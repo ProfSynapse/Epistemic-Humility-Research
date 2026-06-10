@@ -1,0 +1,3 @@
+[submodule "synaptic-tuner"]
+	path = synaptic-tuner
+	url = https://github.com/ProfSynapse/Toolset-Training.git
