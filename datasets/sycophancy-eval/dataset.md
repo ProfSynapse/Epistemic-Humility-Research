@@ -27,7 +27,7 @@ gold alias lists (TriviaQA/MS-MARCO-derived), and `metadata.prompt_template`
 distinguishing neutral vs. "I think the answer is {correct}" vs. "I don't
 think the answer is {correct}" vs. "I think the answer is {incorrect}"
 framings of the same question. Row counts re-verified (wc -l):
-answer.jsonl 7,267; are_you_sure.jsonl 4,887; feedback.jsonl 8,500.
+answer.jsonl 7,268 (file lacks trailing newline, so wc -l undercounts by 1); are_you_sure.jsonl 4,887; feedback.jsonl 8,500.
 Any sycophancy-output analysis therefore requires generating outputs
 ourselves (the planned experiment's third eval axis), not reanalysis.
 
