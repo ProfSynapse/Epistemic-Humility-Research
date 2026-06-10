@@ -599,3 +599,10 @@ papers:
   area: verification
   status: candidate
   note: detector-evasion >85% claim; cited in draft gap 4 caution via raw report 06
+- arxiv: '2309.07875'
+  slug: safety-tuned-llamas
+  title: 'Safety-Tuned LLaMAs: Lessons From Improving the Safety of Large Language Models that Follow Instructions'
+  year: 2023
+  area: methods
+  status: candidate
+  note: true source of the safety-data dose-response sweep mis-attributed to 2505.19056; cited in draft gap 5

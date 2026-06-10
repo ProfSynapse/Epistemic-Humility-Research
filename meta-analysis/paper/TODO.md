@@ -8,9 +8,10 @@
       2312.07000 baseline = UNALIGNED 50.06; 2404.14723 KTO = +2.17 (SFT base)
       / +9.25 (pretrained), report's 17.5% unsupported; 2109.07958 17% =
       gen-task largest-vs-60x-smaller. Remaining 3 unverified: nostalgebraist
-      blog (verify against blog), jmir-e76048 (no PDF), 2505.19056 (DISPUTED —
-      dose-response claim not in paper; re-source, candidate Bianchi
-      2309.07875). Dagger elimination COMPLETE 2026-06-10: two agent
+      blog (verify against blog), jmir-e76048 (no PDF), 2505.19056 (RESOLVED 2026-06-10:
+      dose-response re-attributed to Bianchi 2309.07875 — safety-domain
+      sweep with figure-based over-refusal evidence; row stays excluded
+      from pooled stats; draft gap 5 cites 2309.07875 qualitatively). Dagger elimination COMPLETE 2026-06-10: two agent
       fan-outs (batches A+B, 32 papers) verified every remaining in-text
       value; 0 content daggers left, † convention retired in the draft's
       legends. Batch-B corrections folded in: 2401.12794 (conformal-set

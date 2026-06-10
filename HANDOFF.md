@@ -13,8 +13,9 @@ This doc is the single re-entry point. Tell the next session to
 
 Network blocks are moot on the local machine. Completed:
 
-- **Library fetched**: all 92 manifest papers have PDFs + ar5iv full text
-  (`library/pdfs/`, `library/fulltext/` — gitignored, re-fetch with
+- **Library fetched**: all 95 manifest papers have PDFs + ar5iv full text
+  (2309.07875 added 2026-06-10 during the dose-response re-attribution;
+  `library/pdfs/`, `library/fulltext/` — gitignored, re-fetch with
   `SSL_CERT_FILE=$(python3 -m certifi) python3 docs/epistemic-humility/library/scripts/fetch_library.py --enrich`).
   Script now rate-limits (3s/request, 429 backoff) and skips already-fetched.
 - **All 6 blocked datasets fetched** via `datasets/scripts/fetch_datasets.py`
@@ -71,8 +72,9 @@ OOD transfer — directly filling gaps 1, 2, 5, 6 from
 
 1. ~~Enrich library + FULL verification pass~~ **DONE 2026-06-10**: 56/59
    effects.csv rows verified (31 studies); 6 corrections applied (see
-   `paper/TODO.md` first checkbox for the list); 2505.19056 row DISPUTED
-   (claims not in that paper — re-source from Bianchi 2309.07875?);
+   `paper/TODO.md` first checkbox for the list); 2505.19056 row RESOLVED:
+   dose-response re-attributed to Bianchi 2309.07875 (safety-domain sweep;
+   row stays excluded from pooled stats; gap 5 cites it qualitatively);
    draft + synthesize.py outputs updated. Lesson recorded: text-extraction
    agents misread figure-only values twice (GPT-4 Fig 8, SelfAware Fig 5) —
    always confirm figure values visually (pdftoppm render → Read the PNG).
@@ -81,7 +83,7 @@ OOD transfer — directly filling gaps 1, 2, 5, 6 from
    verified every remaining in-text value — 0 content daggers, † convention
    retired. 3 corrections folded into the draft (2401.12794 conformal-set
    accuracy direction, 2512.00218 monitorability boundary condition,
-   2606.03962 "as well as"); 60/94 library notes status: verified.
+   2606.03962 "as well as"); 61/95 library notes status: verified.
 2. ~~Download blocked datasets~~ **DONE 2026-06-10** (see §1). Remaining
    pendings listed in `datasets/README.md` (Natural Questions; AbstentionBench
    materialization; R-Tuning/Idk Google-Drive train sets — not needed for
