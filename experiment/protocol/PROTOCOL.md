@@ -1,9 +1,14 @@
-# Experiment Protocol (pre-registration draft v0.3)
+# Experiment Protocol (pre-registration v0.3)
 
 **Working title:** *Loss-Averse Humility: Comparing SFT, DPO, and Kahneman-Tversky
 Optimization for Teaching Small Language Models to Say "I Don't Know"*
 
-**Status:** DRAFT v0.3. User sign-off required BEFORE any training run. This
+**Status:** SIGNED OFF v0.3 (user approval, 2026-06-10). Hypotheses H1-H4, the
+run matrix (including the 8B 3-seed confirm, not vetoed), probe N=32, and the
+leakage-guard design are locked as pre-registered. Training runs are authorized
+once the recorded prerequisites in section 5 land. Any post-sign-off change to
+hypotheses, falsifiers, or the headline run matrix requires a new signed
+revision with a changelog entry. This
 version reconciles the stale v0.1 (2-arm, Qwen2.5, wrong tuner path) with the
 finalized Phase 1 design: a three-way comparison plus a replication bridge arm,
 pinned on Qwen3, with the data leakage and trainer gaps resolved, and (v0.3) a
