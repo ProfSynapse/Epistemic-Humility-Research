@@ -44,11 +44,25 @@
       2403.18349 RLKF cited in gap 3); 2606.03969 entry cleaned. §8 stubbed
       out pending the research-trajectory conversation (v0 text parked at
       `experiment/protocol/future-work-section-v0.md`).
-- [ ] **Figure regeneration.** Regenerate `analysis/figures/forest.png` from
-      final effects.csv; add (a) per-claim-family vote/sign-test figure,
-      (b) Section 5.3 recall-vs-over-refusal operating-point scatter,
-      (c) L1-L4 coverage map (stack level x rows). Verify figure numbers match
-      regenerated synthesis-summary.md.
+- [ ] **Figure regeneration.** `forest.png` regenerated 2026-06-10 (67-row
+      corpus). Still to add: (a) per-claim-family vote/sign-test figure — do
+      this as a Cochrane ch. 12 effect-direction plot, the natively
+      recommended visualization for direction-based synthesis (also closes
+      SWiM item 7 fully); (b) Section 5.3 recall-vs-over-refusal
+      operating-point scatter (abstentionbench_frontier.png may already
+      serve); (c) L1-L4 coverage map (stack level x rows). Verify figure
+      numbers match regenerated synthesis-summary.md.
+- [x] **Methods evidence-basing.** DONE 2026-06-10: §4.4 grounds the
+      synthesis design in the methodology literature (SWiM names our exact
+      methods; Cochrane ch. 12 sanctions direction-based vote counting +
+      sign test and condemns the significance-based variant we avoid;
+      Hedges & Olkin 1980 cited as the honest limitation; Kitchenham &
+      Charters for CS norms). §7 grounds the ~14% correction rate in
+      measured single-extraction (Buscemi 2006) and LLM-extraction
+      (Khraisha 2024, ~80% accuracy) error rates. PRISMA 2020 deviation
+      now cited explicitly (Page et al. 2021). GRADE certainty handled as
+      a blanket low/very-low statement in §4.4 (SWiM item 6); full
+      per-family GRADE deferred. 7 methodology references added.
 - [x] **Related-surveys positioning paragraph.** DONE 2026-06-10: §6.4
       expanded from a one-liner plus deferral note into a full comparison,
       grounded in a subagent deep-read of both local PDFs (2407.18418 Wen
