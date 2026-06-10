@@ -79,6 +79,27 @@ candidates for inclusion themselves.
 | 2605.00365 | Uniform-Correct Policy Optimization — same resolution table |
 | 2605.27205 | wireless digital twins — name-collision check while resolving 2605.21127 |
 
+## v1 admission candidates from coverage probes (2026-06-10)
+
+Two post-freeze probes (five-language search; non-arXiv venue sweep across
+ACL Anthology, OpenReview, clinical journals, Nature-family, HCI) surfaced
+no language-based misses but a small set of venue-based ones. Logged here
+as v1 candidates alongside the four post-freeze arXiv papers in §B above:
+
+| Item | Venue | Why in scope | Priority |
+|---|---|---|---|
+| JMIR Med Inform 2025;13:e78432 (Abumelha et al.) | JMIR (no arXiv) | clinical SFT + confidence-regularization loss: hallucinated features −89.9% while ECE worsens 0.060 → 0.147 — a same-intervention hallucination/calibration trade-off datum | high |
+| Self-Augmented Preference Alignment for Sycophancy Reduction (Chen, Huang & Chen) | EMNLP 2025 Main (Anthology-only) | sycophancy reduction via preference alignment, aligned-vs-unaligned comparison | high |
+| Weak-to-Strong Honesty Alignment via Learning-to-Rank Supervision (Xie et al.) | Findings of ACL 2025 (Anthology-only) | honesty/refusal SFT under weak supervision; extract effect sizes from PDF before admitting | medium |
+| MARVEL: Modular Abstention for Reliable and Versatile Expert LLMs | ICML 2025 workshop / ICLR 2026 withdrawn (OpenReview-only) | LoRA abstention experts, +8.1 in-domain / +5.4 OOD abstention accuracy; weak evidentiary tier | low |
+| The Hallucination Tax of Reinforcement Finetuning | arXiv:2505.13988 (Findings EMNLP 2025) | arXiv-visible but missed by all six searches: RFT drops refusal >80% on unanswerable math, 10% SUM data restores it — directly in the RL-degrades-abstention cell; search-coverage datum | high |
+| Calibrated LMs and How to Find Them with Label Smoothing | arXiv:2508.00264 | arXiv-visible, missed by searches | medium |
+| RL for Better Verbalized Confidence in Long-Form Generation | arXiv:2505.23912 | arXiv-visible, missed by searches | medium |
+
+Venue note: corpus paper 2509.04664 ("Why Language Models Hallucinate")
+now has a journal version, Nature 2026, s41586-026-10549-w — record the
+venue upgrade at BibTeX time.
+
 ## Post-admission corrections (verification pass, 2026-06-10)
 
 7 of the 49 retrospectively checked rows (~14%) changed under PDF
