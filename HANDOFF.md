@@ -1,121 +1,104 @@
 # HANDOFF — Epistemic Humility Research Program
 
-**Branch:** `claude/ai-humility-research-experiment-37za2i` · **Updated:** 2026-06-10
+**Repo:** `ProfSynapse/Epistemic-Humility-Research` (private) · **Branch:** `main` · **Updated:** 2026-06-10
 **Goal:** two arXiv submissions — (1) a meta-analysis of epistemic humility in LLM
-training/fine-tuning, (2) a novel SFT-vs-KTO abstention experiment run in Synaptic Tuner.
+training/fine-tuning, (2) a novel SFT-vs-DPO-vs-KTO abstention experiment run in the
+Synaptic Tuner submodule. A staged 4-phase research program builds on both:
+`experiment/protocol/research-trajectory.md`.
 
 This doc is the single re-entry point. Tell the next session to
-"read docs/epistemic-humility/HANDOFF.md and continue."
+"read HANDOFF.md and continue."
 
 ---
 
-## 1. UNBLOCK — DONE (2026-06-10, local macOS session)
+## 1. Repo history (so paths in old commits make sense)
 
-Network blocks are moot on the local machine. Completed:
+This repo was split out of Synaptic Tuner (`ProfSynapse/Toolset-Training`) on
+2026-06-10 via `git subtree split --prefix=docs/epistemic-humility` — full
+commit history preserved. Commits before the split reference
+`docs/epistemic-humility/...` paths; everything now lives at repo root.
+Synaptic Tuner is consumed as a git submodule at `synaptic-tuner/`
+(`git submodule update --init` on first checkout).
 
-- **Library fetched**: all 95 manifest papers have PDFs + ar5iv full text
-  (2309.07875 added 2026-06-10 during the dose-response re-attribution;
-  `library/pdfs/`, `library/fulltext/` — gitignored, re-fetch with
-  `SSL_CERT_FILE=$(python3 -m certifi) python3 docs/epistemic-humility/library/scripts/fetch_library.py --enrich`).
-  Script now rate-limits (3s/request, 429 backoff) and skips already-fetched.
-- **All 6 blocked datasets fetched** via `datasets/scripts/fetch_datasets.py`
-  (TriviaQA, MMLU, PopQA, KUQ, CoCoNot, AbstentionBench-repo-snapshot) —
-  committed with provenance `dataset.md`s.
-- **Exact truthful-rate recomputation done**: Cheng et al.'s test set turned
-  out to be TriviaQA unfiltered.nocontext/validation (100% question match);
-  `cheng_test_gold.jsonl` + exact alias grading replaced the token-F1 proxy.
-  New finding: 43-51% of answers on "unknown"-labeled questions are correct
-  → label-noise caveat (now in draft 5.3).
-- **Priority PDF verifications done** (GPT-4 ECE Fig 8, Cheng Table 1,
-  R-Tuning Table 1, AbstentionBench 24%, Wei sycophancy, Sharma 98%/~6%):
-  25/59 effects.csv rows now verified=true; 2 corrections (R-Tuning metric
-  is AP score not accuracy; Wei -8.8 is Flan-PaLM-8B not 62B); daggers
-  removed in draft for verified claims.
+Gitignored binaries (library/pdfs 273M, library/fulltext 38M,
+scratch/rewardcal-fetch parquets 141M) were copied over locally and are
+re-fetchable: `SSL_CERT_FILE=$(python3 -m certifi) python3 library/scripts/fetch_library.py --enrich`
+(macOS python.org Python needs that SSL_CERT_FILE for arxiv/HF fetches; PDF
+page rendering needs poppler — `/opt/homebrew/bin/pdftoppm` to scratch/, then
+Read the PNG).
 
-macOS gotcha: python.org Python needs `SSL_CERT_FILE=$(python3 -m certifi)`
-for arxiv/HF fetches. PDF page rendering needs poppler (`brew install poppler`;
-if the Read tool can't find pdftoppm, render via `/opt/homebrew/bin/pdftoppm`
-to scratch/ and read the PNG).
+## 2. State of paper 1 (meta-analysis) — draft complete, awaiting user reread
 
-## 2. What exists already (all committed on this branch)
+`meta-analysis/paper/draft-v0.md`, ~10,800 words, 69/69 citations resolved.
 
-| Asset | Path | State |
-|---|---|---|
-| Paper library: manifest (61 papers) + frontmatter notes + fetch script | `library/` | notes stubbed; PDFs pending network |
-| 5 deep-research evidence reports (every extracted number + provenance) | `meta-analysis/evidence/raw-reports/` | done; numbers flagged unverified-against-PDF |
-| Independent reanalysis of Cheng et al. (2401.13275) method outputs | `meta-analysis/analysis/reanalyze_idk_outputs.py` → `evidence/idk-method-reanalysis.csv` | done (exact refusal metrics) |
-| Local datasets (SelfAware, TruthfulQA, 2× sycophancy evals, SaySelf, Cheng outputs) | `datasets/` | done, with licenses + frontmatter notes |
-| Normalized evidence table + synthesis stats | `meta-analysis/evidence/effects.csv`, `analysis/` | see git log — being built |
-| Experiment protocol (hypotheses, design, metrics, recipes) | `experiment/protocol/` | see git log — being built |
+- **Evidence base:** `meta-analysis/evidence/effects.csv` — 67 rows, 35
+  studies, 64 verified=true. Family votes: C1 2/0, C2 3/0 (p=0.25), C3 1/0,
+  C4 4/0 (p=0.125), C5 10/0 (p=0.002, exact binomial).
+- **Verification discipline:** every in-text number verified against primary
+  sources (PDF page renders for figure-only values); † convention retired.
+- **Methods are evidence-based** (§4.4): SWiM reporting items (Campbell 2020),
+  Cochrane Handbook ch. 12 direction-based vote counting + sign tests,
+  Hedges & Olkin 1980 as the limitation cite, PRISMA 2020 with disclosed
+  deviations, Buscemi 2006 + Khraisha 2024 grounding the single-extractor
+  ~14% error-rate mitigation, Kitchenham & Charters 2007 for CS SLR norms.
+- **Independent reanalyses of released artifacts** (§5.3, four worked cases,
+  scripts in `meta-analysis/analysis/`): Cheng et al. outputs (exact refusal
+  metrics, 43-51% label noise on "unknown" labels), AbstentionBench results
+  table (8 new effects rows, study `reanalysis-2506.09038` — paired
+  Tulu-3 ladder contrasts with sign tests), FActScore generations
+  (descriptive only — conflates scale/corpus/vendor), CRM training-data
+  audit (single confidence template, ~300 contradictory double-stacks).
+- **Coverage probes done:** five-language search (English-only corpus holds),
+  venue probe beyond arXiv (~4 arXiv-invisible + 3 missed arXiv papers
+  logged in `evidence/prisma-flow.md` as v1 admission candidates).
+
+**Gate:** the user's read-through of draft-v0.md. After it, in
+`meta-analysis/paper/TODO.md`: v1 admission decision (high-priority: JMIR
+e78432, SAPA EMNLP 2025, 2505.13988), abstract trim ~250→200 + title,
+figures (Cochrane effect-direction plot per family; abstentionbench_frontier
+may serve §5.3), provider-card refresh near submission (Gemini 3.1 Pro /
+3.5 Flash, OpenAI successor), BibTeX + arXiv LaTeX pipeline, §8 future-work
+section drafted from research-trajectory.md.
 
 ## 3. Headline findings driving the experiment
 
-1. **KTO has never been applied to abstention/IDK/calibration training** (verified
-   gap, high confidence, as of 2026-06). Closest prior art: Cheng et al. ICML 2024
-   compares Idk-SFT/DPO/PPO/BoN/HIR on Llama-2-7b-chat (no KTO, no 3B, thin OOD).
-2. Our reanalysis of their raw outputs (exact, n=11,313): Idk-SFT over-refuses
-   42.7% of known questions; DPO halves that to 23.3% (refusal recall 84.1% vs 71.2%).
-3. RLHF/preference training degrades token-level calibration ~10× (GPT-4 ECE
-   0.007→0.074) while *improving* abstention/factuality — unreconciled tension;
-   no paper measures both after the same run. KTO unmeasured on either.
-4. SFT on model-unknown facts causally drives hallucination, linearly in fitted
-   unknowns (Gekhman 2405.05904) → training data must be split by THIS model's
-   knowledge (known/unknown splits are model-specific by construction).
-
-**Planned experiment (pending your sign-off on the formal hypothesis doc):**
-SFT vs KTO on model-specific IDK data for Qwen2.5-3B-Instruct (pilot) →
-Qwen2.5-7B-Instruct (confirm), measuring truthful rate + over-refusal + ECE +
-OOD transfer — directly filling gaps 1, 2, 5, 6 from
-`evidence/raw-reports/05-sft-vs-preference-and-gaps.md`.
+1. **KTO has never been applied to abstention/IDK/calibration training**
+   (verified gap as of 2026-06). Closest prior art: Cheng et al. ICML 2024
+   (Idk-SFT/DPO/PPO/BoN/HIR on Llama-2-7b-chat; no KTO, no small models,
+   thin OOD).
+2. Our reanalysis of Cheng's raw outputs (exact, n=11,313): Idk-SFT
+   over-refuses 42.7% of known questions; DPO halves that to 23.3%.
+3. Our AbstentionBench reanalysis: each Tulu-3 preference stage adds recall
+   (SFT→DPO +0.08 at 8B, p=5.5e-4) with zero precision cost — but ceiling
+   ~0.7 frontier, and scale doesn't move it (0.69→0.71 across 8B-405B).
+4. RLHF degrades token-level calibration ~10× (GPT-4 ECE 0.007→0.074) while
+   improving abstention — unreconciled tension; no paper measures both after
+   the same run. KTO unmeasured on either.
+5. SFT on model-unknown facts causally drives hallucination (Gekhman
+   2405.05904) → training data must be split by THIS model's knowledge.
 
 ## 4. Work queue (in order)
 
-1. ~~Enrich library + FULL verification pass~~ **DONE 2026-06-10**: 56/59
-   effects.csv rows verified (31 studies); 6 corrections applied (see
-   `paper/TODO.md` first checkbox for the list); 2505.19056 row RESOLVED:
-   dose-response re-attributed to Bianchi 2309.07875 (safety-domain sweep;
-   row stays excluded from pooled stats; gap 5 cites it qualitatively);
-   draft + synthesize.py outputs updated. Lesson recorded: text-extraction
-   agents misread figure-only values twice (GPT-4 Fig 8, SelfAware Fig 5) —
-   always confirm figure values visually (pdftoppm render → Read the PNG).
-   **Dagger elimination COMPLETE 2026-06-10**: two agent fan-outs
-   (batches A+B, 32 papers, parallel Explore agents reading local PDFs)
-   verified every remaining in-text value — 0 content daggers, † convention
-   retired. 3 corrections folded into the draft (2401.12794 conformal-set
-   accuracy direction, 2512.00218 monitorability boundary condition,
-   2606.03962 "as well as"); 63/97 library notes status: verified
-   (manifest grew to 97 with 2309.07875, 2505.20903, 2502.19545).
-2. ~~Download blocked datasets~~ **DONE 2026-06-10** (see §1). Remaining
-   pendings listed in `datasets/README.md` (Natural Questions; AbstentionBench
-   materialization; R-Tuning/Idk Google-Drive train sets — not needed for
-   paper 1).
-3. **Finish meta-analysis paper** from `meta-analysis/paper/draft-v0.md` +
-   `TODO.md` checklist (PRISMA flow counts, figure regeneration,
-   related-surveys positioning, abstract trim, BibTeX, author block).
-4. **Experiment execution** (local GPU or HF Jobs; see
-   `experiment/protocol/`): generate known/unknown splits for Qwen2.5-3B by
-   10-sample correctness probing (needs an inference backend — RTX 3090 via
-   `tuner.py local-run`, or cloud), build SFT + KTO JSONL per
-   `.skills/fine-tuning/reference/dataset-formats.md`, train both arms,
-   evaluate with the Evaluator harness, analyze, draft paper 2. NOTE: carry
-   the label-noise finding (43-51% of "unknown"-labeled answered correctly in
-   Cheng's data) into the protocol — consider a higher probing sample count
-   or a label-noise sensitivity analysis.
+1. **User rereads draft-v0.md** → then the TODO.md pre-submission items (§2 above).
+2. **Experiment decisions (user):** model family pin (Qwen2.5 vs newer),
+   Llama-2-7b-chat bridge arm in/out (recommended in), Phase-2 scope inside
+   paper 2 or not, KTO mapping choice (congruence vs correctness-safe — see
+   `experiment/protocol/rewardcal-kto-recipe.md`).
+3. **Phase 1 execution** per `experiment/protocol/research-trajectory.md`:
+   model-specific known/unknown splits via correctness probing (use a higher
+   sample count — carry the 43-51% label-noise finding), SFT vs DPO vs KTO
+   arms, measure refusal recall + over-refusal + truthful rate + ECE on the
+   same run, OOD via KUQ/CoCoNot/AbstentionBench. Training/eval runs in the
+   `synaptic-tuner/` submodule (`./run.sh status`; 3B pilot local RTX 3090
+   via `python tuner.py local-run`, 7-8B confirm on HF Jobs). KTO JSONL must
+   be interleaved — `synaptic-tuner/.skills/fine-tuning/reference/dataset-formats.md`.
+4. **Deferred analyses:** R2 (HINT-lab checkpoints on our abstention suite —
+   needs GPU inference, fold into experiment phase), S2 (Sharma sycophancy
+   framings as a paper-2 eval axis — protocol design).
 
-## 5. Constraints discovered (so you don't re-hit them)
-
-- `docs/research/` is **gitignored** — that's why this lives in `docs/epistemic-humility/`.
-- Egress proxy blocks everything except github.com / raw.githubusercontent.com /
-  pypi.org; WebSearch works (snippets only). WebFetch obeys the same allowlist.
-- HF Jobs / training does not run in this container — training happens on your
-  RTX 3090 or HF cloud from your machine.
-- Datasets in repo so far: ~116 MB. Large downloads (TriviaQA full is GBs) should
-  be subset before committing (rc.nocontext validation slice is enough).
-- The PACT plugin/skills referenced in CLAUDE.md are not installed in cloud
-  sessions; sessions run directly.
-
-## 6. Provenance rules (non-negotiable for arXiv)
+## 5. Provenance rules (non-negotiable for arXiv)
 
 Every number in `effects.csv` carries source + URL + `verified` flag. Numbers
-failing PDF verification get corrected or dropped from pooled stats — the raw
-reports keep the audit trail of what changed.
+failing primary-source verification get corrected or dropped from pooled
+stats — the raw reports keep the audit trail. Analysis scripts are
+deterministic and re-runnable (CSV in, figures out); no hand-edited results.
