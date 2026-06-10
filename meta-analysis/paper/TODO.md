@@ -24,12 +24,26 @@
       held-out questions, 2605.21127 metadata confirmed ("Reasoning-Trace
       Collapse", Twist et al.; VR→0% while pass@1 +50-57%). 60/94 library
       notes now status: verified.
-- [ ] **PRISMA flow counts.** Reconstruct records-identified / screened /
-      excluded / included numbers from the five search agents' logs (82
-      queries) + the follow-up search; add a PRISMA-style flow figure and an
-      explicit exclusion log. Currently only inclusion criteria are stated.
-- [ ] **Integrate raw-reports/06** (mech-interp/probing follow-up search,
-      running) into Sections 3, 6.2, 6.3 gap 4, and 8; add any new effects rows.
+- [x] **PRISMA flow counts.** DONE 2026-06-10: retrospective reconstruction
+      in `evidence/prisma-flow.md` (110 queries; 93 structured entries; 114
+      unique IDs; 95 admitted; 21-ID exclusion log in 3 categories; 34
+      studies/59 rows; 36 context-cited). Figure: `analysis/prisma_figure.py`
+      -> `figures/prisma.png`. Draft §4.1 flow paragraph + §7 caveat added
+      (snippet-level hit counts were never logged — stated honestly). NOTE:
+      4 post-freeze papers (2312.17249 Androids-Dreaming, 2506.14387 SEAT,
+      2603.09117 DCPO, 2605.25850 TIAR) logged as v1 citation candidates.
+- [x] **Integrate raw-reports/06** — DONE (commit 4fd8dd7): folded into §3,
+      §6.2, §6.3 gaps 3-4; 15 papers registered; §4.1 now counts its 28
+      queries (110 total).
+- [x] **Internal-consistency sweep.** DONE 2026-06-10: §4.3/§5.1/§7 updated
+      from the stale 10-verified-rows state to 56/59; §4.1 follow-up search
+      marked complete; §7 limitation 1 rewritten (retrospective-verification
+      framing, ~14% correction rate reported as a finding); references
+      sorted, 2 missing entries added (2511.12991, 2604.17073), 3 uncited
+      entries resolved (2205.14334 + 2305.14251 now cited in C1/C2;
+      2403.18349 RLKF cited in gap 3); 2606.03969 entry cleaned. §8 stubbed
+      out pending the research-trajectory conversation (v0 text parked at
+      `experiment/protocol/future-work-section-v0.md`).
 - [ ] **Figure regeneration.** Regenerate `analysis/figures/forest.png` from
       final effects.csv; add (a) per-claim-family vote/sign-test figure,
       (b) Section 5.3 recall-vs-over-refusal operating-point scatter,
@@ -50,5 +64,6 @@
 - [ ] **Abstract trim** to ~200 words (currently ~250) and final word-count /
       style pass; convert references to BibTeX; arXiv formatting (LaTeX or
       arXiv-ready markdown pipeline).
-- [ ] **Verify 2026 arXiv IDs** flagged in library manifest (2603.xxxxx-
-      2606.xxxxx cluster cited via the essay) resolve to the intended papers.
+- [x] **Verify 2026 arXiv IDs** — DONE 2026-06-10 (batches A+B): all
+      essay-cited 2603-2606 IDs resolve to the intended papers and their
+      quoted values are PDF-verified.
