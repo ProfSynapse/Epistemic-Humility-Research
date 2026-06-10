@@ -59,3 +59,13 @@ python3 -m pytest experiment/phase1/eval/tests/ -q
 Outputs (§6.7): `results/<arm>__<eval_set>/{generations.jsonl,metrics.json,bootstrap_ci.json}`
 and `results/comparisons/{mcnemar.csv,summary_table.csv}`. Every emitted number
 carries `source / metric / model / method / verified / config_sha` provenance.
+
+## AP confidence signal
+
+AP (§6.4 item 3) ranks answers by a confidence signal that is **pluggable** via
+`confidence.signal` in the config. The default is `self_consistency` (P_correct
+agreement across N eval samples) — the architect's pinned default: it is the
+more robust signal at the knowledge frontier and is directly R-Tuning-comparable.
+`seq_logprob` is the swappable alternative. Each run records its
+`confidence_source` in `metrics.json` so AP numbers are provenance-traceable and
+a later logprob run is distinguishable from a self-consistency one.

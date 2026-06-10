@@ -62,6 +62,7 @@ def test_end_to_end_fixture_run(tmp_path):
         "model_tag": "test-model",
         "gold_path": str(gold),
         "results_dir": str(results_dir),
+        "confidence": {"signal": "self_consistency"},
         "bootstrap": {"n_resamples": 200, "level": 0.95, "seed": 42},
         "arms": [
             {"name": "good", "method": "sft", "model": "test-model"},
@@ -90,6 +91,8 @@ def test_end_to_end_fixture_run(tmp_path):
         assert k in prov
     assert prov["verified"] is True
     assert prov["method"] == "sft"
+    # AP confidence source recorded per run (architect provenance note)
+    assert good_metrics["confidence_source"] == "self_consistency"
 
     # bootstrap_ci.json
     boot = json.loads(
