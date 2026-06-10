@@ -52,9 +52,12 @@
 - [ ] **Related-surveys positioning paragraph.** Expand Section 6.4 into a
       proper comparison with 2407.18418 (abstention survey) and 2409.18786
       (honesty survey), plus any 2026 surveys found during the PDF pass.
-- [ ] **Author/affiliation block.** Add author name(s), affiliation, contact,
-      and the companion-essay citation in final form; decide author-name form
-      for the essay attribution (Section 3) and References.
+- [x] **Author/affiliation block.** DONE 2026-06-10: Joseph Rosenbaum
+      (Synaptic Labs, connect2synapse@gmail.com) added to frontmatter +
+      title block. Essay attribution resolved transparently: cited as
+      Synaptic Labs (2026), published under the lab's AI avatar Professor
+      Synapse (Section 3 + References). Re-confirm email choice and exact
+      affiliation string at BibTeX/LaTeX time.
 - [x] **Finish the interim columns** of `idk-method-reanalysis.csv` — DONE
       2026-06-10: exact gold-alias grading via
       `datasets/triviaqa-rc-nocontext/cheng_test_gold.jsonl` (Cheng test set

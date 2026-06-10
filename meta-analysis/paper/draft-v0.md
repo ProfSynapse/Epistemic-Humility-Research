@@ -1,5 +1,6 @@
 ---
 title: "Epistemic Humility in Large Language Models: A Systematic Evidence Synthesis of Training Effects, Interventions, and Open Gaps"
+author: "Joseph Rosenbaum (Synaptic Labs)"
 status: draft-v0
 date: 2026-06-10
 target: arXiv (cs.CL / cs.AI)
@@ -17,7 +18,9 @@ notes: >
 
 # Epistemic Humility in Large Language Models: A Systematic Evidence Synthesis of Training Effects, Interventions, and Open Gaps
 
-**Draft v0. Not for distribution. Author/affiliation block pending (see TODO.md).**
+**Joseph Rosenbaum** · Synaptic Labs · connect2synapse@gmail.com
+
+*Draft v0. Not for distribution.*
 
 ## Title options
 
@@ -52,7 +55,7 @@ We use *epistemic humility* as an umbrella for behaviors and properties that mak
 
 ## 3. Conceptual framework: the Formalization Stack plus a coherence axis
 
-A synthesis needs an organizing taxonomy, and the natural one available is not a method taxonomy (the existing surveys of abstention [arXiv:2407.18418] and honesty [arXiv:2409.18786] already provide those) but a *depth* taxonomy: a hierarchy of what, exactly, is being formalized when a model "expresses ignorance." We adopt the four-level **Formalization Stack** developed in the companion essay series ("Artificial Intellectual Humility," Professor Synapse, 2026, the companion essay to this synthesis; the stack originates there and we use it with attribution):
+A synthesis needs an organizing taxonomy, and the natural one available is not a method taxonomy (the existing surveys of abstention [arXiv:2407.18418] and honesty [arXiv:2409.18786] already provide those) but a *depth* taxonomy: a hierarchy of what, exactly, is being formalized when a model "expresses ignorance." We adopt the four-level **Formalization Stack** developed in the companion essay series "Artificial Intellectual Humility" (Synaptic Labs, 2026, published under the lab's AI avatar, Professor Synapse; the stack originates there and we use it with attribution):
 
 - **L1: Confidence/calibration.** "How sure am I?" formalized as a scalar: token probabilities, verbalized percentages, ECE/Brier/AUROC. This is the level of nearly all training work synthesized below.
 - **L2: Structured ignorance.** "What am I missing?" formalized as structure: gap-naming, knowledge-intersection identification, retrieval proposals. The clearest instantiation is the Structured Ignorance Certificate, trained via RL on a 7,347-question cross-domain Unknown-Unknown dataset, with 99.46% of certificates emitted as valid JSON on 735 held-out questions [arXiv:2606.08571]; the theoretical complement decomposes uncertainty into input ambiguity, knowledge gaps, and aleatoric sampling noise [arXiv:2603.24967], which a scalar confidence collapses into one number.
@@ -258,4 +261,4 @@ Non-arXiv items:
 - nostalgebraist (2023). "OpenAI API base models are not sycophantic, at any size" (LessWrong/Alignment Forum replication).
 - JMIR 2025;27:e76048 — Fine-Tuning Methods for LLMs in Clinical Medicine by SFT and DPO.
 - Schulman, J. (2023). "RLHF: Progress and Challenges" (Berkeley talk, April 2023).
-- Professor Synapse (2026). "Artificial Intellectual Humility: From Confidence Scores to Structured Ignorance" (companion essay; source of the Formalization Stack adopted in Section 3).
+- Synaptic Labs (2026). "Artificial Intellectual Humility: From Confidence Scores to Structured Ignorance." Companion essay series, published under the lab's AI avatar, Professor Synapse. Source of the Formalization Stack adopted in Section 3.
