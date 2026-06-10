@@ -31,7 +31,7 @@ CORRECTED, EXCLUDED = 6, 1
 MAIN = [
     ("Identification",
      f"6 structured searches, {QUERIES} documented queries (June 2026)\n"
-     "snippet-level hit counts not logged — earliest auditable stage below"),
+     "funnel starts at structured assessment (see \u00a77)"),
     ("Structured assessment",
      f"{ENTRIES} per-paper entries in 6 raw reports\n"
      f"{UNIQUE_ARXIV} unique arXiv IDs + {NON_ARXIV} non-arXiv records"),
