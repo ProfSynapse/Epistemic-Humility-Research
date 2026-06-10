@@ -22,10 +22,10 @@ reported. All counts below are recomputable from the files named.
 | Non-arXiv records admitted | 8 (OpenAI postmortems, GPT-5 system card, Opus 4.8 system card, Gemini 3 Pro model card, nostalgebraist blog, JMIR e76048, Schulman talk, companion essay) | draft §9 non-arXiv list |
 | Admitted to library after dedup + §4.2 screening | 97 (93 search-surfaced + 4 verification/follow-up additions: 2309.07875, 2310.06452, 2505.20903, 2502.19545) | `library/manifest.yaml` |
 | Surfaced but **not** admitted | 21 (see exclusion log) | set difference, reports vs. manifest |
-| Studies with extracted quantitative rows | 34 (31 arXiv + 2 gray + 1 own reanalysis) → 59 rows | `effects.csv` |
+| Studies with extracted quantitative rows | 35 (31 arXiv + 2 gray + 2 own reanalyses) → 67 rows | `effects.csv` |
 | Library papers cited as context/framework only | 38 | draft in-text citations minus extraction studies |
 | Rows excluded post-verification | 1 (2505.19056 — citation mis-attribution) | `effects.csv` row 59 notes |
-| Rows verified against primary artifact | 56 of 59 | `effects.csv` `verified` column |
+| Rows verified against primary artifact | 64 of 67 (8 of these are our own computed reanalysis rows, born verified) | `effects.csv` `verified` column |
 
 ## Exclusion log — the 21 surfaced-but-not-admitted arXiv IDs
 
@@ -78,6 +78,14 @@ candidates for inclusion themselves.
 | 2603.16157 | DyJR — alternate considered while resolving 2606.08543 (PAEC) |
 | 2605.00365 | Uniform-Correct Policy Optimization — same resolution table |
 | 2605.27205 | wireless digital twins — name-collision check while resolving 2605.21127 |
+
+## Post-freeze addition (2026-06-10)
+
+Second own reanalysis registered after the original extraction freeze:
+`reanalysis-2506.09038` (AbstentionBench released results table; 8 rows,
+paired within identical benchmark-subset cells; born verified, script
+`analysis/abstentionbench_reanalysis.py`). Raises the funnel's extraction
+stage from 34 studies / 59 rows to 35 / 67.
 
 ## v1 admission candidates from coverage probes (2026-06-10)
 

@@ -23,9 +23,9 @@ UNIQUE_ARXIV = 114     # deduplicated arXiv IDs in reports
 NON_ARXIV = 5          # gray literature + essay
 ADMITTED = 97          # library/manifest.yaml
 NOT_ADMITTED = 21      # 13 peripheral + 4 post-freeze + 4 ID artifacts
-STUDIES, ROWS = 34, 59  # effects.csv
+STUDIES, ROWS = 35, 67  # effects.csv
 CONTEXT_CITED = 38     # cited in draft without extracted rows
-VERIFIED = 56          # effects.csv verified column
+VERIFIED = 64          # effects.csv verified column
 CORRECTED, EXCLUDED = 6, 1
 
 MAIN = [
