@@ -1,0 +1,92 @@
+# WS-2 dataset-builder configuration (Phase 1, paper 2: SFT vs DPO vs KTO abstention).
+#
+# Location: experiment/phase1/data/config/build.yaml
+# Read by:  experiment/phase1/data/build_datasets.py (Component B).
+# Produces: the four training arms (SFT / DPO / KTO-congruence / KTO-correctness-safe)
+#           train+dev JSONL plus build_manifest.json, all under
+#           experiment/phase1/data/<model_tag>/ (arch doc section 4.8).
+#
+# Everything here is pre-registered (PROTOCOL.md section 3.3) and deterministic.
+# Builds MUST be reproducible from a frozen probe_results.jsonl + this config +
+# the checked-in abstention_bank.json. No live generation, no hardcoded paths in
+# the builder source: all knobs live here.
+
+# ---------------------------------------------------------------------------
+# Inputs / outputs (paths relative to the research-repo worktree root).
+# ---------------------------------------------------------------------------
+inputs:
+  # Component A output (coder-probe contract, arch doc section 3.8). One object
+  # per question with question_id, question, question_norm, normalized_aliases,
+  # greedy_answer, greedy_correct, p_correct, sampled_answers, sampled_correct,
+  # label, model_tag.
+  probe_results: "experiment/phase1/probe/{model_tag}/probe_results.jsonl"
+
+  # Cheng held-out test question set for the leakage guard. Keyed by
+  # question_norm (the norm_question form). The guard intersects the builder's
+  # normalized probe/train question set against these keys and ABORTS on any
+  # overlap (load-bearing, pre-registered: arch doc section 3.2).
+  cheng_test_gold: "datasets/triviaqa-rc-nocontext/cheng_test_gold.jsonl"
+
+  # Style-varied, marker-bearing abstention phrasings (checked-in artifact).
+  abstention_bank: "experiment/phase1/data/abstention_bank.json"
+
+output_dir: "experiment/phase1/data/{model_tag}"
+
+# ---------------------------------------------------------------------------
+# Budget + determinism. Budget = distinct source QUESTIONS (the frozen K/U set),
+# NOT row counts (arch doc section 4.2). The frozen set + seed are logged once in
+# build_manifest.json and reused across all arms so the per-arm row-count
+# expansion is a documented consequence of each format, not a confound.
+# ---------------------------------------------------------------------------
+seed: 42
+
+# Optional hard cap on the number of distinct source questions per label class
+# (known / unknown) AFTER the frozen set is drawn. null = use all available.
+# When set, the builder samples deterministically with `seed`. Equalizing the
+# two label classes (known vs unknown count) is controlled by balance_labels.
+max_known_questions: null
+max_unknown_questions: null
+balance_labels: false   # if true, truncate the larger label class to the smaller
+
+# Dev split for Gekhman early stopping. Carved from the SAME frozen question set,
+# format-matched per arm, excluded from every arm's train file, identical dev
+# questions across arms (arch doc section 4.7). Disjoint from Cheng test by
+# construction (drawn from the train-split probe pool).
+dev_fraction: 0.1
+
+# ---------------------------------------------------------------------------
+# Prompt + response templates. One fixed system prompt across probe/train/eval
+# (PROTOCOL.md section 3.3). known answers use a fixed response template; unknown
+# answers draw from the abstention bank.
+# ---------------------------------------------------------------------------
+templates:
+  system_prompt: "You are a helpful, honest assistant. Answer the question if you know it; if you do not, say so plainly."
+  # known-answer response template. {answer} is filled with the gold short
+  # answer (the question's first non-empty alias / answer_value surrogate).
+  known_answer_template: "{answer}"
+
+# ---------------------------------------------------------------------------
+# Negative sourcing for DPO `rejected` and KTO undesirable on UNKNOWN questions.
+# The intended negative is the model's OWN hallucinated probe sample (a wrong
+# entry in sampled_answers). Fallback order when no wrong sample exists:
+#   "drop"      -> drop the question from that arm (logged in manifest), OR
+#   "distractor"-> use a checked-in plausible distractor string (logged).
+# Default "drop" keeps provenance clean (no synthetic content injected).
+# ---------------------------------------------------------------------------
+unknown_negative_source:
+  strategy: "drop"            # one of: drop | distractor
+  distractor_text: "The answer is definitely the one most people would guess."
+
+# ---------------------------------------------------------------------------
+# KTO mapping. congruence (primary) is always emitted. correctness_safe
+# (ablation) is gated by emit_correctness_safe. Both follow rewardcal-kto-recipe
+# and arch doc section 4.6. Interleaving is pre-applied on write (fixed seed) AND
+# re-enforced by the trainer's interleave_dataset as a safety net.
+# ---------------------------------------------------------------------------
+kto:
+  emit_correctness_safe: true
+  # correctness-safe rebalancing weights (recipe section 4 design tension #1).
+  # Surfaced into the per-arm recipe YAMLs by coder-dpo / training config; the
+  # builder records them in build_manifest.json for provenance.
+  correctness_safe_desirable_weight: 2.0
+  correctness_safe_undesirable_weight: 1.0
