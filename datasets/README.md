@@ -26,6 +26,18 @@ querying. Re-fetch provenance is recorded per dataset.
 | `coconot/` | CoCoNot original train/test + contrast test (11,477 + 1,001 + 379) | untagged on HF (AI2) | Noncompliance + over-refusal contrast sets |
 | `abstentionbench-repo/` | AbstentionBench repo snapshot (loading script only — see its dataset.md) | CC-BY-NC-4.0 | Holistic abstention eval, needs materialization |
 
+## Local now (fetched 2026-06-10, released research artifacts — second wave)
+
+| Folder | Dataset | License | Role |
+|---|---|---|---|
+| `factscore-data/` | FActScore released data: 549 human-annotated generations (16,040 labeled atomic facts; InstructGPT/ChatGPT/PerplexityAI) + 12 LMs x 500 raw bio generations + 12 LMs auto-scored atomic-fact labels (5,476 responses) | MIT | **Meta-analysis reanalysis** — respond-rate vs. factual-precision operating points across RLHF ladder + SFT-only models |
+| `abstentionbench-results/` | AbstentionBench aggregated results: 23 models x 31 subsets, abstention precision/recall/F1, incl. Tulu-3 Base→SFT→DPO→PPO ladder at 8B+70B (624 rows) | CC-BY-NC-4.0 | **Meta-analysis reanalysis** — over-refusal trade-offs + scale/post-training comparisons; raw per-question outputs were never released |
+| `reward-calibration/` | PPO-M (Leng et al.) calibration preference mixture, stratified 2,400/25,524 sample + PPO prompt collection sample 1,020/20,480 | Apache-2.0 (repo); HF datasets untagged — verify | Reference train data — only released confidence-calibration preference pairs; KTO recipe template |
+| `repos-staging/` | Shallow clones pending lead disposition (see its README.md) | per-repo | staging only — do not commit `.git` dirs |
+
+Also: `sycophancy-eval/dataset.md` gained a 2026-06-10 verification note —
+upstream repo confirmed to contain prompts only, NO released model outputs.
+
 ## Still pending
 
 | Dataset | Source | Why we want it |

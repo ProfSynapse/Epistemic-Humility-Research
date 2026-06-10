@@ -16,6 +16,21 @@ tags: [dataset, epistemic-humility, sycophancy, eval]
 Sharma et al. (Anthropic) free-form sycophancy evaluation: answer sycophancy,
 "are you sure?" capitulation, and feedback sycophancy tasks.
 
+## Verification note (2026-06-10)
+
+Re-checked upstream with a fresh shallow clone: the repo contains ONLY these
+three eval prompt datasets plus `example.ipynb`/`utils.py` — **no released
+model outputs** (the paper's per-model results were never published as data).
+Still no LICENSE file upstream. The prompt records do carry graded metadata
+enabling output-free analyses: `base.correct_answer`, `base.incorrect_answer`,
+gold alias lists (TriviaQA/MS-MARCO-derived), and `metadata.prompt_template`
+distinguishing neutral vs. "I think the answer is {correct}" vs. "I don't
+think the answer is {correct}" vs. "I think the answer is {incorrect}"
+framings of the same question. Row counts re-verified (wc -l):
+answer.jsonl 7,267; are_you_sure.jsonl 4,887; feedback.jsonl 8,500.
+Any sycophancy-output analysis therefore requires generating outputs
+ourselves (the planned experiment's third eval axis), not reanalysis.
+
 ## Role in our experiment
 
 Optional third eval axis: does abstention/humility training reduce capitulation
