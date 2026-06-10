@@ -49,9 +49,14 @@
       (b) Section 5.3 recall-vs-over-refusal operating-point scatter,
       (c) L1-L4 coverage map (stack level x rows). Verify figure numbers match
       regenerated synthesis-summary.md.
-- [ ] **Related-surveys positioning paragraph.** Expand Section 6.4 into a
-      proper comparison with 2407.18418 (abstention survey) and 2409.18786
-      (honesty survey), plus any 2026 surveys found during the PDF pass.
+- [x] **Related-surveys positioning paragraph.** DONE 2026-06-10: §6.4
+      expanded from a one-liner plus deferral note into a full comparison,
+      grounded in a subagent deep-read of both local PDFs (2407.18418 Wen
+      et al. abstention survey, v3 Feb 2025; 2409.18786 Li et al. honesty
+      survey, Sep 2024). Verified differences asserted: both narrative, no
+      search protocol, no quantitative schema/verification/pooling, KTO
+      absent from both, central tension only qualitative. No 2026 surveys
+      surfaced during the PDF pass.
 - [x] **Author/affiliation block.** DONE 2026-06-10: Joseph Rosenbaum
       (Synaptic Labs, connect2synapse@gmail.com) added to frontmatter +
       title block. Essay attribution resolved transparently: cited as
