@@ -1,0 +1,74 @@
+# Epistemic-Humility Phase 1 — DPO arm, Qwen3-4B-Instruct (local pilot).
+#
+# Config-driven; the dataset local_file is the WS-2 DPO builder output
+# (prompt/chosen/rejected pairs). The LoRA budget here is IDENTICAL to the
+# SFT and KTO Phase-1 4B recipes (r=32, alpha=64, same target_modules) so the
+# three abstention arms differ only in training objective, not capacity.
+#
+# Local pilot runs via the direct trainer (run.command), matching the KTO local
+# path; the 8B confirm arm runs on HF Jobs via method registration.
+name: eh-phase1-qwen3-4b-dpo
+target: local
+method: dpo
+provider: local_docker
+
+job:
+  image: unsloth/unsloth:latest
+  pull_policy: missing
+  transfer: auto
+  keep_container: false
+
+setup:
+  pip:
+    - trl==0.22.2
+    - git+https://github.com/unslothai/unsloth_zoo.git
+    - git+https://github.com/unslothai/unsloth.git
+
+run:
+  # Direct-trainer invocation (DPO is not wired into local-run's sft-only
+  # method dispatch, matching KTO). enable_thinking is pinned OFF for Qwen3.
+  #
+  # {tuner_root} and {data_root} are substituted by the WS-5 experiment runner
+  # (research repo). {tuner_root} = the synaptic-tuner submodule mount inside the
+  # container (the tuner repo root, mounted at /workspace/repo by the local_docker
+  # backend); {data_root} = where the research-repo experiment/phase1/data tree is
+  # made available to the container. The runner owns the mount strategy that binds
+  # the research-repo dataset path into the container; this recipe stays declarative
+  # about it. See experiment/phase1/recipes/README.md.
+  command:
+    - cd {tuner_root}/Trainers/dpo && python train_dpo.py
+      --qwen3-4b
+      --local-file {data_root}/qwen3-4b-instruct/dpo_train.jsonl
+      --split-dataset
+  workdir: "{tuner_root}"
+
+model:
+  name: unsloth/Qwen3-4B-Instruct-bnb-4bit
+  max_seq_length: 2048
+  load_in_4bit: true
+
+dataset:
+  local_file: experiment/phase1/data/qwen3-4b-instruct/dpo_train.jsonl
+
+training:
+  batch_size: 2
+  gradient_accumulation: 4
+  learning_rate: 5.0e-6
+  num_epochs: 1
+
+lora:
+  r: 32
+  alpha: 64
+  dropout: 0.05
+  target_modules:
+    - q_proj
+    - k_proj
+    - v_proj
+    - o_proj
+    - gate_proj
+    - up_proj
+    - down_proj
+
+artifacts:
+  output_root: toolset-training-artifacts/runs/local_docker/dpo/{name}
+  run_timestamp: "{timestamp}"

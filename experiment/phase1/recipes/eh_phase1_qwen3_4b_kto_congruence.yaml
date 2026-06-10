@@ -1,0 +1,62 @@
+# Epistemic-Humility Phase 1 — KTO arm (congruence mapping, primary),
+# Qwen3-4B-Instruct (local pilot).
+#
+# Consumes the WS-2 KTO congruence builder output (interleaved T/F/T/F binary).
+# LoRA budget IDENTICAL to the SFT and DPO Phase-1 4B recipes.
+name: eh-phase1-qwen3-4b-kto-congruence
+target: local
+method: kto
+provider: local_docker
+
+job:
+  image: unsloth/unsloth:latest
+  pull_policy: missing
+  transfer: auto
+  keep_container: false
+
+setup:
+  pip:
+    - trl==0.22.2
+    - git+https://github.com/unslothai/unsloth_zoo.git
+    - git+https://github.com/unslothai/unsloth.git
+
+run:
+  # Direct-trainer invocation (KTO local path). enable_thinking pinned OFF.
+  # {tuner_root}/{data_root} are substituted by the WS-5 experiment runner —
+  # see experiment/phase1/recipes/README.md for the substitution contract.
+  command:
+    - cd {tuner_root}/Trainers/kto && python train_kto.py
+      --qwen3-4b
+      --local-file {data_root}/qwen3-4b-instruct/kto_congruence_train.jsonl
+  workdir: "{tuner_root}"
+
+model:
+  name: unsloth/Qwen3-4B-Instruct-bnb-4bit
+  max_seq_length: 2048
+  load_in_4bit: true
+
+dataset:
+  local_file: experiment/phase1/data/qwen3-4b-instruct/kto_congruence_train.jsonl
+
+training:
+  batch_size: 2
+  gradient_accumulation: 4
+  learning_rate: 1.0e-6
+  num_epochs: 1
+
+lora:
+  r: 32
+  alpha: 64
+  dropout: 0.05
+  target_modules:
+    - q_proj
+    - k_proj
+    - v_proj
+    - o_proj
+    - gate_proj
+    - up_proj
+    - down_proj
+
+artifacts:
+  output_root: toolset-training-artifacts/runs/local_docker/kto/{name}
+  run_timestamp: "{timestamp}"

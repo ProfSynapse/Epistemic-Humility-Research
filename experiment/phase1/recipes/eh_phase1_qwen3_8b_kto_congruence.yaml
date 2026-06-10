@@ -1,0 +1,56 @@
+# Epistemic-Humility Phase 1 — KTO arm (congruence mapping), Qwen3-8B-Instruct
+# (cloud confirm). LoRA budget (r=64, alpha=128) matches the SFT/DPO 8B recipes.
+name: eh-phase1-qwen3-8b-kto-congruence
+target: both
+method: kto
+provider: hf_jobs
+
+job:
+  image: unsloth/unsloth:latest
+  pull_policy: missing
+  transfer: auto
+  keep_container: false
+
+setup:
+  pip:
+    - trl==0.22.2
+    - git+https://github.com/unslothai/unsloth_zoo.git
+    - git+https://github.com/unslothai/unsloth.git
+
+run:
+  method: kto
+  trainer: Trainers/kto/train_kto.py
+  dry_run: false
+  dashboard: false
+  quiet: true
+
+model:
+  name: unsloth/Qwen3-8B-Instruct-bnb-4bit
+  max_seq_length: 2048
+  load_in_4bit: true
+
+dataset:
+  local_file: experiment/phase1/data/qwen3-8b-instruct/kto_congruence_train.jsonl
+
+training:
+  batch_size: 2
+  gradient_accumulation: 4
+  learning_rate: 1.0e-6
+  num_epochs: 1
+
+lora:
+  r: 64
+  alpha: 128
+  dropout: 0.05
+  target_modules:
+    - q_proj
+    - k_proj
+    - v_proj
+    - o_proj
+    - gate_proj
+    - up_proj
+    - down_proj
+
+artifacts:
+  output_root: toolset-training-artifacts/runs/hf_jobs/kto/{name}
+  run_timestamp: "{timestamp}"

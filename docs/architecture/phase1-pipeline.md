@@ -727,10 +727,13 @@ component existing yet.
 
 ## 9. CODE-phase work breakdown with S2 boundaries
 
-Five workstreams. File-level ownership keeps coders from colliding. Workstreams
-1 and 2 are independent and parallelizable; 3 depends on 2's schema (not its
-data, which can be fixtured); 4 depends on the DPO schema only; 5 is the
-prerequisite fetch.
+Six workstreams (WS-0..WS-4 below; WS-5, the experiment-runner skill package, was
+promoted from the §9.1 follow-up by user directive and is designed in full in
+§9.2). File-level
+ownership keeps coders from colliding. WS-0 is the prerequisite fetch; WS-1 and
+WS-2 are independent and parallelizable; WS-3 depends on WS-2's schema (not its
+data, which can be fixtured); WS-4 depends on the DPO schema only; WS-5 sits above
+the recipe + trainer surface and consumes WS-2 outputs read-only.
 
 ### WS-0 (prerequisite, fast): dataset fetch + provenance
 
@@ -810,14 +813,296 @@ tags each run with its (arm, seed, panel-cell) coordinate so the eval harness ca
 aggregate by arm (the layer-2 mean+CI in §6.6) and isolate the panel cells. This
 is NAMED here as a scoped follow-up, not designed in depth: it does not change
 any WS-1/WS-2/WS-3/WS-4 interface contract (it sits ABOVE the existing per-arm
-recipe + trainer surface, reusing `tuner.py cloud-pipeline` per cell). It should
-be a small, separate CODE task after the current WS work lands and after v0.3
-sign-off. Open design questions for that task: whether the tuner already has a
-sweep/experiment-spec surface to reuse (PREPARE noted `run-experiment` and
-`experiment-loop` CLI verbs and `shared/experiment_tracking/experiment_spec.py`),
-vs a thin research-repo driver that emits per-cell recipe overrides. Prefer
-reusing the tuner's experiment-spec surface if it cleanly expresses seed + single
--hyperparameter-override cells.
+recipe + trainer surface, reusing `tuner.py cloud-pipeline` per cell).
+
+**Promoted to WS-5 (2026-06-10, user directive; deliverable shape revised
+same day).** This follow-up is now a CODE-phase workstream, designed in full in
+§9.2. Two design questions are RESOLVED:
+
+1. *Reuse the tuner's `experiment_spec` vs a research-repo driver* -> a
+   research-repo driver. The user directed that the experiment runner live in the
+   Epistemic-Humility-Research repo and that nothing experiment-specific be added
+   to the tuner; the tuner's `experiment_spec` surface has no seed-matrix or
+   hyperparameter-sweep concept anyway (it models a single train -> eval -> loss
+   -> analysis bundle). The driver owns the matrix and invokes the tuner only
+   through its existing public CLI verbs.
+2. *What FORM the deliverable takes* -> a Claude Code SKILL package in the
+   research repo at `.claude/skills/experiment-runner/`, modeled structurally on
+   the tuner's `synaptic-tuner/.claude/skills/fine-tuning/` skill (SKILL.md
+   runbook + skill-local `scripts/` + `reference/` + example config). The
+   matrix-expansion logic is a skill-local executable script; the runbook lives in
+   SKILL.md. This mirrors how the tuner packages an operational workflow (the
+   fine-tuning skill carries `scripts/launch_experiment_batch.py` next to a
+   SKILL.md runbook) rather than scattering a bare driver under `experiment/`.
+
+### 9.2 WS-5: experiment runner (research-repo skill package)
+
+**Goal and boundary.** A Claude Code SKILL in the research repo that packages the
+operational workflow for expanding the PROTOCOL v0.3 (SIGNED OFF) run matrix into
+per-run tuner invocations, on two execution lanes, with full provenance and
+prerequisite gating. It is orchestration GLUE packaged as a skill, not a
+framework. Hard boundary (user directive): the skill lives at
+`.claude/skills/experiment-runner/` in THIS repo, and the recipes + run records it
+operates on are repo content under `experiment/phase1/`. It adds NOTHING
+experiment-specific to the `synaptic-tuner/` submodule, which stays a clean general
+dependency invoked only through its existing public CLI (`tuner.py local-run`,
+`tuner.py cloud-pipeline` / `run-experiment`). The skill reads the tuner's patterns
+(recipe schema, CLI verbs) as reference; it does not modify them.
+
+**Why a skill, modeled on the tuner's fine-tuning skill.** The user directed that
+the experiment-running deliverable be a Claude Code skill in the research repo,
+structurally like `synaptic-tuner/.claude/skills/fine-tuning/` (the local/cloud
+training-run skill). That skill's shape is the template: a SKILL.md runbook
+(frontmatter `name`/`description`/`allowed-tools`, a Quick Reference command table,
+a CLI Discipline section, Common Patterns, and a Progressive Reference table) plus
+skill-local `scripts/` (executable helpers like `launch_experiment_batch.py`),
+`reference/` deep-dive docs loaded on demand, and example `configs/`. WS-5 adopts
+the same shape so that an agent (or the user) loads ONE skill and has the full
+runbook + the executable matrix logic + the provenance discipline in one place.
+
+**Why a driver, not the tuner's experiment_spec.** The tuner's
+`shared/experiment_tracking/experiment_spec.py` models a single experiment bundle
+(dataset + one training stage + eval/loss/analysis); it has no notion of a seed
+sweep or a one-hyperparameter sensitivity grid, and extending it would mean editing
+the tuner (forbidden) or contorting the research code around a tuner dataclass. A
+skill-local script that generates per-cell recipes from a base recipe and a matrix
+config, then shells out to the tuner CLI per cell, is both simpler and keeps the
+tuner generic. The recipe (the tuner's native, self-describing unit: `name /
+target / method / model / dataset.local_file / training / lora / artifacts`, see
+§5.6) is the contract surface between the two repos.
+
+**Recipes and run records are repo content, not skill internals.** Following the
+tuner's own convention (recipes live in `Trainers/recipes/` as repo content; the
+skill documents the workflow and carries only executable helpers), the per-arm
+DEFAULT recipes stay at `experiment/phase1/recipes/` (already relocated there by
+task #24) and the provenance run records are written to
+`experiment/phase1/run_records/` as committed artifacts the paper releases. The
+skill folder holds the runbook, the matrix-expansion script, the matrix config,
+and reference docs -- NOT the recipes or the run records. This keeps the
+provenance spine (records) and the run inputs (recipes) as first-class,
+version-controlled research artifacts independent of the skill packaging.
+
+**Directory layout (research repo).**
+
+```
+.claude/skills/experiment-runner/        # WS-5 skill package (new)
+  SKILL.md                               # runbook: frontmatter + Quick Reference +
+                                         #   CLI Discipline + Common Patterns +
+                                         #   Progressive Reference (models fine-tuning/SKILL.md)
+  scripts/
+    run_matrix.py                        # the driver: expand matrix -> per-cell recipes -> invoke tuner
+    check_prereqs.py                     # standalone prerequisite gate (also importable by run_matrix)
+  config/
+    matrix.yaml                          # the run-matrix definition (committed; the SSOT for runs)
+  reference/
+    run-records.md                       # run-record schema + provenance discipline (HANDOFF.md §5)
+    lanes.md                             # local 3090 vs HF Jobs parallel lane deep-dive
+    matrix-expansion.md                  # how matrix.yaml maps to PROTOCOL v0.3 cells + count assertions
+
+experiment/phase1/                       # repo content the skill operates on (NOT under the skill)
+  recipes/                               # per-arm DEFAULT recipes (relocated here by task #24)
+    eh_phase1_qwen3_4b_{sft,dpo,kto_congruence,kto_correctness_safe}.yaml
+    eh_phase1_qwen3_8b_{sft,dpo,kto_congruence}.yaml
+    eh_bridge_llama2_7b_chat_{sft,dpo}.yaml
+  run_records/                           # one JSON run record per launched cell (provenance; committed)
+```
+
+**SKILL.md content split (what the runbook holds vs what the scripts hold).** The
+SKILL.md is the human/agent-facing runbook and carries NO matrix logic itself; it
+documents how to invoke the skill-local scripts. Its sections mirror the
+fine-tuning skill: (1) frontmatter `name: experiment-runner`, a `description`
+naming the PROTOCOL v0.3 matrix + two lanes + provenance, and
+`allowed-tools: Read, Bash, Write, Grep, Glob`; (2) a **Quick Reference** table
+(dry-run the matrix, check prereqs, launch local smoke cell, launch cloud matrix,
+resume, inspect a run record); (3) a **CLI Discipline** section that inherits the
+tuner skill's non-negotiables verbatim in spirit -- never relaunch a cost-incurring
+cloud run or cancel a job without explicit user approval; never guess tuner CLI
+flags (check `tuner.py --help`); prefer the checked-in `run_matrix.py` over ad hoc
+loops; (4) **Common Patterns** (the canonical launch sequence: check prereqs ->
+dry-run -> local smoke -> cloud matrix); (5) a **Progressive Reference** table
+pointing at the three `reference/*.md` deep-dives. The executable behavior --
+matrix expansion, count assertions, recipe materialization, lane dispatch, record
+emission, gating -- lives in `scripts/run_matrix.py` + `scripts/check_prereqs.py`,
+so the runbook stays a runbook and the logic stays testable.
+
+#### (a) Run-matrix definition and expansion
+
+`.claude/skills/experiment-runner/config/matrix.yaml` is the committed SSOT that
+encodes PROTOCOL v0.3 §3.1 / §3.1a as data (the expansion script enforces
+conformance, it does not re-decide it):
+
+```yaml
+# Conforms to PROTOCOL.md v0.3 (LOCKED). Counts are asserted at load time.
+matrix_version: "phase1-v0.3"
+seeds_headline: [1, 2, 3]          # 3 seeds per arm (4B and 8B headline)
+arms_4b:
+  - {recipe: eh_phase1_qwen3_4b_sft, method: sft, has_beta: false}
+  - {recipe: eh_phase1_qwen3_4b_dpo, method: dpo, has_beta: true}
+  - {recipe: eh_phase1_qwen3_4b_kto_congruence, method: kto, has_beta: true}
+arms_8b:
+  - {recipe: eh_phase1_qwen3_8b_sft, method: sft}
+  - {recipe: eh_phase1_qwen3_8b_dpo, method: dpo}
+  - {recipe: eh_phase1_qwen3_8b_kto_congruence, method: kto}
+panel_4b:
+  lr_multipliers: [3.0, 0.3333333]   # each arm x its OWN default LR (per-arm-relative)
+  beta_values: [0.05, 0.5]            # DPO + KTO only; SFT skipped
+  panel_seed: 1                       # 1 seed per panel cell
+bridge:
+  - {recipe: eh_bridge_llama2_7b_chat_sft, method: sft}
+  - {recipe: eh_bridge_llama2_7b_chat_dpo, method: dpo}
+confirm_8b_seeds: 3                   # FLAG: pending-veto bump (PROTOCOL 3.1); set 1 if vetoed
+```
+
+Expansion logic (the matrix x seeds product):
+
+- **Headline 4B:** for each of 3 arms x 3 seeds = 9 cells, base recipe with
+  `training.seed` overridden, default LR/beta untouched.
+- **LR panel 4B:** for each of 3 arms x 2 multipliers = 6 cells, base recipe at
+  `panel_seed`, `training.learning_rate = default_lr * multiplier` (per-arm
+  default read FROM the recipe, so the per-arm-relative rule is structural).
+- **beta panel 4B:** for DPO + KTO (2 arms) x 2 beta values = 4 cells at
+  `panel_seed`, `training.beta` overridden. SFT skipped (`has_beta: false`).
+- **Confirm 8B:** 3 arms x `confirm_8b_seeds` (default 3) = 9 cells, default
+  config.
+- **Bridge:** 2 cells, default config, 1 seed.
+
+`scripts/run_matrix.py` asserts the resulting counts match PROTOCOL v0.3 (19 at
+4B, 9 at 8B, 2 bridge) and ABORTS on mismatch, so a typo in matrix.yaml cannot
+silently change the pre-registered design. Each cell carries a deterministic
+coordinate `(arm, size, cell_type, seed, hyperparam_override)` that becomes its
+run id and its tag for eval-side aggregation (§6.6 layer-2 mean+CI by arm; panel
+cells isolated). (`reference/matrix-expansion.md` documents the full
+matrix.yaml -> cell mapping and the count-assertion table.)
+
+Per-cell recipe generation: the script deep-copies the base recipe from
+`experiment/phase1/recipes/`, applies the single override (seed, or one of
+LR/beta), rewrites `name` and `artifacts.output_root` to embed the coordinate, and
+writes the materialized recipe to a work dir. It does NOT hand-maintain 30 recipe
+files; the 9 base recipes (repo content) plus matrix.yaml (skill config) are the
+only committed run inputs.
+
+#### (b) Two execution lanes
+
+The recipe's `target` field (`local` vs `cloud`) and the script's `--lane` flag
+select the invocation. `run_matrix.py` does not reimplement training or cloud
+mechanics; it shells out to the tuner CLI (`reference/lanes.md` holds the
+per-lane deep-dive):
+
+- **Local RTX 3090 lane** (`--lane local`): development, pilot, and smoke runs.
+  Invokes `python tuner.py local-run --job-config <materialized-recipe>.yaml
+  --yes` per cell, serially (one local GPU). Used for fast iteration and a single
+  smoke cell before committing the matrix to the cloud lane. The recipe's
+  `run.trainer` / `run.method` fields already point at the right trainer
+  (`Trainers/{sft,dpo,kto}/train_*.py`); the DPO method is registered in the
+  tuner per WS-3, so `--method dpo` resolves.
+- **HF Jobs parallel lane** (`--lane cloud`): the matrix execution lane.
+  Invokes `python tuner.py cloud-pipeline --method <m> ...` (or `run-experiment`
+  with the materialized recipe) per cell. Cells launch in PARALLEL across HF
+  Jobs (the script submits and records job handles; it does not block serially),
+  which is what makes the 19+9 matrix affordable in wall-clock (PROTOCOL §3.6).
+  Precondition (carried from §5.7): HF Jobs checks out the pinned submodule SHA,
+  so the submodule must be pushed and the pointer bumped before the cloud lane
+  runs; the script verifies this in prerequisite gating (below).
+
+The script is lane-agnostic above the invocation: matrix expansion, provenance,
+and gating are identical; only the per-cell command differs. A `--dry-run` prints
+the materialized recipes and the commands without launching.
+
+#### (c) Provenance: per-run records (HANDOFF.md §5 SACROSANCT)
+
+Every launched cell emits a JSON run record to
+`experiment/phase1/run_records/<run_id>.json` (repo content, committed) BEFORE the
+tuner is invoked (so a crashed run still leaves a record), updated with the outcome
+after. (`reference/run-records.md` holds the full schema + the HANDOFF.md §5
+provenance discipline.)
+
+```json
+{
+  "run_id": "qwen3-4b__kto_congruence__lrpanel__lr2.0e-6__seed1",
+  "matrix_version": "phase1-v0.3",
+  "coordinate": {"arm": "kto_congruence", "size": "4b", "cell_type": "lr_panel",
+                 "seed": 1, "override": {"learning_rate": 2.0e-6}},
+  "source_recipe": "experiment/phase1/recipes/eh_phase1_qwen3_4b_kto_congruence.yaml",
+  "materialized_recipe_sha": "<sha256 of the generated recipe>",
+  "method": "kto", "model": "unsloth/Qwen3-4B-Instruct-bnb-4bit",
+  "lane": "cloud",
+  "research_repo_commit": "<git rev-parse HEAD of this repo>",
+  "submodule_commit": "<git rev-parse HEAD of synaptic-tuner>",
+  "prereq_check": {"datasets_present": true, "leakage_guard_passed": true},
+  "launched_at": "<iso8601 utc>",
+  "tuner_invocation": ["python","tuner.py","cloud-pipeline","--method","kto","..."],
+  "outcome": {"status": "launched|completed|failed", "job_handle": "...",
+              "adapter_path": "...", "metrics_path": "...", "verified": false}
+}
+```
+
+The run record is the provenance spine the paper needs: it ties a result back to
+the exact recipe, the exact seed/override, and BOTH commit SHAs (research repo +
+submodule), so any run is deterministic and re-runnable. The `verified` flag
+follows the paper-1 discipline (set true only when the outcome is checked against
+its metrics artifact). `metrics_path` points at the eval harness output (§6.7;
+the WS-4 harness is `--config`-driven, so the config materialized per arm points
+at the adapter + metrics paths the record references), closing the loop from run
+to metric. The records are committed repo content; they are the run manifest for
+the released artifacts, independent of the skill packaging.
+
+#### (d) Prerequisite gating (refuse to launch on unmet PROTOCOL §5 prereqs)
+
+Before launching ANY cell, `scripts/check_prereqs.py` (invoked by `run_matrix.py`
+and also runnable standalone) asserts the PROTOCOL §5 prerequisites are verifiably
+present, and ABORTS the whole matrix (not just the cell) on any failure, with a
+clear message naming the missing prereq:
+
+1. **Datasets fetched:** the builder outputs for the cell's arm exist on disk
+   (`experiment/phase1/data/<model_tag>/<method>_train.jsonl` and `_dev.jsonl`),
+   and the TriviaQA train split that fed the probe is present.
+2. **Leakage guard passed:** the `build_manifest.json` (§4.8) records the
+   leakage-guard PASS (probe/train set disjoint from Cheng test). The gate
+   reads the manifest and refuses to launch if the guard did not pass or is
+   absent. This makes the pre-registered leakage invariant a launch-time
+   precondition, not just a build-time check.
+3. **Cloud lane only:** the submodule is pushed and the research-repo submodule
+   pointer matches a pushed SHA (so HF Jobs can check it out); `HF_TOKEN` is
+   present in the environment (never written to a recipe or record).
+4. **Bridge arm only:** the Cheng IDK training data and the gated Llama-2-7b-chat
+   access are present (the §2 / §9 bridge prerequisites); if absent, only the
+   bridge cells are skipped (with a recorded SKIPPED status), not the whole
+   matrix, since the bridge is validation rather than a core arm.
+
+Gating is deterministic and side-effect-free (it reads, it does not fetch). A
+`--check-only` flag runs the gate and reports without launching.
+
+#### (e) Invoking the tuner without polluting it
+
+The single rule: the skill's scripts communicate with the tuner ONLY through
+(1) the recipe YAML they materialize (the tuner's own native job-config schema)
+and (2) the tuner's existing public CLI verbs. They import NO tuner internals, add
+NO file under `synaptic-tuner/`, and register NO experiment-specific method or
+config there. The DPO method registration (WS-3) already lives in the tuner as a
+GENERAL capability (the tuner now supports DPO for any user), not as anything
+Epistemic-Humility-specific; the skill merely uses it. If the skill needs a tuner
+behavior the CLI does not expose, the correct move is to flag it (it likely
+indicates the tuner is missing a general capability), NOT to reach into tuner
+internals from the research repo. This keeps the dependency boundary clean and
+the tuner reusable by other projects, per the user directive. SKILL.md's CLI
+Discipline section encodes this rule as a runbook non-negotiable so any agent
+loading the skill inherits it.
+
+#### S2 boundary and contract impact
+
+WS-5 is a research-repo-only workstream. Its owned surfaces are the skill package
+`.claude/skills/experiment-runner/` (runbook + scripts + config + reference) and
+the repo content it operates on: `experiment/phase1/recipes/` (relocated by
+task #24, now completed) and `experiment/phase1/run_records/` (provenance, new).
+It changes NO WS-1/WS-2/WS-3/WS-4 interface contract: it consumes the WS-2 builder
+outputs and `build_manifest.json` (read-only), produces materialized recipes + run
+records, and its run-id tagging is the coordinate the WS-4 eval harness already
+needs for layer-2 aggregation (§6.6). The only cross-workstream dependency is
+ordering: WS-5 real launches gate on WS-2 data present, WS-3 DPO pushed (cloud
+lane), and PROTOCOL v0.3 user sign-off (already obtained). The matrix-expansion
+and gate scripts are testable against fixtures (a tiny matrix.yaml + a stub recipe
++ `--dry-run` / `--check-only`) without any real training, so the skill's logic is
+unit-testable independent of the runbook prose.
 
 ---
 
