@@ -21,11 +21,18 @@ generation:
   max_new_tokens: 256
   n_samples: 10               # for self-consistency confidence (AP)
 
-# AP confidence signal. Default self_consistency (matches probe P_correct).
-# Alternative: seq_logprob. Flagged to architect for veto; default stands unless
-# overridden here.
+# AP confidence signal. Default self_consistency (matches probe P_correct);
+# architect-pinned, no veto. Alternative: seq_logprob (swappable here without
+# touching the scorer). The active signal is recorded per run in metrics.json
+# (confidence_source) so AP numbers are provenance-traceable.
+#
+# n_samples is the AP-specific self-consistency budget, kept SEPARATE from the
+# probe's 32: AP only needs a ranking, not a fine P_correct estimate, so a
+# smaller N keeps the OOD-sweep eval cost under the ceiling (architect note).
+# Pinned here and echoed into the run manifest. seq_logprob ignores n_samples.
 confidence:
   signal: self_consistency
+  n_samples: 8
 
 # ECE on MMLU MCQ.
 ece:

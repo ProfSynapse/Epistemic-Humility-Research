@@ -194,6 +194,7 @@ def write_metrics(
     boot: stats.BootstrapCI,
     *,
     confidence_source: str,
+    confidence_n_samples: int,
 ) -> None:
     out_dir.mkdir(parents=True, exist_ok=True)
     metrics_payload = {
@@ -202,8 +203,10 @@ def write_metrics(
         "provenance": prov.as_dict(),
         # AP confidence signal recorded per run (architect note): makes AP numbers
         # provenance-traceable and distinguishes a self_consistency run from a
-        # later seq_logprob run.
+        # later seq_logprob run. n_samples is the AP-specific self-consistency
+        # budget (smaller than the probe's 32; a ranking needs no fine estimate).
         "confidence_source": confidence_source,
+        "confidence_n_samples": confidence_n_samples,
         "metrics": scored["metrics"],
         "counts": scored["counts"],
         "accuracy_retention_pct": scored["accuracy_retention_pct"],
@@ -232,7 +235,9 @@ def run(config_path: Path, generator: Generator | None = None) -> dict:
     results_dir = (EVAL_DIR / cfg["results_dir"]).resolve()
     gold = scorers.load_gold((EVAL_DIR / cfg["gold_path"]).resolve())
 
-    confidence_source = cfg.get("confidence", {}).get("signal", "self_consistency")
+    confidence_cfg = cfg.get("confidence", {})
+    confidence_source = confidence_cfg.get("signal", "self_consistency")
+    confidence_n_samples = int(confidence_cfg.get("n_samples", 8))
 
     summary_rows: list[dict] = []
     truthful_vectors: dict[tuple[str, str], list[int]] = {}
@@ -266,6 +271,7 @@ def run(config_path: Path, generator: Generator | None = None) -> dict:
             write_metrics(
                 out_dir, arm_name, eval_set, scored, prov, boot,
                 confidence_source=confidence_source,
+                confidence_n_samples=confidence_n_samples,
             )
             truthful_vectors[(arm_name, eval_set)] = scored["truthful_vector"]
             summary_rows.append(

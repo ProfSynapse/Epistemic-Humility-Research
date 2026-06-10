@@ -67,5 +67,10 @@ AP (§6.4 item 3) ranks answers by a confidence signal that is **pluggable** via
 agreement across N eval samples) — the architect's pinned default: it is the
 more robust signal at the knowledge frontier and is directly R-Tuning-comparable.
 `seq_logprob` is the swappable alternative. Each run records its
-`confidence_source` in `metrics.json` so AP numbers are provenance-traceable and
-a later logprob run is distinguishable from a self-consistency one.
+`confidence_source` and `confidence_n_samples` in `metrics.json` so AP numbers
+are provenance-traceable and a later logprob run is distinguishable from a
+self-consistency one.
+
+`confidence.n_samples` is the AP-specific self-consistency budget, kept separate
+from the probe's 32: AP only needs a ranking, not a fine P_correct estimate, so a
+smaller N (default 8) keeps the OOD-sweep eval cost under the ceiling.
