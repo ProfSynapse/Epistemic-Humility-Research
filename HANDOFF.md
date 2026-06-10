@@ -69,12 +69,16 @@ OOD transfer — directly filling gaps 1, 2, 5, 6 from
 
 ## 4. Work queue (in order)
 
-1. ~~Enrich library + priority verifications~~ **DONE 2026-06-10** (see §1).
-   **Remaining**: verify the other 34 `verified=false` rows in `effects.csv`
-   against the now-local PDFs (same agent-fan-out pattern works well: one
-   read-only agent per paper, claims + expected location in the prompt);
-   update note statuses `fetched→verified` as you go; re-run
-   `analysis/synthesize.py` and remove daggers in the draft for rows that pass.
+1. ~~Enrich library + FULL verification pass~~ **DONE 2026-06-10**: 56/59
+   effects.csv rows verified (31 studies); 6 corrections applied (see
+   `paper/TODO.md` first checkbox for the list); 2505.19056 row DISPUTED
+   (claims not in that paper — re-source from Bianchi 2309.07875?);
+   draft + synthesize.py outputs updated. Lesson recorded: text-extraction
+   agents misread figure-only values twice (GPT-4 Fig 8, SelfAware Fig 5) —
+   always confirm figure values visually (pdftoppm render → Read the PNG).
+   **Remaining**: 47 draft daggers = raw-report-06/essay-cited claims
+   (TruthRL, Abstain-R1, probing numbers, 2604-2606 cluster) + 2 quotes;
+   verify those the same way next session.
 2. ~~Download blocked datasets~~ **DONE 2026-06-10** (see §1). Remaining
    pendings listed in `datasets/README.md` (Natural Questions; AbstentionBench
    materialization; R-Tuning/Idk Google-Drive train sets — not needed for

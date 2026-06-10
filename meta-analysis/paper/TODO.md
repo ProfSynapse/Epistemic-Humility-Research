@@ -1,12 +1,18 @@
 # Pre-submission checklist (draft-v0 -> arXiv v1)
 
-- [ ] **PDF verification pass.** Re-verify all 49 `verified=false` rows in
-      `evidence/effects.csv` against primary PDFs once network access to
-      arxiv.org/aclanthology.org/openreview.net is available. Flip flags,
-      remove daggers (†) in the draft prose, and re-run
-      `analysis/synthesize.py` so C1-C5 counts/medians regenerate. Priority
-      order: starred sycophancy figures (98%, ~6% from 2310.13548), GPT-4 TR
-      Figure 8 ECE values, Cheng Table values, AbstentionBench 24%.
+- [x] **PDF verification pass.** DONE 2026-06-10: 56/59 rows now
+      `verified=true` (31 studies); daggers removed for verified claims;
+      synthesize.py re-run (C2 median 5.0% range 1.6-21.1%; C5 median 30.1%).
+      Corrections applied: R-Tuning metric = AP score; Wei -8.8 = Flan-PaLM-8B;
+      2410.09724 re-anchored to Table 1 (abstract's 6.44/2.73 irreproducible);
+      2312.07000 baseline = UNALIGNED 50.06; 2404.14723 KTO = +2.17 (SFT base)
+      / +9.25 (pretrained), report's 17.5% unsupported; 2109.07958 17% =
+      gen-task largest-vs-60x-smaller. Remaining 3 unverified: nostalgebraist
+      blog (verify against blog), jmir-e76048 (no PDF), 2505.19056 (DISPUTED —
+      dose-response claim not in paper; re-source, candidate Bianchi
+      2309.07875). Remaining daggers (47) are raw-report-06 / essay-cited
+      claims (TruthRL, Abstain-R1, probing numbers, 2604-2606 cluster) +
+      Kadavath 2207.05221 quote + 2505.01997 preference-collapse quote.
 - [ ] **PRISMA flow counts.** Reconstruct records-identified / screened /
       excluded / included numbers from the five search agents' logs (82
       queries) + the follow-up search; add a PRISMA-style flow figure and an
