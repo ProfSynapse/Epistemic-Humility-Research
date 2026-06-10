@@ -1,37 +1,40 @@
 # HANDOFF — Epistemic Humility Research Program
 
-**Branch:** `claude/ai-humility-research-experiment-37za2i` · **Updated:** 2026-06-09
+**Branch:** `claude/ai-humility-research-experiment-37za2i` · **Updated:** 2026-06-10
 **Goal:** two arXiv submissions — (1) a meta-analysis of epistemic humility in LLM
 training/fine-tuning, (2) a novel SFT-vs-KTO abstention experiment run in Synaptic Tuner.
 
-This doc is the single re-entry point. Read it on your computer, do the
-"UNBLOCK" section, then tell the next session to "read docs/epistemic-humility/HANDOFF.md
-and continue."
+This doc is the single re-entry point. Tell the next session to
+"read docs/epistemic-humility/HANDOFF.md and continue."
 
 ---
 
-## 1. UNBLOCK — settings only you can change (5 minutes, from a computer)
+## 1. UNBLOCK — DONE (2026-06-10, local macOS session)
 
-The cloud session's egress proxy is deny-by-default. On **claude.ai/code →
-(this repo's) Environment → Network policy**, add these domains:
+Network blocks are moot on the local machine. Completed:
 
-```
-arxiv.org
-export.arxiv.org
-ar5iv.labs.arxiv.org
-huggingface.co
-cdn-lfs.huggingface.co
-datasets-server.huggingface.co
-```
-Optional but useful: `aclanthology.org`, `openreview.net`, `cdn.openai.com`,
-`drive.google.com`, `drive.usercontent.google.com` (R-Tuning + Idk train data).
+- **Library fetched**: all 92 manifest papers have PDFs + ar5iv full text
+  (`library/pdfs/`, `library/fulltext/` — gitignored, re-fetch with
+  `SSL_CERT_FILE=$(python3 -m certifi) python3 docs/epistemic-humility/library/scripts/fetch_library.py --enrich`).
+  Script now rate-limits (3s/request, 429 backoff) and skips already-fetched.
+- **All 6 blocked datasets fetched** via `datasets/scripts/fetch_datasets.py`
+  (TriviaQA, MMLU, PopQA, KUQ, CoCoNot, AbstentionBench-repo-snapshot) —
+  committed with provenance `dataset.md`s.
+- **Exact truthful-rate recomputation done**: Cheng et al.'s test set turned
+  out to be TriviaQA unfiltered.nocontext/validation (100% question match);
+  `cheng_test_gold.jsonl` + exact alias grading replaced the token-F1 proxy.
+  New finding: 43-51% of answers on "unknown"-labeled questions are correct
+  → label-noise caveat (now in draft 5.3).
+- **Priority PDF verifications done** (GPT-4 ECE Fig 8, Cheng Table 1,
+  R-Tuning Table 1, AbstentionBench 24%, Wei sycophancy, Sharma 98%/~6%):
+  25/59 effects.csv rows now verified=true; 2 corrections (R-Tuning metric
+  is AP score not accuracy; Wei -8.8 is Flan-PaLM-8B not 62B); daggers
+  removed in draft for verified claims.
 
-Then start a fresh session on this branch and run:
-
-```bash
-# pulls all 61 paper PDFs + abstracts + ar5iv full text into the library
-python3 docs/epistemic-humility/library/scripts/fetch_library.py --enrich
-```
+macOS gotcha: python.org Python needs `SSL_CERT_FILE=$(python3 -m certifi)`
+for arxiv/HF fetches. PDF page rendering needs poppler (`brew install poppler`;
+if the Read tool can't find pdftoppm, render via `/opt/homebrew/bin/pdftoppm`
+to scratch/ and read the PNG).
 
 ## 2. What exists already (all committed on this branch)
 
@@ -64,30 +67,30 @@ Qwen2.5-7B-Instruct (confirm), measuring truthful rate + over-refusal + ECE +
 OOD transfer — directly filling gaps 1, 2, 5, 6 from
 `evidence/raw-reports/05-sft-vs-preference-and-gaps.md`.
 
-## 4. Work queue after unblocking (in order)
+## 4. Work queue (in order)
 
-1. **Enrich library** (command above); spot-verify every number starred/flagged
-   `verify` in raw-reports against the PDFs; update note statuses
-   `candidate→fetched→verified`; correct `effects.csv` where snippets were wrong.
-   Priority verifications: GPT-4 ECE figure-8 values; Sharma 98%/~6% figures;
-   AbstentionBench 24%; Cheng per-method truthful rates; R-Tuning AP tables;
-   Wei et al. sycophancy percentages.
-2. **Download blocked datasets** to `datasets/` (each gets a `dataset.md` with
-   frontmatter like the existing ones): TriviaQA (`mandarjoshi/trivia_qa`,
-   rc.nocontext), MMLU (`cais/mmlu`), PopQA (`akariasai/PopQA`), KUQ
-   (`amayuelas/KUQ`), CoCoNot (`allenai/coconot`), AbstentionBench
-   (`facebook/AbstentionBench`); TriviaQA gold aliases unlock the exact
-   truthful-rate recomputation in `reanalyze_idk_outputs.py` (replace the
-   INTERIM token-F1 proxy).
-3. **Finish meta-analysis paper** from `meta-analysis/paper/` skeleton +
-   verified `effects.csv` (PRISMA-style search section is documented in the
-   raw reports' frontmatter: queries per agent, date, method).
+1. ~~Enrich library + priority verifications~~ **DONE 2026-06-10** (see §1).
+   **Remaining**: verify the other 34 `verified=false` rows in `effects.csv`
+   against the now-local PDFs (same agent-fan-out pattern works well: one
+   read-only agent per paper, claims + expected location in the prompt);
+   update note statuses `fetched→verified` as you go; re-run
+   `analysis/synthesize.py` and remove daggers in the draft for rows that pass.
+2. ~~Download blocked datasets~~ **DONE 2026-06-10** (see §1). Remaining
+   pendings listed in `datasets/README.md` (Natural Questions; AbstentionBench
+   materialization; R-Tuning/Idk Google-Drive train sets — not needed for
+   paper 1).
+3. **Finish meta-analysis paper** from `meta-analysis/paper/draft-v0.md` +
+   `TODO.md` checklist (PRISMA flow counts, figure regeneration,
+   related-surveys positioning, abstract trim, BibTeX, author block).
 4. **Experiment execution** (local GPU or HF Jobs; see
    `experiment/protocol/`): generate known/unknown splits for Qwen2.5-3B by
    10-sample correctness probing (needs an inference backend — RTX 3090 via
    `tuner.py local-run`, or cloud), build SFT + KTO JSONL per
    `.skills/fine-tuning/reference/dataset-formats.md`, train both arms,
-   evaluate with the Evaluator harness, analyze, draft paper 2.
+   evaluate with the Evaluator harness, analyze, draft paper 2. NOTE: carry
+   the label-noise finding (43-51% of "unknown"-labeled answered correctly in
+   Cheng's data) into the protocol — consider a higher probing sample count
+   or a label-noise sensitivity analysis.
 
 ## 5. Constraints discovered (so you don't re-hit them)
 

@@ -21,6 +21,8 @@ needs arxiv.org, export.arxiv.org, and ar5iv.labs.arxiv.org to be allowed.
 import argparse
 import re
 import sys
+import time
+import urllib.error
 import urllib.request
 import xml.etree.ElementTree as ET
 from pathlib import Path
@@ -96,10 +98,26 @@ def stub(papers: list) -> None:
         print(f"stubbed {path.name}")
 
 
+# arXiv API etiquette: no more than ~1 request every 3 seconds, back off on 429
+REQUEST_DELAY = 3.0
+MAX_RETRIES = 4
+
+
 def fetch(url: str) -> bytes:
     req = urllib.request.Request(url, headers={"User-Agent": "synaptic-tuner-library/1.0"})
-    with urllib.request.urlopen(req, timeout=60) as resp:
-        return resp.read()
+    for attempt in range(MAX_RETRIES):
+        time.sleep(REQUEST_DELAY)
+        try:
+            with urllib.request.urlopen(req, timeout=60) as resp:
+                return resp.read()
+        except urllib.error.HTTPError as exc:
+            if exc.code == 429 and attempt < MAX_RETRIES - 1:
+                wait = 30 * (attempt + 1)
+                print(f"  429 on {url}; backing off {wait}s", file=sys.stderr)
+                time.sleep(wait)
+                continue
+            raise
+    raise RuntimeError(f"unreachable: {url}")
 
 
 def arxiv_metadata(arxiv_id: str) -> dict:
@@ -125,6 +143,13 @@ def enrich(papers: list) -> None:
         if not path.exists():
             stub([paper])
         fm, body = split_note(path.read_text())
+        if (
+            fm.get("status") == "fetched"
+            and (PDFS / f"{aid}.pdf").exists()
+            and "## Abstract" in body
+        ):
+            print(f"skipped {aid}: already fetched")
+            continue
         try:
             meta = arxiv_metadata(aid)
             if meta:
