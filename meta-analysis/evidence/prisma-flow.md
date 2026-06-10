@@ -19,11 +19,11 @@ reported. All counts below are recomputable from the files named.
 | Snippet-level records identified | not logged | — (limitation) |
 | Structured per-paper entries | 93 | `grep -c "^PAPER:"` across reports |
 | Unique arXiv IDs surfaced in reports | 114 | regex over reports, deduplicated |
-| Non-arXiv records admitted | 5 (OpenAI postmortems ×1 item-pair, nostalgebraist blog, JMIR e76048, Schulman talk, companion essay) | draft §9 non-arXiv list |
-| Admitted to library after dedup + §4.2 screening | 95 (93 search-surfaced + 2 verification-pass additions: 2309.07875, 2310.06452) | `library/manifest.yaml` |
+| Non-arXiv records admitted | 8 (OpenAI postmortems, GPT-5 system card, Opus 4.8 system card, Gemini 3 Pro model card, nostalgebraist blog, JMIR e76048, Schulman talk, companion essay) | draft §9 non-arXiv list |
+| Admitted to library after dedup + §4.2 screening | 97 (93 search-surfaced + 4 verification/follow-up additions: 2309.07875, 2310.06452, 2505.20903, 2502.19545) | `library/manifest.yaml` |
 | Surfaced but **not** admitted | 21 (see exclusion log) | set difference, reports vs. manifest |
 | Studies with extracted quantitative rows | 34 (31 arXiv + 2 gray + 1 own reanalysis) → 59 rows | `effects.csv` |
-| Library papers cited as context/framework only | 36 | draft in-text citations minus extraction studies |
+| Library papers cited as context/framework only | 38 | draft in-text citations minus extraction studies |
 | Rows excluded post-verification | 1 (2505.19056 — citation mis-attribution) | `effects.csv` row 59 notes |
 | Rows verified against primary artifact | 56 of 59 | `effects.csv` `verified` column |
 

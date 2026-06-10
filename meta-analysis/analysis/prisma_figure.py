@@ -21,10 +21,10 @@ QUERIES = 110          # sum of agent_queries frontmatter, reports 01-06
 ENTRIES = 93           # ^PAPER: entries across reports
 UNIQUE_ARXIV = 114     # deduplicated arXiv IDs in reports
 NON_ARXIV = 5          # gray literature + essay
-ADMITTED = 95          # library/manifest.yaml
+ADMITTED = 97          # library/manifest.yaml
 NOT_ADMITTED = 21      # 13 peripheral + 4 post-freeze + 4 ID artifacts
 STUDIES, ROWS = 34, 59  # effects.csv
-CONTEXT_CITED = 36     # cited in draft without extracted rows
+CONTEXT_CITED = 38     # cited in draft without extracted rows
 VERIFIED = 56          # effects.csv verified column
 CORRECTED, EXCLUDED = 6, 1
 
@@ -37,7 +37,7 @@ MAIN = [
      f"{UNIQUE_ARXIV} unique arXiv IDs + {NON_ARXIV} non-arXiv records"),
     ("Library admission",
      f"{ADMITTED} papers admitted after dedup + eligibility screening\n"
-     "(93 search-surfaced + 2 verification-pass additions)"),
+     "(93 search-surfaced + 4 verification/follow-up additions)"),
     ("Quantitative extraction",
      f"{STUDIES} studies → {ROWS} effect rows in unified schema\n"
      f"+ {CONTEXT_CITED} papers cited as context/framework only"),

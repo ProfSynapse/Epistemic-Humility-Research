@@ -606,3 +606,17 @@ papers:
   area: methods
   status: candidate
   note: true source of the safety-data dose-response sweep mis-attributed to 2505.19056; cited in draft gap 5
+- arxiv: '2505.20903'
+  slug: cogcalib-prior-knowledge-calibration
+  title: 'Towards Objective Fine-tuning: How LLMs'' Prior Knowledge Causes Potential Poor Calibration?'
+  year: 2025
+  area: calibration
+  status: candidate
+  note: known-data overconfidence mechanism; added 2026-06-10 follow-up on the synthetic-data claim; cited in C1
+- arxiv: '2502.19545'
+  slug: distillation-vs-selftraining-hallucination
+  title: 'Winning Big with Small Models: Knowledge Distillation vs. Self-Training for Reducing Hallucination in Product QA Agents'
+  year: 2025
+  area: hallucination
+  status: candidate
+  note: synthetic beats crowdsourced for hallucination reduction (product QA); added 2026-06-10 follow-up; cited in C1
