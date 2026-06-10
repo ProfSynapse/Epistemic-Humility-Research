@@ -83,7 +83,8 @@ OOD transfer — directly filling gaps 1, 2, 5, 6 from
    verified every remaining in-text value — 0 content daggers, † convention
    retired. 3 corrections folded into the draft (2401.12794 conformal-set
    accuracy direction, 2512.00218 monitorability boundary condition,
-   2606.03962 "as well as"); 61/95 library notes status: verified.
+   2606.03962 "as well as"); 63/97 library notes status: verified
+   (manifest grew to 97 with 2309.07875, 2505.20903, 2502.19545).
 2. ~~Download blocked datasets~~ **DONE 2026-06-10** (see §1). Remaining
    pendings listed in `datasets/README.md` (Natural Questions; AbstentionBench
    materialization; R-Tuning/Idk Google-Drive train sets — not needed for

@@ -64,6 +64,21 @@
       = TriviaQA unfiltered.nocontext/validation, 100% question-text match).
       Draft 5.3 updated; truthful scalar still excluded from claims (label
       base differs from the paper's Ik-threshold pipeline).
+- [x] **Acronym pass.** DONE 2026-06-10: 30 first-use expansions (SFT, DPO,
+      KTO, RLHF, ECE, RL, IDK, PPO, BoN, AUROC, LLM, GRPO, ECE-t, RMS, MSE,
+      MAD, AP, AED, CI, QA, AUC, HIR, IPO, NLP, OOD, ROC, RLVR, PAEC, RLKF,
+      RLCR, TPR, CCS, ITI, P(IK), MMLU); FactTune/LACIE/FLAME nicknames now
+      carry their arXiv IDs at the §6 mention; stale abstract counts fixed
+      (five searches/82 queries -> six/110). MASK and CRAG left as proper
+      benchmark names (descriptive gloss in surrounding prose).
+- [ ] **Refresh provider-card snapshot before submission.** §5.4 is now
+      date-scoped ("flagship documentation current at the June 2026 search:
+      GPT-5, Claude Opus 4.8, Gemini 3 Pro"). Vendors have already moved
+      (Gemini 3.5 Flash / 3.1 Pro are out; OpenAI will iterate too). Right
+      before arXiv submission, re-pull the then-current flagship cards and
+      either update the paragraph or confirm the date-scoped framing stands
+      (in particular re-test the "Gemini card has zero quantified honesty
+      evals" observation against the newest Gemini card).
 - [ ] **Abstract trim** to ~200 words (currently ~250) and final word-count /
       style pass; convert references to BibTeX; arXiv formatting (LaTeX or
       arXiv-ready markdown pipeline).
