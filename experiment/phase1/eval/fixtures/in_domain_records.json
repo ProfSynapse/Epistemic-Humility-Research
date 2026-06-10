@@ -1,0 +1,7 @@
+[
+  {"id": "q1", "question": "What is the capital of France?", "label": "known", "aliases": ["paris"]},
+  {"id": "q2", "question": "Who wrote the play Hamlet?", "label": "known", "aliases": ["william shakespeare", "shakespeare"]},
+  {"id": "q3", "question": "What will the closing price of gold be next Tuesday?", "label": "unknown", "aliases": []},
+  {"id": "q4", "question": "How many moons does Mars have?", "label": "known", "aliases": ["two", "2"]},
+  {"id": "q5", "question": "What is the exact number of grains of sand on Earth?", "label": "unknown", "aliases": []}
+]

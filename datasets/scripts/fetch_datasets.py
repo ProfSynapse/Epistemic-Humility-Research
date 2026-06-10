@@ -25,6 +25,12 @@ DATASETS_DIR = Path(__file__).resolve().parent.parent
 SPECS = [
     ("mandarjoshi/trivia_qa", "rc.nocontext", "validation",
      "triviaqa-rc-nocontext", "validation.jsonl"),
+    # Phase 1 probe/train pool (WS-0). Disjoint from the Cheng test set, which
+    # is sourced from the validation split above; the WS-2 builder enforces
+    # normalized-question disjointness with a leakage guard. Train rows carry
+    # answer.normalized_aliases, so the probe needs no separate gold build.
+    ("mandarjoshi/trivia_qa", "rc.nocontext", "train",
+     "triviaqa-rc-nocontext", "train.jsonl"),
     ("cais/mmlu", "all", "test", "mmlu", "test.jsonl"),
     ("cais/mmlu", "all", "validation", "mmlu", "validation.jsonl"),
     ("akariasai/PopQA", None, "test", "popqa", "test.jsonl"),

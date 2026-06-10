@@ -1,0 +1,94 @@
+# Phase 1 knowledge-probe config (WS-1).
+#
+# Location: experiment/phase1/probe/config/probe.yaml
+# Consumed by: experiment/phase1/probe/probe.py
+# Produces:    experiment/phase1/probe/<model_tag>/probe_results.jsonl
+#              + probe_manifest.json sidecar
+#
+# Every field here is pinned and pre-registered in
+# experiment/protocol/PROTOCOL.md v0.2. The probe hashes this config
+# (probe_config_sha) into every output row and the manifest so a run is
+# reproducible and tamper-evident. Do NOT hardcode any of these in code.
+#
+# The model id is a config DEFAULT (WS-1 owns the default; live-HF repo-name
+# verification is WS-3's job per architecture doc 5.3). Swap model_tag +
+# model_name to re-run the probe on any model (Phase 4 reproducibility).
+
+model:
+  # Qwen3-4B-Instruct base, pilot model for the local RTX 3090.
+  # Apache-2.0, ungated. model_tag is the output-directory key.
+  model_tag: qwen3-4b-instruct
+  model_name: Qwen/Qwen3-4B-Instruct-2507
+  # Qwen3 thinking toggle. Pinned OFF for all Phase 1 probing/training/eval.
+  # Honored by the hybrid base models via apply_chat_template(enable_thinking=)
+  # / vLLM chat_template_kwargs; a no-op (already non-thinking) for the
+  # *-Instruct-2507 variant. The probe asserts no <think> scaffolding leaks
+  # regardless (runtime self-check), so a template that silently ignores the
+  # kwarg fails loudly on the first real run instead of contaminating outputs.
+  enable_thinking: false
+
+sampling:
+  # N stochastic samples + 1 greedy decode per question.
+  # N=32 is pre-registered: higher than Cheng's 10 (the trajectory's mandatory
+  # improvement), 1/32 ~= 0.03 P_correct granularity for the sensitivity sweep,
+  # and a power-of-two that batches cleanly on vLLM.
+  n_samples: 32
+  temperature: 1.0
+  top_p: 0.9
+  # TriviaQA is short-answer (rc.nocontext); 64 new tokens is ample.
+  max_new_tokens: 64
+  # Master seed. Per-question seeds are derived deterministically from this
+  # plus the question_id so a resumed run reproduces skipped questions exactly.
+  seed: 20260610
+
+prompt:
+  # One fixed system prompt, recorded in the manifest for provenance.
+  # No few-shot, no context (rc.nocontext): the bare question only.
+  system: "You are a helpful assistant. Answer the question concisely. If you do not know the answer, say so."
+
+probe_pool:
+  # WS-0 output. Each row: question, question_id, answer.normalized_aliases.
+  train_jsonl: datasets/triviaqa-rc-nocontext/train.jsonl
+  # Documented fallback (architecture doc 3.2 contingency): if the train-split
+  # fetch is infeasible, carve the non-Cheng remainder of validation.jsonl.
+  # Left null in the pinned config; flipping this is a recorded deviation.
+  fallback_validation_remainder: null
+  # Prefix for synthesized question ids when a source row lacks one.
+  question_id_prefix: tqa_train_
+
+labels:
+  # Pre-registered known/unknown/discard bands (architecture doc 3.5).
+  # known:   greedy_correct AND p_correct >= known_p_correct_min
+  # unknown: p_correct <= unknown_p_correct_max
+  # discard: everything else (retained on disk, flagged, for the grid).
+  known_p_correct_min: 0.5
+  unknown_p_correct_max: 0.0
+
+sensitivity:
+  # Label-noise sensitivity grid (architecture doc 3.6). Reports the fraction
+  # of "unknown"-labeled questions the greedy decode actually answered (the
+  # Paper-1 43-51% analogue) across a threshold cross-product.
+  enabled: true
+  unknown_cutoffs: [0.0, 0.03125, 0.0625, 0.1]   # 0, 1/32, 2/32, 0.1
+  known_cutoffs: [0.5, 0.7, 0.9]
+  # Optional subsampling cap for the grid (null = use all probed questions).
+  # The point estimate at the pinned band is the headline; the grid is a
+  # robustness check and may subsample (team-lead approved).
+  max_questions: null
+  subsample_seed: 20260610
+
+output:
+  # Outputs land under experiment/phase1/probe/<model_tag>/.
+  results_filename: probe_results.jsonl
+  manifest_filename: probe_manifest.json
+  sensitivity_filename: sensitivity_grid.json
+
+runtime:
+  # Inference backend. "vllm" is the real GPU backend (post-sign-off);
+  # "stub" is a deterministic fixture backend for smoke tests with no GPU.
+  backend: vllm
+  # vLLM engine knobs (only used by the vllm backend).
+  vllm:
+    dtype: auto
+    gpu_memory_utilization: 0.90
+    max_model_len: 2048
