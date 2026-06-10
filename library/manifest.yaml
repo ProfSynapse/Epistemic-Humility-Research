@@ -585,3 +585,17 @@ papers:
   area: methods
   status: candidate
   note: RLVR diversity collapse + mitigation
+- arxiv: '2509.25760'
+  slug: truthrl-incentivizing-truthful-llms
+  title: 'TruthRL: Incentivizing Truthful LLMs via Reinforcement Learning'
+  year: 2025
+  area: methods
+  status: candidate
+  note: ternary-reward GRPO for truthfulness; cited in draft gap 3 via raw report 06
+- arxiv: '2505.13787'
+  slug: lie-detectors-honesty-or-evasion
+  title: 'Preference Learning with Lie Detectors can Induce Honesty or Evasion'
+  year: 2025
+  area: verification
+  status: candidate
+  note: detector-evasion >85% claim; cited in draft gap 4 caution via raw report 06

@@ -10,9 +10,19 @@
       gen-task largest-vs-60x-smaller. Remaining 3 unverified: nostalgebraist
       blog (verify against blog), jmir-e76048 (no PDF), 2505.19056 (DISPUTED —
       dose-response claim not in paper; re-source, candidate Bianchi
-      2309.07875). Remaining daggers (47) are raw-report-06 / essay-cited
-      claims (TruthRL, Abstain-R1, probing numbers, 2604-2606 cluster) +
-      Kadavath 2207.05221 quote + 2505.01997 preference-collapse quote.
+      2309.07875). Dagger elimination COMPLETE 2026-06-10: two agent
+      fan-outs (batches A+B, 32 papers) verified every remaining in-text
+      value; 0 content daggers left, † convention retired in the draft's
+      legends. Batch-B corrections folded in: 2401.12794 (conformal-set
+      growth coincides with *impaired/mixed* accuracy, not improvement),
+      2512.00218 (only adversarial optimization vs. the monitor degrades
+      monitorability — now cited as a boundary condition), 2606.03962
+      ("as well as", better only under noisy judge; true title "Using
+      Reward Uncertainty to Induce Diverse Behaviour in RL", GX-Chen et
+      al.), 2606.08571 refined to 99.46% JSON-valid certificates on 735
+      held-out questions, 2605.21127 metadata confirmed ("Reasoning-Trace
+      Collapse", Twist et al.; VR→0% while pass@1 +50-57%). 60/94 library
+      notes now status: verified.
 - [ ] **PRISMA flow counts.** Reconstruct records-identified / screened /
       excluded / included numbers from the five search agents' logs (82
       queries) + the follow-up search; add a PRISMA-style flow figure and an

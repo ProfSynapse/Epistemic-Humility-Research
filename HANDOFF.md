@@ -76,9 +76,12 @@ OOD transfer — directly filling gaps 1, 2, 5, 6 from
    draft + synthesize.py outputs updated. Lesson recorded: text-extraction
    agents misread figure-only values twice (GPT-4 Fig 8, SelfAware Fig 5) —
    always confirm figure values visually (pdftoppm render → Read the PNG).
-   **Remaining**: 47 draft daggers = raw-report-06/essay-cited claims
-   (TruthRL, Abstain-R1, probing numbers, 2604-2606 cluster) + 2 quotes;
-   verify those the same way next session.
+   **Dagger elimination COMPLETE 2026-06-10**: two agent fan-outs
+   (batches A+B, 32 papers, parallel Explore agents reading local PDFs)
+   verified every remaining in-text value — 0 content daggers, † convention
+   retired. 3 corrections folded into the draft (2401.12794 conformal-set
+   accuracy direction, 2512.00218 monitorability boundary condition,
+   2606.03962 "as well as"); 60/94 library notes status: verified.
 2. ~~Download blocked datasets~~ **DONE 2026-06-10** (see §1). Remaining
    pendings listed in `datasets/README.md` (Natural Questions; AbstentionBench
    materialization; R-Tuning/Idk Google-Drive train sets — not needed for
