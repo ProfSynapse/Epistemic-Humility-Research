@@ -1,0 +1,919 @@
+# Phase 1 Pipeline Architecture — paper 2 (SFT vs DPO vs KTO abstention)
+
+**Author:** architect (PACT Architect, team pact-6d29f2e2)
+**Date:** 2026-06-10 · **Worktree:** `.worktrees/phase1-pipeline`
+**Status:** ARCHITECT deliverable for CODE phase. Companion pre-registration:
+`experiment/protocol/PROTOCOL.md` (v0.2 DRAFT). Upstream PREPARE docs:
+`docs/preparation/model-landscape.md`, `docs/preparation/infra-and-data.md`.
+
+> **Scope note.** This document is the implementation blueprint. It specifies
+> components, interface contracts, data schemas, directory layout, the new DPO
+> trainer in the `synaptic-tuner/` submodule, and a file-level CODE-phase work
+> breakdown with S2 ownership boundaries. It does NOT itself write code. All
+> user decisions (model pin Qwen3, bridge arm in, build DPO, Phase-2 rideshare,
+> KTO mapping congruence+correctness-safe, thinking-axis registration) are
+> resolved upstream and are treated as fixed inputs here.
+
+---
+
+## 1. Executive summary
+
+Phase 1 trains three abstention methods (SFT, DPO, KTO) plus a `base` control
+on model-specific "I don't know" (IDK) data, on a pinned Qwen3 family
+(Qwen3-4B-Instruct pilot / Qwen3-8B-Instruct confirm, thinking mode OFF), and
+measures the full recall / over-refusal / truthful-rate / calibration
+decomposition after each run, in-domain and OOD. A Llama-2-7b-chat bridge arm
+(Idk-SFT + Idk-DPO) validates the pipeline against Cheng et al.'s published
+numbers (42.71% / 23.27% over-refusal, n=11,313) before the novel arms are
+trusted.
+
+The pipeline is four components connected by file-on-disk contracts:
+
+```
+                         experiment/phase1/
+  +-------------------+   probe/        +-------------------+
+  | (A) Knowledge     |---------------->| (B) Dataset       |
+  |     Probe         | per-question    |     Builders      |
+  | Qwen3-4B base     | P_correct +     | known/unknown ->  |
+  | vLLM, N samples   | sampled answers | SFT / DPO / KTO   |
+  +-------------------+                 +---------+---------+
+         ^                                        | JSONL (3 formats)
+         | TriviaQA train split                   v
+         | (disjoint from Cheng test)   +-------------------+
+                                        | (C) Trainers      |
+  +-------------------+   adapters      | SFT (exists)      |
+  | (D) Eval Harness  |<----------------| KTO (exists,+pin) |
+  | truthful/recall/  |                 | DPO (NEW)         |
+  | over-ref/ECE/OOD  |                 | synaptic-tuner/   |
+  | bootstrap+McNemar |                 +-------------------+
+  +-------------------+
+```
+
+Two repos are in play. The **research repo** (this worktree) owns the probe,
+the dataset builders, the eval harness, and the protocol. The **submodule**
+(`synaptic-tuner/`, a separate git repo) owns the trainers; the only change
+there is adding a DPO trainer and Qwen3 presets. The contract between them is
+the on-disk JSONL training files plus the tuner CLI.
+
+Design spine (the reasoning_chain in one line): the model pin (Qwen3, text-only,
+Apache, thinking-off) was chosen to remove confounds, so every component pins
+`enable_thinking=False`; the three-way needs a DPO path that does not exist, so
+we mirror the existing TRL KTO trainer rather than invent a new stack; the
+probe pool overlaps the Cheng test set, so we move probing/training to a
+disjoint TriviaQA train split and pre-register a leakage-guard; identical data
+and LoRA budget across arms is the core confound control, so "budget" is
+defined as distinct source questions and enforced at build time.
+
+---
+
+## 2. System context (C4 L1) and external dependencies
+
+```
+   TriviaQA rc.nocontext        Cheng outputs +        OOD eval sets
+   train split (FETCH)          gold (on disk)         (all on disk)
+        |                            |                      |
+        v                            v                      v
+  +--------------------------------------------------------------+
+  |              Phase 1 Pipeline (this design)                  |
+  |   probe -> builders -> trainers(submodule) -> eval harness   |
+  +--------------------------------------------------------------+
+        |                            |                      |
+        v                            v                      v
+   HF Hub (adapters,          PROTOCOL.md v0.2        paper 2 figures +
+   per-model labels,          (pre-registration,      committed analysis
+   outputs released)          user sign-off gate)     CSVs
+```
+
+External dependencies and their status (from PREPARE):
+
+| Dependency | Status | Action |
+|---|---|---|
+| Qwen3-4B/8B-Instruct (HF, Apache, ungated) | available | pin in configs |
+| Llama-2-7b-chat (HF, gated) | gated, no tuner preset | bridge arm: `--model-name` override + license acceptance (gap #5) |
+| TriviaQA rc.nocontext **train** split | NOT on disk | CODE prerequisite fetch (gaps #2, #3) |
+| Cheng test gold + outputs | on disk | held-out in-domain test |
+| OOD sets (KUQ, CoCoNot, AbstentionBench, MMLU, TruthfulQA, PopQA, SelfAware) | on disk | eval inputs |
+| Cheng IDK **training** data (OpenMOSS) | NOT on disk | bridge-arm CODE prerequisite, license-gated (gap #4) |
+| synaptic-tuner SFT, KTO trainers | exist | reuse; add Qwen3 preset to KTO |
+| synaptic-tuner DPO trainer | ABSENT | BUILD (gap #1) |
+| vLLM (probe + eval backend) | tuner default runtime | reuse |
+
+---
+
+## 3. Component A — Knowledge probe pipeline
+
+### 3.1 Responsibility
+
+One job: for every question in the probe/train pool, estimate this model's
+P_correct under its own generation, and capture the model's own wrong answers
+(needed downstream as KTO/DPO negatives). Single responsibility: produce a
+per-question labeling artifact. It does not build training files (that is B).
+
+### 3.2 Inputs and the disjoint-split decision (resolves gaps #2, #3)
+
+The probe pool is **TriviaQA rc.nocontext train split**, NOT the on-disk
+`validation.jsonl`. Rationale, decided with team-lead:
+
+- The on-disk `validation.jsonl` (17,944 rows) is the source of Cheng's 11,313
+  test questions. Probing/training on it would leak the test set into training.
+- research-trajectory.md always intended a "train subset (~20k)" probe source;
+  the validation pool was never the intended probe input. So using the train
+  split is trajectory-faithful, not a deviation.
+- **Decision (confirmed):** keep Cheng's 11,313 as the bridge-comparable
+  in-domain held-out **test** set; probe and train on the disjoint train split.
+
+**Leakage guard (pre-registered, builder-enforced).** A hard assertion that the
+probe/train question set and the Cheng test question set are disjoint:
+`normalized(probe_questions) ∩ normalized(cheng_test_questions) == ∅`. Use the
+same normalization as the eval scorer (`re.sub(r"\s+", " ", s.strip().lower())`,
+matching `cheng_test_gold.jsonl` keys and `reanalyze_idk_outputs.py:norm_question`).
+The builder (Component B) MUST run this assertion and abort on any non-empty
+intersection. The probe step also writes the normalized question set so the
+guard is checkable independently.
+
+**Contingency (documented fallback, gap #2).** If the train-split fetch is
+infeasible at CODE time, fall back to carving the ~6,631 non-Cheng remainder of
+the on-disk validation pool (17,944 − 11,313) as the probe/train pool, and
+record the reduced n as a power caveat in PROTOCOL.md §power. The leakage guard
+makes this fallback safe by construction.
+
+**CODE prerequisite (record, do not execute this phase).** Add one spec row to
+`datasets/scripts/fetch_datasets.py:SPECS`:
+`("mandarjoshi/trivia_qa", "rc.nocontext", "train", "triviaqa-rc-nocontext", "train.jsonl")`,
+then `python datasets/scripts/fetch_datasets.py --only triviaqa-rc-nocontext`,
+and append a provenance stanza to `datasets/triviaqa-rc-nocontext/dataset.md`.
+The fetch is idempotent and split-restricted, matching the script's existing
+discipline.
+
+### 3.3 Sampling plan (resolves "higher than Cheng's 10")
+
+- **Pinned sample count: N = 32 stochastic samples at T = 1.0, top_p = 0.9,**
+  **plus 1 greedy decode.** Rationale for 32: it is higher than Cheng's 10 (the
+  trajectory's mandatory improvement), gives P_correct on a 1/32 ≈ 0.03
+  granularity so the known/unknown threshold band can be swept finely in the
+  label-noise sensitivity analysis, and is a power-of-two that batches cleanly
+  on vLLM. This single number is pre-registered in PROTOCOL.md v0.2 and gets
+  user eyes at the sign-off gate; it is cheap to correct there.
+- **Generation config (pinned):** `enable_thinking=False` on the Qwen3 chat
+  template (no `<think>` traces in probe outputs), `max_new_tokens` sized to the
+  TriviaQA answer length (short-answer; 64 is ample), stop on the chat turn
+  boundary. The greedy decode is the "Ik threshold 1.0" anchor used by Cheng.
+- **Prompt:** the bare TriviaQA question in the Qwen3 instruct chat template,
+  no context (rc.nocontext), no few-shot. One fixed system prompt, recorded in
+  the protocol and emitted into the probe manifest for provenance.
+
+### 3.4 P_correct and correctness scoring
+
+Correctness reuses the Cheng-validated scorer mechanics (port from
+`meta-analysis/analysis/reanalyze_idk_outputs.py`, read-only source):
+word-bounded normalized gold-alias match. For each sample generation `g` and
+the question's `normalized_aliases`, `is_correct(g) = any(" {alias} " in
+" {normalize(g)} ")`. `P_correct = (# correct samples) / N`. The greedy decode's
+correctness is recorded separately as `greedy_correct` (boolean).
+
+Gold aliases for the **train** split are not yet on disk (only Cheng test gold
+is). The probe step builds train-split aliases the same way `build_cheng_gold`
+does: the TriviaQA train rows already carry `answer.normalized_aliases`, so the
+probe reads them directly from the fetched `train.jsonl` (no separate gold
+build needed; train rows are self-describing, unlike the Cheng re-index case).
+
+### 3.5 Known / unknown / discard bands (pre-registered)
+
+Mirrors v0.1 with the finer granularity N=32 enables:
+
+- **known:** `greedy_correct AND P_correct >= 0.5`
+- **unknown:** `P_correct == 0` (model never gets it right in 32 tries)
+- **discard (ambiguous middle):** everything else, dropped from the primary
+  split for a clean contrast. The discard band is retained on disk (flagged) so
+  the sensitivity analysis can re-include it.
+
+### 3.6 Label-noise sensitivity analysis (resolves the 43-51% finding)
+
+Paper 1 measured that 43-51% of Cheng's "unknown"-labeled questions were in
+fact answerable, because their 10-sample probe was too coarse. Our analysis,
+pre-registered as a secondary result:
+
+- Recompute known/unknown splits across a **threshold grid** on P_correct:
+  unknown-cutoff ∈ {0.0, ≤1/32, ≤2/32, ≤0.1} and known-cutoff ∈ {0.5, 0.7, 0.9}.
+- For each grid cell, report the fraction of "unknown"-labeled questions that
+  the greedy decode actually answered correctly (the direct analogue of the
+  43-51% number), and the resulting split sizes.
+- The grid may subsample questions if the full cross-product is needlessly
+  expensive (team-lead approved subsampling). The point estimate at the
+  pre-registered band (§3.5) is the headline; the grid is the robustness check.
+
+### 3.7 Inference backend
+
+**vLLM, local on the RTX 3090** for the 4B pilot probe. Rationale: it is the
+tuner's default eval runtime (`evaluation.runtime: vllm`, `image_profile:
+fast_vllm`), supports batched N-sample generation efficiently, and keeps the
+probe on the same engine as the eval harness for consistency. The 4B model fits
+the 3090 comfortably for inference. The probe is **checkpointed and resumable**
+(team-lead requirement): write per-question results to a JSONL append log keyed
+by `question_id`; on restart, skip question_ids already present. Linear cost is
+≈ (train-split size) × 33 generations on a 4B model; resumability makes the run
+interruptible without losing work.
+
+### 3.8 Output artifact (interface contract A -> B)
+
+`experiment/phase1/probe/<model_tag>/probe_results.jsonl`, one object per
+question:
+
+```json
+{
+  "question_id": "tqa_train_000123",
+  "question": "Who wrote Paradise Lost?",
+  "question_norm": "who wrote paradise lost",
+  "normalized_aliases": ["john milton", "milton"],
+  "n_samples": 32,
+  "greedy_answer": "John Milton wrote Paradise Lost.",
+  "greedy_correct": true,
+  "p_correct": 0.97,
+  "sampled_answers": ["John Milton.", "Milton", "...", "Dante (WRONG)"],
+  "sampled_correct": [true, true, "...", false],
+  "label": "known",
+  "model_tag": "qwen3-4b-instruct",
+  "probe_config_sha": "<hash of the pinned sampling config>"
+}
+```
+
+`sampled_answers` retains the actual generations because the **wrong** ones are
+the KTO/DPO negatives downstream (a model-unknown question with a confidently
+wrong sample is exactly the hallucination the undesirable label targets). A
+sidecar `probe_manifest.json` records the model, sampling config, prompt
+template, split source, fetch SHA, and the disjointness check result.
+
+---
+
+## 4. Component B — Dataset builders
+
+### 4.1 Responsibility
+
+Convert one `probe_results.jsonl` into the three method-native training files
+(SFT, DPO, KTO) plus a held-out dev file, under one identical question budget,
+config-driven. Single responsibility: labeling-to-training-format transform.
+It owns the leakage guard, the budget equalization, and the abstention-template
+generation.
+
+### 4.2 The shared-budget definition (resolves A4, pre-registered proactively)
+
+Method-native formats expand the same questions into different example counts
+(SFT positives-only vs DPO pairs vs KTO interleaved binary). To keep the data
+budget a genuine confound control rather than an accident of format:
+
+> **Budget = the set of distinct source QUESTIONS.** All three arms are built
+> from the *same* frozen question set (same known set K, same unknown set U,
+> same seed). The per-method example-count expansion (SFT emits 1 row/question,
+> DPO emits 1 pair/question, KTO emits multiple labeled rows/question) is an
+> expected, documented consequence of each method's format, NOT a confound. The
+> builder pins and logs the K/U question IDs once and derives all three files
+> from that frozen set.
+
+This definition is registered in PROTOCOL.md §design so it is fixed before
+training, not negotiated after a result.
+
+### 4.3 Abstention template (style-varied, anti-overfitting)
+
+The unknown-target abstention string must not be a single fixed template (Cheng
+over-refused partly from template overfitting). Generate a **style-varied bank**
+of abstention phrasings (SynthChat-style paraphrase, or a checked-in static
+bank of N paraphrases of "I don't know the answer to that"), sampled per
+example with a fixed seed. CRITICAL CONSTRAINT: every paraphrase MUST contain
+one of the eval harness refusal markers (§6.3) so that refusal detection at eval
+time is reliable. The builder validates this invariant: each generated
+abstention string is checked against the refusal-marker set and rejected if it
+matches none. The marker-bearing phrasings are the bank's backbone; stylistic
+variation rides on top.
+
+### 4.4 SFT builder (positives only)
+
+R-Tuning / Cheng style: every K and U question becomes one positive example.
+
+- known -> assistant target = gold short answer in a fixed response template.
+- unknown -> assistant target = a sampled abstention phrasing (§4.3).
+
+Output schema (per `dataset-formats.md` SFT, conversations form, no tool calls):
+
+```jsonl
+{"conversations":[{"role":"system","content":"<fixed system prompt>"},{"role":"user","content":"<question>"},{"role":"assistant","content":"<gold answer | abstention>"}]}
+```
+
+### 4.5 DPO builder (preference pairs)
+
+One chosen/rejected pair per question (chosen = the desirable completion,
+rejected = the undesirable one):
+
+- known -> chosen = gold answer; rejected = an abstention phrasing
+  (the over-refusal we train against).
+- unknown -> chosen = abstention; rejected = the model's own hallucinated
+  sample (a wrong `sampled_answers` entry; if none wrong, fall back to a
+  plausible distractor or drop the question, logged).
+
+On-disk DPO schema (chosen/rejected as message lists, the TRL DPO convention
+the new trainer's data_loader consumes; see §5.4):
+
+```jsonl
+{"prompt":[{"role":"system","content":"..."},{"role":"user","content":"<question>"}],"chosen":[{"role":"assistant","content":"<desirable>"}],"rejected":[{"role":"assistant","content":"<undesirable>"}]}
+```
+
+### 4.6 KTO builder (interleaved unpaired binary)
+
+The same questions, zero extra labeling, mapped to binary desirable/undesirable
+per `rewardcal-kto-recipe.md` and v0.1 §3.2. **Congruence mapping (primary):**
+
+| Source | Completion | KTO label |
+|---|---|---|
+| known | gold answer | true (desirable) |
+| unknown | abstention | true (desirable) |
+| unknown | model's own hallucinated sample | false (undesirable) |
+| known | abstention | false (undesirable, anti-over-refusal signal) |
+
+**Correctness-safe mapping (ablation, Phase-2 rideshare seed).** Per the recipe
+§4 design tension: dropping the `known+gold` desirable that could reward a
+verbatim wrong answer is not the concern here (our known answers are
+gold-verified), so the correctness-safe variant for THIS dataset instead drops
+the riskiest desirable and rebalances via `desirable_weight`/`undesirable_weight`.
+The builder emits BOTH mappings as separate files behind a config flag; the
+primary is the congruence mapping. (The CRM-derived mapping table in the recipe
+is the precedent; our IDK mapping is the analogue documented inline in the
+builder config.)
+
+On-disk KTO schema (per `dataset-formats.md`, conversations + boolean label,
+**interleaved T/F/T/F**):
+
+```jsonl
+{"conversations":[{"role":"system","content":"..."},{"role":"user","content":"<question>"},{"role":"assistant","content":"<good>"}],"label":true}
+{"conversations":[{"role":"user","content":"<question>"},{"role":"assistant","content":"<bad>"}],"label":false}
+```
+
+Interleaving: the tuner's `interleave_dataset` (`Trainers/kto/src/data_loader.py`)
+already enforces T/F/T/F and balances by truncating the majority class. The
+builder SHOULD pre-interleave on write (fixed seed) so the on-disk file is
+training-ready and human-inspectable, AND rely on the trainer's interleave as a
+safety net. With the congruence mapping the set is ~50/50 by construction; with
+correctness-safe it is imbalanced and uses weights, matching the recipe.
+
+### 4.7 Dev split for early stopping (Gekhman)
+
+The builder carves a held-out dev split (fixed fraction, fixed seed) from the
+SAME question set, format-matched per arm, for dev-loss early stopping. The dev
+questions are excluded from the train files of all arms (same held-out set
+across arms, so early-stopping is comparable). Dev is disjoint from the Cheng
+test set by construction (it is drawn from the train split).
+
+### 4.8 Output artifact (interface contract B -> C)
+
+```
+experiment/phase1/data/<model_tag>/
+  questions_frozen.json        # K/U question IDs + seed (the budget anchor)
+  sft_train.jsonl  sft_dev.jsonl
+  dpo_train.jsonl  dpo_dev.jsonl
+  kto_congruence_train.jsonl  kto_congruence_dev.jsonl
+  kto_correctness_safe_train.jsonl  kto_correctness_safe_dev.jsonl
+  build_manifest.json          # mapping config, budget, leakage-guard result, counts per arm
+```
+
+`build_manifest.json` records the leakage-guard pass, the frozen question count
+(the budget), and per-arm row counts (the documented expansion). This is the
+provenance artifact that satisfies HANDOFF §5 for the training data.
+
+---
+
+## 5. Component C — Trainers (synaptic-tuner submodule)
+
+### 5.1 What exists vs what is built
+
+| Arm | Trainer | Status | Change needed |
+|---|---|---|---|
+| base | none (eval the untrained model) | n/a | none |
+| SFT | `Trainers/sft/train_sft.py` | exists, `--method sft` | add Qwen3 model presets (family branch already handles `qwen`) |
+| KTO | `Trainers/kto/train_kto.py` | exists, `--method kto` | **add Qwen3 preset** (hardcodes Qwen2.5) |
+| DPO | none | **ABSENT** | **BUILD `Trainers/dpo/`** + register method |
+
+### 5.2 Identical LoRA budget across arms (confound control)
+
+All arms pin the SAME LoRA config explicitly (do not rely on `--tier`, per
+PREPARE A.3). Pinned from the KTO config precedent:
+`r=32, lora_alpha=64, lora_dropout=0.05` at 4B pilot;
+`r=64, lora_alpha=128` at 8B confirm; identical `target_modules`
+(q/k/v/o/gate/up/down). The run matrix (seed counts, sensitivity panel) is
+pre-registered in PROTOCOL.md §3.1 / §3.1a (3 headline seeds per arm at 4B, a
+19-run 4B matrix including the LR/beta panel, and 3 seeds at 8B pending user
+veto); LoRA budget is held identical across arms and across panel cells, varying
+only the named panel hyperparameter. These live in the per-arm recipe YAMLs
+(§5.6) so they are visible and identical across SFT/DPO/KTO.
+
+### 5.3 Qwen3 presets (resolves gap, both KTO and DPO)
+
+The KTO `model_map` (`train_kto.py` ~L420) hardcodes Qwen2.5. Add:
+
+```python
+'qwen3_4b': ('3b', 'unsloth/Qwen3-4B-Instruct-bnb-4bit'),
+'qwen3_8b': ('7b', 'unsloth/Qwen3-8B-Instruct-bnb-4bit'),
+```
+
+with matching `--qwen3-4b` / `--qwen3-8b` argparse flags. (CODE verifies the
+exact `unsloth/...` repo names against live HF before pinning; the
+model-landscape doc confirms Qwen3-4B/8B exist, Apache, ungated.) The SFT
+trainer needs no family-branch change (`"qwen"` arm exists, §745 chooses
+`chatml`), only a config `model_name` override per recipe. The new DPO trainer
+gets the same `qwen3_4b`/`qwen3_8b` entries in its own `model_map`.
+
+**enable_thinking=False.** Qwen3 supports a thinking toggle. The pin is OFF for
+all training and eval. Where the chat template is applied (SFT/KTO use Unsloth
+`get_chat_template` -> `chatml` for `qwen`), CODE must ensure no `<think>`
+scaffolding is injected; for Qwen3 specifically, verify the tokenizer's chat
+template default and pass `enable_thinking=False` if the template honors it.
+This is a CODE verification item flagged in §9, not a guess to hardcode.
+
+### 5.4 DPO trainer design (NEW — `Trainers/dpo/`, mirrors `Trainers/kto/`)
+
+Mirror the KTO trainer's structure exactly so it inherits the tuner's
+callbacks, cloud-artifact sync, and model-loading. KTO already uses TRL
+(`from trl import KTOConfig, KTOTrainer`); DPO swaps to `DPOConfig, DPOTrainer`.
+
+```
+Trainers/dpo/
+  train_dpo.py            # mirror train_kto.py: argparse, env bootstrap, orchestration
+  configs/
+    config.yaml           # mirror kto config.yaml; DPOTrainingConfig fields (see below)
+    config_loader.py      # mirror kto config_loader.py; DPOTrainingConfig dataclass
+  src/
+    data_loader.py        # NEW logic: load prompt/chosen/rejected (NOT interleaved binary)
+    model_loader.py       # REUSE kto/src/model_loader.py (LoRA + create_reference_model)
+    training_callbacks.py # REUSE kto/src/training_callbacks.py (or shared/)
+  README.md  requirements.txt  setup.sh   # mirror kto/
+```
+
+Key differences from KTO, by file:
+
+- **`train_dpo.py`:** `from trl import DPOConfig, DPOTrainer`. DPO needs a
+  reference model exactly as KTO does (`create_reference_model` already exists
+  in `kto/src/model_loader.py` and is reusable). No custom `KTOSTrainer`
+  sign-correction analogue is needed (that is KTO-specific); use stock
+  `DPOTrainer`.
+- **`src/data_loader.py`:** consumes the DPO on-disk schema (§4.5). Produces a
+  HF Dataset with columns `prompt`, `chosen`, `rejected` (TRL DPO convention),
+  rather than KTO's `prompt`/`completion`/`label`. No interleaving (DPO has no
+  homogeneous-batch constraint). Reuse KTO's chat-format extraction helper
+  shape but map to chosen/rejected. Add a `validate_dpo_dataset` mirroring
+  `validate_kto_dataset` (required columns present, no empty chosen/rejected).
+- **`configs/config_loader.py`:** replace `KTOTrainingConfig` with
+  `DPOTrainingConfig`. Drop `desirable_weight`/`undesirable_weight`/`use_kto_s`;
+  keep `beta` (DPO has its own beta), add `loss_type` (default `"sigmoid"` =
+  vanilla DPO). All other fields (LoRA, optim, lr, scheduler, early-stop eval
+  fields) carry over unchanged.
+- **`configs/config.yaml`:** mirror KTO's with DPO training block; defaults are
+  overridden per recipe anyway.
+
+### 5.5 Registering DPO as a method (sibling-pin enumeration — IMPORTANT)
+
+`"dpo"` is NOT a single-line addition. The method set is enumerated across
+roughly ten sibling sites spanning ~16 files (verified by grep during CODE
+pre-work; this table was corrected from an earlier 4-site estimate). ALL must be
+updated in the same commit or DPO partially registers and fails at a later layer.
+
+**Central site (the SSOT, update FIRST):**
+`shared/utilities/paths.py:11` defines `TRAINING_METHODS = ("sft", "kto", "grpo")`,
+from which it AUTO-DERIVES `CANONICAL_TRAINER_DIRS`, `LEGACY_TRAINER_DIRS`,
+`CANONICAL_OUTPUT_DIRS`, `LEGACY_OUTPUT_DIRS`, and the `get_trainer_root()`
+dispatch (line 88). Adding `"dpo"` here propagates the trainer-dir and
+output-dir mapping automatically (so `dpo -> Trainers/dpo` and `dpo_output/`
+come for free), which is why it is the effective 5th-and-central registration
+site, not just one of the leaf enumerations. Verify the derived
+`CANONICAL_TRAINER_DIRS["dpo"]` resolves to the new `Trainers/dpo/` dir.
+
+**Leaf / independent enumeration sites (sweep ALL, same commit):**
+
+| Site | What it is | Change |
+|---|---|---|
+| `shared/utilities/paths.py:11` | `TRAINING_METHODS` SSOT (auto-derives dirs + dispatch) | add `"dpo"` — do this first |
+| `tuner/cli/parser.py:222` | `--method` argparse `choices` | add `"dpo"` |
+| `tuner/backends/training/cloud/base_cloud.py:110` | `SUPPORTED_METHODS` tuple | add `"dpo"` |
+| `tuner/backends/training/cloud/hf_jobs_backend.py:125` | returns method list | add `"dpo"` |
+| `tuner/backends/training/rtx_backend.py:106` | returns method list | add `"dpo"` |
+| `tuner/backends/evaluation/{mlc,unsloth,llamacpp}_backend.py` | eval-backend method handling | sweep + add if enumerated |
+| `tuner/discovery/{training_runs,base_models}.py` | run/model discovery by method | sweep + add if enumerated |
+| `tuner/cloud/hardware_planner.py` | per-method hardware planning | sweep + add if enumerated |
+| `tuner/handlers/{train,merge,doctor}_handler.py` | method dispatch in handlers | sweep + add if enumerated |
+| `shared/experiment_tracking/{experiment_spec,schema}.py` | experiment-spec method field | sweep + add if enumerated |
+| parser help strings ("SFT, KTO, GRPO") | cosmetic | update for accuracy |
+
+CODE MUST grep `TRAINING_METHODS`, `SUPPORTED_METHODS`, and the literal
+`"sft", "kto", "grpo"` / `'sft', 'kto', 'grpo'` triples across `tuner/`,
+`Trainers/`, and `shared/` before finishing, and confirm no site is missed (the
+discipline that caught the under-count). The grep hit-set is the full pin
+universe; triage each hit (does it gate DPO, or is it derived from `paths.py`?).
+Because `paths.py` auto-derives the dir/output/dispatch maps, several leaf sites
+need NO change once the SSOT is updated; the sweep confirms which are derived vs
+independent.
+
+For the **pilot (local 3B)**, the DPO arm can run via the direct trainer
+(`cd Trainers/dpo && python train_dpo.py --qwen3-4b --local-file <dpo.jsonl>`)
+independent of cloud-method registration, so dataset+trainer work can land and
+be smoke-tested before the full cloud wiring is complete. Cloud registration is
+required for the **8B confirm** arm on HF Jobs.
+
+### 5.6 Training config conventions (recipes)
+
+Per-arm recipe YAMLs under the submodule's `Trainers/recipes/` (the established
+config-driven home), one per (method × size), e.g.:
+
+```
+Trainers/recipes/eh_phase1_qwen3_4b_sft.yaml
+Trainers/recipes/eh_phase1_qwen3_4b_dpo.yaml
+Trainers/recipes/eh_phase1_qwen3_4b_kto_congruence.yaml
+Trainers/recipes/eh_phase1_qwen3_4b_kto_correctness_safe.yaml
+Trainers/recipes/eh_phase1_qwen3_8b_{sft,dpo,kto_congruence}.yaml
+Trainers/recipes/eh_bridge_llama2_7b_chat_{sft,dpo}.yaml
+```
+
+Each pins: `model_name`, identical LoRA budget (§5.2), `enable_thinking` off
+where applicable, early stopping on dev loss (`eval_strategy`, `eval_steps`,
+load-best-on-dev), the local-file path to the matching builder output, and the
+run output dir. The recipe above is the per-arm DEFAULT config; the full
+pre-registered run matrix (PROTOCOL.md §3.1 / §3.1a) expands each default into 3
+seeds plus the LR / beta sensitivity-panel cells. That seed-and-panel expansion
+is driven by a run-matrix / sweep config layered over these default recipes, NOT
+by hand-writing 19 recipe files; see the scoped CODE follow-up in §9.1. The
+bridge recipes use `--model-name`
+overrides for the gated Llama-2-7b-chat (gap #5) and consume Cheng's IDK
+training data (gap #4 prerequisite).
+
+### 5.7 Submodule git workflow (CODE-phase note)
+
+`synaptic-tuner/` is a SEPARATE git repo. DPO-trainer + preset work is committed
+THERE on its own feature branch (e.g. `feat/dpo-trainer-eh-phase1`), pushed,
+and then the research-repo worktree's submodule pointer is bumped to that commit
+in a research-repo commit. HF Jobs checks out the exact pushed submodule SHA, so
+the cloud (8B) arm cannot run until the submodule branch is pushed and the
+pointer bumped. CODE sequences: land+push submodule DPO work first, bump pointer,
+then cloud runs. The local 4B pilot can run against the working-tree submodule
+before the pointer bump.
+
+---
+
+## 6. Component D — Eval harness
+
+### 6.1 Responsibility
+
+Score every trained adapter (and `base`) on the in-domain held-out set and the
+OOD sets, emit the full metric decomposition with paired CIs, deterministically
+and committed. Single responsibility: adapter-in, metrics-CSV-out. Reuses the
+Cheng-validated scorer so bridge-arm numbers are directly comparable.
+
+### 6.2 Where it lives
+
+The metric suite (over-refusal decomposition, token ECE, OOD scorers) is NOT
+pre-built in the tuner's `Evaluator/` (PREPARE gap #6). Decision: build the
+Phase-1 scorers as **checked-in scripts in the research repo** under
+`experiment/phase1/eval/`, generating responses via vLLM (same backend as the
+probe) loading each adapter. This keeps the novel metrics in the repo that owns
+the paper and its provenance discipline, rather than forcing them into the
+tuner's YAML-assertion harness. The tuner `Evaluator/` is used only if a quick
+smoke scenario is wanted (the existing
+`labkit_epistemic_humility_smoke.yaml` can be a sanity check). Gap #7
+(`Evaluator/recipes/` doc drift) is dispositioned as: do not rely on that path;
+use `Evaluator/config/` if the tuner harness is touched at all. The Phase-1
+suite does not depend on it.
+
+### 6.3 Core scorers (ported from `reanalyze_idk_outputs.py`, read-only source)
+
+The refusal-detection and correctness primitives are lifted verbatim
+(re-implemented in the new eval module, NOT imported from meta-analysis which is
+read-only):
+
+- `REFUSAL_MARKERS` = the 4 markers ("beyond the scope of my knowledge", "i am
+  not sure what the answer is", "i don't know the answer", "i do not know the
+  answer"). The abstention-template bank (§4.3) is constrained to contain these.
+- `normalize(text)` = `" ".join(re.findall(r"[a-z0-9]+", text.lower()))`.
+- `is_correct(gen, aliases)` = word-bounded alias membership.
+- known/unknown labels for in-domain test come from OUR probe of the test
+  questions' answerability (the model-specific labeling), NOT from a training
+  target. (The bridge arm is the exception: it uses Cheng's IDK-target encoding
+  exactly as `reanalyze_idk_outputs.py` does, for apples-to-apples replication.)
+
+### 6.4 Metric suite (per arm, in-domain and per OOD set)
+
+1. **Truthful rate + 4-quadrant matrix** (Cheng): quadrants Ik-Ik (known,
+   answered correct), Ik-Idk (unknown, refused), and the two error cells.
+   `truthful = (refuse_on_unknown + correct_on_known) / n`. Primary metric.
+2. **Refusal recall** on unknowns and **over-refusal** on knowns (the
+   decomposition the field omits). These are the bridge-arm comparison targets
+   (Idk-SFT 42.71%, Idk-DPO 23.27%).
+3. **AP** over confidence-ranked answers (R-Tuning comparability). Confidence =
+   P_correct-style self-consistency from N eval samples, or sequence logprob.
+4. **Token-level ECE on MMLU** MCQ. MMLU schema is `question/subject/choices/answer`
+   (answer = correct choice index). ECE from the model's per-choice token
+   probabilities (probability mass on each option letter), binned, vs accuracy.
+   This is the abstention-calibration tension measured on the same run (first
+   time for KTO). Pinned: 15 equal-width bins, standard ECE.
+5. **TruthfulQA** MC1/MC2 + over-refusal on its informativeness axis.
+6. **Accuracy retention** on answered questions (capability tax): accuracy among
+   answered known questions vs the `base` arm.
+
+### 6.5 OOD sets (all on disk)
+
+| Set | File | Probe |
+|---|---|---|
+| KUQ | `kuq/knowns_unknowns.jsonl` (`unknown` bool) | unanswerable detection |
+| CoCoNot | `coconot/contrast_test.jsonl` | over-refusal headline |
+| AbstentionBench | `abstentionbench-repo/` (loader + indices) | abstention transfer |
+| MMLU | `mmlu/test.jsonl` | token ECE + far-OOD accuracy |
+| TruthfulQA | `truthfulqa/TruthfulQA.csv` | truthful rate |
+| PopQA | `popqa/test.jsonl` | near-OOD long-tail |
+| SelfAware | `selfaware/SelfAware.json` | answerable/unanswerable |
+
+OOD sets share NO questions with training (they are different corpora; the
+in-domain leakage guard does not apply to them, but the eval harness asserts the
+trained question set does not appear in any OOD set as a cheap defensive check).
+
+### 6.6 Statistics
+
+Two-layer uncertainty treatment (pre-registered in PROTOCOL.md §3.6; the
+protocol is the SSOT, this is the implementation view):
+
+- **Layer 1, within-run / eval-question:** paired bootstrap CIs over eval
+  questions for every metric (resample questions with replacement, recompute,
+  percentile CI). Paired = same questions across arms.
+- **Layer 2, across-seed / training stochasticity:** each headline arm is
+  trained at 3 seeds; every headline metric is reported as mean and CI across
+  those 3 seeds. This is the training-procedure error bar the field omits. The
+  eval harness must therefore aggregate per-seed metric outputs into a
+  per-arm mean+CI (the `stats.py` consumer reads N seed-level `metrics.json`
+  files per arm).
+- **Between-arm significance:** McNemar on the binary outcomes (refused-or-not,
+  correct-or-not), computed on MATCHED seeds (seed i of arm A vs seed i of arm B
+  on identical questions) so it is not confounded by cross-seed pairing.
+- **Sensitivity panel:** reported as a robustness figure (headline metric per
+  panel cell, 1 seed each), explicitly WITHOUT seed-level CIs and never as a
+  headline source (PROTOCOL.md §3.1a headline-only rule).
+- Power: at n≈11k in-domain, a 3pp truthful-rate difference has power > 0.95;
+  the across-seed CI (layer 2) is now estimated from 3 points per arm.
+- All scorers deterministic; eval generations use fixed seeds; outputs (raw
+  generations + metric CSVs) committed, same provenance discipline as paper 1.
+
+### 6.7 Output artifact
+
+```
+experiment/phase1/eval/results/<arm>__<eval_set>/
+  generations.jsonl     # raw model outputs (released)
+  metrics.json          # the 6-metric suite + 4-quadrant counts
+  bootstrap_ci.json     # per-metric CIs
+experiment/phase1/eval/results/comparisons/
+  mcnemar.csv           # pairwise arm comparisons
+  summary_table.csv     # the paper's headline table (all arms x all metrics)
+```
+
+---
+
+## 7. Directory layout (research repo)
+
+```
+experiment/
+  protocol/                         # exists; PROTOCOL.md -> v0.2, trajectory edit
+  phase1/                           # NEW
+    README.md                       # how to run the pipeline end to end
+    probe/
+      probe.py                      # Component A
+      config/probe.yaml             # pinned sampling config (N=32, T, thinking off)
+      <model_tag>/probe_results.jsonl  probe_manifest.json
+    data/
+      build_datasets.py             # Component B (all 3 formats from probe_results)
+      config/build.yaml             # mapping flags, budget, abstention bank ref
+      abstention_bank.json          # style-varied marker-bearing phrasings
+      <model_tag>/...               # outputs (§4.8)
+    eval/
+      run_eval.py                   # Component D driver (adapter -> generations)
+      scorers.py                    # ported refusal/correctness/ECE/AP scorers
+      stats.py                      # bootstrap + McNemar
+      config/eval.yaml              # eval sets, sampling, bins
+      results/...                   # outputs (§6.7)
+    configs/                        # optional: top-level run manifests tying arms together
+docs/
+  architecture/phase1-pipeline.md   # this doc
+  preparation/...                   # PREPARE docs
+datasets/
+  scripts/fetch_datasets.py         # +1 spec row (train split) — CODE prerequisite
+  triviaqa-rc-nocontext/train.jsonl # fetched (CODE prerequisite)
+```
+
+Submodule (`synaptic-tuner/`) additions: `Trainers/dpo/` (§5.4), KTO Qwen3
+preset, method registration (§5.5), Phase-1 recipes (§5.6).
+
+Config convention: every component reads a checked-in YAML (`config/*.yaml`),
+no one-off scripts, no hardcoded paths or sample counts. Each writes a manifest
+recording the exact config SHA used. This is what makes the pipeline re-runnable
+on any model (Phase 4) by swapping `model_tag` + `model_name`.
+
+---
+
+## 8. Data schemas / interface contracts (summary)
+
+| Boundary | Artifact | Producer | Consumer | Key fields |
+|---|---|---|---|---|
+| fetch -> A | `triviaqa-rc-nocontext/train.jsonl` | fetch script | probe | `question`, `question_id`, `answer.normalized_aliases` |
+| A -> B | `probe_results.jsonl` | probe.py | build_datasets.py | `question_id`, `p_correct`, `greedy_correct`, `sampled_answers`, `sampled_correct`, `label` |
+| B -> C | `{sft,dpo,kto_*}_{train,dev}.jsonl` | build_datasets.py | trainers | per-format (§4.4-4.6); `build_manifest.json` carries budget+leakage proof |
+| C -> D | LoRA adapters | trainers | run_eval.py | adapter dir per arm/seed |
+| D -> paper | `metrics.json`, `summary_table.csv`, `mcnemar.csv` | eval | paper 2 | full metric suite |
+
+Contracts are file-on-disk JSONL/JSON, language-agnostic, inspectable, and
+provenance-stamped. This decouples the four components: each can be implemented
+and tested against a fixture of the upstream artifact without the upstream
+component existing yet.
+
+---
+
+## 9. CODE-phase work breakdown with S2 boundaries
+
+Five workstreams. File-level ownership keeps coders from colliding. Workstreams
+1 and 2 are independent and parallelizable; 3 depends on 2's schema (not its
+data, which can be fixtured); 4 depends on the DPO schema only; 5 is the
+prerequisite fetch.
+
+### WS-0 (prerequisite, fast): dataset fetch + provenance
+
+- Owns: `datasets/scripts/fetch_datasets.py` (+1 SPEC row),
+  `datasets/triviaqa-rc-nocontext/dataset.md` (provenance stanza).
+- Deliverable: `train.jsonl` on disk, disjointness spot-checked.
+- Gap disposition: #2, #3. Records (does not block) the OpenMOSS Cheng IDK
+  training-data fetch for the bridge arm (#4), which is license-gated and needs
+  user sign-off before fetching.
+
+### WS-1: knowledge probe (research repo)
+
+- Owns: `experiment/phase1/probe/` (probe.py, config, outputs).
+- Depends on: WS-0 output (or the documented validation-remainder fallback).
+- Contract out: `probe_results.jsonl` (§3.8). Can be developed against a
+  small hand-made `train.jsonl` fixture.
+- Includes the label-noise sensitivity analysis (§3.6).
+
+### WS-2: dataset builders (research repo)
+
+- Owns: `experiment/phase1/data/` (build_datasets.py, config, abstention_bank).
+- Depends on: `probe_results.jsonl` SCHEMA (fixture, not real data).
+- Contract out: the 4 arms' train/dev JSONL + `build_manifest.json`.
+- Owns the leakage guard (§3.2), budget equalization (§4.2), abstention bank
+  (§4.3), both KTO mappings (§4.6).
+
+### WS-3: DPO trainer + method registration (SUBMODULE — separate git repo)
+
+- Owns (submodule): `Trainers/dpo/` (new), KTO Qwen3 preset in
+  `Trainers/kto/train_kto.py`, the 4 method-registration sites (§5.5), Phase-1
+  recipe YAMLs (§5.6).
+- Depends on: DPO on-disk SCHEMA (§4.5) from WS-2 (fixture).
+- S2 boundary: this is the ONLY workstream touching the submodule. It commits
+  on a submodule feature branch, pushes, and the research-repo pointer bump is a
+  separate research-repo commit (§5.7). Other workstreams MUST NOT touch
+  `synaptic-tuner/`.
+- Gap disposition: #1 (DPO), Qwen3 preset, #5 (bridge `--model-name` override
+  in the bridge recipes).
+- VERIFY items: exact `unsloth/Qwen3-*` repo names against live HF; that
+  `enable_thinking=False` is honored by the Qwen3 chat template path (§5.3);
+  the cloud-method dispatch maps `dpo -> Trainers/dpo`; grep-sweep that no
+  `("sft","kto","grpo")` enumeration site is missed.
+
+### WS-4: eval harness + stats (research repo)
+
+- Owns: `experiment/phase1/eval/` (run_eval.py, scorers.py, stats.py, config,
+  results).
+- Depends on: trained adapters (C) for real runs; scorer logic depends only on
+  the generations schema (fixture) and `cheng_test_gold.jsonl` (on disk).
+- Contract out: `metrics.json`, `summary_table.csv`, `mcnemar.csv` (§6.7).
+- Gap disposition: #6 (build the scorers), #7 (do not rely on
+  `Evaluator/recipes/`). Ports (re-implements) the read-only
+  `reanalyze_idk_outputs.py` primitives.
+
+### Parallelism and ordering
+
+```
+WS-0 ---> WS-1 ---> WS-2 ---+--> (real training) ---> WS-4 (real eval)
+                            |
+   WS-3 (submodule) <-- schema only (fixture), parallel with WS-1/WS-2
+   WS-4 scorers <-- schema only (fixture), parallel with everything
+```
+
+Schemas in §8 are the synchronization points. As long as WS-2 freezes the DPO
+on-disk schema (§4.5) and the eval generations schema (§6.7) early, WS-3 and
+WS-4 proceed in parallel against fixtures. Real end-to-end runs gate on the
+PROTOCOL.md (currently v0.3 DRAFT) user sign-off (no training before sign-off).
+
+### 9.1 Scoped follow-up: run-matrix / sweep orchestration (post-v0.3)
+
+The v0.3 run matrix (PROTOCOL.md §3.1 / §3.1a: 3 headline seeds per arm + the
+LR/beta sensitivity panel = 19 runs at 4B, plus 3 seeds at 8B pending veto)
+implies one new CODE artifact NOT covered by WS-0..WS-4: a run-matrix / sweep
+orchestration config + runner that layers seed and panel-cell variation over the
+per-arm DEFAULT recipes (§5.6), launches the cells in parallel on HF Jobs, and
+tags each run with its (arm, seed, panel-cell) coordinate so the eval harness can
+aggregate by arm (the layer-2 mean+CI in §6.6) and isolate the panel cells. This
+is NAMED here as a scoped follow-up, not designed in depth: it does not change
+any WS-1/WS-2/WS-3/WS-4 interface contract (it sits ABOVE the existing per-arm
+recipe + trainer surface, reusing `tuner.py cloud-pipeline` per cell). It should
+be a small, separate CODE task after the current WS work lands and after v0.3
+sign-off. Open design questions for that task: whether the tuner already has a
+sweep/experiment-spec surface to reuse (PREPARE noted `run-experiment` and
+`experiment-loop` CLI verbs and `shared/experiment_tracking/experiment_spec.py`),
+vs a thin research-repo driver that emits per-cell recipe overrides. Prefer
+reusing the tuner's experiment-spec surface if it cleanly expresses seed + single
+-hyperparameter-override cells.
+
+---
+
+## 10. Non-functional requirements
+
+- **Provenance (SACROSANCT, HANDOFF §5):** every artifact carries a manifest
+  with config SHA, source, and (for data) a `dataset.md`-style stanza. Scorers
+  deterministic; no hand-edited results; outputs committed.
+- **Reproducibility / Phase 4:** the config-driven design means a new model is a
+  `model_tag` + `model_name` swap. Release adapters, per-model labels
+  (`probe_results.jsonl`), and outputs to HF Hub (the field's documented gap).
+- **Resumability:** probe and eval are checkpointed/resumable (append-log keyed
+  by question_id) so long local runs survive interruption.
+- **Cost:** probe ≈ train-split-size × 33 gens on 4B local; eval ≈ adapters ×
+  eval-set-size gens. Both batched on vLLM. The 8B confirm arm is the cloud
+  cost; the 4B pilot is the local-iteration loop.
+- **Determinism vs sampling:** the probe is intentionally stochastic (P_correct
+  needs samples) but seeded; eval generations are seeded; all statistics are
+  computed from committed raw generations so re-running stats is deterministic.
+- **Security:** no credentials in configs; `HF_TOKEN` passed via env for gated
+  Llama-2 and HF Jobs, never written to a recipe. Llama-2 license acceptance is
+  a user action recorded in the bridge recipe's provenance note.
+
+---
+
+## 11. Gap disposition table (PREPARE gaps #1-#7)
+
+| # | Gap | Disposition |
+|---|---|---|
+| 1 | No DPO trainer | BUILD `Trainers/dpo/` mirroring KTO (TRL DPOTrainer) + register method at 4 sites — WS-3 (§5.4, §5.5) |
+| 2 | TriviaQA pool < 20k | Use the rc.nocontext **train** split (fetch) as probe/train; documented validation-remainder fallback — WS-0/WS-1 (§3.2) |
+| 3 | Probe/Cheng-test leakage | Disjoint train-split design + pre-registered, builder-enforced leakage guard — WS-2 (§3.2, §4.2) |
+| 4 | Cheng IDK training data not on disk | Recorded CODE prerequisite: fetch OpenMOSS Say-I-Dont-Know training data (license-gated, user sign-off) — WS-0 note (§2, §9) |
+| 5 | Llama-2-7b-chat gated + no preset | Bridge recipes use `--model-name` override + recorded license acceptance; HF_TOKEN via env — WS-3 (§5.6) |
+| 6 | Metric scorers not pre-built | Build Phase-1 scorers in research repo `experiment/phase1/eval/`, ported from Cheng reanalysis — WS-4 (§6.2, §6.3) |
+| 7 | `Evaluator/recipes/` doc drift | Do not depend on it; use `Evaluator/config/` only if the tuner harness is touched; Phase-1 suite is research-repo native — WS-4 (§6.2) |
+
+---
+
+## 12. Risk assessment
+
+| Risk | Likelihood | Impact | Mitigation |
+|---|---|---|---|
+| DPO method registration misses an enumeration site | Medium | Med (silent cloud failure) | §5.5 names the `paths.py` SSOT + ~10 leaf sites + a mandatory grep-sweep CODE check (the under-count this risk warns about was itself caught by that sweep in CODE) |
+| Qwen3 chat template injects `<think>` despite thinking-off intent | Medium | Med (parsing confound) | §5.3 CODE-verify the template path; eval scorer strips any `<think>` defensively |
+| Train-split fetch infeasible at CODE time | Low | Med (reduced n) | documented validation-remainder fallback + power caveat (§3.2) |
+| Cheng IDK training data license blocks bridge arm | Medium | Med (bridge arm slips) | recorded prerequisite + user sign-off; bridge arm is validation, not a core arm |
+| Unknown set too small (Qwen3-4B knows most of TriviaQA) | Medium | Med (thin contrast) | N=32 probe gives a real frontier; if U too small, widen threshold band (sensitivity grid already computes this) or add PopQA long-tail to the probe pool (documented option) |
+| Budget cannot equalize across formats | Low | Low | resolved pre-registration: budget = distinct questions, expansion documented (§4.2) |
+| Submodule pointer bump forgotten before cloud run | Medium | Low | §5.7 sequencing; HF Jobs checks out the pinned SHA so a stale pointer fails loudly, not silently |
+
+---
+
+## 13. Reasoning chain (key decisions, connected)
+
+1. **Qwen3 pin (text-only, Apache, thinking-off) -> every component pins
+   `enable_thinking=False`.** The pin's whole value is removing the
+   vision/reasoning confounds; honoring it half-way (e.g. letting the chat
+   template inject `<think>`) would reintroduce exactly the parsing confound the
+   pin avoids. So thinking-off propagates from probe to builder-templates to
+   trainer chat-template to eval-scorer, and is a CODE-verify item where the
+   template path is non-obvious.
+2. **Three-way requires a DPO path that does not exist -> mirror the TRL KTO
+   trainer rather than build a new stack.** KTO already proves TRL + Unsloth +
+   the tuner's callbacks/cloud-sync compose; cloning that structure and swapping
+   `KTOTrainer/KTOConfig -> DPOTrainer/DPOConfig` (plus a chosen/rejected
+   data_loader) is the lowest-risk closure of gap #1 and inherits all the
+   operational plumbing for free.
+3. **DPO registration is multi-site -> enumerate the sibling pins, do not
+   single-line it.** The method set lives at a `paths.py` SSOT plus ~10 leaf
+   sites across ~16 files; a single-line add registers DPO for the CLI but fails
+   at the cloud backend (or, conversely, updating leaf sites while missing the
+   `paths.py` SSOT leaves the trainer-dir/output-dir dispatch wrong). Updating
+   the SSOT first (it auto-derives the dir maps) and grep-sweeping the leaves
+   prevents a mid-implementation surprise where the 8B cloud arm fails after the
+   local arm worked. The CODE-phase grep sweep corrected this section's original
+   4-site estimate to the true surface, which is exactly the failure mode the
+   sweep mandate exists to catch.
+4. **Probe pool overlaps the Cheng test set -> move probing/training to a
+   disjoint train split and pre-register a builder-enforced leakage guard.**
+   Keeping Cheng's 11,313 as the held-out test makes the bridge arm directly
+   comparable to published numbers; probing/training on the disjoint train split
+   removes leakage; the guard makes the invariant checkable and the
+   validation-remainder fallback makes the design robust to a failed fetch.
+5. **Method-native formats expand questions differently -> define budget as
+   distinct source questions and freeze the question set once.** This keeps
+   "identical data budget across arms" a real confound control (same questions,
+   same seed) instead of an illusion that breaks the moment SFT and KTO emit
+   different row counts; the expansion is documented, not hidden.
+6. **Novel metrics are not in the tuner harness -> build them in the research
+   repo, ported from the Cheng-validated reanalysis.** This puts the paper's
+   metrics under the paper's provenance discipline and guarantees bridge-arm
+   numbers use the exact scorer that already reproduces 42.71% / 23.27%, so a
+   bridge mismatch indicts the training pipeline, not the metric.
+7. **Style-varied abstention bank must still be machine-detectable -> constrain
+   every paraphrase to carry a refusal marker.** This squares the
+   anti-overfitting goal (vary the surface form) with the eval requirement
+   (detect refusals reliably), so the two requirements do not silently fight.
+```

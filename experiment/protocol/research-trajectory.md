@@ -41,6 +41,12 @@ close them in order of leverage:
   generation at kickoff (user note: Llama-2-era models are stale/overused;
   apples-to-oranges vs prior work is acceptable because comparisons are
   within-model across methods).
+- PIN DECISION (2026-06-10, frozen for Phase 1 / paper 2): Qwen3, namely
+  Qwen3-4B-Instruct (pilot, local RTX 3090) and Qwen3-8B-Instruct (confirm,
+  HF Jobs), both Apache 2.0, ungated, text-only; thinking mode pinned OFF
+  (enable_thinking=False). Rationale: the only current family that is at once
+  text-only, uniformly Apache and ungated, and a near-exact 4B/8B pairing.
+  Full survey: `docs/preparation/model-landscape.md`.
 - Bridge arm (recommended, pending user confirmation): one replication of
   Idk-SFT + Idk-DPO on Llama-2-7b-chat itself to validate the pipeline
   against Cheng's published numbers before running novel arms on the
@@ -100,6 +106,19 @@ Jobs. KTO data per `.skills/fine-tuning/reference/dataset-formats.md`
   knowledge-labeled questions: does capitulation concentrate at the
   knowledge frontier? (Forward paths documented in
   `evidence/sycophancy-cheng-join.md`.)
+- Thinking vs non-thinking axis (REGISTERED 2026-06-10, future material, not
+  designed yet): Phase 1 pins the Qwen3 thinking toggle OFF for a clean
+  non-reasoning study. The toggle is a free, controlled axis: re-run the
+  three-way abstention training (or at least the eval suite) with
+  enable_thinking=ON vs OFF on the same Qwen3 model. Question: does an
+  explicit reasoning trace change where the knowledge frontier sits, whether
+  abstention training transfers, and the abstention-calibration tension
+  (does a `<think>` trace let the model verbalize uncertainty it cannot
+  express in a direct answer)? This connects to the Phase 3 probing line
+  and the 2606.02907 caution that probes can detect task format rather than
+  reasoning mode. Reasoning-by-default modern families (e.g. Qwen3.5) are
+  the natural cross-architecture extension of this axis in the Phase 4
+  rolling re-runs.
 
 ## Publication shape
 
