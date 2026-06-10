@@ -24,10 +24,12 @@
 - [ ] **Author/affiliation block.** Add author name(s), affiliation, contact,
       and the companion-essay citation in final form; decide author-name form
       for the essay attribution (Section 3) and References.
-- [ ] **Finish the interim columns** of `idk-method-reanalysis.csv`
-      (exact-match answer grader for `approx_correct_on_known` /
-      `approx_truthful`) or drop them from the released CSV; the draft
-      currently excludes them from claims.
+- [x] **Finish the interim columns** of `idk-method-reanalysis.csv` — DONE
+      2026-06-10: exact gold-alias grading via
+      `datasets/triviaqa-rc-nocontext/cheng_test_gold.jsonl` (Cheng test set
+      = TriviaQA unfiltered.nocontext/validation, 100% question-text match).
+      Draft 5.3 updated; truthful scalar still excluded from claims (label
+      base differs from the paper's Ik-threshold pipeline).
 - [ ] **Abstract trim** to ~200 words (currently ~250) and final word-count /
       style pass; convert references to BibTeX; arXiv formatting (LaTeX or
       arXiv-ready markdown pipeline).

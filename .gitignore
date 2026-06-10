@@ -1,0 +1,5 @@
+# Re-fetchable binary archives: rebuild with library/scripts/fetch_library.py --enrich
+library/pdfs/
+library/fulltext/
+# huggingface_hub snapshot_download bookkeeping
+datasets/*/.cache/

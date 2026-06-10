@@ -15,17 +15,23 @@ querying. Re-fetch provenance is recorded per dataset.
 | `sayself/` | SaySelf stage-1 SFT (8,603 ex) + small eval sets | MIT | Reference train data |
 | `say-i-dont-know-outputs/` | Cheng et al. per-method TriviaQA test outputs (SFT/DPO/PPO/BoN/HIR) | unstated | **Meta-analysis reanalysis** — lets us independently recompute truthful rates |
 
-## Blocked by network allowlist (need huggingface.co / drive.google.com / arxiv.org)
+## Local now (fetched 2026-06-10, HF hub via `scripts/fetch_datasets.py`)
+
+| Folder | Dataset | License | Role |
+|---|---|---|---|
+| `triviaqa-rc-nocontext/` | TriviaQA rc.nocontext validation (17,944 Q) | unknown on HF; research use per official release | Gold aliases for exact truthful-rate recomputation; known/unknown split substrate |
+| `mmlu/` | MMLU all test+validation (14,042 + 1,531) | MIT | OOD eval + correctness splits |
+| `popqa/` | PopQA test (14,267 Q) | untagged on HF; GitHub MIT | Long-tail "likely unknown" proxy eval |
+| `kuq/` | KUQ knowns_unknowns + unknowns_all (6,884 + 6,363) | MIT | Known-unknown eval with categories |
+| `coconot/` | CoCoNot original train/test + contrast test (11,477 + 1,001 + 379) | untagged on HF (AI2) | Noncompliance + over-refusal contrast sets |
+| `abstentionbench-repo/` | AbstentionBench repo snapshot (loading script only — see its dataset.md) | CC-BY-NC-4.0 | Holistic abstention eval, needs materialization |
+
+## Still pending
 
 | Dataset | Source | Why we want it |
 |---|---|---|
-| TriviaQA | HF `mandarjoshi/trivia_qa` | Substrate for model-specific known/unknown splits (train) |
-| Natural Questions | HF `google-research-datasets/natural_questions` | OOD eval substrate |
-| MMLU | HF `cais/mmlu` | OOD eval + correctness splits |
-| PopQA | HF `akariasai/PopQA` | Long-tail "likely unknown" proxy eval |
-| KUQ | HF `amayuelas/KUQ` | Known-unknown train/eval (MIT) |
-| CoCoNot | HF `allenai/coconot` | Noncompliance + contrast (over-refusal) sets |
-| AbstentionBench | HF `facebook/AbstentionBench` | Holistic abstention eval |
+| Natural Questions | HF `google-research-datasets/natural_questions` | OOD eval substrate (large — subset before committing) |
+| AbstentionBench materialized data | GitHub `facebookresearch/abstentionbench` pipeline | Repo snapshot has no data; some constituents (GPQA) gated |
 | Idk train datasets | Google Drive via `OpenMOSS/Say-I-Dont-Know` | Model-specific Idk SFT + preference data (we will regenerate for Qwen anyway) |
 | R-Tuning data | Google Drive via `shizhediao/R-Tuning` | Refusal-aware train sets |
 | LACIE preference pairs | `esteng/pragmatic_calibration` `data.tar.gz` (60 MB, cloned to scratch but not committed) | DPO calibration pairs reference |
