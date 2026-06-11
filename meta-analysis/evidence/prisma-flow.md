@@ -24,8 +24,9 @@ reported. All counts below are recomputable from the files named.
 | Surfaced but **not** admitted | 21 (see exclusion log) | set difference, reports vs. manifest |
 | Studies with extracted quantitative rows | 35 (31 arXiv + 2 gray + 2 own reanalyses) → 67 rows | `effects.csv` |
 | Library papers cited as context/framework only | 38 | draft in-text citations minus extraction studies |
-| Rows excluded post-verification | 1 (2505.19056 — citation mis-attribution) | `effects.csv` row 59 notes |
-| Rows verified against primary artifact | 64 of 67 (8 of these are our own computed reanalysis rows, born verified) | `effects.csv` `verified` column |
+| Rows excluded post-verification | 1 (2505.19056 — citation mis-attribution; REMOVED from effects.csv 2026-06-11, full record preserved below) | this document, "Excluded row" section |
+| Review pass (2026-06-11) | +1 row extracted (IPO arm of 2404.14723, promoted from the KTO row's notes); excluded row removed → corpus 75 rows / 38 studies | `effects.csv`; paper TODO.md |
+| Rows verified against primary artifact | 73 of 75 current (was 64 of 67 at the verification freeze, 72 of 75 post-backward-pass; 12 are our own computed reanalysis rows, born verified; the 8 backward-citation rows and the review-extracted IPO row were PDF-verified at admission) | `effects.csv` `verified` column |
 
 ## Exclusion log — the 21 surfaced-but-not-admitted arXiv IDs
 
@@ -121,3 +122,52 @@ verification — the per-row audit trail lives in `effects.csv` notes and
 5. 2404.14723 KTO gain corrected (report's 17.5% unsupported by appendix)
 6. 2109.07958 17% reinterpreted (generation-task largest-vs-60×-smaller)
 7. 2505.19056 row excluded (dose-response claim re-attributed to 2309.07875)
+
+## Backward-citation pass (reference-list checking, 2026-06-11)
+
+Third retrieval phase, run after the verification pass: the Semantic Scholar
+reference lists of all 69 bibliography arXiv papers (~4,000 referenced works)
+were aggregated and ranked by co-citation frequency (`citation-gap-analysis.md`,
+`citation-gap-candidates.csv`; 143 candidates cited by >=3 of our sources).
+Topically relevant candidates absent from the bibliography were screened
+against the §4.2 criteria, six of them by full-PDF screening agents.
+
+**Admitted as effect studies (4 studies, +8 rows; corpus 67→75 rows, 35→39
+studies; all rows PDF-extracted at admission, born verified):**
+
+| arXiv | Study | Rows | Disposition |
+|---|---|---|---|
+| 2203.02155 | InstructGPT (Ouyang et al., NeurIPS 2022) | 1 | counterpoint row: RLHF halves closed-domain hallucination 41%→21%; TruthfulQA gains figure-only, not extracted |
+| 2405.20974 | SaySelf (EMNLP 2024) | 2 | criterion (i); joins C5 (new comparison label `confidence_sft_rl` added to synthesize.py); C5 now 11/0, p=0.001 |
+| 2505.23646 | Are Reasoning Models More Prone to Hallucination? | 3 | criterion (i)/(iii); observational checkpoint recipe decomposition; Table 6 probe values duplicate Tables 1-3 (suspected v1 error), not extracted |
+| 2507.07484 | Machine Bullshit (Liang et al.) | 2 | criterion (i); satisfaction-reward LoRA RLHF (RLHS arXiv:2501.08617), NOT generic RLHF — hedged in prose; both rows variance-aware (corpus variance rows 3→6) |
+
+**Screened in full, held out with rationale (cited as context):**
+
+- arXiv:2012.14983 (Mielke et al., TACL 2022): meets criterion (i) literally,
+  but pre-LLM BlenderBot 2.7B at 4.8% closed-book accuracy is not
+  commensurable with the corpus; cited as linguistic-calibration lineage in C1.
+- arXiv:2505.13787 (Cundy & Gleave, NeurIPS 2025): deception rate under
+  deliberately deception-favoring synthetic preference labels (DolusChat) is a
+  Goodhart/oversight result, not a humility-metric training effect; cited as
+  methodological context in gap 3 (draft paraphrase tightened: ">85% deception,
+  overwhelmingly detector-evading... DPO under 25% at realistic TPRs").
+
+**19 context citations added** (method origins, probing toolkit, theory,
+benchmarks): 1705.03551, 1706.04599, 1707.06347, 2009.03300, 2012.14983,
+2212.03827, 2302.09664, 2304.13734, 2305.18290, 2306.03341, 2310.01405,
+2310.06824, 2311.14648, 2406.15927, 2407.08582, 2503.03750, 2505.13787,
+2509.25760, 2510.09033; plus Farquhar et al. 2024 (Nature, non-arXiv).
+Of these, 11 were Tier-1 fixes: papers already named or quoted in the draft
+prose without a reference entry (TruthRL, lie-detectors, the entire gap-4
+probing toolkit, MASK, and the two gap-4 caveat sources).
+
+## Excluded row (full record, removed from effects.csv 2026-06-11)
+
+Removed from the corpus per the 2026-06-11 review decision (an admitted
+mis-attribution should not count toward corpus size); preserved here verbatim
+as the PRISMA-style excluded record:
+
+```csv
+2505.19056,Abliteration defense,2025,methods,7B-class,7,refusal_dose_response,SFT,over-refusal,lower,safety refusal mix,0% refusal data,0.0,2% refusal data,6.0,6.0,,,False,False,raw-reports/05,RESOLVED 2026-06-10: dose-response re-attributed to Bianchi 2309.07875 (safety-data sweep 100-2000 on 20k Alpaca; exaggerated safety at high doses; figure/annotation evidence only) — this row's scalars (2% -> 6.0) not reproducible there either; row stays excluded from pooled stats; draft gap 5 now cites 2309.07875 qualitatively
+```

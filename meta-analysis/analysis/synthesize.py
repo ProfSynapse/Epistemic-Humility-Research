@@ -67,7 +67,7 @@ FAMILIES = [
     ),
     (
         "C2: preference-based methods beat SFT on abstention/truthfulness quality",
-        lambda d: d[d.comparison.isin(["sft_vs_pref", "sft_vs_dpo", "sft_vs_kto"]) & (d.metric.str.contains("truthful|reasoning|TruthfulQA", case=False))],
+        lambda d: d[d.comparison.isin(["sft_vs_pref", "sft_vs_dpo", "sft_vs_kto", "sft_vs_ipo"]) & (d.metric.str.contains("truthful|reasoning|TruthfulQA", case=False))],
         supports_improvement,
     ),
     (
@@ -81,8 +81,12 @@ FAMILIES = [
         supports_degradation,  # support = humility metric worsens or stays below human with scale
     ),
     (
+        # multi_llm_abstention (method=prompting) is deliberately NOT in this
+        # list: the family claims *training* interventions. The capability
+        # area is excluded so accuracy companion rows don't enter a family
+        # about humility metrics. (2026-06-11 review decisions.)
         "C5: targeted training interventions improve humility metrics",
-        lambda d: d[d.comparison.isin(["refusal_aware_sft", "honesty_sft", "dpo_calibration", "dpo_factuality", "factuality_aware_alignment", "synthetic_data_intervention", "sft_intervention", "rlhf_variant", "posthoc_fix", "multi_llm_abstention"])],
+        lambda d: d[d.comparison.isin(["refusal_aware_sft", "honesty_sft", "dpo_calibration", "dpo_factuality", "factuality_aware_alignment", "synthetic_data_intervention", "sft_intervention", "rlhf_variant", "posthoc_fix", "confidence_sft_rl"]) & (d.area != "capability")],
         supports_improvement,
     ),
 ]
@@ -98,6 +102,10 @@ def main() -> None:
         f"({d[d.verified].study.nunique()} studies); the rest are flagged "
         "`verified=false` pending PDF access (see HANDOFF.md).",
         "",
+        "Rows per area: "
+        + ", ".join(f"{a} {n}" for a, n in d.area.value_counts().items())
+        + ".",
+        "",
         "Method: vote counting + exact binomial sign test per claim family; "
         "descriptive normalization (relative % change) where baselines exist. "
         "Formal pooling deferred — variances are unreported in this literature.",
@@ -105,12 +113,16 @@ def main() -> None:
     ]
 
     plot_rows = []
+    matched_idx = set()
     for name, selector, judge in FAMILIES:
         sub = selector(d).copy()
+        matched_idx.update(sub.index)
         votes = {True: [], False: []}
         for _, row in sub.iterrows():
             v = judge(row)
-            if v is not None:
+            # Votes count verified rows only (the paper's section 4.5 rule,
+            # applied mechanically; unverified rows are listed, never counted).
+            if v is not None and bool(row.verified):
                 votes[v].append(row.study)
         n_sup = len(set(votes[True]))
         n_con = len(set(votes[False]))
@@ -136,6 +148,18 @@ def main() -> None:
             e = effect_sign(row)
             if e is not None and pd.notna(row.rel_change_pct):
                 plot_rows.append((name.split(":")[0], f"{row.paper} ({row.metric})", float(row.rel_change_pct), bool(row.verified)))
+
+    unmatched = d.loc[~d.index.isin(matched_idx)]
+    lines += [
+        "## Rows matched by no family (boundary disclosure)",
+        "",
+        "These rows are in the corpus but outside every family selector; the "
+        "family tallies' unanimity is conditional on these boundaries.",
+        "",
+    ]
+    for _, row in unmatched.iterrows():
+        lines.append(f"- {row.study} | {row.area} | {row.comparison} | {row.metric}")
+    lines.append("")
 
     lines += [
         "## Variance-aware rows (the only ones in the corpus)",

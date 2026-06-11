@@ -1,0 +1,144 @@
+n_citing_sources,arxiv_id,year,s2_citation_count,title,cited_by
+22,2203.02155,2022,21519,Training language models to follow instructions with human feedback,2310.06452;2310.11732;2310.13548;2311.08401;2311.13240;2312.07000;2401.13275;2402.01306;2403.05612;2403.18349;2404.14723;2405.01525;2405.05904;2410.09724;2505.13995;2506.09038;2509.04664;2509.07430;2510.17509;2511.11500;2604.16027;2606.06475
+22,2009.03300,2020,8471,Measuring Massive Multitask Language Understanding,2310.11732;2310.13548;2311.08596;2311.08877;2311.09677;2311.13240;2312.07000;2401.12794;2402.01306;2403.05612;2404.14723;2405.01525;2406.08391;2407.12043;2410.09724;2505.20903;2506.09038;2506.18183;2510.17509;2511.11500;2604.17073;2606.08571
+20,2305.18290,2023,9087,Direct Preference Optimization: Your Language Model is Secretly a Reward Model,2310.06452;2310.11732;2311.08401;2311.08596;2401.13275;2402.01306;2403.18349;2404.14723;2405.01525;2405.05904;2405.21028;2407.12043;2410.09724;2505.01997;2505.13995;2506.09038;2509.04664;2511.12991;2604.16027;2606.08543
+16,1707.06347,2017,28217,Proximal Policy Optimization Algorithms,2310.06452;2310.11732;2401.13275;2402.01306;2403.05612;2403.18349;2404.14723;2405.01525;2410.09724;2505.01997;2506.09038;2509.07430;2511.11500;2604.17073;2606.06475;2606.08543
+15,2110.14168,2021,9181,Training Verifiers to Solve Math Word Problems,2310.06452;2401.12794;2402.01306;2403.18349;2404.14723;2405.01525;2407.12043;2410.09724;2506.09038;2507.16806;2510.05126;2511.11500;2604.16027;2605.21127;2606.05145
+14,1706.04599,2017,8291,On Calibration of Modern Neural Networks,2310.11732;2311.08877;2311.09677;2311.13240;2401.12794;2405.21028;2406.08391;2410.09724;2505.01997;2505.20903;2506.18183;2509.20088;2510.17509;2606.03969
+14,2302.09664,2023,773,Semantic Uncertainty: Linguistic Invariances for Uncertainty Estimation in Natural Language Generation,2310.11732;2311.08401;2401.12794;2403.05612;2405.21028;2406.08391;2410.09724;2410.17234;2506.18183;2507.16806;2510.17509;2606.03969;2606.06475;2606.08571
+13,2307.09288,2023,17198,Llama 2: Open Foundation and Fine-Tuned Chat Models,2310.06452;2310.13548;2311.08877;2312.07000;2401.12794;2403.05612;2403.18349;2404.14723;2405.01525;2406.08391;2407.12043;2410.09724;2505.01997
+12,2204.05862,2022,4103,Training a Helpful and Harmless Assistant with Reinforcement Learning from Human Feedback,2310.06452;2310.13548;2311.13240;2312.07000;2401.13275;2402.01306;2403.18349;2405.01525;2407.12043;2410.09724;2505.13995;2511.12991
+12,1705.03551,2017,3916,TriviaQA: A Large Scale Distantly Supervised Challenge Dataset for Reading Comprehension,2310.13548;2312.07000;2401.12794;2401.13275;2403.05612;2403.18349;2405.21028;2410.17234;2507.16806;2510.05126;2510.17509;2603.24967
+11,2005.14165,2020,59123,Language Models are Few-Shot Learners,2310.06452;2310.11732;2311.09677;2311.13240;2312.07000;2401.13275;2404.14723;2405.01525;2407.12043;2510.17509;2604.17073
+10,2103.03874,2021,5557,Measuring Mathematical Problem Solving With the MATH Dataset,2310.13548;2502.08177;2506.09038;2507.16806;2509.04664;2509.07430;2604.03147;2604.16027;2606.06475;2606.08543
+9,2306.05685,2023,9061,Judging LLM-as-a-judge with MT-Bench and Chatbot Arena,2310.06452;2312.07000;2401.12794;2402.01306;2404.14723;2410.09724;2505.13995;2506.09038;2604.16027
+9,1706.03741,2017,5353,Deep Reinforcement Learning from Human Preferences,2310.06452;2310.13548;2311.08401;2311.08596;2401.13275;2402.01306;2404.14723;2410.09724;2505.01997
+8,2203.11171,2022,6874,Self-Consistency Improves Chain of Thought Reasoning in Language Models,2311.08596;2311.13240;2312.07000;2403.18349;2506.18183;2604.15574;2604.16027;2606.05145
+8,2402.03300,2024,6867,DeepSeekMath: Pushing the Limits of Mathematical Reasoning in Open Language Models,2506.09038;2507.16806;2509.07430;2511.11500;2604.16027;2606.06475;2606.08543;2606.08571
+8,2304.13734,2023,684,The Internal State of an LLM Knows When its Lying,2311.08401;2403.05612;2403.18349;2405.05904;2406.08391;2506.18183;2507.16806;2510.17509
+7,2302.13971,2023,20279,LLaMA: Open and Efficient Foundation Language Models,2310.06452;2311.13240;2312.07000;2401.13275;2402.01306;2406.08391;2407.12043
+7,2107.03374,2021,9996,Evaluating Large Language Models Trained on Code,2311.08401;2401.12794;2402.01306;2404.14723;2407.12043;2604.16027;2606.05145
+7,2109.01652,2021,5097,Finetuned Language Models Are Zero-Shot Learners,2310.11732;2311.13240;2401.13275;2403.18349;2405.05904;2406.08391;2510.05126
+7,,2019,4777,Natural Questions: A Benchmark for Question Answering Research,2312.07000;2401.13275;2410.17234;2506.09038;2510.17509;2511.11500;2511.12991
+7,2212.10560,2022,3306,Self-Instruct: Aligning Language Models with Self-Generated Instructions,2310.06452;2310.11732;2311.13240;2312.07000;2401.13275;2405.01525;2407.12043
+7,2009.01325,2020,3224,Learning to summarize from human feedback,2310.06452;2311.08401;2401.13275;2402.01306;2403.05612;2403.18349;2606.03962
+7,2206.04615,2022,2496,Beyond the Imitation Game: Quantifying and extrapolating the capabilities of language models,2311.08596;2402.01306;2404.14723;2407.12043;2410.09724;2506.09038;2511.11500
+6,2201.11903,2022,18981,Chain of Thought Prompting Elicits Reasoning in Large Language Models,2310.13548;2404.14723;2410.09724;2506.18183;2604.16027;2605.21127
+6,2407.21783,2024,16002,The Llama 3 Herd of Models,2405.05904;2410.09724;2505.13995;2510.17509;2604.17073;2606.03969
+6,2311.12022,2023,2772,GPQA: A Graduate-Level Google-Proof Q&A Benchmark,2506.09038;2506.18183;2507.16806;2509.04664;2511.11500;2606.05145
+6,,2024,1309,Detecting hallucinations in large language models using semantic entropy,2410.17234;2502.19545;2509.04664;2510.05126;2511.11500;2606.06475
+6,2303.08896,2023,994,SelfCheckGPT: Zero-Resource Black-Box Hallucination Detection for Generative Large Language Models,2401.13275;2403.05612;2506.18183;2510.17509;2511.11500;2606.03969
+6,,,,OpenAI,2311.08596;2311.08877;2312.07000;2509.04664;2604.17073;2605.21127
+5,2106.09685,2021,19793,LoRA: Low-Rank Adaptation of Large Language Models,2310.11732;2404.14723;2406.08391;2407.12043;2410.17234
+5,2005.11401,2020,14656,Retrieval-Augmented Generation for Knowledge-Intensive NLP Tasks,2311.08401;2405.01525;2410.17234;2509.04664;2606.08571
+5,2204.02311,2022,8073,PaLM: Scaling Language Modeling with Pathways,2310.06452;2311.08596;2311.13240;2404.14723;2505.01997
+5,1803.05457,2018,4854,"Think you have Solved Question Answering? Try ARC, the AI2 Reasoning Challenge",2311.08596;2404.14723;2406.08391;2505.20903;2506.18183
+5,1809.09600,2018,4627,"HotpotQA: A Dataset for Diverse, Explainable Multi-hop Question Answering",2311.09677;2505.20903;2507.16806;2510.17509;2511.12991
+5,1809.02789,2018,2482,Can a Suit of Armor Conduct Electricity? A New Dataset for Open Book Question Answering,2310.11732;2311.08877;2404.14723;2406.08391;2505.20903
+5,,2015,1884,Obtaining Well Calibrated Probabilities Using Bayesian Binning,2311.09677;2311.13240;2405.21028;2406.08391;2506.18183
+5,2206.14858,2022,1772,Solving Quantitative Reasoning Problems with Language Models,2404.14723;2506.09038;2509.07430;2511.11500;2606.06475
+5,2306.03341,2023,1198,Inference-Time Intervention: Eliciting Truthful Answers from a Language Model,2311.08401;2312.07000;2401.13275;2403.05612;2405.01525
+5,2210.10760,2022,1050,Scaling Laws for Reward Model Overoptimization,2310.06452;2310.13548;2312.07000;2403.18349;2606.03962
+5,2209.14375,2022,670,Improving alignment of dialogue agents via targeted human judgements,2310.06452;2310.13548;2312.07000;2403.18349;2511.12991
+5,2012.00955,2020,578,How Can We Know When Language Models Know? On the Calibration of Language Models for Question Answering,2311.13240;2312.07000;2407.12043;2505.01997;2510.17509
+5,2308.11462,2023,419,LegalBench: A Collaboratively Built Benchmark for Measuring Legal Reasoning in Large Language Models,2311.08596;2506.09038;2510.05126;2511.11500;2606.03969
+5,2210.09150,2022,377,Prompting GPT-3 To Be Reliable,2311.08401;2403.05612;2405.01525;2510.17509;2606.03969
+5,2012.14983,2020,253,Reducing Conversational Agents’ Overconfidence Through Linguistic Calibration,2405.21028;2407.12043;2506.18183;2507.16806;2509.04664
+5,2405.20974,2024,107,SaySelf: Teaching LLMs to Express Confidence with Self-Reflective Rationales,2410.09724;2505.01997;2507.16806;2510.05126;2511.12991
+5,,2023,54,R-Tuning: Teaching Large Language Models to Refuse Unknown Questions,2403.05612;2405.05904;2405.21028;2406.08391;2511.12991
+5,,,,"If the contribution is primarily a new model architecture, the paper should describe the architecture clearly and fully",2312.07000;2403.05612;2405.01525;2405.21028;2406.08391
+4,,2017,34839,Decoupled Weight Decay Regularization,2312.07000;2410.17234;2510.17509;2605.21127
+4,1908.10084,2019,18223,Sentence-BERT: Sentence Embeddings using Siamese BERT-Networks,2310.06452;2406.08391;2505.13995;2604.16027
+4,1610.02136,2016,4339,A Baseline for Detecting Misclassified and Out-of-Distribution Examples in Neural Networks,2311.08877;2311.13240;2403.05612;2410.09724
+4,1905.07830,2019,4327,HellaSwag: Can a Machine Really Finish Your Sentence?,2310.11732;2401.12794;2404.14723;2406.08391
+4,2303.12712,2023,4203,Sparks of Artificial General Intelligence: Early experiments with GPT-4,2311.08401;2403.05612;2404.14723;2505.01997
+4,,2025,3777,DeepSeek-R1: Incentivizing Reasoning Capability in LLMs via Reinforcement Learning,2507.16806;2509.07430;2606.03969;2606.05145
+4,2305.20050,2023,3516,Let's Verify Step by Step,2312.07000;2506.09038;2511.11500;2605.21127
+4,1806.03822,2018,3322,Know What You Don’t Know: Unanswerable Questions for SQuAD,2407.12043;2506.09038;2511.11500;2604.17073
+4,2212.08073,2022,3132,Constitutional AI: Harmlessness from AI Feedback,2311.08596;2312.07000;2405.01525;2509.04664
+4,1811.00937,2019,2486,CommonsenseQA: A Question Answering Challenge Targeting Commonsense Knowledge,2311.08877;2406.08391;2410.09724;2507.16806
+4,1905.10044,2019,2457,BoolQ: Exploring the Surprising Difficulty of Natural Yes/No Questions,2311.08596;2404.14723;2406.08391;2505.20903
+4,2112.09332,2021,1865,WebGPT: Browser-assisted question-answering with human feedback,2310.06452;2310.13548;2312.07000;2509.04664
+4,2305.11206,2023,1312,LIMA: Less Is More for Alignment,2311.09677;2312.07000;2405.01525;2405.05904
+4,2112.00861,2021,1126,A General Language Assistant as a Laboratory for Alignment,2312.07000;2401.13275;2510.17509;2511.12991
+4,2104.07567,2021,1083,Retrieval Augmentation Reduces Hallucination in Conversation,2401.13275;2403.05612;2410.17234;2509.04664
+4,2310.12036,2023,1005,A General Theoretical Paradigm to Understand Learning from Human Preferences,2402.01306;2404.14723;2410.09724;2505.01997
+4,2305.14233,2023,906,Enhancing Chat Language Models by Scaling High-quality Instructional Conversations,2310.11732;2312.07000;2403.18349;2404.14723
+4,2305.14387,2023,884,AlpacaFarm: A Simulation Framework for Methods that Learn from Human Feedback,2310.06452;2404.14723;2405.01525;2505.13995
+4,2411.15124,2024,717,TÜLU 3: Pushing Frontiers in Open Language Model Post-Training,2505.01997;2511.11500;2604.16027;2606.08571
+4,2212.03827,2022,715,Discovering Latent Knowledge in Language Models Without Supervision,2312.07000;2401.13275;2405.05904;2406.08391
+4,2302.12813,2023,510,Check Your Facts and Try Again: Improving Large Language Models with External Knowledge and Automated Feedback,2311.08401;2311.09677;2312.07000;2403.05612
+4,2003.07892,2020,416,Calibration of Pre-trained Transformers,2311.13240;2407.12043;2510.17509;2606.03969
+4,2309.03883,2023,371,DoLa: Decoding by Contrasting Layers Improves Factuality in Large Language Models,2311.08401;2401.13275;2403.05612;2405.01525
+4,2505.05410,2025,325,Reasoning Models Don't Always Say What They Think,2506.09038;2507.16806;2511.11500;2606.03969
+4,2307.13528,2023,306,FacTool: Factuality Detection in Generative AI - A Tool Augmented Framework for Multi-Task and Multi-Domain Scenarios,2311.08401;2312.07000;2405.01525;2405.05904
+4,2206.04624,2022,299,Factuality Enhanced Language Models for Open-Ended Text Generation,2311.09677;2312.07000;2403.05612;2509.04664
+4,2311.14648,2023,171,Calibrated Language Models Must Hallucinate,2403.05612;2509.04664;2510.05126;2511.11500
+4,2310.14820,2023,41,ALCUNA: Large Language Models Meet New Knowledge,2401.13275;2405.05904;2506.09038;2604.17073
+4,,,,Qwen Team,2509.07430;2511.11500;2604.17073;2606.03969
+3,,1992,14925,Advances in prospect theory: Cumulative representation of uncertainty,2402.01306;2404.14723;2606.03962
+3,1606.05250,2016,9450,"SQuAD: 100,000+ Questions for Machine Comprehension of Text",2405.05904;2410.17234;2510.17509
+3,2001.08361,2020,8186,Scaling Laws for Neural Language Models,2311.13240;2407.12043;2510.05126
+3,,2007,6477,"Strictly Proper Scoring Rules, Prediction, and Estimation",2406.08391;2506.18183;2507.16806
+3,2309.06180,2023,6441,Efficient Memory Management for Large Language Model Serving with PagedAttention,2506.09038;2509.20088;2604.16027
+3,,1977,5382,Paper,2410.09724;2509.07430;2510.17509
+3,2501.12948,2025,5369,DeepSeek-R1 incentivizes reasoning in LLMs through reinforcement learning,2506.09038;2506.18183;2511.11500
+3,2202.03629,2022,4731,Survey of Hallucination in Natural Language Generation,2312.07000;2410.17234;2604.15574
+3,,1952,4284,RANK ANALYSIS OF INCOMPLETE BLOCK DESIGNS THE METHOD OF PAIRED COMPARISONS,2311.08401;2402.01306;2410.09724
+3,2210.11416,2022,4193,Scaling Instruction-Finetuned Language Models,2312.07000;2401.13275;2403.18349
+3,2310.06825,2023,3539,Mistral 7B,2401.12794;2402.01306;2505.01997
+3,2203.15556,2022,3347,Training Compute-Optimal Large Language Models,2310.06452;2407.12043;2510.05126
+3,,2019,3244,An Adversarial Winograd Schema Challenge at Scale,2404.14723;2406.08391;2505.20903
+3,2311.05232,2023,2989,"A Survey on Hallucination in Large Language Models: Principles, Taxonomy, Challenges, and Open Questions",2410.17234;2506.09038;2604.15574
+3,2101.00027,2020,2852,The Pile: An 800GB Dataset of Diverse Text for Language Modeling,2311.13240;2403.05612;2509.20088
+3,2202.05262,2022,2660,Locating and Editing Factual Associations in GPT,2405.05904;2604.15574;2606.08571
+3,1909.08593,2019,2547,Fine-Tuning Language Models from Human Preferences,2310.06452;2310.11732;2402.01306
+3,2110.08207,2021,2005,Multitask Prompted Training Enables Zero-Shot Task Generalization,2401.13275;2403.18349;2405.01525
+3,,2024,1843,OpenAI o1 System Card,2506.18183;2507.16806;2511.11500
+3,2305.14325,2023,1757,Improving Factuality and Reasoning in Language Models through Multiagent Debate,2311.08596;2311.09677;2311.13240
+3,2009.13081,2020,1744,What Disease does this Patient Have? A Large-scale Open Domain Question Answering Dataset from Medical Exams,2311.08877;2511.11500;2606.08571
+3,,2023,1717,Holistic Evaluation of Language Models,2310.11732;2311.08877;2401.12794
+3,2501.19393,2025,1283,s1: Simple test-time scaling,2506.09038;2511.11500;2606.05145
+3,2402.04249,2024,1208,HarmBench: A Standardized Evaluation Framework for Automated Red Teaming and Robust Refusal,2506.09038;2511.11500;2604.03147
+3,2503.20783,2025,1079,Understanding R1-Zero-Like Training: A Critical Perspective,2511.11500;2606.06475;2606.08543
+3,2310.01405,2023,1065,Representation Engineering: A Top-Down Approach to AI Transparency,2312.07000;2401.13275;2604.03147
+3,2309.01219,2023,1019,Siren's Song in the AI Ocean: A Survey on Hallucination in Large Language Models,2312.07000;2401.13275;2410.17234
+3,2306.01116,2023,948,"The RefinedWeb Dataset for Falcon LLM: Outperforming Curated Corpora with Web Data, and Web Data Only",2311.08596;2311.09677;2403.18349
+3,2307.15217,2023,881,Open Problems and Fundamental Limitations of Reinforcement Learning from Human Feedback,2310.06452;2402.01306;2502.08177
+3,2304.07327,2023,869,OpenAssistant Conversations - Democratizing Large Language Model Alignment,2310.06452;2402.01306;2405.01525
+3,1705.08500,2017,858,Selective Classification for Deep Neural Networks,2311.08877;2405.21028;2511.11500
+3,1707.06209,2017,849,Crowdsourcing Multiple Choice Science Questions,2311.08596;2406.08391;2410.09724
+3,2504.13837,2025,835,Does Reinforcement Learning Really Incentivize Reasoning Capacity in LLMs Beyond the Base Model?,2509.07430;2604.16027;2606.08543
+3,,1983,828,The Comparison and Evaluation of Forecasters.,2310.11732;2311.08877;2311.13240
+3,2110.08193,2021,769,BBQ: A hand-built bias benchmark for question answering,2506.09038;2509.04664;2604.17073
+3,2211.08411,2022,652,Large Language Models Struggle to Learn Long-Tail Knowledge,2403.05612;2405.01525;2509.20088
+3,2002.09437,2020,633,Calibrating Deep Neural Networks using Focal Loss,2410.09724;2505.01997;2505.20903
+3,,2023,582,UltraFeedback: Boosting Language Models with High-quality Feedback,2312.07000;2403.18349;2410.09724
+3,2308.05374,2023,544,Trustworthy LLMs: a Survey and Guideline for Evaluating Large Language Models' Alignment,2312.07000;2407.12043;2511.11500
+3,2106.07998,2021,540,Revisiting the Calibration of Modern Neural Networks,2311.13240;2401.12794;2410.09724
+3,2304.05302,2023,535,RRHF: Rank Responses to Align Language Models with Human Feedback without tears,2310.06452;2312.07000;2410.09724
+3,2307.10169,2023,491,Challenges and Applications of Large Language Models,2312.07000;2401.12794;2403.18349
+3,2305.13534,2023,428,How Language Model Hallucinations Can Snowball,2311.08401;2403.18349;2509.04664
+3,2110.08420,2021,346,Understanding Dataset Difficulty with V-Usable Information,2402.01306;2403.18349;2410.09724
+3,2405.09673,2024,331,LoRA Learns Less and Forgets Less,2405.05904;2407.12043;2605.21127
+3,2006.09462,2020,266,Selective Question Answering under Domain Shift,2311.08877;2407.12043;2606.08571
+3,2103.15025,2021,257,On Hallucination and Predictive Uncertainty in Conditional Language Generation,2311.13240;2506.18183;2606.03969
+3,2305.15852,2023,176,"Self-contradictory Hallucinations of Large Language Models: Evaluation, Detection and Mitigation",2311.08401;2403.05612;2403.18349
+3,2305.18248,2023,154,Do Language Models Know When They’re Hallucinating References?,2311.08401;2403.05612;2509.04664
+3,2406.00922,2024,150,MediQ: Question-Asking LLMs and a Benchmark for Reliable Interactive Clinical Reasoning,2506.09038;2511.11500;2604.17073
+3,2110.06674,2021,146,Truthful AI: Developing and governing AI that does not lie,2312.07000;2401.13275;2403.18349
+3,2401.06730,2024,135,Relying on the Unreliable: The Impact of Language Models' Reluctance to Express Uncertainty,2405.21028;2510.05126;2606.03969
+3,2307.11768,2023,122,Question Decomposition Improves the Faithfulness of Model-Generated Reasoning,2310.13548;2311.09677;2505.13995
+3,2509.04259,2025,116,RL's Razor: Why Online Reinforcement Learning Forgets Less,2507.16806;2604.15574;2606.05145
+3,2601.19897,2026,98,Self-Distillation Enables Continual Learning,2604.15574;2605.21127;2606.05145
+3,,2023,78,Navigating the Grey Area: Expressions of Overconfidence and Uncertainty in Language Models,2310.11732;2311.08877;2312.07000
+3,2402.13904,2024,78,Calibrating Large Language Models with Sample Consistency,2403.18349;2405.05904;2510.05126
+3,2505.23646,2025,59,Are Reasoning Models More Prone to Hallucination?,2507.16806;2511.11500;2604.17073
+3,2212.10003,2022,54,(QA)^2: Question Answering with Questionable Assumptions,2407.12043;2506.09038;2604.17073
+3,2305.13712,2023,53,Knowledge of Knowledge: Exploring Known-Unknowns Uncertainty with Large Language Models,2312.07000;2407.12043;2506.09038
+3,2403.03558,2024,51,Benchmarking Hallucination in Large Language Models Based on Unanswerable Math Word Problem,2506.09038;2511.11500;2604.17073
+3,2307.02394,2023,50,Won’t Get Fooled Again: Answering Questions with False Premises,2311.09677;2506.09038;2604.17073
+3,2503.14477,2025,38,Calibrating Verbal Uncertainty as a Linear Feature to Reduce Hallucinations,2506.09038;2511.11500;2606.03969
+3,,2023,,Vicuna: An Open-Source Chatbot Impressing GPT-4 with 90%* ChatGPT Quality,2310.11732;2407.12043;2505.01997
+3,,,,2023. Semantic uncertainty: Linguistic invariances for uncertainty estimation in natural language generation,2311.13240;2405.05904;2603.24967
+3,,2023,,Reinforcement learning from human feedback: Progress and challenges,2312.07000;2405.05904;2604.15574

@@ -55,7 +55,8 @@ papers:
   title: 'SaySelf: Teaching LLMs to Express Confidence with Self-Reflective Rationales'
   year: 2024
   area: abstention-finetuning
-  status: stubbed
+  status: verified
+  note: 'ADMITTED 2026-06-11 (backward-citation pass): 2 calibration rows (ECE 0.667->0.356, AUROC 0.32->0.72, Mistral-7B vs vanilla prompting); joins C5 via new confidence_sft_rl label (C5 now 11/0, p=0.001); nonstandard per-sample ECE flagged in row notes; cited in C5 list'
 - arxiv: '2404.00474'
   slug: linguistic-calibration-long-form
   title: Linguistic Calibration of Long-Form Generations
@@ -597,8 +598,8 @@ papers:
   title: 'Preference Learning with Lie Detectors can Induce Honesty or Evasion'
   year: 2025
   area: verification
-  status: candidate
-  note: detector-evasion >85% claim; cited in draft gap 4 caution via raw report 06
+  status: fetched
+  note: 'SCREENED 2026-06-11 in full (backward-citation pass), held out with rationale: deception rate under deliberately deception-favoring synthetic labels (DolusChat) is a Goodhart/oversight result, not a humility-metric training effect; cited as methodological context in gap 3; draft paraphrase tightened (>85% total deception, DPO <25% at realistic TPRs; Fig.3, sec 5.3); Cundy & Gleave, NeurIPS 2025'
 - arxiv: '2309.07875'
   slug: safety-tuned-llamas
   title: 'Safety-Tuned LLaMAs: Lessons From Improving the Safety of Large Language Models that Follow Instructions'
@@ -620,3 +621,87 @@ papers:
   area: hallucination
   status: candidate
   note: synthetic beats crowdsourced for hallucination reduction (product QA); added 2026-06-10 follow-up; cited in C1
+- arxiv: '2507.07484'
+  slug: machine-bullshit
+  title: 'Machine Bullshit: Characterizing the Emergent Disregard for Truth in Large Language Models'
+  year: 2025
+  area: sycophancy
+  status: verified
+  note: 'ADMITTED 2026-06-11 (backward-citation pass, user-flagged): 2 sycophancy rows (BI 0.379->0.665; deceptive claims 20.9->84.5, both variance-aware); satisfaction-reward LoRA RLHF (RLHS 2501.08617), not generic RLHF; cited in draft sec 1 stakes + 5.5'
+- arxiv: '2505.23646'
+  slug: reasoning-models-hallucination-recipes
+  title: 'Are Reasoning Models More Prone to Hallucination?'
+  year: 2025
+  area: hallucination
+  status: verified
+  note: 'ADMITTED 2026-06-11 (backward-citation pass): 3 hallucination rows, recipe decomposition (SFT+RL improves, RL-only/distill-only degrade); observational checkpoints; Table 6 probe values suspect (duplicate Tables 1-3); cited in draft gap 3'
+- arxiv: '2203.02155'
+  slug: instructgpt-rlhf
+  title: 'Training language models to follow instructions with human feedback'
+  year: 2022
+  area: methods
+  status: verified
+  note: 'ADMITTED 2026-06-11 (backward-citation pass): 1 counterpoint hallucination row (closed-domain 41->21 under RLHF); also RLHF method-origin context cite in sec 2; over-hedging quote used in sec 6.1; co-cited by 22/69 bibliography papers'
+- arxiv: '2012.14983'
+  slug: linguistic-calibration-blenderbot
+  title: "Reducing Conversational Agents' Overconfidence Through Linguistic Calibration"
+  year: 2020
+  area: calibration
+  status: fetched
+  note: 'SCREENED 2026-06-11, held out with rationale: meets criterion (i) literally but pre-LLM BlenderBot 2.7B regime (4.8% closed-book accuracy) not commensurable; cited as linguistic-calibration lineage in C1 (13.7->38.9 quoted, PDF-verified)'
+- arxiv: '2305.18290'
+  slug: direct-preference-optimization
+  title: 'Direct Preference Optimization: Your Language Model is Secretly a Reward Model'
+  year: 2023
+  area: methods
+  status: candidate
+  note: 'context ref via backward-citation pass 2026-06-11 (co-cited by 22/69): DPO method-origin cite at sec 2 definitions; was the most conspicuous missing foundational cite'
+- arxiv: '1706.04599'
+  slug: on-calibration-of-modern-neural-networks
+  title: 'On Calibration of Modern Neural Networks'
+  year: 2017
+  area: calibration
+  status: candidate
+  note: 'context ref via backward-citation pass 2026-06-11 (co-cited by 14/69): canonical ECE + temperature scaling; cited at sec 1 ECE definition'
+- arxiv: '2302.09664'
+  slug: semantic-uncertainty-kuhn
+  title: 'Semantic Uncertainty: Linguistic Invariances for Uncertainty Estimation in Natural Language Generation'
+  year: 2023
+  area: verification
+  status: candidate
+  note: 'context ref via backward-citation pass 2026-06-11 (co-cited by 14/69): founding semantic-entropy paper; cited in gap 4 alongside SEPs; pairs with Farquhar et al. Nature 2024 (non-arXiv, in refs)'
+- arxiv: '2311.14648'
+  slug: calibrated-lms-must-hallucinate
+  title: 'Calibrated Language Models Must Hallucinate'
+  year: 2023
+  area: hallucination
+  status: candidate
+  note: 'context ref via backward-citation pass 2026-06-11: theoretical companion to 2509.04664 (Good-Turing once-seen-facts bound; STOC 2024); cited in sec 1; phrasing verified vs abstract'
+- arxiv: '1707.06347'
+  slug: proximal-policy-optimization
+  title: 'Proximal Policy Optimization Algorithms'
+  year: 2017
+  area: methods
+  status: candidate
+  note: 'context ref via backward-citation pass 2026-06-11: PPO method-origin cite at sec 2 definitions'
+- arxiv: '1705.03551'
+  slug: triviaqa-dataset
+  title: 'TriviaQA: A Large Scale Distantly Supervised Challenge Dataset for Reading Comprehension'
+  year: 2017
+  area: datasets-benchmarks
+  status: candidate
+  note: 'context ref via backward-citation pass 2026-06-11: dataset cite for sec 5.3 reanalysis (gold aliases redistributed in datasets/triviaqa-rc-nocontext/)'
+- arxiv: '2009.03300'
+  slug: mmlu-benchmark
+  title: 'Measuring Massive Multitask Language Understanding'
+  year: 2020
+  area: datasets-benchmarks
+  status: candidate
+  note: 'context ref via backward-citation pass 2026-06-11: benchmark cite at sec 1 GPT-4 ECE discussion'
+- arxiv: '2503.03750'
+  slug: mask-benchmark-honesty
+  title: 'The MASK Benchmark: Disentangling Honesty From Accuracy in AI Systems'
+  year: 2025
+  area: datasets-benchmarks
+  status: candidate
+  note: 'context ref via backward-citation pass 2026-06-11: benchmark cite at sec 5.4 (Opus 4.8 system card MASK consistency)'
