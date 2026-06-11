@@ -26,7 +26,7 @@ setup:
 # staging; dataset.local_file is a staging placeholder it rewrites. See
 # experiment/phase1/recipes/README.md.
 model:
-  name: unsloth/Qwen3-4B-Instruct-bnb-4bit
+  name: unsloth/Qwen3-4B-bnb-4bit
   max_seq_length: 2048
   load_in_4bit: true
 

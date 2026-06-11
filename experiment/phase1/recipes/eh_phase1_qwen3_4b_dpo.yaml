@@ -27,7 +27,7 @@ setup:
     - git+https://github.com/unslothai/unsloth.git
 
 model:
-  name: unsloth/Qwen3-4B-Instruct-bnb-4bit
+  name: unsloth/Qwen3-4B-bnb-4bit
   max_seq_length: 2048
   load_in_4bit: true
 

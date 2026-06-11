@@ -28,7 +28,7 @@ run:
   quiet: true
 
 model:
-  name: unsloth/Qwen3-8B-Instruct-bnb-4bit
+  name: unsloth/Qwen3-8B-bnb-4bit
   max_seq_length: 2048
   load_in_4bit: true
 
