@@ -20,16 +20,9 @@ setup:
     - git+https://github.com/unslothai/unsloth_zoo.git
     - git+https://github.com/unslothai/unsloth.git
 
-run:
-  # Direct-trainer invocation (KTO local path). enable_thinking pinned OFF.
-  # {tuner_root}/{data_root} are substituted by the WS-5 experiment runner —
-  # see experiment/phase1/recipes/README.md for the substitution contract.
-  command:
-    - cd {tuner_root}/Trainers/kto && python train_kto.py
-      --qwen3-4b
-      --local-file {data_root}/qwen3-4b-instruct/kto_congruence_train.jsonl
-  workdir: "{tuner_root}"
-
+# Purely declarative: the WS-5 runner owns command construction + per-cell data
+# staging; dataset.local_file is a staging placeholder it rewrites. See
+# experiment/phase1/recipes/README.md.
 model:
   name: unsloth/Qwen3-4B-Instruct-bnb-4bit
   max_seq_length: 2048

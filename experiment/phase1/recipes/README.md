@@ -32,38 +32,59 @@ identical across arms by design.
 
 ## Path contract (read before running)
 
-These recipes were authored when they lived inside the tuner and assumed a
-single `/workspace/repo` that contained both the trainers and the dataset tree.
-Now that they live in the research repo while the data also lives in the
-research repo (`experiment/phase1/data/...`) and the trainers live in the tuner
-submodule, two distinct roots exist and must be resolved by the **WS-5
-experiment runner** (research repo):
+No recipe carries a `run.command` or any WS-5 placeholder vocabulary
+(`{tuner_root}`/`{data_root}`/`/workspace/repo` literals) — they stay valid,
+tuner-runnable job-configs. The **WS-5 experiment runner**
+(`.claude/skills/experiment-runner/`) owns all command construction, container
+wiring, and per-cell data feeding.
 
-- **`dataset.local_file`** — research-repo-relative, e.g.
-  `experiment/phase1/data/qwen3-4b-instruct/dpo_train.jsonl`. Built by the WS-2
-  dataset builders (`experiment/phase1/data/build_datasets.py`).
+The three local-4B DPO/KTO recipes are stripped to the declarative core
+(`model / dataset / training / lora / artifacts + method / provider`). The other
+six recipes additionally keep a harmless declarative `run:` block of pointer keys
+(`method / trainer / dry_run / dashboard / quiet`) — no `command`, no `workdir`,
+no placeholders. The runner's `materialize_recipe` defensively pops `run.command`
+and `run.workdir` from every materialized recipe regardless, so a residual `run:`
+pointer block never contradicts the runner-built invocation.
 
-- **`run.command`** (local 4B pilots only) — uses two placeholder variables the
-  WS-5 runner substitutes before invocation:
-  - `{tuner_root}` — the `synaptic-tuner` trainer root inside the run
-    environment. Under the tuner's `local_docker` backend this is the tuner repo
-    root mounted at `/workspace/repo`; the runner resolves the concrete value.
-  - `{data_root}` — where the research-repo `experiment/phase1/data` tree is made
-    available to the run environment. The WS-5 runner owns the mount/stage
-    strategy that binds this research-repo path into the container.
+**`run.method` + `run.trainer` are set by the runner, in ONE layer.** Under the
+handler-extension dispatch (the tuner's `local-run` handler routes every method
+through its generic command builder, reading `run.trainer` to pick the per-method
+trainer script), a recipe with no `run.trainer` would silently default to
+`Trainers/sft/train_sft.py` — so a DPO/KTO cell would run the SFT trainer. To make
+that hazard impossible, `materialize_recipe` ALWAYS sets `run.method = <cell
+method>` and `run.trainer = Trainers/<method>/train_<method>.py` on the materialized
+recipe, per cell, regardless of what the committed base recipe carries. The
+committed recipes therefore need NOT carry a `run:` block at all (and the three
+local-4B DPO/KTO recipes deliberately do not) — the runner is the single source of
+truth for `run.method`/`run.trainer`, so the value can never drift between a
+committed file and the dispatch. Do not also hand-maintain `run.trainer` in the
+committed recipes; that would create two layers that can disagree.
 
-The 8B and bridge recipes use the tuner's declarative `run.method`/`run.trainer`
-form (no explicit `run.command`); for those, only `dataset.local_file` matters
-and the tuner's own runner translates the repo-relative dataset path for the
-container, with the dataset staged via the cloud backend's transfer mechanism.
+The data-locality reason this matters (verified against the tuner source): the
+tuner container sees ONLY the tuner repo. Local Docker bind-mounts the tuner repo
+root at `/workspace/repo` and joins `dataset.local_file` tuner-repo-relative
+(`local_run_handler.py:502`: `/workspace/repo / local_file`); HF Jobs clones ONLY
+the tuner repo. The research repo's `experiment/phase1/data/` is never visible to
+the container, so a research-repo-relative `dataset.local_file` does not resolve.
+WS-5 therefore feeds data per lane:
 
-> The placeholder substitution and mount strategy are the **WS-5 runner's**
-> responsibility (research repo). These recipes stay declarative about where the
-> two roots resolve. If WS-5 prefers fully declarative recipes (no `run.command`
-> at all, runner constructs the invocation), the four local 4B `run.command`
-> blocks can be dropped in favor of the runner deriving the command from
-> `method` + `dataset.local_file` + the trainer flags — that is a runner-side
-> decision.
+- **`dataset.local_file`** here is a **staging placeholder** the runner rewrites
+  per cell. On the **local lane**, WS-5 stages the per-cell
+  `experiment/phase1/data/<model_tag>/<method>_{train,dev}.jsonl` into the tuner's
+  already-gitignored `synaptic-tuner/scratch/eh_staging/<run_id>/` and rewrites
+  `dataset.local_file` to that tuner-repo-relative staged path so the
+  `/workspace/repo` join resolves.
+
+- On the **cloud lane**, WS-5 swaps `dataset.local_file` for an HF-hub
+  `dataset.name` (the Phase-1 datasets are published publicly via the tuner's
+  dataset-publishing skill), because HF Jobs checks out a pushed tuner commit that
+  cannot see the ephemeral staged scratch.
+
+All nine recipes (4B, 8B, bridge) are fed per lane in exactly this way; none
+carry a `run.command`. The runner derives the invocation from `method` +
+`dataset.local_file`/`dataset.name` + the trainer flags. See
+`.claude/skills/experiment-runner/reference/lanes.md` for the full per-lane
+contract and the current cloud-lane capability gate.
 
 ## Gated prerequisites (bridge arms)
 

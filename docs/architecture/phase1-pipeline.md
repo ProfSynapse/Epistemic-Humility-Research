@@ -403,6 +403,17 @@ veto); LoRA budget is held identical across arms and across panel cells, varying
 only the named panel hyperparameter. These live in the per-arm recipe YAMLs
 (§5.6) so they are visible and identical across SFT/DPO/KTO.
 
+**The recipe `lora:` block is the SSOT for the budget -- not the trainer's sibling
+`config.yaml`.** The DPO/KTO trainers natively read LoRA from `config.lora.*`
+(no `--lora-*` argparse originally), so the local lane MUST forward the recipe's
+LoRA scalars to the trainer via flag parity (`--lora-*` added to `train_dpo.py` /
+`train_kto.py`, §9.2(b)); otherwise the trainer silently falls back to its sibling
+`config.yaml` default. This is load-bearing precisely because the budgets DIVERGE
+from that default at 8B (recipe r=64/alpha=128 vs config.yaml r=32/alpha=64); a
+silent fallback would mistrain every 8B DPO/KTO arm at the wrong budget while the
+recipe and run record both claim the pinned one. The 4B recipe happening to match
+the config.yaml default is a coincidence that would mask the bug.
+
 ### 5.3 Qwen3 presets (resolves gap, both KTO and DPO)
 
 The KTO `model_map` (`train_kto.py` ~L420) hardcodes Qwen2.5. Add:
@@ -991,10 +1002,57 @@ per-lane deep-dive):
 - **Local RTX 3090 lane** (`--lane local`): development, pilot, and smoke runs.
   Invokes `python tuner.py local-run --job-config <materialized-recipe>.yaml
   --yes` per cell, serially (one local GPU). Used for fast iteration and a single
-  smoke cell before committing the matrix to the cloud lane. The recipe's
-  `run.trainer` / `run.method` fields already point at the right trainer
-  (`Trainers/{sft,dpo,kto}/train_*.py`); the DPO method is registered in the
-  tuner per WS-3, so `--method dpo` resolves.
+  smoke cell before committing the matrix to the cloud lane. **Method-dispatch
+  resolution (HANDLER EXTENSION, lead-ratified 2026-06-10; supersedes both the
+  inject-`run.command` idea and the Option-A trainer-`--config` idea after a
+  ground-truth re-read of local_run_handler.py):** the handler's command builder
+  (`_build_trainer_command`, :478 -- renamed from `_build_sft_command` as part of
+  the CODE close since it is no longer SFT-bound, and now takes `method` as a
+  parameter) is method-generic in its CORE (it reads the trainer path from the
+  recipe's `run.trainer` field (:494, defaulting to `Trainers/sft/train_sft.py` but
+  configurable) and assembles the command from the
+  `model`/`dataset`/`training`/`lora` blocks); `seed` is ALREADY in its forwarded
+  training-key list. The dispatch was blocked by two ARTIFICIAL gates -- the
+  `elif method == "sft"` dispatch guard (:585) and a deliberately-skipped `beta`
+  forward whose in-code comment skips it *because* the path was assumed SFT-only.
+  **Governing principle (the §(b.2) flag-set finding, coder-cloud #34):** the
+  builder is NOT uniformly method-agnostic -- some flags it emits are SFT-only and
+  the DPO/KTO trainers' argparse REJECTS them (would crash). The fix splits those
+  flags by whether they are LOAD-BEARING for the experiment:
+  - **Run-control flags** (`--quiet`/`--no-dashboard`/`--save-steps`/
+    `--save-total-limit`/`--load-in-4bit`): pure ergonomics, ZERO experimental
+    meaning. METHOD-GATE them in the builder (dpo/kto skip them). No provenance
+    risk -- nothing load-bearing is substituted.
+  - **LoRA scalars** (`--lora-r`/`--lora-alpha`/`--lora-dropout`/
+    `--lora-target-modules`/`--init-lora-weights`): LOAD-BEARING (§5.2 "identical
+    LoRA budget across arms" is the core confound control). The DPO/KTO trainers
+    read LoRA ONLY from `config.lora.*` (no `--lora-*` argparse exists). Gating
+    these + falling back to sibling `config.yaml` would SILENTLY corrupt the
+    budget: the 8B recipes pin r=64/alpha=128 but the trainer `config.yaml` default
+    is r=32/alpha=64, so 8B DPO/KTO would train at the WRONG budget (the 4B
+    coincidence-match masks it). Resolution: FLAG PARITY -- add `--lora-*` to
+    `train_dpo.py` + `train_kto.py` so the builder's emissions are accepted and the
+    recipe stays the SSOT. (`--use-dora`/`--use-rslora` already have parity across
+    all three trainers.)
+  The hyperparameter subset the trainers already accept
+  (`--local-file`/`--model-name`/`--learning-rate`/`--batch-size`/`--num-epochs`/
+  `--seed`/`--beta`, `train_dpo.py:195-226`, `train_kto.py:244/324/329/334/339`;
+  the builder's `_flag_name` maps `local_file -> --local-file`) flows unchanged. So
+  the fix is the handler extension (widen the dispatch guard to
+  `method in {"sft","dpo","kto"}`, forward `beta` method-gated, method-gate the
+  run-control flags) PLUS narrowly-scoped LoRA flag parity in the two trainers
+  (lead-ratified trainer-edit reopening for THIS load-bearing subset only). NO
+  `run.command` synthesis or trainer-`--config` arg is needed. local-run becomes
+  UNIFORM across all four registered methods (the user's "tuner stays generally
+  useful" principle),
+  and the runner stays purely declarative: per local cell WS-5 materializes one
+  declarative recipe (staging data via §(b.1), setting `run.trainer:
+  Trainers/{method}/train_{method}.py` and the per-cell `training.seed`/
+  `training.beta`), and `tuner.py local-run` forwards everything through its typed
+  surface. The full invocation the tuner builds is recorded in the run record's
+  `tuner_invocation`. (The pre-existing regression test that pinned local-run as
+  SFT-only pinned the ARTIFICIAL limit, not a design invariant; it is updated to
+  assert the handler dispatches all registered methods.)
 - **HF Jobs parallel lane** (`--lane cloud`): the matrix execution lane.
   Invokes `python tuner.py cloud-pipeline --method <m> ...` (or `run-experiment`
   with the materialized recipe) per cell. Cells launch in PARALLEL across HF
@@ -1007,6 +1065,156 @@ per-lane deep-dive):
 The script is lane-agnostic above the invocation: matrix expansion, provenance,
 and gating are identical; only the per-cell command differs. A `--dry-run` prints
 the materialized recipes and the commands without launching.
+
+#### (b.1) Data-locality contract (the tuner container sees only the tuner repo)
+
+A constraint surfaced during CODE (coder-dpo, verified against the tuner source)
+shapes how WS-5 feeds data to the tuner: the tuner container mounts/clones ONLY
+the tuner repo root. Local Docker bind-mounts `{tuner_repo_root}:/workspace/repo`
+(`tuner/handlers/local_run_handler.py:391`); HF Jobs clones ONLY the tuner repo
+into `/workspace/repo` (`tuner/cloud/hf_jobs.py`). And `dataset.local_file` is
+resolved tuner-repo-relative inside the container -- `local_run_handler.py:502`
+hardcodes `container_dataset_path = /workspace/repo / local_file`. The research
+repo's `experiment/phase1/data/` is therefore NEVER visible to the tuner
+container. A recipe whose `dataset.local_file` points at a research-repo-relative
+data path does NOT resolve. This makes data-feeding a WS-5 responsibility, handled
+differently per lane:
+
+- **Recipes are purely declarative.** The relocated recipes carry
+  `model / dataset / training / lora / artifacts + method / provider` only; the
+  `run.command` blocks (which previously hardcoded `/workspace/repo/...` absolutes
+  and `cd /workspace/repo/Trainers/<method>`) are STRIPPED. WS-5 owns container
+  wiring (staging + path rewrite) only; under the handler-extension resolution
+  (§(b) lane bullet) the materialized declarative recipe is handed to
+  `tuner.py local-run`, which forwards every field through its own typed builder
+  for all methods, so WS-5 NEVER hand-assembles a flag list or synthesizes a
+  `run.command` -- the recipe stays the sole contract surface (it sets
+  `run.trainer` + `method` + the per-cell `training.*` overrides). No WS-5
+  placeholder vocabulary
+  (e.g. `{tuner_dir}` / `{data_root}`) leaks into committed recipes -- they stay
+  valid, tuner-runnable job-configs; WS-5 supplies the final `dataset.local_file`
+  value at materialization time. (Recipe `dataset.local_file` in the committed
+  files is a staging placeholder the README documents as WS-5-rewritten.)
+- **Local lane: stage into the tuner working tree.** Per cell, `run_matrix.py`
+  copies the resolved research-repo data file
+  (`experiment/phase1/data/<model_tag>/<method>_{train,dev}.jsonl`) into an
+  EPHEMERAL gitignored scratch dir under the tuner working tree
+  (`synaptic-tuner/.eh_staging/<run_id>/`), then sets the materialized recipe's
+  `dataset.local_file` to that tuner-repo-relative staged path (so the
+  `/workspace/repo` join at `:502` resolves). The staging dir is never committed
+  and is NOT a tuner source addition, so the no-pollution boundary holds (it is
+  scratch under the submodule checkout, the way any build artifact would be). A
+  `.gitignore` entry for `.eh_staging/` is the only tuner-tree touch, and it is a
+  gitignore line, not code.
+- **Cloud lane: reference data by HF-hub name, not a local file.** HF Jobs checks
+  out a pushed tuner COMMIT, so ephemeral staged scratch is not in the container.
+  The cloud lane therefore references the dataset by its HF-hub `dataset.name`,
+  NOT by `local_file`. **User ruling (2026-06-10):** the Phase-1 SFT/DPO/KTO
+  training datasets are published PUBLICLY to the HF hub (via the tuner's
+  dataset-publishing skill workflow), and cloud cells reference them by hub
+  `dataset.name`. This makes "Phase-1 datasets published to the hub" a cloud-lane
+  launch prerequisite, enforced by the prerequisite gate (§(d)) with the SAME
+  skip-vs-abort semantics as the bridge cells: if the hub datasets for a cloud
+  cell's arm are not yet available, the CLOUD cells skip (recorded SKIPPED), the
+  local-lane 4B pilot runs first, and the rest of the matrix is not aborted. The
+  local lane is unaffected by hub availability (it stages from local builder
+  output). Cloud-cell run records additionally carry the hub dataset REVISION SHA
+  (§(c)), so referencing data by name does not weaken provenance -- it pins the
+  exact published revision, strengthening HANDOFF.md §5 compliance.
+- **Bridge cells are LOCAL-LANE ONLY (user ruling 2026-06-10, blocker #30).** The
+  OpenMOSS Cheng IDK training data is VENDORED under a DO-NOT-REDISTRIBUTE
+  containment rail: the user accepted the license risk for USE, but the data is
+  never committed to git and never published to the HF hub. Because the cloud lane
+  requires data to be hub-published (bullet above), the 2 bridge cells CANNOT use
+  the cloud lane -- they run LOCAL-lane only, staging the vendored data through
+  `.eh_staging/` like any other local cell. (Implementation consequence: the two
+  `eh_bridge_llama2_7b_chat_{sft,dpo}` recipes currently carry `target: both`;
+  the #27 recipe revision changes them to `target: local` so the matrix expander
+  never emits a bridge cloud cell.) The hub-availability gate (§(d) item
+  3a) therefore scopes to the Qwen3 CLOUD cells only and never applies to the
+  bridge. This is a license-containment constraint, not a capability gap.
+
+The staging copy is recorded in the run record (`source_data_file` ->
+`staged_data_file` for local; `hf_dataset_name` + `hf_dataset_revision` for
+cloud) so provenance still
+ties each run to the exact bytes it trained on.
+
+#### (b.2) Tuner-capability dependency: per-cell seed and beta forwarding
+
+A second constraint surfaced during CODE (coder-dpo, verified against the tuner
+source): the matrix's per-cell SEED (3-seed headline sweep) and BETA (DPO/KTO beta
+panel, PROTOCOL v0.3 §3.1a) could NOT be expressed through the tuner as originally
+found, on EITHER lane. The tuner forwards training args through an explicit typed
+CLI surface, and at discovery neither `seed` nor `beta` was wired. The original
+state and its remediation:
+- LOCAL: `local_run_handler.py` forwarded a fixed key list (batch_size,
+  gradient_accumulation, learning_rate, num_epochs, max_steps, save_steps,
+  save_total_limit, tier, resume_from_checkpoint) -- `seed`/`beta` absent, so a
+  recipe's `training.seed`/`training.beta` were SILENTLY dropped and the trainer
+  fell back to its `config.yaml` default (seed 42 / beta 0.1). **Now:** `seed` is
+  forwarded (coder-cloud #32); the remaining piece is widening the method-dispatch
+  guard and forwarding `beta` (the handler-extension fix, §(b) lane bullet).
+- CLOUD: `CloudTrainingConfig` had no `seed`/`beta` field and
+  `_hf_command_builder.py` emitted no `--seed`/`--beta`; same silent default.
+  **Now RESOLVED** (coder-cloud #32: cloud config + builder forward both).
+- TRAINERS accepted `--beta` but NOT `--seed` (they read `config.seed` from YAML).
+  **Now RESOLVED** (coder-cloud #32 added `--seed` to the trainers,
+  `train_dpo.py:223`, with an `is not None` guard so seed=0 is honored).
+
+This is provenance-critical: a run record would claim the intended seed/beta while
+the trainer used defaults -- invisible matrix corruption (every headline seed
+identical; every beta-panel cell at 0.1), a direct violation of the SACROSANCT
+provenance rule. The FIX is a TUNER-SIDE general capability (NOT a WS-5 workaround,
+NOT an experiment-specific hack): forward seed+beta mirroring the existing typed
+`learning_rate` flow at every layer (handler forwarding list;
+`CloudTrainingConfig` + command-builder emission, beta method-gated to DPO/KTO; the
+`--seed` trainer arg). A generic key/value overrides passthrough was explicitly
+REJECTED -- it bypasses the typed CLI surface and validation the tuner has kept
+throughout. This work lands in the synaptic-tuner submodule as a generic capability,
+keeping the tuner a clean general dependency that GAINS a capability rather than
+absorbing EH-specifics. Status: the cloud config + builder and the `--seed` trainer
+arg LANDED (coder-cloud #32); the remaining piece is the handler-extension fix
+(widen the local-run method guard to all registered methods + forward `beta` +
+method-gate the SFT-only run-control flags) PLUS narrowly-scoped LoRA flag parity in
+the two trainers (the §(b) load-bearing-flag split), which ALSO removes the
+local-run "SFT-only" wart generically (§(b) lane bullet).
+
+WS-5 sequencing consequence: the experiment runner is built lane-agnostic first
+(matrix expansion, count assertions, run-record emission, prerequisite gate,
+`--dry-run`, recipe revision), and the seed/beta overrides are not RELIED ON for a
+real launch until the tuner-side capability fully lands (cloud done; local handler
+extension pending). The prerequisite gate (§(d)) probes for the capability on each
+cell's lane (asserts the resolved tuner forwards seed/beta on the path that cell
+uses) so a runner built against an un-upgraded tuner ABORTS rather than silently
+launching the corrupt-default matrix. WS-5 itself is unchanged in shape -- it only
+materializes declarative recipes and shells out to `tuner.py`; it is the tuner's
+own arg surface that carries the seed/beta sink.
+
+**Per-lane dependency on the tuner seed/beta fix (SIMPLIFIED under the
+handler-extension resolution, §(b) lane bullet; the earlier per-method split is
+withdrawn):** every cell, every lane, every method forwards seed/beta through the
+tuner's own typed surface, so the dependency is now UNIFORM per lane and the
+runner is purely declarative.
+- LOCAL (all methods sft/dpo/kto) depend on the handler fix: widen the dispatch
+  guard to `method in {"sft","dpo","kto"}`, add `beta` to the forwarded training
+  keys (method-gated to dpo/kto), and method-gate the SFT-only run-control flags
+  (§(b)). `seed` is already forwarded. PLUS narrowly-scoped LoRA flag parity in the
+  two trainers (`--lora-*`, §(b)): the DPO/KTO trainers accept the hyperparameter
+  flags the builder emits (`train_dpo.py:195-226`) but NOT the LoRA scalars, which
+  are load-bearing for the §5.2 budget control and must therefore be added rather
+  than gated. (Seed=0 is honored because the trainer `--seed` guard is `is not
+  None`; the trainer `--beta` guards were ALSO hardened from truthy to `is not
+  None` in a rev2 ruling -- `train_dpo.py:329`, `train_kto.py:612` -- so an
+  explicit beta=0 is forwarded, not silently swapped for the config default. The
+  matrix uses beta in {0.05, 0.5} so 0 never arises here, but the hardening keeps
+  the no-silent-override provenance discipline uniform with `--seed`.)
+- CLOUD (all methods) depend on the cloud config + command-builder fix (coder-cloud
+  #32, landed).
+The §(d) capability probe is correspondingly symmetric: for a LOCAL cell it checks
+the handler dispatches the cell's method and forwards seed (+ beta for dpo/kto);
+for a CLOUD cell it checks the cloud config + builder emit `--seed`/`--beta`. There
+is no longer any local-DPO/KTO trainer-`--config` path to probe -- that mechanism
+is withdrawn.
 
 #### (c) Provenance: per-run records (HANDOFF.md §5 SACROSANCT)
 
@@ -1026,6 +1234,11 @@ provenance discipline.)
   "materialized_recipe_sha": "<sha256 of the generated recipe>",
   "method": "kto", "model": "unsloth/Qwen3-4B-Instruct-bnb-4bit",
   "lane": "cloud",
+  "data": {"source_data_file": "experiment/phase1/data/qwen3-4b-instruct/kto_train.jsonl",
+           "staged_data_file": null,
+           "hf_dataset_name": "<org>/eh-phase1-qwen3-4b-kto",
+           "hf_dataset_revision": "<hub commit SHA of the published dataset; cloud cells>"},
+  "data_sha256": "<sha256 of the exact training file; local cells>",
   "research_repo_commit": "<git rev-parse HEAD of this repo>",
   "submodule_commit": "<git rev-parse HEAD of synaptic-tuner>",
   "prereq_check": {"datasets_present": true, "leakage_guard_passed": true},
@@ -1064,10 +1277,61 @@ clear message naming the missing prereq:
 3. **Cloud lane only:** the submodule is pushed and the research-repo submodule
    pointer matches a pushed SHA (so HF Jobs can check it out); `HF_TOKEN` is
    present in the environment (never written to a recipe or record).
-4. **Bridge arm only:** the Cheng IDK training data and the gated Llama-2-7b-chat
-   access are present (the §2 / §9 bridge prerequisites); if absent, only the
-   bridge cells are skipped (with a recorded SKIPPED status), not the whole
-   matrix, since the bridge is validation rather than a core arm.
+3a. **Cloud cells only -- hub dataset availability (user ruling 2026-06-10):**
+   the cloud cell's arm dataset is published and resolvable on the HF hub by
+   `dataset.name`. The gate performs a REAL hub query (not a locally-recorded
+   "published" flag, which would be an unverifiable provenance assertion the gate
+   exists to reject -- mirroring item 2, which reads a real manifest) and pins the
+   returned revision SHA. The query goes behind a single mockable resolver seam
+   (`check_prereqs.hub_dataset_revision(dataset_name) -> revision_sha | None`, the
+   accepted #27 symbol; a real `HfApi().dataset_info(name)` query with
+   `huggingface_hub` LAZY-imported INSIDE the function, not at module load) so
+   `--check-only` stays import-light and tests monkeypatch that one seam with no
+   network. The SAME call serves both
+   the skip decision AND provenance: per the user ruling, Phase-1 datasets are
+   published publicly via the tuner's dataset-publishing skill; until an arm's
+   dataset resolves on the hub, its CLOUD cells SKIP (recorded SKIPPED) -- SAME
+   skip-vs-abort semantics as the bridge cells (item 4), NOT a whole-matrix abort.
+   The LOCAL lane is unaffected (it stages from local builder output, item 1).
+   Item 3a applies ONLY to the Qwen3 cloud cells; the bridge cells are local-only
+   (item 4) and never reach this gate. The resolved revision SHA is written into
+   the cloud cell's run record (§(c) `hf_dataset_revision`).
+4. **Bridge arm only -- LOCAL-LANE ONLY (user ruling 2026-06-10, blocker #30):**
+   the vendored Cheng IDK training data (DO-NOT-REDISTRIBUTE: never committed,
+   never hub-published per the accepted license-risk containment) and the gated
+   Llama-2-7b-chat access are present (the §2 / §9 bridge prerequisites). Because
+   the data cannot be hub-published, the bridge cells run on the LOCAL lane only
+   (staging the vendored data through `.eh_staging/`) and are NEVER cloud cells, so
+   item 3a does not apply to them. If a bridge prerequisite is absent, only the
+   bridge cells are skipped (recorded SKIPPED), not the whole matrix, since the
+   bridge is validation rather than a core arm.
+5. **Per-lane tuner capability probe (§(b.2)):** before launching any cell that
+   carries a non-default seed or beta override (i.e. every headline and beta-panel
+   cell), the gate asserts the resolved tuner forwards the override on the EXACT
+   path that cell will use. Under the handler-extension resolution the probe is
+   SYMMETRIC across methods within a lane:
+   - **LOCAL cell (any method sft/dpo/kto):** `tuner.py local-run` dispatches the
+     cell's `run.method` (the guard was widened past SFT-only) and its command
+     builder forwards `seed` for all methods and `beta` for dpo/kto. The probe
+     checks the resolved handler accepts the cell's method and forwards seed
+     (+ beta for dpo/kto) -- e.g. by inspecting the handler's dispatch + forwarding
+     surface in the pinned submodule. **For a LOCAL DPO/KTO cell the probe ALSO
+     asserts LoRA flag parity** (`train_dpo.py` / `train_kto.py` accept `--lora-r`/
+     `--lora-alpha`/`--lora-dropout`/`--lora-target-modules`/`--init-lora-weights`,
+     the §(b) load-bearing-flag fix). Without parity the builder's LoRA emissions
+     would crash argparse, or (if the builder gated them instead) the recipe's
+     `lora:` block would be silently ignored in favor of the trainer's sibling
+     `config.yaml` -- corrupting the §5.2 budget control at 8B. This is the same
+     whole-matrix-abort class as the seed/beta sink: a missing LoRA sink silently
+     mistrains every local DPO/KTO arm.
+   - **CLOUD cell (any method):** `CloudTrainingConfig` + the command-builder emit
+     `--seed`/`--beta` (coder-cloud #32, landed).
+   If the path a cell needs has NOT landed in the pinned submodule, the gate
+   ABORTS the whole matrix with a message naming the missing capability and the
+   lane it gates, rather than silently launching cells at the default seed/beta.
+   This is a whole-matrix abort (not a cell skip), because a missing seed/beta
+   sink corrupts the ENTIRE headline + panel design (every headline seed identical,
+   every beta-panel cell at the 0.1 default), not one arm.
 
 Gating is deterministic and side-effect-free (it reads, it does not fetch). A
 `--check-only` flag runs the gate and reports without launching.
@@ -1077,16 +1341,29 @@ Gating is deterministic and side-effect-free (it reads, it does not fetch). A
 The single rule: the skill's scripts communicate with the tuner ONLY through
 (1) the recipe YAML they materialize (the tuner's own native job-config schema)
 and (2) the tuner's existing public CLI verbs. They import NO tuner internals, add
-NO file under `synaptic-tuner/`, and register NO experiment-specific method or
-config there. The DPO method registration (WS-3) already lives in the tuner as a
-GENERAL capability (the tuner now supports DPO for any user), not as anything
-Epistemic-Humility-specific; the skill merely uses it. If the skill needs a tuner
-behavior the CLI does not expose, the correct move is to flag it (it likely
-indicates the tuner is missing a general capability), NOT to reach into tuner
-internals from the research repo. This keeps the dependency boundary clean and
-the tuner reusable by other projects, per the user directive. SKILL.md's CLI
-Discipline section encodes this rule as a runbook non-negotiable so any agent
-loading the skill inherits it.
+NO COMMITTED SOURCE file under `synaptic-tuner/`, and register NO
+experiment-specific method or config there. The DPO method registration (WS-3)
+already lives in the tuner as a GENERAL capability (the tuner now supports DPO for
+any user), not as anything Epistemic-Humility-specific; the skill merely uses it.
+If the skill needs a tuner behavior the CLI does not expose, the correct move is to
+flag it (it likely indicates the tuner is missing a general capability), NOT to
+reach into tuner internals from the research repo. This keeps the dependency
+boundary clean and the tuner reusable by other projects, per the user directive.
+SKILL.md's CLI Discipline section encodes this rule as a runbook non-negotiable so
+any agent loading the skill inherits it.
+
+The one permitted touch of the submodule working tree is the EPHEMERAL local-lane
+data staging (§(b.1)): `run_matrix.py` copies per-cell training data into a
+gitignored `synaptic-tuner/.eh_staging/<run_id>/` scratch dir so the tuner
+container (which mounts only the tuner repo root) can see it. This is scratch, not
+source: it is never committed, adds no behavior to the tuner, and is the same class
+of artifact as any build output under a checkout. The single committed tuner-tree
+change WS-5 implies is one `.gitignore` line for `.eh_staging/` -- a gitignore
+entry, not code, and arguably belongs in the tuner's own ignore rules as generic
+scratch hygiene. If even that gitignore line is judged out of bounds, the
+fallback is to stage into a tuner-root-relative path the tuner already ignores
+(e.g. under an existing scratch/output dir); the implementer should confirm the
+exact staging location against the tuner's `.gitignore` at CODE time.
 
 #### S2 boundary and contract impact
 

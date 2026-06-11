@@ -12,7 +12,10 @@
 # This bridge arm consumes Cheng's OpenMOSS Idk training data, which is itself a
 # license-gated CODE prerequisite (gap #4) requiring user sign-off before fetch.
 name: eh-bridge-llama2-7b-chat-dpo
-target: both
+# LOCAL-LANE ONLY: the OpenMOSS Idk training data is do-not-redistribute (no
+# license) and is never published to the HF hub, so the bridge arm cannot ride a
+# hub-data cloud lane. The WS-5 runner aborts a bridge cell resolving to cloud.
+target: local
 method: dpo
 provider: hf_jobs
 

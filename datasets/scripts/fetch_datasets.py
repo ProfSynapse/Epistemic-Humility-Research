@@ -51,6 +51,24 @@ SNAPSHOT_SPECS = [
     ("facebook/AbstentionBench", "abstentionbench-repo"),
 ]
 
+# OpenMOSS "Say I Don't Know" (Cheng et al. 2401.13275) Idk TRAINING data.
+# This is a special, user-authorized VENDOR case, not an HF pull:
+#   - source data ships only as a Google Drive zip (no HF mirror, no stable host);
+#   - the repo has NO license (GitHub license: null), so the data is USE-only and
+#     MUST NOT be redistributed: the zip and all regenerated files stay gitignored.
+# Only the fetcher code, the pinned ID/SHA, the .gitignore, and dataset.md are
+# committed. See fetch_say_i_dont_know_training() and the dataset.md stanza.
+OPENMOSS_REPO = "https://github.com/OpenMOSS/Say-I-Dont-Know.git"
+OPENMOSS_PIN_SHA = "a4768458638fa78a9a43252d319514db425dcaf3"
+OPENMOSS_DRIVE_FILE_ID = "1xN-xtx12eHL-1-pIsS5-vERXrgzfMnw9"
+# sha256 of the downloaded data.zip (the zip has no stable host, so the SHA is
+# our determinism anchor). Pinned from the authorized fetch on 2026-06-10; later
+# runs verify against it. To re-pin after an upstream change, clear this, fetch,
+# and copy the observed SHA the fetcher prints (also written to data.zip.sha256).
+OPENMOSS_DRIVE_ZIP_SHA256 = "1dfe742ca2ffd4b0a283f972e6bbda68e6131e13648f418c9dfd9b99d91bab86"
+OPENMOSS_OUT_DIR = "say-i-dont-know-training"
+OPENMOSS_MODEL = "llama-2-7b-chat"
+
 
 def fetch_split(repo, config, split, out_dir, out_file, force):
     from datasets import load_dataset
@@ -138,6 +156,148 @@ def build_cheng_gold(force):
     print(f"wrote {out_path.relative_to(DATASETS_DIR)}: {len(found)} rows")
 
 
+def _sha256(path):
+    import hashlib
+
+    h = hashlib.sha256()
+    with open(path, "rb") as fh:
+        for chunk in iter(lambda: fh.read(1 << 20), b""):
+            h.update(chunk)
+    return h.hexdigest()
+
+
+def fetch_say_i_dont_know_training(force):
+    """Vendor + regenerate the OpenMOSS Idk training data (USE, no REDISTRIBUTE).
+
+    Steps, all under datasets/say-i-dont-know-training/ (gitignored):
+      1. gdown the pinned Drive file id -> data.zip; record/verify its sha256.
+      2. git clone OpenMOSS/Say-I-Dont-Know at the pinned SHA (do not vendor
+         their code into our repo; clone is transient, also gitignored).
+      3. unzip data.zip and ASSERT the layout the scripts expect; a mismatch is
+         a hard stop (raises), not a silent guess.
+      4. run their process_sft_data.py to regenerate the Idk-SFT train/valid/test
+         sets; locate the Idk-DPO preference-pairs file shipped in the zip.
+
+    Network egress (Google Drive + GitHub) is required and is user-authorized
+    for this dataset only. If the Drive link is dead or the zip layout does not
+    match, this raises so the caller stops and reports (a new blocker).
+    """
+    import subprocess
+
+    out_root = DATASETS_DIR / OPENMOSS_OUT_DIR
+    out_root.mkdir(parents=True, exist_ok=True)
+    zip_path = out_root / "data.zip"
+    unzip_dir = out_root / "unzipped"
+    clone_dir = out_root / "_openmoss_repo"
+    sha_sidecar = out_root / "data.zip.sha256"
+
+    # 1. Download the Drive zip (idempotent: skip if present unless --force).
+    if zip_path.exists() and not force:
+        print(f"skipped {zip_path.relative_to(DATASETS_DIR)} (exists)")
+    else:
+        import gdown
+
+        url = f"https://drive.google.com/uc?id={OPENMOSS_DRIVE_FILE_ID}"
+        got = gdown.download(url, output=str(zip_path), quiet=False)
+        if not got or not zip_path.exists():
+            raise RuntimeError(
+                "OpenMOSS Drive download failed (link dead or access changed). "
+                "This is a blocker: stop and report, do not work around."
+            )
+
+    # 2. Verify / record the zip sha256 (determinism anchor; no stable host).
+    observed = _sha256(zip_path)
+    sha_sidecar.write_text(observed + "\n")
+    if OPENMOSS_DRIVE_ZIP_SHA256:
+        if observed != OPENMOSS_DRIVE_ZIP_SHA256:
+            raise RuntimeError(
+                f"OpenMOSS data.zip sha256 mismatch: expected "
+                f"{OPENMOSS_DRIVE_ZIP_SHA256}, got {observed}. The Drive file "
+                f"changed under a fixed id; stop and report."
+            )
+        print(f"verified data.zip sha256 == pinned ({observed[:16]}...)")
+    else:
+        print(f"OBSERVED data.zip sha256: {observed}\n"
+              f"  -> pin this into OPENMOSS_DRIVE_ZIP_SHA256 in a follow-up commit")
+
+    # 3. Unzip and assert the layout process_sft_data.py expects.
+    import zipfile
+
+    if force and unzip_dir.exists():
+        import shutil
+        shutil.rmtree(unzip_dir)
+    unzip_dir.mkdir(parents=True, exist_ok=True)
+    with zipfile.ZipFile(zip_path) as zf:
+        zf.extractall(unzip_dir)
+
+    # The scripts read sft_data/<model>/triviaqa_{train,dev}_tp1.0_10responses_with_em_labels.json
+    needed = [
+        "triviaqa_train_tp1.0_10responses_with_em_labels.json",
+        "triviaqa_dev_tp1.0_10responses_with_em_labels.json",
+    ]
+    sft_base = _locate_sft_model_dir(unzip_dir, needed)
+    if sft_base is None:
+        raise RuntimeError(
+            "OpenMOSS zip layout mismatch: could not find "
+            f"sft_data/{OPENMOSS_MODEL}/ with {needed}. The zip contents do not "
+            f"match the scripts' expectations; stop and report (new blocker)."
+        )
+
+    # 4. Clone the repo at the pinned SHA and run their SFT regeneration in place.
+    if clone_dir.exists():
+        import shutil
+        shutil.rmtree(clone_dir)
+    subprocess.run(["git", "clone", "--no-checkout", OPENMOSS_REPO, str(clone_dir)],
+                   check=True)
+    subprocess.run(["git", "-C", str(clone_dir), "checkout", OPENMOSS_PIN_SHA],
+                   check=True)
+
+    # process_sft_data.py reads/writes relative to its CWD's sft_data/<model>/,
+    # so run it from the unzip dir (which holds sft_data/) with the pinned script.
+    sft_script = clone_dir / "Idk_datasets" / "process_sft_data.py"
+    subprocess.run(
+        ["python3", str(sft_script), "--model_name", OPENMOSS_MODEL, "--threshold", "1.0"],
+        cwd=str(sft_base.parents[1]),  # the dir that CONTAINS sft_data/
+        check=True,
+    )
+
+    # Idk-SFT outputs now exist under sft_data/<model>/; Idk-DPO preference pairs
+    # ship in the zip (the repo has no from-scratch pair builder). Locate them.
+    dpo_pairs = _locate_file(unzip_dir, "preference", "threshold_1.0", ".json")
+    print("Idk-SFT regenerated under "
+          f"{sft_base.relative_to(DATASETS_DIR)} "
+          "(triviaqa_{train,valid,test}_threshold_1.0_sft_data.json)")
+    print("Idk-DPO preference pairs: "
+          + (str(dpo_pairs.relative_to(DATASETS_DIR)) if dpo_pairs
+             else "NOT FOUND in zip; stop and report (DPO arm needs them)"))
+    print("ALL outputs under "
+          f"{out_root.relative_to(DATASETS_DIR)} are gitignored (do not commit).")
+
+
+def _locate_sft_model_dir(root, needed_files):
+    """Find the sft_data/<model>/ dir under root that holds the needed files.
+
+    Walks the unzipped tree so the zip's top-level wrapper dir (if any) does
+    not matter, and matches the sft_data/<model> path tail explicitly. Returns
+    the model dir (the one CONTAINING needed_files), or None on no match.
+    """
+    for sft_data in root.rglob("sft_data"):
+        if not sft_data.is_dir():
+            continue
+        model_dir = sft_data / OPENMOSS_MODEL
+        if model_dir.is_dir() and all((model_dir / f).exists() for f in needed_files):
+            return model_dir
+    return None
+
+
+def _locate_file(root, *substrings):
+    """Return the first file under root whose name contains all substrings."""
+    for path in root.rglob("*"):
+        if path.is_file() and all(s in path.name for s in substrings):
+            return path
+    return None
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--force", action="store_true", help="re-download even if present")
@@ -159,6 +319,12 @@ def main():
         snapshot(repo, out_dir, args.force)
     if not wanted or "triviaqa-rc-nocontext" in wanted:
         build_cheng_gold(args.force)
+    # OpenMOSS Idk training data is OPT-IN only (network egress to Drive+GitHub,
+    # runs their scripts, user-authorized for this dataset). It never runs as
+    # part of a bare `python fetch_datasets.py`; request it explicitly:
+    #   python datasets/scripts/fetch_datasets.py --only say-i-dont-know-training
+    if wanted and OPENMOSS_OUT_DIR in wanted:
+        fetch_say_i_dont_know_training(args.force)
 
 
 if __name__ == "__main__":
