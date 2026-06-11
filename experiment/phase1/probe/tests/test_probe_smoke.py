@@ -144,17 +144,35 @@ def test_output_contract_fields(tmp_path, monkeypatch):
     record = probe.read_results(results_path)[0]
 
     # Exact A -> B schema (architecture doc 3.8) consumed by coder-data.
+    # answer_value (natural-case gold) is an OPTIONAL field the builder uses as
+    # the `known` target, falling back to the first alias when it is absent.
     required = {
         "question_id", "question", "question_norm", "normalized_aliases",
-        "n_samples", "greedy_answer", "greedy_correct", "p_correct",
-        "sampled_answers", "sampled_correct", "label", "model_tag",
-        "probe_config_sha",
+        "answer_value", "n_samples", "greedy_answer", "greedy_correct",
+        "p_correct", "sampled_answers", "sampled_correct", "label",
+        "model_tag", "probe_config_sha",
     }
     assert required.issubset(record.keys())
     assert len(record["sampled_answers"]) == record["n_samples"]
     assert len(record["sampled_correct"]) == record["n_samples"]
     # Wrong samples are retained (downstream KTO/DPO negatives).
     assert isinstance(record["sampled_answers"], list)
+
+
+def test_answer_value_propagated_natural_case(tmp_path, monkeypatch):
+    # answer.value (natural-case gold) flows through to the record verbatim,
+    # distinct from the lowercased normalized_aliases the scorer matches on.
+    _patch_pool_to_fixture(monkeypatch)
+    config = _base_config(tmp_path)
+    out_dir = tmp_path / "stub-model"
+    results_path = probe.run_probe(config, _stub_backend(), out_dir)
+    by_id = {r["question_id"]: r for r in probe.read_results(results_path)}
+
+    assert by_id["fix_known_1"]["answer_value"] == "John Milton"
+    assert by_id["fix_known_1"]["normalized_aliases"] == ["john milton", "milton"]
+    # A row that omits answer.value yields None (the optional-field contract);
+    # the builder falls back to the first alias in that case.
+    assert by_id["fix_discard_1"]["answer_value"] is None
 
 
 def test_resumability_skips_done_ids(tmp_path, monkeypatch):

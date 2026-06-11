@@ -8,7 +8,8 @@ Purpose: Assert the PROTOCOL.md v0.3 §5 launch prerequisites are verifiably
     whole matrix (never a single cell); two checks instead SKIP only the
     affected cells (cloud-data-not-published, bridge-prereqs-absent) so a
     not-yet-ready arm degrades gracefully rather than aborting the run.
-Used by: run_matrix.py (imports check_matrix) and as a standalone CLI
+Used by: run_matrix.py (imports check_cell; --check-only invokes it per
+    expanded cell) and as a standalone CLI
     (`python check_prereqs.py --matrix <m.yaml> --data-root <d> [--lane cloud]`).
 
 Design notes:

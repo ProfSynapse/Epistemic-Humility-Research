@@ -1,2 +1,26 @@
 __pycache__/
 *.pyc
+
+# ---------------------------------------------------------------------------
+# Built dataset outputs (MS1 containment). The builder writes per-model_tag
+# output subdirs (experiment/phase1/data/<model_tag>/) holding derived training
+# data. That derived data is NOT committed by default: it is reproducible from
+# probe_results + config + abstention_bank, and some of it (the bridge arm) is
+# DO-NOT-REDISTRIBUTE. Patterns are anchored to the output subdirs only, so the
+# checked-in test fixtures (tests/fixtures/*.jsonl) and abstention_bank.json
+# stay tracked.
+#
+# Derived training data in any model_tag output dir (one directory level):
+*/*_train.jsonl
+*/*_dev.jsonl
+*/build_manifest.json
+
+# Hard containment: the Llama-2 bridge arm output dir is DO-NOT-REDISTRIBUTE
+# derived data (Cheng IDK training data is license-gated). Exclude the ENTIRE
+# dir so `git add -A` can never stage any file under it, regardless of extension.
+bridge_llama2_7b_chat/
+
+# questions_frozen.json is the budget-anchor PROVENANCE artifact (frozen K/U
+# question IDs + seed): protocol-required for reproducibility, so it stays
+# TRACKED. It is intentionally NOT ignored above. If a future broad ignore rule
+# ever catches it, force-add deliberately: `git add -f <tag>/questions_frozen.json`.

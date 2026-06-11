@@ -331,8 +331,35 @@ per `rewardcal-kto-recipe.md` and v0.1 §3.2. **Congruence mapping (primary):**
 **Correctness-safe mapping (ablation, Phase-2 rideshare seed).** Per the recipe
 §4 design tension: dropping the `known+gold` desirable that could reward a
 verbatim wrong answer is not the concern here (our known answers are
-gold-verified), so the correctness-safe variant for THIS dataset instead drops
-the riskiest desirable and rebalances via `desirable_weight`/`undesirable_weight`.
+gold-verified), so the correctness-safe variant for THIS dataset rebalances via
+`desirable_weight`/`undesirable_weight` rather than by deleting a row.
+
+**RULED DISPOSITION (B1, PR #1 review — binding; do not re-introduce a row
+deletion).** correctness_safe emits the SAME FOUR ROWS as congruence — no row is
+dropped:
+
+| Source | Completion | KTO label |
+|---|---|---|
+| known | gold answer | true (desirable) |
+| unknown | abstention | true (desirable) |
+| unknown | model's own hallucinated sample | false (undesirable) |
+| known | abstention | false (undesirable, anti-over-refusal) |
+
+The ONLY difference from congruence is the weight asymmetry: congruence trains at
+`desirable_weight: 1.0` / `undesirable_weight: 1.0` (balanced ~50/50);
+correctness_safe trains the same rows at `desirable_weight: 2.0` /
+`undesirable_weight: 1.0` (per `build.yaml`). The weights are consumed by the
+trainer (`train_kto.py:729-730`, `kto_s_trainer.py:93-94`); `build.yaml`'s
+`correctness_safe_undesirable_weight: 1.0` is itself proof that undesirable rows
+must exist. correctness_safe MUST pre-interleave T/F/T/F on write exactly like
+congruence (same `interleave_kto` path), then rely on the trainer's
+`interleave_dataset` as the safety net. **Anti-regression note:** emitting only the
+two desirable(True) rows (no False rows) produces an all-True file that crashes
+`train_kto.py` at load — `data_loader.py:256` computes a `desirable/undesirable`
+ratio with `undesirable=0` (ZeroDivisionError), before the both-labels training
+guard runs. Both False rows are load-bearing; never gate them behind
+`mapping == "congruence"`.
+
 The builder emits BOTH mappings as separate files behind a config flag; the
 primary is the congruence mapping. (The CRM-derived mapping table in the recipe
 is the precedent; our IDK mapping is the analogue documented inline in the
@@ -360,6 +387,24 @@ SAME question set, format-matched per arm, for dev-loss early stopping. The dev
 questions are excluded from the train files of all arms (same held-out set
 across arms, so early-stopping is comparable). Dev is disjoint from the Cheng
 test set by construction (it is drawn from the train split).
+
+**Per-arm dev row-count divergence (MB3, PR #1 review — confirmed intended).** The
+dev *question set* is identical across arms (the comparability invariant), but the
+dev *files* are NOT row-identical: the DPO and KTO dev files contain FEWER rows
+than the SFT dev file. An `unknown` question with no usable negative yields no
+valid contrastive row — `build_dpo_row` returns `None`
+(`build_datasets.py:350-374`) and `_kto_rows_for_question` omits the
+`unknown+hallucinated` False row when no negative exists — so those questions are
+absent from the DPO/KTO dev files while present in the SFT dev file. This is
+INTENDED and acceptable: each arm early-stops on its OWN dev-loss curve, so the
+requirement is a shared dev *question budget* (which holds), not identical
+per-arm row counts; fabricating a synthetic negative purely to pad the dev file
+would corrupt the very loss signal early-stopping reads. The dropped
+`question_id`s are recorded in `build_manifest.json` (provenance-traced, not a
+silent drop). Comparability caveat: because the dropped-unknown subset differs by
+arm, each arm's dev-loss is computed over a slightly different dev subset; this is
+the correct behavior for per-arm early stopping and does not affect the held-out
+Cheng *test* evaluation (which is row-identical across arms by construction).
 
 ### 4.8 Output artifact (interface contract B -> C)
 
@@ -1204,7 +1249,7 @@ runner is purely declarative.
   are load-bearing for the §5.2 budget control and must therefore be added rather
   than gated. (Seed=0 is honored because the trainer `--seed` guard is `is not
   None`; the trainer `--beta` guards were ALSO hardened from truthy to `is not
-  None` in a rev2 ruling -- `train_dpo.py:329`, `train_kto.py:612` -- so an
+  None` in a rev2 ruling -- `train_dpo.py:331`/`:334`, `train_kto.py:615`/`:618` -- so an
   explicit beta=0 is forwarded, not silently swapped for the config default. The
   matrix uses beta in {0.05, 0.5} so 0 never arises here, but the hardening keeps
   the no-silent-override provenance discipline uniform with `--seed`.)

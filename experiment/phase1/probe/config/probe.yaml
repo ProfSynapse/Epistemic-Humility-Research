@@ -47,7 +47,9 @@ prompt:
   system: "You are a helpful assistant. Answer the question concisely. If you do not know the answer, say so."
 
 probe_pool:
-  # WS-0 output. Each row: question, question_id, answer.normalized_aliases.
+  # WS-0 output. Each row: question, question_id, answer.normalized_aliases
+  # (lowercased, scored against) and answer.value (natural-case gold, carried
+  # through to probe_results as the optional answer_value field for the builder).
   train_jsonl: datasets/triviaqa-rc-nocontext/train.jsonl
   # Documented fallback (architecture doc 3.2 contingency): if the train-split
   # fetch is infeasible, carve the non-Cheng remainder of validation.jsonl.

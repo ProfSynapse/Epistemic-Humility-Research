@@ -754,6 +754,62 @@ def test_dry_run_main_does_not_launch(capsys):
     assert "Count assertions PASSED" in out
 
 
+def test_check_only_invokes_gate_once_per_cell(monkeypatch, capsys):
+    """--check-only runs check_prereqs.check_cell once per expanded cell (the
+    MB1 wiring): the gate is no longer a documented-but-dead no-op. We stub
+    check_cell to a PASS so the whole matrix is gated, and count the calls
+    against the pre-registered cell total.
+    """
+    calls = []
+
+    def fake_check_cell(**kwargs):
+        calls.append(kwargs)
+        return cp.CellPrereqResult(ok=True)
+
+    monkeypatch.setattr(cp, "check_cell", fake_check_cell)
+    rc = rm.main(["--check-only"])
+    out = capsys.readouterr().out
+    expected_cells = (
+        rm.EXPECTED_COUNT_4B + rm.EXPECTED_COUNT_8B + rm.EXPECTED_COUNT_BRIDGE
+    )
+    assert rc == 0
+    assert len(calls) == expected_cells
+    assert f"{expected_cells} PASS, 0 SKIP, 0 ABORT" in out
+    # Every call carried the lane + a per-cell method/model_tag derived from the
+    # base recipe (the gate received real inputs, not placeholders).
+    assert all(c["lane"] == "local" for c in calls)
+    assert all(c["method"] in {"sft", "dpo", "kto"} for c in calls)
+    assert all(c["train_file"].endswith("_train.jsonl") for c in calls)
+
+
+def test_check_only_aborts_whole_matrix_on_prereq_error(monkeypatch, capsys):
+    """A PrereqError from the gate aborts the WHOLE matrix (fail-closed): the
+    first hard failure returns 1 and stops, rather than launching a partial run.
+    """
+    def boom(**kwargs):
+        raise cp.PrereqError("datasets missing for arm")
+
+    monkeypatch.setattr(cp, "check_cell", boom)
+    rc = rm.main(["--check-only"])
+    out = capsys.readouterr().out
+    assert rc == 1
+    assert "ABORT" in out
+    assert "ABORTED the matrix" in out
+
+
+def test_dry_run_does_not_invoke_gate(monkeypatch):
+    """--dry-run is expansion-only: it must NOT call the prereq gate (that is the
+    --check-only contract). Guards against re-collapsing the two paths.
+    """
+    called = []
+    monkeypatch.setattr(
+        cp, "check_cell", lambda **kwargs: called.append(kwargs)
+    )
+    rc = rm.main(["--dry-run"])
+    assert rc == 0
+    assert called == []
+
+
 def test_bare_main_refuses_to_launch(capsys):
     """A launch without --dry-run/--check-only is refused (no implicit cost)."""
     rc = rm.main([])

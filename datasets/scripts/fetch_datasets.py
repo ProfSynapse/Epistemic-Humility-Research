@@ -166,6 +166,58 @@ def _sha256(path):
     return h.hexdigest()
 
 
+def _safe_extract_all(zf, dest_dir):
+    """Extract every member of zf under dest_dir, rejecting path-traversal.
+
+    A defense against zip-slip that holds INDEPENDENT of the sha pin: even a
+    zip whose bytes match the pin is extracted member-by-member, and any member
+    that would escape dest_dir (a "../" path, an absolute path, or a symlink) is
+    a hard stop. The pin guards which zip we trust; this guards how we open it.
+
+    Validation per member:
+      - reject absolute member names (the resolved target must stay inside);
+      - resolve the target against dest_dir and require it to be inside (covers
+        "../" traversal regardless of how the name is spelled);
+      - reject symlink members (external_attr high bits), which could redirect
+        a later write outside the tree.
+    """
+    import stat
+    import zipfile
+
+    dest_root = dest_dir.resolve()
+    for info in zf.infolist():
+        name = info.filename
+        # A symlink member carries S_IFLNK in the upper 16 bits of external_attr.
+        mode = info.external_attr >> 16
+        if stat.S_ISLNK(mode):
+            raise RuntimeError(
+                f"refusing to extract symlink member from zip: {name!r} "
+                f"(zip-slip guard, independent of sha pin)."
+            )
+        target = (dest_root / name).resolve()
+        if not _is_within(target, dest_root):
+            raise RuntimeError(
+                f"refusing to extract member escaping dest dir: {name!r} -> "
+                f"{target} (zip-slip guard, independent of sha pin)."
+            )
+        if info.is_dir():
+            target.mkdir(parents=True, exist_ok=True)
+            continue
+        target.parent.mkdir(parents=True, exist_ok=True)
+        with zf.open(info) as src, open(target, "wb") as dst:
+            import shutil
+            shutil.copyfileobj(src, dst)
+
+
+def _is_within(target, root):
+    """True if the resolved target path is inside (or equal to) root."""
+    try:
+        target.relative_to(root)
+        return True
+    except ValueError:
+        return False
+
+
 def fetch_say_i_dont_know_training(force):
     """Vendor + regenerate the OpenMOSS Idk training data (USE, no REDISTRIBUTE).
 
@@ -228,7 +280,7 @@ def fetch_say_i_dont_know_training(force):
         shutil.rmtree(unzip_dir)
     unzip_dir.mkdir(parents=True, exist_ok=True)
     with zipfile.ZipFile(zip_path) as zf:
-        zf.extractall(unzip_dir)
+        _safe_extract_all(zf, unzip_dir)
 
     # The scripts read sft_data/<model>/triviaqa_{train,dev}_tp1.0_10responses_with_em_labels.json
     needed = [

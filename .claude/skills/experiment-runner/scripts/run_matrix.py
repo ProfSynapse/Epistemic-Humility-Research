@@ -40,6 +40,14 @@ import yaml
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 import check_prereqs  # noqa: E402  (sibling module, intentional local import)
 
+# Research-repo (worktree) root, derived from this file's location so the path
+# defaults below are CWD-independent: .../.claude/skills/experiment-runner/scripts
+# -> parents[4] is the worktree root. The argparse defaults anchor on this rather
+# than on relative strings, so `python run_matrix.py` resolves identically whether
+# invoked from the repo root or from the skill dir (MT4). All four remain
+# caller-overridable for fixtures/tests.
+_REPO_ROOT = Path(__file__).resolve().parents[4]
+
 # Pre-registered cell counts (PROTOCOL v0.3 §3.1 / §3.1a). The expansion result
 # MUST match these exactly; a mismatch ABORTS — this is the pre-registration
 # guard. Do not edit to absorb a matrix change; revise PROTOCOL first.
@@ -437,11 +445,17 @@ def _build_arg_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(description="Phase 1 run-matrix expander + launcher.")
     parser.add_argument("--matrix",
                         default=str(Path(__file__).resolve().parent.parent / "config" / "matrix.yaml"))
-    parser.add_argument("--recipes-dir", default="experiment/phase1/recipes")
-    parser.add_argument("--data-root", default="experiment/phase1/data")
-    parser.add_argument("--run-records-dir", default="experiment/phase1/run_records")
-    parser.add_argument("--research-repo-root", default=".")
-    parser.add_argument("--tuner-root", default="synaptic-tuner")
+    # Path defaults anchor on _REPO_ROOT (this file's location) so they resolve
+    # identically from the repo root or the skill dir (MT4). Callers can override
+    # any of them with an explicit (absolute or CWD-relative) path.
+    parser.add_argument("--recipes-dir",
+                        default=str(_REPO_ROOT / "experiment" / "phase1" / "recipes"))
+    parser.add_argument("--data-root",
+                        default=str(_REPO_ROOT / "experiment" / "phase1" / "data"))
+    parser.add_argument("--run-records-dir",
+                        default=str(_REPO_ROOT / "experiment" / "phase1" / "run_records"))
+    parser.add_argument("--research-repo-root", default=str(_REPO_ROOT))
+    parser.add_argument("--tuner-root", default=str(_REPO_ROOT / "synaptic-tuner"))
     parser.add_argument("--lane", choices=["local", "cloud"], default="local")
     parser.add_argument("--dry-run", action="store_true",
                         help="Expand + materialize + print commands; launch nothing, write nothing.")
@@ -450,8 +464,11 @@ def _build_arg_parser() -> argparse.ArgumentParser:
     return parser
 
 
-def expand_and_report(args) -> int:
-    """Shared expansion path used by --dry-run / --check-only / launch."""
+def _expand_with_count_banner(args) -> list:
+    """Load the matrix, expand it (asserting the pre-registered counts), and print
+    the count banner + bridge-lane safety check. Shared by --dry-run and
+    --check-only so both surface the same pre-registration guard before diverging.
+    """
     matrix = load_yaml(Path(args.matrix))
     cells = expand_matrix(matrix)
     print(f"Matrix '{matrix['matrix_version']}' expanded to {len(cells)} cells "
@@ -459,6 +476,14 @@ def expand_and_report(args) -> int:
           f"{EXPECTED_COUNT_BRIDGE} bridge). Count assertions PASSED.")
     # Belt-and-suspenders: a bridge cell on the cloud lane is a config error.
     assert_bridge_lane_safety(cells, args.lane)
+    return cells
+
+
+def expand_and_report(args) -> int:
+    """--dry-run path: expand + materialize + print per-cell commands. No gate,
+    no launch, no writes. This is the cheap preview; --check-only is the gate.
+    """
+    cells = _expand_with_count_banner(args)
     recipes_dir = Path(args.recipes_dir)
     for cell in cells:
         base = load_yaml(recipes_dir / f"{cell.recipe}.yaml")
@@ -470,10 +495,71 @@ def expand_and_report(args) -> int:
     return 0
 
 
+def check_and_report(args) -> int:
+    """--check-only path: expand, then run the prereq gate per cell and report
+    PASS / SKIP / ABORT. Launches nothing and writes nothing.
+
+    Fail-closed semantics (mirroring check_prereqs.check_cell):
+      - a hard PrereqError aborts the WHOLE matrix (return 1) — there is no
+        meaningful partial run when a launch precondition is structurally absent;
+      - a CellPrereqResult.skip is a per-cell SKIP (not-yet-ready arm degrades
+        gracefully: cloud-data-unpublished, bridge-prereqs-absent), the matrix
+        gate continues, and the cell is reported SKIPPED.
+
+    Per-cell inputs are derived statically from the base recipe + the cell +
+    args — no staging and no tuner execution. The only launch-time-only check
+    (hub-dataset revision on the cloud lane) is already handled inside check_cell
+    as a SKIP, so nothing here fakes a PASS for a value it cannot verify yet.
+    """
+    cells = _expand_with_count_banner(args)
+    recipes_dir = Path(args.recipes_dir)
+    data_root = Path(args.data_root)
+    research_repo_root = Path(args.research_repo_root)
+
+    n_pass = n_skip = 0
+    print(f"Prereq gate (lane={args.lane}) per cell:")
+    for cell in cells:
+        base = load_yaml(recipes_dir / f"{cell.recipe}.yaml")
+        model_tag = model_tag_from_recipe(base)
+        train_file, dev_file = dataset_basenames(base)
+        dataset_name = (base.get("dataset") or {}).get("hf_dataset_name")
+        try:
+            result = check_prereqs.check_cell(
+                lane=args.lane,
+                method=cell.method,
+                model_tag=model_tag,
+                train_file=train_file,
+                dev_file=dev_file,
+                data_root=data_root,
+                research_repo_root=research_repo_root,
+                dataset_name=dataset_name,
+                is_bridge=cell.coordinate.is_bridge,
+            )
+        except check_prereqs.PrereqError as exc:
+            # Hard precondition failure -> abort the WHOLE matrix (fail-closed).
+            print(f"  [{cell.coordinate.run_id()}] ABORT: {exc}")
+            print("Prereq gate ABORTED the matrix (hard precondition absent). "
+                  "Launch nothing until it is resolved.")
+            return 1
+        if result.skip:
+            n_skip += 1
+            print(f"  [{cell.coordinate.run_id()}] SKIP: {result.skip_reason}")
+        else:
+            n_pass += 1
+            detail = f" {result.details}" if result.details else ""
+            print(f"  [{cell.coordinate.run_id()}] PASS{detail}")
+    print(f"Prereq gate complete: {n_pass} PASS, {n_skip} SKIP, 0 ABORT "
+          f"(of {len(cells)} cells). No cell launched.")
+    return 0
+
+
 def main(argv: Optional[list] = None) -> int:
     args = _build_arg_parser().parse_args(argv)
-    if args.dry_run or args.check_only:
-        # Both are non-launching: expand, assert counts, and (check-only) gate.
+    if args.check_only:
+        # The gate: expand, assert counts, and run check_prereqs per cell.
+        return check_and_report(args)
+    if args.dry_run:
+        # The preview: expand, assert counts, print per-cell commands. No gate.
         return expand_and_report(args)
     # A real launch is a cost-incurring, side-effecting operation. Per the SKILL
     # CLI Discipline it must be an explicit, gated step; this entry point refuses

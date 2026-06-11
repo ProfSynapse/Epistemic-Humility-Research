@@ -219,6 +219,189 @@ def test_dpo_drops_unknown_without_negative(tmp_path):
 
 
 # ---------------------------------------------------------------------------
+# B1 regression: correctness_safe must carry BOTH labels (weights-only ablation).
+# ---------------------------------------------------------------------------
+
+
+def test_correctness_safe_contains_both_labels(tmp_path):
+    # B1: correctness_safe used to emit only desirable(True) rows, which the tuner
+    # truncates to an empty set / crashes on a zero undesirable count. The
+    # weights-only ruling means it emits the SAME four rows as congruence, so the
+    # file MUST contain both True and False labels.
+    bd.build_all(_load_config(), "test-model", _paths(tmp_path))
+    for name in ("kto_correctness_safe_train.jsonl", "kto_correctness_safe_dev.jsonl"):
+        rows = _read_jsonl(tmp_path / name)
+        labels = {r["label"] for r in rows}
+        assert True in labels, f"{name}: missing desirable(True) rows"
+        assert False in labels, f"{name}: missing undesirable(False) rows -> would crash trainer"
+
+
+def test_correctness_safe_and_congruence_have_same_label_multiset(tmp_path):
+    # Weights-only ablation: the two mappings differ ONLY in training-time weights,
+    # so their emitted row sets (hence label multisets) are identical.
+    bd.build_all(_load_config(), "test-model", _paths(tmp_path))
+    cong = sorted(r["label"] for r in _read_jsonl(tmp_path / "kto_congruence_train.jsonl"))
+    safe = sorted(r["label"] for r in _read_jsonl(tmp_path / "kto_correctness_safe_train.jsonl"))
+    assert cong == safe, "correctness_safe and congruence must emit the same label multiset"
+
+
+def test_correctness_safe_is_interleaved(tmp_path):
+    # The B1 fix also added correctness_safe to the pre-interleave path.
+    bd.build_all(_load_config(), "test-model", _paths(tmp_path))
+    labels = [r["label"] for r in _read_jsonl(tmp_path / "kto_correctness_safe_train.jsonl")]
+    for i, label in enumerate(labels):
+        assert label is (i % 2 == 0), f"correctness_safe interleaving broken at {i}: {labels}"
+
+
+# ---------------------------------------------------------------------------
+# MA1: gold_answer prefers natural-case answer_value, falls back to alias.
+# ---------------------------------------------------------------------------
+
+
+def test_gold_answer_prefers_natural_case_value():
+    rec = {"question_id": "q", "answer_value": "John Milton", "normalized_aliases": ["john milton"]}
+    assert bd.gold_answer(rec) == "John Milton"
+
+
+def test_gold_answer_falls_back_to_alias_when_value_absent():
+    rec = {"question_id": "q", "normalized_aliases": ["paris"]}
+    assert bd.gold_answer(rec) == "paris"
+
+
+def test_gold_answer_falls_back_when_value_blank():
+    rec = {"question_id": "q", "answer_value": "   ", "normalized_aliases": ["paris"]}
+    assert bd.gold_answer(rec) == "paris"
+
+
+def test_known_sft_target_uses_natural_case_from_fixture(tmp_path):
+    # Fixture tqa_train_000001 carries answer_value "John Milton" (natural case)
+    # while its normalized_aliases are lowercased; the SFT target must be the
+    # natural-case form.
+    bd.build_all(_load_config(), "test-model", _paths(tmp_path))
+    rows = _read_jsonl(tmp_path / "sft_train.jsonl") + _read_jsonl(tmp_path / "sft_dev.jsonl")
+    milton = [
+        r for r in rows
+        if any(m["content"] == "Who wrote Paradise Lost?" for m in r["conversations"])
+    ]
+    assert milton, "Paradise Lost question should appear in SFT output"
+    target = next(m["content"] for m in milton[0]["conversations"] if m["role"] == "assistant")
+    assert target == "John Milton", f"expected natural-case gold, got {target!r}"
+
+
+# ---------------------------------------------------------------------------
+# MT3: distractor negative-sourcing strategy.
+# ---------------------------------------------------------------------------
+
+
+def test_distractor_strategy_substitutes_and_records(tmp_path):
+    # With strategy "distractor", an unknown question lacking a hallucinated
+    # sample (tqa_train_000006) gets the distractor text as its DPO rejected /
+    # KTO False completion, and its question_id lands in distractor_substituted.
+    config = _load_config()
+    config["unknown_negative_source"]["strategy"] = "distractor"
+    distractor = config["unknown_negative_source"]["distractor_text"]
+    manifest = bd.build_all(config, "test-model", _paths(tmp_path))
+
+    substituted = manifest["unknown_negative_source"]["distractor_substituted"]
+    assert "tqa_train_000006" in substituted
+    assert not manifest["unknown_negative_source"]["dropped_no_negative"], (
+        "distractor strategy should drop nothing"
+    )
+    # The distractor appears as a DPO rejected completion.
+    dpo = _read_jsonl(tmp_path / "dpo_train.jsonl") + _read_jsonl(tmp_path / "dpo_dev.jsonl")
+    rejected_contents = {r["rejected"][0]["content"] for r in dpo}
+    assert distractor in rejected_contents
+    # And as a KTO False completion.
+    kto = _read_jsonl(tmp_path / "kto_congruence_train.jsonl")
+    false_contents = {
+        r["conversations"][-1]["content"] for r in kto if r["label"] is False
+    }
+    assert distractor in false_contents
+
+
+# ---------------------------------------------------------------------------
+# FT5: split_dev boundary guards.
+# ---------------------------------------------------------------------------
+
+
+def _q(qid):
+    return {"question_id": qid}
+
+
+def test_split_dev_raises_on_empty_dev():
+    # 3 questions x fraction 0.1 -> round(0.3) = 0 dev examples -> raise.
+    raised = False
+    try:
+        bd.split_dev([_q("a"), _q("b"), _q("c")], fraction=0.1, seed=42)
+    except bd.DevSplitError:
+        raised = True
+    assert raised, "dev=0 must raise DevSplitError"
+
+
+def test_split_dev_raises_on_empty_train():
+    raised = False
+    try:
+        bd.split_dev([_q("a"), _q("b"), _q("c")], fraction=1.0, seed=42)
+    except bd.DevSplitError:
+        raised = True
+    assert raised, "train=0 (fraction=1.0) must raise DevSplitError"
+
+
+def test_split_dev_normal_case_both_nonempty():
+    train, dev = bd.split_dev([_q(str(i)) for i in range(10)], fraction=0.3, seed=42)
+    assert len(dev) == 3 and len(train) == 7
+    dev_ids = {r["question_id"] for r in dev}
+    train_ids = {r["question_id"] for r in train}
+    assert dev_ids.isdisjoint(train_ids)
+
+
+# ---------------------------------------------------------------------------
+# FT6: interleave_kto truncation on imbalanced input.
+# ---------------------------------------------------------------------------
+
+
+def test_interleave_kto_truncates_majority_class():
+    # 7 True / 3 False -> balanced to 3 each (6 rows), 4 trues dropped, T/F/T/F.
+    rows = [{"label": True, "i": i} for i in range(7)] + [{"label": False, "i": i} for i in range(3)]
+    out = bd.interleave_kto(rows, seed=42)
+    labels = [r["label"] for r in out]
+    assert len(out) == 6, f"expected 6 balanced rows, got {len(out)}"
+    assert labels == [True, False, True, False, True, False], f"not interleaved: {labels}"
+    assert sum(1 for r in out if r["label"] is True) == 3
+    assert sum(1 for r in out if r["label"] is False) == 3
+
+
+def test_interleave_kto_empty_on_single_class():
+    # All-True input -> min(n_true, 0) = 0 -> empty (this is exactly the failure
+    # mode the B1 fix prevents upstream by always emitting both labels).
+    rows = [{"label": True, "i": i} for i in range(5)]
+    assert bd.interleave_kto(rows, seed=42) == []
+
+
+# ---------------------------------------------------------------------------
+# FB1: leakage guard re-derives the probe-side key, never trusts stored norm.
+# ---------------------------------------------------------------------------
+
+
+def test_leakage_guard_ignores_stale_stored_question_norm():
+    # A probe record whose stored question_norm is STALE/benign but whose real
+    # question normalizes INTO the Cheng set must still be caught: the guard
+    # re-derives via norm_question and ignores the stored field.
+    probe = [{
+        "question_id": "q1",
+        "question": "Who wrote Paradise Lost?",
+        "question_norm": "totally benign unrelated string",
+    }]
+    cheng = {bd.norm_question("Who wrote Paradise Lost?")}
+    raised = False
+    try:
+        bd.assert_no_leakage(probe, cheng)
+    except bd.LeakageError:
+        raised = True
+    assert raised, "stale stored question_norm must not let a real leak slip through"
+
+
+# ---------------------------------------------------------------------------
 # Determinism.
 # ---------------------------------------------------------------------------
 
@@ -240,15 +423,19 @@ def test_build_is_deterministic(tmp_path):
 
 
 def _run_all():
+    import inspect
     import tempfile
     import traceback
 
     tests = [v for k, v in sorted(globals().items()) if k.startswith("test_")]
     passed = failed = 0
     for test in tests:
+        # Mirror pytest's tmp_path injection: only pass a temp dir to tests that
+        # declare a parameter; zero-arg unit tests are called bare.
+        takes_arg = len(inspect.signature(test).parameters) > 0
         with tempfile.TemporaryDirectory() as td:
             try:
-                test(Path(td))
+                test(Path(td)) if takes_arg else test()
                 passed += 1
                 print(f"PASS {test.__name__}")
             except Exception:  # noqa: BLE001 - smoke harness surfaces all failures

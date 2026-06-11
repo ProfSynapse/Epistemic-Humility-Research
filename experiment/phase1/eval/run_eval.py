@@ -34,6 +34,7 @@ import csv
 import hashlib
 import json
 import sys
+import warnings
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Protocol
@@ -130,6 +131,22 @@ class VLLMGenerator:
 
 def config_sha(config_path: Path) -> str:
     return hashlib.sha256(config_path.read_bytes()).hexdigest()[:16]
+
+
+# Metrics whose scorer path is validated by the Cheng-regression test
+# (tests/test_cheng_regression.py reproduces 42.71% / 23.27% exactly). The
+# `verified` provenance flag (HANDOFF §5: "True only if produced by a
+# regression-validated scorer path") is stamped from THIS registry, not a
+# literal — so a future metric whose scorer is not regression-validated defaults
+# to verified=False rather than silently inheriting a True it did not earn.
+# Keep this a flat constant, not a framework: add a metric here only once its
+# scorer path is covered by a reproduction/regression test.
+VALIDATED_METRICS: frozenset[str] = frozenset({"truthful_rate"})
+
+
+def is_validated_metric(metric: str) -> bool:
+    """True iff `metric` is produced by a regression-validated scorer path."""
+    return metric in VALIDATED_METRICS
 
 
 @dataclass
@@ -259,12 +276,15 @@ def run(config_path: Path, generator: Generator | None = None) -> dict:
                 level=cfg.get("bootstrap", {}).get("level", stats.DEFAULT_CI_LEVEL),
                 seed=cfg.get("bootstrap", {}).get("seed", stats.DEFAULT_SEED),
             )
+            metric_name = "truthful_rate"
             prov = Provenance(
                 source=eval_set,
-                metric="truthful_rate",
+                metric=metric_name,
                 model=arm.get("model", cfg.get("model_tag", "unknown")),
                 method=arm.get("method", arm_name),
-                verified=True,
+                # Conditioned on the scorer path, not hardcoded: only metrics in
+                # VALIDATED_METRICS (Cheng-regression-validated) stamp True.
+                verified=is_validated_metric(metric_name),
                 config_sha=sha,
             )
             out_dir = results_dir / f"{arm_name}__{eval_set}"
@@ -319,7 +339,28 @@ def _write_comparisons(
     comp_dir = results_dir / "comparisons"
     comp_dir.mkdir(parents=True, exist_ok=True)
 
-    # McNemar between every arm pair on the same eval set.
+    # McNemar between every arm pair on the same eval set. A pair that cannot be
+    # compared (missing vector, or mismatched lengths -> unpaired questions) is
+    # NOT silently dropped: it is emitted as a status='skipped_length_mismatch'
+    # row carrying the two vector lengths AND raises a warning, so a vanished
+    # comparison is visible in the same file an auditor reads (MB4 / reviewer M4).
+    # Both compared and skipped rows share one fixed schema so csv.DictWriter has
+    # a stable header regardless of which kind of row comes first.
+    mcnemar_fieldnames = [
+        "eval_set", "arm_a", "arm_b", "status", "note",
+        "b_a_not_b", "c_b_not_a", "statistic", "p_value",
+        "n_discordant", "continuity_correction",
+    ]
+    stat_columns = [
+        "b_a_not_b", "c_b_not_a", "statistic", "p_value",
+        "n_discordant", "continuity_correction",
+    ]
+
+    def _base_row(eval_set: str, a: str, b: str) -> dict:
+        return {k: "" for k in mcnemar_fieldnames} | {
+            "eval_set": eval_set, "arm_a": a, "arm_b": b,
+        }
+
     mcnemar_rows = []
     eval_sets = sorted({s for (_, s) in truthful_vectors})
     arms = [a["name"] for a in cfg["arms"]]
@@ -329,16 +370,29 @@ def _write_comparisons(
                 a, b = arms[i], arms[j]
                 va = truthful_vectors.get((a, eval_set))
                 vb = truthful_vectors.get((b, eval_set))
+                row = _base_row(eval_set, a, b)
+                len_a = "missing" if va is None else len(va)
+                len_b = "missing" if vb is None else len(vb)
                 if va is None or vb is None or len(va) != len(vb):
+                    note = f"length mismatch (arm_a={len_a}, arm_b={len_b})"
+                    warnings.warn(
+                        f"McNemar skipped {a} vs {b} on {eval_set}: {note}; "
+                        "recorded as skipped row in mcnemar.csv",
+                        stacklevel=2,
+                    )
+                    row["status"] = "skipped_length_mismatch"
+                    row["note"] = note
+                    mcnemar_rows.append(row)
                     continue
                 res = stats.mcnemar(va, vb)
-                mcnemar_rows.append(
-                    {"eval_set": eval_set, "arm_a": a, "arm_b": b, **res.as_dict()}
-                )
+                row["status"] = "compared"
+                for col in stat_columns:
+                    row[col] = res.as_dict()[col]
+                mcnemar_rows.append(row)
 
     if mcnemar_rows:
         with (comp_dir / "mcnemar.csv").open("w", newline="") as fh:
-            w = csv.DictWriter(fh, fieldnames=list(mcnemar_rows[0]))
+            w = csv.DictWriter(fh, fieldnames=mcnemar_fieldnames)
             w.writeheader()
             w.writerows(mcnemar_rows)
 

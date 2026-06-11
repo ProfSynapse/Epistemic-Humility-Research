@@ -82,11 +82,16 @@ def resolve_pool_path(config: dict) -> Path:
 
 
 def iter_pool(pool_path: Path, id_prefix: str):
-    """Yield (question_id, question, normalized_aliases) for each pool row.
+    """Yield (question_id, question, normalized_aliases, answer_value) per row.
 
-    TriviaQA train rows carry question, question_id, and
-    answer.normalized_aliases. If a row lacks question_id (e.g. a custom
-    fixture), synthesize a stable one from the row index.
+    TriviaQA train rows carry question, question_id, answer.normalized_aliases
+    (lowercased) and answer.value (natural-case gold). The probe scores against
+    the normalized aliases (normalization-invariant), but propagates answer.value
+    so the downstream builder can use natural-case gold as the `known` target
+    instead of a lowercased alias. answer_value is None if the row omits it
+    (e.g. a custom fixture); callers fall back to the first alias.
+
+    If a row lacks question_id, synthesize a stable one from the row index.
     """
     with pool_path.open() as fh:
         for idx, line in enumerate(fh):
@@ -98,7 +103,8 @@ def iter_pool(pool_path: Path, id_prefix: str):
             question_id = str(raw_id) if raw_id else f"{id_prefix}{idx:06d}"
             answer = row.get("answer", {})
             aliases = [a for a in answer.get("normalized_aliases", []) if a]
-            yield question_id, row["question"], aliases
+            answer_value = answer.get("value") or None
+            yield question_id, row["question"], aliases, answer_value
 
 
 def assign_label(greedy_correct: bool, pc: float, labels_cfg: dict) -> str:
@@ -124,8 +130,15 @@ def load_done_ids(results_path: Path) -> set[str]:
     return done
 
 
-def probe_one(backend, question_id, question, aliases, config, cfg_sha):
-    """Probe a single question and return its result record (A -> B schema)."""
+def probe_one(backend, question_id, question, aliases, answer_value, config,
+              cfg_sha):
+    """Probe a single question and return its result record (A -> B schema).
+
+    answer_value is the natural-case gold (TriviaQA answer.value) carried
+    through for the builder's `known` target; it is an OPTIONAL schema field
+    (None when the pool row omits it). Scoring still uses the normalized
+    aliases, so answer_value never affects p_correct or the label.
+    """
     s = config["sampling"]
     seed = derive_seed(s["seed"], question_id)
 
@@ -147,6 +160,7 @@ def probe_one(backend, question_id, question, aliases, config, cfg_sha):
         "question": question,
         "question_norm": normalize_question(question),
         "normalized_aliases": aliases,
+        "answer_value": answer_value,
         "n_samples": s["n_samples"],
         "greedy_answer": greedy_answer,
         "greedy_correct": greedy_correct,
@@ -170,11 +184,13 @@ def run_probe(config: dict, backend, out_dir: Path) -> Path:
     done = load_done_ids(results_path)
     n_new = 0
     with results_path.open("a") as fh:
-        for question_id, question, aliases in iter_pool(pool_path, id_prefix):
+        for question_id, question, aliases, answer_value in iter_pool(
+                pool_path, id_prefix):
             if question_id in done:
                 continue
             record = probe_one(
-                backend, question_id, question, aliases, config, cfg_sha)
+                backend, question_id, question, aliases, answer_value,
+                config, cfg_sha)
             fh.write(json.dumps(record, ensure_ascii=False) + "\n")
             fh.flush()
             n_new += 1

@@ -113,6 +113,10 @@ class ProbeSchemaError(ValueError):
     """Raised when a probe record is missing a required field."""
 
 
+class DevSplitError(ValueError):
+    """Raised when the train/dev split degenerates to an empty train or dev set."""
+
+
 # ---------------------------------------------------------------------------
 # Loading + validation.
 # ---------------------------------------------------------------------------
@@ -201,8 +205,12 @@ def assert_no_leakage(probe_records: list, cheng_norms: set) -> dict:
     """Abort if any probe question appears in the Cheng held-out test set.
 
     Returns a small proof dict (counts + sample of any offenders) for the
-    manifest. Uses norm_question on both sides so the comparison matches the
-    cheng_test_gold.jsonl keys.
+    manifest. The probe side is ALWAYS re-derived here via this module's own
+    norm_question rather than trusting a probe-stored `question_norm`: a stale or
+    divergent stored value must never be able to weaken the guard by making it
+    compare the wrong keys. The Cheng side keeps its on-disk `question_norm` key,
+    which is the pinned, provenance-verified canonical join key for that gold file
+    (see load_cheng_test_norms).
     """
     if not cheng_norms:
         # Fail closed: a guard that cannot load the test set must not pass
@@ -211,10 +219,7 @@ def assert_no_leakage(probe_records: list, cheng_norms: set) -> dict:
             "leakage guard could not load any Cheng test question keys; "
             "refusing to build (fail-closed). Check inputs.cheng_test_gold."
         )
-    probe_norms = {
-        rec.get("question_norm") or norm_question(rec["question"])
-        for rec in probe_records
-    }
+    probe_norms = {norm_question(rec["question"]) for rec in probe_records}
     overlap = sorted(probe_norms & cheng_norms)
     if overlap:
         sample = overlap[:5]
@@ -238,12 +243,24 @@ def assert_no_leakage(probe_records: list, cheng_norms: set) -> dict:
 
 
 def gold_answer(rec: dict) -> str:
-    """Pick the gold short answer for a known question (first non-empty alias)."""
+    """Pick the gold short answer for a known question.
+
+    Prefers the natural-case `answer_value` (e.g. "John Milton") when the probe
+    propagated it, so the known training target matches how the base model
+    naturally answers rather than the lowercased TriviaQA normalized alias
+    ("john milton"). Falls back to the first non-empty normalized alias when
+    `answer_value` is absent (older probe outputs), keeping the builder
+    forward- and backward-compatible across the A->B contract.
+    """
+    value = rec.get("answer_value")
+    if isinstance(value, str) and value.strip():
+        return value
     for alias in rec.get("normalized_aliases", []):
         if alias and alias.strip():
             return alias
     raise ProbeSchemaError(
-        f"known question {rec.get('question_id')} has no usable gold alias"
+        f"known question {rec.get('question_id')} has no usable gold answer "
+        f"(no answer_value and no non-empty normalized alias)"
     )
 
 
@@ -298,6 +315,11 @@ def split_dev(records: list, fraction: float, seed: int) -> tuple:
 
     The dev questions are the SAME across arms (caller passes the same records
     and seed), so early stopping is comparable.
+
+    Raises DevSplitError if the split degenerates to an empty side: dev=0 (N too
+    small or fraction too low to yield a held-out set for Gekhman early stopping)
+    or train=0 (fraction too high, leaving nothing to train on). Either case would
+    silently produce an unusable arm, so it is a hard, explained abort.
     """
     ordered = sorted(records, key=lambda r: r["question_id"])
     rng = random.Random(seed)
@@ -305,6 +327,17 @@ def split_dev(records: list, fraction: float, seed: int) -> tuple:
     dev_count = int(round(len(ordered) * fraction))
     dev = ordered[:dev_count]
     train = ordered[dev_count:]
+    if not dev:
+        raise DevSplitError(
+            f"dev split is empty: {len(ordered)} question(s) x dev_fraction="
+            f"{fraction} rounds to 0 dev examples. Early stopping needs a "
+            f"non-empty dev set; raise dev_fraction or supply more questions."
+        )
+    if not train:
+        raise DevSplitError(
+            f"train split is empty: dev_fraction={fraction} consumed all "
+            f"{len(ordered)} question(s). Lower dev_fraction below 1.0."
+        )
     return train, dev
 
 
@@ -391,30 +424,33 @@ def _unknown_negative(rec: dict, ctx: dict):
     return None
 
 
-def _kto_rows_for_question(rec: dict, ctx: dict, mapping: str) -> list:
-    """Emit the KTO (completion, label) rows for one question under a mapping.
+def _kto_rows_for_question(rec: dict, ctx: dict) -> list:
+    """Emit the KTO (completion, label) rows for one question.
 
-    congruence (primary):
+    BOTH mappings (congruence and correctness_safe) emit the SAME four rows
+    (arch doc section 4.6, weights-only ablation ruling):
       known+gold = true, unknown+abstention = true,
       unknown+hallucinated = false, known+abstention = false.
-    correctness_safe (ablation): drop the riskiest desirable and rebalance via
-      weights (recipe section 4). Here: keep known+gold true and unknown+abstention
-      true, drop the unknown+hallucinated and known+abstention pairing down to the
-      desirables-plus-the-undesirable-anti-over-refusal signal handled by weights.
+
+    The congruence vs correctness_safe difference is NOT in the row set; it lives
+    entirely in the desirable_weight / undesirable_weight applied at training time
+    (build.yaml correctness_safe_*_weight, surfaced into the recipe YAMLs). Emitting
+    only desirable rows for correctness_safe would produce a 100%-True file that
+    crashes the tuner: interleave_dataset collapses to min(n_true, 0) -> empty, and
+    the undesirable-count division raises ZeroDivisionError at load time. So both
+    mappings carry both labels; the row set is mapping-independent by construction.
     """
     abstention = abstention_for(rec["question_id"], ctx["bank"], ctx["seed"])
     rows = []
     if rec["label"] == "known":
         gold = ctx["known_answer_template"].format(answer=gold_answer(rec))
         rows.append(_kto_row(rec, gold, True, ctx))            # known+gold = true
-        if mapping == "congruence":
-            rows.append(_kto_row(rec, abstention, False, ctx))  # known+abstain = false
+        rows.append(_kto_row(rec, abstention, False, ctx))     # known+abstain = false
     else:
-        rows.append(_kto_row(rec, abstention, True, ctx))       # unknown+abstain = true
-        if mapping == "congruence":
-            negative = _unknown_negative(rec, ctx)
-            if negative is not None:
-                rows.append(_kto_row(rec, negative, False, ctx))  # unknown+halluc = false
+        rows.append(_kto_row(rec, abstention, True, ctx))      # unknown+abstain = true
+        negative = _unknown_negative(rec, ctx)
+        if negative is not None:
+            rows.append(_kto_row(rec, negative, False, ctx))   # unknown+halluc = false
     return rows
 
 
@@ -545,15 +581,16 @@ def _emit_dpo(train, dev, ctx, out_dir, counts) -> None:
 
 
 def _emit_kto(mapping, train, dev, ctx, config, out_dir, counts) -> None:
-    train_rows = [
-        row for r in train for row in _kto_rows_for_question(r, ctx, mapping)
-    ]
-    dev_rows = [
-        row for r in dev for row in _kto_rows_for_question(r, ctx, mapping)
-    ]
-    if mapping == "congruence":
-        train_rows = interleave_kto(train_rows, config["seed"])
-        dev_rows = interleave_kto(dev_rows, config["seed"])
+    # Both mappings emit the same four-row set (_kto_rows_for_question is
+    # mapping-independent per the weights-only ruling); the only mapping-specific
+    # output difference is the filename. Both are pre-interleaved T/F/T/F so the
+    # on-disk file is training-ready and balanced (the tuner re-interleaves as a
+    # safety net). A non-interleaved correctness_safe file used to reach the
+    # trainer all-True and crash it; interleaving both arms closes that.
+    train_rows = [row for r in train for row in _kto_rows_for_question(r, ctx)]
+    dev_rows = [row for r in dev for row in _kto_rows_for_question(r, ctx)]
+    train_rows = interleave_kto(train_rows, config["seed"])
+    dev_rows = interleave_kto(dev_rows, config["seed"])
     write_jsonl(out_dir / f"kto_{mapping}_train.jsonl", train_rows)
     write_jsonl(out_dir / f"kto_{mapping}_dev.jsonl", dev_rows)
     counts[f"kto_{mapping}"] = {
@@ -689,7 +726,7 @@ def main(argv=None) -> int:
     paths = _resolve_paths(config, args, repo_root)
     try:
         manifest = build_all(config, args.model_tag, paths)
-    except (LeakageError, AbstentionBankError, ProbeSchemaError) as exc:
+    except (LeakageError, AbstentionBankError, ProbeSchemaError, DevSplitError) as exc:
         print(f"BUILD ABORTED: {exc}", file=sys.stderr)
         return 1
     budget = manifest["budget"]
