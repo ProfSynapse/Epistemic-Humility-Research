@@ -1,8 +1,16 @@
-# Epistemic-Humility Phase 1 — DPO arm, Qwen3-8B-Instruct (cloud confirm).
+# Epistemic-Humility Phase 1 — DPO arm, Qwen3-8B (hybrid, cloud confirm).
 #
 # The 8B confirm arm runs on HF Jobs, which checks out the pinned submodule SHA
 # and dispatches method: dpo to Trainers/dpo via the method registration. The
 # LoRA budget (r=64, alpha=128) matches the SFT/KTO Phase-1 8B recipes.
+#
+# Thinking mode (PROTOCOL.md:193): NO chat_template_kwargs key here BY DESIGN.
+# DPO is thinking-off by Qwen3 template construction — the WS-2 completions are
+# clean assistant turns (no reasoning_content, no '</think>'), so the template
+# injects no <think> block, and TRL templates internally from the tokenizer's
+# native Qwen3 template. Eval/probe pin enable_thinking=False at the inference
+# config. This is the document-and-accept disposition (no template surgery);
+# see the ADR at docs/architecture/phase1-pipeline.md §9.3.
 name: eh-phase1-qwen3-8b-dpo
 target: both
 method: dpo

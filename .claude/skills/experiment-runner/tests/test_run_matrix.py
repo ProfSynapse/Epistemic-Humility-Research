@@ -541,12 +541,17 @@ def test_bridge_recipes_declare_target_local():
 # ---------------------------------------------------------------------------
 
 
-def _write_tuner_capability_tree(root, *, config=True, builder=True, parser=True):
+def _write_tuner_capability_tree(
+    root, *, config=True, builder=True, parser=True, ctk=True
+):
     """Build a fake synaptic-tuner tree with controllable surface presence.
 
-    Each element mirrors the real seed/beta-forwarding contract: a
-    CloudTrainingConfig with seed/beta fields, a builder emitting --seed/--beta,
-    and the --train-seed/--train-beta CLI flags.
+    Each element mirrors the real forwarding contract: a CloudTrainingConfig with
+    seed/beta (and chat_template_kwargs) fields, a builder emitting --seed/--beta
+    (and --chat-template-kwargs), and the --train-seed/--train-beta CLI flags.
+    ``ctk`` toggles ONLY the chat_template_kwargs surface (config field + builder
+    emission) so the seed/beta probe and the chat_template_kwargs probe can be
+    exercised independently (coder-cloud #48).
     """
     tuner = root / "synaptic-tuner"
     cfg = tuner / "tuner" / "core"
@@ -557,11 +562,15 @@ def _write_tuner_capability_tree(root, *, config=True, builder=True, parser=True
     cfg_body = "class CloudTrainingConfig(TrainingConfig):\n    learning_rate: float\n"
     if config:
         cfg_body += "    seed: Optional[int] = None\n    beta: Optional[float] = None\n"
+    if ctk:
+        cfg_body += "    chat_template_kwargs: Optional[Dict[str, Any]] = None\n"
     (cfg / "config.py").write_text(cfg_body)
     bld_body = 'def _build_training_command(self, config):\n    args = []\n'
     if builder:
         bld_body += '    args.extend(["--seed", str(config.seed)])\n'
         bld_body += '    args.extend(["--beta", str(config.beta)])\n'
+    if ctk:
+        bld_body += '    args.extend(["--chat-template-kwargs", "{}"])\n'
     (bld / "_hf_command_builder.py").write_text(bld_body)
     cli_body = 'def build_parser(p):\n'
     if parser:
@@ -625,6 +634,54 @@ def test_cloud_probe_true_against_post32_surface(tmp_path):
     check). Distinct from the baseline test above."""
     _write_tuner_capability_tree(tmp_path)
     assert cp.cloud_seed_beta_capability_probe(tmp_path) is True
+
+
+# --- chat_template_kwargs cloud probe (coder-cloud #48) -----------------------
+
+
+def test_cloud_ctk_probe_true_when_field_and_emission_present(tmp_path):
+    _write_tuner_capability_tree(tmp_path)
+    assert cp.cloud_chat_template_kwargs_capability_probe(tmp_path) is True
+
+
+def test_cloud_ctk_probe_false_when_config_field_absent(tmp_path):
+    # Field missing on CloudTrainingConfig (builder still emits) → fail-closed.
+    tuner = tmp_path / "synaptic-tuner"
+    cfg = tuner / "tuner" / "core"
+    bld = tuner / "tuner" / "backends" / "training" / "cloud"
+    for d in (cfg, bld):
+        d.mkdir(parents=True, exist_ok=True)
+    (cfg / "config.py").write_text(
+        "class CloudTrainingConfig(TrainingConfig):\n    learning_rate: float\n")
+    (bld / "_hf_command_builder.py").write_text(
+        'def _build_training_command(self, config):\n'
+        '    args = ["--chat-template-kwargs", "{}"]\n')
+    assert cp.cloud_chat_template_kwargs_capability_probe(tmp_path) is False
+
+
+def test_cloud_ctk_probe_false_when_builder_does_not_emit(tmp_path):
+    _write_tuner_capability_tree(tmp_path, ctk=False)
+    assert cp.cloud_chat_template_kwargs_capability_probe(tmp_path) is False
+
+
+def test_cloud_ctk_probe_fails_closed_when_tuner_absent(tmp_path):
+    assert cp.cloud_chat_template_kwargs_capability_probe(tmp_path) is False
+
+
+def test_cloud_gate_requires_both_seed_beta_and_ctk(tmp_path):
+    # The combined cloud gate is the AND of both probes: seed/beta present but
+    # chat_template_kwargs missing must still close the lane (regression sim for
+    # the #48 wiring silently regressing — a cloud SFT cell would train with
+    # thinking ON against PROTOCOL.md:193 otherwise).
+    _write_tuner_capability_tree(tmp_path, ctk=False)
+    assert cp.cloud_seed_beta_capability_probe(tmp_path) is True
+    assert cp.cloud_chat_template_kwargs_capability_probe(tmp_path) is False
+    assert cp.cloud_capability_ready(tmp_path) is False
+    assert cp.lane_capability_ready("cloud", tmp_path) is False
+    # And local lane is unaffected by the cloud ctk probe.
+    # (full surface ⇒ both cloud probes pass ⇒ gate open)
+    _write_tuner_capability_tree(tmp_path)
+    assert cp.cloud_capability_ready(tmp_path) is True
 
 
 def test_override_can_force_closed_but_never_open(tmp_path, monkeypatch):

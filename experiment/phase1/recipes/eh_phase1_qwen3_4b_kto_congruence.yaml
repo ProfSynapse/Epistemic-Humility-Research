@@ -1,8 +1,16 @@
 # Epistemic-Humility Phase 1 — KTO arm (congruence mapping, primary),
-# Qwen3-4B-Instruct (local pilot).
+# Qwen3-4B (hybrid, local pilot).
 #
 # Consumes the WS-2 KTO congruence builder output (interleaved T/F/T/F binary).
 # LoRA budget IDENTICAL to the SFT and DPO Phase-1 4B recipes.
+#
+# Thinking mode (PROTOCOL.md:193): NO chat_template_kwargs key here BY DESIGN.
+# KTO is thinking-off by Qwen3 template construction — the WS-2 completions are
+# clean assistant turns (no reasoning_content, no '</think>'), so the template
+# injects no <think> block, and TRL templates internally from the tokenizer's
+# native Qwen3 template. Eval/probe pin enable_thinking=False at the inference
+# config. This is the document-and-accept disposition (no template surgery);
+# see the ADR at docs/architecture/phase1-pipeline.md §9.3.
 name: eh-phase1-qwen3-4b-kto-congruence
 target: local
 method: kto

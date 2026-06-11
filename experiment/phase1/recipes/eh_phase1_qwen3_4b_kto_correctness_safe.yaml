@@ -1,10 +1,18 @@
 # Epistemic-Humility Phase 1 — KTO arm (correctness-safe mapping, ablation),
-# Qwen3-4B-Instruct (local pilot). Phase-2 rideshare seed.
+# Qwen3-4B (hybrid, local pilot). Phase-2 rideshare seed.
 #
 # Consumes the WS-2 KTO correctness-safe builder output. This mapping is
 # imbalanced by design and leans on desirable_weight/undesirable_weight; the
 # builder pre-interleaves and the trainer's interleave acts as a safety net.
 # LoRA budget IDENTICAL to the congruence/SFT/DPO Phase-1 4B recipes.
+#
+# Thinking mode (PROTOCOL.md:193): NO chat_template_kwargs key here BY DESIGN.
+# KTO is thinking-off by Qwen3 template construction — the WS-2 completions are
+# clean assistant turns (no reasoning_content, no '</think>'), so the template
+# injects no <think> block, and TRL templates internally from the tokenizer's
+# native Qwen3 template. Eval/probe pin enable_thinking=False at the inference
+# config. This is the document-and-accept disposition (no template surgery);
+# see the ADR at docs/architecture/phase1-pipeline.md §9.3.
 name: eh-phase1-qwen3-4b-kto-correctness-safe
 target: local
 method: kto

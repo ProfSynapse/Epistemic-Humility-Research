@@ -219,6 +219,47 @@ def cloud_seed_beta_capability_probe(research_repo_root: Path) -> bool:
     return bool(config_has_fields and builder_emits and cli_exposes)
 
 
+def cloud_chat_template_kwargs_capability_probe(research_repo_root: Path) -> bool:
+    """Live-probe the tuner source for cloud chat_template_kwargs forwarding.
+
+    PROTOCOL.md:193 pins enable_thinking=False for the hybrid Qwen3 pair (which
+    default thinking ON). The SFT recipes carry it as training.chat_template_kwargs;
+    the cloud lane must forward it to the trainer or a cloud SFT cell silently
+    trains with thinking-mode ON while the run record claims the protocol pin —
+    the same silent-substitution corruption class as a dropped seed (tuner #45/#48).
+
+    Returns True only if BOTH cloud surface elements are present in the actual
+    tuner working tree:
+      1. CloudTrainingConfig declares a chat_template_kwargs field   (config.py)
+      2. the HF command builder EMITS --chat-template-kwargs          (_hf_command_builder.py)
+    No CLI-flag element: chat_template_kwargs flows via the recipe.training block
+    through the recipe->CloudTrainingConfig mapping (like gradient_accumulation),
+    not a per-cell --train-* override. A missing file or element => False
+    (fail-closed: a probe that cannot confirm forwarding must not green-light a
+    cloud launch). Against a pre-#48 tree this returns False; it flips True once
+    #48's field + builder emission land in the pinned submodule.
+    """
+    config_src = _read_tuner_source(research_repo_root, _CLOUD_CONFIG_REL)
+    builder_src = _read_tuner_source(research_repo_root, _CLOUD_BUILDER_REL)
+    if config_src is None or builder_src is None:
+        return False
+
+    # 1. CloudTrainingConfig must declare the chat_template_kwargs field. Scope to
+    #    the class body so an unrelated occurrence elsewhere cannot satisfy it.
+    config_tail = config_src.split("class CloudTrainingConfig", 1)
+    config_has_field = (
+        len(config_tail) == 2
+        and re.search(r"^\s*chat_template_kwargs\s*:", config_tail[1], re.MULTILINE)
+        is not None
+    )
+    # 2. The HF command builder must EMIT the flag into the trainer invocation.
+    builder_emits = (
+        '"--chat-template-kwargs"' in builder_src
+        or "'--chat-template-kwargs'" in builder_src
+    )
+    return bool(config_has_field and builder_emits)
+
+
 def cloud_capability_ready(research_repo_root: Optional[Path] = None) -> bool:
     """Gate the whole cloud lane on the tuner seed/beta-forwarding capability.
 
@@ -230,7 +271,9 @@ def cloud_capability_ready(research_repo_root: Optional[Path] = None) -> bool:
     if FORCE_SEED_BETA_GATE_CLOSED:
         return False
     root = research_repo_root if research_repo_root is not None else Path(".")
-    return cloud_seed_beta_capability_probe(root)
+    return cloud_seed_beta_capability_probe(root) and (
+        cloud_chat_template_kwargs_capability_probe(root)
+    )
 
 
 # Local-lane forwarding surface — the mechanism is the HANDLER EXTENSION (§9.2
@@ -323,7 +366,13 @@ def lane_capability_ready(lane: str, research_repo_root: Optional[Path] = None) 
         return False
     root = research_repo_root if research_repo_root is not None else Path(".")
     if lane == "cloud":
-        return cloud_seed_beta_capability_probe(root)
+        # Cloud cells must forward seed/beta AND the chat_template_kwargs pin
+        # (PROTOCOL.md:193 thinking-off). A gap in either is whole-matrix-abort
+        # silent-substitution: a dropped seed corrupts the panel, a dropped
+        # chat_template_kwargs trains the cloud SFT arm with thinking ON.
+        return cloud_seed_beta_capability_probe(root) and (
+            cloud_chat_template_kwargs_capability_probe(root)
+        )
     return local_seed_beta_capability_probe(root)
 
 
@@ -397,10 +446,12 @@ def check_cell(
     if not lane_capability_ready(lane, research_repo_root):
         raise PrereqError(
             f"tuner {lane} lane has not landed the per-cell forwarding capability "
-            f"(seed/beta forwarding + dispatch; LoRA flag parity for local dpo/kto) "
-            f"— capability probe failed against the pinned submodule (coder-cloud "
-            f"#34). This ABORTS the whole matrix: a missing seed/beta/LoRA sink "
-            f"silently corrupts the entire headline + panel design, not one arm. "
+            f"(seed/beta forwarding + dispatch; LoRA flag parity for local dpo/kto; "
+            f"chat_template_kwargs forwarding for cloud SFT, coder-cloud #48) "
+            f"— capability probe failed against the pinned submodule. This ABORTS "
+            f"the whole matrix: a missing seed/beta/LoRA sink silently corrupts the "
+            f"entire headline + panel design, and a missing chat_template_kwargs sink "
+            f"trains the cloud SFT arm with thinking-mode ON against PROTOCOL.md:193. "
             f"Re-run once the {lane}-lane capability lands and is verified."
         )
 

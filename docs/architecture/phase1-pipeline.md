@@ -419,8 +419,8 @@ the config.yaml default is a coincidence that would mask the bug.
 The KTO `model_map` (`train_kto.py` ~L420) hardcodes Qwen2.5. Add:
 
 ```python
-'qwen3_4b': ('3b', 'unsloth/Qwen3-4B-Instruct-bnb-4bit'),
-'qwen3_8b': ('7b', 'unsloth/Qwen3-8B-Instruct-bnb-4bit'),
+'qwen3_4b': ('3b', 'unsloth/Qwen3-4B-bnb-4bit'),
+'qwen3_8b': ('7b', 'unsloth/Qwen3-8B-bnb-4bit'),
 ```
 
 with matching `--qwen3-4b` / `--qwen3-8b` argparse flags. (CODE verifies the
@@ -1232,7 +1232,7 @@ provenance discipline.)
                  "seed": 1, "override": {"learning_rate": 2.0e-6}},
   "source_recipe": "experiment/phase1/recipes/eh_phase1_qwen3_4b_kto_congruence.yaml",
   "materialized_recipe_sha": "<sha256 of the generated recipe>",
-  "method": "kto", "model": "unsloth/Qwen3-4B-Instruct-bnb-4bit",
+  "method": "kto", "model": "unsloth/Qwen3-4B-bnb-4bit",
   "lane": "cloud",
   "data": {"source_data_file": "experiment/phase1/data/qwen3-4b-instruct/kto_train.jsonl",
            "staged_data_file": null,
@@ -1380,6 +1380,93 @@ lane), and PROTOCOL v0.3 user sign-off (already obtained). The matrix-expansion
 and gate scripts are testable against fixtures (a tiny matrix.yaml + a stub recipe
 + `--dry-run` / `--check-only`) without any real training, so the skill's logic is
 unit-testable independent of the runbook prose.
+
+### 9.3 ADR: `enable_thinking=False` enforcement map (hybrid Qwen3 pin)
+
+PROTOCOL.md:193 pins thinking mode OFF for the Phase-1 model pair. The pin became
+load-bearing when the model names were repointed (task #42) from the dead
+`unsloth/Qwen3-{4B,8B}-Instruct-bnb-4bit` repos to the hybrid
+`unsloth/Qwen3-{4B,8B}-bnb-4bit` pair: the `-Instruct` variants defaulted thinking
+OFF, whereas the hybrid models default thinking ON, so `enable_thinking=False` now
+has to be actively enforced rather than inherited. This ADR records the enforcement
+disposition per method, verified by EXECUTION against the live Qwen3-0.6B chat
+template (tester #49, `RUN_LIVE_HUB=1`, the same template family as the 4B/8B
+hybrids; this supersedes the architect's earlier cached-template reading in #43,
+which was empirically refuted on one mechanism point — see below).
+
+Template mechanism (the fact the disposition rests on — CORRECTED against the live
+template): the live Qwen3 template injects the empty think-off marker
+`<think>\n\n</think>\n\n` (inner content literally `\n\n`, NOT populated reasoning)
+into the assistant turn UNCONDITIONALLY at the generation-prompt position — the
+render is byte-identical for `enable_thinking=False`, `=True`, and the no-kwarg
+default. (The cached-template reading that a completed assistant turn "renders clean
+unless it carries `reasoning_content` or `</think>`" does NOT hold live; the marker
+is always present.) The disposition SURVIVES this correction because, on every
+template-invoking method, the marker is the empty thinking-OFF SIGNATURE (not
+reasoning content) and lands in a **non-loss-bearing** position — and on the one
+method that never invokes the template (KTO), no marker is emitted at all:
+
+- For SFT, the marker sits in the MASKED prompt prefix. `materialize_sft_example`
+  computes the prompt-only render (`add_generation_prompt=True`, carrying the same
+  marker at the same position) and masks the matching prefix to `-100`
+  (`shared/sft_preprocessing.py:158-162`). The unmasked training target decodes to
+  exactly `I don't know.<|im_end|>\n` (tester-verified by execution) — the marker is
+  NEVER a training target, so the model is never trained to emit reasoning.
+- For DPO, TRL templates the conversational prompt and the marker lands at the
+  prompt boundary, never in the `chosen`/`rejected` completions the preference loss
+  shapes (see the per-method map below).
+- For KTO, the trainer is fed raw strings and never invokes the chat template, so
+  no marker exists on either the train or eval side of the KTO path.
+- For SFT and DPO, the train-time prompt and the eval-time prompt both carry the
+  identical marker at the identical position, so there is no train/eval prompt
+  mismatch; for KTO neither side carries a marker, so there is likewise nothing to
+  mismatch.
+
+The empty marker being present (where the template is invoked) is therefore the
+EXPECTED thinking-off signature, not contamination; its absence on the KTO
+raw-string path is equally benign.
+
+Enforcement map per method:
+
+| Surface | Disposition | Mechanism |
+|---------|-------------|-----------|
+| **SFT** (train) | Generic config-driven passthrough | `chat_template_kwargs: {enable_thinking: false}` carried by the SFT recipes, threaded through `shared/sft_preprocessing.py` into both `apply_chat_template` calls (coder-cloud #45). No Qwen3 string in shared infra; the kwarg is model-agnostic. |
+| **DPO** (train) | **Document-and-accept, no code change** | The DPO loader feeds TRL the CONVERSATIONAL `prompt`/`chosen`/`rejected` message-list schema (`Trainers/dpo/src/data_loader.py:6-16,:24`). TRL templates the prompt with `add_generation_prompt=True`, so the unconditional empty marker lands at the PROMPT/completion boundary (the generation-prompt position), NOT inside `chosen`/`rejected`. The completions — the text the DPO preference loss actually shapes — are the clean IDK strings (gold answer / abstention), carrying no reasoning. The marker is the empty thinking-OFF signature (`\n\n` inner), so no thinking *behavior* is ever trained; train and eval prompts carry it identically. Thinking-free by construction. |
+| **KTO** (train) | **Document-and-accept, no code change** | Distinct from DPO: the implemented KTO loader transforms the WS-2 ChatML (`conversations` + `label`) into RAW-STRING `prompt`/`completion`, extracted directly from message `content` (`Trainers/kto/src/data_loader.py:185-189`), and hands those raw strings to TRL. TRL never applies `tokenizer.chat_template` to raw strings, so for KTO **no Qwen3 template is invoked at train time and NO marker is injected anywhere** — the empty-marker question is N/A for KTO. The only `apply_chat_template` calls on the KTO path are inference-only (`Trainers/kto/src/inference.py:82,142`), not training. The trained completion is therefore the literal IDK target string the WS-2 builder placed in the assistant `content` (`experiment/phase1/data/build_datasets.py:421-429`), consistent with the SFT/DPO targets; with no marker on either side of the KTO train path, there is no train/eval marker mismatch to reconcile. |
+| **Eval / probe** (inference) | Already pinned | `experiment/phase1/eval/config/eval.yaml:18` and `experiment/phase1/probe/config/probe.yaml:28` pin `enable_thinking: false`; the probe has a runtime self-check (`test_probe_smoke.py:109` raises if not honored). |
+
+Why KTO/DPO is document-and-accept rather than code: forcing think-off at the
+tokenizer-template level (wrapping `chat_template` / `get_chat_template`) is the
+**rejected alternative** — it would require Qwen3-specific logic in shared
+model-load infra (violating tuner generality), risk altering the template for
+non-Qwen models, and (for DPO) suppress an empty marker that is HARMLESS where it
+lands. The contamination that would actually matter — populated reasoning in the
+trained completion — does not exist on either path, for two DIFFERENT reasons:
+for **DPO**, TRL does template the prompt (the empty `\n\n` thinking-OFF marker
+lands at the prompt boundary, never in the `chosen`/`rejected` completions, which
+are clean IDK strings); for **KTO**, TRL never templates at all (raw-string
+`prompt`/`completion`), so no marker is emitted anywhere and the trained completion
+is the clean IDK string verbatim. PROTOCOL.md:193 is satisfied for both because the
+train-time behavior is thinking-off by construction *and* eval-time is thinking-off
+by the eval-config pin — no template surgery, no protocol revision. The per-recipe
+note in the four dpo/kto recipes records this as a deliberate, evidenced disposition
+(not an omission) and cites this ADR.
+
+Forward obligation (eval consistency): the post-sign-off `VLLMGenerator` real
+path in `experiment/phase1/eval/run_eval.py` (currently a stub, ~:111) MUST pass
+`enable_thinking=False` (or `chat_template_kwargs={enable_thinking: false}`) into
+its `apply_chat_template` / vLLM chat call when implemented, with a self-check test
+mirroring the probe's so eval cannot silently regress. This obligation is tracked
+as pending task #47 (owner coder-eval). Train-side (the SFT prompt-prefix marker,
+masked to `-100` at `shared/sft_preprocessing.py:158-162`) and eval-side (the marker
+at the generation prompt) both carry the identical think-off marker at the same
+position, so there is no train/eval prompt mismatch.
+
+**Scope limit:** this ruling holds for the **hybrid pair only**. A future
+Qwen3-Thinking-only variant always thinks, so document-and-accept for KTO/DPO
+would no longer hold and the enforcement map would have to be revisited — at which
+point PROTOCOL.md:193's pin would need an explicit code-level enforcement decision
+for those trainers.
 
 ---
 

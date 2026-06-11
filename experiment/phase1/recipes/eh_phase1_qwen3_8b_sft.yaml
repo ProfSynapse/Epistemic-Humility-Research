@@ -1,4 +1,4 @@
-# Epistemic-Humility Phase 1 — SFT arm, Qwen3-8B-Instruct (cloud confirm).
+# Epistemic-Humility Phase 1 — SFT arm, Qwen3-8B (cloud confirm).
 # LoRA budget (r=64, alpha=128) matches the DPO/KTO Phase-1 8B recipes.
 name: eh-phase1-qwen3-8b-sft
 target: both
@@ -37,6 +37,11 @@ training:
   gradient_accumulation: 4
   learning_rate: 2.0e-4
   num_epochs: 1
+  # Hybrid Qwen3 (non-Instruct) defaults thinking-mode ON; PROTOCOL.md:193 pins it
+  # OFF. Forwarded into the tokenizer chat template at SFT preprocessing time so
+  # the prompt prefix used for the loss mask matches the eval-time prompt.
+  chat_template_kwargs:
+    enable_thinking: false
 
 lora:
   r: 64

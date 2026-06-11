@@ -1,4 +1,4 @@
-# Epistemic-Humility Phase 1 — SFT arm, Qwen3-4B-Instruct (local pilot).
+# Epistemic-Humility Phase 1 — SFT arm, Qwen3-4B (local pilot).
 #
 # Consumes the WS-2 SFT builder output (positives-only conversations). The SFT
 # trainer already handles the "qwen" family branch; only the model name + budget
@@ -40,6 +40,11 @@ training:
   gradient_accumulation: 4
   learning_rate: 2.0e-4
   num_epochs: 1
+  # Hybrid Qwen3 (non-Instruct) defaults thinking-mode ON; PROTOCOL.md:193 pins it
+  # OFF. Forwarded into the tokenizer chat template at SFT preprocessing time so
+  # the prompt prefix used for the loss mask matches the eval-time prompt.
+  chat_template_kwargs:
+    enable_thinking: false
 
 lora:
   r: 32

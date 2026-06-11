@@ -1,4 +1,4 @@
-# Epistemic-Humility Phase 1 — DPO arm, Qwen3-4B-Instruct (local pilot).
+# Epistemic-Humility Phase 1 — DPO arm, Qwen3-4B (hybrid, local pilot).
 #
 # Config-driven; the dataset local_file is the WS-2 DPO builder output
 # (prompt/chosen/rejected pairs). The LoRA budget here is IDENTICAL to the
@@ -9,6 +9,14 @@
 # container wiring, and per-cell data staging. dataset.local_file below is a
 # staging placeholder the runner rewrites per cell (local lane) or swaps for an
 # HF-hub dataset.name (cloud lane). See experiment/phase1/recipes/README.md.
+#
+# Thinking mode (PROTOCOL.md:193): NO chat_template_kwargs key here BY DESIGN.
+# DPO is thinking-off by Qwen3 template construction — the WS-2 completions are
+# clean assistant turns (no reasoning_content, no '</think>'), so the template
+# injects no <think> block, and TRL templates internally from the tokenizer's
+# native Qwen3 template. Eval/probe pin enable_thinking=False at the inference
+# config. This is the document-and-accept disposition (no template surgery);
+# see the ADR at docs/architecture/phase1-pipeline.md §9.3.
 name: eh-phase1-qwen3-4b-dpo
 target: local
 method: dpo
