@@ -50,7 +50,7 @@
       recommended visualization for direction-based synthesis (also closes
       SWiM item 7 fully); (b) Section 5.3 recall-vs-over-refusal
       operating-point scatter (abstentionbench_frontier.png may already
-      serve); (c) L1-L4 coverage map (stack level x rows). Verify figure
+      serve); (c) L1-L4 coverage map (depth x rows; framework renamed Depths of Ignorance 2026-06-11). Verify figure
       numbers match regenerated synthesis-summary.md.
 - [x] **Methods evidence-basing.** DONE 2026-06-10: §4.4 grounds the
       synthesis design in the methodology literature (SWiM names our exact
@@ -73,10 +73,11 @@
       surfaced during the PDF pass.
 - [x] **Author/affiliation block.** DONE 2026-06-10: Joseph Rosenbaum
       (Synaptic Labs, connect2synapse@gmail.com) added to frontmatter +
-      title block. Essay attribution resolved transparently: cited as
-      Synaptic Labs (2026), published under the lab's AI avatar Professor
-      Synapse (Section 3 + References). Re-confirm email choice and exact
-      affiliation string at BibTeX/LaTeX time.
+      title block. Re-confirm email choice and exact affiliation string at
+      BibTeX/LaTeX time. SUPERSEDED 2026-06-11: all companion-essay
+      mentions and the Synaptic Labs (2026) reference REMOVED by author
+      decision; the Formalization Stack is now presented as introduced by
+      this paper (§1 contribution 3, §3). Do not re-add the attribution.
 - [x] **Finish the interim columns** of `idk-method-reanalysis.csv` — DONE
       2026-06-10: exact gold-alias grading via
       `datasets/triviaqa-rc-nocontext/cheng_test_gold.jsonl` (Cheng test set
@@ -104,3 +105,35 @@
 - [x] **Verify 2026 arXiv IDs** — DONE 2026-06-10 (batches A+B): all
       essay-cited 2603-2606 IDs resolve to the intended papers and their
       quoted values are PDF-verified.
+- [x] **Backward-citation pass (reference-list checking).** DONE 2026-06-11:
+      Semantic Scholar reference lists of all 69 bibliography arXiv papers
+      aggregated and ranked (`evidence/citation-gap-analysis.md`,
+      `citation-gap-candidates.csv`). 11 named-but-uncited papers fixed
+      (TruthRL 2509.25760, lie-detectors 2505.13787 with tightened
+      paraphrase, gap-4 probing toolkit 2304.13734/2212.03827/2310.06824/
+      2306.03341/2310.01405/2406.15927, gap-4 caveat sources 2510.09033/
+      2407.08582, MASK 2503.03750). 12 context refs added (DPO 2305.18290,
+      InstructGPT 2203.02155, PPO, Guo ECE 1706.04599, MMLU, TriviaQA,
+      Kuhn SE 2302.09664 + Farquhar Nature 2024, Kalai-Vempala 2311.14648
+      [phrasing verified vs abstract 2026-06-11], Mielke 2012.14983).
+      6 candidates PDF-screened against §4.2 by agents: 4 ADMITTED
+      (+8 rows, corpus 67→75 rows / 35→39 studies: InstructGPT counterpoint
+      row; SaySelf → C5 now 11/0 p=0.001, new `confidence_sft_rl` label in
+      synthesize.py; 2505.23646 recipe rows; Machine Bullshit 2507.07484
+      satisfaction-RLHF rows, variance-aware rows 3→6); 2 held out with
+      logged rationales (Mielke pre-LLM regime; 2505.13787 synthetic
+      deception-reward). synthesize.py re-run; prisma figure + flow doc
+      updated; draft counts propagated (abstract, §1, §4.1/4.3/4.4/4.5,
+      §5.1/5.2/5.5, §6.1/6.3, §7).
+- [ ] **Backward-citation follow-ups:** (a) re-check 2505.23646 Table 6
+      probe-accuracy duplication against a later arXiv revision before
+      citing its probe numbers anywhere; (b) Machine Bullshit Fig. 3 BI row
+      model attribution is "Llama-3-8b (probable)" — paper never states it;
+      confirm with authors/v2 if the BI number is ever quoted per-model;
+      (c) DONE 2026-06-11: library/manifest.yaml updated (12 new entries,
+      97→109; 4 admitted studies status: verified with notes + PDFs;
+      2 screened-held status: fetched; 8 context refs as candidates;
+      note stubs created and Summary/Extracted sections filled for all 6
+      screened papers; PDFs copied into library/pdfs/); (d) consider Tier-3
+      optional cites from citation-gap-analysis.md (Naeini 2015 for ECE
+      origin; 2503.14477 for gap-4 prior art) at style-pass time.
