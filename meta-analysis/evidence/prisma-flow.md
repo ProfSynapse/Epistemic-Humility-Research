@@ -24,8 +24,9 @@ reported. All counts below are recomputable from the files named.
 | Surfaced but **not** admitted | 21 (see exclusion log) | set difference, reports vs. manifest |
 | Studies with extracted quantitative rows | 35 (31 arXiv + 2 gray + 2 own reanalyses) → 67 rows | `effects.csv` |
 | Library papers cited as context/framework only | 38 | draft in-text citations minus extraction studies |
-| Rows excluded post-verification | 1 (2505.19056 — citation mis-attribution) | `effects.csv` row 59 notes |
-| Rows verified against primary artifact | 64 of 67 (8 of these are our own computed reanalysis rows, born verified) | `effects.csv` `verified` column |
+| Rows excluded post-verification | 1 (2505.19056 — citation mis-attribution; REMOVED from effects.csv 2026-06-11, full record preserved below) | this document, "Excluded row" section |
+| Review pass (2026-06-11) | +1 row extracted (IPO arm of 2404.14723, promoted from the KTO row's notes); excluded row removed → corpus 75 rows / 38 studies | `effects.csv`; paper TODO.md |
+| Rows verified against primary artifact | 73 of 75 current (was 64 of 67 at the verification freeze, 72 of 75 post-backward-pass; 12 are our own computed reanalysis rows, born verified; the 8 backward-citation rows and the review-extracted IPO row were PDF-verified at admission) | `effects.csv` `verified` column |
 
 ## Exclusion log — the 21 surfaced-but-not-admitted arXiv IDs
 
@@ -160,3 +161,13 @@ benchmarks): 1705.03551, 1706.04599, 1707.06347, 2009.03300, 2012.14983,
 Of these, 11 were Tier-1 fixes: papers already named or quoted in the draft
 prose without a reference entry (TruthRL, lie-detectors, the entire gap-4
 probing toolkit, MASK, and the two gap-4 caveat sources).
+
+## Excluded row (full record, removed from effects.csv 2026-06-11)
+
+Removed from the corpus per the 2026-06-11 review decision (an admitted
+mis-attribution should not count toward corpus size); preserved here verbatim
+as the PRISMA-style excluded record:
+
+```csv
+2505.19056,Abliteration defense,2025,methods,7B-class,7,refusal_dose_response,SFT,over-refusal,lower,safety refusal mix,0% refusal data,0.0,2% refusal data,6.0,6.0,,,False,False,raw-reports/05,RESOLVED 2026-06-10: dose-response re-attributed to Bianchi 2309.07875 (safety-data sweep 100-2000 on 20k Alpaca; exaggerated safety at high doses; figure/annotation evidence only) — this row's scalars (2% -> 6.0) not reproducible there either; row stays excluded from pooled stats; draft gap 5 now cites 2309.07875 qualitatively
+```
