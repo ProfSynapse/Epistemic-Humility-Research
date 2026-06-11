@@ -25,9 +25,10 @@ ADMITTED = 97          # library/manifest.yaml (search phases)
 BACKCITE_STUDIES = 4   # backward-citation pass admissions (prisma-flow.md)
 BACKCITE_CONTEXT = 20  # 19 arXiv context + 1 non-arXiv (Farquhar 2024)
 NOT_ADMITTED = 21      # 13 peripheral + 4 post-freeze + 4 ID artifacts
-STUDIES, ROWS = 39, 75  # effects.csv
+STUDIES, ROWS = 38, 75  # effects.csv (post 2026-06-11 review: mis-attributed
+#                          row removed; IPO arm of 2404.14723 extracted)
 CONTEXT_CITED = 38 + BACKCITE_CONTEXT  # cited in draft without extracted rows
-VERIFIED = 72          # effects.csv verified column
+VERIFIED = 73          # effects.csv verified column
 CORRECTED, EXCLUDED = 6, 1
 
 MAIN = [
@@ -47,13 +48,14 @@ MAIN = [
      f"+ {CONTEXT_CITED} papers cited as context/framework only"),
     ("PDF verification",
      f"{VERIFIED}/{ROWS} rows verified · {CORRECTED} corrected · "
-     f"{EXCLUDED} excluded (mis-attribution)"),
+     f"{EXCLUDED} excluded + removed (mis-attribution)\n"
+     "+ review pass: IPO arm extracted (2404.14723)"),
 ]
 
 SIDE = {
     2: ("Not admitted: 21 IDs\n13 peripheral mentions\n4 post-extraction-freeze\n"
         "4 ID-disambiguation artifacts"),
-    4: ("Unverifiable: 3 rows\nblog replication · no-PDF journal\nexcluded mis-attribution"),
+    4: ("Unverifiable: 2 rows\nblog replication · no-PDF journal\n(mis-attributed row removed)"),
 }
 
 fig, ax = plt.subplots(figsize=(8.2, 9.2))

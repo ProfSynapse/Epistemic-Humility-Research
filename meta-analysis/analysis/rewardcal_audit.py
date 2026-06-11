@@ -51,8 +51,8 @@ import statistics
 from pathlib import Path
 
 HERE = Path(__file__).resolve().parent          # meta-analysis/analysis
-EH = HERE.parent.parent                          # docs/epistemic-humility
-REPO = HERE.parents[3]                           # repo root
+EH = HERE.parent.parent                          # repo root (project root)
+REPO = HERE.parents[1]                           # repo root
 OUT_R1 = EH / "experiment" / "protocol" / "rewardcal-kto-recipe.md"
 OUT_R3 = HERE.parent / "evidence" / "rewardcal-contamination-audit.md"
 FIGDIR = HERE / "figures"
@@ -116,6 +116,20 @@ CONF_TRAILING = re.compile(r"confidence\s*:\s*\d{1,3}\s*%?\s*\.?\s*$", re.I)
 CONF_SUFFIX = re.compile(r"\nConfidence:\s*(\d+(?:\.\d+)?)\.?\s*$")
 
 
+def _guard_sample_fallback(missing: str) -> None:
+    """The committed evidence doc's percentages come from the FULL parquets
+    (scratch/rewardcal-fetch/, not committed). Falling back to the stratified
+    sample silently changes every percentage, so it must be opted into."""
+    import os
+    if os.environ.get("REWARDCAL_ALLOW_SAMPLE") != "1":
+        raise SystemExit(
+            f"{missing} not found in {[str(d) for d in PARQUET_DIRS]}. "
+            "Refusing to fall back to the 2,400-row sample (it changes the "
+            "audit percentages). Re-fetch the parquets, or set "
+            "REWARDCAL_ALLOW_SAMPLE=1 to run on the sample anyway."
+        )
+
+
 def load_pref():
     """Return (records, source_desc, is_full). Records: list of dicts with
     message lists as list[{'role','content'}]."""
@@ -129,6 +143,7 @@ def load_pref():
                 for k in ("chosen", "rejected") + VARIANTS:
                     r[k] = [dict(m) for m in r[k]]
             return recs, f"FULL parquet ({pq.relative_to(REPO)}, {len(recs)} rows)", True
+    _guard_sample_fallback("calib_pref.parquet")
     sample = SAMPLE_DIR / "calibration_preference_mixture.sample2400.jsonl"
     recs = [json.loads(line) for line in sample.open()]
     return recs, f"stratified SAMPLE ({sample.name}, {len(recs)} rows of 25,524)", False
@@ -145,6 +160,7 @@ def load_prompts():
                 for k in ("prompt", "confidence_prompt"):
                     r[k] = [dict(m) for m in r[k]]
             return recs, f"FULL parquet ({pq.relative_to(REPO)}, {len(recs)} rows)", True
+    _guard_sample_fallback("prompts.parquet")
     sample = SAMPLE_DIR / "prompt_collections.sample.jsonl"
     recs = [json.loads(line) for line in sample.open()]
     return recs, f"stratified SAMPLE ({sample.name}, {len(recs)} rows of 20,480)", False

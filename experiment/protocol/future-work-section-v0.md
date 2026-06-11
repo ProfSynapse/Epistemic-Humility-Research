@@ -1,5 +1,12 @@
 # Paper 1, Section 8 (v0 text) — parked 2026-06-10
 
+SUPERSEDED 2026-06-11: §8 has been drafted in `meta-analysis/paper/draft-v0.md`
+as a four-phase program (method three-way / dose-response and composition /
+probe-transfer mechanism / rolling generalization), sourced from
+`experiment/protocol/research-trajectory.md`. This file is kept for the record;
+the coherent-humility framing and the three-outcome probe-transfer reading
+below were carried into the new section.
+
 Removed from `meta-analysis/paper/draft-v0.md` pending the research-trajectory
 mapping conversation; will be rewritten once the experimental program is
 formally scoped. Original v0 text follows.

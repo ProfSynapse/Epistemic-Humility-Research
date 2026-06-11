@@ -84,8 +84,16 @@ uncertainty + Farquhar Nature 2024, Kalai-Vempala 2311.14648). Six candidates
 were PDF-screened against §4.2 (plus user-flagged Machine Bullshit
 arXiv:2507.07484, which the crawl's >=3x band had missed because it is too
 recent to be widely cited by our corpus): 4 admitted as effect studies
-(2203.02155, 2405.20974, 2505.23646, 2507.07484; +8 rows, corpus now 75 rows /
+(2203.02155, 2405.20974, 2505.23646, 2507.07484; +8 rows, corpus then 75 rows /
 39 studies; C5 11/0 p=0.001; variance-aware rows 3→6), 2 screened-and-held
 (2012.14983 pre-LLM regime; 2505.13787 synthetic deception-reward setting).
 Full disposition table in prisma-flow.md ("Backward-citation pass" section);
 remaining optional Tier-3 cites tracked in paper/TODO.md.
+
+UPDATE 2026-06-11 (factuality review pass): the counts in the paragraph above
+are the post-backward-pass state and are superseded. The mis-attributed row
+2505.19056 was removed from the corpus and the IPO arm of 2404.14723 was
+extracted, so the corpus is now 75 rows / 38 studies (73 verified); C5 is
+10/0 p=0.002 after the multi-LLM prompting row left the family. Current
+numbers regenerate from analysis/synthesize.py; decisions logged in
+paper/TODO.md and docs/review/draft-v0-factuality-review-board-2026-06-11.md.
