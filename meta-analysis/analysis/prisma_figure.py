@@ -21,11 +21,13 @@ QUERIES = 110          # sum of agent_queries frontmatter, reports 01-06
 ENTRIES = 93           # ^PAPER: entries across reports
 UNIQUE_ARXIV = 114     # deduplicated arXiv IDs in reports
 NON_ARXIV = 5          # gray literature + essay
-ADMITTED = 97          # library/manifest.yaml
+ADMITTED = 97          # library/manifest.yaml (search phases)
+BACKCITE_STUDIES = 4   # backward-citation pass admissions (prisma-flow.md)
+BACKCITE_CONTEXT = 20  # 19 arXiv context + 1 non-arXiv (Farquhar 2024)
 NOT_ADMITTED = 21      # 13 peripheral + 4 post-freeze + 4 ID artifacts
-STUDIES, ROWS = 35, 67  # effects.csv
-CONTEXT_CITED = 38     # cited in draft without extracted rows
-VERIFIED = 64          # effects.csv verified column
+STUDIES, ROWS = 39, 75  # effects.csv
+CONTEXT_CITED = 38 + BACKCITE_CONTEXT  # cited in draft without extracted rows
+VERIFIED = 72          # effects.csv verified column
 CORRECTED, EXCLUDED = 6, 1
 
 MAIN = [
@@ -37,7 +39,9 @@ MAIN = [
      f"{UNIQUE_ARXIV} unique arXiv IDs + {NON_ARXIV} non-arXiv records"),
     ("Library admission",
      f"{ADMITTED} papers admitted after dedup + eligibility screening\n"
-     "(93 search-surfaced + 4 verification/follow-up additions)"),
+     "(93 search-surfaced + 4 verification/follow-up additions)\n"
+     f"+ backward-citation pass: {BACKCITE_STUDIES} effect studies, "
+     f"{BACKCITE_CONTEXT} context refs (June 2026)"),
     ("Quantitative extraction",
      f"{STUDIES} studies → {ROWS} effect rows in unified schema\n"
      f"+ {CONTEXT_CITED} papers cited as context/framework only"),

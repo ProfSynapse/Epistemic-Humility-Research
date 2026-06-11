@@ -121,3 +121,42 @@ verification — the per-row audit trail lives in `effects.csv` notes and
 5. 2404.14723 KTO gain corrected (report's 17.5% unsupported by appendix)
 6. 2109.07958 17% reinterpreted (generation-task largest-vs-60×-smaller)
 7. 2505.19056 row excluded (dose-response claim re-attributed to 2309.07875)
+
+## Backward-citation pass (reference-list checking, 2026-06-11)
+
+Third retrieval phase, run after the verification pass: the Semantic Scholar
+reference lists of all 69 bibliography arXiv papers (~4,000 referenced works)
+were aggregated and ranked by co-citation frequency (`citation-gap-analysis.md`,
+`citation-gap-candidates.csv`; 143 candidates cited by >=3 of our sources).
+Topically relevant candidates absent from the bibliography were screened
+against the §4.2 criteria, six of them by full-PDF screening agents.
+
+**Admitted as effect studies (4 studies, +8 rows; corpus 67→75 rows, 35→39
+studies; all rows PDF-extracted at admission, born verified):**
+
+| arXiv | Study | Rows | Disposition |
+|---|---|---|---|
+| 2203.02155 | InstructGPT (Ouyang et al., NeurIPS 2022) | 1 | counterpoint row: RLHF halves closed-domain hallucination 41%→21%; TruthfulQA gains figure-only, not extracted |
+| 2405.20974 | SaySelf (EMNLP 2024) | 2 | criterion (i); joins C5 (new comparison label `confidence_sft_rl` added to synthesize.py); C5 now 11/0, p=0.001 |
+| 2505.23646 | Are Reasoning Models More Prone to Hallucination? | 3 | criterion (i)/(iii); observational checkpoint recipe decomposition; Table 6 probe values duplicate Tables 1-3 (suspected v1 error), not extracted |
+| 2507.07484 | Machine Bullshit (Liang et al.) | 2 | criterion (i); satisfaction-reward LoRA RLHF (RLHS arXiv:2501.08617), NOT generic RLHF — hedged in prose; both rows variance-aware (corpus variance rows 3→6) |
+
+**Screened in full, held out with rationale (cited as context):**
+
+- arXiv:2012.14983 (Mielke et al., TACL 2022): meets criterion (i) literally,
+  but pre-LLM BlenderBot 2.7B at 4.8% closed-book accuracy is not
+  commensurable with the corpus; cited as linguistic-calibration lineage in C1.
+- arXiv:2505.13787 (Cundy & Gleave, NeurIPS 2025): deception rate under
+  deliberately deception-favoring synthetic preference labels (DolusChat) is a
+  Goodhart/oversight result, not a humility-metric training effect; cited as
+  methodological context in gap 3 (draft paraphrase tightened: ">85% deception,
+  overwhelmingly detector-evading... DPO under 25% at realistic TPRs").
+
+**19 context citations added** (method origins, probing toolkit, theory,
+benchmarks): 1705.03551, 1706.04599, 1707.06347, 2009.03300, 2012.14983,
+2212.03827, 2302.09664, 2304.13734, 2305.18290, 2306.03341, 2310.01405,
+2310.06824, 2311.14648, 2406.15927, 2407.08582, 2503.03750, 2505.13787,
+2509.25760, 2510.09033; plus Farquhar et al. 2024 (Nature, non-arXiv).
+Of these, 11 were Tier-1 fixes: papers already named or quoted in the draft
+prose without a reference entry (TruthRL, lie-detectors, the entire gap-4
+probing toolkit, MASK, and the two gap-4 caveat sources).

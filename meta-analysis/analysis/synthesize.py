@@ -82,7 +82,7 @@ FAMILIES = [
     ),
     (
         "C5: targeted training interventions improve humility metrics",
-        lambda d: d[d.comparison.isin(["refusal_aware_sft", "honesty_sft", "dpo_calibration", "dpo_factuality", "factuality_aware_alignment", "synthetic_data_intervention", "sft_intervention", "rlhf_variant", "posthoc_fix", "multi_llm_abstention"])],
+        lambda d: d[d.comparison.isin(["refusal_aware_sft", "honesty_sft", "dpo_calibration", "dpo_factuality", "factuality_aware_alignment", "synthetic_data_intervention", "sft_intervention", "rlhf_variant", "posthoc_fix", "multi_llm_abstention", "confidence_sft_rl"])],
         supports_improvement,
     ),
 ]
