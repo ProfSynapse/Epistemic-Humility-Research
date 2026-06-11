@@ -7,6 +7,12 @@ datasets/*/.cache/
 # working space (refetchable parquets etc.)
 scratch/
 
+# git worktrees (PACT feature isolation)
+.worktrees/
+
+# project-memory lock artifact
+.claude/.CLAUDE.md.lock
+
 # secrets
 .env
 .env.*
