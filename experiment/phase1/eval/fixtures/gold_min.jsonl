@@ -1,0 +1,3 @@
+{"question_norm": "what is the capital of france?", "normalized_aliases": ["paris"]}
+{"question_norm": "who wrote the play hamlet?", "normalized_aliases": ["william shakespeare", "shakespeare"]}
+{"question_norm": "how many moons does mars have?", "normalized_aliases": ["two", "2"]}

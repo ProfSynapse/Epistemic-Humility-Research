@@ -1,0 +1,100 @@
+# experiment/phase1/eval/config/eval.yaml
+#
+# Phase-1 eval harness config (WS-4). Drives run_eval.py. No paths or counts are
+# hardcoded in code; everything the harness needs is here. Paths are relative to
+# the eval dir (experiment/phase1/eval/) unless absolute.
+#
+# This is the REAL-RUN template. Sampling/model fields are honored by the
+# post-sign-off VLLMGenerator; the FixtureGenerator (CI path) ignores them and
+# reads pre-recorded generations. Real eval runs are gated on PROTOCOL v0.2
+# user sign-off.
+
+model_tag: qwen3-4b-instruct
+gold_path: ../../../datasets/triviaqa-rc-nocontext/cheng_test_gold.jsonl
+results_dir: results
+
+# Eval generation sampling (honored by VLLMGenerator at real-run time).
+generation:
+  enable_thinking: false      # Qwen3 thinking pinned OFF (confound control)
+  seed: 20240601              # deterministic eval generations
+  temperature: 0.0            # greedy for the headline pass
+  max_new_tokens: 256
+  n_samples: 10               # for self-consistency confidence (AP)
+
+# AP confidence signal. Default self_consistency (matches probe P_correct);
+# architect-pinned, no veto. Alternative: seq_logprob (swappable here without
+# touching the scorer). The active signal is recorded per run in metrics.json
+# (confidence_source) so AP numbers are provenance-traceable.
+#
+# n_samples is the AP-specific self-consistency budget, kept SEPARATE from the
+# probe's 32: AP only needs a ranking, not a fine P_correct estimate, so a
+# smaller N keeps the OOD-sweep eval cost under the ceiling (architect note).
+# Pinned here and echoed into the run manifest. seq_logprob ignores n_samples.
+confidence:
+  signal: self_consistency
+  n_samples: 8
+
+# ECE on MMLU MCQ.
+ece:
+  n_bins: 15                  # PINNED (PROTOCOL v0.2 §3.5)
+
+# Bootstrap + stats determinism.
+bootstrap:
+  n_resamples: 10000
+  level: 0.95
+  seed: 12345
+
+# Arms to evaluate. `base` is the untrained reference for accuracy-retention.
+# Real adapters are filled in post-training; the bridge arm replicates Cheng.
+arms:
+  - name: base
+    method: base
+    model: qwen3-4b-instruct
+    adapter: null
+  - name: sft
+    method: sft
+    model: qwen3-4b-instruct
+    adapter: ../../../experiment/runs/qwen3_4b_sft
+  - name: dpo
+    method: dpo
+    model: qwen3-4b-instruct
+    adapter: ../../../experiment/runs/qwen3_4b_dpo
+  - name: kto_congruence
+    method: kto
+    model: qwen3-4b-instruct
+    adapter: ../../../experiment/runs/qwen3_4b_kto_congruence
+  # Bridge arm: Llama-2-7b-chat replication vs Cheng published numbers.
+  - name: bridge_sft
+    method: sft
+    model: llama-2-7b-chat
+    adapter: ../../../experiment/runs/bridge_llama2_sft
+  - name: bridge_dpo
+    method: dpo
+    model: llama-2-7b-chat
+    adapter: ../../../experiment/runs/bridge_llama2_dpo
+
+# Eval sets. label_from_target=true ONLY for the bridge in-domain replication
+# (known/unknown inferred from the IDK target, Cheng-style); in-domain Qwen3 sets
+# carry probe labels. type=ood routes to ood.py loaders.
+eval_sets:
+  in_domain:
+    path: ../../../experiment/phase1/eval/fixtures/in_domain_records.json
+    label_from_target: false
+  kuq:
+    type: ood
+    path: ../../../datasets/kuq/knowns_unknowns.jsonl
+  coconot:
+    type: ood
+    path: ../../../datasets/coconot/contrast_test.jsonl
+  popqa:
+    type: ood
+    path: ../../../datasets/popqa/test.jsonl
+  selfaware:
+    type: ood
+    path: ../../../datasets/selfaware/SelfAware.json
+  truthfulqa:
+    type: ood
+    path: ../../../datasets/truthfulqa/TruthfulQA.csv
+  mmlu:
+    type: ood
+    path: ../../../datasets/mmlu/test.jsonl

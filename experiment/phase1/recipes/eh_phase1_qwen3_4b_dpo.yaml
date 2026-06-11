@@ -1,0 +1,66 @@
+# Epistemic-Humility Phase 1 — DPO arm, Qwen3-4B (hybrid, local pilot).
+#
+# Config-driven; the dataset local_file is the WS-2 DPO builder output
+# (prompt/chosen/rejected pairs). The LoRA budget here is IDENTICAL to the
+# SFT and KTO Phase-1 4B recipes (r=32, alpha=64, same target_modules) so the
+# three abstention arms differ only in training objective, not capacity.
+#
+# Purely declarative: the WS-5 experiment runner owns command construction,
+# container wiring, and per-cell data staging. dataset.local_file below is a
+# staging placeholder the runner rewrites per cell (local lane) or swaps for an
+# HF-hub dataset.name (cloud lane). See experiment/phase1/recipes/README.md.
+#
+# Thinking mode (PROTOCOL.md:193): NO chat_template_kwargs key here BY DESIGN.
+# DPO is thinking-off by Qwen3 template construction — the WS-2 completions are
+# clean assistant turns (no reasoning_content, no '</think>'), so the template
+# injects no <think> block, and TRL templates internally from the tokenizer's
+# native Qwen3 template. Eval/probe pin enable_thinking=False at the inference
+# config. This is the document-and-accept disposition (no template surgery);
+# see the ADR at docs/architecture/phase1-pipeline.md §9.3.
+name: eh-phase1-qwen3-4b-dpo
+target: local
+method: dpo
+provider: local_docker
+
+job:
+  image: unsloth/unsloth:latest
+  pull_policy: missing
+  transfer: auto
+  keep_container: false
+
+setup:
+  pip:
+    - trl==0.22.2
+    - git+https://github.com/unslothai/unsloth_zoo.git
+    - git+https://github.com/unslothai/unsloth.git
+
+model:
+  name: unsloth/Qwen3-4B-bnb-4bit
+  max_seq_length: 2048
+  load_in_4bit: true
+
+dataset:
+  local_file: experiment/phase1/data/qwen3-4b-instruct/dpo_train.jsonl
+
+training:
+  batch_size: 2
+  gradient_accumulation: 4
+  learning_rate: 5.0e-6
+  num_epochs: 1
+
+lora:
+  r: 32
+  alpha: 64
+  dropout: 0.05
+  target_modules:
+    - q_proj
+    - k_proj
+    - v_proj
+    - o_proj
+    - gate_proj
+    - up_proj
+    - down_proj
+
+artifacts:
+  output_root: toolset-training-artifacts/runs/local_docker/dpo/{name}
+  run_timestamp: "{timestamp}"

@@ -6,3 +6,15 @@ datasets/*/.cache/
 
 # working space (refetchable parquets etc.)
 scratch/
+
+# secrets
+.env
+.env.*
+
+# Data too large for GitHub (regenerated deterministically by datasets/scripts/fetch_datasets.py)
+datasets/triviaqa-rc-nocontext/train.jsonl
+
+# Python bytecode / test caches
+__pycache__/
+*.pyc
+.pytest_cache/

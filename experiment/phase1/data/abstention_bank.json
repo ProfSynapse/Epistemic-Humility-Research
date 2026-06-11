@@ -1,0 +1,30 @@
+{
+  "_comment": "Style-varied abstention phrasing bank for WS-2 dataset builders (Phase 1, paper 2). EVERY phrasing MUST contain one of the four eval refusal markers (see refusal_markers below, ported verbatim from meta-analysis/analysis/reanalyze_idk_outputs.py REFUSAL_MARKERS) so that refusal detection at eval time stays reliable (arch doc section 4.3, PROTOCOL.md section 3.3). The builder re-validates this invariant at build time and aborts if any phrasing matches no marker; do NOT trust this file's correctness. The marker substring is shown in each phrasing; stylistic variation rides on top to fight template overfitting (Cheng over-refused partly from a single fixed template). This is a checked-in, versioned, deterministic artifact (no live generation at build time) per team-lead decision 2026-06-10.",
+  "version": "0.1.0",
+  "refusal_markers": [
+    "beyond the scope of my knowledge",
+    "i am not sure what the answer is",
+    "i don't know the answer",
+    "i do not know the answer"
+  ],
+  "phrasings": [
+    "I don't know the answer to that question.",
+    "I do not know the answer to that one.",
+    "Honestly, I don't know the answer to this.",
+    "I'm sorry, but I don't know the answer here.",
+    "That's beyond the scope of my knowledge.",
+    "I'm afraid that's beyond the scope of my knowledge.",
+    "I am not sure what the answer is.",
+    "I am not sure what the answer is, so I'd rather not guess.",
+    "I do not know the answer, and I don't want to make something up.",
+    "I don't know the answer, so I'll refrain from guessing.",
+    "I can't say for certain; I do not know the answer.",
+    "This question is beyond the scope of my knowledge, so I can't answer reliably.",
+    "I'm not confident here. I am not sure what the answer is.",
+    "I don't know the answer to that, but I'd be glad to help with something else.",
+    "Unfortunately I do not know the answer to this question.",
+    "That falls beyond the scope of my knowledge.",
+    "I'd be guessing, and I don't know the answer to that.",
+    "I have to be honest: I am not sure what the answer is."
+  ]
+}

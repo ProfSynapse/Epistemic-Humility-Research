@@ -1,0 +1,5 @@
+{"question": "Who wrote Paradise Lost?", "question_id": "fix_known_1", "answer": {"value": "John Milton", "normalized_aliases": ["john milton", "milton"]}}
+{"question": "What is the capital of France?", "question_id": "fix_known_2", "answer": {"value": "Paris", "normalized_aliases": ["paris"]}}
+{"question": "What is the airspeed velocity of an unladen swallow in 1297?", "question_id": "fix_unknown_1", "answer": {"value": "Eleven metres per second", "normalized_aliases": ["eleven metres per second"]}}
+{"question": "What was the exact thought of Caesar at noon on the ides?", "question_id": "fix_unknown_2", "answer": {"value": "Unknowable Phrase", "normalized_aliases": ["unknowable phrase"]}}
+{"question": "Which actor played the third spear-carrier in a 1973 play?", "question_id": "fix_discard_1", "answer": {"normalized_aliases": ["graham chapman"]}}

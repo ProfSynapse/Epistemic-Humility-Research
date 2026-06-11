@@ -1,0 +1,11 @@
+# OpenMOSS "Say I Don't Know" Idk TRAINING data: USE only, DO NOT REDISTRIBUTE.
+# The source repo has NO license (GitHub license: null) and the sibling outputs
+# are flagged analysis-only. This repo may go public with the paper, so the
+# vendored zip, the transient clone, and every regenerated training file MUST
+# stay out of version control. Committing them would be redistribution.
+#
+# Ignore everything in this directory...
+*
+# ...except the provenance record and this gitignore itself.
+!.gitignore
+!dataset.md
