@@ -12,8 +12,8 @@ One job: for every TriviaQA train-split question, estimate this model's
 P_correct under its own generation and capture its wrong answers (the
 downstream KTO/DPO negatives). It does NOT build training files (that is WS-2).
 
-The probe is checkpointed and resumable: per-question results are appended to
-probe_results.jsonl keyed by question_id; on restart, question_ids already
+The probe is checkpointed and resumable: per-row results are appended to
+probe_results.jsonl keyed by probe_pool_row_key; on restart, rows already
 present are skipped. Per-question seeds are derived from the master seed plus
 the question_id so a resumed run reproduces skipped questions exactly.
 
@@ -31,7 +31,11 @@ from pathlib import Path
 
 import yaml
 
-from backends import build_backend
+from backends import (
+    assert_no_generated_thinking,
+    assert_no_generated_thinking_batch,
+    build_backend,
+)
 from scoring import is_correct, normalize_question, p_correct
 
 # Repo root is four levels up from this file
@@ -64,7 +68,7 @@ def derive_seed(master_seed: int, question_id: str) -> int:
 
 
 def load_config(config_path: Path) -> dict:
-    with config_path.open() as fh:
+    with config_path.open(encoding="utf-8") as fh:
         return yaml.safe_load(fh)
 
 
@@ -81,8 +85,13 @@ def resolve_pool_path(config: dict) -> Path:
     return (REPO_ROOT / rel).resolve()
 
 
+def make_pool_row_key(source_index: int, question_id: str) -> str:
+    """Stable row identity for pools where question_id is not unique."""
+    return f"{source_index:012d}|{question_id}"
+
+
 def iter_pool(pool_path: Path, id_prefix: str):
-    """Yield (question_id, question, normalized_aliases, answer_value) per row.
+    """Yield one normalized probe-pool tuple per non-empty source row.
 
     TriviaQA train rows carry question, question_id, answer.normalized_aliases
     (lowercased) and answer.value (natural-case gold). The probe scores against
@@ -93,7 +102,7 @@ def iter_pool(pool_path: Path, id_prefix: str):
 
     If a row lacks question_id, synthesize a stable one from the row index.
     """
-    with pool_path.open() as fh:
+    with pool_path.open(encoding="utf-8") as fh:
         for idx, line in enumerate(fh):
             line = line.strip()
             if not line:
@@ -101,10 +110,62 @@ def iter_pool(pool_path: Path, id_prefix: str):
             row = json.loads(line)
             raw_id = row.get("question_id")
             question_id = str(raw_id) if raw_id else f"{id_prefix}{idx:06d}"
+            row_key = make_pool_row_key(idx, question_id)
             answer = row.get("answer", {})
             aliases = [a for a in answer.get("normalized_aliases", []) if a]
             answer_value = answer.get("value") or None
-            yield question_id, row["question"], aliases, answer_value
+            yield row_key, idx, question_id, row["question"], aliases, answer_value
+
+
+def _subset_key(subset_seed: int, row_key: str) -> str:
+    return hashlib.sha256(f"{subset_seed}|{row_key}".encode()).hexdigest()
+
+
+def load_probe_pool(config: dict, pool_path: Path) -> tuple[list[tuple], dict]:
+    """Load and deterministically cap the probe pool.
+
+    The cap selects source rows by a stable hash of (subset_seed, row_key), then
+    keeps source-file order for the selected rows. Row keys include source index
+    plus question_id because TriviaQA train question_id is not unique.
+    """
+    pool_cfg = config["probe_pool"]
+    id_prefix = pool_cfg["question_id_prefix"]
+    rows = list(iter_pool(pool_path, id_prefix))
+    source_count = len(rows)
+    max_questions = pool_cfg.get("max_questions")
+    subset_seed = int(pool_cfg.get("subset_seed", config["sampling"]["seed"]))
+
+    if isinstance(max_questions, bool) or (
+            max_questions is not None and int(max_questions) < 0):
+        raise ValueError("probe_pool.max_questions must be null or a non-negative integer")
+
+    selected_rows = rows
+    selection_applied = False
+    if max_questions is not None:
+        max_questions = int(max_questions)
+        if source_count > max_questions:
+            selected_row_keys = {
+                row_key for row_key, *_ in sorted(
+                    rows,
+                    key=lambda row: (_subset_key(subset_seed, row[0]), row[0]),
+                )[:max_questions]
+            }
+            selected_rows = [row for row in rows if row[0] in selected_row_keys]
+            selection_applied = True
+
+    selection = {
+        "source_question_count": source_count,
+        "selected_question_count": len(selected_rows),
+        "max_questions": max_questions,
+        "subset_seed": subset_seed,
+        "selection_applied": selection_applied,
+        "selection_method": (
+            "sha256(f'{subset_seed}|{probe_pool_row_key}') ascending; "
+            "probe_pool_row_key is zero-based source_index plus question_id; "
+            "selected rows processed in source order"
+        ),
+    }
+    return selected_rows, selection
 
 
 def assign_label(greedy_correct: bool, pc: float, labels_cfg: dict) -> str:
@@ -116,22 +177,28 @@ def assign_label(greedy_correct: bool, pc: float, labels_cfg: dict) -> str:
     return "discard"
 
 
-def load_done_ids(results_path: Path) -> set[str]:
-    """Question ids already in the append-log (resumability checkpoint)."""
+def load_done_row_keys(results_path: Path) -> tuple[set[str], int]:
+    """Row keys already in the append-log and count of legacy unkeyed rows."""
     done: set[str] = set()
     if not results_path.exists():
-        return done
-    with results_path.open() as fh:
+        return done, 0
+    legacy_rows = 0
+    with results_path.open(encoding="utf-8") as fh:
         for line in fh:
             line = line.strip()
             if not line:
                 continue
-            done.add(json.loads(line)["question_id"])
-    return done
+            record = json.loads(line)
+            row_key = record.get("probe_pool_row_key")
+            if row_key:
+                done.add(row_key)
+            else:
+                legacy_rows += 1
+    return done, legacy_rows
 
 
-def probe_one(backend, question_id, question, aliases, answer_value, config,
-              cfg_sha):
+def probe_one(backend, row_key, source_index, question_id, question, aliases,
+              answer_value, config, cfg_sha):
     """Probe a single question and return its result record (A -> B schema).
 
     answer_value is the natural-case gold (TriviaQA answer.value) carried
@@ -147,15 +214,23 @@ def probe_one(backend, question_id, question, aliases, answer_value, config,
         temperature=s["temperature"], top_p=s["top_p"],
         max_new_tokens=s["max_new_tokens"], seed=seed,
     )
+    assert_no_generated_thinking_batch(
+        sampled_answers, question=question, generation_kind="sampled"
+    )
     sampled_correct = [is_correct(a, aliases) for a in sampled_answers]
     pc = p_correct(sampled_correct)
 
     greedy_answer = backend.generate_greedy(question, s["max_new_tokens"])
+    assert_no_generated_thinking(
+        greedy_answer, question=question, generation_kind="greedy"
+    )
     greedy_correct = is_correct(greedy_answer, aliases)
 
     label = assign_label(greedy_correct, pc, config["labels"])
 
     return {
+        "probe_pool_row_key": row_key,
+        "probe_pool_source_index": source_index,
         "question_id": question_id,
         "question": question,
         "question_norm": normalize_question(question),
@@ -179,29 +254,49 @@ def run_probe(config: dict, backend, out_dir: Path) -> Path:
     results_path = out_dir / config["output"]["results_filename"]
     cfg_sha = config_sha(config)
     pool_path = resolve_pool_path(config)
-    id_prefix = config["probe_pool"]["question_id_prefix"]
+    pool_rows, selection = load_probe_pool(config, pool_path)
 
-    done = load_done_ids(results_path)
+    done, legacy_rows = load_done_row_keys(results_path)
+    if legacy_rows:
+        raise RuntimeError(
+            f"{_rel(results_path)} contains {legacy_rows} legacy records "
+            "without probe_pool_row_key. Duplicate question_ids make this "
+            "append-log unsafe to resume with row-keyed probe_pool selection. "
+            "Archive this partial append-log or choose a fresh model_tag/output "
+            "directory before running with the capped probe_pool config."
+        )
+    selected_row_keys = {row_key for row_key, *_ in pool_rows}
+    outside_done = done - selected_row_keys
+    if outside_done:
+        raise RuntimeError(
+            f"{_rel(results_path)} contains {len(outside_done)} row keys "
+            "outside the configured probe_pool subset. Archive this partial "
+            "append-log or choose a fresh model_tag/output directory before "
+            "running with the capped probe_pool config."
+        )
+
     n_new = 0
-    with results_path.open("a") as fh:
-        for question_id, question, aliases, answer_value in iter_pool(
-                pool_path, id_prefix):
-            if question_id in done:
+    with results_path.open("a", encoding="utf-8") as fh:
+        for row_key, source_index, question_id, question, aliases, answer_value in pool_rows:
+            if row_key in done:
                 continue
             record = probe_one(
-                backend, question_id, question, aliases, answer_value,
+                backend, row_key, source_index, question_id, question, aliases, answer_value,
                 config, cfg_sha)
             fh.write(json.dumps(record, ensure_ascii=False) + "\n")
             fh.flush()
+            done.add(row_key)
             n_new += 1
     print(f"probe: wrote {n_new} new records to "
           f"{_rel(results_path)} "
-          f"({len(done)} already present, skipped)")
+          f"({len(done)} already present, skipped; "
+          f"{selection['selected_question_count']} selected from "
+          f"{selection['source_question_count']})")
     return results_path
 
 
 def read_results(results_path: Path) -> list[dict]:
-    with results_path.open() as fh:
+    with results_path.open(encoding="utf-8") as fh:
         return [json.loads(line) for line in fh if line.strip()]
 
 
@@ -256,13 +351,17 @@ def write_manifest(config: dict, records: list[dict], out_dir: Path,
         "sampling": config["sampling"],
         "prompt_system": config["prompt"]["system"],
         "split_source": _rel(pool_path),
+        "probe_pool": load_probe_pool(config, pool_path)[1],
         "probe_config_sha": config_sha(config),
         "n_questions": len(records),
         "label_counts": label_counts,
         "labels_bands": config["labels"],
     }
     manifest_path = out_dir / config["output"]["manifest_filename"]
-    manifest_path.write_text(json.dumps(manifest, indent=2, ensure_ascii=False))
+    manifest_path.write_text(
+        json.dumps(manifest, indent=2, ensure_ascii=False),
+        encoding="utf-8",
+    )
     return manifest_path
 
 
@@ -274,7 +373,9 @@ def finalize(config: dict, results_path: Path, out_dir: Path) -> None:
     if config["sensitivity"]["enabled"]:
         grid = sensitivity_grid(records, config["sensitivity"])
         (out_dir / config["output"]["sensitivity_filename"]).write_text(
-            json.dumps(grid, indent=2, ensure_ascii=False))
+            json.dumps(grid, indent=2, ensure_ascii=False),
+            encoding="utf-8",
+        )
 
 
 def main() -> None:

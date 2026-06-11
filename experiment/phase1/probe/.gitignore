@@ -1,2 +1,6 @@
 __pycache__/
 *.pyc
+logs/
+qwen3-4b-instruct/
+qwen3-4b-instruct_uncapped_partial_*/
+qwen3-4b-instruct_thinking_contaminated_*/

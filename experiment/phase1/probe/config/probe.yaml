@@ -6,25 +6,26 @@
 #              + probe_manifest.json sidecar
 #
 # Every field here is pinned and pre-registered in
-# experiment/protocol/PROTOCOL.md v0.2. The probe hashes this config
+# experiment/protocol/PROTOCOL.md v0.3. The probe hashes this config
 # (probe_config_sha) into every output row and the manifest so a run is
 # reproducible and tamper-evident. Do NOT hardcode any of these in code.
 #
-# The model id is a config DEFAULT (WS-1 owns the default; live-HF repo-name
-# verification is WS-3's job per architecture doc 5.3). Swap model_tag +
-# model_name to re-run the probe on any model (Phase 4 reproducibility).
+# The model id is a config DEFAULT for the local 4B pilot. model_tag is the
+# established Phase 1 output path key; model_name is the locked HF repo id.
+# Swap both only when intentionally writing a separate probe artifact tree
+# such as the locked 8B confirm model (unsloth/Qwen3-8B-bnb-4bit).
 
 model:
-  # Qwen3-4B-Instruct base, pilot model for the local RTX 3090.
+  # Qwen3-4B hybrid base, 4-bit pilot model for the local RTX 3090.
   # Apache-2.0, ungated. model_tag is the output-directory key.
   model_tag: qwen3-4b-instruct
-  model_name: Qwen/Qwen3-4B-Instruct-2507
+  model_name: unsloth/Qwen3-4B-bnb-4bit
   # Qwen3 thinking toggle. Pinned OFF for all Phase 1 probing/training/eval.
   # Honored by the hybrid base models via apply_chat_template(enable_thinking=)
-  # / vLLM chat_template_kwargs; a no-op (already non-thinking) for the
-  # *-Instruct-2507 variant. The probe asserts no <think> scaffolding leaks
-  # regardless (runtime self-check), so a template that silently ignores the
-  # kwarg fails loudly on the first real run instead of contaminating outputs.
+  # / vLLM chat_template_kwargs. The probe asserts no <think> scaffolding
+  # leaks regardless (runtime self-check), so a template that silently ignores
+  # the kwarg fails loudly on the first real run instead of contaminating
+  # outputs.
   enable_thinking: false
 
 sampling:
@@ -57,6 +58,14 @@ probe_pool:
   fallback_validation_remainder: null
   # Prefix for synthesized question ids when a source row lacks one.
   question_id_prefix: tqa_train_
+  # Deterministic train subset cap. The architecture target is a train subset
+  # of about 20k; the full TriviaQA train split is much larger. Selection is
+  # by sha256(subset_seed|probe_pool_row_key), where the row key includes
+  # source index plus question_id because TriviaQA train question_id is not
+  # unique. Selected rows are processed in source order so checkpoint/resume
+  # behavior stays stable.
+  max_questions: 20000
+  subset_seed: 20260610
 
 labels:
   # Pre-registered known/unknown/discard bands (architecture doc 3.5).

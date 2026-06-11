@@ -79,7 +79,7 @@ def fetch_split(repo, config, split, out_dir, out_file, force):
         return
     out_path.parent.mkdir(parents=True, exist_ok=True)
     ds = load_dataset(repo, config, split=split)
-    with out_path.open("w") as fh:
+    with out_path.open("w", encoding="utf-8") as fh:
         for row in ds:
             fh.write(json.dumps(row, ensure_ascii=False) + "\n")
     print(f"wrote {out_path.relative_to(DATASETS_DIR)}: {len(ds)} rows")
@@ -97,7 +97,7 @@ def fetch_raw(repo, filename, out_dir, force):
     out_path.parent.mkdir(parents=True, exist_ok=True)
     cached = hf_hub_download(repo, filename, repo_type="dataset")
     shutil.copyfile(cached, out_path)
-    n = sum(1 for _ in out_path.open())
+    n = sum(1 for _ in out_path.open(encoding="utf-8"))
     print(f"wrote {out_path.relative_to(DATASETS_DIR)}: {n} rows")
 
 
@@ -130,7 +130,9 @@ def build_cheng_gold(force):
         return
     norm = lambda s: re.sub(r"\s+", " ", s.strip().lower())
     cheng = json.loads(
-        (DATASETS_DIR / "say-i-dont-know-outputs" / "triviaqa_test_llama2_7b_chat_idk_sft.json").read_text()
+        (DATASETS_DIR / "say-i-dont-know-outputs" / "triviaqa_test_llama2_7b_chat_idk_sft.json").read_text(
+            encoding="utf-8"
+        )
     )
     need = {norm(r["question"]) for r in cheng}
     ds = load_dataset("mandarjoshi/trivia_qa", "unfiltered.nocontext", split="validation")
@@ -142,7 +144,7 @@ def build_cheng_gold(force):
     missing = need - set(found)
     if missing:
         raise RuntimeError(f"{len(missing)} Cheng questions unmatched; first: {sorted(missing)[:3]}")
-    with out_path.open("w") as fh:
+    with out_path.open("w", encoding="utf-8") as fh:
         for q, r in found.items():
             a = r["answer"]
             fh.write(json.dumps({
@@ -259,7 +261,7 @@ def fetch_say_i_dont_know_training(force):
 
     # 2. Verify / record the zip sha256 (determinism anchor; no stable host).
     observed = _sha256(zip_path)
-    sha_sidecar.write_text(observed + "\n")
+    sha_sidecar.write_text(observed + "\n", encoding="utf-8")
     if OPENMOSS_DRIVE_ZIP_SHA256:
         if observed != OPENMOSS_DRIVE_ZIP_SHA256:
             raise RuntimeError(

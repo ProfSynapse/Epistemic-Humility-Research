@@ -3,6 +3,7 @@ library/pdfs/
 library/fulltext/
 # huggingface_hub snapshot_download bookkeeping
 datasets/*/.cache/
+.cache/
 
 # working space (refetchable parquets etc.)
 scratch/
