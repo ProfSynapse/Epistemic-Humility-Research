@@ -115,6 +115,10 @@ def test_materialize_sft_sets_seed_and_strips_run_command():
     # Declarative: the legacy run.command/workdir must be stripped, none injected.
     assert "command" not in out.get("run", {})
     assert "workdir" not in out.get("run", {})
+    assert "{lane}" not in out["artifacts"]["output_root"]
+    assert out["artifacts"]["output_root"].startswith(
+        "toolset-training-artifacts/runs/local/4b/"
+    )
     # The base recipe is untouched (deep copy).
     assert "command" in base["run"]
 

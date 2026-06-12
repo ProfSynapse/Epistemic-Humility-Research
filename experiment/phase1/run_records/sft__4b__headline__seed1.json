@@ -1,0 +1,47 @@
+{
+  "run_id": "sft__4b__headline__seed1",
+  "matrix_version": "phase1-v0.3",
+  "coordinate": {
+    "arm": "sft",
+    "size": "4b",
+    "cell_type": "headline",
+    "seed": 1,
+    "override": {}
+  },
+  "source_recipe": "experiment/phase1/recipes/eh_phase1_qwen3_4b_sft.yaml",
+  "materialized_recipe_sha": "1abc97b586117bfdf00b02197d07d2cd2688c7ade5093ffe344681c8ab439f1c",
+  "method": "sft",
+  "model": "unsloth/Qwen3-4B-bnb-4bit",
+  "lane": "local",
+  "data": {
+    "source_data_file": "F:\\Code\\Epistemic-Humility-Research\\experiment\\phase1\\data\\qwen3-4b-instruct\\sft_train.jsonl",
+    "staged_data_file": "scratch/eh_staging/sft__4b__headline__seed1/sft_train.jsonl",
+    "data_sha256": "349916013f4f44894fbc74a1a25e85a7c405fd3a7fcf92242fd8cc690e2c0946",
+    "hf_dataset_name": null,
+    "hf_dataset_revision": null
+  },
+  "research_repo_commit": "ca5f926cbd5ca39afda674402f42a29c56283393",
+  "submodule_commit": "3a3d7a26e976e70d095c7f965e7d6e7b210843f7",
+  "prereq_check": {
+    "datasets_present": true,
+    "leakage_guard_passed": true
+  },
+  "launched_at": "2026-06-12T00:20:43.114725+00:00",
+  "tuner_invocation": [
+    "python",
+    "tuner.py",
+    "local-run",
+    "--job-config",
+    "F:\\Code\\Epistemic-Humility-Research\\experiment\\phase1\\run_records\\materialized_recipes\\sft__4b__headline__seed1.yaml",
+    "--yes"
+  ],
+  "outcome": {
+    "status": "completed",
+    "job_handle": null,
+    "adapter_path": "F:\\Code\\Epistemic-Humility-Research\\synaptic-tuner\\toolset-training-artifacts\\runs\\local\\4b\\sft__4b__headline__seed1\\20260611_202126\\final_model",
+    "metrics_path": "F:\\Code\\Epistemic-Humility-Research\\synaptic-tuner\\toolset-training-artifacts\\runs\\local\\4b\\sft__4b__headline__seed1\\20260611_202126\\logs\\training_latest.jsonl",
+    "verified": false,
+    "completed_at": "2026-06-12T01:14:11.617639+00:00"
+  },
+  "materialized_recipe": "F:\\Code\\Epistemic-Humility-Research\\experiment\\phase1\\run_records\\materialized_recipes\\sft__4b__headline__seed1.yaml"
+}

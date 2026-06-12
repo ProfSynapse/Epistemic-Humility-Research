@@ -159,18 +159,18 @@ def test_every_sft_abstention_carries_marker(tmp_path):
 def test_dev_questions_excluded_from_train_and_shared(tmp_path):
     bd.build_all(_load_config(), "test-model", _paths(tmp_path))
     frozen = json.loads((tmp_path / "questions_frozen.json").read_text())
-    dev_ids = set(frozen["dev_question_ids"])
-    train_ids = set(frozen["train_question_ids"])
-    assert dev_ids and train_ids, "expected non-empty dev and train"
-    assert dev_ids.isdisjoint(train_ids), "dev and train question sets must be disjoint"
+    dev_keys = set(frozen["dev_question_keys"])
+    train_keys = set(frozen["train_question_keys"])
+    assert dev_keys and train_keys, "expected non-empty dev and train"
+    assert dev_keys.isdisjoint(train_keys), "dev and train question keys must be disjoint"
 
     # The dev questions are the same set the SFT dev file is built from; spot-check
-    # that the SFT dev questions are a subset of the frozen dev_question_ids.
-    probe_by_q = {r["question"]: r["question_id"] for r in bd.load_probe_records(PROBE)}
+    # that the SFT dev questions are a subset of the frozen dev_question_keys.
+    probe_by_q = {r["question"]: bd.record_key(r) for r in bd.load_probe_records(PROBE)}
     sft_dev = _read_jsonl(tmp_path / "sft_dev.jsonl")
     for row in sft_dev:
         user = next(m["content"] for m in row["conversations"] if m["role"] == "user")
-        assert probe_by_q[user] in dev_ids
+        assert probe_by_q[user] in dev_keys
 
 
 # ---------------------------------------------------------------------------
@@ -328,6 +328,10 @@ def _q(qid):
     return {"question_id": qid}
 
 
+def _q_with_key(qid, key):
+    return {"question_id": qid, "probe_pool_row_key": key}
+
+
 def test_split_dev_raises_on_empty_dev():
     # 3 questions x fraction 0.1 -> round(0.3) = 0 dev examples -> raise.
     raised = False
@@ -353,6 +357,16 @@ def test_split_dev_normal_case_both_nonempty():
     dev_ids = {r["question_id"] for r in dev}
     train_ids = {r["question_id"] for r in train}
     assert dev_ids.isdisjoint(train_ids)
+
+
+def test_split_dev_uses_probe_pool_row_key_for_duplicate_question_ids():
+    records = [_q_with_key("dup", f"{i:012d}|dup") for i in range(10)]
+    train, dev = bd.split_dev(records, fraction=0.5, seed=42)
+    assert {r["question_id"] for r in train} == {"dup"}
+    assert {r["question_id"] for r in dev} == {"dup"}
+    train_keys = {bd.record_key(r) for r in train}
+    dev_keys = {bd.record_key(r) for r in dev}
+    assert train_keys.isdisjoint(dev_keys)
 
 
 # ---------------------------------------------------------------------------

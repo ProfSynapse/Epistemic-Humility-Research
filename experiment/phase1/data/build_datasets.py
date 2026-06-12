@@ -133,6 +133,11 @@ REQUIRED_PROBE_FIELDS = (
 )
 
 
+def record_key(rec: dict) -> str:
+    """Stable source-question identity; falls back for legacy probe fixtures."""
+    return rec.get("probe_pool_row_key") or rec["question_id"]
+
+
 def load_jsonl(path: Path) -> list:
     """Load a JSONL file into a list of dicts."""
     records = []
@@ -304,14 +309,14 @@ def select_frozen_set(probe_records: list, config: dict) -> dict:
 def _cap(records: list, cap, rng: random.Random) -> list:
     """Deterministically subsample `records` to at most `cap` (None = keep all)."""
     if cap is None or cap >= len(records):
-        return sorted(records, key=lambda r: r["question_id"])
-    ordered = sorted(records, key=lambda r: r["question_id"])
+        return sorted(records, key=record_key)
+    ordered = sorted(records, key=record_key)
     chosen = rng.sample(ordered, cap)
-    return sorted(chosen, key=lambda r: r["question_id"])
+    return sorted(chosen, key=record_key)
 
 
 def split_dev(records: list, fraction: float, seed: int) -> tuple:
-    """Split a question list into (train, dev) deterministically by question_id.
+    """Split a question list into (train, dev) deterministically by row key.
 
     The dev questions are the SAME across arms (caller passes the same records
     and seed), so early stopping is comparable.
@@ -321,7 +326,7 @@ def split_dev(records: list, fraction: float, seed: int) -> tuple:
     or train=0 (fraction too high, leaving nothing to train on). Either case would
     silently produce an unusable arm, so it is a hard, explained abort.
     """
-    ordered = sorted(records, key=lambda r: r["question_id"])
+    ordered = sorted(records, key=record_key)
     rng = random.Random(seed)
     rng.shuffle(ordered)
     dev_count = int(round(len(ordered) * fraction))
@@ -370,7 +375,7 @@ def build_sft_row(rec: dict, ctx: dict) -> dict:
     if rec["label"] == "known":
         target = ctx["known_answer_template"].format(answer=gold_answer(rec))
     else:
-        target = abstention_for(rec["question_id"], ctx["bank"], ctx["seed"])
+        target = abstention_for(record_key(rec), ctx["bank"], ctx["seed"])
     return {
         "conversations": [
             _system_msg(ctx["system_prompt"]),
@@ -388,7 +393,7 @@ def build_dpo_row(rec: dict, ctx: dict):
     unknown: chosen = abstention, rejected = the model's own hallucinated sample
              (fallback per config.unknown_negative_source when none exists).
     """
-    abstention = abstention_for(rec["question_id"], ctx["bank"], ctx["seed"])
+    abstention = abstention_for(record_key(rec), ctx["bank"], ctx["seed"])
     if rec["label"] == "known":
         chosen = ctx["known_answer_template"].format(answer=gold_answer(rec))
         rejected = abstention
@@ -440,7 +445,7 @@ def _kto_rows_for_question(rec: dict, ctx: dict) -> list:
     the undesirable-count division raises ZeroDivisionError at load time. So both
     mappings carry both labels; the row set is mapping-independent by construction.
     """
-    abstention = abstention_for(rec["question_id"], ctx["bank"], ctx["seed"])
+    abstention = abstention_for(record_key(rec), ctx["bank"], ctx["seed"])
     rows = []
     if rec["label"] == "known":
         gold = ctx["known_answer_template"].format(answer=gold_answer(rec))
@@ -603,14 +608,19 @@ def _emit_kto(mapping, train, dev, ctx, config, out_dir, counts) -> None:
 
 def _write_frozen(frozen, train_recs, dev_recs, config, out_dir) -> Path:
     """Write questions_frozen.json (the budget anchor) and return its path."""
-    dev_ids = {r["question_id"] for r in dev_recs}
+    dev_keys = {record_key(r) for r in dev_recs}
     payload = {
         "seed": config["seed"],
+        "question_key_field": "probe_pool_row_key when present, else question_id",
         "budget_distinct_questions": len(frozen["known"]) + len(frozen["unknown"]),
+        "known_question_keys": [record_key(r) for r in frozen["known"]],
+        "unknown_question_keys": [record_key(r) for r in frozen["unknown"]],
+        "train_question_keys": [record_key(r) for r in train_recs],
+        "dev_question_keys": sorted(dev_keys),
         "known_question_ids": [r["question_id"] for r in frozen["known"]],
         "unknown_question_ids": [r["question_id"] for r in frozen["unknown"]],
         "train_question_ids": [r["question_id"] for r in train_recs],
-        "dev_question_ids": sorted(dev_ids),
+        "dev_question_ids": sorted({r["question_id"] for r in dev_recs}),
     }
     path = out_dir / "questions_frozen.json"
     path.parent.mkdir(parents=True, exist_ok=True)
