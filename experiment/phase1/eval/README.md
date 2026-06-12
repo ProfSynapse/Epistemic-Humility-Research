@@ -60,6 +60,9 @@ python3 experiment/phase1/eval/run_eval.py --config experiment/phase1/eval/confi
 # Live local path (requires vLLM/CUDA and a scoped same-model config)
 python3 experiment/phase1/eval/run_eval.py --config <scoped-config.yaml> --live-vllm
 
+# Tiny local base/SFT/DPO smoke config over checked-in fixtures
+python3 experiment/phase1/eval/run_eval.py --config experiment/phase1/eval/config/eval_smoke_local_4b.yaml --live-vllm
+
 # Full test suite
 python3 -m pytest experiment/phase1/eval/tests/ -q
 ```

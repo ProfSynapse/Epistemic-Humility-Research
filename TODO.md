@@ -50,6 +50,7 @@ We are proving the Phase 1 local lane before committing more GPU time. The goal 
 - Local eval harness is now wired for opt-in real vLLM generation.
   - Default fixture path remains unchanged.
   - Live path: `python experiment/phase1/eval/run_eval.py --config <scoped-config.yaml> --live-vllm`.
+  - Local base/SFT/DPO smoke config: `experiment/phase1/eval/config/eval_smoke_local_4b.yaml`.
   - `VLLMGenerator` lazy-loads vLLM, supports one base model plus LoRA arms, rejects generated `<think>` tags, and requires explicit `model_name` so `model_tag` stays a reporting label.
   - Windows UTF-8 read/write fixes landed for eval gold/OOD/config/results paths.
   - Verified: `python -m pytest experiment\phase1\eval\tests -q` (58 passed, 1 intentional McNemar warning).
@@ -109,8 +110,10 @@ We are proving the Phase 1 local lane before committing more GPU time. The goal 
 
    Run from `F:\Code\Epistemic-Humility-Research\synaptic-tuner`.
 
-5. Materialize a local eval smoke config for base/SFT/DPO only, pointing to the completed local adapter paths and excluding KTO/bridge.
-6. With explicit GPU approval, run the smallest local `--live-vllm` eval smoke over a fixture or tiny OOD subset; do not run the full headline eval yet.
+5. With explicit GPU approval, run the smallest local `--live-vllm` eval smoke:
+   `python experiment/phase1/eval/run_eval.py --config experiment/phase1/eval/config/eval_smoke_local_4b.yaml --live-vllm`.
+   Do not run the full headline eval yet.
+6. If that local eval smoke passes, materialize the next same-model real eval config against the intended held-out/OOD subset before expanding to more training cells.
 7. Rerun the bounded SFT max-2 HF Jobs cloud-pipeline smoke on Synaptic Tuner `ee4938d` or later to confirm the labkit eval continuation.
 8. Only after local eval and cloud smoke both work should we consider more headline cells. KTO remains blocked for local expansion until Docker reliability is re-established and for cloud expansion until the necessary KTO datasets are published.
 9. Before cloud-lane expansion beyond the SFT smoke, publish the remaining required Phase 1 dataset files to HF, record the dataset repo/file names, verify process-local `HF_TOKEN` availability, and use Synaptic Tuner's `cloud-pipeline` flow from a clean pushed exact commit.

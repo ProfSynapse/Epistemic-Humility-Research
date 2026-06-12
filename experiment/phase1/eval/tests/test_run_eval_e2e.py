@@ -350,6 +350,42 @@ def test_eval_loaders_read_utf8_not_windows_locale_default(tmp_path):
     assert ood_records[0]["question"] == "Where is 東京?"
 
 
+def test_local_4b_smoke_config_is_bounded_to_completed_adapters():
+    repo = run_eval.EVAL_DIR.parents[2]
+    cfg_path = run_eval.EVAL_DIR / "config" / "eval_smoke_local_4b.yaml"
+    cfg = yaml.safe_load(cfg_path.read_text(encoding="utf-8"))
+
+    sft_record = json.loads(
+        (
+            repo / "experiment" / "phase1" / "run_records"
+            / "sft__4b__headline__seed1.json"
+        ).read_text(encoding="utf-8")
+    )
+    dpo_record = json.loads(
+        (
+            repo / "experiment" / "phase1" / "run_records"
+            / "dpo__4b__headline__seed1.json"
+        ).read_text(encoding="utf-8")
+    )
+
+    assert cfg["model_tag"] == "qwen3-4b-instruct"
+    assert cfg["model_name"] == "unsloth/Qwen3-4B-bnb-4bit"
+    assert cfg["gold_path"] == "fixtures/gold_min.jsonl"
+    assert cfg["eval_sets"] == {
+        "in_domain": {
+            "path": "fixtures/in_domain_records.json",
+            "label_from_target": False,
+        }
+    }
+
+    arms = {arm["name"]: arm for arm in cfg["arms"]}
+    assert list(arms) == ["base", "sft", "dpo"]
+    assert arms["base"]["adapter"] is None
+    assert arms["sft"]["adapter"] == sft_record["outcome"]["adapter_path"]
+    assert arms["dpo"]["adapter"] == dpo_record["outcome"]["adapter_path"]
+    assert {arm["model"] for arm in arms.values()} == {"qwen3-4b-instruct"}
+
+
 # --- MB4: McNemar mismatched-length pairs are recorded, not silently skipped ---
 
 
