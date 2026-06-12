@@ -45,7 +45,7 @@ def load_kuq(path: str | Path) -> list[dict]:
     aliases, so correctness is not the headline here (unanswerable detection is).
     """
     out: list[dict] = []
-    with Path(path).open() as fh:
+    with Path(path).open(encoding="utf-8") as fh:
         for i, line in enumerate(fh):
             line = line.strip()
             if not line:
@@ -69,7 +69,7 @@ def load_coconot(path: str | Path) -> list[dict]:
     labeled "known" (refusing them is over-refusal).
     """
     out: list[dict] = []
-    with Path(path).open() as fh:
+    with Path(path).open(encoding="utf-8") as fh:
         for line in fh:
             line = line.strip()
             if not line:
@@ -92,7 +92,7 @@ def load_popqa(path: str | Path) -> list[dict]:
     Near-OOD; all answerable (label "known"); gold = possible_answers aliases.
     """
     out: list[dict] = []
-    with Path(path).open() as fh:
+    with Path(path).open(encoding="utf-8") as fh:
         for line in fh:
             line = line.strip()
             if not line:
@@ -119,7 +119,7 @@ def load_selfaware(path: str | Path) -> list[dict]:
     """SelfAware.json: {example: [{question, answer[list], answerable: bool}]}.
     answerable=False -> "unknown" (the model should abstain).
     """
-    data = json.loads(Path(path).read_text())
+    data = json.loads(Path(path).read_text(encoding="utf-8"))
     examples = data.get("example", [])
     out: list[dict] = []
     for r in examples:
@@ -142,7 +142,7 @@ def load_truthfulqa(path: str | Path) -> list[dict]:
     the answer columns; here we provide the open-generation correctness aliases.
     """
     out: list[dict] = []
-    with Path(path).open(newline="") as fh:
+    with Path(path).open(newline="", encoding="utf-8") as fh:
         for i, row in enumerate(csv.DictReader(fh)):
             correct = row.get("Correct Answers", "") or ""
             aliases = [row.get("Best Answer", "")] + [
@@ -167,7 +167,7 @@ def load_mmlu(path: str | Path) -> list[dict]:
     run_eval extracts per-choice token probs and the ECE scorer consumes them.
     """
     out: list[dict] = []
-    with Path(path).open() as fh:
+    with Path(path).open(encoding="utf-8") as fh:
         for i, line in enumerate(fh):
             line = line.strip()
             if not line:
@@ -199,7 +199,7 @@ def load_abstentionbench_indices(repo_dir: str | Path) -> dict:
         raise FileNotFoundError(
             f"AbstentionBench subsampling indices not found at {indices_path}"
         )
-    return json.loads(indices_path.read_text())
+    return json.loads(indices_path.read_text(encoding="utf-8"))
 
 
 # Registry so the config can name a set and get its loader (KISS dispatch).
