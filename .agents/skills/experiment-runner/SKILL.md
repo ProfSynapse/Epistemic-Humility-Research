@@ -111,6 +111,13 @@ skill:
   trainer import. Synaptic Tuner now installs missing generic deps without
   `--upgrade`; reserve explicit `pip_packages` upgrades for intentional runtime
   experiments.
+- HF Jobs Phase 1 smoke status: public source checkout, exact commit pinning,
+  public HF dataset wiring, and bucket creation all reached the remote job.
+  Training remains blocked before data/model load by Unsloth image import
+  failures: `unsloth/unsloth:latest` raises the NumPy mid-session mismatch, and
+  the named `next` image raises `ModuleNotFoundError: numpy._core.tests` through
+  SciPy/Transformers. Do not spend attempts changing LoRA, batch size, or
+  dataset files until a verified HF Jobs training image imports `unsloth`.
 
 ## Local Windows/Desktop Gotchas
 

@@ -64,6 +64,11 @@ We are proving the Phase 1 local lane before committing more GPU time. The goal 
   - Require a clean pushed exact commit, the HF dataset repo/file, `HF_TOKEN`, and exact approval before any cost-incurring launch.
   - `tuner.py` loads `.env` from the Synaptic Tuner repo root, but `HF_TOKEN` currently lives in the parent research repo `.env`; use process-local env injection or a Synaptic Tuner `.env` without printing/copying secrets.
   - Current launcher env blocker: the `kto` conda env has `huggingface_hub 0.36.0` with Jobs API support, but lacks Buckets `create_bucket`; keep bucket-support upgrades isolated from the main Unsloth/training runtime.
+  - Tiny SFT HF Jobs smoke reached remote submission, exact public checkout, public HF dataset access, and bucket creation, but training is blocked before data/model load by Unsloth image import failures.
+    - `unsloth/unsloth:latest`: `numpy was upgraded mid-session (loaded: 2.2.6, installed: 2.4.1)`.
+    - `unsloth/unsloth:2026.2.1-pt2.9.0-cu12.8-fixed-numba-numpy-error`: `ModuleNotFoundError: numpy._core.tests` through SciPy/Transformers during `import unsloth`.
+    - Synaptic Tuner fixes already merged: quote HF Jobs pip requirements, avoid upgrading generic project deps in the active trainer runtime, and install bucket-sync overlay deps with `--no-deps`.
+    - Next cloud action is image-profile validation/pinning, not dataset, batch, LoRA, or Qwen-specific changes.
 
 - Docker copy-mode logs can be misleading.
   - The container PID 1 may be `sleep infinity`; the trainer runs through `docker exec`.
@@ -96,7 +101,7 @@ We are proving the Phase 1 local lane before committing more GPU time. The goal 
 5. Next scientific pipeline step is local evaluation against the completed SFT and DPO adapters, if the repo already has the evaluation runner wired locally.
 6. If local eval is not wired yet, document that gap and implement the smallest local-only eval path before expanding the 4B matrix.
 7. Only after local eval works should we consider more headline cells. KTO HF smoke remains blocked until the fixed Synaptic Tuner commit is pushed and cloud prerequisites are cleared.
-8. Before cloud-lane expansion beyond the SFT smoke, publish the remaining required Phase 1 dataset files to HF, record the dataset repo/file names, verify process-local `HF_TOKEN` availability, and use Synaptic Tuner's `cloud-pipeline` flow from a clean pushed exact commit.
+8. Before cloud-lane expansion beyond the SFT smoke, verify a working HF Jobs Unsloth training image, then publish the remaining required Phase 1 dataset files to HF, record the dataset repo/file names, verify process-local `HF_TOKEN` availability, and use Synaptic Tuner's `cloud-pipeline` flow from a clean pushed exact commit.
 
 ## Files Changed During This Session
 
