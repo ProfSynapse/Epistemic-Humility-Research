@@ -99,6 +99,12 @@ skill:
   0.36.0 with Jobs API support, but lacks Buckets `create_bucket`. Do not
   blindly upgrade the main Unsloth/training env; Synaptic Tuner fine-tuning
   guidance keeps bucket-support upgrades isolated from the training runtime.
+- HF Jobs launch fix from the first public smoke attempt: use an isolated
+  launcher venv for local submission (`huggingface_hub>=1.5.0`, Transformers
+  5.x, CPU `torch`) and set `PYTHONIOENCODING=utf-8` on Windows so Rich output
+  cannot crash before submission. Remote pip requirements containing shell
+  metacharacters must be quoted; unquoted `huggingface_hub>=1.5.0` can be parsed
+  as bash redirection inside HF Jobs.
 
 ## Local Windows/Desktop Gotchas
 
