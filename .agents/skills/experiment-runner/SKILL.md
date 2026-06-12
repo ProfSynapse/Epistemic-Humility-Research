@@ -105,6 +105,12 @@ skill:
   cannot crash before submission. Remote pip requirements containing shell
   metacharacters must be quoted; unquoted `huggingface_hub>=1.5.0` can be parsed
   as bash redirection inside HF Jobs.
+- HF Jobs image-runtime gotcha: generic project dependencies must not be
+  upgraded in the active Unsloth training interpreter during bootstrap. The
+  public smoke hit a remote `numpy was upgraded mid-session` failure before
+  trainer import. Synaptic Tuner now installs missing generic deps without
+  `--upgrade`; reserve explicit `pip_packages` upgrades for intentional runtime
+  experiments.
 
 ## Local Windows/Desktop Gotchas
 
