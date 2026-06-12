@@ -47,6 +47,13 @@ We are proving the Phase 1 local lane before committing more GPU time. The goal 
   - Artifact root: `synaptic-tuner/toolset-training-artifacts/runs/local/4b/sft__4b__micro_max2/20260612_084145`
   - Verified: Docker, GPU, model load, staged data load, LoRA, two optimizer steps, checkpoint, final adapter, logs, lineage, capacity file, and host copy-out.
 
+- Local eval harness is now wired for opt-in real vLLM generation.
+  - Default fixture path remains unchanged.
+  - Live path: `python experiment/phase1/eval/run_eval.py --config <scoped-config.yaml> --live-vllm`.
+  - `VLLMGenerator` lazy-loads vLLM, supports one base model plus LoRA arms, rejects generated `<think>` tags, and requires explicit `model_name` so `model_tag` stays a reporting label.
+  - Windows UTF-8 read/write fixes landed for eval gold/OOD/config/results paths.
+  - Verified: `python -m pytest experiment\phase1\eval\tests -q` (58 passed, 1 intentional McNemar warning).
+
 ## Known Issues / Gotchas
 
 - KTO source logging bug is fixed locally, but KTO is still gated for cloud.
@@ -63,12 +70,16 @@ We are proving the Phase 1 local lane before committing more GPU time. The goal 
   - Prefer `python tuner.py cloud-pipeline ...` for HF Jobs.
   - Require a clean pushed exact commit, the HF dataset repo/file, `HF_TOKEN`, and exact approval before any cost-incurring launch.
   - `tuner.py` loads `.env` from the Synaptic Tuner repo root, but `HF_TOKEN` currently lives in the parent research repo `.env`; use process-local env injection or a Synaptic Tuner `.env` without printing/copying secrets.
-  - Current launcher env blocker: the `kto` conda env has `huggingface_hub 0.36.0` with Jobs API support, but lacks Buckets `create_bucket`; keep bucket-support upgrades isolated from the main Unsloth/training runtime.
-  - Tiny SFT HF Jobs smoke reached remote submission, exact public checkout, public HF dataset access, and bucket creation, but training is blocked before data/model load by Unsloth image import failures.
+  - Use the isolated launcher venv `C:\tmp\hfjobs-launcher312` or equivalent; set `PYTHONIOENCODING=utf-8` and `PYTHONUTF8=1` so Rich output cannot crash on Windows.
+  - Tiny SFT HF Jobs smoke reached remote submission, exact public checkout, public HF dataset access, bucket creation, model load, tokenization, two training steps, and final artifact sync on the pinned stable image:
+    `unsloth/unsloth:2026.1.2-pt2.9.0-cu12.8-update@sha256:5266c57be21059bfb407d80dc2f448868a5c2e2dbe7b2aa27780f48b48cbec39`.
+    - Import probe passed: job `6a2c379d7c68f455eff13e99`.
+    - Training + bucket sync passed after Synaptic Tuner PRs #104/#105: jobs `6a2c40c27c68f455eff13f95` and `6a2c4658871c005b5352b6fd`.
+    - Natural labkit smoke eval still needs one rerun after Synaptic Tuner PR #106; the last failure was Hub 1.x leaking onto evaluator `PYTHONPATH`, now fixed in the submodule.
     - `unsloth/unsloth:latest`: `numpy was upgraded mid-session (loaded: 2.2.6, installed: 2.4.1)`.
     - `unsloth/unsloth:2026.2.1-pt2.9.0-cu12.8-fixed-numba-numpy-error`: `ModuleNotFoundError: numpy._core.tests` through SciPy/Transformers during `import unsloth`.
-    - Synaptic Tuner fixes already merged: quote HF Jobs pip requirements, avoid upgrading generic project deps in the active trainer runtime, and install bucket-sync overlay deps with `--no-deps`.
-    - Next cloud action is image-profile validation/pinning, not dataset, batch, LoRA, or Qwen-specific changes.
+    - Synaptic Tuner fixes already merged through submodule `ee4938d`: quote HF Jobs pip requirements, avoid upgrading generic project deps in the active trainer runtime, isolate bucket-sync `hf_xet`, avoid eval overlay ML-stack upgrades, and split eval runtime vs bucket-sync overlays.
+    - Next cloud action is rerun the same bounded SFT max-2 cloud-pipeline smoke to confirm labkit eval continuation; do not change dataset, LoRA, or Qwen settings for that check.
 
 - Docker copy-mode logs can be misleading.
   - The container PID 1 may be `sleep infinity`; the trainer runs through `docker exec`.
@@ -98,10 +109,11 @@ We are proving the Phase 1 local lane before committing more GPU time. The goal 
 
    Run from `F:\Code\Epistemic-Humility-Research\synaptic-tuner`.
 
-5. Next scientific pipeline step is local evaluation against the completed SFT and DPO adapters, if the repo already has the evaluation runner wired locally.
-6. If local eval is not wired yet, document that gap and implement the smallest local-only eval path before expanding the 4B matrix.
-7. Only after local eval works should we consider more headline cells. KTO HF smoke remains blocked until the fixed Synaptic Tuner commit is pushed and cloud prerequisites are cleared.
-8. Before cloud-lane expansion beyond the SFT smoke, verify a working HF Jobs Unsloth training image, then publish the remaining required Phase 1 dataset files to HF, record the dataset repo/file names, verify process-local `HF_TOKEN` availability, and use Synaptic Tuner's `cloud-pipeline` flow from a clean pushed exact commit.
+5. Materialize a local eval smoke config for base/SFT/DPO only, pointing to the completed local adapter paths and excluding KTO/bridge.
+6. With explicit GPU approval, run the smallest local `--live-vllm` eval smoke over a fixture or tiny OOD subset; do not run the full headline eval yet.
+7. Rerun the bounded SFT max-2 HF Jobs cloud-pipeline smoke on Synaptic Tuner `ee4938d` or later to confirm the labkit eval continuation.
+8. Only after local eval and cloud smoke both work should we consider more headline cells. KTO remains blocked for local expansion until Docker reliability is re-established and for cloud expansion until the necessary KTO datasets are published.
+9. Before cloud-lane expansion beyond the SFT smoke, publish the remaining required Phase 1 dataset files to HF, record the dataset repo/file names, verify process-local `HF_TOKEN` availability, and use Synaptic Tuner's `cloud-pipeline` flow from a clean pushed exact commit.
 
 ## Files Changed During This Session
 
@@ -112,3 +124,5 @@ We are proving the Phase 1 local lane before committing more GPU time. The goal 
 - `.agents/skills/experiment-runner/scripts/prepare_local_cell.py`: single-cell local preparation helper plus KTO copy-mode workaround.
 - `.agents/skills/experiment-runner/SKILL.md`: local Docker, data, KTO, and micro-loop gotchas.
 - `experiment/phase1/run_records/*`: local SFT/DPO/KTO run records and materialized recipes.
+- `experiment/phase1/eval/*`: opt-in live vLLM generation path plus UTF-8 eval loader fixes.
+- `synaptic-tuner`: submodule advanced through generic HF Jobs cloud/eval dependency-isolation fixes.

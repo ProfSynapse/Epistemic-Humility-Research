@@ -54,7 +54,7 @@ COMPARED_COLUMNS = [
 def _load_expected() -> dict[str, dict[str, float]]:
     """method -> {column: expected value} from the read-only evidence CSV."""
     expected: dict[str, dict[str, float]] = {}
-    with EVIDENCE_CSV.open() as fh:
+    with EVIDENCE_CSV.open(encoding="utf-8") as fh:
         for row in csv.DictReader(fh):
             method = row["method"].replace("idk-", "")
             expected[method] = {
@@ -79,7 +79,7 @@ def expected() -> dict[str, dict[str, float]]:
 
 def _score_method(method: str, gold: dict[str, list[str]]) -> dict[str, float]:
     path = CHENG_OUTPUTS / f"triviaqa_test_llama2_7b_chat_idk_{method}.json"
-    records = json.loads(path.read_text())
+    records = json.loads(path.read_text(encoding="utf-8"))
     counts = score_quadrants(
         records,
         gold,

@@ -112,12 +112,24 @@ skill:
   `--upgrade`; reserve explicit `pip_packages` upgrades for intentional runtime
   experiments.
 - HF Jobs Phase 1 smoke status: public source checkout, exact commit pinning,
-  public HF dataset wiring, and bucket creation all reached the remote job.
-  Training remains blocked before data/model load by Unsloth image import
-  failures: `unsloth/unsloth:latest` raises the NumPy mid-session mismatch, and
-  the named `next` image raises `ModuleNotFoundError: numpy._core.tests` through
-  SciPy/Transformers. Do not spend attempts changing LoRA, batch size, or
-  dataset files until a verified HF Jobs training image imports `unsloth`.
+  public HF dataset wiring, bucket creation, model load, tokenization,
+  max-2 SFT training, checkpoint sync, and final model sync all reached the
+  remote job on the pinned stable image
+  `unsloth/unsloth:2026.1.2-pt2.9.0-cu12.8-update@sha256:5266c57be21059bfb407d80dc2f448868a5c2e2dbe7b2aa27780f48b48cbec39`.
+  Bad images remain bad: `unsloth/unsloth:latest` raises the NumPy mid-session
+  mismatch, and the named `next` image raises `ModuleNotFoundError:
+  numpy._core.tests` through SciPy/Transformers. Keep using the stable image for
+  cloud smoke unless a new image passes a tiny `import unsloth` probe first.
+- HF Jobs bucket/eval overlay gotchas now fixed generically in Synaptic Tuner:
+  bucket-sync overlay installs `huggingface_hub>=1.5.0`, `hf_transfer`, and
+  `hf_xet`; eval runtime deps do not upgrade the Unsloth ML stack; eval
+  bucket-sync deps live on `HF_BUCKET_SYNC_PYTHONPATH` only, not evaluator
+  `PYTHONPATH`. If a future eval job fails with Hub/Transformers version
+  mismatch, inspect overlay separation before changing experiment settings.
+- Current cloud next step: rerun the same bounded SFT `max_steps=2`
+  `cloud-pipeline` smoke from Synaptic Tuner `ee4938d` or later to confirm the
+  natural labkit smoke eval continuation. Do not change dataset, LoRA, or Qwen
+  settings for that confirmation.
 
 ## Local Windows/Desktop Gotchas
 
@@ -135,6 +147,9 @@ skill:
   Load it process-locally or pass `--env-file .env`; never print token values.
 - Windows default text encoding broke the TriviaQA fetch before the script used
   explicit UTF-8 writes. Keep UTF-8 mode/path handling in mind for fetch retries.
+- Windows default text encoding also broke Phase 1 eval gold/OOD loaders when
+  local files contained non-cp1252 bytes. Eval readers/writers now use explicit
+  UTF-8; preserve that when adding datasets or result files.
 - TriviaQA train `question_id` is not unique. WS-1 resumability/subsetting must
   use `probe_pool_row_key` (source index plus question_id), not bare
   `question_id`, or duplicate source rows will be silently skipped.
@@ -188,6 +203,12 @@ skill:
   output directory, and retry only after the generated-output guard fails before
   writing rows or the backend suppression path is fixed. Do not strip tags and
   continue.
+- Phase 1 local eval now has an opt-in live vLLM path:
+  `python experiment/phase1/eval/run_eval.py --config <scoped-config.yaml>
+  --live-vllm`. Default fixture behavior is unchanged. The live config must use
+  explicit `model_name` for the loadable HF/vLLM repo id and `model_tag` only as
+  the reporting label. Use a scoped same-model base/SFT/DPO config first; KTO
+  has no completed adapter and bridge arms are a different base model.
 - `git submodule status` can fail if Git Unix helpers such as `basename` or
   `sed` are missing. Verify the submodule SHA with the gitlink plus
   `git -C synaptic-tuner rev-parse HEAD`.

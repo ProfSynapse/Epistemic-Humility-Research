@@ -356,7 +356,7 @@ def load_gold(gold_path: str | Path) -> dict[str, list[str]]:
     same normalization norm_question produces on the bare TriviaQA question).
     """
     gold: dict[str, list[str]] = {}
-    with Path(gold_path).open() as fh:
+    with Path(gold_path).open(encoding="utf-8") as fh:
         for line in fh:
             line = line.strip()
             if not line:

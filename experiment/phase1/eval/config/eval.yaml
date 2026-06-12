@@ -10,6 +10,7 @@
 # user sign-off.
 
 model_tag: qwen3-4b-instruct
+model_name: unsloth/Qwen3-4B-bnb-4bit
 gold_path: ../../../datasets/triviaqa-rc-nocontext/cheng_test_gold.jsonl
 results_dir: results
 

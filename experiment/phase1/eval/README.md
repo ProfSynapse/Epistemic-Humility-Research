@@ -40,17 +40,25 @@ python3 -m pytest experiment/phase1/eval/tests/test_cheng_regression.py -q
 
 ## Inference boundary
 
-Real generation (vLLM loading each adapter) is the **post-sign-off** path
-(`VLLMGenerator`, currently a stub — eval runs are gated on PROTOCOL v0.2 user
-sign-off). The scoring + stats layers are fully real and run against on-disk
-generation fixtures via `FixtureGenerator`, so the harness is testable end to
-end without a model.
+Real generation (vLLM loading each adapter) is the explicit opt-in path:
+`run_eval.py --live-vllm`. The default remains `FixtureGenerator`, so the
+scoring + stats layers still run end to end without a model in CI.
+
+`VLLMGenerator` builds one base model per run, supports `base` plus same-model
+LoRA arms, requires an explicit loadable `model_name`, and keeps `model_tag` as
+the reporting/provenance label. Use a scoped config for local GPU smoke that
+contains only same-model arms such as `base`, `sft`, and `dpo`; do not include
+KTO/bridge until those artifacts are ready. Qwen3 thinking is pinned off and
+generated `<think>` tags fail the run instead of being stripped.
 
 ## Run
 
 ```bash
 # Fixture/CI path (no model): uses pre-recorded generations under results/<arm>__<set>/
 python3 experiment/phase1/eval/run_eval.py --config experiment/phase1/eval/config/eval.yaml
+
+# Live local path (requires vLLM/CUDA and a scoped same-model config)
+python3 experiment/phase1/eval/run_eval.py --config <scoped-config.yaml> --live-vllm
 
 # Full test suite
 python3 -m pytest experiment/phase1/eval/tests/ -q

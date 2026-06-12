@@ -11,18 +11,34 @@ from __future__ import annotations
 
 import csv
 import json
+import sys
+import types
 from pathlib import Path
 
+import pytest
 import yaml
 
+import ood
 import run_eval
+import scorers
 
 
 def _write_jsonl(path: Path, rows):
     path.parent.mkdir(parents=True, exist_ok=True)
-    with path.open("w") as fh:
+    with path.open("w", encoding="utf-8") as fh:
         for r in rows:
             fh.write(json.dumps(r) + "\n")
+
+
+def _write_utf8_json(path: Path, payload):
+    path.write_bytes(json.dumps(payload, ensure_ascii=False).encode("utf-8"))
+
+
+def _write_utf8_jsonl(path: Path, rows):
+    path.write_bytes(
+        "\n".join(json.dumps(row, ensure_ascii=False) for row in rows).encode("utf-8")
+        + b"\n"
+    )
 
 
 def test_end_to_end_fixture_run(tmp_path):
@@ -40,7 +56,7 @@ def test_end_to_end_fixture_run(tmp_path):
         {"id": "q3", "question": "What is the gold price next Tuesday?", "label": "unknown"},
     ]
     recs_path = tmp_path / "in_domain_records.json"
-    recs_path.write_text(json.dumps(records))
+    recs_path.write_text(json.dumps(records), encoding="utf-8")
 
     results_dir = tmp_path / "results"
 
@@ -73,7 +89,7 @@ def test_end_to_end_fixture_run(tmp_path):
         },
     }
     cfg_path = tmp_path / "eval.yaml"
-    cfg_path.write_text(yaml.safe_dump(cfg))
+    cfg_path.write_text(yaml.safe_dump(cfg), encoding="utf-8")
 
     result = run_eval.run(cfg_path)
 
@@ -84,7 +100,7 @@ def test_end_to_end_fixture_run(tmp_path):
 
     # per-arm metrics.json with provenance
     good_metrics = json.loads(
-        (results_dir / "good__in_domain" / "metrics.json").read_text()
+        (results_dir / "good__in_domain" / "metrics.json").read_text(encoding="utf-8")
     )
     prov = good_metrics["provenance"]
     for k in ("source", "metric", "model", "method", "verified", "config_sha"):
@@ -97,7 +113,9 @@ def test_end_to_end_fixture_run(tmp_path):
 
     # bootstrap_ci.json
     boot = json.loads(
-        (results_dir / "good__in_domain" / "bootstrap_ci.json").read_text()
+        (results_dir / "good__in_domain" / "bootstrap_ci.json").read_text(
+            encoding="utf-8"
+        )
     )
     assert "truthful_rate" in boot
     assert boot["truthful_rate"]["ci_lo"] <= boot["truthful_rate"]["point"]
@@ -107,9 +125,9 @@ def test_end_to_end_fixture_run(tmp_path):
     summary_csv = results_dir / "comparisons" / "summary_table.csv"
     assert mcnemar_csv.exists()
     assert summary_csv.exists()
-    rows = list(csv.DictReader(summary_csv.open()))
+    rows = list(csv.DictReader(summary_csv.open(encoding="utf-8")))
     assert len(rows) == 2
-    mc_rows = list(csv.DictReader(mcnemar_csv.open()))
+    mc_rows = list(csv.DictReader(mcnemar_csv.open(encoding="utf-8")))
     assert mc_rows and mc_rows[0]["arm_a"] == "good" and mc_rows[0]["arm_b"] == "bad"
     # MB4: a real comparison carries status='compared' and populated stat columns
     assert mc_rows[0]["status"] == "compared"
@@ -129,12 +147,207 @@ def test_fixture_generator_missing_generation_raises(tmp_path):
         pass
 
 
-def test_vllm_generator_is_post_signoff_stub():
-    try:
-        run_eval.VLLMGenerator()
-        assert False, "VLLMGenerator should not be constructible pre-sign-off"
-    except NotImplementedError:
-        pass
+class _CleanTokenizer:
+    def __init__(self):
+        self.calls = []
+
+    def apply_chat_template(self, messages, **kwargs):
+        self.calls.append({"messages": messages, "kwargs": kwargs})
+        return "<|im_start|>assistant\n<think>\n\n</think>\n\n"
+
+
+class _DirectRejectingTokenizer:
+    def __init__(self):
+        self.calls = []
+
+    def apply_chat_template(self, messages, **kwargs):
+        self.calls.append({"messages": messages, "kwargs": kwargs})
+        if "enable_thinking" in kwargs:
+            raise TypeError("unexpected keyword argument 'enable_thinking'")
+        return "<|im_start|>assistant\n<think>\n\n</think>\n\n"
+
+
+def _install_fake_vllm(monkeypatch, *, tokenizer=None, generated_text="Paris."):
+    class FakeSamplingParams:
+        def __init__(self, **kwargs):
+            self.kwargs = kwargs
+
+    class FakeLoRARequest:
+        def __init__(self, lora_name, lora_int_id, lora_path):
+            self.lora_name = lora_name
+            self.lora_int_id = lora_int_id
+            self.lora_path = lora_path
+
+    class FakeLLM:
+        instances = []
+
+        def __init__(self, **kwargs):
+            self.kwargs = kwargs
+            self.tokenizer = tokenizer or _CleanTokenizer()
+            self.generate_calls = []
+            FakeLLM.instances.append(self)
+
+        def get_tokenizer(self):
+            return self.tokenizer
+
+        def generate(self, prompts, sampling_params, **kwargs):
+            self.generate_calls.append(
+                {
+                    "prompts": prompts,
+                    "sampling_params": sampling_params,
+                    "kwargs": kwargs,
+                }
+            )
+            output = types.SimpleNamespace(text=generated_text)
+            return [types.SimpleNamespace(outputs=[output])]
+
+    fake_vllm = types.ModuleType("vllm")
+    fake_vllm.LLM = FakeLLM
+    fake_vllm.SamplingParams = FakeSamplingParams
+    fake_lora = types.ModuleType("vllm.lora")
+    fake_lora_request = types.ModuleType("vllm.lora.request")
+    fake_lora_request.LoRARequest = FakeLoRARequest
+    monkeypatch.setitem(sys.modules, "vllm", fake_vllm)
+    monkeypatch.setitem(sys.modules, "vllm.lora", fake_lora)
+    monkeypatch.setitem(sys.modules, "vllm.lora.request", fake_lora_request)
+    return FakeLLM, FakeLoRARequest
+
+
+def _vllm_cfg(tmp_path):
+    return {
+        "model_tag": "fake-qwen3",
+        "model_name": "hf/fake-qwen3",
+        "generation": {
+            "enable_thinking": False,
+            "seed": 123,
+            "temperature": 0.0,
+            "max_new_tokens": 17,
+        },
+        "arms": [
+            {"name": "base", "method": "base", "model": "fake-qwen3", "adapter": None},
+            {
+                "name": "sft",
+                "method": "sft",
+                "model": "fake-qwen3",
+                "adapter": str(tmp_path / "sft_adapter"),
+            },
+        ],
+    }
+
+
+def test_vllm_generator_constructor_lazy_imports_and_enables_lora(monkeypatch, tmp_path):
+    FakeLLM, _ = _install_fake_vllm(monkeypatch)
+
+    gen = run_eval.VLLMGenerator(_vllm_cfg(tmp_path))
+
+    assert gen is not None
+    assert len(FakeLLM.instances) == 1
+    assert FakeLLM.instances[0].kwargs == {
+        "model": "hf/fake-qwen3",
+        "enable_lora": True,
+    }
+
+
+def test_vllm_generator_requires_explicit_live_model_name(monkeypatch, tmp_path):
+    _install_fake_vllm(monkeypatch)
+    cfg = _vllm_cfg(tmp_path)
+    del cfg["model_name"]
+
+    with pytest.raises(KeyError, match="model_name"):
+        run_eval.VLLMGenerator(cfg)
+
+
+def test_vllm_generator_selects_base_vs_lora_requests(monkeypatch, tmp_path):
+    FakeLLM, _ = _install_fake_vllm(monkeypatch)
+    gen = run_eval.VLLMGenerator(_vllm_cfg(tmp_path))
+
+    base = gen.generate("base", {"id": "q1", "question": "Capital?"})
+    sft = gen.generate("sft", {"id": "q1", "question": "Capital?"})
+
+    assert base["generated_answer"] == "Paris."
+    assert sft["generated_answer"] == "Paris."
+    calls = FakeLLM.instances[0].generate_calls
+    assert calls[0]["kwargs"] == {}
+    lora_request = calls[1]["kwargs"]["lora_request"]
+    assert lora_request.lora_name == "sft"
+    assert lora_request.lora_int_id == 1
+    assert lora_request.lora_path == str((tmp_path / "sft_adapter").resolve())
+    assert calls[0]["sampling_params"].kwargs == {
+        "n": 1,
+        "temperature": 0.0,
+        "max_tokens": 17,
+        "seed": 123,
+    }
+
+
+def test_vllm_generator_falls_back_to_chat_template_kwargs(monkeypatch, tmp_path):
+    tokenizer = _DirectRejectingTokenizer()
+    _install_fake_vllm(monkeypatch, tokenizer=tokenizer)
+    gen = run_eval.VLLMGenerator(_vllm_cfg(tmp_path))
+
+    gen.generate("base", {"id": "q1", "question": "Capital?"})
+
+    assert [call["kwargs"] for call in tokenizer.calls] == [
+        {
+            "tokenize": False,
+            "add_generation_prompt": True,
+            "enable_thinking": False,
+        },
+        {
+            "tokenize": False,
+            "add_generation_prompt": True,
+            "chat_template_kwargs": {"enable_thinking": False},
+        },
+    ]
+
+
+def test_vllm_generator_rejects_generated_thinking(monkeypatch, tmp_path):
+    _install_fake_vllm(monkeypatch, generated_text="<think>private</think> Paris.")
+    gen = run_eval.VLLMGenerator(_vllm_cfg(tmp_path))
+
+    with pytest.raises(RuntimeError, match="thinking marker"):
+        gen.generate("base", {"id": "q1", "question": "Capital?"})
+
+
+def test_eval_loaders_read_utf8_not_windows_locale_default(tmp_path):
+    gold_path = tmp_path / "gold.jsonl"
+    _write_utf8_jsonl(
+        gold_path,
+        [
+            {
+                "question_norm": "where is 東京?",
+                "normalized_aliases": ["日本"],
+            }
+        ],
+    )
+    assert scorers.load_gold(gold_path)["where is 東京?"] == ["日本"]
+
+    in_domain_path = tmp_path / "in_domain.json"
+    _write_utf8_json(
+        in_domain_path,
+        [{"question": "Where is 東京?", "label": "known"}],
+    )
+    records = run_eval._load_eval_records(
+        "in_domain", {"path": str(in_domain_path)}, {}
+    )
+    assert records[0]["question"] == "Where is 東京?"
+
+    selfaware_path = tmp_path / "SelfAware.json"
+    _write_utf8_json(
+        selfaware_path,
+        {
+            "example": [
+                {
+                    "question_id": "utf8",
+                    "question": "Where is 東京?",
+                    "answer": ["日本"],
+                    "answerable": True,
+                }
+            ]
+        },
+    )
+    ood_records = ood.load_selfaware(selfaware_path)
+    assert ood_records[0]["question"] == "Where is 東京?"
 
 
 # --- MB4: McNemar mismatched-length pairs are recorded, not silently skipped ---
@@ -169,7 +382,11 @@ def test_mcnemar_length_mismatch_records_skip_row_and_warns(tmp_path):
     # a warning fired for the mismatched pair
     assert any("McNemar skipped" in str(w.message) for w in caught)
 
-    rows = list(csv.DictReader((results_dir / "comparisons" / "mcnemar.csv").open()))
+    rows = list(
+        csv.DictReader(
+            (results_dir / "comparisons" / "mcnemar.csv").open(encoding="utf-8")
+        )
+    )
     by_pair = {(r["arm_a"], r["arm_b"]): r for r in rows}
 
     # arm_a vs arm_b: skip row, both lengths recorded, stat columns empty
@@ -195,7 +412,11 @@ def test_mcnemar_missing_vector_records_skip_row(tmp_path):
         # arm_b absent on in_domain
     }
     run_eval._write_comparisons(results_dir, cfg, truthful_vectors, [])
-    rows = list(csv.DictReader((results_dir / "comparisons" / "mcnemar.csv").open()))
+    rows = list(
+        csv.DictReader(
+            (results_dir / "comparisons" / "mcnemar.csv").open(encoding="utf-8")
+        )
+    )
     assert len(rows) == 1
     assert rows[0]["status"] == "skipped_length_mismatch"
     assert "missing" in rows[0]["note"]
