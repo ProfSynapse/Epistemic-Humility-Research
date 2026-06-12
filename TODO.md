@@ -27,6 +27,8 @@ We are proving the Phase 1 local lane before committing more GPU time. The goal 
   - Non-discard rows: 15,995
   - Train/dev split is clean by `probe_pool_row_key`.
   - Important fix: TriviaQA `question_id` is not unique, so audits must use `*_question_keys`, not bare `*_question_ids`.
+  - Public HF dataset repo: https://huggingface.co/datasets/professorsynapse/epistemic-humility-phase1
+  - SFT smoke files published there: `qwen3-4b-instruct/sft_train.jsonl` and `qwen3-4b-instruct/sft_dev.jsonl`.
 
 - Local SFT headline seed 1 completed.
   - Run id: `sft__4b__headline__seed1`
@@ -94,7 +96,7 @@ We are proving the Phase 1 local lane before committing more GPU time. The goal 
 5. Next scientific pipeline step is local evaluation against the completed SFT and DPO adapters, if the repo already has the evaluation runner wired locally.
 6. If local eval is not wired yet, document that gap and implement the smallest local-only eval path before expanding the 4B matrix.
 7. Only after local eval works should we consider more headline cells. KTO HF smoke remains blocked until the fixed Synaptic Tuner commit is pushed and cloud prerequisites are cleared.
-8. Before cloud-lane expansion, publish the required Phase 1 dataset files to HF, record the dataset repo/file names, verify process-local `HF_TOKEN` availability, and use Synaptic Tuner's `cloud-pipeline` flow from a clean pushed exact commit.
+8. Before cloud-lane expansion beyond the SFT smoke, publish the remaining required Phase 1 dataset files to HF, record the dataset repo/file names, verify process-local `HF_TOKEN` availability, and use Synaptic Tuner's `cloud-pipeline` flow from a clean pushed exact commit.
 
 ## Files Changed During This Session
 
