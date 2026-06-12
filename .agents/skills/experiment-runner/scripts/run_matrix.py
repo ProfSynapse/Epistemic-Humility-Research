@@ -268,7 +268,7 @@ def materialize_recipe(base: dict, cell: Cell, lane: str = "local") -> dict:
     recipe["name"] = coord.run_id().replace("__", "-").replace("_", "-")
     artifacts = recipe.setdefault("artifacts", {})
     artifacts["output_root"] = (
-        f"toolset-training-artifacts/runs/{{lane}}/{coord.size}/{coord.run_id()}"
+        f"toolset-training-artifacts/runs/{lane}/{coord.size}/{coord.run_id()}"
     )
     # Declarative recipes: drop any legacy run.command/workdir so a materialized
     # recipe is never self-contradictory. Nothing is injected — the handler builds
@@ -321,7 +321,7 @@ def stage_local_data(
     shutil.copy2(src_dir / dev_file, staged_abs / dev_file)
     return {
         "source_data_file": str((src_dir / train_file)),
-        "staged_data_file": str(staged_rel / train_file),
+        "staged_data_file": (staged_rel / train_file).as_posix(),
         "data_sha256": sha256_file(src_dir / train_file),
     }
 
@@ -404,7 +404,7 @@ def local_invocation(materialized_recipe_path: Path) -> list:
     probe keeps DPO/KTO cells SKIPPED (fail-closed), so this never runs prematurely.
     """
     return ["python", "tuner.py", "local-run",
-            "--job-config", str(materialized_recipe_path), "--yes"]
+            "--job-config", materialized_recipe_path.as_posix(), "--yes"]
 
 
 def cloud_invocation(method: str, dataset_name: str, recipe: dict) -> list:

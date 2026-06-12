@@ -1,0 +1,47 @@
+{
+  "run_id": "dpo__4b__headline__seed1",
+  "matrix_version": "phase1-v0.3",
+  "coordinate": {
+    "arm": "dpo",
+    "size": "4b",
+    "cell_type": "headline",
+    "seed": 1,
+    "override": {}
+  },
+  "source_recipe": "experiment/phase1/recipes/eh_phase1_qwen3_4b_dpo.yaml",
+  "materialized_recipe_sha": "c301df87c81dcbc41ce0dcf87332cbe907610ebf36bcf2eab6570466df659f21",
+  "method": "dpo",
+  "model": "unsloth/Qwen3-4B-bnb-4bit",
+  "lane": "local",
+  "data": {
+    "source_data_file": "F:\\Code\\Epistemic-Humility-Research\\experiment\\phase1\\data\\qwen3-4b-instruct\\dpo_train.jsonl",
+    "staged_data_file": "scratch/eh_staging/dpo__4b__headline__seed1/dpo_train.jsonl",
+    "data_sha256": "22669d2c8c0b19df5fd8b76a86bf7fb8d6403770c8e11759562be13f3bc734a8",
+    "hf_dataset_name": null,
+    "hf_dataset_revision": null
+  },
+  "research_repo_commit": "ca5f926cbd5ca39afda674402f42a29c56283393",
+  "submodule_commit": "3a3d7a26e976e70d095c7f965e7d6e7b210843f7",
+  "prereq_check": {
+    "datasets_present": true,
+    "leakage_guard_passed": true
+  },
+  "launched_at": "2026-06-12T01:14:29.956267+00:00",
+  "tuner_invocation": [
+    "python",
+    "tuner.py",
+    "local-run",
+    "--job-config",
+    "F:\\Code\\Epistemic-Humility-Research\\experiment\\phase1\\run_records\\materialized_recipes\\dpo__4b__headline__seed1.yaml",
+    "--yes"
+  ],
+  "outcome": {
+    "status": "completed",
+    "job_handle": null,
+    "adapter_path": "F:\\Code\\Epistemic-Humility-Research\\synaptic-tuner\\toolset-training-artifacts\\runs\\local\\4b\\dpo__4b__headline__seed1\\20260611_211512\\final_model",
+    "metrics_path": "F:\\Code\\Epistemic-Humility-Research\\synaptic-tuner\\toolset-training-artifacts\\runs\\local\\4b\\dpo__4b__headline__seed1\\20260611_211512\\logs\\training_latest.jsonl",
+    "verified": false,
+    "completed_at": "2026-06-12T02:25:45.878376+00:00"
+  },
+  "materialized_recipe": "F:\\Code\\Epistemic-Humility-Research\\experiment\\phase1\\run_records\\materialized_recipes\\dpo__4b__headline__seed1.yaml"
+}
