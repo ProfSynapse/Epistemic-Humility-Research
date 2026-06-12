@@ -126,6 +126,11 @@ skill:
   bucket-sync deps live on `HF_BUCKET_SYNC_PYTHONPATH` only, not evaluator
   `PYTHONPATH`. If a future eval job fails with Hub/Transformers version
   mismatch, inspect overlay separation before changing experiment settings.
+- Synaptic Tuner `0400540` adds generic cloud eval hardening: `--eval-timeout-hours`,
+  eval timeout resolution, cloud-pipeline eval arg forwarding, model-load stage
+  events, and SIGTERM/SIGINT terminated-stage logging including bootstrap
+  downloads. The next cloud smoke should run from `0400540` or later and pass a
+  separate eval timeout budget instead of only increasing training runtime.
 - Current Qwen3 4B public dataset state: all Phase 1 train/dev JSONLs are
   public at `professorsynapse/epistemic-humility-phase1`:
   `sft_train.jsonl`, `sft_dev.jsonl`, `dpo_train.jsonl`, `dpo_dev.jsonl`,
@@ -139,9 +144,9 @@ skill:
   `model.safetensors` download around 25%; bucket stage artifacts contained
   only `logs/stage_summary.json` and `logs/stage_events.jsonl`, with no hidden
   app traceback or result files. Do not classify this as an eval-code failure.
-  Before relaunch, choose a longer timeout/runtime allowance and/or a
-  cache/pre-download mitigation; later improve base-model-load stage markers in
-  Synaptic Tuner.
+  Before relaunch, keep the same dataset/model/LoRA/Qwen settings and tiny
+  training max-2, use Synaptic Tuner `0400540` or later, and pass a longer eval
+  budget with `--eval-timeout-hours`.
 
 ## Local Windows/Desktop Gotchas
 
