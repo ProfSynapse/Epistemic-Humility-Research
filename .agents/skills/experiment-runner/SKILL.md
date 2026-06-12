@@ -126,10 +126,22 @@ skill:
   bucket-sync deps live on `HF_BUCKET_SYNC_PYTHONPATH` only, not evaluator
   `PYTHONPATH`. If a future eval job fails with Hub/Transformers version
   mismatch, inspect overlay separation before changing experiment settings.
-- Current cloud next step: rerun the same bounded SFT `max_steps=2`
-  `cloud-pipeline` smoke from Synaptic Tuner `ee4938d` or later to confirm the
-  natural labkit smoke eval continuation. Do not change dataset, LoRA, or Qwen
-  settings for that confirmation.
+- Current Qwen3 4B public dataset state: all Phase 1 train/dev JSONLs are
+  public at `professorsynapse/epistemic-humility-phase1`:
+  `sft_train.jsonl`, `sft_dev.jsonl`, `dpo_train.jsonl`, `dpo_dev.jsonl`,
+  `kto_congruence_train.jsonl`, `kto_congruence_dev.jsonl`,
+  `kto_correctness_safe_train.jsonl`, and
+  `kto_correctness_safe_dev.jsonl`.
+- Latest bounded SFT `max_steps=2` `cloud-pipeline` smoke on Synaptic Tuner
+  `ee4938d` reached eval `runtime_ready` healthy, then job
+  `6a2c58ac7c68f455eff141df` failed with `ERROR exit 143` during/after slow
+  Qwen3 base model download/load. Visible logs stopped during
+  `model.safetensors` download around 25%; bucket stage artifacts contained
+  only `logs/stage_summary.json` and `logs/stage_events.jsonl`, with no hidden
+  app traceback or result files. Do not classify this as an eval-code failure.
+  Before relaunch, choose a longer timeout/runtime allowance and/or a
+  cache/pre-download mitigation; later improve base-model-load stage markers in
+  Synaptic Tuner.
 
 ## Local Windows/Desktop Gotchas
 

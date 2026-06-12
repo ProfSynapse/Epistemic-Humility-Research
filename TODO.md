@@ -28,7 +28,7 @@ We are proving the Phase 1 local lane before committing more GPU time. The goal 
   - Train/dev split is clean by `probe_pool_row_key`.
   - Important fix: TriviaQA `question_id` is not unique, so audits must use `*_question_keys`, not bare `*_question_ids`.
   - Public HF dataset repo: https://huggingface.co/datasets/professorsynapse/epistemic-humility-phase1
-  - SFT smoke files published there: `qwen3-4b-instruct/sft_train.jsonl` and `qwen3-4b-instruct/sft_dev.jsonl`.
+  - Qwen3 4B Phase 1 train/dev JSONLs are public there: `sft_train.jsonl`, `sft_dev.jsonl`, `dpo_train.jsonl`, `dpo_dev.jsonl`, `kto_congruence_train.jsonl`, `kto_congruence_dev.jsonl`, `kto_correctness_safe_train.jsonl`, and `kto_correctness_safe_dev.jsonl`.
 
 - Local SFT headline seed 1 completed.
   - Run id: `sft__4b__headline__seed1`
@@ -76,11 +76,11 @@ We are proving the Phase 1 local lane before committing more GPU time. The goal 
     `unsloth/unsloth:2026.1.2-pt2.9.0-cu12.8-update@sha256:5266c57be21059bfb407d80dc2f448868a5c2e2dbe7b2aa27780f48b48cbec39`.
     - Import probe passed: job `6a2c379d7c68f455eff13e99`.
     - Training + bucket sync passed after Synaptic Tuner PRs #104/#105: jobs `6a2c40c27c68f455eff13f95` and `6a2c4658871c005b5352b6fd`.
-    - Natural labkit smoke eval still needs one rerun after Synaptic Tuner PR #106; the last failure was Hub 1.x leaking onto evaluator `PYTHONPATH`, now fixed in the submodule.
+    - Latest bounded SFT max-2 `cloud-pipeline` smoke on Synaptic Tuner `ee4938d` reached eval `runtime_ready` healthy, then failed as job `6a2c58ac7c68f455eff141df` with `ERROR exit 143` after visible logs stopped during slow Qwen3 base `model.safetensors` download around 25%. Bucket stage artifacts contained only `logs/stage_summary.json` and `logs/stage_events.jsonl`; no hidden app traceback or result files were present. Treat this as runtime allowance/download-load pressure, not an eval-code failure.
     - `unsloth/unsloth:latest`: `numpy was upgraded mid-session (loaded: 2.2.6, installed: 2.4.1)`.
     - `unsloth/unsloth:2026.2.1-pt2.9.0-cu12.8-fixed-numba-numpy-error`: `ModuleNotFoundError: numpy._core.tests` through SciPy/Transformers during `import unsloth`.
     - Synaptic Tuner fixes already merged through submodule `ee4938d`: quote HF Jobs pip requirements, avoid upgrading generic project deps in the active trainer runtime, isolate bucket-sync `hf_xet`, avoid eval overlay ML-stack upgrades, and split eval runtime vs bucket-sync overlays.
-    - Next cloud action is rerun the same bounded SFT max-2 cloud-pipeline smoke to confirm labkit eval continuation; do not change dataset, LoRA, or Qwen settings for that check.
+    - Next cloud action is another bounded SFT max-2 cloud-pipeline smoke only after choosing a longer timeout/runtime allowance and/or cache/pre-download mitigation; do not change dataset, LoRA, or Qwen settings for that check. Later, improve base-model-load stage markers in Synaptic Tuner.
 
 - Docker copy-mode logs can be misleading.
   - The container PID 1 may be `sleep infinity`; the trainer runs through `docker exec`.
@@ -114,9 +114,9 @@ We are proving the Phase 1 local lane before committing more GPU time. The goal 
    `python experiment/phase1/eval/run_eval.py --config experiment/phase1/eval/config/eval_smoke_local_4b.yaml --live-vllm`.
    Do not run the full headline eval yet.
 6. If that local eval smoke passes, materialize the next same-model real eval config against the intended held-out/OOD subset before expanding to more training cells.
-7. Rerun the bounded SFT max-2 HF Jobs cloud-pipeline smoke on Synaptic Tuner `ee4938d` or later to confirm the labkit eval continuation.
-8. Only after local eval and cloud smoke both work should we consider more headline cells. KTO remains blocked for local expansion until Docker reliability is re-established and for cloud expansion until the necessary KTO datasets are published.
-9. Before cloud-lane expansion beyond the SFT smoke, publish the remaining required Phase 1 dataset files to HF, record the dataset repo/file names, verify process-local `HF_TOKEN` availability, and use Synaptic Tuner's `cloud-pipeline` flow from a clean pushed exact commit.
+7. Rerun the bounded SFT max-2 HF Jobs cloud-pipeline smoke only with longer runtime allowance and/or cache/pre-download mitigation; the `ee4938d` smoke reached eval `runtime_ready` and then failed with exit 143 during/after slow Qwen3 base download/load, with no app traceback in stage artifacts.
+8. Only after local eval and cloud smoke both work should we consider more headline cells. KTO remains blocked for local expansion until Docker reliability is re-established and for cloud expansion until an explicit KTO smoke is approved with the cloud prerequisites cleared.
+9. Before cloud-lane expansion beyond the SFT smoke, verify process-local `HF_TOKEN` availability, use Synaptic Tuner's `cloud-pipeline` flow from a clean pushed exact commit, and confirm the already public Qwen3 4B dataset file names.
 
 ## Files Changed During This Session
 
