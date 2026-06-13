@@ -376,6 +376,13 @@ papers:
   area: calibration
   status: candidate
   note: title confirmed; numbers not retrievable — cite framework only
+- arxiv: '2606.12360'
+  slug: anatomy-of-post-training
+  title: 'Anatomy of Post-Training: Using Interpretability to Characterize Data and Shape the Learning Signal'
+  year: 2026
+  area: methods
+  status: verified
+  note: 'ADMITTED 2026-06-13 as context/framework citation, not an effect row: SAE/probe concept audits of preference data predict and partly mitigate off-target DPO learning incl. safeguards, sycophancy-like physics behavior, and hallucinated sensitive-resource URLs.'
 - arxiv: '2508.15050'
   slug: dont-think-twice
   title: 'Don''t Think Twice: more reasoning time impairs calibration (Lacombe, Wu, Dilworth)'
