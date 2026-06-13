@@ -345,6 +345,38 @@ skill:
   recall/truthful score than base/DPO but severe over-refusal; DPO remains
   base-like here. Non-blocking warnings were the same as earlier diagnostics:
   Triton routing module, AOT cache save, and NCCL shutdown warning.
+- Full SelfAware evidence run `eh-selfaware-full-local-4b` exited 0 with
+  `eval complete: 3 arm x set rows, config_sha=25e6a1faf916c7ef`. Config:
+  `experiment/phase1/eval/config/eval_selfaware_full_local_4b.yaml`. Outputs
+  are under `experiment/phase1/eval/results_selfaware_full_local_4b`. Shape:
+  full SelfAware, 3,369 rows = 2,337 known / 1,032 unknown, base/SFT/DPO only;
+  no KTO, bridge, cloud, headline, protocol, or full matrix. No `<think>` or
+  `</think>` matches were found. Summary: base truthful 19.26, refusal_recall
+  0.0, answer_on_unknown 100.0, over_refusal 0.04, correct_on_known 27.78; SFT
+  truthful 39.51, refusal_recall 89.73, answer_on_unknown 10.27, over_refusal
+  66.07, correct_on_known 51.07; DPO truthful 15.08, refusal_recall 0.0,
+  answer_on_unknown 100.0, over_refusal 0.04, correct_on_known 21.75. The
+  prior 192-row SelfAware pattern survived on full SelfAware: SFT learned
+  abstention on unknowns, but with severe known-question over-refusal; DPO
+  remains close to base. This is bounded local evidence, not headline/protocol
+  evidence.
+- Broader OOD evidence run `eh-broader-ood-evidence-local-4b` exited 0 with
+  `eval complete: 12 arm x set rows, config_sha=7bcf77af7f76caaf`. Config:
+  `experiment/phase1/eval/config/eval_broader_ood_evidence_local_4b.yaml`.
+  Outputs are under
+  `experiment/phase1/eval/results_broader_ood_evidence_local_4b`. Shape:
+  base/SFT/DPO only over KUQ balanced slice (384 rows = 192 unknown / 192
+  known), full CoCoNot contrast set (379 known), TruthfulQA 256 known, and
+  PopQA 256 known; no KTO, bridge, cloud, headline, protocol, or full matrix.
+  No `<think>` or `</think>` matches were found. KUQ summary: base truthful
+  9.64, refusal_recall 0.0, over_refusal 0.0; SFT truthful 53.12,
+  refusal_recall 97.4, over_refusal 79.69; DPO truthful 9.11,
+  refusal_recall 0.52, over_refusal 0.0. Known-only pressure: SFT over_refusal
+  was 79.68 on CoCoNot, 76.17 on TruthfulQA, and 92.97 on PopQA. CoCoNot
+  caveat: the local contrast file has empty aliases, so use it for
+  refusal-rate/over-refusal behavior, not answer correctness. Interpretation:
+  SFT's abstention signal generalized beyond SelfAware to KUQ, and its
+  over-refusal failure generalized across known-only OOD pressure sets.
 - OOD records carry their own `aliases`; scoring now prefers normalized
   non-empty record aliases and falls back to global Cheng gold. Without this,
   OOD known correctness/truthful vectors could be wrongly zero when questions
@@ -397,11 +429,12 @@ validates Docker, GPU access, model load, data prep, two optimizer steps, final
 adapter save, metrics/logs, lineage/capacity files, and host artifact copy-out
 in a few minutes without exercising the currently fragile KTO path.
 
-After the 2026-06-13 successful local recovery, scoped live eval smoke, and
-bounded SelfAware evidence run, the next local-only step is to stage/commit the
-generic eval fixes/configs and evidence docs before expanding to more training
-cells. Do not jump from these bounded runs directly to KTO, a headline/full run,
-or any cloud job without explicit approval.
+After the 2026-06-13 successful local recovery, scoped live eval smoke, bounded
+SelfAware evidence run, full SelfAware evidence run, and broader OOD evidence
+run, the next local-only step is to stage/commit the evidence configs/docs
+before expanding to more training cells. Do not jump from these bounded runs
+directly to KTO, a headline/full run, or any cloud job without explicit
+approval.
 
 Headline numbers come ONLY from the pre-registered default cells; the LR/beta
 panel is robustness-only and is tagged distinctly in each run-id coordinate so

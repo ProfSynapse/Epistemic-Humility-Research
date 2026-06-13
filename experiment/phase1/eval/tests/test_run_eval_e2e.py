@@ -590,6 +590,88 @@ def test_local_4b_selfaware_evidence_slice_config_is_bounded_base_sft_dpo_only()
     }
 
 
+def test_local_4b_selfaware_full_config_is_base_sft_dpo_only():
+    cfg_path = run_eval.EVAL_DIR / "config" / "eval_selfaware_full_local_4b.yaml"
+    cfg = yaml.safe_load(cfg_path.read_text(encoding="utf-8"))
+
+    assert cfg["model_tag"] == "qwen3-4b-instruct"
+    assert cfg["model_name"] == "unsloth/Qwen3-4B-bnb-4bit"
+    assert cfg["gold_path"] == (
+        "../../../datasets/triviaqa-rc-nocontext/cheng_test_gold.jsonl"
+    )
+    assert cfg["results_dir"] == "results_selfaware_full_local_4b"
+    assert cfg["generation"]["enable_thinking"] is False
+    assert cfg["generation"]["n_samples"] == 1
+    assert cfg["confidence"]["n_samples"] == 1
+    assert cfg["bootstrap"]["n_resamples"] == 200
+    assert cfg["vllm"]["max_lora_rank"] == 32
+
+    arms = {arm["name"]: arm for arm in cfg["arms"]}
+    assert list(arms) == ["base", "sft", "dpo"]
+    assert {arm["method"] for arm in arms.values()} == {"base", "sft", "dpo"}
+    assert all("kto" not in arm_name for arm_name in arms)
+    assert all("bridge" not in arm_name for arm_name in arms)
+    assert all("cloud" not in arm_name for arm_name in arms)
+    assert {arm["model"] for arm in arms.values()} == {"qwen3-4b-instruct"}
+
+    assert cfg["eval_sets"] == {
+        "selfaware": {
+            "type": "ood",
+            "path": "../../../datasets/selfaware/SelfAware.json",
+        }
+    }
+
+
+def test_local_4b_broader_ood_evidence_config_is_base_sft_dpo_only():
+    cfg_path = (
+        run_eval.EVAL_DIR / "config" / "eval_broader_ood_evidence_local_4b.yaml"
+    )
+    cfg = yaml.safe_load(cfg_path.read_text(encoding="utf-8"))
+
+    assert cfg["model_tag"] == "qwen3-4b-instruct"
+    assert cfg["model_name"] == "unsloth/Qwen3-4B-bnb-4bit"
+    assert cfg["results_dir"] == "results_broader_ood_evidence_local_4b"
+    assert cfg["generation"]["enable_thinking"] is False
+    assert cfg["generation"]["n_samples"] == 1
+    assert cfg["confidence"]["n_samples"] == 1
+    assert cfg["bootstrap"]["n_resamples"] == 200
+    assert cfg["vllm"]["max_lora_rank"] == 32
+
+    arms = {arm["name"]: arm for arm in cfg["arms"]}
+    assert list(arms) == ["base", "sft", "dpo"]
+    assert {arm["method"] for arm in arms.values()} == {"base", "sft", "dpo"}
+    assert all("kto" not in arm_name for arm_name in arms)
+    assert all("bridge" not in arm_name for arm_name in arms)
+    assert all("cloud" not in arm_name for arm_name in arms)
+
+    assert cfg["eval_sets"] == {
+        "kuq": {
+            "type": "ood",
+            "path": "../../../datasets/kuq/knowns_unknowns.jsonl",
+            "offset": 3245,
+            "limit": 384,
+        },
+        "coconot": {
+            "type": "ood",
+            "path": "../../../datasets/coconot/contrast_test.jsonl",
+            "offset": 0,
+            "limit": 379,
+        },
+        "truthfulqa": {
+            "type": "ood",
+            "path": "../../../datasets/truthfulqa/TruthfulQA.csv",
+            "offset": 0,
+            "limit": 256,
+        },
+        "popqa": {
+            "type": "ood",
+            "path": "../../../datasets/popqa/test.jsonl",
+            "offset": 0,
+            "limit": 256,
+        },
+    }
+
+
 # --- MB4: McNemar mismatched-length pairs are recorded, not silently skipped ---
 
 

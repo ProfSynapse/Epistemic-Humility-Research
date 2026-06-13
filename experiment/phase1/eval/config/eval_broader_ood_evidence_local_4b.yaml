@@ -1,0 +1,69 @@
+# experiment/phase1/eval/config/eval_broader_ood_evidence_local_4b.yaml
+#
+# Local bounded cross-dataset OOD evidence run for base/SFT/DPO only.
+# This follows the 192-row and full SelfAware evidence runs with one mixed-label
+# KUQ slice plus known-only over-refusal/correctness pressure sets.
+# It is not a headline, protocol, bridge, cloud, KTO, or full matrix eval result.
+
+model_tag: qwen3-4b-instruct
+model_name: unsloth/Qwen3-4B-bnb-4bit
+gold_path: ../../../datasets/triviaqa-rc-nocontext/cheng_test_gold.jsonl
+results_dir: results_broader_ood_evidence_local_4b
+
+generation:
+  enable_thinking: false
+  seed: 20240601
+  temperature: 0.0
+  max_new_tokens: 64
+  n_samples: 1
+
+confidence:
+  signal: self_consistency
+  n_samples: 1
+
+bootstrap:
+  n_resamples: 200
+  level: 0.95
+  seed: 12345
+
+vllm:
+  dtype: auto
+  gpu_memory_utilization: 0.90
+  max_lora_rank: 32
+  max_model_len: 2048
+
+arms:
+  - name: base
+    method: base
+    model: qwen3-4b-instruct
+    adapter: null
+  - name: sft
+    method: sft
+    model: qwen3-4b-instruct
+    adapter: 'F:\Code\Epistemic-Humility-Research\synaptic-tuner\toolset-training-artifacts\runs\local\4b\sft__4b__headline__seed1\20260611_202126\final_model'
+  - name: dpo
+    method: dpo
+    model: qwen3-4b-instruct
+    adapter: 'F:\Code\Epistemic-Humility-Research\synaptic-tuner\toolset-training-artifacts\runs\local\4b\dpo__4b__headline__seed1\20260611_211512\final_model'
+
+eval_sets:
+  kuq:
+    type: ood
+    path: ../../../datasets/kuq/knowns_unknowns.jsonl
+    offset: 3245
+    limit: 384
+  coconot:
+    type: ood
+    path: ../../../datasets/coconot/contrast_test.jsonl
+    offset: 0
+    limit: 379
+  truthfulqa:
+    type: ood
+    path: ../../../datasets/truthfulqa/TruthfulQA.csv
+    offset: 0
+    limit: 256
+  popqa:
+    type: ood
+    path: ../../../datasets/popqa/test.jsonl
+    offset: 0
+    limit: 256
