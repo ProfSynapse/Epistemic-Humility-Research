@@ -277,7 +277,34 @@ def test_vllm_generator_selects_base_vs_lora_requests(monkeypatch, tmp_path):
         "temperature": 0.0,
         "max_tokens": 17,
         "seed": 123,
+        "stop": ["<think>", "</think>"],
     }
+
+
+def test_vllm_sampling_params_stop_thinking_markers_when_disabled(
+    monkeypatch, tmp_path
+):
+    _install_fake_vllm(monkeypatch)
+
+    gen = run_eval.VLLMGenerator(_vllm_cfg(tmp_path))
+
+    assert gen._sampling_params.kwargs["stop"] == ["<think>", "</think>"]
+
+
+def test_vllm_sampling_params_preserves_configured_stop_strings(
+    monkeypatch, tmp_path
+):
+    _install_fake_vllm(monkeypatch)
+    cfg = _vllm_cfg(tmp_path)
+    cfg["generation"]["stop"] = ["<|endoftext|>", "</think>"]
+
+    gen = run_eval.VLLMGenerator(cfg)
+
+    assert gen._sampling_params.kwargs["stop"] == [
+        "<|endoftext|>",
+        "</think>",
+        "<think>",
+    ]
 
 
 def test_vllm_generator_falls_back_to_chat_template_kwargs(monkeypatch, tmp_path):
@@ -350,6 +377,97 @@ def test_eval_loaders_read_utf8_not_windows_locale_default(tmp_path):
     assert ood_records[0]["question"] == "Where is 東京?"
 
 
+def test_eval_record_loader_no_limit_preserves_all_records(tmp_path):
+    records_path = tmp_path / "records.json"
+    records = [
+        {"question_id": "q1", "question": "Question 1?", "label": "known"},
+        {"question_id": "q2", "question": "Question 2?", "label": "known"},
+        {"question_id": "q3", "question": "Question 3?", "label": "unknown"},
+    ]
+    records_path.write_text(json.dumps(records), encoding="utf-8")
+
+    loaded = run_eval._load_eval_records(
+        "in_domain", {"path": str(records_path)}, {}
+    )
+
+    assert [record["id"] for record in loaded] == ["q1", "q2", "q3"]
+    assert [record["question"] for record in loaded] == [
+        "Question 1?",
+        "Question 2?",
+        "Question 3?",
+    ]
+
+
+def test_eval_record_loader_limit_offset_is_ordered_and_deterministic(tmp_path):
+    records_path = tmp_path / "records.jsonl"
+    _write_jsonl(
+        records_path,
+        [
+            {"id": "q0", "question": "Question 0?", "label": "known"},
+            {"id": "q1", "question": "Question 1?", "label": "known"},
+            {"id": "q2", "question": "Question 2?", "label": "unknown"},
+            {"id": "q3", "question": "Question 3?", "label": "unknown"},
+        ],
+    )
+    set_cfg = {"path": str(records_path), "offset": 1, "limit": 2}
+
+    first = run_eval._load_eval_records("in_domain", set_cfg, {})
+    second = run_eval._load_eval_records("in_domain", set_cfg, {})
+
+    assert [record["id"] for record in first] == ["q1", "q2"]
+    assert second == first
+
+
+def test_eval_record_loader_limit_applies_after_ood_normalization(
+    monkeypatch, tmp_path
+):
+    normalized = [
+        {"id": "ood-0", "question": "OOD 0?", "label": "known", "source": "fake"},
+        {"id": "ood-1", "question": "OOD 1?", "label": "unknown", "source": "fake"},
+        {"id": "ood-2", "question": "OOD 2?", "label": "known", "source": "fake"},
+    ]
+
+    def fake_load_ood_set(eval_set, path):
+        assert eval_set == "selfaware"
+        assert path == tmp_path / "SelfAware.json"
+        return list(normalized)
+
+    monkeypatch.setattr(ood, "load_ood_set", fake_load_ood_set)
+
+    loaded = run_eval._load_eval_records(
+        "selfaware",
+        {
+            "type": "ood",
+            "path": str(tmp_path / "SelfAware.json"),
+            "offset": 1,
+            "limit": 1,
+        },
+        {},
+    )
+
+    assert loaded == [normalized[1]]
+
+
+def test_eval_record_loader_rejects_invalid_limit(tmp_path):
+    records_path = tmp_path / "records.json"
+    records_path.write_text("[]", encoding="utf-8")
+
+    with pytest.raises(ValueError, match="eval_sets.in_domain.limit"):
+        run_eval._load_eval_records(
+            "in_domain", {"path": str(records_path), "limit": -1}, {}
+        )
+
+
+def test_eval_record_loader_rejects_fractional_limit(tmp_path):
+    records_path = tmp_path / "records.json"
+    records_path.write_text("[]", encoding="utf-8")
+
+    with pytest.raises(ValueError, match="eval_sets.in_domain.limit"):
+        run_eval._load_eval_records(
+            "in_domain", {"path": str(records_path), "limit": 1.5}, {}
+        )
+
+
 def test_local_4b_smoke_config_is_bounded_to_completed_adapters():
     repo = run_eval.EVAL_DIR.parents[2]
     cfg_path = run_eval.EVAL_DIR / "config" / "eval_smoke_local_4b.yaml"
@@ -384,6 +502,54 @@ def test_local_4b_smoke_config_is_bounded_to_completed_adapters():
     assert arms["sft"]["adapter"] == sft_record["outcome"]["adapter_path"]
     assert arms["dpo"]["adapter"] == dpo_record["outcome"]["adapter_path"]
     assert {arm["model"] for arm in arms.values()} == {"qwen3-4b-instruct"}
+
+
+def test_local_4b_ood_slice_config_is_diagnostic_bounded_base_sft_dpo_only():
+    cfg_path = run_eval.EVAL_DIR / "config" / "eval_ood_slice_local_4b.yaml"
+    cfg = yaml.safe_load(cfg_path.read_text(encoding="utf-8"))
+
+    assert cfg["model_tag"] == "qwen3-4b-instruct"
+    assert cfg["model_name"] == "unsloth/Qwen3-4B-bnb-4bit"
+    assert cfg["gold_path"] == (
+        "../../../datasets/triviaqa-rc-nocontext/cheng_test_gold.jsonl"
+    )
+    assert cfg["results_dir"] == "results_ood_slice_local_4b"
+    assert cfg["generation"]["n_samples"] == 1
+    assert cfg["confidence"]["n_samples"] == 1
+    assert cfg["bootstrap"]["n_resamples"] == 200
+    assert cfg["vllm"]["max_lora_rank"] == 32
+
+    arms = {arm["name"]: arm for arm in cfg["arms"]}
+    assert list(arms) == ["base", "sft", "dpo"]
+    assert {arm["method"] for arm in arms.values()} == {"base", "sft", "dpo"}
+    assert all("kto" not in arm_name for arm_name in arms)
+    assert all("bridge" not in arm_name for arm_name in arms)
+
+    assert set(cfg["eval_sets"]) == {"coconot", "truthfulqa", "selfaware"}
+    for set_cfg in cfg["eval_sets"].values():
+        assert set_cfg["type"] == "ood"
+        assert set_cfg["offset"] == 0
+        assert set_cfg["limit"] == 64
+
+
+def test_local_4b_selfaware_mixed_slice_config_is_diagnostic_bounded_base_sft_dpo_only():
+    cfg_path = (
+        run_eval.EVAL_DIR / "config" / "eval_selfaware_mixed_slice_local_4b.yaml"
+    )
+    cfg = yaml.safe_load(cfg_path.read_text(encoding="utf-8"))
+
+    assert cfg["model_name"] == "unsloth/Qwen3-4B-bnb-4bit"
+    assert cfg["results_dir"] == "results_selfaware_mixed_slice_local_4b"
+    assert cfg["vllm"]["max_lora_rank"] == 32
+
+    arms = {arm["name"]: arm for arm in cfg["arms"]}
+    assert list(arms) == ["base", "sft", "dpo"]
+    assert {arm["method"] for arm in arms.values()} == {"base", "sft", "dpo"}
+
+    assert set(cfg["eval_sets"]) == {"selfaware"}
+    selfaware = cfg["eval_sets"]["selfaware"]
+    assert selfaware["offset"] == 2300
+    assert selfaware["limit"] == 64
 
 
 # --- MB4: McNemar mismatched-length pairs are recorded, not silently skipped ---

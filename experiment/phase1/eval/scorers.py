@@ -90,6 +90,19 @@ def is_correct(generation: str, aliases: Sequence[str]) -> bool:
     return any(f" {alias} " in gen for alias in aliases)
 
 
+def _aliases_for_record(
+    record: dict,
+    gold: dict[str, list[str]],
+    question_key: str,
+) -> list[str]:
+    """Prefer normalized record aliases; otherwise fall back to global gold."""
+    record_aliases = [normalize(str(a)) for a in record.get("aliases", [])]
+    record_aliases = [a for a in record_aliases if a]
+    if record_aliases:
+        return record_aliases
+    return gold.get(norm_question(record[question_key]), [])
+
+
 # ---------------------------------------------------------------------------
 # 4-quadrant / truthful-rate core (Cheng). The decomposition under §6.4 #1-2.
 # ---------------------------------------------------------------------------
@@ -145,7 +158,7 @@ def score_quadrants(
             target_unknown = str(r[label_key]).lower() == "unknown"
         gen = r[generation_key]
         gen_refuses = is_refusal(gen)
-        aliases = gold.get(norm_question(r[question_key]), [])
+        aliases = _aliases_for_record(r, gold, question_key)
         c.n += 1
         if target_unknown:
             c.n_unknown_labeled += 1
@@ -213,7 +226,7 @@ def truthful_vector(
             target_unknown = str(r[label_key]).lower() == "unknown"
         gen = r[generation_key]
         gen_refuses = is_refusal(gen)
-        aliases = gold.get(norm_question(r[question_key]), [])
+        aliases = _aliases_for_record(r, gold, question_key)
         if target_unknown:
             out.append(1 if gen_refuses else 0)
         else:

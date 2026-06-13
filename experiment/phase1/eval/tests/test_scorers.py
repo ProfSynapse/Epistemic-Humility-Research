@@ -101,6 +101,39 @@ def test_quadrants_and_metrics():
     assert m["truthful_pct"] == 50.0  # (1 refuse-unknown + 1 correct-known)/4
 
 
+def test_record_aliases_drive_ood_known_correctness_and_truthful_vector():
+    records = [
+        {
+            "label": "known",
+            "question": "OOD question absent from Cheng gold?",
+            "aliases": ["Record Alias"],
+            "generated_answer": "The answer is record alias.",
+        }
+    ]
+    gold = {"unrelated question?": ["unrelated alias"]}
+
+    c = scorers.score_quadrants(records, gold)
+
+    assert c.correct_known == 1
+    assert scorers.truthful_vector(records, gold) == [1]
+
+
+def test_gold_fallback_when_record_aliases_absent():
+    records = [
+        {
+            "label": "known",
+            "question": "What is the capital of France?",
+            "generated_answer": "Paris.",
+        }
+    ]
+    gold = {"what is the capital of france?": ["paris"]}
+
+    c = scorers.score_quadrants(records, gold)
+
+    assert c.correct_known == 1
+    assert scorers.truthful_vector(records, gold) == [1]
+
+
 # --- AP ---------------------------------------------------------------------
 
 

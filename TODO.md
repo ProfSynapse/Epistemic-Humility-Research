@@ -1,6 +1,6 @@
 # TODO / Current State
 
-Last updated: 2026-06-12
+Last updated: 2026-06-13
 
 ## Operator Rules
 
@@ -47,6 +47,16 @@ We are proving the Phase 1 local lane before committing more GPU time. The goal 
   - Artifact root: `synaptic-tuner/toolset-training-artifacts/runs/local/4b/sft__4b__micro_max2/20260612_084145`
   - Verified: Docker, GPU, model load, staged data load, LoRA, two optimizer steps, checkpoint, final adapter, logs, lineage, capacity file, and host copy-out.
 
+- Local Docker/GPU recovery passed after Docker was moved/opened on the F drive.
+  - Local image pull: `docker pull unsloth/unsloth:latest` succeeded with digest `sha256:f21629b9ae4ed11231768edfaed0f40d41d85d6ea9a71e8096a3d96ea0311772`.
+  - Container GPU probe passed: `docker run --rm --gpus all --entrypoint nvidia-smi unsloth/unsloth:latest` saw the RTX 3090.
+  - Local SFT max-2 micro command completed from `synaptic-tuner`:
+    `py -3.11 tuner.py local-run --job-config F:\Code\Epistemic-Humility-Research\experiment\phase1\run_records\materialized_recipes\sft__4b__micro_max2.yaml --yes`.
+  - Artifact root: `synaptic-tuner/toolset-training-artifacts/runs/local/4b/sft__4b__micro_max2/20260613_084227`.
+  - It loaded `unsloth/Qwen3-4B-bnb-4bit`, trained on 14,395 SFT examples for exactly 2 steps, and saved `checkpoints/checkpoint-2`, `final_model`, `training_lineage.json`, and `capacity_features.json`.
+  - Audit: `logs/training_latest.jsonl` ended with `train_end`, `step: 2`, `oom_risk_level: low`, and peak reserved VRAM about 4.383 GB; no containers remained after completion. No eval/generation ran.
+  - Non-blocking warning observed: `Failed to import Triton kernels... No module named 'triton_kernels.routing'`; this did not block the completed micro run.
+
 - Local eval harness is now wired for opt-in real vLLM generation.
   - Default fixture path remains unchanged.
   - Live path: `python experiment/phase1/eval/run_eval.py --config <scoped-config.yaml> --live-vllm`.
@@ -54,6 +64,32 @@ We are proving the Phase 1 local lane before committing more GPU time. The goal 
   - `VLLMGenerator` lazy-loads vLLM, supports one base model plus LoRA arms, rejects generated `<think>` tags, and requires explicit `model_name` so `model_tag` stays a reporting label.
   - Windows UTF-8 read/write fixes landed for eval gold/OOD/config/results paths.
   - Verified: `python -m pytest experiment\phase1\eval\tests -q` (58 passed, 1 intentional McNemar warning).
+
+- Scoped local live eval smoke passed in Docker/Linux for tiny base/SFT/DPO.
+  - Initial live smoke reached the base arm but failed when loading the SFT adapter with `ValueError: LoRA rank 32 is greater than max_lora_rank 16`.
+  - Config fix: `vllm.max_lora_rank: 32` added to `experiment/phase1/eval/config/eval_smoke_local_4b.yaml`.
+  - Focused test after the config fix: `python -m pytest experiment/phase1/eval/tests/test_run_eval_e2e.py -q` -> `13 passed, 1 warning`.
+  - Rerun passed base + SFT + DPO, exit code 0, with `eval complete: 3 arm x set rows, config_sha=97dddaaf30d0dfb0`.
+  - Outputs: `experiment/phase1/eval/results_smoke_local_4b`, including per-arm `metrics.json` / `bootstrap_ci.json` and comparisons `summary_table.csv` / `mcnemar.csv`.
+  - Smoke-only summary table over `n=5` fixture rows: base truthful 60.0, SFT 100.0, DPO 40.0. These are not headline results.
+  - `<think>` guard did not trigger: `rg "<think>|</think>" experiment\phase1\eval\results_smoke_local_4b` found no matches.
+  - No containers or GPU processes remained after completion.
+  - Local eval path is now validated for tiny base/SFT/DPO adapter load, generation, scoring, bootstrap, and comparisons.
+
+- Corrected local OOD diagnostic passed for bounded base/SFT/DPO x CoCoNot/TruthfulQA/SelfAware slices.
+  - Run id: `eh-ood-slice-local-4b-4`.
+  - Exit code 0 with `eval complete: 9 arm x set rows, config_sha=fe48ee93abfbc559`.
+  - Outputs: `experiment/phase1/eval/results_ood_slice_local_4b`.
+  - Coverage: base/SFT/DPO x CoCoNot/TruthfulQA/SelfAware, limit 64 each.
+  - `rg "<think>|</think>" experiment\phase1\eval\results_ood_slice_local_4b` found no matches.
+  - Caveat: these first slices were all known-labeled (`n_unknown_labeled=0`), so unknown/refusal-recall metrics are not meaningful there. This validates known-OOD scoring/over-refusal and the live pipeline, not headline results.
+
+- Mixed SelfAware local diagnostic passed.
+  - Run id: `eh-selfaware-mixed-local-4b`.
+  - Exit code 0 with `eval complete: 3 arm x set rows, config_sha=3f5f676bde46dce9`.
+  - Outputs: `experiment/phase1/eval/results_selfaware_mixed_slice_local_4b`.
+  - `rg "<think>|</think>" experiment\phase1\eval\results_selfaware_mixed_slice_local_4b` found no matches.
+  - Diagnostic-only summary over n=64: base unknown=27 / known=37, refusal_recall 0.0, answer_on_unknown 100.0, over_refusal 0.0, truthful 15.62; SFT refusal_recall 88.89, answer_on_unknown 11.11, over_refusal 72.97, truthful 48.44; DPO refusal_recall 0.0, answer_on_unknown 100.0, over_refusal 0.0, truthful 14.06.
 
 ## Known Issues / Gotchas
 
@@ -76,16 +112,30 @@ We are proving the Phase 1 local lane before committing more GPU time. The goal 
     `unsloth/unsloth:2026.1.2-pt2.9.0-cu12.8-update@sha256:5266c57be21059bfb407d80dc2f448868a5c2e2dbe7b2aa27780f48b48cbec39`.
     - Import probe passed: job `6a2c379d7c68f455eff13e99`.
     - Training + bucket sync passed after Synaptic Tuner PRs #104/#105: jobs `6a2c40c27c68f455eff13f95` and `6a2c4658871c005b5352b6fd`.
-    - Latest bounded SFT max-2 `cloud-pipeline` smoke on Synaptic Tuner `ee4938d` reached eval `runtime_ready` healthy, then failed as job `6a2c58ac7c68f455eff141df` with `ERROR exit 143` after visible logs stopped during slow Qwen3 base `model.safetensors` download around 25%. Bucket stage artifacts contained only `logs/stage_summary.json` and `logs/stage_events.jsonl`; no hidden app traceback or result files were present. Treat this as runtime allowance/download-load pressure, not an eval-code failure.
+    - Prior bounded SFT max-2 `cloud-pipeline` smoke on Synaptic Tuner `ee4938d` reached eval `runtime_ready` healthy, then failed as job `6a2c58ac7c68f455eff141df` with `ERROR exit 143` after visible logs stopped during slow Qwen3 base `model.safetensors` download around 25%. Bucket stage artifacts contained only `logs/stage_summary.json` and `logs/stage_events.jsonl`; no hidden app traceback or result files were present.
+    - Latest bounded SFT max-2 `cloud-pipeline` smoke launched from Synaptic Tuner `0400540` with command shape: `cloud-pipeline --method sft --yes --train-model-name Qwen/Qwen3-4B --train-dataset-name professorsynapse/epistemic-humility-phase1 --train-dataset-file qwen3-4b-instruct/sft_train.jsonl --train-max-steps 2 --train-image-profile stable --eval-image-profile stable_unsloth --scenario labkit_epistemic_humility_smoke.yaml --eval-timeout-hours 4`.
+    - Remote training job `6a2c75e97c68f455eff143b2`, created `2026-06-12 21:11:05 UTC`, ended `ERROR`. It cloned and checked out `0400540`, loaded the Unsloth stable image, began loading `Qwen/Qwen3-4B`, then stalled/failed during download of the first shard `model-00001-of-00002.safetensors` around `28.2M/4.97G`; it did not reach max-2 training or eval. Treat this as a remote base-model download/training-bootstrap failure, not a data or eval-code failure.
+    - Earlier local launch attempts failed before submission because the default launcher env has Hub `0.36.0` without the Buckets API, while an overlay with Hub `1.19.0` conflicts with installed Transformers if the tuner stack imports both in-process.
+    - Host/local logging gotcha: successful submission log `hf_cloud_pipeline_sft_smoke_20260612_171048.log` did not advance past `STEP 1: CLOUD TRAINING`, did not include the remote job id, and was garbled/UTF-16-ish. The remote HF Jobs list was needed to identify the submitted job. Future launcher work should avoid importing Transformers with Hub 1.x, capture/print the job id before polling, and use UTF-8-safe log capture.
     - `unsloth/unsloth:latest`: `numpy was upgraded mid-session (loaded: 2.2.6, installed: 2.4.1)`.
     - `unsloth/unsloth:2026.2.1-pt2.9.0-cu12.8-fixed-numba-numpy-error`: `ModuleNotFoundError: numpy._core.tests` through SciPy/Transformers during `import unsloth`.
     - Synaptic Tuner fixes already merged through submodule `0400540`: quote HF Jobs pip requirements, avoid upgrading generic project deps in the active trainer runtime, isolate bucket-sync `hf_xet`, avoid eval overlay ML-stack upgrades, split eval runtime vs bucket-sync overlays, forward cloud-pipeline eval args, add `--eval-timeout-hours` / eval timeout resolution, and log model-load plus SIGTERM/SIGINT terminated stage events including bootstrap downloads.
-    - Next cloud action is another bounded SFT max-2 cloud-pipeline smoke from Synaptic Tuner `0400540` or later; keep the same dataset, model, LoRA, and Qwen settings, keep training tiny, and pass a separate longer eval budget with `--eval-timeout-hours`.
+    - Next cloud action should avoid immediately repeating the same A10G Qwen3 4B download loop. Run a smaller cloud-pipeline smoke, for example a tiny public model, or improve launcher job-id capture, UTF-8 logging, and model-cache strategy before another Qwen3 4B attempt.
 
 - Docker copy-mode logs can be misleading.
   - The container PID 1 may be `sleep infinity`; the trainer runs through `docker exec`.
   - `docker logs` and host redirected logs can stay blank while training is healthy.
   - For long copy-mode runs, inspect in-container `training_latest.jsonl` only if Docker is healthy and the container is retained.
+
+- Docker CLI behavior from Codex is mixed after the F-drive Docker move/open.
+  - Bare `docker ps` and `docker ps -a --format ...` worked, while `docker info`, `docker context ls`, explicit `DOCKER_CONFIG`, explicit pipe commands, and some image listing paths can hit `C:\Users\Joseph\.docker\config.json Access is denied` or Docker pipe permission errors.
+  - For actual local container create/pull/run operations, escalated Docker commands worked. Do not modify `C:\Users\Joseph\.docker` as a workaround from Codex.
+  - Unsloth image default entrypoint may chmod the mounted repo and fail on `.tmp/pytest-codex*`; for local eval wrapper runs use `--entrypoint python3`.
+
+- Local eval scoring/generation gotchas fixed.
+  - OOD records carry their own `aliases`; scoring now prefers normalized non-empty record aliases and falls back to global Cheng gold. Without this, OOD known correctness/truthful vectors could be wrongly zero when questions are absent from Cheng gold.
+  - Qwen3 prompt rendering with thinking disabled is insufficient; vLLM `SamplingParams` now receives stop strings `<think>` and `</think>` when `generation.enable_thinking: false`, preserving any configured `generation.stop` values. The generated-thinking guard remains a backstop; do not strip contaminated outputs.
+  - Non-blocking warnings seen during local diagnostics: Triton routing module warning, AOT cache save/HF cache metadata permission warnings, and NCCL `destroy_process_group` shutdown warning.
 
 - `Start-Process` may fail in Codex Desktop PowerShell due duplicate `Path` / `PATH`.
   - Reliable detached launcher is a `py -3.11 -c` wrapper around `subprocess.Popen`.
@@ -94,13 +144,14 @@ We are proving the Phase 1 local lane before committing more GPU time. The goal 
 
 1. Do not rerun KTO immediately.
 2. Commit/push the local Synaptic Tuner KTO logging fix to the exact cloud commit, then clear cloud launcher and dataset prerequisites before any KTO HF smoke.
-3. Before any long local run, run:
+3. Before any long local run, prefer the bare Docker/host GPU checks that are known to work from Codex:
 
    ```powershell
-   docker info --format "{{.ServerVersion}}"
    docker ps -a --format "{{.Names}} {{.Status}}"
    nvidia-smi --query-gpu=timestamp,name,utilization.gpu,memory.used,memory.total --format=csv,noheader
    ```
+
+   Avoid treating `docker info` / `docker context ls` failures as definitive engine failures in this environment; they can be Docker config/API permission artifacts.
 
 4. If Docker is healthy, use the SFT max-2 micro recipe as the first confidence check:
 
@@ -110,11 +161,9 @@ We are proving the Phase 1 local lane before committing more GPU time. The goal 
 
    Run from `F:\Code\Epistemic-Humility-Research\synaptic-tuner`.
 
-5. With explicit GPU approval, run the smallest local `--live-vllm` eval smoke:
-   `python experiment/phase1/eval/run_eval.py --config experiment/phase1/eval/config/eval_smoke_local_4b.yaml --live-vllm`.
-   Do not run the full headline eval yet.
-6. If that local eval smoke passes, materialize the next same-model real eval config against the intended held-out/OOD subset before expanding to more training cells.
-7. Rerun the bounded SFT max-2 HF Jobs cloud-pipeline smoke from Synaptic Tuner `0400540` or later, keeping the same dataset/model/LoRA/Qwen settings and tiny training max-2, and pass a separate longer eval budget with `--eval-timeout-hours`; the prior `ee4938d` smoke reached eval `runtime_ready` and then failed with exit 143 during/after slow Qwen3 base download/load, with no app traceback in stage artifacts.
+5. Stage/commit the generic eval fixes/configs, then decide whether to run a larger bounded real eval slice against the intended held-out/OOD subset before expanding to more training cells.
+6. Do not run KTO, the headline/full eval, or any long cell without explicit approval.
+7. Do not immediately repeat the same A10G Qwen3 4B HF Jobs download loop. The latest `0400540` bounded SFT max-2 `cloud-pipeline` smoke submitted job `6a2c75e97c68f455eff143b2` and failed during remote `Qwen/Qwen3-4B` first-shard download before training/eval. Next, run a smaller cloud-pipeline smoke, for example a tiny public model, or improve launcher job-id capture, UTF-8 logging, and model-cache strategy before another Qwen3 4B attempt.
 8. Only after local eval and cloud smoke both work should we consider more headline cells. KTO remains blocked for local expansion until Docker reliability is re-established and for cloud expansion until an explicit KTO smoke is approved with the cloud prerequisites cleared.
 9. Before cloud-lane expansion beyond the SFT smoke, verify process-local `HF_TOKEN` availability, use Synaptic Tuner's `cloud-pipeline` flow from a clean pushed exact commit, and confirm the already public Qwen3 4B dataset file names.
 

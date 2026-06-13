@@ -51,6 +51,12 @@ contains only same-model arms such as `base`, `sft`, and `dpo`; do not include
 KTO/bridge until those artifacts are ready. Qwen3 thinking is pinned off and
 generated `<think>` tags fail the run instead of being stripped.
 
+For Qwen3, prompt rendering with thinking disabled is not sufficient by itself:
+when `generation.enable_thinking: false`, vLLM `SamplingParams` receives
+`<think>` and `</think>` stop strings while preserving configured
+`generation.stop` values. The generated-thinking guard remains a backstop; do
+not strip contaminated outputs.
+
 ## Run
 
 ```bash
@@ -70,6 +76,63 @@ python3 -m pytest experiment/phase1/eval/tests/ -q
 Outputs (§6.7): `results/<arm>__<eval_set>/{generations.jsonl,metrics.json,bootstrap_ci.json}`
 and `results/comparisons/{mcnemar.csv,summary_table.csv}`. Every emitted number
 carries `source / metric / model / method / verified / config_sha` provenance.
+
+The local 4B smoke config sets `vllm.max_lora_rank: 32` because the completed
+SFT/DPO adapters are LoRA rank 32 and vLLM's default rank cap is lower. When
+running this config inside Docker/Linux from a Windows checkout, translate the
+checked-in absolute adapter paths to container-visible paths (or mount the
+workspace at an equivalent path) before launching; the eval loader preserves
+absolute adapter paths as written.
+
+2026-06-13 scoped local live smoke record: the initial Docker/Linux run reached
+the base arm, then failed on the SFT adapter with `ValueError: LoRA rank 32 is
+greater than max_lora_rank 16`. After adding `vllm.max_lora_rank: 32` to
+`config/eval_smoke_local_4b.yaml`, `python -m pytest
+experiment/phase1/eval/tests/test_run_eval_e2e.py -q` passed with `13 passed,
+1 warning`. The rerun passed base + SFT + DPO with exit code 0 and
+`eval complete: 3 arm x set rows, config_sha=97dddaaf30d0dfb0`.
+
+Smoke outputs live under `experiment/phase1/eval/results_smoke_local_4b`:
+per-arm `metrics.json` / `bootstrap_ci.json` plus
+`comparisons/summary_table.csv` and `comparisons/mcnemar.csv`. The summary table
+reported smoke-only truthful rates over `n=5` fixture rows: base 60.0, SFT
+100.0, DPO 40.0. These are not headline results. The `<think>` guard did not
+trigger (`rg "<think>|</think>" experiment\phase1\eval\results_smoke_local_4b`
+found no matches), and no containers or GPU processes remained after
+completion. This validates the tiny local eval path for base/SFT/DPO adapter
+load, generation, scoring, bootstrap, and comparisons; the next step is to
+stage/commit the generic eval fixes/configs, then decide whether to run a
+larger bounded real eval slice against the intended held-out/OOD subset before
+more training cells. No KTO, headline, full eval, or cloud eval without explicit
+approval.
+
+2026-06-13 corrected OOD diagnostic record: `eh-ood-slice-local-4b-4` exited 0
+with `eval complete: 9 arm x set rows, config_sha=fe48ee93abfbc559`. Outputs
+live under `experiment/phase1/eval/results_ood_slice_local_4b`, covering
+base/SFT/DPO x CoCoNot/TruthfulQA/SelfAware at limit 64 each. No `<think>` or
+`</think>` matches were found. Caveat: these first slices were all known-labeled
+(`n_unknown_labeled=0`), so unknown/refusal-recall metrics are not meaningful
+there; this validates known-OOD scoring/over-refusal and the live pipeline, not
+headline results.
+
+2026-06-13 mixed SelfAware diagnostic record: `eh-selfaware-mixed-local-4b`
+exited 0 with `eval complete: 3 arm x set rows,
+config_sha=3f5f676bde46dce9`. Outputs live under
+`experiment/phase1/eval/results_selfaware_mixed_slice_local_4b`; no `<think>` or
+`</think>` matches were found. Diagnostic-only summary over n=64: base
+unknown=27 / known=37, refusal_recall 0.0, answer_on_unknown 100.0,
+over_refusal 0.0, truthful 15.62; SFT refusal_recall 88.89, answer_on_unknown
+11.11, over_refusal 72.97, truthful 48.44; DPO refusal_recall 0.0,
+answer_on_unknown 100.0, over_refusal 0.0, truthful 14.06.
+
+OOD records carry their own `aliases`; scoring prefers normalized non-empty
+record aliases and falls back to global Cheng gold. Without that, OOD known
+correctness/truthful vectors can be wrongly zero when questions are absent from
+Cheng gold. Local Docker eval wrappers should use `--entrypoint python3` with
+the Unsloth image; the default entrypoint may chmod the mounted repo and fail on
+`.tmp/pytest-codex*`. Non-blocking warnings observed in these diagnostics:
+Triton routing module warning, AOT cache save/HF cache metadata permission
+warnings, and NCCL `destroy_process_group` shutdown warning.
 
 ## AP confidence signal
 
