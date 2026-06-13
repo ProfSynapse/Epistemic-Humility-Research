@@ -125,6 +125,33 @@ over_refusal 0.0, truthful 15.62; SFT refusal_recall 88.89, answer_on_unknown
 11.11, over_refusal 72.97, truthful 48.44; DPO refusal_recall 0.0,
 answer_on_unknown 100.0, over_refusal 0.0, truthful 14.06.
 
+2026-06-13 bounded SelfAware evidence record:
+`eh-selfaware-evidence-2240-192-local-4b` exited 0 with `eval complete: 3 arm x
+set rows, config_sha=70ac0fe102d8db1f`. Config:
+`config/eval_selfaware_evidence_2240_192_local_4b.yaml`. Outputs live under
+`experiment/phase1/eval/results_selfaware_evidence_2240_192_local_4b`. Shape:
+SelfAware only, offset 2240, limit 192, expected/observed 97 known / 95 unknown,
+base/SFT/DPO only; no KTO, cloud, headline, full, or protocol run. The
+`<think>` guard did not trigger (`rg "<think>|</think>"
+experiment\phase1\eval\results_selfaware_evidence_2240_192_local_4b` found no
+matches).
+
+Summary over n=192: base unknown=95 / known=97, refusal_recall 0.0,
+answer_on_unknown 100.0, over_refusal 0.0, correct_on_known 24.74, truthful
+12.5; SFT refusal_recall 85.26, answer_on_unknown 14.74, over_refusal 71.13,
+correct_on_known 50.0, truthful 49.48; DPO refusal_recall 0.0,
+answer_on_unknown 100.0, over_refusal 0.0, correct_on_known 18.56, truthful
+9.38. SFT refused 81/95 unknowns and 69/97 knowns; base and DPO refused 0
+unknowns and 0 knowns.
+
+Interpretation caveat: the SFT pattern survived this larger contiguous
+SelfAware slice, with substantially improved refusal recall/truthful score
+versus base/DPO, but severe over-refusal. DPO remains base-like here. This is
+bounded research evidence on one contiguous SelfAware slice, not broad OOD,
+headline, protocol, or full-run evidence. Non-blocking warnings were the same as
+earlier local diagnostics: Triton routing module, AOT cache save, and NCCL
+shutdown warning. No new blocker.
+
 OOD records carry their own `aliases`; scoring prefers normalized non-empty
 record aliases and falls back to global Cheng gold. Without that, OOD known
 correctness/truthful vectors can be wrongly zero when questions are absent from
