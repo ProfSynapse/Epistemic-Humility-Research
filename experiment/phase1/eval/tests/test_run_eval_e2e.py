@@ -552,6 +552,44 @@ def test_local_4b_selfaware_mixed_slice_config_is_diagnostic_bounded_base_sft_dp
     assert selfaware["limit"] == 64
 
 
+def test_local_4b_selfaware_evidence_slice_config_is_bounded_base_sft_dpo_only():
+    cfg_path = (
+        run_eval.EVAL_DIR
+        / "config"
+        / "eval_selfaware_evidence_2240_192_local_4b.yaml"
+    )
+    cfg = yaml.safe_load(cfg_path.read_text(encoding="utf-8"))
+
+    assert cfg["model_tag"] == "qwen3-4b-instruct"
+    assert cfg["model_name"] == "unsloth/Qwen3-4B-bnb-4bit"
+    assert cfg["gold_path"] == (
+        "../../../datasets/triviaqa-rc-nocontext/cheng_test_gold.jsonl"
+    )
+    assert cfg["results_dir"] == "results_selfaware_evidence_2240_192_local_4b"
+    assert cfg["generation"]["enable_thinking"] is False
+    assert cfg["generation"]["n_samples"] == 1
+    assert cfg["confidence"]["n_samples"] == 1
+    assert cfg["bootstrap"]["n_resamples"] == 200
+    assert cfg["vllm"]["max_lora_rank"] == 32
+
+    arms = {arm["name"]: arm for arm in cfg["arms"]}
+    assert list(arms) == ["base", "sft", "dpo"]
+    assert {arm["method"] for arm in arms.values()} == {"base", "sft", "dpo"}
+    assert all("kto" not in arm_name for arm_name in arms)
+    assert all("bridge" not in arm_name for arm_name in arms)
+    assert all("cloud" not in arm_name for arm_name in arms)
+    assert {arm["model"] for arm in arms.values()} == {"qwen3-4b-instruct"}
+
+    assert set(cfg["eval_sets"]) == {"selfaware"}
+    selfaware = cfg["eval_sets"]["selfaware"]
+    assert selfaware == {
+        "type": "ood",
+        "path": "../../../datasets/selfaware/SelfAware.json",
+        "offset": 2240,
+        "limit": 192,
+    }
+
+
 # --- MB4: McNemar mismatched-length pairs are recorded, not silently skipped ---
 
 

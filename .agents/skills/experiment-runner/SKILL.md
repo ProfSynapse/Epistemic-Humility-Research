@@ -324,6 +324,27 @@ skill:
   over_refusal 0.0, truthful 15.62; SFT refusal_recall 88.89,
   answer_on_unknown 11.11, over_refusal 72.97, truthful 48.44; DPO
   refusal_recall 0.0, answer_on_unknown 100.0, over_refusal 0.0, truthful 14.06.
+- Bounded SelfAware evidence run `eh-selfaware-evidence-2240-192-local-4b`
+  exited 0 with `eval complete: 3 arm x set rows,
+  config_sha=70ac0fe102d8db1f`. Config:
+  `experiment/phase1/eval/config/eval_selfaware_evidence_2240_192_local_4b.yaml`.
+  Outputs are under
+  `experiment/phase1/eval/results_selfaware_evidence_2240_192_local_4b`.
+  Shape: SelfAware only, offset 2240, limit 192, expected/observed 97 known /
+  95 unknown, base/SFT/DPO only; no KTO, cloud, headline, full, or protocol
+  run. No `<think>` or `</think>` matches were found. Summary over n=192:
+  base unknown=95 / known=97, refusal_recall 0.0, answer_on_unknown 100.0,
+  over_refusal 0.0, correct_on_known 24.74, truthful 12.5; SFT refusal_recall
+  85.26, answer_on_unknown 14.74, over_refusal 71.13, correct_on_known 50.0,
+  truthful 49.48; DPO refusal_recall 0.0, answer_on_unknown 100.0,
+  over_refusal 0.0, correct_on_known 18.56, truthful 9.38. Refusal counts:
+  SFT refused 81/95 unknowns and 69/97 knowns; base and DPO refused 0 unknowns
+  and 0 knowns. Interpretation caveat: this is bounded research evidence on one
+  contiguous SelfAware slice, not broad OOD, headline, protocol, or full-run
+  evidence. The SFT pattern survived this larger slice with better refusal
+  recall/truthful score than base/DPO but severe over-refusal; DPO remains
+  base-like here. Non-blocking warnings were the same as earlier diagnostics:
+  Triton routing module, AOT cache save, and NCCL shutdown warning.
 - OOD records carry their own `aliases`; scoring now prefers normalized
   non-empty record aliases and falls back to global Cheng gold. Without this,
   OOD known correctness/truthful vectors could be wrongly zero when questions
@@ -376,12 +397,11 @@ validates Docker, GPU access, model load, data prep, two optimizer steps, final
 adapter save, metrics/logs, lineage/capacity files, and host artifact copy-out
 in a few minutes without exercising the currently fragile KTO path.
 
-After the 2026-06-13 successful local recovery and scoped live eval smoke, the
-next local-only step is to stage/commit the generic eval fixes/configs, then
-decide whether to run a larger bounded real eval slice against the intended
-held-out/OOD subset before expanding to more training cells. Do not jump from
-the smoke success directly to KTO, a headline/full run, or any cloud job without
-explicit approval.
+After the 2026-06-13 successful local recovery, scoped live eval smoke, and
+bounded SelfAware evidence run, the next local-only step is to stage/commit the
+generic eval fixes/configs and evidence docs before expanding to more training
+cells. Do not jump from these bounded runs directly to KTO, a headline/full run,
+or any cloud job without explicit approval.
 
 Headline numbers come ONLY from the pre-registered default cells; the LR/beta
 panel is robustness-only and is tagged distinctly in each run-id coordinate so

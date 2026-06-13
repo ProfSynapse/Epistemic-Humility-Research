@@ -91,6 +91,18 @@ We are proving the Phase 1 local lane before committing more GPU time. The goal 
   - `rg "<think>|</think>" experiment\phase1\eval\results_selfaware_mixed_slice_local_4b` found no matches.
   - Diagnostic-only summary over n=64: base unknown=27 / known=37, refusal_recall 0.0, answer_on_unknown 100.0, over_refusal 0.0, truthful 15.62; SFT refusal_recall 88.89, answer_on_unknown 11.11, over_refusal 72.97, truthful 48.44; DPO refusal_recall 0.0, answer_on_unknown 100.0, over_refusal 0.0, truthful 14.06.
 
+- Bounded SelfAware evidence run completed.
+  - Config: `experiment/phase1/eval/config/eval_selfaware_evidence_2240_192_local_4b.yaml`.
+  - Shape: SelfAware only, offset 2240, limit 192, expected/observed 97 known / 95 unknown, base/SFT/DPO only. No KTO, cloud, headline, full, or protocol run.
+  - Docker run id: `eh-selfaware-evidence-2240-192-local-4b`.
+  - Exit code 0 with `eval complete: 3 arm x set rows, config_sha=70ac0fe102d8db1f`.
+  - Outputs: `experiment/phase1/eval/results_selfaware_evidence_2240_192_local_4b`.
+  - `rg "<think>|</think>" experiment\phase1\eval\results_selfaware_evidence_2240_192_local_4b` found no matches.
+  - Summary table: base n=192, unknown=95, known=97, refusal_recall 0.0, answer_on_unknown 100.0, over_refusal 0.0, correct_on_known 24.74, truthful 12.5; SFT n=192, unknown=95, known=97, refusal_recall 85.26, answer_on_unknown 14.74, over_refusal 71.13, correct_on_known 50.0, truthful 49.48; DPO n=192, unknown=95, known=97, refusal_recall 0.0, answer_on_unknown 100.0, over_refusal 0.0, correct_on_known 18.56, truthful 9.38.
+  - Refusal counts: SFT refused 81/95 unknowns and 69/97 knowns; base and DPO refused 0/95 unknowns and 0/97 knowns.
+  - Interpretation: the SFT pattern survived a larger contiguous SelfAware slice, with substantially improved refusal recall/truthful score versus base/DPO, but severe over-refusal. DPO remains base-like here. This is bounded research evidence on one contiguous SelfAware slice, not broad OOD, headline, protocol, or full-run evidence.
+  - Non-blocking warnings were the same as earlier local diagnostics: Triton routing module, AOT cache save, and NCCL shutdown warning. No new blocker.
+
 ## Known Issues / Gotchas
 
 - KTO source logging bug is fixed locally, but KTO is still gated for cloud.
@@ -161,7 +173,7 @@ We are proving the Phase 1 local lane before committing more GPU time. The goal 
 
    Run from `F:\Code\Epistemic-Humility-Research\synaptic-tuner`.
 
-5. Stage/commit the generic eval fixes/configs, then decide whether to run a larger bounded real eval slice against the intended held-out/OOD subset before expanding to more training cells.
+5. Stage/commit the generic eval fixes/configs and the bounded SelfAware evidence config/results docs before expanding to more training cells.
 6. Do not run KTO, the headline/full eval, or any long cell without explicit approval.
 7. Do not immediately repeat the same A10G Qwen3 4B HF Jobs download loop. The latest `0400540` bounded SFT max-2 `cloud-pipeline` smoke submitted job `6a2c75e97c68f455eff143b2` and failed during remote `Qwen/Qwen3-4B` first-shard download before training/eval. Next, run a smaller cloud-pipeline smoke, for example a tiny public model, or improve launcher job-id capture, UTF-8 logging, and model-cache strategy before another Qwen3 4B attempt.
 8. Only after local eval and cloud smoke both work should we consider more headline cells. KTO remains blocked for local expansion until Docker reliability is re-established and for cloud expansion until an explicit KTO smoke is approved with the cloud prerequisites cleared.

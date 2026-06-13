@@ -1,0 +1,54 @@
+# experiment/phase1/eval/config/eval_selfaware_evidence_2240_192_local_4b.yaml
+#
+# Local bounded research-evidence SelfAware slice for quick base/SFT/DPO checks.
+# This is not a headline, protocol, bridge, cloud, KTO, or full eval result.
+# The offset is intentional: SelfAware is ordered known-first, so this slice is
+# expected to include 97 known / 95 unknown rows.
+
+model_tag: qwen3-4b-instruct
+model_name: unsloth/Qwen3-4B-bnb-4bit
+gold_path: ../../../datasets/triviaqa-rc-nocontext/cheng_test_gold.jsonl
+results_dir: results_selfaware_evidence_2240_192_local_4b
+
+generation:
+  enable_thinking: false
+  seed: 20240601
+  temperature: 0.0
+  max_new_tokens: 64
+  n_samples: 1
+
+confidence:
+  signal: self_consistency
+  n_samples: 1
+
+bootstrap:
+  n_resamples: 200
+  level: 0.95
+  seed: 12345
+
+vllm:
+  dtype: auto
+  gpu_memory_utilization: 0.90
+  max_lora_rank: 32
+  max_model_len: 2048
+
+arms:
+  - name: base
+    method: base
+    model: qwen3-4b-instruct
+    adapter: null
+  - name: sft
+    method: sft
+    model: qwen3-4b-instruct
+    adapter: 'F:\Code\Epistemic-Humility-Research\synaptic-tuner\toolset-training-artifacts\runs\local\4b\sft__4b__headline__seed1\20260611_202126\final_model'
+  - name: dpo
+    method: dpo
+    model: qwen3-4b-instruct
+    adapter: 'F:\Code\Epistemic-Humility-Research\synaptic-tuner\toolset-training-artifacts\runs\local\4b\dpo__4b__headline__seed1\20260611_211512\final_model'
+
+eval_sets:
+  selfaware:
+    type: ood
+    path: ../../../datasets/selfaware/SelfAware.json
+    offset: 2240
+    limit: 192
