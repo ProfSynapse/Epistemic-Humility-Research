@@ -1,13 +1,12 @@
-# experiment/phase1/eval/config/eval_smoke_local_4b.yaml
+# experiment/phase1/eval/config/eval_ood_slice_local_4b.yaml
 #
-# Local GPU smoke config for the Phase 1 eval generator. This is intentionally
-# tiny and same-model only: base + completed local SFT/DPO adapters on the
-# checked-in in_domain fixture. It is not the full headline eval config.
+# Local diagnostic OOD slice for quick base/SFT/DPO checks. This bounded slice
+# is not a headline, protocol, bridge, or full eval result.
 
 model_tag: qwen3-4b-instruct
 model_name: unsloth/Qwen3-4B-bnb-4bit
-gold_path: fixtures/gold_min.jsonl
-results_dir: results_smoke_local_4b
+gold_path: ../../../datasets/triviaqa-rc-nocontext/cheng_test_gold.jsonl
+results_dir: results_ood_slice_local_4b
 
 generation:
   enable_thinking: false
@@ -46,6 +45,18 @@ arms:
     adapter: 'F:\Code\Epistemic-Humility-Research\synaptic-tuner\toolset-training-artifacts\runs\local\4b\dpo__4b__headline__seed1\20260611_211512\final_model'
 
 eval_sets:
-  in_domain:
-    path: fixtures/in_domain_records.json
-    label_from_target: false
+  coconot:
+    type: ood
+    path: ../../../datasets/coconot/contrast_test.jsonl
+    offset: 0
+    limit: 64
+  truthfulqa:
+    type: ood
+    path: ../../../datasets/truthfulqa/TruthfulQA.csv
+    offset: 0
+    limit: 64
+  selfaware:
+    type: ood
+    path: ../../../datasets/selfaware/SelfAware.json
+    offset: 0
+    limit: 64

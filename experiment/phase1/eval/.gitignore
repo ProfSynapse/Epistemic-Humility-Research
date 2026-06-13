@@ -6,3 +6,4 @@ __pycache__/
 # (post PROTOCOL v0.2 sign-off) and committed deliberately then, not swept in
 # from CODE-phase fixture/smoke runs. Ignore by default; force-add real results.
 results/
+results_*/

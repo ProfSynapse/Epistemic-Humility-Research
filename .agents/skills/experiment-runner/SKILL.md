@@ -129,8 +129,32 @@ skill:
 - Synaptic Tuner `0400540` adds generic cloud eval hardening: `--eval-timeout-hours`,
   eval timeout resolution, cloud-pipeline eval arg forwarding, model-load stage
   events, and SIGTERM/SIGINT terminated-stage logging including bootstrap
-  downloads. The next cloud smoke should run from `0400540` or later and pass a
-  separate eval timeout budget instead of only increasing training runtime.
+  downloads. Future eval-budgeted cloud attempts should keep those capabilities
+  available, but the latest Qwen3 4B smoke below failed before training/eval.
+- Latest bounded SFT `max_steps=2` `cloud-pipeline` smoke launched from
+  Synaptic Tuner `0400540` with:
+  `cloud-pipeline --method sft --yes --train-model-name Qwen/Qwen3-4B --train-dataset-name professorsynapse/epistemic-humility-phase1 --train-dataset-file qwen3-4b-instruct/sft_train.jsonl --train-max-steps 2 --train-image-profile stable --eval-image-profile stable_unsloth --scenario labkit_epistemic_humility_smoke.yaml --eval-timeout-hours 4`.
+  Remote training job `6a2c75e97c68f455eff143b2` was created
+  `2026-06-12 21:11:05 UTC` and ended `ERROR`. It cloned and checked out
+  `0400540`, loaded the Unsloth stable image, began loading
+  `Qwen/Qwen3-4B`, then stalled/failed while downloading the first shard
+  `model-00001-of-00002.safetensors` around `28.2M/4.97G`; it never reached
+  max-2 training or eval. Classify this as a remote base-model
+  download/training-bootstrap failure, not a data or eval-code failure.
+- Cloud launcher env/logging gotchas from the `0400540` smoke: two earlier
+  local launch attempts failed before submission because the default launcher
+  env had `huggingface_hub` 0.36.0 without the Buckets API, while an overlay
+  with Hub 1.19.0 conflicts with installed Transformers if the tuner stack
+  imports both in-process. The successful host log
+  `hf_cloud_pipeline_sft_smoke_20260612_171048.log` did not advance past
+  `STEP 1: CLOUD TRAINING`, did not include the remote job id, and was
+  garbled/UTF-16-ish; the remote HF Jobs list was needed to find the submitted
+  job. Future launcher work should avoid importing Transformers with Hub 1.x,
+  capture and print the job id before polling, and use UTF-8-safe log capture.
+- Do not immediately repeat the same A10G Qwen3 4B download loop. Prefer a
+  smaller `cloud-pipeline` smoke, for example a tiny public model, or improve
+  launcher job-id capture, UTF-8 logging, and model-cache strategy before
+  another Qwen3 4B attempt.
 - Current Qwen3 4B public dataset state: all Phase 1 train/dev JSONLs are
   public at `professorsynapse/epistemic-humility-phase1`:
   `sft_train.jsonl`, `sft_dev.jsonl`, `dpo_train.jsonl`, `dpo_dev.jsonl`,
@@ -158,6 +182,19 @@ skill:
   `--entrypoint python3` for `probe.py`.
 - Docker may require an unsandboxed/escalated command from Codex. On the desktop
   run, Docker engine `29.3.1` was reachable outside the sandbox.
+- After Joseph moved/opened Docker on the F drive, Codex Docker CLI behavior is
+  mixed: bare `docker ps` and `docker ps -a --format ...` worked, while
+  `docker info`, `docker context ls`, explicit `DOCKER_CONFIG`, explicit pipe
+  commands, and some image listing paths can hit
+  `C:\Users\Joseph\.docker\config.json Access is denied` or Docker pipe
+  permission errors. Do not modify `C:\Users\Joseph\.docker` from Codex as a
+  workaround. For actual local container create/pull/run operations, escalated
+  Docker commands worked.
+- Local Docker/GPU recovery on 2026-06-13: `docker pull unsloth/unsloth:latest`
+  succeeded locally with digest
+  `sha256:f21629b9ae4ed11231768edfaed0f40d41d85d6ea9a71e8096a3d96ea0311772`,
+  and `docker run --rm --gpus all --entrypoint nvidia-smi
+  unsloth/unsloth:latest` saw the RTX 3090.
 - Redirect Hugging Face caches to repo-local `.cache/hf` during local runs to
   avoid Windows permission failures under `C:\Users\Joseph\.cache\huggingface`.
 - `.env` may contain `HF_TOKEN` while the current process environment does not.
@@ -214,18 +251,86 @@ skill:
   shell did not recover it in-session. Treat this as a Docker Desktop backend
   recovery blocker before launching another long local cell; first verify
   `docker info` and `docker ps` return normally.
+- Current local recovery status supersedes the failed-backend state for short
+  SFT confidence checks: the existing SFT max-2 micro recipe completed on
+  2026-06-13 from `synaptic-tuner` with
+  `py -3.11 tuner.py local-run --job-config F:\Code\Epistemic-Humility-Research\experiment\phase1\run_records\materialized_recipes\sft__4b__micro_max2.yaml --yes`.
+  Artifact root:
+  `synaptic-tuner/toolset-training-artifacts/runs/local/4b/sft__4b__micro_max2/20260613_084227`.
+  It loaded `unsloth/Qwen3-4B-bnb-4bit`, trained on 14,395 SFT examples for
+  exactly 2 steps, and saved `checkpoints/checkpoint-2`, `final_model`,
+  `training_lineage.json`, and `capacity_features.json`. Audit:
+  `logs/training_latest.jsonl` ended with `train_end`, `step: 2`,
+  `oom_risk_level: low`, peak reserved VRAM about 4.383 GB, and no containers
+  remained after completion. No eval/generation ran. Non-blocking warning:
+  `Failed to import Triton kernels... No module named 'triton_kernels.routing'`;
+  it did not block this completed micro run.
+- The Unsloth image default entrypoint may chmod the mounted repo and fail on
+  `.tmp/pytest-codex*`. For local eval wrapper runs, override the entrypoint
+  with `--entrypoint python3`.
 - Qwen3 prompt rendering can look thinking-off while generated answers still
   contain `<think>...</think>`. Treat any generated thinking tags in
   `probe_results.jsonl` as contaminated output: stop the container, archive the
   output directory, and retry only after the generated-output guard fails before
   writing rows or the backend suppression path is fixed. Do not strip tags and
   continue.
+- For Phase 1 eval generation, prompt rendering with thinking disabled is not
+  sufficient by itself. When `generation.enable_thinking: false`, vLLM
+  `SamplingParams` receives `<think>` and `</think>` stop strings while
+  preserving any configured `generation.stop` values. The generated-thinking
+  guard remains a backstop; do not strip contaminated outputs.
 - Phase 1 local eval now has an opt-in live vLLM path:
   `python experiment/phase1/eval/run_eval.py --config <scoped-config.yaml>
   --live-vllm`. Default fixture behavior is unchanged. The live config must use
   explicit `model_name` for the loadable HF/vLLM repo id and `model_tag` only as
   the reporting label. Use a scoped same-model base/SFT/DPO config first; KTO
   has no completed adapter and bridge arms are a different base model.
+- The scoped local 4B eval smoke config pins `vllm.max_lora_rank: 32` because
+  the completed SFT/DPO adapters are LoRA rank 32. If running that checked-in
+  config inside Docker/Linux from this Windows workspace, translate the
+  Windows absolute adapter paths to container-visible paths or mount the
+  workspace equivalently before launch; the eval loader preserves absolute
+  adapter paths as written.
+- 2026-06-13 scoped local live eval smoke status: the first Docker/Linux run
+  reached the base arm, then failed on the SFT adapter with
+  `ValueError: LoRA rank 32 is greater than max_lora_rank 16`. The config fix
+  was `vllm.max_lora_rank: 32` in
+  `experiment/phase1/eval/config/eval_smoke_local_4b.yaml`, followed by
+  `python -m pytest experiment/phase1/eval/tests/test_run_eval_e2e.py -q`
+  passing with `13 passed, 1 warning`. The rerun passed base + SFT + DPO with
+  exit code 0 and `eval complete: 3 arm x set rows, config_sha=97dddaaf30d0dfb0`.
+  Outputs are under `experiment/phase1/eval/results_smoke_local_4b`: per-arm
+  metrics/bootstrap plus `comparisons/summary_table.csv` and
+  `comparisons/mcnemar.csv`. Smoke-only truthful rates over `n=5` fixture rows
+  were base 60.0, SFT 100.0, DPO 40.0; do not cite these as headline results.
+  The `<think>` guard did not trigger (`rg "<think>|</think>"
+  experiment\phase1\eval\results_smoke_local_4b` found no matches), and no
+  containers or GPU processes remained after completion. This validates the
+  tiny local eval path for base/SFT/DPO adapter load, generation, scoring,
+  bootstrap, and comparisons.
+- Corrected OOD diagnostic run `eh-ood-slice-local-4b-4` exited 0 with
+  `eval complete: 9 arm x set rows, config_sha=fe48ee93abfbc559`. Outputs are
+  under `experiment/phase1/eval/results_ood_slice_local_4b`, covering
+  base/SFT/DPO x CoCoNot/TruthfulQA/SelfAware at limit 64 each. No `<think>` or
+  `</think>` matches were found. Caveat: the first slices were all known-labeled
+  (`n_unknown_labeled=0`), so unknown/refusal-recall metrics are not meaningful
+  there; this validates known-OOD scoring/over-refusal and the live pipeline,
+  not headline results.
+- Mixed SelfAware diagnostic run `eh-selfaware-mixed-local-4b` exited 0 with
+  `eval complete: 3 arm x set rows, config_sha=3f5f676bde46dce9`. Outputs are
+  under `experiment/phase1/eval/results_selfaware_mixed_slice_local_4b`, with no
+  `<think>` or `</think>` matches. Diagnostic-only summary over n=64: base
+  unknown=27 / known=37, refusal_recall 0.0, answer_on_unknown 100.0,
+  over_refusal 0.0, truthful 15.62; SFT refusal_recall 88.89,
+  answer_on_unknown 11.11, over_refusal 72.97, truthful 48.44; DPO
+  refusal_recall 0.0, answer_on_unknown 100.0, over_refusal 0.0, truthful 14.06.
+- OOD records carry their own `aliases`; scoring now prefers normalized
+  non-empty record aliases and falls back to global Cheng gold. Without this,
+  OOD known correctness/truthful vectors could be wrongly zero when questions
+  are absent from Cheng gold.
+- Non-blocking warnings seen in local diagnostics: Triton routing module
+  warning, AOT cache save/HF cache metadata permission warnings, and NCCL
+  `destroy_process_group` shutdown warning.
 - `git submodule status` can fail if Git Unix helpers such as `basename` or
   `sed` are missing. Verify the submodule SHA with the gitlink plus
   `git -C synaptic-tuner rev-parse HEAD`.
@@ -270,6 +375,13 @@ This runs SFT for `max_steps=2` against the already staged 4B SFT data. It
 validates Docker, GPU access, model load, data prep, two optimizer steps, final
 adapter save, metrics/logs, lineage/capacity files, and host artifact copy-out
 in a few minutes without exercising the currently fragile KTO path.
+
+After the 2026-06-13 successful local recovery and scoped live eval smoke, the
+next local-only step is to stage/commit the generic eval fixes/configs, then
+decide whether to run a larger bounded real eval slice against the intended
+held-out/OOD subset before expanding to more training cells. Do not jump from
+the smoke success directly to KTO, a headline/full run, or any cloud job without
+explicit approval.
 
 Headline numbers come ONLY from the pre-registered default cells; the LR/beta
 panel is robustness-only and is tagged distinctly in each run-id coordinate so

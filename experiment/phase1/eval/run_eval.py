@@ -149,6 +149,35 @@ def assert_no_generated_thinking(text: str, *, question: str) -> None:
             )
 
 
+def _generation_stop_strings(
+    generation_cfg: dict,
+    *,
+    enable_thinking: bool,
+) -> list[str] | None:
+    """Return deterministic vLLM stop strings, preserving configured stops."""
+    configured = generation_cfg.get("stop", [])
+    if configured is None:
+        stops = []
+    elif isinstance(configured, str):
+        stops = [configured]
+    else:
+        stops = list(configured)
+
+    merged: list[str] = []
+    for stop in stops:
+        if not isinstance(stop, str) or not stop:
+            raise ValueError("generation.stop entries must be non-empty strings")
+        if stop not in merged:
+            merged.append(stop)
+
+    if not enable_thinking:
+        for marker in THINK_TAG_MARKERS:
+            if marker not in merged:
+                merged.append(marker)
+
+    return merged or None
+
+
 class VLLMGenerator:
     """Real vLLM generator. vLLM imports are lazy so CPU tests import cleanly."""
 
@@ -193,6 +222,10 @@ class VLLMGenerator:
             temperature=float(self.generation_cfg.get("temperature", 0.0)),
             max_tokens=int(self.generation_cfg.get("max_new_tokens", 256)),
             seed=int(self.generation_cfg.get("seed", 0)),
+            stop=_generation_stop_strings(
+                self.generation_cfg,
+                enable_thinking=self.enable_thinking,
+            ),
         )
 
         adapter_arms = [
@@ -479,7 +512,8 @@ def _load_eval_records(eval_set: str, set_cfg: dict, gold: dict) -> list[dict]:
     import ood  # local import to keep stats/scorers import-light
 
     if set_cfg.get("type") == "ood":
-        return ood.load_ood_set(eval_set, (EVAL_DIR / set_cfg["path"]).resolve())
+        records = ood.load_ood_set(eval_set, (EVAL_DIR / set_cfg["path"]).resolve())
+        return _apply_eval_record_limit(records, set_cfg, eval_set=eval_set)
     # in-domain / bridge: records are the raw Cheng-style outputs on disk
     path = (EVAL_DIR / set_cfg["path"]).resolve()
     text = path.read_text(encoding="utf-8")
@@ -491,7 +525,42 @@ def _load_eval_records(eval_set: str, set_cfg: dict, gold: dict) -> list[dict]:
         rec = dict(r)
         rec.setdefault("id", r.get("question_id", f"{eval_set}-{i}"))
         out.append(rec)
-    return out
+    return _apply_eval_record_limit(out, set_cfg, eval_set=eval_set)
+
+
+def _apply_eval_record_limit(
+    records: list[dict],
+    set_cfg: dict,
+    *,
+    eval_set: str,
+) -> list[dict]:
+    """Apply optional deterministic ordered offset/limit after normalization."""
+    if "limit" not in set_cfg and "offset" not in set_cfg:
+        return records
+
+    offset = _nonnegative_int(set_cfg.get("offset", 0), "offset", eval_set)
+    limited = records[offset:]
+    if "limit" not in set_cfg:
+        return limited
+
+    limit = _nonnegative_int(set_cfg["limit"], "limit", eval_set)
+    return limited[:limit]
+
+
+def _nonnegative_int(value: object, field: str, eval_set: str) -> int:
+    if isinstance(value, bool):
+        raise ValueError(f"eval_sets.{eval_set}.{field} must be a nonnegative integer")
+    if isinstance(value, float) and not value.is_integer():
+        raise ValueError(f"eval_sets.{eval_set}.{field} must be a nonnegative integer")
+    try:
+        parsed = int(value)
+    except (TypeError, ValueError) as exc:
+        raise ValueError(
+            f"eval_sets.{eval_set}.{field} must be a nonnegative integer"
+        ) from exc
+    if parsed < 0:
+        raise ValueError(f"eval_sets.{eval_set}.{field} must be a nonnegative integer")
+    return parsed
 
 
 def _write_comparisons(

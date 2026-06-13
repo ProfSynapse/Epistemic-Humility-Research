@@ -7,6 +7,10 @@ datasets/*/.cache/
 
 # working space (refetchable parquets etc.)
 scratch/
+.tmp/
+
+# local operational logs
+experiment/phase1/run_records/logs/
 
 # git worktrees (PACT feature isolation)
 .worktrees/
