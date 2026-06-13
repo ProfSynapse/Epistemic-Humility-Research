@@ -103,6 +103,29 @@ We are proving the Phase 1 local lane before committing more GPU time. The goal 
   - Interpretation: the SFT pattern survived a larger contiguous SelfAware slice, with substantially improved refusal recall/truthful score versus base/DPO, but severe over-refusal. DPO remains base-like here. This is bounded research evidence on one contiguous SelfAware slice, not broad OOD, headline, protocol, or full-run evidence.
   - Non-blocking warnings were the same as earlier local diagnostics: Triton routing module, AOT cache save, and NCCL shutdown warning. No new blocker.
 
+- Full SelfAware local evidence run completed.
+  - Config: `experiment/phase1/eval/config/eval_selfaware_full_local_4b.yaml`.
+  - Shape: full SelfAware, 3,369 rows = 2,337 known / 1,032 unknown, base/SFT/DPO only. No KTO, bridge, cloud, headline, protocol, or full matrix.
+  - Docker run id: `eh-selfaware-full-local-4b`.
+  - Exit code 0 with `eval complete: 3 arm x set rows, config_sha=25e6a1faf916c7ef`.
+  - Outputs: `experiment/phase1/eval/results_selfaware_full_local_4b`.
+  - `rg "<think>|</think>" experiment\phase1\eval\results_selfaware_full_local_4b` found no matches.
+  - Summary table: base truthful 19.26, refusal_recall 0.0, answer_on_unknown 100.0, over_refusal 0.04, correct_on_known 27.78; SFT truthful 39.51, refusal_recall 89.73, answer_on_unknown 10.27, over_refusal 66.07, correct_on_known 51.07; DPO truthful 15.08, refusal_recall 0.0, answer_on_unknown 100.0, over_refusal 0.04, correct_on_known 21.75.
+  - Refusal counts: SFT refused 926/1,032 unknowns and 1,544/2,337 knowns; base refused 0 unknowns and 1 known; DPO refused 0 unknowns and 1 known.
+  - Interpretation: the earlier 192-row SelfAware pattern survived on full SelfAware. SFT strongly learns abstention on unknowns, but the cost is severe known-question over-refusal; DPO remains close to base.
+
+- Broader local OOD evidence run completed.
+  - Config: `experiment/phase1/eval/config/eval_broader_ood_evidence_local_4b.yaml`.
+  - Shape: base/SFT/DPO only over KUQ balanced slice (384 rows = 192 unknown / 192 known), full CoCoNot contrast set (379 known), TruthfulQA 256 known, PopQA 256 known. No KTO, bridge, cloud, headline, protocol, or full matrix.
+  - Docker run id: `eh-broader-ood-evidence-local-4b`.
+  - Exit code 0 with `eval complete: 12 arm x set rows, config_sha=7bcf77af7f76caaf`.
+  - Outputs: `experiment/phase1/eval/results_broader_ood_evidence_local_4b`.
+  - `rg "<think>|</think>" experiment\phase1\eval\results_broader_ood_evidence_local_4b` found no matches.
+  - KUQ: base truthful 9.64 / refusal_recall 0.0 / over_refusal 0.0; SFT truthful 53.12 / refusal_recall 97.4 / over_refusal 79.69; DPO truthful 9.11 / refusal_recall 0.52 / over_refusal 0.0.
+  - Known-only pressure: SFT over_refusal was 79.68 on CoCoNot, 76.17 on TruthfulQA, and 92.97 on PopQA. DPO stayed near base on refusal behavior, but had lower known correctness than base on PopQA.
+  - CoCoNot caveat: the local contrast file has empty answer aliases, so its truthful/correctness scores are 0 by construction; use it for refusal-rate/over-refusal behavior, not answer correctness.
+  - Interpretation: the SFT abstention signal generalized beyond SelfAware to KUQ, but the over-refusal failure also generalized strongly across known-only OOD pressure sets. This is broader bounded local evidence, still not headline/protocol evidence.
+
 ## Known Issues / Gotchas
 
 - KTO source logging bug is fixed locally, but KTO is still gated for cloud.
@@ -173,7 +196,7 @@ We are proving the Phase 1 local lane before committing more GPU time. The goal 
 
    Run from `F:\Code\Epistemic-Humility-Research\synaptic-tuner`.
 
-5. Stage/commit the generic eval fixes/configs and the bounded SelfAware evidence config/results docs before expanding to more training cells.
+5. Stage/commit the full SelfAware and broader OOD evidence configs/docs before expanding to more training cells.
 6. Do not run KTO, the headline/full eval, or any long cell without explicit approval.
 7. Do not immediately repeat the same A10G Qwen3 4B HF Jobs download loop. The latest `0400540` bounded SFT max-2 `cloud-pipeline` smoke submitted job `6a2c75e97c68f455eff143b2` and failed during remote `Qwen/Qwen3-4B` first-shard download before training/eval. Next, run a smaller cloud-pipeline smoke, for example a tiny public model, or improve launcher job-id capture, UTF-8 logging, and model-cache strategy before another Qwen3 4B attempt.
 8. Only after local eval and cloud smoke both work should we consider more headline cells. KTO remains blocked for local expansion until Docker reliability is re-established and for cloud expansion until an explicit KTO smoke is approved with the cloud prerequisites cleared.
