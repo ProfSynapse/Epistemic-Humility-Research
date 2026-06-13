@@ -178,8 +178,10 @@ We are proving the Phase 1 local lane before committing more GPU time. The goal 
 ## Next Steps
 
 1. Do not rerun KTO immediately.
-2. Commit/push the local Synaptic Tuner KTO logging fix to the exact cloud commit, then clear cloud launcher and dataset prerequisites before any KTO HF smoke.
-3. Before any long local run, prefer the bare Docker/host GPU checks that are known to work from Codex:
+2. Before any mixed-stage training, first complete and audit base KTO headline seed 1 unless Joseph explicitly decides otherwise. The current `kto__4b__headline__seed1` record is still failed after Docker instability, so it does not yet supply a completed cold-start KTO comparator.
+3. Protocol Amendment A / v0.4 may exist now as a prospective draft, but final sign-off and any `SFT -> DPO` or `SFT -> KTO` mixed-stage execution should wait until base KTO seed 1 is completed and audited unless Joseph explicitly decides otherwise. Do not create runnable recipes, edit `matrix.yaml`, or launch mixed-stage runs as a silent matrix expansion.
+4. Commit/push the local Synaptic Tuner KTO logging fix to the exact cloud commit, then clear cloud launcher and dataset prerequisites before any KTO HF smoke.
+5. Before any long local run, prefer the bare Docker/host GPU checks that are known to work from Codex:
 
    ```powershell
    docker ps -a --format "{{.Names}} {{.Status}}"
@@ -188,7 +190,7 @@ We are proving the Phase 1 local lane before committing more GPU time. The goal 
 
    Avoid treating `docker info` / `docker context ls` failures as definitive engine failures in this environment; they can be Docker config/API permission artifacts.
 
-4. If Docker is healthy, use the SFT max-2 micro recipe as the first confidence check:
+6. If Docker is healthy, use the SFT max-2 micro recipe as the first confidence check:
 
    ```powershell
    py -3.11 tuner.py local-run --job-config F:\Code\Epistemic-Humility-Research\experiment\phase1\run_records\materialized_recipes\sft__4b__micro_max2.yaml --yes
@@ -196,11 +198,11 @@ We are proving the Phase 1 local lane before committing more GPU time. The goal 
 
    Run from `F:\Code\Epistemic-Humility-Research\synaptic-tuner`.
 
-5. Stage/commit the full SelfAware and broader OOD evidence configs/docs before expanding to more training cells.
-6. Do not run KTO, the headline/full eval, or any long cell without explicit approval.
-7. Do not immediately repeat the same A10G Qwen3 4B HF Jobs download loop. The latest `0400540` bounded SFT max-2 `cloud-pipeline` smoke submitted job `6a2c75e97c68f455eff143b2` and failed during remote `Qwen/Qwen3-4B` first-shard download before training/eval. Next, run a smaller cloud-pipeline smoke, for example a tiny public model, or improve launcher job-id capture, UTF-8 logging, and model-cache strategy before another Qwen3 4B attempt.
-8. Only after local eval and cloud smoke both work should we consider more headline cells. KTO remains blocked for local expansion until Docker reliability is re-established and for cloud expansion until an explicit KTO smoke is approved with the cloud prerequisites cleared.
-9. Before cloud-lane expansion beyond the SFT smoke, verify process-local `HF_TOKEN` availability, use Synaptic Tuner's `cloud-pipeline` flow from a clean pushed exact commit, and confirm the already public Qwen3 4B dataset file names.
+7. Full SelfAware and broader OOD evidence configs/docs are already merged/tracked via PR #17. Treat that evidence as bounded local motivation for Amendment A, not headline/protocol evidence, and keep the next local research comparator focused on completing base KTO seed 1 before mixed-stage materialization.
+8. Do not run KTO, the headline/full eval, any long cell, or any mixed-stage sequential cell without explicit approval.
+9. Do not immediately repeat the same A10G Qwen3 4B HF Jobs download loop. The latest `0400540` bounded SFT max-2 `cloud-pipeline` smoke submitted job `6a2c75e97c68f455eff143b2` and failed during remote `Qwen/Qwen3-4B` first-shard download before training/eval. Next, run a smaller cloud-pipeline smoke, for example a tiny public model, or improve launcher job-id capture, UTF-8 logging, and model-cache strategy before another Qwen3 4B attempt.
+10. Only after local eval and cloud smoke both work should we consider more headline cells. KTO remains blocked for local expansion until Docker reliability is re-established and for cloud expansion until an explicit KTO smoke is approved with the cloud prerequisites cleared. Mixed-stage cells remain blocked until Amendment A / v0.4 is signed and recipes are deliberately materialized.
+11. Before cloud-lane expansion beyond the SFT smoke, verify process-local `HF_TOKEN` availability, use Synaptic Tuner's `cloud-pipeline` flow from a clean pushed exact commit, and confirm the already public Qwen3 4B dataset file names.
 
 ## Files Changed During This Session
 

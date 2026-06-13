@@ -17,6 +17,34 @@ sensitivity panel. Companion implementation blueprint:
 `docs/architecture/phase1-pipeline.md`. Derived from gaps verified in
 `../../meta-analysis/`.
 
+**Prospective Amendment A / v0.4 draft status:** The Amendment A material below
+is a proposed prospective extension, not a silent edit to the signed v0.3
+pre-registration and not a retroactive pre-registration of already-observed
+results. It is motivated by bounded local evidence collected after v0.3
+sign-off: SFT from the base model induced abstention behavior but with high
+over-refusal, while DPO from the base model stayed close to base-like refusal
+behavior on SelfAware/KUQ evidence. Amendment A tests whether preference
+optimization is better treated as boundary refinement after SFT than as
+cold-start abstention induction on this sized model. No runnable mixed-stage
+cells are added by this draft; they require separate amendment sign-off and
+implementation before execution. The draft may exist before base KTO seed 1 is
+complete; final sign-off and mixed-stage execution should wait for completed and
+audited base KTO seed-1 evidence unless Joseph explicitly decides otherwise.
+
+**Prospective Amendment A / v0.4 draft changelog (pending sign-off):**
+
+1. Adds H5, a sequential-refinement hypothesis: SFT may be required to induce
+   abstention on Qwen3-4B/8B-class models, after which DPO or KTO may refine the
+   abstention boundary and reduce over-refusal.
+2. Adds exploratory mixed-stage arms `SFT -> DPO` and `SFT -> KTO`, using the
+   same frozen data and evaluation surfaces as the original track when recipes
+   are later materialized.
+3. Preserves the signed v0.3 H1-H4 and 19/9/2 matrix as separately analyzable.
+   Mixed-stage results must be labeled as Amendment A / v0.4 results unless a
+   later signed v0.4 explicitly supersedes the matrix.
+4. Records that the post-sign-off evidence motivating this amendment is bounded
+   local evidence, not headline, cloud, bridge, or full-matrix evidence.
+
 **What changed in v0.3 (provenance):**
 
 1. Run design upgraded from a single config per arm to a full matrix, to
@@ -101,6 +129,23 @@ calibration decomposition after each run, in-domain and out-of-domain.
   methods do not degrade calibration relative to SFT. H4 fails if the balance
   knob does not move the over-refusal operating point monotonically.
 
+**Prospective Amendment A / v0.4 draft hypothesis (pending sign-off, not part
+of the signed v0.3 hypothesis set):**
+
+- **H5 (sequential refinement):** On this sized model, SFT may be necessary to
+  induce the abstention behavior at all, while preference optimization may be
+  better suited to refining an already-induced abstention boundary. Therefore
+  `SFT -> DPO` and `SFT -> KTO` should retain most of SFT's unknown-question
+  refusal recall while reducing SFT's known-question over-refusal relative to
+  SFT alone.
+- **H5 falsifiers:** H5 fails if both sequential arms lose the induced
+  abstention behavior, operationalized as a large refusal-recall drop on
+  unknowns relative to SFT alone without a compensating truthful-rate gain; if
+  neither sequential arm reduces known-question over-refusal relative to SFT; or
+  if the sequential arms simply reproduce the cold-start preference-training
+  behavior observed in bounded local evidence, staying base-like on refusal
+  while failing to improve truthful rate.
+
 ## 3. Design
 
 ### 3.1 Factors
@@ -182,6 +227,45 @@ Rationale:
   hyperparameter (learning rate or beta); everything else, including the frozen
   question set and the data budget, is the default. This isolates the panel as a
   clean sensitivity probe rather than a confounded second experiment.
+
+### 3.1b Prospective Amendment A / v0.4 draft sequential arms
+
+This section is prospective amendment text only. It does not change the signed
+v0.3 matrix in 3.1, does not add cells to
+`.agents/skills/experiment-runner/config/matrix.yaml`, and does not authorize
+any mixed-stage run before Amendment A / v0.4 is signed and runnable recipes are
+materialized.
+
+**Motivation from bounded local evidence.** After v0.3 sign-off, local
+base/SFT/DPO diagnostics on SelfAware and KUQ showed a consistent pattern:
+SFT-from-base induced abstention on unknowns but with severe over-refusal on
+knowns, while DPO-from-base stayed near base-like refusal behavior. These runs
+were bounded local evidence only, not headline, cloud, bridge, or full-matrix
+evidence. They motivate the possibility that the first stage must teach the
+model the abstention behavior, and that preference optimization may be more
+appropriate as a second-stage boundary-refinement step.
+
+**Exploratory sequential arms, pending sign-off and implementation:**
+
+| Arm | Stage 1 | Stage 2 | Purpose |
+|---|---|---|---|
+| Sequential DPO | Idk-SFT | DPO from the completed SFT adapter | Test whether DPO reduces SFT over-refusal while preserving refusal recall |
+| Sequential KTO | Idk-SFT | KTO from the completed SFT adapter | Test whether KTO's loss-aversion framing refines the SFT boundary with less over-refusal |
+
+The intended comparison set is SFT alone, cold-start DPO, cold-start KTO, and
+base, evaluated on the same held-out and OOD surfaces used by the original
+track. The initial sequential-arm scope should remain local and bounded until
+the amendment is signed, and final sign-off / execution should normally wait
+until the base KTO seed-1 path is completed and audited unless Joseph explicitly
+decides otherwise.
+
+**Reporting separation.** Original v0.3 headline claims remain drawn only from
+the pre-registered default matrix cells in 3.1 and the v0.3 analysis rules in
+3.6. Amendment A / mixed-stage results must be labeled separately as
+prospective extension results. They may support a v0.4 narrative only after a
+signed v0.4 revision explicitly decides whether the original matrix is
+superseded or whether v0.3 and Amendment A are reported as separate experimental
+tracks.
 
 ### 3.2 Model pin and rationale
 
@@ -397,6 +481,12 @@ headline metric and the pre-registered sensitivity panel are themselves part of
 the contribution (the error-bar and robustness rigor paper 1 documents the field
 lacking). All data-construction and analysis scripts in this repo; datasets,
 adapters, and per-model labels released to HF Hub.
+
+If Amendment A / v0.4 is signed and run, the mixed-stage results are reported as
+a prospective extension unless the signed v0.4 explicitly supersedes the v0.3
+matrix. The original v0.3 headline matrix remains separately analyzable and must
+not be merged with sequential-arm results as though the mixed-stage cells had
+been part of the 2026-06-10 pre-registration.
 
 ## 5. Blockers / needs (before any training run)
 

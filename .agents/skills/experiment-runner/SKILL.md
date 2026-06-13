@@ -11,6 +11,12 @@ full provenance and prerequisite gating. This is orchestration GLUE: the runner
 talks to the `synaptic-tuner` submodule ONLY through the materialized recipe YAML
 and the tuner's public CLI verbs. It adds nothing to the tuner.
 
+Prospective Amendment A / v0.4 is documentation-only until explicitly signed:
+sequential `SFT -> DPO` and `SFT -> KTO` arms are not part of the locked v0.3
+matrix, are not present in `config/matrix.yaml`, and must not be materialized or
+run by this skill unless a later signed amendment and implementation add them
+deliberately.
+
 ## Quick Reference
 
 | Task | Command |
@@ -40,6 +46,14 @@ content at `experiment/phase1/recipes/`; the provenance records are committed at
 `run_matrix.py` ASSERTS 19 @ 4B / 9 @ 8B / 2 bridge and ABORTS on mismatch — the
 pre-registration guard. See [matrix-expansion.md](reference/matrix-expansion.md).
 
+Prospective Amendment A / v0.4 adds a documentation proposal for mixed-stage
+`SFT -> DPO` and `SFT -> KTO` tests, motivated by bounded local evidence that
+SFT induces abstention with high over-refusal while DPO from base remained
+base-like on SelfAware/KUQ refusal behavior. This does not alter the table
+above. Do not edit `config/matrix.yaml`, relax count assertions, or create
+sequential recipes until Amendment A / v0.4 is signed and the implementation
+work is explicitly scoped.
+
 ## CLI Discipline
 
 These are non-negotiables, inherited in spirit from the tuner's fine-tuning
@@ -63,6 +77,10 @@ skill:
 - **Prefer the checked-in `run_matrix.py`** over ad hoc per-cell loops.
 - **Never loosen the count assertions** to absorb a `matrix.yaml` edit. The
   counts are pre-registered; a change needs a NEW signed PROTOCOL revision first.
+- **Never silently expand the v0.3 matrix for Amendment A.** Mixed-stage
+  `SFT -> DPO` / `SFT -> KTO` cells require a signed Amendment A / v0.4 and a
+  deliberate implementation pass. Until then, they are protocol text only, not
+  runnable cells.
 - **BOTH lanes are safety-gated by a LIVE capability probe.** A cell is only safe
   once the tuner forwards per-cell `seed` / `beta` on the lane it runs; otherwise
   cells silently train at defaults. The gap spans both lanes (cloud command
@@ -431,9 +449,12 @@ in a few minutes without exercising the currently fragile KTO path.
 
 After the 2026-06-13 successful local recovery, scoped live eval smoke, bounded
 SelfAware evidence run, full SelfAware evidence run, and broader OOD evidence
-run, the next local-only step is to stage/commit the evidence configs/docs
-before expanding to more training cells. Do not jump from these bounded runs
-directly to KTO, a headline/full run, or any cloud job without explicit
+run, the full SelfAware and broader OOD evidence configs/docs are merged/tracked
+via PR #17. Treat that evidence as bounded local motivation for Amendment A, not
+headline/protocol evidence. The next local research comparator is completing and
+auditing base KTO seed 1 before mixed-stage materialization unless Joseph
+explicitly decides otherwise. Do not jump from these bounded runs directly to
+mixed-stage cells, a headline/full run, or any cloud job without explicit
 approval.
 
 Headline numbers come ONLY from the pre-registered default cells; the LR/beta
