@@ -451,6 +451,22 @@ skill:
   the SFT starting policy, matching the sequential question. Do not continue
   the same adapter in-place unless explicitly testing adapter-continuation as a
   separate design.
+- Amendment A sequential local smoke status: the grouped-split SFT adapter
+  merged successfully to
+  `synaptic-tuner/toolset-training-artifacts/runs/local/4b/sft__4b__headline__seed1/20260614_053221/Qwen3-4B-bnb-4bit/merged-16bit`
+  (`config.json` present, no `adapter_config.json`, two safetensor shards
+  totaling about 8.0 GB). `SFT -> DPO` max-2 smoke
+  `sft_dpo__4b__amendment_a_smoke__seed1` completed from that merged model,
+  saved `final_model`, lineage, and capacity artifacts at
+  `synaptic-tuner/toolset-training-artifacts/runs/local/4b/sft_dpo__4b__amendment_a_smoke__seed1/20260614_073819`,
+  final step 2, final loss 0.6931, peak reserved VRAM 4.922 GB, OOM risk low.
+  `SFT -> KTO` max-2 smoke `sft_kto__4b__amendment_a_smoke__seed1` completed
+  from the same merged model, saved artifacts at
+  `synaptic-tuner/toolset-training-artifacts/runs/local/4b/sft_kto__4b__amendment_a_smoke__seed1/20260614_074015`,
+  final step 2, final loss 0.5, peak reserved VRAM 4.375 GB, OOM risk low.
+  Bind-mode artifacts may make `training_latest.jsonl` a Windows reparse point
+  that `Get-Content` cannot read; use the concrete timestamped
+  `logs/training_*.jsonl` files for verification and run records.
 - Local KTO seed 1 completed after Docker recovery. Run record:
   `experiment/phase1/run_records/kto__4b__headline__seed1.json`. Artifact root:
   `synaptic-tuner/toolset-training-artifacts/runs/local/4b/kto__4b__headline__seed1/20260613_151337_logging_patch`.

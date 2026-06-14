@@ -1,0 +1,59 @@
+# Epistemic-Humility Amendment A / v0.4 — sequential SFT -> KTO arm,
+# Qwen3-4B local prospective extension.
+#
+# This is NOT part of the locked Phase 1 v0.3 matrix. It starts from the
+# grouped-split SFT seed-1 adapter merged to a standalone local merged-16bit
+# model, then trains a fresh KTO LoRA adapter on the frozen primary congruence
+# KTO data.
+name: eh-phase1-qwen3-4b-sft-to-kto
+target: local
+method: kto
+provider: local_docker
+
+job:
+  image: unsloth/unsloth:latest
+  pull_policy: missing
+  transfer: bind
+  keep_container: false
+  mount_hf_cache: false
+  mount_pip_cache: false
+  tty: never
+
+setup:
+  pip: []
+
+run:
+  method: kto
+  trainer: Trainers/kto/train_kto.py
+
+model:
+  # Container path under the synaptic-tuner bind mount.
+  name: /workspace/repo/toolset-training-artifacts/runs/local/4b/sft__4b__headline__seed1/20260614_053221/Qwen3-4B-bnb-4bit/merged-16bit
+  max_seq_length: 2048
+  load_in_4bit: true
+
+dataset:
+  local_file: experiment/phase1/data/qwen3-4b-instruct/kto_congruence_train.jsonl
+
+training:
+  batch_size: 2
+  gradient_accumulation: 4
+  learning_rate: 1.0e-6
+  num_epochs: 1
+
+lora:
+  r: 32
+  alpha: 64
+  dropout: 0.05
+  target_modules:
+    - q_proj
+    - k_proj
+    - v_proj
+    - o_proj
+    - gate_proj
+    - up_proj
+    - down_proj
+
+artifacts:
+  output_root: toolset-training-artifacts/runs/local/4b/sft_kto__4b__amendment_a__seed1
+  run_timestamp: "{timestamp}"

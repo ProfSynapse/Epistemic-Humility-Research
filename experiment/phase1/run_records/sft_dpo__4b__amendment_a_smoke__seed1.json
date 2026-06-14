@@ -1,0 +1,65 @@
+{
+  "run_id": "sft_dpo__4b__amendment_a_smoke__seed1",
+  "matrix_version": "amendment-a-v0.4",
+  "coordinate": {
+    "arm": "sft_dpo",
+    "size": "4b",
+    "cell_type": "amendment_a_smoke",
+    "seed": 1,
+    "override": {
+      "max_steps": 2
+    }
+  },
+  "source_recipe": "experiment/phase1/recipes/eh_phase1_qwen3_4b_sft_to_dpo.yaml",
+  "materialized_recipe_sha": "faf8919cd92dd3e29b9fa40574b9a672819256a5149b150c45d4890c1faca9a3",
+  "method": "dpo",
+  "model": "/workspace/repo/toolset-training-artifacts/runs/local/4b/sft__4b__headline__seed1/20260614_053221/Qwen3-4B-bnb-4bit/merged-16bit",
+  "lane": "local",
+  "data": {
+    "source_data_file": "F:\\Code\\Epistemic-Humility-Research\\experiment\\phase1\\data\\qwen3-4b-instruct\\dpo_train.jsonl",
+    "staged_data_file": "scratch/eh_staging/sft_dpo__4b__amendment_a_smoke__seed1/dpo_train.jsonl",
+    "data_sha256": "39e2ba8c9bc1b41ef1b7e797f80637c276ba150c97055962bbc4e2b550bd17b5",
+    "hf_dataset_name": null,
+    "hf_dataset_revision": null
+  },
+  "research_repo_commit": "32a38b9d56f9a8702b166223ab068112b6cc504a",
+  "submodule_commit": "040054021c6da2c8c94453edbb699a487221120e",
+  "prereq_check": {
+    "datasets_present": true,
+    "leakage_guard_passed": true,
+    "merged_sft_model_present": true
+  },
+  "launched_at": "2026-06-14T11:37:53.027666+00:00",
+  "tuner_invocation": [
+    "python",
+    "tuner.py",
+    "local-run",
+    "--job-config",
+    "F:/Code/Epistemic-Humility-Research/experiment/phase1/run_records/materialized_recipes/sft_dpo__4b__amendment_a_smoke__seed1.yaml",
+    "--yes"
+  ],
+  "outcome": {
+    "status": "completed",
+    "job_handle": null,
+    "adapter_path": "F:\\Code\\Epistemic-Humility-Research\\synaptic-tuner\\toolset-training-artifacts\\runs\\local\\4b\\sft_dpo__4b__amendment_a_smoke__seed1\\20260614_073819\\final_model",
+    "metrics_path": "F:\\Code\\Epistemic-Humility-Research\\synaptic-tuner\\toolset-training-artifacts\\runs\\local\\4b\\sft_dpo__4b__amendment_a_smoke__seed1\\20260614_073819\\logs\\training_20260614_113942.jsonl",
+    "verified": true,
+    "completed_at": "2026-06-14T11:39:57.737350+00:00",
+    "metrics": {
+      "final_step": 2,
+      "total_epochs": 1,
+      "train_runtime": 8.568,
+      "train_steps_per_second": 0.233,
+      "peak_gpu_memory_reserved_gb": 4.922,
+      "oom_risk_level": "low",
+      "final_loss": 0.6931
+    },
+    "verification_summary": "Sequential SFT->DPO max-2 smoke loaded the merged grouped-SFT model, trained 2/2 steps, saved final_model, training_lineage.json, and capacity_features.json; concrete training log ended with train_end and oom_risk_level=low."
+  },
+  "materialized_recipe": "F:\\Code\\Epistemic-Humility-Research\\experiment\\phase1\\run_records\\materialized_recipes\\sft_dpo__4b__amendment_a_smoke__seed1.yaml",
+  "amendment_a": {
+    "stage1_adapter": "F:\\Code\\Epistemic-Humility-Research\\synaptic-tuner\\toolset-training-artifacts\\runs\\local\\4b\\sft__4b__headline__seed1\\20260614_053221\\final_model",
+    "stage1_merged_model": "F:\\Code\\Epistemic-Humility-Research\\synaptic-tuner\\toolset-training-artifacts\\runs\\local\\4b\\sft__4b__headline__seed1\\20260614_053221\\Qwen3-4B-bnb-4bit\\merged-16bit",
+    "smoke_only": true
+  }
+}
