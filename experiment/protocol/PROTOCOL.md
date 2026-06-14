@@ -352,6 +352,9 @@ subsample questions if the full cross-product is needlessly expensive.
 - **Abstention template:** a style-varied bank (anti-overfitting) where every
   phrasing contains one of the eval refusal markers so refusal detection stays
   reliable. The builder validates this invariant.
+- **Dev split identity:** train/dev source row keys are disjoint, and the split
+  is grouped by normalized question text (`norm_question(question)`) so duplicate
+  TriviaQA rows with the same prompt cannot appear on both sides.
 
 Eval sets are never touched during training; OOD sets share no questions with
 training, and the builder asserts the trained question set does not appear in
@@ -369,7 +372,7 @@ any OOD set.
   explicitly per arm, not via tier presets.
 - Early stopping on dev loss (Gekhman: prolonged training on unknowns drives
   hallucination; the dynamics are logged as a secondary analysis). The dev split
-  is the same held-out set across arms.
+  is the same held-out set across arms and is grouped by normalized question text.
 - Execution lanes (compute is not a binding constraint): the RTX 3090 is the
   development, pilot, and smoke-run lane for fast local iteration; HF Jobs is the
   parallel execution lane for the run matrix, since small-model LoRA runs are

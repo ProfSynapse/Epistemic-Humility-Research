@@ -233,15 +233,17 @@ skill:
   not bare `*_question_ids`; duplicate TriviaQA IDs can otherwise make a clean
   row-level split look overlapped or seed duplicate rows identically.
 - Row-key disjointness is not prompt-text disjointness. A 2026-06-14 audit of
-  `qwen3-4b-instruct` found the current WS-2 split is clean by
+  `qwen3-4b-instruct` initially found the WS-2 split was clean by
   `probe_pool_row_key`, leakage-clean against Cheng test, and byte-reproducible,
-  but has 188 normalized question texts present in both train and dev under
-  different source row keys; all had the same known/unknown label. Completed
-  local SFT/DPO/KTO runs consumed only `*_train.jsonl` and did not pass
-  `--split-dataset`, so this does not explain the bounded SelfAware/OOD
-  findings. Before any headline/protocol run that relies on dev/early-stopping,
-  decide explicitly whether to accept row-key semantics or amend/rebuild with a
-  normalized-question grouped split and republish the HF dataset files.
+  but had 188 normalized question texts present in both train and dev under
+  different source row keys. The builder now splits dev by
+  `norm_question(question)` groups and records `dev_split_group_key` in
+  `questions_frozen.json`. Re-audit after rebuild found 0 row-key overlap,
+  0 normalized-question overlap, leakage guard passed, KTO labels balanced, no
+  unknown-negative fallback, no thinking-tag contamination, and byte-for-byte
+  reproducibility. Previous local SFT/DPO/KTO seed-1 runs are pre-split-fix
+  bounded evidence; rerun SFT seed 1 on the regenerated dataset before using it
+  as the mixed-stage comparator.
 - On Windows, staged tuner scratch paths in run records/materialized recipes
   should be POSIX-style (`scratch/...`) even though host paths are Windows paths;
   emitting backslashes makes provenance noisy and can surprise container path

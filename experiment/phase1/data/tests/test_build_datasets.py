@@ -163,6 +163,7 @@ def test_dev_questions_excluded_from_train_and_shared(tmp_path):
     train_keys = set(frozen["train_question_keys"])
     assert dev_keys and train_keys, "expected non-empty dev and train"
     assert dev_keys.isdisjoint(train_keys), "dev and train question keys must be disjoint"
+    assert frozen["dev_split_group_key"] == "norm_question(question)"
 
     # The dev questions are the same set the SFT dev file is built from; spot-check
     # that the SFT dev questions are a subset of the frozen dev_question_keys.
@@ -171,6 +172,19 @@ def test_dev_questions_excluded_from_train_and_shared(tmp_path):
     for row in sft_dev:
         user = next(m["content"] for m in row["conversations"] if m["role"] == "user")
         assert probe_by_q[user] in dev_keys
+
+    sft_train = _read_jsonl(tmp_path / "sft_train.jsonl")
+    train_norms = {
+        bd.norm_question(next(m["content"] for m in row["conversations"] if m["role"] == "user"))
+        for row in sft_train
+    }
+    dev_norms = {
+        bd.norm_question(next(m["content"] for m in row["conversations"] if m["role"] == "user"))
+        for row in sft_dev
+    }
+    assert dev_norms.isdisjoint(train_norms), (
+        "dev and train normalized question texts must be disjoint"
+    )
 
 
 # ---------------------------------------------------------------------------
@@ -325,11 +339,15 @@ def test_distractor_strategy_substitutes_and_records(tmp_path):
 
 
 def _q(qid):
-    return {"question_id": qid}
+    return {"question_id": qid, "question": f"Question {qid}?"}
 
 
-def _q_with_key(qid, key):
-    return {"question_id": qid, "probe_pool_row_key": key}
+def _q_with_key(qid, key, question=None):
+    return {
+        "question_id": qid,
+        "probe_pool_row_key": key,
+        "question": question or f"Question {qid}?",
+    }
 
 
 def test_split_dev_raises_on_empty_dev():
@@ -359,14 +377,25 @@ def test_split_dev_normal_case_both_nonempty():
     assert dev_ids.isdisjoint(train_ids)
 
 
-def test_split_dev_uses_probe_pool_row_key_for_duplicate_question_ids():
-    records = [_q_with_key("dup", f"{i:012d}|dup") for i in range(10)]
+def test_split_dev_groups_duplicate_question_texts_even_with_distinct_row_keys():
+    records = [
+        _q_with_key("dup_a", "000000000001|dup_a", "Same prompt?"),
+        _q_with_key("dup_b", "000000000002|dup_b", "Same   prompt?"),
+    ] + [_q_with_key(str(i), f"{i + 10:012d}|{i}") for i in range(20)]
     train, dev = bd.split_dev(records, fraction=0.5, seed=42)
-    assert {r["question_id"] for r in train} == {"dup"}
-    assert {r["question_id"] for r in dev} == {"dup"}
     train_keys = {bd.record_key(r) for r in train}
     dev_keys = {bd.record_key(r) for r in dev}
     assert train_keys.isdisjoint(dev_keys)
+    train_norms = {bd.norm_question(r["question"]) for r in train}
+    dev_norms = {bd.norm_question(r["question"]) for r in dev}
+    assert train_norms.isdisjoint(dev_norms)
+
+    dup_sides = {
+        "train" if r["question"].startswith("Same") and r in train else "dev"
+        for r in records
+        if r["question"].startswith("Same")
+    }
+    assert len(dup_sides) == 1, "identical normalized prompts must stay together"
 
 
 # ---------------------------------------------------------------------------
