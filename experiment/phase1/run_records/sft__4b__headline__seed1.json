@@ -20,7 +20,7 @@
     "hf_dataset_name": null,
     "hf_dataset_revision": null
   },
-  "research_repo_commit": "5b03bcc561793075c7e4271cb7a55eeb505286ce",
+  "research_repo_commit": "e07f9d53f44da5c46a89c34f4977d7330995923a",
   "submodule_commit": "040054021c6da2c8c94453edbb699a487221120e",
   "prereq_check": {
     "datasets_present": true,
@@ -36,11 +36,22 @@
     "--yes"
   ],
   "outcome": {
-    "status": "launched",
+    "status": "completed",
     "job_handle": null,
-    "adapter_path": null,
-    "metrics_path": null,
-    "verified": false
+    "adapter_path": "F:\\Code\\Epistemic-Humility-Research\\synaptic-tuner\\toolset-training-artifacts\\runs\\local\\4b\\sft__4b__headline__seed1\\20260614_053221\\final_model",
+    "metrics_path": "F:\\Code\\Epistemic-Humility-Research\\synaptic-tuner\\toolset-training-artifacts\\runs\\local\\4b\\sft__4b__headline__seed1\\20260614_053221\\logs\\training_latest.jsonl",
+    "verified": true,
+    "completed_at": "2026-06-14T10:16:06.834552+00:00",
+    "metrics": {
+      "final_step": 1800,
+      "total_epochs": 1.0,
+      "final_loss": 0.3236,
+      "train_loss": 0.44903450502289666,
+      "training_time_seconds": 2505.4,
+      "train_steps_per_second": 0.719,
+      "peak_gpu_memory_reserved_gb": 4.393,
+      "oom_risk_level": "low"
+    }
   },
   "materialized_recipe": "F:\\Code\\Epistemic-Humility-Research\\experiment\\phase1\\run_records\\materialized_recipes\\sft__4b__headline__seed1.yaml"
 }
