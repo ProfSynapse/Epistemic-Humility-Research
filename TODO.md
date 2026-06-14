@@ -27,6 +27,7 @@ We are proving the Phase 1 local lane before committing more GPU time. The goal 
   - Non-discard rows: 15,995
   - Train/dev split is clean by `probe_pool_row_key`.
   - Important fix: TriviaQA `question_id` is not unique, so audits must use `*_question_keys`, not bare `*_question_ids`.
+  - Follow-up audit on 2026-06-14 found 188 normalized prompt texts present in both train and dev under different source row keys. All 188 overlaps had the same known/unknown label across sides. This does not violate the current row-key split invariant and the completed local training recipes consumed only `*_train.jsonl`, but it means the generated dev split is not text-disjoint. Before any headline/protocol run that relies on dev/early-stopping, decide whether to amend the builder to group/split by normalized question text and republish regenerated datasets.
   - Public HF dataset repo: https://huggingface.co/datasets/professorsynapse/epistemic-humility-phase1
   - Qwen3 4B Phase 1 train/dev JSONLs are public there: `sft_train.jsonl`, `sft_dev.jsonl`, `dpo_train.jsonl`, `dpo_dev.jsonl`, `kto_congruence_train.jsonl`, `kto_congruence_dev.jsonl`, `kto_correctness_safe_train.jsonl`, and `kto_correctness_safe_dev.jsonl`.
 
@@ -202,6 +203,12 @@ We are proving the Phase 1 local lane before committing more GPU time. The goal 
   - OOD records carry their own `aliases`; scoring now prefers normalized non-empty record aliases and falls back to global Cheng gold. Without this, OOD known correctness/truthful vectors could be wrongly zero when questions are absent from Cheng gold.
   - Qwen3 prompt rendering with thinking disabled is insufficient; vLLM `SamplingParams` now receives stop strings `<think>` and `</think>` when `generation.enable_thinking: false`, preserving any configured `generation.stop` values. The generated-thinking guard remains a backstop; do not strip contaminated outputs.
   - Non-blocking warnings seen during local diagnostics: Triton routing module warning, AOT cache save/HF cache metadata permission warnings, and NCCL `destroy_process_group` shutdown warning.
+
+- Dataset audit caveat: row-key disjointness is not the same as prompt-text disjointness.
+  - `questions_frozen.json` train/dev keys are disjoint and all generated files are byte-reproducible from the frozen probe/config/bank.
+  - A stricter 2026-06-14 audit found 188 normalized question texts appearing on both train and dev sides because TriviaQA carries duplicate source rows with identical prompts under different row keys.
+  - The completed local SFT/DPO/KTO runs used only the train JSONLs and did not pass `--split-dataset`, so this does not explain the current local SelfAware/OOD findings.
+  - Before headline/protocol training that depends on dev/early-stopping, either explicitly accept row-key split semantics or amend/rebuild the dataset with normalized-question grouping so dev is text-disjoint.
 
 - `Start-Process` may fail in Codex Desktop PowerShell due duplicate `Path` / `PATH`.
   - Reliable detached launcher is a `py -3.11 -c` wrapper around `subprocess.Popen`.
