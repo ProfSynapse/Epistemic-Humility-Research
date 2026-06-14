@@ -34,9 +34,11 @@ We are proving the Phase 1 local lane before committing more GPU time. The goal 
 
 - Local SFT headline seed 1 completed.
   - Run id: `sft__4b__headline__seed1`
-  - Adapter: `synaptic-tuner/toolset-training-artifacts/runs/local/4b/sft__4b__headline__seed1/20260611_202126/final_model`
+  - Current grouped-split rerun adapter: `synaptic-tuner/toolset-training-artifacts/runs/local/4b/sft__4b__headline__seed1/20260614_053221/final_model`
+  - Previous pre-split-fix adapter: `synaptic-tuner/toolset-training-artifacts/runs/local/4b/sft__4b__headline__seed1/20260611_202126/final_model`
   - Metrics: `.../logs/training_latest.jsonl`
   - Run record: `experiment/phase1/run_records/sft__4b__headline__seed1.json`
+  - Grouped-split rerun completed on 2026-06-14: 1,800 / 1,800 steps, 1 epoch, train runtime 2,503.748s, train loss 0.44903450502289666, final logged loss 0.3236, peak reserved VRAM 4.393 GB, OOM risk low.
 
 - Local DPO headline seed 1 completed.
   - Run id: `dpo__4b__headline__seed1`
@@ -205,6 +207,13 @@ We are proving the Phase 1 local lane before committing more GPU time. The goal 
   - Qwen3 prompt rendering with thinking disabled is insufficient; vLLM `SamplingParams` now receives stop strings `<think>` and `</think>` when `generation.enable_thinking: false`, preserving any configured `generation.stop` values. The generated-thinking guard remains a backstop; do not strip contaminated outputs.
   - Non-blocking warnings seen during local diagnostics: Triton routing module warning, AOT cache save/HF cache metadata permission warnings, and NCCL `destroy_process_group` shutdown warning.
 
+- Cheng recipe provenance correction.
+  - The Cheng paper text is vague on exact training implementation, but the official OpenMOSS/Say-I-Dont-Know README gives concrete commands.
+  - Idk-SFT uses `llama_recipes/finetuning.py --enable_fsdp`, `--num_epochs 10`, `--lr 2e-5`, `--batch_size_training 4`, and `--gradient_accumulation_steps 2`.
+  - Idk-DPO is initialized from the SFT result model and uses `loss.beta=0.1`, `loss.sft_coef_when_dpo=0.01`, batch size 64, gradient accumulation 4, and FSDPTrainer.
+  - Therefore the Qwen3 Phase 1 LoRA/QLoRA recipes are not a bit-for-bit Cheng reproduction. They are a modern, resource-feasible replication-style design that reuses the dataset/metric idea while holding LoRA capacity fixed across arms.
+  - Research implication: DPO/KTO-from-base doing little is less surprising under this correction. The more Cheng-faithful preference question is sequential `SFT -> DPO` / `SFT -> KTO`, and epochs/LoRA rank/alpha deserve a sensitivity axis after the grouped-split SFT comparator is evaluated.
+
 - Dataset audit caveat fixed: row-key disjointness is not the same as prompt-text disjointness.
   - `questions_frozen.json` train/dev keys remain disjoint, and the builder now also keeps duplicate normalized prompts on the same side.
   - A stricter 2026-06-14 audit initially found 188 normalized question texts appearing on both train and dev sides because TriviaQA carries duplicate source rows with identical prompts under different row keys.
@@ -216,11 +225,12 @@ We are proving the Phase 1 local lane before committing more GPU time. The goal 
 
 ## Next Steps
 
-1. Rerun local SFT seed 1 on the regenerated grouped-split dataset, then re-run the bounded SelfAware/OOD checks before treating SFT as the comparator for mixed-stage work.
+1. Re-run the bounded SelfAware/OOD checks on the regenerated grouped-split SFT adapter before treating SFT as the comparator for mixed-stage work.
 2. Treat previous local SFT, DPO, and KTO seed 1 as completed pre-split-fix bounded comparators. The plain-language read was: SFT learned abstention but over-refused badly; DPO-from-base and KTO-from-base stayed base-like and did not learn abstention on those local evidence surfaces.
 3. Protocol Amendment A / v0.4 is now the natural next research step: deliberately implement and run `SFT -> DPO` and `SFT -> KTO` as mixed-stage cells to test whether SFT first teaches the behavior and preference training can then reduce over-refusal. Do not create runnable recipes, edit `matrix.yaml`, or launch mixed-stage runs as a silent matrix expansion.
-4. Before cloud KTO smoke, commit/push the Synaptic Tuner KTO logging fix to the exact cloud commit, then clear cloud launcher and dataset prerequisites.
-5. Before any long local run, prefer the bare Docker/host GPU checks that are known to work from Codex:
+4. Add a later sensitivity axis for epochs and LoRA rank/alpha; this should be protocol-scoped rather than silently changing the current headline comparator.
+5. Before cloud KTO smoke, commit/push the Synaptic Tuner KTO logging fix to the exact cloud commit, then clear cloud launcher and dataset prerequisites.
+6. Before any long local run, prefer the bare Docker/host GPU checks that are known to work from Codex:
 
    ```powershell
    docker ps -a --format "{{.Names}} {{.Status}}"
@@ -229,7 +239,7 @@ We are proving the Phase 1 local lane before committing more GPU time. The goal 
 
    Avoid treating `docker info` / `docker context ls` failures as definitive engine failures in this environment; they can be Docker config/API permission artifacts.
 
-6. If Docker is healthy, use the SFT max-2 micro recipe as the first confidence check:
+7. If Docker is healthy, use the SFT max-2 micro recipe as the first confidence check:
 
    ```powershell
    py -3.11 tuner.py local-run --job-config F:\Code\Epistemic-Humility-Research\experiment\phase1\run_records\materialized_recipes\sft__4b__micro_max2.yaml --yes
@@ -237,11 +247,11 @@ We are proving the Phase 1 local lane before committing more GPU time. The goal 
 
    Run from `F:\Code\Epistemic-Humility-Research\synaptic-tuner`.
 
-7. Full SelfAware and broader OOD evidence configs/docs are already merged/tracked via PR #17. The new KTO comparator configs/docs should be committed next. Treat all of this as bounded local motivation for Amendment A, not headline/protocol evidence.
-8. Do not run the headline/full eval, any additional long cell, or any mixed-stage sequential cell without explicit approval.
-9. Do not immediately repeat the same A10G Qwen3 4B HF Jobs download loop. The latest `0400540` bounded SFT max-2 `cloud-pipeline` smoke submitted job `6a2c75e97c68f455eff143b2` and failed during remote `Qwen/Qwen3-4B` first-shard download before training/eval. Next, run a smaller cloud-pipeline smoke, for example a tiny public model, or improve launcher job-id capture, UTF-8 logging, and model-cache strategy before another Qwen3 4B attempt.
-10. Only after local eval and cloud smoke both work should we consider more headline cells. KTO remains blocked for cloud expansion until an explicit KTO smoke is approved with the cloud prerequisites cleared. Mixed-stage cells remain blocked until Amendment A / v0.4 is signed and recipes are deliberately materialized.
-11. Before cloud-lane expansion beyond the SFT smoke, verify process-local `HF_TOKEN` availability, use Synaptic Tuner's `cloud-pipeline` flow from a clean pushed exact commit, and confirm the already public Qwen3 4B dataset file names.
+8. Full SelfAware and broader OOD evidence configs/docs are already merged/tracked via PR #17. The new KTO comparator configs/docs should be committed next. Treat all of this as bounded local motivation for Amendment A, not headline/protocol evidence.
+9. Do not run the headline/full eval, any additional long cell, or any mixed-stage sequential cell without explicit approval.
+10. Do not immediately repeat the same A10G Qwen3 4B HF Jobs download loop. The latest `0400540` bounded SFT max-2 `cloud-pipeline` smoke submitted job `6a2c75e97c68f455eff143b2` and failed during remote `Qwen/Qwen3-4B` first-shard download before training/eval. Next, run a smaller cloud-pipeline smoke, for example a tiny public model, or improve launcher job-id capture, UTF-8 logging, and model-cache strategy before another Qwen3 4B attempt.
+11. Only after local eval and cloud smoke both work should we consider more headline cells. KTO remains blocked for cloud expansion until an explicit KTO smoke is approved with the cloud prerequisites cleared. Mixed-stage cells remain blocked until Amendment A / v0.4 is signed and recipes are deliberately materialized.
+12. Before cloud-lane expansion beyond the SFT smoke, verify process-local `HF_TOKEN` availability, use Synaptic Tuner's `cloud-pipeline` flow from a clean pushed exact commit, and confirm the already public Qwen3 4B dataset file names.
 
 ## Files Changed During This Session
 

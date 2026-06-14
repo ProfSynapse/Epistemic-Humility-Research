@@ -244,6 +244,18 @@ skill:
   reproducibility. Previous local SFT/DPO/KTO seed-1 runs are pre-split-fix
   bounded evidence; rerun SFT seed 1 on the regenerated dataset before using it
   as the mixed-stage comparator.
+- Cheng recipe provenance gotcha: the paper text is vague, but the official
+  OpenMOSS/Say-I-Dont-Know README publishes concrete commands. Cheng Idk-SFT is
+  `llama_recipes/finetuning.py --enable_fsdp` with `--num_epochs 10`, `--lr
+  2e-5`, `--batch_size_training 4`, and `--gradient_accumulation_steps 2`.
+  Cheng Idk-DPO initializes from the SFT result model and uses `loss.beta=0.1`,
+  `loss.sft_coef_when_dpo=0.01`, batch size 64, gradient accumulation 4, and
+  FSDPTrainer. The Phase 1 Qwen3 recipes are therefore NOT a bit-for-bit Cheng
+  training reproduction: they are a resource-feasible LoRA/QLoRA
+  replication-style design with matched LoRA capacity across arms. Do not cite
+  Cheng hyperparameters from the raw evidence report unless re-verified against
+  the official repo/PDF, and do not treat cold-start DPO/KTO failures as a
+  contradiction of Cheng's sequential SFT-warmed preference setup.
 - On Windows, staged tuner scratch paths in run records/materialized recipes
   should be POSIX-style (`scratch/...`) even though host paths are Windows paths;
   emitting backslashes makes provenance noisy and can surprise container path
