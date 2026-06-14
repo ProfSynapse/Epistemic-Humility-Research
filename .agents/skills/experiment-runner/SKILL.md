@@ -342,6 +342,11 @@ skill:
   Windows absolute adapter paths to container-visible paths or mount the
   workspace equivalently before launch; the eval loader preserves absolute
   adapter paths as written.
+- If a local live eval uses a Windows absolute `model_name` for a merged local
+  base, translate that path to the container mount too, not only
+  `arms[].adapter`. Sequential Amendment A evals need this because DPO/KTO
+  adapters were trained from the merged SFT directory, so vLLM must load the
+  merged SFT base path inside Linux.
 - 2026-06-13 scoped local live eval smoke status: the first Docker/Linux run
   reached the base arm, then failed on the SFT adapter with
   `ValueError: LoRA rank 32 is greater than max_lora_rank 16`. The config fix
@@ -488,6 +493,22 @@ skill:
   evidence gate is still eval of the sequential adapters against SelfAware/KUQ/OOD
   to test whether sequential preference training preserves SFT abstention while
   reducing known-question over-refusal.
+- Amendment A broader OOD sequential eval completed locally with
+  `experiment/phase1/eval/config/eval_amendment_a_broader_ood_local_4b.yaml`
+  and `config_sha=d5d819efb942a202`. Outputs are under
+  `experiment/phase1/eval/results_amendment_a_broader_ood_local_4b`. Shape:
+  `sft_merged`, `sft_dpo`, and `sft_kto` over the KUQ balanced slice, full
+  CoCoNot contrast set, TruthfulQA 256, and PopQA 256; all arms used the
+  merged SFT base, no cloud/bridge/headline/protocol/full matrix. No `<think>`,
+  `</think>`, or `reasoning_content` matches were found. KUQ: `sft_merged`
+  truthful 52.34 / refusal_recall 98.44 / over_refusal 80.21; `sft_dpo`
+  truthful 40.10 / refusal_recall 69.79 / over_refusal 20.31; `sft_kto`
+  truthful 48.70 / refusal_recall 90.62 / over_refusal 72.92. Known-only
+  over-refusal fell sharply for sequential DPO but with a KUQ unknown-refusal
+  tradeoff; sequential KTO preserved more abstention but retained high
+  over-refusal. Treat this as bounded local Amendment A evidence, not v0.3
+  headline/protocol evidence. CoCoNot remains refusal/over-refusal-only because
+  local aliases are empty.
 - Local KTO seed 1 completed after Docker recovery. Run record:
   `experiment/phase1/run_records/kto__4b__headline__seed1.json`. Artifact root:
   `synaptic-tuner/toolset-training-artifacts/runs/local/4b/kto__4b__headline__seed1/20260613_151337_logging_patch`.

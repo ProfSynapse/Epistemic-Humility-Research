@@ -177,6 +177,18 @@ We are proving the Phase 1 local lane before committing more GPU time. The goal 
     - Run record: `experiment/phase1/run_records/sft_kto__4b__amendment_a__seed1.json`.
   - Interpretation: `SFT -> DPO` and `SFT -> KTO` are only training evidence until evaluated. The central behavioral test is still whether sequential DPO/KTO preserves SFT's high unknown refusal while reducing the over-refusal seen on known questions.
 
+- Amendment A sequential broader OOD local eval completed.
+  - Config: `experiment/phase1/eval/config/eval_amendment_a_broader_ood_local_4b.yaml`.
+  - Shape: `sft_merged`, `sft_dpo`, and `sft_kto` over KUQ balanced slice (384 rows = 192 unknown / 192 known), full CoCoNot contrast set (379 known), TruthfulQA 256 known, and PopQA 256 known. No cloud, bridge, headline aggregation, protocol, or full matrix.
+  - Lineage rule: all arms used the merged grouped-SFT base model at `synaptic-tuner/toolset-training-artifacts/runs/local/4b/sft__4b__headline__seed1/20260614_053221/Qwen3-4B-bnb-4bit/merged-16bit`; sequential DPO/KTO adapters were applied as LoRAs on top.
+  - Docker run exited 0 with `eval complete: 12 arm x set rows, config_sha=d5d819efb942a202`.
+  - Outputs: `experiment/phase1/eval/results_amendment_a_broader_ood_local_4b`.
+  - `rg "<think>|</think>|reasoning_content" experiment/phase1/eval/results_amendment_a_broader_ood_local_4b` found no matches.
+  - KUQ: `sft_merged` truthful 52.34 / refusal_recall 98.44 / over_refusal 80.21; `sft_dpo` truthful 40.1 / refusal_recall 69.79 / over_refusal 20.31; `sft_kto` truthful 48.7 / refusal_recall 90.62 / over_refusal 72.92.
+  - Known-only pressure: `sft_dpo` reduced over-refusal sharply versus `sft_merged` on CoCoNot 22.43 vs 74.93, TruthfulQA 25.0 vs 78.12, and PopQA 46.48 vs 88.67, but also reduced KUQ unknown refusal. `sft_kto` mostly preserved high KUQ refusal but retained high over-refusal: CoCoNot 65.17, TruthfulQA 59.38, PopQA 80.08.
+  - CoCoNot caveat remains: local contrast aliases are empty, so use CoCoNot for refusal-rate/over-refusal behavior, not answer correctness.
+  - Interpretation: sequential DPO is the first local evidence of a meaningful over-refusal reduction after SFT, but it trades away a substantial part of unknown refusal. Sequential KTO preserves more of the SFT abstention behavior, but only modestly improves over-refusal. This is bounded local Amendment A evidence, not v0.3 headline/protocol evidence.
+
 - Local KTO headline seed 1 completed and was audited.
   - Run id: `kto__4b__headline__seed1`.
   - Adapter: `synaptic-tuner/toolset-training-artifacts/runs/local/4b/kto__4b__headline__seed1/20260613_151337_logging_patch/final_model`.
@@ -249,6 +261,7 @@ We are proving the Phase 1 local lane before committing more GPU time. The goal 
   - For actual local container create/pull/run operations, escalated Docker commands worked. Do not modify `C:\Users\Joseph\.docker` as a workaround from Codex.
   - Unsloth image default entrypoint may chmod the mounted repo and fail on `.tmp/pytest-codex*`; for local eval wrapper runs use `--entrypoint python3`.
   - Do not pass the full repo `.env` into local eval containers unless that exact run truly needs secrets. The grouped-SFT broader OOD eval used public/local assets and ran successfully with only `HF_HOME` / `HUGGINGFACE_HUB_CACHE` env vars.
+  - When a live eval config uses a Windows absolute `model_name` for a local merged base, the container wrapper must translate `model_name` as well as `arms[].adapter`; otherwise vLLM receives an unmounted Windows path inside Linux.
   - Bind-mode local training artifacts can leave `training_latest.jsonl` as a Windows reparse point that `Get-Content` cannot read. Use the concrete timestamped `logs/training_*.jsonl` file for verification and run records.
 
 - Local eval scoring/generation gotchas fixed.
@@ -277,7 +290,7 @@ We are proving the Phase 1 local lane before committing more GPU time. The goal 
 1. Amendment A / v0.4 is signed as a prospective extension for mixed-stage `SFT -> DPO` and `SFT -> KTO` (user approval, 2026-06-14). Keep it separate from the locked v0.3 headline matrix.
 2. The grouped-split SFT LoRA adapter is already merged locally; use the `merged-16bit` path above for sequential DPO/KTO runs, then train fresh downstream DPO/KTO LoRA adapters with `model.name` pointing at that merged SFT model path.
 3. Treat previous local DPO and KTO seed 1 as completed pre-split-fix bounded comparators. The plain-language read remains: SFT learned abstention but over-refused badly; DPO-from-base and KTO-from-base stayed base-like and did not learn abstention on those local evidence surfaces.
-4. Full sequential DPO/KTO runs are now mechanically de-risked by max-2 smokes. Next launch should be a deliberate full local Amendment A cell, not a v0.3 matrix expansion.
+4. Full sequential DPO/KTO runs and the first broader OOD sequential eval are complete locally. Next Amendment A evidence should compare against full SelfAware or another deliberately scoped local surface, not a v0.3 matrix expansion.
 5. Add a later sensitivity axis for epochs and LoRA rank/alpha; this should be protocol-scoped rather than silently changing the current headline comparator.
 6. Before cloud KTO smoke, commit/push the Synaptic Tuner KTO logging fix to the exact cloud commit, then clear cloud launcher and dataset prerequisites.
 7. Before any long local run, prefer the bare Docker/host GPU checks that are known to work from Codex:
