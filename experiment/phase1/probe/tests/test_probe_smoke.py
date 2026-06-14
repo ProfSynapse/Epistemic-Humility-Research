@@ -277,6 +277,124 @@ def test_vllm_render_fails_actionably_when_no_surface_disables_thinking():
         backend._render_prompt("Who wrote Paradise Lost?")
 
 
+# --- Step-1 SIGNED-RENDER REGRESSION (hidden-state tier render-helper extract) ---
+#
+# backends.py is part of the SIGNED Phase-1 pipeline. The hidden-state probing
+# tier (Step 1) extracted render_probe_prompt() as a shared engine-agnostic helper
+# and rewired VLLMBackend._render_prompt to a thin memoizing wrapper over it. These
+# regressions LOCK the byte-identical behavior: a future edit that drifts the
+# rendered bytes, the discovery/fallback order, or the per-instance memoization
+# must break here. They run GPU-free with the same tokenizer stubs above.
+
+from backends import render_probe_prompt  # noqa: E402
+
+
+class _CountingDirectTokenizer:
+    """Thinking-off via the DIRECT enable_thinking kwarg; records every call.
+
+    Mirrors the live Qwen3 thinking-off render: the direct surface succeeds and
+    yields the empty thinking-off marker, so discovery resolves to `direct` on
+    the first try.
+    """
+
+    def __init__(self):
+        self.calls = []
+
+    def apply_chat_template(self, messages, **kwargs):
+        self.calls.append(kwargs)
+        if kwargs.get("enable_thinking") is True:
+            return "<|im_start|>assistant\nTHINKING-ON\n"
+        if kwargs.get("enable_thinking") is False:
+            return "<|im_start|>assistant\n<think>\n\n</think>\n\n"
+        # chat_template_kwargs fallback surface (should not be reached here).
+        return "<|im_start|>assistant\n<think>\n\n</think>\n\n"
+
+
+def test_render_helper_byte_identical_to_vllm_wrapper_thinking_off():
+    """The shared helper and VLLMBackend's wrapper render the SAME bytes (off)."""
+    helper_rendered, resolved_mode = render_probe_prompt(
+        _CountingDirectTokenizer(), "answer concisely",
+        "Who wrote Paradise Lost?", enable_thinking=False)
+    backend = _vllm_backend_with_tokenizer(_CountingDirectTokenizer())
+    wrapper_rendered = backend._render_prompt("Who wrote Paradise Lost?")
+
+    assert helper_rendered == wrapper_rendered
+    assert resolved_mode == "direct"  # direct surface wins first
+
+
+def test_render_helper_byte_identical_thinking_on():
+    """enable_thinking=True keeps the legacy direct path, no self-check (parity)."""
+    helper_rendered, resolved_mode = render_probe_prompt(
+        _CountingDirectTokenizer(), "answer concisely",
+        "Who wrote Paradise Lost?", enable_thinking=True)
+    assert helper_rendered == "<|im_start|>assistant\nTHINKING-ON\n"
+    assert resolved_mode is None  # thinking-on skips discovery + self-check
+
+
+def test_render_helper_fallback_order_direct_then_chat_template_kwargs():
+    """Discovery ORDER is load-bearing: direct is tried before chat_template_kwargs."""
+    tokenizer = _DirectRejectingTokenizer()
+    rendered, resolved_mode = render_probe_prompt(
+        tokenizer, "answer concisely", "Who wrote Paradise Lost?",
+        enable_thinking=False)
+    assert resolved_mode == "chat_template_kwargs"  # direct rejected, fell back
+    assert rendered.endswith("</think>\n\n")
+    # direct was attempted FIRST (it raised TypeError), then chat_template_kwargs.
+    assert tokenizer.calls == [
+        {"tokenize": False, "add_generation_prompt": True, "enable_thinking": False},
+        {"tokenize": False, "add_generation_prompt": True,
+         "chat_template_kwargs": {"enable_thinking": False}},
+    ]
+
+
+def test_render_helper_self_check_fires_on_populated_think_block():
+    """The thinking-tag self-check moved into the helper VERBATIM; it still fires."""
+    class _LeakyTokenizer:
+        def apply_chat_template(self, messages, **kwargs):
+            # Both surfaces leak a populated think block -> no clean render.
+            return "<|im_start|>assistant\n<think>\nprivate\n</think>\n"
+
+    with pytest.raises(RuntimeError, match="Unable to render.*thinking disabled"):
+        render_probe_prompt(_LeakyTokenizer(), "answer concisely",
+                            "Who wrote Paradise Lost?", enable_thinking=False)
+
+
+def test_render_helper_passed_mode_skips_rediscovery():
+    """Passing a resolved mode renders via that surface with no discovery loop."""
+    tokenizer = _CountingDirectTokenizer()
+    rendered, resolved_mode = render_probe_prompt(
+        tokenizer, "answer concisely", "Who wrote Paradise Lost?",
+        enable_thinking=False, mode="direct")
+    assert resolved_mode == "direct"
+    assert rendered.endswith("</think>\n\n")
+    # Exactly ONE render call (no fallback probing) since mode was supplied.
+    assert len(tokenizer.calls) == 1
+
+
+def test_vllm_wrapper_memoizes_resolved_mode_across_calls():
+    """VLLMBackend caches the resolved mode: 2nd render does NOT re-discover.
+
+    The memoization is a path-dependent observable contract the signed suite
+    already asserts on; this locks that the wrapper still caches after the
+    helper extraction (single render call on the second invocation).
+    """
+    tokenizer = _DirectRejectingTokenizer()
+    backend = _vllm_backend_with_tokenizer(tokenizer)
+
+    backend._render_prompt("Who wrote Paradise Lost?")
+    calls_after_first = len(tokenizer.calls)
+    assert backend._chat_template_mode == "chat_template_kwargs"
+
+    backend._render_prompt("What is the capital of France?")
+    # Second render used the cached mode: exactly ONE additional call, no
+    # re-probing of the rejected `direct` surface.
+    assert len(tokenizer.calls) == calls_after_first + 1
+    assert tokenizer.calls[-1] == {
+        "tokenize": False, "add_generation_prompt": True,
+        "chat_template_kwargs": {"enable_thinking": False},
+    }
+
+
 # --- end-to-end probe ---
 
 def test_probe_runs_and_labels_all_bands(tmp_path, monkeypatch):
