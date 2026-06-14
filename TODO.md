@@ -25,9 +25,10 @@ We are proving the Phase 1 local lane before committing more GPU time. The goal 
 - WS-2 datasets rebuilt and audited.
   - Output dir: `experiment/phase1/data/qwen3-4b-instruct/`
   - Non-discard rows: 15,995
-  - Train/dev split is clean by `probe_pool_row_key`.
+  - Train/dev split is clean by `probe_pool_row_key` and by normalized question text.
   - Important fix: TriviaQA `question_id` is not unique, so audits must use `*_question_keys`, not bare `*_question_ids`.
-  - Follow-up audit on 2026-06-14 found 188 normalized prompt texts present in both train and dev under different source row keys. All 188 overlaps had the same known/unknown label across sides. This does not violate the current row-key split invariant and the completed local training recipes consumed only `*_train.jsonl`, but it means the generated dev split is not text-disjoint. Before any headline/protocol run that relies on dev/early-stopping, decide whether to amend the builder to group/split by normalized question text and republish regenerated datasets.
+  - Follow-up audit on 2026-06-14 found 188 normalized prompt texts present in both train and dev under different source row keys. This is now fixed: the builder groups the dev split by `norm_question(question)`, the regenerated `questions_frozen.json` records `dev_split_group_key`, and the re-audit found 0 normalized prompt overlaps.
+  - Regenerated Qwen3 4B dataset hashes after the split fix: `sft_train.jsonl` `714577a8ce6d32ace422df519690b0a96adde3985f36cab0a24404e0a92d558b`; `dpo_train.jsonl` `39e2ba8c9bc1b41ef1b7e797f80637c276ba150c97055962bbc4e2b550bd17b5`; `kto_congruence_train.jsonl` and `kto_correctness_safe_train.jsonl` `9cb291ee45c8dd5893b150abe033386127d0eedce9fa16faa2309e31a1a70e15`; `questions_frozen.json` `2d29e79f0748c076e5768f38210dd4da2548725cb16e54d125a6b556b90bdd64`.
   - Public HF dataset repo: https://huggingface.co/datasets/professorsynapse/epistemic-humility-phase1
   - Qwen3 4B Phase 1 train/dev JSONLs are public there: `sft_train.jsonl`, `sft_dev.jsonl`, `dpo_train.jsonl`, `dpo_dev.jsonl`, `kto_congruence_train.jsonl`, `kto_congruence_dev.jsonl`, `kto_correctness_safe_train.jsonl`, and `kto_correctness_safe_dev.jsonl`.
 
@@ -204,19 +205,19 @@ We are proving the Phase 1 local lane before committing more GPU time. The goal 
   - Qwen3 prompt rendering with thinking disabled is insufficient; vLLM `SamplingParams` now receives stop strings `<think>` and `</think>` when `generation.enable_thinking: false`, preserving any configured `generation.stop` values. The generated-thinking guard remains a backstop; do not strip contaminated outputs.
   - Non-blocking warnings seen during local diagnostics: Triton routing module warning, AOT cache save/HF cache metadata permission warnings, and NCCL `destroy_process_group` shutdown warning.
 
-- Dataset audit caveat: row-key disjointness is not the same as prompt-text disjointness.
-  - `questions_frozen.json` train/dev keys are disjoint and all generated files are byte-reproducible from the frozen probe/config/bank.
-  - A stricter 2026-06-14 audit found 188 normalized question texts appearing on both train and dev sides because TriviaQA carries duplicate source rows with identical prompts under different row keys.
-  - The completed local SFT/DPO/KTO runs used only the train JSONLs and did not pass `--split-dataset`, so this does not explain the current local SelfAware/OOD findings.
-  - Before headline/protocol training that depends on dev/early-stopping, either explicitly accept row-key split semantics or amend/rebuild the dataset with normalized-question grouping so dev is text-disjoint.
+- Dataset audit caveat fixed: row-key disjointness is not the same as prompt-text disjointness.
+  - `questions_frozen.json` train/dev keys remain disjoint, and the builder now also keeps duplicate normalized prompts on the same side.
+  - A stricter 2026-06-14 audit initially found 188 normalized question texts appearing on both train and dev sides because TriviaQA carries duplicate source rows with identical prompts under different row keys.
+  - The builder now splits grouped by `norm_question(question)`, records `dev_split_group_key`, and has regression coverage for this exact failure mode.
+  - Re-audit after rebuild: 0 row-key overlap, 0 normalized-question overlap, leakage guard passed, KTO labels balanced, no unknown-negative fallback, no `<think>` / `</think>` / `reasoning_content`, and byte-for-byte reproducibility against a fresh rebuild.
 
 - `Start-Process` may fail in Codex Desktop PowerShell due duplicate `Path` / `PATH`.
   - Reliable detached launcher is a `py -3.11 -c` wrapper around `subprocess.Popen`.
 
 ## Next Steps
 
-1. Do not run more long cells without explicit approval.
-2. Treat local SFT, DPO, and KTO seed 1 as completed bounded comparators. The plain-language read is: SFT learns abstention but over-refuses badly; DPO-from-base and KTO-from-base stay base-like and do not learn abstention on these local evidence surfaces.
+1. Rerun local SFT seed 1 on the regenerated grouped-split dataset, then re-run the bounded SelfAware/OOD checks before treating SFT as the comparator for mixed-stage work.
+2. Treat previous local SFT, DPO, and KTO seed 1 as completed pre-split-fix bounded comparators. The plain-language read was: SFT learned abstention but over-refused badly; DPO-from-base and KTO-from-base stayed base-like and did not learn abstention on those local evidence surfaces.
 3. Protocol Amendment A / v0.4 is now the natural next research step: deliberately implement and run `SFT -> DPO` and `SFT -> KTO` as mixed-stage cells to test whether SFT first teaches the behavior and preference training can then reduce over-refusal. Do not create runnable recipes, edit `matrix.yaml`, or launch mixed-stage runs as a silent matrix expansion.
 4. Before cloud KTO smoke, commit/push the Synaptic Tuner KTO logging fix to the exact cloud commit, then clear cloud launcher and dataset prerequisites.
 5. Before any long local run, prefer the bare Docker/host GPU checks that are known to work from Codex:

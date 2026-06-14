@@ -24,7 +24,8 @@ four load-bearing, pre-registered invariants (arch doc sections 3.2, 4.2, 4.3, 4
      if any phrasing matches none.
   4. DEV SPLIT - one held-out dev set (fixed fraction/seed) from the frozen set,
      format-matched per arm, excluded from every arm's train file, identical dev
-     questions across arms.
+     questions across arms, and grouped by normalized question text so duplicate
+     source rows cannot place the same prompt on both sides.
 
 Determinism: all randomness is seeded; builds reproduce from probe_results +
 config + abstention_bank. No live generation, no network, no hardcoded paths.
@@ -316,10 +317,14 @@ def _cap(records: list, cap, rng: random.Random) -> list:
 
 
 def split_dev(records: list, fraction: float, seed: int) -> tuple:
-    """Split a question list into (train, dev) deterministically by row key.
+    """Split a question list into (train, dev) by normalized question group.
 
     The dev questions are the SAME across arms (caller passes the same records
-    and seed), so early stopping is comparable.
+    and seed), so early stopping is comparable. Duplicate TriviaQA source rows
+    can share identical question text under different row keys; splitting those
+    independently leaks the same prompt into train and dev. Grouping by
+    norm_question(question) keeps identical prompts on the same side while the
+    budget remains source-row based.
 
     Raises DevSplitError if the split degenerates to an empty side: dev=0 (N too
     small or fraction too low to yield a held-out set for Gekhman early stopping)
@@ -327,21 +332,33 @@ def split_dev(records: list, fraction: float, seed: int) -> tuple:
     silently produce an unusable arm, so it is a hard, explained abort.
     """
     ordered = sorted(records, key=record_key)
+    groups = {}
+    for rec in ordered:
+        groups.setdefault(norm_question(rec["question"]), []).append(rec)
+
+    ordered_groups = [groups[key] for key in sorted(groups)]
     rng = random.Random(seed)
-    rng.shuffle(ordered)
-    dev_count = int(round(len(ordered) * fraction))
-    dev = ordered[:dev_count]
-    train = ordered[dev_count:]
+    rng.shuffle(ordered_groups)
+
+    target_dev_count = int(round(len(ordered) * fraction))
+    dev = []
+    for group in ordered_groups:
+        if len(dev) >= target_dev_count:
+            break
+        dev.extend(group)
+
+    dev_keys = {record_key(r) for r in dev}
+    train = [r for r in ordered if record_key(r) not in dev_keys]
     if not dev:
         raise DevSplitError(
-            f"dev split is empty: {len(ordered)} question(s) x dev_fraction="
+            f"dev split is empty: {len(ordered)} source question(s) x dev_fraction="
             f"{fraction} rounds to 0 dev examples. Early stopping needs a "
             f"non-empty dev set; raise dev_fraction or supply more questions."
         )
     if not train:
         raise DevSplitError(
             f"train split is empty: dev_fraction={fraction} consumed all "
-            f"{len(ordered)} question(s). Lower dev_fraction below 1.0."
+            f"{len(ordered)} source question(s). Lower dev_fraction below 1.0."
         )
     return train, dev
 
@@ -612,6 +629,7 @@ def _write_frozen(frozen, train_recs, dev_recs, config, out_dir) -> Path:
     payload = {
         "seed": config["seed"],
         "question_key_field": "probe_pool_row_key when present, else question_id",
+        "dev_split_group_key": "norm_question(question)",
         "budget_distinct_questions": len(frozen["known"]) + len(frozen["unknown"]),
         "known_question_keys": [record_key(r) for r in frozen["known"]],
         "unknown_question_keys": [record_key(r) for r in frozen["unknown"]],
@@ -645,7 +663,10 @@ def _assemble_manifest(
         "seed": config["seed"],
         "leakage_guard": leakage_proof,
         "budget": {
-            "definition": "distinct source questions (frozen K/U set, shared seed)",
+            "definition": (
+                "distinct source questions (frozen K/U set, shared seed); "
+                "dev split grouped by normalized question text"
+            ),
             "distinct_questions": len(frozen["known"]) + len(frozen["unknown"]),
             "known_questions": len(frozen["known"]),
             "unknown_questions": len(frozen["unknown"]),

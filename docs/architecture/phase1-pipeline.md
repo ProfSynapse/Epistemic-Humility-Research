@@ -384,9 +384,11 @@ correctness-safe it is imbalanced and uses weights, matching the recipe.
 
 The builder carves a held-out dev split (fixed fraction, fixed seed) from the
 SAME question set, format-matched per arm, for dev-loss early stopping. The dev
-questions are excluded from the train files of all arms (same held-out set
-across arms, so early-stopping is comparable). Dev is disjoint from the Cheng
-test set by construction (it is drawn from the train split).
+split is grouped by `norm_question(question)` so duplicate TriviaQA source rows
+with identical prompt text cannot land on both sides under different row keys.
+The dev questions are excluded from the train files of all arms (same held-out
+set across arms, so early-stopping is comparable). Dev is disjoint from the
+Cheng test set by construction (it is drawn from the train split).
 
 **Per-arm dev row-count divergence (MB3, PR #1 review — confirmed intended).** The
 dev *question set* is identical across arms (the comparability invariant), but the
