@@ -220,6 +220,11 @@ skill:
   avoid Windows permission failures under `C:\Users\Joseph\.cache\huggingface`.
 - `.env` may contain `HF_TOKEN` while the current process environment does not.
   Load it process-locally or pass `--env-file .env`; never print token values.
+  For local eval containers that only use public/local assets, do not pass the
+  full repo `.env`; pass only narrow cache/env variables such as `HF_HOME` and
+  `HUGGINGFACE_HUB_CACHE`. The grouped-SFT broader OOD eval completed this way
+  after the full `.env` launch was correctly rejected as unnecessary secret
+  exposure.
 - Windows default text encoding broke the TriviaQA fetch before the script used
   explicit UTF-8 writes. Keep UTF-8 mode/path handling in mind for fetch retries.
 - Windows default text encoding also broke Phase 1 eval gold/OOD loaders when
@@ -423,6 +428,29 @@ skill:
   refusal-rate/over-refusal behavior, not answer correctness. Interpretation:
   SFT's abstention signal generalized beyond SelfAware to KUQ, and its
   over-refusal failure generalized across known-only OOD pressure sets.
+- Grouped-split SFT comparator evals completed against the regenerated SFT
+  adapter
+  `synaptic-tuner/toolset-training-artifacts/runs/local/4b/sft__4b__headline__seed1/20260614_053221/final_model`.
+  Full SelfAware grouped-SFT-only eval exited 0 with `config_sha=327c92c91428e9d4`
+  and no `<think>` / `</think>` matches. Summary: truthful 37.99,
+  refusal_recall 83.82, answer_on_unknown 16.18, over_refusal 64.18,
+  correct_on_known 49.58. Broader OOD grouped-SFT-only eval
+  `eh-sft-grouped-broader-ood-local-4b` exited 0 with
+  `config_sha=57cb7a1c6fe5e601` and no `<think>` / `</think>` matches. KUQ:
+  truthful 51.82, refusal_recall 97.92, answer_on_unknown 2.08, over_refusal
+  82.29. Known-only pressure: over_refusal 78.63 on CoCoNot, 80.47 on
+  TruthfulQA, and 91.02 on PopQA. Interpretation: the grouped split did not
+  erase the core SFT pattern; SFT still strongly learns abstention on unknowns,
+  but over-refuses badly on known questions. Treat this as bounded local
+  motivation for Amendment A, not headline/protocol evidence.
+- Sequential preference-training plan: for `SFT -> DPO` / `SFT -> KTO`, merge
+  the grouped SFT LoRA adapter into a standalone local `merged-16bit` model
+  first, then train fresh downstream DPO/KTO LoRA adapters with `model.name`
+  pointing at that merged SFT model path. DPO/KTO reference models should load
+  from the same merged SFT path so the preference objective regularizes against
+  the SFT starting policy, matching the sequential question. Do not continue
+  the same adapter in-place unless explicitly testing adapter-continuation as a
+  separate design.
 - Local KTO seed 1 completed after Docker recovery. Run record:
   `experiment/phase1/run_records/kto__4b__headline__seed1.json`. Artifact root:
   `synaptic-tuner/toolset-training-artifacts/runs/local/4b/kto__4b__headline__seed1/20260613_151337_logging_patch`.
