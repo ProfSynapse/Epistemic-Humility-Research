@@ -119,6 +119,90 @@ def assert_no_generated_thinking_batch(
         )
 
 
+# Discovery order for the Qwen3 thinking-off render surface. We render text with
+# the tokenizer and call generate() on raw prompts, so prefer the direct HF/Jinja
+# kwarg; vLLM's chat_template_kwargs is the compatibility fallback. The ORDER is
+# load-bearing (direct first) and must not change.
+_RENDER_MODES = ("direct", "chat_template_kwargs")
+
+
+def _apply_chat_template(tokenizer, messages: list[dict[str, str]], mode: str,
+                         enable_thinking: bool) -> str:
+    """Render one Qwen3 chat prompt via the requested thinking-off surface.
+
+    Engine-agnostic leaf: takes any tokenizer exposing apply_chat_template and
+    threads enable_thinking through whichever surface `mode` selects. Raises
+    ValueError on an unknown mode (a programming error, distinct from the
+    TypeError a tokenizer raises when it rejects a kwarg surface).
+    """
+    template_kwargs = {
+        "tokenize": False,
+        "add_generation_prompt": True,
+    }
+    if mode == "chat_template_kwargs":
+        template_kwargs["chat_template_kwargs"] = {"enable_thinking": enable_thinking}
+    elif mode == "direct":
+        template_kwargs["enable_thinking"] = enable_thinking
+    else:
+        raise ValueError(f"unknown chat template mode: {mode!r}")
+    return tokenizer.apply_chat_template(messages, **template_kwargs)
+
+
+def render_probe_prompt(
+    tokenizer, system_prompt: str, question: str, *, enable_thinking: bool,
+    mode: str | None = None,
+) -> tuple[str, str | None]:
+    """Render one probe-shaped Qwen3 prompt with the thinking-off self-check.
+
+    Engine-agnostic shared render+verify path (architect Decision A): the
+    tokenizer is injected, so both VLLMBackend and the hidden-state harness
+    render byte-identically and cannot drift in thinking-tag handling. The
+    self-check (`assert_no_think_scaffolding`) and the direct->chat_template_kwargs
+    discovery/fallback move here VERBATIM from the former VLLMBackend method.
+
+    Returns (rendered_prompt, resolved_mode). `resolved_mode` is the surface that
+    produced a self-check-clean prompt (None when enable_thinking is True, which
+    skips discovery and the self-check, matching prior behavior). A caller may
+    pass a previously-resolved `mode` to skip rediscovery (the VLLMBackend
+    memoization); passing None runs the full deterministic discovery each call
+    (the harness path, batch=1, where caching buys nothing).
+    """
+    messages = [
+        {"role": "system", "content": system_prompt},
+        {"role": "user", "content": question},
+    ]
+    # enable_thinking=True keeps the legacy direct path with no self-check: the
+    # self-check is a thinking-OFF guard and would reject a thinking-on prompt.
+    if enable_thinking:
+        return _apply_chat_template(tokenizer, messages, "direct", enable_thinking), None
+    if mode is not None:
+        return _apply_chat_template(tokenizer, messages, mode, enable_thinking), mode
+
+    failures: list[str] = []
+    for candidate in _RENDER_MODES:
+        try:
+            rendered = _apply_chat_template(
+                tokenizer, messages, candidate, enable_thinking)
+            assert_no_think_scaffolding(rendered)
+        except TypeError as exc:
+            failures.append(f"{candidate}: tokenizer rejected kwargs ({exc})")
+            continue
+        except RuntimeError as exc:
+            failures.append(f"{candidate}: {exc}")
+            continue
+        return rendered, candidate
+
+    detail = "; ".join(failures) if failures else "no render attempts made"
+    raise RuntimeError(
+        "Unable to render a Qwen3 prompt with thinking disabled. Tried both "
+        "vLLM chat_template_kwargs={'enable_thinking': False} and direct "
+        "enable_thinking=False tokenizer surfaces, but neither produced a "
+        f"self-check-clean prompt. Details: {detail}. Install a tokenizer/"
+        "vLLM version whose Qwen3 chat template supports thinking-off, or "
+        "update the configured model/tokenizer to a non-thinking variant."
+    )
+
+
 class VLLMBackend:
     """Real GPU backend. vLLM imported lazily so this file loads without it."""
 
@@ -144,57 +228,23 @@ class VLLMBackend:
         # ignores enable_thinking, before any question is probed.
         self._self_check_thinking_off()
 
-    def _apply_chat_template(self, messages: list[dict[str, str]], mode: str) -> str:
-        template_kwargs = {
-            "tokenize": False,
-            "add_generation_prompt": True,
-        }
-        if mode == "chat_template_kwargs":
-            template_kwargs["chat_template_kwargs"] = {
-                "enable_thinking": self.enable_thinking
-            }
-        elif mode == "direct":
-            template_kwargs["enable_thinking"] = self.enable_thinking
-        else:
-            raise ValueError(f"unknown chat template mode: {mode!r}")
-        return self.tokenizer.apply_chat_template(messages, **template_kwargs)
-
     def _render_prompt(self, question: str) -> str:
-        messages = [
-            {"role": "system", "content": self.system_prompt},
-            {"role": "user", "content": question},
-        ]
-        if self.enable_thinking:
-            return self._apply_chat_template(messages, "direct")
-        if self._chat_template_mode is not None:
-            return self._apply_chat_template(messages, self._chat_template_mode)
+        """Render one prompt, memoizing the resolved thinking-off surface.
 
-        failures: list[str] = []
-        # We render with the tokenizer and call LLM.generate() on raw prompts,
-        # so prefer the direct HF/Jinja kwarg. vLLM's chat_template_kwargs is
-        # still tried as a compatibility fallback.
-        for mode in ("direct", "chat_template_kwargs"):
-            try:
-                rendered = self._apply_chat_template(messages, mode)
-                assert_no_think_scaffolding(rendered)
-            except TypeError as exc:
-                failures.append(f"{mode}: tokenizer rejected kwargs ({exc})")
-                continue
-            except RuntimeError as exc:
-                failures.append(f"{mode}: {exc}")
-                continue
-            self._chat_template_mode = mode
-            return rendered
-
-        detail = "; ".join(failures) if failures else "no render attempts made"
-        raise RuntimeError(
-            "Unable to render a Qwen3 prompt with thinking disabled. Tried both "
-            "vLLM chat_template_kwargs={'enable_thinking': False} and direct "
-            "enable_thinking=False tokenizer surfaces, but neither produced a "
-            f"self-check-clean prompt. Details: {detail}. Install a tokenizer/"
-            "vLLM version whose Qwen3 chat template supports thinking-off, or "
-            "update the configured model/tokenizer to a non-thinking variant."
+        Thin per-instance caching wrapper over the shared `render_probe_prompt`
+        helper: the discovery is deterministic, so caching the winning mode is a
+        pure micro-optimization, but it preserves this backend's observable
+        single-call render surface. The shared helper owns the actual render +
+        self-check so VLLMBackend and the hidden-state harness cannot drift.
+        """
+        rendered, resolved_mode = render_probe_prompt(
+            self.tokenizer, self.system_prompt, question,
+            enable_thinking=self.enable_thinking,
+            mode=self._chat_template_mode,
         )
+        if resolved_mode is not None:
+            self._chat_template_mode = resolved_mode
+        return rendered
 
     def _self_check_thinking_off(self) -> None:
         if self.enable_thinking:
