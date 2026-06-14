@@ -50,9 +50,28 @@ def _stub_config() -> dict:
                       "n_known": 2, "n_unknown": 2, "selection_seed": 20260614},
         "output": {"hidden_states_subdir": "hidden_states",
                    "manifest_filename": "manifest.json", "rows_filename": "rows.jsonl"},
-        "provenance": {"aligned_run_record_id": None,
-                       "aligned_probe_config_sha": None, "source_split": "fixture"},
+        # B1 fix: the config key build_manifest/collect_static_provenance reads is
+        # `manifest_provenance` (NOT the legacy `provenance`). Both static fields
+        # are non-None so a finalized stub run passes the require_populated gate;
+        # `aligned_run_record_id` MUST be non-None for finalize (a real run links
+        # the run record that trained the adapter). _under_populated_config() below
+        # nulls it to drive the NEGATIVE finalize-gate test.
+        "manifest_provenance": {"aligned_run_record_id": "stub-run-record",
+                                "source_split": "fixture"},
     }
+
+
+def _under_populated_config() -> dict:
+    """Stub config whose manifest_provenance leaves a Decision-D field None.
+
+    Drives the NEGATIVE finalize-gate test: a finalized status=ok run over this
+    config must RAISE under validate_manifest(require_populated=True) rather than
+    silently shipping verified=True over a None provenance field (the B2 bug).
+    """
+    config = _stub_config()
+    config["manifest_provenance"] = {"aligned_run_record_id": None,
+                                     "source_split": "fixture"}
+    return config
 
 
 # --- one coder smoke check: the GPU-free stub pipeline runs end to end ---
@@ -62,6 +81,13 @@ def test_stub_pipeline_runs_gpu_free(tmp_path, monkeypatch):
 
     This is the coder's "does the happy path hold without a GPU" gate; the
     test-engineer expands the focused unit coverage (Step 7) around it.
+
+    B2 fix: `verified is True` is now asserted over a manifest that PASSED the
+    require_populated finalize gate (run_extraction:551). Previously this asserted
+    verified=True over a None-provenance manifest (the gate was dead code), so the
+    test encoded the bug. The extra assertions below pin that the finalized
+    manifest actually carries its Decision-D provenance (static + backend) non-None
+    — i.e. verified=True is earned, not stamped over missing fields.
     """
     monkeypatch.setattr(hsp, "PROBE_DIR", PROBE_DIR)
     config = _stub_config()
@@ -75,9 +101,16 @@ def test_stub_pipeline_runs_gpu_free(tmp_path, monkeypatch):
 
     import json
     manifest = json.loads(manifest_path.read_text())
-    schema.validate_manifest(manifest)
+    # The persisted manifest survives the strict finalize gate, not just the
+    # lenient default validate — proving the populated path, not the dead one.
+    schema.validate_manifest(manifest, require_populated=True)
     assert manifest["status"] == schema.STATUS_OK
     assert manifest["verified"] is True
+    # Decision-D provenance is genuinely populated (config-sourced + backend-sourced).
+    assert manifest["aligned_run_record_id"] == "stub-run-record"
+    assert manifest["source_split"] == "fixture"
+    assert manifest["base_model_id"] == "stub/base-model"
+    assert manifest["transformers_version"] == "stub-transformers"
     rows = [json.loads(line) for line in (out_dir / "rows.jsonl").read_text().splitlines()]
     assert len(rows) == 4
     assert list((out_dir).glob("*_delta.safetensors"))
@@ -129,6 +162,15 @@ def test_gpu_manifest_adapter_hash_matches_loaded_adapter():
 # ===========================================================================
 
 import json  # noqa: E402
+
+# numpy + safetensors are HARD test requirements (M4): the persistence-contract
+# tests below (the 2-D shape footgun, the safetensors byte round-trip) assert the
+# on-disk contract and MUST run — they are NOT pytest.importorskip-gated. A host
+# missing them is a misconfigured env (requirements-hidden-state.txt declares them
+# mandatory), so these imports error at collection rather than letting the
+# round-trip silently vanish from the suite.
+import numpy as np  # noqa: E402
+import safetensors.numpy as safetensors_numpy  # noqa: E402
 
 # ---------------------------------------------------------------------------
 # Fixtures / builders for the schema-level units (no model, no stub needed)
@@ -348,7 +390,6 @@ def test_hidden_state_shape_rejects_2d_vector_via_numpy_shape():
     slipping in is caught as a shape error rather than silently passing because
     its first axis happens to equal hidden_dim.
     """
-    np = pytest.importorskip("numpy")
     vecs = _layer_vectors(num_hidden_layers=2, hidden_dim=4)
     # Replace one layer with a 2-D array whose first axis == hidden_dim (4).
     vecs[1] = np.zeros((4, 4))
@@ -546,14 +587,15 @@ def test_validate_safetensors_metadata_rejects_nonstring_value():
 
 
 def test_safetensors_round_trip_via_persist(tmp_path):
-    """If numpy+safetensors are present, a persisted shard round-trips cleanly.
+    """A persisted shard round-trips cleanly (numpy+safetensors hard-required, M4).
 
     Exercises _persist_row_tensors (the stub-reachable persistence path): write
     h_base/h_lora/delta shards, then load one back and confirm the layer keys,
     the values, and the string-only metadata survive the round-trip.
+
+    numpy + safetensors are HARD requirements (M4): this round-trip is no longer
+    importorskip-gated, so a CI env missing them errors here rather than skipping.
     """
-    pytest.importorskip("numpy")
-    safetensors_numpy = pytest.importorskip("safetensors.numpy")
     config = _stub_config()
     h_base = _layer_vectors(num_hidden_layers=2, hidden_dim=8)
     h_lora = {k: [v + 1.0 for v in vec] for k, vec in h_base.items()}
@@ -703,6 +745,71 @@ def test_parse_config_rejects_both_active_with_adapters_via_preflight(tmp_path):
 
 
 # ---------------------------------------------------------------------------
+# M2 — resolve_eval_arm_adapters BY-VALUE mirror resolution
+# (the PROD path: prod config sets eval_arms_source; this was green-by-omission)
+# ---------------------------------------------------------------------------
+
+
+def _write_eval_config(tmp_path, name_to_adapter: dict) -> str:
+    """Write a tiny eval-config fixture with an arms[] name->adapter mapping.
+
+    Returns the path RELATIVE to tmp_path (the test monkeypatches PROBE_DIR to
+    tmp_path, and resolve_eval_arm_adapters anchors eval_arms_source at PROBE_DIR).
+    """
+    import yaml
+    eval_cfg = {"arms": [{"name": n, "adapter": a}
+                         for n, a in name_to_adapter.items()]}
+    eval_path = tmp_path / "eval_smoke.yaml"
+    eval_path.write_text(yaml.safe_dump(eval_cfg))
+    return "eval_smoke.yaml"
+
+
+def test_resolve_eval_arm_adapters_backfills_active_arm_by_value(tmp_path, monkeypatch):
+    """The PROD mirror path: an active arm with adapter=None back-fills from the
+    eval config's name->adapter mapping (this is what the production config does
+    via eval_arms_source, and was previously exercised by NO test).
+    """
+    monkeypatch.setattr(hsp, "PROBE_DIR", tmp_path)
+    eval_source = _write_eval_config(tmp_path, {"sft": "/mirror/sft_adapter"})
+    config = _stub_config()
+    config["eval_arms_source"] = eval_source
+    config["arms"][1]["adapter"] = None  # active arm relies on the mirror
+
+    resolved = hsp.resolve_eval_arm_adapters(config, tmp_path / "unused.yaml")
+
+    active = next(a for a in resolved["arms"]
+                 if a["adapter_state"] == schema.ADAPTER_STATE_ACTIVE)
+    assert active["adapter"] == "/mirror/sft_adapter"  # filled BY VALUE from eval
+
+
+def test_resolve_eval_arm_adapters_explicit_overrides_mirror(tmp_path, monkeypatch):
+    """An explicit arms[].adapter takes precedence over the eval-config mirror."""
+    monkeypatch.setattr(hsp, "PROBE_DIR", tmp_path)
+    eval_source = _write_eval_config(tmp_path, {"sft": "/mirror/sft_adapter"})
+    config = _stub_config()
+    config["eval_arms_source"] = eval_source
+    config["arms"][1]["adapter"] = "/explicit/override"  # explicit wins
+
+    resolved = hsp.resolve_eval_arm_adapters(config, tmp_path / "unused.yaml")
+
+    active = next(a for a in resolved["arms"]
+                 if a["adapter_state"] == schema.ADAPTER_STATE_ACTIVE)
+    assert active["adapter"] == "/explicit/override"  # mirror did NOT clobber it
+
+
+def test_resolve_eval_arm_adapters_raises_when_active_unresolvable(tmp_path, monkeypatch):
+    """An active arm with no explicit adapter AND no eval-config mapping aborts."""
+    monkeypatch.setattr(hsp, "PROBE_DIR", tmp_path)
+    eval_source = _write_eval_config(tmp_path, {"other_arm": "/mirror/x"})
+    config = _stub_config()
+    config["eval_arms_source"] = eval_source
+    config["arms"][1]["adapter"] = None  # active arm "sft" not in the mapping
+
+    with pytest.raises(ValueError, match="no adapter path"):
+        hsp.resolve_eval_arm_adapters(config, tmp_path / "unused.yaml")
+
+
+# ---------------------------------------------------------------------------
 # End-to-end stub pipeline: select -> extract -> persist -> verify -> resume
 # ---------------------------------------------------------------------------
 
@@ -730,6 +837,53 @@ def test_run_extraction_marks_ok_and_verified(tmp_path, monkeypatch):
     assert manifest["tensor_shapes"] is not None
 
 
+def test_run_extraction_finalize_gate_raises_on_underpopulated_provenance(
+        tmp_path, monkeypatch):
+    """NEGATIVE finalize gate (B2): an under-populated manifest RAISES at finalize.
+
+    Drives a full run whose config nulls a Decision-D field (aligned_run_record_id).
+    The rows + tensors get written, but the require_populated gate at
+    run_extraction:551 must reject the finalize and re-raise rather than ship
+    verified=True over a None field. This is the regression that the original
+    line-80 smoke could NOT catch (the gate was dead code).
+    """
+    monkeypatch.setattr(hsp, "PROBE_DIR", PROBE_DIR)
+    config = _under_populated_config()
+    cfg_sha = schema.config_sha(config)
+    slice_rows = hsp.select_matched_slice(config)
+    backend = hsp.StubExtractionBackend(num_hidden_layers=2, hidden_dim=8)
+    out_dir = tmp_path / "out"
+
+    with pytest.raises(ValueError, match="aligned_run_record_id"):
+        hsp.run_extraction(config, cfg_sha, backend, slice_rows, out_dir)
+
+    # The gate fired at FINALIZE (after extraction), so no verified manifest was
+    # shipped: any manifest on disk is the pre-finalize launched/ok-but-rejected
+    # write, never a status=ok+verified=True artifact over None provenance.
+    manifest_path = out_dir / config["output"]["manifest_filename"]
+    if manifest_path.exists():
+        manifest = json.loads(manifest_path.read_text())
+        assert not (manifest.get("status") == schema.STATUS_OK
+                    and manifest.get("verified") is True)
+
+
+def test_run_extraction_finalize_gate_passes_on_full_provenance(tmp_path, monkeypatch):
+    """POSITIVE finalize gate: a fully-populated run survives require_populated=True.
+
+    The companion to the negative test: with every Decision-D field non-None the
+    finalize gate passes, the persisted manifest itself re-validates under the
+    STRICT gate, and verified=True is earned over populated provenance.
+    """
+    _c, _s, _r, _b, out_dir, manifest_path = _run_stub_extraction(tmp_path, monkeypatch)
+    manifest = json.loads(manifest_path.read_text())
+    # The on-disk manifest passes the strict gate, not merely the lenient default.
+    schema.validate_manifest(manifest, require_populated=True)
+    assert manifest["status"] == schema.STATUS_OK
+    assert manifest["verified"] is True
+    assert manifest["aligned_run_record_id"] is not None
+    assert manifest["source_split"] is not None
+
+
 def test_run_extraction_writes_one_row_per_selected_key(tmp_path, monkeypatch):
     _c, _s, slice_rows, _b, out_dir, _m = _run_stub_extraction(tmp_path, monkeypatch)
     rows = [json.loads(l) for l in (out_dir / "rows.jsonl").read_text().splitlines()]
@@ -744,6 +898,29 @@ def test_run_extraction_persists_all_three_tensor_roles(tmp_path, monkeypatch):
     assert list(out_dir.glob("*__h_base.safetensors"))
     assert list(out_dir.glob("*__h_lora.safetensors"))
     assert list(out_dir.glob("*__delta.safetensors"))
+
+
+def test_run_extraction_persist_delta_false_writes_no_delta_shard(tmp_path, monkeypatch):
+    """M3: persist_delta=False persists only h_base/h_lora, NO delta shard.
+
+    Every other config uses persist_delta=True; this is the previously-untested
+    branch where _extract_rows passes delta=None and _persist_row_tensors skips
+    the delta role. h_base/h_lora must still be written and the run still ok.
+    """
+    monkeypatch.setattr(hsp, "PROBE_DIR", PROBE_DIR)
+    config = _stub_config()
+    config["extraction"]["persist_delta"] = False
+    cfg_sha = schema.config_sha(config)
+    slice_rows = hsp.select_matched_slice(config)
+    backend = hsp.StubExtractionBackend(num_hidden_layers=2, hidden_dim=8)
+    out_dir = tmp_path / "out"
+    manifest_path = hsp.run_extraction(config, cfg_sha, backend, slice_rows, out_dir)
+
+    assert list(out_dir.glob("*__h_base.safetensors"))
+    assert list(out_dir.glob("*__h_lora.safetensors"))
+    assert not list(out_dir.glob("*__delta.safetensors"))  # delta suppressed
+    manifest = json.loads(manifest_path.read_text())
+    assert manifest["status"] == schema.STATUS_OK
 
 
 def test_run_extraction_row_stamps_prompt_hash_and_cfg_sha(tmp_path, monkeypatch):

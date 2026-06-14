@@ -410,6 +410,10 @@ def validate_manifest(manifest: dict, *, require_populated: bool = False) -> Non
 # deferred-merged path never populates a merged manifest).
 _FINALIZE_REQUIRED_NON_NULL = frozenset(REQUIRED_MANIFEST_FIELDS - {
     "tensor_shapes",  # validated separately (must be populated when status ok)
+    # layer_list is null by design when ALL layers are persisted (the common
+    # case); null here is an intentional "all layers" sentinel, not missing
+    # provenance, so it is exempt from the non-null finalize requirement.
+    "layer_list",
 })
 
 
