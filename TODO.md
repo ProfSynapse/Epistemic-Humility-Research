@@ -165,15 +165,17 @@ We are proving the Phase 1 local lane before committing more GPU time. The goal 
     - Concrete log: `.../logs/training_20260614_115056.jsonl`.
     - Final step 1,800 / 1,800, final loss 0.07663947408947731, train runtime 3,584.511s, peak reserved VRAM 6.902 GB, OOM risk low.
     - Run record: `experiment/phase1/run_records/sft_dpo__4b__amendment_a__seed1.json`.
-  - `SFT -> KTO` full local run launched from the same merged SFT model.
+  - `SFT -> KTO` full local run completed successfully from the same merged SFT model.
     - Run id: `sft_kto__4b__amendment_a__seed1`.
     - Host PID: `24564`.
     - Container: `elated_shaw`.
     - Artifact root: `synaptic-tuner/toolset-training-artifacts/runs/local/4b/sft_kto__4b__amendment_a__seed1/20260614_085358`.
+    - Final adapter: `.../final_model`.
     - Concrete log: `.../logs/training_20260614_125521.jsonl`.
-    - Early checks passed: balanced KTO data 14,395 desirable / 14,395 undesirable, merged SFT model load, tokenizer load, fresh LoRA application, trainer preprocessing, and first optimizer steps. Step 25 / 3,599 had OOM risk low and peak reserved VRAM 4.387 GB.
+    - Final step 3,599 / 3,599, final loss 0.2568387638515617, train runtime 28,753.901s, peak reserved VRAM 4.391 GB, OOM risk low.
+    - Data/training checks passed: balanced KTO data 14,395 desirable / 14,395 undesirable, merged SFT model load, tokenizer load, fresh LoRA application, trainer preprocessing, full optimizer schedule, final adapter save, lineage/capacity artifacts, and host artifact write-out.
     - Run record: `experiment/phase1/run_records/sft_kto__4b__amendment_a__seed1.json`.
-  - Interpretation: `SFT -> DPO` is only training evidence until evaluated. The central behavioral test is still whether sequential DPO/KTO preserves SFT's high unknown refusal while reducing the over-refusal seen on known questions.
+  - Interpretation: `SFT -> DPO` and `SFT -> KTO` are only training evidence until evaluated. The central behavioral test is still whether sequential DPO/KTO preserves SFT's high unknown refusal while reducing the over-refusal seen on known questions.
 
 - Local KTO headline seed 1 completed and was audited.
   - Run id: `kto__4b__headline__seed1`.

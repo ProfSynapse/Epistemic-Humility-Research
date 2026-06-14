@@ -474,17 +474,20 @@ skill:
   It saved `final_model`, lineage, and capacity artifacts; concrete metrics log
   is `logs/training_20260614_115056.jsonl`; final step 1,800/1,800, final loss
   0.07663947408947731, train runtime 3,584.511s, peak reserved VRAM 6.902 GB,
-  OOM risk low. `SFT -> KTO` full run `sft_kto__4b__amendment_a__seed1` was
-  launched as host PID `24564`, container `elated_shaw`, artifact root
+  OOM risk low. `SFT -> KTO` full run `sft_kto__4b__amendment_a__seed1`
+  completed successfully from the same merged SFT model, host PID `24564`,
+  container `elated_shaw`, artifact root
   `synaptic-tuner/toolset-training-artifacts/runs/local/4b/sft_kto__4b__amendment_a__seed1/20260614_085358`;
-  concrete metrics log is `logs/training_20260614_125521.jsonl`;
-  early checks passed through balanced KTO data (14,395 desirable / 14,395
-  undesirable), merged SFT model load, tokenizer load, fresh LoRA application,
-  trainer preprocessing, and first optimizer steps. Step 25/3,599 had OOM risk
-  low and peak reserved VRAM 4.387 GB. These are training/provenance facts only;
-  the behavioral evidence gate is still eval of the sequential adapters against
-  SelfAware/KUQ/OOD to test whether sequential preference training preserves SFT
-  abstention while reducing known-question over-refusal.
+  concrete metrics log is `logs/training_20260614_125521.jsonl`; final step
+  3,599/3,599, final loss 0.2568387638515617, train runtime 28,753.901s, peak
+  reserved VRAM 4.391 GB, OOM risk low. Data/training checks passed through
+  balanced KTO data (14,395 desirable / 14,395 undesirable), merged SFT model
+  load, tokenizer load, fresh LoRA application, trainer preprocessing, full
+  optimizer schedule, final adapter save, lineage/capacity artifacts, and host
+  artifact write-out. These are training/provenance facts only; the behavioral
+  evidence gate is still eval of the sequential adapters against SelfAware/KUQ/OOD
+  to test whether sequential preference training preserves SFT abstention while
+  reducing known-question over-refusal.
 - Local KTO seed 1 completed after Docker recovery. Run record:
   `experiment/phase1/run_records/kto__4b__headline__seed1.json`. Artifact root:
   `synaptic-tuner/toolset-training-artifacts/runs/local/4b/kto__4b__headline__seed1/20260613_151337_logging_patch`.
