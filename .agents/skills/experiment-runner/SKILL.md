@@ -232,6 +232,16 @@ skill:
   disjointness must be audited with `*_question_keys` / `probe_pool_row_key`,
   not bare `*_question_ids`; duplicate TriviaQA IDs can otherwise make a clean
   row-level split look overlapped or seed duplicate rows identically.
+- Row-key disjointness is not prompt-text disjointness. A 2026-06-14 audit of
+  `qwen3-4b-instruct` found the current WS-2 split is clean by
+  `probe_pool_row_key`, leakage-clean against Cheng test, and byte-reproducible,
+  but has 188 normalized question texts present in both train and dev under
+  different source row keys; all had the same known/unknown label. Completed
+  local SFT/DPO/KTO runs consumed only `*_train.jsonl` and did not pass
+  `--split-dataset`, so this does not explain the bounded SelfAware/OOD
+  findings. Before any headline/protocol run that relies on dev/early-stopping,
+  decide explicitly whether to accept row-key semantics or amend/rebuild with a
+  normalized-question grouped split and republish the HF dataset files.
 - On Windows, staged tuner scratch paths in run records/materialized recipes
   should be POSIX-style (`scratch/...`) even though host paths are Windows paths;
   emitting backslashes makes provenance noisy and can surprise container path
