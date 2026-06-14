@@ -11,11 +11,11 @@ full provenance and prerequisite gating. This is orchestration GLUE: the runner
 talks to the `synaptic-tuner` submodule ONLY through the materialized recipe YAML
 and the tuner's public CLI verbs. It adds nothing to the tuner.
 
-Prospective Amendment A / v0.4 is documentation-only until explicitly signed:
-sequential `SFT -> DPO` and `SFT -> KTO` arms are not part of the locked v0.3
-matrix, are not present in `config/matrix.yaml`, and must not be materialized or
-run by this skill unless a later signed amendment and implementation add them
-deliberately.
+Amendment A / v0.4 is now signed as a prospective extension (user approval,
+2026-06-14): sequential `SFT -> DPO` and `SFT -> KTO` arms are not part of the
+locked v0.3 matrix, are not present in `config/matrix.yaml`, and must be
+materialized/run only as deliberate Amendment A cells with separate recipes and
+run records.
 
 ## Quick Reference
 
@@ -46,13 +46,13 @@ content at `experiment/phase1/recipes/`; the provenance records are committed at
 `run_matrix.py` ASSERTS 19 @ 4B / 9 @ 8B / 2 bridge and ABORTS on mismatch — the
 pre-registration guard. See [matrix-expansion.md](reference/matrix-expansion.md).
 
-Prospective Amendment A / v0.4 adds a documentation proposal for mixed-stage
+Amendment A / v0.4 adds a signed prospective extension for mixed-stage
 `SFT -> DPO` and `SFT -> KTO` tests, motivated by bounded local evidence that
 SFT induces abstention with high over-refusal while DPO from base remained
 base-like on SelfAware/KUQ refusal behavior. This does not alter the table
 above. Do not edit `config/matrix.yaml`, relax count assertions, or create
-sequential recipes until Amendment A / v0.4 is signed and the implementation
-work is explicitly scoped.
+sequential recipes inside the locked v0.3 matrix; create them only through a
+deliberate Amendment A implementation path.
 
 ## CLI Discipline
 
@@ -78,9 +78,9 @@ skill:
 - **Never loosen the count assertions** to absorb a `matrix.yaml` edit. The
   counts are pre-registered; a change needs a NEW signed PROTOCOL revision first.
 - **Never silently expand the v0.3 matrix for Amendment A.** Mixed-stage
-  `SFT -> DPO` / `SFT -> KTO` cells require a signed Amendment A / v0.4 and a
-  deliberate implementation pass. Until then, they are protocol text only, not
-  runnable cells.
+  `SFT -> DPO` / `SFT -> KTO` cells are signed Amendment A / v0.4 prospective
+  extension cells, not v0.3 matrix cells. Materialize them only through a
+  deliberate implementation path with separate run records and labels.
 - **BOTH lanes are safety-gated by a LIVE capability probe.** A cell is only safe
   once the tuner forwards per-cell `seed` / `beta` on the lane it runs; otherwise
   cells silently train at defaults. The gap spans both lanes (cloud command

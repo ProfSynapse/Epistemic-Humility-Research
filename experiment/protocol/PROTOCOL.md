@@ -17,21 +17,19 @@ sensitivity panel. Companion implementation blueprint:
 `docs/architecture/phase1-pipeline.md`. Derived from gaps verified in
 `../../meta-analysis/`.
 
-**Prospective Amendment A / v0.4 draft status:** The Amendment A material below
-is a proposed prospective extension, not a silent edit to the signed v0.3
-pre-registration and not a retroactive pre-registration of already-observed
+**Amendment A / v0.4 status:** SIGNED OFF as a prospective extension (user
+approval, 2026-06-14). Amendment A is not a silent edit to the signed v0.3
+pre-registration and is not a retroactive pre-registration of already-observed
 results. It is motivated by bounded local evidence collected after v0.3
 sign-off: SFT from the base model induced abstention behavior but with high
-over-refusal, while DPO from the base model stayed close to base-like refusal
-behavior on SelfAware/KUQ evidence. Amendment A tests whether preference
+over-refusal, while DPO and KTO from the base model stayed close to base-like
+refusal behavior on SelfAware/KUQ evidence. Amendment A tests whether preference
 optimization is better treated as boundary refinement after SFT than as
-cold-start abstention induction on this sized model. No runnable mixed-stage
-cells are added by this draft; they require separate amendment sign-off and
-implementation before execution. The draft may exist before base KTO seed 1 is
-complete; final sign-off and mixed-stage execution should wait for completed and
-audited base KTO seed-1 evidence unless Joseph explicitly decides otherwise.
+cold-start abstention induction on this sized model. Mixed-stage cells remain
+separate from the signed v0.3 headline matrix and must be labeled as Amendment A
+/ v0.4 prospective extension results.
 
-**Prospective Amendment A / v0.4 draft changelog (pending sign-off):**
+**Amendment A / v0.4 changelog:**
 
 1. Adds H5, a sequential-refinement hypothesis: SFT may be required to induce
    abstention on Qwen3-4B/8B-class models, after which DPO or KTO may refine the
@@ -129,8 +127,8 @@ calibration decomposition after each run, in-domain and out-of-domain.
   methods do not degrade calibration relative to SFT. H4 fails if the balance
   knob does not move the over-refusal operating point monotonically.
 
-**Prospective Amendment A / v0.4 draft hypothesis (pending sign-off, not part
-of the signed v0.3 hypothesis set):**
+**Amendment A / v0.4 hypothesis (prospective extension, not part of the signed
+v0.3 hypothesis set):**
 
 - **H5 (sequential refinement):** On this sized model, SFT may be necessary to
   induce the abstention behavior at all, while preference optimization may be
@@ -228,36 +226,42 @@ Rationale:
   question set and the data budget, is the default. This isolates the panel as a
   clean sensitivity probe rather than a confounded second experiment.
 
-### 3.1b Prospective Amendment A / v0.4 draft sequential arms
+### 3.1b Amendment A / v0.4 sequential arms
 
-This section is prospective amendment text only. It does not change the signed
-v0.3 matrix in 3.1, does not add cells to
-`.agents/skills/experiment-runner/config/matrix.yaml`, and does not authorize
-any mixed-stage run before Amendment A / v0.4 is signed and runnable recipes are
-materialized.
+This signed prospective amendment does not change the signed v0.3 matrix in
+3.1 and does not add cells to
+`.agents/skills/experiment-runner/config/matrix.yaml`. Sequential runs are
+separate Amendment A / v0.4 cells and require deliberately materialized recipes
+and run records outside the locked v0.3 matrix expansion.
 
 **Motivation from bounded local evidence.** After v0.3 sign-off, local
 base/SFT/DPO diagnostics on SelfAware and KUQ showed a consistent pattern:
 SFT-from-base induced abstention on unknowns but with severe over-refusal on
-knowns, while DPO-from-base stayed near base-like refusal behavior. These runs
-were bounded local evidence only, not headline, cloud, bridge, or full-matrix
-evidence. They motivate the possibility that the first stage must teach the
-model the abstention behavior, and that preference optimization may be more
-appropriate as a second-stage boundary-refinement step.
+knowns, while DPO-from-base and KTO-from-base stayed near base-like refusal
+behavior. Grouped-split SFT rerun evals preserved the same qualitative pattern.
+These runs were bounded local evidence only, not headline, cloud, bridge, or
+full-matrix evidence. They motivate the possibility that the first stage must
+teach the model the abstention behavior, and that preference optimization may be
+more appropriate as a second-stage boundary-refinement step.
 
-**Exploratory sequential arms, pending sign-off and implementation:**
+**Exploratory sequential arms:**
 
 | Arm | Stage 1 | Stage 2 | Purpose |
 |---|---|---|---|
 | Sequential DPO | Idk-SFT | DPO from the completed SFT adapter | Test whether DPO reduces SFT over-refusal while preserving refusal recall |
 | Sequential KTO | Idk-SFT | KTO from the completed SFT adapter | Test whether KTO's loss-aversion framing refines the SFT boundary with less over-refusal |
 
+**Merge-first execution rule.** The completed SFT LoRA adapter is first merged
+into a standalone local `merged-16bit` model. Sequential DPO/KTO then train
+fresh LoRA adapters with `model.name` pointing at that merged SFT model path.
+The DPO/KTO reference model also loads from the merged SFT model, so the
+preference objective regularizes against the SFT starting policy rather than the
+original base model. Continuing the same adapter in place is a separate design
+and is not part of Amendment A.
+
 The intended comparison set is SFT alone, cold-start DPO, cold-start KTO, and
 base, evaluated on the same held-out and OOD surfaces used by the original
-track. The initial sequential-arm scope should remain local and bounded until
-the amendment is signed, and final sign-off / execution should normally wait
-until the base KTO seed-1 path is completed and audited unless Joseph explicitly
-decides otherwise.
+track. The initial sequential-arm scope remains local and bounded.
 
 **Reporting separation.** Original v0.3 headline claims remain drawn only from
 the pre-registered default matrix cells in 3.1 and the v0.3 analysis rules in
