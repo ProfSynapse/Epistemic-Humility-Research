@@ -237,10 +237,10 @@ We are proving the Phase 1 local lane before committing more GPU time. The goal 
 
 ## Next Steps
 
-1. Prepare Protocol Amendment A / v0.4 sign-off for mixed-stage `SFT -> DPO` and `SFT -> KTO`. The grouped-split SFT evals are now complete enough to motivate the amendment.
+1. Amendment A / v0.4 is signed as a prospective extension for mixed-stage `SFT -> DPO` and `SFT -> KTO` (user approval, 2026-06-14). Keep it separate from the locked v0.3 headline matrix.
 2. Merge the grouped-split SFT LoRA adapter into a local `merged-16bit` model before any sequential DPO/KTO run, then train fresh downstream DPO/KTO LoRA adapters with `model.name` pointing at that merged SFT model path.
 3. Treat previous local DPO and KTO seed 1 as completed pre-split-fix bounded comparators. The plain-language read remains: SFT learned abstention but over-refused badly; DPO-from-base and KTO-from-base stayed base-like and did not learn abstention on those local evidence surfaces.
-4. After Amendment A is signed, deliberately materialize sequential recipes/run records without editing the locked v0.3 `matrix.yaml` or silently expanding headline counts.
+4. Deliberately materialize sequential recipes/run records without editing the locked v0.3 `matrix.yaml` or silently expanding headline counts.
 5. Add a later sensitivity axis for epochs and LoRA rank/alpha; this should be protocol-scoped rather than silently changing the current headline comparator.
 6. Before cloud KTO smoke, commit/push the Synaptic Tuner KTO logging fix to the exact cloud commit, then clear cloud launcher and dataset prerequisites.
 7. Before any long local run, prefer the bare Docker/host GPU checks that are known to work from Codex:
@@ -263,7 +263,7 @@ We are proving the Phase 1 local lane before committing more GPU time. The goal 
 9. Full SelfAware, broader OOD, KTO comparator, and grouped-SFT comparator configs/docs should be committed next where appropriate. Treat all of this as bounded local motivation for Amendment A, not headline/protocol evidence.
 10. Do not run the headline/full eval, any additional long cell, or any mixed-stage sequential cell without explicit approval.
 11. Do not immediately repeat the same A10G Qwen3 4B HF Jobs download loop. The latest `0400540` bounded SFT max-2 `cloud-pipeline` smoke submitted job `6a2c75e97c68f455eff143b2` and failed during remote `Qwen/Qwen3-4B` first-shard download before training/eval. Next, run a smaller cloud-pipeline smoke, for example a tiny public model, or improve launcher job-id capture, UTF-8 logging, and model-cache strategy before another Qwen3 4B attempt.
-12. Only after local eval and cloud smoke both work should we consider more headline cells. KTO remains blocked for cloud expansion until an explicit KTO smoke is approved with the cloud prerequisites cleared. Mixed-stage cells remain blocked until Amendment A / v0.4 is signed and recipes are deliberately materialized.
+12. Only after local eval and cloud smoke both work should we consider more headline cells. KTO remains blocked for cloud expansion until an explicit KTO smoke is approved with the cloud prerequisites cleared. Mixed-stage cells are Amendment A / v0.4 work and require deliberately materialized recipes/run records.
 13. Before cloud-lane expansion beyond the SFT smoke, verify process-local `HF_TOKEN` availability, use Synaptic Tuner's `cloud-pipeline` flow from a clean pushed exact commit, and confirm the already public Qwen3 4B dataset file names.
 
 ## Files Changed During This Session
