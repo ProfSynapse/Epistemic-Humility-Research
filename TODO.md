@@ -141,6 +141,22 @@ We are proving the Phase 1 local lane before committing more GPU time. The goal 
   - Known-only pressure: over_refusal 78.63 on CoCoNot, 80.47 on TruthfulQA, and 91.02 on PopQA. CoCoNot and TruthfulQA correctness/truthful values are not useful in this local file/config because aliases/gold coverage are empty or absent there; use those rows for refusal-rate/over-refusal pressure.
   - Interpretation: the grouped split did not erase the core SFT pattern. SFT still strongly learns abstention on unknowns, but it still over-refuses badly on known questions. The grouped rerun is slightly weaker than the pre-split full SelfAware SFT result, but qualitatively the same.
 
+- Amendment A sequential local smoke path completed.
+  - Amendment A / v0.4 is signed as a prospective extension, separate from the locked v0.3 matrix.
+  - Grouped-split SFT adapter merged successfully to: `synaptic-tuner/toolset-training-artifacts/runs/local/4b/sft__4b__headline__seed1/20260614_053221/Qwen3-4B-bnb-4bit/merged-16bit`.
+  - Merge output has `config.json`, no `adapter_config.json`, and two safetensor shards totaling about 8.0 GB.
+  - `SFT -> DPO` max-2 smoke completed from the merged SFT model.
+    - Run id: `sft_dpo__4b__amendment_a_smoke__seed1`
+    - Artifact root: `synaptic-tuner/toolset-training-artifacts/runs/local/4b/sft_dpo__4b__amendment_a_smoke__seed1/20260614_073819`
+    - Concrete log: `.../logs/training_20260614_113942.jsonl`
+    - Final step 2, final loss 0.6931, peak reserved VRAM 4.922 GB, OOM risk low.
+  - `SFT -> KTO` max-2 smoke completed from the merged SFT model.
+    - Run id: `sft_kto__4b__amendment_a_smoke__seed1`
+    - Artifact root: `synaptic-tuner/toolset-training-artifacts/runs/local/4b/sft_kto__4b__amendment_a_smoke__seed1/20260614_074015`
+    - Concrete log: `.../logs/training_20260614_114134.jsonl`
+    - Final step 2, final loss 0.5, peak reserved VRAM 4.375 GB, OOM risk low.
+  - Interpretation: the end-to-end local mechanics for sequential training work: merged SFT model load, fresh DPO/KTO LoRA application, data load, two optimizer steps, final adapter save, lineage/capacity artifacts, and host artifact write-out.
+
 - Local KTO headline seed 1 completed and was audited.
   - Run id: `kto__4b__headline__seed1`.
   - Adapter: `synaptic-tuner/toolset-training-artifacts/runs/local/4b/kto__4b__headline__seed1/20260613_151337_logging_patch/final_model`.
@@ -213,6 +229,7 @@ We are proving the Phase 1 local lane before committing more GPU time. The goal 
   - For actual local container create/pull/run operations, escalated Docker commands worked. Do not modify `C:\Users\Joseph\.docker` as a workaround from Codex.
   - Unsloth image default entrypoint may chmod the mounted repo and fail on `.tmp/pytest-codex*`; for local eval wrapper runs use `--entrypoint python3`.
   - Do not pass the full repo `.env` into local eval containers unless that exact run truly needs secrets. The grouped-SFT broader OOD eval used public/local assets and ran successfully with only `HF_HOME` / `HUGGINGFACE_HUB_CACHE` env vars.
+  - Bind-mode local training artifacts can leave `training_latest.jsonl` as a Windows reparse point that `Get-Content` cannot read. Use the concrete timestamped `logs/training_*.jsonl` file for verification and run records.
 
 - Local eval scoring/generation gotchas fixed.
   - OOD records carry their own `aliases`; scoring now prefers normalized non-empty record aliases and falls back to global Cheng gold. Without this, OOD known correctness/truthful vectors could be wrongly zero when questions are absent from Cheng gold.
@@ -238,9 +255,9 @@ We are proving the Phase 1 local lane before committing more GPU time. The goal 
 ## Next Steps
 
 1. Amendment A / v0.4 is signed as a prospective extension for mixed-stage `SFT -> DPO` and `SFT -> KTO` (user approval, 2026-06-14). Keep it separate from the locked v0.3 headline matrix.
-2. Merge the grouped-split SFT LoRA adapter into a local `merged-16bit` model before any sequential DPO/KTO run, then train fresh downstream DPO/KTO LoRA adapters with `model.name` pointing at that merged SFT model path.
+2. The grouped-split SFT LoRA adapter is already merged locally; use the `merged-16bit` path above for sequential DPO/KTO runs, then train fresh downstream DPO/KTO LoRA adapters with `model.name` pointing at that merged SFT model path.
 3. Treat previous local DPO and KTO seed 1 as completed pre-split-fix bounded comparators. The plain-language read remains: SFT learned abstention but over-refused badly; DPO-from-base and KTO-from-base stayed base-like and did not learn abstention on those local evidence surfaces.
-4. Deliberately materialize sequential recipes/run records without editing the locked v0.3 `matrix.yaml` or silently expanding headline counts.
+4. Full sequential DPO/KTO runs are now mechanically de-risked by max-2 smokes. Next launch should be a deliberate full local Amendment A cell, not a v0.3 matrix expansion.
 5. Add a later sensitivity axis for epochs and LoRA rank/alpha; this should be protocol-scoped rather than silently changing the current headline comparator.
 6. Before cloud KTO smoke, commit/push the Synaptic Tuner KTO logging fix to the exact cloud commit, then clear cloud launcher and dataset prerequisites.
 7. Before any long local run, prefer the bare Docker/host GPU checks that are known to work from Codex:
