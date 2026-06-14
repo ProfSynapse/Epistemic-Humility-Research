@@ -1,6 +1,6 @@
 # TODO / Current State
 
-Last updated: 2026-06-13
+Last updated: 2026-06-14
 
 ## Operator Rules
 
@@ -130,6 +130,17 @@ We are proving the Phase 1 local lane before committing more GPU time. The goal 
   - CoCoNot caveat: the local contrast file has empty answer aliases, so its truthful/correctness scores are 0 by construction; use it for refusal-rate/over-refusal behavior, not answer correctness.
   - Interpretation: the SFT abstention signal generalized beyond SelfAware to KUQ, but the over-refusal failure also generalized strongly across known-only OOD pressure sets. This is broader bounded local evidence, still not headline/protocol evidence.
 
+- Grouped-split SFT rerun comparator evals completed.
+  - Adapter: `synaptic-tuner/toolset-training-artifacts/runs/local/4b/sft__4b__headline__seed1/20260614_053221/final_model`.
+  - Full SelfAware grouped-SFT-only eval completed with `config_sha=327c92c91428e9d4`.
+  - Outputs: `experiment/phase1/eval/results_sft_grouped_selfaware_full_local_4b`.
+  - Summary: truthful 37.99, refusal_recall 83.82, answer_on_unknown 16.18, over_refusal 64.18, correct_on_known 49.58. No `<think>` / `</think>` matches were found.
+  - Broader OOD grouped-SFT-only eval completed in Docker run `eh-sft-grouped-broader-ood-local-4b`, exit 0, with `config_sha=57cb7a1c6fe5e601`.
+  - Outputs: `experiment/phase1/eval/results_sft_grouped_broader_ood_local_4b`.
+  - KUQ: truthful 51.82, refusal_recall 97.92, answer_on_unknown 2.08, over_refusal 82.29.
+  - Known-only pressure: over_refusal 78.63 on CoCoNot, 80.47 on TruthfulQA, and 91.02 on PopQA. CoCoNot and TruthfulQA correctness/truthful values are not useful in this local file/config because aliases/gold coverage are empty or absent there; use those rows for refusal-rate/over-refusal pressure.
+  - Interpretation: the grouped split did not erase the core SFT pattern. SFT still strongly learns abstention on unknowns, but it still over-refuses badly on known questions. The grouped rerun is slightly weaker than the pre-split full SelfAware SFT result, but qualitatively the same.
+
 - Local KTO headline seed 1 completed and was audited.
   - Run id: `kto__4b__headline__seed1`.
   - Adapter: `synaptic-tuner/toolset-training-artifacts/runs/local/4b/kto__4b__headline__seed1/20260613_151337_logging_patch/final_model`.
@@ -201,6 +212,7 @@ We are proving the Phase 1 local lane before committing more GPU time. The goal 
   - Bare `docker ps` and `docker ps -a --format ...` worked, while `docker info`, `docker context ls`, explicit `DOCKER_CONFIG`, explicit pipe commands, and some image listing paths can hit `C:\Users\Joseph\.docker\config.json Access is denied` or Docker pipe permission errors.
   - For actual local container create/pull/run operations, escalated Docker commands worked. Do not modify `C:\Users\Joseph\.docker` as a workaround from Codex.
   - Unsloth image default entrypoint may chmod the mounted repo and fail on `.tmp/pytest-codex*`; for local eval wrapper runs use `--entrypoint python3`.
+  - Do not pass the full repo `.env` into local eval containers unless that exact run truly needs secrets. The grouped-SFT broader OOD eval used public/local assets and ran successfully with only `HF_HOME` / `HUGGINGFACE_HUB_CACHE` env vars.
 
 - Local eval scoring/generation gotchas fixed.
   - OOD records carry their own `aliases`; scoring now prefers normalized non-empty record aliases and falls back to global Cheng gold. Without this, OOD known correctness/truthful vectors could be wrongly zero when questions are absent from Cheng gold.
@@ -225,12 +237,13 @@ We are proving the Phase 1 local lane before committing more GPU time. The goal 
 
 ## Next Steps
 
-1. Re-run the bounded SelfAware/OOD checks on the regenerated grouped-split SFT adapter before treating SFT as the comparator for mixed-stage work.
-2. Treat previous local SFT, DPO, and KTO seed 1 as completed pre-split-fix bounded comparators. The plain-language read was: SFT learned abstention but over-refused badly; DPO-from-base and KTO-from-base stayed base-like and did not learn abstention on those local evidence surfaces.
-3. Protocol Amendment A / v0.4 is now the natural next research step: deliberately implement and run `SFT -> DPO` and `SFT -> KTO` as mixed-stage cells to test whether SFT first teaches the behavior and preference training can then reduce over-refusal. Do not create runnable recipes, edit `matrix.yaml`, or launch mixed-stage runs as a silent matrix expansion.
-4. Add a later sensitivity axis for epochs and LoRA rank/alpha; this should be protocol-scoped rather than silently changing the current headline comparator.
-5. Before cloud KTO smoke, commit/push the Synaptic Tuner KTO logging fix to the exact cloud commit, then clear cloud launcher and dataset prerequisites.
-6. Before any long local run, prefer the bare Docker/host GPU checks that are known to work from Codex:
+1. Prepare Protocol Amendment A / v0.4 sign-off for mixed-stage `SFT -> DPO` and `SFT -> KTO`. The grouped-split SFT evals are now complete enough to motivate the amendment.
+2. Merge the grouped-split SFT LoRA adapter into a local `merged-16bit` model before any sequential DPO/KTO run, then train fresh downstream DPO/KTO LoRA adapters with `model.name` pointing at that merged SFT model path.
+3. Treat previous local DPO and KTO seed 1 as completed pre-split-fix bounded comparators. The plain-language read remains: SFT learned abstention but over-refused badly; DPO-from-base and KTO-from-base stayed base-like and did not learn abstention on those local evidence surfaces.
+4. After Amendment A is signed, deliberately materialize sequential recipes/run records without editing the locked v0.3 `matrix.yaml` or silently expanding headline counts.
+5. Add a later sensitivity axis for epochs and LoRA rank/alpha; this should be protocol-scoped rather than silently changing the current headline comparator.
+6. Before cloud KTO smoke, commit/push the Synaptic Tuner KTO logging fix to the exact cloud commit, then clear cloud launcher and dataset prerequisites.
+7. Before any long local run, prefer the bare Docker/host GPU checks that are known to work from Codex:
 
    ```powershell
    docker ps -a --format "{{.Names}} {{.Status}}"
@@ -239,7 +252,7 @@ We are proving the Phase 1 local lane before committing more GPU time. The goal 
 
    Avoid treating `docker info` / `docker context ls` failures as definitive engine failures in this environment; they can be Docker config/API permission artifacts.
 
-7. If Docker is healthy, use the SFT max-2 micro recipe as the first confidence check:
+8. If Docker is healthy, use the SFT max-2 micro recipe as the first confidence check:
 
    ```powershell
    py -3.11 tuner.py local-run --job-config F:\Code\Epistemic-Humility-Research\experiment\phase1\run_records\materialized_recipes\sft__4b__micro_max2.yaml --yes
@@ -247,11 +260,11 @@ We are proving the Phase 1 local lane before committing more GPU time. The goal 
 
    Run from `F:\Code\Epistemic-Humility-Research\synaptic-tuner`.
 
-8. Full SelfAware and broader OOD evidence configs/docs are already merged/tracked via PR #17. The new KTO comparator configs/docs should be committed next. Treat all of this as bounded local motivation for Amendment A, not headline/protocol evidence.
-9. Do not run the headline/full eval, any additional long cell, or any mixed-stage sequential cell without explicit approval.
-10. Do not immediately repeat the same A10G Qwen3 4B HF Jobs download loop. The latest `0400540` bounded SFT max-2 `cloud-pipeline` smoke submitted job `6a2c75e97c68f455eff143b2` and failed during remote `Qwen/Qwen3-4B` first-shard download before training/eval. Next, run a smaller cloud-pipeline smoke, for example a tiny public model, or improve launcher job-id capture, UTF-8 logging, and model-cache strategy before another Qwen3 4B attempt.
-11. Only after local eval and cloud smoke both work should we consider more headline cells. KTO remains blocked for cloud expansion until an explicit KTO smoke is approved with the cloud prerequisites cleared. Mixed-stage cells remain blocked until Amendment A / v0.4 is signed and recipes are deliberately materialized.
-12. Before cloud-lane expansion beyond the SFT smoke, verify process-local `HF_TOKEN` availability, use Synaptic Tuner's `cloud-pipeline` flow from a clean pushed exact commit, and confirm the already public Qwen3 4B dataset file names.
+9. Full SelfAware, broader OOD, KTO comparator, and grouped-SFT comparator configs/docs should be committed next where appropriate. Treat all of this as bounded local motivation for Amendment A, not headline/protocol evidence.
+10. Do not run the headline/full eval, any additional long cell, or any mixed-stage sequential cell without explicit approval.
+11. Do not immediately repeat the same A10G Qwen3 4B HF Jobs download loop. The latest `0400540` bounded SFT max-2 `cloud-pipeline` smoke submitted job `6a2c75e97c68f455eff143b2` and failed during remote `Qwen/Qwen3-4B` first-shard download before training/eval. Next, run a smaller cloud-pipeline smoke, for example a tiny public model, or improve launcher job-id capture, UTF-8 logging, and model-cache strategy before another Qwen3 4B attempt.
+12. Only after local eval and cloud smoke both work should we consider more headline cells. KTO remains blocked for cloud expansion until an explicit KTO smoke is approved with the cloud prerequisites cleared. Mixed-stage cells remain blocked until Amendment A / v0.4 is signed and recipes are deliberately materialized.
+13. Before cloud-lane expansion beyond the SFT smoke, verify process-local `HF_TOKEN` availability, use Synaptic Tuner's `cloud-pipeline` flow from a clean pushed exact commit, and confirm the already public Qwen3 4B dataset file names.
 
 ## Files Changed During This Session
 
