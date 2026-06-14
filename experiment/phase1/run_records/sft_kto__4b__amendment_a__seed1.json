@@ -1,0 +1,54 @@
+{
+  "run_id": "sft_kto__4b__amendment_a__seed1",
+  "matrix_version": "amendment-a-v0.4",
+  "coordinate": {
+    "arm": "sft_kto",
+    "size": "4b",
+    "cell_type": "amendment_a_full",
+    "seed": 1,
+    "override": {}
+  },
+  "source_recipe": "experiment/phase1/recipes/eh_phase1_qwen3_4b_sft_to_kto.yaml",
+  "materialized_recipe_sha": "a6866d39c9838674f930cac8890f8b4c46fde38857077ca840b19c3dd4f12784",
+  "method": "kto",
+  "model": "/workspace/repo/toolset-training-artifacts/runs/local/4b/sft__4b__headline__seed1/20260614_053221/Qwen3-4B-bnb-4bit/merged-16bit",
+  "lane": "local",
+  "data": {
+    "source_data_file": "F:\\Code\\Epistemic-Humility-Research\\experiment\\phase1\\data\\qwen3-4b-instruct\\kto_congruence_train.jsonl",
+    "staged_data_file": "scratch/eh_staging/sft_kto__4b__amendment_a__seed1/kto_congruence_train.jsonl",
+    "data_sha256": "9cb291ee45c8dd5893b150abe033386127d0eedce9fa16faa2309e31a1a70e15",
+    "hf_dataset_name": null,
+    "hf_dataset_revision": null
+  },
+  "research_repo_commit": "c7ac31e9d99f7e5dde1f38ae210586288f074ede",
+  "submodule_commit": "040054021c6da2c8c94453edbb699a487221120e",
+  "prereq_check": {
+    "datasets_present": true,
+    "leakage_guard_passed": true,
+    "merged_sft_model_present": true,
+    "max2_smoke_completed": true
+  },
+  "launched_at": "2026-06-14T12:53:57.000000+00:00",
+  "tuner_invocation": [
+    "python",
+    "tuner.py",
+    "local-run",
+    "--job-config",
+    "F:/Code/Epistemic-Humility-Research/experiment/phase1/run_records/materialized_recipes/sft_kto__4b__amendment_a__seed1.yaml",
+    "--yes"
+  ],
+  "outcome": {
+    "status": "launched",
+    "job_handle": "host_pid:24564",
+    "adapter_path": null,
+    "metrics_path": "F:\\Code\\Epistemic-Humility-Research\\synaptic-tuner\\toolset-training-artifacts\\runs\\local\\4b\\sft_kto__4b__amendment_a__seed1\\20260614_085358\\logs\\training_20260614_125521.jsonl",
+    "artifact_root": "F:\\Code\\Epistemic-Humility-Research\\synaptic-tuner\\toolset-training-artifacts\\runs\\local\\4b\\sft_kto__4b__amendment_a__seed1\\20260614_085358",
+    "verified": false
+  },
+  "materialized_recipe": "F:\\Code\\Epistemic-Humility-Research\\experiment\\phase1\\run_records\\materialized_recipes\\sft_kto__4b__amendment_a__seed1.yaml",
+  "amendment_a": {
+    "stage1_adapter": "F:\\Code\\Epistemic-Humility-Research\\synaptic-tuner\\toolset-training-artifacts\\runs\\local\\4b\\sft__4b__headline__seed1\\20260614_053221\\final_model",
+    "stage1_merged_model": "F:\\Code\\Epistemic-Humility-Research\\synaptic-tuner\\toolset-training-artifacts\\runs\\local\\4b\\sft__4b__headline__seed1\\20260614_053221\\Qwen3-4B-bnb-4bit\\merged-16bit",
+    "smoke_only": false
+  }
+}
