@@ -38,12 +38,23 @@
     "--yes"
   ],
   "outcome": {
-    "status": "launched",
+    "status": "completed",
     "job_handle": "host_pid:24564",
-    "adapter_path": null,
+    "adapter_path": "F:\\Code\\Epistemic-Humility-Research\\synaptic-tuner\\toolset-training-artifacts\\runs\\local\\4b\\sft_kto__4b__amendment_a__seed1\\20260614_085358\\final_model",
     "metrics_path": "F:\\Code\\Epistemic-Humility-Research\\synaptic-tuner\\toolset-training-artifacts\\runs\\local\\4b\\sft_kto__4b__amendment_a__seed1\\20260614_085358\\logs\\training_20260614_125521.jsonl",
     "artifact_root": "F:\\Code\\Epistemic-Humility-Research\\synaptic-tuner\\toolset-training-artifacts\\runs\\local\\4b\\sft_kto__4b__amendment_a__seed1\\20260614_085358",
-    "verified": false
+    "verified": true,
+    "completed_at": "2026-06-14T20:56:42.764885+00:00",
+    "metrics": {
+      "final_step": 3599,
+      "total_epochs": 1.0,
+      "final_loss": 0.2568387638515617,
+      "train_runtime_seconds": 28753.901,
+      "train_steps_per_second": 0.125,
+      "peak_gpu_memory_reserved_gb": 4.391,
+      "peak_gpu_memory_reserved_pct": 18.29,
+      "oom_risk_level": "low"
+    }
   },
   "materialized_recipe": "F:\\Code\\Epistemic-Humility-Research\\experiment\\phase1\\run_records\\materialized_recipes\\sft_kto__4b__amendment_a__seed1.yaml",
   "amendment_a": {
