@@ -47,9 +47,9 @@ scoring + stats layers still run end to end without a model in CI.
 `VLLMGenerator` builds one base model per run, supports `base` plus same-model
 LoRA arms, requires an explicit loadable `model_name`, and keeps `model_tag` as
 the reporting/provenance label. Use a scoped config for local GPU smoke that
-contains only same-model arms such as `base`, `sft`, and `dpo`; do not include
-KTO/bridge until those artifacts are ready. Qwen3 thinking is pinned off and
-generated `<think>` tags fail the run instead of being stripped.
+contains only same-model arms such as `base`, `sft`, `dpo`, and completed local
+`kto`; do not include bridge until those artifacts are ready. Qwen3 thinking is
+pinned off and generated `<think>` tags fail the run instead of being stripped.
 
 For Qwen3, prompt rendering with thinking disabled is not sufficient by itself:
 when `generation.enable_thinking: false`, vLLM `SamplingParams` receives
@@ -193,6 +193,44 @@ truthful/correctness scores are 0 by construction; use CoCoNot for
 refusal-rate/over-refusal behavior, not answer correctness. Interpretation:
 SFT's abstention signal generalized beyond SelfAware to KUQ, and its
 over-refusal failure generalized across known-only OOD pressure sets.
+
+2026-06-13 KTO full SelfAware comparator record:
+`eh-kto-selfaware-full-local-4b` exited 0 with `eval complete: 1 arm x set
+rows, config_sha=fb24ee65ee717a18`. Config:
+`config/eval_kto_selfaware_full_local_4b.yaml`. Outputs live under
+`experiment/phase1/eval/results_kto_selfaware_full_local_4b`. Shape: full
+SelfAware, 3,369 rows = 2,337 known / 1,032 unknown, KTO seed 1 only; no
+base/SFT/DPO, bridge, cloud, headline aggregation, protocol, or full matrix.
+The `<think>` guard did not trigger (`rg "<think>|</think>"
+experiment\phase1\eval\results_kto_selfaware_full_local_4b` found no matches).
+
+KTO SelfAware summary: truthful 18.73, refusal_recall 0.0,
+answer_on_unknown 100.0, over_refusal 0.21, correct_on_known 27.06. KTO
+refused 0/1,032 unknowns and 5/2,337 knowns. Interpretation: cold-start KTO did
+not learn the abstention behavior on full SelfAware and sits much closer to
+base/DPO than to SFT.
+
+2026-06-13 KTO broader OOD comparator record:
+`eh-kto-broader-ood-evidence-local-4b` exited 0 with `eval complete: 4 arm x
+set rows, config_sha=2acc68f74d12e302`. Config:
+`config/eval_kto_broader_ood_evidence_local_4b.yaml`. Outputs live under
+`experiment/phase1/eval/results_kto_broader_ood_evidence_local_4b`. Shape: KTO
+seed 1 only over KUQ balanced slice (384 rows = 192 unknown / 192 known), full
+CoCoNot contrast set (379 known), TruthfulQA 256 known, and PopQA 256 known; no
+base/SFT/DPO, bridge, cloud, headline aggregation, protocol, or full matrix.
+The `<think>` guard did not trigger (`rg "<think>|</think>"
+experiment\phase1\eval\results_kto_broader_ood_evidence_local_4b` found no
+matches).
+
+KTO KUQ summary: truthful 9.9, refusal_recall 0.0, answer_on_unknown 100.0,
+over_refusal 1.56. Known-only pressure: KTO over_refusal was 0.0 on CoCoNot,
+TruthfulQA, and PopQA; correctness was 9.38 on TruthfulQA and 19.92 on PopQA.
+CoCoNot still has empty answer aliases, so use it only for
+refusal-rate/over-refusal. Interpretation: KTO-from-base is now a completed
+local comparator and supports the same practical hypothesis as DPO-from-base:
+preference-style training alone is not inducing abstention on this small
+model/run. The next research question is whether `SFT -> DPO` or `SFT -> KTO`
+can preserve SFT's abstention gains while reducing over-refusal.
 
 OOD records carry their own `aliases`; scoring prefers normalized non-empty
 record aliases and falls back to global Cheng gold. Without that, OOD known
