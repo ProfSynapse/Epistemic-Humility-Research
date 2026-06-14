@@ -1,0 +1,10 @@
+{
+  "seed": 20260614,
+  "question_key_field": "probe_pool_row_key when present, else question_id",
+  "dev_split_group_key": "norm_question(question)",
+  "budget_distinct_questions": 4,
+  "known_question_keys": ["000000000000|fix_known_1", "000000000001|fix_known_2"],
+  "unknown_question_keys": ["000000000002|fix_unknown_1", "000000000003|fix_unknown_2"],
+  "train_question_keys": ["000000000000|fix_known_1", "000000000002|fix_unknown_1"],
+  "dev_question_keys": ["000000000001|fix_known_2", "000000000003|fix_unknown_2"]
+}

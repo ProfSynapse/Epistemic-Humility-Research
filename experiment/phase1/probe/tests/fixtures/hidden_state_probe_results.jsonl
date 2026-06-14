@@ -1,0 +1,5 @@
+{"probe_pool_row_key": "000000000000|fix_known_1", "question": "Who wrote Paradise Lost?", "label": "known", "probe_config_sha": "fixturesha000001"}
+{"probe_pool_row_key": "000000000001|fix_known_2", "question": "What is the capital of France?", "label": "known", "probe_config_sha": "fixturesha000001"}
+{"probe_pool_row_key": "000000000002|fix_unknown_1", "question": "What is the airspeed velocity of an unladen swallow in 1297?", "label": "unknown", "probe_config_sha": "fixturesha000001"}
+{"probe_pool_row_key": "000000000003|fix_unknown_2", "question": "What was the exact thought of Caesar at noon on the ides?", "label": "unknown", "probe_config_sha": "fixturesha000001"}
+{"probe_pool_row_key": "000000000004|fix_discard_1", "question": "Which actor played the third spear-carrier in a 1973 play?", "label": "discard", "probe_config_sha": "fixturesha000001"}
