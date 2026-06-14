@@ -189,6 +189,16 @@ We are proving the Phase 1 local lane before committing more GPU time. The goal 
   - CoCoNot caveat remains: local contrast aliases are empty, so use CoCoNot for refusal-rate/over-refusal behavior, not answer correctness.
   - Interpretation: sequential DPO is the first local evidence of a meaningful over-refusal reduction after SFT, but it trades away a substantial part of unknown refusal. Sequential KTO preserves more of the SFT abstention behavior, but only modestly improves over-refusal. This is bounded local Amendment A evidence, not v0.3 headline/protocol evidence.
 
+- Amendment A sequential full SelfAware local eval completed.
+  - Config: `experiment/phase1/eval/config/eval_amendment_a_selfaware_full_local_4b.yaml`.
+  - Shape: full SelfAware, 3,369 rows = 2,337 known / 1,032 unknown, `sft_merged`, `sft_dpo`, and `sft_kto` only. No cloud, bridge, headline aggregation, protocol, or full matrix.
+  - Lineage rule: all arms used the merged grouped-SFT base model at `synaptic-tuner/toolset-training-artifacts/runs/local/4b/sft__4b__headline__seed1/20260614_053221/Qwen3-4B-bnb-4bit/merged-16bit`; sequential DPO/KTO adapters were applied as LoRAs on top.
+  - Docker run exited 0 with `eval complete: 3 arm x set rows, config_sha=62388c69b67bbc43`.
+  - Outputs: `experiment/phase1/eval/results_amendment_a_selfaware_full_local_4b`.
+  - `rg "<think>|</think>|reasoning_content" experiment/phase1/eval/results_amendment_a_selfaware_full_local_4b` found no matches.
+  - Summary: `sft_merged` truthful 38.5, refusal_recall 82.56, answer_on_unknown 17.44, over_refusal 61.49, correct_on_known 49.44; `sft_dpo` truthful 30.25, refusal_recall 48.84, answer_on_unknown 51.16, over_refusal 13.95, correct_on_known 25.61; `sft_kto` truthful 36.92, refusal_recall 75.68, answer_on_unknown 24.32, over_refusal 48.31, correct_on_known 38.33.
+  - Interpretation: full SelfAware matches the broader OOD direction. Sequential DPO sharply reduces over-refusal but loses much of SFT's unknown refusal and known correctness. Sequential KTO retains more abstention and truthful score than DPO, but only partially reduces over-refusal. This is bounded local Amendment A evidence, not v0.3 headline/protocol evidence.
+
 - Local KTO headline seed 1 completed and was audited.
   - Run id: `kto__4b__headline__seed1`.
   - Adapter: `synaptic-tuner/toolset-training-artifacts/runs/local/4b/kto__4b__headline__seed1/20260613_151337_logging_patch/final_model`.
@@ -290,7 +300,7 @@ We are proving the Phase 1 local lane before committing more GPU time. The goal 
 1. Amendment A / v0.4 is signed as a prospective extension for mixed-stage `SFT -> DPO` and `SFT -> KTO` (user approval, 2026-06-14). Keep it separate from the locked v0.3 headline matrix.
 2. The grouped-split SFT LoRA adapter is already merged locally; use the `merged-16bit` path above for sequential DPO/KTO runs, then train fresh downstream DPO/KTO LoRA adapters with `model.name` pointing at that merged SFT model path.
 3. Treat previous local DPO and KTO seed 1 as completed pre-split-fix bounded comparators. The plain-language read remains: SFT learned abstention but over-refused badly; DPO-from-base and KTO-from-base stayed base-like and did not learn abstention on those local evidence surfaces.
-4. Full sequential DPO/KTO runs and the first broader OOD sequential eval are complete locally. Next Amendment A evidence should compare against full SelfAware or another deliberately scoped local surface, not a v0.3 matrix expansion.
+4. Full sequential DPO/KTO runs plus broader OOD and full SelfAware sequential evals are complete locally. Next Amendment A evidence should be a deliberately scoped follow-up analysis, not a v0.3 matrix expansion.
 5. Add a later sensitivity axis for epochs and LoRA rank/alpha; this should be protocol-scoped rather than silently changing the current headline comparator.
 6. Before cloud KTO smoke, commit/push the Synaptic Tuner KTO logging fix to the exact cloud commit, then clear cloud launcher and dataset prerequisites.
 7. Before any long local run, prefer the bare Docker/host GPU checks that are known to work from Codex:

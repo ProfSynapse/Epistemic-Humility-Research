@@ -509,6 +509,22 @@ skill:
   over-refusal. Treat this as bounded local Amendment A evidence, not v0.3
   headline/protocol evidence. CoCoNot remains refusal/over-refusal-only because
   local aliases are empty.
+- Amendment A full SelfAware sequential eval completed locally with
+  `experiment/phase1/eval/config/eval_amendment_a_selfaware_full_local_4b.yaml`
+  and `config_sha=62388c69b67bbc43`. Outputs are under
+  `experiment/phase1/eval/results_amendment_a_selfaware_full_local_4b`. Shape:
+  full SelfAware, 3,369 rows = 2,337 known / 1,032 unknown, `sft_merged`,
+  `sft_dpo`, and `sft_kto` only; all arms used the merged SFT base, no
+  cloud/bridge/headline/protocol/full matrix. No `<think>`, `</think>`, or
+  `reasoning_content` matches were found. Summary: `sft_merged` truthful 38.5 /
+  refusal_recall 82.56 / over_refusal 61.49 / correct_on_known 49.44;
+  `sft_dpo` truthful 30.25 / refusal_recall 48.84 / over_refusal 13.95 /
+  correct_on_known 25.61; `sft_kto` truthful 36.92 / refusal_recall 75.68 /
+  over_refusal 48.31 / correct_on_known 38.33. Interpretation matches broader
+  OOD: sequential DPO reduces over-refusal sharply but sacrifices unknown
+  refusal and known correctness; sequential KTO preserves more abstention but
+  leaves substantial over-refusal. Treat this as bounded local Amendment A
+  evidence, not v0.3 headline/protocol evidence.
 - Local KTO seed 1 completed after Docker recovery. Run record:
   `experiment/phase1/run_records/kto__4b__headline__seed1.json`. Artifact root:
   `synaptic-tuner/toolset-training-artifacts/runs/local/4b/kto__4b__headline__seed1/20260613_151337_logging_patch`.
