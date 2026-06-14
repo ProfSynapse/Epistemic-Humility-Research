@@ -112,7 +112,10 @@ skill:
   (5 passed). KTO HF smoke is still blocked until that Synaptic Tuner change is
   committed/pushed to the exact cloud commit and the cloud launcher/dataset
   prerequisites are cleared. The local copy-mode KTO workaround in
-  `prepare_local_cell.py` does not apply to HF Jobs.
+  `prepare_local_cell.py` does not apply to HF Jobs. Local KTO seed 1 later
+  completed successfully with the compatibility copy-mode patch still present
+  in the materialized recipe; keep that distinction clear when reading
+  provenance.
 - Current launcher env blocker: the `kto` conda env has `huggingface_hub`
   0.36.0 with Jobs API support, but lacks Buckets `create_bucket`. Do not
   blindly upgrade the main Unsloth/training env; Synaptic Tuner fine-tuning
@@ -301,8 +304,9 @@ skill:
   `python experiment/phase1/eval/run_eval.py --config <scoped-config.yaml>
   --live-vllm`. Default fixture behavior is unchanged. The live config must use
   explicit `model_name` for the loadable HF/vLLM repo id and `model_tag` only as
-  the reporting label. Use a scoped same-model base/SFT/DPO config first; KTO
-  has no completed adapter and bridge arms are a different base model.
+  the reporting label. Use scoped same-model configs first; base/SFT/DPO and
+  local KTO seed 1 have completed Qwen3-4B adapters, while bridge arms are a
+  different base model.
 - The scoped local 4B eval smoke config pins `vllm.max_lora_rank: 32` because
   the completed SFT/DPO adapters are LoRA rank 32. If running that checked-in
   config inside Docker/Linux from this Windows workspace, translate the
@@ -395,6 +399,43 @@ skill:
   refusal-rate/over-refusal behavior, not answer correctness. Interpretation:
   SFT's abstention signal generalized beyond SelfAware to KUQ, and its
   over-refusal failure generalized across known-only OOD pressure sets.
+- Local KTO seed 1 completed after Docker recovery. Run record:
+  `experiment/phase1/run_records/kto__4b__headline__seed1.json`. Artifact root:
+  `synaptic-tuner/toolset-training-artifacts/runs/local/4b/kto__4b__headline__seed1/20260613_151337_logging_patch`.
+  It trained 3,599/3,599 steps in 5h43m4s, saved `final_model`,
+  `training_lineage.json`, and `capacity_features.json`, ended
+  `training_latest.jsonl` with `train_end`, and had `oom_risk_level=low`.
+  Caveat: the materialized local recipe still includes the temporary copy-mode
+  `import logging` patch even though the Synaptic Tuner source already imports
+  `logging`; remove that workaround in a future cleanup after the fixed source
+  is the only supported baseline.
+- KTO full SelfAware comparator run `eh-kto-selfaware-full-local-4b` exited 0
+  with `eval complete: 1 arm x set rows, config_sha=fb24ee65ee717a18`. Config:
+  `experiment/phase1/eval/config/eval_kto_selfaware_full_local_4b.yaml`.
+  Outputs are under
+  `experiment/phase1/eval/results_kto_selfaware_full_local_4b`. Shape: full
+  SelfAware, 3,369 rows = 2,337 known / 1,032 unknown, KTO seed 1 only; no
+  base/SFT/DPO, bridge, cloud, headline aggregation, protocol, or full matrix.
+  No `<think>` or `</think>` matches were found. Summary: truthful 18.73,
+  refusal_recall 0.0, answer_on_unknown 100.0, over_refusal 0.21,
+  correct_on_known 27.06. KTO refused 0/1,032 unknowns and 5/2,337 knowns.
+- KTO broader OOD comparator run `eh-kto-broader-ood-evidence-local-4b` exited
+  0 with `eval complete: 4 arm x set rows, config_sha=2acc68f74d12e302`.
+  Config:
+  `experiment/phase1/eval/config/eval_kto_broader_ood_evidence_local_4b.yaml`.
+  Outputs are under
+  `experiment/phase1/eval/results_kto_broader_ood_evidence_local_4b`. Shape:
+  KTO seed 1 only over KUQ balanced slice (384 rows = 192 unknown / 192 known),
+  full CoCoNot contrast set (379 known), TruthfulQA 256 known, and PopQA 256
+  known; no base/SFT/DPO, bridge, cloud, headline aggregation, protocol, or
+  full matrix. No `<think>` or `</think>` matches were found. KUQ: truthful
+  9.9, refusal_recall 0.0, answer_on_unknown 100.0, over_refusal 1.56.
+  Known-only pressure: over_refusal 0.0 on CoCoNot, TruthfulQA, and PopQA;
+  correctness 9.38 on TruthfulQA and 19.92 on PopQA. Interpretation: KTO from
+  base is now a completed local comparator and, like DPO from base, did not
+  induce abstention on these bounded local surfaces. The mixed-stage question is
+  whether `SFT -> DPO` or `SFT -> KTO` preserves SFT's abstention gains while
+  reducing over-refusal.
 - OOD records carry their own `aliases`; scoring now prefers normalized
   non-empty record aliases and falls back to global Cheng gold. Without this,
   OOD known correctness/truthful vectors could be wrongly zero when questions
@@ -448,14 +489,13 @@ adapter save, metrics/logs, lineage/capacity files, and host artifact copy-out
 in a few minutes without exercising the currently fragile KTO path.
 
 After the 2026-06-13 successful local recovery, scoped live eval smoke, bounded
-SelfAware evidence run, full SelfAware evidence run, and broader OOD evidence
-run, the full SelfAware and broader OOD evidence configs/docs are merged/tracked
-via PR #17. Treat that evidence as bounded local motivation for Amendment A, not
-headline/protocol evidence. The next local research comparator is completing and
-auditing base KTO seed 1 before mixed-stage materialization unless Joseph
-explicitly decides otherwise. Do not jump from these bounded runs directly to
-mixed-stage cells, a headline/full run, or any cloud job without explicit
-approval.
+SelfAware evidence run, full SelfAware evidence run, broader OOD evidence run,
+and KTO seed-1 comparator/evals, treat the evidence as bounded local motivation
+for Amendment A, not headline/protocol evidence. The practical pattern is:
+SFT learns abstention but over-refuses badly; DPO-from-base and KTO-from-base
+remain base-like on refusal behavior. Do not jump from these bounded runs
+directly to mixed-stage cells, a headline/full run, or any cloud job without
+explicit approval and deliberate materialization.
 
 Headline numbers come ONLY from the pre-registered default cells; the LR/beta
 panel is robustness-only and is tagged distinctly in each run-id coordinate so

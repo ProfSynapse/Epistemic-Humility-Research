@@ -9,7 +9,7 @@
     "override": {}
   },
   "source_recipe": "experiment/phase1/recipes/eh_phase1_qwen3_4b_kto_congruence.yaml",
-  "materialized_recipe_sha": "d4d7eb2d590d355789e094cee1caa30c0bed349982290c00f086568b6443a7ab",
+  "materialized_recipe_sha": "c1b699af1b8d576bae52452f6a855ff0fbf0ff42173825894231db59430c4b66",
   "method": "kto",
   "model": "unsloth/Qwen3-4B-bnb-4bit",
   "lane": "local",
@@ -20,29 +20,29 @@
     "hf_dataset_name": null,
     "hf_dataset_revision": null
   },
-  "research_repo_commit": "ca5f926cbd5ca39afda674402f42a29c56283393",
-  "submodule_commit": "3a3d7a26e976e70d095c7f965e7d6e7b210843f7",
+  "research_repo_commit": "d19d9c28061bd3ef30d20cf129b6309778379a09",
+  "submodule_commit": "040054021c6da2c8c94453edbb699a487221120e",
   "prereq_check": {
     "datasets_present": true,
     "leakage_guard_passed": true
   },
-  "launched_at": "2026-06-12T08:12:40.300621+00:00",
+  "launched_at": "2026-06-13T19:13:37.347383+00:00",
   "tuner_invocation": [
     "python",
     "tuner.py",
     "local-run",
     "--job-config",
-    "F:\\Code\\Epistemic-Humility-Research\\experiment\\phase1\\run_records\\materialized_recipes\\kto__4b__headline__seed1.yaml",
+    "F:/Code/Epistemic-Humility-Research/experiment/phase1/run_records/materialized_recipes/kto__4b__headline__seed1.yaml",
     "--yes"
   ],
   "outcome": {
-    "status": "failed_docker_exec_3221225786",
+    "status": "completed",
     "job_handle": null,
-    "adapter_path": null,
-    "metrics_path": null,
-    "verified": false,
-    "failed_at": "2026-06-12T11:43:00.606791+00:00",
-    "failure_summary": "KTO rerun progressed in-container after logging workaround, but docker exec returned Windows code 3221225786; Docker Desktop Linux engine then returned 500 for ps/info/inspect. GPU idle; no host artifact copy-out present."
+    "adapter_path": "F:\\Code\\Epistemic-Humility-Research\\synaptic-tuner\\toolset-training-artifacts\\runs\\local\\4b\\kto__4b__headline__seed1\\20260613_151337_logging_patch\\final_model",
+    "metrics_path": "F:\\Code\\Epistemic-Humility-Research\\synaptic-tuner\\toolset-training-artifacts\\runs\\local\\4b\\kto__4b__headline__seed1\\20260613_151337_logging_patch\\logs\\training_latest.jsonl",
+    "verified": true,
+    "completed_at": "2026-06-14T01:01:18.554863+00:00",
+    "verification_summary": "Local KTO seed 1 completed 3599/3599 steps in 5h43m4s, saved final_model plus training_lineage.json and capacity_features.json; training_latest.jsonl ended with train_end, final_loss=0.3003657495819817, oom_risk_level=low."
   },
   "materialized_recipe": "F:\\Code\\Epistemic-Humility-Research\\experiment\\phase1\\run_records\\materialized_recipes\\kto__4b__headline__seed1.yaml"
 }

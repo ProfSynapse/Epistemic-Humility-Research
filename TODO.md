@@ -126,16 +126,47 @@ We are proving the Phase 1 local lane before committing more GPU time. The goal 
   - CoCoNot caveat: the local contrast file has empty answer aliases, so its truthful/correctness scores are 0 by construction; use it for refusal-rate/over-refusal behavior, not answer correctness.
   - Interpretation: the SFT abstention signal generalized beyond SelfAware to KUQ, but the over-refusal failure also generalized strongly across known-only OOD pressure sets. This is broader bounded local evidence, still not headline/protocol evidence.
 
+- Local KTO headline seed 1 completed and was audited.
+  - Run id: `kto__4b__headline__seed1`.
+  - Adapter: `synaptic-tuner/toolset-training-artifacts/runs/local/4b/kto__4b__headline__seed1/20260613_151337_logging_patch/final_model`.
+  - Metrics: `.../logs/training_latest.jsonl`.
+  - Run record: `experiment/phase1/run_records/kto__4b__headline__seed1.json`.
+  - Training completed 3,599 / 3,599 steps in 5h43m4s, saved `final_model`, `training_lineage.json`, and `capacity_features.json`.
+  - Audit: `training_latest.jsonl` ended with `train_end`, final loss was 0.3003657495819817, `oom_risk_level` was low, and peak reserved VRAM was well below the 24 GB card limit.
+  - Caveat: the materialized local recipe still carries the temporary copy-mode `import logging` patch for compatibility with older KTO copies. The Synaptic Tuner source itself already imports `logging` and passed the KTO source test.
+
+- KTO full SelfAware local comparator completed.
+  - Config: `experiment/phase1/eval/config/eval_kto_selfaware_full_local_4b.yaml`.
+  - Shape: full SelfAware, 3,369 rows = 2,337 known / 1,032 unknown, KTO seed 1 only. No base/SFT/DPO, bridge, cloud, headline aggregation, protocol, or full matrix.
+  - Docker run id: `eh-kto-selfaware-full-local-4b`.
+  - Exit code 0 with `eval complete: 1 arm x set rows, config_sha=fb24ee65ee717a18`.
+  - Outputs: `experiment/phase1/eval/results_kto_selfaware_full_local_4b`.
+  - `rg "<think>|</think>" experiment\phase1\eval\results_kto_selfaware_full_local_4b` found no matches.
+  - Summary: truthful 18.73, refusal_recall 0.0, answer_on_unknown 100.0, over_refusal 0.21, correct_on_known 27.06.
+  - Refusal counts: KTO refused 0/1,032 unknowns and 5/2,337 knowns.
+  - Interpretation: cold-start KTO did not learn the abstention behavior on full SelfAware. It is much closer to base/DPO behavior than to SFT.
+
+- KTO broader OOD local comparator completed.
+  - Config: `experiment/phase1/eval/config/eval_kto_broader_ood_evidence_local_4b.yaml`.
+  - Shape: KTO seed 1 only over KUQ balanced slice (384 rows = 192 unknown / 192 known), full CoCoNot contrast set (379 known), TruthfulQA 256 known, and PopQA 256 known. No base/SFT/DPO, bridge, cloud, headline aggregation, protocol, or full matrix.
+  - Docker run id: `eh-kto-broader-ood-evidence-local-4b`.
+  - Exit code 0 with `eval complete: 4 arm x set rows, config_sha=2acc68f74d12e302`.
+  - Outputs: `experiment/phase1/eval/results_kto_broader_ood_evidence_local_4b`.
+  - `rg "<think>|</think>" experiment\phase1\eval\results_kto_broader_ood_evidence_local_4b` found no matches.
+  - KUQ: truthful 9.9, refusal_recall 0.0, answer_on_unknown 100.0, over_refusal 1.56.
+  - Known-only pressure: KTO over_refusal was 0.0 on CoCoNot, TruthfulQA, and PopQA; correctness was 9.38 on TruthfulQA and 19.92 on PopQA. CoCoNot still has empty answer aliases, so use it only for refusal-rate/over-refusal.
+  - Interpretation: KTO-from-base is now a completed local comparator, and it supports the same practical hypothesis as DPO-from-base: preference-style training alone is not inducing abstention on this small model/run. The next research question is whether `SFT -> DPO` or `SFT -> KTO` can preserve SFT's abstention gains while reducing over-refusal.
+
 ## Known Issues / Gotchas
 
-- KTO source logging bug is fixed locally, but KTO is still gated for cloud.
+- KTO source logging bug is fixed locally, but KTO remains gated for cloud.
   - First full KTO attempt trained nearly to completion but failed after training because `train_kto.py` references `logging` without importing it.
   - A 20-step patched KTO debug run proved that adding `import logging` inside the copied container file allows the KTO trainer to complete and copy artifacts.
   - `synaptic-tuner/Trainers/kto/train_kto.py` now imports `logging` locally and was verified with `python -m pytest synaptic-tuner\tests\trainers\kto\test_train_kto_source.py -q` (5 passed).
   - HF Jobs/cloud KTO smoke remains blocked until the Synaptic Tuner fix is committed/pushed to the exact cloud commit and the cloud launcher/dataset prerequisites are cleared. The experiment-side local copy-mode workaround will not apply in HF Jobs.
-  - The patched full KTO rerun progressed to at least step 1,650 / 3,599, then `docker exec` returned Windows code `3221225786`; Docker Desktop then returned HTTP 500 for `docker ps/info/inspect`.
+  - The patched full KTO rerun progressed to at least step 1,650 / 3,599, then `docker exec` returned Windows code `3221225786`; Docker Desktop then returned HTTP 500 for `docker ps/info/inspect`. A later local KTO seed 1 rerun completed cleanly.
   - Run record: `experiment/phase1/run_records/kto__4b__headline__seed1.json`
-  - Current status: `failed_docker_exec_3221225786`
+  - Current local status: completed and verified.
 
 - Cloud lane should use Synaptic Tuner workflows, not ad hoc launch scripts.
   - Publish Phase 1 datasets with the Synaptic Tuner dataset-publishing skill/script before launching cloud cells.
@@ -177,10 +208,10 @@ We are proving the Phase 1 local lane before committing more GPU time. The goal 
 
 ## Next Steps
 
-1. Do not rerun KTO immediately.
-2. Before any mixed-stage training, first complete and audit base KTO headline seed 1 unless Joseph explicitly decides otherwise. The current `kto__4b__headline__seed1` record is still failed after Docker instability, so it does not yet supply a completed cold-start KTO comparator.
-3. Protocol Amendment A / v0.4 may exist now as a prospective draft, but final sign-off and any `SFT -> DPO` or `SFT -> KTO` mixed-stage execution should wait until base KTO seed 1 is completed and audited unless Joseph explicitly decides otherwise. Do not create runnable recipes, edit `matrix.yaml`, or launch mixed-stage runs as a silent matrix expansion.
-4. Commit/push the local Synaptic Tuner KTO logging fix to the exact cloud commit, then clear cloud launcher and dataset prerequisites before any KTO HF smoke.
+1. Do not run more long cells without explicit approval.
+2. Treat local SFT, DPO, and KTO seed 1 as completed bounded comparators. The plain-language read is: SFT learns abstention but over-refuses badly; DPO-from-base and KTO-from-base stay base-like and do not learn abstention on these local evidence surfaces.
+3. Protocol Amendment A / v0.4 is now the natural next research step: deliberately implement and run `SFT -> DPO` and `SFT -> KTO` as mixed-stage cells to test whether SFT first teaches the behavior and preference training can then reduce over-refusal. Do not create runnable recipes, edit `matrix.yaml`, or launch mixed-stage runs as a silent matrix expansion.
+4. Before cloud KTO smoke, commit/push the Synaptic Tuner KTO logging fix to the exact cloud commit, then clear cloud launcher and dataset prerequisites.
 5. Before any long local run, prefer the bare Docker/host GPU checks that are known to work from Codex:
 
    ```powershell
@@ -198,10 +229,10 @@ We are proving the Phase 1 local lane before committing more GPU time. The goal 
 
    Run from `F:\Code\Epistemic-Humility-Research\synaptic-tuner`.
 
-7. Full SelfAware and broader OOD evidence configs/docs are already merged/tracked via PR #17. Treat that evidence as bounded local motivation for Amendment A, not headline/protocol evidence, and keep the next local research comparator focused on completing base KTO seed 1 before mixed-stage materialization.
-8. Do not run KTO, the headline/full eval, any long cell, or any mixed-stage sequential cell without explicit approval.
+7. Full SelfAware and broader OOD evidence configs/docs are already merged/tracked via PR #17. The new KTO comparator configs/docs should be committed next. Treat all of this as bounded local motivation for Amendment A, not headline/protocol evidence.
+8. Do not run the headline/full eval, any additional long cell, or any mixed-stage sequential cell without explicit approval.
 9. Do not immediately repeat the same A10G Qwen3 4B HF Jobs download loop. The latest `0400540` bounded SFT max-2 `cloud-pipeline` smoke submitted job `6a2c75e97c68f455eff143b2` and failed during remote `Qwen/Qwen3-4B` first-shard download before training/eval. Next, run a smaller cloud-pipeline smoke, for example a tiny public model, or improve launcher job-id capture, UTF-8 logging, and model-cache strategy before another Qwen3 4B attempt.
-10. Only after local eval and cloud smoke both work should we consider more headline cells. KTO remains blocked for local expansion until Docker reliability is re-established and for cloud expansion until an explicit KTO smoke is approved with the cloud prerequisites cleared. Mixed-stage cells remain blocked until Amendment A / v0.4 is signed and recipes are deliberately materialized.
+10. Only after local eval and cloud smoke both work should we consider more headline cells. KTO remains blocked for cloud expansion until an explicit KTO smoke is approved with the cloud prerequisites cleared. Mixed-stage cells remain blocked until Amendment A / v0.4 is signed and recipes are deliberately materialized.
 11. Before cloud-lane expansion beyond the SFT smoke, verify process-local `HF_TOKEN` availability, use Synaptic Tuner's `cloud-pipeline` flow from a clean pushed exact commit, and confirm the already public Qwen3 4B dataset file names.
 
 ## Files Changed During This Session
