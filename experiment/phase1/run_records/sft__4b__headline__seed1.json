@@ -16,32 +16,31 @@
   "data": {
     "source_data_file": "F:\\Code\\Epistemic-Humility-Research\\experiment\\phase1\\data\\qwen3-4b-instruct\\sft_train.jsonl",
     "staged_data_file": "scratch/eh_staging/sft__4b__headline__seed1/sft_train.jsonl",
-    "data_sha256": "349916013f4f44894fbc74a1a25e85a7c405fd3a7fcf92242fd8cc690e2c0946",
+    "data_sha256": "714577a8ce6d32ace422df519690b0a96adde3985f36cab0a24404e0a92d558b",
     "hf_dataset_name": null,
     "hf_dataset_revision": null
   },
-  "research_repo_commit": "ca5f926cbd5ca39afda674402f42a29c56283393",
-  "submodule_commit": "3a3d7a26e976e70d095c7f965e7d6e7b210843f7",
+  "research_repo_commit": "5b03bcc561793075c7e4271cb7a55eeb505286ce",
+  "submodule_commit": "040054021c6da2c8c94453edbb699a487221120e",
   "prereq_check": {
     "datasets_present": true,
     "leakage_guard_passed": true
   },
-  "launched_at": "2026-06-12T00:20:43.114725+00:00",
+  "launched_at": "2026-06-14T09:29:14.107609+00:00",
   "tuner_invocation": [
     "python",
     "tuner.py",
     "local-run",
     "--job-config",
-    "F:\\Code\\Epistemic-Humility-Research\\experiment\\phase1\\run_records\\materialized_recipes\\sft__4b__headline__seed1.yaml",
+    "F:/Code/Epistemic-Humility-Research/experiment/phase1/run_records/materialized_recipes/sft__4b__headline__seed1.yaml",
     "--yes"
   ],
   "outcome": {
-    "status": "completed",
+    "status": "launched",
     "job_handle": null,
-    "adapter_path": "F:\\Code\\Epistemic-Humility-Research\\synaptic-tuner\\toolset-training-artifacts\\runs\\local\\4b\\sft__4b__headline__seed1\\20260611_202126\\final_model",
-    "metrics_path": "F:\\Code\\Epistemic-Humility-Research\\synaptic-tuner\\toolset-training-artifacts\\runs\\local\\4b\\sft__4b__headline__seed1\\20260611_202126\\logs\\training_latest.jsonl",
-    "verified": false,
-    "completed_at": "2026-06-12T01:14:11.617639+00:00"
+    "adapter_path": null,
+    "metrics_path": null,
+    "verified": false
   },
   "materialized_recipe": "F:\\Code\\Epistemic-Humility-Research\\experiment\\phase1\\run_records\\materialized_recipes\\sft__4b__headline__seed1.yaml"
 }
