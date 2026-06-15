@@ -1,0 +1,316 @@
+version: 1
+description: "Canonical edge ontology for typed Obsidian knowledge graph relationships."
+
+# Research extension (Epistemic-Humility vault): the node types and edges marked
+# "Research extension" are additive to the generic ontology so the same scripts
+# analyze both the personal vault and the research library.
+
+node_types:
+  - person
+  - org
+  - project
+  - concept
+  - work
+  - place
+  - event
+  - artifact
+  - source
+  - claim
+  # Research extension
+  - paper       # a citable research paper (kg.id paper:<arxiv>)
+  - method      # a method/algorithm/training objective
+  - metric      # an evaluation metric
+  - dataset     # a dataset or benchmark
+  - model       # a specific model
+  - term        # a term of art in the field
+  - mechanism   # a causal cause->effect claim
+
+edges:
+  related_to:
+    inverse: related_to
+    description: "Weak semantic relationship when no more specific edge is justified."
+  similar_to:
+    inverse: similar_to
+    description: "Subject is meaningfully similar to target."
+  different_from:
+    inverse: different_from
+    description: "Subject is meaningfully contrasted with target."
+  part_of:
+    inverse: has_part
+    aliases: [has_part_of]
+    description: "Subject is a component, member, subset, or section of target."
+  has_part:
+    inverse: part_of
+    description: "Subject contains target as a component, member, subset, or section."
+  contains:
+    inverse: located_in
+    description: "Subject physically, conceptually, or organizationally contains target."
+  located_in:
+    inverse: contains
+    aliases: [based_in]
+    description: "Subject is located in target."
+  adjacent_to:
+    inverse: adjacent_to
+    description: "Subject is spatially or conceptually adjacent to target."
+
+  causes:
+    inverse: caused_by
+    description: "Subject causes or materially contributes to target."
+  caused_by:
+    inverse: causes
+    description: "Subject is caused by target."
+  enables:
+    inverse: enabled_by
+    description: "Subject makes target possible or easier."
+  enabled_by:
+    inverse: enables
+    description: "Subject is enabled by target."
+  prevents:
+    inverse: prevented_by
+    description: "Subject prevents, blocks, or mitigates target."
+  prevented_by:
+    inverse: prevents
+    description: "Subject is prevented by target."
+  requires:
+    inverse: required_by
+    description: "Subject requires target."
+  required_by:
+    inverse: requires
+    description: "Subject is required by target."
+  produces:
+    inverse: produced_by
+    description: "Subject produces target."
+  produced_by:
+    inverse: produces
+    aliases: [created_by]
+    description: "Subject is produced or created by target."
+  used_for:
+    inverse: uses
+    description: "Subject is used for target."
+  uses:
+    inverse: used_by
+    aliases: [utilizes]
+    description: "Subject uses target."
+  used_by:
+    inverse: uses
+    description: "Subject is used by target."
+
+  before:
+    inverse: after
+    description: "Subject occurs before target."
+  after:
+    inverse: before
+    description: "Subject occurs after target."
+  during:
+    inverse: during
+    description: "Subject occurs during target."
+
+  authored_by:
+    inverse: authored
+    description: "Subject was authored by target."
+  authored:
+    inverse: authored_by
+    description: "Subject authored target."
+  contributed_to:
+    inverse: has_contributor
+    description: "Subject contributed to target."
+  has_contributor:
+    inverse: contributed_to
+    description: "Subject has target as a contributor."
+  derived_from:
+    inverse: source_of
+    description: "Subject derives from target."
+  source_of:
+    inverse: derived_from
+    description: "Subject is a source for target."
+  cited_by:
+    inverse: cites
+    description: "Subject is cited by target."
+  cites:
+    inverse: cited_by
+    description: "Subject cites target."
+
+  inspired_by:
+    inverse: inspired
+    description: "Subject is inspired by target."
+  inspired:
+    inverse: inspired_by
+    description: "Subject inspired target."
+  influenced_by:
+    inverse: influenced
+    description: "Subject is influenced by target."
+  influenced:
+    inverse: influenced_by
+    description: "Subject influenced target."
+  explains:
+    inverse: explained_by
+    description: "Subject explains target."
+  explained_by:
+    inverse: explains
+    description: "Subject is explained by target."
+  critiques:
+    inverse: critiqued_by
+    description: "Subject critiques target."
+  critiqued_by:
+    inverse: critiques
+    description: "Subject is critiqued by target."
+  opposes:
+    inverse: opposed_by
+    aliases: [opposed]
+    description: "Subject opposes target."
+  opposed_by:
+    inverse: opposes
+    description: "Subject is opposed by target."
+  supports:
+    inverse: supported_by
+    description: "Subject supports target."
+  supported_by:
+    inverse: supports
+    description: "Subject is supported by target."
+
+  parent_of:
+    inverse: child_of
+    description: "Subject is a parent of target."
+  child_of:
+    inverse: parent_of
+    description: "Subject is a child of target."
+  father_of:
+    inverse: child_of
+    description: "Subject is the father of target."
+  mother_of:
+    inverse: child_of
+    description: "Subject is the mother of target."
+  son_of:
+    inverse: parent_of
+    description: "Subject is a son of target."
+  daughter_of:
+    inverse: parent_of
+    description: "Subject is a daughter of target."
+  sibling_of:
+    inverse: sibling_of
+    aliases: [brother_of, sister_of]
+    description: "Subject is a sibling of target."
+  spouse_of:
+    inverse: spouse_of
+    aliases: [married_to]
+    description: "Subject is married to or partnered with target."
+
+  worked_at:
+    inverse: employed
+    aliases: [work_at, employed_by, taught_at, served_at]
+    description: "Subject worked at target."
+  employed:
+    inverse: worked_at
+    description: "Subject employed target."
+  founded:
+    inverse: founded_by
+    aliases: [established]
+    description: "Subject founded target."
+  founded_by:
+    inverse: founded
+    aliases: [established_by]
+    description: "Subject was founded by target."
+  led:
+    inverse: led_by
+    description: "Subject led target."
+  led_by:
+    inverse: led
+    description: "Subject was led by target."
+  member_of:
+    inverse: has_member
+    description: "Subject is a member of target."
+  has_member:
+    inverse: member_of
+    description: "Subject has target as a member."
+  affiliated_with:
+    inverse: affiliated_with
+    description: "Subject is affiliated with target."
+  reports_to:
+    inverse: supervises
+    description: "Subject reports to target."
+  supervises:
+    inverse: reports_to
+    description: "Subject supervises target."
+
+  born_in:
+    inverse: birthplace_of
+    description: "Subject was born in target."
+  birthplace_of:
+    inverse: born_in
+    description: "Subject is the birthplace of target."
+  died_in:
+    inverse: deathplace_of
+    description: "Subject died in target."
+  deathplace_of:
+    inverse: died_in
+    description: "Subject is the death place of target."
+  studied_at:
+    inverse: educated
+    description: "Subject studied at target."
+  educated:
+    inverse: studied_at
+    description: "Subject educated target."
+
+  applied_to:
+    inverse: application_of
+    aliases: [applies_to, applied_in]
+    description: "Subject is applied to target."
+  application_of:
+    inverse: applied_to
+    description: "Subject is an application of target."
+  has_property:
+    inverse: property_of
+    description: "Subject has target as a property."
+  property_of:
+    inverse: has_property
+    description: "Subject is a property of target."
+  has_component:
+    inverse: component_of
+    description: "Subject has target as a component."
+  component_of:
+    inverse: has_component
+    description: "Subject is a component of target."
+  has_variation:
+    inverse: variation_of
+    description: "Subject has target as a variation."
+  variation_of:
+    inverse: has_variation
+    description: "Subject is a variation of target."
+  has_algorithm:
+    inverse: algorithm_for
+    description: "Subject has target as an algorithm."
+  algorithm_for:
+    inverse: has_algorithm
+    description: "Subject is an algorithm for target."
+
+  # Research extension: paper -> entity and entity lineage edges for the library.
+  # Reuse generics where they fit: uses, derived_from, variation_of, required_by,
+  # supports/supported_by, causes/caused_by, enables, prevents, authored_by.
+  proposes:
+    inverse: proposed_by
+    aliases: [introduces]
+    description: "Subject (paper) introduces or proposes target (method, metric, dataset, or term)."
+  proposed_by:
+    inverse: proposes
+    description: "Subject was proposed or introduced by target paper."
+  evaluates_on:
+    inverse: evaluation_set_for
+    aliases: [evaluated_on, benchmarks_on]
+    description: "Subject (paper) runs its evaluation on target (dataset or benchmark)."
+  evaluation_set_for:
+    inverse: evaluates_on
+    description: "Subject (dataset) is an evaluation set used by target paper."
+  measures:
+    inverse: measured_by
+    aliases: [reports_metric]
+    description: "Subject (paper) reports or measures target (metric)."
+  measured_by:
+    inverse: measures
+    description: "Subject (metric) is measured or reported by target paper."
+  studies:
+    inverse: studied_by
+    aliases: [investigates]
+    description: "Subject (paper) studies target (term or mechanism)."
+  studied_by:
+    inverse: studies
+    description: "Subject is studied by target paper."

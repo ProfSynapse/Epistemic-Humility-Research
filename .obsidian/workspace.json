@@ -1,0 +1,195 @@
+{
+  "main": {
+    "id": "55dbb304022aa0f1",
+    "type": "split",
+    "children": [
+      {
+        "id": "914c78ebc1515287",
+        "type": "tabs",
+        "children": [
+          {
+            "id": "03508dd7096dbcbc",
+            "type": "leaf",
+            "state": {
+              "type": "markdown",
+              "state": {
+                "file": "library/concepts/mechanisms/abstention-generalization-failure.md",
+                "mode": "source",
+                "source": false
+              },
+              "icon": "lucide-file",
+              "title": "abstention-generalization-failure"
+            }
+          }
+        ]
+      }
+    ],
+    "direction": "vertical"
+  },
+  "left": {
+    "id": "4ea3b2ae2b709e53",
+    "type": "split",
+    "children": [
+      {
+        "id": "dd8cbc3884ecd47c",
+        "type": "tabs",
+        "children": [
+          {
+            "id": "0570cac3a1db689f",
+            "type": "leaf",
+            "state": {
+              "type": "file-explorer",
+              "state": {
+                "sortOrder": "alphabetical",
+                "autoReveal": false
+              },
+              "icon": "lucide-folder-closed",
+              "title": "Files"
+            }
+          },
+          {
+            "id": "1f09b5f05c6b4f97",
+            "type": "leaf",
+            "state": {
+              "type": "search",
+              "state": {
+                "query": "",
+                "matchingCase": false,
+                "explainSearch": false,
+                "collapseAll": false,
+                "extraContext": false,
+                "sortOrder": "alphabetical"
+              },
+              "icon": "lucide-search",
+              "title": "Search"
+            }
+          },
+          {
+            "id": "310ef612edd1d252",
+            "type": "leaf",
+            "state": {
+              "type": "bookmarks",
+              "state": {},
+              "icon": "lucide-bookmark",
+              "title": "Bookmarks"
+            }
+          }
+        ]
+      }
+    ],
+    "direction": "horizontal",
+    "width": 300
+  },
+  "right": {
+    "id": "25a2529bb40b2b38",
+    "type": "split",
+    "children": [
+      {
+        "id": "90233fa1bd9605df",
+        "type": "tabs",
+        "children": [
+          {
+            "id": "ca932279ebdfd1c1",
+            "type": "leaf",
+            "state": {
+              "type": "backlink",
+              "state": {
+                "file": "library/concepts/mechanisms/abstention-generalization-failure.md",
+                "collapseAll": false,
+                "extraContext": false,
+                "sortOrder": "alphabetical",
+                "showSearch": false,
+                "searchQuery": "",
+                "backlinkCollapsed": false,
+                "unlinkedCollapsed": true
+              },
+              "icon": "links-coming-in",
+              "title": "Backlinks for abstention-generalization-failure"
+            }
+          },
+          {
+            "id": "0c37e8760c2cb0bd",
+            "type": "leaf",
+            "state": {
+              "type": "outgoing-link",
+              "state": {
+                "file": "library/concepts/mechanisms/abstention-generalization-failure.md",
+                "linksCollapsed": false,
+                "unlinkedCollapsed": true
+              },
+              "icon": "links-going-out",
+              "title": "Outgoing links from abstention-generalization-failure"
+            }
+          },
+          {
+            "id": "f9632da67a3ccbf4",
+            "type": "leaf",
+            "state": {
+              "type": "tag",
+              "state": {
+                "sortOrder": "frequency",
+                "useHierarchy": true,
+                "showSearch": false,
+                "searchQuery": ""
+              },
+              "icon": "lucide-tags",
+              "title": "Tags"
+            }
+          },
+          {
+            "id": "f97c14651e2a62ca",
+            "type": "leaf",
+            "state": {
+              "type": "all-properties",
+              "state": {
+                "sortOrder": "frequency",
+                "showSearch": false,
+                "searchQuery": ""
+              },
+              "icon": "lucide-archive",
+              "title": "All properties"
+            }
+          },
+          {
+            "id": "8820800e8052788d",
+            "type": "leaf",
+            "state": {
+              "type": "outline",
+              "state": {
+                "file": "library/concepts/mechanisms/abstention-generalization-failure.md",
+                "followCursor": false,
+                "showSearch": false,
+                "searchQuery": ""
+              },
+              "icon": "lucide-list",
+              "title": "Outline of abstention-generalization-failure"
+            }
+          }
+        ]
+      }
+    ],
+    "direction": "horizontal",
+    "width": 300,
+    "collapsed": true
+  },
+  "left-ribbon": {
+    "hiddenItems": {
+      "switcher:Open quick switcher": false,
+      "graph:Open graph view": false,
+      "canvas:Create new canvas": false,
+      "daily-notes:Open today's daily note": false,
+      "templates:Insert template": false,
+      "command-palette:Open command palette": false,
+      "bases:Create new base": false
+    }
+  },
+  "active": "03508dd7096dbcbc",
+  "lastOpenFiles": [
+    "sync_skills.py",
+    "docs/review/pr40-experiment-runner-probe-dataprep-review.md",
+    "docs/preparation/experiment-runner-probe-dataprep-research.md",
+    "docs/architecture/experiment-runner-probe-dataprep.md",
+    "library/notes/2407.18418--know-your-limits-abstention-survey.md",
+    "library/concepts/mechanisms/abstention-generalization-failure.md"
+  ]
+}

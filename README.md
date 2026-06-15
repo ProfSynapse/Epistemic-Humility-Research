@@ -82,7 +82,12 @@ current state.
 │   └── phase1/                #   probe/ data/ eval/ recipes/ run_records/
 ├── docs/                      # architecture decisions, prep research,
 │                              #   peer-review records for the pipeline
-├── library/                   # paper manifest + frontmatter notes
+├── library/                   # Obsidian-style knowledge graph (see SCHEMA.md)
+│   ├── notes/                 #   per-paper notes (frontmatter + typed edges)
+│   ├── concepts/              #   atomic notes: methods/ metrics/ datasets/
+│   │                          #   models/ terms/ mechanisms/  (+ README map)
+│   ├── SCHEMA.md              #   the graph ontology + frontmatter templates
+│   ├── manifest.yaml          #   paper registry
 │   ├── pdfs/                  #   gitignored; refetch via library/scripts/
 │   └── fulltext/              #   gitignored; same
 ├── datasets/                  # eval/training data, one dir per source;
@@ -100,6 +105,26 @@ Suggested reading order for a newcomer:
 2. `meta-analysis/paper/draft-v0.md` for the synthesis and the gap analysis.
 3. `experiment/protocol/PROTOCOL.md` for the locked experimental design.
 4. `docs/architecture/phase1-pipeline.md` for how the pipeline implements it.
+
+### The library as a knowledge graph
+
+`library/` is not a flat reading list. It is an Obsidian-style vault where each
+paper note carries typed `relationships` (`proposes`, `evaluates_on`, `measures`,
+`derived_from`, `supports`, ...) to atomic concept notes for the methods,
+metrics, datasets, terms, and causal mechanisms it touches. The design follows
+**Agents-K1: Towards Agent-native Knowledge Orchestration**
+([arXiv:2606.13669](https://arxiv.org/abs/2606.13669)), which argues for
+capturing entities, claims, evidence, mechanisms, and method lineages rather than
+reducing papers to abstracts and flat `cites` edges. This makes the literature
+traversable (what derives from DPO? which papers measure ECE? what mechanism
+explains finetuning-induced hallucination?) for both humans and agents.
+
+The graph uses the governed `kg` / `relationships` / `related` schema from the
+vendored `knowledge-graph` skill, so it is validatable and analyzable:
+`validate_kg_relationships.py`, `export_kg.py` (triples), and `analyze_kg.py`
+(centrality, orphans, ontology drift) all run over `library/`. The domain overlay
+is in `library/SCHEMA.md`; new papers are folded in with the `kg-ingest` skill.
+Start at `library/concepts/README.md` for the map.
 
 ## Running experiments
 
