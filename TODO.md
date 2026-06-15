@@ -199,6 +199,15 @@ We are proving the Phase 1 local lane before committing more GPU time. The goal 
   - Summary: `sft_merged` truthful 38.5, refusal_recall 82.56, answer_on_unknown 17.44, over_refusal 61.49, correct_on_known 49.44; `sft_dpo` truthful 30.25, refusal_recall 48.84, answer_on_unknown 51.16, over_refusal 13.95, correct_on_known 25.61; `sft_kto` truthful 36.92, refusal_recall 75.68, answer_on_unknown 24.32, over_refusal 48.31, correct_on_known 38.33.
   - Interpretation: full SelfAware matches the broader OOD direction. Sequential DPO sharply reduces over-refusal but loses much of SFT's unknown refusal and known correctness. Sequential KTO retains more abstention and truthful score than DPO, but only partially reduces over-refusal. This is bounded local Amendment A evidence, not v0.3 headline/protocol evidence.
 
+- Amendment A transition analysis completed from persisted local eval artifacts.
+  - Script/report: `experiment/phase1/eval/analysis/amendment_a_transition_analysis.py` and `experiment/phase1/eval/analysis/amendment_a_transition_report.md`.
+  - Row-identity caveat: the Amendment A live eval result directories did not persist `generations.jsonl` or another per-row prediction table. Exact row-level transitions cannot be reconstructed after the run. The analysis therefore reports exact McNemar truthful flips plus tight feasible ranges for the narrower refusal/correctness transitions implied by aggregate margins.
+  - Full SelfAware exact truthful flips: `sft_merged -> sft_dpo` had 424 SFT-truthful/DPO-untruthful vs 146 DPO-truthful/SFT-untruthful rows; `sft_merged -> sft_kto` had 124 vs 71; `sft_dpo -> sft_kto` had 108 vs 333.
+  - Full SelfAware bounded transition evidence: `sft_dpo` must have answered on 348-424 unknown rows where `sft_merged` correctly refused, while `sft_kto` did so on 71-124 such rows. Known-row useful recovery is not proven by the persisted artifacts: `sft_dpo` may have 0-146 rows where SFT refused and DPO answered correctly, despite 1,111 fewer known refusals in aggregate.
+  - KUQ supports the same direction: `sft_merged -> sft_dpo` had 58 exact SFT-truthful/DPO-untruthful flips, with 55-58 attributable to unknown SFT-refusal becoming DPO-answer; `sft_merged -> sft_kto` had 18 such flips, with 15-18 attributable to that unknown-refusal loss.
+  - Interpretation: sequential DPO's over-refusal reduction is mixed rather than clean useful recovery; it applies strong answer pressure that also collapses a substantial portion of unknown refusal and known correctness. Sequential KTO preserves more abstention but leaves high over-refusal.
+  - Next experimental recommendation: if Amendment A continues, prioritize deliberately scoped sequential-stage sensitivity. DPO variants should test lower-intensity correction (lower beta, lower LR, fewer effective epochs/steps, and possibly smaller downstream LoRA rank/alpha). KTO variants are justified only if the priority is preserving abstention first while seeking stronger known-question recovery. Future live evals should persist per-row scored outputs for exact transition analysis.
+
 - Local KTO headline seed 1 completed and was audited.
   - Run id: `kto__4b__headline__seed1`.
   - Adapter: `synaptic-tuner/toolset-training-artifacts/runs/local/4b/kto__4b__headline__seed1/20260613_151337_logging_patch/final_model`.
@@ -300,8 +309,8 @@ We are proving the Phase 1 local lane before committing more GPU time. The goal 
 1. Amendment A / v0.4 is signed as a prospective extension for mixed-stage `SFT -> DPO` and `SFT -> KTO` (user approval, 2026-06-14). Keep it separate from the locked v0.3 headline matrix.
 2. The grouped-split SFT LoRA adapter is already merged locally; use the `merged-16bit` path above for sequential DPO/KTO runs, then train fresh downstream DPO/KTO LoRA adapters with `model.name` pointing at that merged SFT model path.
 3. Treat previous local DPO and KTO seed 1 as completed pre-split-fix bounded comparators. The plain-language read remains: SFT learned abstention but over-refused badly; DPO-from-base and KTO-from-base stayed base-like and did not learn abstention on those local evidence surfaces.
-4. Full sequential DPO/KTO runs plus broader OOD and full SelfAware sequential evals are complete locally. Next Amendment A evidence should be a deliberately scoped follow-up analysis, not a v0.3 matrix expansion.
-5. Add a later sensitivity axis for epochs and LoRA rank/alpha; this should be protocol-scoped rather than silently changing the current headline comparator.
+4. Full sequential DPO/KTO runs, broader OOD/full SelfAware sequential evals, and transition analysis are complete locally. Next Amendment A evidence should be deliberately scoped sensitivity work, not a v0.3 matrix expansion.
+5. If Amendment A continues, add sensitivity around the sequential preference stage: lower DPO beta, lower LR, fewer effective epochs/steps, and possibly smaller downstream LoRA rank/alpha for gentler correction; KTO sensitivity is most useful if the priority is preserving abstention while reducing known over-refusal.
 6. Before cloud KTO smoke, commit/push the Synaptic Tuner KTO logging fix to the exact cloud commit, then clear cloud launcher and dataset prerequisites.
 7. Before any long local run, prefer the bare Docker/host GPU checks that are known to work from Codex:
 
