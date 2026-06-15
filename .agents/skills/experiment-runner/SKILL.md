@@ -28,6 +28,7 @@ run records.
 | Launch the local smoke/pilot lane | see Common Patterns (gated, explicit; seed/beta capability-probed — see CLI Discipline) |
 | Launch the cloud matrix | see Common Patterns (both lanes safety-gated by a live capability probe — see CLI Discipline) |
 | Inspect a run record | `cat experiment/phase1/run_records/<run_id>.json` |
+| Prepare/gate one hidden-state extraction (GPU-free; gate + resolve, launch nothing) | `python3 .agents/skills/experiment-runner/scripts/prepare_extraction_cell.py --config experiment/phase1/probe/config/hidden_state_probe.yaml` — see [hidden-state-probe-smoke.md](reference/hidden-state-probe-smoke.md) |
 
 The matrix SSOT is `config/matrix.yaml`; the per-arm DEFAULT recipes are repo
 content at `experiment/phase1/recipes/`; the provenance records are committed at
@@ -656,3 +657,4 @@ the eval-side aggregation isolates it.
 | How `matrix.yaml` maps to PROTOCOL v0.3 cells + the count-assertion table | [reference/matrix-expansion.md](reference/matrix-expansion.md) |
 | Local staging vs cloud hub-name; the data-locality contract; the cloud capability gap | [reference/lanes.md](reference/lanes.md) |
 | Run-record schema + provenance discipline (dual SHAs, data block, verified flag) | [reference/run-records.md](reference/run-records.md) |
+| Off-matrix hidden-state extraction: gate (E1..E4), `aligned_run_record_id` resolver, GPU-free smoke chain | [reference/hidden-state-probe-smoke.md](reference/hidden-state-probe-smoke.md) |
