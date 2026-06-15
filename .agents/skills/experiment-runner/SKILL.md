@@ -525,6 +525,28 @@ skill:
   refusal and known correctness; sequential KTO preserves more abstention but
   leaves substantial over-refusal. Treat this as bounded local Amendment A
   evidence, not v0.3 headline/protocol evidence.
+- Amendment A transition analysis is documented at
+  `experiment/phase1/eval/analysis/amendment_a_transition_report.md`, with the
+  reproducible script
+  `experiment/phase1/eval/analysis/amendment_a_transition_analysis.py`. Important
+  caveat: the Amendment A live eval result directories did not persist
+  `generations.jsonl` or another per-row prediction table, so exact row-level
+  refusal/correctness transitions cannot be reconstructed after the run. The
+  report therefore uses exact McNemar truthful flips plus tight feasible bounds
+  from aggregate margins. Full SelfAware exact truthful flips were:
+  `sft_merged -> sft_dpo` 424 SFT-truthful/DPO-untruthful vs 146 DPO-truthful
+  rows; `sft_merged -> sft_kto` 124 vs 71; `sft_dpo -> sft_kto` 108 vs 333.
+  Bounded SelfAware transition evidence implies `sft_dpo` answered on 348-424
+  unknown rows where `sft_merged` correctly refused; `sft_kto` did so on 71-124.
+  KUQ supports the same direction: 55-58 of the 58 exact SFT-truthful/DPO-bad
+  flips are attributable to unknown SFT-refusal becoming DPO-answer. Readout:
+  DPO's over-refusal reduction is mixed, not clean useful recovery; it also
+  collapses a substantial part of unknown refusal. KTO preserves more abstention
+  but leaves high over-refusal. If Amendment A continues, prefer deliberate
+  sequential-stage sensitivity: lower DPO beta/LR/effective epochs and possibly
+  smaller downstream rank/alpha; KTO sensitivity is useful mainly if preserving
+  abstention is prioritized. Future live evals should persist per-row scored
+  outputs for exact transition analysis.
 - Local KTO seed 1 completed after Docker recovery. Run record:
   `experiment/phase1/run_records/kto__4b__headline__seed1.json`. Artifact root:
   `synaptic-tuner/toolset-training-artifacts/runs/local/4b/kto__4b__headline__seed1/20260613_151337_logging_patch`.
