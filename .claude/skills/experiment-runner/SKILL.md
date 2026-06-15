@@ -11,6 +11,12 @@ full provenance and prerequisite gating. This is orchestration GLUE: the runner
 talks to the `synaptic-tuner` submodule ONLY through the materialized recipe YAML
 and the tuner's public CLI verbs. It adds nothing to the tuner.
 
+Amendment A / v0.4 is now signed as a prospective extension (user approval,
+2026-06-14): sequential `SFT -> DPO` and `SFT -> KTO` arms are not part of the
+locked v0.3 matrix, are not present in `config/matrix.yaml`, and must be
+materialized/run only as deliberate Amendment A cells with separate recipes and
+run records.
+
 ## Quick Reference
 
 | Task | Command |
@@ -22,6 +28,7 @@ and the tuner's public CLI verbs. It adds nothing to the tuner.
 | Launch the local smoke/pilot lane | see Common Patterns (gated, explicit; seed/beta capability-probed — see CLI Discipline) |
 | Launch the cloud matrix | see Common Patterns (both lanes safety-gated by a live capability probe — see CLI Discipline) |
 | Inspect a run record | `cat experiment/phase1/run_records/<run_id>.json` |
+| Prepare/gate one hidden-state extraction (GPU-free; gate + resolve, launch nothing) | `python3 .agents/skills/experiment-runner/scripts/prepare_extraction_cell.py --config experiment/phase1/probe/config/hidden_state_probe.yaml` — see [hidden-state-probe-smoke.md](reference/hidden-state-probe-smoke.md) |
 
 The matrix SSOT is `config/matrix.yaml`; the per-arm DEFAULT recipes are repo
 content at `experiment/phase1/recipes/`; the provenance records are committed at
@@ -39,6 +46,14 @@ content at `experiment/phase1/recipes/`; the provenance records are committed at
 
 `run_matrix.py` ASSERTS 19 @ 4B / 9 @ 8B / 2 bridge and ABORTS on mismatch — the
 pre-registration guard. See [matrix-expansion.md](reference/matrix-expansion.md).
+
+Amendment A / v0.4 adds a signed prospective extension for mixed-stage
+`SFT -> DPO` and `SFT -> KTO` tests, motivated by bounded local evidence that
+SFT induces abstention with high over-refusal while DPO from base remained
+base-like on SelfAware/KUQ refusal behavior. This does not alter the table
+above. Do not edit `config/matrix.yaml`, relax count assertions, or create
+sequential recipes inside the locked v0.3 matrix; create them only through a
+deliberate Amendment A implementation path.
 
 ## CLI Discipline
 
@@ -63,6 +78,10 @@ skill:
 - **Prefer the checked-in `run_matrix.py`** over ad hoc per-cell loops.
 - **Never loosen the count assertions** to absorb a `matrix.yaml` edit. The
   counts are pre-registered; a change needs a NEW signed PROTOCOL revision first.
+- **Never silently expand the v0.3 matrix for Amendment A.** Mixed-stage
+  `SFT -> DPO` / `SFT -> KTO` cells are signed Amendment A / v0.4 prospective
+  extension cells, not v0.3 matrix cells. Materialize them only through a
+  deliberate implementation path with separate run records and labels.
 - **BOTH lanes are safety-gated by a LIVE capability probe.** A cell is only safe
   once the tuner forwards per-cell `seed` / `beta` on the lane it runs; otherwise
   cells silently train at defaults. The gap spans both lanes (cloud command
@@ -94,7 +113,10 @@ skill:
   (5 passed). KTO HF smoke is still blocked until that Synaptic Tuner change is
   committed/pushed to the exact cloud commit and the cloud launcher/dataset
   prerequisites are cleared. The local copy-mode KTO workaround in
-  `prepare_local_cell.py` does not apply to HF Jobs.
+  `prepare_local_cell.py` does not apply to HF Jobs. Local KTO seed 1 later
+  completed successfully with the compatibility copy-mode patch still present
+  in the materialized recipe; keep that distinction clear when reading
+  provenance.
 - Current launcher env blocker: the `kto` conda env has `huggingface_hub`
   0.36.0 with Jobs API support, but lacks Buckets `create_bucket`. Do not
   blindly upgrade the main Unsloth/training env; Synaptic Tuner fine-tuning
@@ -129,8 +151,32 @@ skill:
 - Synaptic Tuner `0400540` adds generic cloud eval hardening: `--eval-timeout-hours`,
   eval timeout resolution, cloud-pipeline eval arg forwarding, model-load stage
   events, and SIGTERM/SIGINT terminated-stage logging including bootstrap
-  downloads. The next cloud smoke should run from `0400540` or later and pass a
-  separate eval timeout budget instead of only increasing training runtime.
+  downloads. Future eval-budgeted cloud attempts should keep those capabilities
+  available, but the latest Qwen3 4B smoke below failed before training/eval.
+- Latest bounded SFT `max_steps=2` `cloud-pipeline` smoke launched from
+  Synaptic Tuner `0400540` with:
+  `cloud-pipeline --method sft --yes --train-model-name Qwen/Qwen3-4B --train-dataset-name professorsynapse/epistemic-humility-phase1 --train-dataset-file qwen3-4b-instruct/sft_train.jsonl --train-max-steps 2 --train-image-profile stable --eval-image-profile stable_unsloth --scenario labkit_epistemic_humility_smoke.yaml --eval-timeout-hours 4`.
+  Remote training job `6a2c75e97c68f455eff143b2` was created
+  `2026-06-12 21:11:05 UTC` and ended `ERROR`. It cloned and checked out
+  `0400540`, loaded the Unsloth stable image, began loading
+  `Qwen/Qwen3-4B`, then stalled/failed while downloading the first shard
+  `model-00001-of-00002.safetensors` around `28.2M/4.97G`; it never reached
+  max-2 training or eval. Classify this as a remote base-model
+  download/training-bootstrap failure, not a data or eval-code failure.
+- Cloud launcher env/logging gotchas from the `0400540` smoke: two earlier
+  local launch attempts failed before submission because the default launcher
+  env had `huggingface_hub` 0.36.0 without the Buckets API, while an overlay
+  with Hub 1.19.0 conflicts with installed Transformers if the tuner stack
+  imports both in-process. The successful host log
+  `hf_cloud_pipeline_sft_smoke_20260612_171048.log` did not advance past
+  `STEP 1: CLOUD TRAINING`, did not include the remote job id, and was
+  garbled/UTF-16-ish; the remote HF Jobs list was needed to find the submitted
+  job. Future launcher work should avoid importing Transformers with Hub 1.x,
+  capture and print the job id before polling, and use UTF-8-safe log capture.
+- Do not immediately repeat the same A10G Qwen3 4B download loop. Prefer a
+  smaller `cloud-pipeline` smoke, for example a tiny public model, or improve
+  launcher job-id capture, UTF-8 logging, and model-cache strategy before
+  another Qwen3 4B attempt.
 - Current Qwen3 4B public dataset state: all Phase 1 train/dev JSONLs are
   public at `professorsynapse/epistemic-humility-phase1`:
   `sft_train.jsonl`, `sft_dev.jsonl`, `dpo_train.jsonl`, `dpo_dev.jsonl`,
@@ -158,10 +204,28 @@ skill:
   `--entrypoint python3` for `probe.py`.
 - Docker may require an unsandboxed/escalated command from Codex. On the desktop
   run, Docker engine `29.3.1` was reachable outside the sandbox.
+- After Joseph moved/opened Docker on the F drive, Codex Docker CLI behavior is
+  mixed: bare `docker ps` and `docker ps -a --format ...` worked, while
+  `docker info`, `docker context ls`, explicit `DOCKER_CONFIG`, explicit pipe
+  commands, and some image listing paths can hit
+  `C:\Users\Joseph\.docker\config.json Access is denied` or Docker pipe
+  permission errors. Do not modify `C:\Users\Joseph\.docker` from Codex as a
+  workaround. For actual local container create/pull/run operations, escalated
+  Docker commands worked.
+- Local Docker/GPU recovery on 2026-06-13: `docker pull unsloth/unsloth:latest`
+  succeeded locally with digest
+  `sha256:f21629b9ae4ed11231768edfaed0f40d41d85d6ea9a71e8096a3d96ea0311772`,
+  and `docker run --rm --gpus all --entrypoint nvidia-smi
+  unsloth/unsloth:latest` saw the RTX 3090.
 - Redirect Hugging Face caches to repo-local `.cache/hf` during local runs to
   avoid Windows permission failures under `C:\Users\Joseph\.cache\huggingface`.
 - `.env` may contain `HF_TOKEN` while the current process environment does not.
   Load it process-locally or pass `--env-file .env`; never print token values.
+  For local eval containers that only use public/local assets, do not pass the
+  full repo `.env`; pass only narrow cache/env variables such as `HF_HOME` and
+  `HUGGINGFACE_HUB_CACHE`. The grouped-SFT broader OOD eval completed this way
+  after the full `.env` launch was correctly rejected as unnecessary secret
+  exposure.
 - Windows default text encoding broke the TriviaQA fetch before the script used
   explicit UTF-8 writes. Keep UTF-8 mode/path handling in mind for fetch retries.
 - Windows default text encoding also broke Phase 1 eval gold/OOD loaders when
@@ -174,6 +238,30 @@ skill:
   disjointness must be audited with `*_question_keys` / `probe_pool_row_key`,
   not bare `*_question_ids`; duplicate TriviaQA IDs can otherwise make a clean
   row-level split look overlapped or seed duplicate rows identically.
+- Row-key disjointness is not prompt-text disjointness. A 2026-06-14 audit of
+  `qwen3-4b-instruct` initially found the WS-2 split was clean by
+  `probe_pool_row_key`, leakage-clean against Cheng test, and byte-reproducible,
+  but had 188 normalized question texts present in both train and dev under
+  different source row keys. The builder now splits dev by
+  `norm_question(question)` groups and records `dev_split_group_key` in
+  `questions_frozen.json`. Re-audit after rebuild found 0 row-key overlap,
+  0 normalized-question overlap, leakage guard passed, KTO labels balanced, no
+  unknown-negative fallback, no thinking-tag contamination, and byte-for-byte
+  reproducibility. Previous local SFT/DPO/KTO seed-1 runs are pre-split-fix
+  bounded evidence; rerun SFT seed 1 on the regenerated dataset before using it
+  as the mixed-stage comparator.
+- Cheng recipe provenance gotcha: the paper text is vague, but the official
+  OpenMOSS/Say-I-Dont-Know README publishes concrete commands. Cheng Idk-SFT is
+  `llama_recipes/finetuning.py --enable_fsdp` with `--num_epochs 10`, `--lr
+  2e-5`, `--batch_size_training 4`, and `--gradient_accumulation_steps 2`.
+  Cheng Idk-DPO initializes from the SFT result model and uses `loss.beta=0.1`,
+  `loss.sft_coef_when_dpo=0.01`, batch size 64, gradient accumulation 4, and
+  FSDPTrainer. The Phase 1 Qwen3 recipes are therefore NOT a bit-for-bit Cheng
+  training reproduction: they are a resource-feasible LoRA/QLoRA
+  replication-style design with matched LoRA capacity across arms. Do not cite
+  Cheng hyperparameters from the raw evidence report unless re-verified against
+  the official repo/PDF, and do not treat cold-start DPO/KTO failures as a
+  contradiction of Cheng's sequential SFT-warmed preference setup.
 - On Windows, staged tuner scratch paths in run records/materialized recipes
   should be POSIX-style (`scratch/...`) even though host paths are Windows paths;
   emitting backslashes makes provenance noisy and can surprise container path
@@ -214,18 +302,234 @@ skill:
   shell did not recover it in-session. Treat this as a Docker Desktop backend
   recovery blocker before launching another long local cell; first verify
   `docker info` and `docker ps` return normally.
+- Current local recovery status supersedes the failed-backend state for short
+  SFT confidence checks: the existing SFT max-2 micro recipe completed on
+  2026-06-13 from `synaptic-tuner` with
+  `py -3.11 tuner.py local-run --job-config F:\Code\Epistemic-Humility-Research\experiment\phase1\run_records\materialized_recipes\sft__4b__micro_max2.yaml --yes`.
+  Artifact root:
+  `synaptic-tuner/toolset-training-artifacts/runs/local/4b/sft__4b__micro_max2/20260613_084227`.
+  It loaded `unsloth/Qwen3-4B-bnb-4bit`, trained on 14,395 SFT examples for
+  exactly 2 steps, and saved `checkpoints/checkpoint-2`, `final_model`,
+  `training_lineage.json`, and `capacity_features.json`. Audit:
+  `logs/training_latest.jsonl` ended with `train_end`, `step: 2`,
+  `oom_risk_level: low`, peak reserved VRAM about 4.383 GB, and no containers
+  remained after completion. No eval/generation ran. Non-blocking warning:
+  `Failed to import Triton kernels... No module named 'triton_kernels.routing'`;
+  it did not block this completed micro run.
+- The Unsloth image default entrypoint may chmod the mounted repo and fail on
+  `.tmp/pytest-codex*`. For local eval wrapper runs, override the entrypoint
+  with `--entrypoint python3`.
 - Qwen3 prompt rendering can look thinking-off while generated answers still
   contain `<think>...</think>`. Treat any generated thinking tags in
   `probe_results.jsonl` as contaminated output: stop the container, archive the
   output directory, and retry only after the generated-output guard fails before
   writing rows or the backend suppression path is fixed. Do not strip tags and
   continue.
+- For Phase 1 eval generation, prompt rendering with thinking disabled is not
+  sufficient by itself. When `generation.enable_thinking: false`, vLLM
+  `SamplingParams` receives `<think>` and `</think>` stop strings while
+  preserving any configured `generation.stop` values. The generated-thinking
+  guard remains a backstop; do not strip contaminated outputs.
 - Phase 1 local eval now has an opt-in live vLLM path:
   `python experiment/phase1/eval/run_eval.py --config <scoped-config.yaml>
   --live-vllm`. Default fixture behavior is unchanged. The live config must use
   explicit `model_name` for the loadable HF/vLLM repo id and `model_tag` only as
-  the reporting label. Use a scoped same-model base/SFT/DPO config first; KTO
-  has no completed adapter and bridge arms are a different base model.
+  the reporting label. Use scoped same-model configs first; base/SFT/DPO and
+  local KTO seed 1 have completed Qwen3-4B adapters, while bridge arms are a
+  different base model.
+- The scoped local 4B eval smoke config pins `vllm.max_lora_rank: 32` because
+  the completed SFT/DPO adapters are LoRA rank 32. If running that checked-in
+  config inside Docker/Linux from this Windows workspace, translate the
+  Windows absolute adapter paths to container-visible paths or mount the
+  workspace equivalently before launch; the eval loader preserves absolute
+  adapter paths as written.
+- 2026-06-13 scoped local live eval smoke status: the first Docker/Linux run
+  reached the base arm, then failed on the SFT adapter with
+  `ValueError: LoRA rank 32 is greater than max_lora_rank 16`. The config fix
+  was `vllm.max_lora_rank: 32` in
+  `experiment/phase1/eval/config/eval_smoke_local_4b.yaml`, followed by
+  `python -m pytest experiment/phase1/eval/tests/test_run_eval_e2e.py -q`
+  passing with `13 passed, 1 warning`. The rerun passed base + SFT + DPO with
+  exit code 0 and `eval complete: 3 arm x set rows, config_sha=97dddaaf30d0dfb0`.
+  Outputs are under `experiment/phase1/eval/results_smoke_local_4b`: per-arm
+  metrics/bootstrap plus `comparisons/summary_table.csv` and
+  `comparisons/mcnemar.csv`. Smoke-only truthful rates over `n=5` fixture rows
+  were base 60.0, SFT 100.0, DPO 40.0; do not cite these as headline results.
+  The `<think>` guard did not trigger (`rg "<think>|</think>"
+  experiment\phase1\eval\results_smoke_local_4b` found no matches), and no
+  containers or GPU processes remained after completion. This validates the
+  tiny local eval path for base/SFT/DPO adapter load, generation, scoring,
+  bootstrap, and comparisons.
+- Corrected OOD diagnostic run `eh-ood-slice-local-4b-4` exited 0 with
+  `eval complete: 9 arm x set rows, config_sha=fe48ee93abfbc559`. Outputs are
+  under `experiment/phase1/eval/results_ood_slice_local_4b`, covering
+  base/SFT/DPO x CoCoNot/TruthfulQA/SelfAware at limit 64 each. No `<think>` or
+  `</think>` matches were found. Caveat: the first slices were all known-labeled
+  (`n_unknown_labeled=0`), so unknown/refusal-recall metrics are not meaningful
+  there; this validates known-OOD scoring/over-refusal and the live pipeline,
+  not headline results.
+- Mixed SelfAware diagnostic run `eh-selfaware-mixed-local-4b` exited 0 with
+  `eval complete: 3 arm x set rows, config_sha=3f5f676bde46dce9`. Outputs are
+  under `experiment/phase1/eval/results_selfaware_mixed_slice_local_4b`, with no
+  `<think>` or `</think>` matches. Diagnostic-only summary over n=64: base
+  unknown=27 / known=37, refusal_recall 0.0, answer_on_unknown 100.0,
+  over_refusal 0.0, truthful 15.62; SFT refusal_recall 88.89,
+  answer_on_unknown 11.11, over_refusal 72.97, truthful 48.44; DPO
+  refusal_recall 0.0, answer_on_unknown 100.0, over_refusal 0.0, truthful 14.06.
+- Bounded SelfAware evidence run `eh-selfaware-evidence-2240-192-local-4b`
+  exited 0 with `eval complete: 3 arm x set rows,
+  config_sha=70ac0fe102d8db1f`. Config:
+  `experiment/phase1/eval/config/eval_selfaware_evidence_2240_192_local_4b.yaml`.
+  Outputs are under
+  `experiment/phase1/eval/results_selfaware_evidence_2240_192_local_4b`.
+  Shape: SelfAware only, offset 2240, limit 192, expected/observed 97 known /
+  95 unknown, base/SFT/DPO only; no KTO, cloud, headline, full, or protocol
+  run. No `<think>` or `</think>` matches were found. Summary over n=192:
+  base unknown=95 / known=97, refusal_recall 0.0, answer_on_unknown 100.0,
+  over_refusal 0.0, correct_on_known 24.74, truthful 12.5; SFT refusal_recall
+  85.26, answer_on_unknown 14.74, over_refusal 71.13, correct_on_known 50.0,
+  truthful 49.48; DPO refusal_recall 0.0, answer_on_unknown 100.0,
+  over_refusal 0.0, correct_on_known 18.56, truthful 9.38. Refusal counts:
+  SFT refused 81/95 unknowns and 69/97 knowns; base and DPO refused 0 unknowns
+  and 0 knowns. Interpretation caveat: this is bounded research evidence on one
+  contiguous SelfAware slice, not broad OOD, headline, protocol, or full-run
+  evidence. The SFT pattern survived this larger slice with better refusal
+  recall/truthful score than base/DPO but severe over-refusal; DPO remains
+  base-like here. Non-blocking warnings were the same as earlier diagnostics:
+  Triton routing module, AOT cache save, and NCCL shutdown warning.
+- Full SelfAware evidence run `eh-selfaware-full-local-4b` exited 0 with
+  `eval complete: 3 arm x set rows, config_sha=25e6a1faf916c7ef`. Config:
+  `experiment/phase1/eval/config/eval_selfaware_full_local_4b.yaml`. Outputs
+  are under `experiment/phase1/eval/results_selfaware_full_local_4b`. Shape:
+  full SelfAware, 3,369 rows = 2,337 known / 1,032 unknown, base/SFT/DPO only;
+  no KTO, bridge, cloud, headline, protocol, or full matrix. No `<think>` or
+  `</think>` matches were found. Summary: base truthful 19.26, refusal_recall
+  0.0, answer_on_unknown 100.0, over_refusal 0.04, correct_on_known 27.78; SFT
+  truthful 39.51, refusal_recall 89.73, answer_on_unknown 10.27, over_refusal
+  66.07, correct_on_known 51.07; DPO truthful 15.08, refusal_recall 0.0,
+  answer_on_unknown 100.0, over_refusal 0.04, correct_on_known 21.75. The
+  prior 192-row SelfAware pattern survived on full SelfAware: SFT learned
+  abstention on unknowns, but with severe known-question over-refusal; DPO
+  remains close to base. This is bounded local evidence, not headline/protocol
+  evidence.
+- Broader OOD evidence run `eh-broader-ood-evidence-local-4b` exited 0 with
+  `eval complete: 12 arm x set rows, config_sha=7bcf77af7f76caaf`. Config:
+  `experiment/phase1/eval/config/eval_broader_ood_evidence_local_4b.yaml`.
+  Outputs are under
+  `experiment/phase1/eval/results_broader_ood_evidence_local_4b`. Shape:
+  base/SFT/DPO only over KUQ balanced slice (384 rows = 192 unknown / 192
+  known), full CoCoNot contrast set (379 known), TruthfulQA 256 known, and
+  PopQA 256 known; no KTO, bridge, cloud, headline, protocol, or full matrix.
+  No `<think>` or `</think>` matches were found. KUQ summary: base truthful
+  9.64, refusal_recall 0.0, over_refusal 0.0; SFT truthful 53.12,
+  refusal_recall 97.4, over_refusal 79.69; DPO truthful 9.11,
+  refusal_recall 0.52, over_refusal 0.0. Known-only pressure: SFT over_refusal
+  was 79.68 on CoCoNot, 76.17 on TruthfulQA, and 92.97 on PopQA. CoCoNot
+  caveat: the local contrast file has empty aliases, so use it for
+  refusal-rate/over-refusal behavior, not answer correctness. Interpretation:
+  SFT's abstention signal generalized beyond SelfAware to KUQ, and its
+  over-refusal failure generalized across known-only OOD pressure sets.
+- Grouped-split SFT comparator evals completed against the regenerated SFT
+  adapter
+  `synaptic-tuner/toolset-training-artifacts/runs/local/4b/sft__4b__headline__seed1/20260614_053221/final_model`.
+  Full SelfAware grouped-SFT-only eval exited 0 with `config_sha=327c92c91428e9d4`
+  and no `<think>` / `</think>` matches. Summary: truthful 37.99,
+  refusal_recall 83.82, answer_on_unknown 16.18, over_refusal 64.18,
+  correct_on_known 49.58. Broader OOD grouped-SFT-only eval
+  `eh-sft-grouped-broader-ood-local-4b` exited 0 with
+  `config_sha=57cb7a1c6fe5e601` and no `<think>` / `</think>` matches. KUQ:
+  truthful 51.82, refusal_recall 97.92, answer_on_unknown 2.08, over_refusal
+  82.29. Known-only pressure: over_refusal 78.63 on CoCoNot, 80.47 on
+  TruthfulQA, and 91.02 on PopQA. Interpretation: the grouped split did not
+  erase the core SFT pattern; SFT still strongly learns abstention on unknowns,
+  but over-refuses badly on known questions. Treat this as bounded local
+  motivation for Amendment A, not headline/protocol evidence.
+- Sequential preference-training plan: for `SFT -> DPO` / `SFT -> KTO`, merge
+  the grouped SFT LoRA adapter into a standalone local `merged-16bit` model
+  first, then train fresh downstream DPO/KTO LoRA adapters with `model.name`
+  pointing at that merged SFT model path. DPO/KTO reference models should load
+  from the same merged SFT path so the preference objective regularizes against
+  the SFT starting policy, matching the sequential question. Do not continue
+  the same adapter in-place unless explicitly testing adapter-continuation as a
+  separate design.
+- Amendment A sequential local smoke status: the grouped-split SFT adapter
+  merged successfully to
+  `synaptic-tuner/toolset-training-artifacts/runs/local/4b/sft__4b__headline__seed1/20260614_053221/Qwen3-4B-bnb-4bit/merged-16bit`
+  (`config.json` present, no `adapter_config.json`, two safetensor shards
+  totaling about 8.0 GB). `SFT -> DPO` max-2 smoke
+  `sft_dpo__4b__amendment_a_smoke__seed1` completed from that merged model,
+  saved `final_model`, lineage, and capacity artifacts at
+  `synaptic-tuner/toolset-training-artifacts/runs/local/4b/sft_dpo__4b__amendment_a_smoke__seed1/20260614_073819`,
+  final step 2, final loss 0.6931, peak reserved VRAM 4.922 GB, OOM risk low.
+  `SFT -> KTO` max-2 smoke `sft_kto__4b__amendment_a_smoke__seed1` completed
+  from the same merged model, saved artifacts at
+  `synaptic-tuner/toolset-training-artifacts/runs/local/4b/sft_kto__4b__amendment_a_smoke__seed1/20260614_074015`,
+  final step 2, final loss 0.5, peak reserved VRAM 4.375 GB, OOM risk low.
+  Bind-mode artifacts may make `training_latest.jsonl` a Windows reparse point
+  that `Get-Content` cannot read; use the concrete timestamped
+  `logs/training_*.jsonl` files for verification and run records.
+- Amendment A sequential full local status: `SFT -> DPO` full run
+  `sft_dpo__4b__amendment_a__seed1` completed successfully from the merged SFT
+  model at
+  `synaptic-tuner/toolset-training-artifacts/runs/local/4b/sft_dpo__4b__amendment_a__seed1/20260614_074933`.
+  It saved `final_model`, lineage, and capacity artifacts; concrete metrics log
+  is `logs/training_20260614_115056.jsonl`; final step 1,800/1,800, final loss
+  0.07663947408947731, train runtime 3,584.511s, peak reserved VRAM 6.902 GB,
+  OOM risk low. `SFT -> KTO` full run `sft_kto__4b__amendment_a__seed1` was
+  launched as host PID `24564`, container `elated_shaw`, artifact root
+  `synaptic-tuner/toolset-training-artifacts/runs/local/4b/sft_kto__4b__amendment_a__seed1/20260614_085358`;
+  concrete metrics log is `logs/training_20260614_125521.jsonl`;
+  early checks passed through balanced KTO data (14,395 desirable / 14,395
+  undesirable), merged SFT model load, tokenizer load, fresh LoRA application,
+  trainer preprocessing, and first optimizer steps. Step 25/3,599 had OOM risk
+  low and peak reserved VRAM 4.387 GB. These are training/provenance facts only;
+  the behavioral evidence gate is still eval of the sequential adapters against
+  SelfAware/KUQ/OOD to test whether sequential preference training preserves SFT
+  abstention while reducing known-question over-refusal.
+- Local KTO seed 1 completed after Docker recovery. Run record:
+  `experiment/phase1/run_records/kto__4b__headline__seed1.json`. Artifact root:
+  `synaptic-tuner/toolset-training-artifacts/runs/local/4b/kto__4b__headline__seed1/20260613_151337_logging_patch`.
+  It trained 3,599/3,599 steps in 5h43m4s, saved `final_model`,
+  `training_lineage.json`, and `capacity_features.json`, ended
+  `training_latest.jsonl` with `train_end`, and had `oom_risk_level=low`.
+  Caveat: the materialized local recipe still includes the temporary copy-mode
+  `import logging` patch even though the Synaptic Tuner source already imports
+  `logging`; remove that workaround in a future cleanup after the fixed source
+  is the only supported baseline.
+- KTO full SelfAware comparator run `eh-kto-selfaware-full-local-4b` exited 0
+  with `eval complete: 1 arm x set rows, config_sha=fb24ee65ee717a18`. Config:
+  `experiment/phase1/eval/config/eval_kto_selfaware_full_local_4b.yaml`.
+  Outputs are under
+  `experiment/phase1/eval/results_kto_selfaware_full_local_4b`. Shape: full
+  SelfAware, 3,369 rows = 2,337 known / 1,032 unknown, KTO seed 1 only; no
+  base/SFT/DPO, bridge, cloud, headline aggregation, protocol, or full matrix.
+  No `<think>` or `</think>` matches were found. Summary: truthful 18.73,
+  refusal_recall 0.0, answer_on_unknown 100.0, over_refusal 0.21,
+  correct_on_known 27.06. KTO refused 0/1,032 unknowns and 5/2,337 knowns.
+- KTO broader OOD comparator run `eh-kto-broader-ood-evidence-local-4b` exited
+  0 with `eval complete: 4 arm x set rows, config_sha=2acc68f74d12e302`.
+  Config:
+  `experiment/phase1/eval/config/eval_kto_broader_ood_evidence_local_4b.yaml`.
+  Outputs are under
+  `experiment/phase1/eval/results_kto_broader_ood_evidence_local_4b`. Shape:
+  KTO seed 1 only over KUQ balanced slice (384 rows = 192 unknown / 192 known),
+  full CoCoNot contrast set (379 known), TruthfulQA 256 known, and PopQA 256
+  known; no base/SFT/DPO, bridge, cloud, headline aggregation, protocol, or
+  full matrix. No `<think>` or `</think>` matches were found. KUQ: truthful
+  9.9, refusal_recall 0.0, answer_on_unknown 100.0, over_refusal 1.56.
+  Known-only pressure: over_refusal 0.0 on CoCoNot, TruthfulQA, and PopQA;
+  correctness 9.38 on TruthfulQA and 19.92 on PopQA. Interpretation: KTO from
+  base is now a completed local comparator and, like DPO from base, did not
+  induce abstention on these bounded local surfaces. The mixed-stage question is
+  whether `SFT -> DPO` or `SFT -> KTO` preserves SFT's abstention gains while
+  reducing over-refusal.
+- OOD records carry their own `aliases`; scoring now prefers normalized
+  non-empty record aliases and falls back to global Cheng gold. Without this,
+  OOD known correctness/truthful vectors could be wrongly zero when questions
+  are absent from Cheng gold.
+- Non-blocking warnings seen in local diagnostics: Triton routing module
+  warning, AOT cache save/HF cache metadata permission warnings, and NCCL
+  `destroy_process_group` shutdown warning.
 - `git submodule status` can fail if Git Unix helpers such as `basename` or
   `sed` are missing. Verify the submodule SHA with the gitlink plus
   `git -C synaptic-tuner rev-parse HEAD`.
@@ -271,6 +575,15 @@ validates Docker, GPU access, model load, data prep, two optimizer steps, final
 adapter save, metrics/logs, lineage/capacity files, and host artifact copy-out
 in a few minutes without exercising the currently fragile KTO path.
 
+After the 2026-06-13 successful local recovery, scoped live eval smoke, bounded
+SelfAware evidence run, full SelfAware evidence run, broader OOD evidence run,
+and KTO seed-1 comparator/evals, treat the evidence as bounded local motivation
+for Amendment A, not headline/protocol evidence. The practical pattern is:
+SFT learns abstention but over-refuses badly; DPO-from-base and KTO-from-base
+remain base-like on refusal behavior. Do not jump from these bounded runs
+directly to mixed-stage cells, a headline/full run, or any cloud job without
+explicit approval and deliberate materialization.
+
 Headline numbers come ONLY from the pre-registered default cells; the LR/beta
 panel is robustness-only and is tagged distinctly in each run-id coordinate so
 the eval-side aggregation isolates it.
@@ -282,3 +595,4 @@ the eval-side aggregation isolates it.
 | How `matrix.yaml` maps to PROTOCOL v0.3 cells + the count-assertion table | [reference/matrix-expansion.md](reference/matrix-expansion.md) |
 | Local staging vs cloud hub-name; the data-locality contract; the cloud capability gap | [reference/lanes.md](reference/lanes.md) |
 | Run-record schema + provenance discipline (dual SHAs, data block, verified flag) | [reference/run-records.md](reference/run-records.md) |
+| Off-matrix hidden-state extraction: gate (E1..E4), `aligned_run_record_id` resolver, GPU-free smoke chain | [reference/hidden-state-probe-smoke.md](reference/hidden-state-probe-smoke.md) |

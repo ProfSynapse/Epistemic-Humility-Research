@@ -1,0 +1,49 @@
+# Phase 1 run matrix — SSOT for the experiment runner.
+#
+# Location: .claude/skills/experiment-runner/config/matrix.yaml
+# Encodes PROTOCOL.md v0.3 (LOCKED) §3.1 / §3.1a as DATA. The expansion script
+# (scripts/run_matrix.py) ENFORCES conformance — it asserts the resulting cell
+# counts match the pre-registered design (19 @ 4B, 9 @ 8B, 2 bridge) and ABORTS
+# on any mismatch. This file is the only place a count is declared; the runner
+# never re-decides the design, it only checks that this data still matches it.
+#
+# Changing the matrix (counts, arms, seeds, panel grid) requires a NEW signed
+# PROTOCOL revision FIRST — do not loosen run_matrix.py's assertions to absorb a
+# change here. The abort IS the pre-registration guard.
+
+matrix_version: "phase1-v0.3"
+
+# 3 seeds per arm for the headline 4B and 8B runs (PROTOCOL §3.1).
+seeds_headline: [1, 2, 3]
+
+# Headline 4B arms. has_beta gates the beta sensitivity panel (SFT has no beta).
+arms_4b:
+  - {recipe: eh_phase1_qwen3_4b_sft, method: sft, has_beta: false}
+  - {recipe: eh_phase1_qwen3_4b_dpo, method: dpo, has_beta: true}
+  - {recipe: eh_phase1_qwen3_4b_kto_congruence, method: kto, has_beta: true}
+
+# Confirm 8B arms (cloud lane).
+arms_8b:
+  - {recipe: eh_phase1_qwen3_8b_sft, method: sft}
+  - {recipe: eh_phase1_qwen3_8b_dpo, method: dpo}
+  - {recipe: eh_phase1_qwen3_8b_kto_congruence, method: kto}
+
+# 4B sensitivity panel (robustness only — NOT headline numbers). PROTOCOL §3.1a.
+panel_4b:
+  # Each multiplier scales each arm's OWN default LR (read FROM the recipe), so
+  # the per-arm-relative rule is structural, not a hardcoded LR per arm.
+  lr_multipliers: [3.0, 0.3333333]
+  # beta panel applies to DPO + KTO only (has_beta: true); SFT is skipped.
+  beta_values: [0.05, 0.5]
+  # 1 seed per panel cell.
+  panel_seed: 1
+
+# Bridge replication arms (Cheng Idk-SFT / Idk-DPO), 1 seed, default config.
+bridge:
+  - {recipe: eh_bridge_llama2_7b_chat_sft, method: sft}
+  - {recipe: eh_bridge_llama2_7b_chat_dpo, method: dpo}
+
+# 8B confirm seed count. PROTOCOL §3.1 carries a pending-veto bump to 3 seeds;
+# un-vetoed default is 3. Set to 1 ONLY if the bump is vetoed in a signed
+# PROTOCOL revision (and update the asserted 8B count accordingly).
+confirm_8b_seeds: 3

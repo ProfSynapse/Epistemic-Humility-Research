@@ -41,12 +41,28 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 import check_prereqs  # noqa: E402  (sibling module, intentional local import)
 
 # Research-repo (worktree) root, derived from this file's location so the path
-# defaults below are CWD-independent: .../.claude/skills/experiment-runner/scripts
-# -> parents[4] is the worktree root. The argparse defaults anchor on this rather
-# than on relative strings, so `python run_matrix.py` resolves identically whether
-# invoked from the repo root or from the skill dir (MT4). All four remain
-# caller-overridable for fixtures/tests.
-_REPO_ROOT = Path(__file__).resolve().parents[4]
+# defaults below are CWD-independent. We walk UP to the first ancestor that owns
+# experiment/phase1/ rather than hardcoding a parent index: this skill file lives
+# at a DIFFERENT depth in the canonical tree (.skills/experiment-runner/scripts,
+# 3 deep) than in the generated mirrors (.{claude,agents}/skills/experiment-runner/
+# scripts, 4 deep), so a fixed parents[N] is only correct in one layout. The
+# sentinel walk-up is location-robust — correct from .skills-direct AND both
+# mirrors — and matches prepare_extraction_cell._infer_repo_root's anchor. The
+# argparse defaults anchor on this rather than on relative strings, so
+# `python run_matrix.py` resolves identically wherever it is invoked (MT4). All
+# four remain caller-overridable for fixtures/tests.
+def _find_repo_root() -> Path:
+    here = Path(__file__).resolve()
+    for parent in here.parents:
+        if (parent / "experiment" / "phase1").is_dir():
+            return parent
+    # Fallback: the canonical .skills/<skill>/scripts layout (3 deep). A mirror is
+    # one deeper, but the experiment/phase1 walk-up above resolves before this in
+    # any real checkout; this only guards a detached/synthetic layout.
+    return here.parents[3]
+
+
+_REPO_ROOT = _find_repo_root()
 
 # Pre-registered cell counts (PROTOCOL v0.3 §3.1 / §3.1a). The expansion result
 # MUST match these exactly; a mismatch ABORTS — this is the pre-registration
@@ -268,7 +284,7 @@ def materialize_recipe(base: dict, cell: Cell, lane: str = "local") -> dict:
     recipe["name"] = coord.run_id().replace("__", "-").replace("_", "-")
     artifacts = recipe.setdefault("artifacts", {})
     artifacts["output_root"] = (
-        f"toolset-training-artifacts/runs/{{lane}}/{coord.size}/{coord.run_id()}"
+        f"toolset-training-artifacts/runs/{lane}/{coord.size}/{coord.run_id()}"
     )
     # Declarative recipes: drop any legacy run.command/workdir so a materialized
     # recipe is never self-contradictory. Nothing is injected — the handler builds
@@ -321,7 +337,7 @@ def stage_local_data(
     shutil.copy2(src_dir / dev_file, staged_abs / dev_file)
     return {
         "source_data_file": str((src_dir / train_file)),
-        "staged_data_file": str(staged_rel / train_file),
+        "staged_data_file": (staged_rel / train_file).as_posix(),
         "data_sha256": sha256_file(src_dir / train_file),
     }
 
@@ -404,7 +420,7 @@ def local_invocation(materialized_recipe_path: Path) -> list:
     probe keeps DPO/KTO cells SKIPPED (fail-closed), so this never runs prematurely.
     """
     return ["python", "tuner.py", "local-run",
-            "--job-config", str(materialized_recipe_path), "--yes"]
+            "--job-config", materialized_recipe_path.as_posix(), "--yes"]
 
 
 def cloud_invocation(method: str, dataset_name: str, recipe: dict) -> list:

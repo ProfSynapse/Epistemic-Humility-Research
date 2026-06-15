@@ -82,6 +82,14 @@ selection:
   # is ~123MB; the harness streams it by key and never whole-loads it.
   questions_frozen: ../data/qwen3-4b-instruct/questions_frozen.json
   probe_results: qwen3-4b-instruct/probe_results.jsonl
+  # E2 provenance expectation (runner-side prepare_extraction_cell gate): the
+  # probe_config_sha the streamed probe_results.jsonl rows MUST carry. The gate
+  # reads the first row's probe_config_sha and SKIPs the extraction on a mismatch
+  # (a contaminated/thinking-mode-ON probe run). null => E2 degrades to
+  # presence-only with a loud WARN (a null expectation cannot fail-closed against
+  # an unknown). SHOULD be pinned to the probe tier's sha before a reproducible
+  # run. (Additive field; included in extraction_config_sha like every config key.)
+  expected_probe_config_sha: null
   # Small balanced slice for the MVP: N known + N unknown (cheap first run).
   n_known: 16
   n_unknown: 16

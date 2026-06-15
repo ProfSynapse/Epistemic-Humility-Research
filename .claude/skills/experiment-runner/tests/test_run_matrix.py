@@ -115,6 +115,10 @@ def test_materialize_sft_sets_seed_and_strips_run_command():
     # Declarative: the legacy run.command/workdir must be stripped, none injected.
     assert "command" not in out.get("run", {})
     assert "workdir" not in out.get("run", {})
+    assert "{lane}" not in out["artifacts"]["output_root"]
+    assert out["artifacts"]["output_root"].startswith(
+        "toolset-training-artifacts/runs/local/4b/"
+    )
     # The base recipe is untouched (deep copy).
     assert "command" in base["run"]
 
@@ -526,11 +530,10 @@ def test_dry_run_cloud_lane_aborts_when_bridge_present(monkeypatch, capsys):
 def test_bridge_recipes_declare_target_local():
     """Both bridge recipes must carry target: local (not 'both') — the license
     containment is also declared in the recipe, not only enforced by the runner."""
-    # scripts/run_matrix.py → .../.claude/skills/experiment-runner/scripts;
-    # the repo root is the parent of the .claude dir.
-    skill_dir = Path(rm.__file__).resolve().parent.parent  # experiment-runner
-    repo_root = skill_dir.parent.parent.parent  # skills → .claude → repo root
-    recipes_dir = repo_root / "experiment" / "phase1" / "recipes"
+    # Anchor on run_matrix's own walk-up sentinel (FUTURE-1) so the recipes dir
+    # resolves identically whether the module loads from the 2-deep canonical
+    # .skills tree or a 4-deep mirror — no fixed-depth ancestor walk.
+    recipes_dir = rm._REPO_ROOT / "experiment" / "phase1" / "recipes"
     for name in ("eh_bridge_llama2_7b_chat_sft", "eh_bridge_llama2_7b_chat_dpo"):
         recipe = yaml.safe_load((recipes_dir / f"{name}.yaml").read_text())
         assert recipe["target"] == "local", f"{name} must be target: local"
