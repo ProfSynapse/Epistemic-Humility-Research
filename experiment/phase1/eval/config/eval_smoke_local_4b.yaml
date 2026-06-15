@@ -39,7 +39,7 @@ arms:
   - name: sft
     method: sft
     model: qwen3-4b-instruct
-    adapter: 'F:\Code\Epistemic-Humility-Research\synaptic-tuner\toolset-training-artifacts\runs\local\4b\sft__4b__headline__seed1\20260611_202126\final_model'
+    adapter: 'F:\Code\Epistemic-Humility-Research\synaptic-tuner\toolset-training-artifacts\runs\local\4b\sft__4b__headline__seed1\20260614_053221\final_model'
   - name: dpo
     method: dpo
     model: qwen3-4b-instruct

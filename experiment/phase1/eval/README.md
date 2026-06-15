@@ -73,9 +73,13 @@ python3 experiment/phase1/eval/run_eval.py --config experiment/phase1/eval/confi
 python3 -m pytest experiment/phase1/eval/tests/ -q
 ```
 
-Outputs (§6.7): `results/<arm>__<eval_set>/{generations.jsonl,metrics.json,bootstrap_ci.json}`
+Outputs (§6.7): `results/<arm>__<eval_set>/{generations.jsonl,scored_rows.jsonl,metrics.json,bootstrap_ci.json}`
 and `results/comparisons/{mcnemar.csv,summary_table.csv}`. Every emitted number
 carries `source / metric / model / method / verified / config_sha` provenance.
+`scored_rows.jsonl` is UTF-8 JSONL with one compact row per evaluated record,
+including deterministic row identity, prompt/answer text, label, refusal,
+correctness, truthful outcome, method/model, and config SHA for transition
+analysis.
 
 The local 4B smoke config sets `vllm.max_lora_rank: 32` because the completed
 SFT/DPO adapters are LoRA rank 32 and vLLM's default rank cap is lower. When

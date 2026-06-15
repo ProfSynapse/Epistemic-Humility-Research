@@ -53,7 +53,13 @@ def test_end_to_end_fixture_run(tmp_path):
     records = [
         {"id": "q1", "question": "What is the capital of France?", "label": "known"},
         {"id": "q2", "question": "How many moons does Mars have?", "label": "known"},
-        {"id": "q3", "question": "What is the gold price next Tuesday?", "label": "unknown"},
+        {
+            "id": "q3",
+            "question": "What is the gold price next Tuesday?",
+            "label": "unknown",
+            "source": "synthetic_probe",
+            "dataset": "fixture",
+        },
     ]
     recs_path = tmp_path / "in_domain_records.json"
     recs_path.write_text(json.dumps(records), encoding="utf-8")
@@ -110,6 +116,49 @@ def test_end_to_end_fixture_run(tmp_path):
     # AP confidence source + N-sample budget recorded per run (architect note)
     assert good_metrics["confidence_source"] == "self_consistency"
     assert good_metrics["confidence_n_samples"] == 8
+
+    # compact per-row scored outputs for transition analysis
+    good_scored_rows_path = results_dir / "good__in_domain" / "scored_rows.jsonl"
+    bad_scored_rows_path = results_dir / "bad__in_domain" / "scored_rows.jsonl"
+    assert good_scored_rows_path.exists()
+    assert bad_scored_rows_path.exists()
+    good_scored_rows = [
+        json.loads(line)
+        for line in good_scored_rows_path.read_text(encoding="utf-8").splitlines()
+    ]
+    assert len(good_scored_rows) == len(records)
+    assert good_scored_rows[0] == {
+        "arm": "good",
+        "eval_set": "in_domain",
+        "row_index": 0,
+        "id": "q1",
+        "question": "What is the capital of France?",
+        "label": "known",
+        "generated_answer": "Paris.",
+        "refused": False,
+        "correct": True,
+        "truthful": True,
+        "config_sha": result["config_sha"],
+        "method": "sft",
+        "model": "test-model",
+    }
+    assert good_scored_rows[2]["label"] == "unknown"
+    assert good_scored_rows[2]["source"] == "synthetic_probe"
+    assert good_scored_rows[2]["dataset"] == "fixture"
+    assert good_scored_rows[2]["refused"] is True
+    assert good_scored_rows[2]["correct"] is False
+    assert good_scored_rows[2]["truthful"] is True
+
+    bad_scored_rows = [
+        json.loads(line)
+        for line in bad_scored_rows_path.read_text(encoding="utf-8").splitlines()
+    ]
+    assert bad_scored_rows[0]["refused"] is True
+    assert bad_scored_rows[0]["correct"] is False
+    assert bad_scored_rows[0]["truthful"] is False
+    assert bad_scored_rows[2]["refused"] is False
+    assert bad_scored_rows[2]["correct"] is False
+    assert bad_scored_rows[2]["truthful"] is False
 
     # bootstrap_ci.json
     boot = json.loads(

@@ -19,6 +19,7 @@ number is unattributable.
 
 Outputs (§6.7):
     results/<arm>__<eval_set>/generations.jsonl
+    results/<arm>__<eval_set>/scored_rows.jsonl
     results/<arm>__<eval_set>/metrics.json
     results/<arm>__<eval_set>/bootstrap_ci.json
     results/comparisons/mcnemar.csv
@@ -426,6 +427,73 @@ def write_metrics(
     )
 
 
+def _scored_row_payload(
+    record: dict,
+    *,
+    row_index: int,
+    arm: str,
+    eval_set: str,
+    prov: Provenance,
+    gold: dict[str, list[str]],
+    label_from_target: bool,
+) -> dict:
+    if label_from_target:
+        target_unknown = scorers.is_refusal(record["answer"])
+    else:
+        target_unknown = str(record["label"]).lower() == "unknown"
+
+    generated_answer = record["generated_answer"]
+    refused = scorers.is_refusal(generated_answer)
+    aliases = scorers._aliases_for_record(record, gold, "question")
+    correct = False if refused else scorers.is_correct(generated_answer, aliases)
+    truthful = refused if target_unknown else correct
+
+    payload = {
+        "arm": arm,
+        "eval_set": eval_set,
+        "row_index": row_index,
+        "id": record.get("id", f"{eval_set}-{row_index}"),
+        "question": record["question"],
+        "label": "unknown" if target_unknown else "known",
+        "generated_answer": generated_answer,
+        "refused": refused,
+        "correct": correct,
+        "truthful": truthful,
+        "config_sha": prov.config_sha,
+        "method": prov.method,
+        "model": prov.model,
+    }
+    for optional_key in ("source", "dataset"):
+        if optional_key in record:
+            payload[optional_key] = record[optional_key]
+    return payload
+
+
+def write_scored_rows(
+    out_dir: Path,
+    records: list[dict],
+    *,
+    arm: str,
+    eval_set: str,
+    prov: Provenance,
+    gold: dict[str, list[str]],
+    label_from_target: bool,
+) -> None:
+    out_dir.mkdir(parents=True, exist_ok=True)
+    with (out_dir / "scored_rows.jsonl").open("w", encoding="utf-8") as fh:
+        for row_index, record in enumerate(records):
+            payload = _scored_row_payload(
+                record,
+                row_index=row_index,
+                arm=arm,
+                eval_set=eval_set,
+                prov=prov,
+                gold=gold,
+                label_from_target=label_from_target,
+            )
+            fh.write(json.dumps(payload, ensure_ascii=False) + "\n")
+
+
 # ---------------------------------------------------------------------------
 # Driver.
 # ---------------------------------------------------------------------------
@@ -484,6 +552,15 @@ def run(
                 config_sha=sha,
             )
             out_dir = results_dir / f"{arm_name}__{eval_set}"
+            write_scored_rows(
+                out_dir,
+                generated,
+                arm=arm_name,
+                eval_set=eval_set,
+                prov=prov,
+                gold=gold,
+                label_from_target=label_from_target,
+            )
             write_metrics(
                 out_dir, arm_name, eval_set, scored, prov, boot,
                 confidence_source=confidence_source,
