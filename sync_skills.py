@@ -28,6 +28,11 @@ Usage:
     python3 sync_skills.py --check          # default: drift-check, exit 1 on drift
     python3 sync_skills.py --write          # propagate canonical -> both mirrors
     python3 sync_skills.py --check --skill experiment-runner   # scope to one skill
+
+Unscoped checks also verify the root project-context docs (`AGENTS.md` and
+`CLAUDE.md`) share the same PROJECT_ORCHESTRATOR section. Unscoped writes refresh
+`CLAUDE.md` from the canonical section in `AGENTS.md`. This is intentionally root
+project context only; it never writes into the `synaptic-tuner/` submodule.
 """
 
 from __future__ import annotations
@@ -47,6 +52,13 @@ MIRROR_ROOTS = (
     REPO_ROOT / ".claude" / "skills",
     REPO_ROOT / ".agents" / "skills",
 )
+PROJECT_CONTEXT_DOCS = (
+    REPO_ROOT / "AGENTS.md",
+    REPO_ROOT / "CLAUDE.md",
+)
+PROJECT_CONTEXT_CANONICAL = REPO_ROOT / "AGENTS.md"
+PROJECT_CONTEXT_START = "<!-- PROJECT_ORCHESTRATOR_START -->"
+PROJECT_CONTEXT_END = "<!-- PROJECT_ORCHESTRATOR_END -->"
 
 # Transient / generated artifacts that are NOT part of the canonical skill source
 # and must never be synced or counted as drift. pytest writes __pycache__/*.pyc
@@ -78,6 +90,75 @@ def _content_sha(path: Path) -> str:
 def _normalized_bytes(path: Path) -> bytes:
     """LF-normalized file bytes (the canonical on-disk form for every tree)."""
     return path.read_bytes().replace(b"\r\n", b"\n").replace(b"\r", b"\n")
+
+
+def _project_context_section(path: Path) -> str | None:
+    """Return the marked project-context section from a root agent doc."""
+    if not path.is_file():
+        return None
+    text = _normalized_bytes(path).decode("utf-8")
+    start = text.find(PROJECT_CONTEXT_START)
+    end = text.find(PROJECT_CONTEXT_END)
+    if start < 0 or end < 0 or end < start:
+        return None
+    end += len(PROJECT_CONTEXT_END)
+    return text[start:end].strip() + "\n"
+
+
+def _upsert_project_context_section(path: Path, section: str) -> bool:
+    """Insert or replace the marked project-context section in one root doc."""
+    existing = ""
+    if path.exists():
+        existing = _normalized_bytes(path).decode("utf-8")
+    start = existing.find(PROJECT_CONTEXT_START)
+    end = existing.find(PROJECT_CONTEXT_END)
+    if start >= 0 and end >= start:
+        end += len(PROJECT_CONTEXT_END)
+        updated = existing[:start].rstrip() + "\n\n" + section.rstrip() + "\n" + existing[end:].lstrip()
+    else:
+        prefix = existing.rstrip()
+        updated = (prefix + "\n\n" if prefix else "") + section.rstrip() + "\n"
+    if path.exists() and updated.encode("utf-8") == _normalized_bytes(path):
+        return False
+    path.write_text(updated, encoding="utf-8")
+    return True
+
+
+def check_project_context_docs() -> list[str]:
+    """Verify root AGENTS.md and CLAUDE.md share the same orchestrator section."""
+    drift: list[str] = []
+    sections: dict[Path, str] = {}
+    for path in PROJECT_CONTEXT_DOCS:
+        section = _project_context_section(path)
+        if section is None:
+            drift.append(f"{path}: missing {PROJECT_CONTEXT_START} section")
+        else:
+            sections[path] = section
+    canonical = sections.get(PROJECT_CONTEXT_CANONICAL)
+    if canonical is None:
+        return drift
+    for path, section in sections.items():
+        if path == PROJECT_CONTEXT_CANONICAL:
+            continue
+        if section != canonical:
+            drift.append(f"{path}: project orchestrator section differs from {PROJECT_CONTEXT_CANONICAL}")
+    return drift
+
+
+def write_project_context_docs() -> int:
+    """Refresh non-canonical root context docs from AGENTS.md's marked section."""
+    section = _project_context_section(PROJECT_CONTEXT_CANONICAL)
+    if section is None:
+        raise FileNotFoundError(
+            f"canonical project context section missing from {PROJECT_CONTEXT_CANONICAL}"
+        )
+    written = 0
+    for path in PROJECT_CONTEXT_DOCS:
+        if path == PROJECT_CONTEXT_CANONICAL:
+            continue
+        if _upsert_project_context_section(path, section):
+            written += 1
+    return written
 
 
 def _iter_skill_dirs(root: Path, skill: str | None) -> list[str]:
@@ -199,14 +280,20 @@ def main(argv: list[str] | None = None) -> int:
         total = 0
         for skill in skills:
             total += write_skill(skill)
+        context_written = 0
+        if args.skill is None:
+            context_written = write_project_context_docs()
         print(f"sync_skills: wrote {total} file(s) across "
-              f"{len(MIRROR_ROOTS)} mirror(s) for skill(s): {', '.join(skills)}")
+              f"{len(MIRROR_ROOTS)} mirror(s) for skill(s): {', '.join(skills)}"
+              f"; project context docs updated: {context_written}")
         return 0
 
     # Default mode is --check (drift-check / CI gate).
     all_drift: list[str] = []
     for skill in skills:
         all_drift.extend(check_skill(skill))
+    if args.skill is None:
+        all_drift.extend(check_project_context_docs())
     if all_drift:
         print("sync_skills: DRIFT detected (run `python3 sync_skills.py --write`):")
         for line in all_drift:

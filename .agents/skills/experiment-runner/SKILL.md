@@ -343,11 +343,6 @@ skill:
   Windows absolute adapter paths to container-visible paths or mount the
   workspace equivalently before launch; the eval loader preserves absolute
   adapter paths as written.
-- If a local live eval uses a Windows absolute `model_name` for a merged local
-  base, translate that path to the container mount too, not only
-  `arms[].adapter`. Sequential Amendment A evals need this because DPO/KTO
-  adapters were trained from the merged SFT directory, so vLLM must load the
-  merged SFT base path inside Linux.
 - 2026-06-13 scoped local live eval smoke status: the first Docker/Linux run
   reached the base arm, then failed on the SFT adapter with
   `ValueError: LoRA rank 32 is greater than max_lora_rank 16`. The config fix
@@ -480,74 +475,17 @@ skill:
   It saved `final_model`, lineage, and capacity artifacts; concrete metrics log
   is `logs/training_20260614_115056.jsonl`; final step 1,800/1,800, final loss
   0.07663947408947731, train runtime 3,584.511s, peak reserved VRAM 6.902 GB,
-  OOM risk low. `SFT -> KTO` full run `sft_kto__4b__amendment_a__seed1`
-  completed successfully from the same merged SFT model, host PID `24564`,
-  container `elated_shaw`, artifact root
+  OOM risk low. `SFT -> KTO` full run `sft_kto__4b__amendment_a__seed1` was
+  launched as host PID `24564`, container `elated_shaw`, artifact root
   `synaptic-tuner/toolset-training-artifacts/runs/local/4b/sft_kto__4b__amendment_a__seed1/20260614_085358`;
-  concrete metrics log is `logs/training_20260614_125521.jsonl`; final step
-  3,599/3,599, final loss 0.2568387638515617, train runtime 28,753.901s, peak
-  reserved VRAM 4.391 GB, OOM risk low. Data/training checks passed through
-  balanced KTO data (14,395 desirable / 14,395 undesirable), merged SFT model
-  load, tokenizer load, fresh LoRA application, trainer preprocessing, full
-  optimizer schedule, final adapter save, lineage/capacity artifacts, and host
-  artifact write-out. These are training/provenance facts only; the behavioral
-  evidence gate is still eval of the sequential adapters against SelfAware/KUQ/OOD
-  to test whether sequential preference training preserves SFT abstention while
-  reducing known-question over-refusal.
-- Amendment A broader OOD sequential eval completed locally with
-  `experiment/phase1/eval/config/eval_amendment_a_broader_ood_local_4b.yaml`
-  and `config_sha=d5d819efb942a202`. Outputs are under
-  `experiment/phase1/eval/results_amendment_a_broader_ood_local_4b`. Shape:
-  `sft_merged`, `sft_dpo`, and `sft_kto` over the KUQ balanced slice, full
-  CoCoNot contrast set, TruthfulQA 256, and PopQA 256; all arms used the
-  merged SFT base, no cloud/bridge/headline/protocol/full matrix. No `<think>`,
-  `</think>`, or `reasoning_content` matches were found. KUQ: `sft_merged`
-  truthful 52.34 / refusal_recall 98.44 / over_refusal 80.21; `sft_dpo`
-  truthful 40.10 / refusal_recall 69.79 / over_refusal 20.31; `sft_kto`
-  truthful 48.70 / refusal_recall 90.62 / over_refusal 72.92. Known-only
-  over-refusal fell sharply for sequential DPO but with a KUQ unknown-refusal
-  tradeoff; sequential KTO preserved more abstention but retained high
-  over-refusal. Treat this as bounded local Amendment A evidence, not v0.3
-  headline/protocol evidence. CoCoNot remains refusal/over-refusal-only because
-  local aliases are empty.
-- Amendment A full SelfAware sequential eval completed locally with
-  `experiment/phase1/eval/config/eval_amendment_a_selfaware_full_local_4b.yaml`
-  and `config_sha=62388c69b67bbc43`. Outputs are under
-  `experiment/phase1/eval/results_amendment_a_selfaware_full_local_4b`. Shape:
-  full SelfAware, 3,369 rows = 2,337 known / 1,032 unknown, `sft_merged`,
-  `sft_dpo`, and `sft_kto` only; all arms used the merged SFT base, no
-  cloud/bridge/headline/protocol/full matrix. No `<think>`, `</think>`, or
-  `reasoning_content` matches were found. Summary: `sft_merged` truthful 38.5 /
-  refusal_recall 82.56 / over_refusal 61.49 / correct_on_known 49.44;
-  `sft_dpo` truthful 30.25 / refusal_recall 48.84 / over_refusal 13.95 /
-  correct_on_known 25.61; `sft_kto` truthful 36.92 / refusal_recall 75.68 /
-  over_refusal 48.31 / correct_on_known 38.33. Interpretation matches broader
-  OOD: sequential DPO reduces over-refusal sharply but sacrifices unknown
-  refusal and known correctness; sequential KTO preserves more abstention but
-  leaves substantial over-refusal. Treat this as bounded local Amendment A
-  evidence, not v0.3 headline/protocol evidence.
-- Amendment A transition analysis is documented at
-  `experiment/phase1/eval/analysis/amendment_a_transition_report.md`, with the
-  reproducible script
-  `experiment/phase1/eval/analysis/amendment_a_transition_analysis.py`. Important
-  caveat: the Amendment A live eval result directories did not persist
-  `generations.jsonl` or another per-row prediction table, so exact row-level
-  refusal/correctness transitions cannot be reconstructed after the run. The
-  report therefore uses exact McNemar truthful flips plus tight feasible bounds
-  from aggregate margins. Full SelfAware exact truthful flips were:
-  `sft_merged -> sft_dpo` 424 SFT-truthful/DPO-untruthful vs 146 DPO-truthful
-  rows; `sft_merged -> sft_kto` 124 vs 71; `sft_dpo -> sft_kto` 108 vs 333.
-  Bounded SelfAware transition evidence implies `sft_dpo` answered on 348-424
-  unknown rows where `sft_merged` correctly refused; `sft_kto` did so on 71-124.
-  KUQ supports the same direction: 55-58 of the 58 exact SFT-truthful/DPO-bad
-  flips are attributable to unknown SFT-refusal becoming DPO-answer. Readout:
-  DPO's over-refusal reduction is mixed, not clean useful recovery; it also
-  collapses a substantial part of unknown refusal. KTO preserves more abstention
-  but leaves high over-refusal. If Amendment A continues, prefer deliberate
-  sequential-stage sensitivity: lower DPO beta/LR/effective epochs and possibly
-  smaller downstream rank/alpha; KTO sensitivity is useful mainly if preserving
-  abstention is prioritized. Future live evals should persist per-row scored
-  outputs for exact transition analysis.
+  concrete metrics log is `logs/training_20260614_125521.jsonl`;
+  early checks passed through balanced KTO data (14,395 desirable / 14,395
+  undesirable), merged SFT model load, tokenizer load, fresh LoRA application,
+  trainer preprocessing, and first optimizer steps. Step 25/3,599 had OOM risk
+  low and peak reserved VRAM 4.387 GB. These are training/provenance facts only;
+  the behavioral evidence gate is still eval of the sequential adapters against
+  SelfAware/KUQ/OOD to test whether sequential preference training preserves SFT
+  abstention while reducing known-question over-refusal.
 - Local KTO seed 1 completed after Docker recovery. Run record:
   `experiment/phase1/run_records/kto__4b__headline__seed1.json`. Artifact root:
   `synaptic-tuner/toolset-training-artifacts/runs/local/4b/kto__4b__headline__seed1/20260613_151337_logging_patch`.

@@ -200,3 +200,45 @@ def test_main_write_then_check_clears_the_gate(synthetic_trees):
     assert sync_skills.main(["--check", "--skill", SKILL]) == 1  # drift present
     assert sync_skills.main(["--write", "--skill", SKILL]) == 0  # re-image
     assert sync_skills.main(["--check", "--skill", SKILL]) == 0  # back in sync
+
+
+def test_project_context_check_detects_agent_claude_drift(tmp_path, monkeypatch):
+    """Root AGENTS.md and CLAUDE.md must share one orchestrator section."""
+    agents = tmp_path / "AGENTS.md"
+    claude = tmp_path / "CLAUDE.md"
+    agents.write_text(
+        "prefix\n\n<!-- PROJECT_ORCHESTRATOR_START -->\n# Canonical\n<!-- PROJECT_ORCHESTRATOR_END -->\n",
+        encoding="utf-8",
+    )
+    claude.write_text(
+        "<!-- PROJECT_ORCHESTRATOR_START -->\n# Drifted\n<!-- PROJECT_ORCHESTRATOR_END -->\n",
+        encoding="utf-8",
+    )
+    monkeypatch.setattr(sync_skills, "PROJECT_CONTEXT_DOCS", (agents, claude))
+    monkeypatch.setattr(sync_skills, "PROJECT_CONTEXT_CANONICAL", agents)
+
+    drift = sync_skills.check_project_context_docs()
+
+    assert any("project orchestrator section differs" in item for item in drift)
+
+
+def test_project_context_write_repairs_claude_from_agents(tmp_path, monkeypatch):
+    """Unscoped --write can refresh CLAUDE.md from AGENTS.md without touching skills."""
+    agents = tmp_path / "AGENTS.md"
+    claude = tmp_path / "CLAUDE.md"
+    canonical = (
+        "<!-- PROJECT_ORCHESTRATOR_START -->\n"
+        "# Canonical\n"
+        "Use root project context only.\n"
+        "<!-- PROJECT_ORCHESTRATOR_END -->\n"
+    )
+    agents.write_text("PACT block stays outside\n\n" + canonical, encoding="utf-8")
+    claude.write_text("# Existing Claude notes\n", encoding="utf-8")
+    monkeypatch.setattr(sync_skills, "PROJECT_CONTEXT_DOCS", (agents, claude))
+    monkeypatch.setattr(sync_skills, "PROJECT_CONTEXT_CANONICAL", agents)
+
+    assert sync_skills.write_project_context_docs() == 1
+
+    assert sync_skills.check_project_context_docs() == []
+    assert "PACT block stays outside" not in claude.read_text(encoding="utf-8")
+    assert "# Existing Claude notes" in claude.read_text(encoding="utf-8")
