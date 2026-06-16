@@ -52,3 +52,15 @@ def test_skill_trees_in_sync():
         "experiment-runner skill trees have drifted from the canonical .skills/ "
         f"source (run `python3 sync_skills.py --write`):\n{result.stdout}{result.stderr}"
     )
+
+
+def test_project_context_docs_in_sync():
+    """Unscoped sync check also validates root AGENTS.md / CLAUDE.md context."""
+    result = subprocess.run(
+        [sys.executable, str(SYNC_SCRIPT), "--check"],
+        capture_output=True, text=True, cwd=str(REPO_ROOT),
+    )
+    assert result.returncode == 0, (
+        "project context docs or skill mirrors have drifted "
+        f"(run `python3 sync_skills.py --write`):\n{result.stdout}{result.stderr}"
+    )
