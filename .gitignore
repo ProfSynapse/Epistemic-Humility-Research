@@ -8,6 +8,7 @@ datasets/*/.cache/
 # working space (refetchable parquets etc.)
 scratch/
 .tmp/
+.kg/
 
 # local operational logs
 experiment/phase1/run_records/logs/
