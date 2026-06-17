@@ -30,6 +30,7 @@ run records.
 | Inspect a run record | `cat experiment/phase1/run_records/<run_id>.json` |
 | Prepare/gate one hidden-state extraction (GPU-free; gate + resolve, launch nothing) | `python3 .agents/skills/experiment-runner/scripts/prepare_extraction_cell.py --config experiment/phase1/probe/config/hidden_state_probe.yaml` — see [hidden-state-probe-smoke.md](reference/hidden-state-probe-smoke.md) |
 | Durable research-session memory | Read [research-sessions.md](reference/research-sessions.md) |
+| Governed protocol amendment | Read [protocol-amendments.md](reference/protocol-amendments.md) and use [protocol-amendment-template.md](reference/protocol-amendment-template.md) |
 
 The matrix SSOT is `config/matrix.yaml`; the per-arm DEFAULT recipes are repo
 content at `experiment/phase1/recipes/`; the provenance records are committed at
@@ -37,6 +38,8 @@ content at `experiment/phase1/recipes/`; the provenance records are committed at
 
 For durable episodic memory about gates, launches, blockers, results, handoffs,
 or research-trajectory state, read [research-sessions.md](reference/research-sessions.md).
+For governed protocol changes, amendments, output-contract changes, or rerun
+scope changes, read [protocol-amendments.md](reference/protocol-amendments.md).
 
 ## Run Matrix at a Glance
 

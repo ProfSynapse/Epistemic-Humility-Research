@@ -6,6 +6,7 @@ correctness membership, quadrant tallies, AP, and ECE.
 from __future__ import annotations
 
 import pytest
+import json
 
 import scorers
 
@@ -66,6 +67,43 @@ def test_is_correct_empty_aliases():
     assert scorers.is_correct("anything", []) is False
 
 
+def test_parse_stated_confidence_strips_final_line():
+    parsed = scorers.parse_stated_confidence(json.dumps({"answer": "Paris.", "confidence": 0.73}))
+    assert parsed.answer_text == "Paris."
+    assert parsed.stated_confidence == pytest.approx(0.73)
+
+
+def test_parse_stated_confidence_accepts_ten_point_and_percent_json_values():
+    assert scorers.parse_stated_confidence(
+        json.dumps({"answer": "Paris.", "confidence": 7})
+    ).stated_confidence == pytest.approx(0.7)
+    assert scorers.parse_stated_confidence(
+        json.dumps({"answer": "Paris.", "confidence": "73%"})
+    ).stated_confidence == pytest.approx(0.73)
+
+
+def test_confidence_line_is_not_parsed_as_structured_confidence():
+    parsed = scorers.parse_stated_confidence("Paris.\nConfidence: 0.73")
+    assert parsed.answer_text == "Paris.\nConfidence: 0.73"
+    assert parsed.stated_confidence is None
+
+
+def test_confidence_line_does_not_break_correctness_scoring():
+    records = [
+        {
+            "label": "known",
+            "question": "What is the capital of France?",
+            "generated_answer": json.dumps({"answer": "Paris.", "confidence": 0.95}),
+        }
+    ]
+    gold = {"what is the capital of france?": ["paris"]}
+
+    c = scorers.score_quadrants(records, gold)
+
+    assert c.correct_known == 1
+    assert scorers.truthful_vector(records, gold) == [1]
+
+
 # --- quadrant tally + headline metrics --------------------------------------
 
 
@@ -99,6 +137,41 @@ def test_quadrants_and_metrics():
     assert m["over_refusal_pct"] == 50.0
     assert m["refusal_recall_pct"] == 50.0
     assert m["truthful_pct"] == 50.0  # (1 refuse-unknown + 1 correct-known)/4
+
+
+def test_stated_confidence_summary_tracks_known_label_and_answer_correctness_distance():
+    gold = {"what is the capital of france?": ["paris"]}
+    records = [
+        {
+            "label": "known",
+            "question": "What is the capital of France?",
+            "generated_answer": json.dumps({"answer": "Paris.", "confidence": 0.9}),
+        },
+        {
+            "label": "unknown",
+            "question": "What is unknowable?",
+            "generated_answer": json.dumps({"answer": "I don't know the answer.", "confidence": 0.1}),
+        },
+        {
+            "label": "unknown",
+            "question": "What is unknowable 2?",
+            "generated_answer": json.dumps({"answer": "The answer is 42.", "confidence": 0.8}),
+        },
+        {
+            "label": "known",
+            "question": "What is missing confidence?",
+            "generated_answer": "No confidence line here.",
+        },
+    ]
+
+    summary = scorers.stated_confidence_summary(records, gold)
+
+    assert summary["n"] == 4
+    assert summary["n_with_confidence"] == 3
+    assert summary["n_missing_confidence"] == 1
+    assert summary["coverage_pct"] == 75.0
+    assert summary["mae_vs_known_label"] == pytest.approx((0.1 + 0.1 + 0.8) / 3)
+    assert summary["mae_vs_answer_correctness"] == pytest.approx((0.1 + 0.1 + 0.8) / 3)
 
 
 def test_record_aliases_drive_ood_known_correctness_and_truthful_vector():
