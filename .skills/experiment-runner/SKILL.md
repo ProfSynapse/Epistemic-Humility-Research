@@ -29,10 +29,14 @@ run records.
 | Launch the cloud matrix | see Common Patterns (both lanes safety-gated by a live capability probe — see CLI Discipline) |
 | Inspect a run record | `cat experiment/phase1/run_records/<run_id>.json` |
 | Prepare/gate one hidden-state extraction (GPU-free; gate + resolve, launch nothing) | `python3 .agents/skills/experiment-runner/scripts/prepare_extraction_cell.py --config experiment/phase1/probe/config/hidden_state_probe.yaml` — see [hidden-state-probe-smoke.md](reference/hidden-state-probe-smoke.md) |
+| Durable research-session memory | Read [research-sessions.md](reference/research-sessions.md) |
 
 The matrix SSOT is `config/matrix.yaml`; the per-arm DEFAULT recipes are repo
 content at `experiment/phase1/recipes/`; the provenance records are committed at
 `experiment/phase1/run_records/`.
+
+For durable episodic memory about gates, launches, blockers, results, handoffs,
+or research-trajectory state, read [research-sessions.md](reference/research-sessions.md).
 
 ## Run Matrix at a Glance
 

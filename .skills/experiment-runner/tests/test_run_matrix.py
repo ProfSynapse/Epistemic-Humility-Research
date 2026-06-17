@@ -20,6 +20,7 @@ import pytest
 import yaml
 
 import check_prereqs as cp
+import research_session as rs
 import run_matrix as rm
 
 
@@ -47,6 +48,65 @@ def _stub_recipe(method="dpo", model_tag="qwen3-4b-instruct", lr=5.0e-6):
                 "workdir": "{tuner_root}"},
         "artifacts": {"output_root": "x/{name}"},
     }
+
+
+# ---------------------------------------------------------------------------
+# Durable research-session memory.
+# ---------------------------------------------------------------------------
+
+
+def test_research_session_markdown_frontmatter_roundtrip(tmp_path):
+    session = tmp_path / "docs" / "sessions" / "0001 - phase-1-smoke.md"
+    rs.create_session(
+        session,
+        session_id="phase1-smoke",
+        title="Phase 1 smoke",
+        question="Can the local lane prepare the first Phase 1 cell?",
+        phase="phase1",
+        tags=["experiment-runner"],
+    )
+    rs.append_checkpoint(
+        session,
+        kind="planning",
+        title="Initial Planning",
+        summary="Dry-run will expand the matrix before any launch.",
+        evidence=[".agents/skills/experiment-runner/scripts/run_matrix.py"],
+        next_steps=["Run the prereq gate."],
+    )
+
+    frontmatter, body = rs.load_session(session)
+    assert frontmatter["schema_version"] == rs.SCHEMA_VERSION
+    assert frontmatter["session_id"] == "phase1-smoke"
+    assert frontmatter["checkpoints"][0]["kind"] == "planning"
+    assert frontmatter["checkpoints"][0]["title"] == "Initial Planning"
+    assert "### 001-planning - Initial Planning" in body
+    assert rs.validate_path(session) == []
+
+
+def test_research_session_default_path_uses_numbered_title_filename(tmp_path, monkeypatch):
+    monkeypatch.chdir(tmp_path)
+    path = rs.default_session_path("phase1-smoke", "Phase 1 Smoke")
+    assert path.as_posix() == "docs/sessions/0001 - phase-1-smoke.md"
+
+
+def test_run_matrix_dry_run_appends_session_checkpoint(tmp_path):
+    session = tmp_path / "phase1-dry-run.md"
+    rs.create_session(
+        session,
+        session_id="phase1-dry-run",
+        title="Phase 1 dry run",
+        question="Can the matrix expand without launch?",
+        phase="phase1",
+    )
+
+    rc = rm.main(["--dry-run", "--session", str(session)])
+
+    assert rc == 0
+    frontmatter, body = rs.load_session(session)
+    assert frontmatter["checkpoints"][0]["kind"] == "planning"
+    assert frontmatter["checkpoints"][0]["title"] == "Matrix Dry-Run"
+    assert "pre-registration count assertions passed" in frontmatter["checkpoints"][0]["summary"]
+    assert "### 001-planning - Matrix Dry-Run" in body
 
 
 # ---------------------------------------------------------------------------

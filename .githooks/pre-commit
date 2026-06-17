@@ -1,0 +1,19 @@
+#!/bin/sh
+set -eu
+
+ROOT="$(git rev-parse --show-toplevel)"
+cd "$ROOT"
+
+if command -v py >/dev/null 2>&1; then
+  PYTHON="py -3"
+elif command -v python3 >/dev/null 2>&1; then
+  PYTHON="python3"
+else
+  PYTHON="python"
+fi
+
+$PYTHON validate_kg.py
+
+if [ -d docs/sessions ]; then
+  $PYTHON .agents/skills/experiment-runner/scripts/research_session.py validate docs/sessions
+fi

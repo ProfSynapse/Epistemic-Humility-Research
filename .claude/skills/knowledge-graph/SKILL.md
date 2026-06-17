@@ -120,6 +120,40 @@ python3 skills/knowledge-graph/scripts/analyze_kg.py
 python3 skills/knowledge-graph/scripts/analyze_kg.py --json
 ```
 
+Build or update the local search index, then search it:
+
+```bash
+./search query terms --limit 10
+.\search.cmd query terms --limit 10  # Windows PowerShell/CMD
+python3 .agents/skills/knowledge-graph/scripts/kg_index.py --root . --json
+python3 .agents/skills/knowledge-graph/scripts/kg_search.py query terms --root . --limit 10
+```
+
+Validate that the repo has not drifted from the KG search system:
+
+```bash
+git config core.hooksPath .githooks
+./validate-kg
+.\validate-kg.cmd  # Windows PowerShell/CMD
+```
+
+`core.hooksPath` must point at `.githooks` so the KG validator runs before
+commit. `validate-kg` fails when the hook path is not installed.
+
+Record retrieval feedback when a search result was actually useful:
+
+```bash
+python3 .agents/skills/knowledge-graph/scripts/kg_feedback.py \
+  --query "query terms" \
+  --event read \
+  --path path/from/repo/root.md \
+  --success
+```
+
+The search index is local state under `.kg/`. It is rebuilt lazily by
+`kg_search.py`, so it should not be committed. Dot-directories are skipped by
+default except `.skills/`, which is indexed as procedural memory.
+
 ## Workflow
 
 1. Inspect the note or folder the user names.

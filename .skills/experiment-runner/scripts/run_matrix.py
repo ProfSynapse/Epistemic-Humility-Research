@@ -39,6 +39,7 @@ import yaml
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 import check_prereqs  # noqa: E402  (sibling module, intentional local import)
+import research_session  # noqa: E402  (sibling module, intentional local import)
 
 # Research-repo (worktree) root, derived from this file's location so the path
 # defaults below are CWD-independent. We walk UP to the first ancestor that owns
@@ -474,10 +475,29 @@ def _build_arg_parser() -> argparse.ArgumentParser:
     parser.add_argument("--tuner-root", default=str(_REPO_ROOT / "synaptic-tuner"))
     parser.add_argument("--lane", choices=["local", "cloud"], default="local")
     parser.add_argument("--dry-run", action="store_true",
-                        help="Expand + materialize + print commands; launch nothing, write nothing.")
+                        help="Expand + materialize + print commands; launch nothing. Writes only if --session is provided.")
     parser.add_argument("--check-only", action="store_true",
                         help="Run the prereq gate per cell and report; launch nothing.")
+    parser.add_argument("--session",
+                        help="Optional docs/sessions/*.md research-session note to append a checkpoint to.")
     return parser
+
+
+def append_session_checkpoint(args, *, kind: str, summary: str, evidence: list[str] | None = None,
+                              title: str | None = None, decisions: list[str] | None = None,
+                              next_steps: list[str] | None = None) -> None:
+    if not getattr(args, "session", None):
+        return
+    research_session.append_checkpoint(
+        Path(args.session),
+        kind=kind,
+        title=title,
+        summary=summary,
+        evidence=evidence or [],
+        commands=["run_matrix.py " + " ".join(getattr(args, "_argv", sys.argv[1:]))],
+        decisions=decisions or [],
+        next_steps=next_steps or [],
+    )
 
 
 def _expand_with_count_banner(args) -> list:
@@ -497,7 +517,8 @@ def _expand_with_count_banner(args) -> list:
 
 def expand_and_report(args) -> int:
     """--dry-run path: expand + materialize + print per-cell commands. No gate,
-    no launch, no writes. This is the cheap preview; --check-only is the gate.
+    no launch. It writes only an optional session checkpoint. This is the cheap
+    preview; --check-only is the gate.
     """
     cells = _expand_with_count_banner(args)
     recipes_dir = Path(args.recipes_dir)
@@ -508,6 +529,17 @@ def expand_and_report(args) -> int:
         if cell.coordinate.override:
             line += f" {cell.coordinate.override[0]}={materialized['training'].get(cell.coordinate.override[0])}"
         print(line)
+    append_session_checkpoint(
+        args,
+        kind="planning",
+        title="Matrix Dry-Run",
+        summary=(
+            f"Dry-run expanded {len(cells)} Phase 1 cells on lane={args.lane}; "
+            "pre-registration count assertions passed and no launch occurred."
+        ),
+        evidence=[args.matrix, args.recipes_dir, "experiment/protocol/research-trajectory.md"],
+        next_steps=["Run --check-only before preparing or launching cells."],
+    )
     return 0
 
 
@@ -556,6 +588,14 @@ def check_and_report(args) -> int:
             print(f"  [{cell.coordinate.run_id()}] ABORT: {exc}")
             print("Prereq gate ABORTED the matrix (hard precondition absent). "
                   "Launch nothing until it is resolved.")
+            append_session_checkpoint(
+                args,
+                kind="blocker",
+                title="Prereq Gate Blocker",
+                summary=f"Prereq gate aborted on {cell.coordinate.run_id()}: {exc}",
+                evidence=[args.matrix, args.data_root, "experiment/phase1/run_records/"],
+                next_steps=["Resolve the hard prerequisite before launching any cell."],
+            )
             return 1
         if result.skip:
             n_skip += 1
@@ -566,11 +606,23 @@ def check_and_report(args) -> int:
             print(f"  [{cell.coordinate.run_id()}] PASS{detail}")
     print(f"Prereq gate complete: {n_pass} PASS, {n_skip} SKIP, 0 ABORT "
           f"(of {len(cells)} cells). No cell launched.")
+    append_session_checkpoint(
+        args,
+        kind="gate",
+        title="Prereq Gate Completed",
+        summary=(
+            f"Prereq gate completed for lane={args.lane}: {n_pass} PASS, "
+            f"{n_skip} SKIP, 0 ABORT across {len(cells)} cells."
+        ),
+        evidence=[args.matrix, args.data_root, "experiment/phase1/run_records/"],
+        next_steps=["Prepare or launch only cells that passed the gate."],
+    )
     return 0
 
 
 def main(argv: Optional[list] = None) -> int:
     args = _build_arg_parser().parse_args(argv)
+    args._argv = list(argv) if argv is not None else sys.argv[1:]
     if args.check_only:
         # The gate: expand, assert counts, and run check_prereqs per cell.
         return check_and_report(args)
