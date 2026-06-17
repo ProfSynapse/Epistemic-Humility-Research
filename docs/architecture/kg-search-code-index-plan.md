@@ -7,6 +7,8 @@ Build a low-upkeep search layer for the research repo that works out of the box:
 - no embedding model required for v0
 - no long-running daemon required
 - no manual reindex step required before normal search
+- Windows and POSIX CLI wrappers for the common search path
+- a repo validator so KG search/source invariants do not silently drift
 - deterministic typed extraction for code, configs, docs, and existing KG notes
 - bounded results that make `rg` more targeted instead of replacing it outright
 
@@ -17,9 +19,9 @@ of truth.
 ## V0 Architecture
 
 The index lives in `.kg/index.sqlite` and is regenerated incrementally. The
-directory is gitignored. Dot-directories are skipped by default unless explicitly
-allowlisted later; the index should focus on source, configs, docs, datasets,
-and the curated library rather than editor/plugin state.
+directory is gitignored. Dot-directories are skipped by default. The explicit
+exception is `.skills/`, because canonical project skills are procedural memory;
+generated mirrors and editor/plugin state stay out of scope.
 
 Tables:
 
@@ -29,20 +31,24 @@ Tables:
 - `nodes`: typed graph nodes such as files, Python symbols, config keys, and KG notes.
 - `edges`: typed graph edges such as `contains`, `defined_in`, `imports`,
   `calls`, `contains_key`, and `references_path`.
-- `search_log`: query/result audit trail reserved for later feedback mining.
-- `feedback_events`: read/edit/test events reserved for later learning.
+- `path_memory_labels`: soft memory-lane labels for paths, such as semantic,
+  procedural, episodic, artifact, normative, evaluative, and prospective.
+- `search_log`: query/result audit trail plus lane weights used for that query.
+- `feedback_events`: read/edit/test events used by the lightweight lane adapter.
 
 Search flow:
 
-1. `kg_search "query"` calls the indexer in changed-file mode.
+1. `./search query terms --flags` on POSIX or `.\search.cmd query terms --flags`
+   on Windows calls the indexer in changed-file mode.
 2. The indexer scans tracked plus untracked non-ignored source files, hashes
    changed files, removes deleted file rows, and reparses only changed files.
 3. Search queries FTS5 for seed chunks.
 4. Seed files/nodes are expanded through the typed graph with edge-type weights
    so code/config traversal is in the first version, not a later bolt-on.
-5. Search reranks FTS hits plus graph-expanded candidates and prints bounded
-   results.
-6. If raw text search is still needed, the wrapper prints scoped `rg` commands
+5. Recent feedback on similar queries adjusts memory-lane weights softly.
+6. Search reranks FTS hits plus graph-expanded candidates and prints bounded
+   results with path memory labels.
+7. If raw text search is still needed, the wrapper prints scoped `rg` commands
    against the highest-ranked files.
 
 ## Extraction Scope
@@ -104,26 +110,53 @@ Lowest-upkeep trigger:
 This keeps the happy path automatic without creating a background service to
 debug.
 
-## Learning Later
+## Drift Guard
 
-The `search_log` table is reserved for Nexus-style retrieval feedback:
+`./validate-kg` on POSIX and `.\validate-kg.cmd` on Windows validate the checked-in
+KG search system:
 
-- log query and returned candidates
-- observe later file reads/edits/test runs as implicit positives
-- mine skip-above pairs only when the used result was ranked below another
-  candidate
-- bake off simple rerankers on held-out traces
-- promote only when MRR/Recall improve and diversity does not collapse
+- required root CLI wrappers exist
+- the canonical `.skills/knowledge-graph/` tree is synced to `.agents/` and
+  `.claude/`
+- required KG scripts and tests exist in every tree
+- `.skills/` is indexed as procedural memory while other dot-directories remain
+  ignored by default
+- a temporary index smoke test confirms `.skills` labels are written
+
+The tracked pre-commit hook lives at `.githooks/pre-commit` and runs the
+validator before every commit. Each checkout must install the tracked hook path
+once:
+
+```bash
+git config core.hooksPath .githooks
+```
+
+The validator fails if that local hook path is not configured, so a checkout
+cannot silently drift into committing without the KG gate.
+
+## Lightweight Memory-Lane Adapter
+
+The checked-in v0 learning mechanism is deliberately simple and low-upkeep:
+
+- label paths by stable memory lane from structure and file kind
+- log query, returned candidates, and the lane weights used for that search
+- record later reads/edits/test events with `kg_feedback.py`
+- compare the new query to past logged queries by token overlap
+- softly boost lanes that were useful for similar prior queries
+
+This is an adapter over the deterministic FTS+graph ranker, not a replacement
+ranker. At first all lanes start neutral; repeated evidence changes weights
+within caps, so exact symbol/path/config matches remain reliable.
 
 Feedback signal policy:
 
 | Signal | Meaning | Default weight |
 | --- | --- | --- |
-| `read` | user or agent opened/read a returned file | weak positive |
+| `read` / `open` | user or agent opened/read a returned file | weak positive |
 | `edit` | user or agent edited a returned file | medium positive |
 | `test_pass` | relevant test passed after using/editing returned files | strong positive |
-| `test_fail` | relevant test failed after using/editing returned files | weak negative or no label |
-| `repeat_query` | user re-queried immediately after result set | possible weak negative |
+| `test_fail` | relevant test failed after using/editing returned files | weak negative |
+| `requery` | user re-queried immediately after result set | weak negative |
 
 Reward-hacking guards:
 

@@ -24,6 +24,7 @@ SCRIPT_DIR = Path(__file__).resolve().parent
 sys.path.insert(0, str(SCRIPT_DIR))
 
 import check_prereqs  # noqa: E402
+import research_session  # noqa: E402
 import run_matrix as rm  # noqa: E402
 
 
@@ -54,6 +55,10 @@ def _parser() -> argparse.ArgumentParser:
     )
     parser.add_argument("--research-repo-root", default=str(rm._REPO_ROOT))
     parser.add_argument("--tuner-root", default=str(rm._REPO_ROOT / "synaptic-tuner"))
+    parser.add_argument(
+        "--session",
+        help="Optional docs/sessions/*.md research-session note to append a checkpoint to.",
+    )
     return parser
 
 
@@ -222,6 +227,17 @@ def main(argv: list[str] | None = None) -> int:
     record["matrix_version"] = matrix["matrix_version"]
     record["materialized_recipe"] = str(materialized_path)
     record_path = rm.write_run_record(record, run_records_dir)
+    if args.session:
+        research_session.append_checkpoint(
+            Path(args.session),
+            kind="launch" if args.status == "launched" else "checkpoint",
+            title=f"Prepared {args.run_id}",
+            summary=f"Prepared local cell {args.run_id} with status={args.status}.",
+            evidence=[str(record_path), str(materialized_path), data_block["source_data_file"]],
+            run_ids=[args.run_id],
+            commands=["prepare_local_cell.py " + " ".join(argv if argv is not None else sys.argv[1:])],
+            next_steps=["Run the emitted tuner local-run command when launch is approved."],
+        )
 
     print(json.dumps({
         "run_id": args.run_id,
