@@ -14,6 +14,7 @@ __pycache__/
 */*_train.jsonl
 */*_dev.jsonl
 */build_manifest.json
+*/grpo_manifest.json
 
 # Hard containment: the Llama-2 bridge arm output dir is DO-NOT-REDISTRIBUTE
 # derived data (Cheng IDK training data is license-gated). Exclude the ENTIRE

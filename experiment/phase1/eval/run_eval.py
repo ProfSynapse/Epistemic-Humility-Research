@@ -381,11 +381,15 @@ def score_arm_on_set(
     truthful_vec = scorers.truthful_vector(
         records, gold, label_from_target=label_from_target
     )
+    stated_confidence = scorers.stated_confidence_summary(
+        records, gold, label_from_target=label_from_target
+    )
     return {
         "counts": counts.__dict__,
         "metrics": headline,
         "accuracy_retention_pct": scorers.accuracy_retention(counts),
         "truthful_vector": truthful_vec,
+        "stated_confidence": stated_confidence,
     }
 
 
@@ -414,6 +418,7 @@ def write_metrics(
         "metrics": scored["metrics"],
         "counts": scored["counts"],
         "accuracy_retention_pct": scored["accuracy_retention_pct"],
+        "stated_confidence": scored["stated_confidence"],
     }
     (out_dir / "metrics.json").write_text(
         json.dumps(metrics_payload, indent=2), encoding="utf-8"
@@ -443,9 +448,11 @@ def _scored_row_payload(
         target_unknown = str(record["label"]).lower() == "unknown"
 
     generated_answer = record["generated_answer"]
-    refused = scorers.is_refusal(generated_answer)
+    parsed = scorers.parse_stated_confidence(generated_answer)
+    answer_text = parsed.answer_text
+    refused = scorers.is_refusal(answer_text)
     aliases = scorers._aliases_for_record(record, gold, "question")
-    correct = False if refused else scorers.is_correct(generated_answer, aliases)
+    correct = False if refused else scorers.is_correct(answer_text, aliases)
     truthful = refused if target_unknown else correct
 
     payload = {
@@ -456,6 +463,8 @@ def _scored_row_payload(
         "question": record["question"],
         "label": "unknown" if target_unknown else "known",
         "generated_answer": generated_answer,
+        "answer_text": answer_text,
+        "stated_confidence": parsed.stated_confidence,
         "refused": refused,
         "correct": correct,
         "truthful": truthful,
