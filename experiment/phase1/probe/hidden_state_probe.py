@@ -405,6 +405,74 @@ def _file_sha256(path: Path) -> str | None:
     return h.hexdigest()
 
 
+def _looks_like_explicit_local_path(model_name: str) -> bool:
+    """Whether a model id should be treated as an operator-supplied local path."""
+    path = Path(model_name).expanduser()
+    return path.is_absolute() or model_name.startswith((".", "~"))
+
+
+def _local_model_dir_sha256(model_name: str) -> str | None:
+    """Deterministic local-model identity, or None when model_name is a hub id.
+
+    Local merged models do not have a hub snapshot commit, so the manifest needs
+    another immutable content key. Hash stable identity-bearing files in a fixed
+    order, including each relative path and each file's sha256, and prefix the
+    result so it cannot be mistaken for a hub commit SHA.
+
+    Returns None only for non-local model ids. Explicit local-path failures are
+    raised so the operator gets a direct error instead of a later None-field
+    finalize failure.
+    """
+    import hashlib  # noqa: PLC0415
+
+    root = Path(model_name).expanduser()
+    if not root.exists():
+        if _looks_like_explicit_local_path(model_name):
+            raise FileNotFoundError(f"local model directory {model_name!r} does not exist")
+        return None
+    if not root.is_dir():
+        raise NotADirectoryError(f"local model path {model_name!r} is not a directory")
+
+    config_file = root / "config.json"
+    if not config_file.is_file():
+        raise FileNotFoundError(
+            f"local model directory {model_name!r} is missing config.json")
+
+    stable_names = [
+        "config.json",
+        "generation_config.json",
+        "tokenizer_config.json",
+        "tokenizer.json",
+        "special_tokens_map.json",
+        "model.safetensors.index.json",
+        "pytorch_model.bin.index.json",
+    ]
+    files = {root / name for name in stable_names if (root / name).is_file()}
+    files.update(p for p in root.glob("*.safetensors") if p.is_file())
+    files.update(p for p in root.glob("*.bin") if p.is_file())
+    weight_files = [
+        p for p in files
+        if (p.name.endswith(".safetensors") or p.name.endswith(".bin")
+            or p.name.endswith(".index.json"))
+    ]
+    if not weight_files:
+        raise FileNotFoundError(
+            f"local model directory {model_name!r} has config.json but no stable "
+            "weight identity files (*.safetensors, *.bin, or weight index json)")
+
+    h = hashlib.sha256()
+    for path in sorted(files, key=lambda p: p.relative_to(root).as_posix()):
+        rel = path.relative_to(root).as_posix()
+        digest = _file_sha256(path)
+        if digest is None:
+            raise FileNotFoundError(f"local model provenance file disappeared: {path}")
+        h.update(rel.encode("utf-8"))
+        h.update(b"\0")
+        h.update(digest.encode("ascii"))
+        h.update(b"\n")
+    return f"local-sha256:{h.hexdigest()}"
+
+
 def _read_adapter_lora_config(adapter_path: str | None) -> dict:
     """Read LoRA hyperparams from a PEFT adapter_config.json (GPU-free JSON read).
 
@@ -804,10 +872,11 @@ class TransformersPeftBackend:
 
         Supplies the fields that need the loaded backend: library versions, the
         base-model id/revision, and content hashes of the model + adapter dirs.
-        Hashes are best-effort over the adapter_config.json + tokenizer config
-        (cheap, identity-bearing) rather than full weight files, so this stays
-        fast; None-safe so a missing file degrades to a recorded None (which the
-        finalize gate will then catch as under-populated, surfacing the gap).
+        Hub loads keep the resolved snapshot commit/configured revision behavior.
+        Local merged-model directories have no hub commit, so they get an
+        explicit local-sha256:<digest> identity over stable model files. Missing
+        local provenance inputs fail explicitly; non-local unresolved hub ids
+        still degrade to None so the strict finalize gate surfaces the gap.
         """
         base_cfg = getattr(self.model, "config", None)
         base_model_id = getattr(base_cfg, "_name_or_path", None) or self.model_name
@@ -824,10 +893,14 @@ class TransformersPeftBackend:
         # rather than attesting a non-immutable revision.
         base_model_revision = (
             getattr(base_cfg, "_commit_hash", None) or self.model_revision)
+        local_model_hash = None
+        if base_model_revision is None:
+            local_model_hash = _local_model_dir_sha256(self.model_name)
+            base_model_revision = local_model_hash
         return {
             "base_model_id": base_model_id,
             "base_model_revision": base_model_revision,
-            "base_model_hash": base_model_id,  # id IS the content key for a hub model
+            "base_model_hash": local_model_hash or base_model_id,
             "adapter_hash": adapter_hash,
             "tokenizer_revision": getattr(self.tokenizer, "name_or_path", None),
             "peft_version": self._peft.__version__,

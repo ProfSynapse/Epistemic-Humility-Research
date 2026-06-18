@@ -7,6 +7,24 @@ trajectory is and how it got there.
 Do not save every local read/edit/test trace as a session. Keep sessions to
 meaningful checkpoints.
 
+Allowed checkpoint kinds:
+
+- `planning`: intended plan, matrix choice, or work-session setup before action.
+- `gate`: prerequisite, safety, count, or readiness gate result.
+- `launch`: actual run or job launch event.
+- `observation`: factual observation from logs, artifacts, metrics, or traces.
+- `decision`: durable choice that changes what happens next.
+- `result`: completed run, analysis, or workflow outcome.
+- `blocker`: issue that prevents progress until resolved.
+- `handoff`: state transfer to another worker, phase, machine, or future session.
+- `checkpoint`: generic state marker when a more specific kind does not fit.
+- `recovery`: restart, resume, repair, or rollback after interruption or failure.
+- `validation`: verification check, audit result, or independent confirmation.
+- `heartbeat`: brief liveness/progress marker for long-running work.
+- `interpretation`: meaning assigned to results, patterns, or evidence.
+- `amendment`: correction or update to an earlier checkpoint or session claim.
+- `infrastructure`: environment, tooling, dependency, or platform change relevant to the research run.
+
 Workflow:
 
 1. Read `reference/research-session-template.md`.

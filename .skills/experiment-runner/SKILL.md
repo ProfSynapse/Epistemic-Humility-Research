@@ -219,6 +219,21 @@ skill:
   permission errors. Do not modify `C:\Users\Joseph\.docker` from Codex as a
   workaround. For actual local container create/pull/run operations, escalated
   Docker commands worked.
+- Local copy-mode can leave the Docker container alive with PID 1 as
+  `sleep infinity` after training is complete, while host stdout/stderr and
+  host artifact directories are stale or missing. Do not treat an old host PID,
+  frozen dashboard step, or running sleep container as the completion source of
+  truth. Verify local completion from the run record plus host-visible
+  `final_model` and metrics/lineage `train_end`; if host artifacts are absent,
+  inspect the in-container path
+  `/workspace/repo/toolset-training-artifacts/runs/local/<size>/<run_id>/<timestamp>/`
+  for `final_model`, `training_lineage.json`, and `logs/training_*.jsonl`.
+  On Windows, `docker cp` can fail when it tries to create the container symlink
+  `logs/training_latest.jsonl` (`A required privilege is not held by the
+  client`) after copying most real files. Recover any missed provenance files
+  individually and materialize `training_latest.jsonl` as a normal copy of the
+  concrete timestamped metrics log; keep the large recovered artifact tree
+  gitignored.
 - Local Docker/GPU recovery on 2026-06-13: `docker pull unsloth/unsloth:latest`
   succeeded locally with digest
   `sha256:f21629b9ae4ed11231768edfaed0f40d41d85d6ea9a71e8096a3d96ea0311772`,
@@ -286,7 +301,13 @@ skill:
   tool timeout. The reliable detached launcher is a foreground `py -3.11 -c`
   wrapper that opens stdout/stderr files and calls `subprocess.Popen(...,
   cwd='synaptic-tuner', stdin=DEVNULL, creationflags=DETACHED_PROCESS |
-  CREATE_NEW_PROCESS_GROUP, close_fds=True)`.
+  CREATE_NEW_PROCESS_GROUP, close_fds=True)`. If that launcher path is skipped
+  or blocked, do not keep retrying fragile PowerShell job mechanisms. For an
+  already materialized and audited local recipe, it is acceptable to launch the
+  equivalent `docker run -d` directly, but record the bypass in the run record,
+  keep the materialized recipe as the provenance source of truth, and verify
+  parity for model path, staged data path, LoRA budget, seed, output root,
+  timestamp, image, workdir, and trainer flags before treating the run as clean.
 - In local copy-mode, the Docker container PID 1 may be `sleep infinity` while
   the tuner starts the trainer with `docker exec`. In that case `docker logs`
   and the host redirected stdout/stderr can remain blank during training, and
@@ -326,6 +347,14 @@ skill:
 - The Unsloth image default entrypoint may chmod the mounted repo and fail on
   `.tmp/pytest-codex*`. For local eval wrapper runs, override the entrypoint
   with `--entrypoint python3`.
+- For Phase 3 causal-pilot GPU smokes in `unsloth/unsloth:latest`, override the
+  default image entrypoint with `--entrypoint python` before invoking
+  `experiment/phase1/probe/phase3_causal_pilot_runner.py`. Without the override,
+  the image can run studio setup, try to chmod the mounted repository, fail on
+  Windows-mounted repo permissions, and never invoke the runner. This applies to
+  the logit diagnostic path as well as generation smokes; use
+  `--mode logit_diagnostic --allow-logit-diagnostic` for the bounded logit check
+  through the existing Phase 3 activation hook/model/candidate path.
 - Qwen3 prompt rendering can look thinking-off while generated answers still
   contain `<think>...</think>`. Treat any generated thinking tags in
   `probe_results.jsonl` as contaminated output: stop the container, archive the
@@ -404,6 +433,100 @@ skill:
   recall/truthful score than base/DPO but severe over-refusal; DPO remains
   base-like here. Non-blocking warnings were the same as earlier diagnostics:
   Triton routing module, AOT cache save, and NCCL shutdown warning.
+- For Codex-side long-run monitors on this Windows host, prefer direct Docker
+  commands over piped/combined Docker calls. During 2026-06-16 eval monitoring,
+  direct `docker ps -a --filter ...` and `docker logs --tail ...` worked, while
+  the same checks embedded after `Start-Sleep` or inside PowerShell pipelines
+  intermittently hit `C:\Users\Joseph\.docker\config.json Access is denied` or
+  Docker pipe permission errors. Treat those combined-command failures as
+  monitor artifacts if result files and GPU telemetry show healthy progress.
+- One live vLLM eval container can run beside local KTO training on the RTX 3090
+  if the eval is scoped to one arm, uses container-visible paths, overrides the
+  image entrypoint with `--entrypoint python3`, and caps vLLM with
+  `gpu_memory_utilization: 0.40` plus `max_lora_rank: 32`. On 2026-06-16,
+  sequential DPO seed 2 and seed 3 full SelfAware evals each exited 0 while
+  `sft_kto__4b__amendment_a__seed2` kept training; total card VRAM peaked near
+  16.4 GB, and KTO's own reserved VRAM stayed about 4.389 GB with low OOM risk.
+  Do not launch two vLLM engines plus training unless intentionally testing
+  capacity. Run seed evals sequentially beside training.
+- After every eval, do a quick plausibility pass before accepting the result:
+  compare each arm against its nearest controls, prior seeds, and expected
+  directional behavior. Large surprises are allowed as hypotheses, but they are
+  first treated as an audit trigger. Check lineage, adapter/base paths, merged
+  checkpoint health, generation samples, scorer/refusal phrase alignment, and
+  config parity before writing the scientific interpretation. This should be
+  general: if an arm that should be SFT-warmed suddenly looks base-like, or a
+  control moves far outside its peer runs, pause and run a bounded sanity check
+  rather than explaining the outlier from the headline metrics alone.
+- Amendment B stated-confidence reruns are prompt-contract evals, not plain
+  rescoring. The JSON-only instruction belongs in each eval YAML under
+  `prompt.system`; do not mutate old result directories or reuse old configs
+  unchanged. Keep outputs labeled as Amendment B stated-confidence reruns,
+  use the strict answer/confidence parser as the coverage gate, and set
+  `generation.stated_confidence_json_retries` deliberately when live generation
+  should retry malformed JSON. A retry reduces accidental format loss, but it is
+  still measurement-affecting provenance; inspect `stated_confidence` coverage
+  and retry counts before treating the metrics as comparable. Also check a small
+  base-model slice before full reruns: on 2026-06-17 an over-strong JSON prompt
+  achieved 100% coverage with zero retries but induced massive prompt-only base
+  over-refusal, so coverage alone is not enough.
+- Amendment B can also expose scorer drift in the opposite direction: JSON answer
+  text may contain natural abstentions like "I do not know the exact number"
+  rather than the Cheng fixed phrase "I do not know the answer." Do not broaden
+  the legacy Cheng `is_refusal` path if the bridge regression moves; keep it
+  byte-stable and add JSON-aware stated-confidence refusal handling with tests
+  that cover both the natural abstention and the Cheng regression.
+- Amendment B structured-output schemas still need behavioral smoke tests, not
+  only parser coverage. A 2026-06-17 base-only SelfAware smoke with an explicit
+  `decision: answer|abstain` enum achieved perfect structure
+  (`stated_confidence.coverage_pct=100.0`, no retry exhaustion, all abstentions
+  canonicalized to "I don't know") but induced large base over-refusal
+  (`over_refusal_pct=37.11` on the 192-row slice where the neutral-concise
+  comparator had 0.0). Treat explicit abstain enums as measurement-affecting
+  until a base-slice behavioral comparator clears them. This is a general
+  instrumentation lesson: making abstention schema-visible can steer the model
+  toward over-abstention even when the prompt says to preserve normal behavior.
+  Prefer a control that constrains JSON shape without exposing an abstain option
+  if behavior must match the plain-answer baseline.
+- The follow-up answer/confidence-only structured-output control on the same
+  192-row base SelfAware slice preserved the intended behavior much better:
+  `stated_confidence.coverage_pct=100.0`, retry exhaustion 0,
+  `over_refusal_pct=1.03`, and `refusal_rate_pct=1.04`. Use this as the
+  preferred Amendment B measurement posture unless a later base-slice smoke
+  falsifies it. The durable rule is: any output contract that names abstention
+  as an explicit option is a behavioral intervention until proven otherwise.
+- On the local RTX 3090, one conservative vLLM eval engine
+  (`gpu_memory_utilization: 0.40`) can run beside KTO training, but the combined
+  card usage can still climb near 17 GB once vLLM is generating. Do not launch a
+  second vLLM eval engine while KTO is active unless intentionally testing local
+  capacity. Queue seed/config evals sequentially beside the trainer.
+- Structural validation of a merged SFT checkpoint is not sufficient after any
+  nonzero merge exit, OSError, or memory/flush warning. On 2026-06-16, the
+  seed2 merged SFT directory had `config.json`, two readable safetensor shards,
+  and a plausible index, but a 192-row SelfAware behavioral sanity eval of the
+  merged model alone produced refusal_recall 6.32, over_refusal 4.12, and
+  truthful 12.5, while the adapter-on-base SFT seed2 full eval had
+  refusal_recall 87.4. Treat such merges as semantically failed until a tiny
+  merged-base live eval confirms the expected SFT refusal behavior. Do not use a
+  suspect merged SFT checkpoint as the base for sequential `SFT -> DPO` or
+  `SFT -> KTO`; rebuild/merge with a lower-memory path first.
+- Phase 3 causal-pilot live runs must not blindly reuse readiness-plan control
+  labels as executable intervention labels. The dry-run config can list future
+  controls such as random direction, shuffled labels, wrong-layer neighbors, and
+  sign flips before the live runner implements them. A live runner should fail
+  closed on unsupported controls and use explicit labels such as
+  `activation_addition` and `activation_subtraction`; otherwise an artifact can
+  be mechanically valid but scientifically mislabeled. First live smoke on
+  2026-06-18 caught this: `control=sign_flip` with a positive coefficient was
+  a valid hook/scoring smoke, but the label was misleading for interpretation.
+- Phase 3 causal-pilot logit diagnostics are gated separately from generation:
+  use `--mode logit_diagnostic --allow-logit-diagnostic` when the question is
+  whether activation addition/subtraction changes next-token logits before
+  scaling generated rows. A moved logit distribution with unchanged greedy
+  top-1 means the hook is mechanically active but not yet behaviorally strong
+  under that direction/layer/coefficient; prefer richer logit probability
+  slices, an alternate direction, a layer/position sweep, or a final-norm
+  intervention before treating the null generation result as decisive.
 - Full SelfAware evidence run `eh-selfaware-full-local-4b` exited 0 with
   `eval complete: 3 arm x set rows, config_sha=25e6a1faf916c7ef`. Config:
   `experiment/phase1/eval/config/eval_selfaware_full_local_4b.yaml`. Outputs
@@ -530,6 +653,23 @@ skill:
   induce abstention on these bounded local surfaces. The mixed-stage question is
   whether `SFT -> DPO` or `SFT -> KTO` preserves SFT's abstention gains while
   reducing over-refusal.
+- 2026-06-16 local three-seed cold-start SelfAware eval completed for
+  `sft__4b__headline__seed1..3`, `dpo__4b__headline__seed1..3`, and
+  `kto__4b__headline__seed1..3`. Outputs:
+  `experiment/phase1/eval/results_selfaware_full_seed1_all_arms_4b_20260615_2148`,
+  `experiment/phase1/eval/results_selfaware_full_seed2_all_arms_4b_20260615_2148`,
+  and
+  `experiment/phase1/eval/results_selfaware_full_seed3_all_arms_4b_20260616_0615`.
+  Each arm wrote 3,369 scored SelfAware rows, and contamination scans for
+  `<think>`, `</think>`, and `reasoning_content` found no matches. Three-seed
+  means/ranges: SFT refusal recall 87.88% (83.91-92.34), over-refusal 64.77%
+  (64.31-65.25), truthful 39.19% (38.08-40.52); DPO-from-base refusal recall
+  0.03% (0.00-0.10), over-refusal 0.10% (0.04-0.17), truthful 15.67%
+  (15.08-16.68); KTO-from-base refusal recall 0.00%, over-refusal 0.14%
+  (0.09-0.17), truthful 18.67% (18.43-18.85). Readout: the SFT abstention
+  effect is seed-robust on SelfAware but carries a severe known-question
+  over-refusal cost; cold-start DPO/KTO remain stable negative controls under
+  this recipe.
 - OOD records carry their own `aliases`; scoring now prefers normalized
   non-empty record aliases and falls back to global Cheng gold. Without this,
   OOD known correctness/truthful vectors could be wrongly zero when questions

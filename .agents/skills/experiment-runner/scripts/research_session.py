@@ -31,6 +31,12 @@ VALID_KINDS = {
     "blocker",
     "handoff",
     "checkpoint",
+    "recovery",
+    "validation",
+    "heartbeat",
+    "interpretation",
+    "amendment",
+    "infrastructure",
 }
 SESSION_ID_RE = re.compile(r"^[a-z0-9][a-z0-9_.-]*$")
 SESSION_FILENAME_RE = re.compile(r"^\d{4} - [a-z0-9][a-z0-9-]*\.md$")

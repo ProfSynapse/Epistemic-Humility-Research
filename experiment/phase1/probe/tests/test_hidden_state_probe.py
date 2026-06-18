@@ -566,6 +566,142 @@ def test_corpus_prompt_hash_order_sensitive():
 
 
 # ---------------------------------------------------------------------------
+# Local model directory provenance (sequential SFT -> DPO/KTO base identity)
+# ---------------------------------------------------------------------------
+
+
+def _write_local_model_dir(root: Path, *, shard_text: str = "weights") -> None:
+    root.mkdir()
+    (root / "config.json").write_text('{"model_type":"qwen3"}', encoding="utf-8")
+    (root / "tokenizer_config.json").write_text(
+        '{"tokenizer_class":"Qwen2TokenizerFast"}', encoding="utf-8")
+    (root / "model.safetensors.index.json").write_text(
+        '{"weight_map":{"layer":"model-00001-of-00001.safetensors"}}',
+        encoding="utf-8")
+    (root / "model-00001-of-00001.safetensors").write_text(
+        shard_text, encoding="utf-8")
+
+
+def test_local_model_dir_sha256_returns_stable_prefixed_identity(tmp_path):
+    """A complete local merged model dir produces populated deterministic provenance."""
+    model_dir = tmp_path / "merged_sft_model"
+    _write_local_model_dir(model_dir)
+
+    first = hsp._local_model_dir_sha256(str(model_dir))
+    second = hsp._local_model_dir_sha256(str(model_dir))
+
+    assert first is not None
+    assert first.startswith("local-sha256:")
+    assert second == first
+
+
+def test_local_model_dir_sha256_changes_when_stable_file_changes(tmp_path):
+    """The local identity is content-derived, not just path-derived."""
+    model_dir = tmp_path / "merged_sft_model"
+    _write_local_model_dir(model_dir)
+    before = hsp._local_model_dir_sha256(str(model_dir))
+
+    (model_dir / "model-00001-of-00001.safetensors").write_text(
+        "changed weights", encoding="utf-8")
+
+    assert hsp._local_model_dir_sha256(str(model_dir)) != before
+
+
+def test_local_model_dir_sha256_returns_none_for_hub_id():
+    """Hub ids are left to transformers _commit_hash / configured revision handling."""
+    assert hsp._local_model_dir_sha256("Qwen/Qwen3-4B") is None
+
+
+def test_local_model_dir_sha256_raises_for_missing_explicit_dir(tmp_path):
+    missing = tmp_path / "missing_model"
+    with pytest.raises(FileNotFoundError, match="does not exist"):
+        hsp._local_model_dir_sha256(str(missing))
+
+
+def test_local_model_dir_sha256_raises_for_missing_config(tmp_path):
+    model_dir = tmp_path / "bad_model"
+    model_dir.mkdir()
+    (model_dir / "model.safetensors").write_text("weights", encoding="utf-8")
+
+    with pytest.raises(FileNotFoundError, match="missing config.json"):
+        hsp._local_model_dir_sha256(str(model_dir))
+
+
+def test_local_model_dir_sha256_raises_for_missing_weight_identity(tmp_path):
+    model_dir = tmp_path / "bad_model"
+    model_dir.mkdir()
+    (model_dir / "config.json").write_text("{}", encoding="utf-8")
+
+    with pytest.raises(FileNotFoundError, match="no stable weight identity"):
+        hsp._local_model_dir_sha256(str(model_dir))
+
+
+def test_transformers_backend_provenance_uses_local_hash_without_hub_revision(tmp_path):
+    """Local model dirs populate base_model_revision/hash without weakening finalize."""
+    model_dir = tmp_path / "merged_sft_model"
+    _write_local_model_dir(model_dir)
+    adapter_dir = tmp_path / "adapter"
+    adapter_dir.mkdir()
+    (adapter_dir / "adapter_config.json").write_text('{"r":8}', encoding="utf-8")
+
+    class _Config:
+        _name_or_path = str(model_dir)
+        _commit_hash = None
+
+    class _Model:
+        config = _Config()
+
+    class _Tokenizer:
+        name_or_path = str(model_dir)
+
+    backend = hsp.TransformersPeftBackend.__new__(hsp.TransformersPeftBackend)
+    backend.model = _Model()
+    backend.model_name = str(model_dir)
+    backend.model_revision = None
+    backend.active_adapter_path = str(adapter_dir)
+    backend.tokenizer = _Tokenizer()
+    backend._peft = type("Peft", (), {"__version__": "test-peft"})
+    backend._transformers = type("Transformers", (), {"__version__": "test-transformers"})
+
+    prov = backend.provenance()
+
+    assert prov["base_model_revision"].startswith("local-sha256:")
+    assert prov["base_model_hash"] == prov["base_model_revision"]
+    assert prov["base_model_id"] == str(model_dir)
+
+
+def test_transformers_backend_provenance_preserves_hub_commit_behavior(tmp_path):
+    """A hub-resolved commit remains the base revision; no local hash is substituted."""
+    adapter_dir = tmp_path / "adapter"
+    adapter_dir.mkdir()
+    (adapter_dir / "adapter_config.json").write_text('{"r":8}', encoding="utf-8")
+
+    class _Config:
+        _name_or_path = "Qwen/Qwen3-4B"
+        _commit_hash = "abc123hubcommit"
+
+    class _Model:
+        config = _Config()
+
+    class _Tokenizer:
+        name_or_path = "Qwen/Qwen3-4B"
+
+    backend = hsp.TransformersPeftBackend.__new__(hsp.TransformersPeftBackend)
+    backend.model = _Model()
+    backend.model_name = "Qwen/Qwen3-4B"
+    backend.model_revision = None
+    backend.active_adapter_path = str(adapter_dir)
+    backend.tokenizer = _Tokenizer()
+    backend._peft = type("Peft", (), {"__version__": "test-peft"})
+    backend._transformers = type("Transformers", (), {"__version__": "test-transformers"})
+
+    prov = backend.provenance()
+
+    assert prov["base_model_revision"] == "abc123hubcommit"
+    assert prov["base_model_hash"] == "Qwen/Qwen3-4B"
+
+
+# ---------------------------------------------------------------------------
 # safetensors persistence contract (metadata is string-only; round-trip)
 # ---------------------------------------------------------------------------
 
