@@ -4,7 +4,7 @@ session_id: phase3-causal-pilot-start
 title: Phase 3 Causal Pilot Start
 status: active
 created_at: '2026-06-18T20:09:45Z'
-updated_at: '2026-06-18T21:36:00Z'
+updated_at: '2026-06-18T23:45:00Z'
 phase: phase1
 question: Track startup of the Phase 3 exploratory causal-pilot mechanistic-interpretability
   work from existing hidden-state directions.
@@ -115,6 +115,86 @@ checkpoints:
     activation_addition_hook_applied: 16/16
     activation_subtraction_hook_applied: 16/16
     top1_changed_rate: 0.0
+- id: 004-infrastructure
+  at: '2026-06-18T22:52:00Z'
+  kind: infrastructure
+  title: Reusable Full-Sweep Runner Fixed
+  summary: Added reusable Phase 3 sweep orchestration for the full local candidate
+    inventory, including Docker materialized-config path rewriting, per-job
+    execution logs, execution_results.jsonl, mode filtering, host aggregation of
+    Docker manifest paths, and a new mech-interp-runner skill. A malformed first
+    sweep exposed the gotcha that Docker YAML must not contain Windows absolute
+    output roots.
+  evidence:
+  - .skills/mech-interp-runner/SKILL.md
+  - experiment/phase1/probe/phase3_causal_pilot_sweep.py
+  - experiment/phase1/probe/phase3_causal_pilot_aggregate.py
+  - experiment/phase1/probe/config/phase3_causal_pilot_full_candidates.yaml
+  - experiment/phase1/probe/config/phase3_causal_pilot_local_sweep.yaml
+  run_ids: []
+  commands:
+  - python -m pytest experiment\\phase1\\probe\\tests\\test_phase3_causal_pilot_sweep.py
+    experiment\\phase1\\probe\\tests\\test_phase3_causal_pilot_runner.py experiment\\phase1\\probe\\tests\\test_phase3_causal_pilot_dry_run.py
+    -q
+  - python -m py_compile experiment\\phase1\\probe\\phase3_causal_pilot_sweep.py
+    experiment\\phase1\\probe\\phase3_causal_pilot_aggregate.py
+  - python sync_skills.py --check --skill mech-interp-runner
+  decisions:
+  - Keep base-original h_base skipped until the live runner supports adapterless
+    base execution; current generator requires an adapter and wraps the base in
+    PeftModel.
+  next_steps:
+  - Use the reusable sweep wrapper for future Phase 3 local runs rather than
+    hand-written Docker loops.
+  signals:
+    focused_tests: 34 passed in 3.21s
+    skill_sync: in sync for mech-interp-runner
+- id: 005-result
+  at: '2026-06-18T23:45:00Z'
+  kind: result
+  title: Full Local Causal-Pilot Sweep Complete
+  summary: Ran the full executable local Phase 3 causal-pilot sweep across 8
+    trained-model candidate directions, excluding only the adapterless base
+    direction. Both logit_diagnostic and generation modes completed with return
+    code 0. Aggregation produced 144 rows, exactly 8 candidates x 9 arms x 2
+    modes. Logit interventions moved distributions, but generation effects were
+    sparse and mostly harmful at coefficient 50 rather than clean humility
+    control.
+  evidence:
+  - experiment/phase1/probe/qwen3-4b-instruct/causal_pilots/phase3_local_mech_interp_sweep/summary.csv
+  - experiment/phase1/probe/qwen3-4b-instruct/causal_pilots/phase3_local_mech_interp_sweep/_execution_logs/execution_results.jsonl
+  - experiment/phase1/probe/qwen3-4b-instruct/causal_pilots/phase3_local_mech_interp_sweep/sft_dpo_delta_l35/generation/run_20260618T233308Z
+  - experiment/phase1/probe/qwen3-4b-instruct/causal_pilots/phase3_local_mech_interp_sweep/sft_kto_h_lora_l35/generation/run_20260618T233700Z
+  run_ids: []
+  commands:
+  - python experiment\\phase1\\probe\\phase3_causal_pilot_sweep.py --config
+    experiment\\phase1\\probe\\config\\phase3_causal_pilot_local_sweep.yaml
+    --mode-filter logit_diagnostic --write-plan --materialize-configs --execute
+    --allow-logit-diagnostic
+  - python experiment\\phase1\\probe\\phase3_causal_pilot_sweep.py --config
+    experiment\\phase1\\probe\\config\\phase3_causal_pilot_local_sweep.yaml
+    --mode-filter generation --write-plan --materialize-configs --execute
+    --allow-generation
+  - python experiment\\phase1\\probe\\phase3_causal_pilot_aggregate.py --root
+    experiment\\phase1\\probe\\qwen3-4b-instruct\\causal_pilots\\phase3_local_mech_interp_sweep
+    --out experiment\\phase1\\probe\\qwen3-4b-instruct\\causal_pilots\\phase3_local_mech_interp_sweep\\summary.csv
+  decisions:
+  - Treat the full sweep as Tier 2 exploratory local evidence only; do not promote
+    it into headline Phase 1 claims or reward design without a later governed
+    revision.
+  - Interpret current directions as mechanically active but not yet a reliable
+    behavioral control knob.
+  next_steps:
+  - Inspect richer logit/probability targets around refusal-related tokens and
+    consider layer/position/final-norm variants before scaling row count.
+  - If pursuing behavioral steering, prioritize targeted SFT-KTO/SFT-DPO follow-up
+    around the few changed rows rather than broadening all arms immediately.
+  signals:
+    executed_jobs: 16
+    aggregate_rows: 144
+    logit_top1_changes: sparse; strongest 4/16 on SFT-DPO coefficient-50 arms
+    generation_behavior_changes: three intervention arms changed refusal/truthfulness;
+      changed rows mostly removed abstention or corrupted correct answers
 ---
 # Phase 3 Causal Pilot Start
 
@@ -226,3 +306,53 @@ correlational until a controlled intervention changes behavior.
   - Coefficient 50 on this SFT `h_lora` layer-36 direction did not change greedy next-token top-1 on the 16-row smoke.
 - next steps:
   - Prefer richer logit targets/probability slices, the alternate SFT `delta` layer-35 direction, a layer/position sweep, or a final-norm intervention before broader generation scaling.
+
+### 004-infrastructure - Reusable Full-Sweep Runner Fixed
+
+- at: `2026-06-18T22:52:00Z`
+- kind: `infrastructure`
+- summary: Added reusable Phase 3 sweep orchestration for the full local candidate inventory, including Docker materialized-config path rewriting, per-job execution logs, `execution_results.jsonl`, mode filtering, host aggregation of Docker manifest paths, and a new `mech-interp-runner` skill. A malformed first sweep exposed the gotcha that Docker YAML must not contain Windows absolute output roots.
+- evidence:
+  - `.skills/mech-interp-runner/SKILL.md`
+  - `experiment/phase1/probe/phase3_causal_pilot_sweep.py`
+  - `experiment/phase1/probe/phase3_causal_pilot_aggregate.py`
+  - `experiment/phase1/probe/config/phase3_causal_pilot_full_candidates.yaml`
+  - `experiment/phase1/probe/config/phase3_causal_pilot_local_sweep.yaml`
+- commands:
+  - `python -m pytest experiment\\phase1\\probe\\tests\\test_phase3_causal_pilot_sweep.py experiment\\phase1\\probe\\tests\\test_phase3_causal_pilot_runner.py experiment\\phase1\\probe\\tests\\test_phase3_causal_pilot_dry_run.py -q`
+  - `python -m py_compile experiment\\phase1\\probe\\phase3_causal_pilot_sweep.py experiment\\phase1\\probe\\phase3_causal_pilot_aggregate.py`
+  - `python sync_skills.py --check --skill mech-interp-runner`
+- result:
+  - Focused tests passed: `34 passed in 3.21s`.
+  - Skill mirrors are in sync for `mech-interp-runner`.
+- decisions:
+  - Keep base-original `h_base` skipped until the live runner supports adapterless base execution; current generator requires an adapter and wraps the base in `PeftModel`.
+- next steps:
+  - Use the reusable sweep wrapper for future Phase 3 local runs rather than hand-written Docker loops.
+
+### 005-result - Full Local Causal-Pilot Sweep Complete
+
+- at: `2026-06-18T23:45:00Z`
+- kind: `result`
+- summary: Ran the full executable local Phase 3 causal-pilot sweep across 8 trained-model candidate directions, excluding only the adapterless base direction. Both `logit_diagnostic` and `generation` modes completed with return code 0. Aggregation produced 144 rows, exactly 8 candidates x 9 arms x 2 modes. Logit interventions moved distributions, but generation effects were sparse and mostly harmful at coefficient 50 rather than clean humility control.
+- evidence:
+  - `experiment/phase1/probe/qwen3-4b-instruct/causal_pilots/phase3_local_mech_interp_sweep/summary.csv`
+  - `experiment/phase1/probe/qwen3-4b-instruct/causal_pilots/phase3_local_mech_interp_sweep/_execution_logs/execution_results.jsonl`
+  - `experiment/phase1/probe/qwen3-4b-instruct/causal_pilots/phase3_local_mech_interp_sweep/sft_dpo_delta_l35/generation/run_20260618T233308Z`
+  - `experiment/phase1/probe/qwen3-4b-instruct/causal_pilots/phase3_local_mech_interp_sweep/sft_kto_h_lora_l35/generation/run_20260618T233700Z`
+- commands:
+  - `python experiment\\phase1\\probe\\phase3_causal_pilot_sweep.py --config experiment\\phase1\\probe\\config\\phase3_causal_pilot_local_sweep.yaml --mode-filter logit_diagnostic --write-plan --materialize-configs --execute --allow-logit-diagnostic`
+  - `python experiment\\phase1\\probe\\phase3_causal_pilot_sweep.py --config experiment\\phase1\\probe\\config\\phase3_causal_pilot_local_sweep.yaml --mode-filter generation --write-plan --materialize-configs --execute --allow-generation`
+  - `python experiment\\phase1\\probe\\phase3_causal_pilot_aggregate.py --root experiment\\phase1\\probe\\qwen3-4b-instruct\\causal_pilots\\phase3_local_mech_interp_sweep --out experiment\\phase1\\probe\\qwen3-4b-instruct\\causal_pilots\\phase3_local_mech_interp_sweep\\summary.csv`
+- result:
+  - Executed jobs: 16 total, all return code 0.
+  - Aggregated rows: 144.
+  - Logit diagnostic: all executable directions produced nonzero logit movement. Top-1 next-token changes were sparse; strongest arms were `sft_dpo_delta_l35` coefficient-50 activation-addition and `sft_dpo_h_lora_l34` coefficient-50 activation-subtraction at `4/16`.
+  - Generation: only three intervention arms changed refusal/truthfulness relative to no-vector baseline. The changed examples mostly removed abstention on unknown rows or changed a correct known answer to an incorrect one.
+  - Baseline generation on the 16-row slice tracked prior behavior qualitatively: cold DPO/KTO answered all unknowns; SFT refused most unknowns; sequential arms were intermediate.
+- interpretation:
+  - These directions are mechanically active, but current activation addition/subtraction is not yet a reliable behavioral humility-control knob.
+  - The best current evidence is negative/diagnostic: simple hidden-state direction steering can move logits without producing clean abstention improvements, and high-coefficient behavioral movement can degrade answers.
+- next steps:
+  - Inspect richer logit/probability targets around refusal-related tokens and consider layer/position/final-norm variants before scaling row count.
+  - If pursuing behavioral steering, prioritize targeted SFT-KTO/SFT-DPO follow-up around the few changed rows rather than broadening all arms immediately.
