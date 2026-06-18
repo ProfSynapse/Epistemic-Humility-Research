@@ -29,6 +29,7 @@ run records.
 | Launch the cloud matrix | see Common Patterns (both lanes safety-gated by a live capability probe — see CLI Discipline) |
 | Inspect a run record | `cat experiment/phase1/run_records/<run_id>.json` |
 | Prepare/gate one hidden-state extraction (GPU-free; gate + resolve, launch nothing) | `python3 .agents/skills/experiment-runner/scripts/prepare_extraction_cell.py --config experiment/phase1/probe/config/hidden_state_probe.yaml` — see [hidden-state-probe-smoke.md](reference/hidden-state-probe-smoke.md) |
+| Plan Phase 3 causal-pilot sweeps (GPU-free by default) | `python experiment/phase1/probe/phase3_causal_pilot_sweep.py --config experiment/phase1/probe/config/phase3_causal_pilot_local_sweep.yaml` — see [phase3-causal-pilot-sweeps.md](reference/phase3-causal-pilot-sweeps.md) |
 | Durable research-session memory | Read [research-sessions.md](reference/research-sessions.md) |
 | Governed protocol amendment | Read [protocol-amendments.md](reference/protocol-amendments.md) and use [protocol-amendment-template.md](reference/protocol-amendment-template.md) |
 
@@ -743,3 +744,4 @@ the eval-side aggregation isolates it.
 | Local staging vs cloud hub-name; the data-locality contract; the cloud capability gap | [reference/lanes.md](reference/lanes.md) |
 | Run-record schema + provenance discipline (dual SHAs, data block, verified flag) | [reference/run-records.md](reference/run-records.md) |
 | Off-matrix hidden-state extraction: gate (E1..E4), `aligned_run_record_id` resolver, GPU-free smoke chain | [reference/hidden-state-probe-smoke.md](reference/hidden-state-probe-smoke.md) |
+| Phase 3 local causal-pilot sweep planning, explicit live gates, and offline aggregation | [reference/phase3-causal-pilot-sweeps.md](reference/phase3-causal-pilot-sweeps.md) |
