@@ -89,6 +89,36 @@ def test_research_session_default_path_uses_numbered_title_filename(tmp_path, mo
     assert path.as_posix() == "docs/sessions/0001 - phase-1-smoke.md"
 
 
+def test_research_session_accepts_extended_checkpoint_taxonomy(tmp_path):
+    session = tmp_path / "docs" / "sessions" / "0001 - taxonomy.md"
+    rs.create_session(
+        session,
+        session_id="taxonomy",
+        title="Taxonomy",
+        question="Does the session validator accept the extended taxonomy?",
+    )
+    new_kinds = [
+        "recovery",
+        "validation",
+        "heartbeat",
+        "interpretation",
+        "amendment",
+        "infrastructure",
+    ]
+
+    for kind in new_kinds:
+        rs.append_checkpoint(
+            session,
+            kind=kind,
+            summary=f"{kind} checkpoint accepted by the taxonomy.",
+        )
+
+    frontmatter, body = rs.load_session(session)
+    assert [checkpoint["kind"] for checkpoint in frontmatter["checkpoints"]] == new_kinds
+    assert "### 006-infrastructure - Infrastructure" in body
+    assert rs.validate_path(session) == []
+
+
 def test_run_matrix_dry_run_appends_session_checkpoint(tmp_path):
     session = tmp_path / "phase1-dry-run.md"
     rs.create_session(
