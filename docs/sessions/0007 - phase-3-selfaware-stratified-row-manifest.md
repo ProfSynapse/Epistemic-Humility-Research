@@ -4,7 +4,7 @@ session_id: phase3-selfaware-stratified-row-manifest
 title: Phase 3 SelfAware Stratified Row Manifest
 status: active
 created_at: '2026-06-19T10:19:26Z'
-updated_at: '2026-06-19T17:30:00Z'
+updated_at: '2026-06-19T18:56:00Z'
 phase: phase3
 question: Track bounded no-GPU/no-Docker Phase 3 SelfAware stratified row-manifest
   work, including bridge failure rationale, manifest/script changes, validation, and
@@ -317,6 +317,156 @@ checkpoints:
         value: 0.9793510833873522
     directions_ok: 222
     direction_vector_files: 222
+- id: 011-validation
+  at: '2026-06-19T18:30:00Z'
+  kind: validation
+  title: Full SelfAware KTO Extraction Finalized
+  summary: Full frozen-manifest SelfAware extraction completed and finalized for
+    the seed1 SFT->KTO artifact. The full config selects all 1233 frozen SelfAware
+    manifest rows into hidden_states_selfaware_full_kto with extraction config sha
+    bb5e579fa10e33bb. The finalized artifact has manifest status ok, verified
+    true, 1233 rows, 3699 safetensors, row provenance mismatches 0, and sampled
+    delta tensors are nonzero.
+  evidence:
+  - experiment/phase1/probe/config/hidden_state_selfaware_manifest_sft_kto_seed1_full.yaml
+  - experiment/phase1/probe/qwen3-4b-sft-merged-seed1-selfaware/hidden_states_selfaware_full_kto/extraction__bb5e579fa10e
+  run_ids: []
+  commands: []
+  decisions:
+  - Treat the full SFT->KTO extraction artifact as verified and finalized for
+    downstream full-run analysis.
+  next_steps:
+  - Use the verified KTO full extraction alongside the DPO full extraction when
+    selecting symmetric SelfAware causal/logit pilot candidates.
+  signals:
+    rows: 1233
+    safetensors: 3699
+    row_provenance_mismatches: 0
+    sampled_delta_nonzero: true
+    manifest_status: ok
+    verified: true
+    config_sha: bb5e579fa10e33bb
+    output_subdir: hidden_states_selfaware_full_kto
+    research_repo_commit: 13075d10f610edd0375147e9ecc0b827dd755783
+    submodule_commit: 3a3d7a26e976e70d095c7f965e7d6e7b210843f7
+    aligned_probe_config_sha: selfaware-manifest-sha256:8dc5e509f2f4ba27fb90c48c768eb28548b0872b119f402d2f90ef11741a5bc4
+- id: 012-analysis
+  at: '2026-06-19T18:40:00Z'
+  kind: result
+  title: Full SelfAware KTO Hidden-State Analysis Materialized
+  summary: Full 1233-row SFT->KTO k-fold linear-probe analysis and candidate-direction
+    derivation are materialized under the full KTO SelfAware extraction artifact.
+    The analysis produced selfaware_full_kto_linear_probe_kfold5 csv/json outputs
+    and selfaware_full_kto_candidate_directions.manifest.json with 222 ok directions.
+    Best balanced accuracy by role was h_base layer 18 = 0.9723175669213522,
+    h_lora layer 22 = 0.9727346630819421, and delta layer 25 =
+    0.9809889164001148. The corresponding DPO comparison remains h_base layer
+    18 = 0.9723175669213522, h_lora layer 23 = 0.9745332242330212, and delta
+    layer 24 = 0.9793510833873522.
+  evidence:
+  - experiment/phase1/probe/qwen3-4b-sft-merged-seed1-selfaware/hidden_states_selfaware_full_kto/extraction__bb5e579fa10e/selfaware_full_kto_linear_probe_kfold5.json
+  - experiment/phase1/probe/qwen3-4b-sft-merged-seed1-selfaware/hidden_states_selfaware_full_kto/extraction__bb5e579fa10e/selfaware_full_kto_linear_probe_kfold5.csv
+  - experiment/phase1/probe/qwen3-4b-sft-merged-seed1-selfaware/hidden_states_selfaware_full_kto/extraction__bb5e579fa10e/selfaware_full_kto_candidate_directions.manifest.json
+  run_ids: []
+  commands: []
+  decisions:
+  - Treat SFT->KTO delta layer 25 as the top full-run KTO diagnostic candidate,
+    paired with SFT->DPO delta layer 24 for the next SelfAware causal/logit pilot.
+  next_steps:
+  - Keep both DPO and KTO full-run analyses labeled diagnostic/exploratory, not
+    pre-registered headline evidence.
+  signals:
+    rows: 1233
+    directions_ok: 222
+    direction_vector_files: 222
+    best_balanced_accuracy:
+      h_base:
+        layer: 18
+        value: 0.9723175669213522
+      h_lora:
+        layer: 22
+        value: 0.9727346630819421
+      delta:
+        layer: 25
+        value: 0.9809889164001148
+    dpo_comparison_best_balanced_accuracy:
+      h_base:
+        layer: 18
+        value: 0.9723175669213522
+      h_lora:
+        layer: 23
+        value: 0.9745332242330212
+      delta:
+        layer: 24
+        value: 0.9793510833873522
+- id: 013-result
+  at: '2026-06-19T18:55:00Z'
+  kind: result
+  title: Full SelfAware Delta Logit Diagnostic Completed
+  summary: Local Docker logit diagnostics completed for the full SelfAware top
+    delta candidates, SFT->DPO delta layer 24 and SFT->KTO delta layer 25. Both
+    runs are status ok, generation_executed false, logit_diagnostic_executed true,
+    with 18 arms over 16 rows each. The sign panel used no-vector baseline,
+    activation addition/subtraction, sign-matched wrong-layer controls, and
+    deterministic random matched-norm. Addition corresponds to pushing the
+    known_unknown_diff direction toward the unknown side; subtraction corresponds
+    to pushing toward known.
+  evidence:
+  - experiment/phase1/probe/config/phase3_selfaware_full_delta_logit_diagnostic.yaml
+  - experiment/phase1/probe/config/phase3_selfaware_full_delta_logit_diagnostic_sweep.yaml
+  - experiment/phase1/probe/qwen3-4b-sft-merged-seed1-selfaware/causal_pilots/phase3_selfaware_full_delta_logit_diagnostic/sft_dpo_selfaware_full_delta_l24/logit_diagnostic/run_20260619T185249Z/run_manifest.json
+  - experiment/phase1/probe/qwen3-4b-sft-merged-seed1-selfaware/causal_pilots/phase3_selfaware_full_delta_logit_diagnostic/sft_kto_selfaware_full_delta_l25/logit_diagnostic/run_20260619T185413Z/run_manifest.json
+  - experiment/phase1/probe/qwen3-4b-sft-merged-seed1-selfaware/causal_pilots/phase3_selfaware_full_delta_logit_diagnostic/_execution_logs/execution_results.jsonl
+  run_ids: []
+  commands:
+  - python experiment/phase1/probe/phase3_causal_pilot_sweep.py --config experiment/phase1/probe/config/phase3_selfaware_full_delta_logit_diagnostic_sweep.yaml
+    --mode-filter logit_diagnostic --write-plan --materialize-configs --execute
+    --allow-logit-diagnostic
+  decisions:
+  - Treat these outputs as Tier 2 exploratory local logit diagnostics only, not
+    generation evidence and not pre-registered headline evidence.
+  - Answer-alias probability buckets were absent because the selected SelfAware
+    rows did not carry aliases, so interpretation should use refusal-opener
+    slices, top-k rows, and top-1 changes only.
+  next_steps:
+  - Do not make a source-layer-specific claim from this small panel alone; wrong-layer
+    and random controls produced comparable top-1 changes in some high-coefficient
+    settings.
+  signals:
+    rows_per_candidate: 16
+    arms_per_candidate: 18
+    dpo:
+      candidate: sft_dpo_selfaware_full_delta_l24
+      direction_id: direction__d9ee6d66b65bde72
+      layer: 24
+      top1_changed_at_coef50:
+        activation_addition: 3
+        activation_subtraction: 1
+        wrong_layer: 2
+        wrong_layer_subtraction: 4
+        random_matched_norm: 0
+      refusal_probability_delta_mean_at_coef50:
+        activation_addition: 0.03038
+        activation_subtraction: -0.001214
+        wrong_layer: 0.005522
+        wrong_layer_subtraction: 0.011282
+        random_matched_norm: -0.026382
+    kto:
+      candidate: sft_kto_selfaware_full_delta_l25
+      direction_id: direction__adc2e92c2a40c157
+      layer: 25
+      top1_changed_at_coef50:
+        activation_addition: 0
+        activation_subtraction: 4
+        wrong_layer: 0
+        wrong_layer_subtraction: 2
+        random_matched_norm: 2
+      refusal_probability_delta_mean_at_coef50:
+        activation_addition: 0.044554
+        activation_subtraction: -0.034205
+        wrong_layer: 0.021724
+        wrong_layer_subtraction: -0.029757
+        random_matched_norm: -0.023804
 ---
 # Phase 3 SelfAware Stratified Row Manifest
 
@@ -361,13 +511,24 @@ dpo_unknown_refusal_loss_transition=447, and stable_unknown_refusal=227.
 Torchao cpp extension, tokenizer regex, and `torch_dtype` deprecation messages
 were runtime warnings, not blockers.
 
-Full-run analysis over this verified artifact is now materialized after fixing
-analysis shard lookup for SelfAware row keys containing colons. The best
-5-fold balanced accuracies by role are: h_base layer 18 = 0.9723175669213522,
-h_lora layer 23 = 0.9745332242330212, and delta layer 24 =
+Full-run analysis over this verified DPO artifact is now materialized after
+fixing analysis shard lookup for SelfAware row keys containing colons. The DPO
+best 5-fold balanced accuracies by role are: h_base layer 18 =
+0.9723175669213522, h_lora layer 23 = 0.9745332242330212, and delta layer 24 =
 0.9793510833873522. Candidate direction derivation produced 222 ok manifest
-rows with 222 materialized vector shards. These are diagnostic/exploratory
-Phase 3 artifacts, not pre-registered headline evidence.
+rows with 222 materialized vector shards.
+
+The symmetric full frozen-manifest SFT->KTO extraction is also complete and
+finalized under `hidden_states_selfaware_full_kto` at
+`experiment/phase1/probe/qwen3-4b-sft-merged-seed1-selfaware/hidden_states_selfaware_full_kto/extraction__bb5e579fa10e`.
+It has 1233 rows, 3699 safetensors, manifest status `ok`, `verified=true`, row
+provenance mismatches 0, and sampled delta tensors are nonzero. KTO full-run
+analysis is materialized as `selfaware_full_kto_linear_probe_kfold5.csv/json`
+and `selfaware_full_kto_candidate_directions.manifest.json`; the KTO manifest
+has 222 ok directions. The KTO best 5-fold balanced accuracies by role are:
+h_base layer 18 = 0.9723175669213522, h_lora layer 22 =
+0.9727346630819421, and delta layer 25 = 0.9809889164001148. These are
+diagnostic/exploratory Phase 3 artifacts, not pre-registered headline evidence.
 
 ## Checkpoints
 ### 001-planning - No-GPU SelfAware Row Manifest Setup
@@ -541,3 +702,74 @@ Phase 3 artifacts, not pre-registered headline evidence.
   - best balanced accuracy: `h_base L18=0.9723175669213522`, `h_lora L23=0.9745332242330212`, `delta L24=0.9793510833873522`
   - directions ok: `222`
   - direction vector files: `222`
+
+### 011-validation - Full SelfAware KTO Extraction Finalized
+
+- at: `2026-06-19T18:30:00Z`
+- kind: `validation`
+- summary: Full frozen-manifest SelfAware extraction completed and finalized for the seed1 SFT->KTO artifact. The full config selects all 1233 frozen SelfAware manifest rows into `hidden_states_selfaware_full_kto` with extraction config sha `bb5e579fa10e33bb`. The finalized artifact has manifest status `ok`, `verified=true`, 1233 rows, 3699 safetensors, row provenance mismatches 0, and sampled delta tensors are nonzero.
+- evidence:
+  - `experiment/phase1/probe/config/hidden_state_selfaware_manifest_sft_kto_seed1_full.yaml`
+  - `experiment/phase1/probe/qwen3-4b-sft-merged-seed1-selfaware/hidden_states_selfaware_full_kto/extraction__bb5e579fa10e`
+- decisions:
+  - Treat the full SFT->KTO extraction artifact as verified and finalized for downstream full-run analysis.
+- next steps:
+  - Use the verified KTO full extraction alongside the DPO full extraction when selecting symmetric SelfAware causal/logit pilot candidates.
+- signals:
+  - rows: `1233`
+  - safetensors: `3699`
+  - row provenance mismatches: `0`
+  - sampled delta nonzero: `true`
+  - manifest status: `ok`
+  - verified: `true`
+  - config sha: `bb5e579fa10e33bb`
+  - output subdir: `hidden_states_selfaware_full_kto`
+  - research repo commit: `13075d10f610edd0375147e9ecc0b827dd755783`
+  - submodule commit: `3a3d7a26e976e70d095c7f965e7d6e7b210843f7`
+  - aligned probe config sha: `selfaware-manifest-sha256:8dc5e509f2f4ba27fb90c48c768eb28548b0872b119f402d2f90ef11741a5bc4`
+
+### 012-analysis - Full SelfAware KTO Hidden-State Analysis Materialized
+
+- at: `2026-06-19T18:40:00Z`
+- kind: `result`
+- summary: Full 1233-row SFT->KTO k-fold linear-probe analysis and candidate-direction derivation are materialized under the full KTO SelfAware extraction artifact. The analysis produced `selfaware_full_kto_linear_probe_kfold5` csv/json outputs and `selfaware_full_kto_candidate_directions.manifest.json` with 222 ok directions. Best balanced accuracy by role was h_base layer 18 = 0.9723175669213522, h_lora layer 22 = 0.9727346630819421, and delta layer 25 = 0.9809889164001148. The corresponding DPO comparison remains h_base layer 18 = 0.9723175669213522, h_lora layer 23 = 0.9745332242330212, and delta layer 24 = 0.9793510833873522.
+- evidence:
+  - `experiment/phase1/probe/qwen3-4b-sft-merged-seed1-selfaware/hidden_states_selfaware_full_kto/extraction__bb5e579fa10e/selfaware_full_kto_linear_probe_kfold5.json`
+  - `experiment/phase1/probe/qwen3-4b-sft-merged-seed1-selfaware/hidden_states_selfaware_full_kto/extraction__bb5e579fa10e/selfaware_full_kto_linear_probe_kfold5.csv`
+  - `experiment/phase1/probe/qwen3-4b-sft-merged-seed1-selfaware/hidden_states_selfaware_full_kto/extraction__bb5e579fa10e/selfaware_full_kto_candidate_directions.manifest.json`
+- decisions:
+  - Treat SFT->KTO delta layer 25 as the top full-run KTO diagnostic candidate, paired with SFT->DPO delta layer 24 for the next SelfAware causal/logit pilot.
+- next steps:
+  - Keep both DPO and KTO full-run analyses labeled diagnostic/exploratory, not pre-registered headline evidence.
+- signals:
+  - rows: `1233`
+  - directions ok: `222`
+  - direction vector files: `222`
+  - best balanced accuracy: `h_base L18=0.9723175669213522`, `h_lora L22=0.9727346630819421`, `delta L25=0.9809889164001148`
+  - DPO comparison best balanced accuracy: `h_base L18=0.9723175669213522`, `h_lora L23=0.9745332242330212`, `delta L24=0.9793510833873522`
+
+### 013-result - Full SelfAware Delta Logit Diagnostic Completed
+
+- at: `2026-06-19T18:55:00Z`
+- kind: `result`
+- summary: Local Docker logit diagnostics completed for the full SelfAware top delta candidates, SFT->DPO delta layer 24 and SFT->KTO delta layer 25. Both runs are `status=ok`, `generation_executed=false`, and `logit_diagnostic_executed=true`, with 18 arms over 16 rows each. The sign panel used no-vector baseline, activation addition/subtraction, sign-matched wrong-layer controls, and deterministic random matched-norm. Addition corresponds to pushing the `known_unknown_diff` direction toward the unknown side; subtraction corresponds to pushing toward known.
+- evidence:
+  - `experiment/phase1/probe/config/phase3_selfaware_full_delta_logit_diagnostic.yaml`
+  - `experiment/phase1/probe/config/phase3_selfaware_full_delta_logit_diagnostic_sweep.yaml`
+  - `experiment/phase1/probe/qwen3-4b-sft-merged-seed1-selfaware/causal_pilots/phase3_selfaware_full_delta_logit_diagnostic/sft_dpo_selfaware_full_delta_l24/logit_diagnostic/run_20260619T185249Z/run_manifest.json`
+  - `experiment/phase1/probe/qwen3-4b-sft-merged-seed1-selfaware/causal_pilots/phase3_selfaware_full_delta_logit_diagnostic/sft_kto_selfaware_full_delta_l25/logit_diagnostic/run_20260619T185413Z/run_manifest.json`
+  - `experiment/phase1/probe/qwen3-4b-sft-merged-seed1-selfaware/causal_pilots/phase3_selfaware_full_delta_logit_diagnostic/_execution_logs/execution_results.jsonl`
+- commands:
+  - `python experiment/phase1/probe/phase3_causal_pilot_sweep.py --config experiment/phase1/probe/config/phase3_selfaware_full_delta_logit_diagnostic_sweep.yaml --mode-filter logit_diagnostic --write-plan --materialize-configs --execute --allow-logit-diagnostic`
+- decisions:
+  - Treat these outputs as Tier 2 exploratory local logit diagnostics only, not generation evidence and not pre-registered headline evidence.
+  - Answer-alias probability buckets were absent because the selected SelfAware rows did not carry aliases, so interpretation should use refusal-opener slices, top-k rows, and top-1 changes only.
+- next steps:
+  - Do not make a source-layer-specific claim from this small panel alone; wrong-layer and random controls produced comparable top-1 changes in some high-coefficient settings.
+- signals:
+  - rows per candidate: `16`
+  - arms per candidate: `18`
+  - DPO L24 coef 50 top-1 changes: `activation_addition=3`, `activation_subtraction=1`, `wrong_layer=2`, `wrong_layer_subtraction=4`, `random_matched_norm=0`
+  - DPO L24 coef 50 refusal probability delta means: `activation_addition=0.03038`, `activation_subtraction=-0.001214`, `wrong_layer=0.005522`, `wrong_layer_subtraction=0.011282`, `random_matched_norm=-0.026382`
+  - KTO L25 coef 50 top-1 changes: `activation_addition=0`, `activation_subtraction=4`, `wrong_layer=0`, `wrong_layer_subtraction=2`, `random_matched_norm=2`
+  - KTO L25 coef 50 refusal probability delta means: `activation_addition=0.044554`, `activation_subtraction=-0.034205`, `wrong_layer=0.021724`, `wrong_layer_subtraction=-0.029757`, `random_matched_norm=-0.023804`

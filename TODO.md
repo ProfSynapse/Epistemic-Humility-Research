@@ -20,3 +20,10 @@
 ## Later Mixes
 
 - [ ] Add the remaining GRPO/DPO/KTO mix matrix and recipes later.
+
+## Unknown-Question Category-Regimen Follow-Up
+
+- [ ] Label always-unanswered unknown questions so category-regimen analysis covers the full unknown-question pool, not only questions answered by at least one arm.
+- [ ] Run category-level statistical checks for SFT/DPO/KTO answer-on-unknown differences before treating the exploratory pattern as evidence.
+- [ ] Review representative examples by semantic category and regimen, especially categories where DPO sharply increases answering.
+- [ ] Validate v3 semantic labels before publication-grade claims; treat current broad labels and `answer_form` fields as exploratory until checked.
