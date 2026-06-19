@@ -102,6 +102,43 @@ python experiment/phase1/probe/phase3_causal_pilot_aggregate.py \
 Use aggregate output as an index. Inspect source manifests and JSONL rows before
 interpreting surprising effects.
 
+## Probability-Slice Diagnostics
+
+When inspecting next-token probability slices, avoid treating the first token of
+every multi-token answer alias as an answer token. Qwen tokenization can split
+an answer like `Ireland` into a first token `I`, which collides with refusal
+openers such as `I don't know` and falsely inflates the answer bucket.
+
+For row-specific answer aliases, prefer exact single-token aliases and record
+multi-token aliases as skipped unless a later diagnostic explicitly models
+multi-token sequence probability. Static refusal opener groups may intentionally
+use first-token openers, but answer-alias groups should default to
+`include_multi_token_first_token: false`.
+
+For changed-row replay claims, use exact row selection through
+`selection.row_keys` or `selection.row_keys_by_candidate`. A balanced
+`max_rows` slice may contain changed rows, but it is not changed-row-only
+evidence.
+
+Inspect top-k next-token entries together with probability slices. Top-1 or
+greedy changes alone can hide whether refusal tokens, answer aliases, or nearby
+answer-like distractors are moving.
+
+Before making vector- or source-layer-specific interpretations, run implemented
+controls such as no-vector baseline, activation addition/subtraction,
+wrong-layer, and deterministic random matched-norm. If wrong-layer matches the
+candidate effect, do not make a source-layer-specific claim without a stronger
+nearby-layer panel.
+
+Wrong-layer controls must be sign-matched to the source intervention. Do not
+compare source-layer subtraction against positive wrong-layer addition; use the
+`wrong_layer_subtraction` logit-diagnostic control pattern when the source
+effect is activation subtraction.
+
+Do not label a shuffled-label control unless there is a real shuffled-label
+direction artifact or a valid checked-in derivation path. Report it as not
+implemented rather than faking the control.
+
 ## Validation
 
 Use focused non-GPU checks:

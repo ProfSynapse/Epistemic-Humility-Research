@@ -84,6 +84,16 @@ with safe_open("delta.safetensors", framework="pt") as f:
     assert float(t.abs().sum()) > 0, "delta all-zero — adapter never engaged (F1 confound)"
 ```
 
+Durable gotcha: after a provenance/finalization fix, rerunning a resumable
+extraction may skip already-written rows/tensors and finalize the manifest while
+existing `rows.jsonl` records still carry stale row-level provenance from the
+failed run. Post-rerun verification must check both manifest-level
+status/provenance and row-level provenance consistency, especially
+`aligned_probe_config_sha`, before downstream analysis. If generated row-level
+fields are stale, backfill or regenerate the artifact deliberately and record
+that cleanup; do not treat manifest `verified=true` as sufficient when
+row-level provenance participates in analysis.
+
 ## Skill-tree sync invariant (do NOT edit a mirror)
 
 All of these scripts are authored ONCE in the canonical `.skills/experiment-runner/`
