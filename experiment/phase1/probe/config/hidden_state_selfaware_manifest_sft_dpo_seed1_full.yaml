@@ -1,0 +1,43 @@
+# Phase 3 dedicated SelfAware frozen-manifest hidden-state extraction, full run.
+#
+# Full run over the frozen SelfAware manifest: no max_rows and no explicit
+# strata filter, so every manifest row is selected. Output is isolated from the
+# 128-row smoke under hidden_states_selfaware_full.
+
+model:
+  model_tag: qwen3-4b-sft-merged-seed1-selfaware
+  model_name: /workspace/repo/synaptic-tuner/toolset-training-artifacts/runs/local/4b/sft__4b__headline__seed1/20260614_053221/Qwen3-4B-bnb-4bit/merged-16bit
+  revision: null
+  enable_thinking: false
+
+extraction:
+  layer_list: null
+  token_position_rule: final_prompt_token
+  compute_dtype: bfloat16
+  persist_dtype: float32
+  persistence_format: safetensors
+  device: cuda
+  persist_delta: true
+
+arms:
+  - name: sft_merged_seed1_base
+    adapter_state: disabled
+    adapter: null
+  - name: sft_dpo_seed1
+    adapter_state: active
+    adapter: /workspace/repo/synaptic-tuner/toolset-training-artifacts/runs/local/4b/sft_dpo__4b__amendment_a__seed1/20260614_074933/final_model
+
+eval_arms_source: null
+
+selection:
+  source: selfaware_manifest
+  manifest: manifests/phase3_selfaware_frozen_row_manifest.json
+
+output:
+  hidden_states_subdir: hidden_states_selfaware_full
+  manifest_filename: manifest.json
+  rows_filename: rows.jsonl
+
+manifest_provenance:
+  aligned_run_record_id: sft_dpo__4b__amendment_a__seed1
+  source_split: phase3-selfaware-frozen-row-manifest/v1

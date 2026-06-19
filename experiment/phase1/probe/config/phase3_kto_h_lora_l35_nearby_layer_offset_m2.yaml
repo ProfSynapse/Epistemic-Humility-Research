@@ -1,11 +1,8 @@
-# Phase 3 activation-addition GPU smoke config.
-#
-# This is an explicit generation-enabled config for the local exploratory
-# causal pilot. It is separate from phase3_causal_pilot_smoke.yaml, which remains
-# readiness-only and must not trigger generation.
+# Phase 3 KTO h_lora nearby-layer panel: source layer 35 vs subtraction at layer 33.
+# Logit-diagnostic only; no generation/cloud.
 
 spec:
-  name: phase3_sft_activation_addition_gpu_smoke
+  name: phase3_kto_h_lora_l35_nearby_layer_offset_m2
   status: generation_smoke
   evidence_tier_current: tier1_correlational
   evidence_tier_if_intervention_runs: tier2_exploratory_local
@@ -19,8 +16,6 @@ model:
   token_position_rule: final_prompt_token
 
 runtime_model:
-  # By default the runner uses model/adapter provenance from the extraction
-  # manifest. These fields exist for explicit local overrides if needed.
   model_name: null
   revision: null
   adapter_path: null
@@ -37,26 +32,38 @@ first_smoke:
 selection:
   probe_results: experiment/phase1/probe/qwen3-4b-instruct/probe_results.jsonl
   max_rows_default: 16
+  row_keys_by_candidate:
+    sft_kto_h_lora_l35:
+      - 000000001480|tc_2358
+      - 000000002112|qz_71
+
+logit_diagnostic:
+  top_k: 10
+
+control_settings:
+  wrong_layer:
+    layer_offset: -2
 
 candidate_directions:
-  - label: sft_h_lora_l36_known_unknown
+  - label: sft_kto_h_lora_l35
     priority: 1
-    arm: sft
-    extraction_dir: experiment/phase1/probe/qwen3-4b-instruct/hidden_states/extraction__12fb10b1c8c8
-    extraction_manifest: experiment/phase1/probe/qwen3-4b-instruct/hidden_states/extraction__12fb10b1c8c8/manifest.json
-    direction_manifest: experiment/phase1/probe/qwen3-4b-instruct/hidden_states/extraction__12fb10b1c8c8/hidden_state_candidate_directions.manifest.json
-    direction_csv: experiment/phase1/probe/qwen3-4b-instruct/hidden_states/extraction__12fb10b1c8c8/hidden_state_candidate_directions.csv
-    direction_id: direction__9c8c74f718038292
-    direction_file: experiment/phase1/probe/qwen3-4b-instruct/hidden_states/extraction__12fb10b1c8c8/directions/direction__9c8c74f718038292.safetensors
+    arm: sft_kto
+    extraction_dir: experiment/phase1/probe/qwen3-4b-instruct/hidden_states/extraction__e1473df788a5
+    extraction_manifest: experiment/phase1/probe/qwen3-4b-instruct/hidden_states/extraction__e1473df788a5/manifest.json
+    direction_manifest: experiment/phase1/probe/qwen3-4b-instruct/hidden_states/extraction__e1473df788a5/hidden_state_candidate_directions.manifest.json
+    direction_csv: experiment/phase1/probe/qwen3-4b-instruct/hidden_states/extraction__e1473df788a5/hidden_state_candidate_directions.csv
+    direction_id: direction__1e6940a0ce433bc9
+    direction_file: experiment/phase1/probe/qwen3-4b-instruct/hidden_states/extraction__e1473df788a5/directions/direction__1e6940a0ce433bc9.safetensors
     tensor_key: direction
     role: h_lora
-    layer: 36
+    layer: 35
     method: known_unknown_diff
     contrast: unknown_minus_known
     positive_label: unknown
     negative_label: known
     required_status: ok
-    linear_probe_balanced_accuracy: 0.863281
+    linear_probe_balanced_accuracy: 0.859375
+    source_run_id: sft_kto__4b__amendment_a__seed1
 
 readiness_checks:
   require_extraction_manifest:
@@ -75,8 +82,8 @@ readiness_checks:
 controls:
   required:
     - no_vector_baseline
-    - activation_addition
     - activation_subtraction
+    - wrong_layer_subtraction
 
 logit_targets:
   groups:
@@ -92,19 +99,8 @@ logit_targets:
       include_leading_space_variants: true
       include_multi_token_first_token: false
 
-metrics:
-  primary:
-    - unknown_refusal_rate
-    - known_answer_retention
-    - known_answer_correctness
-    - over_refusal_on_known
-    - answer_on_unknown_rate
-  contamination:
-    - think_tag_contamination
-    - invalid_output_rate
-
 output:
-  root: experiment/phase1/probe/qwen3-4b-instruct/causal_pilots/phase3_sft_activation_addition_gpu_smoke
+  root: experiment/phase1/probe/qwen3-4b-instruct/causal_pilots/phase3_kto_h_lora_l35_nearby_layer_panel/offset_m2
   intervention_results_allowed_by_this_spec: true
 
 stop_conditions:

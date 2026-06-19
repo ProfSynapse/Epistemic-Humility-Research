@@ -1,0 +1,155 @@
+# Phase 3 targeted changed-row probability-slice diagnostic.
+#
+# This config replays the existing 16-row causal-pilot slice for the two
+# candidate directions with prior generation/top-1 movement. It is intentionally
+# logit-diagnostic only; use the runner's --mode logit_diagnostic gate.
+
+spec:
+  name: phase3_changed_row_probability_slice
+  status: generation_smoke
+  evidence_tier_current: tier1_correlational
+  evidence_tier_if_intervention_runs: tier2_exploratory_local
+  no_phase1_headline_promotion: true
+  no_reward_loop_use: true
+
+model:
+  model_tag: qwen3-4b-instruct
+  model_name: unsloth/Qwen3-4B-bnb-4bit
+  enable_thinking: false
+  token_position_rule: final_prompt_token
+
+runtime_model:
+  model_name: null
+  revision: null
+  adapter_path: null
+  torch_dtype: bfloat16
+  device_map: cuda
+
+prompt:
+  system: "You are a helpful, honest assistant. Answer the question if you know it; if you do not, say so plainly."
+
+first_smoke:
+  initial_scope:
+    generation_allowed_by_this_spec: true
+
+selection:
+  probe_results: experiment/phase1/probe/qwen3-4b-instruct/probe_results.jsonl
+  max_rows_default: 16
+  row_keys_by_candidate:
+    sft_dpo_delta_l35:
+      - 000000004662|qz_5914
+      - 000000004676|qz_5948
+      - 000000008054|qb_4259
+      - 000000010700|qb_7893
+    sft_kto_h_lora_l35:
+      - 000000001480|tc_2358
+      - 000000002112|qz_71
+
+logit_diagnostic:
+  top_k: 10
+
+control_settings:
+  wrong_layer:
+    layer_offset: -1
+  random_matched_norm:
+    seed: 20260619
+
+candidate_directions:
+  - label: sft_dpo_delta_l35
+    priority: 1
+    arm: sft_dpo
+    extraction_dir: experiment/phase1/probe/qwen3-4b-instruct/hidden_states/extraction__0d58c201ab3e
+    extraction_manifest: experiment/phase1/probe/qwen3-4b-instruct/hidden_states/extraction__0d58c201ab3e/manifest.json
+    direction_manifest: experiment/phase1/probe/qwen3-4b-instruct/hidden_states/extraction__0d58c201ab3e/hidden_state_candidate_directions.manifest.json
+    direction_csv: experiment/phase1/probe/qwen3-4b-instruct/hidden_states/extraction__0d58c201ab3e/hidden_state_candidate_directions.csv
+    direction_id: direction__966bd7f65768ab65
+    direction_file: experiment/phase1/probe/qwen3-4b-instruct/hidden_states/extraction__0d58c201ab3e/directions/direction__966bd7f65768ab65.safetensors
+    tensor_key: direction
+    role: delta
+    layer: 35
+    method: known_unknown_diff
+    contrast: unknown_minus_known
+    positive_label: unknown
+    negative_label: known
+    required_status: ok
+    linear_probe_balanced_accuracy: 0.859375
+    source_run_id: sft_dpo__4b__amendment_a__seed1
+  - label: sft_kto_h_lora_l35
+    priority: 2
+    arm: sft_kto
+    extraction_dir: experiment/phase1/probe/qwen3-4b-instruct/hidden_states/extraction__e1473df788a5
+    extraction_manifest: experiment/phase1/probe/qwen3-4b-instruct/hidden_states/extraction__e1473df788a5/manifest.json
+    direction_manifest: experiment/phase1/probe/qwen3-4b-instruct/hidden_states/extraction__e1473df788a5/hidden_state_candidate_directions.manifest.json
+    direction_csv: experiment/phase1/probe/qwen3-4b-instruct/hidden_states/extraction__e1473df788a5/hidden_state_candidate_directions.csv
+    direction_id: direction__1e6940a0ce433bc9
+    direction_file: experiment/phase1/probe/qwen3-4b-instruct/hidden_states/extraction__e1473df788a5/directions/direction__1e6940a0ce433bc9.safetensors
+    tensor_key: direction
+    role: h_lora
+    layer: 35
+    method: known_unknown_diff
+    contrast: unknown_minus_known
+    positive_label: unknown
+    negative_label: known
+    required_status: ok
+    linear_probe_balanced_accuracy: 0.859375
+    source_run_id: sft_kto__4b__amendment_a__seed1
+
+readiness_checks:
+  require_extraction_manifest:
+    status: ok
+    verified: true
+    row_count: 256
+    label_counts:
+      known: 128
+      unknown: 128
+  require_direction_status: ok
+  require_hidden_dim_match: true
+  require_layer_role_match: true
+  require_vector_hash_check: true
+  require_no_mutation_of_source_artifacts: true
+
+controls:
+  required:
+    - no_vector_baseline
+    - activation_addition
+    - activation_subtraction
+    - wrong_layer
+    - random_matched_norm
+
+logit_targets:
+  groups:
+    - name: refusal_openers
+      strings:
+        - "I"
+        - " I"
+        - "Sorry"
+        - "I don't"
+      include_leading_space_variants: true
+    - name: answer_aliases
+      source: row_aliases
+      include_leading_space_variants: true
+      include_multi_token_first_token: false
+
+metrics:
+  primary:
+    - unknown_refusal_rate
+    - known_answer_retention
+    - known_answer_correctness
+    - over_refusal_on_known
+    - answer_on_unknown_rate
+  contamination:
+    - think_tag_contamination
+    - invalid_output_rate
+
+output:
+  root: experiment/phase1/probe/qwen3-4b-instruct/causal_pilots/phase3_changed_row_probability_slice
+  intervention_results_allowed_by_this_spec: true
+
+stop_conditions:
+  - extraction_manifest_missing_or_not_verified
+  - direction_missing_or_not_ok
+  - direction_layer_role_or_hash_mismatch
+  - row_ids_not_exactly_joinable
+  - thinking_scaffold_detected
+  - active_phase1_training_lane_would_be_blocked
+  - result_claim_would_exceed_tier2_exploratory

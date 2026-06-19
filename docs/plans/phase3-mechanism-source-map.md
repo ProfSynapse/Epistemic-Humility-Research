@@ -38,6 +38,48 @@ Validation basis:
 | `mechanism:representation-engineering-enables-reading-and-control` | `library/concepts/mechanisms/representation-engineering-enables-reading-and-control.md` | `library/notes/2310.01405--representation-engineering.md` | Frame Phase 3 as representation reading plus small representation-control pilots; do not train an encoder until direction tests expose a stable target. | Tier 1 to Tier 2 bridge | RepE is a method frame, not evidence that this project's abstention direction is causal. |
 | `mechanism:typed-scientific-kg-preserves-reasoning-provenance` | `library/concepts/mechanisms/typed-scientific-kg-preserves-reasoning-provenance.md` | `library/notes/2606.13669--agents-k1.md` | Require every pilot mechanism claim to link to typed KG nodes, supporting papers, and method/metric/dataset atoms before being used in interpretation. | Process guardrail | Agents-K1 is abstract-backed in the local source; keep confidence medium until full-paper ingestion confirms details. |
 
+## External Gap-Fill Update 2026-06-18
+
+After the first full local causal-pilot sweep, treat the 2024 single-refusal
+direction source as an important baseline, not the whole evidence frame. Newer
+external papers add three caveats before broadening Phase 3 intervention runs:
+
+- `2602.02132`, "There Is More to Refusal in Large Language Models than a
+  Single Direction", reports geometrically distinct refusal directions across
+  refusal/non-compliance categories. This directly weakens any assumption that
+  a single safety-refusal direction will transfer cleanly to epistemic
+  abstention.
+- `2512.16602`, "Refusal Steering", reports Qwen3-family refusal steering with
+  refusal-confidence judging, ridge-regularized vectors, deeper-layer signal
+  concentration, and distributed refusal dimensions. This is relevant to the
+  current Qwen3-4B local lane, but is not yet represented in the local KG.
+- `2411.11296` and `2505.23556` support SAE-based refusal feature work, but
+  also make the encoder/SAE gate more conservative: refusal features may be
+  behaviorally causal while still entangled with broader model capability.
+
+Design implication: before another broad generation sweep, implement richer
+probability-slice diagnostics for refusal and answer token sets, then replay
+only the changed rows plus matched stable rows. Do not promote the current
+known/unknown directions to "refusal" or "truth" mechanisms without these
+checks.
+
+Current local KG gaps filled to source-ready status on 2026-06-18:
+
+- paper notes and arXiv HTML sources for `2602.02132`, `2512.16602`,
+  `2411.11296`, and `2505.23556`;
+- `method:correlational-probe` and `method:causal-intervention`;
+- `term:known-unknown-direction`, explicitly different from
+  `term:truth-direction` and `term:refusal-direction`;
+- SAE-related source-ready atoms:
+  `method:sparse-autoencoder`,
+  `mechanism:sae-features-mediate-refusal`, and
+  `mechanism:sae-refusal-steering-trades-off-capability`;
+- `mechanism:refusal-directions-are-geometrically-distinct`.
+
+Remaining gap: these additions are source-ready, not fully extracted. Run the
+`kg-ingest` workflow before relying on detailed mechanism claims beyond the
+conservative source-map caveats above.
+
 ## Pilot-Config Implications
 
 - Direction families must be named separately: `truth-direction`,
