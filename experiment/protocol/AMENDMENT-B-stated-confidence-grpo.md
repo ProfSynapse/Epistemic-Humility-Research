@@ -1,15 +1,21 @@
 # Protocol Amendment B: Stated Confidence and GRPO Calibration Reward
 
-**Status:** READY FOR USER SIGN-OFF / NOT SIGNED. This amendment is a proposed
-prospective extension to the signed Phase 1 protocol. It does not modify the
-signed PROTOCOL v0.3 headline matrix or Amendment A results unless a later
-signed revision explicitly says so.
+**Status:** SIGNED OFF for stated-confidence measurement and reporting
+(user approval, 2026-06-19). This amendment is accepted as an additive
+measurement extension to the signed Phase 1 protocol. It does not silently
+replace the signed PROTOCOL v0.3 plain-answer headline matrix or Amendment A
+plain-answer sequential results.
+
+**GRPO/RLVR status:** prospective only. This sign-off accepts the
+answer/confidence output contract, stated-confidence reruns, and confidence
+scoring/reporting rules. It does not authorize new GRPO/RLVR training runs
+without a separate launch decision.
 
 **Short name:** Amendment B / stated-confidence GRPO
 
 **Scope:** Add a structured stated-confidence output contract to Phase 1 evals,
 rerun existing evals under that contract to establish baselines across training
-regimens and seeds, and introduce a prospective GRPO/RLVR arm with a
+regimens and seeds, and define the prospective GRPO/RLVR arm with a
 calibration-aware reward.
 
 **Session note:** `docs/sessions/0003 - grpo-stated-confidence.md`
@@ -142,6 +148,20 @@ This code must remain outside `synaptic-tuner/`. The tuner should receive it
 through its existing custom GRPO reward and dataset interfaces; project-specific
 experiment logic must not be committed into the submodule.
 
+### Prospective GRPO Candidate Cells
+
+The current requested GRPO candidate set is:
+
+| Model size | Lane | Seed scope | Arm | Definition | Recipe status |
+|---|---|---|---|---|---|
+| 4B | local or approved lane | seeds 1, 2, and 3 | `grpo` | GRPO/RLVR from the Qwen3-4B base model using the Amendment B answer/confidence reward contract. | Checklist only; no runnable Phase 1 recipe until dataset projection, reward wiring, and tuner dispatch are confirmed. |
+| 4B | local or approved lane | seeds 1, 2, and 3 | `sft_grpo` | Merge/use the matched SFT seed as the starting model, then train GRPO/RLVR with the Amendment B reward contract. | Checklist only; additionally requires exact seed-specific SFT merged model paths and base/reference semantics. |
+
+These cells are prospective and do not authorize launch. They are not part of
+the signed v0.3 matrix/count assertions, and they must not be represented as
+runnable YAML until the generic tuner route can truthfully express the intended
+GRPO base model, reward function, dataset projection, and artifact output path.
+
 ## 7. Launch And Reporting Rules
 
 No training or eval reruns are authorized by this amendment text alone. Each
@@ -165,15 +185,18 @@ Reporting language must distinguish:
 - Amendment B stated-confidence rerun evidence
 - prospective Amendment B GRPO/RLVR training results
 
-## 8. Sign-Off Checklist
+## 8. Sign-Off Record
 
-This amendment becomes active only after explicit user approval. At sign-off,
-record:
-
-- approval date
-- approved rerun scope
-- whether GRPO is approved for implementation-only, local smoke, local full run,
-  or cloud run
-- any excluded arms/seeds
-- any changed output schema or metric definitions
-
+- Approval date: 2026-06-19
+- Approved rerun/reporting scope: accepted stated-confidence reruns using the
+  answer/confidence-only JSON contract, including completed SelfAware sequential
+  Amendment A cells where available.
+- Supersession: no silent supersession of v0.3 plain-answer headline results or
+  Amendment A plain-answer sequential results. Stated-confidence runs are a
+  separate measurement layer.
+- GRPO authorization: not approved by this sign-off. Future GRPO/RLVR cells
+  require separate explicit launch approval.
+- Output schema: strict JSON with `answer` and `confidence`.
+- Metrics: coverage, mean stated confidence, MAE and Brier against the
+  model-specific known/unknown label, and MAE and Brier against factual answer
+  correctness.

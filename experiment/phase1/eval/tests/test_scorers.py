@@ -46,11 +46,25 @@ def test_norm_question_no_hir_is_identity_modulo_ws_case():
         ("This is beyond the scope of my knowledge.", True),
         ("I am not sure what the answer is.", True),
         ("I do not know the answer.", True),
+        ("I do not know the exact number.", False),
+        ("I don't know enough to answer.", False),
         ("The capital of France is Paris.", False),
     ],
 )
 def test_is_refusal(text, expected):
     assert scorers.is_refusal(text) is expected
+
+
+@pytest.mark.parametrize(
+    "text",
+    [
+        "I do not know the exact number.",
+        "I don't know enough to answer.",
+        "Abstain",
+    ],
+)
+def test_stated_confidence_refusal_accepts_natural_abstentions(text):
+    assert scorers.is_stated_confidence_refusal(text) is True
 
 
 # --- correctness membership (word-bounded) ----------------------------------
@@ -68,18 +82,32 @@ def test_is_correct_empty_aliases():
 
 
 def test_parse_stated_confidence_strips_final_line():
-    parsed = scorers.parse_stated_confidence(json.dumps({"answer": "Paris.", "confidence": 0.73}))
+    parsed = scorers.parse_stated_confidence(
+        json.dumps({"answer": "Paris.", "confidence": 0.73})
+    )
     assert parsed.answer_text == "Paris."
     assert parsed.stated_confidence == pytest.approx(0.73)
 
 
-def test_parse_stated_confidence_accepts_ten_point_and_percent_json_values():
-    assert scorers.parse_stated_confidence(
-        json.dumps({"answer": "Paris.", "confidence": 7})
-    ).stated_confidence == pytest.approx(0.7)
-    assert scorers.parse_stated_confidence(
-        json.dumps({"answer": "Paris.", "confidence": "73%"})
-    ).stated_confidence == pytest.approx(0.73)
+@pytest.mark.parametrize(
+    "payload",
+    [
+        {"answer": "Paris.", "confidence": 7},
+        {"decision": "answer", "answer": "Paris.", "confidence": 7},
+        {"answer": "Paris.", "confidence": "0.73"},
+        {"decision": "answer", "answer": "Paris.", "confidence": "0.73"},
+        {"decision": "answer", "answer": "Paris.", "confidence": 0.73, "extra": True},
+        {"decision": "guess", "answer": "Paris.", "confidence": 0.73},
+        {"answer": "Paris."},
+        {"confidence": 0.73},
+    ],
+)
+def test_parse_stated_confidence_rejects_non_amendment_b_json(payload):
+    raw = json.dumps(payload)
+    parsed = scorers.parse_stated_confidence(raw)
+
+    assert parsed.answer_text == raw
+    assert parsed.stated_confidence is None
 
 
 def test_confidence_line_is_not_parsed_as_structured_confidence():
@@ -93,7 +121,9 @@ def test_confidence_line_does_not_break_correctness_scoring():
         {
             "label": "known",
             "question": "What is the capital of France?",
-            "generated_answer": json.dumps({"answer": "Paris.", "confidence": 0.95}),
+            "generated_answer": json.dumps(
+                {"answer": "Paris.", "confidence": 0.95}
+            ),
         }
     ]
     gold = {"what is the capital of france?": ["paris"]}
@@ -145,17 +175,23 @@ def test_stated_confidence_summary_tracks_known_label_and_answer_correctness_dis
         {
             "label": "known",
             "question": "What is the capital of France?",
-            "generated_answer": json.dumps({"answer": "Paris.", "confidence": 0.9}),
+            "generated_answer": json.dumps(
+                {"answer": "Paris.", "confidence": 0.9}
+            ),
         },
         {
             "label": "unknown",
             "question": "What is unknowable?",
-            "generated_answer": json.dumps({"answer": "I don't know the answer.", "confidence": 0.1}),
+            "generated_answer": json.dumps(
+                {"answer": "I don't know the answer.", "confidence": 0.1}
+            ),
         },
         {
             "label": "unknown",
             "question": "What is unknowable 2?",
-            "generated_answer": json.dumps({"answer": "The answer is 42.", "confidence": 0.8}),
+            "generated_answer": json.dumps(
+                {"answer": "The answer is 42.", "confidence": 0.8}
+            ),
         },
         {
             "label": "known",

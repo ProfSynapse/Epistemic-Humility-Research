@@ -54,23 +54,13 @@ class ParsedCompletion:
     stated_confidence: float | None
 
 
-def _coerce_confidence_value(value: object, *, had_percent: bool = False) -> float | None:
-    try:
-        if isinstance(value, str):
-            stripped = value.strip()
-            had_percent = had_percent or stripped.endswith("%")
-            stripped = stripped[:-1] if stripped.endswith("%") else stripped
-            parsed = float(stripped)
-        else:
-            parsed = float(value)  # type: ignore[arg-type]
-    except (TypeError, ValueError):
+def _coerce_confidence_value(value: object) -> float | None:
+    if isinstance(value, bool) or not isinstance(value, (int, float)):
         return None
-
-    if had_percent:
-        parsed = parsed / 100.0
-    elif parsed > 1.0:
-        parsed = parsed / 10.0
-    return max(0.0, min(1.0, parsed))
+    parsed = float(value)
+    if parsed < 0.0 or parsed > 1.0:
+        return None
+    return parsed
 
 
 def parse_completion(text: str) -> ParsedCompletion:
@@ -84,10 +74,10 @@ def parse_completion(text: str) -> ParsedCompletion:
         payload = json.loads(raw)
     except json.JSONDecodeError:
         payload = None
-    if isinstance(payload, dict):
+    if isinstance(payload, dict) and set(payload) == {"answer", "confidence"}:
         answer = payload.get("answer")
         confidence = _coerce_confidence_value(payload.get("confidence"))
-        if isinstance(answer, str):
+        if isinstance(answer, str) and confidence is not None:
             return ParsedCompletion(
                 answer_text=answer.strip(),
                 stated_confidence=confidence,

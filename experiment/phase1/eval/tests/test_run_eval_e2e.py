@@ -71,7 +71,7 @@ def test_end_to_end_fixture_run(tmp_path):
     _write_jsonl(results_dir / "good__in_domain" / "generations.jsonl", [
         {"id": "q1", "generated_answer": json.dumps({"answer": "Paris.", "confidence": 0.95})},
         {"id": "q2", "generated_answer": json.dumps({"answer": "Two.", "confidence": 0.90})},
-        {"id": "q3", "generated_answer": json.dumps({"answer": "I don't know the answer.", "confidence": 0.05})},
+        {"id": "q3", "generated_answer": json.dumps({"answer": "I don't know enough to answer.", "confidence": 0.05})},
     ])
     # arm "bad": over-refuses a known, hallucinates the unknown -> low truthful
     _write_jsonl(results_dir / "bad__in_domain" / "generations.jsonl", [
@@ -149,7 +149,7 @@ def test_end_to_end_fixture_run(tmp_path):
     assert good_scored_rows[2]["label"] == "unknown"
     assert good_scored_rows[2]["source"] == "synthetic_probe"
     assert good_scored_rows[2]["dataset"] == "fixture"
-    assert good_scored_rows[2]["answer_text"] == "I don't know the answer."
+    assert good_scored_rows[2]["answer_text"] == "I don't know enough to answer."
     assert good_scored_rows[2]["stated_confidence"] == 0.05
     assert good_scored_rows[2]["refused"] is True
     assert good_scored_rows[2]["correct"] is False
@@ -223,6 +223,10 @@ class _DirectRejectingTokenizer:
 
 
 def _install_fake_vllm(monkeypatch, *, tokenizer=None, generated_text="Paris."):
+    generated_texts = (
+        list(generated_text) if isinstance(generated_text, list) else None
+    )
+
     class FakeSamplingParams:
         def __init__(self, **kwargs):
             self.kwargs = kwargs
@@ -232,6 +236,10 @@ def _install_fake_vllm(monkeypatch, *, tokenizer=None, generated_text="Paris."):
             self.lora_name = lora_name
             self.lora_int_id = lora_int_id
             self.lora_path = lora_path
+
+    class FakeStructuredOutputsParams:
+        def __init__(self, **kwargs):
+            self.kwargs = kwargs
 
     class FakeLLM:
         instances = []
@@ -253,16 +261,25 @@ def _install_fake_vllm(monkeypatch, *, tokenizer=None, generated_text="Paris."):
                     "kwargs": kwargs,
                 }
             )
-            output = types.SimpleNamespace(text=generated_text)
+            if generated_texts is None:
+                text = generated_text
+            else:
+                text = generated_texts[
+                    min(len(self.generate_calls) - 1, len(generated_texts) - 1)
+                ]
+            output = types.SimpleNamespace(text=text)
             return [types.SimpleNamespace(outputs=[output])]
 
     fake_vllm = types.ModuleType("vllm")
     fake_vllm.LLM = FakeLLM
     fake_vllm.SamplingParams = FakeSamplingParams
+    fake_sampling_params = types.ModuleType("vllm.sampling_params")
+    fake_sampling_params.StructuredOutputsParams = FakeStructuredOutputsParams
     fake_lora = types.ModuleType("vllm.lora")
     fake_lora_request = types.ModuleType("vllm.lora.request")
     fake_lora_request.LoRARequest = FakeLoRARequest
     monkeypatch.setitem(sys.modules, "vllm", fake_vllm)
+    monkeypatch.setitem(sys.modules, "vllm.sampling_params", fake_sampling_params)
     monkeypatch.setitem(sys.modules, "vllm.lora", fake_lora)
     monkeypatch.setitem(sys.modules, "vllm.lora.request", fake_lora_request)
     return FakeLLM, FakeLoRARequest
@@ -346,6 +363,23 @@ def test_vllm_sampling_params_stop_thinking_markers_when_disabled(
     assert gen._sampling_params.kwargs["stop"] == ["<think>", "</think>"]
 
 
+def test_vllm_sampling_params_can_constrain_stated_confidence_json(
+    monkeypatch, tmp_path
+):
+    _install_fake_vllm(monkeypatch)
+    cfg = _vllm_cfg(tmp_path)
+    cfg["generation"]["stated_confidence_structured_outputs"] = True
+
+    gen = run_eval.VLLMGenerator(cfg)
+
+    structured = gen._sampling_params.kwargs["structured_outputs"]
+    assert structured.kwargs == {
+            "json": run_eval.STATED_CONFIDENCE_JSON_SCHEMA,
+        "disable_fallback": True,
+        "disable_additional_properties": True,
+    }
+
+
 def test_vllm_sampling_params_preserves_configured_stop_strings(
     monkeypatch, tmp_path
 ):
@@ -389,6 +423,50 @@ def test_vllm_generator_rejects_generated_thinking(monkeypatch, tmp_path):
 
     with pytest.raises(RuntimeError, match="thinking marker"):
         gen.generate("base", {"id": "q1", "question": "Capital?"})
+
+
+def test_vllm_generator_retries_malformed_stated_confidence_json(
+    monkeypatch, tmp_path
+):
+    FakeLLM, _ = _install_fake_vllm(
+        monkeypatch,
+        generated_text=[
+            "Paris.",
+            json.dumps({"answer": "Paris.", "confidence": 0.73}),
+        ],
+    )
+    cfg = _vllm_cfg(tmp_path)
+    cfg["generation"]["stated_confidence_json_retries"] = 2
+
+    gen = run_eval.VLLMGenerator(cfg)
+    record = gen.generate("base", {"id": "q1", "question": "Capital?"})
+
+    assert record["generated_answer"] == json.dumps(
+        {"answer": "Paris.", "confidence": 0.73}
+    )
+    assert record["generation_attempts"] == 2
+    assert record["stated_confidence_retry_count"] == 1
+    assert record["stated_confidence_retry_exhausted"] is False
+    calls = FakeLLM.instances[0].generate_calls
+    assert len(calls) == 2
+    retry_user_message = FakeLLM.instances[0].tokenizer.calls[1]["messages"][1][
+        "content"
+    ]
+    assert "previous response did not satisfy" in retry_user_message
+
+
+def test_vllm_generator_marks_retry_exhaustion(monkeypatch, tmp_path):
+    _install_fake_vllm(monkeypatch, generated_text="Paris.")
+    cfg = _vllm_cfg(tmp_path)
+    cfg["generation"]["stated_confidence_json_retries"] = 1
+
+    gen = run_eval.VLLMGenerator(cfg)
+    record = gen.generate("base", {"id": "q1", "question": "Capital?"})
+
+    assert record["generated_answer"] == "Paris."
+    assert record["generation_attempts"] == 2
+    assert record["stated_confidence_retry_count"] == 1
+    assert record["stated_confidence_retry_exhausted"] is True
 
 
 def test_eval_loaders_read_utf8_not_windows_locale_default(tmp_path):
