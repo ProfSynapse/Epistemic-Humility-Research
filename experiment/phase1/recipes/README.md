@@ -30,6 +30,24 @@ the bridge arms use r=32/alpha=64. Within a model size, the SFT/DPO/KTO arms
 differ only in training objective, not in capacity — the LoRA surface is held
 identical across arms by design.
 
+## Candidate recipe backlog
+
+The following requested cells are tracked as exploratory checklist items only.
+They are deliberately not represented by runnable recipe YAML yet:
+
+| Candidate | Seeds | Protocol scope | Missing prerequisite before YAML |
+|---|---:|---|---|
+| `sft_dpo_kto` (`SFT -> DPO -> KTO`) | 1, 2, 3 | Amendment C draft | Exact seed-specific merged `SFT -> DPO` model paths and approved second-stage base/reference interpretation. |
+| `sft_kto_dpo` (`SFT -> KTO -> DPO`) | 1, 2, 3 | Amendment C draft | Exact seed-specific merged `SFT -> KTO` model paths and approved second-stage base/reference interpretation. |
+| `grpo` | 1, 2, 3 | Amendment B prospective GRPO | Confirmed Phase 1 GRPO dataset projection, custom reward wiring, and tuner local/cloud dispatch path. |
+| `sft_grpo` (`SFT -> GRPO`) | 1, 2, 3 | Amendment B prospective GRPO | All `grpo` prerequisites plus exact seed-specific merged SFT model paths and base/reference semantics. |
+
+Do not add executable recipe files for these cells by copying existing
+SFT/DPO/KTO YAMLs. The existing Phase 1 runner materialization path is pinned to
+the locked v0.3 matrix plus signed/proven sequential extensions, and the current
+tuner local-run dispatch must be verified for GRPO before these can be truthful
+job configs.
+
 ## Path contract (read before running)
 
 No recipe carries a `run.command` or any WS-5 placeholder vocabulary

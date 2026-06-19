@@ -1,0 +1,46 @@
+{
+  "run_id": "dpo__4b__headline__seed3",
+  "matrix_version": "phase1-v0.3",
+  "coordinate": {
+    "arm": "dpo",
+    "size": "4b",
+    "cell_type": "headline",
+    "seed": 3,
+    "override": {}
+  },
+  "source_recipe": "experiment/phase1/recipes/eh_phase1_qwen3_4b_dpo.yaml",
+  "materialized_recipe_sha": "f1c4d4362ef334a0bfc5310f4d4045287318e231dc1708e0b1b39a416890392d",
+  "method": "dpo",
+  "model": "unsloth/Qwen3-4B-bnb-4bit",
+  "lane": "local",
+  "data": {
+    "source_data_file": "F:\\Code\\Epistemic-Humility-Research\\experiment\\phase1\\data\\qwen3-4b-instruct\\dpo_train.jsonl",
+    "staged_data_file": "scratch/eh_staging/dpo__4b__headline__seed3/dpo_train.jsonl",
+    "data_sha256": "39e2ba8c9bc1b41ef1b7e797f80637c276ba150c97055962bbc4e2b550bd17b5",
+    "hf_dataset_name": null,
+    "hf_dataset_revision": null
+  },
+  "research_repo_commit": "62fbba2d6240d1953543d4fbb6dca2d322ee70f4",
+  "submodule_commit": "089fa9b7b1b9e3116637b772c7ba62b88e4469d5",
+  "prereq_check": {
+    "datasets_present": true,
+    "leakage_guard_passed": true
+  },
+  "launched_at": "2026-06-15T17:04:40.157017+00:00",
+  "tuner_invocation": [
+    "python",
+    "tuner.py",
+    "local-run",
+    "--job-config",
+    "F:/Code/Epistemic-Humility-Research/experiment/phase1/run_records/materialized_recipes/dpo__4b__headline__seed3.yaml",
+    "--yes"
+  ],
+  "outcome": {
+    "status": "launched",
+    "job_handle": null,
+    "adapter_path": null,
+    "metrics_path": null,
+    "verified": false
+  },
+  "materialized_recipe": "F:\\Code\\Epistemic-Humility-Research\\experiment\\phase1\\run_records\\materialized_recipes\\dpo__4b__headline__seed3.yaml"
+}
