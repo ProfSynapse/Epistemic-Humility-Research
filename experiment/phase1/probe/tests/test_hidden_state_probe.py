@@ -834,6 +834,158 @@ def test_select_matched_slice_raises_on_absent_results_file(monkeypatch, tmp_pat
         hsp.select_matched_slice(config)
 
 
+def _selfaware_manifest_payload(rows: list[dict]) -> dict:
+    return {
+        "schema_version": "phase3-selfaware-frozen-row-manifest/v1",
+        "scope": {"not_probe_pool_runner_ready": True},
+        "rows": rows,
+    }
+
+
+def _selfaware_manifest_row(row_key: str, label: str, strata: list[str]) -> dict:
+    return {
+        "row_key": row_key,
+        "stable_identity": {
+            "eval_set": "selfaware",
+            "row_index": 1,
+            "id": "selfaware-2",
+            "source": "selfaware",
+        },
+        "question": "SelfAware question?",
+        "prompt": "SelfAware question?",
+        "label": label,
+        "answer_value": None,
+        "aliases": [],
+        "strata": strata,
+        "source_arms": {
+            "sft_merged_seed1": {"refused": True, "truthful": True},
+        },
+    }
+
+
+def test_select_matched_slice_loads_selfaware_manifest_rows(monkeypatch, tmp_path):
+    """SelfAware selection preserves frozen row identity and metadata."""
+    monkeypatch.setattr(hsp, "PROBE_DIR", tmp_path)
+    manifest_path = tmp_path / "manifests" / "selfaware.json"
+    manifest_path.parent.mkdir()
+    manifest_path.write_text(json.dumps(_selfaware_manifest_payload([
+        _selfaware_manifest_row(
+            "selfaware::selfaware::000001::selfaware-2",
+            "unknown",
+            ["stable_unknown_refusal"],
+        ),
+        _selfaware_manifest_row(
+            "selfaware::selfaware::000002::selfaware-3",
+            "known",
+            ["stable_known_correct"],
+        ),
+    ])), encoding="utf-8")
+    config = _stub_config()
+    config["selection"] = {
+        "source": "selfaware_manifest",
+        "manifest": "manifests/selfaware.json",
+        "strata": ["stable_unknown_refusal"],
+    }
+
+    rows = hsp.select_matched_slice(config)
+
+    assert len(rows) == 1
+    row = rows[0]
+    assert row["probe_pool_row_key"] == "selfaware::selfaware::000001::selfaware-2"
+    assert row["row_key"] == "selfaware::selfaware::000001::selfaware-2"
+    assert row["stable_identity"]["id"] == "selfaware-2"
+    assert row["strata"] == ["stable_unknown_refusal"]
+    assert row["probe_label"] is None
+    assert (
+        row["aligned_probe_config_sha"]
+        == hsp.selfaware_manifest_provenance_sha(manifest_path)
+    )
+
+
+def test_selfaware_manifest_loader_fails_on_duplicate_row_key(tmp_path):
+    manifest_path = tmp_path / "selfaware.json"
+    row = _selfaware_manifest_row(
+        "selfaware::selfaware::000001::selfaware-2",
+        "unknown",
+        ["stable_unknown_refusal"],
+    )
+    manifest_path.write_text(
+        json.dumps(_selfaware_manifest_payload([row, row])),
+        encoding="utf-8",
+    )
+
+    with pytest.raises(ValueError, match="duplicate SelfAware manifest row_key"):
+        hsp.load_selfaware_manifest_rows(manifest_path)
+
+
+def test_selfaware_manifest_row_conversion_requires_identity_fields():
+    row = _selfaware_manifest_row(
+        "selfaware::selfaware::000001::selfaware-2",
+        "unknown",
+        ["stable_unknown_refusal"],
+    )
+    del row["stable_identity"]
+
+    with pytest.raises(ValueError, match="missing"):
+        hsp.convert_selfaware_manifest_row(row, index=0)
+
+
+def test_selfaware_tensor_key_is_filesystem_safe():
+    assert (
+        hsp.safe_tensor_key("selfaware::selfaware::000001::selfaware-2")
+        == "selfaware__selfaware__000001__selfaware-2"
+    )
+
+
+def test_selfaware_manifest_config_parses_and_selects_no_gpu():
+    config_path = PROBE_DIR / "config" / "hidden_state_selfaware_manifest_sft_dpo_seed1.yaml"
+    config, cfg_sha = hsp.parse_config(config_path)
+    rows = hsp.select_matched_slice(config)
+
+    assert len(cfg_sha) == 16
+    assert config["selection"]["source"] == "selfaware_manifest"
+    assert len(rows) == 128
+    assert rows[0]["row_key"].startswith("selfaware::selfaware::")
+    assert rows[0]["strata"]
+    assert rows[0]["aligned_probe_config_sha"].startswith(
+        "selfaware-manifest-sha256:"
+    )
+
+
+def test_selfaware_manifest_stub_extraction_finalizes_with_manifest_provenance(
+        monkeypatch, tmp_path):
+    """SelfAware manifest selection supplies non-null finalize provenance."""
+    monkeypatch.setattr(hsp, "PROBE_DIR", tmp_path)
+    manifest_path = tmp_path / "manifests" / "selfaware.json"
+    manifest_path.parent.mkdir()
+    manifest_path.write_text(json.dumps(_selfaware_manifest_payload([
+        _selfaware_manifest_row(
+            "selfaware::selfaware::000001::selfaware-2",
+            "unknown",
+            ["stable_unknown_refusal"],
+        ),
+    ])), encoding="utf-8")
+    config = _stub_config()
+    config["selection"] = {
+        "source": "selfaware_manifest",
+        "manifest": "manifests/selfaware.json",
+        "strata": ["stable_unknown_refusal"],
+    }
+    cfg_sha = schema.config_sha(config)
+    slice_rows = hsp.select_matched_slice(config)
+    expected_sha = hsp.selfaware_manifest_provenance_sha(manifest_path)
+
+    backend = hsp.StubExtractionBackend(num_hidden_layers=2, hidden_dim=8)
+    out_dir = tmp_path / "out"
+    manifest_out = hsp.run_extraction(config, cfg_sha, backend, slice_rows, out_dir)
+
+    manifest = json.loads(manifest_out.read_text())
+    schema.validate_manifest(manifest, require_populated=True)
+    assert manifest["aligned_probe_config_sha"] == expected_sha
+    row = json.loads((out_dir / "rows.jsonl").read_text().strip())
+    assert row["aligned_probe_config_sha"] == expected_sha
+
+
 # ---------------------------------------------------------------------------
 # parse_config — model-free pre-flight at parse time
 # ---------------------------------------------------------------------------

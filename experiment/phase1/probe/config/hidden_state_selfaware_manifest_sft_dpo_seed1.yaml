@@ -1,0 +1,54 @@
+# Phase 3 dedicated SelfAware frozen-manifest hidden-state extraction prep.
+#
+# This config is intentionally no-run prep until an explicit GPU gate is opened.
+# It consumes experiment/phase1/probe/manifests/phase3_selfaware_frozen_row_manifest.json,
+# preserving SelfAware row_key/stable_identity/strata in rows.jsonl. It is NOT a
+# probe_pool_row_key causal-pilot runner input and does not use probe_results.
+
+model:
+  model_tag: qwen3-4b-sft-merged-seed1-selfaware
+  model_name: /workspace/repo/synaptic-tuner/toolset-training-artifacts/runs/local/4b/sft__4b__headline__seed1/20260614_053221/Qwen3-4B-bnb-4bit/merged-16bit
+  revision: null
+  enable_thinking: false
+
+extraction:
+  layer_list: null
+  token_position_rule: final_prompt_token
+  compute_dtype: bfloat16
+  persist_dtype: float32
+  persistence_format: safetensors
+  device: cuda
+  persist_delta: true
+
+arms:
+  - name: sft_merged_seed1_base
+    adapter_state: disabled
+    adapter: null
+  - name: sft_dpo_seed1
+    adapter_state: active
+    adapter: /workspace/repo/synaptic-tuner/toolset-training-artifacts/runs/local/4b/sft_dpo__4b__amendment_a__seed1/20260614_074933/final_model
+
+eval_arms_source: null
+
+selection:
+  source: selfaware_manifest
+  manifest: manifests/phase3_selfaware_frozen_row_manifest.json
+  strata:
+    - stable_unknown_refusal
+    - stable_known_correct
+    - dpo_unknown_refusal_loss_transition
+    - known_recovery_transition
+    - known_corruption_transition
+  # Remove or raise only after checking disk/runtime budget. This is a prep
+  # guard for the first dedicated SelfAware extraction smoke, not a row-sampling
+  # claim about the manifest.
+  max_rows: 128
+
+output:
+  hidden_states_subdir: hidden_states_selfaware
+  manifest_filename: manifest.json
+  rows_filename: rows.jsonl
+
+manifest_provenance:
+  aligned_run_record_id: sft_dpo__4b__amendment_a__seed1
+  source_split: phase3-selfaware-frozen-row-manifest/v1

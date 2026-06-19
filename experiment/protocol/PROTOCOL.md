@@ -43,6 +43,33 @@ separate from the signed v0.3 headline matrix and must be labeled as Amendment A
 4. Records that the post-sign-off evidence motivating this amendment is bounded
    local evidence, not headline, cloud, bridge, or full-matrix evidence.
 
+**Amendment B / Phase 3 causal interpretability status:** DRAFT ONLY as of
+2026-06-15. This is a prospective mechanism-work amendment, not signed protocol
+and not a change to the v0.3 headline matrix or Amendment A / v0.4 sequential
+training track. It records the proposed next step after correlational
+hidden-state diagnostics: literature-grounded knowledge-graph ingestion followed
+by small causal direction/patching pilots. No intervention, SAE, encoder, or
+probe result may be used as headline evidence unless a later signed revision
+promotes it from exploratory mechanism evidence.
+
+**Amendment B draft changelog:**
+
+1. Adds H6 as an exploratory mechanism hypothesis: some abstention behavior
+   induced by SFT or reshaped by sequential DPO/KTO may be mediated by
+   directionally steerable residual-stream representations, but a diagnostic
+   direction is not a mechanism unless causal intervention changes behavior
+   under controls.
+2. Requires an arXiv and knowledge-graph ingestion gate before scaling Phase 3
+   intervention work: relevant papers must be represented as typed graph atoms,
+   claims, mechanisms, and method lineages where possible.
+3. Defines the first causal pilot as small local Tier 2 evidence, separated from
+   v0.3 and Amendment A behavioral claims.
+4. Makes encoder/SAE training conditional on a prior causal signal and a written
+   question that linear directions cannot answer.
+5. Preserves the rule that probes, directions, SAE features, or encoder outputs
+   must not be used in a reward loop or as claim-bearing evidence without a
+   later signed protocol revision.
+
 **What changed in v0.3 (provenance):**
 
 1. Run design upgraded from a single config per arm to a full matrix, to
@@ -143,6 +170,17 @@ v0.3 hypothesis set):**
   if the sequential arms simply reproduce the cold-start preference-training
   behavior observed in bounded local evidence, staying base-like on refusal
   while failing to improve truthful rate.
+
+**Amendment B / Phase 3 hypothesis (draft exploratory mechanism extension, not
+signed and not part of v0.3 or Amendment A):**
+
+- **H6 (causal abstention direction):** The known/unknown separability observed
+  in local hidden-state diagnostics may include a direction or sparse feature
+  that causally affects abstention behavior. A candidate direction only counts
+  as causal local mechanism evidence if adding, subtracting, erasing, or
+  patching it changes refusal/answer behavior on held-out rows more than
+  shuffled/random/wrong-layer controls, without merely breaking generation or
+  detecting prompt format.
 
 ## 3. Design
 
@@ -270,6 +308,42 @@ prospective extension results. They may support a v0.4 narrative only after a
 signed v0.4 revision explicitly decides whether the original matrix is
 superseded or whether v0.3 and Amendment A are reported as separate experimental
 tracks.
+
+### 3.1c Amendment B / Phase 3 causal interpretability draft
+
+This draft does not authorize claim-bearing mechanism results by itself. It
+records the intended Phase 3 path so exploratory work can proceed without
+blurring evidence tiers.
+
+**Literature and KG gate.** Before scaling causal intervention work, the
+activation-steering and refusal-mechanism spine must be represented in the
+library knowledge graph where practical. The repo-local `kg-ingest` and
+`knowledge-graph` skills define the workflow: snapshot the vault inventory,
+ingest paper notes/fulltext, apply typed paper patches, migrate to canonical
+metadata, validate relationships, and analyze the graph. The graph
+should represent methods, datasets, metrics, mechanisms, and support edges
+rather than only flat citations.
+
+**Initial intervention scope.** The first pilot is local and small:
+
+- Qwen3-4B only.
+- Thinking mode remains off.
+- Use already verified run records and hidden-state extraction manifests.
+- Start from a balanced known/unknown slice.
+- Intervene on a small shortlist of known-vs-unknown and adapter-delta
+  directions.
+- Include shuffled-label, random-direction, sign-flip, and wrong-layer controls.
+- Score refusal on unknowns, over-refusal on knowns, known correctness,
+  answer-on-unknown, and generation contamination.
+
+**Encoder/SAE gate.** A small encoder or SAE is not the next default step. It is
+allowed only after a direction or patching pilot finds a reproducible
+intervention-sensitive target and a written question explains why sparse
+features or learned encoders are needed.
+
+**Reporting separation.** Amendment B outputs are Tier 0 to Tier 2 exploratory
+mechanism evidence unless a later signed revision promotes them. They must not
+change v0.3 headline tables, Amendment A sequential reporting, or arm ranking.
 
 ### 3.2 Model pin and rationale
 

@@ -83,9 +83,19 @@ Jobs. KTO data per `.skills/fine-tuning/reference/dataset-formats.md`
 
 ## Phase 3 — mechanism
 
+- Protocol pointer (2026-06-19): Phase 3 mechanism/control-system work is now
+  governed as `OFFICIAL EXPLORATORY PROTOCOL`, draft v0.1, in
+  `experiment/protocol/PHASE3-control-system-protocol.md`. This is separate
+  from signed Phase 1 `PROTOCOL.md` v0.3 and amendments unless later promoted
+  by explicit signed revision.
 - Probe for an "I don't know" direction before/after each training method;
   test whether the probe transfers OOD when behavior does not (gap 4; the
   essay's "form of ignorance without the substance" made empirical).
+- Future implementation planning for the LoRA/hidden-state activation tier is
+  tracked in `docs/plans/lora-hidden-state-probing-tier.md`; it is exploratory
+  mechanism work and does not modify either the locked PROTOCOL v0.3 headline
+  matrix or the signed Amendment A / v0.4 prospective sequential-extension
+  track.
 - Toolkit: raw report 06's probing line (Azaria-Mitchell, CCS, ITI,
   semantic-entropy probes); caution from 2606.02907 (probes can detect
   task format, not reasoning mode) and the TPR-gaming result (probes
@@ -114,7 +124,10 @@ Jobs. KTO data per `.skills/fine-tuning/reference/dataset-formats.md`
   explicit reasoning trace change where the knowledge frontier sits, whether
   abstention training transfers, and the abstention-calibration tension
   (does a `<think>` trace let the model verbalize uncertainty it cannot
-  express in a direct answer)? This connects to the Phase 3 probing line
+  express in a direct answer)? This is also an agentic metacognition axis:
+  uncertainty should help decide when to search and what to trust
+  (Yona, Geva, and Matias, "Hallucinations Undermine Trust; Metacognition is a
+  Way Forward," arXiv:2605.01428). This connects to the Phase 3 probing line
   and the 2606.02907 caution that probes can detect task format rather than
   reasoning mode. Reasoning-by-default modern families (e.g. Qwen3.5) are
   the natural cross-architecture extension of this axis in the Phase 4

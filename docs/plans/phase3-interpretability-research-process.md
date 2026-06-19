@@ -13,6 +13,7 @@ provenance, causal-pilot gating, and evidence-tier control.
 
 The governing context is:
 
+- `experiment/protocol/PHASE3-control-system-protocol.md`
 - `docs/plans/phase3-causal-interpretability-and-kg-plan.md`
 - `docs/plans/phase3-interpretability-direction.md`
 - `experiment/protocol/PROTOCOL.md` Amendment B draft text
@@ -70,9 +71,10 @@ Do not promote any row to `ready_for_ingest` unless both `note_path` and
 | 2312.06681 | Steering Llama 2 via Contrastive Activation Addition | P0 | contrastive activation addition | `library/notes/2312.06681--steering-llama-2-via-contrastive-activation-addition.md` | `library/fulltext/2312.06681.html` | `html` | `validated` | none | CAA; contrastive steering; transfer controls |
 | 2309.16042 | Towards Best Practices of Activation Patching in Language Models | P0 | patching controls/metrics | `library/notes/2309.16042--towards-best-practices-of-activation-patching-in-language-models.md` | `library/fulltext/2309.16042.html` | `html` | `validated` | none | activation patching; corruption choice; metric controls |
 | 2606.13669 | Agents-K1 | P0 | KG process spine | `library/notes/2606.13669--agents-k1.md` | `library/fulltext/2606.13669.html` | `html` | `validated` | none | typed scientific KG; claims; mechanisms; method lineage |
-| 2411.11296 | Steering Language Model Refusal with Sparse Autoencoders | P0b/P1 | SAE refusal steering | `missing` | `missing` | `missing` | `candidate` | note and local source missing; not first batch unless needed before pilots | SAE refusal feature; sparse feature steering |
-| 2505.23556 | Understanding Refusal in Language Models with Sparse Autoencoders | P0b/P1 | SAE refusal mechanisms | `missing` | `missing` | `missing` | `candidate` | note and local source missing; not first batch unless needed before pilots | SAE refusal interpretation; refusal feature localization |
-| 2512.16602 | Refusal Steering: Fine-grained Control over LLM Refusal Behaviour for Sensitive Topics | P0b/P1 | Qwen3-specific refusal steering | `missing` | `missing` | `missing` | `candidate` | note and local source missing; not first batch unless needed before pilots | Qwen3 refusal steering; fine-grained refusal control |
+| 2411.11296 | Steering Language Model Refusal with Sparse Autoencoders | P0b/P1 | SAE refusal steering | `library/notes/2411.11296--steering-refusal-with-sparse-autoencoders.md` | `library/fulltext/2411.11296.html` | `html` | `source_ready` | needs full `kg-ingest` extraction before claim use | SAE refusal feature; sparse feature steering |
+| 2505.23556 | Understanding Refusal in Language Models with Sparse Autoencoders | P0b/P1 | SAE refusal mechanisms | `library/notes/2505.23556--understanding-refusal-with-sparse-autoencoders.md` | `library/fulltext/2505.23556.html` | `html` | `source_ready` | needs full `kg-ingest` extraction before claim use | SAE refusal interpretation; refusal feature localization |
+| 2512.16602 | Refusal Steering: Fine-grained Control over LLM Refusal Behaviour for Sensitive Topics | P0b/P1 | Qwen3-specific refusal steering | `library/notes/2512.16602--refusal-steering-sensitive-topics.md` | `library/fulltext/2512.16602.html` | `html` | `source_ready` | needs full `kg-ingest` extraction before claim use | Qwen3 refusal steering; fine-grained refusal control |
+| 2602.02132 | There Is More to Refusal in Large Language Models than a Single Direction | P0b/P1 | multi-direction refusal geometry | `library/notes/2602.02132--more-to-refusal-than-single-direction.md` | `library/fulltext/2602.02132.html` | `html` | `source_ready` | needs full `kg-ingest` extraction before treating any single direction as a general refusal mechanism | refusal category geometry; single-direction caveat; over-refusal tradeoff |
 | 2409.05907 | Programming Refusal with Conditional Activation Steering | P2 optional | conditional refusal steering | `missing` | `missing` | `missing` | `candidate` | optional; note and local source missing | conditional activation steering; refusal control |
 | 2501.09929 | Steering Large Language Models with Feature Guided Activation Additions | P2 optional | feature-guided activation additions | `missing` | `missing` | `missing` | `candidate` | optional; note and local source missing | feature-guided activation addition; steering feature selection |
 
@@ -89,6 +91,10 @@ Allowed `status` values:
 
 Immediate next batch steps:
 
+0. Treat `experiment/protocol/PHASE3-control-system-protocol.md` as the current
+   Phase 3 exploratory mechanism/control-system protocol. It does not promote
+   Phase 3 outputs into Phase 1 headline evidence, arm ranking, or reward-loop
+   input.
 1. Use `docs/plans/phase3-mechanism-source-map.md` as the Gate 5 source map for
    the initial causal-pilot design.
 2. Keep P0 graph status validated unless new source notes or concept nodes are
@@ -98,6 +104,16 @@ Immediate next batch steps:
 4. If Workflow is unavailable, use the fallback proposal path in Gate 3B and
    keep write control with deterministic scripts or a narrow orchestrator-
    approved manual patch.
+5. After the 2026-06-18 full local causal-pilot sweep, prioritize external
+   gap-fill for `2602.02132`, `2512.16602`, `2411.11296`, and `2505.23556`
+   before broadening generation sweeps or training an encoder/SAE.
+6. Add queryable KG atoms for `correlational probe vs causal intervention` and
+   the project-specific `known/unknown direction` before using either as a
+   manuscript mechanism.
+7. Source-gate the next literature queue before claim use: `2605.26772`,
+   `2410.16314`, `2605.04980`, `2509.23799`, and `2606.03969` if not already
+   fully ingested. These are pending ingestion/source reconciliation, not fully
+   claim-bearing evidence.
 
 Validation artifact:
 
@@ -109,6 +125,11 @@ Validation artifact:
   edges, and 0 orphan graph nodes.
 - Windows note: use the absolute `--root` path for validation. A relative
   `--root library` can produce false unresolved-link warnings.
+- KG search note: if repo-wide search tries to index local `.cache` or a stale
+  `.kg` DB fails, rerun with a scoped root and scratch DB, for example
+  `python .agents/skills/knowledge-graph/scripts/kg_search.py "query" --root library --db .tmp/kg-search/query.sqlite --limit 12`.
+  On Windows, set `PYTHONIOENCODING=utf-8` if KG search output contains math or
+  citation Unicode.
 
 ## File Locations
 

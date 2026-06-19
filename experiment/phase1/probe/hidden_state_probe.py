@@ -162,6 +162,14 @@ def select_matched_slice(config: dict) -> list[dict]:
     needs; alignment is by key only, never loose question text.
     """
     sel = config["selection"]
+    source = sel.get("source", "probe_pool")
+    if source == "selfaware_manifest":
+        return select_selfaware_manifest_slice(config)
+    if source != "probe_pool":
+        raise ValueError(
+            f"selection.source {source!r} is not supported; expected "
+            "'probe_pool' or 'selfaware_manifest'"
+        )
     # Config relative paths are anchored at the probe dir (see
     # resolve_eval_arm_adapters); keep frozen + results on the same base.
     frozen_path = (PROBE_DIR / sel["questions_frozen"]).resolve()
@@ -187,6 +195,128 @@ def select_matched_slice(config: dict) -> list[dict]:
             "tier must have probed these before extraction"
         )
     return found
+
+
+def select_selfaware_manifest_slice(config: dict) -> list[dict]:
+    """Load frozen SelfAware manifest rows for dedicated extraction prep.
+
+    This path consumes `phase3-selfaware-frozen-row-manifest/v1` rows. It maps
+    the manifest's stable `row_key` into `probe_pool_row_key` only as a
+    compatibility key for the existing tensor writer/resume path; the row record
+    still preserves the original `row_key`, `stable_identity`, and `strata`.
+    """
+    sel = config["selection"]
+    manifest_path = (PROBE_DIR / sel["manifest"]).resolve()
+    wanted_strata = sel.get("strata")
+    max_rows = sel.get("max_rows")
+    if max_rows is not None and (
+        not isinstance(max_rows, int) or isinstance(max_rows, bool) or max_rows <= 0
+    ):
+        raise ValueError("selection.max_rows must be a positive integer when set")
+    rows = load_selfaware_manifest_rows(
+        manifest_path,
+        wanted_strata=wanted_strata,
+        max_rows=max_rows,
+    )
+    if not rows:
+        raise ValueError(f"no rows selected from SelfAware manifest {_rel(manifest_path)}")
+    return rows
+
+
+def load_selfaware_manifest_rows(
+    manifest_path: Path,
+    *,
+    wanted_strata: list[str] | None = None,
+    max_rows: int | None = None,
+) -> list[dict]:
+    """Convert frozen SelfAware manifest rows into extraction slice rows."""
+    if not manifest_path.is_file():
+        raise FileNotFoundError(f"SelfAware manifest {_rel(manifest_path)} not found")
+    payload = json.loads(manifest_path.read_text(encoding="utf-8"))
+    if payload.get("schema_version") != "phase3-selfaware-frozen-row-manifest/v1":
+        raise ValueError("SelfAware manifest schema_version is not supported")
+    if payload.get("scope", {}).get("not_probe_pool_runner_ready") is not True:
+        raise ValueError("SelfAware manifest must declare not_probe_pool_runner_ready: true")
+    raw_rows = payload.get("rows")
+    if not isinstance(raw_rows, list):
+        raise ValueError("SelfAware manifest rows must be a list")
+    aligned_probe_config_sha = selfaware_manifest_provenance_sha(manifest_path)
+    strata_filter = set(wanted_strata or [])
+    selected: list[dict] = []
+    seen: set[str] = set()
+    for index, row in enumerate(raw_rows):
+        converted = convert_selfaware_manifest_row(
+            row,
+            index=index,
+            aligned_probe_config_sha=aligned_probe_config_sha,
+        )
+        row_strata = set(converted["strata"])
+        if strata_filter and not (row_strata & strata_filter):
+            continue
+        key = converted["row_key"]
+        if key in seen:
+            raise ValueError(f"duplicate SelfAware manifest row_key {key!r}")
+        seen.add(key)
+        selected.append(converted)
+        if max_rows is not None and len(selected) >= max_rows:
+            break
+    return selected
+
+
+def selfaware_manifest_provenance_sha(manifest_path: Path) -> str:
+    """Tagged immutable identity for a frozen SelfAware row manifest."""
+    digest = _file_sha256(manifest_path)
+    if digest is None:
+        raise FileNotFoundError(f"SelfAware manifest {_rel(manifest_path)} not found")
+    return f"selfaware-manifest-sha256:{digest}"
+
+
+def convert_selfaware_manifest_row(
+    row: dict,
+    *,
+    index: int,
+    aligned_probe_config_sha: str | None = None,
+) -> dict:
+    """Validate and convert one frozen SelfAware row for extraction."""
+    required = ["row_key", "stable_identity", "strata", "label", "question", "prompt"]
+    missing = [field for field in required if field not in row]
+    if missing:
+        raise ValueError(f"SelfAware manifest rows[{index}] missing {missing}")
+    row_key = row["row_key"]
+    if not isinstance(row_key, str) or not row_key:
+        raise ValueError(f"SelfAware manifest rows[{index}].row_key must be non-empty")
+    if not isinstance(row["stable_identity"], dict):
+        raise ValueError(f"SelfAware manifest rows[{index}].stable_identity must be a mapping")
+    if row["label"] not in {"known", "unknown"}:
+        raise ValueError(f"SelfAware manifest rows[{index}].label must be known or unknown")
+    if not isinstance(row["question"], str) or not row["question"]:
+        raise ValueError(f"SelfAware manifest rows[{index}].question must be non-empty")
+    prompt = row["prompt"]
+    if not isinstance(prompt, str) or not prompt:
+        raise ValueError(f"SelfAware manifest rows[{index}].prompt must be non-empty")
+    strata = row["strata"]
+    if not isinstance(strata, list) or not all(isinstance(item, str) and item for item in strata):
+        raise ValueError(f"SelfAware manifest rows[{index}].strata must be non-empty strings")
+    aliases = row.get("aliases", [])
+    if aliases is None:
+        aliases = []
+    if not isinstance(aliases, list):
+        raise ValueError(f"SelfAware manifest rows[{index}].aliases must be a list")
+    return {
+        "probe_pool_row_key": row_key,
+        "row_key": row_key,
+        "stable_identity": row["stable_identity"],
+        "strata": list(strata),
+        "question": row["question"],
+        "prompt": prompt,
+        "label": row["label"],
+        "frozen_label": row["label"],
+        "probe_label": None,
+        "aligned_probe_config_sha": aligned_probe_config_sha,
+        "answer_value": row.get("answer_value"),
+        "aliases": aliases,
+        "source_arms": row.get("source_arms", {}),
+    }
 
 
 def _stream_probe_rows(results_path: Path, wanted: set[str],
@@ -348,7 +478,8 @@ def load_done_row_keys(rows_path: Path) -> set[str]:
             line = line.strip()
             if not line:
                 continue
-            key = json.loads(line).get("probe_pool_row_key")
+            row = json.loads(line)
+            key = row.get("probe_pool_row_key") or row.get("row_key")
             if key:
                 done.add(key)
     return done
@@ -543,6 +674,9 @@ def collect_static_provenance(config: dict, slice_rows: list[dict],
     aligned_probe_sha = (
         slice_rows[0].get("aligned_probe_config_sha") if slice_rows else None)
 
+    data_source = selection_data_source(config)
+    if aligned_probe_sha is None and config["selection"].get("source") == "selfaware_manifest":
+        aligned_probe_sha = selfaware_manifest_provenance_sha(data_source)
     static = {
         "adapter_path": active_arm.get("adapter"),
         "active_adapter_name": active_arm["name"],
@@ -555,13 +689,21 @@ def collect_static_provenance(config: dict, slice_rows: list[dict],
         "aligned_probe_config_sha": aligned_probe_sha,
         "research_repo_commit": _git_commit(REPO_ROOT),
         "submodule_commit": _submodule_commit(REPO_ROOT, "synaptic-tuner"),
-        "data_sha256": _file_sha256(
-            (PROBE_DIR / config["selection"]["probe_results"]).resolve()),
+        "data_sha256": _file_sha256(data_source),
         "prompt_renderer_hash": _renderer_hash(config),
         "prompt_hash_corpus": schema.corpus_prompt_hash(rendered_prompts),
     }
     static.update(_read_adapter_lora_config(active_arm.get("adapter")))
     return static
+
+
+def selection_data_source(config: dict) -> Path:
+    """Return the selected row-source artifact for manifest data hashing."""
+    selection = config["selection"]
+    source = selection.get("source", "probe_pool")
+    if source == "selfaware_manifest":
+        return (PROBE_DIR / selection["manifest"]).resolve()
+    return (PROBE_DIR / selection["probe_results"]).resolve()
 
 
 def run_extraction(config: dict, extraction_config_sha: str, backend,
@@ -653,6 +795,7 @@ def _extract_rows(backend, slice_rows, done, rows_path, base_arm, active_arm,
                                  config, tensor_shapes)
             record = {
                 "probe_pool_row_key": key,
+                "row_key": row.get("row_key", key),
                 "question": row["question"],
                 "label": row["label"],
                 "probe_label": row["probe_label"],
@@ -662,6 +805,9 @@ def _extract_rows(backend, slice_rows, done, rows_path, base_arm, active_arm,
                 "layer_count": schema.expected_layer_count(backend.num_hidden_layers),
                 "hidden_dim": backend.hidden_dim,
             }
+            for optional in ("stable_identity", "strata", "answer_value", "aliases", "source_arms"):
+                if optional in row:
+                    record[optional] = row[optional]
             fh.write(json.dumps(record, ensure_ascii=False) + "\n")
             fh.flush()
             done.add(key)
@@ -700,7 +846,7 @@ def _persist_row_tensors(out_dir, key, cfg_sha, h_base, h_lora, delta, config,
     if delta is not None:
         roles["delta"] = delta
 
-    safe_key = key.replace("|", "_")
+    safe_key = safe_tensor_key(key)
     for role, layer_vectors in roles.items():
         selected = {
             layer: vec for layer, vec in layer_vectors.items()
@@ -722,6 +868,14 @@ def _persist_row_tensors(out_dir, key, cfg_sha, h_base, h_lora, delta, config,
         save_file(tensors, str(path), metadata=metadata)
         any_layer = next(iter(layer_vectors.values()))
         tensor_shapes[role] = [len(layer_vectors), len(any_layer)]
+
+
+def safe_tensor_key(key: str) -> str:
+    """Filesystem-safe tensor shard stem while preserving existing pipe behavior."""
+    safe = key.replace("|", "_")
+    for char in (":", "/", "\\", "<", ">", '"', "?", "*"):
+        safe = safe.replace(char, "_")
+    return safe
 
 
 def _reconstruct_tensor_shapes(out_dir: Path, rows_path: Path) -> dict:
