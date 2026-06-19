@@ -180,6 +180,32 @@ for the next causal diagnostic pass, not as an explanation by itself.
 Generated `sae_feature_analysis` outputs are local/reproducible and may expose
 row-level examples from the probe set. Keep them gitignored by default.
 
+## SAE Feature Directions
+
+After feature analysis, export selected SAE decoder columns as raw hidden-state
+direction candidates for later controlled diagnostics:
+
+```bash
+python experiment/phase1/probe/phase3_sae_feature_directions.py \
+  --config experiment/phase1/probe/config/phase3_selfaware_sae_feature_directions.yaml
+```
+
+The exporter multiplies each selected decoder column by the saved training
+normalization scale, because the SAE was trained in standardized activation
+space but the causal/logit runner intervenes in raw hidden-state space. Preserve
+the feature's natural polarity: addition to a known-skewed feature should be
+interpreted differently than addition to an unknown-skewed feature, and
+subtraction is the paired opposite control.
+
+Treat every output as `SAE_FEATURE_DIRECTION_CANDIDATES_ONLY`. These are bridge
+artifacts for causal tests, not evidence that the SAE feature is monosemantic or
+behaviorally active. Current exported top-k16 feature directions have much
+smaller norms than the broad known/unknown mean-difference directions, so use a
+separate coefficient smoke rather than blindly reusing prior grids.
+
+Generated `sae_feature_directions` outputs are local/reproducible and should
+stay gitignored unless a governed artifact-publication decision says otherwise.
+
 ## Aggregate Completed Runs
 
 ```bash
@@ -239,10 +265,12 @@ python -m pytest experiment/phase1/probe/tests/test_phase3_causal_pilot_sweep.py
 python -m pytest experiment/phase1/probe/tests/test_phase3_sae_smoke.py -q
 python -m pytest experiment/phase1/probe/tests/test_phase3_sae_train.py -q
 python -m pytest experiment/phase1/probe/tests/test_phase3_sae_feature_analysis.py -q
+python -m pytest experiment/phase1/probe/tests/test_phase3_sae_feature_directions.py -q
 python -m py_compile experiment/phase1/probe/phase3_causal_pilot_sweep.py \
   experiment/phase1/probe/phase3_causal_pilot_aggregate.py \
   experiment/phase1/probe/phase3_sae_smoke.py \
   experiment/phase1/probe/phase3_sae_train.py \
-  experiment/phase1/probe/phase3_sae_feature_analysis.py
+  experiment/phase1/probe/phase3_sae_feature_analysis.py \
+  experiment/phase1/probe/phase3_sae_feature_directions.py
 python bin/sync_skills.py --check
 ```

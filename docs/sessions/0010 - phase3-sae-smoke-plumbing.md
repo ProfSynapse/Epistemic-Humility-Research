@@ -4,7 +4,7 @@ session_id: phase3-sae-smoke-plumbing
 title: Phase 3 SAE Smoke Plumbing
 status: active
 created_at: '2026-06-19T19:52:17Z'
-updated_at: '2026-06-19T22:25:00Z'
+updated_at: '2026-06-19T22:55:00Z'
 phase: phase3
 question: Add a CPU-only SAE-shaped plumbing smoke for verified SelfAware hidden-state extraction artifacts without making trained-SAE claims.
 tags:
@@ -229,6 +229,45 @@ checkpoints:
     kto_top_feature_direction: unknown_skewed
     kto_top_feature_known_activation_frequency: 0.02697841726618705
     kto_top_feature_unknown_activation_frequency: 0.35893648449039883
+- id: 007-result
+  at: '2026-06-19T22:55:00Z'
+  kind: result
+  title: SAE Feature Direction Export Completed
+  summary: >-
+    Added and ran a bridge exporter that converts selected SAE decoder columns
+    from standardized SAE space back into raw hidden-state direction candidates
+    by multiplying decoder columns by the saved training normalization scale.
+    The checked-in config exports the top two unknown-skewed and top two
+    known-skewed features for each DPO/KTO top-k16 SAE. These local artifacts
+    are ready to feed the existing logit-diagnostic runner, but remain
+    candidate directions only until controlled interventions are run.
+  evidence:
+  - experiment/phase1/probe/phase3_sae_feature_directions.py
+  - experiment/phase1/probe/config/phase3_selfaware_sae_feature_directions.yaml
+  - experiment/phase1/probe/qwen3-4b-sft-merged-seed1-selfaware/sae_feature_directions/phase3_selfaware_delta_topk16_feature_directions/sae_feature_directions.manifest.json
+  - experiment/phase1/probe/qwen3-4b-sft-merged-seed1-selfaware/sae_feature_directions/phase3_selfaware_delta_topk16_feature_directions/sae_feature_directions.csv
+  run_ids: []
+  commands:
+  - python experiment\phase1\probe\phase3_sae_feature_directions.py --config experiment\phase1\probe\config\phase3_selfaware_sae_feature_directions.yaml
+  decisions:
+  - Keep exported feature directions labeled `SAE_FEATURE_DIRECTION_CANDIDATES_ONLY`.
+  - Preserve feature polarity instead of flipping all vectors to an
+    unknown-positive convention; addition/subtraction controls must be
+    interpreted relative to `feature_skew_label`.
+  - Do not reuse the old broad-direction coefficient grid blindly; SAE feature
+    vectors have smaller norms and need their own coefficient smoke.
+  next_steps:
+  - Build a small logit-diagnostic config over these 8 feature directions with a
+    feature-specific coefficient grid and no-vector, sign, wrong-layer, and
+    random matched-norm controls.
+  signals:
+    direction_count: 8
+    dpo_unknown_features: [51, 47]
+    dpo_known_features: [64, 65]
+    kto_unknown_features: [110, 62]
+    kto_known_features: [43, 58]
+    dpo_feature_direction_norm_range: [1.173532247543335, 1.249133825302124]
+    kto_feature_direction_norm_range: [0.7090413570404053, 0.72569739818573]
 ---
 # 0010 - Phase 3 SAE Smoke Plumbing
 
@@ -408,3 +447,28 @@ plumbing can read and write the expected artifacts.
   - mean active features: DPO `15.968369829683699`, KTO `15.94809407948094`
   - DPO top feature: `64`, known-skewed, |d| `1.2849521566888198`, known activation frequency `0.5737410071942446`, unknown activation frequency `0.022156573116691284`
   - KTO top feature: `110`, unknown-skewed, |d| `0.8848182554650794`, known activation frequency `0.02697841726618705`, unknown activation frequency `0.35893648449039883`
+
+### 007-result - SAE Feature Direction Export Completed
+
+- at: `2026-06-19T22:55:00Z`
+- kind: `result`
+- summary: Added and ran a bridge exporter that converts selected SAE decoder columns from standardized SAE space back into raw hidden-state direction candidates by multiplying decoder columns by the saved training normalization scale. The checked-in config exports the top two unknown-skewed and top two known-skewed features for each DPO/KTO top-k16 SAE.
+- evidence:
+  - `experiment/phase1/probe/phase3_sae_feature_directions.py`
+  - `experiment/phase1/probe/config/phase3_selfaware_sae_feature_directions.yaml`
+  - `experiment/phase1/probe/qwen3-4b-sft-merged-seed1-selfaware/sae_feature_directions/phase3_selfaware_delta_topk16_feature_directions/sae_feature_directions.manifest.json`
+  - `experiment/phase1/probe/qwen3-4b-sft-merged-seed1-selfaware/sae_feature_directions/phase3_selfaware_delta_topk16_feature_directions/sae_feature_directions.csv`
+- commands:
+  - `python experiment\phase1\probe\phase3_sae_feature_directions.py --config experiment\phase1\probe\config\phase3_selfaware_sae_feature_directions.yaml`
+- decisions:
+  - Keep exported feature directions labeled `SAE_FEATURE_DIRECTION_CANDIDATES_ONLY`.
+  - Preserve feature polarity instead of flipping all vectors to unknown-positive; addition/subtraction controls must be interpreted relative to `feature_skew_label`.
+  - Do not reuse the old broad-direction coefficient grid blindly; SAE feature vectors have smaller norms and need their own coefficient smoke.
+- next steps:
+  - Build a small logit-diagnostic config over these 8 feature directions with a feature-specific coefficient grid and no-vector, sign, wrong-layer, and random matched-norm controls.
+- signals:
+  - direction count: `8`
+  - DPO unknown-skewed features: `51`, `47`; DPO known-skewed features: `64`, `65`
+  - KTO unknown-skewed features: `110`, `62`; KTO known-skewed features: `43`, `58`
+  - DPO feature direction norm range: `1.173532247543335` to `1.249133825302124`
+  - KTO feature direction norm range: `0.7090413570404053` to `0.72569739818573`
