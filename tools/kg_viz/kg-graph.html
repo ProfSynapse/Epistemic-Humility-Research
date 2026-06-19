@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Epistemic-Humility KG explorer</title>
+<!--
+  Static, self-contained explorer for the typed research knowledge graph.
+
+  DATA LOADING (tried in order):
+    1. window.KG_DATA           - inline a <script> with the elements object
+                                  for a truly single-file, e-mailable artifact.
+    2. fetch('data/graph.cytoscape.json')
+                                - works when served over http
+                                  (cd tools/kg_viz && python3 -m http.server,
+                                   then open http://localhost:8000/kg-graph.html).
+    3. file picker / drag-drop  - works on a double-clicked file:// page where
+                                  fetch() is blocked by the browser. Pick the
+                                  graph.cytoscape.json produced by convert.py.
+
+  Regenerate the data with:  python3 tools/kg_viz/convert.py
+  Cytoscape.js + fcose load from a CDN; for fully offline use, download both
+  scripts next to this file and repoint the two <script src> tags.
+
+  Visual encoding leads with node TYPE colour + edge TYPE; confidence/status/
+  evidence are shown on hover only when present (status/evidence are empty in
+  the current vault, so they will usually be blank - that is expected).
+-->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/cytoscape/3.30.2/cytoscape.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/layout-base@2.0.1/layout-base.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/cose-base@2.2.0/cose-base.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/cytoscape-fcose@2.2.0/cytoscape-fcose.js"></script>
+<style>
+  :root {
+    --paper:#4e79a7; --method:#f28e2b; --metric:#59a14f; --dataset:#e15759;
+    --model:#b07aa1; --term:#76b7b2; --mechanism:#edc948; --unknown:#9c9c9c;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin:0; height:100%; font-family: system-ui, -apple-system, Segoe UI, Roboto, sans-serif; }
+  #app { display:flex; height:100%; }
+  #sidebar { width:280px; flex:0 0 280px; border-right:1px solid #ddd; padding:14px; overflow-y:auto; background:#fafafa; }
+  #cy { flex:1; height:100%; background:#fff; }
+  h1 { font-size:15px; margin:0 0 4px; }
+  .sub { color:#666; font-size:12px; margin:0 0 14px; }
+  .group { margin-bottom:16px; }
+  .group h2 { font-size:12px; text-transform:uppercase; letter-spacing:.04em; color:#888; margin:0 0 8px; }
+  input[type=search] { width:100%; padding:6px 8px; border:1px solid #ccc; border-radius:6px; font-size:13px; }
+  .legend-item, .filter-item { display:flex; align-items:center; gap:8px; font-size:13px; margin:4px 0; cursor:pointer; user-select:none; }
+  .swatch { width:13px; height:13px; border-radius:3px; flex:0 0 13px; }
+  .filter-item input { margin:0; }
+  .count { color:#999; margin-left:auto; font-variant-numeric:tabular-nums; }
+  button { font-size:12px; padding:5px 9px; border:1px solid #ccc; background:#fff; border-radius:6px; cursor:pointer; margin:0 4px 4px 0; }
+  button:hover { background:#f0f0f0; }
+  #tooltip { position:absolute; pointer-events:none; background:rgba(20,20,20,.92); color:#fff; padding:8px 10px;
+             border-radius:6px; font-size:12px; max-width:300px; line-height:1.45; display:none; z-index:10; }
+  #tooltip b { color:#ffd; }
+  #status { font-size:12px; color:#666; margin-top:10px; }
+  #drop { border:2px dashed #ccc; border-radius:8px; padding:14px; text-align:center; color:#888; font-size:12px; }
+  code { background:#eee; padding:1px 4px; border-radius:3px; }
+</style>
+</head>
+<body>
+<div id="app">
+  <div id="sidebar">
+    <h1>KG explorer</h1>
+    <p class="sub" id="counts">loading…</p>
+
+    <div class="group">
+      <h2>Search</h2>
+      <input id="search" type="search" placeholder="filter nodes by label / id…" autocomplete="off" />
+    </div>
+
+    <div class="group">
+      <h2>Node types</h2>
+      <div id="filters"></div>
+    </div>
+
+    <div class="group">
+      <h2>Controls</h2>
+      <button id="fit">Fit</button>
+      <button id="relayout">Re-layout</button>
+      <button id="reset">Reset</button>
+      <div id="status"></div>
+    </div>
+
+    <div class="group" id="loader" style="display:none">
+      <h2>Load data</h2>
+      <div id="drop">Drop <code>graph.cytoscape.json</code> here, or
+        <input id="file" type="file" accept="application/json,.json" />
+      </div>
+    </div>
+  </div>
+  <div id="cy"></div>
+</div>
+<div id="tooltip"></div>
+
+<script>
+const TYPE_COLORS = {
+  paper:'#4e79a7', method:'#f28e2b', metric:'#59a14f', dataset:'#e15759',
+  model:'#b07aa1', term:'#76b7b2', mechanism:'#edc948', unknown:'#9c9c9c'
+};
+const EDGE_PALETTE = [
+  '#8c8c8c','#1f77b4','#ff7f0e','#2ca02c','#d62728','#9467bd',
+  '#8c564b','#e377c2','#17becf','#bcbd22','#7f7f7f'
+];
+
+let cy = null;
+
+function edgeColorMap(elements) {
+  const types = [...new Set(elements.edges.map(e => e.data.edge_type))].sort();
+  const map = {};
+  types.forEach((t, i) => { map[t] = EDGE_PALETTE[i % EDGE_PALETTE.length]; });
+  return map;
+}
+
+function buildStyle(edgeColors) {
+  const edgeSelectors = Object.entries(edgeColors).map(([t, c]) => ({
+    selector: `edge[edge_type = "${t}"]`,
+    style: { 'line-color': c, 'target-arrow-color': c }
+  }));
+  return [
+    { selector: 'node', style: {
+        'background-color': ele => TYPE_COLORS[ele.data('type')] || TYPE_COLORS.unknown,
+        'label': 'data(label)', 'font-size': 7, 'text-wrap':'wrap', 'text-max-width':80,
+        'color':'#222', 'text-valign':'bottom', 'text-halign':'center',
+        'width':14, 'height':14, 'border-width':0.5, 'border-color':'#fff' } },
+    { selector: 'edge', style: {
+        'width':1, 'curve-style':'bezier', 'opacity':0.55,
+        'target-arrow-shape':'triangle', 'arrow-scale':0.6, 'line-color':'#bbb',
+        'target-arrow-color':'#bbb' } },
+    ...edgeSelectors,
+    { selector: '.faded', style: { 'opacity':0.07, 'text-opacity':0 } },
+    { selector: '.hidden', style: { 'display':'none' } },
+    { selector: 'node.highlight', style: {
+        'border-width':2, 'border-color':'#222', 'width':20, 'height':20, 'font-size':9 } },
+    { selector: 'edge.highlight', style: { 'opacity':1, 'width':2.2 } },
+  ];
+}
+
+function render(elements) {
+  document.getElementById('loader').style.display = 'none';
+  const edgeColors = edgeColorMap(elements);
+
+  cy = cytoscape({
+    container: document.getElementById('cy'),
+    elements: { nodes: elements.nodes, edges: elements.edges },
+    style: buildStyle(edgeColors),
+    layout: { name: 'fcose', quality:'default', animate:false, nodeRepulsion:6000, idealEdgeLength:60 },
+    wheelSensitivity: 0.2,
+  });
+
+  // counts
+  const byType = {};
+  elements.nodes.forEach(n => { const t=n.data.type; byType[t]=(byType[t]||0)+1; });
+  document.getElementById('counts').textContent =
+    `${elements.nodes.length} nodes · ${elements.edges.length} edges`;
+
+  // node-type filters + legend (combined)
+  const filters = document.getElementById('filters');
+  filters.innerHTML = '';
+  Object.keys(TYPE_COLORS).filter(t => byType[t]).sort().forEach(type => {
+    const row = document.createElement('label');
+    row.className = 'filter-item';
+    row.innerHTML =
+      `<input type="checkbox" checked data-type="${type}">` +
+      `<span class="swatch" style="background:${TYPE_COLORS[type]}"></span>` +
+      `<span>${type}</span><span class="count">${byType[type]}</span>`;
+    row.querySelector('input').addEventListener('change', applyFilters);
+    filters.appendChild(row);
+  });
+
+  wireInteractions();
+  document.getElementById('status').textContent = 'ready';
+}
+
+function applyFilters() {
+  const active = new Set(
+    [...document.querySelectorAll('#filters input:checked')].map(i => i.dataset.type)
+  );
+  cy.batch(() => {
+    cy.nodes().forEach(n => n.toggleClass('hidden', !active.has(n.data('type'))));
+    cy.edges().forEach(e =>
+      e.toggleClass('hidden', e.source().hasClass('hidden') || e.target().hasClass('hidden')));
+  });
+}
+
+function wireInteractions() {
+  const tooltip = document.getElementById('tooltip');
+
+  // neighbour highlight on tap
+  cy.on('tap', 'node', evt => {
+    const node = evt.target;
+    const hood = node.closedNeighborhood();
+    cy.elements().addClass('faded');
+    hood.removeClass('faded').addClass('highlight');
+    node.addClass('highlight');
+  });
+  cy.on('tap', evt => { if (evt.target === cy) cy.elements().removeClass('faded highlight'); });
+
+  // hover tooltip - metadata shown only when present
+  cy.on('mouseover', 'node', evt => {
+    const d = evt.target.data();
+    tooltip.innerHTML = `<b>${d.label}</b><br>type: ${d.type}` +
+      (d.status ? `<br>status: ${d.status}` : '') +
+      `<br><span style="color:#aaa">${d.id}</span>`;
+    tooltip.style.display = 'block';
+  });
+  cy.on('mouseover', 'edge', evt => {
+    const d = evt.target.data();
+    tooltip.innerHTML = `<b>${d.edge_type}</b>` +
+      (d.confidence ? `<br>confidence: ${d.confidence}` : '') +
+      (d.status ? `<br>status: ${d.status}` : '') +
+      (d.evidence && d.evidence.length ? `<br>evidence: ${d.evidence.length}` : '');
+    tooltip.style.display = 'block';
+  });
+  cy.on('mousemove', evt => {
+    tooltip.style.left = (evt.originalEvent.pageX + 12) + 'px';
+    tooltip.style.top  = (evt.originalEvent.pageY + 12) + 'px';
+  });
+  cy.on('mouseout', 'node, edge', () => { tooltip.style.display = 'none'; });
+
+  // search
+  document.getElementById('search').addEventListener('input', e => {
+    const q = e.target.value.trim().toLowerCase();
+    if (!q) { cy.elements().removeClass('faded highlight'); return; }
+    cy.batch(() => {
+      cy.elements().addClass('faded');
+      const hits = cy.nodes().filter(n =>
+        (n.data('label')||'').toLowerCase().includes(q) ||
+        (n.data('id')||'').toLowerCase().includes(q));
+      hits.removeClass('faded').addClass('highlight');
+      hits.connectedEdges().removeClass('faded');
+    });
+  });
+
+  document.getElementById('fit').onclick = () => cy.fit(undefined, 30);
+  document.getElementById('relayout').onclick = () =>
+    cy.layout({ name:'fcose', animate:true, nodeRepulsion:6000, idealEdgeLength:60 }).run();
+  document.getElementById('reset').onclick = () => {
+    document.querySelectorAll('#filters input').forEach(i => i.checked = true);
+    document.getElementById('search').value = '';
+    cy.elements().removeClass('faded highlight hidden');
+    cy.fit(undefined, 30);
+  };
+}
+
+// ── data loading: inline -> fetch -> file picker ──────────────────────────
+function loadFromFile(file) {
+  const reader = new FileReader();
+  reader.onload = () => { try { render(JSON.parse(reader.result)); }
+    catch (err) { alert('Invalid JSON: ' + err.message); } };
+  reader.readAsText(file);
+}
+
+function showLoader(msg) {
+  document.getElementById('loader').style.display = 'block';
+  document.getElementById('counts').textContent = msg;
+  const drop = document.getElementById('drop');
+  document.getElementById('file').addEventListener('change', e => {
+    if (e.target.files[0]) loadFromFile(e.target.files[0]);
+  });
+  ['dragover','dragenter'].forEach(ev => drop.addEventListener(ev, e => {
+    e.preventDefault(); drop.style.borderColor = '#4e79a7'; }));
+  ['dragleave','drop'].forEach(ev => drop.addEventListener(ev, e => {
+    e.preventDefault(); drop.style.borderColor = '#ccc'; }));
+  drop.addEventListener('drop', e => { if (e.dataTransfer.files[0]) loadFromFile(e.dataTransfer.files[0]); });
+}
+
+(function init() {
+  if (window.KG_DATA && window.KG_DATA.nodes) { render(window.KG_DATA); return; }
+  fetch('data/graph.cytoscape.json')
+    .then(r => { if (!r.ok) throw new Error(r.status); return r.json(); })
+    .then(render)
+    .catch(() => showLoader('Load graph.cytoscape.json to begin'));
+})();
+</script>
+</body>
+</html>
