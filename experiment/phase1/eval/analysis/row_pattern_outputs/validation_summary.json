@@ -1,0 +1,21 @@
+{
+  "amendment_a_row_count": 13932,
+  "amendment_a_transition_count": 9288,
+  "amendment_b_answer_text_blank_count": 0,
+  "amendment_b_answer_text_nonempty_count": 30321,
+  "amendment_b_row_count": 30321,
+  "amendment_b_schema_has_answer_text_column": true,
+  "amendment_b_schema_has_stated_confidence_column": true,
+  "amendment_b_stated_confidence_blank_count": 30,
+  "amendment_b_stated_confidence_blank_not_retry_exhausted_count": 0,
+  "amendment_b_stated_confidence_blank_retry_exhausted_count": 30,
+  "amendment_b_stated_confidence_nonempty_count": 30291,
+  "amendment_b_transition_count": 20214,
+  "bad_merge_exclusion_present": true,
+  "evidence_tier": "local_bounded_exploratory_non_headline",
+  "excluded_input_count": 3,
+  "families_separated": true,
+  "included_input_count": 24,
+  "status": "pass",
+  "validation_errors": []
+}
