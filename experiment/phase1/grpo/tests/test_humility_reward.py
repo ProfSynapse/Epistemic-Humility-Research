@@ -12,14 +12,18 @@ import humility_reward as hr  # noqa: E402
 
 
 def test_parse_completion_splits_final_confidence():
-    parsed = hr.parse_completion(json.dumps({"answer": "Paris.", "confidence": 0.73}))
+    parsed = hr.parse_completion(
+        json.dumps({"answer": "Paris.", "confidence": 0.73})
+    )
     assert parsed.answer_text == "Paris."
     assert parsed.stated_confidence == 0.73
 
 
-def test_parse_completion_accepts_ten_point_scale():
-    parsed = hr.parse_completion(json.dumps({"answer": "Paris.", "confidence": 7}))
-    assert parsed.stated_confidence == 0.7
+def test_parse_completion_rejects_non_amendment_b_json():
+    raw = json.dumps({"answer": "Paris.", "confidence": 7})
+    parsed = hr.parse_completion(raw)
+    assert parsed.answer_text == raw
+    assert parsed.stated_confidence is None
 
 
 def test_confidence_line_is_not_parsed_as_structured_confidence():
