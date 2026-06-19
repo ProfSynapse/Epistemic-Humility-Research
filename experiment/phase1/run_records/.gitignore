@@ -1,0 +1,3 @@
+# Raw launch logs (stdout/stderr) are regenerable run noise, not provenance.
+# Run-record JSONs and materialized_recipes/ stay tracked as provenance.
+launch_logs/*.log
