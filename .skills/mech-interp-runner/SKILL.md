@@ -140,10 +140,10 @@ feature-interpretability evidence, and not Phase 1 headline evidence.
 
 Current local sensitivity found that a vanilla ReLU SAE with L1 coefficients
 `1e-4` and `1e-2` stayed dense on the SelfAware delta slices, and `1e-1` was
-only moderately sparse. Do not interpret this pilot as crisp feature recovery.
-If the next objective is interpretable features, design a governed follow-up
-with explicit target sparsity, top-k or JumpReLU-style constraints,
-dead-feature handling, and a reconstruction/sparsity sweep.
+only moderately sparse. Top-k ReLU produced exact sparse codes: k=16 is the
+current checked-in interpretability pilot default, while k=32 is the softer
+reconstruction/sparsity compromise. Do not interpret either as feature-level
+causal evidence without downstream feature inspection and intervention.
 
 The generated `sae_runs` output tree contains learned weights and normalization
 statistics derived from hidden activations. Keep it gitignored by default and

@@ -49,13 +49,28 @@ class SaeTrainError(RuntimeError):
 
 
 class SparseAutoencoder(nn.Module):
-    def __init__(self, input_dim: int, dictionary_size: int) -> None:
+    def __init__(self, input_dim: int, dictionary_size: int, *, activation: str, top_k: int | None = None) -> None:
         super().__init__()
         self.encoder = nn.Linear(input_dim, dictionary_size)
         self.decoder = nn.Linear(dictionary_size, input_dim)
+        self.activation = activation
+        self.top_k = top_k
 
     def forward(self, x: torch.Tensor) -> tuple[torch.Tensor, torch.Tensor]:
-        code = torch.relu(self.encoder(x))
+        pre_code = self.encoder(x)
+        if self.activation == "relu_l1":
+            code = torch.relu(pre_code)
+        elif self.activation == "topk_relu":
+            if self.top_k is None:
+                raise SaeTrainError("topk_relu activation requires top_k")
+            relu_code = torch.relu(pre_code)
+            if self.top_k <= 0 or self.top_k > relu_code.shape[1]:
+                raise SaeTrainError(f"invalid top_k {self.top_k} for dictionary size {relu_code.shape[1]}")
+            values, indices = torch.topk(relu_code, k=self.top_k, dim=1)
+            code = torch.zeros_like(relu_code)
+            code.scatter_(1, indices, values)
+        else:
+            raise SaeTrainError(f"unsupported activation {self.activation!r}")
         reconstruction = self.decoder(code)
         return reconstruction, code
 
@@ -166,6 +181,8 @@ def train_sae(
     *,
     seed: int,
     dictionary_size: int,
+    activation: str,
+    top_k: int | None,
     learning_rate: float,
     l1_coefficient: float,
     epochs: int,
@@ -175,6 +192,14 @@ def train_sae(
 ) -> dict[str, Any]:
     if dictionary_size <= 0:
         raise SaeTrainError("dictionary_size must be positive")
+    if activation not in {"relu_l1", "topk_relu"}:
+        raise SaeTrainError(f"unsupported activation {activation!r}")
+    if top_k is not None:
+        top_k = int(top_k)
+    if activation == "topk_relu" and top_k is None:
+        raise SaeTrainError("topk_relu activation requires top_k")
+    if top_k is not None and (top_k <= 0 or top_k > dictionary_size):
+        raise SaeTrainError(f"top_k {top_k} must be between 1 and dictionary_size {dictionary_size}")
     if epochs <= 0:
         raise SaeTrainError("epochs must be positive")
     if batch_size <= 0:
@@ -188,7 +213,7 @@ def train_sae(
     val_labels = [labels[int(index)] for index in val_idx]
     train_x = torch.tensor(x_std[train_idx], dtype=torch.float32, device=device)
     val_x = torch.tensor(x_std[val_idx], dtype=torch.float32, device=device)
-    model = SparseAutoencoder(x_np.shape[1], dictionary_size).to(device)
+    model = SparseAutoencoder(x_np.shape[1], dictionary_size, activation=activation, top_k=top_k).to(device)
     optimizer = torch.optim.AdamW(model.parameters(), lr=learning_rate)
     generator = torch.Generator(device="cpu").manual_seed(seed)
 
@@ -261,6 +286,8 @@ def run_candidate(
         labels,
         seed=int(training["seed"]),
         dictionary_size=int(training["dictionary_size"]),
+        activation=str(training.get("activation", "relu_l1")),
+        top_k=training.get("top_k"),
         learning_rate=float(training["learning_rate"]),
         l1_coefficient=float(training["l1_coefficient"]),
         epochs=int(training["epochs"]),
@@ -288,6 +315,8 @@ def run_candidate(
         "row_count": len(selected_rows),
         "hidden_dim": int(x.shape[1]),
         "dictionary_size": int(training["dictionary_size"]),
+        "activation": str(training.get("activation", "relu_l1")),
+        "top_k": int(training["top_k"]) if training.get("top_k") is not None else None,
         "epochs": int(training["epochs"]),
         "batch_size": int(training["batch_size"]),
         "learning_rate": float(training["learning_rate"]),
@@ -321,6 +350,8 @@ def run_candidate(
         },
         "training": {
             "dictionary_size": int(training["dictionary_size"]),
+            "activation": str(training.get("activation", "relu_l1")),
+            "top_k": int(training["top_k"]) if training.get("top_k") is not None else None,
             "epochs": int(training["epochs"]),
             "batch_size": int(training["batch_size"]),
             "learning_rate": float(training["learning_rate"]),

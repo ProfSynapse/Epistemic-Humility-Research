@@ -90,6 +90,33 @@ def test_run_config_trains_sae_pilot_and_writes_claim_safe_outputs(tmp_path):
     assert weights["normalization.mean"].shape == (6,)
 
 
+def test_run_config_trains_topk_sae_pilot(tmp_path):
+    extraction_dir = tmp_path / "extract"
+    output_root = tmp_path / "sae_runs" / "unit_topk"
+    _write_extraction(extraction_dir, row_count_per_label=5, layer_count=3, hidden_dim=6)
+    config_path = _config(
+        tmp_path / "config.yaml",
+        extraction_dir,
+        output_root,
+        activation="topk_relu",
+        top_k=1,
+        l1_coefficient=0.0,
+    )
+
+    train.run_config(config_path)
+
+    candidate_root = output_root / "fixture_delta_l1"
+    manifest = json.loads((candidate_root / "run_manifest.json").read_text(encoding="utf-8"))
+    metrics = json.loads((candidate_root / "metrics.json").read_text(encoding="utf-8"))
+
+    assert manifest["training"]["activation"] == "topk_relu"
+    assert manifest["training"]["top_k"] == 1
+    assert metrics["activation"] == "topk_relu"
+    assert metrics["top_k"] == 1
+    assert metrics["validation"]["max_active_features"] <= 1
+    assert metrics["train"]["mean_active_features"] <= 1.0
+
+
 def test_run_config_rejects_cuda_when_unavailable(tmp_path):
     if train.torch.cuda.is_available():
         pytest.skip("cuda is available in this environment")
@@ -98,6 +125,21 @@ def test_run_config_rejects_cuda_when_unavailable(tmp_path):
     config_path = _config(tmp_path / "config.yaml", extraction_dir, tmp_path / "out", device="cuda")
 
     with pytest.raises(train.SaeTrainError, match="requested cuda"):
+        train.run_config(config_path)
+
+
+def test_run_config_rejects_invalid_topk(tmp_path):
+    extraction_dir = tmp_path / "extract"
+    _write_extraction(extraction_dir, row_count_per_label=5, layer_count=3, hidden_dim=6)
+    config_path = _config(
+        tmp_path / "config.yaml",
+        extraction_dir,
+        tmp_path / "out",
+        activation="topk_relu",
+        top_k=99,
+    )
+
+    with pytest.raises(train.SaeTrainError, match="top_k 99"):
         train.run_config(config_path)
 
 

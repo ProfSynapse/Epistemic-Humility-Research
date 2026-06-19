@@ -4,7 +4,7 @@ session_id: phase3-sae-smoke-plumbing
 title: Phase 3 SAE Smoke Plumbing
 status: active
 created_at: '2026-06-19T19:52:17Z'
-updated_at: '2026-06-19T21:05:00Z'
+updated_at: '2026-06-19T21:35:00Z'
 phase: phase3
 question: Add a CPU-only SAE-shaped plumbing smoke for verified SelfAware hidden-state extraction artifacts without making trained-SAE claims.
 tags:
@@ -144,6 +144,46 @@ checkpoints:
     kto_l1_0_1_validation_mse: 0.5550731420516968
     dpo_l1_0_1_validation_mean_active_features: 58.065040588378906
     kto_l1_0_1_validation_mean_active_features: 59.03658676147461
+- id: 005-result
+  at: '2026-06-19T21:35:00Z'
+  kind: result
+  title: Top-K SAE Sensitivity Completed
+  summary: >-
+    Added top-k ReLU activation support to the SAE pilot and ran local k=8, k=16,
+    and k=32 sensitivity points over the same full DPO L24 and KTO L25 SelfAware
+    delta slices. Top-k produced exact sparse codes. k=16 is now the checked-in
+    interpretability pilot default because it gives exact 16/128 active features
+    with moderate reconstruction cost, while k=32 is the softer reconstruction
+    compromise.
+  evidence:
+  - experiment/phase1/probe/config/phase3_selfaware_sae_pilot.yaml
+  - experiment/phase1/probe/qwen3-4b-sft-merged-seed1-selfaware/sae_runs/phase3_selfaware_delta_sae_pilot_topk16/sft_dpo_selfaware_full_delta_l24/metrics.json
+  - experiment/phase1/probe/qwen3-4b-sft-merged-seed1-selfaware/sae_runs/phase3_selfaware_delta_sae_pilot_topk16/sft_kto_selfaware_full_delta_l25/metrics.json
+  - experiment/phase1/probe/qwen3-4b-sft-merged-seed1-selfaware/sae_runs/phase3_selfaware_delta_sae_pilot_topk32/sft_dpo_selfaware_full_delta_l24/metrics.json
+  - experiment/phase1/probe/qwen3-4b-sft-merged-seed1-selfaware/sae_runs/phase3_selfaware_delta_sae_pilot_topk32/sft_kto_selfaware_full_delta_l25/metrics.json
+  run_ids: []
+  commands:
+  - python experiment\phase1\probe\phase3_sae_train.py --config .tmp\phase3_selfaware_sae_pilot_topk8.yaml
+  - python experiment\phase1\probe\phase3_sae_train.py --config .tmp\phase3_selfaware_sae_pilot_topk16.yaml
+  - python experiment\phase1\probe\phase3_sae_train.py --config .tmp\phase3_selfaware_sae_pilot_topk32.yaml
+  decisions:
+  - Keep top-k k=16 as the checked-in interpretability pilot default.
+  - Keep k=32 in the session record as the lower-reconstruction comparison point.
+  next_steps:
+  - Inspect learned top-k feature activations by label and candidate, then design
+    feature-level logit/intervention diagnostics only after selecting stable features.
+  signals:
+    dictionary_size: 128
+    epochs: 80
+    topk8_dpo_validation_mse: 0.5614777207374573
+    topk8_kto_validation_mse: 0.6116589307785034
+    topk8_validation_active_features: 8
+    topk16_dpo_validation_mse: 0.5362363457679749
+    topk16_kto_validation_mse: 0.5912008881568909
+    topk16_validation_active_features: 16
+    topk32_dpo_validation_mse: 0.5151500701904297
+    topk32_kto_validation_mse: 0.5658350586891174
+    topk32_validation_active_features: 32
 ---
 # 0010 - Phase 3 SAE Smoke Plumbing
 
@@ -271,3 +311,30 @@ plumbing can read and write the expected artifacts.
   - KTO validation MSE at L1 0.1: `0.5550731420516968`
   - DPO validation mean active features at L1 0.1: `58.065040588378906`
   - KTO validation mean active features at L1 0.1: `59.03658676147461`
+
+### 005-result - Top-K SAE Sensitivity Completed
+
+- at: `2026-06-19T21:35:00Z`
+- kind: `result`
+- summary: Added top-k ReLU activation support to the SAE pilot and ran local k=8, k=16, and k=32 sensitivity points over the same full DPO L24 and KTO L25 SelfAware delta slices. Top-k produced exact sparse codes. k=16 is now the checked-in interpretability pilot default because it gives exact 16/128 active features with moderate reconstruction cost, while k=32 is the softer reconstruction compromise.
+- evidence:
+  - `experiment/phase1/probe/config/phase3_selfaware_sae_pilot.yaml`
+  - `experiment/phase1/probe/qwen3-4b-sft-merged-seed1-selfaware/sae_runs/phase3_selfaware_delta_sae_pilot_topk16/sft_dpo_selfaware_full_delta_l24/metrics.json`
+  - `experiment/phase1/probe/qwen3-4b-sft-merged-seed1-selfaware/sae_runs/phase3_selfaware_delta_sae_pilot_topk16/sft_kto_selfaware_full_delta_l25/metrics.json`
+  - `experiment/phase1/probe/qwen3-4b-sft-merged-seed1-selfaware/sae_runs/phase3_selfaware_delta_sae_pilot_topk32/sft_dpo_selfaware_full_delta_l24/metrics.json`
+  - `experiment/phase1/probe/qwen3-4b-sft-merged-seed1-selfaware/sae_runs/phase3_selfaware_delta_sae_pilot_topk32/sft_kto_selfaware_full_delta_l25/metrics.json`
+- commands:
+  - `python experiment\phase1\probe\phase3_sae_train.py --config .tmp\phase3_selfaware_sae_pilot_topk8.yaml`
+  - `python experiment\phase1\probe\phase3_sae_train.py --config .tmp\phase3_selfaware_sae_pilot_topk16.yaml`
+  - `python experiment\phase1\probe\phase3_sae_train.py --config .tmp\phase3_selfaware_sae_pilot_topk32.yaml`
+- decisions:
+  - Keep top-k k=16 as the checked-in interpretability pilot default.
+  - Keep k=32 in the session record as the lower-reconstruction comparison point.
+- next steps:
+  - Inspect learned top-k feature activations by label and candidate, then design feature-level logit/intervention diagnostics only after selecting stable features.
+- signals:
+  - dictionary size: `128`
+  - epochs: `80`
+  - top-k 8 validation MSE: DPO `0.5614777207374573`, KTO `0.6116589307785034`, active features `8`
+  - top-k 16 validation MSE: DPO `0.5362363457679749`, KTO `0.5912008881568909`, active features `16`
+  - top-k 32 validation MSE: DPO `0.5151500701904297`, KTO `0.5658350586891174`, active features `32`

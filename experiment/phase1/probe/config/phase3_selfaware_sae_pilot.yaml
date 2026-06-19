@@ -15,12 +15,14 @@ training:
   seed: 20260619
   max_rows_per_label:
   dictionary_size: 128
+  # Local sensitivity found vanilla ReLU+L1 stayed dense. Use top-k as the
+  # current bounded interpretability pilot default.
+  activation: topk_relu
+  top_k: 16
   epochs: 80
   batch_size: 128
   learning_rate: 0.001
-  # Initial local sensitivity found 1e-4 and 1e-2 were still dense; 1e-1 is
-  # the current bounded pilot default, though still only moderately sparse.
-  l1_coefficient: 0.1
+  l1_coefficient: 0.0
   validation_fraction: 0.2
   device: auto
 
@@ -41,4 +43,4 @@ candidate_extractions:
     required_status: ok
 
 output:
-  root: experiment/phase1/probe/qwen3-4b-sft-merged-seed1-selfaware/sae_runs/phase3_selfaware_delta_sae_pilot_l1_0_1
+  root: experiment/phase1/probe/qwen3-4b-sft-merged-seed1-selfaware/sae_runs/phase3_selfaware_delta_sae_pilot_topk16
