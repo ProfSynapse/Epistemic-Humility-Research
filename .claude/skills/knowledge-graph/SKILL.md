@@ -123,8 +123,8 @@ python3 skills/knowledge-graph/scripts/analyze_kg.py --json
 Build or update the local search index, then search it:
 
 ```bash
-./search query terms --limit 10
-.\search.cmd query terms --limit 10  # Windows PowerShell/CMD
+bin/search query terms --limit 10
+bin\search.cmd query terms --limit 10  # Windows PowerShell/CMD
 python3 .agents/skills/knowledge-graph/scripts/kg_index.py --root . --json
 python3 .agents/skills/knowledge-graph/scripts/kg_search.py query terms --root . --limit 10
 ```
@@ -133,8 +133,8 @@ Validate that the repo has not drifted from the KG search system:
 
 ```bash
 git config core.hooksPath .githooks
-./validate-kg
-.\validate-kg.cmd  # Windows PowerShell/CMD
+bin/validate-kg
+bin\validate-kg.cmd  # Windows PowerShell/CMD
 ```
 
 `core.hooksPath` must point at `.githooks` so the KG validator runs before

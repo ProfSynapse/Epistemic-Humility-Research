@@ -30,7 +30,7 @@ Protocol amendments are separate from durable session notes:
 
 ```bash
 python3 .agents/skills/experiment-runner/scripts/research_session.py validate docs/sessions
-python3 sync_skills.py --check --skill experiment-runner
+python3 bin/sync_skills.py --check --skill experiment-runner
 ```
 
 ## Guardrails

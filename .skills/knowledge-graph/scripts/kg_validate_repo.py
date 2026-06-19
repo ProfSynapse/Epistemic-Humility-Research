@@ -16,10 +16,10 @@ from typing import Any
 
 REQUIRED_ROOT_FILES = (
     ".githooks/pre-commit",
-    "search",
-    "search.py",
-    "search.cmd",
-    "sync_skills.py",
+    "bin/search",
+    "bin/search.py",
+    "bin/search.cmd",
+    "bin/sync_skills.py",
 )
 REQUIRED_SKILL_FILES = (
     "SKILL.md",
@@ -46,9 +46,9 @@ class Finding:
 
 def repo_root(start: Path) -> Path:
     for path in (start.resolve(), *start.resolve().parents):
-        if (path / "sync_skills.py").is_file() and (path / ".skills").is_dir():
+        if (path / "bin" / "sync_skills.py").is_file() and (path / ".skills").is_dir():
             return path
-    raise FileNotFoundError("could not find repo root owning sync_skills.py and .skills/")
+    raise FileNotFoundError("could not find repo root owning bin/sync_skills.py and .skills/")
 
 
 def load_module(path: Path, name: str) -> Any:
@@ -72,15 +72,15 @@ def check_required_files(root: Path) -> list[Finding]:
             if not path.is_file():
                 findings.append(Finding("ERROR", "required-files", f"missing {skill_root}/{rel}"))
     if os.name != "nt":
-        search_path = root / "search"
+        search_path = root / "bin" / "search"
         if search_path.exists() and not os.access(search_path, os.X_OK):
-            findings.append(Finding("ERROR", "required-files", "root search shim is not executable"))
+            findings.append(Finding("ERROR", "required-files", "bin/search shim is not executable"))
     return findings
 
 
 def check_sync(root: Path) -> list[Finding]:
     proc = subprocess.run(
-        [sys.executable, str(root / "sync_skills.py"), "--check", "--skill", "knowledge-graph"],
+        [sys.executable, str(root / "bin" / "sync_skills.py"), "--check", "--skill", "knowledge-graph"],
         cwd=root,
         stdout=subprocess.PIPE,
         stderr=subprocess.PIPE,

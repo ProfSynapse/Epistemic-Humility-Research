@@ -43,7 +43,7 @@ import sys
 from pathlib import Path
 
 # Repo root is this script's own directory (sync_skills.py lives at repo root).
-REPO_ROOT = Path(__file__).resolve().parent
+REPO_ROOT = Path(__file__).resolve().parent.parent
 
 # The canonical source tree and the two generated mirrors. The canonical source
 # is authoritative; mirrors are overwritten by --write and never edited directly.

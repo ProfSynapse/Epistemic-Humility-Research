@@ -149,5 +149,5 @@ python -m pytest experiment/phase1/probe/tests/test_phase3_causal_pilot_sweep.py
   experiment/phase1/probe/tests/test_phase3_causal_pilot_dry_run.py -q
 python -m py_compile experiment/phase1/probe/phase3_causal_pilot_sweep.py \
   experiment/phase1/probe/phase3_causal_pilot_aggregate.py
-python sync_skills.py --check
+python bin/sync_skills.py --check
 ```
