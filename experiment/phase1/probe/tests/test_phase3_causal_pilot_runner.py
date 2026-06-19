@@ -376,9 +376,45 @@ def test_build_smoke_arms_adds_wrong_layer_subtraction_provenance():
         }
 
 
+def test_build_smoke_arms_expands_wrong_layer_offset_panel():
+    candidate = {
+        "label": "candidate",
+        "direction_id": "direction__x",
+        "layer": 10,
+        "role": "h_lora",
+    }
+
+    arms = runner.build_smoke_arms(
+        candidate=candidate,
+        coefficients=[50.0],
+        controls=["wrong_layer"],
+        control_settings={"wrong_layer": {"layer_offsets": [-2, -1, 1, 2]}},
+    )
+
+    assert [arm["layer"] for arm in arms] == [8, 9, 11, 12]
+    assert [arm["control_provenance"]["wrong_layer_offset"] for arm in arms] == [
+        -2,
+        -1,
+        1,
+        2,
+    ]
+    assert [arm["arm_id"] for arm in arms] == [
+        "candidate__coef_50p0__control_wrong_layer__offset_neg_2",
+        "candidate__coef_50p0__control_wrong_layer__offset_neg_1",
+        "candidate__coef_50p0__control_wrong_layer__offset_1",
+        "candidate__coef_50p0__control_wrong_layer__offset_2",
+    ]
+
+
 def test_wrong_layer_and_random_settings_fail_closed():
     with pytest.raises(runner.PilotRunnerError, match="nonzero integer"):
         runner.wrong_layer_offset({"wrong_layer": {"layer_offset": 0}})
+    with pytest.raises(runner.PilotRunnerError, match="layer_offsets"):
+        runner.wrong_layer_offsets({"wrong_layer": {"layer_offsets": []}})
+    with pytest.raises(runner.PilotRunnerError, match="layer_offsets"):
+        runner.wrong_layer_offsets({"wrong_layer": {"layer_offsets": [-1, -1]}})
+    with pytest.raises(runner.PilotRunnerError, match="layer_offsets"):
+        runner.wrong_layer_offsets({"wrong_layer": {"layer_offsets": [-1, 0]}})
     with pytest.raises(runner.PilotRunnerError, match="seed is required"):
         runner.random_matched_norm_seed({"random_matched_norm": {}})
     with pytest.raises(runner.PilotRunnerError, match="non-negative integer"):

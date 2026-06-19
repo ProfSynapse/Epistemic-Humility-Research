@@ -1,0 +1,29 @@
+# Phase 3 SelfAware SAE feature-47 nearby-layer logit-diagnostic sweep.
+#
+# One-candidate locality panel around the strongest feature-level smoke signal.
+
+sweep:
+  name: phase3_selfaware_sae_feature_f047_nearby_layer_logit_diagnostic
+  evidence_tier: tier2_exploratory_local
+  runner_config: experiment/phase1/probe/config/phase3_selfaware_sae_feature_f047_nearby_layer_logit_diagnostic.yaml
+  candidate_source_config: experiment/phase1/probe/config/phase3_selfaware_sae_feature_f047_nearby_layer_logit_diagnostic.yaml
+  output_root: experiment/phase1/probe/qwen3-4b-sft-merged-seed1-selfaware/causal_pilots/phase3_selfaware_sae_feature_f047_nearby_layer_logit_diagnostic
+  candidates: all
+  execution:
+    backend: docker
+    docker:
+      image: unsloth/unsloth:latest
+      repo_mount: /workspace/repo
+      workdir: /workspace/repo
+      hf_home: /workspace/repo/.cache/hf
+      huggingface_hub_cache: /workspace/repo/.cache/hf/hub
+  modes:
+    - name: logit_diagnostic
+      max_rows: 4
+      coefficients: [50.0]
+      controls:
+        - no_vector_baseline
+        - activation_addition
+        - activation_subtraction
+        - wrong_layer
+        - wrong_layer_subtraction

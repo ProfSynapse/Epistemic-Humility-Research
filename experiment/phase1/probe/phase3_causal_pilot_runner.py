@@ -301,13 +301,31 @@ def runner_control_settings(config: dict[str, Any]) -> dict[str, Any]:
 
 
 def wrong_layer_offset(control_settings: dict[str, Any]) -> int:
+    return wrong_layer_offsets(control_settings)[0]
+
+
+def wrong_layer_offsets(control_settings: dict[str, Any]) -> list[int]:
     raw_config = control_settings.get("wrong_layer", {})
     if not isinstance(raw_config, dict):
         raise PilotRunnerError("control_settings.wrong_layer must be a mapping")
+    if "layer_offsets" in raw_config:
+        raw_offsets = raw_config["layer_offsets"]
+        if not isinstance(raw_offsets, list) or not raw_offsets:
+            raise PilotRunnerError("control_settings.wrong_layer.layer_offsets must be a non-empty list")
+        offsets: list[int] = []
+        for raw_offset in raw_offsets:
+            if not isinstance(raw_offset, int) or isinstance(raw_offset, bool) or raw_offset == 0:
+                raise PilotRunnerError(
+                    "control_settings.wrong_layer.layer_offsets must contain nonzero integers"
+                )
+            offsets.append(raw_offset)
+        if len(set(offsets)) != len(offsets):
+            raise PilotRunnerError("control_settings.wrong_layer.layer_offsets must not contain duplicates")
+        return offsets
     raw_offset = raw_config.get("layer_offset", -1)
     if not isinstance(raw_offset, int) or isinstance(raw_offset, bool) or raw_offset == 0:
         raise PilotRunnerError("control_settings.wrong_layer.layer_offset must be a nonzero integer")
-    return raw_offset
+    return [raw_offset]
 
 
 def random_matched_norm_seed(control_settings: dict[str, Any]) -> int:
@@ -396,55 +414,64 @@ def build_smoke_arms(
     control_settings = control_settings or {}
     for coefficient in coefficients:
         for control in controls:
-            effective = effective_coefficient_for_control(control, coefficient)
-            layer = int(candidate["layer"])
-            direction_id = None if control == "no_vector_baseline" else candidate["direction_id"]
-            control_provenance: dict[str, Any] = {
-                "control_type": control,
-                "source_direction_id": candidate["direction_id"],
-                "source_layer": int(candidate["layer"]),
-            }
-            random_seed = None
-            if control in {"wrong_layer", "wrong_layer_subtraction"}:
-                offset = wrong_layer_offset(control_settings)
-                layer = int(candidate["layer"]) + offset
-                if layer <= 0:
-                    raise PilotRunnerError(
-                        f"{control} control produced invalid layer {layer} "
-                        f"from source layer {candidate['layer']} offset {offset}"
-                    )
-                if layer == int(candidate["layer"]):
-                    raise PilotRunnerError(f"{control} control must not use the source layer")
-                control_provenance.update({
-                    "wrong_layer_offset": offset,
-                    "applied_layer": layer,
-                    "uses_source_direction": True,
-                })
-            elif control == "random_matched_norm":
-                random_seed = random_matched_norm_seed(control_settings)
-                direction_id = f"random_matched_norm_seed_{random_seed}"
-                control_provenance.update({
+            offsets: list[int | None] = (
+                wrong_layer_offsets(control_settings)
+                if control in {"wrong_layer", "wrong_layer_subtraction"}
+                else [None]
+            )
+            for offset in offsets:
+                effective = effective_coefficient_for_control(control, coefficient)
+                layer = int(candidate["layer"])
+                direction_id = None if control == "no_vector_baseline" else candidate["direction_id"]
+                control_provenance: dict[str, Any] = {
+                    "control_type": control,
+                    "source_direction_id": candidate["direction_id"],
+                    "source_layer": int(candidate["layer"]),
+                }
+                random_seed = None
+                arm_suffix = ""
+                if offset is not None:
+                    layer = int(candidate["layer"]) + offset
+                    if layer <= 0:
+                        raise PilotRunnerError(
+                            f"{control} control produced invalid layer {layer} "
+                            f"from source layer {candidate['layer']} offset {offset}"
+                        )
+                    if layer == int(candidate["layer"]):
+                        raise PilotRunnerError(f"{control} control must not use the source layer")
+                    control_provenance.update({
+                        "wrong_layer_offset": offset,
+                        "applied_layer": layer,
+                        "uses_source_direction": True,
+                    })
+                    if len(offsets) > 1:
+                        offset_text = str(offset).replace("-", "neg_")
+                        arm_suffix = f"__offset_{offset_text}"
+                elif control == "random_matched_norm":
+                    random_seed = random_matched_norm_seed(control_settings)
+                    direction_id = f"random_matched_norm_seed_{random_seed}"
+                    control_provenance.update({
+                        "random_seed": random_seed,
+                        "matched_norm_source_direction_id": candidate["direction_id"],
+                        "matched_norm_source_layer": int(candidate["layer"]),
+                    })
+                arms.append({
+                    "arm_id": (
+                        f"{candidate['label']}__coef_{str(coefficient).replace('-', 'neg_').replace('.', 'p')}"
+                        f"__control_{control}{arm_suffix}"
+                    ),
+                    "candidate_label": candidate["label"],
+                    "coefficient": effective,
+                    "grid_coefficient": coefficient,
+                    "control": control,
+                    "direction_id": direction_id,
+                    "layer": layer,
+                    "source_layer": int(candidate["layer"]),
+                    "role": candidate["role"],
+                    "control_provenance": control_provenance,
                     "random_seed": random_seed,
-                    "matched_norm_source_direction_id": candidate["direction_id"],
-                    "matched_norm_source_layer": int(candidate["layer"]),
+                    "generation_executed": True,
                 })
-            arms.append({
-                "arm_id": (
-                    f"{candidate['label']}__coef_{str(coefficient).replace('-', 'neg_').replace('.', 'p')}"
-                    f"__control_{control}"
-                ),
-                "candidate_label": candidate["label"],
-                "coefficient": effective,
-                "grid_coefficient": coefficient,
-                "control": control,
-                "direction_id": direction_id,
-                "layer": layer,
-                "source_layer": int(candidate["layer"]),
-                "role": candidate["role"],
-                "control_provenance": control_provenance,
-                "random_seed": random_seed,
-                "generation_executed": True,
-            })
     return arms
 
 

@@ -534,3 +534,34 @@ plumbing can read and write the expected artifacts.
   - DPO feature 47 coefficient-50 source-layer subtraction: refusal-opener probability delta mean `-0.101644`, top-1 changed rate `25.0%`
   - DPO feature 47 coefficient-50 random matched-norm: refusal-opener probability delta mean `-0.079778`, top-1 changed rate `0.0%`
   - KTO feature directions were weaker in the same smoke; the largest KTO refusal-opener source-layer delta in the top summary was around `0.037823` absolute mean.
+
+### 010-result - DPO Feature 47 Nearby-Layer Panel Completed
+
+- at: `2026-06-19T23:25:00Z`
+- kind: `result`
+- summary: Added reusable multi-offset wrong-layer support and ran a one-candidate nearby-layer panel for DPO unknown-skewed SAE feature 47. The panel used the same 4 top-activating rows and coefficient `50.0`, comparing source-layer addition/subtraction against wrong-layer offsets `-2`, `-1`, `+1`, and `+2`. The source layer did not stand apart; nearby layers also moved refusal-opener probabilities strongly.
+- evidence:
+  - `experiment/phase1/probe/phase3_causal_pilot_runner.py`
+  - `experiment/phase1/probe/tests/test_phase3_causal_pilot_runner.py`
+  - `experiment/phase1/probe/config/phase3_selfaware_sae_feature_f047_nearby_layer_logit_diagnostic.yaml`
+  - `experiment/phase1/probe/config/phase3_selfaware_sae_feature_f047_nearby_layer_logit_diagnostic_sweep.yaml`
+  - `experiment/phase1/probe/qwen3-4b-sft-merged-seed1-selfaware/causal_pilots/phase3_selfaware_sae_feature_f047_nearby_layer_logit_diagnostic/sft_dpo_selfaware_full_delta_l24_topk16__f047_unknown/logit_diagnostic/run_20260619T231849Z/logit_metrics.json`
+- commands:
+  - `python -m pytest experiment\phase1\probe\tests\test_phase3_causal_pilot_runner.py experiment\phase1\probe\tests\test_phase3_causal_pilot_sweep.py experiment\phase1\probe\tests\test_phase3_causal_pilot_dry_run.py -q`
+  - `python experiment\phase1\probe\phase3_causal_pilot_sweep.py --config experiment\phase1\probe\config\phase3_selfaware_sae_feature_f047_nearby_layer_logit_diagnostic_sweep.yaml --mode-filter logit_diagnostic --write-plan --materialize-configs`
+  - `python experiment\phase1\probe\phase3_causal_pilot_sweep.py --config experiment\phase1\probe\config\phase3_selfaware_sae_feature_f047_nearby_layer_logit_diagnostic_sweep.yaml --mode-filter logit_diagnostic --write-plan --materialize-configs --execute --allow-logit-diagnostic`
+- decisions:
+  - Treat feature 47 as a broad/non-local steering direction candidate, not a localized SAE feature knob.
+  - Keep `control_settings.wrong_layer.layer_offsets` as reusable runner infrastructure for nearby-layer panels.
+  - Do not promote this to mechanism evidence without a broader row panel and stronger controls.
+- next steps:
+  - Test whether multi-feature/subspace directions are more stable than single SAE decoder columns.
+  - Add row-specific answer/refusal target slices or sequence-probability diagnostics before interpreting content-specific effects.
+  - Consider activation patching or path-level attribution if the goal remains layer localization.
+- signals:
+  - source layer 24 addition: refusal-opener probability delta mean `+0.268498`, top-1 changed rate `100.0%`
+  - wrong-layer offset `-1`: refusal-opener probability delta mean `+0.253672`, top-1 changed rate `100.0%`
+  - wrong-layer offset `+1`: refusal-opener probability delta mean `+0.244882`, top-1 changed rate `75.0%`
+  - wrong-layer offset `-2`: refusal-opener probability delta mean `+0.219151`, top-1 changed rate `75.0%`
+  - wrong-layer offset `+2`: refusal-opener probability delta mean `+0.145846`, top-1 changed rate `75.0%`
+  - source-layer subtraction: refusal-opener probability delta mean `-0.101644`, top-1 changed rate `25.0%`

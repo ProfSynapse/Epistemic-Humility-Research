@@ -232,13 +232,21 @@ random matched-norm controls decide whether a feature deserves a stronger
 causal follow-up. If a wrong-layer control is nearly as strong as the source
 layer, do not call the feature a localized mechanism.
 
+For nearby-layer panels, `control_settings.wrong_layer.layer_offsets` can be a
+non-empty list such as `[-2, -1, 1, 2]`. The runner expands wrong-layer and
+wrong-layer-subtraction controls into one arm per offset while preserving the
+legacy single `layer_offset` behavior for older configs.
+
 Current local result: DPO feature 47 at coefficient 50 strongly increased the
 static refusal-opener slice on its four selected unknown rows, but the `+1`
 wrong-layer control was nearly as strong, so this is an interesting
 non-localized steering signal rather than a clean feature mechanism. KTO feature
 directions were much weaker in the same smoke. Future follow-up should use a
 nearby-layer panel, more rows, and row-specific answer/refusal target slices
-before making a mechanistic claim.
+before making a mechanistic claim. The first nearby-layer panel for DPO feature
+47 confirmed the non-local result: offsets `-2`, `-1`, `+1`, and `+2` all moved
+the refusal-opener slice, with offset `-1` close to the source-layer effect.
+Treat this as evidence against a tidy layer-local SAE feature knob.
 
 ## Aggregate Completed Runs
 
