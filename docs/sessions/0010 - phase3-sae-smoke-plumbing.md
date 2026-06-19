@@ -4,7 +4,7 @@ session_id: phase3-sae-smoke-plumbing
 title: Phase 3 SAE Smoke Plumbing
 status: active
 created_at: '2026-06-19T19:52:17Z'
-updated_at: '2026-06-19T21:35:00Z'
+updated_at: '2026-06-19T22:25:00Z'
 phase: phase3
 question: Add a CPU-only SAE-shaped plumbing smoke for verified SelfAware hidden-state extraction artifacts without making trained-SAE claims.
 tags:
@@ -184,6 +184,51 @@ checkpoints:
     topk32_dpo_validation_mse: 0.5151500701904297
     topk32_kto_validation_mse: 0.5658350586891174
     topk32_validation_active_features: 32
+- id: 006-result
+  at: '2026-06-19T22:25:00Z'
+  kind: result
+  title: Top-K SAE Feature Screen Completed
+  summary: >-
+    Added and ran a feature-analysis runner that reloads trained SAE weights,
+    saved normalization tensors, selected rows, and verified hidden-state shards
+    to recompute codes and rank SAE features by known/unknown activation
+    separation. The checked-in analysis targets the current top-k16 DPO L24 and
+    KTO L25 SelfAware delta SAE pilots. DPO showed stronger top feature
+    separation than KTO in this screen, but these are candidate features only
+    and require row-level inspection plus causal/logit interventions before
+    mechanism claims.
+  evidence:
+  - experiment/phase1/probe/phase3_sae_feature_analysis.py
+  - experiment/phase1/probe/config/phase3_selfaware_sae_feature_analysis.yaml
+  - experiment/phase1/probe/qwen3-4b-sft-merged-seed1-selfaware/sae_feature_analysis/phase3_selfaware_delta_topk16_features/sft_dpo_selfaware_full_delta_l24_topk16/summary.json
+  - experiment/phase1/probe/qwen3-4b-sft-merged-seed1-selfaware/sae_feature_analysis/phase3_selfaware_delta_topk16_features/sft_kto_selfaware_full_delta_l25_topk16/summary.json
+  run_ids: []
+  commands:
+  - python experiment\phase1\probe\phase3_sae_feature_analysis.py --config experiment\phase1\probe\config\phase3_selfaware_sae_feature_analysis.yaml
+  decisions:
+  - Treat feature screen outputs as `SAE_FEATURE_ANALYSIS_ONLY`; do not promote
+    them to causal or monosemantic-feature evidence.
+  - Use the top separated features as a queue for the next controlled logit or
+    activation-intervention pass.
+  next_steps:
+  - Inspect top activating examples for the strongest known-skewed and
+    unknown-skewed features, then design feature-level causal diagnostics.
+  signals:
+    dictionary_size: 128
+    top_k: 16
+    row_count_per_candidate: 1233
+    dpo_mean_active_features: 15.968369829683699
+    kto_mean_active_features: 15.94809407948094
+    dpo_top_feature: 64
+    dpo_top_feature_abs_cohen_d: 1.2849521566888198
+    dpo_top_feature_direction: known_skewed
+    dpo_top_feature_known_activation_frequency: 0.5737410071942446
+    dpo_top_feature_unknown_activation_frequency: 0.022156573116691284
+    kto_top_feature: 110
+    kto_top_feature_abs_cohen_d: 0.8848182554650794
+    kto_top_feature_direction: unknown_skewed
+    kto_top_feature_known_activation_frequency: 0.02697841726618705
+    kto_top_feature_unknown_activation_frequency: 0.35893648449039883
 ---
 # 0010 - Phase 3 SAE Smoke Plumbing
 
@@ -338,3 +383,28 @@ plumbing can read and write the expected artifacts.
   - top-k 8 validation MSE: DPO `0.5614777207374573`, KTO `0.6116589307785034`, active features `8`
   - top-k 16 validation MSE: DPO `0.5362363457679749`, KTO `0.5912008881568909`, active features `16`
   - top-k 32 validation MSE: DPO `0.5151500701904297`, KTO `0.5658350586891174`, active features `32`
+
+### 006-result - Top-K SAE Feature Screen Completed
+
+- at: `2026-06-19T22:25:00Z`
+- kind: `result`
+- summary: Added and ran a feature-analysis runner that reloads trained SAE weights, saved normalization tensors, selected rows, and verified hidden-state shards to recompute codes and rank SAE features by known/unknown activation separation. The checked-in analysis targets the current top-k16 DPO L24 and KTO L25 SelfAware delta SAE pilots.
+- evidence:
+  - `experiment/phase1/probe/phase3_sae_feature_analysis.py`
+  - `experiment/phase1/probe/config/phase3_selfaware_sae_feature_analysis.yaml`
+  - `experiment/phase1/probe/qwen3-4b-sft-merged-seed1-selfaware/sae_feature_analysis/phase3_selfaware_delta_topk16_features/sft_dpo_selfaware_full_delta_l24_topk16/summary.json`
+  - `experiment/phase1/probe/qwen3-4b-sft-merged-seed1-selfaware/sae_feature_analysis/phase3_selfaware_delta_topk16_features/sft_kto_selfaware_full_delta_l25_topk16/summary.json`
+- commands:
+  - `python experiment\phase1\probe\phase3_sae_feature_analysis.py --config experiment\phase1\probe\config\phase3_selfaware_sae_feature_analysis.yaml`
+- decisions:
+  - Treat feature screen outputs as `SAE_FEATURE_ANALYSIS_ONLY`; they are candidate-feature prioritization, not causal or monosemantic-feature evidence.
+  - Use the top separated features as a queue for controlled logit or activation-intervention diagnostics.
+- next steps:
+  - Inspect top activating examples for the strongest known-skewed and unknown-skewed features, then design feature-level causal diagnostics.
+- signals:
+  - dictionary size: `128`
+  - top-k: `16`
+  - rows per candidate: `1233`
+  - mean active features: DPO `15.968369829683699`, KTO `15.94809407948094`
+  - DPO top feature: `64`, known-skewed, |d| `1.2849521566888198`, known activation frequency `0.5737410071942446`, unknown activation frequency `0.022156573116691284`
+  - KTO top feature: `110`, unknown-skewed, |d| `0.8848182554650794`, known activation frequency `0.02697841726618705`, unknown activation frequency `0.35893648449039883`

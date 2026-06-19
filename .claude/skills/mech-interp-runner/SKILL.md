@@ -150,6 +150,36 @@ statistics derived from hidden activations. Keep it gitignored by default and
 commit only the runner, config, tests, skill updates, and session note unless a
 governed artifact-publication decision explicitly whitelists a subset.
 
+## SAE Feature Analysis
+
+After a trained SAE pilot exists, use the feature-analysis runner to rank learned
+features by known/unknown activation separation:
+
+```bash
+python experiment/phase1/probe/phase3_sae_feature_analysis.py \
+  --config experiment/phase1/probe/config/phase3_selfaware_sae_feature_analysis.yaml
+```
+
+This reuses the trained SAE weights, saved normalization statistics, selected
+rows, and verified source extraction tensors to recompute feature codes. It
+writes `feature_rankings.csv`, `summary.json`, and top activating row examples
+under the configured `sae_feature_analysis` output root.
+
+Treat every output as `SAE_FEATURE_ANALYSIS_ONLY`: this is feature-screening
+evidence for choosing candidate features, not causal evidence, not a
+monosemantic-feature claim, and not Phase 1 headline evidence. Candidate
+features still need row-level inspection and downstream logit/intervention
+controls before being described as mechanisms.
+
+Current local top-k16 SelfAware screen found stronger known/unknown separation
+in the SFT->DPO delta SAE than the SFT->KTO delta SAE. DPO's top separated
+feature had |d| about 1.28 and was known-skewed; KTO's top separated feature
+had |d| about 0.88 and was unknown-skewed. Treat this as a prioritization cue
+for the next causal diagnostic pass, not as an explanation by itself.
+
+Generated `sae_feature_analysis` outputs are local/reproducible and may expose
+row-level examples from the probe set. Keep them gitignored by default.
+
 ## Aggregate Completed Runs
 
 ```bash
@@ -208,9 +238,11 @@ python -m pytest experiment/phase1/probe/tests/test_phase3_causal_pilot_sweep.py
   experiment/phase1/probe/tests/test_phase3_causal_pilot_dry_run.py -q
 python -m pytest experiment/phase1/probe/tests/test_phase3_sae_smoke.py -q
 python -m pytest experiment/phase1/probe/tests/test_phase3_sae_train.py -q
+python -m pytest experiment/phase1/probe/tests/test_phase3_sae_feature_analysis.py -q
 python -m py_compile experiment/phase1/probe/phase3_causal_pilot_sweep.py \
   experiment/phase1/probe/phase3_causal_pilot_aggregate.py \
   experiment/phase1/probe/phase3_sae_smoke.py \
-  experiment/phase1/probe/phase3_sae_train.py
+  experiment/phase1/probe/phase3_sae_train.py \
+  experiment/phase1/probe/phase3_sae_feature_analysis.py
 python bin/sync_skills.py --check
 ```

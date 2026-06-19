@@ -18,3 +18,4 @@ qwen3-4b-instruct_thinking_contaminated_*/
 # artifact-publication decision explicitly whitelists a subset.
 */sae_smokes/
 */sae_runs/
+*/sae_feature_analysis/
