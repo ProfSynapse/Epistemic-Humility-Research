@@ -1,0 +1,99 @@
+{
+  "run_id": "sft_kto__4b__amendment_a__seed2",
+  "matrix_version": "amendment-a-v0.4",
+  "coordinate": {
+    "arm": "sft_kto",
+    "size": "4b",
+    "cell_type": "amendment_a_full",
+    "seed": 2,
+    "override": {}
+  },
+  "source_recipe": "experiment/phase1/recipes/eh_phase1_qwen3_4b_sft_to_kto.yaml",
+  "materialized_recipe_sha": "da7df2be46363591013368544b9868efb4276693449144ebaabd804721b2b52b",
+  "method": "kto",
+  "model": "/workspace/repo/toolset-training-artifacts/runs/local/4b/sft__4b__headline__seed2/20260615_090734/Qwen3-4B-bnb-4bit/merged-16bit-lowmem-20260616",
+  "lane": "local",
+  "data": {
+    "source_data_file": "F:\\Code\\Epistemic-Humility-Research\\experiment\\phase1\\data\\qwen3-4b-instruct\\kto_congruence_train.jsonl",
+    "staged_data_file": "scratch/eh_staging/sft_kto__4b__amendment_a__seed2/kto_congruence_train.jsonl",
+    "data_sha256": "9cb291ee45c8dd5893b150abe033386127d0eedce9fa16faa2309e31a1a70e15",
+    "hf_dataset_name": null,
+    "hf_dataset_revision": null
+  },
+  "research_repo_commit": "62fbba2d6240d1953543d4fbb6dca2d322ee70f4",
+  "submodule_commit": "089fa9b7b1b9e3116637b772c7ba62b88e4469d5",
+  "prereq_check": {
+    "datasets_present": true,
+    "leakage_guard_passed": true,
+    "merged_sft_model_present": true,
+    "merged_sft_model_validated": true,
+    "merged_sft_behavioral_sanity_passed": true
+  },
+  "launched_at": "2026-06-16T22:36:48+00:00",
+  "tuner_invocation": [
+    "python",
+    "tuner.py",
+    "local-run",
+    "--job-config",
+    "F:/Code/Epistemic-Humility-Research/experiment/phase1/run_records/materialized_recipes/sft_kto__4b__amendment_a__seed2.yaml",
+    "--yes"
+  ],
+  "outcome": {
+    "status": "completed",
+    "job_handle": "container:zealous_villani; container_id:2a33dd0f3d8f; host_pid:45780",
+    "completed_at": "2026-06-17T06:09:09Z",
+    "adapter_path": "F:\\Code\\Epistemic-Humility-Research\\synaptic-tuner\\toolset-training-artifacts\\runs\\local\\4b\\sft_kto__4b__amendment_a__seed2\\20260616_183650\\final_model",
+    "metrics_path": "F:\\Code\\Epistemic-Humility-Research\\synaptic-tuner\\toolset-training-artifacts\\runs\\local\\4b\\sft_kto__4b__amendment_a__seed2\\20260616_183650\\logs\\training_20260616_223856.jsonl",
+    "artifact_root": "F:\\Code\\Epistemic-Humility-Research\\synaptic-tuner\\toolset-training-artifacts\\runs\\local\\4b\\sft_kto__4b__amendment_a__seed2\\20260616_183650",
+    "verified": true,
+    "training_summary": {
+      "final_step": 3599,
+      "total_steps": 3599,
+      "final_loss": 0.2636691490522058,
+      "train_runtime_seconds": 26859.501,
+      "peak_gpu_memory_reserved_gb": 4.393,
+      "oom_risk_level": "low",
+      "capacity_features": "F:\\Code\\Epistemic-Humility-Research\\synaptic-tuner\\toolset-training-artifacts\\runs\\local\\4b\\sft_kto__4b__amendment_a__seed2\\20260616_183650\\capacity_features.json",
+      "training_lineage": "F:\\Code\\Epistemic-Humility-Research\\synaptic-tuner\\toolset-training-artifacts\\runs\\local\\4b\\sft_kto__4b__amendment_a__seed2\\20260616_183650\\training_lineage.json"
+    },
+    "eval_summary": {
+      "status": "completed",
+      "completed_at": "2026-06-17T10:01:08Z",
+      "config": "F:\\Code\\Epistemic-Humility-Research\\experiment\\phase1\\eval\\config\\eval_amendment_a_selfaware_full_seed2_sft_kto_lowmem_local_4b.yaml",
+      "results_dir": "F:\\Code\\Epistemic-Humility-Research\\experiment\\phase1\\eval\\results_amendment_a_selfaware_full_seed2_sft_kto_lowmem_local_4b",
+      "metrics_path": "F:\\Code\\Epistemic-Humility-Research\\experiment\\phase1\\eval\\results_amendment_a_selfaware_full_seed2_sft_kto_lowmem_local_4b\\sft_kto_seed2_lowmem__selfaware\\metrics.json",
+      "config_sha": "b18d66c711bc62bd",
+      "contamination_scan": {
+        "pattern": "<think>|</think>|reasoning_content",
+        "matches": 0
+      },
+      "selfaware": {
+        "n": 3369,
+        "n_unknown_labeled": 1032,
+        "n_known_labeled": 2337,
+        "refusal_recall_pct": 78.68,
+        "answer_on_unknown_pct": 21.32,
+        "over_refusal_pct": 45.53,
+        "refusal_rate_pct": 55.68,
+        "correct_on_known_pct": 37.16,
+        "truthful_pct": 38.14
+      }
+    },
+    "confounded_attempt": {
+      "status": "stopped_confounded",
+      "job_handle": "host_pid:11252",
+      "artifact_root": "F:\\Code\\Epistemic-Humility-Research\\synaptic-tuner\\toolset-training-artifacts\\runs\\local\\4b\\sft_kto__4b__amendment_a__seed2\\20260616_141725",
+      "adapter_path": null,
+      "metrics_path": null,
+      "verified": false,
+      "stopped_at": "2026-06-16T20:06:46-04:00",
+      "reason": "Stopped by operator after post-hoc merged SFT seed2 sanity eval showed the stage1 merged base had lost SFT refusal behavior; this run used the confounded merged seed2 base and should not be counted as clean SFT->KTO evidence."
+    }
+  },
+  "materialized_recipe": "F:\\Code\\Epistemic-Humility-Research\\experiment\\phase1\\run_records\\materialized_recipes\\sft_kto__4b__amendment_a__seed2.yaml",
+  "amendment_a": {
+    "stage1_adapter": "F:\\Code\\Epistemic-Humility-Research\\synaptic-tuner\\toolset-training-artifacts\\runs\\local\\4b\\sft__4b__headline__seed2\\20260615_090734\\final_model",
+    "stage1_merged_model": "F:\\Code\\Epistemic-Humility-Research\\synaptic-tuner\\toolset-training-artifacts\\runs\\local\\4b\\sft__4b__headline__seed2\\20260615_090734\\Qwen3-4B-bnb-4bit\\merged-16bit-lowmem-20260616",
+    "smoke_only": false
+  }
+}
