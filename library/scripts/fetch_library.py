@@ -146,6 +146,7 @@ def enrich(papers: list) -> None:
         if (
             fm.get("status") == "fetched"
             and (PDFS / f"{aid}.pdf").exists()
+            and (FULLTEXT / f"{aid}.html").exists()
             and "## Abstract" in body
         ):
             print(f"skipped {aid}: already fetched")

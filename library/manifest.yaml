@@ -509,6 +509,34 @@ papers:
   area: verification
   status: candidate
   note: from raw-reports/06 verification pass
+- arxiv: '2308.10248'
+  slug: steering-language-models-with-activation-engineering
+  title: Steering Language Models With Activation Engineering
+  year: 2023
+  area: verification
+  status: candidate
+  note: Phase 3 P0 source-readiness prep
+- arxiv: '2312.06681'
+  slug: steering-llama-2-via-contrastive-activation-addition
+  title: Steering Llama 2 via Contrastive Activation Addition
+  year: 2023
+  area: verification
+  status: candidate
+  note: Phase 3 P0 source-readiness prep
+- arxiv: '2309.16042'
+  slug: towards-best-practices-of-activation-patching-in-language-models
+  title: Towards Best Practices of Activation Patching in Language Models
+  year: 2023
+  area: verification
+  status: candidate
+  note: Phase 3 P0 source-readiness prep
+- arxiv: '2606.13669'
+  slug: agents-k1
+  title: Agents-K1
+  year: 2026
+  area: verification
+  status: candidate
+  note: Phase 3 P0 source-readiness prep
 - arxiv: '2410.02707'
   slug: llms-know-more-than-they-show
   title: 'LLMs Know More Than They Show: Intrinsic Representation of Hallucinations'
@@ -712,3 +740,31 @@ papers:
   area: datasets-benchmarks
   status: candidate
   note: 'context ref via backward-citation pass 2026-06-11: benchmark cite at sec 5.4 (Opus 4.8 system card MASK consistency)'
+- arxiv: '2602.02132'
+  slug: more-to-refusal-than-single-direction
+  title: 'There Is More to Refusal in Large Language Models than a Single Direction'
+  year: 2026
+  area: verification
+  status: fetched
+  note: 'Phase 3 external gap-fill 2026-06-18: source-ready note + arXiv HTML added; cautions against treating a single refusal direction as universal across refusal and epistemic-abstention behaviors.'
+- arxiv: '2512.16602'
+  slug: refusal-steering-sensitive-topics
+  title: 'Refusal Steering: Fine-grained Control over LLM Refusal Behaviour for Sensitive Topics'
+  year: 2025
+  area: verification
+  status: fetched
+  note: 'Phase 3 external gap-fill 2026-06-18: source-ready note + arXiv HTML added; Qwen3-family refusal steering context for probability-slice diagnostics.'
+- arxiv: '2411.11296'
+  slug: steering-refusal-with-sparse-autoencoders
+  title: 'Steering Language Model Refusal with Sparse Autoencoders'
+  year: 2024
+  area: verification
+  status: fetched
+  note: 'Phase 3 external gap-fill 2026-06-18: source-ready note + arXiv HTML added; SAE refusal steering with capability-tradeoff caveat.'
+- arxiv: '2505.23556'
+  slug: understanding-refusal-with-sparse-autoencoders
+  title: 'Understanding Refusal in Language Models with Sparse Autoencoders'
+  year: 2025
+  area: verification
+  status: fetched
+  note: 'Phase 3 external gap-fill 2026-06-18: source-ready note + arXiv HTML added; SAE refusal feature-localization context for future encoder gate.'
