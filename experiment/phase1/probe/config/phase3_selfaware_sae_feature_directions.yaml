@@ -1,0 +1,22 @@
+# Phase 3 SelfAware SAE feature direction export.
+#
+# Exploratory bridge only: converts selected SAE decoder columns into raw
+# hidden-state direction candidates for later controlled logit diagnostics.
+
+spec:
+  name: phase3_selfaware_topk16_sae_feature_directions
+  analysis_type: phase3_sae_feature_direction_export
+  notice: SAE_FEATURE_DIRECTION_CANDIDATES_ONLY
+  no_phase1_headline_promotion: true
+
+selection:
+  top_per_sign: 2
+
+candidate_analyses:
+  - label: sft_dpo_selfaware_full_delta_l24_topk16
+    summary: experiment/phase1/probe/qwen3-4b-sft-merged-seed1-selfaware/sae_feature_analysis/phase3_selfaware_delta_topk16_features/sft_dpo_selfaware_full_delta_l24_topk16/summary.json
+  - label: sft_kto_selfaware_full_delta_l25_topk16
+    summary: experiment/phase1/probe/qwen3-4b-sft-merged-seed1-selfaware/sae_feature_analysis/phase3_selfaware_delta_topk16_features/sft_kto_selfaware_full_delta_l25_topk16/summary.json
+
+output:
+  root: experiment/phase1/probe/qwen3-4b-sft-merged-seed1-selfaware/sae_feature_directions/phase3_selfaware_delta_topk16_feature_directions

@@ -1,0 +1,46 @@
+# Phase 3 SelfAware trained SAE pilot.
+#
+# This is a bounded exploratory SAE training run over existing hidden-state
+# extraction artifacts. It is not causal evidence or Phase 1 headline evidence.
+
+spec:
+  name: phase3_selfaware_delta_sae_pilot
+  analysis_type: phase3_sae_training_pilot
+  notice: SAE_TRAINING_PILOT_ONLY
+  no_docker: true
+  no_external_sae_dependency: true
+  no_phase1_headline_promotion: true
+
+training:
+  seed: 20260619
+  max_rows_per_label:
+  dictionary_size: 128
+  # Local sensitivity found vanilla ReLU+L1 stayed dense. Use top-k as the
+  # current bounded interpretability pilot default.
+  activation: topk_relu
+  top_k: 16
+  epochs: 80
+  batch_size: 128
+  learning_rate: 0.001
+  l1_coefficient: 0.0
+  validation_fraction: 0.2
+  device: auto
+
+candidate_extractions:
+  - label: sft_dpo_selfaware_full_delta_l24
+    arm: sft_dpo
+    extraction_dir: experiment/phase1/probe/qwen3-4b-sft-merged-seed1-selfaware/hidden_states_selfaware_full/extraction__d3d0e6d19c0e
+    extraction_manifest: experiment/phase1/probe/qwen3-4b-sft-merged-seed1-selfaware/hidden_states_selfaware_full/extraction__d3d0e6d19c0e/manifest.json
+    role: delta
+    layer: 24
+    required_status: ok
+  - label: sft_kto_selfaware_full_delta_l25
+    arm: sft_kto
+    extraction_dir: experiment/phase1/probe/qwen3-4b-sft-merged-seed1-selfaware/hidden_states_selfaware_full_kto/extraction__bb5e579fa10e
+    extraction_manifest: experiment/phase1/probe/qwen3-4b-sft-merged-seed1-selfaware/hidden_states_selfaware_full_kto/extraction__bb5e579fa10e/manifest.json
+    role: delta
+    layer: 25
+    required_status: ok
+
+output:
+  root: experiment/phase1/probe/qwen3-4b-sft-merged-seed1-selfaware/sae_runs/phase3_selfaware_delta_sae_pilot_topk16

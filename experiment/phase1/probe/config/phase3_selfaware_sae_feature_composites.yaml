@@ -1,0 +1,35 @@
+# Phase 3 SelfAware SAE feature composite direction export.
+#
+# Exploratory bridge only: combines exported SAE feature directions into
+# candidate subspace directions for controlled logit diagnostics.
+
+spec:
+  name: phase3_selfaware_topk16_sae_feature_composites
+  analysis_type: phase3_sae_feature_composite_direction_export
+  notice: SAE_FEATURE_COMPOSITE_DIRECTION_CANDIDATES_ONLY
+  no_phase1_headline_promotion: true
+
+source_manifest: experiment/phase1/probe/qwen3-4b-sft-merged-seed1-selfaware/sae_feature_directions/phase3_selfaware_delta_topk16_feature_directions/sae_feature_directions.manifest.json
+
+composites:
+  - label: sft_dpo_unknown_pair_f047_f051_l24
+    source_direction_ids:
+      - sae_feature__sft_dpo_selfaware_full_delta_l24_topk16__f047__aebf86541a64
+      - sae_feature__sft_dpo_selfaware_full_delta_l24_topk16__f051__7b5aa9bd3a82
+    weights: [1.0, 1.0]
+    combine: unit_weighted_mean
+    rescale: mean_source_norm
+    feature_skew_label: unknown
+  - label: sft_dpo_unknown_minus_known_f047_f051_f064_f065_l24
+    source_direction_ids:
+      - sae_feature__sft_dpo_selfaware_full_delta_l24_topk16__f047__aebf86541a64
+      - sae_feature__sft_dpo_selfaware_full_delta_l24_topk16__f051__7b5aa9bd3a82
+      - sae_feature__sft_dpo_selfaware_full_delta_l24_topk16__f064__64bb537dae44
+      - sae_feature__sft_dpo_selfaware_full_delta_l24_topk16__f065__ab47b80a28f3
+    weights: [1.0, 1.0, -1.0, -1.0]
+    combine: unit_weighted_mean
+    rescale: mean_source_norm
+    feature_skew_label: unknown_minus_known
+
+output:
+  root: experiment/phase1/probe/qwen3-4b-sft-merged-seed1-selfaware/sae_feature_composites/phase3_selfaware_delta_topk16_feature_composites

@@ -1,0 +1,52 @@
+# Phase 3 SelfAware SAE-shaped plumbing smoke.
+#
+# CPU-only numpy smoke. This validates extraction -> row selection -> safetensor
+# loading -> SAE-shaped encode/top-k/decode output plumbing. It is not trained
+# SAE evidence.
+
+spec:
+  name: phase3_selfaware_delta_plumbing_sae_smoke
+  analysis_type: phase3_sae_plumbing_smoke_only
+  notice: SAE_PLUMBING_SMOKE_ONLY
+  no_gpu: true
+  no_docker: true
+  no_external_sae_dependency: true
+  trained_sae: false
+  no_phase1_headline_promotion: true
+
+smoke:
+  seed: 20260619
+  max_rows_per_label: 8
+  bottleneck_dim: 16
+  top_k: 4
+  write_tensors: true
+
+candidate_extractions:
+  - label: sft_dpo_selfaware_full_delta_l24
+    arm: sft_dpo
+    extraction_dir: experiment/phase1/probe/qwen3-4b-sft-merged-seed1-selfaware/hidden_states_selfaware_full/extraction__d3d0e6d19c0e
+    extraction_manifest: experiment/phase1/probe/qwen3-4b-sft-merged-seed1-selfaware/hidden_states_selfaware_full/extraction__d3d0e6d19c0e/manifest.json
+    role: delta
+    layer: 24
+    required_status: ok
+  - label: sft_kto_selfaware_full_delta_l25
+    arm: sft_kto
+    extraction_dir: experiment/phase1/probe/qwen3-4b-sft-merged-seed1-selfaware/hidden_states_selfaware_full_kto/extraction__bb5e579fa10e
+    extraction_manifest: experiment/phase1/probe/qwen3-4b-sft-merged-seed1-selfaware/hidden_states_selfaware_full_kto/extraction__bb5e579fa10e/manifest.json
+    role: delta
+    layer: 25
+    required_status: ok
+
+output:
+  root: experiment/phase1/probe/qwen3-4b-sft-merged-seed1-selfaware/sae_smokes/phase3_selfaware_delta_plumbing_smoke
+
+stop_conditions:
+  - extraction_manifest_missing_or_not_ok
+  - extraction_manifest_not_verified
+  - output_root_inside_extraction_dir
+  - rows_missing_or_invalid_label
+  - insufficient_known_unknown_balance
+  - missing_role_shard
+  - missing_layer_tensor
+  - tensor_shape_mismatch
+  - claim_would_exceed_plumbing_smoke

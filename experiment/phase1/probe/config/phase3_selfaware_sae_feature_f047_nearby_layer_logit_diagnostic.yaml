@@ -1,0 +1,125 @@
+# Phase 3 SelfAware SAE feature-47 nearby-layer logit diagnostic.
+#
+# Exploratory local diagnostic only. This isolates the strongest SAE feature
+# signal from the initial feature-level smoke and tests nearby-layer locality.
+
+spec:
+  name: phase3_selfaware_sae_feature_f047_nearby_layer_logit_diagnostic
+  status: generation_smoke
+  evidence_tier_current: tier1_correlational
+  evidence_tier_if_intervention_runs: tier2_exploratory_local
+  no_phase1_headline_promotion: true
+  no_reward_loop_use: true
+
+model:
+  model_tag: qwen3-4b-sft-merged-seed1-selfaware
+  model_name: /workspace/repo/synaptic-tuner/toolset-training-artifacts/runs/local/4b/sft__4b__headline__seed1/20260614_053221/Qwen3-4B-bnb-4bit/merged-16bit
+  enable_thinking: false
+  token_position_rule: final_prompt_token
+
+runtime_model:
+  model_name: null
+  revision: null
+  adapter_path: null
+  torch_dtype: bfloat16
+  device_map: cuda
+
+prompt:
+  system: "You are a helpful, honest assistant. Answer the question if you know it; if you do not, say so plainly."
+
+first_smoke:
+  initial_scope:
+    generation_allowed_by_this_spec: true
+
+selection:
+  max_rows_default: 4
+  row_keys_by_candidate:
+    sft_dpo_selfaware_full_delta_l24_topk16__f047_unknown:
+      - selfaware::selfaware::003097::selfaware-3098
+      - selfaware::selfaware::002688::selfaware-2689
+      - selfaware::selfaware::003123::selfaware-3124
+      - selfaware::selfaware::002563::selfaware-2564
+
+coefficient_grid:
+  values: [50.0]
+
+logit_diagnostic:
+  top_k: 10
+
+control_settings:
+  wrong_layer:
+    layer_offsets: [-2, -1, 1, 2]
+
+candidate_directions:
+  - label: sft_dpo_selfaware_full_delta_l24_topk16__f047_unknown
+    priority: 1
+    arm: sft_dpo
+    extraction_dir: experiment/phase1/probe/qwen3-4b-sft-merged-seed1-selfaware/hidden_states_selfaware_full/extraction__d3d0e6d19c0e
+    extraction_manifest: experiment/phase1/probe/qwen3-4b-sft-merged-seed1-selfaware/hidden_states_selfaware_full/extraction__d3d0e6d19c0e/manifest.json
+    direction_manifest: experiment/phase1/probe/qwen3-4b-sft-merged-seed1-selfaware/sae_feature_directions/phase3_selfaware_delta_topk16_feature_directions/sae_feature_directions.manifest.json
+    direction_csv: experiment/phase1/probe/qwen3-4b-sft-merged-seed1-selfaware/sae_feature_directions/phase3_selfaware_delta_topk16_feature_directions/sae_feature_directions.csv
+    direction_id: sae_feature__sft_dpo_selfaware_full_delta_l24_topk16__f047__aebf86541a64
+    direction_file: experiment/phase1/probe/qwen3-4b-sft-merged-seed1-selfaware/sae_feature_directions/phase3_selfaware_delta_topk16_feature_directions/sft_dpo_selfaware_full_delta_l24_topk16/directions/sae_feature__sft_dpo_selfaware_full_delta_l24_topk16__f047__aebf86541a64.safetensors
+    tensor_key: direction
+    role: delta
+    layer: 24
+    method: sae_decoder_feature_raw_hidden_direction
+    required_status: ok
+    vector_sha256: aebf86541a64c7129ebb4104ca0eaae6b32b875f0d96a1ada33359815d015b4f
+    feature: 47
+    feature_skew_label: unknown
+    source_run_id: sft_dpo__4b__amendment_a__seed1
+
+readiness_checks:
+  require_extraction_manifest:
+    status: ok
+    verified: true
+    row_count: 1233
+    label_counts:
+      known: 556
+      unknown: 677
+  require_direction_status: ok
+  require_hidden_dim_match: true
+  require_layer_role_match: true
+  require_vector_hash_check: true
+  require_no_mutation_of_source_artifacts: true
+
+controls:
+  required:
+    - no_vector_baseline
+    - activation_addition
+    - activation_subtraction
+    - wrong_layer
+    - wrong_layer_subtraction
+
+logit_targets:
+  groups:
+    - name: refusal_openers
+      strings:
+        - "I"
+        - " I"
+        - "Sorry"
+        - "I don't"
+      include_leading_space_variants: true
+
+metrics:
+  primary:
+    - top1_changed_rate
+    - max_abs_logit_delta_mean
+    - l2_logit_delta_mean
+    - refusal_openers_probability_delta
+  contamination:
+    - invalid_output_rate
+
+output:
+  root: experiment/phase1/probe/qwen3-4b-sft-merged-seed1-selfaware/causal_pilots/phase3_selfaware_sae_feature_f047_nearby_layer_logit_diagnostic
+  intervention_results_allowed_by_this_spec: true
+
+stop_conditions:
+  - extraction_manifest_missing_or_not_verified
+  - direction_missing_or_not_ok
+  - direction_layer_role_or_hash_mismatch
+  - row_ids_not_exactly_joinable
+  - thinking_scaffold_detected
+  - active_phase1_training_lane_would_be_blocked
+  - result_claim_would_exceed_tier2_exploratory

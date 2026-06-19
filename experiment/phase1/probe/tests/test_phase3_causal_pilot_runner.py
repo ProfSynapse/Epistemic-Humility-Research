@@ -376,9 +376,45 @@ def test_build_smoke_arms_adds_wrong_layer_subtraction_provenance():
         }
 
 
+def test_build_smoke_arms_expands_wrong_layer_offset_panel():
+    candidate = {
+        "label": "candidate",
+        "direction_id": "direction__x",
+        "layer": 10,
+        "role": "h_lora",
+    }
+
+    arms = runner.build_smoke_arms(
+        candidate=candidate,
+        coefficients=[50.0],
+        controls=["wrong_layer"],
+        control_settings={"wrong_layer": {"layer_offsets": [-2, -1, 1, 2]}},
+    )
+
+    assert [arm["layer"] for arm in arms] == [8, 9, 11, 12]
+    assert [arm["control_provenance"]["wrong_layer_offset"] for arm in arms] == [
+        -2,
+        -1,
+        1,
+        2,
+    ]
+    assert [arm["arm_id"] for arm in arms] == [
+        "candidate__coef_50p0__control_wrong_layer__offset_neg_2",
+        "candidate__coef_50p0__control_wrong_layer__offset_neg_1",
+        "candidate__coef_50p0__control_wrong_layer__offset_1",
+        "candidate__coef_50p0__control_wrong_layer__offset_2",
+    ]
+
+
 def test_wrong_layer_and_random_settings_fail_closed():
     with pytest.raises(runner.PilotRunnerError, match="nonzero integer"):
         runner.wrong_layer_offset({"wrong_layer": {"layer_offset": 0}})
+    with pytest.raises(runner.PilotRunnerError, match="layer_offsets"):
+        runner.wrong_layer_offsets({"wrong_layer": {"layer_offsets": []}})
+    with pytest.raises(runner.PilotRunnerError, match="layer_offsets"):
+        runner.wrong_layer_offsets({"wrong_layer": {"layer_offsets": [-1, -1]}})
+    with pytest.raises(runner.PilotRunnerError, match="layer_offsets"):
+        runner.wrong_layer_offsets({"wrong_layer": {"layer_offsets": [-1, 0]}})
     with pytest.raises(runner.PilotRunnerError, match="seed is required"):
         runner.random_matched_norm_seed({"random_matched_norm": {}})
     with pytest.raises(runner.PilotRunnerError, match="non-negative integer"):
@@ -882,6 +918,14 @@ def test_summarize_logit_metrics_groups_by_arm():
             "l2_logit_delta": 4.0,
             "intervention_applied_count": 1,
             "intervention_delta_abs_sum": 10.0,
+            "logit_target_metrics": {
+                "refusal_openers": {
+                    "baseline_probability_sum": 0.2,
+                    "intervention_probability_sum": 0.5,
+                    "probability_sum_delta": 0.3,
+                    "logit_sum_delta": 2.0,
+                }
+            },
         },
         {
             "arm_id": "add",
@@ -890,6 +934,14 @@ def test_summarize_logit_metrics_groups_by_arm():
             "l2_logit_delta": 2.0,
             "intervention_applied_count": 1,
             "intervention_delta_abs_sum": 6.0,
+            "logit_target_metrics": {
+                "refusal_openers": {
+                    "baseline_probability_sum": 0.4,
+                    "intervention_probability_sum": 0.1,
+                    "probability_sum_delta": -0.3,
+                    "logit_sum_delta": -1.0,
+                }
+            },
         },
     ]
 
@@ -903,6 +955,11 @@ def test_summarize_logit_metrics_groups_by_arm():
     assert metrics["add"]["l2_logit_delta_mean"] == 3.0
     assert metrics["add"]["intervention_applied_count_total"] == 2
     assert metrics["add"]["intervention_delta_abs_sum_mean"] == 8.0
+    assert metrics["add"]["refusal_openers_baseline_probability_sum_mean"] == 0.3
+    assert metrics["add"]["refusal_openers_intervention_probability_sum_mean"] == 0.3
+    assert metrics["add"]["refusal_openers_probability_sum_delta_mean"] == 0.0
+    assert metrics["add"]["refusal_openers_probability_sum_delta_abs_mean"] == 0.3
+    assert metrics["add"]["refusal_openers_logit_sum_delta_mean"] == 0.5
 
 
 def test_validated_candidate_merge_preserves_raw_paths():
