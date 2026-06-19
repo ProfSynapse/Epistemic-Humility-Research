@@ -154,6 +154,27 @@ The search index is local state under `.kg/`. It is rebuilt lazily by
 `kg_search.py`, so it should not be committed. Dot-directories are skipped by
 default except `.skills/`, which is indexed as procedural memory.
 
+Windows gotcha: when validating a repo-local vault from outside the vault root,
+prefer an absolute `--root` path such as
+`python .agents/skills/knowledge-graph/scripts/validate_kg_relationships.py --root F:\Code\Epistemic-Humility-Research\library`.
+A relative `--root library` can produce false unresolved-link warnings on
+Windows even when absolute-root validation passes cleanly.
+
+Windows KG-search gotchas:
+
+- Repo-wide KG search can fall back from `git ls-files` to a recursive walk and
+  hit inaccessible local cache files, especially Hugging Face cache snapshots
+  under `.cache/`. When that happens, rerun with a scoped root such as
+  `--root library` or another narrow subtree rather than indexing the whole
+  checkout.
+- If the default `.kg/index.sqlite` is stale or throws SQLite constraint errors,
+  avoid deleting local state as a first move. Use a scratch DB under a writable
+  repo-local temp directory, for example:
+  `python .agents/skills/knowledge-graph/scripts/kg_search.py "query" --root library --db .tmp/kg-search/query.sqlite --limit 12`.
+- PowerShell sessions using cp1252 stdout can crash while printing KG search
+  results that contain math or citation Unicode. Set
+  `$env:PYTHONIOENCODING='utf-8'` before rerunning the search.
+
 ## Workflow
 
 1. Inspect the note or folder the user names.
