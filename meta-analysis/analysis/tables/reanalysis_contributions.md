@@ -1,0 +1,4 @@
+| reanalysis_id | rows | areas | comparisons | metrics | verified_rows | contribution |
+| --- | --- | --- | --- | --- | --- | --- |
+| reanalysis-2401.13275 | 4 | abstention | sft_vs_pref | over-refusal on known; refusal recall on unknown | 4 | new paired extraction from released outputs/results, carried as study-prefixed reanalysis row |
+| reanalysis-2506.09038 | 8 | abstention | scale; sft_vs_base; sft_vs_pref | abstention precision (over-refusal-sensitive); abstention recall (median over 30 shared subsets); abstention recall (paired median delta) | 8 | new paired extraction from released outputs/results, carried as study-prefixed reanalysis row |
