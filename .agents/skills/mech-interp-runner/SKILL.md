@@ -212,6 +212,27 @@ separate coefficient smoke rather than blindly reusing prior grids.
 Generated `sae_feature_directions` outputs are local/reproducible and should
 stay gitignored unless a governed artifact-publication decision says otherwise.
 
+## SAE Feature Composite Directions
+
+When single SAE decoder-feature interventions look non-local or entangled, build
+explicit composite directions rather than hand-editing tensors:
+
+```bash
+python experiment/phase1/probe/phase3_sae_feature_composites.py \
+  --config experiment/phase1/probe/config/phase3_selfaware_sae_feature_composites.yaml
+```
+
+Composite directions are derived from an exported
+`sae_feature_directions.manifest.json`, so each output keeps source direction
+IDs, feature IDs, weights, combination method, rescaling method, layer, role,
+hash, and vector path. Current supported combinations are
+`raw_weighted_mean` and `unit_weighted_mean`; current rescaling choices are
+`none`, `mean_source_norm`, and `sum_abs_weighted_source_norm`.
+
+Treat outputs as `SAE_FEATURE_COMPOSITE_DIRECTION_CANDIDATES_ONLY`. They are
+subspace-screening bridge artifacts, not proof that a sparse feature circuit has
+been found. Composite sources must share layer, role, and hidden dimension.
+
 ## SAE Feature Logit Diagnostics
 
 After exporting SAE feature directions, run the checked-in feature-level
@@ -247,6 +268,39 @@ before making a mechanistic claim. The first nearby-layer panel for DPO feature
 47 confirmed the non-local result: offsets `-2`, `-1`, `+1`, and `+2` all moved
 the refusal-opener slice, with offset `-1` close to the source-layer effect.
 Treat this as evidence against a tidy layer-local SAE feature knob.
+
+Current composite screen: the DPO unknown-pair composite (`f47 + f51`) was
+weaker and no cleaner than feature 47 alone. The DPO unknown-minus-known
+contrast (`f47 + f51 - f64 - f65`) produced stronger signed refusal-opener
+movement on an 8-row panel, but wrong-layer controls remained comparable and
+random matched-norm was still substantial. Treat this as evidence for an
+entangled broader direction or subspace, not a localized SAE mechanism.
+
+## Direction Geometry Maps
+
+Before scaling causal runs, map candidate direction geometry against broader
+known/unknown and arm-delta direction inventories:
+
+```bash
+python experiment/phase1/probe/phase3_direction_geometry.py \
+  --config experiment/phase1/probe/config/phase3_selfaware_direction_geometry.yaml
+python experiment/phase1/probe/phase3_direction_geometry.py \
+  --config experiment/phase1/probe/config/phase3_selfaware_direction_geometry_all_delta_layers.yaml
+```
+
+This is CPU-only. It writes `direction_inventory.csv`, `pairwise_cosine.csv`,
+`nearest_neighbors.csv`, and `summary.json` under the configured
+`direction_geometry` output root. Treat every output as
+`DIRECTION_GEOMETRY_ANALYSIS_ONLY`: cosine alignment is triage evidence for
+choosing interventions, not causal evidence.
+
+Current local result: the DPO SAE unknown-minus-known composite aligned strongly
+with the broad DPO unknown-minus-known delta at layer 24 (`cosine ~= 0.653`) and
+remained aligned with adjacent later DPO layers (`layer 25 ~= 0.553`, `layer 26
+~= 0.506`, `layer 23 ~= 0.504`). The unknown-only pair aligned less strongly
+with the same broad direction (`cosine ~= 0.388`). This supports treating the
+SAE composite as a lead into a distributed known/unknown subspace rather than a
+standalone sparse feature knob.
 
 ## Aggregate Completed Runs
 
@@ -312,11 +366,15 @@ python -m pytest experiment/phase1/probe/tests/test_phase3_sae_smoke.py -q
 python -m pytest experiment/phase1/probe/tests/test_phase3_sae_train.py -q
 python -m pytest experiment/phase1/probe/tests/test_phase3_sae_feature_analysis.py -q
 python -m pytest experiment/phase1/probe/tests/test_phase3_sae_feature_directions.py -q
+python -m pytest experiment/phase1/probe/tests/test_phase3_sae_feature_composites.py -q
+python -m pytest experiment/phase1/probe/tests/test_phase3_direction_geometry.py -q
 python -m py_compile experiment/phase1/probe/phase3_causal_pilot_sweep.py \
   experiment/phase1/probe/phase3_causal_pilot_aggregate.py \
   experiment/phase1/probe/phase3_sae_smoke.py \
   experiment/phase1/probe/phase3_sae_train.py \
   experiment/phase1/probe/phase3_sae_feature_analysis.py \
-  experiment/phase1/probe/phase3_sae_feature_directions.py
+  experiment/phase1/probe/phase3_sae_feature_directions.py \
+  experiment/phase1/probe/phase3_sae_feature_composites.py \
+  experiment/phase1/probe/phase3_direction_geometry.py
 python bin/sync_skills.py --check
 ```

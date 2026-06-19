@@ -565,3 +565,71 @@ plumbing can read and write the expected artifacts.
   - wrong-layer offset `-2`: refusal-opener probability delta mean `+0.219151`, top-1 changed rate `75.0%`
   - wrong-layer offset `+2`: refusal-opener probability delta mean `+0.145846`, top-1 changed rate `75.0%`
   - source-layer subtraction: refusal-opener probability delta mean `-0.101644`, top-1 changed rate `25.0%`
+
+### 011-result - DPO SAE Composite Direction Screen Completed
+
+- at: `2026-06-19T23:40:00Z`
+- kind: `result`
+- summary: Added a reusable composite-direction exporter for SAE feature directions and ran a two-candidate DPO composite logit diagnostic. The screen compared an unknown-feature pair (`f47 + f51`) against an unknown-minus-known contrast (`f47 + f51 - f64 - f65`) on the 8-row union of top f47/f51 activating examples. The pair was weaker and no cleaner than feature 47 alone. The contrast had stronger signed structure but still failed clean locality: wrong-layer controls and random matched-norm remained substantial.
+- evidence:
+  - `experiment/phase1/probe/phase3_sae_feature_composites.py`
+  - `experiment/phase1/probe/tests/test_phase3_sae_feature_composites.py`
+  - `experiment/phase1/probe/config/phase3_selfaware_sae_feature_composites.yaml`
+  - `experiment/phase1/probe/config/phase3_selfaware_sae_feature_composite_logit_diagnostic.yaml`
+  - `experiment/phase1/probe/config/phase3_selfaware_sae_feature_composite_logit_diagnostic_sweep.yaml`
+  - `experiment/phase1/probe/qwen3-4b-sft-merged-seed1-selfaware/sae_feature_composites/phase3_selfaware_delta_topk16_feature_composites/sae_feature_composite_directions.manifest.json`
+  - `experiment/phase1/probe/qwen3-4b-sft-merged-seed1-selfaware/causal_pilots/phase3_selfaware_sae_feature_composite_logit_diagnostic/summary.csv`
+- commands:
+  - `python experiment\phase1\probe\phase3_sae_feature_composites.py --config experiment\phase1\probe\config\phase3_selfaware_sae_feature_composites.yaml`
+  - `python -m pytest experiment\phase1\probe\tests\test_phase3_sae_feature_composites.py experiment\phase1\probe\tests\test_phase3_causal_pilot_runner.py experiment\phase1\probe\tests\test_phase3_causal_pilot_sweep.py experiment\phase1\probe\tests\test_phase3_causal_pilot_dry_run.py -q`
+  - `python experiment\phase1\probe\phase3_causal_pilot_sweep.py --config experiment\phase1\probe\config\phase3_selfaware_sae_feature_composite_logit_diagnostic_sweep.yaml --mode-filter logit_diagnostic --write-plan --materialize-configs --execute --allow-logit-diagnostic`
+  - `python experiment\phase1\probe\phase3_causal_pilot_aggregate.py --root experiment\phase1\probe\qwen3-4b-sft-merged-seed1-selfaware\causal_pilots\phase3_selfaware_sae_feature_composite_logit_diagnostic --out experiment\phase1\probe\qwen3-4b-sft-merged-seed1-selfaware\causal_pilots\phase3_selfaware_sae_feature_composite_logit_diagnostic\summary.csv`
+- decisions:
+  - Keep composite directions as explicit bridge artifacts labeled `SAE_FEATURE_COMPOSITE_DIRECTION_CANDIDATES_ONLY`.
+  - Treat the contrast direction as an entangled subspace/perturbation lead, not a localized SAE mechanism.
+  - Do not scale to more composite live sweeps until we map direction geometry against the broader known/unknown direction and random controls.
+- next steps:
+  - Run a cheap direction-geometry map across single SAE features, composites, random matched-norm, and the broader known/unknown delta directions.
+  - If geometry shows high alignment with broad deltas, prioritize subspace diagnostics over sparse feature circuits.
+  - If geometry shows low alignment but effects persist, consider a sparse feature circuit/path-level attribution pass.
+- signals:
+  - composite unknown pair norm: `1.1850064992904663`; contrast norm: `1.2142820358276367`
+  - unknown pair coefficient-50 source addition: refusal-opener probability delta mean `+0.078996`, top-1 changed rate `37.5%`
+  - unknown pair coefficient-50 random matched-norm: refusal-opener probability delta mean `+0.067841`, top-1 changed rate `62.5%`
+  - contrast coefficient-50 source addition: refusal-opener probability delta mean `-0.119050`, top-1 changed rate `25.0%`
+  - contrast coefficient-50 source subtraction: refusal-opener probability delta mean `+0.133768`, top-1 changed rate `62.5%`
+  - contrast coefficient-50 wrong-layer subtraction offset `-1`: refusal-opener probability delta mean `+0.149519`, top-1 changed rate `62.5%`
+  - contrast coefficient-50 random matched-norm: refusal-opener probability delta mean `+0.058642`, top-1 changed rate `50.0%`
+
+### 012-result - Direction Geometry Map Added
+
+- at: `2026-06-20T00:05:00Z`
+- kind: `result`
+- summary: Added a reusable CPU-only direction-geometry analyzer and ran two SelfAware geometry maps. The narrow map compared DPO layer-24 and KTO layer-25 broad deltas against top-k16 SAE feature directions and DPO composites. The all-delta-layer map compared the SAE directions against DPO/KTO broad delta inventories across all layers. The main finding is that the DPO unknown-minus-known SAE composite is geometrically aligned with the broad DPO unknown-minus-known direction, especially at source layer 24 and adjacent layers. This reinforces the live causal readout: the useful lead is probably a distributed known/unknown subspace, not a clean layer-local SAE feature.
+- evidence:
+  - `experiment/phase1/probe/phase3_direction_geometry.py`
+  - `experiment/phase1/probe/tests/test_phase3_direction_geometry.py`
+  - `experiment/phase1/probe/config/phase3_selfaware_direction_geometry.yaml`
+  - `experiment/phase1/probe/config/phase3_selfaware_direction_geometry_all_delta_layers.yaml`
+  - `experiment/phase1/probe/qwen3-4b-sft-merged-seed1-selfaware/direction_geometry/phase3_selfaware_direction_geometry/summary.json`
+  - `experiment/phase1/probe/qwen3-4b-sft-merged-seed1-selfaware/direction_geometry/phase3_selfaware_direction_geometry_all_delta_layers/summary.json`
+- commands:
+  - `python -m pytest experiment\phase1\probe\tests\test_phase3_direction_geometry.py -q`
+  - `python -m py_compile experiment\phase1\probe\phase3_direction_geometry.py`
+  - `python experiment\phase1\probe\phase3_direction_geometry.py --config experiment\phase1\probe\config\phase3_selfaware_direction_geometry.yaml`
+  - `python experiment\phase1\probe\phase3_direction_geometry.py --config experiment\phase1\probe\config\phase3_selfaware_direction_geometry_all_delta_layers.yaml`
+- decisions:
+  - Treat geometry output as `DIRECTION_GEOMETRY_ANALYSIS_ONLY`: useful triage, not causal evidence.
+  - Prioritize subspace diagnostics over one-feature claims because the best composite aligns with broad known/unknown deltas and with adjacent layers.
+  - Keep DPO contrast composite as the strongest current SAE-derived lead; do not over-interpret the unknown-only pair.
+- next steps:
+  - Run a broader subspace/control panel: broad DPO unknown-minus-known direction, SAE unknown-minus-known composite, PCA/logistic probe direction if available, random matched-norm, wrong-layer and sign controls on the same row panel.
+  - Consider activation patching or path-level attribution only after the subspace panel identifies a stable behavioral intervention.
+  - Add row-specific answer/refusal target slices once clean single-token aliases or sequence-probability diagnostics are available.
+- signals:
+  - narrow geometry map: `18` directions, `153` pairwise comparisons.
+  - all-delta-layer geometry map: `298` directions, `44253` pairwise comparisons.
+  - DPO contrast composite vs broad DPO unknown-minus-known at layer 24: cosine `0.6529`.
+  - DPO contrast composite vs broad DPO unknown-minus-known at nearby layers: layer 25 cosine `0.5528`, layer 26 cosine `0.5059`, layer 23 cosine `0.5040`.
+  - DPO unknown-pair composite vs broad DPO unknown-minus-known at layer 24: cosine `0.3881`.
+  - single DPO unknown-skewed features vs broad DPO unknown-minus-known were weaker: feature 51 cosine `0.3259`, feature 47 cosine `0.2683`; known-skewed features were anti-aligned, feature 64 cosine `-0.5269`, feature 65 cosine `-0.3952`.
