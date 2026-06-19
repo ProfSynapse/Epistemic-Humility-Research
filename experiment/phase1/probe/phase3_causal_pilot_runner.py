@@ -970,6 +970,36 @@ def summarize_logit_metrics(rows: Iterable[dict[str, Any]]) -> dict[str, Any]:
                 r.get("intervention_delta_abs_sum", 0.0) for r in arm_rows
             ),
         }
+        target_groups: dict[str, list[dict[str, Any]]] = defaultdict(list)
+        for row in arm_rows:
+            target_metrics = row.get("logit_target_metrics", {})
+            if not isinstance(target_metrics, dict):
+                continue
+            for group_name, group_metrics in target_metrics.items():
+                if isinstance(group_metrics, dict):
+                    target_groups[str(group_name)].append(group_metrics)
+        for group_name, group_rows in sorted(target_groups.items()):
+            prefix = f"{group_name}_"
+            out[arm_id].update(
+                {
+                    f"{prefix}baseline_probability_sum_mean": _mean_float(
+                        r.get("baseline_probability_sum", 0.0) for r in group_rows
+                    ),
+                    f"{prefix}intervention_probability_sum_mean": _mean_float(
+                        r.get("intervention_probability_sum", 0.0) for r in group_rows
+                    ),
+                    f"{prefix}probability_sum_delta_mean": _mean_float(
+                        r.get("probability_sum_delta", 0.0) for r in group_rows
+                    ),
+                    f"{prefix}probability_sum_delta_abs_mean": _mean_float(
+                        abs(float(r.get("probability_sum_delta", 0.0)))
+                        for r in group_rows
+                    ),
+                    f"{prefix}logit_sum_delta_mean": _mean_float(
+                        r.get("logit_sum_delta", 0.0) for r in group_rows
+                    ),
+                }
+            )
     return out
 
 

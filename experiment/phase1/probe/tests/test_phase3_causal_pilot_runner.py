@@ -882,6 +882,14 @@ def test_summarize_logit_metrics_groups_by_arm():
             "l2_logit_delta": 4.0,
             "intervention_applied_count": 1,
             "intervention_delta_abs_sum": 10.0,
+            "logit_target_metrics": {
+                "refusal_openers": {
+                    "baseline_probability_sum": 0.2,
+                    "intervention_probability_sum": 0.5,
+                    "probability_sum_delta": 0.3,
+                    "logit_sum_delta": 2.0,
+                }
+            },
         },
         {
             "arm_id": "add",
@@ -890,6 +898,14 @@ def test_summarize_logit_metrics_groups_by_arm():
             "l2_logit_delta": 2.0,
             "intervention_applied_count": 1,
             "intervention_delta_abs_sum": 6.0,
+            "logit_target_metrics": {
+                "refusal_openers": {
+                    "baseline_probability_sum": 0.4,
+                    "intervention_probability_sum": 0.1,
+                    "probability_sum_delta": -0.3,
+                    "logit_sum_delta": -1.0,
+                }
+            },
         },
     ]
 
@@ -903,6 +919,11 @@ def test_summarize_logit_metrics_groups_by_arm():
     assert metrics["add"]["l2_logit_delta_mean"] == 3.0
     assert metrics["add"]["intervention_applied_count_total"] == 2
     assert metrics["add"]["intervention_delta_abs_sum_mean"] == 8.0
+    assert metrics["add"]["refusal_openers_baseline_probability_sum_mean"] == 0.3
+    assert metrics["add"]["refusal_openers_intervention_probability_sum_mean"] == 0.3
+    assert metrics["add"]["refusal_openers_probability_sum_delta_mean"] == 0.0
+    assert metrics["add"]["refusal_openers_probability_sum_delta_abs_mean"] == 0.3
+    assert metrics["add"]["refusal_openers_logit_sum_delta_mean"] == 0.5
 
 
 def test_validated_candidate_merge_preserves_raw_paths():

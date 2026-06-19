@@ -84,6 +84,12 @@ Docker sweep is interrupted or a job fails, inspect this JSONL plus the per-job
 logs before deciding what to rerun; do not rely only on `sweep_manifest.json` or
 `planned_commands.jsonl`.
 
+If a failed Docker attempt is immediately rerun, `execution_results.jsonl` may
+contain both the failed row and the later successful row for the same
+candidate/mode. Treat it as an append-only event log: group by candidate/mode
+and use the latest successful event when summarizing completed work, while
+still preserving the failed event as provenance for the retry.
+
 Docker materialized runner configs must contain container-readable paths. The
 sweep wrapper rewrites obvious runner config paths such as `output.root`,
 `selection.probe_results`, `runtime_model.adapter_path`, and candidate direction
@@ -206,6 +212,34 @@ separate coefficient smoke rather than blindly reusing prior grids.
 Generated `sae_feature_directions` outputs are local/reproducible and should
 stay gitignored unless a governed artifact-publication decision says otherwise.
 
+## SAE Feature Logit Diagnostics
+
+After exporting SAE feature directions, run the checked-in feature-level
+logit-diagnostic sweep as a coefficient smoke:
+
+```bash
+python experiment/phase1/probe/phase3_causal_pilot_sweep.py \
+  --config experiment/phase1/probe/config/phase3_selfaware_sae_feature_logit_diagnostic_sweep.yaml \
+  --mode-filter logit_diagnostic \
+  --write-plan --materialize-configs --execute \
+  --allow-logit-diagnostic
+```
+
+This pass uses exact top-activating row keys per feature and a smaller
+feature-vector coefficient grid. Interpret it as a screening diagnostic:
+top-1 token changes, target probability-slice deltas, wrong-layer controls, and
+random matched-norm controls decide whether a feature deserves a stronger
+causal follow-up. If a wrong-layer control is nearly as strong as the source
+layer, do not call the feature a localized mechanism.
+
+Current local result: DPO feature 47 at coefficient 50 strongly increased the
+static refusal-opener slice on its four selected unknown rows, but the `+1`
+wrong-layer control was nearly as strong, so this is an interesting
+non-localized steering signal rather than a clean feature mechanism. KTO feature
+directions were much weaker in the same smoke. Future follow-up should use a
+nearby-layer panel, more rows, and row-specific answer/refusal target slices
+before making a mechanistic claim.
+
 ## Aggregate Completed Runs
 
 ```bash
@@ -216,6 +250,10 @@ python experiment/phase1/probe/phase3_causal_pilot_aggregate.py \
 
 Use aggregate output as an index. Inspect source manifests and JSONL rows before
 interpreting surprising effects.
+
+The aggregate script walks every `run_manifest.json` under the root. If the same
+sweep root contains repeated runs, filter to the newest run directory per
+candidate/mode before reporting headline diagnostic numbers.
 
 ## Probability-Slice Diagnostics
 

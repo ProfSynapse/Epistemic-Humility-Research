@@ -472,3 +472,65 @@ plumbing can read and write the expected artifacts.
   - KTO unknown-skewed features: `110`, `62`; KTO known-skewed features: `43`, `58`
   - DPO feature direction norm range: `1.173532247543335` to `1.249133825302124`
   - KTO feature direction norm range: `0.7090413570404053` to `0.72569739818573`
+
+### 008-planned - SAE Feature Logit Diagnostic Ready
+
+- at: `2026-06-20T03:20:00Z`
+- kind: `plan`
+- summary: Added a bounded logit-diagnostic config and Docker sweep over the 8 exported top-k16 SAE feature directions. The first live pass is a coefficient smoke, not a generation intervention: 4 top-activating rows per feature, coefficients `10.0` and `50.0`, and required controls for no-vector baseline, addition/subtraction, wrong-layer addition/subtraction, and deterministic random matched-norm.
+- evidence:
+  - `experiment/phase1/probe/config/phase3_selfaware_sae_feature_logit_diagnostic.yaml`
+  - `experiment/phase1/probe/config/phase3_selfaware_sae_feature_logit_diagnostic_sweep.yaml`
+  - `experiment/phase1/probe/qwen3-4b-sft-merged-seed1-selfaware/causal_pilots/phase3_selfaware_sae_feature_logit_diagnostic/sweep_manifest.json`
+  - `experiment/phase1/probe/qwen3-4b-sft-merged-seed1-selfaware/causal_pilots/phase3_selfaware_sae_feature_logit_diagnostic/planned_commands.jsonl`
+- commands:
+  - `python experiment\phase1\probe\phase3_causal_pilot_sweep.py --config experiment\phase1\probe\config\phase3_selfaware_sae_feature_logit_diagnostic_sweep.yaml --mode-filter logit_diagnostic --write-plan --materialize-configs`
+  - `python -m pytest experiment\phase1\probe\tests\test_phase3_causal_pilot_sweep.py experiment\phase1\probe\tests\test_phase3_causal_pilot_runner.py experiment\phase1\probe\tests\test_phase3_causal_pilot_dry_run.py -q`
+  - `python -m py_compile experiment\phase1\probe\phase3_causal_pilot_sweep.py experiment\phase1\probe\phase3_causal_pilot_runner.py`
+- decisions:
+  - Keep this as `tier2_exploratory_local` only if the live diagnostic runs; planned/materialized commands alone remain readiness evidence.
+  - Use refusal-opener probability slices and top-k token movement first. Do not use row-specific answer aliases in this pass because the SelfAware extraction rows do not carry clean gold aliases, and prior model output text should not be silently promoted to ground truth.
+  - Interpret activation addition/subtraction relative to each feature's `feature_skew_label`; unknown-skewed and known-skewed features have opposite semantic polarity.
+- next steps:
+  - Run the live Docker logit-diagnostic sweep serially and inspect `_execution_logs/execution_results.jsonl` plus per-candidate output manifests before making any mechanism claim.
+- signals:
+  - executable candidates: `8`
+  - planned jobs: `8`
+  - rows per candidate: `4`
+  - coefficient grid: `10.0`, `50.0`
+  - required controls: `no_vector_baseline`, `activation_addition`, `activation_subtraction`, `wrong_layer`, `wrong_layer_subtraction`, `random_matched_norm`
+
+### 009-result - SAE Feature Logit Diagnostic Completed
+
+- at: `2026-06-19T23:15:00Z`
+- kind: `result`
+- summary: Ran the 8-candidate SAE feature logit-diagnostic sweep in Docker/GPU, then patched the runner so configured logit-target probability slices persist into `logit_metrics.json` summaries. Reran the sweep after the patch; all 8 candidates completed successfully. The strongest movement was DPO unknown-skewed feature 47 at coefficient `50.0`, but the adjacent wrong-layer control nearly matched the source-layer effect, so this is a non-localized steering signal rather than a clean feature mechanism.
+- evidence:
+  - `experiment/phase1/probe/config/phase3_selfaware_sae_feature_logit_diagnostic.yaml`
+  - `experiment/phase1/probe/config/phase3_selfaware_sae_feature_logit_diagnostic_sweep.yaml`
+  - `experiment/phase1/probe/qwen3-4b-sft-merged-seed1-selfaware/causal_pilots/phase3_selfaware_sae_feature_logit_diagnostic/_execution_logs/execution_results.jsonl`
+  - `experiment/phase1/probe/qwen3-4b-sft-merged-seed1-selfaware/causal_pilots/phase3_selfaware_sae_feature_logit_diagnostic/sft_dpo_selfaware_full_delta_l24_topk16__f047_unknown/logit_diagnostic/run_20260619T230129Z/logit_metrics.json`
+  - `experiment/phase1/probe/qwen3-4b-sft-merged-seed1-selfaware/causal_pilots/phase3_selfaware_sae_feature_logit_diagnostic/summary.csv`
+  - `experiment/phase1/probe/phase3_causal_pilot_runner.py`
+  - `experiment/phase1/probe/tests/test_phase3_causal_pilot_runner.py`
+- commands:
+  - `python experiment\phase1\probe\phase3_causal_pilot_sweep.py --config experiment\phase1\probe\config\phase3_selfaware_sae_feature_logit_diagnostic_sweep.yaml --mode-filter logit_diagnostic --write-plan --materialize-configs --execute --allow-logit-diagnostic`
+  - `python -m pytest experiment\phase1\probe\tests\test_phase3_causal_pilot_runner.py experiment\phase1\probe\tests\test_phase3_causal_pilot_sweep.py experiment\phase1\probe\tests\test_phase3_causal_pilot_dry_run.py -q`
+  - `python experiment\phase1\probe\phase3_causal_pilot_aggregate.py --root experiment\phase1\probe\qwen3-4b-sft-merged-seed1-selfaware\causal_pilots\phase3_selfaware_sae_feature_logit_diagnostic --out experiment\phase1\probe\qwen3-4b-sft-merged-seed1-selfaware\causal_pilots\phase3_selfaware_sae_feature_logit_diagnostic\summary.csv`
+- decisions:
+  - Treat this as `tier2_exploratory_local` screening evidence only.
+  - Do not claim a localized SAE feature mechanism for feature 47 because the `wrong_layer` coefficient-50 control also shifted the same refusal-opener slice strongly.
+  - Keep the row-level and summary target-slice metrics because they are more informative than top-1 changes alone.
+  - Use latest successful run directories per candidate when summarizing this sweep root; an initial sandbox-blocked Docker attempt and an earlier pre-summary rerun remain in the append-only execution log.
+- next steps:
+  - Add a nearby-layer panel around DPO feature 47 and a broader row panel before making any layer- or feature-specific claim.
+  - Add row-specific answer/refusal target slices once the diagnostic has clean single-token aliases or an explicit sequence-probability path.
+  - If the nearby-layer panel still fails localization, shift from single SAE features toward multi-feature or subspace interventions.
+- signals:
+  - executable candidates completed in the rerun: `8/8`
+  - rows per candidate: `4`
+  - DPO feature 47 coefficient-50 source-layer addition: refusal-opener probability delta mean `+0.268498`, top-1 changed rate `100.0%`
+  - DPO feature 47 coefficient-50 wrong-layer addition: refusal-opener probability delta mean `+0.244882`, top-1 changed rate `75.0%`
+  - DPO feature 47 coefficient-50 source-layer subtraction: refusal-opener probability delta mean `-0.101644`, top-1 changed rate `25.0%`
+  - DPO feature 47 coefficient-50 random matched-norm: refusal-opener probability delta mean `-0.079778`, top-1 changed rate `0.0%`
+  - KTO feature directions were weaker in the same smoke; the largest KTO refusal-opener source-layer delta in the top summary was around `0.037823` absolute mean.
