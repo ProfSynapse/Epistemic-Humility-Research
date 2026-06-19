@@ -79,7 +79,7 @@ def _infer_repo_root() -> Path:
     (.{claude,agents}/skills/<skill>/scripts, 4 deep), so no fixed parent index is
     assumed. The fallback only guards a detached/synthetic layout where the
     sentinel is absent; it walks up to the first ancestor that has a sibling
-    sync_skills.py (the repo-root marker) and finally degrades to the parent that
+    bin/sync_skills.py (the repo-root marker) and finally degrades to the parent that
     is correct for the canonical 3-deep layout.
     """
     here = SCRIPT_DIR.resolve()
@@ -87,7 +87,7 @@ def _infer_repo_root() -> Path:
         if (parent / "experiment" / "phase1").is_dir():
             return parent
     for parent in here.parents:
-        if (parent / "sync_skills.py").is_file():
+        if (parent / "bin" / "sync_skills.py").is_file():
             return parent
     return here.parents[3]
 

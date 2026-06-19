@@ -100,11 +100,11 @@ All of these scripts are authored ONCE in the canonical `.skills/experiment-runn
 tree and propagated to the `.claude/` and `.agents/` mirrors:
 
 ```bash
-python3 sync_skills.py --write      # canonical -> both mirrors (LF-normalized)
-python3 sync_skills.py --check      # drift-check (sha256 on CRLF-normalized
+python3 bin/sync_skills.py --write      # canonical -> both mirrors (LF-normalized)
+python3 bin/sync_skills.py --check      # drift-check (sha256 on CRLF-normalized
                                     # content — NEVER the rtk-proxied diff, which
                                     # lies with a false "[ok] identical" banner)
 ```
 
-`sync_skills.py --check` is the CI gate (`tests/test_skills_sync.py`). Never
+`bin/sync_skills.py --check` is the CI gate (`tests/test_skills_sync.py`). Never
 hand-edit a mirror — edit `.skills/` and re-run `--write`.

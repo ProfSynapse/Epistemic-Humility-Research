@@ -31,11 +31,11 @@ def _load_sync_module():
     """Import the repo-root sync_skills.py as a module (it is not on sys.path).
 
     Walk up from this test (works identically from any of the three mirror trees)
-    to the first ancestor owning sync_skills.py, then load it by file path.
+    to the first ancestor owning bin/sync_skills.py, then load it by file path.
     """
     here = Path(__file__).resolve()
     for parent in here.parents:
-        candidate = parent / "sync_skills.py"
+        candidate = parent / "bin" / "sync_skills.py"
         if candidate.is_file():
             spec = importlib.util.spec_from_file_location("sync_skills", candidate)
             module = importlib.util.module_from_spec(spec)
@@ -43,7 +43,7 @@ def _load_sync_module():
             sys.modules.setdefault("sync_skills", module)
             spec.loader.exec_module(module)
             return module
-    raise FileNotFoundError("sync_skills.py not found in any ancestor directory")
+    raise FileNotFoundError("bin/sync_skills.py not found in any ancestor directory")
 
 
 sync_skills = _load_sync_module()

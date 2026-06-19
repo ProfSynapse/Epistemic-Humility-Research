@@ -90,8 +90,8 @@ Edit the canonical tree under `.skills/experiment-runner/` only. `.agents/` and
 `.claude/` are generated mirrors. After canonical edits, run:
 
 ```bash
-python3 sync_skills.py --write --skill experiment-runner
-python3 sync_skills.py --check --skill experiment-runner
+python3 bin/sync_skills.py --write --skill experiment-runner
+python3 bin/sync_skills.py --check --skill experiment-runner
 ```
 
 When this skill grows, move details into one-level files under `reference/` and

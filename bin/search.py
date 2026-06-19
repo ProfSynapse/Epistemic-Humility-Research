@@ -7,7 +7,7 @@ from pathlib import Path
 
 
 def main() -> int:
-    root = Path(__file__).resolve().parent
+    root = Path(__file__).resolve().parent.parent
     script_dir = root / ".agents" / "skills" / "knowledge-graph" / "scripts"
     sys.path.insert(0, str(script_dir))
     runpy.run_path(str(script_dir / "kg_search.py"), run_name="__main__")

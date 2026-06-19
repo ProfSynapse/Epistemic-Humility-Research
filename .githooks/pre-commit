@@ -12,7 +12,7 @@ else
   PYTHON="python"
 fi
 
-$PYTHON validate_kg.py
+$PYTHON bin/validate_kg.py
 
 if [ -d docs/sessions ]; then
   $PYTHON .agents/skills/experiment-runner/scripts/research_session.py validate docs/sessions
