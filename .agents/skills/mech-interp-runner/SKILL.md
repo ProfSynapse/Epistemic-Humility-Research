@@ -91,6 +91,37 @@ artifact paths to `/workspace/repo/...` when `execution.backend: docker`. A mixe
 path like `/workspace/repo/F:\Code\...` means the materialized YAML is unsafe to
 run and the sweep should be stopped and replanned.
 
+## SAE Plumbing Smoke
+
+Use the CPU-only SAE-shaped plumbing smoke to validate existing hidden-state
+extraction artifacts before adding real SAE training code:
+
+```bash
+python experiment/phase1/probe/phase3_sae_smoke.py \
+  --config experiment/phase1/probe/config/phase3_selfaware_sae_smoke.yaml
+```
+
+This smoke is numpy-only and deterministic. It loads verified SelfAware
+extraction manifests and row shards, selects a small balanced known/unknown row
+slice, applies a seeded random encoder, keeps a top-k sparse code, decodes it,
+and writes claim-safe metrics/manifests under the configured `sae_smokes` root.
+
+Treat every output as `SAE_PLUMBING_SMOKE_ONLY`. It is not a trained SAE, not a
+mechanistic interpretation result, and not evidence for paper claims. Use it
+only to catch broken manifest, row-selection, safetensors, layer, role, shape,
+or output-root plumbing before a governed SAE implementation exists.
+
+The generated `sae_smokes` output tree is local/reproducible and may contain
+tensor slices from hidden activations. Keep it gitignored by default; commit
+the runner, config, tests, and session note rather than smoke tensor outputs
+unless a governed artifact-publication decision explicitly whitelists a subset.
+
+Fail closed if the source extraction manifest is missing, not `status: ok`, or
+not `verified: true`; if labels are not exactly `known`/`unknown`; if the
+balanced slice is unavailable; if a role shard or layer tensor is missing; if
+tensor shapes disagree with the manifest; or if the output root is inside a
+source extraction directory.
+
 ## Aggregate Completed Runs
 
 ```bash
@@ -147,7 +178,9 @@ Use focused non-GPU checks:
 python -m pytest experiment/phase1/probe/tests/test_phase3_causal_pilot_sweep.py \
   experiment/phase1/probe/tests/test_phase3_causal_pilot_runner.py \
   experiment/phase1/probe/tests/test_phase3_causal_pilot_dry_run.py -q
+python -m pytest experiment/phase1/probe/tests/test_phase3_sae_smoke.py -q
 python -m py_compile experiment/phase1/probe/phase3_causal_pilot_sweep.py \
-  experiment/phase1/probe/phase3_causal_pilot_aggregate.py
+  experiment/phase1/probe/phase3_causal_pilot_aggregate.py \
+  experiment/phase1/probe/phase3_sae_smoke.py
 python bin/sync_skills.py --check
 ```
