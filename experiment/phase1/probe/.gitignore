@@ -11,4 +11,4 @@ qwen3-4b-instruct_thinking_contaminated_*/
 # (qwen3-4b-instruct/) is already fully ignored above; this anchored rule is a
 # defensive guard so a FUTURE model_tag's hidden_states tree is never staged by
 # `git add -A`, regardless of which model_tag dir is or isn't blanket-ignored.
-*/hidden_states/
+*/hidden_states*/
