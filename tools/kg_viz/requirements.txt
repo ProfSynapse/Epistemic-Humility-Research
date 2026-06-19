@@ -1,0 +1,21 @@
+# KG-viz starter — notebook stack (tools/kg_viz/analysis.ipynb)
+# Install:  pip install -r tools/kg_viz/requirements.txt
+
+# Core analysis (required; notebook executes on these alone)
+networkx>=3.3
+pandas>=2.0
+matplotlib>=3.7
+pyyaml>=6.0          # used by convert.py via the knowledge-graph skill
+
+# Interactive in-notebook widget (recommended) — preserves parallel typed edges
+ipysigma>=0.24
+ipywidgets>=8.0
+jupyterlab>=4.0
+
+# Interactive publication figures (optional)
+plotly>=5.20
+
+# Optional Leiden backend for networkx's leiden_communities dispatch API
+# (Louvain is used by default and needs none of these)
+igraph>=0.11
+leidenalg>=0.10

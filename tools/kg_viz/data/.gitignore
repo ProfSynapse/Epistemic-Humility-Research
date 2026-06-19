@@ -1,0 +1,5 @@
+# Generated visualization artifacts — regenerate with:
+#   python3 tools/kg_viz/convert.py      (graph.cytoscape.json)
+#   python3 tools/kg_viz/analyze.py      (stats.json, graph.figure.png, graph.sigma.html)
+*
+!.gitignore
