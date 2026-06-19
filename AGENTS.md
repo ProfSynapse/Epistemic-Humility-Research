@@ -129,9 +129,27 @@ Treat skills as reusable project infrastructure:
 
 ## Search And Traversal
 
-Prefer bounded, structure-aware search before broad text search. Use the local
-KG/search tooling when available, then use scoped `rg` over the files it returns
-when raw matching is still needed.
+The typed knowledge graph is the default entry point for ALL exploration:
+locating papers, concepts, claims, mechanisms, experiment artifacts, or code.
+Before reaching for `rg`, grep, or an Explore/general-purpose search subagent,
+run the local KG search first:
+
+```bash
+./search <query terms> --limit 10        # macOS/Linux
+.\search.cmd <query terms> --limit 10     # Windows
+```
+
+This wraps `.agents/skills/knowledge-graph/scripts/kg_search.py` and returns
+ranked, graph-aware hits (file + line + typed edges). Only after the KG search
+returns its candidate set should you fall back to scoped `rg` over those files,
+or dispatch a search subagent, when raw text matching is still needed. Do not
+open with broad text search or a fan-out search agent on the first move. See the
+`knowledge-graph` skill for indexing, feedback, and validation commands.
+
+This directive binds subagents too. Any agent dispatched to find, locate, or
+explore anything in this repo must run `./search` first and pass through its
+candidate set before broad text search. When you spawn a search/explore
+subagent, restate this KG-search-first rule in its prompt so it is never lost.
 
 When investigating behavior, trace artifacts into their downstream consumer:
 config -> builder/evaluator -> generated file -> trainer/eval loader -> tests.
