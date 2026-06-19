@@ -4,7 +4,7 @@ session_id: phase3-sae-smoke-plumbing
 title: Phase 3 SAE Smoke Plumbing
 status: active
 created_at: '2026-06-19T19:52:17Z'
-updated_at: '2026-06-19T20:11:10Z'
+updated_at: '2026-06-19T21:05:00Z'
 phase: phase3
 question: Add a CPU-only SAE-shaped plumbing smoke for verified SelfAware hidden-state extraction artifacts without making trained-SAE claims.
 tags:
@@ -102,6 +102,48 @@ checkpoints:
     kto_mean_mse: 0.27408140897750854
     dpo_code_density: 0.25
     kto_code_density: 0.25
+- id: 004-result
+  at: '2026-06-19T21:05:00Z'
+  kind: result
+  title: First Trained SAE Pilot Completed
+  summary: >-
+    Added and ran a bounded PyTorch SAE training pilot over both verified
+    SelfAware delta extraction slices. The pilot trained 128-feature ReLU SAEs
+    for 80 epochs on CPU with deterministic train/validation splits. Training
+    completed for DPO L24 and KTO L25, and local L1 sensitivity showed the
+    simple ReLU+L1 setup trains but remains dense: L1 1e-4 and 1e-2 produced
+    roughly 69-74 active features per validation row, while L1 1e-1 improved
+    only to roughly 58-59 active features per validation row.
+  evidence:
+  - experiment/phase1/probe/phase3_sae_train.py
+  - experiment/phase1/probe/config/phase3_selfaware_sae_pilot.yaml
+  - experiment/phase1/probe/qwen3-4b-sft-merged-seed1-selfaware/sae_runs/phase3_selfaware_delta_sae_pilot_l1_0_1/sft_dpo_selfaware_full_delta_l24/metrics.json
+  - experiment/phase1/probe/qwen3-4b-sft-merged-seed1-selfaware/sae_runs/phase3_selfaware_delta_sae_pilot_l1_0_1/sft_kto_selfaware_full_delta_l25/metrics.json
+  run_ids: []
+  commands:
+  - python experiment\phase1\probe\phase3_sae_train.py --config experiment\phase1\probe\config\phase3_selfaware_sae_pilot.yaml
+  - python experiment\phase1\probe\phase3_sae_train.py --config .tmp\phase3_selfaware_sae_pilot_l1_0_01.yaml
+  - python experiment\phase1\probe\phase3_sae_train.py --config .tmp\phase3_selfaware_sae_pilot_l1_0_1.yaml
+  decisions:
+  - Treat the trained SAE outputs as `SAE_TRAINING_PILOT_ONLY`; they prove the real
+    training path works but do not yet establish interpretable feature recovery.
+  - Update the checked-in pilot config to the stronger L1 0.1 local default because
+    1e-4 and 1e-2 were clearly too dense.
+  next_steps:
+  - Design the next governed SAE run around explicit target sparsity, top-k or
+    JumpReLU-style constraints, dead-feature handling, and a reconstruction/sparsity
+    sweep before making feature-level claims.
+  signals:
+    device: cpu
+    row_count_per_candidate: 1233
+    hidden_dim: 2560
+    dictionary_size: 128
+    epochs: 80
+    selected_l1_coefficient: 0.1
+    dpo_l1_0_1_validation_mse: 0.5074488520622253
+    kto_l1_0_1_validation_mse: 0.5550731420516968
+    dpo_l1_0_1_validation_mean_active_features: 58.065040588378906
+    kto_l1_0_1_validation_mean_active_features: 59.03658676147461
 ---
 # 0010 - Phase 3 SAE Smoke Plumbing
 
@@ -198,3 +240,34 @@ plumbing can read and write the expected artifacts.
   - DPO mean MSE: `0.8565788269042969`
   - KTO mean MSE: `0.27408140897750854`
   - code density: `0.25` for both candidates
+
+### 004-result - First Trained SAE Pilot Completed
+
+- at: `2026-06-19T21:05:00Z`
+- kind: `result`
+- summary: Added and ran a bounded PyTorch SAE training pilot over both verified SelfAware delta extraction slices. The pilot trained 128-feature ReLU SAEs for 80 epochs on CPU with deterministic train/validation splits. Training completed for DPO L24 and KTO L25, and local L1 sensitivity showed the simple ReLU+L1 setup trains but remains dense.
+- evidence:
+  - `experiment/phase1/probe/phase3_sae_train.py`
+  - `experiment/phase1/probe/config/phase3_selfaware_sae_pilot.yaml`
+  - `experiment/phase1/probe/qwen3-4b-sft-merged-seed1-selfaware/sae_runs/phase3_selfaware_delta_sae_pilot_l1_0_1/sft_dpo_selfaware_full_delta_l24/metrics.json`
+  - `experiment/phase1/probe/qwen3-4b-sft-merged-seed1-selfaware/sae_runs/phase3_selfaware_delta_sae_pilot_l1_0_1/sft_kto_selfaware_full_delta_l25/metrics.json`
+- commands:
+  - `python experiment\phase1\probe\phase3_sae_train.py --config experiment\phase1\probe\config\phase3_selfaware_sae_pilot.yaml`
+  - `python experiment\phase1\probe\phase3_sae_train.py --config .tmp\phase3_selfaware_sae_pilot_l1_0_01.yaml`
+  - `python experiment\phase1\probe\phase3_sae_train.py --config .tmp\phase3_selfaware_sae_pilot_l1_0_1.yaml`
+- decisions:
+  - Treat the trained SAE outputs as `SAE_TRAINING_PILOT_ONLY`; they prove the real training path works but do not yet establish interpretable feature recovery.
+  - Update the checked-in pilot config to the stronger L1 `0.1` local default because `1e-4` and `1e-2` were clearly too dense.
+- next steps:
+  - Design the next governed SAE run around explicit target sparsity, top-k or JumpReLU-style constraints, dead-feature handling, and a reconstruction/sparsity sweep before making feature-level claims.
+- signals:
+  - device: `cpu`
+  - rows per candidate: `1233`
+  - hidden dim: `2560`
+  - dictionary size: `128`
+  - epochs: `80`
+  - selected L1 coefficient: `0.1`
+  - DPO validation MSE at L1 0.1: `0.5074488520622253`
+  - KTO validation MSE at L1 0.1: `0.5550731420516968`
+  - DPO validation mean active features at L1 0.1: `58.065040588378906`
+  - KTO validation mean active features at L1 0.1: `59.03658676147461`

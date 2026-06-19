@@ -122,6 +122,34 @@ balanced slice is unavailable; if a role shard or layer tensor is missing; if
 tensor shapes disagree with the manifest; or if the output root is inside a
 source extraction directory.
 
+## SAE Training Pilot
+
+After the plumbing smoke passes, use the bounded SAE training pilot for a first
+real autoencoder run over existing hidden-state tensors:
+
+```bash
+python experiment/phase1/probe/phase3_sae_train.py \
+  --config experiment/phase1/probe/config/phase3_selfaware_sae_pilot.yaml
+```
+
+This trains a small ReLU sparse autoencoder with an L1 code penalty over the
+configured hidden-state layer, using deterministic train/validation splits and
+local `sae_runs` outputs. Treat every output as `SAE_TRAINING_PILOT_ONLY`: it
+is exploratory representation-learning evidence only, not causal evidence, not
+feature-interpretability evidence, and not Phase 1 headline evidence.
+
+Current local sensitivity found that a vanilla ReLU SAE with L1 coefficients
+`1e-4` and `1e-2` stayed dense on the SelfAware delta slices, and `1e-1` was
+only moderately sparse. Do not interpret this pilot as crisp feature recovery.
+If the next objective is interpretable features, design a governed follow-up
+with explicit target sparsity, top-k or JumpReLU-style constraints,
+dead-feature handling, and a reconstruction/sparsity sweep.
+
+The generated `sae_runs` output tree contains learned weights and normalization
+statistics derived from hidden activations. Keep it gitignored by default and
+commit only the runner, config, tests, skill updates, and session note unless a
+governed artifact-publication decision explicitly whitelists a subset.
+
 ## Aggregate Completed Runs
 
 ```bash
@@ -179,8 +207,10 @@ python -m pytest experiment/phase1/probe/tests/test_phase3_causal_pilot_sweep.py
   experiment/phase1/probe/tests/test_phase3_causal_pilot_runner.py \
   experiment/phase1/probe/tests/test_phase3_causal_pilot_dry_run.py -q
 python -m pytest experiment/phase1/probe/tests/test_phase3_sae_smoke.py -q
+python -m pytest experiment/phase1/probe/tests/test_phase3_sae_train.py -q
 python -m py_compile experiment/phase1/probe/phase3_causal_pilot_sweep.py \
   experiment/phase1/probe/phase3_causal_pilot_aggregate.py \
-  experiment/phase1/probe/phase3_sae_smoke.py
+  experiment/phase1/probe/phase3_sae_smoke.py \
+  experiment/phase1/probe/phase3_sae_train.py
 python bin/sync_skills.py --check
 ```

@@ -17,3 +17,4 @@ qwen3-4b-instruct_thinking_contaminated_*/
 # tensor slices from hidden activations, so keep them local unless a governed
 # artifact-publication decision explicitly whitelists a subset.
 */sae_smokes/
+*/sae_runs/
