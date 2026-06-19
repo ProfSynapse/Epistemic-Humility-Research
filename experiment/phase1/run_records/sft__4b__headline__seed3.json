@@ -1,0 +1,57 @@
+{
+  "run_id": "sft__4b__headline__seed3",
+  "matrix_version": "phase1-v0.3",
+  "coordinate": {
+    "arm": "sft",
+    "size": "4b",
+    "cell_type": "headline",
+    "seed": 3,
+    "override": {}
+  },
+  "source_recipe": "experiment/phase1/recipes/eh_phase1_qwen3_4b_sft.yaml",
+  "materialized_recipe_sha": "1e364cd9b6764e7b8cda7b6b647fc2624ca1b4469786211b3dc2331865084ac7",
+  "method": "sft",
+  "model": "unsloth/Qwen3-4B-bnb-4bit",
+  "lane": "local",
+  "data": {
+    "source_data_file": "F:\\Code\\Epistemic-Humility-Research\\experiment\\phase1\\data\\qwen3-4b-instruct\\sft_train.jsonl",
+    "staged_data_file": "scratch/eh_staging/sft__4b__headline__seed3/sft_train.jsonl",
+    "data_sha256": "714577a8ce6d32ace422df519690b0a96adde3985f36cab0a24404e0a92d558b",
+    "hf_dataset_name": null,
+    "hf_dataset_revision": null
+  },
+  "research_repo_commit": "552fa8bd35c863ab94510ff4689e84545aac78f1",
+  "submodule_commit": "040054021c6da2c8c94453edbb699a487221120e",
+  "prereq_check": {
+    "datasets_present": true,
+    "leakage_guard_passed": true
+  },
+  "launched_at": "2026-06-15T14:45:06.128523+00:00",
+  "tuner_invocation": [
+    "python",
+    "tuner.py",
+    "local-run",
+    "--job-config",
+    "F:/Code/Epistemic-Humility-Research/experiment/phase1/run_records/materialized_recipes/sft__4b__headline__seed3.yaml",
+    "--yes"
+  ],
+  "outcome": {
+    "status": "completed",
+    "job_handle": null,
+    "adapter_path": "F:\\Code\\Epistemic-Humility-Research\\synaptic-tuner\\toolset-training-artifacts\\runs\\local\\4b\\sft__4b__headline__seed3\\20260615_104507\\final_model",
+    "metrics_path": "F:\\Code\\Epistemic-Humility-Research\\synaptic-tuner\\toolset-training-artifacts\\runs\\local\\4b\\sft__4b__headline__seed3\\20260615_104507\\logs\\training_latest.jsonl",
+    "verified": true,
+    "completed_at": "2026-06-15T15:44:36.317145+00:00",
+    "metrics": {
+      "final_step": 1800,
+      "total_epochs": 1.0,
+      "final_loss": 0.3224,
+      "train_loss": 0.448427192568779,
+      "training_time_seconds": 3435.0,
+      "train_steps_per_second": 0.524,
+      "peak_gpu_memory_reserved_gb": 4.393,
+      "oom_risk_level": "low"
+    }
+  },
+  "materialized_recipe": "F:\\Code\\Epistemic-Humility-Research\\experiment\\phase1\\run_records\\materialized_recipes\\sft__4b__headline__seed3.yaml"
+}
