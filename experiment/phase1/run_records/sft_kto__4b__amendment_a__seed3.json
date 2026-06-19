@@ -1,0 +1,82 @@
+{
+  "run_id": "sft_kto__4b__amendment_a__seed3",
+  "matrix_version": "amendment-a-v0.4",
+  "coordinate": {
+    "arm": "sft_kto",
+    "size": "4b",
+    "cell_type": "amendment_a_full",
+    "seed": 3,
+    "override": {}
+  },
+  "source_recipe": "experiment/phase1/recipes/eh_phase1_qwen3_4b_sft_to_kto.yaml",
+  "materialized_recipe_sha": "db39d4ccf9d15c52a6821285d8b3e9c12bfea2a0334dbd24024e7659d0641565",
+  "method": "kto",
+  "model": "/workspace/repo/toolset-training-artifacts/runs/local/4b/sft__4b__headline__seed3/20260615_104507/Qwen3-4B-bnb-4bit/merged-16bit",
+  "lane": "local",
+  "data": {
+    "source_data_file": "F:\\Code\\Epistemic-Humility-Research\\experiment\\phase1\\data\\qwen3-4b-instruct\\kto_congruence_train.jsonl",
+    "staged_data_file": "scratch/eh_staging/sft_kto__4b__amendment_a__seed3/kto_congruence_train.jsonl",
+    "data_sha256": "9cb291ee45c8dd5893b150abe033386127d0eedce9fa16faa2309e31a1a70e15",
+    "hf_dataset_name": null,
+    "hf_dataset_revision": null
+  },
+  "research_repo_commit": "62fbba2d6240d1953543d4fbb6dca2d322ee70f4",
+  "submodule_commit": "089fa9b7b1b9e3116637b772c7ba62b88e4469d5",
+  "prereq_check": {
+    "datasets_present": true,
+    "leakage_guard_passed": true,
+    "merged_sft_model_present": true,
+    "merged_sft_model_validated": true
+  },
+  "launched_at": "2026-06-17T11:03:34Z",
+  "tuner_invocation": [
+    "python",
+    "tuner.py",
+    "local-run",
+    "--job-config",
+    "F:/Code/Epistemic-Humility-Research/experiment/phase1/run_records/materialized_recipes/sft_kto__4b__amendment_a__seed3.yaml",
+    "--yes"
+  ],
+  "outcome": {
+    "status": "launched",
+    "job_handle": "container:local-run-sft-kto-4b-amendment-a-seed3-20260617_070334; container_id:6a6db9a4b858",
+    "adapter_path": null,
+    "metrics_path": null,
+    "artifact_root": "F:\\Code\\Epistemic-Humility-Research\\synaptic-tuner\\toolset-training-artifacts\\runs\\local\\4b\\sft_kto__4b__amendment_a__seed3\\20260617_070334",
+    "verified": false
+  },
+  "launch_notes": {
+    "direct_docker_launch": true,
+    "reason": "Windows PowerShell background launch paths failed in this Codex session due duplicate Path/PATH environment handling and non-persistent background jobs; launched equivalent detached Docker command directly from the prepared materialized recipe.",
+    "container_name": "local-run-sft-kto-4b-amendment-a-seed3-20260617_070334",
+    "container_id": "6a6db9a4b858",
+    "run_timestamp": "20260617_070334",
+    "early_health": {
+      "dataset_examples": 28790,
+      "desirable": 14395,
+      "undesirable": 14395,
+      "model_loaded": true,
+      "lora_applied": true,
+      "trainer_initialized": true,
+      "total_steps": 3599,
+      "initial_gpu_vram_mib": 4812,
+      "metrics_log": "F:\\Code\\Epistemic-Humility-Research\\synaptic-tuner\\toolset-training-artifacts\\runs\\local\\4b\\sft_kto__4b__amendment_a__seed3\\20260617_070334\\logs\\training_20260617_110523.jsonl",
+      "latest_checked_step": 95,
+      "latest_checked_at": "2026-06-17T11:19:20Z",
+      "latest_loss": 0.5014,
+      "latest_oom_risk_level": "low",
+      "latest_gpu_memory_reserved_gb": 4.385,
+      "checkpoints_observed": [
+        "checkpoint-25",
+        "checkpoint-50",
+        "checkpoint-75"
+      ]
+    }
+  },
+  "materialized_recipe": "F:\\Code\\Epistemic-Humility-Research\\experiment\\phase1\\run_records\\materialized_recipes\\sft_kto__4b__amendment_a__seed3.yaml",
+  "amendment_a": {
+    "stage1_adapter": "F:\\Code\\Epistemic-Humility-Research\\synaptic-tuner\\toolset-training-artifacts\\runs\\local\\4b\\sft__4b__headline__seed3\\20260615_104507\\final_model",
+    "stage1_merged_model": "F:\\Code\\Epistemic-Humility-Research\\synaptic-tuner\\toolset-training-artifacts\\runs\\local\\4b\\sft__4b__headline__seed3\\20260615_104507\\Qwen3-4B-bnb-4bit\\merged-16bit",
+    "smoke_only": false
+  }
+}

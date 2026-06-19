@@ -1,10 +1,9 @@
 """Amendment A transition analysis from persisted local eval artifacts.
 
-The live eval driver currently persists aggregate metrics and McNemar paired
-truthful flips, but not per-row generations. That means exact row-level
-refusal/correctness transitions cannot be reconstructed after the run. This
-script reports exact values where the persisted artifacts support them and
-tight feasible bounds where row-level identity is missing.
+The eval driver persists aggregate metrics, McNemar paired truthful flips, and
+compact per-row scored outputs. This script reports exact row-level transitions
+when every compared arm has `scored_rows.jsonl`, and falls back to tight
+feasible bounds when row-level identity is missing.
 """
 
 from __future__ import annotations
@@ -37,6 +36,7 @@ class ArmCounts:
 class PairBounds:
     pair: str
     eval_set: str
+    source: str
     exact_truthful_a_not_b: int
     exact_truthful_b_not_a: int
     unknown_a_refuse_b_answer: tuple[int, int]
@@ -65,6 +65,134 @@ def _load_mcnemar(root: Path, eval_set: str, arm_a: str, arm_b: str) -> tuple[in
             if row["eval_set"] == eval_set and row["arm_a"] == arm_a and row["arm_b"] == arm_b:
                 return int(row["b_a_not_b"]), int(row["c_b_not_a"])
     raise KeyError((eval_set, arm_a, arm_b))
+
+
+@dataclass(frozen=True)
+class ScoredRow:
+    eval_set: str
+    row_index: int
+    row_id: object
+    label: str
+    refused: bool
+    correct: bool
+    truthful: bool
+
+
+def _load_scored_rows(
+    root: Path,
+    arm: str,
+    eval_set: str,
+) -> dict[tuple[str, int], ScoredRow] | None:
+    path = root / f"{arm}__{eval_set}" / "scored_rows.jsonl"
+    if not path.exists():
+        return None
+
+    rows: dict[tuple[str, int], ScoredRow] = {}
+    with path.open(encoding="utf-8") as fh:
+        for line_no, line in enumerate(fh, start=1):
+            line = line.strip()
+            if not line:
+                continue
+            payload = json.loads(line)
+            row_eval_set = str(payload["eval_set"])
+            row_index = int(payload["row_index"])
+            if row_eval_set != eval_set:
+                raise ValueError(
+                    f"{path}:{line_no} has eval_set={row_eval_set!r}, "
+                    f"expected {eval_set!r}"
+                )
+            key = (row_eval_set, row_index)
+            if key in rows:
+                raise ValueError(f"{path}:{line_no} duplicates row key {key!r}")
+            label = str(payload["label"]).lower()
+            if label not in {"known", "unknown"}:
+                raise ValueError(f"{path}:{line_no} has invalid label {label!r}")
+            rows[key] = ScoredRow(
+                eval_set=row_eval_set,
+                row_index=row_index,
+                row_id=payload.get("id"),
+                label=label,
+                refused=bool(payload["refused"]),
+                correct=bool(payload["correct"]),
+                truthful=bool(payload["truthful"]),
+            )
+
+    return rows
+
+
+def _compute_pair_from_scored_rows(
+    root: Path,
+    eval_set: str,
+    arm_a: str,
+    arm_b: str,
+) -> PairBounds | None:
+    rows_a = _load_scored_rows(root, arm_a, eval_set)
+    rows_b = _load_scored_rows(root, arm_b, eval_set)
+    if rows_a is None or rows_b is None:
+        return None
+    if not rows_a and not rows_b:
+        return None
+    if set(rows_a) != set(rows_b):
+        missing_from_b = sorted(set(rows_a) - set(rows_b))[:5]
+        missing_from_a = sorted(set(rows_b) - set(rows_a))[:5]
+        raise ValueError(
+            f"scored_rows key mismatch for {eval_set} {arm_a}->{arm_b}; "
+            f"missing from {arm_b}: {missing_from_b}; "
+            f"missing from {arm_a}: {missing_from_a}"
+        )
+
+    truthful_a_not_b = 0
+    truthful_b_not_a = 0
+    unknown_a_refuse_b_answer = 0
+    known_a_refuse_b_answer = 0
+    known_a_refuse_b_correct = 0
+    known_a_correct_b_bad = 0
+
+    for key in sorted(rows_a):
+        row_a = rows_a[key]
+        row_b = rows_b[key]
+        if row_a.label != row_b.label:
+            raise ValueError(
+                f"scored_rows label mismatch for {eval_set} row_index={key[1]} "
+                f"{arm_a}={row_a.label!r} {arm_b}={row_b.label!r}"
+            )
+
+        if row_a.truthful and not row_b.truthful:
+            truthful_a_not_b += 1
+        if row_b.truthful and not row_a.truthful:
+            truthful_b_not_a += 1
+
+        if row_a.label == "unknown":
+            if row_a.refused and not row_b.refused:
+                unknown_a_refuse_b_answer += 1
+        elif row_a.refused and not row_b.refused:
+            known_a_refuse_b_answer += 1
+            if row_b.correct:
+                known_a_refuse_b_correct += 1
+
+        if row_a.label == "known" and row_a.correct and not row_b.correct:
+            known_a_correct_b_bad += 1
+
+    return PairBounds(
+        pair=f"{arm_a}->{arm_b}",
+        eval_set=eval_set,
+        source="scored_rows",
+        exact_truthful_a_not_b=truthful_a_not_b,
+        exact_truthful_b_not_a=truthful_b_not_a,
+        unknown_a_refuse_b_answer=(
+            unknown_a_refuse_b_answer,
+            unknown_a_refuse_b_answer,
+        ),
+        known_a_refuse_b_answer=(
+            known_a_refuse_b_answer,
+            known_a_refuse_b_answer,
+        ),
+        known_a_refuse_b_correct=(
+            known_a_refuse_b_correct,
+            known_a_refuse_b_correct,
+        ),
+        known_a_correct_b_bad=(known_a_correct_b_bad, known_a_correct_b_bad),
+    )
 
 
 def _unknown_tables(a: ArmCounts, b: ArmCounts) -> Iterable[tuple[int, int]]:
@@ -167,6 +295,10 @@ def _round_bounds(values: list[tuple[int, int]]) -> tuple[int, int]:
 
 
 def compute_pair(root: Path, eval_set: str, arm_a: str, arm_b: str) -> PairBounds:
+    exact = _compute_pair_from_scored_rows(root, eval_set, arm_a, arm_b)
+    if exact is not None:
+        return exact
+
     a = _load_counts(root, arm_a, eval_set)
     b = _load_counts(root, arm_b, eval_set)
     a_not_b, b_not_a = _load_mcnemar(root, eval_set, arm_a, arm_b)
@@ -197,6 +329,7 @@ def compute_pair(root: Path, eval_set: str, arm_a: str, arm_b: str) -> PairBound
     return PairBounds(
         pair=f"{arm_a}->{arm_b}",
         eval_set=eval_set,
+        source="aggregate_bounds",
         exact_truthful_a_not_b=a_not_b,
         exact_truthful_b_not_a=b_not_a,
         unknown_a_refuse_b_answer=_round_bounds(unknown_ab_bounds),
@@ -210,6 +343,62 @@ def _fmt_bounds(bounds: tuple[int, int]) -> str:
     return str(bounds[0]) if bounds[0] == bounds[1] else f"{bounds[0]}-{bounds[1]}"
 
 
+def _fmt_range_phrase(bounds: tuple[int, int]) -> str:
+    return (
+        str(bounds[0])
+        if bounds[0] == bounds[1]
+        else f"at least {bounds[0]} and at most {bounds[1]}"
+    )
+
+
+def _row_evidence_phrase(bounds: tuple[int, int]) -> str:
+    return (
+        "exact row-level counts show"
+        if bounds[0] == bounds[1]
+        else "feasible row-level bounds allow"
+    )
+
+
+def _known_recovery_interpretation(pair: PairBounds) -> str:
+    if pair.source == "scored_rows":
+        return (
+            "These exact row-level artifacts show how much of the over-refusal "
+            "reduction became useful correct recovery versus incorrect answering."
+        )
+    return (
+        "The current persisted artifacts cannot prove that most over-refusal "
+        "reduction became useful correct recovery. It could include substantial "
+        "incorrect answering."
+    )
+
+
+def _source_note(pairs: list[PairBounds]) -> str:
+    sources = {p.source for p in pairs}
+    if sources == {"scored_rows"}:
+        return (
+            "Row-identity note: every compared arm for these eval sets includes "
+            "`scored_rows.jsonl`, so all transition counts below are exact. Rows "
+            "are aligned by `eval_set` plus `row_index`; `id` is treated as "
+            "metadata only."
+        )
+    if "scored_rows" in sources:
+        return (
+            "Row-identity note: eval-set pairs with complete `scored_rows.jsonl` "
+            "use exact transition counts aligned by `eval_set` plus `row_index`; "
+            "pairs without complete row files retain the aggregate feasible-bound "
+            "fallback. `id` is treated as metadata only."
+        )
+    return (
+        "Row-identity caveat: these result directories do not include complete "
+        "`scored_rows.jsonl` files for the compared arms. Exact row-level "
+        "transitions cannot be reconstructed from the persisted aggregate "
+        "artifacts. McNemar truthful flips are exact because the eval driver "
+        "persisted paired truthful-vector discordance counts. The narrower "
+        "refusal/correctness transitions below are tight feasible count ranges "
+        "implied by the per-arm margins plus those exact McNemar counts."
+    )
+
+
 def render_markdown() -> str:
     pairs = [
         compute_pair(SELFWARE, "selfaware", "sft_merged", "sft_dpo"),
@@ -219,13 +408,29 @@ def render_markdown() -> str:
         compute_pair(BROADER, "kuq", "sft_merged", "sft_kto"),
         compute_pair(BROADER, "kuq", "sft_dpo", "sft_kto"),
     ]
+    selfaware_sft_dpo = pairs[0]
+    selfaware_sft_kto = pairs[1]
+    kuq_sft_dpo = pairs[3]
+    selfaware_sft_counts = _load_counts(SELFWARE, "sft_merged", "selfaware")
+    selfaware_dpo_counts = _load_counts(SELFWARE, "sft_dpo", "selfaware")
+    selfaware_dpo_known_refusal_delta = (
+        selfaware_sft_counts.k_refuse - selfaware_dpo_counts.k_refuse
+    )
+    selfaware_dpo_known_correct_delta = (
+        selfaware_dpo_counts.k_correct - selfaware_sft_counts.k_correct
+    )
+    evidence_scope = (
+        "row-level local"
+        if {p.source for p in pairs} == {"scored_rows"}
+        else "bounded local Amendment A"
+    )
 
     lines = [
         "# Amendment A Transition Analysis",
         "",
-        "Source artifacts: persisted local `metrics.json` and `comparisons/mcnemar.csv` files from the Amendment A SelfAware full and broader OOD eval directories.",
+        "Source artifacts: persisted local `metrics.json`, `scored_rows.jsonl` when present, and `comparisons/mcnemar.csv` files from the Amendment A SelfAware full and broader OOD eval directories.",
         "",
-        "Row-identity caveat: the live eval outputs in these result directories do not include `generations.jsonl` or another per-row prediction file. Exact row-level transitions cannot be reconstructed from the persisted artifacts. McNemar truthful flips are exact because the eval driver persisted paired truthful-vector discordance counts. The narrower refusal/correctness transitions below are tight feasible count ranges implied by the per-arm margins plus those exact McNemar counts.",
+        _source_note(pairs),
         "",
         "## SelfAware Full",
         "",
@@ -257,21 +462,21 @@ def render_markdown() -> str:
         "",
         "## Interpretation",
         "",
-        "Sequential DPO is mixed, not a clean recovery. On full SelfAware it reduced known over-refusal sharply, but the persisted evidence implies at least 348 and at most 424 unknown rows where `sft_merged` correctly refused and `sft_dpo` answered instead. KUQ supports the same direction: at least 55 of the 58 exact `sft_merged`-truthful / `sft_dpo`-untruthful flips came from unknown rows where DPO answered after SFT refused.",
+        f"Sequential DPO is mixed, not a clean recovery. On full SelfAware it reduced known over-refusal sharply, but the persisted evidence implies {_fmt_range_phrase(selfaware_sft_dpo.unknown_a_refuse_b_answer)} unknown rows where `sft_merged` correctly refused and `sft_dpo` answered instead. KUQ supports the same direction: {_fmt_range_phrase(kuq_sft_dpo.unknown_a_refuse_b_answer)} of the {kuq_sft_dpo.exact_truthful_a_not_b} exact `sft_merged`-truthful / `sft_dpo`-untruthful flips came from unknown rows where DPO answered after SFT refused.",
         "",
-        "The known-question recovery side is weaker than the aggregate over-refusal drop suggests. Full SelfAware has 1,111 fewer known refusals for `sft_dpo` than `sft_merged`, but only 70 additional known correct answers in the aggregate. The feasible row-level bounds allow 0-146 known rows where SFT refused and DPO answered correctly, so the current persisted artifacts cannot prove that most over-refusal reduction became useful correct recovery. It could include substantial incorrect answering.",
+        f"The known-question recovery side is weaker than the aggregate over-refusal drop suggests. Full SelfAware has {selfaware_dpo_known_refusal_delta:,} fewer known refusals for `sft_dpo` than `sft_merged`, but only {selfaware_dpo_known_correct_delta:,} net additional known correct answers in the aggregate. The {_row_evidence_phrase(selfaware_sft_dpo.known_a_refuse_b_correct)} {_fmt_range_phrase(selfaware_sft_dpo.known_a_refuse_b_correct)} known rows where SFT refused and DPO answered correctly. {_known_recovery_interpretation(selfaware_sft_dpo)}",
         "",
-        "Sequential KTO is closer to SFT than DPO. On full SelfAware it can account for 71-124 unknown SFT-refusal to KTO-answer losses, versus 348-424 for DPO, and its exact truthful loss against SFT is much smaller (124 vs 424). The cost is that KTO retains high known over-refusal: aggregate SelfAware over-refusal is 48.31 for KTO versus 13.95 for DPO and 61.49 for SFT.",
+        f"Sequential KTO is closer to SFT than DPO. On full SelfAware it can account for {_fmt_bounds(selfaware_sft_kto.unknown_a_refuse_b_answer)} unknown SFT-refusal to KTO-answer losses, versus {_fmt_bounds(selfaware_sft_dpo.unknown_a_refuse_b_answer)} for DPO, and its exact truthful loss against SFT is much smaller ({selfaware_sft_kto.exact_truthful_a_not_b} vs {selfaware_sft_dpo.exact_truthful_a_not_b}). The cost is that KTO retains high known over-refusal: aggregate SelfAware over-refusal is 48.31 for KTO versus 13.95 for DPO and 61.49 for SFT.",
         "",
         "## Recommendations",
         "",
-        "Use this as bounded local Amendment A evidence only. Do not fold it into v0.3 headline/protocol claims.",
+        f"Use this as {evidence_scope} evidence only. Do not fold it into v0.3 headline/protocol claims.",
         "",
         "The next experimental direction is sensitivity around the sequential preference stage rather than a binary keep/drop decision. DPO deserves lower-intensity variants because it has the desired over-refusal pressure but overshoots into unknown-answering and lower known correctness. Reasonable axes are lower DPO beta, lower LR, fewer effective epochs/steps, and possibly smaller downstream LoRA rank/alpha if the goal is a gentler correction to SFT.",
         "",
         "KTO deserves a separate sensitivity axis only if the priority is preserving abstention first. It retained more unknown refusal but did not reduce over-refusal enough in this local run, so KTO variants should target stronger known-question recovery without collapsing unknown refusal.",
         "",
-        "Future live eval runs should persist `generations.jsonl` or a compact per-row scored table (`id`, question/order key, label, refused, correct, truthful) for each arm. Without that, exact transition analysis is limited to McNemar truthful flips plus feasible bounds from aggregate margins.",
+        "Future live eval runs should continue to persist `generations.jsonl` or a compact per-row scored table (`id`, question/order key, label, refused, correct, truthful) for each arm. Without that, exact transition analysis is limited to McNemar truthful flips plus feasible bounds from aggregate margins.",
     ])
     return "\n".join(lines) + "\n"
 

@@ -1,0 +1,71 @@
+{
+  "run_id": "sft_dpo__4b__amendment_a__seed2",
+  "matrix_version": "amendment-a-v0.4",
+  "coordinate": {
+    "arm": "sft_dpo",
+    "size": "4b",
+    "cell_type": "amendment_a_full",
+    "seed": 2,
+    "override": {}
+  },
+  "source_recipe": "experiment/phase1/recipes/eh_phase1_qwen3_4b_sft_to_dpo.yaml",
+  "materialized_recipe_sha": "a2885a9bc866d6468fb35b2e874defbbbd608be5f50ccbac60444274b2b24fd2",
+  "method": "dpo",
+  "model": "/workspace/repo/toolset-training-artifacts/runs/local/4b/sft__4b__headline__seed2/20260615_090734/Qwen3-4B-bnb-4bit/merged-16bit-lowmem-20260616",
+  "lane": "local",
+  "data": {
+    "source_data_file": "F:\\Code\\Epistemic-Humility-Research\\experiment\\phase1\\data\\qwen3-4b-instruct\\dpo_train.jsonl",
+    "staged_data_file": "scratch/eh_staging/sft_dpo__4b__amendment_a__seed2/dpo_train.jsonl",
+    "data_sha256": "39e2ba8c9bc1b41ef1b7e797f80637c276ba150c97055962bbc4e2b550bd17b5",
+    "hf_dataset_name": null,
+    "hf_dataset_revision": null
+  },
+  "research_repo_commit": "62fbba2d6240d1953543d4fbb6dca2d322ee70f4",
+  "submodule_commit": "089fa9b7b1b9e3116637b772c7ba62b88e4469d5",
+  "prereq_check": {
+    "datasets_present": true,
+    "leakage_guard_passed": true,
+    "merged_sft_model_present": true,
+    "merged_sft_model_validated": true,
+    "merged_sft_behavioral_sanity_passed": true
+  },
+  "launched_at": "2026-06-16T20:45:38+00:00",
+  "tuner_invocation": [
+    "python",
+    "tuner.py",
+    "local-run",
+    "--job-config",
+    "F:/Code/Epistemic-Humility-Research/experiment/phase1/run_records/materialized_recipes/sft_dpo__4b__amendment_a__seed2.yaml",
+    "--yes"
+  ],
+  "outcome": {
+    "status": "completed",
+    "job_handle": "container:funny_ride; host_pid:11544",
+    "adapter_path": "F:\\Code\\Epistemic-Humility-Research\\synaptic-tuner\\toolset-training-artifacts\\runs\\local\\4b\\sft_dpo__4b__amendment_a__seed2\\20260616_164539\\final_model",
+    "metrics_path": "F:\\Code\\Epistemic-Humility-Research\\synaptic-tuner\\toolset-training-artifacts\\runs\\local\\4b\\sft_dpo__4b__amendment_a__seed2\\20260616_164539\\logs\\training_20260616_204756.jsonl",
+    "verified": true,
+    "completed_at": "2026-06-16T22:11:38.718908+00:00",
+    "confounded_attempt": {
+      "status": "completed_confounded",
+      "reason": "Original seed2 sequential DPO attempt used merged-16bit checkpoint that later failed behavioral sanity check; do not count as clean SFT->DPO evidence.",
+      "adapter_path": "F:\\Code\\Epistemic-Humility-Research\\synaptic-tuner\\toolset-training-artifacts\\runs\\local\\4b\\sft_dpo__4b__amendment_a__seed2\\20260616_114829\\final_model",
+      "metrics_path": "F:\\Code\\Epistemic-Humility-Research\\synaptic-tuner\\toolset-training-artifacts\\runs\\local\\4b\\sft_dpo__4b__amendment_a__seed2\\20260616_114829\\logs\\training_20260616_155022.jsonl"
+    },
+    "metrics": {
+      "final_step": 1800,
+      "total_epochs": 1.0,
+      "final_loss": 0.07945938525647055,
+      "train_runtime_seconds": 5009.702,
+      "train_steps_per_second": 0.359,
+      "peak_gpu_memory_reserved_gb": 6.902,
+      "peak_gpu_memory_reserved_pct": 28.76,
+      "oom_risk_level": "low"
+    }
+  },
+  "materialized_recipe": "F:\\Code\\Epistemic-Humility-Research\\experiment\\phase1\\run_records\\materialized_recipes\\sft_dpo__4b__amendment_a__seed2.yaml",
+  "amendment_a": {
+    "stage1_adapter": "F:\\Code\\Epistemic-Humility-Research\\synaptic-tuner\\toolset-training-artifacts\\runs\\local\\4b\\sft__4b__headline__seed2\\20260615_090734\\final_model",
+    "stage1_merged_model": "F:\\Code\\Epistemic-Humility-Research\\synaptic-tuner\\toolset-training-artifacts\\runs\\local\\4b\\sft__4b__headline__seed2\\20260615_090734\\Qwen3-4B-bnb-4bit\\merged-16bit-lowmem-20260616",
+    "smoke_only": false
+  }
+}
