@@ -53,6 +53,42 @@ checkpoints:
       smoke_over_refusal_pct_nonthinking: 1.03
       smoke_mean_stated_confidence_thinking: 0.942187
       smoke_mean_stated_confidence_nonthinking: 0.899479
+  - id: 002-seed1-all-arms-complete
+    at: '2026-06-20T22:25:00Z'
+    kind: result
+    title: Seed 1 Thinking-On All-Arms Eval Completed
+    summary: >
+      The full SelfAware Amendment B thinking-on seed 1 all-arms config
+      completed in Docker with complete row counts for base, SFT, DPO, and KTO.
+      All four arms had no visible think tags in scored rows and high
+      confidence coverage. Compared with non-thinking, thinking produced small
+      deltas: base and DPO improved slightly, KTO stayed essentially flat, and
+      SFT's refusal behavior softened slightly without changing the core
+      pattern that SFT is the only high-refusal arm.
+    evidence:
+      - experiment/phase1/eval/results_amendment_b_stated_confidence_neutral_concise_schema_answer_confidence_selfaware_seed1_all_arms_4b_thinking_on/base_seed1__selfaware/metrics.json
+      - experiment/phase1/eval/results_amendment_b_stated_confidence_neutral_concise_schema_answer_confidence_selfaware_seed1_all_arms_4b_thinking_on/sft_seed1__selfaware/metrics.json
+      - experiment/phase1/eval/results_amendment_b_stated_confidence_neutral_concise_schema_answer_confidence_selfaware_seed1_all_arms_4b_thinking_on/dpo_seed1__selfaware/metrics.json
+      - experiment/phase1/eval/results_amendment_b_stated_confidence_neutral_concise_schema_answer_confidence_selfaware_seed1_all_arms_4b_thinking_on/kto_seed1__selfaware/metrics.json
+      - experiment/phase1/eval/analysis/thinking_comparison/seed1_all_arms_thinking_vs_nonthinking_summary.csv
+    commands:
+      - python experiment/phase1/eval/tools/compare_thinking_eval_results.py --config eval_amendment_b_stated_confidence_selfaware_seed1_all_arms_local_4b.yaml --output experiment/phase1/eval/analysis/thinking_comparison/seed1_all_arms_thinking_vs_nonthinking_summary.csv
+    decisions:
+      - Treat seed 1 as a completed thinking comparison, but do not generalize until seed 2/3 and sequential arms complete.
+      - Continue the queued batch; seed 2 all-arms started automatically after seed 1.
+    signals:
+      row_count_per_arm: 3369
+      visible_think_tags_per_arm: 0
+      base_confidence_coverage_pct: 99.88
+      sft_confidence_coverage_pct: 99.88
+      dpo_confidence_coverage_pct: 99.79
+      kto_confidence_coverage_pct: 99.73
+      base_delta_truthful_pct: 0.15
+      sft_delta_truthful_pct: -0.48
+      dpo_delta_truthful_pct: 0.66
+      kto_delta_truthful_pct: -0.09
+      sft_delta_refusal_recall_pct: -2.71
+      sft_delta_over_refusal_pct: -3.85
 ---
 
 # Session 0013 - Thinking-Enabled Eval Layer
