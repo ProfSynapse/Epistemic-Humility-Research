@@ -1,0 +1,35 @@
+# Normalize broad DPO known/unknown delta directions to the SAE contrast norm
+# so coefficient-grid comparisons are not dominated by vector magnitude.
+
+source_manifest: experiment/phase1/probe/qwen3-4b-sft-merged-seed1-selfaware/hidden_states_selfaware_full/extraction__d3d0e6d19c0e/selfaware_full_candidate_directions.manifest.json
+
+transforms:
+  - label: dpo_unknown_minus_known_l23_norm_to_sae_contrast
+    source_direction_id: direction__75bc3dfaa11d33e8
+    method: unit_rescale_to_norm
+    target_norm: 1.2142820358276367
+    metadata:
+      arm: sft_dpo
+      source_layer_role: adjacent_lower
+      comparison_norm_source: sae_feature_composite__sft_dpo_unknown_minus_known_f047_f051_f064_f065_l24__9e87229e2fc4
+
+  - label: dpo_unknown_minus_known_l24_norm_to_sae_contrast
+    source_direction_id: direction__d9ee6d66b65bde72
+    method: unit_rescale_to_norm
+    target_norm: 1.2142820358276367
+    metadata:
+      arm: sft_dpo
+      source_layer_role: source_layer_match
+      comparison_norm_source: sae_feature_composite__sft_dpo_unknown_minus_known_f047_f051_f064_f065_l24__9e87229e2fc4
+
+  - label: dpo_unknown_minus_known_l25_norm_to_sae_contrast
+    source_direction_id: direction__8e24e2b291ff5b26
+    method: unit_rescale_to_norm
+    target_norm: 1.2142820358276367
+    metadata:
+      arm: sft_dpo
+      source_layer_role: adjacent_upper
+      comparison_norm_source: sae_feature_composite__sft_dpo_unknown_minus_known_f047_f051_f064_f065_l24__9e87229e2fc4
+
+output:
+  root: experiment/phase1/probe/qwen3-4b-sft-merged-seed1-selfaware/direction_transforms/phase3_selfaware_dpo_subspace_normed_to_sae_contrast

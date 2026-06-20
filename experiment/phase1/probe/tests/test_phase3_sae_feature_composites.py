@@ -92,6 +92,7 @@ def test_run_config_exports_unit_mean_rescaled_composite(tmp_path):
             "combine": "unit_weighted_mean",
             "rescale": "mean_source_norm",
             "feature_skew_label": "unknown",
+            "contrast": "unknown_minus_known",
         },
     )
 
@@ -109,6 +110,7 @@ def test_run_config_exports_unit_mean_rescaled_composite(tmp_path):
     assert record["source_features"] == [1, 2]
     assert record["combine"] == "unit_weighted_mean"
     assert record["rescale"] == "mean_source_norm"
+    assert record["contrast"] == "unknown_minus_known"
     assert float(np.linalg.norm(tensor)) == pytest.approx(3.5)
 
 

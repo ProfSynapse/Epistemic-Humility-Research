@@ -30,6 +30,7 @@ composites:
     combine: unit_weighted_mean
     rescale: mean_source_norm
     feature_skew_label: unknown_minus_known
+    contrast: unknown_minus_known
 
 output:
   root: experiment/phase1/probe/qwen3-4b-sft-merged-seed1-selfaware/sae_feature_composites/phase3_selfaware_delta_topk16_feature_composites

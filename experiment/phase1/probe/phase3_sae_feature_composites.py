@@ -232,6 +232,7 @@ def build_composite(
         "analysis_type": ANALYSIS_TYPE,
         "method": "sae_feature_composite_direction",
         "direction_space": "raw_hidden_composite_of_sae_feature_directions",
+        "contrast": composite.get("contrast"),
         "source_direction_ids": source_ids,
         "source_features": source_features,
         "weights": weights,
