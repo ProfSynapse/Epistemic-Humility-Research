@@ -203,6 +203,40 @@ def test_select_rows_rejects_duplicate_probe_result_keys(tmp_path):
         )
 
 
+def test_runtime_adapter_path_defaults_to_extraction_manifest():
+    model_cfg = {"adapter_path": None}
+    extraction_manifest = {"adapter_path": "/workspace/repo/runs/adapter"}
+
+    assert runner.runtime_adapter_path(model_cfg, extraction_manifest).endswith("runs\\adapter") or (
+        runner.runtime_adapter_path(model_cfg, extraction_manifest).endswith("runs/adapter")
+    )
+
+
+def test_runtime_adapter_path_allows_explicit_adapterless_runtime():
+    model_cfg = {
+        "adapter_path": None,
+        "use_extraction_adapter": False,
+        "allow_adapterless": True,
+    }
+    extraction_manifest = {"adapter_path": "/workspace/repo/runs/adapter"}
+
+    assert runner.runtime_adapter_path(model_cfg, extraction_manifest) is None
+
+
+def test_runtime_adapter_path_fails_closed_without_adapter():
+    with pytest.raises(runner.PilotRunnerError, match="allow_adapterless"):
+        runner.runtime_adapter_path(
+            {"adapter_path": None, "use_extraction_adapter": False},
+            {"adapter_path": "/workspace/repo/runs/adapter"},
+        )
+
+    with pytest.raises(runner.PilotRunnerError, match="boolean"):
+        runner.runtime_adapter_path(
+            {"use_extraction_adapter": "no"},
+            {"adapter_path": "/workspace/repo/runs/adapter"},
+        )
+
+
 def test_selection_row_keys_for_candidate_prefers_candidate_specific_keys():
     config = {
         "selection": {

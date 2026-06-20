@@ -4,7 +4,7 @@ session_id: phase3-sae-smoke-plumbing
 title: Phase 3 SAE Smoke Plumbing
 status: active
 created_at: '2026-06-19T19:52:17Z'
-updated_at: '2026-06-19T22:55:00Z'
+updated_at: '2026-06-20T00:40:00Z'
 phase: phase3
 question: Add a CPU-only SAE-shaped plumbing smoke for verified SelfAware hidden-state extraction artifacts without making trained-SAE claims.
 tags:
@@ -678,3 +678,77 @@ plumbing can read and write the expected artifacts.
   - DPO broad layer-25 normalized coefficient-50 activation addition: refusal-opener probability delta mean `+0.081517`, top-1 changed rate `25.0%`.
   - KTO broad layer-25 normalized coefficient-50 activation addition: refusal-opener probability delta mean `+0.043184`, top-1 changed rate `0.0%`.
   - Row-level top-1 changes were concentrated on unknown rows in this 8-row panel.
+
+### 014-result - Known-Retention Subspace Panel Completed
+
+- at: `2026-06-20T00:25:00Z`
+- kind: `result`
+- summary: Added sweep-level runner overrides and ran the same-norm subspace panel on a deterministic stable known-correct row slice. This tested whether the same candidate directions that move refusal-openers on unknown rows also damage known-answer behavior. The arm-native panel kept DPO/SAE known-row refusal-opener baseline almost zero, while KTO's arm-native runtime had a much higher known-row refusal-opener baseline. This difference traced to live runtime semantics: when `runtime_model.adapter_path` is null, the runner falls back to the candidate extraction manifest adapter, so DPO candidates run with the DPO adapter and KTO candidates run with the KTO adapter.
+- evidence:
+  - `experiment/phase1/probe/phase3_causal_pilot_sweep.py`
+  - `experiment/phase1/probe/tests/test_phase3_causal_pilot_sweep.py`
+  - `experiment/phase1/probe/config/phase3_selfaware_subspace_known_retention_logit_diagnostic_sweep.yaml`
+  - `experiment/phase1/probe/qwen3-4b-sft-merged-seed1-selfaware/causal_pilots/phase3_selfaware_subspace_known_retention_logit_diagnostic/summary.csv`
+- commands:
+  - `python -m pytest experiment\phase1\probe\tests\test_phase3_causal_pilot_sweep.py -q`
+  - `python -m py_compile experiment\phase1\probe\phase3_causal_pilot_sweep.py`
+  - `python experiment\phase1\probe\phase3_causal_pilot_sweep.py --config experiment\phase1\probe\config\phase3_selfaware_subspace_known_retention_logit_diagnostic_sweep.yaml --mode-filter logit_diagnostic --write-plan --materialize-configs`
+  - `python experiment\phase1\probe\phase3_causal_pilot_sweep.py --config experiment\phase1\probe\config\phase3_selfaware_subspace_known_retention_logit_diagnostic_sweep.yaml --mode-filter logit_diagnostic --write-plan --materialize-configs --execute --allow-logit-diagnostic`
+  - `python experiment\phase1\probe\phase3_causal_pilot_aggregate.py --root experiment\phase1\probe\qwen3-4b-sft-merged-seed1-selfaware\causal_pilots\phase3_selfaware_subspace_known_retention_logit_diagnostic --out experiment\phase1\probe\qwen3-4b-sft-merged-seed1-selfaware\causal_pilots\phase3_selfaware_subspace_known_retention_logit_diagnostic\summary.csv`
+- gotchas:
+  - `model.model_name` is descriptive metadata for these configs; the live generator uses `runtime_model` plus candidate extraction-manifest fallbacks. If `runtime_model.adapter_path` is null and extraction fallback is enabled, each candidate runs in its own arm-native adapter runtime.
+  - Arm-native DPO/KTO baseline differences are real runtime differences, not necessarily direction effects. Label these panels as arm-native unless `runtime_model` pins or disables the adapter explicitly.
+- decisions:
+  - Keep `runner_overrides` as generic sweep infrastructure for row slices and runtime overrides.
+  - Treat the KTO known-row baseline as an arm-native adapter signal, not as evidence that the KTO direction alone raises known-row refusal.
+  - Add an explicit SFT-runtime adapterless panel before comparing DPO/KTO directions inside the same model.
+- next steps:
+  - Run the unknown and known-retention panels in the pure SFT merged runtime with extraction adapter fallback disabled.
+  - Use exact runtime labels in future summaries: arm-native adapter, pinned adapter, or adapterless SFT runtime.
+- signals:
+  - arm-native known rows, DPO/SAE baseline refusal-opener probability mean: about `0.000054`.
+  - arm-native known rows, KTO baseline refusal-opener probability mean: about `0.053762`.
+  - arm-native known rows, SAE contrast coefficient-50 activation addition: refusal-opener delta mean `+0.000377`, top-1 changed rate `25.0%`.
+  - arm-native known rows, DPO broad layer-24 coefficient-50 activation addition: refusal-opener delta mean `+0.002482`, top-1 changed rate `25.0%`.
+  - arm-native known rows, KTO broad layer-25 coefficient-50 activation addition: refusal-opener delta mean `+0.047058`, top-1 changed rate `0.0%`.
+
+### 015-result - Adapterless SFT Runtime Subspace Panels Completed
+
+- at: `2026-06-20T00:40:00Z`
+- kind: `result`
+- summary: Added an explicit adapterless live-runtime path and ran both unknown-row and known-retention same-norm subspace panels inside the pure SFT merged model. This provides a same-runtime comparison for DPO/KTO/SAE directions, separate from the arm-native adapter panels. In SFT runtime, unknown rows already had high refusal-opener probability, so directions mostly moved probability mass without top-1 changes. Known rows had lower but nontrivial refusal-opener baseline, and broad KTO/DPO directions could raise that slice, while the SAE DPO contrast barely moved known-row refusal at source layer.
+- evidence:
+  - `experiment/phase1/probe/phase3_causal_pilot_runner.py`
+  - `experiment/phase1/probe/tests/test_phase3_causal_pilot_runner.py`
+  - `experiment/phase1/probe/config/phase3_selfaware_subspace_normed_sft_runtime_logit_diagnostic_sweep.yaml`
+  - `experiment/phase1/probe/config/phase3_selfaware_subspace_known_retention_sft_runtime_logit_diagnostic_sweep.yaml`
+  - `experiment/phase1/probe/qwen3-4b-sft-merged-seed1-selfaware/causal_pilots/phase3_selfaware_subspace_normed_sft_runtime_logit_diagnostic/summary.csv`
+  - `experiment/phase1/probe/qwen3-4b-sft-merged-seed1-selfaware/causal_pilots/phase3_selfaware_subspace_known_retention_sft_runtime_logit_diagnostic/summary.csv`
+- commands:
+  - `python -m pytest experiment\phase1\probe\tests\test_phase3_causal_pilot_runner.py experiment\phase1\probe\tests\test_phase3_causal_pilot_sweep.py -q`
+  - `python -m py_compile experiment\phase1\probe\phase3_causal_pilot_runner.py experiment\phase1\probe\phase3_causal_pilot_sweep.py`
+  - `python experiment\phase1\probe\phase3_causal_pilot_sweep.py --config experiment\phase1\probe\config\phase3_selfaware_subspace_normed_sft_runtime_logit_diagnostic_sweep.yaml --mode-filter logit_diagnostic --write-plan --materialize-configs --execute --allow-logit-diagnostic`
+  - `python experiment\phase1\probe\phase3_causal_pilot_aggregate.py --root experiment\phase1\probe\qwen3-4b-sft-merged-seed1-selfaware\causal_pilots\phase3_selfaware_subspace_normed_sft_runtime_logit_diagnostic --out experiment\phase1\probe\qwen3-4b-sft-merged-seed1-selfaware\causal_pilots\phase3_selfaware_subspace_normed_sft_runtime_logit_diagnostic\summary.csv`
+  - `python experiment\phase1\probe\phase3_causal_pilot_sweep.py --config experiment\phase1\probe\config\phase3_selfaware_subspace_known_retention_sft_runtime_logit_diagnostic_sweep.yaml --mode-filter logit_diagnostic --write-plan --materialize-configs --execute --allow-logit-diagnostic`
+  - `python experiment\phase1\probe\phase3_causal_pilot_aggregate.py --root experiment\phase1\probe\qwen3-4b-sft-merged-seed1-selfaware\causal_pilots\phase3_selfaware_subspace_known_retention_sft_runtime_logit_diagnostic --out experiment\phase1\probe\qwen3-4b-sft-merged-seed1-selfaware\causal_pilots\phase3_selfaware_subspace_known_retention_sft_runtime_logit_diagnostic\summary.csv`
+- gotchas:
+  - Adapterless runtime is now explicit and fail-closed: set `runtime_model.use_extraction_adapter: false` and `runtime_model.allow_adapterless: true`. Without those flags, the runner keeps using candidate extraction adapters by default.
+  - `model.model_name` and `runtime_model.model_name` can both appear in materialized configs. Interpret runtime from `runtime_model`; `model` remains descriptive/spec metadata.
+- decisions:
+  - Separate future claims into arm-native adapter effects versus same-runtime direction effects.
+  - Treat current SFT-runtime effects as probability-slice steering only; top-1 did not move on the unknown panel and known-row top-1 movement was minimal.
+  - Do not call the SAE contrast a clean knob: wrong-layer controls remain substantial on unknown rows even in SFT runtime.
+- next steps:
+  - Add row-specific answer-token target slices or sequence-probability targets, because refusal-opener probability alone can miss answer degradation.
+  - Consider a small learned linear probe/PCA direction as a same-runtime subspace comparator.
+  - Scale the most informative panels to more rows after target slices are less proxy-like.
+- signals:
+  - SFT-runtime unknown-row baseline refusal-opener probability mean: `0.607347`.
+  - SFT-runtime unknown rows, SAE contrast coefficient-50 activation subtraction: refusal-opener delta mean `+0.051214`, top-1 changed `0.0%`.
+  - SFT-runtime unknown rows, SAE contrast coefficient-50 activation addition: refusal-opener delta mean `-0.066321`, top-1 changed `0.0%`.
+  - SFT-runtime unknown rows, SAE contrast coefficient-50 wrong-layer offset `-1`: refusal-opener delta mean `-0.097313`, top-1 changed `0.0%`.
+  - SFT-runtime unknown rows, broad DPO layer-24 coefficient-50 activation addition: refusal-opener delta mean `+0.041172`, top-1 changed `0.0%`.
+  - SFT-runtime known-row baseline refusal-opener probability mean: `0.094628`.
+  - SFT-runtime known rows, SAE contrast coefficient-50 activation addition: refusal-opener delta mean `+0.002875`, top-1 changed `0.0%`.
+  - SFT-runtime known rows, broad DPO layer-24 coefficient-50 activation addition: refusal-opener delta mean `+0.062745`, top-1 changed `0.0%`.
+  - SFT-runtime known rows, broad KTO layer-25 coefficient-50 activation addition: refusal-opener delta mean `+0.113123`, top-1 changed `12.5%`.
