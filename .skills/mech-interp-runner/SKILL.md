@@ -364,6 +364,23 @@ python experiment/phase1/probe/phase3_calibrated_expression_plane.py \
   --config experiment/phase1/probe/config/phase3_selfaware_calibrated_expression_plane.yaml
 ```
 
+When one-axis or simple multi-hook interventions collapse into generic refusal
+pressure, run a multicell readout before designing more steering candidates:
+
+```bash
+python .skills/mech-interp-runner/scripts/phase3_cli.py multicell-readout \
+  --config experiment/phase1/probe/config/phase3_gold_kto_multicell_readout.yaml
+```
+
+Compare rank-1 against low-rank and full readouts by behavior-cell macro
+recall. Treat high readout accuracy as localization/screening evidence only;
+it is not a causal steering result.
+
+Use balanced class weighting for rare behavior-cell panels. Plain accuracy can
+look good while the readout ignores `known_refused` or
+`unknown_answered_wrong`; macro recall and per-cell recall are the decision
+surface.
+
 After logit diagnostics on behavior-conditioned rows, aggregate by behavior
 cell before interpreting:
 

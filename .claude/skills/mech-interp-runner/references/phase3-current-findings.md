@@ -191,6 +191,18 @@ repair weight raised refusal on unknown-wrong rows (`-0.007`, `+0.011`,
 supports the multi-component/distributed reading but falsifies this simple
 two-hook recipe as a calibrated steering intervention.
 
+The first gold-backed multicell readout supports a low-dimensional
+control-surface hypothesis, but it is not yet a steering source. A balanced
+four-cell ridge readout over KTO seed1 gold behavior cells improved from weak
+rank-1 macro recall (`~0.46`) to low-rank macro recall around `0.57-0.58`.
+Best current readouts include `h_lora` L21 rank 4 (`macro_recall ~= 0.582`),
+`delta` L27 rank 8 (`~0.575`), `delta` L25 rank 4 (`~0.575`), and `h_base`
+L22 rank 4 (`~0.569`). The panel is heavily imbalanced
+(`known_refused=7`, `unknown_answered_wrong=16`, `known_correct=104`,
+`unknown_refused=108`), so treat this as localization/screening evidence. The
+next useful step is a larger targeted gold behavior panel that oversamples rare
+damage cells before exporting readout-derived directions.
+
 ### Gold-Backed Answer-Start Diagnostics
 
 Tiny changed-row KTO evidence initially looked promising, but scale and replay
@@ -329,8 +341,10 @@ Prioritize the calibrated-expression question over refusal-axis steering:
 
 1. Explore multi-layer or constrained subspace controls; simple single-axis and
    simple two-hook KTO steering are active but behaviorally unsafe.
-2. Scan layer windows for directions that separate damaged behavior from paired
+2. Build a larger targeted gold behavior panel for rare cells before relying on
+   readout-derived directions.
+3. Scan layer windows for directions that separate damaged behavior from paired
    desired behavior without collapsing into a generic refusal axis.
-3. Gate candidates with generated-answer replay, not only logit slices.
-4. Prefer directions that preserve known correctness while reducing both
+4. Gate candidates with generated-answer replay, not only logit slices.
+5. Prefer directions that preserve known correctness while reducing both
    over-refusal and hallucinated unknown answers.

@@ -105,6 +105,10 @@ def build_parser() -> argparse.ArgumentParser:
     _add_config(p)
     _add_dry_run(p)
 
+    p = sub.add_parser("multicell-readout", help="Run multiclass hidden-state behavior-cell readout")
+    _add_config(p)
+    _add_dry_run(p)
+
     p = sub.add_parser("logit-cell-analysis", help="Aggregate logit diagnostics by behavior cell")
     _add_config(p)
     _add_dry_run(p)
@@ -162,6 +166,8 @@ def command_args(args: argparse.Namespace) -> tuple[str, list[str]]:
         return "experiment/phase1/probe/phase3_gold_behavior_panel.py", ["--config", args.config]
     if command == "calibrated-plane":
         return "experiment/phase1/probe/phase3_calibrated_expression_plane.py", ["--config", args.config]
+    if command == "multicell-readout":
+        return "experiment/phase1/probe/phase3_multicell_readout.py", ["--config", args.config]
     if command == "logit-cell-analysis":
         return "experiment/phase1/probe/phase3_logit_cell_analysis.py", ["--config", args.config]
     if command == "logit-cell-sign-score":
@@ -211,6 +217,7 @@ def run_validate(*, quick: bool, dry_run: bool) -> int:
             "experiment/phase1/probe/tests/test_phase3_sycophancy_generation_analysis.py",
             "experiment/phase1/probe/tests/test_phase3_sae_behavior_feature_analysis.py",
             "experiment/phase1/probe/tests/test_phase3_behavior_axis_scan.py",
+            "experiment/phase1/probe/tests/test_phase3_multicell_readout.py",
             "experiment/phase1/probe/tests/test_hidden_state_probe.py",
             "-q",
         ],
@@ -223,6 +230,7 @@ def run_validate(*, quick: bool, dry_run: bool) -> int:
             "experiment/phase1/probe/phase3_sycophancy_generation_analysis.py",
             "experiment/phase1/probe/phase3_sae_behavior_feature_analysis.py",
             "experiment/phase1/probe/phase3_behavior_axis_scan.py",
+            "experiment/phase1/probe/phase3_multicell_readout.py",
             "experiment/phase1/probe/hidden_state_probe.py",
         ],
         ["bin/sync_skills.py", "--check"],

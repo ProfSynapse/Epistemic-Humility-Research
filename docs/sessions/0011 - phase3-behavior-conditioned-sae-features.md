@@ -1503,3 +1503,63 @@ Decision:
 - Do not run generated replay for this two-hook recipe.
 - Commit the four source configs for reproducibility; keep generated run
   outputs ignored.
+
+## Checkpoint 032 - Gold KTO Multicell Readout
+
+Question: is calibrated expression better represented as a low-dimensional
+behavior-cell subspace than as one refusal/answer axis?
+
+Work completed:
+
+- Added `phase3_multicell_readout.py`, a CPU-only hidden-state readout over
+  behavior cells.
+- Added a reusable CLI route:
+  `python .skills/mech-interp-runner/scripts/phase3_cli.py multicell-readout --config ...`.
+- Added `phase3_gold_kto_multicell_readout.yaml` for the gold KTO behavior
+  panel.
+- Added tests proving the readout can distinguish a rank-2 behavior surface
+  that rank-1 cannot.
+- Initial unweighted readout mostly learned majority cells, so the readout now
+  supports `class_weighting: balanced` with fold-local weighted
+  standardization and inverse-frequency ridge training weights.
+
+Run:
+
+- Config: `experiment/phase1/probe/config/phase3_gold_kto_multicell_readout.yaml`.
+- Input: KTO seed1 gold behavior panel over 256 generated rows.
+- Labeled rows used: 235.
+- Cell counts: `known_refused=7`, `known_correct_answered=104`,
+  `unknown_refused=108`, `unknown_answered_wrong=16`.
+- 21 rows were unmatched by the four target cells, mostly non-target behavior
+  cells such as known-wrong or unknown-correct.
+
+Result:
+
+- Rank-1 readouts remain weak: best macro recall is about `0.46`.
+- Low-rank multicell readouts improve meaningfully:
+  - `h_lora` L21 rank 4: macro recall `0.582`, accuracy `0.604`.
+  - `delta` L27 rank 8: macro recall `0.575`, accuracy `0.736`.
+  - `delta` L25 rank 4: macro recall `0.575`, accuracy `0.638`.
+  - `h_base` L22 rank 4: macro recall `0.569`, accuracy `0.604`.
+- Full-rank readouts are not best after balanced weighting; the useful signal is
+  low-dimensional but not one-dimensional.
+- Confusion remains substantial. Example `h_lora` L21 rank 4:
+  - known-refused recall `5/7`.
+  - known-correct recall `77/104`.
+  - unknown-refused recall `54/108`.
+  - unknown-wrong recall `6/16`.
+
+Interpretation:
+
+- This supports the multi-dimensional control-surface hypothesis more than a
+  single humility knob.
+- The readout is not strong enough to export steering directions directly. It
+  is screening/localization evidence.
+- The biggest practical bottleneck is row balance: the panel has too few
+  known-refused and unknown-wrong examples to learn stable rare-cell boundaries.
+
+Next step:
+
+- Build a larger, targeted gold behavior panel that oversamples candidate rows
+  likely to produce the rare cells (`known_refused` and
+  `unknown_answered_wrong`) before exporting readout-derived directions.
