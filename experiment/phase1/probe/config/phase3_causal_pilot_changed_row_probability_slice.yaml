@@ -128,7 +128,7 @@ logit_targets:
     - name: answer_aliases
       source: row_aliases
       include_leading_space_variants: true
-      include_multi_token_first_token: false
+      include_multi_token_first_token: true
 
 metrics:
   primary:

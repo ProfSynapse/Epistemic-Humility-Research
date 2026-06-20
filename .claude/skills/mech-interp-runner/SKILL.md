@@ -1,11 +1,81 @@
 ---
 name: mech-interp-runner
-description: Run, plan, validate, or aggregate Epistemic-Humility local Phase 3 mechanistic-interpretability sweeps, including hidden-state candidate inventories, causal-pilot sweep planning, explicit non-GPU/GPU gates, base-original skip handling, and offline result aggregation. Use when working on local mech-interp sweeps, causal-pilot diagnostics, activation-addition/logit-diagnostic runs, or future reruns of the Phase 3 full candidate inventory.
+description: Run, plan, validate, or aggregate Epistemic-Humility local Phase 3 mechanistic-interpretability sweeps, including hidden-state candidate inventories, causal-pilot sweep planning, explicit non-GPU/GPU gates, base-original skip handling, and offline result aggregation. Use when working on local mech-interp sweeps, causal-pilot diagnostics, activation-addition/logit-diagnostic runs, behavior-axis scans, SAE feature screens, or future reruns of the Phase 3 full candidate inventory.
 ---
 
 # Mech-Interp Runner
 
-Use the checked-in scripts. Do not hand-roll terminal loops.
+Use checked-in scripts and configs. Do not hand-roll terminal loops.
+
+## Progressive Disclosure
+
+Keep this file as the runnable workflow and invariant checklist. Load extra
+context only when needed:
+
+- For current Phase 3 findings and interpretation caveats, read
+  `references/phase3-current-findings.md`.
+- For detailed provenance, read the active session note under `docs/sessions/`.
+- For exact historical output values, inspect run manifests, summary CSVs, and
+  JSONL rows under the relevant `causal_pilots`, `behavior_axis_scan`,
+  `sae_*`, or `direction_geometry` output root.
+
+Do not add running result logs or long historical summaries to `SKILL.md`.
+Promote only durable procedure, guardrails, and reusable commands here.
+
+## Compact Recovery Loop
+
+After context compaction or degraded memory:
+
+1. Re-read this skill and drill into references only as needed.
+2. Re-read the latest relevant `docs/sessions/` note and local KG/search
+   results if they affect the next experiment.
+3. Set up or run the current local experiment with checked-in scripts/configs.
+4. Analyze outputs against the current research target.
+5. Update session notes, findings references, and skills when a durable
+   procedure or gotcha changes.
+6. Choose the next highest-ROI local slice from the evidence and repeat.
+
+Stay local to this repository for Phase 3 mech-interp work. Do not use external
+workflow or memory systems such as Nexus unless the user explicitly asks for
+them in the current turn.
+
+## Skill Maintenance Contract
+
+Keep `SKILL.md` self-documenting and bounded:
+
+- Put timeless rules, routing, commands, and validation gates in `SKILL.md`.
+- Put current findings, numeric results, and interpretation snapshots in
+  `references/*.md`.
+- Put run-specific provenance, decisions, and narrative updates in
+  `docs/sessions/*.md`.
+- Put reusable analysis logic in checked-in scripts or configs, not prose.
+- If a section grows because of one experiment, move the details to a reference
+  and leave only the general rule plus the reference path.
+- After editing this skill, run `python bin/sync_skills.py --write`, then
+  `python bin/sync_skills.py --check`.
+
+Before adding a paragraph to this file, ask: "Will this still guide a future
+agent six months from now without loading today's run history?" If not, put it
+in a reference or session note.
+
+## Research Target
+
+The target is not a raw refusal axis. The target is coherent epistemic-humility
+expression: the model answers when it has usable knowledge and abstains when it
+does not.
+
+Separate these surfaces before interpreting a direction:
+
+- `known_correct_answer`: desired answering behavior.
+- `known_refused`: over-refusal damage.
+- `unknown_refused`: desired abstention behavior.
+- `unknown_answered_wrong`: hallucination / under-refusal damage.
+- Confidence-bearing variants when available: low-confidence unknown refusal,
+  high-confidence wrong answer, and uncertain-but-correct known answer.
+
+A candidate direction is only promising if it improves one damaged behavior
+without degrading the paired desired behavior. Lower refusal alone is not a win.
+First-token answer-start movement is not generated-answer correctness.
 
 ## Scope
 
@@ -14,51 +84,94 @@ Use the checked-in scripts. Do not hand-roll terminal loops.
 - Do not run Docker/GPU unless the user explicitly approves that live run.
 - Keep base-original `h_base` adapterless work fail-closed until the live runner
   explicitly supports adapterless base execution.
+- Keep generated outputs gitignored by default unless a governed publication
+  decision explicitly whitelists them.
 
-## Full Sweep Plan
+## Sycophancy / Helpfulness Probe Path
 
-Plan the reusable full local sweep without model loading:
+Use this path when testing whether training regimens change susceptibility to
+user pressure, helpfulness framing, or answer-sycophancy. Treat it as adjacent
+evidence: it can explain over-answering or user-pleasing pressure, but it is not
+the same construct as calibrated epistemic humility.
+
+Start with the checked-in answer-sycophancy OOD loader and smoke config:
 
 ```bash
-python experiment/phase1/probe/phase3_causal_pilot_sweep.py \
-  --config experiment/phase1/probe/config/phase3_causal_pilot_local_sweep.yaml
+python experiment/phase1/eval/run_eval.py \
+  --config experiment/phase1/eval/config/eval_sycophancy_answer_smoke_seed1_all_arms_local_4b.yaml \
+  --live-vllm
 ```
 
-The sweep config points at:
+For Windows/WSL local runs, prefer the working Docker vLLM environment if host
+Python reports `ModuleNotFoundError: No module named 'vllm._C'`. The host import
+can detect the package while missing compiled vLLM extensions.
 
-- `experiment/phase1/probe/config/phase3_causal_pilot_full_candidates.yaml`
-- `experiment/phase1/probe/config/phase3_causal_pilot_gpu_smoke.yaml`
+Analyze scored rows with:
 
-Expected current shape: 9 inventory candidates, 8 executable candidates, 1
-skipped base-original candidate, and 16 executable jobs across generation and
-logit-diagnostic modes. The checked-in local sweep uses Docker command planning
-for live GPU execution.
+```bash
+python experiment/phase1/eval/analysis/sycophancy_answer_analysis.py \
+  --results-dir experiment/phase1/eval/results_sycophancy_answer_smoke_seed1_all_arms_4b \
+  --output-root experiment/phase1/eval/analysis/sycophancy_answer_smoke_seed1_all_arms_4b
+```
 
-## Materialize Without Running
+Read the paired JSONL before interpreting summary metrics. On small slices, low
+neutral correctness can make capitulation percentages unstable. Report neutral
+accuracy, wrong-hint accuracy, wrong-hint match rate, over-refusal, and
+condition-level stated confidence together.
+
+Wrong-hint matching must be correctness/refusal-aware. Do not count a row as
+matching the user's wrong answer if the model answered correctly while negating
+or mentioning that wrong answer.
+
+For mechanistic follow-up, build an extraction-compatible row manifest before
+running hidden-state extraction:
+
+```bash
+python experiment/phase1/probe/phase3_sycophancy_answer_row_manifest.py
+```
+
+Prefer same-condition controls before interpreting a sycophancy axis. A
+neutral-vs-wrong-hint contrast can mostly encode the extra user-hint text. Use
+wrong-hint-followed vs wrong-hint-not-followed, or wrong-hint-followed vs
+wrong-hint-refused, when the panel has enough rows.
+
+Run offline scans only after the hidden-state extraction manifests are
+`status=ok` and `verified=true`:
+
+```bash
+python experiment/phase1/probe/phase3_behavior_axis_scan.py \
+  --config experiment/phase1/probe/config/phase3_sycophancy_answer_behavior_axis_scan.yaml
+```
+
+For Docker hidden-state extraction, git provenance can fail under mounted-repo
+ownership unless git is called with `safe.directory`. Keep the strict manifest
+gate; fix provenance collection rather than allowing null commit fields.
+
+For generated-answer sycophancy replays, use the screening analyzer and then
+manually inspect the per-row JSONL:
+
+```bash
+python experiment/phase1/probe/phase3_sycophancy_generation_analysis.py \
+  --generations path/to/generations.jsonl \
+  --output-root path/to/analysis
+```
+
+The automatic wrong-hint match is conservative about correct/refusal rows, but
+it can still overcount hedged mentions. Treat the summary CSV as triage and the
+row JSONL as the interpretation surface.
+
+## Standard Sweep Workflow
+
+Plan/materialize before live execution:
 
 ```bash
 python experiment/phase1/probe/phase3_causal_pilot_sweep.py \
   --config experiment/phase1/probe/config/phase3_causal_pilot_local_sweep.yaml \
+  --mode-filter logit_diagnostic \
   --write-plan --materialize-configs
 ```
 
-This writes a plan plus per-candidate runner configs only. It does not execute
-generation or logit diagnostics. Planned live commands should start with
-`docker run --rm --gpus all --ipc=host --entrypoint python`, mount the repo to
-`/workspace/repo`, and use `/workspace/repo/...` paths for the runner and
-materialized configs.
-
-For a logit-only sweep from the full config, filter before planning:
-
-```bash
-python experiment/phase1/probe/phase3_causal_pilot_sweep.py \
-  --config experiment/phase1/probe/config/phase3_causal_pilot_local_sweep.yaml \
-  --mode-filter logit_diagnostic --write-plan --materialize-configs
-```
-
-## Live Execution Gate
-
-Only after explicit user approval:
+Only after approval, execute:
 
 ```bash
 python experiment/phase1/probe/phase3_causal_pilot_sweep.py \
@@ -68,300 +181,44 @@ python experiment/phase1/probe/phase3_causal_pilot_sweep.py \
   --allow-logit-diagnostic
 ```
 
-The wrapper still relies on `phase3_causal_pilot_runner.py` for live model
-loading, hooks, output manifests, and fail-closed control validation. Execution
-is serial by default; do not parallelize GPU jobs unless the user explicitly
-asks for a capacity experiment.
+Aggregate completed runs:
 
-Live execution observability is under the sweep output root:
+```bash
+python experiment/phase1/probe/phase3_causal_pilot_aggregate.py \
+  --root experiment/phase1/probe/qwen3-4b-instruct/causal_pilots/phase3_local_mech_interp_sweep \
+  --out experiment/phase1/probe/qwen3-4b-instruct/causal_pilots/phase3_local_mech_interp_sweep/summary.csv
+```
+
+Use aggregate output as an index. Inspect `run_manifest.json`, per-row JSONL,
+and source configs before interpreting surprising effects.
+
+Aggregation collects every completed run under the root. If a candidate was
+rerun after a failed or partial attempt, filter to the latest successful
+`run_manifest.json` per candidate/mode before reporting metrics.
+
+## Live Execution Observability
+
+Sweep execution logs are under:
 
 - `OUTPUT_ROOT/_execution_logs/*.stdout.log`
 - `OUTPUT_ROOT/_execution_logs/*.stderr.log`
 - `OUTPUT_ROOT/_execution_logs/execution_results.jsonl`
 
-The wrapper appends one execution-results row after each job finishes. If a
-Docker sweep is interrupted or a job fails, inspect this JSONL plus the per-job
-logs before deciding what to rerun; do not rely only on `sweep_manifest.json` or
-`planned_commands.jsonl`.
+`execution_results.jsonl` is append-only. If a failed Docker attempt is rerun,
+group by candidate/mode and use the latest successful event while preserving
+failed events as retry provenance.
 
-If a failed Docker attempt is immediately rerun, `execution_results.jsonl` may
-contain both the failed row and the later successful row for the same
-candidate/mode. Treat it as an append-only event log: group by candidate/mode
-and use the latest successful event when summarizing completed work, while
-still preserving the failed event as provenance for the retry.
+Docker materialized runner configs must contain container-readable paths. A path
+like `/workspace/repo/F:\Code\...` is unsafe; stop and replan.
 
-Docker materialized runner configs must contain container-readable paths. The
-sweep wrapper rewrites obvious runner config paths such as `output.root`,
-`selection.probe_results`, `runtime_model.adapter_path`, and candidate direction
-artifact paths to `/workspace/repo/...` when `execution.backend: docker`. A mixed
-path like `/workspace/repo/F:\Code\...` means the materialized YAML is unsafe to
-run and the sweep should be stopped and replanned.
-
-## SAE Plumbing Smoke
-
-Use the CPU-only SAE-shaped plumbing smoke to validate existing hidden-state
-extraction artifacts before adding real SAE training code:
-
-```bash
-python experiment/phase1/probe/phase3_sae_smoke.py \
-  --config experiment/phase1/probe/config/phase3_selfaware_sae_smoke.yaml
-```
-
-This smoke is numpy-only and deterministic. It loads verified SelfAware
-extraction manifests and row shards, selects a small balanced known/unknown row
-slice, applies a seeded random encoder, keeps a top-k sparse code, decodes it,
-and writes claim-safe metrics/manifests under the configured `sae_smokes` root.
-
-Treat every output as `SAE_PLUMBING_SMOKE_ONLY`. It is not a trained SAE, not a
-mechanistic interpretation result, and not evidence for paper claims. Use it
-only to catch broken manifest, row-selection, safetensors, layer, role, shape,
-or output-root plumbing before a governed SAE implementation exists.
-
-The generated `sae_smokes` output tree is local/reproducible and may contain
-tensor slices from hidden activations. Keep it gitignored by default; commit
-the runner, config, tests, and session note rather than smoke tensor outputs
-unless a governed artifact-publication decision explicitly whitelists a subset.
-
-Fail closed if the source extraction manifest is missing, not `status: ok`, or
-not `verified: true`; if labels are not exactly `known`/`unknown`; if the
-balanced slice is unavailable; if a role shard or layer tensor is missing; if
-tensor shapes disagree with the manifest; or if the output root is inside a
-source extraction directory.
-
-## SAE Training Pilot
-
-After the plumbing smoke passes, use the bounded SAE training pilot for a first
-real autoencoder run over existing hidden-state tensors:
-
-```bash
-python experiment/phase1/probe/phase3_sae_train.py \
-  --config experiment/phase1/probe/config/phase3_selfaware_sae_pilot.yaml
-```
-
-This trains a small ReLU sparse autoencoder with an L1 code penalty over the
-configured hidden-state layer, using deterministic train/validation splits and
-local `sae_runs` outputs. Treat every output as `SAE_TRAINING_PILOT_ONLY`: it
-is exploratory representation-learning evidence only, not causal evidence, not
-feature-interpretability evidence, and not Phase 1 headline evidence.
-
-Current local sensitivity found that a vanilla ReLU SAE with L1 coefficients
-`1e-4` and `1e-2` stayed dense on the SelfAware delta slices, and `1e-1` was
-only moderately sparse. Top-k ReLU produced exact sparse codes: k=16 is the
-current checked-in interpretability pilot default, while k=32 is the softer
-reconstruction/sparsity compromise. Do not interpret either as feature-level
-causal evidence without downstream feature inspection and intervention.
-
-The generated `sae_runs` output tree contains learned weights and normalization
-statistics derived from hidden activations. Keep it gitignored by default and
-commit only the runner, config, tests, skill updates, and session note unless a
-governed artifact-publication decision explicitly whitelists a subset.
-
-## SAE Feature Analysis
-
-After a trained SAE pilot exists, use the feature-analysis runner to rank learned
-features by known/unknown activation separation:
-
-```bash
-python experiment/phase1/probe/phase3_sae_feature_analysis.py \
-  --config experiment/phase1/probe/config/phase3_selfaware_sae_feature_analysis.yaml
-```
-
-This reuses the trained SAE weights, saved normalization statistics, selected
-rows, and verified source extraction tensors to recompute feature codes. It
-writes `feature_rankings.csv`, `summary.json`, and top activating row examples
-under the configured `sae_feature_analysis` output root.
-
-Treat every output as `SAE_FEATURE_ANALYSIS_ONLY`: this is feature-screening
-evidence for choosing candidate features, not causal evidence, not a
-monosemantic-feature claim, and not Phase 1 headline evidence. Candidate
-features still need row-level inspection and downstream logit/intervention
-controls before being described as mechanisms.
-
-Current local top-k16 SelfAware screen found stronger known/unknown separation
-in the SFT->DPO delta SAE than the SFT->KTO delta SAE. DPO's top separated
-feature had |d| about 1.28 and was known-skewed; KTO's top separated feature
-had |d| about 0.88 and was unknown-skewed. Treat this as a prioritization cue
-for the next causal diagnostic pass, not as an explanation by itself.
-
-Generated `sae_feature_analysis` outputs are local/reproducible and may expose
-row-level examples from the probe set. Keep them gitignored by default.
-
-## SAE Feature Directions
-
-After feature analysis, export selected SAE decoder columns as raw hidden-state
-direction candidates for later controlled diagnostics:
-
-```bash
-python experiment/phase1/probe/phase3_sae_feature_directions.py \
-  --config experiment/phase1/probe/config/phase3_selfaware_sae_feature_directions.yaml
-```
-
-The exporter multiplies each selected decoder column by the saved training
-normalization scale, because the SAE was trained in standardized activation
-space but the causal/logit runner intervenes in raw hidden-state space. Preserve
-the feature's natural polarity: addition to a known-skewed feature should be
-interpreted differently than addition to an unknown-skewed feature, and
-subtraction is the paired opposite control.
-
-Treat every output as `SAE_FEATURE_DIRECTION_CANDIDATES_ONLY`. These are bridge
-artifacts for causal tests, not evidence that the SAE feature is monosemantic or
-behaviorally active. Current exported top-k16 feature directions have much
-smaller norms than the broad known/unknown mean-difference directions, so use a
-separate coefficient smoke rather than blindly reusing prior grids.
-
-Generated `sae_feature_directions` outputs are local/reproducible and should
-stay gitignored unless a governed artifact-publication decision says otherwise.
-
-## SAE Feature Composite Directions
-
-When single SAE decoder-feature interventions look non-local or entangled, build
-explicit composite directions rather than hand-editing tensors:
-
-```bash
-python experiment/phase1/probe/phase3_sae_feature_composites.py \
-  --config experiment/phase1/probe/config/phase3_selfaware_sae_feature_composites.yaml
-```
-
-Composite directions are derived from an exported
-`sae_feature_directions.manifest.json`, so each output keeps source direction
-IDs, feature IDs, weights, combination method, rescaling method, layer, role,
-hash, and vector path. Current supported combinations are
-`raw_weighted_mean` and `unit_weighted_mean`; current rescaling choices are
-`none`, `mean_source_norm`, and `sum_abs_weighted_source_norm`.
-
-Treat outputs as `SAE_FEATURE_COMPOSITE_DIRECTION_CANDIDATES_ONLY`. They are
-subspace-screening bridge artifacts, not proof that a sparse feature circuit has
-been found. Composite sources must share layer, role, and hidden dimension.
-
-If a composite is later referenced by a causal-pilot config with metadata fields
-such as `contrast`, the composite export config must include the same metadata
-so the generated manifest row matches the candidate config. Do not weaken the
-dry-run validator to bypass a mismatch; regenerate the composite manifest with
-the missing provenance field.
-
-## Direction Transforms
-
-Use direction transforms when broad hidden-state directions need to be compared
-against much smaller SAE-derived directions under a shared coefficient grid:
-
-```bash
-python experiment/phase1/probe/phase3_direction_transforms.py \
-  --config experiment/phase1/probe/config/phase3_selfaware_dpo_subspace_direction_transforms.yaml
-python experiment/phase1/probe/phase3_direction_transforms.py \
-  --config experiment/phase1/probe/config/phase3_selfaware_kto_subspace_direction_transforms.yaml
-```
-
-Current supported transforms are `unit_rescale_to_norm`, `multiply`, and
-`identity`. Treat outputs as `DIRECTION_TRANSFORM_CANDIDATES_ONLY`. They are
-bridge artifacts for controlled comparisons, not new source evidence. Prefer
-same-norm transforms before comparing broad known/unknown deltas with SAE
-decoder-feature or composite directions; otherwise coefficient-grid effects can
-mostly reflect vector magnitude.
-
-## SAE Feature Logit Diagnostics
-
-After exporting SAE feature directions, run the checked-in feature-level
-logit-diagnostic sweep as a coefficient smoke:
-
-```bash
-python experiment/phase1/probe/phase3_causal_pilot_sweep.py \
-  --config experiment/phase1/probe/config/phase3_selfaware_sae_feature_logit_diagnostic_sweep.yaml \
-  --mode-filter logit_diagnostic \
-  --write-plan --materialize-configs --execute \
-  --allow-logit-diagnostic
-```
-
-This pass uses exact top-activating row keys per feature and a smaller
-feature-vector coefficient grid. Interpret it as a screening diagnostic:
-top-1 token changes, target probability-slice deltas, wrong-layer controls, and
-random matched-norm controls decide whether a feature deserves a stronger
-causal follow-up. If a wrong-layer control is nearly as strong as the source
-layer, do not call the feature a localized mechanism.
-
-For nearby-layer panels, `control_settings.wrong_layer.layer_offsets` can be a
-non-empty list such as `[-2, -1, 1, 2]`. The runner expands wrong-layer and
-wrong-layer-subtraction controls into one arm per offset while preserving the
-legacy single `layer_offset` behavior for older configs.
-
-Current local result: DPO feature 47 at coefficient 50 strongly increased the
-static refusal-opener slice on its four selected unknown rows, but the `+1`
-wrong-layer control was nearly as strong, so this is an interesting
-non-localized steering signal rather than a clean feature mechanism. KTO feature
-directions were much weaker in the same smoke. Future follow-up should use a
-nearby-layer panel, more rows, and row-specific answer/refusal target slices
-before making a mechanistic claim. The first nearby-layer panel for DPO feature
-47 confirmed the non-local result: offsets `-2`, `-1`, `+1`, and `+2` all moved
-the refusal-opener slice, with offset `-1` close to the source-layer effect.
-Treat this as evidence against a tidy layer-local SAE feature knob.
-
-Current composite screen: the DPO unknown-pair composite (`f47 + f51`) was
-weaker and no cleaner than feature 47 alone. The DPO unknown-minus-known
-contrast (`f47 + f51 - f64 - f65`) produced stronger signed refusal-opener
-movement on an 8-row panel, but wrong-layer controls remained comparable and
-random matched-norm was still substantial. Treat this as evidence for an
-entangled broader direction or subspace, not a localized SAE mechanism.
-
-## Direction Geometry Maps
-
-Before scaling causal runs, map candidate direction geometry against broader
-known/unknown and arm-delta direction inventories:
-
-```bash
-python experiment/phase1/probe/phase3_direction_geometry.py \
-  --config experiment/phase1/probe/config/phase3_selfaware_direction_geometry.yaml
-python experiment/phase1/probe/phase3_direction_geometry.py \
-  --config experiment/phase1/probe/config/phase3_selfaware_direction_geometry_all_delta_layers.yaml
-```
-
-This is CPU-only. It writes `direction_inventory.csv`, `pairwise_cosine.csv`,
-`nearest_neighbors.csv`, and `summary.json` under the configured
-`direction_geometry` output root. Treat every output as
-`DIRECTION_GEOMETRY_ANALYSIS_ONLY`: cosine alignment is triage evidence for
-choosing interventions, not causal evidence.
-
-Current local result: the DPO SAE unknown-minus-known composite aligned strongly
-with the broad DPO unknown-minus-known delta at layer 24 (`cosine ~= 0.653`) and
-remained aligned with adjacent later DPO layers (`layer 25 ~= 0.553`, `layer 26
-~= 0.506`, `layer 23 ~= 0.504`). The unknown-only pair aligned less strongly
-with the same broad direction (`cosine ~= 0.388`). This supports treating the
-SAE composite as a lead into a distributed known/unknown subspace rather than a
-standalone sparse feature knob.
-
-## Same-Norm Subspace Diagnostics
-
-After same-norm transform export, run the same-scale subspace logit diagnostic:
-
-```bash
-python experiment/phase1/probe/phase3_causal_pilot_sweep.py \
-  --config experiment/phase1/probe/config/phase3_selfaware_subspace_normed_logit_diagnostic_sweep.yaml \
-  --mode-filter logit_diagnostic \
-  --write-plan --materialize-configs --execute \
-  --allow-logit-diagnostic
-```
-
-Current local result: with all compared directions normalized to the SAE
-unknown-minus-known composite norm, the SAE contrast still produced the largest
-signed refusal-opener movement on the 8-row unknown panel, especially under
-activation subtraction at coefficient 50 (`delta ~= +0.134`, top-1 changed
-`62.5%`). The same-norm DPO broad layer-24 direction was cleaner but smaller
-under activation addition at coefficient 50 (`delta ~= +0.093`, top-1 changed
-`37.5%`). The KTO broad layer-25 direction remained weak at the same norm.
-Wrong-layer controls for the SAE contrast stayed comparable to the source-layer
-effect, so this remains distributed-subspace evidence rather than layer-local
-mechanism evidence.
-
-### Runtime Semantics
+## Runtime Semantics
 
 For live `phase3_causal_pilot_runner.py` diagnostics, runtime identity is
-controlled by `runtime_model`, not by descriptive `model` metadata. If
+controlled by `runtime_model`, not descriptive `model` metadata. If
 `runtime_model.adapter_path` is null, the runner falls back to the candidate
-extraction manifest adapter by default. That is an arm-native panel: DPO
-candidates run with the DPO extraction adapter, KTO candidates run with the KTO
-extraction adapter, and baseline differences can reflect adapter/runtime
-differences rather than the direction alone.
+extraction manifest adapter by default. That is an arm-native panel.
 
-For a same-runtime adapterless SFT panel, disable extraction-adapter fallback
-explicitly in the sweep `runner_overrides`:
+For same-runtime adapterless SFT panels, disable extraction-adapter fallback:
 
 ```yaml
 runner_overrides:
@@ -372,11 +229,12 @@ runner_overrides:
     allow_adapterless: true
 ```
 
-Adapterless execution is fail-closed and opt-in. Do not interpret
-`model.model_name` as the live model if `runtime_model` disagrees.
+Use `runner_overrides` for reusable sweep-level changes such as exact row
+slices, runtime pins, logit target groups, and control settings.
 
-Use `runner_overrides` for reusable sweep-level changes such as exact row slices
-or runtime pins, rather than copying whole runner configs:
+## Row Selection
+
+Use fixed row keys for causal replay claims:
 
 ```yaml
 runner_overrides:
@@ -385,94 +243,264 @@ runner_overrides:
       - selfaware::selfaware::000002::selfaware-3
 ```
 
-Current known-retention result: arm-native DPO/SAE known rows had near-zero
-refusal-opener baseline (`~0.000054`), while the arm-native KTO runtime baseline
-was higher (`~0.053762`). Treat that as a runtime/adapter signal unless a
-same-runtime panel confirms it.
+For changed-row or behavior-conditioned claims, balanced `max_rows` is not
+enough. Use exact `selection.row_keys` or `selection.row_keys_by_candidate` and
+record how rows were chosen.
 
-Current adapterless SFT-runtime result: unknown rows already had high
-refusal-opener baseline (`~0.607347`), and same-norm subspace directions mostly
-moved refusal probability without top-1 changes. On known rows, the SAE DPO
-contrast barely moved the source-layer refusal slice at coefficient 50
-(`+0.002875`), while broad DPO and KTO directions moved it more (`+0.062745`
-and `+0.113123` respectively). Wrong-layer controls remain substantial, so this
-is still distributed-subspace/probability-slice evidence, not a clean knob.
+For reusable fixed panels, put row keys in a text file and reference it:
 
-## Aggregate Completed Runs
-
-```bash
-python experiment/phase1/probe/phase3_causal_pilot_aggregate.py \
-  --root experiment/phase1/probe/qwen3-4b-instruct/causal_pilots/phase3_local_mech_interp_sweep \
-  --out experiment/phase1/probe/qwen3-4b-instruct/causal_pilots/phase3_local_mech_interp_sweep/summary.csv
+```yaml
+runner_overrides:
+  selection:
+    probe_results: null
+    row_keys_file: experiment/phase1/probe/config/example_fixed_row_keys.txt
 ```
 
-Use aggregate output as an index. Inspect source manifests and JSONL rows before
-interpreting surprising effects.
+Use one row key per line. Blank lines and `#` comments are allowed. Keep these
+files small, named by the panel purpose, and checked in only when they contain
+non-restricted row identifiers.
 
-The aggregate script walks every `run_manifest.json` under the root. If the same
-sweep root contains repeated runs, filter to the newest run directory per
-candidate/mode before reporting headline diagnostic numbers.
+For per-row logit targets, prefer structured row fields over copied strings:
+
+```yaml
+logit_targets:
+  groups:
+    - name: wrong_hint_answer
+      source: row_field
+      field_path: sycophancy.incorrect_answer
+      include_leading_space_variants: true
+      include_multi_token_first_token: false
+```
+
+This requires the extraction rows to preserve the nested metadata field. Verify
+`rows.jsonl` before launching live diagnostics.
+
+## SAE Path
+
+Use SAE scripts as screens, not causal evidence:
+
+```bash
+python experiment/phase1/probe/phase3_sae_smoke.py \
+  --config experiment/phase1/probe/config/phase3_selfaware_sae_smoke.yaml
+python experiment/phase1/probe/phase3_sae_train.py \
+  --config experiment/phase1/probe/config/phase3_selfaware_sae_pilot.yaml
+python experiment/phase1/probe/phase3_sae_feature_analysis.py \
+  --config experiment/phase1/probe/config/phase3_selfaware_sae_feature_analysis.yaml
+python experiment/phase1/probe/phase3_sae_behavior_feature_analysis.py \
+  --config experiment/phase1/probe/config/phase3_selfaware_sae_behavior_feature_analysis.yaml
+```
+
+Treat outputs as plumbing/training/feature-screening evidence only. Candidate
+features need row inspection, geometry, logit controls, and generated-answer
+replay before being described as mechanisms.
+
+For SelfAware extraction manifests, if using
+`readiness_checks.require_extraction_manifest`, specify `label_counts`
+explicitly (`known: 556`, `unknown: 677`). Omitting the field can be interpreted
+as an expected empty map and fail before model loading.
+
+## Behavior-Axis Path
+
+Use layerwise behavior-axis scans when SAE features look entangled or when the
+question is where behavior signal lives across `h_base`, `h_lora`, and `delta`:
+
+```bash
+python experiment/phase1/probe/phase3_behavior_axis_scan.py \
+  --config experiment/phase1/probe/config/phase3_selfaware_behavior_axis_scan.yaml
+python experiment/phase1/probe/phase3_behavior_axis_directions.py \
+  --config experiment/phase1/probe/config/phase3_selfaware_behavior_axis_directions.yaml
+```
+
+For gold-backed behavior cells, materialize a generated-answer behavior panel
+before scanning. Use a no-vector baseline generation pass with
+`selection.probe_results` so rows carry aliases/answer values, then run:
+
+```bash
+python experiment/phase1/probe/phase3_gold_behavior_panel.py \
+  --config experiment/phase1/probe/config/phase3_gold_kto_behavior_panel.yaml
+```
+
+Pass the resulting `rows.jsonl` as `extractions[].rows_path` in behavior-axis
+scan/export configs. The tensor shards still come from `extraction_dir`; the
+alternate rows file only supplies generated behavior labels and row filters.
+
+Use calibrated-expression plane analysis to project behavior cells onto paired
+damage axes after direction export:
+
+```bash
+python experiment/phase1/probe/phase3_calibrated_expression_plane.py \
+  --config experiment/phase1/probe/config/phase3_selfaware_calibrated_expression_plane.yaml
+```
+
+After logit diagnostics on behavior-conditioned rows, aggregate by behavior
+cell before interpreting:
+
+```bash
+python experiment/phase1/probe/phase3_logit_cell_analysis.py \
+  --config experiment/phase1/probe/config/phase3_selfaware_calibrated_expression_kto_logit_cell_analysis.yaml
+```
+
+Use `phase3_direction_transforms.py` for reusable direction transforms instead
+of ad hoc vector math. For composite plane tests, prefer an explicit
+`linear_combination` transform with named source direction IDs, weights, and a
+target norm:
+
+```yaml
+transforms:
+  - label: example_composite_normed
+    method: linear_combination
+    target_norm: 1.2142820358276367
+    components:
+      - source_direction_id: behavior_axis__...
+        weight: -1.0
+      - source_direction_id: behavior_axis__...
+        weight: -1.25
+```
+
+Treat composite directions as candidate controls. A right-signed logit-cell
+pattern still needs generated-answer replay and row-level flip inspection before
+it counts as behavioral improvement.
+
+Linear-combination components must share hidden dimension, role, and layer. For
+multi-layer hypotheses, use a dedicated multi-layer intervention path rather
+than forcing different-layer vectors into one transformed vector.
+
+Multi-layer candidate configs use `multi_layer_components` instead of a
+top-level `direction_file`. Each component must declare its own
+`direction_manifest`, `direction_file`, `tensor_key`, `role`, `layer`,
+`vector_sha256`, and `weight`. The live runner applies every component at the
+final prompt token and records aggregate hook counts; for a two-component
+28-row diagnostic, expect `intervention_applied_count_total: 56`.
+
+Use signed component weights to encode the intended repair direction, then use
+`activation_addition` as the source arm. Wrong-layer controls shift all
+component layers by the same offset. Keep the cell-analysis gate unchanged:
+multi-layer candidates must still improve damaged behavior cells while
+preserving paired desired cells before generated replay.
+
+Interpret behavior axes as candidate subspaces, not localized mechanisms. If
+wrong-layer controls are comparable or stronger, export source axes across the
+nearby layer window before claiming a source-layer effect.
+
+Do not call `h_base` inside DPO/KTO extractions the original Qwen base. It is
+the SFT-merged model before the preference adapter. True original-base
+adapterless extraction is a separate fail-closed capability.
 
 ## Probability-Slice Diagnostics
 
-When inspecting next-token probability slices, avoid treating the first token of
-every multi-token answer alias as an answer token. Qwen tokenization can split
-an answer like `Ireland` into a first token `I`, which collides with refusal
-openers such as `I don't know` and falsely inflates the answer bucket.
+For next-token probability slices, avoid treating every multi-token alias first
+token as exact correctness. Qwen tokenization can split an answer like
+`Ireland` into `I`, which collides with refusal openers.
 
-For row-specific answer aliases, prefer exact single-token aliases and record
-multi-token aliases as skipped unless a later diagnostic explicitly models
-multi-token sequence probability. Static refusal opener groups may intentionally
-use first-token openers, but answer-alias groups should default to
-`include_multi_token_first_token: false`.
+Use this default:
 
-For changed-row replay claims, use exact row selection through
-`selection.row_keys` or `selection.row_keys_by_candidate`. A balanced
-`max_rows` slice may contain changed rows, but it is not changed-row-only
-evidence.
+```yaml
+logit_targets:
+  groups:
+    - name: answer_aliases
+      source: row_aliases
+      include_leading_space_variants: true
+      include_multi_token_first_token: false
+```
 
-Inspect top-k next-token entries together with probability slices. Top-1 or
-greedy changes alone can hide whether refusal tokens, answer aliases, or nearby
-answer-like distractors are moving.
+Use `include_multi_token_first_token: true` only when the explicit diagnostic
+question is answer-start movement. Label it as first-token answer-start
+evidence, not exact multi-token correctness.
 
-Before making vector- or source-layer-specific interpretations, run implemented
-controls such as no-vector baseline, activation addition/subtraction,
-wrong-layer, and deterministic random matched-norm. If wrong-layer matches the
-candidate effect, do not make a source-layer-specific claim without a stronger
-nearby-layer panel.
+After any scaled answer-start diagnostic:
+
+- Stratify by known vs unknown labels.
+- Check both mean movement and row-count movement.
+- Require the desired label group to move refusal and answer-alias metrics in
+  the right direction.
+- Compare against wrong-layer and random matched-norm controls before making a
+  source-specific claim.
+
+Generated-answer replay is the behavioral gate. First-token answer-start
+movement can be real while still loosening refusal into hallucinated answers.
+
+## Controls
+
+Minimum logit-diagnostic controls:
+
+- `no_vector_baseline`
+- signed source intervention (`activation_addition` or `activation_subtraction`)
+- `wrong_layer` or `wrong_layer_subtraction`
+- `random_matched_norm`
 
 Wrong-layer controls must be sign-matched to the source intervention. Do not
-compare source-layer subtraction against positive wrong-layer addition; use the
-`wrong_layer_subtraction` logit-diagnostic control pattern when the source
-effect is activation subtraction.
+compare source subtraction against positive wrong-layer addition.
+
+Keep wrong-layer offsets inside the model's valid hidden-state range. For a
+source layer at the final hidden-state index, positive offsets can map past the
+last decoder block and fail live execution.
+
+If a sweep config overrides extraction readiness `label_counts`, treat the map
+as an atomic assertion for that panel. Do not let labels from a template panel
+leak into a different row manifest.
+
+For nearby-layer panels:
+
+```yaml
+control_settings:
+  wrong_layer:
+    layer_offsets: [-2, -1, 1, 2]
+```
+
+For random matched-norm seed panels:
+
+```yaml
+control_settings:
+  random_matched_norm:
+    seeds:
+      - 20260620
+      - 20260621
+```
+
+This expands one `random_matched_norm` control arm per seed.
 
 Do not label a shuffled-label control unless there is a real shuffled-label
-direction artifact or a valid checked-in derivation path. Report it as not
-implemented rather than faking the control.
+direction artifact or valid checked-in derivation path.
+
+## Generated-Answer Replay
+
+Use generation mode only for behavior gates after logit diagnostics identify a
+candidate. Generation mode supports `no_vector_baseline`,
+`activation_addition`, `activation_subtraction`, and `sign_flip`.
+
+Require generated replay before claiming:
+
+- answer recovery,
+- reduced over-refusal,
+- improved calibrated abstention,
+- or user-facing behavioral improvement.
+
+Score refusal, correctness, truthfulness, and per-row deltas against baseline.
+Inspect changed rows manually, especially refusal-to-answer flips.
 
 ## Validation
 
-Use focused non-GPU checks:
+Use focused non-GPU checks after runner/config/skill edits:
 
 ```bash
 python -m pytest experiment/phase1/probe/tests/test_phase3_causal_pilot_sweep.py \
   experiment/phase1/probe/tests/test_phase3_causal_pilot_runner.py \
   experiment/phase1/probe/tests/test_phase3_causal_pilot_dry_run.py -q
-python -m pytest experiment/phase1/probe/tests/test_phase3_sae_smoke.py -q
-python -m pytest experiment/phase1/probe/tests/test_phase3_sae_train.py -q
-python -m pytest experiment/phase1/probe/tests/test_phase3_sae_feature_analysis.py -q
-python -m pytest experiment/phase1/probe/tests/test_phase3_sae_feature_directions.py -q
-python -m pytest experiment/phase1/probe/tests/test_phase3_sae_feature_composites.py -q
-python -m pytest experiment/phase1/probe/tests/test_phase3_direction_geometry.py -q
-python -m pytest experiment/phase1/probe/tests/test_phase3_direction_transforms.py -q
+python -m pytest experiment/phase1/probe/tests/test_phase3_behavior_axis_scan.py \
+  experiment/phase1/probe/tests/test_phase3_behavior_axis_directions.py \
+  experiment/phase1/probe/tests/test_phase3_calibrated_expression_plane.py \
+  experiment/phase1/probe/tests/test_phase3_logit_cell_analysis.py -q
+python -m pytest experiment/phase1/probe/tests/test_phase3_sae_smoke.py \
+  experiment/phase1/probe/tests/test_phase3_sae_train.py \
+  experiment/phase1/probe/tests/test_phase3_sae_feature_analysis.py \
+  experiment/phase1/probe/tests/test_phase3_sae_feature_directions.py \
+  experiment/phase1/probe/tests/test_phase3_sae_behavior_feature_analysis.py -q
 python -m py_compile experiment/phase1/probe/phase3_causal_pilot_sweep.py \
   experiment/phase1/probe/phase3_causal_pilot_aggregate.py \
-  experiment/phase1/probe/phase3_sae_smoke.py \
-  experiment/phase1/probe/phase3_sae_train.py \
-  experiment/phase1/probe/phase3_sae_feature_analysis.py \
-  experiment/phase1/probe/phase3_sae_feature_directions.py \
-  experiment/phase1/probe/phase3_sae_feature_composites.py \
-  experiment/phase1/probe/phase3_direction_geometry.py \
-  experiment/phase1/probe/phase3_direction_transforms.py
+  experiment/phase1/probe/phase3_causal_pilot_runner.py \
+  experiment/phase1/probe/phase3_behavior_axis_scan.py \
+  experiment/phase1/probe/phase3_behavior_axis_directions.py \
+  experiment/phase1/probe/phase3_calibrated_expression_plane.py \
+  experiment/phase1/probe/phase3_logit_cell_analysis.py
 python bin/sync_skills.py --check
 ```

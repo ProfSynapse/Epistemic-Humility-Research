@@ -1,0 +1,126 @@
+spec:
+  name: phase3_sycophancy_answer_behavior_axis_scan
+  analysis_type: phase3_behavior_axis_scan
+  notice: BEHAVIOR_AXIS_SCAN_ONLY
+
+analysis:
+  roles:
+    - h_base
+    - h_lora
+    - delta
+  contrasts:
+    - name: wrong_hint_match_vs_neutral_counterpart
+      positive_label: wrong_hint_match_prompt
+      negative_label: neutral_counterpart
+      min_rows_per_group: 6
+      positive:
+        label: known
+        wrong_hint_match: true
+        strata_any:
+          - wrong_hint_followed_by_base_dpo_kto
+      negative:
+        label: known
+        strata_any:
+          - neutral_counterpart__wrong_hint_followed_by_base_dpo_kto
+
+    - name: sft_pressure_refusal_vs_neutral_counterpart
+      positive_label: sft_pressure_refusal_prompt
+      negative_label: neutral_counterpart
+      min_rows_per_group: 3
+      positive:
+        label: known
+        refused: true
+        confidence_max: 0.5
+        strata_any:
+          - sft_refuses_wrong_hint_kto_follows
+      negative:
+        label: known
+        strata_any:
+          - neutral_counterpart__sft_refuses_wrong_hint_kto_follows
+
+extractions:
+  - label: sft_seed1_sycophancy_answer
+    behavior_arm: sft_seed1
+    contrasts:
+      - name: wrong_hint_match_vs_neutral_counterpart
+        positive_label: wrong_hint_match_prompt
+        negative_label: neutral_counterpart
+        min_rows_per_group: 4
+        positive:
+          label: known
+          wrong_hint_match: true
+          strata_any:
+            - wrong_hint_followed_by_base_dpo_kto
+        negative:
+          label: known
+          strata_any:
+            - neutral_counterpart__wrong_hint_followed_by_base_dpo_kto
+
+      - name: sft_pressure_refusal_vs_neutral_counterpart
+        positive_label: sft_pressure_refusal_prompt
+        negative_label: neutral_counterpart
+        min_rows_per_group: 3
+        positive:
+          label: known
+          refused: true
+          confidence_max: 0.5
+          strata_any:
+            - sft_refuses_wrong_hint_kto_follows
+        negative:
+          label: known
+          strata_any:
+            - neutral_counterpart__sft_refuses_wrong_hint_kto_follows
+
+      - name: sft_wrong_hint_followed_vs_refused
+        positive_label: sft_wrong_hint_followed
+        negative_label: sft_wrong_hint_refused
+        min_rows_per_group: 6
+        positive:
+          label: known
+          wrong_hint_match: true
+          strata_any:
+            - sft_wrong_hint_followed
+        negative:
+          label: known
+          refused: true
+          strata_any:
+            - sft_wrong_hint_refused
+    extraction_dir: experiment/phase1/probe/qwen3-4b-instruct-sycophancy-answer-sft-seed1/hidden_states_sycophancy_answer/extraction__127d6d80d3f7
+    extraction_manifest: experiment/phase1/probe/qwen3-4b-instruct-sycophancy-answer-sft-seed1/hidden_states_sycophancy_answer/extraction__127d6d80d3f7/manifest.json
+
+  - label: kto_seed1_sycophancy_answer
+    behavior_arm: kto_seed1
+    contrasts:
+      - name: wrong_hint_match_vs_neutral_counterpart
+        positive_label: wrong_hint_match_prompt
+        negative_label: neutral_counterpart
+        min_rows_per_group: 6
+        positive:
+          label: known
+          wrong_hint_match: true
+          strata_any:
+            - wrong_hint_followed_by_base_dpo_kto
+        negative:
+          label: known
+          strata_any:
+            - neutral_counterpart__wrong_hint_followed_by_base_dpo_kto
+
+      - name: kto_wrong_hint_followed_vs_not_followed
+        positive_label: kto_wrong_hint_followed
+        negative_label: kto_wrong_hint_not_followed
+        min_rows_per_group: 8
+        positive:
+          label: known
+          wrong_hint_match: true
+          strata_any:
+            - kto_wrong_hint_followed
+        negative:
+          label: known
+          wrong_hint_match: false
+          strata_any:
+            - kto_wrong_hint_not_followed
+    extraction_dir: experiment/phase1/probe/qwen3-4b-instruct-sycophancy-answer-kto-seed1/hidden_states_sycophancy_answer/extraction__b42e8f533574
+    extraction_manifest: experiment/phase1/probe/qwen3-4b-instruct-sycophancy-answer-kto-seed1/hidden_states_sycophancy_answer/extraction__b42e8f533574/manifest.json
+
+output:
+  root: experiment/phase1/probe/qwen3-4b-instruct-sycophancy-answer/behavior_axis_scan/phase3_sycophancy_answer_behavior_axis_scan

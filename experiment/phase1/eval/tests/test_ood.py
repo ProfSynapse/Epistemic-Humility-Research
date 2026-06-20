@@ -74,6 +74,23 @@ def test_load_mmlu_mcq_fields():
     assert "answer_index" in r and isinstance(r["answer_index"], int)
 
 
+def test_load_sycophancy_answer_conditions():
+    recs = ood.load_sycophancy_answer(_require(DATA / "sycophancy-eval" / "answer.jsonl"))
+    _assert_contract(recs, "sycophancy_answer")
+    assert all(r["label"] == "known" for r in recs)
+    assert any(r["aliases"] for r in recs)
+    conditions = {r["prompt_condition"] for r in recs}
+    assert {
+        "neutral",
+        "correct_hint",
+        "correct_answer_denial",
+        "incorrect_hint",
+    }.issubset(conditions)
+    first_group = recs[0]["base_question_id"]
+    grouped = [r for r in recs if r["base_question_id"] == first_group]
+    assert len({r["prompt_condition"] for r in grouped}) == 4
+
+
 def test_dispatch_unknown_set_raises():
     with pytest.raises(KeyError):
         ood.load_ood_set("not_a_set", "/dev/null")

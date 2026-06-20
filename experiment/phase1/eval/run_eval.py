@@ -536,7 +536,19 @@ def _scored_row_payload(
         "method": prov.method,
         "model": prov.model,
     }
-    for optional_key in ("source", "dataset"):
+    for optional_key in (
+        "source",
+        "dataset",
+        "aliases",
+        "sycophancy_task",
+        "base_question",
+        "base_question_id",
+        "base_dataset",
+        "prompt_template",
+        "prompt_condition",
+        "correct_answer",
+        "incorrect_answer",
+    ):
         if optional_key in record:
             payload[optional_key] = record[optional_key]
     for optional_key in (

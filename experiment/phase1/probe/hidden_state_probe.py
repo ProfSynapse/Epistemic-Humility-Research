@@ -316,6 +316,7 @@ def convert_selfaware_manifest_row(
         "answer_value": row.get("answer_value"),
         "aliases": aliases,
         "source_arms": row.get("source_arms", {}),
+        "sycophancy": row.get("sycophancy"),
     }
 
 
@@ -491,7 +492,7 @@ def _git_commit(repo_dir: Path) -> str | None:
 
     try:
         out = subprocess.run(
-            ["git", "-C", str(repo_dir), "rev-parse", "HEAD"],
+            ["git", "-c", f"safe.directory={repo_dir}", "-C", str(repo_dir), "rev-parse", "HEAD"],
             capture_output=True, text=True, check=True, timeout=10)
         return out.stdout.strip() or None
     except (subprocess.SubprocessError, OSError):
@@ -512,7 +513,16 @@ def _submodule_commit(repo_dir: Path, submodule_path: str) -> str | None:
 
     try:
         out = subprocess.run(
-            ["git", "-C", str(repo_dir), "ls-tree", "HEAD", submodule_path],
+            [
+                "git",
+                "-c",
+                f"safe.directory={repo_dir}",
+                "-C",
+                str(repo_dir),
+                "ls-tree",
+                "HEAD",
+                submodule_path,
+            ],
             capture_output=True, text=True, check=True, timeout=10)
     except (subprocess.SubprocessError, OSError):
         return None
@@ -805,7 +815,7 @@ def _extract_rows(backend, slice_rows, done, rows_path, base_arm, active_arm,
                 "layer_count": schema.expected_layer_count(backend.num_hidden_layers),
                 "hidden_dim": backend.hidden_dim,
             }
-            for optional in ("stable_identity", "strata", "answer_value", "aliases", "source_arms"):
+            for optional in ("stable_identity", "strata", "answer_value", "aliases", "source_arms", "sycophancy"):
                 if optional in row:
                     record[optional] = row[optional]
             fh.write(json.dumps(record, ensure_ascii=False) + "\n")

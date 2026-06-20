@@ -74,6 +74,33 @@ def test_final_prompt_hook_adds_once_to_last_prompt_token():
     assert hook._phase3_state["applied_count"] == 1
 
 
+def test_multi_layer_activation_hooks_apply_each_component_once():
+    torch = pytest.importorskip("torch")
+
+    class IdentityLayer(torch.nn.Module):
+        def forward(self, hidden):
+            return hidden
+
+    model = torch.nn.Module()
+    model.layers = torch.nn.ModuleList([IdentityLayer(), IdentityLayer(), IdentityLayer()])
+    hidden = torch.zeros((1, 2, 3))
+    components = [
+        {"layer": 1, "direction": torch.tensor([1.0, 0.0, 0.0]), "coefficient": 2.0},
+        {"layer": 3, "direction": torch.tensor([0.0, 1.0, 0.0]), "coefficient": -3.0},
+    ]
+
+    with runner.activation_addition_hooks(model, components) as state:
+        out = hidden
+        for layer in model.layers:
+            out = layer(out)
+
+    assert torch.equal(out[0, 0, :], torch.zeros(3))
+    assert torch.equal(out[0, 1, :], torch.tensor([2.0, -3.0, 0.0]))
+    assert state["applied_count"] == 2
+    assert state["delta_abs_sum"] == 5.0
+    assert [component["layer"] for component in state["component_states"]] == [1, 3]
+
+
 def test_select_balanced_rows_adds_aliases(tmp_path):
     extraction_rows = tmp_path / "rows.jsonl"
     rows = [
@@ -251,6 +278,34 @@ def test_selection_row_keys_for_candidate_prefers_candidate_specific_keys():
     assert runner.selection_row_keys_for_candidate(config, "cand_b") == ["global"]
 
 
+def test_selection_row_keys_for_candidate_reads_row_keys_file(tmp_path):
+    row_keys_file = tmp_path / "row_keys.txt"
+    row_keys_file.write_text(
+        "\n".join(
+            [
+                "# fixed behavior cells",
+                "row-a",
+                "",
+                "row-b",
+            ]
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+    config = {"selection": {"row_keys_file": str(row_keys_file)}}
+
+    assert runner.selection_row_keys_for_candidate(config, "cand") == ["row-a", "row-b"]
+
+
+def test_selection_row_keys_for_candidate_rejects_duplicate_row_keys_file(tmp_path):
+    row_keys_file = tmp_path / "row_keys.txt"
+    row_keys_file.write_text("row-a\nrow-a\n", encoding="utf-8")
+    config = {"selection": {"row_keys_file": str(row_keys_file)}}
+
+    with pytest.raises(runner.PilotRunnerError, match="must not contain duplicates"):
+        runner.selection_row_keys_for_candidate(config, "cand")
+
+
 def test_score_generation_and_metrics():
     known = {"label": "known", "aliases": ["paris"]}
     unknown = {"label": "unknown", "aliases": []}
@@ -359,8 +414,10 @@ def test_build_smoke_arms_adds_wrong_layer_and_random_provenance():
         "control_type": "wrong_layer",
         "source_direction_id": "direction__x",
         "source_layer": 10,
+        "source_layers": [10],
         "wrong_layer_offset": -2,
         "applied_layer": 8,
+        "applied_layers": [8],
         "uses_source_direction": True,
     }
 
@@ -373,10 +430,77 @@ def test_build_smoke_arms_adds_wrong_layer_and_random_provenance():
         "control_type": "random_matched_norm",
         "source_direction_id": "direction__x",
         "source_layer": 10,
+        "source_layers": [10],
         "random_seed": 1234,
         "matched_norm_source_direction_id": "direction__x",
         "matched_norm_source_layer": 10,
+        "matched_norm_source_layers": [10],
     }
+
+
+def test_build_smoke_arms_tracks_multi_layer_source_and_wrong_layers():
+    candidate = {
+        "label": "multi",
+        "direction_id": "multi__x",
+        "role": "h_lora",
+        "multi_layer_components": [
+            {"layer": 27, "direction_id": "a", "direction_file": "a.safetensors"},
+            {"layer": 36, "direction_id": "b", "direction_file": "b.safetensors"},
+        ],
+    }
+
+    arms = runner.build_smoke_arms(
+        candidate=candidate,
+        coefficients=[50.0],
+        controls=["wrong_layer"],
+        control_settings={"wrong_layer": {"layer_offset": -2}},
+    )
+
+    assert len(arms) == 1
+    arm = arms[0]
+    assert arm["source_layers"] == [27, 36]
+    assert arm["wrong_layer_offset"] == -2
+    assert arm["control_provenance"]["applied_layers"] == [25, 34]
+    assert arm["layer"] == 25
+
+
+def test_build_smoke_arms_expands_random_matched_norm_seed_panel():
+    candidate = {
+        "label": "candidate",
+        "direction_id": "direction__x",
+        "layer": 10,
+        "role": "h_lora",
+    }
+
+    arms = runner.build_smoke_arms(
+        candidate=candidate,
+        coefficients=[50.0],
+        controls=["random_matched_norm"],
+        control_settings={"random_matched_norm": {"seeds": [11, 22, 33]}},
+    )
+
+    assert [arm["arm_id"] for arm in arms] == [
+        "candidate__coef_50p0__control_random_matched_norm__seed_11",
+        "candidate__coef_50p0__control_random_matched_norm__seed_22",
+        "candidate__coef_50p0__control_random_matched_norm__seed_33",
+    ]
+    assert [arm["random_seed"] for arm in arms] == [11, 22, 33]
+    assert [arm["direction_id"] for arm in arms] == [
+        "random_matched_norm_seed_11",
+        "random_matched_norm_seed_22",
+        "random_matched_norm_seed_33",
+    ]
+
+
+def test_random_matched_norm_seed_panel_fails_closed():
+    with pytest.raises(runner.PilotRunnerError, match="non-empty list"):
+        runner.random_matched_norm_seeds({"random_matched_norm": {"seeds": []}})
+
+    with pytest.raises(runner.PilotRunnerError, match="non-negative integers"):
+        runner.random_matched_norm_seeds({"random_matched_norm": {"seeds": [1, -1]}})
+
+    with pytest.raises(runner.PilotRunnerError, match="duplicates"):
+        runner.random_matched_norm_seeds({"random_matched_norm": {"seeds": [1, 1]}})
 
 
 def test_build_smoke_arms_adds_wrong_layer_subtraction_provenance():
@@ -404,8 +528,10 @@ def test_build_smoke_arms_adds_wrong_layer_subtraction_provenance():
             "control_type": "wrong_layer_subtraction",
             "source_direction_id": "direction__x",
             "source_layer": 10,
+            "source_layers": [10],
             "wrong_layer_offset": 1,
             "applied_layer": 11,
+            "applied_layers": [11],
             "uses_source_direction": True,
         }
 
@@ -755,6 +881,36 @@ def test_resolve_logit_targets_accepts_row_alias_source():
     }]
 
 
+def test_resolve_logit_targets_accepts_row_field_source():
+    resolved = runner.resolve_logit_targets(
+        {
+            "logit_targets": {
+                "groups": [{
+                    "name": "wrong_hint_answer",
+                    "source": "row_field",
+                    "field_path": "sycophancy.incorrect_answer",
+                    "include_leading_space_variants": True,
+                    "include_multi_token_first_token": True,
+                }]
+            }
+        },
+        SimpleNamespace(),
+    )
+
+    assert resolved == [{
+        "name": "wrong_hint_answer",
+        "source": "row_field",
+        "field_path": "sycophancy.incorrect_answer",
+        "strings": [],
+        "include_leading_space_variants": True,
+        "include_multi_token_first_token": True,
+        "token_ids": [],
+        "token_texts": [],
+        "resolved_targets": [],
+        "skipped_targets": [],
+    }]
+
+
 def test_resolve_row_logit_targets_expands_answer_aliases_for_known_rows():
     class Tokenizer:
         def encode(self, text, add_special_tokens=False):
@@ -803,6 +959,42 @@ def test_resolve_row_logit_targets_expands_answer_aliases_for_known_rows():
         if item["resolved_string"] == "City of Paris"
     ][0]
     assert skipped_multi_token["skip_reason"] == "multi_token_target"
+
+
+def test_resolve_row_logit_targets_expands_row_field_value():
+    class Tokenizer:
+        def encode(self, text, add_special_tokens=False):
+            return {
+                "Roald Dahl": [1, 2],
+                " Roald Dahl": [3, 2],
+            }[text]
+
+        def decode(self, token_ids, skip_special_tokens=False):
+            return {1: "Roald", 2: " Dahl", 3: " Roald"}[token_ids[0]]
+
+    targets = [{
+        "name": "wrong_hint_answer",
+        "source": "row_field",
+        "field_path": "sycophancy.incorrect_answer",
+        "strings": [],
+        "include_leading_space_variants": True,
+        "include_multi_token_first_token": True,
+        "token_ids": [],
+        "token_texts": [],
+        "resolved_targets": [],
+        "skipped_targets": [],
+    }]
+
+    resolved = runner.resolve_row_logit_targets(
+        row={"sycophancy": {"incorrect_answer": "Roald Dahl"}},
+        logit_targets=targets,
+        tokenizer=Tokenizer(),
+    )
+
+    assert resolved[0]["name"] == "wrong_hint_answer"
+    assert resolved[0]["source"] == "row_field"
+    assert resolved[0]["field_path"] == "sycophancy.incorrect_answer"
+    assert resolved[0]["token_ids"] == [1, 3]
 
 
 def test_resolve_row_logit_targets_skips_empty_unknown_alias_group():
@@ -909,7 +1101,7 @@ def test_resolve_logit_targets_is_noop_without_config_key():
         ),
         (
             {"logit_targets": {"groups": [{"name": "answer", "source": "row_value"}]}},
-            "static_strings or row_aliases",
+            "static_strings, row_aliases, or row_field",
         ),
     ],
 )

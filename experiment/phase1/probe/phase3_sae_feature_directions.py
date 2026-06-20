@@ -67,28 +67,78 @@ def load_feature_rankings(path: Path) -> list[dict[str, Any]]:
     with path.open(encoding="utf-8", newline="") as fh:
         for row in csv.DictReader(fh):
             parsed = dict(row)
+            for key, value in list(parsed.items()):
+                if value in (None, ""):
+                    continue
+                if key == "feature":
+                    parsed[key] = int(parsed[key])
+                elif key.endswith("_count") or key == "active_count":
+                    parsed[key] = int(parsed[key])
+                else:
+                    try:
+                        parsed[key] = float(parsed[key])
+                    except ValueError:
+                        pass
+            if "feature" not in parsed:
+                raise SaeFeatureDirectionError(f"{repo_relative(path)} row missing feature")
+            if "mean_diff_unknown_minus_known" not in parsed and "mean_diff_positive_minus_negative" not in parsed:
+                raise SaeFeatureDirectionError(
+                    f"{repo_relative(path)} must include mean_diff_unknown_minus_known "
+                    "or mean_diff_positive_minus_negative"
+                )
+            if "abs_cohen_d" in parsed:
+                parsed["abs_cohen_d"] = float(parsed["abs_cohen_d"])
+            elif "cohen_d_positive_minus_negative" in parsed:
+                parsed["abs_cohen_d"] = abs(float(parsed["cohen_d_positive_minus_negative"]))
+            else:
+                raise SaeFeatureDirectionError(f"{repo_relative(path)} row missing effect-size field")
             for key in (
-                "feature",
                 "known_mean",
                 "unknown_mean",
                 "mean_diff_unknown_minus_known",
-                "abs_cohen_d",
                 "known_activation_frequency",
                 "unknown_activation_frequency",
             ):
-                if key == "feature":
-                    parsed[key] = int(parsed[key])
-                else:
+                if key in parsed:
                     parsed[key] = float(parsed[key])
             rows.append(parsed)
     return rows
+
+
+def ranking_signed_diff(row: dict[str, Any]) -> float:
+    if "mean_diff_unknown_minus_known" in row:
+        return float(row["mean_diff_unknown_minus_known"])
+    return float(row["mean_diff_positive_minus_negative"])
+
+
+def ranking_skew_label(row: dict[str, Any]) -> str:
+    signed = ranking_signed_diff(row)
+    if "mean_diff_unknown_minus_known" in row:
+        return "unknown" if signed > 0.0 else "known"
+    if signed > 0.0:
+        return str(row.get("positive_label", "positive"))
+    return str(row.get("negative_label", "negative"))
 
 
 def select_features(rankings: list[dict[str, Any]], selection: dict[str, Any]) -> list[dict[str, Any]]:
     explicit = selection.get("features")
     if explicit is not None:
         wanted = {int(value) for value in explicit}
-        selected = [row for row in rankings if int(row["feature"]) in wanted]
+        selected_by_feature: dict[int, dict[str, Any]] = {}
+        for row in rankings:
+            feature = int(row["feature"])
+            if feature not in wanted:
+                continue
+            current = selected_by_feature.get(feature)
+            if current is None or (
+                float(row.get("abs_cohen_d", 0.0)),
+                abs(ranking_signed_diff(row)),
+            ) > (
+                float(current.get("abs_cohen_d", 0.0)),
+                abs(ranking_signed_diff(current)),
+            ):
+                selected_by_feature[feature] = row
+        selected = [selected_by_feature[feature] for feature in sorted(selected_by_feature)]
         missing = sorted(wanted - {int(row["feature"]) for row in selected})
         if missing:
             raise SaeFeatureDirectionError(f"feature_rankings.csv missing requested features {missing}")
@@ -97,8 +147,8 @@ def select_features(rankings: list[dict[str, Any]], selection: dict[str, Any]) -
     top_per_sign = int(selection.get("top_per_sign", 1))
     if top_per_sign <= 0:
         raise SaeFeatureDirectionError("selection.top_per_sign must be positive")
-    unknown_skewed = [row for row in rankings if float(row["mean_diff_unknown_minus_known"]) > 0.0]
-    known_skewed = [row for row in rankings if float(row["mean_diff_unknown_minus_known"]) < 0.0]
+    unknown_skewed = [row for row in rankings if ranking_signed_diff(row) > 0.0]
+    known_skewed = [row for row in rankings if ranking_signed_diff(row) < 0.0]
     return unknown_skewed[:top_per_sign] + known_skewed[:top_per_sign]
 
 
@@ -140,16 +190,30 @@ def direction_id(label: str, feature: int, sha: str) -> str:
     return f"sae_feature__{safe_label}__f{feature:03d}__{sha[:12]}"
 
 
-def run_candidate(candidate: dict[str, Any], *, output_root: Path, selection: dict[str, Any]) -> list[dict[str, Any]]:
+def run_candidate(
+    candidate: dict[str, Any],
+    *,
+    output_root: Path,
+    default_selection: dict[str, Any],
+) -> list[dict[str, Any]]:
     summary_path = resolve_path(candidate["summary"])
     summary = load_json(summary_path)
     run_manifest_path = resolve_path(summary["source_run_manifest"])
     run_manifest = load_json(run_manifest_path)
     run_dir = run_manifest_path.parent
     weights_path = resolve_path(run_manifest["outputs"]["weights"])
-    rankings_path = resolve_path(summary["outputs"]["feature_rankings"])
+    summary_outputs = summary["outputs"]
+    rankings_text = summary_outputs.get("feature_rankings") or summary_outputs.get("behavior_feature_rankings")
+    if not isinstance(rankings_text, str) or not rankings_text:
+        raise SaeFeatureDirectionError(
+            f"{repo_relative(summary_path)} outputs must include feature_rankings or behavior_feature_rankings"
+        )
+    rankings_path = resolve_path(rankings_text)
     rankings = load_feature_rankings(rankings_path)
-    selected = select_features(rankings, selection)
+    candidate_selection = candidate.get("selection", default_selection)
+    if not isinstance(candidate_selection, dict):
+        raise SaeFeatureDirectionError(f"candidate {candidate.get('label')} selection must be a mapping")
+    selected = select_features(rankings, candidate_selection)
     raw_decoder = load_raw_decoder_directions(weights_path)
 
     label = str(candidate.get("label") or summary["candidate_label"])
@@ -169,8 +233,8 @@ def run_candidate(candidate: dict[str, Any], *, output_root: Path, selection: di
             raise SaeFeatureDirectionError(f"safetensors is required: {SAFETENSORS_IMPORT_ERROR}")
         save_numpy_safetensors({TENSOR_KEY: vector}, str(vector_path))
 
-        mean_diff = float(feature_row["mean_diff_unknown_minus_known"])
-        skew_label = "unknown" if mean_diff > 0.0 else "known"
+        mean_diff = ranking_signed_diff(feature_row)
+        skew_label = ranking_skew_label(feature_row)
         record = {
             "direction_id": did,
             "candidate_label": label,
@@ -192,11 +256,27 @@ def run_candidate(candidate: dict[str, Any], *, output_root: Path, selection: di
             "source_feature_summary": repo_relative(summary_path),
             "source_feature_rankings": repo_relative(rankings_path),
             "feature_skew_label": skew_label,
-            "mean_diff_unknown_minus_known": mean_diff,
+            "signed_mean_diff": mean_diff,
             "abs_cohen_d": float(feature_row["abs_cohen_d"]),
-            "known_activation_frequency": float(feature_row["known_activation_frequency"]),
-            "unknown_activation_frequency": float(feature_row["unknown_activation_frequency"]),
         }
+        if "mean_diff_unknown_minus_known" in feature_row:
+            record["mean_diff_unknown_minus_known"] = mean_diff
+        for key in (
+            "known_activation_frequency",
+            "unknown_activation_frequency",
+            "positive_activation_frequency",
+            "negative_activation_frequency",
+            "contrast",
+            "arm",
+            "positive_label",
+            "negative_label",
+            "positive_count",
+            "negative_count",
+            "mean_diff_positive_minus_negative",
+            "cohen_d_positive_minus_negative",
+        ):
+            if key in feature_row:
+                record[key] = feature_row[key]
         records.append(record)
     write_csv(candidate_out / "sae_feature_directions.csv", records)
     write_json(
@@ -229,7 +309,7 @@ def run_config(config_path: Path) -> dict[str, Any]:
     output_root = resolve_path(output["root"])
     records: list[dict[str, Any]] = []
     for candidate in candidates:
-        records.extend(run_candidate(candidate, output_root=output_root, selection=selection))
+        records.extend(run_candidate(candidate, output_root=output_root, default_selection=selection))
     manifest_path = output_root / "sae_feature_directions.manifest.json"
     csv_path = output_root / "sae_feature_directions.csv"
     write_csv(csv_path, records)

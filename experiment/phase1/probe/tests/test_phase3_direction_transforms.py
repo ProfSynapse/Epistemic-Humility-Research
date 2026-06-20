@@ -116,3 +116,49 @@ def test_run_config_rejects_missing_source_direction(tmp_path):
 
     with pytest.raises(transforms.DirectionTransformError, match="not found"):
         transforms.run_config(config_path)
+
+
+def test_run_config_exports_linear_combination(tmp_path):
+    source_root = tmp_path / "source"
+    source_root.mkdir()
+    source_manifest = _fixture_manifest(
+        tmp_path,
+        [
+            _write_source_direction(source_root, direction_id="a", vector=[1.0, 0.0], role="h_lora", layer=4),
+            _write_source_direction(source_root, direction_id="b", vector=[0.0, 2.0], role="h_lora", layer=4),
+        ],
+    )
+    output_root = tmp_path / "out"
+    config_path = tmp_path / "transforms.yaml"
+    _write_yaml(
+        config_path,
+        {
+            "source_manifest": str(source_manifest),
+            "transforms": [
+                {
+                    "label": "a_minus_b",
+                    "method": "linear_combination",
+                    "components": [
+                        {"source_direction_id": "a", "weight": 1.0},
+                        {"source_direction_id": "b", "weight": -1.0},
+                    ],
+                    "target_norm": 1.0,
+                }
+            ],
+            "output": {"root": str(output_root)},
+        },
+    )
+
+    transforms.run_config(config_path)
+
+    manifest = json.loads((output_root / "direction_transforms.manifest.json").read_text(encoding="utf-8"))
+    record = manifest["directions"][0]
+    tensor = safetensors_numpy.load_file(str(Path(record["vector_file"])))[transforms.TENSOR_KEY]
+
+    assert record["transform_method"] == "linear_combination"
+    assert record["component_count"] == 2
+    assert record["source_direction_ids"] == ["a", "b"]
+    assert record["component_weights"] == [1.0, -1.0]
+    assert record["role"] == "h_lora"
+    assert record["layer"] == 4
+    assert float(np.linalg.norm(tensor)) == pytest.approx(1.0)

@@ -33,6 +33,7 @@ DOCKER_CONFIG_PATH_KEYS = {
     "probe_results",
     "root",
 }
+REPLACE_ON_MERGE_KEYS = {"label_counts"}
 
 
 class SweepError(RuntimeError):
@@ -110,7 +111,9 @@ def _rewrite_docker_config_paths(value: Any, *, repo_mount: str, key: str | None
 def deep_merge(base: dict[str, Any], override: dict[str, Any]) -> dict[str, Any]:
     merged = copy.deepcopy(base)
     for key, value in override.items():
-        if (
+        if key in REPLACE_ON_MERGE_KEYS:
+            merged[key] = copy.deepcopy(value)
+        elif (
             key in merged
             and isinstance(merged[key], dict)
             and isinstance(value, dict)
