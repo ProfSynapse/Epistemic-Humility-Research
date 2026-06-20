@@ -424,6 +424,10 @@ The source and constraint directions must share hidden dimension, role, and
 layer. Interpret removal fractions as geometry evidence only until the
 orthogonalized vectors pass logit diagnostics and generated replay.
 
+When a transform changes the conceptual contrast, set `contrast:` explicitly in
+the transform config. Otherwise the output manifest can inherit the source
+contrast, and candidate/sweep validation will fail with a contrast mismatch.
+
 Multi-layer candidate configs use `multi_layer_components` instead of a
 top-level `direction_file`. Each component must declare its own
 `direction_manifest`, `direction_file`, `tensor_key`, `role`, `layer`,

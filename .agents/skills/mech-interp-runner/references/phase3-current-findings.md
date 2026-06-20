@@ -125,12 +125,16 @@ sign goals passed), but the sign-matched wrong-layer control scores higher
 (`score ~= 0.1034`). This confirms the L24 composite as the best logit
 triage candidate while weakening any source-layer-local interpretation.
 
-The first constrained-subspace prep supports the entangled-window hypothesis.
-Orthogonalizing same-layer KTO h_lora known-overrefusal and unknown-wrong axes
-against each other removes a substantial component across L24-L26
-(`~0.49-0.53` of unit-scaled vector norm). Six constrained candidates are
-materialized and a logit sweep is planned but not executed. Treat this as a
-high-ROI next diagnostic, not a result.
+The first constrained-subspace test supports the entangled-window hypothesis
+but does not yield a steering win. Orthogonalizing same-layer KTO h_lora
+known-overrefusal and unknown-wrong axes against each other removes a
+substantial component across L24-L26 (`~0.49-0.53` of unit-scaled vector norm).
+The six-candidate logit sweep completed, but the best sign score was only
+`0.0317` and passed `2/4` goals. The top L24 unknown-repair arm increased
+refusal on unknown-wrong rows, but also increased refusal on known-refused and
+known-correct rows, failing both known-question protections. Treat
+orthogonalization as useful geometry evidence, not as a calibrated-expression
+intervention.
 
 The first gold-backed KTO behavior panel gives a cleaner target surface than
 the SelfAware labels. On 256 TriviaQA/Cheng rows for SFT->KTO baseline
@@ -323,13 +327,10 @@ level replay.
 
 Prioritize the calibrated-expression question over refusal-axis steering:
 
-1. Run the prepared orthogonalized KTO L24-L26 logit diagnostic after explicit
-   local GPU approval; score it with the four-cell sign scorer before any
-   generated replay.
-2. Explore multi-layer or constrained subspace controls; simple single-axis and
+1. Explore multi-layer or constrained subspace controls; simple single-axis and
    simple two-hook KTO steering are active but behaviorally unsafe.
-3. Scan layer windows for directions that separate damaged behavior from paired
+2. Scan layer windows for directions that separate damaged behavior from paired
    desired behavior without collapsing into a generic refusal axis.
-4. Gate candidates with generated-answer replay, not only logit slices.
-5. Prefer directions that preserve known correctness while reducing both
+3. Gate candidates with generated-answer replay, not only logit slices.
+4. Prefer directions that preserve known correctness while reducing both
    over-refusal and hallucinated unknown answers.

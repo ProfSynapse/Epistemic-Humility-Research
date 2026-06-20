@@ -3,6 +3,7 @@ source_manifest: experiment/phase1/probe/qwen3-4b-sft-merged-seed1-selfaware/beh
 transforms:
   - label: kto_h_lora_l24_known_repair_orthogonal_to_unknown_wrong
     method: orthogonalize_to
+    contrast: known_repair_orthogonal_to_unknown_wrong
     source_direction_id: behavior_axis__kto_h_lora_known_refused_vs_correct_l24_normed__540672190112
     target_norm: 1.2142820358276367
     constraints:
@@ -13,6 +14,7 @@ transforms:
       selection_reason: remove same-layer unknown-wrong axis component before testing known-overrefusal repair
   - label: kto_h_lora_l24_unknown_repair_orthogonal_to_known_overrefusal
     method: orthogonalize_to
+    contrast: unknown_repair_orthogonal_to_known_overrefusal
     source_direction_id: behavior_axis__kto_h_lora_unknown_wrong_vs_refused_l24_normed__7e353159058d
     target_norm: 1.2142820358276367
     constraints:
@@ -23,6 +25,7 @@ transforms:
       selection_reason: remove same-layer known-overrefusal axis component before testing unknown-wrong repair
   - label: kto_h_lora_l25_known_repair_orthogonal_to_unknown_wrong
     method: orthogonalize_to
+    contrast: known_repair_orthogonal_to_unknown_wrong
     source_direction_id: behavior_axis__kto_h_lora_known_refused_vs_correct_l25_normed__e7585eae957b
     target_norm: 1.2142820358276367
     constraints:
@@ -33,6 +36,7 @@ transforms:
       selection_reason: layer-window constrained candidate
   - label: kto_h_lora_l25_unknown_repair_orthogonal_to_known_overrefusal
     method: orthogonalize_to
+    contrast: unknown_repair_orthogonal_to_known_overrefusal
     source_direction_id: behavior_axis__kto_h_lora_unknown_wrong_vs_refused_l25_normed__e5550beef972
     target_norm: 1.2142820358276367
     constraints:
@@ -43,6 +47,7 @@ transforms:
       selection_reason: layer-window constrained candidate
   - label: kto_h_lora_l26_known_repair_orthogonal_to_unknown_wrong
     method: orthogonalize_to
+    contrast: known_repair_orthogonal_to_unknown_wrong
     source_direction_id: behavior_axis__kto_h_lora_known_refused_vs_correct_l26_normed__ffbf076ead91
     target_norm: 1.2142820358276367
     constraints:
@@ -53,6 +58,7 @@ transforms:
       selection_reason: layer-window constrained candidate
   - label: kto_h_lora_l26_unknown_repair_orthogonal_to_known_overrefusal
     method: orthogonalize_to
+    contrast: unknown_repair_orthogonal_to_known_overrefusal
     source_direction_id: behavior_axis__kto_h_lora_unknown_wrong_vs_refused_l26_normed__f4258fdc76be
     target_norm: 1.2142820358276367
     constraints:

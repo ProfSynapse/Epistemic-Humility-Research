@@ -1398,3 +1398,65 @@ Interpretation:
   four-cell sign pattern and weakens wrong-layer parity. It should not jump
   directly to generated replay until the logit-cell sign score beats the
   current L24 composite source arm and its controls.
+
+## Checkpoint 030 - Orthogonalized Window Sweep And KG-Ingest Delegation
+
+KG capture status:
+
+- Delegated the interpretability-paper KG ingest path to a subagent while the
+  local GPU sweep ran.
+- The subagent loaded the repo-local `kg-ingest` skill mirror and validated the
+  existing graph, but the required `Workflow` tool is not callable in this
+  environment. Therefore, full KG ingest did not complete.
+- Prepared ingest payload:
+  `C:\Users\Joseph\AppData\Local\Temp\kg_ingest_payload_interpretability_papers.json`.
+- Ready local papers in the payload:
+  `2602.02132` (`library/notes/2602.02132--more-to-refusal-than-single-direction.md`,
+  `library/fulltext/2602.02132.html`) and `2411.11296`
+  (`library/notes/2411.11296--steering-refusal-with-sparse-autoencoders.md`,
+  `library/fulltext/2411.11296.html`).
+- Partial local paper: `2606.03969` has a note but no local fulltext/PDF source.
+- Missing local notes/sources for follow-up: `2411.02193` and `2505.20063`.
+- Baseline graph validation remained clean:
+  `validate_kg_relationships.py --root library` -> `OK 374 graph notes
+  validated`; `analyze_kg.py --root library` -> `374` graph notes, `1373`
+  typed edges, `0` unresolved targets, `0` legacy edges, `0` orphan graph nodes.
+
+Live sweep:
+
+- Ran the prepared SelfAware KTO h_lora L24-L26 orthogonalized logit diagnostic
+  after explicit local GPU approval.
+- First attempt failed fast because transformed manifests inherited the source
+  contrast. Fixed by adding explicit `contrast:` fields for the conceptual
+  transformed contrasts and regenerated directions.
+- Retry completed all six live Docker jobs successfully. The append-only
+  execution log retains the failed event plus six successful events.
+- Added cell-analysis config:
+  `phase3_selfaware_calibrated_expression_kto_orthogonalized_window_logit_cell_analysis.yaml`.
+- Added sign-score config:
+  `phase3_selfaware_kto_orthogonalized_cell_sign_score.yaml`.
+
+Results:
+
+- Cell analysis summarized six runs into 120 behavior-cell rows.
+- Sign scoring produced 30 scored arms.
+- Best arm: `kto_h_lora_l24_unknown_repair_orthogonal_to_known_overrefusal`
+  under `activation_subtraction` at coefficient `50`.
+- Best score: `0.0317`, only `2/4` goals passed.
+- Desired unknown side moved correctly: unknown-wrong refusal-openers increased
+  (`+0.1788`) and unknown-refused refusal-openers were preserved/increased
+  (`+0.0797`).
+- Known-question protections failed: known-refused refusal-openers increased
+  (`+0.0765`) and known-correct refusal-openers increased (`+0.0706`).
+- Random matched-norm controls were small but sometimes passed `3/4` goals,
+  mostly failing only known-correct preservation.
+
+Interpretation:
+
+- Orthogonalization confirmed meaningful geometric overlap, but it did not
+  isolate calibrated expression.
+- The constrained unknown-repair direction still behaves like a broad
+  refusal-pressure lever: it helps unknown-wrong abstention but worsens
+  known-question answering/refusal tradeoffs.
+- Do not run generated replay for this candidate unless a later constrained or
+  multi-layer score improves the four-cell gate substantially.
