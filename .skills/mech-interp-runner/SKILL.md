@@ -87,6 +87,38 @@ First-token answer-start movement is not generated-answer correctness.
 - Keep generated outputs gitignored by default unless a governed publication
   decision explicitly whitelists them.
 
+## CLI Wrapper
+
+Prefer the skill CLI for common local analyses instead of hand-writing long
+PowerShell commands:
+
+```bash
+python .skills/mech-interp-runner/scripts/phase3_cli.py --help
+python .skills/mech-interp-runner/scripts/phase3_cli.py validate --quick
+```
+
+The wrapper delegates to checked-in repo scripts, resolves paths from the repo
+root, uses `sys.executable`, and forces UTF-8 subprocess output
+(`PYTHONUTF8=1`, `PYTHONIOENCODING=utf-8`, `PYTHONUNBUFFERED=1`) to avoid
+Windows console encoding failures.
+
+Use it for routine non-GPU analysis:
+
+```bash
+python .skills/mech-interp-runner/scripts/phase3_cli.py behavior-axis-scan \
+  --config experiment/phase1/probe/config/phase3_sycophancy_answer_behavior_axis_scan.yaml
+python .skills/mech-interp-runner/scripts/phase3_cli.py causal-sweep \
+  --config experiment/phase1/probe/config/phase3_sycophancy_answer_logit_sweep.yaml \
+  --mode-filter logit_diagnostic --write-plan --materialize-configs
+python .skills/mech-interp-runner/scripts/phase3_cli.py sycophancy-generation-analysis \
+  --generations path/to/generations.jsonl \
+  --output-root path/to/analysis
+```
+
+Use `--dry-run` on any subcommand to print the delegated command before running
+it. For live Docker/GPU execution, the same approval rule applies: do not pass
+`--execute` unless the user has approved that live run.
+
 ## Sycophancy / Helpfulness Probe Path
 
 Use this path when testing whether training regimens change susceptibility to
