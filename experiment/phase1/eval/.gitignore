@@ -7,3 +7,6 @@ __pycache__/
 # from CODE-phase fixture/smoke runs. Ignore by default; force-add real results.
 results/
 results_*/
+
+# Local detached eval launcher logs/status files.
+logs/

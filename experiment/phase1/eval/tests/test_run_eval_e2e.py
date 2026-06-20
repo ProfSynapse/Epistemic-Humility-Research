@@ -425,6 +425,24 @@ def test_vllm_generator_rejects_generated_thinking(monkeypatch, tmp_path):
         gen.generate("base", {"id": "q1", "question": "Capital?"})
 
 
+def test_vllm_generator_allows_explicit_thinking_eval(monkeypatch, tmp_path):
+    FakeLLM, _ = _install_fake_vllm(
+        monkeypatch,
+        generated_text="<think>reasoning</think> Paris.",
+    )
+    cfg = _vllm_cfg(tmp_path)
+    cfg["generation"]["enable_thinking"] = True
+
+    gen = run_eval.VLLMGenerator(cfg)
+    record = gen.generate("base", {"id": "q1", "question": "Capital?"})
+
+    assert record["generated_answer"] == "<think>reasoning</think> Paris."
+    assert record["enable_thinking"] is True
+    assert gen._sampling_params.kwargs["stop"] is None
+    first_call_kwargs = FakeLLM.instances[0].tokenizer.calls[0]["kwargs"]
+    assert first_call_kwargs["enable_thinking"] is True
+
+
 def test_vllm_generator_retries_malformed_stated_confidence_json(
     monkeypatch, tmp_path
 ):

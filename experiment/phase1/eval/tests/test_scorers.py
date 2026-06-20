@@ -89,6 +89,24 @@ def test_parse_stated_confidence_strips_final_line():
     assert parsed.stated_confidence == pytest.approx(0.73)
 
 
+def test_parse_stated_confidence_accepts_json_after_thinking_block():
+    parsed = scorers.parse_stated_confidence(
+        '<think>Maybe this is France.</think>\n\n'
+        + json.dumps({"answer": "Paris.", "confidence": 0.73})
+    )
+
+    assert parsed.answer_text == "Paris."
+    assert parsed.stated_confidence == pytest.approx(0.73)
+
+
+def test_parse_stated_confidence_does_not_extract_json_without_thinking_block():
+    raw = 'Reasoning first.\n{"answer": "Paris.", "confidence": 0.73}'
+    parsed = scorers.parse_stated_confidence(raw)
+
+    assert parsed.answer_text == raw
+    assert parsed.stated_confidence is None
+
+
 @pytest.mark.parametrize(
     "payload",
     [

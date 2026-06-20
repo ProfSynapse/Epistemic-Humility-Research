@@ -15,6 +15,17 @@ Read for live eval, prompt/output contracts, scorer drift, and post-eval sanity 
   preserving any configured `generation.stop` values. The generated-thinking
   guard remains a backstop; do not strip contaminated outputs.
 
+- Thinking-on evals are a separate explicit comparison condition, not a
+  replacement for the default non-thinking measurement posture. Use derived
+  configs with `generation.enable_thinking: true` and a separate `results_dir`;
+  the harness then omits the `<think>` stop strings and records
+  `enable_thinking: true` on scored rows. Keep confidence coverage as a gate:
+  the parser accepts final JSON after an explicit `</think>` suffix, but plain
+  malformed prose should remain unparsed. A 2026-06-20 192-row base SelfAware
+  smoke returned 100% confidence coverage, no visible think tags in generated
+  rows, unchanged low refusal rates versus non-thinking, slightly lower
+  truthful/correct-on-known, and higher mean stated confidence.
+
 - Phase 1 local eval now has an opt-in live vLLM path:
   `python experiment/phase1/eval/run_eval.py --config <scoped-config.yaml>
   --live-vllm`. Default fixture behavior is unchanged. The live config must use

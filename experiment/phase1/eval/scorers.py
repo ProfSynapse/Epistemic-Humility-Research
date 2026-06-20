@@ -103,10 +103,7 @@ def parse_stated_confidence(text: str) -> ParsedGeneration:
     `{"answer": "Paris", "confidence": 0.73}`.
     """
     raw = str(text or "").strip()
-    try:
-        payload = json.loads(raw)
-    except json.JSONDecodeError:
-        payload = None
+    payload = _load_stated_confidence_payload(raw)
     if isinstance(payload, dict) and set(payload) == {"answer", "confidence"}:
         answer = payload.get("answer")
         confidence = _coerce_confidence_value(payload.get("confidence"))
@@ -117,6 +114,30 @@ def parse_stated_confidence(text: str) -> ParsedGeneration:
             )
 
     return ParsedGeneration(answer_text=raw, stated_confidence=None)
+
+
+def _load_stated_confidence_payload(raw: str) -> object:
+    """Load the stated-confidence JSON, allowing explicit thinking prefixes.
+
+    Thinking-on Qwen runs can expose a visible `<think>...</think>` block before
+    the constrained final answer. Only that explicit suffix is accepted as a
+    fallback so ordinary malformed prose is not reinterpreted as structured
+    output.
+    """
+    try:
+        return json.loads(raw)
+    except json.JSONDecodeError:
+        pass
+
+    if "</think>" not in raw:
+        return None
+    suffix = raw.rsplit("</think>", maxsplit=1)[-1].strip()
+    if not suffix:
+        return None
+    try:
+        return json.loads(suffix)
+    except json.JSONDecodeError:
+        return None
 
 
 def normalize(text: str) -> str:

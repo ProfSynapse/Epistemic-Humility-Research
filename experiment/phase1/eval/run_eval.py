@@ -166,6 +166,10 @@ def assert_no_generated_thinking(text: str, *, question: str) -> None:
             )
 
 
+def _thinking_mode_name(enable_thinking: bool) -> str:
+    return "thinking_on" if enable_thinking else "thinking_off"
+
+
 def _generation_stop_strings(
     generation_cfg: dict,
     *,
@@ -219,8 +223,6 @@ class VLLMGenerator:
         self.enable_thinking = bool(
             self.generation_cfg.get("enable_thinking", False)
         )
-        if self.enable_thinking:
-            raise ValueError("Phase 1 eval requires generation.enable_thinking=false")
 
         self.model_name = cfg.get("model_name") or self.generation_cfg.get("model_name")
         if not self.model_name:
@@ -303,13 +305,17 @@ class VLLMGenerator:
             {"role": "user", "content": user_content},
         ]
         if self._chat_template_mode is not None:
-            return self._apply_chat_template(messages, self._chat_template_mode)
+            rendered = self._apply_chat_template(messages, self._chat_template_mode)
+            if not self.enable_thinking:
+                assert_no_think_scaffolding(rendered)
+            return rendered
 
         failures: list[str] = []
         for mode in ("direct", "chat_template_kwargs"):
             try:
                 rendered = self._apply_chat_template(messages, mode)
-                assert_no_think_scaffolding(rendered)
+                if not self.enable_thinking:
+                    assert_no_think_scaffolding(rendered)
             except TypeError as exc:
                 failures.append(f"{mode}: tokenizer rejected kwargs ({exc})")
                 continue
@@ -321,9 +327,8 @@ class VLLMGenerator:
 
         detail = "; ".join(failures) if failures else "no render attempts made"
         raise RuntimeError(
-            "Unable to render a Qwen3 prompt with thinking disabled. Tried both "
-            "direct enable_thinking=False and "
-            "chat_template_kwargs={'enable_thinking': False}. "
+            f"Unable to render a Qwen3 prompt with {_thinking_mode_name(self.enable_thinking)}. "
+            "Tried both direct enable_thinking and chat_template_kwargs wiring. "
             f"Details: {detail}."
         )
 
@@ -348,10 +353,10 @@ class VLLMGenerator:
             rendered = self._render_prompt(
                 question, retry_instruction=retry_instruction
             )
-            assert_no_think_scaffolding(rendered)
             outputs = self.llm.generate([rendered], self._sampling_params, **kwargs)
             text = outputs[0].outputs[0].text
-            assert_no_generated_thinking(text, question=question)
+            if not self.enable_thinking:
+                assert_no_generated_thinking(text, question=question)
             if self.stated_confidence_json_retries <= 0:
                 break
             parsed = scorers.parse_stated_confidence(text)
@@ -362,6 +367,7 @@ class VLLMGenerator:
 
         merged = dict(record)
         merged["generated_answer"] = text
+        merged["enable_thinking"] = self.enable_thinking
         merged["generation_attempts"] = attempts_made
         merged["stated_confidence_retry_count"] = retry_count
         merged["stated_confidence_retry_exhausted"] = (
@@ -552,6 +558,7 @@ def _scored_row_payload(
         if optional_key in record:
             payload[optional_key] = record[optional_key]
     for optional_key in (
+        "enable_thinking",
         "generation_attempts",
         "stated_confidence_retry_count",
         "stated_confidence_retry_exhausted",
