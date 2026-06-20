@@ -292,6 +292,21 @@ Use one row key per line. Blank lines and `#` comments are allowed. Keep these
 files small, named by the panel purpose, and checked in only when they contain
 non-restricted row identifiers.
 
+Hidden-state extraction also supports exact probe-pool row-key files:
+
+```yaml
+selection:
+  source: probe_pool
+  questions_frozen: ../data/qwen3-4b-instruct/questions_frozen.json
+  probe_results: qwen3-4b-instruct/probe_results.jsonl
+  row_keys_file: config/example_fixed_row_keys.txt
+```
+
+The extraction selector validates every key against the frozen known/unknown
+pools, rejects duplicates and discard/out-of-frozen keys, and preserves file
+order. Use this for rare-cell-enriched panels instead of increasing random
+`n_known`/`n_unknown` slices blindly.
+
 For per-row logit targets, prefer structured row fields over copied strings:
 
 ```yaml
@@ -380,6 +395,18 @@ Use balanced class weighting for rare behavior-cell panels. Plain accuracy can
 look good while the readout ignores `known_refused` or
 `unknown_answered_wrong`; macro recall and per-cell recall are the decision
 surface.
+
+For larger rare-cell panels, build deterministic target row-key files before
+extracting:
+
+```bash
+python experiment/phase1/probe/phase3_targeted_row_keys.py \
+  --config experiment/phase1/probe/config/phase3_gold_kto_targeted_rare_cell_row_keys.yaml
+```
+
+Treat heuristic buckets such as known-low-confidence and unknown-answering as
+candidate enrichment only. The generated-answer behavior panel is the source of
+truth for actual behavior-cell membership.
 
 After logit diagnostics on behavior-conditioned rows, aggregate by behavior
 cell before interpreting:
@@ -518,6 +545,11 @@ last decoder block and fail live execution.
 If a sweep config overrides extraction readiness `label_counts`, treat the map
 as an atomic assertion for that panel. Do not let labels from a template panel
 leak into a different row manifest.
+
+Template readiness checks often include `row_count` and `label_counts`. When a
+sweep targets a new extraction panel, override both in `runner_overrides` before
+live execution; otherwise the runner can correctly fail on the old template
+shape before model loading.
 
 For nearby-layer panels:
 

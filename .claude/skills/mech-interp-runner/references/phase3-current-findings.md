@@ -203,6 +203,21 @@ L22 rank 4 (`~0.569`). The panel is heavily imbalanced
 next useful step is a larger targeted gold behavior panel that oversamples rare
 damage cells before exporting readout-derived directions.
 
+The targeted KTO gold panel confirms the sampling bottleneck and improves the
+readout surface. A deterministic 448-row probe-pool slice excluded the original
+256-row panel and oversampled likely known-overrefusal and unknown-wrong
+candidates. Actual SFT->KTO baseline generation yielded:
+`known_refused=37`, `known_correct_answered=164`, `known_answered_wrong=23`,
+`unknown_refused=187`, `unknown_answered_wrong=31`, and
+`unknown_answered_correct=6`. The four-cell readout used 419 labeled rows. Best
+current low-rank results improved to `h_lora` L27 rank 16
+(`macro_recall ~= 0.613`, rare-cell recall `known_refused ~= 0.43`,
+`unknown_answered_wrong ~= 0.55`) and `delta` L34 rank 16
+(`macro_recall ~= 0.595`). This strengthens the multi-dimensional
+mid/late-layer control-surface hypothesis, but it remains readout/localization
+evidence only. Next causal tests should use the enriched behavior-cell row-key
+files and preserve paired desired cells.
+
 ### Gold-Backed Answer-Start Diagnostics
 
 Tiny changed-row KTO evidence initially looked promising, but scale and replay

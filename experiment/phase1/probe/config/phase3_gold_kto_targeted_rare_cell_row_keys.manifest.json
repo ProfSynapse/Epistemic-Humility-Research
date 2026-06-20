@@ -1,0 +1,67 @@
+{
+  "schema_version": "phase3-targeted-row-keys/v1",
+  "purpose": "Build an exact probe-pool row-key slice for a larger SFT->KTO gold behavior panel, oversampling likely rare behavior cells before another hidden-state extraction and baseline generation pass.",
+  "seed": 20260620,
+  "inputs": {
+    "questions_frozen": "experiment\\phase1\\data\\qwen3-4b-instruct\\questions_frozen.json",
+    "questions_frozen_sha256": "222199a3dfecdfc3ef4f846b00c5ad697930e662d0bc2ce3455e1d9177736bac",
+    "probe_results": "experiment\\phase1\\probe\\qwen3-4b-instruct\\probe_results.jsonl",
+    "probe_results_sha256": "f8b4b89345f15b89fa40fd834c3d9249e0a5417b67d2cf7da7eee6f936635c43",
+    "expected_probe_config_sha": "893861257973170b",
+    "excluded_source_count": 256
+  },
+  "heuristics": {
+    "refusal_patterns": [
+      "\\bi don't know\\b",
+      "\\bi do not know\\b",
+      "\\bnot sure\\b",
+      "\\bnot enough information\\b",
+      "\\bcannot determine\\b",
+      "\\bcan't determine\\b",
+      "\\bnot widely recognized\\b",
+      "\\bno definitive\\b",
+      "\\bunknown\\b",
+      "\\bno record\\b",
+      "\\bnot available\\b",
+      "\\bunclear\\b",
+      "\\bi can't answer\\b",
+      "\\bi cannot answer\\b",
+      "\\bit is difficult to\\b",
+      "\\bthere is no\\b",
+      "\\bdoes not appear\\b"
+    ],
+    "buckets": {
+      "known_low_confidence_or_refusal": "known rows with refusal-like greedy answer, p_correct < 1.0, or greedy_correct false",
+      "known_high_confidence_correct": "known rows without refusal-like greedy answer and no low-confidence flag",
+      "unknown_refusal_like": "unknown rows with refusal-like greedy answer",
+      "unknown_answered_wrong_like": "unknown rows without refusal-like greedy answer"
+    }
+  },
+  "bucket_summaries": {
+    "known_low_confidence_or_refusal": {
+      "available": 2376,
+      "selected": 160,
+      "quota": 160
+    },
+    "known_high_confidence_correct": {
+      "available": 6388,
+      "selected": 64,
+      "quota": 64
+    },
+    "unknown_answered_wrong_like": {
+      "available": 6898,
+      "selected": 160,
+      "quota": 160
+    },
+    "unknown_refusal_like": {
+      "available": 77,
+      "selected": 64,
+      "quota": 64
+    }
+  },
+  "total_selected": 448,
+  "selected_label_counts": {
+    "known": 224,
+    "unknown": 224
+  }
+}

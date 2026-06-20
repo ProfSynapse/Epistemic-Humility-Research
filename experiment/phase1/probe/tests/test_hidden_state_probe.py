@@ -800,6 +800,54 @@ def test_select_matched_slice_honors_n_known_cap(monkeypatch):
     assert labels == ["known", "unknown"]
 
 
+def test_select_matched_slice_honors_exact_row_keys_file(monkeypatch, tmp_path):
+    """Exact row-key files select a fixed slice in file order."""
+    row_keys_file = tmp_path / "row_keys.txt"
+    row_keys_file.write_text(
+        "\n".join([
+            "# fixed targeted panel",
+            "000000000003|fix_unknown_2",
+            "",
+            "000000000000|fix_known_1",
+        ]),
+        encoding="utf-8",
+    )
+    config = _select_config(
+        monkeypatch,
+        row_keys_file=str(row_keys_file),
+    )
+
+    rows = hsp.select_matched_slice(config)
+
+    assert [r["probe_pool_row_key"] for r in rows] == [
+        "000000000003|fix_unknown_2",
+        "000000000000|fix_known_1",
+    ]
+    assert [r["label"] for r in rows] == ["unknown", "known"]
+
+
+def test_select_matched_slice_row_keys_file_rejects_duplicate(monkeypatch, tmp_path):
+    row_keys_file = tmp_path / "row_keys.txt"
+    row_keys_file.write_text(
+        "000000000000|fix_known_1\n000000000000|fix_known_1\n",
+        encoding="utf-8",
+    )
+    config = _select_config(monkeypatch, row_keys_file=str(row_keys_file))
+
+    with pytest.raises(ValueError, match="duplicate row key"):
+        hsp.select_matched_slice(config)
+
+
+def test_select_matched_slice_row_keys_file_rejects_outside_frozen(
+        monkeypatch, tmp_path):
+    row_keys_file = tmp_path / "row_keys.txt"
+    row_keys_file.write_text("000000000004|fix_discard_1\n", encoding="utf-8")
+    config = _select_config(monkeypatch, row_keys_file=str(row_keys_file))
+
+    with pytest.raises(ValueError, match="outside the frozen"):
+        hsp.select_matched_slice(config)
+
+
 def test_select_matched_slice_raises_on_key_absent_from_results(monkeypatch, tmp_path):
     """A frozen key with no matching probe_results row aborts (must be probed)."""
     monkeypatch.setattr(hsp, "PROBE_DIR", tmp_path)

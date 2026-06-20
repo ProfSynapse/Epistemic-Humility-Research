@@ -1563,3 +1563,97 @@ Next step:
 - Build a larger, targeted gold behavior panel that oversamples candidate rows
   likely to produce the rare cells (`known_refused` and
   `unknown_answered_wrong`) before exporting readout-derived directions.
+
+## Checkpoint 033 - Targeted KTO Rare-Cell Gold Panel
+
+Question: can a targeted probe-pool slice produce enough rare generated
+behavior cells to make multicell readouts more stable?
+
+Reusable plumbing added:
+
+- `hidden_state_probe.py` now supports `selection.row_keys_file` for
+  `source: probe_pool` extraction.
+- The exact row-key path validates keys against frozen known/unknown pools,
+  rejects duplicates and discard/out-of-frozen rows, and preserves file order.
+- Added `phase3_targeted_row_keys.py`, a CPU-only selector that writes exact
+  row-key files plus a provenance manifest from frozen split + probe results.
+- Added tests for exact hidden-state row-key selection and targeted row-key
+  selector behavior.
+
+Targeted row-key panel:
+
+- Config:
+  `experiment/phase1/probe/config/phase3_gold_kto_targeted_rare_cell_row_keys.yaml`.
+- Output row keys:
+  `experiment/phase1/probe/config/phase3_gold_kto_targeted_rare_cell_row_keys.txt`.
+- The selector excluded the original 256-row KTO gold extraction.
+- Selected `448` rows, balanced `224` known / `224` unknown.
+- Heuristic buckets selected:
+  - `known_low_confidence_or_refusal=160`.
+  - `known_high_confidence_correct=64`.
+  - `unknown_answered_wrong_like=160`.
+  - `unknown_refusal_like=64`.
+
+Extraction and baseline generation:
+
+- Hidden-state extraction config:
+  `experiment/phase1/probe/config/hidden_state_gold_kto_targeted_rare_cells.yaml`.
+- Extraction completed in Docker with manifest `status=ok`, `verified=true`.
+- Extraction output:
+  `experiment/phase1/probe/qwen3-4b-instruct/hidden_states_gold_kto_targeted/extraction__9220ebb266f4`.
+- Candidate directions derived with `hidden_state_directions.py`.
+- New candidate source:
+  `experiment/phase1/probe/config/phase3_gold_kto_targeted_candidates.yaml`.
+- No-vector baseline generation config:
+  `experiment/phase1/probe/config/phase3_gold_kto_targeted_baseline_generation_replay.yaml`.
+- Initial generation launch correctly failed because the inherited template
+  readiness check expected `row_count=256`; fixed by overriding
+  `row_count=448` and label counts `known=224`, `unknown=224`.
+- Generation completed successfully:
+  `experiment/phase1/probe/qwen3-4b-instruct/causal_pilots/phase3_gold_kto_targeted_baseline_generation_replay/sft_kto_targeted_h_lora_l35/generation/run_20260620T194500Z`.
+
+Actual generated behavior cells:
+
+- Behavior panel config:
+  `experiment/phase1/probe/config/phase3_gold_kto_targeted_behavior_panel.yaml`.
+- Behavior panel output:
+  `experiment/phase1/probe/qwen3-4b-instruct/gold_behavior_panels/phase3_gold_kto_targeted_behavior_panel`.
+- Counts:
+  - `known_refused=37`.
+  - `known_correct_answered=164`.
+  - `known_answered_wrong=23`.
+  - `unknown_refused=187`.
+  - `unknown_answered_wrong=31`.
+  - `unknown_answered_correct=6`.
+- Compared with the earlier 256-row panel, the targeted slice increased
+  `known_refused` from `7` to `37` and `unknown_answered_wrong` from `16` to
+  `31`, while preserving large desired-cell pools.
+
+Targeted multicell readout:
+
+- Config:
+  `experiment/phase1/probe/config/phase3_gold_kto_targeted_multicell_readout.yaml`.
+- Output:
+  `experiment/phase1/probe/qwen3-4b-instruct/multicell_readout/phase3_gold_kto_targeted_multicell_readout`.
+- Four-cell labeled rows: `419`; unmatched rows: `29`.
+- Cell counts used by the readout:
+  `known_refused=37`, `known_correct_answered=164`,
+  `unknown_refused=187`, `unknown_answered_wrong=31`.
+- Best current readouts:
+  - `h_lora` L27 rank 16: macro recall `0.613`, accuracy `0.695`,
+    rare-cell recall `known_refused=0.432`,
+    `unknown_answered_wrong=0.548`.
+  - `delta` L34 rank 16: macro recall `0.595`, accuracy `0.704`.
+  - `h_base` L25 rank 16: macro recall `0.576`, accuracy `0.702`.
+
+Interpretation:
+
+- The targeted panel confirmed row balance was a real bottleneck.
+- The best readout moved from about `0.58` macro recall on the imbalanced
+  panel to about `0.61` on the enriched panel, with notably better
+  `unknown_answered_wrong` recall.
+- This strengthens the low-dimensional-but-not-rank-1 control-surface
+  hypothesis.
+- It is still localization/screening evidence, not a steering result.
+- The next causal slice should use enriched behavior-cell row-key files and
+  test candidate controls against paired desired cells before generated replay.
