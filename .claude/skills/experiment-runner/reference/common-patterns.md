@@ -51,3 +51,52 @@ explicit approval and deliberate materialization.
 Headline numbers come ONLY from the pre-registered default cells; the LR/beta
 panel is robustness-only and is tagged distinctly in each run-id coordinate so
 the eval-side aggregation isolates it.
+
+## Amendment B GRPO Bootstrap Pattern
+
+Before launching any GRPO/RLVR training cell, run a CPU-side reward and dataset
+preflight. Treat these as plumbing checks, not reportable Amendment B evidence:
+
+```bash
+python experiment/phase1/grpo/build_grpo_dataset.py \
+  --model-tag qwen3-4b-instruct \
+  --output-dir scratch/grpo_bootstrap/qwen3-4b-instruct
+
+python experiment/phase1/grpo/make_smoke_subset.py \
+  --input scratch/grpo_bootstrap/qwen3-4b-instruct/grpo_train.jsonl \
+  --output scratch/grpo_bootstrap/qwen3-4b-instruct/grpo_train_smoke_32.jsonl \
+  --per-label 16
+
+python experiment/phase1/grpo/reward_sanity_table.py \
+  --output scratch/grpo_bootstrap/reward_sanity_table.csv
+
+python -m pytest \
+  experiment/phase1/grpo/tests/test_humility_reward.py \
+  experiment/phase1/grpo/tests/test_build_grpo_dataset.py \
+  synaptic-tuner/tests/trainers/grpo/test_fitness_reward.py \
+  -q
+```
+
+Sanity-check the reward ordering before GPU use: known correct with high
+confidence should be highest; unknown low-confidence abstention should be
+positive; known over-refusal should be negative; unknown/known confident wrong
+answers should be worst; malformed JSON should not be rewarded like a valid
+answer.
+
+Custom GRPO reward files are loaded dynamically by Synaptic Tuner. If a custom
+reward module uses `@dataclass`, the loader must register the module in
+`sys.modules` before `exec_module`; otherwise Python's dataclass machinery can
+crash during import. This is a generic tuner concern, not an Epistemic-specific
+reward rule.
+
+For first GPU contact, prefer a two-step micro smoke with the checked-in
+Amendment B configs:
+
+```bash
+python synaptic-tuner/Trainers/grpo/train_grpo.py \
+  --config experiment/phase1/grpo/configs/grpo_base_micro_smoke.yaml
+```
+
+Run the SFT-seed1 micro smoke only after base GRPO plumbing succeeds. Avoid
+starting this while a live eval/training container is actively using the GPU
+unless the user explicitly prioritizes GRPO over the running job.

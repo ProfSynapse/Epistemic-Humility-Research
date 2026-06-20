@@ -1,0 +1,133 @@
+---
+schema_version: research-session/v1
+session_id: grpo-bootstrap
+title: GRPO Bootstrap
+status: active
+created_at: '2026-06-20T23:00:51Z'
+updated_at: '2026-06-20T23:08:11Z'
+phase: phase1
+question: Can we safely bootstrap Amendment B GRPO training locally with a calibrated
+  answer/confidence reward before any full GRPO cells?
+tags:
+- experiment-runner
+- grpo
+- stated-confidence
+- training
+run_ids: []
+trajectory:
+  anchor: experiment/protocol/research-trajectory.md
+  current_position: ''
+  changed_by_session: ''
+checkpoints:
+- id: 001-gate
+  at: '2026-06-20T23:06:37Z'
+  kind: gate
+  title: GRPO Reward And Dataset Preflight
+  summary: 'Started Amendment B GRPO bootstrap. Tightened the custom reward to align
+    stated-confidence refusal handling with the evaluator, added a material invalid-JSON
+    penalty, added a deterministic reward sanity table, projected the Qwen3-4B GRPO
+    dataset into scratch, and created a 32-row balanced smoke subset plus base and
+    SFT-seed1 micro-smoke configs. A generic Synaptic Tuner custom-reward import bug
+    was found and fixed: dynamically loaded reward modules must be registered in sys.modules
+    before exec_module so dataclass-decorated reward helpers work.'
+  evidence:
+  - experiment/phase1/grpo/humility_reward.py
+  - experiment/phase1/grpo/reward_sanity_table.py
+  - experiment/phase1/grpo/make_smoke_subset.py
+  - experiment/phase1/grpo/configs/grpo_base_micro_smoke.yaml
+  - experiment/phase1/grpo/configs/grpo_sft_seed1_micro_smoke.yaml
+  - synaptic-tuner/Trainers/grpo/src/rewards.py
+  run_ids: []
+  commands:
+  - python -m pytest experiment/phase1/grpo/tests/test_humility_reward.py experiment/phase1/grpo/tests/test_build_grpo_dataset.py
+    -q
+  - python -m pytest synaptic-tuner/tests/trainers/grpo/test_fitness_reward.py -q
+  - python experiment/phase1/grpo/build_grpo_dataset.py --model-tag qwen3-4b-instruct
+    --output-dir scratch/grpo_bootstrap/qwen3-4b-instruct
+  - python experiment/phase1/grpo/make_smoke_subset.py --input scratch/grpo_bootstrap/qwen3-4b-instruct/grpo_train.jsonl
+    --output scratch/grpo_bootstrap/qwen3-4b-instruct/grpo_train_smoke_32.jsonl --per-label
+    16
+  decisions:
+  - Treat the next GRPO run as a two-step plumbing smoke only, not a reportable Amendment
+    B training cell.
+  - Do not launch the GPU micro-smoke while the thinking eval container is actively
+    using the GPU unless the user explicitly prioritizes GRPO over eval throughput.
+  next_steps:
+  - When GPU is free, run the base micro smoke first to prove trainer/reward/data
+    plumbing, then the SFT-seed1 micro smoke if base plumbing succeeds.
+  signals: {}
+- id: 002-gate
+  at: '2026-06-20T23:08:11Z'
+  kind: gate
+  title: GPU Launch Guard Held
+  summary: Tested the GRPO micro-smoke launch wrapper. It correctly refused to start
+    the Docker GRPO run because the thinking eval container was still active and nvidia-smi
+    reported 12364 MiB used, above the 4096 MiB default guard threshold. No GRPO GPU
+    training was launched.
+  evidence:
+  - experiment/phase1/grpo/run_micro_smoke.ps1
+  - experiment/phase1/eval/logs/thinking_eval_batch/batch_status_current.jsonl
+  run_ids: []
+  commands:
+  - powershell -NoProfile -ExecutionPolicy Bypass -File experiment/phase1/grpo/run_micro_smoke.ps1
+    -Mode base
+  decisions:
+  - Keep the GRPO base micro-smoke queued until the running eval frees enough GPU
+    memory, unless explicitly forced.
+  next_steps:
+  - After the eval container exits, run powershell -NoProfile -ExecutionPolicy Bypass
+    -File experiment/phase1/grpo/run_micro_smoke.ps1 -Mode base, then inspect scratch/grpo_bootstrap/runs/base_micro_smoke
+    for checkpoints/logs.
+  signals: {}
+---
+# GRPO Bootstrap
+
+## Question
+
+Can we safely bootstrap Amendment B GRPO training locally with a calibrated answer/confidence reward before any full GRPO cells?
+
+## Trajectory Position
+
+_Not yet recorded._
+
+## Summary
+
+_No summary yet._
+
+## Checkpoints
+### 001-gate - GRPO Reward And Dataset Preflight
+
+- at: `2026-06-20T23:06:37Z`
+- kind: `gate`
+- summary: Started Amendment B GRPO bootstrap. Tightened the custom reward to align stated-confidence refusal handling with the evaluator, added a material invalid-JSON penalty, added a deterministic reward sanity table, projected the Qwen3-4B GRPO dataset into scratch, and created a 32-row balanced smoke subset plus base and SFT-seed1 micro-smoke configs. A generic Synaptic Tuner custom-reward import bug was found and fixed: dynamically loaded reward modules must be registered in sys.modules before exec_module so dataclass-decorated reward helpers work.
+- evidence:
+  - `experiment/phase1/grpo/humility_reward.py`
+  - `experiment/phase1/grpo/reward_sanity_table.py`
+  - `experiment/phase1/grpo/make_smoke_subset.py`
+  - `experiment/phase1/grpo/configs/grpo_base_micro_smoke.yaml`
+  - `experiment/phase1/grpo/configs/grpo_sft_seed1_micro_smoke.yaml`
+  - `synaptic-tuner/Trainers/grpo/src/rewards.py`
+- commands:
+  - `python -m pytest experiment/phase1/grpo/tests/test_humility_reward.py experiment/phase1/grpo/tests/test_build_grpo_dataset.py -q`
+  - `python -m pytest synaptic-tuner/tests/trainers/grpo/test_fitness_reward.py -q`
+  - `python experiment/phase1/grpo/build_grpo_dataset.py --model-tag qwen3-4b-instruct --output-dir scratch/grpo_bootstrap/qwen3-4b-instruct`
+  - `python experiment/phase1/grpo/make_smoke_subset.py --input scratch/grpo_bootstrap/qwen3-4b-instruct/grpo_train.jsonl --output scratch/grpo_bootstrap/qwen3-4b-instruct/grpo_train_smoke_32.jsonl --per-label 16`
+- decisions:
+  - Treat the next GRPO run as a two-step plumbing smoke only, not a reportable Amendment B training cell.
+  - Do not launch the GPU micro-smoke while the thinking eval container is actively using the GPU unless the user explicitly prioritizes GRPO over eval throughput.
+- next steps:
+  - When GPU is free, run the base micro smoke first to prove trainer/reward/data plumbing, then the SFT-seed1 micro smoke if base plumbing succeeds.
+### 002-gate - GPU Launch Guard Held
+
+- at: `2026-06-20T23:08:11Z`
+- kind: `gate`
+- summary: Tested the GRPO micro-smoke launch wrapper. It correctly refused to start the Docker GRPO run because the thinking eval container was still active and nvidia-smi reported 12364 MiB used, above the 4096 MiB default guard threshold. No GRPO GPU training was launched.
+- evidence:
+  - `experiment/phase1/grpo/run_micro_smoke.ps1`
+  - `experiment/phase1/eval/logs/thinking_eval_batch/batch_status_current.jsonl`
+- commands:
+  - `powershell -NoProfile -ExecutionPolicy Bypass -File experiment/phase1/grpo/run_micro_smoke.ps1 -Mode base`
+- decisions:
+  - Keep the GRPO base micro-smoke queued until the running eval frees enough GPU memory, unless explicitly forced.
+- next steps:
+  - After the eval container exits, run powershell -NoProfile -ExecutionPolicy Bypass -File experiment/phase1/grpo/run_micro_smoke.ps1 -Mode base, then inspect scratch/grpo_bootstrap/runs/base_micro_smoke for checkpoints/logs.

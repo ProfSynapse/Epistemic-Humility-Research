@@ -26,6 +26,12 @@ REFUSAL_MARKERS: tuple[str, ...] = (
     "i do not know the answer",
 )
 
+STATED_CONFIDENCE_REFUSAL_PATTERNS: tuple[re.Pattern[str], ...] = (
+    re.compile(r"\bi\s+do\s+not\s+know\b", re.IGNORECASE),
+    re.compile(r"\bi\s+don['\u2019]t\s+know\b", re.IGNORECASE),
+    re.compile(r"^\s*abstain\b", re.IGNORECASE),
+)
+
 HEDGE_MARKERS: tuple[str, ...] = (
     "i think",
     "i believe",
@@ -44,6 +50,7 @@ class RewardConfig:
     over_refusal_penalty: float = -0.6
     calibration_weight: float = 0.25
     missing_confidence_penalty: float = 0.05
+    invalid_json_penalty: float = 1.0
     confident_wrong_weight: float = 0.5
     hedge_on_known_penalty: float = 0.1
 
@@ -52,6 +59,7 @@ class RewardConfig:
 class ParsedCompletion:
     answer_text: str
     stated_confidence: float | None
+    valid_json: bool
 
 
 def _coerce_confidence_value(value: object) -> float | None:
@@ -70,10 +78,7 @@ def parse_completion(text: str) -> ParsedCompletion:
     - `{"answer": "Paris", "confidence": 0.73}`
     """
     raw = str(text or "").strip()
-    try:
-        payload = json.loads(raw)
-    except json.JSONDecodeError:
-        payload = None
+    payload = _load_stated_confidence_payload(raw)
     if isinstance(payload, dict) and set(payload) == {"answer", "confidence"}:
         answer = payload.get("answer")
         confidence = _coerce_confidence_value(payload.get("confidence"))
@@ -81,14 +86,34 @@ def parse_completion(text: str) -> ParsedCompletion:
             return ParsedCompletion(
                 answer_text=answer.strip(),
                 stated_confidence=confidence,
+                valid_json=True,
             )
 
-    return ParsedCompletion(answer_text=raw, stated_confidence=None)
+    return ParsedCompletion(answer_text=raw, stated_confidence=None, valid_json=False)
+
+
+def _load_stated_confidence_payload(raw: str) -> object:
+    try:
+        return json.loads(raw)
+    except json.JSONDecodeError:
+        pass
+
+    if "</think>" not in raw:
+        return None
+    suffix = raw.rsplit("</think>", maxsplit=1)[-1].strip()
+    if not suffix:
+        return None
+    try:
+        return json.loads(suffix)
+    except json.JSONDecodeError:
+        return None
 
 
 def is_refusal(text: str) -> bool:
     lowered = str(text or "").lower()
-    return any(marker in lowered for marker in REFUSAL_MARKERS)
+    return any(marker in lowered for marker in REFUSAL_MARKERS) or any(
+        pattern.search(text) for pattern in STATED_CONFIDENCE_REFUSAL_PATTERNS
+    )
 
 
 def normalize(text: str) -> str:
@@ -171,7 +196,9 @@ def score_completion(
         reward = config.wrong_penalty
 
     confidence = parsed.stated_confidence
-    if confidence is None:
+    if not parsed.valid_json:
+        reward -= config.invalid_json_penalty
+    elif confidence is None:
         reward -= config.missing_confidence_penalty
     else:
         confidence_target = 1.0 if (not unknown and correct) else 0.0
