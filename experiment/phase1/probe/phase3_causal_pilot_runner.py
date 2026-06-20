@@ -81,10 +81,39 @@ def resolve_runtime_path(value: str | Path | None) -> str | None:
     if value is None:
         return None
     text = str(value)
+    if not text:
+        return None
     docker_prefix = "/workspace/repo/"
     if text.startswith(docker_prefix) and not Path(text).exists():
         return str((REPO_ROOT / text[len(docker_prefix):]).resolve())
     return text
+
+
+def runtime_adapter_path(
+    model_cfg: dict[str, Any],
+    extraction_manifest: dict[str, Any],
+) -> str | None:
+    """Resolve the PEFT adapter path for the live runtime.
+
+    By default the runner stays arm-native and falls back to the extraction
+    manifest adapter. Adapterless execution is opt-in so null adapter settings
+    cannot silently drop the trained arm being diagnosed.
+    """
+    use_extraction_adapter = model_cfg.get("use_extraction_adapter", True)
+    if not isinstance(use_extraction_adapter, bool):
+        raise PilotRunnerError("runtime_model.use_extraction_adapter must be boolean")
+    raw_adapter_path = model_cfg.get("adapter_path")
+    if use_extraction_adapter and not raw_adapter_path:
+        raw_adapter_path = extraction_manifest.get("adapter_path")
+    adapter_path = resolve_runtime_path(raw_adapter_path)
+    if adapter_path:
+        return adapter_path
+    if model_cfg.get("allow_adapterless") is True:
+        return None
+    raise PilotRunnerError(
+        "No adapter path available for active smoke; set "
+        "runtime_model.allow_adapterless: true only for explicit adapterless runtimes"
+    )
 
 
 def require_generation_enabled(config: dict[str, Any], *, allow_generation: bool) -> None:
@@ -583,11 +612,7 @@ class TransformersActivationGenerator:
         revision = model_cfg.get("revision") or extraction_manifest.get("base_model_revision")
         if isinstance(revision, str) and revision.startswith("local-sha256:"):
             revision = None
-        adapter_path = resolve_runtime_path(
-            model_cfg.get("adapter_path") or extraction_manifest.get("adapter_path")
-        )
-        if not adapter_path:
-            raise PilotRunnerError("No adapter path available for active SFT smoke")
+        adapter_path = runtime_adapter_path(model_cfg, extraction_manifest)
         dtype_name = model_cfg.get("torch_dtype", extraction_manifest.get("compute_dtype", "bfloat16"))
         dtype = getattr(torch, dtype_name)
         device_map = model_cfg.get("device_map", "cuda")
@@ -598,11 +623,14 @@ class TransformersActivationGenerator:
             torch_dtype=dtype,
             device_map=device_map,
         )
-        self.model = PeftModel.from_pretrained(
-            base,
-            adapter_path,
-            adapter_name=candidate.get("arm") or extraction_manifest.get("active_adapter_name", "sft"),
-        )
+        if adapter_path:
+            self.model = PeftModel.from_pretrained(
+                base,
+                adapter_path,
+                adapter_name=candidate.get("arm") or extraction_manifest.get("active_adapter_name", "sft"),
+            )
+        else:
+            self.model = base
         self.model.eval()
         self.device = next(self.model.parameters()).device
         self.system_prompt = config.get("prompt", {}).get(

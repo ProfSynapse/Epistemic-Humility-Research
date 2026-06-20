@@ -350,6 +350,54 @@ Wrong-layer controls for the SAE contrast stayed comparable to the source-layer
 effect, so this remains distributed-subspace evidence rather than layer-local
 mechanism evidence.
 
+### Runtime Semantics
+
+For live `phase3_causal_pilot_runner.py` diagnostics, runtime identity is
+controlled by `runtime_model`, not by descriptive `model` metadata. If
+`runtime_model.adapter_path` is null, the runner falls back to the candidate
+extraction manifest adapter by default. That is an arm-native panel: DPO
+candidates run with the DPO extraction adapter, KTO candidates run with the KTO
+extraction adapter, and baseline differences can reflect adapter/runtime
+differences rather than the direction alone.
+
+For a same-runtime adapterless SFT panel, disable extraction-adapter fallback
+explicitly in the sweep `runner_overrides`:
+
+```yaml
+runner_overrides:
+  runtime_model:
+    model_name: /workspace/repo/path/to/sft/merged-16bit
+    adapter_path: null
+    use_extraction_adapter: false
+    allow_adapterless: true
+```
+
+Adapterless execution is fail-closed and opt-in. Do not interpret
+`model.model_name` as the live model if `runtime_model` disagrees.
+
+Use `runner_overrides` for reusable sweep-level changes such as exact row slices
+or runtime pins, rather than copying whole runner configs:
+
+```yaml
+runner_overrides:
+  selection:
+    row_keys:
+      - selfaware::selfaware::000002::selfaware-3
+```
+
+Current known-retention result: arm-native DPO/SAE known rows had near-zero
+refusal-opener baseline (`~0.000054`), while the arm-native KTO runtime baseline
+was higher (`~0.053762`). Treat that as a runtime/adapter signal unless a
+same-runtime panel confirms it.
+
+Current adapterless SFT-runtime result: unknown rows already had high
+refusal-opener baseline (`~0.607347`), and same-norm subspace directions mostly
+moved refusal probability without top-1 changes. On known rows, the SAE DPO
+contrast barely moved the source-layer refusal slice at coefficient 50
+(`+0.002875`), while broad DPO and KTO directions moved it more (`+0.062745`
+and `+0.113123` respectively). Wrong-layer controls remain substantial, so this
+is still distributed-subspace/probability-slice evidence, not a clean knob.
+
 ## Aggregate Completed Runs
 
 ```bash
