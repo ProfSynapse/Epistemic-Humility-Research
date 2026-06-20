@@ -1,0 +1,128 @@
+candidate_directions:
+  - label: kto_h_lora_l24_known_repair_orthogonal_to_unknown_wrong
+    priority: 1
+    arm: sft_kto
+    extraction_dir: experiment/phase1/probe/qwen3-4b-sft-merged-seed1-selfaware/hidden_states_selfaware_full_kto/extraction__bb5e579fa10e
+    extraction_manifest: experiment/phase1/probe/qwen3-4b-sft-merged-seed1-selfaware/hidden_states_selfaware_full_kto/extraction__bb5e579fa10e/manifest.json
+    direction_manifest: experiment/phase1/probe/qwen3-4b-sft-merged-seed1-selfaware/direction_transforms/phase3_selfaware_calibrated_expression_kto_orthogonalized_window_directions/direction_transforms.manifest.json
+    direction_csv: experiment/phase1/probe/qwen3-4b-sft-merged-seed1-selfaware/direction_transforms/phase3_selfaware_calibrated_expression_kto_orthogonalized_window_directions/direction_transforms.csv
+    direction_id: direction_transform__kto_h_lora_l24_known_repair_orthogonal_to_unknown_wrong__b6635f392487
+    direction_file: experiment/phase1/probe/qwen3-4b-sft-merged-seed1-selfaware/direction_transforms/phase3_selfaware_calibrated_expression_kto_orthogonalized_window_directions/kto_h_lora_l24_known_repair_orthogonal_to_unknown_wrong/directions/direction_transform__kto_h_lora_l24_known_repair_orthogonal_to_unknown_wrong__b6635f392487.safetensors
+    tensor_key: direction
+    role: h_lora
+    layer: 24
+    method: direction_transform
+    transform_method: orthogonalize_to
+    contrast: known_repair_orthogonal_to_unknown_wrong
+    required_status: ok
+    vector_sha256: b6635f392487239039fd9cd3cb087f578b2d6a322a98c7b69b53f2be11c7f550
+    source_run_id: sft_kto__4b__amendment_a__seed1
+
+  - label: kto_h_lora_l24_unknown_repair_orthogonal_to_known_overrefusal
+    priority: 2
+    arm: sft_kto
+    extraction_dir: experiment/phase1/probe/qwen3-4b-sft-merged-seed1-selfaware/hidden_states_selfaware_full_kto/extraction__bb5e579fa10e
+    extraction_manifest: experiment/phase1/probe/qwen3-4b-sft-merged-seed1-selfaware/hidden_states_selfaware_full_kto/extraction__bb5e579fa10e/manifest.json
+    direction_manifest: experiment/phase1/probe/qwen3-4b-sft-merged-seed1-selfaware/direction_transforms/phase3_selfaware_calibrated_expression_kto_orthogonalized_window_directions/direction_transforms.manifest.json
+    direction_csv: experiment/phase1/probe/qwen3-4b-sft-merged-seed1-selfaware/direction_transforms/phase3_selfaware_calibrated_expression_kto_orthogonalized_window_directions/direction_transforms.csv
+    direction_id: direction_transform__kto_h_lora_l24_unknown_repair_orthogonal_to_known_overrefusal__3f7105abdd1b
+    direction_file: experiment/phase1/probe/qwen3-4b-sft-merged-seed1-selfaware/direction_transforms/phase3_selfaware_calibrated_expression_kto_orthogonalized_window_directions/kto_h_lora_l24_unknown_repair_orthogonal_to_known_overrefusal/directions/direction_transform__kto_h_lora_l24_unknown_repair_orthogonal_to_known_overrefusal__3f7105abdd1b.safetensors
+    tensor_key: direction
+    role: h_lora
+    layer: 24
+    method: direction_transform
+    transform_method: orthogonalize_to
+    contrast: unknown_repair_orthogonal_to_known_overrefusal
+    required_status: ok
+    vector_sha256: 3f7105abdd1ba67781338e1e035d04a293fe39ae15a59aeedfdde5a37d925869
+    source_run_id: sft_kto__4b__amendment_a__seed1
+
+  - label: kto_h_lora_l25_known_repair_orthogonal_to_unknown_wrong
+    priority: 3
+    arm: sft_kto
+    extraction_dir: experiment/phase1/probe/qwen3-4b-sft-merged-seed1-selfaware/hidden_states_selfaware_full_kto/extraction__bb5e579fa10e
+    extraction_manifest: experiment/phase1/probe/qwen3-4b-sft-merged-seed1-selfaware/hidden_states_selfaware_full_kto/extraction__bb5e579fa10e/manifest.json
+    direction_manifest: experiment/phase1/probe/qwen3-4b-sft-merged-seed1-selfaware/direction_transforms/phase3_selfaware_calibrated_expression_kto_orthogonalized_window_directions/direction_transforms.manifest.json
+    direction_csv: experiment/phase1/probe/qwen3-4b-sft-merged-seed1-selfaware/direction_transforms/phase3_selfaware_calibrated_expression_kto_orthogonalized_window_directions/direction_transforms.csv
+    direction_id: direction_transform__kto_h_lora_l25_known_repair_orthogonal_to_unknown_wrong__fe3ca49f8d3b
+    direction_file: experiment/phase1/probe/qwen3-4b-sft-merged-seed1-selfaware/direction_transforms/phase3_selfaware_calibrated_expression_kto_orthogonalized_window_directions/kto_h_lora_l25_known_repair_orthogonal_to_unknown_wrong/directions/direction_transform__kto_h_lora_l25_known_repair_orthogonal_to_unknown_wrong__fe3ca49f8d3b.safetensors
+    tensor_key: direction
+    role: h_lora
+    layer: 25
+    method: direction_transform
+    transform_method: orthogonalize_to
+    contrast: known_repair_orthogonal_to_unknown_wrong
+    required_status: ok
+    vector_sha256: fe3ca49f8d3bb3dafa71dbd79ce8c62f2fa725ae0860ff9e11f396b01d015c5d
+    source_run_id: sft_kto__4b__amendment_a__seed1
+
+  - label: kto_h_lora_l25_unknown_repair_orthogonal_to_known_overrefusal
+    priority: 4
+    arm: sft_kto
+    extraction_dir: experiment/phase1/probe/qwen3-4b-sft-merged-seed1-selfaware/hidden_states_selfaware_full_kto/extraction__bb5e579fa10e
+    extraction_manifest: experiment/phase1/probe/qwen3-4b-sft-merged-seed1-selfaware/hidden_states_selfaware_full_kto/extraction__bb5e579fa10e/manifest.json
+    direction_manifest: experiment/phase1/probe/qwen3-4b-sft-merged-seed1-selfaware/direction_transforms/phase3_selfaware_calibrated_expression_kto_orthogonalized_window_directions/direction_transforms.manifest.json
+    direction_csv: experiment/phase1/probe/qwen3-4b-sft-merged-seed1-selfaware/direction_transforms/phase3_selfaware_calibrated_expression_kto_orthogonalized_window_directions/direction_transforms.csv
+    direction_id: direction_transform__kto_h_lora_l25_unknown_repair_orthogonal_to_known_overrefusal__6c8d1f016ba1
+    direction_file: experiment/phase1/probe/qwen3-4b-sft-merged-seed1-selfaware/direction_transforms/phase3_selfaware_calibrated_expression_kto_orthogonalized_window_directions/kto_h_lora_l25_unknown_repair_orthogonal_to_known_overrefusal/directions/direction_transform__kto_h_lora_l25_unknown_repair_orthogonal_to_known_overrefusal__6c8d1f016ba1.safetensors
+    tensor_key: direction
+    role: h_lora
+    layer: 25
+    method: direction_transform
+    transform_method: orthogonalize_to
+    contrast: unknown_repair_orthogonal_to_known_overrefusal
+    required_status: ok
+    vector_sha256: 6c8d1f016ba147ca590cd23ff8ec8cf25830ad4bb708230548cac9cd55ad2f3e
+    source_run_id: sft_kto__4b__amendment_a__seed1
+
+  - label: kto_h_lora_l26_known_repair_orthogonal_to_unknown_wrong
+    priority: 5
+    arm: sft_kto
+    extraction_dir: experiment/phase1/probe/qwen3-4b-sft-merged-seed1-selfaware/hidden_states_selfaware_full_kto/extraction__bb5e579fa10e
+    extraction_manifest: experiment/phase1/probe/qwen3-4b-sft-merged-seed1-selfaware/hidden_states_selfaware_full_kto/extraction__bb5e579fa10e/manifest.json
+    direction_manifest: experiment/phase1/probe/qwen3-4b-sft-merged-seed1-selfaware/direction_transforms/phase3_selfaware_calibrated_expression_kto_orthogonalized_window_directions/direction_transforms.manifest.json
+    direction_csv: experiment/phase1/probe/qwen3-4b-sft-merged-seed1-selfaware/direction_transforms/phase3_selfaware_calibrated_expression_kto_orthogonalized_window_directions/direction_transforms.csv
+    direction_id: direction_transform__kto_h_lora_l26_known_repair_orthogonal_to_unknown_wrong__5bba526aeb34
+    direction_file: experiment/phase1/probe/qwen3-4b-sft-merged-seed1-selfaware/direction_transforms/phase3_selfaware_calibrated_expression_kto_orthogonalized_window_directions/kto_h_lora_l26_known_repair_orthogonal_to_unknown_wrong/directions/direction_transform__kto_h_lora_l26_known_repair_orthogonal_to_unknown_wrong__5bba526aeb34.safetensors
+    tensor_key: direction
+    role: h_lora
+    layer: 26
+    method: direction_transform
+    transform_method: orthogonalize_to
+    contrast: known_repair_orthogonal_to_unknown_wrong
+    required_status: ok
+    vector_sha256: 5bba526aeb34a2118dba0cb5f0531b1ff29f92372f4a149f0f535ae5fa56ed10
+    source_run_id: sft_kto__4b__amendment_a__seed1
+
+  - label: kto_h_lora_l26_unknown_repair_orthogonal_to_known_overrefusal
+    priority: 6
+    arm: sft_kto
+    extraction_dir: experiment/phase1/probe/qwen3-4b-sft-merged-seed1-selfaware/hidden_states_selfaware_full_kto/extraction__bb5e579fa10e
+    extraction_manifest: experiment/phase1/probe/qwen3-4b-sft-merged-seed1-selfaware/hidden_states_selfaware_full_kto/extraction__bb5e579fa10e/manifest.json
+    direction_manifest: experiment/phase1/probe/qwen3-4b-sft-merged-seed1-selfaware/direction_transforms/phase3_selfaware_calibrated_expression_kto_orthogonalized_window_directions/direction_transforms.manifest.json
+    direction_csv: experiment/phase1/probe/qwen3-4b-sft-merged-seed1-selfaware/direction_transforms/phase3_selfaware_calibrated_expression_kto_orthogonalized_window_directions/direction_transforms.csv
+    direction_id: direction_transform__kto_h_lora_l26_unknown_repair_orthogonal_to_known_overrefusal__490f70cf4546
+    direction_file: experiment/phase1/probe/qwen3-4b-sft-merged-seed1-selfaware/direction_transforms/phase3_selfaware_calibrated_expression_kto_orthogonalized_window_directions/kto_h_lora_l26_unknown_repair_orthogonal_to_known_overrefusal/directions/direction_transform__kto_h_lora_l26_unknown_repair_orthogonal_to_known_overrefusal__490f70cf4546.safetensors
+    tensor_key: direction
+    role: h_lora
+    layer: 26
+    method: direction_transform
+    transform_method: orthogonalize_to
+    contrast: unknown_repair_orthogonal_to_known_overrefusal
+    required_status: ok
+    vector_sha256: 490f70cf454604ea9516dfac9dafce50d3f075edd28ecca4eb634b0b283c5d91
+    source_run_id: sft_kto__4b__amendment_a__seed1
+
+readiness_checks:
+  require_extraction_manifest:
+    status: ok
+    verified: true
+    row_count: 1233
+    label_counts:
+      known: 556
+      unknown: 677
+  require_direction_status: ok
+  require_hidden_dim_match: true
+  require_layer_role_match: true
+  require_vector_hash_check: true
+  require_no_mutation_of_source_artifacts: true

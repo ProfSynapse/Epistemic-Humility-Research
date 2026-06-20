@@ -1,0 +1,100 @@
+# Targeted gold-backed KTO calibrated-expression intervention candidates.
+#
+# These directions are derived from the 448-row targeted SFT->KTO behavior
+# panel. They intentionally test simple axes around the enriched multicell
+# readout's strongest regions; they are not yet readout-subspace interventions.
+
+candidate_directions:
+  - label: gold_kto_targeted_h_lora_known_refused_vs_correct_l27
+    priority: 1
+    arm: sft_kto
+    extraction_dir: experiment/phase1/probe/qwen3-4b-instruct/hidden_states_gold_kto_targeted/extraction__9220ebb266f4
+    extraction_manifest: experiment/phase1/probe/qwen3-4b-instruct/hidden_states_gold_kto_targeted/extraction__9220ebb266f4/manifest.json
+    direction_manifest: experiment/phase1/probe/qwen3-4b-instruct/behavior_axis_directions/phase3_gold_kto_targeted_calibrated_expression_axis_directions/behavior_axis_directions.manifest.json
+    direction_csv: experiment/phase1/probe/qwen3-4b-instruct/behavior_axis_directions/phase3_gold_kto_targeted_calibrated_expression_axis_directions/behavior_axis_directions.csv
+    direction_id: behavior_axis__gold_kto_targeted_h_lora_known_refused_vs_correct_l27_normed__4c82e8d868a8
+    direction_file: experiment/phase1/probe/qwen3-4b-instruct/behavior_axis_directions/phase3_gold_kto_targeted_calibrated_expression_axis_directions/gold_kto_targeted_h_lora_known_refused_vs_correct_l27_normed/directions/behavior_axis__gold_kto_targeted_h_lora_known_refused_vs_correct_l27_normed__4c82e8d868a8.safetensors
+    tensor_key: direction
+    role: h_lora
+    layer: 27
+    method: behavior_axis_mean_difference
+    contrast: known_refused_vs_known_correct_answered
+    positive_label: known_refused
+    negative_label: known_correct_answered
+    required_status: ok
+    vector_sha256: 4c82e8d868a8e37e93a0f10bddb2cff2f50d8b94cdb1127f2d35bcf8a8226e7a
+    source_run_id: sft_kto__4b__amendment_a__seed1
+
+  - label: gold_kto_targeted_h_lora_unknown_wrong_vs_refused_l27
+    priority: 2
+    arm: sft_kto
+    extraction_dir: experiment/phase1/probe/qwen3-4b-instruct/hidden_states_gold_kto_targeted/extraction__9220ebb266f4
+    extraction_manifest: experiment/phase1/probe/qwen3-4b-instruct/hidden_states_gold_kto_targeted/extraction__9220ebb266f4/manifest.json
+    direction_manifest: experiment/phase1/probe/qwen3-4b-instruct/behavior_axis_directions/phase3_gold_kto_targeted_calibrated_expression_axis_directions/behavior_axis_directions.manifest.json
+    direction_csv: experiment/phase1/probe/qwen3-4b-instruct/behavior_axis_directions/phase3_gold_kto_targeted_calibrated_expression_axis_directions/behavior_axis_directions.csv
+    direction_id: behavior_axis__gold_kto_targeted_h_lora_unknown_wrong_vs_refused_l27_normed__b9c630265c78
+    direction_file: experiment/phase1/probe/qwen3-4b-instruct/behavior_axis_directions/phase3_gold_kto_targeted_calibrated_expression_axis_directions/gold_kto_targeted_h_lora_unknown_wrong_vs_refused_l27_normed/directions/behavior_axis__gold_kto_targeted_h_lora_unknown_wrong_vs_refused_l27_normed__b9c630265c78.safetensors
+    tensor_key: direction
+    role: h_lora
+    layer: 27
+    method: behavior_axis_mean_difference
+    contrast: unknown_answered_wrong_vs_unknown_refused
+    positive_label: unknown_answered_wrong
+    negative_label: unknown_refused
+    required_status: ok
+    vector_sha256: b9c630265c781daa94055e3c6e4cc56059eb13dc7a07398c0abbd504514731f7
+    source_run_id: sft_kto__4b__amendment_a__seed1
+
+  - label: gold_kto_targeted_delta_known_refused_vs_correct_l34
+    priority: 3
+    arm: sft_kto
+    extraction_dir: experiment/phase1/probe/qwen3-4b-instruct/hidden_states_gold_kto_targeted/extraction__9220ebb266f4
+    extraction_manifest: experiment/phase1/probe/qwen3-4b-instruct/hidden_states_gold_kto_targeted/extraction__9220ebb266f4/manifest.json
+    direction_manifest: experiment/phase1/probe/qwen3-4b-instruct/behavior_axis_directions/phase3_gold_kto_targeted_calibrated_expression_axis_directions/behavior_axis_directions.manifest.json
+    direction_csv: experiment/phase1/probe/qwen3-4b-instruct/behavior_axis_directions/phase3_gold_kto_targeted_calibrated_expression_axis_directions/behavior_axis_directions.csv
+    direction_id: behavior_axis__gold_kto_targeted_delta_known_refused_vs_correct_l34_normed__62d813891ab7
+    direction_file: experiment/phase1/probe/qwen3-4b-instruct/behavior_axis_directions/phase3_gold_kto_targeted_calibrated_expression_axis_directions/gold_kto_targeted_delta_known_refused_vs_correct_l34_normed/directions/behavior_axis__gold_kto_targeted_delta_known_refused_vs_correct_l34_normed__62d813891ab7.safetensors
+    tensor_key: direction
+    role: delta
+    layer: 34
+    method: behavior_axis_mean_difference
+    contrast: known_refused_vs_known_correct_answered
+    positive_label: known_refused
+    negative_label: known_correct_answered
+    required_status: ok
+    vector_sha256: 62d813891ab7eccfd10cbbc058c64ee09ece690cffaefbe9ed8f6f1f9c0c934a
+    source_run_id: sft_kto__4b__amendment_a__seed1
+
+  - label: gold_kto_targeted_delta_unknown_wrong_vs_refused_l34
+    priority: 4
+    arm: sft_kto
+    extraction_dir: experiment/phase1/probe/qwen3-4b-instruct/hidden_states_gold_kto_targeted/extraction__9220ebb266f4
+    extraction_manifest: experiment/phase1/probe/qwen3-4b-instruct/hidden_states_gold_kto_targeted/extraction__9220ebb266f4/manifest.json
+    direction_manifest: experiment/phase1/probe/qwen3-4b-instruct/behavior_axis_directions/phase3_gold_kto_targeted_calibrated_expression_axis_directions/behavior_axis_directions.manifest.json
+    direction_csv: experiment/phase1/probe/qwen3-4b-instruct/behavior_axis_directions/phase3_gold_kto_targeted_calibrated_expression_axis_directions/behavior_axis_directions.csv
+    direction_id: behavior_axis__gold_kto_targeted_delta_unknown_wrong_vs_refused_l34_normed__521f5d94055e
+    direction_file: experiment/phase1/probe/qwen3-4b-instruct/behavior_axis_directions/phase3_gold_kto_targeted_calibrated_expression_axis_directions/gold_kto_targeted_delta_unknown_wrong_vs_refused_l34_normed/directions/behavior_axis__gold_kto_targeted_delta_unknown_wrong_vs_refused_l34_normed__521f5d94055e.safetensors
+    tensor_key: direction
+    role: delta
+    layer: 34
+    method: behavior_axis_mean_difference
+    contrast: unknown_answered_wrong_vs_unknown_refused
+    positive_label: unknown_answered_wrong
+    negative_label: unknown_refused
+    required_status: ok
+    vector_sha256: 521f5d94055e81fcedbd1674adb1089f90a3531b66edd06fff2a99630b577eac
+    source_run_id: sft_kto__4b__amendment_a__seed1
+
+readiness_checks:
+  require_extraction_manifest:
+    status: ok
+    verified: true
+    row_count: 448
+    label_counts:
+      known: 224
+      unknown: 224
+  require_direction_status: ok
+  require_hidden_dim_match: true
+  require_layer_role_match: true
+  require_vector_hash_check: true
+  require_no_mutation_of_source_artifacts: true

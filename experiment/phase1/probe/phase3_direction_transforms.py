@@ -159,6 +159,184 @@ def transform_vector(vector: np.ndarray, spec: dict[str, Any]) -> tuple[np.ndarr
     raise DirectionTransformError("transform method must be unit_rescale_to_norm, multiply, or identity")
 
 
+def rescale_if_requested(vector: np.ndarray, spec: dict[str, Any]) -> tuple[np.ndarray, dict[str, Any]]:
+    source_norm = float(np.linalg.norm(vector))
+    if source_norm <= 0.0:
+        raise DirectionTransformError("cannot transform zero-norm source vector")
+    if "target_norm" not in spec:
+        return vector.astype(np.float32), {
+            "source_norm": source_norm,
+            "target_norm": source_norm,
+            "scale_factor": 1.0,
+        }
+    target_norm = float(spec["target_norm"])
+    if target_norm <= 0.0:
+        raise DirectionTransformError("target_norm must be positive")
+    transformed = (vector / source_norm * target_norm).astype(np.float32)
+    return transformed, {
+        "source_norm": source_norm,
+        "target_norm": target_norm,
+        "scale_factor": target_norm / source_norm,
+    }
+
+
+def validate_same_space(source_rows: list[dict[str, Any]], vectors: list[np.ndarray], *, label: str) -> None:
+    first = source_rows[0]
+    first_shape = vectors[0].shape
+    first_role = first.get("role")
+    first_layer = first.get("layer")
+    for row, vector in zip(source_rows[1:], vectors[1:]):
+        if vector.shape != first_shape:
+            raise DirectionTransformError(f"{label} component vector shapes must match")
+        if row.get("role") != first_role:
+            raise DirectionTransformError(f"{label} component roles must match")
+        if row.get("layer") != first_layer:
+            raise DirectionTransformError(f"{label} component layers must match")
+
+
+def build_linear_combination(
+    transform: dict[str, Any],
+    *,
+    source_by_id: dict[str, dict[str, Any]],
+    source_manifest_path: Path,
+) -> tuple[np.ndarray, dict[str, Any], dict[str, Any]]:
+    components = transform.get("components")
+    if not isinstance(components, list) or not components:
+        raise DirectionTransformError("linear_combination transforms must define non-empty components")
+    vectors: list[np.ndarray] = []
+    source_rows: list[dict[str, Any]] = []
+    component_records: list[dict[str, Any]] = []
+    for index, component in enumerate(components):
+        if not isinstance(component, dict):
+            raise DirectionTransformError("linear_combination components must be mappings")
+        source_id = component.get("source_direction_id")
+        if not isinstance(source_id, str) or not source_id:
+            raise DirectionTransformError(f"component {index} must define source_direction_id")
+        if source_id not in source_by_id:
+            raise DirectionTransformError(f"component source_direction_id {source_id!r} not found")
+        weight = float(component.get("weight", 1.0))
+        source_row = source_by_id[source_id]
+        vector = load_vector(source_row, source_manifest_path)
+        vectors.append((weight * vector).astype(np.float32))
+        source_rows.append(source_row)
+        component_records.append(
+            {
+                "source_direction_id": source_id,
+                "weight": weight,
+                "role": source_row.get("role"),
+                "layer": source_row.get("layer"),
+                "contrast": source_row.get("contrast"),
+                "vector_sha256": source_row.get("vector_sha256"),
+            }
+        )
+
+    first = source_rows[0]
+    validate_same_space(source_rows, vectors, label="linear_combination")
+
+    raw = np.sum(np.stack(vectors, axis=0), axis=0).astype(np.float32)
+    transformed, metadata = rescale_if_requested(raw, transform)
+    metadata["transform_method"] = "linear_combination"
+    metadata["component_count"] = len(component_records)
+    metadata["components"] = component_records
+    metadata["source_direction_ids"] = [item["source_direction_id"] for item in component_records]
+    metadata["component_weights"] = [item["weight"] for item in component_records]
+    return transformed, first, metadata
+
+
+def source_vector_from_transform(
+    transform: dict[str, Any],
+    *,
+    source_by_id: dict[str, dict[str, Any]],
+    source_manifest_path: Path,
+) -> tuple[np.ndarray, dict[str, Any], dict[str, Any]]:
+    if "components" in transform:
+        combination_spec = {key: value for key, value in transform.items() if key != "target_norm"}
+        vector, source_row, metadata = build_linear_combination(
+            {**combination_spec, "method": "linear_combination"},
+            source_by_id=source_by_id,
+            source_manifest_path=source_manifest_path,
+        )
+        metadata["pre_orthogonalization_transform_method"] = "linear_combination"
+        return vector, source_row, metadata
+
+    source_id = transform.get("source_direction_id")
+    if not isinstance(source_id, str) or not source_id:
+        raise DirectionTransformError("orthogonalize_to transform must define source_direction_id or components")
+    if source_id not in source_by_id:
+        raise DirectionTransformError(f"orthogonalize_to source_direction_id {source_id!r} not found")
+    source_row = source_by_id[source_id]
+    vector = load_vector(source_row, source_manifest_path).astype(np.float32)
+    return vector, source_row, {
+        "source_direction_id": source_id,
+        "pre_orthogonalization_transform_method": "identity",
+        "source_norm": float(np.linalg.norm(vector)),
+    }
+
+
+def build_orthogonalized(
+    transform: dict[str, Any],
+    *,
+    source_by_id: dict[str, dict[str, Any]],
+    source_manifest_path: Path,
+) -> tuple[np.ndarray, dict[str, Any], dict[str, Any]]:
+    constraints = transform.get("constraints")
+    if not isinstance(constraints, list) or not constraints:
+        raise DirectionTransformError("orthogonalize_to transforms must define non-empty constraints")
+
+    raw, source_row, metadata = source_vector_from_transform(
+        transform,
+        source_by_id=source_by_id,
+        source_manifest_path=source_manifest_path,
+    )
+    constraint_rows: list[dict[str, Any]] = []
+    constraint_vectors: list[np.ndarray] = []
+    constraint_records: list[dict[str, Any]] = []
+    for index, constraint in enumerate(constraints):
+        if not isinstance(constraint, dict):
+            raise DirectionTransformError("orthogonalize_to constraints must be mappings")
+        source_id = constraint.get("source_direction_id")
+        if not isinstance(source_id, str) or not source_id:
+            raise DirectionTransformError(f"constraint {index} must define source_direction_id")
+        if source_id not in source_by_id:
+            raise DirectionTransformError(f"constraint source_direction_id {source_id!r} not found")
+        row = source_by_id[source_id]
+        vector = load_vector(row, source_manifest_path)
+        constraint_rows.append(row)
+        constraint_vectors.append(vector.astype(np.float32))
+        constraint_records.append(
+            {
+                "source_direction_id": source_id,
+                "role": row.get("role"),
+                "layer": row.get("layer"),
+                "contrast": row.get("contrast"),
+                "vector_sha256": row.get("vector_sha256"),
+            }
+        )
+
+    validate_same_space([source_row, *constraint_rows], [raw, *constraint_vectors], label="orthogonalize_to")
+    basis = np.stack(constraint_vectors, axis=1).astype(np.float32)
+    coeffs, *_ = np.linalg.lstsq(basis, raw, rcond=None)
+    removed = basis @ coeffs
+    orthogonalized = (raw - removed).astype(np.float32)
+    removed_norm = float(np.linalg.norm(removed))
+    raw_norm = float(np.linalg.norm(raw))
+    transformed, rescale_metadata = rescale_if_requested(orthogonalized, transform)
+    metadata.update(rescale_metadata)
+    metadata.update(
+        {
+            "transform_method": "orthogonalize_to",
+            "constraint_count": len(constraint_records),
+            "constraints": constraint_records,
+            "constraint_direction_ids": [item["source_direction_id"] for item in constraint_records],
+            "raw_norm": raw_norm,
+            "removed_component_norm": removed_norm,
+            "removed_component_fraction": removed_norm / raw_norm if raw_norm > 0.0 else 0.0,
+            "orthogonalized_norm": float(np.linalg.norm(orthogonalized)),
+        }
+    )
+    return transformed, source_row, metadata
+
+
 def build_record(
     transform: dict[str, Any],
     *,
@@ -167,17 +345,33 @@ def build_record(
     output_root: Path,
 ) -> dict[str, Any]:
     label = transform.get("label")
-    source_id = transform.get("source_direction_id")
     if not isinstance(label, str) or not label:
         raise DirectionTransformError("each transform must define non-empty label")
-    if not isinstance(source_id, str) or not source_id:
-        raise DirectionTransformError(f"transform {label!r} must define source_direction_id")
-    if source_id not in source_by_id:
-        raise DirectionTransformError(f"transform {label!r} source_direction_id {source_id!r} not found")
 
-    source_row = source_by_id[source_id]
-    vector = load_vector(source_row, source_manifest_path)
-    transformed, metadata = transform_vector(vector, transform)
+    if transform.get("method") == "linear_combination":
+        transformed, source_row, metadata = build_linear_combination(
+            transform,
+            source_by_id=source_by_id,
+            source_manifest_path=source_manifest_path,
+        )
+        source_id = ",".join(metadata["source_direction_ids"])
+    elif transform.get("method") == "orthogonalize_to":
+        transformed, source_row, metadata = build_orthogonalized(
+            transform,
+            source_by_id=source_by_id,
+            source_manifest_path=source_manifest_path,
+        )
+        source_id = metadata.get("source_direction_id") or ",".join(metadata.get("source_direction_ids", []))
+    else:
+        source_id = transform.get("source_direction_id")
+        if not isinstance(source_id, str) or not source_id:
+            raise DirectionTransformError(f"transform {label!r} must define source_direction_id")
+        if source_id not in source_by_id:
+            raise DirectionTransformError(f"transform {label!r} source_direction_id {source_id!r} not found")
+        source_row = source_by_id[source_id]
+        vector = load_vector(source_row, source_manifest_path)
+        transformed, metadata = transform_vector(vector, transform)
+
     sha = vector_sha256(transformed)
     direction_id = f"direction_transform__{safe_label(label)}__{sha[:12]}"
     vector_path = output_root / safe_label(label) / "directions" / f"{direction_id}.safetensors"

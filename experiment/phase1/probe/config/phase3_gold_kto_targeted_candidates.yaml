@@ -1,0 +1,17 @@
+candidate_directions:
+  - label: sft_kto_targeted_h_lora_l35
+    model_family: qwen3-4b
+    arm: sft_kto
+    extraction_dir: experiment/phase1/probe/qwen3-4b-instruct/hidden_states_gold_kto_targeted/extraction__9220ebb266f4
+    extraction_manifest: experiment/phase1/probe/qwen3-4b-instruct/hidden_states_gold_kto_targeted/extraction__9220ebb266f4/manifest.json
+    direction_manifest: experiment/phase1/probe/qwen3-4b-instruct/hidden_states_gold_kto_targeted/extraction__9220ebb266f4/hidden_state_candidate_directions.manifest.json
+    direction_csv: experiment/phase1/probe/qwen3-4b-instruct/hidden_states_gold_kto_targeted/extraction__9220ebb266f4/hidden_state_candidate_directions.csv
+    direction_id: direction__f8dbdb8f8f5582fa
+    direction_file: experiment/phase1/probe/qwen3-4b-instruct/hidden_states_gold_kto_targeted/extraction__9220ebb266f4/directions/direction__f8dbdb8f8f5582fa.safetensors
+    tensor_key: direction
+    method: known_unknown_diff
+    contrast: unknown_minus_known
+    role: h_lora
+    layer: 35
+    vector_sha256: e28349a04ff2b410216f0b76729632d21c02a6ae1ab830469453dd265e069d6c
+    source_run_id: sft_kto__4b__amendment_a__seed1

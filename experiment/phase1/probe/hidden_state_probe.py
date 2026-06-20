@@ -152,6 +152,34 @@ def _select_keys(frozen: dict, pool_field: str, n: int, seed: int) -> list[str]:
     return ordered[:n]
 
 
+def load_selection_row_keys_file(path: Path) -> list[str]:
+    """Load exact extraction row keys from a small checked-in text file."""
+    if not path.is_file():
+        raise FileNotFoundError(f"selection.row_keys_file missing: {_rel(path)}")
+    keys: list[str] = []
+    for line_no, raw in enumerate(path.read_text(encoding="utf-8").splitlines(), start=1):
+        line = raw.strip()
+        if not line or line.startswith("#"):
+            continue
+        if not line:
+            continue
+        keys.append(line)
+    if not keys:
+        raise ValueError(f"selection.row_keys_file {_rel(path)} contained no row keys")
+    seen: set[str] = set()
+    duplicates: list[str] = []
+    for key in keys:
+        if key in seen:
+            duplicates.append(key)
+        seen.add(key)
+    if duplicates:
+        raise ValueError(
+            f"selection.row_keys_file {_rel(path)} contains duplicate row key(s): "
+            f"{duplicates[:3]}"
+        )
+    return keys
+
+
 def select_matched_slice(config: dict) -> list[dict]:
     """Build the matched known/unknown extraction slice (leakage-safe).
 
@@ -178,13 +206,37 @@ def select_matched_slice(config: dict) -> list[dict]:
     with frozen_path.open(encoding="utf-8") as fh:
         frozen = json.load(fh)
 
-    want_known = set(_select_keys(frozen, "known_question_keys",
-                                  sel["n_known"], sel["selection_seed"]))
-    want_unknown = set(_select_keys(frozen, "unknown_question_keys",
-                                    sel["n_unknown"], sel["selection_seed"]))
-    wanted = want_known | want_unknown
-    label_by_key = {**{k: "known" for k in want_known},
-                    **{k: "unknown" for k in want_unknown}}
+    known_pool = set(frozen.get("known_question_keys", []))
+    unknown_pool = set(frozen.get("unknown_question_keys", []))
+    row_keys_file = sel.get("row_keys_file")
+    if row_keys_file:
+        if not isinstance(row_keys_file, str):
+            raise ValueError("selection.row_keys_file must be a non-empty string")
+        selected_keys = load_selection_row_keys_file((PROBE_DIR / row_keys_file).resolve())
+        outside_frozen = [
+            key for key in selected_keys
+            if key not in known_pool and key not in unknown_pool
+        ]
+        if outside_frozen:
+            raise ValueError(
+                f"selection.row_keys_file contains key(s) outside the frozen "
+                f"known/unknown pools (e.g. {outside_frozen[:3]})"
+            )
+        label_by_key = {
+            **{key: "known" for key in selected_keys if key in known_pool},
+            **{key: "unknown" for key in selected_keys if key in unknown_pool},
+        }
+        wanted = set(selected_keys)
+        desired_order = selected_keys
+    else:
+        want_known = set(_select_keys(frozen, "known_question_keys",
+                                      sel["n_known"], sel["selection_seed"]))
+        want_unknown = set(_select_keys(frozen, "unknown_question_keys",
+                                        sel["n_unknown"], sel["selection_seed"]))
+        wanted = want_known | want_unknown
+        label_by_key = {**{k: "known" for k in want_known},
+                        **{k: "unknown" for k in want_unknown}}
+        desired_order = None
 
     found = _stream_probe_rows(results_path, wanted, label_by_key)
     missing = wanted - {r["probe_pool_row_key"] for r in found}
@@ -194,6 +246,9 @@ def select_matched_slice(config: dict) -> list[dict]:
             f"{_rel(results_path)} (e.g. {sorted(missing)[:3]}); the probe "
             "tier must have probed these before extraction"
         )
+    if desired_order is not None:
+        by_key = {row["probe_pool_row_key"]: row for row in found}
+        found = [by_key[key] for key in desired_order]
     return found
 
 
@@ -316,6 +371,7 @@ def convert_selfaware_manifest_row(
         "answer_value": row.get("answer_value"),
         "aliases": aliases,
         "source_arms": row.get("source_arms", {}),
+        "sycophancy": row.get("sycophancy"),
     }
 
 
@@ -491,7 +547,7 @@ def _git_commit(repo_dir: Path) -> str | None:
 
     try:
         out = subprocess.run(
-            ["git", "-C", str(repo_dir), "rev-parse", "HEAD"],
+            ["git", "-c", f"safe.directory={repo_dir}", "-C", str(repo_dir), "rev-parse", "HEAD"],
             capture_output=True, text=True, check=True, timeout=10)
         return out.stdout.strip() or None
     except (subprocess.SubprocessError, OSError):
@@ -512,7 +568,16 @@ def _submodule_commit(repo_dir: Path, submodule_path: str) -> str | None:
 
     try:
         out = subprocess.run(
-            ["git", "-C", str(repo_dir), "ls-tree", "HEAD", submodule_path],
+            [
+                "git",
+                "-c",
+                f"safe.directory={repo_dir}",
+                "-C",
+                str(repo_dir),
+                "ls-tree",
+                "HEAD",
+                submodule_path,
+            ],
             capture_output=True, text=True, check=True, timeout=10)
     except (subprocess.SubprocessError, OSError):
         return None
@@ -805,7 +870,7 @@ def _extract_rows(backend, slice_rows, done, rows_path, base_arm, active_arm,
                 "layer_count": schema.expected_layer_count(backend.num_hidden_layers),
                 "hidden_dim": backend.hidden_dim,
             }
-            for optional in ("stable_identity", "strata", "answer_value", "aliases", "source_arms"):
+            for optional in ("stable_identity", "strata", "answer_value", "aliases", "source_arms", "sycophancy"):
                 if optional in row:
                     record[optional] = row[optional]
             fh.write(json.dumps(record, ensure_ascii=False) + "\n")

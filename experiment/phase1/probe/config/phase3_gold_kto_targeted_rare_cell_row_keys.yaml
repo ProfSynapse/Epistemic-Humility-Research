@@ -1,0 +1,25 @@
+purpose: >-
+  Build an exact probe-pool row-key slice for a larger SFT->KTO gold behavior
+  panel, oversampling likely rare behavior cells before another hidden-state
+  extraction and baseline generation pass.
+
+inputs:
+  questions_frozen: ../data/qwen3-4b-instruct/questions_frozen.json
+  probe_results: qwen3-4b-instruct/probe_results.jsonl
+  expected_probe_config_sha: "893861257973170b"
+  exclude_row_keys_sources:
+    - qwen3-4b-instruct/hidden_states/extraction__e1473df788a5/rows.jsonl
+
+sampling:
+  seed: 20260620
+
+quotas:
+  known_low_confidence_or_refusal: 160
+  known_high_confidence_correct: 64
+  unknown_answered_wrong_like: 160
+  unknown_refusal_like: 64
+
+output:
+  row_keys_file: config/phase3_gold_kto_targeted_rare_cell_row_keys.txt
+  rows_jsonl: config/phase3_gold_kto_targeted_rare_cell_rows.jsonl
+  manifest: config/phase3_gold_kto_targeted_rare_cell_row_keys.manifest.json

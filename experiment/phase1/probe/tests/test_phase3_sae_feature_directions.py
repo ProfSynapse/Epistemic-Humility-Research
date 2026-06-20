@@ -86,3 +86,51 @@ def test_run_config_rejects_missing_explicit_feature(tmp_path):
 
     with pytest.raises(feature_directions.SaeFeatureDirectionError, match="missing requested features"):
         feature_directions.run_config(config_path)
+
+
+def test_load_feature_rankings_accepts_behavior_analysis_csv(tmp_path):
+    rankings_path = tmp_path / "behavior_feature_rankings.csv"
+    rankings_path.write_text(
+        "\n".join(
+            [
+                "contrast,arm,feature,positive_label,negative_label,positive_count,negative_count,"
+                "mean_diff_positive_minus_negative,abs_cohen_d,positive_activation_frequency,"
+                "negative_activation_frequency",
+                "unknown_refused_vs_unknown_answered,fixture,7,unknown_refused,unknown_answered,"
+                "10,12,0.5,0.75,0.8,0.2",
+            ]
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+
+    rows = feature_directions.load_feature_rankings(rankings_path)
+
+    assert rows[0]["feature"] == 7
+    assert feature_directions.ranking_signed_diff(rows[0]) == pytest.approx(0.5)
+    assert feature_directions.ranking_skew_label(rows[0]) == "unknown_refused"
+
+
+def test_explicit_feature_selection_deduplicates_behavior_contrasts():
+    rankings = [
+        {
+            "feature": 7,
+            "mean_diff_positive_minus_negative": 0.5,
+            "abs_cohen_d": 0.75,
+        },
+        {
+            "feature": 7,
+            "mean_diff_positive_minus_negative": 0.9,
+            "abs_cohen_d": 0.25,
+        },
+        {
+            "feature": 9,
+            "mean_diff_positive_minus_negative": -0.4,
+            "abs_cohen_d": 0.5,
+        },
+    ]
+
+    selected = feature_directions.select_features(rankings, {"features": [7, 9]})
+
+    assert [row["feature"] for row in selected] == [7, 9]
+    assert selected[0]["abs_cohen_d"] == pytest.approx(0.75)

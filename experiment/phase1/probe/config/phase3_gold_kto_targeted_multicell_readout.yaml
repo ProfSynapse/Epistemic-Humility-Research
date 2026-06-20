@@ -1,0 +1,45 @@
+analysis:
+  ridge: 1.0
+  class_weighting: balanced
+  cv_folds: 4
+  min_rows_per_cell: 4
+  ranks:
+    - 1
+    - 2
+    - 4
+    - 8
+    - 16
+    - full
+  cells:
+    - label: known_refused
+      filter:
+        label: known
+        refused: true
+    - label: known_correct_answered
+      filter:
+        label: known
+        refused: false
+        correct: true
+    - label: unknown_refused
+      filter:
+        label: unknown
+        refused: true
+    - label: unknown_answered_wrong
+      filter:
+        label: unknown
+        refused: false
+        correct: false
+
+extractions:
+  - label: gold_kto_seed1_targeted
+    behavior_arm: sft_kto_targeted_gold_baseline
+    roles:
+      - h_base
+      - h_lora
+      - delta
+    extraction_dir: experiment/phase1/probe/qwen3-4b-instruct/hidden_states_gold_kto_targeted/extraction__9220ebb266f4
+    extraction_manifest: experiment/phase1/probe/qwen3-4b-instruct/hidden_states_gold_kto_targeted/extraction__9220ebb266f4/manifest.json
+    rows_path: experiment/phase1/probe/qwen3-4b-instruct/gold_behavior_panels/phase3_gold_kto_targeted_behavior_panel/rows.jsonl
+
+output:
+  root: experiment/phase1/probe/qwen3-4b-instruct/multicell_readout/phase3_gold_kto_targeted_multicell_readout

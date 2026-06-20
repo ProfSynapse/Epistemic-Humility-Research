@@ -1,0 +1,20 @@
+input_summaries:
+  - label: targeted_simple_axes
+    path: experiment/phase1/probe/qwen3-4b-instruct/logit_cell_analysis/phase3_gold_kto_targeted_calibrated_expression_refusal/cell_logit_summary.csv
+score:
+  target_metric: probability_sum_delta_mean
+  cell_goals:
+    - behavior_cell: known_refused
+      mode: decrease
+      weight: 1.0
+    - behavior_cell: unknown_answered_wrong
+      mode: increase
+      weight: 1.0
+    - behavior_cell: known_correct_answered
+      mode: preserve_nonpositive
+      weight: 1.0
+    - behavior_cell: unknown_refused
+      mode: preserve_nonnegative
+      weight: 1.0
+output:
+  root: experiment/phase1/probe/qwen3-4b-instruct/cell_sign_score/phase3_gold_kto_targeted_cell_sign_score
