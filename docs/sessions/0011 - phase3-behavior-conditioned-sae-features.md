@@ -4,7 +4,7 @@ session_id: phase3-behavior-conditioned-sae-features
 title: Phase 3 Behavior-Conditioned SAE Features
 status: active
 created_at: '2026-06-20T01:05:00Z'
-updated_at: '2026-06-20T15:34:00Z'
+updated_at: '2026-06-20T16:07:00Z'
 phase: phase3
 question: Can trained SelfAware SAE latents identify epistemic-humility behavior features beyond the coarse known/unknown screen?
 tags:
@@ -1023,6 +1023,7 @@ next_steps:
   - Add sequence-probability or row-specific answer-token slices before scaling behavior-feature diagnostics.
   - Test behavior features in same-runtime adapterless SFT mode to separate adapter-native effects from direction effects.
   - Use `phase3_logit_cell_sign_score.py` to rank cell-level logit candidates against explicit four-cell goals before selecting any future replay candidate.
+  - Run the prepared orthogonalized KTO L24-L26 logit sweep only after explicit live Docker/GPU approval.
 ---
 
 # 0011 - Phase 3 Behavior-Conditioned SAE Features
@@ -1341,3 +1342,59 @@ Interpretation:
   constrained objective or generation-time/sequence-level diagnostic that
   optimizes the four behavior cells directly and rejects candidates that
   increase harmful refusal-to-answer flips.
+
+## Checkpoint 029 - Orthogonalized Window Candidates Prepared
+
+Question: given the negative replay and wrong-layer caveat, is there evidence
+that the KTO calibrated-expression axes overlap enough to justify a constrained
+subspace test?
+
+Research check:
+
+- Local KG search surfaced the newer refusal-caveat literature: refusal-like
+  behavior can involve multiple geometrically distinct directions that collapse
+  into similar refusal/over-refusal tradeoffs under linear steering.
+- SAE refusal steering notes reinforce that active refusal features can still
+  trade off unrelated capability, so feature/axis steering needs output-effect
+  and generated-behavior gates.
+- The faithful-calibration note supports treating confidence expression,
+  token probabilities, hidden states, and sample consistency as distinct
+  readouts rather than assuming refusal equals epistemic humility.
+
+Work completed:
+
+- Added `orthogonalize_to` support to `phase3_direction_transforms.py`.
+- Added unit tests for orthogonalization and cross-layer rejection.
+- Added `phase3_selfaware_calibrated_expression_kto_orthogonalized_window_directions.yaml`.
+- Materialized six L24-L26 SelfAware KTO h_lora constrained directions:
+  known-repair orthogonalized to unknown-wrong, and unknown-repair
+  orthogonalized to known-overrefusal.
+- Added hash-pinned candidate and sweep configs for a future logit diagnostic.
+- Materialized the sweep plan/configs without execution.
+
+Validation:
+
+- `python -m pytest experiment/phase1/probe/tests/test_phase3_direction_transforms.py -q`
+  -> `5 passed`.
+- `python -m py_compile experiment/phase1/probe/phase3_direction_transforms.py`
+  -> passed.
+- `python .skills/mech-interp-runner/scripts/phase3_cli.py causal-sweep --config experiment/phase1/probe/config/phase3_selfaware_calibrated_expression_kto_orthogonalized_window_logit_sweep.yaml --mode-filter logit_diagnostic --write-plan --materialize-configs`
+  -> six planned jobs, zero skipped, `executed=false`.
+
+Geometry result:
+
+- L24 removed component fraction: `0.518`.
+- L25 removed component fraction: `0.486`.
+- L26 removed component fraction: `0.526`.
+- This is a meaningful same-layer overlap between known-overrefusal and
+  unknown-wrong axes, not a tiny correction.
+
+Interpretation:
+
+- This supports the "coherent but entangled layer band" hypothesis: the axes
+  are not identical, but roughly half of each unit-scaled vector lies along the
+  paired behavior axis in this L24-L26 window.
+- The next live diagnostic should ask whether orthogonalization improves the
+  four-cell sign pattern and weakens wrong-layer parity. It should not jump
+  directly to generated replay until the logit-cell sign score beats the
+  current L24 composite source arm and its controls.

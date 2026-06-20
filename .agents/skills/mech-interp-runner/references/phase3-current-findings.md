@@ -125,6 +125,13 @@ sign goals passed), but the sign-matched wrong-layer control scores higher
 (`score ~= 0.1034`). This confirms the L24 composite as the best logit
 triage candidate while weakening any source-layer-local interpretation.
 
+The first constrained-subspace prep supports the entangled-window hypothesis.
+Orthogonalizing same-layer KTO h_lora known-overrefusal and unknown-wrong axes
+against each other removes a substantial component across L24-L26
+(`~0.49-0.53` of unit-scaled vector norm). Six constrained candidates are
+materialized and a logit sweep is planned but not executed. Treat this as a
+high-ROI next diagnostic, not a result.
+
 The first gold-backed KTO behavior panel gives a cleaner target surface than
 the SelfAware labels. On 256 TriviaQA/Cheng rows for SFT->KTO baseline
 generation: known answer correctness was `81.25%`, known over-refusal was
@@ -316,10 +323,13 @@ level replay.
 
 Prioritize the calibrated-expression question over refusal-axis steering:
 
-1. Explore multi-layer or constrained subspace controls; simple single-axis and
+1. Run the prepared orthogonalized KTO L24-L26 logit diagnostic after explicit
+   local GPU approval; score it with the four-cell sign scorer before any
+   generated replay.
+2. Explore multi-layer or constrained subspace controls; simple single-axis and
    simple two-hook KTO steering are active but behaviorally unsafe.
-2. Scan layer windows for directions that separate damaged behavior from paired
+3. Scan layer windows for directions that separate damaged behavior from paired
    desired behavior without collapsing into a generic refusal axis.
-3. Gate candidates with generated-answer replay, not only logit slices.
-4. Prefer directions that preserve known correctness while reducing both
+4. Gate candidates with generated-answer replay, not only logit slices.
+5. Prefer directions that preserve known correctness while reducing both
    over-refusal and hallucinated unknown answers.

@@ -407,6 +407,23 @@ Linear-combination components must share hidden dimension, role, and layer. For
 multi-layer hypotheses, use a dedicated multi-layer intervention path rather
 than forcing different-layer vectors into one transformed vector.
 
+Use `orthogonalize_to` transforms when testing whether one same-layer behavior
+axis can be separated from another protected axis before causal diagnostics:
+
+```yaml
+transforms:
+  - label: example_repair_orthogonalized
+    method: orthogonalize_to
+    source_direction_id: behavior_axis__example_repair
+    target_norm: 1.2142820358276367
+    constraints:
+      - source_direction_id: behavior_axis__protected_axis
+```
+
+The source and constraint directions must share hidden dimension, role, and
+layer. Interpret removal fractions as geometry evidence only until the
+orthogonalized vectors pass logit diagnostics and generated replay.
+
 Multi-layer candidate configs use `multi_layer_components` instead of a
 top-level `direction_file`. Each component must declare its own
 `direction_manifest`, `direction_file`, `tensor_key`, `role`, `layer`,
