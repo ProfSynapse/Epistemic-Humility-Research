@@ -1460,3 +1460,46 @@ Interpretation:
   known-question answering/refusal tradeoffs.
 - Do not run generated replay for this candidate unless a later constrained or
   multi-layer score improves the four-cell gate substantially.
+
+## Checkpoint 031 - Gold Multi-Layer Local Artifact Recheck
+
+Why this rerun happened:
+
+- The session/finding notes already recorded the gold-backed KTO multi-layer
+  result, but the expected local output root was absent after later cleanup or
+  workspace drift.
+- Re-ran the smaller three-candidate multi-layer diagnostic to restore local
+  provenance and verify that the recorded interpretation still matches the
+  actual artifacts.
+
+Run:
+
+- Config:
+  `experiment/phase1/probe/config/phase3_gold_kto_calibrated_expression_multilayer_logit_sweep.yaml`.
+- Candidates: L36 known-overrefusal repair plus L28 unknown-wrong repair with
+  L28 weights `-0.10`, `-0.25`, and `-0.50`.
+- Live Docker execution completed all three jobs with return code `0`.
+- Aggregated refusal-openers and answer-aliases by four gold behavior cells.
+
+Confirmed result:
+
+- The multi-layer path is active but still not a calibrated-expression steering
+  win.
+- Refusal-opener deltas under source addition:
+  - weight `-0.10`: known-refused `-0.0774`, unknown-wrong `-0.0071`,
+    known-correct `+0.0088`, unknown-refused `-0.0967`.
+  - weight `-0.25`: known-refused `-0.0553`, unknown-wrong `+0.0111`,
+    known-correct `+0.0188`, unknown-refused `-0.0857`.
+  - weight `-0.50`: known-refused `-0.0218`, unknown-wrong `+0.0616`,
+    known-correct `+0.0409`, unknown-refused `-0.0808`.
+- Increasing the L28 repair weight improves the desired unknown-wrong refusal
+  direction, but it also raises refusal on known-correct rows and still lowers
+  desired refusal on unknown-refused rows.
+- Answer-alias deltas are tiny (`~0.002` absolute at most), so this is still a
+  refusal-start intervention rather than answer recovery.
+
+Decision:
+
+- Do not run generated replay for this two-hook recipe.
+- Commit the four source configs for reproducibility; keep generated run
+  outputs ignored.
