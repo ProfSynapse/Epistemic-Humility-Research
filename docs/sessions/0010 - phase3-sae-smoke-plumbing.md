@@ -633,3 +633,48 @@ plumbing can read and write the expected artifacts.
   - DPO contrast composite vs broad DPO unknown-minus-known at nearby layers: layer 25 cosine `0.5528`, layer 26 cosine `0.5059`, layer 23 cosine `0.5040`.
   - DPO unknown-pair composite vs broad DPO unknown-minus-known at layer 24: cosine `0.3881`.
   - single DPO unknown-skewed features vs broad DPO unknown-minus-known were weaker: feature 51 cosine `0.3259`, feature 47 cosine `0.2683`; known-skewed features were anti-aligned, feature 64 cosine `-0.5269`, feature 65 cosine `-0.3952`.
+
+### 013-result - Same-Norm Subspace Diagnostic Completed
+
+- at: `2026-06-20T00:20:00Z`
+- kind: `result`
+- summary: Added a generic direction-transform exporter, normalized broad DPO/KTO known/unknown delta directions to the SAE unknown-minus-known composite norm, and ran a 4-candidate same-scale logit diagnostic. This avoided comparing a norm-15 broad vector against a norm-1.21 SAE composite under the same coefficient grid. The same-norm panel supports the subspace hypothesis: the SAE contrast still produced the strongest signed refusal-opener movement, but wrong-layer controls remained comparable, while the normalized DPO broad direction produced a cleaner but smaller source-layer addition effect. KTO stayed weak at the same norm.
+- evidence:
+  - `experiment/phase1/probe/phase3_direction_transforms.py`
+  - `experiment/phase1/probe/tests/test_phase3_direction_transforms.py`
+  - `experiment/phase1/probe/config/phase3_selfaware_dpo_subspace_direction_transforms.yaml`
+  - `experiment/phase1/probe/config/phase3_selfaware_kto_subspace_direction_transforms.yaml`
+  - `experiment/phase1/probe/config/phase3_selfaware_subspace_normed_logit_diagnostic.yaml`
+  - `experiment/phase1/probe/config/phase3_selfaware_subspace_normed_logit_diagnostic_sweep.yaml`
+  - `experiment/phase1/probe/qwen3-4b-sft-merged-seed1-selfaware/direction_transforms/phase3_selfaware_dpo_subspace_normed_to_sae_contrast/direction_transforms.manifest.json`
+  - `experiment/phase1/probe/qwen3-4b-sft-merged-seed1-selfaware/direction_transforms/phase3_selfaware_kto_subspace_normed_to_sae_contrast/direction_transforms.manifest.json`
+  - `experiment/phase1/probe/qwen3-4b-sft-merged-seed1-selfaware/causal_pilots/phase3_selfaware_subspace_normed_logit_diagnostic/_execution_logs/execution_results.jsonl`
+  - `experiment/phase1/probe/qwen3-4b-sft-merged-seed1-selfaware/causal_pilots/phase3_selfaware_subspace_normed_logit_diagnostic/summary.csv`
+- commands:
+  - `python experiment\phase1\probe\phase3_direction_transforms.py --config experiment\phase1\probe\config\phase3_selfaware_dpo_subspace_direction_transforms.yaml`
+  - `python experiment\phase1\probe\phase3_direction_transforms.py --config experiment\phase1\probe\config\phase3_selfaware_kto_subspace_direction_transforms.yaml`
+  - `python experiment\phase1\probe\phase3_causal_pilot_sweep.py --config experiment\phase1\probe\config\phase3_selfaware_subspace_normed_logit_diagnostic_sweep.yaml --mode-filter logit_diagnostic --write-plan --materialize-configs`
+  - `python experiment\phase1\probe\phase3_causal_pilot_sweep.py --config experiment\phase1\probe\config\phase3_selfaware_subspace_normed_logit_diagnostic_sweep.yaml --mode-filter logit_diagnostic --write-plan --materialize-configs --execute --allow-logit-diagnostic`
+  - `python experiment\phase1\probe\phase3_causal_pilot_aggregate.py --root experiment\phase1\probe\qwen3-4b-sft-merged-seed1-selfaware\causal_pilots\phase3_selfaware_subspace_normed_logit_diagnostic --out experiment\phase1\probe\qwen3-4b-sft-merged-seed1-selfaware\causal_pilots\phase3_selfaware_subspace_normed_logit_diagnostic\summary.csv`
+  - `python -m pytest experiment\phase1\probe\tests\test_phase3_direction_transforms.py experiment\phase1\probe\tests\test_phase3_direction_geometry.py experiment\phase1\probe\tests\test_phase3_sae_feature_composites.py -q`
+- gotchas:
+  - First live attempt failed before model loading because the subspace config declared `contrast: unknown_minus_known` for the SAE composite, but the generated composite manifest row had no `contrast` field. Fixed by propagating optional `contrast` in `phase3_sae_feature_composites.py` and regenerating the local composite manifest. Keep the dry-run validator strict; fix manifests rather than bypassing provenance checks.
+  - Use same-norm transforms before comparing broad deltas to SAE-derived directions under a shared coefficient grid. Otherwise vector norm confounds the interpretation.
+- decisions:
+  - Treat the result as `tier2_exploratory_local` only.
+  - Continue describing this as distributed-subspace evidence, not a layer-local sparse feature mechanism.
+  - Prefer subspace panels with norm-matched broad/SAE/cross-arm controls before investing in sparse circuit claims.
+- next steps:
+  - Add a broader row panel with known-retention rows, not only unknown rows, to test whether the subspace moves refusal without damaging known answers.
+  - Add row-specific answer/refusal target slices or sequence-probability diagnostics so the panel can distinguish "more I-token" from better calibrated abstention.
+  - If same-norm effects persist, test a learned linear probe or PCA direction alongside the SAE composite and broad mean-difference directions.
+- signals:
+  - live jobs completed: `4/4`; aggregate rows: `64`.
+  - all normalized direction norms: about `1.21428`.
+  - SAE contrast coefficient-50 activation subtraction: refusal-opener probability delta mean `+0.133768`, top-1 changed rate `62.5%`.
+  - SAE contrast coefficient-50 activation addition: refusal-opener probability delta mean `-0.119050`, top-1 changed rate `25.0%`.
+  - SAE contrast coefficient-50 wrong-layer subtraction offset `-1`: refusal-opener probability delta mean `+0.149519`, top-1 changed rate `62.5%`.
+  - DPO broad layer-24 normalized coefficient-50 activation addition: refusal-opener probability delta mean `+0.093366`, top-1 changed rate `37.5%`.
+  - DPO broad layer-25 normalized coefficient-50 activation addition: refusal-opener probability delta mean `+0.081517`, top-1 changed rate `25.0%`.
+  - KTO broad layer-25 normalized coefficient-50 activation addition: refusal-opener probability delta mean `+0.043184`, top-1 changed rate `0.0%`.
+  - Row-level top-1 changes were concentrated on unknown rows in this 8-row panel.

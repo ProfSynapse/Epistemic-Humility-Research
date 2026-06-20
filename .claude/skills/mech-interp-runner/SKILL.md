@@ -233,6 +233,31 @@ Treat outputs as `SAE_FEATURE_COMPOSITE_DIRECTION_CANDIDATES_ONLY`. They are
 subspace-screening bridge artifacts, not proof that a sparse feature circuit has
 been found. Composite sources must share layer, role, and hidden dimension.
 
+If a composite is later referenced by a causal-pilot config with metadata fields
+such as `contrast`, the composite export config must include the same metadata
+so the generated manifest row matches the candidate config. Do not weaken the
+dry-run validator to bypass a mismatch; regenerate the composite manifest with
+the missing provenance field.
+
+## Direction Transforms
+
+Use direction transforms when broad hidden-state directions need to be compared
+against much smaller SAE-derived directions under a shared coefficient grid:
+
+```bash
+python experiment/phase1/probe/phase3_direction_transforms.py \
+  --config experiment/phase1/probe/config/phase3_selfaware_dpo_subspace_direction_transforms.yaml
+python experiment/phase1/probe/phase3_direction_transforms.py \
+  --config experiment/phase1/probe/config/phase3_selfaware_kto_subspace_direction_transforms.yaml
+```
+
+Current supported transforms are `unit_rescale_to_norm`, `multiply`, and
+`identity`. Treat outputs as `DIRECTION_TRANSFORM_CANDIDATES_ONLY`. They are
+bridge artifacts for controlled comparisons, not new source evidence. Prefer
+same-norm transforms before comparing broad known/unknown deltas with SAE
+decoder-feature or composite directions; otherwise coefficient-grid effects can
+mostly reflect vector magnitude.
+
 ## SAE Feature Logit Diagnostics
 
 After exporting SAE feature directions, run the checked-in feature-level
@@ -302,6 +327,29 @@ with the same broad direction (`cosine ~= 0.388`). This supports treating the
 SAE composite as a lead into a distributed known/unknown subspace rather than a
 standalone sparse feature knob.
 
+## Same-Norm Subspace Diagnostics
+
+After same-norm transform export, run the same-scale subspace logit diagnostic:
+
+```bash
+python experiment/phase1/probe/phase3_causal_pilot_sweep.py \
+  --config experiment/phase1/probe/config/phase3_selfaware_subspace_normed_logit_diagnostic_sweep.yaml \
+  --mode-filter logit_diagnostic \
+  --write-plan --materialize-configs --execute \
+  --allow-logit-diagnostic
+```
+
+Current local result: with all compared directions normalized to the SAE
+unknown-minus-known composite norm, the SAE contrast still produced the largest
+signed refusal-opener movement on the 8-row unknown panel, especially under
+activation subtraction at coefficient 50 (`delta ~= +0.134`, top-1 changed
+`62.5%`). The same-norm DPO broad layer-24 direction was cleaner but smaller
+under activation addition at coefficient 50 (`delta ~= +0.093`, top-1 changed
+`37.5%`). The KTO broad layer-25 direction remained weak at the same norm.
+Wrong-layer controls for the SAE contrast stayed comparable to the source-layer
+effect, so this remains distributed-subspace evidence rather than layer-local
+mechanism evidence.
+
 ## Aggregate Completed Runs
 
 ```bash
@@ -368,6 +416,7 @@ python -m pytest experiment/phase1/probe/tests/test_phase3_sae_feature_analysis.
 python -m pytest experiment/phase1/probe/tests/test_phase3_sae_feature_directions.py -q
 python -m pytest experiment/phase1/probe/tests/test_phase3_sae_feature_composites.py -q
 python -m pytest experiment/phase1/probe/tests/test_phase3_direction_geometry.py -q
+python -m pytest experiment/phase1/probe/tests/test_phase3_direction_transforms.py -q
 python -m py_compile experiment/phase1/probe/phase3_causal_pilot_sweep.py \
   experiment/phase1/probe/phase3_causal_pilot_aggregate.py \
   experiment/phase1/probe/phase3_sae_smoke.py \
@@ -375,6 +424,7 @@ python -m py_compile experiment/phase1/probe/phase3_causal_pilot_sweep.py \
   experiment/phase1/probe/phase3_sae_feature_analysis.py \
   experiment/phase1/probe/phase3_sae_feature_directions.py \
   experiment/phase1/probe/phase3_sae_feature_composites.py \
-  experiment/phase1/probe/phase3_direction_geometry.py
+  experiment/phase1/probe/phase3_direction_geometry.py \
+  experiment/phase1/probe/phase3_direction_transforms.py
 python bin/sync_skills.py --check
 ```
