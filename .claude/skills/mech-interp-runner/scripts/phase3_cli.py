@@ -109,6 +109,10 @@ def build_parser() -> argparse.ArgumentParser:
     _add_config(p)
     _add_dry_run(p)
 
+    p = sub.add_parser("logit-cell-sign-score", help="Rank behavior-cell logit summaries by target signs")
+    _add_config(p)
+    _add_dry_run(p)
+
     p = sub.add_parser("causal-sweep", help="Plan/materialize/execute a causal pilot sweep")
     _add_config(p)
     p.add_argument("--mode-filter", action="append")
@@ -160,6 +164,8 @@ def command_args(args: argparse.Namespace) -> tuple[str, list[str]]:
         return "experiment/phase1/probe/phase3_calibrated_expression_plane.py", ["--config", args.config]
     if command == "logit-cell-analysis":
         return "experiment/phase1/probe/phase3_logit_cell_analysis.py", ["--config", args.config]
+    if command == "logit-cell-sign-score":
+        return "experiment/phase1/probe/phase3_logit_cell_sign_score.py", ["--config", args.config]
     if command == "causal-sweep":
         out = ["--config", args.config]
         for mode_filter in args.mode_filter or []:

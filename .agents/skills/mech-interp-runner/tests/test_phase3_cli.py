@@ -64,6 +64,20 @@ def test_command_args_builds_causal_sweep_flags():
     ]
 
 
+def test_command_args_builds_logit_cell_sign_score():
+    parser = phase3_cli.build_parser()
+    args = parser.parse_args([
+        "logit-cell-sign-score",
+        "--config",
+        "score.yaml",
+    ])
+
+    script, out = phase3_cli.command_args(args)
+
+    assert script == "experiment/phase1/probe/phase3_logit_cell_sign_score.py"
+    assert out == ["--config", "score.yaml"]
+
+
 def test_subprocess_env_forces_utf8(monkeypatch):
     captured = {}
     monkeypatch.setenv("PYTHONIOENCODING", "cp1252")

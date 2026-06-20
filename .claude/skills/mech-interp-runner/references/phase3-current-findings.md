@@ -118,6 +118,13 @@ wrong-layer controls are comparable. Across L24-L27, L24 is cleanest, L25/L26
 are weaker, and L27 moves the unknown cells the wrong way. Treat this as a
 narrow L24-L26 behavior-control window, not a clean knob.
 
+A reusable sign-score pass now ranks this tradeoff explicitly. Across the
+current SelfAware KTO single-axis and composite summaries, the best source arm
+is still the L24 1:1.25 composite source addition (`score ~= 0.0849`, all four
+sign goals passed), but the sign-matched wrong-layer control scores higher
+(`score ~= 0.1034`). This confirms the L24 composite as the best logit
+triage candidate while weakening any source-layer-local interpretation.
+
 The first gold-backed KTO behavior panel gives a cleaner target surface than
 the SelfAware labels. On 256 TriviaQA/Cheng rows for SFT->KTO baseline
 generation: known answer correctness was `81.25%`, known over-refusal was
@@ -215,8 +222,10 @@ On the SelfAware 64-row calibrated-expression replay, the best current L24
 - Baseline answer-on-unknown rate: `15.62%`.
 - Composite source-addition answer-on-unknown rate: `18.75%`.
 - Known over-refusal stayed flat at `53.12%`.
-- Only three rows changed: one unknown wrong-answer row switched to refusal,
-  but two rows worsened by switching from refusal to non-refusal.
+- Refusal state changed on only three rows: one unknown wrong-answer row
+  switched to refusal, but two rows worsened by switching from refusal to
+  non-refusal. Additional rows changed refusal wording without changing the
+  behavior classification.
 
 Interpretation: linear blends can tune next-token refusal tradeoffs, but this
 blend still loosens refusal behavior more than it repairs calibrated humility.

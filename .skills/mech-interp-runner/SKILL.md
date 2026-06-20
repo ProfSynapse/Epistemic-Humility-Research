@@ -372,6 +372,16 @@ python experiment/phase1/probe/phase3_logit_cell_analysis.py \
   --config experiment/phase1/probe/config/phase3_selfaware_calibrated_expression_kto_logit_cell_analysis.yaml
 ```
 
+Then rank candidate arms against explicit behavior-cell sign goals:
+
+```bash
+python .skills/mech-interp-runner/scripts/phase3_cli.py logit-cell-sign-score \
+  --config experiment/phase1/probe/config/phase3_selfaware_kto_cell_sign_score.yaml
+```
+
+Use sign scores as triage only. A candidate can satisfy the cell-level
+next-token refusal pattern and still fail generated-answer replay.
+
 Use `phase3_direction_transforms.py` for reusable direction transforms instead
 of ad hoc vector math. For composite plane tests, prefer an explicit
 `linear_combination` transform with named source direction IDs, weights, and a

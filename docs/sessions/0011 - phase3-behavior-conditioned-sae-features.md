@@ -4,7 +4,7 @@ session_id: phase3-behavior-conditioned-sae-features
 title: Phase 3 Behavior-Conditioned SAE Features
 status: active
 created_at: '2026-06-20T01:05:00Z'
-updated_at: '2026-06-20T14:52:19Z'
+updated_at: '2026-06-20T15:34:00Z'
 phase: phase3
 question: Can trained SelfAware SAE latents identify epistemic-humility behavior features beyond the coarse known/unknown screen?
 tags:
@@ -1022,6 +1022,7 @@ next_steps:
   - Replay DPO f49 row-level top-k tokens to see whether addition suppresses refusal or shifts to answer-like tokens.
   - Add sequence-probability or row-specific answer-token slices before scaling behavior-feature diagnostics.
   - Test behavior features in same-runtime adapterless SFT mode to separate adapter-native effects from direction effects.
+  - Use `phase3_logit_cell_sign_score.py` to rank cell-level logit candidates against explicit four-cell goals before selecting any future replay candidate.
 ---
 
 # 0011 - Phase 3 Behavior-Conditioned SAE Features
@@ -1283,3 +1284,60 @@ Interpretation:
   direction that explicitly optimizes the four behavior-cell inequalities:
   lower known-refused refusal, raise unknown-wrong refusal, preserve
   known-correct answering, and preserve unknown-refused abstention.
+
+## Checkpoint 028 - KTO Cell Sign Scoring
+
+Question: among the existing SelfAware KTO logit-cell runs, which candidate
+best satisfies the four calibrated-expression sign goals, and does that change
+the replay interpretation?
+
+Work completed:
+
+- Added `phase3_logit_cell_sign_score.py` to rank
+  `cell_logit_summary.csv` rows against declared behavior-cell sign goals.
+- Added `phase3_selfaware_kto_cell_sign_score.yaml` covering the current KTO
+  single-axis, equal-composite, composite-grid, and L24-L27 composite125 layer
+  window summaries.
+- Added `logit-cell-sign-score` to the mech-interp skill CLI.
+- Ran the scorer over 100 candidate/control groups.
+- Re-inspected the existing L24 1:1.25 generated replay rows.
+
+Validation:
+
+- `python -m pytest experiment/phase1/probe/tests/test_phase3_logit_cell_sign_score.py .skills/mech-interp-runner/tests/test_phase3_cli.py -q`
+  -> `6 passed`.
+- `python -m py_compile experiment/phase1/probe/phase3_logit_cell_sign_score.py .skills/mech-interp-runner/scripts/phase3_cli.py`
+  -> passed.
+- `python bin/sync_skills.py --check` -> in sync.
+
+Scoring result:
+
+- Top overall sign score is the L24 1:1.25 composite wrong-layer control:
+  score `0.1034`, all four sign goals passed.
+- Best source arm is the same L24 1:1.25 composite under source
+  `activation_addition`: score `0.0849`, all four sign goals passed.
+- The source arm decreased refusal on `known_refused` rows (`-0.0250`),
+  increased refusal on `unknown_answered_wrong` rows (`+0.0599`), kept
+  `known_correct_answered` roughly stable (`-0.0055`), and preserved
+  `unknown_refused` in the sign-score sense (`+0.0254`).
+- L26 source addition is the next clean source arm but weaker: score `0.0413`.
+- The fact that the wrong-layer control beats the source arm remains a major
+  caveat against source-layer localization.
+
+Replay row check:
+
+- The existing L24 1:1.25 source replay still fails the behavioral gate.
+- Refusal state changed on only three rows: one unknown wrong answer (`God`) was
+  repaired to refusal, but two unknown-refused rows became non-refusals (`Yes`
+  and `I'd rather be captured by pirates`).
+- Several other rows only changed refusal wording, not behavior.
+- Exact correctness did not change.
+
+Interpretation:
+
+- The sign-score makes the best logit tradeoff reproducible, but it does not
+  rescue the candidate as a user-facing steering intervention.
+- The next research step should not be "scale this L24 vector." It should be a
+  constrained objective or generation-time/sequence-level diagnostic that
+  optimizes the four behavior cells directly and rejects candidates that
+  increase harmful refusal-to-answer flips.
