@@ -1657,3 +1657,84 @@ Interpretation:
 - It is still localization/screening evidence, not a steering result.
 - The next causal slice should use enriched behavior-cell row-key files and
   test candidate controls against paired desired cells before generated replay.
+
+## Checkpoint 034 - Targeted KTO Simple-Axis Causal Follow-Up
+
+Question: do simple behavior axes from the enriched panel around the best
+multicell readout regions produce a calibrated-expression logit control?
+
+Offline axis prep:
+
+- Scan config:
+  `experiment/phase1/probe/config/phase3_gold_kto_targeted_calibrated_expression_axis_scan.yaml`.
+- Direction export config:
+  `experiment/phase1/probe/config/phase3_gold_kto_targeted_calibrated_expression_axis_directions.yaml`.
+- Candidate source:
+  `experiment/phase1/probe/config/phase3_gold_kto_targeted_calibrated_expression_logit_candidates.yaml`.
+- Tested simple axes:
+  - `h_lora` L27 known-refused vs known-correct.
+  - `h_lora` L27 unknown-wrong vs unknown-refused.
+  - `delta` L34 known-refused vs known-correct.
+  - `delta` L34 unknown-wrong vs unknown-refused.
+- Offline separation stayed strong:
+  - `h_lora` L27 known-refused vs known-correct:
+    AUC `0.985`, Cohen d `3.223`.
+  - `h_lora` L27 unknown-wrong vs unknown-refused:
+    AUC `0.962`, Cohen d `2.618`.
+  - `delta` L34 known-refused vs known-correct:
+    AUC `0.920`, Cohen d `1.999`.
+  - `delta` L34 unknown-wrong vs unknown-refused:
+    AUC `0.911`, Cohen d `1.946`.
+
+Live diagnostic:
+
+- Sweep config:
+  `experiment/phase1/probe/config/phase3_gold_kto_targeted_calibrated_expression_logit_sweep.yaml`.
+- Exact row-key panel:
+  `experiment/phase1/probe/qwen3-4b-instruct/gold_behavior_panels/phase3_gold_kto_targeted_behavior_panel/row_keys/calibrated_expression_four_cell_available_row_keys.txt`.
+- Rows: `124` total, `31` per target cell.
+- Controls: no-vector baseline, source add/subtract, wrong-layer add/subtract,
+  random matched norm.
+- Coefficients: `25`, `50`.
+- All four Docker jobs completed successfully.
+
+Cell-level scoring:
+
+- Refusal cell-analysis config:
+  `experiment/phase1/probe/config/phase3_gold_kto_targeted_calibrated_expression_refusal_logit_cell_analysis.yaml`.
+- Answer-alias cell-analysis config:
+  `experiment/phase1/probe/config/phase3_gold_kto_targeted_calibrated_expression_answer_logit_cell_analysis.yaml`.
+- Sign-score config:
+  `experiment/phase1/probe/config/phase3_gold_kto_targeted_cell_sign_score.yaml`.
+- Top source arm:
+  `h_lora` L27 known-overrefusal axis, activation subtraction, coefficient
+  `50`.
+- Top source-arm score: `0.0908`, `2/4` goals passed.
+- Refusal-opener deltas for that arm:
+  - `known_refused=-0.4079` (desired).
+  - `known_correct_answered=-0.0155` (acceptable preservation).
+  - `unknown_answered_wrong=-0.1456` (wrong direction).
+  - `unknown_refused=-0.1715` (wrong direction).
+- Complementary `h_lora` L27 unknown-wrong axis, activation subtraction,
+  coefficient `50`, also passed only `2/4`:
+  - `unknown_answered_wrong=+0.3565` (desired).
+  - `unknown_refused=+0.0442` (desired preservation).
+  - `known_refused=+0.0863` (wrong direction).
+  - `known_correct_answered=+0.1856` (wrong direction).
+- Delta L34 axes were weaker and showed the same split pattern.
+- Answer-alias probability movement stayed small relative to refusal-opener
+  movement. The largest source-arm answer-alias lift was about `+0.0185` on
+  known-refused rows under `h_lora` L27 known-axis subtraction, while many
+  answer-alias effects were near zero or moved the wrong cell.
+
+Interpretation:
+
+- The enriched panel and offline axes are real separability evidence, but simple
+  behavior-axis steering still does not satisfy calibrated-expression goals.
+- The two main L27 axes behave like complementary levers: one repairs known
+  over-refusal while damaging unknown abstention; the other repairs unknown
+  under-refusal while increasing known-question refusal pressure.
+- No generated replay is warranted for these simple axes.
+- The next mech-interp step, if any, should be a true constrained subspace or
+  readout-derived intervention rather than more single-axis replay. Otherwise,
+  this is a good stopping point for pivoting back to training experiments.

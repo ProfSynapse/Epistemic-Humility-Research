@@ -218,6 +218,22 @@ mid/late-layer control-surface hypothesis, but it remains readout/localization
 evidence only. Next causal tests should use the enriched behavior-cell row-key
 files and preserve paired desired cells.
 
+The first causal follow-up on the targeted panel is negative for simple axes.
+Four behavior-axis candidates tested the enriched readout regions:
+`h_lora` L27 known-overrefusal, `h_lora` L27 unknown-wrong, `delta` L34
+known-overrefusal, and `delta` L34 unknown-wrong. Offline separation remained
+strong (`h_lora` L27 AUC `~0.985` for known-overrefusal and `~0.962` for
+unknown-wrong), but live logit diagnostics again split the goals. The top
+source arm was `h_lora` L27 known-overrefusal subtraction at coefficient `50`
+(`sign_score ~= 0.091`, `2/4` goals): it lowered refusal-openers on
+known-refused rows and preserved known-correct rows, but also lowered refusal
+on unknown-wrong and unknown-refused rows. The complementary unknown-wrong
+axis raised refusal on unknown-wrong rows but also raised refusal on
+known-correct and known-refused rows. No candidate passed all four goals, and
+answer-alias probability deltas stayed small. Do not run generated replay for
+these simple axes; the next mech-interp step would need a real constrained
+subspace/readout-derived intervention, otherwise pivot to training.
+
 ### Gold-Backed Answer-Start Diagnostics
 
 Tiny changed-row KTO evidence initially looked promising, but scale and replay
