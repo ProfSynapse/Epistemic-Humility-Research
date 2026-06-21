@@ -14,8 +14,11 @@ file without importing experiment-specific packages from the submodule.
 from __future__ import annotations
 
 import json
+import os
 import re
 from dataclasses import dataclass
+from datetime import datetime, timezone
+from pathlib import Path
 from typing import Any, Sequence
 
 
@@ -226,17 +229,50 @@ def epistemic_humility_reward(completions, prompts=None, **kwargs) -> list[float
     aliases = _expand(kwargs.get("aliases", []), n)
 
     rewards: list[float] = []
+    debug_rows: list[dict[str, Any]] = []
     for idx, completion in enumerate(completions):
         alias_value = aliases[idx]
         if isinstance(alias_value, str):
             alias_list = [alias_value]
         else:
             alias_list = list(alias_value or [])
-        rewards.append(
-            score_completion(
-                _coerce_completion_text(completion),
-                label=str(labels[idx]),
-                aliases=alias_list,
-            )
+        completion_text = _coerce_completion_text(completion)
+        reward = score_completion(
+            completion_text,
+            label=str(labels[idx]),
+            aliases=alias_list,
         )
+        rewards.append(reward)
+        if os.environ.get("GRPO_REWARD_DEBUG_PATH"):
+            parsed = parse_completion(completion_text)
+            debug_rows.append(
+                {
+                    "idx": idx,
+                    "label": labels[idx],
+                    "aliases": alias_list,
+                    "reward": reward,
+                    "valid_json": parsed.valid_json,
+                    "answer_text": parsed.answer_text,
+                    "confidence": parsed.stated_confidence,
+                    "completion": completion_text,
+                }
+            )
+    _write_debug_rows(debug_rows)
     return rewards
+
+
+def _write_debug_rows(rows: list[dict[str, Any]]) -> None:
+    if not rows:
+        return
+    path_value = os.environ.get("GRPO_REWARD_DEBUG_PATH")
+    if not path_value:
+        return
+    path = Path(path_value)
+    path.parent.mkdir(parents=True, exist_ok=True)
+    event = {
+        "at": datetime.now(timezone.utc).isoformat(),
+        "num_completions": len(rows),
+        "rows": rows,
+    }
+    with path.open("a", encoding="utf-8") as handle:
+        handle.write(json.dumps(event, ensure_ascii=False) + "\n")

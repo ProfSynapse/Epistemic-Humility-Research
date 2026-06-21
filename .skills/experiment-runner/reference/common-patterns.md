@@ -92,6 +92,30 @@ zero-variance smokes as infrastructure passes only. Before a longer run, add or
 run a rollout/reward-variance diagnostic that records raw completions and reward
 distributions under the intended generation settings.
 
+For Qwen3 GRPO, use tokenizer-native chat templating when relying on
+`enable_thinking: false`; generic ChatML templating can ignore the Qwen thinking
+switch and produce clipped `<think>` traces. The working local base-GRPO smoke
+pattern used `model.chat_template: "native"` plus
+`training.chat_template_kwargs.enable_thinking: false`. Synaptic Tuner GRPO must
+thread `chat_template_kwargs` into `tokenizer.apply_chat_template`; if a trainer
+copy lacks that support, treat the run as not Qwen3-protocol-equivalent.
+
+For reward-variance bootstrap, a low-temperature or default Qwen3 sampler can
+produce four identical JSON completions per prompt, yielding zero GRPO signal
+even when parsing is healthy. The 2026-06-21 local base smoke only produced
+nonzero trainer reward variance after increasing exploration
+(`temperature: 1.6`, `top_p: 1.0`, `top_k: 0`, four generations, 256 completion
+tokens). Keep the reward-debug trace opt-in, and enable it when trainer logs
+show unexpected zero variance so raw completions, parse status, and per-sample
+rewards can be audited.
+
+Do not assume SFT-warmed checkpoints are better GRPO starting points for the
+stated-confidence objective. The local SFT seed-1 merged checkpoint preserved
+the old answer-only/refusal contract and produced 0% valid answer/confidence
+JSON under the same native Qwen prompt, even with eight rollouts. SFT-start GRPO
+needs a format bridge or separate prompt-contract adaptation before treating
+confidence-reward GRPO as operational.
+
 Custom GRPO reward files are loaded dynamically by Synaptic Tuner. If a custom
 reward module uses `@dataclass`, the loader must register the module in
 `sys.modules` before `exec_module`; otherwise Python's dataclass machinery can
