@@ -2,6 +2,18 @@
 
 Read only when interpreting or comparing bounded local diagnostic/evidence runs. These are not headline/protocol results unless a governed run record says so.
 
+- GRPO diagnostics require a two-gate readout. Nonzero trainer
+  `reward_std`, nonzero gradients/KL, valid JSON rollouts, and saved adapters
+  prove that the local training signal and plumbing are alive, but they do not
+  prove the target behavior moved. Always follow a GRPO smoke or bounded pilot
+  with a same-slice behavioral comparator against the nearest base/starting
+  policy before making a scientific claim. On 2026-06-21, a 64-step base-GRPO
+  pilot had nonzero reward std on 40/64 logged steps, 94.5% valid JSON reward
+  debug completions, no clipping, and low OOM risk, but its 192-row SelfAware
+  stated-confidence eval matched the base control on refusal recall,
+  over-refusal, correct-on-known, and truthful score; 52/192 answer texts
+  changed, while 0 refusal decisions changed.
+
 - 2026-06-13 scoped local live eval smoke status: the first Docker/Linux run
   reached the base arm, then failed on the SFT adapter with
   `ValueError: LoRA rank 32 is greater than max_lora_rank 16`. The config fix
