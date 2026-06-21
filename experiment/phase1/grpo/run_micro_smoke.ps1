@@ -1,5 +1,5 @@
 param(
-    [ValidateSet("base", "sft-seed1")]
+    [ValidateSet("base", "base-pilot", "sft-seed1")]
     [string]$Mode = "base",
     [int]$MaxUsedMemoryMiB = 4096,
     [switch]$DebugReward,
@@ -13,12 +13,16 @@ Set-Location $repoRoot
 
 $config = switch ($Mode) {
     "base" { "experiment/phase1/grpo/configs/grpo_base_micro_smoke.yaml" }
+    "base-pilot" { "experiment/phase1/grpo/configs/grpo_base_pilot.yaml" }
     "sft-seed1" { "experiment/phase1/grpo/configs/grpo_sft_seed1_micro_smoke.yaml" }
 }
 
-$smokeData = "scratch/grpo_bootstrap/qwen3-4b-instruct/grpo_train_smoke_32.jsonl"
-if (-not (Test-Path -LiteralPath $smokeData)) {
-    throw "Missing smoke dataset: $smokeData. Run build_grpo_dataset.py and make_smoke_subset.py first."
+$requiredData = switch ($Mode) {
+    "base-pilot" { "scratch/grpo_bootstrap/qwen3-4b-instruct/grpo_train.jsonl" }
+    default { "scratch/grpo_bootstrap/qwen3-4b-instruct/grpo_train_smoke_32.jsonl" }
+}
+if (-not (Test-Path -LiteralPath $requiredData)) {
+    throw "Missing GRPO dataset: $requiredData. Run build_grpo_dataset.py and make_smoke_subset.py first."
 }
 
 $usedMemory = $null
