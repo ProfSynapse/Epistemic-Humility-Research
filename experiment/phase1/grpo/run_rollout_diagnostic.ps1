@@ -1,8 +1,12 @@
 param(
     [ValidateSet("base", "sft-seed1")]
     [string]$Mode = "base",
+    [int]$MaxRows = 4,
+    [int]$NumRollouts = 4,
+    [int]$MaxCompletionLength = 256,
+    [double]$Temperature = 1.0,
+    [double]$TopP = 0.95,
     [int]$MaxUsedMemoryMiB = 4096,
-    [switch]$DebugReward,
     [switch]$Force
 )
 
@@ -33,22 +37,20 @@ if ($null -ne $usedMemory -and -not $Force -and $usedMemory -gt $MaxUsedMemoryMi
     throw "GPU already using ${usedMemory}MiB, above ${MaxUsedMemoryMiB}MiB. Re-run with -Force to override."
 }
 
-$debugArgs = @()
-if ($DebugReward) {
-    $debugPath = "scratch/grpo_bootstrap/reward_debug/${Mode}_latest.jsonl"
-    $debugArgs = @("-e", "GRPO_REWARD_DEBUG_PATH=/workspace/repo/$debugPath")
-    if (Test-Path -LiteralPath $debugPath) {
-        Remove-Item -LiteralPath $debugPath
-    }
-    Write-Host "Reward debug trace: $debugPath"
-}
+$timestamp = Get-Date -Format "yyyyMMdd_HHmmss"
+$outputDir = "scratch/grpo_bootstrap/diagnostics/${Mode}_${timestamp}"
 
 docker run --rm --gpus all --ipc=host --entrypoint python3 `
     -e HF_HOME=/workspace/repo/.cache/hf `
     -e HUGGINGFACE_HUB_CACHE=/workspace/repo/.cache/hf/hub `
-    @debugArgs `
     -v "${repoRoot}:/workspace/repo" `
     -w /workspace/repo `
     unsloth/unsloth:latest `
-    synaptic-tuner/Trainers/grpo/train_grpo.py `
-    --config $config
+    experiment/phase1/grpo/rollout_reward_diagnostic.py `
+    --config $config `
+    --output-dir $outputDir `
+    --max-rows $MaxRows `
+    --num-rollouts $NumRollouts `
+    --max-completion-length $MaxCompletionLength `
+    --temperature $Temperature `
+    --top-p $TopP

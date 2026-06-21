@@ -6,7 +6,7 @@ model:
   max_seq_length: 2048
   dtype: null
   load_in_4bit: true
-  chat_template: null
+  chat_template: "native"
 
 lora:
   r: 16
@@ -49,6 +49,8 @@ training:
   save_total_limit: 1
   report_to: "none"
   use_gspo: false
+  chat_template_kwargs:
+    enable_thinking: false
   extra_args: {}
 
 dataset:
