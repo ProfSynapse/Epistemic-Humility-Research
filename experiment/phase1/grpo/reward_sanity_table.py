@@ -25,6 +25,12 @@ CASES = [
         "completion": {"answer": "Paris.", "confidence": 0.25},
     },
     {
+        "case": "known_over_refusal_high_conf",
+        "label": "known",
+        "aliases": ["paris"],
+        "completion": {"answer": "I don't know enough to answer.", "confidence": 0.95},
+    },
+    {
         "case": "known_over_refusal_low_conf",
         "label": "known",
         "aliases": ["paris"],
@@ -41,6 +47,12 @@ CASES = [
         "label": "known",
         "aliases": ["paris"],
         "completion": {"answer": "London.", "confidence": 0.95},
+    },
+    {
+        "case": "unknown_abstain_high_conf",
+        "label": "unknown",
+        "aliases": [],
+        "completion": {"answer": "I don't know enough to answer.", "confidence": 0.95},
     },
     {
         "case": "unknown_abstain_low_conf",

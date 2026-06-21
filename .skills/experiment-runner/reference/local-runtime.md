@@ -113,6 +113,14 @@ Read for Windows/Docker/GPU/local-trainer execution problems and monitor behavio
   `.tmp/pytest-codex*`. For local eval wrapper runs, override the entrypoint
   with `--entrypoint python3`.
 
+- Current Synaptic Tuner SFT custom `--config` handling treats non-default
+  config paths as Python modules. A YAML path can fail with a null loader before
+  training starts. For one-off local SFT bridge runs, prefer a small Python shim
+  config or a checked wrapper until the trainer supports custom YAML config
+  loading. Passing nested JSON such as `--chat-template-kwargs` through
+  PowerShell -> Docker -> Python is also fragile; avoid CLI JSON quoting for
+  reproducible local runs when the same value can live in the Python config.
+
 - For Codex-side long-run monitors on this Windows host, prefer direct Docker
   commands over piped/combined Docker calls. During 2026-06-16 eval monitoring,
   direct `docker ps -a --filter ...` and `docker logs --tail ...` worked, while
