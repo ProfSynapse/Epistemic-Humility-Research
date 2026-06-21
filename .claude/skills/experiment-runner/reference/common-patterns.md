@@ -83,6 +83,15 @@ positive; known over-refusal should be negative; unknown/known confident wrong
 answers should be worst; malformed JSON should not be rewarded like a valid
 answer.
 
+After any GRPO smoke, inspect the trainer logs for reward variance before
+scaling. A micro-run can validate Docker/model/data/reward plumbing while still
+logging `rewards/combined_reward/std: 0.0` and `frac_reward_zero_std: 1.0`,
+which means the sampled completions within each prompt received identical
+reward and GRPO had no useful comparative learning signal on that step. Treat
+zero-variance smokes as infrastructure passes only. Before a longer run, add or
+run a rollout/reward-variance diagnostic that records raw completions and reward
+distributions under the intended generation settings.
+
 Custom GRPO reward files are loaded dynamically by Synaptic Tuner. If a custom
 reward module uses `@dataclass`, the loader must register the module in
 `sys.modules` before `exec_module`; otherwise Python's dataclass machinery can

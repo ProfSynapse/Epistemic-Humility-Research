@@ -4,7 +4,7 @@ session_id: grpo-bootstrap
 title: GRPO Bootstrap
 status: active
 created_at: '2026-06-20T23:00:51Z'
-updated_at: '2026-06-20T23:08:11Z'
+updated_at: '2026-06-21T05:27:53Z'
 phase: phase1
 question: Can we safely bootstrap Amendment B GRPO training locally with a calibrated
   answer/confidence reward before any full GRPO cells?
@@ -79,6 +79,41 @@ checkpoints:
     -File experiment/phase1/grpo/run_micro_smoke.ps1 -Mode base, then inspect scratch/grpo_bootstrap/runs/base_micro_smoke
     for checkpoints/logs.
   signals: {}
+- id: 003-result
+  at: '2026-06-21T05:27:53Z'
+  kind: result
+  title: Base And SFT-Seed1 GRPO Micro-Smokes Completed
+  summary: 'The thinking eval batch completed all 10 configs, then the guarded local
+    path launched the Amendment B base GRPO micro-smoke and the SFT-seed1 GRPO micro-smoke.
+    Both completed max_steps=2, wrote final adapters, lineage, and capacity features,
+    and stayed low-risk on VRAM. The smoke validated Docker, model load, SFT-merged
+    model resolution, dataset formatting, custom reward loading, trainer execution,
+    checkpointing, and artifact write-out. It also exposed a training-readiness issue:
+    both smokes logged zero reward standard deviation on each step, so these runs
+    prove plumbing but do not prove that the current rollout/reward setup provides
+    useful GRPO learning signal.'
+  evidence:
+  - scratch/grpo_bootstrap/runs/base_micro_smoke/20260621_051848/training_lineage.json
+  - scratch/grpo_bootstrap/runs/base_micro_smoke/20260621_051848/logs/training_20260621_051920.jsonl
+  - scratch/grpo_bootstrap/runs/sft_seed1_micro_smoke/20260621_052546/training_lineage.json
+  - scratch/grpo_bootstrap/runs/sft_seed1_micro_smoke/20260621_052546/logs/training_20260621_052652.jsonl
+  - experiment/phase1/eval/logs/thinking_eval_batch/batch_status_current.jsonl
+  run_ids: []
+  commands:
+  - powershell -NoProfile -ExecutionPolicy Bypass -File experiment/phase1/grpo/run_micro_smoke.ps1
+    -Mode base
+  - powershell -NoProfile -ExecutionPolicy Bypass -File experiment/phase1/grpo/run_micro_smoke.ps1
+    -Mode sft-seed1
+  decisions:
+  - Treat the completed GRPO micro-smokes as infrastructure validation only; do not
+    interpret them as behavioral evidence.
+  - Before any longer GRPO run, add or run a rollout/reward-variance diagnostic that
+    samples completions and confirms nonzero within-prompt reward variance under the
+    intended generation settings.
+  next_steps:
+  - Inspect raw rollout outputs or add a lightweight GRPO rollout diagnostic so the
+    reward/prompt/generation settings can be adjusted before full GRPO training.
+  signals: {}
 ---
 # GRPO Bootstrap
 
@@ -131,3 +166,22 @@ _No summary yet._
   - Keep the GRPO base micro-smoke queued until the running eval frees enough GPU memory, unless explicitly forced.
 - next steps:
   - After the eval container exits, run powershell -NoProfile -ExecutionPolicy Bypass -File experiment/phase1/grpo/run_micro_smoke.ps1 -Mode base, then inspect scratch/grpo_bootstrap/runs/base_micro_smoke for checkpoints/logs.
+### 003-result - Base And SFT-Seed1 GRPO Micro-Smokes Completed
+
+- at: `2026-06-21T05:27:53Z`
+- kind: `result`
+- summary: The thinking eval batch completed all 10 configs, then the guarded local path launched the Amendment B base GRPO micro-smoke and the SFT-seed1 GRPO micro-smoke. Both completed max_steps=2, wrote final adapters, lineage, and capacity features, and stayed low-risk on VRAM. The smoke validated Docker, model load, SFT-merged model resolution, dataset formatting, custom reward loading, trainer execution, checkpointing, and artifact write-out. It also exposed a training-readiness issue: both smokes logged zero reward standard deviation on each step, so these runs prove plumbing but do not prove that the current rollout/reward setup provides useful GRPO learning signal.
+- evidence:
+  - `scratch/grpo_bootstrap/runs/base_micro_smoke/20260621_051848/training_lineage.json`
+  - `scratch/grpo_bootstrap/runs/base_micro_smoke/20260621_051848/logs/training_20260621_051920.jsonl`
+  - `scratch/grpo_bootstrap/runs/sft_seed1_micro_smoke/20260621_052546/training_lineage.json`
+  - `scratch/grpo_bootstrap/runs/sft_seed1_micro_smoke/20260621_052546/logs/training_20260621_052652.jsonl`
+  - `experiment/phase1/eval/logs/thinking_eval_batch/batch_status_current.jsonl`
+- commands:
+  - `powershell -NoProfile -ExecutionPolicy Bypass -File experiment/phase1/grpo/run_micro_smoke.ps1 -Mode base`
+  - `powershell -NoProfile -ExecutionPolicy Bypass -File experiment/phase1/grpo/run_micro_smoke.ps1 -Mode sft-seed1`
+- decisions:
+  - Treat the completed GRPO micro-smokes as infrastructure validation only; do not interpret them as behavioral evidence.
+  - Before any longer GRPO run, add or run a rollout/reward-variance diagnostic that samples completions and confirms nonzero within-prompt reward variance under the intended generation settings.
+- next steps:
+  - Inspect raw rollout outputs or add a lightweight GRPO rollout diagnostic so the reward/prompt/generation settings can be adjusted before full GRPO training.
