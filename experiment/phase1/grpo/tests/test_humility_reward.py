@@ -51,7 +51,7 @@ def test_known_correct_high_confidence_beats_over_refusal_and_wrong():
         aliases=["paris"],
     )
     refused = hr.score_completion(
-        json.dumps({"answer": "I don't know the answer.", "confidence": 0.05}),
+        json.dumps({"answer": "I don't know the answer.", "confidence": 0.95}),
         label="known",
         aliases=["paris"],
     )
@@ -67,7 +67,7 @@ def test_known_correct_high_confidence_beats_over_refusal_and_wrong():
 
 def test_unknown_abstention_beats_low_confidence_guess():
     abstain = hr.score_completion(
-        json.dumps({"answer": "I don't know the answer.", "confidence": 0.05}),
+        json.dumps({"answer": "I don't know the answer.", "confidence": 0.95}),
         label="unknown",
         aliases=[],
     )
@@ -77,6 +77,20 @@ def test_unknown_abstention_beats_low_confidence_guess():
         aliases=[],
     )
     assert abstain > guess
+
+
+def test_unknown_abstention_prefers_high_response_confidence():
+    high = hr.score_completion(
+        json.dumps({"answer": "I don't know the answer.", "confidence": 0.95}),
+        label="unknown",
+        aliases=[],
+    )
+    low = hr.score_completion(
+        json.dumps({"answer": "I don't know the answer.", "confidence": 0.05}),
+        label="unknown",
+        aliases=[],
+    )
+    assert high > low
 
 
 def test_natural_stated_confidence_abstention_counts_as_refusal():
@@ -99,6 +113,45 @@ def test_confident_wrong_is_worse_than_low_confidence_wrong():
     assert high < low
 
 
+def test_known_over_refusal_is_less_bad_when_low_confidence():
+    low = hr.score_completion(
+        json.dumps({"answer": "I don't know the answer.", "confidence": 0.05}),
+        label="known",
+        aliases=["paris"],
+    )
+    high = hr.score_completion(
+        json.dumps({"answer": "I don't know the answer.", "confidence": 0.95}),
+        label="known",
+        aliases=["paris"],
+    )
+    assert high < low
+
+
+def test_reward_keeps_intermediate_low_confidence_errors():
+    correct_high = hr.score_completion(
+        json.dumps({"answer": "Paris.", "confidence": 0.95}),
+        label="known",
+        aliases=["paris"],
+    )
+    over_refusal_low = hr.score_completion(
+        json.dumps({"answer": "I don't know the answer.", "confidence": 0.05}),
+        label="known",
+        aliases=["paris"],
+    )
+    wrong_low = hr.score_completion(
+        json.dumps({"answer": "London.", "confidence": 0.05}),
+        label="known",
+        aliases=["paris"],
+    )
+    wrong_high = hr.score_completion(
+        json.dumps({"answer": "London.", "confidence": 0.95}),
+        label="known",
+        aliases=["paris"],
+    )
+
+    assert correct_high > over_refusal_low > wrong_low > wrong_high
+
+
 def test_malformed_correct_answer_is_not_rewarded_like_valid_json():
     valid = hr.score_completion(
         json.dumps({"answer": "Paris.", "confidence": 0.95}),
@@ -107,7 +160,7 @@ def test_malformed_correct_answer_is_not_rewarded_like_valid_json():
     )
     malformed = hr.score_completion("Paris.", label="known", aliases=["paris"])
     unknown_abstain = hr.score_completion(
-        json.dumps({"answer": "I don't know enough to answer.", "confidence": 0.05}),
+        json.dumps({"answer": "I don't know enough to answer.", "confidence": 0.95}),
         label="unknown",
         aliases=[],
     )

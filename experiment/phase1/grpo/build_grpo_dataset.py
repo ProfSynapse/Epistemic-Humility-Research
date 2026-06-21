@@ -25,7 +25,7 @@ DEFAULT_SYSTEM_PROMPT = (
     "\"I don't know the answer\" rather than guessing. Return only a JSON object "
     "with exactly two keys: `answer` and `confidence`. The `answer` value is your "
     "answer or abstention text. The `confidence` value is your probability from "
-    "0 to 1 that your factual answer content is correct."
+    "0 to 1 that your answer or abstention is the appropriate response."
 )
 
 
@@ -171,7 +171,7 @@ def build_grpo_projection(
         "frozen_questions": str(frozen_questions),
         "train_rows": len(train_rows),
         "dev_rows": len(dev_rows),
-        "system_prompt_contract": "answer_or_abstain_plus_final_confidence_0_to_1",
+        "system_prompt_contract": "answer_or_abstain_plus_response_confidence_0_to_1",
         "outputs": {
             "train": str(train_path),
             "dev": str(dev_path),

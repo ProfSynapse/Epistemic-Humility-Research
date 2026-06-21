@@ -13,16 +13,17 @@ and a new output contract.
 The GRPO arm should ask the model for two separable signals in one JSON object:
 
 1. `answer`: an answer or abstention in ordinary text
-2. `confidence`: the model's probability from 0 to 1 that its factual answer
-   content is correct
+2. `confidence`: the model's probability from 0 to 1 that its answer or
+   abstention is the appropriate response
 
 ```json
 {"answer": "Paris.", "confidence": 0.73}
 ```
 
-The confidence value is interpreted as the model's probability that its factual
-answer content is correct. For a clean abstention, the calibrated value should be
-low because the model is not asserting a factual answer.
+The confidence value is interpreted as response confidence. It should be high
+for a correct factual answer and also high for a correct abstention on an
+unknown question. It should be low for an incorrect answer or an inappropriate
+known-question over-refusal.
 
 Current Phase 1 SFT/DPO/KTO evaluation does not require this JSON shape. It
 scores the generated answer for refusal/correctness, uses self-consistency for

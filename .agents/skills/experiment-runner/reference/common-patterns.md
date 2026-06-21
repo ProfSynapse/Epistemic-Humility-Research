@@ -78,10 +78,19 @@ python -m pytest \
 ```
 
 Sanity-check the reward ordering before GPU use: known correct with high
-confidence should be highest; unknown low-confidence abstention should be
-positive; known over-refusal should be negative; unknown/known confident wrong
-answers should be worst; malformed JSON should not be rewarded like a valid
-answer.
+response confidence should be highest; unknown high-confidence abstention should
+be positive; known over-refusal should be negative, especially if confident;
+unknown/known confident wrong answers should be worst; malformed JSON should not
+be rewarded like a valid answer. In Amendment B GRPO, `confidence` means
+confidence that the answer or abstention is appropriate, not probability that a
+factual answer string is correct.
+
+Preserve intermediate confidence signal instead of binarizing the reward. A
+wrong answer with low confidence should be penalized less than a confident wrong
+answer, and an `I don't know` on a known question with low confidence should be
+penalized less than confident over-refusal while still remaining negative. Keep
+these cases in the sanity table/tests so reward edits do not collapse the
+ordinal ladder.
 
 After any GRPO smoke, inspect the trainer logs for reward variance before
 scaling. A micro-run can validate Docker/model/data/reward plumbing while still
@@ -115,6 +124,16 @@ the old answer-only/refusal contract and produced 0% valid answer/confidence
 JSON under the same native Qwen prompt, even with eight rollouts. SFT-start GRPO
 needs a format bridge or separate prompt-contract adaptation before treating
 confidence-reward GRPO as operational.
+
+After an SFT JSON bridge, do not blindly reuse the high-exploration base-GRPO
+sampler. In the 2026-06-21 local bridge smoke, `temperature: 1.6` with 256
+completion tokens produced nonzero reward variance but many clipped/gibberish
+malformed completions. Over-correcting to low temperature kept JSON clean but
+collapsed trainer reward variance. The working bridge micro pattern used
+`num_generations: 8`, `per_device_train_batch_size: 8`, `temperature: 1.35`,
+`top_p: 1.0`, and 128 completion tokens: 48/48 reward-debug completions were
+valid JSON, trainer clipping stayed 0.0, and all 6 smoke steps had nonzero
+reward variance. Treat sampler choice as a contract-format gate before scaling.
 
 Custom GRPO reward files are loaded dynamically by Synaptic Tuner. If a custom
 reward module uses `@dataclass`, the loader must register the module in

@@ -4,47 +4,62 @@ session_id: grpo-reward-variance-diagnostic
 title: GRPO Reward Variance Diagnostic
 status: active
 created_at: '2026-06-21T09:09:44Z'
-updated_at: '2026-06-21T10:08:00Z'
+updated_at: '2026-06-21T11:05:53Z'
 phase: phase1
 question: Can local GRPO rollouts produce parseable completions and nonzero reward
   variance under intended generation/reward settings before scaling training?
 tags:
 - experiment-runner
-run_ids: []
+run_ids:
+- sft_json_bridge_seed1_20260621_102859
 trajectory:
   anchor: experiment/protocol/research-trajectory.md
-  current_position: 'Amendment B / GRPO bootstrap preflight after stated-confidence eval layer.'
-  changed_by_session: 'GRPO base smoke moved from infrastructure-only to nonzero reward-variance proof under native Qwen template plus high-exploration sampling; a bounded 64-step base pilot trained and evaluated cleanly but did not move core SelfAware refusal/correctness behavior versus the base control; SFT-start remains blocked on answer-only format inertia.'
+  current_position: Amendment B / GRPO bootstrap preflight after stated-confidence
+    eval layer.
+  changed_by_session: GRPO base smoke moved from infrastructure-only to nonzero reward-variance
+    proof under native Qwen template plus high-exploration sampling; a bounded 64-step
+    base pilot trained and evaluated cleanly but did not move core SelfAware refusal/correctness
+    behavior versus the base control; SFT-start remains blocked on answer-only format
+    inertia.
 checkpoints:
 - id: 001-planning
   at: '2026-06-21T09:09:44Z'
   kind: planning
   title: Reward-Variance Gate
-  summary: Prior GRPO smokes proved Docker/model/reward plumbing but had zero within-prompt reward variance. This session gates longer GRPO on raw rollout inspection, JSON parse coverage, and nonzero trainer reward std.
+  summary: Prior GRPO smokes proved Docker/model/reward plumbing but had zero within-prompt
+    reward variance. This session gates longer GRPO on raw rollout inspection, JSON
+    parse coverage, and nonzero trainer reward std.
   evidence:
   - experiment/phase1/grpo/configs/grpo_base_micro_smoke.yaml
   - experiment/phase1/grpo/humility_reward.py
   run_ids: []
   commands:
-  - python -m pytest experiment/phase1/grpo/tests/test_humility_reward.py experiment/phase1/grpo/tests/test_build_grpo_dataset.py -q
+  - python -m pytest experiment/phase1/grpo/tests/test_humility_reward.py experiment/phase1/grpo/tests/test_build_grpo_dataset.py
+    -q
   decisions:
-  - Do not scale GRPO until sampled completions and trainer logs show a real comparative reward signal.
+  - Do not scale GRPO until sampled completions and trainer logs show a real comparative
+    reward signal.
   next_steps: []
   signals: {}
 - id: 002-observation
   at: '2026-06-21T09:24:46Z'
   kind: observation
   title: Native Qwen Template Fix
-  summary: Base rollout diagnostics with tokenizer-native Qwen templating and enable_thinking=false produced high JSON coverage, no clipping, and nonzero reward variance; generic ChatML templating ignored the Qwen thinking switch and produced clipped think traces.
+  summary: Base rollout diagnostics with tokenizer-native Qwen templating and enable_thinking=false
+    produced high JSON coverage, no clipping, and nonzero reward variance; generic
+    ChatML templating ignored the Qwen thinking switch and produced clipped think
+    traces.
   evidence:
   - scratch/grpo_bootstrap/diagnostics/base_20260621_052343/summary.json
   - scratch/grpo_bootstrap/diagnostics/base_20260621_052343/rollouts.jsonl
   - https://qwen.readthedocs.io/en/latest/getting_started/quickstart.html
   run_ids: []
   commands:
-  - powershell -NoProfile -ExecutionPolicy Bypass -File experiment/phase1/grpo/run_rollout_diagnostic.ps1 -Mode base -MaxRows 4 -NumRollouts 4 -MaxCompletionLength 256
+  - powershell -NoProfile -ExecutionPolicy Bypass -File experiment/phase1/grpo/run_rollout_diagnostic.ps1
+    -Mode base -MaxRows 4 -NumRollouts 4 -MaxCompletionLength 256
   decisions:
-  - Add generic Synaptic Tuner GRPO support for chat_template_kwargs and native/tokenizer chat-template preservation.
+  - Add generic Synaptic Tuner GRPO support for chat_template_kwargs and native/tokenizer
+    chat-template preservation.
   next_steps: []
   signals:
     mean_valid_json_rate: 0.875
@@ -55,15 +70,20 @@ checkpoints:
   at: '2026-06-21T09:28:33Z'
   kind: observation
   title: SFT-Start Format Inertia
-  summary: SFT seed 1 retained the old answer-only/refusal behavior and produced zero valid JSON even with native Qwen thinking-off templating and eight rollouts per prompt. SFT-start GRPO is therefore not ready for the stated-confidence objective without a format bridge or separate prompt-contract adaptation.
+  summary: SFT seed 1 retained the old answer-only/refusal behavior and produced zero
+    valid JSON even with native Qwen thinking-off templating and eight rollouts per
+    prompt. SFT-start GRPO is therefore not ready for the stated-confidence objective
+    without a format bridge or separate prompt-contract adaptation.
   evidence:
   - scratch/grpo_bootstrap/diagnostics/sft-seed1_20260621_052656/summary.json
   - scratch/grpo_bootstrap/diagnostics/sft-seed1_20260621_052656/rollouts.jsonl
   run_ids: []
   commands:
-  - powershell -NoProfile -ExecutionPolicy Bypass -File experiment/phase1/grpo/run_rollout_diagnostic.ps1 -Mode sft-seed1 -MaxRows 4 -NumRollouts 8 -MaxCompletionLength 256
+  - powershell -NoProfile -ExecutionPolicy Bypass -File experiment/phase1/grpo/run_rollout_diagnostic.ps1
+    -Mode sft-seed1 -MaxRows 4 -NumRollouts 8 -MaxCompletionLength 256
   decisions:
-  - Treat base-start GRPO as the first working GRPO bootstrap target; treat SFT-start GRPO as requiring an additional format/alignment bridge before scale.
+  - Treat base-start GRPO as the first working GRPO bootstrap target; treat SFT-start
+    GRPO as requiring an additional format/alignment bridge before scale.
   next_steps: []
   signals:
     mean_valid_json_rate: 0.0
@@ -74,20 +94,27 @@ checkpoints:
   at: '2026-06-21T09:43:51Z'
   kind: result
   title: Trainer Reward Variance Achieved
-  summary: Base GRPO micro-smoke with native Qwen template, four generations, 256 completion tokens, and high-exploration sampling produced nonzero reward std on three of six trainer steps, nonzero grad norms, nonzero KL after step 1, no clipping, and completed artifact save-out.
+  summary: Base GRPO micro-smoke with native Qwen template, four generations, 256
+    completion tokens, and high-exploration sampling produced nonzero reward std on
+    three of six trainer steps, nonzero grad norms, nonzero KL after step 1, no clipping,
+    and completed artifact save-out.
   evidence:
   - scratch/grpo_bootstrap/runs/base_micro_smoke/20260621_094323/logs/training_20260621_094351.jsonl
   - scratch/grpo_bootstrap/reward_debug/base_latest.jsonl
   run_ids:
   - grpo_base_micro_smoke_20260621_094323
   commands:
-  - powershell -NoProfile -ExecutionPolicy Bypass -File experiment/phase1/grpo/run_micro_smoke.ps1 -Mode base -Force -DebugReward
+  - powershell -NoProfile -ExecutionPolicy Bypass -File experiment/phase1/grpo/run_micro_smoke.ps1
+    -Mode base -Force -DebugReward
   decisions:
-  - The GRPO base pipeline is now locally operational as a smoke-tested training path; longer runs still need a protocol-scale decision and post-run eval gate.
+  - The GRPO base pipeline is now locally operational as a smoke-tested training path;
+    longer runs still need a protocol-scale decision and post-run eval gate.
   - Keep reward debug opt-in only; use it when reward_std unexpectedly collapses.
   next_steps:
-  - Decide whether to run a bounded base-GRPO pilot or first build an SFT-format bridge for SFT-start GRPO.
-  - If scaling base-GRPO, keep native Qwen template and high-exploration sampling, then evaluate against the stated-confidence comparison set.
+  - Decide whether to run a bounded base-GRPO pilot or first build an SFT-format bridge
+    for SFT-start GRPO.
+  - If scaling base-GRPO, keep native Qwen template and high-exploration sampling,
+    then evaluate against the stated-confidence comparison set.
   signals:
     nonzero_reward_std_steps: 3
     total_logged_train_steps: 6
@@ -99,26 +126,38 @@ checkpoints:
   at: '2026-06-21T10:04:00Z'
   kind: launch
   title: Bounded Base-GRPO Pilot
-  summary: Proceeding from the successful base smoke to a bounded base-GRPO pilot on the full projected GRPO train JSONL with the same native Qwen thinking-off template and high-exploration sampler. This remains local Amendment B pilot evidence, not headline Phase 1 evidence.
+  summary: Proceeding from the successful base smoke to a bounded base-GRPO pilot
+    on the full projected GRPO train JSONL with the same native Qwen thinking-off
+    template and high-exploration sampler. This remains local Amendment B pilot evidence,
+    not headline Phase 1 evidence.
   evidence:
   - experiment/phase1/grpo/configs/grpo_base_pilot.yaml
   - scratch/grpo_bootstrap/qwen3-4b-instruct/grpo_train.jsonl
   run_ids:
   - grpo_base_pilot_pending
   commands:
-  - powershell -NoProfile -ExecutionPolicy Bypass -File experiment/phase1/grpo/run_micro_smoke.ps1 -Mode base-pilot -Force -DebugReward
+  - powershell -NoProfile -ExecutionPolicy Bypass -File experiment/phase1/grpo/run_micro_smoke.ps1
+    -Mode base-pilot -Force -DebugReward
   decisions:
-  - Keep the smoke config separate from the pilot config so the six-step gate remains fast and reproducible.
-  - Run reward debug for the first pilot so raw candidate diversity can be audited if reward variance collapses.
+  - Keep the smoke config separate from the pilot config so the six-step gate remains
+    fast and reproducible.
+  - Run reward debug for the first pilot so raw candidate diversity can be audited
+    if reward variance collapses.
   next_steps:
-  - Inspect reward std, clipping, grad norms, KL, train_end, final_model, training_lineage, and reward debug trace after completion.
-  - If pilot artifacts are healthy, evaluate the pilot adapter against the stated-confidence eval layer.
+  - Inspect reward std, clipping, grad norms, KL, train_end, final_model, training_lineage,
+    and reward debug trace after completion.
+  - If pilot artifacts are healthy, evaluate the pilot adapter against the stated-confidence
+    eval layer.
   signals: {}
 - id: 006-result
   at: '2026-06-21T10:08:00Z'
   kind: result
   title: Base-GRPO Pilot Completed
-  summary: The 64-step base-GRPO pilot completed locally, saved a final LoRA adapter and lineage, maintained nonzero reward variance on most logged steps, and showed no clipping or OOM pressure. Reward-debug rollouts were mostly parseable JSON and frequently had within-group diversity, so the GRPO training signal exists under this setup.
+  summary: The 64-step base-GRPO pilot completed locally, saved a final LoRA adapter
+    and lineage, maintained nonzero reward variance on most logged steps, and showed
+    no clipping or OOM pressure. Reward-debug rollouts were mostly parseable JSON
+    and frequently had within-group diversity, so the GRPO training signal exists
+    under this setup.
   evidence:
   - scratch/grpo_bootstrap/runs/base_pilot/20260621_095511/logs/training_20260621_095545.jsonl
   - scratch/grpo_bootstrap/runs/base_pilot/20260621_095511/final_model/adapter_model.safetensors
@@ -127,11 +166,14 @@ checkpoints:
   run_ids:
   - grpo_base_pilot_20260621_095511
   commands:
-  - powershell -NoProfile -ExecutionPolicy Bypass -File experiment/phase1/grpo/run_micro_smoke.ps1 -Mode base-pilot -Force -DebugReward
+  - powershell -NoProfile -ExecutionPolicy Bypass -File experiment/phase1/grpo/run_micro_smoke.ps1
+    -Mode base-pilot -Force -DebugReward
   decisions:
-  - Treat reward variance as a training-plumbing gate only; behavioral movement must be checked by same-slice eval before interpreting the pilot as scientific evidence.
+  - Treat reward variance as a training-plumbing gate only; behavioral movement must
+    be checked by same-slice eval before interpreting the pilot as scientific evidence.
   next_steps:
-  - Evaluate the pilot adapter on the 192-row SelfAware stated-confidence slice and compare against the same prompt-contract base control.
+  - Evaluate the pilot adapter on the 192-row SelfAware stated-confidence slice and
+    compare against the same prompt-contract base control.
   signals:
     steps: 64
     nonzero_reward_std_steps: 40
@@ -149,14 +191,12 @@ checkpoints:
   at: '2026-06-21T10:08:00Z'
   kind: result
   title: Base-GRPO Pilot Eval Was Base-Like
-  summary: >-
-    Live vLLM eval of the 64-step base-GRPO pilot on the 192-row SelfAware
-    stated-confidence slice completed successfully, but the scored behavior was
-    unchanged from the base prompt-contract control: refusal recall 1.05%,
-    over-refusal 1.03%, correct-on-known 23.96%, truthful 12.5%. Row-level
-    comparison showed 52/192 answer texts changed, but 0 refusal decisions
-    changed and only 2 correctness labels moved, one improvement and one
-    regression.
+  summary: 'Live vLLM eval of the 64-step base-GRPO pilot on the 192-row SelfAware
+    stated-confidence slice completed successfully, but the scored behavior was unchanged
+    from the base prompt-contract control: refusal recall 1.05%, over-refusal 1.03%,
+    correct-on-known 23.96%, truthful 12.5%. Row-level comparison showed 52/192 answer
+    texts changed, but 0 refusal decisions changed and only 2 correctness labels moved,
+    one improvement and one regression.'
   evidence:
   - experiment/phase1/eval/config/eval_amendment_b_stated_confidence_selfaware_base_grpo_pilot_smoke_local_4b.yaml
   - experiment/phase1/eval/results_amendment_b_stated_confidence_selfaware_base_grpo_pilot_smoke_4b/base_grpo_pilot_64__selfaware/metrics.json
@@ -165,12 +205,21 @@ checkpoints:
   run_ids:
   - eval_base_grpo_pilot_64_selfaware_20260621
   commands:
-  - docker run --rm --gpus all --ipc=host --entrypoint python3 -e HF_HOME=/workspace/repo/.cache/hf -e HUGGINGFACE_HUB_CACHE=/workspace/repo/.cache/hf/hub -v "${PWD}:/workspace/repo" -w /workspace/repo unsloth/unsloth:latest experiment/phase1/eval/run_eval.py --config experiment/phase1/eval/config/eval_amendment_b_stated_confidence_selfaware_base_grpo_pilot_smoke_local_4b.yaml --live-vllm
+  - docker run --rm --gpus all --ipc=host --entrypoint python3 -e HF_HOME=/workspace/repo/.cache/hf
+    -e HUGGINGFACE_HUB_CACHE=/workspace/repo/.cache/hf/hub -v "${PWD}:/workspace/repo"
+    -w /workspace/repo unsloth/unsloth:latest experiment/phase1/eval/run_eval.py --config
+    experiment/phase1/eval/config/eval_amendment_b_stated_confidence_selfaware_base_grpo_pilot_smoke_local_4b.yaml
+    --live-vllm
   decisions:
-  - Do not treat this pilot as evidence that GRPO improved humility yet; it is evidence that local base-GRPO training/eval plumbing works and that 64 low-LR steps are behaviorally too weak on the current slice.
-  - Next GRPO scaling should change one of duration, reward strength, curriculum, or starting policy, and should keep same-slice behavioral comparators as a hard gate.
+  - Do not treat this pilot as evidence that GRPO improved humility yet; it is evidence
+    that local base-GRPO training/eval plumbing works and that 64 low-LR steps are
+    behaviorally too weak on the current slice.
+  - Next GRPO scaling should change one of duration, reward strength, curriculum,
+    or starting policy, and should keep same-slice behavioral comparators as a hard
+    gate.
   next_steps:
-  - Decide whether the next GRPO step is a longer base-start pilot, a prompt-contract/format bridge for SFT-start GRPO, or reward-weight/curriculum tuning before another pilot.
+  - Decide whether the next GRPO step is a longer base-start pilot, a prompt-contract/format
+    bridge for SFT-start GRPO, or reward-weight/curriculum tuning before another pilot.
   signals:
     n: 192
     refusal_recall_pct: 1.05
@@ -182,6 +231,209 @@ checkpoints:
     changed_answer_text_rows: 52
     changed_refusal_rows: 0
     changed_correctness_rows: 2
+- id: 008-planning
+  at: '2026-06-21T10:16:21Z'
+  kind: planning
+  title: Merged-SFT GRPO Start
+  summary: Proceeding to test GRPO with the merged SFT seed1 model as the base policy,
+    rather than stacking the SFT LoRA through model.lora_path. The goal is to preserve
+    the SFT abstention behavior while training a fresh GRPO LoRA on the answer/confidence
+    reward contract.
+  evidence:
+  - experiment/phase1/grpo/configs/grpo_sft_merged_seed1_micro_smoke.yaml
+  - experiment/phase1/grpo/configs/grpo_sft_merged_seed1_pilot.yaml
+  run_ids: []
+  commands:
+  - powershell -NoProfile -ExecutionPolicy Bypass -File experiment/phase1/grpo/run_rollout_diagnostic.ps1
+    -Mode sft-merged-seed1 -MaxRows 4 -NumRollouts 4 -MaxCompletionLength 256 -Temperature
+    1.6 -TopP 1.0
+  decisions:
+  - Gate SFT-merged GRPO on rollout parseability and reward variance before running
+    the micro-smoke or bounded pilot.
+  next_steps:
+  - Run the rollout/reward diagnostic for sft-merged-seed1; if JSON coverage and reward
+    variance are viable, run the micro-smoke with reward debug.
+  signals: {}
+- id: 009-launch
+  at: '2026-06-21T10:21:04Z'
+  kind: launch
+  title: SFT JSON Bridge Launch
+  summary: The merged-SFT rollout diagnostic had nonzero reward variance but 0% valid
+    answer/confidence JSON, so direct GRPO is deferred. Launching a 64-step SFT format
+    bridge on top of the merged SFT seed1 base using 256 projected GRPO rows with
+    assistant JSON targets.
+  evidence:
+  - scratch/grpo_bootstrap/diagnostics/sft-merged-seed1_20260621_061629/summary.json
+  - scratch/grpo_bootstrap/qwen3-4b-instruct/sft_json_bridge_smoke_256.jsonl
+  - experiment/phase1/grpo/configs/sft_merged_seed1_json_bridge.yaml
+  run_ids: []
+  commands:
+  - docker run --rm --gpus all --ipc=host --entrypoint python3 -e HF_HOME=/workspace/repo/.cache/hf
+    -e HUGGINGFACE_HUB_CACHE=/workspace/repo/.cache/hf/hub -v ${PWD}:/workspace/repo
+    -w /workspace/repo unsloth/unsloth:latest synaptic-tuner/Trainers/sft/train_sft.py
+    --config experiment/phase1/grpo/configs/sft_merged_seed1_json_bridge.yaml --max-steps
+    64 --no-dashboard --quiet
+  decisions:
+  - Use a supervised format bridge before GRPO because malformed merged-SFT completions
+    make direct confidence-reward GRPO a weak indirect format correction.
+  next_steps:
+  - After the bridge completes, patch the GRPO bridge config to its final_model path
+    and rerun rollout diagnostics before GRPO training.
+  signals: {}
+- id: 010-amendment
+  at: '2026-06-21T10:23:01Z'
+  kind: amendment
+  title: Response-Confidence Reward Correction
+  summary: 'Corrected Amendment B GRPO confidence semantics before bridge training.
+    Confidence now means probability that the answer or abstention is the appropriate
+    response: high for known-correct answers and unknown abstentions, low for wrong
+    guesses and inappropriate known-question refusals. Regenerated GRPO and bridge
+    scratch datasets with the updated prompt/targets.'
+  evidence:
+  - experiment/phase1/grpo/humility_reward.py
+  - experiment/phase1/grpo/build_grpo_dataset.py
+  - experiment/phase1/grpo/build_sft_json_bridge_dataset.py
+  - scratch/grpo_bootstrap/reward_sanity_table.csv
+  run_ids: []
+  commands:
+  - python -m pytest experiment/phase1/grpo/tests/test_humility_reward.py experiment/phase1/grpo/tests/test_build_grpo_dataset.py
+    synaptic-tuner/tests/trainers/grpo/test_data_loader_chat_template_kwargs.py -q
+  decisions:
+  - Do not launch the bridge or GRPO run under the old factual-answer confidence target;
+    use response-confidence targets for Amendment B GRPO.
+  next_steps:
+  - Rerun merged-SFT rollout diagnostics with regenerated prompts, then train the
+    JSON bridge if parseability still fails.
+  signals: {}
+- id: 011-gate
+  at: '2026-06-21T10:25:11Z'
+  kind: gate
+  title: Merged-SFT JSON Gate Failed
+  summary: Rerunning the merged-SFT rollout diagnostic after the response-confidence
+    prompt correction still produced 0% valid JSON, with nonzero reward variance and
+    no clipping. This confirms direct GRPO from merged SFT remains format-blocked
+    and should go through the SFT JSON bridge first.
+  evidence:
+  - scratch/grpo_bootstrap/diagnostics/sft-merged-seed1_20260621_062309/summary.json
+  - scratch/grpo_bootstrap/diagnostics/sft-merged-seed1_20260621_062309/rollouts.jsonl
+  run_ids: []
+  commands:
+  - powershell -NoProfile -ExecutionPolicy Bypass -File experiment/phase1/grpo/run_rollout_diagnostic.ps1
+    -Mode sft-merged-seed1 -MaxRows 4 -NumRollouts 4 -MaxCompletionLength 256 -Temperature
+    1.6 -TopP 1.0
+  decisions:
+  - Proceed with the supervised JSON bridge before any SFT-start GRPO training.
+  next_steps:
+  - Run the 64-step SFT JSON bridge on the merged SFT seed1 base.
+  signals: {}
+- id: 012-result
+  at: '2026-06-21T10:31:23Z'
+  kind: result
+  title: SFT JSON Bridge Completed
+  summary: The 64-step SFT JSON bridge on top of merged SFT seed1 completed successfully
+    on 256 bridge rows, saved final_model, training_lineage, and capacity artifacts.
+    Loss fell quickly, indicating the adapter learned the narrow answer/confidence
+    JSON format target.
+  evidence:
+  - scratch/grpo_bootstrap/runs/sft_merged_seed1_json_bridge/20260621_102859/final_model/adapter_model.safetensors
+  - scratch/grpo_bootstrap/runs/sft_merged_seed1_json_bridge/20260621_102859/training_lineage.json
+  - scratch/grpo_bootstrap/runs/sft_merged_seed1_json_bridge/20260621_102859/logs/training_20260621_103002.jsonl
+  run_ids:
+  - sft_json_bridge_seed1_20260621_102859
+  commands:
+  - docker run --rm --gpus all --ipc=host --entrypoint python3 ... synaptic-tuner/Trainers/sft/train_sft.py
+    --config experiment/phase1/grpo/configs/sft_merged_seed1_json_bridge_config.py
+    --max-steps 64 --no-dashboard --quiet
+  decisions:
+  - Use the bridge final_model as model.lora_path for the next GRPO rollout diagnostic
+    and micro-smoke, with the merged SFT seed1 model remaining the base model.
+  next_steps:
+  - Run rollout diagnostics through the bridge adapter to verify JSON coverage and
+    reward variance before GRPO micro-smoke.
+  signals: {}
+- id: 013-gate
+  at: '2026-06-21T10:38:10Z'
+  kind: gate
+  title: SFT JSON Bridge GRPO Gate Passed
+  summary: The SFT JSON bridge rollout diagnostic improved valid answer/confidence
+    JSON coverage from 0% to 68.75%, retained nonzero reward variance on all four
+    sampled prompts, and had 0% clipping. This clears the local gate for an SFT-start
+    GRPO micro-smoke through the bridge adapter.
+  evidence:
+  - scratch/grpo_bootstrap/diagnostics/sft-json-bridge-seed1_20260621_063133/summary.json
+  - scratch/grpo_bootstrap/diagnostics/sft-json-bridge-seed1_20260621_063133/rollouts.jsonl
+  run_ids: []
+  commands:
+  - powershell -NoProfile -ExecutionPolicy Bypass -File experiment/phase1/grpo/run_rollout_diagnostic.ps1
+    -Mode sft-json-bridge-seed1 -MaxRows 4 -NumRollouts 4 -MaxCompletionLength 256
+    -Temperature 1.6 -TopP 1.0
+  decisions:
+  - Proceed to GRPO micro-smoke with reward debug using the merged SFT seed1 base
+    plus JSON bridge adapter.
+  next_steps:
+  - Run experiment/phase1/grpo/run_micro_smoke.ps1 -Mode sft-json-bridge-seed1 -Force
+    -DebugReward.
+  signals: {}
+- id: 014-decision
+  at: '2026-06-21T10:47:35Z'
+  kind: decision
+  title: Response-Confidence Reward Ladder Locked
+  summary: 'Reward confidence now means confidence that the answer or abstention is
+    appropriate. The reward keeps intermediate signal: low-confidence wrong answers
+    and low-confidence known-question abstentions are penalized less than confident
+    wrong or confident over-refusal, while remaining below correct confident answers.'
+  evidence:
+  - 'reward_sanity_table now includes known_over_refusal_low_conf. Current ordering:
+    known_correct_high_conf 1.248750; known_over_refusal_low_conf -0.351250; known_wrong_low_conf
+    -0.776250; known_over_refusal_high_conf -0.801250; known_wrong_high_conf -1.676250;
+    unknown_abstain_high_conf 0.498750.'
+  run_ids: []
+  commands: []
+  decisions: []
+  next_steps:
+  - Rerun bridge GRPO micro-smoke with temp=1.0, top_p=0.95, max_completion_length=128.
+  signals: {}
+- id: 015-observation
+  at: '2026-06-21T10:47:35Z'
+  kind: observation
+  title: Bridge GRPO High-Temperature Smoke Exposed Clipping
+  summary: SFT JSON bridge made GRPO operational, but the first bridge micro-smoke
+    reused the high-exploration base-GRPO sampler and produced nonzero reward variance
+    together with frequent clipped/gibberish malformed completions. This validates
+    plumbing but is not a scaling setting.
+  evidence:
+  - Run scratch/grpo_bootstrap/runs/sft_json_bridge_seed1_micro_smoke/20260621_103852
+    completed 6 steps with reward std > 0 on every logged step, but clipped_ratio
+    reached 0.75 on multiple steps in trainer logs/reward debug.
+  run_ids: []
+  commands: []
+  decisions: []
+  next_steps:
+  - 'Use a cleaner bridge sampler before pilot scale: lower temperature and shorter
+    completion budget, then rerun the micro-smoke.'
+  signals: {}
+- id: 016-result
+  at: '2026-06-21T11:05:53Z'
+  kind: result
+  title: SFT-Bridge GRPO 8-Generation Smoke Passed
+  summary: 'Using the SFT seed-1 merged model plus a 256-row JSON bridge adapter,
+    the GRPO micro-smoke passed the practical gate with 8 generations per prompt:
+    valid schema, no clipping, and nonzero comparative reward signal on every step.'
+  evidence:
+  - 'Run scratch/grpo_bootstrap/runs/sft_json_bridge_seed1_micro_smoke/20260621_110345
+    completed 6 GRPO steps. Trainer aggregate: nonzero_reward_std_steps=6/6, mean_reward_std=1.099736,
+    max_clipped_ratio=0.0, max_completion_length_seen=22. Reward debug: 48/48 valid
+    JSON. Capacity: peak reserved VRAM 4.174GB, OOM risk low.'
+  run_ids: []
+  commands: []
+  decisions:
+  - For SFT-bridge GRPO micro/pilot bootstrapping, prefer num_generations=8, per_device_train_batch_size=8,
+    temperature=1.35, top_p=1.0, max_completion_length=128 over either low-temp 4-generation
+    deterministic settings or high-temp 256-token settings.
+  next_steps:
+  - Validate touched code/docs, then commit/PR the GRPO bootstrap changes before moving
+    to a longer SFT-bridge GRPO pilot.
+  signals: {}
 ---
 # GRPO Reward Variance Diagnostic
 
@@ -240,3 +492,122 @@ Base-start GRPO now works as a local smoke-tested training path when Qwen uses i
 - at: `2026-06-21T10:08:00Z`
 - kind: `result`
 - summary: Live vLLM eval of the pilot on the 192-row SelfAware stated-confidence slice matched the base control on core metrics: refusal recall 1.05%, over-refusal 1.03%, correct-on-known 23.96%, truthful 12.5%. Row-level comparison found 52 changed answer texts but zero changed refusal decisions.
+### 008-planning - Merged-SFT GRPO Start
+
+- at: `2026-06-21T10:16:21Z`
+- kind: `planning`
+- summary: Proceeding to test GRPO with the merged SFT seed1 model as the base policy, rather than stacking the SFT LoRA through model.lora_path. The goal is to preserve the SFT abstention behavior while training a fresh GRPO LoRA on the answer/confidence reward contract.
+- evidence:
+  - `experiment/phase1/grpo/configs/grpo_sft_merged_seed1_micro_smoke.yaml`
+  - `experiment/phase1/grpo/configs/grpo_sft_merged_seed1_pilot.yaml`
+- commands:
+  - `powershell -NoProfile -ExecutionPolicy Bypass -File experiment/phase1/grpo/run_rollout_diagnostic.ps1 -Mode sft-merged-seed1 -MaxRows 4 -NumRollouts 4 -MaxCompletionLength 256 -Temperature 1.6 -TopP 1.0`
+- decisions:
+  - Gate SFT-merged GRPO on rollout parseability and reward variance before running the micro-smoke or bounded pilot.
+- next steps:
+  - Run the rollout/reward diagnostic for sft-merged-seed1; if JSON coverage and reward variance are viable, run the micro-smoke with reward debug.
+### 009-launch - SFT JSON Bridge Launch
+
+- at: `2026-06-21T10:21:04Z`
+- kind: `launch`
+- summary: The merged-SFT rollout diagnostic had nonzero reward variance but 0% valid answer/confidence JSON, so direct GRPO is deferred. Launching a 64-step SFT format bridge on top of the merged SFT seed1 base using 256 projected GRPO rows with assistant JSON targets.
+- evidence:
+  - `scratch/grpo_bootstrap/diagnostics/sft-merged-seed1_20260621_061629/summary.json`
+  - `scratch/grpo_bootstrap/qwen3-4b-instruct/sft_json_bridge_smoke_256.jsonl`
+  - `experiment/phase1/grpo/configs/sft_merged_seed1_json_bridge.yaml`
+- commands:
+  - `docker run --rm --gpus all --ipc=host --entrypoint python3 -e HF_HOME=/workspace/repo/.cache/hf -e HUGGINGFACE_HUB_CACHE=/workspace/repo/.cache/hf/hub -v ${PWD}:/workspace/repo -w /workspace/repo unsloth/unsloth:latest synaptic-tuner/Trainers/sft/train_sft.py --config experiment/phase1/grpo/configs/sft_merged_seed1_json_bridge.yaml --max-steps 64 --no-dashboard --quiet`
+- decisions:
+  - Use a supervised format bridge before GRPO because malformed merged-SFT completions make direct confidence-reward GRPO a weak indirect format correction.
+- next steps:
+  - After the bridge completes, patch the GRPO bridge config to its final_model path and rerun rollout diagnostics before GRPO training.
+### 010-amendment - Response-Confidence Reward Correction
+
+- at: `2026-06-21T10:23:01Z`
+- kind: `amendment`
+- summary: Corrected Amendment B GRPO confidence semantics before bridge training. Confidence now means probability that the answer or abstention is the appropriate response: high for known-correct answers and unknown abstentions, low for wrong guesses and inappropriate known-question refusals. Regenerated GRPO and bridge scratch datasets with the updated prompt/targets.
+- evidence:
+  - `experiment/phase1/grpo/humility_reward.py`
+  - `experiment/phase1/grpo/build_grpo_dataset.py`
+  - `experiment/phase1/grpo/build_sft_json_bridge_dataset.py`
+  - `scratch/grpo_bootstrap/reward_sanity_table.csv`
+- commands:
+  - `python -m pytest experiment/phase1/grpo/tests/test_humility_reward.py experiment/phase1/grpo/tests/test_build_grpo_dataset.py synaptic-tuner/tests/trainers/grpo/test_data_loader_chat_template_kwargs.py -q`
+- decisions:
+  - Do not launch the bridge or GRPO run under the old factual-answer confidence target; use response-confidence targets for Amendment B GRPO.
+- next steps:
+  - Rerun merged-SFT rollout diagnostics with regenerated prompts, then train the JSON bridge if parseability still fails.
+### 011-gate - Merged-SFT JSON Gate Failed
+
+- at: `2026-06-21T10:25:11Z`
+- kind: `gate`
+- summary: Rerunning the merged-SFT rollout diagnostic after the response-confidence prompt correction still produced 0% valid JSON, with nonzero reward variance and no clipping. This confirms direct GRPO from merged SFT remains format-blocked and should go through the SFT JSON bridge first.
+- evidence:
+  - `scratch/grpo_bootstrap/diagnostics/sft-merged-seed1_20260621_062309/summary.json`
+  - `scratch/grpo_bootstrap/diagnostics/sft-merged-seed1_20260621_062309/rollouts.jsonl`
+- commands:
+  - `powershell -NoProfile -ExecutionPolicy Bypass -File experiment/phase1/grpo/run_rollout_diagnostic.ps1 -Mode sft-merged-seed1 -MaxRows 4 -NumRollouts 4 -MaxCompletionLength 256 -Temperature 1.6 -TopP 1.0`
+- decisions:
+  - Proceed with the supervised JSON bridge before any SFT-start GRPO training.
+- next steps:
+  - Run the 64-step SFT JSON bridge on the merged SFT seed1 base.
+### 012-result - SFT JSON Bridge Completed
+
+- at: `2026-06-21T10:31:23Z`
+- kind: `result`
+- summary: The 64-step SFT JSON bridge on top of merged SFT seed1 completed successfully on 256 bridge rows, saved final_model, training_lineage, and capacity artifacts. Loss fell quickly, indicating the adapter learned the narrow answer/confidence JSON format target.
+- run ids:
+  - `sft_json_bridge_seed1_20260621_102859`
+- evidence:
+  - `scratch/grpo_bootstrap/runs/sft_merged_seed1_json_bridge/20260621_102859/final_model/adapter_model.safetensors`
+  - `scratch/grpo_bootstrap/runs/sft_merged_seed1_json_bridge/20260621_102859/training_lineage.json`
+  - `scratch/grpo_bootstrap/runs/sft_merged_seed1_json_bridge/20260621_102859/logs/training_20260621_103002.jsonl`
+- commands:
+  - `docker run --rm --gpus all --ipc=host --entrypoint python3 ... synaptic-tuner/Trainers/sft/train_sft.py --config experiment/phase1/grpo/configs/sft_merged_seed1_json_bridge_config.py --max-steps 64 --no-dashboard --quiet`
+- decisions:
+  - Use the bridge final_model as model.lora_path for the next GRPO rollout diagnostic and micro-smoke, with the merged SFT seed1 model remaining the base model.
+- next steps:
+  - Run rollout diagnostics through the bridge adapter to verify JSON coverage and reward variance before GRPO micro-smoke.
+### 013-gate - SFT JSON Bridge GRPO Gate Passed
+
+- at: `2026-06-21T10:38:10Z`
+- kind: `gate`
+- summary: The SFT JSON bridge rollout diagnostic improved valid answer/confidence JSON coverage from 0% to 68.75%, retained nonzero reward variance on all four sampled prompts, and had 0% clipping. This clears the local gate for an SFT-start GRPO micro-smoke through the bridge adapter.
+- evidence:
+  - `scratch/grpo_bootstrap/diagnostics/sft-json-bridge-seed1_20260621_063133/summary.json`
+  - `scratch/grpo_bootstrap/diagnostics/sft-json-bridge-seed1_20260621_063133/rollouts.jsonl`
+- commands:
+  - `powershell -NoProfile -ExecutionPolicy Bypass -File experiment/phase1/grpo/run_rollout_diagnostic.ps1 -Mode sft-json-bridge-seed1 -MaxRows 4 -NumRollouts 4 -MaxCompletionLength 256 -Temperature 1.6 -TopP 1.0`
+- decisions:
+  - Proceed to GRPO micro-smoke with reward debug using the merged SFT seed1 base plus JSON bridge adapter.
+- next steps:
+  - Run experiment/phase1/grpo/run_micro_smoke.ps1 -Mode sft-json-bridge-seed1 -Force -DebugReward.
+### 014-decision - Response-Confidence Reward Ladder Locked
+
+- at: `2026-06-21T10:47:35Z`
+- kind: `decision`
+- summary: Reward confidence now means confidence that the answer or abstention is appropriate. The reward keeps intermediate signal: low-confidence wrong answers and low-confidence known-question abstentions are penalized less than confident wrong or confident over-refusal, while remaining below correct confident answers.
+- evidence:
+  - `reward_sanity_table now includes known_over_refusal_low_conf. Current ordering: known_correct_high_conf 1.248750; known_over_refusal_low_conf -0.351250; known_wrong_low_conf -0.776250; known_over_refusal_high_conf -0.801250; known_wrong_high_conf -1.676250; unknown_abstain_high_conf 0.498750.`
+- next steps:
+  - Rerun bridge GRPO micro-smoke with temp=1.0, top_p=0.95, max_completion_length=128.
+### 015-observation - Bridge GRPO High-Temperature Smoke Exposed Clipping
+
+- at: `2026-06-21T10:47:35Z`
+- kind: `observation`
+- summary: SFT JSON bridge made GRPO operational, but the first bridge micro-smoke reused the high-exploration base-GRPO sampler and produced nonzero reward variance together with frequent clipped/gibberish malformed completions. This validates plumbing but is not a scaling setting.
+- evidence:
+  - `Run scratch/grpo_bootstrap/runs/sft_json_bridge_seed1_micro_smoke/20260621_103852 completed 6 steps with reward std > 0 on every logged step, but clipped_ratio reached 0.75 on multiple steps in trainer logs/reward debug.`
+- next steps:
+  - Use a cleaner bridge sampler before pilot scale: lower temperature and shorter completion budget, then rerun the micro-smoke.
+### 016-result - SFT-Bridge GRPO 8-Generation Smoke Passed
+
+- at: `2026-06-21T11:05:53Z`
+- kind: `result`
+- summary: Using the SFT seed-1 merged model plus a 256-row JSON bridge adapter, the GRPO micro-smoke passed the practical gate with 8 generations per prompt: valid schema, no clipping, and nonzero comparative reward signal on every step.
+- evidence:
+  - `Run scratch/grpo_bootstrap/runs/sft_json_bridge_seed1_micro_smoke/20260621_110345 completed 6 GRPO steps. Trainer aggregate: nonzero_reward_std_steps=6/6, mean_reward_std=1.099736, max_clipped_ratio=0.0, max_completion_length_seen=22. Reward debug: 48/48 valid JSON. Capacity: peak reserved VRAM 4.174GB, OOM risk low.`
+- decisions:
+  - For SFT-bridge GRPO micro/pilot bootstrapping, prefer num_generations=8, per_device_train_batch_size=8, temperature=1.35, top_p=1.0, max_completion_length=128 over either low-temp 4-generation deterministic settings or high-temp 256-token settings.
+- next steps:
+  - Validate touched code/docs, then commit/PR the GRPO bootstrap changes before moving to a longer SFT-bridge GRPO pilot.

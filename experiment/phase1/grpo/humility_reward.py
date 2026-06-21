@@ -5,7 +5,7 @@ The reward separates three decisions that should not be collapsed:
 
 1. Did the completion answer or abstain?
 2. If it answered a known question, was the answer correct?
-3. Did the stated confidence match the correctness/knowledge-boundary state?
+3. Did the stated confidence match whether the response was appropriate?
 
 This module is self-contained so Synaptic Tuner can load it as a custom reward
 file without importing experiment-specific packages from the submodule.
@@ -79,6 +79,9 @@ def parse_completion(text: str) -> ParsedCompletion:
 
     Required stated-confidence format:
     - `{"answer": "Paris", "confidence": 0.73}`
+
+    The confidence field is response confidence: the model's probability that
+    its answer or abstention is the appropriate response.
     """
     raw = str(text or "").strip()
     payload = _load_stated_confidence_payload(raw)
@@ -204,7 +207,7 @@ def score_completion(
     elif confidence is None:
         reward -= config.missing_confidence_penalty
     else:
-        confidence_target = 1.0 if (not unknown and correct) else 0.0
+        confidence_target = 1.0 if ((not unknown and correct) or (unknown and refused)) else 0.0
         calibration_reward = 1.0 - 2.0 * ((confidence - confidence_target) ** 2)
         reward += config.calibration_weight * calibration_reward
 
