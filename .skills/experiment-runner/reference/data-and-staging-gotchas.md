@@ -44,12 +44,14 @@ Read for dataset identity, leakage, recipe materialization, and local staging is
   appended special-case rows. Hugging Face `datasets` infers/casts the JSON
   schema before trainer-specific row cleanup can drop provenance fields; if
   later ambiguous or diagnostic rows add columns such as `label`,
-  `source_label`, or `p_correct`, `load_dataset("json")` can fail before model
-  loading. Null defaults are not enough because Arrow may infer a `null` column
-  type and then reject later strings/floats. Add optional provenance keys with
-  typed sentinel values such as `""` or `-1.0` to ordinary rows, then cover both
-  row-key stability and mixed-type loading with tests whenever a builder appends
-  another row family.
+  `source_label`, `p_correct`, or `ambiguity_band`, `load_dataset("json")` can
+  fail before model loading. Null defaults are not enough because Arrow may
+  infer a `null` column type and then reject later strings/floats. Add optional
+  provenance keys with typed sentinel values such as `""` or `-1.0` to ordinary
+  rows, then cover both row-key stability and mixed-type loading with tests
+  whenever a builder appends another row family. The schema-response-confidence
+  GRPO builder uses `p_correct: -1.0` and `ambiguity_band: ""` for normal
+  known/unknown rows so ambiguous-middle rows can coexist in one JSONL.
 
 - Cheng recipe provenance gotcha: the paper text is vague, but the official
   OpenMOSS/Say-I-Dont-Know README publishes concrete commands. Cheng Idk-SFT is

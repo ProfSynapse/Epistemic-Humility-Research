@@ -169,3 +169,11 @@ def test_build_grpo_projection_can_include_middle_discard_rows(tmp_path):
     assert manifest["ambiguous_middle"]["rows"] == 1
     assert ambiguous[0]["p_correct"] == 0.5
     assert ambiguous[0]["gold_answer"] == "Middle"
+
+    expected_keys = set(all_rows[0])
+    assert expected_keys
+    assert all(set(row) == expected_keys for row in all_rows)
+    normal = [row for row in all_rows if row["label"] != "ambiguous"]
+    assert normal
+    assert all(row["p_correct"] == -1.0 for row in normal)
+    assert all(row["ambiguity_band"] == "" for row in normal)
