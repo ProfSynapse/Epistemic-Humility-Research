@@ -78,6 +78,19 @@ Read for live eval, prompt/output contracts, scorer drift, and post-eval sanity 
   not calibrated confidence; inspect unique confidence values and row-level
   behavior transitions before interpreting stated-confidence metrics.
 
+- Do not seed a calibrated-confidence experiment with a bridge target that
+  emits endpoint confidence on every supervised row. The 2026-06-22 SFT JSON
+  bridge used `confidence: 1.0` for both known gold answers and unknown
+  abstentions; the resulting SFT control and downstream GRPO adapter then
+  emitted 1.0 for every SelfAware row, even under higher temperature, a
+  stronger scale prompt, and no structured-output grammar. Before scaling a
+  confidence-learning run, smoke-test unique confidence values and reward sanity
+  cases for both behavior and confidence endpoints. Prefer non-endpoint target
+  bands for appropriate responses, low-confidence bands for inappropriate
+  responses, and explicit penalties or zero credit for exact 0.0/1.0 endpoints
+  when the research question is calibrated expression rather than deterministic
+  correctness.
+
 - Amendment B can also expose scorer drift in the opposite direction: JSON answer
   text may contain natural abstentions like "I do not know the exact number"
   rather than the Cheng fixed phrase "I do not know the answer." Do not broaden
