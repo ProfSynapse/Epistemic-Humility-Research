@@ -100,13 +100,20 @@ def parse_stated_confidence(text: str) -> ParsedGeneration:
     """Parse structured answer/confidence output from a generation.
 
     Required stated-confidence format is a JSON object:
-    `{"answer": "Paris", "confidence": 0.73}`.
+    `{"answer": "Paris", "confidence": 0.73}` or the schema-aware
+    response-confidence form:
+    `{"answer": "Paris", "response_confidence": 0.73}`.
     """
     raw = str(text or "").strip()
     payload = _load_stated_confidence_payload(raw)
-    if isinstance(payload, dict) and set(payload) == {"answer", "confidence"}:
+    if isinstance(payload, dict) and (
+        set(payload) == {"answer", "confidence"}
+        or set(payload) == {"answer", "response_confidence"}
+    ):
         answer = payload.get("answer")
-        confidence = _coerce_confidence_value(payload.get("confidence"))
+        confidence = _coerce_confidence_value(
+            payload.get("response_confidence", payload.get("confidence"))
+        )
         if isinstance(answer, str) and confidence is not None:
             return ParsedGeneration(
                 answer_text=answer.strip(),

@@ -91,6 +91,14 @@ Read for live eval, prompt/output contracts, scorer drift, and post-eval sanity 
   when the research question is calibrated expression rather than deterministic
   correctness.
 
+- For schema-trained response-confidence runs, prefer the explicit
+  `response_confidence` key over generic `confidence`. The intended scalar is
+  "probability that this answer or abstention is the appropriate response": high
+  for correct known answers, high for correct unknown abstentions, low for wrong
+  answers and over-refusals, and middle for model-specific ambiguous rows. Keep
+  historical Amendment B `confidence` outputs parseable, but label new runs so
+  answer-confidence and response-confidence are never pooled silently.
+
 - Amendment B can also expose scorer drift in the opposite direction: JSON answer
   text may contain natural abstentions like "I do not know the exact number"
   rather than the Cheng fixed phrase "I do not know the answer." Do not broaden

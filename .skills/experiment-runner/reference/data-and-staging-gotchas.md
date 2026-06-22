@@ -31,6 +31,15 @@ Read for dataset identity, leakage, recipe materialization, and local staging is
   bounded evidence; rerun SFT seed 1 on the regenerated dataset before using it
   as the mixed-stage comparator.
 
+- The Phase 1 frozen SFT/DPO/KTO builders intentionally use only `known` and
+  `unknown` probe labels; raw probe rows labeled `discard` are excluded from the
+  locked v0.3 training set. For schema-trained response-confidence work, do not
+  treat all discarded rows as waste. The Qwen3-4B probe had 4,005 discard rows;
+  the middle `p_correct` band `[0.4, 0.6]` contributed 548 useful ambiguous
+  examples. In the schema response-confidence projection, those rows should be
+  labeled separately as ambiguous/middle, trained with correct answers and
+  middle `response_confidence`, and kept out of v0.3 headline counts.
+
 - Cheng recipe provenance gotcha: the paper text is vague, but the official
   OpenMOSS/Say-I-Dont-Know README publishes concrete commands. Cheng Idk-SFT is
   `llama_recipes/finetuning.py --enable_fsdp` with `--num_epochs 10`, `--lr

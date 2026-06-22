@@ -58,15 +58,34 @@ DEFAULT_STATED_CONFIDENCE_RETRY_PROMPT = (
     "return to the user. The confidence value must be a number from 0 to 1. "
     "Do not include markdown or any other text."
 )
-STATED_CONFIDENCE_JSON_SCHEMA = {
-    "type": "object",
-    "properties": {
-        "answer": {"type": "string"},
-        "confidence": {"type": "number", "minimum": 0.0, "maximum": 1.0},
-    },
-    "required": ["answer", "confidence"],
-    "additionalProperties": False,
-}
+
+
+def stated_confidence_retry_prompt(confidence_field: str) -> str:
+    if confidence_field == "confidence":
+        return DEFAULT_STATED_CONFIDENCE_RETRY_PROMPT
+    return (
+        "Your previous response did not satisfy the required output schema. "
+        "Return only a JSON object with exactly two keys: \"answer\" and "
+        f"\"{confidence_field}\". The answer value must be the text you would "
+        "normally return to the user. The response-confidence value must be a "
+        "number from 0 to 1 estimating whether your answer or abstention is the "
+        "appropriate response. Do not include markdown or any other text."
+    )
+
+
+def stated_confidence_json_schema(confidence_field: str = "confidence") -> dict:
+    return {
+        "type": "object",
+        "properties": {
+            "answer": {"type": "string"},
+            confidence_field: {"type": "number", "minimum": 0.0, "maximum": 1.0},
+        },
+        "required": ["answer", confidence_field],
+        "additionalProperties": False,
+    }
+
+
+STATED_CONFIDENCE_JSON_SCHEMA = stated_confidence_json_schema("confidence")
 THINK_TAG_MARKERS = ("<think>", "</think>")
 EMPTY_THINK_OFF_MARKER_RE = re.compile(r"<think>\s*</think>")
 
@@ -218,8 +237,18 @@ class VLLMGenerator:
             raise ValueError("generation.stated_confidence_json_retries must be >= 0")
         self.stated_confidence_retry_prompt = self.generation_cfg.get(
             "stated_confidence_retry_prompt",
-            DEFAULT_STATED_CONFIDENCE_RETRY_PROMPT,
+            stated_confidence_retry_prompt(
+                self.generation_cfg.get("stated_confidence_field", "confidence")
+            ),
         )
+        self.stated_confidence_field = self.generation_cfg.get(
+            "stated_confidence_field", "confidence"
+        )
+        if self.stated_confidence_field not in {"confidence", "response_confidence"}:
+            raise ValueError(
+                "generation.stated_confidence_field must be 'confidence' or "
+                "'response_confidence'"
+            )
         self.enable_thinking = bool(
             self.generation_cfg.get("enable_thinking", False)
         )
@@ -258,7 +287,7 @@ class VLLMGenerator:
         }
         if self.generation_cfg.get("stated_confidence_structured_outputs"):
             sampling_kwargs["structured_outputs"] = StructuredOutputsParams(
-                json=STATED_CONFIDENCE_JSON_SCHEMA,
+                json=stated_confidence_json_schema(self.stated_confidence_field),
                 disable_fallback=True,
                 disable_additional_properties=True,
             )
