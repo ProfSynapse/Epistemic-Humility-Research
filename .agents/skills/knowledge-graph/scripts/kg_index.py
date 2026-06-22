@@ -8,6 +8,7 @@ import csv
 import hashlib
 import html
 import json
+import os
 import re
 import sqlite3
 import subprocess
@@ -125,6 +126,59 @@ def should_ignore(rel: str) -> bool:
     return any(part in IGNORED_PARTS for part in parts) or any(rel.startswith(prefix + "/") for prefix in IGNORED_PARTS)
 
 
+def _is_supported_source_file(path: Path) -> bool:
+    try:
+        return path.is_file() and path.suffix.lower() in SUPPORTED_EXTS
+    except OSError:
+        return False
+
+
+def _iter_git_files(root: Path) -> list[Path]:
+    proc = subprocess.run(
+        [
+            "git",
+            "-c",
+            f"safe.directory={root.as_posix()}",
+            "ls-files",
+            "-z",
+            "--cached",
+            "--others",
+            "--exclude-standard",
+        ],
+        cwd=root,
+        check=True,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.DEVNULL,
+    )
+    rels = [item.decode("utf-8") for item in proc.stdout.split(b"\0") if item]
+    return [root / rel for rel in rels]
+
+
+def _iter_walk_files(root: Path) -> list[Path]:
+    files: list[Path] = []
+    for dirpath, dirnames, filenames in os.walk(root):
+        current = Path(dirpath)
+        kept_dirs = []
+        for dirname in dirnames:
+            try:
+                rel = repo_relative(current / dirname, root)
+            except ValueError:
+                continue
+            if not should_ignore(rel):
+                kept_dirs.append(dirname)
+        dirnames[:] = kept_dirs
+
+        for filename in filenames:
+            path = current / filename
+            try:
+                rel = repo_relative(path, root)
+            except ValueError:
+                continue
+            if not should_ignore(rel):
+                files.append(path)
+    return files
+
+
 def file_kind(path: Path) -> str:
     suffix = path.suffix.lower()
     if suffix == ".py":
@@ -144,20 +198,12 @@ def file_kind(path: Path) -> str:
 
 def iter_source_files(root: Path) -> list[Path]:
     try:
-        proc = subprocess.run(
-            ["git", "ls-files", "-z", "--cached", "--others", "--exclude-standard"],
-            cwd=root,
-            check=True,
-            stdout=subprocess.PIPE,
-            stderr=subprocess.DEVNULL,
-        )
-        rels = [item.decode("utf-8") for item in proc.stdout.split(b"\0") if item]
-        files = [root / rel for rel in rels]
+        files = _iter_git_files(root)
     except Exception:
-        files = [path for path in root.rglob("*") if path.is_file()]
+        files = _iter_walk_files(root)
     out = []
     for path in files:
-        if not path.is_file() or path.suffix.lower() not in SUPPORTED_EXTS:
+        if not _is_supported_source_file(path):
             continue
         rel = repo_relative(path, root)
         if not should_ignore(rel):

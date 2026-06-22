@@ -14,11 +14,18 @@ sys.path.insert(0, str(SCRIPT_DIR))
 
 from kg_common import NoteIndex, collect_graph_notes, collect_triples, load_ontology  # noqa: E402
 from kg_feedback import record_feedback  # noqa: E402
-from kg_index import connect, dangling_references, index_root  # noqa: E402
+from kg_index import connect, dangling_references, index_root, iter_source_files  # noqa: E402
 from kg_search import main as kg_search_main  # noqa: E402
 from kg_search import lane_weights_from_feedback, search  # noqa: E402
 from kg_validate_repo import validate as validate_kg_repo  # noqa: E402
 from validate_kg_relationships import validate_note  # noqa: E402
+
+
+def find_repo_root(path: Path) -> Path:
+    for parent in [path, *path.parents]:
+        if (parent / "bin" / "sync_skills.py").is_file() and (parent / ".skills").is_dir():
+            return parent
+    raise FileNotFoundError("repo root with bin/sync_skills.py not found")
 
 
 class KnowledgeGraphScriptTests(unittest.TestCase):
@@ -433,7 +440,7 @@ def unrelated():
             self.assertIn("KG search results for: alpha beta", stdout.getvalue())
 
     def test_kg_repo_validator_source_invariants_pass(self) -> None:
-        repo_root = SCRIPT_DIR.parents[3]
+        repo_root = find_repo_root(SCRIPT_DIR)
         findings = validate_kg_repo(repo_root, skip_sync=True, skip_hook_installation=True)
         errors = [finding for finding in findings if finding.severity == "ERROR"]
         self.assertEqual([], errors)
@@ -466,6 +473,37 @@ def unrelated():
             root = Path(tmp)
             with self.assertRaises(FileNotFoundError):
                 index_root(root / "missing", root / ".kg" / "index.sqlite")
+
+    def test_kg_index_uses_repo_local_safe_directory_for_git_listing(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            (root / "note.md").write_text("# Note\n", encoding="utf-8")
+            proc = type("Proc", (), {"stdout": b"note.md\0"})()
+
+            with patch("kg_index.subprocess.run", return_value=proc) as run:
+                files = iter_source_files(root)
+
+            self.assertEqual([root / "note.md"], files)
+            argv = run.call_args.args[0]
+            self.assertEqual("git", argv[0])
+            self.assertIn("-c", argv)
+            self.assertIn(f"safe.directory={root.resolve().as_posix()}", argv)
+
+    def test_kg_index_fallback_walk_prunes_ignored_dot_caches(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            db = root / ".kg" / "index.sqlite"
+            cache = root / ".cache" / "hf" / "snapshots"
+            cache.mkdir(parents=True)
+            (cache / "config.json").write_text('{"cacheonlytoken": true}\n', encoding="utf-8")
+            (root / "note.md").write_text("# Public\n\nvisibletoken\n", encoding="utf-8")
+
+            with patch("kg_index.subprocess.run", side_effect=RuntimeError("git unavailable")):
+                summary = index_root(root, db)
+
+            self.assertEqual(1, summary["files"])
+            self.assertTrue(search(db, "visibletoken", limit=3))
+            self.assertFalse(search(db, "cacheonlytoken", limit=3))
 
     def test_kg_index_skips_dot_directories_by_default_except_canonical_skills(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
