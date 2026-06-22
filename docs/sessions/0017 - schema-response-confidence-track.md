@@ -4,7 +4,7 @@ session_id: schema-response-confidence-track
 title: Schema Response-Confidence Track
 status: active
 created_at: '2026-06-22T13:53:26Z'
-updated_at: '2026-06-22T19:13:00Z'
+updated_at: '2026-06-22T20:44:20Z'
 phase: phase1
 question: Can a schema-trained SFT base plus DPO/KTO/GRPO variants learn response-appropriate
   confidence without endpoint collapse?
@@ -714,3 +714,52 @@ batch 12.
   - Keep GPU eval paused until the KTO run finishes.
 - next_steps:
   - Recheck near completion; then run schema SelfAware smoke eval against the KTO adapter.
+
+### 025-result - KTO Seed 1 Completed And Evaluated
+
+- at: `2026-06-22T20:44:20Z`
+- kind: `result`
+- summary: The accepted schema-SFT->KTO seed-1 batch-12 run completed cleanly and its SelfAware schema smoke eval shows no meaningful confidence-calibration rescue relative to schema-SFT or schema-SFT->DPO.
+- evidence:
+  - `scratch/schema_response_confidence/runs/schema_sft_kto_seed1_full/20260622_batch12_accum1_seed1/capacity_features.json`
+  - `experiment/phase1/eval/config/eval_amendment_d_response_confidence_selfaware_schema_sft_kto_seed1_smoke_local_4b.yaml`
+  - `experiment/phase1/eval/results_amendment_d_response_confidence_selfaware_schema_sft_kto_seed1_smoke_4b/schema_sft_kto_seed1__selfaware/metrics.json`
+- signals:
+    training:
+      status_completed: 1
+      final_step: 2491
+      training_time_seconds: 7678.4
+      batch_size: 12
+      gradient_accumulation: 1
+      effective_batch_size: 12
+      peak_reserved_vram_gb: 21.1
+      min_reserved_headroom_gb: 2.9
+      oom_observed: 0
+      oom_risk_level: moderate
+      final_loss: 0.065176
+    eval:
+      n: 192
+      refusal_recall_pct: 86.32
+      over_refusal_pct: 61.86
+      truthful_pct: 50.52
+      correct_on_known_pct: 40.54
+      answer_on_unknown_pct: 13.68
+      stated_confidence_coverage_pct: 100.0
+      mean_stated_confidence: 0.8
+      confidence_mae_vs_response_appropriateness: 0.496875
+      confidence_brier_vs_response_appropriateness: 0.336875
+    local_comparison:
+      schema_sft_seed1_truthful_pct: 51.04
+      schema_sft_seed1_mean_stated_confidence: 0.8
+      schema_sft_dpo_seed1_truthful_pct: 50.52
+      schema_sft_dpo_seed1_mean_stated_confidence: 0.873828
+- interpretation:
+  - KTO preserved the schema contract but did not teach response-appropriate confidence under this setup.
+  - Relative to schema-SFT, KTO slightly reduced over-refusal but also reduced refusal recall; truthful rate stayed effectively flat/slightly lower.
+  - Confidence remains collapsed to a narrow high value, so preference training after schema-SFT is not yet shaping the confidence scalar.
+- decisions:
+  - Treat schema-SFT->KTO seed 1 as a completed bounded local diagnostic, not headline evidence.
+  - Before scaling additional downstream preference runs, prioritize reward/data changes that directly penalize endpoint or constant confidence collapse.
+- next_steps:
+  - Keep the KTO eval config as reusable source, while leaving generated training/eval artifacts local/ignored.
+  - Use this result to inform the next GRPO bootstrap attempt from the schema-SFT base.
