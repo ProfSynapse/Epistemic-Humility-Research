@@ -209,3 +209,36 @@ batch 12.
   - The next confidence-shaping evidence should come from DPO/KTO/GRPO or from adding more explicit low/middle contrast to supervised data.
 - gotchas:
   - OOD eval config keys must be canonical loader IDs such as `selfaware`; invented keys like `selfaware_unknown_smoke` fail before generation.
+
+### 008-planning - Merge-First Downstream Schema Runs
+
+- at: `2026-06-22T15:05:00Z`
+- kind: `planning`
+- summary: Clarified that Amendment D downstream DPO/KTO/GRPO cells should not run bare from the original Qwen3 base; all downstream cells must start from a merged schema-SFT model and train fresh adapters.
+- evidence:
+  - `experiment/protocol/AMENDMENT-D-schema-response-confidence.md`
+  - `scratch/schema_response_confidence/runs/sft_schema_seed1_full/20260622_141511/final_model`
+  - `scratch/schema_response_confidence/qwen3-4b-instruct/dpo_response_confidence_train.jsonl`
+  - `scratch/schema_response_confidence/qwen3-4b-instruct/kto_response_confidence_train.jsonl`
+  - `scratch/schema_response_confidence/qwen3-4b-instruct-grpo/grpo_train.jsonl`
+- decisions:
+  - Treat `schema_sft` as the only bare-base Amendment D training cell.
+  - Merge the completed schema-SFT adapter into a standalone local merged model before DPO, KTO, or GRPO.
+  - Train `schema_sft_dpo`, `schema_sft_kto`, and `schema_sft_grpo` as fresh LoRA adapters on that merged schema-SFT base.
+  - Exclude bare `schema_dpo`, `schema_kto`, and `schema_grpo` from the initial Amendment D matrix.
+  - For GRPO, set `model.model_name` to the merged schema-SFT path and leave `model.lora_path` unset/null to avoid accidental adapter stacking.
+- dataset_construction:
+    dpo:
+      chosen_response_confidence: 0.8
+      rejected_response_confidence: 0.2
+      ambiguous_chosen: gold answer with `response_confidence = p_correct`
+      ambiguous_rejected: sampled wrong answer with high `response_confidence: 0.8`
+    kto:
+      true_label_response_confidence: 0.8
+      false_label_response_confidence: 0.2
+      ambiguous_true: gold answer with `response_confidence = p_correct`
+      ambiguous_false: sampled wrong answer with high `response_confidence: 0.8`
+- next_steps:
+  - Merge schema-SFT seed 1.
+  - Sanity-eval the merged model against the adapter result.
+  - Launch DPO/KTO/GRPO smoke runs from the merged schema-SFT base.
