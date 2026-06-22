@@ -4,7 +4,7 @@ session_id: schema-response-confidence-track
 title: Schema Response-Confidence Track
 status: active
 created_at: '2026-06-22T13:53:26Z'
-updated_at: '2026-06-22T20:44:20Z'
+updated_at: '2026-06-22T22:05:00Z'
 phase: phase1
 question: Can a schema-trained SFT base plus DPO/KTO/GRPO variants learn response-appropriate
   confidence without endpoint collapse?
@@ -763,3 +763,138 @@ batch 12.
 - next_steps:
   - Keep the KTO eval config as reusable source, while leaving generated training/eval artifacts local/ignored.
   - Use this result to inform the next GRPO bootstrap attempt from the schema-SFT base.
+
+### 026-result - Full Merged Schema-SFT Eval Gate
+
+- at: `2026-06-22T21:20:00Z`
+- kind: `result`
+- summary: Ran the full SelfAware eval on the merged schema-SFT seed-1 model before launching another downstream fine-tune; the checkpoint is structurally usable but behaviorally over-refusal-heavy with collapsed confidence.
+- evidence:
+  - `experiment/phase1/eval/config/eval_amendment_d_response_confidence_selfaware_schema_sft_seed1_merged_full_local_4b.yaml`
+  - `experiment/phase1/eval/results_amendment_d_response_confidence_selfaware_schema_sft_seed1_merged_full_4b/schema_sft_merged_seed1__selfaware/metrics.json`
+- signals:
+    n: 3369
+    known_rows: 2337
+    unknown_rows: 1032
+    stated_confidence_coverage_pct: 100.0
+    stated_confidence_retry_exhausted: 0
+    unique_response_confidence_values:
+      - 0.8
+    refusal_recall_pct: 89.05
+    answer_on_unknown_pct: 10.95
+    over_refusal_pct: 59.14
+    correct_on_known_pct: 48.06
+    truthful_pct: 40.9
+    response_confidence_mae_vs_response_appropriateness: 0.554586
+    response_confidence_brier_vs_response_appropriateness: 0.394586
+- interpretation:
+  - The merged schema-SFT model is not bunk as an output-contract base: JSON coverage is complete and no retries were needed.
+  - SFT alone still fails the calibration question: every row emits `response_confidence: 0.8`, including wrong answers and over-refusals.
+  - The model has enough structural competence to justify GRPO, because the reward can directly target over-refusal, hallucinated answers, malformed JSON, and confidence banding.
+- decisions:
+  - Do not launch more DPO/KTO variants before testing whether GRPO can move the collapsed response-confidence scalar.
+  - Use the merged schema-SFT seed-1 checkpoint as the GRPO base.
+
+### 027-validation - GRPO Full Dataset Schema Repair
+
+- at: `2026-06-22T21:34:00Z`
+- kind: `validation`
+- summary: The first full-dataset GRPO batch probe exposed a Hugging Face JSON schema mismatch because ambiguous rows had provenance fields that normal known/unknown rows lacked; the builder now emits stable typed columns for every row.
+- evidence:
+  - `experiment/phase1/grpo/build_grpo_dataset.py`
+  - `experiment/phase1/grpo/tests/test_build_grpo_dataset.py`
+  - `scratch/schema_response_confidence/qwen3-4b-instruct-grpo/grpo_train.jsonl`
+- commands:
+  - `python -m pytest experiment/phase1/grpo/tests/test_build_grpo_dataset.py experiment/phase1/grpo/tests/test_humility_reward.py -q`
+  - `py -3.11 experiment/phase1/grpo/build_grpo_dataset.py --model-tag qwen3-4b-instruct --output-dir scratch/schema_response_confidence/qwen3-4b-instruct-grpo --confidence-field response_confidence --include-ambiguous-middle`
+- signals:
+    tests_passed: 21
+    regenerated_train_rows: 14888
+    regenerated_dev_rows: 1655
+    train_labels:
+      known: 7981
+      unknown: 6414
+      ambiguous: 493
+    unique_jsonl_column_sets: 1
+    normal_row_p_correct_sentinel: -1.0
+    normal_row_ambiguity_band_sentinel: ""
+- decisions:
+  - Keep `p_correct` and `ambiguity_band` present on all GRPO rows using typed sentinels for non-ambiguous rows.
+  - Treat mixed row-family JSONL schema stability as a preflight requirement before full trainer launches.
+
+### 028-validation - GRPO Micro And Batch Probes
+
+- at: `2026-06-22T21:52:00Z`
+- kind: `validation`
+- summary: GRPO smoke and full-dataset batch probes completed from the merged schema-SFT base; batch 32 is the fastest safe local setting tested so far.
+- evidence:
+  - `scratch/schema_response_confidence/runs/schema_sft_grpo_seed1_micro_smoke/20260622_212817/capacity_features.json`
+  - `scratch/schema_response_confidence/runs/schema_sft_grpo_seed1_batch8_probe/20260622_213553/capacity_features.json`
+  - `scratch/schema_response_confidence/runs/schema_sft_grpo_seed1_batch16_probe/20260622_214301/capacity_features.json`
+  - `scratch/schema_response_confidence/runs/schema_sft_grpo_seed1_batch32_probe/20260622_214717/capacity_features.json`
+- signals:
+    micro_smoke:
+      completed: true
+      max_steps: 6
+      batch_size: 4
+      peak_reserved_vram_gb: 4.416
+      oom_risk_level: low
+      nonzero_reward_variance_steps: 4
+      zero_variance_steps: 2
+    batch8_probe:
+      completed: true
+      max_steps: 12
+      peak_reserved_vram_gb: 4.357
+      peak_samples_per_second: 1.603
+      projected_full_steps: 7444
+    batch16_probe:
+      completed: true
+      max_steps: 12
+      peak_reserved_vram_gb: 5.746
+      peak_samples_per_second: 2.661
+      projected_full_steps: 3722
+    batch32_probe:
+      completed: true
+      max_steps: 12
+      peak_reserved_vram_gb: 10.934
+      peak_samples_per_second: 3.128
+      projected_full_steps: 1861
+      oom_risk_level: low
+- decisions:
+  - Launch the full schema-SFT->GRPO seed-1 run at batch 32 / accumulation 1 / 4 generations per prompt.
+  - Do not spend more time probing batch 64 unless the batch-32 full run proves too slow or too conservative.
+
+### 029-launch - Full Schema-SFT To GRPO Seed 1
+
+- at: `2026-06-22T22:05:00Z`
+- kind: `launch`
+- summary: Launched the full local schema-SFT->GRPO seed-1 run at batch 32 after the full SFT eval gate and batch probes; early training telemetry is healthy.
+- evidence:
+  - `experiment/phase1/grpo/configs/grpo_schema_sft_merged_seed1_full.yaml`
+  - `scratch/schema_response_confidence/runs/schema_sft_grpo_seed1_full/20260622_215344/logs/training_20260622_215457.jsonl`
+  - `scratch/schema_response_confidence/reward_debug/schema_sft_grpo_seed1_full_b32_latest.jsonl`
+- commands:
+  - `docker run -d --name eh-schema-sft-grpo-seed1-full-b32-202606221753 --gpus all --ipc=host --entrypoint python3 ... synaptic-tuner/Trainers/grpo/train_grpo.py --config experiment/phase1/grpo/configs/grpo_schema_sft_merged_seed1_full.yaml`
+- signals:
+    container: eh-schema-sft-grpo-seed1-full-b32-202606221753
+    run_dir: `scratch/schema_response_confidence/runs/schema_sft_grpo_seed1_full/20260622_215344`
+    train_rows: 14888
+    batch_size: 32
+    gradient_accumulation: 1
+    num_generations: 4
+    total_steps: 1861
+    first_logged_step: 25
+    steps_per_second: 0.081
+    samples_per_second: 2.596
+    peak_reserved_vram_gb_at_step25: 10.934
+    oom_risk_level_at_step25: low
+    reward_mean_at_step25: -0.308637
+    reward_std_at_step25: 1.122555
+    frac_reward_zero_std_at_step25: 0.105
+- interpretation:
+  - The repaired full GRPO dataset is loading correctly, including `known`, `unknown`, and `ambiguous` rows with stable columns.
+  - Early reward-debug rows show enough behavioral diversity for GRPO to learn from: correct known answers, hallucinations, abstentions, malformed JSON, and varied confidence values.
+  - The run is still early; the next evidence gate is completion plus a full schema SelfAware eval against the GRPO adapter.
+- next_steps:
+  - Monitor the GRPO run with direct Docker/log checks.
+  - On completion, run the schema SelfAware eval and compare against merged schema-SFT, schema-SFT->DPO, and schema-SFT->KTO.

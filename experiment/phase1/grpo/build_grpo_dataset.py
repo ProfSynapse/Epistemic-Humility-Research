@@ -39,6 +39,8 @@ def system_prompt_for_confidence_field(confidence_field: str = "confidence") -> 
 
 
 DEFAULT_SYSTEM_PROMPT = system_prompt_for_confidence_field("confidence")
+NORMAL_P_CORRECT = -1.0
+NORMAL_AMBIGUITY_BAND = ""
 
 SCHEMA_RESPONSE_CONFIDENCE_SYSTEM_PROMPT = (
     "Answer the user's question. If the answer is not known to you, say "
@@ -136,6 +138,8 @@ def _rows_for_keys(records_by_key: dict[str, dict], keys: list[str], system_prom
                 "aliases": aliases,
                 "gold_answer": bd.gold_answer(rec) if label == "known" else "",
                 "unknown_type": "model_specific_unknown" if label == "unknown" else "",
+                "p_correct": NORMAL_P_CORRECT,
+                "ambiguity_band": NORMAL_AMBIGUITY_BAND,
             }
         )
     if missing:
@@ -160,6 +164,8 @@ def _rows_for_records(records: list[dict], system_prompt: str) -> list[dict]:
             "aliases": aliases,
             "gold_answer": bd.gold_answer(rec) if label in {"known", "discard"} else "",
             "unknown_type": "model_specific_unknown" if label == "unknown" else "",
+            "p_correct": NORMAL_P_CORRECT,
+            "ambiguity_band": NORMAL_AMBIGUITY_BAND,
         }
         if label == "discard" and rec.get("p_correct") is not None:
             row["p_correct"] = float(rec["p_correct"])

@@ -137,6 +137,17 @@ Read for Windows/Docker/GPU/local-trainer execution problems and monitor behavio
   use batch 12 only with live monitoring, and fall back to the proven batch 8 /
   accumulation 1 if batch 12 enters high or critical risk.
 
+- GRPO local throughput depends strongly on `per_device_train_batch_size /
+  num_generations`, because that ratio controls optimizer prompts per step. On
+  2026-06-22, schema-SFT->GRPO from the merged Qwen3-4B schema-SFT base with
+  `num_generations: 4` and the full 14,888-row response-confidence dataset
+  projected to 7,444 steps at batch 8, 3,722 steps at batch 16, and 1,861 steps
+  at batch 32. Batch-32 12-step probing stayed low risk on the RTX 3090
+  (about 10.9 GB max reserved VRAM, about 13 GB reserved headroom) and the full
+  launch remained low risk at step 25. Start future equivalent GRPO runs at
+  batch 32 unless the dataset/model/sequence length changes, then re-probe with
+  representative full-dataset rows before launching the full cell.
+
 - The Unsloth image default entrypoint may chmod the mounted repo and fail on
   `.tmp/pytest-codex*`. For local eval wrapper runs, override the entrypoint
   with `--entrypoint python3`.
