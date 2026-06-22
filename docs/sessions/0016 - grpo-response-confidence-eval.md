@@ -4,7 +4,7 @@ session_id: grpo-response-confidence-eval
 title: GRPO Response-Confidence Eval
 status: active
 created_at: '2026-06-22T11:33:40Z'
-updated_at: '2026-06-22T12:24:00Z'
+updated_at: '2026-06-22T13:42:31Z'
 phase: phase1
 question: Does the completed SFT-bridge GRPO adapter improve response-appropriate
   confidence and truthful SelfAware behavior compared with its SFT JSON-bridge base?
@@ -30,6 +30,13 @@ This session evaluates the completed local SFT JSON-bridge -> GRPO seed-1 adapte
 ## Summary
 
 The full SelfAware response-confidence eval completed for the SFT JSON-bridge base and the completed SFT JSON-bridge -> GRPO seed-1 adapter. GRPO reduced over-refusal but also reduced unknown refusal recall, leaving truthful rate statistically unchanged; both arms emitted confidence 1.0 on every row, so this run does not show learned confidence calibration.
+
+Follow-up diagnostics marked the GRPO adapter as a failed confidence-learning
+model rather than a candidate checkpoint. The collapse was already present in
+the SFT JSON-bridge control and is plausibly seeded by supervised bridge targets
+that used `confidence: 1.0` for both known answers and unknown abstentions, then
+reinforced by the current reward formula's endpoint target for appropriate
+responses.
 
 ## Checkpoints
 
@@ -139,3 +146,62 @@ The full SelfAware response-confidence eval completed for the SFT JSON-bridge ba
 - next_steps:
   - Decide whether to run a temperature/prompt diagnostic for confidence variation before additional GRPO training.
   - Treat this GRPO run as evidence of a behavior tradeoff, not evidence that stated-confidence calibration is solved.
+
+### 004-interpretation - GRPO Confidence Collapse Failure
+
+- at: `2026-06-22T13:42:31Z`
+- kind: `interpretation`
+- summary: Follow-up diagnostics showed the completed SFT JSON-bridge -> GRPO seed-1 adapter failed the confidence-learning objective. It preserved a degenerate confidence channel rather than learning calibrated response confidence.
+- evidence:
+  - `scratch/grpo_bootstrap/confidence_diagnostics/20260622_response_confidence/`
+  - `experiment/phase1/eval/results_amendment_b_response_confidence_selfaware_sft_bridge_grpo_seed1_full_4b/`
+  - `experiment/phase1/grpo/build_sft_json_bridge_dataset.py`
+  - `experiment/phase1/grpo/humility_reward.py`
+- signals:
+    failed_grpo_adapter:
+      model_tag: sft_bridge_grpo_seed1
+      truthful_pct: 40.84
+      refusal_recall_pct: 86.72
+      over_refusal_pct: 55.71
+      confidence_coverage_pct: 100.0
+      mean_stated_confidence: 1.0
+      unique_confidence_values: 1
+      response_confidence_mae: 0.59157
+    sft_json_bridge_control:
+      model_tag: sft_json_bridge_seed1
+      truthful_pct: 41.14
+      refusal_recall_pct: 93.02
+      over_refusal_pct: 62.86
+      confidence_coverage_pct: 100.0
+      mean_stated_confidence: 1.0
+      unique_confidence_values: 1
+      response_confidence_mae: 0.588602
+    ordinary_sft_amendment_b_comparison:
+      sft_seed1_mean_confidence: 0.435581
+      sft_seed2_mean_confidence: 0.365246
+      sft_seed3_mean_confidence: 0.34981
+      sft_merged_seed1_mean_confidence: 0.479383
+      sft_merged_seed2_mean_confidence: 0.391848
+      sft_merged_seed3_mean_confidence: 0.381145
+- interpretation:
+  - The ordinary SFT Amendment B evals did not show the all-1.0 confidence collapse; they emitted varied confidence values with means around 0.35-0.48 under the answer-confidence contract.
+  - The special SFT JSON bridge did show the all-1.0 collapse before GRPO. That bridge trained `confidence: 1.0` for both known gold answers and unknown abstentions.
+  - Higher-temperature diagnostics, a stronger scale prompt, and no structured-output grammar still produced confidence 1.0 on parsed rows, so the collapse is not explained by deterministic decoding or the structured-output schema alone.
+  - The current GRPO reward made 1.0 the mathematical calibration target for appropriate known answers and appropriate unknown abstentions; paired with the bridge target, this likely reinforced endpoint confidence rather than teaching graded confidence expression.
+- decisions:
+  - Mark `sft_bridge_grpo_seed1` as a failed model for the response-confidence learning objective.
+  - Do not use the failed GRPO adapter as a candidate model for future comparisons except as negative evidence.
+  - Preserve logs, eval metrics, diagnostics, lineage, and this session note as the failure record.
+  - Delete local failed-model weight artifacts to avoid accidental reuse.
+- disposition:
+    deleted_local_artifacts:
+      - `scratch/grpo_bootstrap/runs/sft_json_bridge_seed1_full/20260621_111743/final_model`
+      - `scratch/grpo_bootstrap/runs/sft_json_bridge_seed1_full/20260621_111743/merged-16bit`
+      - `scratch/grpo_bootstrap/runs/sft_json_bridge_seed1_full/20260621_111743/checkpoints`
+    retained_local_evidence:
+      - `scratch/grpo_bootstrap/runs/sft_json_bridge_seed1_full/20260621_111743/logs/`
+      - `scratch/grpo_bootstrap/runs/sft_json_bridge_seed1_full/20260621_111743/training_lineage.json`
+      - `scratch/grpo_bootstrap/runs/sft_json_bridge_seed1_full/20260621_111743/capacity_features.json`
+- next_steps:
+  - Replace endpoint confidence targets with a banded confidence reward/bridge design before another GRPO attempt.
+  - Add reward sanity tests that penalize exact 0.0/1.0 endpoints when calibrated expression, not deterministic correctness, is the target.
