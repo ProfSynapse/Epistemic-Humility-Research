@@ -97,10 +97,71 @@ Initial local 4B sequence:
 | 3 | `schema_sft_kto` | merged `schema_sft` | KTO JSON desirable/undesirable |
 | 4 | `schema_sft_grpo` | merged `schema_sft` | GRPO/RLVR reward over same schema |
 
+Merge-first rule:
+
+- `schema_sft` is the only bare-base training cell in this track.
+- The completed schema-SFT LoRA adapter must be merged into a standalone
+  local model before any DPO, KTO, or GRPO/RLVR stage.
+- `schema_sft_dpo`, `schema_sft_kto`, and `schema_sft_grpo` each train a fresh
+  LoRA adapter with `model_name`/base path pointing at the merged schema-SFT
+  model.
+- Bare `schema_dpo`, `schema_kto`, and `schema_grpo` cells are excluded from
+  the initial Amendment D matrix because they test a different question: whether
+  preference/RL can teach the schema and behavior from scratch.
+- GRPO configs should set the merged schema-SFT path as `model.model_name` and
+  should not pass the schema-SFT adapter again as `model.lora_path`; this avoids
+  accidental adapter stacking.
+
 The first local run may use seed 1 as a pipeline proof. Multi-seed claims
 require predeclared seed coverage before being reported as robust.
 
-## 5. Metrics And Interpretation
+## 5. DPO And KTO Dataset Construction
+
+The schema DPO and KTO datasets are projections of the existing Phase 1
+preference artifacts plus the model-specific ambiguous-middle rows. They do not
+change the prompt population; they change the assistant output contract and add
+middle-band confidence signal.
+
+DPO rows use TRL conversational preference-pair shape:
+
+```json
+{
+  "prompt": [{"role": "system", "content": "..."}, {"role": "user", "content": "..."}],
+  "chosen": [{"role": "assistant", "content": "{\"answer\":\"...\",\"response_confidence\":0.8}"}],
+  "rejected": [{"role": "assistant", "content": "{\"answer\":\"...\",\"response_confidence\":0.2}"}]
+}
+```
+
+- `chosen` responses get `response_confidence: 0.8`.
+- `rejected` responses get `response_confidence: 0.2`.
+- Ambiguous-middle rows use the gold answer as `chosen` with
+  `response_confidence = p_correct` in `[0.4, 0.6]`.
+- Ambiguous-middle `rejected` examples use a sampled wrong answer with high
+  `response_confidence: 0.8`, when a wrong sample is available.
+
+KTO rows use single-response desirability labels:
+
+```json
+{
+  "conversations": [
+    {"role": "system", "content": "..."},
+    {"role": "user", "content": "..."},
+    {"role": "assistant", "content": "{\"answer\":\"...\",\"response_confidence\":0.8}"}
+  ],
+  "label": true
+}
+```
+
+- `label: true` rows get the desirable response-confidence target, normally
+  `0.8`.
+- `label: false` rows get the undesirable response-confidence target, normally
+  `0.2`.
+- Ambiguous-middle rows add a `label: true` gold-answer example with
+  `response_confidence = p_correct`.
+- If a sampled wrong answer exists, ambiguous-middle rows also add a
+  `label: false` confidently-wrong example with `response_confidence: 0.8`.
+
+## 6. Metrics And Interpretation
 
 Eval metrics should include the existing answer/refusal metrics plus:
 
@@ -119,7 +180,7 @@ Interpretation rules:
   not under-confidence.
 - Endpoint collapse is a model failure even when JSON coverage is 100%.
 
-## 6. Implementation Boundary
+## 7. Implementation Boundary
 
 Project-local files:
 
@@ -134,7 +195,7 @@ The `synaptic-tuner/` submodule remains generic. This amendment must use public
 trainer config/data interfaces and must not add Epistemic-specific code inside
 the submodule.
 
-## 7. Launch And Reporting Rules
+## 8. Launch And Reporting Rules
 
 No cloud launch is authorized by this draft. Local seed-1 smoke/full runs may
 be used as bounded pipeline evidence if explicitly launched in session notes.
@@ -143,7 +204,7 @@ All outputs must be labeled as Amendment D schema response-confidence runs.
 They must not overwrite Amendment B eval results or v0.3/A plain-answer
 artifacts.
 
-## 8. Sign-Off Checklist
+## 9. Sign-Off Checklist
 
 - approval date:
 - approved scope:
