@@ -768,3 +768,94 @@ papers:
   area: verification
   status: fetched
   note: 'Phase 3 external gap-fill 2026-06-18: source-ready note + arXiv HTML added; SAE refusal feature-localization context for future encoder gate.'
+- arxiv: '2202.05262'
+  slug: rome-locating-editing-factual-associations
+  title: 'Locating and Editing Factual Associations in GPT'
+  year: 2022
+  area: mechanistic-interpretability
+  status: candidate
+  note: 'Awesome-MI ingest 2026-06-19 (knowledge-core): ROME causal-tracing localization of factual associations; mech-interp of knowledge storage relevant to Phase 3 self-awareness probing.'
+- arxiv: '2404.03646'
+  slug: locating-editing-factual-associations-mamba
+  title: 'Locating and Editing Factual Associations in Mamba'
+  year: 2024
+  area: mechanistic-interpretability
+  status: candidate
+  note: 'Awesome-MI ingest 2026-06-19 (knowledge-core): ROME-style factual localization/editing in a state-space (Mamba) model.'
+- arxiv: '2405.17969'
+  slug: knowledge-circuits-pretrained-transformers
+  title: 'Knowledge Circuits in Pretrained Transformers'
+  year: 2024
+  area: mechanistic-interpretability
+  status: candidate
+  note: 'Awesome-MI ingest 2026-06-19 (knowledge-core): circuit-level account of how knowledge is composed across components.'
+- arxiv: '2104.08696'
+  slug: knowledge-neurons-pretrained-transformers
+  title: 'Knowledge Neurons in Pretrained Transformers'
+  year: 2022
+  area: mechanistic-interpretability
+  status: candidate
+  note: 'Awesome-MI ingest 2026-06-19 (knowledge-core): knowledge-neuron localization in FFN layers; foundational for knowledge-representation probing.'
+- arxiv: '2304.14767'
+  slug: dissecting-recall-factual-associations
+  title: 'Dissecting Recall of Factual Associations in Auto-Regressive Language Models'
+  year: 2023
+  area: mechanistic-interpretability
+  status: candidate
+  note: 'Awesome-MI ingest 2026-06-19 (knowledge-core): attribute-extraction/subject-enrichment mechanism of factual recall.'
+- arxiv: '2305.01610'
+  slug: finding-neurons-haystack-sparse-probing
+  title: 'Finding Neurons in a Haystack: Case Studies with Sparse Probing'
+  year: 2023
+  area: mechanistic-interpretability
+  status: candidate
+  note: 'Awesome-MI ingest 2026-06-19 (knowledge-core): sparse-probing methodology directly relevant to Phase 3 hidden-state probes.'
+- arxiv: '2309.00941'
+  slug: emergent-linear-representations-world-models
+  title: 'Emergent Linear Representations in World Models of Self-Supervised Sequence Models'
+  year: 2023
+  area: mechanistic-interpretability
+  status: candidate
+  note: 'Awesome-MI ingest 2026-06-19 (knowledge-core): linear-representation hypothesis for latent world/knowledge state.'
+- arxiv: '2303.08112'
+  slug: tuned-lens-eliciting-latent-predictions
+  title: 'Eliciting Latent Predictions from Transformers with the Tuned Lens'
+  year: 2023
+  area: mechanistic-interpretability
+  status: candidate
+  note: 'Awesome-MI ingest 2026-06-19 (knowledge-core): tuned-lens probe of intermediate predictions; relevant to Phase 3 logit-diagnostic.'
+- arxiv: '2309.08600'
+  slug: sparse-autoencoders-interpretable-features
+  title: 'Sparse Autoencoders Find Highly Interpretable Features in Language Models'
+  year: 2023
+  area: mechanistic-interpretability
+  status: candidate
+  note: 'Awesome-MI ingest 2026-06-19 (SAE add-on): dictionary-learning SAE feature extraction; basis for feature-level knowledge/uncertainty analysis.'
+- arxiv: '2403.19647'
+  slug: sparse-feature-circuits
+  title: 'Sparse Feature Circuits: Discovering and Editing Interpretable Causal Graphs in Language Models'
+  year: 2024
+  area: mechanistic-interpretability
+  status: candidate
+  note: 'Awesome-MI ingest 2026-06-19 (SAE add-on): SAE-feature causal graphs; bridges SAE features to circuit-level editing.'
+- arxiv: '2012.14913'
+  slug: transformer-ff-layers-key-value-memories
+  title: 'Transformer Feed-Forward Layers Are Key-Value Memories'
+  year: 2021
+  area: mechanistic-interpretability
+  status: candidate
+  note: 'Awesome-MI ingest batch 2 2026-06-19: FFN-as-key-value-memory account of how transformers store knowledge; foundational substrate referenced by the ROME/knowledge-neuron atoms.'
+- arxiv: '2606.20560'
+  slug: how-transparent-is-diffusiongemma
+  title: 'How Transparent is DiffusionGemma?'
+  year: 2026
+  area: mechanistic-interpretability
+  status: fetched
+  note: 'KG ingest 2026-06-20: DiffusionGemma transparency audit; context/mechanism evidence for latent-reasoning monitorability, opaque serial depth, and non-chronological denoising behavior; not a meta-analysis effect row.'
+- arxiv: '2606.20529'
+  slug: ledgeragent-structured-state-policy-adherent-tool-calling
+  title: 'LedgerAgent: Structured State for Policy-Adherent Tool-Calling Agents'
+  year: 2026
+  area: agent-safety
+  status: fetched
+  note: 'KG ingest 2026-06-20: inference-time structured-state and policy-gate scaffold for customer-service tool-calling agents; agent-control context only, not a meta-analysis effect row.'
