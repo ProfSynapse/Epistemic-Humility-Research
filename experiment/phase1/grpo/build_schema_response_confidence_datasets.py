@@ -25,6 +25,8 @@ DESIRABLE_CONFIDENCE = 0.8
 UNDESIRABLE_CONFIDENCE = 0.2
 AMBIGUOUS_MIN = 0.4
 AMBIGUOUS_MAX = 0.6
+NORMAL_SOURCE_LABEL = ""
+NORMAL_P_CORRECT = -1.0
 
 
 def _read_jsonl(path: Path) -> list[dict[str, Any]]:
@@ -132,6 +134,8 @@ def build_sft_rows(rows: list[dict[str, Any]], *, limit: int | None = None) -> l
                     },
                 ],
                 "schema_target": "response_confidence_json",
+                "label": NORMAL_SOURCE_LABEL,
+                "p_correct": NORMAL_P_CORRECT,
             }
         )
     return out
@@ -179,6 +183,8 @@ def build_dpo_rows(rows: list[dict[str, Any]], *, limit: int | None = None) -> l
                 "chosen": _wrap_message_list(row.get("chosen"), DESIRABLE_CONFIDENCE),
                 "rejected": _wrap_message_list(row.get("rejected"), UNDESIRABLE_CONFIDENCE),
                 "schema_target": "response_confidence_json",
+                "label": NORMAL_SOURCE_LABEL,
+                "p_correct": NORMAL_P_CORRECT,
             }
         )
     return out
@@ -233,6 +239,8 @@ def build_kto_rows(rows: list[dict[str, Any]], *, limit: int | None = None) -> l
                 ],
                 "label": bool(row.get("label")),
                 "schema_target": "response_confidence_json",
+                "source_label": NORMAL_SOURCE_LABEL,
+                "p_correct": NORMAL_P_CORRECT,
             }
         )
     return out
