@@ -1,5 +1,5 @@
 param(
-    [ValidateSet("base", "base-pilot", "sft-seed1", "sft-merged-seed1", "sft-merged-seed1-pilot", "sft-json-bridge-seed1")]
+    [ValidateSet("base", "base-pilot", "sft-seed1", "sft-merged-seed1", "sft-merged-seed1-pilot", "sft-json-bridge-seed1", "sft-json-bridge-seed1-full")]
     [string]$Mode = "base",
     [int]$MaxUsedMemoryMiB = 4096,
     [switch]$DebugReward,
@@ -18,11 +18,13 @@ $config = switch ($Mode) {
     "sft-merged-seed1" { "experiment/phase1/grpo/configs/grpo_sft_merged_seed1_micro_smoke.yaml" }
     "sft-merged-seed1-pilot" { "experiment/phase1/grpo/configs/grpo_sft_merged_seed1_pilot.yaml" }
     "sft-json-bridge-seed1" { "experiment/phase1/grpo/configs/grpo_sft_json_bridge_seed1_micro_smoke.yaml" }
+    "sft-json-bridge-seed1-full" { "experiment/phase1/grpo/configs/grpo_sft_json_bridge_seed1_full.yaml" }
 }
 
 $requiredData = switch ($Mode) {
     "base-pilot" { "scratch/grpo_bootstrap/qwen3-4b-instruct/grpo_train.jsonl" }
     "sft-merged-seed1-pilot" { "scratch/grpo_bootstrap/qwen3-4b-instruct/grpo_train.jsonl" }
+    "sft-json-bridge-seed1-full" { "scratch/grpo_bootstrap/qwen3-4b-instruct/grpo_train.jsonl" }
     default { "scratch/grpo_bootstrap/qwen3-4b-instruct/grpo_train_smoke_32.jsonl" }
 }
 if (-not (Test-Path -LiteralPath $requiredData)) {
@@ -39,7 +41,7 @@ if ($requiredModel -and -not (Test-Path -LiteralPath $requiredModel)) {
     throw "Missing merged SFT model artifact: $requiredModel"
 }
 
-if ($Mode -eq "sft-json-bridge-seed1") {
+if ($Mode -in @("sft-json-bridge-seed1", "sft-json-bridge-seed1-full")) {
     $requiredBridge = "scratch/grpo_bootstrap/runs/sft_merged_seed1_json_bridge/20260621_102859/final_model/adapter_config.json"
     if (-not (Test-Path -LiteralPath $requiredBridge)) {
         throw "Missing SFT JSON bridge adapter artifact: $requiredBridge"
