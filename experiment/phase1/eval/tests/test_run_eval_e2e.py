@@ -374,10 +374,26 @@ def test_vllm_sampling_params_can_constrain_stated_confidence_json(
 
     structured = gen._sampling_params.kwargs["structured_outputs"]
     assert structured.kwargs == {
-            "json": run_eval.STATED_CONFIDENCE_JSON_SCHEMA,
+        "json": run_eval.STATED_CONFIDENCE_JSON_SCHEMA,
         "disable_fallback": True,
         "disable_additional_properties": True,
     }
+
+
+def test_vllm_sampling_params_can_constrain_response_confidence_json(
+    monkeypatch, tmp_path
+):
+    _install_fake_vllm(monkeypatch)
+    cfg = _vllm_cfg(tmp_path)
+    cfg["generation"]["stated_confidence_structured_outputs"] = True
+    cfg["generation"]["stated_confidence_field"] = "response_confidence"
+
+    gen = run_eval.VLLMGenerator(cfg)
+
+    structured = gen._sampling_params.kwargs["structured_outputs"]
+    assert structured.kwargs["json"] == run_eval.stated_confidence_json_schema(
+        "response_confidence"
+    )
 
 
 def test_vllm_sampling_params_preserves_configured_stop_strings(

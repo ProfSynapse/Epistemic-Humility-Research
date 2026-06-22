@@ -51,11 +51,21 @@ class RewardConfig:
     wrong_penalty: float = -1.0
     abstain_unknown_reward: float = 0.25
     over_refusal_penalty: float = -0.6
-    calibration_weight: float = 0.25
+    calibration_weight: float = 0.5
     missing_confidence_penalty: float = 0.05
     invalid_json_penalty: float = 1.0
     confident_wrong_weight: float = 0.5
     hedge_on_known_penalty: float = 0.1
+    appropriate_confidence_min: float = 0.7
+    appropriate_confidence_max: float = 0.9
+    ambiguous_confidence_min: float = 0.4
+    ambiguous_confidence_max: float = 0.6
+    inappropriate_confidence_min: float = 0.1
+    inappropriate_confidence_max: float = 0.3
+    confidence_band_tolerance: float = 0.1
+    endpoint_confidence_penalty: float = 1.5
+    ambiguous_correct_reward: float = 0.5
+    ambiguous_refusal_penalty: float = -0.2
 
 
 @dataclass(frozen=True)
@@ -78,16 +88,22 @@ def parse_completion(text: str) -> ParsedCompletion:
     """Split a completion into answer text and optional confidence.
 
     Required stated-confidence format:
-    - `{"answer": "Paris", "confidence": 0.73}`
+    - `{"answer": "Paris", "response_confidence": 0.73}`
 
-    The confidence field is response confidence: the model's probability that
-    its answer or abstention is the appropriate response.
+    The response-confidence field is the model's probability that its answer or
+    abstention is the appropriate response. Historical Amendment B outputs with
+    `confidence` are still accepted for backwards-compatible diagnostics.
     """
     raw = str(text or "").strip()
     payload = _load_stated_confidence_payload(raw)
-    if isinstance(payload, dict) and set(payload) == {"answer", "confidence"}:
+    if isinstance(payload, dict) and (
+        set(payload) == {"answer", "response_confidence"}
+        or set(payload) == {"answer", "confidence"}
+    ):
         answer = payload.get("answer")
-        confidence = _coerce_confidence_value(payload.get("confidence"))
+        confidence = _coerce_confidence_value(
+            payload.get("response_confidence", payload.get("confidence"))
+        )
         if isinstance(answer, str) and confidence is not None:
             return ParsedCompletion(
                 answer_text=answer.strip(),
@@ -148,6 +164,17 @@ def _as_bool_unknown(value: Any) -> bool:
     return False
 
 
+def _label_kind(value: Any) -> str:
+    if isinstance(value, bool):
+        return "known" if value else "unknown"
+    lowered = str(value or "").strip().lower()
+    if lowered in {"unknown", "unanswerable", "false", "0"}:
+        return "unknown"
+    if lowered in {"ambiguous", "uncertain", "discard", "ambiguous_middle"}:
+        return "ambiguous"
+    return "known"
+
+
 def _coerce_completion_text(completion: Any) -> str:
     if isinstance(completion, str):
         return completion
@@ -178,6 +205,22 @@ def _expand(values: Any, n: int) -> list[Any]:
     return [values] * n
 
 
+def _confidence_band_reward(
+    confidence: float,
+    *,
+    low: float,
+    high: float,
+    config: RewardConfig,
+) -> float:
+    if confidence <= 0.0 or confidence >= 1.0:
+        return -config.endpoint_confidence_penalty
+    if low <= confidence <= high:
+        return 1.0
+    distance = low - confidence if confidence < low else confidence - high
+    tolerance = max(config.confidence_band_tolerance, 1e-9)
+    return max(-1.0, 1.0 - 2.0 * (distance / tolerance))
+
+
 def score_completion(
     completion: str,
     *,
@@ -188,11 +231,20 @@ def score_completion(
     """Score one completion for a known/unknown labeled question."""
     parsed = parse_completion(completion)
     answer = parsed.answer_text
-    unknown = _as_bool_unknown(label)
+    label_kind = _label_kind(label)
+    unknown = label_kind == "unknown"
+    ambiguous = label_kind == "ambiguous"
     refused = is_refusal(answer)
     correct = False if refused else is_correct(answer, aliases or [])
 
-    if unknown:
+    if ambiguous:
+        if refused:
+            reward = config.ambiguous_refusal_penalty
+        elif correct:
+            reward = config.ambiguous_correct_reward
+        else:
+            reward = config.wrong_penalty
+    elif unknown:
         reward = config.abstain_unknown_reward if refused else config.wrong_penalty
     elif refused:
         reward = config.over_refusal_penalty
@@ -207,14 +259,38 @@ def score_completion(
     elif confidence is None:
         reward -= config.missing_confidence_penalty
     else:
-        confidence_target = 1.0 if ((not unknown and correct) or (unknown and refused)) else 0.0
-        calibration_reward = 1.0 - 2.0 * ((confidence - confidence_target) ** 2)
+        response_appropriate = (
+            (not unknown and not ambiguous and correct)
+            or (unknown and refused)
+            or (ambiguous and correct)
+        )
+        if ambiguous and correct:
+            calibration_reward = _confidence_band_reward(
+                confidence,
+                low=config.ambiguous_confidence_min,
+                high=config.ambiguous_confidence_max,
+                config=config,
+            )
+        elif response_appropriate:
+            calibration_reward = _confidence_band_reward(
+                confidence,
+                low=config.appropriate_confidence_min,
+                high=config.appropriate_confidence_max,
+                config=config,
+            )
+        else:
+            calibration_reward = _confidence_band_reward(
+                confidence,
+                low=config.inappropriate_confidence_min,
+                high=config.inappropriate_confidence_max,
+                config=config,
+            )
         reward += config.calibration_weight * calibration_reward
 
         if (unknown and not refused) or ((not unknown) and not refused and not correct):
             reward -= config.confident_wrong_weight * confidence
 
-    if (not unknown) and correct and _has_generic_hedge(answer):
+    if (not unknown) and (not ambiguous) and correct and _has_generic_hedge(answer):
         reward -= config.hedge_on_known_penalty
 
     return float(reward)
@@ -256,7 +332,7 @@ def epistemic_humility_reward(completions, prompts=None, **kwargs) -> list[float
                     "reward": reward,
                     "valid_json": parsed.valid_json,
                     "answer_text": parsed.answer_text,
-                    "confidence": parsed.stated_confidence,
+                    "response_confidence": parsed.stated_confidence,
                     "completion": completion_text,
                 }
             )

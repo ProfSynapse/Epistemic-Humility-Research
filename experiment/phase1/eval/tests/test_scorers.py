@@ -89,6 +89,14 @@ def test_parse_stated_confidence_strips_final_line():
     assert parsed.stated_confidence == pytest.approx(0.73)
 
 
+def test_parse_stated_confidence_accepts_response_confidence_key():
+    parsed = scorers.parse_stated_confidence(
+        json.dumps({"answer": "Paris.", "response_confidence": 0.73})
+    )
+    assert parsed.answer_text == "Paris."
+    assert parsed.stated_confidence == pytest.approx(0.73)
+
+
 def test_parse_stated_confidence_accepts_json_after_thinking_block():
     parsed = scorers.parse_stated_confidence(
         '<think>Maybe this is France.</think>\n\n'

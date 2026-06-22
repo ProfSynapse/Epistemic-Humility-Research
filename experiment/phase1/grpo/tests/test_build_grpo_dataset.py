@@ -104,3 +104,68 @@ def test_build_grpo_projection_can_reconstruct_from_triviaqa_source(tmp_path):
     assert train_rows[0]["aliases"] == ["paris"]
     assert train_rows[0]["answerable"] is True
     assert dev_rows[0]["label"] == "unknown"
+
+
+def test_build_grpo_projection_can_include_middle_discard_rows(tmp_path):
+    frozen = {
+        "known_question_keys": ["000000000001|known_q"],
+        "unknown_question_keys": ["000000000002|unknown_q"],
+        "train_question_keys": ["000000000001|known_q"],
+        "dev_question_keys": ["000000000002|unknown_q"],
+    }
+    frozen_path = tmp_path / "questions_frozen.json"
+    frozen_path.write_text(json.dumps(frozen), encoding="utf-8")
+    probe_path = tmp_path / "probe_results.jsonl"
+    rows = [
+        {
+            "probe_pool_row_key": "000000000001|known_q",
+            "question_id": "known_q",
+            "question": "Known?",
+            "label": "known",
+            "greedy_answer": "Known",
+            "p_correct": 1.0,
+            "sampled_answers": ["Known"],
+            "sampled_correct": [True],
+            "normalized_aliases": ["known"],
+            "answer_value": "Known",
+        },
+        {
+            "probe_pool_row_key": "000000000002|unknown_q",
+            "question_id": "unknown_q",
+            "question": "Unknown?",
+            "label": "unknown",
+            "greedy_answer": "Wrong",
+            "p_correct": 0.0,
+            "sampled_answers": ["Wrong"],
+            "sampled_correct": [False],
+            "normalized_aliases": ["unknown"],
+            "answer_value": "Unknown",
+        },
+        {
+            "probe_pool_row_key": "000000000003|discard_q",
+            "question_id": "discard_q",
+            "question": "Ambiguous?",
+            "label": "discard",
+            "greedy_answer": "Middle",
+            "p_correct": 0.5,
+            "sampled_answers": ["Middle", "Wrong"],
+            "sampled_correct": [True, False],
+            "normalized_aliases": ["middle"],
+            "answer_value": "Middle",
+        },
+    ]
+    probe_path.write_text("\n".join(json.dumps(row) for row in rows), encoding="utf-8")
+
+    manifest = bgd.build_grpo_projection(
+        probe_results=probe_path,
+        frozen_questions=frozen_path,
+        output_dir=tmp_path,
+        include_ambiguous_middle=True,
+        dev_fraction=0.5,
+    )
+
+    all_rows = _read_jsonl(tmp_path / "grpo_train.jsonl") + _read_jsonl(tmp_path / "grpo_dev.jsonl")
+    ambiguous = [row for row in all_rows if row["label"] == "ambiguous"]
+    assert manifest["ambiguous_middle"]["rows"] == 1
+    assert ambiguous[0]["p_correct"] == 0.5
+    assert ambiguous[0]["gold_answer"] == "Middle"

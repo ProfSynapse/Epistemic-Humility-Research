@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Print a deterministic sanity table for the Amendment B GRPO reward."""
+"""Print a deterministic sanity table for the response-confidence GRPO reward."""
 
 from __future__ import annotations
 
@@ -16,61 +16,91 @@ CASES = [
         "case": "known_correct_high_conf",
         "label": "known",
         "aliases": ["paris"],
-        "completion": {"answer": "Paris.", "confidence": 0.95},
+        "completion": {"answer": "Paris.", "response_confidence": 0.8},
+    },
+    {
+        "case": "known_correct_endpoint_conf",
+        "label": "known",
+        "aliases": ["paris"],
+        "completion": {"answer": "Paris.", "response_confidence": 1.0},
     },
     {
         "case": "known_correct_low_conf",
         "label": "known",
         "aliases": ["paris"],
-        "completion": {"answer": "Paris.", "confidence": 0.25},
+        "completion": {"answer": "Paris.", "response_confidence": 0.2},
     },
     {
         "case": "known_over_refusal_high_conf",
         "label": "known",
         "aliases": ["paris"],
-        "completion": {"answer": "I don't know enough to answer.", "confidence": 0.95},
+        "completion": {"answer": "I don't know enough to answer.", "response_confidence": 0.8},
     },
     {
         "case": "known_over_refusal_low_conf",
         "label": "known",
         "aliases": ["paris"],
-        "completion": {"answer": "I don't know enough to answer.", "confidence": 0.05},
+        "completion": {"answer": "I don't know enough to answer.", "response_confidence": 0.2},
     },
     {
         "case": "known_wrong_low_conf",
         "label": "known",
         "aliases": ["paris"],
-        "completion": {"answer": "London.", "confidence": 0.05},
+        "completion": {"answer": "London.", "response_confidence": 0.2},
     },
     {
         "case": "known_wrong_high_conf",
         "label": "known",
         "aliases": ["paris"],
-        "completion": {"answer": "London.", "confidence": 0.95},
+        "completion": {"answer": "London.", "response_confidence": 0.8},
     },
     {
         "case": "unknown_abstain_high_conf",
         "label": "unknown",
         "aliases": [],
-        "completion": {"answer": "I don't know enough to answer.", "confidence": 0.95},
+        "completion": {"answer": "I don't know enough to answer.", "response_confidence": 0.8},
+    },
+    {
+        "case": "unknown_abstain_endpoint_conf",
+        "label": "unknown",
+        "aliases": [],
+        "completion": {"answer": "I don't know enough to answer.", "response_confidence": 1.0},
     },
     {
         "case": "unknown_abstain_low_conf",
         "label": "unknown",
         "aliases": [],
-        "completion": {"answer": "I don't know enough to answer.", "confidence": 0.05},
+        "completion": {"answer": "I don't know enough to answer.", "response_confidence": 0.2},
     },
     {
         "case": "unknown_guess_low_conf",
         "label": "unknown",
         "aliases": [],
-        "completion": {"answer": "Paris.", "confidence": 0.05},
+        "completion": {"answer": "Paris.", "response_confidence": 0.2},
     },
     {
         "case": "unknown_guess_high_conf",
         "label": "unknown",
         "aliases": [],
-        "completion": {"answer": "Paris.", "confidence": 0.95},
+        "completion": {"answer": "Paris.", "response_confidence": 0.8},
+    },
+    {
+        "case": "ambiguous_correct_mid_conf",
+        "label": "ambiguous",
+        "aliases": ["paris"],
+        "completion": {"answer": "Paris.", "response_confidence": 0.5},
+    },
+    {
+        "case": "ambiguous_correct_high_conf",
+        "label": "ambiguous",
+        "aliases": ["paris"],
+        "completion": {"answer": "Paris.", "response_confidence": 0.8},
+    },
+    {
+        "case": "ambiguous_wrong_high_conf",
+        "label": "ambiguous",
+        "aliases": ["paris"],
+        "completion": {"answer": "London.", "response_confidence": 0.8},
     },
     {
         "case": "malformed_known_correct",
@@ -103,7 +133,7 @@ def build_rows() -> list[dict[str, str]]:
                 "label": str(case["label"]),
                 "valid_json": str(parsed.valid_json).lower(),
                 "refused": str(hr.is_refusal(parsed.answer_text)).lower(),
-                "confidence": "" if parsed.stated_confidence is None else f"{parsed.stated_confidence:.3f}",
+                "response_confidence": "" if parsed.stated_confidence is None else f"{parsed.stated_confidence:.3f}",
                 "reward": f"{score:.6f}",
                 "answer_text": parsed.answer_text,
             }
@@ -117,7 +147,7 @@ def main(argv: list[str] | None = None) -> int:
     args = parser.parse_args(argv)
 
     rows = build_rows()
-    fieldnames = ["case", "label", "valid_json", "refused", "confidence", "reward", "answer_text"]
+    fieldnames = ["case", "label", "valid_json", "refused", "response_confidence", "reward", "answer_text"]
 
     if args.output:
         args.output.parent.mkdir(parents=True, exist_ok=True)

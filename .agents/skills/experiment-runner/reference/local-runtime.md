@@ -109,6 +109,16 @@ Read for Windows/Docker/GPU/local-trainer execution problems and monitor behavio
   `Failed to import Triton kernels... No module named 'triton_kernels.routing'`;
   it did not block this completed micro run.
 
+- Local schema-SFT batch probing on 2026-06-22: Qwen3-4B LoRA r=32,
+  completion-only, BF16, batch 16 completed a 512-row response-confidence smoke
+  in about 70 seconds, but the saved capacity profile marked `oom_risk_level:
+  critical` and reported impossible reserved-memory percentages at shutdown.
+  Treat that as a capacity red flag, not as clearance for full runs. The first
+  full schema-SFT was launched at batch 12 as the speed/safety compromise, but
+  live telemetry still reached about 23.7/24 GB VRAM and reported critical risk
+  by step 125. Do not run parallel GPU work beside this cell; if it OOMs or must
+  be repeated, prefer batch 8 before trying to recover throughput elsewhere.
+
 - The Unsloth image default entrypoint may chmod the mounted repo and fail on
   `.tmp/pytest-codex*`. For local eval wrapper runs, override the entrypoint
   with `--entrypoint python3`.

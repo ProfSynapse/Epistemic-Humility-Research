@@ -71,6 +71,14 @@ Read for live eval, prompt/output contracts, scorer drift, and post-eval sanity 
   dataset had the first unknown row at offset 2337). Record the offset in the
   config and session note rather than relying on memory.
 
+- Eval-set keys are canonical loader IDs, not arbitrary slice labels. The OOD
+  loader accepts keys such as `selfaware`, `kuq`, `popqa`, and
+  `sycophancy_answer`; a config key like `selfaware_unknown_smoke` fails before
+  generation. To smoke both known and unknown SelfAware behavior, either use the
+  canonical `selfaware` key with a mixed offset/limit (for example offset 2240,
+  limit 192) or run separate config files, not multiple invented SelfAware keys
+  in one YAML.
+
 - Response-confidence GRPO evals can pass schema perfectly while still failing
   confidence learning. The 2026-06-22 SFT JSON-bridge -> GRPO full SelfAware
   eval had 100% answer/confidence JSON coverage and zero retries, but both arms
@@ -90,6 +98,22 @@ Read for live eval, prompt/output contracts, scorer drift, and post-eval sanity 
   responses, and explicit penalties or zero credit for exact 0.0/1.0 endpoints
   when the research question is calibrated expression rather than deterministic
   correctness.
+
+- For schema-trained response-confidence runs, prefer the explicit
+  `response_confidence` key over generic `confidence`. The intended scalar is
+  "probability that this answer or abstention is the appropriate response": high
+  for correct known answers, high for correct unknown abstentions, low for wrong
+  answers and over-refusals, and middle for model-specific ambiguous rows. Keep
+  historical Amendment B `confidence` outputs parseable, but label new runs so
+  answer-confidence and response-confidence are never pooled silently.
+
+- Schema-SFT can learn the output envelope while still collapsing the scalar.
+  The first Amendment D schema-SFT seed-1 SelfAware smoke had 100% JSON
+  coverage and no exact endpoints, but every row emitted
+  `response_confidence: 0.8`, matching the dominant desirable SFT target. Always
+  inspect unique confidence values and band counts before interpreting
+  response-confidence metrics; DPO/KTO/GRPO or additional supervised contrast
+  is needed to test whether the scalar can carry calibrated signal.
 
 - Amendment B can also expose scorer drift in the opposite direction: JSON answer
   text may contain natural abstentions like "I do not know the exact number"
