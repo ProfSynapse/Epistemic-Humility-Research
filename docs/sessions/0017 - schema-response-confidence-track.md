@@ -172,3 +172,40 @@ batch 12.
   - Treat ambiguous middle rows as useful signal in Amendment D, not waste.
   - Do not launch parallel GPU work during this full schema-SFT cell.
   - If the cell fails or needs rerun, use batch 8 rather than batch 12.
+
+### 007-result - Full Schema-SFT Seed 1 And Eval Smoke
+
+- at: `2026-06-22T14:49:30Z`
+- kind: `result`
+- summary: Full schema-SFT seed 1 completed locally and a SelfAware mixed-slice live eval smoke passed the JSON contract, but the model emitted constant `response_confidence: 0.8` on every row.
+- evidence:
+  - `scratch/schema_response_confidence/runs/sft_schema_seed1_full/20260622_141511/final_model`
+  - `scratch/schema_response_confidence/runs/sft_schema_seed1_full/20260622_141511/capacity_features.json`
+  - `experiment/phase1/eval/config/eval_amendment_d_response_confidence_selfaware_schema_sft_seed1_smoke_local_4b.yaml`
+  - `experiment/phase1/eval/results_amendment_d_response_confidence_selfaware_schema_sft_seed1_smoke_4b/schema_sft_seed1__selfaware/metrics.json`
+  - `experiment/phase1/eval/results_amendment_d_response_confidence_selfaware_schema_sft_seed1_smoke_4b/schema_sft_seed1__selfaware/scored_rows.jsonl`
+- signals:
+    training_exit_code: 0
+    train_rows: 14943
+    train_runtime_seconds: 1419.544
+    final_loss: 0.1609
+    training_oom_observed: 0
+    training_oom_risk_level: critical
+    eval_rows: 192
+    eval_known_rows: 97
+    eval_unknown_rows: 95
+    stated_confidence_coverage_pct: 100.0
+    unique_response_confidence_values:
+      - 0.8
+    endpoint_confidence_count: 0
+    refusal_recall_pct: 90.53
+    over_refusal_pct: 70.1
+    correct_on_known_pct: 41.38
+    truthful_pct: 51.04
+- interpretation:
+  - SFT learned the JSON envelope and the response-confidence key cleanly.
+  - SFT alone did not learn calibrated confidence variation; it collapsed to the dominant desirable target value of `0.8`.
+  - This is not the same failure as the previous endpoint-`1.0` bridge, but it is still degenerate confidence for analysis.
+  - The next confidence-shaping evidence should come from DPO/KTO/GRPO or from adding more explicit low/middle contrast to supervised data.
+- gotchas:
+  - OOD eval config keys must be canonical loader IDs such as `selfaware`; invented keys like `selfaware_unknown_smoke` fail before generation.
