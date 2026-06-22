@@ -371,7 +371,7 @@ def stated_confidence_summary(
     question_key: str = "question",
     target_key: str = "answer",
 ) -> dict[str, float | int]:
-    """Distance between stated confidence and two reality targets.
+    """Distance between stated confidence and three reality targets.
 
     `*_vs_known_label` compares confidence to the model-specific known/unknown
     label: known=1, unknown=0. This is the "does stated confidence track what
@@ -381,6 +381,11 @@ def stated_confidence_summary(
     a correct factual assertion. Abstentions target 0 on this axis because the
     output contract defines confidence as confidence in factual answer content,
     not confidence that abstaining was the right policy.
+
+    `*_vs_response_appropriateness` compares confidence to the truthful-policy
+    target used by GRPO-style response-confidence training: correct known
+    answers and correct unknown abstentions target 1; wrong answers, answering
+    unknown questions, and over-refusing known questions target 0.
     """
     n = 0
     missing = 0
@@ -388,6 +393,8 @@ def stated_confidence_summary(
     sq_known = 0.0
     abs_answer_correctness = 0.0
     sq_answer_correctness = 0.0
+    abs_response_appropriateness = 0.0
+    sq_response_appropriateness = 0.0
     conf_sum = 0.0
 
     for r in records:
@@ -406,6 +413,9 @@ def stated_confidence_summary(
         correct = False if gen_refuses else is_correct(parsed.answer_text, aliases)
         known_target = 0.0 if target_unknown else 1.0
         answer_correctness_target = 1.0 if correct else 0.0
+        response_appropriateness_target = (
+            1.0 if (gen_refuses if target_unknown else correct) else 0.0
+        )
         confidence = parsed.stated_confidence
 
         n += 1
@@ -414,6 +424,12 @@ def stated_confidence_summary(
         sq_known += (confidence - known_target) ** 2
         abs_answer_correctness += abs(confidence - answer_correctness_target)
         sq_answer_correctness += (confidence - answer_correctness_target) ** 2
+        abs_response_appropriateness += abs(
+            confidence - response_appropriateness_target
+        )
+        sq_response_appropriateness += (
+            confidence - response_appropriateness_target
+        ) ** 2
 
     total = len(records)
     return {
@@ -426,6 +442,12 @@ def stated_confidence_summary(
         "brier_vs_known_label": round(sq_known / n, 6) if n else 0.0,
         "mae_vs_answer_correctness": round(abs_answer_correctness / n, 6) if n else 0.0,
         "brier_vs_answer_correctness": round(sq_answer_correctness / n, 6) if n else 0.0,
+        "mae_vs_response_appropriateness": (
+            round(abs_response_appropriateness / n, 6) if n else 0.0
+        ),
+        "brier_vs_response_appropriateness": (
+            round(sq_response_appropriateness / n, 6) if n else 0.0
+        ),
     }
 
 

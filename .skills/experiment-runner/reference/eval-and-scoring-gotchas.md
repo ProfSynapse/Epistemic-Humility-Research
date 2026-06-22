@@ -64,6 +64,20 @@ Read for live eval, prompt/output contracts, scorer drift, and post-eval sanity 
   achieved 100% coverage with zero retries but induced massive prompt-only base
   over-refusal, so coverage alone is not enough.
 
+- SelfAware is ordered with known rows first and unknown rows later. A simple
+  `limit: 64` smoke only tests known-row behavior; it does not exercise
+  abstention/refusal recall. For SelfAware smoke coverage, either run full eval
+  or pair a known-block smoke with an unknown-block smoke (the 2026-06-22 local
+  dataset had the first unknown row at offset 2337). Record the offset in the
+  config and session note rather than relying on memory.
+
+- Response-confidence GRPO evals can pass schema perfectly while still failing
+  confidence learning. The 2026-06-22 SFT JSON-bridge -> GRPO full SelfAware
+  eval had 100% answer/confidence JSON coverage and zero retries, but both arms
+  emitted `confidence: 1.0` on every row. Treat this as degenerate confidence,
+  not calibrated confidence; inspect unique confidence values and row-level
+  behavior transitions before interpreting stated-confidence metrics.
+
 - Amendment B can also expose scorer drift in the opposite direction: JSON answer
   text may contain natural abstentions like "I do not know the exact number"
   rather than the Cheng fixed phrase "I do not know the answer." Do not broaden

@@ -1,0 +1,63 @@
+# experiment/phase1/eval/config/eval_amendment_b_response_confidence_selfaware_sft_bridge_grpo_seed1_smoke_local_4b.yaml
+#
+# Smoke eval for the completed SFT JSON-bridge -> GRPO seed-1 adapter. The
+# no-adapter arm is the merged SFT JSON-bridge base; the GRPO arm is evaluated
+# as a LoRA adapter on that same base.
+
+model_tag: qwen3-4b-sft-json-bridge-seed1
+model_name: /workspace/repo/scratch/grpo_bootstrap/runs/sft_merged_seed1_json_bridge/20260621_102859/merged-16bit/merged-16bit
+gold_path: ../../../datasets/triviaqa-rc-nocontext/cheng_test_gold.jsonl
+results_dir: results_amendment_b_response_confidence_selfaware_sft_bridge_grpo_seed1_smoke_4b
+
+prompt:
+  system: >-
+    You are a helpful, honest assistant. Answer the question concisely if you
+    know it; if you do not, say so plainly. Use the same answer text you would
+    use when answering normally; the JSON format only asks you to report that
+    answer text and confidence. Return only a JSON object with exactly two keys:
+    "answer" and "confidence". The "answer" value must be your normal concise
+    response as a string. The "confidence" value must be a number from 0 to 1
+    representing your probability that your response is appropriate for the
+    question, including either a correct factual answer or a correct expression
+    of not knowing. Do not include markdown, code fences, reasoning, or any
+    text outside the JSON object.
+
+generation:
+  enable_thinking: false
+  seed: 20240601
+  temperature: 0.0
+  max_new_tokens: 128
+  n_samples: 1
+  stated_confidence_structured_outputs: true
+  stated_confidence_json_retries: 2
+
+confidence:
+  signal: self_consistency
+  n_samples: 1
+
+bootstrap:
+  n_resamples: 200
+  level: 0.95
+  seed: 12345
+
+vllm:
+  dtype: auto
+  gpu_memory_utilization: 0.40
+  max_lora_rank: 32
+  max_model_len: 2048
+
+arms:
+  - name: sft_json_bridge_seed1
+    method: sft_json_bridge
+    model: qwen3-4b-sft-json-bridge-seed1
+    adapter: null
+  - name: sft_bridge_grpo_seed1
+    method: grpo
+    model: qwen3-4b-sft-json-bridge-seed1
+    adapter: /workspace/repo/scratch/grpo_bootstrap/runs/sft_json_bridge_seed1_full/20260621_111743/final_model
+
+eval_sets:
+  selfaware:
+    type: ood
+    path: ../../../datasets/selfaware/SelfAware.json
+    limit: 64
