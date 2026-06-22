@@ -135,8 +135,8 @@ Before reaching for `rg`, grep, or an Explore/general-purpose search subagent,
 run the local KG search first:
 
 ```bash
-./search <query terms> --limit 10        # macOS/Linux
-.\search.cmd <query terms> --limit 10     # Windows
+bin/search <query terms> --limit 10         # macOS/Linux
+bin\search.cmd <query terms> --limit 10      # Windows
 ```
 
 This wraps `.agents/skills/knowledge-graph/scripts/kg_search.py` and returns
@@ -147,7 +147,7 @@ open with broad text search or a fan-out search agent on the first move. See the
 `knowledge-graph` skill for indexing, feedback, and validation commands.
 
 This directive binds subagents too. Any agent dispatched to find, locate, or
-explore anything in this repo must run `./search` first and pass through its
+explore anything in this repo must run `bin/search` first and pass through its
 candidate set before broad text search. When you spawn a search/explore
 subagent, restate this KG-search-first rule in its prompt so it is never lost.
 

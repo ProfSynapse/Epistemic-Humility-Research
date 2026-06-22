@@ -10,7 +10,7 @@ import time
 from dataclasses import asdict, dataclass
 from pathlib import Path
 
-from kg_index import DEFAULT_DB, connect, index_root
+from kg_index import DEFAULT_DB, REPO_ROOT, connect, index_root
 
 TOKEN_RE = re.compile(r"[A-Za-z0-9_]{2,}")
 STOPWORDS = {
@@ -549,7 +549,12 @@ def format_results(results: list[SearchResult], query: str) -> str:
 def main() -> int:
     parser = argparse.ArgumentParser(description="Search the local code/config/research KG index.")
     parser.add_argument("query", nargs="+", help="Search query. Quotes are optional for multi-word queries.")
-    parser.add_argument("--root", default=".", help="Repository root. Defaults to current directory.")
+    parser.add_argument(
+        "--root",
+        default=str(REPO_ROOT),
+        help="Repository root. Defaults to the repo root, not the CWD, so the "
+        "shared --db index stays consistent regardless of where the tool runs.",
+    )
     parser.add_argument("--db", default=str(DEFAULT_DB), help="SQLite index path. Defaults to .kg/index.sqlite.")
     parser.add_argument("--limit", type=int, default=10, help="Maximum results to show.")
     parser.add_argument("--traverse-depth", type=int, default=2, help="Graph traversal depth from seed files/nodes.")
