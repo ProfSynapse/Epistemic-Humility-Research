@@ -226,6 +226,12 @@ def test_stated_confidence_summary_tracks_known_label_and_answer_correctness_dis
     assert summary["coverage_pct"] == 75.0
     assert summary["mae_vs_known_label"] == pytest.approx((0.1 + 0.1 + 0.8) / 3)
     assert summary["mae_vs_answer_correctness"] == pytest.approx((0.1 + 0.1 + 0.8) / 3)
+    assert summary["mae_vs_response_appropriateness"] == pytest.approx(
+        (0.1 + 0.9 + 0.8) / 3
+    )
+    assert summary["brier_vs_response_appropriateness"] == pytest.approx(
+        ((0.1 ** 2) + (0.9 ** 2) + (0.8 ** 2)) / 3
+    )
 
 
 def test_record_aliases_drive_ood_known_correctness_and_truthful_vector():
