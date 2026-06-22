@@ -1,0 +1,64 @@
+# Bounded generated-answer replay for the KTO source direction that survived
+# next-token answer-start controls. Uses the same fixed 32 unknown rows as the
+# coefficient and random-seed logit panels.
+sweep:
+  name: phase3_gold_answer_kto_unknown_generation_replay
+  evidence_tier: tier2_exploratory_local
+  runner_config: experiment/phase1/probe/config/phase3_causal_pilot_gpu_smoke.yaml
+  candidate_source_config: experiment/phase1/probe/config/phase3_causal_pilot_full_candidates.yaml
+  output_root: experiment/phase1/probe/qwen3-4b-instruct/causal_pilots/phase3_gold_answer_kto_unknown_generation_replay
+  candidates:
+    - sft_kto_h_lora_l35
+  execution:
+    backend: docker
+    docker:
+      image: unsloth/unsloth:latest
+      repo_mount: /workspace/repo
+      workdir: /workspace/repo
+      hf_home: /workspace/repo/.cache/hf
+      huggingface_hub_cache: /workspace/repo/.cache/hf/hub
+  runner_overrides:
+    selection:
+      row_keys:
+        - 000000000289|tc_555
+        - 000000001478|tc_2356
+        - 000000001480|tc_2358
+        - 000000002112|qz_71
+        - 000000003930|qz_3988
+        - 000000004662|qz_5914
+        - 000000007238|qb_3139
+        - 000000008054|qb_4259
+        - 000000008531|qb_4924
+        - 000000010803|qb_8044
+        - 000000012089|qb_9825
+        - 000000012222|qb_9998
+        - 000000012574|dpql_163
+        - 000000012698|dpql_353
+        - 000000012805|dpql_526
+        - 000000013685|dpql_1836
+        - 000000013690|dpql_1843
+        - 000000013982|dpql_2279
+        - 000000015118|dpql_3973
+        - 000000016918|wh_244
+        - 000000017744|wh_1470
+        - 000000019104|wh_3428
+        - 000000019547|wh_4051
+        - 000000020042|bb_431
+        - 000000021805|bb_3180
+        - 000000024367|bb_7311
+        - 000000025558|bb_8941
+        - 000000027002|qw_1592
+        - 000000028318|qw_3863
+        - 000000028742|qw_4611
+        - 000000029726|qw_6430
+        - 000000030775|qw_8386
+  modes:
+    - name: generation
+      max_rows: 32
+      max_new_tokens: 32
+      coefficients:
+        - 35.0
+        - 50.0
+      controls:
+        - no_vector_baseline
+        - activation_subtraction

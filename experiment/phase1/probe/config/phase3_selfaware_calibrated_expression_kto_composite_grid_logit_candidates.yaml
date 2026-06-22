@@ -1,0 +1,77 @@
+# KTO SelfAware calibrated-expression composite grid candidates.
+#
+# These directions vary the unknown-wrong repair component while keeping the
+# known-overrefusal repair component fixed. They are exploratory Phase 3
+# evidence, not preregistered headline evidence.
+
+candidate_directions:
+  - label: kto_h_lora_l24_composite_known1_unknown125_normed
+    priority: 1
+    arm: sft_kto
+    extraction_dir: experiment/phase1/probe/qwen3-4b-sft-merged-seed1-selfaware/hidden_states_selfaware_full_kto/extraction__bb5e579fa10e
+    extraction_manifest: experiment/phase1/probe/qwen3-4b-sft-merged-seed1-selfaware/hidden_states_selfaware_full_kto/extraction__bb5e579fa10e/manifest.json
+    direction_manifest: experiment/phase1/probe/qwen3-4b-sft-merged-seed1-selfaware/direction_transforms/phase3_selfaware_calibrated_expression_kto_composite_grid_directions/direction_transforms.manifest.json
+    direction_csv: experiment/phase1/probe/qwen3-4b-sft-merged-seed1-selfaware/direction_transforms/phase3_selfaware_calibrated_expression_kto_composite_grid_directions/direction_transforms.csv
+    direction_id: direction_transform__kto_h_lora_l24_composite_known1_unknown125_normed__02395271ae12
+    direction_file: experiment/phase1/probe/qwen3-4b-sft-merged-seed1-selfaware/direction_transforms/phase3_selfaware_calibrated_expression_kto_composite_grid_directions/kto_h_lora_l24_composite_known1_unknown125_normed/directions/direction_transform__kto_h_lora_l24_composite_known1_unknown125_normed__02395271ae12.safetensors
+    tensor_key: direction
+    role: h_lora
+    layer: 24
+    method: direction_transform
+    transform_method: linear_combination
+    contrast: composite_known_overrefusal_unknown_wrong_grid
+    required_status: ok
+    vector_sha256: 02395271ae12d15f6e6080e01f08aceef3afa2d08f1add5ebe67251eefbd9d9f
+    source_run_id: sft_kto__4b__amendment_a__seed1
+
+  - label: kto_h_lora_l24_composite_known1_unknown150_normed
+    priority: 2
+    arm: sft_kto
+    extraction_dir: experiment/phase1/probe/qwen3-4b-sft-merged-seed1-selfaware/hidden_states_selfaware_full_kto/extraction__bb5e579fa10e
+    extraction_manifest: experiment/phase1/probe/qwen3-4b-sft-merged-seed1-selfaware/hidden_states_selfaware_full_kto/extraction__bb5e579fa10e/manifest.json
+    direction_manifest: experiment/phase1/probe/qwen3-4b-sft-merged-seed1-selfaware/direction_transforms/phase3_selfaware_calibrated_expression_kto_composite_grid_directions/direction_transforms.manifest.json
+    direction_csv: experiment/phase1/probe/qwen3-4b-sft-merged-seed1-selfaware/direction_transforms/phase3_selfaware_calibrated_expression_kto_composite_grid_directions/direction_transforms.csv
+    direction_id: direction_transform__kto_h_lora_l24_composite_known1_unknown150_normed__27d074d7c87b
+    direction_file: experiment/phase1/probe/qwen3-4b-sft-merged-seed1-selfaware/direction_transforms/phase3_selfaware_calibrated_expression_kto_composite_grid_directions/kto_h_lora_l24_composite_known1_unknown150_normed/directions/direction_transform__kto_h_lora_l24_composite_known1_unknown150_normed__27d074d7c87b.safetensors
+    tensor_key: direction
+    role: h_lora
+    layer: 24
+    method: direction_transform
+    transform_method: linear_combination
+    contrast: composite_known_overrefusal_unknown_wrong_grid
+    required_status: ok
+    vector_sha256: 27d074d7c87bd2fceb73b512a8c513a0e25f9f3d2d0e3213b333ca0811cc1fe8
+    source_run_id: sft_kto__4b__amendment_a__seed1
+
+  - label: kto_h_lora_l24_composite_known1_unknown200_normed
+    priority: 3
+    arm: sft_kto
+    extraction_dir: experiment/phase1/probe/qwen3-4b-sft-merged-seed1-selfaware/hidden_states_selfaware_full_kto/extraction__bb5e579fa10e
+    extraction_manifest: experiment/phase1/probe/qwen3-4b-sft-merged-seed1-selfaware/hidden_states_selfaware_full_kto/extraction__bb5e579fa10e/manifest.json
+    direction_manifest: experiment/phase1/probe/qwen3-4b-sft-merged-seed1-selfaware/direction_transforms/phase3_selfaware_calibrated_expression_kto_composite_grid_directions/direction_transforms.manifest.json
+    direction_csv: experiment/phase1/probe/qwen3-4b-sft-merged-seed1-selfaware/direction_transforms/phase3_selfaware_calibrated_expression_kto_composite_grid_directions/direction_transforms.csv
+    direction_id: direction_transform__kto_h_lora_l24_composite_known1_unknown200_normed__c2843c8a06d7
+    direction_file: experiment/phase1/probe/qwen3-4b-sft-merged-seed1-selfaware/direction_transforms/phase3_selfaware_calibrated_expression_kto_composite_grid_directions/kto_h_lora_l24_composite_known1_unknown200_normed/directions/direction_transform__kto_h_lora_l24_composite_known1_unknown200_normed__c2843c8a06d7.safetensors
+    tensor_key: direction
+    role: h_lora
+    layer: 24
+    method: direction_transform
+    transform_method: linear_combination
+    contrast: composite_known_overrefusal_unknown_wrong_grid
+    required_status: ok
+    vector_sha256: c2843c8a06d7c0947a723c9877e97a53cc99e6777289a799d91ba4a6d6d56be9
+    source_run_id: sft_kto__4b__amendment_a__seed1
+
+readiness_checks:
+  require_extraction_manifest:
+    status: ok
+    verified: true
+    row_count: 1233
+    label_counts:
+      known: 556
+      unknown: 677
+  require_direction_status: ok
+  require_hidden_dim_match: true
+  require_layer_role_match: true
+  require_vector_hash_check: true
+  require_no_mutation_of_source_artifacts: true

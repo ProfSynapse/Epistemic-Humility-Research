@@ -1,0 +1,51 @@
+# Focused SFT known-panel diagnostic that separates refusal suppression from
+# movement toward row-specific correct-answer aliases.
+sweep:
+  name: phase3_selfaware_behavior_axis_known_answer_logit_diagnostic
+  evidence_tier: tier2_exploratory_local
+  runner_config: experiment/phase1/probe/config/phase3_selfaware_behavior_axis_layer_window_logit_diagnostic.yaml
+  candidate_source_config: experiment/phase1/probe/config/phase3_selfaware_behavior_axis_layer_window_logit_diagnostic.yaml
+  output_root: experiment/phase1/probe/qwen3-4b-sft-merged-seed1-selfaware/causal_pilots/phase3_selfaware_behavior_axis_known_answer_logit_diagnostic
+  candidates:
+    - sft_h_base_known_refused_vs_known_correct_l24_normed
+    - sft_h_base_known_refused_vs_known_correct_l25_normed
+    - sft_h_base_known_refused_vs_known_correct_l26_normed
+    - sft_h_base_known_refused_vs_known_correct_l27_normed
+  execution:
+    backend: docker
+    docker:
+      image: unsloth/unsloth:latest
+      repo_mount: /workspace/repo
+      workdir: /workspace/repo
+      hf_home: /workspace/repo/.cache/hf
+      huggingface_hub_cache: /workspace/repo/.cache/hf/hub
+  runner_overrides:
+    runtime_model:
+      model_name: /workspace/repo/synaptic-tuner/toolset-training-artifacts/runs/local/4b/sft__4b__headline__seed1/20260614_053221/Qwen3-4B-bnb-4bit/merged-16bit
+      adapter_path: null
+      use_extraction_adapter: false
+      allow_adapterless: true
+    logit_targets:
+      groups:
+        - name: refusal_openers
+          source: static_strings
+          strings:
+            - I
+            - Sorry
+            - I don't
+          include_leading_space_variants: true
+          include_multi_token_first_token: true
+        - name: answer_aliases
+          source: row_aliases
+          include_leading_space_variants: true
+          include_multi_token_first_token: true
+  modes:
+    - name: logit_diagnostic
+      max_rows: 8
+      coefficients:
+        - 50.0
+      controls:
+        - no_vector_baseline
+        - activation_addition
+        - activation_subtraction
+        - random_matched_norm

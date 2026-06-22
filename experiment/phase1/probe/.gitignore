@@ -4,6 +4,7 @@ logs/
 qwen3-4b-instruct/
 qwen3-4b-instruct_uncapped_partial_*/
 qwen3-4b-instruct_thinking_contaminated_*/
+qwen3-4b-*/
 
 # Hidden-state extraction outputs (exploratory tier). These land under
 # <model_tag>/hidden_states/ and are large reproducible tensor artifacts

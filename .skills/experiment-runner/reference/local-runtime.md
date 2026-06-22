@@ -119,6 +119,24 @@ Read for Windows/Docker/GPU/local-trainer execution problems and monitor behavio
   by step 125. Do not run parallel GPU work beside this cell; if it OOMs or must
   be repeated, prefer batch 8 before trying to recover throughput elsewhere.
 
+- Short preference-training smokes can understate full-run VRAM growth when row
+  lengths vary. On 2026-06-22, schema-SFT->DPO batch 4 / accumulation 2 looked
+  low-risk in a 10-step smoke (about 11.1 GB reserved), but the full run climbed
+  past 23.7/24 GB live VRAM by step 185 and was intentionally stopped before an
+  OOM. For DPO from the merged schema-SFT base on this RTX 3090, use batch 2 /
+  accumulation 4 as the safer effective-batch-8 setting unless a longer probe
+  over representative long rows proves otherwise.
+
+- KTO can show the same short-smoke capacity trap at larger batches. On
+  2026-06-22, schema-SFT->KTO batch 24 / accumulation 1 completed a 10-step
+  smoke with low OOM risk and about 16.5 GB reserved, but the full run reached
+  about 23.7/24 GB live VRAM and `oom_risk_level: critical` by step 15. Batch
+  16 / accumulation 1 also climbed into the high-risk band later in the full
+  run, reaching about 23.5-23.7/24 GB live VRAM by step 250. Treat batch 16 and
+  batch 24 as too hot on the RTX 3090 for this response-confidence KTO dataset;
+  use batch 12 only with live monitoring, and fall back to the proven batch 8 /
+  accumulation 1 if batch 12 enters high or critical risk.
+
 - The Unsloth image default entrypoint may chmod the mounted repo and fail on
   `.tmp/pytest-codex*`. For local eval wrapper runs, override the entrypoint
   with `--entrypoint python3`.

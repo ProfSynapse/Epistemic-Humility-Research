@@ -1,0 +1,80 @@
+source_manifest: experiment/phase1/probe/qwen3-4b-instruct/behavior_axis_directions/phase3_gold_kto_calibrated_expression_same_layer_axis_directions/behavior_axis_directions.manifest.json
+
+transforms:
+  - label: gold_kto_h_lora_l27_composite_known1_unknown025_normed
+    method: linear_combination
+    contrast: gold_composite_known_overrefusal_unknown_wrong
+    target_norm: 1.2142820358276367
+    components:
+      - source_direction_id: behavior_axis__gold_kto_h_lora_known_refused_vs_correct_l27_normed__ffb2903f34b5
+        weight: 1.0
+      - source_direction_id: behavior_axis__gold_kto_h_lora_unknown_wrong_vs_refused_l27_normed__1ef4ff134445
+        weight: -0.25
+    metadata:
+      arm: sft_kto
+      selection_reason: gold_behavior_composite_grid
+  - label: gold_kto_h_lora_l27_composite_known1_unknown050_normed
+    method: linear_combination
+    contrast: gold_composite_known_overrefusal_unknown_wrong
+    target_norm: 1.2142820358276367
+    components:
+      - source_direction_id: behavior_axis__gold_kto_h_lora_known_refused_vs_correct_l27_normed__ffb2903f34b5
+        weight: 1.0
+      - source_direction_id: behavior_axis__gold_kto_h_lora_unknown_wrong_vs_refused_l27_normed__1ef4ff134445
+        weight: -0.5
+    metadata:
+      arm: sft_kto
+      selection_reason: gold_behavior_composite_grid
+
+  - label: gold_kto_h_lora_l28_composite_known1_unknown025_normed
+    method: linear_combination
+    contrast: gold_composite_known_overrefusal_unknown_wrong
+    target_norm: 1.2142820358276367
+    components:
+      - source_direction_id: behavior_axis__gold_kto_h_lora_known_refused_vs_correct_l28_normed__358220555e9a
+        weight: 1.0
+      - source_direction_id: behavior_axis__gold_kto_h_lora_unknown_wrong_vs_refused_l28_normed__a69a81013187
+        weight: -0.25
+    metadata:
+      arm: sft_kto
+      selection_reason: gold_behavior_composite_grid
+  - label: gold_kto_h_lora_l28_composite_known1_unknown050_normed
+    method: linear_combination
+    contrast: gold_composite_known_overrefusal_unknown_wrong
+    target_norm: 1.2142820358276367
+    components:
+      - source_direction_id: behavior_axis__gold_kto_h_lora_known_refused_vs_correct_l28_normed__358220555e9a
+        weight: 1.0
+      - source_direction_id: behavior_axis__gold_kto_h_lora_unknown_wrong_vs_refused_l28_normed__a69a81013187
+        weight: -0.5
+    metadata:
+      arm: sft_kto
+      selection_reason: gold_behavior_composite_grid
+
+  - label: gold_kto_h_lora_l36_composite_known1_unknown025_normed
+    method: linear_combination
+    contrast: gold_composite_known_overrefusal_unknown_wrong
+    target_norm: 1.2142820358276367
+    components:
+      - source_direction_id: behavior_axis__gold_kto_h_lora_known_refused_vs_correct_l36_normed__6766d9e2215f
+        weight: 1.0
+      - source_direction_id: behavior_axis__gold_kto_h_lora_unknown_wrong_vs_refused_l36_normed__eb028dfcbf4c
+        weight: -0.25
+    metadata:
+      arm: sft_kto
+      selection_reason: gold_behavior_composite_grid
+  - label: gold_kto_h_lora_l36_composite_known1_unknown050_normed
+    method: linear_combination
+    contrast: gold_composite_known_overrefusal_unknown_wrong
+    target_norm: 1.2142820358276367
+    components:
+      - source_direction_id: behavior_axis__gold_kto_h_lora_known_refused_vs_correct_l36_normed__6766d9e2215f
+        weight: 1.0
+      - source_direction_id: behavior_axis__gold_kto_h_lora_unknown_wrong_vs_refused_l36_normed__eb028dfcbf4c
+        weight: -0.5
+    metadata:
+      arm: sft_kto
+      selection_reason: gold_behavior_composite_grid
+
+output:
+  root: experiment/phase1/probe/qwen3-4b-instruct/direction_transforms/phase3_gold_kto_calibrated_expression_composite_directions

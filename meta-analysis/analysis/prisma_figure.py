@@ -25,10 +25,9 @@ ADMITTED = 97          # library/manifest.yaml (search phases)
 BACKCITE_STUDIES = 4   # backward-citation pass admissions (prisma-flow.md)
 BACKCITE_CONTEXT = 20  # 19 arXiv context + 1 non-arXiv (Farquhar 2024)
 NOT_ADMITTED = 21      # 13 peripheral + 4 post-freeze + 4 ID artifacts
-STUDIES, ROWS = 38, 75  # effects.csv (post 2026-06-11 review: mis-attributed
-#                          row removed; IPO arm of 2404.14723 extracted)
-CONTEXT_CITED = 38 + BACKCITE_CONTEXT  # cited in draft without extracted rows
-VERIFIED = 73          # effects.csv verified column
+STUDIES, ROWS = 39, 78  # effects.csv after 2026-06-20 KG-ingest admission
+CONTEXT_CITED = 60      # cited in draft without extracted rows
+VERIFIED = 76          # effects.csv verified column
 CORRECTED, EXCLUDED = 6, 1
 
 MAIN = [

@@ -1,0 +1,36 @@
+source_rows: experiment/phase1/probe/qwen3-4b-sft-merged-seed1-selfaware/hidden_states_selfaware_full_kto/extraction__bb5e579fa10e/rows.jsonl
+behavior_arm: sft_kto_seed1
+target_group: refusal_openers
+
+runs:
+  - label: kto_h_lora_unknown_wrong_vs_refused_l24
+    diagnostics: experiment/phase1/probe/qwen3-4b-sft-merged-seed1-selfaware/causal_pilots/phase3_selfaware_calibrated_expression_kto_logit_sweep/kto_h_lora_unknown_wrong_vs_refused_l24/logit_diagnostic/run_20260620T114530Z/logit_diagnostics.jsonl
+  - label: kto_h_lora_known_refused_vs_correct_l24
+    diagnostics: experiment/phase1/probe/qwen3-4b-sft-merged-seed1-selfaware/causal_pilots/phase3_selfaware_calibrated_expression_kto_logit_sweep/kto_h_lora_known_refused_vs_correct_l24/logit_diagnostic/run_20260620T114833Z/logit_diagnostics.jsonl
+  - label: kto_h_lora_known_refused_vs_correct_l27
+    diagnostics: experiment/phase1/probe/qwen3-4b-sft-merged-seed1-selfaware/causal_pilots/phase3_selfaware_calibrated_expression_kto_logit_sweep/kto_h_lora_known_refused_vs_correct_l27/logit_diagnostic/run_20260620T115138Z/logit_diagnostics.jsonl
+
+behavior_cells:
+  fallback_cell: other
+  cells:
+    - label: known_refused
+      filter:
+        label: known
+        refused: true
+    - label: known_correct_answered
+      filter:
+        label: known
+        refused: false
+        correct: true
+    - label: unknown_refused
+      filter:
+        label: unknown
+        refused: true
+    - label: unknown_answered_wrong
+      filter:
+        label: unknown
+        refused: false
+        correct: false
+
+output:
+  root: experiment/phase1/probe/qwen3-4b-sft-merged-seed1-selfaware/causal_pilots/phase3_selfaware_calibrated_expression_kto_logit_sweep/cell_analysis

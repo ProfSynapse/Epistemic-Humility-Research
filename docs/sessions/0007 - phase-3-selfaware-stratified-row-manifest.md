@@ -4,7 +4,7 @@ session_id: phase3-selfaware-stratified-row-manifest
 title: Phase 3 SelfAware Stratified Row Manifest
 status: active
 created_at: '2026-06-19T10:19:26Z'
-updated_at: '2026-06-19T18:56:00Z'
+updated_at: '2026-06-19T19:27:49Z'
 phase: phase3
 question: Track bounded no-GPU/no-Docker Phase 3 SelfAware stratified row-manifest
   work, including bridge failure rationale, manifest/script changes, validation, and
@@ -467,6 +467,48 @@ checkpoints:
         wrong_layer: 0.021724
         wrong_layer_subtraction: -0.029757
         random_matched_norm: -0.023804
+- id: 014-result
+  at: '2026-06-19T19:27:49Z'
+  kind: result
+  title: Nearby-Layer Logit Diagnostic Completed
+  summary: Local Docker logit diagnostics completed for the full SelfAware top delta
+    candidates across nearby wrong-layer offsets -2, -1, +1, and +2, with coefficients
+    2, 5, 10, and 20 over 16 rows per candidate. All eight candidate/offset runs are
+    status ok, generation_executed=false, and logit_diagnostic_executed=true. The
+    smaller grid preserved sign behavior for source activation arms, especially KTO
+    L25, but nearby wrong-layer arms at adjacent lower layers often matched or exceeded
+    the source-layer refusal-opener probability deltas, so this panel does not support
+    a source-layer-local claim.
+  evidence:
+  - experiment/phase1/probe/config/phase3_selfaware_full_delta_nearby_logit_diagnostic_offset_neg2_sweep.yaml
+  - experiment/phase1/probe/config/phase3_selfaware_full_delta_nearby_logit_diagnostic_offset_neg1_sweep.yaml
+  - experiment/phase1/probe/config/phase3_selfaware_full_delta_nearby_logit_diagnostic_offset_pos1_sweep.yaml
+  - experiment/phase1/probe/config/phase3_selfaware_full_delta_nearby_logit_diagnostic_offset_pos2_sweep.yaml
+  - experiment/phase1/probe/qwen3-4b-sft-merged-seed1-selfaware/causal_pilots/phase3_selfaware_full_delta_nearby_logit_diagnostic_offset_neg2/_execution_logs/execution_results.jsonl
+  - experiment/phase1/probe/qwen3-4b-sft-merged-seed1-selfaware/causal_pilots/phase3_selfaware_full_delta_nearby_logit_diagnostic_offset_neg1/_execution_logs/execution_results.jsonl
+  - experiment/phase1/probe/qwen3-4b-sft-merged-seed1-selfaware/causal_pilots/phase3_selfaware_full_delta_nearby_logit_diagnostic_offset_pos1/_execution_logs/execution_results.jsonl
+  - experiment/phase1/probe/qwen3-4b-sft-merged-seed1-selfaware/causal_pilots/phase3_selfaware_full_delta_nearby_logit_diagnostic_offset_pos2/_execution_logs/execution_results.jsonl
+  run_ids: []
+  commands:
+  - python experiment/phase1/probe/phase3_causal_pilot_sweep.py --config experiment/phase1/probe/config/phase3_selfaware_full_delta_nearby_logit_diagnostic_offset_neg2_sweep.yaml
+    --mode-filter logit_diagnostic --write-plan --materialize-configs --execute --allow-logit-diagnostic
+  - python experiment/phase1/probe/phase3_causal_pilot_sweep.py --config experiment/phase1/probe/config/phase3_selfaware_full_delta_nearby_logit_diagnostic_offset_neg1_sweep.yaml
+    --mode-filter logit_diagnostic --write-plan --materialize-configs --execute --allow-logit-diagnostic
+  - python experiment/phase1/probe/phase3_causal_pilot_sweep.py --config experiment/phase1/probe/config/phase3_selfaware_full_delta_nearby_logit_diagnostic_offset_pos1_sweep.yaml
+    --mode-filter logit_diagnostic --write-plan --materialize-configs --execute --allow-logit-diagnostic
+  - python experiment/phase1/probe/phase3_causal_pilot_sweep.py --config experiment/phase1/probe/config/phase3_selfaware_full_delta_nearby_logit_diagnostic_offset_pos2_sweep.yaml
+    --mode-filter logit_diagnostic --write-plan --materialize-configs --execute --allow-logit-diagnostic
+  decisions:
+  - Treat these outputs as Tier 2 exploratory local logit diagnostics only, not generation
+    evidence and not pre-registered headline evidence.
+  - 'Do not make a source-layer-specific claim: nearby lower-layer wrong-layer controls
+    were comparable to source-layer arms, and random matched-norm subtraction remained
+    comparable to source subtraction in parts of the small grid.'
+  next_steps:
+  - If stronger locality evidence is needed, design a follow-up that separates source-layer
+    intervention from same-vector layer placement more directly, rather than relying
+    on this compact nearby-layer panel alone.
+  signals: {}
 ---
 # Phase 3 SelfAware Stratified Row Manifest
 
@@ -773,3 +815,27 @@ diagnostic/exploratory Phase 3 artifacts, not pre-registered headline evidence.
   - DPO L24 coef 50 refusal probability delta means: `activation_addition=0.03038`, `activation_subtraction=-0.001214`, `wrong_layer=0.005522`, `wrong_layer_subtraction=0.011282`, `random_matched_norm=-0.026382`
   - KTO L25 coef 50 top-1 changes: `activation_addition=0`, `activation_subtraction=4`, `wrong_layer=0`, `wrong_layer_subtraction=2`, `random_matched_norm=2`
   - KTO L25 coef 50 refusal probability delta means: `activation_addition=0.044554`, `activation_subtraction=-0.034205`, `wrong_layer=0.021724`, `wrong_layer_subtraction=-0.029757`, `random_matched_norm=-0.023804`
+### 014-result - Nearby-Layer Logit Diagnostic Completed
+
+- at: `2026-06-19T19:27:49Z`
+- kind: `result`
+- summary: Local Docker logit diagnostics completed for the full SelfAware top delta candidates across nearby wrong-layer offsets -2, -1, +1, and +2, with coefficients 2, 5, 10, and 20 over 16 rows per candidate. All eight candidate/offset runs are status ok, generation_executed=false, and logit_diagnostic_executed=true. The smaller grid preserved sign behavior for source activation arms, especially KTO L25, but nearby wrong-layer arms at adjacent lower layers often matched or exceeded the source-layer refusal-opener probability deltas, so this panel does not support a source-layer-local claim.
+- evidence:
+  - `experiment/phase1/probe/config/phase3_selfaware_full_delta_nearby_logit_diagnostic_offset_neg2_sweep.yaml`
+  - `experiment/phase1/probe/config/phase3_selfaware_full_delta_nearby_logit_diagnostic_offset_neg1_sweep.yaml`
+  - `experiment/phase1/probe/config/phase3_selfaware_full_delta_nearby_logit_diagnostic_offset_pos1_sweep.yaml`
+  - `experiment/phase1/probe/config/phase3_selfaware_full_delta_nearby_logit_diagnostic_offset_pos2_sweep.yaml`
+  - `experiment/phase1/probe/qwen3-4b-sft-merged-seed1-selfaware/causal_pilots/phase3_selfaware_full_delta_nearby_logit_diagnostic_offset_neg2/_execution_logs/execution_results.jsonl`
+  - `experiment/phase1/probe/qwen3-4b-sft-merged-seed1-selfaware/causal_pilots/phase3_selfaware_full_delta_nearby_logit_diagnostic_offset_neg1/_execution_logs/execution_results.jsonl`
+  - `experiment/phase1/probe/qwen3-4b-sft-merged-seed1-selfaware/causal_pilots/phase3_selfaware_full_delta_nearby_logit_diagnostic_offset_pos1/_execution_logs/execution_results.jsonl`
+  - `experiment/phase1/probe/qwen3-4b-sft-merged-seed1-selfaware/causal_pilots/phase3_selfaware_full_delta_nearby_logit_diagnostic_offset_pos2/_execution_logs/execution_results.jsonl`
+- commands:
+  - `python experiment/phase1/probe/phase3_causal_pilot_sweep.py --config experiment/phase1/probe/config/phase3_selfaware_full_delta_nearby_logit_diagnostic_offset_neg2_sweep.yaml --mode-filter logit_diagnostic --write-plan --materialize-configs --execute --allow-logit-diagnostic`
+  - `python experiment/phase1/probe/phase3_causal_pilot_sweep.py --config experiment/phase1/probe/config/phase3_selfaware_full_delta_nearby_logit_diagnostic_offset_neg1_sweep.yaml --mode-filter logit_diagnostic --write-plan --materialize-configs --execute --allow-logit-diagnostic`
+  - `python experiment/phase1/probe/phase3_causal_pilot_sweep.py --config experiment/phase1/probe/config/phase3_selfaware_full_delta_nearby_logit_diagnostic_offset_pos1_sweep.yaml --mode-filter logit_diagnostic --write-plan --materialize-configs --execute --allow-logit-diagnostic`
+  - `python experiment/phase1/probe/phase3_causal_pilot_sweep.py --config experiment/phase1/probe/config/phase3_selfaware_full_delta_nearby_logit_diagnostic_offset_pos2_sweep.yaml --mode-filter logit_diagnostic --write-plan --materialize-configs --execute --allow-logit-diagnostic`
+- decisions:
+  - Treat these outputs as Tier 2 exploratory local logit diagnostics only, not generation evidence and not pre-registered headline evidence.
+  - Do not make a source-layer-specific claim: nearby lower-layer wrong-layer controls were comparable to source-layer arms, and random matched-norm subtraction remained comparable to source subtraction in parts of the small grid.
+- next steps:
+  - If stronger locality evidence is needed, design a follow-up that separates source-layer intervention from same-vector layer placement more directly, rather than relying on this compact nearby-layer panel alone.

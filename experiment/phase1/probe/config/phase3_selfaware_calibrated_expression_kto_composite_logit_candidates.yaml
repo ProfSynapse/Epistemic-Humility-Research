@@ -1,0 +1,41 @@
+# KTO SelfAware calibrated-expression composite intervention candidate.
+#
+# This direction combines two behavior-axis repairs in the KTO h_lora L24 plane:
+# subtract known-overrefusal damage and subtract unknown-wrong damage. It is
+# exploratory Phase 3 evidence, not preregistered headline evidence.
+
+candidate_directions:
+  - label: kto_h_lora_l24_composite_subtract_known_and_unknown_damage
+    priority: 1
+    arm: sft_kto
+    extraction_dir: experiment/phase1/probe/qwen3-4b-sft-merged-seed1-selfaware/hidden_states_selfaware_full_kto/extraction__bb5e579fa10e
+    extraction_manifest: experiment/phase1/probe/qwen3-4b-sft-merged-seed1-selfaware/hidden_states_selfaware_full_kto/extraction__bb5e579fa10e/manifest.json
+    direction_manifest: experiment/phase1/probe/qwen3-4b-sft-merged-seed1-selfaware/direction_transforms/phase3_selfaware_calibrated_expression_kto_composite_directions/direction_transforms.manifest.json
+    direction_csv: experiment/phase1/probe/qwen3-4b-sft-merged-seed1-selfaware/direction_transforms/phase3_selfaware_calibrated_expression_kto_composite_directions/direction_transforms.csv
+    direction_id: direction_transform__kto_h_lora_l24_subtract_known_and_unknown_damage_normed__a96c65ad4d05
+    direction_file: experiment/phase1/probe/qwen3-4b-sft-merged-seed1-selfaware/direction_transforms/phase3_selfaware_calibrated_expression_kto_composite_directions/kto_h_lora_l24_subtract_known_and_unknown_damage_normed/directions/direction_transform__kto_h_lora_l24_subtract_known_and_unknown_damage_normed__a96c65ad4d05.safetensors
+    tensor_key: direction
+    role: h_lora
+    layer: 24
+    method: direction_transform
+    transform_method: linear_combination
+    contrast: composite_known_overrefusal_and_unknown_wrong_repair
+    positive_label: known_refused
+    negative_label: known_correct_answered
+    required_status: ok
+    vector_sha256: a96c65ad4d051e53d36acf2e8e79202ef68864d2d81c84c5dfb60e6cb3a558e6
+    source_run_id: sft_kto__4b__amendment_a__seed1
+
+readiness_checks:
+  require_extraction_manifest:
+    status: ok
+    verified: true
+    row_count: 1233
+    label_counts:
+      known: 556
+      unknown: 677
+  require_direction_status: ok
+  require_hidden_dim_match: true
+  require_layer_role_match: true
+  require_vector_hash_check: true
+  require_no_mutation_of_source_artifacts: true

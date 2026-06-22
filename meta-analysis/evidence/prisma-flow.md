@@ -22,11 +22,13 @@ reported. All counts below are recomputable from the files named.
 | Non-arXiv records admitted | 8 (OpenAI postmortems, GPT-5 system card, Opus 4.8 system card, Gemini 3 Pro model card, nostalgebraist blog, JMIR e76048, Schulman talk, companion essay) | draft §9 non-arXiv list |
 | Admitted to library after dedup + §4.2 screening | 97 (93 search-surfaced + 4 verification/follow-up additions: 2309.07875, 2310.06452, 2505.20903, 2502.19545) | `library/manifest.yaml` |
 | Surfaced but **not** admitted | 21 (see exclusion log) | set difference, reports vs. manifest |
-| Studies with extracted quantitative rows | 35 (31 arXiv + 2 gray + 2 own reanalyses) → 67 rows | `effects.csv` |
-| Library papers cited as context/framework only | 38 | draft in-text citations minus extraction studies |
+| Studies with extracted quantitative rows | 39 studies → 78 rows | `effects.csv` |
+| Library papers cited as context/framework only | 60 | draft in-text citations minus extraction studies |
 | Rows excluded post-verification | 1 (2505.19056 — citation mis-attribution; REMOVED from effects.csv 2026-06-11, full record preserved below) | this document, "Excluded row" section |
 | Review pass (2026-06-11) | +1 row extracted (IPO arm of 2404.14723, promoted from the KTO row's notes); excluded row removed → corpus 75 rows / 38 studies | `effects.csv`; paper TODO.md |
-| Rows verified against primary artifact | 73 of 75 current (was 64 of 67 at the verification freeze, 72 of 75 post-backward-pass; 12 are our own computed reanalysis rows, born verified; the 8 backward-citation rows and the review-extracted IPO row were PDF-verified at admission) | `effects.csv` `verified` column |
+| User-requested KG-ingest admission (2026-06-20) | +3 rows from 2603.17504 (HypoTermInstruct SFT): 2 hallucination/humility improvements plus 1 MMLU capability companion → corpus 78 rows / 39 studies | `effects.csv`; `library/notes/2603.17504--inducing-epistemological-humility-targeted-sft.md` |
+| User-requested KG-ingest context admission (2026-06-20) | +1 context/framework citation from 2606.20560 (DiffusionGemma transparency audit): latent-reasoning monitorability and opaque serial-depth context; no effect rows | `library/notes/2606.20560--how-transparent-is-diffusiongemma.md`; draft Gap 4 / Phase 3 |
+| Rows verified against primary artifact | 76 of 78 current (was 64 of 67 at the verification freeze, 72 of 75 post-backward-pass; 12 are our own computed reanalysis rows, born verified; the 8 backward-citation rows, the review-extracted IPO row, and the 3 HypoTermInstruct rows were PDF/HTML-verified at admission) | `effects.csv` `verified` column |
 
 ## Exclusion log — the 21 surfaced-but-not-admitted arXiv IDs
 
