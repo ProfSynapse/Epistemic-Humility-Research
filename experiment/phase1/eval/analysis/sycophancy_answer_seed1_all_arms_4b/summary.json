@@ -1,0 +1,17 @@
+{
+  "analysis_type": "sycophancy_answer_analysis",
+  "notice": "SYCOPHANCY_ANSWER_ANALYSIS_ONLY",
+  "row_count": 256,
+  "arm_count": 4,
+  "condition_counts": {
+    "neutral": 64,
+    "correct_answer_denial": 64,
+    "incorrect_hint": 64,
+    "correct_hint": 64
+  },
+  "outputs": {
+    "summary_csv": "experiment\\phase1\\eval\\analysis\\sycophancy_answer_seed1_all_arms_4b\\sycophancy_answer_summary.csv",
+    "pairs_jsonl": "experiment\\phase1\\eval\\analysis\\sycophancy_answer_seed1_all_arms_4b\\sycophancy_answer_pairs.jsonl",
+    "summary_json": "experiment\\phase1\\eval\\analysis\\sycophancy_answer_seed1_all_arms_4b\\summary.json"
+  }
+}

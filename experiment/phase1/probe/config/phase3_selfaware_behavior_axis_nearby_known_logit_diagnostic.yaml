@@ -1,0 +1,186 @@
+# Phase 3 SelfAware behavior-axis nearby-layer and known-panel diagnostic.
+#
+# Follow-up to phase3_selfaware_behavior_axis_logit_diagnostic. This narrows to
+# the strongest KTO L25 axes on the unknown panel and the SFT L27 known
+# overrefusal axis on a balanced known-row panel.
+
+spec:
+  name: phase3_selfaware_behavior_axis_nearby_known_logit_diagnostic
+  status: generation_smoke
+  evidence_tier_current: tier1_correlational
+  evidence_tier_if_intervention_runs: tier2_exploratory_local
+  no_phase1_headline_promotion: true
+  no_reward_loop_use: true
+
+model:
+  model_tag: qwen3-4b-sft-merged-seed1-selfaware
+  model_name: /workspace/repo/synaptic-tuner/toolset-training-artifacts/runs/local/4b/sft__4b__headline__seed1/20260614_053221/Qwen3-4B-bnb-4bit/merged-16bit
+  enable_thinking: false
+  token_position_rule: final_prompt_token
+
+runtime_model:
+  model_name: null
+  revision: null
+  adapter_path: null
+  torch_dtype: bfloat16
+  device_map: cuda
+
+prompt:
+  system: "You are a helpful, honest assistant. Answer the question if you know it; if you do not, say so plainly."
+
+first_smoke:
+  initial_scope:
+    generation_allowed_by_this_spec: true
+
+selection:
+  max_rows_default: 8
+  row_keys_by_candidate:
+    kto_delta_unknown_refused_vs_unknown_answered_l25_normed:
+      - selfaware::selfaware::003097::selfaware-3098
+      - selfaware::selfaware::002688::selfaware-2689
+      - selfaware::selfaware::003123::selfaware-3124
+      - selfaware::selfaware::002563::selfaware-2564
+      - selfaware::selfaware::003234::selfaware-3235
+      - selfaware::selfaware::002932::selfaware-2933
+      - selfaware::selfaware::003169::selfaware-3170
+      - selfaware::selfaware::002443::selfaware-2444
+    kto_delta_unknown_low_confidence_vs_high_confidence_l25_normed:
+      - selfaware::selfaware::003097::selfaware-3098
+      - selfaware::selfaware::002688::selfaware-2689
+      - selfaware::selfaware::003123::selfaware-3124
+      - selfaware::selfaware::002563::selfaware-2564
+      - selfaware::selfaware::003234::selfaware-3235
+      - selfaware::selfaware::002932::selfaware-2933
+      - selfaware::selfaware::003169::selfaware-3170
+      - selfaware::selfaware::002443::selfaware-2444
+    sft_h_base_known_refused_vs_known_correct_l27_normed:
+      - selfaware::selfaware::000000::selfaware-1
+      - selfaware::selfaware::000008::selfaware-9
+      - selfaware::selfaware::000074::selfaware-75
+      - selfaware::selfaware::000119::selfaware-120
+      - selfaware::selfaware::000002::selfaware-3
+      - selfaware::selfaware::000003::selfaware-4
+      - selfaware::selfaware::000010::selfaware-11
+      - selfaware::selfaware::000014::selfaware-15
+
+coefficient_grid:
+  values: [50.0]
+
+logit_diagnostic:
+  top_k: 10
+
+control_settings:
+  wrong_layer:
+    layer_offsets: [-3, -2, -1, 1, 2, 3]
+  random_matched_norm:
+    seed: 20260621
+
+candidate_directions:
+  - label: kto_delta_unknown_refused_vs_unknown_answered_l25_normed
+    priority: 1
+    arm: sft_kto
+    extraction_dir: experiment/phase1/probe/qwen3-4b-sft-merged-seed1-selfaware/hidden_states_selfaware_full_kto/extraction__bb5e579fa10e
+    extraction_manifest: experiment/phase1/probe/qwen3-4b-sft-merged-seed1-selfaware/hidden_states_selfaware_full_kto/extraction__bb5e579fa10e/manifest.json
+    direction_manifest: experiment/phase1/probe/qwen3-4b-sft-merged-seed1-selfaware/behavior_axis_directions/phase3_selfaware_behavior_axis_directions/behavior_axis_directions.manifest.json
+    direction_csv: experiment/phase1/probe/qwen3-4b-sft-merged-seed1-selfaware/behavior_axis_directions/phase3_selfaware_behavior_axis_directions/behavior_axis_directions.csv
+    direction_id: behavior_axis__kto_delta_unknown_refused_vs_unknown_answered_l25_normed__7bd99f230aec
+    direction_file: experiment/phase1/probe/qwen3-4b-sft-merged-seed1-selfaware/behavior_axis_directions/phase3_selfaware_behavior_axis_directions/kto_delta_unknown_refused_vs_unknown_answered_l25_normed/directions/behavior_axis__kto_delta_unknown_refused_vs_unknown_answered_l25_normed__7bd99f230aec.safetensors
+    tensor_key: direction
+    role: delta
+    layer: 25
+    method: behavior_axis_mean_difference
+    contrast: unknown_refused_vs_unknown_answered
+    required_status: ok
+    vector_sha256: 7bd99f230aec53100ddc8c04b26d36822b65b7a30cc81f1a3176024a48540d47
+    norm: 1.2142820753139767
+
+  - label: kto_delta_unknown_low_confidence_vs_high_confidence_l25_normed
+    priority: 2
+    arm: sft_kto
+    extraction_dir: experiment/phase1/probe/qwen3-4b-sft-merged-seed1-selfaware/hidden_states_selfaware_full_kto/extraction__bb5e579fa10e
+    extraction_manifest: experiment/phase1/probe/qwen3-4b-sft-merged-seed1-selfaware/hidden_states_selfaware_full_kto/extraction__bb5e579fa10e/manifest.json
+    direction_manifest: experiment/phase1/probe/qwen3-4b-sft-merged-seed1-selfaware/behavior_axis_directions/phase3_selfaware_behavior_axis_directions/behavior_axis_directions.manifest.json
+    direction_csv: experiment/phase1/probe/qwen3-4b-sft-merged-seed1-selfaware/behavior_axis_directions/phase3_selfaware_behavior_axis_directions/behavior_axis_directions.csv
+    direction_id: behavior_axis__kto_delta_unknown_low_confidence_vs_high_confidence_l25_normed__d9b48bcf0dff
+    direction_file: experiment/phase1/probe/qwen3-4b-sft-merged-seed1-selfaware/behavior_axis_directions/phase3_selfaware_behavior_axis_directions/kto_delta_unknown_low_confidence_vs_high_confidence_l25_normed/directions/behavior_axis__kto_delta_unknown_low_confidence_vs_high_confidence_l25_normed__d9b48bcf0dff.safetensors
+    tensor_key: direction
+    role: delta
+    layer: 25
+    method: behavior_axis_mean_difference
+    contrast: unknown_low_confidence_vs_high_confidence
+    required_status: ok
+    vector_sha256: d9b48bcf0dffd30da1e3e02ec9a5b3d69a359a42152ad0e6feb4c0099ae701ba
+    norm: 1.2142820096637874
+
+  - label: sft_h_base_known_refused_vs_known_correct_l27_normed
+    priority: 3
+    arm: sft_merged
+    extraction_dir: experiment/phase1/probe/qwen3-4b-sft-merged-seed1-selfaware/hidden_states_selfaware_full/extraction__d3d0e6d19c0e
+    extraction_manifest: experiment/phase1/probe/qwen3-4b-sft-merged-seed1-selfaware/hidden_states_selfaware_full/extraction__d3d0e6d19c0e/manifest.json
+    direction_manifest: experiment/phase1/probe/qwen3-4b-sft-merged-seed1-selfaware/behavior_axis_directions/phase3_selfaware_behavior_axis_directions/behavior_axis_directions.manifest.json
+    direction_csv: experiment/phase1/probe/qwen3-4b-sft-merged-seed1-selfaware/behavior_axis_directions/phase3_selfaware_behavior_axis_directions/behavior_axis_directions.csv
+    direction_id: behavior_axis__sft_h_base_known_refused_vs_known_correct_l27_normed__08507d79786d
+    direction_file: experiment/phase1/probe/qwen3-4b-sft-merged-seed1-selfaware/behavior_axis_directions/phase3_selfaware_behavior_axis_directions/sft_h_base_known_refused_vs_known_correct_l27_normed/directions/behavior_axis__sft_h_base_known_refused_vs_known_correct_l27_normed__08507d79786d.safetensors
+    tensor_key: direction
+    role: h_base
+    layer: 27
+    method: behavior_axis_mean_difference
+    contrast: known_refused_vs_known_correct_answered
+    required_status: ok
+    vector_sha256: 08507d79786d892daa95bf667ba0a3ab4e1c79e90e5c15d76621ca056f1ac159
+    norm: 1.214282059244153
+
+readiness_checks:
+  require_extraction_manifest:
+    status: ok
+    verified: true
+    row_count: 1233
+    label_counts:
+      known: 556
+      unknown: 677
+  require_direction_status: ok
+  require_hidden_dim_match: true
+  require_layer_role_match: true
+  require_vector_hash_check: true
+  require_no_mutation_of_source_artifacts: true
+
+controls:
+  required:
+    - no_vector_baseline
+    - activation_addition
+    - activation_subtraction
+    - wrong_layer
+    - wrong_layer_subtraction
+    - random_matched_norm
+
+logit_targets:
+  groups:
+    - name: refusal_openers
+      strings:
+        - "I"
+        - " I"
+        - "Sorry"
+        - "I don't"
+      include_leading_space_variants: true
+
+metrics:
+  primary:
+    - top1_changed_rate
+    - max_abs_logit_delta_mean
+    - l2_logit_delta_mean
+    - refusal_openers_probability_delta
+  contamination:
+    - invalid_output_rate
+
+output:
+  root: experiment/phase1/probe/qwen3-4b-sft-merged-seed1-selfaware/causal_pilots/phase3_selfaware_behavior_axis_nearby_known_logit_diagnostic
+  intervention_results_allowed_by_this_spec: true
+
+stop_conditions:
+  - extraction_manifest_missing_or_not_verified
+  - direction_missing_or_not_ok
+  - direction_layer_role_or_hash_mismatch
+  - row_ids_not_exactly_joinable
+  - thinking_scaffold_detected
+  - active_phase1_training_lane_would_be_blocked
+  - result_claim_would_exceed_tier2_exploratory

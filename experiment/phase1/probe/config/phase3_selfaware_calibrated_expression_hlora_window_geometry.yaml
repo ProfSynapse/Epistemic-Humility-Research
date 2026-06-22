@@ -1,0 +1,18 @@
+analysis:
+  name: phase3_selfaware_calibrated_expression_hlora_window_geometry
+  notice: DIRECTION_GEOMETRY_ANALYSIS_ONLY
+
+direction_sets:
+  - label: calibrated_expression_hlora_window
+    manifest: experiment/phase1/probe/qwen3-4b-sft-merged-seed1-selfaware/behavior_axis_directions/phase3_selfaware_calibrated_expression_hlora_window_directions/behavior_axis_directions.manifest.json
+
+  - label: calibrated_expression_axes
+    manifest: experiment/phase1/probe/qwen3-4b-sft-merged-seed1-selfaware/behavior_axis_directions/phase3_selfaware_calibrated_expression_axis_directions/behavior_axis_directions.manifest.json
+
+  - label: prior_layer_window_axes
+    manifest: experiment/phase1/probe/qwen3-4b-sft-merged-seed1-selfaware/behavior_axis_directions/phase3_selfaware_behavior_axis_layer_window_directions/behavior_axis_directions.manifest.json
+
+nearest_neighbors_per_direction: 8
+
+output:
+  root: experiment/phase1/probe/qwen3-4b-sft-merged-seed1-selfaware/direction_geometry/phase3_selfaware_calibrated_expression_hlora_window_geometry

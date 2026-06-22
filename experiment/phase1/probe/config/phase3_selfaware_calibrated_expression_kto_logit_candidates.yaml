@@ -1,0 +1,80 @@
+# KTO SelfAware calibrated-expression intervention candidates.
+#
+# These behavior-axis vectors are exploratory Phase 3 artifacts. They are
+# intended for local logit/generation diagnostics, not preregistered headline
+# evidence.
+
+candidate_directions:
+  - label: kto_h_lora_unknown_wrong_vs_refused_l24
+    priority: 1
+    arm: sft_kto
+    extraction_dir: experiment/phase1/probe/qwen3-4b-sft-merged-seed1-selfaware/hidden_states_selfaware_full_kto/extraction__bb5e579fa10e
+    extraction_manifest: experiment/phase1/probe/qwen3-4b-sft-merged-seed1-selfaware/hidden_states_selfaware_full_kto/extraction__bb5e579fa10e/manifest.json
+    direction_manifest: experiment/phase1/probe/qwen3-4b-sft-merged-seed1-selfaware/behavior_axis_directions/phase3_selfaware_calibrated_expression_hlora_window_directions/behavior_axis_directions.manifest.json
+    direction_csv: experiment/phase1/probe/qwen3-4b-sft-merged-seed1-selfaware/behavior_axis_directions/phase3_selfaware_calibrated_expression_hlora_window_directions/behavior_axis_directions.csv
+    direction_id: behavior_axis__kto_h_lora_unknown_wrong_vs_refused_l24_normed__7e353159058d
+    direction_file: experiment/phase1/probe/qwen3-4b-sft-merged-seed1-selfaware/behavior_axis_directions/phase3_selfaware_calibrated_expression_hlora_window_directions/kto_h_lora_unknown_wrong_vs_refused_l24_normed/directions/behavior_axis__kto_h_lora_unknown_wrong_vs_refused_l24_normed__7e353159058d.safetensors
+    tensor_key: direction
+    role: h_lora
+    layer: 24
+    method: behavior_axis_mean_difference
+    contrast: unknown_answered_wrong_vs_unknown_refused
+    positive_label: unknown_answered_wrong
+    negative_label: unknown_refused
+    required_status: ok
+    vector_sha256: 7e353159058da870463604cf9e0f339be1507e6149f7f68031c08a8352ff2c99
+    source_run_id: sft_kto__4b__amendment_a__seed1
+
+  - label: kto_h_lora_known_refused_vs_correct_l24
+    priority: 2
+    arm: sft_kto
+    extraction_dir: experiment/phase1/probe/qwen3-4b-sft-merged-seed1-selfaware/hidden_states_selfaware_full_kto/extraction__bb5e579fa10e
+    extraction_manifest: experiment/phase1/probe/qwen3-4b-sft-merged-seed1-selfaware/hidden_states_selfaware_full_kto/extraction__bb5e579fa10e/manifest.json
+    direction_manifest: experiment/phase1/probe/qwen3-4b-sft-merged-seed1-selfaware/behavior_axis_directions/phase3_selfaware_calibrated_expression_hlora_window_directions/behavior_axis_directions.manifest.json
+    direction_csv: experiment/phase1/probe/qwen3-4b-sft-merged-seed1-selfaware/behavior_axis_directions/phase3_selfaware_calibrated_expression_hlora_window_directions/behavior_axis_directions.csv
+    direction_id: behavior_axis__kto_h_lora_known_refused_vs_correct_l24_normed__540672190112
+    direction_file: experiment/phase1/probe/qwen3-4b-sft-merged-seed1-selfaware/behavior_axis_directions/phase3_selfaware_calibrated_expression_hlora_window_directions/kto_h_lora_known_refused_vs_correct_l24_normed/directions/behavior_axis__kto_h_lora_known_refused_vs_correct_l24_normed__540672190112.safetensors
+    tensor_key: direction
+    role: h_lora
+    layer: 24
+    method: behavior_axis_mean_difference
+    contrast: known_refused_vs_known_correct_answered
+    positive_label: known_refused
+    negative_label: known_correct_answered
+    required_status: ok
+    vector_sha256: 540672190112787c231d78b28ccd7bb2475482a21f6160d1c8958f570f125eaa
+    source_run_id: sft_kto__4b__amendment_a__seed1
+
+  - label: kto_h_lora_known_refused_vs_correct_l27
+    priority: 3
+    arm: sft_kto
+    extraction_dir: experiment/phase1/probe/qwen3-4b-sft-merged-seed1-selfaware/hidden_states_selfaware_full_kto/extraction__bb5e579fa10e
+    extraction_manifest: experiment/phase1/probe/qwen3-4b-sft-merged-seed1-selfaware/hidden_states_selfaware_full_kto/extraction__bb5e579fa10e/manifest.json
+    direction_manifest: experiment/phase1/probe/qwen3-4b-sft-merged-seed1-selfaware/behavior_axis_directions/phase3_selfaware_calibrated_expression_hlora_window_directions/behavior_axis_directions.manifest.json
+    direction_csv: experiment/phase1/probe/qwen3-4b-sft-merged-seed1-selfaware/behavior_axis_directions/phase3_selfaware_calibrated_expression_hlora_window_directions/behavior_axis_directions.csv
+    direction_id: behavior_axis__kto_h_lora_known_refused_vs_correct_l27_normed__9b833378b389
+    direction_file: experiment/phase1/probe/qwen3-4b-sft-merged-seed1-selfaware/behavior_axis_directions/phase3_selfaware_calibrated_expression_hlora_window_directions/kto_h_lora_known_refused_vs_correct_l27_normed/directions/behavior_axis__kto_h_lora_known_refused_vs_correct_l27_normed__9b833378b389.safetensors
+    tensor_key: direction
+    role: h_lora
+    layer: 27
+    method: behavior_axis_mean_difference
+    contrast: known_refused_vs_known_correct_answered
+    positive_label: known_refused
+    negative_label: known_correct_answered
+    required_status: ok
+    vector_sha256: 9b833378b389d043ac97559a751b350c1746a0ffde15c205bb4a3bb0d2d5866d
+    source_run_id: sft_kto__4b__amendment_a__seed1
+
+readiness_checks:
+  require_extraction_manifest:
+    status: ok
+    verified: true
+    row_count: 1233
+    label_counts:
+      known: 556
+      unknown: 677
+  require_direction_status: ok
+  require_hidden_dim_match: true
+  require_layer_role_match: true
+  require_vector_hash_check: true
+  require_no_mutation_of_source_artifacts: true

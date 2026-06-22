@@ -1,0 +1,18 @@
+source_manifest: experiment/phase1/probe/qwen3-4b-sft-merged-seed1-selfaware/behavior_axis_directions/phase3_selfaware_calibrated_expression_hlora_window_directions/behavior_axis_directions.manifest.json
+
+transforms:
+  - label: kto_h_lora_l24_subtract_known_and_unknown_damage_normed
+    method: linear_combination
+    contrast: composite_known_overrefusal_and_unknown_wrong_repair
+    target_norm: 1.2142820358276367
+    components:
+      - source_direction_id: behavior_axis__kto_h_lora_known_refused_vs_correct_l24_normed__540672190112
+        weight: -1.0
+      - source_direction_id: behavior_axis__kto_h_lora_unknown_wrong_vs_refused_l24_normed__7e353159058d
+        weight: -1.0
+    metadata:
+      arm: sft_kto
+      selection_reason: combine lowering known-overrefusal with raising unknown-wrong refusal
+
+output:
+  root: experiment/phase1/probe/qwen3-4b-sft-merged-seed1-selfaware/direction_transforms/phase3_selfaware_calibrated_expression_kto_composite_directions

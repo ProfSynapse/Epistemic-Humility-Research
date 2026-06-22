@@ -1,0 +1,30 @@
+analysis:
+  name: phase3_selfaware_behavior_feature_direction_geometry
+  notice: DIRECTION_GEOMETRY_ANALYSIS_ONLY
+
+direction_sets:
+  - label: dpo_broad_delta_l24
+    manifest: experiment/phase1/probe/qwen3-4b-sft-merged-seed1-selfaware/hidden_states_selfaware_full/extraction__d3d0e6d19c0e/selfaware_full_candidate_directions.manifest.json
+    filters:
+      roles: [delta]
+      layers: [24]
+
+  - label: kto_broad_delta_l25
+    manifest: experiment/phase1/probe/qwen3-4b-sft-merged-seed1-selfaware/hidden_states_selfaware_full_kto/extraction__bb5e579fa10e/selfaware_full_kto_candidate_directions.manifest.json
+    filters:
+      roles: [delta]
+      layers: [25]
+
+  - label: prior_sae_features
+    manifest: experiment/phase1/probe/qwen3-4b-sft-merged-seed1-selfaware/sae_feature_directions/phase3_selfaware_delta_topk16_feature_directions/sae_feature_directions.manifest.json
+
+  - label: prior_sae_composites
+    manifest: experiment/phase1/probe/qwen3-4b-sft-merged-seed1-selfaware/sae_feature_composites/phase3_selfaware_delta_topk16_feature_composites/sae_feature_composite_directions.manifest.json
+
+  - label: behavior_sae_features
+    manifest: experiment/phase1/probe/qwen3-4b-sft-merged-seed1-selfaware/sae_feature_directions/phase3_selfaware_delta_topk16_behavior_feature_directions/sae_feature_directions.manifest.json
+
+nearest_neighbors_per_direction: 8
+
+output:
+  root: experiment/phase1/probe/qwen3-4b-sft-merged-seed1-selfaware/direction_geometry/phase3_selfaware_behavior_feature_direction_geometry

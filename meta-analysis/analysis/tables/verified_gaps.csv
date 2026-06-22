@@ -1,5 +1,5 @@
 gap,count,unit,why_it_matters,affected_items
 unverified_effect_rows,2,rows,not counted as verified directional evidence until primary-source access is resolved,nostalgebraist-2023; jmir-e76048
 variance_reporting_sparse,6,rows with variance information,formal random-effects pooling remains underpowered for most claim families,variance-aware rows only; see synthesis-summary.md
-outside_claim_family_boundaries,38,rows,family unanimity is conditional on selector boundaries,2203.02155; 2205.14334; 2305.14251; 2305.14975; 2306.13063; 2308.03958; 2310.13548; 2311.08596; 2311.08877; 2401.12794; 2401.13275; 2402.00367; 2406.10162; 2407.12043; 2410.09724; 2410.17234; 2502.08177; 2505.13995; 2505.23646; 2506.09038; 2507.07484; 2509.20088; nostalgebraist-2023; reanalysis-2401.13275; reanalysis-2506.09038
-capability_companion_rows,1,rows,accuracy companion rows contextualize humility metrics but are excluded from humility-family support counts,2410.09724
+outside_claim_family_boundaries,39,rows,family unanimity is conditional on selector boundaries,2203.02155; 2205.14334; 2305.14251; 2305.14975; 2306.13063; 2308.03958; 2310.13548; 2311.08596; 2311.08877; 2401.12794; 2401.13275; 2402.00367; 2406.10162; 2407.12043; 2410.09724; 2410.17234; 2502.08177; 2505.13995; 2505.23646; 2506.09038; 2507.07484; 2509.20088; 2603.17504; nostalgebraist-2023; reanalysis-2401.13275; reanalysis-2506.09038
+capability_companion_rows,2,rows,accuracy companion rows contextualize humility metrics but are excluded from humility-family support counts,2410.09724; 2603.17504

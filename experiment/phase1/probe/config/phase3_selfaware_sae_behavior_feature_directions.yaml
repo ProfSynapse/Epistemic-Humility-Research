@@ -1,0 +1,31 @@
+# Export selected behavior-conditioned SAE features as raw hidden-state direction
+# candidates. These are bridge artifacts for later diagnostics, not causal
+# evidence or monosemantic-feature claims.
+
+spec:
+  name: phase3_selfaware_topk16_sae_behavior_feature_directions
+  analysis_type: phase3_sae_feature_direction_export
+  notice: SAE_FEATURE_DIRECTION_CANDIDATES_ONLY
+  no_phase1_headline_promotion: true
+
+candidate_analyses:
+  - label: sft_dpo_selfaware_behavior_features_l24
+    summary: experiment/phase1/probe/qwen3-4b-sft-merged-seed1-selfaware/sae_behavior_feature_analysis/phase3_selfaware_delta_topk16_behavior_features/sft_dpo_selfaware_full_delta_l24_topk16_behavior/summary.json
+    selection:
+      # Top unknown-refusal / low-confidence DPO candidates.
+      features:
+        - 49
+        - 80
+        - 125
+  - label: sft_kto_selfaware_behavior_features_l25
+    summary: experiment/phase1/probe/qwen3-4b-sft-merged-seed1-selfaware/sae_behavior_feature_analysis/phase3_selfaware_delta_topk16_behavior_features/sft_kto_selfaware_full_delta_l25_topk16_behavior/summary.json
+    selection:
+      # Top unknown-refusal KTO candidates plus the strongest known-overrefusal
+      # candidate for damage/over-refusal controls.
+      features:
+        - 27
+        - 12
+        - 16
+
+output:
+  root: experiment/phase1/probe/qwen3-4b-sft-merged-seed1-selfaware/sae_feature_directions/phase3_selfaware_delta_topk16_behavior_feature_directions

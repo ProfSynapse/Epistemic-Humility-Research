@@ -4,7 +4,7 @@ session_id: schema-response-confidence-track
 title: Schema Response-Confidence Track
 status: active
 created_at: '2026-06-22T13:53:26Z'
-updated_at: '2026-06-22T15:33:09Z'
+updated_at: '2026-06-22T19:13:00Z'
 phase: phase1
 question: Can a schema-trained SFT base plus DPO/KTO/GRPO variants learn response-appropriate
   confidence without endpoint collapse?
@@ -316,7 +316,7 @@ batch 12.
       peak_reserved_vram_gb: 22.633
       peak_steps_per_second: 0.358
 - decisions:
-  - Use batch 4 with gradient accumulation 2 for the full schema-SFT->DPO run.
+  - Use batch 4 with gradient accumulation 2 for the full schema-SFT->DPO run unless longer full-run telemetry shows this is unsafe.
   - Do not scale DPO to batch 8 locally; it provides no speed gain and leaves only about 1.4 GB reserved-VRAM headroom.
 - gotchas:
   - HF JSON loading needs stable column types, not only stable keys; ordinary rows should use typed sentinels such as `""` and `-1.0` instead of null provenance fields.
@@ -325,7 +325,7 @@ batch 12.
 
 - at: `2026-06-22T15:33:09Z`
 - kind: `launch`
-- summary: Launched the full local schema-SFT->DPO seed-1 run from the merged schema-SFT base at the lower-risk batch setting selected by smoke probes.
+- summary: Launched the first full local schema-SFT->DPO seed-1 run from the merged schema-SFT base after low-risk batch-4 smoke probes.
 - evidence:
   - `scratch/schema_response_confidence/runs/sft_schema_seed1_full/20260622_141511/Qwen3-4B-bnb-4bit/merged-16bit`
   - `scratch/schema_response_confidence/qwen3-4b-instruct/dpo_response_confidence_train.jsonl`
@@ -339,6 +339,378 @@ batch 12.
     gradient_accumulation: 2
     effective_batch_size: 8
     data_loader_status: passed
+
+### 013-recovery - DPO Batch 4 Full Run Aborted For VRAM Risk
+
+- at: `2026-06-22T15:43:09Z`
+- kind: `recovery`
+- summary: Stopped the first full schema-SFT->DPO run after live telemetry contradicted the 10-step smoke and showed critical VRAM pressure, then relaunched with the same effective batch at lower per-device batch.
+- evidence:
+  - `scratch/schema_response_confidence/runs/schema_sft_dpo_seed1_full/20260622_batch4_accum2_seed1/logs/training_20260622_153402.jsonl`
+  - `scratch/schema_response_confidence/runs/schema_sft_dpo_seed1_full/20260622_batch2_accum4_seed1`
+  - `.skills/experiment-runner/reference/local-runtime.md`
+- signals:
+    aborted_run:
+      container: eh-schema-dpo-seed1-full-202606221132
+      stopped_at_step: 185
+      total_steps: 1868
+      batch_size: 4
+      gradient_accumulation: 2
+      effective_batch_size: 8
+      live_vram_used_gb: 23.722
+      oom_risk_level: critical
+      stop_exit_code: 137
+    relaunched_run:
+      container: eh-schema-dpo-seed1-full-b2a4-202606221144
+      batch_size: 2
+      gradient_accumulation: 4
+      effective_batch_size: 8
+      data_loader_status: passed
+- decisions:
+  - Do not trust a 10-step DPO smoke alone for full-run batch sizing when row lengths vary.
+  - Continue schema-SFT->DPO at batch 2 / accumulation 4, preserving effective batch 8 with safer per-device memory.
 - next_steps:
-  - Monitor until the run reaches optimizer steps, then estimate ETA from timestamped training logs.
+  - Confirm the relaunched run remains stable beyond the first 100-200 optimizer steps.
   - After DPO completes, eval the DPO adapter on the schema SelfAware config and launch the schema-SFT->KTO smoke/full path.
+
+### 014-validation - DPO Relaunch Stable And GRPO Prep
+
+- at: `2026-06-22T15:51:52Z`
+- kind: `validation`
+- summary: The batch-2 DPO relaunch remained low-risk beyond 100 optimizer steps, and the Amendment D GRPO smoke plumbing was prepared with known/unknown/ambiguous coverage.
+- evidence:
+  - `scratch/schema_response_confidence/runs/schema_sft_dpo_seed1_full/20260622_batch2_accum4_seed1/logs/training_20260622_154449.jsonl`
+  - `experiment/phase1/grpo/make_smoke_subset.py`
+  - `experiment/phase1/grpo/configs/grpo_schema_sft_merged_seed1_micro_smoke.yaml`
+  - `experiment/phase1/grpo/configs/grpo_schema_sft_merged_seed1_full.yaml`
+  - `scratch/schema_response_confidence/qwen3-4b-instruct-grpo/grpo_train_smoke_48.jsonl`
+- commands:
+  - `python experiment/phase1/grpo/make_smoke_subset.py --input scratch/schema_response_confidence/qwen3-4b-instruct-grpo/grpo_train.jsonl --output scratch/schema_response_confidence/qwen3-4b-instruct-grpo/grpo_train_smoke_48.jsonl --per-label 16 --labels known,unknown,ambiguous`
+  - `python -m pytest experiment/phase1/grpo/tests/test_make_smoke_subset.py experiment/phase1/grpo/tests/test_build_grpo_dataset.py experiment/phase1/grpo/tests/test_humility_reward.py -q`
+- signals:
+    dpo_relaunch_step_checked: 145
+    dpo_total_steps: 1868
+    dpo_steps_per_second: 0.358
+    dpo_oom_risk_level: low
+    dpo_live_vram_used_gb: 10.752
+    grpo_smoke_subset_rows: 48
+    grpo_smoke_subset_labels:
+      known: 16
+      unknown: 16
+      ambiguous: 16
+    tests_passed: 22
+- decisions:
+  - Leave DPO running at batch 2 / accumulation 4.
+  - Use the 48-row schema GRPO smoke subset for first GRPO contact so the ambiguous-middle reward path is exercised.
+
+### 015-heartbeat - DPO Relaunch Mid-Run
+
+- at: `2026-06-22T16:07:44Z`
+- kind: `heartbeat`
+- summary: The safer batch-2 DPO run is stable after a longer check, but the objective is already separating chosen/rejected very aggressively.
+- evidence:
+  - `scratch/schema_response_confidence/runs/schema_sft_dpo_seed1_full/20260622_batch2_accum4_seed1/logs/training_20260622_154449.jsonl`
+- signals:
+    step_checked: 480
+    total_steps: 1868
+    elapsed_seconds: 1352.775
+    steps_per_second: 0.355
+    oom_risk_level: low
+    current_live_vram_used_gb: 9.215
+    max_reserved_vram_gb: 11.271
+    latest_loss: 0.0002
+    rewards_accuracy: 1.0
+    rewards_margin: 9.9108
+- interpretation:
+  - Batch 2 / accumulation 4 is the right local DPO setting for this full run.
+  - The near-zero DPO loss and large margins may indicate strong preference overoptimization; eval should be interpreted as evidence about whether this objective improved calibrated expression or merely pushed rejected completions down.
+- next_steps:
+  - Keep the run going unless OOM or trainer failure occurs.
+  - On completion, run schema SelfAware eval against the DPO adapter before launching KTO.
+
+### 016-result - Schema-SFT To DPO Seed 1 Smoke Eval
+
+- at: `2026-06-22T17:23:51Z`
+- kind: `result`
+- summary: The safer full schema-SFT->DPO seed-1 run completed, but the first SelfAware smoke eval shows no clear behavioral gain over merged schema-SFT and a stronger high-confidence collapse.
+- evidence:
+  - `scratch/schema_response_confidence/runs/schema_sft_dpo_seed1_full/20260622_batch2_accum4_seed1/final_model`
+  - `scratch/schema_response_confidence/runs/schema_sft_dpo_seed1_full/20260622_batch2_accum4_seed1/capacity_features.json`
+  - `experiment/phase1/eval/config/eval_amendment_d_response_confidence_selfaware_schema_sft_dpo_seed1_smoke_local_4b.yaml`
+  - `experiment/phase1/eval/results_amendment_d_response_confidence_selfaware_schema_sft_dpo_seed1_smoke_4b/schema_sft_dpo_seed1__selfaware/metrics.json`
+  - `experiment/phase1/eval/results_amendment_d_response_confidence_selfaware_schema_sft_dpo_seed1_smoke_4b/schema_sft_dpo_seed1__selfaware/scored_rows.jsonl`
+- signals:
+    training:
+      exit_code: 0
+      final_step: 1868
+      runtime_seconds: 5200.8
+      final_loss: 0.0387
+      peak_reserved_vram_gb: 11.271
+      oom_risk_level: low
+    eval:
+      rows: 192
+      known_rows: 97
+      unknown_rows: 95
+      stated_confidence_coverage_pct: 100.0
+      mean_stated_confidence: 0.873828
+      confidence_values:
+        0.875: 189
+        0.8: 3
+      refusal_recall_pct: 87.37
+      over_refusal_pct: 64.95
+      correct_on_known_pct: 41.18
+      truthful_pct: 50.52
+- interpretation:
+  - DPO successfully trained and preserved the JSON schema, but it did not produce calibrated confidence variation on this smoke slice.
+  - Relative to the merged schema-SFT smoke, DPO is behaviorally near-flat or slightly worse while pushing confidence higher, consistent with the near-zero DPO loss and very large preference margins observed during training.
+  - Treat this as bounded seed-1 evidence that schema-SFT->DPO alone is not solving response-confidence calibration at these settings.
+- next_steps:
+  - Launch schema-SFT->KTO from the same merged schema-SFT base.
+  - Defer full SelfAware DPO eval until after KTO/GRPO smokes clarify whether DPO is worth broader evaluation.
+
+### 017-launch - Full Schema-SFT To KTO Seed 1
+
+- at: `2026-06-22T17:31:31Z`
+- kind: `launch`
+- summary: KTO smoke probes passed from the merged schema-SFT base, and the full schema-SFT->KTO seed-1 run was launched at batch 8 / accumulation 1.
+- evidence:
+  - `scratch/schema_response_confidence/runs/schema_sft_kto_seed1_smoke/20260622_batch4_step10_probe/capacity_features.json`
+  - `scratch/schema_response_confidence/runs/schema_sft_kto_seed1_smoke/20260622_batch8_step10_probe/capacity_features.json`
+  - `scratch/schema_response_confidence/qwen3-4b-instruct/kto_response_confidence_train.jsonl`
+  - `scratch/schema_response_confidence/runs/schema_sft_kto_seed1_full/20260622_batch8_accum1_seed1`
+- signals:
+    kto_batch4_accum2_smoke:
+      completed: true
+      final_step: 10
+      effective_batch_size: 8
+      oom_risk_level: low
+      peak_reserved_vram_gb: 4.486
+      peak_steps_per_second: 0.31
+    kto_batch8_accum1_smoke:
+      completed: true
+      final_step: 10
+      effective_batch_size: 8
+      oom_risk_level: low
+      peak_reserved_vram_gb: 6.35
+      peak_steps_per_second: 0.469
+    full_launch:
+      container: eh-schema-kto-seed1-full-b8a1-202606221331
+      train_rows: 29886
+      batch_size: 8
+      gradient_accumulation: 1
+      effective_batch_size: 8
+      learning_rate: 1.0e-6
+      beta: 0.1
+- decisions:
+  - Use batch 8 / accumulation 1 for the full KTO run; it improves throughput over batch 4 and remains low VRAM risk in smoke.
+- next_steps:
+  - Monitor until the full KTO run reaches optimizer steps and estimate ETA.
+  - On completion, run the same schema SelfAware smoke eval before moving to GRPO.
+
+### 018-heartbeat - KTO Full Run Started
+
+- at: `2026-06-22T17:37:25Z`
+- kind: `heartbeat`
+- summary: The full schema-SFT->KTO seed-1 run reached optimizer steps and is memory-stable at the faster batch-8 setting.
+- evidence:
+  - `scratch/schema_response_confidence/runs/schema_sft_kto_seed1_full/20260622_batch8_accum1_seed1/logs/training_*.jsonl`
+- signals:
+    step_checked: 105
+    total_steps: 3736
+    steps_per_second: 0.519
+    oom_risk_level: low
+    current_live_vram_used_gb: 8.402
+    max_reserved_vram_gb: 8.068
+    latest_loss: 0.4968
+    latest_kl: 0.0659
+- decisions:
+  - Keep KTO running at batch 8 / accumulation 1.
+  - Do not launch eval or GRPO in parallel with this full KTO run.
+- next_steps:
+  - Check again after a longer interval; if it remains stable, let it complete and then run schema SelfAware smoke eval.
+
+### 019-reroute - KTO Batch Increase
+
+- at: `2026-06-22T18:05:00Z`
+- kind: `reroute`
+- summary: The first full schema-SFT->KTO seed-1 run was intentionally stopped at batch 8 / accumulation 1 after stable telemetry, then relaunched at batch 24 / accumulation 1 to use available RTX 3090 headroom.
+- evidence:
+  - `scratch/schema_response_confidence/runs/schema_sft_kto_seed1_full/20260622_batch8_accum1_seed1/logs/training_*.jsonl`
+  - `scratch/schema_response_confidence/runs/schema_sft_kto_seed1_smoke/20260622_batch16_step10_probe/capacity_features.json`
+  - `scratch/schema_response_confidence/runs/schema_sft_kto_seed1_smoke/20260622_batch24_step10_probe/capacity_features.json`
+  - `scratch/schema_response_confidence/runs/schema_sft_kto_seed1_full/20260622_batch24_accum1_seed1`
+- signals:
+    stopped_batch8_full:
+      container: eh-schema-kto-seed1-full-b8a1-202606221331
+      exit_code: 137
+      stop_reason: manual_user_directed_capacity_reroute
+      oom_observed: false
+      last_observed_step_approx: 365
+      oom_risk_level: low
+      peak_reserved_vram_gb_approx: 10.441
+    kto_batch16_accum1_smoke:
+      completed: true
+      final_step: 10
+      effective_batch_size: 16
+      oom_risk_level: low
+      peak_reserved_vram_gb: 10.807
+      peak_samples_per_second: 5.235
+    kto_batch24_accum1_smoke:
+      completed: true
+      final_step: 10
+      effective_batch_size: 24
+      oom_risk_level: low
+      peak_reserved_vram_gb: 16.529
+      peak_reserved_headroom_gb: 7.47
+      peak_samples_per_second: 6.494
+    full_launch:
+      container: eh-schema-kto-seed1-full-b24a1-202606221405
+      train_rows: 29886
+      batch_size: 24
+      gradient_accumulation: 1
+      effective_batch_size: 24
+      expected_optimizer_steps_approx: 1246
+- decisions:
+  - Use batch 24 / accumulation 1 for the full KTO rerun because smoke throughput improved and the card was idle, while keeping an early monitor because DPO showed that 10-step smokes can understate full-run memory growth.
+- next_steps:
+  - Check startup logs and live VRAM after the trainer reaches optimizer steps.
+  - If memory remains below critical range, let the KTO run complete before launching KTO eval.
+
+### 020-reroute - KTO Batch 24 Too Hot
+
+- at: `2026-06-22T18:15:00Z`
+- kind: `reroute`
+- summary: The batch-24 KTO full run was stopped after early live telemetry hit critical VRAM, then relaunched at batch 16 / accumulation 1 as the faster-but-safer capacity point.
+- evidence:
+  - `scratch/schema_response_confidence/runs/schema_sft_kto_seed1_full/20260622_batch24_accum1_seed1/logs/training_*.jsonl`
+  - `scratch/schema_response_confidence/runs/schema_sft_kto_seed1_full/20260622_batch16_accum1_seed1`
+- signals:
+    stopped_batch24_full:
+      container: eh-schema-kto-seed1-full-b24a1-202606221405
+      exit_code: 137
+      stop_reason: manual_pre_oom_capacity_reroute
+      last_observed_step: 25
+      total_steps: 1246
+      live_vram_used_gb: 23.709
+      gpu_vram_utilization_pct: 98.79
+      max_reserved_vram_gb_reported: 26.779
+      oom_risk_level: critical
+    full_relaunch:
+      container: eh-schema-kto-seed1-full-b16a1-202606221415
+      train_rows: 29886
+      batch_size: 16
+      gradient_accumulation: 1
+      effective_batch_size: 16
+      expected_optimizer_steps_approx: 1868
+- decisions:
+  - Treat KTO batch 24 as too close to the RTX 3090 limit for this dataset despite a low-risk 10-step smoke.
+  - Use batch 16 / accumulation 1 as the current KTO full-run speed/safety compromise.
+- next_steps:
+  - Monitor batch 16 after optimizer steps begin; if live VRAM remains comfortably below the ceiling, let the run complete.
+
+### 021-heartbeat - KTO Batch 16 Stable
+
+- at: `2026-06-22T18:18:00Z`
+- kind: `heartbeat`
+- summary: The schema-SFT->KTO seed-1 batch-16 rerun reached optimizer steps and is stable enough to continue.
+- evidence:
+  - `scratch/schema_response_confidence/runs/schema_sft_kto_seed1_full/20260622_batch16_accum1_seed1/logs/training_*.jsonl`
+- signals:
+    step_checked: 30
+    total_steps: 1868
+    steps_per_second: 0.354
+    samples_per_second: 5.665
+    live_vram_used_gb: 16.857
+    max_reserved_vram_gb: 16.523
+    reserved_headroom_gb: 7.476
+    oom_risk_level: low
+    latest_loss: 0.4996
+    latest_kl: 0.0131
+- decisions:
+  - Continue the batch-16 KTO full run.
+  - Do not run parallel eval while confirming whether batch-16 stays stable beyond the early long-row region.
+- next_steps:
+  - Recheck after a longer interval; if it remains low risk, let the full run finish and then run the schema SelfAware KTO smoke eval.
+
+### 022-reroute - KTO Batch 16 Also Too Tight
+
+- at: `2026-06-22T18:30:00Z`
+- kind: `reroute`
+- summary: The batch-16 KTO full run was stopped after later telemetry climbed into a high-risk VRAM band; batch 12 / accumulation 1 was launched as the last speed-up attempt before falling back to the proven batch-8 setting.
+- evidence:
+  - `scratch/schema_response_confidence/runs/schema_sft_kto_seed1_full/20260622_batch16_accum1_seed1/logs/training_*.jsonl`
+  - `scratch/schema_response_confidence/runs/schema_sft_kto_seed1_full/20260622_batch12_accum1_seed1`
+- signals:
+    stopped_batch16_full:
+      container: eh-schema-kto-seed1-full-b16a1-202606221415
+      exit_code: 137
+      stop_reason: manual_pre_oom_capacity_reroute
+      last_observed_step: 250
+      total_steps: 1868
+      live_vram_used_gb_range: "23.473-23.72"
+      gpu_vram_utilization_pct_range: "97.8-98.83"
+      reserved_headroom_gb: 0.861
+      oom_risk_level: high
+    full_relaunch:
+      container: eh-schema-kto-seed1-full-b12a1-202606221430
+      train_rows: 29886
+      batch_size: 12
+      gradient_accumulation: 1
+      effective_batch_size: 12
+      expected_optimizer_steps_approx: 2491
+- decisions:
+  - Treat batch 16 as too tight for unattended full KTO despite early low-risk logs.
+  - Try batch 12 because it still improves effective batch over batch 8, but revert to batch 8 if batch 12 enters high/critical VRAM risk.
+- next_steps:
+  - Monitor batch 12 at startup and after the long-row region; keep only if it remains below high risk.
+
+### 023-heartbeat - KTO Batch 12 Cleared Long-Row Check
+
+- at: `2026-06-22T18:35:00Z`
+- kind: `heartbeat`
+- summary: The schema-SFT->KTO seed-1 batch-12 run passed the step range where batch 16 became unsafe, with low OOM risk and materially more headroom.
+- evidence:
+  - `scratch/schema_response_confidence/runs/schema_sft_kto_seed1_full/20260622_batch12_accum1_seed1/logs/training_*.jsonl`
+- signals:
+    step_checked: 390
+    total_steps: 2491
+    steps_per_second: 0.362
+    samples_per_second: 4.343
+    live_vram_used_gb: 12.037
+    current_reserved_vram_gb: 11.703
+    max_reserved_vram_gb: 15.973
+    max_reserved_headroom_gb: 8.027
+    oom_risk_level: low
+    latest_loss: 0.0503
+    rewards_margin: 6.4391
+- decisions:
+  - Treat batch 12 / accumulation 1 as the current accepted KTO full-run setting.
+  - Continue without parallel GPU eval until KTO completes.
+- next_steps:
+  - Let the KTO run continue with longer heartbeat checks; expected remaining time from this checkpoint is roughly 95-100 minutes.
+  - On completion, run schema SelfAware smoke eval against the KTO adapter.
+
+### 024-heartbeat - KTO Batch 12 Mid-Run
+
+- at: `2026-06-22T19:13:00Z`
+- kind: `heartbeat`
+- summary: The accepted batch-12 schema-SFT->KTO seed-1 run remains low-risk around the midpoint.
+- evidence:
+  - `scratch/schema_response_confidence/runs/schema_sft_kto_seed1_full/20260622_batch12_accum1_seed1/logs/training_*.jsonl`
+- signals:
+    step_checked: 1200
+    total_steps: 2491
+    steps_per_second: 0.349
+    samples_per_second: 4.187
+    live_vram_used_gb: 15.398
+    current_reserved_vram_gb: 15.064
+    max_reserved_vram_gb: 16.18
+    max_reserved_headroom_gb: 7.82
+    oom_risk_level: low
+    latest_loss: 0.0026
+    rewards_margin: 15.1594
+- decisions:
+  - Continue the batch-12 KTO full run.
+  - Keep GPU eval paused until the KTO run finishes.
+- next_steps:
+  - Recheck near completion; then run schema SelfAware smoke eval against the KTO adapter.
