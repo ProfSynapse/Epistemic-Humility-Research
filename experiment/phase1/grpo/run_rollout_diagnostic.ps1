@@ -1,5 +1,5 @@
 param(
-    [ValidateSet("base", "sft-seed1", "sft-merged-seed1", "sft-json-bridge-seed1")]
+    [ValidateSet("base", "sft-seed1", "sft-merged-seed1", "sft-json-bridge-seed1", "sft-json-bridge-seed1-dev", "sft-json-bridge-seed1-full-final")]
     [string]$Mode = "base",
     [int]$MaxRows = 4,
     [int]$NumRollouts = 4,
@@ -20,24 +20,38 @@ $config = switch ($Mode) {
     "sft-seed1" { "experiment/phase1/grpo/configs/grpo_sft_seed1_micro_smoke.yaml" }
     "sft-merged-seed1" { "experiment/phase1/grpo/configs/grpo_sft_merged_seed1_micro_smoke.yaml" }
     "sft-json-bridge-seed1" { "experiment/phase1/grpo/configs/grpo_sft_json_bridge_seed1_micro_smoke.yaml" }
+    "sft-json-bridge-seed1-dev" { "experiment/phase1/grpo/configs/grpo_sft_json_bridge_seed1_dev_diagnostic.yaml" }
+    "sft-json-bridge-seed1-full-final" { "experiment/phase1/grpo/configs/grpo_sft_json_bridge_seed1_full_final_diagnostic.yaml" }
 }
 
-$smokeData = "scratch/grpo_bootstrap/qwen3-4b-instruct/grpo_train_smoke_32.jsonl"
-if (-not (Test-Path -LiteralPath $smokeData)) {
-    throw "Missing smoke dataset: $smokeData. Run build_grpo_dataset.py and make_smoke_subset.py first."
+$requiredData = switch ($Mode) {
+    { $_ -in @("sft-json-bridge-seed1-dev", "sft-json-bridge-seed1-full-final") } {
+        "scratch/grpo_bootstrap/qwen3-4b-instruct/grpo_dev.jsonl"
+    }
+    default { "scratch/grpo_bootstrap/qwen3-4b-instruct/grpo_train_smoke_32.jsonl" }
+}
+if (-not (Test-Path -LiteralPath $requiredData)) {
+    throw "Missing diagnostic dataset: $requiredData. Run build_grpo_dataset.py first; for smoke modes also run make_smoke_subset.py."
 }
 
-if ($Mode -eq "sft-merged-seed1" -or $Mode -eq "sft-json-bridge-seed1") {
+if ($Mode -eq "sft-merged-seed1" -or $Mode -eq "sft-json-bridge-seed1" -or $Mode -eq "sft-json-bridge-seed1-dev") {
     $requiredModel = "synaptic-tuner/toolset-training-artifacts/runs/local/4b/sft__4b__headline__seed1/20260614_053221/Qwen3-4B-bnb-4bit/merged-16bit/config.json"
     if (-not (Test-Path -LiteralPath $requiredModel)) {
         throw "Missing merged SFT model artifact: $requiredModel"
     }
 }
 
-if ($Mode -eq "sft-json-bridge-seed1") {
+if ($Mode -in @("sft-json-bridge-seed1", "sft-json-bridge-seed1-dev", "sft-json-bridge-seed1-full-final")) {
     $requiredBridge = "scratch/grpo_bootstrap/runs/sft_merged_seed1_json_bridge/20260621_102859/final_model/adapter_config.json"
     if (-not (Test-Path -LiteralPath $requiredBridge)) {
         throw "Missing SFT JSON bridge adapter artifact: $requiredBridge"
+    }
+}
+
+if ($Mode -eq "sft-json-bridge-seed1-full-final") {
+    $requiredFinal = "scratch/grpo_bootstrap/runs/sft_json_bridge_seed1_full/20260621_111743/final_model/adapter_config.json"
+    if (-not (Test-Path -LiteralPath $requiredFinal)) {
+        throw "Missing full GRPO final adapter artifact: $requiredFinal"
     }
 }
 

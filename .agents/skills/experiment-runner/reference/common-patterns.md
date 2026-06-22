@@ -135,6 +135,20 @@ collapsed trainer reward variance. The working bridge micro pattern used
 valid JSON, trainer clipping stayed 0.0, and all 6 smoke steps had nonzero
 reward variance. Treat sampler choice as a contract-format gate before scaling.
 
+For full SFT-bridge GRPO, remember that one trainer step is effectively one
+prompt group when `num_generations` equals the per-device batch size. The
+2026-06-21 local full run over 14,395 prompts therefore ran 14,395 steps, not
+roughly 1,800 batch steps, and took about 15.9 hours on the RTX 3090 at
+~0.25-0.37 steps/sec. Plan monitoring/checkpoint cadence accordingly.
+
+The first completed full SFT-bridge GRPO run showed a real behavior/schema
+tradeoff: training completed with low OOM risk and preserved rolling reward
+variance, and a 64-row eval-like dev diagnostic improved known accuracy and
+unknown abstention relative to the pre-GRPO bridge, but introduced 1 malformed
+known JSON output where the pre-GRPO bridge had none. Do not report it as
+headline evidence until the standard eval suite quantifies schema validity and
+behavior on the full evaluation set.
+
 Custom GRPO reward files are loaded dynamically by Synaptic Tuner. If a custom
 reward module uses `@dataclass`, the loader must register the module in
 `sys.modules` before `exec_module`; otherwise Python's dataclass machinery can

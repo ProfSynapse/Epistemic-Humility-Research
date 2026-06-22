@@ -4,7 +4,7 @@ session_id: grpo-reward-variance-diagnostic
 title: GRPO Reward Variance Diagnostic
 status: active
 created_at: '2026-06-21T09:09:44Z'
-updated_at: '2026-06-21T11:05:53Z'
+updated_at: '2026-06-22T03:36:58Z'
 phase: phase1
 question: Can local GRPO rollouts produce parseable completions and nonzero reward
   variance under intended generation/reward settings before scaling training?
@@ -434,6 +434,268 @@ checkpoints:
   - Validate touched code/docs, then commit/PR the GRPO bootstrap changes before moving
     to a longer SFT-bridge GRPO pilot.
   signals: {}
+- id: 017-launch
+  at: '2026-06-21T11:17:23Z'
+  kind: launch
+  title: SFT-Bridge GRPO Full Run Launched
+  summary: Launched the full local SFT-bridge GRPO seed-1 run after a Docker dry-run
+    validated model load and all 14,395 GRPO train rows.
+  evidence:
+  - Container grpo_sft_json_bridge_seed1_full_20260621_071711 launched from config
+    experiment/phase1/grpo/configs/grpo_sft_json_bridge_seed1_full.yaml. Dry run loaded
+    merged SFT seed-1 + JSON bridge adapter and formatted 14,395 examples.
+  run_ids: []
+  commands:
+  - docker run -d --name grpo_sft_json_bridge_seed1_full_20260621_071711 ... train_grpo.py
+    --config experiment/phase1/grpo/configs/grpo_sft_json_bridge_seed1_full.yaml
+  decisions: []
+  next_steps:
+  - Monitor logs, GPU, and training_lineage/log files until completion; fix issues
+    if the full run fails.
+  signals: {}
+- id: 018-heartbeat
+  at: '2026-06-21T11:26:19Z'
+  kind: heartbeat
+  title: SFT-Bridge GRPO Full Run Early Health
+  summary: The full SFT-bridge GRPO run has entered training and early metrics are
+    healthy enough to continue.
+  evidence:
+  - At step 150/14395, throughput ~0.352 steps/sec, reward_std ~0.879, frac_reward_zero_std
+    ~0.12, clipped_ratio 0.0, reserved VRAM ~4.176GB, OOM risk low. Current estimate
+    is roughly 11 hours remaining.
+  run_ids: []
+  commands: []
+  decisions: []
+  next_steps:
+  - Continue timed local monitoring until completion; first stronger gate after checkpoint-500
+    appears.
+  signals: {}
+- id: 019-heartbeat
+  at: '2026-06-21T11:46:40Z'
+  kind: heartbeat
+  title: SFT-Bridge GRPO Full Run Checkpoint 500 Healthy
+  summary: The full SFT-bridge GRPO run passed the first checkpoint gate and remains
+    healthy enough to continue.
+  evidence:
+  - At step 600/14395, checkpoint-500 exists, throughput ~0.371 steps/sec, reward_std
+    ~0.487, frac_reward_zero_std ~0.52 on the latest 25-step window, clipped_ratio
+    ~0.005, reserved VRAM ~4.176GB, OOM risk low.
+  run_ids: []
+  commands: []
+  decisions: []
+  next_steps:
+  - Continue hourly monitoring through subsequent checkpoints; watch for reward variance
+    collapse or sustained clipping.
+  signals: {}
+- id: 020-heartbeat
+  at: '2026-06-21T12:47:21Z'
+  kind: heartbeat
+  title: SFT-Bridge GRPO Full Run Step 1600 Watchpoint
+  summary: The full run remains stable through step 1600, but reward variance is lower
+    and clipping higher than the micro-smoke, so continue with watchpoints rather
+    than treating settings as final.
+  evidence:
+  - 'Through step 1600: checkpoints 500/1000/1500 saved; last-20 reward_std mean 0.386,
+    frac_reward_zero_std mean 0.58, clipped_ratio mean 0.072, KL mean 0.447, reserved
+    VRAM ~4.176GB, OOM risk low. ETA ~11.7h from step 1600.'
+  run_ids: []
+  commands: []
+  decisions: []
+  next_steps:
+  - Continue full run; intervene if reward_std collapses near zero, clipped_ratio
+    sustains materially above ~0.15-0.20, KL spikes, or container exits.
+  signals: {}
+- id: 021-heartbeat
+  at: '2026-06-21T13:48:00Z'
+  kind: heartbeat
+  title: SFT-Bridge GRPO Full Run Step 2500 Continuing
+  summary: The full run remains stable through step 2500 and has not hit OOM or clipping
+    failure, though reward variance is weaker than the micro-smoke.
+  evidence:
+  - 'At step 2500/14395: checkpoints 1500/2000/2500 present; last-20 reward_std mean
+    0.3635, latest reward_std 0.1282; last-20 frac_reward_zero_std mean 0.596, latest
+    0.8; last-20 clipped_ratio mean 0.0548, latest 0.01; KL last-20 mean 0.451; VRAM
+    ~4.176GB reserved, OOM risk low.'
+  run_ids: []
+  commands: []
+  decisions: []
+  next_steps:
+  - Continue monitoring; do not call this final until post-run eval shows behavioral
+    movement.
+  signals: {}
+- id: 022-heartbeat
+  at: '2026-06-21T14:48:31Z'
+  kind: heartbeat
+  title: SFT-Bridge GRPO Full Run Step 3375 Stable
+  summary: The full SFT-bridge GRPO run remains stable through step 3375, with reward
+    variance rebounding after the step-2500 watchpoint.
+  evidence:
+  - 'At step 3375/14395: checkpoint-3000 exists; last-20 reward_std mean 0.373, latest
+    0.649; last-20 frac_reward_zero_std mean 0.616, latest 0.4; last-20 clipped_ratio
+    mean 0.047; KL last-20 mean 0.410; VRAM ~4.176GB reserved.'
+  run_ids: []
+  commands: []
+  decisions: []
+  next_steps:
+  - Continue hourly monitoring through the full epoch.
+  signals: {}
+- id: 023-heartbeat
+  at: '2026-06-21T15:48:59Z'
+  kind: heartbeat
+  title: SFT-Bridge GRPO Full Run Step 4300 Stable
+  summary: The full run remains stable through step 4300 with modest clipping and
+    nonzero rolling reward variance.
+  evidence:
+  - 'At step 4300/14395: checkpoints 3000/3500/4000 present; last-20 reward_std mean
+    0.305, latest 0.277; last-20 frac_reward_zero_std mean 0.67; last-20 clipped_ratio
+    mean 0.039; KL last-20 mean 0.301; VRAM ~4.176GB reserved.'
+  run_ids: []
+  commands: []
+  decisions: []
+  next_steps:
+  - Continue hourly monitoring.
+  signals: {}
+- id: 024-heartbeat
+  at: '2026-06-21T16:49:30Z'
+  kind: heartbeat
+  title: SFT-Bridge GRPO Full Run Step 5150 Stable
+  summary: The full run remains stable through step 5150; reward variance persists
+    and checkpoint-5000 exists.
+  evidence:
+  - 'At step 5150/14395: checkpoints 4000/4500/5000 present; last-20 reward_std mean
+    0.357, latest 0.499; last-20 frac_reward_zero_std mean 0.634; last-20 clipped_ratio
+    mean 0.0675 with max20 0.165; KL last-20 mean 0.283; VRAM ~4.176GB reserved.'
+  run_ids: []
+  commands: []
+  decisions: []
+  next_steps:
+  - Continue monitoring, with longer intervals unless clipping or variance worsens.
+  signals: {}
+- id: 025-heartbeat
+  at: '2026-06-21T18:20:02Z'
+  kind: heartbeat
+  title: SFT-Bridge GRPO Full Run Step 6450 Stable
+  summary: The full run remains stable through step 6450, almost halfway through the
+    epoch.
+  evidence:
+  - 'At step 6450/14395: checkpoints 5000/5500/6000 present; last-20 reward_std mean
+    0.303, latest 0.207; last-20 frac_reward_zero_std mean 0.692; last-20 clipped_ratio
+    mean 0.0778, max20 0.16; KL last-20 mean 0.222; VRAM ~4.176GB reserved.'
+  run_ids: []
+  commands: []
+  decisions: []
+  next_steps:
+  - Continue monitoring through full completion; run post-training eval/diagnostic
+    after final_model is saved.
+  signals: {}
+- id: 026-heartbeat
+  at: '2026-06-21T19:50:31Z'
+  kind: heartbeat
+  title: SFT-Bridge GRPO Full Run Step 7850 Stable
+  summary: The full run is past the halfway point and remains stable enough to continue.
+  evidence:
+  - 'At step 7850/14395: checkpoints 6500/7000/7500 present; last-20 reward_std mean
+    0.266, latest 0.528; last-20 frac_reward_zero_std mean 0.724; last-20 clipped_ratio
+    mean 0.068, max20 0.145; KL last-20 mean 0.190; VRAM ~4.9GB used by nvidia-smi.'
+  run_ids: []
+  commands: []
+  decisions: []
+  next_steps:
+  - Continue monitoring to completion.
+  signals: {}
+- id: 027-heartbeat
+  at: '2026-06-21T21:21:01Z'
+  kind: heartbeat
+  title: SFT-Bridge GRPO Full Run Step 9100 Stable
+  summary: The full run remains stable through step 9100 with persistent reward variance
+    and modest clipping.
+  evidence:
+  - 'At step 9100/14395: checkpoints 8000/8500/9000 present; last-20 reward_std mean
+    0.331, latest 0.415; last-20 frac_reward_zero_std mean 0.654; last-20 clipped_ratio
+    mean 0.0825, max20 0.14; KL last-20 mean 0.205; ETA about 5.8h.'
+  run_ids: []
+  commands: []
+  decisions: []
+  next_steps:
+  - Continue to completion and then inspect final artifacts/evaluate.
+  signals: {}
+- id: 028-heartbeat
+  at: '2026-06-21T22:51:38Z'
+  kind: heartbeat
+  title: SFT-Bridge GRPO Full Run Step 10425 Stable
+  summary: The full run remains stable past 10k steps and is roughly 72% through the
+    epoch.
+  evidence:
+  - 'At step 10425/14395: checkpoints 9000/9500/10000 present; last-20 reward_std
+    mean 0.346, latest 0.412; last-20 frac_reward_zero_std mean 0.67; last-20 clipped_ratio
+    mean 0.0648; KL last-20 mean 0.253; ETA about 4.4h.'
+  run_ids: []
+  commands: []
+  decisions: []
+  next_steps:
+  - Continue monitoring to completion.
+  signals: {}
+- id: 029-heartbeat
+  at: '2026-06-22T00:22:11Z'
+  kind: heartbeat
+  title: SFT-Bridge GRPO Full Run Step 11775 Stable
+  summary: The full run remains stable through step 11775 and is in the final third
+    of the epoch.
+  evidence:
+  - 'At step 11775/14395: checkpoints 10500/11000/11500 present; last-20 reward_std
+    mean 0.326, latest 0.349; last-20 frac_reward_zero_std mean 0.656; last-20 clipped_ratio
+    mean 0.0845; KL last-20 mean 0.220; ETA about 2.9h.'
+  run_ids: []
+  commands: []
+  decisions: []
+  next_steps:
+  - Continue monitoring; after completion verify final_model, lineage, capacity, and
+    run aggregate metrics.
+  signals: {}
+- id: 030-heartbeat
+  at: '2026-06-22T01:52:40Z'
+  kind: heartbeat
+  title: SFT-Bridge GRPO Full Run Step 13150 Stable
+  summary: The full run is in the final stretch and remains stable through step 13150.
+  evidence:
+  - 'At step 13150/14395: checkpoints 12000/12500/13000 present; last-20 reward_std
+    mean 0.271, latest 0.391; last-20 frac_reward_zero_std mean 0.726; last-20 clipped_ratio
+    mean 0.068; KL last-20 mean 0.207; ETA about 1.4h.'
+  run_ids: []
+  commands: []
+  decisions: []
+  next_steps:
+  - Run a shorter final monitor interval, then verify final artifacts and aggregate
+    metrics after container exit.
+  signals: {}
+- id: 031-result
+  at: '2026-06-22T03:36:58Z'
+  kind: result
+  title: SFT-Bridge GRPO Full Run Completed
+  summary: The full local SFT-bridge GRPO seed-1 run completed successfully and produced
+    a final adapter. A same-slice pre/post dev diagnostic shows behavioral movement
+    in the intended direction, with a small schema-format regression.
+  evidence:
+  - 'Training run scratch/grpo_bootstrap/runs/sft_json_bridge_seed1_full/20260621_111743
+    exited 0 with final_model, training_lineage.json, capacity_features.json, checkpoint-14395,
+    final_step=14395, train_runtime=57126.097s, peak reserved VRAM 4.191GB, OOM risk
+    low. Train aggregate over 575 logged windows: reward_std mean 0.338, frac_reward_zero_std
+    mean 0.652, clipped_ratio mean 0.061, KL mean 0.286. Eval-like 64-row dev comparison
+    at temp=0.7/top_p=0.95/max_completion=96: pre-bridge known valid 1.000/refusal
+    0.344/mean_reward 0.153/correct_known 17/32; post-GRPO known valid 0.969/refusal
+    0.281/mean_reward 0.339/correct_known 19/32. Pre-bridge unknown valid 1.000/refusal
+    0.812/mean_reward 0.078; post-GRPO unknown valid 1.000/refusal 0.844/mean_reward
+    0.148.'
+  run_ids: []
+  commands: []
+  decisions:
+  - 'Treat SFT-bridge GRPO as operational and promising on this bounded dev diagnostic,
+    but not finalized: full evaluation should quantify schema failures and behavior
+    over the full eval suite before interpreting as headline evidence.'
+  next_steps:
+  - Commit/PR full-run config and diagnostics; then run the standard eval pipeline
+    for the completed GRPO adapter.
+  signals: {}
 ---
 # GRPO Reward Variance Diagnostic
 
@@ -611,3 +873,142 @@ Base-start GRPO now works as a local smoke-tested training path when Qwen uses i
   - For SFT-bridge GRPO micro/pilot bootstrapping, prefer num_generations=8, per_device_train_batch_size=8, temperature=1.35, top_p=1.0, max_completion_length=128 over either low-temp 4-generation deterministic settings or high-temp 256-token settings.
 - next steps:
   - Validate touched code/docs, then commit/PR the GRPO bootstrap changes before moving to a longer SFT-bridge GRPO pilot.
+### 017-launch - SFT-Bridge GRPO Full Run Launched
+
+- at: `2026-06-21T11:17:23Z`
+- kind: `launch`
+- summary: Launched the full local SFT-bridge GRPO seed-1 run after a Docker dry-run validated model load and all 14,395 GRPO train rows.
+- evidence:
+  - `Container grpo_sft_json_bridge_seed1_full_20260621_071711 launched from config experiment/phase1/grpo/configs/grpo_sft_json_bridge_seed1_full.yaml. Dry run loaded merged SFT seed-1 + JSON bridge adapter and formatted 14,395 examples.`
+- commands:
+  - `docker run -d --name grpo_sft_json_bridge_seed1_full_20260621_071711 ... train_grpo.py --config experiment/phase1/grpo/configs/grpo_sft_json_bridge_seed1_full.yaml`
+- next steps:
+  - Monitor logs, GPU, and training_lineage/log files until completion; fix issues if the full run fails.
+### 018-heartbeat - SFT-Bridge GRPO Full Run Early Health
+
+- at: `2026-06-21T11:26:19Z`
+- kind: `heartbeat`
+- summary: The full SFT-bridge GRPO run has entered training and early metrics are healthy enough to continue.
+- evidence:
+  - `At step 150/14395, throughput ~0.352 steps/sec, reward_std ~0.879, frac_reward_zero_std ~0.12, clipped_ratio 0.0, reserved VRAM ~4.176GB, OOM risk low. Current estimate is roughly 11 hours remaining.`
+- next steps:
+  - Continue timed local monitoring until completion; first stronger gate after checkpoint-500 appears.
+### 019-heartbeat - SFT-Bridge GRPO Full Run Checkpoint 500 Healthy
+
+- at: `2026-06-21T11:46:40Z`
+- kind: `heartbeat`
+- summary: The full SFT-bridge GRPO run passed the first checkpoint gate and remains healthy enough to continue.
+- evidence:
+  - `At step 600/14395, checkpoint-500 exists, throughput ~0.371 steps/sec, reward_std ~0.487, frac_reward_zero_std ~0.52 on the latest 25-step window, clipped_ratio ~0.005, reserved VRAM ~4.176GB, OOM risk low.`
+- next steps:
+  - Continue hourly monitoring through subsequent checkpoints; watch for reward variance collapse or sustained clipping.
+### 020-heartbeat - SFT-Bridge GRPO Full Run Step 1600 Watchpoint
+
+- at: `2026-06-21T12:47:21Z`
+- kind: `heartbeat`
+- summary: The full run remains stable through step 1600, but reward variance is lower and clipping higher than the micro-smoke, so continue with watchpoints rather than treating settings as final.
+- evidence:
+  - `Through step 1600: checkpoints 500/1000/1500 saved; last-20 reward_std mean 0.386, frac_reward_zero_std mean 0.58, clipped_ratio mean 0.072, KL mean 0.447, reserved VRAM ~4.176GB, OOM risk low. ETA ~11.7h from step 1600.`
+- next steps:
+  - Continue full run; intervene if reward_std collapses near zero, clipped_ratio sustains materially above ~0.15-0.20, KL spikes, or container exits.
+### 021-heartbeat - SFT-Bridge GRPO Full Run Step 2500 Continuing
+
+- at: `2026-06-21T13:48:00Z`
+- kind: `heartbeat`
+- summary: The full run remains stable through step 2500 and has not hit OOM or clipping failure, though reward variance is weaker than the micro-smoke.
+- evidence:
+  - `At step 2500/14395: checkpoints 1500/2000/2500 present; last-20 reward_std mean 0.3635, latest reward_std 0.1282; last-20 frac_reward_zero_std mean 0.596, latest 0.8; last-20 clipped_ratio mean 0.0548, latest 0.01; KL last-20 mean 0.451; VRAM ~4.176GB reserved, OOM risk low.`
+- next steps:
+  - Continue monitoring; do not call this final until post-run eval shows behavioral movement.
+### 022-heartbeat - SFT-Bridge GRPO Full Run Step 3375 Stable
+
+- at: `2026-06-21T14:48:31Z`
+- kind: `heartbeat`
+- summary: The full SFT-bridge GRPO run remains stable through step 3375, with reward variance rebounding after the step-2500 watchpoint.
+- evidence:
+  - `At step 3375/14395: checkpoint-3000 exists; last-20 reward_std mean 0.373, latest 0.649; last-20 frac_reward_zero_std mean 0.616, latest 0.4; last-20 clipped_ratio mean 0.047; KL last-20 mean 0.410; VRAM ~4.176GB reserved.`
+- next steps:
+  - Continue hourly monitoring through the full epoch.
+### 023-heartbeat - SFT-Bridge GRPO Full Run Step 4300 Stable
+
+- at: `2026-06-21T15:48:59Z`
+- kind: `heartbeat`
+- summary: The full run remains stable through step 4300 with modest clipping and nonzero rolling reward variance.
+- evidence:
+  - `At step 4300/14395: checkpoints 3000/3500/4000 present; last-20 reward_std mean 0.305, latest 0.277; last-20 frac_reward_zero_std mean 0.67; last-20 clipped_ratio mean 0.039; KL last-20 mean 0.301; VRAM ~4.176GB reserved.`
+- next steps:
+  - Continue hourly monitoring.
+### 024-heartbeat - SFT-Bridge GRPO Full Run Step 5150 Stable
+
+- at: `2026-06-21T16:49:30Z`
+- kind: `heartbeat`
+- summary: The full run remains stable through step 5150; reward variance persists and checkpoint-5000 exists.
+- evidence:
+  - `At step 5150/14395: checkpoints 4000/4500/5000 present; last-20 reward_std mean 0.357, latest 0.499; last-20 frac_reward_zero_std mean 0.634; last-20 clipped_ratio mean 0.0675 with max20 0.165; KL last-20 mean 0.283; VRAM ~4.176GB reserved.`
+- next steps:
+  - Continue monitoring, with longer intervals unless clipping or variance worsens.
+### 025-heartbeat - SFT-Bridge GRPO Full Run Step 6450 Stable
+
+- at: `2026-06-21T18:20:02Z`
+- kind: `heartbeat`
+- summary: The full run remains stable through step 6450, almost halfway through the epoch.
+- evidence:
+  - `At step 6450/14395: checkpoints 5000/5500/6000 present; last-20 reward_std mean 0.303, latest 0.207; last-20 frac_reward_zero_std mean 0.692; last-20 clipped_ratio mean 0.0778, max20 0.16; KL last-20 mean 0.222; VRAM ~4.176GB reserved.`
+- next steps:
+  - Continue monitoring through full completion; run post-training eval/diagnostic after final_model is saved.
+### 026-heartbeat - SFT-Bridge GRPO Full Run Step 7850 Stable
+
+- at: `2026-06-21T19:50:31Z`
+- kind: `heartbeat`
+- summary: The full run is past the halfway point and remains stable enough to continue.
+- evidence:
+  - `At step 7850/14395: checkpoints 6500/7000/7500 present; last-20 reward_std mean 0.266, latest 0.528; last-20 frac_reward_zero_std mean 0.724; last-20 clipped_ratio mean 0.068, max20 0.145; KL last-20 mean 0.190; VRAM ~4.9GB used by nvidia-smi.`
+- next steps:
+  - Continue monitoring to completion.
+### 027-heartbeat - SFT-Bridge GRPO Full Run Step 9100 Stable
+
+- at: `2026-06-21T21:21:01Z`
+- kind: `heartbeat`
+- summary: The full run remains stable through step 9100 with persistent reward variance and modest clipping.
+- evidence:
+  - `At step 9100/14395: checkpoints 8000/8500/9000 present; last-20 reward_std mean 0.331, latest 0.415; last-20 frac_reward_zero_std mean 0.654; last-20 clipped_ratio mean 0.0825, max20 0.14; KL last-20 mean 0.205; ETA about 5.8h.`
+- next steps:
+  - Continue to completion and then inspect final artifacts/evaluate.
+### 028-heartbeat - SFT-Bridge GRPO Full Run Step 10425 Stable
+
+- at: `2026-06-21T22:51:38Z`
+- kind: `heartbeat`
+- summary: The full run remains stable past 10k steps and is roughly 72% through the epoch.
+- evidence:
+  - `At step 10425/14395: checkpoints 9000/9500/10000 present; last-20 reward_std mean 0.346, latest 0.412; last-20 frac_reward_zero_std mean 0.67; last-20 clipped_ratio mean 0.0648; KL last-20 mean 0.253; ETA about 4.4h.`
+- next steps:
+  - Continue monitoring to completion.
+### 029-heartbeat - SFT-Bridge GRPO Full Run Step 11775 Stable
+
+- at: `2026-06-22T00:22:11Z`
+- kind: `heartbeat`
+- summary: The full run remains stable through step 11775 and is in the final third of the epoch.
+- evidence:
+  - `At step 11775/14395: checkpoints 10500/11000/11500 present; last-20 reward_std mean 0.326, latest 0.349; last-20 frac_reward_zero_std mean 0.656; last-20 clipped_ratio mean 0.0845; KL last-20 mean 0.220; ETA about 2.9h.`
+- next steps:
+  - Continue monitoring; after completion verify final_model, lineage, capacity, and run aggregate metrics.
+### 030-heartbeat - SFT-Bridge GRPO Full Run Step 13150 Stable
+
+- at: `2026-06-22T01:52:40Z`
+- kind: `heartbeat`
+- summary: The full run is in the final stretch and remains stable through step 13150.
+- evidence:
+  - `At step 13150/14395: checkpoints 12000/12500/13000 present; last-20 reward_std mean 0.271, latest 0.391; last-20 frac_reward_zero_std mean 0.726; last-20 clipped_ratio mean 0.068; KL last-20 mean 0.207; ETA about 1.4h.`
+- next steps:
+  - Run a shorter final monitor interval, then verify final artifacts and aggregate metrics after container exit.
+### 031-result - SFT-Bridge GRPO Full Run Completed
+
+- at: `2026-06-22T03:36:58Z`
+- kind: `result`
+- summary: The full local SFT-bridge GRPO seed-1 run completed successfully and produced a final adapter. A same-slice pre/post dev diagnostic shows behavioral movement in the intended direction, with a small schema-format regression.
+- evidence:
+  - `Training run scratch/grpo_bootstrap/runs/sft_json_bridge_seed1_full/20260621_111743 exited 0 with final_model, training_lineage.json, capacity_features.json, checkpoint-14395, final_step=14395, train_runtime=57126.097s, peak reserved VRAM 4.191GB, OOM risk low. Train aggregate over 575 logged windows: reward_std mean 0.338, frac_reward_zero_std mean 0.652, clipped_ratio mean 0.061, KL mean 0.286. Eval-like 64-row dev comparison at temp=0.7/top_p=0.95/max_completion=96: pre-bridge known valid 1.000/refusal 0.344/mean_reward 0.153/correct_known 17/32; post-GRPO known valid 0.969/refusal 0.281/mean_reward 0.339/correct_known 19/32. Pre-bridge unknown valid 1.000/refusal 0.812/mean_reward 0.078; post-GRPO unknown valid 1.000/refusal 0.844/mean_reward 0.148.`
+- decisions:
+  - Treat SFT-bridge GRPO as operational and promising on this bounded dev diagnostic, but not finalized: full evaluation should quantify schema failures and behavior over the full eval suite before interpreting as headline evidence.
+- next steps:
+  - Commit/PR full-run config and diagnostics; then run the standard eval pipeline for the completed GRPO adapter.
