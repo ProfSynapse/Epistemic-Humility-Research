@@ -4,7 +4,7 @@ session_id: schema-response-confidence-track
 title: Schema Response-Confidence Track
 status: active
 created_at: '2026-06-22T13:53:26Z'
-updated_at: '2026-06-22T14:14:49Z'
+updated_at: '2026-06-22T15:33:09Z'
 phase: phase1
 question: Can a schema-trained SFT base plus DPO/KTO/GRPO variants learn response-appropriate
   confidence without endpoint collapse?
@@ -242,3 +242,103 @@ batch 12.
   - Merge schema-SFT seed 1.
   - Sanity-eval the merged model against the adapter result.
   - Launch DPO/KTO/GRPO smoke runs from the merged schema-SFT base.
+
+### 009-validation - Schema-SFT Merge Sanity
+
+- at: `2026-06-22T15:22:23Z`
+- kind: `validation`
+- summary: Merged the completed schema-SFT seed-1 LoRA into a standalone local model and ran a SelfAware mixed-slice smoke; merged behavior stayed close to the adapter smoke and preserved the JSON contract.
+- evidence:
+  - `scratch/schema_response_confidence/runs/sft_schema_seed1_full/20260622_141511/Qwen3-4B-bnb-4bit/merged-16bit`
+  - `experiment/phase1/eval/config/eval_amendment_d_response_confidence_selfaware_schema_sft_seed1_merged_smoke_local_4b.yaml`
+  - `experiment/phase1/eval/results_amendment_d_response_confidence_selfaware_schema_sft_seed1_merged_smoke_4b/schema_sft_merged_seed1__selfaware/metrics.json`
+- signals:
+    eval_rows: 192
+    stated_confidence_coverage_pct: 100.0
+    unique_response_confidence_values:
+      - 0.8
+    refusal_recall_pct: 89.47
+    over_refusal_pct: 63.92
+    correct_on_known_pct: 40.0
+    truthful_pct: 51.56
+- interpretation:
+  - The merged model is a usable base for Amendment D downstream DPO/KTO/GRPO cells.
+  - The confidence-collapse issue is present in the merged base too, so downstream cells are testing whether preference/RL training can shape confidence beyond SFT's constant 0.8.
+
+### 010-blocker - DPO Loader Column Mismatch
+
+- at: `2026-06-22T15:22:23Z`
+- kind: `blocker`
+- summary: The first DPO smoke from the merged schema-SFT base failed before model loading because appended ambiguous rows added provenance columns that ordinary DPO rows did not have.
+- evidence:
+  - `experiment/phase1/grpo/build_schema_response_confidence_datasets.py`
+  - `scratch/schema_response_confidence/qwen3-4b-instruct/dpo_response_confidence_train.jsonl`
+- signals:
+    trainer: dpo
+    attempted_batch_size: 4
+    attempted_gradient_accumulation: 2
+    max_steps: 10
+    failure_stage: `load_dataset("json")`
+    missing_ordinary_row_columns:
+      - `label`
+      - `p_correct`
+- decisions:
+  - Fix the dataset projection so normal and ambiguous rows share stable optional provenance columns.
+  - Add a regression test for row-key stability before regenerating local scratch datasets and relaunching DPO.
+
+### 011-validation - DPO Smoke Batch Probe
+
+- at: `2026-06-22T15:31:43Z`
+- kind: `validation`
+- summary: Fixed the schema-response-confidence JSONL projection with typed provenance sentinels, regenerated scratch datasets, and completed DPO smoke runs from the merged schema-SFT base.
+- evidence:
+  - `experiment/phase1/grpo/build_schema_response_confidence_datasets.py`
+  - `experiment/phase1/grpo/tests/test_build_schema_response_confidence_datasets.py`
+  - `scratch/schema_response_confidence/runs/schema_sft_dpo_seed1_smoke/20260622_batch4_step10_typedcols/capacity_features.json`
+  - `scratch/schema_response_confidence/runs/schema_sft_dpo_seed1_smoke/20260622_batch8_step10_probe/capacity_features.json`
+- commands:
+  - `python -m pytest experiment/phase1/grpo/tests/test_build_schema_response_confidence_datasets.py experiment/phase1/grpo/tests/test_build_grpo_dataset.py experiment/phase1/grpo/tests/test_humility_reward.py -q`
+  - `python experiment/phase1/grpo/build_schema_response_confidence_datasets.py --output-dir scratch/schema_response_confidence/qwen3-4b-instruct --include-ambiguous-middle`
+- signals:
+    tests_passed: 26
+    dpo_batch4_accum2:
+      completed: true
+      final_step: 10
+      effective_batch_size: 8
+      oom_risk_level: low
+      peak_reserved_vram_gb: 11.092
+      peak_steps_per_second: 0.366
+    dpo_batch8_accum1:
+      completed: true
+      final_step: 10
+      effective_batch_size: 8
+      oom_risk_level: high
+      peak_reserved_vram_gb: 22.633
+      peak_steps_per_second: 0.358
+- decisions:
+  - Use batch 4 with gradient accumulation 2 for the full schema-SFT->DPO run.
+  - Do not scale DPO to batch 8 locally; it provides no speed gain and leaves only about 1.4 GB reserved-VRAM headroom.
+- gotchas:
+  - HF JSON loading needs stable column types, not only stable keys; ordinary rows should use typed sentinels such as `""` and `-1.0` instead of null provenance fields.
+
+### 012-launch - Full Schema-SFT To DPO Seed 1
+
+- at: `2026-06-22T15:33:09Z`
+- kind: `launch`
+- summary: Launched the full local schema-SFT->DPO seed-1 run from the merged schema-SFT base at the lower-risk batch setting selected by smoke probes.
+- evidence:
+  - `scratch/schema_response_confidence/runs/sft_schema_seed1_full/20260622_141511/Qwen3-4B-bnb-4bit/merged-16bit`
+  - `scratch/schema_response_confidence/qwen3-4b-instruct/dpo_response_confidence_train.jsonl`
+  - `scratch/schema_response_confidence/runs/schema_sft_dpo_seed1_full/20260622_batch4_accum2_seed1`
+- commands:
+  - `docker run -d --name eh-schema-dpo-seed1-full-202606221132 ... train_dpo.py --model-name /workspace/repo/scratch/schema_response_confidence/runs/sft_schema_seed1_full/20260622_141511/Qwen3-4B-bnb-4bit/merged-16bit --local-file /workspace/repo/scratch/schema_response_confidence/qwen3-4b-instruct/dpo_response_confidence_train.jsonl --output-root /workspace/repo/scratch/schema_response_confidence/runs/schema_sft_dpo_seed1_full --run-timestamp 20260622_batch4_accum2_seed1 --batch-size 4 --gradient-accumulation 2 --learning-rate 5e-6 --seed 1 --lora-r 32 --lora-alpha 64 --lora-dropout 0.05 --num-epochs 1`
+- signals:
+    container: eh-schema-dpo-seed1-full-202606221132
+    train_rows: 14943
+    batch_size: 4
+    gradient_accumulation: 2
+    effective_batch_size: 8
+    data_loader_status: passed
+- next_steps:
+  - Monitor until the run reaches optimizer steps, then estimate ETA from timestamped training logs.
+  - After DPO completes, eval the DPO adapter on the schema SelfAware config and launch the schema-SFT->KTO smoke/full path.

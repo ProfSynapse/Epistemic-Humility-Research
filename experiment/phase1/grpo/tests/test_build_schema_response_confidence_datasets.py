@@ -98,3 +98,55 @@ def test_ambiguous_middle_rows_use_p_correct_band():
     assert _payload(kto[0]["conversations"][-1]["content"])["response_confidence"] == 0.5
     assert kto[0]["label"] is True
     assert kto[1]["label"] is False
+
+
+def test_normal_and_ambiguous_rows_have_stable_columns():
+    normal_sft = [
+        {
+            "conversations": [
+                {"role": "user", "content": "Known?"},
+                {"role": "assistant", "content": "Known answer."},
+            ]
+        }
+    ]
+    normal_dpo = [
+        {
+            "prompt": [{"role": "user", "content": "Known?"}],
+            "chosen": [{"role": "assistant", "content": "Known answer."}],
+            "rejected": [{"role": "assistant", "content": "I don't know."}],
+        }
+    ]
+    normal_kto = [
+        {
+            "conversations": [
+                {"role": "user", "content": "Known?"},
+                {"role": "assistant", "content": "Known answer."},
+            ],
+            "label": True,
+        }
+    ]
+    ambiguous = [
+        {
+            "question": "Ambiguous?",
+            "answer_value": "Maybe",
+            "p_correct": 0.5,
+            "sampled_answers": ["Wrong"],
+            "sampled_correct": [False],
+        }
+    ]
+
+    sft_rows = builder.build_sft_rows(normal_sft) + builder.build_ambiguous_sft_rows(ambiguous)
+    dpo_rows = builder.build_dpo_rows(normal_dpo) + builder.build_ambiguous_dpo_rows(ambiguous)
+    kto_rows = builder.build_kto_rows(normal_kto) + builder.build_ambiguous_kto_rows(ambiguous)
+
+    for rows in (sft_rows, dpo_rows, kto_rows):
+        expected_keys = set(rows[0])
+        assert expected_keys
+        assert all(set(row) == expected_keys for row in rows)
+
+    assert sft_rows[0]["label"] == ""
+    assert sft_rows[0]["p_correct"] == -1.0
+    assert dpo_rows[0]["label"] == ""
+    assert dpo_rows[0]["p_correct"] == -1.0
+    assert kto_rows[0]["source_label"] == ""
+    assert kto_rows[0]["p_correct"] == -1.0
