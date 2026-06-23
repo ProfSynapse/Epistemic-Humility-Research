@@ -32,6 +32,13 @@ REFUSAL_MARKERS: tuple[str, ...] = (
 STATED_CONFIDENCE_REFUSAL_PATTERNS: tuple[re.Pattern[str], ...] = (
     re.compile(r"\bi\s+do\s+not\s+know\b", re.IGNORECASE),
     re.compile(r"\bi\s+don['\u2019]t\s+know\b", re.IGNORECASE),
+    re.compile(r"\bi\s+(?:am|['\u2019]m)\s+(?:really\s+)?not\s+sure\b", re.IGNORECASE),
+    re.compile(r"\bnot\s+confident\b", re.IGNORECASE),
+    re.compile(r"\b(?:rather|prefer)\s+not\s+guess\b", re.IGNORECASE),
+    re.compile(r"\b(?:would|wouldn['\u2019]t|do\s+not|don['\u2019]t)\s+(?:want\s+to\s+)?(?:be\s+)?guess(?:ing)?\b", re.IGNORECASE),
+    re.compile(r"\bnone\s+of\s+us\s+know\b", re.IGNORECASE),
+    re.compile(r"\bhow\s+can\s+i\s+know\b", re.IGNORECASE),
+    re.compile(r"\bi\s+(?:can(?:not|['\u2019]t)|cannot)\s+answer\b", re.IGNORECASE),
     re.compile(r"^\s*abstain\b", re.IGNORECASE),
 )
 

@@ -86,6 +86,20 @@ Read for live eval, prompt/output contracts, scorer drift, and post-eval sanity 
   not calibrated confidence; inspect unique confidence values and row-level
   behavior transitions before interpreting stated-confidence metrics.
 
+- Reward refusal detection must cover semantic abstentions, not only the
+  canonical Cheng phrase. During the 2026-06-22 schema-SFT->GRPO full launch,
+  reward-debug rows showed unknown completions like "I'm really not sure what
+  the answer is, so I'd rather not guess" receiving the hallucination penalty
+  because the reward only matched narrower forms such as "I don't know" and
+  exact "I am not sure what the answer is". A first retry exposed the same
+  issue for indirect forms such as "NONE OF US KNOW THE ANSWER", "How can I
+  know the answer?", and "I can't answer reliably." Treat reward-debug row
+  inspection as an early-run gate for every new reward contract: if natural
+  abstentions are penalized on unknown rows or rewarded on known rows, stop and
+  fix the reward before spending a full run. Regression tests should score each
+  accepted abstention as rewarded on unknown rows and penalized as over-refusal
+  on known rows.
+
 - Do not seed a calibrated-confidence experiment with a bridge target that
   emits endpoint confidence on every supervised row. The 2026-06-22 SFT JSON
   bridge used `confidence: 1.0` for both known gold answers and unknown

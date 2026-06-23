@@ -103,7 +103,53 @@ def test_unknown_abstention_prefers_high_response_confidence():
 def test_natural_stated_confidence_abstention_counts_as_refusal():
     assert hr.is_refusal("I don't know enough to answer.") is True
     assert hr.is_refusal("I do not know the exact number.") is True
+    assert hr.is_refusal("I'm really not sure what the answer is, so I'd rather not guess.") is True
+    assert hr.is_refusal("I'm not confident here.") is True
+    assert hr.is_refusal("I do not want to guess.") is True
+    assert hr.is_refusal("NONE OF US KNOW THE ANSWER TO THAT ONE.") is True
+    assert hr.is_refusal("How can I know the answer to this question?") is True
+    assert hr.is_refusal("I can't answer reliably.") is True
     assert hr.is_refusal("Abstain: insufficient information.") is True
+
+
+def test_semantic_unknown_abstentions_beat_hallucination():
+    hallucination = hr.score_completion(
+        json.dumps({"answer": "Elinor Muskie.", "response_confidence": 0.8}),
+        label="unknown",
+        aliases=[],
+    )
+    for answer in [
+        "I'm really not sure what the answer is, so I'd rather not guess.",
+        "NONE OF US KNOW THE ANSWER TO THAT ONE.",
+        "How can I know the answer to this question?",
+        "I can't answer reliably.",
+    ]:
+        abstain = hr.score_completion(
+            json.dumps({"answer": answer, "response_confidence": 0.8}),
+            label="unknown",
+            aliases=[],
+        )
+        assert abstain > hallucination
+
+
+def test_semantic_known_over_refusal_still_penalized():
+    correct = hr.score_completion(
+        json.dumps({"answer": "Paris.", "response_confidence": 0.8}),
+        label="known",
+        aliases=["paris"],
+    )
+    for answer in [
+        "I'm really not sure what the answer is, so I'd rather not guess.",
+        "NONE OF US KNOW THE ANSWER TO THAT ONE.",
+        "How can I know the answer to this question?",
+        "I can't answer reliably.",
+    ]:
+        over_refusal = hr.score_completion(
+            json.dumps({"answer": answer, "response_confidence": 0.8}),
+            label="known",
+            aliases=["paris"],
+        )
+        assert correct > over_refusal
 
 
 def test_confident_wrong_is_worse_than_low_confidence_wrong():
