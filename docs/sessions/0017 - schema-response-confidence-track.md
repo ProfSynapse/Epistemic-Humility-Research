@@ -4,7 +4,7 @@ session_id: schema-response-confidence-track
 title: Schema Response-Confidence Track
 status: active
 created_at: '2026-06-22T13:53:26Z'
-updated_at: '2026-06-22T22:05:00Z'
+updated_at: '2026-06-23T00:17:00Z'
 phase: phase1
 question: Can a schema-trained SFT base plus DPO/KTO/GRPO variants learn response-appropriate
   confidence without endpoint collapse?
@@ -898,3 +898,56 @@ batch 12.
 - next_steps:
   - Monitor the GRPO run with direct Docker/log checks.
   - On completion, run the schema SelfAware eval and compare against merged schema-SFT, schema-SFT->DPO, and schema-SFT->KTO.
+
+### 030-recovery - GRPO Reward Refusal Matcher Fix
+
+- at: `2026-06-23T00:07:00Z`
+- kind: `recovery`
+- summary: Stopped the first full schema-SFT->GRPO seed-1 run and its first retry after reward-debug inspection showed semantic unknown abstentions being penalized as hallucinations; patched the reward matcher before relaunching retry2.
+- evidence:
+  - `scratch/schema_response_confidence/reward_debug/schema_sft_grpo_seed1_full_b32_latest.jsonl`
+  - `scratch/schema_response_confidence/runs/schema_sft_grpo_seed1_full/20260622_215344/logs/training_20260622_215457.jsonl`
+  - `experiment/phase1/grpo/humility_reward.py`
+  - `experiment/phase1/grpo/tests/test_humility_reward.py`
+- signals:
+    stopped_container: eh-schema-sft-grpo-seed1-full-b32-202606221753
+    stopped_exit_code: 137
+    last_logged_step: 600
+    total_steps: 1861
+    stop_reason: reward_alignment_bug
+    observed_bad_case:
+      label: unknown
+      answer: `I'm really not sure what the answer is, so I'd rather not guess.`
+      old_reward: -1.9
+      issue: Semantic abstention was not counted as refusal because the matcher covered only narrower canonical forms.
+    fixed_case:
+      is_refusal: true
+      unknown_reward: 0.75
+      known_over_refusal_reward: -1.1
+    retry1:
+      container: eh-schema-sft-grpo-seed1-full-b32-retry1-202606222003
+      status: stopped_early
+      stop_reason: second_semantic_abstention_matcher_gap
+      additional_bad_forms:
+        - `NONE OF US KNOW THE ANSWER TO THAT ONE.`
+        - `How can I know the answer to this question?`
+        - `I can't answer reliably.`
+    retry2:
+      container: eh-schema-sft-grpo-seed1-full-b32-retry2-202606222015
+      run_dir: `scratch/schema_response_confidence/runs/schema_sft_grpo_seed1_full/20260623_001629`
+      reward_debug: `scratch/schema_response_confidence/reward_debug/schema_sft_grpo_seed1_full_b32_retry2_latest.jsonl`
+      first_logged_step: 25
+      total_steps: 1861
+      steps_per_second: 0.077
+      reward_std: 1.106988
+      frac_reward_zero_std: 0.12
+      peak_reserved_vram_gb: 10.934
+      oom_risk_level: low
+- commands:
+  - `docker stop eh-schema-sft-grpo-seed1-full-b32-202606221753`
+  - `docker stop eh-schema-sft-grpo-seed1-full-b32-retry1-202606222003`
+  - `python -m pytest experiment/phase1/grpo/tests/test_humility_reward.py experiment/phase1/grpo/tests/test_build_grpo_dataset.py -q`
+- decisions:
+  - Discard the first GRPO full run and retry1 as flawed reward-contract evidence.
+  - Relaunch GRPO from scratch after expanding the refusal matcher to semantic abstentions such as "I'm not sure", "not confident", "rather not guess", collective "none of us know", indirect "how can I know", and "can't answer reliably".
+  - Keep reward-debug inspection as an early gate for new reward contracts, not just a debugging convenience.
