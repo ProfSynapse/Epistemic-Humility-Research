@@ -33,6 +33,56 @@ def test_build_sft_rows_wraps_assistant_with_response_confidence():
     assert assistant == {"answer": "A.", "response_confidence": 0.8}
 
 
+def test_build_sft_rows_uses_probe_scaled_response_confidence():
+    rows = [
+        {
+            "conversations": [
+                {"role": "system", "content": "old"},
+                {"role": "user", "content": "Q?"},
+                {"role": "assistant", "content": "I don't know the answer."},
+            ]
+        },
+        {
+            "conversations": [
+                {"role": "system", "content": "old"},
+                {"role": "user", "content": "Known?"},
+                {"role": "assistant", "content": "A."},
+            ]
+        },
+    ]
+    probes = [
+        {
+            "probe_pool_row_key": "unknown-key",
+            "label": "unknown",
+            "p_correct": 0.0,
+            "n_samples": 32,
+            "sampled_correct": [False] * 32,
+        },
+        {
+            "probe_pool_row_key": "known-key",
+            "label": "known",
+            "p_correct": 1.0,
+            "n_samples": 32,
+            "sampled_correct": [True] * 32,
+        },
+    ]
+
+    out = builder.build_sft_rows(rows, probe_records=probes)
+
+    assert _payload(out[0]["messages"][-1]["content"]) == {
+        "answer": "I don't know the answer.",
+        "response_confidence": 0.8765,
+    }
+    assert out[0]["probe_pool_row_key"] == "unknown-key"
+    assert out[0]["source_label"] == "unknown"
+    assert _payload(out[1]["messages"][-1]["content"]) == {
+        "answer": "A.",
+        "response_confidence": 0.8765,
+    }
+    assert out[1]["probe_pool_row_key"] == "known-key"
+    assert out[1]["source_label"] == "known"
+
+
 def test_build_dpo_rows_wraps_chosen_and_rejected_bands():
     rows = [
         {
@@ -80,8 +130,9 @@ def test_ambiguous_middle_rows_use_p_correct_band():
             "question": "Who?",
             "answer_value": "Paris",
             "p_correct": 0.5,
-            "sampled_answers": ["London"],
-            "sampled_correct": [False],
+            "n_samples": 32,
+            "sampled_answers": ["Paris"] * 16 + ["London"] * 16,
+            "sampled_correct": [True] * 16 + [False] * 16,
         }
     ]
 
@@ -94,7 +145,7 @@ def test_ambiguous_middle_rows_use_p_correct_band():
         "response_confidence": 0.5,
     }
     assert _payload(dpo[0]["chosen"][0]["content"])["response_confidence"] == 0.5
-    assert _payload(dpo[0]["rejected"][0]["content"])["response_confidence"] == 0.8
+    assert _payload(dpo[0]["rejected"][0]["content"])["response_confidence"] == 0.5
     assert _payload(kto[0]["conversations"][-1]["content"])["response_confidence"] == 0.5
     assert kto[0]["label"] is True
     assert kto[1]["label"] is False
@@ -144,9 +195,9 @@ def test_normal_and_ambiguous_rows_have_stable_columns():
         assert expected_keys
         assert all(set(row) == expected_keys for row in rows)
 
-    assert sft_rows[0]["label"] == ""
+    assert sft_rows[0]["source_label"] == ""
     assert sft_rows[0]["p_correct"] == -1.0
-    assert dpo_rows[0]["label"] == ""
+    assert dpo_rows[0]["source_label"] == ""
     assert dpo_rows[0]["p_correct"] == -1.0
     assert kto_rows[0]["source_label"] == ""
     assert kto_rows[0]["p_correct"] == -1.0

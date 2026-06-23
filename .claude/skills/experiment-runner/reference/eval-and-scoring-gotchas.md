@@ -129,6 +129,15 @@ Read for live eval, prompt/output contracts, scorer drift, and post-eval sanity 
   response-confidence metrics; DPO/KTO/GRPO or additional supervised contrast
   is needed to test whether the scalar can carry calibrated signal.
 
+- Before retraining a schema response-confidence SFT model, inspect the training
+  target histogram, not only the eval histogram. The failed Amendment D dataset
+  had 14,395 ordinary SFT rows at exactly `response_confidence: 0.8` and only
+  548 ambiguous-middle rows in `[0.4, 0.6]`, so a constant-0.8 model was a
+  target-construction failure. For probe-scaled reruns, derive targets from the
+  original 32-sample probe: estimate factual confidence with smoothed
+  `p_correct`, use `1 - factual_p` for abstentions, and map to non-endpoint
+  response-confidence bands before launching training.
+
 - A completed GRPO run can move the refusal boundary without solving confidence
   expression. The 2026-06-23 schema-SFT->GRPO seed-1 full SelfAware eval
   preserved 100% JSON coverage and reduced unknown answering, but every row
