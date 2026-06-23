@@ -129,6 +129,14 @@ Read for live eval, prompt/output contracts, scorer drift, and post-eval sanity 
   response-confidence metrics; DPO/KTO/GRPO or additional supervised contrast
   is needed to test whether the scalar can carry calibrated signal.
 
+- A completed GRPO run can move the refusal boundary without solving confidence
+  expression. The 2026-06-23 schema-SFT->GRPO seed-1 full SelfAware eval
+  preserved 100% JSON coverage and reduced unknown answering, but every row
+  still emitted `response_confidence: 0.8` while known-row over-refusal rose.
+  Post-GRPO acceptance checks must compare unique confidence values, unknown
+  answering, known over-refusal, and row samples against the nearest control;
+  do not call a run calibrated because reward training completed cleanly.
+
 - Amendment B can also expose scorer drift in the opposite direction: JSON answer
   text may contain natural abstentions like "I do not know the exact number"
   rather than the Cheng fixed phrase "I do not know the answer." Do not broaden

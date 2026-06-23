@@ -4,7 +4,7 @@ session_id: schema-response-confidence-track
 title: Schema Response-Confidence Track
 status: active
 created_at: '2026-06-22T13:53:26Z'
-updated_at: '2026-06-23T00:17:00Z'
+updated_at: '2026-06-23T09:16:02Z'
 phase: phase1
 question: Can a schema-trained SFT base plus DPO/KTO/GRPO variants learn response-appropriate
   confidence without endpoint collapse?
@@ -951,3 +951,92 @@ batch 12.
   - Discard the first GRPO full run and retry1 as flawed reward-contract evidence.
   - Relaunch GRPO from scratch after expanding the refusal matcher to semantic abstentions such as "I'm not sure", "not confident", "rather not guess", collective "none of us know", indirect "how can I know", and "can't answer reliably".
   - Keep reward-debug inspection as an early gate for new reward contracts, not just a debugging convenience.
+
+### 031-result - Corrected GRPO Seed 1 Completed
+
+- at: `2026-06-23T09:16:02Z`
+- kind: `result`
+- summary: The corrected schema-SFT->GRPO seed-1 retry2 run completed locally from the merged schema-SFT base after the semantic-abstention reward matcher fix.
+- evidence:
+  - `experiment/phase1/grpo/configs/grpo_schema_sft_merged_seed1_full.yaml`
+  - `scratch/schema_response_confidence/runs/schema_sft_grpo_seed1_full/20260623_001629/final_model`
+  - `scratch/schema_response_confidence/runs/schema_sft_grpo_seed1_full/20260623_001629/capacity_features.json`
+  - `scratch/schema_response_confidence/runs/schema_sft_grpo_seed1_full/20260623_001629/training_lineage.json`
+  - `scratch/schema_response_confidence/runs/schema_sft_grpo_seed1_full/20260623_001629/logs/training_20260623_001746.jsonl`
+- signals:
+    container: eh-schema-sft-grpo-seed1-full-b32-retry2-202606222015
+    exit_code: 0
+    train_rows: 14888
+    final_step: 1861
+    total_epochs: 1
+    training_runtime_seconds: 28840.587
+    batch_size: 32
+    gradient_accumulation: 1
+    effective_batch_size: 32
+    num_generations: 4
+    learning_rate: 5e-6
+    beta: 0.1
+    lora_rank: 32
+    lora_alpha: 64
+    peak_reserved_vram_gb: 17.531
+    min_reserved_headroom_gb: 6.468
+    oom_observed: 0
+    oom_risk_level: low
+    final_loss: 0.0943
+- decisions:
+  - Treat the original GRPO full run and retry1 as discarded reward-contract failures.
+  - Treat retry2 as the first valid completed schema-SFT->GRPO seed-1 local run for Amendment D diagnostics.
+  - Keep batch 32 / accumulation 1 as a viable local GRPO setting for this model/dataset unless sequence length or dataset shape changes.
+
+### 032-result - GRPO Seed 1 Full SelfAware Eval
+
+- at: `2026-06-23T09:16:02Z`
+- kind: `result`
+- summary: GRPO seed 1 preserved the JSON schema and nearly eliminated answering unknown questions, but it did not learn confidence variation and pushed known-question over-refusal higher than the merged schema-SFT base.
+- evidence:
+  - `experiment/phase1/eval/config/eval_amendment_d_response_confidence_selfaware_schema_sft_grpo_seed1_smoke_local_4b.yaml`
+  - `experiment/phase1/eval/config/eval_amendment_d_response_confidence_selfaware_schema_sft_grpo_seed1_full_local_4b.yaml`
+  - `experiment/phase1/eval/results_amendment_d_response_confidence_selfaware_schema_sft_grpo_seed1_smoke_4b/schema_sft_grpo_seed1__selfaware/metrics.json`
+  - `experiment/phase1/eval/results_amendment_d_response_confidence_selfaware_schema_sft_grpo_seed1_full_4b/schema_sft_grpo_seed1__selfaware/metrics.json`
+  - `experiment/phase1/eval/results_amendment_d_response_confidence_selfaware_schema_sft_grpo_seed1_full_4b/schema_sft_grpo_seed1__selfaware/scored_rows.jsonl`
+- signals:
+    smoke_eval:
+      n: 192
+      stated_confidence_coverage_pct: 100.0
+      unique_response_confidence_values:
+        - 0.8
+      refusal_recall_pct: 97.89
+      answer_on_unknown_pct: 2.11
+      over_refusal_pct: 81.44
+      correct_on_known_pct: 50.0
+      truthful_pct: 53.12
+    full_eval:
+      n: 3369
+      known_rows: 2337
+      unknown_rows: 1032
+      stated_confidence_coverage_pct: 100.0
+      stated_confidence_retry_exhausted: 0
+      unique_response_confidence_values:
+        - 0.8
+      refusal_recall_pct: 97.87
+      answer_on_unknown_pct: 2.13
+      over_refusal_pct: 74.11
+      correct_on_known_pct: 60.33
+      truthful_pct: 40.81
+      response_confidence_mae_vs_response_appropriateness: 0.55512
+      response_confidence_brier_vs_response_appropriateness: 0.39512
+    merged_schema_sft_full_comparison:
+      refusal_recall_pct: 89.05
+      answer_on_unknown_pct: 10.95
+      over_refusal_pct: 59.14
+      correct_on_known_pct: 48.06
+      truthful_pct: 40.9
+      mean_response_confidence: 0.8
+- interpretation:
+  - The reward can move the refusal/answer boundary: GRPO reduced unknown answering from 10.95% to 2.13%.
+  - The movement is not selective enough: GRPO also increased over-refusal on known rows from 59.14% to 74.11%.
+  - The response-confidence scalar remains collapsed to the supervised `0.8` value on every row, so current GRPO is not yet solving calibrated confidence expression.
+  - Full-run truthful rate is effectively flat versus merged schema-SFT because improved unknown abstention is offset by worse known over-refusal.
+- decisions:
+  - Do not scale this exact GRPO objective to more seeds before changing either the reward, the supervised contrast, or the evaluation/training contract for confidence variation.
+  - Next GRPO iteration should directly reward confidence variation conditional on response appropriateness instead of allowing `0.8` to remain a locally safe default.
