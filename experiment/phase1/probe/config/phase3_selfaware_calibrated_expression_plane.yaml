@@ -1,0 +1,57 @@
+spec:
+  name: phase3_selfaware_calibrated_expression_plane
+  analysis_type: phase3_calibrated_expression_plane
+  notice: CALIBRATED_EXPRESSION_PLANE_ANALYSIS_ONLY
+
+extraction:
+  label: sft_kto_seed1_full
+  behavior_arm: sft_kto_seed1
+  role: h_lora
+  extraction_dir: experiment/phase1/probe/qwen3-4b-sft-merged-seed1-selfaware/hidden_states_selfaware_full_kto/extraction__bb5e579fa10e
+  extraction_manifest: experiment/phase1/probe/qwen3-4b-sft-merged-seed1-selfaware/hidden_states_selfaware_full_kto/extraction__bb5e579fa10e/manifest.json
+
+direction_manifest: experiment/phase1/probe/qwen3-4b-sft-merged-seed1-selfaware/behavior_axis_directions/phase3_selfaware_calibrated_expression_hlora_window_directions/behavior_axis_directions.manifest.json
+
+planes:
+  - layer: 24
+    x_direction_id: behavior_axis__kto_h_lora_unknown_wrong_vs_refused_l24_normed__7e353159058d
+    y_direction_id: behavior_axis__kto_h_lora_known_refused_vs_correct_l24_normed__540672190112
+  - layer: 25
+    x_direction_id: behavior_axis__kto_h_lora_unknown_wrong_vs_refused_l25_normed__e5550beef972
+    y_direction_id: behavior_axis__kto_h_lora_known_refused_vs_correct_l25_normed__e7585eae957b
+  - layer: 26
+    x_direction_id: behavior_axis__kto_h_lora_unknown_wrong_vs_refused_l26_normed__f4258fdc76be
+    y_direction_id: behavior_axis__kto_h_lora_known_refused_vs_correct_l26_normed__ffbf076ead91
+  - layer: 27
+    x_direction_id: behavior_axis__kto_h_lora_unknown_wrong_vs_refused_l27_normed__646ef938026f
+    y_direction_id: behavior_axis__kto_h_lora_known_refused_vs_correct_l27_normed__9b833378b389
+
+row_filter:
+  label:
+    - known
+    - unknown
+
+behavior_cells:
+  fallback_cell: other
+  cells:
+    - label: unknown_answered_wrong
+      filter:
+        label: unknown
+        refused: false
+        correct: false
+    - label: unknown_refused
+      filter:
+        label: unknown
+        refused: true
+    - label: known_correct_answered
+      filter:
+        label: known
+        refused: false
+        correct: true
+    - label: known_refused
+      filter:
+        label: known
+        refused: true
+
+output:
+  root: experiment/phase1/probe/qwen3-4b-sft-merged-seed1-selfaware/calibrated_expression_plane/phase3_selfaware_calibrated_expression_plane

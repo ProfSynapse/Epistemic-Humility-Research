@@ -169,20 +169,86 @@ def validate_direction_fields(candidate: dict[str, Any], direction: dict[str, An
         )
 
 
+def validate_component_direction_fields(component: dict[str, Any], direction: dict[str, Any], *, label: str) -> None:
+    comparisons = {
+        "role": component.get("role"),
+        "layer": component.get("layer"),
+        "tensor_key": component.get("tensor_key", "direction"),
+    }
+    if component.get("method") is not None:
+        comparisons["method"] = component.get("method")
+    if component.get("contrast") is not None:
+        comparisons["contrast"] = component.get("contrast")
+    for key, expected in comparisons.items():
+        require(
+            direction.get(key) == expected,
+            (
+                f"{label} component {component.get('label', component.get('direction_id'))} {key} mismatch: "
+                f"expected {expected!r}, found {direction.get(key)!r}"
+            ),
+        )
+    expected_status = component.get("required_status", "ok")
+    require(
+        direction.get("status") == expected_status,
+        (
+            f"{label} component {component.get('label', component.get('direction_id'))} status mismatch: "
+            f"expected {expected_status!r}, found {direction.get('status')!r}"
+        ),
+    )
+    configured_hash = component.get("vector_sha256")
+    if configured_hash:
+        require(
+            direction.get("vector_sha256") == configured_hash,
+            (
+                f"{label} component {component.get('label', component.get('direction_id'))} vector_sha256 "
+                f"mismatch: expected {configured_hash!r}, found {direction.get('vector_sha256')!r}"
+            ),
+        )
+
+
+def validate_multi_layer_components(candidate: dict[str, Any], *, label: str) -> list[dict[str, Any]]:
+    components = candidate.get("multi_layer_components")
+    require(isinstance(components, list) and len(components) > 0, f"{label} multi_layer_components must be non-empty")
+    summaries: list[dict[str, Any]] = []
+    for index, component in enumerate(components):
+        require(isinstance(component, dict), f"{label} multi_layer_components[{index}] must be a mapping")
+        direction_manifest_path = resolve_path(component["direction_manifest"])
+        direction_file_path = resolve_path(component["direction_file"])
+        require(direction_manifest_path.exists(), f"{label} component manifest missing: {direction_manifest_path}")
+        require(direction_file_path.exists(), f"{label} component direction file missing: {direction_file_path}")
+        direction_manifest = load_json(direction_manifest_path)
+        direction = find_direction(direction_manifest, component["direction_id"])
+        validate_component_direction_fields(component, direction, label=label)
+        summaries.append(
+            {
+                "label": component.get("label"),
+                "direction_id": component.get("direction_id"),
+                "role": component.get("role"),
+                "layer": component.get("layer"),
+                "weight": component.get("weight", 1.0),
+                "tensor_key": component.get("tensor_key", "direction"),
+                "status": direction.get("status"),
+                "vector_sha256": direction.get("vector_sha256"),
+                "configured_vector_sha256": component.get("vector_sha256"),
+                "direction_file": str(direction_file_path),
+                "direction_manifest": str(direction_manifest_path),
+            }
+        )
+    roles = {summary.get("role") for summary in summaries}
+    require(len(roles) == 1, f"{label} multi_layer_components must share one role; found {sorted(roles)}")
+    return summaries
+
+
 def validate_candidate(
     candidate: dict[str, Any],
     readiness_checks: dict[str, Any],
 ) -> dict[str, Any]:
     label = candidate.get("label") or candidate.get("direction_id")
     extraction_manifest_path = resolve_path(candidate["extraction_manifest"])
-    direction_manifest_path = resolve_path(candidate["direction_manifest"])
-    direction_file_path = resolve_path(candidate["direction_file"])
     extraction_dir = resolve_path(candidate["extraction_dir"])
     rows_path = extraction_dir / "rows.jsonl"
 
     require(extraction_manifest_path.exists(), f"extraction manifest missing: {extraction_manifest_path}")
-    require(direction_manifest_path.exists(), f"direction manifest missing: {direction_manifest_path}")
-    require(direction_file_path.exists(), f"direction file missing: {direction_file_path}")
 
     extraction_manifest = load_json(extraction_manifest_path)
     expected_extraction = readiness_checks.get("require_extraction_manifest", {})
@@ -203,30 +269,44 @@ def validate_candidate(
         context=f"{label} rows.jsonl",
     )
 
-    direction_manifest = load_json(direction_manifest_path)
-    direction = find_direction(direction_manifest, candidate["direction_id"])
-    validate_direction_fields(candidate, direction)
-    if "n_total" in direction:
-        require(
-            direction["n_total"] == row_count,
-            f"{label} direction n_total mismatch: expected {row_count}, found {direction['n_total']}",
-        )
-    if "label_counts" in direction_manifest:
-        require(
-            direction_manifest["label_counts"] == label_counts,
-            (
-                f"{label} direction manifest label_counts mismatch: "
-                f"expected {label_counts}, found {direction_manifest['label_counts']}"
-            ),
-        )
-    if "n_labeled_rows" in direction_manifest:
-        require(
-            direction_manifest["n_labeled_rows"] == row_count,
-            (
-                f"{label} direction manifest n_labeled_rows mismatch: "
-                f"expected {row_count}, found {direction_manifest['n_labeled_rows']}"
-            ),
-        )
+    component_summaries: list[dict[str, Any]] | None = None
+    if candidate.get("multi_layer_components") is not None:
+        component_summaries = validate_multi_layer_components(candidate, label=label)
+        direction = {
+            "status": "ok",
+            "vector_sha256": None,
+        }
+        direction_file_path = None
+        direction_manifest_path = None
+    else:
+        direction_manifest_path = resolve_path(candidate["direction_manifest"])
+        direction_file_path = resolve_path(candidate["direction_file"])
+        require(direction_manifest_path.exists(), f"direction manifest missing: {direction_manifest_path}")
+        require(direction_file_path.exists(), f"direction file missing: {direction_file_path}")
+        direction_manifest = load_json(direction_manifest_path)
+        direction = find_direction(direction_manifest, candidate["direction_id"])
+        validate_direction_fields(candidate, direction)
+        if "n_total" in direction:
+            require(
+                direction["n_total"] == row_count,
+                f"{label} direction n_total mismatch: expected {row_count}, found {direction['n_total']}",
+            )
+        if "label_counts" in direction_manifest:
+            require(
+                direction_manifest["label_counts"] == label_counts,
+                (
+                    f"{label} direction manifest label_counts mismatch: "
+                    f"expected {label_counts}, found {direction_manifest['label_counts']}"
+                ),
+            )
+        if "n_labeled_rows" in direction_manifest:
+            require(
+                direction_manifest["n_labeled_rows"] == row_count,
+                (
+                    f"{label} direction manifest n_labeled_rows mismatch: "
+                    f"expected {row_count}, found {direction_manifest['n_labeled_rows']}"
+                ),
+            )
 
     return {
         "label": label,
@@ -243,9 +323,10 @@ def validate_candidate(
         "label_counts": label_counts,
         "vector_sha256": direction.get("vector_sha256"),
         "configured_vector_sha256": candidate.get("vector_sha256"),
-        "direction_file": str(direction_file_path),
+        "direction_file": str(direction_file_path) if direction_file_path is not None else None,
         "extraction_manifest": str(extraction_manifest_path),
-        "direction_manifest": str(direction_manifest_path),
+        "direction_manifest": str(direction_manifest_path) if direction_manifest_path is not None else None,
+        "multi_layer_components": component_summaries,
     }
 
 

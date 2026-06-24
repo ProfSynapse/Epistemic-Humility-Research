@@ -89,6 +89,32 @@ def test_parse_stated_confidence_strips_final_line():
     assert parsed.stated_confidence == pytest.approx(0.73)
 
 
+def test_parse_stated_confidence_accepts_response_confidence_key():
+    parsed = scorers.parse_stated_confidence(
+        json.dumps({"answer": "Paris.", "response_confidence": 0.73})
+    )
+    assert parsed.answer_text == "Paris."
+    assert parsed.stated_confidence == pytest.approx(0.73)
+
+
+def test_parse_stated_confidence_accepts_json_after_thinking_block():
+    parsed = scorers.parse_stated_confidence(
+        '<think>Maybe this is France.</think>\n\n'
+        + json.dumps({"answer": "Paris.", "confidence": 0.73})
+    )
+
+    assert parsed.answer_text == "Paris."
+    assert parsed.stated_confidence == pytest.approx(0.73)
+
+
+def test_parse_stated_confidence_does_not_extract_json_without_thinking_block():
+    raw = 'Reasoning first.\n{"answer": "Paris.", "confidence": 0.73}'
+    parsed = scorers.parse_stated_confidence(raw)
+
+    assert parsed.answer_text == raw
+    assert parsed.stated_confidence is None
+
+
 @pytest.mark.parametrize(
     "payload",
     [
@@ -208,6 +234,12 @@ def test_stated_confidence_summary_tracks_known_label_and_answer_correctness_dis
     assert summary["coverage_pct"] == 75.0
     assert summary["mae_vs_known_label"] == pytest.approx((0.1 + 0.1 + 0.8) / 3)
     assert summary["mae_vs_answer_correctness"] == pytest.approx((0.1 + 0.1 + 0.8) / 3)
+    assert summary["mae_vs_response_appropriateness"] == pytest.approx(
+        (0.1 + 0.9 + 0.8) / 3
+    )
+    assert summary["brier_vs_response_appropriateness"] == pytest.approx(
+        ((0.1 ** 2) + (0.9 ** 2) + (0.8 ** 2)) / 3
+    )
 
 
 def test_record_aliases_drive_ood_known_correctness_and_truthful_vector():

@@ -4,6 +4,7 @@ logs/
 qwen3-4b-instruct/
 qwen3-4b-instruct_uncapped_partial_*/
 qwen3-4b-instruct_thinking_contaminated_*/
+qwen3-4b-*/
 
 # Hidden-state extraction outputs (exploratory tier). These land under
 # <model_tag>/hidden_states/ and are large reproducible tensor artifacts
@@ -12,3 +13,11 @@ qwen3-4b-instruct_thinking_contaminated_*/
 # defensive guard so a FUTURE model_tag's hidden_states tree is never staged by
 # `git add -A`, regardless of which model_tag dir is or isn't blanket-ignored.
 */hidden_states*/
+
+# SAE smoke outputs are reproducible exploratory artifacts. They may include
+# tensor slices from hidden activations, so keep them local unless a governed
+# artifact-publication decision explicitly whitelists a subset.
+*/sae_smokes/
+*/sae_runs/
+*/sae_feature_analysis/
+*/sae_feature_directions/

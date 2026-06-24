@@ -15,6 +15,17 @@ Read for live eval, prompt/output contracts, scorer drift, and post-eval sanity 
   preserving any configured `generation.stop` values. The generated-thinking
   guard remains a backstop; do not strip contaminated outputs.
 
+- Thinking-on evals are a separate explicit comparison condition, not a
+  replacement for the default non-thinking measurement posture. Use derived
+  configs with `generation.enable_thinking: true` and a separate `results_dir`;
+  the harness then omits the `<think>` stop strings and records
+  `enable_thinking: true` on scored rows. Keep confidence coverage as a gate:
+  the parser accepts final JSON after an explicit `</think>` suffix, but plain
+  malformed prose should remain unparsed. A 2026-06-20 192-row base SelfAware
+  smoke returned 100% confidence coverage, no visible think tags in generated
+  rows, unchanged low refusal rates versus non-thinking, slightly lower
+  truthful/correct-on-known, and higher mean stated confidence.
+
 - Phase 1 local eval now has an opt-in live vLLM path:
   `python experiment/phase1/eval/run_eval.py --config <scoped-config.yaml>
   --live-vllm`. Default fixture behavior is unchanged. The live config must use
@@ -52,6 +63,88 @@ Read for live eval, prompt/output contracts, scorer drift, and post-eval sanity 
   base-model slice before full reruns: on 2026-06-17 an over-strong JSON prompt
   achieved 100% coverage with zero retries but induced massive prompt-only base
   over-refusal, so coverage alone is not enough.
+
+- SelfAware is ordered with known rows first and unknown rows later. A simple
+  `limit: 64` smoke only tests known-row behavior; it does not exercise
+  abstention/refusal recall. For SelfAware smoke coverage, either run full eval
+  or pair a known-block smoke with an unknown-block smoke (the 2026-06-22 local
+  dataset had the first unknown row at offset 2337). Record the offset in the
+  config and session note rather than relying on memory.
+
+- Eval-set keys are canonical loader IDs, not arbitrary slice labels. The OOD
+  loader accepts keys such as `selfaware`, `kuq`, `popqa`, and
+  `sycophancy_answer`; a config key like `selfaware_unknown_smoke` fails before
+  generation. To smoke both known and unknown SelfAware behavior, either use the
+  canonical `selfaware` key with a mixed offset/limit (for example offset 2240,
+  limit 192) or run separate config files, not multiple invented SelfAware keys
+  in one YAML.
+
+- Response-confidence GRPO evals can pass schema perfectly while still failing
+  confidence learning. The 2026-06-22 SFT JSON-bridge -> GRPO full SelfAware
+  eval had 100% answer/confidence JSON coverage and zero retries, but both arms
+  emitted `confidence: 1.0` on every row. Treat this as degenerate confidence,
+  not calibrated confidence; inspect unique confidence values and row-level
+  behavior transitions before interpreting stated-confidence metrics.
+
+- Reward refusal detection must cover semantic abstentions, not only the
+  canonical Cheng phrase. During the 2026-06-22 schema-SFT->GRPO full launch,
+  reward-debug rows showed unknown completions like "I'm really not sure what
+  the answer is, so I'd rather not guess" receiving the hallucination penalty
+  because the reward only matched narrower forms such as "I don't know" and
+  exact "I am not sure what the answer is". A first retry exposed the same
+  issue for indirect forms such as "NONE OF US KNOW THE ANSWER", "How can I
+  know the answer?", and "I can't answer reliably." Treat reward-debug row
+  inspection as an early-run gate for every new reward contract: if natural
+  abstentions are penalized on unknown rows or rewarded on known rows, stop and
+  fix the reward before spending a full run. Regression tests should score each
+  accepted abstention as rewarded on unknown rows and penalized as over-refusal
+  on known rows.
+
+- Do not seed a calibrated-confidence experiment with a bridge target that
+  emits endpoint confidence on every supervised row. The 2026-06-22 SFT JSON
+  bridge used `confidence: 1.0` for both known gold answers and unknown
+  abstentions; the resulting SFT control and downstream GRPO adapter then
+  emitted 1.0 for every SelfAware row, even under higher temperature, a
+  stronger scale prompt, and no structured-output grammar. Before scaling a
+  confidence-learning run, smoke-test unique confidence values and reward sanity
+  cases for both behavior and confidence endpoints. Prefer non-endpoint target
+  bands for appropriate responses, low-confidence bands for inappropriate
+  responses, and explicit penalties or zero credit for exact 0.0/1.0 endpoints
+  when the research question is calibrated expression rather than deterministic
+  correctness.
+
+- For schema-trained response-confidence runs, prefer the explicit
+  `response_confidence` key over generic `confidence`. The intended scalar is
+  "probability that this answer or abstention is the appropriate response": high
+  for correct known answers, high for correct unknown abstentions, low for wrong
+  answers and over-refusals, and middle for model-specific ambiguous rows. Keep
+  historical Amendment B `confidence` outputs parseable, but label new runs so
+  answer-confidence and response-confidence are never pooled silently.
+
+- Schema-SFT can learn the output envelope while still collapsing the scalar.
+  The first Amendment D schema-SFT seed-1 SelfAware smoke had 100% JSON
+  coverage and no exact endpoints, but every row emitted
+  `response_confidence: 0.8`, matching the dominant desirable SFT target. Always
+  inspect unique confidence values and band counts before interpreting
+  response-confidence metrics; DPO/KTO/GRPO or additional supervised contrast
+  is needed to test whether the scalar can carry calibrated signal.
+
+- Before retraining a schema response-confidence SFT model, inspect the training
+  target histogram, not only the eval histogram. The failed Amendment D dataset
+  had 14,395 ordinary SFT rows at exactly `response_confidence: 0.8` and only
+  548 ambiguous-middle rows in `[0.4, 0.6]`, so a constant-0.8 model was a
+  target-construction failure. For probe-scaled reruns, derive targets from the
+  original 32-sample probe: estimate factual confidence with smoothed
+  `p_correct`, use `1 - factual_p` for abstentions, and map to non-endpoint
+  response-confidence bands before launching training.
+
+- A completed GRPO run can move the refusal boundary without solving confidence
+  expression. The 2026-06-23 schema-SFT->GRPO seed-1 full SelfAware eval
+  preserved 100% JSON coverage and reduced unknown answering, but every row
+  still emitted `response_confidence: 0.8` while known-row over-refusal rose.
+  Post-GRPO acceptance checks must compare unique confidence values, unknown
+  answering, known over-refusal, and row samples against the nearest control;
+  do not call a run calibrated because reward training completed cleanly.
 
 - Amendment B can also expose scorer drift in the opposite direction: JSON answer
   text may contain natural abstentions like "I do not know the exact number"

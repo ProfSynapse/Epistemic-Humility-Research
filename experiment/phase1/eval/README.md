@@ -49,13 +49,21 @@ LoRA arms, requires an explicit loadable `model_name`, and keeps `model_tag` as
 the reporting/provenance label. Use a scoped config for local GPU smoke that
 contains only same-model arms such as `base`, `sft`, `dpo`, and completed local
 `kto`; do not include bridge until those artifacts are ready. Qwen3 thinking is
-pinned off and generated `<think>` tags fail the run instead of being stripped.
+pinned off by default and generated `<think>` tags fail non-thinking runs
+instead of being stripped.
 
 For Qwen3, prompt rendering with thinking disabled is not sufficient by itself:
 when `generation.enable_thinking: false`, vLLM `SamplingParams` receives
 `<think>` and `</think>` stop strings while preserving configured
 `generation.stop` values. The generated-thinking guard remains a backstop; do
 not strip contaminated outputs.
+
+Explicit thinking comparisons use separate configs with
+`generation.enable_thinking: true` and separate `results_dir` values. In that
+mode the harness does not inject `<think>` stop strings and records
+`enable_thinking: true` on each scored row. Stated-confidence parsing accepts a
+final JSON object after an explicit `</think>` suffix, but ordinary malformed
+prose is still left unparsed so confidence coverage remains a visible gate.
 
 ## Run
 

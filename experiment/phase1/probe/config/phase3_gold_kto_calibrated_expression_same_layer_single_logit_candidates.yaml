@@ -1,0 +1,96 @@
+# Same-layer gold KTO single axes used to map causal signs before more composites.
+
+candidate_directions:
+  - label: gold_kto_h_lora_known_refused_vs_correct_l27
+    priority: 1
+    arm: sft_kto
+    extraction_dir: experiment/phase1/probe/qwen3-4b-instruct/hidden_states/extraction__e1473df788a5
+    extraction_manifest: experiment/phase1/probe/qwen3-4b-instruct/hidden_states/extraction__e1473df788a5/manifest.json
+    direction_manifest: experiment/phase1/probe/qwen3-4b-instruct/behavior_axis_directions/phase3_gold_kto_calibrated_expression_same_layer_axis_directions/behavior_axis_directions.manifest.json
+    direction_csv: experiment/phase1/probe/qwen3-4b-instruct/behavior_axis_directions/phase3_gold_kto_calibrated_expression_same_layer_axis_directions/behavior_axis_directions.csv
+    direction_id: behavior_axis__gold_kto_h_lora_known_refused_vs_correct_l27_normed__ffb2903f34b5
+    direction_file: experiment/phase1/probe/qwen3-4b-instruct/behavior_axis_directions/phase3_gold_kto_calibrated_expression_same_layer_axis_directions/gold_kto_h_lora_known_refused_vs_correct_l27_normed/directions/behavior_axis__gold_kto_h_lora_known_refused_vs_correct_l27_normed__ffb2903f34b5.safetensors
+    tensor_key: direction
+    role: h_lora
+    layer: 27
+    method: behavior_axis_mean_difference
+    contrast: known_refused_vs_known_correct_answered
+    positive_label: known_refused
+    negative_label: known_correct_answered
+    required_status: ok
+    vector_sha256: ffb2903f34b5d67100d883e487ec989807af6ee40362b8552c089214af4e0162
+    source_run_id: sft_kto__4b__amendment_a__seed1
+
+  - label: gold_kto_h_lora_known_refused_vs_correct_l28
+    priority: 2
+    arm: sft_kto
+    extraction_dir: experiment/phase1/probe/qwen3-4b-instruct/hidden_states/extraction__e1473df788a5
+    extraction_manifest: experiment/phase1/probe/qwen3-4b-instruct/hidden_states/extraction__e1473df788a5/manifest.json
+    direction_manifest: experiment/phase1/probe/qwen3-4b-instruct/behavior_axis_directions/phase3_gold_kto_calibrated_expression_same_layer_axis_directions/behavior_axis_directions.manifest.json
+    direction_csv: experiment/phase1/probe/qwen3-4b-instruct/behavior_axis_directions/phase3_gold_kto_calibrated_expression_same_layer_axis_directions/behavior_axis_directions.csv
+    direction_id: behavior_axis__gold_kto_h_lora_known_refused_vs_correct_l28_normed__358220555e9a
+    direction_file: experiment/phase1/probe/qwen3-4b-instruct/behavior_axis_directions/phase3_gold_kto_calibrated_expression_same_layer_axis_directions/gold_kto_h_lora_known_refused_vs_correct_l28_normed/directions/behavior_axis__gold_kto_h_lora_known_refused_vs_correct_l28_normed__358220555e9a.safetensors
+    tensor_key: direction
+    role: h_lora
+    layer: 28
+    method: behavior_axis_mean_difference
+    contrast: known_refused_vs_known_correct_answered
+    positive_label: known_refused
+    negative_label: known_correct_answered
+    required_status: ok
+    vector_sha256: 358220555e9a5c0dd61e3cccad86a53a93d89868f96d5f8be0bd5134691bd333
+    source_run_id: sft_kto__4b__amendment_a__seed1
+
+  - label: gold_kto_h_lora_unknown_wrong_vs_refused_l28
+    priority: 3
+    arm: sft_kto
+    extraction_dir: experiment/phase1/probe/qwen3-4b-instruct/hidden_states/extraction__e1473df788a5
+    extraction_manifest: experiment/phase1/probe/qwen3-4b-instruct/hidden_states/extraction__e1473df788a5/manifest.json
+    direction_manifest: experiment/phase1/probe/qwen3-4b-instruct/behavior_axis_directions/phase3_gold_kto_calibrated_expression_same_layer_axis_directions/behavior_axis_directions.manifest.json
+    direction_csv: experiment/phase1/probe/qwen3-4b-instruct/behavior_axis_directions/phase3_gold_kto_calibrated_expression_same_layer_axis_directions/behavior_axis_directions.csv
+    direction_id: behavior_axis__gold_kto_h_lora_unknown_wrong_vs_refused_l28_normed__a69a81013187
+    direction_file: experiment/phase1/probe/qwen3-4b-instruct/behavior_axis_directions/phase3_gold_kto_calibrated_expression_same_layer_axis_directions/gold_kto_h_lora_unknown_wrong_vs_refused_l28_normed/directions/behavior_axis__gold_kto_h_lora_unknown_wrong_vs_refused_l28_normed__a69a81013187.safetensors
+    tensor_key: direction
+    role: h_lora
+    layer: 28
+    method: behavior_axis_mean_difference
+    contrast: unknown_answered_wrong_vs_unknown_refused
+    positive_label: unknown_answered_wrong
+    negative_label: unknown_refused
+    required_status: ok
+    vector_sha256: a69a8101318734c05c984f1044f19700e9b8142398c31a6bba9a0ad97d1c5c86
+    source_run_id: sft_kto__4b__amendment_a__seed1
+
+  - label: gold_kto_h_lora_unknown_wrong_vs_refused_l36
+    priority: 4
+    arm: sft_kto
+    extraction_dir: experiment/phase1/probe/qwen3-4b-instruct/hidden_states/extraction__e1473df788a5
+    extraction_manifest: experiment/phase1/probe/qwen3-4b-instruct/hidden_states/extraction__e1473df788a5/manifest.json
+    direction_manifest: experiment/phase1/probe/qwen3-4b-instruct/behavior_axis_directions/phase3_gold_kto_calibrated_expression_same_layer_axis_directions/behavior_axis_directions.manifest.json
+    direction_csv: experiment/phase1/probe/qwen3-4b-instruct/behavior_axis_directions/phase3_gold_kto_calibrated_expression_same_layer_axis_directions/behavior_axis_directions.csv
+    direction_id: behavior_axis__gold_kto_h_lora_unknown_wrong_vs_refused_l36_normed__eb028dfcbf4c
+    direction_file: experiment/phase1/probe/qwen3-4b-instruct/behavior_axis_directions/phase3_gold_kto_calibrated_expression_same_layer_axis_directions/gold_kto_h_lora_unknown_wrong_vs_refused_l36_normed/directions/behavior_axis__gold_kto_h_lora_unknown_wrong_vs_refused_l36_normed__eb028dfcbf4c.safetensors
+    tensor_key: direction
+    role: h_lora
+    layer: 36
+    method: behavior_axis_mean_difference
+    contrast: unknown_answered_wrong_vs_unknown_refused
+    positive_label: unknown_answered_wrong
+    negative_label: unknown_refused
+    required_status: ok
+    vector_sha256: eb028dfcbf4cffdfcb8d419665fcaf94f61e6289b9bcb65a01ad1112a383e26b
+    source_run_id: sft_kto__4b__amendment_a__seed1
+
+readiness_checks:
+  require_extraction_manifest:
+    status: ok
+    verified: true
+    row_count: 256
+    label_counts:
+      known: 128
+      unknown: 128
+  require_direction_status: ok
+  require_hidden_dim_match: true
+  require_layer_role_match: true
+  require_vector_hash_check: true
+  require_no_mutation_of_source_artifacts: true

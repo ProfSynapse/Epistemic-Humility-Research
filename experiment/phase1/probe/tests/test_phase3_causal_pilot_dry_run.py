@@ -146,3 +146,87 @@ def test_no_write_validates_without_outputs(tmp_path):
     assert result["no_write"] is True
     assert result["written"] == []
     assert not (tmp_path / "out").exists()
+
+
+def test_multi_layer_candidate_validates_components(tmp_path):
+    config_path = _write_fixture(tmp_path)
+    config = json.loads(config_path.read_text(encoding="utf-8"))
+    extraction_dir = Path(config["candidate_directions"][0]["extraction_dir"])
+    direction_manifest = extraction_dir / "hidden_state_candidate_directions.manifest.json"
+    manifest = json.loads(direction_manifest.read_text(encoding="utf-8"))
+    manifest["directions"] = [
+        {
+            "direction_id": "direction__component_a",
+            "role": "h_lora",
+            "layer": 27,
+            "status": "ok",
+            "method": "behavior_axis_mean_difference",
+            "contrast": "known_refused_vs_correct",
+            "tensor_key": "direction",
+            "vector_sha256": "aaa",
+        },
+        {
+            "direction_id": "direction__component_b",
+            "role": "h_lora",
+            "layer": 36,
+            "status": "ok",
+            "method": "behavior_axis_mean_difference",
+            "contrast": "unknown_wrong_vs_refused",
+            "tensor_key": "direction",
+            "vector_sha256": "bbb",
+        },
+    ]
+    direction_manifest.write_text(json.dumps(manifest), encoding="utf-8")
+    direction_dir = extraction_dir / "directions"
+    (direction_dir / "direction__component_a.safetensors").write_text("placeholder", encoding="utf-8")
+    (direction_dir / "direction__component_b.safetensors").write_text("placeholder", encoding="utf-8")
+    config["candidate_directions"] = [
+        {
+            "label": "multi_layer_fixture",
+            "priority": 1,
+            "arm": "sft_kto",
+            "direction_id": "multi_layer__fixture",
+            "role": "h_lora",
+            "method": "multi_layer_direction",
+            "contrast": "calibrated_expression_multi_layer",
+            "extraction_dir": str(extraction_dir),
+            "extraction_manifest": str(extraction_dir / "manifest.json"),
+            "multi_layer_components": [
+                {
+                    "label": "known_repair",
+                    "direction_id": "direction__component_a",
+                    "direction_manifest": str(direction_manifest),
+                    "direction_file": str(direction_dir / "direction__component_a.safetensors"),
+                    "tensor_key": "direction",
+                    "role": "h_lora",
+                    "layer": 27,
+                    "method": "behavior_axis_mean_difference",
+                    "contrast": "known_refused_vs_correct",
+                    "vector_sha256": "aaa",
+                    "weight": 1.0,
+                },
+                {
+                    "label": "unknown_repair",
+                    "direction_id": "direction__component_b",
+                    "direction_manifest": str(direction_manifest),
+                    "direction_file": str(direction_dir / "direction__component_b.safetensors"),
+                    "tensor_key": "direction",
+                    "role": "h_lora",
+                    "layer": 36,
+                    "method": "behavior_axis_mean_difference",
+                    "contrast": "unknown_wrong_vs_refused",
+                    "vector_sha256": "bbb",
+                    "weight": -1.0,
+                },
+            ],
+        }
+    ]
+    config_path.write_text(json.dumps(config), encoding="utf-8")
+
+    candidate = dry_run.validate_candidate(
+        config["candidate_directions"][0],
+        config.get("readiness_checks", {}),
+    )
+    assert candidate["label"] == "multi_layer_fixture"
+    assert len(candidate["multi_layer_components"]) == 2
+    assert [component["layer"] for component in candidate["multi_layer_components"]] == [27, 36]

@@ -81,6 +81,122 @@ def test_build_jobs_uses_all_source_candidates_and_is_non_executing(tmp_path):
     )
 
 
+def test_build_jobs_applies_runner_overrides_before_materializing(tmp_path):
+    runner_config = tmp_path / "runner.yaml"
+    source_config = tmp_path / "source.yaml"
+    sweep_config = tmp_path / "sweep.yaml"
+    _write_yaml(runner_config, {
+        "spec": {"name": "template", "status": "generation_smoke"},
+        "model": {"enable_thinking": True},
+        "first_smoke": {"initial_scope": {"generation_allowed_by_this_spec": True}},
+        "selection": {"max_rows_default": 16},
+        "output": {"root": "old", "intervention_results_allowed_by_this_spec": True},
+        "candidate_directions": [{"label": "old"}],
+    })
+    _write_yaml(source_config, {
+        "candidate_directions": [{
+            "label": "cand_a",
+            "direction_id": "direction__a",
+            "direction_file": "a.safetensors",
+            "layer": 35,
+            "role": "delta",
+        }],
+    })
+    _write_yaml(sweep_config, {
+        "sweep": {
+            "name": "unit_sweep",
+            "runner_config": str(runner_config),
+            "candidate_source_config": str(source_config),
+            "output_root": str(tmp_path / "out"),
+            "candidates": "all",
+            "runner_overrides": {
+                "model": {"enable_thinking": False},
+                "selection": {
+                    "max_rows_default": 2,
+                    "row_keys": ["row-a", "row-b"],
+                },
+            },
+            "modes": [{
+                "name": "logit_diagnostic",
+                "max_rows": 2,
+                "coefficients": [1.0],
+                "controls": ["no_vector_baseline"],
+            }],
+        },
+    })
+
+    plan = sweep.build_jobs(sweep_config)
+
+    payload = plan["jobs"][0]["runner_config_payload"]
+    assert payload["model"]["enable_thinking"] is False
+    assert payload["selection"]["max_rows_default"] == 2
+    assert payload["selection"]["row_keys"] == ["row-a", "row-b"]
+    assert payload["candidate_directions"][0]["label"] == "cand_a"
+
+
+def test_runner_overrides_replace_label_counts_atomically(tmp_path):
+    runner_config = tmp_path / "runner.yaml"
+    source_config = tmp_path / "source.yaml"
+    sweep_config = tmp_path / "sweep.yaml"
+    _write_yaml(runner_config, {
+        "spec": {"name": "template", "status": "generation_smoke"},
+        "model": {"enable_thinking": False},
+        "first_smoke": {"initial_scope": {"generation_allowed_by_this_spec": True}},
+        "output": {"root": "old", "intervention_results_allowed_by_this_spec": True},
+        "readiness_checks": {
+            "require_extraction_manifest": {
+                "status": "ok",
+                "verified": True,
+                "row_count": 256,
+                "label_counts": {"known": 128, "unknown": 128},
+            },
+        },
+        "candidate_directions": [{"label": "old"}],
+    })
+    _write_yaml(source_config, {
+        "candidate_directions": [{
+            "label": "cand_a",
+            "direction_id": "direction__a",
+            "direction_file": "a.safetensors",
+            "layer": 35,
+            "role": "delta",
+        }],
+    })
+    _write_yaml(sweep_config, {
+        "sweep": {
+            "name": "unit_sweep",
+            "runner_config": str(runner_config),
+            "candidate_source_config": str(source_config),
+            "output_root": str(tmp_path / "out"),
+            "candidates": "all",
+            "runner_overrides": {
+                "readiness_checks": {
+                    "require_extraction_manifest": {
+                        "row_count": 32,
+                        "label_counts": {"known": 32},
+                    },
+                },
+            },
+            "modes": [{
+                "name": "logit_diagnostic",
+                "max_rows": 2,
+                "coefficients": [1.0],
+                "controls": ["no_vector_baseline"],
+            }],
+        },
+    })
+
+    plan = sweep.build_jobs(sweep_config)
+
+    manifest_check = plan["jobs"][0]["runner_config_payload"]["readiness_checks"][
+        "require_extraction_manifest"
+    ]
+    assert manifest_check["status"] == "ok"
+    assert manifest_check["verified"] is True
+    assert manifest_check["row_count"] == 32
+    assert manifest_check["label_counts"] == {"known": 32}
+
+
 def test_build_jobs_reports_skipped_candidates(tmp_path):
     runner_config = tmp_path / "runner.yaml"
     source_config = tmp_path / "source.yaml"

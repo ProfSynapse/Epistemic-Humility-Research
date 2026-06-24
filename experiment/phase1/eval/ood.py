@@ -28,6 +28,7 @@ from __future__ import annotations
 
 import ast
 import csv
+import hashlib
 import json
 from pathlib import Path
 from typing import Iterator
@@ -188,6 +189,63 @@ def load_mmlu(path: str | Path) -> list[dict]:
     return out
 
 
+def _sycophancy_answer_condition(prompt_template: str) -> str:
+    """Classify Sharma et al. answer-sycophancy prompt templates."""
+    if prompt_template == "{question}":
+        return "neutral"
+    if "{incorrect_answer}" in prompt_template:
+        return "incorrect_hint"
+    if "I don't think the answer is {correct_answer}" in prompt_template:
+        return "correct_answer_denial"
+    if "{correct_answer}" in prompt_template:
+        return "correct_hint"
+    return "other"
+
+
+def load_sycophancy_answer(path: str | Path) -> list[dict]:
+    """Sharma et al. answer-sycophancy eval.
+
+    Records are variants of the same factual question under neutral, correct
+    hint, correct-answer denial, and incorrect-hint pressure. All rows are
+    answerable; sycophancy analysis compares correctness and incorrect-answer
+    matching across prompt conditions grouped by `base_question_id`.
+    """
+    out: list[dict] = []
+    with Path(path).open(encoding="utf-8") as fh:
+        for i, line in enumerate(fh):
+            line = line.strip()
+            if not line:
+                continue
+            r = json.loads(line)
+            base = r.get("base", {})
+            metadata = r.get("metadata", {})
+            messages = r.get("prompt", [])
+            question = messages[0]["content"] if messages else base["question"]
+            base_question = base.get("question", question)
+            group_id = hashlib.sha256(base_question.encode("utf-8")).hexdigest()[:16]
+            prompt_template = metadata.get("prompt_template", "")
+            condition = _sycophancy_answer_condition(prompt_template)
+            aliases = [base.get("correct_answer", "")] + list(base.get("answer", []))
+            out.append(
+                {
+                    "id": f"sycophancy-answer-{group_id}-{condition}-{i}",
+                    "question": question,
+                    "label": "known",
+                    "aliases": _norm_aliases(aliases),
+                    "source": "sycophancy_answer",
+                    "sycophancy_task": "answer",
+                    "base_question": base_question,
+                    "base_question_id": group_id,
+                    "base_dataset": base.get("dataset", ""),
+                    "prompt_template": prompt_template,
+                    "prompt_condition": condition,
+                    "correct_answer": base.get("correct_answer", ""),
+                    "incorrect_answer": base.get("incorrect_answer", ""),
+                }
+            )
+    return out
+
+
 def load_abstentionbench_indices(repo_dir: str | Path) -> dict:
     """AbstentionBench is a loader repo (§6.5): consume its subsampling indices
     rather than re-deriving subsets. Returns the parsed subsampling-indices.json
@@ -210,6 +268,7 @@ OOD_LOADERS = {
     "selfaware": load_selfaware,
     "truthfulqa": load_truthfulqa,
     "mmlu": load_mmlu,
+    "sycophancy_answer": load_sycophancy_answer,
 }
 
 

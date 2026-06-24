@@ -100,16 +100,20 @@ def parse_stated_confidence(text: str) -> ParsedGeneration:
     """Parse structured answer/confidence output from a generation.
 
     Required stated-confidence format is a JSON object:
-    `{"answer": "Paris", "confidence": 0.73}`.
+    `{"answer": "Paris", "confidence": 0.73}` or the schema-aware
+    response-confidence form:
+    `{"answer": "Paris", "response_confidence": 0.73}`.
     """
     raw = str(text or "").strip()
-    try:
-        payload = json.loads(raw)
-    except json.JSONDecodeError:
-        payload = None
-    if isinstance(payload, dict) and set(payload) == {"answer", "confidence"}:
+    payload = _load_stated_confidence_payload(raw)
+    if isinstance(payload, dict) and (
+        set(payload) == {"answer", "confidence"}
+        or set(payload) == {"answer", "response_confidence"}
+    ):
         answer = payload.get("answer")
-        confidence = _coerce_confidence_value(payload.get("confidence"))
+        confidence = _coerce_confidence_value(
+            payload.get("response_confidence", payload.get("confidence"))
+        )
         if isinstance(answer, str) and confidence is not None:
             return ParsedGeneration(
                 answer_text=answer.strip(),
@@ -117,6 +121,30 @@ def parse_stated_confidence(text: str) -> ParsedGeneration:
             )
 
     return ParsedGeneration(answer_text=raw, stated_confidence=None)
+
+
+def _load_stated_confidence_payload(raw: str) -> object:
+    """Load the stated-confidence JSON, allowing explicit thinking prefixes.
+
+    Thinking-on Qwen runs can expose a visible `<think>...</think>` block before
+    the constrained final answer. Only that explicit suffix is accepted as a
+    fallback so ordinary malformed prose is not reinterpreted as structured
+    output.
+    """
+    try:
+        return json.loads(raw)
+    except json.JSONDecodeError:
+        pass
+
+    if "</think>" not in raw:
+        return None
+    suffix = raw.rsplit("</think>", maxsplit=1)[-1].strip()
+    if not suffix:
+        return None
+    try:
+        return json.loads(suffix)
+    except json.JSONDecodeError:
+        return None
 
 
 def normalize(text: str) -> str:
@@ -350,7 +378,7 @@ def stated_confidence_summary(
     question_key: str = "question",
     target_key: str = "answer",
 ) -> dict[str, float | int]:
-    """Distance between stated confidence and two reality targets.
+    """Distance between stated confidence and three reality targets.
 
     `*_vs_known_label` compares confidence to the model-specific known/unknown
     label: known=1, unknown=0. This is the "does stated confidence track what
@@ -360,6 +388,11 @@ def stated_confidence_summary(
     a correct factual assertion. Abstentions target 0 on this axis because the
     output contract defines confidence as confidence in factual answer content,
     not confidence that abstaining was the right policy.
+
+    `*_vs_response_appropriateness` compares confidence to the truthful-policy
+    target used by GRPO-style response-confidence training: correct known
+    answers and correct unknown abstentions target 1; wrong answers, answering
+    unknown questions, and over-refusing known questions target 0.
     """
     n = 0
     missing = 0
@@ -367,6 +400,8 @@ def stated_confidence_summary(
     sq_known = 0.0
     abs_answer_correctness = 0.0
     sq_answer_correctness = 0.0
+    abs_response_appropriateness = 0.0
+    sq_response_appropriateness = 0.0
     conf_sum = 0.0
 
     for r in records:
@@ -385,6 +420,9 @@ def stated_confidence_summary(
         correct = False if gen_refuses else is_correct(parsed.answer_text, aliases)
         known_target = 0.0 if target_unknown else 1.0
         answer_correctness_target = 1.0 if correct else 0.0
+        response_appropriateness_target = (
+            1.0 if (gen_refuses if target_unknown else correct) else 0.0
+        )
         confidence = parsed.stated_confidence
 
         n += 1
@@ -393,6 +431,12 @@ def stated_confidence_summary(
         sq_known += (confidence - known_target) ** 2
         abs_answer_correctness += abs(confidence - answer_correctness_target)
         sq_answer_correctness += (confidence - answer_correctness_target) ** 2
+        abs_response_appropriateness += abs(
+            confidence - response_appropriateness_target
+        )
+        sq_response_appropriateness += (
+            confidence - response_appropriateness_target
+        ) ** 2
 
     total = len(records)
     return {
@@ -405,6 +449,12 @@ def stated_confidence_summary(
         "brier_vs_known_label": round(sq_known / n, 6) if n else 0.0,
         "mae_vs_answer_correctness": round(abs_answer_correctness / n, 6) if n else 0.0,
         "brier_vs_answer_correctness": round(sq_answer_correctness / n, 6) if n else 0.0,
+        "mae_vs_response_appropriateness": (
+            round(abs_response_appropriateness / n, 6) if n else 0.0
+        ),
+        "brier_vs_response_appropriateness": (
+            round(sq_response_appropriateness / n, 6) if n else 0.0
+        ),
     }
 
 

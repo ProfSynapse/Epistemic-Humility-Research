@@ -1,0 +1,31 @@
+source_rows: experiment/phase1/probe/qwen3-4b-instruct/gold_behavior_panels/phase3_gold_kto_behavior_panel/rows.jsonl
+behavior_arm: sft_kto_gold_baseline
+target_group: refusal_openers
+runs:
+  - label: known_refused_l36
+    diagnostics: experiment/phase1/probe/qwen3-4b-instruct/causal_pilots/phase3_gold_kto_calibrated_expression_logit_sweep/gold_kto_h_lora_known_refused_vs_correct_l36/logit_diagnostic/run_20260620T130832Z/logit_diagnostics.jsonl
+  - label: unknown_wrong_l27
+    diagnostics: experiment/phase1/probe/qwen3-4b-instruct/causal_pilots/phase3_gold_kto_calibrated_expression_logit_sweep/gold_kto_h_lora_unknown_wrong_vs_refused_l27/logit_diagnostic/run_20260620T131012Z/logit_diagnostics.jsonl
+behavior_cells:
+  fallback_cell: other
+  cells:
+    - label: known_refused
+      filter:
+        label: known
+        refused: true
+    - label: known_correct_answered
+      filter:
+        label: known
+        refused: false
+        correct: true
+    - label: unknown_refused
+      filter:
+        label: unknown
+        refused: true
+    - label: unknown_answered_wrong
+      filter:
+        label: unknown
+        refused: false
+        correct: false
+output:
+  root: experiment/phase1/probe/qwen3-4b-instruct/logit_cell_analysis/phase3_gold_kto_calibrated_expression_refusal

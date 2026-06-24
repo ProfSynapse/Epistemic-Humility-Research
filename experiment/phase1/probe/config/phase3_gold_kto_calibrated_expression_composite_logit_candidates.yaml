@@ -1,0 +1,136 @@
+# Gold-backed KTO calibrated-expression composite candidates.
+
+candidate_directions:
+  - label: gold_kto_h_lora_l27_composite_known1_unknown025
+    priority: 1
+    arm: sft_kto
+    extraction_dir: experiment/phase1/probe/qwen3-4b-instruct/hidden_states/extraction__e1473df788a5
+    extraction_manifest: experiment/phase1/probe/qwen3-4b-instruct/hidden_states/extraction__e1473df788a5/manifest.json
+    direction_manifest: experiment/phase1/probe/qwen3-4b-instruct/direction_transforms/phase3_gold_kto_calibrated_expression_composite_directions/direction_transforms.manifest.json
+    direction_csv: experiment/phase1/probe/qwen3-4b-instruct/direction_transforms/phase3_gold_kto_calibrated_expression_composite_directions/direction_transforms.csv
+    direction_id: direction_transform__gold_kto_h_lora_l27_composite_known1_unknown025_normed__8cf7e2f1e5cf
+    direction_file: experiment/phase1/probe/qwen3-4b-instruct/direction_transforms/phase3_gold_kto_calibrated_expression_composite_directions/gold_kto_h_lora_l27_composite_known1_unknown025_normed/directions/direction_transform__gold_kto_h_lora_l27_composite_known1_unknown025_normed__8cf7e2f1e5cf.safetensors
+    tensor_key: direction
+    role: h_lora
+    layer: 27
+    method: direction_transform
+    contrast: gold_composite_known_overrefusal_unknown_wrong
+    positive_label: composite_known_repair
+    negative_label: composite_unknown_repair
+    required_status: ok
+    vector_sha256: 8cf7e2f1e5cf831c3f37886e59b229ba791e6c1af980e9e0df307dff09e26ade
+    source_run_id: sft_kto__4b__amendment_a__seed1
+
+  - label: gold_kto_h_lora_l27_composite_known1_unknown050
+    priority: 2
+    arm: sft_kto
+    extraction_dir: experiment/phase1/probe/qwen3-4b-instruct/hidden_states/extraction__e1473df788a5
+    extraction_manifest: experiment/phase1/probe/qwen3-4b-instruct/hidden_states/extraction__e1473df788a5/manifest.json
+    direction_manifest: experiment/phase1/probe/qwen3-4b-instruct/direction_transforms/phase3_gold_kto_calibrated_expression_composite_directions/direction_transforms.manifest.json
+    direction_csv: experiment/phase1/probe/qwen3-4b-instruct/direction_transforms/phase3_gold_kto_calibrated_expression_composite_directions/direction_transforms.csv
+    direction_id: direction_transform__gold_kto_h_lora_l27_composite_known1_unknown050_normed__9aa40881afca
+    direction_file: experiment/phase1/probe/qwen3-4b-instruct/direction_transforms/phase3_gold_kto_calibrated_expression_composite_directions/gold_kto_h_lora_l27_composite_known1_unknown050_normed/directions/direction_transform__gold_kto_h_lora_l27_composite_known1_unknown050_normed__9aa40881afca.safetensors
+    tensor_key: direction
+    role: h_lora
+    layer: 27
+    method: direction_transform
+    contrast: gold_composite_known_overrefusal_unknown_wrong
+    positive_label: composite_known_repair
+    negative_label: composite_unknown_repair
+    required_status: ok
+    vector_sha256: 9aa40881afca67c541fe99ef938a336da24ad1af0de4613453011f2e3906f170
+    source_run_id: sft_kto__4b__amendment_a__seed1
+
+  - label: gold_kto_h_lora_l28_composite_known1_unknown025
+    priority: 3
+    arm: sft_kto
+    extraction_dir: experiment/phase1/probe/qwen3-4b-instruct/hidden_states/extraction__e1473df788a5
+    extraction_manifest: experiment/phase1/probe/qwen3-4b-instruct/hidden_states/extraction__e1473df788a5/manifest.json
+    direction_manifest: experiment/phase1/probe/qwen3-4b-instruct/direction_transforms/phase3_gold_kto_calibrated_expression_composite_directions/direction_transforms.manifest.json
+    direction_csv: experiment/phase1/probe/qwen3-4b-instruct/direction_transforms/phase3_gold_kto_calibrated_expression_composite_directions/direction_transforms.csv
+    direction_id: direction_transform__gold_kto_h_lora_l28_composite_known1_unknown025_normed__424d618e988d
+    direction_file: experiment/phase1/probe/qwen3-4b-instruct/direction_transforms/phase3_gold_kto_calibrated_expression_composite_directions/gold_kto_h_lora_l28_composite_known1_unknown025_normed/directions/direction_transform__gold_kto_h_lora_l28_composite_known1_unknown025_normed__424d618e988d.safetensors
+    tensor_key: direction
+    role: h_lora
+    layer: 28
+    method: direction_transform
+    contrast: gold_composite_known_overrefusal_unknown_wrong
+    positive_label: composite_known_repair
+    negative_label: composite_unknown_repair
+    required_status: ok
+    vector_sha256: 424d618e988dddd4a98b8a4597cd216ebca78b6ec29d6b6d5ddabc24d5d9fb58
+    source_run_id: sft_kto__4b__amendment_a__seed1
+
+  - label: gold_kto_h_lora_l28_composite_known1_unknown050
+    priority: 4
+    arm: sft_kto
+    extraction_dir: experiment/phase1/probe/qwen3-4b-instruct/hidden_states/extraction__e1473df788a5
+    extraction_manifest: experiment/phase1/probe/qwen3-4b-instruct/hidden_states/extraction__e1473df788a5/manifest.json
+    direction_manifest: experiment/phase1/probe/qwen3-4b-instruct/direction_transforms/phase3_gold_kto_calibrated_expression_composite_directions/direction_transforms.manifest.json
+    direction_csv: experiment/phase1/probe/qwen3-4b-instruct/direction_transforms/phase3_gold_kto_calibrated_expression_composite_directions/direction_transforms.csv
+    direction_id: direction_transform__gold_kto_h_lora_l28_composite_known1_unknown050_normed__b395cbd2bc98
+    direction_file: experiment/phase1/probe/qwen3-4b-instruct/direction_transforms/phase3_gold_kto_calibrated_expression_composite_directions/gold_kto_h_lora_l28_composite_known1_unknown050_normed/directions/direction_transform__gold_kto_h_lora_l28_composite_known1_unknown050_normed__b395cbd2bc98.safetensors
+    tensor_key: direction
+    role: h_lora
+    layer: 28
+    method: direction_transform
+    contrast: gold_composite_known_overrefusal_unknown_wrong
+    positive_label: composite_known_repair
+    negative_label: composite_unknown_repair
+    required_status: ok
+    vector_sha256: b395cbd2bc98634f390be4267aa20e8cadd9c77a83e896de09e79cfdd3946206
+    source_run_id: sft_kto__4b__amendment_a__seed1
+
+  - label: gold_kto_h_lora_l36_composite_known1_unknown025
+    priority: 5
+    arm: sft_kto
+    extraction_dir: experiment/phase1/probe/qwen3-4b-instruct/hidden_states/extraction__e1473df788a5
+    extraction_manifest: experiment/phase1/probe/qwen3-4b-instruct/hidden_states/extraction__e1473df788a5/manifest.json
+    direction_manifest: experiment/phase1/probe/qwen3-4b-instruct/direction_transforms/phase3_gold_kto_calibrated_expression_composite_directions/direction_transforms.manifest.json
+    direction_csv: experiment/phase1/probe/qwen3-4b-instruct/direction_transforms/phase3_gold_kto_calibrated_expression_composite_directions/direction_transforms.csv
+    direction_id: direction_transform__gold_kto_h_lora_l36_composite_known1_unknown025_normed__1270320fefe5
+    direction_file: experiment/phase1/probe/qwen3-4b-instruct/direction_transforms/phase3_gold_kto_calibrated_expression_composite_directions/gold_kto_h_lora_l36_composite_known1_unknown025_normed/directions/direction_transform__gold_kto_h_lora_l36_composite_known1_unknown025_normed__1270320fefe5.safetensors
+    tensor_key: direction
+    role: h_lora
+    layer: 36
+    method: direction_transform
+    contrast: gold_composite_known_overrefusal_unknown_wrong
+    positive_label: composite_known_repair
+    negative_label: composite_unknown_repair
+    required_status: ok
+    vector_sha256: 1270320fefe5a967ef6d1e1af2a31c2c56f70f9fe6c03c4b02d3cdb63e54a9f8
+    source_run_id: sft_kto__4b__amendment_a__seed1
+
+  - label: gold_kto_h_lora_l36_composite_known1_unknown050
+    priority: 6
+    arm: sft_kto
+    extraction_dir: experiment/phase1/probe/qwen3-4b-instruct/hidden_states/extraction__e1473df788a5
+    extraction_manifest: experiment/phase1/probe/qwen3-4b-instruct/hidden_states/extraction__e1473df788a5/manifest.json
+    direction_manifest: experiment/phase1/probe/qwen3-4b-instruct/direction_transforms/phase3_gold_kto_calibrated_expression_composite_directions/direction_transforms.manifest.json
+    direction_csv: experiment/phase1/probe/qwen3-4b-instruct/direction_transforms/phase3_gold_kto_calibrated_expression_composite_directions/direction_transforms.csv
+    direction_id: direction_transform__gold_kto_h_lora_l36_composite_known1_unknown050_normed__4eaa756cfa20
+    direction_file: experiment/phase1/probe/qwen3-4b-instruct/direction_transforms/phase3_gold_kto_calibrated_expression_composite_directions/gold_kto_h_lora_l36_composite_known1_unknown050_normed/directions/direction_transform__gold_kto_h_lora_l36_composite_known1_unknown050_normed__4eaa756cfa20.safetensors
+    tensor_key: direction
+    role: h_lora
+    layer: 36
+    method: direction_transform
+    contrast: gold_composite_known_overrefusal_unknown_wrong
+    positive_label: composite_known_repair
+    negative_label: composite_unknown_repair
+    required_status: ok
+    vector_sha256: 4eaa756cfa201cc5303719d3662d4fea85ad8ff5daf1daa53fffdff304978e45
+    source_run_id: sft_kto__4b__amendment_a__seed1
+
+readiness_checks:
+  require_extraction_manifest:
+    status: ok
+    verified: true
+    row_count: 256
+    label_counts:
+      known: 128
+      unknown: 128
+  require_direction_status: ok
+  require_hidden_dim_match: true
+  require_layer_role_match: true
+  require_vector_hash_check: true
+  require_no_mutation_of_source_artifacts: true

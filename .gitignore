@@ -30,5 +30,6 @@ datasets/triviaqa-rc-nocontext/train.jsonl
 __pycache__/
 *.pyc
 .pytest_cache/
+unsloth_compiled_cache/
 
 .obsidian/

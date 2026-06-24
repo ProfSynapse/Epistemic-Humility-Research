@@ -81,10 +81,39 @@ def resolve_runtime_path(value: str | Path | None) -> str | None:
     if value is None:
         return None
     text = str(value)
+    if not text:
+        return None
     docker_prefix = "/workspace/repo/"
     if text.startswith(docker_prefix) and not Path(text).exists():
         return str((REPO_ROOT / text[len(docker_prefix):]).resolve())
     return text
+
+
+def runtime_adapter_path(
+    model_cfg: dict[str, Any],
+    extraction_manifest: dict[str, Any],
+) -> str | None:
+    """Resolve the PEFT adapter path for the live runtime.
+
+    By default the runner stays arm-native and falls back to the extraction
+    manifest adapter. Adapterless execution is opt-in so null adapter settings
+    cannot silently drop the trained arm being diagnosed.
+    """
+    use_extraction_adapter = model_cfg.get("use_extraction_adapter", True)
+    if not isinstance(use_extraction_adapter, bool):
+        raise PilotRunnerError("runtime_model.use_extraction_adapter must be boolean")
+    raw_adapter_path = model_cfg.get("adapter_path")
+    if use_extraction_adapter and not raw_adapter_path:
+        raw_adapter_path = extraction_manifest.get("adapter_path")
+    adapter_path = resolve_runtime_path(raw_adapter_path)
+    if adapter_path:
+        return adapter_path
+    if model_cfg.get("allow_adapterless") is True:
+        return None
+    raise PilotRunnerError(
+        "No adapter path available for active smoke; set "
+        "runtime_model.allow_adapterless: true only for explicit adapterless runtimes"
+    )
 
 
 def require_generation_enabled(config: dict[str, Any], *, allow_generation: bool) -> None:
@@ -191,6 +220,46 @@ def activation_addition_hook(model: Any, *, layer: int, direction: Any, coeffici
         handle.remove()
 
 
+@contextmanager
+def activation_addition_hooks(model: Any, components: list[dict[str, Any]]):
+    layers = find_decoder_layers(model)
+    handles: list[Any] = []
+    hooks: list[Any] = []
+    aggregate_state: dict[str, Any] = {"applied_count": 0, "delta_abs_sum": 0.0, "component_states": []}
+    try:
+        for index, component in enumerate(components):
+            layer = int(component["layer"])
+            block_index = block_index_for_hidden_state_layer(layer)
+            if block_index >= len(layers):
+                raise PilotRunnerError(
+                    f"Layer {layer} maps to block {block_index}, but model has only {len(layers)} blocks"
+                )
+            hook = make_final_prompt_token_addition_hook(component["direction"], float(component["coefficient"]))
+            hook._phase3_component_index = index  # type: ignore[attr-defined]
+            hook._phase3_layer = layer  # type: ignore[attr-defined]
+            handles.append(layers[block_index].register_forward_hook(hook))
+            hooks.append(hook)
+        yield aggregate_state
+    finally:
+        aggregate_state.update(summarize_hook_states(hooks))
+        for handle in handles:
+            handle.remove()
+
+
+def summarize_hook_states(hooks: list[Any]) -> dict[str, Any]:
+    components: list[dict[str, Any]] = []
+    for hook in hooks:
+        state = dict(getattr(hook, "_phase3_state", {}))
+        state["component_index"] = getattr(hook, "_phase3_component_index", None)
+        state["layer"] = getattr(hook, "_phase3_layer", None)
+        components.append(state)
+    return {
+        "applied_count": sum(int(component.get("applied_count", 0)) for component in components),
+        "delta_abs_sum": sum(float(component.get("delta_abs_sum", 0.0)) for component in components),
+        "component_states": components,
+    }
+
+
 def load_probe_rows(probe_results: Path, keys: set[str]) -> dict[str, dict[str, Any]]:
     found: dict[str, dict[str, Any]] = {}
     seen_keys: set[Any] = set()
@@ -271,9 +340,14 @@ def selection_row_keys_for_candidate(config: dict[str, Any], candidate_label: st
         if raw_keys is not None:
             return validate_selection_row_keys(raw_keys, "selection.row_keys_by_candidate")
     raw_keys = selection.get("row_keys")
-    if raw_keys is None:
+    if raw_keys is not None:
+        return validate_selection_row_keys(raw_keys, "selection.row_keys")
+    raw_keys_file = selection.get("row_keys_file")
+    if raw_keys_file is None:
         return None
-    return validate_selection_row_keys(raw_keys, "selection.row_keys")
+    if not isinstance(raw_keys_file, str) or not raw_keys_file:
+        raise PilotRunnerError("selection.row_keys_file must be a non-empty string")
+    return load_selection_row_keys_file(resolve_path(raw_keys_file))
 
 
 def validate_selection_row_keys(raw_keys: Any, field_name: str) -> list[str]:
@@ -284,6 +358,17 @@ def validate_selection_row_keys(raw_keys: Any, field_name: str) -> list[str]:
     if len(set(raw_keys)) != len(raw_keys):
         raise PilotRunnerError(f"{field_name} must not contain duplicates")
     return list(raw_keys)
+
+
+def load_selection_row_keys_file(path: Path) -> list[str]:
+    if not path.is_file():
+        raise PilotRunnerError(f"selection.row_keys_file missing: {path}")
+    keys = [
+        line.strip()
+        for line in path.read_text(encoding="utf-8").splitlines()
+        if line.strip() and not line.lstrip().startswith("#")
+    ]
+    return validate_selection_row_keys(keys, "selection.row_keys_file")
 
 
 def logit_diagnostic_top_k(config: dict[str, Any]) -> int:
@@ -301,25 +386,61 @@ def runner_control_settings(config: dict[str, Any]) -> dict[str, Any]:
 
 
 def wrong_layer_offset(control_settings: dict[str, Any]) -> int:
+    return wrong_layer_offsets(control_settings)[0]
+
+
+def wrong_layer_offsets(control_settings: dict[str, Any]) -> list[int]:
     raw_config = control_settings.get("wrong_layer", {})
     if not isinstance(raw_config, dict):
         raise PilotRunnerError("control_settings.wrong_layer must be a mapping")
+    if "layer_offsets" in raw_config:
+        raw_offsets = raw_config["layer_offsets"]
+        if not isinstance(raw_offsets, list) or not raw_offsets:
+            raise PilotRunnerError("control_settings.wrong_layer.layer_offsets must be a non-empty list")
+        offsets: list[int] = []
+        for raw_offset in raw_offsets:
+            if not isinstance(raw_offset, int) or isinstance(raw_offset, bool) or raw_offset == 0:
+                raise PilotRunnerError(
+                    "control_settings.wrong_layer.layer_offsets must contain nonzero integers"
+                )
+            offsets.append(raw_offset)
+        if len(set(offsets)) != len(offsets):
+            raise PilotRunnerError("control_settings.wrong_layer.layer_offsets must not contain duplicates")
+        return offsets
     raw_offset = raw_config.get("layer_offset", -1)
     if not isinstance(raw_offset, int) or isinstance(raw_offset, bool) or raw_offset == 0:
         raise PilotRunnerError("control_settings.wrong_layer.layer_offset must be a nonzero integer")
-    return raw_offset
+    return [raw_offset]
 
 
 def random_matched_norm_seed(control_settings: dict[str, Any]) -> int:
+    return random_matched_norm_seeds(control_settings)[0]
+
+
+def random_matched_norm_seeds(control_settings: dict[str, Any]) -> list[int]:
     raw_config = control_settings.get("random_matched_norm", {})
     if not isinstance(raw_config, dict):
         raise PilotRunnerError("control_settings.random_matched_norm must be a mapping")
+    if "seeds" in raw_config:
+        raw_seeds = raw_config["seeds"]
+        if not isinstance(raw_seeds, list) or not raw_seeds:
+            raise PilotRunnerError("control_settings.random_matched_norm.seeds must be a non-empty list")
+        seeds: list[int] = []
+        for raw_seed in raw_seeds:
+            if not isinstance(raw_seed, int) or isinstance(raw_seed, bool) or raw_seed < 0:
+                raise PilotRunnerError(
+                    "control_settings.random_matched_norm.seeds must contain non-negative integers"
+                )
+            seeds.append(raw_seed)
+        if len(set(seeds)) != len(seeds):
+            raise PilotRunnerError("control_settings.random_matched_norm.seeds must not contain duplicates")
+        return seeds
     raw_seed = raw_config.get("seed")
     if raw_seed is None:
         raise PilotRunnerError("control_settings.random_matched_norm.seed is required")
     if not isinstance(raw_seed, int) or isinstance(raw_seed, bool) or raw_seed < 0:
         raise PilotRunnerError("control_settings.random_matched_norm.seed must be a non-negative integer")
-    return raw_seed
+    return [raw_seed]
 
 
 def score_generation(row: dict[str, Any], generated_answer: str) -> dict[str, Any]:
@@ -385,6 +506,23 @@ def _has_thinking_tag(text: str) -> bool:
     return "<think>" in text or "</think>" in text or "reasoning_content" in text
 
 
+def candidate_source_layers(candidate: dict[str, Any]) -> list[int]:
+    components = candidate.get("multi_layer_components")
+    if components is None:
+        return [int(candidate["layer"])]
+    if not isinstance(components, list) or not components:
+        raise PilotRunnerError("multi_layer_components must be a non-empty list")
+    layers: list[int] = []
+    for index, component in enumerate(components):
+        if not isinstance(component, dict):
+            raise PilotRunnerError("multi_layer_components entries must be mappings")
+        layer = component.get("layer")
+        if not isinstance(layer, int) or isinstance(layer, bool) or layer <= 0:
+            raise PilotRunnerError(f"multi_layer_components[{index}].layer must be a positive integer")
+        layers.append(layer)
+    return layers
+
+
 def build_smoke_arms(
     *,
     candidate: dict[str, Any],
@@ -394,57 +532,82 @@ def build_smoke_arms(
 ) -> list[dict[str, Any]]:
     arms: list[dict[str, Any]] = []
     control_settings = control_settings or {}
+    source_layers = candidate_source_layers(candidate)
     for coefficient in coefficients:
         for control in controls:
-            effective = effective_coefficient_for_control(control, coefficient)
-            layer = int(candidate["layer"])
-            direction_id = None if control == "no_vector_baseline" else candidate["direction_id"]
-            control_provenance: dict[str, Any] = {
-                "control_type": control,
-                "source_direction_id": candidate["direction_id"],
-                "source_layer": int(candidate["layer"]),
-            }
-            random_seed = None
-            if control in {"wrong_layer", "wrong_layer_subtraction"}:
-                offset = wrong_layer_offset(control_settings)
-                layer = int(candidate["layer"]) + offset
-                if layer <= 0:
-                    raise PilotRunnerError(
-                        f"{control} control produced invalid layer {layer} "
-                        f"from source layer {candidate['layer']} offset {offset}"
-                    )
-                if layer == int(candidate["layer"]):
-                    raise PilotRunnerError(f"{control} control must not use the source layer")
-                control_provenance.update({
-                    "wrong_layer_offset": offset,
-                    "applied_layer": layer,
-                    "uses_source_direction": True,
-                })
-            elif control == "random_matched_norm":
-                random_seed = random_matched_norm_seed(control_settings)
-                direction_id = f"random_matched_norm_seed_{random_seed}"
-                control_provenance.update({
-                    "random_seed": random_seed,
-                    "matched_norm_source_direction_id": candidate["direction_id"],
-                    "matched_norm_source_layer": int(candidate["layer"]),
-                })
-            arms.append({
-                "arm_id": (
-                    f"{candidate['label']}__coef_{str(coefficient).replace('-', 'neg_').replace('.', 'p')}"
-                    f"__control_{control}"
-                ),
-                "candidate_label": candidate["label"],
-                "coefficient": effective,
-                "grid_coefficient": coefficient,
-                "control": control,
-                "direction_id": direction_id,
-                "layer": layer,
-                "source_layer": int(candidate["layer"]),
-                "role": candidate["role"],
-                "control_provenance": control_provenance,
-                "random_seed": random_seed,
-                "generation_executed": True,
-            })
+            offsets: list[int | None] = (
+                wrong_layer_offsets(control_settings)
+                if control in {"wrong_layer", "wrong_layer_subtraction"}
+                else [None]
+            )
+            random_seeds: list[int | None] = (
+                random_matched_norm_seeds(control_settings)
+                if control == "random_matched_norm"
+                else [None]
+            )
+            for offset in offsets:
+                for random_seed in random_seeds:
+                    effective = effective_coefficient_for_control(control, coefficient)
+                    candidate_layer = candidate.get("layer")
+                    layer = int(candidate_layer if candidate_layer is not None else source_layers[0])
+                    direction_id = None if control == "no_vector_baseline" else candidate["direction_id"]
+                    control_provenance: dict[str, Any] = {
+                        "control_type": control,
+                        "source_direction_id": candidate["direction_id"],
+                        "source_layer": layer,
+                        "source_layers": source_layers,
+                    }
+                    arm_suffix = ""
+                    if offset is not None:
+                        shifted_layers = [source_layer + offset for source_layer in source_layers]
+                        if any(shifted_layer <= 0 for shifted_layer in shifted_layers):
+                            raise PilotRunnerError(
+                                f"{control} control produced invalid layer(s) {shifted_layers} "
+                                f"from source layers {source_layers} offset {offset}"
+                            )
+                        if shifted_layers == source_layers:
+                            raise PilotRunnerError(f"{control} control must not use the source layer")
+                        layer = shifted_layers[0]
+                        control_provenance.update({
+                            "wrong_layer_offset": offset,
+                            "applied_layer": layer,
+                            "applied_layers": shifted_layers,
+                            "uses_source_direction": True,
+                        })
+                        if len(offsets) > 1:
+                            offset_text = str(offset).replace("-", "neg_")
+                            arm_suffix = f"__offset_{offset_text}"
+                    elif control == "random_matched_norm":
+                        if random_seed is None:
+                            raise AssertionError("random_matched_norm missing expanded seed")
+                        direction_id = f"random_matched_norm_seed_{random_seed}"
+                        control_provenance.update({
+                            "random_seed": random_seed,
+                            "matched_norm_source_direction_id": candidate["direction_id"],
+                            "matched_norm_source_layer": layer,
+                            "matched_norm_source_layers": source_layers,
+                        })
+                        if len(random_seeds) > 1:
+                            arm_suffix = f"__seed_{random_seed}"
+                    arms.append({
+                        "arm_id": (
+                            f"{candidate['label']}__coef_{str(coefficient).replace('-', 'neg_').replace('.', 'p')}"
+                            f"__control_{control}{arm_suffix}"
+                        ),
+                        "candidate_label": candidate["label"],
+                        "coefficient": effective,
+                        "grid_coefficient": coefficient,
+                        "control": control,
+                        "direction_id": direction_id,
+                        "layer": layer,
+                        "source_layer": int(candidate_layer if candidate_layer is not None else source_layers[0]),
+                        "source_layers": source_layers,
+                        "wrong_layer_offset": offset,
+                        "role": candidate["role"],
+                        "control_provenance": control_provenance,
+                        "random_seed": random_seed,
+                        "generation_executed": True,
+                    })
     return arms
 
 
@@ -514,6 +677,51 @@ def load_direction_tensor(candidate: dict[str, Any]):
     return payload[tensor_key]
 
 
+def load_direction_tensor_from_file(path: str | Path, *, tensor_key: str = "direction"):
+    from safetensors.torch import load_file  # noqa: PLC0415
+
+    payload = load_file(str(resolve_path(path)))
+    if tensor_key not in payload:
+        raise PilotRunnerError(f"{path} missing tensor key {tensor_key!r}")
+    return payload[tensor_key]
+
+
+def load_intervention_direction(candidate: dict[str, Any]) -> Any:
+    components = candidate.get("multi_layer_components")
+    if components is None:
+        return load_direction_tensor(candidate)
+    if not isinstance(components, list) or not components:
+        raise PilotRunnerError("multi_layer_components must be a non-empty list")
+    loaded: list[dict[str, Any]] = []
+    for index, component in enumerate(components):
+        if not isinstance(component, dict):
+            raise PilotRunnerError("multi_layer_components entries must be mappings")
+        layer = component.get("layer")
+        if not isinstance(layer, int) or isinstance(layer, bool) or layer <= 0:
+            raise PilotRunnerError(f"multi_layer_components[{index}].layer must be a positive integer")
+        direction_file = component.get("direction_file")
+        if not isinstance(direction_file, str) or not direction_file:
+            raise PilotRunnerError(f"multi_layer_components[{index}] missing direction_file")
+        tensor_key = component.get("tensor_key", "direction")
+        if not isinstance(tensor_key, str) or not tensor_key:
+            raise PilotRunnerError(f"multi_layer_components[{index}].tensor_key must be non-empty")
+        weight = float(component.get("weight", 1.0))
+        vector = load_direction_tensor_from_file(direction_file, tensor_key=tensor_key) * weight
+        loaded.append(
+            {
+                "component_index": index,
+                "component_label": component.get("label", f"component_{index}"),
+                "direction_id": component.get("direction_id"),
+                "direction": vector,
+                "layer": layer,
+                "source_layer": layer,
+                "weight": weight,
+                "role": component.get("role", candidate.get("role")),
+            }
+        )
+    return loaded
+
+
 def random_matched_norm_direction(direction: Any, *, seed: int) -> Any:
     import torch  # noqa: PLC0415
 
@@ -541,6 +749,52 @@ def direction_for_arm(direction: Any, arm: dict[str, Any]) -> Any:
     return direction
 
 
+def intervention_components_for_arm(direction: Any, arm: dict[str, Any]) -> list[dict[str, Any]]:
+    if isinstance(direction, list):
+        components = direction
+    else:
+        components = [
+            {
+                "component_index": 0,
+                "component_label": "single_direction",
+                "direction_id": arm.get("direction_id"),
+                "direction": direction,
+                "layer": int(arm["source_layer"]),
+                "source_layer": int(arm["source_layer"]),
+                "weight": 1.0,
+                "role": arm.get("role"),
+            }
+        ]
+    out: list[dict[str, Any]] = []
+    offset = arm.get("wrong_layer_offset")
+    for component in components:
+        component_direction = component["direction"]
+        if arm.get("control") == "random_matched_norm":
+            seed = arm.get("random_seed")
+            if not isinstance(seed, int):
+                raise PilotRunnerError("random_matched_norm arm missing integer random_seed")
+            component_direction = random_matched_norm_direction(
+                component_direction,
+                seed=seed + int(component.get("component_index", 0)),
+            )
+        source_layer = int(component["source_layer"])
+        layer = source_layer + int(offset) if offset is not None else source_layer
+        if layer <= 0:
+            raise PilotRunnerError(
+                f"{arm['control']} control produced invalid layer {layer} "
+                f"from source layer {source_layer} offset {offset}"
+            )
+        out.append(
+            {
+                **component,
+                "direction": component_direction,
+                "layer": layer,
+                "coefficient": float(arm["coefficient"]),
+            }
+        )
+    return out
+
+
 class TransformersActivationGenerator:
     def __init__(self, config: dict[str, Any], candidate: dict[str, Any]):
         import torch  # noqa: PLC0415
@@ -556,11 +810,7 @@ class TransformersActivationGenerator:
         revision = model_cfg.get("revision") or extraction_manifest.get("base_model_revision")
         if isinstance(revision, str) and revision.startswith("local-sha256:"):
             revision = None
-        adapter_path = resolve_runtime_path(
-            model_cfg.get("adapter_path") or extraction_manifest.get("adapter_path")
-        )
-        if not adapter_path:
-            raise PilotRunnerError("No adapter path available for active SFT smoke")
+        adapter_path = runtime_adapter_path(model_cfg, extraction_manifest)
         dtype_name = model_cfg.get("torch_dtype", extraction_manifest.get("compute_dtype", "bfloat16"))
         dtype = getattr(torch, dtype_name)
         device_map = model_cfg.get("device_map", "cuda")
@@ -571,11 +821,14 @@ class TransformersActivationGenerator:
             torch_dtype=dtype,
             device_map=device_map,
         )
-        self.model = PeftModel.from_pretrained(
-            base,
-            adapter_path,
-            adapter_name=candidate.get("arm") or extraction_manifest.get("active_adapter_name", "sft"),
-        )
+        if adapter_path:
+            self.model = PeftModel.from_pretrained(
+                base,
+                adapter_path,
+                adapter_name=candidate.get("arm") or extraction_manifest.get("active_adapter_name", "sft"),
+            )
+        else:
+            self.model = base
         self.model.eval()
         self.device = next(self.model.parameters()).device
         self.system_prompt = config.get("prompt", {}).get(
@@ -584,7 +837,16 @@ class TransformersActivationGenerator:
         self.enable_thinking = config.get("model", {}).get("enable_thinking", False)
         self.last_hook_state: dict[str, Any] = {}
 
-    def generate(self, question: str, *, direction: Any, layer: int, coefficient: float, max_new_tokens: int) -> str:
+    def generate(
+        self,
+        question: str,
+        *,
+        direction: Any,
+        layer: int,
+        coefficient: float,
+        max_new_tokens: int,
+        components: list[dict[str, Any]] | None = None,
+    ) -> str:
         rendered, _mode = render_probe_prompt(
             self.tokenizer,
             self.system_prompt,
@@ -592,13 +854,16 @@ class TransformersActivationGenerator:
             enable_thinking=self.enable_thinking,
         )
         inputs = self.tokenizer(rendered, return_tensors="pt").to(self.device)
-        direction = direction.to(self.device)
+        if components is None:
+            components = [{"direction": direction, "layer": layer, "coefficient": coefficient}]
+        components = [
+            {**component, "direction": component["direction"].to(self.device)}
+            for component in components
+        ]
         with self.torch.no_grad():
-            with activation_addition_hook(
+            with activation_addition_hooks(
                 self.model,
-                layer=layer,
-                direction=direction,
-                coefficient=coefficient,
+                components,
             ) as hook_state:
                 output_ids = self.model.generate(
                     **inputs,
@@ -610,7 +875,15 @@ class TransformersActivationGenerator:
         new_tokens = output_ids[0, inputs["input_ids"].shape[1]:]
         return self.tokenizer.decode(new_tokens, skip_special_tokens=True).strip()
 
-    def next_token_logits(self, question: str, *, direction: Any, layer: int, coefficient: float) -> Any:
+    def next_token_logits(
+        self,
+        question: str,
+        *,
+        direction: Any,
+        layer: int,
+        coefficient: float,
+        components: list[dict[str, Any]] | None = None,
+    ) -> Any:
         rendered, _mode = render_probe_prompt(
             self.tokenizer,
             self.system_prompt,
@@ -618,13 +891,16 @@ class TransformersActivationGenerator:
             enable_thinking=self.enable_thinking,
         )
         inputs = self.tokenizer(rendered, return_tensors="pt").to(self.device)
-        direction = direction.to(self.device)
+        if components is None:
+            components = [{"direction": direction, "layer": layer, "coefficient": coefficient}]
+        components = [
+            {**component, "direction": component["direction"].to(self.device)}
+            for component in components
+        ]
         with self.torch.no_grad():
-            with activation_addition_hook(
+            with activation_addition_hooks(
                 self.model,
-                layer=layer,
-                direction=direction,
-                coefficient=coefficient,
+                components,
             ) as hook_state:
                 outputs = self.model(**inputs)
             self.last_hook_state = dict(hook_state)
@@ -770,17 +1046,27 @@ def resolve_logit_targets(config: dict[str, Any], tokenizer: Any) -> list[dict[s
             raise PilotRunnerError(f"Duplicate logit target group name {name!r}")
         seen_names.add(name)
         source = raw_group.get("source", "static_strings")
-        if source not in {"static_strings", "row_aliases"}:
+        if source not in {"static_strings", "row_aliases", "row_field"}:
             raise PilotRunnerError(
-                f"logit_targets.groups[{index}].source must be static_strings or row_aliases"
+                f"logit_targets.groups[{index}].source must be static_strings, row_aliases, or row_field"
             )
         strings = raw_group.get("strings")
+        field_path = raw_group.get("field_path")
         if source == "static_strings":
             if not isinstance(strings, list) or not strings or not all(
                 isinstance(value, str) and value for value in strings
             ):
                 raise PilotRunnerError(
                     f"logit_targets.groups[{index}].strings must be a non-empty list of strings"
+                )
+        elif source == "row_field":
+            if strings is not None:
+                raise PilotRunnerError(
+                    f"logit_targets.groups[{index}].strings is only supported for static_strings"
+                )
+            if not isinstance(field_path, str) or not field_path:
+                raise PilotRunnerError(
+                    f"logit_targets.groups[{index}].field_path must be a non-empty dotted path for row_field"
                 )
         elif strings is not None:
             raise PilotRunnerError(
@@ -799,7 +1085,7 @@ def resolve_logit_targets(config: dict[str, Any], tokenizer: Any) -> list[dict[s
             raise PilotRunnerError(
                 f"logit_targets.groups[{index}].include_multi_token_first_token must be boolean"
             )
-        if source == "row_aliases":
+        if source in {"row_aliases", "row_field"}:
             resolved_group = {
                 "name": name,
                 "source": source,
@@ -811,6 +1097,8 @@ def resolve_logit_targets(config: dict[str, Any], tokenizer: Any) -> list[dict[s
                 "resolved_targets": [],
                 "skipped_targets": [],
             }
+            if source == "row_field":
+                resolved_group["field_path"] = field_path
             resolved.append(resolved_group)
             continue
         resolved_group = resolve_logit_target_group(
@@ -834,12 +1122,15 @@ def resolve_row_logit_targets(
 ) -> list[dict[str, Any]]:
     resolved: list[dict[str, Any]] = []
     for group in logit_targets:
-        if group.get("source") != "row_aliases":
+        if group.get("source") not in {"row_aliases", "row_field"}:
             resolved.append(group)
             continue
-        aliases = [str(alias) for alias in row.get("aliases", []) if str(alias)]
-        if row.get("answer_value"):
-            aliases.append(str(row["answer_value"]))
+        if group.get("source") == "row_aliases":
+            aliases = [str(alias) for alias in row.get("aliases", []) if str(alias)]
+            if row.get("answer_value"):
+                aliases.append(str(row["answer_value"]))
+        else:
+            aliases = row_field_strings(row, str(group["field_path"]))
         # Unknown rows often have no correct answer alias. Keep the group absent
         # on those rows rather than forcing an empty metric bucket.
         if not aliases:
@@ -853,9 +1144,24 @@ def resolve_row_logit_targets(
         )
         if not row_group["token_ids"] and not row_group["skipped_targets"]:
             continue
-        row_group["source"] = "row_aliases"
+        row_group["source"] = group.get("source")
+        if group.get("source") == "row_field":
+            row_group["field_path"] = group["field_path"]
         resolved.append(row_group)
     return resolved
+
+
+def row_field_strings(row: dict[str, Any], field_path: str) -> list[str]:
+    value: Any = row
+    for part in field_path.split("."):
+        if not isinstance(value, dict) or part not in value:
+            return []
+        value = value[part]
+    if isinstance(value, str):
+        return [value] if value else []
+    if isinstance(value, list):
+        return [str(item) for item in value if str(item)]
+    return [str(value)] if value is not None and str(value) else []
 
 
 def resolve_logit_target_group(
@@ -970,6 +1276,36 @@ def summarize_logit_metrics(rows: Iterable[dict[str, Any]]) -> dict[str, Any]:
                 r.get("intervention_delta_abs_sum", 0.0) for r in arm_rows
             ),
         }
+        target_groups: dict[str, list[dict[str, Any]]] = defaultdict(list)
+        for row in arm_rows:
+            target_metrics = row.get("logit_target_metrics", {})
+            if not isinstance(target_metrics, dict):
+                continue
+            for group_name, group_metrics in target_metrics.items():
+                if isinstance(group_metrics, dict):
+                    target_groups[str(group_name)].append(group_metrics)
+        for group_name, group_rows in sorted(target_groups.items()):
+            prefix = f"{group_name}_"
+            out[arm_id].update(
+                {
+                    f"{prefix}baseline_probability_sum_mean": _mean_float(
+                        r.get("baseline_probability_sum", 0.0) for r in group_rows
+                    ),
+                    f"{prefix}intervention_probability_sum_mean": _mean_float(
+                        r.get("intervention_probability_sum", 0.0) for r in group_rows
+                    ),
+                    f"{prefix}probability_sum_delta_mean": _mean_float(
+                        r.get("probability_sum_delta", 0.0) for r in group_rows
+                    ),
+                    f"{prefix}probability_sum_delta_abs_mean": _mean_float(
+                        abs(float(r.get("probability_sum_delta", 0.0)))
+                        for r in group_rows
+                    ),
+                    f"{prefix}logit_sum_delta_mean": _mean_float(
+                        r.get("logit_sum_delta", 0.0) for r in group_rows
+                    ),
+                }
+            )
     return out
 
 
@@ -1032,7 +1368,7 @@ def run(config_path: Path, args: argparse.Namespace) -> dict[str, Any]:
     if not rows:
         raise PilotRunnerError("No rows selected for pilot")
 
-    direction = load_direction_tensor(candidate)
+    direction = load_intervention_direction(candidate)
     generator = TransformersActivationGenerator(config, candidate)
     logit_targets = (
         resolve_logit_targets(config, generator.tokenizer)
@@ -1071,6 +1407,7 @@ def run(config_path: Path, args: argparse.Namespace) -> dict[str, Any]:
                     direction=direction,
                     layer=int(arm["layer"]),
                     coefficient=float(arm["coefficient"]),
+                    components=intervention_components_for_arm(direction, arm),
                     max_new_tokens=args.max_new_tokens,
                 )
                 generation_row = {
@@ -1156,13 +1493,15 @@ def run_logit_diagnostic(
                 control,
                 float(arm["grid_coefficient"]),
             )
-            arm_direction = direction_for_arm(direction, arm)
+            arm_components = intervention_components_for_arm(direction, arm)
+            arm_direction = arm_components[0]["direction"]
             for row in rows:
                 logits = generator.next_token_logits(
                     row["question"],
                     direction=arm_direction,
                     layer=int(arm["layer"]),
                     coefficient=float(arm["coefficient"]),
+                    components=arm_components,
                 )
                 row_key = row["probe_pool_row_key"]
                 baseline_key = (row_key, float(arm["grid_coefficient"]))

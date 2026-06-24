@@ -1,0 +1,74 @@
+# Amendment B SFT-merged JSON format bridge.
+# This trains a small LoRA on top of the merged SFT seed1 base to emit the
+# answer/confidence JSON contract before downstream GRPO.
+model:
+  model_name: "synaptic-tuner/toolset-training-artifacts/runs/local/4b/sft__4b__headline__seed1/20260614_053221/Qwen3-4B-bnb-4bit/merged-16bit"
+  max_seq_length: 2048
+  dtype: null
+  load_in_4bit: true
+
+lora:
+  r: 16
+  lora_alpha: 32
+  lora_dropout: 0.05
+  bias: "none"
+  target_modules:
+    - "q_proj"
+    - "k_proj"
+    - "v_proj"
+    - "o_proj"
+    - "gate_proj"
+    - "up_proj"
+    - "down_proj"
+  use_gradient_checkpointing: "unsloth"
+  random_state: 1
+  use_rslora: false
+  use_dora: false
+
+training:
+  output_dir: "scratch/grpo_bootstrap/runs/sft_merged_seed1_json_bridge"
+  per_device_train_batch_size: 4
+  gradient_accumulation_steps: 1
+  learning_rate: 1.0e-4
+  max_grad_norm: 1.0
+  lr_scheduler_type: "linear"
+  max_seq_length: 2048
+  packing: false
+  completion_only_loss: true
+  assistant_only_loss: false
+  gradient_checkpointing: true
+  optim: "adamw_8bit"
+  fp16: false
+  bf16: true
+  num_train_epochs: 1
+  warmup_ratio: 0.03
+  logging_steps: 1
+  save_steps: 64
+  save_total_limit: 1
+  dataloader_num_workers: 0
+  dataloader_pin_memory: true
+  group_by_length: false
+  eval_strategy: "no"
+  eval_steps: 64
+  chat_template_kwargs:
+    enable_thinking: false
+
+dataset:
+  dataset_name: null
+  dataset_file: null
+  local_file: "scratch/grpo_bootstrap/qwen3-4b-instruct/sft_json_bridge_smoke_256.jsonl"
+  num_proc: 1
+  test_size: 0.0
+  split_dataset: false
+  filter_desirable: false
+
+wandb:
+  enabled: false
+  project: null
+  run_name: null
+  entity: null
+
+evolutionary:
+  enabled: false
+
+seed: 1

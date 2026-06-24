@@ -20,12 +20,35 @@ sys.path.insert(0, str(DATA_DIR))
 import build_datasets as bd  # noqa: E402
 
 
-DEFAULT_SYSTEM_PROMPT = (
+def system_prompt_for_confidence_field(confidence_field: str = "confidence") -> str:
+    if confidence_field not in {"confidence", "response_confidence"}:
+        raise ValueError(f"unsupported confidence field: {confidence_field!r}")
+    field_description = (
+        "The `response_confidence` value is your probability from 0 to 1 that "
+        "your answer or abstention is the appropriate response."
+        if confidence_field == "response_confidence"
+        else "The `confidence` value is your probability from 0 to 1 that your "
+        "answer or abstention is the appropriate response."
+    )
+    return (
+        "Answer the user's question. If the answer is not known to you, say "
+        "\"I don't know the answer\" rather than guessing. Return only a JSON object "
+        f"with exactly two keys: `answer` and `{confidence_field}`. The `answer` "
+        f"value is your answer or abstention text. {field_description}"
+    )
+
+
+DEFAULT_SYSTEM_PROMPT = system_prompt_for_confidence_field("confidence")
+NORMAL_P_CORRECT = -1.0
+NORMAL_AMBIGUITY_BAND = ""
+
+SCHEMA_RESPONSE_CONFIDENCE_SYSTEM_PROMPT = (
     "Answer the user's question. If the answer is not known to you, say "
     "\"I don't know the answer\" rather than guessing. Return only a JSON object "
-    "with exactly two keys: `answer` and `confidence`. The `answer` value is your "
-    "answer or abstention text. The `confidence` value is your probability from "
-    "0 to 1 that your factual answer content is correct."
+    "with exactly two keys: `answer` and `response_confidence`. The `answer` "
+    "value is your answer or abstention text. The `response_confidence` value "
+    "is your probability from 0 to 1 that your answer or abstention is the "
+    "appropriate response."
 )
 
 
@@ -115,11 +138,58 @@ def _rows_for_keys(records_by_key: dict[str, dict], keys: list[str], system_prom
                 "aliases": aliases,
                 "gold_answer": bd.gold_answer(rec) if label == "known" else "",
                 "unknown_type": "model_specific_unknown" if label == "unknown" else "",
+                "p_correct": NORMAL_P_CORRECT,
+                "ambiguity_band": NORMAL_AMBIGUITY_BAND,
             }
         )
     if missing:
         raise KeyError(f"questions_frozen references {len(missing)} missing probe key(s): {missing[:5]}")
     return rows
+
+
+def _rows_for_records(records: list[dict], system_prompt: str) -> list[dict]:
+    rows = []
+    for rec in records:
+        label = str(rec["label"]).lower()
+        aliases = [bd.normalize(alias) for alias in rec.get("normalized_aliases", []) if alias]
+        row = {
+            "prompt": [
+                {"role": "system", "content": system_prompt},
+                {"role": "user", "content": rec["question"]},
+            ],
+            "id": bd.record_key(rec),
+            "question_id": rec["question_id"],
+            "label": "ambiguous" if label == "discard" else label,
+            "answerable": label != "unknown",
+            "aliases": aliases,
+            "gold_answer": bd.gold_answer(rec) if label in {"known", "discard"} else "",
+            "unknown_type": "model_specific_unknown" if label == "unknown" else "",
+            "p_correct": NORMAL_P_CORRECT,
+            "ambiguity_band": NORMAL_AMBIGUITY_BAND,
+        }
+        if label == "discard" and rec.get("p_correct") is not None:
+            row["p_correct"] = float(rec["p_correct"])
+            row["ambiguity_band"] = "middle"
+        rows.append(row)
+    return rows
+
+
+def _middle_discard_records(
+    records_by_key: dict[str, dict],
+    *,
+    min_p_correct: float,
+    max_p_correct: float,
+) -> list[dict]:
+    out = []
+    for rec in records_by_key.values():
+        if str(rec.get("label", "")).lower() != "discard":
+            continue
+        if rec.get("p_correct") is None:
+            continue
+        p_correct = float(rec["p_correct"])
+        if min_p_correct <= p_correct <= max_p_correct:
+            out.append(rec)
+    return sorted(out, key=bd.record_key)
 
 
 def write_jsonl(path: Path, rows: list[dict]) -> None:
@@ -136,7 +206,15 @@ def build_grpo_projection(
     output_dir: Path,
     triviaqa_train: Path | None = None,
     system_prompt: str = DEFAULT_SYSTEM_PROMPT,
+    confidence_field: str = "confidence",
+    include_ambiguous_middle: bool = False,
+    ambiguous_min_p_correct: float = 0.4,
+    ambiguous_max_p_correct: float = 0.6,
+    dev_fraction: float = 0.1,
+    seed: int = 42,
 ) -> dict:
+    if confidence_field not in {"confidence", "response_confidence"}:
+        raise ValueError(f"unsupported confidence field: {confidence_field!r}")
     frozen = _load_json(frozen_questions)
     if probe_results.exists():
         probe_records = bd.load_probe_records(probe_results)
@@ -157,6 +235,29 @@ def build_grpo_projection(
     train_rows = _rows_for_keys(records_by_key, frozen["train_question_keys"], system_prompt)
     dev_rows = _rows_for_keys(records_by_key, frozen["dev_question_keys"], system_prompt)
 
+    ambiguous_rows = []
+    if include_ambiguous_middle:
+        if not probe_results.exists():
+            raise FileNotFoundError(
+                "--include-ambiguous-middle requires original probe_results metadata"
+            )
+        ambiguous_records = _middle_discard_records(
+            records_by_key,
+            min_p_correct=ambiguous_min_p_correct,
+            max_p_correct=ambiguous_max_p_correct,
+        )
+        if len(ambiguous_records) < 2:
+            ambiguous_train, ambiguous_dev = ambiguous_records, []
+        else:
+            ambiguous_train, ambiguous_dev = bd.split_dev(
+                ambiguous_records,
+                dev_fraction,
+                seed,
+            )
+        train_rows.extend(_rows_for_records(ambiguous_train, system_prompt))
+        dev_rows.extend(_rows_for_records(ambiguous_dev, system_prompt))
+        ambiguous_rows = ambiguous_records
+
     train_path = output_dir / "grpo_train.jsonl"
     dev_path = output_dir / "grpo_dev.jsonl"
     write_jsonl(train_path, train_rows)
@@ -171,7 +272,14 @@ def build_grpo_projection(
         "frozen_questions": str(frozen_questions),
         "train_rows": len(train_rows),
         "dev_rows": len(dev_rows),
-        "system_prompt_contract": "answer_or_abstain_plus_final_confidence_0_to_1",
+        "system_prompt_contract": f"answer_or_abstain_plus_{confidence_field}_0_to_1",
+        "confidence_field": confidence_field,
+        "ambiguous_middle": {
+            "included": include_ambiguous_middle,
+            "rows": len(ambiguous_rows),
+            "p_correct_min": ambiguous_min_p_correct,
+            "p_correct_max": ambiguous_max_p_correct,
+        },
         "outputs": {
             "train": str(train_path),
             "dev": str(dev_path),
@@ -191,6 +299,15 @@ def main(argv=None) -> int:
     parser.add_argument("--frozen-questions")
     parser.add_argument("--triviaqa-train")
     parser.add_argument("--output-dir")
+    parser.add_argument(
+        "--confidence-field",
+        choices=["confidence", "response_confidence"],
+        default="confidence",
+        help="JSON confidence key to request in the prompt.",
+    )
+    parser.add_argument("--include-ambiguous-middle", action="store_true")
+    parser.add_argument("--ambiguous-min-p-correct", type=float, default=0.4)
+    parser.add_argument("--ambiguous-max-p-correct", type=float, default=0.6)
     args = parser.parse_args(argv)
 
     config_path = Path(args.config)
@@ -223,6 +340,11 @@ def main(argv=None) -> int:
         frozen_questions=frozen_questions,
         triviaqa_train=triviaqa_train,
         output_dir=output_dir,
+        system_prompt=system_prompt_for_confidence_field(args.confidence_field),
+        confidence_field=args.confidence_field,
+        include_ambiguous_middle=args.include_ambiguous_middle,
+        ambiguous_min_p_correct=args.ambiguous_min_p_correct,
+        ambiguous_max_p_correct=args.ambiguous_max_p_correct,
     )
     print(
         f"Built GRPO projection: {manifest['train_rows']} train / "

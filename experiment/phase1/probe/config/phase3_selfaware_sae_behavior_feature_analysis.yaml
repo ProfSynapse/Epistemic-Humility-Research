@@ -1,0 +1,58 @@
+# Phase 3 SelfAware SAE behavior-conditioned feature analysis.
+#
+# Exploratory screening only: ranks learned top-k SAE features by separation
+# between behavior-defined groups in a target eval arm. It is not causal
+# evidence and does not establish monosemantic features.
+
+spec:
+  name: phase3_selfaware_topk16_sae_behavior_feature_analysis
+  analysis_type: phase3_sae_behavior_feature_analysis
+  notice: SAE_BEHAVIOR_FEATURE_ANALYSIS_ONLY
+  no_phase1_headline_promotion: true
+
+analysis:
+  top_features: 12
+  top_rows_per_group: 5
+  contrasts:
+    - name: unknown_refused_vs_unknown_answered
+      positive_label: unknown_refused
+      negative_label: unknown_answered
+      min_rows_per_group: 8
+      positive:
+        label: unknown
+        refused: true
+      negative:
+        label: unknown
+        refused: false
+    - name: unknown_low_confidence_vs_high_confidence
+      positive_label: unknown_low_confidence
+      negative_label: unknown_high_confidence
+      min_rows_per_group: 8
+      positive:
+        label: unknown
+        confidence_max: 0.25
+      negative:
+        label: unknown
+        confidence_min: 0.75
+    - name: known_refused_vs_known_correct_answered
+      positive_label: known_refused
+      negative_label: known_correct_answered
+      min_rows_per_group: 8
+      positive:
+        label: known
+        refused: true
+      negative:
+        label: known
+        refused: false
+        correct: true
+
+candidate_runs:
+  - label: sft_dpo_selfaware_full_delta_l24_topk16_behavior
+    behavior_arm: sft_dpo_seed1
+    run_dir: experiment/phase1/probe/qwen3-4b-sft-merged-seed1-selfaware/sae_runs/phase3_selfaware_delta_sae_pilot_topk16/sft_dpo_selfaware_full_delta_l24
+  - label: sft_kto_selfaware_full_delta_l25_topk16_behavior
+    behavior_arm: sft_kto_seed1
+    run_dir: experiment/phase1/probe/qwen3-4b-sft-merged-seed1-selfaware/sae_runs/phase3_selfaware_delta_sae_pilot_topk16/sft_kto_selfaware_full_delta_l25
+
+output:
+  root: experiment/phase1/probe/qwen3-4b-sft-merged-seed1-selfaware/sae_behavior_feature_analysis/phase3_selfaware_delta_topk16_behavior_features

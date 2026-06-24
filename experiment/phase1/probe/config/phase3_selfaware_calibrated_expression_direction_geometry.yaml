@@ -1,0 +1,30 @@
+analysis:
+  name: phase3_selfaware_calibrated_expression_direction_geometry
+  notice: DIRECTION_GEOMETRY_ANALYSIS_ONLY
+
+direction_sets:
+  - label: calibrated_expression_axes
+    manifest: experiment/phase1/probe/qwen3-4b-sft-merged-seed1-selfaware/behavior_axis_directions/phase3_selfaware_calibrated_expression_axis_directions/behavior_axis_directions.manifest.json
+
+  - label: prior_behavior_axes
+    manifest: experiment/phase1/probe/qwen3-4b-sft-merged-seed1-selfaware/behavior_axis_directions/phase3_selfaware_behavior_axis_directions/behavior_axis_directions.manifest.json
+
+  - label: prior_layer_window_axes
+    manifest: experiment/phase1/probe/qwen3-4b-sft-merged-seed1-selfaware/behavior_axis_directions/phase3_selfaware_behavior_axis_layer_window_directions/behavior_axis_directions.manifest.json
+
+  - label: kto_broad_delta_l25
+    manifest: experiment/phase1/probe/qwen3-4b-sft-merged-seed1-selfaware/hidden_states_selfaware_full_kto/extraction__bb5e579fa10e/selfaware_full_kto_candidate_directions.manifest.json
+    filters:
+      roles: [delta]
+      layers: [25]
+
+  - label: dpo_broad_delta_l28
+    manifest: experiment/phase1/probe/qwen3-4b-sft-merged-seed1-selfaware/hidden_states_selfaware_full/extraction__d3d0e6d19c0e/selfaware_full_candidate_directions.manifest.json
+    filters:
+      roles: [delta]
+      layers: [28]
+
+nearest_neighbors_per_direction: 8
+
+output:
+  root: experiment/phase1/probe/qwen3-4b-sft-merged-seed1-selfaware/direction_geometry/phase3_selfaware_calibrated_expression_direction_geometry

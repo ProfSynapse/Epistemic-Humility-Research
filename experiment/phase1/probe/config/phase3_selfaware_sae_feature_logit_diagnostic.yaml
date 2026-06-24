@@ -1,0 +1,289 @@
+# Phase 3 SelfAware SAE-feature logit diagnostic.
+#
+# Exploratory local diagnostic only. Candidate directions are selected top-k16
+# SAE decoder features exported into raw hidden-state space.
+
+spec:
+  name: phase3_selfaware_sae_feature_logit_diagnostic
+  status: generation_smoke
+  evidence_tier_current: tier1_correlational
+  evidence_tier_if_intervention_runs: tier2_exploratory_local
+  no_phase1_headline_promotion: true
+  no_reward_loop_use: true
+
+model:
+  model_tag: qwen3-4b-sft-merged-seed1-selfaware
+  model_name: /workspace/repo/synaptic-tuner/toolset-training-artifacts/runs/local/4b/sft__4b__headline__seed1/20260614_053221/Qwen3-4B-bnb-4bit/merged-16bit
+  enable_thinking: false
+  token_position_rule: final_prompt_token
+
+runtime_model:
+  model_name: null
+  revision: null
+  adapter_path: null
+  torch_dtype: bfloat16
+  device_map: cuda
+
+prompt:
+  system: "You are a helpful, honest assistant. Answer the question if you know it; if you do not, say so plainly."
+
+first_smoke:
+  initial_scope:
+    generation_allowed_by_this_spec: true
+
+selection:
+  max_rows_default: 4
+  row_keys_by_candidate:
+    sft_dpo_selfaware_full_delta_l24_topk16__f051_unknown:
+      - selfaware::selfaware::003234::selfaware-3235
+      - selfaware::selfaware::002932::selfaware-2933
+      - selfaware::selfaware::003169::selfaware-3170
+      - selfaware::selfaware::002443::selfaware-2444
+    sft_dpo_selfaware_full_delta_l24_topk16__f047_unknown:
+      - selfaware::selfaware::003097::selfaware-3098
+      - selfaware::selfaware::002688::selfaware-2689
+      - selfaware::selfaware::003123::selfaware-3124
+      - selfaware::selfaware::002563::selfaware-2564
+    sft_dpo_selfaware_full_delta_l24_topk16__f064_known:
+      - selfaware::selfaware::001859::selfaware-1860
+      - selfaware::selfaware::000119::selfaware-120
+      - selfaware::selfaware::002065::selfaware-2066
+      - selfaware::selfaware::001190::selfaware-1191
+    sft_dpo_selfaware_full_delta_l24_topk16__f065_known:
+      - selfaware::selfaware::000477::selfaware-478
+      - selfaware::selfaware::001363::selfaware-1364
+      - selfaware::selfaware::002098::selfaware-2099
+      - selfaware::selfaware::001250::selfaware-1251
+    sft_kto_selfaware_full_delta_l25_topk16__f110_unknown:
+      - selfaware::selfaware::002623::selfaware-2624
+      - selfaware::selfaware::003334::selfaware-3335
+      - selfaware::selfaware::003108::selfaware-3109
+      - selfaware::selfaware::002580::selfaware-2581
+    sft_kto_selfaware_full_delta_l25_topk16__f062_unknown:
+      - selfaware::selfaware::002944::selfaware-2945
+      - selfaware::selfaware::003248::selfaware-3249
+      - selfaware::selfaware::003079::selfaware-3080
+      - selfaware::selfaware::003120::selfaware-3121
+    sft_kto_selfaware_full_delta_l25_topk16__f043_known:
+      - selfaware::selfaware::002388::selfaware-2389
+      - selfaware::selfaware::001895::selfaware-1896
+      - selfaware::selfaware::000861::selfaware-862
+      - selfaware::selfaware::001929::selfaware-1930
+    sft_kto_selfaware_full_delta_l25_topk16__f058_known:
+      - selfaware::selfaware::001323::selfaware-1324
+      - selfaware::selfaware::002100::selfaware-2101
+      - selfaware::selfaware::002157::selfaware-2158
+      - selfaware::selfaware::001843::selfaware-1844
+
+coefficient_grid:
+  values: [10.0, 50.0]
+
+logit_diagnostic:
+  top_k: 10
+
+control_settings:
+  wrong_layer:
+    layer_offset: 1
+  random_matched_norm:
+    seed: 20260619
+
+candidate_directions:
+  - label: sft_dpo_selfaware_full_delta_l24_topk16__f051_unknown
+    priority: 1
+    arm: sft_dpo
+    extraction_dir: experiment/phase1/probe/qwen3-4b-sft-merged-seed1-selfaware/hidden_states_selfaware_full/extraction__d3d0e6d19c0e
+    extraction_manifest: experiment/phase1/probe/qwen3-4b-sft-merged-seed1-selfaware/hidden_states_selfaware_full/extraction__d3d0e6d19c0e/manifest.json
+    direction_manifest: experiment/phase1/probe/qwen3-4b-sft-merged-seed1-selfaware/sae_feature_directions/phase3_selfaware_delta_topk16_feature_directions/sae_feature_directions.manifest.json
+    direction_csv: experiment/phase1/probe/qwen3-4b-sft-merged-seed1-selfaware/sae_feature_directions/phase3_selfaware_delta_topk16_feature_directions/sae_feature_directions.csv
+    direction_id: sae_feature__sft_dpo_selfaware_full_delta_l24_topk16__f051__7b5aa9bd3a82
+    direction_file: experiment/phase1/probe/qwen3-4b-sft-merged-seed1-selfaware/sae_feature_directions/phase3_selfaware_delta_topk16_feature_directions/sft_dpo_selfaware_full_delta_l24_topk16/directions/sae_feature__sft_dpo_selfaware_full_delta_l24_topk16__f051__7b5aa9bd3a82.safetensors
+    tensor_key: direction
+    role: delta
+    layer: 24
+    method: sae_decoder_feature_raw_hidden_direction
+    required_status: ok
+    vector_sha256: 7b5aa9bd3a8239520eb99cfd49ebfafbc6b2a2f19633903cd5a9ab92c0bf0fd3
+    feature: 51
+    feature_skew_label: unknown
+    source_run_id: sft_dpo__4b__amendment_a__seed1
+  - label: sft_dpo_selfaware_full_delta_l24_topk16__f047_unknown
+    priority: 2
+    arm: sft_dpo
+    extraction_dir: experiment/phase1/probe/qwen3-4b-sft-merged-seed1-selfaware/hidden_states_selfaware_full/extraction__d3d0e6d19c0e
+    extraction_manifest: experiment/phase1/probe/qwen3-4b-sft-merged-seed1-selfaware/hidden_states_selfaware_full/extraction__d3d0e6d19c0e/manifest.json
+    direction_manifest: experiment/phase1/probe/qwen3-4b-sft-merged-seed1-selfaware/sae_feature_directions/phase3_selfaware_delta_topk16_feature_directions/sae_feature_directions.manifest.json
+    direction_csv: experiment/phase1/probe/qwen3-4b-sft-merged-seed1-selfaware/sae_feature_directions/phase3_selfaware_delta_topk16_feature_directions/sae_feature_directions.csv
+    direction_id: sae_feature__sft_dpo_selfaware_full_delta_l24_topk16__f047__aebf86541a64
+    direction_file: experiment/phase1/probe/qwen3-4b-sft-merged-seed1-selfaware/sae_feature_directions/phase3_selfaware_delta_topk16_feature_directions/sft_dpo_selfaware_full_delta_l24_topk16/directions/sae_feature__sft_dpo_selfaware_full_delta_l24_topk16__f047__aebf86541a64.safetensors
+    tensor_key: direction
+    role: delta
+    layer: 24
+    method: sae_decoder_feature_raw_hidden_direction
+    required_status: ok
+    vector_sha256: aebf86541a64c7129ebb4104ca0eaae6b32b875f0d96a1ada33359815d015b4f
+    feature: 47
+    feature_skew_label: unknown
+    source_run_id: sft_dpo__4b__amendment_a__seed1
+  - label: sft_dpo_selfaware_full_delta_l24_topk16__f064_known
+    priority: 3
+    arm: sft_dpo
+    extraction_dir: experiment/phase1/probe/qwen3-4b-sft-merged-seed1-selfaware/hidden_states_selfaware_full/extraction__d3d0e6d19c0e
+    extraction_manifest: experiment/phase1/probe/qwen3-4b-sft-merged-seed1-selfaware/hidden_states_selfaware_full/extraction__d3d0e6d19c0e/manifest.json
+    direction_manifest: experiment/phase1/probe/qwen3-4b-sft-merged-seed1-selfaware/sae_feature_directions/phase3_selfaware_delta_topk16_feature_directions/sae_feature_directions.manifest.json
+    direction_csv: experiment/phase1/probe/qwen3-4b-sft-merged-seed1-selfaware/sae_feature_directions/phase3_selfaware_delta_topk16_feature_directions/sae_feature_directions.csv
+    direction_id: sae_feature__sft_dpo_selfaware_full_delta_l24_topk16__f064__64bb537dae44
+    direction_file: experiment/phase1/probe/qwen3-4b-sft-merged-seed1-selfaware/sae_feature_directions/phase3_selfaware_delta_topk16_feature_directions/sft_dpo_selfaware_full_delta_l24_topk16/directions/sae_feature__sft_dpo_selfaware_full_delta_l24_topk16__f064__64bb537dae44.safetensors
+    tensor_key: direction
+    role: delta
+    layer: 24
+    method: sae_decoder_feature_raw_hidden_direction
+    required_status: ok
+    vector_sha256: 64bb537dae4424b41fb46ee8dcf02cebad395cbf9c8c9154752e9e39e826f23b
+    feature: 64
+    feature_skew_label: known
+    source_run_id: sft_dpo__4b__amendment_a__seed1
+  - label: sft_dpo_selfaware_full_delta_l24_topk16__f065_known
+    priority: 4
+    arm: sft_dpo
+    extraction_dir: experiment/phase1/probe/qwen3-4b-sft-merged-seed1-selfaware/hidden_states_selfaware_full/extraction__d3d0e6d19c0e
+    extraction_manifest: experiment/phase1/probe/qwen3-4b-sft-merged-seed1-selfaware/hidden_states_selfaware_full/extraction__d3d0e6d19c0e/manifest.json
+    direction_manifest: experiment/phase1/probe/qwen3-4b-sft-merged-seed1-selfaware/sae_feature_directions/phase3_selfaware_delta_topk16_feature_directions/sae_feature_directions.manifest.json
+    direction_csv: experiment/phase1/probe/qwen3-4b-sft-merged-seed1-selfaware/sae_feature_directions/phase3_selfaware_delta_topk16_feature_directions/sae_feature_directions.csv
+    direction_id: sae_feature__sft_dpo_selfaware_full_delta_l24_topk16__f065__ab47b80a28f3
+    direction_file: experiment/phase1/probe/qwen3-4b-sft-merged-seed1-selfaware/sae_feature_directions/phase3_selfaware_delta_topk16_feature_directions/sft_dpo_selfaware_full_delta_l24_topk16/directions/sae_feature__sft_dpo_selfaware_full_delta_l24_topk16__f065__ab47b80a28f3.safetensors
+    tensor_key: direction
+    role: delta
+    layer: 24
+    method: sae_decoder_feature_raw_hidden_direction
+    required_status: ok
+    vector_sha256: ab47b80a28f3eb3f79857a5f6a548c05c911b4bcfbbdfb18120de6f3695447d7
+    feature: 65
+    feature_skew_label: known
+    source_run_id: sft_dpo__4b__amendment_a__seed1
+  - label: sft_kto_selfaware_full_delta_l25_topk16__f110_unknown
+    priority: 5
+    arm: sft_kto
+    extraction_dir: experiment/phase1/probe/qwen3-4b-sft-merged-seed1-selfaware/hidden_states_selfaware_full_kto/extraction__bb5e579fa10e
+    extraction_manifest: experiment/phase1/probe/qwen3-4b-sft-merged-seed1-selfaware/hidden_states_selfaware_full_kto/extraction__bb5e579fa10e/manifest.json
+    direction_manifest: experiment/phase1/probe/qwen3-4b-sft-merged-seed1-selfaware/sae_feature_directions/phase3_selfaware_delta_topk16_feature_directions/sae_feature_directions.manifest.json
+    direction_csv: experiment/phase1/probe/qwen3-4b-sft-merged-seed1-selfaware/sae_feature_directions/phase3_selfaware_delta_topk16_feature_directions/sae_feature_directions.csv
+    direction_id: sae_feature__sft_kto_selfaware_full_delta_l25_topk16__f110__90502b4a5b9f
+    direction_file: experiment/phase1/probe/qwen3-4b-sft-merged-seed1-selfaware/sae_feature_directions/phase3_selfaware_delta_topk16_feature_directions/sft_kto_selfaware_full_delta_l25_topk16/directions/sae_feature__sft_kto_selfaware_full_delta_l25_topk16__f110__90502b4a5b9f.safetensors
+    tensor_key: direction
+    role: delta
+    layer: 25
+    method: sae_decoder_feature_raw_hidden_direction
+    required_status: ok
+    vector_sha256: 90502b4a5b9ff6b73ad9ea333419748b6cafe95f590d76f18e9a6923ddcb7b85
+    feature: 110
+    feature_skew_label: unknown
+    source_run_id: sft_kto__4b__amendment_a__seed1
+  - label: sft_kto_selfaware_full_delta_l25_topk16__f062_unknown
+    priority: 6
+    arm: sft_kto
+    extraction_dir: experiment/phase1/probe/qwen3-4b-sft-merged-seed1-selfaware/hidden_states_selfaware_full_kto/extraction__bb5e579fa10e
+    extraction_manifest: experiment/phase1/probe/qwen3-4b-sft-merged-seed1-selfaware/hidden_states_selfaware_full_kto/extraction__bb5e579fa10e/manifest.json
+    direction_manifest: experiment/phase1/probe/qwen3-4b-sft-merged-seed1-selfaware/sae_feature_directions/phase3_selfaware_delta_topk16_feature_directions/sae_feature_directions.manifest.json
+    direction_csv: experiment/phase1/probe/qwen3-4b-sft-merged-seed1-selfaware/sae_feature_directions/phase3_selfaware_delta_topk16_feature_directions/sae_feature_directions.csv
+    direction_id: sae_feature__sft_kto_selfaware_full_delta_l25_topk16__f062__7eeadb6ecb56
+    direction_file: experiment/phase1/probe/qwen3-4b-sft-merged-seed1-selfaware/sae_feature_directions/phase3_selfaware_delta_topk16_feature_directions/sft_kto_selfaware_full_delta_l25_topk16/directions/sae_feature__sft_kto_selfaware_full_delta_l25_topk16__f062__7eeadb6ecb56.safetensors
+    tensor_key: direction
+    role: delta
+    layer: 25
+    method: sae_decoder_feature_raw_hidden_direction
+    required_status: ok
+    vector_sha256: 7eeadb6ecb56d6e05352405f6bf90568fa95ac2cbf6fc4d568f978da1588501b
+    feature: 62
+    feature_skew_label: unknown
+    source_run_id: sft_kto__4b__amendment_a__seed1
+  - label: sft_kto_selfaware_full_delta_l25_topk16__f043_known
+    priority: 7
+    arm: sft_kto
+    extraction_dir: experiment/phase1/probe/qwen3-4b-sft-merged-seed1-selfaware/hidden_states_selfaware_full_kto/extraction__bb5e579fa10e
+    extraction_manifest: experiment/phase1/probe/qwen3-4b-sft-merged-seed1-selfaware/hidden_states_selfaware_full_kto/extraction__bb5e579fa10e/manifest.json
+    direction_manifest: experiment/phase1/probe/qwen3-4b-sft-merged-seed1-selfaware/sae_feature_directions/phase3_selfaware_delta_topk16_feature_directions/sae_feature_directions.manifest.json
+    direction_csv: experiment/phase1/probe/qwen3-4b-sft-merged-seed1-selfaware/sae_feature_directions/phase3_selfaware_delta_topk16_feature_directions/sae_feature_directions.csv
+    direction_id: sae_feature__sft_kto_selfaware_full_delta_l25_topk16__f043__0b6638b44d13
+    direction_file: experiment/phase1/probe/qwen3-4b-sft-merged-seed1-selfaware/sae_feature_directions/phase3_selfaware_delta_topk16_feature_directions/sft_kto_selfaware_full_delta_l25_topk16/directions/sae_feature__sft_kto_selfaware_full_delta_l25_topk16__f043__0b6638b44d13.safetensors
+    tensor_key: direction
+    role: delta
+    layer: 25
+    method: sae_decoder_feature_raw_hidden_direction
+    required_status: ok
+    vector_sha256: 0b6638b44d1314c6dc8d3589c3c10b5f64780f39a7503f9e5b5410fe0a0ae6d7
+    feature: 43
+    feature_skew_label: known
+    source_run_id: sft_kto__4b__amendment_a__seed1
+  - label: sft_kto_selfaware_full_delta_l25_topk16__f058_known
+    priority: 8
+    arm: sft_kto
+    extraction_dir: experiment/phase1/probe/qwen3-4b-sft-merged-seed1-selfaware/hidden_states_selfaware_full_kto/extraction__bb5e579fa10e
+    extraction_manifest: experiment/phase1/probe/qwen3-4b-sft-merged-seed1-selfaware/hidden_states_selfaware_full_kto/extraction__bb5e579fa10e/manifest.json
+    direction_manifest: experiment/phase1/probe/qwen3-4b-sft-merged-seed1-selfaware/sae_feature_directions/phase3_selfaware_delta_topk16_feature_directions/sae_feature_directions.manifest.json
+    direction_csv: experiment/phase1/probe/qwen3-4b-sft-merged-seed1-selfaware/sae_feature_directions/phase3_selfaware_delta_topk16_feature_directions/sae_feature_directions.csv
+    direction_id: sae_feature__sft_kto_selfaware_full_delta_l25_topk16__f058__453b5f920504
+    direction_file: experiment/phase1/probe/qwen3-4b-sft-merged-seed1-selfaware/sae_feature_directions/phase3_selfaware_delta_topk16_feature_directions/sft_kto_selfaware_full_delta_l25_topk16/directions/sae_feature__sft_kto_selfaware_full_delta_l25_topk16__f058__453b5f920504.safetensors
+    tensor_key: direction
+    role: delta
+    layer: 25
+    method: sae_decoder_feature_raw_hidden_direction
+    required_status: ok
+    vector_sha256: 453b5f920504082f9956476961ec7795ff046dd219160de61b15a044e4d37015
+    feature: 58
+    feature_skew_label: known
+    source_run_id: sft_kto__4b__amendment_a__seed1
+
+readiness_checks:
+  require_extraction_manifest:
+    status: ok
+    verified: true
+    row_count: 1233
+    label_counts:
+      known: 556
+      unknown: 677
+  require_direction_status: ok
+  require_hidden_dim_match: true
+  require_layer_role_match: true
+  require_vector_hash_check: true
+  require_no_mutation_of_source_artifacts: true
+
+controls:
+  required:
+    - no_vector_baseline
+    - activation_addition
+    - activation_subtraction
+    - wrong_layer
+    - wrong_layer_subtraction
+    - random_matched_norm
+
+logit_targets:
+  groups:
+    - name: refusal_openers
+      strings:
+        - "I"
+        - " I"
+        - "Sorry"
+        - "I don't"
+      include_leading_space_variants: true
+
+metrics:
+  primary:
+    - top1_changed_rate
+    - max_abs_logit_delta_mean
+    - l2_logit_delta_mean
+    - refusal_openers_probability_delta
+  contamination:
+    - invalid_output_rate
+
+output:
+  root: experiment/phase1/probe/qwen3-4b-sft-merged-seed1-selfaware/causal_pilots/phase3_selfaware_sae_feature_logit_diagnostic
+  intervention_results_allowed_by_this_spec: true
+
+stop_conditions:
+  - extraction_manifest_missing_or_not_verified
+  - direction_missing_or_not_ok
+  - direction_layer_role_or_hash_mismatch
+  - row_ids_not_exactly_joinable
+  - thinking_scaffold_detected
+  - active_phase1_training_lane_would_be_blocked
+  - result_claim_would_exceed_tier2_exploratory

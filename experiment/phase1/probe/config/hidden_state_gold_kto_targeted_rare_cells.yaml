@@ -1,0 +1,47 @@
+# Phase 3 targeted hidden-state extraction for a larger SFT->KTO gold behavior panel.
+#
+# The exact row-key file is produced by phase3_targeted_row_keys.py from
+# phase3_gold_kto_targeted_rare_cell_row_keys.yaml. It oversamples rows likely
+# to populate the rare behavior cells before a no-vector baseline generation
+# pass scores the actual SFT->KTO behavior.
+
+model:
+  model_tag: qwen3-4b-instruct
+  model_name: /workspace/repo/synaptic-tuner/toolset-training-artifacts/runs/local/4b/sft__4b__headline__seed1/20260614_053221/Qwen3-4B-bnb-4bit/merged-16bit
+  revision: null
+  enable_thinking: false
+
+extraction:
+  layer_list: null
+  token_position_rule: final_prompt_token
+  compute_dtype: bfloat16
+  persist_dtype: float32
+  persistence_format: safetensors
+  device: cuda
+  persist_delta: true
+
+arms:
+  - name: sft_merged_seed1_base
+    adapter_state: disabled
+    adapter: null
+  - name: sft_kto_seed1
+    adapter_state: active
+    adapter: /workspace/repo/synaptic-tuner/toolset-training-artifacts/runs/local/4b/sft_kto__4b__amendment_a__seed1/20260614_085358/final_model
+
+eval_arms_source: null
+
+selection:
+  source: probe_pool
+  questions_frozen: ../data/qwen3-4b-instruct/questions_frozen.json
+  probe_results: qwen3-4b-instruct/probe_results.jsonl
+  expected_probe_config_sha: "893861257973170b"
+  row_keys_file: config/phase3_gold_kto_targeted_rare_cell_row_keys.txt
+
+output:
+  hidden_states_subdir: hidden_states_gold_kto_targeted
+  manifest_filename: manifest.json
+  rows_filename: rows.jsonl
+
+manifest_provenance:
+  aligned_run_record_id: sft_kto__4b__amendment_a__seed1
+  source_split: triviaqa-rc-nocontext/frozen-known-unknown-targeted-rare-cells/v1

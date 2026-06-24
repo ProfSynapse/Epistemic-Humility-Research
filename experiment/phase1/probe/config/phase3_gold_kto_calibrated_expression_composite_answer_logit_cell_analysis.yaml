@@ -1,0 +1,27 @@
+source_rows: experiment/phase1/probe/qwen3-4b-instruct/gold_behavior_panels/phase3_gold_kto_behavior_panel/rows.jsonl
+behavior_arm: sft_kto_gold_baseline
+target_group: answer_aliases
+diagnostics_glob: experiment/phase1/probe/qwen3-4b-instruct/causal_pilots/phase3_gold_kto_calibrated_expression_composite_logit_sweep/*/logit_diagnostic/run_*/logit_diagnostics.jsonl
+behavior_cells:
+  fallback_cell: other
+  cells:
+    - label: known_refused
+      filter:
+        label: known
+        refused: true
+    - label: known_correct_answered
+      filter:
+        label: known
+        refused: false
+        correct: true
+    - label: unknown_refused
+      filter:
+        label: unknown
+        refused: true
+    - label: unknown_answered_wrong
+      filter:
+        label: unknown
+        refused: false
+        correct: false
+output:
+  root: experiment/phase1/probe/qwen3-4b-instruct/logit_cell_analysis/phase3_gold_kto_calibrated_expression_composite_answer_alias

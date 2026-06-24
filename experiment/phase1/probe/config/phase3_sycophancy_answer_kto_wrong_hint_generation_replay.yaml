@@ -1,0 +1,46 @@
+# Bounded generated-answer replay for KTO wrong-hint-followed rows.
+# This tests whether the same-condition KTO direction changes actual
+# answer-sycophancy behavior, not just next-token answer/refusal starts.
+
+sweep:
+  name: phase3_sycophancy_answer_kto_wrong_hint_generation_replay
+  evidence_tier: tier2_exploratory_local
+  runner_config: experiment/phase1/probe/config/phase3_causal_pilot_gpu_smoke.yaml
+  candidate_source_config: experiment/phase1/probe/config/phase3_sycophancy_answer_logit_candidates.yaml
+  output_root: experiment/phase1/probe/qwen3-4b-instruct-sycophancy-answer/causal_pilots/phase3_sycophancy_answer_kto_wrong_hint_generation_replay
+  candidates:
+    - sycophancy_kto_delta_wrong_hint_followed_vs_not_l17
+  execution:
+    backend: docker
+    docker:
+      image: unsloth/unsloth:latest
+      repo_mount: /workspace/repo
+      workdir: /workspace/repo
+      hf_home: /workspace/repo/.cache/hf
+      huggingface_hub_cache: /workspace/repo/.cache/hf/hub
+  runner_overrides:
+    readiness_checks:
+      require_extraction_manifest:
+        status: ok
+        verified: true
+        row_count: 32
+        label_counts:
+          known: 32
+      require_direction_status: ok
+      require_hidden_dim_match: true
+      require_layer_role_match: true
+      require_vector_hash_check: true
+      require_no_mutation_of_source_artifacts: true
+    selection:
+      probe_results: null
+      row_keys_file: experiment/phase1/probe/config/phase3_sycophancy_answer_kto_wrong_hint_followed_row_keys.txt
+  modes:
+    - name: generation
+      max_rows: 8
+      max_new_tokens: 96
+      coefficients:
+        - 10.0
+        - 25.0
+      controls:
+        - no_vector_baseline
+        - activation_subtraction

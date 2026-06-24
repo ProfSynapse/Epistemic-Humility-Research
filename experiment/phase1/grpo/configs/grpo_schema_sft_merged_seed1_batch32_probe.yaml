@@ -1,0 +1,87 @@
+# Amendment D schema-SFT-merged -> GRPO seed-1 batch-32 capacity probe.
+# Uses the full GRPO dataset for representative row lengths, but stops early.
+# If this remains low-risk and improves throughput, use batch 32 for the full run.
+model:
+  model_name: "scratch/schema_response_confidence/runs/sft_schema_seed1_full/20260622_141511/Qwen3-4B-bnb-4bit/merged-16bit"
+  lora_path: null
+  max_seq_length: 2048
+  dtype: null
+  load_in_4bit: true
+  chat_template: "native"
+
+lora:
+  r: 32
+  lora_alpha: 64
+  lora_dropout: 0.05
+  bias: "none"
+  target_modules:
+    - "q_proj"
+    - "k_proj"
+    - "v_proj"
+    - "o_proj"
+    - "gate_proj"
+    - "up_proj"
+    - "down_proj"
+  use_gradient_checkpointing: "unsloth"
+  random_state: 1
+  use_rslora: false
+  use_dora: false
+
+training:
+  output_dir: "scratch/schema_response_confidence/runs/schema_sft_grpo_seed1_batch32_probe"
+  per_device_train_batch_size: 32
+  gradient_accumulation_steps: 1
+  num_generations: 4
+  max_prompt_length: 512
+  max_completion_length: 128
+  temperature: 1.35
+  learning_rate: 5.0e-6
+  weight_decay: 0.0
+  warmup_ratio: 0.0
+  lr_scheduler_type: "linear"
+  num_train_epochs: 1
+  max_steps: 12
+  beta: 0.1
+  fp16: false
+  bf16: true
+  optim: "adamw_8bit"
+  logging_steps: 1
+  save_steps: 12
+  save_total_limit: 1
+  report_to: "none"
+  use_gspo: false
+  chat_template_kwargs:
+    enable_thinking: false
+  extra_args:
+    top_p: 1.0
+    top_k: 0
+    min_p: 0.0
+
+dataset:
+  dataset_name: null
+  dataset_file: null
+  local_file: "scratch/schema_response_confidence/qwen3-4b-instruct-grpo/grpo_train.jsonl"
+  num_proc: 1
+  prompt_column: "prompt"
+
+schema:
+  tool_schema_path: null
+
+rewards:
+  items: []
+  custom:
+    enabled: true
+    module: null
+    file: "../../../experiment/phase1/grpo/humility_reward.py"
+    functions:
+      - name: "epistemic_humility_reward"
+        weight: 1.0
+        params: {}
+
+wandb:
+  enabled: false
+  project: null
+  run_name: null
+  entity: null
+
+seed: 1

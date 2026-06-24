@@ -374,10 +374,26 @@ def test_vllm_sampling_params_can_constrain_stated_confidence_json(
 
     structured = gen._sampling_params.kwargs["structured_outputs"]
     assert structured.kwargs == {
-            "json": run_eval.STATED_CONFIDENCE_JSON_SCHEMA,
+        "json": run_eval.STATED_CONFIDENCE_JSON_SCHEMA,
         "disable_fallback": True,
         "disable_additional_properties": True,
     }
+
+
+def test_vllm_sampling_params_can_constrain_response_confidence_json(
+    monkeypatch, tmp_path
+):
+    _install_fake_vllm(monkeypatch)
+    cfg = _vllm_cfg(tmp_path)
+    cfg["generation"]["stated_confidence_structured_outputs"] = True
+    cfg["generation"]["stated_confidence_field"] = "response_confidence"
+
+    gen = run_eval.VLLMGenerator(cfg)
+
+    structured = gen._sampling_params.kwargs["structured_outputs"]
+    assert structured.kwargs["json"] == run_eval.stated_confidence_json_schema(
+        "response_confidence"
+    )
 
 
 def test_vllm_sampling_params_preserves_configured_stop_strings(
@@ -423,6 +439,24 @@ def test_vllm_generator_rejects_generated_thinking(monkeypatch, tmp_path):
 
     with pytest.raises(RuntimeError, match="thinking marker"):
         gen.generate("base", {"id": "q1", "question": "Capital?"})
+
+
+def test_vllm_generator_allows_explicit_thinking_eval(monkeypatch, tmp_path):
+    FakeLLM, _ = _install_fake_vllm(
+        monkeypatch,
+        generated_text="<think>reasoning</think> Paris.",
+    )
+    cfg = _vllm_cfg(tmp_path)
+    cfg["generation"]["enable_thinking"] = True
+
+    gen = run_eval.VLLMGenerator(cfg)
+    record = gen.generate("base", {"id": "q1", "question": "Capital?"})
+
+    assert record["generated_answer"] == "<think>reasoning</think> Paris."
+    assert record["enable_thinking"] is True
+    assert gen._sampling_params.kwargs["stop"] is None
+    first_call_kwargs = FakeLLM.instances[0].tokenizer.calls[0]["kwargs"]
+    assert first_call_kwargs["enable_thinking"] is True
 
 
 def test_vllm_generator_retries_malformed_stated_confidence_json(

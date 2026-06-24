@@ -9,13 +9,14 @@ kg:
   id: mechanism:activation-addition-steers-generation
   type: mechanism
   status: canonical
-cause: "Adding a [[steering-vector]] to intermediate activations during generation."
-effect: "Model generations shift toward the behavior represented by the vector."
+cause: Adding a [[steering-vector]] to intermediate activations during generation.
+effect: Model generations shift toward the behavior represented by the vector.
 polarity: enables
 related:
 - '[[2308.10248--steering-language-models-with-activation-engineering]]'
 - '[[activation-addition]]'
 - '[[steering-vector]]'
+- '[[2309.00941--emergent-linear-representations-world-models]]'
 relationships:
 - type: supported_by
   target: '[[2308.10248--steering-language-models-with-activation-engineering]]'
@@ -28,6 +29,10 @@ relationships:
 - type: related_to
   target: '[[steering-vector]]'
   target_id: term:steering-vector
+  confidence: high
+- type: supported_by
+  target: '[[2309.00941--emergent-linear-representations-world-models]]'
+  target_id: paper:2309.00941
   confidence: high
 ---
 

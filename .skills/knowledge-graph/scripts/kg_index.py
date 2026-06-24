@@ -8,6 +8,7 @@ import csv
 import hashlib
 import html
 import json
+import os
 import re
 import sqlite3
 import subprocess
@@ -21,6 +22,11 @@ try:
     import fcntl
 except ImportError:  # pragma: no cover - non-POSIX fallback
     fcntl = None
+
+try:
+    import msvcrt
+except ImportError:  # pragma: no cover - POSIX fallback
+    msvcrt = None
 
 try:
     import yaml
@@ -120,6 +126,59 @@ def should_ignore(rel: str) -> bool:
     return any(part in IGNORED_PARTS for part in parts) or any(rel.startswith(prefix + "/") for prefix in IGNORED_PARTS)
 
 
+def _is_supported_source_file(path: Path) -> bool:
+    try:
+        return path.is_file() and path.suffix.lower() in SUPPORTED_EXTS
+    except OSError:
+        return False
+
+
+def _iter_git_files(root: Path) -> list[Path]:
+    proc = subprocess.run(
+        [
+            "git",
+            "-c",
+            f"safe.directory={root.as_posix()}",
+            "ls-files",
+            "-z",
+            "--cached",
+            "--others",
+            "--exclude-standard",
+        ],
+        cwd=root,
+        check=True,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.DEVNULL,
+    )
+    rels = [item.decode("utf-8") for item in proc.stdout.split(b"\0") if item]
+    return [root / rel for rel in rels]
+
+
+def _iter_walk_files(root: Path) -> list[Path]:
+    files: list[Path] = []
+    for dirpath, dirnames, filenames in os.walk(root):
+        current = Path(dirpath)
+        kept_dirs = []
+        for dirname in dirnames:
+            try:
+                rel = repo_relative(current / dirname, root)
+            except ValueError:
+                continue
+            if not should_ignore(rel):
+                kept_dirs.append(dirname)
+        dirnames[:] = kept_dirs
+
+        for filename in filenames:
+            path = current / filename
+            try:
+                rel = repo_relative(path, root)
+            except ValueError:
+                continue
+            if not should_ignore(rel):
+                files.append(path)
+    return files
+
+
 def file_kind(path: Path) -> str:
     suffix = path.suffix.lower()
     if suffix == ".py":
@@ -139,20 +198,12 @@ def file_kind(path: Path) -> str:
 
 def iter_source_files(root: Path) -> list[Path]:
     try:
-        proc = subprocess.run(
-            ["git", "ls-files", "-z", "--cached", "--others", "--exclude-standard"],
-            cwd=root,
-            check=True,
-            stdout=subprocess.PIPE,
-            stderr=subprocess.DEVNULL,
-        )
-        rels = [item.decode("utf-8") for item in proc.stdout.split(b"\0") if item]
-        files = [root / rel for rel in rels]
+        files = _iter_git_files(root)
     except Exception:
-        files = [path for path in root.rglob("*") if path.is_file()]
+        files = _iter_walk_files(root)
     out = []
     for path in files:
-        if not path.is_file() or path.suffix.lower() not in SUPPORTED_EXTS:
+        if not _is_supported_source_file(path):
             continue
         rel = repo_relative(path, root)
         if not should_ignore(rel):
@@ -178,18 +229,42 @@ def connect(db_path: Path) -> sqlite3.Connection:
     return conn
 
 
+def _acquire_exclusive(handle) -> None:
+    """Block until an exclusive lock on the index is held (cross-platform)."""
+    if fcntl is not None:  # POSIX: a true blocking lock
+        fcntl.flock(handle.fileno(), fcntl.LOCK_EX)
+    elif msvcrt is not None:  # Windows: LK_LOCK only waits ~10s then raises, so
+        handle.seek(0)        # spin on the non-blocking variant until it takes.
+        while True:
+            try:
+                msvcrt.locking(handle.fileno(), msvcrt.LK_NBLCK, 1)
+                return
+            except OSError:
+                time.sleep(0.1)
+    # Neither primitive available: proceed unguarded (single-process best effort).
+
+
+def _release_exclusive(handle) -> None:
+    if fcntl is not None:
+        fcntl.flock(handle.fileno(), fcntl.LOCK_UN)
+    elif msvcrt is not None:
+        handle.seek(0)
+        try:
+            msvcrt.locking(handle.fileno(), msvcrt.LK_UNLCK, 1)
+        except OSError:  # pragma: no cover - lock already gone
+            pass
+
+
 @contextmanager
 def index_lock(db_path: Path):
     db_path.parent.mkdir(parents=True, exist_ok=True)
     lock_path = db_path.with_suffix(db_path.suffix + ".lock")
     with lock_path.open("a+", encoding="utf-8") as handle:
-        if fcntl is not None:
-            fcntl.flock(handle.fileno(), fcntl.LOCK_EX)
+        _acquire_exclusive(handle)
         try:
             yield
         finally:
-            if fcntl is not None:
-                fcntl.flock(handle.fileno(), fcntl.LOCK_UN)
+            _release_exclusive(handle)
 
 
 def ensure_schema(conn: sqlite3.Connection) -> None:
@@ -214,13 +289,6 @@ def ensure_schema(conn: sqlite3.Connection) -> None:
           start_line INTEGER NOT NULL,
           end_line INTEGER NOT NULL,
           text TEXT NOT NULL
-        );
-        CREATE VIRTUAL TABLE IF NOT EXISTS chunks_fts USING fts5(
-          path,
-          kind,
-          symbol,
-          title,
-          text
         );
         CREATE TABLE IF NOT EXISTS nodes (
           node_id TEXT PRIMARY KEY,
@@ -279,6 +347,60 @@ def ensure_schema(conn: sqlite3.Connection) -> None:
     }
     if "lane_weights_json" not in columns:
         conn.execute("ALTER TABLE search_log ADD COLUMN lane_weights_json TEXT NOT NULL DEFAULT '{}'")
+    ensure_fts(conn)
+
+
+# Triggers keep chunks_fts in lockstep with chunks within the same transaction,
+# so the two can never drift. INSERT/DELETE/UPDATE on chunks are the only writers.
+_FTS_TRIGGERS = """
+CREATE TRIGGER IF NOT EXISTS chunks_fts_ai AFTER INSERT ON chunks BEGIN
+  INSERT INTO chunks_fts(rowid, path, kind, symbol, title, text)
+  VALUES (new.id, new.path, new.kind, new.symbol, new.title, new.text);
+END;
+CREATE TRIGGER IF NOT EXISTS chunks_fts_ad AFTER DELETE ON chunks BEGIN
+  INSERT INTO chunks_fts(chunks_fts, rowid, path, kind, symbol, title, text)
+  VALUES ('delete', old.id, old.path, old.kind, old.symbol, old.title, old.text);
+END;
+CREATE TRIGGER IF NOT EXISTS chunks_fts_au AFTER UPDATE ON chunks BEGIN
+  INSERT INTO chunks_fts(chunks_fts, rowid, path, kind, symbol, title, text)
+  VALUES ('delete', old.id, old.path, old.kind, old.symbol, old.title, old.text);
+  INSERT INTO chunks_fts(rowid, path, kind, symbol, title, text)
+  VALUES (new.id, new.path, new.kind, new.symbol, new.title, new.text);
+END;
+"""
+
+
+def ensure_fts(conn: sqlite3.Connection) -> None:
+    """Create the external-content FTS table + sync triggers, migrating legacy DBs.
+
+    chunks_fts is an external-content FTS5 index (content='chunks', content_rowid='id'):
+    it stores no copy of the text, only the inverted index, and is maintained purely
+    by triggers. This makes chunks<->FTS drift structurally impossible. Older DBs used
+    a standalone (content-less) FTS table mirrored by hand; detect those by the absence
+    of `content=` in the stored DDL, drop them, recreate, and repopulate from chunks.
+    """
+    row = conn.execute(
+        "SELECT sql FROM sqlite_master WHERE type = 'table' AND name = 'chunks_fts'"
+    ).fetchone()
+    existing_ddl = (row["sql"] if row else "") or ""
+    if row and "content=" not in existing_ddl:
+        for trigger in ("chunks_fts_ai", "chunks_fts_ad", "chunks_fts_au"):
+            conn.execute(f"DROP TRIGGER IF EXISTS {trigger}")
+        conn.execute("DROP TABLE IF EXISTS chunks_fts")
+        row = None
+    if row is None:
+        conn.execute(
+            """
+            CREATE VIRTUAL TABLE chunks_fts USING fts5(
+              path, kind, symbol, title, text,
+              content='chunks', content_rowid='id'
+            )
+            """
+        )
+        # Rebuild the inverted index from whatever rows chunks already holds
+        # (no-op on a fresh DB, full repopulate when migrating a legacy index).
+        conn.execute("INSERT INTO chunks_fts(chunks_fts) VALUES ('rebuild')")
+    conn.executescript(_FTS_TRIGGERS)
 
 
 def memory_labels_for_path(rel: str, kind: str) -> list[tuple[str, float]]:
@@ -309,9 +431,8 @@ def memory_labels_for_path(rel: str, kind: str) -> list[tuple[str, float]]:
 
 
 def delete_file_rows(conn: sqlite3.Connection, rel: str) -> None:
-    rows = conn.execute("SELECT id FROM chunks WHERE path = ?", (rel,)).fetchall()
-    for row in rows:
-        conn.execute("DELETE FROM chunks_fts WHERE rowid = ?", (row["id"],))
+    # Deleting from chunks fires chunks_fts_ad, which removes the matching FTS
+    # rows in the same transaction — no manual chunks_fts bookkeeping needed.
     conn.execute("DELETE FROM chunks WHERE path = ?", (rel,))
     conn.execute("DELETE FROM nodes WHERE path = ?", (rel,))
     conn.execute("DELETE FROM edges WHERE path = ?", (rel,))
@@ -320,7 +441,9 @@ def delete_file_rows(conn: sqlite3.Connection, rel: str) -> None:
 
 
 def insert_chunk(conn: sqlite3.Connection, chunk: Chunk) -> None:
-    cur = conn.execute(
+    # Inserting into chunks fires chunks_fts_ai, which indexes the new row in the
+    # same transaction. chunks_fts (external-content) is never written directly.
+    conn.execute(
         """
         INSERT INTO chunks(path, kind, symbol, symbol_type, title, start_line, end_line, text)
         VALUES (?, ?, ?, ?, ?, ?, ?, ?)
@@ -335,11 +458,6 @@ def insert_chunk(conn: sqlite3.Connection, chunk: Chunk) -> None:
             chunk.end_line,
             chunk.text,
         ),
-    )
-    rowid = cur.lastrowid
-    conn.execute(
-        "INSERT INTO chunks_fts(rowid, path, kind, symbol, title, text) VALUES (?, ?, ?, ?, ?, ?)",
-        (rowid, chunk.path, chunk.kind, chunk.symbol, chunk.title, chunk.text),
     )
 
 
@@ -880,7 +998,12 @@ def dangling_references(db_path: Path = DEFAULT_DB) -> list[dict[str, str]]:
 
 def main() -> int:
     parser = argparse.ArgumentParser(description="Build/update the local code/config/research KG search index.")
-    parser.add_argument("--root", default=".", help="Repository root. Defaults to current directory.")
+    parser.add_argument(
+        "--root",
+        default=str(REPO_ROOT),
+        help="Repository root. Defaults to the repo root, not the CWD, so the "
+        "shared --db index stays consistent regardless of where the tool runs.",
+    )
     parser.add_argument("--db", default=str(DEFAULT_DB), help="SQLite index path. Defaults to .kg/index.sqlite.")
     parser.add_argument("--force", action="store_true", help="Reparse every supported file.")
     parser.add_argument("--dangling", action="store_true", help="Report indexed config path references whose targets are missing.")

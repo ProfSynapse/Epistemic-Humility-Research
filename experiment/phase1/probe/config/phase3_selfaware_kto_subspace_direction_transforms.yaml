@@ -1,0 +1,17 @@
+# Normalize the KTO broad known/unknown delta direction to the SAE contrast norm
+# for a cross-arm same-scale subspace control.
+
+source_manifest: experiment/phase1/probe/qwen3-4b-sft-merged-seed1-selfaware/hidden_states_selfaware_full_kto/extraction__bb5e579fa10e/selfaware_full_kto_candidate_directions.manifest.json
+
+transforms:
+  - label: kto_unknown_minus_known_l25_norm_to_sae_contrast
+    source_direction_id: direction__adc2e92c2a40c157
+    method: unit_rescale_to_norm
+    target_norm: 1.2142820358276367
+    metadata:
+      arm: sft_kto
+      source_layer_role: cross_arm_layer_match
+      comparison_norm_source: sae_feature_composite__sft_dpo_unknown_minus_known_f047_f051_f064_f065_l24__9e87229e2fc4
+
+output:
+  root: experiment/phase1/probe/qwen3-4b-sft-merged-seed1-selfaware/direction_transforms/phase3_selfaware_kto_subspace_normed_to_sae_contrast

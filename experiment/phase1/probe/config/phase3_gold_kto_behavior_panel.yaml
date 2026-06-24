@@ -1,0 +1,15 @@
+source_rows: experiment/phase1/probe/qwen3-4b-instruct/hidden_states/extraction__e1473df788a5/rows.jsonl
+scored_rows: experiment/phase1/probe/qwen3-4b-instruct/causal_pilots/phase3_gold_kto_baseline_generation_replay/sft_kto_h_lora_l35/generation/run_20260620T125901Z/scored_rows.jsonl
+behavior_arm: sft_kto_gold_baseline
+control: no_vector_baseline
+arm_id: sft_kto_h_lora_l35__coef_50p0__control_no_vector_baseline
+require_all_rows: true
+balanced_panel:
+  name: calibrated_expression_four_cell_available
+  cells:
+    - known_refused
+    - known_correct_answered
+    - unknown_refused
+    - unknown_answered_wrong
+output:
+  root: experiment/phase1/probe/qwen3-4b-instruct/gold_behavior_panels/phase3_gold_kto_behavior_panel

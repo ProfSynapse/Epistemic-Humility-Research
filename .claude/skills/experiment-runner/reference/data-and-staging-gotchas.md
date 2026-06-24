@@ -31,6 +31,28 @@ Read for dataset identity, leakage, recipe materialization, and local staging is
   bounded evidence; rerun SFT seed 1 on the regenerated dataset before using it
   as the mixed-stage comparator.
 
+- The Phase 1 frozen SFT/DPO/KTO builders intentionally use only `known` and
+  `unknown` probe labels; raw probe rows labeled `discard` are excluded from the
+  locked v0.3 training set. For schema-trained response-confidence work, do not
+  treat all discarded rows as waste. The Qwen3-4B probe had 4,005 discard rows;
+  the middle `p_correct` band `[0.4, 0.6]` contributed 548 useful ambiguous
+  examples. In the schema response-confidence projection, those rows should be
+  labeled separately as ambiguous/middle, trained with correct answers and
+  middle `response_confidence`, and kept out of v0.3 headline counts.
+
+- JSONL training projections must keep a stable column set across normal and
+  appended special-case rows. Hugging Face `datasets` infers/casts the JSON
+  schema before trainer-specific row cleanup can drop provenance fields; if
+  later ambiguous or diagnostic rows add columns such as `label`,
+  `source_label`, `p_correct`, or `ambiguity_band`, `load_dataset("json")` can
+  fail before model loading. Null defaults are not enough because Arrow may
+  infer a `null` column type and then reject later strings/floats. Add optional
+  provenance keys with typed sentinel values such as `""` or `-1.0` to ordinary
+  rows, then cover both row-key stability and mixed-type loading with tests
+  whenever a builder appends another row family. The schema-response-confidence
+  GRPO builder uses `p_correct: -1.0` and `ambiguity_band: ""` for normal
+  known/unknown rows so ambiguous-middle rows can coexist in one JSONL.
+
 - Cheng recipe provenance gotcha: the paper text is vague, but the official
   OpenMOSS/Say-I-Dont-Know README publishes concrete commands. Cheng Idk-SFT is
   `llama_recipes/finetuning.py --enable_fsdp` with `--num_epochs 10`, `--lr

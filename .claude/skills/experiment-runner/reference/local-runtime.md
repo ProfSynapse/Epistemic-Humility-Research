@@ -109,9 +109,56 @@ Read for Windows/Docker/GPU/local-trainer execution problems and monitor behavio
   `Failed to import Triton kernels... No module named 'triton_kernels.routing'`;
   it did not block this completed micro run.
 
+- Local schema-SFT batch probing on 2026-06-22: Qwen3-4B LoRA r=32,
+  completion-only, BF16, batch 16 completed a 512-row response-confidence smoke
+  in about 70 seconds, but the saved capacity profile marked `oom_risk_level:
+  critical` and reported impossible reserved-memory percentages at shutdown.
+  Treat that as a capacity red flag, not as clearance for full runs. The first
+  full schema-SFT was launched at batch 12 as the speed/safety compromise, but
+  live telemetry still reached about 23.7/24 GB VRAM and reported critical risk
+  by step 125. Do not run parallel GPU work beside this cell; if it OOMs or must
+  be repeated, prefer batch 8 before trying to recover throughput elsewhere.
+
+- Short preference-training smokes can understate full-run VRAM growth when row
+  lengths vary. On 2026-06-22, schema-SFT->DPO batch 4 / accumulation 2 looked
+  low-risk in a 10-step smoke (about 11.1 GB reserved), but the full run climbed
+  past 23.7/24 GB live VRAM by step 185 and was intentionally stopped before an
+  OOM. For DPO from the merged schema-SFT base on this RTX 3090, use batch 2 /
+  accumulation 4 as the safer effective-batch-8 setting unless a longer probe
+  over representative long rows proves otherwise.
+
+- KTO can show the same short-smoke capacity trap at larger batches. On
+  2026-06-22, schema-SFT->KTO batch 24 / accumulation 1 completed a 10-step
+  smoke with low OOM risk and about 16.5 GB reserved, but the full run reached
+  about 23.7/24 GB live VRAM and `oom_risk_level: critical` by step 15. Batch
+  16 / accumulation 1 also climbed into the high-risk band later in the full
+  run, reaching about 23.5-23.7/24 GB live VRAM by step 250. Treat batch 16 and
+  batch 24 as too hot on the RTX 3090 for this response-confidence KTO dataset;
+  use batch 12 only with live monitoring, and fall back to the proven batch 8 /
+  accumulation 1 if batch 12 enters high or critical risk.
+
+- GRPO local throughput depends strongly on `per_device_train_batch_size /
+  num_generations`, because that ratio controls optimizer prompts per step. On
+  2026-06-22, schema-SFT->GRPO from the merged Qwen3-4B schema-SFT base with
+  `num_generations: 4` and the full 14,888-row response-confidence dataset
+  projected to 7,444 steps at batch 8, 3,722 steps at batch 16, and 1,861 steps
+  at batch 32. Batch-32 12-step probing stayed low risk on the RTX 3090
+  (about 10.9 GB max reserved VRAM, about 13 GB reserved headroom) and the full
+  launch remained low risk at step 25. Start future equivalent GRPO runs at
+  batch 32 unless the dataset/model/sequence length changes, then re-probe with
+  representative full-dataset rows before launching the full cell.
+
 - The Unsloth image default entrypoint may chmod the mounted repo and fail on
   `.tmp/pytest-codex*`. For local eval wrapper runs, override the entrypoint
   with `--entrypoint python3`.
+
+- Current Synaptic Tuner SFT custom `--config` handling treats non-default
+  config paths as Python modules. A YAML path can fail with a null loader before
+  training starts. For one-off local SFT bridge runs, prefer a small Python shim
+  config or a checked wrapper until the trainer supports custom YAML config
+  loading. Passing nested JSON such as `--chat-template-kwargs` through
+  PowerShell -> Docker -> Python is also fragile; avoid CLI JSON quoting for
+  reproducible local runs when the same value can live in the Python config.
 
 - For Codex-side long-run monitors on this Windows host, prefer direct Docker
   commands over piped/combined Docker calls. During 2026-06-16 eval monitoring,

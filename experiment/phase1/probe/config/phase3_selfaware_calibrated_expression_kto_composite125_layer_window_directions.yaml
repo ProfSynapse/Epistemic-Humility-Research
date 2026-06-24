@@ -1,0 +1,57 @@
+source_manifest: experiment/phase1/probe/qwen3-4b-sft-merged-seed1-selfaware/behavior_axis_directions/phase3_selfaware_calibrated_expression_hlora_window_directions/behavior_axis_directions.manifest.json
+
+transforms:
+  - label: kto_h_lora_l24_composite_known1_unknown125_window_normed
+    method: linear_combination
+    contrast: composite_known_overrefusal_unknown_wrong_window
+    target_norm: 1.2142820358276367
+    components:
+      - source_direction_id: behavior_axis__kto_h_lora_known_refused_vs_correct_l24_normed__540672190112
+        weight: -1.0
+      - source_direction_id: behavior_axis__kto_h_lora_unknown_wrong_vs_refused_l24_normed__7e353159058d
+        weight: -1.25
+    metadata:
+      arm: sft_kto
+      selection_reason: best current KTO composite tradeoff, tested across layer window
+
+  - label: kto_h_lora_l25_composite_known1_unknown125_window_normed
+    method: linear_combination
+    contrast: composite_known_overrefusal_unknown_wrong_window
+    target_norm: 1.2142820358276367
+    components:
+      - source_direction_id: behavior_axis__kto_h_lora_known_refused_vs_correct_l25_normed__e7585eae957b
+        weight: -1.0
+      - source_direction_id: behavior_axis__kto_h_lora_unknown_wrong_vs_refused_l25_normed__e5550beef972
+        weight: -1.25
+    metadata:
+      arm: sft_kto
+      selection_reason: best current KTO composite tradeoff, tested across layer window
+
+  - label: kto_h_lora_l26_composite_known1_unknown125_window_normed
+    method: linear_combination
+    contrast: composite_known_overrefusal_unknown_wrong_window
+    target_norm: 1.2142820358276367
+    components:
+      - source_direction_id: behavior_axis__kto_h_lora_known_refused_vs_correct_l26_normed__ffbf076ead91
+        weight: -1.0
+      - source_direction_id: behavior_axis__kto_h_lora_unknown_wrong_vs_refused_l26_normed__f4258fdc76be
+        weight: -1.25
+    metadata:
+      arm: sft_kto
+      selection_reason: best current KTO composite tradeoff, tested across layer window
+
+  - label: kto_h_lora_l27_composite_known1_unknown125_window_normed
+    method: linear_combination
+    contrast: composite_known_overrefusal_unknown_wrong_window
+    target_norm: 1.2142820358276367
+    components:
+      - source_direction_id: behavior_axis__kto_h_lora_known_refused_vs_correct_l27_normed__9b833378b389
+        weight: -1.0
+      - source_direction_id: behavior_axis__kto_h_lora_unknown_wrong_vs_refused_l27_normed__646ef938026f
+        weight: -1.25
+    metadata:
+      arm: sft_kto
+      selection_reason: best current KTO composite tradeoff, tested across layer window
+
+output:
+  root: experiment/phase1/probe/qwen3-4b-sft-merged-seed1-selfaware/direction_transforms/phase3_selfaware_calibrated_expression_kto_composite125_layer_window_directions

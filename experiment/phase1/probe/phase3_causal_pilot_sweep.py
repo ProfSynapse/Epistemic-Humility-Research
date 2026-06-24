@@ -33,6 +33,7 @@ DOCKER_CONFIG_PATH_KEYS = {
     "probe_results",
     "root",
 }
+REPLACE_ON_MERGE_KEYS = {"label_counts"}
 
 
 class SweepError(RuntimeError):
@@ -105,6 +106,22 @@ def _rewrite_docker_config_paths(value: Any, *, repo_mount: str, key: str | None
     if key in DOCKER_CONFIG_PATH_KEYS and isinstance(value, str) and value:
         return docker_config_path(value, repo_mount=repo_mount)
     return value
+
+
+def deep_merge(base: dict[str, Any], override: dict[str, Any]) -> dict[str, Any]:
+    merged = copy.deepcopy(base)
+    for key, value in override.items():
+        if key in REPLACE_ON_MERGE_KEYS:
+            merged[key] = copy.deepcopy(value)
+        elif (
+            key in merged
+            and isinstance(merged[key], dict)
+            and isinstance(value, dict)
+        ):
+            merged[key] = deep_merge(merged[key], value)
+        else:
+            merged[key] = copy.deepcopy(value)
+    return merged
 
 
 def execution_config(sweep: dict[str, Any]) -> dict[str, Any]:
@@ -310,9 +327,12 @@ def build_runner_config(
     sweep_name: str,
     mode: str,
     execution: dict[str, Any],
+    runner_overrides: dict[str, Any] | None = None,
 ) -> dict[str, Any]:
     """Return a generation-enabled runner config scoped to one candidate."""
     config = copy.deepcopy(template_config)
+    if runner_overrides:
+        config = deep_merge(config, runner_overrides)
     config["candidate_directions"] = [copy.deepcopy(candidate)]
     config.setdefault("spec", {})["name"] = f"{sweep_name}__{candidate['label']}__{mode}"
     config.setdefault("output", {})["root"] = str(output_root / candidate["label"] / mode)
@@ -369,6 +389,11 @@ def build_jobs(config_path: Path, mode_filter: set[str] | None = None) -> dict[s
     execution = execution_config(sweep)
     runner_template = load_yaml(runner_config_path)
     candidate_source = load_yaml(candidate_source_path)
+    runner_overrides = sweep.get("runner_overrides", {})
+    if runner_overrides is None:
+        runner_overrides = {}
+    if not isinstance(runner_overrides, dict):
+        raise SweepError("sweep.runner_overrides must be a mapping")
     candidates = _selected_candidates(candidate_source, sweep.get("candidates", "all"))
     executable_candidates, skipped_candidates = split_executable_candidates(candidates)
     modes = [_mode_plan(mode) for mode in sweep.get("modes", [])]
@@ -405,6 +430,7 @@ def build_jobs(config_path: Path, mode_filter: set[str] | None = None) -> dict[s
                     sweep_name=sweep_name,
                     mode=mode["name"],
                     execution=execution,
+                    runner_overrides=runner_overrides,
                 ),
             })
     return {

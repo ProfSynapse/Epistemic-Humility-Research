@@ -1,0 +1,86 @@
+# Amendment B GRPO base-model micro smoke.
+# This is a plumbing check only, not a reportable training cell.
+model:
+  model_name: "unsloth/Qwen3-4B-bnb-4bit"
+  lora_path: null
+  max_seq_length: 2048
+  dtype: null
+  load_in_4bit: true
+  chat_template: "native"
+
+lora:
+  r: 16
+  lora_alpha: 32
+  lora_dropout: 0.05
+  bias: "none"
+  target_modules:
+    - "q_proj"
+    - "k_proj"
+    - "v_proj"
+    - "o_proj"
+    - "gate_proj"
+    - "up_proj"
+    - "down_proj"
+  use_gradient_checkpointing: "unsloth"
+  random_state: 1
+  use_rslora: false
+  use_dora: false
+
+training:
+  output_dir: "scratch/grpo_bootstrap/runs/base_micro_smoke"
+  per_device_train_batch_size: 4
+  gradient_accumulation_steps: 1
+  num_generations: 4
+  max_prompt_length: 512
+  max_completion_length: 256
+  temperature: 1.6
+  learning_rate: 5.0e-6
+  weight_decay: 0.0
+  warmup_ratio: 0.0
+  lr_scheduler_type: "linear"
+  num_train_epochs: 1
+  max_steps: 6
+  beta: 0.1
+  fp16: false
+  bf16: true
+  optim: "adamw_8bit"
+  logging_steps: 1
+  save_steps: 6
+  save_total_limit: 1
+  report_to: "none"
+  use_gspo: false
+  chat_template_kwargs:
+    enable_thinking: false
+  extra_args:
+    top_p: 1.0
+    top_k: 0
+    min_p: 0.0
+
+dataset:
+  dataset_name: null
+  dataset_file: null
+  local_file: "scratch/grpo_bootstrap/qwen3-4b-instruct/grpo_train_smoke_32.jsonl"
+  num_proc: 1
+  prompt_column: "prompt"
+
+schema:
+  tool_schema_path: null
+
+rewards:
+  items: []
+  custom:
+    enabled: true
+    module: null
+    file: "../../../experiment/phase1/grpo/humility_reward.py"
+    functions:
+      - name: "epistemic_humility_reward"
+        weight: 1.0
+        params: {}
+
+wandb:
+  enabled: false
+  project: null
+  run_name: null
+  entity: null
+
+seed: 1

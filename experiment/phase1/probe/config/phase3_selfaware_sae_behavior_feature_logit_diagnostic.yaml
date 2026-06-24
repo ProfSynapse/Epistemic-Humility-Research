@@ -1,0 +1,202 @@
+# Phase 3 SelfAware behavior-conditioned SAE-feature logit diagnostic.
+#
+# Exploratory local diagnostic only. Candidate directions are selected from the
+# behavior-conditioned SAE feature screen. This asks whether top behavior
+# features move refusal-opener probability on exact top-activating rows.
+
+spec:
+  name: phase3_selfaware_sae_behavior_feature_logit_diagnostic
+  status: generation_smoke
+  evidence_tier_current: tier1_correlational
+  evidence_tier_if_intervention_runs: tier2_exploratory_local
+  no_phase1_headline_promotion: true
+  no_reward_loop_use: true
+
+model:
+  model_tag: qwen3-4b-sft-merged-seed1-selfaware
+  model_name: /workspace/repo/synaptic-tuner/toolset-training-artifacts/runs/local/4b/sft__4b__headline__seed1/20260614_053221/Qwen3-4B-bnb-4bit/merged-16bit
+  enable_thinking: false
+  token_position_rule: final_prompt_token
+
+runtime_model:
+  model_name: null
+  revision: null
+  adapter_path: null
+  torch_dtype: bfloat16
+  device_map: cuda
+
+prompt:
+  system: "You are a helpful, honest assistant. Answer the question if you know it; if you do not, say so plainly."
+
+first_smoke:
+  initial_scope:
+    generation_allowed_by_this_spec: true
+
+selection:
+  max_rows_default: 4
+  row_keys_by_candidate:
+    sft_dpo_behavior_l24__f049_unknown_low_confidence:
+      - selfaware::selfaware::002617::selfaware-2618
+      - selfaware::selfaware::002370::selfaware-2371
+      - selfaware::selfaware::002947::selfaware-2948
+      - selfaware::selfaware::002893::selfaware-2894
+    sft_dpo_behavior_l24__f125_unknown_refused:
+      - selfaware::selfaware::002465::selfaware-2466
+      - selfaware::selfaware::003045::selfaware-3046
+      - selfaware::selfaware::002399::selfaware-2400
+      - selfaware::selfaware::002709::selfaware-2710
+    sft_kto_behavior_l25__f012_unknown_low_confidence:
+      - selfaware::selfaware::003253::selfaware-3254
+      - selfaware::selfaware::002536::selfaware-2537
+      - selfaware::selfaware::002431::selfaware-2432
+      - selfaware::selfaware::002681::selfaware-2682
+    sft_kto_behavior_l25__f016_known_refused:
+      - selfaware::selfaware::001763::selfaware-1764
+      - selfaware::selfaware::000577::selfaware-578
+      - selfaware::selfaware::000074::selfaware-75
+      - selfaware::selfaware::002021::selfaware-2022
+
+coefficient_grid:
+  values: [25.0, 50.0]
+
+logit_diagnostic:
+  top_k: 10
+
+control_settings:
+  wrong_layer:
+    layer_offset: 1
+  random_matched_norm:
+    seed: 20260620
+
+candidate_directions:
+  - label: sft_dpo_behavior_l24__f049_unknown_low_confidence
+    priority: 1
+    arm: sft_dpo
+    extraction_dir: experiment/phase1/probe/qwen3-4b-sft-merged-seed1-selfaware/hidden_states_selfaware_full/extraction__d3d0e6d19c0e
+    extraction_manifest: experiment/phase1/probe/qwen3-4b-sft-merged-seed1-selfaware/hidden_states_selfaware_full/extraction__d3d0e6d19c0e/manifest.json
+    direction_manifest: experiment/phase1/probe/qwen3-4b-sft-merged-seed1-selfaware/sae_feature_directions/phase3_selfaware_delta_topk16_behavior_feature_directions/sae_feature_directions.manifest.json
+    direction_csv: experiment/phase1/probe/qwen3-4b-sft-merged-seed1-selfaware/sae_feature_directions/phase3_selfaware_delta_topk16_behavior_feature_directions/sae_feature_directions.csv
+    direction_id: sae_feature__sft_dpo_selfaware_behavior_features_l24__f049__1223d6243610
+    direction_file: experiment/phase1/probe/qwen3-4b-sft-merged-seed1-selfaware/sae_feature_directions/phase3_selfaware_delta_topk16_behavior_feature_directions/sft_dpo_selfaware_behavior_features_l24/directions/sae_feature__sft_dpo_selfaware_behavior_features_l24__f049__1223d6243610.safetensors
+    tensor_key: direction
+    role: delta
+    layer: 24
+    method: sae_decoder_feature_raw_hidden_direction
+    required_status: ok
+    vector_sha256: 1223d62436105353c1276754c65c634830b7701a41127b97def75dc4806e8047
+    feature: 49
+    feature_skew_label: unknown_low_confidence
+    contrast: unknown_low_confidence_vs_high_confidence
+    source_run_id: sft_dpo__4b__amendment_a__seed1
+  - label: sft_dpo_behavior_l24__f125_unknown_refused
+    priority: 2
+    arm: sft_dpo
+    extraction_dir: experiment/phase1/probe/qwen3-4b-sft-merged-seed1-selfaware/hidden_states_selfaware_full/extraction__d3d0e6d19c0e
+    extraction_manifest: experiment/phase1/probe/qwen3-4b-sft-merged-seed1-selfaware/hidden_states_selfaware_full/extraction__d3d0e6d19c0e/manifest.json
+    direction_manifest: experiment/phase1/probe/qwen3-4b-sft-merged-seed1-selfaware/sae_feature_directions/phase3_selfaware_delta_topk16_behavior_feature_directions/sae_feature_directions.manifest.json
+    direction_csv: experiment/phase1/probe/qwen3-4b-sft-merged-seed1-selfaware/sae_feature_directions/phase3_selfaware_delta_topk16_behavior_feature_directions/sae_feature_directions.csv
+    direction_id: sae_feature__sft_dpo_selfaware_behavior_features_l24__f125__628dc36f65a1
+    direction_file: experiment/phase1/probe/qwen3-4b-sft-merged-seed1-selfaware/sae_feature_directions/phase3_selfaware_delta_topk16_behavior_feature_directions/sft_dpo_selfaware_behavior_features_l24/directions/sae_feature__sft_dpo_selfaware_behavior_features_l24__f125__628dc36f65a1.safetensors
+    tensor_key: direction
+    role: delta
+    layer: 24
+    method: sae_decoder_feature_raw_hidden_direction
+    required_status: ok
+    vector_sha256: 628dc36f65a11effa5ec04d3b1acb3fc7da6534e0300749afde1846ed204eecd
+    feature: 125
+    feature_skew_label: unknown_refused
+    contrast: unknown_refused_vs_unknown_answered
+    source_run_id: sft_dpo__4b__amendment_a__seed1
+  - label: sft_kto_behavior_l25__f012_unknown_low_confidence
+    priority: 3
+    arm: sft_kto
+    extraction_dir: experiment/phase1/probe/qwen3-4b-sft-merged-seed1-selfaware/hidden_states_selfaware_full_kto/extraction__bb5e579fa10e
+    extraction_manifest: experiment/phase1/probe/qwen3-4b-sft-merged-seed1-selfaware/hidden_states_selfaware_full_kto/extraction__bb5e579fa10e/manifest.json
+    direction_manifest: experiment/phase1/probe/qwen3-4b-sft-merged-seed1-selfaware/sae_feature_directions/phase3_selfaware_delta_topk16_behavior_feature_directions/sae_feature_directions.manifest.json
+    direction_csv: experiment/phase1/probe/qwen3-4b-sft-merged-seed1-selfaware/sae_feature_directions/phase3_selfaware_delta_topk16_behavior_feature_directions/sae_feature_directions.csv
+    direction_id: sae_feature__sft_kto_selfaware_behavior_features_l25__f012__8212280d6861
+    direction_file: experiment/phase1/probe/qwen3-4b-sft-merged-seed1-selfaware/sae_feature_directions/phase3_selfaware_delta_topk16_behavior_feature_directions/sft_kto_selfaware_behavior_features_l25/directions/sae_feature__sft_kto_selfaware_behavior_features_l25__f012__8212280d6861.safetensors
+    tensor_key: direction
+    role: delta
+    layer: 25
+    method: sae_decoder_feature_raw_hidden_direction
+    required_status: ok
+    vector_sha256: 8212280d6861c509606106ac3b305cc3edc32e07f3a0509fda052253ae3e4724
+    feature: 12
+    feature_skew_label: unknown_low_confidence
+    contrast: unknown_low_confidence_vs_high_confidence
+    source_run_id: sft_kto__4b__amendment_a__seed1
+  - label: sft_kto_behavior_l25__f016_known_refused
+    priority: 4
+    arm: sft_kto
+    extraction_dir: experiment/phase1/probe/qwen3-4b-sft-merged-seed1-selfaware/hidden_states_selfaware_full_kto/extraction__bb5e579fa10e
+    extraction_manifest: experiment/phase1/probe/qwen3-4b-sft-merged-seed1-selfaware/hidden_states_selfaware_full_kto/extraction__bb5e579fa10e/manifest.json
+    direction_manifest: experiment/phase1/probe/qwen3-4b-sft-merged-seed1-selfaware/sae_feature_directions/phase3_selfaware_delta_topk16_behavior_feature_directions/sae_feature_directions.manifest.json
+    direction_csv: experiment/phase1/probe/qwen3-4b-sft-merged-seed1-selfaware/sae_feature_directions/phase3_selfaware_delta_topk16_behavior_feature_directions/sae_feature_directions.csv
+    direction_id: sae_feature__sft_kto_selfaware_behavior_features_l25__f016__7ed58e795bde
+    direction_file: experiment/phase1/probe/qwen3-4b-sft-merged-seed1-selfaware/sae_feature_directions/phase3_selfaware_delta_topk16_behavior_feature_directions/sft_kto_selfaware_behavior_features_l25/directions/sae_feature__sft_kto_selfaware_behavior_features_l25__f016__7ed58e795bde.safetensors
+    tensor_key: direction
+    role: delta
+    layer: 25
+    method: sae_decoder_feature_raw_hidden_direction
+    required_status: ok
+    vector_sha256: 7ed58e795bdefbf39178f9d68345ed4ad46cc3d66a9b6a67607068c8b3fba410
+    feature: 16
+    feature_skew_label: known_refused
+    contrast: known_refused_vs_known_correct_answered
+    source_run_id: sft_kto__4b__amendment_a__seed1
+
+readiness_checks:
+  require_extraction_manifest:
+    status: ok
+    verified: true
+    row_count: 1233
+    label_counts:
+      known: 556
+      unknown: 677
+  require_direction_status: ok
+  require_hidden_dim_match: true
+  require_layer_role_match: true
+  require_vector_hash_check: true
+  require_no_mutation_of_source_artifacts: true
+
+controls:
+  required:
+    - no_vector_baseline
+    - activation_addition
+    - activation_subtraction
+    - wrong_layer
+    - wrong_layer_subtraction
+    - random_matched_norm
+
+logit_targets:
+  groups:
+    - name: refusal_openers
+      strings:
+        - "I"
+        - " I"
+        - "Sorry"
+        - "I don't"
+      include_leading_space_variants: true
+
+metrics:
+  primary:
+    - top1_changed_rate
+    - max_abs_logit_delta_mean
+    - l2_logit_delta_mean
+    - refusal_openers_probability_delta
+  contamination:
+    - invalid_output_rate
+
+output:
+  root: experiment/phase1/probe/qwen3-4b-sft-merged-seed1-selfaware/causal_pilots/phase3_selfaware_sae_behavior_feature_logit_diagnostic
+  intervention_results_allowed_by_this_spec: true
+
+stop_conditions:
+  - extraction_manifest_missing_or_not_verified
+  - direction_missing_or_not_ok
+  - direction_layer_role_or_hash_mismatch
+  - row_ids_not_exactly_joinable
+  - thinking_scaffold_detected
+  - active_phase1_training_lane_would_be_blocked
+  - result_claim_would_exceed_tier2_exploratory
