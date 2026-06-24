@@ -121,7 +121,7 @@ Atomic notes extracted from the library papers via the Agents-K1 ingestion skill
 - [[selective-classification-auc]] : Selective-classification AUC is the area under the curve traced by plotting
 - [[self-knowledge-f1]] : Self-Knowledge F1 is an F1 score computed by treating unanswerable questions as the positive class, measuring how well a model's response ex
 
-## Datasets & benchmarks (30)
+## Datasets & benchmarks (31)
 
 - [[abstentionbench]] : AbstentionBench is a large-scale benchmark for evaluating LLM abstention,
 - [[anthropic-hh]] : The Anthropic HH-RLHF dataset contains human-annotated preference-pair-data collected through conversations with Claude, covering both helpf
@@ -133,6 +133,7 @@ Atomic notes extracted from the library papers via the Agents-K1 ingestion skill
 - [[eli5]] : ELI5 (Explain Like I'm 5) is a long-form question answering dataset collected from the Reddit community r/explainlikeimfive, consisting of q
 - [[entityquestions]] : EntityQuestions is a closed-book QA benchmark that converts factual (subject,
 - [[gsm8k]] : GSM8K is a benchmark of approximately 8,500 grade-school-level math word problems requiring multi-step arithmetic reasoning to solve correct
+- [[humblebench]] : HumbleBench is a multimodal hallucination benchmark of 22,831 five-way
 - [[idk-dataset]] : The Idk dataset is a model-specific training corpus built from triviaqa by
 - [[indirect-object-identification]] : A controlled syntactic benchmark where a language model must complete sentences
 - [[jailbreakbench]] : JailbreakBench is a benchmark context for evaluating harmful-request refusal and
@@ -170,7 +171,7 @@ Atomic notes extracted from the library papers via the Agents-K1 ingestion skill
 - [[pythia-70m]] : Pythia-70M is a 70-million-parameter decoder-only transformer from the Pythia
 - [[pythia-suite]] : The Pythia suite is EleutherAI's family of autoregressive transformer language models trained on The Pile, spanning seven sizes from 70M to 
 
-## Terms (69)
+## Terms (71)
 
 - [[abstain-qa]] : AbstainQA is a task formulation in which a model is given a question and must
 - [[abstention]] : Abstention is the behavior of an LLM deliberately declining to provide a
@@ -180,6 +181,7 @@ Atomic notes extracted from the library papers via the Agents-K1 ingestion skill
 - [[calibration]] : Calibration is the property that a model's stated probability for an event matches the empirical frequency with which that event occurs. A p
 - [[clipped-surrogate-objective]] : The clipped surrogate objective is the core PPO training loss: min(r_t * A_t, clip(r_t, 1-epsilon, 1+epsilon) * A_t), where r_t is the proba
 - [[emergent-world-model]] : An emergent world model is the phenomenon whereby a sequence model trained only
+- [[epistemic-humility]] : Epistemic humility is a model's capacity to recognize and act on the limits of
 - [[factual-association-recall-mechanism]] : The factual-association recall mechanism is a three-step internal process for fact completion in autoregressive language models, identified 
 - [[factual-recall-localization]] : Factual recall localization is the empirical finding that factual recall in language models is mediated by specific layers and token positio
 - [[false-premise-questions]] : False-premise questions are queries predicated on an incorrect or counterfactual
@@ -206,6 +208,7 @@ Atomic notes extracted from the library papers via the Agents-K1 ingestion skill
 - [[linear-representation-hypothesis]] : The linear representation hypothesis, tracing to Mikolov et al. (2013), holds that neural network features are encoded as linear directions 
 - [[monosemanticity]] : Monosemanticity is the property of a neuron that responds selectively to a single, well-defined semantic feature. Context neurons in the mid
 - [[mover-head]] : A mover head is an attention head in a transformer that copies or "moves"
+- [[multimodal-large-language-model]] : A multimodal large language model (MLLM), also called a vision-language model
 - [[online-rl-training]] : Online RL training is a regime in which the policy being updated also generates the training rollouts at each step, so the data distribution
 - [[outcome-reward-model]] : An outcome reward model assigns a single scalar reward to a complete reasoning chain based solely on whether the final answer is correct, wi
 - [[over-abstention]] : Over-abstention is the failure mode where a language model refuses to answer
@@ -242,11 +245,12 @@ Atomic notes extracted from the library papers via the Agents-K1 ingestion skill
 - [[unembedding-matrix]] : The unembedding matrix is the weight matrix used to project from the model's
 - [[unfamiliar-finetuning-examples]] : Unfamiliar finetuning examples are SFT training instances whose correct answers
 
-## Mechanisms (cause -> effect) (116)
+## Mechanisms (cause -> effect) (118)
 
 - [[abstention-generalization-failure]] : 'instruction-tuning for abstention on a narrow, homogeneous set of refusal expressions and task formats' **prevents** Abstention ability does not generalize to 
 - [[activation-addition-steers-generation]] : Adding a steering-vector to intermediate activations during generation. **enables** Model generations shift toward the behavior represented by the vector.
 - [[activation-patching-results-depend-on-method-choices]] : Choices of patching metric, clean/corrupt prompt construction, and corruption method. **modulates** Activation-patching attribution results can change.
+- [[answer-commitment-bias-undermines-epistemic-humility]] : A learned bias toward always selecting one of the presented answer options, reinforced by training and evaluation regimes that reward picking a listed choice **
 - [[answer-relabeling-enables-abstention]] : Relabeling unfamiliar-finetuning-examples with 'I don't know' before supervised-finetuning (answer-relabeling) **enables** Model's default hedged-prediction bec
 - [[code-pretraining-benefits-math-reasoning]] : Pre-training on code tokens before math-domain continual pre-training on the deepseekmath-corpus **increases** Improved mathematical reasoning performance on ma
 - [[conservative-rm-improves-rl-factuality]] : Training a conservative-reward-model to underestimate rewards on unfamiliar inputs **increases** RL finetuning steers policy toward abstention|abstaining on unf
@@ -290,6 +294,7 @@ Atomic notes extracted from the library papers via the Agents-K1 ingestion skill
 - [[lre-faithfulness-mamba-transformer-parity]] : Fitting a first-order linear relation embedding (LRE) to Mamba's subject representations at the optimal extraction layer **enables** LRE achieves greater than 5
 - [[mid-layer-mlp-mediates-factual-recall]] : Processing of the final subject token in middle-layer feed-forward modules of GPT-style transformers **enables** Decisive contribution to the model's factual pr
 - [[model-scale-improves-self-knowledge]] : Increasing model parameter size within a model family (e.g., ada to babbage to curie to davinci) **increases** Higher self-knowledge-f1, consistent with neural 
+- [[model-scale-insufficient-for-epistemic-humility]] : Increasing parameter count without targeted training for uncertainty handling and answer rejection **neutral** No reliable improvement in epistemic humility; sm
 - [[model-size-improves-calibration]] : Increasing language model parameter count (800M to 52B) on diverse multiple-choice and True/False tasks with appropriate formatting **decreases** Lower expected
 - [[monosemantic-context-neurons-in-middle-layers]] : High-level context features (language, programming language, data source) being sufficiently important and not mutually exclusive with other sequence-level feat
 - [[mover-head-failure-drives-hallucination]] : Mover head selects incorrect information from subject position in early-to-middle layers **enables** Model produces a factually incorrect object token (hallucin
