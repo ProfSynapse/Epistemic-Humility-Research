@@ -21,6 +21,7 @@ from __future__ import annotations
 import argparse
 import json
 import re
+import subprocess
 import sys
 from pathlib import Path
 from typing import Any
@@ -60,6 +61,32 @@ def repo_root() -> Path:
         if (cand / "bin" / "sync_skills.py").is_file():
             return cand
     return here
+
+
+_IGNORE_CACHE: dict[str, bool] = {}
+
+
+def is_gitignored(root: Path, rel: str) -> bool:
+    """True if `rel` (repo-relative) is excluded by .gitignore. Cached.
+
+    Gitignored paths (e.g. library/fulltext/ HTML, restricted/large data) are not
+    committed, so a runbook may legitimately reference one that is present for the
+    operator but absent in a fresh CI checkout. Existence of such paths cannot be
+    enforced, so they are skipped rather than flagged as rot.
+    """
+    if rel in _IGNORE_CACHE:
+        return _IGNORE_CACHE[rel]
+    try:
+        res = subprocess.run(
+            ["git", "-C", str(root), "check-ignore", "-q", "--", rel],
+            stdout=subprocess.DEVNULL,
+            stderr=subprocess.DEVNULL,
+        )
+        ignored = res.returncode == 0
+    except (OSError, subprocess.SubprocessError):
+        ignored = False
+    _IGNORE_CACHE[rel] = ignored
+    return ignored
 
 
 def split_frontmatter(text: str) -> tuple[dict[str, Any], str]:
@@ -166,7 +193,11 @@ def validate_note(path: Path, root: Path) -> list[str]:
     runbook = next((secs[h] for h in heads if "runbook" in h), "")
     for token in BACKTICK_RE.findall(runbook):
         tok = token.strip()
-        if tok.startswith(PATH_PREFIXES) and not (root / tok).exists():
+        if (
+            tok.startswith(PATH_PREFIXES)
+            and not (root / tok).exists()
+            and not is_gitignored(root, tok)
+        ):
             errors.append(f"{loc}runbook references missing path '{tok}'")
 
     return errors
