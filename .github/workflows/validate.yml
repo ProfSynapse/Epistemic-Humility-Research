@@ -1,0 +1,38 @@
+name: validate
+
+# Auto-reject structurally-invalid contributions: run the same validators the
+# local pre-commit hook runs, on every PR and push. Any non-zero step fails the
+# check. Mirrors .githooks/pre-commit (which contributors may not have installed).
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: false
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install dependencies
+        run: python -m pip install --upgrade pyyaml
+
+      - name: Repo invariants + skill-mirror drift (KG)
+        # --skip-hook-installation: CI checkouts do not set core.hooksPath.
+        run: python bin/validate_kg.py --skip-hook-installation
+
+      - name: Research-session notes
+        run: python .agents/skills/experiment-runner/scripts/research_session.py validate docs/sessions
+
+      - name: Experiment notes
+        run: python .agents/skills/experiment-runner/scripts/validate_experiment_notes.py experiment/notes
+
+      - name: Typed-graph frontmatter + edges (library + experiment notes)
+        run: python .agents/skills/knowledge-graph/scripts/validate_kg_relationships.py library experiment/notes

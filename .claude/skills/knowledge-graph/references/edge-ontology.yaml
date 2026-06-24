@@ -24,6 +24,8 @@ node_types:
   - model       # a specific model
   - term        # a term of art in the field
   - mechanism   # a causal cause->effect claim
+  - gap         # a verified absence in the literature (kg.id gap:<slug>)
+  - experiment  # a planned/running/done experiment note (kg.id experiment:<slug>)
 
 edges:
   related_to:
@@ -314,3 +316,19 @@ edges:
   studied_by:
     inverse: studies
     description: "Subject is studied by target paper."
+
+  # Research extension: experiment -> gap/mechanism/atom edges for experiment notes.
+  tests:
+    inverse: tested_by
+    aliases: [addresses_gap]
+    description: "Subject (experiment) tests or addresses target (gap or mechanism)."
+  tested_by:
+    inverse: tests
+    description: "Subject (gap or mechanism) is tested by target experiment."
+  builds_on:
+    inverse: built_on_by
+    aliases: [informed_by]
+    description: "Subject (experiment) builds on target (paper, method, or prior result)."
+  built_on_by:
+    inverse: builds_on
+    description: "Subject is built on by target experiment."

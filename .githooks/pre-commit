@@ -17,3 +17,15 @@ $PYTHON bin/validate_kg.py
 if [ -d docs/sessions ]; then
   $PYTHON .agents/skills/experiment-runner/scripts/research_session.py validate docs/sessions
 fi
+
+if [ -d experiment/notes ]; then
+  $PYTHON bin/validate_experiments.py experiment/notes
+fi
+
+# Typed-graph frontmatter/edge validation across the library and experiment notes.
+# This vault carries many non-fatal KG331 ambiguity warnings; only surface output
+# when it actually fails (non-zero exit = an ERROR), so commits stay quiet.
+if ! kg_out="$($PYTHON .agents/skills/knowledge-graph/scripts/validate_kg_relationships.py library experiment/notes 2>&1)"; then
+  printf '%s\n' "$kg_out"
+  exit 1
+fi
