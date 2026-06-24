@@ -8,17 +8,21 @@ Publication is a release gate, not a training side effect. Upload only after the
 run/eval artifacts are reconciled against
 `experiment/paper/results-provenance-inventory.md` and the relevant run records.
 
-## Candidate HF Repos
+## Published HF Repos
 
-Use lowercase, queryable names. Fill `status`, `hf_repo`, and `revision` when an
-artifact is actually uploaded.
+Use lowercase, queryable names. Record the exact HF revision after every upload.
+
+| Artifact family | HF repo | Status | Revision | Local provenance | Notes |
+|---|---|---|---|---|---|
+| Phase 1 redistributable datasets | [`professorsynapse/epistemic-humility-phase1`](https://huggingface.co/datasets/professorsynapse/epistemic-humility-phase1) | published | `922d3b52ff6e8143b2701c3a7562909077eba4ab` | `experiment/phase1/data/qwen3-4b-instruct/` | Qwen3 4B train/dev JSONLs plus `README.md`, `build_manifest.json`, and `questions_frozen.json`. Excludes restricted bridge/OpenMOSS/Cheng-derived raw data. |
+| Phase 1 eval outputs | [`professorsynapse/epistemic-humility-phase1-evals`](https://huggingface.co/datasets/professorsynapse/epistemic-humility-phase1-evals) | published | `df4a9961321c04903c748f8caa4d79f84840e3b7` | `experiment/phase1/eval/analysis/` and `experiment/paper/results-provenance-inventory.md` | Compact analysis layer only: aggregate tables, analysis reports, row-pattern outputs, thinking/sycophancy summaries, unknown-label analyses, and scripts. Full raw local eval result directories remain local unless deliberately released. |
+| Phase 1 knowledge labels | [`professorsynapse/epistemic-humility-phase1-labels`](https://huggingface.co/datasets/professorsynapse/epistemic-humility-phase1-labels) | published | `fef638b8870937fddab6c2759baa404cb13da660` | `experiment/phase1/data/qwen3-4b-instruct/questions_frozen.json` and `experiment/phase1/probe/qwen3-4b-instruct/` | Compact label/probe release: frozen question split, probe manifest, and sensitivity grid. The large local `probe_results.jsonl` cache is not published. |
+
+## Pending HF Repos
 
 | Artifact family | Proposed HF repo | Status | Local provenance | Notes |
 |---|---|---|---|---|
-| Phase 1 redistributable datasets | `professorsynapse/epistemic-humility-phase1-data` | planned | `experiment/phase1/data/` dataset cards + build scripts | Exclude restricted bridge/OpenMOSS/Cheng-derived raw data. |
-| Phase 1 eval outputs | `professorsynapse/epistemic-humility-phase1-evals` | planned | `experiment/phase1/eval/analysis/` + scored rows | Include aggregate CSVs and license-safe row-level outputs. |
-| Phase 1 knowledge labels | `professorsynapse/epistemic-humility-phase1-labels` | planned | probe outputs / selected publication slices | Publish compact, reproducible labels/slices, not local cache dumps. |
-| Adapter repos | one repo per evaluated adapter | planned | run record + `training_lineage.json` | Prefer LoRA-only repos first. |
+| Adapter repos | one repo per evaluated adapter | gated | run record + `training_lineage.json` + exact eval result path | Hold until the run-record/eval provenance gates below pass. Prefer LoRA-only repos first. |
 
 ## Adapter Naming
 

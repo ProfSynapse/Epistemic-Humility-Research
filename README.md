@@ -150,6 +150,12 @@ gated release step rather than a scratch-artifact dump. Publication candidates,
 repo naming, license boundaries, and current status are tracked in
 [`docs/public-artifacts.md`](docs/public-artifacts.md).
 
+Current public HF artifacts:
+
+- [Phase 1 Qwen3 4B training/dev data](https://huggingface.co/datasets/professorsynapse/epistemic-humility-phase1)
+- [Phase 1 evaluation analysis artifacts](https://huggingface.co/datasets/professorsynapse/epistemic-humility-phase1-evals)
+- [Phase 1 compact knowledge labels/probe manifests](https://huggingface.co/datasets/professorsynapse/epistemic-humility-phase1-labels)
+
 Default policy:
 
 - Publish redistributable datasets, per-model knowledge labels, scored eval
