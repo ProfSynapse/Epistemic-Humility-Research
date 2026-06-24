@@ -304,6 +304,67 @@ prints dangling links; ignore ones that predate your change (confirm with
 The graph format and analysis tooling are owned by the vendored `knowledge-graph`
 skill; `library/SCHEMA.md` is the domain overlay (namespaces + research edges).
 
+---
+
+## Enriching existing notes (cluster backfill)
+
+Moves 0-4 above ingest a *new* paper. The complementary job is bringing the many
+**skeleton notes** already in `library/notes/` up to the enriched standard: a real
+`## Summary`, an `## Extracted numbers` block where every figure cites its
+table/figure, a `## Relevance to experiment` section, plus (for notes that predate
+the graph) the `kg:` block, typed edges, new atoms/mechanisms, and `## Claims`.
+The gold-standard targets are `2606.24790--grad-detect...` and
+`2401.13275--can-ai-assistants...`.
+
+Two note modes, handled automatically by the applier:
+
+- **pre-graph** (no `kg:` block): gets body + full graph + Claims.
+- **body-only** (already has `kg:`): gets only the three body sections; its
+  existing graph and Claims are left untouched.
+
+Do this a **topic cluster at a time** (use the note `area:` field as the cluster
+axis). The loop is four steps:
+
+```bash
+SCRATCH=<a tmp dir>; ID="<id1> <id2> ..."   # the cluster's skeleton ids
+
+# 1. Prep: acquire + render clean fulltext to $SCRATCH/<id>.md (pandoc, pdftotext fallback)
+python3 .agents/skills/kg-ingest/scripts/enrich_prep.py --out $SCRATCH/papertext $ID
+
+# 2. Enrich: extract -> adversarial verify -> revise, all on Sonnet 4.6.
+#    Invoke enrich_cluster.js by path with args; save the return to a file.
+#    args = { root, textDir: "$SCRATCH/papertext", papers: [{arxiv, note}] }
+
+# 3. Apply deterministically (normalizes slugs, drops unresolved edges, blanks
+#    unresolved claim links, drops bare-arxiv-id claim sources, dedupes dup slugs).
+python3 .agents/skills/kg-ingest/scripts/enrich_apply.py $SCRATCH/cluster_result.json
+
+# 4. Finalize: Move 4 tail (apply_kg_patches empty -> MOC + dangling check;
+#    validate_kg_relationships; stage new .md; kg_index).
+```
+
+Why this shape (same spirit as Move 3's gotchas):
+
+- **Agents never write notes.** Extract/verify/revise return structured data only;
+  `enrich_apply.py` does every disk write serially, so parallel papers cannot
+  collide and provenance stays deterministic.
+- **The verify stage is not optional.** It refutes each extracted number against
+  the source; the revise stage drops rejected numbers, keeps uncertain ones with
+  an inline flag, and folds in corrections. This has caught backwards metric
+  comparisons, figure/term misattributions, and genuine inconsistencies in source
+  papers. Provenance is a hard requirement here.
+- **Dedup is the cluster-scale risk.** 15-20 papers propose many overlapping
+  atoms; the applier keeps the first definition of a duplicate slug and resolves
+  every edge/claim/related target against on-disk concepts + the batch's new
+  atoms, dropping or blanking anything unresolved so a big cluster never lands a
+  dangling link. Always run the Move 4c validator as the gate.
+- **Skeleton detection (`grep "filled during extraction"`) has false positives.**
+  An already-enriched note can still match; the applier no-ops safely (logs
+  `WARN stub missing` and writes the body unchanged), so a stray re-run is cheap.
+- **Provenance must name the durable source** (`library/fulltext/<id>.html` or
+  `library/pdfs/<id>.pdf`), never a scratch path. The revise prompt enforces this;
+  spot-check and normalize if an agent slips.
+
 ## Gotchas (these are why the steps are shaped this way)
 
 - **The paper is usually NOT in the vault yet.** The common entry is a URL or

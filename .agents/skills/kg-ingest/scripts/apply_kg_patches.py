@@ -104,8 +104,16 @@ def apply_mech_support(additions):
 
 
 def valid_targets():
-    # any markdown anywhere in the vault is a legal wikilink target (SCHEMA, READMEs, ...)
-    return set(os.path.basename(p)[:-3] for p in glob.glob("library/**/*.md", recursive=True))
+    # any markdown anywhere in the vault is a legal wikilink target (SCHEMA, READMEs,
+    # experiment/notes, ...). The repo root is the Obsidian vault, so a library note may
+    # legitimately link a sibling tree (e.g. a gap note -> experiment/notes/<exp>.md).
+    # Exclude the synaptic-tuner submodule (separate vault and ownership boundary).
+    targets = set()
+    for p in glob.glob("**/*.md", recursive=True):
+        if p.startswith("synaptic-tuner/"):
+            continue
+        targets.add(os.path.basename(p)[:-3])
+    return targets
 
 
 def integrity():

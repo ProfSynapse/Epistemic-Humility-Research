@@ -173,3 +173,19 @@ as the PRISMA-style excluded record:
 ```csv
 2505.19056,Abliteration defense,2025,methods,7B-class,7,refusal_dose_response,SFT,over-refusal,lower,safety refusal mix,0% refusal data,0.0,2% refusal data,6.0,6.0,,,False,False,raw-reports/05,RESOLVED 2026-06-10: dose-response re-attributed to Bianchi 2309.07875 (safety-data sweep 100-2000 on 20k Alpaca; exaggerated safety at high doses; figure/annotation evidence only) — this row's scalars (2% -> 6.0) not reproducible there either; row stays excluded from pooled stats; draft gap 5 now cites 2309.07875 qualitatively
 ```
+
+## Post-synthesis v1 candidates (surfaced after the 2026-06-11 review)
+
+Papers handed to the project after the corpus freeze. They are NOT in the frozen
+draft body, NOT in `effects.csv`, and do NOT change any count above; logged here
+so a future v1 revision can fold them in deliberately. This is the standing home
+for newly-surfaced relevant papers (the KG note carries the full extraction).
+
+| arXiv ID | Paper | Surfaced | Relevance |
+|---|---|---|---|
+| 2606.24790 | Grad Detect: Gradient-Based Hallucination Detection in LLMs | 2026-06-24 (user-supplied) | New probe MODALITY for gap 4 / Phase 3: predicts hallucination and abstention from layer-wise gradients in one backward pass, distinct from the activation-probe toolkit (2304.13734, 2212.03827, 2310.06824, 2306.03341, 2310.01405). Reports AUC 0.80-0.82 at 1B vs 0.52-0.75 best baseline, +3-8 pts over confidence baselines, 94-99% abstention-prediction accuracy, and last-5-layers carry >97% of the signal. Its own caveat (gradients may read recall, not truth) is the gap-4 caution already cited as 2510.09033. A candidate L-gradient layer for the coherent-humility stack. |
+
+When v1 opens: this belongs in §6.3 Gap 4 "Nearest existing evidence" (probe
+toolkit) as the gradient-space modality, with the layer-localization claim as a
+design input to §8.3 Phase 3. It is a detection method, not a training-effect
+study, so it stays out of the pooled `effects.csv` sign-tests by construction.
