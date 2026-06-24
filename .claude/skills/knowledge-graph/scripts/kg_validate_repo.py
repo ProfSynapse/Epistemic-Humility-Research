@@ -95,8 +95,7 @@ def check_sync(root: Path) -> list[Finding]:
 
 def check_hook_installation(root: Path) -> list[Finding]:
     proc = subprocess.run(
-        ["git", "config", "--get", "core.hooksPath"],
-        cwd=root,
+        ["git", "-c", f"safe.directory={root.as_posix()}", "-C", str(root), "config", "--get", "core.hooksPath"],
         stdout=subprocess.PIPE,
         stderr=subprocess.PIPE,
         text=True,

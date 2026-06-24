@@ -4,6 +4,8 @@ kg:
   id: experiment:<slug>
   type: experiment
   status: canonical
+tags:
+  - kg/experiment
 status: proposed
 governance: exploratory
 phase: phase3
