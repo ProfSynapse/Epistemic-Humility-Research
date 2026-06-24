@@ -13,6 +13,9 @@ kg:
 area: datasets
 related:
 - '[[2509.09658--humblebench-epistemic-humility-multimodal]]'
+- '[[panoptic-scene-graph]]'
+- '[[false-option-rejection]]'
+- '[[humility-score]]'
 - '[[epistemic-humility]]'
 - '[[multimodal-large-language-model]]'
 - '[[hallucination]]'
@@ -22,6 +25,15 @@ relationships:
   target: '[[2509.09658--humblebench-epistemic-humility-multimodal]]'
   target_id: paper:2509.09658
   confidence: high
+- type: derived_from
+  target: '[[panoptic-scene-graph]]'
+  target_id: dataset:panoptic-scene-graph
+- type: related_to
+  target: '[[false-option-rejection]]'
+  target_id: term:false-option-rejection
+- type: related_to
+  target: '[[humility-score]]'
+  target_id: metric:humility-score
 - type: related_to
   target: '[[epistemic-humility]]'
   target_id: term:epistemic-humility
@@ -36,23 +48,25 @@ relationships:
   target_id: term:abstention
 ---
 
-HumbleBench is a multimodal hallucination benchmark of 22,831 five-way
-multiple-choice questions that tests an MLLM's ability to reject plausible but
-incorrect answers and select "None of the above" (NOTA) when no listed option
-matches the image. Each item probes one of three fine-grained hallucination
-types: object, relation, or attribute. Questions are constructed from the
-Panoptic Scene Graph (PSG) dataset's dense scene-graph annotations, with
-GPT-4-Turbo (and InstructBLIP in the generation loop) producing the questions and
-distractors, followed by a rigorous manual filtering pass. It was introduced by
-Tong et al. 2025 (arXiv:2509.09658, maifoundations/HumbleBench).
+HumbleBench is a large-scale multimodal hallucination benchmark of 22,831 five-way
+multiple-choice questions in which one option is always "None of the above"
+(NOTA), testing whether an MLLM can reject all plausible-but-wrong options and
+abstain when no listed answer is supported by the image. Each item targets one of
+three hallucination types: object, relation, or attribute. It is built from the
+[[panoptic-scene-graph]] (PSG) dataset (4,500 sampled images): object and relation
+labels come from PSG annotations, attribute cues from InstructBLIP (Vicuna-7B),
+and GPT-4-Turbo generates the questions and plausible distractors, followed by
+manual filtering (41,843 candidates down to 22,831 final). Introduced by Tong et
+al. 2025 (arXiv:2509.09658, maifoundations/HumbleBench).
 
-**Why it matters here:** HumbleBench operationalizes [[epistemic-humility]] as a
-forced-choice abstention task in the visual domain. Its central finding, that
-state-of-the-art models clear random-guess accuracy on standard items but
-collapse on NOTA-only and pure-noise-image cases, makes it the multimodal analog
-of the text-only abstention/NOTA framing in the Phase 1 SFT-vs-DPO-vs-KTO study,
-and a reference for over-commitment under uncertainty.
+**Why it matters here:** HumbleBench operationalizes the rejection facet of
+[[epistemic-humility]] as a forced-choice task in the visual domain. Its central
+finding, that models clear random-guess accuracy on standard items but average
+near random (26.61%) on the NOTA-only stress test while humans score 92%, makes
+it the multimodal analog of the text-only abstention/NOTA framing in the Phase 1
+SFT-vs-DPO-vs-KTO study, and a reference for over-commitment under uncertainty.
 
 **Lineage:** introduced by
-[[2509.09658--humblebench-epistemic-humility-multimodal]]; derived from the
-Panoptic Scene Graph dataset; related to [[hallucination]] and [[abstention]].
+[[2509.09658--humblebench-epistemic-humility-multimodal]]; derived from
+[[panoptic-scene-graph]]; reports [[humility-score]]; instantiates
+[[false-option-rejection]].

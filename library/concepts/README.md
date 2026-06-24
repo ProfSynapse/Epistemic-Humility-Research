@@ -85,7 +85,7 @@ Atomic notes extracted from the library papers via the Agents-K1 ingestion skill
 - [[verbalized-confidence]] : Verbalized confidence is a technique where a language model generates a natural-language expression of its own certainty (for example, "90% 
 - [[weight-orthogonalization]] : Weight orthogonalization is a model-editing intervention that removes a target
 
-## Metrics (33)
+## Metrics (34)
 
 - [[abstain-accuracy]] : Abstain Accuracy (A-Acc) is an AbstainQA metric computed as the number of
 - [[abstention-rate]] : Abstention rate is the fraction of queries for which a model declines to answer,
@@ -103,6 +103,7 @@ Atomic notes extracted from the library papers via the Agents-K1 ingestion skill
 - [[gpt4-win-rate]] : GPT-4 win rate is an automatic evaluation metric where GPT-4 acts as a judge and decides whether a candidate model's response is preferred o
 - [[hit-at-10]] : Hit@10 (H@10) is the fraction of knowledge queries for which the correct target
 - [[honesty-score]] : Honesty score (S_honesty) is a composite metric defined as the average of the
+- [[humility-score]] : The humility score is the balanced accuracy for detecting the "None of the above"
 - [[kl-divergence]] : Kullback-Leibler divergence is a non-symmetric, non-negative information-theoretic
 - [[knowledge-quadrant-metric]] : The knowledge-quadrant metric cross-tabulates ground-truth knowledge (does the
 - [[llm-reliability-score]] : The LLM Reliability Score (rely) is a composite metric that balances a model's
@@ -121,7 +122,7 @@ Atomic notes extracted from the library papers via the Agents-K1 ingestion skill
 - [[selective-classification-auc]] : Selective-classification AUC is the area under the curve traced by plotting
 - [[self-knowledge-f1]] : Self-Knowledge F1 is an F1 score computed by treating unanswerable questions as the positive class, measuring how well a model's response ex
 
-## Datasets & benchmarks (31)
+## Datasets & benchmarks (32)
 
 - [[abstentionbench]] : AbstentionBench is a large-scale benchmark for evaluating LLM abstention,
 - [[anthropic-hh]] : The Anthropic HH-RLHF dataset contains human-annotated preference-pair-data collected through conversations with Claude, covering both helpf
@@ -133,7 +134,7 @@ Atomic notes extracted from the library papers via the Agents-K1 ingestion skill
 - [[eli5]] : ELI5 (Explain Like I'm 5) is a long-form question answering dataset collected from the Reddit community r/explainlikeimfive, consisting of q
 - [[entityquestions]] : EntityQuestions is a closed-book QA benchmark that converts factual (subject,
 - [[gsm8k]] : GSM8K is a benchmark of approximately 8,500 grade-school-level math word problems requiring multi-step arithmetic reasoning to solve correct
-- [[humblebench]] : HumbleBench is a multimodal hallucination benchmark of 22,831 five-way
+- [[humblebench]] : HumbleBench is a large-scale multimodal hallucination benchmark of 22,831 five-way
 - [[idk-dataset]] : The Idk dataset is a model-specific training corpus built from triviaqa by
 - [[indirect-object-identification]] : A controlled syntactic benchmark where a language model must complete sentences
 - [[jailbreakbench]] : JailbreakBench is a benchmark context for evaluating harmful-request refusal and
@@ -141,6 +142,7 @@ Atomic notes extracted from the library papers via the Agents-K1 ingestion skill
 - [[lre-dataset]] : The LRE dataset (Hernandez et al.) is a factual-recall benchmark covering
 - [[math-benchmark]] : The MATH benchmark (Hendrycks et al., 2021) is a competition-level mathematics
 - [[mmlu]] : MMLU is a large benchmark of multiple-choice questions spanning 57 academic subjects, ranging from elementary mathematics to professional la
+- [[panoptic-scene-graph]] : The Panoptic Scene Graph (PSG) dataset (Yang et al. 2022, ECCV) provides
 - [[pararel]] : ParaRel is a factual question-answering benchmark covering relational knowledge
 - [[preference-pair-data]] : A preference-pair dataset consists of (prompt, chosen response, rejected response) triples, where the ranking between the two responses is s
 - [[scholar-kg]] : Scholar-KG is the scientific knowledge graph dataset described in the
@@ -171,7 +173,7 @@ Atomic notes extracted from the library papers via the Agents-K1 ingestion skill
 - [[pythia-70m]] : Pythia-70M is a 70-million-parameter decoder-only transformer from the Pythia
 - [[pythia-suite]] : The Pythia suite is EleutherAI's family of autoregressive transformer language models trained on The Pile, spanning seven sizes from 70M to 
 
-## Terms (71)
+## Terms (72)
 
 - [[abstain-qa]] : AbstainQA is a task formulation in which a model is given a question and must
 - [[abstention]] : Abstention is the behavior of an LLM deliberately declining to provide a
@@ -184,6 +186,7 @@ Atomic notes extracted from the library papers via the Agents-K1 ingestion skill
 - [[epistemic-humility]] : Epistemic humility is a model's capacity to recognize and act on the limits of
 - [[factual-association-recall-mechanism]] : The factual-association recall mechanism is a three-step internal process for fact completion in autoregressive language models, identified 
 - [[factual-recall-localization]] : Factual recall localization is the empirical finding that factual recall in language models is mediated by specific layers and token positio
+- [[false-option-rejection]] : False-option rejection is the ability, in a forced-choice multiple-choice
 - [[false-premise-questions]] : False-premise questions are queries predicated on an incorrect or counterfactual
 - [[feature-splitting]] : Feature splitting is the empirical phenomenon whereby a coarse feature learned by a small sparse autoencoder divides into multiple finer, mo
 - [[feature-universality]] : Feature universality is the finding that sparse autoencoder features learned from different transformer models trained with different random
@@ -245,12 +248,12 @@ Atomic notes extracted from the library papers via the Agents-K1 ingestion skill
 - [[unembedding-matrix]] : The unembedding matrix is the weight matrix used to project from the model's
 - [[unfamiliar-finetuning-examples]] : Unfamiliar finetuning examples are SFT training instances whose correct answers
 
-## Mechanisms (cause -> effect) (118)
+## Mechanisms (cause -> effect) (119)
 
 - [[abstention-generalization-failure]] : 'instruction-tuning for abstention on a narrow, homogeneous set of refusal expressions and task formats' **prevents** Abstention ability does not generalize to 
 - [[activation-addition-steers-generation]] : Adding a steering-vector to intermediate activations during generation. **enables** Model generations shift toward the behavior represented by the vector.
 - [[activation-patching-results-depend-on-method-choices]] : Choices of patching metric, clean/corrupt prompt construction, and corruption method. **modulates** Activation-patching attribution results can change.
-- [[answer-commitment-bias-undermines-epistemic-humility]] : A learned bias toward always selecting one of the presented answer options, reinforced by training and evaluation regimes that reward picking a listed choice **
+- [[answer-commitment-bias-undermines-epistemic-humility]] : A learned bias toward always selecting one of the presented answer options, reinforced by recognition-focused training and evaluation that reward picking a list
 - [[answer-relabeling-enables-abstention]] : Relabeling unfamiliar-finetuning-examples with 'I don't know' before supervised-finetuning (answer-relabeling) **enables** Model's default hedged-prediction bec
 - [[code-pretraining-benefits-math-reasoning]] : Pre-training on code tokens before math-domain continual pre-training on the deepseekmath-corpus **increases** Improved mathematical reasoning performance on ma
 - [[conservative-rm-improves-rl-factuality]] : Training a conservative-reward-model to underestimate rewards on unfamiliar inputs **increases** RL finetuning steers policy toward abstention|abstaining on unf
@@ -287,14 +290,15 @@ Atomic notes extracted from the library papers via the Agents-K1 ingestion skill
 - [[knowledge-neurons-activated-by-knowledge-expressing-prompts]] : Presenting a prompt that expresses a specific relational fact (head and tail entities in correct relational context) **increases** Identified knowledge neurons 
 - [[knowledge-neurons-concentrated-upper-layers]] : Factual relational knowledge representation in pretrained Transformers **enables** Knowledge neurons identified by the attribution method are predominantly dist
 - [[knowledge-surgery-enables-targeted-fact-update]] : Directly modifying FFN value-slot weight vectors for approximately 4 identified knowledge neurons per fact **enables** Fact update success rate of 34.4% with mi
+- [[language-priors-override-absent-visual-evidence]] : When visual evidence is uninformative or destroyed (e.g. a Gaussian-noise image), the MLLM falls back on the parametric language priors of its LLM backbone **in
 - [[larger-model-better-abstention]] : Applying idk-sft to a larger model (Llama-2-70b-chat vs 7b-chat) **increases** 5.8% improvement in total Ik-Ik + Ik-Idk questions, indicating better self-knowle
 - [[layer-depth-determines-pattern-abstraction]] : Depth of a feed-forward layer in the transformer-feed-forward-layer stack **enables** Type of input pattern captured by memory keys -- shallow n-gram patterns i
 - [[layers-converge-to-output-distribution]] : Iterative refinement across transformer layers operating in a shared predictive embedding space via residual-stream accumulation **enables** Distributions decod
 - [[llm-rationale-misleads-human-judgment]] : Exposure to LLM-generated rationales about whether a question is known or unknown **decreases** Human accuracy on known-vs-unknown perception drops when the rat
 - [[lre-faithfulness-mamba-transformer-parity]] : Fitting a first-order linear relation embedding (LRE) to Mamba's subject representations at the optimal extraction layer **enables** LRE achieves greater than 5
 - [[mid-layer-mlp-mediates-factual-recall]] : Processing of the final subject token in middle-layer feed-forward modules of GPT-style transformers **enables** Decisive contribution to the model's factual pr
+- [[model-scale-confounded-with-design]] : Comparing MLLMs that differ simultaneously in parameter count, architecture, training data, visual encoder, and post-training strategy **neutral** Parameter cou
 - [[model-scale-improves-self-knowledge]] : Increasing model parameter size within a model family (e.g., ada to babbage to curie to davinci) **increases** Higher self-knowledge-f1, consistent with neural 
-- [[model-scale-insufficient-for-epistemic-humility]] : Increasing parameter count without targeted training for uncertainty handling and answer rejection **neutral** No reliable improvement in epistemic humility; sm
 - [[model-size-improves-calibration]] : Increasing language model parameter count (800M to 52B) on diverse multiple-choice and True/False tasks with appropriate formatting **decreases** Lower expected
 - [[monosemantic-context-neurons-in-middle-layers]] : High-level context features (language, programming language, data source) being sufficiently important and not mutually exclusive with other sequence-level feat
 - [[mover-head-failure-drives-hallucination]] : Mover head selects incorrect information from subject position in early-to-middle layers **enables** Model produces a factually incorrect object token (hallucin

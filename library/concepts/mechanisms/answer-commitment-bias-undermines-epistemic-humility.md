@@ -1,6 +1,6 @@
 ---
 aliases:
-- Answer-Commitment Bias Undermines Epistemic Humility
+- Answer-Commitment Bias Undermines False-Option Rejection
 tags:
 - kg/mechanism
 - concept
@@ -9,11 +9,12 @@ kg:
   id: mechanism:answer-commitment-bias-undermines-epistemic-humility
   type: mechanism
   status: canonical
-cause: A learned bias toward always selecting one of the presented answer options, reinforced by training and evaluation regimes that reward picking a listed choice
-effect: Failure to select "None of the above" when no option is correct, with accuracy on NOTA-only and pure-noise-image items collapsing below the random-guess baseline
+cause: A learned bias toward always selecting one of the presented answer options, reinforced by recognition-focused training and evaluation that reward picking a listed choice
+effect: Failure of false-option rejection; high recognition accuracy coexists with low NOTA hit rate, and NOTA-only accuracy drops to near random (26.61% avg) while humans score 92%
 polarity: decreases
 related:
 - '[[2509.09658--humblebench-epistemic-humility-multimodal]]'
+- '[[false-option-rejection]]'
 - '[[epistemic-humility]]'
 - '[[multimodal-large-language-model]]'
 - '[[hallucination]]'
@@ -22,6 +23,9 @@ relationships:
   target: '[[2509.09658--humblebench-epistemic-humility-multimodal]]'
   target_id: paper:2509.09658
   confidence: high
+- type: related_to
+  target: '[[false-option-rejection]]'
+  target_id: term:false-option-rejection
 - type: related_to
   target: '[[epistemic-humility]]'
   target_id: term:epistemic-humility
@@ -35,11 +39,12 @@ relationships:
 
 MLLMs trained and evaluated on standard multiple-choice recognition learn that a
 listed option is essentially always correct, so they develop a strong prior to
-commit to one of the presented answers. When HumbleBench
-(arXiv:2509.09658) inserts a "None of the above" option and constructs items where
-every listed answer is wrong, this commitment bias surfaces: models keep selecting
-a plausible but unsupported choice and their accuracy on NOTA-only items, and on
-pure-noise images that carry no supporting evidence, drops sharply, in several
-cases below random chance. The failure is one of [[epistemic-humility]] rather
-than recognition: the visual signal is absent or contradictory, yet the model
-still overcommits.
+commit to one of the presented answers. HumbleBench (arXiv:2509.09658) exposes this
+by inserting a "None of the above" option and building a NOTA-only stress setting
+where every listed answer is removed: average NOTA-only accuracy falls to 26.61%,
+close to random, even though a human annotator on the same subset scores 92.00%.
+The gap between non-NOTA accuracy and NOTA hit rate confirms the bias is not a
+recognition deficit but a refusal-to-abstain one, e.g. Qwen2.5-VL reaches 78.98%
+non-NOTA accuracy yet only a 32.33% NOTA hit rate. Cautious prompting shifts the
+operating point toward NOTA but trades away recognition accuracy rather than
+fixing the underlying commitment bias.
