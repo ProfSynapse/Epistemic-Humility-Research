@@ -14,6 +14,7 @@ undesirable responses use a non-endpoint low band.
 from __future__ import annotations
 
 import argparse
+import hashlib
 import json
 import re
 from pathlib import Path
@@ -31,6 +32,11 @@ NORMAL_P_CORRECT = -1.0
 UNKNOWN_N_SAMPLES = 0
 UNKNOWN_PROBE_KEY = ""
 PROBE_SCALED_FORMULA = "0.1 + 0.8 * response_appropriateness_p_laplace"
+CONTRASTIVE_FORMULA = "deterministic_uait_style_band_spread_v1"
+SFT_CLEAN_FORMULA = "deterministic_clean_sft_band_spread_v1"
+CONTRASTIVE_LOW_BAND = (0.10, 0.35)
+CONTRASTIVE_MIDDLE_BAND = (0.35, 0.60)
+CONTRASTIVE_HIGH_BAND = (0.70, 0.90)
 
 REFUSAL_PATTERNS = (
     re.compile(r"\bi\s+(?:do\s+not|don't)\s+know\b", re.I),
@@ -132,6 +138,17 @@ def _schema_payload(answer: str, response_confidence: float) -> str:
     return json.dumps(payload, ensure_ascii=False, separators=(",", ": "))
 
 
+def _stable_unit_interval(*parts: object) -> float:
+    text = "\x1f".join(str(part) for part in parts)
+    digest = hashlib.sha256(text.encode("utf-8")).digest()
+    return int.from_bytes(digest[:8], "big") / float(2**64 - 1)
+
+
+def _spread_in_band(band: tuple[float, float], *parts: object) -> float:
+    low, high = band
+    return round(low + (high - low) * _stable_unit_interval(*parts), 4)
+
+
 def _is_refusal(text: str) -> bool:
     return any(pattern.search(text or "") for pattern in REFUSAL_PATTERNS)
 
@@ -172,6 +189,60 @@ def _response_confidence_for(answer: str, probe_row: dict[str, Any] | None, *, f
         "source_label": str(probe_row.get("label", NORMAL_SOURCE_LABEL)),
         "p_correct": float(probe_row.get("p_correct", NORMAL_P_CORRECT)),
         "n_samples": int(probe_row.get("n_samples", n_samples)),
+    }
+
+
+def _contrastive_response_confidence_for(
+    answer: str,
+    probe_row: dict[str, Any] | None,
+    *,
+    role: str,
+) -> tuple[float, dict[str, Any]]:
+    if role == "appropriate":
+        band = CONTRASTIVE_HIGH_BAND
+    elif role == "inappropriate":
+        band = CONTRASTIVE_LOW_BAND
+    elif role == "ambiguous_answer":
+        band = CONTRASTIVE_MIDDLE_BAND
+    else:
+        raise ValueError(f"unknown contrastive role: {role}")
+    key = _record_key(probe_row or {})
+    confidence = _spread_in_band(band, role, key, answer)
+    factual_p, n_samples = _probe_factual_confidence(probe_row)
+    return confidence, {
+        "response_confidence_source": "contrastive_uait_style_target_shaping",
+        "response_confidence_formula": CONTRASTIVE_FORMULA,
+        "response_confidence_role": role,
+        "probe_pool_row_key": key,
+        "source_label": str((probe_row or {}).get("label", NORMAL_SOURCE_LABEL)),
+        "p_correct": float((probe_row or {}).get("p_correct", factual_p if factual_p is not None else NORMAL_P_CORRECT)),
+        "n_samples": int((probe_row or {}).get("n_samples", n_samples)),
+    }
+
+
+def _clean_sft_response_confidence_for(
+    answer: str,
+    probe_row: dict[str, Any] | None,
+    *,
+    role: str,
+) -> tuple[float, dict[str, Any]]:
+    if role == "appropriate":
+        band = CONTRASTIVE_HIGH_BAND
+    elif role == "ambiguous_answer":
+        band = CONTRASTIVE_MIDDLE_BAND
+    else:
+        raise ValueError(f"unknown clean SFT role: {role}")
+    key = _record_key(probe_row or {})
+    confidence = _spread_in_band(band, role, key, answer, "clean_sft")
+    factual_p, n_samples = _probe_factual_confidence(probe_row)
+    return confidence, {
+        "response_confidence_source": "clean_sft_appropriate_response_target_shaping",
+        "response_confidence_formula": SFT_CLEAN_FORMULA,
+        "response_confidence_role": role,
+        "probe_pool_row_key": key,
+        "source_label": str((probe_row or {}).get("label", NORMAL_SOURCE_LABEL)),
+        "p_correct": float((probe_row or {}).get("p_correct", factual_p if factual_p is not None else NORMAL_P_CORRECT)),
+        "n_samples": int((probe_row or {}).get("n_samples", n_samples)),
     }
 
 
@@ -294,6 +365,138 @@ def build_ambiguous_sft_rows(rows: list[dict[str, Any]]) -> list[dict[str, Any]]
                     {
                         "role": "assistant",
                         "content": _schema_payload(_gold_answer(row), response_confidence),
+                    },
+                ],
+                "schema_target": "response_confidence_json",
+                **provenance,
+            }
+        )
+    return out
+
+
+def build_clean_sft_rows(
+    rows: list[dict[str, Any]],
+    *,
+    limit: int | None = None,
+    probe_records: list[dict[str, Any]] | None = None,
+) -> list[dict[str, Any]]:
+    """Build SFT rows with only appropriate completions and spread targets."""
+    out: list[dict[str, Any]] = []
+    selected = rows[:limit] if limit else rows
+    selected_probe_records = probe_records[: len(selected)] if probe_records else [None] * len(selected)
+    if probe_records is not None and len(probe_records) < len(selected):
+        raise ValueError("probe_records must cover every clean SFT row")
+    for row, probe_row in zip(selected, selected_probe_records):
+        messages = row.get("messages") or row.get("conversations")
+        if not isinstance(messages, list):
+            raise ValueError("SFT row lacks messages/conversations list")
+        answer = _assistant_content(messages)
+        response_confidence, provenance = _clean_sft_response_confidence_for(
+            answer,
+            probe_row,
+            role="appropriate",
+        )
+        out.append(
+            {
+                "messages": [
+                    *_without_assistant(messages),
+                    {
+                        "role": "assistant",
+                        "content": _schema_payload(answer, response_confidence),
+                    },
+                ],
+                "schema_target": "response_confidence_json",
+                **provenance,
+            }
+        )
+    return out
+
+
+def build_clean_ambiguous_sft_rows(rows: list[dict[str, Any]]) -> list[dict[str, Any]]:
+    out: list[dict[str, Any]] = []
+    system = {"role": "system", "content": system_prompt_for_confidence_field(CONFIDENCE_FIELD)}
+    for row in rows:
+        answer = _gold_answer(row)
+        response_confidence, provenance = _clean_sft_response_confidence_for(
+            answer,
+            row,
+            role="ambiguous_answer",
+        )
+        out.append(
+            {
+                "messages": [
+                    system,
+                    {"role": "user", "content": str(row["question"])},
+                    {
+                        "role": "assistant",
+                        "content": _schema_payload(answer, response_confidence),
+                    },
+                ],
+                "schema_target": "response_confidence_json",
+                **provenance,
+            }
+        )
+    return out
+
+
+def build_contrastive_sft_rows(
+    rows: list[dict[str, Any]],
+    *,
+    limit: int | None = None,
+    probe_records: list[dict[str, Any]] | None = None,
+) -> list[dict[str, Any]]:
+    out: list[dict[str, Any]] = []
+    selected = rows[:limit] if limit else rows
+    selected_probe_records = probe_records[: len(selected)] if probe_records else [None] * len(selected)
+    if probe_records is not None and len(probe_records) < len(selected):
+        raise ValueError("probe_records must cover every contrastive SFT row")
+    for row, probe_row in zip(selected, selected_probe_records):
+        prompt = row.get("prompt")
+        if not isinstance(prompt, list):
+            raise ValueError("DPO row lacks prompt list")
+        prompt_messages = _replace_system_prompt(prompt)
+        for field, role in (("chosen", "appropriate"), ("rejected", "inappropriate")):
+            messages = row.get(field)
+            answer = _assistant_content(messages)
+            response_confidence, provenance = _contrastive_response_confidence_for(
+                answer,
+                probe_row,
+                role=role,
+            )
+            out.append(
+                {
+                    "messages": [
+                        *prompt_messages,
+                        {
+                            "role": "assistant",
+                            "content": _schema_payload(answer, response_confidence),
+                        },
+                    ],
+                    "schema_target": "response_confidence_json",
+                    **provenance,
+                }
+            )
+    return out
+
+
+def build_contrastive_ambiguous_sft_rows(rows: list[dict[str, Any]]) -> list[dict[str, Any]]:
+    out: list[dict[str, Any]] = []
+    system = {"role": "system", "content": system_prompt_for_confidence_field(CONFIDENCE_FIELD)}
+    for row in rows:
+        answer = _gold_answer(row)
+        response_confidence, provenance = _contrastive_response_confidence_for(
+            answer,
+            row,
+            role="ambiguous_answer",
+        )
+        out.append(
+            {
+                "messages": [
+                    system,
+                    {"role": "user", "content": str(row["question"])},
+                    {
+                        "role": "assistant",
+                        "content": _schema_payload(answer, response_confidence),
                     },
                 ],
                 "schema_target": "response_confidence_json",
@@ -481,21 +684,34 @@ def build_all(
         train_probe_records = train_probe_records[:limit]
     probe_index = _probe_index_by_norm_question(train_probe_records)
     sft_rows = build_sft_rows(_read_jsonl(sft_input), limit=limit, probe_records=train_probe_records)
-    dpo_rows = build_dpo_rows(_read_jsonl(dpo_input), limit=limit, probe_records=train_probe_records)
+    sft_clean_rows = build_clean_sft_rows(_read_jsonl(sft_input), limit=limit, probe_records=train_probe_records)
+    dpo_source_rows = _read_jsonl(dpo_input)
+    sft_contrastive_rows = build_contrastive_sft_rows(
+        dpo_source_rows,
+        limit=limit,
+        probe_records=train_probe_records,
+    )
+    dpo_rows = build_dpo_rows(dpo_source_rows, limit=limit, probe_records=train_probe_records)
     kto_rows = build_kto_rows(_read_jsonl(kto_input), limit=limit, probe_index_by_norm_question=probe_index)
     ambiguous_rows: list[dict[str, Any]] = []
     if include_ambiguous_middle:
         ambiguous_rows = _read_ambiguous_middle_rows(probe_results, limit=limit)
         sft_rows.extend(build_ambiguous_sft_rows(ambiguous_rows))
+        sft_clean_rows.extend(build_clean_ambiguous_sft_rows(ambiguous_rows))
+        sft_contrastive_rows.extend(build_contrastive_ambiguous_sft_rows(ambiguous_rows))
         dpo_rows.extend(build_ambiguous_dpo_rows(ambiguous_rows))
         kto_rows.extend(build_ambiguous_kto_rows(ambiguous_rows))
 
     outputs = {
         "sft": output_dir / "sft_response_confidence_train.jsonl",
+        "sft_clean": output_dir / "sft_response_confidence_train_clean.jsonl",
+        "sft_contrastive": output_dir / "sft_response_confidence_train_contrastive.jsonl",
         "dpo": output_dir / "dpo_response_confidence_train.jsonl",
         "kto": output_dir / "kto_response_confidence_train.jsonl",
     }
     _write_jsonl(outputs["sft"], sft_rows)
+    _write_jsonl(outputs["sft_clean"], sft_clean_rows)
+    _write_jsonl(outputs["sft_contrastive"], sft_contrastive_rows)
     _write_jsonl(outputs["dpo"], dpo_rows)
     _write_jsonl(outputs["kto"], kto_rows)
     manifest = {
@@ -511,7 +727,45 @@ def build_all(
             "answer_target": "response_appropriateness_p = factual_p",
             "abstention_target": "response_appropriateness_p = 1 - factual_p",
         },
-        "rows": {"sft": len(sft_rows), "dpo": len(dpo_rows), "kto": len(kto_rows)},
+        "contrastive_sft": {
+            "included": True,
+            "rows": len(sft_contrastive_rows),
+            "source": "DPO chosen/rejected pairs plus optional ambiguous middle answer rows",
+            "formula": CONTRASTIVE_FORMULA,
+            "bands": {
+                "appropriate": CONTRASTIVE_HIGH_BAND,
+                "inappropriate": CONTRASTIVE_LOW_BAND,
+                "ambiguous_answer": CONTRASTIVE_MIDDLE_BAND,
+            },
+            "semantics": {
+                "unknown_abstention": "high confidence because abstention is appropriate",
+                "known_over_refusal": "low confidence because abstention is inappropriate",
+                "ambiguous_answer": "answer remains supervised, with middle confidence",
+            },
+        },
+        "clean_sft": {
+            "included": True,
+            "rows": len(sft_clean_rows),
+            "source": "Original SFT appropriate completions plus optional ambiguous middle answer rows",
+            "formula": SFT_CLEAN_FORMULA,
+            "bands": {
+                "appropriate": CONTRASTIVE_HIGH_BAND,
+                "ambiguous_answer": CONTRASTIVE_MIDDLE_BAND,
+            },
+            "semantics": {
+                "known_answer": "high confidence because the factual answer is appropriate",
+                "unknown_abstention": "high confidence because abstention is appropriate",
+                "ambiguous_answer": "answer remains supervised, with middle confidence",
+                "excluded": "wrong answers and over-refusals are excluded from clean SFT and reserved for DPO/KTO/GRPO",
+            },
+        },
+        "rows": {
+            "sft": len(sft_rows),
+            "sft_clean": len(sft_clean_rows),
+            "sft_contrastive": len(sft_contrastive_rows),
+            "dpo": len(dpo_rows),
+            "kto": len(kto_rows),
+        },
         "ambiguous_middle": {
             "included": include_ambiguous_middle,
             "rows": len(ambiguous_rows),

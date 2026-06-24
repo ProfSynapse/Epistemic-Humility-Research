@@ -85,6 +85,17 @@ Read for Windows/Docker/GPU/local-trainer execution problems and monitor behavio
   `prepare_local_cell.py` as temporary compatibility for unfixed copies only;
   remove it after the fixed Synaptic Tuner source is the committed baseline.
 
+- SFT can hit the same class of non-fatal post-training registry bug after
+  artifacts are already saved. On 2026-06-23, a probe-scaled schema-SFT smoke
+  completed all training steps and wrote `final_model`, `training_lineage.json`,
+  and `capacity_features.json`, then exited 1 with
+  `UnboundLocalError: cannot access local variable 'logging'` from the
+  unified-tracking registration block. Root cause: `import logging` inside
+  conditional blocks in `run()` made `logging` a local function variable before
+  later unconditional registry logging. Generic fix: import `logging` at module
+  scope in the SFT trainer and remove local conditional imports; confirm with a
+  tiny `--max-steps 2` run that exits 0 before launching a long SFT cell.
+
 - A timed-out host monitor can leave Docker Desktop's Linux engine unhealthy
   after an interrupted `docker exec`; observed wrapper exit
   `3221225786`, no active GPU process, retained container inaccessible, and both
@@ -127,6 +138,16 @@ Read for Windows/Docker/GPU/local-trainer execution problems and monitor behavio
   accumulation 4 as the safer effective-batch-8 setting unless a longer probe
   over representative long rows proves otherwise.
 
+- Full-run capacity evidence can justify a cautious DPO batch bump, but only
+  after the behavioral objective is worth rerunning. On 2026-06-23, clean
+  schema-SFT->DPO seed 1 at batch 2 / accumulation 4 completed one epoch with
+  peak reserved VRAM about 11.203 GB and low OOM risk. If rerunning the same
+  data/model family after fixing the objective or hyperparameters, probe batch 4
+  / accumulation 2 first, then consider batch 8 / accumulation 1 only after the
+  run has passed the row-length growth zone that previously caused late VRAM
+  spikes. Do not increase batch size merely to repeat a behaviorally failed
+  DPO objective faster.
+
 - KTO can show the same short-smoke capacity trap at larger batches. On
   2026-06-22, schema-SFT->KTO batch 24 / accumulation 1 completed a 10-step
   smoke with low OOM risk and about 16.5 GB reserved, but the full run reached
@@ -136,6 +157,16 @@ Read for Windows/Docker/GPU/local-trainer execution problems and monitor behavio
   batch 24 as too hot on the RTX 3090 for this response-confidence KTO dataset;
   use batch 12 only with live monitoring, and fall back to the proven batch 8 /
   accumulation 1 if batch 12 enters high or critical risk.
+
+- Before launching a one-off KTO cell, verify the live trainer CLI and the
+  checked-in runbook, not just a handoff summary. On 2026-06-23, `train_kto.py`
+  rejected stale run-control flags (`--max-prompt-length`, `--save-steps`,
+  `--logging-steps`, `--no-dashboard`), and a relaunch almost continued with
+  stale summary hyperparameters (`lr=5e-6`, LoRA r64/alpha128) instead of the
+  runbook's KTO values (`lr=1e-6`, LoRA r32/alpha64). If a KTO container exits
+  before training, inspect `docker logs` for argparse errors; if a launch starts
+  with wrong governed hyperparameters, stop it early and relaunch with a new
+  run timestamp.
 
 - GRPO local throughput depends strongly on `per_device_train_batch_size /
   num_generations`, because that ratio controls optimizer prompts per step. On
@@ -159,6 +190,15 @@ Read for Windows/Docker/GPU/local-trainer execution problems and monitor behavio
   loading. Passing nested JSON such as `--chat-template-kwargs` through
   PowerShell -> Docker -> Python is also fragile; avoid CLI JSON quoting for
   reproducible local runs when the same value can live in the Python config.
+
+- A smoke run is not bounded just because the config file contains
+  `training.max_steps`. Verify the trainer startup banner and metrics log show
+  the intended total step count before leaving it alone. On 2026-06-23, the SFT
+  trainer initially ignored config-level `max_steps` and a 32-step smoke began a
+  full 1,246-step epoch until it was stopped. Generic fix: SFT resolves
+  `effective_max_steps` from CLI `--max-steps` first, then
+  `config.training.max_steps`, then `-1`; the corrected smoke exited 0 at
+  exactly step 32 with final artifacts saved.
 
 - For Codex-side long-run monitors on this Windows host, prefer direct Docker
   commands over piped/combined Docker calls. During 2026-06-16 eval monitoring,

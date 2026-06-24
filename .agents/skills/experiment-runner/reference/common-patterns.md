@@ -85,6 +85,13 @@ be rewarded like a valid answer. In Amendment B GRPO, `confidence` means
 confidence that the answer or abstention is appropriate, not probability that a
 factual answer string is correct.
 
+For any custom GRPO reward, add a deterministic reward-grid preflight before
+GPU training: enumerate representative known, unknown, and ambiguous prompts
+with good answers, abstentions, wrong answers, malformed outputs, and varied
+confidence values; print or save the reward table; verify the intended ordinal
+ordering; assert bad behavior cannot be rescued by high or low confidence; and
+commit or update a focused test or sanity-table fixture before scaling.
+
 Preserve intermediate confidence signal instead of binarizing the reward. A
 wrong answer with low confidence should be penalized less than a confident wrong
 answer, and an `I don't know` on a known question with low confidence should be

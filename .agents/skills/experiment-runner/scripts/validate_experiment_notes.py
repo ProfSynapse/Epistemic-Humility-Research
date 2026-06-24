@@ -78,7 +78,17 @@ def is_gitignored(root: Path, rel: str) -> bool:
         return _IGNORE_CACHE[rel]
     try:
         res = subprocess.run(
-            ["git", "-C", str(root), "check-ignore", "-q", "--", rel],
+            [
+                "git",
+                "-c",
+                f"safe.directory={root.as_posix()}",
+                "-C",
+                str(root),
+                "check-ignore",
+                "-q",
+                "--",
+                rel,
+            ],
             stdout=subprocess.DEVNULL,
             stderr=subprocess.DEVNULL,
         )

@@ -83,6 +83,168 @@ def test_build_sft_rows_uses_probe_scaled_response_confidence():
     assert out[1]["source_label"] == "known"
 
 
+def test_contrastive_sft_rows_include_high_idk_and_low_hallucination():
+    rows = [
+        {
+            "prompt": [{"role": "user", "content": "Unknown?"}],
+            "chosen": [{"role": "assistant", "content": "I don't know the answer."}],
+            "rejected": [{"role": "assistant", "content": "A made-up answer."}],
+        },
+        {
+            "prompt": [{"role": "user", "content": "Known?"}],
+            "chosen": [{"role": "assistant", "content": "Correct answer."}],
+            "rejected": [{"role": "assistant", "content": "I am not sure what the answer is."}],
+        },
+    ]
+    probes = [
+        {
+            "probe_pool_row_key": "unknown-key",
+            "label": "unknown",
+            "p_correct": 0.0,
+            "n_samples": 32,
+            "sampled_correct": [False] * 32,
+        },
+        {
+            "probe_pool_row_key": "known-key",
+            "label": "known",
+            "p_correct": 1.0,
+            "n_samples": 32,
+            "sampled_correct": [True] * 32,
+        },
+    ]
+
+    out = builder.build_contrastive_sft_rows(rows, probe_records=probes)
+
+    unknown_idk = _payload(out[0]["messages"][-1]["content"])
+    unknown_hallucination = _payload(out[1]["messages"][-1]["content"])
+    known_answer = _payload(out[2]["messages"][-1]["content"])
+    known_over_refusal = _payload(out[3]["messages"][-1]["content"])
+    assert unknown_idk["answer"] == "I don't know the answer."
+    assert 0.7 <= unknown_idk["response_confidence"] <= 0.9
+    assert unknown_hallucination["answer"] == "A made-up answer."
+    assert 0.1 <= unknown_hallucination["response_confidence"] <= 0.35
+    assert known_answer["answer"] == "Correct answer."
+    assert 0.7 <= known_answer["response_confidence"] <= 0.9
+    assert known_over_refusal["answer"] == "I am not sure what the answer is."
+    assert 0.1 <= known_over_refusal["response_confidence"] <= 0.35
+    assert out[0]["response_confidence_role"] == "appropriate"
+    assert out[1]["response_confidence_role"] == "inappropriate"
+
+
+def test_contrastive_sft_spreads_repeated_targets_without_row_dropping():
+    rows = []
+    probes = []
+    for idx in range(50):
+        rows.append(
+            {
+                "prompt": [{"role": "user", "content": f"Unknown {idx}?"}],
+                "chosen": [{"role": "assistant", "content": "I don't know the answer."}],
+                "rejected": [{"role": "assistant", "content": f"Wrong answer {idx}."}],
+            }
+        )
+        probes.append(
+            {
+                "probe_pool_row_key": f"unknown-{idx}",
+                "label": "unknown",
+                "p_correct": 0.0,
+                "n_samples": 32,
+                "sampled_correct": [False] * 32,
+            }
+        )
+
+    out = builder.build_contrastive_sft_rows(rows, probe_records=probes)
+
+    values = [
+        _payload(row["messages"][-1]["content"])["response_confidence"]
+        for row in out
+    ]
+    assert len(out) == 100
+    assert len(set(values)) > 80
+    assert all(0.1 <= value <= 0.9 for value in values)
+
+
+def test_clean_sft_rows_include_only_appropriate_completions_with_spread_targets():
+    rows = [
+        {
+            "conversations": [
+                {"role": "system", "content": "old"},
+                {"role": "user", "content": "Unknown?"},
+                {"role": "assistant", "content": "I don't know the answer."},
+            ]
+        },
+        {
+            "conversations": [
+                {"role": "system", "content": "old"},
+                {"role": "user", "content": "Known?"},
+                {"role": "assistant", "content": "Correct answer."},
+            ]
+        },
+    ]
+    probes = [
+        {
+            "probe_pool_row_key": "unknown-key",
+            "label": "unknown",
+            "p_correct": 0.0,
+            "n_samples": 32,
+            "sampled_correct": [False] * 32,
+        },
+        {
+            "probe_pool_row_key": "known-key",
+            "label": "known",
+            "p_correct": 1.0,
+            "n_samples": 32,
+            "sampled_correct": [True] * 32,
+        },
+    ]
+
+    out = builder.build_clean_sft_rows(rows, probe_records=probes)
+
+    assert len(out) == 2
+    unknown = _payload(out[0]["messages"][-1]["content"])
+    known = _payload(out[1]["messages"][-1]["content"])
+    assert unknown["answer"] == "I don't know the answer."
+    assert known["answer"] == "Correct answer."
+    assert 0.7 <= unknown["response_confidence"] <= 0.9
+    assert 0.7 <= known["response_confidence"] <= 0.9
+    assert out[0]["response_confidence_role"] == "appropriate"
+    assert out[1]["response_confidence_role"] == "appropriate"
+    assert out[0]["source_label"] == "unknown"
+    assert out[1]["source_label"] == "known"
+
+
+def test_clean_sft_rows_do_not_double_rows_or_supervise_rejections():
+    rows = []
+    probes = []
+    for idx in range(50):
+        rows.append(
+            {
+                "conversations": [
+                    {"role": "user", "content": f"Q{idx}?"},
+                    {"role": "assistant", "content": "I don't know the answer."},
+                ]
+            }
+        )
+        probes.append(
+            {
+                "probe_pool_row_key": f"unknown-{idx}",
+                "label": "unknown",
+                "p_correct": 0.0,
+                "n_samples": 32,
+                "sampled_correct": [False] * 32,
+            }
+        )
+
+    out = builder.build_clean_sft_rows(rows, probe_records=probes)
+
+    values = [
+        _payload(row["messages"][-1]["content"])["response_confidence"]
+        for row in out
+    ]
+    assert len(out) == 50
+    assert len(set(values)) > 40
+    assert all(0.7 <= value <= 0.9 for value in values)
+
+
 def test_build_dpo_rows_wraps_chosen_and_rejected_bands():
     rows = [
         {
@@ -137,6 +299,8 @@ def test_ambiguous_middle_rows_use_p_correct_band():
     ]
 
     sft = builder.build_ambiguous_sft_rows(rows)
+    clean_sft = builder.build_clean_ambiguous_sft_rows(rows)
+    contrastive_sft = builder.build_contrastive_ambiguous_sft_rows(rows)
     dpo = builder.build_ambiguous_dpo_rows(rows)
     kto = builder.build_ambiguous_kto_rows(rows)
 
@@ -144,6 +308,14 @@ def test_ambiguous_middle_rows_use_p_correct_band():
         "answer": "Paris",
         "response_confidence": 0.5,
     }
+    clean_payload = _payload(clean_sft[0]["messages"][-1]["content"])
+    assert clean_payload["answer"] == "Paris"
+    assert 0.35 <= clean_payload["response_confidence"] <= 0.6
+    assert clean_sft[0]["response_confidence_role"] == "ambiguous_answer"
+    contrastive_payload = _payload(contrastive_sft[0]["messages"][-1]["content"])
+    assert contrastive_payload["answer"] == "Paris"
+    assert 0.35 <= contrastive_payload["response_confidence"] <= 0.6
+    assert contrastive_sft[0]["response_confidence_role"] == "ambiguous_answer"
     assert _payload(dpo[0]["chosen"][0]["content"])["response_confidence"] == 0.5
     assert _payload(dpo[0]["rejected"][0]["content"])["response_confidence"] == 0.5
     assert _payload(kto[0]["conversations"][-1]["content"])["response_confidence"] == 0.5

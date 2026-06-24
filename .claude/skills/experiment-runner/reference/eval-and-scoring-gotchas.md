@@ -138,6 +138,35 @@ Read for live eval, prompt/output contracts, scorer drift, and post-eval sanity 
   `p_correct`, use `1 - factual_p` for abstentions, and map to non-endpoint
   response-confidence bands before launching training.
 
+- A target can be non-constant and still be effectively modal. On 2026-06-23,
+  the first probe-scaled schema-SFT dataset had 20 target values, but
+  `response_confidence: 0.8765` was 12,222 / 14,943 rows (81.79%). The full SFT
+  run completed and the mixed SelfAware smoke had 100% JSON coverage, but every
+  eval row emitted `0.8765`. Treat dominant target frequency as a preflight
+  gate alongside unique-value count; if one scalar is the easy loss minimum,
+  add balanced/bin-capped SFT projection or another contrastive calibration
+  stage before spending downstream DPO/KTO/GRPO time.
+
+- Keep the SFT/preference boundary explicit in response-confidence experiments.
+  The preferred mainline SFT dataset should teach only appropriate completions
+  plus the output schema and broad confidence bands: correct known answers,
+  correct unknown abstentions, and ambiguous-answer middle-confidence rows.
+  Rejected completions, hallucinated answers, and known-question over-refusals
+  belong in DPO/KTO/GRPO unless the run is deliberately labeled as an
+  exploratory contrastive-SFT diagnostic. If SFT is built from both chosen and
+  rejected DPO rows, record that it is no longer a clean format/style SFT
+  control before interpreting downstream results.
+
+- Exploratory contrastive SFT can prove the scalar is movable while still being
+  behaviorally bad. On 2026-06-23, an interrupted contrastive
+  response-confidence SFT checkpoint at step 1500/2934 produced 31 unique
+  `response_confidence` values on a 192-row mixed SelfAware smoke
+  (`coverage_pct=99.48`, mean confidence 0.4567), but behavior regressed
+  (`correct_on_known_pct=17.24`, `over_refusal_pct=40.21`). Treat this pattern
+  as evidence against constant-scalar inevitability, not as a green light to
+  continue the branch. Move rejected completions back into DPO/KTO/GRPO and use
+  a clean SFT base for the mainline.
+
 - A completed GRPO run can move the refusal boundary without solving confidence
   expression. The 2026-06-23 schema-SFT->GRPO seed-1 full SelfAware eval
   preserved 100% JSON coverage and reduced unknown answering, but every row
@@ -145,6 +174,57 @@ Read for live eval, prompt/output contracts, scorer drift, and post-eval sanity 
   Post-GRPO acceptance checks must compare unique confidence values, unknown
   answering, known over-refusal, and row samples against the nearest control;
   do not call a run calibrated because reward training completed cleanly.
+
+- Reward-grid preflight is necessary but not sufficient for confidence-learning
+  claims. A reward can have the right offline ordinal ordering and a healthy
+  nonzero-variance GRPO run while the trained model still emits high,
+  behavior-insensitive confidence. After any confidence-reward GRPO eval,
+  report confidence by behavioral cell: known-correct, known-wrong,
+  known-over-refusal, unknown-abstention, and unknown-answer. If those means are
+  clustered together, treat the scalar as style or policy confidence, not
+  calibrated response appropriateness, even when coverage is 100% and unique
+  confidence values are nonzero.
+
+- A preference adapter must be evaluated on the same base family it was trained
+  from. On 2026-06-23, an initial clean schema-SFT->DPO seed-1 192-row smoke was
+  launched with `model_name: unsloth/Qwen3-4B-bnb-4bit` even though the DPO
+  adapter lineage showed it was trained from the merged clean-SFT checkpoint.
+  The smoke produced a severe confident-abstention pattern, but that result is
+  confounded by the base/adapter mismatch and must not be interpreted as DPO
+  objective evidence. Before accepting any sequential SFT->DPO/KTO/GRPO eval,
+  check `training_lineage.json` and verify that `model_name` equals the trained
+  base checkpoint while `adapter` points to the follow-on adapter. Then compare
+  against the nearest SFT base on known over-refusal, unknown answering, answer
+  text concentration, and confidence concentration.
+
+- Preference tuning can be behaviorally inert while increasing stated
+  confidence. After correcting the base mismatch above, the 2026-06-23 full
+  clean schema-SFT->DPO seed-1 SelfAware eval was nearly flat against the merged
+  clean-SFT baseline (`truthful_pct` 40.58 -> 40.69,
+  `answer_on_unknown_pct` 12.98 -> 12.89, `over_refusal_pct` 57.51 -> 56.18)
+  but raised mean `response_confidence` from 0.7485 to 0.8121 and worsened
+  response-appropriateness Brier score. Treat higher stated confidence as a
+  separate outcome, not an improvement. If DPO/KTO/GRPO moves confidence more
+  than behavior, report it as confidence amplification or style regularization
+  unless calibration metrics improve relative to the nearest SFT baseline.
+
+- KTO reward separation is not behavioral validation. On 2026-06-23, clean
+  schema-SFT->KTO seed 1 trained cleanly from the merged SFT base and reached
+  strong preference separation near the end of training (`rewards/margins`
+  around 16-18), but full SelfAware eval moved the wrong tradeoff: unknown
+  answering rose 12.98 -> 18.99, known over-refusal fell 57.51 -> 52.37,
+  correct-on-known fell 47.23 -> 44.03, truthful fell 40.58 -> 39.36, and mean
+  confidence rose 0.7485 -> 0.8527. Treat this pattern as "less refusal plus
+  higher confidence", not better epistemic humility. Always run the corrected
+  base eval and inspect unknown answering, known over-refusal, answer text
+  concentration, and confidence concentration before calling KTO useful.
+
+- SelfAware `correct_on_known_pct` is conditional on answered known rows, not
+  all known rows. A more selective model can raise this metric simply by
+  refusing many hard known questions. Always read it with `over_refusal_pct`,
+  `answered_known`, `correct_known`, and `truthful_pct`; if answered-known
+  accuracy rises while truthful rate is flat or lower, report that as selective
+  answering plus over-refusal, not a broad knowledge improvement.
 
 - Amendment B can also expose scorer drift in the opposite direction: JSON answer
   text may contain natural abstentions like "I do not know the exact number"
