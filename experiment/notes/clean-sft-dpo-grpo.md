@@ -6,7 +6,7 @@ kg:
   status: canonical
 tags:
   - kg/experiment
-status: proposed
+status: running
 governance: amendment
 phase: phase1
 lane: local
@@ -117,3 +117,7 @@ Brier/MAE versus response appropriateness.
 
 - 2026-06-24: created (proposed) as one of four Amendment F GRPO-centered
   stacking experiment notes.
+- 2026-06-24: activated for seed-1 local launch after Amendment F sign-off.
+- 2026-06-24: merged the clean SFT->DPO seed-1 adapter, passed bounded
+  merged-source sanity eval, and launched full GRPO in
+  `eh-clean-sft-dpo-grpo-seed1-full-20260624a`.

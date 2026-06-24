@@ -1,6 +1,6 @@
 # Protocol Amendment F: GRPO-Centered Three-Stage Stacking
 
-**Status:** DRAFT / NOT SIGNED
+**Status:** SIGNED OFF
 
 **Short name:** Amendment F / GRPO-centered stacking
 
@@ -143,11 +143,20 @@ not be pooled into v0.3, Amendment A, or Amendment E headline claims.
 
 ## 8. Sign-Off Checklist
 
-- approval date:
-- approved scope:
-- approved cells/seeds/lane:
-- exact GRPO source variant:
-- exact source checkpoints:
-- merge/sanity-eval requirements frozen:
-- schema/metric definitions frozen:
-- excluded cells/seeds:
+- approval date: 2026-06-24
+- approved scope: exploratory local seed-1 three-stage stacking over the clean
+  Amendment E response-confidence lineage
+- approved cells/seeds/lane: seed 1 local for `clean_sft_dpo_grpo`,
+  `clean_sft_kto_grpo`, `clean_sft_grpo_dpo`, and `clean_sft_grpo_kto`
+- exact GRPO source variant: GRPO v2 from Amendment E unless a later signed
+  amendment supersedes it before a specific cell launches
+- exact source checkpoints: clean SFT merged seed 1, clean SFT->DPO seed 1,
+  clean SFT->KTO seed 1, and clean SFT->GRPO v2 seed 1 as recorded in the
+  Amendment E session note and corrected-base eval configs
+- merge/sanity-eval requirements frozen: each source adapter must be merged onto
+  its immediate clean lineage before the next stage; a bounded SelfAware sanity
+  eval must pass before a full next-stage launch
+- schema/metric definitions frozen: use the existing response-confidence JSON
+  output contract and the metrics listed in section 5
+- excluded cells/seeds: seeds 2/3, 8B, cloud lanes, bridge cells, and any merged
+  model publication are deferred until seed-1 local results are interpretable
