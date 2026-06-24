@@ -83,6 +83,8 @@ NODE_TYPES = (
     "model",
     "term",
     "mechanism",
+    "gap",
+    "experiment",
 )
 
 

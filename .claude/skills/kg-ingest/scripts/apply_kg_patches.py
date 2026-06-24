@@ -149,6 +149,7 @@ def regen_moc():
         ("models", "Models"),
         ("terms", "Terms"),
         ("mechanisms", "Mechanisms (cause -> effect)"),
+        ("gaps", "Gaps (verified literature absences)"),
     ]
     out = [
         "# Concepts: knowledge-graph map",
