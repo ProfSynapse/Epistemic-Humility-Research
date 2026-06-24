@@ -143,6 +143,24 @@ cells) is driven by the experiment-runner scripts under
 interleaving etc.) are documented at
 `synaptic-tuner/.skills/fine-tuning/reference/dataset-formats.md`.
 
+## Public artifacts
+
+The project is designed for public replication, but HF Hub publication is a
+gated release step rather than a scratch-artifact dump. Publication candidates,
+repo naming, license boundaries, and current status are tracked in
+[`docs/public-artifacts.md`](docs/public-artifacts.md).
+
+Default policy:
+
+- Publish redistributable datasets, per-model knowledge labels, scored eval
+  outputs, aggregate CSVs, and evaluated LoRA adapters.
+- Prefer adapter-only model repos first; publish merged checkpoints only for
+  deliberate reference releases.
+- Do not publish restricted bridge/OpenMOSS/Cheng data or gitignored local cache
+  artifacts.
+- Record every uploaded artifact with an HF repo URL/revision and the local run
+  record or analysis file that produced it.
+
 ## Contributing
 
 Contributions, corrections, and replication attempts are welcome; see

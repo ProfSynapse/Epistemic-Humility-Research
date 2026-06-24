@@ -33,6 +33,7 @@ Always choose the narrowest reference needed for the task:
 | Plan Phase 3 causal-pilot sweeps | [reference/phase3-causal-pilot-sweeps.md](reference/phase3-causal-pilot-sweeps.md) |
 | Record durable research-session memory | [reference/research-sessions.md](reference/research-sessions.md) |
 | Create or update experiment notes | [reference/experiment-notes.md](reference/experiment-notes.md) |
+| Publish or document public HF artifacts | [reference/hf-publication.md](reference/hf-publication.md) |
 | Make governed protocol, output-contract, or rerun-scope changes | [reference/protocol-amendments.md](reference/protocol-amendments.md) |
 
 Do not preload all references. Read only the files needed for the user's current
