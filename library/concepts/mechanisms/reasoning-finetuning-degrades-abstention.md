@@ -14,6 +14,7 @@ effect: Decreased [[abstention-recall]] on unanswerable questions, including in 
 polarity: decreases
 related:
 - '[[2506.09038--abstentionbench]]'
+- '[[2509.09658--humblebench-epistemic-humility-multimodal]]'
 - '[[reasoning-fine-tuning]]'
 - '[[abstention-recall]]'
 relationships:
@@ -21,6 +22,10 @@ relationships:
   target: '[[2506.09038--abstentionbench]]'
   target_id: paper:2506.09038
   confidence: high
+- type: supported_by
+  target: '[[2509.09658--humblebench-epistemic-humility-multimodal]]'
+  target_id: paper:2509.09658
+  confidence: medium
 - type: related_to
   target: '[[reasoning-fine-tuning]]'
   target_id: method:reasoning-fine-tuning
