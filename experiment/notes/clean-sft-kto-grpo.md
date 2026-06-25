@@ -6,7 +6,7 @@ kg:
   status: canonical
 tags:
   - kg/experiment
-status: proposed
+status: running
 governance: amendment
 phase: phase1
 lane: local
@@ -117,3 +117,9 @@ Brier/MAE versus response appropriateness.
 
 - 2026-06-24: created (proposed) as one of four Amendment F GRPO-centered
   stacking experiment notes.
+- 2026-06-25: staged the seed-1 GRPO config and bounded merged-source sanity
+  eval config. Merge and sanity launch remain gated on the active
+  `clean_sft_dpo_grpo` full eval freeing the local GPU.
+- 2026-06-25: merged the clean SFT->KTO seed-1 adapter, passed the bounded
+  merged-source sanity eval, and launched the full local `clean_sft_kto_grpo`
+  GRPO run in container `eh-clean-sft-kto-grpo-seed1-full-20260625a`.

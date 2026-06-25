@@ -72,6 +72,10 @@ def _selected_metric_paths() -> list[tuple[str, Path]]:
         for path in result_dir.glob("*__selfaware/metrics.json"):
             selected.append(("Amendment E clean response-confidence", path))
 
+    for result_dir in sorted(ROOT.glob("results_amendment_f_response_confidence_selfaware_*_full_4b")):
+        for path in result_dir.glob("*__selfaware/metrics.json"):
+            selected.append(("Amendment F GRPO-centered stacking", path))
+
     return selected
 
 
@@ -87,13 +91,15 @@ def _normalized_arm(family: str, arm: str) -> str:
     normalized = re.sub(r"_seed\d+(_lowmem|_corrected_base)?", "", arm)
     normalized = re.sub(r"seed\d+", "seed", normalized)
 
-    if "sft_merged" in normalized:
-        normalized = "sft_merged"
-    if "sft_dpo" in normalized:
-        normalized = "sft_dpo"
-    if "sft_kto" in normalized:
-        normalized = "sft_kto"
-    if "clean_schema_sft_grpo_v2" in normalized:
+    if "clean_sft_dpo_grpo" in normalized:
+        normalized = "clean_sft_dpo_grpo"
+    elif "clean_sft_kto_grpo" in normalized:
+        normalized = "clean_sft_kto_grpo"
+    elif "clean_sft_grpo_dpo" in normalized:
+        normalized = "clean_sft_grpo_dpo"
+    elif "clean_sft_grpo_kto" in normalized:
+        normalized = "clean_sft_grpo_kto"
+    elif "clean_schema_sft_grpo_v2" in normalized:
         normalized = "clean_sft_grpo_v2"
     elif "clean_schema_sft_grpo" in normalized:
         normalized = "clean_sft_grpo_v1"
@@ -103,6 +109,12 @@ def _normalized_arm(family: str, arm: str) -> str:
         normalized = "clean_sft_kto"
     elif "clean_schema_sft_merged" in normalized:
         normalized = "clean_sft_merged"
+    elif "sft_merged" in normalized:
+        normalized = "sft_merged"
+    elif "sft_dpo" in normalized:
+        normalized = "sft_dpo"
+    elif "sft_kto" in normalized:
+        normalized = "sft_kto"
     elif "schema_sft_grpo" in normalized:
         normalized = "schema_sft_grpo"
     elif "schema_sft_merged" in normalized:
