@@ -208,6 +208,11 @@ Read for Windows/Docker/GPU/local-trainer execution problems and monitor behavio
   Docker pipe permission errors. Treat those combined-command failures as
   monitor artifacts if result files and GPU telemetry show healthy progress.
 
+- PowerShell does not support bash heredocs such as `python - <<'PY'`. For
+  inline Python checks on Windows, use a PowerShell here-string:
+  `@' ... '@ | python -`. This avoids parser errors before the Python code ever
+  runs.
+
 - One live vLLM eval container can run beside local KTO training on the RTX 3090
   if the eval is scoped to one arm, uses container-visible paths, overrides the
   image entrypoint with `--entrypoint python3`, and caps vLLM with

@@ -6,7 +6,7 @@ kg:
   status: canonical
 tags:
   - kg/experiment
-status: running
+status: done
 governance: amendment
 phase: phase1
 lane: local
@@ -123,3 +123,13 @@ Brier/MAE versus response appropriateness.
 - 2026-06-25: merged the clean SFT->KTO seed-1 adapter, passed the bounded
   merged-source sanity eval, and launched the full local `clean_sft_kto_grpo`
   GRPO run in container `eh-clean-sft-kto-grpo-seed1-full-20260625a`.
+- 2026-06-25: full GRPO training completed at step 1861 with final loss 0.1162,
+  low OOM risk, and final adapter artifacts in
+  `scratch/schema_response_confidence/runs/clean_sft_kto_grpo_seed1_full/20260625_012319/final_model`.
+  The full SelfAware eval is running in
+  `eh-clean-sft-kto-grpo-full-eval-20260625a`.
+- 2026-06-25: full SelfAware eval completed with `truthful_pct=40.84`,
+  `answer_on_unknown_pct=7.46`, `over_refusal_pct=66.37`,
+  `correct_on_known_pct=53.56`, and mean response confidence `0.862188`. The
+  arm is structurally valid but converges to the same GRPO-final tradeoff and a
+  five-value confidence collapse.
