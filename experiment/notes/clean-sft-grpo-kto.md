@@ -6,7 +6,7 @@ kg:
   status: canonical
 tags:
   - kg/experiment
-status: proposed
+status: done
 governance: amendment
 phase: phase1
 lane: local
@@ -115,3 +115,35 @@ Brier/MAE versus response appropriateness.
 
 - 2026-06-24: created (proposed) as one of four Amendment F GRPO-centered
   stacking experiment notes.
+- 2026-06-25: staged the shared GRPO-v2 merged-source sanity eval config at
+  `experiment/phase1/eval/config/eval_amendment_f_response_confidence_selfaware_clean_sft_grpo_v2_merged_seed1_sanity_local_4b.yaml`.
+  Actual merge, sanity eval, and KTO launch remain gated on the active
+  `clean_sft_kto_grpo` full eval completing and the preceding
+  `clean_sft_grpo_dpo` decision point.
+- 2026-06-25: preceding `clean_sft_grpo_dpo` arm completed and passed structural
+  eval sanity; `clean_sft_grpo_kto` is the next Amendment F arm to launch from
+  the already sanity-gated merged clean SFT->GRPO v2 source model.
+- 2026-06-25: launched local KTO run in
+  `eh-clean-sft-grpo-kto-seed1-full-20260625a` using run dir
+  `scratch/schema_response_confidence/runs/clean_sft_grpo_kto_seed1_full/20260625_052610`.
+  Step-250 monitoring passed at batch 12 / accumulation 1 with max reserved
+  VRAM `16.639 GB` and OOM risk `low`; mid-run objective separation is strong,
+  so the full SelfAware eval will decide whether this is useful behavior or only
+  another KTO separation artifact. Full eval config:
+  `experiment/phase1/eval/config/eval_amendment_f_response_confidence_selfaware_clean_sft_grpo_kto_seed1_full_local_4b.yaml`.
+- 2026-06-25: KTO training completed successfully at step 2491 with final
+  adapter artifacts in
+  `scratch/schema_response_confidence/runs/clean_sft_grpo_kto_seed1_full/20260625_052610/final_model`.
+  Peak reserved VRAM reached `21.412 GB` (`89.22%`) with final risk `moderate`,
+  so batch 12 is usable but should not be treated as having large headroom. The
+  full SelfAware eval is running in
+  `eh-clean-sft-grpo-kto-full-eval-20260625a`.
+- 2026-06-25: full SelfAware eval completed cleanly with `n=3369`, no thinking
+  tags, `100%` response-confidence coverage, and zero retries. Metrics:
+  `truthful_pct=40.90`, `refusal_recall_pct=89.63`,
+  `answer_on_unknown_pct=10.37`, `over_refusal_pct=60.59`,
+  `correct_on_known_pct=49.19`, mean response confidence `0.864039`, Brier vs
+  response appropriateness `0.448626`. Interpretation: KTO after GRPO softened
+  GRPO's known over-refusal but reopened unknown answering and left confidence
+  collapsed high; `clean_sft_grpo_dpo` is the stronger Amendment F seed-1 stack
+  on truthful rate and unknown-answer control.

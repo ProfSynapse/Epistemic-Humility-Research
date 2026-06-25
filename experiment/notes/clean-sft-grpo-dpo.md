@@ -6,7 +6,7 @@ kg:
   status: canonical
 tags:
   - kg/experiment
-status: proposed
+status: done
 governance: amendment
 phase: phase1
 lane: local
@@ -114,3 +114,25 @@ Brier/MAE versus response appropriateness.
 
 - 2026-06-24: created (proposed) as one of four Amendment F GRPO-centered
   stacking experiment notes.
+- 2026-06-25: staged the shared GRPO-v2 merged-source sanity eval config at
+  `experiment/phase1/eval/config/eval_amendment_f_response_confidence_selfaware_clean_sft_grpo_v2_merged_seed1_sanity_local_4b.yaml`.
+  Actual merge, sanity eval, and DPO launch remain gated on the active
+  `clean_sft_kto_grpo` full eval completing and passing post-eval sanity.
+- 2026-06-25: merged the clean SFT->GRPO v2 seed-1 adapter, passed the
+  merged-source sanity/equivalence gate, and launched the full local
+  `clean_sft_grpo_dpo` DPO run in
+  `eh-clean-sft-grpo-dpo-seed1-full-20260625a` with conservative batch 2 /
+  accumulation 4.
+- 2026-06-25: full DPO training completed at step 1868 with low OOM risk and
+  final adapter artifacts in
+  `scratch/schema_response_confidence/runs/clean_sft_grpo_dpo_seed1_full/20260625_031724/final_model`.
+  The full SelfAware eval config is
+  `experiment/phase1/eval/config/eval_amendment_f_response_confidence_selfaware_clean_sft_grpo_dpo_seed1_full_local_4b.yaml`.
+- 2026-06-25: full SelfAware eval completed cleanly with `n=3369`, no thinking
+  tags, `100%` response-confidence coverage, and zero retries. Metrics:
+  `truthful_pct=41.64`, `refusal_recall_pct=93.31`,
+  `answer_on_unknown_pct=6.69`, `over_refusal_pct=63.63`,
+  `correct_on_known_pct=51.76`, mean response confidence `0.866301`, Brier vs
+  response appropriateness `0.445413`. Interpretation: modestly lower
+  over-refusal than direct GRPO v2 while preserving low unknown answering, but
+  confidence remains high and behavior-insensitive.
