@@ -4,7 +4,7 @@ session_id: '0025'
 title: uncertainty-monitor-hypothesis
 status: complete
 created_at: '2026-06-26T19:11:24Z'
-updated_at: '2026-06-26T22:21:32Z'
+updated_at: '2026-06-26T22:35:31Z'
 phase: phase-3-mech-interp
 question: "Is the sign-inverted per-head failure-axis direction a graded internal\
   \ UNCERTAINTY MONITOR (amplifying it raises abstention) rather than a be-wrong axis\
@@ -554,6 +554,24 @@ checkpoints:
     to h_base (pre-GRPO) to see if GRPO sharpened the boundary; (4) test on a held-out
     question set to rule out question-type memorization.'
   signals: {}
+- id: 015-result
+  at: '2026-06-26T22:35:31Z'
+  kind: result
+  title: Track-A latent-knowledge hardening controls (A1/A2/A3, GPU-free)
+  summary: 'A1 lexical baseline DEFLATES the known/unknown headline: TF-IDF on question
+    text gets 0.964 vs residual 0.997 (margin +0.033) -- mostly dataset-lexicon, not
+    internal memory. A2 within-known refused-vs-answered is the clean survivor: residual
+    0.919 vs lexical 0.641 (margin +0.278), depth-climbing (L1 0.67->L35 0.92) = computed
+    internal over-refusal axis. A3 h_base==h_lora (known/unknown L35 0.997, gap pos
+    0.266 vs 0.27): GRPO inherited both signals from SFT, did not sharpen. Net: belief-vs-action
+    over-refusal story holds and is lexically clean; raw known/unknown AUROC recharacterized
+    as lexicon.'
+  evidence: []
+  run_ids: []
+  commands: []
+  decisions: []
+  next_steps: []
+  signals: {}
 ---
 # uncertainty-monitor-hypothesis
 
@@ -756,3 +774,8 @@ failure-axis direction move abstention ~0 (67→63 cells) vs the localized heads
   - `phase3_latent_knowledge_probe.py (+6 tests); analysis/current_clean_grpo_v2_latent_knowledge_probe/probe.json; activations h_lora full panel L0..L36, behavior_cell join (1233 rows, 1233/1233 overlap)`
 - next steps:
   - Controls to harden the claim: (1) bag-of-words/lexical baseline AUROC (how much of 0.98 is lexical?); (2) within-known refused-vs-answered probe; (3) compare to h_base (pre-GRPO) to see if GRPO sharpened the boundary; (4) test on a held-out question set to rule out question-type memorization.
+### 015-result - Track-A latent-knowledge hardening controls (A1/A2/A3, GPU-free)
+
+- at: `2026-06-26T22:35:31Z`
+- kind: `result`
+- summary: A1 lexical baseline DEFLATES the known/unknown headline: TF-IDF on question text gets 0.964 vs residual 0.997 (margin +0.033) -- mostly dataset-lexicon, not internal memory. A2 within-known refused-vs-answered is the clean survivor: residual 0.919 vs lexical 0.641 (margin +0.278), depth-climbing (L1 0.67->L35 0.92) = computed internal over-refusal axis. A3 h_base==h_lora (known/unknown L35 0.997, gap pos 0.266 vs 0.27): GRPO inherited both signals from SFT, did not sharpen. Net: belief-vs-action over-refusal story holds and is lexically clean; raw known/unknown AUROC recharacterized as lexicon.

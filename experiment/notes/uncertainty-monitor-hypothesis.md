@@ -226,6 +226,52 @@ experiment-specific code to the `synaptic-tuner` submodule.
   Ferrando's *entity-recognition*, so partial (not full) overlap is the expected
   result.
 
+## Strategic trajectory (read-side program)
+
+After F and K both came back **anti-steerable** (settled — a real Tan-2407.12404
+result, but a dead end for "find the dial"), the program pivoted to the **read
+side**, where the latent-knowledge probe gave the first POSITIVE signal. The
+forming publishable unit: *"In a humility-tuned model, over-refusals are
+belief-vs-action gaps — the residual stream linearly encodes that the model
+knows the answer, yet it abstains; this 'humility tax' is laid partly by SFT and
+behaviorally amplified by GRPO."* The grind sequence:
+
+- **Track A — harden the read claim (GPU-free; data on disk; DO FIRST).**
+  - **A1 lexical baseline.** Bag-of-words on question text → same known/unknown
+    labels. THE control: how much of the 0.997 AUROC is question vocabulary vs
+    internal state? Kills H_surface_lexical. (Highest priority — single biggest
+    threat to the headline number.)
+  - **A2 within-known refused-vs-answered probe.** Train only inside known cells
+    (known_refused=168 vs known_answered=388): is the over-refusal gap a real
+    internal axis, or a label echo? A positive AUROC means over-refusal has an
+    internal signature independent of the known/unknown contrast theta was built on.
+  - **A3 h_base vs h_lora source comparison.** Re-run the probe on the SFT-merged
+    pre-adapter activations (h_base) vs active-adapter (h_lora): did GRPO *sharpen*
+    the known/unknown code or *inherit* it from SFT? Ties the read result to the
+    F-pre-exists-GRPO finding. (No new code — `analyze(..., source=...)` already
+    supports it.)
+  - *(A4 held-out-by-question DROPPED: all 1233 questions are unique, so CV never
+    reuses a question; A1 subsumes the memorization worry. Calibration catch.)*
+- **Track B — causal test of the READ that survives anti-steerability (GPU; after A).**
+  - **B1 activation patching / ablation** at L≈35 on over-refused items, instead
+    of additive ITI. Additive steering is anti-steerable; patching a
+    known-answered residual into an over-refused forward pass is a cleaner causal
+    handle — is the encoded "known" state load-bearing for the eventual abstention?
+  - **B2 generation-trajectory of the known/unknown projection** — does the code
+    fire BEFORE the refuse/answer token (pre-commitment monitor, H_monitor) or
+    echo the decision (H_decision_echo)? Reuse a read-trajectory runner.
+- **Track C — generalization (mixed; after A, opportunistic).**
+  - **C1 cross-dataset transfer** of the known/unknown probe (GPU: new extraction)
+    — general epistemic code vs dataset-specific.
+  - **C2 cross-regimen read on DPO/KTO seeds** (GPU-free IF those activations
+    exist) — does the same direction read across the paper-2 regimens? Ties the
+    mech result to the headline SFT/DPO/KTO comparison.
+- **Track D — synthesis.** Assemble the training-tradeoff narrative once A (+ at
+  least one of B/C) lands.
+
+Sequencing: A1→A2→A3 in one GPU-free grind, report the hardened headline, then
+choose B vs C with the user.
+
 ## Status log
 
 - 2026-06-26: created (proposed). Spun off from session 0023's Step A.4 sweep into
@@ -366,3 +412,43 @@ experiment-specific code to the `synaptic-tuner` submodule.
   signal is the uncertainty representation the steerable axes (F, K — both
   anti-steer) were not. Next controls: lexical-baseline AUROC; within-known
   refused-vs-answered probe; h_base (pre-GRPO) comparison; held-out question set.
+- 2026-06-26: **Track-A hardening controls** via
+  `phase3_latent_knowledge_controls.py` (A1, A2; GPU-free) + an `h_base` re-run of
+  the probe (A3). The controls PARTLY DEFLATE the headline and surface a cleaner
+  signal — calibrated result, not the inflated one.
+  - **A1 lexical baseline (the key control): the 0.997 known/unknown AUROC is
+    LARGELY a dataset-lexicon confound.** A TF-IDF (1–2gram) logistic on the raw
+    QUESTION TEXT already separates known/unknown at **0.964**; the residual probe
+    (L35 0.997) beats it by only **+0.033**. known/unknown is dataset-defined
+    (answerable TriviaQA-style vs unanswerable SelfAware-style) and the two have
+    distinct vocabularies, so most of the spectacular AUROC is readable from
+    question words — NOT primarily an internal memory-retrieval signal. The probe's
+    own depth profile agrees: it JUMPS at L1 (0.981) and plateaus (shallow/surface),
+    rather than building with depth. Headline correction: do not report the raw
+    known/unknown AUROC as evidence of an internal "do I know this" code.
+  - **A2 within-known refused-vs-answered (the result that SURVIVES): a clean,
+    DEEP internal over-refusal axis.** Restricting to KNOWN rows only and
+    predicting over-refused (known_refused=168) vs answered (known_answered=388) —
+    a contrast orthogonal to the known/unknown labels — the residual hits
+    **0.919** (L35) while the lexical baseline gets only **0.641** (margin
+    **+0.278**). Unlike A1 this CLIMBS with depth (L1 0.67 → L18 0.83 → L35 0.92):
+    a COMPUTED deep feature, not surface vocabulary. So among questions the model
+    knows, there is a genuine internal signature distinguishing the ones it
+    over-refuses, not reducible to question wording. This — not the
+    lexicon-confounded known/unknown probe — is the real read-side uncertainty/
+    caution activation candidate. (Residual caveat: lexical controls surface words,
+    not deeper semantic difficulty; but 0.64→0.92 + depth-climb is strong.)
+  - **A3 h_base (pre-adapter) comparison: GRPO INHERITED both signals from SFT,
+    did not sharpen them.** On the SFT-merged h_base activations the known/unknown
+    curve is near-identical (L1 0.981, L35 0.997) and the over-refusal gap position
+    is **0.266** vs h_lora's 0.27 (over-refusals look internally KNOWN in BOTH).
+    Mirrors the F-pre-exists-GRPO finding: the read geometry (boundary code + the
+    latent-knowledge gap) is SFT-laid; GRPO moved BEHAVIOR (more abstention), not
+    the representation. Consistent training-tradeoff story across F and the
+    read-side probes.
+  - **Net:** the belief-vs-action / over-refusal story holds and is now lexically
+    clean (A2 + the gap), but the inflated "residual encodes known/unknown at
+    0.997" claim is recharacterized as mostly dataset-lexicon (A1). Next: B2
+    generation-trajectory timing (pre-commitment vs decision-echo for the A2 axis),
+    or C2 cross-regimen read on DPO/KTO; B1 activation-patching for a causal handle
+    that survives anti-steerability.
