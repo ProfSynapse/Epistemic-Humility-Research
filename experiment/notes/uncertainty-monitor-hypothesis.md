@@ -294,3 +294,21 @@ experiment-specific code to the `synaptic-tuner` submodule.
   (alpha curve) — a read/write sign inversion localized to write-side steering.
   H_monitor (distinct uncertainty subspace) and H_OOD_default refuted; refined
   sign-inverted H_refusal_motor supported. See 0025 checkpoint (alpha-curve).
+- 2026-06-26: **Per-head read-sign consistency** via
+  `phase3_head_read_sign_consistency.py` (GPU-free; re-reads the Tier-2
+  read-trajectory `rows.jsonl` `prompt_read_per_head`, no new generation).
+  **UNANIMOUS: 11/11 heads** read F with the same sign — prompt-token separation
+  mean(unknown_answered_wrong) − mean(unknown_refused) is positive for every head
+  (+0.78 to +1.69, mean +1.29; zero inverted). So the aggregate failure-axis read
+  is **not** a sum over cancelling heads; the A.4 steering inversion is a
+  write-side property on a clean, uniform read (Tan 2407.12404 anti-steerability:
+  read sign ≠ steer sign). Open follow-up: a **per-head steering sweep** (steer
+  each head individually) to test whether the anti-steerability is also uniform
+  per-head, or whether a subset of heads carries the inverted causal sign.
+- 2026-06-26: **SFT pre-adapter read-trajectory arm** launched
+  (`..._head_read_trajectory_sft_base.yaml`; GRPO adapter removed, generation +
+  read on the SFT-merged h_base model). Transfer/pre-existence test: does the
+  GRPO-derived F already separate the SFT model's OWN unknown-wrong vs
+  unknown-refused behavior at the prompt token, before GRPO training? Caveat: F
+  (theta/sigma) is fixed from GRPO activations; this reads that direction on SFT
+  activations (axis transfer, not an SFT-rebuilt axis). Result pending.

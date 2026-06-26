@@ -4,7 +4,7 @@ session_id: '0025'
 title: uncertainty-monitor-hypothesis
 status: complete
 created_at: '2026-06-26T19:11:24Z'
-updated_at: '2026-06-26T21:10:37Z'
+updated_at: '2026-06-26T21:24:34Z'
 phase: phase-3-mech-interp
 question: "Is the sign-inverted per-head failure-axis direction a graded internal\
   \ UNCERTAINTY MONITOR (amplifying it raises abstention) rather than a be-wrong axis\
@@ -452,6 +452,27 @@ checkpoints:
     prompt-token read carrying knowledge-boundary signal (Ferrando-adjacent) while
     being causally anti-aligned at generation. Base-model arm (T8) still untested.'
   signals: {}
+- id: 011-result
+  at: '2026-06-26T21:24:34Z'
+  kind: result
+  title: 'Per-head read-sign consistency: UNANIMOUS (11/11)'
+  summary: 'GPU-free analysis of the existing Tier-2 read-trajectory rows.jsonl: per
+    head, prompt-token read separation mean(unknown_answered_wrong) - mean(unknown_refused).
+    All 11 localized heads read F with the SAME sign (+0.78 to +1.69, mean +1.29);
+    zero heads inverted. The aggregate failure-axis read is not a sum over cancelling
+    heads -> the A.4 steering inversion is a write-side property sitting on a clean,
+    uniform read (consistent with Tan 2407.12404 anti-steerability: read sign != steer
+    sign). New GPU-free script phase3_head_read_sign_consistency.py (+5 tests).'
+  evidence:
+  - experiment/phase1/probe/phase3_head_read_sign_consistency.py; rows=analysis/.../head_read_trajectory/rows.jsonl
+    (256 rows; 61 answered_wrong, 67 refused)
+  run_ids: []
+  commands: []
+  decisions: []
+  next_steps:
+  - Per-head STEERING sweep to test whether anti-steerability is uniform per-head;
+    SFT pre-adapter read-trajectory arm launched (axis pre-existence/transfer test).
+  signals: {}
 ---
 # uncertainty-monitor-hypothesis
 
@@ -616,3 +637,12 @@ failure-axis direction move abstention ~0 (67→63 cells) vs the localized heads
   - Central H_monitor puzzle RESOLVED across three legs: (1) geometry -- F IS the refuse<->answer decision axis, not a distinct uncertainty subspace; (2) read-trajectory NO FLIP -- F's read is direction-consistent across positions, so the inversion is not a read/write coordinate flip; (3) alpha-curve DIRECTIONAL -- the write effect is a monotone, sign-inverted, bidirectional refusal motor, not OOD-collapse. Net: F is the refusal decision axis with a read/write SIGN INVERSION localized to write-side steering dynamics (anti-steerable mass-mean direction). H_monitor (distinct uncertainty monitor) and H_OOD_default are both refuted; refined H_refusal_motor (sign-inverted at write time) is supported and grounded in Tan.
 - next steps:
   - Remaining open: WHY the mass-mean read sign is inverted vs the causal steering sign (the anti-steerability mechanism itself). Candidate offline probes: per-head sign-consistency (does each head's read-sign vs steer-sign agree?), and whether projecting OUT F before generation removes the refusal-motor capacity. Novelty now narrows to: per-head localization of an anti-steerable refusal axis + the prompt-token read carrying knowledge-boundary signal (Ferrando-adjacent) while being causally anti-aligned at generation. Base-model arm (T8) still untested.
+### 011-result - Per-head read-sign consistency: UNANIMOUS (11/11)
+
+- at: `2026-06-26T21:24:34Z`
+- kind: `result`
+- summary: GPU-free analysis of the existing Tier-2 read-trajectory rows.jsonl: per head, prompt-token read separation mean(unknown_answered_wrong) - mean(unknown_refused). All 11 localized heads read F with the SAME sign (+0.78 to +1.69, mean +1.29); zero heads inverted. The aggregate failure-axis read is not a sum over cancelling heads -> the A.4 steering inversion is a write-side property sitting on a clean, uniform read (consistent with Tan 2407.12404 anti-steerability: read sign != steer sign). New GPU-free script phase3_head_read_sign_consistency.py (+5 tests).
+- evidence:
+  - `experiment/phase1/probe/phase3_head_read_sign_consistency.py; rows=analysis/.../head_read_trajectory/rows.jsonl (256 rows; 61 answered_wrong, 67 refused)`
+- next steps:
+  - Per-head STEERING sweep to test whether anti-steerability is uniform per-head; SFT pre-adapter read-trajectory arm launched (axis pre-existence/transfer test).
