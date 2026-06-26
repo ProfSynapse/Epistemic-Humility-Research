@@ -40,6 +40,15 @@ Three measurement layers on the same model, same questions:
 | L-hidden | internal knowledge state | linear probes on hidden states for "will answer correctly" (P(IK)-style) — trainable because we control the weights (LoRA, open 3B/7B) |
 | L-stated | verbalized confidence / abstention behavior | truthful rate, over-refusal, verbalized-confidence ECE |
 
+**L-token caveat (Zenn & Geiping, arXiv:2606.27359):** read the L-token logprob
+signal as a CROSS-prompt calibration signal, not a within-prompt sample-ranking
+signal. Within a dataset, sequence-probability/correctness correlation is
+informative across prompt-answer pairs and scales with task accuracy (Pearson
+r~0.6), but per-sample logprob/correctness correlation for repeated samples to
+the same prompt is mean-zero. So logprob-based ECE/AUROC at L-token measures
+whether the model is better-calibrated on some prompts than others; it does not
+license using sequence probability to rank or vote among samples of one prompt.
+
 **Core research question (RQ-coherence):** does humility fine-tuning (SFT /
 KTO / GRPO) produce *agreement* across the three layers, or only surface
 behavior at L-stated while L-token and L-hidden are unchanged (or degraded)?

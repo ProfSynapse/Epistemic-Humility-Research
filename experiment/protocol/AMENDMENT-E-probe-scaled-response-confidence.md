@@ -30,6 +30,14 @@ in `[0.4, 0.6]`, and no ordinary low-confidence or varied high-confidence SFT
 targets. The model learned the output envelope but had little reason to learn a
 usable scalar.
 
+External evidence supports deriving the target from sampled correctness rather
+than from sequence log-probability. Zenn & Geiping (arXiv:2606.27359) find that
+per-sample sequence-probability/correctness rank correlations are distributed
+symmetrically around zero, so log-probability is not a reliable lever for
+ranking repeated responses to the same prompt. The probe-scaled target below
+uses empirical `p_correct` over 32 samples, an accuracy estimate rather than a
+probability lever, which is the better-grounded signal under that finding.
+
 ## 2. Relationship To Existing Protocols
 
 This amendment is additive and corrective relative to Amendment D.

@@ -172,6 +172,17 @@ These papers may motivate questions and source-gate priorities. They must not
 be cited as validated mechanism support until ingestion and reconciliation are
 complete.
 
+Follow-up SAE-stage method candidate (ingested 2026-06-26, not mechanism
+support):
+
+- `2606.27321`: off-support L1 and L1/L2-ratio sparsity regularizers that
+  improve Top-k SAE feature monosemanticity at no reconstruction cost. Relevant
+  only to the gated follow-up SAE feature-screen stage (SAE/encoder methods are
+  considered only after a reproducible causal target exists, per Methods). The
+  evidence is vision-domain (CLIP/SigLIP2/ViT on ImageNet/Open Images); transfer
+  to text-model SAEs is unverified, so it is a method candidate for SAE feature
+  quality, not mechanism evidence.
+
 ## Reporting Rules
 
 Reports must label evidence tier, frozen-row scope, controls run, and controls
