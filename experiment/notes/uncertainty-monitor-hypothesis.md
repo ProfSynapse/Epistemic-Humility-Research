@@ -234,3 +234,17 @@ experiment-specific code to the `synaptic-tuner` submodule.
   Tan 2407.12404 as the sign-instability grounding (both ingested same day). The
   random-HEAD control sigma-matched leg is complete (random heads do NOT reproduce
   the abstention shift); the norm-matched leg was in flight at creation.
+- 2026-06-26: random-HEAD control complete (both legs). Localization is real and
+  dominant (~75% head-selection-specific) with a ~25% generic-energy component;
+  see session 0025 checkpoint 005.
+- 2026-06-26: **Tier 1 T1 (geometry) run** via `phase3_head_axis_geometry.py`
+  (GPU-free; parity self-check passes). Failure axis F vs refuse-vs-answer axis R:
+  mean cos −0.80 across all 11 heads; vs knowledge-boundary axis K: mean |cos| 0.12
+  (6.4× dominance). F **is** the refuse↔answer decision axis (anti-aligned by
+  construction), **orthogonal** to the static known/unknown axis. This **refutes**
+  both the naive refusal-motor reading and the clean "distinct uncertainty
+  subspace" reading of H_monitor, and re-centers the puzzle on a **read/write sign
+  inversion** on the decision axis (see 0025 checkpoint 006). Design update:
+  promote the Tier-2 projection-trajectory test (does the read axis flip sign
+  between the prompt token and generation positions?) and the read/write-mismatch
+  explanation; demote the separate-subspace framing.
