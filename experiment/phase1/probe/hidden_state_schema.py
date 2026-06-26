@@ -59,6 +59,22 @@ VALID_ADAPTER_STATES = frozenset({
 TOKEN_POSITION_FINAL_PROMPT = "final_prompt_token"
 VALID_TOKEN_POSITION_RULES = frozenset({TOKEN_POSITION_FINAL_PROMPT})
 
+# Extraction granularity (Step A, ITI-grounded). The MVP captured only the
+# residual stream at each block output (`expected_layer_count` = N+1 vectors of
+# width hidden_dim). `attention_head` captures the per-head context vectors that
+# feed each block's attention output projection (o_proj input), which is the
+# surface ITI (paper:2306.03341) localizes and intervenes on to close the
+# generation-discrimination gap. Head granularity has a DIFFERENT shape contract
+# (N attention layers, no embedding layer; each layer carries
+# num_attention_heads * head_dim values), validated by validate_head_state_shape
+# rather than validate_hidden_state_shape. Default stays residual_stream so every
+# existing config and persisted artifact keeps its exact meaning.
+GRANULARITY_RESIDUAL_STREAM = "residual_stream"
+GRANULARITY_ATTENTION_HEAD = "attention_head"
+VALID_GRANULARITIES = frozenset({
+    GRANULARITY_RESIDUAL_STREAM, GRANULARITY_ATTENTION_HEAD,
+})
+
 # Crash-safe manifest status lifecycle (Decision D-bis): WRITE-BEFORE-INVOKE
 # stamps `launched`; the forward patches `ok` or `failed`. A `launched` manifest
 # left on disk is a self-evident crashed/partial extraction.
@@ -265,6 +281,120 @@ def validate_hidden_state_shape(
                 f"hidden-state layer {layer_id} vector length {length} != "
                 f"hidden_dim {hidden_dim}; a final-token vector must be 1-D of "
                 "width hidden_dim"
+            )
+
+
+# ---------------------------------------------------------------------------
+# Per-head (attention_head) granularity: shape contract + reshape (no torch)
+# ---------------------------------------------------------------------------
+
+def validate_granularity(granularity: str) -> None:
+    """Reject any extraction granularity outside the supported set."""
+    if granularity not in VALID_GRANULARITIES:
+        raise ValueError(
+            f"extraction granularity {granularity!r} is not supported; "
+            f"expected one of {sorted(VALID_GRANULARITIES)}"
+        )
+
+
+def expected_attention_layer_count(num_hidden_layers: int) -> int:
+    """Per-head granularity carries one vector per attention BLOCK (N), no embeds.
+
+    Unlike `expected_layer_count` (N+1, which includes the index-0 embedding
+    output of the residual stream), the per-head surface is the o_proj input of
+    each of the N decoder blocks. There is no head activation for the embedding
+    layer, so the contract is exactly N contiguous ids 0..N-1.
+    """
+    return num_hidden_layers
+
+
+def reshape_o_proj_input_to_heads(
+    flat_vec, num_attention_heads: int, head_dim: int,
+) -> dict:
+    """Split one block's final-token o_proj-input vector into per-head vectors.
+
+    The attention output projection (o_proj) consumes the concatenation of every
+    query head's context vector, so its input width is
+    ``num_attention_heads * head_dim`` (this holds under GQA, where it differs
+    from hidden_size). This reshapes that flat 1-D vector into
+    ``{head_id: [head_dim floats]}`` for head_ids 0..num_attention_heads-1, in
+    the natural concatenation order (head h occupies slots
+    ``h*head_dim : (h+1)*head_dim``). Pure python so it is unit-testable without
+    torch; the backend hands in a plain list sliced from the captured tensor.
+
+    Raises ValueError if the flat width does not equal
+    num_attention_heads * head_dim, so a wrong head_dim/head-count config or a
+    captured tensor of the wrong layer is caught loudly rather than silently
+    mis-split.
+    """
+    if num_attention_heads <= 0 or head_dim <= 0:
+        raise ValueError(
+            f"num_attention_heads ({num_attention_heads}) and head_dim "
+            f"({head_dim}) must both be positive"
+        )
+    width = _vector_length(flat_vec)
+    expected_width = num_attention_heads * head_dim
+    if width != expected_width:
+        raise ValueError(
+            f"o_proj-input width {width} != num_attention_heads * head_dim "
+            f"= {num_attention_heads} * {head_dim} = {expected_width}; the "
+            "captured vector does not match the configured head layout"
+        )
+    return {
+        head: list(flat_vec[head * head_dim:(head + 1) * head_dim])
+        for head in range(num_attention_heads)
+    }
+
+
+def validate_head_state_shape(
+    *, layer_vectors: dict, num_hidden_layers: int, num_attention_heads: int,
+    head_dim: int, token_position_rule: str,
+) -> None:
+    """Validate one arm's per-layer final-token o_proj-input stack (no torch).
+
+    `layer_vectors` maps attention-block id (int, 0..N-1) -> a 1-D sequence of
+    length ``num_attention_heads * head_dim`` (the final-token concatenated
+    per-head context that feeds that block's o_proj). This is the per-head
+    sibling of `validate_hidden_state_shape`; the residual validator is left
+    untouched so existing residual extractions keep their exact contract.
+
+    Raises ValueError on: wrong layer count (!= N, since there is no embedding
+    layer for head activations), a missing/extra layer id, or any layer vector
+    whose length != num_attention_heads * head_dim.
+    """
+    validate_token_position_rule(token_position_rule)
+    if num_attention_heads <= 0 or head_dim <= 0:
+        raise ValueError(
+            f"num_attention_heads ({num_attention_heads}) and head_dim "
+            f"({head_dim}) must both be positive"
+        )
+
+    want_count = expected_attention_layer_count(num_hidden_layers)
+    if len(layer_vectors) != want_count:
+        raise ValueError(
+            f"head-state layer count {len(layer_vectors)} != num_hidden_layers "
+            f"= {want_count}. Per-head capture is one vector per attention block "
+            "(o_proj input); a mismatch means the wrong blocks were hooked."
+        )
+
+    expected_ids = set(range(want_count))
+    got_ids = set(layer_vectors.keys())
+    if got_ids != expected_ids:
+        missing = sorted(expected_ids - got_ids)
+        extra = sorted(got_ids - expected_ids)
+        raise ValueError(
+            f"head-state layer ids mismatch; missing={missing} extra={extra}; "
+            f"expected contiguous 0..{want_count - 1}"
+        )
+
+    expected_width = num_attention_heads * head_dim
+    for layer_id, vec in layer_vectors.items():
+        length = _vector_length(vec)
+        if length != expected_width:
+            raise ValueError(
+                f"head-state layer {layer_id} vector length {length} != "
+                f"num_attention_heads * head_dim = {expected_width}; a final-"
+                "token o_proj-input vector must be 1-D of that width"
             )
 
 

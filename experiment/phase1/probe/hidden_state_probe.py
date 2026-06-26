@@ -38,6 +38,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import re
 from pathlib import Path
 from typing import Protocol
 
@@ -417,6 +418,11 @@ class ExtractionBackend(Protocol):
 
     num_hidden_layers: int
     hidden_dim: int
+    # Per-head (attention_head granularity) layout; populated by backends that
+    # implement forward_head_states. num_attention_heads * head_dim is the
+    # o_proj-input width.
+    num_attention_heads: int
+    head_dim: int
 
     def render(self, question: str) -> str:
         """Render the prompt bytes for one question (shared render helper)."""
@@ -425,6 +431,18 @@ class ExtractionBackend(Protocol):
     def forward_hidden_states(self, rendered_prompt: str, arm_state: str,
                               adapter_name: str | None) -> dict:
         """Final-token hidden states per layer for one arm/adapter-state."""
+        ...
+
+    def forward_head_states(self, rendered_prompt: str, arm_state: str,
+                            adapter_name: str | None) -> dict:
+        """Final-token per-head o_proj-input stack for one arm/adapter-state.
+
+        Returns ``{block_id: flat_vector}`` for block_id 0..N-1, where each
+        flat_vector is length ``num_attention_heads * head_dim`` (the concatenated
+        per-head context feeding that block's attention output projection). This
+        is the ITI-style per-head surface; backends exposing it must also set
+        `num_attention_heads` and `head_dim` so the harness/manifest can reshape.
+        """
         ...
 
     def provenance(self) -> dict:
@@ -458,29 +476,54 @@ class StubExtractionBackend:
     """
 
     def __init__(self, num_hidden_layers: int = 3, hidden_dim: int = 8,
-                 system_prompt: str = "answer concisely", seed: int = 0):
+                 system_prompt: str = "answer concisely", seed: int = 0,
+                 num_attention_heads: int = 4, head_dim: int = 2):
         self.num_hidden_layers = num_hidden_layers
         self.hidden_dim = hidden_dim
         self.system_prompt = system_prompt
         self.seed = seed
+        # Per-head layout for the attention_head granularity stub path; defaults
+        # are tiny so tests stay fast. Independent of hidden_dim (under GQA the
+        # o_proj-input width num_attention_heads*head_dim need not equal hidden).
+        self.num_attention_heads = num_attention_heads
+        self.head_dim = head_dim
 
     def render(self, question: str) -> str:
         # Deterministic stand-in render; the real backend uses the shared helper.
         return f"<|stub|>{self.system_prompt}|{question}<|gen|>"
 
-    def forward_hidden_states(self, rendered_prompt, arm_state, adapter_name):
+    def _hashed_vector(self, *parts, width: int) -> list[float]:
         import hashlib
 
+        key = "|".join(str(p) for p in parts)
+        digest = hashlib.sha256(key.encode()).digest()
+        return [((digest[i % len(digest)] / 255.0) - 0.5) for i in range(width)]
+
+    def forward_hidden_states(self, rendered_prompt, arm_state, adapter_name):
         vectors: dict[int, list[float]] = {}
         layer_count = schema.expected_layer_count(self.num_hidden_layers)
         for layer in range(layer_count):
-            key = f"{self.seed}|{rendered_prompt}|{arm_state}|{adapter_name}|{layer}"
-            digest = hashlib.sha256(key.encode()).digest()
-            vectors[layer] = [
-                ((digest[i % len(digest)] / 255.0) - 0.5)
-                for i in range(self.hidden_dim)
-            ]
+            vectors[layer] = self._hashed_vector(
+                self.seed, rendered_prompt, arm_state, adapter_name, layer,
+                width=self.hidden_dim,
+            )
         return vectors
+
+    def forward_head_states(self, rendered_prompt, arm_state, adapter_name):
+        # Deterministic per-block o_proj-input stand-in: N attention blocks (no
+        # embedding layer), each width num_attention_heads*head_dim. arm_state is
+        # mixed into the hash so h_base != h_lora structurally, mirroring the
+        # residual stub. A distinct "head" tag keeps these vectors from colliding
+        # with the residual stub's per-layer vectors.
+        width = self.num_attention_heads * self.head_dim
+        return {
+            block: self._hashed_vector(
+                self.seed, "head", rendered_prompt, arm_state, adapter_name, block,
+                width=width,
+            )
+            for block in range(schema.expected_attention_layer_count(
+                self.num_hidden_layers))
+        }
 
     def provenance(self) -> dict:
         """Deterministic stub stand-ins for the post-load provenance fields.
@@ -1056,6 +1099,14 @@ class TransformersPeftBackend:
         self.model.eval()
         self.num_hidden_layers = self.model.config.num_hidden_layers
         self.hidden_dim = self.model.config.hidden_size
+        # Per-head layout for attention_head granularity. head_dim is read
+        # explicitly from config when present (Qwen3 sets head_dim independently,
+        # so hidden_size // num_attention_heads is WRONG under that config) and
+        # only falls back to the even-split when the config omits it.
+        self.num_attention_heads = self.model.config.num_attention_heads
+        self.head_dim = getattr(
+            self.model.config, "head_dim", None
+        ) or (self.hidden_dim // self.num_attention_heads)
 
     def render(self, question: str) -> str:
         # Reuse the SHARED render+verify helper (no second template path).
@@ -1085,6 +1136,87 @@ class TransformersPeftBackend:
     def _forward(self, inputs):
         return self.model(**inputs, output_hidden_states=True,
                           use_cache=False, return_dict=True)
+
+    def _o_proj_modules(self) -> dict:
+        """Map attention-block id -> that block's o_proj module (PEFT-safe).
+
+        Resolves by module-name suffix `self_attn.o_proj` over named_modules(),
+        so it is robust to PEFT's wrapper nesting (the matched module is the
+        possibly-LoRA-wrapped o_proj; hooking its INPUT captures the concatenated
+        per-head context regardless of whether o_proj is a LoRA target). The
+        block index is parsed from the `...layers.<i>...` segment of the name.
+        Raises if the discovered ids are not exactly the N contiguous blocks, so
+        a model whose attention module is named differently fails loudly instead
+        of silently capturing a partial stack.
+        """
+        modules: dict[int, object] = {}
+        for name, module in self.model.named_modules():
+            if not name.endswith("self_attn.o_proj"):
+                continue
+            match = re.search(r"layers\.(\d+)\.", name)
+            if match is None:
+                raise RuntimeError(
+                    f"found an o_proj module with no parseable block index: {name!r}"
+                )
+            modules[int(match.group(1))] = module
+        expected = set(range(self.num_hidden_layers))
+        if set(modules) != expected:
+            raise RuntimeError(
+                f"o_proj module discovery captured blocks {sorted(modules)}, "
+                f"expected contiguous 0..{self.num_hidden_layers - 1}; the model's "
+                "attention module naming is not the assumed `layers.<i>.self_attn."
+                "o_proj` layout"
+            )
+        return modules
+
+    def forward_head_states(self, rendered_prompt, arm_state, adapter_name):
+        """Capture each block's final-token o_proj INPUT (per-head context).
+
+        ITI-style per-head surface: a forward hook on every block's o_proj records
+        the tensor fed INTO the output projection, whose last dim is
+        num_attention_heads * head_dim (holds under GQA). We keep only the final
+        prompt token ([0, -1, :]) per block and return ``{block_id: flat_list}``;
+        the caller reshapes per head via schema.reshape_o_proj_input_to_heads.
+        Deterministic like forward_hidden_states: eval / no_grad / use_cache=False,
+        base vs active selected exactly as the residual path does. Hooks are always
+        removed in a finally so a raising forward cannot leak handles across arms.
+        """
+        torch = self._torch
+        captured: dict[int, list[float]] = {}
+        modules = self._o_proj_modules()
+        handles = []
+
+        def _make_hook(block_id: int):
+            def _hook(_module, inputs, _output):
+                # inputs[0]: [batch, seq, num_attention_heads * head_dim]
+                x = inputs[0]
+                captured[block_id] = x[0, -1, :].float().cpu().tolist()
+            return _hook
+
+        inputs = self.tokenizer(rendered_prompt, return_tensors="pt").to(self.device)
+        try:
+            for block_id, module in modules.items():
+                handles.append(module.register_forward_hook(_make_hook(block_id)))
+            with torch.no_grad():
+                if arm_state in schema.BASE_ADAPTER_STATES:
+                    with self.model.disable_adapter():
+                        self._forward(inputs)
+                else:
+                    self.model.set_adapter(adapter_name)
+                    self._forward(inputs)
+        finally:
+            for handle in handles:
+                handle.remove()
+
+        expected_width = self.num_attention_heads * self.head_dim
+        for block_id, vec in captured.items():
+            if len(vec) != expected_width:
+                raise RuntimeError(
+                    f"block {block_id} o_proj-input width {len(vec)} != "
+                    f"num_attention_heads * head_dim = {expected_width}; the "
+                    "captured tensor does not match the configured head layout"
+                )
+        return captured
 
     def provenance(self) -> dict:
         """Post-load manifest provenance from the REAL loaded model + libraries.
