@@ -6,7 +6,7 @@ kg:
   status: canonical
 tags:
   - kg/experiment
-status: running
+status: done
 governance: amendment
 phase: phase1
 lane: local
@@ -121,3 +121,11 @@ Brier/MAE versus response appropriateness.
 - 2026-06-24: merged the clean SFT->DPO seed-1 adapter, passed bounded
   merged-source sanity eval, and launched full GRPO in
   `eh-clean-sft-dpo-grpo-seed1-full-20260624a`.
+- 2026-06-24: full SelfAware eval completed cleanly with `n=3369`, `100%`
+  response-confidence coverage, `truthful_pct=41.20`,
+  `refusal_recall_pct=93.31`, `answer_on_unknown_pct=6.69`,
+  `over_refusal_pct=65.30`, `correct_on_known_pct=52.40`, mean response
+  confidence `0.844615`, and Brier vs response appropriateness `0.428793`.
+  Interpretation: GRPO after DPO strongly controls unknown answering but does
+  so with high known-row over-refusal; it is useful evidence but did not beat
+  the `clean_sft_grpo_dpo` direction on the overall tradeoff.

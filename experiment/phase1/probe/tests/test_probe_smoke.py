@@ -28,6 +28,7 @@ from backends import (  # noqa: E402
     assert_no_generated_thinking,
     assert_no_generated_thinking_batch,
     assert_no_think_scaffolding,
+    extract_answer_after_thinking,
 )
 from scoring import is_correct, normalize_answer, normalize_question, p_correct  # noqa: E402
 
@@ -186,6 +187,24 @@ def test_assert_no_generated_thinking_batch_identifies_sample_index():
             question="Who wrote Paradise Lost?",
             generation_kind="sampled",
         )
+
+
+def test_extract_answer_after_thinking_scores_final_answer_only():
+    answer, status = extract_answer_after_thinking(
+        "<think>\nprivate reasoning\n</think>\nJohn Milton"
+    )
+
+    assert answer == "John Milton"
+    assert status == "post_think"
+
+
+def test_extract_answer_after_thinking_scores_empty_for_unclosed_trace():
+    answer, status = extract_answer_after_thinking(
+        "<think>\nprivate reasoning mentions John Milton"
+    )
+
+    assert answer == ""
+    assert status == "unterminated_thinking"
 
 
 class _ModeSensitiveTokenizer:
@@ -440,6 +459,63 @@ def test_run_probe_rejects_generated_thinking_before_writing_rows(tmp_path, monk
 
     results_path = out_dir / "probe_results.jsonl"
     assert not results_path.exists() or results_path.read_text() == ""
+
+
+class _ThinkingGeneratedBackend:
+    def __init__(self, sampled_text: str, greedy_text: str):
+        self.sampled_text = sampled_text
+        self.greedy_text = greedy_text
+
+    def generate_batch(self, question, n_samples, temperature, top_p,
+                       max_new_tokens, seed):
+        return [self.sampled_text] * n_samples
+
+    def generate_greedy(self, question, max_new_tokens):
+        return self.greedy_text
+
+
+def test_run_probe_thinking_on_scores_post_think_answer(tmp_path, monkeypatch):
+    _patch_pool_to_fixture(monkeypatch)
+    config = _base_config(tmp_path)
+    config["model"]["enable_thinking"] = True
+    out_dir = tmp_path / "stub-model"
+    backend = _ThinkingGeneratedBackend(
+        sampled_text="<think>\nprivate reasoning\n</think>\nJohn Milton",
+        greedy_text="<think>\nprivate reasoning\n</think>\nJohn Milton",
+    )
+
+    results_path = probe.run_probe(config, backend, out_dir)
+    record = probe.read_results(results_path)[0]
+
+    assert record["sampled_answers"] == ["John Milton"] * config["sampling"]["n_samples"]
+    assert record["sampled_answers_raw"][0].startswith("<think>")
+    assert set(record["sampled_thinking_extract_statuses"]) == {"post_think"}
+    assert record["greedy_answer"] == "John Milton"
+    assert record["greedy_answer_raw"].startswith("<think>")
+    assert record["greedy_thinking_extract_status"] == "post_think"
+    assert record["p_correct"] == 1.0
+
+
+def test_run_probe_thinking_on_scores_empty_for_unclosed_trace(tmp_path, monkeypatch):
+    _patch_pool_to_fixture(monkeypatch)
+    config = _base_config(tmp_path)
+    config["model"]["enable_thinking"] = True
+    out_dir = tmp_path / "stub-model"
+    backend = _ThinkingGeneratedBackend(
+        sampled_text="<think>\nprivate reasoning mentions John Milton",
+        greedy_text="<think>\nprivate reasoning mentions John Milton",
+    )
+
+    results_path = probe.run_probe(config, backend, out_dir)
+    record = probe.read_results(results_path)[0]
+
+    assert record["sampled_answers"] == [""] * config["sampling"]["n_samples"]
+    assert set(record["sampled_thinking_extract_statuses"]) == {
+        "unterminated_thinking"
+    }
+    assert record["greedy_answer"] == ""
+    assert record["greedy_thinking_extract_status"] == "unterminated_thinking"
+    assert record["p_correct"] == 0.0
 
 
 def test_probe_pool_cap_selects_deterministic_question_subset(tmp_path, monkeypatch):

@@ -1,0 +1,43 @@
+# Phase 3 dedicated SelfAware frozen-manifest hidden-state extraction, full run.
+#
+# Current JSON-output response-confidence clean SFT->GRPO v2->DPO row. This
+# extracts the DPO adapter over the GRPO-v2 merged base so h_base is the
+# two-stage GRPO model and delta isolates the final preference-training surface.
+
+model:
+  model_tag: qwen3-4b-clean-sft-grpo-dpo-seed1-selfaware
+  model_name: /workspace/repo/scratch/schema_response_confidence/runs/schema_clean_sft_grpo_v2_seed1_full/20260624_095831/Qwen3-4B-clean-sft-grpo-v2/merged-16bit
+  revision: null
+  enable_thinking: false
+
+extraction:
+  layer_list: null
+  token_position_rule: final_prompt_token
+  compute_dtype: bfloat16
+  persist_dtype: float32
+  persistence_format: safetensors
+  device: cuda
+  persist_delta: true
+
+arms:
+  - name: clean_sft_grpo_v2_seed1_base
+    adapter_state: disabled
+    adapter: null
+  - name: clean_sft_grpo_dpo_seed1
+    adapter_state: active
+    adapter: /workspace/repo/scratch/schema_response_confidence/runs/clean_sft_grpo_dpo_seed1_full/20260625_031724/final_model
+
+eval_arms_source: null
+
+selection:
+  source: selfaware_manifest
+  manifest: manifests/phase3_selfaware_frozen_row_manifest.json
+
+output:
+  hidden_states_subdir: hidden_states_selfaware_clean_sft_grpo_dpo_full
+  manifest_filename: manifest.json
+  rows_filename: rows.jsonl
+
+manifest_provenance:
+  aligned_run_record_id: clean_sft_grpo_dpo_seed1_full
+  source_split: phase3-selfaware-frozen-row-manifest/v1

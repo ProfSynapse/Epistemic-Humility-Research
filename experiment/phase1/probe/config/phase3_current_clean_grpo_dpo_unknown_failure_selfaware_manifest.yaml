@@ -1,0 +1,27 @@
+purpose: >-
+  Build a focused GRPO-DPO SelfAware behavior panel for the unknown-answering
+  side of calibrated expression. The panel mirrors the GRPO v2 unknown-failure
+  panel so cross-regimen scans compare the same behavior-cell structure.
+
+behavior_arm: clean_sft_grpo_dpo
+strata_prefix: grpo_dpo_unknown_failure_panel
+
+inputs:
+  scored_rows: ../eval/results_amendment_f_response_confidence_selfaware_clean_sft_grpo_dpo_seed1_full_4b/clean_sft_grpo_dpo_seed1__selfaware/scored_rows.jsonl
+
+sampling:
+  seed: 20260626
+
+require_quotas: true
+
+quotas:
+  unknown_answered_wrong: 64
+  unknown_refused: 64
+  known_correct_answered: 64
+  known_refused: 64
+
+output:
+  manifest: manifests/phase3_current_clean_grpo_dpo_unknown_failure_selfaware_manifest.json
+  row_keys_file: config/phase3_current_clean_grpo_dpo_unknown_failure_selfaware_row_keys.txt
+  selected_scored_rows: config/phase3_current_clean_grpo_dpo_unknown_failure_selfaware_scored_rows.jsonl
+  summary: config/phase3_current_clean_grpo_dpo_unknown_failure_selfaware_manifest.summary.json

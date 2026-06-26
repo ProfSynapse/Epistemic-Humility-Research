@@ -26,6 +26,27 @@ Read for live eval, prompt/output contracts, scorer drift, and post-eval sanity 
   rows, unchanged low refusal rates versus non-thinking, slightly lower
   truthful/correct-on-known, and higher mean stated confidence.
 
+- Thinking-on knowledge probes are source-of-truth audits, not drop-in reruns
+  of the locked non-thinking probe. Keep the non-thinking path strict:
+  generated `<think>` tags still contaminate locked probe rows. For explicit
+  thinking audits, preserve raw generations but score only the final answer
+  after the last `</think>`; if a generation opens `<think>` and never closes
+  it, score an empty final answer and record the extraction status. Always
+  inspect extraction-status counts before interpreting label migration. A
+  2026-06-25 Qwen3 TriviaQA audit pilot with `max_new_tokens: 384` was invalid
+  because early greedy outputs mostly never reached `</think>`; a smaller
+  `max_new_tokens: 1024` audit produced usable but still imperfect closure
+  rates. If trace truncation dominates, stop and change the audit design before
+  spending more GPU.
+
+- TriviaQA exact-alias scoring is deliberately comparable across probes, but it
+  is not semantic truth. Article/title variants can be visually correct while
+  failing the locked scorer, e.g. an answer containing "Butch Cassidy and the
+  Sundance Kid" can miss aliases normalized as "butch cassidy and sundance kid".
+  Do not silently change the scorer during a comparability audit. Record this
+  as label-noise/conservative measurement, and only broaden scoring behind a
+  governed amendment with before/after sensitivity reporting.
+
 - Phase 1 local eval now has an opt-in live vLLM path:
   `python experiment/phase1/eval/run_eval.py --config <scoped-config.yaml>
   --live-vllm`. Default fixture behavior is unchanged. The live config must use

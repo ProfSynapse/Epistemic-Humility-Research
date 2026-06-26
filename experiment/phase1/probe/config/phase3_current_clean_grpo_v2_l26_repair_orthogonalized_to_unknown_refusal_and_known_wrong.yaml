@@ -1,0 +1,18 @@
+source_manifest: experiment/phase1/probe/analysis/current_clean_grpo_v2_l26_repair_multi_protect_directions/behavior_axis_directions.manifest.json
+
+transforms:
+  - label: clean_sft_grpo_v2_l26_known_repair_orthogonal_to_unknown_refusal_and_known_wrong
+    method: orthogonalize_to
+    contrast: known_repair_orthogonal_to_unknown_refusal_and_known_wrong
+    source_direction_id: behavior_axis__clean_sft_grpo_v2_l26_known_repair_multi_protect_normed__aac9693277a8
+    target_norm: 1.2142820358276367
+    constraints:
+      - source_direction_id: behavior_axis__clean_sft_grpo_v2_l26_unknown_refusal_multi_protect_normed__d116dd91a4f6
+      - source_direction_id: behavior_axis__clean_sft_grpo_v2_l26_known_wrong_multi_protect_normed__415bbcb729d2
+    metadata:
+      arm: clean_sft_grpo_v2
+      intervention_sign_hint: subtraction_reduces_known_overrefusal_after_removing_broad_unknown_refusal_and_known_wrong_components
+      selection_reason: test whether remaining known-wrong semantic errors can be reduced by adding a same-layer known-wrong protection constraint
+
+output:
+  root: experiment/phase1/probe/analysis/current_clean_grpo_v2_l26_repair_orthogonalized_to_unknown_refusal_and_known_wrong

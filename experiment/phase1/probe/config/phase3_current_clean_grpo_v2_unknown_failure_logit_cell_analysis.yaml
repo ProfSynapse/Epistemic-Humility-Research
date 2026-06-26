@@ -1,0 +1,38 @@
+source_rows: experiment/phase1/probe/qwen3-4b-clean-sft-grpo-v2-seed1-selfaware/hidden_states_selfaware_clean_sft_grpo_v2_unknown_failure_panel/extraction__b076a1b96a1c/rows.jsonl
+behavior_arm: clean_sft_grpo_v2
+target_group: refusal_openers
+
+runs:
+  - label: delta_unknown_wrong_l14
+    diagnostics: experiment/phase1/probe/analysis/current_clean_grpo_v2_unknown_failure_logit_diagnostic/clean_sft_grpo_v2_delta_unknown_wrong_vs_refused_l14_normed/logit_diagnostic/run_20260625T233503Z/logit_diagnostics.jsonl
+  - label: delta_unknown_wrong_l16
+    diagnostics: experiment/phase1/probe/analysis/current_clean_grpo_v2_unknown_failure_logit_diagnostic/clean_sft_grpo_v2_delta_unknown_wrong_vs_refused_l16_normed/logit_diagnostic/run_20260625T234301Z/logit_diagnostics.jsonl
+  - label: h_lora_unknown_wrong_l33
+    diagnostics: experiment/phase1/probe/analysis/current_clean_grpo_v2_unknown_failure_logit_diagnostic/clean_sft_grpo_v2_h_lora_unknown_wrong_vs_refused_l33_normed/logit_diagnostic/run_20260625T235050Z/logit_diagnostics.jsonl
+  - label: h_lora_unknown_wrong_l30
+    diagnostics: experiment/phase1/probe/analysis/current_clean_grpo_v2_unknown_failure_logit_diagnostic/clean_sft_grpo_v2_h_lora_unknown_wrong_vs_refused_l30_normed/logit_diagnostic/run_20260625T235838Z/logit_diagnostics.jsonl
+
+behavior_cells:
+  fallback_cell: other
+  cells:
+    - label: unknown_answered_wrong
+      filter:
+        label: unknown
+        refused: false
+        correct: false
+    - label: unknown_refused
+      filter:
+        label: unknown
+        refused: true
+    - label: known_correct_answered
+      filter:
+        label: known
+        refused: false
+        correct: true
+    - label: known_refused
+      filter:
+        label: known
+        refused: true
+
+output:
+  root: experiment/phase1/probe/analysis/current_clean_grpo_v2_unknown_failure_logit_diagnostic/cell_analysis

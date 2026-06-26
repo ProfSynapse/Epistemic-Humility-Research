@@ -119,6 +119,34 @@ Use `--dry-run` on any subcommand to print the delegated command before running
 it. For live Docker/GPU execution, the same approval rule applies: do not pass
 `--execute` unless the user has approved that live run.
 
+## Hidden-State Extraction Preflight
+
+Before launching a hidden-state extraction, run a model-free config preflight
+from the repo root. Importing `hidden_state_probe.py` directly requires the
+probe directory on `PYTHONPATH`; otherwise root-level imports can fail with
+`ModuleNotFoundError: No module named 'hidden_state_schema'`.
+
+PowerShell pattern:
+
+```powershell
+$env:PYTHONPATH='experiment/phase1/probe'
+@'
+from pathlib import Path
+from hidden_state_probe import parse_config, resolve_output_dir, select_matched_slice
+for path in [
+    Path('experiment/phase1/probe/config/example_hidden_state_config.yaml'),
+]:
+    cfg, sha = parse_config(path)
+    rows = select_matched_slice(cfg)
+    out = resolve_output_dir(cfg, sha)
+    print(path.name, sha[:16], len(rows), out.as_posix())
+'@ | python -
+```
+
+This validates YAML shape, arm declarations, selection source, row count, and
+deterministic output path without constructing the model backend. It is not a
+substitute for the manifest verification gate after live extraction.
+
 ## Sycophancy / Helpfulness Probe Path
 
 Use this path when testing whether training regimens change susceptibility to
@@ -292,6 +320,34 @@ Use one row key per line. Blank lines and `#` comments are allowed. Keep these
 files small, named by the panel purpose, and checked in only when they contain
 non-restricted row identifiers.
 
+For behavior-cell replay panels from an existing behavior-labeled rows file,
+use the checked-in builder instead of copying row keys from terminal output:
+
+```bash
+python experiment/phase1/probe/phase3_behavior_panel_row_keys.py \
+  --config experiment/phase1/probe/config/example_behavior_panel_row_keys.yaml
+```
+
+The builder selects deterministic row-key quotas by `behavior_cell`, applies
+exclude row-key files, and writes selected rows plus a manifest. Use it for
+disjoint replay panels such as known-refused / known-correct / unknown-refused
+stress tests.
+
+Do not infer rare-cell availability from the current extracted overlay alone.
+Full evals can contain enough rare failures even when a prior hidden-state
+extraction slice does not. For SelfAware full-eval rare-cell panels, first build
+a focused extraction-ready manifest from scored rows:
+
+```bash
+python experiment/phase1/probe/phase3_selfaware_behavior_manifest.py \
+  --config experiment/phase1/probe/config/example_selfaware_behavior_manifest.yaml
+```
+
+Then point a `selection.source: selfaware_manifest` hidden-state extraction at
+the generated manifest. Keep quotas explicit and `require_quotas: true` for
+balanced axes so sparse rare-cell panels fail closed instead of silently
+becoming one-sided.
+
 Hidden-state extraction also supports exact probe-pool row-key files:
 
 ```yaml
@@ -321,6 +377,13 @@ logit_targets:
 
 This requires the extraction rows to preserve the nested metadata field. Verify
 `rows.jsonl` before launching live diagnostics.
+
+For row-alias logit targets, verify the live runner actually receives aliases.
+Legacy probe result files usually expose `normalized_aliases`; current behavior
+row overlays expose `aliases`. The causal-pilot runner supports both, but only
+when `selection.probe_results` points at a row source that contains one of
+those fields. If answer-alias metrics are absent from `logit_diagnostics.jsonl`,
+do not interpret the run as answer-channel evidence; fix alias loading and rerun.
 
 ## SAE Path
 
@@ -370,6 +433,13 @@ python experiment/phase1/probe/phase3_gold_behavior_panel.py \
 Pass the resulting `rows.jsonl` as `extractions[].rows_path` in behavior-axis
 scan/export configs. The tensor shards still come from `extraction_dir`; the
 alternate rows file only supplies generated behavior labels and row filters.
+
+Before running a behavior-axis scan on reused extraction rows, inspect
+`source_arms` in the rows file and confirm the configured `behavior_arm` is
+present and current. A hidden-state extraction can be valid while its embedded
+row behavior labels come from an older eval manifest. In that case, materialize
+a current `rows_path` override from the current scored eval rows and point both
+the scan and direction-export configs at it.
 
 Use calibrated-expression plane analysis to project behavior cells onto paired
 damage axes after direction export:
@@ -499,6 +569,14 @@ For next-token probability slices, avoid treating every multi-token alias first
 token as exact correctness. Qwen tokenization can split an answer like
 `Ireland` into `I`, which collides with refusal openers.
 
+For schema-constrained prompts, confirm the diagnostic token position still
+matches the behavior question. If the prompt requires JSON output, a
+final-prompt-token diagnostic usually probes the opening JSON token rather than
+the answer/refusal text inside the `answer` field. Treat refusal-opener or
+answer-alias deltas under that setup as uninformative unless the runner supports
+an explicit answer-field prefix/position. Use generated-answer replay as the
+behavior gate instead.
+
 Use this default:
 
 ```yaml
@@ -525,6 +603,14 @@ After any scaled answer-start diagnostic:
 
 Generated-answer replay is the behavioral gate. First-token answer-start
 movement can be real while still loosening refusal into hallucinated answers.
+
+When generation mode needs a wrong-layer-style control, use an explicit
+shifted-layer candidate rather than calling unsupported logit-only controls.
+Reuse the same direction artifact and vector hash, set the candidate `layer` to
+the target intervention layer, and mark it with
+`allow_direction_layer_override: true` plus a clear control note. Normal
+candidate validation still fails closed on layer mismatches unless this flag is
+present.
 
 ## Controls
 
@@ -589,6 +675,22 @@ Require generated replay before claiming:
 
 Score refusal, correctness, truthfulness, and per-row deltas against baseline.
 Inspect changed rows manually, especially refusal-to-answer flips.
+Interpret deltas against the replay's own no-vector baseline, not only the
+behavior-cell labels used to select rows. Deterministic replay baselines can
+drift from the earlier scored behavior overlay, so summaries should report
+baseline and intervention counts side by side.
+
+Use the replay analyzer for completed generation sweeps:
+
+```bash
+python experiment/phase1/probe/phase3_generation_replay_analysis.py \
+  --root experiment/phase1/probe/analysis/example_generation_sweep \
+  --out experiment/phase1/probe/analysis/example_generation_sweep/summary_latest
+```
+
+This writes `summary.json`, `summary.csv`, and `changed_rows.csv`. Treat the
+automatic alias/refusal matching as triage; inspect changed rows before making
+behavior claims.
 
 ## Validation
 

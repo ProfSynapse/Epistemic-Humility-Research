@@ -1,0 +1,58 @@
+spec:
+  name: phase3_current_clean_grpo_v2_unknown_failure_directions
+  analysis_type: phase3_behavior_axis_direction_export
+  notice: BEHAVIOR_AXIS_DIRECTION_CANDIDATES_ONLY_GRPO_V2_UNKNOWN_FAILURE_PANEL
+
+source_scan_config: experiment/phase1/probe/config/phase3_current_clean_grpo_v2_unknown_failure_behavior_axis_scan.yaml
+
+axes:
+  - label: clean_sft_grpo_v2_delta_unknown_wrong_vs_refused_l14_normed
+    extraction_label: clean_sft_grpo_v2_seed1_unknown_failure_panel
+    behavior_arm: clean_sft_grpo_v2
+    arm: clean_sft_grpo_v2
+    role: delta
+    layer: 14
+    contrast: unknown_answered_wrong_vs_unknown_refused
+    transform_method: unit_rescale_to_norm
+    target_norm: 1.2142820358276367
+    metadata:
+      selection_reason: strongest GRPO v2 delta unknown-answering failure separation in focused panel
+
+  - label: clean_sft_grpo_v2_delta_unknown_wrong_vs_refused_l16_normed
+    extraction_label: clean_sft_grpo_v2_seed1_unknown_failure_panel
+    behavior_arm: clean_sft_grpo_v2
+    arm: clean_sft_grpo_v2
+    role: delta
+    layer: 16
+    contrast: unknown_answered_wrong_vs_unknown_refused
+    transform_method: unit_rescale_to_norm
+    target_norm: 1.2142820358276367
+    metadata:
+      selection_reason: second strongest nearby GRPO v2 delta unknown-answering failure separation in focused panel
+
+  - label: clean_sft_grpo_v2_h_lora_unknown_wrong_vs_refused_l33_normed
+    extraction_label: clean_sft_grpo_v2_seed1_unknown_failure_panel
+    behavior_arm: clean_sft_grpo_v2
+    arm: clean_sft_grpo_v2
+    role: h_lora
+    layer: 33
+    contrast: unknown_answered_wrong_vs_unknown_refused
+    transform_method: unit_rescale_to_norm
+    target_norm: 1.2142820358276367
+    metadata:
+      selection_reason: strongest GRPO v2 h_lora late-layer unknown-answering failure separation in focused panel
+
+  - label: clean_sft_grpo_v2_h_lora_unknown_wrong_vs_refused_l30_normed
+    extraction_label: clean_sft_grpo_v2_seed1_unknown_failure_panel
+    behavior_arm: clean_sft_grpo_v2
+    arm: clean_sft_grpo_v2
+    role: h_lora
+    layer: 30
+    contrast: unknown_answered_wrong_vs_unknown_refused
+    transform_method: unit_rescale_to_norm
+    target_norm: 1.2142820358276367
+    metadata:
+      selection_reason: nearby late-layer GRPO v2 h_lora unknown-answering failure separation in focused panel
+
+output:
+  root: experiment/phase1/probe/analysis/current_clean_grpo_v2_unknown_failure_directions
