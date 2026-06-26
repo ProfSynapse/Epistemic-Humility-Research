@@ -4,7 +4,7 @@ session_id: '0025'
 title: uncertainty-monitor-hypothesis
 status: complete
 created_at: '2026-06-26T19:11:24Z'
-updated_at: '2026-06-26T21:05:42Z'
+updated_at: '2026-06-26T21:10:37Z'
 phase: phase-3-mech-interp
 question: "Is the sign-inverted per-head failure-axis direction a graded internal\
   \ UNCERTAINTY MONITOR (amplifying it raises abstention) rather than a be-wrong axis\
@@ -414,6 +414,44 @@ checkpoints:
     if monotone in sign it is directional anti-steer. That reuses already-generated
     data.'
   signals: {}
+- id: 010-result
+  at: '2026-06-26T21:10:37Z'
+  kind: result
+  title: 'A.4 alpha-curve discriminator: DIRECTIONAL anti-steer, NOT OOD-collapse
+    (H_OOD_default refuted)'
+  summary: 'phase3_head_intervention_sign_curve.py (GPU-free; re-reads the existing
+    A.4 sweep summary.json, no new generation) classifies the refusal-vs-alpha curve
+    to discriminate the two surviving write-side explanations. RESULT: DIRECTIONAL
+    (anti-steerable), robust across both refusal metrics. unknown_refusal_rate vs
+    alpha: -8->40.6, -4->48.4, -2->48.4, 0->52.3, +4->82.8 (monotone); over_refusal_on_known:
+    -8->47.7 ... +4->56.3 (monotone). -F (toward the refused pole) LOWERS refusal
+    even at large magnitude (no collapse); +F RAISES refusal sharply, globally across
+    known AND unknown. This REFUTES H_OOD_default (which predicts BOTH extremes rise
+    above baseline) and confirms a genuine directional refusal motor whose STEERING
+    sign is inverted relative to the prompt-token READ direction -- exactly Tan 2407.12404
+    anti-steerability.'
+  evidence: []
+  run_ids: []
+  commands: []
+  decisions:
+  - 'Central H_monitor puzzle RESOLVED across three legs: (1) geometry -- F IS the
+    refuse<->answer decision axis, not a distinct uncertainty subspace; (2) read-trajectory
+    NO FLIP -- F''s read is direction-consistent across positions, so the inversion
+    is not a read/write coordinate flip; (3) alpha-curve DIRECTIONAL -- the write
+    effect is a monotone, sign-inverted, bidirectional refusal motor, not OOD-collapse.
+    Net: F is the refusal decision axis with a read/write SIGN INVERSION localized
+    to write-side steering dynamics (anti-steerable mass-mean direction). H_monitor
+    (distinct uncertainty monitor) and H_OOD_default are both refuted; refined H_refusal_motor
+    (sign-inverted at write time) is supported and grounded in Tan.'
+  next_steps:
+  - 'Remaining open: WHY the mass-mean read sign is inverted vs the causal steering
+    sign (the anti-steerability mechanism itself). Candidate offline probes: per-head
+    sign-consistency (does each head''s read-sign vs steer-sign agree?), and whether
+    projecting OUT F before generation removes the refusal-motor capacity. Novelty
+    now narrows to: per-head localization of an anti-steerable refusal axis + the
+    prompt-token read carrying knowledge-boundary signal (Ferrando-adjacent) while
+    being causally anti-aligned at generation. Base-model arm (T8) still untested.'
+  signals: {}
 ---
 # uncertainty-monitor-hypothesis
 
@@ -569,3 +607,12 @@ failure-axis direction move abstention ~0 (67→63 cells) vs the localized heads
   - `summary.json analysis block in current_clean_grpo_v2_unknown_failure_prompt_matched_head_read_trajectory (gitignored); groups 61 unknown-wrong / 67 unknown-refused; 4 offline unit tests pass (read-hook last-position capture on a tiny torch model; sign-flip/no-flip/roundtrip analysis)`
 - next steps:
   - The inverted WRITE effect now has two live explanations to discriminate, both write-side: (a) Tan 2407.12404 genuine anti-steerability (sign-unstable steering), (b) H_OOD_default -- simultaneous all-position all-head ITI injection breaks attention and the model falls back to its safe default (refuse). CHEAP DISCRIMINATOR (offline, no GPU): re-read the existing A.4 intervention-sweep rows (alphas [-8,-4,-2,0,+4]) for the alpha->refusal curve -- if refusal rises for BOTH signs it is OOD-collapse; if monotone in sign it is directional anti-steer. That reuses already-generated data.
+### 010-result - A.4 alpha-curve discriminator: DIRECTIONAL anti-steer, NOT OOD-collapse (H_OOD_default refuted)
+
+- at: `2026-06-26T21:10:37Z`
+- kind: `result`
+- summary: phase3_head_intervention_sign_curve.py (GPU-free; re-reads the existing A.4 sweep summary.json, no new generation) classifies the refusal-vs-alpha curve to discriminate the two surviving write-side explanations. RESULT: DIRECTIONAL (anti-steerable), robust across both refusal metrics. unknown_refusal_rate vs alpha: -8->40.6, -4->48.4, -2->48.4, 0->52.3, +4->82.8 (monotone); over_refusal_on_known: -8->47.7 ... +4->56.3 (monotone). -F (toward the refused pole) LOWERS refusal even at large magnitude (no collapse); +F RAISES refusal sharply, globally across known AND unknown. This REFUTES H_OOD_default (which predicts BOTH extremes rise above baseline) and confirms a genuine directional refusal motor whose STEERING sign is inverted relative to the prompt-token READ direction -- exactly Tan 2407.12404 anti-steerability.
+- decisions:
+  - Central H_monitor puzzle RESOLVED across three legs: (1) geometry -- F IS the refuse<->answer decision axis, not a distinct uncertainty subspace; (2) read-trajectory NO FLIP -- F's read is direction-consistent across positions, so the inversion is not a read/write coordinate flip; (3) alpha-curve DIRECTIONAL -- the write effect is a monotone, sign-inverted, bidirectional refusal motor, not OOD-collapse. Net: F is the refusal decision axis with a read/write SIGN INVERSION localized to write-side steering dynamics (anti-steerable mass-mean direction). H_monitor (distinct uncertainty monitor) and H_OOD_default are both refuted; refined H_refusal_motor (sign-inverted at write time) is supported and grounded in Tan.
+- next steps:
+  - Remaining open: WHY the mass-mean read sign is inverted vs the causal steering sign (the anti-steerability mechanism itself). Candidate offline probes: per-head sign-consistency (does each head's read-sign vs steer-sign agree?), and whether projecting OUT F before generation removes the refusal-motor capacity. Novelty now narrows to: per-head localization of an anti-steerable refusal axis + the prompt-token read carrying knowledge-boundary signal (Ferrando-adjacent) while being causally anti-aligned at generation. Base-model arm (T8) still untested.

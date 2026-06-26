@@ -280,3 +280,17 @@ experiment-specific code to the `synaptic-tuner` submodule.
   all-head injection → safe-default collapse). Cheap offline discriminator:
   re-read the A.4 sweep alpha→refusal curve (symmetric in sign ⇒ OOD-collapse;
   monotone ⇒ directional). See 0025 checkpoint (Tier-2 read-trajectory).
+- 2026-06-26: **A.4 alpha-curve discriminator** via
+  `phase3_head_intervention_sign_curve.py` (GPU-free; re-reads the existing A.4
+  `summary.json`, no new generation). **DIRECTIONAL (anti-steerable), not
+  OOD-collapse.** unknown_refusal_rate is monotone in alpha (−8→40.6, −4→48.4,
+  −2→48.4, 0→52.3, +4→82.8) and over_refusal_on_known likewise (−8→47.7 … +4→
+  56.3): −F lowers refusal even at large magnitude (no collapse), +F raises it
+  globally across known **and** unknown. Refutes **H_OOD_default**; confirms a
+  directional refusal motor whose steering sign is inverted vs the prompt-token
+  read (Tan 2407.12404). **Net resolution** of the central puzzle: F is the
+  refuse↔answer decision axis (geometry) read direction-consistently across
+  positions (no-flip trajectory) but causally **anti-aligned** under injection
+  (alpha curve) — a read/write sign inversion localized to write-side steering.
+  H_monitor (distinct uncertainty subspace) and H_OOD_default refuted; refined
+  sign-inverted H_refusal_motor supported. See 0025 checkpoint (alpha-curve).
