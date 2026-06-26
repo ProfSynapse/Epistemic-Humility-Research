@@ -13,6 +13,27 @@ scratch/
 # local operational logs
 experiment/phase1/run_records/logs/
 
+# Generated Phase 3 probe artifacts. Keep reusable scripts/configs/notes in git,
+# but do not publish raw logs, rows, vectors, or run-output directories by default.
+experiment/phase1/probe/analysis/**/_execution_logs/
+experiment/phase1/probe/analysis/**/_sweep_configs/
+experiment/phase1/probe/analysis/**/directions/
+experiment/phase1/probe/analysis/**/generation/
+experiment/phase1/probe/analysis/**/logit_diagnostic/
+experiment/phase1/probe/analysis/**/*.safetensors
+experiment/phase1/probe/analysis/**/*.jsonl
+experiment/phase1/probe/analysis/**/*.csv
+experiment/phase1/probe/analysis/**/*.json
+experiment/phase1/probe/analysis/**/metrics.json
+experiment/phase1/probe/analysis/**/run_manifest.json
+experiment/phase1/probe/analysis/**/sweep_manifest.json
+experiment/phase1/probe/analysis/**/planned_commands.jsonl
+experiment/phase1/probe/config/*.summary.json
+experiment/phase1/probe/config/*row_keys*.manifest.json
+experiment/phase1/probe/config/*_rows.jsonl
+experiment/phase1/probe/config/*_scored_rows.jsonl
+experiment/phase1/probe/manifests/
+
 # git worktrees (PACT feature isolation)
 .worktrees/
 

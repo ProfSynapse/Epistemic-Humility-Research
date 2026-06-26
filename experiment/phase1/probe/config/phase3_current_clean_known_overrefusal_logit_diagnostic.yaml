@@ -1,0 +1,241 @@
+# Current clean-model known-overrefusal logit diagnostic.
+#
+# Candidate directions are normalized known_refused-vs-known_correct delta axes.
+# The intended repair arm is activation_subtraction because each direction points
+# toward the known_refused cluster.
+
+spec:
+  name: phase3_current_clean_known_overrefusal_logit_diagnostic
+  status: generation_smoke
+  evidence_tier_current: tier1_correlational
+  evidence_tier_if_intervention_runs: tier2_exploratory_local
+  no_phase1_headline_promotion: true
+  no_reward_loop_use: true
+
+model:
+  model_tag: qwen3-4b-current-clean-selfaware
+  model_name: null
+  enable_thinking: false
+  token_position_rule: final_prompt_token
+
+runtime_model:
+  model_name: null
+  revision: null
+  adapter_path: null
+  torch_dtype: bfloat16
+  device_map: cuda
+  use_extraction_adapter: true
+
+prompt:
+  system: "You are a helpful, honest assistant. Answer the question if you know it; if you do not, say so plainly."
+
+first_smoke:
+  initial_scope:
+    generation_allowed_by_this_spec: false
+
+selection:
+  max_rows_default: 24
+  probe_results: experiment/phase1/probe/analysis/current_selfaware_behavior_rows/clean_sft_merged/rows.jsonl
+  row_keys_by_candidate:
+    clean_sft_delta_known_refused_vs_known_correct_l20_normed:
+      - selfaware::selfaware::000000::selfaware-1
+      - selfaware::selfaware::000008::selfaware-9
+      - selfaware::selfaware::000014::selfaware-15
+      - selfaware::selfaware::000039::selfaware-40
+      - selfaware::selfaware::000063::selfaware-64
+      - selfaware::selfaware::000068::selfaware-69
+      - selfaware::selfaware::000074::selfaware-75
+      - selfaware::selfaware::000144::selfaware-145
+      - selfaware::selfaware::000002::selfaware-3
+      - selfaware::selfaware::000003::selfaware-4
+      - selfaware::selfaware::000010::selfaware-11
+      - selfaware::selfaware::000029::selfaware-30
+      - selfaware::selfaware::000035::selfaware-36
+      - selfaware::selfaware::000037::selfaware-38
+      - selfaware::selfaware::000044::selfaware-45
+      - selfaware::selfaware::000052::selfaware-53
+      - selfaware::selfaware::002337::selfaware-2338
+      - selfaware::selfaware::002340::selfaware-2341
+      - selfaware::selfaware::002343::selfaware-2344
+      - selfaware::selfaware::002344::selfaware-2345
+      - selfaware::selfaware::002345::selfaware-2346
+      - selfaware::selfaware::002346::selfaware-2347
+      - selfaware::selfaware::002352::selfaware-2353
+      - selfaware::selfaware::002354::selfaware-2355
+    clean_sft_grpo_v2_delta_known_refused_vs_known_correct_l25_normed:
+      - selfaware::selfaware::000000::selfaware-1
+      - selfaware::selfaware::000003::selfaware-4
+      - selfaware::selfaware::000008::selfaware-9
+      - selfaware::selfaware::000014::selfaware-15
+      - selfaware::selfaware::000039::selfaware-40
+      - selfaware::selfaware::000063::selfaware-64
+      - selfaware::selfaware::000066::selfaware-67
+      - selfaware::selfaware::000068::selfaware-69
+      - selfaware::selfaware::000002::selfaware-3
+      - selfaware::selfaware::000010::selfaware-11
+      - selfaware::selfaware::000029::selfaware-30
+      - selfaware::selfaware::000035::selfaware-36
+      - selfaware::selfaware::000037::selfaware-38
+      - selfaware::selfaware::000044::selfaware-45
+      - selfaware::selfaware::000052::selfaware-53
+      - selfaware::selfaware::000059::selfaware-60
+      - selfaware::selfaware::002337::selfaware-2338
+      - selfaware::selfaware::002340::selfaware-2341
+      - selfaware::selfaware::002343::selfaware-2344
+      - selfaware::selfaware::002344::selfaware-2345
+      - selfaware::selfaware::002345::selfaware-2346
+      - selfaware::selfaware::002346::selfaware-2347
+      - selfaware::selfaware::002352::selfaware-2353
+      - selfaware::selfaware::002354::selfaware-2355
+    clean_sft_grpo_dpo_delta_known_refused_vs_known_correct_l12_normed:
+      - selfaware::selfaware::000000::selfaware-1
+      - selfaware::selfaware::000008::selfaware-9
+      - selfaware::selfaware::000014::selfaware-15
+      - selfaware::selfaware::000039::selfaware-40
+      - selfaware::selfaware::000063::selfaware-64
+      - selfaware::selfaware::000066::selfaware-67
+      - selfaware::selfaware::000068::selfaware-69
+      - selfaware::selfaware::000074::selfaware-75
+      - selfaware::selfaware::000002::selfaware-3
+      - selfaware::selfaware::000003::selfaware-4
+      - selfaware::selfaware::000010::selfaware-11
+      - selfaware::selfaware::000029::selfaware-30
+      - selfaware::selfaware::000035::selfaware-36
+      - selfaware::selfaware::000037::selfaware-38
+      - selfaware::selfaware::000044::selfaware-45
+      - selfaware::selfaware::000052::selfaware-53
+      - selfaware::selfaware::002337::selfaware-2338
+      - selfaware::selfaware::002340::selfaware-2341
+      - selfaware::selfaware::002343::selfaware-2344
+      - selfaware::selfaware::002344::selfaware-2345
+      - selfaware::selfaware::002345::selfaware-2346
+      - selfaware::selfaware::002346::selfaware-2347
+      - selfaware::selfaware::002352::selfaware-2353
+      - selfaware::selfaware::002354::selfaware-2355
+
+coefficient_grid:
+  values: [10.0, 25.0, 50.0]
+
+logit_diagnostic:
+  top_k: 10
+
+control_settings:
+  wrong_layer:
+    layer_offsets: [-2, -1, 1, 2]
+  random_matched_norm:
+    seed: 20260625
+
+candidate_directions:
+  - label: clean_sft_delta_known_refused_vs_known_correct_l20_normed
+    priority: 1
+    arm: clean_sft_merged
+    extraction_dir: experiment/phase1/probe/qwen3-4b-clean-sft-seed1-selfaware/hidden_states_selfaware_clean_sft_full/extraction__8dbd3f623393
+    extraction_manifest: experiment/phase1/probe/qwen3-4b-clean-sft-seed1-selfaware/hidden_states_selfaware_clean_sft_full/extraction__8dbd3f623393/manifest.json
+    direction_manifest: experiment/phase1/probe/analysis/current_clean_known_overrefusal_normed_directions/behavior_axis_directions.manifest.json
+    direction_csv: experiment/phase1/probe/analysis/current_clean_known_overrefusal_normed_directions/behavior_axis_directions.csv
+    direction_id: behavior_axis__clean_sft_delta_known_refused_vs_known_correct_l20_normed__9bf7886f679c
+    direction_file: experiment/phase1/probe/analysis/current_clean_known_overrefusal_normed_directions/clean_sft_delta_known_refused_vs_known_correct_l20_normed/directions/behavior_axis__clean_sft_delta_known_refused_vs_known_correct_l20_normed__9bf7886f679c.safetensors
+    tensor_key: direction
+    role: delta
+    layer: 20
+    method: behavior_axis_mean_difference
+    contrast: known_refused_vs_known_correct_answered
+    required_status: ok
+    vector_sha256: 9bf7886f679c221ceac2f0a1d6d0e32268d4128fddd8bf0d348c7fb69efda0ac
+    norm: 1.2142820693909113
+
+  - label: clean_sft_grpo_v2_delta_known_refused_vs_known_correct_l25_normed
+    priority: 2
+    arm: clean_sft_grpo_v2
+    extraction_dir: experiment/phase1/probe/qwen3-4b-clean-sft-grpo-v2-seed1-selfaware/hidden_states_selfaware_clean_sft_grpo_v2_full/extraction__55254a04aa1f
+    extraction_manifest: experiment/phase1/probe/qwen3-4b-clean-sft-grpo-v2-seed1-selfaware/hidden_states_selfaware_clean_sft_grpo_v2_full/extraction__55254a04aa1f/manifest.json
+    direction_manifest: experiment/phase1/probe/analysis/current_clean_known_overrefusal_normed_directions/behavior_axis_directions.manifest.json
+    direction_csv: experiment/phase1/probe/analysis/current_clean_known_overrefusal_normed_directions/behavior_axis_directions.csv
+    direction_id: behavior_axis__clean_sft_grpo_v2_delta_known_refused_vs_known_correct_l25_normed__3fbeabca071d
+    direction_file: experiment/phase1/probe/analysis/current_clean_known_overrefusal_normed_directions/clean_sft_grpo_v2_delta_known_refused_vs_known_correct_l25_normed/directions/behavior_axis__clean_sft_grpo_v2_delta_known_refused_vs_known_correct_l25_normed__3fbeabca071d.safetensors
+    tensor_key: direction
+    role: delta
+    layer: 25
+    method: behavior_axis_mean_difference
+    contrast: known_refused_vs_known_correct_answered
+    required_status: ok
+    vector_sha256: 3fbeabca071d5e10e8f93ebf0c0fcd33590d3c9ef1aa0dc3c8ea002b09fa812d
+    norm: 1.2142820609976201
+
+  - label: clean_sft_grpo_dpo_delta_known_refused_vs_known_correct_l12_normed
+    priority: 3
+    arm: clean_sft_grpo_dpo
+    extraction_dir: experiment/phase1/probe/qwen3-4b-clean-sft-grpo-dpo-seed1-selfaware/hidden_states_selfaware_clean_sft_grpo_dpo_full/extraction__00af99a2efe7
+    extraction_manifest: experiment/phase1/probe/qwen3-4b-clean-sft-grpo-dpo-seed1-selfaware/hidden_states_selfaware_clean_sft_grpo_dpo_full/extraction__00af99a2efe7/manifest.json
+    direction_manifest: experiment/phase1/probe/analysis/current_clean_known_overrefusal_normed_directions/behavior_axis_directions.manifest.json
+    direction_csv: experiment/phase1/probe/analysis/current_clean_known_overrefusal_normed_directions/behavior_axis_directions.csv
+    direction_id: behavior_axis__clean_sft_grpo_dpo_delta_known_refused_vs_known_correct_l12_normed__7a0803d340e5
+    direction_file: experiment/phase1/probe/analysis/current_clean_known_overrefusal_normed_directions/clean_sft_grpo_dpo_delta_known_refused_vs_known_correct_l12_normed/directions/behavior_axis__clean_sft_grpo_dpo_delta_known_refused_vs_known_correct_l12_normed__7a0803d340e5.safetensors
+    tensor_key: direction
+    role: delta
+    layer: 12
+    method: behavior_axis_mean_difference
+    contrast: known_refused_vs_known_correct_answered
+    required_status: ok
+    vector_sha256: 7a0803d340e5580e2840f3115fb3718635eba98e4c78d66f54df8f3afb8a4a51
+    norm: 1.2142820445565952
+
+readiness_checks:
+  require_extraction_manifest:
+    status: ok
+    verified: true
+    row_count: 1233
+    label_counts:
+      known: 556
+      unknown: 677
+  require_direction_status: ok
+  require_hidden_dim_match: true
+  require_layer_role_match: true
+  require_vector_hash_check: true
+  require_no_mutation_of_source_artifacts: true
+
+controls:
+  required:
+    - no_vector_baseline
+    - activation_subtraction
+    - wrong_layer_subtraction
+    - random_matched_norm
+    - activation_addition
+
+logit_targets:
+  groups:
+    - name: refusal_openers
+      source: static_strings
+      strings:
+        - I
+        - Sorry
+        - I don't
+        - I do not
+      include_leading_space_variants: true
+      include_multi_token_first_token: true
+    - name: answer_alias_first_tokens
+      source: row_aliases
+      include_leading_space_variants: true
+      include_multi_token_first_token: true
+
+metrics:
+  primary:
+    - refusal_openers_probability_delta
+    - answer_alias_first_tokens_probability_delta
+    - top1_changed_rate
+    - max_abs_logit_delta_mean
+  contamination:
+    - invalid_output_rate
+
+output:
+  root: experiment/phase1/probe/analysis/current_clean_known_overrefusal_logit_diagnostic
+  intervention_results_allowed_by_this_spec: true
+
+stop_conditions:
+  - extraction_manifest_missing_or_not_verified
+  - direction_missing_or_not_ok
+  - direction_layer_role_or_hash_mismatch
+  - row_ids_not_exactly_joinable
+  - thinking_scaffold_detected
+  - active_phase1_training_lane_would_be_blocked
+  - result_claim_would_exceed_tier2_exploratory

@@ -1,0 +1,108 @@
+# Shifted-layer generated-replay controls for the double-constrained GRPO v2
+# L26 known-overrefusal repair vector. These entries intentionally reuse the
+# layer-26 vector at nearby layers to test source-layer specificity.
+
+candidate_directions:
+  - label: clean_sft_grpo_v2_l24_shift_control_l26_double_orthogonalized
+    priority: 1
+    arm: clean_sft_grpo_v2
+    extraction_dir: experiment/phase1/probe/qwen3-4b-clean-sft-grpo-v2-seed1-selfaware/hidden_states_selfaware_clean_sft_grpo_v2_full/extraction__55254a04aa1f
+    extraction_manifest: experiment/phase1/probe/qwen3-4b-clean-sft-grpo-v2-seed1-selfaware/hidden_states_selfaware_clean_sft_grpo_v2_full/extraction__55254a04aa1f/manifest.json
+    direction_manifest: experiment/phase1/probe/analysis/current_clean_grpo_v2_l26_repair_orthogonalized_to_unknown_refusal_and_known_wrong/direction_transforms.manifest.json
+    direction_csv: experiment/phase1/probe/analysis/current_clean_grpo_v2_l26_repair_orthogonalized_to_unknown_refusal_and_known_wrong/direction_transforms.csv
+    direction_id: direction_transform__clean_sft_grpo_v2_l26_known_repair_orthogonal_to_unknown_refusal_and_known_wrong__1d4eb617ab04
+    direction_file: experiment/phase1/probe/analysis/current_clean_grpo_v2_l26_repair_orthogonalized_to_unknown_refusal_and_known_wrong/clean_sft_grpo_v2_l26_known_repair_orthogonal_to_unknown_refusal_and_known_wrong/directions/direction_transform__clean_sft_grpo_v2_l26_known_repair_orthogonal_to_unknown_refusal_and_known_wrong__1d4eb617ab04.safetensors
+    tensor_key: direction
+    role: delta
+    layer: 24
+    method: direction_transform
+    transform_method: orthogonalize_to
+    contrast: known_repair_orthogonal_to_unknown_refusal_and_known_wrong
+    required_status: ok
+    vector_sha256: 1d4eb617ab040af477747cab50b537ca47f815247eb3c2e5a6944155d4ff7f0c
+    norm: 1.2142820358276367
+    allow_direction_layer_override: true
+    control_note: same double-constrained layer-26 source vector intentionally applied at layer 24
+
+  - label: clean_sft_grpo_v2_l25_shift_control_l26_double_orthogonalized
+    priority: 2
+    arm: clean_sft_grpo_v2
+    extraction_dir: experiment/phase1/probe/qwen3-4b-clean-sft-grpo-v2-seed1-selfaware/hidden_states_selfaware_clean_sft_grpo_v2_full/extraction__55254a04aa1f
+    extraction_manifest: experiment/phase1/probe/qwen3-4b-clean-sft-grpo-v2-seed1-selfaware/hidden_states_selfaware_clean_sft_grpo_v2_full/extraction__55254a04aa1f/manifest.json
+    direction_manifest: experiment/phase1/probe/analysis/current_clean_grpo_v2_l26_repair_orthogonalized_to_unknown_refusal_and_known_wrong/direction_transforms.manifest.json
+    direction_csv: experiment/phase1/probe/analysis/current_clean_grpo_v2_l26_repair_orthogonalized_to_unknown_refusal_and_known_wrong/direction_transforms.csv
+    direction_id: direction_transform__clean_sft_grpo_v2_l26_known_repair_orthogonal_to_unknown_refusal_and_known_wrong__1d4eb617ab04
+    direction_file: experiment/phase1/probe/analysis/current_clean_grpo_v2_l26_repair_orthogonalized_to_unknown_refusal_and_known_wrong/clean_sft_grpo_v2_l26_known_repair_orthogonal_to_unknown_refusal_and_known_wrong/directions/direction_transform__clean_sft_grpo_v2_l26_known_repair_orthogonal_to_unknown_refusal_and_known_wrong__1d4eb617ab04.safetensors
+    tensor_key: direction
+    role: delta
+    layer: 25
+    method: direction_transform
+    transform_method: orthogonalize_to
+    contrast: known_repair_orthogonal_to_unknown_refusal_and_known_wrong
+    required_status: ok
+    vector_sha256: 1d4eb617ab040af477747cab50b537ca47f815247eb3c2e5a6944155d4ff7f0c
+    norm: 1.2142820358276367
+    allow_direction_layer_override: true
+    control_note: same double-constrained layer-26 source vector intentionally applied at layer 25
+
+  - label: clean_sft_grpo_v2_l26_source_l26_double_orthogonalized
+    priority: 3
+    arm: clean_sft_grpo_v2
+    extraction_dir: experiment/phase1/probe/qwen3-4b-clean-sft-grpo-v2-seed1-selfaware/hidden_states_selfaware_clean_sft_grpo_v2_full/extraction__55254a04aa1f
+    extraction_manifest: experiment/phase1/probe/qwen3-4b-clean-sft-grpo-v2-seed1-selfaware/hidden_states_selfaware_clean_sft_grpo_v2_full/extraction__55254a04aa1f/manifest.json
+    direction_manifest: experiment/phase1/probe/analysis/current_clean_grpo_v2_l26_repair_orthogonalized_to_unknown_refusal_and_known_wrong/direction_transforms.manifest.json
+    direction_csv: experiment/phase1/probe/analysis/current_clean_grpo_v2_l26_repair_orthogonalized_to_unknown_refusal_and_known_wrong/direction_transforms.csv
+    direction_id: direction_transform__clean_sft_grpo_v2_l26_known_repair_orthogonal_to_unknown_refusal_and_known_wrong__1d4eb617ab04
+    direction_file: experiment/phase1/probe/analysis/current_clean_grpo_v2_l26_repair_orthogonalized_to_unknown_refusal_and_known_wrong/clean_sft_grpo_v2_l26_known_repair_orthogonal_to_unknown_refusal_and_known_wrong/directions/direction_transform__clean_sft_grpo_v2_l26_known_repair_orthogonal_to_unknown_refusal_and_known_wrong__1d4eb617ab04.safetensors
+    tensor_key: direction
+    role: delta
+    layer: 26
+    method: direction_transform
+    transform_method: orthogonalize_to
+    contrast: known_repair_orthogonal_to_unknown_refusal_and_known_wrong
+    required_status: ok
+    vector_sha256: 1d4eb617ab040af477747cab50b537ca47f815247eb3c2e5a6944155d4ff7f0c
+    norm: 1.2142820358276367
+    control_note: double-constrained layer-26 source vector applied at its source layer
+
+  - label: clean_sft_grpo_v2_l27_shift_control_l26_double_orthogonalized
+    priority: 4
+    arm: clean_sft_grpo_v2
+    extraction_dir: experiment/phase1/probe/qwen3-4b-clean-sft-grpo-v2-seed1-selfaware/hidden_states_selfaware_clean_sft_grpo_v2_full/extraction__55254a04aa1f
+    extraction_manifest: experiment/phase1/probe/qwen3-4b-clean-sft-grpo-v2-seed1-selfaware/hidden_states_selfaware_clean_sft_grpo_v2_full/extraction__55254a04aa1f/manifest.json
+    direction_manifest: experiment/phase1/probe/analysis/current_clean_grpo_v2_l26_repair_orthogonalized_to_unknown_refusal_and_known_wrong/direction_transforms.manifest.json
+    direction_csv: experiment/phase1/probe/analysis/current_clean_grpo_v2_l26_repair_orthogonalized_to_unknown_refusal_and_known_wrong/direction_transforms.csv
+    direction_id: direction_transform__clean_sft_grpo_v2_l26_known_repair_orthogonal_to_unknown_refusal_and_known_wrong__1d4eb617ab04
+    direction_file: experiment/phase1/probe/analysis/current_clean_grpo_v2_l26_repair_orthogonalized_to_unknown_refusal_and_known_wrong/clean_sft_grpo_v2_l26_known_repair_orthogonal_to_unknown_refusal_and_known_wrong/directions/direction_transform__clean_sft_grpo_v2_l26_known_repair_orthogonal_to_unknown_refusal_and_known_wrong__1d4eb617ab04.safetensors
+    tensor_key: direction
+    role: delta
+    layer: 27
+    method: direction_transform
+    transform_method: orthogonalize_to
+    contrast: known_repair_orthogonal_to_unknown_refusal_and_known_wrong
+    required_status: ok
+    vector_sha256: 1d4eb617ab040af477747cab50b537ca47f815247eb3c2e5a6944155d4ff7f0c
+    norm: 1.2142820358276367
+    allow_direction_layer_override: true
+    control_note: same double-constrained layer-26 source vector intentionally applied at layer 27
+
+  - label: clean_sft_grpo_v2_l28_shift_control_l26_double_orthogonalized
+    priority: 5
+    arm: clean_sft_grpo_v2
+    extraction_dir: experiment/phase1/probe/qwen3-4b-clean-sft-grpo-v2-seed1-selfaware/hidden_states_selfaware_clean_sft_grpo_v2_full/extraction__55254a04aa1f
+    extraction_manifest: experiment/phase1/probe/qwen3-4b-clean-sft-grpo-v2-seed1-selfaware/hidden_states_selfaware_clean_sft_grpo_v2_full/extraction__55254a04aa1f/manifest.json
+    direction_manifest: experiment/phase1/probe/analysis/current_clean_grpo_v2_l26_repair_orthogonalized_to_unknown_refusal_and_known_wrong/direction_transforms.manifest.json
+    direction_csv: experiment/phase1/probe/analysis/current_clean_grpo_v2_l26_repair_orthogonalized_to_unknown_refusal_and_known_wrong/direction_transforms.csv
+    direction_id: direction_transform__clean_sft_grpo_v2_l26_known_repair_orthogonal_to_unknown_refusal_and_known_wrong__1d4eb617ab04
+    direction_file: experiment/phase1/probe/analysis/current_clean_grpo_v2_l26_repair_orthogonalized_to_unknown_refusal_and_known_wrong/clean_sft_grpo_v2_l26_known_repair_orthogonal_to_unknown_refusal_and_known_wrong/directions/direction_transform__clean_sft_grpo_v2_l26_known_repair_orthogonal_to_unknown_refusal_and_known_wrong__1d4eb617ab04.safetensors
+    tensor_key: direction
+    role: delta
+    layer: 28
+    method: direction_transform
+    transform_method: orthogonalize_to
+    contrast: known_repair_orthogonal_to_unknown_refusal_and_known_wrong
+    required_status: ok
+    vector_sha256: 1d4eb617ab040af477747cab50b537ca47f815247eb3c2e5a6944155d4ff7f0c
+    norm: 1.2142820358276367
+    allow_direction_layer_override: true
+    control_note: same double-constrained layer-26 source vector intentionally applied at layer 28

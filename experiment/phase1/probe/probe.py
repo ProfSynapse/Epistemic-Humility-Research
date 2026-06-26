@@ -35,6 +35,7 @@ from backends import (
     assert_no_generated_thinking,
     assert_no_generated_thinking_batch,
     build_backend,
+    extract_answer_after_thinking,
 )
 from scoring import is_correct, normalize_question, p_correct
 
@@ -177,6 +178,24 @@ def assign_label(greedy_correct: bool, pc: float, labels_cfg: dict) -> str:
     return "discard"
 
 
+def prepare_generated_for_scoring(
+    texts: list[str], *, question: str, generation_kind: str, enable_thinking: bool
+) -> tuple[list[str], list[str] | None]:
+    """Apply the thinking-on/off output contract before TriviaQA scoring."""
+    if not enable_thinking:
+        assert_no_generated_thinking_batch(
+            texts, question=question, generation_kind=generation_kind
+        )
+        return texts, None
+    scored: list[str] = []
+    statuses: list[str] = []
+    for text in texts:
+        answer, status = extract_answer_after_thinking(text)
+        scored.append(answer)
+        statuses.append(status)
+    return scored, statuses
+
+
 def load_done_row_keys(results_path: Path) -> tuple[set[str], int]:
     """Row keys already in the append-log and count of legacy unkeyed rows."""
     done: set[str] = set()
@@ -208,27 +227,40 @@ def probe_one(backend, row_key, source_index, question_id, question, aliases,
     """
     s = config["sampling"]
     seed = derive_seed(s["seed"], question_id)
+    enable_thinking = bool(config["model"].get("enable_thinking", False))
 
-    sampled_answers = backend.generate_batch(
+    sampled_raw_answers = backend.generate_batch(
         question=question, n_samples=s["n_samples"],
         temperature=s["temperature"], top_p=s["top_p"],
         max_new_tokens=s["max_new_tokens"], seed=seed,
     )
-    assert_no_generated_thinking_batch(
-        sampled_answers, question=question, generation_kind="sampled"
+    sampled_answers, sampled_thinking_extract_statuses = prepare_generated_for_scoring(
+        sampled_raw_answers,
+        question=question,
+        generation_kind="sampled",
+        enable_thinking=enable_thinking,
     )
     sampled_correct = [is_correct(a, aliases) for a in sampled_answers]
     pc = p_correct(sampled_correct)
 
-    greedy_answer = backend.generate_greedy(question, s["max_new_tokens"])
-    assert_no_generated_thinking(
-        greedy_answer, question=question, generation_kind="greedy"
+    greedy_raw_answer = backend.generate_greedy(question, s["max_new_tokens"])
+    greedy_answers, greedy_thinking_extract_statuses = prepare_generated_for_scoring(
+        [greedy_raw_answer],
+        question=question,
+        generation_kind="greedy",
+        enable_thinking=enable_thinking,
+    )
+    greedy_answer = greedy_answers[0]
+    greedy_thinking_extract_status = (
+        greedy_thinking_extract_statuses[0]
+        if greedy_thinking_extract_statuses is not None
+        else None
     )
     greedy_correct = is_correct(greedy_answer, aliases)
 
     label = assign_label(greedy_correct, pc, config["labels"])
 
-    return {
+    record = {
         "probe_pool_row_key": row_key,
         "probe_pool_source_index": source_index,
         "question_id": question_id,
@@ -246,6 +278,18 @@ def probe_one(backend, row_key, source_index, question_id, question, aliases,
         "model_tag": config["model"]["model_tag"],
         "probe_config_sha": cfg_sha,
     }
+    if enable_thinking:
+        record.update({
+            "greedy_answer_raw": greedy_raw_answer,
+            "greedy_thinking_extract_status": greedy_thinking_extract_status,
+            "sampled_answers_raw": sampled_raw_answers,
+            "sampled_thinking_extract_statuses": sampled_thinking_extract_statuses,
+            "thinking_scoring_policy": (
+                "score text after the final </think>; if <think> is opened "
+                "without </think>, score an empty final answer"
+            ),
+        })
+    return record
 
 
 def run_probe(config: dict, backend, out_dir: Path) -> Path:

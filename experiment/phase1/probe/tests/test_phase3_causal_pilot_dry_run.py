@@ -130,6 +130,23 @@ def test_success_writes_dry_run_outputs(tmp_path):
     assert metrics_plan["generation_executed"] is False
 
 
+def test_shifted_layer_control_requires_explicit_override(tmp_path):
+    config_path = _write_fixture(tmp_path)
+    config = json.loads(config_path.read_text(encoding="utf-8"))
+    candidate = config["candidate_directions"][0]
+    candidate["layer"] = 4
+
+    with pytest.raises(dry_run.DryRunValidationError, match="layer mismatch"):
+        dry_run.validate_candidate(candidate, config.get("readiness_checks", {}))
+
+    candidate["allow_direction_layer_override"] = True
+    validated = dry_run.validate_candidate(candidate, config.get("readiness_checks", {}))
+
+    assert validated["layer"] == 4
+    assert validated["source_direction_layer"] == 3
+    assert validated["allow_direction_layer_override"] is True
+
+
 def test_direction_mismatch_fails(tmp_path):
     config_path = _write_fixture(tmp_path, direction_role="delta")
 

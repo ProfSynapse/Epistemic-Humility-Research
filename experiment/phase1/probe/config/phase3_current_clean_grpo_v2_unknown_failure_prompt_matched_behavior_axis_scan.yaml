@@ -1,0 +1,55 @@
+spec:
+  name: phase3_current_clean_grpo_v2_unknown_failure_prompt_matched_behavior_axis_scan
+  analysis_type: phase3_behavior_axis_scan
+  notice: BEHAVIOR_AXIS_SCAN_ONLY_GRPO_V2_UNKNOWN_FAILURE_PROMPT_MATCHED_PANEL
+
+analysis:
+  roles:
+    - h_base
+    - h_lora
+    - delta
+  contrasts:
+    - name: unknown_answered_wrong_vs_unknown_refused
+      positive_label: unknown_answered_wrong
+      negative_label: unknown_refused
+      min_rows_per_group: 32
+      positive:
+        label: unknown
+        refused: false
+        correct: false
+      negative:
+        label: unknown
+        refused: true
+
+    - name: known_refused_vs_known_correct_answered
+      positive_label: known_refused
+      negative_label: known_correct_answered
+      min_rows_per_group: 32
+      positive:
+        label: known
+        refused: true
+      negative:
+        label: known
+        refused: false
+        correct: true
+
+    - name: unknown_refused_vs_known_correct_answered
+      positive_label: unknown_refused
+      negative_label: known_correct_answered
+      min_rows_per_group: 32
+      positive:
+        label: unknown
+        refused: true
+      negative:
+        label: known
+        refused: false
+        correct: true
+
+extractions:
+  - label: clean_sft_grpo_v2_seed1_unknown_failure_prompt_matched_panel
+    behavior_arm: clean_sft_grpo_v2
+    extraction_dir: experiment/phase1/probe/qwen3-4b-clean-sft-grpo-v2-seed1-selfaware/hidden_states_selfaware_clean_sft_grpo_v2_unknown_failure_panel_prompt_matched/extraction__88649d66a6fb
+    extraction_manifest: experiment/phase1/probe/qwen3-4b-clean-sft-grpo-v2-seed1-selfaware/hidden_states_selfaware_clean_sft_grpo_v2_unknown_failure_panel_prompt_matched/extraction__88649d66a6fb/manifest.json
+
+output:
+  root: experiment/phase1/probe/analysis/current_clean_grpo_v2_unknown_failure_prompt_matched_behavior_axis_scan

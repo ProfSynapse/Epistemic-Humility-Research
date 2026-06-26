@@ -130,6 +130,21 @@ Read for Windows/Docker/GPU/local-trainer execution problems and monitor behavio
   by step 125. Do not run parallel GPU work beside this cell; if it OOMs or must
   be repeated, prefer batch 8 before trying to recover throughput elsewhere.
 
+- On Windows host-visible artifact trees, `logs/training_latest.jsonl` can be a
+  symlink/link entry that PowerShell cannot read (`The file cannot be accessed
+  by the system`) even when the concrete timestamped `logs/training_*.jsonl`
+  file is intact. Audit and dashboard scripts should prefer concrete
+  timestamped trainer logs and treat `training_latest.jsonl` as a convenience
+  pointer only.
+
+- Capacity telemetry can report peak allocator percentages above the card's
+  nominal VRAM on local SFT runs. On this Windows/Docker/Unsloth stack that may
+  reflect offload/shared-memory behavior, allocator-history accounting, or a
+  telemetry/unit anomaly. Treat `capacity_pct_over_100` / zero-headroom rows as
+  unsafe for batch-size increases, but do not interpret the exact percentage
+  literally without an independent rerun and live `nvidia-smi`/timestamped-log
+  confirmation.
+
 - Short preference-training smokes can understate full-run VRAM growth when row
   lengths vary. On 2026-06-22, schema-SFT->DPO batch 4 / accumulation 2 looked
   low-risk in a 10-step smoke (about 11.1 GB reserved), but the full run climbed

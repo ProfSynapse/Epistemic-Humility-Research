@@ -391,6 +391,11 @@ Why this shape (same spirit as Move 3's gotchas):
 - **Keep file writes collision-free.** Extract does no writes. Author agents own
   disjoint new files (skip-if-exists). Paper-note patching is deterministic
   Python in `apply_kg_patches.py`, never parallel agents editing the same note.
+- **Windows temp JSON must be UTF-8 without BOM.** PowerShell `Set-Content
+  -Encoding utf8` can emit a BOM that makes `apply_kg_patches.py` fail with
+  `Unexpected UTF-8 BOM`. For by-hand empty patch files on Windows, use
+  `[System.IO.File]::WriteAllText($path, $json, [System.Text.UTF8Encoding]::new($false))`
+  or another no-BOM writer.
 - Generated prose: no em dashes; do not use the phrase "load-bearing".
 
 ## Provenance

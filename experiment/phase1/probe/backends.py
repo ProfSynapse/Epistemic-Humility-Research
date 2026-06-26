@@ -119,6 +119,21 @@ def assert_no_generated_thinking_batch(
         )
 
 
+def extract_answer_after_thinking(text: str) -> tuple[str, str]:
+    """Return the scorable final answer after any Qwen thinking trace.
+
+    Thinking-enabled audits need the raw trace for provenance, but TriviaQA
+    correctness must be scored on the final answer, not private reasoning. If a
+    generation opens a thinking block and never closes it, treat it as having no
+    final answer instead of scoring trace text as an answer.
+    """
+    if "</think>" in text:
+        return text.rsplit("</think>", 1)[1].strip(), "post_think"
+    if "<think>" in text:
+        return "", "unterminated_thinking"
+    return text, "no_thinking_tags"
+
+
 # Discovery order for the Qwen3 thinking-off render surface. We render text with
 # the tokenizer and call generate() on raw prompts, so prefer the direct HF/Jinja
 # kwarg; vLLM's chat_template_kwargs is the compatibility fallback. The ORDER is
@@ -264,26 +279,30 @@ class VLLMBackend:
     def generate_batch(self, question, n_samples, temperature, top_p,
                        max_new_tokens, seed):
         rendered = self._render_prompt(question)
-        assert_no_think_scaffolding(rendered)
+        if not self.enable_thinking:
+            assert_no_think_scaffolding(rendered)
         params = self._sampling_params(
             n_samples, temperature, top_p, max_new_tokens, seed)
         out = self.llm.generate([rendered], params)
         texts = [o.text for o in out[0].outputs]
-        assert_no_generated_thinking_batch(
-            texts, question=question, generation_kind="sampled"
-        )
+        if not self.enable_thinking:
+            assert_no_generated_thinking_batch(
+                texts, question=question, generation_kind="sampled"
+            )
         return texts
 
     def generate_greedy(self, question, max_new_tokens):
         rendered = self._render_prompt(question)
-        assert_no_think_scaffolding(rendered)
+        if not self.enable_thinking:
+            assert_no_think_scaffolding(rendered)
         params = self._sampling_params(
             1, 0.0, 1.0, max_new_tokens, seed=0)
         out = self.llm.generate([rendered], params)
         text = out[0].outputs[0].text
-        assert_no_generated_thinking(
-            text, question=question, generation_kind="greedy"
-        )
+        if not self.enable_thinking:
+            assert_no_generated_thinking(
+                text, question=question, generation_kind="greedy"
+            )
         return text
 
 

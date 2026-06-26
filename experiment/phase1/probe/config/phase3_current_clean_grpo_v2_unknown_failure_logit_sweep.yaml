@@ -1,0 +1,27 @@
+# GRPO v2 unknown-answering failure logit diagnostic sweep.
+
+sweep:
+  name: phase3_current_clean_grpo_v2_unknown_failure_logit_diagnostic
+  evidence_tier: tier2_exploratory_local
+  runner_config: experiment/phase1/probe/config/phase3_current_clean_grpo_v2_unknown_failure_logit_candidates.yaml
+  candidate_source_config: experiment/phase1/probe/config/phase3_current_clean_grpo_v2_unknown_failure_logit_candidates.yaml
+  output_root: experiment/phase1/probe/analysis/current_clean_grpo_v2_unknown_failure_logit_diagnostic
+  candidates: all
+  execution:
+    backend: docker
+    docker:
+      image: unsloth/unsloth:latest
+      repo_mount: /workspace/repo
+      workdir: /workspace/repo
+      hf_home: /workspace/repo/.cache/hf
+      huggingface_hub_cache: /workspace/repo/.cache/hf/hub
+  modes:
+    - name: logit_diagnostic
+      max_rows: 256
+      coefficients: [5.0, 10.0, 25.0]
+      controls:
+        - no_vector_baseline
+        - activation_subtraction
+        - wrong_layer_subtraction
+        - random_matched_norm
+        - activation_addition
