@@ -195,7 +195,7 @@ Atomic notes extracted from the library papers via the Agents-K1 ingestion skill
 - [[verifier-free-self-improvement]] : A class of inference-time methods where a model uses its own sequence probabilities to select, weight, or iteratively refine outputs without
 - [[weight-orthogonalization]] : Weight orthogonalization is a model-editing intervention that removes a target
 
-## Metrics (61)
+## Metrics (62)
 
 - [[abstain-accuracy]] : Abstain Accuracy (A-Acc) is an AbstainQA metric computed as the number of
 - [[abstention-rate]] : Abstention rate is the fraction of queries for which a model declines to answer,
@@ -251,6 +251,7 @@ Atomic notes extracted from the library papers via the Agents-K1 ingestion skill
 - [[selective-classification-auc]] : Selective-classification AUC is the area under the curve traced by plotting
 - [[self-knowledge-f1]] : Self-Knowledge F1 is an F1 score computed by treating unanswerable questions as the positive class, measuring how well a model's response ex
 - [[singleton-rate]] : The fraction of training prompts that appear exactly once in the training data without abstention responses; derived from Turing's missing-m
+- [[steerability]] : Steerability is Tan et al.'s per-input measure of how strongly a steering vector
 - [[truthful-helpfulness-score]] : A composite metric for refusal-aware evaluation that measures model performance as a geometric quantity in the (P_correct, P_wrong) space, b
 - [[truthfulness-score]] : A composite scalar T = w1*accuracy + w2*uncertainty_rate - w3*hallucination_rate, with weights w1, w2, w3 >= 0. Following Yang et al. 2024a 
 - [[turn-of-flip]] : The mean earliest dialogue turn at which a model's response diverges from its expected (principled) stance, averaged over benchmark instance
@@ -394,7 +395,7 @@ Atomic notes extracted from the library papers via the Agents-K1 ingestion skill
 - [[qwen3-32b]] : A 32B-parameter hybrid reasoning model from the Qwen3 family (Qwen Team, 2025) whose reasoning can be toggled ON or OFF.
 - [[unifiedqa]] : A T5-based question-answering model finetuned by Khashabi et al. on a diverse collection of NLP QA datasets (including SQuAD, NaturalQuestio
 
-## Terms (124)
+## Terms (125)
 
 - [[abstain-qa]] : AbstainQA is a task formulation in which a model is given a question and must
 - [[abstention]] : Abstention is the behavior of an LLM deliberately declining to provide a
@@ -419,6 +420,7 @@ Atomic notes extracted from the library papers via the Agents-K1 ingestion skill
 - [[delayed-reward-credit-assignment]] : The problem of attributing a terminal scalar reward backward to the intermediate steps or decisions that caused it, which is acute in CoT RL
 - [[distant-supervision]] : A training paradigm in which labels are inferred automatically from weak heuristics rather than direct annotation. In reading comprehension,
 - [[emergent-world-model]] : An emergent world model is the phenomenon whereby a sequence model trained only
+- [[entity-recognition-direction]] : An entity-recognition direction is a linear direction in a language model's
 - [[epistemic-alignment]] : The principle that reward systems for LLMs should optimize for justified confidence over perceived fluency: outputs should be rewarded when 
 - [[epistemic-humility]] : Epistemic humility is a model's capacity to recognize and act on the limits of
 - [[error-type-taxonomy-llm]] : A five-category behavioral taxonomy of LLM errors defined by the distribution of answers across K=30 resampled responses at temperature 1: (
@@ -521,7 +523,7 @@ Atomic notes extracted from the library papers via the Agents-K1 ingestion skill
 - [[valence-arousal-subspace]] : A two-dimensional linear subspace in LLM activation space spanned by a recovered valence axis (pleasure-displeasure) and arousal axis (activ
 - [[world-model-hallucination-modes]] : A three-type taxonomy of failure modes in generative world models, each anchored to a different pipeline stage. Perceptual hallucination occ
 
-## Mechanisms (cause -> effect) (260)
+## Mechanisms (cause -> effect) (264)
 
 - [[abstention-generalization-failure]] : 'instruction-tuning for abstention on a narrow, homogeneous set of refusal expressions and task formats' **prevents** Abstention ability does not generalize to 
 - [[activation-addition-steers-generation]] : Adding a steering-vector to intermediate activations during generation. **enables** Model generations shift toward the behavior represented by the vector.
@@ -535,6 +537,7 @@ Atomic notes extracted from the library papers via the Agents-K1 ingestion skill
 - [[arousal-axis-monotonically-controls-refusal-and-sycophancy]] : Steering LLM activations along the arousal axis of the VA subspace (increasing or decreasing arousal coordinate). **mediates** Refusal rate and sycophancy rate 
 - [[attention-head-truthfulness-concentration]] : Selecting 1 or 2 attention-head output positions (out of 1,024 candidates across 32 layers and 32 heads) as features for a linear truthfulness probe **enables**
 - [[authoritative-persona-amplifies-sycophantic-flip]] : A challenger utterance that attributes domain authority or expertise to the user (e.g., 'I have a Ph.D. in linguistics' or 'My teacher told me this is wrong') r
+- [[base-model-entity-recognition-direction-transfers-to-chat-refusal]] : Steering the chat model with entity-recognition directions extracted from sparse autoencoders trained only on the base model. **enables** The chat model's refus
 - [[behavior-underdetermines-motivation]] : Observing a single concerning agentic action (a workaround, a deception, a sandbag) without further investigation of why it occurred. **mediates** The underlyin
 - [[binary-grading-reinforces-hallucination]] : Benchmark evaluations that use binary grading (0/1 for correct/wrong, 0 for IDK) **enables** Models learn that IDK responses are strictly suboptimal, reinforcin
 - [[bounded-proper-scoring-rule-incentivizes-accuracy-and-calibration]] : Augmenting a binary correctness reward with a bounded proper scoring rule (e.g., Brier score) as the calibration term in an RL objective **enables** The combine
@@ -570,6 +573,8 @@ Atomic notes extracted from the library papers via the Agents-K1 ingestion skill
 - [[early-mlp-drives-subject-enrichment]] : Early MLP sublayers processing the last-subject token across lower layers **enables** The last-subject-position representation becomes attribute-rich, reaching 
 - [[entity-popularity-predicts-parametric-memorization]] : Higher subject entity web popularity (Wikipedia page views) in the input question **increases** Higher LM accuracy on the corresponding factual QA question acro
 - [[entity-rarity-degrades-factual-precision]] : A topic entity is rare in LM pretraining data (low Wikipedia page-view frequency), causing the model's parametric knowledge about that entity to be sparse or ab
+- [[entity-recognition-direction-gates-refusal-vs-hallucination]] : Adding or ablating the sparse-autoencoder entity-recognition (known vs unknown entity) direction in the residual stream during a factual query. **mediates** The
+- [[entity-recognition-direction-regulates-attribute-mover-attention]] : The entity-recognition (unknown-entity) direction is active or amplified at the entity token. **mediates** It disrupts the attention of downstream heads that no
 - [[epistemic-humility-reward-induces-over-hedging]] : Instructing labelers to reward epistemic humility in reinforcement-learning-from-human-feedback training **increases** Model over-hedging on simple questions wi
 - [[estimator-divergence-invalidates-single-probe-faithfulness]] : Using a single internal confidence estimator (e.g. token-probability RCC or hidden-state DeepConf or sampling consistency) to assess whether a large reasoning m
 - [[evidence-access-bottlenecks-expert-calibration]] : Providing a reasoning model with retrieved evidence passages from web search for each statement in a knowledge-intensive calibration task (retrieval-augmented g
@@ -755,6 +760,7 @@ Atomic notes extracted from the library papers via the Agents-K1 ingestion skill
 - [[sparsity-enables-superposition]] : High sparsity of input features -- features that are rarely active simultaneously **enables** Neural networks represent more features than hidden dimensions by 
 - [[specification-gaming-curriculum-generalizes-to-reward-tampering]] : Training an LLM assistant on a curriculum of increasingly sophisticated gameable environments, starting with sycophancy and progressing through data falsificati
 - [[static-conflict-degrades-rait-calibration]] : Correctness-only data construction assigns opposite labels (vanilla vs IdK) to semantically similar samples that are nearby in the model's representation space 
+- [[steering-vector-steerability-is-high-variance-and-sign-unstable]] : Applying a contrastive-activation-addition steering vector across the inputs of a behavior dataset. **prevents** Per-input steerability varies widely within and
 - [[subject-enrichment-required-for-attribute-extraction]] : Patching (replacing) early subject representations before they are enriched **decreases** Attribute extraction rate decreases by up to 50%, demonstrating that t
 - [[superposition-causes-polysemanticity]] : Neural networks representing more features than dimensions (superposition) by storing features as non-orthogonal directions **enables** Individual neurons activ
 - [[superposition-creates-adversarial-vulnerability]] : Features stored in superposition introduce non-zero interference terms in the effective weight matrix **enables** Adversaries can exploit the interference struc

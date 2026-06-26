@@ -4,7 +4,7 @@ session_id: phase3-model-variation-panel
 title: Phase 3 Model Variation Panel
 status: active
 created_at: '2026-06-25T14:58:42Z'
-updated_at: '2026-06-26T19:30:00Z'
+updated_at: '2026-06-26T19:13:32Z'
 phase: phase3
 question: Do the JSON-output fine-tuned model variations share calibrated-expression
   mechanisms, or do different regimens produce distinct behavior-control surfaces?
@@ -232,6 +232,28 @@ checkpoints:
   next_steps:
   - 'Run source-specific generated controls: nearby-layer/shifted-vector replay or
     another valid wrong-layer generation control on the same 96-row panel.'
+  signals: {}
+- id: 008-handoff
+  at: '2026-06-26T19:13:32Z'
+  kind: handoff
+  title: H_monitor (uncertainty-monitor) investigation spun off into Session 0025
+  summary: The H_monitor hypothesis + Tier 1-3 test battery (checkpoint 039-hypothesis)
+    and the random-head control analysis have been pulled into a dedicated session
+    note, docs/sessions/0025 - uncertainty-monitor-hypothesis.md, since the mechanistic
+    reinterpretation of the A.4 sign inversion is an evolution of, but conceptually
+    separate from, this model-variation panel. 0023 keeps the A.4 sweep itself (038-result),
+    the resume/checkpoint infrastructure, and the panel; 0025 carries the uncertainty-monitor
+    reframe, the competing-hypothesis battery, and the control verdict. Checkpoint
+    039-hypothesis here remains as the historical origin; 0025 is now canonical for
+    that thread.
+  evidence:
+  - docs/sessions/0025 - uncertainty-monitor-hypothesis.md
+  run_ids: []
+  commands: []
+  decisions: []
+  next_steps:
+  - 'Continue the H_monitor thread in 0025: norm-matched control verdict, then Tier
+    1 offline tests.'
   signals: {}
 ---
 # Phase 3 Model Variation Panel
@@ -1009,3 +1031,33 @@ _No summary yet._
   - Step A.4b (optional, GPU): positive-only alpha sweep `[+1,+2,+3,+6]` (new output dir / `--fresh` -- different alphas => new fingerprint) to map the dose-response knee and locate any collateral-free window. Reuse the same runner; resume infra now makes a teardown cheap.
   - Write the A.4 result into the corpus as Tier-2 exploratory evidence on `gap:4-probe-transfer` (sign-inverted, partially-selective ITI control), alongside the regimen-robust gap framing from checkpoint 034.
   - If A.4b shows no collateral-free window, close Step A: sparse-head ITI gives only a non-clean abstention dial, pointing the humility-calibration lever back to training/eval rather than inference-time steering.
+
+### 039-hypothesis - Reinterpret the sign inversion: the steered direction may be a graded UNCERTAINTY MONITOR, not a "be-wrong" axis (H_monitor) + test battery
+
+- at: `2026-06-26T21:00:00Z`
+- kind: `hypothesis`
+- summary: The checkpoint-038 sign inversion has a mechanistically interesting reading. We BUILT the per-head direction as `mean(unknown_answered_wrong) - mean(unknown_refused)` and assumed it was a "be-wrong" axis, so adding it should hallucinate MORE. It refuses more. **H_monitor:** the direction is not a wrongness axis but a GRADED INTERNAL UNCERTAINTY / "this-is-hard, I-might-not-know" signal that is present DURING hard/unknown questions regardless of the eventual answer-vs-refuse outcome. Under H_monitor, hallucinations are items where the uncertainty alarm fired sub-threshold (model guessed), refusals are items where it crossed threshold (model bailed); AMPLIFYING the alarm pushes more items over the threshold -> more refusal. This is the "stimulant calms ADHD" shape: you are amplifying a regulatory/monitor signal, not the symptom, so a low-level "more" yields a behavioral "less (guessing)". It reframes the sign inversion from a measurement gotcha (known ITI folklore: sweep both signs) into a testable claim that the model carries a readable knowledge-uncertainty signal. Competing hypotheses to kill: H_wrongness (original, "be-wrong" axis -- contradicted by the data); H_refusal_motor (the direction is just the refuse-vs-answer MOTOR direction, not an epistemic monitor); H_OOD_default (no specific signal; any large perturbation -> fallback to the model's safe default abstention under the JSON prompt). The random-head control already running discriminates H_specific-circuit from H_OOD_default; the battery below adds the rest. Grounding: the KG already holds the adjacent literature -- `paper:2306.03341` (ITI), `paper:2310.01405` (RepE: reading AND control), `paper:2212.03827` (CCS latent knowledge), `paper:2304.13734` (internal state knows when lying), `paper:2207.05221` (P(IK): models mostly know what they know), `paper:2510.09033` (CAUTION: probes may read recall not truth), `term:truth-direction`, `term:universal-truthfulness-hyperplane`, `term:knowledge-boundary`. A background research+ingestion agent is filling external gaps (candidates: Geometry of Truth 2310.06824, Semantic Entropy Probes 2406.15927, selective-prediction-for-LLMs).
+- decisions:
+  - Test H_monitor with READ-OUT (correlational, GPU-cheap, less confounded than steering) BEFORE more interventions; the key circularity guard is to never score the monitor against the same wrong/refused labels theta was built from -- use INDEPENDENT difficulty (stated `response_confidence`, answer-token logprob, resample accuracy, or an external model).
+  - Frame the deployable version as the actual contribution if it survives: not "we steered refusal" but "humility-trained models compute a graded knowledge-uncertainty signal you can READ to abstain (selective prediction) and AMPLIFY to abstain more" -- direct evidence on `gap:4-probe-transfer` (representations carry controllable calibration, not just the performance of humility).
+- next steps:
+  - TIER 1 (offline, near-free, reuses data in hand):
+    1. **Geometry vs refusal axis** -- cosine(theta_failure, theta_refuse-vs-answer) per head. If ~1, H_monitor collapses into H_refusal_motor (cheap brutal falsifier). We have both axes' inputs.
+    2. **Flip-order vs difficulty** -- per unknown item, the alpha at which it flips to refusal across the sweep; correlate with independent difficulty (baseline stated confidence / answer logprob). Monitor predicts difficulty-ordered flips; OOD-default predicts difficulty-agnostic.
+    3. **Read-don't-steer wrongness prediction** -- among ANSWERED items only (no refusal happening), does theta-projection predict the answer being WRONG? Monitor predicts yes; refusal-motor predicts null. Doubles as the selective-prediction/abstention-trigger test (compare AUC vs the model's own stated confidence).
+  - TIER 2 (one modest GPU pass):
+    4. **Ground-truth difficulty grading** -- resample each item N times, empirical accuracy = difficulty; check theta-projection rises monotonically from always-right to always-wrong.
+    5. **Pre-commitment timing** -- read the projection trajectory across generated positions; is it high at the prompt-final/first token BEFORE the refusal tokens appear? Separates monitor from decision-echo.
+    6. **Random-DIRECTION control** -- same 11 heads, random directions, matched norm; crosses head x direction with the random-HEAD control now running.
+  - TIER 3 (more GPU, the real novelty test):
+    7. **Cross-dataset / cross-regimen transfer** -- build theta here, read+steer on TriviaQA/bridge and on KTO/DPO regimens. Transfer => general uncertainty monitor; no transfer => panel-surface artifact. Speaks directly to `gap:4-probe-transfer`.
+  - Logic of the battery: Test 1 can kill it cheaply; 2-3 separate monitor from refusal-motor on data in hand; 5 separates monitor from decision-echo; 6 separates specific-signal from generic-OOD-jolt; 4 upgrades the difficulty axis to ground truth; 7 tests portability. Surviving 1+3+5+7 = a real, deployable result.
+### 008-handoff - H_monitor (uncertainty-monitor) investigation spun off into Session 0025
+
+- at: `2026-06-26T19:13:32Z`
+- kind: `handoff`
+- summary: The H_monitor hypothesis + Tier 1-3 test battery (checkpoint 039-hypothesis) and the random-head control analysis have been pulled into a dedicated session note, docs/sessions/0025 - uncertainty-monitor-hypothesis.md, since the mechanistic reinterpretation of the A.4 sign inversion is an evolution of, but conceptually separate from, this model-variation panel. 0023 keeps the A.4 sweep itself (038-result), the resume/checkpoint infrastructure, and the panel; 0025 carries the uncertainty-monitor reframe, the competing-hypothesis battery, and the control verdict. Checkpoint 039-hypothesis here remains as the historical origin; 0025 is now canonical for that thread.
+- evidence:
+  - `docs/sessions/0025 - uncertainty-monitor-hypothesis.md`
+- next steps:
+  - Continue the H_monitor thread in 0025: norm-matched control verdict, then Tier 1 offline tests.

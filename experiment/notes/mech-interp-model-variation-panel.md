@@ -207,6 +207,67 @@ Primary analyses:
   mechanism, artifact lifecycle, or live-run plan that would make this umbrella
   note unwieldy.
 
+## Sub-hypothesis H_monitor (uncertainty monitor) and test battery
+
+> **Canonical home: session note `docs/sessions/0025 - uncertainty-monitor-hypothesis.md`.**
+> The H_monitor thread was spun off from this panel into a dedicated session note
+> (it is an evolution of, but conceptually separate from, the model-variation
+> panel). The reframe, competing-hypothesis battery, and random-head control
+> verdict live in 0025; the summary below is retained as the panel-side pointer.
+
+Arising from the Step A.4 sweep (session 0023 checkpoints 038-039). The per-head
+ITI direction, built as `mean(unknown_answered_wrong) - mean(unknown_refused)`
+on 11 heads, steers with an INVERTED causal sign (adding the "wrong-answer"
+direction raises refusal) and acts as a partially knowledge-conditioned
+abstention dial (~5.6x more effect on unknown than known).
+
+- **H_monitor.** The direction is not a "be-wrong" axis but a GRADED internal
+  uncertainty / "this-is-hard, I-might-not-know" monitor present during hard
+  questions regardless of the answer-vs-refuse outcome. Hallucinations =
+  sub-threshold alarm (model guessed); refusals = supra-threshold (model bailed);
+  amplifying the alarm pushes more items over the threshold -> more refusal
+  (the "stimulant amplifies the brake, not the symptom" shape).
+- **Competing hypotheses to kill.** H_wrongness (original "be-wrong" axis;
+  contradicted by the sign). H_refusal_motor (it is just the refuse-vs-answer
+  motor direction, not an epistemic monitor). H_OOD_default (no specific signal;
+  any large perturbation collapses to the model's default JSON abstention).
+- **Falsifier for H_monitor.** theta-projection does NOT track independent
+  difficulty among answered items, OR theta is ~parallel to the refuse-vs-answer
+  axis, OR matched-norm random heads/directions reproduce the abstention shift,
+  OR it fails to transfer across datasets/regimens.
+
+Circularity guard: never score the monitor against the same wrong/refused labels
+theta was built from. Use INDEPENDENT difficulty (stated `response_confidence`,
+answer-token logprob, resample accuracy, or an external model).
+
+Test battery (priority order; cheapest/most-discriminating first):
+
+1. **Geometry vs refusal axis** (offline). cosine(theta_failure,
+   theta_refuse-vs-answer) per head; ~1 collapses H_monitor into H_refusal_motor.
+2. **Flip-order vs difficulty** (offline, reuses the A.4 sweep). Per unknown item,
+   the alpha at which it flips to refusal vs independent difficulty. Monitor =>
+   difficulty-ordered flips; OOD-default => difficulty-agnostic.
+3. **Read-don't-steer wrongness prediction** (offline). Among ANSWERED items,
+   does theta-projection predict the answer being WRONG? Doubles as the
+   selective-prediction/abstention-trigger test (AUC vs the model's own stated
+   confidence).
+4. **Ground-truth difficulty grading** (GPU). Resample N times; empirical accuracy
+   = difficulty; check projection rises monotonically.
+5. **Pre-commitment timing** (GPU). Projection trajectory across generated tokens;
+   high BEFORE the refusal tokens appear separates monitor from decision-echo.
+6. **Random-DIRECTION control** (GPU). Same 11 heads, random directions, matched
+   norm; crosses head x direction with the random-HEAD control.
+7. **Cross-dataset / cross-regimen transfer** (GPU). Build theta here, read+steer
+   on TriviaQA/bridge and on KTO/DPO. Transfer => general monitor; speaks directly
+   to `gap:4-probe-transfer`.
+
+Literature grounding (KG): `paper:2306.03341` ITI, `paper:2310.01405` RepE,
+`paper:2212.03827` CCS, `paper:2304.13734` internal-state-knows-when-lying,
+`paper:2207.05221` P(IK), `paper:2510.09033` (probes read recall not truth --
+the key caution), `term:truth-direction`, `term:universal-truthfulness-hyperplane`,
+`term:knowledge-boundary`. External gaps under ingestion (Geometry of Truth,
+Semantic Entropy Probes, selective-prediction-for-LLMs).
+
 ## Status log
 
 - 2026-06-25: created as a single umbrella note for the JSON-output
@@ -455,3 +516,20 @@ Primary analyses:
   `--fresh`/new dir) to find any collateral-free window. Resume/checkpoint infra
   proved out: the run finished after a CLI-teardown kill at 901/1280 rows by
   resuming (379 generated, 901 reused, identical fingerprint).
+- 2026-06-26: RANDOM-HEAD CONTROL launched (sigma-matched + norm-matched) +
+  H_monitor hypothesis registered (see the sub-hypothesis section above; session
+  0023 checkpoint 039). The control tests whether the A.4 abstention shift is
+  specific to the 11 localized heads or reproduced by any 11 heads at matched
+  push. Two variants bracket the magnitude confound: sigma-matched random heads
+  carry only ~0.30x the localized perturbation energy at matched alpha, so a
+  norm-matched variant grafts the localized sigma multiset onto random heads
+  (`phase3_head_norm_match_control.py`). Random heads chosen by numpy seed
+  20260626, disjoint from the localized 11. Early peek (sigma-matched `-8` arm):
+  localized drove unknown_answered_wrong to 76 / refusal to 52; random heads sat
+  near baseline (wrong 54 / refusal 74) -- i.e. random heads did NOT reproduce
+  the localized effect -- but this is the weaker push and the decisive `+4` arm +
+  norm-matched run were still pending at log time. H_monitor test battery (Tier
+  1-3) registered for follow-up; Tier 1 (geometry-vs-refusal-axis,
+  flip-order-vs-difficulty, read-don't-steer wrongness prediction) is offline and
+  reuses data in hand. Literature grounding via a parallel research+ingestion
+  pass against the existing KG (ITI, RepE, CCS, P(IK), probes-read-recall).

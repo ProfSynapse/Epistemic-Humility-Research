@@ -1,0 +1,41 @@
+# RANDOM-HEAD CONTROL for the Step A.4 per-head ITI sweep.
+#
+# Identical to phase3_..._head_intervention_sweep.yaml in every respect EXCEPT the
+# steering_directions artifact: this points at the 11 RANDOM heads (numpy
+# default_rng seed 20260626, disjoint from the localized 11), each given its own
+# mass-mean failure-axis direction at its own per-head sigma (standard ITI
+# "alpha standard deviations" scaling). Comparing this sweep's behavior-cell
+# movement to the localized sweep isolates whether the localization scan's head
+# selection mattered. Report the per-arm mean delta norm alongside the cells: if
+# the random heads move abstention less, check whether it is head selection or a
+# smaller perturbation magnitude (random-head sigma is naturally smaller).
+
+model:
+  model_name: /workspace/repo/scratch/schema_response_confidence/runs/sft_schema_clean_seed1_full/20260623_123624/Qwen3-4B-bnb-4bit/merged-16bit
+  adapter: /workspace/repo/scratch/schema_response_confidence/runs/schema_clean_sft_grpo_v2_seed1_full/20260624_095831/final_model
+  adapter_name: clean_sft_grpo_v2
+  torch_dtype: bfloat16
+  device_map: cuda
+  enable_thinking: false
+
+prompt:
+  system: >-
+    Answer the user's question. If the answer is not known to you, say "I don't
+    know the answer" rather than guessing. Return only a JSON object with
+    exactly two keys: "answer" and "response_confidence". The "answer" value is
+    your answer or abstention text. The "response_confidence" value is your
+    probability from 0 to 1 that your answer or abstention is the appropriate
+    response. Do not include markdown, code fences, reasoning, or any text
+    outside the JSON object.
+
+steering_directions: experiment/phase1/probe/analysis/current_clean_grpo_v2_unknown_failure_prompt_matched_head_steering_directions_randomctl/clean_sft_grpo_v2_seed1_unknown_failure_prompt_matched_steering_randomctl/steering_directions.json
+
+rows: experiment/phase1/probe/qwen3-4b-clean-sft-grpo-v2-seed1-selfaware/hidden_states_selfaware_clean_sft_grpo_v2_unknown_failure_panel_prompt_matched_attention_head/extraction__fb700baa8dda/rows.jsonl
+
+sweep:
+  alphas: [-8.0, -4.0, -2.0, 0.0, 4.0]
+  max_new_tokens: 96
+  max_rows: 256
+
+output:
+  root: experiment/phase1/probe/analysis/current_clean_grpo_v2_unknown_failure_prompt_matched_head_intervention_sweep_randomctl
