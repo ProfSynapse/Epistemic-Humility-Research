@@ -91,6 +91,103 @@ def test_sweep_runs_baseline_and_steered_arms(tmp_path, monkeypatch):
     assert len(written) == 4
 
 
+class _CountingHarness(_StubHarness):
+    """Class-level call counter so a resumed run can prove it skipped completed units."""
+
+    total_calls = 0
+
+    def generate(self, question, *, by_block, max_new_tokens):
+        _CountingHarness.total_calls += 1
+        return super().generate(question, by_block=by_block, max_new_tokens=max_new_tokens)
+
+
+def _basic_config(tmp_path):
+    steering = tmp_path / "steering.json"
+    rows = tmp_path / "rows.jsonl"
+    _steering_artifact(steering)
+    _rows(rows)
+    output_root = tmp_path / "out"
+    config = {
+        "model": {"model_name": "stub"},
+        "prompt": {"system": "sys"},
+        "steering_directions": str(steering),
+        "rows": str(rows),
+        "sweep": {"alphas": [-4.0, 0.0], "max_new_tokens": 8, "max_rows": 2},
+        "output": {"root": str(output_root)},
+    }
+    config_path = tmp_path / "config.yaml"
+    config_path.write_text(yaml.safe_dump(config), encoding="utf-8")
+    return config_path, output_root
+
+
+def test_resume_skips_completed_units(tmp_path, monkeypatch):
+    config_path, output_root = _basic_config(tmp_path)
+    monkeypatch.setattr(runner, "ModelHarness", _CountingHarness)
+
+    _CountingHarness.total_calls = 0
+    first = runner.run_config(config_path)
+    assert first["units_generated"] == 4  # 2 alphas x 2 rows
+    assert _CountingHarness.total_calls == 4
+    assert (output_root / "checkpoint.json").is_file()
+
+    # Re-run unchanged: everything resumes, model is never asked to generate again.
+    _CountingHarness.total_calls = 0
+    second = runner.run_config(config_path)
+    assert second["units_generated"] == 0
+    assert second["units_resumed"] == 4
+    assert _CountingHarness.total_calls == 0
+    # Metrics identical to the full run.
+    assert second["metrics_by_arm"] == first["metrics_by_arm"]
+
+
+def test_resume_after_truncated_tail(tmp_path, monkeypatch):
+    config_path, output_root = _basic_config(tmp_path)
+    output_root.mkdir(parents=True, exist_ok=True)
+    # Simulate a process killed mid-write: 1 clean row + a truncated JSON line.
+    rows_file = output_root / "rows.jsonl"
+    good = {
+        "arm_id": "no_vector_baseline", "control": "no_vector_baseline", "alpha": 0.0,
+        "probe_pool_row_key": "k1", "label": "known", "generated_answer": "{}",
+        "refused": False, "correct": True, "truthful": True,
+    }
+    rows_file.write_text(json.dumps(good) + "\n" + '{"arm_id": "no_vector_base', encoding="utf-8")
+    # Matching checkpoint so resume is allowed.
+    config = yaml.safe_load(config_path.read_text())
+    fp = runner._config_fingerprint(config, alphas=[-4.0, 0.0], max_new_tokens=8)
+    (output_root / "checkpoint.json").write_text(json.dumps({"fingerprint": fp}), encoding="utf-8")
+
+    monkeypatch.setattr(runner, "ModelHarness", _CountingHarness)
+    _CountingHarness.total_calls = 0
+    summary = runner.run_config(config_path)
+    # 1 unit kept (the clean row), truncated tail dropped -> 3 regenerated.
+    assert summary["units_resumed"] == 1
+    assert summary["units_generated"] == 3
+    written = [json.loads(l) for l in rows_file.read_text().splitlines() if l.strip()]
+    assert len(written) == 4  # clean file, no truncated tail
+
+
+def test_fresh_discards_prior_rows(tmp_path, monkeypatch):
+    config_path, output_root = _basic_config(tmp_path)
+    monkeypatch.setattr(runner, "ModelHarness", _CountingHarness)
+    runner.run_config(config_path)
+    _CountingHarness.total_calls = 0
+    summary = runner.run_config(config_path, fresh=True)
+    assert summary["units_generated"] == 4
+    assert _CountingHarness.total_calls == 4
+
+
+def test_fingerprint_mismatch_refuses_resume(tmp_path, monkeypatch):
+    config_path, output_root = _basic_config(tmp_path)
+    monkeypatch.setattr(runner, "ModelHarness", _CountingHarness)
+    runner.run_config(config_path)
+    # Change the sweep -> fingerprint changes -> resume must refuse.
+    config = yaml.safe_load(config_path.read_text())
+    config["sweep"]["alphas"] = [-2.0, 0.0]
+    config_path.write_text(yaml.safe_dump(config), encoding="utf-8")
+    with pytest.raises(runner.HeadInterventionRunError, match="fingerprint"):
+        runner.run_config(config_path)
+
+
 def test_sweep_requires_baseline_alpha(tmp_path):
     steering = tmp_path / "steering.json"
     rows = tmp_path / "rows.jsonl"
