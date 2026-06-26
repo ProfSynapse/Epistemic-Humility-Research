@@ -311,4 +311,24 @@ experiment-specific code to the `synaptic-tuner` submodule.
   GRPO-derived F already separate the SFT model's OWN unknown-wrong vs
   unknown-refused behavior at the prompt token, before GRPO training? Caveat: F
   (theta/sigma) is fixed from GRPO activations; this reads that direction on SFT
-  activations (axis transfer, not an SFT-rebuilt axis). Result pending.
+  activations (axis transfer, not an SFT-rebuilt axis). **RESULT: axis
+  PRE-EXISTS GRPO.** The SFT arm is near-identical to GRPO — NO-FLIP trajectory
+  (prompt +1.19 → gen +0.37 vs GRPO +1.29 → +0.40) and UNANIMOUS 11/11 per-head
+  read (mean +1.20 vs +1.29). GRPO did **not** create the failure axis; it
+  inherits an SFT-laid representation. What GRPO changed is **behavior**: SFT
+  answers-wrong 67 / refuses 61, GRPO refuses 67 / answers-wrong 61 (GRPO trained
+  in more abstention). Training moved the decision threshold/action, not the
+  underlying read geometry — on-thesis for the training-tradeoff story.
+- 2026-06-26: **Causal knowledge-boundary (K) steering test** launched
+  (`phase3_current_clean_grpo_v2_knowledge_boundary_steer.yaml` + offline
+  `phase3_knowledge_boundary_steer_readout.py`). After H_monitor was refuted for
+  F (the refusal axis), K — the unknown-vs-known, behavior-agnostic direction
+  nearly orthogonal to F (geometry cos 0.12) — is the remaining candidate for a
+  separable "do I know this?" representation. Steers K on the same 11 heads across
+  symmetric alpha (sign: +alpha = "unknown" pole) over a balanced 128-known /
+  128-unknown panel; offline readout parses per-row response_confidence and
+  classifies the causal signature as **belief_monitor** (steering toward "unknown"
+  raises refusal AND lowers confidence — belief-consistent), **anti_steer** (the
+  F-like inverted case), or **inert**. The discriminator is belief-CONSISTENCY of
+  the sign vs K's pole, not refusal uniformity (both F and a monitor can move
+  refusal the same way on both labels). Result pending.

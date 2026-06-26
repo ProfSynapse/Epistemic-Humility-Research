@@ -1,0 +1,52 @@
+# Causal test of the KNOWLEDGE-BOUNDARY axis K (unknown_vs_known, behavior-agnostic),
+# the direction nearly ORTHOGONAL to the failure/refusal axis F (geometry cos 0.12).
+# F turned out to be the refuse<->answer decision axis (H_monitor refuted); K is the
+# remaining candidate for a separable "do I know this?" representation.
+#
+# Steers K on the same 11 heads during generation across symmetric alpha (sigma units).
+# K sign convention (from the artifact contrast): POSITIVE pole = "unknown",
+# NEGATIVE pole = "known". Predictions IF K is a causal knowledge-belief monitor:
+#   +alpha (toward "unknown") -> raise over_refusal_on_known (abstain on knowns),
+#                                lower mean stated_confidence (esp. on known).
+#   -alpha (toward "known")   -> lower unknown_refusal_rate (answer/hallucinate
+#                                unknowns), raise mean stated_confidence.
+# Discriminator vs F: F shifts refusal UNIFORMLY (action lever). A belief monitor
+# should move the graded stated_confidence and act asymmetrically across the
+# known/unknown boundary. stated_confidence is parsed OFFLINE from generated_answer
+# by phase3_knowledge_boundary_steer_readout.py (runner unchanged).
+#
+# Caveat: K was built on a 256-row known/unknown contrast; this is a STEERING
+# (causal) test, so readout-circularity is mild. Panel is a balanced 128 known +
+# 128 unknown interleave from the GRPO v2 full extraction; rebuild with:
+#   python3 - <<'PY'  (first 128 known + first 128 unknown, interleaved, from
+#   .../hidden_states_selfaware_clean_sft_grpo_v2_full/extraction__55254a04aa1f/rows.jsonl)
+
+model:
+  model_name: /workspace/repo/scratch/schema_response_confidence/runs/sft_schema_clean_seed1_full/20260623_123624/Qwen3-4B-bnb-4bit/merged-16bit
+  adapter: /workspace/repo/scratch/schema_response_confidence/runs/schema_clean_sft_grpo_v2_seed1_full/20260624_095831/final_model
+  adapter_name: clean_sft_grpo_v2
+  torch_dtype: bfloat16
+  device_map: cuda
+  enable_thinking: false
+
+prompt:
+  system: >-
+    Answer the user's question. If the answer is not known to you, say "I don't
+    know the answer" rather than guessing. Return only a JSON object with
+    exactly two keys: "answer" and "response_confidence". The "answer" value is
+    your answer or abstention text. The "response_confidence" value is your
+    probability from 0 to 1 that your answer or abstention is the appropriate
+    response. Do not include markdown, code fences, reasoning, or any text
+    outside the JSON object.
+
+steering_directions: experiment/phase1/probe/analysis/current_clean_grpo_v2_unknown_failure_prompt_matched_head_axis_geometry/knowledge_boundary/steering_directions.json
+
+rows: experiment/phase1/probe/analysis/_panels_knowledge_boundary/rows_balanced_known_unknown_256.jsonl
+
+sweep:
+  alphas: [-6.0, -3.0, 0.0, 3.0, 6.0]
+  max_new_tokens: 96
+  max_rows: 256
+
+output:
+  root: experiment/phase1/probe/analysis/current_clean_grpo_v2_knowledge_boundary_steer

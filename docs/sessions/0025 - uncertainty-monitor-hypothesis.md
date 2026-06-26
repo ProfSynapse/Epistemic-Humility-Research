@@ -4,7 +4,7 @@ session_id: '0025'
 title: uncertainty-monitor-hypothesis
 status: complete
 created_at: '2026-06-26T19:11:24Z'
-updated_at: '2026-06-26T21:24:34Z'
+updated_at: '2026-06-26T21:41:30Z'
 phase: phase-3-mech-interp
 question: "Is the sign-inverted per-head failure-axis direction a graded internal\
   \ UNCERTAINTY MONITOR (amplifying it raises abstention) rather than a be-wrong axis\
@@ -473,6 +473,29 @@ checkpoints:
   - Per-head STEERING sweep to test whether anti-steerability is uniform per-head;
     SFT pre-adapter read-trajectory arm launched (axis pre-existence/transfer test).
   signals: {}
+- id: 012-result
+  at: '2026-06-26T21:41:30Z'
+  kind: result
+  title: 'SFT pre-adapter arm: failure axis PRE-EXISTS GRPO'
+  summary: 'Read-trajectory + per-head read-sign on the SFT-merged h_base model (GRPO
+    adapter removed; reads the fixed GRPO-derived F on SFT activations). Near-identical
+    to the GRPO arm: NO-FLIP trajectory (prompt +1.19 -> generation +0.37, vs GRPO
+    +1.29 -> +0.40) and UNANIMOUS 11/11 per-head read (mean sep +1.20 vs GRPO +1.29;
+    every head +). The failure-axis read geometry is laid down by SFT (or earlier)
+    and GRPO inherits it -- GRPO did NOT create the axis. What GRPO changed is BEHAVIOR:
+    SFT answers-wrong 67 / refuses 61, GRPO refuses 67 / answers-wrong 61 (GRPO trained
+    in more abstention). Training moved the decision threshold/action, not the underlying
+    knowledge representation.'
+  evidence:
+  - analysis/.../head_read_trajectory_sft_base/summary.json + rows.jsonl (256 rows);
+    phase3_head_read_sign_consistency.py on both arms
+  run_ids: []
+  commands: []
+  decisions: []
+  next_steps:
+  - 'Causal K (knowledge-boundary) steering sweep launched: does the orthogonal known/unknown
+    axis causally control the knowledge belief (belief_monitor) or is it F-like/anti-steer/inert?'
+  signals: {}
 ---
 # uncertainty-monitor-hypothesis
 
@@ -646,3 +669,12 @@ failure-axis direction move abstention ~0 (67→63 cells) vs the localized heads
   - `experiment/phase1/probe/phase3_head_read_sign_consistency.py; rows=analysis/.../head_read_trajectory/rows.jsonl (256 rows; 61 answered_wrong, 67 refused)`
 - next steps:
   - Per-head STEERING sweep to test whether anti-steerability is uniform per-head; SFT pre-adapter read-trajectory arm launched (axis pre-existence/transfer test).
+### 012-result - SFT pre-adapter arm: failure axis PRE-EXISTS GRPO
+
+- at: `2026-06-26T21:41:30Z`
+- kind: `result`
+- summary: Read-trajectory + per-head read-sign on the SFT-merged h_base model (GRPO adapter removed; reads the fixed GRPO-derived F on SFT activations). Near-identical to the GRPO arm: NO-FLIP trajectory (prompt +1.19 -> generation +0.37, vs GRPO +1.29 -> +0.40) and UNANIMOUS 11/11 per-head read (mean sep +1.20 vs GRPO +1.29; every head +). The failure-axis read geometry is laid down by SFT (or earlier) and GRPO inherits it -- GRPO did NOT create the axis. What GRPO changed is BEHAVIOR: SFT answers-wrong 67 / refuses 61, GRPO refuses 67 / answers-wrong 61 (GRPO trained in more abstention). Training moved the decision threshold/action, not the underlying knowledge representation.
+- evidence:
+  - `analysis/.../head_read_trajectory_sft_base/summary.json + rows.jsonl (256 rows); phase3_head_read_sign_consistency.py on both arms`
+- next steps:
+  - Causal K (knowledge-boundary) steering sweep launched: does the orthogonal known/unknown axis causally control the knowledge belief (belief_monitor) or is it F-like/anti-steer/inert?
