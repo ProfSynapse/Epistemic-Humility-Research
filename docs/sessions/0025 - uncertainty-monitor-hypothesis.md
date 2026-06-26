@@ -4,7 +4,7 @@ session_id: '0025'
 title: uncertainty-monitor-hypothesis
 status: complete
 created_at: '2026-06-26T19:11:24Z'
-updated_at: '2026-06-26T20:11:32Z'
+updated_at: '2026-06-26T21:05:42Z'
 phase: phase-3-mech-interp
 question: "Is the sign-inverted per-head failure-axis direction a graded internal\
   \ UNCERTAINTY MONITOR (amplifying it raises abstention) rather than a be-wrong axis\
@@ -377,6 +377,43 @@ checkpoints:
     row pool or accept that the read-vs-confidence selective-prediction comparison
     is deferred to a base-model / variance-bearing arm (T8).'
   signals: {}
+- id: 009-result
+  at: '2026-06-26T21:05:42Z'
+  kind: result
+  title: 'Tier-2 read-trajectory: NO FLIP -- read/write-mismatch explanation REFUTED'
+  summary: 'phase3_head_read_trajectory_runner.py (GPU, Docker/unsloth, 256 rows,
+    baseline greedy decode, read pre-hooks on the 11 target o_proj blocks) reads the
+    natural per-head projection onto F at the final prompt token and every generated
+    position, with NO steering. Tests the read/write-mismatch hypothesis (does F''s
+    read flip sign between prompt-token and generation positions, which would explain
+    A.4''s inverted causal sign?). VERDICT: NO FLIP. The unknown-answered-wrong vs
+    unknown-refused separation along F KEEPS its sign: +1.29 at the prompt token (in-sample,
+    by construction) -> +0.40 during generation. It attenuates to ~31% of prompt magnitude
+    but never inverts. Per-position: unknown-wrong stays positive across generation
+    (prompt 2.21 -> ~0.9 mid -> 0.24 late); unknown-refused decays to ~0 (0.91 ->
+    0.15 -> -0.01). F''s read is direction-consistent at every position, strongest
+    pre-generation (Ferrando-style decision-time read) and washing out as the model
+    emits. This REFUTES the read/write coordinate-mismatch / sign-flip explanation
+    of the inverted causal sign: the inversion is a WRITE-side phenomenon, not a read-axis
+    flip.'
+  evidence:
+  - summary.json analysis block in current_clean_grpo_v2_unknown_failure_prompt_matched_head_read_trajectory
+    (gitignored); groups 61 unknown-wrong / 67 unknown-refused; 4 offline unit tests
+    pass (read-hook last-position capture on a tiny torch model; sign-flip/no-flip/roundtrip
+    analysis)
+  run_ids: []
+  commands: []
+  decisions: []
+  next_steps:
+  - 'The inverted WRITE effect now has two live explanations to discriminate, both
+    write-side: (a) Tan 2407.12404 genuine anti-steerability (sign-unstable steering),
+    (b) H_OOD_default -- simultaneous all-position all-head ITI injection breaks attention
+    and the model falls back to its safe default (refuse). CHEAP DISCRIMINATOR (offline,
+    no GPU): re-read the existing A.4 intervention-sweep rows (alphas [-8,-4,-2,0,+4])
+    for the alpha->refusal curve -- if refusal rises for BOTH signs it is OOD-collapse;
+    if monotone in sign it is directional anti-steer. That reuses already-generated
+    data.'
+  signals: {}
 ---
 # uncertainty-monitor-hypothesis
 
@@ -523,3 +560,12 @@ failure-axis direction move abstention ~0 (67→63 cells) vs the localized heads
   - `experiment/phase1/probe/analysis/current_clean_grpo_v2_unknown_failure_prompt_matched_head_read_projection/read_projection.json (gitignored); 2 unit tests in test_phase3_head_read_projection.py (non-degenerate known-population AUROC=1.0; degenerate-population->None) pass`
 - next steps:
   - To run T3 cleanly, need an extraction with WITHIN-label correctness variance: known-answered confident ERRORS and unknown-answered lucky-correct rows. The current prompt-matched panel is too 'pure' by construction. Either widen the extraction row pool or accept that the read-vs-confidence selective-prediction comparison is deferred to a base-model / variance-bearing arm (T8).
+### 009-result - Tier-2 read-trajectory: NO FLIP -- read/write-mismatch explanation REFUTED
+
+- at: `2026-06-26T21:05:42Z`
+- kind: `result`
+- summary: phase3_head_read_trajectory_runner.py (GPU, Docker/unsloth, 256 rows, baseline greedy decode, read pre-hooks on the 11 target o_proj blocks) reads the natural per-head projection onto F at the final prompt token and every generated position, with NO steering. Tests the read/write-mismatch hypothesis (does F's read flip sign between prompt-token and generation positions, which would explain A.4's inverted causal sign?). VERDICT: NO FLIP. The unknown-answered-wrong vs unknown-refused separation along F KEEPS its sign: +1.29 at the prompt token (in-sample, by construction) -> +0.40 during generation. It attenuates to ~31% of prompt magnitude but never inverts. Per-position: unknown-wrong stays positive across generation (prompt 2.21 -> ~0.9 mid -> 0.24 late); unknown-refused decays to ~0 (0.91 -> 0.15 -> -0.01). F's read is direction-consistent at every position, strongest pre-generation (Ferrando-style decision-time read) and washing out as the model emits. This REFUTES the read/write coordinate-mismatch / sign-flip explanation of the inverted causal sign: the inversion is a WRITE-side phenomenon, not a read-axis flip.
+- evidence:
+  - `summary.json analysis block in current_clean_grpo_v2_unknown_failure_prompt_matched_head_read_trajectory (gitignored); groups 61 unknown-wrong / 67 unknown-refused; 4 offline unit tests pass (read-hook last-position capture on a tiny torch model; sign-flip/no-flip/roundtrip analysis)`
+- next steps:
+  - The inverted WRITE effect now has two live explanations to discriminate, both write-side: (a) Tan 2407.12404 genuine anti-steerability (sign-unstable steering), (b) H_OOD_default -- simultaneous all-position all-head ITI injection breaks attention and the model falls back to its safe default (refuse). CHEAP DISCRIMINATOR (offline, no GPU): re-read the existing A.4 intervention-sweep rows (alphas [-8,-4,-2,0,+4]) for the alpha->refusal curve -- if refusal rises for BOTH signs it is OOD-collapse; if monotone in sign it is directional anti-steer. That reuses already-generated data.

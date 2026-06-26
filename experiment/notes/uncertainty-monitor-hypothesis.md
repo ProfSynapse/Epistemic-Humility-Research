@@ -262,3 +262,21 @@ experiment-specific code to the `synaptic-tuner` submodule.
   within-label correctness variance (known confident-errors, unknown
   lucky-correct); deferred to a variance-bearing / base-model arm (T8). See 0025
   checkpoint (T3).
+- 2026-06-26: **Tier 2 read-trajectory run** via
+  `phase3_head_read_trajectory_runner.py` (GPU, Docker/unsloth, 256 rows,
+  baseline greedy decode, read pre-hooks on the 11 o_proj blocks; NO steering).
+  Reads F's natural projection at the final prompt token and every generated
+  position to test the read/write-mismatch hypothesis (does F's read flip sign
+  between prompt and generation, explaining A.4's inverted causal sign?).
+  **VERDICT: NO FLIP.** unknown-wrong vs unknown-refused separation along F keeps
+  its sign: **+1.29 at the prompt token → +0.40 during generation** (attenuates
+  to ~31%, never inverts). Per-position, unknown-wrong stays positive across
+  generation (2.21 → ~0.9 → 0.24) and unknown-refused decays to ~0 (0.91 → 0.15
+  → −0.01). F's read is direction-consistent at every position and strongest
+  pre-generation (Ferrando-style decision-time read). This **refutes** the
+  read/write coordinate-mismatch explanation: the inverted causal sign is a
+  **write-side** effect, not a read-axis flip. Two live write-side explanations
+  remain — Tan 2407.12404 anti-steerability vs H_OOD_default (all-position
+  all-head injection → safe-default collapse). Cheap offline discriminator:
+  re-read the A.4 sweep alpha→refusal curve (symmetric in sign ⇒ OOD-collapse;
+  monotone ⇒ directional). See 0025 checkpoint (Tier-2 read-trajectory).
