@@ -760,6 +760,23 @@ GQA GOTCHA confirmed live: Qwen3-4B `hidden_size=2560` but o_proj input width is
 `num_attention_heads * head_dim = 32 * 128 = 4096`; `2560 // 32 = 80 != 128`. Always
 read `head_dim` from `config.head_dim`, never `hidden_size // num_heads`.
 
+Step A.4 SWEEP RESULT (GRPO v2, gated GPU, 256-row matched panel, alphas
+`[-8,-4,-2,0,+4]`): sparse 11-head ITI is causally potent but (a) SIGN-INVERTED
+vs the probe and (b) only partially selective. Failure cell
+`unknown_answered_wrong` (counts /128) is monotonic: `76/66/66/61/22`;
+`unknown_refused` `52/62/62/67/106`; `known_correct` `61/62/64/63/56`;
+over-refusal `known_refused` `61/62/63/65/72`. The A.4-input artifact predicted
+`alpha<0` = safe refusal, but causally `alpha>0` (ADDING the wrong-answer
+direction) raises refusal and `alpha<0` worsens the failure — a probe-causality
+dissociation. At `+4` the failure cell drops 61→22 (−64%) with only +7 known
+over-refusal and −7 known-correct: unknown abstention moves ~5.6× harder than
+known (knowledge-conditioned) but not collateral-free. Verdict: a *partially
+knowledge-conditioned abstention dial*, not a clean humility switch — gate
+partial-pass. LESSON for future steering: do NOT trust the projection sign of a
+mass-mean readout to predict the causal steering sign; sweep BOTH signs and read
+the dose-response. Positive side here is under-sampled (only +4); a positive-only
+`[+1,+2,+3,+6]` refinement maps the collateral knee.
+
 Then prioritize the calibrated-expression question over refusal-axis steering:
 
 1. Explore multi-layer or constrained subspace controls; simple single-axis and
