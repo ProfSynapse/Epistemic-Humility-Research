@@ -103,6 +103,9 @@ REQUIRED_MANIFEST_FIELDS = frozenset({
     # data + alignment provenance
     "source_split", "data_sha256", "layer_list", "token_position_rule",
     "tensor_shapes", "persistence_format",
+    # extraction granularity (Step A: residual_stream | attention_head). The two
+    # head-layout fields are non-null ONLY for attention_head extractions.
+    "granularity", "num_attention_heads", "head_dim",
     # code + config provenance (link-never-mutate run records)
     "research_repo_commit", "submodule_commit",
     "extraction_config_sha", "aligned_probe_config_sha", "aligned_run_record_id",
@@ -487,6 +490,13 @@ def build_manifest(*, config: dict, extraction_config_sha: str,
     manifest["compute_dtype"] = extraction.get("compute_dtype")
     manifest["persist_dtype"] = extraction.get("persist_dtype")
     manifest["persistence_format"] = extraction.get("persistence_format", "safetensors")
+    # Granularity is config-owned (default residual_stream so every existing
+    # config keeps its meaning); the head-layout dims are backend-discovered
+    # (post-load), so they start None and the harness patches them for the
+    # attention_head path. They stay None for residual_stream.
+    manifest["granularity"] = extraction.get("granularity", GRANULARITY_RESIDUAL_STREAM)
+    manifest["num_attention_heads"] = None
+    manifest["head_dim"] = None
     manifest["status"] = status
     manifest["verified"] = False
     manifest["tensor_shapes"] = None  # patched post-forward
@@ -544,6 +554,12 @@ _FINALIZE_REQUIRED_NON_NULL = frozenset(REQUIRED_MANIFEST_FIELDS - {
     # case); null here is an intentional "all layers" sentinel, not missing
     # provenance, so it is exempt from the non-null finalize requirement.
     "layer_list",
+    # The head-layout dims are null by design for residual_stream extractions
+    # (they describe an attention_head capture only). _assert_populated enforces
+    # them conditionally on granularity below, so they are exempt from the blanket
+    # non-null requirement. granularity itself is always populated (build_manifest
+    # defaults it) and stays required-non-null.
+    "num_attention_heads", "head_dim",
 })
 
 
@@ -562,3 +578,17 @@ def _assert_populated(manifest: dict) -> None:
             "finalize: status is ok but tensor_shapes is None; the forward must "
             "patch tensor_shapes before marking an extraction ok"
         )
+    # Head-layout dims are required for an attention_head extraction (the
+    # downstream per-head reshape cannot proceed without them) and must stay null
+    # for residual_stream (where they are meaningless).
+    if manifest.get("granularity") == GRANULARITY_ATTENTION_HEAD:
+        head_layout_nulls = sorted(
+            f for f in ("num_attention_heads", "head_dim") if manifest.get(f) is None
+        )
+        if head_layout_nulls:
+            raise ValueError(
+                f"finalize: attention_head extraction is missing head-layout "
+                f"field(s) {head_layout_nulls}; the harness must patch "
+                "num_attention_heads and head_dim from the backend before "
+                "marking an attention_head extraction ok"
+            )

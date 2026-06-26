@@ -158,6 +158,8 @@ def parse_config(config_path: Path) -> tuple[dict, str]:
     config = resolve_eval_arm_adapters(config, config_path)
     schema.validate_arm_states(config["arms"])
     schema.validate_token_position_rule(config["extraction"]["token_position_rule"])
+    schema.validate_granularity(
+        config["extraction"].get("granularity", schema.GRANULARITY_RESIDUAL_STREAM))
     cfg_sha = schema.config_sha(config)
     return config, cfg_sha
 
@@ -356,6 +358,9 @@ def run_extraction(config: dict, extraction_config_sha: str, backend,
     rows_path = out_dir / config["output"]["rows_filename"]
     base_arm, active_arm = _arm_roles(config["arms"])
     token_rule = config["extraction"]["token_position_rule"]
+    granularity = config["extraction"].get(
+        "granularity", schema.GRANULARITY_RESIDUAL_STREAM)
+    schema.validate_granularity(granularity)
 
     # WRITE-BEFORE-INVOKE: launched manifest hits disk before any forward.
     manifest = schema.build_manifest(
@@ -373,7 +378,8 @@ def run_extraction(config: dict, extraction_config_sha: str, backend,
     try:
         n_new = _extract_rows(
             backend, slice_rows, done, rows_path, base_arm, active_arm,
-            token_rule, extraction_config_sha, out_dir, config, tensor_shapes)
+            token_rule, extraction_config_sha, out_dir, config, tensor_shapes,
+            granularity)
     except Exception as exc:  # noqa: BLE001 - record failure, then re-raise
         manifest["status"] = schema.STATUS_FAILED
         _write_json(manifest_path, manifest)
@@ -393,6 +399,13 @@ def run_extraction(config: dict, extraction_config_sha: str, backend,
     # BEFORE the finalize gate, so require_populated=True has a complete manifest.
     manifest.update(collect_static_provenance(config, slice_rows, rendered_prompts))
     manifest.update(backend.provenance())
+    # Head-layout dims are backend-discovered; patch them for the attention_head
+    # path so the finalize gate (which requires them non-null there) passes and
+    # the downstream per-head reshape can read the layout from the manifest. They
+    # stay None for residual_stream.
+    if granularity == schema.GRANULARITY_ATTENTION_HEAD:
+        manifest["num_attention_heads"] = backend.num_attention_heads
+        manifest["head_dim"] = backend.head_dim
     manifest["status"] = schema.STATUS_OK
     manifest["tensor_shapes"] = tensor_shapes or None
     manifest["verified"] = _verify_emitted(out_dir, base_arm, active_arm, config)
@@ -408,21 +421,36 @@ def run_extraction(config: dict, extraction_config_sha: str, backend,
 
 
 def _extract_rows(backend, slice_rows, done, rows_path, base_arm, active_arm,
-                  token_rule, cfg_sha, out_dir, config, tensor_shapes) -> int:
-    """Forward each unseen row for both arms; append the row + per-arm tensors."""
+                  token_rule, cfg_sha, out_dir, config, tensor_shapes,
+                  granularity=schema.GRANULARITY_RESIDUAL_STREAM) -> int:
+    """Forward each unseen row for both arms; append the row + per-arm tensors.
+
+    The forward + shape contract is granularity-dependent: residual_stream uses
+    forward_hidden_states (N+1 layers, hidden_dim wide); attention_head uses
+    forward_head_states (N blocks, num_attention_heads*head_dim wide, the o_proj
+    input ITI localizes on). Persistence is granularity-agnostic (both produce a
+    layer_id -> vector map), so only the forward/validation and the per-row
+    provenance fields branch.
+    """
     n_new = 0
     persist_delta = config["extraction"].get("persist_delta", True)
+    is_head = granularity == schema.GRANULARITY_ATTENTION_HEAD
+    if is_head:
+        layer_count = schema.expected_attention_layer_count(backend.num_hidden_layers)
+    else:
+        layer_count = schema.expected_layer_count(backend.num_hidden_layers)
     with rows_path.open("a", encoding="utf-8") as fh:
         for row in slice_rows:
             key = row["probe_pool_row_key"]
             if key in done:
                 continue
             rendered = backend.render(row["question"])
-            h_base = backend.forward_hidden_states(
-                rendered, base_arm["adapter_state"], None)
-            h_lora = backend.forward_hidden_states(
+            forward = (backend.forward_head_states if is_head
+                       else backend.forward_hidden_states)
+            h_base = forward(rendered, base_arm["adapter_state"], None)
+            h_lora = forward(
                 rendered, active_arm["adapter_state"], active_arm["name"])
-            _validate_arm_tensors(backend, h_base, h_lora, token_rule)
+            _validate_arm_tensors(backend, h_base, h_lora, token_rule, granularity)
             delta = _vector_delta(h_lora, h_base) if persist_delta else None
 
             _persist_row_tensors(out_dir, key, cfg_sha, h_base, h_lora, delta,
@@ -436,9 +464,15 @@ def _extract_rows(backend, slice_rows, done, rows_path, base_arm, active_arm,
                 "aligned_probe_config_sha": row["aligned_probe_config_sha"],
                 "prompt_hash": schema.prompt_hash(rendered),
                 "extraction_config_sha": cfg_sha,
-                "layer_count": schema.expected_layer_count(backend.num_hidden_layers),
+                "granularity": granularity,
+                "layer_count": layer_count,
                 "hidden_dim": backend.hidden_dim,
             }
+            if is_head:
+                # Per-row head layout so the downstream reshape is self-describing
+                # even from rows.jsonl alone (the manifest carries it too).
+                record["num_attention_heads"] = backend.num_attention_heads
+                record["head_dim"] = backend.head_dim
             for optional in ("stable_identity", "strata", "answer_value", "aliases", "source_arms", "sycophancy"):
                 if optional in row:
                     record[optional] = row[optional]
@@ -449,13 +483,22 @@ def _extract_rows(backend, slice_rows, done, rows_path, base_arm, active_arm,
     return n_new
 
 
-def _validate_arm_tensors(backend, h_base, h_lora, token_rule) -> None:
+def _validate_arm_tensors(backend, h_base, h_lora, token_rule,
+                          granularity=schema.GRANULARITY_RESIDUAL_STREAM) -> None:
     for layer_vectors in (h_base, h_lora):
-        schema.validate_hidden_state_shape(
-            layer_vectors=layer_vectors,
-            num_hidden_layers=backend.num_hidden_layers,
-            hidden_dim=backend.hidden_dim,
-            token_position_rule=token_rule)
+        if granularity == schema.GRANULARITY_ATTENTION_HEAD:
+            schema.validate_head_state_shape(
+                layer_vectors=layer_vectors,
+                num_hidden_layers=backend.num_hidden_layers,
+                num_attention_heads=backend.num_attention_heads,
+                head_dim=backend.head_dim,
+                token_position_rule=token_rule)
+        else:
+            schema.validate_hidden_state_shape(
+                layer_vectors=layer_vectors,
+                num_hidden_layers=backend.num_hidden_layers,
+                hidden_dim=backend.hidden_dim,
+                token_position_rule=token_rule)
 
 
 # ---------------------------------------------------------------------------
