@@ -331,4 +331,38 @@ experiment-specific code to the `synaptic-tuner` submodule.
   raises refusal AND lowers confidence — belief-consistent), **anti_steer** (the
   F-like inverted case), or **inert**. The discriminator is belief-CONSISTENCY of
   the sign vs K's pole, not refusal uniformity (both F and a monitor can move
-  refusal the same way on both labels). Result pending.
+  refusal the same way on both labels). **VERDICT: anti_steer.** Known-side
+  over-refusal is monotone and belief-INCONSISTENT — steering toward the "unknown"
+  pole LOWERS abstention (α −6:56.2, −3:40.6, 0:33.6, +3:28.9, +6:23.4), the wrong
+  way for a knowledge dial; stated confidence flat (Δ−0.014); unknown side pinned
+  at ~100% (ceiling). K, like F, is an anti-steerable refusal-correlated direction,
+  **not** a causal knowledge dial. **Two candidate axes, both anti-steerable** ⇒ a
+  separable uncertainty representation is not a STEERABLE axis in this head-set.
+- 2026-06-26: **Pivot to a READ-side probe** (`phase3_latent_knowledge_probe.py`,
+  GPU-free). After F and K both came back anti-steerable, stop hunting a steerable
+  knob and ask whether the residual stream LINEARLY ENCODES "do I know this?" more
+  than the model's abstention expresses. Reuses the on-disk GRPO v2 full-panel
+  residual stream (h_lora, 37 layers × 2560) joined to behavior_cell. Two readouts:
+  (1) per-layer CV AUROC of activation → ground-truth known/unknown; (2) the
+  **over-refusal gap** — train the best-layer probe on clean cells
+  (known_correct_answered vs unknown_refused) and score the 168 over-refusals
+  (known_refused): if they look internally KNOWN, the over-abstention is a
+  behavioral-threshold gap, not an internal "I don't know". NOTE: "predict
+  correctness among answered" is intentionally NOT the target — the GRPO model
+  answers-wrong too rarely (~15 known + 1 unknown) to power a 2560-dim correctness
+  probe; the known/unknown boundary and the 168-item over-refusal cell are the
+  well-powered signals. **RESULT (first POSITIVE in the search): the boundary IS
+  linearly encoded and COMPUTED, not surface.** Per-layer CV AUROC of h_lora →
+  known/unknown: L0 (embeddings) = 0.498 (chance), L1 = 0.981, plateau ~0.99,
+  peak L35 = 0.997. The L0-chance → L1-0.98 jump rules out a lexical/embedding
+  artifact. Caveat: single-layer emergence ⇒ a relatively SHALLOW feature, and
+  known/unknown is dataset-defined (TriviaQA vs SelfAware), so the probe may read
+  question-TYPE differences rather than memory-retrieval — needs a lexical
+  baseline + held-out control. **Over-refusal gap (more robust, within-known):**
+  the best-layer probe places the 168 known_refused over-abstentions at position
+  0.27 (look internally KNOWN, like answered-knowns, not like unknown-refused).
+  The model represented the answer but refused anyway ⇒ over-abstention is a
+  behavioral-THRESHOLD gap, not an internal "I don't know" signal. This read-side
+  signal is the uncertainty representation the steerable axes (F, K — both
+  anti-steer) were not. Next controls: lexical-baseline AUROC; within-known
+  refused-vs-answered probe; h_base (pre-GRPO) comparison; held-out question set.
