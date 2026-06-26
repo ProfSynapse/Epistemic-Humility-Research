@@ -4,7 +4,7 @@ session_id: '0025'
 title: uncertainty-monitor-hypothesis
 status: complete
 created_at: '2026-06-26T19:11:24Z'
-updated_at: '2026-06-26T22:55:19Z'
+updated_at: '2026-06-26T23:00:21Z'
 phase: phase-3-mech-interp
 question: "Is the sign-inverted per-head failure-axis direction a graded internal\
   \ UNCERTAINTY MONITOR (amplifying it raises abstention) rather than a be-wrong axis\
@@ -594,6 +594,25 @@ checkpoints:
   decisions: []
   next_steps: []
   signals: {}
+- id: 017-result
+  at: '2026-06-26T23:00:21Z'
+  kind: result
+  title: 'Cross-regimen caution-axis agreement: SHARED-AXIS with drift (GPU-free)'
+  summary: 'Fit the within-known over-refusal direction at L35 for SFT/GRPO+DPO/GRPO
+    v2 in a shared whitened frame; pairwise |cos| of unit normals vs shuffled-label
+    floor. SHARED-AXIS: mean cross |cos|=0.701 vs floor 0.014 (~50x). grpo_dpo<->grpo_v2
+    0.857 (GRPO family tightest), sft<->grpo_dpo 0.671, sft<->grpo_v2 0.576 (SFT ancestor
+    most distinct). One shared SFT-laid caution mechanism that rotates measurably
+    under tuning; GRPO variants converge. Calibration: strongly-shared-WITH-drift
+    not identical; single seed so ordering suggestive, far-above-floor agreement robust.
+    Read-side correlational case strong; remaining gaps causal (B1 patching) + timing
+    (B2) + cross-dataset (C1).'
+  evidence: []
+  run_ids: []
+  commands: []
+  decisions: []
+  next_steps: []
+  signals: {}
 ---
 # uncertainty-monitor-hypothesis
 
@@ -806,3 +825,8 @@ failure-axis direction move abstention ~0 (67→63 cells) vs the localized heads
 - at: `2026-06-26T22:55:19Z`
 - kind: `result`
 - summary: Ran the controls pipeline (A1/A2 + new axis_geometry readout) on SFT, GRPO+DPO, GRPO v2 full panels. Humility-tax picture consistent across all 3: over-refusal count rises 127->152->168 with tuning while internal knowledge stays at ceiling; a deep lexically-clean caution axis predicts which knowns get over-refused (residual 0.90-0.93 vs lexical 0.64-0.66) in EVERY regimen, present from SFT; that caution axis is ORTHOGONAL to the knowledge axis everywhere (|cos| 0.035-0.087, all <0.1); over-refusals read as internally KNOWN in all (gap 0.25-0.28). Suggestive single-seed trend: caution axis trends more orthogonal + stronger as tuning intensifies. Net: belief-vs-action over-refusal mechanism + dedicated knowledge-orthogonal caution axis generalize across the SFT/DPO/GRPO family, tying mech result to paper-2. Caveats: 1 seed/regimen; lexical!=semantic-difficulty; cross-DATASET (C1) open.
+### 017-result - Cross-regimen caution-axis agreement: SHARED-AXIS with drift (GPU-free)
+
+- at: `2026-06-26T23:00:21Z`
+- kind: `result`
+- summary: Fit the within-known over-refusal direction at L35 for SFT/GRPO+DPO/GRPO v2 in a shared whitened frame; pairwise |cos| of unit normals vs shuffled-label floor. SHARED-AXIS: mean cross |cos|=0.701 vs floor 0.014 (~50x). grpo_dpo<->grpo_v2 0.857 (GRPO family tightest), sft<->grpo_dpo 0.671, sft<->grpo_v2 0.576 (SFT ancestor most distinct). One shared SFT-laid caution mechanism that rotates measurably under tuning; GRPO variants converge. Calibration: strongly-shared-WITH-drift not identical; single seed so ordering suggestive, far-above-floor agreement robust. Read-side correlational case strong; remaining gaps causal (B1 patching) + timing (B2) + cross-dataset (C1).

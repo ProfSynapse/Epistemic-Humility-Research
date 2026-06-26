@@ -492,3 +492,26 @@ choose B vs C with the user.
     belief-vs-action over-refusal mechanism and its dedicated, knowledge-orthogonal
     caution axis generalize across the SFT/DPO/GRPO regimen family, tying the
     read-side mech result to the paper-2 headline comparison.
+- 2026-06-26: **Cross-regimen caution-axis AGREEMENT** via
+  `phase3_caution_axis_transfer.py` (GPU-free). C2 showed each regimen has a
+  caution axis of similar strength; this tests whether it is the SAME direction.
+  Fits the within-known over-refusal direction at L35 for all three regimens in a
+  shared whitened frame (one StandardScaler on the pooled known activations) and
+  reports pairwise |cos| of the unit normals, with a shuffled-label random floor.
+  (Cosine, not train-A/test-B transfer AUROC, because the SelfAware questions are
+  identical across regimens — only the over-refusal labels differ — so AUROC
+  transfer could ride question identity; direction geometry does not.)
+  **VERDICT: SHARED-AXIS.** mean cross-regimen |cos| = **0.701** vs random floor
+  **0.014** (~50×). Structure: **grpo_dpo↔grpo_v2 = 0.857** (the two GRPO-family
+  regimens cluster tightest), **sft↔grpo_dpo = 0.671**, **sft↔grpo_v2 = 0.576**
+  (SFT, the ancestor, sits furthest from both). So the caution axis is ONE shared
+  mechanism the regimens inherit — laid by SFT — but it **rotates measurably as
+  tuning proceeds**, with the GRPO variants converging on a common rotated version.
+  This sharpens the C2 "suggestive trend": not three coincidental axes (the floor
+  rules that out), but an inherited direction that drifts under tuning. Calibration:
+  0.58–0.86 is "strongly shared WITH drift," not "identical"; single seed, so the
+  exact SFT-most-distinct ordering is suggestive while the far-above-floor
+  agreement is robust. **Read-side correlational case is now strong; remaining gaps
+  are CAUSAL (does the caution axis DRIVE over-refusal — B1 activation patching) and
+  TIMING (pre-commitment monitor vs decision echo — B2 trajectory), both GPU; and
+  cross-DATASET transfer (C1).**
