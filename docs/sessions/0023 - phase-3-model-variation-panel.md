@@ -886,3 +886,65 @@ _No summary yet._
 - next steps:
   - Export KTO prompt-matched behavior-axis directions.
   - Run a small generated replay sweep on the KTO L11 unknown-answering axis with both signs and conservative coefficients.
+
+### 031-result - KTO L11 generated replay is also not a usable control
+
+- at: `2026-06-26T12:30:00Z`
+- kind: `result`
+- summary: Exported KTO prompt-matched unknown-failure directions and ran generated replay for the strongest pairwise axis, `delta` L11, with both signs and coefficients 5/10/25. The run completed with 2,304 scored rows because the runner repeats the no-vector baseline once per coefficient. Baseline replay had 65/128 unknown refusals and 63/128 unknown answers, plus 64/128 known refusals and 64/128 known answers. The best-looking arm was `activation_subtraction` coeff 25: unknown refusals increased from 65 to 67, with 3 unknown answer-to-refusal repairs but 1 unknown refusal-to-answer leak; known correctness improved by only one row and known refusal count did not move. All other signs/coefficients were flat or net negative. Interpretation: KTO's sharp L11 pairwise separability mostly changes generated wording and does not deliver robust calibrated-expression control.
+- evidence:
+  - `experiment/phase1/probe/config/phase3_current_clean_kto_unknown_failure_prompt_matched_directions.yaml`
+  - `experiment/phase1/probe/analysis/current_clean_kto_unknown_failure_prompt_matched_directions/behavior_axis_directions.manifest.json`
+  - `experiment/phase1/probe/config/phase3_current_clean_kto_unknown_failure_prompt_matched_candidates.yaml`
+  - `experiment/phase1/probe/config/phase3_current_clean_kto_unknown_failure_prompt_matched_generation_replay.yaml`
+  - `experiment/phase1/probe/analysis/current_clean_kto_unknown_failure_prompt_matched_generation_replay/summary_latest/summary.json`
+  - `experiment/phase1/probe/analysis/current_clean_kto_unknown_failure_prompt_matched_generation_replay/summary_latest/changed_rows.csv`
+- commands:
+  - `python experiment\\phase1\\probe\\phase3_behavior_axis_directions.py --config experiment\\phase1\\probe\\config\\phase3_current_clean_kto_unknown_failure_prompt_matched_directions.yaml`
+  - `python experiment\\phase1\\probe\\phase3_causal_pilot_sweep.py --config experiment\\phase1\\probe\\config\\phase3_current_clean_kto_unknown_failure_prompt_matched_generation_replay.yaml --mode-filter generation --write-plan --materialize-configs`
+  - `python experiment\\phase1\\probe\\phase3_causal_pilot_sweep.py --config experiment\\phase1\\probe\\config\\phase3_current_clean_kto_unknown_failure_prompt_matched_generation_replay.yaml --mode-filter generation --write-plan --materialize-configs --execute --allow-generation`
+  - `python experiment\\phase1\\probe\\phase3_generation_replay_analysis.py --root experiment\\phase1\\probe\\analysis\\current_clean_kto_unknown_failure_prompt_matched_generation_replay --out experiment\\phase1\\probe\\analysis\\current_clean_kto_unknown_failure_prompt_matched_generation_replay\\summary_latest`
+- decisions:
+  - Do not continue scalar tuning on KTO L11 as the next move.
+  - Treat pairwise AUC/d-prime as insufficient for this project unless generated replay moves behavior in the right direction without paired leaks.
+  - Pause after this round and hand off to a new conversation as requested.
+- next steps:
+  - New conversation should resume from the handoff, not launch additional runs automatically.
+
+### 032-result - GRPO-order pass: dpo_grpo and kto_grpo restore GRPO's sharp axis but not its coherence
+
+- at: `2026-06-26T14:30:00Z`
+- kind: `result`
+- summary: Resumed from the 0024 handoff and chose option 1 (finish the regimen sweep, analysis-only, no generated replay). Built two new prompt-matched 256-row rare-cell panels (64/cell) from the Amendment F full SelfAware scored evals and ran live Docker extractions: `clean_sft_dpo_grpo` (SFT->DPO->GRPO; `extraction__7dfcdd2681a5`) and `clean_sft_kto_grpo` (SFT->KTO->GRPO; `extraction__481dd6eb764c`). Both manifests `status=ok`, `verified=true`, 256 rows. The final GRPO adapter sits over the SFT->DPO and SFT->KTO merged bases respectively, so delta isolates the final GRPO surface. Behavior-axis (best per contrast/role) and four-cell multicell readout (balanced ridge, CV=4) gave: dpo_grpo unknown-answering `delta` L14 `d=2.391` AUC `0.983` balacc `0.961`, known-overrefusal `delta` L13 `d=3.205` AUC `1.000`, best four-cell readout `h_lora` L21 full macro recall `0.648`; kto_grpo unknown-answering `delta` L14 `d=2.269` AUC `0.987` balacc `0.953`, known-overrefusal `delta` L12 AUC `1.000`, best four-cell readout `h_base` L6 rank-16 / `delta` L22 full macro recall `0.641`.
+- evidence:
+  - `experiment/phase1/probe/config/hidden_state_selfaware_manifest_clean_sft_dpo_grpo_unknown_failure_panel_prompt_matched.yaml`
+  - `experiment/phase1/probe/config/hidden_state_selfaware_manifest_clean_sft_kto_grpo_unknown_failure_panel_prompt_matched.yaml`
+  - `experiment/phase1/probe/qwen3-4b-clean-sft-dpo-grpo-seed1-selfaware/hidden_states_selfaware_clean_sft_dpo_grpo_unknown_failure_panel_prompt_matched/extraction__7dfcdd2681a5/manifest.json`
+  - `experiment/phase1/probe/qwen3-4b-clean-sft-kto-grpo-seed1-selfaware/hidden_states_selfaware_clean_sft_kto_grpo_unknown_failure_panel_prompt_matched/extraction__481dd6eb764c/manifest.json`
+  - `experiment/phase1/probe/analysis/current_clean_dpo_grpo_unknown_failure_prompt_matched_behavior_axis_scan/axis_scan_all.csv`
+  - `experiment/phase1/probe/analysis/current_clean_dpo_grpo_unknown_failure_prompt_matched_multicell_readout/top_readouts_all.csv`
+  - `experiment/phase1/probe/analysis/current_clean_kto_grpo_unknown_failure_prompt_matched_behavior_axis_scan/axis_scan_all.csv`
+  - `experiment/phase1/probe/analysis/current_clean_kto_grpo_unknown_failure_prompt_matched_multicell_readout/top_readouts_all.csv`
+- commands:
+  - `python experiment\\phase1\\probe\\phase3_selfaware_behavior_manifest.py --config experiment\\phase1\\probe\\config\\phase3_current_clean_dpo_grpo_unknown_failure_selfaware_manifest.yaml`
+  - `python experiment\\phase1\\probe\\phase3_selfaware_behavior_manifest.py --config experiment\\phase1\\probe\\config\\phase3_current_clean_kto_grpo_unknown_failure_selfaware_manifest.yaml`
+  - `docker.exe run --rm --gpus all --ipc=host --entrypoint python -e HF_HOME=/workspace/repo/.cache/hf -e HUGGINGFACE_HUB_CACHE=/workspace/repo/.cache/hf/hub -v F:\\Code\\Epistemic-Humility-Research:/workspace/repo -w /workspace/repo unsloth/unsloth:latest /workspace/repo/experiment/phase1/probe/hidden_state_probe.py --config /workspace/repo/experiment/phase1/probe/config/hidden_state_selfaware_manifest_clean_sft_dpo_grpo_unknown_failure_panel_prompt_matched.yaml`
+  - `docker.exe run ... --config .../hidden_state_selfaware_manifest_clean_sft_kto_grpo_unknown_failure_panel_prompt_matched.yaml`
+  - `python .skills\\mech-interp-runner\\scripts\\phase3_cli.py behavior-axis-scan --config experiment\\phase1\\probe\\config\\phase3_current_clean_{dpo_grpo,kto_grpo}_unknown_failure_prompt_matched_behavior_axis_scan.yaml`
+  - `python .skills\\mech-interp-runner\\scripts\\phase3_cli.py multicell-readout --config experiment\\phase1\\probe\\config\\phase3_current_clean_{dpo_grpo,kto_grpo}_unknown_failure_prompt_matched_multicell_readout.yaml`
+- decisions:
+  - On WSL, Phase 3 GPU Docker runs use `docker.exe` (Docker Desktop) with the `F:\\` mount; the WSL `docker` CLI defaults to a dead colima context. Saved as project memory.
+  - Defer the clean SFT control: its h_base is the original Qwen base (fail-closed adapterless path) plus a 4-bit-base vs 16-bit-merged quantization-parity confound the other regimens lack. Treat as a separate methodology decision.
+
+### 033-conclusion - Regimen sweep closes: final stage sets the axis, plain GRPO v2 keeps the best coherence
+
+- at: `2026-06-26T14:45:00Z`
+- kind: `conclusion`
+- summary: Two findings close the cross-regimen comparison. (1) FINAL-STAGE DOMINANCE: the final training stage, not the full stacking history, sets the final-adapter delta geometry. All three GRPO-terminal stacks (GRPO v2, dpo_grpo, kto_grpo) converge on the same sharp mid-layer L14-15 delta axis at AUC `~0.98-0.99`; GRPO overwrites KTO's distinctive ultra-sharp L11 axis, while the lone DPO-terminal stack (GRPO-DPO) is the blurred outlier (AUC `0.939`). (2) SEPARABILITY != COHERENCE across the whole sweep: best four-cell macro recall ranks GRPO v2 `0.695` > GRPO-DPO `0.664` > dpo_grpo `0.648` > kto_grpo `0.641` > KTO `0.625`. Plain single-stage GRPO v2 has the best multicell coherence; no stacking order improves it, and sharp GRPO-terminal pairwise axes do not yield a cleaner calibrated-expression surface. This independently re-confirms the standing conclusion: hand-built linear surfaces are exhausted for calibrated-expression control; the next real move is a genuinely stronger method (readout-derived / answer-field-prefix / constrained multi-layer) or a pivot back to training/eval.
+- decisions:
+  - Mark the model-variation behavior-axis/readout sweep complete for the JSON-output clean stack at the four-cell prompt-matched level.
+  - Do not run generated replay on dpo_grpo/kto_grpo: their coherence is below GRPO v2, so there is no candidate worth a behavior gate.
+- next steps:
+  - If continuing mech interp: design a readout-derived or answer-field-prefix intervention rather than another mean-difference axis.
+  - Otherwise pivot to training/eval, treating Phase 3 as a Tier 2 negative/localization result.
+  - Best next research choice is to compare remaining model variations at the analysis level or design a stronger method than hand-built single axes, rather than brute-force KTO scalar coefficients.
