@@ -248,3 +248,17 @@ experiment-specific code to the `synaptic-tuner` submodule.
   promote the Tier-2 projection-trajectory test (does the read axis flip sign
   between the prompt token and generation positions?) and the read/write-mismatch
   explanation; demote the separate-subspace framing.
+- 2026-06-26: **Tier 1 T3 (read-don't-steer) run** via
+  `phase3_head_read_projection.py` (GPU-free). Reads the prompt-token projection
+  onto F (σ-standardized, mean over the 11 heads) and tests whether that
+  pre-generation read predicts WRONGNESS among answered items vs the model's
+  stated confidence (Ferrando/SEP selective-prediction frame). **INCONCLUSIVE**
+  on the current extraction: it has perfect label↔correctness collinearity
+  (known-answered 64/64 correct, unknown-answered 64/64 wrong), so within-label
+  wrongness has no variance to predict and the clean per-label test is undefined.
+  Pooled, AUROC(read)=0.71 vs AUROC(1−stated_conf)=0.58 (+0.13), but that only
+  re-reads the knowledge boundary and is partly circular (F's positive pole IS
+  the unknown-wrong rows). To run T3 cleanly needs an extraction carrying
+  within-label correctness variance (known confident-errors, unknown
+  lucky-correct); deferred to a variance-bearing / base-model arm (T8). See 0025
+  checkpoint (T3).
