@@ -116,8 +116,10 @@ Primary analyses:
 
 ## Runbook
 
-1. Read `.agents/skills/mech-interp-runner/references/phase3-current-findings.md`
-   and `docs/sessions/0023 - phase-3-model-variation-panel.md`.
+1. Read `.agents/skills/mech-interp-runner/SKILL.md` (router; for interpretation
+   invariants see `references/interpretation-invariants.md`) and
+   `docs/sessions/0023 - phase-3-model-variation-panel.md`. Current findings live
+   in that session note and in this experiment note, not in the skill.
 2. Inventory existing Phase 3 configs and manifests using
    `python .skills/mech-interp-runner/scripts/phase3_cli.py validate --quick`.
 3. Build a model-row inventory from
