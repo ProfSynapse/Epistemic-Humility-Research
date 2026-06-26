@@ -4,7 +4,7 @@ session_id: phase3-model-variation-panel
 title: Phase 3 Model Variation Panel
 status: active
 created_at: '2026-06-25T14:58:42Z'
-updated_at: '2026-06-26T10:10:00Z'
+updated_at: '2026-06-26T15:30:00Z'
 phase: phase3
 question: Do the JSON-output fine-tuned model variations share calibrated-expression
   mechanisms, or do different regimens produce distinct behavior-control surfaces?
@@ -948,3 +948,16 @@ _No summary yet._
   - If continuing mech interp: design a readout-derived or answer-field-prefix intervention rather than another mean-difference axis.
   - Otherwise pivot to training/eval, treating Phase 3 as a Tier 2 negative/localization result.
   - Best next research choice is to compare remaining model variations at the analysis level or design a stronger method than hand-built single axes, rather than brute-force KTO scalar coefficients.
+
+### 034-synthesis - Name the result: a regimen-robust generation-discrimination gap, grounded in the literature
+
+- at: `2026-06-26T15:30:00Z`
+- kind: `synthesis`
+- summary: Connected the closed sweep to the research corpus and named what it shows. The `separability != coherence != steerability` pattern is the **generation-discrimination gap** (`term:generation-discrimination-gap`; coined by Saunders et al., operationalized by ITI `paper:2306.03341` as a ~40-point probe-vs-generation gap on LLaMA-7B / TruthfulQA). Our contribution is that the gap is **regimen-robust** for calibrated epistemic-humility: across five regimens (SFT-DPO-GRPO, SFT-KTO-GRPO, GRPO v2, GRPO-DPO, KTO) the final-adapter delta is highly separable (pairwise AUC `~0.98-0.99`, final-stage-determined) yet does not steer generated behavior safely (KTO L11 replay failed the gate; best four-cell macro recall `0.695`). This is direct evidence on `gap:4-probe-transfer` (meta-analysis draft-v0 §6.3, "no probe-transfer study tests whether humility fine-tuning changes representations or only behavior"): the representations DO move with the final training stage, but the moved signal is the performance of humility read off internal state, not a behaviorally controllable calibration surface. The same predictiveness-vs-interventional-efficacy dissociation appears in a different surface in `paper:2606.27359` (sequence probability predicts correctness across prompts but maximizing it does not transfer to decoding). Inherited caution: probes may read knowledge-recall not calibration (`paper:2510.09033`), so high separability must not be over-read.
+- decisions:
+  - Adopt "regimen-robust generation-discrimination gap" as the headline framing for the Phase 3 model-variation program (Tier 2 exploratory local evidence).
+  - Next mechanism step (Step A) is ITI-grounded: the gap closes by changing WHERE the direction is read/applied (sparse attention heads, token-by-token during generation, intermediate strength), not by a better single residual-stream axis (mass-mean is already ITI's best estimator).
+  - Record the infra constraint that scopes Step A: `hidden_state_probe.py` currently extracts residual-stream final-prompt-token vectors only; per-head + generated-token extraction is the required extension.
+- next steps:
+  - Step A: extend extraction to per-attention-head activations and apply the mass-mean direction during generation (ITI-style), then re-run the behavior gate.
+  - Keep the clean SFT control deferred (original-base fail-closed path + 4-bit/16-bit quantization-parity confound).

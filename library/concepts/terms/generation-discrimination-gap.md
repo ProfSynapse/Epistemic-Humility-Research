@@ -44,3 +44,18 @@ between a model's internal uncertainty representation and its
 
 **Lineage:** introduced by Saunders et al. as the G-D gap and given a concrete
 probe-versus-generation measurement by [[inference-time-intervention]].
+
+**Phase 3 in-house evidence (regimen-robust):** the
+[[mech-interp-model-variation-panel]] program reproduces the gap in the
+calibrated-epistemic-humility setting and shows it survives method variation.
+Across five fine-tuning regimens (SFT-DPO-GRPO, SFT-KTO-GRPO, GRPO v2, GRPO-DPO,
+KTO) the final-adapter delta is highly separable on internal activations
+(pairwise AUC ~0.98-0.99, set by the final training stage) yet does not steer
+generated behavior safely (best four-cell macro recall 0.695; KTO's sharp L11
+axis failed a generated-replay behavior gate). This ties the gap to
+[[gap-4-probe-transfer]]: humility fine-tuning moves the representation, but the
+moved signal is the *performance* of humility read off internal state rather than
+a behaviorally controllable calibration surface. The planned mechanism response
+follows ITI's lesson that the gap closes by *where* a direction is applied
+(sparse attention heads, token-by-token during generation), not by a sharper
+single residual-stream axis.
