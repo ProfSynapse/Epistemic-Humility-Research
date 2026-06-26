@@ -314,3 +314,124 @@ def test_o_proj_discovery_rejects_unexpected_naming():
     backend = _make_fake_backend(model, 4)
     with pytest.raises(RuntimeError, match="expected contiguous"):
         backend.forward_head_states("x", schema.ADAPTER_STATE_ACTIVE, "a")
+
+
+# ---------------------------------------------------------------------------
+# End-to-end stub run with granularity=attention_head (run_extraction wiring)
+# ---------------------------------------------------------------------------
+
+FIXTURE_FROZEN = PROBE_DIR / "tests" / "fixtures" / "hidden_state_frozen.json"
+FIXTURE_RESULTS = PROBE_DIR / "tests" / "fixtures" / "hidden_state_probe_results.jsonl"
+
+
+def _head_stub_config(granularity=schema.GRANULARITY_ATTENTION_HEAD) -> dict:
+    """GPU-free config pointing selection at the checked-in fixtures, head mode."""
+    return {
+        "model": {"model_tag": "stub-model", "model_name": "stub",
+                  "enable_thinking": False},
+        "extraction": {"layer_list": None,
+                       "token_position_rule": schema.TOKEN_POSITION_FINAL_PROMPT,
+                       "granularity": granularity,
+                       "compute_dtype": "float32", "persist_dtype": "float32",
+                       "persistence_format": "safetensors", "device": "cpu",
+                       "persist_delta": True},
+        "arms": [{"name": "base", "adapter_state": "disabled", "adapter": None},
+                 {"name": "sft", "adapter_state": "active", "adapter": "/fake/adapter"}],
+        "eval_arms_source": None,
+        "selection": {"questions_frozen": str(FIXTURE_FROZEN),
+                      "probe_results": str(FIXTURE_RESULTS),
+                      "n_known": 2, "n_unknown": 2, "selection_seed": 20260614},
+        "output": {"hidden_states_subdir": "hidden_states",
+                   "manifest_filename": "manifest.json", "rows_filename": "rows.jsonl"},
+        "manifest_provenance": {"aligned_run_record_id": "stub-run-record",
+                                "source_split": "fixture"},
+    }
+
+
+def test_head_granularity_run_extraction_end_to_end(tmp_path, monkeypatch):
+    """Stub run with granularity=attention_head: N-block tensors, head-layout
+    manifest, finalize gate passes. Mirrors the residual smoke test."""
+    import json
+
+    monkeypatch.setattr(hsp, "PROBE_DIR", PROBE_DIR)
+    config = _head_stub_config()
+    cfg_sha = schema.config_sha(config)
+    slice_rows = hsp.select_matched_slice(config)
+    assert len(slice_rows) == 4
+
+    n_layers, heads, head_dim = 3, 4, 2
+    backend = hsp.StubExtractionBackend(
+        num_hidden_layers=n_layers, hidden_dim=8,
+        num_attention_heads=heads, head_dim=head_dim)
+    out_dir = tmp_path / "out"
+    manifest_path = hsp.run_extraction(config, cfg_sha, backend, slice_rows, out_dir)
+
+    manifest = json.loads(manifest_path.read_text())
+    schema.validate_manifest(manifest, require_populated=True)
+    assert manifest["status"] == schema.STATUS_OK
+    assert manifest["verified"] is True
+    # Head-layout provenance present and correct.
+    assert manifest["granularity"] == schema.GRANULARITY_ATTENTION_HEAD
+    assert manifest["num_attention_heads"] == heads
+    assert manifest["head_dim"] == head_dim
+    # tensor_shapes: N attention blocks (not N+1), width heads*head_dim.
+    assert manifest["tensor_shapes"]["h_base"] == [n_layers, heads * head_dim]
+
+    rows = [json.loads(line) for line in (out_dir / "rows.jsonl").read_text().splitlines()]
+    assert len(rows) == 4
+    for row in rows:
+        assert row["granularity"] == schema.GRANULARITY_ATTENTION_HEAD
+        assert row["layer_count"] == n_layers  # N, no embedding layer
+        assert row["num_attention_heads"] == heads
+        assert row["head_dim"] == head_dim
+    assert list(out_dir.glob("*_delta.safetensors"))
+
+
+def test_residual_run_extraction_leaves_head_fields_null(tmp_path, monkeypatch):
+    """The default (residual) path keeps granularity=residual_stream and null
+    head-layout dims — the additive change does not perturb the existing path."""
+    import json
+
+    monkeypatch.setattr(hsp, "PROBE_DIR", PROBE_DIR)
+    config = _head_stub_config(granularity=schema.GRANULARITY_RESIDUAL_STREAM)
+    cfg_sha = schema.config_sha(config)
+    slice_rows = hsp.select_matched_slice(config)
+    backend = hsp.StubExtractionBackend(num_hidden_layers=2, hidden_dim=8)
+    out_dir = tmp_path / "out"
+    manifest_path = hsp.run_extraction(config, cfg_sha, backend, slice_rows, out_dir)
+
+    manifest = json.loads(manifest_path.read_text())
+    schema.validate_manifest(manifest, require_populated=True)
+    assert manifest["granularity"] == schema.GRANULARITY_RESIDUAL_STREAM
+    assert manifest["num_attention_heads"] is None
+    assert manifest["head_dim"] is None
+    # Residual layer_count is N+1 (embeddings + blocks); no head fields on rows.
+    rows = [json.loads(line) for line in (out_dir / "rows.jsonl").read_text().splitlines()]
+    assert rows[0]["layer_count"] == schema.expected_layer_count(2)
+    assert "num_attention_heads" not in rows[0]
+
+
+def test_parse_config_rejects_unknown_granularity(tmp_path):
+    import yaml
+    config = _head_stub_config(granularity="whole_layer")
+    path = tmp_path / "bad.yaml"
+    path.write_text(yaml.safe_dump(config))
+    with pytest.raises(ValueError, match="granularity"):
+        hsp.parse_config(path)
+
+
+def test_finalize_gate_rejects_head_extraction_missing_layout():
+    # An attention_head manifest finalized without head dims must RAISE.
+    manifest = schema.build_manifest(
+        config={"extraction": {"granularity": schema.GRANULARITY_ATTENTION_HEAD},
+                "manifest_provenance": {}},
+        extraction_config_sha="x", status=schema.STATUS_OK)
+    # Populate everything the generic gate needs, but leave head dims None.
+    for field in schema.REQUIRED_MANIFEST_FIELDS:
+        if manifest.get(field) is None and field not in (
+                "num_attention_heads", "head_dim", "layer_list"):
+            manifest[field] = "x"
+    manifest["tensor_shapes"] = {"h_base": [3, 8]}
+    manifest["verified"] = False
+    with pytest.raises(ValueError, match="head-layout field"):
+        schema.validate_manifest(manifest, require_populated=True)
