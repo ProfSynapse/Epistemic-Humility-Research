@@ -389,3 +389,20 @@ Primary analyses:
   predicting Step A.4 steering will be hardest on the axis that matters most. Top
   failure-axis steering targets for A.4: L21H17, L35H0, L23H1, L7H30, L10H11,
   L22H12.
+- 2026-06-26: STEP A.4 input — ITI steering-direction artifact built (GPU-free).
+  New `phase3_head_steering_directions.py` reads the per-head extraction and a
+  chosen sparse target set and emits, per head, the ITI triple the generation
+  hook consumes: `theta` (unit mass-mean direction `mean(positive) -
+  mean(negative)`), `sigma` (std of the arm's per-head activations projected onto
+  theta — the ITI scale, `h' = h + alpha*sigma*theta`), and projection
+  provenance. Directions are computed from the `h_lora` (adapter-active) arm —
+  the forward pass the harness will hook — not delta. Targets = union of the
+  top-6 `h_lora` and top-6 `delta` failure-axis heads (11 sparse heads; L21H17 is
+  the robust overlap). GRPO v2 run: all 11 unit-norm, 64 unknown-wrong / 64
+  unknown-refused rows, per-head sigma 0.18-3.0. Sign convention: positive =
+  `unknown_answered_wrong` projects higher than negative = `unknown_refused`, so
+  steering toward the SAFE behavior (refuse) is `alpha<0`; the artifact records
+  the labels and the harness sweeps both signs. Remaining for A.4:
+  `phase3_head_intervention.py` (GPU) — hook the 11 heads' `o_proj` input, add
+  `alpha*sigma*theta` per generated token, sweep alpha, score behavior cells, run
+  the generated-replay gate. Build + tiny-model test offline; gate the GPU sweep.

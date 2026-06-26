@@ -730,6 +730,18 @@ sharper probe. Step A.4 targets (failure axis, delta): L21H17, L35H0, L23H1, L7H
 L10H11, L22H12. Step A.4 (during-generation intervention + behavior gate) still needs
 the generated-token extraction/intervention path, which is not yet built.
 
+**Step A.4 INPUT DONE (2026-06-26, GPU-free).** `phase3_head_steering_directions.py`
+(config `..._head_steering_directions.yaml`) emits the per-head ITI triple the
+generation hook consumes: `theta` (unit mass-mean direction
+`mean(positive)-mean(negative)`), `sigma` (std of the arm's projections onto theta;
+ITI scale `h' = h + alpha*sigma*theta`), and provenance. Directions come from the
+`h_lora` (adapter-active) arm — the hooked forward pass — not delta. Targets =
+union of top-6 `h_lora` + top-6 `delta` failure-axis heads (11 sparse heads). GRPO
+v2 artifact: 11 unit directions, 64/64 rows, sigma 0.18-3.0. Sign: positive =
+`unknown_answered_wrong` projects higher than `unknown_refused`, so steering toward
+SAFE refusal is `alpha<0` (the harness sweeps both signs). Remaining: the GPU
+generation-intervention harness.
+
 GQA GOTCHA confirmed live: Qwen3-4B `hidden_size=2560` but o_proj input width is
 `num_attention_heads * head_dim = 32 * 128 = 4096`; `2560 // 32 = 80 != 128`. Always
 read `head_dim` from `config.head_dim`, never `hidden_size // num_heads`.
