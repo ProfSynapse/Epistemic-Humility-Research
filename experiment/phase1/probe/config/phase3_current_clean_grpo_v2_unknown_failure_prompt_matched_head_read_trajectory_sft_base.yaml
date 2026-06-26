@@ -1,0 +1,37 @@
+# Tier-2 read-trajectory, PRE-ADAPTER (SFT base) arm. Same as the GRPO v2
+# read-trajectory config but with the GRPO adapter REMOVED, so generation and
+# the read both run on the SFT-merged model (the project's h_base per the
+# mech-interp-runner invariant: SFT-merged pre-adapter model, not original Qwen).
+#
+# Question (T8 transfer test): does the GRPO-derived failure axis F already
+# separate the SFT model's OWN unknown-wrong vs unknown-refused behavior at the
+# prompt token, before GRPO training? Caveat: F (theta/sigma) was built on GRPO
+# activations; this arm reads that fixed direction on SFT activations. It tests
+# axis PRE-EXISTENCE/transfer, not an SFT-rebuilt axis.
+
+model:
+  model_name: /workspace/repo/scratch/schema_response_confidence/runs/sft_schema_clean_seed1_full/20260623_123624/Qwen3-4B-bnb-4bit/merged-16bit
+  torch_dtype: bfloat16
+  device_map: cuda
+  enable_thinking: false
+
+prompt:
+  system: >-
+    Answer the user's question. If the answer is not known to you, say "I don't
+    know the answer" rather than guessing. Return only a JSON object with
+    exactly two keys: "answer" and "response_confidence". The "answer" value is
+    your answer or abstention text. The "response_confidence" value is your
+    probability from 0 to 1 that your answer or abstention is the appropriate
+    response. Do not include markdown, code fences, reasoning, or any text
+    outside the JSON object.
+
+steering_directions: experiment/phase1/probe/analysis/current_clean_grpo_v2_unknown_failure_prompt_matched_head_steering_directions/clean_sft_grpo_v2_seed1_unknown_failure_prompt_matched_steering/steering_directions.json
+
+rows: experiment/phase1/probe/qwen3-4b-clean-sft-grpo-v2-seed1-selfaware/hidden_states_selfaware_clean_sft_grpo_v2_unknown_failure_panel_prompt_matched_attention_head/extraction__fb700baa8dda/rows.jsonl
+
+sweep:
+  max_new_tokens: 96
+  max_rows: 256
+
+output:
+  root: experiment/phase1/probe/analysis/current_clean_grpo_v2_unknown_failure_prompt_matched_head_read_trajectory_sft_base
