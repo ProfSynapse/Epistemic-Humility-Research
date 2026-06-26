@@ -2,9 +2,9 @@
 schema_version: research-session/v1
 session_id: '0025'
 title: uncertainty-monitor-hypothesis
-status: active
+status: complete
 created_at: '2026-06-26T19:11:24Z'
-updated_at: '2026-06-26T19:48:55Z'
+updated_at: '2026-06-26T20:11:32Z'
 phase: phase-3-mech-interp
 question: "Is the sign-inverted per-head failure-axis direction a graded internal\
   \ UNCERTAINTY MONITOR (amplifying it raises abstention) rather than a be-wrong axis\
@@ -344,6 +344,39 @@ checkpoints:
     predict wrongness among answered items vs stated confidence) is still worth running
     as the selective-prediction comparison.'
   signals: {}
+- id: 008-result
+  at: '2026-06-26T20:11:32Z'
+  kind: result
+  title: 'Tier-1 T3 read-don''t-steer: INCONCLUSIVE on current extraction (label/correctness
+    collinear)'
+  summary: 'phase3_head_read_projection.py reads the prompt-token (final_prompt_token)
+    projection onto the per-head failure axis F (sigma-standardized, mean over the
+    11 localized heads) and asks whether that pre-generation read predicts WRONGNESS
+    among ANSWERED items, head-to-head vs the model''s stated_confidence (the Ferrando/SEP
+    selective-prediction frame). RESULT on the 256-row current_clean_grpo_v2_unknown_failure_prompt_matched
+    extraction: the clean per-label test cannot run -- the extraction has perfect
+    label<->correctness collinearity (known-answered: 64/64 correct, 0 wrong; unknown-answered:
+    64/64 wrong, 0 correct), so ''wrongness among answered'' IS the known/unknown
+    label and there is no within-label correctness variance to predict. Pooled across
+    both labels, AUROC(read->wrong)=0.71 vs AUROC(1-stated_conf->wrong)=0.58 (read
+    beats verbalized confidence by +0.13 on the confidence-bearing subset), but that
+    pooled number only shows F re-reads the knowledge boundary at the prompt token
+    and is partly circular (F''s positive pole IS the unknown-answered-wrong rows).
+    NOT selective-prediction evidence either way.'
+  evidence:
+  - experiment/phase1/probe/analysis/current_clean_grpo_v2_unknown_failure_prompt_matched_head_read_projection/read_projection.json
+    (gitignored); 2 unit tests in test_phase3_head_read_projection.py (non-degenerate
+    known-population AUROC=1.0; degenerate-population->None) pass
+  run_ids: []
+  commands: []
+  decisions: []
+  next_steps:
+  - 'To run T3 cleanly, need an extraction with WITHIN-label correctness variance:
+    known-answered confident ERRORS and unknown-answered lucky-correct rows. The current
+    prompt-matched panel is too ''pure'' by construction. Either widen the extraction
+    row pool or accept that the read-vs-confidence selective-prediction comparison
+    is deferred to a base-model / variance-bearing arm (T8).'
+  signals: {}
 ---
 # uncertainty-monitor-hypothesis
 
@@ -481,3 +514,12 @@ failure-axis direction move abstention ~0 (67→63 cells) vs the localized heads
   - Demote the 'distinct uncertainty subspace' reading of H_monitor; promote the READ/WRITE sign-inversion explanation (the prompt-token-read axis has inverted causal valence at generation positions). Reframe the contribution around the sign inversion on the decision axis, now the cleanest surviving novel phenomenon, explicitly linked to Tan 2407.12404 anti-steerability.
 - next steps:
   - Tier 2 PROMOTED: read the failure-axis projection trajectory ACROSS generated positions (not just the prompt token) -- does the read axis itself flip sign between the prompt token and generation positions? That directly tests the read/write-mismatch explanation. Also Tier 1 T3 read-don't-steer (does prompt-token F-projection predict wrongness among answered items vs stated confidence) is still worth running as the selective-prediction comparison.
+### 008-result - Tier-1 T3 read-don't-steer: INCONCLUSIVE on current extraction (label/correctness collinear)
+
+- at: `2026-06-26T20:11:32Z`
+- kind: `result`
+- summary: phase3_head_read_projection.py reads the prompt-token (final_prompt_token) projection onto the per-head failure axis F (sigma-standardized, mean over the 11 localized heads) and asks whether that pre-generation read predicts WRONGNESS among ANSWERED items, head-to-head vs the model's stated_confidence (the Ferrando/SEP selective-prediction frame). RESULT on the 256-row current_clean_grpo_v2_unknown_failure_prompt_matched extraction: the clean per-label test cannot run -- the extraction has perfect label<->correctness collinearity (known-answered: 64/64 correct, 0 wrong; unknown-answered: 64/64 wrong, 0 correct), so 'wrongness among answered' IS the known/unknown label and there is no within-label correctness variance to predict. Pooled across both labels, AUROC(read->wrong)=0.71 vs AUROC(1-stated_conf->wrong)=0.58 (read beats verbalized confidence by +0.13 on the confidence-bearing subset), but that pooled number only shows F re-reads the knowledge boundary at the prompt token and is partly circular (F's positive pole IS the unknown-answered-wrong rows). NOT selective-prediction evidence either way.
+- evidence:
+  - `experiment/phase1/probe/analysis/current_clean_grpo_v2_unknown_failure_prompt_matched_head_read_projection/read_projection.json (gitignored); 2 unit tests in test_phase3_head_read_projection.py (non-degenerate known-population AUROC=1.0; degenerate-population->None) pass`
+- next steps:
+  - To run T3 cleanly, need an extraction with WITHIN-label correctness variance: known-answered confident ERRORS and unknown-answered lucky-correct rows. The current prompt-matched panel is too 'pure' by construction. Either widen the extraction row pool or accept that the read-vs-confidence selective-prediction comparison is deferred to a base-model / variance-bearing arm (T8).
