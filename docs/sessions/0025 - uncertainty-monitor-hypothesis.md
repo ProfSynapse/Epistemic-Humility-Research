@@ -4,7 +4,7 @@ session_id: '0025'
 title: uncertainty-monitor-hypothesis
 status: active
 created_at: '2026-06-26T19:11:24Z'
-updated_at: '2026-06-26T19:34:51Z'
+updated_at: '2026-06-26T19:48:55Z'
 phase: phase-3-mech-interp
 question: "Is the sign-inverted per-head failure-axis direction a graded internal\
   \ UNCERTAINTY MONITOR (amplifying it raises abstention) rather than a be-wrong axis\
@@ -292,6 +292,58 @@ checkpoints:
   - Sequence T8(a) read test alongside the GPU-free Tier 1 tests (both are forward-pass
     reads, no training); it needs base-model activations on the same panel items.
   signals: {}
+- id: 007-result
+  at: '2026-06-26T19:48:55Z'
+  kind: result
+  title: 'Tier 1 geometry test: failure axis IS the refuse<->answer decision axis
+    (anti-aligned), orthogonal to the static knowledge boundary -- refutes the clean
+    H_monitor subspace reading'
+  summary: 'Ran the first Tier 1 falsifier (phase3_head_axis_geometry.py, GPU-free,
+    reuses build_directions for identical mass-mean machinery; parity self-check rebuilds
+    the failure axis F and matches the stored theta exactly, min cos 1.0 across all
+    11 heads -> cosines trustworthy). Compared F per-head against two reference axes
+    on the SAME 11 localized heads: R = refuse-vs-answer pooled (positive refused,
+    negative answered) and K = knowledge-boundary behavior-agnostic (positive label=unknown,
+    negative label=known). RESULT: cos(F,R) is strongly NEGATIVE and consistent across
+    all 11 heads (range -0.67..-0.89, mean |cos| 0.80); cos(F,K) is near zero (mean
+    |cos| 0.12). Dominance ratio 6.4x. So F lives on the refuse<->answer DECISION
+    axis (anti-aligned to the refusal direction by construction: F''s positive pole
+    is unknown_answered_wrong, on the ANSWER side), and is roughly ORTHOGONAL to the
+    static unknown-vs-known axis. IMPLICATIONS: (1) REFUTES the clean H_refusal_motor
+    (naive): F is not +parallel to the refusal motor (it is ~antiparallel, |cos|=0.80<0.95).
+    (2) REFUTES the clean H_monitor GEOMETRY: F is not a distinct knowledge-boundary/uncertainty
+    subspace separate from the refusal decision -- it IS (anti-aligned with) the decision
+    axis, and it does NOT encode the static known/unknown label. (3) RE-CENTERS the
+    puzzle: read against the A.4 causal result (adding +F, which points geometrically
+    toward ANSWER, RAISES refusal), the surviving phenomenon is a READ/WRITE SIGN
+    INVERSION on the decision axis itself -- a probe direction whose causal valence
+    is inverted relative to BOTH its label AND its geometric placement. This connects
+    directly to Tan 2407.12404 anti-steerability and to a read-vs-write geometry mismatch
+    (F is READ at the final prompt token but WRITTEN at generation positions). H_monitor
+    is not dead but must be REFORMULATED: not ''a separate uncertainty monitor subspace''
+    but possibly ''the decision axis read pre-generation whose injection at generation
+    flips behavior''; the ''amplify the brake'' metaphor now needs the brake to BE
+    the decision axis with inverted gain, a more mechanical story.'
+  evidence:
+  - experiment/phase1/probe/phase3_head_axis_geometry.py
+  - experiment/phase1/probe/analysis/current_clean_grpo_v2_unknown_failure_prompt_matched_head_axis_geometry/axis_geometry.json
+  - experiment/phase1/probe/tests/test_phase3_head_axis_geometry.py
+  run_ids: []
+  commands: []
+  decisions:
+  - Demote the 'distinct uncertainty subspace' reading of H_monitor; promote the READ/WRITE
+    sign-inversion explanation (the prompt-token-read axis has inverted causal valence
+    at generation positions). Reframe the contribution around the sign inversion on
+    the decision axis, now the cleanest surviving novel phenomenon, explicitly linked
+    to Tan 2407.12404 anti-steerability.
+  next_steps:
+  - 'Tier 2 PROMOTED: read the failure-axis projection trajectory ACROSS generated
+    positions (not just the prompt token) -- does the read axis itself flip sign between
+    the prompt token and generation positions? That directly tests the read/write-mismatch
+    explanation. Also Tier 1 T3 read-don''t-steer (does prompt-token F-projection
+    predict wrongness among answered items vs stated confidence) is still worth running
+    as the selective-prediction comparison.'
+  signals: {}
 ---
 # uncertainty-monitor-hypothesis
 
@@ -416,3 +468,16 @@ failure-axis direction move abstention ~0 (67→63 cells) vs the localized heads
   - Base-model arm uses non-steering reads (project tuned direction into base activations) + Ferrando's accuracy-threshold entity labeling, NOT a base-model refusal contrast (base models do not refuse). Treat partial overlap as the expected, informative outcome given the unanswerability-vs-entity-recognition framing gap.
 - next steps:
   - Sequence T8(a) read test alongside the GPU-free Tier 1 tests (both are forward-pass reads, no training); it needs base-model activations on the same panel items.
+### 007-result - Tier 1 geometry test: failure axis IS the refuse<->answer decision axis (anti-aligned), orthogonal to the static knowledge boundary -- refutes the clean H_monitor subspace reading
+
+- at: `2026-06-26T19:48:55Z`
+- kind: `result`
+- summary: Ran the first Tier 1 falsifier (phase3_head_axis_geometry.py, GPU-free, reuses build_directions for identical mass-mean machinery; parity self-check rebuilds the failure axis F and matches the stored theta exactly, min cos 1.0 across all 11 heads -> cosines trustworthy). Compared F per-head against two reference axes on the SAME 11 localized heads: R = refuse-vs-answer pooled (positive refused, negative answered) and K = knowledge-boundary behavior-agnostic (positive label=unknown, negative label=known). RESULT: cos(F,R) is strongly NEGATIVE and consistent across all 11 heads (range -0.67..-0.89, mean |cos| 0.80); cos(F,K) is near zero (mean |cos| 0.12). Dominance ratio 6.4x. So F lives on the refuse<->answer DECISION axis (anti-aligned to the refusal direction by construction: F's positive pole is unknown_answered_wrong, on the ANSWER side), and is roughly ORTHOGONAL to the static unknown-vs-known axis. IMPLICATIONS: (1) REFUTES the clean H_refusal_motor (naive): F is not +parallel to the refusal motor (it is ~antiparallel, |cos|=0.80<0.95). (2) REFUTES the clean H_monitor GEOMETRY: F is not a distinct knowledge-boundary/uncertainty subspace separate from the refusal decision -- it IS (anti-aligned with) the decision axis, and it does NOT encode the static known/unknown label. (3) RE-CENTERS the puzzle: read against the A.4 causal result (adding +F, which points geometrically toward ANSWER, RAISES refusal), the surviving phenomenon is a READ/WRITE SIGN INVERSION on the decision axis itself -- a probe direction whose causal valence is inverted relative to BOTH its label AND its geometric placement. This connects directly to Tan 2407.12404 anti-steerability and to a read-vs-write geometry mismatch (F is READ at the final prompt token but WRITTEN at generation positions). H_monitor is not dead but must be REFORMULATED: not 'a separate uncertainty monitor subspace' but possibly 'the decision axis read pre-generation whose injection at generation flips behavior'; the 'amplify the brake' metaphor now needs the brake to BE the decision axis with inverted gain, a more mechanical story.
+- evidence:
+  - `experiment/phase1/probe/phase3_head_axis_geometry.py`
+  - `experiment/phase1/probe/analysis/current_clean_grpo_v2_unknown_failure_prompt_matched_head_axis_geometry/axis_geometry.json`
+  - `experiment/phase1/probe/tests/test_phase3_head_axis_geometry.py`
+- decisions:
+  - Demote the 'distinct uncertainty subspace' reading of H_monitor; promote the READ/WRITE sign-inversion explanation (the prompt-token-read axis has inverted causal valence at generation positions). Reframe the contribution around the sign inversion on the decision axis, now the cleanest surviving novel phenomenon, explicitly linked to Tan 2407.12404 anti-steerability.
+- next steps:
+  - Tier 2 PROMOTED: read the failure-axis projection trajectory ACROSS generated positions (not just the prompt token) -- does the read axis itself flip sign between the prompt token and generation positions? That directly tests the read/write-mismatch explanation. Also Tier 1 T3 read-don't-steer (does prompt-token F-projection predict wrongness among answered items vs stated confidence) is still worth running as the selective-prediction comparison.
