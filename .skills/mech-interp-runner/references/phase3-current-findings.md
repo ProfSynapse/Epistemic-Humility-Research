@@ -21,6 +21,19 @@ It points to distributed behavior-control subspaces. Some directions steer
 refusal or answer-start probability, but generated-answer replay shows that
 loosening refusal can produce wrong answers.
 
+This is now named and connected to the literature. The recurring
+`separability != coherence != steerability` pattern is the
+**generation-discrimination gap** (`term:generation-discrimination-gap`; coined by
+Saunders et al., operationalized by ITI `paper:2306.03341`). The Phase 3
+model-variation sweep shows the gap is **regimen-robust**: across five regimens
+(SFT-DPO-GRPO, SFT-KTO-GRPO, GRPO v2, GRPO-DPO, KTO) the final-adapter delta is
+highly separable (pairwise AUC `~0.98-0.99`, final-stage-determined) yet does not
+steer generated behavior safely (best four-cell macro recall `0.695`). That is
+direct evidence on `gap:4-probe-transfer`: humility fine-tuning moves the
+representation, but the moved signal reads like the *performance* of humility, not
+a controllable calibration surface. Caution: probes may read knowledge-recall, not
+calibration (`paper:2510.09033`), so high separability must not be over-read.
+
 Working target: find coherent layer windows where the model expresses calibrated
 knowledge state:
 
@@ -686,7 +699,20 @@ the other regimens lack.
 
 ## Next Research Direction
 
-Prioritize the calibrated-expression question over refusal-axis steering:
+**Step A (chosen, ITI-grounded).** The regimen sweep closed the single-residual-axis
+question: that path is exhausted (`separability != steerability`, regimen-robust).
+ITI (`paper:2306.03341`) shows the generation-discrimination gap closes by changing
+*where* the direction is read/applied, not by a sharper estimator — mass-mean (which
+we already use) was ITI's best direction; their gains came from intervening on a
+**sparse set of attention heads, token-by-token during generation, at intermediate
+strength**. Our `hidden_state_probe.py` currently extracts residual-stream
+final-prompt-token vectors only. Step A is therefore: (a) extend extraction to
+per-attention-head activations (and generated-token positions), (b) localize the
+heads where the cell-probe is most accurate, (c) apply the mass-mean direction
+during generation at swept alpha, (d) gate with generated-answer replay. Avoid more
+scalar tuning of one residual axis — the literature predicts it will not close the gap.
+
+Then prioritize the calibrated-expression question over refusal-axis steering:
 
 1. Explore multi-layer or constrained subspace controls; simple single-axis and
    simple two-hook KTO steering are active but behaviorally unsafe.

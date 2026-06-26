@@ -24,10 +24,17 @@ relationships:
     target: '[[dpo-beta-should-follow-pair-quality]]'
     target_id: mechanism:dpo-beta-should-follow-pair-quality
     confidence: medium
+  - type: tests
+    target: '[[generation-discrimination-gap]]'
+    target_id: term:generation-discrimination-gap
+    confidence: high
 related:
   - '[[gap-4-probe-transfer]]'
+  - '[[generation-discrimination-gap]]'
   - '[[grpo-composite-reward-installs-epistemic-output-schema]]'
   - '[[dpo-beta-should-follow-pair-quality]]'
+  - '[[2306.03341--inference-time-intervention]]'
+  - '[[2606.27359--when-likely-answers-right-sequence-probability-correctness]]'
 ---
 
 ## Question & Hypothesis
@@ -328,3 +335,32 @@ Primary analyses:
   calibrated-expression control. Clean SFT control deferred: its h_base would be
   the original Qwen base (fail-closed adapterless path) plus a 4-bit-base vs
   16-bit-merged quantization-parity wrinkle the other regimens do not have.
+- 2026-06-26: SYNTHESIS — naming the result and connecting it to the literature.
+  The sweep's `separability != coherence != steerability` pattern is not a defect
+  of our probes; it is the **generation-discrimination gap**
+  ([[generation-discrimination-gap]], coined by Saunders et al., operationalized
+  by ITI [[2306.03341--inference-time-intervention]] as a ~40-point probe-vs-
+  generation gap on LLaMA-7B / TruthfulQA). Our contribution is to show the gap
+  is **regimen-robust** in the calibrated-epistemic-humility setting: across five
+  fine-tuning regimens (SFT-DPO-GRPO, SFT-KTO-GRPO, GRPO v2, GRPO-DPO, KTO) the
+  final-adapter delta is highly *separable* (pairwise AUC ~0.98-0.99,
+  final-stage-determined) yet does not *steer* generated behavior safely
+  (KTO L11 replay failed the gate; best four-cell macro recall only 0.695). This
+  is direct evidence on [[gap-4-probe-transfer]] (Gap 4, meta-analysis §6.3): the
+  representations DO move with the final training stage, but the moved signal is
+  the *performance of humility* read off internal state, not a behaviorally
+  controllable calibration surface — exactly the representations-vs-behavior split
+  the gap predicts. The same dissociation appears in a different surface in
+  [[2606.27359--when-likely-answers-right-sequence-probability-correctness]]:
+  sequence probability predicts correctness across prompts but maximizing it does
+  not transfer to decoding decisions (predictiveness != interventional efficacy).
+  Inherited cautions: probes may read knowledge-recall rather than calibration
+  ([[2510.09033--probes-read-recall-not-truth]]), so the high separability should
+  not be over-read as a calibration signal. METHOD CONSEQUENCE for next step:
+  ITI's gains came from where it reads/applies the direction — a sparse set of
+  *attention heads*, intervened *token-by-token during generation* at intermediate
+  strength — not from a better single residual-stream axis (mass-mean, which we
+  already use, was ITI's best estimator). Our probe currently extracts
+  residual-stream, final-prompt-token vectors only; closing the gap (Step A) means
+  extending extraction to per-head activations and applying the direction during
+  generation, not more scalar tuning of one residual axis.
