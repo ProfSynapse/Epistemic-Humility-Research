@@ -4,7 +4,7 @@ session_id: '0025'
 title: uncertainty-monitor-hypothesis
 status: complete
 created_at: '2026-06-26T19:11:24Z'
-updated_at: '2026-06-26T21:24:34Z'
+updated_at: '2026-06-26T22:21:32Z'
 phase: phase-3-mech-interp
 question: "Is the sign-inverted per-head failure-axis direction a graded internal\
   \ UNCERTAINTY MONITOR (amplifying it raises abstention) rather than a be-wrong axis\
@@ -473,6 +473,87 @@ checkpoints:
   - Per-head STEERING sweep to test whether anti-steerability is uniform per-head;
     SFT pre-adapter read-trajectory arm launched (axis pre-existence/transfer test).
   signals: {}
+- id: 012-result
+  at: '2026-06-26T21:41:30Z'
+  kind: result
+  title: 'SFT pre-adapter arm: failure axis PRE-EXISTS GRPO'
+  summary: 'Read-trajectory + per-head read-sign on the SFT-merged h_base model (GRPO
+    adapter removed; reads the fixed GRPO-derived F on SFT activations). Near-identical
+    to the GRPO arm: NO-FLIP trajectory (prompt +1.19 -> generation +0.37, vs GRPO
+    +1.29 -> +0.40) and UNANIMOUS 11/11 per-head read (mean sep +1.20 vs GRPO +1.29;
+    every head +). The failure-axis read geometry is laid down by SFT (or earlier)
+    and GRPO inherits it -- GRPO did NOT create the axis. What GRPO changed is BEHAVIOR:
+    SFT answers-wrong 67 / refuses 61, GRPO refuses 67 / answers-wrong 61 (GRPO trained
+    in more abstention). Training moved the decision threshold/action, not the underlying
+    knowledge representation.'
+  evidence:
+  - analysis/.../head_read_trajectory_sft_base/summary.json + rows.jsonl (256 rows);
+    phase3_head_read_sign_consistency.py on both arms
+  run_ids: []
+  commands: []
+  decisions: []
+  next_steps:
+  - 'Causal K (knowledge-boundary) steering sweep launched: does the orthogonal known/unknown
+    axis causally control the knowledge belief (belief_monitor) or is it F-like/anti-steer/inert?'
+  signals: {}
+- id: 013-result
+  at: '2026-06-26T22:18:27Z'
+  kind: result
+  title: 'Causal K (knowledge-boundary) steering: ANTI-STEER, not a monitor'
+  summary: "Steered the orthogonal knowledge-boundary axis K (unknown_vs_known, behavior-agnostic;\
+    \ geometry cos 0.12 to F) on the 11 heads across symmetric alpha over a balanced\
+    \ 128-known/128-unknown panel; offline readout parsed response_confidence. VERDICT\
+    \ anti_steer. Known-side refusal is monotone and BELIEF-INCONSISTENT: steering\
+    \ toward the 'unknown' pole LOWERS over-refusal (alpha -6:56.2, -3:40.6, 0:33.6,\
+    \ +3:28.9, +6:23.4) -- the wrong way for a knowledge dial (toward 'unknown' should\
+    \ raise abstention). Stated confidence flat (\u0394-0.014, under tol). Unknown\
+    \ side pinned at ~100% (ceiling, no headroom). So K, like F, is an anti-steerable\
+    \ refusal-correlated direction, NOT a causal knowledge dial. TWO candidate axes\
+    \ now both anti-steerable -> the separable uncertainty representation is not a\
+    \ steerable axis in this head-set."
+  evidence:
+  - experiment/phase1/probe/analysis/current_clean_grpo_v2_knowledge_boundary_steer/summary.json
+    + steer_readout.json (1280 rows, 5 alphas x 256); phase3_knowledge_boundary_steer_readout.py
+  run_ids: []
+  commands: []
+  decisions:
+  - 'Pivot the uncertainty search from a STEERABLE knob to a READ signal: phase3_latent_knowledge_probe.py
+    (per-layer residual-stream known/unknown AUROC + over-refusal latent-vs-expressed
+    gap), GPU-free on existing h_lora activations.'
+  next_steps:
+  - Run the latent-knowledge read probe on the GRPO v2 full-panel residual stream.
+  signals: {}
+- id: 014-result
+  at: '2026-06-26T22:21:32Z'
+  kind: result
+  title: 'Latent-knowledge READ probe: boundary encoded (AUROC 0.99), over-refusal
+    is a behavioral gap'
+  summary: 'First POSITIVE result in the uncertainty search. Per-layer CV logistic
+    probe of the GRPO v2 residual stream (h_lora) -> ground-truth known/unknown: L0
+    (embeddings) = 0.498 (CHANCE), L1 = 0.981, plateau ~0.99, peak L35 = 0.9971. The
+    L0-chance->L1-0.98 jump rules out a surface/lexical embedding artifact: the knowledge
+    boundary is COMPUTED by the network. Calibration caveat: single-layer emergence
+    => a relatively SHALLOW feature; known/unknown is dataset-defined (TriviaQA vs
+    SelfAware) so the probe may read systematic question-TYPE differences, not memory-retrieval
+    per se. Over-refusal gap (more robust, within-known): train best-layer probe on
+    known_correct_answered vs unknown_refused, score the 168 known_refused over-abstentions
+    -> position 0.27 (look internally KNOWN, like answered-knowns). The model represented
+    the answer but refused anyway => over-abstention is a behavioral-THRESHOLD gap,
+    not an internal ''I dont know'' signal. This is the read-side uncertainty signal
+    the steerable axes (F, K both anti-steer) were not.'
+  evidence:
+  - phase3_latent_knowledge_probe.py (+6 tests); analysis/current_clean_grpo_v2_latent_knowledge_probe/probe.json;
+    activations h_lora full panel L0..L36, behavior_cell join (1233 rows, 1233/1233
+    overlap)
+  run_ids: []
+  commands: []
+  decisions: []
+  next_steps:
+  - 'Controls to harden the claim: (1) bag-of-words/lexical baseline AUROC (how much
+    of 0.98 is lexical?); (2) within-known refused-vs-answered probe; (3) compare
+    to h_base (pre-GRPO) to see if GRPO sharpened the boundary; (4) test on a held-out
+    question set to rule out question-type memorization.'
+  signals: {}
 ---
 # uncertainty-monitor-hypothesis
 
@@ -646,3 +727,32 @@ failure-axis direction move abstention ~0 (67→63 cells) vs the localized heads
   - `experiment/phase1/probe/phase3_head_read_sign_consistency.py; rows=analysis/.../head_read_trajectory/rows.jsonl (256 rows; 61 answered_wrong, 67 refused)`
 - next steps:
   - Per-head STEERING sweep to test whether anti-steerability is uniform per-head; SFT pre-adapter read-trajectory arm launched (axis pre-existence/transfer test).
+### 012-result - SFT pre-adapter arm: failure axis PRE-EXISTS GRPO
+
+- at: `2026-06-26T21:41:30Z`
+- kind: `result`
+- summary: Read-trajectory + per-head read-sign on the SFT-merged h_base model (GRPO adapter removed; reads the fixed GRPO-derived F on SFT activations). Near-identical to the GRPO arm: NO-FLIP trajectory (prompt +1.19 -> generation +0.37, vs GRPO +1.29 -> +0.40) and UNANIMOUS 11/11 per-head read (mean sep +1.20 vs GRPO +1.29; every head +). The failure-axis read geometry is laid down by SFT (or earlier) and GRPO inherits it -- GRPO did NOT create the axis. What GRPO changed is BEHAVIOR: SFT answers-wrong 67 / refuses 61, GRPO refuses 67 / answers-wrong 61 (GRPO trained in more abstention). Training moved the decision threshold/action, not the underlying knowledge representation.
+- evidence:
+  - `analysis/.../head_read_trajectory_sft_base/summary.json + rows.jsonl (256 rows); phase3_head_read_sign_consistency.py on both arms`
+- next steps:
+  - Causal K (knowledge-boundary) steering sweep launched: does the orthogonal known/unknown axis causally control the knowledge belief (belief_monitor) or is it F-like/anti-steer/inert?
+### 013-result - Causal K (knowledge-boundary) steering: ANTI-STEER, not a monitor
+
+- at: `2026-06-26T22:18:27Z`
+- kind: `result`
+- summary: Steered the orthogonal knowledge-boundary axis K (unknown_vs_known, behavior-agnostic; geometry cos 0.12 to F) on the 11 heads across symmetric alpha over a balanced 128-known/128-unknown panel; offline readout parsed response_confidence. VERDICT anti_steer. Known-side refusal is monotone and BELIEF-INCONSISTENT: steering toward the 'unknown' pole LOWERS over-refusal (alpha -6:56.2, -3:40.6, 0:33.6, +3:28.9, +6:23.4) -- the wrong way for a knowledge dial (toward 'unknown' should raise abstention). Stated confidence flat (Δ-0.014, under tol). Unknown side pinned at ~100% (ceiling, no headroom). So K, like F, is an anti-steerable refusal-correlated direction, NOT a causal knowledge dial. TWO candidate axes now both anti-steerable -> the separable uncertainty representation is not a steerable axis in this head-set.
+- evidence:
+  - `experiment/phase1/probe/analysis/current_clean_grpo_v2_knowledge_boundary_steer/summary.json + steer_readout.json (1280 rows, 5 alphas x 256); phase3_knowledge_boundary_steer_readout.py`
+- decisions:
+  - Pivot the uncertainty search from a STEERABLE knob to a READ signal: phase3_latent_knowledge_probe.py (per-layer residual-stream known/unknown AUROC + over-refusal latent-vs-expressed gap), GPU-free on existing h_lora activations.
+- next steps:
+  - Run the latent-knowledge read probe on the GRPO v2 full-panel residual stream.
+### 014-result - Latent-knowledge READ probe: boundary encoded (AUROC 0.99), over-refusal is a behavioral gap
+
+- at: `2026-06-26T22:21:32Z`
+- kind: `result`
+- summary: First POSITIVE result in the uncertainty search. Per-layer CV logistic probe of the GRPO v2 residual stream (h_lora) -> ground-truth known/unknown: L0 (embeddings) = 0.498 (CHANCE), L1 = 0.981, plateau ~0.99, peak L35 = 0.9971. The L0-chance->L1-0.98 jump rules out a surface/lexical embedding artifact: the knowledge boundary is COMPUTED by the network. Calibration caveat: single-layer emergence => a relatively SHALLOW feature; known/unknown is dataset-defined (TriviaQA vs SelfAware) so the probe may read systematic question-TYPE differences, not memory-retrieval per se. Over-refusal gap (more robust, within-known): train best-layer probe on known_correct_answered vs unknown_refused, score the 168 known_refused over-abstentions -> position 0.27 (look internally KNOWN, like answered-knowns). The model represented the answer but refused anyway => over-abstention is a behavioral-THRESHOLD gap, not an internal 'I dont know' signal. This is the read-side uncertainty signal the steerable axes (F, K both anti-steer) were not.
+- evidence:
+  - `phase3_latent_knowledge_probe.py (+6 tests); analysis/current_clean_grpo_v2_latent_knowledge_probe/probe.json; activations h_lora full panel L0..L36, behavior_cell join (1233 rows, 1233/1233 overlap)`
+- next steps:
+  - Controls to harden the claim: (1) bag-of-words/lexical baseline AUROC (how much of 0.98 is lexical?); (2) within-known refused-vs-answered probe; (3) compare to h_base (pre-GRPO) to see if GRPO sharpened the boundary; (4) test on a held-out question set to rule out question-type memorization.
