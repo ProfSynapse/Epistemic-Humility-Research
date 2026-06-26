@@ -742,6 +742,20 @@ v2 artifact: 11 unit directions, 64/64 rows, sigma 0.18-3.0. Sign: positive =
 SAFE refusal is `alpha<0` (the harness sweeps both signs). Remaining: the GPU
 generation-intervention harness.
 
+**Step A.4 MECHANISM DONE (2026-06-26, GPU-free core).**
+`phase3_head_intervention.py` discovers each block's `self_attn.o_proj` and
+registers forward PRE-hooks adding `alpha*sigma*theta` to each target head's
+o_proj-input column slice at ALL token positions (fires once per decode step =
+ITI token-by-token). `build_block_deltas` precomputes per-head deltas; the
+`per_head_intervention` context manager removes handles in `finally`. Torch-
+injected, verified offline on a tiny 2-layer/2-head module (5 tests: delta math,
+target-only shift, hook removal, loud discovery failure). The GPU runner (4B load
++ alpha sweep + behavior-cell scoring) is the explicit-gate follow-up; CLI
+`main()` is a gated placeholder. Use the existing replay/eval scorer for cells,
+not a duplicate JSON parser. NOTE: this is NOT the residual-stream
+final-prompt-token hook in `phase3_causal_pilot_runner.py` (that path is
+exhausted) — A.4 is per-head, all-positions.
+
 GQA GOTCHA confirmed live: Qwen3-4B `hidden_size=2560` but o_proj input width is
 `num_attention_heads * head_dim = 32 * 128 = 4096`; `2560 // 32 = 80 != 128`. Always
 read `head_dim` from `config.head_dim`, never `hidden_size // num_heads`.
