@@ -628,6 +628,28 @@ KTO likely creates a sharp pairwise behavior boundary, but this may not be a
 coherent calibrated-expression surface. Generated replay is required before
 treating KTO L11 as useful.
 
+The GRPO-order pass closes the cross-regimen sweep with two findings. On matched
+prompt-matched 256-row rare-cell panels, `clean_sft_dpo_grpo` (SFT->DPO->GRPO)
+and `clean_sft_kto_grpo` (SFT->KTO->GRPO) both restore the GRPO-like surface:
+dpo_grpo unknown-answering `delta` L14 `d=2.391`, AUC `0.983`; known-overrefusal
+`delta` L13 `d=3.205`, AUC `1.000`. kto_grpo unknown-answering `delta` L14
+`d=2.269`, AUC `0.987`; known-overrefusal `delta` L12 AUC `1.000`. (1)
+FINAL-STAGE DOMINANCE: the final training stage, not the stacking history, sets
+the final-adapter delta geometry. All three GRPO-terminal stacks (GRPO v2,
+dpo_grpo, kto_grpo) converge on the same sharp mid-layer L14-15 delta axis at
+AUC `~0.98-0.99`; the GRPO stage overwrites KTO's distinctive ultra-sharp L11
+axis (kto_grpo looks like GRPO, not standalone KTO), while the lone DPO-terminal
+stack (GRPO-DPO) is the blurred outlier (AUC `0.939`). (2) SEPARABILITY !=
+COHERENCE confirmed across the sweep: best four-cell macro recall ranks
+GRPO v2 `0.695` > GRPO-DPO `0.664` > dpo_grpo `0.648` > kto_grpo `0.641` >
+KTO `0.625`. Plain single-stage GRPO v2 keeps the best multicell coherence; no
+stacking order improves it, and sharp GRPO-terminal pairwise axes do not yield a
+cleaner calibrated-expression surface. This independently re-confirms that
+hand-built linear surfaces are exhausted for calibrated-expression control. The
+clean SFT control was deferred: its h_base is the original Qwen base (fail-closed
+adapterless path) plus a 4-bit-base vs 16-bit-merged quantization-parity confound
+the other regimens lack.
+
 ## Reusable Gotchas
 
 - SelfAware `known` labels do not guarantee gold answer aliases. Confirm

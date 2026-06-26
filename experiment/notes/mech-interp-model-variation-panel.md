@@ -290,3 +290,41 @@ Primary analyses:
   may collapse multiple behaviors into a simpler refusal/answering boundary
   rather than a coherent calibrated-expression surface. Generated replay is
   required before treating the L11 axis as useful.
+- 2026-06-26: KTO L11 generated replay completed and did not pass the
+  behavioral gate. The no-vector replay baseline had 65/128 unknown refusals
+  and 63/128 unknown answers, plus 64/128 known refusals and 64/128 known
+  answers. The best-looking arm was `activation_subtraction` coeff 25: unknown
+  refusals improved from 65 to 67, with 3 unknown answer-to-refusal repairs but
+  still 1 unknown refusal-to-answer leak; known correctness improved by only one
+  row and known refusal count did not move. Other signs/coefficients were flat
+  or net negative. Interpretation: even KTO's sharp L11 pairwise axis mostly
+  changes wording and does not deliver robust calibrated-expression control.
+- 2026-06-26: completed the GRPO-order pass of the regimen sweep with two new
+  prompt-matched 256-row rare-cell panels (64/cell), analysis-only (no generated
+  replay). `clean_sft_dpo_grpo` (SFT->DPO->GRPO; `extraction__7dfcdd2681a5`) and
+  `clean_sft_kto_grpo` (SFT->KTO->GRPO; `extraction__481dd6eb764c`) both extracted
+  live via Docker, manifests `status=ok`, `verified=true`, 256 rows each. Final
+  GRPO adapter over the respective SFT->DPO / SFT->KTO merged base, so delta
+  isolates the final GRPO surface. Behavior-axis (best per contrast/role) and
+  four-cell multicell readout (balanced ridge, CV=4) results:
+  - dpo_grpo: unknown-answering `delta` L14 `d=2.391`, AUC `0.983`, balacc
+    `0.961`; known-overrefusal `delta` L13 `d=3.205`, AUC `1.000`. Best four-cell
+    readout `h_lora` L21 full-rank macro recall `0.648`.
+  - kto_grpo: unknown-answering `delta` L14 `d=2.269`, AUC `0.987`, balacc
+    `0.953`; known-overrefusal `delta` L12 AUC `1.000`. Best four-cell readout
+    `h_base` L6 rank-16 / `delta` L22 full macro recall `0.641`.
+  Two findings. (1) FINAL-STAGE DOMINANCE: the final training stage, not the
+  stacking history, sets the delta-surface geometry. All three GRPO-terminal
+  stacks (GRPO v2, dpo_grpo, kto_grpo) converge on the same sharp mid-layer
+  (L14-15) delta signature at AUC `~0.98-0.99`; the GRPO stage even overwrites
+  KTO's distinctive ultra-sharp L11 axis (kto_grpo looks like GRPO, not standalone
+  KTO). The lone DPO-terminal stack (GRPO-DPO) is the outlier (blurred, AUC
+  `0.939`). (2) SEPARABILITY != COHERENCE confirmed across the sweep: best
+  four-cell macro recall is GRPO v2 `0.695` > GRPO-DPO `0.664` > dpo_grpo `0.648`
+  > kto_grpo `0.641` > KTO `0.625`. Plain single-stage GRPO v2 has the best
+  multicell coherence; no stacking order improves it, and the sharp GRPO-terminal
+  pairwise axes do not translate into a cleaner calibrated-expression surface.
+  This independently re-confirms that hand-built linear surfaces are exhausted for
+  calibrated-expression control. Clean SFT control deferred: its h_base would be
+  the original Qwen base (fail-closed adapterless path) plus a 4-bit-base vs
+  16-bit-merged quantization-parity wrinkle the other regimens do not have.
