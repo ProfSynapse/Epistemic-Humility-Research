@@ -32,41 +32,87 @@ Design (plan Decisions A-E):
 Real runs use TransformersPeftBackend on a GPU. The numerical h_base != h_lora
 smoke assertion is GPU-only and out of MVP scope (a marked skip lives in the
 test suite for the test-engineer).
+
+Module structure (SRP refactor — this file is now a thin FACADE):
+  - hs_paths.py        REPO_ROOT + _rel display helper
+  - hs_config.py       load_config + extraction_id
+  - hs_selection.py    PROBE_DIR-free selection/alignment + SelfAware manifest IO
+  - hs_provenance.py   GPU-free provenance leaf helpers (git/sha256/adapter/renderer)
+  - hs_persistence.py  safetensors writer + resume/verify/JSON helpers
+  - hs_backends.py     ExtractionBackend protocol + Stub/Transformers backends
+  - hidden_state_probe.py (this file) the PROBE_DIR-anchored config/selection
+    resolvers + run-extraction loop + CLI, and a re-export of the full public
+    surface so `import hidden_state_probe as hsp` keeps every name working.
+
+PROBE_DIR monkeypatch seam (IMPORTANT): tests do
+`monkeypatch.setattr(hsp, "PROBE_DIR", ...)` and expect the resolvers and the
+run loop to observe the patched value at CALL time. Every function that reads
+PROBE_DIR is therefore kept PHYSICALLY in this module so it reads this module's
+live global, not a stale copy imported into a helper module. The helper modules
+deliberately do NOT import this facade (no circular import), so they never read
+PROBE_DIR; the PROBE_DIR-anchored path resolution lives here.
 """
 
 from __future__ import annotations
 
 import argparse
 import json
-import re
 from pathlib import Path
-from typing import Protocol
+from typing import Protocol  # re-exported for the historical public surface
 
 import yaml
 
 import hidden_state_schema as schema
 
-# Repo root is four levels up (experiment/phase1/probe/hidden_state_probe.py).
-REPO_ROOT = Path(__file__).resolve().parents[3]
+# --- re-exported helpers (the full public surface lives across hs_* modules) ---
+from hs_paths import REPO_ROOT, _rel
+from hs_config import load_config, extraction_id
+from hs_provenance import (
+    _git_commit,
+    _submodule_commit,
+    _file_sha256,
+    _looks_like_explicit_local_path,
+    _local_model_dir_sha256,
+    _read_adapter_lora_config,
+    _renderer_hash,
+)
+from hs_selection import (
+    _select_keys,
+    load_selection_row_keys_file,
+    load_selfaware_manifest_rows,
+    selfaware_manifest_provenance_sha,
+    convert_selfaware_manifest_row,
+    _stream_probe_rows,
+)
+from hs_persistence import (
+    load_done_row_keys,
+    _persist_row_tensors,
+    safe_tensor_key,
+    _reconstruct_tensor_shapes,
+    _verify_emitted,
+    _write_json,
+)
+from hs_backends import (
+    ExtractionBackend,
+    StubExtractionBackend,
+    _arm_roles,
+    _vector_delta,
+    TransformersPeftBackend,
+    build_extraction_backend,
+)
+
+# PROBE_DIR is the test monkeypatch seam (monkeypatch.setattr(hsp, "PROBE_DIR",
+# ...)). It MUST stay a module-level attribute on THIS module, and every reader
+# below stays physically here so the patched value is observed at call time.
+# (REPO_ROOT and _rel are imported from hs_paths and re-exported above; REPO_ROOT
+# is never monkeypatched so it is safe to centralize.)
 PROBE_DIR = Path(__file__).resolve().parent
-
-
-def _rel(path: Path) -> str:
-    """Path relative to REPO_ROOT for display, or absolute if outside it."""
-    try:
-        return str(path.relative_to(REPO_ROOT))
-    except ValueError:
-        return str(path)
 
 
 # ---------------------------------------------------------------------------
 # Step 3 — config parse, extraction_config_sha, output-tree resolution
+# (PROBE_DIR-anchored resolvers; the PROBE_DIR-free primitives live in hs_config)
 # ---------------------------------------------------------------------------
-
-def load_config(config_path: Path) -> dict:
-    with config_path.open(encoding="utf-8") as fh:
-        return yaml.safe_load(fh)
-
 
 def resolve_eval_arm_adapters(config: dict, config_path: Path) -> dict:
     """Resolve active-arm adapter paths BY-VALUE from the eval config (Decision).
@@ -116,11 +162,6 @@ def parse_config(config_path: Path) -> tuple[dict, str]:
     return config, cfg_sha
 
 
-def extraction_id(arm_name: str, extraction_config_sha: str) -> str:
-    """Per-arm output id: f'{arm}__{extraction_config_sha[:12]}' (Decision C)."""
-    return f"{arm_name}__{extraction_config_sha[:12]}"
-
-
 def resolve_output_dir(config: dict, extraction_config_sha: str,
                        base_dir: Path | None = None) -> Path:
     """probe/<model_tag>/hidden_states/<extraction_id>/ (shared per extraction).
@@ -137,49 +178,8 @@ def resolve_output_dir(config: dict, extraction_config_sha: str,
 
 # ---------------------------------------------------------------------------
 # Step 4 — selection / alignment (frozen keys + streamed probe_results.jsonl)
+# (PROBE_DIR-anchored slice entry points; PROBE_DIR-free logic in hs_selection)
 # ---------------------------------------------------------------------------
-
-def _select_keys(frozen: dict, pool_field: str, n: int, seed: int) -> list[str]:
-    """Deterministically pick n keys from a frozen-split pool by stable hash."""
-    import hashlib
-
-    keys = list(frozen.get(pool_field, []))
-    if n is None or n >= len(keys):
-        return keys
-    ordered = sorted(
-        keys,
-        key=lambda k: hashlib.sha256(f"{seed}|{k}".encode()).hexdigest(),
-    )
-    return ordered[:n]
-
-
-def load_selection_row_keys_file(path: Path) -> list[str]:
-    """Load exact extraction row keys from a small checked-in text file."""
-    if not path.is_file():
-        raise FileNotFoundError(f"selection.row_keys_file missing: {_rel(path)}")
-    keys: list[str] = []
-    for line_no, raw in enumerate(path.read_text(encoding="utf-8").splitlines(), start=1):
-        line = raw.strip()
-        if not line or line.startswith("#"):
-            continue
-        if not line:
-            continue
-        keys.append(line)
-    if not keys:
-        raise ValueError(f"selection.row_keys_file {_rel(path)} contained no row keys")
-    seen: set[str] = set()
-    duplicates: list[str] = []
-    for key in keys:
-        if key in seen:
-            duplicates.append(key)
-        seen.add(key)
-    if duplicates:
-        raise ValueError(
-            f"selection.row_keys_file {_rel(path)} contains duplicate row key(s): "
-            f"{duplicates[:3]}"
-        )
-    return keys
-
 
 def select_matched_slice(config: dict) -> list[dict]:
     """Build the matched known/unknown extraction slice (leakage-safe).
@@ -279,489 +279,10 @@ def select_selfaware_manifest_slice(config: dict) -> list[dict]:
     return rows
 
 
-def load_selfaware_manifest_rows(
-    manifest_path: Path,
-    *,
-    wanted_strata: list[str] | None = None,
-    max_rows: int | None = None,
-) -> list[dict]:
-    """Convert frozen SelfAware manifest rows into extraction slice rows."""
-    if not manifest_path.is_file():
-        raise FileNotFoundError(f"SelfAware manifest {_rel(manifest_path)} not found")
-    payload = json.loads(manifest_path.read_text(encoding="utf-8"))
-    if payload.get("schema_version") != "phase3-selfaware-frozen-row-manifest/v1":
-        raise ValueError("SelfAware manifest schema_version is not supported")
-    if payload.get("scope", {}).get("not_probe_pool_runner_ready") is not True:
-        raise ValueError("SelfAware manifest must declare not_probe_pool_runner_ready: true")
-    raw_rows = payload.get("rows")
-    if not isinstance(raw_rows, list):
-        raise ValueError("SelfAware manifest rows must be a list")
-    aligned_probe_config_sha = selfaware_manifest_provenance_sha(manifest_path)
-    strata_filter = set(wanted_strata or [])
-    selected: list[dict] = []
-    seen: set[str] = set()
-    for index, row in enumerate(raw_rows):
-        converted = convert_selfaware_manifest_row(
-            row,
-            index=index,
-            aligned_probe_config_sha=aligned_probe_config_sha,
-        )
-        row_strata = set(converted["strata"])
-        if strata_filter and not (row_strata & strata_filter):
-            continue
-        key = converted["row_key"]
-        if key in seen:
-            raise ValueError(f"duplicate SelfAware manifest row_key {key!r}")
-        seen.add(key)
-        selected.append(converted)
-        if max_rows is not None and len(selected) >= max_rows:
-            break
-    return selected
-
-
-def selfaware_manifest_provenance_sha(manifest_path: Path) -> str:
-    """Tagged immutable identity for a frozen SelfAware row manifest."""
-    digest = _file_sha256(manifest_path)
-    if digest is None:
-        raise FileNotFoundError(f"SelfAware manifest {_rel(manifest_path)} not found")
-    return f"selfaware-manifest-sha256:{digest}"
-
-
-def convert_selfaware_manifest_row(
-    row: dict,
-    *,
-    index: int,
-    aligned_probe_config_sha: str | None = None,
-) -> dict:
-    """Validate and convert one frozen SelfAware row for extraction."""
-    required = ["row_key", "stable_identity", "strata", "label", "question", "prompt"]
-    missing = [field for field in required if field not in row]
-    if missing:
-        raise ValueError(f"SelfAware manifest rows[{index}] missing {missing}")
-    row_key = row["row_key"]
-    if not isinstance(row_key, str) or not row_key:
-        raise ValueError(f"SelfAware manifest rows[{index}].row_key must be non-empty")
-    if not isinstance(row["stable_identity"], dict):
-        raise ValueError(f"SelfAware manifest rows[{index}].stable_identity must be a mapping")
-    if row["label"] not in {"known", "unknown"}:
-        raise ValueError(f"SelfAware manifest rows[{index}].label must be known or unknown")
-    if not isinstance(row["question"], str) or not row["question"]:
-        raise ValueError(f"SelfAware manifest rows[{index}].question must be non-empty")
-    prompt = row["prompt"]
-    if not isinstance(prompt, str) or not prompt:
-        raise ValueError(f"SelfAware manifest rows[{index}].prompt must be non-empty")
-    strata = row["strata"]
-    if not isinstance(strata, list) or not all(isinstance(item, str) and item for item in strata):
-        raise ValueError(f"SelfAware manifest rows[{index}].strata must be non-empty strings")
-    aliases = row.get("aliases", [])
-    if aliases is None:
-        aliases = []
-    if not isinstance(aliases, list):
-        raise ValueError(f"SelfAware manifest rows[{index}].aliases must be a list")
-    return {
-        "probe_pool_row_key": row_key,
-        "row_key": row_key,
-        "stable_identity": row["stable_identity"],
-        "strata": list(strata),
-        "question": row["question"],
-        "prompt": prompt,
-        "label": row["label"],
-        "frozen_label": row["label"],
-        "probe_label": None,
-        "aligned_probe_config_sha": aligned_probe_config_sha,
-        "answer_value": row.get("answer_value"),
-        "aliases": aliases,
-        "source_arms": row.get("source_arms", {}),
-        "sycophancy": row.get("sycophancy"),
-    }
-
-
-def _stream_probe_rows(results_path: Path, wanted: set[str],
-                       label_by_key: dict[str, str]) -> list[dict]:
-    """Stream probe_results.jsonl, returning only the selected alignment rows."""
-    found: list[dict] = []
-    if not results_path.exists():
-        raise FileNotFoundError(
-            f"alignment source {_rel(results_path)} not found; run the probe "
-            "tier first (it produces probe_results.jsonl)"
-        )
-    with results_path.open(encoding="utf-8") as fh:
-        for line in fh:
-            line = line.strip()
-            if not line:
-                continue
-            row = json.loads(line)
-            key = row.get("probe_pool_row_key")
-            if key in wanted:
-                found.append({
-                    "probe_pool_row_key": key,
-                    "question": row["question"],
-                    "label": label_by_key[key],
-                    "frozen_label": label_by_key[key],
-                    "probe_label": row.get("label"),
-                    "aligned_probe_config_sha": row.get("probe_config_sha"),
-                })
-    return found
-
-
 # ---------------------------------------------------------------------------
-# Step 5 — ExtractionBackend seam + Stub + writer + resume
+# Step 5b — PROBE_DIR-anchored provenance (data source + static collection)
+# (the GPU-free provenance LEAF helpers live in hs_provenance)
 # ---------------------------------------------------------------------------
-
-class ExtractionBackend(Protocol):
-    """Minimal forward interface the harness depends on (one seam to stub).
-
-    The base-vs-LoRA contrast lives behind this Protocol so the real GPU path
-    (TransformersPeftBackend) and a deterministic torch-free stub are
-    interchangeable. forward returns layer_id -> 1-D final-token vector.
-    """
-
-    num_hidden_layers: int
-    hidden_dim: int
-    # Per-head (attention_head granularity) layout; populated by backends that
-    # implement forward_head_states. num_attention_heads * head_dim is the
-    # o_proj-input width.
-    num_attention_heads: int
-    head_dim: int
-
-    def render(self, question: str) -> str:
-        """Render the prompt bytes for one question (shared render helper)."""
-        ...
-
-    def forward_hidden_states(self, rendered_prompt: str, arm_state: str,
-                              adapter_name: str | None) -> dict:
-        """Final-token hidden states per layer for one arm/adapter-state."""
-        ...
-
-    def forward_head_states(self, rendered_prompt: str, arm_state: str,
-                            adapter_name: str | None) -> dict:
-        """Final-token per-head o_proj-input stack for one arm/adapter-state.
-
-        Returns ``{block_id: flat_vector}`` for block_id 0..N-1, where each
-        flat_vector is length ``num_attention_heads * head_dim`` (the concatenated
-        per-head context feeding that block's attention output projection). This
-        is the ITI-style per-head surface; backends exposing it must also set
-        `num_attention_heads` and `head_dim` so the harness/manifest can reshape.
-        """
-        ...
-
-    def provenance(self) -> dict:
-        """Backend-derived (post-load) manifest provenance fields.
-
-        Returns the manifest fields that can only be known once the model is
-        loaded: base_model_id/revision/hash, adapter_hash, tokenizer_revision,
-        and the library versions (peft_version/transformers_version). The harness
-        merges this into the manifest (after collect_static_provenance, so these
-        win) before the finalize gate, so the REAL backend supplies real values
-        and the stub supplies deterministic stand-ins (keeping the
-        require_populated gate exercisable GPU-free).
-
-        Seam note for the lora_* fields: on the REAL path they come from the
-        adapter dir's adapter_config.json (read GPU-free by
-        collect_static_provenance), so the real backend OMITS them here to let
-        those values stand; the STUB has no adapter dir, so it INCLUDES lora_*
-        stand-ins so the GPU-free pipeline still finalizes.
-        """
-        ...
-
-
-class StubExtractionBackend:
-    """Deterministic, torch-free ExtractionBackend for GPU-free tests.
-
-    Fabricates per-layer final-token vectors from a stable hash of
-    (prompt, arm_state, adapter_name, layer), so h_base != h_lora structurally
-    (different arm_state seeds different vectors) and a resumed run reproduces
-    identical tensors. No model, no torch — exercises the full select/persist/
-    resume pipeline in CI.
-    """
-
-    def __init__(self, num_hidden_layers: int = 3, hidden_dim: int = 8,
-                 system_prompt: str = "answer concisely", seed: int = 0,
-                 num_attention_heads: int = 4, head_dim: int = 2):
-        self.num_hidden_layers = num_hidden_layers
-        self.hidden_dim = hidden_dim
-        self.system_prompt = system_prompt
-        self.seed = seed
-        # Per-head layout for the attention_head granularity stub path; defaults
-        # are tiny so tests stay fast. Independent of hidden_dim (under GQA the
-        # o_proj-input width num_attention_heads*head_dim need not equal hidden).
-        self.num_attention_heads = num_attention_heads
-        self.head_dim = head_dim
-
-    def render(self, question: str) -> str:
-        # Deterministic stand-in render; the real backend uses the shared helper.
-        return f"<|stub|>{self.system_prompt}|{question}<|gen|>"
-
-    def _hashed_vector(self, *parts, width: int) -> list[float]:
-        import hashlib
-
-        key = "|".join(str(p) for p in parts)
-        digest = hashlib.sha256(key.encode()).digest()
-        return [((digest[i % len(digest)] / 255.0) - 0.5) for i in range(width)]
-
-    def forward_hidden_states(self, rendered_prompt, arm_state, adapter_name):
-        vectors: dict[int, list[float]] = {}
-        layer_count = schema.expected_layer_count(self.num_hidden_layers)
-        for layer in range(layer_count):
-            vectors[layer] = self._hashed_vector(
-                self.seed, rendered_prompt, arm_state, adapter_name, layer,
-                width=self.hidden_dim,
-            )
-        return vectors
-
-    def forward_head_states(self, rendered_prompt, arm_state, adapter_name):
-        # Deterministic per-block o_proj-input stand-in: N attention blocks (no
-        # embedding layer), each width num_attention_heads*head_dim. arm_state is
-        # mixed into the hash so h_base != h_lora structurally, mirroring the
-        # residual stub. A distinct "head" tag keeps these vectors from colliding
-        # with the residual stub's per-layer vectors.
-        width = self.num_attention_heads * self.head_dim
-        return {
-            block: self._hashed_vector(
-                self.seed, "head", rendered_prompt, arm_state, adapter_name, block,
-                width=width,
-            )
-            for block in range(schema.expected_attention_layer_count(
-                self.num_hidden_layers))
-        }
-
-    def provenance(self) -> dict:
-        """Deterministic stub stand-ins for the post-load provenance fields.
-
-        These are clearly stub-marked (so a stub-produced manifest is never
-        mistaken for a real extraction) but non-None, which lets the GPU-free
-        pipeline produce a manifest that passes validate_manifest(
-        require_populated=True) — i.e. the finalize gate is exercisable in CI.
-        """
-        return {
-            "base_model_id": "stub/base-model",
-            "base_model_revision": "stub-revision",
-            "base_model_hash": "stub-base-hash",
-            "adapter_hash": "stub-adapter-hash",
-            "tokenizer_revision": "stub-tokenizer-revision",
-            "peft_version": "stub-peft",
-            "transformers_version": "stub-transformers",
-            # LoRA hyperparams come from adapter_config.json on the real path
-            # (GPU host has the adapter dir); the stub has no adapter dir, so it
-            # supplies stand-ins here. The REAL backend OMITS these keys, letting
-            # collect_static_provenance's adapter_config.json read stand.
-            "lora_rank": -1,
-            "lora_alpha": -1,
-            "lora_dropout": 0.0,
-            "lora_target_modules": ["stub-target"],
-        }
-
-
-def _arm_roles(arms: list[dict]) -> tuple[dict, dict]:
-    """Return (base_arm, active_arm) after the pre-flight has validated them."""
-    base = next(a for a in arms if a["adapter_state"] in schema.BASE_ADAPTER_STATES)
-    active = next(a for a in arms if a["adapter_state"] == schema.ADAPTER_STATE_ACTIVE)
-    return base, active
-
-
-def _vector_delta(lora: dict, base: dict) -> dict:
-    """delta = h_lora - h_base, per layer (plain python; persisted, not trusted)."""
-    return {
-        layer: [lv - bv for lv, bv in zip(lora[layer], base[layer])]
-        for layer in lora
-    }
-
-
-def load_done_row_keys(rows_path: Path) -> set[str]:
-    """Row keys already written to the append-log (resume; probe.py idiom)."""
-    done: set[str] = set()
-    if not rows_path.exists():
-        return done
-    with rows_path.open(encoding="utf-8") as fh:
-        for line in fh:
-            line = line.strip()
-            if not line:
-                continue
-            row = json.loads(line)
-            key = row.get("probe_pool_row_key") or row.get("row_key")
-            if key:
-                done.add(key)
-    return done
-
-
-def _git_commit(repo_dir: Path) -> str | None:
-    """HEAD commit of a git repo, or None if unavailable (GPU-free, optional)."""
-    import subprocess  # noqa: PLC0415
-
-    try:
-        out = subprocess.run(
-            ["git", "-c", f"safe.directory={repo_dir}", "-C", str(repo_dir), "rev-parse", "HEAD"],
-            capture_output=True, text=True, check=True, timeout=10)
-        return out.stdout.strip() or None
-    except (subprocess.SubprocessError, OSError):
-        return None
-
-
-def _submodule_commit(repo_dir: Path, submodule_path: str) -> str | None:
-    """The gitlink SHA a superproject records for a submodule (GPU-free).
-
-    Reads the recorded commit from the superproject's index via `git ls-tree`,
-    NOT `git -C <submodule> rev-parse HEAD`: in a worktree the submodule is often
-    UNPOPULATED (no working tree), and rev-parse inside the missing dir silently
-    walks up to the PARENT repo and returns the wrong commit. ls-tree reads the
-    pinned gitlink directly, so it is correct whether or not the submodule is
-    checked out. Returns None if the path is not a recorded submodule.
-    """
-    import subprocess  # noqa: PLC0415
-
-    try:
-        out = subprocess.run(
-            [
-                "git",
-                "-c",
-                f"safe.directory={repo_dir}",
-                "-C",
-                str(repo_dir),
-                "ls-tree",
-                "HEAD",
-                submodule_path,
-            ],
-            capture_output=True, text=True, check=True, timeout=10)
-    except (subprocess.SubprocessError, OSError):
-        return None
-    # Output: "<mode> commit <sha>\t<path>"; mode 160000 marks a gitlink.
-    parts = out.stdout.split()
-    if len(parts) >= 3 and parts[1] == "commit":
-        return parts[2]
-    return None
-
-
-def _file_sha256(path: Path) -> str | None:
-    """sha256 of a file's bytes, streamed (GPU-free), or None if absent."""
-    import hashlib  # noqa: PLC0415
-
-    if not path.exists():
-        return None
-    h = hashlib.sha256()
-    with path.open("rb") as fh:
-        for chunk in iter(lambda: fh.read(1 << 20), b""):
-            h.update(chunk)
-    return h.hexdigest()
-
-
-def _looks_like_explicit_local_path(model_name: str) -> bool:
-    """Whether a model id should be treated as an operator-supplied local path."""
-    path = Path(model_name).expanduser()
-    return path.is_absolute() or model_name.startswith((".", "~"))
-
-
-def _local_model_dir_sha256(model_name: str) -> str | None:
-    """Deterministic local-model identity, or None when model_name is a hub id.
-
-    Local merged models do not have a hub snapshot commit, so the manifest needs
-    another immutable content key. Hash stable identity-bearing files in a fixed
-    order, including each relative path and each file's sha256, and prefix the
-    result so it cannot be mistaken for a hub commit SHA.
-
-    Returns None only for non-local model ids. Explicit local-path failures are
-    raised so the operator gets a direct error instead of a later None-field
-    finalize failure.
-    """
-    import hashlib  # noqa: PLC0415
-
-    root = Path(model_name).expanduser()
-    if not root.exists():
-        if _looks_like_explicit_local_path(model_name):
-            raise FileNotFoundError(f"local model directory {model_name!r} does not exist")
-        return None
-    if not root.is_dir():
-        raise NotADirectoryError(f"local model path {model_name!r} is not a directory")
-
-    config_file = root / "config.json"
-    if not config_file.is_file():
-        raise FileNotFoundError(
-            f"local model directory {model_name!r} is missing config.json")
-
-    stable_names = [
-        "config.json",
-        "generation_config.json",
-        "tokenizer_config.json",
-        "tokenizer.json",
-        "special_tokens_map.json",
-        "model.safetensors.index.json",
-        "pytorch_model.bin.index.json",
-    ]
-    files = {root / name for name in stable_names if (root / name).is_file()}
-    files.update(p for p in root.glob("*.safetensors") if p.is_file())
-    files.update(p for p in root.glob("*.bin") if p.is_file())
-    weight_files = [
-        p for p in files
-        if (p.name.endswith(".safetensors") or p.name.endswith(".bin")
-            or p.name.endswith(".index.json"))
-    ]
-    if not weight_files:
-        raise FileNotFoundError(
-            f"local model directory {model_name!r} has config.json but no stable "
-            "weight identity files (*.safetensors, *.bin, or weight index json)")
-
-    h = hashlib.sha256()
-    for path in sorted(files, key=lambda p: p.relative_to(root).as_posix()):
-        rel = path.relative_to(root).as_posix()
-        digest = _file_sha256(path)
-        if digest is None:
-            raise FileNotFoundError(f"local model provenance file disappeared: {path}")
-        h.update(rel.encode("utf-8"))
-        h.update(b"\0")
-        h.update(digest.encode("ascii"))
-        h.update(b"\n")
-    return f"local-sha256:{h.hexdigest()}"
-
-
-def _read_adapter_lora_config(adapter_path: str | None) -> dict:
-    """Read LoRA hyperparams from a PEFT adapter_config.json (GPU-free JSON read).
-
-    PEFT writes adapter_config.json into the adapter dir; rank/alpha/dropout/
-    target_modules are plain JSON, so we read them WITHOUT loading torch/peft.
-    Returns the four manifest fields (None each if the file is unreadable, e.g.
-    an adapter dir that only exists on the GPU host).
-    """
-    fields = {"lora_rank": None, "lora_alpha": None, "lora_dropout": None,
-              "lora_target_modules": None}
-    if not adapter_path:
-        return fields
-    cfg_file = Path(adapter_path) / "adapter_config.json"
-    if not cfg_file.exists():
-        return fields
-    try:
-        with cfg_file.open(encoding="utf-8") as fh:
-            adapter_cfg = json.load(fh)
-    except (OSError, json.JSONDecodeError):
-        return fields
-    tgt = adapter_cfg.get("target_modules")
-    fields["lora_rank"] = adapter_cfg.get("r")
-    fields["lora_alpha"] = adapter_cfg.get("lora_alpha")
-    fields["lora_dropout"] = adapter_cfg.get("lora_dropout")
-    # target_modules may be a list or a set serialized as a list; normalize to a
-    # sorted list of strings so the manifest value is JSON-stable and non-None.
-    fields["lora_target_modules"] = sorted(tgt) if isinstance(tgt, (list, set)) else tgt
-    return fields
-
-
-def _renderer_hash(config: dict) -> str:
-    """Stable identity of the prompt-render path (GPU-free).
-
-    Hashes the render-affecting knobs (enable_thinking, token_position_rule) plus
-    the shared helper's discovery-mode tuple, so a change to the render surface
-    changes this manifest field. Imports the helper's constant lazily to avoid a
-    hard backends dependency at module import.
-    """
-    try:
-        from backends import _RENDER_MODES  # noqa: PLC0415
-        modes = list(_RENDER_MODES)
-    except Exception:  # noqa: BLE001 - renderer identity degrades, not fails
-        modes = ["direct", "chat_template_kwargs"]
-    identity = {
-        "enable_thinking": config.get("model", {}).get("enable_thinking"),
-        "token_position_rule": config.get("extraction", {}).get("token_position_rule"),
-        "render_modes": modes,
-    }
-    return schema.config_sha(identity)
-
 
 def collect_static_provenance(config: dict, slice_rows: list[dict],
                               rendered_prompts: list[str]) -> dict:
@@ -813,6 +334,11 @@ def selection_data_source(config: dict) -> Path:
         return (PROBE_DIR / selection["manifest"]).resolve()
     return (PROBE_DIR / selection["probe_results"]).resolve()
 
+
+# ---------------------------------------------------------------------------
+# Step 5c — run-extraction loop (crash-safe manifest + resumable append-log)
+# (persistence/backends/provenance primitives are imported from hs_* modules)
+# ---------------------------------------------------------------------------
 
 def run_extraction(config: dict, extraction_config_sha: str, backend,
                    slice_rows: list[dict], out_dir: Path) -> Path:
@@ -930,342 +456,6 @@ def _validate_arm_tensors(backend, h_base, h_lora, token_rule) -> None:
             num_hidden_layers=backend.num_hidden_layers,
             hidden_dim=backend.hidden_dim,
             token_position_rule=token_rule)
-
-
-def _persist_row_tensors(out_dir, key, cfg_sha, h_base, h_lora, delta, config,
-                         tensor_shapes) -> None:
-    """Persist per-arm tensors for one row as safetensors (lazy numpy import).
-
-    numpy is imported lazily so the row-record/append path stays importable
-    without it; persistence is where the array dependency legitimately enters.
-    """
-    import numpy as np  # noqa: PLC0415
-    from safetensors.numpy import save_file  # noqa: PLC0415
-
-    persist_dtype = config["extraction"]["persist_dtype"]
-    np_dtype = getattr(np, persist_dtype)
-    # M1: honor extraction.layer_list. null => persist ALL captured layers; a
-    # list => persist ONLY those layer ids (the full stack is still captured and
-    # shape-validated upstream; this filters what reaches disk). Advertised knob
-    # is now live, so the manifest's layer_list matches the persisted tensors.
-    layer_list = config["extraction"].get("layer_list")
-    keep_layers = set(layer_list) if layer_list is not None else None
-    roles = {"h_base": h_base, "h_lora": h_lora}
-    if delta is not None:
-        roles["delta"] = delta
-
-    safe_key = safe_tensor_key(key)
-    for role, layer_vectors in roles.items():
-        selected = {
-            layer: vec for layer, vec in layer_vectors.items()
-            if keep_layers is None or layer in keep_layers
-        }
-        if not selected:
-            raise ValueError(
-                f"extraction.layer_list {sorted(keep_layers)} selected no "
-                f"captured layers (available 0..{len(layer_vectors) - 1}); "
-                "check the configured layer ids"
-            )
-        tensors = {
-            f"L{layer}": np.asarray(vec, dtype=np_dtype)
-            for layer, vec in selected.items()
-        }
-        metadata = schema.safetensors_metadata(cfg_sha, safe_key, role)
-        schema.validate_safetensors_metadata(metadata)
-        path = out_dir / f"{safe_key}__{role}.safetensors"
-        save_file(tensors, str(path), metadata=metadata)
-        any_layer = next(iter(layer_vectors.values()))
-        tensor_shapes[role] = [len(layer_vectors), len(any_layer)]
-
-
-def safe_tensor_key(key: str) -> str:
-    """Filesystem-safe tensor shard stem while preserving existing pipe behavior."""
-    safe = key.replace("|", "_")
-    for char in (":", "/", "\\", "<", ">", '"', "?", "*"):
-        safe = safe.replace(char, "_")
-    return safe
-
-
-def _reconstruct_tensor_shapes(out_dir: Path, rows_path: Path) -> dict:
-    """Rebuild tensor_shapes for a FULLY-resumed run from on-disk artifacts.
-
-    On a resume where every slice row is already in the append-log, _extract_rows
-    forwards nothing, so the in-memory tensor_shapes stays empty. The finalize
-    gate (Decision D-bis) requires a status=ok manifest to carry non-None
-    tensor_shapes, so a resumed run must reconstruct the same shapes a fresh run
-    would have stamped — otherwise an idempotent re-run crashes at finalize.
-
-    Faithful to the fresh-run value `[len(layer_vectors), len(any_layer)]`
-    (hidden_state_probe.py: _persist_row_tensors): the FULL captured layer count
-    (== the per-row record's `layer_count`, which is M1-independent — layer_list
-    filters what reaches disk, not what is captured) and the hidden_dim. The
-    roles present are derived from the shards actually on disk so persist_delta is
-    honored without re-reading the config. Returns {} if nothing is recoverable
-    (no rows or no shards), leaving the caller's None-tensor_shapes gate to fire.
-    """
-    last_record = None
-    if rows_path.exists():
-        with rows_path.open(encoding="utf-8") as fh:
-            for line in fh:
-                line = line.strip()
-                if line:
-                    last_record = json.loads(line)
-    if last_record is None:
-        return {}
-    layer_count = last_record.get("layer_count")
-    hidden_dim = last_record.get("hidden_dim")
-    if layer_count is None or hidden_dim is None:
-        return {}
-
-    # Roles present on disk (h_base / h_lora / optionally delta), from the shard
-    # filenames `<key>__<role>.safetensors`. Using disk-truth keeps delta in iff
-    # it was persisted, with no dependence on the config's persist_delta flag.
-    roles = {
-        shard.stem.rsplit("__", 1)[1]
-        for shard in out_dir.glob("*.safetensors")
-        if "__" in shard.stem
-    }
-    return {role: [layer_count, hidden_dim] for role in sorted(roles)}
-
-
-def _verify_emitted(out_dir: Path, base_arm, active_arm, config) -> bool:
-    """Decision D-bis: verified=True ONLY if expected tensor shards exist.
-
-    The numerical h_base != h_lora check is GPU-only (real forward); on CPU the
-    structural existence check is the strongest honest verification, so this
-    never hand-sets verified on a run that emitted no tensors.
-    """
-    shards = list(out_dir.glob("*.safetensors"))
-    return len(shards) > 0
-
-
-def _write_json(path: Path, obj: dict) -> None:
-    path.write_text(json.dumps(obj, indent=2, ensure_ascii=False), encoding="utf-8")
-
-
-# ---------------------------------------------------------------------------
-# Step 6 — TransformersPeftBackend (lazy heavy imports; GPU-only forward)
-# ---------------------------------------------------------------------------
-
-class TransformersPeftBackend:
-    """Real HF Transformers + PEFT ExtractionBackend (GPU). Lazy heavy imports.
-
-    torch/transformers/peft are imported INSIDE __init__ so this module loads,
-    and the stub path runs, on a CPU-only / no-GPU host (mirrors VLLMBackend's
-    lazy vLLM import). Deterministic forward: model.eval(), use_cache=False,
-    torch.no_grad(), batch=1, fixed dtype/device. The base pass uses
-    PeftModel.disable_adapter(); the LoRA pass uses set_adapter(active). The
-    shared render helper (backends.render_probe_prompt) is reused so this path
-    cannot drift from VLLMBackend's thinking-tag handling.
-
-    NOTE: PEFT/Transformers versions are intentionally NOT hard-pinned here;
-    the manifest records them at runtime and the version pins are a TODO for
-    devops/architect (cross-version adapter-load skew is a first-GPU-run gate).
-    """
-
-    def __init__(self, config: dict, system_prompt: str, active_adapter_path: str,
-                 active_adapter_name: str):
-        import torch  # noqa: PLC0415
-        from transformers import AutoModelForCausalLM, AutoTokenizer  # noqa: PLC0415
-        from peft import PeftModel  # noqa: PLC0415
-
-        self._torch = torch
-        self._peft = __import__("peft")
-        self._transformers = __import__("transformers")
-        self.system_prompt = system_prompt
-        self.enable_thinking = config["model"]["enable_thinking"]
-        self.active_adapter_name = active_adapter_name
-        self.active_adapter_path = active_adapter_path
-        ext = config["extraction"]
-        self.device = ext.get("device", "cuda")
-        self._compute_dtype = getattr(torch, ext["compute_dtype"])
-        self.token_position_rule = ext["token_position_rule"]
-
-        self.model_name = config["model"]["model_name"]
-        # Optional immutable revision pin (commit SHA / tag). Recorded as
-        # base_model_revision and passed to from_pretrained so the load is
-        # reproducible. None (default) loads the hub default branch — the
-        # resolved snapshot SHA is still recovered post-load from
-        # config._commit_hash below, so provenance stays a commit SHA, not a
-        # mutable ref, whenever the hub returns one.
-        self.model_revision = config["model"].get("revision")
-        self.tokenizer = AutoTokenizer.from_pretrained(
-            self.model_name, revision=self.model_revision)
-        base = AutoModelForCausalLM.from_pretrained(
-            self.model_name, revision=self.model_revision,
-            torch_dtype=self._compute_dtype, device_map=self.device)
-        self.model = PeftModel.from_pretrained(
-            base, active_adapter_path, adapter_name=active_adapter_name)
-        self.model.eval()
-        self.num_hidden_layers = self.model.config.num_hidden_layers
-        self.hidden_dim = self.model.config.hidden_size
-        # Per-head layout for attention_head granularity. head_dim is read
-        # explicitly from config when present (Qwen3 sets head_dim independently,
-        # so hidden_size // num_attention_heads is WRONG under that config) and
-        # only falls back to the even-split when the config omits it.
-        self.num_attention_heads = self.model.config.num_attention_heads
-        self.head_dim = getattr(
-            self.model.config, "head_dim", None
-        ) or (self.hidden_dim // self.num_attention_heads)
-
-    def render(self, question: str) -> str:
-        # Reuse the SHARED render+verify helper (no second template path).
-        from backends import render_probe_prompt  # noqa: PLC0415
-
-        rendered, _mode = render_probe_prompt(
-            self.tokenizer, self.system_prompt, question,
-            enable_thinking=self.enable_thinking)
-        return rendered
-
-    def forward_hidden_states(self, rendered_prompt, arm_state, adapter_name):
-        torch = self._torch
-        inputs = self.tokenizer(rendered_prompt, return_tensors="pt").to(self.device)
-        with torch.no_grad():
-            if arm_state in schema.BASE_ADAPTER_STATES:
-                with self.model.disable_adapter():
-                    out = self._forward(inputs)
-            else:
-                self.model.set_adapter(adapter_name)
-                out = self._forward(inputs)
-        # Final prompt token, all layers; batch=1 so -1 is unambiguous.
-        return {
-            layer: hs[0, -1, :].float().cpu().tolist()
-            for layer, hs in enumerate(out.hidden_states)
-        }
-
-    def _forward(self, inputs):
-        return self.model(**inputs, output_hidden_states=True,
-                          use_cache=False, return_dict=True)
-
-    def _o_proj_modules(self) -> dict:
-        """Map attention-block id -> that block's o_proj module (PEFT-safe).
-
-        Resolves by module-name suffix `self_attn.o_proj` over named_modules(),
-        so it is robust to PEFT's wrapper nesting (the matched module is the
-        possibly-LoRA-wrapped o_proj; hooking its INPUT captures the concatenated
-        per-head context regardless of whether o_proj is a LoRA target). The
-        block index is parsed from the `...layers.<i>...` segment of the name.
-        Raises if the discovered ids are not exactly the N contiguous blocks, so
-        a model whose attention module is named differently fails loudly instead
-        of silently capturing a partial stack.
-        """
-        modules: dict[int, object] = {}
-        for name, module in self.model.named_modules():
-            if not name.endswith("self_attn.o_proj"):
-                continue
-            match = re.search(r"layers\.(\d+)\.", name)
-            if match is None:
-                raise RuntimeError(
-                    f"found an o_proj module with no parseable block index: {name!r}"
-                )
-            modules[int(match.group(1))] = module
-        expected = set(range(self.num_hidden_layers))
-        if set(modules) != expected:
-            raise RuntimeError(
-                f"o_proj module discovery captured blocks {sorted(modules)}, "
-                f"expected contiguous 0..{self.num_hidden_layers - 1}; the model's "
-                "attention module naming is not the assumed `layers.<i>.self_attn."
-                "o_proj` layout"
-            )
-        return modules
-
-    def forward_head_states(self, rendered_prompt, arm_state, adapter_name):
-        """Capture each block's final-token o_proj INPUT (per-head context).
-
-        ITI-style per-head surface: a forward hook on every block's o_proj records
-        the tensor fed INTO the output projection, whose last dim is
-        num_attention_heads * head_dim (holds under GQA). We keep only the final
-        prompt token ([0, -1, :]) per block and return ``{block_id: flat_list}``;
-        the caller reshapes per head via schema.reshape_o_proj_input_to_heads.
-        Deterministic like forward_hidden_states: eval / no_grad / use_cache=False,
-        base vs active selected exactly as the residual path does. Hooks are always
-        removed in a finally so a raising forward cannot leak handles across arms.
-        """
-        torch = self._torch
-        captured: dict[int, list[float]] = {}
-        modules = self._o_proj_modules()
-        handles = []
-
-        def _make_hook(block_id: int):
-            def _hook(_module, inputs, _output):
-                # inputs[0]: [batch, seq, num_attention_heads * head_dim]
-                x = inputs[0]
-                captured[block_id] = x[0, -1, :].float().cpu().tolist()
-            return _hook
-
-        inputs = self.tokenizer(rendered_prompt, return_tensors="pt").to(self.device)
-        try:
-            for block_id, module in modules.items():
-                handles.append(module.register_forward_hook(_make_hook(block_id)))
-            with torch.no_grad():
-                if arm_state in schema.BASE_ADAPTER_STATES:
-                    with self.model.disable_adapter():
-                        self._forward(inputs)
-                else:
-                    self.model.set_adapter(adapter_name)
-                    self._forward(inputs)
-        finally:
-            for handle in handles:
-                handle.remove()
-
-        expected_width = self.num_attention_heads * self.head_dim
-        for block_id, vec in captured.items():
-            if len(vec) != expected_width:
-                raise RuntimeError(
-                    f"block {block_id} o_proj-input width {len(vec)} != "
-                    f"num_attention_heads * head_dim = {expected_width}; the "
-                    "captured tensor does not match the configured head layout"
-                )
-        return captured
-
-    def provenance(self) -> dict:
-        """Post-load manifest provenance from the REAL loaded model + libraries.
-
-        Supplies the fields that need the loaded backend: library versions, the
-        base-model id/revision, and content hashes of the model + adapter dirs.
-        Hub loads keep the resolved snapshot commit/configured revision behavior.
-        Local merged-model directories have no hub commit, so they get an
-        explicit local-sha256:<digest> identity over stable model files. Missing
-        local provenance inputs fail explicitly; non-local unresolved hub ids
-        still degrade to None so the strict finalize gate surfaces the gap.
-        """
-        base_cfg = getattr(self.model, "config", None)
-        base_model_id = getattr(base_cfg, "_name_or_path", None) or self.model_name
-        adapter_dir = Path(self.active_adapter_path) if self.active_adapter_path else None
-        adapter_hash = (
-            _file_sha256(adapter_dir / "adapter_config.json") if adapter_dir else None)
-        # base_model_revision MUST be an IMMUTABLE pin, not a mutable ref or a
-        # library version: prefer the resolved snapshot commit SHA the hub
-        # returned (transformers sets config._commit_hash on a hub load), then
-        # the operator-configured revision pin. Deliberately NOT
-        # config.transformers_version (that is the library version the config was
-        # saved with, not a model identity). None-safe: if neither is available
-        # the field records None and the finalize gate surfaces the gap loudly
-        # rather than attesting a non-immutable revision.
-        base_model_revision = (
-            getattr(base_cfg, "_commit_hash", None) or self.model_revision)
-        local_model_hash = None
-        if base_model_revision is None:
-            local_model_hash = _local_model_dir_sha256(self.model_name)
-            base_model_revision = local_model_hash
-        return {
-            "base_model_id": base_model_id,
-            "base_model_revision": base_model_revision,
-            "base_model_hash": local_model_hash or base_model_id,
-            "adapter_hash": adapter_hash,
-            "tokenizer_revision": getattr(self.tokenizer, "name_or_path", None),
-            "peft_version": self._peft.__version__,
-            "transformers_version": self._transformers.__version__,
-        }
-
-
-def build_extraction_backend(config: dict, system_prompt: str):
-    """Construct the real GPU backend. The stub is built directly by tests."""
-    _base_arm, active_arm = _arm_roles(config["arms"])
-    return TransformersPeftBackend(
-        config=config, system_prompt=system_prompt,
-        active_adapter_path=active_arm["adapter"],
-        active_adapter_name=active_arm["name"])
 
 
 # ---------------------------------------------------------------------------
