@@ -4,7 +4,7 @@ session_id: phase3-model-variation-panel
 title: Phase 3 Model Variation Panel
 status: active
 created_at: '2026-06-25T14:58:42Z'
-updated_at: '2026-06-26T15:30:00Z'
+updated_at: '2026-06-26T16:30:00Z'
 phase: phase3
 question: Do the JSON-output fine-tuned model variations share calibrated-expression
   mechanisms, or do different regimens produce distinct behavior-control surfaces?
@@ -961,3 +961,15 @@ _No summary yet._
 - next steps:
   - Step A: extend extraction to per-attention-head activations and apply the mass-mean direction during generation (ITI-style), then re-run the behavior gate.
   - Keep the clean SFT control deferred (original-base fail-closed path + 4-bit/16-bit quantization-parity confound).
+
+### 035-result - Per-head extraction lands; the failure axis is the sparsest, weakest head signal
+
+- at: `2026-06-26T16:30:00Z`
+- kind: `result`
+- summary: Ran Step A.1-A.3 for GRPO v2 (the best-coherence regimen, `0.695`). (A.1) Authored the `attention_head`-granularity extraction config, prompt-matched to the same SelfAware manifest as the residual run, and ran the Docker GPU extraction: manifest `status=ok verified=True`, `granularity=attention_head`, `num_attention_heads=32 x head_dim=128 = width 4096` across 36 blocks, 256 rows (128 known / 128 unknown), 768 shards (3 roles). GQA confirmed load-bearing: Qwen3-4B `hidden_size=2560`, so `hidden//heads = 80 != 128`; reading `head_dim` from config (never `hidden_size // num_heads`) was required for a correct split. (A.3) New offline scan `phase3_head_localization_scan.py` reuses the residual scan's metric primitives but splits each block's 4096-wide o_proj-input vector into its 32 per-head 128-dim slices and computes a mean-diff axis per (block, head): 10,368 (block x head x contrast) axes per role. Findings (delta role): the refuse-vs-answer IDENTITY axis (`unknown_refused vs known_correct_answered`) is richly head-distributed and sharply localized -- 223/1152 heads >= 0.85 AUC, 17 >= 0.95, best L34H17/L32H14 AUC `0.978-0.980`; GRPO's delta concentrates it in LATE heads (L32-35) where the base/lora representation has it mid-stack (L21-22). The FAILURE-discrimination axis we actually need to steer (`unknown_answered_wrong vs unknown_refused`) is the SPARSEST and WEAKEST: only 20/1152 heads >= 0.85, 1 >= 0.90, best delta L21H17 AUC `0.910` d`+1.65`; sparse candidate set L21H17, L35H0, L23H1, L7H30, L10H11, L22H12. Per-head vs per-block: single-head best AUC is `0.016-0.078` BELOW the full-block AUC (expected -- a 128-dim head carries less than the 4096-dim block); per-head's value is sparse-intervention localization (ITI), not a sharper probe.
+- decisions:
+  - The per-head result reinforces `gap:4-probe-transfer`: GRPO moved the *identity* of refusal (sharply head-localized, pushed to late layers) far more than the *failure discrimination* the behavior needs (weak, sparse). This predicts Step A.4 steering will be HARDEST on the axis that matters most.
+  - Keep `attention_head` extraction additive: residual-stream path byte-for-byte unchanged; both granularities produce layer_id->vector maps so persistence/verify/reconstruct stayed granularity-agnostic.
+- next steps:
+  - Step A.4: during-generation ITI on the top-k delta heads of the failure axis (L21H17, L35H0, L23H1, L7H30, L10H11, L22H12) at swept alpha, then the generated-replay behavior gate. This requires the generated-token extraction/intervention path (not yet built) on top of the now-landed per-head extraction.
+  - Optional: replicate the per-head scan on a second regimen (e.g. KTO, whose L11 residual axis failed the gate) to test whether the failure-axis sparsity is regimen-robust like the gap itself.

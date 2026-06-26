@@ -364,3 +364,28 @@ Primary analyses:
   residual-stream, final-prompt-token vectors only; closing the gap (Step A) means
   extending extraction to per-head activations and applying the direction during
   generation, not more scalar tuning of one residual axis.
+- 2026-06-26: STEP A.1-A.3 — per-head extraction lands; the failure axis is the
+  sparsest, weakest head signal. Added an additive `attention_head` extraction
+  granularity (residual path byte-for-byte unchanged) that hooks each decoder
+  block's `self_attn.o_proj` INPUT — the concatenated per-head context vectors,
+  width `num_attention_heads * head_dim`. Ran it on GRPO v2 (best-coherence
+  regimen) prompt-matched to the same SelfAware manifest: manifest
+  `status=ok verified=True`, 32 heads x head_dim 128 = width 4096 across 36
+  blocks, 256 rows. GQA was load-bearing: Qwen3-4B `hidden_size=2560` so
+  `hidden//heads = 80 != 128`; the split reads `head_dim` from config, never
+  `hidden_size // num_heads`. New offline `phase3_head_localization_scan.py`
+  splits each block vector into its 32 per-head slices and computes a mean-diff
+  axis per (block, head), reusing the residual scan's metric primitives
+  (10,368 axes/role). Result (delta role): the refuse-vs-answer IDENTITY axis is
+  richly head-distributed and sharply localized (223/1152 heads >= 0.85 AUC, best
+  L34H17/L32H14 ~0.98), and GRPO pushes it into LATE heads (L32-35) where the base
+  representation has it mid-stack (L21-22). The FAILURE-discrimination axis we
+  need to steer (`unknown_answered_wrong vs unknown_refused`) is the sparsest and
+  weakest (20/1152 heads >= 0.85, best L21H17 AUC 0.910). Single-head best AUC is
+  0.02-0.08 below the full-block AUC (a 128-dim head carries less than the
+  4096-dim block) — per-head's value is sparse-intervention localization, not a
+  sharper probe. This sharpens [[gap-4-probe-transfer]]: GRPO moved the *identity*
+  of refusal far more than the *failure discrimination* the behavior needs,
+  predicting Step A.4 steering will be hardest on the axis that matters most. Top
+  failure-axis steering targets for A.4: L21H17, L35H0, L23H1, L7H30, L10H11,
+  L22H12.

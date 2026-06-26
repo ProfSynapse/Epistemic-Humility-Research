@@ -1,0 +1,60 @@
+spec:
+  name: phase3_current_clean_grpo_v2_unknown_failure_prompt_matched_head_localization_scan
+  analysis_type: phase3_head_localization_scan
+  notice: HEAD_LOCALIZATION_SCAN_ONLY_GRPO_V2_UNKNOWN_FAILURE_PROMPT_MATCHED_PANEL
+
+# Per-head (attention_head granularity) localization scan. Same three behavior
+# contrasts as the residual prompt-matched behavior-axis scan, but ranks
+# individual attention heads (block x head) rather than blocks. Top heads are
+# the sparse ITI steering targets for Step A.4.
+
+analysis:
+  roles:
+    - h_base
+    - h_lora
+    - delta
+  contrasts:
+    - name: unknown_answered_wrong_vs_unknown_refused
+      positive_label: unknown_answered_wrong
+      negative_label: unknown_refused
+      min_rows_per_group: 32
+      positive:
+        label: unknown
+        refused: false
+        correct: false
+      negative:
+        label: unknown
+        refused: true
+
+    - name: known_refused_vs_known_correct_answered
+      positive_label: known_refused
+      negative_label: known_correct_answered
+      min_rows_per_group: 32
+      positive:
+        label: known
+        refused: true
+      negative:
+        label: known
+        refused: false
+        correct: true
+
+    - name: unknown_refused_vs_known_correct_answered
+      positive_label: unknown_refused
+      negative_label: known_correct_answered
+      min_rows_per_group: 32
+      positive:
+        label: unknown
+        refused: true
+      negative:
+        label: known
+        refused: false
+        correct: true
+
+extractions:
+  - label: clean_sft_grpo_v2_seed1_unknown_failure_prompt_matched_head_panel
+    behavior_arm: clean_sft_grpo_v2
+    extraction_dir: experiment/phase1/probe/qwen3-4b-clean-sft-grpo-v2-seed1-selfaware/hidden_states_selfaware_clean_sft_grpo_v2_unknown_failure_panel_prompt_matched_attention_head/extraction__fb700baa8dda
+    extraction_manifest: experiment/phase1/probe/qwen3-4b-clean-sft-grpo-v2-seed1-selfaware/hidden_states_selfaware_clean_sft_grpo_v2_unknown_failure_panel_prompt_matched_attention_head/extraction__fb700baa8dda/manifest.json
+
+output:
+  root: experiment/phase1/probe/analysis/current_clean_grpo_v2_unknown_failure_prompt_matched_head_localization_scan

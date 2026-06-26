@@ -712,6 +712,28 @@ heads where the cell-probe is most accurate, (c) apply the mass-mean direction
 during generation at swept alpha, (d) gate with generated-answer replay. Avoid more
 scalar tuning of one residual axis — the literature predicts it will not close the gap.
 
+**Step A.1-A.3 DONE (2026-06-26, GRPO v2).** Per-head extraction is built and run.
+Added an additive `attention_head` extraction granularity to `hidden_state_probe.py`
+that hooks each block's `self_attn.o_proj` INPUT (concatenated per-head context
+vectors, width `num_attention_heads * head_dim`). GRPO v2 prompt-matched run:
+manifest `ok/verified`, 32 heads x head_dim 128 = width 4096 across 36 blocks,
+256 rows. New offline `phase3_head_localization_scan.py` (config
+`phase3_current_clean_grpo_v2_unknown_failure_prompt_matched_head_localization_scan.yaml`)
+splits each block vector into its per-head slices and ranks (block, head) axes.
+Result (delta role): the refuse-vs-answer IDENTITY axis is richly head-localized
+(223/1152 heads >= 0.85 AUC, best L34H17/L32H14 ~0.98) and GRPO pushes it to LATE
+heads (L32-35); the FAILURE-discrimination axis we must steer
+(`unknown_answered_wrong vs unknown_refused`) is the sparsest and weakest (20/1152
+heads >= 0.85, best L21H17 AUC 0.910). Single-head best AUC sits 0.02-0.08 BELOW the
+full-block AUC — per-head's value is sparse-intervention localization (ITI), not a
+sharper probe. Step A.4 targets (failure axis, delta): L21H17, L35H0, L23H1, L7H30,
+L10H11, L22H12. Step A.4 (during-generation intervention + behavior gate) still needs
+the generated-token extraction/intervention path, which is not yet built.
+
+GQA GOTCHA confirmed live: Qwen3-4B `hidden_size=2560` but o_proj input width is
+`num_attention_heads * head_dim = 32 * 128 = 4096`; `2560 // 32 = 80 != 128`. Always
+read `head_dim` from `config.head_dim`, never `hidden_size // num_heads`.
+
 Then prioritize the calibrated-expression question over refusal-axis steering:
 
 1. Explore multi-layer or constrained subspace controls; simple single-axis and
