@@ -452,3 +452,43 @@ choose B vs C with the user.
     generation-trajectory timing (pre-commitment vs decision-echo for the A2 axis),
     or C2 cross-regimen read on DPO/KTO; B1 activation-patching for a causal handle
     that survives anti-steerability.
+- 2026-06-26: **C2 cross-regimen read + axis geometry** (GPU-free; same controls
+  pipeline run on the SFT, GRPO+DPO, and GRPO v2 full panels, all 1233 rows on
+  disk; `phase3_latent_knowledge_controls.py` extended with an `axis_geometry`
+  readout + single-load refactor). Tests whether the read-side over-refusal story
+  is GRPO-specific or general across the paper-2 humility-tuning family, and
+  whether the over-refusal axis is a SEPARATE internal direction or a re-read of
+  the knowledge axis. **A mechanistic humility-tax picture, consistent across all
+  three regimens:**
+
+  | regimen | known_refused (over-refusals) | A2 over-refusal axis (residual / lexical / margin) | caution⊥knowledge \|cos\| | over-refusal gap pos |
+  |---|---|---|---|---|
+  | SFT (clean_sft_merged) | 127 | 0.901 / 0.644 / **+0.256** | 0.087 | 0.25 |
+  | GRPO+DPO (clean_sft_grpo_dpo) | 152 | 0.930 / 0.660 / **+0.270** | 0.053 | 0.28 |
+  | GRPO v2 (clean_sft_grpo_v2) | 168 | 0.919 / 0.641 / **+0.278** | 0.035 | 0.27 |
+
+  - **Behavioral humility tax is in the cell counts:** over-refusal (known_refused)
+    rises monotonically with tuning intensity, 127 → 152 → 168, while internal
+    knowledge is unchanged (known/unknown probe pinned at ceiling ~0.997 in all
+    three; A1 lexical-confounded as before).
+  - **A distinct internal CAUTION axis is present in EVERY regimen, from SFT
+    onward.** Among knowns, a deep lexically-clean residual axis predicts which get
+    over-refused at 0.90–0.93 (vs lexical 0.64–0.66, margin +0.26–+0.28). Like F
+    and the knowledge code, it is SFT-laid and inherited, not GRPO-created.
+  - **That caution axis is ORTHOGONAL to the knowledge axis in all three**
+    (\|cos\| 0.035–0.087, all < 0.1). The decision of WHICH knowns to abstain on is
+    carried by a separate direction, not the "do I know this" representation —
+    mechanistically consistent with the gap (over-refusals read as KNOWN, position
+    0.25–0.28 in every regimen).
+  - **Suggestive trend (single seed — NOT firmly established):** as humility tuning
+    intensifies the caution axis trends MORE orthogonal to knowledge (cos 0.087 →
+    0.053 → 0.035) and marginally stronger (+0.256 → +0.270 → +0.278). Reads as:
+    tuning recruits/sharpens a separate caution direction to drive more abstention
+    rather than changing what the model knows. Report orthogonality (<0.1 ×3) as
+    robust; the monotone cos drift as suggestive pending multi-seed.
+  - **Caveats:** one seed per regimen; lexical controls surface words not deeper
+    semantic difficulty; known/unknown is dataset-defined (same SelfAware items
+    across arms) — cross-DATASET transfer (C1) still open. **Net:** the
+    belief-vs-action over-refusal mechanism and its dedicated, knowledge-orthogonal
+    caution axis generalize across the SFT/DPO/GRPO regimen family, tying the
+    read-side mech result to the paper-2 headline comparison.
