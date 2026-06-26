@@ -406,3 +406,23 @@ Primary analyses:
   `phase3_head_intervention.py` (GPU) — hook the 11 heads' `o_proj` input, add
   `alpha*sigma*theta` per generated token, sweep alpha, score behavior cells, run
   the generated-replay gate. Build + tiny-model test offline; gate the GPU sweep.
+- 2026-06-26: STEP A.4 mechanism — per-head intervention landed + tested
+  (GPU-free core). `phase3_head_intervention.py` discovers each block's
+  `self_attn.o_proj` (same name-suffix/regex discovery as the extraction backend)
+  and registers forward PRE-hooks that add `alpha*sigma*theta` to each target
+  head's column slice of the o_proj INPUT at ALL token positions, so under
+  generation the steer fires once per decode step — token-by-token, as ITI
+  prescribes (NOT the residual-stream final-prompt-token hook in
+  `phase3_causal_pilot_runner.py`, which the sweep showed is exhausted).
+  `build_block_deltas` precomputes per-head `delta = alpha*sigma*theta` grouped by
+  block; `per_head_intervention` is a context manager that removes handles in
+  `finally`. Torch-injected so a tiny 2-layer/2-head/head_dim-3 module verifies it
+  offline (5 tests): delta scales as `alpha*sigma*theta`, only the target head
+  slice shifts across all positions, only the target block is touched, hooks are
+  removed after the context, and discovery fails loudly on a mis-claimed block
+  count. The GPU runner (4B model load + alpha sweep + behavior-cell scoring) is
+  the explicit-gate follow-up; the CLI `main()` is a gated placeholder. Score
+  generated outputs with the existing replay/eval cell scorer rather than
+  duplicating the JSON behavior parser. Predicted negative if the sparse 11-head
+  steer cannot move the cells safely: the failure axis is too weak/sparse at head
+  granularity, closing Step A on a Tier-2 negative pointing back to training/eval.

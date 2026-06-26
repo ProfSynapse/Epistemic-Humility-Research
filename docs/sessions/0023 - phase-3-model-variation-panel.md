@@ -4,7 +4,7 @@ session_id: phase3-model-variation-panel
 title: Phase 3 Model Variation Panel
 status: active
 created_at: '2026-06-25T14:58:42Z'
-updated_at: '2026-06-26T17:15:00Z'
+updated_at: '2026-06-26T18:00:00Z'
 phase: phase3
 question: Do the JSON-output fine-tuned model variations share calibrated-expression
   mechanisms, or do different regimens produce distinct behavior-control surfaces?
@@ -984,3 +984,15 @@ _No summary yet._
   - Compute `theta`/`sigma` from `h_lora` activations (the arm whose forward pass is hooked at generation time), reusing `scan_layer`-equivalent mass-mean math so the steering vectors match the localization numbers.
 - next steps:
   - Step A.4 harness `phase3_head_intervention.py` (GPU): register forward hooks on the 11 target heads' `o_proj` input, add `alpha*sigma*theta` to each head slice per generated token, sweep alpha (both signs), generate on the unknown panel, score behavior cells, and run the generated-replay gate. Build + tiny-model unit test offline first; the actual GPU sweep needs an explicit gate.
+
+### 037-method - Per-head intervention mechanism landed + tested (GPU-free core)
+
+- at: `2026-06-26T18:00:00Z`
+- kind: `method`
+- summary: Built and unit-tested the novel, riskiest part of Step A.4 -- the during-generation per-head injection -- without a real LLM. `phase3_head_intervention.py` discovers each block's `self_attn.o_proj` (same name-suffix/regex discovery as the extraction backend) and registers forward PRE-hooks that add `alpha*sigma*theta` to each target head's column slice (`head*head_dim:(head+1)*head_dim`) of the o_proj INPUT at ALL token positions -- so under generation the steer fires once per decode step, token-by-token, exactly as ITI prescribes. This is deliberately NOT the residual-stream final-prompt-token hook in `phase3_causal_pilot_runner.py` (which the sweep showed is exhausted). `build_block_deltas` precomputes per-head `delta = alpha*sigma*theta` and groups by block; `per_head_intervention` is a context manager that always removes handles in `finally`. The mechanism is torch-injected so a tiny 2-layer / 2-head / head_dim-3 module verifies it offline: delta scales as `alpha*sigma*theta`, only the target head slice shifts (by `-6.0 = -3*2*1` across all 4 positions), only the target block is touched, hooks are removed after the context, and discovery fails loudly on a non-contiguous/mis-claimed block count. 5 tests pass.
+- decisions:
+  - Land the tested injection mechanism now; defer the GPU runner wiring (4B model load + alpha sweep + behavior-cell scoring) to the explicit GPU gate, same pattern as the extraction step. The CLI `main()` is a gated placeholder that raises with the run instructions rather than silently importing transformers.
+  - Score generated outputs with the existing replay/eval cell scorer (don't duplicate the JSON behavior parser); the harness will emit raw per-alpha generations for that downstream step.
+- next steps:
+  - GATED GPU run: load the GRPO v2 model (merged base + active adapter), generate the unknown panel under `generate_steered` across an alpha sweep (both signs, e.g. -2sigma..+2sigma equivalents), write per-alpha generations, score behavior cells, and run the generated-replay gate (reduce `unknown_answered_wrong`, raise `unknown_refused`, preserve `known_correct_answered`, avoid `known_refused`).
+  - If the sparse 11-head steer cannot move the cells safely, that is the predicted negative: the failure axis is too weak/sparse at head granularity, closing Step A on a Tier-2 negative and pointing back to training/eval.
