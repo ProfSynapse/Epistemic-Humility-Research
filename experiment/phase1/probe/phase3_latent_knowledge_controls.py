@@ -114,14 +114,27 @@ def _verdict_margin(residual: float, lexical: float, *, tol: float = 0.03) -> tu
     return v, msg
 
 
+def _select(mats_all: dict[int, np.ndarray], keys_all: list[str],
+            wanted: list[str]) -> dict[int, np.ndarray]:
+    """Sub-matrix of a preloaded {layer: [n_all, hidden]} for an ordered key subset."""
+    idx = {k: i for i, k in enumerate(keys_all)}
+    rows = [idx[k] for k in wanted]
+    return {L: M[rows] for L, M in mats_all.items()}
+
+
 def a1_lexical_baseline(extraction_dir: Path, rows: list[dict[str, Any]], *,
-                        layers: list[int], source: str = "h_lora") -> dict[str, Any]:
+                        layers: list[int], source: str = "h_lora",
+                        preloaded: tuple[list[str], dict[int, np.ndarray]] | None = None) -> dict[str, Any]:
     """A1: residual known/unknown AUROC vs a TF-IDF lexical baseline on question text."""
     keys = [r["row_key"] for r in rows]
     y = np.array([1 if r["label"] == "unknown" else 0 for r in rows])
     texts = [r["question"] for r in rows]
 
-    mats = lkp.load_layers(extraction_dir, keys, layers, source=source)
+    if preloaded is not None:
+        keys_all, mats_all = preloaded
+        mats = _select(mats_all, keys_all, keys)
+    else:
+        mats = lkp.load_layers(extraction_dir, keys, layers, source=source)
     residual_by_layer = [{"layer": L, "auroc": round(lkp.cv_auroc(mats[L], y), 4)} for L in layers]
     best = max(residual_by_layer, key=lambda d: d["auroc"])
     lexical = round(lexical_cv_auroc(texts, y), 4)
@@ -141,7 +154,8 @@ def a1_lexical_baseline(extraction_dir: Path, rows: list[dict[str, Any]], *,
 
 
 def a2_within_known(extraction_dir: Path, rows: list[dict[str, Any]], *,
-                    layers: list[int], source: str = "h_lora") -> dict[str, Any]:
+                    layers: list[int], source: str = "h_lora",
+                    preloaded: tuple[list[str], dict[int, np.ndarray]] | None = None) -> dict[str, Any]:
     """A2: among KNOWN rows, residual refused-vs-answered AUROC vs lexical baseline."""
     known = [r for r in rows if r["label"] == "known"]
     refused = [r for r in known if r["behavior_cell"] == KNOWN_REFUSED]
@@ -154,7 +168,11 @@ def a2_within_known(extraction_dir: Path, rows: list[dict[str, Any]], *,
     y = np.array([1] * len(refused) + [0] * len(answered))  # 1 == over-refused
     texts = [r["question"] for r in sub]
 
-    mats = lkp.load_layers(extraction_dir, keys, layers, source=source)
+    if preloaded is not None:
+        keys_all, mats_all = preloaded
+        mats = _select(mats_all, keys_all, keys)
+    else:
+        mats = lkp.load_layers(extraction_dir, keys, layers, source=source)
     residual_by_layer = [{"layer": L, "auroc": round(lkp.cv_auroc(mats[L], y), 4)} for L in layers]
     best = max(residual_by_layer, key=lambda d: d["auroc"])
     lexical = round(lexical_cv_auroc(texts, y), 4)
@@ -173,15 +191,85 @@ def a2_within_known(extraction_dir: Path, rows: list[dict[str, Any]], *,
     }
 
 
+def _fit_direction(X: np.ndarray, y: np.ndarray, *, C: float = 0.5) -> np.ndarray:
+    """Unit normal of an L2-logistic hyperplane on standardized X (whitened coords)."""
+    from sklearn.linear_model import LogisticRegression
+    from sklearn.preprocessing import StandardScaler
+
+    sc = StandardScaler().fit(X)
+    clf = LogisticRegression(C=C, max_iter=2000)
+    clf.fit(sc.transform(X), np.asarray(y).astype(int))
+    w = clf.coef_[0]
+    n = np.linalg.norm(w)
+    return w / n if n > 0 else w
+
+
+def axis_geometry(rows: list[dict[str, Any]], *, layer: int,
+                  preloaded: tuple[list[str], dict[int, np.ndarray]]) -> dict[str, Any]:
+    """Is the within-known over-refusal axis the SAME direction as the known/unknown axis?
+
+    Fits both probe normals at one layer in a shared whitened (StandardScaler-on-all-rows)
+    coordinate frame and reports |cos|. Near 0 => the over-refusal 'caution' axis is
+    distinct from the knowledge axis (a separate internal signal, consistent with
+    over-refusals reading as KNOWN on the knowledge axis); near 1 => A2 is just re-reading
+    the knowledge boundary.
+    """
+    from sklearn.preprocessing import StandardScaler
+
+    keys_all, mats_all = preloaded
+    idx = {k: i for i, k in enumerate(keys_all)}
+    order = [r for r in rows if r["row_key"] in idx]
+    X = mats_all[layer][[idx[r["row_key"]] for r in order]]
+    sc = StandardScaler().fit(X)  # shared frame for both directions
+    Xw = sc.transform(X)
+
+    y_ku = np.array([1 if r["label"] == "unknown" else 0 for r in order])
+    known_mask = np.array([r["label"] == "known" for r in order])
+    y_or = np.array([1 if r["behavior_cell"] == KNOWN_REFUSED else 0 for r in order])
+
+    from sklearn.linear_model import LogisticRegression
+
+    def _dir(Xsub, ysub):
+        w = LogisticRegression(C=0.5, max_iter=2000).fit(Xsub, ysub).coef_[0]
+        n = np.linalg.norm(w)
+        return w / n if n > 0 else w
+
+    d_ku = _dir(Xw, y_ku)
+    d_or = _dir(Xw[known_mask], y_or[known_mask])
+    cos = float(abs(np.dot(d_ku, d_or)))
+    if cos < 0.2:
+        verdict = "ORTHOGONAL"
+        msg = (f"|cos|={cos:.3f}: the over-refusal 'caution' axis is DISTINCT from the "
+               f"known/unknown axis — a separate internal signal, not a re-read of knowledge.")
+    elif cos > 0.6:
+        verdict = "ALIGNED"
+        msg = (f"|cos|={cos:.3f}: the over-refusal axis largely RE-READS the known/unknown "
+               f"boundary; not an independent caution signal.")
+    else:
+        verdict = "PARTIAL"
+        msg = (f"|cos|={cos:.3f}: the over-refusal axis partially overlaps the knowledge axis.")
+    return {"control": "axis_geometry", "layer": layer, "abs_cosine": round(cos, 4),
+            "verdict": verdict, "verdict_msg": msg}
+
+
 def run(extraction_dir: Path, behavior_rows: Path, *, layers: list[int],
         source: str = "h_lora") -> dict[str, Any]:
     rows = load_rows(behavior_rows)
+    # single file-read pass over all rows/layers (9P mount is the cost), reused by all readouts
+    keys_all = [r["row_key"] for r in rows]
+    mats_all = lkp.load_layers(extraction_dir, keys_all, layers, source=source)
+    preloaded = (keys_all, mats_all)
+    a1 = a1_lexical_baseline(extraction_dir, rows, layers=layers, source=source, preloaded=preloaded)
+    a2 = a2_within_known(extraction_dir, rows, layers=layers, source=source, preloaded=preloaded)
+    geom = axis_geometry(rows, layer=a1["residual_best"]["layer"], preloaded=preloaded)
     return {
         "ok": True,
         "analysis_type": "phase3_latent_knowledge_controls",
         "source": source,
-        "a1_lexical_baseline": a1_lexical_baseline(extraction_dir, rows, layers=layers, source=source),
-        "a2_within_known": a2_within_known(extraction_dir, rows, layers=layers, source=source),
+        "extraction_dir": str(extraction_dir),
+        "a1_lexical_baseline": a1,
+        "a2_within_known": a2,
+        "axis_geometry": geom,
     }
 
 
@@ -210,6 +298,10 @@ def main(argv: list[str] | None = None) -> int:
     result = run(args.extraction_dir, args.behavior_rows, layers=layers, source=args.source)
     _print_control(result["a1_lexical_baseline"])
     _print_control(result["a2_within_known"])
+    g = result["axis_geometry"]
+    print(f"\n[axis_geometry] L{g['layer']}  |cos(knowledge, over-refusal)|={g['abs_cosine']:.4f}",
+          file=sys.stderr)
+    print(f"  VERDICT [{g['verdict']}]: {g['verdict_msg']}", file=sys.stderr)
     if args.out is not None:
         args.out.parent.mkdir(parents=True, exist_ok=True)
         args.out.write_text(json.dumps(result, indent=2) + "\n", encoding="utf-8")

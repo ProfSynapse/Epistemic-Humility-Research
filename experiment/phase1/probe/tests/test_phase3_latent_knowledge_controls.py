@@ -101,3 +101,36 @@ def test_a2_degenerate_raises(monkeypatch):
     rows = _fake_rows(n_known_ref=0)
     with pytest.raises(ctl.ControlError):
         ctl.a2_within_known(Path("/nope"), rows, layers=[10])
+
+
+def test_axis_geometry_orthogonal():
+    # knowledge axis on dim0, over-refusal axis on dim1 -> orthogonal directions.
+    rng = np.random.default_rng(1)
+    rows = _fake_rows()
+    keys = [r["row_key"] for r in rows]
+    n = len(rows)
+    X = rng.normal(size=(n, 6))
+    ku = np.array([1.0 if r["label"] == "unknown" else 0.0 for r in rows])
+    orf = np.array([1.0 if r["behavior_cell"] == "known_refused" else 0.0 for r in rows])
+    X[:, 0] += ku * 6.0   # knowledge separated on dim0
+    X[:, 1] += orf * 6.0  # over-refusal separated on dim1 (orthogonal)
+    preloaded = (keys, {20: X})
+    g = ctl.axis_geometry(rows, layer=20, preloaded=preloaded)
+    assert g["abs_cosine"] < 0.4  # well below aligned
+    assert g["verdict"] in {"ORTHOGONAL", "PARTIAL"}
+
+
+def test_axis_geometry_aligned():
+    # both axes loaded on the SAME dim -> aligned.
+    rng = np.random.default_rng(2)
+    rows = _fake_rows()
+    keys = [r["row_key"] for r in rows]
+    n = len(rows)
+    X = rng.normal(size=(n, 6))
+    ku = np.array([1.0 if r["label"] == "unknown" else 0.0 for r in rows])
+    orf = np.array([1.0 if r["behavior_cell"] == "known_refused" else 0.0 for r in rows])
+    X[:, 0] += ku * 6.0 + orf * 6.0  # both signals on dim0
+    preloaded = (keys, {20: X})
+    g = ctl.axis_geometry(rows, layer=20, preloaded=preloaded)
+    assert g["abs_cosine"] > 0.6
+    assert g["verdict"] == "ALIGNED"

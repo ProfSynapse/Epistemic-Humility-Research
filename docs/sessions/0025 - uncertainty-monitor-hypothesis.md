@@ -4,7 +4,7 @@ session_id: '0025'
 title: uncertainty-monitor-hypothesis
 status: complete
 created_at: '2026-06-26T19:11:24Z'
-updated_at: '2026-06-26T22:35:31Z'
+updated_at: '2026-06-26T22:55:19Z'
 phase: phase-3-mech-interp
 question: "Is the sign-inverted per-head failure-axis direction a graded internal\
   \ UNCERTAINTY MONITOR (amplifying it raises abstention) rather than a be-wrong axis\
@@ -572,6 +572,28 @@ checkpoints:
   decisions: []
   next_steps: []
   signals: {}
+- id: 016-result
+  at: '2026-06-26T22:55:19Z'
+  kind: result
+  title: 'C2 cross-regimen read + axis geometry: knowledge-orthogonal caution axis
+    generalizes (GPU-free)'
+  summary: 'Ran the controls pipeline (A1/A2 + new axis_geometry readout) on SFT,
+    GRPO+DPO, GRPO v2 full panels. Humility-tax picture consistent across all 3: over-refusal
+    count rises 127->152->168 with tuning while internal knowledge stays at ceiling;
+    a deep lexically-clean caution axis predicts which knowns get over-refused (residual
+    0.90-0.93 vs lexical 0.64-0.66) in EVERY regimen, present from SFT; that caution
+    axis is ORTHOGONAL to the knowledge axis everywhere (|cos| 0.035-0.087, all <0.1);
+    over-refusals read as internally KNOWN in all (gap 0.25-0.28). Suggestive single-seed
+    trend: caution axis trends more orthogonal + stronger as tuning intensifies. Net:
+    belief-vs-action over-refusal mechanism + dedicated knowledge-orthogonal caution
+    axis generalize across the SFT/DPO/GRPO family, tying mech result to paper-2.
+    Caveats: 1 seed/regimen; lexical!=semantic-difficulty; cross-DATASET (C1) open.'
+  evidence: []
+  run_ids: []
+  commands: []
+  decisions: []
+  next_steps: []
+  signals: {}
 ---
 # uncertainty-monitor-hypothesis
 
@@ -779,3 +801,8 @@ failure-axis direction move abstention ~0 (67→63 cells) vs the localized heads
 - at: `2026-06-26T22:35:31Z`
 - kind: `result`
 - summary: A1 lexical baseline DEFLATES the known/unknown headline: TF-IDF on question text gets 0.964 vs residual 0.997 (margin +0.033) -- mostly dataset-lexicon, not internal memory. A2 within-known refused-vs-answered is the clean survivor: residual 0.919 vs lexical 0.641 (margin +0.278), depth-climbing (L1 0.67->L35 0.92) = computed internal over-refusal axis. A3 h_base==h_lora (known/unknown L35 0.997, gap pos 0.266 vs 0.27): GRPO inherited both signals from SFT, did not sharpen. Net: belief-vs-action over-refusal story holds and is lexically clean; raw known/unknown AUROC recharacterized as lexicon.
+### 016-result - C2 cross-regimen read + axis geometry: knowledge-orthogonal caution axis generalizes (GPU-free)
+
+- at: `2026-06-26T22:55:19Z`
+- kind: `result`
+- summary: Ran the controls pipeline (A1/A2 + new axis_geometry readout) on SFT, GRPO+DPO, GRPO v2 full panels. Humility-tax picture consistent across all 3: over-refusal count rises 127->152->168 with tuning while internal knowledge stays at ceiling; a deep lexically-clean caution axis predicts which knowns get over-refused (residual 0.90-0.93 vs lexical 0.64-0.66) in EVERY regimen, present from SFT; that caution axis is ORTHOGONAL to the knowledge axis everywhere (|cos| 0.035-0.087, all <0.1); over-refusals read as internally KNOWN in all (gap 0.25-0.28). Suggestive single-seed trend: caution axis trends more orthogonal + stronger as tuning intensifies. Net: belief-vs-action over-refusal mechanism + dedicated knowledge-orthogonal caution axis generalize across the SFT/DPO/GRPO family, tying mech result to paper-2. Caveats: 1 seed/regimen; lexical!=semantic-difficulty; cross-DATASET (C1) open.
