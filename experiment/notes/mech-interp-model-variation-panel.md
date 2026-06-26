@@ -426,3 +426,32 @@ Primary analyses:
   duplicating the JSON behavior parser. Predicted negative if the sparse 11-head
   steer cannot move the cells safely: the failure axis is too weak/sparse at head
   granularity, closing Step A on a Tier-2 negative pointing back to training/eval.
+- 2026-06-26: STEP A.4 sweep RESULT — sparse 11-head ITI is causally potent but
+  SIGN-INVERTED vs the probe and only partially selective (gate = partial pass).
+  `phase3_head_intervention_runner.py` (gated GPU) loaded GRPO v2 (merged base +
+  active adapter) and generated the 256-row matched panel (128 known/128 unknown,
+  greedy, 96 new tokens) under the 11-head intervention across alphas
+  `[-8,-4,-2,0,+4]` (0 = no-hook baseline), scored with the causal-pilot
+  generated-replay cell scorer. Four cells are MONOTONIC in alpha (counts /128).
+  Failure cell `unknown_answered_wrong`: `-8:76 / -4:66 / -2:66 / 0:61 / +4:22`.
+  `unknown_refused`: `52/62/62/67/106`. `known_correct`: `61/62/64/63/56`.
+  `known_refused` (over-refusal): `61/62/63/65/72`. No thinking-tag contamination.
+  (1) SIGN INVERSION: the A.4-input artifact predicted `alpha<0` = toward safe
+  refusal (positive=wrong-answer projects higher), but causally `alpha>0` (ADDING
+  the wrong-answer direction) raises refusal; `alpha<0` makes the failure WORSE.
+  A direct probe-causality dissociation — the per-head linear axis does not move
+  generation in the sign its projection predicts. (2) PARTIAL SELECTIVITY: at
+  `+4` the failure cell drops 61→22 (−64%), unknown refusal +39, while known
+  over-refusal rises only +7 and known-correct falls only −7 — unknown abstention
+  moves ~5.6× harder than known (knowledge-conditioned) but not collateral-free.
+  Aggregate truthful_rate `50.8→63.3` at +4, entirely via raised abstention.
+  Gate verdict PARTIAL PASS at +4: sparse per-head ITI is a *partially
+  knowledge-conditioned abstention dial*, not a clean humility switch — sharpest
+  local evidence yet on `gap:4-probe-transfer` (representation carries causal,
+  ~5:1-selective abstention control, so NOT behavior-only, but sign-inverted vs
+  the readout and imperfectly selective). Positive side UNDER-SAMPLED (only +4;
+  collateral curves flat through −4, break at +4 → magnitude-driven). Natural
+  refinement Step A.4b: positive-only `[+1,+2,+3,+6]` sweep (new fingerprint →
+  `--fresh`/new dir) to find any collateral-free window. Resume/checkpoint infra
+  proved out: the run finished after a CLI-teardown kill at 901/1280 rows by
+  resuming (379 generated, 901 reused, identical fingerprint).

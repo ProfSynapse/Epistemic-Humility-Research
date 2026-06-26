@@ -4,7 +4,7 @@ session_id: phase3-model-variation-panel
 title: Phase 3 Model Variation Panel
 status: active
 created_at: '2026-06-25T14:58:42Z'
-updated_at: '2026-06-26T18:00:00Z'
+updated_at: '2026-06-26T19:30:00Z'
 phase: phase3
 question: Do the JSON-output fine-tuned model variations share calibrated-expression
   mechanisms, or do different regimens produce distinct behavior-control surfaces?
@@ -996,3 +996,16 @@ _No summary yet._
 - next steps:
   - GATED GPU run: load the GRPO v2 model (merged base + active adapter), generate the unknown panel under `generate_steered` across an alpha sweep (both signs, e.g. -2sigma..+2sigma equivalents), write per-alpha generations, score behavior cells, and run the generated-replay gate (reduce `unknown_answered_wrong`, raise `unknown_refused`, preserve `known_correct_answered`, avoid `known_refused`).
   - If the sparse 11-head steer cannot move the cells safely, that is the predicted negative: the failure axis is too weak/sparse at head granularity, closing Step A on a Tier-2 negative and pointing back to training/eval.
+
+### 038-result - A.4 ITI sweep: causally potent, sign-INVERTED vs the probe, partially selective (gate partial-pass)
+
+- at: `2026-06-26T19:30:00Z`
+- kind: `result`
+- summary: Ran the gated GPU sweep (`phase3_head_intervention_runner.py`) -- GRPO v2 model (merged base + active adapter), 11-head during-generation ITI on the failure axis, alphas `[-8,-4,-2,0,+4]` (0 = no-hook baseline), 256-row matched panel (128 known / 128 unknown), greedy, `max_new_tokens=96`, scored with the causal-pilot generated-replay cell scorer. The four behavior cells (counts /128) are MONOTONIC in alpha. Failure cell `unknown_answered_wrong`: `-8:76  -4:66  -2:66  0:61  +4:22`. `unknown_refused`: `52 / 62 / 62 / 67 / 106`. `known_correct`: `61 / 62 / 64 / 63 / 56`. `known_refused` (over-refusal): `61 / 62 / 63 / 65 / 72`. No thinking-tag contamination at any alpha. TWO findings. (1) SIGN INVERSION vs the A.4-input prediction: the steering-direction artifact recorded `alpha<0` as "toward SAFE refusal" (positive=`unknown_answered_wrong` projects higher, so subtracting it should refuse). Causally the OPPOSITE holds -- `alpha>0` (ADDING the wrong-answer direction to the 11 heads) is what raises refusal; `alpha<0` makes the failure WORSE (-8: failure cell rises 61->76, unknown refusal falls 67->52). This is a direct probe-causality dissociation: the per-head linear axis that separates wrong-vs-refuse does not move generation in the sign its projection predicts. (2) PARTIAL SELECTIVITY, not a clean gate: at `+4` the failure cell drops 61->22 (-64%) and unknown refusal rises +39, while known over-refusal rises only +7 and known-correct falls only -7 -- the axis moves UNKNOWN abstention ~5.6x harder than KNOWN (knowledge-conditioned), but not collateral-free. Aggregate truthful_rate (per-label right-behavior) `50.8 -> 63.3` at +4, entirely via raised abstention. Resume/checkpoint infra worked: the run completed after a CLI-teardown kill at 901/1280 rows by resuming (379 generated, 901 reused, identical fingerprint).
+- decisions:
+  - Gate verdict = PARTIAL PASS at `alpha=+4`: strong, preferential reduction of `unknown_answered_wrong` (the cell that matters) with real-but-minor known collateral; the predicted-safe NEGATIVE direction is strictly harmful. Sparse per-head ITI is therefore a *partially knowledge-conditioned abstention dial*, not a clean humility switch -- representation carries causal, ~5:1-selective control over abstention (so NOT "behavior only"), but sign-inverted vs the linear readout and imperfectly selective. This is the sharpest local evidence yet on `gap:4-probe-transfer`.
+  - Treat the positive side as UNDER-SAMPLED: only `+4` probed. The known-collateral curves are near-flat from `0` through `-4` and break only at `+4`, so the collateral is magnitude-driven; a `+1/+2/+3/+6` positive-only sweep (Step A.4b) is the natural refinement to find whether a smaller positive alpha captures most of the unknown gain before over-refusal sets in.
+- next steps:
+  - Step A.4b (optional, GPU): positive-only alpha sweep `[+1,+2,+3,+6]` (new output dir / `--fresh` -- different alphas => new fingerprint) to map the dose-response knee and locate any collateral-free window. Reuse the same runner; resume infra now makes a teardown cheap.
+  - Write the A.4 result into the corpus as Tier-2 exploratory evidence on `gap:4-probe-transfer` (sign-inverted, partially-selective ITI control), alongside the regimen-robust gap framing from checkpoint 034.
+  - If A.4b shows no collateral-free window, close Step A: sparse-head ITI gives only a non-clean abstention dial, pointing the humility-calibration lever back to training/eval rather than inference-time steering.
