@@ -4,7 +4,7 @@ session_id: phase3-model-variation-panel
 title: Phase 3 Model Variation Panel
 status: active
 created_at: '2026-06-25T14:58:42Z'
-updated_at: '2026-06-26T16:30:00Z'
+updated_at: '2026-06-26T17:15:00Z'
 phase: phase3
 question: Do the JSON-output fine-tuned model variations share calibrated-expression
   mechanisms, or do different regimens produce distinct behavior-control surfaces?
@@ -973,3 +973,14 @@ _No summary yet._
 - next steps:
   - Step A.4: during-generation ITI on the top-k delta heads of the failure axis (L21H17, L35H0, L23H1, L7H30, L10H11, L22H12) at swept alpha, then the generated-replay behavior gate. This requires the generated-token extraction/intervention path (not yet built) on top of the now-landed per-head extraction.
   - Optional: replicate the per-head scan on a second regimen (e.g. KTO, whose L11 residual axis failed the gate) to test whether the failure-axis sparsity is regimen-robust like the gap itself.
+
+### 036-method - ITI steering-direction artifact built (GPU-free A.4 input)
+
+- at: `2026-06-26T17:15:00Z`
+- kind: `method`
+- summary: Built the offline, GPU-free input the during-generation intervention will consume, so the only remaining GPU step is the generation sweep itself. New `phase3_head_steering_directions.py` reads the per-head extraction and a chosen sparse target set and emits, per head, the ITI triple: `theta` (UNIT mass-mean direction `mean(positive) - mean(negative)`), `sigma` (std of the arm's per-head activations projected onto theta -- the ITI scale `h' = h + alpha*sigma*theta`), and projection provenance. Directions are computed from the `h_lora` (adapter-active) arm -- the forward pass the harness hooks -- NOT delta. Target set is the union of the top-6 `h_lora` and top-6 `delta` failure-axis heads from the localization scan = 11 sparse heads (L19H30, L21H17, L18H6, L35H5, L18H16, L18H4, L35H0, L23H1, L7H30, L10H11, L22H12; L21H17 is the robust overlap). Ran it on GRPO v2: all 11 directions unit-norm, 64 unknown-wrong / 64 unknown-refused rows, per-head sigma `0.18-3.0`. Sign convention verified: positive=`unknown_answered_wrong` projects higher than negative=`unknown_refused`, so steering toward the SAFE behavior (refuse) is `alpha<0`; the artifact records labels so the consumer fixes the sign, and the harness sweeps alpha across both signs.
+- decisions:
+  - Choose intervention targets from the `h_lora` localization (where the DEPLOYED model represents the axis), not delta (where training moved it); take the union with delta's top so the robust-overlap head L21H17 and the training-created heads are both covered.
+  - Compute `theta`/`sigma` from `h_lora` activations (the arm whose forward pass is hooked at generation time), reusing `scan_layer`-equivalent mass-mean math so the steering vectors match the localization numbers.
+- next steps:
+  - Step A.4 harness `phase3_head_intervention.py` (GPU): register forward hooks on the 11 target heads' `o_proj` input, add `alpha*sigma*theta` to each head slice per generated token, sweep alpha (both signs), generate on the unknown panel, score behavior cells, and run the generated-replay gate. Build + tiny-model unit test offline first; the actual GPU sweep needs an explicit gate.

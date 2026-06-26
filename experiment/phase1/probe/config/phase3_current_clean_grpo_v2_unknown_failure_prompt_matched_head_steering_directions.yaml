@@ -1,0 +1,46 @@
+spec:
+  name: phase3_current_clean_grpo_v2_unknown_failure_prompt_matched_head_steering_directions
+  artifact_type: phase3_head_steering_directions
+  notice: HEAD_STEERING_DIRECTIONS_ONLY_GRPO_V2_UNKNOWN_FAILURE_PROMPT_MATCHED_PANEL
+
+# Step A.4 input: per-head ITI mass-mean steering directions for the failure axis
+# (unknown_answered_wrong vs unknown_refused). Target heads are the union of the
+# top-6 h_lora and top-6 delta failure-axis heads from the localization scan
+# (sparse, 11 heads). Directions are computed from the h_lora (adapter-active)
+# arm — the forward pass the intervention harness hooks during generation.
+# Steering toward unknown_refused (the safe behavior) means negative alpha
+# (positive_label is unknown_answered_wrong).
+
+output:
+  root: experiment/phase1/probe/analysis/current_clean_grpo_v2_unknown_failure_prompt_matched_head_steering_directions
+
+steering_specs:
+  - label: clean_sft_grpo_v2_seed1_unknown_failure_prompt_matched_steering
+    behavior_arm: clean_sft_grpo_v2
+    arm_role: h_lora
+    extraction_dir: experiment/phase1/probe/qwen3-4b-clean-sft-grpo-v2-seed1-selfaware/hidden_states_selfaware_clean_sft_grpo_v2_unknown_failure_panel_prompt_matched_attention_head/extraction__fb700baa8dda
+    extraction_manifest: experiment/phase1/probe/qwen3-4b-clean-sft-grpo-v2-seed1-selfaware/hidden_states_selfaware_clean_sft_grpo_v2_unknown_failure_panel_prompt_matched_attention_head/extraction__fb700baa8dda/manifest.json
+    contrast:
+      name: unknown_answered_wrong_vs_unknown_refused
+      positive_label: unknown_answered_wrong
+      negative_label: unknown_refused
+      min_rows_per_group: 32
+      positive:
+        label: unknown
+        refused: false
+        correct: false
+      negative:
+        label: unknown
+        refused: true
+    targets:
+      - {layer: 19, head: 30}
+      - {layer: 21, head: 17}
+      - {layer: 18, head: 6}
+      - {layer: 35, head: 5}
+      - {layer: 18, head: 16}
+      - {layer: 18, head: 4}
+      - {layer: 35, head: 0}
+      - {layer: 23, head: 1}
+      - {layer: 7, head: 30}
+      - {layer: 10, head: 11}
+      - {layer: 22, head: 12}
