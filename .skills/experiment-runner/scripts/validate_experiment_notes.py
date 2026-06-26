@@ -78,7 +78,17 @@ def is_gitignored(root: Path, rel: str) -> bool:
         return _IGNORE_CACHE[rel]
     try:
         res = subprocess.run(
-            ["git", "-C", str(root), "check-ignore", "-q", "--", rel],
+            [
+                "git",
+                "-c",
+                f"safe.directory={root.as_posix()}",
+                "-C",
+                str(root),
+                "check-ignore",
+                "-q",
+                "--",
+                rel,
+            ],
             stdout=subprocess.DEVNULL,
             stderr=subprocess.DEVNULL,
         )
@@ -162,6 +172,9 @@ def validate_note(path: Path, root: Path) -> list[str]:
     for key in ("phase", "est_compute"):
         if not fm.get(key):
             errors.append(f"{loc}{key} is required")
+    tags = fm.get("tags")
+    if not isinstance(tags, list) or "kg/experiment" not in tags:
+        errors.append(f"{loc}tags must include 'kg/experiment'")
 
     # --- relationships: a `tests` edge is mandatory ---
     rels = fm.get("relationships")

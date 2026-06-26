@@ -401,6 +401,8 @@ def collect_graph_notes(paths: list[Path], root: Path = VAULT_ROOT) -> tuple[lis
     notes: list[ParsedNote] = []
     findings: list[Finding] = []
     for path in iter_markdown(paths, root=root):
+        if path.name.startswith("_"):
+            continue
         if not path.exists():
             findings.append(Finding("ERROR", "KG001", rel_path(path, root), "path does not exist"))
             continue

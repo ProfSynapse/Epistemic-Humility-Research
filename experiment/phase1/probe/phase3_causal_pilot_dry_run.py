@@ -135,13 +135,15 @@ def find_direction(direction_manifest: dict[str, Any], direction_id: str) -> dic
 
 
 def validate_direction_fields(candidate: dict[str, Any], direction: dict[str, Any]) -> None:
+    allow_layer_override = bool(candidate.get("allow_direction_layer_override"))
     comparisons = {
         "role": candidate.get("role"),
-        "layer": candidate.get("layer"),
         "method": candidate.get("method"),
         "contrast": candidate.get("contrast"),
         "tensor_key": candidate.get("tensor_key"),
     }
+    if not allow_layer_override:
+        comparisons["layer"] = candidate.get("layer")
     for key, expected in comparisons.items():
         require(
             direction.get(key) == expected,
@@ -315,6 +317,8 @@ def validate_candidate(
         "direction_id": candidate.get("direction_id"),
         "role": candidate.get("role"),
         "layer": candidate.get("layer"),
+        "source_direction_layer": direction.get("layer"),
+        "allow_direction_layer_override": bool(candidate.get("allow_direction_layer_override")),
         "method": candidate.get("method"),
         "contrast": candidate.get("contrast"),
         "tensor_key": candidate.get("tensor_key"),

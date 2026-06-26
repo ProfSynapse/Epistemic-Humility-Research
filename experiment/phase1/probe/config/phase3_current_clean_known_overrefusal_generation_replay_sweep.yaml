@@ -1,0 +1,31 @@
+# Small generated-answer replay for current clean known-overrefusal candidates.
+#
+# This is a behavioral gate after the logit diagnostic. It intentionally tests
+# only the two least-bad coefficient-10 candidates from the logit slice.
+
+sweep:
+  name: phase3_current_clean_known_overrefusal_generation_replay
+  evidence_tier: tier2_exploratory_local
+  runner_config: experiment/phase1/probe/config/phase3_current_clean_known_overrefusal_logit_diagnostic.yaml
+  candidate_source_config: experiment/phase1/probe/config/phase3_current_clean_known_overrefusal_logit_diagnostic.yaml
+  output_root: experiment/phase1/probe/analysis/current_clean_known_overrefusal_generation_replay
+  candidates:
+    - clean_sft_grpo_dpo_delta_known_refused_vs_known_correct_l12_normed
+    - clean_sft_grpo_v2_delta_known_refused_vs_known_correct_l25_normed
+  execution:
+    backend: docker
+    docker:
+      image: unsloth/unsloth:latest
+      repo_mount: /workspace/repo
+      workdir: /workspace/repo
+      hf_home: /workspace/repo/.cache/hf
+      huggingface_hub_cache: /workspace/repo/.cache/hf/hub
+  modes:
+    - name: generation
+      max_rows: 24
+      max_new_tokens: 96
+      coefficients: [10.0]
+      controls:
+        - no_vector_baseline
+        - activation_subtraction
+        - activation_addition

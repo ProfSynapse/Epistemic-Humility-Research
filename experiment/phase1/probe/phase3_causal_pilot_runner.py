@@ -325,7 +325,7 @@ def select_balanced_rows(
         by_key = load_probe_rows(probe_results, {r["probe_pool_row_key"] for r in selected})
         for row in selected:
             probe_row = by_key.get(row["probe_pool_row_key"], {})
-            row["aliases"] = probe_row.get("normalized_aliases", [])
+            row["aliases"] = probe_row.get("normalized_aliases", probe_row.get("aliases", []))
             row["answer_value"] = probe_row.get("answer_value")
     return selected
 

@@ -1,0 +1,55 @@
+spec:
+  name: phase3_current_clean_grpo_v2_l26_repair_multi_protect_scan
+  analysis_type: phase3_behavior_axis_scan
+  notice: BEHAVIOR_AXIS_SCAN_ONLY_CURRENT_CLEAN_PANEL
+
+analysis:
+  roles:
+    - delta
+  contrasts:
+    - name: known_refused_vs_known_correct_answered
+      positive_label: known_refused
+      negative_label: known_correct_answered
+      min_rows_per_group: 8
+      positive:
+        label: known
+        refused: true
+      negative:
+        label: known
+        refused: false
+        correct: true
+
+    - name: unknown_refused_vs_known_correct_answered
+      positive_label: unknown_refused
+      negative_label: known_correct_answered
+      min_rows_per_group: 8
+      positive:
+        label: unknown
+        refused: true
+      negative:
+        label: known
+        refused: false
+        correct: true
+
+    - name: known_answered_wrong_vs_known_correct_answered
+      positive_label: known_answered_wrong
+      negative_label: known_correct_answered
+      min_rows_per_group: 8
+      positive:
+        label: known
+        refused: false
+        correct: false
+      negative:
+        label: known
+        refused: false
+        correct: true
+
+extractions:
+  - label: clean_sft_grpo_v2_seed1_current
+    behavior_arm: clean_sft_grpo_v2
+    extraction_dir: experiment/phase1/probe/qwen3-4b-clean-sft-grpo-v2-seed1-selfaware/hidden_states_selfaware_clean_sft_grpo_v2_full/extraction__55254a04aa1f
+    extraction_manifest: experiment/phase1/probe/qwen3-4b-clean-sft-grpo-v2-seed1-selfaware/hidden_states_selfaware_clean_sft_grpo_v2_full/extraction__55254a04aa1f/manifest.json
+    rows_path: experiment/phase1/probe/analysis/current_selfaware_behavior_rows/clean_sft_grpo_v2/rows.jsonl
+
+output:
+  root: experiment/phase1/probe/analysis/current_clean_grpo_v2_l26_repair_multi_protect_scan

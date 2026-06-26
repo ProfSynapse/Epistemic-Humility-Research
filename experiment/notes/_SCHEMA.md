@@ -31,12 +31,14 @@ kg:
   id: experiment:<slug>          # slug must match the filename
   type: experiment
   status: canonical
+tags:
+  - kg/experiment                # required by the typed KG validator
 status: proposed                 # proposed | ready | running | blocked | done | superseded
 governance: exploratory          # exploratory | amendment | locked
 phase: phase3                    # phase1 | phase2 | phase3 | phase4 | ...
 lane: local                      # local | cloud | either
 est_compute: '<one line>'        # e.g. "~6 GPU-hours on one RTX 3090"
-relationships:                   # typed KG edges; MUST include >=1 `tests` edge
+relationships:                   # typed KG edges from edge-ontology.yaml; MUST include >=1 `tests` edge
   - type: tests
     target: '[[gap-4-probe-transfer]]'
     target_id: gap:4-probe-transfer
@@ -51,6 +53,13 @@ related:                         # projection of every edge target
 
 Enum values are fixed; the validator rejects anything else. `status` tracks the
 experiment lifecycle; `governance` gates what an agent may change (below).
+Every experiment note is a KG node and must carry `tags: [kg/experiment]`.
+
+Relationship types are ontology-governed. Do not invent local edge names such as
+`governed_by`; choose an existing edge from
+`.skills/knowledge-graph/references/edge-ontology.yaml`, or keep the reference
+in prose when no valid typed edge exists. `related` must project every
+relationship target.
 
 ## Required body sections (`##` headings, in any order)
 
@@ -92,4 +101,11 @@ paths are ignored. Keep brittle inline commands out; point at checked-in scripts
 
 ```bash
 python3 .agents/skills/experiment-runner/scripts/validate_experiment_notes.py experiment/notes --emit-index
+```
+
+Before committing new or edited notes, also run the KG relationship validator:
+
+```bash
+python3 .agents/skills/knowledge-graph/scripts/validate_kg_relationships.py library experiment/notes
+python3 bin/validate_kg.py
 ```

@@ -340,6 +340,294 @@ the wrong answer. This fails the generated-answer gate and reinforces the
 current rule: separable behavior axes are not safe steering claims without row
 level replay.
 
+### Current Clean Model-Variation Known-Overrefusal Slice
+
+The first current JSON-output model-variation Phase 3 slice has verified
+hidden-state extractions for clean SFT, clean SFT->GRPO v2, and clean
+SFT->GRPO v2->DPO on the 1,233-row SelfAware panel. Behavior-axis scans found
+usable known-overrefusal delta separators, but broad unknown-refusal-vs-known
+separators are much stronger and easier; unknown-wrong rows remain too rare in
+this slice for a stable under-refusal axis.
+
+Normalized known-overrefusal logit diagnostics showed no clean single
+"humility knob." SFT subtraction was comparatively safe for unknown-refusal
+preservation but weak and not source-layer-specific. GRPO v2 had the clearest
+answer-alias first-token nudge, but also slightly suppressed unknown-refusal
+probability in the logit slice. GRPO-DPO at coefficient `10` reduced known
+refusal while preserving or raising unknown-refusal probability, but its
+answer-alias movement was weak.
+
+Generated replay is more encouraging but still tiny. On a fixed 24-row panel,
+coefficient-`10` source subtraction preserved all `8/8` unknown refusals for
+both tested candidates. GRPO v2 L25 repaired `3` known rows from refusal to
+correct answer, improving known correctness/retention from `25.0%` to
+`43.75%` and lowering known over-refusal from `75.0%` to `56.25%`. GRPO-DPO L12
+repaired `1` known row, improving known correctness/retention from `37.5%` to
+`43.75%`. Addition moved in the opposite/worse direction. Treat GRPO v2 L25
+subtraction as the leading behavioral steering candidate, not yet a localized
+mechanism claim.
+
+Caveats: the replay panel is small; baseline behavior under the runner prompt
+differs from prior eval labels; answer-alias logit evidence requires explicit
+alias loading from current row overlays; and same-arm nearby/wrong-layer
+generation controls are still needed before source-layer claims.
+
+Scaling the GRPO v2 L25 replay to a deterministic 96-row panel strengthened
+the signal. The panel used 32 current `known_refused`, 32 current
+`known_correct_answered`, and 32 current `unknown_refused` rows. Coefficient
+`10` source subtraction repaired `9` known refusals to truthful answers,
+introduced `1` new known wrong answer, worsened `0` previously truthful known
+rows, and introduced `0` new unknown non-refusals relative to baseline. Known
+answer correctness rose from `25.0%` to `39.06%`; known over-refusal fell from
+`75.0%` to `59.38%`; unknown refusal stayed at `96.88%`.
+
+On the same 96-row panel, coefficient sensitivity produced:
+
+- `5`: `6` truthful known repairs, `0` new known wrong answers, `1` new unknown
+  non-refusal row swap, known correctness `34.38%`.
+- `10`: `9` truthful known repairs, `1` new known wrong answer, `0` new
+  unknown non-refusals, known correctness `39.06%`.
+- `15`: `11` truthful known repairs, `1` new known wrong answer, `0` new
+  unknown non-refusals, known correctness `42.19%`.
+
+Interpretation: coefficient `15` is currently the best behavioral tradeoff in
+this fixed panel. This remains Tier 2 exploratory steering evidence. The next
+mechanism gate is not another same-axis success metric; it is a source-specific
+control, such as nearby-layer generated replay or an equivalent shifted-vector
+generation control, because earlier logit controls showed wrong-layer effects
+can be nontrivial.
+
+The source-specific generated replay gate is partially positive but not a tidy
+single-layer mechanism. Applying the same GRPO v2 L25 vector at layers `23-27`
+on the same 96-row panel with coefficient `15` produced the following truthful
+known repairs while preserving all `32/32` unknown refusals in every arm:
+`L23=8`, `L24=10`, `L25=11`, `L26=9`, `L27=7`. Each layer introduced `1` new
+known wrong answer and worsened `0` previously truthful known rows. Baseline
+answers were identical across all five jobs, so the comparison is not explained
+by baseline generation drift. Interpretation: L25 is the best point in this
+local window, but adjacent L24 is close enough that the current evidence points
+to a late-layer repair region or subspace, not a sharply localized feature.
+
+Native same-layer directions sharpen that reading. Exporting independent GRPO
+v2 known-overrefusal vectors at layers `23-27`, all rescaled to the same norm
+as the original L25 vector, produced coherent adjacent geometry
+(`cos L24-L25 ~= 0.85`, `L25-L26 ~= 0.85`, `L26-L27 ~= 0.92`) and stronger
+behavior at L26 than the shifted L25-vector control. On the same 96-row panel,
+coefficient-`15` native source subtraction repaired:
+`L23=8`, `L24=9`, `L25=11`, `L26=12`, `L27=10` truthful known refusals, with
+`0/32` unknown non-refusal leaks at every layer and no worsened previously
+truthful known rows. Native L26 is now the best single-layer behavioral
+candidate in this window: `12` truthful repairs, `1` new known wrong answer,
+known correctness `43.75%`, and known over-refusal `54.69%`. Baselines were
+identical across native and shifted sweeps. Interpretation: the effect is a
+coherent late-layer direction band, not an L25-only artifact. Next tests should
+either sweep L26 coefficients or test a constrained/multi-layer blend centered
+on L25-L27.
+
+The native L26 coefficient frontier keeps coefficient `15` as the current best
+single-layer operating point. On the same 96-row panel, L26 source subtraction
+yielded: coeff `5` = `7` truthful repairs / `0` new known wrong; coeff `10` =
+`9` / `1`; coeff `15` = `12` / `1`; coeff `20` = `11` / `2`; coeff `25` =
+`11` / `2`. All five settings preserved `32/32` unknown refusals and had no
+unknown non-refusal leaks. Interpretation: more coefficient is not better
+beyond `15`; it begins trading repair quality for extra wrong known answers.
+Use L26 coeff `15` as the single-layer baseline for any multi-layer comparison.
+
+The first normalized multi-layer band comparison did not beat L26 alone. Four
+L25-L27 blends used negative component weights under activation addition, with
+absolute weights summing to `1.0` so total intervention strength matched the
+single-layer baseline. The best blends (`L25/L26 half`, `L26/L27 half`, and
+`L25/L26/L27 centered`) repaired `11` truthful known refusals, one fewer than
+native L26 coeff `15`; the equal three-layer blend repaired `10`. All preserved
+`32/32` unknown refusals and introduced `1` new known wrong answer. Current
+conclusion: simple distributed averaging smooths the effect but does not
+improve it. Keep native L26 coeff `15` as the best current behavioral steering
+candidate on this panel.
+
+Manual inspection of native L26 coeff-`15` key flips found the `12` truthful
+known repairs spread across crude question types (`7` entity/fact, `2` person,
+`1` date/time, `2` other), not one obvious micro-domain. The single new known
+wrong answer is a semantic-direction error on a higher/lower parental-support
+question. Report L26 as a broad repair candidate with small observed wrong-answer
+risk, not as error-free steering.
+
+A held-out 96-row panel B partially replicated native L26 coeff-`15`, but less
+cleanly than panel A. Panel B excluded all original replay rows and used another
+`32` current `known_refused`, `32` current `known_correct_answered`, and `32`
+current `unknown_refused` rows. Against the replay's own no-vector baseline,
+L26 source subtraction improved known answer correctness from `23/64` to
+`31/64` (`+8` truthful known repairs), reduced known refusals from `41/64` to
+`32/64`, introduced `1` new known wrong answer, and worsened `0` baseline
+truthful known rows. Unlike panel A, it also produced `1` unknown non-refusal,
+lowering unknown refusal from `32/32` to `31/32`. Current interpretation: the
+L26 direction generalizes as a real over-refusal repair pressure, but it is not
+yet a safe calibrated-expression intervention because unknown-leak risk appears
+on the held-out panel. Manual inspection confirms the leak is substantive: an
+unknown cosmology question received an extended expansion/dark-energy answer
+before hedging, not merely a parser artifact.
+
+A panel-B coefficient sweep makes the repair/leak tradeoff explicit. Against
+the same replay baseline (`23/64` known-correct, `41/64` known-refused,
+`32/32` unknown-refused), L26 coeff `5` repaired `3` known refusals with
+`0` new known wrong answers and `0` unknown leaks. Coeff `10` repaired `7`
+but introduced `1` known wrong answer and `1` unknown leak; coeff `12.5`
+repaired `7` with `1` known wrong and `2` unknown leaks; coeff `15` repaired
+`8` with `1` known wrong and `1` unknown leak. Current implication: lower
+coefficient can be safe but too weak; stronger coefficients recover more known
+answers by loosening refusal broadly enough to create unknown-answer risk.
+Simple scalar tuning is therefore not enough for calibrated expression.
+
+A same-layer constrained transform is the first stronger positive result. The
+native L26 known-overrefusal vector and a broad L26
+`unknown_refused_vs_known_correct_answered` protection vector overlap strongly
+(`cos ~= 0.707`); orthogonalizing known repair against the protection vector
+removed `~70.7%` of the original component before rescaling. On held-out panel
+B, the orthogonalized repair at coeff `10` matched the native coeff-10 repair
+count (`+7` truthful known repairs) while improving safety: `0` new known wrong
+answers and `0` unknown leaks, versus native coeff-10's `1` known wrong and
+`1` unknown leak. On panel A, the same constrained coeff `10` matched native
+coeff-10: `+9` truthful known repairs, `1` known wrong answer, and `0` unknown
+leaks. Current interpretation: removing the broad unknown-refusal component
+meaningfully reduces held-out unknown-leak risk while preserving useful repair
+pressure, but it does not eliminate known-answer semantic errors. This is the
+best current constrained steering candidate, not yet a complete calibrated
+expression solution.
+
+Adding a second same-layer protection constraint for `known_answered_wrong` is
+the current best generated-replay result. The rare known-wrong axis is based on
+only 15 positive rows, so treat it cautiously, but it meaningfully changes the
+frontier. Orthogonalizing the native L26 known-repair vector against both the
+broad unknown-refusal protection axis and the L26 known-wrong-vs-known-correct
+axis removed `~71.0%` of the original component before rescaling. At coeff
+`10`, the double-constrained vector preserved useful repair and eliminated
+observed safety failures across three fixed panels: panel A produced `+9`
+truthful known repairs, `0` new known wrong answers, and `0` unknown leaks;
+panel B produced `+7` truthful repairs with the same zero/zero safety profile;
+panel C replicated with another `+7` truthful repairs and zero/zero safety. In
+aggregate across 288 replay rows, coeff `10` yielded `+23` truthful known
+repairs with no observed new known-wrong answers, no worsened baseline-truthful
+known answers, and no unknown non-refusal leaks. Higher coefficients are worse:
+panel B coeff `20` reached `+9` repairs but introduced `1` known wrong answer
+and `2` unknown leaks. Current interpretation: constrained subspace removal is
+a real improvement over scalar tuning, but the safe operating point remains
+coefficient-sensitive and is not yet evidence for a single localized humility
+feature.
+
+Shifted-layer controls further weaken a source-layer-local interpretation. On
+panel C, applying the same double-constrained L26 vector at layers `24-28` with
+coeff `10` showed a late-layer safety band rather than L26 specificity. Layers
+`26`, `27`, and `28` all produced the same clean outcome: `+7` truthful known
+repairs, `0` new known wrong answers, and `0` unknown leaks. Layers `24` and
+`25` still repaired known refusals, but introduced known-wrong answers (`2` at
+L24, `1` at L25). Current interpretation: the constrained vector is
+behaviorally useful in a late-layer region, but should be reported as a
+distributed/source-window intervention rather than a localized L26 mechanism.
+
+A larger disjoint panel D falsifies the clean safety reading from A/B/C. Panel D
+used the reusable behavior-panel row-key builder to select 64 fresh rows each
+from `known_refused`, `known_correct_answered`, and `unknown_refused`, excluding
+all A/B/C keys. At L26 coeff `10`, the double-constrained vector still repaired
+known refusals (`+5`) but introduced `1` known wrong answer and `1` unknown
+non-refusal leak. Shifting the same vector to L27/L28 removed the known-wrong
+error but not the unknown leak, and lowering coefficients to `5` or `7.5` across
+L26/L27/L28 also failed to remove that same unknown leak while reducing repairs
+to `+3` or `+4`. Current interpretation: constrained subspace removal is a real
+repair pressure, but it is not robust calibrated-expression control. The
+remaining failure appears row-sensitive: the same unknown item, "When does
+something become impossible?", flips to a non-refusal answer under every tested
+nonzero placement/coefficient.
+
+The current GRPO v2 unknown-answering question requires a full-eval enriched
+panel, not the prior extracted overlay. The already extracted 1,233-row current
+SelfAware overlay had only `1` `unknown_answered_wrong` row for
+`clean_sft_grpo_v2`, which is too sparse for an unknown-wrong axis. The full
+3,369-row clean SFT->GRPO v2 SelfAware eval has `68`
+`unknown_answered_wrong` rows. A focused extraction-ready manifest now selects a
+balanced 256-row panel: `64` `unknown_answered_wrong`, `64`
+`unknown_refused`, `64` `known_correct_answered`, and `64` `known_refused`.
+Use this panel for the next GRPO v2 unknown-failure hidden-state extraction and
+axis scan before any generated-answer replay.
+
+Panel artifacts:
+
+- `experiment/phase1/probe/config/phase3_current_clean_grpo_v2_unknown_failure_selfaware_manifest.yaml`
+- `experiment/phase1/probe/manifests/phase3_current_clean_grpo_v2_unknown_failure_selfaware_manifest.json`
+- `experiment/phase1/probe/config/hidden_state_selfaware_manifest_clean_sft_grpo_v2_unknown_failure_panel.yaml`
+- `experiment/phase1/probe/config/phase3_current_clean_grpo_v2_unknown_failure_behavior_axis_scan.yaml`
+
+Prompt parity matters for this panel. A generic-prompt extraction/replay did
+not reproduce the source eval behavior: the no-vector replay refused most rows
+that had been selected as `unknown_answered_wrong`. The corrected prompt-matched
+extraction used the exact Amendment E JSON response-confidence prompt. Under
+that prompt, the unknown-answering separation shifted to mid layers: delta L15
+was strongest (`d ~= 2.39`, AUC `~0.985`), nearby delta L14 remained strong,
+and h_lora L22 was the strongest h_lora surface (`d ~= 1.88`, AUC `~0.912`).
+
+The prompt-matched simple-axis causal gate is mostly negative. Final-prompt
+logit diagnostics under the JSON schema prompt produced near-zero
+refusal-opener probability movements because the next token is the JSON object
+opener, not the answer text. Generated replay on the 256-row balanced panel
+was more informative: baseline replay refused `68/128` unknown rows and
+answered `60/128`, so it did contain both sides. The best simple arms repaired
+only one or two unknown-answering failures and introduced comparable or worse
+unknown-refusal leaks:
+
+- delta L15 addition coeff `10`: `2` unknown answer-to-refusal repairs, `3`
+  unknown refusal-to-answer leaks, `+1` known truthful repair.
+- delta L15 subtraction coeff `25`: `1` unknown repair, `1` unknown leak.
+- h_lora L22 subtraction coeff `10` or `25`: `1` unknown repair, `1` unknown
+  leak.
+- h_lora L22 addition produced no unknown repairs and `3-4` unknown leaks.
+
+Interpretation: the prompt-matched behavior cells are separable, but these
+simple unknown-failure axes are not useful calibrated-expression interventions.
+The next useful mech-interp move would need a constrained or multicell subspace
+that explicitly preserves `unknown_refused` and known-question behavior, not
+more scalar tuning of the same single axes.
+
+A multicell readout reconciles the apparent layer shift. The simple pairwise
+unknown-wrong-vs-refused contrast peaks earlier/mid (`delta` L15), but the
+four-cell prompt-matched control surface is best in a later `delta` band. On
+the balanced 256-row panel, the best readout was `delta` L26 full-rank
+(`macro_recall ~= 0.695`), followed by nearby delta L24-L30. Per-cell recall at
+L26 was balanced but imperfect: `known_refused ~= 0.75`,
+`known_correct_answered ~= 0.734`, `unknown_refused ~= 0.656`, and
+`unknown_answered_wrong ~= 0.641`. This supports a distributed multicell
+surface rather than a single early unknown-failure knob.
+
+The first L26 constrained unknown-repair test did not rescue the behavior. A
+same-layer transform orthogonalized the L26 unknown-wrong repair source against
+unknown-refusal and known-refusal protection axes, removing `~47%` of the raw
+source vector before rescaling. Generated replay showed no unknown
+answer-to-refusal repairs. Subtraction coeff `10` was safe but only repaired
+one known refusal; subtraction coeff `25` and both addition arms introduced
+two unknown-refusal leaks. Current interpretation: the L26 multicell surface is
+readable but this protection-constrained unknown repair vector is not a useful
+causal control.
+
+The first cross-regimen prompt-matched rare-cell comparison does not make
+GRPO-DPO look cleaner than GRPO v2. On a matched 256-row SelfAware panel, the
+unknown-answering contrast remains strongest around final-adapter `delta` L15,
+but GRPO-DPO is weaker than GRPO v2 (`d=2.280`, AUC `0.939`, balanced accuracy
+`0.867` vs GRPO v2 `d=2.388`, AUC `0.985`, balanced accuracy `0.914`). The
+known-overrefusal delta axis is also weaker after final DPO (`d=1.956`, AUC
+`0.935` vs GRPO v2 `d=3.276`, AUC `0.999`). Four-cell multicell readout stays
+readable but not improved: best GRPO-DPO delta readout is L24 full-rank macro
+recall `0.664`, below GRPO v2 delta L26 full-rank macro recall `0.695`.
+Current interpretation: DPO stacked after GRPO looks like a weaker/broader
+version of the same surface, not a qualitatively better control surface.
+
+Clean SFT->KTO behaves differently from GRPO-DPO on the same prompt-matched
+rare-cell protocol. KTO has much sharper pairwise final-adapter axes: `delta`
+L11 unknown-answering `d=2.998`, AUC `0.994`; known-overrefusal `delta` L11
+`d=3.468`, AUC `1.000`; and unknown-refused-vs-known-correct `delta` L11
+`d=4.436`, AUC `1.000`. But the four-cell readout is weaker, not stronger:
+best KTO `delta` readout is L25 full-rank macro recall `0.566`, and best
+overall is `h_base` L33 rank-16 macro recall `0.625`. Current interpretation:
+KTO likely creates a sharp pairwise behavior boundary, but this may not be a
+coherent calibrated-expression surface. Generated replay is required before
+treating KTO L11 as useful.
+
 ## Reusable Gotchas
 
 - SelfAware `known` labels do not guarantee gold answer aliases. Confirm
@@ -365,6 +653,14 @@ level replay.
 - For Docker hidden-state extraction, mounted repo ownership can make `git`
   reject the repository as unsafe and leave commit provenance null. The helper
   should pass `safe.directory`; do not weaken the manifest finalization gate.
+- Do not equate the current hidden-state extraction overlay with the full eval
+  corpus. If a rare behavior cell is sparse in the overlay, scan full scored
+  eval rows and build a focused SelfAware manifest before concluding the model
+  lacks enough cases for an axis.
+- Under JSON/schema prompts, final-prompt-token logit diagnostics can probe the
+  JSON scaffold instead of the answer/refusal content. Do not interpret
+  refusal-opener or answer-alias probability slices from that position as
+  behavioral evidence unless an answer-field prefix/position diagnostic exists.
 
 ## Next Research Direction
 

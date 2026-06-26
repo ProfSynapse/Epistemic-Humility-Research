@@ -1,0 +1,21 @@
+candidate_directions:
+  - label: clean_sft_grpo_v2_l26_known_repair_orthogonal_to_unknown_refusal
+    priority: 1
+    arm: clean_sft_grpo_v2
+    extraction_dir: experiment/phase1/probe/qwen3-4b-clean-sft-grpo-v2-seed1-selfaware/hidden_states_selfaware_clean_sft_grpo_v2_full/extraction__55254a04aa1f
+    extraction_manifest: experiment/phase1/probe/qwen3-4b-clean-sft-grpo-v2-seed1-selfaware/hidden_states_selfaware_clean_sft_grpo_v2_full/extraction__55254a04aa1f/manifest.json
+    direction_manifest: experiment/phase1/probe/analysis/current_clean_grpo_v2_l26_repair_orthogonalized_to_unknown_refusal/direction_transforms.manifest.json
+    direction_csv: experiment/phase1/probe/analysis/current_clean_grpo_v2_l26_repair_orthogonalized_to_unknown_refusal/direction_transforms.csv
+    direction_id: direction_transform__clean_sft_grpo_v2_l26_known_repair_orthogonal_to_unknown_refusal__de4c3a76deb8
+    direction_file: experiment/phase1/probe/analysis/current_clean_grpo_v2_l26_repair_orthogonalized_to_unknown_refusal/clean_sft_grpo_v2_l26_known_repair_orthogonal_to_unknown_refusal/directions/direction_transform__clean_sft_grpo_v2_l26_known_repair_orthogonal_to_unknown_refusal__de4c3a76deb8.safetensors
+    tensor_key: direction
+    role: delta
+    layer: 26
+    method: direction_transform
+    transform_method: orthogonalize_to
+    contrast: known_repair_orthogonal_to_unknown_refusal
+    required_status: ok
+    vector_sha256: de4c3a76deb8a217dfc34facfcf2a882ce307bad234c561619f4e7ad420987c1
+    norm: 1.2142820358276367
+    removed_component_fraction: 0.7069383817376874
+    constraint_direction_id: behavior_axis__clean_sft_grpo_v2_l26_unknown_refusal_protect_normed__d116dd91a4f6

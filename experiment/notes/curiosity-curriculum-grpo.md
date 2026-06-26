@@ -4,6 +4,8 @@ kg:
   id: experiment:curiosity-curriculum-grpo
   type: experiment
   status: canonical
+tags:
+  - kg/experiment
 status: proposed
 governance: exploratory
 phase: phase1

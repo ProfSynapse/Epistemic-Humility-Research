@@ -177,6 +177,34 @@ def test_select_exact_row_keys_preserves_order_and_adds_aliases(tmp_path):
     assert selected[1]["aliases"] == []
 
 
+def test_select_rows_accepts_aliases_probe_results_fallback(tmp_path):
+    extraction_rows = tmp_path / "rows.jsonl"
+    extraction_rows.write_text(
+        json.dumps({"probe_pool_row_key": "k1", "question": "Known?", "label": "known"}) + "\n",
+        encoding="utf-8",
+    )
+    probe_results = tmp_path / "current_rows.jsonl"
+    probe_results.write_text(
+        json.dumps({
+            "probe_pool_row_key": "k1",
+            "aliases": ["song"],
+            "answer_value": "song",
+        })
+        + "\n",
+        encoding="utf-8",
+    )
+
+    selected = runner.select_balanced_rows(
+        extraction_rows,
+        max_rows=1,
+        probe_results=probe_results,
+        row_keys=["k1"],
+    )
+
+    assert selected[0]["aliases"] == ["song"]
+    assert selected[0]["answer_value"] == "song"
+
+
 def test_select_exact_row_keys_fails_closed(tmp_path):
     extraction_rows = tmp_path / "rows.jsonl"
     extraction_rows.write_text(

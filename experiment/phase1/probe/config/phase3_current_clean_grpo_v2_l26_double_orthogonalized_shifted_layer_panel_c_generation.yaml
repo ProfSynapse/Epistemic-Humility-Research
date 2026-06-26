@@ -1,0 +1,38 @@
+# Source-specificity control for the double-constrained GRPO v2 L26
+# known-overrefusal generated replay. Applies the same L26 transformed vector at
+# nearby layers on held-out panel C.
+
+sweep:
+  name: phase3_current_clean_grpo_v2_l26_double_orthogonalized_shifted_layer_panel_c_generation
+  evidence_tier: tier2_exploratory_local
+  runner_config: experiment/phase1/probe/config/phase3_current_clean_known_overrefusal_logit_diagnostic.yaml
+  candidate_source_config: experiment/phase1/probe/config/phase3_current_clean_grpo_v2_l26_double_orthogonalized_shifted_layer_candidates.yaml
+  output_root: experiment/phase1/probe/analysis/current_clean_grpo_v2_l26_double_orthogonalized_shifted_layer_panel_c_generation
+  candidates:
+    - clean_sft_grpo_v2_l24_shift_control_l26_double_orthogonalized
+    - clean_sft_grpo_v2_l25_shift_control_l26_double_orthogonalized
+    - clean_sft_grpo_v2_l26_source_l26_double_orthogonalized
+    - clean_sft_grpo_v2_l27_shift_control_l26_double_orthogonalized
+    - clean_sft_grpo_v2_l28_shift_control_l26_double_orthogonalized
+  execution:
+    backend: docker
+    docker:
+      image: unsloth/unsloth:latest
+      repo_mount: /workspace/repo
+      workdir: /workspace/repo
+      hf_home: /workspace/repo/.cache/hf
+      huggingface_hub_cache: /workspace/repo/.cache/hf/hub
+  runner_overrides:
+    selection:
+      max_rows_default: 96
+      probe_results: experiment/phase1/probe/analysis/current_selfaware_behavior_rows/clean_sft_grpo_v2/rows.jsonl
+      row_keys_by_candidate: null
+      row_keys_file: experiment/phase1/probe/config/phase3_current_clean_grpo_v2_known_overrefusal_replay_96_panel_c_row_keys.txt
+  modes:
+    - name: generation
+      max_rows: 96
+      max_new_tokens: 96
+      coefficients: [10.0]
+      controls:
+        - no_vector_baseline
+        - activation_subtraction

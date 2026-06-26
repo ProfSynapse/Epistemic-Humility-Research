@@ -79,6 +79,14 @@ Response-appropriateness probability:
 | factual answer | `factual_p` |
 | abstention/refusal | `1 - factual_p` |
 
+Important semantic constraint: high `response_confidence` is not the same thing
+as high factual-answer confidence. It means the emitted response is appropriate.
+Therefore, saying "I don't know" on a true unknown should receive high
+`response_confidence`, because the abstention is correct. Conversely,
+model-ambiguous rows should not be forced into abstention by default; they can
+remain answerable, but the answer should carry low-to-middle confidence to
+express uncertainty.
+
 Final training target:
 
 ```text
@@ -90,6 +98,96 @@ question the base model got wrong on all 32 samples gives an abstention target
 near `0.8765` and a factual-answer target near `0.1235`; a 16/32 question maps
 near `0.5`.
 
+### 3.1 Seed-1 v1 Result: Probe Scaling Alone Was Insufficient
+
+The first local seed-1 probe-scaled schema-SFT run completed successfully, but
+the scalar still collapsed:
+
+- SFT run:
+  `scratch/schema_response_confidence/runs/sft_schema_probe_scaled_seed1_full/20260623_095638`
+- mixed SelfAware smoke config:
+  `experiment/phase1/eval/config/eval_amendment_e_response_confidence_selfaware_probe_scaled_sft_seed1_smoke_local_4b.yaml`
+- eval result:
+  `experiment/phase1/eval/results_amendment_e_response_confidence_selfaware_probe_scaled_sft_seed1_smoke_4b`
+
+The eval had 100% JSON/response-confidence coverage over 192 rows, but every
+row emitted `response_confidence: 0.8765`. The training target histogram explains
+the failure: the SFT dataset had 20 target values, but `0.8765` still accounted
+for 12,222 / 14,943 rows (81.79%). This result is therefore a target-imbalance
+failure, not evidence that calibrated scalar expression is impossible.
+
+Follow-up Amendment E revisions must prevent SFT from solving the scalar loss by
+emitting the modal value.
+
+### 3.2 Seed-1 v2 Exploratory Branch: Full-Size Contrastive Target Shaping
+
+Rather than dropping rows to balance target values, v2 adds a full-size
+contrastive SFT projection derived from the DPO chosen/rejected pairs:
+
+| Source row | SFT target role | Confidence target |
+|---|---|---|
+| chosen response | appropriate | deterministic spread in `[0.70, 0.90]` |
+| rejected response | inappropriate | deterministic spread in `[0.10, 0.35]` |
+| ambiguous/discard answer row | ambiguous_answer | deterministic spread in `[0.35, 0.60]` |
+
+The deterministic spread is keyed by role, probe row key, and answer text:
+
+```text
+response_confidence = band_low + (band_high - band_low) * stable_hash(role, key, answer)
+```
+
+This is an UaIT-style contrastive supervision revision: SFT sees high-confidence
+appropriate behavior and low-confidence inappropriate behavior instead of only
+high-confidence successful rows. It preserves the semantic constraint that a
+correct "I don't know" on a true unknown is high-confidence, while a known
+question over-refusal is low-confidence.
+
+Regenerated local dataset audit:
+
+- contrastive SFT rows: 29,338
+- appropriate rows: 14,395
+- inappropriate rows: 14,395
+- ambiguous-answer rows: 548
+- unique response-confidence targets: 4,986
+- target range: `[0.10, 0.90]`
+- mean target: `0.512539`
+- largest exact target count: 20 rows
+
+This v2 dataset is an exploratory diagnostic branch, not the preferred mainline.
+It directly tests whether supervised low/high contrast can make the scalar move,
+but because it supervises rejected completions in SFT, it blurs the intended
+boundary between format/style learning and preference/accuracy tuning.
+
+### 3.3 Seed-1 v3 Mainline Revision: Clean SFT, Preference Contrast Later
+
+The preferred mainline separates the stages:
+
+- SFT teaches the JSON format, appropriate answer/abstention style, and broad
+  confidence bands.
+- DPO/KTO/GRPO carry the bad-response contrast and accuracy/calibration tuning.
+
+The clean SFT projection contains only appropriate completions:
+
+| Source row | SFT target role | Rows | Confidence target |
+|---|---|---:|---|
+| known SFT answer | appropriate | 7,981 | deterministic spread in `[0.70, 0.90]` |
+| unknown SFT abstention | appropriate | 6,414 | deterministic spread in `[0.70, 0.90]` |
+| ambiguous/discard answer row | ambiguous_answer | 548 | deterministic spread in `[0.35, 0.60]` |
+
+Local dataset audit:
+
+- clean SFT rows: 14,943
+- appropriate known rows: 7,981
+- appropriate unknown rows: 6,414
+- ambiguous-answer rows: 548
+- unique response-confidence targets: 2,489
+- target range: `[0.3508, 0.90]`
+- mean target: `0.788340`
+- largest exact target count: 17 rows
+
+Rejected completions, wrong answers, and known-question over-refusals are
+excluded from clean SFT and reserved for DPO/KTO/GRPO.
+
 ## 4. Rerun / Launch Requirement
 
 The prior Amendment D schema-SFT, schema-SFT->DPO, schema-SFT->KTO, and
@@ -100,10 +198,14 @@ Required rerun sequence:
 
 | Order | Cell | Base | Dataset contract |
 |---|---|---|---|
-| 1 | `schema_probe_scaled_sft` | Qwen3-4B base | probe-scaled SFT JSON |
-| 2 | `schema_probe_scaled_sft_dpo` | merged probe-scaled SFT | probe-scaled DPO JSON |
-| 3 | `schema_probe_scaled_sft_kto` | merged probe-scaled SFT | probe-scaled KTO JSON |
-| 4 | `schema_probe_scaled_sft_grpo` | merged probe-scaled SFT | GRPO over same schema/reward family |
+| 1 | `schema_clean_sft` | Qwen3-4B base | clean SFT JSON |
+| 2 | `schema_clean_sft_dpo` | merged clean SFT | schema DPO JSON |
+| 3 | `schema_clean_sft_kto` | merged clean SFT | schema KTO JSON |
+| 4 | `schema_clean_sft_grpo` | merged clean SFT | GRPO over same schema/reward family |
+
+The `schema_contrastive_sft` branch is allowed as an exploratory scalar-movement
+diagnostic, but downstream DPO/KTO/GRPO should not use it as the default base
+unless its eval is explicitly being interpreted as contrastive-SFT evidence.
 
 Start with seed 1 local smoke/full before scaling to additional seeds.
 
@@ -134,6 +236,10 @@ Project-local files:
 - `experiment/phase1/grpo/tests/test_build_schema_response_confidence_datasets.py`
 - `experiment/phase1/grpo/configs/sft_schema_probe_scaled_response_confidence_seed1_smoke_config.py`
 - `experiment/phase1/grpo/configs/sft_schema_probe_scaled_response_confidence_seed1_full_config.py`
+- `experiment/phase1/grpo/configs/sft_schema_contrastive_response_confidence_seed1_smoke_config.py`
+- `experiment/phase1/grpo/configs/sft_schema_contrastive_response_confidence_seed1_full_config.py`
+- `experiment/phase1/grpo/configs/sft_schema_clean_response_confidence_seed1_smoke_config.py`
+- `experiment/phase1/grpo/configs/sft_schema_clean_response_confidence_seed1_full_config.py`
 - Amendment E eval configs to be added after a successful probe-scaled SFT
   checkpoint exists
 

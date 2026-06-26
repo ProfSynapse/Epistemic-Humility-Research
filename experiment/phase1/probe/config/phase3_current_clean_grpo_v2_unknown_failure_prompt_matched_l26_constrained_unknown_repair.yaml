@@ -1,0 +1,18 @@
+source_manifest: experiment/phase1/probe/analysis/current_clean_grpo_v2_unknown_failure_prompt_matched_l26_multicell_directions/behavior_axis_directions.manifest.json
+
+transforms:
+  - label: clean_sft_grpo_v2_pm_l26_unknown_repair_orthogonal_to_refusal_and_known
+    method: orthogonalize_to
+    contrast: unknown_repair_orthogonal_to_unknown_refusal_and_known_refusal
+    source_direction_id: behavior_axis__clean_sft_grpo_v2_pm_l26_unknown_wrong_repair_source_normed__8584e071cfda
+    target_norm: 1.2142820358276367
+    constraints:
+      - source_direction_id: behavior_axis__clean_sft_grpo_v2_pm_l26_unknown_refusal_protect_normed__af5ca619fe01
+      - source_direction_id: behavior_axis__clean_sft_grpo_v2_pm_l26_known_refusal_protect_normed__4d38edbb9df5
+    metadata:
+      arm: clean_sft_grpo_v2
+      intervention_sign_hint: subtraction_should_move_unknown_answered_wrong_toward_refusal_after_removing_unknown_refusal_and_known-question_components
+      selection_reason: test whether the multicell L26 surface can repair unknown answering without the simple-axis refusal leaks
+
+output:
+  root: experiment/phase1/probe/analysis/current_clean_grpo_v2_unknown_failure_prompt_matched_l26_constrained_unknown_repair

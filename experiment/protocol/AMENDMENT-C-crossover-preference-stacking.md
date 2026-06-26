@@ -1,8 +1,11 @@
 # Protocol Amendment C: Cross-Over Preference Stacking
 
-**Status:** DRAFT / NOT SIGNED. This amendment is a proposed exploratory
-extension. It does not authorize training, evaluation, artifact publication, or
-changes to any signed protocol scope by itself.
+**Status:** DRAFT / NOT SIGNED / DEPRIORITIZED. This amendment is a proposed
+exploratory extension. It does not authorize training, evaluation, artifact
+publication, or changes to any signed protocol scope by itself. As of
+2026-06-25, reciprocal DPO/KTO preference stacking is not part of the active
+near-term matrix; preference -> RL and RL -> preference crossings are higher
+priority.
 
 **Short name:** Amendment C / crossover preference stacking
 
@@ -32,6 +35,12 @@ instability rather than balancing it. The second stage may wash out the first
 stage, over-answer unknown rows, restore over-refusal, degrade known-answer
 accuracy, or introduce schema and provenance failures that make the resulting
 arms uninterpretable.
+
+2026-06-25 literature check: `DPO Meets PPO: Reinforced Token Optimization for
+RLHF` (arXiv:2404.18922) supports preference-derived signal feeding a later
+RL-style policy optimizer, but does not provide a comparable reason to treat
+DPO->KTO and KTO->DPO ordering as a distinct high-priority axis. This amendment
+therefore remains a dormant draft unless later evidence revives it.
 
 ## 2. Relationship To Existing Protocols
 

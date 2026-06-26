@@ -1,0 +1,22 @@
+purpose: >-
+  Build a larger held-out clean_sft_grpo_v2 behavior replay panel for the
+  double-constrained L26 known-overrefusal steering candidate. Excludes fixed
+  panels A, B, and C, then selects 64 rows each from known_refused,
+  known_correct_answered, and unknown_refused.
+
+inputs:
+  rows: analysis/current_selfaware_behavior_rows/clean_sft_grpo_v2/rows.jsonl
+  exclude_row_keys_sources:
+    - config/phase3_current_clean_grpo_v2_known_overrefusal_replay_96_row_keys.txt
+    - config/phase3_current_clean_grpo_v2_known_overrefusal_replay_96_panel_b_row_keys.txt
+    - config/phase3_current_clean_grpo_v2_known_overrefusal_replay_96_panel_c_row_keys.txt
+
+quotas:
+  known_refused: 64
+  known_correct_answered: 64
+  unknown_refused: 64
+
+output:
+  row_keys_file: config/phase3_current_clean_grpo_v2_known_overrefusal_replay_192_panel_d_row_keys.txt
+  rows_jsonl: config/phase3_current_clean_grpo_v2_known_overrefusal_replay_192_panel_d_rows.jsonl
+  manifest: config/phase3_current_clean_grpo_v2_known_overrefusal_replay_192_panel_d_row_keys.manifest.json

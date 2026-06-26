@@ -1,0 +1,90 @@
+spec:
+  name: phase3_current_clean_behavior_axis_scan
+  analysis_type: phase3_behavior_axis_scan
+  notice: BEHAVIOR_AXIS_SCAN_ONLY_CURRENT_CLEAN_PANEL
+
+analysis:
+  roles:
+    - h_base
+    - h_lora
+    - delta
+  contrasts:
+    - name: known_refused_vs_known_correct_answered
+      positive_label: known_refused
+      negative_label: known_correct_answered
+      min_rows_per_group: 8
+      positive:
+        label: known
+        refused: true
+      negative:
+        label: known
+        refused: false
+        correct: true
+
+    - name: unknown_refused_vs_known_correct_answered
+      positive_label: unknown_refused
+      negative_label: known_correct_answered
+      min_rows_per_group: 8
+      positive:
+        label: unknown
+        refused: true
+      negative:
+        label: known
+        refused: false
+        correct: true
+
+    - name: unknown_answered_wrong_vs_unknown_refused
+      positive_label: unknown_answered_wrong
+      negative_label: unknown_refused
+      min_rows_per_group: 8
+      positive:
+        label: unknown
+        refused: false
+        correct: false
+      negative:
+        label: unknown
+        refused: true
+
+    - name: known_low_confidence_vs_known_high_confidence
+      positive_label: known_low_confidence
+      negative_label: known_high_confidence
+      min_rows_per_group: 8
+      positive:
+        label: known
+        confidence_max: 0.4
+      negative:
+        label: known
+        confidence_min: 0.8
+
+    - name: unknown_low_confidence_vs_unknown_high_confidence
+      positive_label: unknown_low_confidence
+      negative_label: unknown_high_confidence
+      min_rows_per_group: 8
+      positive:
+        label: unknown
+        confidence_max: 0.4
+      negative:
+        label: unknown
+        confidence_min: 0.8
+
+extractions:
+  - label: clean_sft_seed1_current
+    behavior_arm: clean_sft_merged
+    extraction_dir: experiment/phase1/probe/qwen3-4b-clean-sft-seed1-selfaware/hidden_states_selfaware_clean_sft_full/extraction__8dbd3f623393
+    extraction_manifest: experiment/phase1/probe/qwen3-4b-clean-sft-seed1-selfaware/hidden_states_selfaware_clean_sft_full/extraction__8dbd3f623393/manifest.json
+    rows_path: experiment/phase1/probe/analysis/current_selfaware_behavior_rows/clean_sft_merged/rows.jsonl
+
+  - label: clean_sft_grpo_v2_seed1_current
+    behavior_arm: clean_sft_grpo_v2
+    extraction_dir: experiment/phase1/probe/qwen3-4b-clean-sft-grpo-v2-seed1-selfaware/hidden_states_selfaware_clean_sft_grpo_v2_full/extraction__55254a04aa1f
+    extraction_manifest: experiment/phase1/probe/qwen3-4b-clean-sft-grpo-v2-seed1-selfaware/hidden_states_selfaware_clean_sft_grpo_v2_full/extraction__55254a04aa1f/manifest.json
+    rows_path: experiment/phase1/probe/analysis/current_selfaware_behavior_rows/clean_sft_grpo_v2/rows.jsonl
+
+  - label: clean_sft_grpo_dpo_seed1_current
+    behavior_arm: clean_sft_grpo_dpo
+    extraction_dir: experiment/phase1/probe/qwen3-4b-clean-sft-grpo-dpo-seed1-selfaware/hidden_states_selfaware_clean_sft_grpo_dpo_full/extraction__00af99a2efe7
+    extraction_manifest: experiment/phase1/probe/qwen3-4b-clean-sft-grpo-dpo-seed1-selfaware/hidden_states_selfaware_clean_sft_grpo_dpo_full/extraction__00af99a2efe7/manifest.json
+    rows_path: experiment/phase1/probe/analysis/current_selfaware_behavior_rows/clean_sft_grpo_dpo/rows.jsonl
+
+output:
+  root: experiment/phase1/probe/analysis/current_clean_behavior_axis_scan

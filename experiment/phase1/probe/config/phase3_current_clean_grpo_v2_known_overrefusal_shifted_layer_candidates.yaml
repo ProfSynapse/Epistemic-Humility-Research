@@ -1,0 +1,103 @@
+# Shifted-layer generated-replay controls for the leading current clean GRPO v2
+# known-overrefusal direction. These entries intentionally reuse the layer-25
+# vector at nearby layers to test source-layer specificity.
+
+candidate_directions:
+  - label: clean_sft_grpo_v2_l23_shift_control_known_overrefusal_l25_vector
+    priority: 1
+    arm: clean_sft_grpo_v2
+    extraction_dir: experiment/phase1/probe/qwen3-4b-clean-sft-grpo-v2-seed1-selfaware/hidden_states_selfaware_clean_sft_grpo_v2_full/extraction__55254a04aa1f
+    extraction_manifest: experiment/phase1/probe/qwen3-4b-clean-sft-grpo-v2-seed1-selfaware/hidden_states_selfaware_clean_sft_grpo_v2_full/extraction__55254a04aa1f/manifest.json
+    direction_manifest: experiment/phase1/probe/analysis/current_clean_known_overrefusal_normed_directions/behavior_axis_directions.manifest.json
+    direction_csv: experiment/phase1/probe/analysis/current_clean_known_overrefusal_normed_directions/behavior_axis_directions.csv
+    direction_id: behavior_axis__clean_sft_grpo_v2_delta_known_refused_vs_known_correct_l25_normed__3fbeabca071d
+    direction_file: experiment/phase1/probe/analysis/current_clean_known_overrefusal_normed_directions/clean_sft_grpo_v2_delta_known_refused_vs_known_correct_l25_normed/directions/behavior_axis__clean_sft_grpo_v2_delta_known_refused_vs_known_correct_l25_normed__3fbeabca071d.safetensors
+    tensor_key: direction
+    role: delta
+    layer: 23
+    method: behavior_axis_mean_difference
+    contrast: known_refused_vs_known_correct_answered
+    required_status: ok
+    vector_sha256: 3fbeabca071d5e10e8f93ebf0c0fcd33590d3c9ef1aa0dc3c8ea002b09fa812d
+    norm: 1.2142820609976201
+    allow_direction_layer_override: true
+    control_note: same layer-25 source vector intentionally applied at layer 23
+
+  - label: clean_sft_grpo_v2_l24_shift_control_known_overrefusal_l25_vector
+    priority: 2
+    arm: clean_sft_grpo_v2
+    extraction_dir: experiment/phase1/probe/qwen3-4b-clean-sft-grpo-v2-seed1-selfaware/hidden_states_selfaware_clean_sft_grpo_v2_full/extraction__55254a04aa1f
+    extraction_manifest: experiment/phase1/probe/qwen3-4b-clean-sft-grpo-v2-seed1-selfaware/hidden_states_selfaware_clean_sft_grpo_v2_full/extraction__55254a04aa1f/manifest.json
+    direction_manifest: experiment/phase1/probe/analysis/current_clean_known_overrefusal_normed_directions/behavior_axis_directions.manifest.json
+    direction_csv: experiment/phase1/probe/analysis/current_clean_known_overrefusal_normed_directions/behavior_axis_directions.csv
+    direction_id: behavior_axis__clean_sft_grpo_v2_delta_known_refused_vs_known_correct_l25_normed__3fbeabca071d
+    direction_file: experiment/phase1/probe/analysis/current_clean_known_overrefusal_normed_directions/clean_sft_grpo_v2_delta_known_refused_vs_known_correct_l25_normed/directions/behavior_axis__clean_sft_grpo_v2_delta_known_refused_vs_known_correct_l25_normed__3fbeabca071d.safetensors
+    tensor_key: direction
+    role: delta
+    layer: 24
+    method: behavior_axis_mean_difference
+    contrast: known_refused_vs_known_correct_answered
+    required_status: ok
+    vector_sha256: 3fbeabca071d5e10e8f93ebf0c0fcd33590d3c9ef1aa0dc3c8ea002b09fa812d
+    norm: 1.2142820609976201
+    allow_direction_layer_override: true
+    control_note: same layer-25 source vector intentionally applied at layer 24
+
+  - label: clean_sft_grpo_v2_l25_source_known_overrefusal_l25_vector
+    priority: 3
+    arm: clean_sft_grpo_v2
+    extraction_dir: experiment/phase1/probe/qwen3-4b-clean-sft-grpo-v2-seed1-selfaware/hidden_states_selfaware_clean_sft_grpo_v2_full/extraction__55254a04aa1f
+    extraction_manifest: experiment/phase1/probe/qwen3-4b-clean-sft-grpo-v2-seed1-selfaware/hidden_states_selfaware_clean_sft_grpo_v2_full/extraction__55254a04aa1f/manifest.json
+    direction_manifest: experiment/phase1/probe/analysis/current_clean_known_overrefusal_normed_directions/behavior_axis_directions.manifest.json
+    direction_csv: experiment/phase1/probe/analysis/current_clean_known_overrefusal_normed_directions/behavior_axis_directions.csv
+    direction_id: behavior_axis__clean_sft_grpo_v2_delta_known_refused_vs_known_correct_l25_normed__3fbeabca071d
+    direction_file: experiment/phase1/probe/analysis/current_clean_known_overrefusal_normed_directions/clean_sft_grpo_v2_delta_known_refused_vs_known_correct_l25_normed/directions/behavior_axis__clean_sft_grpo_v2_delta_known_refused_vs_known_correct_l25_normed__3fbeabca071d.safetensors
+    tensor_key: direction
+    role: delta
+    layer: 25
+    method: behavior_axis_mean_difference
+    contrast: known_refused_vs_known_correct_answered
+    required_status: ok
+    vector_sha256: 3fbeabca071d5e10e8f93ebf0c0fcd33590d3c9ef1aa0dc3c8ea002b09fa812d
+    norm: 1.2142820609976201
+    control_note: source layer-25 vector applied at its source layer
+
+  - label: clean_sft_grpo_v2_l26_shift_control_known_overrefusal_l25_vector
+    priority: 4
+    arm: clean_sft_grpo_v2
+    extraction_dir: experiment/phase1/probe/qwen3-4b-clean-sft-grpo-v2-seed1-selfaware/hidden_states_selfaware_clean_sft_grpo_v2_full/extraction__55254a04aa1f
+    extraction_manifest: experiment/phase1/probe/qwen3-4b-clean-sft-grpo-v2-seed1-selfaware/hidden_states_selfaware_clean_sft_grpo_v2_full/extraction__55254a04aa1f/manifest.json
+    direction_manifest: experiment/phase1/probe/analysis/current_clean_known_overrefusal_normed_directions/behavior_axis_directions.manifest.json
+    direction_csv: experiment/phase1/probe/analysis/current_clean_known_overrefusal_normed_directions/behavior_axis_directions.csv
+    direction_id: behavior_axis__clean_sft_grpo_v2_delta_known_refused_vs_known_correct_l25_normed__3fbeabca071d
+    direction_file: experiment/phase1/probe/analysis/current_clean_known_overrefusal_normed_directions/clean_sft_grpo_v2_delta_known_refused_vs_known_correct_l25_normed/directions/behavior_axis__clean_sft_grpo_v2_delta_known_refused_vs_known_correct_l25_normed__3fbeabca071d.safetensors
+    tensor_key: direction
+    role: delta
+    layer: 26
+    method: behavior_axis_mean_difference
+    contrast: known_refused_vs_known_correct_answered
+    required_status: ok
+    vector_sha256: 3fbeabca071d5e10e8f93ebf0c0fcd33590d3c9ef1aa0dc3c8ea002b09fa812d
+    norm: 1.2142820609976201
+    allow_direction_layer_override: true
+    control_note: same layer-25 source vector intentionally applied at layer 26
+
+  - label: clean_sft_grpo_v2_l27_shift_control_known_overrefusal_l25_vector
+    priority: 5
+    arm: clean_sft_grpo_v2
+    extraction_dir: experiment/phase1/probe/qwen3-4b-clean-sft-grpo-v2-seed1-selfaware/hidden_states_selfaware_clean_sft_grpo_v2_full/extraction__55254a04aa1f
+    extraction_manifest: experiment/phase1/probe/qwen3-4b-clean-sft-grpo-v2-seed1-selfaware/hidden_states_selfaware_clean_sft_grpo_v2_full/extraction__55254a04aa1f/manifest.json
+    direction_manifest: experiment/phase1/probe/analysis/current_clean_known_overrefusal_normed_directions/behavior_axis_directions.manifest.json
+    direction_csv: experiment/phase1/probe/analysis/current_clean_known_overrefusal_normed_directions/behavior_axis_directions.csv
+    direction_id: behavior_axis__clean_sft_grpo_v2_delta_known_refused_vs_known_correct_l25_normed__3fbeabca071d
+    direction_file: experiment/phase1/probe/analysis/current_clean_known_overrefusal_normed_directions/clean_sft_grpo_v2_delta_known_refused_vs_known_correct_l25_normed/directions/behavior_axis__clean_sft_grpo_v2_delta_known_refused_vs_known_correct_l25_normed__3fbeabca071d.safetensors
+    tensor_key: direction
+    role: delta
+    layer: 27
+    method: behavior_axis_mean_difference
+    contrast: known_refused_vs_known_correct_answered
+    required_status: ok
+    vector_sha256: 3fbeabca071d5e10e8f93ebf0c0fcd33590d3c9ef1aa0dc3c8ea002b09fa812d
+    norm: 1.2142820609976201
+    allow_direction_layer_override: true
+    control_note: same layer-25 source vector intentionally applied at layer 27
