@@ -39,54 +39,94 @@ trainings (GRPO / DPO / KTO). The current mech-interp probe model
 (`clean-sft-grpo-v2`) is therefore **fine to keep probing**: probing is about
 reading the internal axes, not about whether the emitted number is honest.
 
-**The gap this regimen attacks.** The current `clean-sft` projection assigns
-confidence by a **deterministic per-role band** (appropriate → 0.8, inappropriate
-→ 0.2, ambiguous → 0.4–0.6). Every appropriate answer is labelled with the *same*
-0.8 regardless of question difficulty. That plants a **flat-0.8 prior** at the SFT
-stage, and the v2 GRPO reward (fixed per-cell target) gave no pressure to leave
-it → the observed **collapse** (emitted confidence std 0.015, ECE 0.142, AUROC
-0.56; see [[caution-vs-doubt-knowledge-gate]]). So even though "alignment is
-GRPO's job," SFT sets the *prior GRPO starts from*, and a flat prior is a
-collapsed basin that a broken reward never leaves.
+## Audit result (2026-06-27) — this CORRECTS two assumptions in v1 of this note
 
-**What already exists (do not rebuild from scratch).** A **computed**-confidence
-SFT projection is already implemented:
-`build_schema_response_confidence_datasets.py` `probe-scaled` mode uses
-`confidence = 0.1 + 0.8 · appropriateness_p`, where `appropriateness_p` is the
-model's **own per-question correctness rate from 32 stochastic samples**, Laplace-
-smoothed `(k+1)/(n+2)` (refusal rows use `1 − factual_p`). That *is* "actually
-computed confidence values per question." It was built/tested in session 0018 but
-the model we probe was trained on the **clean-band** projection, not this one.
-**Prereq before any run:** confirm whether session-0018's probe-scaled projection
-was ever taken end-to-end (SFT→GRPO) and evaluated for *emitted-confidence*
-calibration (ECE / std / correct-vs-wrong AUROC). If yes, this regimen extends it;
-if no (likely — 0018 focused on dataset construction + smoke), that end-to-end
-calibration eval is the novel contribution.
+A read-only audit of session 0018 ([[0018 - probe-scaled-response-confidence-retrain]])
+overturns the original premise of this note. Both corrections below are recorded
+verbatim because they change where the fix belongs.
 
-**Hypothesis.** A regimen that (a) seeds SFT with **computed per-question
-confidence** (probe-scaled) and (b) applies a **proper-scoring GRPO reward**
-([[grpo-v3-proper-scoring-confidence]], v3) yields emitted confidence that is
-**graded and calibrated** (std ≫ 0.015, ECE ↓, correct-vs-wrong AUROC ↑) without
-degrading behavior — and, because the v3 reward's optimum is the true per-question
-probability already encoded on the L35 doubt axis, it should **tighten
-internal→output coherence** (emitted confidence tracks the doubt projection).
+**Correction 1 — the clean SFT base is NOT a flat-0.8 prior.** The `clean`
+projection that became the GRPO base has **2489 unique confidence values**, range
+**0.35–0.9**, mean 0.788, largest exact-target count only 17 (§009). The "0.8" is
+just a band *centre*, not the label on every row. So the collapse is **not** an
+SFT flat-label artifact.
 
-## Design — a 2×2 attribution matrix
+**Correction 2 — probe-scaled (computed) SFT was already run, and it COLLAPSED.**
+The full probe-scaled SFT (`0.1 + 0.8·appropriateness_p`) trained and passed
+JSON-format eval, but emitted a **single** confidence value (0.8765) on every row
+(§004). Cause: the *target distribution itself* is imbalanced — the modal target
+0.8765 covered **81.79%** of rows (low-band rows: 0), because most knowns are
+answerable → high `appropriateness_p` → high target. SFT minimised loss by
+emitting the mode. It was explicitly **paused and not taken downstream**. The
+team's anti-collapse answer was deterministic **band-spreading** (contrastive,
+then the clean projection), which spreads the *distribution* by role but is **not
+per-question-grounded calibration**.
 
-Cross **SFT confidence source** × **alignment stage** so calibration is
-attributable to the seed vs the reward, not confounded:
+**Where the collapse actually comes from (revised causal story).** The clean SFT
+base emits a spread; **GRPO is what destroys it.** GRPO v1 already showed
+known/unknown confidence means nearly identical (0.746 vs 0.747), values
+concentrated in a few bands, top value 0.711 on 1521 rows (§023); GRPO v2 then
+tightened to std 0.015 (session 0026). The v1/v2 rewards made a near-constant
+confidence reward-optimal, so the preference stage *collapsed* the spread the SFT
+stage had. **Therefore the primary lever is the GRPO reward (v3), not redoing the
+SFT dataset.** "Redo SFT with computed confidence" — the original ask — is largely
+*unnecessary for anti-collapse* (clean SFT is already spread) and *insufficient on
+its own* (naive probe-scaled collapses at SFT from target imbalance).
 
-| Arm | SFT confidence | Alignment stage | Question it answers |
-|-----|----------------|-----------------|---------------------|
-| A0  | clean-band (flat 0.8) | — (SFT only) | baseline prior: how flat is SFT alone? |
-| A1  | probe-scaled (computed) | — (SFT only) | can SFT *alone* teach graded confidence, or only structure? |
-| B0  | clean-band | GRPO-v3 | can the v3 reward fix collapse *without* a computed seed? |
-| B1  | probe-scaled | GRPO-v3 | full regimen: computed seed + proper-scoring reward |
+**What was already measured vs what session 0026 added.** Emitted-confidence
+**Brier vs appropriateness** WAS computed at eval (GRPO v1: 0.3697, §023). Session
+0026 added the ECE / std / correct-vs-wrong-AUROC framing and the internal-axis
+comparison. So "calibration was never measured" is wrong; the *internal vs
+external coherence gap* is what 0026 contributed.
 
-`clean-sft-grpo-v2` is the historical reference cell (clean-band SFT + v2 reward).
-A1 directly tests the user's "SFT only teaches structure" claim: if A1's emitted
-confidence is already graded, SFT *can* carry calibration; if A1 stays flat-ish,
-calibration genuinely requires the preference stage (supports the framing).
+## Question & Hypothesis (revised)
+
+**Division of labor (user's framing — and the 0018 team's, §416).** Session 0018
+states it independently: "SFT teaches format and broadly appropriate
+response-confidence expression; DPO/KTO/GRPO then tune accuracy, abstention, and
+calibration." The user's instinct matches the existing design intent. The current
+mech-interp probe model (`clean-sft-grpo-v2`) is **fine to keep probing** —
+probing reads the internal axes, not whether the emitted number is honest.
+
+**Hypothesis (relocated to the reward).** The emitted-confidence collapse is a
+**GRPO-reward artifact**, not an SFT-seed artifact. A **proper-scoring GRPO
+reward** ([[grpo-v3-proper-scoring-confidence]], v3) — under which a near-constant
+is provably sub-optimal and the true per-question probability is optimal — should
+**stop GRPO from collapsing the spread the clean SFT already carries**, yielding
+emitted confidence that is graded and calibrated (std ≫ 0.015, ECE < 0.14,
+correct-vs-wrong AUROC > 0.56) without degrading behavior, and tightening
+internal→output coherence (emitted confidence tracks the L35 doubt projection).
+
+**Secondary, still-open SFT question.** Spread ≠ calibrated. Clean SFT is spread
+but role-based, not grounded in per-question difficulty; naive probe-scaled is
+per-question-grounded but collapses from distribution imbalance. The genuinely
+unexplored SFT-side idea is a **per-question-grounded AND distribution-balanced**
+target (quantile-map the probe `appropriateness_p` onto a spread band) — combine
+the contrastive anti-collapse property with per-question grounding. This is a
+*secondary* arm; the reward fix is primary.
+
+## Design — primary reward arm + attribution controls
+
+The audit collapses the original 2×2 (two of its four cells are already answered).
+What remains:
+
+| Arm | SFT base | Alignment | Status / question |
+|-----|----------|-----------|-------------------|
+| ref | clean (spread) | GRPO-v2 | `clean-sft-grpo-v2` — historical reference; std 0.015 (collapsed by GRPO) |
+| A1  | probe-scaled | — (SFT only) | **DONE (§004): collapses to a single value (0.8765), target imbalance** |
+| A0  | clean (spread) | — (SFT only) | known result: SFT carries a spread (2489 values) but role-based, not calibrated; re-measure emitted std/ECE if a number is wanted |
+| **B0** | clean (spread) | **GRPO-v3** | **PRIMARY: does proper-scoring stop GRPO collapsing the SFT spread?** |
+| B1  | quantile-balanced probe-scaled | GRPO-v3 | secondary: does a per-question-grounded *and* balanced SFT seed help on top of v3? (needs the new quantile target — not the naive probe-scaled that collapsed) |
+
+**B0 is the headline.** It isolates the single most-supported hypothesis: the
+collapse is a reward artifact, so the v3 reward alone (on the existing clean SFT
+base) should recover graded, calibrated confidence. If B0 succeeds, "redo the SFT
+dataset" is unnecessary. If B0 fails (confidence still collapses under a proper
+score), the SFT prior or the group-target variance is implicated → escalate to B1.
+
+Note the original A1 ("can SFT alone teach calibration?") is **already answered**:
+naive computed per-question targets collapse SFT to the mode. SFT can carry a
+*spread* (clean projection proves it) but not a *naively-grounded* one.
 
 **DPO / KTO arms (optional, later).** The same computed-confidence dataset already
 emits DPO/KTO projections. Worth adding `probe-scaled → DPO` and `probe-scaled →
@@ -109,28 +149,33 @@ spending compute on all objectives before knowing the seed matters.
 
 ## Runbook
 
-1. (prereq) Audit session 0018: was probe-scaled ever evaluated for emitted-
-   confidence calibration end-to-end? Record yes/no + pointers.
-2. Build/refresh probe-scaled SFT + GRPO datasets; assert per-question confidence
-   spread is non-degenerate (std of labels ≫ 0 across difficulties).
-3. (gated, sign-off) Train A1 (probe-scaled SFT only). Eval emitted-confidence
-   std / ECE / correct-vs-wrong AUROC vs A0.
-4. (gated, sign-off) Train B1 (probe-scaled SFT → GRPO-v3). Same eval + behavior
-   (over-refusal, unknown-answer) vs `clean-sft-grpo-v2`.
-5. Train B0 (clean SFT → GRPO-v3) to isolate the reward's standalone contribution.
-6. Re-probe B1: does emitted confidence now track the L35 doubt-axis projection
-   (internal→output coherence improved)? This closes the mech-interp → RL loop.
+1. ~~(prereq) Audit session 0018~~ **DONE (2026-06-27)** — see Audit result above.
+   Probe-scaled was run and collapsed; clean SFT is spread; collapse is GRPO-driven.
+2. **B0 (primary, gated, sign-off):** train clean SFT (existing base) → GRPO with
+   the v3 proper-scoring reward (`target_mode="group"`). Eval emitted-confidence
+   std / ECE / correct-vs-wrong AUROC + behavior vs `clean-sft-grpo-v2`. This is
+   the single highest-ROI run.
+3. CPU preflight before B0: re-score a sample of v2 reward-debug rollouts with v3;
+   confirm behavior ordering preserved AND the group targets actually spread across
+   prompts (if group targets are near-constant, Brier optimum is still ~constant —
+   the SFT collapse risk reappears one level up; mitigate by difficulty-stratified
+   batches).
+4. If B0 falls short: build the **quantile-balanced probe-scaled** SFT target (per-
+   question grounded AND distribution-spread, unlike the §004 naive version), train
+   B1 (→ GRPO-v3), compare.
+5. Re-probe the winning arm: does emitted confidence now track the L35 doubt-axis
+   projection (internal→output coherence improved)? Closes the mech-interp → RL loop.
+6. (later) DPO/KTO arms only after a GRPO arm shows signal.
 
 ## Validation contract
 
-- Dataset: per-question confidence labels are graded (not a 2–3 point comb);
-  appropriate-answer label std ≫ 0; behavior preference signal unchanged vs the
-  clean projection (same known/unknown ordering).
+- CPU preflight: v3 re-scoring preserves behavior ordering on v2 rollouts AND the
+  per-prompt group targets are non-degenerate (spread across difficulties).
 - Definition of done (per trained arm): emitted confidence std ≫ 0.015 AND ECE <
   v2's 0.142 AND correct-vs-wrong AUROC > v2's 0.56, with over-refusal and
   unknown-answer rates no worse than `clean-sft-grpo-v2`.
-- Attribution: report the 2×2 so the calibration delta is assigned to seed (A1−A0)
-  vs reward (B0−A0) vs both (B1−A0).
+- Attribution: B0 isolates the reward's contribution (clean SFT held fixed vs the
+  v2 reference); B1−B0 isolates any added value of a balanced computed SFT seed.
 - Power: correct-vs-wrong eval needs more wrong-answered rows than the 16
   currently available (shared limitation with [[caution-vs-doubt-knowledge-gate]]).
 
@@ -152,8 +197,16 @@ here. Does not feed meta-analysis or alter PROTOCOL v0.3 cells without amendment
 ## Status log
 
 - 2026-06-27: created (proposed). Motivated by the calibration-gap finding and the
-  v3 reward draft. Key realization: a *computed* confidence SFT projection already
-  exists (probe-scaled, session 0018) but the probed model used the flat clean-band
-  projection — so the novel work is the end-to-end calibration-evaluated regimen
-  (2×2 seed×reward), not building a dataset from scratch. Design only; awaiting
-  sign-off and the session-0018 audit before any run.
+  v3 reward draft. Original (now-superseded) premise: clean SFT is a flat-0.8 prior
+  and redoing SFT with computed confidence is the novel work.
+- 2026-06-27: **session-0018 audit DONE — premise corrected.** (1) Clean SFT is NOT
+  flat: 2489 unique values, 0.35–0.9 (§009). (2) Probe-scaled SFT was already run
+  and collapsed to a single value 0.8765 from 81.79% target imbalance (§004) —
+  paused, not taken downstream. (3) The collapse is **GRPO-driven**: clean SFT
+  emits a spread; GRPO v1/v2 destroyed it (v1 known/unknown means 0.746/0.747,
+  banded, §023; v2 std 0.015, session 0026) because the reward made a constant
+  optimal. **Reframe: the primary lever is the v3 GRPO reward (arm B0), not redoing
+  SFT.** "Redo SFT with computed confidence" is unnecessary for anti-collapse and
+  insufficient alone. Secondary open arm: quantile-balanced per-question SFT target.
+  Brier-vs-appropriateness was already an eval metric (0.3697, §023); session 0026
+  added the ECE/AUROC/internal-coherence framing. Design only; B0 awaits sign-off.
