@@ -183,3 +183,50 @@ base, or Amendment J.
 - known risk acknowledged: yes (§3.2 wrong-answer supervision; behavior gate is
   the mitigation; documented fallback on gate failure)
 - authorization: user, 2026-06-27 — "Proceed"
+
+## 7. Result (2026-06-27)
+
+Trained to completion (seed 1, 4B; resumed once from checkpoint-2000 after a
+transient external CUDA OOM, recipe unchanged), merged 16-bit, evaluated on
+SelfAware (3,369 rows, apples-to-apples vs the clean-SFT base and GRPO v3).
+
+**§4.1 calibration gate — PASSES all four** (first success in the whole
+calibration-gap thread):
+
+| metric | gate | result | clean-SFT / v3 |
+|---|---|---|---|
+| emitted AUROC→appropriateness | ≥0.62 | **0.684** ✓ | ≈0.52 |
+| emitted std | ≥0.10 | **0.309** ✓ | 0.047 / 0.027 |
+| ECE-vs-appropriateness | <0.30 | **0.183** ✓ | 0.40–0.44 |
+| known_correct > known_wrong | — | 0.670 > 0.306 ✓ | fails |
+| unknown_refused > unknown_answered_wrong | — | 0.581 > 0.156 ✓ | fails |
+
+Bonus: correct-vs-wrong AUROC among answered-known = **0.789** (v3 reached 0.600).
+The fully-trained run beat the session-0018 half-trained ckpt-1500 existence proof.
+
+**§4.2 behavior gate — FAILS 3 of 4:**
+
+| metric | gate | result | clean-SFT base |
+|---|---|---|---|
+| truthful_pct | ≥35.6 | 30.93 ✗ | 40.58 |
+| correct_on_known_pct | ≥42.2 | 36.63 ✗ | 47.23 |
+| over_refusal_pct | ≤67.5 | 79.2 ✗ | 57.51 |
+| refusal_recall_pct | ≥82.0 | 83.72 ✓ | 87.02 |
+
+**Disposition: cell `schema_contrastive_sft_seed1` is REJECTED** per §4.2 (behavior
+gate fails regardless of calibration). This is the §3.2 primary risk materializing:
+`completion_only_loss` masks the prompt but not the answer sub-span, so the 14,395
+inappropriate rows trained the wrong-answer text and degraded correctness while
+inflating over-refusal.
+
+**Scientific takeaway (decision-relevant):** the calibration *mechanism* works at
+the SFT stage — supervised high/low contrast installs behavior-conditional,
+appropriateness-tracking confidence in the greedy mode the eval reads, which no
+downstream RL objective achieved. This validates the §3.2 fallback. Two paths,
+each needing a new signed amendment:
+
+- **(a)** probe-scaled appropriate rows + a small (~15%) contrastive low-confidence
+  tail (the §3.2 documented fallback);
+- **(b)** answer-sub-span masking in the `synaptic-tuner` engine so inappropriate
+  rows supervise only the confidence token, not the wrong answer — a generic
+  engine feature (now in-bounds) that attacks the §3.2 root cause directly.
