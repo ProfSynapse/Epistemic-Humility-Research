@@ -1,14 +1,14 @@
-# Auto-converted from sft_merged_seed1_json_bridge_config.py for config-format uniformity (YAML, like the
+# Auto-converted from sft_schema_response_confidence_seed1_full_config.py for config-format uniformity (YAML, like the
 # GRPO trainer). Consumed by: train_sft.py --config <this>.yaml. Verified to
 # load byte-identically to the original Python Config() module.
 model:
-  model_name: synaptic-tuner/toolset-training-artifacts/runs/local/4b/sft__4b__headline__seed1/20260614_053221/Qwen3-4B-bnb-4bit/merged-16bit
+  model_name: unsloth/Qwen3-4B-bnb-4bit
   max_seq_length: 2048
   dtype: null
   load_in_4bit: true
 lora:
-  r: 16
-  lora_alpha: 32
+  r: 32
+  lora_alpha: 64
   lora_dropout: 0.05
   bias: none
   target_modules:
@@ -25,10 +25,10 @@ lora:
   use_dora: false
   init_lora_weights: null
 training:
-  output_dir: scratch/grpo_bootstrap/runs/sft_merged_seed1_json_bridge
-  per_device_train_batch_size: 4
+  output_dir: scratch/schema_response_confidence/runs/sft_schema_seed1_full
+  per_device_train_batch_size: 12
   gradient_accumulation_steps: 1
-  learning_rate: 0.0001
+  learning_rate: 0.0002
   max_grad_norm: 1.0
   lr_scheduler_type: linear
   max_seq_length: 2048
@@ -41,21 +41,21 @@ training:
   bf16: true
   num_train_epochs: 1
   warmup_ratio: 0.03
-  logging_steps: 1
-  save_steps: 64
-  save_total_limit: 1
+  logging_steps: 25
+  save_steps: 500
+  save_total_limit: 2
   dataloader_num_workers: 0
   dataloader_pin_memory: true
   group_by_length: false
   eval_strategy: 'no'
-  eval_steps: 64
+  eval_steps: 500
   chat_template_kwargs:
     enable_thinking: false
   max_steps: null
 dataset:
   dataset_name: null
   dataset_file: null
-  local_file: scratch/grpo_bootstrap/qwen3-4b-instruct/sft_json_bridge_smoke_256.jsonl
+  local_file: scratch/schema_response_confidence/qwen3-4b-instruct/sft_response_confidence_train.jsonl
   num_proc: 1
   test_size: 0.0
   split_dataset: false

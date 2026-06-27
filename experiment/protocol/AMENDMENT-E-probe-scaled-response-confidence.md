@@ -234,12 +234,12 @@ Project-local files:
 
 - `experiment/phase1/grpo/build_schema_response_confidence_datasets.py`
 - `experiment/phase1/grpo/tests/test_build_schema_response_confidence_datasets.py`
-- `experiment/phase1/grpo/configs/sft_schema_probe_scaled_response_confidence_seed1_smoke_config.py`
-- `experiment/phase1/grpo/configs/sft_schema_probe_scaled_response_confidence_seed1_full_config.py`
-- `experiment/phase1/grpo/configs/sft_schema_contrastive_response_confidence_seed1_smoke_config.py`
-- `experiment/phase1/grpo/configs/sft_schema_contrastive_response_confidence_seed1_full_config.py`
-- `experiment/phase1/grpo/configs/sft_schema_clean_response_confidence_seed1_smoke_config.py`
-- `experiment/phase1/grpo/configs/sft_schema_clean_response_confidence_seed1_full_config.py`
+- `experiment/phase1/grpo/configs/sft_schema_probe_scaled_response_confidence_seed1_smoke.yaml`
+- `experiment/phase1/grpo/configs/sft_schema_probe_scaled_response_confidence_seed1_full.yaml`
+- `experiment/phase1/grpo/configs/sft_schema_contrastive_response_confidence_seed1_smoke.yaml`
+- `experiment/phase1/grpo/configs/sft_schema_contrastive_response_confidence_seed1_full.yaml`
+- `experiment/phase1/grpo/configs/sft_schema_clean_response_confidence_seed1_smoke.yaml`
+- `experiment/phase1/grpo/configs/sft_schema_clean_response_confidence_seed1_full.yaml`
 - Amendment E eval configs to be added after a successful probe-scaled SFT
   checkpoint exists
 
