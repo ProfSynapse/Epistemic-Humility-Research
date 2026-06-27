@@ -376,3 +376,14 @@ _No summary yet._
   - Numbers are consistent with 0026 (NOT contradictory): 0026 ECE 0.14 / AUROC 0.56 were scoped to answered-known rows vs CORRECTNESS (n=389, 16 wrong); this is full-eval emitted vs APPROPRIATENESS (the Amendment J section-5 target) + the head-to-head. The earlier internal fitted-probe ECE 0.004 is the calibrated analogue of the 0.972 threshold-free AUROC here.
 - next steps:
   - Re-run calibration_gap_report.py on B0's scored_rows after the GRPO-v3 full run for an apples-to-apples table; success = emitted std up, ECE-vs-appropriateness down, emitted->known/appropriateness AUROC toward the internal 0.97, Spearman(internal,emitted) up.
+### 009-interpretation - Stage trajectory refines 'GRPO-driven collapse': v2-specific std-crush + SFT-level discrimination failure
+
+- at: `2026-06-27T11:30:00Z`
+- kind: `interpretation`
+- summary: Ran calibration_gap_report.py Analysis A across all three training stages (full SelfAware eval, 3369 rows each). emitted response_confidence std/mean/ECE-vs-appropriateness/AUROC->correct-vs-wrong: clean_SFT 0.047 / 0.748 / 0.343 / 0.489; GRPO_v1 0.047 / 0.747 / 0.350 / 0.460; GRPO_v2 0.013 / 0.813 / 0.403 / 0.521. Two refinements to checkpoint 006's 'collapse is GRPO-driven': (1) the STD-collapse is v2-SPECIFIC, not generic GRPO -- v1 PRESERVED SFT's spread (std 0.047 unchanged); only v2 crushed it to 0.013. 006's 'v1 already banded it' was about the known/unknown MEANS being equal (0.746/0.747 = no discrimination), which still holds; overall std is a separate axis and survived v1. (2) DISCRIMINATION was never present -- emitted AUROC->correct-vs-wrong is ~0.5 at EVERY stage including clean SFT (0.489), so GRPO did not destroy discrimination; SFT never created it. Separately, GRPO worsens overconfidence: mean drifts 0.748->0.813 while appropriateness stays ~0.40, so ECE rises 0.343->0.403. Also note clean SFT already COMPRESSES the training-target spread (targets std ~0.15 / 2489 unique -> SFT emits std 0.047 / 52 unique): SFT learns the format and a muted spread, not the full target distribution.
+- evidence:
+  - `experiment/phase1/eval/analysis/calibration_gap_report.py over clean_sft_seed1_merged_full / clean_sft_grpo_seed1_corrected_base_full / clean_sft_grpo_v2_seed1_corrected_base_full`
+- decisions:
+  - B0's v3 proper-scoring reward has TWO jobs the baseline proves are BOTH needed: (a) restore/expand spread (counter v2's std-crush), and (b) INDUCE discrimination the emitted scalar never had at any stage (tie it to realized appropriateness so it ranks correct vs wrong). The internal L35 axis (AUROC 0.972, checkpoint 008) shows the signal exists to be surfaced; the proper-scoring Brier term is the mechanism to surface it into the scalar.
+- next steps:
+  - After B0, compare its Analysis-A row in this trajectory table: success = std up from 0.013, ECE down from 0.403, AUROC->correct-vs-wrong up from ~0.5 toward the internal 0.97.
