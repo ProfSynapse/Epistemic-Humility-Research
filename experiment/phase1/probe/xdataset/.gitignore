@@ -1,0 +1,32 @@
+# Cross-dataset transfer (C1) working tree.
+#
+# COMMITTABLE: the deterministic panel INPUTS produced by
+# phase3_xdataset_build_panel.py from a checked-in dataset — gen_rows.jsonl
+# (questions to generate on), manifest.json (frozen extraction rows),
+# panel_meta.json. These are reproducible inputs, not model outputs.
+#
+# LOCAL-ONLY: everything downstream that contains model behavior or activations
+# (generated answers, behavior rows, hidden-state tensors). Keep these gitignored
+# unless a governed publication decision whitelists a subset.
+
+# Generated-answer + behavior outputs (model behavior).
+*_generation/
+*_behavior/
+*generated*.jsonl
+*behavior_rows*.jsonl
+*scored*.jsonl
+
+# Hidden-state extraction outputs (large tensor artifacts).
+*_extraction/
+*/hidden_states*/
+*.safetensors
+
+# Probe analysis outputs for the cross-dataset panel.
+*_analysis/
+metrics.json
+*.csv
+
+# Allow the panel inputs back in explicitly.
+!*/gen_rows.jsonl
+!*/manifest.json
+!*/panel_meta.json
