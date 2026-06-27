@@ -138,6 +138,20 @@ def _schema_payload(answer: str, response_confidence: float) -> str:
     return json.dumps(payload, ensure_ascii=False, separators=(",", ": "))
 
 
+def _answer_value_render(answer: str) -> str:
+    """The answer value exactly as it is rendered inside the schema JSON.
+
+    `_schema_payload` json-dumps the stripped answer, so the value's on-the-wire
+    form is the escaped string content WITHOUT its surrounding quotes. This is the
+    literal sub-span the SFT engine masks out of the loss (Amendment L), so it
+    must match the rendered text byte-for-byte.
+    """
+    value = str(answer or "").strip()
+    if not value:
+        return ""
+    return json.dumps(value, ensure_ascii=False)[1:-1]
+
+
 def _stable_unit_interval(*parts: object) -> float:
     text = "\x1f".join(str(part) for part in parts)
     digest = hashlib.sha256(text.encode("utf-8")).digest()
@@ -463,19 +477,26 @@ def build_contrastive_sft_rows(
                 probe_row,
                 role=role,
             )
-            out.append(
-                {
-                    "messages": [
-                        *prompt_messages,
-                        {
-                            "role": "assistant",
-                            "content": _schema_payload(answer, response_confidence),
-                        },
-                    ],
-                    "schema_target": "response_confidence_json",
-                    **provenance,
-                }
-            )
+            built = {
+                "messages": [
+                    *prompt_messages,
+                    {
+                        "role": "assistant",
+                        "content": _schema_payload(answer, response_confidence),
+                    },
+                ],
+                "schema_target": "response_confidence_json",
+                **provenance,
+            }
+            # Amendment L: on inappropriate rows, exclude the wrong-answer value
+            # from the SFT loss (engine honors the generic loss_mask_text column)
+            # so only the low response_confidence is supervised, not the wrong
+            # answer text. Appropriate/ambiguous answers stay fully supervised.
+            if role == "inappropriate":
+                span = _answer_value_render(answer)
+                if span:
+                    built["loss_mask_text"] = [span]
+            out.append(built)
     return out
 
 
@@ -706,12 +727,20 @@ def build_all(
         "sft": output_dir / "sft_response_confidence_train.jsonl",
         "sft_clean": output_dir / "sft_response_confidence_train_clean.jsonl",
         "sft_contrastive": output_dir / "sft_response_confidence_train_contrastive.jsonl",
+        "sft_contrastive_masked": output_dir / "sft_response_confidence_train_contrastive_masked.jsonl",
         "dpo": output_dir / "dpo_response_confidence_train.jsonl",
         "kto": output_dir / "kto_response_confidence_train.jsonl",
     }
     _write_jsonl(outputs["sft"], sft_rows)
     _write_jsonl(outputs["sft_clean"], sft_clean_rows)
-    _write_jsonl(outputs["sft_contrastive"], sft_contrastive_rows)
+    # The Amendment K contrastive file stays byte-identical (no loss_mask_text
+    # column); the Amendment L masked file is the same rows PLUS the additive
+    # loss_mask_text directive on inappropriate rows.
+    _write_jsonl(
+        outputs["sft_contrastive"],
+        [{k: v for k, v in r.items() if k != "loss_mask_text"} for r in sft_contrastive_rows],
+    )
+    _write_jsonl(outputs["sft_contrastive_masked"], sft_contrastive_rows)
     _write_jsonl(outputs["dpo"], dpo_rows)
     _write_jsonl(outputs["kto"], kto_rows)
     manifest = {
@@ -742,6 +771,13 @@ def build_all(
                 "known_over_refusal": "low confidence because abstention is inappropriate",
                 "ambiguous_answer": "answer remains supervised, with middle confidence",
             },
+            "loss_subspan_masking": {
+                "amendment": "L",
+                "masked_file": "sft_response_confidence_train_contrastive_masked.jsonl",
+                "unmasked_file": "sft_response_confidence_train_contrastive.jsonl",
+                "rule": "inappropriate rows carry loss_mask_text=[answer value] so the wrong-answer text is excluded from the SFT loss; response_confidence stays supervised. Appropriate/ambiguous answers fully supervised.",
+                "engine": "synaptic-tuner materialize_sft_example loss_mask_spans (generic per-row sub-span masking)",
+            },
         },
         "clean_sft": {
             "included": True,
@@ -763,6 +799,10 @@ def build_all(
             "sft": len(sft_rows),
             "sft_clean": len(sft_clean_rows),
             "sft_contrastive": len(sft_contrastive_rows),
+            "sft_contrastive_masked": len(sft_contrastive_rows),
+            "sft_contrastive_masked_inappropriate": sum(
+                1 for r in sft_contrastive_rows if r.get("loss_mask_text")
+            ),
             "dpo": len(dpo_rows),
             "kto": len(kto_rows),
         },
