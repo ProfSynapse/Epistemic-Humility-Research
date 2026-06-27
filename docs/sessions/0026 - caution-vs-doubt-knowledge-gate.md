@@ -398,3 +398,14 @@ _No summary yet._
   - The doubt-orthogonalized caution gate is INDEPENDENTLY causal for over-refusal (not merely the doubt axis in disguise): with the rank-1 doubt direction removed it still de-refuses half the over-refusals at high specificity. Caution is not reducible to doubt-thresholding; the two are separable causal contributors. This closes the raw-theta caveat (raw theta was 83% doubt-aligned) -- the caution-specific residual is load-bearing on its own.
 - next steps:
   - Commit build script + config + PR (analysis outputs stay untracked). The training half (Amendment J / B0 GRPO-v3) proceeds in parallel (smoke launched).
+### 011-validation - B0 GRPO-v3 smoke GREEN; full run launched
+
+- at: `2026-06-27T12:05:00Z`
+- kind: `validation`
+- summary: Amendment J B0 cell (clean schema-SFT seed1 -> GRPO-v3 proper-scoring reward). 12-step smoke completed clean (exit 0). Gate GREEN on every axis: per-completion reward std 1.82 over 384 rows (range [-3.6,3.2], 321 unique); per-STEP within-group reward std 1.17-2.11 at all 12 steps and frac_reward_zero_std=0.0 throughout (no degenerate groups -> the proper-scoring term gives GRPO a live learning signal a constant-confidence policy could not earn). Group confidence_targets spread mean 0.591 std 0.334 over {0,0.125,0.25,0.5,0.75,1.0} (matches the CPU preflight std 0.320 -> real per-group appropriateness, not collapsed-one-level-up). Behavior ordering correct: known +1.52 > unknown +1.16 > ambiguous +0.21. valid_json 97.1% (373/384). Emitted response_confidence already spans [0.311,0.899] std 0.105 under temp-1.35 sampling (not greedy eval, so not directly vs v2's 0.013, but the policy demonstrably CAN emit a range and the reward differentiates it). Reward path resolves via base_dir=Trainers/grpo (../../../experiment -> repo root), trainer self-bootstraps sys.path. Triton gpt_oss MoE kernel import warning is benign (Qwen3 is dense; same as v2).
+- evidence:
+  - `scratch/schema_response_confidence/runs/schema_clean_sft_grpo_v3_seed1_smoke/20260627_113404/; scratch/schema_response_confidence/reward_debug/schema_clean_sft_grpo_v3_seed1_smoke.jsonl`
+- decisions:
+  - Smoke->full gate PASSED; launched the full B0 run (container phase3-grpo-v3-full, config grpo_schema_clean_sft_merged_seed1_v3_full.yaml, 1 epoch ~465 steps over 14888 examples, reward-debug to schema_clean_sft_grpo_v3_seed1_full.jsonl). v2 cell outputs untouched (distinct run dir).
+- next steps:
+  - On full completion: merge adapter, run the Amendment E/F SelfAware eval, then calibration_gap_report.py on B0 scored_rows for the apples-to-apples table vs v2 (target: emitted std up from 0.013, ECE-vs-appropriateness down from 0.403, AUROC->known/appropriateness up toward internal 0.97, Spearman(internal,emitted) up); re-probe L35 doubt-axis coherence.
