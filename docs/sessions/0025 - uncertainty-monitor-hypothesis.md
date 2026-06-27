@@ -4,7 +4,7 @@ session_id: '0025'
 title: uncertainty-monitor-hypothesis
 status: complete
 created_at: '2026-06-26T19:11:24Z'
-updated_at: '2026-06-26T23:00:21Z'
+updated_at: '2026-06-27T00:06:05Z'
 phase: phase-3-mech-interp
 question: "Is the sign-inverted per-head failure-axis direction a graded internal\
   \ UNCERTAINTY MONITOR (amplifying it raises abstention) rather than a be-wrong axis\
@@ -613,6 +613,30 @@ checkpoints:
   decisions: []
   next_steps: []
   signals: {}
+- id: 018-result
+  at: '2026-06-27T00:06:05Z'
+  kind: result
+  title: 'C1 cross-dataset transfer (KUQ): phenomenon generalizes, direction + behavioral
+    meaning are construct-conditioned'
+  summary: "Full GPU pipeline on KUQ (600 known/400 unknown, GRPO v2). New reusable\
+    \ scripts: phase3_xdataset_build_panel.py (panel+manifest), phase3_xdataset_behavior_from_generation.py\
+    \ (behavior cells). KUQ over-refuses 77% of 'known' (461 known_refused). FINDINGS:\
+    \ (1) caution-axis PHENOMENON replicates \u2014 A1 knowledge L25 0.974 vs lex\
+    \ 0.918 (+0.056), A2 caution L32 0.912 vs lex 0.680 (+0.233) depth-climbing, axis\
+    \ geometry |cos|=0.022 ORTHOGONAL. (2) caution DIRECTION largely dataset-specific\
+    \ \u2014 SelfAware vs KUQ |cos|=0.16-0.19 (~9x floor) PARTIAL-SHARED, far below\
+    \ within-SelfAware cross-regimen 0.58-0.86. (3) belief-action gap REVERSES \u2014\
+    \ SelfAware over-refusal position 0.25 (looks KNOWN=over-refusal/humility tax)\
+    \ vs KUQ 0.68 (looks UNKNOWN=appropriate abstention). Construct cause: SelfAware\
+    \ known=model-knowable, KUQ known=answerable-in-principle (obscure trivia). Calibrated\
+    \ headline: properties are dataset-robust; direction+meaning are construct-conditioned;\
+    \ the humility-tax claim needs a model-knowable 'known' set."
+  evidence: []
+  run_ids: []
+  commands: []
+  decisions: []
+  next_steps: []
+  signals: {}
 ---
 # uncertainty-monitor-hypothesis
 
@@ -830,3 +854,8 @@ failure-axis direction move abstention ~0 (67→63 cells) vs the localized heads
 - at: `2026-06-26T23:00:21Z`
 - kind: `result`
 - summary: Fit the within-known over-refusal direction at L35 for SFT/GRPO+DPO/GRPO v2 in a shared whitened frame; pairwise |cos| of unit normals vs shuffled-label floor. SHARED-AXIS: mean cross |cos|=0.701 vs floor 0.014 (~50x). grpo_dpo<->grpo_v2 0.857 (GRPO family tightest), sft<->grpo_dpo 0.671, sft<->grpo_v2 0.576 (SFT ancestor most distinct). One shared SFT-laid caution mechanism that rotates measurably under tuning; GRPO variants converge. Calibration: strongly-shared-WITH-drift not identical; single seed so ordering suggestive, far-above-floor agreement robust. Read-side correlational case strong; remaining gaps causal (B1 patching) + timing (B2) + cross-dataset (C1).
+### 018-result - C1 cross-dataset transfer (KUQ): phenomenon generalizes, direction + behavioral meaning are construct-conditioned
+
+- at: `2026-06-27T00:06:05Z`
+- kind: `result`
+- summary: Full GPU pipeline on KUQ (600 known/400 unknown, GRPO v2). New reusable scripts: phase3_xdataset_build_panel.py (panel+manifest), phase3_xdataset_behavior_from_generation.py (behavior cells). KUQ over-refuses 77% of 'known' (461 known_refused). FINDINGS: (1) caution-axis PHENOMENON replicates — A1 knowledge L25 0.974 vs lex 0.918 (+0.056), A2 caution L32 0.912 vs lex 0.680 (+0.233) depth-climbing, axis geometry |cos|=0.022 ORTHOGONAL. (2) caution DIRECTION largely dataset-specific — SelfAware vs KUQ |cos|=0.16-0.19 (~9x floor) PARTIAL-SHARED, far below within-SelfAware cross-regimen 0.58-0.86. (3) belief-action gap REVERSES — SelfAware over-refusal position 0.25 (looks KNOWN=over-refusal/humility tax) vs KUQ 0.68 (looks UNKNOWN=appropriate abstention). Construct cause: SelfAware known=model-knowable, KUQ known=answerable-in-principle (obscure trivia). Calibrated headline: properties are dataset-robust; direction+meaning are construct-conditioned; the humility-tax claim needs a model-knowable 'known' set.

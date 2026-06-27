@@ -515,3 +515,51 @@ choose B vs C with the user.
   are CAUSAL (does the caution axis DRIVE over-refusal — B1 activation patching) and
   TIMING (pre-commitment monitor vs decision echo — B2 trajectory), both GPU; and
   cross-DATASET transfer (C1).**
+- 2026-06-26: **C1 cross-dataset transfer — KUQ (Known-Unknown Questions), GRPO v2,
+  full GPU pipeline.** Built a dataset-agnostic panel (600 known / 400 unknown,
+  seed 0) from `datasets/kuq/knowns_unknowns.jsonl` via the new
+  `phase3_xdataset_build_panel.py`, generated clean baseline answers
+  (`phase3_head_intervention_runner` @ alpha=0.0, GRPO v2), assembled behavior
+  rows (`phase3_xdataset_behavior_from_generation.py`), extracted residuals
+  (`hidden_state_probe.py`, final_prompt_token, h_base/h_lora/delta), and ran the
+  Track-A controls + caution-axis transfer. KUQ behavior cells: known_refused
+  **461**, known_answered_wrong 74, known_correct_answered 65, unknown_refused
+  392, unknown_answered_wrong 8 — i.e. the model **over-refuses 77% of KUQ
+  "known" questions** (vs ~30% on SelfAware). **Three results, two layers of
+  finding:**
+  - **The caution-axis PHENOMENON generalizes.** A1 knowledge axis: residual
+    best L25 AUROC **0.974** vs TF-IDF lexical **0.918** (margin **+0.056**,
+    INTERNAL-STATE — a *cleaner* margin than SelfAware, whose 0.997 was mostly
+    lexical). A2 within-known caution axis: residual best L32 AUROC **0.912** vs
+    lexical **0.680** (margin **+0.233**, INTERNAL-STATE), depth-climbing
+    (0.71@L1 → 0.91@L32), lexically clean — same signature as SelfAware. Axis
+    geometry: |cos(knowledge, caution)| = **0.022** → ORTHOGONAL, same as
+    SelfAware. So a deep, lexically-clean, knowledge-orthogonal within-known
+    over-refusal axis exists on a second, independently-sourced dataset.
+  - **The caution DIRECTION is largely dataset-specific.** Cross-dataset cosine
+    (SelfAware-GRPOv2 vs KUQ-GRPOv2, shared whitened frame): |cos| = **0.16**
+    (L32) / **0.19** (L35) vs random floor 0.04 / 0.02 (~9× chance) →
+    **PARTIAL-SHARED**. This is FAR below the within-SelfAware cross-regimen
+    agreement (|cos| ≈ 0.58–0.86). Caveat: cross-regimen held questions identical
+    (only labels differed), so some of that 0.7 rides shared inputs; cross-dataset
+    uses entirely disjoint questions, a harder + cleaner test. Net: the axis is a
+    weak-but-real shared sliver atop a large dataset/content-specific component.
+  - **The belief-action gap REVERSES — and the cross-dataset test is what
+    revealed why.** Over-refusal gap position: SelfAware **0.25–0.28** (over-
+    refusals look internally KNOWN → genuine over-refusal / "humility tax",
+    refuses despite knowing) vs KUQ **0.679** (over-refusals look internally
+    UNKNOWN ~ unknown_refused → INTERNAL-UNCERTAINTY, abstention tracks genuine
+    ignorance, epistemically appropriate). This is the **construct difference**:
+    SelfAware "known" = model-filtered-knowable, so its known_refused is true
+    over-refusal; KUQ "known" = answerable-in-principle (obscure multi-hop
+    trivia), so its known_refused is dominated by the model genuinely not knowing.
+    The weak ~0.17 direction overlap is consistent with the shared over-refusal
+    sliver; the rest is KUQ's genuine-uncertainty axis that SelfAware's
+    filtered-known construct excludes. **Calibration takeaway (non-sycophantic):
+    the headline is NOT "the caution axis transfers." It is that the
+    caution-axis PROPERTIES are dataset-robust while its DIRECTION and BEHAVIORAL
+    MEANING are construct-conditioned — the belief-action "humility tax" claim
+    specifically requires a dataset whose "known" means model-knowable, which KUQ
+    is not.** Artifacts (gitignored): `analysis/_xdataset_kuq_controls/` +
+    `xdataset/kuq_*`. Reusable scripts + configs checked in; this is the basis for
+    the Task-6 cross-dataset protocol in the mech-interp-runner skill.
