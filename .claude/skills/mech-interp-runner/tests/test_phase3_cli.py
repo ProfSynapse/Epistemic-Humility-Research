@@ -78,6 +78,53 @@ def test_command_args_builds_logit_cell_sign_score():
     assert out == ["--config", "score.yaml"]
 
 
+def test_command_args_builds_xdataset_build_panel():
+    parser = phase3_cli.build_parser()
+    args = parser.parse_args([
+        "xdataset-build-panel",
+        "--source", "datasets/kuq/knowns_unknowns.jsonl",
+        "--dataset", "kuq",
+        "--out-dir", "experiment/phase1/probe/xdataset/kuq_panel",
+        "--n-known", "600",
+        "--n-unknown", "400",
+        "--seed", "0",
+    ])
+
+    script, out = phase3_cli.command_args(args)
+
+    assert script == "experiment/phase1/probe/phase3_xdataset_build_panel.py"
+    assert out == [
+        "--source", "datasets/kuq/knowns_unknowns.jsonl",
+        "--dataset", "kuq",
+        "--out-dir", "experiment/phase1/probe/xdataset/kuq_panel",
+        "--n-known", "600",
+        "--n-unknown", "400",
+        "--seed", "0",
+        "--question-field", "question",
+        "--unknown-field", "unknown",
+        "--answer-field", "answer",
+    ]
+
+
+def test_command_args_builds_xdataset_behavior():
+    parser = phase3_cli.build_parser()
+    args = parser.parse_args([
+        "xdataset-behavior",
+        "--generation", "experiment/phase1/probe/xdataset/kuq_generation/rows.jsonl",
+        "--panel-rows", "experiment/phase1/probe/xdataset/kuq_panel/gen_rows.jsonl",
+        "--out-dir", "experiment/phase1/probe/xdataset/kuq_behavior",
+    ])
+
+    script, out = phase3_cli.command_args(args)
+
+    assert script == "experiment/phase1/probe/phase3_xdataset_behavior_from_generation.py"
+    assert out == [
+        "--generation", "experiment/phase1/probe/xdataset/kuq_generation/rows.jsonl",
+        "--panel-rows", "experiment/phase1/probe/xdataset/kuq_panel/gen_rows.jsonl",
+        "--out-dir", "experiment/phase1/probe/xdataset/kuq_behavior",
+    ]
+
+
 def test_subprocess_env_forces_utf8(monkeypatch):
     captured = {}
     monkeypatch.setenv("PYTHONIOENCODING", "cp1252")

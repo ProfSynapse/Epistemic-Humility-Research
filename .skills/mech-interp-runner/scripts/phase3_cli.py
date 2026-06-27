@@ -132,6 +132,26 @@ def build_parser() -> argparse.ArgumentParser:
     p.add_argument("--out", required=True)
     _add_dry_run(p)
 
+    p = sub.add_parser("xdataset-build-panel",
+                       help="Build a cross-dataset transfer panel (gen rows + extraction manifest)")
+    p.add_argument("--source", required=True, help="known/unknown source JSONL (repo-relative)")
+    p.add_argument("--dataset", required=True, help="short dataset id / row_key prefix, e.g. kuq")
+    p.add_argument("--out-dir", required=True)
+    p.add_argument("--n-known", type=int, required=True)
+    p.add_argument("--n-unknown", type=int, required=True)
+    p.add_argument("--seed", type=int, default=0)
+    p.add_argument("--question-field", default="question")
+    p.add_argument("--unknown-field", default="unknown")
+    p.add_argument("--answer-field", default="answer")
+    _add_dry_run(p)
+
+    p = sub.add_parser("xdataset-behavior",
+                       help="Assemble cross-dataset behavior rows from a baseline (alpha=0) generation")
+    p.add_argument("--generation", required=True, help="generation rows.jsonl (repo-relative)")
+    p.add_argument("--panel-rows", required=True, help="panel gen_rows.jsonl for question/aliases join")
+    p.add_argument("--out-dir", required=True)
+    _add_dry_run(p)
+
     p = sub.add_parser("validate", help="Run the focused Phase 3 non-GPU validation set")
     p.add_argument("--quick", action="store_true", help="Only run CLI/unit tests for the skill wrapper")
     _add_dry_run(p)
@@ -193,6 +213,24 @@ def command_args(args: argparse.Namespace) -> tuple[str, list[str]]:
             "--out",
             args.out,
         ]
+    if command == "xdataset-build-panel":
+        return "experiment/phase1/probe/phase3_xdataset_build_panel.py", [
+            "--source", args.source,
+            "--dataset", args.dataset,
+            "--out-dir", args.out_dir,
+            "--n-known", str(args.n_known),
+            "--n-unknown", str(args.n_unknown),
+            "--seed", str(args.seed),
+            "--question-field", args.question_field,
+            "--unknown-field", args.unknown_field,
+            "--answer-field", args.answer_field,
+        ]
+    if command == "xdataset-behavior":
+        return "experiment/phase1/probe/phase3_xdataset_behavior_from_generation.py", [
+            "--generation", args.generation,
+            "--panel-rows", args.panel_rows,
+            "--out-dir", args.out_dir,
+        ]
     raise SystemExit(f"unsupported command {command!r}")
 
 
@@ -219,6 +257,8 @@ def run_validate(*, quick: bool, dry_run: bool) -> int:
             "experiment/phase1/probe/tests/test_phase3_behavior_axis_scan.py",
             "experiment/phase1/probe/tests/test_phase3_multicell_readout.py",
             "experiment/phase1/probe/tests/test_hidden_state_probe.py",
+            "experiment/phase1/probe/tests/test_phase3_xdataset_build_panel.py",
+            "experiment/phase1/probe/tests/test_phase3_xdataset_behavior_from_generation.py",
             "-q",
         ],
         [
@@ -232,6 +272,8 @@ def run_validate(*, quick: bool, dry_run: bool) -> int:
             "experiment/phase1/probe/phase3_behavior_axis_scan.py",
             "experiment/phase1/probe/phase3_multicell_readout.py",
             "experiment/phase1/probe/hidden_state_probe.py",
+            "experiment/phase1/probe/phase3_xdataset_build_panel.py",
+            "experiment/phase1/probe/phase3_xdataset_behavior_from_generation.py",
         ],
         ["bin/sync_skills.py", "--check"],
     ]
