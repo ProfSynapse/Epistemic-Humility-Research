@@ -29,6 +29,7 @@ Always choose the narrowest reference needed for the task:
 | Run behavior-axis scans, plane/multicell readouts, direction transforms, multi-layer candidates | [references/behavior-axis-path.md](references/behavior-axis-path.md) |
 | Test answer-sycophancy / helpfulness pressure across regimens | [references/sycophancy-probe-path.md](references/sycophancy-probe-path.md) |
 | Test whether a read-side finding generalizes to a second known/unknown dataset | [references/cross-dataset-transfer.md](references/cross-dataset-transfer.md) |
+| Test WHEN an axis fires vs the decision token (pre-commitment vs decision-echo, read-only) | [references/read-trajectory-timing.md](references/read-trajectory-timing.md) |
 
 Do not preload all references. Read only the file needed for the current
 operation, then follow any further routing inside it.
@@ -50,6 +51,8 @@ Windows console encoding failures.
 | Sycophancy generation analysis | `python .skills/mech-interp-runner/scripts/phase3_cli.py sycophancy-generation-analysis --generations <jsonl> --output-root <dir>` |
 | Cross-dataset panel (step 1) | `python .skills/mech-interp-runner/scripts/phase3_cli.py xdataset-build-panel --source <jsonl> --dataset <id> --out-dir <dir> --n-known 600 --n-unknown 400` |
 | Cross-dataset behavior rows (step 3) | `python .skills/mech-interp-runner/scripts/phase3_cli.py xdataset-behavior --generation <rows.jsonl> --panel-rows <gen_rows.jsonl> --out-dir <dir>` |
+| Residual caution direction (read-trajectory step 1) | `python .skills/mech-interp-runner/scripts/phase3_cli.py residual-caution-direction --extraction-dir <ext> --behavior-rows <rows.jsonl> --layer 35 --out <dir>/caution_direction_L35.json` |
+| Read-trajectory re-analysis (GPU-free) | `python .skills/mech-interp-runner/scripts/phase3_cli.py residual-read-trajectory-analysis --rows <rows.jsonl> --out <analysis.json>` |
 
 Use `--dry-run` on any subcommand to print the delegated command before running
 it. For live Docker/GPU execution the same approval rule applies: do not pass

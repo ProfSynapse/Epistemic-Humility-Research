@@ -4,7 +4,7 @@ session_id: '0025'
 title: uncertainty-monitor-hypothesis
 status: complete
 created_at: '2026-06-26T19:11:24Z'
-updated_at: '2026-06-27T00:06:05Z'
+updated_at: '2026-06-27T01:09:41Z'
 phase: phase-3-mech-interp
 question: "Is the sign-inverted per-head failure-axis direction a graded internal\
   \ UNCERTAINTY MONITOR (amplifying it raises abstention) rather than a be-wrong axis\
@@ -637,6 +637,32 @@ checkpoints:
   decisions: []
   next_steps: []
   signals: {}
+- id: 019-result
+  at: '2026-06-27T01:09:41Z'
+  kind: result
+  title: 'B2 caution-axis read-trajectory: PRE-COMMITMENT (decision-echo falsified)'
+  summary: 'Built a residual-stream read-trajectory harness (phase3_residual_read_trajectory.py
+    + _runner.py + fitter phase3_residual_caution_direction.py) for the CAUTION axis
+    (A2: known_refused vs known_correct_answered). Raw mass-mean L35 direction, prompt-token
+    AUROC 0.9094 (~A2 0.91). GPU run on 556 known SelfAware rows under baseline greedy
+    + a forward post-hook on decoder block 34, splitting pre/post refusal-lexicon
+    windows. RESULT: PRE-COMMITMENT. Pre-lexical separation (refused-answered) = +1.09
+    sigma, out-of-fit on generation positions, same sign as the by-construction prompt
+    sep -> the caution axis separates the two behaviors BEFORE the refusal phrase,
+    falsifying pure decision-echo. Refused rows spike pre-phrase (e.g. 7.28) then
+    relax (5.42); answered rows flat ~5.62. CAVEATS: read-only test cannot separate
+    monitor-vs-pre-formed-decision (causal=B1); direction fit under extraction prompt
+    but read under JSON generation prompt -> prompt-token sep collapses to +0.22 sigma
+    (operating-point shift), so the generation-internal pre-lexical contrast is the
+    robust number; Tier-2 single seed. Remaining read-side gap is only causal (B1
+    patching). Skill protocol added (references/read-trajectory-timing.md); 199 phase3
+    tests pass; mirrors synced.'
+  evidence: []
+  run_ids: []
+  commands: []
+  decisions: []
+  next_steps: []
+  signals: {}
 ---
 # uncertainty-monitor-hypothesis
 
@@ -859,3 +885,8 @@ failure-axis direction move abstention ~0 (67→63 cells) vs the localized heads
 - at: `2026-06-27T00:06:05Z`
 - kind: `result`
 - summary: Full GPU pipeline on KUQ (600 known/400 unknown, GRPO v2). New reusable scripts: phase3_xdataset_build_panel.py (panel+manifest), phase3_xdataset_behavior_from_generation.py (behavior cells). KUQ over-refuses 77% of 'known' (461 known_refused). FINDINGS: (1) caution-axis PHENOMENON replicates — A1 knowledge L25 0.974 vs lex 0.918 (+0.056), A2 caution L32 0.912 vs lex 0.680 (+0.233) depth-climbing, axis geometry |cos|=0.022 ORTHOGONAL. (2) caution DIRECTION largely dataset-specific — SelfAware vs KUQ |cos|=0.16-0.19 (~9x floor) PARTIAL-SHARED, far below within-SelfAware cross-regimen 0.58-0.86. (3) belief-action gap REVERSES — SelfAware over-refusal position 0.25 (looks KNOWN=over-refusal/humility tax) vs KUQ 0.68 (looks UNKNOWN=appropriate abstention). Construct cause: SelfAware known=model-knowable, KUQ known=answerable-in-principle (obscure trivia). Calibrated headline: properties are dataset-robust; direction+meaning are construct-conditioned; the humility-tax claim needs a model-knowable 'known' set.
+### 019-result - B2 caution-axis read-trajectory: PRE-COMMITMENT (decision-echo falsified)
+
+- at: `2026-06-27T01:09:41Z`
+- kind: `result`
+- summary: Built a residual-stream read-trajectory harness (phase3_residual_read_trajectory.py + _runner.py + fitter phase3_residual_caution_direction.py) for the CAUTION axis (A2: known_refused vs known_correct_answered). Raw mass-mean L35 direction, prompt-token AUROC 0.9094 (~A2 0.91). GPU run on 556 known SelfAware rows under baseline greedy + a forward post-hook on decoder block 34, splitting pre/post refusal-lexicon windows. RESULT: PRE-COMMITMENT. Pre-lexical separation (refused-answered) = +1.09 sigma, out-of-fit on generation positions, same sign as the by-construction prompt sep -> the caution axis separates the two behaviors BEFORE the refusal phrase, falsifying pure decision-echo. Refused rows spike pre-phrase (e.g. 7.28) then relax (5.42); answered rows flat ~5.62. CAVEATS: read-only test cannot separate monitor-vs-pre-formed-decision (causal=B1); direction fit under extraction prompt but read under JSON generation prompt -> prompt-token sep collapses to +0.22 sigma (operating-point shift), so the generation-internal pre-lexical contrast is the robust number; Tier-2 single seed. Remaining read-side gap is only causal (B1 patching). Skill protocol added (references/read-trajectory-timing.md); 199 phase3 tests pass; mirrors synced.

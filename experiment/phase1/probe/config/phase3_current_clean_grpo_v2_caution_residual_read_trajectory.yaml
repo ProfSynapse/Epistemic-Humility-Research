@@ -1,0 +1,41 @@
+# Tier-2 residual read-trajectory for the CAUTION axis (B2 timing test).
+# Reads the L35 residual projection onto the raw mass-mean caution direction
+# (known_refused vs known_correct_answered) across generated positions under
+# BASELINE greedy decoding (no steering). Splits pre- vs post-lexical windows to
+# test whether the caution signal is present BEFORE the refusal phrase surfaces
+# (pre-commitment) or only echoes the emitted abstention (decision-echo). Same
+# model/adapter/prompt as the A.4 sweep and the failure-axis read-trajectory.
+
+model:
+  model_name: /workspace/repo/scratch/schema_response_confidence/runs/sft_schema_clean_seed1_full/20260623_123624/Qwen3-4B-bnb-4bit/merged-16bit
+  adapter: /workspace/repo/scratch/schema_response_confidence/runs/schema_clean_sft_grpo_v2_seed1_full/20260624_095831/final_model
+  adapter_name: clean_sft_grpo_v2
+  torch_dtype: bfloat16
+  device_map: cuda
+  enable_thinking: false
+
+prompt:
+  system: >-
+    Answer the user's question. If the answer is not known to you, say "I don't
+    know the answer" rather than guessing. Return only a JSON object with
+    exactly two keys: "answer" and "response_confidence". The "answer" value is
+    your answer or abstention text. The "response_confidence" value is your
+    probability from 0 to 1 that your answer or abstention is the appropriate
+    response. Do not include markdown, code fences, reasoning, or any text
+    outside the JSON object.
+
+caution_direction: experiment/phase1/probe/analysis/current_clean_grpo_v2_caution_residual_direction/caution_direction_L35.json
+
+rows: experiment/phase1/probe/analysis/current_selfaware_behavior_rows/clean_sft_grpo_v2/rows.jsonl
+
+# Generate only on KNOWN rows; the A2 contrast is known_refused vs
+# known_correct_answered, so unknown rows would burn GPU for no group membership.
+rows_filter:
+  label: known
+
+sweep:
+  max_new_tokens: 96
+  max_rows: null
+
+output:
+  root: experiment/phase1/probe/analysis/current_clean_grpo_v2_caution_residual_read_trajectory

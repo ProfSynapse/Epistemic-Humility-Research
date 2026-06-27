@@ -152,6 +152,21 @@ def build_parser() -> argparse.ArgumentParser:
     p.add_argument("--out-dir", required=True)
     _add_dry_run(p)
 
+    p = sub.add_parser("residual-caution-direction",
+                       help="Fit the raw mass-mean caution direction for the residual read-trajectory (GPU-free)")
+    p.add_argument("--extraction-dir", required=True, help="dir of per-row *_h_lora.safetensors")
+    p.add_argument("--behavior-rows", required=True, help="rows.jsonl with probe_pool_row_key + behavior_cell")
+    p.add_argument("--layer", type=int, default=35, help="hidden_states layer (default 35)")
+    p.add_argument("--source", default="h_lora", choices=["h_lora", "h_base", "delta"])
+    p.add_argument("--out", required=True, help="output caution_direction JSON path")
+    _add_dry_run(p)
+
+    p = sub.add_parser("residual-read-trajectory-analysis",
+                       help="Re-run the GPU-free pre/post-lexical analysis over a trajectory rows.jsonl")
+    p.add_argument("--rows", required=True, help="runner rows.jsonl with per-row trajectory summaries")
+    p.add_argument("--out", required=True)
+    _add_dry_run(p)
+
     p = sub.add_parser("validate", help="Run the focused Phase 3 non-GPU validation set")
     p.add_argument("--quick", action="store_true", help="Only run CLI/unit tests for the skill wrapper")
     _add_dry_run(p)
@@ -231,6 +246,19 @@ def command_args(args: argparse.Namespace) -> tuple[str, list[str]]:
             "--panel-rows", args.panel_rows,
             "--out-dir", args.out_dir,
         ]
+    if command == "residual-caution-direction":
+        return "experiment/phase1/probe/phase3_residual_caution_direction.py", [
+            "--extraction-dir", args.extraction_dir,
+            "--behavior-rows", args.behavior_rows,
+            "--layer", str(args.layer),
+            "--source", args.source,
+            "--out", args.out,
+        ]
+    if command == "residual-read-trajectory-analysis":
+        return "experiment/phase1/probe/phase3_residual_read_trajectory.py", [
+            "--rows", args.rows,
+            "--out", args.out,
+        ]
     raise SystemExit(f"unsupported command {command!r}")
 
 
@@ -259,6 +287,8 @@ def run_validate(*, quick: bool, dry_run: bool) -> int:
             "experiment/phase1/probe/tests/test_hidden_state_probe.py",
             "experiment/phase1/probe/tests/test_phase3_xdataset_build_panel.py",
             "experiment/phase1/probe/tests/test_phase3_xdataset_behavior_from_generation.py",
+            "experiment/phase1/probe/tests/test_phase3_residual_read_trajectory.py",
+            "experiment/phase1/probe/tests/test_phase3_residual_caution_direction.py",
             "-q",
         ],
         [
@@ -274,6 +304,9 @@ def run_validate(*, quick: bool, dry_run: bool) -> int:
             "experiment/phase1/probe/hidden_state_probe.py",
             "experiment/phase1/probe/phase3_xdataset_build_panel.py",
             "experiment/phase1/probe/phase3_xdataset_behavior_from_generation.py",
+            "experiment/phase1/probe/phase3_residual_caution_direction.py",
+            "experiment/phase1/probe/phase3_residual_read_trajectory.py",
+            "experiment/phase1/probe/phase3_residual_read_trajectory_runner.py",
         ],
         ["bin/sync_skills.py", "--check"],
     ]
