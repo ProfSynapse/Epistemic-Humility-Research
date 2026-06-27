@@ -4,7 +4,7 @@ session_id: '0026'
 title: caution-vs-doubt-knowledge-gate
 status: active
 created_at: '2026-06-27T09:37:23Z'
-updated_at: '2026-06-27T10:24:44Z'
+updated_at: '2026-06-27T10:32:31Z'
 phase: phase3
 question: Are caution (a late refuse/answer gate) and doubt (graded knowledge-axis
   position) separable signals, and is over-refusal a miscalibrated late gate over
@@ -246,6 +246,31 @@ checkpoints:
   - 'On sign-off: CPU preflight v3 re-scoring of v2 rollouts (confirm group targets
     spread), then B0 train+eval vs clean-sft-grpo-v2.'
   signals: {}
+- id: 007-validation
+  at: '2026-06-27T10:32:31Z'
+  kind: validation
+  title: "v3 reward CPU preflight GREEN \u2014 B0 de-risked"
+  summary: 'Re-scored 19904 real GRPO rollouts (v1 full reward_debug, 4211 distinct
+    prompts; refused/correct re-derived with base reward matchers, grouped by gold-answer
+    set) with the v3 proper-scoring reward via experiment/phase1/grpo/v3_reward_preflight.py.
+    Q1 group-target spread: mean 0.571, std 0.320, range 0-1, 65.6% in [0.2,0.8] ->
+    the degenerate-target collapse-one-level-up risk is empirically ABSENT (v3 has
+    real per-prompt signal). Q2 behavior ordering on real data: known_correct +3.04
+    > unknown_abstain +2.20 > known_wrong -0.45 > known_over_refusal -1.78 (behavior
+    dominance holds beyond unit tests). Q3 proper scoring beats flat 0.82 on 4211/4211
+    prompts (mean Brier gain +0.394). PREFLIGHT GREEN: B0 well-posed.'
+  evidence:
+  - experiment/phase1/grpo/v3_reward_preflight.py; scratch/schema_response_confidence/reward_debug/schema_sft_grpo_seed1_full_b32_latest.jsonl
+  run_ids: []
+  commands: []
+  decisions:
+  - B0 (clean SFT -> GRPO-v3) is the de-risked primary arm. Spread is a property of
+    the fixed question set's difficulty range so it survives the policy shift during
+    training.
+  next_steps:
+  - B0 gated on user sign-off + governed PROTOCOL amendment before any GPU training
+    run.
+  signals: {}
 ---
 # caution-vs-doubt-knowledge-gate
 
@@ -328,3 +353,14 @@ _No summary yet._
   - Primary lever is the v3 GRPO proper-scoring reward (arm B0: clean SFT -> GRPO-v3), NOT redoing the SFT dataset. Redoing SFT with naive computed confidence is unnecessary for anti-collapse (clean SFT already spread) and insufficient alone (collapses from target imbalance). Secondary open arm: quantile-balanced per-question SFT target.
 - next steps:
   - On sign-off: CPU preflight v3 re-scoring of v2 rollouts (confirm group targets spread), then B0 train+eval vs clean-sft-grpo-v2.
+### 007-validation - v3 reward CPU preflight GREEN — B0 de-risked
+
+- at: `2026-06-27T10:32:31Z`
+- kind: `validation`
+- summary: Re-scored 19904 real GRPO rollouts (v1 full reward_debug, 4211 distinct prompts; refused/correct re-derived with base reward matchers, grouped by gold-answer set) with the v3 proper-scoring reward via experiment/phase1/grpo/v3_reward_preflight.py. Q1 group-target spread: mean 0.571, std 0.320, range 0-1, 65.6% in [0.2,0.8] -> the degenerate-target collapse-one-level-up risk is empirically ABSENT (v3 has real per-prompt signal). Q2 behavior ordering on real data: known_correct +3.04 > unknown_abstain +2.20 > known_wrong -0.45 > known_over_refusal -1.78 (behavior dominance holds beyond unit tests). Q3 proper scoring beats flat 0.82 on 4211/4211 prompts (mean Brier gain +0.394). PREFLIGHT GREEN: B0 well-posed.
+- evidence:
+  - `experiment/phase1/grpo/v3_reward_preflight.py; scratch/schema_response_confidence/reward_debug/schema_sft_grpo_seed1_full_b32_latest.jsonl`
+- decisions:
+  - B0 (clean SFT -> GRPO-v3) is the de-risked primary arm. Spread is a property of the fixed question set's difficulty range so it survives the policy shift during training.
+- next steps:
+  - B0 gated on user sign-off + governed PROTOCOL amendment before any GPU training run.
