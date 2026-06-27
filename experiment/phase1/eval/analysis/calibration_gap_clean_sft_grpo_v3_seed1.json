@@ -1,0 +1,46 @@
+{
+  "scored_rows": "experiment/phase1/eval/results_amendment_j_response_confidence_selfaware_clean_sft_grpo_v3_seed1_full_4b/clean_schema_sft_grpo_v3_seed1__selfaware/scored_rows.jsonl",
+  "n_scored": 3369,
+  "A_full_eval": {
+    "n": 3369,
+    "emitted_mean": 0.8494457108934402,
+    "emitted_std": 0.02726221245819721,
+    "emitted_min": 0.711,
+    "emitted_max": 0.8888,
+    "emitted_unique": 49,
+    "appropriateness_rate": 0.40991392104482044,
+    "ece_vs_appropriateness": 0.43953178984861985,
+    "brier_vs_appropriateness": 0.4345233276877412,
+    "auroc_emitted_to_appropriateness": 0.522137167683873,
+    "answered_known_n": 815,
+    "answered_known_n_wrong": 387,
+    "auroc_emitted_correct_vs_wrong_answered_known": 0.5999420415851626,
+    "per_cell_emitted_mean": {
+      "known_answered_wrong": {
+        "n": 387,
+        "mean": 0.8422266149870801,
+        "std": 0.022927232144613653
+      },
+      "known_correct_answered": {
+        "n": 428,
+        "mean": 0.852302570093458,
+        "std": 0.023381421211735632
+      },
+      "known_refused": {
+        "n": 1522,
+        "mean": 0.85060814717477,
+        "std": 0.027999744448982032
+      },
+      "unknown_answered_wrong": {
+        "n": 79,
+        "mean": 0.8348531645569619,
+        "std": 0.0314948653056096
+      },
+      "unknown_refused": {
+        "n": 953,
+        "mean": 0.8504474291710389,
+        "std": 0.028080176698185712
+      }
+    }
+  }
+}
