@@ -105,6 +105,34 @@ target (quantile-map the probe `appropriateness_p` onto a spread band) — combi
 the contrastive anti-collapse property with per-question grounding. This is a
 *secondary* arm; the reward fix is primary.
 
+## Preflight result (2026-06-27) — B0 de-risked, GREEN
+
+CPU re-scoring of **19,904 real GRPO rollouts** (v1 full-run `reward_debug`, 4211
+distinct prompts; `refused`/`correct` re-derived with the base reward's own
+matchers, grouped by gold-answer set) with the v3 reward
+(`experiment/phase1/grpo/v3_reward_preflight.py <reward_debug.jsonl>`):
+
+- **Q1 — group-target spread (THE risk):** per-prompt mean-appropriateness targets
+  span **0.000–1.000, mean 0.571, std 0.320**; **65.6%** of prompts fall in
+  [0.2, 0.8]. The distribution is broad, not a spike → the "Brier optimum is still
+  ~constant" collapse-one-level-up risk is **NOT realized**. v3's group target has
+  real per-prompt dynamic range to move confidence. (Spread is a property of the
+  fixed question set's difficulty range, so it survives the policy shift during
+  training.)
+- **Q2 — behavior ordering on real data:** `known_correct +3.04 > unknown_abstain
+  +2.20 > known_wrong −0.45 > known_over_refusal −1.78` (also unknown_answer
+  −0.62). Behavior dominance holds on rollouts, not just unit tests.
+- **Q3 — proper scoring beats the flat prior:** emitting the group target beats a
+  flat 0.82 on **4211/4211** prompts (mean Brier gain +0.394). The constant is
+  strictly sub-optimal everywhere — exactly the mechanism v3 installs.
+
+**Reading:** B0 is well-posed. The one quantitative risk that could have made v3 a
+no-op (degenerate group targets) is empirically absent in this question set. Caveat:
+targets here are computed from the v1 policy's accuracy; the *level* shifts as the
+policy improves, but the *spread* (driven by question difficulty) is robust. Self-
+consistent matcher caveat: re-derived correctness uses the same base matcher v3
+uses in-loop, so the preflight and training agree by construction.
+
 ## Design — primary reward arm + attribution controls
 
 The audit collapses the original 2×2 (two of its four cells are already answered).
@@ -155,11 +183,10 @@ spending compute on all objectives before knowing the seed matters.
    the v3 proper-scoring reward (`target_mode="group"`). Eval emitted-confidence
    std / ECE / correct-vs-wrong AUROC + behavior vs `clean-sft-grpo-v2`. This is
    the single highest-ROI run.
-3. CPU preflight before B0: re-score a sample of v2 reward-debug rollouts with v3;
-   confirm behavior ordering preserved AND the group targets actually spread across
-   prompts (if group targets are near-constant, Brier optimum is still ~constant —
-   the SFT collapse risk reappears one level up; mitigate by difficulty-stratified
-   batches).
+3. ~~CPU preflight before B0~~ **DONE (2026-06-27) — GREEN, see Preflight result.**
+   Re-scored 19,904 real GRPO rollouts: group targets spread (std 0.320 over 4211
+   prompts), behavior ordering preserved, calibrated beats flat on 4211/4211. The
+   collapse-one-level-up risk is NOT realized in the data.
 4. If B0 falls short: build the **quantile-balanced probe-scaled** SFT target (per-
    question grounded AND distribution-spread, unlike the §004 naive version), train
    B1 (→ GRPO-v3), compare.
@@ -210,3 +237,8 @@ here. Does not feed meta-analysis or alter PROTOCOL v0.3 cells without amendment
   insufficient alone. Secondary open arm: quantile-balanced per-question SFT target.
   Brier-vs-appropriateness was already an eval metric (0.3697, §023); session 0026
   added the ECE/AUROC/internal-coherence framing. Design only; B0 awaits sign-off.
+- 2026-06-27: **CPU preflight DONE — B0 de-risked, GREEN** (see Preflight result).
+  19,904 real rollouts re-scored with v3: group targets spread (std 0.320 / 4211
+  prompts, 65.6% in [0.2,0.8]); behavior ordering preserved; calibrated beats flat
+  on 4211/4211 (mean Brier gain +0.394). The degenerate-target risk is empirically
+  absent. B0 remains gated on user sign-off + a governed amendment before any run.
