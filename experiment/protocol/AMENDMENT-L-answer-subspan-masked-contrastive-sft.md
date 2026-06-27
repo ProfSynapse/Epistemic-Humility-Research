@@ -1,6 +1,6 @@
 # Protocol Amendment L: Answer-Sub-Span-Masked Contrastive Schema-SFT
 
-**Status:** DRAFT — pending user sign-off
+**Status:** SIGNED — user-authorized 2026-06-27 ("Approve")
 
 **Short name:** Amendment L / masked-contrastive-SFT calibration base
 
@@ -191,7 +191,7 @@ J, or the Amendment K artifact.
 
 ## 6. Sign-Off Checklist
 
-- approval date: _pending_
+- approval date: 2026-06-27
 - approved scope: one local seed-1 SFT cell `schema_contrastive_masked_sft_seed1`,
   trained to completion, local 4B lane; one generic engine feature (per-row
   sub-span loss masking) + tests
@@ -202,4 +202,4 @@ J, or the Amendment K artifact.
 - gates frozen: yes (§4 calibration gate reused from K + behavior gate)
 - risk acknowledged: yes (offsets require a fast tokenizer; masking is additive
   and byte-identical when absent; behavior-via-other-channel fallback documented)
-- authorization: _pending user sign-off_
+- authorization: user, 2026-06-27 — "Approve"
