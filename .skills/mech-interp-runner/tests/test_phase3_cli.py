@@ -125,6 +125,42 @@ def test_command_args_builds_xdataset_behavior():
     ]
 
 
+def test_command_args_builds_residual_caution_direction():
+    parser = phase3_cli.build_parser()
+    args = parser.parse_args([
+        "residual-caution-direction",
+        "--extraction-dir", "probe/x/extraction__abc",
+        "--behavior-rows", "probe/y/rows.jsonl",
+        "--layer", "35",
+        "--out", "probe/z/caution_direction_L35.json",
+    ])
+
+    script, out = phase3_cli.command_args(args)
+
+    assert script == "experiment/phase1/probe/phase3_residual_caution_direction.py"
+    assert out == [
+        "--extraction-dir", "probe/x/extraction__abc",
+        "--behavior-rows", "probe/y/rows.jsonl",
+        "--layer", "35",
+        "--source", "h_lora",
+        "--out", "probe/z/caution_direction_L35.json",
+    ]
+
+
+def test_command_args_builds_residual_read_trajectory_analysis():
+    parser = phase3_cli.build_parser()
+    args = parser.parse_args([
+        "residual-read-trajectory-analysis",
+        "--rows", "probe/t/rows.jsonl",
+        "--out", "probe/t/analysis.json",
+    ])
+
+    script, out = phase3_cli.command_args(args)
+
+    assert script == "experiment/phase1/probe/phase3_residual_read_trajectory.py"
+    assert out == ["--rows", "probe/t/rows.jsonl", "--out", "probe/t/analysis.json"]
+
+
 def test_subprocess_env_forces_utf8(monkeypatch):
     captured = {}
     monkeypatch.setenv("PYTHONIOENCODING", "cp1252")

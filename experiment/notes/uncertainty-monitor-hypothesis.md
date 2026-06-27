@@ -563,3 +563,38 @@ choose B vs C with the user.
     is not.** Artifacts (gitignored): `analysis/_xdataset_kuq_controls/` +
     `xdataset/kuq_*`. Reusable scripts + configs checked in; this is the basis for
     the Task-6 cross-dataset protocol in the mech-interp-runner skill.
+- 2026-06-26: **B2 caution-axis read-side TIMING test (residual read-trajectory,
+  GRPO v2, SelfAware, full GPU).** New residual-stream variant of the read-
+  trajectory harness (`phase3_residual_read_trajectory.py` + `_runner.py`,
+  direction fitter `phase3_residual_caution_direction.py`): reads the L35 residual
+  projection onto the **raw mass-mean caution direction** (known_refused vs
+  known_correct_answered) at every generated position under BASELINE greedy
+  decoding, and splits **pre- vs post-lexical** windows by the refusal-phrase
+  onset. Ran on all 556 known rows (168 refused / 373 answered). Direction
+  sanity: raw mass-mean prompt-token AUROC **0.9094** ≈ the whitened A2 logistic
+  0.91 → the raw direction captures the same caution axis. **Result:
+  PRE-COMMITMENT.** Pre-lexical separation (refused − answered) = **+1.09σ**
+  (refused 6.72 vs answered 5.62), held OUT-OF-FIT on generation positions, same
+  sign as the by-construction prompt sep — the caution axis already separates the
+  two behaviors BEFORE the refusal words are emitted, so a **pure decision-echo is
+  falsified**. Mechanism is visible per row: refused rows **spike** on the caution
+  axis just before "I don't know" (e.g. pre 7.28 → post 5.42) then relax; answered
+  rows stay flat (~5.62) and by construction never enter a post-lexical window
+  (post-lexical neg group empty/nan). 167/168 refused rows onset-detected (lone
+  miss is a scorer edge case, not a refusal). **Calibration / caveats
+  (non-sycophantic):** (1) a read-only timing test can falsify decision-echo but
+  CANNOT separate a *monitor* (caution state causes the refusal) from a
+  *pre-formed-but-unverbalized decision* — that is causal and remains B1's job;
+  (2) the direction/σ were fit on the SelfAware FULL extraction (default render)
+  but read under the JSON response-confidence generation prompt, so the
+  standardized **prompt-token** separation collapses to +0.22σ (operating-point
+  shift across prompts) even though the held-out fit-prompt A2 AUROC is 0.91 — the
+  robust, internally-consistent number is the generation-internal pre-lexical
+  contrast (+1.09σ), and under the generation prompt the signal *strengthens* from
+  the prompt token through the JSON scaffold to the pre-lexical peak; (3) Tier-2,
+  single seed. Remaining read-side gap is now only CAUSAL (B1 activation
+  patching). Artifacts (gitignored):
+  `analysis/current_clean_grpo_v2_caution_residual_read_trajectory/` +
+  `analysis/current_clean_grpo_v2_caution_residual_direction/`. Harness + config +
+  tests checked in; protocol added to the mech-interp-runner skill
+  (`references/read-trajectory-timing.md`).
