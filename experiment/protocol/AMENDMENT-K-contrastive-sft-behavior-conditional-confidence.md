@@ -114,8 +114,16 @@ contrastive low-confidence tail," to be proposed as a revised amendment.
 
 ### 3.3 Config files
 
-- `experiment/phase1/grpo/configs/sft_schema_contrastive_seed1_smoke.yaml`
-- `experiment/phase1/grpo/configs/sft_schema_contrastive_seed1_full.yaml`
+The SFT trainer (`synaptic-tuner/Trainers/sft/train_sft.py --config <file>`) consumes
+a **Python config module** exporting a `Config()` function (it `exec`s the file and
+calls `Config()`), NOT a YAML — unlike the GRPO trainer. The proven contrastive
+configs already exist from session 0018 and mirror the clean-SFT recipe exactly
+(`completion_only_loss=True`, `assistant_only_loss=False` → lineage reports
+`loss_mask_mode: assistant_only`; batch 10; LR 2e-4; LoRA r32/α64; seed 1); only the
+dataset and `output_dir` differ from the clean-SFT cell:
+
+- `experiment/phase1/grpo/configs/sft_schema_contrastive_response_confidence_seed1_smoke_config.py`
+- `experiment/phase1/grpo/configs/sft_schema_contrastive_response_confidence_seed1_full_config.py`
 
 ## 4. Launch Sequence And Gates
 

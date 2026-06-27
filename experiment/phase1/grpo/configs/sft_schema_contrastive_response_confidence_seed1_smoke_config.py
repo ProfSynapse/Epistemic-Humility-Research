@@ -24,7 +24,7 @@ def Config():  # noqa: N802 - train_sft.py expects this exact symbol.
     config.dataset.filter_desirable = False
 
     config.training.output_dir = "scratch/schema_response_confidence/runs/sft_schema_contrastive_seed1_smoke"
-    config.training.per_device_train_batch_size = 12
+    config.training.per_device_train_batch_size = 10
     config.training.gradient_accumulation_steps = 1
     config.training.learning_rate = 2.0e-4
     config.training.max_grad_norm = 1.0
