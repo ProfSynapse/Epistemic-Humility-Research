@@ -4,7 +4,7 @@ session_id: '0026'
 title: caution-vs-doubt-knowledge-gate
 status: active
 created_at: '2026-06-27T09:37:23Z'
-updated_at: '2026-06-27T10:11:42Z'
+updated_at: '2026-06-27T10:24:44Z'
 phase: phase3
 question: Are caution (a late refuse/answer gate) and doubt (graded knowledge-axis
   position) separable signals, and is over-refusal a miscalibrated late gate over
@@ -216,6 +216,36 @@ checkpoints:
   - Commit B1 module/runner/config/tests + PR; draft new SFT-computed-confidence training
     regimen note; refined B1 on caution_perp.
   signals: {}
+- id: 006-interpretation
+  at: '2026-06-27T10:24:44Z'
+  kind: interpretation
+  title: 'Audit: emitted-confidence collapse is GRPO-driven, not SFT-driven'
+  summary: 'Read-only audit of session 0018 corrects the computed-confidence regimen
+    premise. (1) The clean SFT base is NOT a flat-0.8 prior: 2489 unique confidence
+    values spread 0.35-0.9, mean 0.788 (0018 section 009). (2) Probe-scaled (computed
+    per-question) SFT was ALREADY run and collapsed to a single value 0.8765 because
+    the target distribution is imbalanced (modal target 0.8765 covered 81.79% of rows,
+    low-band rows 0) -> SFT minimized loss by emitting the mode; explicitly paused,
+    not taken downstream (section 004). (3) The emitted-confidence collapse is GRPO-driven:
+    clean SFT emits a spread, GRPO v1 already banded it (known/unknown means 0.746/0.747
+    nearly identical, top value 0.711 on 1521 rows, section 023) and v2 tightened
+    to std 0.015 (session 0026), because the v1/v2 reward made a near-constant confidence
+    reward-optimal. Brier-vs-appropriateness was already an eval metric (GRPO v1 0.3697);
+    session 0026 added the ECE/AUROC/internal-coherence framing.'
+  evidence:
+  - docs/sessions/0018 - probe-scaled-response-confidence-retrain.md; experiment/phase1/eval/results_amendment_e_response_confidence_selfaware_clean_sft_grpo_seed1_corrected_base_full_4b/
+  run_ids: []
+  commands: []
+  decisions:
+  - 'Primary lever is the v3 GRPO proper-scoring reward (arm B0: clean SFT -> GRPO-v3),
+    NOT redoing the SFT dataset. Redoing SFT with naive computed confidence is unnecessary
+    for anti-collapse (clean SFT already spread) and insufficient alone (collapses
+    from target imbalance). Secondary open arm: quantile-balanced per-question SFT
+    target.'
+  next_steps:
+  - 'On sign-off: CPU preflight v3 re-scoring of v2 rollouts (confirm group targets
+    spread), then B0 train+eval vs clean-sft-grpo-v2.'
+  signals: {}
 ---
 # caution-vs-doubt-knowledge-gate
 
@@ -287,3 +317,14 @@ _No summary yet._
   - Caution gate is causal for over-refusal, not merely correlational. Refined B1 should ablate caution_perp (doubt-orthogonalized) to attribute the residual split.
 - next steps:
   - Commit B1 module/runner/config/tests + PR; draft new SFT-computed-confidence training regimen note; refined B1 on caution_perp.
+### 006-interpretation - Audit: emitted-confidence collapse is GRPO-driven, not SFT-driven
+
+- at: `2026-06-27T10:24:44Z`
+- kind: `interpretation`
+- summary: Read-only audit of session 0018 corrects the computed-confidence regimen premise. (1) The clean SFT base is NOT a flat-0.8 prior: 2489 unique confidence values spread 0.35-0.9, mean 0.788 (0018 section 009). (2) Probe-scaled (computed per-question) SFT was ALREADY run and collapsed to a single value 0.8765 because the target distribution is imbalanced (modal target 0.8765 covered 81.79% of rows, low-band rows 0) -> SFT minimized loss by emitting the mode; explicitly paused, not taken downstream (section 004). (3) The emitted-confidence collapse is GRPO-driven: clean SFT emits a spread, GRPO v1 already banded it (known/unknown means 0.746/0.747 nearly identical, top value 0.711 on 1521 rows, section 023) and v2 tightened to std 0.015 (session 0026), because the v1/v2 reward made a near-constant confidence reward-optimal. Brier-vs-appropriateness was already an eval metric (GRPO v1 0.3697); session 0026 added the ECE/AUROC/internal-coherence framing.
+- evidence:
+  - `docs/sessions/0018 - probe-scaled-response-confidence-retrain.md; experiment/phase1/eval/results_amendment_e_response_confidence_selfaware_clean_sft_grpo_seed1_corrected_base_full_4b/`
+- decisions:
+  - Primary lever is the v3 GRPO proper-scoring reward (arm B0: clean SFT -> GRPO-v3), NOT redoing the SFT dataset. Redoing SFT with naive computed confidence is unnecessary for anti-collapse (clean SFT already spread) and insufficient alone (collapses from target imbalance). Secondary open arm: quantile-balanced per-question SFT target.
+- next steps:
+  - On sign-off: CPU preflight v3 re-scoring of v2 rollouts (confirm group targets spread), then B0 train+eval vs clean-sft-grpo-v2.
