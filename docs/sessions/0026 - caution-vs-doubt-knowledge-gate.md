@@ -406,6 +406,6 @@ _No summary yet._
 - evidence:
   - `scratch/schema_response_confidence/runs/schema_clean_sft_grpo_v3_seed1_smoke/20260627_113404/; scratch/schema_response_confidence/reward_debug/schema_clean_sft_grpo_v3_seed1_smoke.jsonl`
 - decisions:
-  - Smoke->full gate PASSED; launched the full B0 run (container phase3-grpo-v3-full, config grpo_schema_clean_sft_merged_seed1_v3_full.yaml, 1 epoch ~465 steps over 14888 examples, reward-debug to schema_clean_sft_grpo_v3_seed1_full.jsonl). v2 cell outputs untouched (distinct run dir).
+  - Smoke->full gate PASSED; launched the full B0 run (container phase3-grpo-v3-full, config grpo_schema_clean_sft_merged_seed1_v3_full.yaml, 1 epoch = 1861 optimizer steps over 14888 prompts at 8 unique prompts/step [batch 32 / num_generations 4], reward-debug to schema_clean_sft_grpo_v3_seed1_full.jsonl). First launch died on a run-dir PermissionError (container uid 1001 could not mkdir inside my uid-1000 755 dir); fixed by chmod 777 on the full output dir (same treatment the smoke dir already had) and relaunched -- training started clean (run dir 20260627_114253). v2 cell outputs untouched (distinct run dir).
 - next steps:
   - On full completion: merge adapter, run the Amendment E/F SelfAware eval, then calibration_gap_report.py on B0 scored_rows for the apples-to-apples table vs v2 (target: emitted std up from 0.013, ECE-vs-appropriateness down from 0.403, AUROC->known/appropriateness up toward internal 0.97, Spearman(internal,emitted) up); re-probe L35 doubt-axis coherence.
