@@ -114,16 +114,20 @@ contrastive low-confidence tail," to be proposed as a revised amendment.
 
 ### 3.3 Config files
 
-The SFT trainer (`synaptic-tuner/Trainers/sft/train_sft.py --config <file>`) consumes
-a **Python config module** exporting a `Config()` function (it `exec`s the file and
-calls `Config()`), NOT a YAML — unlike the GRPO trainer. The proven contrastive
-configs already exist from session 0018 and mirror the clean-SFT recipe exactly
-(`completion_only_loss=True`, `assistant_only_loss=False` → lineage reports
-`loss_mask_mode: assistant_only`; batch 10; LR 2e-4; LoRA r32/α64; seed 1); only the
-dataset and `output_dir` differ from the clean-SFT cell:
+Both the SFT and GRPO trainers now consume **YAML** configs via `--config` (the SFT
+trainer's `train_sft.py` was given generic YAML support — it routes a `*.yaml`/`*.yml`
+path to the existing `config_loader.load_config()`, falling back to the legacy
+Python-`Config()` module for any non-YAML path; backward-compatible, generic engine
+change in the `synaptic-tuner` submodule). The contrastive configs mirror the
+clean-SFT recipe exactly (`completion_only_loss: true`, `assistant_only_loss: false`
+→ lineage reports `loss_mask_mode: assistant_only`; batch 10; LR 2e-4; LoRA r32/α64;
+seed 1); only the dataset and `output_dir` differ from the clean-SFT cell:
 
-- `experiment/phase1/grpo/configs/sft_schema_contrastive_response_confidence_seed1_smoke_config.py`
-- `experiment/phase1/grpo/configs/sft_schema_contrastive_response_confidence_seed1_full_config.py`
+- `experiment/phase1/grpo/configs/sft_schema_contrastive_seed1_smoke.yaml`
+- `experiment/phase1/grpo/configs/sft_schema_contrastive_seed1_full.yaml`
+
+(These YAMLs were validated to load byte-identically to the prior session-0018
+`*_config.py` modules, which are now superseded and removed.)
 
 ## 4. Launch Sequence And Gates
 
