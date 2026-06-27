@@ -1,6 +1,6 @@
 # Protocol Amendment K: Full Contrastive Schema-SFT for Behavior-Conditional Response Confidence
 
-**Status:** DRAFT — PENDING USER SIGN-OFF (do not launch training until signed)
+**Status:** SIGNED — user-authorized 2026-06-27 ("Proceed")
 
 **Short name:** Amendment K / contrastive-SFT calibration base
 
@@ -160,7 +160,7 @@ base, or Amendment J.
 
 ## 6. Sign-Off Checklist
 
-- approval date: __________ (pending)
+- approval date: 2026-06-27
 - approved scope: one local seed-1 SFT cell `schema_contrastive_sft_seed1`,
   trained to completion, local 4B lane
 - approved dataset: `sft_response_confidence_train_contrastive.jsonl` (committed
@@ -170,4 +170,4 @@ base, or Amendment J.
 - gates frozen: yes (§4 calibration gate + behavior gate)
 - known risk acknowledged: yes (§3.2 wrong-answer supervision; behavior gate is
   the mitigation; documented fallback on gate failure)
-- authorization: __________ (pending user sign-off)
+- authorization: user, 2026-06-27 — "Proceed"
