@@ -54,7 +54,11 @@ governed: changes need explicit rationale, changelog, and user approval.
 ## Skills And When To Use Them
 
 - `experiment-runner`: use for experiment orchestration, matrix/runnable-cell
-  checks, lane preparation, run records, and experiment smoke tests.
+  checks, lane preparation, run records, and experiment smoke tests. Before
+  changing a protocol, adding a cell/arm, or recording experiment work, consult
+  its `reference/amendment-vs-lab-notebook.md` to pick the right instrument
+  (signed protocol revision vs Amendment vs lab-notebook entry) — do not mint a
+  new amendment for a smoke, diagnostic, re-run, or authorized-knob tuning.
 - `knowledge-graph`: use for validating, exporting, analyzing, or searching the
   typed research graph.
 - `kg-ingest`: use when adding or backfilling papers into the library as typed
@@ -121,6 +125,14 @@ inspection or fixture debugging.
 - Prefer deterministic scripts, manifests, and tests over manual result edits.
 - Preserve registered protocols and paper claims unless the user explicitly asks
   for a governed revision.
+- Match the instrument to the work (see the experiment-runner
+  `reference/amendment-vs-lab-notebook.md`): the locked headline matrix is the
+  only confirmatory surface and its numbers are the only claims; amendment cells
+  are exploratory and reported separately, never pooled with the headline. Every
+  amendment pre-states a prediction, a falsifier, and its gates before the run,
+  and never moves the goalposts after the result. Promote an exploratory win to a
+  claim only via a confirmatory replication (fresh seeds / larger model /
+  held-out) registered before running it.
 - When tests appear absent or oddly skipped, verify with an explicit test file or
   non-wrapper command before concluding there is no test coverage.
 <!-- PROJECT_ORCHESTRATOR_END -->

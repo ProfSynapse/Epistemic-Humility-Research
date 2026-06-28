@@ -4,6 +4,15 @@ Use this when experiment work changes or extends a governed protocol surface:
 hypotheses, arms, output contracts, metrics, rerun scope, launch matrix,
 reporting labels, or interpretation rules.
 
+**First decide whether you even need an amendment.** Not every cell, smoke, or
+tweak warrants one. Read [reference/amendment-vs-lab-notebook.md](amendment-vs-lab-notebook.md)
+to route the work: a *signed protocol revision* (headline surface / claims), an
+*Amendment* (a new exploratory evidence cell), or a *lab-notebook* entry
+(smoke / preflight / diagnostic / re-run / tuning within an amendment's authorized
+knobs). Reserve amendment letters for new evidence cells and genuine contract
+changes; send lighter work to the session note + run record so the amendment
+series stays meaningful.
+
 Protocol amendments are separate from durable session notes:
 
 - an amendment is the governed research contract
@@ -38,7 +47,20 @@ python3 bin/sync_skills.py --check --skill experiment-runner
 - Do not silently edit a signed protocol to absorb a new arm, metric, or output
   schema.
 - Do not label amendment results as v0.3 headline results unless a later signed
-  protocol explicitly supersedes v0.3.
+  protocol explicitly supersedes v0.3. Amendment cells are **exploratory** until a
+  signed protocol revision promotes them; report them separately and never pool
+  them with the headline.
+- Pre-state a prediction, a falsifier (the result that kills the line), and the
+  pass/fail gates BEFORE the run. Do not move the goalposts after seeing the
+  result; report ambiguous results as ambiguous.
+- Promote an exploratory win to a claim only via a **confirmatory replication**
+  registered before running it (fresh seeds, ideally the larger model / held-out
+  set). A single-seed win is a lead, not a result.
+- A new amendment needs a **distinct mechanistic rationale** from prior attempts.
+  If it is only a hyperparameter nudge with the same mechanism, it is lab-notebook
+  tuning under the existing amendment. When mechanistically-distinct attempts on
+  the same target keep failing, the persistent failure is the finding — write it
+  up instead of opening another amendment letter.
 - Do not authorize local or cloud launches from an amendment draft alone; launch
   approval must name the exact cells/seeds/lane.
 - Do not put project-specific trainer logic into `synaptic-tuner/`; route
