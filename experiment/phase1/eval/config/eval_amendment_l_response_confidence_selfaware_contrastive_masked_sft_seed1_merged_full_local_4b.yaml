@@ -7,11 +7,11 @@
 # baseline), vs GRPO v3, and vs the Amendment K (unmasked) contrastive result.
 # The ONLY difference vs K is model_name -> the masked merged-16bit base.
 #
-# NOTE: <RUN_TIMESTAMP> below is filled in after the full run completes (pin the
+# NOTE: 20260627_amendmentL_full below is filled in after the full run completes (pin the
 # run dir at launch with train_sft.py --run-timestamp, same as the K run).
 
 model_tag: qwen3-4b-contrastive-masked-schema-sft-merged-seed1
-model_name: /workspace/repo/scratch/schema_response_confidence/runs/sft_schema_contrastive_masked_seed1_full/<RUN_TIMESTAMP>/Qwen3-4B-bnb-4bit/merged-16bit
+model_name: /workspace/repo/scratch/schema_response_confidence/runs/sft_schema_contrastive_masked_seed1_full/20260627_amendmentL_full/Qwen3-4B-bnb-4bit/merged-16bit
 gold_path: ../../../datasets/triviaqa-rc-nocontext/cheng_test_gold.jsonl
 results_dir: results_amendment_l_response_confidence_selfaware_contrastive_masked_sft_seed1_merged_full_4b
 
