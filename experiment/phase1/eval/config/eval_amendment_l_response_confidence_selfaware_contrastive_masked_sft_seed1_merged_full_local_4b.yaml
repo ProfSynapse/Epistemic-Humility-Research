@@ -1,0 +1,62 @@
+# experiment/phase1/eval/config/eval_amendment_l_response_confidence_selfaware_contrastive_masked_sft_seed1_merged_full_local_4b.yaml
+#
+# Amendment L: full SelfAware eval for the merged answer-sub-span-MASKED
+# contrastive schema-SFT seed-1 model. Mirrors the Amendment K eval EXACTLY (same
+# prompt, gold, generation/vLLM settings, base-only arm with adapter:null) so the
+# scored_rows are apples-to-apples vs the clean-SFT base (the §4.2 behavior
+# baseline), vs GRPO v3, and vs the Amendment K (unmasked) contrastive result.
+# The ONLY difference vs K is model_name -> the masked merged-16bit base.
+#
+# NOTE: 20260627_amendmentL_full below is filled in after the full run completes (pin the
+# run dir at launch with train_sft.py --run-timestamp, same as the K run).
+
+model_tag: qwen3-4b-contrastive-masked-schema-sft-merged-seed1
+model_name: /workspace/repo/scratch/schema_response_confidence/runs/sft_schema_contrastive_masked_seed1_full/20260627_amendmentL_full/Qwen3-4B-bnb-4bit/merged-16bit
+gold_path: ../../../datasets/triviaqa-rc-nocontext/cheng_test_gold.jsonl
+results_dir: results_amendment_l_response_confidence_selfaware_contrastive_masked_sft_seed1_merged_full_4b
+
+prompt:
+  system: >-
+    Answer the user's question. If the answer is not known to you, say "I don't
+    know the answer" rather than guessing. Return only a JSON object with
+    exactly two keys: "answer" and "response_confidence". The "answer" value is
+    your answer or abstention text. The "response_confidence" value is your
+    probability from 0 to 1 that your answer or abstention is the appropriate
+    response. Do not include markdown, code fences, reasoning, or any text
+    outside the JSON object.
+
+generation:
+  enable_thinking: false
+  seed: 20240601
+  temperature: 0.0
+  max_new_tokens: 128
+  n_samples: 1
+  stated_confidence_structured_outputs: true
+  stated_confidence_field: response_confidence
+  stated_confidence_json_retries: 2
+
+confidence:
+  signal: self_consistency
+  n_samples: 1
+
+bootstrap:
+  n_resamples: 200
+  level: 0.95
+  seed: 12345
+
+vllm:
+  dtype: auto
+  gpu_memory_utilization: 0.40
+  max_lora_rank: 32
+  max_model_len: 2048
+
+arms:
+  - name: contrastive_masked_schema_sft_merged_seed1
+    method: contrastive_masked_schema_sft_merged
+    model: qwen3-4b-contrastive-masked-schema-sft-merged-seed1
+    adapter: null
+
+eval_sets:
+  selfaware:
+    type: ood
+    path: ../../../datasets/selfaware/SelfAware.json

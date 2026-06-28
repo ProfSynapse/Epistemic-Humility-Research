@@ -131,6 +131,41 @@ def test_contrastive_sft_rows_include_high_idk_and_low_hallucination():
     assert out[1]["response_confidence_role"] == "inappropriate"
 
 
+def test_contrastive_sft_emits_loss_mask_text_on_inappropriate_rows_only():
+    rows = [
+        {
+            "prompt": [{"role": "user", "content": "Unknown?"}],
+            "chosen": [{"role": "assistant", "content": "I don't know the answer."}],
+            "rejected": [{"role": "assistant", "content": "A made-up answer."}],
+        }
+    ]
+    probes = [
+        {
+            "probe_pool_row_key": "unknown-key",
+            "label": "unknown",
+            "p_correct": 0.0,
+            "n_samples": 32,
+            "sampled_correct": [False] * 32,
+        }
+    ]
+
+    out = builder.build_contrastive_sft_rows(rows, probe_records=probes)
+    appropriate, inappropriate = out[0], out[1]
+
+    # appropriate rows are fully supervised -> no mask directive
+    assert appropriate["response_confidence_role"] == "appropriate"
+    assert "loss_mask_text" not in appropriate
+
+    # inappropriate rows carry the exact rendered answer value to mask
+    assert inappropriate["response_confidence_role"] == "inappropriate"
+    assert inappropriate["loss_mask_text"] == ["A made-up answer."]
+    # and the span occurs verbatim inside the rendered assistant JSON
+    rendered = inappropriate["messages"][-1]["content"]
+    assert inappropriate["loss_mask_text"][0] in rendered
+    # the masked span does NOT include the response_confidence key
+    assert "response_confidence" not in inappropriate["loss_mask_text"][0]
+
+
 def test_contrastive_sft_spreads_repeated_targets_without_row_dropping():
     rows = []
     probes = []
