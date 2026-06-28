@@ -34,6 +34,7 @@ Always choose the narrowest reference needed for the task:
 | Record durable research-session memory | [reference/research-sessions.md](reference/research-sessions.md) |
 | Create or update experiment notes | [reference/experiment-notes.md](reference/experiment-notes.md) |
 | Publish or document public HF artifacts | [reference/hf-publication.md](reference/hf-publication.md) |
+| Decide whether work needs an Amendment, a protocol revision, or just a lab-notebook entry | [reference/amendment-vs-lab-notebook.md](reference/amendment-vs-lab-notebook.md) |
 | Make governed protocol, output-contract, or rerun-scope changes | [reference/protocol-amendments.md](reference/protocol-amendments.md) |
 
 Do not preload all references. Read only the files needed for the user's current
@@ -72,6 +73,13 @@ operation, then follow any further routing inside that reference.
 - Treat bounded local diagnostics and Amendment A/B evidence as non-headline
   unless a protocol/run record explicitly says otherwise. Headline numbers come
   only from the pre-registered default cells.
+- Pick the right instrument before writing one: signed protocol revision (headline
+  surface / claims) vs Amendment (a new exploratory evidence cell, falsifier
+  pre-stated) vs lab notebook (smoke/preflight/diagnostic/re-run/authorized-knob
+  tuning). Reserve Amendments for new evidence cells; route lighter work to the
+  session note + run record. Every amendment pre-states a prediction, a falsifier,
+  and its gates — and never moves the goalposts after the result. See
+  [reference/amendment-vs-lab-notebook.md](reference/amendment-vs-lab-notebook.md).
 
 ## Matrix At A Glance
 

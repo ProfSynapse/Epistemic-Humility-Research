@@ -50,13 +50,13 @@ Clean SFT audit:
 Smoke config:
 
 ```text
-experiment/phase1/grpo/configs/sft_schema_clean_response_confidence_seed1_smoke_config.py
+experiment/phase1/grpo/configs/sft_schema_clean_response_confidence_seed1_smoke.yaml
 ```
 
 Full config:
 
 ```text
-experiment/phase1/grpo/configs/sft_schema_clean_response_confidence_seed1_full_config.py
+experiment/phase1/grpo/configs/sft_schema_clean_response_confidence_seed1_full.yaml
 ```
 
 Full local launch, after no other GPU job is running:
@@ -70,7 +70,7 @@ docker run -d --name eh-clean-sft-full-<timestamp> `
   -w /workspace/repo `
   unsloth/unsloth:latest `
   synaptic-tuner/Trainers/sft/train_sft.py `
-  --config experiment/phase1/grpo/configs/sft_schema_clean_response_confidence_seed1_full_config.py `
+  --config experiment/phase1/grpo/configs/sft_schema_clean_response_confidence_seed1_full.yaml `
   --no-dashboard --quiet
 ```
 

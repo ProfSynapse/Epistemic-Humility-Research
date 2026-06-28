@@ -134,6 +134,12 @@ def appropriate_from_scored(r: dict) -> int:
 
 # ----------------------------------------------------------------------------- analysis A
 def analysis_a(rows: list[dict], cell_of: dict | None = None) -> dict:
+    # Drop rows with no parseable stated_confidence (JSON-retry exhausted). These
+    # are an emission failure, not a calibration datapoint; count them so coverage
+    # is auditable rather than silently crashing the report.
+    n_in = len(rows)
+    rows = [r for r in rows if r.get("stated_confidence") is not None]
+    n_dropped = n_in - len(rows)
     conf = np.array([float(r["stated_confidence"]) for r in rows], dtype=np.float64)
     appr = np.array([appropriate_from_scored(r) for r in rows], dtype=np.float64)
     out = {

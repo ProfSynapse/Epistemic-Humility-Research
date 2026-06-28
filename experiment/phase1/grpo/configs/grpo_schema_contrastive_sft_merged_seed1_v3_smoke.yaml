@@ -1,0 +1,102 @@
+# Amendment N: GRPO v3 reward on the Amendment K (contrastive-SFT) base -- seed-1 SMOKE.
+#
+# THE ONLY VARIABLE CHANGED vs grpo_schema_clean_sft_merged_seed1_v3_smoke.yaml is
+# the base model (model_name) -> the Amendment K merged-16bit base, plus the
+# output_dir. The reward (humility_reward_v3.py, proper-scoring Brier + dominant
+# behavior term), beta, LR, batch, num_generations, temperature, and all other
+# hyperparameters are IDENTICAL to Amendment J. This makes the run a clean
+# single-variable test of the diagnosis "GRPO v3 failed because of the BASE, not
+# the method": v3 trained on clean-SFT (collapsed confidence, std 0.047) anchored
+# its KL to a flat reference; here it trains on K (discriminating confidence,
+# std 0.309, AUROC 0.684) so the KL anchor and the proper-score reward BOTH point
+# toward calibrated spread, while the dominant behavior term (magnitude 2.0)
+# repairs K's broken behavior against the soft beta=0.1 KL.
+#
+# SMOKE PURPOSE: confirm reward variance + that the emitted confidence std does
+# NOT collapse off K's ~0.31 within 12 steps (reward-debug rows), and that the
+# behavior reward is live, before committing the full run. GRPO_REWARD_DEBUG_PATH
+# should be set at launch.
+model:
+  model_name: "/workspace/repo/scratch/schema_response_confidence/runs/sft_schema_contrastive_seed1_full/20260627_203232/Qwen3-4B-bnb-4bit/merged-16bit"
+  lora_path: null
+  max_seq_length: 2048
+  dtype: null
+  load_in_4bit: true
+  chat_template: "native"
+
+lora:
+  r: 32
+  lora_alpha: 64
+  lora_dropout: 0.05
+  bias: "none"
+  target_modules:
+    - "q_proj"
+    - "k_proj"
+    - "v_proj"
+    - "o_proj"
+    - "gate_proj"
+    - "up_proj"
+    - "down_proj"
+  use_gradient_checkpointing: "unsloth"
+  random_state: 1
+  use_rslora: false
+  use_dora: false
+
+training:
+  output_dir: "/workspace/repo/scratch/schema_response_confidence/runs/schema_contrastive_sft_grpo_v3_seed1_smoke"
+  per_device_train_batch_size: 32
+  gradient_accumulation_steps: 1
+  num_generations: 4
+  max_prompt_length: 512
+  max_completion_length: 128
+  temperature: 1.35
+  learning_rate: 5.0e-6
+  weight_decay: 0.0
+  warmup_ratio: 0.0
+  lr_scheduler_type: "linear"
+  num_train_epochs: 1
+  max_steps: 12
+  beta: 0.1
+  fp16: false
+  bf16: true
+  optim: "adamw_8bit"
+  logging_steps: 1
+  save_steps: 12
+  save_total_limit: 2
+  report_to: "none"
+  use_gspo: false
+  chat_template_kwargs:
+    enable_thinking: false
+  extra_args:
+    top_p: 1.0
+    top_k: 0
+    min_p: 0.0
+
+dataset:
+  dataset_name: null
+  dataset_file: null
+  local_file: "/workspace/repo/scratch/schema_response_confidence/qwen3-4b-instruct-grpo/grpo_train.jsonl"
+  num_proc: 1
+  prompt_column: "prompt"
+
+schema:
+  tool_schema_path: null
+
+rewards:
+  items: []
+  custom:
+    enabled: true
+    module: null
+    file: "../../../experiment/phase1/grpo/humility_reward_v3.py"
+    functions:
+      - name: "epistemic_humility_reward"
+        weight: 1.0
+        params: {}
+
+wandb:
+  enabled: false
+  project: null
+  run_name: null
+  entity: null
+
+seed: 1
