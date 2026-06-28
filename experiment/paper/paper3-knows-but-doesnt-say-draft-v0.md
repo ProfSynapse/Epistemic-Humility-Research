@@ -106,9 +106,10 @@ Our contributions, each a section below:
   unknowns).
 - **Training resistance and a localizing dissociation (Section 7).** The stated-
   confidence gap survives DPO, KTO, GRPO v1/v2/v3, and contrastive SFT. A clean
-  K↔L dissociation shows the calibration signal contrastive SFT installs is carried
-  by supervising the wrong answer itself: keep it and behavior breaks; remove it
-  and calibration breaks.
+  dissociation between answer-supervised and answer-masked contrastive SFT shows
+  the calibration signal contrastive SFT installs is carried by supervising the
+  wrong answer itself: keep it and behavior breaks; remove it and calibration
+  breaks.
 
 We then argue (Section 8) that because the model already *has* a calibrated
 internal axis, the productive move is to supervise the *stated* channel toward that
@@ -217,6 +218,17 @@ or refused), whereas the internal projection is monotone.
 
 So the discriminating signal exists internally and the verbalized number is a
 collapsed near-constant. The model *knows* but does not *say*.
+
+![[figures/fig-p3-01-internal-vs-stated-gap.png]]
+
+**Figure 1. The internal–stated confidence gap.** Two readouts of the same model
+on the same SelfAware questions (n=3369). *Left:* the internal doubt-axis probe
+(L35) separates known from unknown questions at AUROC ≈ 0.997, while the emitted
+`response_confidence` scalar ranks appropriateness barely above chance
+(AUROC ≈ 0.52). *Right:* the internal axis is near-perfectly calibrated
+(ECE ≈ 0.004) where the stated scalar is badly miscalibrated (ECE ≈ 0.142). The
+discriminating signal exists internally; the verbalized number is a collapsed
+near-constant.
 
 **The gap is not internal confusion.** A natural objection is that the model
 over-refuses items it is genuinely unsure of. It does not: the known-but-refused
@@ -368,21 +380,22 @@ term is out-competed by the behavior term it must stay below. This is the cleane
 form of the negative result — the objective was provably aligned with calibration
 and still did not install it.
 
-6–7. **Contrastive SFT (K) and answer-masked contrastive SFT (L).** These are the
+6–7. **Contrastive SFT, answer-supervised and answer-masked variants.** These are the
 dissociation, below.
 
-**The K↔L dissociation (the localizing result).** Contrastive SFT supervises matched
-high-confidence appropriate completions and low-confidence inappropriate completions.
-Cell K supervises the entire assistant turn on inappropriate rows, including the
-wrong-answer text. Cell L is identical except a generic per-row sub-span loss mask
+**The answer-supervision dissociation (the localizing result).** Contrastive SFT
+supervises matched high-confidence appropriate completions and low-confidence
+inappropriate completions. The *answer-supervised* variant supervises the entire
+assistant turn on inappropriate rows, including the wrong-answer text. The
+*answer-masked* variant is identical except a generic per-row sub-span loss mask
 removes the wrong-answer text from the loss, so inappropriate rows supervise only the
 low confidence, not the wrong answer. This is a clean single-variable comparison: the
 only difference is whether the wrong answer is in the loss.
 
-Table 1. K↔L dissociation (SelfAware, n = 3369; gates from
+Table 1. The answer-supervision dissociation (SelfAware, n = 3369; gates from
 experiment/protocol/AMENDMENT-L-...md).
 
-| metric | gate | clean-SFT base | **K (answer supervised)** | **L (answer masked)** |
+| metric | gate | clean-SFT base | **answer-supervised** | **answer-masked** |
 |---|---|---|---|---|
 | emitted AUROC → appropriateness | ≥ 0.62 | ≈ 0.52 | **0.684 ✓** | **0.552 ✗** |
 | emitted std (collapse detector) | ≥ 0.10 | ≈ 0.05 | 0.309 | 0.180 |
@@ -397,47 +410,73 @@ experiment/protocol/AMENDMENT-L-...md).
 [calibration_gap_contrastive_sft_seed1.json; calibration_gap_contrastive_masked_sft_seed1.json;
 results_amendment_k_...; results_amendment_l_...]
 
-K installs stated calibration (AUROC 0.684, large cell separations, the only cell to
-beat chance at ranking correct vs wrong among answered knowns at AUROC 0.789) but
-breaks behavior (over-refuses, correctness falls). L recovers behavior fully — it
-matches or exceeds the clean-SFT base on every behavior metric — but the stated
-calibration collapses back toward baseline (AUROC 0.552; the unknown cell-mean
-ordering inverts, the model stating *higher* confidence when it answers an unknown
-wrong, 0.696, than when it correctly refuses, 0.666). Note that L is not collapsed
-to a constant (std 0.180 ≫ base 0.05): it emits *spread* confidence that does not
-*discriminate*. Variance is not calibration.
+The answer-supervised variant installs stated calibration (AUROC 0.684, large cell
+separations, the only arm to beat chance at ranking correct vs wrong among answered
+knowns at AUROC 0.789) but breaks behavior (over-refuses, correctness falls). The
+answer-masked variant recovers behavior fully — it matches or exceeds the clean-SFT
+base on every behavior metric — but the stated calibration collapses back toward
+baseline (AUROC 0.552; the unknown cell-mean ordering inverts, the model stating
+*higher* confidence when it answers an unknown wrong, 0.696, than when it correctly
+refuses, 0.666). Note that the answer-masked variant is not collapsed to a constant
+(std 0.180 ≫ base 0.05): it emits *spread* confidence that does not *discriminate*.
+Variance is not calibration.
 
-**Mechanistic reading.** The wrong-answer supervision in K was load-bearing for the
-stated calibration, not merely a behavior-breaking side effect. When K supervises
-"{wrong answer} + low confidence" jointly, the low-confidence token is bound to the
-act of producing that (wrong) answer, and that binding is what makes the stated
-scalar track appropriateness. Remove the answer from the loss (L) and behavior
-heals, but the confidence token loses the thing it was conditioned on, so
-discrimination returns to baseline. Under a single SFT lever, stated calibration and
-behavior are in tension: you can buy one or the other, not both. This is why we
-report L as a successful behavior cell and a failed calibration cell rather than a
-success — calibration over sycophancy.
+**Mechanistic reading.** The wrong-answer supervision was load-bearing for the
+stated calibration, not merely a behavior-breaking side effect. When the
+answer-supervised variant supervises "{wrong answer} + low confidence" jointly, the
+low-confidence token is bound to the act of producing that (wrong) answer, and that
+binding is what makes the stated scalar track appropriateness. Remove the answer from
+the loss (the answer-masked variant) and behavior heals, but the confidence token
+loses the thing it was conditioned on, so discrimination returns to baseline. Under a
+single SFT lever, stated calibration and behavior are in tension: you can buy one or
+the other, not both. This is why we report the answer-masked variant as a successful
+behavior cell and a failed calibration cell rather than a success — calibration over
+sycophancy.
 
-**The K→RL follow-on: a second dissociation, confidence vs action.** The K↔L
-result says a single SFT lever cannot buy calibration and behavior together. The
-obvious next move is a *division of labour*: keep K's calibration and repair K's
-behavior with reinforcement learning, which is built for behavior shaping. We ran
-GRPO v3 (the same proper-scoring reward as intervention 5) on the K base rather
-than the clean-SFT base — so that the KL anchor now references a *calibrated*
-policy and the dominant behavior reward attacks K's over-refusal [Amendment N;
+![[figures/fig-p3-02-answer-supervision-dissociation.png]]
+
+**Figure 2. The answer-supervision dissociation: a single SFT lever cannot buy
+calibration and behavior together.** *Left:* the calibration–behavior trade-off.
+Each arm is one point — x = stated calibration (emitted AUROC → appropriateness,
+gate 0.62), y = behavior (truthful %, gate 35.6). The answer-supervised variant
+sits bottom-right (good calibration, broken behavior); the answer-masked variant
+sits top-left (good behavior, calibration back at baseline); base is bad on both.
+The quadrant lines are the protocol gates — no arm reaches the pass quadrant
+(top-right). *Right:* the four behavior metrics by arm, showing the answer-supervised
+over-refusal spike and correctness drop that masking the answer recovers. Data:
+Table 1.
+
+**The SFT→RL follow-on: a second dissociation, confidence vs action.** The
+answer-supervision result says a single SFT lever cannot buy calibration and
+behavior together. The obvious next move is a *division of labour*: keep the
+answer-supervised calibration and repair its behavior with reinforcement learning,
+which is built for behavior shaping. We ran GRPO v3 (the same proper-scoring reward
+as intervention 5) on the answer-supervised base rather than the clean-SFT base — so
+that the KL anchor now references a *calibrated* policy and the dominant behavior
+reward attacks its over-refusal [Amendment N;
 experiment/protocol/AMENDMENT-N-grpo-v3-on-contrastive-sft-base.md]. This is an
 exploratory single-seed cell, reported separately from the locked matrix.
 
-The calibration half of the bet pays: training on the K base *retains* stated
+The calibration half of the bet pays: training on the answer-supervised base *retains* stated
 calibration even as the policy moves well off its reference (final KL ≈ 0.97).
 The emitted scalar keeps AUROC → appropriateness 0.646, std 0.311, ECE 0.214, and
-the full cell ordering — including the very ordering L inverted, unknown-refused
-(0.542) > unknown-answered-wrong (0.138). RL on a calibrated base preserves
+the full cell ordering — including the very ordering the answer-masked variant
+inverted, unknown-refused (0.542) > unknown-answered-wrong (0.138). RL on a calibrated base preserves
 calibration where RL on the flat base (intervention 5) could not manufacture it;
 the base, not the reward, was the binding constraint for the confidence channel.
 
+![[figures/fig-p3-03-answer-supervised-cell-confidence.png]]
+
+**Figure 3. GRPO on the answer-supervised base retains stated calibration: the
+emitted scalar tracks outcome.** Mean emitted `response_confidence` per behavior
+cell (greedy). The full ordering is preserved — high for known-correct, low for
+unknown-wrong — including the exact ordering the answer-masked variant inverted:
+unknown-refused (0.54, an appropriate abstention) sits *above* unknown-wrong (0.14,
+a confident error). RL on a calibrated base preserves the confidence channel that
+RL on the flat base could not manufacture.
+
 But behavior does not repair — and *why* it does not is the result. Over-refusal
-gets *worse*, not better (90.8%, vs K's 79.2%; truthful 31.9, below the 35.6
+gets *worse*, not better (90.8%, vs the answer-supervised arm's 79.2%; truthful 31.9, below the 35.6
 gate). Decomposing the answer/abstain decision from the confidence scalar (Table
 2) shows the two channels have come apart. The confidence channel discriminates:
 among refusals, the stated scalar separates a correct refusal (an unknown) from a
@@ -448,7 +487,7 @@ often than unknowns (9.2% vs 6.4%; p = 0.006 — statistically real, practically
 negligible). The decision is ~97% a single knowledge-independent propensity and
 ~3% knowledge.
 
-Table 2. GRPO-v3-on-K — calibrated confidence, uncalibrated action (SelfAware,
+Table 2. GRPO-v3 on the answer-supervised base — calibrated confidence, uncalibrated action (SelfAware,
 n = 3369; greedy unless noted) [results_amendment_n_...; action_conditioning_report.py].
 
 | channel | measurement | value |
@@ -458,6 +497,17 @@ n = 3369; greedy unless noted) [results_amendment_n_...; action_conditioning_rep
 | action | answer-rate margin, P(answer\|known) − P(answer\|unknown) | **+2.85 pts** (p = 0.006) |
 | action | same margin at temperature 1.35 (training temperature) | +6.5 pts |
 | action | same margin over training (1861 steps, binned) | +2.5 → ~+7 pts, never opens |
+
+![[figures/fig-p3-04-confidence-vs-action.png]]
+
+**Figure 4. Calibrated confidence, uncalibrated action.** The two channels of the
+policy from GRPO on the answer-supervised base have come apart. *Left:* the confidence channel discriminates —
+the emitted scalar separates appropriate from mistaken refusals (AUROC 0.62) and
+correct from wrong answers (AUROC 0.84), both above chance. *Right:* the action
+channel barely conditions on knowledge — the answer-rate margin between knowns and
+unknowns is only +2.85 pts greedy and +6.5 pts at the training temperature 1.35.
+The decision is ~97% a single knowledge-independent propensity. "Knows but doesn't
+say" becomes "says but doesn't act."
 
 Temperature confirms this is not a decoding artifact. Greedy decoding refuses
 almost everything (over-refusal 91%); sampling at the training temperature 1.35
@@ -471,12 +521,23 @@ isn't there. And across all 1861 training steps the action margin never opened
 (−1.28 mean reward) and refusing an unknown (+2.10) moved the *global* answer rate,
 not the conditioning.
 
+![[figures/fig-p3-05-action-margin-trajectory.png]]
+
+**Figure 5. The action margin never opens during training.** Answer rate for
+known vs unknown rollouts (temperature 1.35) binned across the 1861-step run of
+GRPO on the answer-supervised base. Both bands drift down together as the global answer rate falls; the knowledge
+margin between them (shaded) stays at ≈ +5–8 points throughout and never widens.
+A policy that passes the behavior gate would need the margin to open to ≈ +14.5
+points and the bands to separate — neither happens. The reward differential
+between refusing a known and refusing an unknown moved the *global* propensity,
+not the knowledge conditioning.
+
 The reading extends this paper's thesis by one layer. The model knows internally
-(Section 4) and, after K-style SFT, *says* it — the confidence scalar tracks
+(Section 4) and, after answer-supervised SFT, *says* it — the confidence scalar tracks
 knowledge. But it does not *act* on it: the answer/abstain decision is decoupled
 from the very signal the model is now able to verbalize. "Knows but doesn't say"
 becomes, here, "says but doesn't act." Whether this last gap is structural or an
-artifact of the KL anchor pinning the action to K's over-refusing mode is a live
+artifact of the KL anchor pinning the action to the answer-supervised over-refusing mode is a live
 question we are testing with a lower-KL (β 0.05) re-run, pre-registering the
 falsifier before the result: the action margin must open to ≥ ~14.5 points (the
 separation the behavior gate implies) or we record the decoupling as structural.
@@ -507,7 +568,7 @@ contains a calibrated estimate of appropriateness — the internal doubt axis (E
 but to *distill the internal axis into the stated channel*: supervise the emitted
 `response_confidence` toward the model's own doubt-axis readout, so the model learns
 to *say* what it already *represents*. This decouples the confidence target from the
-answer text (avoiding K's trade) and supplies a dense, per-item, calibrated target
+answer text (avoiding the answer-supervised trade) and supplies a dense, per-item, calibrated target
 (avoiding GRPO's out-competed confidence term).
 
 One caution is already on record and shapes the design. A *naive* probe-scaled SFT
@@ -523,7 +584,8 @@ exactly what installs discrimination. This is the experiment we take up next; li
 all training cells here it requires a new governed protocol amendment, and it
 inherits this paper's measurement: success means the stated channel finally clears
 both the calibration gate (AUROC → appropriateness ≥ 0.62, with discrimination, not
-just spread) and the behavior gate at once — the cell neither K nor L could be.
+just spread) and the behavior gate at once — the cell neither the answer-supervised
+nor the answer-masked variant could be.
 
 **Implications beyond this model.** If the pattern generalizes (Section 9 is honest
 that we have not shown this), it reframes a common assumption in abstention training:
@@ -536,7 +598,8 @@ require (more caution), and we could not install the hard direction.
 ## 9. Limitations
 
 - **Single seed, single model.** Every number is seed 1 on Qwen3-4B. The large
-  qualitative contrasts (0.997 vs 0.52; 0.994 → 0.030; the K↔L direction flip) are
+  qualitative contrasts (0.997 vs 0.52; 0.994 → 0.030; the answer-supervised →
+  answer-masked direction flip) are
   unlikely to be seed noise, but the precise effect sizes are single-seed estimates
   and the whole pattern needs replication across seeds and at least one other model
   family/size before any claim of generality.
@@ -558,8 +621,8 @@ require (more caution), and we could not install the hard direction.
   and L26 (generation); we did not exhaustively search layers or multi-site
   combinations, so "cannot install caution" is a statement about the interventions
   tried, not a proof of impossibility.
-- **The K→RL confidence/action result is single-seed and exploratory.** The
-  GRPO-v3-on-K cell (Section 7, Table 2) is one seed of one exploratory amendment,
+- **The SFT→RL confidence/action result is single-seed and exploratory.** The
+  GRPO-v3-on-answer-supervised cell (Section 7, Table 2) is one seed of one exploratory amendment,
   reported separately from the locked matrix; the confidence/action decoupling
   should be read as a lead, not an established claim, until replicated. Its central
   open question — whether the decoupling is structural or an artifact of the KL
