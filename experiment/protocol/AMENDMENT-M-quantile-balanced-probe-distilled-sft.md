@@ -1,22 +1,21 @@
 # Protocol Amendment M: Quantile-Balanced Probe-Distilled Stated Confidence (SFT)
 
-**Status:** Revision 1 SIGNED — user-authorized 2026-06-27 ("Yes approve"), with
-recommended defaults: global quantile, band [0.10, 0.90], SFT-only clean completions
-first. **Revision 2 — SIGNED, user-authorized 2026-06-29 ("1" → sign R2 as-is).**
-Revision 1 was parked
-as Amendment N's fallback; N has now completed and its result (the structural
-action/knowledge decoupling) materially extends this cell. Revision 2 revives M as
-the primary calibration route and adds an action-conditioning endpoint and a
-pre-registered threshold-policy follow-on. **The Revision-1 §4.1/§4.2 gates are
-unchanged and remain in force; Revision 2 only ADDS endpoints — but because it adds
-a pre-registered measurement and a follow-on with its own decision rule, it requires
-a fresh signature before running.**
+**Status:** Revision 1 SIGNED — user-authorized 2026-06-27 ("Yes approve"). Revision 2
+SIGNED — user-authorized 2026-06-29 ("1"). **Revision 3 — SIGNED, user-authorized
+2026-06-29 ("Proceed I approve").** R3 RETARGETS the cell from the quantile-balanced `appropriateness_p`
+target (R1/R2) to the **calibrated factual/doubt axis directly** (`factual_p`), after
+the R2 implementation's CPU preflight showed the quantile-balanced target manufactures
+knowledge-uncorrelated confidence for 85% of rows. **This changes a pre-registered
+endpoint (the distillation target and the calibration gate's axis), so it supersedes
+the R1/R2 builder target spec (§3.1) and the R1 calibration gate axis (§4.1) and
+REQUIRES a fresh signature before building or training.** The §4.2 behavior gate and
+the mirror-of-N framing carry forward unchanged.
 
 **Revision history:**
 - **R1 (2026-06-27, signed):** quantile-balanced probe-distilled `response_confidence`
   SFT on clean-SFT completions; calibration gate (with discrimination) + behavior
   gate; channel/loss falsifier.
-- **R2 (2026-06-29, pending re-sign):** integrates Amendment N's finding that stated
+- **R2 (2026-06-29, signed):** integrates Amendment N's finding that stated
   calibration and knowledge-conditioned *action* are separable and that the action
   decoupling is structural under RL (β re-run falsifier fired). Adds: (a) §1 fact 4 +
   the RETAIN-behavior/REPAIR-calibration mirror framing; (b) §2 relationship to N;
@@ -25,6 +24,21 @@ a fresh signature before running.**
   threshold-policy sweep (no retraining); (e) §4.3 a "says-but-doesn't-act" branch
   that is EXPECTED, not a failure, and triggers the threshold follow-on. No change to
   the R1 gates, the builder target spec, the recipe, or the data scope.
+- **R3 (2026-06-29, pending sign):** RETARGET to the factual/doubt axis. The R2
+  implementation was built and its CPU preflight (§4 step 2) run; it revealed
+  `appropriateness_p` is near-degenerate on clean-SFT data (17 distinct values, 85% of
+  rows at the 0.9706 ceiling because every clean completion is appropriate by
+  construction), so quantile-balancing fabricates a uniform spread the internal axis
+  does not contain (row-level Spearman vs source 0.62, not 1.0). R3 replaces the
+  target with the probe's `factual_p` directly (no balancing): the axis that genuinely
+  varies with knowledge (abstentions ≈0.03; answers bimodal 0.03/0.97 with a real
+  0.5–0.9 tail; 18 levels; ≈44% low / 12% mid / 44% high), is calibrated by
+  construction, and is exactly what the threshold bridge thresholds. Changes: §1 fact 5
+  (the preflight); §3.1 (new authorized target, supersedes the quantile target);
+  §3.4/§4 (the scalar now means factual confidence; bridge is direct); §4.1 (gate axis
+  → correctness/known-unknown); §4.3 (falsifier number). §4.2 behavior gate and the
+  mirror framing UNCHANGED. The R1/R2 quantile-balanced builder + preflight are kept on
+  record (commit d8414971) as the provenance for this retarget.
 
 **Short name:** Amendment M / probe-distilled calibration SFT
 
@@ -69,6 +83,26 @@ established three facts that jointly motivate this amendment:
    The falsifier fired: the action/knowledge decoupling is **structural**, not a KL
    artifact. So "knows but doesn't say" has a sibling: "says but doesn't act"
    [AMENDMENT-N §7/§7.1; paper3 §7].
+5. **(R3) The "appropriateness" target is near-degenerate on clean-SFT data; the
+   factual/doubt axis is not.** The R1/R2 quantile-balanced builder was implemented and
+   its CPU preflight run on the real 14,395-row clean-SFT pool. The marginal-balance
+   gate passed perfectly (max-bin share 0.0001, 7,999 distinct targets, 0 fallback) but
+   exposed that `appropriateness_p` has only **17 distinct values, with 85% of rows
+   (12,222) at the single 0.9706 ceiling** — because every clean-SFT completion is
+   appropriate by construction (a confident known-answer and a confident unknown-
+   abstention both score "appropriate"), so there is essentially no within-training-set
+   discrimination in this axis to distill. Quantile-balancing therefore scatters those
+   genuinely-equivalent rows uniformly across [0.11, 0.89] by a hash tie-break,
+   *manufacturing* knowledge-uncorrelated confidence for 85% of the data (row-level
+   Spearman vs `appropriateness_p` = 0.62, not the ≈1.0 §4 step 2 requires; cluster-
+   level Spearman = 1.0 — monotone between clusters, scrambled within the dominant one).
+   The **factual/doubt axis** measured by the same probe is the opposite: per-row
+   `factual_p` (the Laplace 32-sample P-correct) is genuinely bimodal-with-tail —
+   abstention rows ≈0.03 (uniformly low: that is *why* they abstain), answer rows split
+   ≈0.97 (true knowns) / ≈0.03 (gold-answer but probe-says-wrong) with a real 0.5–0.9
+   middle tail (18 levels; ≈44% low / 12% mid / 44% high). That axis varies with
+   knowledge, is what the probe scores AUROC ≈0.997 on, and is exactly what the
+   threshold bridge thresholds. R3 retargets onto it [preflight: commit d8414971].
 
 The untried route is to supervise the stated channel **toward the calibrated
 internal estimate directly**. One naive form of this was already run and failed:
@@ -163,6 +197,58 @@ target still orders appropriate above inappropriate AND grades within each. A
 per-stratum (per-role) quantile is the alternative; global is recommended because it
 preserves the cross-role ordering the calibration gate's cell-means check rewards.
 
+> **R3 SUPERSEDES the target above.** The quantile-balanced `appropriateness_p` target
+> (steps 1–4) was implemented and CPU-preflighted; the preflight (§1 fact 5) showed it
+> manufactures knowledge-uncorrelated confidence for 85% of rows because
+> `appropriateness_p` is near-constant on clean-SFT data. The R1/R2 target is RETIRED
+> (kept on record at commit d8414971); the authorized R3 target is §3.1a below.
+
+### 3.1a (R3) Authorized target — calibrated factual/doubt axis (direct, no balancing)
+
+The cell trains the stated scalar toward the model's own **factual confidence** — the
+calibrated doubt axis — read per-row from the same 32-sample probe:
+
+1. For each clean-SFT row, take the probe's Laplace-smoothed factual estimate
+   `factual_p = (k_correct + 1) / (n_samples + 2)` for that question (deterministic,
+   GPU-free given the probe JSONL). This is applied to **whatever the clean completion
+   is** — answer or abstention — and is NOT inverted for abstentions (the R1/R2
+   `appropriateness_p` inversion `1 − factual_p` for abstentions is exactly what
+   collapsed the axis; R3 drops it).
+2. The target IS `factual_p` directly: `response_confidence_i = round(factual_p_i, prec)`.
+   **No quantile transform, no balancing.** `factual_p` is already a probability and is
+   already calibrated; rescaling or rebalancing it would *de*-calibrate the target,
+   which defeats the objective. A light clamp to a non-endpoint band `[0.02, 0.98]` is
+   applied only to keep JSON/logit targets away from hard 0/1 (the data already lies in
+   [0.0294, 0.9706], so the clamp is effectively inert).
+3. Missing-probe rows fall back to the global mean `factual_p` (constant), recorded as
+   `constant_fallback` in provenance (same fallback discipline as R1/R2).
+
+Semantics under R3: the scalar means **P(the asserted answer is factually correct)** —
+high on knowns the model gets right, **low on abstentions and on questions it gets
+wrong**. This is intentionally the *opposite* polarity to "appropriateness" for
+abstentions, and it is the polarity the threshold bridge needs (answer iff confidence ≥
+τ). The field name stays `response_confidence` (plumbing/eval comparability on the
+known/unknown AUROC and action margin is preserved), but the eval system prompt is
+reworded to define it as factual confidence (§4, step 6).
+
+Properties to assert in tests (R3):
+- **Calibrated/identity:** the emitted target equals `factual_p` (clamped); Spearman vs
+  `factual_p` = 1.0 by construction (the R1 monotonicity intent, now exact).
+- **Discriminating distribution (NOT balanced):** the target is bimodal-with-tail, not
+  uniform — abstention rows low, known-correct rows high, with a populated middle. The
+  test asserts both modes are populated and a middle tail exists; it does NOT assert a
+  uniform marginal (balancing is explicitly rejected).
+- **Behavior-identical to clean SFT:** `messages` byte-identical; only
+  `response_confidence` differs (unchanged from R1/R2).
+- Manifest records: formula `PROBE_FACTUAL_FORMULA`, band/clamp, the factual_p
+  histogram, mode masses, and the answer/abstention split per band.
+
+Why no balancing defeats the §004 collapse here (it did not for R1's constant target):
+the §004 collapse occurs when the target is ~constant, so emitting the mode minimizes
+loss. `factual_p` is **bimodal-with-tail** (≈44% low / 12% mid / 44% high), so the
+mean-emitting / single-mode solution is strongly penalized — the model must read the
+question to place mass at the correct mode, which is what installs discrimination.
+
 ### 3.2 Training cell
 
 - Cell name: `schema_probe_distilled_sft_seed1`. Seed 1, local 4B lane.
@@ -220,15 +306,26 @@ the primary surface.
 
 1. **Builder unit tests (CPU):** monotonicity, balance (no value > 15% of rows),
    behavior-identity to clean SFT, manifest histogram. GREEN required.
-2. **CPU preflight (data):** confirm the emitted target marginal is spread (report
-   the histogram + max-bin share) and that ordering vs `appropriateness_p` is
-   preserved (Spearman ≈ 1.0). GREEN required.
+2. **CPU preflight (data) — (R3) reframed:** confirm the `factual_p` target is
+   bimodal-with-tail (report the histogram, both mode masses, the populated middle, and
+   the answer/abstention split per band), that the target equals `factual_p` (Spearman
+   = 1.0 by construction), and that abstention rows sit at the low mode. GREEN =
+   both modes populated, middle tail present, no single value ≥ ~50% (the R1 uniform-
+   balance gate is RETIRED). The R1/R2 quantile preflight already ran (§1 fact 5); the
+   R3 preflight re-runs on the `factual_p` dataset before smoke.
 3. **Smoke** (`..._smoke.yaml`, max_steps ~32): exit 0; lineage records the
    probe-distilled dataset; loss decreasing.
 4. **Full** (`..._full.yaml`, 1 epoch): exit 0; adapter + lineage. (OOM contingency:
    resume from latest checkpoint with `--run-timestamp` pin, as for K/L.)
 5. **Merge** the adapter to 16-bit (same as clean-SFT / K / L).
 6. **Eval** on SelfAware (mirror the K/L eval config) + `calibration_gap_report.py`.
+   **(R3)** the eval system prompt is reworded so `response_confidence` is defined as
+   *factual confidence* — "your probability from 0 to 1 that your answer is factually
+   correct (for an abstention, your probability that you would be correct if you did
+   answer)" — to match the R3 training target. The field name and JSON schema are
+   unchanged, so the calibration_gap / AUROC plumbing is identical; only the prompt
+   wording changes (the M eval config is the only place this differs from K/L/N, and the
+   AUROC is computed against correctness, which is prompt-agnostic).
 7. **(R2) Action endpoint + threshold sweep (secondary, no retraining).** On the
    native eval scored rows, run `action_conditioning_report.py` to record the action
    margin `P(answer|known) − P(answer|unknown)` and the confidence/action AUROCs —
@@ -240,13 +337,22 @@ the primary surface.
 
 ### 4.1 Calibration gate (the objective — must PASS, with discrimination)
 
-- emitted AUROC → appropriateness ≥ **0.62** (this is discrimination, the thing L
-  failed at despite having spread);
+**(R3) The gate axis is CORRECTNESS (known/unknown), not appropriateness.** Because the
+R3 target is `factual_p`, the natural and stronger gate is whether emitted confidence
+discriminates *known-correct from unknown/incorrect*:
+
+- emitted AUROC → correctness (known vs unknown) ≥ **0.70** (vs clean-SFT base ≈0.52
+  collapsed; internal-axis ceiling ≈0.997 — R3 hands the model that axis as a dense
+  per-row target, so a real distill should clear 0.70 comfortably; this number is the
+  headline bar to confirm at sign-off);
 - emitted std ≥ **0.10** (spread; expected, by construction);
-- ECE → appropriateness < **0.30**;
+- ECE → correctness < **0.30**;
 - behavior-conditional cell means ordered correctly: known_correct_answered >
-  known_answered_wrong AND unknown_refused > unknown_answered_wrong (L inverted the
-  second; this must hold).
+  unknown_refused (factual confidence is higher where the model is actually right; this
+  is the polarity the threshold bridge needs).
+
+*(R1/R2 framing, retired: emitted AUROC → appropriateness ≥ 0.62; ECE → appropriateness.
+Kept here only to show R3 raises the bar by switching to the more discriminative axis.)*
 
 ### 4.2 Behavior gate (must PASS — preserve clean-SFT behavior)
 
@@ -263,12 +369,14 @@ comfortably; the risk is entirely on the calibration side.
   stated-confidence calibration AND behavior. Then (optional, separate amendment)
   re-probe to confirm emitted confidence now tracks the internal doubt projection
   (internal→stated coherence), and consider a GRPO-v3 arm on top.
-- **FALSIFIER:** if calibration still fails (AUROC < 0.62) despite a balanced,
-  discriminating target, the conclusion is that SFT cross-entropy on a single
-  confidence token cannot install discrimination even from a clean target — i.e. the
-  bottleneck is the *channel/loss*, not the target distribution — which would
-  redirect the program toward a dedicated confidence head / regression loss (an
-  engine change) rather than another dataset.
+- **FALSIFIER (R3):** if calibration still fails (emitted AUROC → correctness <
+  **0.60**) despite a calibrated, discriminating, bimodal target that IS the model's own
+  high-AUROC internal axis, the conclusion is that SFT cross-entropy on a single
+  confidence token cannot install discrimination even from the best possible target —
+  i.e. the bottleneck is the *channel/loss*, not the target distribution — which would
+  redirect the program toward a dedicated confidence head / regression loss (an engine
+  change) rather than another dataset. (R1/R2 falsifier was AUROC → appropriateness <
+  0.62; R3 makes it more pointed by handing the model the calibrated axis directly.)
 - **(R2) "Says but doesn't act" branch — EXPECTED, not a failure.** The native
   action margin (§4 step 7) staying flat (≈ N's +3 pts) while the §4.1 calibration
   gate PASSES is the *predicted* outcome, given N: M fixes the scalar, not the native
@@ -327,3 +435,26 @@ recommended (clean-completions) cell or the R2 endpoints.
 - still-open R1 decisions carried forward (recommended defaults unchanged): global
   quantile; band [0.10, 0.90]; SFT-only clean completions first.
 - authorization: user, 2026-06-29 — "1" (sign R2 as-is).
+
+**(R3) re-sign checklist — 2026-06-29, SIGNED:**
+- why a new revision: R3 changes a pre-registered endpoint — the distillation TARGET
+  (quantile-balanced `appropriateness_p` → calibrated `factual_p` direct) and the
+  calibration-gate AXIS (appropriateness → correctness). Endpoint/gate changes require
+  a fresh signature; they are not a lab-notebook knob.
+- what changed: §1 fact 5 (R2-impl CPU preflight: `appropriateness_p` near-degenerate,
+  85% at ceiling, quantile-balance fabricates uncorrelated variance); §3.1a (new
+  authorized target = `factual_p` direct, NO balancing, no abstention inversion; new
+  formula `PROBE_FACTUAL_FORMULA`; bimodal-distribution test instead of uniform-balance
+  test); §3.4/§4 step 6 (scalar now means factual confidence; eval prompt reworded);
+  §4 step 2 (preflight = bimodal-with-tail check, uniform-balance gate retired); §4.1
+  (gate axis → correctness, AUROC bar 0.70); §4.3 falsifier (AUROC → correctness < 0.60).
+- what did NOT change: §4.2 behavior gate (same clean-SFT bars; behavior held by
+  construction — answer text byte-identical, scalar-only loss); the mirror-of-N framing
+  (RETAIN behavior / REPAIR calibration); the threshold-bridge logic (§3.4) — now more
+  direct, since the scalar IS factual confidence; the recipe (§3.2); data scope (clean-
+  SFT completions, SFT-only); the action-margin + τ-sweep secondary endpoints (§4 step 7).
+- new pre-registered numbers (to confirm at sign-off): success = emitted AUROC →
+  correctness ≥ 0.70 (+ std ≥ 0.10, ECE < 0.30); falsifier = AUROC → correctness < 0.60.
+- provenance retained: the R1/R2 quantile-balanced builder + tests + its CPU preflight
+  finding are kept on record at commit d8414971 as the evidence that motivated R3.
+- authorization: user, 2026-06-29 — "Proceed I approve".
