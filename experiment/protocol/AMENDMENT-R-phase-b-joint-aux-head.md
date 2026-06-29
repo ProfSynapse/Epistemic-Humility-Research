@@ -160,10 +160,40 @@ correctness gap (O's 0.64) and generic-train-distribution transfer remain separa
   `pytest` 62 passed 2026-06-29). Root submodule-pointer bump to `e95dbde` pending.
 - [ ] Pre-flight smoke green (joint loss runs; gradients reach head + LoRA;
   end_of_prompt token reproduces the Q axis; head calibration baseline measured).
+  **BLOCKED (2026-06-29): end_of_prompt faithfulness FAILED — see §7 smoke finding.
+  Requires a rendering-alignment fix before the scored run.**
 - [x] Primary-metric instrument identified + A0-analog baseline anchored (R1.1).
 - [ ] Final effect-size falsifier threshold locked (post-smoke; candidate ≥ +0.05).
 - [ ] User sign-off recorded + training launch authorized.
 
 ## 7. Result
 
-_(pending engine build, smoke, sign-off, and run)_
+_(pending sign-off + scored run)_
+
+### Pre-flight smoke finding (2026-06-29, lab-notebook — NOT verdict-bearing)
+
+Engine landed (PR #119, submodule `e95dbde`, 62 aux_head tests green). The pre-flight
+faithfulness smoke (`experiment/phase1/probe/amendment_r_phase_b_{smoke,offset_diag}.py`)
+routes real KUQ rows through the exact trainer preprocessing and reads L35 via the
+engine reduce path. It caught a **token-position confound before any scored run**
+(falsifier untouched — faithfulness clause):
+
+| position | CV AUROC | cos→cached |
+|---|---|---|
+| cached faithful axis | 0.964 | — |
+| gen-prompt token (Q's, `add_generation_prompt=True`) | 0.938 | **0.9998** |
+| engine `end_of_prompt + 0` | 0.850 | **0.544** |
+| `end_of_prompt + {1,2,3}` | 0.948 / 0.867 / 0.929 | 0.910 / 0.628 / 0.936 |
+
+**The engine's `end_of_prompt` does NOT reproduce the validated answerability axis**
+(cos 0.55 — the weak-token signature). Root cause: the full-sequence assistant-turn
+render emits `</think>\n{content}` (one newline) while `add_generation_prompt=True`
+emits `</think>\n\n`; the labels-derived boundary lands one token short of the
+validated gen-prompt position, and no integer offset into the completion reproduces it
+(best +1 = cos 0.91, still under the 0.95 bar). `aux_target` threading verified OK.
+
+**Blocker + fix paths (user/builder decision):** scored A0/A1/A2 is blocked until the
+SFT prompt segment ends exactly at the gen-prompt token. (1) **Rendering alignment**
+(preferred, generic engine fix): align the `</think>\n\n` scaffold + mask so
+`end_of_prompt` == gen-prompt token. (2) **Separate gen-prompt forward** for the head
+input (messier for joint training). See [[amendment-r-phase-b-token-faithfulness-gap]].
