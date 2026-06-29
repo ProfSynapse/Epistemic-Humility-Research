@@ -346,12 +346,21 @@ def _write_debug_rows(rows: list[dict[str, Any]]) -> None:
     path_value = os.environ.get("GRPO_REWARD_DEBUG_PATH")
     if not path_value:
         return
-    path = Path(path_value)
-    path.parent.mkdir(parents=True, exist_ok=True)
-    event = {
-        "at": datetime.now(timezone.utc).isoformat(),
-        "num_completions": len(rows),
-        "rows": rows,
-    }
-    with path.open("a", encoding="utf-8") as handle:
-        handle.write(json.dumps(event, ensure_ascii=False) + "\n")
+    # The debug log is diagnostic-only (action-margin trajectory). It must NEVER
+    # crash a multi-hour training run. Two guards: (1) ensure_ascii=True escapes
+    # lone surrogates (e.g. a truncated emoji like '\ud83d' that degenerate
+    # low-beta completions emit) so the utf-8 write cannot raise UnicodeEncodeError;
+    # (2) the whole write is wrapped so any other I/O failure is swallowed.
+    try:
+        path = Path(path_value)
+        path.parent.mkdir(parents=True, exist_ok=True)
+        event = {
+            "at": datetime.now(timezone.utc).isoformat(),
+            "num_completions": len(rows),
+            "rows": rows,
+        }
+        line = json.dumps(event, ensure_ascii=True)
+        with path.open("a", encoding="utf-8") as handle:
+            handle.write(line + "\n")
+    except Exception as exc:  # noqa: BLE001 - diagnostics must never kill training
+        print(f"[humility_reward_v3] debug-row write skipped: {exc}")

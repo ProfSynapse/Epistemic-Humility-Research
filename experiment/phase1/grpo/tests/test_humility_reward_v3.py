@@ -174,3 +174,30 @@ def test_trl_reward_default_closure_callable():
     rewards = hr.epistemic_humility_reward(
         [_payload("Paris", 0.8)], prompts=["q"], label="known", aliases=["Paris"])
     assert len(rewards) == 1
+
+
+# --- debug-row writer: surrogate-safe and never fatal ----------------------
+
+def test_debug_rows_survive_lone_surrogate(tmp_path, monkeypatch):
+    # Regression: a degenerate low-beta completion emitted a lone surrogate
+    # (truncated emoji, e.g. '\ud83d'); the old ensure_ascii=False utf-8 write
+    # raised UnicodeEncodeError and killed a 4-hour run at step 832/1861. The
+    # diagnostic writer must escape it and keep going, never crash training.
+    debug_path = tmp_path / "reward_debug.jsonl"
+    monkeypatch.setenv("GRPO_REWARD_DEBUG_PATH", str(debug_path))
+    rows = [{
+        "idx": 0,
+        "label": "unknown",
+        "answer_text": "fire \ud83d cut off",  # lone high surrogate
+        "completion": "\ud83d",
+        "reward": 0.0,
+    }]
+    hr._write_debug_rows(rows)  # must not raise
+    event = json.loads(debug_path.read_text(encoding="utf-8").strip())
+    assert event["num_completions"] == 1
+    assert event["rows"][0]["label"] == "unknown"
+
+
+def test_debug_rows_noop_without_env(monkeypatch):
+    monkeypatch.delenv("GRPO_REWARD_DEBUG_PATH", raising=False)
+    hr._write_debug_rows([{"idx": 0}])  # silently no-ops, no path configured
