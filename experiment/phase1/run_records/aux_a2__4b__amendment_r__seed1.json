@@ -1,0 +1,52 @@
+{
+  "run_id": "aux_a2__4b__amendment_r__seed1",
+  "matrix_version": "amendment-r-phase-b-v1",
+  "coordinate": {
+    "arm": "aux_a2_joint_placebo",
+    "size": "4b",
+    "cell_type": "amendment_r",
+    "seed": 1,
+    "override": {}
+  },
+  "source_recipe": "experiment/phase1/recipes/eh_phase1_qwen3_4b_amendment_r_a2_joint_placebo.yaml",
+  "method": "sft",
+  "model": "unsloth/Qwen3-4B-bnb-4bit",
+  "lane": "local",
+  "data": {
+    "source_data_file": "experiment/phase1/data/qwen3-4b-instruct/sft_train.jsonl",
+    "staged_data_file": "scratch/amendment_r/phase_b/phase_b_aux_train_shuffled.jsonl",
+    "data_sha256": "e87d37f7f4afc187d116168cc9509f698a62b73040e9a56695146e427cead599",
+    "rows": 14395,
+    "aux_target_field": "aux_target",
+    "placebo": {
+      "shuffle_seed": 20260629,
+      "marginal_preserved": {"known_answer_1.0": 7981, "unknown_abstain_0.0": 6414},
+      "rows_target_unchanged_frac": 0.511,
+      "note": "Seed-permuted targets: same marginal as A1, question<->target correspondence broken. ~0.506 coincidental match is expected for answerable_frac=0.5544."
+    },
+    "builder": "experiment/phase1/probe/amendment_r_build_phase_b_aux_dataset.py"
+  },
+  "research_repo_commit": "2501d6507902d12817a6678dc96a6017427ea2ae",
+  "submodule_commit": "e95dbde57641011fc9bc506263f7ff35f3c78ba1",
+  "prereq_check": {
+    "datasets_present": true,
+    "aux_dataset_built": true,
+    "engine_prompt_render_landed": false,
+    "runner_aux_head_forwarding_landed": false
+  },
+  "outcome": {
+    "status": "blocked",
+    "blocked_on": [
+      "ENGINE: train_sft.py prompt_render=prompt_completion mode (docs/sessions/0029).",
+      "RUNNER: tuner aux_head block forwarding (see A1 run record)."
+    ],
+    "note": "Placebo control. BYTE-IDENTICAL to A1 except aux_target is the seed-shuffled column. Launch alongside A1 under matched conditions."
+  },
+  "amendment_r": {
+    "framing": "B1 — placebo null for A1.",
+    "role": "A2 = control. Same head, same co-training, target carries no per-row signal beyond base rate. Isolates the effect of REAL supervision from the mere act of attaching/optimizing a head.",
+    "primary_metric": "auroc_emitted_to_appropriateness (calibration_gap_report.py Analysis A)",
+    "falsifier": "A1 NOT > A2 by +0.05 (threshold locked post re-smoke).",
+    "exploratory_not_headline": true
+  }
+}

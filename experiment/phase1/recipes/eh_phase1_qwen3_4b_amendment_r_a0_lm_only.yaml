@@ -1,0 +1,75 @@
+# Epistemic-Humility Amendment R (Phase B) — A0: LM-only SFT, aux_head OFF.
+#
+# Reference arm. Plain clean-SFT with NO auxiliary head (aux_head absent ⇒ feature
+# fully off ⇒ byte-identical to a normal SFT run). Trains on the SAME conversations
+# as A1/A2 (the staged real-target file; the aux_target column is simply ignored
+# when no head is attached), so the LM-training distribution is held constant across
+# all three arms.
+#
+# Purpose: (a) the "does attaching+co-training a head perturb native LM/abstention
+# behavior at all?" reference for A1/A2; (b) a comparability check against the
+# existing headline clean-SFT seed1 (identical LM hyperparameters), confirming the
+# staged Phase-B data reproduces the baseline before the head is introduced.
+#
+# Unlike A1/A2 this arm has NO engine/runner dependency — it runs on the current
+# tuner lane today. (A1/A2 are launch-blocked on prompt_render + aux_head
+# forwarding; see those recipes.)
+name: eh-phase1-qwen3-4b-amendment-r-a0-lm-only
+target: local
+method: sft
+provider: local_docker
+
+job:
+  image: unsloth/unsloth:latest
+  pull_policy: missing
+  transfer: auto
+  keep_container: false
+
+setup:
+  pip:
+    - trl==0.22.2
+    - git+https://github.com/unslothai/unsloth_zoo.git
+    - git+https://github.com/unslothai/unsloth.git
+
+run:
+  method: sft
+  trainer: Trainers/sft/train_sft.py
+  dry_run: false
+  dashboard: false
+  quiet: true
+
+model:
+  name: unsloth/Qwen3-4B-bnb-4bit
+  max_seq_length: 2048
+  load_in_4bit: true
+
+dataset:
+  # Same conversations as A1/A2 (aux_target ignored when no head is attached).
+  local_file: scratch/amendment_r/phase_b/phase_b_aux_train.jsonl
+
+training:
+  batch_size: 2
+  gradient_accumulation: 4
+  learning_rate: 2.0e-4
+  num_epochs: 1
+  chat_template_kwargs:
+    enable_thinking: false
+
+lora:
+  r: 32
+  alpha: 64
+  dropout: 0.05
+  target_modules:
+    - q_proj
+    - k_proj
+    - v_proj
+    - o_proj
+    - gate_proj
+    - up_proj
+    - down_proj
+
+# aux_head intentionally OMITTED — A0 is the head-off reference arm.
+
+artifacts:
+  output_root: toolset-training-artifacts/runs/local_docker/sft/{name}
+  run_timestamp: "{timestamp}"

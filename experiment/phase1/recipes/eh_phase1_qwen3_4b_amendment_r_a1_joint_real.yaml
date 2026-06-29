@@ -1,0 +1,103 @@
+# Epistemic-Humility Amendment R (Phase B) — A1: JOINT co-train, REAL targets.
+#
+# Treatment arm. Co-trains the aux_head answerability readout JOINTLY with the LM
+# loss over the unfrozen LoRA base (total = lm_loss + lm_loss_weight * head_loss).
+# The head reads L35 at the gen-prompt token; targets are the per-row real
+# answerability label (1.0 answer / 0.0 abstain) produced by
+# `experiment/phase1/probe/amendment_r_build_phase_b_aux_dataset.py`.
+#
+# B1 primary question: does native (emitted-scalar) calibration improve when the
+# head co-trains on REAL targets? Falsifier: A1 emitted-scalar AUROC-to-
+# appropriateness NOT > A2 (placebo) by the candidate +0.05 margin. A1 vs A2 are
+# byte-identical except the aux_target column (real vs seed-shuffled), and A1 vs A0
+# differ ONLY by the aux_head block — so any A1>A2 / A1≠A0 gap is attributable to
+# the real answerability supervision, not to LM hyperparameters or data.
+#
+# LM hyperparameters are held IDENTICAL to the headline SFT seed1 (lr 2e-4, r32,
+# enable_thinking:false) so A0 doubles as a comparability check against the
+# existing clean-SFT run and A1/A2 isolate the head's effect.
+#
+# ⚠️ LAUNCH-BLOCKED (prep artifact, do NOT launch yet). Two engine/runner items
+#    must land first (see AMENDMENT-R §6 / docs/sessions/0029):
+#    (1) ENGINE: train_sft.py needs the `prompt_render: prompt_completion` mode so
+#        end_of_prompt lands on the faithful gen-prompt token (smoke-verified fix).
+#    (2) RUNNER: the tuner local-run handler does NOT forward an `aux_head` block
+#        (train_sft.py reads it from the trainer config only; no argparse exists).
+#        Needs aux_head CLI flags in train_sft.py + forwarding in
+#        local_run_handler._build_trainer_command. Until both land this recipe's
+#        aux_head block is inert.
+name: eh-phase1-qwen3-4b-amendment-r-a1-joint-real
+target: local
+method: sft
+provider: local_docker
+
+job:
+  image: unsloth/unsloth:latest
+  pull_policy: missing
+  transfer: auto
+  keep_container: false
+
+setup:
+  pip:
+    - trl==0.22.2
+    - git+https://github.com/unslothai/unsloth_zoo.git
+    - git+https://github.com/unslothai/unsloth.git
+
+run:
+  method: sft
+  trainer: Trainers/sft/train_sft.py
+  dry_run: false
+  dashboard: false
+  quiet: true
+
+model:
+  name: unsloth/Qwen3-4B-bnb-4bit
+  max_seq_length: 2048
+  load_in_4bit: true
+
+dataset:
+  # Real-target file (staged, gitignored). Conversations are byte-identical across
+  # A0/A1/A2; only aux_target differs. A1 = real targets.
+  local_file: scratch/amendment_r/phase_b/phase_b_aux_train.jsonl
+
+training:
+  batch_size: 2
+  gradient_accumulation: 4
+  learning_rate: 2.0e-4   # held == headline SFT seed1; re-confirm in the joint-loss smoke
+  num_epochs: 1
+  chat_template_kwargs:
+    enable_thinking: false
+
+lora:
+  r: 32
+  alpha: 64
+  dropout: 0.05
+  target_modules:
+    - q_proj
+    - k_proj
+    - v_proj
+    - o_proj
+    - gate_proj
+    - up_proj
+    - down_proj
+
+# Auxiliary scalar readout head — Phase B (unfrozen base, joint LM + head loss).
+# Schema mirrors synaptic-tuner/Trainers/sft/configs/aux_head_phase_b_example.yaml.
+aux_head:
+  enabled: true
+  layer: 35                       # validated answerability axis (O/P/Q)
+  token_position: end_of_prompt   # faithful only with prompt_render: prompt_completion below
+  target_field: aux_target        # column added by the builder (real answerability label)
+  loss: bce
+  head_type: linear
+  hidden_dims: []
+  out_activation: sigmoid
+  input_norm: layernorm           # so the head trains at a normal LR
+  freeze_base: false              # Phase B: co-train the unfrozen base
+  lm_loss_weight: 1.0
+  head_lr: null
+  prompt_render: prompt_completion  # ⚠ pending engine support (0029); makes end_of_prompt faithful
+
+artifacts:
+  output_root: toolset-training-artifacts/runs/local_docker/sft/{name}
+  run_timestamp: "{timestamp}"

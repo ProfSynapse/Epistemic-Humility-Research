@@ -71,6 +71,34 @@ Four reusable features, plus a gotcha:
 A focused builder handoff (parallel to docs/sessions/0027, Phase A) will spec these
 with acceptance tests. Phase B does not run until this lands + smokes green.
 
+**Status (2026-06-29):** items 1–4 LANDED in PR #119 (submodule `e95dbde`, 62
+aux_head tests green). Two prerequisites remain before the scored A0/A1/A2 run, both
+generic engine/runner work (NOT epistemic-humility specifics):
+
+6. **`prompt_render="prompt_completion"` mode** (`train_sft.py` preprocessing;
+   builder spec `docs/sessions/0029`). The default full-conversation render diverges
+   from `add_generation_prompt=True` at the `</think>` newlines, so item 3's
+   `end_of_prompt` lands one token short of the validated gen-prompt axis (smoke:
+   cos 0.54 / AUROC 0.85 vs the 0.96 axis). The verified fix renders rows
+   prompt/completion-style so the *existing* `end_of_prompt` helper lands on the
+   faithful token (400/400 rows, cos 0.9998). Default unchanged ⇒ backward-compatible.
+7. **Runner forwarding of the `aux_head` block.** `train_sft.py` reads `aux_head`
+   from its config file only — there is **no argparse** for it — and the tuner's
+   `local_run_handler._build_trainer_command` forwards recipe keys as `--flags` but
+   does **not** forward any `aux_head` block (verified: `aux_head` appears nowhere in
+   `tuner/`). So a recipe's `aux_head:` is **inert on the standard local-run lane**
+   until aux_head argparse is added to `train_sft.py` and forwarded in
+   `_build_trainer_command` (alongside the existing `--chat-template-kwargs` / lora
+   forwarding). This belongs in the submodule's **own** `fine-tuning` skill + the
+   builder PR — it is generic engine knowledge, not installed from the root project.
+
+Root-side prep for the run is DONE and staged (lab-notebook): the aux-dataset builder
+(`amendment_r_build_phase_b_aux_dataset.py`, real + seeded-shuffled placebo, gitignored
+scratch), the A0/A1/A2 recipes (`eh_phase1_qwen3_4b_amendment_r_*.yaml`), and the
+run records (`aux_a{0,1,2}__4b__amendment_r__seed1.json`, A0 launchable today, A1/A2
+`blocked_on` items 6+7). The reusable runbook is
+`experiment-runner/reference/aux-head-cotraining-arms.md`.
+
 ## 3. Method (joint training; one treatment + two controls)
 
 4B, single-seed, local. Same abstention SFT data the clean-SFT arm used (known→answer

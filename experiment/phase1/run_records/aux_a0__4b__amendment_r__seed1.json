@@ -1,0 +1,44 @@
+{
+  "run_id": "aux_a0__4b__amendment_r__seed1",
+  "matrix_version": "amendment-r-phase-b-v1",
+  "coordinate": {
+    "arm": "aux_a0_lm_only",
+    "size": "4b",
+    "cell_type": "amendment_r",
+    "seed": 1,
+    "override": {}
+  },
+  "source_recipe": "experiment/phase1/recipes/eh_phase1_qwen3_4b_amendment_r_a0_lm_only.yaml",
+  "method": "sft",
+  "model": "unsloth/Qwen3-4B-bnb-4bit",
+  "lane": "local",
+  "data": {
+    "source_data_file": "experiment/phase1/data/qwen3-4b-instruct/sft_train.jsonl",
+    "staged_data_file": "scratch/amendment_r/phase_b/phase_b_aux_train.jsonl",
+    "data_sha256": "e8b903cb742fa83aa6e9734c010f46d5c9e014fc12e3c20e2119b84e867d7473",
+    "rows": 14395,
+    "aux_target_field": "aux_target",
+    "aux_target_note": "Column present but IGNORED by A0 (no aux_head attached). Same conversations as A1/A2.",
+    "builder": "experiment/phase1/probe/amendment_r_build_phase_b_aux_dataset.py"
+  },
+  "research_repo_commit": "2501d6507902d12817a6678dc96a6017427ea2ae",
+  "submodule_commit": "e95dbde57641011fc9bc506263f7ff35f3c78ba1",
+  "prereq_check": {
+    "datasets_present": true,
+    "aux_dataset_built": true,
+    "engine_prompt_render_landed": "n/a (A0 has no aux_head)",
+    "runner_aux_head_forwarding_landed": "n/a (A0 has no aux_head)"
+  },
+  "outcome": {
+    "status": "prepared",
+    "note": "Reference arm (aux_head OFF). Launchable on the current tuner lane with no engine/runner changes. Doubles as a comparability check vs the existing headline clean-SFT seed1 (identical LM hyperparameters). Not yet launched — awaiting batch launch alongside A1/A2 for matched conditions."
+  },
+  "amendment_r": {
+    "framing": "B1 — does native (emitted-scalar) calibration change under joint aux_head co-training?",
+    "role": "A0 = LM-only reference (head off); isolates whether merely attaching+co-training a head perturbs native behavior when compared to A1/A2.",
+    "primary_metric": "auroc_emitted_to_appropriateness (calibration_gap_report.py Analysis A)",
+    "baseline_a0_analog": 0.561,
+    "falsifier": "A1 emitted-scalar AUROC-to-appropriateness NOT > A2 by candidate +0.05 (threshold to be locked after the joint-loss+baseline re-smoke).",
+    "exploratory_not_headline": true
+  }
+}

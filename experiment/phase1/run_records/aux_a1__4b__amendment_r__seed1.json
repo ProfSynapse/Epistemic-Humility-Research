@@ -1,0 +1,49 @@
+{
+  "run_id": "aux_a1__4b__amendment_r__seed1",
+  "matrix_version": "amendment-r-phase-b-v1",
+  "coordinate": {
+    "arm": "aux_a1_joint_real",
+    "size": "4b",
+    "cell_type": "amendment_r",
+    "seed": 1,
+    "override": {}
+  },
+  "source_recipe": "experiment/phase1/recipes/eh_phase1_qwen3_4b_amendment_r_a1_joint_real.yaml",
+  "method": "sft",
+  "model": "unsloth/Qwen3-4B-bnb-4bit",
+  "lane": "local",
+  "data": {
+    "source_data_file": "experiment/phase1/data/qwen3-4b-instruct/sft_train.jsonl",
+    "staged_data_file": "scratch/amendment_r/phase_b/phase_b_aux_train.jsonl",
+    "data_sha256": "e8b903cb742fa83aa6e9734c010f46d5c9e014fc12e3c20e2119b84e867d7473",
+    "rows": 14395,
+    "aux_target_field": "aux_target",
+    "aux_target_marginal": {"known_answer_1.0": 7981, "unknown_abstain_0.0": 6414, "answerable_frac": 0.5544},
+    "builder": "experiment/phase1/probe/amendment_r_build_phase_b_aux_dataset.py"
+  },
+  "research_repo_commit": "2501d6507902d12817a6678dc96a6017427ea2ae",
+  "submodule_commit": "e95dbde57641011fc9bc506263f7ff35f3c78ba1",
+  "prereq_check": {
+    "datasets_present": true,
+    "aux_dataset_built": true,
+    "engine_prompt_render_landed": false,
+    "runner_aux_head_forwarding_landed": false
+  },
+  "outcome": {
+    "status": "blocked",
+    "blocked_on": [
+      "ENGINE: train_sft.py prompt_render=prompt_completion mode (docs/sessions/0029) — makes end_of_prompt land on the faithful gen-prompt token (smoke-verified; current end_of_prompt reads cos 0.54 / AUROC 0.85, not the 0.96 axis).",
+      "RUNNER: tuner local_run_handler does not forward an aux_head block (train_sft.py reads it from the trainer config only; no argparse). Needs aux_head CLI flags + forwarding in _build_trainer_command."
+    ],
+    "note": "Treatment arm (JOINT co-train, REAL targets). Recipe + data staged and ready; launch is instant once both prerequisites land and the joint-loss+baseline re-smoke locks the falsifier threshold."
+  },
+  "amendment_r": {
+    "framing": "B1 — does native (emitted-scalar) calibration improve when the head co-trains on REAL answerability targets?",
+    "role": "A1 = treatment. Differs from A0 ONLY by the aux_head block; from A2 ONLY by real-vs-shuffled targets.",
+    "primary_metric": "auroc_emitted_to_appropriateness (calibration_gap_report.py Analysis A)",
+    "baseline_a0_analog": 0.561,
+    "prediction": "A1 emitted-scalar AUROC-to-appropriateness > A2 by >= +0.05 (real answerability supervision propagates to the emitted scalar / native behavior).",
+    "falsifier": "A1 NOT > A2 by +0.05 (threshold to be locked after the joint-loss+baseline re-smoke).",
+    "exploratory_not_headline": true
+  }
+}
