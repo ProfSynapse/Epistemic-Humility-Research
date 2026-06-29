@@ -1,8 +1,30 @@
 # Protocol Amendment M: Quantile-Balanced Probe-Distilled Stated Confidence (SFT)
 
-**Status:** SIGNED — user-authorized 2026-06-27 ("Yes approve"). Approved with
+**Status:** Revision 1 SIGNED — user-authorized 2026-06-27 ("Yes approve"), with
 recommended defaults: global quantile, band [0.10, 0.90], SFT-only clean completions
-first.
+first. **Revision 2 — SIGNED, user-authorized 2026-06-29 ("1" → sign R2 as-is).**
+Revision 1 was parked
+as Amendment N's fallback; N has now completed and its result (the structural
+action/knowledge decoupling) materially extends this cell. Revision 2 revives M as
+the primary calibration route and adds an action-conditioning endpoint and a
+pre-registered threshold-policy follow-on. **The Revision-1 §4.1/§4.2 gates are
+unchanged and remain in force; Revision 2 only ADDS endpoints — but because it adds
+a pre-registered measurement and a follow-on with its own decision rule, it requires
+a fresh signature before running.**
+
+**Revision history:**
+- **R1 (2026-06-27, signed):** quantile-balanced probe-distilled `response_confidence`
+  SFT on clean-SFT completions; calibration gate (with discrimination) + behavior
+  gate; channel/loss falsifier.
+- **R2 (2026-06-29, pending re-sign):** integrates Amendment N's finding that stated
+  calibration and knowledge-conditioned *action* are separable and that the action
+  decoupling is structural under RL (β re-run falsifier fired). Adds: (a) §1 fact 4 +
+  the RETAIN-behavior/REPAIR-calibration mirror framing; (b) §2 relationship to N;
+  (c) §3.4 the action-conditioning question and why M's scalar-only loss leaves it
+  untouched by design; (d) §4 the action-margin SECONDARY endpoint + an inference-time
+  threshold-policy sweep (no retraining); (e) §4.3 a "says-but-doesn't-act" branch
+  that is EXPECTED, not a failure, and triggers the threshold follow-on. No change to
+  the R1 gates, the builder target spec, the recipe, or the data scope.
 
 **Short name:** Amendment M / probe-distilled calibration SFT
 
@@ -36,6 +58,17 @@ established three facts that jointly motivate this amendment:
    answer (K), which breaks behavior; masking the answer (L) recovers behavior but
    destroys calibration** — a clean dissociation
    [calibration_gap_contrastive_sft_seed1.json; calibration_gap_contrastive_masked_sft_seed1.json].
+4. **(R2) RL on the calibrated base retains calibration but cannot repair behavior,
+   and the answer/abstain ACTION is decoupled from knowledge — structurally.**
+   Amendment N (GRPO v3 on the K base) RETAINED K's stated calibration (4/4) but
+   FAILED behavior repair (2/4): greedy decode stayed pinned to K's over-refusing
+   argmax. The deeper finding is that the action margin
+   `P(answer|known) − P(answer|unknown)` is only ≈ +3 pts (it would need ≈ +14.5 to
+   clear the behavior gate), and the pre-registered β 0.05 re-run — which demonstrably
+   loosened the KL anchor (train KL ≈0.97 → ≈1.91) — moved that margin by +0.17 pts.
+   The falsifier fired: the action/knowledge decoupling is **structural**, not a KL
+   artifact. So "knows but doesn't say" has a sibling: "says but doesn't act"
+   [AMENDMENT-N §7/§7.1; paper3 §7].
 
 The untried route is to supervise the stated channel **toward the calibrated
 internal estimate directly**. One naive form of this was already run and failed:
@@ -58,6 +91,16 @@ is monotone, it preserves the per-question ordering of the calibrated internal
 estimate (so the discrimination of the target is retained); because it equalizes the
 marginal, it removes the §004 mode-collapse.
 
+**(R2) The mirror of Amendment N.** N was **RETAIN calibration / REPAIR behavior** and
+failed the repair (the resistant target was *behavior*, induced sideways from a
+sub-dominant reward term against a KL anchor). M is the exact mirror — **RETAIN
+behavior / REPAIR calibration** — and the bet is the mirror succeeds, because the
+resistant channel (the stated scalar) is finally given a *direct, dense, per-item,
+monotone-calibrated* target (the internal axis), instead of being induced from
+outcomes (DPO/KTO/GRPO) or entangled with answer text (K). Behavior is held by
+construction: the loss touches only the `response_confidence` token; the
+answer/abstention completions are clean-SFT-identical (§3.1).
+
 ## 2. Relationship To Existing Protocols
 
 - PROTOCOL v0.3 — locked plain-answer headline matrix. Untouched.
@@ -65,6 +108,15 @@ marginal, it removes the §004 mode-collapse.
   completions and differs ONLY in the `response_confidence` target.
 - Amendment J — GRPO v3. Untouched; this is an SFT-side cell, complementary to the
   reward-side fix that did not close the gap.
+- **(R2) Amendment N — GRPO v3 on the K base.** Completed; PARTIAL (calibration
+  retained, behavior not repaired) and the action decoupling shown structural by the
+  pre-registered β 0.05 re-run. N's R1 note listed M as "on hold / fallback if N's
+  falsifier triggers." N's result is the trigger: M is now the **revived primary
+  route** to coherent calibration+behavior. M does not consume any N artifact; it is
+  an SFT-side cell from the clean-SFT completions. N taught M two things, folded into
+  R2: stated calibration ≠ knowledge-conditioned action (measure both, §4), and the
+  action is best made a *readout* of the calibrated scalar rather than a separately
+  trained policy (the threshold follow-on, §4).
 - Amendments K / L — the contrastive cells and their dispositions stay on record.
   This cell is reported separately; do not pool with the clean-SFT base or the v0.3
   headline matrix.
@@ -135,6 +187,35 @@ preserves the cross-role ordering the calibration gate's cell-means check reward
 - vs GRPO v3: a dense, per-item, monotone-calibrated SFT target instead of a
   proper-score term that must stay sub-dominant to the behavior reward.
 
+### 3.4 (R2) What M fixes, what it does not, and the threshold bridge
+
+M supervises only the `response_confidence` scalar. It therefore targets the "says"
+channel — the verbalized number — and **by construction does not change the native
+answer/abstain action**, which is whatever the clean-SFT base does. Amendment N
+proved these are separable (fact 4, §1): a model can emit calibrated confidence and
+still take a knowledge-blind action. So M must NOT be read as automatically fixing
+the action, and §4 measures the action margin as a distinct endpoint rather than
+assuming it.
+
+The bridge is a consequence of M's own success, and needs **no retraining**: if M's
+emitted scalar is calibrated to appropriateness (the §4.1 gate), then an
+inference-time decision rule — *surface the answer iff `response_confidence ≥ τ`,
+otherwise abstain* — converts the calibrated scalar into knowledge-conditioned
+action by construction (thresholding a calibrated appropriateness estimate is exactly
+a knowledge-conditioned decision). This is the coherence that N's RL route could not
+reach structurally: there the action was an independently-learned global propensity;
+here it is a readout of the calibrated confidence. R2 pre-registers this threshold
+sweep (§4, step 7) as a SECONDARY analysis on M's eval outputs — it is cheap, it does
+not alter the M cell, and it is the natural test of whether installing calibration
+*also* buys coherent action.
+
+A note on the operating point. To make the threshold the *sole* action lever (so the
+sweep cleanly isolates "calibration → action"), the threshold-policy eval re-prompts
+the model to attempt an answer on every item and emit its calibrated confidence; the
+abstain/answer decision is then the `τ` rule applied post-hoc, not the model's native
+abstention. The native-abstention eval (the §4.1/§4.2 gates) is unchanged and remains
+the primary surface.
+
 ## 4. Launch Sequence And Gates
 
 1. **Builder unit tests (CPU):** monotonicity, balance (no value > 15% of rows),
@@ -148,6 +229,14 @@ preserves the cross-role ordering the calibration gate's cell-means check reward
    resume from latest checkpoint with `--run-timestamp` pin, as for K/L.)
 5. **Merge** the adapter to 16-bit (same as clean-SFT / K / L).
 6. **Eval** on SelfAware (mirror the K/L eval config) + `calibration_gap_report.py`.
+7. **(R2) Action endpoint + threshold sweep (secondary, no retraining).** On the
+   native eval scored rows, run `action_conditioning_report.py` to record the action
+   margin `P(answer|known) − P(answer|unknown)` and the confidence/action AUROCs —
+   the same instrument used for N, so M and N are comparable. Then run the
+   threshold-policy eval (force-answer prompt + calibrated confidence) and sweep `τ`,
+   reporting, per `τ`, the induced behavior gate (truthful / over_refusal /
+   correct_on_known / refusal_recall) and the induced action margin. Report the
+   τ-frontier; pick the operating point on a held-out split, never on the test set.
 
 ### 4.1 Calibration gate (the objective — must PASS, with discrimination)
 
@@ -180,14 +269,31 @@ comfortably; the risk is entirely on the calibration side.
   bottleneck is the *channel/loss*, not the target distribution — which would
   redirect the program toward a dedicated confidence head / regression loss (an
   engine change) rather than another dataset.
+- **(R2) "Says but doesn't act" branch — EXPECTED, not a failure.** The native
+  action margin (§4 step 7) staying flat (≈ N's +3 pts) while the §4.1 calibration
+  gate PASSES is the *predicted* outcome, given N: M fixes the scalar, not the native
+  action. This is not a falsifier — it is the trigger for the pre-registered
+  threshold-policy bridge (§3.4). Pre-registered prediction for the bridge: with M's
+  calibrated scalar, a τ-thresholded action recovers a margin ≥ ~14.5 pts AND a
+  behavior operating point on or above the §4.2 gate at some τ. If the τ-frontier
+  CANNOT reach both at once — i.e. calibration is genuine yet thresholding it still
+  fails to produce knowledge-conditioned action above the behavior gate — then the
+  decoupling is deeper than the verbalized scalar (the internal axis itself does not
+  support a clean operating point on this eval), which redirects to revisiting the
+  probe/operating definition rather than to more SFT or RL. The calibration result
+  (§4.1) stands on its own regardless of the bridge outcome.
 
 ## 5. Implementation Boundary
 
 In scope: the builder quantile-balanced target + its tests + the new dataset; the
 two SFT YAML configs; one eval config; merge + eval + calibration_gap reporting;
-session-note checkpoints. No change to PROTOCOL v0.3, Amendment E artifacts, the
-clean-SFT base, Amendment J, or the K/L artifacts. No `synaptic-tuner` engine change
-is required for the recommended (clean-completions) cell.
+session-note checkpoints. **(R2)** also in scope: reusing the existing
+`action_conditioning_report.py` on M's scored rows, and a threshold-policy eval
+(force-answer prompt variant of the eval config) + a stdlib τ-sweep analysis script
+— all reporting-only, no retraining, no new training cell. No change to PROTOCOL
+v0.3, Amendment E artifacts, the clean-SFT base, Amendment J, the K/L artifacts, or
+the Amendment N artifacts. No `synaptic-tuner` engine change is required for the
+recommended (clean-completions) cell or the R2 endpoints.
 
 ## 6. Sign-Off Checklist
 
@@ -207,3 +313,17 @@ is required for the recommended (clean-completions) cell.
 - risk acknowledged: yes (falsifier = channel/loss bottleneck → would motivate a
   confidence-head engine change under a further amendment)
 - authorization: user, 2026-06-27 — "Yes approve"
+
+**(R2) re-sign checklist — 2026-06-29, SIGNED:**
+- what changed: added §1 fact 4 (N's structural action decoupling) + the
+  RETAIN-behavior/REPAIR-calibration mirror framing; §2 relationship to N (M revived
+  as primary route); §3.4 (action separable; threshold bridge); §4 step 7 (action
+  margin + τ-sweep, reporting-only); §4.3 says-but-doesn't-act branch + the
+  pre-registered bridge prediction; §5 R2 in-scope endpoints.
+- what did NOT change: §4.1 calibration gate, §4.2 behavior gate, the builder target
+  spec (§3.1), the recipe (§3.2), the data scope (clean-SFT completions, SFT-only).
+- new pre-registered endpoint: action margin (secondary); bridge prediction: a τ on
+  M's calibrated scalar reaches margin ≥ ~14.5 pts AND a behavior point ≥ §4.2 gate.
+- still-open R1 decisions carried forward (recommended defaults unchanged): global
+  quantile; band [0.10, 0.90]; SFT-only clean completions first.
+- authorization: user, 2026-06-29 — "1" (sign R2 as-is).
