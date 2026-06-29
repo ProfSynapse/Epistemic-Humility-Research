@@ -37,16 +37,17 @@
   },
   "outcome": {
     "status": "ready",
-    "gated_on": [
-      "Launch alongside A1 under matched conditions, after the shared joint-loss + faithful-token re-smoke (see A1)."
-    ],
-    "note": "Placebo control. BYTE-IDENTICAL to A1 except aux_target is the seed-shuffled column. Both prerequisites landed via PR #120."
+    "faithful_token_gate": {
+      "verdict": "GREEN (shared with A1)",
+      "note": "Same render path as A1 (prompt_completion + enable_thinking=False); see A1 run record for the cos-0.9998 smoke result."
+    },
+    "note": "Placebo control. BYTE-IDENTICAL to A1 except aux_target is the seed-shuffled column. Both prerequisites landed via PR #120; faithful-token gate GREEN."
   },
   "amendment_r": {
     "framing": "B1 — placebo null for A1.",
     "role": "A2 = control. Same head, same co-training, target carries no per-row signal beyond base rate. Isolates the effect of REAL supervision from the mere act of attaching/optimizing a head.",
     "primary_metric": "auroc_emitted_to_appropriateness (calibration_gap_report.py Analysis A)",
-    "falsifier": "A1 NOT > A2 by +0.05 (threshold locked post re-smoke).",
+    "falsifier": "A1 NOT > A2 by +0.05. Margin LOCKED at the pre-stated +0.05 (2026-06-29, after the faithful-token gate went GREEN).",
     "exploratory_not_headline": true
   }
 }

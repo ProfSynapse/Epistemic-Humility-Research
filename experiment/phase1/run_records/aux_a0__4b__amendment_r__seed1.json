@@ -40,7 +40,7 @@
     "role": "A0 = LM-only reference (head off); isolates whether merely attaching+co-training a head perturbs native behavior when compared to A1/A2.",
     "primary_metric": "auroc_emitted_to_appropriateness (calibration_gap_report.py Analysis A)",
     "baseline_a0_analog": 0.561,
-    "falsifier": "A1 emitted-scalar AUROC-to-appropriateness NOT > A2 by candidate +0.05 (threshold to be locked after the joint-loss+baseline re-smoke).",
+    "falsifier": "A1 emitted-scalar AUROC-to-appropriateness NOT > A2 by +0.05 (margin LOCKED 2026-06-29 after the faithful-token gate went GREEN; see A1 run record).",
     "exploratory_not_headline": true
   }
 }

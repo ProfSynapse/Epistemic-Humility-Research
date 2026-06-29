@@ -32,10 +32,13 @@
   },
   "outcome": {
     "status": "ready",
-    "gated_on": [
-      "Joint-loss + faithful-token re-smoke against the merged engine (3eb6e23): confirm end_of_prompt reads the faithful axis (cos ~0.9998) and the head co-trains, then lock the falsifier margin (candidate +0.05)."
-    ],
-    "note": "Treatment arm (JOINT co-train, REAL targets). Both engine/runner prerequisites landed via PR #120; recipe + data staged. Launchable once the re-smoke confirms the faithful token position and locks the +0.05 margin."
+    "faithful_token_gate": {
+      "verdict": "GREEN",
+      "smoke": "experiment/phase1/probe/amendment_r_phase_b_smoke.py --source h_lora --limit 0 --prompt-render prompt_completion --no-enable-thinking (vs 3eb6e23)",
+      "result": "end_of_prompt CV AUROC 0.9645 (cached 0.9642); cos_vs_cached 0.9998; boundary token '\\n\\n' after </think> on all 1000 rows. Requires chat_template_kwargs.enable_thinking=False (the recipe setting); template-default thinking lands one anchor early (cos 0.55, the prior false RED).",
+      "artifact": "scratch/amendment_r/phase_b_smoke_h_lora_prompt_completion.json"
+    },
+    "note": "Treatment arm (JOINT co-train, REAL targets). Engine/runner prerequisites landed (PR #120); faithful-token gate GREEN. Recipe + data staged and launchable."
   },
   "amendment_r": {
     "framing": "B1 — does native (emitted-scalar) calibration improve when the head co-trains on REAL answerability targets?",
@@ -43,7 +46,7 @@
     "primary_metric": "auroc_emitted_to_appropriateness (calibration_gap_report.py Analysis A)",
     "baseline_a0_analog": 0.561,
     "prediction": "A1 emitted-scalar AUROC-to-appropriateness > A2 by >= +0.05 (real answerability supervision propagates to the emitted scalar / native behavior).",
-    "falsifier": "A1 NOT > A2 by +0.05 (threshold to be locked after the joint-loss+baseline re-smoke).",
+    "falsifier": "A1 NOT > A2 by +0.05. Margin LOCKED at +0.05 on 2026-06-29 after the faithful-token gate came back GREEN (cos 0.9998); pre-stated candidate confirmed, not moved.",
     "exploratory_not_headline": true
   }
 }

@@ -170,6 +170,22 @@ def main():
     ap.add_argument("--limit", type=int, default=400, help="cap rows for speed (0 = all 1000)")
     ap.add_argument("--source", default="h_lora", choices=["h_base", "h_lora"])
     ap.add_argument("--max-seq-length", type=int, default=2048)
+    ap.add_argument(
+        "--prompt-render",
+        default="full_conversation",
+        choices=["full_conversation", "prompt_completion"],
+        help="Engine render mode threaded into prepare_sft_dataset. "
+        "prompt_completion (PR #120) makes end_of_prompt land on the faithful "
+        "gen-prompt token; full_conversation is the original cos-0.55 path.",
+    )
+    ap.add_argument(
+        "--enable-thinking",
+        action=argparse.BooleanOptionalAction,
+        default=False,
+        help="Forwarded as chat_template_kwargs.enable_thinking. MUST be False to "
+        "match the cached extraction (manifest enable_thinking=false) and the "
+        "A0/A1/A2 recipes; True lands end_of_prompt one anchor early (false RED).",
+    )
     a = ap.parse_args()
 
     print(f"[smoke] cached ground-truth source={a.source}, layer L{LAYER}")
@@ -189,7 +205,17 @@ def main():
         str(BASE), torch_dtype=torch.bfloat16, device_map="cuda" if torch.cuda.is_available() else "cpu"
     ).eval()
 
-    print("[smoke] preprocessing prompt+completion rows through prepare_sft_dataset ...")
+    # MUST match the cached extraction's render (manifest: enable_thinking=false) AND
+    # the A0/A1/A2 recipes (chat_template_kwargs.enable_thinking: false). With Qwen3,
+    # enable_thinking=False injects an empty "<think>\n\n</think>\n\n" block into the
+    # add_generation_prompt render, so end_of_prompt lands on the '\n\n' AFTER </think>
+    # — the cached final_prompt_token. Omitting this (template default thinking=ON)
+    # lands one anchor early on the post-"assistant" '\n' and reads a DIFFERENT axis.
+    ctk = {"enable_thinking": a.enable_thinking}
+    print(
+        f"[smoke] preprocessing rows through prepare_sft_dataset "
+        f"(prompt_render={a.prompt_render}, chat_template_kwargs={ctk}) ..."
+    )
     ds = build_dataset(rows)
     prepared = prepare_sft_dataset(
         ds,
@@ -197,6 +223,8 @@ def main():
         max_seq_length=a.max_seq_length,
         loss_mask_mode="assistant_only",
         aux_target_field="aux_target",
+        prompt_render=a.prompt_render,
+        chat_template_kwargs=ctk,
     )
     # sanity: target threading survived
     tgt = np.asarray([prepared[i]["aux_target"] for i in range(len(prepared))], dtype=float)
@@ -234,6 +262,8 @@ def main():
     out = {
         "n": len(y),
         "source": a.source,
+        "prompt_render": a.prompt_render,
+        "enable_thinking": a.enable_thinking,
         "auroc_cached": auroc_cached,
         "auroc_end_of_prompt": auroc_a,
         "auroc_last": auroc_b,
@@ -244,7 +274,7 @@ def main():
     }
     outdir = REPO / "scratch" / "amendment_r"
     outdir.mkdir(parents=True, exist_ok=True)
-    outpath = outdir / f"phase_b_smoke_{a.source}.json"
+    outpath = outdir / f"phase_b_smoke_{a.source}_{a.prompt_render}.json"
     outpath.write_text(json.dumps(out, indent=2))
     print(f"[smoke] wrote {outpath}")
 
