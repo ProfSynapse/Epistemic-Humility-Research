@@ -497,6 +497,7 @@ n = 3369; greedy unless noted) [results_amendment_n_...; action_conditioning_rep
 | action | answer-rate margin, P(answer\|known) − P(answer\|unknown) | **+2.85 pts** (p = 0.006) |
 | action | same margin at temperature 1.35 (training temperature) | +6.5 pts |
 | action | same margin over training (1861 steps, binned) | +2.5 → ~+7 pts, never opens |
+| action | same margin, lower-KL re-run (β 0.05, greedy) — pre-reg. falsifier ≥ ~14.5 | **+3.02 pts** (p = 0.004), falsifier fired → structural |
 
 ![[figures/fig-p3-04-confidence-vs-action.png]]
 
@@ -537,10 +538,26 @@ The reading extends this paper's thesis by one layer. The model knows internally
 knowledge. But it does not *act* on it: the answer/abstain decision is decoupled
 from the very signal the model is now able to verbalize. "Knows but doesn't say"
 becomes, here, "says but doesn't act." Whether this last gap is structural or an
-artifact of the KL anchor pinning the action to the answer-supervised over-refusing mode is a live
-question we are testing with a lower-KL (β 0.05) re-run, pre-registering the
-falsifier before the result: the action margin must open to ≥ ~14.5 points (the
-separation the behavior gate implies) or we record the decoupling as structural.
+artifact of the KL anchor pinning the action to the answer-supervised over-refusing mode is a
+question we pre-registered a falsifier for — the action margin must open to ≥ ~14.5
+points (the separation the behavior gate implies) or we record the decoupling as
+structural — and then tested with a lower-KL (β 0.05) re-run.
+
+**The falsifier fired: the decoupling is structural.** Halving the KL anchor
+(β 0.1 → 0.05) demonstrably loosened the policy — train-time KL roughly doubled
+(≈ 0.97 → ≈ 1.91), so the policy moved markedly further from the answer-supervised
+base — yet the greedy eval is a near-exact overlay of the β 0.1 run: truthful 31.9%
+(unchanged), over-refusal 90.6% (vs 90.8%), and the confidence channel still
+calibrated (AUROC 0.65, ECE 0.21, cells ordered). The action margin moved by **0.17
+points**, from +2.85 to **+3.02 pts** (z = 2.90, p = 0.004) — against the ~14.5 it
+would need to clear the behavior gate — and the training-trajectory margin stayed in
+the same +5–9 pt band throughout, never trending toward opening. The β knob was the
+one lever that could have explained the action decoupling as a KL artifact; it moved
+the policy and did not move the conditioning. We therefore record "says but doesn't
+act" as a **structural** property of the objective-and-decode, not of the KL anchor.
+The implication is the experiment Section 8 sets out: the action and the stated
+scalar must be supervised against the model's own internal doubt axis directly,
+which no outcome or preference reward does. Tuning the RL knob is closed.
 
 ## 8. Discussion
 
@@ -626,9 +643,12 @@ require (more caution), and we could not install the hard direction.
   reported separately from the locked matrix; the confidence/action decoupling
   should be read as a lead, not an established claim, until replicated. Its central
   open question — whether the decoupling is structural or an artifact of the KL
-  anchor — is the subject of a pre-registered lower-KL (β 0.05) re-run that was not
-  yet complete at the time of writing; the falsifier (action margin ≥ ~14.5 points)
-  was fixed in advance.
+  anchor — was settled within the cell by a pre-registered lower-KL (β 0.05) re-run:
+  the falsifier (action margin ≥ ~14.5 points), fixed in advance, fired — the margin
+  moved only +0.17 pts (to +3.02) while the policy demonstrably loosened, so the
+  decoupling is recorded as structural. This resolves the artifact-vs-structural
+  question for this single-seed cell but does not lift the single-seed caveat: the
+  structural reading itself still wants replication across seeds and a larger model.
 
 ## 10. Conclusion
 

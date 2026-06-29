@@ -56,7 +56,7 @@ arms:
   - name: grpo_v3_beta005_on_contrastive_sft_seed1
     method: contrastive_schema_sft_grpo_v3_beta005
     model: qwen3-4b-contrastive-schema-sft-merged-seed1
-    adapter: /workspace/repo/scratch/schema_response_confidence/runs/schema_contrastive_sft_grpo_v3_beta005_seed1_full/20260628_204936/final_model
+    adapter: /workspace/repo/scratch/schema_response_confidence/runs/schema_contrastive_sft_grpo_v3_beta005_seed1_full/20260629_010141/final_model
 
 eval_sets:
   selfaware:

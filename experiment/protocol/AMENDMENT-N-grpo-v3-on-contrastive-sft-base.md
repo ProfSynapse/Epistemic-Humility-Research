@@ -284,3 +284,61 @@ Re-run gate = the same §4.2 dual gate (no goalpost change). If beta 0.05 still
 leaves greedy behavior anchored, the next reading is that the gap is intrinsic to
 argmax-vs-expectation decode (a real finding), pointing to a decode/objective
 change rather than more beta steps.
+
+## 7.1 Re-run result — seed 1, beta 0.05 (2026-06-29)
+
+Tier-3 authorized-knob re-run (β 0.1 → 0.05, single variable; reward UNCHANGED),
+lab-notebook tier under §3.3 — NOT a new amendment, NO goalpost change. Cell
+`schema_contrastive_sft_grpo_v3_beta005_seed1` ran to completion (1 epoch, 1861
+steps, 6h32m). The lower KL anchor did what it was supposed to: train-time KL
+roughly doubled (~0.97 → ~1.91), so the policy moved markedly further off K. Same
+greedy SelfAware eval, same gate.
+
+Artifacts: adapter
+`scratch/.../runs/schema_contrastive_sft_grpo_v3_beta005_seed1_full/20260629_010141/final_model`;
+scored rows `experiment/phase1/eval/results_amendment_n_beta005_..._4b/grpo_v3_beta005_on_contrastive_sft_seed1__selfaware/`;
+training reward debug `scratch/.../runs/grpo_on_k_beta005_resume_debug.jsonl`
+(steps ~501–1861; the run resumed from checkpoint-500 after a step-832
+diagnostic-writer crash, fixed lab-notebook-tier — lone-surrogate `\ud83d` from a
+degenerate low-β completion broke the debug JSONL write; `ensure_ascii=True` +
+non-fatal wrap, 2 regression tests).
+
+**§4.2 verdict: Calibration RETAIN ✅ PASS (4/4) · Behavior REPAIR ❌ FAIL (2/4) →
+PARTIAL (§4.3) — a near-exact overlay of β=0.1.** Lowering KL by half changed
+nothing material:
+
+| Gate | Threshold | β=0.1 | β=0.05 | Verdict |
+|------|-----------|-------|--------|---------|
+| AUROC emitted→appropriateness | ≥ 0.62 | 0.646 | 0.648 | ✅ |
+| emitted std | ≥ 0.10 | 0.311 | 0.312 | ✅ |
+| ECE vs appropriateness | < 0.30 | 0.214 | 0.212 | ✅ |
+| cells ordered (unknown_refused > unknown_wrong) | — | 0.542 > 0.138 | 0.557 > 0.132 | ✅ |
+| truthful | ≥ 35.6 | 31.91 | 31.91 | ❌ |
+| correct_on_known | ≥ 42.2 | 50.46 | 49.55 | ✅ |
+| over_refusal | ≤ 67.5 | 90.76 | 90.59 | ❌ |
+| refusal_recall | ≥ 82.0 | 93.6 | 93.6 | ✅ |
+
+**Pre-registered margin falsifier — TRIGGERED.** The re-run pre-stated (Paper 3 §7,
+before the result) that the answer-rate margin P(answer|known) − P(answer|unknown)
+must open to ≥ ~14.5 pts (the separation the behavior gate implies) or the
+action/knowledge decoupling is recorded as **structural**:
+
+| | β=0.1 (greedy) | β=0.05 (greedy) | threshold |
+|---|---|---|---|
+| action margin P(ans\|known) − P(ans\|unknown) | +2.85 pts | **+3.02 pts** (z=2.90, p=0.004) | ≥ ~14.5 |
+
+Halving the KL anchor moved the action margin by **0.17 pts**. The
+training-trajectory margin (1361 logged steps, 6 bins) stays in a +5–9 pt band
+(+5.1 → +7.2 → +8.5 → +9.4 → +7.5 → +8.6) and never trends toward opening. The
+action stayed a global-propensity knob regardless of KL pressure.
+
+**Disposition: STOP tuning β.** The β knob was the one lever that could have
+explained the action decoupling as a KL artifact (the policy pinned to K's
+over-refusing argmax). It demonstrably loosened the policy and the action margin
+did not move. The decoupling is **structural**: "calibrated confidence,
+uncalibrated action" / "says but doesn't act" is a property of the
+objective+decode, not of the KL anchor. This closes the §4.3 PARTIAL→tune-and-rerun
+path. The program redirects to the implied experiment — **distill the model's own
+internal doubt axis (ECE 0.004) into the stated channel and supervise the
+answer/abstain action against it directly** — which is a new objective/engine
+change and belongs to a future amendment, not more β steps under N.
