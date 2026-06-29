@@ -160,8 +160,10 @@ correctness gap (O's 0.64) and generic-train-distribution transfer remain separa
   `pytest` 62 passed 2026-06-29). Root submodule-pointer bump to `e95dbde` pending.
 - [ ] Pre-flight smoke green (joint loss runs; gradients reach head + LoRA;
   end_of_prompt token reproduces the Q axis; head calibration baseline measured).
-  **BLOCKED (2026-06-29): end_of_prompt faithfulness FAILED — see §7 smoke finding.
-  Requires a rendering-alignment fix before the scored run.**
+  **Faithfulness sub-gate RESOLVED (2026-06-29): the fix is verified — prompt/completion
+  tokenization restores cos 0.9998 / AUROC 0.938 (see §7). Pending: the engine
+  preprocessing render-mode build (handoff `docs/sessions/0029`), then the
+  joint-loss-runs + baseline parts of the smoke.**
 - [x] Primary-metric instrument identified + A0-analog baseline anchored (R1.1).
 - [ ] Final effect-size falsifier threshold locked (post-smoke; candidate ≥ +0.05).
 - [ ] User sign-off recorded + training launch authorized.
@@ -197,3 +199,16 @@ SFT prompt segment ends exactly at the gen-prompt token. (1) **Rendering alignme
 (preferred, generic engine fix): align the `</think>\n\n` scaffold + mask so
 `end_of_prompt` == gen-prompt token. (2) **Separate gen-prompt forward** for the head
 input (messier for joint training). See [[amendment-r-phase-b-token-faithfulness-gap]].
+
+**FIX VERIFIED (2026-06-29, prototype `amendment_r_phase_b_promptcompletion_proto.py`).**
+Path (1) confirmed. Tokenizing rows **prompt/completion-style** — prompt =
+`render(system+user, add_generation_prompt=True)`, then `++ completion ++ <|im_end|>`,
+with `labels = [-100]*len(prompt) ++ completion` — makes the engine's *existing*
+`prompt_end_indices`/`reduce_hidden_states(token_position="end_of_prompt")` land on the
+gen-prompt token for **400/400** rows: **CV AUROC 0.9380 (cached 0.9389), cos 0.9998,
+mse 0.04.** No change to the engine's token-position code; the fix is a preprocessing
+**render mode** (the current full-conversation render diverges from
+`add_generation_prompt=True` at the `</think>` newlines, so the faithful token has no
+clean in-row position). Builder spec: `docs/sessions/0029`. The real run uses the real
+abstention completion (known→answer, unknown→IDK); the fixed completion here only
+isolates the read position (which is before the completion).
