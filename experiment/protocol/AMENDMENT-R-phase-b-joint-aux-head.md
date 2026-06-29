@@ -155,7 +155,9 @@ correctness gap (O's 0.64) and generic-train-distribution transfer remain separa
 
 ## 6. Sign-off checklist
 - [x] Primary framing locked (B1 native behavior change; user 2026-06-29).
-- [ ] Engine build (§2) landed in synaptic-tuner + unit tests green.
+- [x] Engine build (§2) landed in synaptic-tuner + unit tests green (PR #119,
+  squash `e95dbde` on submodule main; all 5 items + §2.5 grad-flow test; local
+  `pytest` 62 passed 2026-06-29). Root submodule-pointer bump to `e95dbde` pending.
 - [ ] Pre-flight smoke green (joint loss runs; gradients reach head + LoRA;
   end_of_prompt token reproduces the Q axis; head calibration baseline measured).
 - [x] Primary-metric instrument identified + A0-analog baseline anchored (R1.1).
