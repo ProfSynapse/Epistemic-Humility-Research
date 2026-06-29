@@ -16,7 +16,7 @@
 #      §4.1 gate AUROC is computed against correctness, which is prompt-agnostic.
 
 model_tag: qwen3-4b-probe-factual-schema-sft-merged-seed1
-model_name: /workspace/repo/scratch/schema_response_confidence/runs/sft_schema_probe_factual_seed1_full/FILL_TIMESTAMP/Qwen3-4B-bnb-4bit/merged-16bit
+model_name: /workspace/repo/scratch/schema_response_confidence/runs/sft_schema_probe_factual_seed1_full/20260629_111239/Qwen3-4B-bnb-4bit/merged-16bit
 gold_path: ../../../datasets/triviaqa-rc-nocontext/cheng_test_gold.jsonl
 results_dir: results_amendment_m_response_confidence_selfaware_probe_factual_sft_seed1_merged_full_4b
 

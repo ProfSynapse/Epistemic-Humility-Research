@@ -24,7 +24,7 @@ the mirror-of-N framing carry forward unchanged.
   threshold-policy sweep (no retraining); (e) §4.3 a "says-but-doesn't-act" branch
   that is EXPECTED, not a failure, and triggers the threshold follow-on. No change to
   the R1 gates, the builder target spec, the recipe, or the data scope.
-- **R3 (2026-06-29, pending sign):** RETARGET to the factual/doubt axis. The R2
+- **R3 (2026-06-29, signed):** RETARGET to the factual/doubt axis. The R2
   implementation was built and its CPU preflight (§4 step 2) run; it revealed
   `appropriateness_p` is near-degenerate on clean-SFT data (17 distinct values, 85% of
   rows at the 0.9706 ceiling because every clean completion is appropriate by
@@ -458,3 +458,52 @@ recommended (clean-completions) cell or the R2 endpoints.
 - provenance retained: the R1/R2 quantile-balanced builder + tests + its CPU preflight
   finding are kept on record at commit d8414971 as the evidence that motivated R3.
 - authorization: user, 2026-06-29 — "Proceed I approve".
+
+---
+
+## 7. Result — R3 probe-factual cell (seed 1, full, 2026-06-29)
+
+Run `sft_schema_probe_factual_seed1_full/20260629_111239` (1,440 steps, loss→~0.15),
+merged-16bit, SelfAware full eval (3,369 rows, temp 0, config_sha 0e2253f0).
+
+**§4.2 Behavior gate — PASS 4/4** (preserved by construction, as predicted):
+truthful 41.56 (≥35.6) · correct_on_known 49.32 (≥42.2) · over_refusal 62.26 (≤67.5)
+· refusal_recall 93.51 (≥82.0). Native action margin `P(answer|known) −
+P(answer|unknown)` = **+31.2 pts** (37.74% vs 6.49%, z=18.6, p≈4e-77) — robust
+knowledge-conditioned ACTION, ~10× N's +3 pts (M sits on the clean-SFT base, N on the
+over-refusing K base).
+
+**§4.1 Calibration gate — FAIL; the §4.3 FALSIFIER FIRED.** Emitted AUROC→correctness
+is ≈ chance on every slice (success needed ≥0.70; falsifier <0.60):
+- answered-knowns correct-vs-wrong AUROC = **0.504** (means: correct 0.9706 vs wrong
+  0.9651 — indistinguishable);
+- refusal-appropriateness AUROC (known vs unknown refusal) = **0.501** (0.0294 vs
+  0.0314);
+- emitted→appropriateness AUROC = **0.526**; ECE→appropriateness 0.408.
+- emitted std 0.423 (≥0.10) but DEGENERATE: only **3 distinct emitted values**. The
+  model emits **0.9706 whenever it answers and 0.0294 whenever it abstains, regardless
+  of correctness** (per-cell: known_answered_wrong 0.9706 = known_correct_answered
+  0.9706; known_refused 0.0294 ≈ unknown_refused 0.0314). The cell-means ordering
+  known_correct_answered (0.9706) > unknown_refused (0.0294) holds, but only vacuously —
+  it reflects the answer/abstain split, not correctness.
+
+**Interpretation (verbatim the pre-registered falsifier).** SFT cross-entropy on a
+single confidence token cannot install correctness-discrimination even when handed the
+model's own calibrated `factual_p` target directly. The scalar learned to verbalize the
+model's own ACTION (answer↔high / abstain↔low), not the correctness of the answer. The
+bottleneck is therefore the **channel/loss, not the target distribution**: the redirect
+is a dedicated confidence head / regression loss (a synaptic-tuner engine change), not
+another dataset or RL run. Because the scalar is a pure readout of the action, the §3.4
+threshold bridge is provably a no-op here (thresholding it reproduces the existing
+answer/abstain decision; it cannot add knowledge-conditioning the action does not
+already have — and the action margin is already +31 pts).
+
+**N↔M symmetry (the program-level finding).** N (RL on K base): stated confidence
+RETAINED calibration but the ACTION stayed knowledge-blind (+3 pts) — "says but doesn't
+act." M (SFT factual target on clean base): the ACTION is knowledge-conditioned (+31
+pts) but the stated scalar COLLAPSED to encoding that action — "acts but doesn't
+(calibratedly) say." Neither RL nor direct-SFT routes the calibrated internal axis
+(AUROC 0.997) into the verbalized single-token scalar. The verbalized scalar is the
+resistant channel; the next move is an architectural confidence readout, not more
+preference/SFT data. The §4.1 calibration result stands on its own; the bridge was not
+testable (calibration did not pass).
