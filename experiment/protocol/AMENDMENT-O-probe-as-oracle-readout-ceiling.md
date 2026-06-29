@@ -1,7 +1,9 @@
 # Amendment O — Probe-as-Oracle Readout-Ceiling Test
 
-**Status:** DRAFT — awaiting user sign-off. Tier-2 exploratory cell (new evidence,
-falsifier pre-stated; reported separately from the locked PROTOCOL v0.3 matrix).
+**Status:** SIGNED 2026-06-29 (user: "signed off lets GOO"). Tier-2 exploratory cell
+(new evidence, falsifier pre-stated; reported separately from the locked PROTOCOL v0.3
+matrix). Gates, primary τ, and falsifier below are LOCKED as of sign-off — no
+goalpost-moving after the result.
 **Instrument rationale:** classified Tier-2 per
 `experiment-runner/reference/amendment-vs-lab-notebook.md` decision Q2 — it produces
 a result that will be *reported as evidence* (the readout ceiling that motivates the
@@ -15,7 +17,8 @@ operator discipline.
 exploratory.
 
 ## Revision history
-- **R1 (2026-06-29, draft):** initial pre-registration.
+- **R1 (2026-06-29, SIGNED):** initial pre-registration; signed off as-is by the user
+  ("signed off lets GOO"). CPU-only run authorized.
 
 ## 1. Facts this builds on (from the merged Paper 3 arc)
 
@@ -120,10 +123,86 @@ replication discipline. The result will be written into Paper 3 §8 as the ceili
 does (or does not) justify the proposed engine change.
 
 ## 6. Sign-off checklist
-- [ ] Prediction, falsifier, and gates stated above before any run (this doc).
-- [ ] Checkpoint-consistency resolution chosen (§3) and recorded.
-- [ ] CPU-only; no GPU extraction or training launched without separate approval.
-- [ ] User sign-off recorded here with date + approval phrase.
+- [x] Prediction, falsifier, and gates stated above before any run (this doc).
+- [x] Checkpoint-consistency resolution chosen (§3) and recorded: route (a) —
+  clean-SFT-fit probe (5-fold CV) against the clean-SFT SelfAware cache. No claim
+  across mismatched checkpoints.
+- [x] CPU-only; no GPU extraction or training launched without separate approval.
+- [x] User sign-off recorded: 2026-06-29, "signed off lets GOO" (+ CPU run authorized).
 
 ## 7. Result
-_(pending — appended after the run.)_
+
+**VERDICT: SUCCESS — ceiling demonstrated, emphatically. Falsifier dead; all 7
+gates pass.** Run 2026-06-29, CPU-only, `probe_as_oracle_ceiling.py` on the cached
+clean-SFT SelfAware extraction at L35, primary τ = 0.5 (native cutoff, not tuned).
+Labeled subset n = 1233 (556 known / 677 unknown).
+
+**§4.1 calibration (threshold-free):**
+- probe → appropriateness **AUROC 0.9967** (gate ≥ 0.70 ✓; reproduces the paper's
+  L35 ≈ 0.997 — the falsifier line at 0.70 is not remotely approached).
+- emitted (= probe) → appropriateness **AUROC 0.9967** (gate ≥ 0.62 ✓).
+- **ECE 0.0149** (gate < 0.30 ✓); factual_p std 0.486 (well-spread, not collapsed —
+  contrast Amendment M's 3 distinct emitted values).
+
+**§4.2 behavior (oracle policy at τ = 0.5):**
+- **over_refusal 3.24%** (gate ≤ 67.5 ✓) — vs M's 62.26.
+- **refusal_recall 98.38%** (gate ≥ 82.0 ✓).
+- answer_rate known 96.76% / unknown 1.62% → **action margin +95.14 pts** (vs M's
+  +31.2, N's +2.85). A single policy sitting in the pass quadrant that **no trained
+  arm reached.**
+- **truthful 86.21%** (gate ≥ 35.6 ✓), **correct_on_known 73.79%** (gate ≥ 42.2 ✓).
+
+**The genuinely non-circular finding:** answered-knowns correct-vs-wrong
+**AUROC 0.640**. The answerability axis only *modestly* tracks per-attempt
+correctness (0.64) — far below its 0.997 on answerability, but above the trained
+stated scalar (M 0.504, base 0.559). Design implication for the engine change: a
+head supervised on known/unknown buys a near-perfect *action* policy and calibrated
+*appropriateness*, but **does not** by itself buy correctness-ranking; a
+correctness-calibrated head needs a correctness target, not just the answerability
+label.
+
+**Caveats (do not overclaim):**
+1. **In-distribution readout ceiling, not a TriviaQA→SelfAware transfer test.** The
+   probe is fit by 5-fold CV *on SelfAware itself* (out-of-fold, no per-row leakage,
+   but in-distribution). This measures whether a passing policy exists *latently in
+   the SelfAware representation* — it does, decisively. It does **not** establish
+   that a probe/head trained on the *training* distribution transfers to SelfAware;
+   that stricter test (train-dist-fit probe applied cold to SelfAware) is the natural
+   follow-up and is what the deployed head must actually earn. (Checkpoint-consistency
+   per §3 was resolved by route (a): clean-SFT-fit probe against the clean-SFT cache.)
+2. **The action metrics are partly circular.** The probe predicts the same
+   known/unknown labels that *define* over_refusal / refusal_recall, so +95 pts is a
+   near-tautology of "the representation linearly separates known/unknown at 0.997."
+   The legitimate, non-circular content: the trained arms had the **same labels** as
+   their training signal and still could not route them to the action (M maxed at
+   +31), whereas a plain linear readout extracts them at +95. The signal is in the
+   representation at near-perfect fidelity; the bottleneck is the readout/channel —
+   confirmed now from the positive side. The single number that is *not* circular is
+   AUROC→correctness = 0.64.
+3. **correct_on_known / truthful are a lower bound.** They reuse the clean-SFT
+   model's cached greedy generations. For knowns the base model *refused*, there is
+   no cached correct answer, so the oracle "answering" them is scored as incorrect —
+   dragging both metrics down. True values under an oracle that actually re-generates
+   are ≥ reported. Full measurement needs a cheap re-generation pass (knowns the base
+   refused, decoded under the oracle's answer decision). Reported on the labeled
+   subset n = 1233, not the full n = 3369.
+
+**Base sanity (same rows, model's own behavior):** known answered 43.8% / correct
+20.2%; unknown answered 12.9% / correct 0.0%. The oracle moves known-answer-rate
+43.8 → 96.8 and unknown-answer-rate 12.9 → 1.6.
+
+**So what.** H_O holds: a passing policy already exists latently in the clean-SFT
+representation; the trained channels just cannot express it. This is the strongest
+available motivation for the confidence-head engine change — it reduces the open
+problem to "make the oracle readout differentiable / online" rather than "find a
+signal." It does **not** retire the two things the engine experiment must still earn:
+(a) cross-distribution transfer (caveat 1), and (b) correctness-calibration as
+opposed to answerability-calibration (the 0.64). Result written into Paper 3 §8 as
+the ceiling that motivates — with those two earned caveats — the proposed engine
+change. Exploratory, single-model, single-seed; reported separately from the locked
+matrix; not a headline claim.
+
+Artifacts: scorer `experiment/phase1/probe/probe_as_oracle_ceiling.py`; raw per-row
+result JSON written to the (gitignored) extraction dir
+`.../hidden_states_selfaware_clean_sft_full/amendment_o_probe_as_oracle.json` (not
+redistributed; numbers transcribed here are the tracked record).
