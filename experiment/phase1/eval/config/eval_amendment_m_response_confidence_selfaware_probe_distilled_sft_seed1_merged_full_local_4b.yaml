@@ -1,5 +1,9 @@
 # experiment/phase1/eval/config/eval_amendment_m_response_confidence_selfaware_probe_distilled_sft_seed1_merged_full_local_4b.yaml
 #
+# RETIRED by Amendment M Revision 3 (2026-06-29): the probe-distilled cell is retired
+# (near-degenerate target, commit d8414971). Use the probe_factual eval config
+# instead. Kept for provenance only.
+#
 # Amendment M (revision 2): full SelfAware eval for the merged probe-distilled
 # schema-SFT seed-1 model. Mirrors the Amendment K / clean-SFT merged-base eval
 # EXACTLY (same prompt, gold, generation/vLLM settings, base-only arm with

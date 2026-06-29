@@ -1,3 +1,8 @@
+# RETIRED by Amendment M Revision 3 (2026-06-29): the quantile-balanced
+# appropriateness_p target this config trains is near-degenerate on clean-SFT data
+# (CPU preflight, commit d8414971). Use sft_schema_probe_factual_response_confidence_*
+# instead. Kept for provenance only — do NOT launch.
+#
 # Amendment M (revision 2): quantile-balanced probe-distilled stated-confidence SFT.
 # Mirrors sft_schema_clean_response_confidence_seed1_full.yaml EXACTLY (recipe, LoRA,
 # completion_only_loss) per Amendment M §3.2 — the ONLY differences are training

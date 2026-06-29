@@ -1,12 +1,9 @@
-# RETIRED by Amendment M Revision 3 (2026-06-29): the quantile-balanced
-# appropriateness_p target this config trains is near-degenerate on clean-SFT data
-# (CPU preflight, commit d8414971). Use sft_schema_probe_factual_response_confidence_*
-# instead. Kept for provenance only — do NOT launch.
-#
-# Amendment M (revision 2): quantile-balanced probe-distilled stated-confidence SFT
-# SMOKE (max_steps 32). Mirrors sft_schema_clean_response_confidence_seed1_smoke.yaml
-# EXACTLY per §3.2 — only training output_dir and the dataset local_file differ.
-# Consumed by: train_sft.py --config <this>.yaml.
+# Amendment M Revision 3 (SIGNED 2026-06-29): factual/doubt-axis probe-distilled
+# stated-confidence SFT — the AUTHORIZED cell. Mirrors
+# sft_schema_clean_response_confidence_seed1_full.yaml EXACTLY (recipe, LoRA,
+# completion_only_loss) per §3.2 — the ONLY differences are training output_dir and
+# the dataset local_file (the probe-FACTUAL target column, response_confidence =
+# factual_p direct). Consumed by: train_sft.py --config <this>.yaml.
 model:
   model_name: unsloth/Qwen3-4B-bnb-4bit
   max_seq_length: 2048
@@ -31,8 +28,8 @@ lora:
   use_dora: false
   init_lora_weights: null
 training:
-  output_dir: scratch/schema_response_confidence/runs/sft_schema_probe_distilled_seed1_smoke
-  per_device_train_batch_size: 12
+  output_dir: scratch/schema_response_confidence/runs/sft_schema_probe_factual_seed1_full
+  per_device_train_batch_size: 10
   gradient_accumulation_steps: 1
   learning_rate: 0.0002
   max_grad_norm: 1.0
@@ -47,21 +44,21 @@ training:
   bf16: true
   num_train_epochs: 1
   warmup_ratio: 0.03
-  logging_steps: 10
-  save_steps: 100
-  save_total_limit: 1
+  logging_steps: 25
+  save_steps: 500
+  save_total_limit: 2
   dataloader_num_workers: 0
   dataloader_pin_memory: true
   group_by_length: false
   eval_strategy: 'no'
-  eval_steps: 50
+  eval_steps: 500
   chat_template_kwargs:
     enable_thinking: false
-  max_steps: 32
+  max_steps: null
 dataset:
   dataset_name: null
   dataset_file: null
-  local_file: scratch/schema_response_confidence/qwen3-4b-instruct/sft_response_confidence_train_probe_distilled.jsonl
+  local_file: scratch/schema_response_confidence/qwen3-4b-instruct/sft_response_confidence_train_probe_factual.jsonl
   num_proc: 1
   test_size: 0.0
   split_dataset: false
