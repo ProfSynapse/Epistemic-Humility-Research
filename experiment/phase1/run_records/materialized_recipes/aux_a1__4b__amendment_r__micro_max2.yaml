@@ -1,0 +1,90 @@
+# Amendment R Phase B — A1 MICRO smoke (max_steps: 2). NOT a scored run.
+#
+# Validates the full local Docker pipeline end-to-end against merged engine
+# 3eb6e23 BEFORE the scored A0/A1/A2 cells: Docker + GPU + model load + data
+# prep + the NEW aux_head CLI forwarding (enabled/layer/token_position/
+# target_field/loss/head_type/out_activation/input_norm/lm_loss_weight) +
+# prompt_render=prompt_completion + 2 joint optimizer steps. Exit 0 with a
+# train_end at step 2 clears the pipeline; then launch the full arms.
+#
+# Mirrors eh_phase1_qwen3_4b_amendment_r_a1_joint_real.yaml exactly except:
+#   - training.max_steps: 2
+#   - explicit setup.copy (copy-mode provenance) + distinct output_root.
+name: eh-phase1-qwen3-4b-amendment-r-a1-micro-max2
+target: local
+method: sft
+provider: local_docker
+
+job:
+  image: unsloth/unsloth:latest
+  pull_policy: missing
+  transfer: auto
+  keep_container: false
+
+setup:
+  pip:
+    - trl==0.22.2
+    - git+https://github.com/unslothai/unsloth_zoo.git
+    - git+https://github.com/unslothai/unsloth.git
+  copy:
+    - Trainers/sft
+    - Trainers/shared
+    - shared
+    - tuner
+    - scratch/amendment_r/phase_b/phase_b_aux_train.jsonl
+
+run:
+  method: sft
+  trainer: Trainers/sft/train_sft.py
+  dry_run: false
+  dashboard: false
+  quiet: true
+
+model:
+  name: unsloth/Qwen3-4B-bnb-4bit
+  max_seq_length: 2048
+  load_in_4bit: true
+
+dataset:
+  local_file: scratch/amendment_r/phase_b/phase_b_aux_train.jsonl
+
+training:
+  batch_size: 2
+  gradient_accumulation: 4
+  learning_rate: 2.0e-4
+  num_epochs: 1
+  max_steps: 2
+  prompt_render: prompt_completion
+  chat_template_kwargs:
+    enable_thinking: false
+  seed: 1
+
+lora:
+  r: 32
+  alpha: 64
+  dropout: 0.05
+  target_modules:
+    - q_proj
+    - k_proj
+    - v_proj
+    - o_proj
+    - gate_proj
+    - up_proj
+    - down_proj
+
+aux_head:
+  enabled: true
+  layer: 35
+  token_position: end_of_prompt
+  target_field: aux_target
+  loss: bce
+  head_type: linear
+  out_activation: sigmoid
+  input_norm: layernorm
+  freeze_base: false
+  lm_loss_weight: 1.0
+  head_lr: null
+
+artifacts:
+  output_root: toolset-training-artifacts/runs/local/4b/aux_a1__4b__amendment_r__micro_max2
+  run_timestamp: "{timestamp}"
