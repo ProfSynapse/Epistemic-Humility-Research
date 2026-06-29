@@ -22,20 +22,20 @@
     "builder": "experiment/phase1/probe/amendment_r_build_phase_b_aux_dataset.py"
   },
   "research_repo_commit": "2501d6507902d12817a6678dc96a6017427ea2ae",
-  "submodule_commit": "e95dbde57641011fc9bc506263f7ff35f3c78ba1",
+  "submodule_commit": "3eb6e23c7ee47342377eec8887f9fe96837a889e",
   "prereq_check": {
     "datasets_present": true,
     "aux_dataset_built": true,
-    "engine_prompt_render_landed": false,
-    "runner_aux_head_forwarding_landed": false
+    "engine_prompt_render_landed": true,
+    "runner_aux_head_forwarding_landed": true,
+    "prompt_render_engine_pr": "ProfSynapse/Synaptic-Tuner#120 (merged 2026-06-29, commit 3eb6e23): prompt_completion render mode + aux_head CLI forwarding in local_run_handler._build_trainer_command. 78 passed / 1 skipped on the aux_head test subset."
   },
   "outcome": {
-    "status": "blocked",
-    "blocked_on": [
-      "ENGINE: train_sft.py prompt_render=prompt_completion mode (docs/sessions/0029) — makes end_of_prompt land on the faithful gen-prompt token (smoke-verified; current end_of_prompt reads cos 0.54 / AUROC 0.85, not the 0.96 axis).",
-      "RUNNER: tuner local_run_handler does not forward an aux_head block (train_sft.py reads it from the trainer config only; no argparse). Needs aux_head CLI flags + forwarding in _build_trainer_command."
+    "status": "ready",
+    "gated_on": [
+      "Joint-loss + faithful-token re-smoke against the merged engine (3eb6e23): confirm end_of_prompt reads the faithful axis (cos ~0.9998) and the head co-trains, then lock the falsifier margin (candidate +0.05)."
     ],
-    "note": "Treatment arm (JOINT co-train, REAL targets). Recipe + data staged and ready; launch is instant once both prerequisites land and the joint-loss+baseline re-smoke locks the falsifier threshold."
+    "note": "Treatment arm (JOINT co-train, REAL targets). Both engine/runner prerequisites landed via PR #120; recipe + data staged. Launchable once the re-smoke confirms the faithful token position and locks the +0.05 margin."
   },
   "amendment_r": {
     "framing": "B1 — does native (emitted-scalar) calibration improve when the head co-trains on REAL answerability targets?",

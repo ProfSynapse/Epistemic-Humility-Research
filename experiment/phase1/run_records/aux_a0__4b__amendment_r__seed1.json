@@ -22,12 +22,14 @@
     "builder": "experiment/phase1/probe/amendment_r_build_phase_b_aux_dataset.py"
   },
   "research_repo_commit": "2501d6507902d12817a6678dc96a6017427ea2ae",
-  "submodule_commit": "e95dbde57641011fc9bc506263f7ff35f3c78ba1",
+  "submodule_commit": "3eb6e23c7ee47342377eec8887f9fe96837a889e",
   "prereq_check": {
     "datasets_present": true,
     "aux_dataset_built": true,
-    "engine_prompt_render_landed": "n/a (A0 has no aux_head)",
-    "runner_aux_head_forwarding_landed": "n/a (A0 has no aux_head)"
+    "engine_prompt_render_landed": true,
+    "runner_aux_head_forwarding_landed": "n/a (A0 has no aux_head)",
+    "prompt_render_engine_pr": "ProfSynapse/Synaptic-Tuner#120 (merged 2026-06-29, commit 3eb6e23)",
+    "note": "A0 now shares A1/A2's prompt_render=prompt_completion (render-matched), so it depends on the PR #120 engine mode for identical row layout across arms."
   },
   "outcome": {
     "status": "prepared",

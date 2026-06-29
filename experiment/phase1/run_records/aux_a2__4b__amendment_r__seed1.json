@@ -27,20 +27,20 @@
     "builder": "experiment/phase1/probe/amendment_r_build_phase_b_aux_dataset.py"
   },
   "research_repo_commit": "2501d6507902d12817a6678dc96a6017427ea2ae",
-  "submodule_commit": "e95dbde57641011fc9bc506263f7ff35f3c78ba1",
+  "submodule_commit": "3eb6e23c7ee47342377eec8887f9fe96837a889e",
   "prereq_check": {
     "datasets_present": true,
     "aux_dataset_built": true,
-    "engine_prompt_render_landed": false,
-    "runner_aux_head_forwarding_landed": false
+    "engine_prompt_render_landed": true,
+    "runner_aux_head_forwarding_landed": true,
+    "prompt_render_engine_pr": "ProfSynapse/Synaptic-Tuner#120 (merged 2026-06-29, commit 3eb6e23). See A1 run record."
   },
   "outcome": {
-    "status": "blocked",
-    "blocked_on": [
-      "ENGINE: train_sft.py prompt_render=prompt_completion mode (docs/sessions/0029).",
-      "RUNNER: tuner aux_head block forwarding (see A1 run record)."
+    "status": "ready",
+    "gated_on": [
+      "Launch alongside A1 under matched conditions, after the shared joint-loss + faithful-token re-smoke (see A1)."
     ],
-    "note": "Placebo control. BYTE-IDENTICAL to A1 except aux_target is the seed-shuffled column. Launch alongside A1 under matched conditions."
+    "note": "Placebo control. BYTE-IDENTICAL to A1 except aux_target is the seed-shuffled column. Both prerequisites landed via PR #120."
   },
   "amendment_r": {
     "framing": "B1 — placebo null for A1.",

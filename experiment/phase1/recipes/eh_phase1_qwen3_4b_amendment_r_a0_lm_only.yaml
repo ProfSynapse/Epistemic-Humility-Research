@@ -11,9 +11,10 @@
 # existing headline clean-SFT seed1 (identical LM hyperparameters), confirming the
 # staged Phase-B data reproduces the baseline before the head is introduced.
 #
-# Unlike A1/A2 this arm has NO engine/runner dependency — it runs on the current
-# tuner lane today. (A1/A2 are launch-blocked on prompt_render + aux_head
-# forwarding; see those recipes.)
+# This arm has NO aux_head, so it does not need the aux_head runner-forwarding
+# prerequisite. It DOES share A1/A2's prompt_render: prompt_completion (render-
+# matched, so the LM-training row layout is identical across all three arms), so
+# it depends on the prompt_render engine mode (landed in tuner 3317667).
 name: eh-phase1-qwen3-4b-amendment-r-a0-lm-only
 target: local
 method: sft
@@ -52,6 +53,10 @@ training:
   gradient_accumulation: 4
   learning_rate: 2.0e-4
   num_epochs: 1
+  # Render-matched to A1/A2: prompt/completion render so the LM-training row layout
+  # is byte-identical across all three arms and only the aux supervision varies
+  # (off / real / shuffled). A0 has no head, so this only affects row tokenization.
+  prompt_render: prompt_completion
   chat_template_kwargs:
     enable_thinking: false
 

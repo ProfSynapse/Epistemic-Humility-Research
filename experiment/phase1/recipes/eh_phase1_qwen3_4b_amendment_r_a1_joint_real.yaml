@@ -17,15 +17,15 @@
 # enable_thinking:false) so A0 doubles as a comparability check against the
 # existing clean-SFT run and A1/A2 isolate the head's effect.
 #
-# ⚠️ LAUNCH-BLOCKED (prep artifact, do NOT launch yet). Two engine/runner items
-#    must land first (see AMENDMENT-R §6 / docs/sessions/0029):
-#    (1) ENGINE: train_sft.py needs the `prompt_render: prompt_completion` mode so
-#        end_of_prompt lands on the faithful gen-prompt token (smoke-verified fix).
-#    (2) RUNNER: the tuner local-run handler does NOT forward an `aux_head` block
-#        (train_sft.py reads it from the trainer config only; no argparse exists).
-#        Needs aux_head CLI flags in train_sft.py + forwarding in
-#        local_run_handler._build_trainer_command. Until both land this recipe's
-#        aux_head block is inert.
+# Both engine/runner prerequisites have LANDED (Synaptic-Tuner PR #120, merged
+# 2026-06-29, commit 3eb6e23):
+#    (1) ENGINE: train_sft.py `prompt_render: prompt_completion` mode, so
+#        end_of_prompt lands on the faithful gen-prompt token (cos 0.9998).
+#    (2) RUNNER: local_run_handler._build_trainer_command now forwards the
+#        aux_head block + prompt_render via aux_head CLI flags.
+# Remaining gate before launch: the joint-loss + faithful-token re-smoke against
+# the merged engine, which confirms the faithful token position end-to-end and
+# locks the falsifier margin (candidate +0.05).
 name: eh-phase1-qwen3-4b-amendment-r-a1-joint-real
 target: local
 method: sft
@@ -65,6 +65,10 @@ training:
   gradient_accumulation: 4
   learning_rate: 2.0e-4   # held == headline SFT seed1; re-confirm in the joint-loss smoke
   num_epochs: 1
+  # Render rows prompt/completion-style so end_of_prompt lands on the faithful
+  # add_generation_prompt token (cos 0.9998). The handler forwards this from the
+  # TRAINING block (training_cfg.prompt_render), NOT the aux_head block.
+  prompt_render: prompt_completion
   chat_template_kwargs:
     enable_thinking: false
 
@@ -86,17 +90,15 @@ lora:
 aux_head:
   enabled: true
   layer: 35                       # validated answerability axis (O/P/Q)
-  token_position: end_of_prompt   # faithful only with prompt_render: prompt_completion below
+  token_position: end_of_prompt   # faithful only with training.prompt_render: prompt_completion
   target_field: aux_target        # column added by the builder (real answerability label)
   loss: bce
   head_type: linear
-  hidden_dims: []
   out_activation: sigmoid
   input_norm: layernorm           # so the head trains at a normal LR
   freeze_base: false              # Phase B: co-train the unfrozen base
   lm_loss_weight: 1.0
   head_lr: null
-  prompt_render: prompt_completion  # ⚠ pending engine support (0029); makes end_of_prompt faithful
 
 artifacts:
   output_root: toolset-training-artifacts/runs/local_docker/sft/{name}

@@ -11,9 +11,9 @@
 # the mere act of attaching/optimizing a head (capacity, gradient interference,
 # regularization) independent of whether the target carries information.
 #
-# ⚠️ LAUNCH-BLOCKED (prep artifact). Same two engine/runner prerequisites as A1
-#    (prompt_render mode + aux_head runner forwarding) — see the A1 recipe header
-#    and AMENDMENT-R §6 / docs/sessions/0029.
+# Both engine/runner prerequisites have LANDED (Synaptic-Tuner PR #120, merged
+# 2026-06-29, commit 3eb6e23) — same as A1. Remaining gate before launch: the
+# shared joint-loss + faithful-token re-smoke; see the A1 recipe header.
 name: eh-phase1-qwen3-4b-amendment-r-a2-joint-placebo
 target: local
 method: sft
@@ -53,6 +53,11 @@ training:
   gradient_accumulation: 4
   learning_rate: 2.0e-4
   num_epochs: 1
+  # Render rows prompt/completion-style so end_of_prompt lands on the faithful
+  # add_generation_prompt token (cos 0.9998). The handler forwards this from the
+  # TRAINING block (training_cfg.prompt_render), NOT the aux_head block. Held
+  # identical to A1 so A1 vs A2 differ ONLY by the aux_target column.
+  prompt_render: prompt_completion
   chat_template_kwargs:
     enable_thinking: false
 
@@ -76,13 +81,11 @@ aux_head:
   target_field: aux_target        # shuffled placebo label (data file differs from A1)
   loss: bce
   head_type: linear
-  hidden_dims: []
   out_activation: sigmoid
   input_norm: layernorm
   freeze_base: false
   lm_loss_weight: 1.0
   head_lr: null
-  prompt_render: prompt_completion  # ⚠ pending engine support (0029)
 
 artifacts:
   output_root: toolset-training-artifacts/runs/local_docker/sft/{name}
