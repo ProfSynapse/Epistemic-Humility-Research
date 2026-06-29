@@ -22,6 +22,12 @@ exploratory.
 - **R1 (2026-06-29, DRAFT):** scope + primary framing locked (B1 native behavior
   change). Engine prerequisites enumerated. Gates pending engine build + smoke;
   signature pending.
+- **R1.1 (2026-06-29, DRAFT):** §4 made concrete pre-smoke — named the existing
+  scorer (`calibration_gap_report.py` Analysis A) as the primary-metric instrument,
+  anchored the A0-analog baseline from the committed `clean_sft_grpo_v2_seed1`
+  report (emitted→appropriateness AUROC 0.561, flat scalar std 0.0129), and recorded
+  a candidate falsifier effect size (≥ +0.05 AUROC, A1>A2). Threshold still locks
+  post-smoke; no goalpost moved (made stricter/more concrete, never loosened).
 
 ## 1. Facts this builds on
 
@@ -68,8 +74,10 @@ with acceptance tests. Phase B does not run until this lands + smokes green.
 ## 3. Method (joint training; one treatment + two controls)
 
 4B, single-seed, local. Same abstention SFT data the clean-SFT arm used (known→answer
-rows, unknown→IDK rows; the known/unknown split IS the `target_field` — confirm during
-build). aux_head reads `end_of_prompt`, L35, BCE, LayerNorm input.
+rows, unknown→IDK rows; the known/unknown split IS the `target_field`). **Confirmed
+(R1.1):** the KUQ extraction rows carry `label ∈ {known: 600, unknown: 400}` — a
+binary answerability column ready to map to a 0/1 `aux_head.target_field`; A2 shuffles
+this column. aux_head reads `end_of_prompt`, L35, BCE, LayerNorm input.
 
 - **A0 — LM-only SFT baseline** (aux_head off): the model's native abstention behavior
   + a post-hoc (frozen-base, Q-style) head readout for reference.
@@ -92,6 +100,36 @@ measured from the model's own generations, NOT the head's readout.
   no behavioral change; the bottleneck is the expression channel, not the
   representation. (Exact effect-size threshold locked on sign-off, after the smoke
   fixes baseline variance.)
+
+**Primary-metric instrument & A0-analog baseline (pre-smoke anchor, not yet locked).**
+The non-circular primary is already computed by the existing GPU-free scorer
+`experiment/phase1/eval/analysis/calibration_gap_report.py` (Analysis A), so A0/A1/A2
+are scored with the same instrument as every prior arm — no new measurement code. The
+two locked metric fields it emits, on the SelfAware **behavior subset** (n=1233):
+- `auroc_emitted_to_appropriateness` — emitted stated-confidence as a forecast of
+  response appropriateness. Its docstring establishes this read is non-circular (the
+  axis is a known/unknown contrast over two *appropriate* cells, not trained to
+  separate appropriate from inappropriate), which is exactly the property §4 needs to
+  avoid O's circularity caveat.
+- `auroc_emitted_correct_vs_wrong_answered_known` + `ece_vs_appropriateness` (secondary
+  reads on the same generations).
+
+**A0 analog = the `clean_sft_grpo_v2_seed1` calibration-gap report already committed**
+(`experiment/phase1/eval/analysis/calibration_gap_clean_sft_grpo_v2_seed1.json`): on
+the behavior subset, `auroc_emitted_to_appropriateness = 0.561`,
+`auroc_emitted_correct_vs_wrong = 0.532`, emitted std `0.0129` (a flat, chance-level
+scalar). Arm-to-arm spread on the same field: the abstention/GRPO arms sit ~0.52–0.56
+(grpo-v3 emitted std 0.027); only the contrastive-SFT arms ever moved the scalar
+(Amendment K emitted std 0.309; L 0.180) — i.e. a real shift in this metric is large
+and visible, not a fraction of a point.
+
+**Candidate effect size (to confirm or revise post-smoke, NOT yet locked):** A1's
+behavior-subset `auroc_emitted_to_appropriateness` exceeds A2's by **≥ +0.05** AND
+clears the ~0.56 flat-scalar floor. The smoke fixes A0/A2 run-to-run variance under the
+actual Phase B harness; the final threshold is set to max(this candidate,
+2×observed-baseline-SD) at sign-off. Recording the candidate now prevents a
+hindsight-fit threshold — it can be made stricter or its variance basis corrected, but
+not loosened to manufacture a pass.
 
 **SECONDARY (de-risk gate, descriptive):** head answerability-AUROC after A1 ≥ 0.90 —
 the head stays calibrated as the base moves (the deployed-artifact preservation
@@ -120,7 +158,8 @@ correctness gap (O's 0.64) and generic-train-distribution transfer remain separa
 - [ ] Engine build (§2) landed in synaptic-tuner + unit tests green.
 - [ ] Pre-flight smoke green (joint loss runs; gradients reach head + LoRA;
   end_of_prompt token reproduces the Q axis; head calibration baseline measured).
-- [ ] Final effect-size falsifier threshold locked (post-smoke).
+- [x] Primary-metric instrument identified + A0-analog baseline anchored (R1.1).
+- [ ] Final effect-size falsifier threshold locked (post-smoke; candidate ≥ +0.05).
 - [ ] User sign-off recorded + training launch authorized.
 
 ## 7. Result
