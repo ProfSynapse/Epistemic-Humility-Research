@@ -1,0 +1,72 @@
+# Amendment M Revision 3 (SIGNED 2026-06-29): factual/doubt-axis probe-distilled
+# stated-confidence SFT — the AUTHORIZED cell. SMOKE (max_steps 32). Mirrors
+# sft_schema_clean_response_confidence_seed1_smoke.yaml EXACTLY per §3.2 — only the
+# training output_dir and the dataset local_file (the probe-FACTUAL target column,
+# response_confidence = factual_p direct) differ. Consumed by: train_sft.py --config.
+model:
+  model_name: unsloth/Qwen3-4B-bnb-4bit
+  max_seq_length: 2048
+  dtype: null
+  load_in_4bit: true
+lora:
+  r: 32
+  lora_alpha: 64
+  lora_dropout: 0.05
+  bias: none
+  target_modules:
+  - q_proj
+  - k_proj
+  - v_proj
+  - o_proj
+  - gate_proj
+  - up_proj
+  - down_proj
+  use_gradient_checkpointing: unsloth
+  random_state: 1
+  use_rslora: false
+  use_dora: false
+  init_lora_weights: null
+training:
+  output_dir: scratch/schema_response_confidence/runs/sft_schema_probe_factual_seed1_smoke
+  per_device_train_batch_size: 12
+  gradient_accumulation_steps: 1
+  learning_rate: 0.0002
+  max_grad_norm: 1.0
+  lr_scheduler_type: linear
+  max_seq_length: 2048
+  packing: false
+  completion_only_loss: true
+  assistant_only_loss: false
+  gradient_checkpointing: true
+  optim: adamw_8bit
+  fp16: false
+  bf16: true
+  num_train_epochs: 1
+  warmup_ratio: 0.03
+  logging_steps: 10
+  save_steps: 100
+  save_total_limit: 1
+  dataloader_num_workers: 0
+  dataloader_pin_memory: true
+  group_by_length: false
+  eval_strategy: 'no'
+  eval_steps: 50
+  chat_template_kwargs:
+    enable_thinking: false
+  max_steps: 32
+dataset:
+  dataset_name: null
+  dataset_file: null
+  local_file: scratch/schema_response_confidence/qwen3-4b-instruct/sft_response_confidence_train_probe_factual.jsonl
+  num_proc: 1
+  test_size: 0.0
+  split_dataset: false
+  filter_desirable: false
+wandb:
+  enabled: false
+  project: null
+  run_name: null
+  entity: null
+evolutionary:
+  enabled: false
+seed: 1

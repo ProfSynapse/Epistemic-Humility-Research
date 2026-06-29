@@ -34,6 +34,46 @@ UNKNOWN_PROBE_KEY = ""
 PROBE_SCALED_FORMULA = "0.1 + 0.8 * response_appropriateness_p_laplace"
 CONTRASTIVE_FORMULA = "deterministic_uait_style_band_spread_v1"
 SFT_CLEAN_FORMULA = "deterministic_clean_sft_band_spread_v1"
+# Amendment M (probe-distilled calibration SFT): the response_confidence target is
+# the empirical quantile of each row's internal appropriateness_p, mapped onto a
+# spread band. This is per-question grounded (monotone in appropriateness_p) AND
+# distribution-balanced (the marginal is ~uniform across the band), which defeats
+# the naive probe-scaled mode-collapse (computed-confidence-alignment-regimen §004:
+# 0.1+0.8*p emitted a constant 0.8765 because the target distribution is mode-heavy).
+#
+# NOTE (implementation refinement of Amendment M §3.1): the signed spec wrote
+# "average-rank for ties". But appropriateness_p is a 32-sample Laplace value with
+# only ~34 discrete levels, so it has large tie-clusters (a point mass of easy
+# knowns near the top). Average-rank maps a whole tie-cluster to ONE target, which
+# would merely RELOCATE the §004 point mass and fail the spec's own balance gate
+# (no quantized target > 15% of rows). We therefore break ties with a deterministic
+# secondary key (a stable hash of the probe row key + answer) so each row gets a
+# distinct rank and the marginal is genuinely spread. This stays "deterministic
+# given a fixed sort key" (§3.1) and is what the balance requirement actually needs;
+# strict monotonicity (appropriateness_p_i < appropriateness_p_j => conf_i <= conf_j)
+# is preserved because tied rows occupy a contiguous rank block between neighbours.
+PROBE_DISTILLED_QUANTILE_FORMULA = "quantile_balanced(appropriateness_p_laplace, ties=deterministic_key) -> band"
+PROBE_DISTILLED_BAND = (0.10, 0.90)
+PROBE_DISTILLED_BALANCE_CAP = 0.15  # no single quantized target may exceed 15% of rows
+
+# Amendment M Revision 3 (SIGNED 2026-06-29): the R1/R2 quantile-balanced
+# appropriateness_p target above is RETIRED. Its CPU preflight (commit d8414971)
+# showed appropriateness_p is near-constant on clean-SFT data (only 17 distinct
+# values, 85% of rows at the 0.9706 ceiling, because every clean completion is
+# "appropriate"), so quantile-balancing scattered genuinely-equivalent rows across
+# the band by a hash tie-break — manufacturing knowledge-uncorrelated confidence for
+# 85% of the data. R3 retargets onto the calibrated factual/doubt axis DIRECTLY:
+# response_confidence = factual_p (the Laplace 32-sample P-correct), with NO balancing
+# and NO abstention inversion. factual_p is already a calibrated probability and is
+# genuinely bimodal-with-tail (abstentions low ~0.03; answers split high/low with a
+# real 0.5-0.9 tail), so the mean-emitting §004 collapse is strongly penalized AND the
+# target stays calibrated. A light clamp keeps JSON/logit targets off the hard 0/1
+# endpoints (the data lies inside it, so the clamp is effectively inert). The scalar
+# now means P(the asserted answer is factually correct): high on knowns-it-gets-right,
+# low on abstentions and questions-it-gets-wrong — the polarity the threshold bridge
+# (Amendment M §3.4) needs.
+PROBE_FACTUAL_FORMULA = "factual_p_laplace (direct, no balancing, no abstention inversion) -> clamp[0.02,0.98]"
+PROBE_FACTUAL_CLAMP = (0.02, 0.98)
 CONTRASTIVE_LOW_BAND = (0.10, 0.35)
 CONTRASTIVE_MIDDLE_BAND = (0.35, 0.60)
 CONTRASTIVE_HIGH_BAND = (0.70, 0.90)
@@ -258,6 +298,191 @@ def _clean_sft_response_confidence_for(
         "p_correct": float((probe_row or {}).get("p_correct", factual_p if factual_p is not None else NORMAL_P_CORRECT)),
         "n_samples": int((probe_row or {}).get("n_samples", n_samples)),
     }
+
+
+def _appropriateness_p(answer: str, probe_row: dict[str, Any] | None) -> tuple[float | None, int]:
+    """Internal appropriateness probability for a (clean) completion.
+
+    answer rows: appropriateness_p = factual_p; refusal rows: 1 - factual_p. Mirrors
+    the probe-scaled path exactly (line ~197) but returns the raw probability for the
+    quantile transform instead of mapping it through 0.1+0.8*p. None if the probe row
+    carries no usable signal.
+    """
+    factual_p, n_samples = _probe_factual_confidence(probe_row)
+    if factual_p is None:
+        return None, n_samples
+    appropriateness_p = 1.0 - factual_p if _is_refusal(answer) else factual_p
+    return appropriateness_p, n_samples
+
+
+def _quantile_balanced_targets(
+    values: list[float | None],
+    tiebreaks: list[float],
+    band: tuple[float, float],
+) -> list[float]:
+    """Map each value to lo + (hi-lo) * rank/(N+1), ranks DISTINCT (ties broken by
+    `tiebreaks`), so the emitted marginal is ~uniform across the band.
+
+    Rows with value None (no probe signal) are excluded from the ranking and assigned
+    the band midpoint (deterministic, flagged in provenance by the caller). Ranking is
+    over the valid rows only, by (value, tiebreak, original_index) so it is fully
+    deterministic. Strict monotonicity in `value` holds: a row with a smaller value
+    cannot receive a larger target, because all rows sort primarily by value.
+    """
+    lo, hi = band
+    midpoint = round(lo + (hi - lo) * 0.5, 4)
+    valid_idx = [i for i, v in enumerate(values) if v is not None]
+    targets = [midpoint] * len(values)
+    n_valid = len(valid_idx)
+    if n_valid == 0:
+        return targets
+    order = sorted(valid_idx, key=lambda i: (values[i], tiebreaks[i], i))
+    for rank0, i in enumerate(order):
+        q = (rank0 + 1) / (n_valid + 1)  # 1-based rank in (0, 1), endpoints avoided
+        targets[i] = round(lo + (hi - lo) * q, 4)
+    return targets
+
+
+def build_probe_distilled_sft_rows(
+    rows: list[dict[str, Any]],
+    *,
+    limit: int | None = None,
+    probe_records: list[dict[str, Any]] | None = None,
+    band: tuple[float, float] = PROBE_DISTILLED_BAND,
+) -> list[dict[str, Any]]:
+    """Amendment M: clean-SFT behavior completions whose response_confidence is the
+    quantile-balanced transform of the internal appropriateness_p.
+
+    Behavior-identical to build_clean_sft_rows by construction: same input rows, same
+    answer text (`_assistant_content`), same prompt (`_without_assistant`); ONLY the
+    response_confidence scalar differs. Needs a global pass (the quantile is a rank
+    over all rows), so it builds in two passes.
+    """
+    selected = rows[:limit] if limit else rows
+    selected_probe_records = probe_records[: len(selected)] if probe_records else [None] * len(selected)
+    if probe_records is not None and len(probe_records) < len(selected):
+        raise ValueError("probe_records must cover every probe-distilled SFT row")
+
+    # Pass 1: answers, appropriateness_p, deterministic tiebreak.
+    staged: list[tuple[list[dict[str, Any]], str, dict[str, Any] | None, int]] = []
+    appropriateness: list[float | None] = []
+    tiebreaks: list[float] = []
+    for row, probe_row in zip(selected, selected_probe_records):
+        messages = row.get("messages") or row.get("conversations")
+        if not isinstance(messages, list):
+            raise ValueError("SFT row lacks messages/conversations list")
+        answer = _assistant_content(messages)
+        ap, n_samples = _appropriateness_p(answer, probe_row)
+        key = _record_key(probe_row or {})
+        staged.append((messages, answer, probe_row, n_samples))
+        appropriateness.append(ap)
+        tiebreaks.append(_stable_unit_interval("probe_distilled", key, answer))
+
+    targets = _quantile_balanced_targets(appropriateness, tiebreaks, band)
+
+    # Pass 2: build rows (answer text identical to clean SFT; only confidence differs).
+    out: list[dict[str, Any]] = []
+    for (messages, answer, probe_row, n_samples), ap, target in zip(staged, appropriateness, targets):
+        provenance = {
+            "response_confidence_source": (
+                "probe_distilled_quantile_balanced" if ap is not None else "constant_fallback"
+            ),
+            "response_confidence_formula": (
+                PROBE_DISTILLED_QUANTILE_FORMULA if ap is not None else "constant_fallback"
+            ),
+            "response_confidence_role": "appropriate",
+            "appropriateness_p": (round(ap, 6) if ap is not None else None),
+            "probe_pool_row_key": _record_key(probe_row or {}),
+            "source_label": str((probe_row or {}).get("label", NORMAL_SOURCE_LABEL)),
+            "p_correct": float((probe_row or {}).get("p_correct", NORMAL_P_CORRECT)),
+            "n_samples": int((probe_row or {}).get("n_samples", n_samples)),
+        }
+        out.append(
+            {
+                "messages": [
+                    *_without_assistant(messages),
+                    {
+                        "role": "assistant",
+                        "content": _schema_payload(answer, target),
+                    },
+                ],
+                "schema_target": "response_confidence_json",
+                **provenance,
+            }
+        )
+    return out
+
+
+def build_probe_factual_sft_rows(
+    rows: list[dict[str, Any]],
+    *,
+    limit: int | None = None,
+    probe_records: list[dict[str, Any]] | None = None,
+    clamp: tuple[float, float] = PROBE_FACTUAL_CLAMP,
+) -> list[dict[str, Any]]:
+    """Amendment M Revision 3: clean-SFT behavior completions whose response_confidence
+    is the model's own calibrated factual confidence (probe `factual_p`), applied
+    DIRECTLY — no quantile transform, no balancing, no abstention inversion.
+
+    Behavior-identical to build_clean_sft_rows by construction: same input rows, same
+    answer text (`_assistant_content`), same prompt (`_without_assistant`); ONLY the
+    response_confidence scalar differs. The scalar means P(the asserted answer is
+    factually correct): high on knowns the model gets right, LOW on abstentions and on
+    questions it gets wrong (this is the opposite polarity to R1/R2 "appropriateness"
+    for abstentions, and is the polarity the threshold bridge needs). Missing-probe
+    rows fall back to the global mean `factual_p` (constant), flagged in provenance.
+    """
+    selected = rows[:limit] if limit else rows
+    selected_probe_records = probe_records[: len(selected)] if probe_records else [None] * len(selected)
+    if probe_records is not None and len(probe_records) < len(selected):
+        raise ValueError("probe_records must cover every probe-factual SFT row")
+
+    lo, hi = clamp
+    # Pass 1: answers + raw factual_p (NO inversion). Compute the global mean over the
+    # rows that DO carry a probe signal, for the missing-probe fallback.
+    staged: list[tuple[list[dict[str, Any]], str, dict[str, Any] | None, int]] = []
+    factual: list[float | None] = []
+    for row, probe_row in zip(selected, selected_probe_records):
+        messages = row.get("messages") or row.get("conversations")
+        if not isinstance(messages, list):
+            raise ValueError("SFT row lacks messages/conversations list")
+        answer = _assistant_content(messages)
+        fp, n_samples = _probe_factual_confidence(probe_row)
+        staged.append((messages, answer, probe_row, n_samples))
+        factual.append(fp)
+    valid = [fp for fp in factual if fp is not None]
+    fallback_mean = round(sum(valid) / len(valid), 6) if valid else round((lo + hi) / 2.0, 6)
+
+    # Pass 2: build rows (answer text identical to clean SFT; only confidence differs).
+    out: list[dict[str, Any]] = []
+    for (messages, answer, probe_row, n_samples), fp in zip(staged, factual):
+        if fp is None:
+            target = round(min(hi, max(lo, fallback_mean)), 4)
+            source, formula = "constant_fallback", "constant_fallback"
+        else:
+            target = round(min(hi, max(lo, fp)), 4)
+            source, formula = "probe_factual_direct", PROBE_FACTUAL_FORMULA
+        provenance = {
+            "response_confidence_source": source,
+            "response_confidence_formula": formula,
+            "response_confidence_role": "factual",
+            "factual_p": (round(fp, 6) if fp is not None else None),
+            "probe_pool_row_key": _record_key(probe_row or {}),
+            "source_label": str((probe_row or {}).get("label", NORMAL_SOURCE_LABEL)),
+            "p_correct": float((probe_row or {}).get("p_correct", NORMAL_P_CORRECT)),
+            "n_samples": int((probe_row or {}).get("n_samples", n_samples)),
+        }
+        out.append(
+            {
+                "messages": [
+                    *_without_assistant(messages),
+                    {"role": "assistant", "content": _schema_payload(answer, target)},
+                ],
+                "schema_target": "response_confidence_json",
+                **provenance,
+            }
+        )
+    return out
 
 
 def _gold_answer(row: dict[str, Any]) -> str:
@@ -706,6 +931,14 @@ def build_all(
     probe_index = _probe_index_by_norm_question(train_probe_records)
     sft_rows = build_sft_rows(_read_jsonl(sft_input), limit=limit, probe_records=train_probe_records)
     sft_clean_rows = build_clean_sft_rows(_read_jsonl(sft_input), limit=limit, probe_records=train_probe_records)
+    sft_probe_distilled_rows = build_probe_distilled_sft_rows(
+        _read_jsonl(sft_input), limit=limit, probe_records=train_probe_records
+    )
+    # Amendment M Revision 3: the authorized cell (factual_p direct). Mirrors the
+    # probe-distilled scope (sft_input rows only; no ambiguous-middle append).
+    sft_probe_factual_rows = build_probe_factual_sft_rows(
+        _read_jsonl(sft_input), limit=limit, probe_records=train_probe_records
+    )
     dpo_source_rows = _read_jsonl(dpo_input)
     sft_contrastive_rows = build_contrastive_sft_rows(
         dpo_source_rows,
@@ -726,6 +959,8 @@ def build_all(
     outputs = {
         "sft": output_dir / "sft_response_confidence_train.jsonl",
         "sft_clean": output_dir / "sft_response_confidence_train_clean.jsonl",
+        "sft_probe_distilled": output_dir / "sft_response_confidence_train_probe_distilled.jsonl",
+        "sft_probe_factual": output_dir / "sft_response_confidence_train_probe_factual.jsonl",
         "sft_contrastive": output_dir / "sft_response_confidence_train_contrastive.jsonl",
         "sft_contrastive_masked": output_dir / "sft_response_confidence_train_contrastive_masked.jsonl",
         "dpo": output_dir / "dpo_response_confidence_train.jsonl",
@@ -733,6 +968,8 @@ def build_all(
     }
     _write_jsonl(outputs["sft"], sft_rows)
     _write_jsonl(outputs["sft_clean"], sft_clean_rows)
+    _write_jsonl(outputs["sft_probe_distilled"], sft_probe_distilled_rows)
+    _write_jsonl(outputs["sft_probe_factual"], sft_probe_factual_rows)
     # The Amendment K contrastive file stays byte-identical (no loss_mask_text
     # column); the Amendment L masked file is the same rows PLUS the additive
     # loss_mask_text directive on inappropriate rows.
@@ -743,6 +980,50 @@ def build_all(
     _write_jsonl(outputs["sft_contrastive_masked"], sft_contrastive_rows)
     _write_jsonl(outputs["dpo"], dpo_rows)
     _write_jsonl(outputs["kto"], kto_rows)
+    # Probe-distilled balance stat (Amendment M §4 preflight): the largest share any
+    # single quantized target takes. §004's collapse was 81.79%; the gate is <= 15%.
+    pd_targets = [
+        json.loads(r["messages"][-1]["content"]).get(CONFIDENCE_FIELD)
+        for r in sft_probe_distilled_rows
+    ]
+    pd_counts: dict[float, int] = {}
+    for t in pd_targets:
+        pd_counts[t] = pd_counts.get(t, 0) + 1
+    pd_max_share = (max(pd_counts.values()) / len(pd_targets)) if pd_targets else 0.0
+    pd_fallback = sum(
+        1 for r in sft_probe_distilled_rows
+        if r.get("response_confidence_source") == "constant_fallback"
+    )
+    # Amendment M R3 preflight (§4 step 2): the factual_p target is BIMODAL-with-tail,
+    # NOT balanced. Report both mode masses, the populated middle, and the
+    # answer/abstention split per band; the uniform-balance gate is RETIRED.
+    pf_targets = [
+        json.loads(r["messages"][-1]["content"]).get(CONFIDENCE_FIELD)
+        for r in sft_probe_factual_rows
+    ]
+    pf_counts: dict[float, int] = {}
+    for t in pf_targets:
+        pf_counts[t] = pf_counts.get(t, 0) + 1
+    pf_n = len(pf_targets) or 1
+    pf_low = sum(1 for t in pf_targets if t <= 0.2) / pf_n
+    pf_mid = sum(1 for t in pf_targets if 0.2 < t < 0.8) / pf_n
+    pf_high = sum(1 for t in pf_targets if t >= 0.8) / pf_n
+    pf_max_share = (max(pf_counts.values()) / pf_n) if pf_targets else 0.0
+    pf_fallback = sum(
+        1 for r in sft_probe_factual_rows
+        if r.get("response_confidence_source") == "constant_fallback"
+    )
+    def _pf_payload(r: dict[str, Any]) -> dict[str, Any]:
+        return json.loads(r["messages"][-1]["content"])
+    pf_abst_low = sum(
+        1 for r in sft_probe_factual_rows
+        if _is_refusal(_pf_payload(r).get("answer", ""))
+        and _pf_payload(r).get(CONFIDENCE_FIELD) <= 0.2
+    )
+    pf_abst_total = sum(
+        1 for r in sft_probe_factual_rows if _is_refusal(_pf_payload(r).get("answer", ""))
+    )
+
     manifest = {
         "component": "schema response-confidence dataset projection",
         "status": "not part of locked Phase 1 v0.3 matrix",
@@ -795,9 +1076,59 @@ def build_all(
                 "excluded": "wrong answers and over-refusals are excluded from clean SFT and reserved for DPO/KTO/GRPO",
             },
         },
+        "probe_distilled_sft": {
+            "included": True,
+            "amendment": "M (revision 2)",
+            "rows": len(sft_probe_distilled_rows),
+            "source": "Same clean-SFT appropriate completions; ONLY response_confidence differs",
+            "formula": PROBE_DISTILLED_QUANTILE_FORMULA,
+            "band": list(PROBE_DISTILLED_BAND),
+            "quantile": "global; q_i = rank_i/(N+1); ranks distinct, ties broken by stable hash(key, answer)",
+            "balance": {
+                "max_target_share": round(pd_max_share, 4),
+                "cap": PROBE_DISTILLED_BALANCE_CAP,
+                "passes_cap": pd_max_share <= PROBE_DISTILLED_BALANCE_CAP,
+                "distinct_targets": len(pd_counts),
+                "naive_004_collapse_share_for_reference": 0.8179,
+                "constant_fallback_rows": pd_fallback,
+            },
+            "semantics": {
+                "target": "monotone quantile transform of internal appropriateness_p",
+                "behavior": "identical to clean SFT by construction (answer text byte-identical)",
+                "goal": "install stated-confidence DISCRIMINATION while preserving behavior",
+            },
+            "status": "RETIRED by R3 (near-degenerate source); kept for provenance",
+        },
+        "probe_factual_sft": {
+            "included": True,
+            "amendment": "M (revision 3, SIGNED 2026-06-29)",
+            "rows": len(sft_probe_factual_rows),
+            "source": "Same clean-SFT appropriate completions; ONLY response_confidence differs",
+            "formula": PROBE_FACTUAL_FORMULA,
+            "clamp": list(PROBE_FACTUAL_CLAMP),
+            "target": "factual_p (Laplace 32-sample P-correct) DIRECT; no balancing, no abstention inversion",
+            "distribution": {
+                "shape": "bimodal-with-tail (NOT balanced; uniform-balance gate retired)",
+                "low_mode_mass_le_0p2": round(pf_low, 4),
+                "mid_mass_0p2_0p8": round(pf_mid, 4),
+                "high_mode_mass_ge_0p8": round(pf_high, 4),
+                "max_target_share": round(pf_max_share, 4),
+                "distinct_targets": len(pf_counts),
+                "constant_fallback_rows": pf_fallback,
+                "abstentions_at_low_mode": f"{pf_abst_low}/{pf_abst_total}",
+            },
+            "semantics": {
+                "target": "model's own calibrated factual confidence P(answer correct)",
+                "polarity": "high on knowns-it-gets-right; LOW on abstentions and wrong answers",
+                "behavior": "identical to clean SFT by construction (answer text byte-identical)",
+                "goal": "install stated-confidence DISCRIMINATION on the correctness axis while preserving behavior; feed the threshold bridge",
+            },
+        },
         "rows": {
             "sft": len(sft_rows),
             "sft_clean": len(sft_clean_rows),
+            "sft_probe_distilled": len(sft_probe_distilled_rows),
+            "sft_probe_factual": len(sft_probe_factual_rows),
             "sft_contrastive": len(sft_contrastive_rows),
             "sft_contrastive_masked": len(sft_contrastive_rows),
             "sft_contrastive_masked_inappropriate": sum(

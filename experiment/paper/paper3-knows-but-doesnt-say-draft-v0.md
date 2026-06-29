@@ -111,10 +111,19 @@ Our contributions, each a section below:
   wrong answer itself: keep it and behavior breaks; remove it and calibration
   breaks.
 
-We then argue (Section 8) that because the model already *has* a calibrated
-internal axis, the productive move is to supervise the *stated* channel toward that
-internal axis — probe distillation — rather than to keep trying to induce
-calibration from outcome rewards or answer-bound supervision.
+Two follow-on cells then close off the obvious repairs from both sides. Reinforcement
+learning on the calibrated (answer-supervised) base retains stated calibration but
+cannot install knowledge-conditioned action ("says but doesn't act"), and the result
+survives halving the KL anchor — the decoupling is structural, not an anchor artifact.
+Its mirror — distilling the model's own calibrated internal axis directly into the
+stated confidence token by SFT — preserves the knowledge-conditioned action but cannot
+install stated calibration: the distilled scalar collapses onto the answer/abstain
+action ("acts but doesn't say"). We then argue (Section 8) that two opposite training
+pressures failing on the same channel localize the bottleneck to the channel itself —
+a single confidence token emitted by the language head and trained by next-token
+cross-entropy — and that the productive move is therefore an engine change: a dedicated
+confidence head supervised by a regression loss against the internal axis, not another
+objective on the same token.
 
 A scope note before the results: this is a deep within-model mechanistic study of a
 single model (Qwen3-4B) at a single seed. We are explicit throughout about which
@@ -559,6 +568,65 @@ The implication is the experiment Section 8 sets out: the action and the stated
 scalar must be supervised against the model's own internal doubt axis directly,
 which no outcome or preference reward does. Tuning the RL knob is closed.
 
+**The SFT-distillation mirror: a third dissociation, action vs stated confidence.**
+The RL follow-on gives "says but doesn't act." Its mirror is the obvious
+SFT route to the same goal from the other side: instead of installing the scalar
+and repairing behavior, *preserve* the clean-SFT behavior and install the scalar by
+distilling the model's own calibrated internal axis into it directly. We supervised
+the stated `response_confidence` on clean-SFT data with a scalar-only loss whose
+target is the probe's factual confidence $P(\text{answer correct})$ per row
+(AUROC ≈ 0.997 internally), clamped to $[0.02, 0.98]$ — no balancing, no abstention
+inversion. The assistant *answer* text is byte-identical to clean SFT, so the
+knowledge-conditioned action is preserved by construction; only the confidence token
+is retargeted [Amendment M, Revision 3;
+experiment/protocol/AMENDMENT-M-quantile-balanced-probe-distilled-sft.md]. This too
+is an exploratory single-seed cell, reported separately from the locked matrix, with
+the gate pre-registered: success = emitted AUROC → correctness ≥ 0.70, falsifier
+< 0.60.
+
+The behavior half holds trivially and the calibration half fails — the falsifier
+fired (Table 3). Because the answer text is untouched, the action channel conditions
+on knowledge *strongly*: the answer-rate margin is **+31.2 pts** (known 37.7% vs
+unknown 6.5%; z = 18.6), the widest in this paper and a full behavior pass 4/4. But
+the distilled scalar did not learn correctness. It collapsed onto the **action**:
+across 3369 rows it emits essentially two values — 0.9706 whenever it answers, 0.0294
+whenever it abstains — regardless of whether the answer is right. Ranking answered
+knowns correct-vs-wrong gives AUROC 0.504 (means 0.9706 vs 0.9651); refusal
+appropriateness 0.501; emitted → appropriateness 0.526; ECE 0.408. The emitted std
+is large (0.42) precisely *because* it splits on the answer/abstain action, not
+because it discriminates correctness — the same "variance is not calibration" caution
+as the answer-masked variant, in its sharpest form. A scalar-only SFT loss with a
+genuinely calibrated, per-row-varying target (the source axis ranks correctness at
+AUROC 0.997) still installs only a re-description of the action the model already
+takes, not the correctness the target encodes.
+
+Table 3. Amendment M — distilling the calibrated internal axis into the stated
+scalar by SFT (SelfAware, n = 3369; greedy)
+[results_amendment_m_..._probe_factual_sft_seed1_merged_full_4b; calibration_gap_report.py;
+action_conditioning_report.py].
+
+| channel | measurement | value |
+|---|---|---|
+| action | answer-rate margin, P(answer\|known) − P(answer\|unknown) | **+31.2 pts** (z = 18.6) — behavior 4/4 ✓ |
+| confidence | emitted AUROC → correctness (pre-reg. success ≥ 0.70, falsifier < 0.60) | **0.504** — falsifier fired ✗ |
+| confidence | distinct emitted values across 3369 rows | **3** (0.9706 answer / 0.0294 abstain, correctness-blind) |
+| confidence | ECE → appropriateness | 0.408 |
+
+**The symmetry, and what it localizes.** The two follow-ons are mirror images.
+RL on the calibrated base (Amendment N) keeps the *stated* calibration and cannot
+install knowledge-conditioned *action* — "says but doesn't act." SFT distillation
+into the scalar (Amendment M) keeps the knowledge-conditioned *action* and cannot
+install *stated* calibration — "acts but doesn't say." Neither the RL route nor the
+scalar-SFT route succeeds in routing the calibrated internal doubt axis (AUROC 0.997)
+into the verbalized single-token confidence readout. That the same channel resists
+two opposite training pressures — an outcome-aligned proper-scoring reward and a
+direct distillation of the very axis that is calibrated — localizes the bottleneck to
+the channel itself: a single confidence token trained by next-token cross-entropy
+collapses onto the lowest-entropy correlate available (the answer/abstain action),
+not the higher-entropy correctness signal. This is the motivation for Section 8's
+engine change: a dedicated confidence head supervised by a regression (proper-score)
+loss against the internal axis, rather than a token emitted by the language head.
+
 ## 8. Discussion
 
 **Possessed vs performed humility, measured.** Paper 1 framed the distinction
@@ -579,30 +647,53 @@ moved the scalar (contrastive SFT) did so by entangling it with answer text, whi
 trades behavior. No objective we tried supervises the stated scalar *against the
 right target directly*.
 
-**The implied experiment: quantile-balanced probe distillation.** The model already
-contains a calibrated estimate of appropriateness — the internal doubt axis (ECE
-0.004). The natural objective is therefore not to induce calibration from outcomes,
-but to *distill the internal axis into the stated channel*: supervise the emitted
-`response_confidence` toward the model's own doubt-axis readout, so the model learns
-to *say* what it already *represents*. This decouples the confidence target from the
-answer text (avoiding the answer-supervised trade) and supplies a dense, per-item, calibrated target
-(avoiding GRPO's out-competed confidence term).
+**The implied experiment, run and resolved: probe distillation does not route the
+axis into the scalar.** The model already contains a calibrated estimate of
+appropriateness — the internal doubt axis (ECE 0.004). The natural objective is
+therefore not to induce calibration from outcomes, but to *distill the internal axis
+into the stated channel*: supervise the emitted `response_confidence` toward the
+model's own doubt-axis readout, so the model learns to *say* what it already
+*represents*. This decouples the confidence target from the answer text (avoiding the
+answer-supervised trade) and supplies a dense, per-item, calibrated target (avoiding
+GRPO's out-competed confidence term). We ran it (Amendment M, Section 7), and it
+failed in an informative way.
 
-One caution is already on record and shapes the design. A *naive* probe-scaled SFT
-target (response_confidence = 0.1 + 0.8·appropriateness_p) was run earlier and
-collapsed: it emitted a single value (0.8765) on every row, because the target
-*distribution* is imbalanced — most known items are answerable, so most targets land
-in a high band, and cross-entropy is minimized by emitting that mode regardless of
-the input [experiment/notes/computed-confidence-alignment-regimen.md, §004]. The
-fix is to make the target *per-question grounded and distribution-balanced* at once:
-quantile-map the probe estimate onto a spread band so that emitting any constant is
-penalized, forcing the model to use the question to predict the target — which is
-exactly what installs discrimination. This is the experiment we take up next; like
-all training cells here it requires a new governed protocol amendment, and it
-inherits this paper's measurement: success means the stated channel finally clears
-both the calibration gate (AUROC → appropriateness ≥ 0.62, with discrimination, not
-just spread) and the behavior gate at once — the cell neither the answer-supervised
-nor the answer-masked variant could be.
+The design needed two corrections on the way, both instructive. First, a *naive*
+probe-scaled target (response_confidence = 0.1 + 0.8·appropriateness_p) collapses to
+a single emitted value (0.8765) because the target *distribution* is imbalanced — most
+known items are answerable, so most targets land in a high band, and cross-entropy is
+minimized by emitting that mode [experiment/notes/computed-confidence-alignment-regimen.md,
+§004]. The intended fix was to quantile-balance the target onto a spread band so that
+emitting a constant is penalized; but a CPU preflight on the real pool showed the
+*source* axis it balanced — appropriateness on all-appropriate clean-SFT completions —
+is itself near-degenerate (85% of rows at one ceiling value), so balancing fabricates
+knowledge-uncorrelated variance. The signed design (Revision 3) therefore distills the
+probe's factual-correctness axis $P(\text{answer correct})$ *directly* — a genuinely
+per-row-varying, internally calibrated target (AUROC 0.997), no balancing.
+
+That target is exactly what the objection above asks for, and the model still did not
+learn to say it. With the answer text held byte-identical to clean SFT, behavior
+passed 4/4 and the action conditioned on knowledge strongly (+31.2 pts), but the
+distilled scalar collapsed onto the *action* — two values, answer↔0.97 / abstain↔0.03,
+correctness AUROC 0.504 (Section 7, Table 3). Distilling a calibrated target into the
+single confidence token does not install calibration; it installs a re-description of
+the answer/abstain decision. Combined with the RL mirror (Amendment N), this is what
+moves the conclusion past "we have not yet found the right objective": two opposite
+training pressures on the same channel both fail, which points at the *channel*, not
+the objective.
+
+**The next experiment, then, is an engine change, not another loss on the same
+token.** If a single confidence token trained by next-token cross-entropy collapses
+onto the lowest-entropy correlate available regardless of the target, the remedy is to
+stop emitting confidence from the language head: add a dedicated confidence head that
+reads the same hidden state the internal axis is fit on and is supervised by a
+regression (proper-score) loss against that axis, so the calibrated representation is
+routed to the readout directly rather than relayed through a token the LM objective
+keeps collapsing. Like all training cells here this requires a new governed protocol
+amendment and inherits this paper's measurement — success means the stated channel
+finally clears both the calibration gate (AUROC → appropriateness ≥ 0.62, with
+discrimination, not just spread) and the behavior gate at once, the cell none of the
+seven interventions could be.
 
 **Implications beyond this model.** If the pattern generalizes (Section 9 is honest
 that we have not shown this), it reframes a common assumption in abstention training:
@@ -649,6 +740,15 @@ require (more caution), and we could not install the hard direction.
   decoupling is recorded as structural. This resolves the artifact-vs-structural
   question for this single-seed cell but does not lift the single-seed caveat: the
   structural reading itself still wants replication across seeds and a larger model.
+- **The probe-distillation cell is single-seed and exploratory.** The Amendment M
+  result (Section 7, Table 3) is one seed of one exploratory amendment, reported
+  separately from the locked matrix; "acts but doesn't say" and the channel-bottleneck
+  reading it supports should be read as a lead, not an established claim, until
+  replicated. The pre-registered calibration falsifier (AUROC → correctness < 0.60)
+  fired, so the negative is on the record, but the *interpretation* — that the
+  collapse is a property of the single-token-via-CE channel rather than of this
+  particular target or recipe — is what the proposed confidence-head experiment is
+  designed to test, and is not yet established.
 
 ## 10. Conclusion
 
@@ -660,9 +760,15 @@ to fix it with. The decisive evidence is a single-variable dissociation: contras
 SFT can install stated calibration only by supervising the wrong-answer text, which
 breaks behavior, and masking that text restores behavior while destroying the
 calibration. The model knows but does not say, and current objectives move what it
-says or what it does without coupling them. Because the calibrated signal already
-exists inside the model, the route we have not yet tried — and the one this paper
-motivates — is to supervise the stated channel toward the model's own internal axis.
+says or what it does without coupling them. Two mirror follow-ons sharpen rather than
+close the gap: reinforcement learning on a calibrated base keeps the stated signal but
+not knowledge-conditioned action, and distilling the calibrated internal axis directly
+into the stated confidence token keeps the action but collapses the scalar onto it —
+two opposite pressures, the same channel, the same failure. Because the calibrated
+signal already exists inside the model and the obstruction is now localized to the
+single-token confidence channel, the route this paper motivates is not another
+objective on that token but an engine change: a dedicated confidence head, reading the
+hidden state the internal axis is fit on, supervised by a regression loss against it.
 
 ## Data and code availability
 
