@@ -4,6 +4,53 @@ Captured 2026-06-10 from the trajectory conversation. This is the staged
 plan that paper 1's §8 will announce and the experiment program executes.
 Each phase consumes the previous phase's artifacts.
 
+> **The Phases 1-4 plan below is the original staged design and is preserved as
+> the historical record.** For where the program ACTUALLY is, read the update
+> immediately below first; it supersedes the dated Publication-shape, Open-decisions,
+> and Status sections at the foot of this file.
+
+## Update 2026-06-30 — where the program actually is
+
+The big empirical move since 2026-06-10: the program ran Phase 1, then pivoted into
+the Phase 3 mechanism line, and that mechanism work — not the training three-way — now
+carries the headline.
+
+- **Phase 1 executed and merged** (full SFT/DPO/KTO pipeline, PR #1, on `main`).
+  Model pinned to Qwen3-4B (local) / 8B (cloud), thinking OFF, as planned.
+- **Paper 3 — "Knows but Doesn't Say"** (drafted, `experiment/paper/paper3-knows-but-doesnt-say-draft-v0.md`):
+  the model represents what it does not know on an internal axis (answerability AUROC
+  0.997) while its STATED confidence is decoupled (0.52-0.56) and TRAINING-RESISTANT —
+  the gap survives DPO, KTO, GRPO v1/v2/v3, and contrastive SFT. Steering relaxes
+  over-refusal but cannot install abstention (asymmetric control). This reframes the
+  training three-way: preference/RL training moves behavior but does not open the
+  internal->stated channel.
+- **The two-signal readout (Paper 4, working)** — the current headline thesis:
+  *epistemic state in a small LM is largely a READOUT, not a training outcome.* Two
+  orthogonal linearly-decodable axes — an answerability **gate** (read at the prompt
+  anchor) and a per-answer correctness **dial** (read post-generation) — compose into a
+  deployable two-stage trust pipeline, and the correctness dial **vetoes** confident
+  hallucinations. Established across Amendments O/P/Q (probe-as-oracle ceiling +
+  through-engine replication), S/T (post-gen correctness readout, 0.834 / 0.819), U
+  (hallucination veto 0.980), Stage 1.5 (orthogonality — fusing the scalars HURTS), and
+  **W (the whole mechanism reads off the RAW base with no task training**: gate 0.997 /
+  dial 0.834 / veto 0.754; training only SHARPENS the veto to 0.980). Synthesis:
+  `experiment/paper/two-signal-readout-framework.md`; atomized into the KG as
+  `paper:internal-twosignal` + `paper:internal-paper3` and six mechanism atoms. Runnable
+  family spec: `experiment/notes/two-signal-readout.md`.
+- **Gap status.** Gap 4 (probe-transfer of humility) is RESOLVED in the strong form: the
+  answerability axis transfers cross-dataset (Amendment P, KUQ->SelfAware 0.983) and the
+  readout works training-free. Gaps 6/7 (small-model + cross-model coverage) are being
+  addressed now by **Amendment X** (cross-SIZE generalization within Qwen3: 1.7B/8B/14B;
+  `experiment/protocol/AMENDMENT-X-cross-model-size-sweep.md`). Cross-FAMILY
+  (Llama/Mistral/Gemma) remains the next generalization axis.
+- **Deliverable reframe.** The product the program targets — a surfaced, thresholdable
+  trust number that tracks whether THIS answer is correct — does NOT require us to train
+  it in; it is a readout. "Training is not needed for the readout" is the headline, with
+  the honest nuance that training sharpens the veto.
+
+Episodic record of this arc: `docs/sessions/0030`. The Phases 1-4 staged plan below
+remains the canonical description of the training-study spine (Papers 2's core).
+
 ## Anchor
 
 The meta-analysis (paper 1) verified these gaps; the program is built to
@@ -135,20 +182,38 @@ Jobs. KTO data per `.skills/fine-tuning/reference/dataset-formats.md`
 
 ## Publication shape
 
-- Paper 2 = Phase 1 (+ cheapest Phase-2 slice if budget allows).
-- Paper 3 = Phases 2+3.
-- Phase 4 = ongoing infrastructure / community artifact.
+Original (2026-06-10): Paper 2 = Phase 1; Paper 3 = Phases 2+3; Phase 4 = artifact.
+Revised (2026-06-30) to match what was actually produced:
+
+- **Paper 2 = Phase 1** training three-way (SFT/DPO/KTO), the decomposition + the
+  abstention-calibration tension. Unchanged in scope.
+- **Paper 3 = "Knows but Doesn't Say"** (drafted): the internal-vs-stated confidence
+  gap and its training-resistance + the steering asymmetry. This is the mechanism
+  *diagnosis* paper, not "Phases 2+3" as originally framed.
+- **Paper 4 = the two-signal readout** (working): the training-free answerability-gate +
+  correctness-dial + hallucination-veto pipeline, and the cross-size generalization
+  (Amendment X). This is the mechanism *solution* paper and the current headline.
+- Phase 4 = ongoing infrastructure / community artifact (unchanged).
 
 ## Open decisions (user)
 
-1. Model family pin at kickoff (Qwen2.5 vs newer generation).
-2. Llama-2-7b-chat bridge arm: in or out (recommendation: in).
-3. How much Phase 2 rides along in paper 2.
-4. KTO label mapping for the calibration-flavored arm: congruence vs
-   correctness-safe (see rewardcal-kto-recipe.md ablation note).
+1. ~~Model family pin~~ — RESOLVED 2026-06-10: Qwen3-4B / 8B, thinking OFF (see Model
+   strategy PIN DECISION).
+2. ~~Llama-2-7b-chat bridge arm~~ — RESOLVED: in; Llama-2 gated access granted
+   2026-06-10 (2 bridge cells in the locked matrix).
+3. How much Phase 2 rides along in Paper 2 (still open).
+4. ~~KTO label mapping~~ — RESOLVED: correctness-safe = the same four rows as
+   congruence, a weights-only 2.0/1.0 ablation (ADR §4.6).
+5. NEW (open): cross-FAMILY generalization (Llama/Mistral/Gemma) for the readout, and
+   promotion of any exploratory readout result to a headline claim via a pre-registered
+   replication — registered before running.
 
 ## Status
 
-- Paper 1 §8 is stubbed pending this trajectory being finalized; v0 text
-  parked at `experiment/protocol/future-work-section-v0.md`.
-- Pre-register hypotheses in `experiment/protocol/` before any training.
+- Phase 1 pipeline merged to `main` (PR #1). Paper 3 drafted; the two-signal readout
+  arc (Amendments O/P/Q/S/T/U/Stage-1.5/W) complete on Qwen3-4B and atomized into the KG.
+- In flight: Amendment X (cross-size readout generalization, 1.7B/8B/14B) — gates locked,
+  pipeline GREEN, sequential extraction running.
+- Paper 1 §8 is stubbed; v0 text parked at
+  `experiment/protocol/future-work-section-v0.md`.
+- Pre-register hypotheses/amendments in `experiment/protocol/` before any run (held).
