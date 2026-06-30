@@ -7,6 +7,19 @@ skill:
   unless the user has explicitly approved that exact action in the current
   conversation. Treat launch/cancel/delete as irreversible operator actions; do
   not infer permission from a broader goal.
+- **Branch-per-amendment lifecycle (one amendment = one branch = one PR, landed
+  before the next).** Cut a dedicated branch from an up-to-date `main` for each
+  Amendment or standalone experiment. Do the FULL arc on it (recipes, run
+  records, scored results, doc verdict, skill notes), open a PR into `main`, and
+  MERGE it before cutting the branch for the next amendment. Do not stack a
+  second amendment on an unmerged branch, and do not let a branch accumulate a
+  long-lived divergence (Amendment R reached 14 commits off `main` before
+  landing — that is the anti-pattern this rule exists to prevent). Serializing
+  amendments through `main` keeps it the single source of truth and makes each
+  amendment a reviewable, revertable unit. `main` is protected: open a PR, never
+  push or commit to it directly. Exception: lab-notebook smokes / diagnostics /
+  re-runs that belong to the IN-FLIGHT amendment ride its branch; only a
+  genuinely new amendment must start clean off `main`.
 - **No-pollution rule (SACROSANCT).** The runner communicates with the tuner
   ONLY through (1) the materialized recipe YAML and (2) the tuner's public CLI
   verbs. It imports NO tuner internals, adds NO committed file under
