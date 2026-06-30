@@ -1,8 +1,10 @@
 # Amendment U — Unified Single-Stream Two-Signal Mechanism (Dial-Veto on Unknowns)
 
-**Status:** SIGNED — gates LOCKED (2026-06-30); run authorized. Tier-2 exploratory
-cell (new evidence, falsifier pre-stated; reported separately from the locked
-PROTOCOL v0.3 matrix). Result pending in §7.
+**Status:** RESOLVED — SUCCESS (2026-06-30). The correctness dial flags
+hallucinations on unanswerable questions as lowest-trust (U-G3 AUROC 0.980, the
+falsifier did NOT fire). Gates were LOCKED at sign-off; no goalpost moved. Tier-2
+exploratory cell (new evidence, falsifier pre-stated; reported separately from the
+locked PROTOCOL v0.3 matrix). Full result in §7.
 
 **Sign-off (2026-06-30):** gates U-G1/U-G3 and the falsifier as written in §4 are
 LOCKED; data-adequacy precondition (≥50 hallucinations) ordered before the fit.
@@ -202,5 +204,87 @@ Paper 3 §8 alongside Amendments S/T and the Stage 1/1.5 diagnostics.
 
 ## 7. Result
 
-_(to be written after the run; SUCCESS/FALSIFIER verdict read on the locked §4
-primary metric, no goalpost moved)_
+**VERDICT: SUCCESS — and strongly.** The correctness dial DOES provide independent
+hallucination defense: a fabricated answer to an unanswerable question reads as the
+LOWEST-trust group of all. H_U3 (primary) and H_U1 (confirmatory) both PASS; the
+falsifier did NOT fire. Confident confabulation does **not** read like correctness.
+
+**Run provenance.** Checkpoint = clean-SFT merged-16bit base + GRPO-v2 LoRA adapter
+(active), forced-best-guess system prompt VERBATIM from Amendment T, greedy decode,
+thinking off, seed 20260630. Pool = the 1,233 SelfAware questions from the gate's
+frozen row manifest (556 known / 677 unknown). n_attempts = 1233 →
+**n_answered = 397 (121 hallucinations + 276 known-answered)**, n_refused = 836
+(~68% — GRPO-v2 native abstention again resists the forced prompt, but answers
+SelfAware more than the PopQA/TriviaQA pool). Data-adequacy precondition cleared
+with margin (≥50 hallucinations; actual **121**). Dial = the Amendment T correctness
+probe (post-gen L22), T-reference groups scored OUT-OF-FOLD (honest), U groups
+COLD-applied (external to the T fit). Artifacts:
+`experiment/phase1/probe/amendment_u_two_signal_result.json` (tensor outputs
+gitignored under `qwen3-4b-clean-sft-grpo-v2/amendment_u/`).
+
+**Gate table (locked §4):**
+
+| Gate | Threshold | Result | Pass |
+|------|-----------|--------|------|
+| U-G3 PRIMARY (dial flags hallucinations) | AUROC(T-correct vs hallucination) ≥ 0.65, CI excl 0.50 | **0.980**, 95% CI [0.968, 0.990] ("strong" band) | ✅ |
+| U-G1 gate confirm | within-SelfAware known-vs-unknown pre-gen AUROC ≥ 0.90 | **0.999** (L33) under the forced-best-guess prompt | ✅ |
+| U-G2 descriptive | hallucination vs T-wrong + within-SelfAware control | see below (NOT gated) | — |
+
+SUCCESS = U-G3 AND U-G1 → **met.**
+
+**The dial-score ordering (U-G2, descriptive — the interpretive core).** Mean dial
+P(correct) by group, in rank order:
+
+| Group | mean dial P(correct) | n |
+|-------|----------------------|---|
+| T-correct (answerable, right) | 0.833 | 988 |
+| known-answered (SelfAware answerable attempts, ungraded) | 0.679 | 276 |
+| T-wrong (answerable, wrong) | 0.353 | 500 |
+| **hallucination (unanswerable, answered)** | **0.018** | 121 |
+
+A clean monotone: hallucinations get the LOWEST trust of any group — **below even
+genuinely-wrong answers to answerable questions** (0.018 vs 0.353). The model's
+internal state when fabricating an answer to an unanswerable question is the
+furthest of all from its correctness signature.
+
+**Confound controlled — it is hallucination-detection, not dataset shift.** The
+within-SelfAware control AUROC(known-answered vs hallucination) = **0.93**, 95% CI
+[0.899, 0.957]. Holding the question pool fixed (both groups are SelfAware), the
+dial still sharply separates answerable attempts (0.679) from hallucinations
+(0.018). So the low hallucination score is NOT a SelfAware-OOD artifact; the dial
+reads whether THIS answer is trustworthy. (And hallucinations rank below T-wrong,
+the §4 pre-stated hallucination-vs-wrong check — consistent with detection.)
+
+**Scientific takeaways.**
+1. **The dial is a second line of defense, not just a trust display.** It does not
+   merely rank correct-vs-wrong among answerable items (T); it actively flags
+   hallucinations on unanswerable questions as least-trustworthy. The deployed
+   mechanism is gate (abstain unanswerable) → dial (surface trust on answered AND
+   veto residual hallucinations the gate misses).
+2. **Confident confabulation does NOT read like correctness.** The falsifier's
+   failure mode — fabrication carrying a confident-correct internal signature — did
+   not occur; it carries the OPPOSITE signature (lowest trust of all). This is the
+   first direct evidence in the program that the post-gen correctness representation
+   distinguishes "I know this" from "I am making this up."
+3. **The two-signal mechanism is complete on one shipped checkpoint.** Gate
+   answerability AUROC ~0.999 (here, under the deployment prompt) + dial correctness
+   AUROC 0.819 (T) + dial hallucination-flagging AUROC 0.980 (here), all on the
+   clean-SFT → GRPO-v2 checkpoint. Both stages validated end-to-end on the same
+   model. Consistent with [[two-signal-pipeline-not-fused]]: keep them as two
+   orthogonal stages.
+
+**Caveats (as pre-stated §3).** Forced-best-guess generation — establishes
+readability on the deployed checkpoint, not generalization to natural (un-forced)
+answers. The known-answered control group is correct-enriched but ungraded
+(SelfAware carries no gold aliases), so it is a directional control, not a certified
+correct set; the gated verdict rests on T-correct (graded) vs hallucination, not on
+it. The unified end-to-end risk-coverage frontier (§3 step 5) is a descriptive
+extension; the verdict here rests on the locked threshold-free U-G3 and the
+confound-controlled within-SelfAware AUROC, both decisive.
+
+**Promotion / next.** Exploratory, single-model, single-seed — NOT a headline claim;
+promotion needs a confirmatory replication (fresh seeds / 8B / held-out) registered
+before running. With the full two-signal mechanism now demonstrated on one shipped
+checkpoint (S/T/U + Stage 1/1.5), the natural next steps are (a) the natural-answer
+(un-forced) generalization follow-up both S and T flagged, and (b) a confirmatory
+replication to promote any of this to a headline claim.
