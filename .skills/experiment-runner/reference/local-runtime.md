@@ -80,6 +80,23 @@ does not exist: scratch\...`.
 - Redirect Hugging Face caches to repo-local `.cache/hf` during local runs to
   avoid Windows permission failures under `C:\Users\Joseph\.cache\huggingface`.
 
+- Detached `docker run` output dirs need world-write because the Unsloth
+  container runs as a NON-ROOT user (uid 1001), not root. A host-side output dir
+  pre-created from WSL (`mkdir`) lands as `755 profsynapse:profsynapse`, so the
+  container user cannot `mkdir` a child inside it and the script dies immediately
+  with `PermissionError: [Errno 13] ... '<out_dir>'` at the first
+  `out_dir.mkdir(...)`. Container-created trees are fine (they come out
+  `777 1001:...`), which is why an out-dir nested under a pre-existing
+  container-made dir (e.g. an old `qwen3-4b-instruct/`) works while a freshly
+  hand-made one fails. Generic fix before launching a detached extraction/probe
+  cell: either let the container create the ENTIRE output subtree (point
+  `--out-dir` below a dir the container already owns), or `chmod -R 777
+  <host-output-subtree>` first. Symptom signature: container exits within seconds,
+  exit 0/1, logs end at the mkdir line. (Note this is the MIRROR of the read-only
+  problem on the other side: dirs the container DID create are root/1001-owned and
+  the WSL user may not be able to write a score JSON into them — always pass an
+  `--out` to a user-writable path for the CPU scorer.)
+
 - `.env` may contain `HF_TOKEN` while the current process environment does not.
   Load it process-locally or pass `--env-file .env`; never print token values.
   For local eval containers that only use public/local assets, do not pass the
