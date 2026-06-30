@@ -60,10 +60,11 @@ cheapest such surface and is the pilot here.
 hidden states discriminates correct vs wrong answered attempts, and reads this
 **more strongly after the model has generated its answer than before**:
 
-- **H_S1 (signal exists):** best post-generation correctness-AUROC ≥ **0.75**
-  (5-fold CV, out-of-fold).
-- **H_S2 (self-eval gain — the bet):** best post-generation correctness-AUROC
-  exceeds the best pre-generation (end-of-prompt) correctness-AUROC by ≥ **+0.05**.
+- **H_S1 (signal exists):** best post-generation correctness-AUROC ≥ **0.70**
+  (5-fold CV, out-of-fold; useful floor — see §4 bands).
+- **H_S2 (self-eval gain — THE BET, primary):** best post-generation
+  correctness-AUROC exceeds the best pre-generation (end-of-prompt)
+  correctness-AUROC by ≥ **+0.05** (delta CI excludes 0).
 
 Rationale: pre-generation, the only available signal is prospective answerability
 ("do I know this topic"), which caps near 0.64 because topic-knowledge ≠ this
@@ -110,24 +111,41 @@ explicitly out of scope here.
 
 ## 4. Gates and falsifier (to be LOCKED at sign-off)
 
-**Data-adequacy precondition (checked BEFORE fitting; not a result).** The answered
-set must contain ≥ **150 correct** AND ≥ **150 wrong** attempts. If generation does
-not yield this balance, that is a data-stage stop (pool more datasets / more
-questions), NOT a probe verdict — we do not fit an underpowered probe and call the
-line dead (the 27-wrong lesson).
+**The baseline (anchored, not guessed).** Existing correctness-ranking AUROCs in
+the program: chance 0.50; model's own verbalized confidence (M) 0.504; base emitted
+scalar 0.559; **pre-generation answerability probe read as correctness (O) ≈ 0.64**
+(noisy, 27 wrong). The principled baseline is therefore **the run's own
+pre-generation read (~0.64)** — the "free" number the already-validated
+answerability probe gives with no new idea. The novel question is whether reading
+*after* the answer beats it, so the baseline is measured in-run, not assumed.
 
-**Primary metrics (threshold-free):**
-- **G1 (signal exists):** best post-gen correctness-AUROC ≥ **0.75** (5-fold CV).
-- **G2 (self-eval gain):** best post-gen correctness-AUROC − best pre-gen
-  correctness-AUROC ≥ **+0.05**.
-- **G3 (calibration):** ECE of surfaced confidence vs correctness < **0.15** at the
+**Data sizing.** Data is abundant (PopQA 14.3k + TriviaQA-gold 11.3k, with gold
+aliases; PopQA `s_pop` gives a difficulty gradient that guarantees a wrong class on
+long-tail entities). **Target ≈ 500 correct AND ≈ 500 wrong** answered attempts so
+the post-vs-pre delta has tight CIs.
+
+**Data-adequacy precondition (checked BEFORE fitting; not a result).** Hard floor:
+≥ **150 correct** AND ≥ **150 wrong**. Below this is a data-stage stop (pool more
+datasets / more questions), NOT a probe verdict — we do not fit an underpowered
+probe and call the line dead (the 27-wrong lesson).
+
+**Metrics (threshold-free):**
+- **G2 — PRIMARY (self-eval gain, the scientific question):** best post-gen
+  correctness-AUROC − best pre-gen correctness-AUROC ≥ **+0.05**, AND the delta's
+  bootstrap/DeLong 95% CI excludes 0. Baselined on the run's own pre-gen read.
+- **G1 — usefulness floor:** best post-gen correctness-AUROC ≥ **0.70** (5-fold CV,
+  out-of-fold) — conservatively above chance (0.50), emitted (0.55), and the free
+  answerability read (0.64). Descriptive bands: 0.70 useful · 0.75 moderate · 0.80+
+  strong.
+- **G3 — calibration:** ECE of surfaced confidence vs correctness < **0.15** at the
   best post-gen (layer, position).
 
-**SUCCESS — correctness dial achievable:** G1 AND G2 pass (G3 reported; a clean
-selective-prediction curve strengthens but is not required for the green-light).
+**SUCCESS — correctness dial achievable:** G2 (primary) AND G1 pass (G3 reported; a
+clean selective-prediction curve strengthens but is not required for the
+green-light).
 
 **FALSIFIER — kills the correctness-readout line on this model:** best post-gen
-correctness-AUROC < 0.75 **AND** ≤ pre-gen + 0.05 (no self-eval gain). The model
+correctness-AUROC < 0.70 **AND** post−pre ≤ +0.05 (no self-eval gain). The model
 does not linearly represent its own correctness any better after answering than
 before; a surfaced correctness-confidence dial is not achievable by linear readout
 here. Report as a negative; do NOT open a tweak-amendment — escalate to a richer
@@ -155,8 +173,12 @@ surfaced confidence is latently readable.
   scoped as a separate follow-up.
 - [x] Distinct mechanistic rationale vs prior amendments (correctness/post-gen, not
   answerability/pre-gen).
-- [ ] Stage-0 data check: confirm PopQA / TriviaQA loaders + gold present and the
-  Instruct base errs enough to clear the §4 precondition.
+- [x] Stage-0 data check (2026-06-30, CPU): PopQA (`datasets/popqa/test.jsonl`,
+  14,267 rows, gold `possible_answers`) and TriviaQA
+  (`datasets/triviaqa-rc-nocontext/cheng_test_gold.jsonl`, 11,313 rows, gold
+  `aliases`) present with gold for alias-grading; PopQA `s_pop` gradient guarantees
+  a wrong class on long-tail entities. Ample to clear ≥150/≥150 and the ~500/500
+  target. Actual Instruct-base error rate measurable only at generation (Stage 2).
 - [ ] GPU launch authorization (explicit, naming the exact run/lane).
 - [ ] User sign-off recorded.
 
