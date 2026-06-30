@@ -1,0 +1,272 @@
+---
+schema_version: research-session/v1
+session_id: '0030'
+title: Two-signal readout arc (S-T-U-W) + cross-size generalization (Amendment X)
+status: active
+created_at: '2026-06-30T18:08:42Z'
+updated_at: '2026-06-30T18:08:42Z'
+phase: phase1
+question: Is the answerability-gate + correctness-dial + hallucination-veto a training-free,
+  model-general readout? Arc from the correctness-readout discovery (S) through the
+  deployed checkpoint (T), hallucination veto (U), orthogonal two-stage pipeline (Stage
+  1.5), training-free base (W), framework synthesis + KG self-ingest, V shelving,
+  and the in-flight cross-size sweep (Amendment X).
+tags:
+- experiment-runner
+run_ids: []
+trajectory:
+  anchor: experiment/protocol/research-trajectory.md
+  current_position: "The deliverable (a surfaced, thresholdable trust signal that tracks
+    whether THIS answer is correct) is a training-free READOUT of two orthogonal internal
+    axes - answerability (gate, read at the prompt anchor) and per-answer correctness
+    (dial, read post-generation) - validated on Qwen3-4B (S/T/U/Stage1.5/W). Amendment X
+    is testing whether it is size-general within Qwen3 (1.7B/8B/14B); smoke GREEN, full
+    sweep pending. NOTE - the anchor doc itself (research-trajectory.md, Jun 19) is stale -
+    it predates Paper 3 finalization and this whole arc and needs a governed refresh."
+  changed_by_session: true
+checkpoints:
+- id: 001-result
+  at: '2026-06-30T18:08:42Z'
+  kind: result
+  title: Amendment S - per-answer correctness is linearly readable post-generation
+  summary: A linear probe at the post-generation content token ranks per-answer correctness
+    at AUROC 0.834 (L20, Instruct base); reading AFTER the answer beats before by +0.065
+    (CI [0.040,0.090] excludes 0 - the first P(True)/self-eval win). G1+G2 PASS, G3
+    (ECE-style) misses at 0.151. New free-answer surface (500 correct / 1336 wrong).
+  evidence:
+  - experiment/protocol/AMENDMENT-S-correctness-confidence-probe.md
+  - experiment/phase1/probe/amendment_s_correctness_probe_score.py
+  run_ids: []
+  commands: []
+  decisions: []
+  next_steps: []
+  signals: {auroc_post: 0.834, self_eval_gain: 0.065}
+- id: 002-result
+  at: '2026-06-30T18:08:42Z'
+  kind: result
+  title: Amendment T - the S readout survives on the deployed checkpoint
+  summary: On the deployed clean-SFT -> GRPO-v2 checkpoint the S correctness readout
+    replicates (post AUROC 0.819, L22; self-eval gain +0.074, CI excludes 0; G1+G2 PASS,
+    G3 0.168). Cold-transfer of the S probe = 0.679 (partial; direction drifts, refit
+    per checkpoint). GRPO-v2 refused ~82% even under forced-best-guess.
+  evidence:
+  - experiment/protocol/AMENDMENT-T-correctness-readout-deployment-port.md
+  run_ids: []
+  commands: []
+  decisions: []
+  next_steps: []
+  signals: {auroc_post: 0.819, cold_transfer: 0.679}
+- id: 003-result
+  at: '2026-06-30T18:08:42Z'
+  kind: result
+  title: Amendment U - the correctness dial vetoes confident hallucinations
+  summary: The dial reads hallucinations on unanswerable questions as LOWEST-trust
+    (AUROC 0.980; within-SelfAware control 0.93 rules out dataset shift). Confident
+    confabulation does NOT read like correctness - the veto is real. Two-signal mechanism
+    complete on one trained checkpoint.
+  evidence:
+  - experiment/protocol/AMENDMENT-U-unified-two-signal-dial-veto.md
+  - experiment/phase1/probe/amendment_u_two_signal_score.py
+  run_ids: []
+  commands: []
+  decisions: []
+  next_steps: []
+  signals: {veto_auroc: 0.980, within_selfaware_control: 0.93}
+- id: 004-result
+  at: '2026-06-30T18:08:42Z'
+  kind: result
+  title: Stage 1.5 - the two axes are an orthogonal pipeline, not a fused scalar
+  summary: Gate + dial validated per-item on CPU (PR 128). The answerability and
+    correctness axes are orthogonal; FUSING the scalars HURTS correctness ranking
+    (delta -0.014, CI excludes 0), so they deploy as two separate stages. The gate
+    transfers cross-prompt.
+  evidence:
+  - experiment/paper/two-signal-readout-framework.md
+  run_ids: []
+  commands: []
+  decisions:
+  - Keep gate and dial as separate pipeline stages; do not fuse into one scalar.
+  next_steps: []
+  signals: {fusion_delta: -0.014}
+- id: 005-result
+  at: '2026-06-30T18:08:42Z'
+  kind: result
+  title: Amendment W - the full mechanism is training-free on the RAW base
+  summary: On raw unsloth/Qwen3-4B-bnb-4bit (no adapter, no abstention SFT/RL) the
+    full mechanism reads off - gate 0.997 + dial 0.834 + hallucination-veto 0.754
+    (W-G1 0.7545, W-G2 0.997, both PASS). Task training SHARPENS the veto (0.754 ->
+    0.980; halluc dial-mean 0.271 base -> 0.018 trained) and adds ~0 to the gate -
+    training amplifies, it does not create, the signal. Answers "do we need training?"
+    for the readout deliverable - no.
+  evidence:
+  - experiment/protocol/AMENDMENT-W-base-model-training-free-mechanism.md
+  - experiment/phase1/probe/amendment_w_base_model_extract.py
+  - experiment/phase1/probe/amendment_w_base_model_score.py
+  run_ids: []
+  commands: []
+  decisions:
+  - The headline shifts to "training is not needed for the readout"; de-emphasize
+    retraining-on-seeds as off-message.
+  next_steps: []
+  signals: {gate: 0.997, dial: 0.834, veto_base: 0.754, veto_trained: 0.980}
+- id: 006-decision
+  at: '2026-06-30T18:08:42Z'
+  kind: decision
+  title: Framework synthesis + KG self-ingestion of the trajectory
+  summary: Wrote the theoretical framework (thesis "epistemic state in a small LM is
+    largely a readout, not a training outcome") and self-ingested the arc into the
+    typed KG - the first INTERNAL paper nodes (paper:internal-paper3,
+    paper:internal-twosignal) plus 6 mechanism atoms (M1-M6) with supported_by edges
+    to the internal papers and related_to edges into the external literature graph.
+  evidence:
+  - experiment/paper/two-signal-readout-framework.md
+  - library/notes/internal-twosignal-readout--training-free.md
+  - library/notes/internal-paper3--knows-but-doesnt-say.md
+  run_ids: []
+  commands: []
+  decisions:
+  - Atomize internal findings as first-class KG nodes so they are reusable evidence.
+  next_steps: []
+  signals: {internal_paper_nodes: 2, mechanism_atoms: 6}
+- id: 007-decision
+  at: '2026-06-30T18:08:42Z'
+  kind: decision
+  title: Amendment V (natural-answer generalization) shelved
+  summary: V was signed and gates locked but DEFERRED unlaunched - the natural
+    deployment prompt is data-starved (~96% refusal on the deployed checkpoint, too
+    few natural errors/hallucinations for a probe verdict) and W supersedes its intent
+    by establishing the training-free readout directly. Reported as a SAFETY observation,
+    not a probe verdict; the forced prompt was NOT substituted.
+  evidence:
+  - experiment/protocol/AMENDMENT-V-natural-answer-generalization.md
+  run_ids: []
+  commands: []
+  decisions:
+  - Shelve V; do not switch it to the forced prompt to manufacture a class.
+  next_steps: []
+  signals: {refusal_rate_approx: 0.96}
+- id: 008-amendment
+  at: '2026-06-30T18:08:42Z'
+  kind: amendment
+  title: Amendment X signed - cross-size generalization of the training-free readout
+  summary: Reframed "seeds" (rejected - greedy decode + only-seed1-on-disk make naive
+    seed reruns no-ops) to cross-MODEL/cross-SIZE generalization. User chose a Qwen3
+    size sweep (1.7B/8B/14B; 4B done). Tier-2 amendment SIGNED 2026-06-30, gates
+    LOCKED - per model X-G3 veto (PRIMARY) >=0.65 CI excl 0.50, X-G1 gate >=0.65, X-G2
+    dial >=0.65; adequacy >=30 wrong AND >=50 halluc. SUCCESS = all three on all three
+    sizes; FALSIFIER = veto fails on >=2 of 3. Scope = size within one family;
+    cross-family deferred (named limitation).
+  evidence:
+  - experiment/protocol/AMENDMENT-X-cross-model-size-sweep.md
+  - experiment/phase1/probe/amendment_x_cross_model_extract.py
+  - experiment/phase1/probe/amendment_x_cross_model_score.py
+  run_ids: []
+  commands: []
+  decisions:
+  - Size sweep within Qwen3 is the controlled first cut; cross-family is the next axis.
+  next_steps: []
+  signals: {gate_threshold: 0.65}
+- id: 009-launch
+  at: '2026-06-30T18:08:42Z'
+  kind: launch
+  title: Amendment X smoke on Qwen3-1.7B (local Docker GPU)
+  summary: User authorized smoke + full sweep (single GPU, sequential). Launched the
+    smoke (--max-attempts 60) on raw unsloth/Qwen3-1.7B-bnb-4bit via detached Docker
+    with --entrypoint python. GPU pre-flight - RTX 3090 free (0 MiB); a stale 18h
+    orphan container (ls /probe, 0 GPU) left alone; a stuck nvidia-smi probe killed
+    (root cause - omitted --entrypoint, fixed in the launch pattern).
+  evidence:
+  - experiment/phase1/probe/qwen3-1.7b-bnb-4bit/amendment_x/smoke/manifest.json
+  run_ids: []
+  commands:
+  - "docker.exe run -d --name eh-amd-x-smoke-1p7b --gpus all --ipc=host --entrypoint python -e HF_HOME=/workspace/repo/.cache/hf -e HUGGINGFACE_HUB_CACHE=/workspace/repo/.cache/hf/hub -v 'F:\\Code\\Epistemic-Humility-Research:/workspace/repo' -w /workspace/repo unsloth/unsloth:latest experiment/phase1/probe/amendment_x_cross_model_extract.py --base-model unsloth/Qwen3-1.7B-bnb-4bit --out-dir experiment/phase1/probe/qwen3-1.7b-bnb-4bit/amendment_x/smoke --gate-rows experiment/phase1/probe/qwen3-4b-clean-sft-grpo-v2-seed1-selfaware/hidden_states_selfaware_clean_sft_grpo_v2_full/extraction__55254a04aa1f/rows.jsonl --max-attempts 60 --wrong-floor 3 --hallucination-floor 5"
+  decisions: []
+  next_steps: []
+  signals: {}
+- id: 010-validation
+  at: '2026-06-30T18:08:42Z'
+  kind: validation
+  title: Amendment X pipeline GREEN end-to-end (extractor + scorer)
+  summary: Smoke validated the full X pipeline on Qwen3-1.7B (28 layers) - download ->
+    load -> generate -> grade -> dual-position extract -> manifest. answered=60
+    (correct=6, wrong=32, halluc=11, known_ans=11), all four classes populated, both
+    smoke floors cleared. The CPU scorer ran clean (exit 0), correctly returned
+    DATA_STAGE_STOP (smoke halluc=11 < 50 - adequacy guard firing as designed) with
+    directionally-correct dial means (correct 0.13 > wrong 0.036) even at tiny N.
+  evidence:
+  - experiment/phase1/probe/amendment_x_cross_model_score.py
+  run_ids: []
+  commands:
+  - "python3 amendment_x_cross_model_score.py --x-dir qwen3-1.7b-bnb-4bit/amendment_x/smoke --out <scratch>/x_smoke_score.json"
+  decisions: []
+  next_steps: []
+  signals: {answered: 60, correct: 6, wrong: 32, halluc: 11, known_ans: 11}
+- id: 011-handoff
+  at: '2026-06-30T18:08:42Z'
+  kind: handoff
+  title: Next - full Amendment X sweep, then writeup
+  summary: Pipeline is GREEN; ready for the full sweep (1.7B full -> 8B -> 14B, one
+    at a time on the single GPU; 8B/14B download on first load). Then per-model score,
+    assemble the cross-size SUCCESS/PARTIAL/FALSIFIER roll-up in AMENDMENT-X §7, add
+    fold-variance error bars (free) to S/T/U/W AUROCs, and seed Paper 4 from the
+    framework doc. Open governance item - refresh the stale research-trajectory.md.
+  evidence:
+  - experiment/protocol/AMENDMENT-X-cross-model-size-sweep.md
+  run_ids: []
+  commands: []
+  decisions: []
+  next_steps:
+  - Full X extraction on Qwen3-1.7B (lift caps), then Qwen3-8B, then Qwen3-14B.
+  - Score each model; write AMENDMENT-X §7 roll-up; no goalpost moved.
+  - Refresh research-trajectory.md (governed) to reflect Paper 3 + the readout arc.
+  signals: {}
+---
+# Two-signal readout arc (S-T-U-W) + cross-size generalization (Amendment X)
+
+## Question
+
+Is the answerability-gate + correctness-dial + hallucination-veto a training-free,
+model-general readout the user can threshold to decide how much to trust a response?
+This session tracks the arc from the correctness-readout discovery (Amendment S),
+through the deployed checkpoint (T), the hallucination veto (U), the orthogonal
+two-stage pipeline (Stage 1.5), the training-free base-model result (W), the framework
+synthesis + KG self-ingest, the shelving of V, and the in-flight cross-size sweep
+(Amendment X: Qwen3 1.7B/8B/14B).
+
+## Trajectory Position
+
+This arc materially moves the program's position. The deliverable - a surfaced,
+thresholdable trust signal that tracks whether THIS specific answer is correct - is now
+understood as a training-free READOUT of two orthogonal internal axes (answerability at
+the prompt anchor; per-answer correctness post-generation), validated on Qwen3-4B.
+Amendment X is the size-generalization test within Qwen3.
+
+The anchor doc `experiment/protocol/research-trajectory.md` is stale (last touched
+Jun 19; it predates Paper 3 finalization and this entire arc, and still frames "Paper 3
+= Phases 2+3" with open model-pin decisions). A governed refresh is an open item
+(handoff checkpoint 011); it is flagged, not silently rewritten.
+
+## Summary
+
+The two-signal mechanism is complete and training-free on Qwen3-4B: gate 0.997 + dial
+0.834 + veto 0.754 read off the raw base; training only sharpens the veto (-> 0.980),
+it does not create the signal. The findings are atomized into the KG (2 internal paper
+nodes + 6 mechanism atoms) and synthesized in the framework doc (Paper 4 seed). V is
+shelved (data-starved). Amendment X (cross-size) is signed with locked gates; its
+pipeline is GREEN (smoke on Qwen3-1.7B passed extractor + scorer end-to-end), and the
+full sweep (1.7B/8B/14B) is the next launch.
+
+## Checkpoints
+
+See the structured `checkpoints:` list in the frontmatter for the full, validated
+record (001-result S through 011-handoff). Headline beats:
+
+- **001-005 (results)** S -> T -> U -> Stage 1.5 -> W: correctness is post-gen
+  readable (0.834), survives on the deployed checkpoint (0.819), vetoes hallucinations
+  (0.980), is orthogonal to the gate (fusion hurts -0.014), and the whole mechanism is
+  training-free on the raw base (gate 0.997 / dial 0.834 / veto 0.754; training sharpens
+  the veto to 0.980).
+- **006-007 (decisions)** framework synthesis + first internal KG paper nodes; V shelved.
+- **008 (amendment)** Amendment X signed - cross-size generalization, gates locked.
+- **009-010 (launch + validation)** X smoke on Qwen3-1.7B GREEN; full pipeline validated.
+- **011 (handoff)** full sweep next; refresh the stale trajectory anchor.
