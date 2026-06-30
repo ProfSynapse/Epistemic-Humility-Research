@@ -1,8 +1,14 @@
 # Amendment W — Training-Free Base-Model Two-Signal Mechanism
 
-**Status:** DRAFT — pending sign-off. Tier-2 exploratory cell (new evidence,
-falsifier pre-stated; reported separately from the locked PROTOCOL v0.3 matrix).
-Result pending in §7.
+**Status:** SIGNED — gates LOCKED (2026-06-30); run authorized. Tier-2 exploratory
+cell (new evidence, falsifier pre-stated; reported separately from the locked
+PROTOCOL v0.3 matrix). Result pending in §7.
+
+**Sign-off (2026-06-30):** gates W-G1 (primary) / W-G2 and the falsifier as written
+in §4 are LOCKED; the ≥50-hallucination data-adequacy precondition is ordered before
+the fit. GPU run AUTHORIZED — forced-answer generation + dual-position extraction
+over the SelfAware pool on the RAW Instruct base (no adapter), local lane (smoke
+first, then full). No goalpost may move after the result.
 
 **Supersedes (governance note):** an earlier, never-signed sketch of a
 "cross-recipe replication on GRPO-v3" cell occupied the working "W" slot in
@@ -141,8 +147,8 @@ Paper 3 §8 alongside S/T/U.
 - [x] Data-adequacy precondition stated (≥50 base-hallucinations) before scoring.
 - [x] Distinct rationale vs S/T/U/V (raw untrained base, full mechanism incl. veto).
 - [x] Checkpoint resolved = raw `unsloth/Qwen3-4B-bnb-4bit`, no adapter (= S surface).
-- [ ] GPU launch authorization (explicit). _pending_
-- [ ] User sign-off recorded; gates LOCKED. _pending_
+- [x] GPU launch authorization (explicit). **Authorized 2026-06-30** (smoke then full).
+- [x] User sign-off recorded; gates LOCKED. **Signed 2026-06-30.**
 
 ## 7. Result
 
