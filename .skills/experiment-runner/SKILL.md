@@ -63,6 +63,11 @@ operation, then follow any further routing inside that reference.
   and 2 bridge cells. Never loosen these assertions to absorb a matrix edit.
 - Launch/cancel/delete actions require exact user approval in the current
   conversation, especially cost-incurring cloud actions.
+- One amendment/experiment = one branch off an up-to-date `main` = one PR,
+  MERGED before the next amendment branches. Do the full arc on that branch
+  (recipes, run records, scored results, doc verdict), then PR into protected
+  `main`; never stack a second amendment on an unmerged branch or push to `main`
+  directly. See [reference/operator-discipline.md](reference/operator-discipline.md).
 - The no-pollution rule is sacrosanct: runner code may not import tuner
   internals, write committed files under `synaptic-tuner/`, or register
   Epistemic-specific tuner behavior. Ephemeral staging under already-gitignored
