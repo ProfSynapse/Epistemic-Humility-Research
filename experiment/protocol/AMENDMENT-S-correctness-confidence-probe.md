@@ -1,6 +1,7 @@
 # Amendment S — Correctness-Confidence Probe (post- vs pre-generation readout)
 
-**Status:** SIGNED — user sign-off 2026-06-30 ("1 approved 2 authorized"). Tier-2
+**Status:** RESOLVED — **SUCCESS** (run + scored 2026-06-30; see §7). Signed
+2026-06-30 ("1 approved 2 authorized"). Tier-2
 exploratory cell (new evidence, falsifier pre-stated; reported separately from the
 locked PROTOCOL v0.3 matrix). Gates, primary metrics, and falsifier below are LOCKED
 as of sign-off — no goalpost-moving after the result. GPU authorized for the Stage-2
@@ -28,6 +29,10 @@ hard open-domain QA with gold. Single-model, single-seed, exploratory.
 - **R2 (SIGNED, 2026-06-30):** gates anchored to the in-run pre-gen baseline (G2
   primary; G1 floor 0.70; generous sizing); Stage-0 data check GREEN. User signed
   off and authorized the Stage-2 GPU run ("1 approved 2 authorized"). Gates LOCKED.
+- **R3 (RESOLVED, 2026-06-30):** Stage-2 run executed (1836 answered, 500/1336),
+  scored against the locked gates. SUCCESS: G1 PASS (post-AUROC 0.834), G2 primary
+  PASS (delta +0.065, CI [0.040, 0.090]); G3 misses by 0.001 (not a green-light
+  gate). Result written to §7; no goalpost moved. See §7 for full disposition.
 
 ## 1. Facts this builds on
 
@@ -190,4 +195,64 @@ surfaced confidence is latently readable.
 
 ## 7. Result
 
-_Pending sign-off and run._
+**VERDICT: SUCCESS** (run 2026-06-30, Qwen3-4B Instruct base, single seed). The
+primary self-eval gate G2 and the usefulness floor G1 both pass; the
+green-light condition (G2 AND G1) is met. Reported separately from the locked
+matrix; this is an exploratory lead, not a headline claim.
+
+**Run provenance.** Free-answer greedy generation + dual-position extraction on
+`unsloth/Qwen3-4B-bnb-4bit` (Instruct base, no adapter), thinking off,
+answer-encouraging neutral system prompt (recorded in the run manifest), PopQA +
+TriviaQA-gold pool (25,580 questions, shuffled seed 20260630), graded by the
+verbatim Cheng alias scorer. `n_answered = 1836` → **500 correct / 1336 wrong**
+(error rate ≈ 73% on the long-tail-heavy pool — the "answers a lot AND errs a
+lot" surface §1.3 required). Data-adequacy precondition cleared (≥150/≥150;
+actual 500/1336). Probe: 5-fold stratified CV logistic on standardized hidden
+states, out-of-fold, fit independently per (position × layer). Full AUROC surface
++ verdict: `experiment/phase1/probe/amendment_s_stage2_result.json`. Scripts:
+`amendment_s_correctness_probe_extract.py` (GPU) +
+`amendment_s_correctness_probe_score.py` (CPU).
+
+**Headline numbers (vs LOCKED gates).**
+
+| Metric | Value | Gate | Result |
+|---|---|---|---|
+| best **post-gen** correctness-AUROC | **0.834** (L20) | G1 ≥ 0.70 | **PASS** (strong band, > 0.80) |
+| best **pre-gen** correctness-AUROC | 0.769 (L22) | — (in-run baseline) | — |
+| **post − pre delta** | **+0.065** | G2 ≥ +0.05 | **PASS** |
+| delta bootstrap 95% CI (2000×, paired over rows) | **[0.040, 0.090]** | G2: excludes 0 | **PASS** (lower bound > 0) |
+| ECE(best post) | 0.151 | G3 < 0.15 | **FAIL by 0.001** (not a green-light gate) |
+
+**SUCCESS condition (§4): G2 (primary) AND G1 → both PASS → green light.** G3 is
+reported, not required for the green light (§4 verbatim); it misses by 0.001, a
+calibration-of-the-readout matter (post-hoc Platt/temperature scaling), not a
+signal-existence problem — AUROC is threshold-free and clears strongly. No
+goalpost was moved: the verdict is read on the threshold-free primary metrics
+exactly as locked at sign-off.
+
+**Selective-prediction curve (best post-gen, L20).** Accuracy rises from 27.2%
+(full coverage) → 34.9% @75% → 47.2% @50% → 64.9% @25% → **75.5% @10%**. The
+surfaced confidence is a usable trust dial: thresholding to the top-confidence
+decile nearly triples answer accuracy. (Descriptive; strengthens but is not
+required for the verdict.)
+
+**Scientific reading.**
+1. **Correctness IS linearly readable** at useful strength (0.834) — the open
+   question of §1.2 is answered yes for this model.
+2. **Self-evaluation helps (THE BET, confirmed).** Reading *after* the answer
+   beats reading *before* by +0.065 with a CI excluding 0 — the first positive
+   evidence in this program for the P(True)/Kadavath self-eval hypothesis. The
+   gain is real but modest; the larger result is the absolute post-gen readability.
+3. **The correctness signal peaks mid-network (L19–L24, post ≈ 0.82–0.83), not
+   late.** It sits earlier than the L35 caution gate and the late layers
+   (L34–L36 post ≈ 0.79) read slightly weaker — correctness is represented before
+   the answer/abstain decision layer, distinct from both the answerability axis
+   and the caution gate.
+
+**Promotion / next.** Exploratory, single-model, single-seed — NOT promoted to a
+headline claim. This is a lead that motivates (a) the deployment-checkpoint port
+(clean-SFT, abstention suppressed) and (b) the full two-signal mechanism
+(answerability gate + correctness dial), each a separate registered amendment.
+A G3 follow-up (temperature-scale the readout, re-measure ECE) is a cheap CPU
+refinement on the same extraction. Promotion requires a confirmatory replication
+(fresh seeds / 8B / held-out) registered before running, per the firewall.
