@@ -1,8 +1,10 @@
 # Amendment X — Cross-Size Generalization of the Training-Free Two-Signal Readout
 
-**Status:** SIGNED (2026-06-30) — gates §4 LOCKED. Tier-2 exploratory cell (new
-evidence, falsifier pre-stated; reported separately from the locked PROTOCOL v0.3
-matrix). Result pending in §7.
+**Status:** COMPLETE (2026-06-30) — gates §4 LOCKED; all four sizes (1.7B/4B/8B/14B)
+PASS all three gates. VERDICT: the training-free two-signal readout is size-robust
+across an order of magnitude; scaling of sharpness is non-monotonic (peaks at 8B),
+descriptive only — no goalpost moved. Tier-2 exploratory cell (new evidence, falsifier
+pre-stated; reported separately from the locked PROTOCOL v0.3 matrix). See §7 roll-up.
 
 **Instrument rationale:** Tier-2 Amendment per
 `experiment-runner/reference/amendment-vs-lab-notebook.md`. New evidence surface
@@ -179,6 +181,52 @@ within-SelfAware control (known vs hallucination, same dataset) recovers to 0.79
 component strengthens with size. Result:
 `experiment/phase1/probe/amendment_x_qwen3-8b-bnb-4bit_result.json`.
 
-### Qwen3-14B — pending
+### Qwen3-14B — PASS (all three gates)
 
-### Cross-size roll-up — pending (after 8B + 14B)
+Raw `unsloth/Qwen3-14B-bnb-4bit`, no adapter. Pool answered=3000
+(correct 741 / wrong 1112 / hallucination 629 / known_answered 518); adequacy floors
+met (wrong >=30, halluc >=50).
+
+| Gate | metric | AUROC | 95% CI | pass |
+|------|--------|-------|--------|------|
+| X-G1 gate | known vs unknown (L25) | 0.9982 | [0.9966, 0.9993] | yes |
+| X-G2 dial | correct vs wrong (L28) | 0.8399 | [0.8204, 0.8574] | yes |
+| X-G3 veto (PRIMARY) | correct vs hallucination | 0.7412 | [0.7157, 0.7664] | yes |
+
+Dial means ordered as predicted: correct 0.705 > known_answered 0.700 > hallucination
+0.348 > wrong 0.195. The dial best layer moves deeper with depth (L28 of 40, vs L20/L21
+at 8B/1.7B). **The veto is weaker than at 8B (0.741 vs 0.846):** at 14B the
+hallucination dial-mean rises to 0.348 (vs 8B's 0.184), i.e. 14B's confident
+confabulations read as somewhat more trustworthy, narrowing the correct-vs-hallucination
+gap. Within-SelfAware control (known vs hallucination, same dataset) is 0.7373
+[0.7085, 0.7651], between 1.7B's 0.6675 and 8B's 0.7953. Primary gates unambiguous.
+Result: `experiment/phase1/probe/amendment_x_qwen3-14b-bnb-4bit_result.json`.
+
+### Cross-size roll-up — all four sizes PASS
+
+The locked §4 gates, across an order of magnitude of scale (raw `unsloth/*-bnb-4bit`
+instruct bases, no adapter, no task training). 4B is the [[amendment-w-base-model-training-free]]
+reference under the identical raw-base protocol.
+
+| Size | layers | X-G1 gate | X-G2 dial | X-G3 veto (PRIMARY) | within-SA control | verdict |
+|------|--------|-----------|-----------|---------------------|-------------------|---------|
+| 1.7B | 28 | 0.9958 | 0.8152 | 0.7574 | 0.6675 | PASS |
+| 4B (W) | 36 | 0.997 | 0.834 | 0.754 | — | PASS |
+| 8B | 36 | 0.9979 | 0.8621 | 0.8455 | 0.7953 | PASS |
+| 14B | 40 | 0.9982 | 0.8399 | 0.7412 | 0.7373 | PASS |
+
+**Verdict: the training-free two-signal readout is size-robust.** All four sizes pass
+all three gates; the full mechanism (answerability gate + correctness dial + confident-
+hallucination veto) is recoverable on every raw Qwen3 instruct base from 1.7B to 14B
+with no adapter and no task training. The gate is effectively saturated at every size
+(0.996–0.998).
+
+**Scaling is NOT monotonic (descriptive, never gated).** The §4 descriptive note
+allowed that the veto might "plausibly sharpen with scale"; the data do not bear that
+out. Dial and veto rise from 1.7B to a peak at 8B (dial 0.862, veto 0.846), then dip at
+14B (dial 0.840, veto 0.741); the within-SA control tracks the same arc (peak 8B 0.795).
+So the readout is robustly present across scale but its sharpness peaks at 8B rather than
+increasing monotonically — driven at 14B by confident confabulations reading as more
+trustworthy (hallucination dial-mean 0.348 vs 8B 0.184). Per §4/§5 this is reported as a
+scale-dependence finding with no goalpost moved: the gated outcome (all sizes PASS)
+stands, and the monotonic-sharpening expectation is recorded as not supported.
