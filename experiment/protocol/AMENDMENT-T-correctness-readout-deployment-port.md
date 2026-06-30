@@ -1,9 +1,10 @@
 # Amendment T — Correctness-Readout Deployment-Checkpoint Port
 
-**Status:** SIGNED (2026-06-30) — user sign-off + GPU authorization recorded.
-Gates / primary metric / falsifier below are LOCKED — no goalpost-moving after
-the result. Tier-2 exploratory cell (new evidence, falsifier pre-stated; reported
-separately from the locked PROTOCOL v0.3 matrix).
+**Status:** RESOLVED — SUCCESS (2026-06-30). The correctness readout SURVIVES on
+the deployed checkpoint and the post-gen self-eval gain replicates. Gates were
+LOCKED at sign-off; no goalpost moved. Tier-2 exploratory cell (new evidence,
+falsifier pre-stated; reported separately from the locked PROTOCOL v0.3 matrix).
+Full result in §7.
 
 **Sign-off (2026-06-30):** abstention-suppression method = forced-best-guess
 system prompt (locked choice; distribution-shift caveat in §3 bounds the claim);
@@ -178,4 +179,83 @@ Written into Paper 3 §8 alongside the Amendment S result.
 
 ## 7. Result
 
-_Pending sign-off and run._
+**VERDICT: SUCCESS.** The Amendment S correctness readout SURVIVES on the deployed
+clean-SFT → GRPO-v2 checkpoint, and the post-gen self-eval gain replicates. H_T1
+and H_T2 both PASS; the falsifier did NOT fire. Prediction (§2) confirmed.
+
+**Run provenance.** Checkpoint = clean-SFT merged-16bit base + GRPO-v2 LoRA
+adapter (active), forced-best-guess system prompt, greedy decode, thinking off,
+seed 20260630. n_attempts = 8550 → **n_answered = 1488 (988 correct / 500 wrong)**,
+n_refused ≈ 7044. The deployed checkpoint **refused ~82% of attempts even under
+the forced-best-guess prompt** — GRPO-v2's abstention training resists prompt-level
+suppression, so *wrong* is the rare class (~6%/attempt). Data-adequacy precondition
+cleared with large margin (≥150/≥150; actual 988/500). Artifacts:
+`experiment/phase1/probe/amendment_t_stage2_result.json` (tensor outputs gitignored
+under `qwen3-4b-clean-sft-grpo-v2/`).
+
+**Gate table (locked §4):**
+
+| Gate | Threshold | Result | Pass |
+|------|-----------|--------|------|
+| T-G1 usefulness floor | post AUROC ≥ 0.70 | **0.819** (L22, "strong" band) | ✅ |
+| T-G2 PRIMARY self-eval gain | post−pre ≥ +0.05 AND CI excludes 0 | **+0.074**, 95% CI [0.044, 0.105] | ✅ |
+| T-G3 calibration | ECE < 0.15 | 0.168 (NOT a green-light gate) | ❌ |
+
+SUCCESS = T-G2 AND T-G1 → **met**. Best pre-gen AUROC 0.745 (L36). Selective
+prediction: 66.4% accuracy @ full coverage → 80.2% @ top-75% → **93.3% @ top-10%**
+confidence — a usable trust dial on the deployed model.
+
+**Side-by-side vs Amendment S (Instruct base):** the result is a near-clean
+replication on the calibration-trained checkpoint.
+
+| | post AUROC | best post layer | self-eval gain (post−pre) | gain 95% CI | ECE |
+|--|-----------|-----------------|---------------------------|-------------|-----|
+| S (Instruct base) | 0.834 | L20 | +0.065 | [0.040, 0.090] | 0.151 |
+| T (clean-SFT→GRPO-v2) | 0.819 | L22 | **+0.074** | [0.044, 0.105] | 0.168 |
+
+The post-gen correctness signal is essentially as readable on the deployed model
+(0.819 vs 0.834), peaks at the same mid-network depth (L22 vs L20, not the late
+L34–36 caution gate), and the post>pre self-eval gain is if anything slightly
+*larger* on the deployed checkpoint (+0.074 vs +0.065), CI excludes 0 in both.
+G3 misses by a similar margin in both (calibration of the raw readout, fixable by
+Platt/temperature scaling; not a green-light gate).
+
+**Secondary — cross-checkpoint cold transfer (descriptive, NOT gated).** The
+S-fit probe (Instruct base, L20) applied COLD to T's post-gen vectors reads
+AUROC **0.679**, versus T's in-distribution same-layer AUROC 0.799. So the
+Instruct-base correctness DIRECTION reads the deployed checkpoint's correctness
+well above chance (0.50) but with a real drop: the direction is **partially
+shared**, not fully — unlike Amendment P's near-full cross-dataset answerability
+transfer. The deployed checkpoint represents its own correctness substantially
+along its OWN direction. Read: the readout is a robust property of the model
+family (survives, ~same strength), but it is not a single frozen vector you can
+lift from the base and reuse verbatim; the probe should be (re)fit on the target
+checkpoint.
+
+**Scientific takeaways.**
+1. **The correctness dial is real on the shipped model.** The S finding was not an
+   Instruct-base artifact; calibration RL (GRPO-v2) does not erase the post-gen
+   correctness representation. Consistent with the program thesis that calibration
+   training reshapes the answer/abstain policy and emitted channel, not the
+   internal factual representation ([[amendment-r-phase-b-falsified]],
+   [[amendment-n-beta005-structural-decoupling]]).
+2. **Self-evaluation helps on the deployed model too.** Reading after the answer
+   beats before by +0.074 (CI excludes 0) — the second positive P(True)/self-eval
+   result in the program, now on the calibration-trained checkpoint.
+3. **The direction drifts across checkpoints** (cold transfer 0.68 vs in-dist 0.80):
+   refit per checkpoint; do not assume a shared frozen correctness vector.
+4. **GRPO-v2 abstention is prompt-robust** (~82% refusal under forced-best-guess) —
+   an incidental but notable behavioral observation about how strongly the
+   deployed policy holds its abstention.
+
+**Distribution-shift caveat (as pre-stated §3):** fit on forced-best-guess answers;
+this establishes readability on the deployed checkpoint, not generalization to the
+model's natural (un-forced) answers — that remains an explicit follow-up.
+
+**Promotion / next.** Exploratory, single-model, single-seed — NOT a headline
+claim; promotion needs a confirmatory replication (fresh seeds / 8B / held-out)
+registered before running. T de-risks the prerequisite: with both signals now
+validated on the SAME checkpoint family — answerability gate (O/P, AUROC ~0.997)
+and correctness dial (T, post-gen AUROC 0.819) — the **full two-signal mechanism**
+(abstain on the gate; surface the correctness dial as a trust score on answered
+items) becomes the next registered amendment.
