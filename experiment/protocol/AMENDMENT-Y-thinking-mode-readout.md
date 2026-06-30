@@ -73,25 +73,41 @@ already be present at **end-of-think**, before the answer token is emitted.
 **H_Y-B.** The think trace carries *some* verbalized confidence signal, but the probe
 reads correctness information the trace does not state.
 
-Define per answered item: `cot_conf` = LLM-judge expressed-confidence scalar (0–1)
-over the think trace; `probe_dial` = the activation readout (calibrated dial). Both as
-predictors of correctness.
+Define per answered item THREE correctness predictors — one verbalized (external) and
+two internal:
+- `cot_conf` = LLM-judge expressed-confidence scalar (0–1) over the think trace
+  (verbalized; what the model *says*).
+- `seq_logprob` = the model's own mean token log-probability of its answer span (a cheap
+  RCC-style internal-confidence estimator, free from generation).
+- `probe_dial` = the activation readout (calibrated dial; the internal signal we claim).
 
-- **Primary content metric:** incremental AUROC of `probe_dial` over `cot_conf` for
-  predicting correctness (ΔAUROC = AUROC(cot_conf + probe) − AUROC(cot_conf alone)),
-  with bootstrap CI. `cot_conf` is produced by a **multi-judge panel** (§3); to keep the
-  "probe adds beyond CoT" claim conservative, the primary comparator is the **single
-  best-performing judge** (highest standalone correctness-AUROC) — the probe must beat
-  even the strongest verbalized-confidence read. Panel consensus (mean) and per-judge
-  ΔAUROC are reported alongside, plus inter-judge agreement.
+**Why two internal estimators (the estimator-divergence guard).** Our own library
+documents that faithfulness conclusions are *estimator-dependent* — different
+internal-confidence estimators correlate with verbal decisiveness at wildly different
+rates (Faithful Calibration, 2606.03969; the
+`estimator-divergence-invalidates-single-probe-faithfulness` caveat). A single-probe
+claim is therefore vulnerable. So the strong claim must clear BOTH a verbalized and a
+cheap internal comparator.
+
+- **Primary content metric:** incremental AUROC of `probe_dial` over the **best of
+  {`cot_conf`, `seq_logprob`}** for predicting correctness (ΔAUROC = AUROC(best + probe)
+  − AUROC(best alone)), with bootstrap CI. `cot_conf` itself is the best of a **multi-judge
+  panel** (§3) — so the probe must beat the strongest verbalized read AND the cheap
+  token-prob estimator. Each predictor's standalone AUROC, the consensus/per-judge
+  numbers, and inter-judge agreement are all reported.
 - **Predicted direction:** ΔAUROC > 0, CI excludes 0 — *even given room to reason, the
-  model knows more than it says.*
+  model knows more than it says, and the activation readout beats the token-prob
+  estimator too.* Per the over-reasoning-worsens-calibration prior (Don't Think Twice,
+  2508.15050), `cot_conf` is expected to be *inflated* under thinking, which should
+  WIDEN this gap rather than close it.
 - **Two-sided interpretation (pre-stated, both informative — no goalpost):**
-  - If ΔAUROC > 0 (CI excl 0): the readout still adds signal beyond the verbalized
-    chain of thought → strengthens "readout, not a lesson" under reasoning.
-  - If ΔAUROC ≈ 0 (CI incl 0) AND `cot_conf` AUROC ≥ `probe_dial` AUROC: thinking
-    **verbalizes** the internal axis → reasoning is the channel that surfaces what the
-    model knows. A different, equally publishable finding.
+  - If ΔAUROC > 0 (CI excl 0): the readout adds signal beyond BOTH the verbalized chain
+    of thought and the token-prob estimator → strengthens "readout, not a lesson" under
+    reasoning, and answers the estimator-divergence critique on its own terms.
+  - If ΔAUROC ≈ 0 (CI incl 0) AND the best comparator's AUROC ≥ `probe_dial` AUROC:
+    thinking **verbalizes** the internal axis (or the cheap estimator already captures
+    it) → reasoning is the channel that surfaces what the model knows. A different,
+    equally publishable finding.
 
 **Specific content prediction (descriptive, on-thesis):** on *unanswerable* questions
 the model answers anyway (hallucinations), the think trace expresses **low** verbalized
@@ -116,7 +132,9 @@ if answered). Same pool construction as Amendment X for comparability.
 **Generation & parsing.** Greedy decode. Split each generation into the think block and
 the post-`</think>` answer. **Grade on the answer text only** (not the think block).
 Persist BOTH strings per item (think trace + answer) for the content analysis — this is
-new vs prior cells, which kept no generated text.
+new vs prior cells, which kept no generated text. **Also persist the per-token log-probs
+of the generated tokens** (free from the same forward pass) so the answer-span
+`seq_logprob` estimator can be computed without re-running generation.
 
 **Tap points (dual-position, all layers, fp32).**
 - **Gate:** pre-gen anchor = last prompt token (unchanged definition).
@@ -152,8 +170,15 @@ thinking-OFF 4B numbers.
     Claude Sonnet 5, GPT-5.4-mini, GPT-OSS-120B. Report each judge's standalone
     correctness-AUROC, pairwise inter-judge agreement (Spearman + ICC), and the panel
     consensus (mean composite).
-- **Head-to-head:** the ΔAUROC test in §2 Arm B (probe vs the best single judge, primary;
-  vs consensus, secondary), plus the hallucination-doubt comparison.
+- **Sequence log-prob (`seq_logprob`) — judge-independent internal estimator.** From the
+  persisted per-token log-probs, compute the **mean token log-prob over the answer span**
+  (post-`</think>` answer tokens only, excluding the think block; RCC-style length-normalized
+  confidence). Report its standalone correctness-AUROC. This is the second internal estimator
+  that makes the §2 estimator-divergence guard concrete: it is free from generation, depends
+  on no judge, and gives the probe a strictly harder baseline to beat than `cot_conf` alone.
+- **Head-to-head:** the ΔAUROC test in §2 Arm B (probe over the **best of {`cot_conf`,
+  `seq_logprob`}**, primary; over the judge consensus, secondary), plus the
+  hallucination-doubt comparison.
 
 **Caveats.** Single-seed, greedy (one trajectory per item); structural ungraded
 hallucination label (unknown ∧ answered); cross-dataset correctness reference
@@ -176,10 +201,10 @@ raise `max_new_tokens` until the truncation rate is negligible).
 - **Y-G1:** AUROC(known vs unknown) ≥ **0.65**, CI excl 0.50.
 - **Y-G2:** AUROC(correct vs wrong) ≥ **0.65**, CI excl 0.50.
 - **Content (Arm B, reported with CI; two-sided interpretation per §2, NOT a pass/fail
-  threshold):** ΔAUROC(probe over the best single judge's `cot_conf`, primary; over
-  consensus, secondary); each judge's standalone `cot_conf` AUROC; inter-judge agreement
-  (Spearman + ICC); the hallucination-doubt comparison; lexicon distributions by outcome
-  class.
+  threshold):** ΔAUROC(probe over the best of {`cot_conf`, `seq_logprob`}, primary; over
+  the judge consensus, secondary); each judge's standalone `cot_conf` AUROC; the
+  `seq_logprob` standalone AUROC; inter-judge agreement (Spearman + ICC); the
+  hallucination-doubt comparison; lexicon distributions by outcome class.
 
 **SUCCESS — the readout survives thinking:** Y-G1 AND Y-G2 AND Y-G3 pass.
 
