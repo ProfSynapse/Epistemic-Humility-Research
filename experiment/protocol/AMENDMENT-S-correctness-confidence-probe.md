@@ -1,9 +1,10 @@
 # Amendment S — Correctness-Confidence Probe (post- vs pre-generation readout)
 
-**Status:** DRAFT — pending user sign-off. Tier-2 exploratory cell (new evidence,
-falsifier pre-stated; reported separately from the locked PROTOCOL v0.3 matrix).
-Gates, primary metrics, and falsifier below are to be LOCKED at sign-off — no
-goalpost-moving after the result.
+**Status:** SIGNED — user sign-off 2026-06-30 ("1 approved 2 authorized"). Tier-2
+exploratory cell (new evidence, falsifier pre-stated; reported separately from the
+locked PROTOCOL v0.3 matrix). Gates, primary metrics, and falsifier below are LOCKED
+as of sign-off — no goalpost-moving after the result. GPU authorized for the Stage-2
+free-answer generation + dual-position extraction on the Qwen3-4B Instruct base.
 
 **Instrument rationale:** Tier-2 Amendment per
 `experiment-runner/reference/amendment-vs-lab-notebook.md` (decision Q2). It
@@ -24,6 +25,9 @@ hard open-domain QA with gold. Single-model, single-seed, exploratory.
 ## Revision history
 - **R1 (DRAFT, 2026-06-30):** initial pre-registration; awaiting user sign-off and
   GPU authorization.
+- **R2 (SIGNED, 2026-06-30):** gates anchored to the in-run pre-gen baseline (G2
+  primary; G1 floor 0.70; generous sizing); Stage-0 data check GREEN. User signed
+  off and authorized the Stage-2 GPU run ("1 approved 2 authorized"). Gates LOCKED.
 
 ## 1. Facts this builds on
 
@@ -179,8 +183,10 @@ surfaced confidence is latently readable.
   `aliases`) present with gold for alias-grading; PopQA `s_pop` gradient guarantees
   a wrong class on long-tail entities. Ample to clear ≥150/≥150 and the ~500/500
   target. Actual Instruct-base error rate measurable only at generation (Stage 2).
-- [ ] GPU launch authorization (explicit, naming the exact run/lane).
-- [ ] User sign-off recorded.
+- [x] GPU launch authorization (explicit): Stage-2 free-answer generation +
+  dual-position extraction on the Qwen3-4B Instruct base, local lane. Authorized
+  2026-06-30 ("2 authorized").
+- [x] User sign-off recorded: 2026-06-30, "1 approved 2 authorized". Gates LOCKED.
 
 ## 7. Result
 
