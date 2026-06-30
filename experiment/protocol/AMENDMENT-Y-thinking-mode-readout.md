@@ -79,7 +79,11 @@ predictors of correctness.
 
 - **Primary content metric:** incremental AUROC of `probe_dial` over `cot_conf` for
   predicting correctness (ΔAUROC = AUROC(cot_conf + probe) − AUROC(cot_conf alone)),
-  with bootstrap CI.
+  with bootstrap CI. `cot_conf` is produced by a **multi-judge panel** (§3); to keep the
+  "probe adds beyond CoT" claim conservative, the primary comparator is the **single
+  best-performing judge** (highest standalone correctness-AUROC) — the probe must beat
+  even the strongest verbalized-confidence read. Panel consensus (mean) and per-judge
+  ΔAUROC are reported alongside, plus inter-judge agreement.
 - **Predicted direction:** ΔAUROC > 0, CI excludes 0 — *even given room to reason, the
   model knows more than it says.*
 - **Two-sided interpretation (pre-stated, both informative — no goalpost):**
@@ -133,11 +137,23 @@ thinking-OFF 4B numbers.
   ("wait", "actually", "no,"), explicit-abstention reasoning ("cannot be answered",
   "no way to know"), and trace length (tokens). Report distributions stratified by
   outcome class (correct / wrong / hallucination / known-answered).
-- **LLM-judge (`cot_conf`):** a fixed judge model + frozen prompt scores each think
-  trace's expressed confidence in its own answer on [0,1], blind to the gold label and
-  to the probe. Judge model + prompt + version recorded for reproducibility.
-- **Head-to-head:** the ΔAUROC test in §2 Arm B, plus the hallucination-doubt
-  comparison.
+- **LLM-judge (`cot_conf`) — multi-judge panel via OpenRouter.** Each judge scores a
+  think trace's expressed confidence on [0,1] using the SAME frozen, **blind**
+  3-dimension rubric (assertiveness + absence-of-hedging + reasoning-stability;
+  reason-first per dimension, weighted composite computed by our code, not the judge).
+  **Blind to gold and to the probe** — the judge sees only `{question, thinking, answer}`
+  and rates expressed stance, never told if it is correct (a confident wrong answer must
+  score high). Run through synaptic-tuner's generic judge harness
+  (`shared.judge.JudgeService` + `Evaluator.client_factory`, `BackendType.OPENROUTER`,
+  `temperature=0`); the rubric lives in the ROOT repo
+  (`experiment/phase1/probe/rubrics/cot_confidence.yaml`), NOT in the submodule — the
+  harness is imported as infra, no tuner pollution.
+  - **Panel (3 judges, exact OpenRouter slugs/versions pinned at wiring time):**
+    Claude Sonnet 5, GPT-5.4-mini, GPT-OSS-120B. Report each judge's standalone
+    correctness-AUROC, pairwise inter-judge agreement (Spearman + ICC), and the panel
+    consensus (mean composite).
+- **Head-to-head:** the ΔAUROC test in §2 Arm B (probe vs the best single judge, primary;
+  vs consensus, secondary), plus the hallucination-doubt comparison.
 
 **Caveats.** Single-seed, greedy (one trajectory per item); structural ungraded
 hallucination label (unknown ∧ answered); cross-dataset correctness reference
@@ -160,8 +176,10 @@ raise `max_new_tokens` until the truncation rate is negligible).
 - **Y-G1:** AUROC(known vs unknown) ≥ **0.65**, CI excl 0.50.
 - **Y-G2:** AUROC(correct vs wrong) ≥ **0.65**, CI excl 0.50.
 - **Content (Arm B, reported with CI; two-sided interpretation per §2, NOT a pass/fail
-  threshold):** ΔAUROC(probe over cot_conf); `cot_conf` standalone AUROC; the
-  hallucination-doubt comparison; lexicon distributions by outcome class.
+  threshold):** ΔAUROC(probe over the best single judge's `cot_conf`, primary; over
+  consensus, secondary); each judge's standalone `cot_conf` AUROC; inter-judge agreement
+  (Spearman + ICC); the hallucination-doubt comparison; lexicon distributions by outcome
+  class.
 
 **SUCCESS — the readout survives thinking:** Y-G1 AND Y-G2 AND Y-G3 pass.
 
@@ -194,7 +212,14 @@ sampled (multi-path) reasoning are named as next axes, not claimed here.
 - [x] Data-adequacy + truncation preconditions stated before scoring.
 - [x] Distinct rationale vs prior cells (generation MODE never probed before).
 - [x] Scope limitation stated (one family/size/path).
-- [ ] Judge model + frozen judge prompt fixed and recorded (before any judge call).
+- [x] Judge approach fixed: blind 3-dimension rubric
+      (`experiment/phase1/probe/rubrics/cot_confidence.yaml`), multi-judge OpenRouter
+      panel (Claude Sonnet 5 / GPT-5.4-mini / GPT-OSS-120B), `temperature=0`, run through
+      synaptic-tuner's `shared.judge` harness (no submodule pollution).
+- [ ] Pin exact OpenRouter model slugs + versions for the 3 panel judges (postdate
+      knowledge cutoff; resolve against the live OpenRouter model list at wiring time).
+- [ ] Freeze dimension weights (`weights_ratified: true`) at sign-off.
+- [ ] Validate the rubric loads via `shared.judge.RubricLoader` + `rubric_validator`.
 - [ ] User sign-off recorded; gates LOCKED.
 - [ ] GPU launch authorization (explicit), sequenced AFTER Amendment X merges.
 
