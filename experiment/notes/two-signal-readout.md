@@ -146,8 +146,11 @@ training-free cells).
 - **By read position:** pre-gen anchor (gate) vs post-gen content token (dial); post beats
   pre for correctness.
 - **By model size (Amendment X):** Qwen3 1.7B / 4B / 8B / 14B - the controlled size axis.
-- **Deferred:** natural (un-forced) deployment prompt (Amendment V, shelved - data-starved);
-  cross-FAMILY generalization (Llama/Mistral/Gemma) - the next axis, not yet run.
+- **By model family (Amendment Z, RUNNING):** cross-FAMILY confirmatory on four ungated
+  ~3-4B bases - `unsloth/Llama-3.2-3B-Instruct`, `mistralai/Ministral-3-3B-Instruct-2512`,
+  `Qwen/Qwen3.5-4B`, `google/gemma-4-E4B-it`. The governed replication that would promote
+  the training-free readout to a cross-family claim.
+- **Deferred:** natural (un-forced) deployment prompt (Amendment V, shelved - data-starved).
 
 ## Status log
 
@@ -155,3 +158,13 @@ training-free cells).
   self-ingest done; V shelved. Amendment X (cross-size) signed, gates locked; smoke on
   Qwen3-1.7B GREEN (extractor + scorer end-to-end); full sweep (1.7B/8B/14B) pending the
   authorized launch. Tracked in `docs/sessions/0030 - two-signal-readout-arc-s-t-u-w-cross-size-generalization-amendment-x.md`.
+- 2026-06-30 (later): Amendment X COMPLETE - all four sizes (1.7B/4B/8B/14B) PASS all three
+  gates; size-robust, scaling non-monotonic (peaks 8B). PR #134. Then **Amendment Z
+  (cross-FAMILY) pre-registered and LAUNCHED** on branch `pr/amendment-z-cross-family`
+  (stacked on X). Sequential overnight queue (single GPU, local Docker `unsloth-z:latest`
+  = unsloth + transformers 5.12.1 for the post-cutoff Gemma4/Qwen3.5 archs). Run order:
+  Llama-3.2-3B -> Ministral-3-3B -> Qwen3.5-4B -> Gemma-4-E4B. Per model: compat smoke
+  (shape-validated) -> full (3000 attempts) -> CPU score. Failures logged INELIGIBLE, queue
+  continues. Loader hardened for multimodal (CausalLM -> ImageTextToText fallback,
+  text_config layer counts) with Qwen3 path unchanged. Progress:
+  `experiment/phase1/probe/z_logs/PROGRESS.log`; results: `amendment_z_*_result.json`.
