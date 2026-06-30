@@ -26,3 +26,9 @@ qwen3-*/
 */sae_runs/
 */sae_feature_analysis/
 */sae_feature_directions/
+
+# Amendment Z cross-family extraction subtrees (z_<tag>/, z_smoke_<tag>/) and the
+# queue logs (z_logs/) are large reproducible tensor/rows artifacts. The scored
+# result JSONs are tracked at the probe root as amendment_z_*_result.json (which
+# does NOT match z_*/), never from under an extraction dir.
+z_*/

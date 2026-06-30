@@ -112,11 +112,46 @@ def run(args) -> int:
 
     print(f"[amendment-x] loading RAW base {model_name} (no adapter) ...", flush=True)
     tokenizer = AutoTokenizer.from_pretrained(model_name)
-    model = AutoModelForCausalLM.from_pretrained(
-        model_name, torch_dtype=torch.bfloat16, device_map="cuda")
+    # Backward-compatible loader: Qwen3 (and any text-only CausalLM) loads via the
+    # first path unchanged; multimodal families (Gemma 4, Qwen 3.5) fall back to
+    # the image-text-to-text / vision2seq auto-classes, from which we still read
+    # the text backbone's hidden states. NO behavior change for X's Qwen3 sizes.
+    import transformers as _tf
+    # transformers 5.x renamed the load kwarg torch_dtype -> dtype.
+    _major = int(_tf.__version__.split(".")[0])
+    _dtype_kw = "dtype" if _major >= 5 else "torch_dtype"
+    load_kw = {_dtype_kw: torch.bfloat16, "device_map": "cuda"}
+    model = None
+    last_err = None
+    _classes = ["AutoModelForCausalLM"]
+    for _name in ("AutoModelForImageTextToText", "AutoModelForVision2Seq"):
+        if hasattr(_tf, _name):
+            _classes.append(_name)
+    for _cls_name in _classes:
+        try:
+            import transformers as _tf
+            _Cls = getattr(_tf, _cls_name)
+            model = _Cls.from_pretrained(model_name, **load_kw)
+            print(f"[amendment-x] loaded via {_cls_name}", flush=True)
+            break
+        except Exception as e:  # noqa: BLE001
+            last_err = e
+            print(f"[amendment-x] {_cls_name} load failed: {type(e).__name__}: "
+                  f"{str(e)[:200]}", flush=True)
+    if model is None:
+        raise RuntimeError(
+            f"could not load {model_name} via any of {_classes}: {last_err}")
     model.eval()
     device = next(model.parameters()).device
-    n_layers = model.config.num_hidden_layers
+
+    def _text_cfg(m):
+        # multimodal configs nest the LM hyperparams under text_config
+        return getattr(m.config, "text_config", m.config)
+
+    _tcfg = _text_cfg(model)
+    n_layers = getattr(_tcfg, "num_hidden_layers", None)
+    if n_layers is None:
+        n_layers = getattr(model.config, "num_hidden_layers")
 
     special_ids = set(tokenizer.all_special_ids or [])
     if tokenizer.eos_token_id is not None:
@@ -187,6 +222,12 @@ def run(args) -> int:
                     out = model(input_ids=fwd_ids, attention_mask=attn,
                                 output_hidden_states=True, use_cache=False)
                 hs = out.hidden_states
+                if hs is None or len(hs) != n_layers + 1:
+                    raise RuntimeError(
+                        f"hidden_states shape mismatch: got "
+                        f"{None if hs is None else len(hs)} layers, expected "
+                        f"{n_layers + 1} (n_layers+1). Wrong model wrapper for "
+                        f"{model_name}? Aborting before persisting garbage.")
                 pre_tensors = {f"L{li}": hs[li][0, prompt_len - 1, :].float().cpu().contiguous()
                                for li in range(len(hs))}
                 post_tensors = {f"L{li}": hs[li][0, seq_end, :].float().cpu().contiguous()
@@ -218,7 +259,9 @@ def run(args) -> int:
 
     manifest = {
         **config_payload, "config_sha": config_sha, "n_layers": n_layers,
-        "hidden_dim": model.config.hidden_size, "n_pool": len(pool),
+        "hidden_dim": getattr(_tcfg, "hidden_size",
+                              getattr(model.config, "hidden_size", None)),
+        "n_pool": len(pool),
         "n_attempts": written, "n_answered": n_answered, "n_correct": n_correct,
         "n_wrong": n_wrong, "n_hallucination": n_halluc,
         "n_known_answered": n_known_answered, "n_refused": n_refused, "n_empty": n_empty,
