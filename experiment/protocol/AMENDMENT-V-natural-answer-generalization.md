@@ -1,8 +1,13 @@
 # Amendment V — Natural-Answer Generalization of the Two-Signal Mechanism
 
-**Status:** SIGNED — gates LOCKED (2026-06-30); run authorized. Tier-2 exploratory
-cell (new evidence, falsifier pre-stated; reported separately from the locked
-PROTOCOL v0.3 matrix). Result pending in §7.
+**Status:** SHELVED (2026-06-30) — signed and gates locked, but DEFERRED unlaunched.
+Two reasons: (1) data-starved under the natural prompt (smoke: ~96% refusal, 48/50),
+so the natural-wrong / natural-hallucination floors are hard to clear on the trained
+checkpoint; (2) [[AMENDMENT-W]] superseded the strategic priority by showing the
+mechanism is training-free on the raw base, which reframes the program around the
+readout rather than the deployed policy. May be revived as a deployment-surface check
+if a headline natural-answer claim is later needed; gates as written in §4 still hold.
+Tier-2 exploratory cell, reported separately from the locked PROTOCOL v0.3 matrix.
 
 **Sign-off (2026-06-30):** gates V-G2 (primary) / V-G1 and the falsifier as written
 in §4 are LOCKED; data-adequacy precondition ordered before the fit. GPU run
