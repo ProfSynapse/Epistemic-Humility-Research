@@ -1,0 +1,77 @@
+# TEMPLATE — Amendment R (Phase B) full SelfAware response-confidence eval.
+#
+# Instantiate ONE copy per arm (A0/A1/A2) AFTER that arm finishes training and its
+# adapter is merged to 16-bit. Mirrors the B0/Amendment-J response_confidence
+# SelfAware eval exactly (same prompt, generation, vLLM, bootstrap, gold, eval set)
+# so the scored_rows are apples-to-apples; only the merged base differs per arm.
+#
+# Per-arm instantiation (3 fields to fill, marked __FILL_*__ below):
+#   1. Train the arm    -> final_model/ (LoRA adapter only; train_sft saves no merge)
+#   2. MERGE to 16-bit  (in the unsloth container, GPU):
+#        python3 experiment/phase1/grpo/merge_sft_adapter_16bit.py \
+#          <run>/final_model  <run>/Qwen3-4B-bnb-4bit/merged-16bit
+#      where <run> = synaptic-tuner/toolset-training-artifacts/runs/local_docker/sft/<name>/<timestamp>
+#   3. Set model_name / model_tag / results_dir / arms[0].name for the arm and run:
+#        python experiment/phase1/eval/run_eval.py --config <this-copy>.yaml --live-vllm
+#   4. Analyze:
+#        python experiment/phase1/eval/analysis/calibration_gap_report.py \
+#          --scored <results_dir>/<arm>__selfaware/scored_rows.jsonl \
+#          --out experiment/phase1/eval/analysis/calibration_gap_amendment_r_<arm>.json
+#   5. After all three: amendment_r_falsifier_check.py --a0/--a1/--a2 <those JSONs>.
+#
+# NOTE on the eval base: the R arms are SFT LoRA adapters trained directly on
+# unsloth/Qwen3-4B-bnb-4bit (NO prior merged-SFT substrate), so the merged-16bit of
+# the arm's OWN adapter IS the eval base and arms[0].adapter is EMPTY (base only) —
+# exactly like Amendment A's sft_merged arm. Do NOT stack the adapter on a
+# different merged-SFT base.
+
+model_tag: __FILL_MODEL_TAG__          # e.g. qwen3-4b-amendment-r-a0-merged
+model_name: __FILL_MERGED_16BIT_DIR__  # Windows host path to <run>/Qwen3-4B-bnb-4bit/merged-16bit
+gold_path: ../../../datasets/triviaqa-rc-nocontext/cheng_test_gold.jsonl
+results_dir: __FILL_RESULTS_DIR__      # e.g. results_amendment_r_response_confidence_selfaware_a0_full_4b
+
+prompt:
+  system: >-
+    Answer the user's question. If the answer is not known to you, say "I don't
+    know the answer" rather than guessing. Return only a JSON object with
+    exactly two keys: "answer" and "response_confidence". The "answer" value is
+    your answer or abstention text. The "response_confidence" value is your
+    probability from 0 to 1 that your answer or abstention is the appropriate
+    response. Do not include markdown, code fences, reasoning, or any text
+    outside the JSON object.
+
+generation:
+  enable_thinking: false
+  seed: 20240601
+  temperature: 0.0
+  max_new_tokens: 128
+  n_samples: 1
+  stated_confidence_structured_outputs: true
+  stated_confidence_field: response_confidence
+  stated_confidence_json_retries: 2
+
+confidence:
+  signal: self_consistency
+  n_samples: 1
+
+bootstrap:
+  n_resamples: 200
+  level: 0.95
+  seed: 12345
+
+vllm:
+  dtype: auto
+  gpu_memory_utilization: 0.40
+  max_lora_rank: 32
+  max_model_len: 2048
+
+arms:
+  - name: __FILL_ARM_NAME__   # e.g. a0_lm_only / a1_joint_real / a2_joint_placebo
+    method: __FILL_METHOD__   # e.g. amendment_r_a0_sft / amendment_r_a1_aux_head_real / ..._placebo
+    model: __FILL_MODEL_TAG__ # must match model_tag above
+    adapter:                  # EMPTY — base IS the merged arm (see NOTE above)
+
+eval_sets:
+  selfaware:
+    type: ood
+    path: ../../../datasets/selfaware/SelfAware.json

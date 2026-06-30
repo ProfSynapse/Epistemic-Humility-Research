@@ -1,0 +1,14 @@
+{
+  "metric": "A_full_eval.auroc_emitted_to_appropriateness",
+  "locked_margin": 0.05,
+  "auroc": {
+    "a0_lm_only": 0.512661512775842,
+    "a1_joint_real": 0.46545311880363427,
+    "a2_joint_placebo": 0.4223852629151292
+  },
+  "a1_minus_a2_placebo": 0.04306785588850509,
+  "a1_minus_a0_reference": -0.047208393972207774,
+  "primary_pass_a1_gt_a2_by_margin": false,
+  "secondary_pass_a1_gt_a0": false,
+  "verdict": "FALSIFIED"
+}

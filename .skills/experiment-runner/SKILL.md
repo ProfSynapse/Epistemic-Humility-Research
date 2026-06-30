@@ -30,6 +30,7 @@ Always choose the narrowest reference needed for the task:
 | Inspect or update run records | [reference/run-records.md](reference/run-records.md) |
 | Use common launch command patterns | [reference/common-patterns.md](reference/common-patterns.md) |
 | Prepare/gate hidden-state extraction | [reference/hidden-state-probe-smoke.md](reference/hidden-state-probe-smoke.md) |
+| Stage an aux_head co-training arm (Phase B: build dataset + A0/A1/A2 recipes + launch prereqs) | [reference/aux-head-cotraining-arms.md](reference/aux-head-cotraining-arms.md) |
 | Plan Phase 3 causal-pilot sweeps | [reference/phase3-causal-pilot-sweeps.md](reference/phase3-causal-pilot-sweeps.md) |
 | Record durable research-session memory | [reference/research-sessions.md](reference/research-sessions.md) |
 | Create or update experiment notes | [reference/experiment-notes.md](reference/experiment-notes.md) |
@@ -51,6 +52,7 @@ operation, then follow any further routing inside that reference.
 | Inspect a run record | `Get-Content experiment/phase1/run_records/<run_id>.json` |
 | Prepare/gate one hidden-state extraction (GPU-free; gate + resolve, launch nothing) | `python3 .agents/skills/experiment-runner/scripts/prepare_extraction_cell.py --config experiment/phase1/probe/config/hidden_state_probe.yaml` |
 | Plan Phase 3 causal-pilot sweeps (GPU-free by default) | `python experiment/phase1/probe/phase3_causal_pilot_sweep.py --config experiment/phase1/probe/config/phase3_causal_pilot_local_sweep.yaml` |
+| Build aux_head co-training datasets (real + shuffled placebo; CPU-only) | `python3 experiment/phase1/probe/amendment_r_build_phase_b_aux_dataset.py --out-dir scratch/amendment_r/phase_b` |
 
 ## Core Invariants
 

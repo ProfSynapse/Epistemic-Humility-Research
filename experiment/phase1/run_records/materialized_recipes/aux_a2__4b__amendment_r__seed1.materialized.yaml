@@ -1,0 +1,88 @@
+# Amendment R Phase B — A2 (JOINT co-train, PLACEBO targets) SCORED run,
+# materialized for the local Windows/Docker copy lane. Mirrors the canonical recipe
+#   experiment/phase1/recipes/eh_phase1_qwen3_4b_amendment_r_a2_joint_placebo.yaml
+# exactly, with two launch-layer additions (see A0 materialized header for the
+# full rationale):
+#   (1) setup.copy incl. Trainers/shared (default copy set omits it; train_sft
+#       imports Trainers.shared.callbacks).
+#   (2) training.seed: 1 (canonical omits seed; run record pinned seed1).
+# BYTE-IDENTICAL to the A1 materialized recipe except the data file is the
+# seed-shuffled placebo (phase_b_aux_train_shuffled.jsonl), at the SAME seed 1.
+name: eh-phase1-qwen3-4b-amendment-r-a2-joint-placebo
+target: local
+method: sft
+provider: local_docker
+
+job:
+  image: unsloth/unsloth:latest
+  pull_policy: missing
+  transfer: auto
+  keep_container: false
+
+setup:
+  pip:
+    - trl==0.22.2
+    - git+https://github.com/unslothai/unsloth_zoo.git
+    - git+https://github.com/unslothai/unsloth.git
+  copy:
+    - Trainers/sft
+    - Trainers/shared
+    - shared
+    - tuner
+    - scratch/amendment_r/phase_b/phase_b_aux_train_shuffled.jsonl
+
+run:
+  method: sft
+  trainer: Trainers/sft/train_sft.py
+  dry_run: false
+  dashboard: false
+  quiet: true
+
+model:
+  name: unsloth/Qwen3-4B-bnb-4bit
+  max_seq_length: 2048
+  load_in_4bit: true
+
+dataset:
+  # Shuffled-target file (staged, gitignored). A2 = seed-permuted placebo targets.
+  local_file: scratch/amendment_r/phase_b/phase_b_aux_train_shuffled.jsonl
+
+training:
+  batch_size: 2
+  gradient_accumulation: 4
+  learning_rate: 2.0e-4
+  num_epochs: 1
+  prompt_render: prompt_completion
+  chat_template_kwargs:
+    enable_thinking: false
+  seed: 1
+
+lora:
+  r: 32
+  alpha: 64
+  dropout: 0.05
+  target_modules:
+    - q_proj
+    - k_proj
+    - v_proj
+    - o_proj
+    - gate_proj
+    - up_proj
+    - down_proj
+
+aux_head:
+  enabled: true
+  layer: 35
+  token_position: end_of_prompt
+  target_field: aux_target
+  loss: bce
+  head_type: linear
+  out_activation: sigmoid
+  input_norm: layernorm
+  freeze_base: false
+  lm_loss_weight: 1.0
+  head_lr: null
+
+artifacts:
+  output_root: toolset-training-artifacts/runs/local_docker/sft/{name}
+  run_timestamp: "{timestamp}"
