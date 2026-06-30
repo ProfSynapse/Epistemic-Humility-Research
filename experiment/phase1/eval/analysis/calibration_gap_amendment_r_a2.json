@@ -1,0 +1,46 @@
+{
+  "scored_rows": "experiment/phase1/eval/results_amendment_r_response_confidence_selfaware_a2_full_4b/a2_joint_placebo__selfaware/scored_rows.jsonl",
+  "n_scored": 3369,
+  "A_full_eval": {
+    "n": 3368,
+    "emitted_mean": 0.5163791300475059,
+    "emitted_std": 0.4525221815028742,
+    "emitted_min": 0.0,
+    "emitted_max": 1.0,
+    "emitted_unique": 9,
+    "appropriateness_rate": 0.35629453681710216,
+    "ece_vs_appropriateness": 0.567448013657957,
+    "brier_vs_appropriateness": 0.5397503666864875,
+    "auroc_emitted_to_appropriateness": 0.4223852629151292,
+    "answered_known_n": 1631,
+    "answered_known_n_wrong": 1120,
+    "auroc_emitted_correct_vs_wrong_answered_known": 0.6511601901034386,
+    "per_cell_emitted_mean": {
+      "known_answered_wrong": {
+        "n": 1120,
+        "mean": 0.8702481910714286,
+        "std": 0.1768888024633825
+      },
+      "known_correct_answered": {
+        "n": 511,
+        "mean": 0.9450840410958903,
+        "std": 0.09056840881328829
+      },
+      "known_refused": {
+        "n": 705,
+        "mean": 0.0007092198581560284,
+        "std": 0.018817729306980994
+      },
+      "unknown_answered_wrong": {
+        "n": 343,
+        "mean": 0.8135539096209913,
+        "std": 0.20994991347838357
+      },
+      "unknown_refused": {
+        "n": 689,
+        "mean": 0.002902757619738752,
+        "std": 0.046568682749301725
+      }
+    }
+  }
+}

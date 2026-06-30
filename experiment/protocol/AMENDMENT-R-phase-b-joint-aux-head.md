@@ -193,12 +193,54 @@ correctness gap (O's 0.64) and generic-train-distribution transfer remain separa
   preprocessing render-mode build (handoff `docs/sessions/0029`), then the
   joint-loss-runs + baseline parts of the smoke.**
 - [x] Primary-metric instrument identified + A0-analog baseline anchored (R1.1).
-- [ ] Final effect-size falsifier threshold locked (post-smoke; candidate ≥ +0.05).
-- [ ] User sign-off recorded + training launch authorized.
+- [x] Final effect-size falsifier threshold locked (+0.05, 2026-06-29 after the
+  faithful-token gate went GREEN; not moved at scoring).
+- [x] User sign-off recorded + training launch authorized; scored run complete
+  2026-06-30 (see §7 — FALSIFIED).
 
 ## 7. Result
 
-_(pending sign-off + scored run)_
+### Verdict (2026-06-30): FALSIFIED
+
+Scored run complete. All three arms trained (1800 steps, seed 1, identical LM data),
+merged to 16-bit, evaluated on full SelfAware response-confidence (n=3369/arm), and
+scored via `calibration_gap_report.py` Analysis A. Verdict by the locked falsifier
+(`amendment_r_falsifier_check.py`; margin +0.05 unchanged):
+
+| Arm | `auroc_emitted_to_appropriateness` | refusals | answered-known-wrong | combined train_loss |
+|---|---|---|---|---|
+| A0 (reference, head off) | **0.513** | 2256 | 544 | 0.505 (pure LM) |
+| A1 (treatment, real targets) | **0.466** | 1912 | 795 | 4.557 (LM+aux) |
+| A2 (placebo, shuffled) | **0.422** | 1394 | 1120 | 5.530 (LM+aux) |
+
+- **PRIMARY gate A1 − A2 ≥ +0.05: FAIL** (got **+0.043**; real-target arm beats placebo
+  only directionally, below the pre-locked bar).
+- **SECONDARY A1 > A0: FAIL** (A1 is **−0.047 below** the head-off reference).
+
+**Interpretation.** The emitted stated-confidence is a near-deterministic function of the
+answer/abstain ACTION in every arm (conf|answered ≈ 0.88–0.95, conf|refused ≈ 0.00), not
+an appropriateness estimate; the model answers many known-wrong questions at ~0.9
+confidence, so emitted confidence does not rank appropriateness (AUROC ≈ chance). The
+aux head DID fit its target internally (A1 combined loss 4.557 < A2 5.530, real beats
+placebo), but that internal readout did not propagate to the emitted channel. What the
+co-training changed was the action policy: it reduced abstention (refusals A0 2256 > A1
+1912 > A2 1394) and raised confident-wrong answers, which lowered appropriateness-AUROC
+below the head-off reference. The placebo perturbed the policy most, so the shift tracks
+the act of attaching+optimizing a head, not the target information.
+
+This is a clean negative consistent with the project's internal-vs-emitted three-channel
+dissociation (the internal axis reads at AUROC ~0.997 but the emitted scalar collapses
+onto the action): jointly co-training an auxiliary readout on an unfrozen base does not
+open the internal→emitted channel. Non-locked footnote (not the gate): on
+`auroc_emitted_correct_vs_wrong | answered_known` the order flips and all are >chance
+(A0 0.581 < A1 0.607 < A2 0.651) — among answers it gives, emitted confidence ranks
+correct-vs-wrong somewhat, and slightly more so with the head — but that does not rescue
+the appropriateness falsifier.
+
+Artifacts: `experiment/phase1/eval/analysis/{calibration_gap_amendment_r_a0,a1,a2,
+amendment_r_falsifier_verdict}.json`; per-arm `scored_result` blocks in the three
+`run_records/aux_a{0,1,2}__4b__amendment_r__seed1.json`. Not promoted (it is a negative);
+no replication registered.
 
 ### Pre-flight smoke finding (2026-06-29, lab-notebook — NOT verdict-bearing)
 

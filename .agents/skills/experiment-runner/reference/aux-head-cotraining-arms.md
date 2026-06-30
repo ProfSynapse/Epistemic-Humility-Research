@@ -107,6 +107,46 @@ Both are tracked in `AMENDMENT-R-phase-b-joint-aux-head.md §6` and the run reco
 - These are **exploratory Amendment cells**, never pooled with the locked headline
   matrix. Promote a win only via a registered confirmatory replication.
 
+## 5. Eval, score, and evaluate the falsifier (after each arm trains)
+
+The primary metric is the model's **emitted** stated-confidence, NOT the aux_head
+sidecar — so eval is a standard SelfAware response-confidence generation on the
+arm's LoRA, and the sidecar is irrelevant to scoring. Per arm, after `train_end`:
+
+1. **Merge the adapter to 16-bit** (the SFT trainer saves only `final_model/`; the
+   downstream eval base must be a standalone 16-bit model — same primitive the
+   clean-SFT/GRPO bases use). Runs inside the unsloth container (GPU, ~1-2 min):
+   ```
+   python3 experiment/phase1/grpo/merge_sft_adapter_16bit.py \
+     <run>/final_model  <run>/Qwen3-4B-bnb-4bit/merged-16bit
+   ```
+   The R arms train directly on `unsloth/Qwen3-4B-bnb-4bit` with no prior
+   merged-SFT substrate, so the merge of the arm's OWN adapter IS the eval base and
+   the eval arm's `adapter:` is EMPTY (base only) — like Amendment A's `sft_merged`
+   arm. Do NOT stack the adapter on a different merged base (double-counts SFT).
+2. **Generate scored rows** with the response-confidence SelfAware eval (mirror the
+   B0/Amendment-J config exactly; only the merged base differs per arm). Instantiate
+   `eval/config/eval_amendment_r_response_confidence_selfaware_full_local_4b.template.yaml`:
+   ```
+   python experiment/phase1/eval/run_eval.py --config <arm-config>.yaml --live-vllm
+   ```
+   `scored_rows.jsonl` must carry `stated_confidence`, `refused`, `correct`, `label`,
+   `id` for Analysis A.
+3. **Score** the non-circular metric:
+   ```
+   python experiment/phase1/eval/analysis/calibration_gap_report.py \
+     --scored <results_dir>/<arm>__selfaware/scored_rows.jsonl \
+     --out experiment/phase1/eval/analysis/calibration_gap_amendment_r_<arm>.json
+   ```
+   The headline number is `A_full_eval.auroc_emitted_to_appropriateness`.
+4. **Evaluate the locked falsifier** once all three arms are scored:
+   ```
+   python experiment/phase1/eval/analysis/amendment_r_falsifier_check.py \
+     --a0 <...a0.json> --a1 <...a1.json> --a2 <...a2.json>
+   ```
+   PRIMARY gate = A1 − A2 ≥ +0.05 (placebo contrast); §4 also requires A1 > A0.
+   The margin is pre-stated/locked — never edit it to fit a result.
+
 ## Provenance / governance checklist
 
 - [ ] Builder run; real + shuffled files in gitignored scratch; marginal + placebo

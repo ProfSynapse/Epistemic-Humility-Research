@@ -2,6 +2,39 @@
 
 Read for Windows/Docker/GPU/local-trainer execution problems and monitor behavior.
 
+## Proven local-run launch command (the one-liner)
+
+A local training cell is launched with a single tuner CLI verb. The proven,
+reproducible invocation (works from WSL or Windows on this dual-boot host):
+
+```bash
+# From the synaptic-tuner directory. Use the WINDOWS Python launcher (py.exe),
+# NOT WSL python3, and pass a Windows F:\ path to the materialized recipe.
+py.exe -3.11 tuner.py local-run --job-config 'F:\Code\Epistemic-Humility-Research\experiment\phase1\run_records\materialized_recipes\<recipe>.yaml' --yes
+```
+
+Why `py.exe -3.11` and not `python3`: the tuner shells out to a bare `docker`
+binary. On this host the WSL-native `/usr/bin/docker` is a broken apt build
+(`docker.io` 29.1.3) that SEGFAULTS, and the active context is Docker Desktop
+over a Windows npipe (`desktop-linux`) that the Linux client cannot drive
+anyway. The Windows Python launcher runs the tuner as a Windows process, so its
+`docker` resolves to Docker Desktop's working CLI. Running `python3 tuner.py`
+from WSL fails at `docker pull` with `Failed to initialize: protocol not
+available`. (You CAN drive this entirely from a WSL shell — `py.exe` is on PATH
+from WSL — it is not a hand-off to the user.) If you ever need a raw Docker
+command from WSL, use `docker.exe` (it accepts `/mnt/f` bind paths); never bare
+`docker`.
+
+Staging: `setup.copy` paths in the materialized recipe resolve relative to the
+`synaptic-tuner/` directory (the tuner cwd), NOT the research repo root. The
+sibling copy entries (`Trainers/sft`, `shared`, `tuner`) live under the tuner,
+so any data file (e.g. a `scratch/.../foo.jsonl`) must be staged INTO
+`synaptic-tuner/scratch/...` before launch — copying from the research-root
+`scratch/` is required and safe (tuner `scratch/` is gitignored; this is the
+allowed ephemeral staging write). Verify the staged file's sha256 matches the
+run record before launching. Symptom if skipped: `Error: Configured copy path
+does not exist: scratch\...`.
+
 - Native Windows vLLM can import `vllm` while still failing at runtime with
   `ModuleNotFoundError: vllm._C`; use Docker/WSL Linux vLLM for real WS-1 probe
   runs.

@@ -31,7 +31,7 @@
     "prompt_render_engine_pr": "ProfSynapse/Synaptic-Tuner#120 (merged 2026-06-29, commit 3eb6e23): prompt_completion render mode + aux_head CLI forwarding in local_run_handler._build_trainer_command. 78 passed / 1 skipped on the aux_head test subset."
   },
   "outcome": {
-    "status": "ready",
+    "status": "scored",
     "faithful_token_gate": {
       "verdict": "GREEN",
       "smoke": "experiment/phase1/probe/amendment_r_phase_b_smoke.py --source h_lora --limit 0 --prompt-render prompt_completion --no-enable-thinking (vs 3eb6e23)",
@@ -48,5 +48,33 @@
     "prediction": "A1 emitted-scalar AUROC-to-appropriateness > A2 by >= +0.05 (real answerability supervision propagates to the emitted scalar / native behavior).",
     "falsifier": "A1 NOT > A2 by +0.05. Margin LOCKED at +0.05 on 2026-06-29 after the faithful-token gate came back GREEN (cos 0.9998); pre-stated candidate confirmed, not moved.",
     "exploratory_not_headline": true
+  },
+  "scored_result": {
+    "scored_date": "2026-06-30",
+    "verdict": "FALSIFIED",
+    "pipeline": "merge_sft_adapter_16bit.py -> run_eval.py --live-vllm (SelfAware response_confidence, full n=3369) -> calibration_gap_report.py Analysis A -> amendment_r_falsifier_check.py. All 3 arms scored in one detached unsloth container (eh-amendment-r-score), exit 0.",
+    "train_run_timestamp": "20260629_205757",
+    "train_loss": 4.557,
+    "train_loss_note": "COMBINED LM+aux (lm_loss_weight=1.0). NOT comparable to A0's pure-LM 0.505. Descended 38.0 -> 3.0 with grad_norm 166 -> 3.6 (healthy). A1 < A2 (4.557 < 5.530) confirms the head fit REAL targets better than placebo.",
+    "merged_16bit": "synaptic-tuner/toolset-training-artifacts/runs/local_docker/sft/eh-phase1-qwen3-4b-amendment-r-a1-joint-real/20260629_205757/Qwen3-4B-bnb-4bit/merged-16bit",
+    "eval_config": "experiment/phase1/eval/config/eval_amendment_r_response_confidence_selfaware_a1_full_local_4b.yaml",
+    "scored_rows": "experiment/phase1/eval/results_amendment_r_response_confidence_selfaware_a1_full_4b/a1_joint_real__selfaware/scored_rows.jsonl",
+    "calibration_gap_report": "experiment/phase1/eval/analysis/calibration_gap_amendment_r_a1.json",
+    "auroc_emitted_to_appropriateness": 0.4655,
+    "emitted_mean": 0.403,
+    "emitted_std": 0.464,
+    "refused": 1912,
+    "answered_known_wrong": 795,
+    "falsifier_verdict": {
+      "metric": "A_full_eval.auroc_emitted_to_appropriateness",
+      "locked_margin": 0.05,
+      "auroc": {"a0_lm_only": 0.5127, "a1_joint_real": 0.4655, "a2_joint_placebo": 0.4224},
+      "a1_minus_a2_placebo": 0.0431,
+      "a1_minus_a0_reference": -0.0472,
+      "primary_pass_a1_gt_a2_by_margin": false,
+      "secondary_pass_a1_gt_a0": false,
+      "artifact": "experiment/phase1/eval/analysis/amendment_r_falsifier_verdict.json"
+    },
+    "interpretation": "TREATMENT FALSIFIED. Primary gate A1-A2 = +0.0431 < +0.05 (locked, not moved): real-target arm beats placebo only directionally, below bar. Secondary A1-A0 = -0.0472: the head co-train left emitted calibration WORSE than the head-off reference. The head learned answerability internally but the signal did not reach the emitted stated-confidence channel; the co-train instead nudged the action policy toward answering more. Consistent with the project's internal-vs-emitted three-channel dissociation."
   }
 }
