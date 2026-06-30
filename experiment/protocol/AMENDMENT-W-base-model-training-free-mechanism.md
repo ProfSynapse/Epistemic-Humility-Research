@@ -1,8 +1,8 @@
 # Amendment W — Training-Free Base-Model Two-Signal Mechanism
 
-**Status:** SIGNED — gates LOCKED (2026-06-30); run authorized. Tier-2 exploratory
-cell (new evidence, falsifier pre-stated; reported separately from the locked
-PROTOCOL v0.3 matrix). Result pending in §7.
+**Status:** RESOLVED — SUCCESS (2026-06-30). Both locked gates passed; falsifier did
+not fire. Tier-2 exploratory cell (new evidence, falsifier pre-stated; reported
+separately from the locked PROTOCOL v0.3 matrix). Result in §7.
 
 **Sign-off (2026-06-30):** gates W-G1 (primary) / W-G2 and the falsifier as written
 in §4 are LOCKED; the ≥50-hallucination data-adequacy precondition is ordered before
@@ -152,4 +152,46 @@ Paper 3 §8 alongside S/T/U.
 
 ## 7. Result
 
-_(to be written after the run; verdict on the locked §4 primary, no goalpost moved)_
+**SUCCESS — both locked gates pass; the falsifier did NOT fire.** The full
+two-signal mechanism reads off the RAW Qwen3-4B Instruct base with NO adapter and
+NO training. Run: 1,233 SelfAware questions, **0 refused** (the base is
+pre-abstention and answered every question), 677 hallucinations + 556
+known-answered — the ≥50 adequacy floor cleared decisively.
+
+| Leg | Gate | Raw base (W) | Trained checkpoint (prior) |
+|-----|------|--------------|----------------------------|
+| Answerability **gate** (known vs unknown, pre-gen anchor) | **W-G2** | **0.997** @L18, CI [0.995, 0.999] — PASS | 0.999 (U-G1) |
+| Correctness **dial** (correct vs wrong, post-gen) | — | 0.834 (Amendment S) | 0.819 (T) |
+| Hallucination **veto** (S-correct vs hallucination) | **W-G1 PRIMARY** | **0.7545** @L20, CI [0.728, 0.782] — PASS | 0.980 (U-G3) |
+
+**Headline:** the mechanism is a readout property of the untrained base, not a
+training outcome. What GRPO training buys is *behavioral* abstention (the model
+refuses on its own) and a *sharper* veto — not the latent signal itself.
+
+**The honest nuance (no goalpost moved — W-G1 was locked at 0.65 and cleared at
+0.75):** the veto is training-free but markedly WEAKER on the base than after
+training (0.754 vs 0.980). On the base, hallucinations read as *middling* trust
+(dial mean 0.271, sitting between wrong 0.141 and correct 0.613); on the trained
+checkpoint they read as lowest-of-all (U: 0.018). The within-SelfAware confound
+control is correspondingly weaker (known-answered vs hallucination 0.699,
+CI [0.669, 0.727], vs U's 0.93). So training does not CREATE the veto — it
+SHARPENS confident confabulation into a clearly-lowest-trust signal. The gate, by
+contrast, is essentially saturated on the base already (0.997 vs 0.999); training
+adds nothing there.
+
+**What this answers (the originating question — "do we even need the training?"):**
+For the deliverable (a thresholdable surfaced confidence read from activations),
+the gate and dial are fully training-free, and the veto is present training-free.
+Training is not required to expose the signal; it is an *amplifier* for the
+hallucination-veto leg specifically. Consistent with program findings N/M/R
+(training moves the behavioral/emitted channel, not the existence of the internal
+axis) — here quantified: +0.226 AUROC of veto sharpening, ~0 gate gain.
+
+**Caveats.** Single-model, single-seed, exploratory. Structural hallucination label
+(unknown ∧ answered), ungraded SelfAware rows — identical to U. The base-correct
+reference is cross-dataset (S's PopQA/TriviaQA) vs SelfAware hallucinations; the
+within-SelfAware control (0.699) bounds but does not eliminate the dataset-shift
+contribution to W-G1. Promotion to a headline claim still requires a confirmatory
+replication (fresh seeds / 8B / held-out) registered before running.
+
+Result JSON: `experiment/phase1/probe/qwen3-4b-instruct/amendment_w/stage2/amendment_w_base_model_result.json`.

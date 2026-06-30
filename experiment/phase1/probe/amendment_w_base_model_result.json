@@ -1,0 +1,81 @@
+{
+  "amendment": "W",
+  "analysis": "training_free_base_model_two_signal",
+  "checkpoint": "raw Qwen3-4B Instruct base (unsloth/Qwen3-4B-bnb-4bit, NO adapter)",
+  "dial_source": "Amendment S RAW-base post-gen dial",
+  "dial_layer": 20,
+  "n_s_correct": 500,
+  "n_s_wrong": 1336,
+  "n_hallucination": 677,
+  "n_known_answered": 556,
+  "data_adequacy_ok": true,
+  "W_G1_dial_on_hallucination_PRIMARY": {
+    "auroc_scorrect_vs_hallucination": 0.7545,
+    "ci_95": [
+      0.7277,
+      0.7823
+    ],
+    "pass_ge_0.65_ci_excl_0.50": true
+  },
+  "W_G2_gate_on_base_anchor": {
+    "best_layer": 18,
+    "answerability_auroc": 0.9971,
+    "ci_95": [
+      0.995,
+      0.9987
+    ],
+    "auroc_surface": {
+      "0": 0.4984,
+      "1": 0.9818,
+      "2": 0.9862,
+      "3": 0.9873,
+      "4": 0.9899,
+      "5": 0.9886,
+      "6": 0.9901,
+      "7": 0.99,
+      "8": 0.9899,
+      "9": 0.9921,
+      "10": 0.9919,
+      "11": 0.9923,
+      "12": 0.9934,
+      "13": 0.9934,
+      "14": 0.9931,
+      "15": 0.994,
+      "16": 0.995,
+      "17": 0.9959,
+      "18": 0.9971,
+      "19": 0.9958,
+      "20": 0.9954,
+      "21": 0.9953,
+      "22": 0.9958,
+      "23": 0.9969,
+      "24": 0.9965,
+      "25": 0.9962,
+      "26": 0.996,
+      "27": 0.9962,
+      "28": 0.996,
+      "29": 0.9958,
+      "30": 0.9954,
+      "31": 0.9953,
+      "32": 0.995,
+      "33": 0.9952,
+      "34": 0.9949,
+      "35": 0.9955,
+      "36": 0.9945
+    },
+    "pass_ge_0.65_ci_excl_0.50": true
+  },
+  "descriptive": {
+    "dial_mean_s_correct": 0.613,
+    "dial_mean_s_wrong": 0.1407,
+    "dial_mean_hallucination": 0.271,
+    "dial_mean_known_answered": 0.5368,
+    "within_selfaware_control_auroc_known_vs_halluc": 0.6986,
+    "within_selfaware_control_ci": [
+      0.6688,
+      0.7273
+    ]
+  },
+  "verdict": "SUCCESS",
+  "verdict_rule": "SUCCESS = W-G1 (>=0.65, CI excl 0.50) AND W-G2 (>=0.65, CI excl 0.50) given >=50 hallucinations; FALSIFIER = W-G1 <0.65 AND CI includes 0.50"
+}
