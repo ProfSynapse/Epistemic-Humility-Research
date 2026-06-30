@@ -137,5 +137,31 @@ readout paper) as the generalization section.
 
 ## 7. Result
 
-_(to be written after the runs; per-model verdict on the locked §4 gates, plus the
-SUCCESS/PARTIAL/FALSIFIER roll-up across sizes; no goalpost moved)_
+Per-model verdict on the locked §4 gates. Roll-up assembled once all three sizes
+are scored. No goalpost moved.
+
+### Qwen3-1.7B — PASS (all three gates)
+
+Raw `unsloth/Qwen3-1.7B-bnb-4bit`, no adapter. Pool answered=3000
+(correct 377 / wrong 1476 / hallucination 629 / known_answered 518); adequacy floors
+met (wrong >=30, halluc >=50).
+
+| Gate | metric | AUROC | 95% CI | pass |
+|------|--------|-------|--------|------|
+| X-G1 gate | known vs unknown (L20) | 0.9958 | [0.9925, 0.9981] | yes |
+| X-G2 dial | correct vs wrong (L21) | 0.8152 | [0.7871, 0.8416] | yes |
+| X-G3 veto (PRIMARY) | correct vs hallucination (L21) | 0.7574 | [0.7288, 0.7855] | yes |
+
+Dial means ordered as predicted: correct 0.558 > known 0.431 > hallucination 0.219
+> wrong 0.122. Replicates the 4B mechanism at the smallest size (4B ref: gate 0.997,
+dial 0.834, base veto 0.754). **Caveat:** the within-SelfAware control
+(known vs hallucination, same dataset) is 0.6675 [0.6351, 0.6979] here, weaker than
+4B's 0.93 — the veto's cross-source component is stronger than its within-source
+component at 1.7B. Primary gates unambiguous. Result:
+`experiment/phase1/probe/amendment_x_qwen3-1.7b-bnb-4bit_result.json`.
+
+### Qwen3-8B — pending
+
+### Qwen3-14B — pending
+
+### Cross-size roll-up — pending (after 8B + 14B)
