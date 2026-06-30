@@ -160,7 +160,24 @@ dial 0.834, base veto 0.754). **Caveat:** the within-SelfAware control
 component at 1.7B. Primary gates unambiguous. Result:
 `experiment/phase1/probe/amendment_x_qwen3-1.7b-bnb-4bit_result.json`.
 
-### Qwen3-8B — pending
+### Qwen3-8B — PASS (all three gates)
+
+Raw `unsloth/Qwen3-8B-bnb-4bit`, no adapter. Pool answered=3000
+(correct 648 / wrong 1205 / hallucination 629 / known_answered 518); adequacy floors
+met (wrong >=30, halluc >=50).
+
+| Gate | metric | AUROC | 95% CI | pass |
+|------|--------|-------|--------|------|
+| X-G1 gate | known vs unknown (L21) | 0.9979 | [0.9960, 0.9992] | yes |
+| X-G2 dial | correct vs wrong (L20) | 0.8621 | [0.8444, 0.8797] | yes |
+| X-G3 veto (PRIMARY) | correct vs hallucination | 0.8455 | [0.8236, 0.8656] | yes |
+
+Dial means ordered as predicted: correct 0.701 > known 0.634 > hallucination 0.184
+> wrong 0.160. Stronger than 1.7B on every gate (dial +0.047, veto +0.088) and the
+within-SelfAware control (known vs hallucination, same dataset) recovers to 0.7953
+[0.7705, 0.8199] — markedly above 1.7B's 0.6675, so the veto's within-source
+component strengthens with size. Result:
+`experiment/phase1/probe/amendment_x_qwen3-8b-bnb-4bit_result.json`.
 
 ### Qwen3-14B — pending
 
