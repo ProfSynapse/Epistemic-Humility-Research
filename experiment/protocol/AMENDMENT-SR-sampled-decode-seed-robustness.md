@@ -174,10 +174,13 @@ append result + update session/experiment notes. Cost ≈ 3× the Z overnight qu
 ## §7 Results (filled per family × seed as runs complete)
 
 **Status: RUNNING — launched 2026-07-01 10:11 UTC (user approval), local Docker GPU lane.
-4/12 cells scored. Updating as cells land. Early read: the veto is seed-SENSITIVE and
-moves in BOTH directions vs the Z greedy point — Llama flips greedy-FAIL(0.633)→PASS on
-all 3 seeds; Ministral's first sampled seed flips greedy-PASS(0.733)→FAIL(0.606). Verdict
-not read from partial data.**
+6/12 cells scored (Llama + Ministral families complete). Updating as cells land. Early
+read: the veto is seed-SENSITIVE per-seed but seed-STABLE at the family level so far —
+Llama flips greedy-FAIL(0.633)→PASS 3/3; Ministral flips greedy-PASS(0.733)→seed1
+FAIL(0.606) but recovers seeds 2/3 (0.696, 0.742) = 2/3 seed-stable PASS. Both families
+seed-stable PASS on veto (2/4 so far); dial passes all 6 cells. Verdict not read from
+partial data. WATCH the strict per-seed majority clause: seed 20260701 already has one
+family (Ministral) failing veto.**
 
 ### Per-family seed table (filling as cells land)
 
@@ -190,8 +193,8 @@ SR-veto ≥0.65 with CI excl 0.50.
 | Llama-3.2-3B | 20260702 | 0.853 ✓ | 0.684 | ✓ | **PASS** |
 | Llama-3.2-3B | 20260703 | 0.865 ✓ | 0.732 | ✓ | **PASS** |
 | Ministral-3-3B | 20260701 | 0.808 ✓ | 0.606 | ✓ | **FAIL** |
-| Ministral-3-3B | 20260702 | | | | |
-| Ministral-3-3B | 20260703 | | | | |
+| Ministral-3-3B | 20260702 | 0.812 ✓ | 0.696 | ✓ | **PASS** |
+| Ministral-3-3B | 20260703 | 0.799 ✓ | 0.742 | ✓ | **PASS** |
 | Qwen3.5-4B | 20260701 | | | | |
 | Qwen3.5-4B | 20260702 | | | | |
 | Qwen3.5-4B | 20260703 | | | | |
