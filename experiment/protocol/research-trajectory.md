@@ -183,17 +183,41 @@ Jobs. KTO data per `.skills/fine-tuning/reference/dataset-formats.md`
 ## Publication shape
 
 Original (2026-06-10): Paper 2 = Phase 1; Paper 3 = Phases 2+3; Phase 4 = artifact.
-Revised (2026-06-30) to match what was actually produced:
+Revised (2026-06-30): Paper 2 = training three-way; Paper 3 = "Knows but Doesn't Say";
+Paper 4 = two-signal readout.
 
-- **Paper 2 = Phase 1** training three-way (SFT/DPO/KTO), the decomposition + the
-  abstention-calibration tension. Unchanged in scope.
-- **Paper 3 = "Knows but Doesn't Say"** (drafted): the internal-vs-stated confidence
-  gap and its training-resistance + the steering asymmetry. This is the mechanism
-  *diagnosis* paper, not "Phases 2+3" as originally framed.
-- **Paper 4 = the two-signal readout** (working): the training-free answerability-gate +
-  correctness-dial + hallucination-veto pipeline, and the cross-size generalization
-  (Amendment X). This is the mechanism *solution* paper and the current headline.
-- Phase 4 = ongoing infrastructure / community artifact (unchanged).
+**RENUMBERED (2026-07-01, user steer — supersedes all above).** The program is a
+four-paper line; the numbering below is canonical. NOTE the draft *filenames* still
+carry the OLD numbers and are stale until renamed — the mapping is given per paper.
+
+- **Paper 1 = the training-regimen paper.** NOT a standalone meta-analysis anymore: the
+  meta-analysis is converted into a **literature-review section** at the top, followed by
+  **our training experiment** — the FULL regimen (SFT / DPO / KTO / **GRPO**, the complete
+  method set, not just the three-way). Absorbs what was "Paper 2." Current drafts:
+  `experiment/paper/draft-v0.md`, `experiment/paper/draft-v1.md` (titled for the SFT/DPO/KTO
+  study; need the meta-analysis folded in AS the review, the GRPO arm added, and a renumber
+  to Paper 1). The meta-analysis is no longer published on its own.
+- **Paper 2 = "Knows but Doesn't Say."** The internal-vs-stated confidence gap and its
+  training-resistance — explicitly including that **even GRPO does not change it** — plus
+  the steering asymmetry. Mechanism *diagnosis*. Current draft:
+  `experiment/paper/paper3-knows-but-doesnt-say-draft-v0.md` (filename says paper3; it is
+  Paper 2).
+- **Paper 3 = the two-signal readout** (the paper being drafted NOW). The training-free
+  answerability-**gate** + correctness-**dial** + hallucination-**veto** pipeline;
+  cross-SIZE (Qwen3 1.7–14B) and the **cross-FAMILY confirmatory (Qwen/Llama/Mistral/
+  Gemma) — SUCCESS, veto 3/4**. Mechanism *solution* / current headline. STANDALONE (not
+  merged with Paper 2); it cites Paper 2 for the diagnosis. Seed:
+  `experiment/paper/two-signal-readout-framework.md`; figures:
+  `experiment/paper/make_figures.py`.
+- **Paper 4 = steering** (next phase, not yet run). Turn the probe direction around from
+  READING to WRITING — activation steering + CoT injection — as a causal test of the
+  anchor-vs-end account. Design: `docs/plans/confidence-steering-experiment.md`; scaffold
+  parked on branch `experiment/paper5-confidence-steering` (branch name uses the old "5").
+- Phase 4 program work = ongoing infrastructure / community artifact (unchanged).
+
+**Amendment enumeration:** the reader-facing papers present ONE clean narrative and do
+NOT enumerate the internal amendment labels (S/T/U/W/X/Z/O/P/Q/R). Amendment→result-JSON
+traceability lives in a methods/provenance appendix, not the prose.
 
 ## Open decisions (user)
 
