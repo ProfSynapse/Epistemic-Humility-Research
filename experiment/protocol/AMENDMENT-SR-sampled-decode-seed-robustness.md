@@ -174,13 +174,15 @@ append result + update session/experiment notes. Cost ≈ 3× the Z overnight qu
 ## §7 Results (filled per family × seed as runs complete)
 
 **Status: RUNNING — launched 2026-07-01 10:11 UTC (user approval), local Docker GPU lane.
-6/12 cells scored (Llama + Ministral families complete). Updating as cells land. Early
-read: the veto is seed-SENSITIVE per-seed but seed-STABLE at the family level so far —
-Llama flips greedy-FAIL(0.633)→PASS 3/3; Ministral flips greedy-PASS(0.733)→seed1
-FAIL(0.606) but recovers seeds 2/3 (0.696, 0.742) = 2/3 seed-stable PASS. Both families
-seed-stable PASS on veto (2/4 so far); dial passes all 6 cells. Verdict not read from
-partial data. WATCH the strict per-seed majority clause: seed 20260701 already has one
-family (Ministral) failing veto.**
+8/12 cells scored (Llama + Ministral complete; Qwen3.5 2/3, seed3 running; Gemma pending).
+Updating as cells land. The veto is seed-SENSITIVE per-seed but seed-STABLE at the family
+level: Llama 3/3 PASS, Ministral 2/3 PASS, Qwen3.5 2/2 PASS = THREE families seed-stable
+PASS ⇒ the veto ≥3/4 SUCCESS bar (part b) is MET regardless of Gemma. dial passes all 8
+cells (part a on track, Gemma pending). The ONLY thing still live is the STRICT per-seed
+majority clause (part c, ≥3/4 veto PASS on EVERY seed): seed 20260702 already ≥3/4 secured;
+seed 20260701 sits 2 PASS (Llama, Qwen3.5) / 1 FAIL (Ministral) with Gemma 701 pending —
+Gemma 701 must PASS for seed 701 to clear 3/4, else the clause (and SUCCESS) breaks. Gemma
+was the Z-strongest veto (0.871). Verdict not called until all 12 land.**
 
 ### Per-family seed table (filling as cells land)
 
@@ -196,7 +198,7 @@ SR-veto ≥0.65 with CI excl 0.50.
 | Ministral-3-3B | 20260702 | 0.812 ✓ | 0.696 | ✓ | **PASS** |
 | Ministral-3-3B | 20260703 | 0.799 ✓ | 0.742 | ✓ | **PASS** |
 | Qwen3.5-4B | 20260701 | 0.830 ✓ | 0.659 | ✓ | **PASS** (marginal) |
-| Qwen3.5-4B | 20260702 | | | | |
+| Qwen3.5-4B | 20260702 | 0.864 ✓ | 0.807 | ✓ | **PASS** |
 | Qwen3.5-4B | 20260703 | | | | |
 | Gemma-4-E4B | 20260701 | | | | |
 | Gemma-4-E4B | 20260702 | | | | |
