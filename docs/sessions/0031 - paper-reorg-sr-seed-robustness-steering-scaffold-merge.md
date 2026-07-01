@@ -238,3 +238,12 @@ _No summary yet._
   - `experiment/phase1/probe/amendment_sr_gemma-4-e4b_seed20260701_result.json`
   - `experiment/phase1/probe/amendment_sr_gemma-4-e4b_seed20260702_result.json`
   - `experiment/phase1/probe/amendment_sr_gemma-4-e4b_seed20260703_result.json`
+### 014-refactor - FIVE-paper line executed (Paper 1 split back out; Paper 2 slimmed)
+
+- at: `2026-07-02T00:45:00Z`
+- kind: `refactor`
+- summary: Executed the user's five-paper re-steer on branch paper-line-restructure (off main post-PR #141). Renames (git mv): paper1-training-regimen-draft-v{0,1,2} -> paper2-*, paper2-knows-but-doesnt-say -> paper3-*, paper3-two-signal-readout -> paper4-*. NEW Paper 1 written (paper1-taxonomy-framework-draft-v0.md): standalone taxonomy + evidence synthesis + policy-vs-signal framework with three propositions (P1 locus / P2 policy-not-signal / P3 readout) and the program agenda; Meno/Daedalus tether image surfaced from the source-of-record so Paper 3's citation of it stays true. Paper 2 draft-v2 slimmed 1094 -> 677 lines: Part I replaced by a one-page Section 2 citing Paper 1; sections 7-8 (confidence-channel depth + probe coda) replaced by a short Section 5 bridge (confidence tracks the decision, not the truth + forward pointer to Paper 3); references pruned 46 -> 21 (verified one-to-one). Per user direction mid-turn, the mix-and-match stacks are compressed to a ONE-SENTENCE null (table rows dropped; Figure 6 keeps stack points as visual support) and the paper is explicitly the SFT-warm -> DPO/KTO/GRPO story. Seed-accounting check against run records: cold-start and SFT-warmed arms are 3-seed (KTO 2 plain-answer seeds); ALL GRPO cells single-seed exploratory - user's "3 seeds each" memory corrected in-session. meta-analysis/draft-v0 un-archived as Paper 1's source of record; cross-refs fixed in paper3/paper4 drafts, research-trajectory.md (Publication shape rewritten to the five-paper line; stale supersession note corrected), two-signal-readout-framework.md, and the internal-paper3 KG note (slug accurate again). Figure/script prefixes (fig-p1-*/build_paper1_* etc.) deliberately NOT renamed - legacy mapping documented in research-trajectory.md. OWED FOLLOW-UP: Paper 3 must absorb the draft-v2 sections 7-8 depth (proper-scoring negative, contrastive/masked, RL-on-contrastive, Figs 7-8).
+- evidence:
+  - `experiment/paper/paper1-taxonomy-framework-draft-v0.md`
+  - `experiment/paper/paper2-training-regimen-draft-v2.md`
+  - `experiment/protocol/research-trajectory.md`

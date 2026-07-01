@@ -1,7 +1,10 @@
 # The Two-Signal Readout Framework — working theory synthesis
 
 *Working document, 2026-06-30. Synthesizes the O→P→Q→S→T→U→W amendment trajectory
-into a theoretical frame, ahead of editing Paper 2 / drafting Paper 3. Not for
+into a theoretical frame, ahead of editing the diagnosis paper / drafting the
+readout paper. (Numbering note, 2026-07-01: "Paper 2"/"Paper 3" below are the
+OLD labels; in the five-paper line they are Paper 3 = "Knows but Doesn't Say"
+and Paper 4 = the two-signal readout.) Not for
 distribution. Numbers are single-seed (seed 1), single-model (Qwen3-4B) unless a
 confirmatory replication is named.*
 

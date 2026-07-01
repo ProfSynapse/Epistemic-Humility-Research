@@ -1,7 +1,7 @@
 # The Confidence Is Already There: A Training-Free Two-Signal Readout for Epistemic Humility in Small Language Models
 
-*Draft v0 — flagship paper (Paper 3 of the program). Standalone contribution; cites
-the companion diagnosis paper ("Knows but Doesn't Say") for the representation-vs-
+*Draft v0 — flagship paper (Paper 4 of the program). Standalone contribution; cites
+the companion diagnosis paper (Paper 3, "Knows but Doesn't Say") for the representation-vs-
 verbalization gap it builds on. All primary numbers are single-seed (seed 1) unless a
 cross-model replication is named; provenance for every figure is in Appendix A.*
 
