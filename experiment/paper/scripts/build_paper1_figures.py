@@ -889,7 +889,7 @@ def write_stated_confidence_png(path: Path, confidence_rows: list[dict[str, obje
             x0 = int(center + (i - 1) * (bar_w + 14) - bar_w / 2)
             y0 = top + plot_h - int(val / 100 * plot_h)
             draw.rounded_rectangle((x0, y0, x0 + bar_w, top + plot_h), radius=6, fill=PNG_COLORS[color_key])
-            _draw_text(draw, (x0 + bar_w / 2, y0 - 9), f"{raw:.2f}", _font(15, bold=True), fill=PNG_COLORS[color_key], anchor="mm")
+            _draw_text(draw, (x0 + bar_w / 2, y0 - 9), f"{val:.0f}", _font(15, bold=True), fill=PNG_COLORS[color_key], anchor="mm")
     legend_x, legend_y = 1205, 170
     _draw_card(draw, (1185, 140, 1445, 305))
     for i, (_arm, label, color_key) in enumerate(arms):
@@ -945,7 +945,7 @@ def write_confidence_alignment_png(path: Path, alignment_rows: list[dict[str, ob
             y0 = top + plot_h - int(val / 100 * plot_h)
             draw.rounded_rectangle((x0, y0, x0 + bar_w, top + plot_h), radius=6, fill=PNG_COLORS[color_key])
             if val >= 7:
-                _draw_text(draw, (x0 + bar_w / 2, y0 - 8), f"{raw:.2f}", _font(14, bold=True), fill=PNG_COLORS[color_key], anchor="mm")
+                _draw_text(draw, (x0 + bar_w / 2, y0 - 8), f"{val:.0f}", _font(14, bold=True), fill=PNG_COLORS[color_key], anchor="mm")
     legend_x, legend_y = 1385, 170
     _draw_card(draw, (1360, 140, 1640, 315))
     for i, (_arm, label, color_key) in enumerate(arms):
