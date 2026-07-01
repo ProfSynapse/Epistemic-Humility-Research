@@ -41,47 +41,26 @@ Synaptic Labs
 
 Language models acquire most of their epistemic character (how confident they
 sound, when they refuse, how readily they capitulate) not from pretraining but
-from post-training. We present, first, a systematic evidence synthesis of how
-training interventions create, damage, and partially repair epistemic humility
-in large language models: 78 quantitative effect rows extracted from 39 studies
-(110 documented queries, June 2026), synthesized by vote counting and exact
-binomial sign tests because the literature almost never reports variance. Five
-claim families emerge: post-training degrades token-probability calibration;
-preference-based methods beat supervised fine-tuning (SFT) on abstention and
-truthfulness in every extracted comparison but one; preference optimization
-reduces SFT-induced over-refusal (our independent reanalysis of released model
-outputs: over-refusal on known questions falls from 42.71% under SFT to 23.27%
-under DPO, $n = 11{,}313$); scale alone does not produce humility; and targeted
-interventions reliably help (sign test $p = 0.001$). The synthesis also verifies
-six specific experiments the field has not run, three of which we then run.
-
-Second, we report the first controlled comparison of the full post-training
-regimen (SFT, DPO, KTO, and GRPO) on a shared model-specific abstention dataset
-and a shared base model (Qwen3-4B), with behavior, stated confidence, and
-internal representations measured after the same runs. The comparison yields a
-stage decomposition rather than a winner. Only SFT *induces* abstention from
-the base model (refusal recall 87.9% across three seeds, but with 64.8%
-over-refusal on known questions); cold-start DPO and KTO leave the model
-answering nearly everything (refusal recall 0.03% and 0.00%). Applied after
-SFT, the preference methods *reposition* the boundary along a trade-off: DPO
-cuts over-refusal to 14% but gives up 34 points of refusal recall; KTO
-preserves recall at the cost of persistent over-refusal. GRPO with a
-behavior-dominant appropriateness reward *amplifies* the abstention routine to
-near-ceiling recall (93 to 98%) and the best truthfulness of any arm, but pushes
-over-refusal back up, and stacking a preference stage before or after GRPO
-moves the operating point only marginally. Third, the confidence channel fails
-independently of behavior: every GRPO reward we tested, including a proper
-scoring (Brier) reward for which calibrated confidence is the mathematical
-optimum, leaves emitted confidence collapsed near a constant (std 0.013 to
-0.027, AUROC 0.52), while a contrastive supervised recipe produces genuinely
-calibrated stated confidence (AUROC 0.68, ECE 0.18) at severe behavioral cost,
-and RL on top of that base preserves the calibration while failing to repair
-the behavior. Throughout, a linear probe of the model's hidden states reads
-the knowledge boundary at AUROC 0.97 while the model's own emitted confidence
-reads it at 0.52 to 0.68: after every regimen tested, the model knows
-substantially more than any output channel says. Training reshapes what the
-model does with its uncertainty; it neither creates nor surfaces the
-uncertainty signal itself.
+from post-training. We present a systematic synthesis of the training evidence
+(78 quantitative effects from 39 studies) and then run the experiment it shows
+to be missing: the first controlled comparison of SFT, DPO, KTO, and GRPO on a
+shared model-specific abstention dataset and base model (Qwen3-4B), with
+behavior, stated confidence, and internal representations measured after the
+same runs. The comparison yields a stage decomposition rather than a winner.
+Only SFT *induces* abstention (refusal recall 87.9%, over-refusal 64.8%;
+cold-start DPO and KTO refuse almost nothing); preference optimization
+*repositions* the boundary along a recall/over-refusal trade-off; GRPO
+*amplifies* the routine to near-ceiling recall and the study's best
+truthfulness while re-inflating over-refusal. No objective, order, or stack
+moves the underlying discrimination frontier. The confidence channel fails
+independently of behavior: every GRPO reward tested, including a proper
+scoring rule for which calibrated confidence is the mathematical optimum,
+leaves emitted confidence collapsed near a constant, while contrastive
+supervision calibrates the channel at severe behavioral cost. Throughout, a
+linear probe reads the knowledge boundary from hidden states at AUROC 0.97
+versus 0.52 to 0.68 for the emitted channel: after every regimen, the model
+knows more than it says. Training reshapes what the model does with its
+uncertainty; it neither creates nor surfaces the signal itself.
 
 ## 1. Introduction
 
