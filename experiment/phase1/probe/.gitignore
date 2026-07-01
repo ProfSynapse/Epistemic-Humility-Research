@@ -32,3 +32,9 @@ qwen3-*/
 # result JSONs are tracked at the probe root as amendment_z_*_result.json (which
 # does NOT match z_*/), never from under an extraction dir.
 z_*/
+
+# Amendment SR sampled-decode seed-robustness extraction subtrees
+# (sr_<tag>_seed<N>/, sr_smoke_<tag>/) + queue logs (sr_logs/) are large
+# reproducible tensor/rows artifacts. Scored result JSONs are tracked at the
+# probe root as amendment_sr_*_result.json (does NOT match sr_*/).
+sr_*/

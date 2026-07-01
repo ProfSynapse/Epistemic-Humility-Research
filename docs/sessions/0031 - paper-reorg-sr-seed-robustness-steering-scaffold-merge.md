@@ -206,3 +206,35 @@ _No summary yet._
 - evidence:
   - `experiment/paper/paper1-training-regimen-draft-v2.md`
   - `experiment/paper/scripts/build_paper1_figures.py`
+### 010-writeup - Paper 1 abstract tightened (~430 -> ~215 words); PR #140 merged
+
+- at: `2026-07-02T00:20:00Z`
+- kind: `writeup`
+- summary: Per user review ("the abstract in this draft seems wayyy too long"), cut the draft-v2 abstract from ~430 words / two result-dense paragraphs to one ~215-word paragraph keeping the stage-decomposition claim, the confidence-channel negative, and the probe-vs-emitted gap; all dropped numbers remain in sections 6-8. Merged as PR #140 (follow-up to #139).
+- evidence:
+  - `experiment/paper/paper1-training-regimen-draft-v2.md`
+### 011-design - NEW proposed line: pretrain-only readout (base-model era study)
+
+- at: `2026-07-02T00:50:00Z`
+- kind: `design`
+- summary: User raised that all "training-free" readout evidence sits on vendor-post-trained instruct checkpoints (Amendment W's "raw base" = Qwen3-4B Instruct, no adapter of ours; X/Z/SR likewise), so Paper 1 §8's pretraining-origin claim is untested. Captured a design-only proposal at docs/plans/base-model-era-readout.md: Arm A paired base-vs-instruct contrasts (Qwen3-4B, Llama-3.2-3B, Mistral-7B-v0.1 pairs; H_B1 base gate ≥0.90 with a stated falsifier, H_B2 base veto ≥0.65 on ≥2/3), Arm B descriptive era ladder (gpt2-xl → pythia-2.8b → Llama-2-7B base → OLMo-2). Infra prereq: backward-compatible base-mode (no-chat-template, k-shot) prompting path in the X extractor + SR-style adequacy gate. NOT registered, NOT launched; sequenced behind the SR PR.
+- evidence:
+  - `docs/plans/base-model-era-readout.md`
+### 012-design - Amendment Y drafted (pretrain-only base readout), NOT SIGNED
+
+- at: `2026-07-01T14:40:00Z`
+- kind: `design`
+- summary: Per user direction to set the new experiment up through the experiment-runner skill, the base-model era proposal (docs/plans/base-model-era-readout.md) was promoted to a formal amendment draft following reference/protocol-amendments.md + the template: experiment/protocol/AMENDMENT-Y-pretrain-only-base-readout.md (letter Y is the first unused). Status DRAFT / NOT SIGNED. Gates frozen in the draft: H_B1 base gate >=0.90 with falsifier (base <0.75 while sibling >=0.95 -> post-training CREATES the signal), H_B2 base veto >=0.65 on >=2/3 Arm A bases, H_B3 report-only sharpening delta, SR-style adequacy floor (proposed 50/50 rows). Branch discipline honored: the draft file is deliberately left UNCOMMITTED (untracked) — it must NOT ride the SR branch; it gets its own branch off main after the SR PR merges, then user sign-off, then (separately) launch approval naming exact cells/lane.
+- evidence:
+  - `experiment/protocol/AMENDMENT-Y-pretrain-only-base-readout.md`
+### 013-result - Amendment SR VERDICT: SUCCESS (Gemma re-run complete, 12/12 cells)
+
+- at: `2026-07-01T22:30:00Z`
+- kind: `result`
+- summary: Gemma-4-E4B re-run (user-approved relaunch with --user 0:0 after the 9P mkdir PermissionError; lab-notebook re-run of a pre-registered cell) completed 22:18 UTC — smoke OK, three sampled-decode seeds extracted and scored in-run: 20260701 dial 0.802 / veto 0.762, 20260702 dial 0.839 / veto 0.746, 20260703 dial 0.812 / veto 0.718; gate 0.998 all, adequacy OK all. LOCKED verdict computed: (a) dial seed-stable 4/4 PASS (12/12 cells), (b) veto seed-stable 4/4 PASS, (c) per-seed veto majority 3/4, 4/4, 4/4 PASS — seed 20260701 (the pre-identified pinch: Ministral 0.606) clears at exactly 3/4 via Gemma. Falsifier did NOT fire (only Ministral flips status; >=2 required). Z magnitudes promoted to seed-robust-under-sampled-decoding. AMENDMENT-SR sec 7 filled (tables, roll-up, verdict, provenance incl. sr_rr_* dirs); paper3 draft finalized (abstract point 3 + co-headline reworded to the decode-artifact finding, sec 4.7 closing, sec 4.8 Table 2 + verdict paragraph, sec 5 pipeline veto note, sec 6 discussion, sec 7 limitation 1). Both greedy Z-margin misses moved UP under sampling (Llama 0.633 FAIL -> 0.68-0.80 3/3 PASS; Qwen3.5 0.666 marginal -> 3/3 clean): greedy point estimates understated the veto.
+- evidence:
+  - `experiment/protocol/AMENDMENT-SR-sampled-decode-seed-robustness.md`
+  - `experiment/paper/paper3-two-signal-readout-draft-v0.md`
+  - `experiment/phase1/probe/amendment_sr_gemma-4-e4b_seed20260701_result.json`
+  - `experiment/phase1/probe/amendment_sr_gemma-4-e4b_seed20260702_result.json`
+  - `experiment/phase1/probe/amendment_sr_gemma-4-e4b_seed20260703_result.json`

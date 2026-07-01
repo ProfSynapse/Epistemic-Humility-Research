@@ -106,7 +106,8 @@ def run(args) -> int:
         "max_attempts": args.max_attempts,
         "seed": args.seed,
         "persist_dtype": "float32",
-        "decode": "greedy",
+        "decode": (f"sampled(temp={args.temperature},top_p={args.top_p})"
+                   if args.do_sample else "greedy"),
     }
     config_sha = _config_sha(config_payload)
 
@@ -164,6 +165,14 @@ def run(args) -> int:
         eos_for_gen = ([tokenizer.eos_token_id, im_end]
                        if tokenizer.eos_token_id is not None else im_end)
 
+    # Seed the generation RNG per run so sampled decoding (Amendment SR) is a
+    # reproducible independent draw. No effect on greedy runs (do_sample=False),
+    # so X/Z remain byte-for-byte reproducible from this script.
+    if args.do_sample:
+        import transformers as _tf_seed
+        _tf_seed.set_seed(args.seed)
+        torch.manual_seed(args.seed)
+
     pool = build_mixed_pool(datasets_root, gate_rows, args.n_answerable, args.seed)
     n_ans = sum(1 for p in pool if p["source"] == "answerable")
     n_known = sum(1 for p in pool if p["source"] == "selfaware_known")
@@ -186,11 +195,17 @@ def run(args) -> int:
             prompt_len = int(enc["input_ids"].shape[1])
 
             with torch.no_grad():
-                gen = model.generate(
-                    **enc, max_new_tokens=args.max_new_tokens, do_sample=False,
-                    num_beams=1, eos_token_id=eos_for_gen,
+                gen_kw = dict(
+                    max_new_tokens=args.max_new_tokens, num_beams=1,
+                    eos_token_id=eos_for_gen,
                     pad_token_id=tokenizer.pad_token_id or tokenizer.eos_token_id,
                     return_dict_in_generate=True)
+                if args.do_sample:
+                    gen_kw.update(do_sample=True, temperature=args.temperature,
+                                  top_p=args.top_p)
+                else:
+                    gen_kw.update(do_sample=False)
+                gen = model.generate(**enc, **gen_kw)
             full = gen.sequences[0]
             full_list = full.tolist()
             answer_text = tokenizer.decode(
@@ -299,6 +314,11 @@ def parse_args(argv=None):
     ap.add_argument("--wrong-floor", type=int, default=30)
     ap.add_argument("--hallucination-floor", type=int, default=50)
     ap.add_argument("--seed", type=int, default=20260630)
+    # Amendment SR: sampled-decode seed-robustness. Defaults preserve greedy X/Z.
+    ap.add_argument("--do-sample", action="store_true",
+                    help="sampled decoding (Amendment SR); default off = greedy (X/Z)")
+    ap.add_argument("--temperature", type=float, default=1.0)
+    ap.add_argument("--top-p", type=float, default=1.0)
     return ap.parse_args(argv)
 
 
