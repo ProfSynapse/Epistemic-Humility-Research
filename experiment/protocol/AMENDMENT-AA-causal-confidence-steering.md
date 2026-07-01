@@ -1,9 +1,10 @@
 # Amendment AA — Causal confidence steering: writing the trust axis (Paper 5)
 
-**Status:** DRAFT PRE-REGISTRATION (2026-07-01) — awaiting user signature. NOT
-signed, NOT authorized to run. No GPU cell may launch until (a) this amendment is
-signed and (b) the user gives explicit launch approval naming the exact cells and
-lane.
+**Status:** SIGNED (2026-07-01, user approval in session). Gates LOCKED as
+written below — goalposts do not move after the result. **Stage-1 launch
+APPROVED** by the same user approval: cells AA-1..AA-8, Qwen3.5-4B, local Docker
+GPU lane, sequential. Stage 2 (cross-family) still requires its own launch
+approval.
 
 Tier-2 amendment (per `amendment-vs-lab-notebook.md`: a new exploratory evidence
 line, reported separately from the locked PROTOCOL v0.3 headline surface). One
