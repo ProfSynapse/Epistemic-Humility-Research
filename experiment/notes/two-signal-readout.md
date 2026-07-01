@@ -151,6 +151,14 @@ training-free cells).
   `Qwen/Qwen3.5-4B`, `google/gemma-4-E4B-it`. The governed replication that would promote
   the training-free readout to a cross-family claim.
 - **Deferred:** natural (un-forced) deployment prompt (Amendment V, shelved - data-starved).
+- **Next axis (PROPOSED, Paper 5): turn the probe around from reading to WRITING.**
+  Causal confidence steering - reuse the probe DIRECTION as a steering vector
+  (activation steering) and/or inject the score as text into the CoT, to influence
+  thinking + output from the inside. Two modalities x two positions (anchor vs end)
+  give a CAUSAL test of the anchor-vs-end "why": probing shows where the signal is
+  legible (presence); steering/injection show where it is causally used (use). Design:
+  `docs/plans/confidence-steering-experiment.md`. New experiment; first run = a signed
+  Tier-2 amendment on its own branch off main. Not yet registered or launched.
 
 ## Status log
 

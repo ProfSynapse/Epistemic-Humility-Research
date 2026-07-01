@@ -270,3 +270,18 @@ record (001-result S through 011-handoff). Headline beats:
 - **008 (amendment)** Amendment X signed - cross-size generalization, gates locked.
 - **009-010 (launch + validation)** X smoke on Qwen3-1.7B GREEN; full pipeline validated.
 - **011 (handoff)** full sweep next; refresh the stale trajectory anchor.
+- **012 (result+amendment)** Amendment X COMPLETE - all four sizes (1.7B/4B/8B/14B) PASS
+  all three gates; size-robust, scaling non-monotonic (peaks 8B), no goalpost moved (PR #134).
+- **013 (amendment+launch)** Amendment Z (cross-FAMILY confirmatory) pre-registered + launched
+  as an overnight single-GPU queue on 4 ungated ~3-4B bases (Llama-3.2-3B, Ministral-3-3B,
+  Qwen3.5-4B, Gemma-4-E4B) via a transformers-5.12.1 image (post-cutoff Gemma4/Qwen3.5 archs).
+  SUCCESS = veto PASS >=3/4 -> cross-family CLAIM; FALSIFIER = veto fails >=2/4. First result
+  (Llama-3.2-3B): gate 0.997 + dial 0.861 PASS, veto 0.633 FAIL (above chance, below the 0.65
+  bar) -> PARTIAL. Emerging read: gate+dial family-general, the VETO is the model-dependent
+  signal (same knob that softened X at 14B). Paper-writing HELD pending all 4 + user review.
+- **014 (design)** NEW EXPERIMENT proposed (Paper 5 - "reading vs writing the trust axis"):
+  causal confidence STEERING - turn the probe direction around to WRITE (activation steering)
+  and/or inject the score into the CoT. Two modalities x two positions = a causal test of the
+  anchor-vs-end "why" (probing = presence; steering/injection = use). Instrument ruling: new
+  experiment; first run = signed Tier-2 amendment on own branch off main; not yet registered/
+  launched. Design: docs/plans/confidence-steering-experiment.md.
