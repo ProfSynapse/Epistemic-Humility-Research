@@ -5,6 +5,11 @@ qwen3-4b-instruct/
 qwen3-4b-instruct_uncapped_partial_*/
 qwen3-4b-instruct_thinking_contaminated_*/
 qwen3-4b-*/
+# All Qwen3 model_tag extraction subtrees are reproducible tensor/rows artifacts.
+# Result JSONs are tracked by COPYING to the probe root (amendment_*_result.json),
+# never from under a model_tag dir. Covers Amendment X sizes (qwen3-1.7b-bnb-4bit/,
+# qwen3-8b-bnb-4bit/, qwen3-14b-bnb-4bit/) and any future Qwen3 tag.
+qwen3-*/
 
 # Hidden-state extraction outputs (exploratory tier). These land under
 # <model_tag>/hidden_states/ and are large reproducible tensor artifacts
@@ -21,3 +26,9 @@ qwen3-4b-*/
 */sae_runs/
 */sae_feature_analysis/
 */sae_feature_directions/
+
+# Amendment Z cross-family extraction subtrees (z_<tag>/, z_smoke_<tag>/) and the
+# queue logs (z_logs/) are large reproducible tensor/rows artifacts. The scored
+# result JSONs are tracked at the probe root as amendment_z_*_result.json (which
+# does NOT match z_*/), never from under an extraction dir.
+z_*/

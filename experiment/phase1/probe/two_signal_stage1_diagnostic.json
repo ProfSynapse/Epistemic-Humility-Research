@@ -1,0 +1,143 @@
+{
+  "analysis": "two_signal_mechanism_stage1_cpu_diagnostic",
+  "instrument": "lab-notebook diagnostic (NOT an amendment); go/no-go for Stage 2",
+  "checkpoint": "qwen3-4b clean-sft-merged-16bit + grpo-v2-lora (deployed)",
+  "gate": {
+    "source": "experiment/phase1/probe/qwen3-4b-clean-sft-grpo-v2-seed1-selfaware/hidden_states_selfaware_clean_sft_grpo_v2_full/extraction__55254a04aa1f",
+    "read": "h_lora @ final_prompt_token (adapter active)",
+    "label": "known(1) vs unknown(0) = answerable vs unanswerable",
+    "n": 1233,
+    "n_answerable": 556,
+    "n_unanswerable": 677,
+    "best_layer": 33,
+    "answerability_auroc": 0.9967,
+    "auroc_surface": {
+      "0": 0.4984,
+      "1": 0.9765,
+      "2": 0.9823,
+      "3": 0.9844,
+      "4": 0.9886,
+      "5": 0.9899,
+      "6": 0.9925,
+      "7": 0.9909,
+      "8": 0.9901,
+      "9": 0.9899,
+      "10": 0.988,
+      "11": 0.9839,
+      "12": 0.9833,
+      "13": 0.9872,
+      "14": 0.9879,
+      "15": 0.9886,
+      "16": 0.9903,
+      "17": 0.9939,
+      "18": 0.9925,
+      "19": 0.9942,
+      "20": 0.9943,
+      "21": 0.9956,
+      "22": 0.9956,
+      "23": 0.9965,
+      "24": 0.9964,
+      "25": 0.9957,
+      "26": 0.9958,
+      "27": 0.9959,
+      "28": 0.9962,
+      "29": 0.9962,
+      "30": 0.9963,
+      "31": 0.9961,
+      "32": 0.9962,
+      "33": 0.9967,
+      "34": 0.9966,
+      "35": 0.9965,
+      "36": 0.9959
+    },
+    "ece_calibration": {
+      "raw": 0.0174,
+      "platt": 0.0062,
+      "isotonic": 0.0117
+    },
+    "risk_coverage": [
+      {
+        "coverage": 1.0,
+        "n": 1233,
+        "accuracy": 0.45093268450932683
+      },
+      {
+        "coverage": 0.9,
+        "n": 1110,
+        "accuracy": 0.5009009009009009
+      },
+      {
+        "coverage": 0.75,
+        "n": 925,
+        "accuracy": 0.601081081081081
+      },
+      {
+        "coverage": 0.5,
+        "n": 616,
+        "accuracy": 0.9025974025974026
+      },
+      {
+        "coverage": 0.25,
+        "n": 308,
+        "accuracy": 0.9967532467532467
+      },
+      {
+        "coverage": 0.1,
+        "n": 123,
+        "accuracy": 1.0
+      }
+    ]
+  },
+  "dial": {
+    "source": "experiment/phase1/probe/qwen3-4b-clean-sft-grpo-v2/amendment_t/stage2",
+    "read": "post-gen content token",
+    "label": "correct(1) vs wrong(0)",
+    "n": 1488,
+    "n_correct": 988,
+    "n_wrong": 500,
+    "best_layer": 22,
+    "correctness_auroc": 0.8186,
+    "ece_calibration": {
+      "raw": 0.1679,
+      "platt": 0.0346,
+      "isotonic": 0.0301
+    },
+    "risk_coverage": [
+      {
+        "coverage": 1.0,
+        "n": 1488,
+        "accuracy": 0.6639784946236559
+      },
+      {
+        "coverage": 0.9,
+        "n": 1339,
+        "accuracy": 0.7266616878267363
+      },
+      {
+        "coverage": 0.75,
+        "n": 1116,
+        "accuracy": 0.8019713261648745
+      },
+      {
+        "coverage": 0.5,
+        "n": 744,
+        "accuracy": 0.8669354838709677
+      },
+      {
+        "coverage": 0.25,
+        "n": 372,
+        "accuracy": 0.8978494623655914
+      },
+      {
+        "coverage": 0.1,
+        "n": 149,
+        "accuracy": 0.9328859060402684
+      }
+    ]
+  },
+  "honest_limitation": "gate and dial are fit on DIFFERENT question pools; Stage 1 reports each component on its native pool and does NOT read both signals on the same item. The per-item joint read on one mixed stream is Stage 2 (a signed GPU amendment).",
+  "go_no_go": {
+    "recommend_stage2": true,
+    "heuristic": "gate AUROC>=0.90 AND dial AUROC>=0.70 AND dial calibrated ECE<0.10"
+  }
+}

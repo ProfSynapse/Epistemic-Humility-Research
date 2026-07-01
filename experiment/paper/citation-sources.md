@@ -1,9 +1,9 @@
-# Paper 2 Citation Sources
+# Paper 1 Citation Sources
 
-Status: KG-backed citation spine for `draft-v1.md`
+Status: KG-backed citation spine for `paper1-training-regimen-draft-v1.md`
 
 This file records the local knowledge-graph notes used to ground the first real
-Paper 2 draft. It is not a bibliography replacement; it is a provenance map from
+Paper 1 draft. It is not a bibliography replacement; it is a provenance map from
 manuscript claims to local notes.
 
 ## KG Queries Used
@@ -34,7 +34,7 @@ The manuscript's numeric tables come from generated files under
 `experiment/paper/analysis/`, produced by:
 
 ```powershell
-python experiment\paper\scripts\build_paper2_results.py
+python experiment\paper\scripts\build_paper1_figures.py
 ```
 
 The script reads local eval artifacts under `experiment/phase1/eval/results_*`,

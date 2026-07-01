@@ -57,7 +57,7 @@ be. It does NOT modify PROTOCOL v0.3, Amendment E (clean-SFT), Amendment J
 
 ## 1. Rationale
 
-The calibration-gap thread (Paper 3, `experiment/paper/paper3-knows-but-doesnt-say-draft-v0.md`)
+The calibration-gap thread (Paper 2, `experiment/paper/paper2-knows-but-doesnt-say-draft-v0.md`)
 established three facts that jointly motivate this amendment:
 
 1. **The model has the signal internally.** A 1-D doubt-axis readout is calibrated

@@ -1,0 +1,117 @@
+{
+  "amendment": "X",
+  "analysis": "cross_size_training_free_two_signal",
+  "base_model": "unsloth/Llama-3.2-3B-Instruct",
+  "model_tag": "llama-3.2-3b-instruct",
+  "checkpoint": "raw unsloth/Llama-3.2-3B-Instruct (no adapter)",
+  "dial_layer_used": 25,
+  "dial_best_layer": 25,
+  "n_correct": 648,
+  "n_wrong": 1205,
+  "n_hallucination": 629,
+  "n_known_answered": 518,
+  "data_adequacy_ok": true,
+  "X_G1_gate": {
+    "best_layer": 14,
+    "answerability_auroc": 0.9973,
+    "ci_95": [
+      0.9952,
+      0.9989
+    ],
+    "n_known": 518,
+    "n_unknown": 629,
+    "auroc_surface": {
+      "0": 0.4982,
+      "1": 0.9699,
+      "2": 0.9821,
+      "3": 0.9866,
+      "4": 0.9908,
+      "5": 0.9929,
+      "6": 0.9936,
+      "7": 0.9944,
+      "8": 0.9945,
+      "9": 0.9951,
+      "10": 0.995,
+      "11": 0.9951,
+      "12": 0.9947,
+      "13": 0.9966,
+      "14": 0.9973,
+      "15": 0.9965,
+      "16": 0.9959,
+      "17": 0.9957,
+      "18": 0.9959,
+      "19": 0.9956,
+      "20": 0.9957,
+      "21": 0.996,
+      "22": 0.9955,
+      "23": 0.9949,
+      "24": 0.9956,
+      "25": 0.9958,
+      "26": 0.9959,
+      "27": 0.9957,
+      "28": 0.9956
+    },
+    "pass_ge_0.65_ci_excl_0.50": true
+  },
+  "X_G2_dial": {
+    "auroc_correct_vs_wrong": 0.8613,
+    "ci_95": [
+      0.8441,
+      0.8788
+    ],
+    "best_layer": 25,
+    "auroc_surface": {
+      "0": 0.7214,
+      "1": 0.7831,
+      "2": 0.8012,
+      "3": 0.8094,
+      "4": 0.8299,
+      "5": 0.798,
+      "6": 0.8168,
+      "7": 0.8303,
+      "8": 0.8273,
+      "9": 0.8402,
+      "10": 0.8409,
+      "11": 0.8475,
+      "12": 0.847,
+      "13": 0.8468,
+      "14": 0.8498,
+      "15": 0.8445,
+      "16": 0.8394,
+      "17": 0.8412,
+      "18": 0.8404,
+      "19": 0.8432,
+      "20": 0.8488,
+      "21": 0.8464,
+      "22": 0.8543,
+      "23": 0.853,
+      "24": 0.8568,
+      "25": 0.8613,
+      "26": 0.8567,
+      "27": 0.8524,
+      "28": 0.8563
+    },
+    "pass_ge_0.65_ci_excl_0.50": true
+  },
+  "X_G3_veto_PRIMARY": {
+    "auroc_correct_vs_hallucination": 0.633,
+    "ci_95": [
+      0.6025,
+      0.6647
+    ],
+    "pass_ge_0.65_ci_excl_0.50": false
+  },
+  "descriptive": {
+    "dial_mean_correct": 0.7066,
+    "dial_mean_wrong": 0.1696,
+    "dial_mean_hallucination": 0.4761,
+    "dial_mean_known_answered": 0.5857,
+    "within_selfaware_control_auroc_known_vs_halluc": 0.575,
+    "within_selfaware_control_ci": [
+      0.5429,
+      0.6069
+    ]
+  },
+  "verdict": "PARTIAL (not all gates pass)",
+  "verdict_rule": "PASS = X-G1 AND X-G2 AND X-G3 each >=0.65 with CI excl 0.50, given wrong>=30 AND halluc>=50; FALSIFIER_CONTRIB = X-G3 <0.65 AND CI includes 0.50. Cross-size roll-up over all models in \u00a77."
+}
