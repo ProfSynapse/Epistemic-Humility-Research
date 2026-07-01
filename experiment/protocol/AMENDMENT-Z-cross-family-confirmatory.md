@@ -128,25 +128,43 @@ update session/experiment notes. Failures logged; the queue continues.
 
 ## §7 Results (filled per model as runs complete)
 
-**Status: 3 of 4 scored (2026-06-30 overnight queue).** Gemma-4-E4B extracting.
-Verdict pending the last family; SUCCESS = veto PASS ≥3/4, FALSIFIER = veto
-fails ≥2/4.
+**Status: COMPLETE — 4 of 4 scored (2026-06-30 overnight queue). VERDICT: SUCCESS.**
+Veto PASS 3/4 (≥3/4 bar met). The training-free two-signal readout replicates
+across model families and is promoted to a cross-family CLAIM.
 
-### Cross-family roll-up (live)
+### Cross-family roll-up (FINAL)
 
 | model | hidden_dim | gate (G1) | dial (G2) | **veto (G3, PRIMARY)** | adequacy | verdict |
 |---|---|---|---|---|---|---|
 | Llama-3.2-3B | 3072 | 0.997 ✓ [.995,.999] | 0.861 ✓ [.844,.879] | **0.633 ✗ [.603,.665]** | ✓ (wrong 1205 / halluc 629) | **PARTIAL** |
 | Ministral-3-3B | 3072 | 0.997 ✓ [.995,.999] | 0.818 ✓ [.797,.839] | **0.733 ✓ [.703,.762]** | ✓ (wrong 1314 / halluc 629) | **PASS** |
 | Qwen3.5-4B | 2560 | 0.998 ✓ [.997,.999] | 0.827 ✓ [.806,.848] | **0.666 ✓ [.634,.695]** (marginal) | ✓ (wrong 1277 / halluc 629) | **PASS** |
-| Gemma-4-E4B | — | _extracting_ | | | | |
+| Gemma-4-E4B | 2560 | 0.998 ✓ [.997,.999] | 0.818 ✓ [.794,.840] | **0.871 ✓ [.850,.893]** | ✓ (wrong 1390 / halluc 629) | **PASS** |
 
-**Veto tally so far: 2 PASS (Ministral, Qwen3.5) / 1 FAIL (Llama).** Gate and dial
-pass on all three families (gate saturated ~0.997–0.998; dial 0.82–0.86). Gemma-4
-is now fully decisive: PASS → 3/4 → SUCCESS; FAIL/INELIGIBLE → 2/4 fail →
-FALSIFIER. Note Qwen3.5's veto is a **marginal** pass (point 0.666 ≥ 0.65 but the
-CI lower bound 0.634 dips below the bar; it satisfies the locked criterion —
-point ≥0.65 AND CI excludes 0.50 — but is not a clean margin like Ministral's).
+**Veto tally (FINAL): 3 PASS (Ministral, Qwen3.5, Gemma-4) / 1 FAIL (Llama-3.2).**
+Gate and dial pass on ALL FOUR families (gate saturated 0.997–0.998; dial
+0.82–0.86) — those two axes are fully family-general (4/4). The veto passes 3/4,
+meeting the pre-registered ≥3/4 SUCCESS bar. Honest notes, no goalpost moved:
+Qwen3.5's veto is a **marginal** pass (point 0.666 ≥ 0.65 but CI lower bound 0.634
+dips below the bar; it satisfies the locked criterion — point ≥0.65 AND CI
+excludes 0.50 — but is not a clean margin); Llama-3.2 is a clean **fail** (real
+signal, CI excludes 0.50, but below 0.65). Gemma-4 is the cleanest veto of the
+set (0.871).
+
+### VERDICT: SUCCESS
+
+Per the pre-registered criterion (SUCCESS = veto PASS ≥3/4), the confirmatory
+**PASSES**. The two-signal trust readout — answerability gate + correctness dial +
+confident-hallucination veto, read training-free off a frozen base — **replicates
+across four model families** (Qwen, Llama, Mistral, Gemma) and is promoted from
+the W/X exploratory finding to a **cross-family claim**. Scope of the claim:
+- **Gate + dial: robust (4/4).** Answerability at the anchor and correctness at
+  the post-answer token are family-general, near-saturated for the gate.
+- **Veto: replicates but is the fragile axis (3/4, one clean fail + one marginal).**
+  Catching *confident* hallucination is the model-dependent capability — mirrors
+  Amendment X, where the veto (not gate/dial) dipped non-monotonically with size.
+  The claim is "the veto replicates across families," honestly qualified by the
+  Llama miss and the Qwen marginality; it is NOT "the veto is uniformly strong."
 
 ### Emerging read (descriptive, no goalpost moved)
 
@@ -164,15 +182,18 @@ descriptive dial means explain the split:
 - **Qwen3.5 (veto marginal PASS):** `dial_mean_hallucination = 0.425` vs
   `dial_mean_correct = 0.636` — intermediate separation, between Ministral's clean
   split and Llama's collapse. Control 0.649 [.617,.680].
+- **Gemma-4 (veto strong PASS):** `dial_mean_hallucination = 0.089` vs
+  `dial_mean_correct = 0.593` — the widest split of the set; confabulations read as
+  near-zero trust. Strongest control too (0.816 [.790,.842]).
 
-The three scored families form a clean **gradient** in exactly the quantity the
-veto measures — the correct-vs-hallucination gap in the dial mean: Ministral 0.327
-(clean pass) > Qwen3.5 0.211 (marginal pass) > Llama 0.231... note Llama's *gap*
-(0.707−0.476 = 0.231) is similar to Qwen's, yet Llama fails and Qwen marginally
-passes — the veto AUROC depends on the full distribution overlap, not just the
-mean gap, so read the gradient as directional, not a strict rank. The stable
-conclusion is unchanged: gate + dial are family-general; the veto is the fragile,
-model-specific axis.
+The four families order by exactly the quantity the veto measures — the
+correct-vs-hallucination gap in the dial mean: Gemma 0.504 (strong pass) >
+Ministral 0.327 (clean pass) > Qwen3.5 0.211 (marginal) ≈ Llama 0.231 (fail).
+Note Llama's mean *gap* (0.707−0.476 = 0.231) slightly exceeds Qwen's yet Llama
+fails and Qwen marginally passes — the veto AUROC depends on full distribution
+overlap, not just the mean gap, so read the low end as directional, not a strict
+rank. The stable conclusion: gate + dial are family-general (4/4); the veto
+replicates (3/4) but is the fragile, model-specific axis.
 
 This mirrors Amendment X, where the veto (not the gate/dial) was the axis that
 dipped non-monotonically (softest at 14B). Consistent story: the answerability
@@ -181,12 +202,12 @@ hallucination is the fragile, model-specific capability.
 
 ### Data & provenance
 
-- Scored result JSONs (tracked, at probe root):
-  `experiment/phase1/probe/amendment_z_llama-3.2-3b_result.json`,
-  `experiment/phase1/probe/amendment_z_ministral-3-3b_result.json`
-  (full per-layer AUROC surfaces + CIs + descriptives inside).
+- Scored result JSONs (tracked, at probe root), one per family:
+  `amendment_z_{llama-3.2-3b,ministral-3-3b,qwen3.5-4b,gemma-4-e4b}_result.json`
+  under `experiment/phase1/probe/` (full per-layer AUROC surfaces + CIs +
+  descriptives inside).
 - Extraction outputs (local only, gitignored `z_<tag>/`): rows.jsonl +
   per-row `{pre,post}.safetensors` + manifest.json under
-  `experiment/phase1/probe/z_llama-3.2-3b/`, `…/z_ministral-3-3b/`.
+  `experiment/phase1/probe/z_{llama-3.2-3b,ministral-3-3b,qwen3.5-4b,gemma-4-e4b}/`.
 - Queue log: `experiment/phase1/probe/z_logs/PROGRESS.log`
   (smoke → full → score milestones, timestamps, INELIGIBLE handling).

@@ -146,10 +146,11 @@ training-free cells).
 - **By read position:** pre-gen anchor (gate) vs post-gen content token (dial); post beats
   pre for correctness.
 - **By model size (Amendment X):** Qwen3 1.7B / 4B / 8B / 14B - the controlled size axis.
-- **By model family (Amendment Z, RUNNING):** cross-FAMILY confirmatory on four ungated
+- **By model family (Amendment Z, SUCCESS):** cross-FAMILY confirmatory on four ungated
   ~3-4B bases - `unsloth/Llama-3.2-3B-Instruct`, `mistralai/Ministral-3-3B-Instruct-2512`,
-  `Qwen/Qwen3.5-4B`, `google/gemma-4-E4B-it`. The governed replication that would promote
-  the training-free readout to a cross-family claim.
+  `Qwen/Qwen3.5-4B`, `google/gemma-4-E4B-it`. PASSED (veto 3/4): gate + dial family-general
+  (4/4), veto replicates (3/4, fragile axis). Promotes the training-free readout to a
+  cross-family CLAIM.
 - **Deferred:** natural (un-forced) deployment prompt (Amendment V, shelved - data-starved).
 - **Next axis (PROPOSED, Paper 5): turn the probe around from reading to WRITING.**
   Causal confidence steering - reuse the probe DIRECTION as a steering vector
@@ -176,11 +177,14 @@ training-free cells).
   continues. Loader hardened for multimodal (CausalLM -> ImageTextToText fallback,
   text_config layer counts) with Qwen3 path unchanged. Progress:
   `experiment/phase1/probe/z_logs/PROGRESS.log`; results: `amendment_z_*_result.json`.
-- 2026-06-30 (results, in-flight): Amendment Z 2 of 4 scored. **Llama-3.2-3B PARTIAL**
-  (gate 0.997 / dial 0.861 / veto 0.633 FAIL); **Ministral-3-3B PASS** (gate 0.997 /
-  dial 0.818 / veto 0.733). Veto tally 1 PASS / 1 FAIL; Qwen3.5-4B extracting, Gemma-4-E4B
-  queued. Gate + dial family-general (gate saturated ~0.997, dial 0.82-0.86); the **veto is
-  the model-dependent axis** - Llama's confident hallucinations read as trustworthy to its own
-  dial (dial_mean_halluc 0.476 vs correct 0.707) so the veto misses; Ministral's read low-trust
-  (0.278 vs 0.605) so it passes. Mirrors X's non-monotonic veto. Roll-up table + data links in
+- 2026-06-30 (RESULT: SUCCESS): **Amendment Z COMPLETE, 4/4 scored.** Final veto tally
+  **3 PASS (Ministral 0.733, Qwen3.5 0.666 marginal, Gemma-4 0.871) / 1 FAIL (Llama-3.2
+  0.633)** => meets the pre-registered ≥3/4 bar => **SUCCESS**. Gate + dial pass on ALL FOUR
+  families (gate saturated 0.997-0.998; dial 0.82-0.86) — those axes are fully family-general.
+  The **veto replicates (3/4) but is the fragile, model-specific axis**: Llama's confident
+  hallucinations read as trustworthy to its own dial (dial_mean_halluc 0.476 vs correct 0.707,
+  so the veto misses); Gemma's read near-zero trust (0.089 vs 0.593, the cleanest split).
+  Mirrors X's non-monotonic veto. **The training-free two-signal readout is promoted from
+  W/X exploratory to a cross-FAMILY CLAIM** (Qwen/Llama/Mistral/Gemma). Full roll-up table,
+  descriptive gradient, and SUCCESS verdict in
   `experiment/protocol/AMENDMENT-Z-cross-family-confirmatory.md` §7.

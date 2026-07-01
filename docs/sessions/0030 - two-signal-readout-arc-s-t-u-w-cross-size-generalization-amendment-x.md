@@ -304,3 +304,11 @@ record (001-result S through 011-handoff). Headline beats:
   0.231, but Llama fails while Qwen passes => veto tracks distribution overlap not mean gap
   (noted honestly, no goalpost moved). Steering scaffold DONE + parked (branch
   experiment/paper5-confidence-steering @ e53daafe, 88 tests green, awaits amendment+approval).
+- **017 (RESULT: SUCCESS)** Amendment Z COMPLETE, 4/4 scored. Gemma-4-E4B PASS with the
+  CLEANEST veto of the set (gate 0.998 / dial 0.818 / veto 0.871 [.850,.893]; dial_mean_halluc
+  0.089 vs correct 0.593). FINAL veto tally 3 PASS (Ministral, Qwen3.5, Gemma-4) / 1 FAIL
+  (Llama-3.2) => meets the pre-registered >=3/4 bar => SUCCESS. The training-free two-signal
+  readout is promoted from W/X exploratory to a cross-FAMILY CLAIM (Qwen/Llama/Mistral/Gemma).
+  Scope, honestly qualified: gate + dial family-general (4/4, gate saturated ~0.998); veto
+  replicates (3/4) but is the fragile model-specific axis (Llama clean fail, Qwen marginal,
+  mirrors X non-monotonic veto). No goalpost moved. Results ALIGNED with expectations.
