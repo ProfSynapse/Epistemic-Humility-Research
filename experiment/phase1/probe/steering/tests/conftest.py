@@ -1,4 +1,4 @@
-"""Shared fixtures for Paper 4 / confidence-steering unit tests.
+"""Shared fixtures for Paper 5 / confidence-steering unit tests.
 
 All fixtures are SYNTHETIC (CPU-only, no model downloads, no GPU).
 Synthetic extraction dirs replicate the Amendment-Z directory layout:

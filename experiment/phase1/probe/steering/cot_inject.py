@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Arm B — chain-of-thought injection harness (Paper 4 / confidence-steering experiment).
+"""Arm B — chain-of-thought injection harness (Paper 5 / confidence-steering experiment).
 
 DESIGN REFERENCE: docs/plans/confidence-steering-experiment.md
 
@@ -20,7 +20,7 @@ note, and inject it into the model's reasoning trace at a configurable position:
 The note format is:
   [internal: <signal_name> <score:.2f> — <interpretation>]
 
-Placebo control (Amendment Y / Paper 4 circularity check):
+Placebo control (Amendment Y / Paper 5 circularity check):
   Replace the real score with a SHUFFLED/RANDOM value from the score distribution
   to isolate the real signal from generic "be cautious" priming.  The only
   difference between placebo and real is the score value; the note structure and
