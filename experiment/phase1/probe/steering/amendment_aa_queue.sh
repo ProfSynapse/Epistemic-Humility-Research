@@ -40,7 +40,7 @@ DECODE_ARGS=(--temperature 0.7 --top-p 0.9 --datasets-root /workspace/repo/datas
 SWEEP='-4,-2,-1,0,1,2,4'
 
 dgpu() {
-  docker.exe run --rm --gpus all --ipc=host --entrypoint python \
+  docker.exe run --rm --gpus all --ipc=host --user 0:0 --entrypoint python \
     -e HF_HOME=/workspace/repo/.cache/hf \
     -e HUGGINGFACE_HUB_CACHE=/workspace/repo/.cache/hf/hub \
     -v "${REPO_WIN}:/workspace/repo" -w /workspace/repo \
