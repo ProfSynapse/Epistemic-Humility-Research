@@ -14,3 +14,7 @@ __pycache__/
 # Any per-family output subtrees (mirroring the parent probe dir convention)
 z_*/
 *_result.json
+
+# Per-cell run outputs (Amendment AA: steering/results/ is gitignored; the
+# scored roll-up JSON is tracked at the probe root instead)
+results/
