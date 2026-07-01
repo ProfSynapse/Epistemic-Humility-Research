@@ -1,4 +1,4 @@
-# Paper 5 — Confidence Steering: Reading vs Writing the Trust Axis
+# Paper 4 — Confidence Steering: Reading vs Writing the Trust Axis
 
 **Status:** CODE SCAFFOLD ONLY. NOT registered. NOT authorized for GPU runs.
 
