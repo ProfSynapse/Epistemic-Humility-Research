@@ -176,3 +176,11 @@ training-free cells).
   continues. Loader hardened for multimodal (CausalLM -> ImageTextToText fallback,
   text_config layer counts) with Qwen3 path unchanged. Progress:
   `experiment/phase1/probe/z_logs/PROGRESS.log`; results: `amendment_z_*_result.json`.
+- 2026-06-30 (results, in-flight): Amendment Z 2 of 4 scored. **Llama-3.2-3B PARTIAL**
+  (gate 0.997 / dial 0.861 / veto 0.633 FAIL); **Ministral-3-3B PASS** (gate 0.997 /
+  dial 0.818 / veto 0.733). Veto tally 1 PASS / 1 FAIL; Qwen3.5-4B extracting, Gemma-4-E4B
+  queued. Gate + dial family-general (gate saturated ~0.997, dial 0.82-0.86); the **veto is
+  the model-dependent axis** - Llama's confident hallucinations read as trustworthy to its own
+  dial (dial_mean_halluc 0.476 vs correct 0.707) so the veto misses; Ministral's read low-trust
+  (0.278 vs 0.605) so it passes. Mirrors X's non-monotonic veto. Roll-up table + data links in
+  `experiment/protocol/AMENDMENT-Z-cross-family-confirmatory.md` §7.

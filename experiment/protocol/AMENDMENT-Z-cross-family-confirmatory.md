@@ -128,5 +128,51 @@ update session/experiment notes. Failures logged; the queue continues.
 
 ## §7 Results (filled per model as runs complete)
 
-_pending — runner appends one PASS/FAIL/INELIGIBLE block per family + a
-cross-family roll-up table and the SUCCESS/FALSIFIER verdict._
+**Status: 2 of 4 scored (2026-06-30 overnight queue).** Qwen3.5-4B extracting;
+Gemma-4-E4B queued. Verdict pending all four; SUCCESS = veto PASS ≥3/4,
+FALSIFIER = veto fails ≥2/4.
+
+### Cross-family roll-up (live)
+
+| model | hidden_dim | gate (G1) | dial (G2) | **veto (G3, PRIMARY)** | adequacy | verdict |
+|---|---|---|---|---|---|---|
+| Llama-3.2-3B | 3072 | 0.997 ✓ [.995,.999] | 0.861 ✓ [.844,.879] | **0.633 ✗ [.603,.665]** | ✓ (wrong 1205 / halluc 629) | **PARTIAL** |
+| Ministral-3-3B | 3072 | 0.997 ✓ [.995,.999] | 0.818 ✓ [.797,.839] | **0.733 ✓ [.703,.762]** | ✓ (wrong 1314 / halluc 629) | **PASS** |
+| Qwen3.5-4B | 2560 | _extracting_ | | | | |
+| Gemma-4-E4B | — | _queued_ | | | | |
+
+**Veto tally so far: 1 PASS (Ministral) / 1 FAIL (Llama).** Gate and dial pass on
+both families (gate saturated ~0.997; dial 0.82–0.86). The verdict hinges on the
+two remaining families: both must clear the 0.65 veto bar for the ≥3/4 SUCCESS;
+either miss drops to the ≥2/4 falsifier.
+
+### Emerging read (descriptive, no goalpost moved)
+
+The **veto is the model-dependent axis**; gate + dial are family-general. The
+descriptive dial means explain the split:
+
+- **Llama (veto FAIL):** `dial_mean_hallucination = 0.476` sits near
+  `dial_mean_correct = 0.707` — confident confabulations read almost as
+  trustworthy as correct answers, so the dial cannot separate them. Within-
+  SelfAware control weak (known-vs-halluc AUROC 0.575 [.543,.607]). The veto CI
+  excludes 0.50 (a real but weak signal), it just misses the 0.65 pass bar.
+- **Ministral (veto PASS):** `dial_mean_hallucination = 0.278` sits far below
+  `dial_mean_correct = 0.605` — hallucinations read as low-trust. Control
+  stronger (0.682 [.652,.712]).
+
+This mirrors Amendment X, where the veto (not the gate/dial) was the axis that
+dipped non-monotonically (softest at 14B). Consistent story: the answerability
+gate and the correctness dial generalize across families; catching *confident*
+hallucination is the fragile, model-specific capability.
+
+### Data & provenance
+
+- Scored result JSONs (tracked, at probe root):
+  `experiment/phase1/probe/amendment_z_llama-3.2-3b_result.json`,
+  `experiment/phase1/probe/amendment_z_ministral-3-3b_result.json`
+  (full per-layer AUROC surfaces + CIs + descriptives inside).
+- Extraction outputs (local only, gitignored `z_<tag>/`): rows.jsonl +
+  per-row `{pre,post}.safetensors` + manifest.json under
+  `experiment/phase1/probe/z_llama-3.2-3b/`, `…/z_ministral-3-3b/`.
+- Queue log: `experiment/phase1/probe/z_logs/PROGRESS.log`
+  (smoke → full → score milestones, timestamps, INELIGIBLE handling).

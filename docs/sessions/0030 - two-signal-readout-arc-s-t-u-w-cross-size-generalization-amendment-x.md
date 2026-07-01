@@ -285,3 +285,14 @@ record (001-result S through 011-handoff). Headline beats:
   anchor-vs-end "why" (probing = presence; steering/injection = use). Instrument ruling: new
   experiment; first run = signed Tier-2 amendment on own branch off main; not yet registered/
   launched. Design: docs/plans/confidence-steering-experiment.md.
+- **015 (results, in-flight)** Amendment Z queue: 2 of 4 scored. Ministral-3-3B PASS (gate
+  0.997 / dial 0.818 / veto 0.733) joins Llama-3.2-3B PARTIAL (veto 0.633 FAIL). Veto tally
+  1 PASS / 1 FAIL; verdict hinges on Qwen3.5-4B (extracting) + Gemma-4-E4B (queued) - both
+  must clear 0.65 for the >=3/4 SUCCESS. Descriptive split confirms the emerging read: Llama's
+  hallucinations read as trustworthy (dial_mean_halluc 0.476 ~ correct 0.707) so its veto
+  fails; Ministral's read low-trust (0.278 << 0.605) so its veto passes. Gate+dial family-
+  general, VETO model-dependent (mirrors X's non-monotonic veto). Results table + data links
+  in AMENDMENT-Z §7 (result JSONs amendment_z_{llama-3.2-3b,ministral-3-3b}_result.json).
+  In parallel: steering-harness build dispatched to a background subagent in an isolated
+  worktree (CPU-only scaffolding for Paper 5, no GPU/launch). Paper-writing still HELD (Llama
+  veto miss => discuss-first) pending all 4 + user review.
