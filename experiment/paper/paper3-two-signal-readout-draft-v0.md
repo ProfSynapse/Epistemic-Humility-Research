@@ -34,14 +34,18 @@ abstention training of ours; our training only *sharpens* the veto (0.754 → 0.
 does not create the signal. **(2) It is size-robust:** the readout passes on every Qwen3
 scale from 1.7B to 14B. **(3) It replicates across model families:** on four independent
 families (Qwen, Llama, Mistral, Gemma) the gate and dial pass on all four (gate saturated
-0.997–0.998; dial 0.82–0.86), establishing them as *family-general*. The veto replicates
-on three of four — it is the *fragile, model-dependent* axis, strong on Gemma (0.871),
-clean on Mistral (0.733), marginal on Qwen3.5 (0.666), and failing on Llama-3.2 (0.633).
-We report this split as a co-headline: **a small LM's sense of "can I answer this?" and
-"is this answer right?" is a universal, readable property of the representation; its
-ability to distrust its own confident fabrications is not.** We give the descriptive
-mechanism (the correct-vs-hallucination gap in the dial distribution) that predicts which
-models have it.
+0.997–0.998; dial 0.82–0.86), establishing them as *family-general*. Under single greedy
+decoding the veto split the families (strong on Gemma at 0.871, failing on Llama-3.2 at
+0.633); a pre-registered three-seed sampled-decoding replication shows those greedy misses
+were largely *decode artifacts* — under sampling the veto passes seed-stably on **all
+four** families (family means 0.68–0.75), while confirming it as the *high-variance* axis:
+across-seed spread reaches 0.12–0.15 per family (versus 0.01–0.04 for the dial) and
+individual cells still dip below the bar. We report this as a co-headline: **a small LM's
+sense of "can I answer this?" and "is this answer right?" is a universal, readable property
+of the representation; its ability to distrust its own confident fabrications is present
+across families but decode- and seed-sensitive — it must be reported with seed spread and
+validated per model.** We give the descriptive mechanism (the correct-vs-hallucination gap
+in the dial distribution) that predicts where it is strong.
 
 ---
 
@@ -304,14 +308,12 @@ Ordering families by the dial-mean gap (Gemma 0.504 > Mistral 0.327 > Qwen3.5 0.
 (0.231) slightly *exceeds* Qwen3.5's (0.211), yet Llama fails and Qwen3.5 marginally passes —
 because the veto AUROC depends on the full distribution overlap, not the mean gap alone. We
 therefore read the gap as a *directional* predictor, not a strict rank. The stable
-conclusion stands: **gate + dial are family-general (4/4); the veto replicates (3/4) but is
-the fragile, model-specific axis.**
+conclusion stands: **gate + dial are family-general (4/4); the veto replicates (3/4 under
+this single greedy decode) and is the fragile axis** — though §4.8 shows the two greedy
+misses are largely decode artifacts: under sampled decoding the veto passes seed-stably on
+all four families.
 
 ### 4.8 Seed-robustness: the greedy veto misses were decode artifacts
-
-<!-- DRAFT-IN-PROGRESS 2026-07-01: Gemma seeds 20260702/20260703 still extracting; rows
-marked TBD. Do NOT finalize the verdict sentence or touch §4.7's conclusion / the abstract
-until all 12 cells land. Pre-reg: AMENDMENT-SR-sampled-decode-seed-robustness.md. -->
 
 Every number in §4.7 comes from a single deterministic decode (greedy). A deployment
 samples. We therefore pre-registered a seed-robustness confirmatory: the identical
@@ -330,7 +332,7 @@ families, the veto seed-stable on ≥3/4, and the per-seed veto majority never d
 | Llama-3.2-3B | 0.848 [0.827–0.865], 3/3 pass | **0.739 [0.684–0.801], 3/3 pass** | **YES** | 0.633 (FAIL) |
 | Ministral-3-3B | 0.806 [0.799–0.812], 3/3 pass | 0.681 [0.606–0.742], 2/3 pass | **YES** | 0.733 (pass) |
 | Qwen3.5-4B | 0.852 [0.830–0.864], 3/3 pass | **0.753 [0.659–0.807], 3/3 pass** | **YES** | 0.666 (marginal) |
-| Gemma-4-E4B | 0.802 / TBD / TBD | 0.762 / TBD / TBD | TBD | 0.871 (pass) |
+| Gemma-4-E4B | 0.817 [0.802–0.839], 3/3 pass | **0.742 [0.718–0.762], 3/3 pass** | **YES** | 0.871 (pass) |
 
 **The two greedy veto misses flip to passes under sampling.** Llama — the one clean veto
 *failure* in §4.7 (0.633) — passes on **all three seeds** under sampled decoding (0.684–
@@ -341,21 +343,25 @@ Llama's greedy confabulations happened to read as trustworthy; its sampled ones 
 Single-decode point estimates *understated* the veto.
 
 **The veto is seed-sensitive per cell, seed-stable per family.** Across-seed spread on the
-veto is real (Llama range 0.12, Qwen3.5 0.15, Ministral 0.14 — vs dial spreads of 0.01–
-0.04), and Ministral drops below the bar on one seed (0.606 on seed 1, its only failing
-cell). Per-cell veto numbers should accordingly be reported with seed spread, not as point
-estimates. At the family level the verdict is stable: every family that has completed is a
-seed-stable veto pass.
+veto is real (Llama range 0.12, Qwen3.5 0.15, Ministral 0.14, Gemma 0.04 — vs dial spreads
+of 0.01–0.04), and Ministral drops below the bar on one seed (0.606 on seed 1, its only
+failing cell). Per-cell veto numbers should accordingly be reported with seed spread, not
+as point estimates. At the family level the verdict is stable: **all four families are
+seed-stable veto passes.**
 
 **The gate is decode-invariant, as pre-declared.** Across all completed cells the gate sits
 at 0.996–0.999 with a per-family across-seed range under 0.003 — sampling the answer does
 not move an axis read before the answer exists.
 
-<!-- TBD (fill when Gemma 702/703 land): final verdict sentence — SUCCESS requires Gemma
-dial 3/3 for clause (a) and the per-seed majority table. Seed 20260701, the only pinch
-seed (Ministral fails it), already cleared 3/4 with Gemma's 0.762 pass. Then update:
-§4.7 closing line ("fragile, model-specific axis" → decode-artifact nuance), the abstract's
-single-seed caveat, and §7 Limitations. -->
+**Pre-registered verdict: SUCCESS.** All three locked clauses pass: (a) the dial is
+seed-stable on **4/4** families (every one of the 12 cells passes the dial bar); (b) the
+veto is seed-stable on **4/4** families (Llama and Qwen3.5 and Gemma 3/3 each, Ministral
+2/3); (c) the per-seed veto majority never drops below 3/4 — seed 20260701, the pinch seed
+where Ministral fails, clears at 3/4 on Gemma's 0.762 pass, and seeds 20260702/20260703 sit
+at 4/4. The falsifier (a seed with majority < 3/4, or ≥2 families flipping veto status) did
+not fire: Ministral is the only status-flipping family. The Table 1 magnitudes are thereby
+promoted from "single greedy decode" to **seed-robust under sampled decoding**
+(pre-registration and per-cell provenance: `AMENDMENT-SR-sampled-decode-seed-robustness.md`).
 
 ---
 
@@ -368,10 +374,11 @@ mechanism with no fine-tuning:
    threshold → abstain. This is the most robust component (0.997–0.998 everywhere).
 2. **Dial (post-generation).** For gated-through questions, generate, then read the
    correctness axis at the post-answer token and surface it as a *ranked* trust number.
-3. **Veto (within the dial).** Confident confabulations that pass the gate are pushed to the
-   bottom of the dial where the veto is strong (Gemma, Mistral); where the veto is weak
-   (Llama), the gate remains the primary defense and the dial's confabulation-catching should
-   not be relied on.
+3. **Veto (within the dial).** Confident confabulations that pass the gate are pushed to
+   the bottom of the dial. The veto passes seed-stably on all four families under sampled
+   decoding (§4.8), but it is the high-variance axis — individual decodes/seeds can dip
+   below the bar — so validate it per model and per decode configuration before relying on
+   the dial's confabulation-catching; the gate remains the primary defense.
 
 Two engineering notes fall out of the results. Keep the axes *separate* — fusing them costs
 correctness ranking (§4.4). And *refit the dial per checkpoint* — the correctness direction
@@ -397,14 +404,17 @@ the goal is not to teach the model what it knows (it already represents that), b
 its *behavior* and its *emitted signal* faithful to what it already represents — and, for the
 veto specifically, to sharpen a signal that is present but weak on some models out of the box.
 
-**Universal axes vs a fragile capability.** The cleanest scientific result is the split. "Can
-I answer this?" and "is this answer right?" are readable across four families and four sizes —
-they look like general properties of instruction-tuned small LMs. "Can I distrust my own
-confident fabrication?" is not general: it is strong on Gemma, absent enough on Llama to fail
-the bar, and non-monotonic in scale. This is an actionable map for practitioners (the gate is
-safe to rely on anywhere; the veto must be validated per model) and a pointed question for
-future mechanistic work (why do some models' confabulations read as low-trust to their own
-correctness axis and others' do not?).
+**Universal axes vs a high-variance capability.** The cleanest scientific result is the
+split. "Can I answer this?" and "is this answer right?" are readable across four families
+and four sizes — they look like general properties of instruction-tuned small LMs. "Can I
+distrust my own confident fabrication?" is present across the same families (seed-stable
+4/4 under sampled decoding, §4.8) but far noisier: strong on Gemma, decode- and
+seed-sensitive elsewhere (Llama's greedy failure flipped to three sampled passes), and
+non-monotonic in scale. This is an actionable map for practitioners (the gate is safe to
+rely on anywhere; the veto must be validated per model and reported with seed spread) and a
+pointed question for future mechanistic work (why do some models' confabulations read as
+low-trust to their own correctness axis on any decode, while others' depend on which
+confabulation the decoder happens to produce?).
 
 **Why not just steer?** The companion diagnosis found the answerability axis is causally
 steerable, but *asymmetrically* — excess caution can be relaxed, missing caution cannot be
@@ -419,12 +429,12 @@ writing missing caution into the model is not. Turning the readout around into a
 
 We state these plainly; several are the reason specific claims are scoped as they are.
 
-1. **Single seed.** The core Qwen3-4B numbers (dial 0.834, veto deltas, the +0.065
-   post-beats-pre gain) are seed 1. The near-saturated effects (gate 0.997) are low
-   seed-risk; the dial and veto magnitudes are the seed-sensitive ones. The cross-family and
-   cross-size replications provide model-level (not seed-level) robustness; a pre-registered
-   multi-seed replication of the dial/veto magnitudes is the outstanding item before those
-   *magnitudes* (as opposed to the existence claim) are headline-grade.
+1. **Seed coverage is partial.** The pre-registered three-seed sampled-decoding
+   replication (§4.8) makes the *cross-family* dial and veto magnitudes seed-robust, and
+   quantifies their spread. The core Qwen3-4B deep-dive numbers (dial 0.834, veto deltas,
+   the +0.065 post-beats-pre gain) remain seed 1: the near-saturated effects (gate 0.997)
+   are low seed-risk, and §4.8's spread measurements bound how much the seed-sensitive
+   axes move, but a multi-seed pass on the deep-dive checkpoint itself has not been run.
 2. **"Training-free" is scoped.** It means no abstention-SFT or RL of ours, on an
    *instruction-tuned* base. The answerability axis may partly reflect upstream instruction
    tuning; we do not claim it exists in a pre-instruction base.

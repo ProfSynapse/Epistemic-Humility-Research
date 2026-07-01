@@ -173,26 +173,16 @@ append result + update session/experiment notes. Cost ≈ 3× the Z overnight qu
 
 ## §7 Results (filled per family × seed as runs complete)
 
-**Status: QUEUE COMPLETE 2026-07-01 16:54 UTC (launched 10:11 UTC, user approval, local
-Docker GPU lane) — 9/12 cells scored. Llama, Ministral, Qwen3.5 = 3/3 seeds each (all 9
-eligible). Gemma-4-E4B DID NOT RUN: its compat smoke crashed on a transient 9P/DrvFS
-`PermissionError [Errno 13]` at `out_dir.mkdir(...)` BEFORE the model loaded (the other 12
-in-container dirs — 3 smoke + 9 seed — created fine via the same call; Gemma was last in the
-queue and hit a filesystem hiccup on the Windows mount). This is a RETRYABLE INFRA FAULT, NOT
-a scientific ineligibility: Gemma passed this exact greedy smoke in Z with the same
-`unsloth-z:latest` image, and the pre-reg INELIGIBLE category (gated 401 / multimodal class
-mismatch / FP8 dtype fail / degenerate pool) does not cover a mkdir error. Disposition: Gemma
-= RE-RUN PENDING (needs explicit GPU launch approval), NOT recorded INELIGIBLE.**
-
-**Verdict status — the 3 eligible families are unanimous and strong: dial 9/9 PASS (0.799–0.865),
-gate decode-invariant (0.9964–0.9986, range <0.003/family), veto seed-stable PASS on all three
-(Llama 3/3, Ministral 2/3, Qwen3.5 3/3). SUCCESS parts (a) dial and (b) veto ≥3/4 are met on the
-eligible set. The verdict genuinely HINGES ON GEMMA via the strict per-seed clause (c): seed
-20260702 and 20260703 are 3/3 veto PASS, but seed 20260701 sits 2 PASS (Llama, Qwen3.5) / 1 FAIL
-(Ministral 0.606) — with 4 families the ≥3/4 bar needs Gemma-701 to PASS; dropping Gemma leaves
-seed 701 at 2/3 (0.67 < 0.75), which does NOT clear the literal ≥3/4 bar. So the verdict is NOT
-called: re-running Gemma (Z-strongest veto 0.871) is required to resolve clause (c), and it also
-strengthens (b). Verdict deferred pending the Gemma re-run.**
+**Status: COMPLETE 2026-07-01 — 12/12 cells scored.** Main queue (launched 10:11 UTC,
+user approval, local Docker GPU lane) landed 9/9 cells for Llama, Ministral, Qwen3.5 but
+Gemma-4-E4B crashed pre-model-load on a transient 9P/DrvFS `PermissionError [Errno 13]` at
+`out_dir.mkdir(...)` — a RETRYABLE INFRA FAULT, not a pre-reg INELIGIBLE category (Gemma
+passed this exact greedy smoke in Z with the same `unsloth-z:latest` image). The
+user-approved Gemma re-run (lab-notebook re-run of a pre-registered cell; container run
+with `--user 0:0` after `probe/` ownership flipped to root:root — uid 1001 could not mkdir
+on the 9P mount) completed 2026-07-01 22:18 UTC: smoke OK, then seeds 20260701/02/03
+extracted (sampled, temp 0.7 / top-p 0.9, 3000 attempts each) and scored in-run. All three
+Gemma cells pass adequacy.
 
 ### Per-family seed table (filling as cells land)
 
@@ -210,53 +200,60 @@ SR-veto ≥0.65 with CI excl 0.50.
 | Qwen3.5-4B | 20260701 | 0.830 ✓ | 0.659 | ✓ | **PASS** (marginal) |
 | Qwen3.5-4B | 20260702 | 0.864 ✓ | 0.807 | ✓ | **PASS** |
 | Qwen3.5-4B | 20260703 | 0.862 ✓ | 0.794 | ✓ | **PASS** |
-| Gemma-4-E4B | 20260701 | — | — | — | *RE-RUN PENDING (9P mkdir PermissionError, infra)* |
-| Gemma-4-E4B | 20260702 | — | — | — | *RE-RUN PENDING (9P mkdir PermissionError, infra)* |
-| Gemma-4-E4B | 20260703 | — | — | — | *RE-RUN PENDING (9P mkdir PermissionError, infra)* |
+| Gemma-4-E4B | 20260701 | 0.802 ✓ | 0.762 | ✓ | **PASS** |
+| Gemma-4-E4B | 20260702 | 0.839 ✓ | 0.746 | ✓ | **PASS** |
+| Gemma-4-E4B | 20260703 | 0.812 ✓ | 0.718 | ✓ | **PASS** |
 
-### Seed-stability roll-up (3 eligible families; Gemma re-run pending)
+### Seed-stability roll-up (4/4 families complete)
 
 | model | dial mean ± range | dial 3/3 PASS? | veto mean ± range | veto ≥2/3 PASS? | gate invariance |
 |---|---|---|---|---|---|
 | Llama-3.2-3B | 0.848 [0.827–0.865] | **YES (3/3)** | 0.739 [0.684–0.801] | **YES (3/3)** | 0.9964–0.9975 (Δ0.0011) |
 | Ministral-3-3B | 0.806 [0.799–0.812] | **YES (3/3)** | 0.681 [0.606–0.742] | **YES (2/3)** | 0.9967–0.9975 (Δ0.0008) |
 | Qwen3.5-4B | 0.852 [0.830–0.864] | **YES (3/3)** | 0.753 [0.659–0.807] | **YES (3/3)** | 0.9982–0.9986 (Δ0.0004) |
-| Gemma-4-E4B | — | *pending re-run* | — | *pending re-run* | *pending re-run* |
+| Gemma-4-E4B | 0.817 [0.802–0.839] | **YES (3/3)** | 0.742 [0.718–0.762] | **YES (3/3)** | 0.9980–0.9984 (Δ0.0004) |
 
-Dial is a seed-stable PASS on **3/3 eligible** families (Gemma pending → part (a) not yet
-4/4). Veto is a seed-stable PASS on **3/3 eligible** families → part (b) ≥3/4 already met on
-the eligible set. Gate invariance holds (per-family across-seed range <0.0011) — sampled
-decoding does not move the pre-gen anchor axis, exactly as pre-stated.
+Dial is a seed-stable PASS on **4/4** families → part (a) met. Veto is a seed-stable PASS
+on **4/4** families → part (b) ≥3/4 exceeded. Gate invariance holds (per-family across-seed
+range ≤0.0011) — sampled decoding does not move the pre-gen anchor axis, exactly as
+pre-stated.
 
-### Per-seed veto majority (3 eligible families; Gemma re-run pending)
+### Per-seed veto majority (all 4 families)
 
-| seed | families with veto PASS (eligible) | Gemma | ≥3/4? |
-|---|---|---|---|
-| 20260701 | 2/3 — Llama ✓, Qwen3.5 ✓, Ministral ✗ (0.606) | pending | **HINGES ON GEMMA** (2/4 without, needs Gemma-701 PASS for 3/4) |
-| 20260702 | 3/3 — Llama ✓, Ministral ✓, Qwen3.5 ✓ | pending | **YES** (3/4 secured regardless of Gemma) |
-| 20260703 | 3/3 — Llama ✓, Ministral ✓, Qwen3.5 ✓ | pending | **YES** (3/4 secured regardless of Gemma) |
+| seed | families with veto PASS | ≥3/4? |
+|---|---|---|
+| 20260701 | 3/4 — Llama ✓, Qwen3.5 ✓, Gemma ✓ (0.762), Ministral ✗ (0.606) | **YES** (exactly 3/4; Gemma resolves the pinch seed) |
+| 20260702 | 4/4 — Llama ✓, Ministral ✓, Qwen3.5 ✓, Gemma ✓ | **YES** |
+| 20260703 | 4/4 — Llama ✓, Ministral ✓, Qwen3.5 ✓, Gemma ✓ | **YES** |
 
-### VERDICT: DEFERRED — pending Gemma-4-E4B re-run
+### VERDICT: SUCCESS (all three locked clauses pass; falsifier did not fire)
 
-- **Parts (a) dial and (b) veto:** met on the 3 eligible families (dial 3/3 seed-stable,
-  veto 3/3 seed-stable). Adding Gemma can only strengthen (b); it is required to reach the
-  literal 4/4 on (a).
-- **Part (c) strict per-seed ≥3/4 majority:** seeds 702 and 703 clear it (3/4 secured);
-  **seed 701 is the pinch** — 2/4 without Gemma, so Gemma-701 must post a veto PASS to reach
-  3/4. Dropping Gemma leaves seed 701 at 2/3 (0.67 < 0.75 = below the literal ≥3/4 bar), so
-  the verdict cannot be honestly called SUCCESS on the 3-family set.
-- **Why not INELIGIBLE:** Gemma's smoke failed on a transient 9P `PermissionError` at
-  `mkdir` before the model loaded — a retryable filesystem fault, not one of the pre-reg
-  INELIGIBLE blockers. Gemma passed this same greedy smoke in Z with the identical image.
-  Recording it INELIGIBLE would both misclassify the failure and leave (c) unresolvable.
-- **Action:** re-run `gemma-4-e4b` seeds 20260701/02/03 on the local Docker GPU lane (a
-  lab-notebook re-run of a pre-registered cell — not a new amendment, no goalpost change),
-  then finalize the verdict. Requires explicit user launch approval before GPU use.
+- **(a) Dial seed-stable 4/4:** every one of the 12 cells passes the dial bar
+  (range 0.799–0.865; Gemma 0.802–0.839). **PASS.**
+- **(b) Veto seed-stable ≥3/4:** 4/4 families (Llama 3/3, Ministral 2/3, Qwen3.5 3/3,
+  Gemma 3/3). **PASS.**
+- **(c) Per-seed veto majority ≥3/4 on every seed:** 3/4, 4/4, 4/4. Seed 20260701 — the
+  pre-identified pinch seed (Ministral 0.606) — clears at exactly 3/4 via Gemma's 0.762.
+  **PASS.**
+- **Falsifier check:** no seed's majority dropped below 3/4, and only ONE family
+  (Ministral) flips veto PASS/FAIL across seeds (falsifier required ≥2). **Did not fire.**
+- **Consequence (as pre-registered):** the Z magnitudes are promoted from "single greedy
+  decode" to **seed-robust under sampled decoding**. Notably, both Z-margin axes flagged in
+  the live-falsifier honesty note moved *upward*: Llama's greedy veto FAIL (0.633) is 3/3
+  sampled PASS (0.684–0.801) and Qwen3.5's marginal 0.666 is 3/3 clean (0.659–0.807) — the
+  greedy misses were decode artifacts, and single-decode point estimates *understated* the
+  veto. Per-cell veto numbers must still be reported with seed spread (family ranges
+  0.04–0.15); Ministral's seed-701 0.606 shows individual cells can dip below the bar.
+- Exploratory amendment evidence: reported separately, never pooled with the v0.3 headline.
 
 ### Data & provenance (to fill)
 
 - Scored result JSONs (tracked, at probe root), one per family × seed:
   `amendment_sr_{family}_seed{N}_result.json` under `experiment/phase1/probe/`.
 - Extraction outputs (local only, gitignored): `sr_{family}_seed{N}/` under
-  `experiment/phase1/probe/`.
-- Queue log: `experiment/phase1/probe/sr_logs/PROGRESS.log`.
+  `experiment/phase1/probe/`. Gemma's re-run cells live under
+  `sr_rr_gemma-4-e4b_seed{N}/` (the `sr_gemma-4-e4b_seed{N}/` dirs are the
+  crashed first attempt); the scoring step consumed the `sr_rr_*` dirs.
+- Queue log: `experiment/phase1/probe/sr_logs/PROGRESS.log`; Gemma re-run log:
+  the relaunch task output (smoke 17:18–17:23, seeds scored 18:59 / 20:36 /
+  22:16 UTC 2026-07-01).
