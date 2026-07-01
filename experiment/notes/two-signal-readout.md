@@ -188,3 +188,21 @@ training-free cells).
   W/X exploratory to a cross-FAMILY CLAIM** (Qwen/Llama/Mistral/Gemma). Full roll-up table,
   descriptive gradient, and SUCCESS verdict in
   `experiment/protocol/AMENDMENT-Z-cross-family-confirmatory.md` §7.
+- 2026-07-01: **Amendment SR (sampled-decode seed-robustness) pre-registered + LAUNCHED**
+  on branch `pr/seed-robustness-sampled-decode` (off main after #136). Hardens the Z
+  headline dial+veto magnitudes against the single-greedy-decode confound: identical
+  training-free readout under SAMPLED decoding (temp 0.7 / top_p 0.9) × 3 seeds
+  (20260701/02/03) on the **4 confirmatory families only** (Qwen3-4B/W excluded so the
+  seed pass stays inside the confirmatory set). Scope = dial + veto (gate is
+  pre-gen-anchor decode-INVARIANT, emitted as an invariance check only). Extractor gained
+  backward-compatible `--do-sample/--temperature/--top-p` (default greedy = X/Z reproduce
+  byte-for-byte). Queue driver `amendment_sr_queue.sh`; log `sr_logs/PROGRESS.log`; results
+  `amendment_sr_<tag>_seed<N>_result.json`. Pre-reg + gates:
+  `experiment/protocol/AMENDMENT-SR-sampled-decode-seed-robustness.md`.
+  **Incremental results (updating as cells land):**
+  - **Llama-3.2-3B — 3/3 seeds DONE.** veto 0.801 / 0.684 / 0.732 → **seed-stable PASS
+    (3/3)**, mean ~0.739. dial 0.827 / 0.853 / 0.865 (all PASS). gate ~0.997 all (invariance
+    confirmed). NOTE: Llama's veto was the clean **greedy FAIL (0.633)** in Z; under sampled
+    decoding it PASSES on every seed → the Z single-decode veto miss looks like a
+    greedy-decode artifact. (n=1 family so far; not read into the verdict yet.)
+  - Ministral / Qwen3.5 / Gemma-4: pending (queue running, ~30 min/seed).

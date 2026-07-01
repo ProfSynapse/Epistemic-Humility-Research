@@ -173,15 +173,19 @@ append result + update session/experiment notes. Cost ≈ 3× the Z overnight qu
 
 ## §7 Results (filled per family × seed as runs complete)
 
-**Status: NOT STARTED — pre-registered, awaiting explicit user launch approval.**
+**Status: RUNNING — launched 2026-07-01 10:11 UTC (user approval), local Docker GPU lane.
+3/12 cells scored (Llama-3.2-3B family complete). Updating as cells land.**
 
-### Per-family seed table (to fill)
+### Per-family seed table (filling as cells land)
+
+Gate column = decode-invariance check only (not a verdict axis). "veto PASS?" =
+SR-veto ≥0.65 with CI excl 0.50.
 
 | model | seed | dial (SR-dial) | veto (SR-veto) | adequacy | veto PASS? |
 |---|---|---|---|---|---|
-| Llama-3.2-3B | 20260701 | | | | |
-| Llama-3.2-3B | 20260702 | | | | |
-| Llama-3.2-3B | 20260703 | | | | |
+| Llama-3.2-3B | 20260701 | 0.827 ✓ | 0.801 | ✓ | **PASS** |
+| Llama-3.2-3B | 20260702 | 0.853 ✓ | 0.684 | ✓ | **PASS** |
+| Llama-3.2-3B | 20260703 | 0.865 ✓ | 0.732 | ✓ | **PASS** |
 | Ministral-3-3B | 20260701 | | | | |
 | Ministral-3-3B | 20260702 | | | | |
 | Ministral-3-3B | 20260703 | | | | |
