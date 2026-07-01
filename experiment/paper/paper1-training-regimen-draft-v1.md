@@ -1,7 +1,7 @@
 ---
 title: "Teaching Small Language Models to Say I Don't Know: SFT Induces Abstention, Preference Optimization Repositions It"
 author: "Joseph Rosenbaum (Synaptic Labs)"
-status: draft-v1
+status: superseded by paper1-training-regimen-draft-v2.md (2026-07-01; v2 folds in the meta-analysis as Part I and adds the GRPO regimen arm + confidence-channel results)
 date: 2026-06-18
 repository: https://github.com/ProfSynapse/Epistemic-Humility-Research
 reproducibility: "See repository paths experiment/paper/scripts/build_paper1_figures.py and experiment/paper/analysis/"

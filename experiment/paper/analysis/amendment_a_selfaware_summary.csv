@@ -1,7 +1,7 @@
 source,arm,n,n_unknown,n_known,truthful_pct,refusal_recall_pct,over_refusal_pct,correct_on_known_pct,config_sha,source_csv
-seed1_all,sft_merged,3369,1032,2337,38.59,82.85,61.62,49.61,62388c69b67bbc43,experiment\phase1\eval\results_amendment_a_selfaware_full_local_4b\comparisons\summary_table.csv
-seed1_all,sft_dpo,3369,1032,2337,30.16,48.84,13.99,25.47,62388c69b67bbc43,experiment\phase1\eval\results_amendment_a_selfaware_full_local_4b\comparisons\summary_table.csv
-seed1_all,sft_kto,3369,1032,2337,36.95,75.68,48.22,38.35,62388c69b67bbc43,experiment\phase1\eval\results_amendment_a_selfaware_full_local_4b\comparisons\summary_table.csv
-seed2_dpo_clean,sft_dpo_seed2_lowmem,3369,1032,2337,34.82,65.89,18.36,25.84,dd3585c939108136,experiment\phase1\eval\results_amendment_a_selfaware_full_seed2_sft_dpo_lowmem_local_4b\comparisons\summary_table.csv
-seed2_kto_clean,sft_kto_seed2_lowmem,3369,1032,2337,38.14,78.68,45.53,37.16,b18d66c711bc62bd,experiment\phase1\eval\results_amendment_a_selfaware_full_seed2_sft_kto_lowmem_local_4b\comparisons\summary_table.csv
-seed3_dpo,sft_dpo_seed3,3369,1032,2337,28.55,43.7,11.42,24.69,8ea042deeaef115e,experiment\phase1\eval\results_amendment_a_selfaware_full_seed3_sft_dpo_local_4b\comparisons\summary_table.csv
+seed1_all,sft_merged,3369,1032,2337,38.59,82.85,61.62,49.61,62388c69b67bbc43,experiment/phase1/eval/results_amendment_a_selfaware_full_local_4b/comparisons/summary_table.csv
+seed1_all,sft_dpo,3369,1032,2337,30.16,48.84,13.99,25.47,62388c69b67bbc43,experiment/phase1/eval/results_amendment_a_selfaware_full_local_4b/comparisons/summary_table.csv
+seed1_all,sft_kto,3369,1032,2337,36.95,75.68,48.22,38.35,62388c69b67bbc43,experiment/phase1/eval/results_amendment_a_selfaware_full_local_4b/comparisons/summary_table.csv
+seed2_dpo_clean,sft_dpo_seed2_lowmem,3369,1032,2337,34.82,65.89,18.36,25.84,dd3585c939108136,experiment/phase1/eval/results_amendment_a_selfaware_full_seed2_sft_dpo_lowmem_local_4b/comparisons/summary_table.csv
+seed2_kto_clean,sft_kto_seed2_lowmem,3369,1032,2337,38.14,78.68,45.53,37.16,b18d66c711bc62bd,experiment/phase1/eval/results_amendment_a_selfaware_full_seed2_sft_kto_lowmem_local_4b/comparisons/summary_table.csv
+seed3_dpo,sft_dpo_seed3,3369,1032,2337,28.55,43.7,11.42,24.69,8ea042deeaef115e,experiment/phase1/eval/results_amendment_a_selfaware_full_seed3_sft_dpo_local_4b/comparisons/summary_table.csv
