@@ -296,3 +296,11 @@ record (001-result S through 011-handoff). Headline beats:
   In parallel: steering-harness build dispatched to a background subagent in an isolated
   worktree (CPU-only scaffolding for Paper 5, no GPU/launch). Paper-writing still HELD (Llama
   veto miss => discuss-first) pending all 4 + user review.
+- **016 (results, in-flight)** Amendment Z 3 of 4 scored. Qwen3.5-4B PASS (gate 0.998 / dial
+  0.827 / veto 0.666 MARGINAL - CI [.634,.695] dips below 0.65 but point >=0.65 & excludes
+  0.50). Veto tally 2 PASS (Ministral, Qwen3.5) / 1 FAIL (Llama). Gemma-4-E4B (multimodal,
+  tf-5.12.1 image) now FULLY DECISIVE: PASS -> 3/4 SUCCESS; FAIL/INELIGIBLE -> 2/4 FALSIFIER.
+  Three-family dial gradient (correct-vs-halluc gap): Ministral 0.327 clean > Qwen 0.211 ~ Llama
+  0.231, but Llama fails while Qwen passes => veto tracks distribution overlap not mean gap
+  (noted honestly, no goalpost moved). Steering scaffold DONE + parked (branch
+  experiment/paper5-confidence-steering @ e53daafe, 88 tests green, awaits amendment+approval).

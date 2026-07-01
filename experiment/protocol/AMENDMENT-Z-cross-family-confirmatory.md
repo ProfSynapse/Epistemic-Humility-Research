@@ -128,9 +128,9 @@ update session/experiment notes. Failures logged; the queue continues.
 
 ## §7 Results (filled per model as runs complete)
 
-**Status: 2 of 4 scored (2026-06-30 overnight queue).** Qwen3.5-4B extracting;
-Gemma-4-E4B queued. Verdict pending all four; SUCCESS = veto PASS ≥3/4,
-FALSIFIER = veto fails ≥2/4.
+**Status: 3 of 4 scored (2026-06-30 overnight queue).** Gemma-4-E4B extracting.
+Verdict pending the last family; SUCCESS = veto PASS ≥3/4, FALSIFIER = veto
+fails ≥2/4.
 
 ### Cross-family roll-up (live)
 
@@ -138,13 +138,15 @@ FALSIFIER = veto fails ≥2/4.
 |---|---|---|---|---|---|---|
 | Llama-3.2-3B | 3072 | 0.997 ✓ [.995,.999] | 0.861 ✓ [.844,.879] | **0.633 ✗ [.603,.665]** | ✓ (wrong 1205 / halluc 629) | **PARTIAL** |
 | Ministral-3-3B | 3072 | 0.997 ✓ [.995,.999] | 0.818 ✓ [.797,.839] | **0.733 ✓ [.703,.762]** | ✓ (wrong 1314 / halluc 629) | **PASS** |
-| Qwen3.5-4B | 2560 | _extracting_ | | | | |
-| Gemma-4-E4B | — | _queued_ | | | | |
+| Qwen3.5-4B | 2560 | 0.998 ✓ [.997,.999] | 0.827 ✓ [.806,.848] | **0.666 ✓ [.634,.695]** (marginal) | ✓ (wrong 1277 / halluc 629) | **PASS** |
+| Gemma-4-E4B | — | _extracting_ | | | | |
 
-**Veto tally so far: 1 PASS (Ministral) / 1 FAIL (Llama).** Gate and dial pass on
-both families (gate saturated ~0.997; dial 0.82–0.86). The verdict hinges on the
-two remaining families: both must clear the 0.65 veto bar for the ≥3/4 SUCCESS;
-either miss drops to the ≥2/4 falsifier.
+**Veto tally so far: 2 PASS (Ministral, Qwen3.5) / 1 FAIL (Llama).** Gate and dial
+pass on all three families (gate saturated ~0.997–0.998; dial 0.82–0.86). Gemma-4
+is now fully decisive: PASS → 3/4 → SUCCESS; FAIL/INELIGIBLE → 2/4 fail →
+FALSIFIER. Note Qwen3.5's veto is a **marginal** pass (point 0.666 ≥ 0.65 but the
+CI lower bound 0.634 dips below the bar; it satisfies the locked criterion —
+point ≥0.65 AND CI excludes 0.50 — but is not a clean margin like Ministral's).
 
 ### Emerging read (descriptive, no goalpost moved)
 
@@ -159,6 +161,18 @@ descriptive dial means explain the split:
 - **Ministral (veto PASS):** `dial_mean_hallucination = 0.278` sits far below
   `dial_mean_correct = 0.605` — hallucinations read as low-trust. Control
   stronger (0.682 [.652,.712]).
+- **Qwen3.5 (veto marginal PASS):** `dial_mean_hallucination = 0.425` vs
+  `dial_mean_correct = 0.636` — intermediate separation, between Ministral's clean
+  split and Llama's collapse. Control 0.649 [.617,.680].
+
+The three scored families form a clean **gradient** in exactly the quantity the
+veto measures — the correct-vs-hallucination gap in the dial mean: Ministral 0.327
+(clean pass) > Qwen3.5 0.211 (marginal pass) > Llama 0.231... note Llama's *gap*
+(0.707−0.476 = 0.231) is similar to Qwen's, yet Llama fails and Qwen marginally
+passes — the veto AUROC depends on the full distribution overlap, not just the
+mean gap, so read the gradient as directional, not a strict rank. The stable
+conclusion is unchanged: gate + dial are family-general; the veto is the fragile,
+model-specific axis.
 
 This mirrors Amendment X, where the veto (not the gate/dial) was the axis that
 dipped non-monotonically (softest at 14B). Consistent story: the answerability
