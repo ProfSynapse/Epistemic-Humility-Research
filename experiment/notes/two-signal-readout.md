@@ -205,4 +205,23 @@ training-free cells).
     confirmed). NOTE: Llama's veto was the clean **greedy FAIL (0.633)** in Z; under sampled
     decoding it PASSES on every seed → the Z single-decode veto miss looks like a
     greedy-decode artifact. (n=1 family so far; not read into the verdict yet.)
-  - Ministral / Qwen3.5 / Gemma-4: pending (queue running, ~30 min/seed).
+  - **Ministral-3-3B — 3/3 seeds DONE.** veto 0.606 / 0.696 / 0.742 → **seed-stable PASS
+    (2/3)** (seed 701 FAILs at 0.606; greedy Z was 0.733). dial 0.808 / 0.812 / 0.799 (all
+    PASS). gate ~0.997 all.
+  - **Qwen3.5-4B — 3/3 seeds DONE.** veto 0.659 / 0.807 / 0.794 → **seed-stable PASS (3/3)**
+    (seed 701 marginal at 0.659; greedy Z was marginal 0.666). dial 0.830 / 0.864 / 0.862
+    (all PASS). gate ~0.998 all.
+  - **Gemma-4-E4B — DID NOT RUN → RE-RUN PENDING.** Compat smoke crashed on a transient 9P
+    `PermissionError [Errno 13]` at `out_dir.mkdir(...)` BEFORE the model loaded (the queue's
+    other 12 in-container dirs created fine; Gemma was last and hit a DrvFS hiccup). This is a
+    retryable INFRA fault, NOT a scientific INELIGIBLE — Gemma passed the same greedy smoke in
+    Z with the identical `unsloth-z:latest` image. Recorded RE-RUN PENDING, awaiting GPU
+    launch approval.
+  - **Queue COMPLETE 16:54 UTC — 9/12 scored (3 eligible families).** Roll-up: dial 9/9 PASS
+    (seed-stable 3/3 on all 3 families); veto seed-stable PASS on all 3 (Llama 3/3, Ministral
+    2/3, Qwen3.5 3/3); gate decode-invariant (per-family across-seed range <0.0011). Llama's Z
+    greedy veto FAIL (0.633) and Qwen3.5's Z greedy marginal (0.666) both come up PASS under
+    sampled decoding → the single-greedy-decode veto softness was a decode artifact.
+    **VERDICT DEFERRED:** the strict per-seed clause (c, ≥3/4 veto PASS on every seed) hinges
+    on Gemma — seeds 702/703 are 3/3 but seed 701 is 2/3 (Ministral FAILs), so Gemma-701 must
+    PASS to clear ≥3/4. Re-run Gemma before calling the verdict.

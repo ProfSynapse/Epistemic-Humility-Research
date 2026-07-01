@@ -4,7 +4,7 @@ session_id: '0031'
 title: Paper reorg + SR seed-robustness + steering-scaffold merge
 status: active
 created_at: '2026-07-01T11:59:38Z'
-updated_at: '2026-07-01T12:00:08Z'
+updated_at: '2026-07-01T17:01:25Z'
 phase: phase1
 question: Are the training-free two-signal readout headline magnitudes (Z cross-family
   dial+veto) seed-robust under sampled decoding, and consolidate the paper numbering
@@ -80,6 +80,33 @@ checkpoints:
     \ roll-up + per-seed veto majority + locked verdict; refresh experiment note;\
     \ open the SR PR."
   signals: {}
+- id: 004-result
+  at: '2026-07-01T17:01:25Z'
+  kind: result
+  title: 'SR queue complete: 9/12 scored, 3 families PASS, Gemma re-run pending (9P
+    infra fault)'
+  summary: 'Amendment SR sampled-decode queue completed 16:54 UTC. Llama/Ministral/Qwen3.5
+    = 3/3 seeds each (9 eligible cells): dial 9/9 PASS (0.799-0.865), gate decode-invariant
+    (0.9964-0.9986), veto seed-stable PASS on all three (Llama 3/3, Ministral 2/3,
+    Qwen3.5 3/3). Llama''s Z greedy veto FAIL (0.633) and Qwen3.5''s Z greedy marginal
+    (0.666) both PASS under sampled decoding -> single-greedy-decode veto softness
+    was a decode artifact. Gemma-4-E4B DID NOT RUN: compat smoke crashed on a transient
+    9P PermissionError at mkdir before model load (other 12 in-container dirs created
+    fine). Retryable infra fault, NOT scientific INELIGIBLE (Gemma passed same greedy
+    smoke in Z, identical image).'
+  evidence: []
+  run_ids: []
+  commands: []
+  decisions:
+  - "Record Gemma as RE-RUN PENDING, not INELIGIBLE (mkdir error is not a pre-reg\
+    \ blocker). DEFER the SR verdict: strict per-seed clause (c) at seed 701 hinges\
+    \ on Gemma-701 (2/4 without it; seeds 702/703 already 3/4). \xA77 + experiment\
+    \ note updated and committed (f7cc4ad6)."
+  next_steps:
+  - Get explicit user GPU launch approval to re-run gemma-4-e4b seeds 20260701/02/03
+    on local Docker GPU lane (lab-notebook re-run of a pre-registered cell, no goalpost
+    change), then finalize verdict + open SR PR + update memory.
+  signals: {}
 ---
 # Paper reorg + SR seed-robustness + steering-scaffold merge
 
@@ -123,3 +150,12 @@ _No summary yet._
   - `experiment/phase1/probe/sr_logs/PROGRESS.log`
 - next steps:
   - Let the queue finish; fill AMENDMENT-SR §7 per-seed tables + seed-stability roll-up + per-seed veto majority + locked verdict; refresh experiment note; open the SR PR.
+### 004-result - SR queue complete: 9/12 scored, 3 families PASS, Gemma re-run pending (9P infra fault)
+
+- at: `2026-07-01T17:01:25Z`
+- kind: `result`
+- summary: Amendment SR sampled-decode queue completed 16:54 UTC. Llama/Ministral/Qwen3.5 = 3/3 seeds each (9 eligible cells): dial 9/9 PASS (0.799-0.865), gate decode-invariant (0.9964-0.9986), veto seed-stable PASS on all three (Llama 3/3, Ministral 2/3, Qwen3.5 3/3). Llama's Z greedy veto FAIL (0.633) and Qwen3.5's Z greedy marginal (0.666) both PASS under sampled decoding -> single-greedy-decode veto softness was a decode artifact. Gemma-4-E4B DID NOT RUN: compat smoke crashed on a transient 9P PermissionError at mkdir before model load (other 12 in-container dirs created fine). Retryable infra fault, NOT scientific INELIGIBLE (Gemma passed same greedy smoke in Z, identical image).
+- decisions:
+  - Record Gemma as RE-RUN PENDING, not INELIGIBLE (mkdir error is not a pre-reg blocker). DEFER the SR verdict: strict per-seed clause (c) at seed 701 hinges on Gemma-701 (2/4 without it; seeds 702/703 already 3/4). §7 + experiment note updated and committed (f7cc4ad6).
+- next steps:
+  - Get explicit user GPU launch approval to re-run gemma-4-e4b seeds 20260701/02/03 on local Docker GPU lane (lab-notebook re-run of a pre-registered cell, no goalpost change), then finalize verdict + open SR PR + update memory.
