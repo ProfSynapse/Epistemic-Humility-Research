@@ -4,7 +4,7 @@ author: "Joseph Rosenbaum (Synaptic Labs)"
 status: draft-v1
 date: 2026-06-18
 repository: https://github.com/ProfSynapse/Epistemic-Humility-Research
-reproducibility: "See repository paths experiment/paper/scripts/build_paper2_results.py and experiment/paper/analysis/"
+reproducibility: "See repository paths experiment/paper/scripts/build_paper1_figures.py and experiment/paper/analysis/"
 ---
 
 # Teaching Small Language Models to Say I Don't Know: SFT Induces Abstention, Preference Optimization Repositions It
@@ -207,7 +207,7 @@ intervals over seed-level point estimates. With only three seeds, these
 intervals are descriptive rather than high-power inferential guarantees. For
 paired row comparisons, we compute exact McNemar/binomial tests on discordant
 counts from aligned scored-row artifacts. In the open research repository, the
-repo-relative script path `experiment/paper/scripts/build_paper2_results.py`
+repo-relative script path `experiment/paper/scripts/build_paper1_figures.py`
 regenerates the tables used in this draft and writes them under
 `experiment/paper/analysis/`.
 
@@ -232,7 +232,7 @@ SFT consistently induces unknown-question abstention on SelfAware. Across three
 seeds, refusal recall is 87.88% (95% seed interval 77.36-98.41). The cost is
 severe over-refusal: SFT refuses 64.77% of known questions (63.60-65.94).
 
-![[figures/fig-01-cold-start-tradeoff.png]]
+![[figures/fig-p1-01-cold-start-tradeoff.png]]
 
 **Figure 1. Cold-start SelfAware refusal tradeoff.** Each faint point is one
 seed and each outlined point is the mean across seeds. SFT occupies the
@@ -240,7 +240,7 @@ high-refusal/high-over-refusal corner, while cold-start DPO and KTO remain near
 the answer-everything corner. The inset zooms the origin because DPO and KTO
 are both effectively at zero unknown-refusal recall and near-zero over-refusal.
 
-![[figures/fig-02-selfaware-metrics.png]]
+![[figures/fig-p1-02-selfaware-metrics.png]]
 
 **Figure 2. Mean SelfAware metrics across three seeds.** Bars show seed means
 and error bars show bounded t-based 95% intervals over seed-level point
@@ -262,7 +262,7 @@ corner of the tradeoff: answer almost everything.
 Paired row counts make this clear. On each seed, SFT refuses hundreds of unknown
 rows that DPO/KTO answer:
 
-![[figures/fig-03-paired-transitions.png]]
+![[figures/fig-p1-03-paired-transitions.png]]
 
 **Figure 3. Paired row transitions from SFT to cold-start preference arms.**
 Bars are seed means. DPO and KTO convert many SFT refusals into attempted
@@ -295,7 +295,7 @@ abstention routine, can DPO or KTO refine the boundary?
 
 The SFT-warmed SelfAware runs show a clear tradeoff:
 
-![[figures/fig-04-sft-warmed-tradeoff.png]]
+![[figures/fig-p1-04-sft-warmed-tradeoff.png]]
 
 **Figure 4. SFT-warmed operating points on SelfAware.** The available
 plain-answer SFT-warmed runs show DPO moving much farther left toward lower
@@ -337,7 +337,7 @@ al., 2023; Liu et al., 2024).
 Under the answer/confidence-only contract, the three-seed SFT-warmed SelfAware
 report gives the profile in Figure 5.
 
-![[figures/fig-05-stated-confidence.png]]
+![[figures/fig-p1-05-stated-confidence.png]]
 
 **Figure 5. Stated-confidence profile under the answer/confidence-only
 contract.** Mean confidence is plotted on the same 0-100 scale by multiplying
@@ -362,7 +362,7 @@ answer.
 
 Figure 6 breaks this down by actual outcome rather than arm-level averages.
 
-![[figures/fig-06-confidence-alignment.png]]
+![[figures/fig-p1-06-confidence-alignment.png]]
 
 **Figure 6. Stated-confidence alignment by actual outcome.** Bars show mean
 stated confidence across all three SFT-warmed SelfAware seeds. For
@@ -435,7 +435,7 @@ prompt contract as part of the intervention.
 The project repository is
 https://github.com/ProfSynapse/Epistemic-Humility-Research. The paper-facing
 reproducibility entrypoint is the repo-relative script
-`experiment/paper/scripts/build_paper2_results.py`, which rebuilds the generated
+`experiment/paper/scripts/build_paper1_figures.py`, which rebuilds the generated
 tables in `experiment/paper/analysis/` and charts in
 `experiment/paper/figures/` from local Phase 1 evaluation artifacts.
 Protocol documents are also maintained in the repository so that reported

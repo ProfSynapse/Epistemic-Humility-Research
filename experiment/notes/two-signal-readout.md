@@ -134,7 +134,7 @@ training-free cells).
 - Per-cell result JSONs at the probe root (`experiment/phase1/probe/amendment_*_result.json`);
   tensor/rows artifacts stay local under gitignored `qwen3-*/` model_tag subtrees.
 - Episodic record: `docs/sessions/` (session 0030 tracks this arc).
-- Synthesis: `experiment/paper/two-signal-readout-framework.md` (Paper 4 seed) and the
+- Synthesis: `experiment/paper/two-signal-readout-framework.md` (Paper 3 seed) and the
   internal KG paper nodes `paper:internal-twosignal` + `paper:internal-paper3`.
 - These are exploratory, non-headline results; they do NOT feed the locked PROTOCOL
   headline matrix. Promotion to a headline claim requires a pre-registered cross-family /
@@ -152,7 +152,7 @@ training-free cells).
   (4/4), veto replicates (3/4, fragile axis). Promotes the training-free readout to a
   cross-family CLAIM.
 - **Deferred:** natural (un-forced) deployment prompt (Amendment V, shelved - data-starved).
-- **Next axis (PROPOSED, Paper 5): turn the probe around from reading to WRITING.**
+- **Next axis (PROPOSED, Paper 4): turn the probe around from reading to WRITING.**
   Causal confidence steering - reuse the probe DIRECTION as a steering vector
   (activation steering) and/or inject the score as text into the CoT, to influence
   thinking + output from the inside. Two modalities x two positions (anchor vs end)

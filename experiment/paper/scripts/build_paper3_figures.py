@@ -1,278 +1,330 @@
 #!/usr/bin/env python3
-"""Paper 3 figures — "Knows but Doesn't Say".
+"""Generate the figures for the two-signal-readout paper (Paper 3).
 
-Generates publication figures into experiment/paper/figures/ as both .svg
-(vector) and .png (raster, for ![[...]] embeds), styled to match the Paper 1/2
-muted-academic palette (build_paper2_results.py COLORS).
-
-Every constant below is a summary value with its provenance in a comment, in the
-style of meta-analysis/analysis/prisma_figure.py. Regenerate with:
+Reads the committed amendment result JSONs under experiment/phase1/probe/ and
+emits publication figures to experiment/paper/figures/. Deterministic: no
+randomness, no network, CPU only. Regenerate with:
 
     python3 experiment/paper/scripts/build_paper3_figures.py
-"""
 
+Every number in every figure traces to a specific amendment_*_result.json.
+"""
 from __future__ import annotations
 
+import json
 from pathlib import Path
 
 import matplotlib
+
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
-from matplotlib.lines import Line2D
+from matplotlib.patches import FancyArrowPatch, FancyBboxPatch
 
-FIG_DIR = Path(__file__).resolve().parents[1] / "figures"
-FIG_DIR.mkdir(parents=True, exist_ok=True)
+ROOT = Path(__file__).resolve().parents[3]
+PROBE = ROOT / "experiment" / "phase1" / "probe"
+OUT = ROOT / "experiment" / "paper" / "figures"
+OUT.mkdir(parents=True, exist_ok=True)
 
-# --- palette (from build_paper2_results.py COLORS + PNG_COLORS) --------------
-C = {
-    "green":  "#2f6f4e",   # K / internal / calibration / appropriate
-    "blue":   "#4f78a8",   # L / known
-    "orange": "#b85c38",   # stated / behavior / unknown / inappropriate
-    "purple": "#6f5f9f",   # GRPO-on-K (Amendment N)
-    "gray":   "#5c6370",   # base / muted
-    "grid":   "#d9d6cd",
-    "text":   "#1f2933",
-    "gate":   "#c0392b",   # gate / falsifier reference lines
-}
-
+# ---- palette -------------------------------------------------------------
+C_GATE = "#2C6E9C"   # answerability gate  (blue)
+C_DIAL = "#4A9D7F"   # correctness dial    (green)
+C_VETO = "#C25B3F"   # hallucination veto  (terracotta)
+C_MUTE = "#9AA0A6"
+THRESH = 0.65
+CHANCE = 0.50
 plt.rcParams.update({
     "font.family": "DejaVu Sans",
     "font.size": 11,
-    "axes.titlesize": 13,
-    "axes.titleweight": "bold",
-    "axes.labelsize": 11,
-    "axes.edgecolor": C["text"],
-    "axes.linewidth": 0.9,
-    "text.color": C["text"],
-    "axes.labelcolor": C["text"],
-    "xtick.color": C["text"],
-    "ytick.color": C["text"],
-    "figure.facecolor": "white",
-    "axes.facecolor": "white",
-    "savefig.facecolor": "white",
+    "axes.spines.top": False,
+    "axes.spines.right": False,
+    "axes.grid": True,
+    "grid.alpha": 0.25,
+    "grid.linewidth": 0.6,
+    "figure.dpi": 150,
 })
 
 
-def _style(ax):
-    ax.spines["top"].set_visible(False)
-    ax.spines["right"].set_visible(False)
-    ax.grid(axis="y", color=C["grid"], linewidth=0.8, zorder=0)
-    ax.set_axisbelow(True)
+def load(name: str) -> dict:
+    return json.loads((PROBE / name).read_text())
 
 
-def _save(fig, name: str, suptitle: str | None = None):
-    if suptitle:
-        fig.suptitle(suptitle, fontsize=13, fontweight="bold")
-        fig.tight_layout(rect=(0, 0, 1, 0.93))
-    else:
-        fig.tight_layout()
-    fig.savefig(FIG_DIR / f"{name}.svg")
-    fig.savefig(FIG_DIR / f"{name}.png", dpi=200)
+def ci_err(point: float, ci: list[float]) -> list[list[float]]:
+    """asymmetric yerr (2x1) from a [lo, hi] CI around point."""
+    return [[point - ci[0]], [ci[1] - point]]
+
+
+# ---- data ----------------------------------------------------------------
+Z = {
+    "Llama-3.2-3B": load("amendment_z_llama-3.2-3b_result.json"),
+    "Ministral-3-3B": load("amendment_z_ministral-3-3b_result.json"),
+    "Qwen3.5-4B": load("amendment_z_qwen3.5-4b_result.json"),
+    "Gemma-4-E4B": load("amendment_z_gemma-4-e4b_result.json"),
+}
+W = load("amendment_w_base_model_result.json")
+U = load("amendment_u_two_signal_result.json")
+S = load("amendment_s_stage2_result.json")
+T = load("amendment_t_stage2_result.json")
+X = {
+    "1.7B": load("amendment_x_qwen3-1.7b-bnb-4bit_result.json"),
+    "8B": load("amendment_x_qwen3-8b-bnb-4bit_result.json"),
+    "14B": load("amendment_x_qwen3-14b-bnb-4bit_result.json"),
+}
+
+
+def z_triplet(d: dict):
+    g = d["X_G1_gate"]["answerability_auroc"]
+    di = d["X_G2_dial"]["auroc_correct_vs_wrong"]
+    v = d["X_G3_veto_PRIMARY"]
+    return g, di, v["answerability_auroc"] if False else v["auroc_correct_vs_hallucination"], v["ci_95"]
+
+
+# =========================================================================
+# FIG 1 — cross-family two-signal readout (the confirmatory hero)
+# =========================================================================
+def fig1_cross_family():
+    # order families by veto ascending -> makes the variation legible
+    fams = sorted(Z.items(), key=lambda kv: kv[1]["X_G3_veto_PRIMARY"]["auroc_correct_vs_hallucination"])
+    labels = [k for k, _ in fams]
+    gate = [d["X_G1_gate"]["answerability_auroc"] for _, d in fams]
+    dial = [d["X_G2_dial"]["auroc_correct_vs_wrong"] for _, d in fams]
+    veto = [d["X_G3_veto_PRIMARY"]["auroc_correct_vs_hallucination"] for _, d in fams]
+    veto_ci = [d["X_G3_veto_PRIMARY"]["ci_95"] for _, d in fams]
+
+    import numpy as np
+    x = np.arange(len(labels))
+    w = 0.26
+    fig, ax = plt.subplots(figsize=(8.6, 4.9))
+    ax.bar(x - w, gate, w, label="Answerability gate", color=C_GATE)
+    ax.bar(x, dial, w, label="Correctness dial", color=C_DIAL)
+    bars = ax.bar(x + w, veto, w, label="Hallucination veto (primary)", color=C_VETO)
+    ax.errorbar(x + w, veto, yerr=np.array([ci_err(v, c) for v, c in zip(veto, veto_ci)]).squeeze(-1).T,
+                fmt="none", ecolor="#222", elinewidth=1.1, capsize=3)
+
+    for xi, v, c in zip(x + w, veto, veto_ci):
+        ok = v >= THRESH and c[0] > CHANCE
+        ax.text(xi, c[1] + 0.015, "PASS" if ok else "FAIL",
+                ha="center", va="bottom", fontsize=8.5, fontweight="bold",
+                color=(C_DIAL if ok else C_VETO))
+
+    ax.axhline(THRESH, ls="--", lw=1.1, color="#444", zorder=0)
+    ax.text(len(labels) - 0.5, THRESH + 0.006, "pass bar 0.65", ha="right", va="bottom", fontsize=8.5, color="#444")
+    ax.axhline(CHANCE, ls=":", lw=1.0, color=C_MUTE, zorder=0)
+    ax.text(len(labels) - 0.5, CHANCE + 0.006, "chance 0.50", ha="right", va="bottom", fontsize=8.5, color=C_MUTE)
+
+    ax.set_xticks(x)
+    ax.set_xticklabels(labels)
+    ax.set_ylabel("AUROC")
+    ax.set_ylim(0.45, 1.02)
+    ax.set_title("Two-signal trust readout replicates across four model families\n"
+                 "gate + dial saturate everywhere; the veto is the variable axis (3/4 pass)",
+                 fontsize=11.5)
+    ax.legend(loc="lower center", ncol=3, frameon=False, fontsize=9, bbox_to_anchor=(0.5, -0.22))
+    fig.tight_layout()
+    fig.savefig(OUT / "fig-p3-01-cross-family-readout.png", bbox_inches="tight")
     plt.close(fig)
-    print(f"wrote {name}.svg + .png")
 
 
-def _bar_labels(ax, bars, fmt="{:.2f}", dy=0.0):
-    for b in bars:
-        h = b.get_height()
-        ax.text(b.get_x() + b.get_width() / 2, h + dy, fmt.format(h),
-                ha="center", va="bottom", fontsize=9.5, color=C["text"])
-
-
-# ============================================================ Figure 1 — the gap
-def fig1_internal_vs_stated():
-    # Provenance: paper §4 / Abstract. Internal probe L35 known/unknown
-    # AUROC 0.997, ECE 0.004 [c2_sft.json]; stated->appropriateness AUROC ~0.52,
-    # own correct-vs-wrong ECE 0.142 [checkpoint calibration_gap reports].
-    fig, (axL, axR) = plt.subplots(1, 2, figsize=(8.4, 4.2))
-
-    labels = ["Internal\n(probe, L35)", "Stated\n(emitted number)"]
-    cols = [C["green"], C["orange"]]
-
-    bars = axL.bar(labels, [0.997, 0.52], color=cols, width=0.6, zorder=3)
-    axL.axhline(0.5, ls="--", lw=1.1, color=C["gray"], zorder=2)
-    axL.text(1.42, 0.505, "chance", fontsize=8.5, color=C["gray"], ha="right", va="bottom")
-    axL.set_ylim(0, 1.05)
-    axL.set_ylabel("AUROC (separates known / unknown)")
-    axL.set_title("Discrimination")
-    _style(axL); _bar_labels(axL, bars)
-
-    bars2 = axR.bar(labels, [0.004, 0.142], color=cols, width=0.6, zorder=3)
-    axR.set_ylim(0, 0.18)
-    axR.set_ylabel("Expected calibration error (lower = better)")
-    axR.set_title("Calibration error")
-    _style(axR); _bar_labels(axR, bars2, fmt="{:.3f}")
-
-    _save(fig, "fig-p3-01-internal-vs-stated-gap",
-          suptitle="The internal–stated confidence gap: the model knows, but does not say")
-
-
-# ===================================================== Figure 2 — K/L dissociation
-def fig2_kl_dissociation():
-    # Provenance: paper §7 Table 1 [calibration_gap_contrastive_sft_seed1.json;
-    # calibration_gap_contrastive_masked_sft_seed1.json; AMENDMENT-L gates].
-    # cal AUROC->appropriateness: base 0.52, K 0.684, L 0.552 (gate 0.62)
-    # truthful_pct: base 40.58, K 30.93, L 41.59 (gate 35.6)
-    arm_cols = [C["gray"], C["green"], C["blue"]]
-    cal = [0.52, 0.684, 0.552]
-    truthful = [40.58, 30.93, 41.59]
-
-    fig, (axS, axB) = plt.subplots(1, 2, figsize=(9.2, 4.4))
-
-    # Panel A — the trade-off scatter (the punchline)
-    label_off = {"base": (-12, -20), "answer-\nsupervised": (-26, 30),
-                 "answer-\nmasked": (10, 6)}
-    label_ha = {"base": "left", "answer-\nsupervised": "center", "answer-\nmasked": "left"}
-    for x, y, c, name in zip(cal, truthful, arm_cols,
-                             ["base", "answer-\nsupervised", "answer-\nmasked"]):
-        axS.scatter(x, y, s=190, color=c, zorder=4, edgecolor="white", linewidth=1.3)
-        axS.annotate(name, (x, y), textcoords="offset points", xytext=label_off[name],
-                     ha=label_ha[name], fontsize=11, fontweight="bold", color=c)
-    axS.axvline(0.62, ls="--", lw=1.1, color=C["gate"], zorder=2)
-    axS.axhline(35.6, ls="--", lw=1.1, color=C["gate"], zorder=2)
-    axS.text(0.621, 31.2, "calibration gate 0.62", rotation=90, fontsize=8,
-             color=C["gate"], va="bottom")
-    axS.text(0.515, 35.9, "behavior gate 35.6", fontsize=8, color=C["gate"], va="bottom")
-    axS.set_xlabel("Stated calibration  (emitted AUROC → appropriateness)")
-    axS.set_ylabel("Behavior  (truthful %)")
-    axS.set_title("You can buy one, not both")
-    axS.set_xlim(0.49, 0.72); axS.set_ylim(28, 45)
-    _style(axS); axS.grid(axis="both", color=C["grid"], linewidth=0.8)
-
-    # Panel B — behavior detail
-    metrics = ["truthful", "correct_on\n_known", "over_refusal\n(↓ better)", "refusal\n_recall"]
-    base = [40.58, 47.23, 57.51, 87.02]
-    K = [30.93, 36.63, 79.2, 83.72]
-    L = [41.59, 50.06, 62.73, 93.51]
+# =========================================================================
+# FIG 2 — the veto mechanism: dial-mean by outcome class, per family
+# =========================================================================
+def fig2_dial_distribution():
     import numpy as np
-    x = np.arange(len(metrics)); w = 0.26
-    axB.bar(x - w, base, w, label="base", color=C["gray"], zorder=3)
-    axB.bar(x,     K,    w, label="answer-supervised", color=C["green"], zorder=3)
-    axB.bar(x + w, L,    w, label="answer-masked",     color=C["blue"], zorder=3)
-    axB.set_xticks(x); axB.set_xticklabels(metrics, fontsize=9)
-    axB.set_ylabel("percent")
-    axB.set_title("Behavior metrics by arm")
-    axB.legend(frameon=False, fontsize=8.5, ncol=3, loc="upper center", bbox_to_anchor=(0.5, 1.0))
-    axB.set_ylim(0, 105)
-    _style(axB)
+    fams = sorted(Z.items(), key=lambda kv: kv[1]["X_G3_veto_PRIMARY"]["auroc_correct_vs_hallucination"])
+    labels = [k for k, _ in fams]
+    correct = [d["descriptive"]["dial_mean_correct"] for _, d in fams]
+    wrong = [d["descriptive"]["dial_mean_wrong"] for _, d in fams]
+    halluc = [d["descriptive"]["dial_mean_hallucination"] for _, d in fams]
 
-    _save(fig, "fig-p3-02-answer-supervision-dissociation",
-          suptitle="Result 4 — the answer-supervision dissociation")
+    x = np.arange(len(labels))
+    w = 0.26
+    fig, ax = plt.subplots(figsize=(8.6, 4.9))
+    ax.bar(x - w, correct, w, label="correct answers", color=C_DIAL)
+    ax.bar(x, wrong, w, label="wrong answers", color=C_MUTE)
+    ax.bar(x + w, halluc, w, label="confident hallucinations", color=C_VETO)
 
+    # annotate the correct-vs-hallucination gap that the veto measures
+    for xi, cc, hh in zip(x, correct, halluc):
+        gap = cc - hh
+        ax.annotate("", xy=(xi - w, cc), xytext=(xi + w, hh),
+                    arrowprops=dict(arrowstyle="<->", color="#333", lw=0.9, alpha=0.7))
+        ax.text(xi, max(cc, hh) + 0.02, f"gap {gap:.2f}", ha="center", va="bottom", fontsize=8, color="#333")
 
-# ================================== Figure 3 — answer-supervised base cell confidence
-def fig3_cell_confidence():
-    # Provenance: action_conditioning_report.py / calibration_gap_report.py on
-    # results_amendment_n_..._grpo_on_contrastive_sft_seed1 (greedy).
-    cells = [
-        ("known\ncorrect", 0.724, C["green"]),
-        ("unknown\nrefused", 0.542, C["green"]),
-        ("known\nwrong", 0.424, C["orange"]),
-        ("known\nrefused", 0.412, C["orange"]),
-        ("unknown\nwrong", 0.138, C["orange"]),
-    ]
-    fig, ax = plt.subplots(figsize=(8.2, 4.3))
-    names = [c[0] for c in cells]
-    vals = [c[1] for c in cells]
-    cols = [c[2] for c in cells]
-    bars = ax.bar(names, vals, color=cols, width=0.66, zorder=3)
-    _bar_labels(ax, bars)
+    ax.set_xticks(x)
+    ax.set_xticklabels(labels)
+    ax.set_ylabel("correctness-dial score (mean)")
     ax.set_ylim(0, 0.85)
-    ax.set_ylabel("mean stated confidence")
-    _style(ax)
-
-    # highlight the ordering the answer-masked variant inverted
-    ax.annotate("",
-                xy=(1, 0.542), xytext=(4, 0.138),
-                arrowprops=dict(arrowstyle="<->", color=C["gate"], lw=1.3))
-    ax.text(2.5, 0.60, "unknown-refused > unknown-wrong\n(the ordering answer-masking inverted — here correct)",
-            ha="center", fontsize=9, color=C["gate"])
-
-    legend = [Line2D([0], [0], marker="s", color="w", markerfacecolor=C["green"],
-                     markersize=11, label="appropriate response"),
-              Line2D([0], [0], marker="s", color="w", markerfacecolor=C["orange"],
-                     markersize=11, label="inappropriate response")]
-    ax.legend(handles=legend, frameon=False, fontsize=9, loc="upper right")
-    ax.set_title("RL on the answer-supervised base retains stated calibration",
-                 fontsize=12.5)
-    _save(fig, "fig-p3-03-answer-supervised-cell-confidence")
+    ax.set_title("Why the veto is fragile: how far confident hallucinations sit below correct answers\n"
+                 "wide gap (Gemma) → veto works; collapsed gap (Llama) → veto fails",
+                 fontsize=11.5)
+    ax.legend(loc="upper right", frameon=False, fontsize=9)
+    fig.tight_layout()
+    fig.savefig(OUT / "fig-p3-02-dial-distribution.png", bbox_inches="tight")
+    plt.close(fig)
 
 
-# ====================================== Figure 4 — calibrated conf, uncalibrated action
-def fig4_confidence_vs_action():
-    # Provenance: action_conditioning_report.py on N greedy + temp1.35.
-    # confidence AUROC: refusal-appropriateness 0.620, answer-correctness 0.837.
-    # action answer-rate: greedy known 0.0924 / unknown 0.0640 (+2.85pt);
-    # temp1.35 known 0.9375 / unknown 0.8721 (+6.5pt).
+# =========================================================================
+# FIG 3 — the veto is the fragile axis across BOTH size and family
+# =========================================================================
+def fig3_fragile_axis():
     import numpy as np
-    fig, (axA, axB) = plt.subplots(1, 2, figsize=(9.2, 4.3))
+    fig, (axL, axR) = plt.subplots(1, 2, figsize=(11.0, 4.6))
 
-    # Panel A — confidence channel discriminates
-    labs = ["refusal\nappropriateness", "answer\ncorrectness"]
-    bars = axA.bar(labs, [0.620, 0.837], color=C["green"], width=0.55, zorder=3)
-    axA.axhline(0.5, ls="--", lw=1.1, color=C["gray"], zorder=2)
-    axA.text(1.45, 0.505, "chance", fontsize=8.5, color=C["gray"], ha="right", va="bottom")
-    _bar_labels(axA, bars)
-    axA.set_ylim(0, 1.0)
-    axA.set_ylabel("AUROC")
-    axA.set_title("Confidence channel: discriminates ✓")
-    _style(axA)
+    # left: cross-size (X) — 1.7B, 4B(=W), 8B, 14B
+    sizes = ["1.7B", "4B", "8B", "14B"]
+    xg = [X["1.7B"]["X_G1_gate"]["answerability_auroc"], W["W_G2_gate_on_base_anchor"]["answerability_auroc"],
+          X["8B"]["X_G1_gate"]["answerability_auroc"], X["14B"]["X_G1_gate"]["answerability_auroc"]]
+    xd = [X["1.7B"]["X_G2_dial"]["auroc_correct_vs_wrong"], S["headline"]["auroc_post"],
+          X["8B"]["X_G2_dial"]["auroc_correct_vs_wrong"], X["14B"]["X_G2_dial"]["auroc_correct_vs_wrong"]]
+    xv = [X["1.7B"]["X_G3_veto_PRIMARY"]["auroc_correct_vs_hallucination"],
+          W["W_G1_dial_on_hallucination_PRIMARY"]["auroc_scorrect_vs_hallucination"],
+          X["8B"]["X_G3_veto_PRIMARY"]["auroc_correct_vs_hallucination"],
+          X["14B"]["X_G3_veto_PRIMARY"]["auroc_correct_vs_hallucination"]]
+    xi = np.arange(len(sizes))
+    axL.plot(xi, xg, "-o", color=C_GATE, label="gate")
+    axL.plot(xi, xd, "-s", color=C_DIAL, label="dial")
+    axL.plot(xi, xv, "-^", color=C_VETO, label="veto", lw=2.2, ms=8)
+    axL.axhline(THRESH, ls="--", lw=1.0, color="#444")
+    axL.set_xticks(xi); axL.set_xticklabels(sizes)
+    axL.set_ylim(0.45, 1.02); axL.set_ylabel("AUROC")
+    axL.set_xlabel("Qwen3 model size")
+    axL.set_title("across SIZE (one family)", fontsize=10.5)
+    axL.legend(frameon=False, fontsize=9, loc="lower left")
 
-    # Panel B — action channel barely conditions on knowledge
-    x = np.arange(2); w = 0.34
-    known = [9.24, 93.75]; unknown = [6.40, 87.21]
-    b1 = axB.bar(x - w/2, known, w, label="known", color=C["blue"], zorder=3)
-    b2 = axB.bar(x + w/2, unknown, w, label="unknown", color=C["orange"], zorder=3)
-    axB.set_xticks(x); axB.set_xticklabels(["greedy\n(temp 0)", "temp 1.35\n(train temp)"])
-    axB.set_ylabel("answer rate (%)")
-    axB.set_ylim(0, 108)
-    axB.set_title("Action channel: barely conditions ✗")
-    _bar_labels(axB, b1, fmt="{:.1f}"); _bar_labels(axB, b2, fmt="{:.1f}")
-    # margin annotations
-    axB.text(0, 22, "margin\n+2.85 pts", ha="center", fontsize=8.5, color=C["gate"])
-    axB.text(1, 102, "margin\n+6.5 pts", ha="center", fontsize=8.5, color=C["gate"])
-    axB.legend(frameon=False, fontsize=9, loc="center left")
-    _style(axB)
+    # right: cross-family (Z), veto ascending
+    fams = sorted(Z.items(), key=lambda kv: kv[1]["X_G3_veto_PRIMARY"]["auroc_correct_vs_hallucination"])
+    labels = [k.split("-")[0] for k, _ in fams]
+    zg = [d["X_G1_gate"]["answerability_auroc"] for _, d in fams]
+    zd = [d["X_G2_dial"]["auroc_correct_vs_wrong"] for _, d in fams]
+    zv = [d["X_G3_veto_PRIMARY"]["auroc_correct_vs_hallucination"] for _, d in fams]
+    zi = np.arange(len(labels))
+    axR.plot(zi, zg, "-o", color=C_GATE, label="gate")
+    axR.plot(zi, zd, "-s", color=C_DIAL, label="dial")
+    axR.plot(zi, zv, "-^", color=C_VETO, label="veto", lw=2.2, ms=8)
+    axR.axhline(THRESH, ls="--", lw=1.0, color="#444")
+    axR.text(len(labels) - 1, THRESH + 0.008, "pass bar 0.65", ha="right", va="bottom", fontsize=8, color="#444")
+    axR.set_xticks(zi); axR.set_xticklabels(labels)
+    axR.set_ylim(0.45, 1.02)
+    axR.set_xlabel("model family")
+    axR.set_title("across FAMILY (fixed ~3–4B)", fontsize=10.5)
+    axR.legend(frameon=False, fontsize=9, loc="lower left")
 
-    _save(fig, "fig-p3-04-confidence-vs-action",
-          suptitle="Calibrated confidence, uncalibrated action — 'says but doesn't act'")
+    fig.suptitle("The gate and dial are stable; the veto is the fragile axis — in both directions",
+                 fontsize=12, y=1.02)
+    fig.tight_layout()
+    fig.savefig(OUT / "fig-p3-03-fragile-axis.png", bbox_inches="tight")
+    plt.close(fig)
 
 
-# ============================================ Figure 5 — action margin trajectory
-def fig5_margin_trajectory():
-    # Provenance: action_conditioning_report.py --reward-debug
-    # grpo_on_k_full_debug.jsonl (beta 0.1 run, 1861 steps, 6 bins).
+# =========================================================================
+# FIG 4 — reading AFTER the answer beats reading before (S, T)
+# =========================================================================
+def fig4_post_beats_pre():
     import numpy as np
-    mids = [155, 465, 775, 1085, 1395, 1705]
-    known = [0.769, 0.759, 0.758, 0.752, 0.741, 0.735]
-    unknown = [0.743, 0.707, 0.684, 0.683, 0.662, 0.667]
+    fig, (axS, axT) = plt.subplots(1, 2, figsize=(11.0, 4.6), sharey=True)
+    for ax, d, name, ckpt in [(axS, S, "S", "raw instruction-tuned base"), (axT, T, "T", "after abstention training")]:
+        pre = d["auroc_surface"]["pre"]
+        post = d["auroc_surface"]["post"]
+        layers = sorted(int(k) for k in post)
+        yv_pre = [pre[str(l)] for l in layers]
+        yv_post = [post[str(l)] for l in layers]
+        ax.plot(layers, yv_pre, "-", color=C_MUTE, label="read BEFORE answer (pre)")
+        ax.plot(layers, yv_post, "-", color=C_DIAL, lw=2.0, label="read AFTER answer (post)")
+        bl = d["headline"]["best_post_layer"]
+        ax.plot([bl], [d["headline"]["auroc_post"]], "o", color=C_DIAL, ms=8)
+        ax.axvline(bl, ls=":", lw=0.9, color=C_DIAL, alpha=0.6)
+        ax.set_xlabel("layer")
+        ax.set_title(ckpt, fontsize=10.5)
+        ax.legend(frameon=False, fontsize=9, loc="lower right")
+    axS.set_ylabel("correctness AUROC")
+    axS.set_ylim(0.48, 0.87)
+    fig.suptitle("Per-answer correctness reads best AFTER the answer, peaking mid-network",
+                 fontsize=12, y=1.02)
+    fig.tight_layout()
+    fig.savefig(OUT / "fig-p3-04-post-beats-pre.png", bbox_inches="tight")
+    plt.close(fig)
 
-    fig, ax = plt.subplots(figsize=(8.4, 4.3))
-    ax.plot(mids, known, "-o", color=C["blue"], lw=2, label="answer rate | known", zorder=4)
-    ax.plot(mids, unknown, "-o", color=C["orange"], lw=2, label="answer rate | unknown", zorder=4)
-    ax.fill_between(mids, unknown, known, color=C["purple"], alpha=0.15, zorder=2,
-                    label="knowledge margin (≈ +5–8 pts, never opens)")
-    ax.set_xlabel("training step (binned)")
-    ax.set_ylabel("answer rate (rollouts, temp 1.35)")
-    ax.set_ylim(0.0, 1.0)
-    ax.set_xlim(0, 1861)
 
-    # reference: margin needed to pass the behavior gate
-    ax.annotate("a passing policy needs the\nmargin to open to ≈ +14.5 pts\n(and the bands to separate)",
-                xy=(1705, (known[-1] + unknown[-1]) / 2),
-                xytext=(900, 0.30), fontsize=9, color=C["gate"],
-                arrowprops=dict(arrowstyle="->", color=C["gate"], lw=1.2))
-    ax.legend(frameon=False, fontsize=9, loc="lower left")
-    _style(ax)
-    ax.set_title("The action margin never opens across 1861 training steps",
-                 fontsize=12.5)
-    _save(fig, "fig-p3-05-action-margin-trajectory")
+# =========================================================================
+# FIG 5 — training SHARPENS, does not CREATE the veto (W -> U)
+# =========================================================================
+def fig5_training_sharpens():
+    import numpy as np
+    fig, (axA, axB) = plt.subplots(1, 2, figsize=(10.2, 4.5))
+
+    # A: veto AUROC base -> trained
+    base_v = W["W_G1_dial_on_hallucination_PRIMARY"]["auroc_scorrect_vs_hallucination"]
+    train_v = U["U_G3_dial_on_hallucination_PRIMARY"]["auroc_tcorrect_vs_hallucination"]
+    axA.bar([0, 1], [base_v, train_v], color=[C_MUTE, C_VETO], width=0.6)
+    axA.annotate("", xy=(1, train_v), xytext=(0, base_v),
+                 arrowprops=dict(arrowstyle="->", color="#333", lw=1.4))
+    axA.text(0.5, (base_v + train_v) / 2 + 0.02, f"+{train_v - base_v:.3f}", ha="center", fontsize=10, fontweight="bold")
+    axA.axhline(THRESH, ls="--", lw=1.0, color="#444")
+    for xi, v in zip([0, 1], [base_v, train_v]):
+        axA.text(xi, v + 0.01, f"{v:.3f}", ha="center", va="bottom", fontsize=10)
+    axA.set_xticks([0, 1]); axA.set_xticklabels(["raw base", "after training"])
+    axA.set_ylabel("hallucination-veto AUROC"); axA.set_ylim(0, 1.05)
+    axA.set_title("the veto EXISTS untrained,\ntraining sharpens it", fontsize=10.5)
+
+    # B: hallucination dial-mean base -> trained (lower = more distrusted)
+    base_h = W["descriptive"]["dial_mean_hallucination"]
+    train_h = U["U_G2_descriptive"]["dial_mean_hallucination"]
+    axB.bar([0, 1], [base_h, train_h], color=[C_MUTE, C_VETO], width=0.6)
+    for xi, v in zip([0, 1], [base_h, train_h]):
+        axB.text(xi, v + 0.008, f"{v:.3f}", ha="center", va="bottom", fontsize=10)
+    axB.set_xticks([0, 1]); axB.set_xticklabels(["raw base", "after training"])
+    axB.set_ylabel("dial score on confident hallucinations"); axB.set_ylim(0, 0.35)
+    axB.set_title("training pushes confabulations\ntoward zero trust", fontsize=10.5)
+
+    fig.suptitle("Training does not create the trust signal — it sharpens the veto (Qwen3-4B)",
+                 fontsize=12, y=1.02)
+    fig.tight_layout()
+    fig.savefig(OUT / "fig-p3-05-training-sharpens.png", bbox_inches="tight")
+    plt.close(fig)
+
+
+# =========================================================================
+# FIG 6 — the two-stage pipeline schematic
+# =========================================================================
+def fig6_pipeline():
+    fig, ax = plt.subplots(figsize=(10.5, 3.6))
+    ax.set_xlim(0, 10); ax.set_ylim(0, 4); ax.axis("off")
+
+    def box(x, y, w, h, text, fc, tc="white"):
+        ax.add_patch(FancyBboxPatch((x, y), w, h, boxstyle="round,pad=0.02,rounding_size=0.12",
+                                    fc=fc, ec="none"))
+        ax.text(x + w / 2, y + h / 2, text, ha="center", va="center", color=tc, fontsize=9.5, wrap=True)
+
+    def arrow(x1, y1, x2, y2, text="", tc="#333"):
+        ax.add_patch(FancyArrowPatch((x1, y1), (x2, y2), arrowstyle="-|>", mutation_scale=14, color="#555", lw=1.4))
+        if text:
+            ax.text((x1 + x2) / 2, (y1 + y2) / 2 + 0.18, text, ha="center", fontsize=8.5, color=tc)
+
+    box(0.1, 1.6, 1.5, 0.9, "prompt", "#3a3a3a")
+    arrow(1.6, 2.05, 2.3, 2.05)
+    box(2.3, 1.4, 1.9, 1.3, "GATE\nanswerability\n(read @ anchor)", C_GATE)
+    arrow(4.2, 2.6, 5.0, 3.1, "≥ τ: answer")
+    arrow(4.2, 1.5, 5.0, 0.8, "< τ: abstain")
+    box(5.0, 0.35, 1.9, 0.9, '"I don\'t know"', C_MUTE)
+    box(5.0, 2.7, 1.9, 1.0, "model generates\nan answer", "#3a3a3a")
+    arrow(6.9, 3.2, 7.6, 2.7)
+    box(7.6, 1.4, 2.2, 1.3, "DIAL + VETO\ncorrectness\n(read @ answer)", C_DIAL)
+    arrow(8.7, 1.4, 8.7, 0.7)
+    box(7.6, -0.15, 2.2, 0.8, "surface trust # /\nveto confabulation", C_VETO)
+
+    ax.set_title("The deployable two-stage pipeline: gate abstains, dial surfaces trust and vetoes hallucination",
+                 fontsize=11.5, y=1.04)
+    fig.tight_layout()
+    fig.savefig(OUT / "fig-p3-06-pipeline.png", bbox_inches="tight")
+    plt.close(fig)
 
 
 if __name__ == "__main__":
-    fig1_internal_vs_stated()
-    fig2_kl_dissociation()
-    fig3_cell_confidence()
-    fig4_confidence_vs_action()
-    fig5_margin_trajectory()
-    print(f"\nAll figures written to {FIG_DIR}")
+    fig1_cross_family()
+    fig2_dial_distribution()
+    fig3_fragile_axis()
+    fig4_post_beats_pre()
+    fig5_training_sharpens()
+    fig6_pipeline()
+    print("figures written to", OUT)
+    for p in sorted(OUT.glob("*.png")):
+        print(" -", p.relative_to(ROOT), f"({p.stat().st_size // 1024} KB)")

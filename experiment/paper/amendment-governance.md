@@ -1,6 +1,6 @@
 # Protocol Amendment Governance
 
-Status: working rule for Paper 2 protocol hygiene
+Status: working rule for Paper 1 protocol hygiene
 
 Use this note when deciding whether an extension can be described as a signed
 protocol amendment, a local analysis extension, or only exploratory evidence.
@@ -27,7 +27,7 @@ An amendment is accepted only when all of the following are true:
 | PROTOCOL v0.3 | Signed off 2026-06-10 | Governs original headline matrix. |
 | Amendment A / v0.4 sequential SFT-warmed DPO/KTO | Signed off 2026-06-14 in `PROTOCOL.md` | Report separately as a prospective extension. |
 | Amendment B stated-confidence / GRPO | Signed off for stated-confidence measurement/reporting on 2026-06-19 in `AMENDMENT-B-stated-confidence-grpo.md` | Report as a separate accepted measurement layer; GRPO/RLVR remains prospective and needs separate launch approval. |
-| Phase 3 mechanism work | Exploratory draft protocol | Keep out of Paper 2 main results; use for a separate paper or future-work sentence only. |
+| Phase 3 mechanism work | Exploratory draft protocol | Keep out of Paper 1 main results; use for a separate paper or future-work sentence only. |
 
 ## Amendment B Scope
 

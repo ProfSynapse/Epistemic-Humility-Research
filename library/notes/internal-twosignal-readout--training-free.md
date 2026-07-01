@@ -31,7 +31,7 @@ related:
 - '[[auroc]]'
 - '[[hallucination]]'
 - '[[abstention]]'
-provenance: 'Internal program paper (Paper 4, working). Evidence: experiment/protocol/AMENDMENT-{O,P,Q,S,T,U,W}-*.md, the Stage 1.5 integration (PR #128), experiment/phase1/probe/amendment_*_result.json, and the synthesis experiment/paper/two-signal-readout-framework.md. Not an external publication.'
+provenance: 'Internal program paper (Paper 3, working). Evidence: experiment/protocol/AMENDMENT-{O,P,Q,S,T,U,W}-*.md, the Stage 1.5 integration (PR #128), experiment/phase1/probe/amendment_*_result.json, and the synthesis experiment/paper/two-signal-readout-framework.md. Not an external publication.'
 relationships:
 - type: supports
   target: '[[answerability-axis-present-without-task-training]]'
@@ -73,7 +73,7 @@ relationships:
 
 ## Summary
 
-Internal program paper (Paper 4, working) for the Epistemic-Humility-Research
+Internal program paper (Paper 3, working) for the Epistemic-Humility-Research
 program. Where Paper 3 ([[internal-paper3--knows-but-doesnt-say]]) establishes the
 representation-verbalization gap and proposes a confidence-head engine change, this
 paper shows the route works and that its core signal is recoverable with no task

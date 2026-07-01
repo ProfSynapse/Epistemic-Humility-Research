@@ -23,11 +23,13 @@ notes: >
   SelfAware (n=3369) unless stated otherwise; this is a within-model mechanistic
   study, not a multi-seed effect-size estimate. Figures marked "directional" rest
   on small wrong-answer cells (n=16 on the held-in TriviaQA known set) and are
-  reported as such. Companion papers: the systematic evidence synthesis
-  (meta-analysis/paper/draft-v0.md, "Paper 1") that defines the coherence axis this
-  paper measures, and the three-way abstention-training comparison
-  (experiment/paper/draft-v1.md, "Paper 2") that supplies the DPO/KTO behavior
-  results referenced in Section 7.
+  reported as such. Companion paper: the training-regimen paper ("Paper 1"), which
+  pairs a systematic evidence synthesis/review (source:
+  meta-analysis/paper/draft-v0.md) that defines the coherence axis this paper
+  measures with the full-regimen SFT/DPO/KTO/GRPO abstention experiment (source:
+  experiment/paper/paper1-training-regimen-draft-v1.md) that supplies the DPO/KTO
+  behavior results referenced in Section 7. This paper is Paper 2; the training-free
+  two-signal readout it motivates is Paper 3.
 ---
 
 # Knows but Doesn't Say: A Training-Resistant Gap Between Internal and Stated Confidence in a Small Language Model
@@ -70,7 +72,7 @@ calibrated internal axis*, and we frame that experiment.
 
 The dominant way to teach a language model epistemic humility is to teach it to
 *act* humble: to abstain when it should, to hedge, to say "I don't know." Paper 1's
-synthesis of the training literature [meta-analysis/paper/draft-v0.md] shows that
+review of the training literature [meta-analysis/paper/draft-v0.md] shows that
 almost all of this work is measured at a single depth — a scalar confidence or a
 binary abstention — and that one axis is almost entirely unmeasured: *coherence*,
 whether the model's stated epistemic signal, its token-level signal, and its
@@ -159,8 +161,9 @@ sycophancy live in steerable internal subspaces [arXiv:2604.03147]. We use steer
 as a causal probe of our two-axis decomposition and report a clean asymmetry that,
 to our knowledge, has not been isolated for the abstention behavior specifically.
 
-**Abstention and preference training.** Paper 2 [experiment/paper/draft-v1.md]
-establishes, on the same model and data, that cold-start SFT induces abstention (and
+**Abstention and preference training.** Paper 1's training experiment
+[experiment/paper/paper1-training-regimen-draft-v1.md] establishes, on the same
+model and data, that cold-start SFT induces abstention (and
 over-refusal), and that DPO and KTO reposition the abstention boundary rather than
 inducing the behavior. This paper builds on Paper 2 by asking what happens to the
 *confidence* channel under those and further objectives, and by adding the GRPO and
@@ -228,7 +231,7 @@ or refused), whereas the internal projection is monotone.
 So the discriminating signal exists internally and the verbalized number is a
 collapsed near-constant. The model *knows* but does not *say*.
 
-![[figures/fig-p3-01-internal-vs-stated-gap.png]]
+![[figures/fig-p2-01-internal-vs-stated-gap.png]]
 
 **Figure 1. The internal–stated confidence gap.** Two readouts of the same model
 on the same SelfAware questions (n=3369). *Left:* the internal doubt-axis probe
@@ -442,7 +445,7 @@ the other, not both. This is why we report the answer-masked variant as a succes
 behavior cell and a failed calibration cell rather than a success — calibration over
 sycophancy.
 
-![[figures/fig-p3-02-answer-supervision-dissociation.png]]
+![[figures/fig-p2-02-answer-supervision-dissociation.png]]
 
 **Figure 2. The answer-supervision dissociation: a single SFT lever cannot buy
 calibration and behavior together.** *Left:* the calibration–behavior trade-off.
@@ -474,7 +477,7 @@ inverted, unknown-refused (0.542) > unknown-answered-wrong (0.138). RL on a cali
 calibration where RL on the flat base (intervention 5) could not manufacture it;
 the base, not the reward, was the binding constraint for the confidence channel.
 
-![[figures/fig-p3-03-answer-supervised-cell-confidence.png]]
+![[figures/fig-p2-03-answer-supervised-cell-confidence.png]]
 
 **Figure 3. GRPO on the answer-supervised base retains stated calibration: the
 emitted scalar tracks outcome.** Mean emitted `response_confidence` per behavior
@@ -508,7 +511,7 @@ n = 3369; greedy unless noted) [results_amendment_n_...; action_conditioning_rep
 | action | same margin over training (1861 steps, binned) | +2.5 → ~+7 pts, never opens |
 | action | same margin, lower-KL re-run (β 0.05, greedy) — pre-reg. falsifier ≥ ~14.5 | **+3.02 pts** (p = 0.004), falsifier fired → structural |
 
-![[figures/fig-p3-04-confidence-vs-action.png]]
+![[figures/fig-p2-04-confidence-vs-action.png]]
 
 **Figure 4. Calibrated confidence, uncalibrated action.** The two channels of the
 policy from GRPO on the answer-supervised base have come apart. *Left:* the confidence channel discriminates —
@@ -531,7 +534,7 @@ isn't there. And across all 1861 training steps the action margin never opened
 (−1.28 mean reward) and refusing an unknown (+2.10) moved the *global* answer rate,
 not the conditioning.
 
-![[figures/fig-p3-05-action-margin-trajectory.png]]
+![[figures/fig-p2-05-action-margin-trajectory.png]]
 
 **Figure 5. The action margin never opens during training.** Answer rate for
 known vs unknown rollouts (temperature 1.35) binned across the 1861-step run of

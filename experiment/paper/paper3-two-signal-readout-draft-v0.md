@@ -416,7 +416,7 @@ you can trust.
 ## Appendix A — Provenance and reproducibility
 
 Every figure and number is generated from tracked result artifacts. Figures are produced by
-`experiment/paper/make_figures.py`, which reads the per-cell result JSONs directly:
+`experiment/paper/scripts/build_paper3_figures.py`, which reads the per-cell result JSONs directly:
 
 | Result surface | Artifact (under `experiment/phase1/probe/`) |
 |---|---|
@@ -438,14 +438,14 @@ surfaces, CIs, and dial descriptives.
 **Figure index.**
 
 - **Figure 1** — Cross-family training-free readout: gate/dial/veto per family, veto-ascending,
-  with CIs and the 0.65 pass / 0.50 chance lines. (`fig1_cross_family_readout.png`)
+  with CIs and the 0.65 pass / 0.50 chance lines. (`fig-p3-01-cross-family-readout.png`)
 - **Figure 2** — Dial distribution per family: mean trust of correct / wrong / confident-
-  confabulation groups, with the correct−hallucination gap annotated. (`fig2_dial_distribution.png`)
+  confabulation groups, with the correct−hallucination gap annotated. (`fig-p3-02-dial-distribution.png`)
 - **Figure 3** — The fragile axis: veto AUROC across Qwen3 sizes (left, non-monotonic, peaks
-  8B) and across families (right, 3/4 pass). (`fig3_fragile_axis.png`)
+  8B) and across families (right, 3/4 pass). (`fig-p3-03-fragile-axis.png`)
 - **Figure 4** — Correctness reads best after the answer: pre- vs post-generation dial AUROC by
-  layer, base and deployed. (`fig4_post_beats_pre.png`)
+  layer, base and deployed. (`fig-p3-04-post-beats-pre.png`)
 - **Figure 5** — Training sharpens the veto: veto AUROC 0.754 → 0.980 and hallucination
-  dial-mean 0.271 → 0.018, base vs trained. (`fig5_training_sharpens.png`)
+  dial-mean 0.271 → 0.018, base vs trained. (`fig-p3-05-training-sharpens.png`)
 - **Figure 6** — The deployable two-stage pipeline: gate (abstain) → generate → dial+veto
-  (surface trust). (`fig6_pipeline.png`)
+  (surface trust). (`fig-p3-06-pipeline.png`)

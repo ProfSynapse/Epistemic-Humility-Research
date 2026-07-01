@@ -1,7 +1,7 @@
 # The Two-Signal Readout Framework — working theory synthesis
 
 *Working document, 2026-06-30. Synthesizes the O→P→Q→S→T→U→W amendment trajectory
-into a theoretical frame, ahead of editing Paper 3 / drafting Paper 4. Not for
+into a theoretical frame, ahead of editing Paper 2 / drafting Paper 3. Not for
 distribution. Numbers are single-seed (seed 1), single-model (Qwen3-4B) unless a
 confirmatory replication is named.*
 
@@ -13,24 +13,24 @@ internal representation already contains two orthogonal, linearly-decodable axes
 the answer) — that compose into a deployable trust signal; our training relocates
 behavior and *sharpens* the hallucination veto, but does not *create* the signal.
 
-This extends Paper 3 ("Knows but Doesn't Say"), which established the gap and
+This extends Paper 2 ("Knows but Doesn't Say"), which established the gap and
 *proposed* a confidence-head engine change as the remaining route. The trajectory
 below shows the route works and, more strongly, that its core signal is recoverable
 with no training of ours at all.
 
 ## 1. The arc, as one logical line
 
-1. **The gap (Paper 3 R1).** The model holds a calibrated internal answerability
+1. **The gap (Paper 2 R1).** The model holds a calibrated internal answerability
    estimate (known/unknown AUROC ≈ 0.997, readout ECE ≈ 0.004) but states a
    near-constant, chance-level confidence (≈ 0.52–0.56). Knows, doesn't say.
-2. **The geometry (Paper 3 R2).** The internal signal is two correlated-but-separable
+2. **The geometry (Paper 2 R2).** The internal signal is two correlated-but-separable
    axes: a graded *doubt* axis and a *caution* gate (caution-specific refuse/answer
    AUROC 0.825 after orthogonalizing out doubt).
-3. **Asymmetric causality (Paper 3 R3).** Ablating the caution residual cuts
+3. **Asymmetric causality (Paper 2 R3).** Ablating the caution residual cuts
    over-refusal on known items 0.994 → 0.030 with clean specificity; no intervention
    installs abstention on true unknowns. We can relax excess caution, not install
    missing caution.
-4. **Training resistance + dissociation (Paper 3 R4; N, M).** The stated-confidence
+4. **Training resistance + dissociation (Paper 2 R4; N, M).** The stated-confidence
    gap survives DPO/KTO/GRPO-v1/v2/v3 + two contrastive-SFT variants. Two opposite
    training pressures fail on the same channel: RL on the calibrated base keeps stated
    calibration but cannot install knowledge-conditioned action (N, "says but doesn't
@@ -86,10 +86,10 @@ These are the cause→effect claims the trajectory supports, written to become
   gap is a property of the single LM-head confidence token under cross-entropy, not a
   knowledge deficit; two opposite training pressures fail on it → an engine change
   (dedicated head, regression loss vs the internal axis) is the route. *Evidence:*
-  N, M, Paper 3 R4; ceiling shown by O, Q.
+  N, M, Paper 2 R4; ceiling shown by O, Q.
 - **M6 — caution-gate-causally-steerable-asymmetrically.** Behavior is controllable
   along the caution axis (relaxable), but missing caution cannot be installed by
-  steering. *Evidence:* Paper 3 R3.
+  steering. *Evidence:* Paper 2 R3.
 
 ## 3. Blind spots to fill before writing up (rigor audit)
 
@@ -139,17 +139,24 @@ Ordered by how load-bearing they are for the claims we want to make.
 
 ## 4. Where these land in the papers
 
-- **Paper 3 §7–8 (R4 + Discussion).** The arc up through O/Q/P/N/M *is* the close of
-  Paper 3's argument: it proposed the confidence-head engine change; O/Q show the
+*(Numbering below uses the current 4-paper map: Paper 1 = training regimen
+[review + full SFT/DPO/KTO/GRPO experiment]; Paper 2 = "Knows but Doesn't Say";
+Paper 3 = this two-signal readout; Paper 4 = steering.)*
+
+- **Paper 2 §7–8 (R4 + Discussion).** The arc up through O/Q/P/N/M *is* the close of
+  Paper 2's argument: it proposed the confidence-head engine change; O/Q show the
   ceiling and that the production engine reaches it. Fold O/Q/P as a "Result 5: the
   readout route reaches the ceiling" or a Discussion subsection; N/M already anchor §7.
-- **Paper 4 (new): the two-signal readout.** S/T/U/Stage-1.5/W are a *distinct*
-  contribution — a second axis (correctness), the orthogonality/pipeline result, and
-  the training-free finding. Candidate title: *"The confidence is already there:
-  a training-free two-signal readout for epistemic humility."* This doc is its seed.
-- **Paper 1 (meta-analysis, draft-v0).** M4 (training sharpens not creates) and M5
-  (channel bottleneck) connect to the synthesis's "coherence axis is unmeasured"
-  thesis; cite the trajectory as the empirical instantiation.
+- **Paper 3: the two-signal readout.** S/T/U/Stage-1.5/W/X/Z are a *distinct*
+  contribution — a second axis (correctness), the orthogonality/pipeline result, the
+  training-free finding, and the cross-size/cross-family replication. Title:
+  *"The Confidence Is Already There: A Training-Free Two-Signal Readout for Epistemic
+  Humility in Small Language Models."* Drafted at
+  `experiment/paper/paper3-two-signal-readout-draft-v0.md`; this doc is its seed.
+- **Paper 1 (training regimen; review from meta-analysis/paper/draft-v0.md + the
+  experiment in paper1-training-regimen-draft-v1.md).** M4 (training sharpens not
+  creates) and M5 (channel bottleneck) connect to the review's "coherence axis is
+  unmeasured" thesis; cite the trajectory as the empirical instantiation.
 
 ## 5. KG-ingest of our own findings (atomize the trajectory)
 
@@ -191,4 +198,4 @@ user asked for.
 2. Pre-register + run the Tier-1 seed replication of S/T/U/W (§3.1) — the one thing
    that gates promotion of any of these numbers to a headline claim.
 3. Fill Tier-2 (§3.3–3.5) opportunistically (mostly CPU/analysis).
-4. Then edit Paper 3 §7–8 and seed Paper 4 from this doc; Tier-3 → future work.
+4. Then edit Paper 2 §7–8 and seed Paper 3 from this doc; Tier-3 → future work.

@@ -8,11 +8,11 @@ approval naming cells/lane. Nothing here is authorized to run yet.
 
 **Instrument ruling (per `experiment-runner/reference/amendment-vs-lab-notebook.md`):**
 this is a **new experiment / new paper line** (causal *steering*, Architecture A),
-distinct from the observational two-signal *readout* paper (Paper 4). It does NOT
+distinct from the observational two-signal *readout* paper (Paper 3). It does NOT
 touch the locked PROTOCOL v0.3 headline surface, so it is not a Tier-1 protocol
 revision. Its first concrete run is governed as a **Tier-2 Amendment** (falsifier
 pre-stated), exactly as S/T/U/W/X/Z were for the readout paper. Working title:
-**Paper 5 — reading vs. writing the trust axis.**
+**Paper 4 — reading vs. writing the trust axis.**
 
 ## One-line thesis
 

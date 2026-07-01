@@ -123,7 +123,7 @@ Exploratory, multi-model (one family), single-seed; reported separately from the
 locked matrix. A SUCCESS extends the training-free two-signal readout across Qwen3
 scale. **Remaining limitation:** cross-FAMILY generalization (Llama/Mistral/Gemma)
 is untested and is the next axis; a headline claim still requires it plus, ideally,
-a held-out dataset, registered before running. Written into Paper 4 (the two-signal
+a held-out dataset, registered before running. Written into Paper 3 (the two-signal
 readout paper) as the generalization section.
 
 ## 6. Sign-off checklist

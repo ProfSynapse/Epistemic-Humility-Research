@@ -1,4 +1,4 @@
-# Paper 2 TODO
+# Paper 1 TODO
 
 Status: draft scaffold checklist
 Created: 2026-06-18
@@ -64,8 +64,8 @@ Created: 2026-06-18
 
 ## Citation and Reference Work
 
-- [ ] Build a Paper 2 bibliography from verified Paper 1 references and method
-  papers.
+- [ ] Build the Paper 1 bibliography from verified review (meta-analysis) references
+  and method papers.
 - [ ] Verify citation metadata for DPO, KTO, Cheng IDK training, calibration,
   TriviaQA, Qwen3, and every evaluation benchmark mentioned.
 - [ ] Add citations for SelfAware, KUQ, CoCoNot, AbstentionBench, MMLU, PopQA,
