@@ -307,6 +307,56 @@ therefore read the gap as a *directional* predictor, not a strict rank. The stab
 conclusion stands: **gate + dial are family-general (4/4); the veto replicates (3/4) but is
 the fragile, model-specific axis.**
 
+### 4.8 Seed-robustness: the greedy veto misses were decode artifacts
+
+<!-- DRAFT-IN-PROGRESS 2026-07-01: Gemma seeds 20260702/20260703 still extracting; rows
+marked TBD. Do NOT finalize the verdict sentence or touch §4.7's conclusion / the abstract
+until all 12 cells land. Pre-reg: AMENDMENT-SR-sampled-decode-seed-robustness.md. -->
+
+Every number in §4.7 comes from a single deterministic decode (greedy). A deployment
+samples. We therefore pre-registered a seed-robustness confirmatory: the identical
+training-free readout on the same four families under **sampled decoding** (temperature 0.7,
+top-p 0.9) across **three seeds**, with the same per-cell gates and adequacy floors. The
+gate was pre-declared decode-invariant (it reads the prompt anchor, which sampling never
+touches) and emitted as an invariance check only; the dial and veto — both read from
+*sampled* answers — were the endpoints. Success required the dial seed-stable on 4/4
+families, the veto seed-stable on ≥3/4, and the per-seed veto majority never dropping below
+3/4 on any single seed.
+
+**Table 2. Sampled-decode seed-robustness (AUROC per seed; mean [min–max] across 3 seeds).**
+
+| Model | Dial (3 seeds) | Veto (3 seeds) | Veto seed-stable? | Greedy veto (§4.7) |
+|---|---|---|---|---|
+| Llama-3.2-3B | 0.848 [0.827–0.865], 3/3 pass | **0.739 [0.684–0.801], 3/3 pass** | **YES** | 0.633 (FAIL) |
+| Ministral-3-3B | 0.806 [0.799–0.812], 3/3 pass | 0.681 [0.606–0.742], 2/3 pass | **YES** | 0.733 (pass) |
+| Qwen3.5-4B | 0.852 [0.830–0.864], 3/3 pass | **0.753 [0.659–0.807], 3/3 pass** | **YES** | 0.666 (marginal) |
+| Gemma-4-E4B | 0.802 / TBD / TBD | 0.762 / TBD / TBD | TBD | 0.871 (pass) |
+
+**The two greedy veto misses flip to passes under sampling.** Llama — the one clean veto
+*failure* in §4.7 (0.633) — passes on **all three seeds** under sampled decoding (0.684–
+0.801). Qwen3.5 — the marginal pass whose CI dipped below the bar — passes all three seeds
+cleanly. The §4.7 "fragile veto" split is therefore partly a *decode* artifact, not purely a
+model property: a single greedy trajectory produces one specific set of confabulations, and
+Llama's greedy confabulations happened to read as trustworthy; its sampled ones do not.
+Single-decode point estimates *understated* the veto.
+
+**The veto is seed-sensitive per cell, seed-stable per family.** Across-seed spread on the
+veto is real (Llama range 0.12, Qwen3.5 0.15, Ministral 0.14 — vs dial spreads of 0.01–
+0.04), and Ministral drops below the bar on one seed (0.606 on seed 1, its only failing
+cell). Per-cell veto numbers should accordingly be reported with seed spread, not as point
+estimates. At the family level the verdict is stable: every family that has completed is a
+seed-stable veto pass.
+
+**The gate is decode-invariant, as pre-declared.** Across all completed cells the gate sits
+at 0.996–0.999 with a per-family across-seed range under 0.003 — sampling the answer does
+not move an axis read before the answer exists.
+
+<!-- TBD (fill when Gemma 702/703 land): final verdict sentence — SUCCESS requires Gemma
+dial 3/3 for clause (a) and the per-seed majority table. Seed 20260701, the only pinch
+seed (Ministral fails it), already cleared 3/4 with Gemma's 0.762 pass. Then update:
+§4.7 closing line ("fragile, model-specific axis" → decode-artifact nuance), the abstract's
+single-seed caveat, and §7 Limitations. -->
+
 ---
 
 ## 5. The deployable pipeline
