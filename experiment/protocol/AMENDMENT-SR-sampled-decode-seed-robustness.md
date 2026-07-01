@@ -173,16 +173,26 @@ append result + update session/experiment notes. Cost ≈ 3× the Z overnight qu
 
 ## §7 Results (filled per family × seed as runs complete)
 
-**Status: RUNNING — launched 2026-07-01 10:11 UTC (user approval), local Docker GPU lane.
-8/12 cells scored (Llama + Ministral complete; Qwen3.5 2/3, seed3 running; Gemma pending).
-Updating as cells land. The veto is seed-SENSITIVE per-seed but seed-STABLE at the family
-level: Llama 3/3 PASS, Ministral 2/3 PASS, Qwen3.5 2/2 PASS = THREE families seed-stable
-PASS ⇒ the veto ≥3/4 SUCCESS bar (part b) is MET regardless of Gemma. dial passes all 8
-cells (part a on track, Gemma pending). The ONLY thing still live is the STRICT per-seed
-majority clause (part c, ≥3/4 veto PASS on EVERY seed): seed 20260702 already ≥3/4 secured;
-seed 20260701 sits 2 PASS (Llama, Qwen3.5) / 1 FAIL (Ministral) with Gemma 701 pending —
-Gemma 701 must PASS for seed 701 to clear 3/4, else the clause (and SUCCESS) breaks. Gemma
-was the Z-strongest veto (0.871). Verdict not called until all 12 land.**
+**Status: QUEUE COMPLETE 2026-07-01 16:54 UTC (launched 10:11 UTC, user approval, local
+Docker GPU lane) — 9/12 cells scored. Llama, Ministral, Qwen3.5 = 3/3 seeds each (all 9
+eligible). Gemma-4-E4B DID NOT RUN: its compat smoke crashed on a transient 9P/DrvFS
+`PermissionError [Errno 13]` at `out_dir.mkdir(...)` BEFORE the model loaded (the other 12
+in-container dirs — 3 smoke + 9 seed — created fine via the same call; Gemma was last in the
+queue and hit a filesystem hiccup on the Windows mount). This is a RETRYABLE INFRA FAULT, NOT
+a scientific ineligibility: Gemma passed this exact greedy smoke in Z with the same
+`unsloth-z:latest` image, and the pre-reg INELIGIBLE category (gated 401 / multimodal class
+mismatch / FP8 dtype fail / degenerate pool) does not cover a mkdir error. Disposition: Gemma
+= RE-RUN PENDING (needs explicit GPU launch approval), NOT recorded INELIGIBLE.**
+
+**Verdict status — the 3 eligible families are unanimous and strong: dial 9/9 PASS (0.799–0.865),
+gate decode-invariant (0.9964–0.9986, range <0.003/family), veto seed-stable PASS on all three
+(Llama 3/3, Ministral 2/3, Qwen3.5 3/3). SUCCESS parts (a) dial and (b) veto ≥3/4 are met on the
+eligible set. The verdict genuinely HINGES ON GEMMA via the strict per-seed clause (c): seed
+20260702 and 20260703 are 3/3 veto PASS, but seed 20260701 sits 2 PASS (Llama, Qwen3.5) / 1 FAIL
+(Ministral 0.606) — with 4 families the ≥3/4 bar needs Gemma-701 to PASS; dropping Gemma leaves
+seed 701 at 2/3 (0.67 < 0.75), which does NOT clear the literal ≥3/4 bar. So the verdict is NOT
+called: re-running Gemma (Z-strongest veto 0.871) is required to resolve clause (c), and it also
+strengthens (b). Verdict deferred pending the Gemma re-run.**
 
 ### Per-family seed table (filling as cells land)
 
@@ -199,22 +209,49 @@ SR-veto ≥0.65 with CI excl 0.50.
 | Ministral-3-3B | 20260703 | 0.799 ✓ | 0.742 | ✓ | **PASS** |
 | Qwen3.5-4B | 20260701 | 0.830 ✓ | 0.659 | ✓ | **PASS** (marginal) |
 | Qwen3.5-4B | 20260702 | 0.864 ✓ | 0.807 | ✓ | **PASS** |
-| Qwen3.5-4B | 20260703 | | | | |
-| Gemma-4-E4B | 20260701 | | | | |
-| Gemma-4-E4B | 20260702 | | | | |
-| Gemma-4-E4B | 20260703 | | | | |
+| Qwen3.5-4B | 20260703 | 0.862 ✓ | 0.794 | ✓ | **PASS** |
+| Gemma-4-E4B | 20260701 | — | — | — | *RE-RUN PENDING (9P mkdir PermissionError, infra)* |
+| Gemma-4-E4B | 20260702 | — | — | — | *RE-RUN PENDING (9P mkdir PermissionError, infra)* |
+| Gemma-4-E4B | 20260703 | — | — | — | *RE-RUN PENDING (9P mkdir PermissionError, infra)* |
 
-### Seed-stability roll-up (to fill)
+### Seed-stability roll-up (3 eligible families; Gemma re-run pending)
 
 | model | dial mean ± range | dial 3/3 PASS? | veto mean ± range | veto ≥2/3 PASS? | gate invariance |
 |---|---|---|---|---|---|
+| Llama-3.2-3B | 0.848 [0.827–0.865] | **YES (3/3)** | 0.739 [0.684–0.801] | **YES (3/3)** | 0.9964–0.9975 (Δ0.0011) |
+| Ministral-3-3B | 0.806 [0.799–0.812] | **YES (3/3)** | 0.681 [0.606–0.742] | **YES (2/3)** | 0.9967–0.9975 (Δ0.0008) |
+| Qwen3.5-4B | 0.852 [0.830–0.864] | **YES (3/3)** | 0.753 [0.659–0.807] | **YES (3/3)** | 0.9982–0.9986 (Δ0.0004) |
+| Gemma-4-E4B | — | *pending re-run* | — | *pending re-run* | *pending re-run* |
 
-### Per-seed veto majority (to fill)
+Dial is a seed-stable PASS on **3/3 eligible** families (Gemma pending → part (a) not yet
+4/4). Veto is a seed-stable PASS on **3/3 eligible** families → part (b) ≥3/4 already met on
+the eligible set. Gate invariance holds (per-family across-seed range <0.0011) — sampled
+decoding does not move the pre-gen anchor axis, exactly as pre-stated.
 
-| seed | families with veto PASS | ≥3/4? |
-|---|---|---|
+### Per-seed veto majority (3 eligible families; Gemma re-run pending)
 
-### VERDICT (to fill): SUCCESS / FALSIFIER
+| seed | families with veto PASS (eligible) | Gemma | ≥3/4? |
+|---|---|---|---|
+| 20260701 | 2/3 — Llama ✓, Qwen3.5 ✓, Ministral ✗ (0.606) | pending | **HINGES ON GEMMA** (2/4 without, needs Gemma-701 PASS for 3/4) |
+| 20260702 | 3/3 — Llama ✓, Ministral ✓, Qwen3.5 ✓ | pending | **YES** (3/4 secured regardless of Gemma) |
+| 20260703 | 3/3 — Llama ✓, Ministral ✓, Qwen3.5 ✓ | pending | **YES** (3/4 secured regardless of Gemma) |
+
+### VERDICT: DEFERRED — pending Gemma-4-E4B re-run
+
+- **Parts (a) dial and (b) veto:** met on the 3 eligible families (dial 3/3 seed-stable,
+  veto 3/3 seed-stable). Adding Gemma can only strengthen (b); it is required to reach the
+  literal 4/4 on (a).
+- **Part (c) strict per-seed ≥3/4 majority:** seeds 702 and 703 clear it (3/4 secured);
+  **seed 701 is the pinch** — 2/4 without Gemma, so Gemma-701 must post a veto PASS to reach
+  3/4. Dropping Gemma leaves seed 701 at 2/3 (0.67 < 0.75 = below the literal ≥3/4 bar), so
+  the verdict cannot be honestly called SUCCESS on the 3-family set.
+- **Why not INELIGIBLE:** Gemma's smoke failed on a transient 9P `PermissionError` at
+  `mkdir` before the model loaded — a retryable filesystem fault, not one of the pre-reg
+  INELIGIBLE blockers. Gemma passed this same greedy smoke in Z with the identical image.
+  Recording it INELIGIBLE would both misclassify the failure and leave (c) unresolvable.
+- **Action:** re-run `gemma-4-e4b` seeds 20260701/02/03 on the local Docker GPU lane (a
+  lab-notebook re-run of a pre-registered cell — not a new amendment, no goalpost change),
+  then finalize the verdict. Requires explicit user launch approval before GPU use.
 
 ### Data & provenance (to fill)
 
