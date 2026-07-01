@@ -1,7 +1,7 @@
 ---
 title: "Epistemic Humility in Large Language Models: A Systematic Evidence Synthesis of Training Effects, Interventions, and Open Gaps"
 author: "Joseph Rosenbaum (Synaptic Labs)"
-status: draft-v0
+status: archived (absorbed as Part I of experiment/paper/paper1-training-regimen-draft-v2.md, 2026-07-01)
 date: 2026-06-10
 target: arXiv (cs.CL / cs.AI)
 evidence_base: meta-analysis/evidence/effects.csv (78 rows, 39 studies), meta-analysis/evidence/idk-method-reanalysis.csv
@@ -24,6 +24,15 @@ notes: >
 **Joseph Rosenbaum** · Synaptic Labs · connect2synapse@gmail.com
 
 *Draft v0. Not for distribution.*
+
+> **ARCHIVED (2026-07-01).** This standalone synthesis is superseded as
+> reader-facing text: it has been absorbed as Part I (the systematic review)
+> of the unified Paper 1,
+> `experiment/paper/paper1-training-regimen-draft-v2.md`, which pairs the
+> review with the SFT/DPO/KTO/GRPO regimen experiment it motivated. This file
+> remains the provenance source of record for every Part I number (methods,
+> flow accounting, sensitivity analyses, full bibliography). Do not edit the
+> claims here without a matching update to Paper 1 Part I.
 
 > *"It is likely that neither of us knows anything worthwhile, but he thinks he knows something when he does not, whereas I, as I do not know, do not think I know either."*
 >
