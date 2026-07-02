@@ -6,6 +6,20 @@ direction_*.npy
 */directions/
 directions/
 
+# EXCEPTION: the frozen qwen3.5-4b probe directions are pinned inputs of the
+# signed Amendments AA/AB (gate L14 / dial L16, seed 20260630); cloud Arm B
+# cells load them from a fresh clone, and the extraction dirs they are
+# "reproducible from" are local-only. These four small files are the
+# provenance artifacts of record.
+!directions/
+directions/*
+!directions/qwen3.5-4b/
+directions/qwen3.5-4b/*
+!directions/qwen3.5-4b/direction_gate.json
+!directions/qwen3.5-4b/direction_gate.safetensors
+!directions/qwen3.5-4b/direction_dial.json
+!directions/qwen3.5-4b/direction_dial.safetensors
+
 # pytest cache
 .pytest_cache/
 __pycache__/

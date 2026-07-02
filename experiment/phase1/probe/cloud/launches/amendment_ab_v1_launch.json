@@ -3,7 +3,7 @@
   "launched_utc": "2026-07-02T21:26:45Z",
   "lane": "hf-jobs a10g-small, sequential engine (precondition 6: batched harness not spot-checked; 'final' unsupported in arm_b_batched)",
   "approval": "user in-conversation 2026-07-02: 'lets toss arm b up on the cloud and run in parallel' + AskUserQuestion 'Launch all three' naming AB-1/AB-2/AB-3",
-  "repo_commit": "7e61ad7a24e0d80f9835b8b3aa26ab7a04a63d70",
+  "repo_commit": "PENDING-ROUND-3",
   "model": "unsloth/Qwen3.5-4B",
   "note_variant": "v1",
   "seed": 20260701,
@@ -11,6 +11,28 @@
   "timeout": "5h",
   "log_push_interval_s": 300,
   "results_repo": "professorsynapse/epistemic-humility-cloud-results",
+  "failed_rounds": [
+    {
+      "round": 1,
+      "repo_commit_attempted": "7e61ad7a24e0d80f... (FABRICATED: hand-expanded from short sha 7e61ad7a; true sha is 7e61ad7aa5cc...)",
+      "reason": "bootstrap git fetch failed 'not our ref' (exit 128, ~2min) on all three jobs. Lesson: never hand-expand a short sha; always rev-parse.",
+      "job_ids": {
+        "AB-1": "6a46d79533c08a2c0dae1de1",
+        "AB-2": "6a46d79533c08a2c0dae1de3",
+        "AB-3": "6a46d79633c08a2c0dae1de5"
+      }
+    },
+    {
+      "round": 2,
+      "repo_commit_attempted": "7e61ad7aa5cc59ee8a84d41fc92edff3cff86a3e",
+      "reason": "bootstrap OK (clone + A10G visible) but run_arm_b.py died with FileNotFoundError on steering/directions/qwen3.5-4b/direction_*.json: the frozen probe direction files were gitignored (steering/.gitignore 'directions/') so the cloud clone lacked them. Local dry-runs passed because the files exist on disk. Fix: scoped gitignore exception + commit the 4 small direction artifacts; verify inputs against git ls-tree of the pinned sha, not the working tree, before launching.",
+      "job_ids": {
+        "AB-1": "6a46d93233c08a2c0dae1e07",
+        "AB-2": "6a46d932fb6818a83db3098e",
+        "AB-3": "6a46d933fb6818a83db30990"
+      }
+    }
+  ],
   "cells": [
     {
       "cell": "AB-1",
@@ -19,8 +41,7 @@
       "position": "early",
       "pool": "gate 300 unknown + 300 known",
       "n_generations": 2400,
-      "job_id": "6a46d79533c08a2c0dae1de1",
-      "outcome": null
+      "job_id": "PENDING-ROUND-3"
     },
     {
       "cell": "AB-2",
@@ -29,8 +50,7 @@
       "position": "late",
       "pool": "dial 500 answerable",
       "n_generations": 1500,
-      "job_id": "6a46d79533c08a2c0dae1de3",
-      "outcome": null
+      "job_id": "PENDING-ROUND-3"
     },
     {
       "cell": "AB-3",
@@ -39,8 +59,7 @@
       "position": "final",
       "pool": "dial 500 answerable",
       "n_generations": 2000,
-      "job_id": "6a46d79633c08a2c0dae1de5",
-      "outcome": null
+      "job_id": "PENDING-ROUND-3"
     }
   ]
 }
