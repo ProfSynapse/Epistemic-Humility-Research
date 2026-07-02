@@ -322,6 +322,32 @@ this single greedy decode) and is the fragile axis** — though §4.8 shows the 
 misses are largely decode artifacts: under sampled decoding the veto passes seed-stably on
 all four families.
 
+**Where the two signals live in depth (descriptive).** The same Amendment Z runs carry the
+full per-layer AUROC surface for the gate and the dial, and plotting them against fractional
+depth (layer / n_layers, since the four families have 28, 26, 32, and 42 blocks) shows the
+two signals occupy different parts of the network (Figure 7). The gate is not a
+single-layer phenomenon anywhere: in all four families it rises from chance at the embedding
+to a saturated ~0.997+ plateau whose within-0.005-of-max span covers most of the network —
+Llama L5–28/28, Ministral L4–26/26, Qwen3.5 L7–32/32, Gemma L7–42/42 — with onset by roughly
+20% of depth in every family. The per-family "best gate layer" differences in the result
+JSONs are therefore argmax jitter on a flat plateau, not meaningful localization. The dial
+is different: its within-0.02-of-max band is a narrower, overlapping mid-to-late region —
+Llama L11–28, Ministral L16–21, Qwen3.5 L13–24, Gemma L15–41 — and Llama's dial argmax sits
+at L25/28, near the unembedding. Read descriptively, answerability appears to be computed
+early from the question and simply carried forward, while correctness requires the formed
+answer and lives in a localized mid-to-late band. This is a descriptive replot of the
+already-reported Amendment Z surfaces — no new claim and no gate rests on it.
+
+> **Figure 7 — Cross-family depth profile of the two signals.** Per-layer AUROC for the
+> answerability gate (left, zoomed y-axis) and the correctness dial (right) against
+> fractional depth, one line per family; dots mark each family's argmax layer and the bars
+> under each panel mark its within-tolerance span (gate: within 0.005 of max; dial: within
+> 0.02). The gate saturates by ~20% of depth and stays saturated to the last block in all
+> four families, so per-family best-layer differences are jitter on a plateau; the dial
+> concentrates in an overlapping mid-to-late band, with Llama's argmax at L25/28 near the
+> unembedding. Descriptive only, from the Amendment Z `auroc_surface` blocks.
+> (`fig-p3-07-depth-profile.png`)
+
 ### 4.8 Seed-robustness: the greedy veto misses were decode artifacts
 
 Every number in §4.7 comes from a single deterministic decode (greedy). A deployment
@@ -590,3 +616,6 @@ surfaces, CIs, and dial descriptives.
   dial-mean 0.271 → 0.018, base vs trained. (`fig-p3-05-training-sharpens.png`)
 - **Figure 6** — The deployable two-stage pipeline: gate (abstain) → generate → dial+veto
   (surface trust). (`fig-p3-06-pipeline.png`)
+- **Figure 7** — Cross-family depth profile: gate vs dial per-layer AUROC against fractional
+  depth, with argmax dots and within-tolerance span bars; descriptive, from the Amendment Z
+  `auroc_surface` blocks. (`fig-p3-07-depth-profile.png`)
