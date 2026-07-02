@@ -96,6 +96,42 @@ notes:
   paper3-absorb-confidence-depth (b5c9cbca, stacked on paper-line-restructure);
   PR follows the #142 merge. Number fix: GRPO-v2 appropriateness AUROC 0.520
   (full eval, n=3369) replaces the behavior-subset 0.561 (n=1233, 15 wrong).'
+- 'Mid-run diagnostics on the flat AA-1/AA-3 Arm A sweeps (2026-07-02): (a) the
+  perturbation is NOT small in amplitude - Qwen3.5-4B L14 residual norm is ~7.8
+  (sd 0.1, n=60 frozen pre-anchor states), so effective alpha ~2 is a ~27%
+  perturbation and unscaled alpha 4 would be ~51%; (b) the anchor-mode hook
+  fires ONCE (prefill, last prompt token, one layer) while all 128 decode steps
+  run unsteered, so the anchor cells test a one-token nudge - the end cells
+  (gen_stream) steer every decode token, meaning anchor-vs-end differ in BOTH
+  position and intervention surface (confound to name in section 7); (c) the
+  uncertainty-proportional rule alpha*(1-probe) costs ~2x on unknowns (probe
+  reads them 0.36-0.59); (d) AA-3 sign-agnostic tiny lifts (+0.011..+0.029 at
+  BOTH alpha signs, none CI-excluding 0) read as perturbation noise, and the
+  control revision-discrimination is ~0.008 - the unsteered revision pass has
+  no discrimination to amplify.'
+- 'Doubt-vs-caution reframe (user insight, 2026-07-02): the probes read the
+  DOUBT/evidence axes; abstention is governed by the CAUTION/action gate, and
+  Paper 2 line already showed these are separable (whitened cosine -0.565,
+  caution_perp held-out AUROC 0.825 after doubt projected out) with caution
+  causally load-bearing (refined B1: ablate caution_perp -> refusal 0.994->0.524).
+  AA Arm A flatness on a raw base (gate engaged ~1/3000) is the two-axis
+  prediction: evidence variable steered, decision variable never consulted.
+  FALSIFIER-1, if it lands, reads "doubt axis is not the action lever", not
+  "steering does not work".'
+- 'Follow-up directions queued behind the AA verdict + PR (user-proposed
+  2026-07-02, none registered yet): (1) rerun AA cell structure on the TRAINED
+  abstainer checkpoints (clean-SFT, SFT->GRPO-v2) where the caution gate is
+  live (GRPO-v2 refuses ~82% forced-best-guess) - directions refit per
+  checkpoint per Amendment T; cheapest and most diagnostic, decides whether
+  training installs the doubt->caution wire. (2) probe-as-reward training:
+  couple the ACTION policy to the frozen probe readout via RL (reward abstain
+  when probe-doubt high / answer when low) - distinct from the falsified M/R
+  channels which coupled REPORTING to the internal state; design downstream of
+  (1). (3) think-end position cell: read/steer at the last thinking token -
+  post-formation signal (S/T: post beats pre) available BEFORE any visible
+  token, dissolving the read-late/act-early dilemma; plus thinking-tuning
+  (train the model to self-emit the AA Arm B injection note) if Arm B moves
+  behavior.'
 ---
 
 # Session 0032 — Amendment AA: causal confidence steering (Paper 5)
