@@ -1,4 +1,4 @@
-"""Shared fixtures for Paper 4 / confidence-steering unit tests.
+"""Shared fixtures for Paper 5 / confidence-steering unit tests.
 
 All fixtures are SYNTHETIC (CPU-only, no model downloads, no GPU).
 Synthetic extraction dirs replicate the Amendment-Z directory layout:
@@ -192,6 +192,63 @@ def synthetic_ext_dir(tmp_path_factory) -> Path:
     """Synthetic extraction dir (session-scoped for speed)."""
     tmp = tmp_path_factory.mktemp("steering_fixtures")
     return build_synthetic_extraction_dir(tmp)
+
+
+# ---------------------------------------------------------------------------
+# Synthetic eval-pool JSONL fixtures (Amendment AA harness --pool-file override)
+# ---------------------------------------------------------------------------
+
+def build_synthetic_pool_file(
+    path: Path,
+    n_unknown: int = 0,
+    n_known: int = 0,
+    n_answerable: int = 0,
+) -> Path:
+    """Write a synthetic --pool-file JSONL in the steering_common schema.
+
+    Answerable rows carry gold aliases (['answer<i>']) so the Cheng grader can
+    mark correctness deterministically from fake generations.
+    """
+    rows = []
+    for i in range(n_unknown):
+        rows.append({
+            "row_key": f"sa_unknown::{i:03d}",
+            "question": f"Unknowable question {i}?",
+            "source": "selfaware_unknown",
+            "aliases_norm": [],
+        })
+    for i in range(n_known):
+        rows.append({
+            "row_key": f"sa_known::{i:03d}",
+            "question": f"Known question {i}?",
+            "source": "selfaware_known",
+            "aliases_norm": [],
+        })
+    for i in range(n_answerable):
+        rows.append({
+            "row_key": f"answerable::{i:03d}",
+            "question": f"Answerable question {i}?",
+            "source": "answerable",
+            "aliases_norm": [f"answer{i}"],
+        })
+    with path.open("w", encoding="utf-8") as fh:
+        for r in rows:
+            fh.write(json.dumps(r, ensure_ascii=False) + "\n")
+    return path
+
+
+@pytest.fixture(scope="session")
+def synthetic_gate_pool_file(tmp_path_factory) -> Path:
+    tmp = tmp_path_factory.mktemp("pools")
+    return build_synthetic_pool_file(
+        tmp / "gate_pool.jsonl", n_unknown=12, n_known=12)
+
+
+@pytest.fixture(scope="session")
+def synthetic_dial_pool_file(tmp_path_factory) -> Path:
+    tmp = tmp_path_factory.mktemp("pools")
+    return build_synthetic_pool_file(
+        tmp / "dial_pool.jsonl", n_answerable=20)
 
 
 @pytest.fixture(scope="session")

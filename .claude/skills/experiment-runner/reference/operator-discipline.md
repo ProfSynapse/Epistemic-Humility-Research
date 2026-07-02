@@ -7,19 +7,29 @@ skill:
   unless the user has explicitly approved that exact action in the current
   conversation. Treat launch/cancel/delete as irreversible operator actions; do
   not infer permission from a broader goal.
-- **Branch-per-amendment lifecycle (one amendment = one branch = one PR, landed
-  before the next).** Cut a dedicated branch from an up-to-date `main` for each
-  Amendment or standalone experiment. Do the FULL arc on it (recipes, run
-  records, scored results, doc verdict, skill notes), open a PR into `main`, and
-  MERGE it before cutting the branch for the next amendment. Do not stack a
-  second amendment on an unmerged branch, and do not let a branch accumulate a
-  long-lived divergence (Amendment R reached 14 commits off `main` before
-  landing — that is the anti-pattern this rule exists to prevent). Serializing
-  amendments through `main` keeps it the single source of truth and makes each
-  amendment a reviewable, revertable unit. `main` is protected: open a PR, never
-  push or commit to it directly. Exception: lab-notebook smokes / diagnostics /
-  re-runs that belong to the IN-FLIGHT amendment ride its branch; only a
-  genuinely new amendment must start clean off `main`.
+- **Worktree-per-amendment lifecycle (one amendment = one branch in its OWN
+  worktree = one PR).** Cut a dedicated branch from an up-to-date `origin/main`
+  for each Amendment or standalone experiment, and materialize it as a git
+  WORKTREE (`git worktree add .worktrees/<branch> -b <branch> origin/main`)
+  instead of checking it out in the primary working tree. Never swap branches
+  in the primary tree: long-running GPU queues, docker mounts, and monitors
+  execute scripts from that tree in place, and an in-place checkout changes
+  files under a live run (user directive, 2026-07-02). Do the FULL arc for the
+  amendment inside its worktree (protocol doc, recipes, run records, scored
+  results, doc verdict, skill notes), open a PR into `main`, and remove the
+  worktree after merge (`git worktree remove`). PR MERGE ORDER still
+  serializes through `main` — merge the in-flight amendment's PR before the
+  next amendment's PR — but a later amendment MAY branch and start
+  non-GPU/registration work in parallel in its own worktree when the user
+  directs it; rebase or merge `main` into it after the earlier PR lands. Do
+  not let any branch accumulate long-lived divergence (Amendment R reached 14
+  commits off `main` before landing — the anti-pattern this rule exists to
+  prevent). `main` is protected: open a PR, never push or commit to it
+  directly. Exception: lab-notebook smokes / diagnostics / re-runs that belong
+  to the IN-FLIGHT amendment ride its branch; only a genuinely new amendment
+  must start clean off `origin/main`. Cross-worktree gotcha: a file edited but
+  not yet committed in one worktree is invisible to the others — commit (or
+  copy) before referencing it from another tree.
 - **No-pollution rule (SACROSANCT).** The runner communicates with the tuner
   ONLY through (1) the materialized recipe YAML and (2) the tuner's public CLI
   verbs. It imports NO tuner internals, adds NO committed file under

@@ -1,0 +1,96 @@
+{
+  "amendment": "AA",
+  "stage": 1,
+  "model": "Qwen/Qwen3.5-4B",
+  "verdict": "FALSIFIER-1 (channel stays shut — no effect gate passed)",
+  "verdict_rule": "SUCCESS = AA-G5 (>=3/4 combos, predicted-minus-wrong contrast >0 with CI excl 0) AND (G1 or G2) AND (G3 or G4); gates locked in AMENDMENT-AA before the run",
+  "missing_cells": [],
+  "effect_gates": {
+    "AA-G1": {
+      "pass": false,
+      "adequate": true,
+      "adequacy": {
+        "n_initial_wrong": 0,
+        "n_initial_correct": 0,
+        "n_unknown_answered_control": 297,
+        "dial_adequate_ge_40_40": false,
+        "gate_adequate_ge_100_unknown_answered": true
+      },
+      "passing_alphas": []
+    },
+    "AA-G2": {
+      "pass": false,
+      "adequate": true,
+      "adequacy": {
+        "n_initial_wrong": 0,
+        "n_initial_correct": 0,
+        "n_unknown_answered_control": 299,
+        "dial_adequate_ge_40_40": false,
+        "gate_adequate_ge_100_unknown_answered": true
+      },
+      "effect": {
+        "delta": 0.0033,
+        "ci_lo": 0.0,
+        "ci_hi": 0.0104,
+        "n_boot": 2000,
+        "ci_excludes_zero": false
+      },
+      "coherent_both": true
+    },
+    "AA-G3": {
+      "pass": false,
+      "adequate": true,
+      "adequacy": {
+        "n_initial_wrong": 351,
+        "n_initial_correct": 149,
+        "n_unknown_answered_control": 0,
+        "dial_adequate_ge_40_40": true,
+        "gate_adequate_ge_100_unknown_answered": false
+      },
+      "passing_alphas": []
+    },
+    "AA-G4": {
+      "pass": false,
+      "adequate": true,
+      "adequacy": {
+        "n_initial_wrong": 358,
+        "n_initial_correct": 140,
+        "n_unknown_answered_control": 0,
+        "dial_adequate_ge_40_40": true,
+        "gate_adequate_ge_100_unknown_answered": false
+      },
+      "effect": {
+        "delta": 0.0,
+        "ci_lo": 0.0,
+        "ci_hi": 0.0,
+        "n_boot": 2000,
+        "ci_excludes_zero": false
+      },
+      "coherent_both": true
+    }
+  },
+  "AA_G5_position_asymmetry_PRIMARY": {
+    "combos": {
+      "armA_gate": {
+        "status": "NOT_APPLICABLE",
+        "reason": "AA-G1 did not pass"
+      },
+      "armA_dial": {
+        "status": "NOT_APPLICABLE",
+        "reason": "AA-G3 did not pass"
+      },
+      "armB_gate": {
+        "status": "NOT_APPLICABLE",
+        "reason": "AA-G2 did not pass"
+      },
+      "armB_dial": {
+        "status": "NOT_APPLICABLE",
+        "reason": "AA-G4 did not pass"
+      }
+    },
+    "n_pass": 0,
+    "n_fail": 0,
+    "pass": false
+  },
+  "falsifier3_incoherent_only_effects": {}
+}

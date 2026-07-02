@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Arm A — internal activation steering harness (Paper 4 / confidence-steering experiment).
+"""Arm A — internal activation steering harness (Paper 5 / confidence-steering experiment).
 
 DESIGN REFERENCE: docs/plans/confidence-steering-experiment.md
 
@@ -14,7 +14,7 @@ residual-stream hidden state, where:
   - ``alpha`` is a signed steering magnitude, optionally proportional to measured
               uncertainty
 
-Position variants (Paper 4 2×2 design):
+Position variants (Paper 5 2×2 design):
   anchor-only  — steer at the SINGLE token that is the pre-answer anchor
                  (prompt's last token, token index = prompt_len - 1)
   all-post     — steer at EVERY token position in the post-answer generation stream
