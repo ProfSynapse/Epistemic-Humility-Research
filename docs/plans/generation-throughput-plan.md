@@ -63,6 +63,18 @@ only through public CLI behavior, never imports:
   token positions out (safetensors), engine-selectable (`hf-batched` forward
   or vLLM native hidden-states extraction, v0.18.0+). Nothing
   Epistemic-specific: no pools, no grading, no outcome taxonomy.
+- **Tuner (generic) — incremental persistence + resume (REQUIRED, user
+  directive 2026-07-02 after the Y-fleet preemption losses):** both verbs
+  flush completed rows after every batch (append-fsync JSONL; tensor files
+  atomic-per-row), keep a `checkpoint.json` of done row ids + a config hash,
+  and accept `--resume` to skip completed ids on re-invocation (refusing to
+  resume across a changed config). A generic `--sync-every N` +
+  `--sync-cmd '<shell>'` hook pushes partial artifacts to durable storage
+  mid-run (sync failure warns, never kills the run). Contract: a preempted
+  cloud job loses at most one batch of work and a restart with `--resume`
+  produces the identical artifact set an uninterrupted run would have. Logs
+  are telemetry; ROWS AND TENSORS are the data — both must survive a kill at
+  any moment.
 - **This repo (experiment-specific):** pool building, k-shot/base-mode
   rendering, answer parsing, grading/scorers, row schema + outcome taxonomy,
   config_sha/manifest assembly, safetensors naming, cloud wrapper. The
