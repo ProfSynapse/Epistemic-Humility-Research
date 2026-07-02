@@ -99,7 +99,32 @@
    "base_mode": true,
    "timeout": "6h",
    "job_id": "6a468700fb6818a83db303d2",
-   "note": "re-run of canceled y-a-qwen3.5-4b-base; pinned a65d8fc9 (wrapper now tees per-incarnation job_log_<boot>.txt and pushes to <run-tag>/logs/ every 10 min + rows.jsonl upload). Doubles as the durable-log-capture test after the preemption post-mortem."
+   "note": "re-run of canceled y-a-qwen3.5-4b-base; pinned a65d8fc9 (wrapper now tees per-incarnation job_log_<boot>.txt and pushes to <run-tag>/logs/ every 10 min + rows.jsonl upload). Doubles as the durable-log-capture test after the preemption post-mortem.",
+   "outcome": "CANCELED 2026-07-02: superseded before completion by the batched-engine re-run y-a-qwen3.5-4b-base-r3 after the throughput plan \u00a75 equivalence gate passed (per-row half user-waived)"
+  },
+  {
+   "cell": "y-a-qwen3.5-4b-base-r3",
+   "model": "Qwen/Qwen3.5-4B-Base",
+   "base_mode": true,
+   "timeout": "90m",
+   "job_id": "6a46c1d9fb6818a83db307d5",
+   "note": "batched-engine re-run (throughput plan \u00a75 gate PASSED 2026-07-02, per-row half user-waived): repo 8dcbf58050a6da91eb77a1444c6654c1fd494786 + tuner db4f9a3cf7e8342bc1ddce337a36b82931dd3f39, --engine tuner-batched --batch-size 32, log push 120s, timeout 90m"
+  },
+  {
+   "cell": "y-a-gemma-4-e4b-pt-r2",
+   "model": "google/gemma-4-E4B",
+   "base_mode": true,
+   "timeout": "90m",
+   "job_id": "6a46c1dafb6818a83db307d7",
+   "note": "batched-engine re-run (throughput plan \u00a75 gate PASSED 2026-07-02, per-row half user-waived): repo 8dcbf58050a6da91eb77a1444c6654c1fd494786 + tuner db4f9a3cf7e8342bc1ddce337a36b82931dd3f39, --engine tuner-batched --batch-size 32, log push 120s, timeout 90m"
+  },
+  {
+   "cell": "y-b-olmo-2-7b-r2",
+   "model": "allenai/OLMo-2-1124-7B",
+   "base_mode": true,
+   "timeout": "90m",
+   "job_id": "6a46c1dafb6818a83db307d9",
+   "note": "batched-engine re-run (throughput plan \u00a75 gate PASSED 2026-07-02, per-row half user-waived): repo 8dcbf58050a6da91eb77a1444c6654c1fd494786 + tuner db4f9a3cf7e8342bc1ddce337a36b82931dd3f39, --engine tuner-batched --batch-size 32, log push 120s, timeout 90m"
   }
  ],
  "failed_submissions": [],
