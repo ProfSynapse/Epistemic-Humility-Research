@@ -48,41 +48,80 @@ torch.compile (~1.3× at best, complicates hooks — skip).
 
 ## 4. The plan per lane
 
+### Ownership split: generic engine in Synaptic Tuner, glue here
+
+The generic parts of this are useful to any research project, so they live in
+the `synaptic-tuner` submodule (its own repo, tests, and PR flow), exposed as
+public CLI verbs per the no-pollution boundary — this repo talks to the tuner
+only through public CLI behavior, never imports:
+
+- **Tuner (generic):** `tuner.py batch-generate` — prompts-in (JSONL),
+  completions-out; engine-selectable (`hf-batched` with length-sorted
+  left-pad micro-batching, or `vllm` continuous batching); greedy/sampled,
+  seed, stop discipline, batch-size auto-halve on OOM. And
+  `tuner.py batch-capture` — sequences-in, per-layer hidden states at named
+  token positions out (safetensors), engine-selectable (`hf-batched` forward
+  or vLLM native hidden-states extraction, v0.18.0+). Nothing
+  Epistemic-specific: no pools, no grading, no outcome taxonomy.
+- **This repo (experiment-specific):** pool building, k-shot/base-mode
+  rendering, answer parsing, grading/scorers, row schema + outcome taxonomy,
+  config_sha/manifest assembly, safetensors naming, cloud wrapper. The
+  extractor becomes orchestration: render prompts -> `batch-generate` ->
+  grade rows -> `batch-capture` on answered rows -> persist rows/manifest.
+
+The two-pass design maps 1:1 onto the two verbs, so the split costs nothing
+architecturally. The interleaved bs=1 loop in
+`amendment_x_cross_model_extract.py` stays as the reference implementation
+(default path) until the §5 gate passes.
+
+Cloud note: HF Jobs cells currently clone only this repo; using tuner verbs
+in-job means either `git submodule update --init synaptic-tuner` in the
+bootstrap or pip-installing the tuner from its repo at a pinned commit. Local
+lane uses the submodule checkout directly.
+
+Governance note (amendment-vs-lab-notebook): this is a throughput refactor
+whose §5 gate enforces output-equivalence with the existing engine — it
+creates no new evidence-cell type, so it routes as lab-notebook
+infrastructure, not a Tier-2 amendment. If the vLLM engine ever changes
+*what* is measured (not just how fast), that re-opens the routing question.
+
 ### Phase 1 — batched HF path (both lanes; the workhorse)
 
-Add to `amendment_x_cross_model_extract.py`:
+Implement `batch-generate`/`batch-capture` (hf-batched engine) in the tuner;
+in this repo add to the extractor:
 
-- `--batch-size N` (default 1 = today's behavior, so old invocations are
-  byte-identical and old config_shas remain reproducible).
-- Length-sorted micro-batching with left padding for `generate`; per-row
-  parse/grade exactly as now (parsing is per-sequence and unchanged).
-- Batch the hidden-state capture forwards the same way (right-pad, mask,
-  gather per-row `prompt_len-1` / `content_end` positions).
+- `--engine {sequential,tuner-batched}` (default sequential = today's
+  behavior, so old invocations are byte-identical and old config_shas remain
+  reproducible).
+- Per-row parse/grade exactly as now (parsing is per-sequence and unchanged).
 - `--scratch-dir` for the local lane (L6): persist tensors on ext4, single
   move at the end.
-- Manifest gains `engine: "hf-batched"` + `batch_size` fields (config_sha
-  already hashes the config payload, so batched runs are visibly distinct —
-  the roll-up config-equality check must treat `batch_size` as a
-  non-substantive field ONLY after §5 passes).
+- Manifest gains `engine` + `batch_size` fields (config_sha already hashes
+  the config payload, so batched runs are visibly distinct — the roll-up
+  config-equality check may treat them as non-substantive ONLY after §5
+  passes).
 
 Expected cell times: 3000-attempt 4B cell ≈ **15–25 min** on a10g-small or the
 3090 (vs 2.5–5 h). Every cell drops under the preemption horizon; the durable
 log wrapper stays as belt-and-braces.
 
-### Phase 2 — vLLM two-pass (big fleets / repeated sweeps)
+### Phase 2 — vLLM engine (big fleets / repeated sweeps)
 
-New sibling script (not a rewrite): `vllm_extract.py`:
+Add the `vllm` engine behind the SAME two tuner verbs (no new script in this
+repo — the extractor's orchestration is engine-agnostic):
 
-1. **Pass A (generate):** vLLM continuous batching over the whole pool,
-   greedy, same stop discipline → answers + token ids. Minutes for 3000 rows.
-2. **Pass B (capture):** vLLM hidden-states extraction (v0.18.0+ native
-   feature, prefill-only) over prompt+answer token ids, selecting all layers;
-   slice our two positions; persist the identical safetensors/rows.jsonl/
-   manifest layout so `amendment_x_cross_model_score.py` runs unmodified.
-   Fallback if the native feature fights us: Phase 1's batched HF forward is
-   already fast enough for capture (generation was the bottleneck).
+1. **`batch-generate --engine vllm`:** continuous batching over the whole
+   pool, greedy, same stop discipline → answers + token ids. Minutes for
+   3000 rows.
+2. **`batch-capture --engine vllm`:** native hidden-states extraction
+   (v0.18.0+, prefill-only) over prompt+answer token ids, selecting all
+   layers; this repo slices its two positions and persists the identical
+   safetensors/rows.jsonl/manifest layout so
+   `amendment_x_cross_model_score.py` runs unmodified. Fallback if the
+   native feature fights us: the hf-batched capture engine is already fast
+   enough (generation was the bottleneck).
 
-Manifest `engine: "vllm-twopass"` + vllm version pin. Use for: Stage-2 style
+Manifest `engine: "vllm"` + vllm version pin. Use for: Stage-2 style
 fleets, AA follow-up cells (2400+ gens each), any future sweep where cells
 repeat. Skip for one-off cells on exotic day-zero archs until vLLM support is
 confirmed (check the supported-models page per arch; Gemma 4 yes, Qwen3.5 yes
