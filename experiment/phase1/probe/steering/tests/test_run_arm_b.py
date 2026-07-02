@@ -479,3 +479,23 @@ class TestDryRunFinal:
         assert plan["position"] == "final"
         # final: shared initial + shared revision_think + 2 forced answers
         assert plan["n_generations"] == 10 * 4
+
+
+class TestNoteVariantThreading:
+    def test_default_is_v0(self):
+        gen = RecordingGen()
+        results = run_arm_b_cell(make_items(2), "gate", "early",
+                                 fake_score_fn, gen, seed=7)
+        for rec in results["real"]:
+            assert rec["note_variant"] == "v0"
+            assert rec["injection_note"].startswith("[internal:")
+
+    def test_v1_notes_rendered_and_recorded(self):
+        gen = RecordingGen()
+        results = run_arm_b_cell(make_items(3), "gate", "early",
+                                 fake_score_fn, gen, seed=7, note_variant="v1")
+        for rec in results["real"] + results["placebo"]:
+            assert rec["note_variant"] == "v1"
+            assert rec["injection_note"].startswith("Let me first check")
+            assert f"{int(round(rec['injected_score'] * 100))}%" \
+                in rec["injection_note"]

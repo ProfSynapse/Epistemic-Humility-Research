@@ -54,6 +54,7 @@ import sys
 from pathlib import Path
 from typing import Callable, Optional
 
+from ab_templates import render_note as render_note_variant
 from cot_inject import InjectionConfig, extract_think_content
 from steering_common import (
     N_BOOT_DEFAULT,
@@ -82,13 +83,19 @@ def permute_scores(real_scores: list[float], seed: int) -> list[float]:
     return placebo
 
 
-def make_note(signal: str, score: float, position: str) -> str:
-    """Render the injection note via cot_inject.InjectionConfig.
+def make_note(signal: str, score: float, position: str,
+              variant: str = "v0") -> str:
+    """Render the injection note.
 
-    The runner's 'early'/'late' cell position maps directly onto the
-    InjectionConfig position of the pass the note lands in."""
-    cfg = InjectionConfig(signal=signal, score=float(score), position=position)
-    return cfg.render_note()
+    variant='v0' is the registered AA telemetry template, rendered via
+    cot_inject.InjectionConfig (byte-identical to the AA cells). Amendment AB
+    variants v1-v3 render banded first-person prose via ab_templates.
+    The runner's cell position maps directly onto the position of the pass
+    the note lands in."""
+    if variant == "v0":
+        cfg = InjectionConfig(signal=signal, score=float(score), position=position)
+        return cfg.render_note()
+    return render_note_variant(variant, signal, float(score), position)
 
 
 # ---------------------------------------------------------------------------
@@ -102,6 +109,7 @@ def run_arm_b_cell(
     probe_score_fn: Callable[[dict, Optional[str]], float],
     generate_fn: Callable[[dict, Optional[str], str, str, Optional[str]], str],
     seed: int,
+    note_variant: str = "v0",
 ) -> dict[str, list[dict]]:
     """Run paired real + placebo two-pass generation over the same items.
 
@@ -165,7 +173,7 @@ def run_arm_b_cell(
     for i, item in enumerate(items):
         for variant, score in (("real", real_scores[i]),
                                ("placebo", placebo_scores[i])):
-            note = make_note(signal, score, position)
+            note = make_note(signal, score, position, note_variant)
             if position == "early":
                 initial_text = generate_fn(item, None, "initial", variant, note)
                 final_text = generate_fn(item, initial_text, "revision", variant, None)
@@ -181,6 +189,7 @@ def run_arm_b_cell(
                 item, initial_text, final_text,
                 extra={
                     "variant": variant,
+                    "note_variant": note_variant,
                     "injected_score": float(score),
                     "real_score": float(real_scores[i]),
                     "placebo_score": float(placebo_scores[i]),
@@ -230,6 +239,10 @@ def parse_args(argv=None) -> argparse.Namespace:
                          "of the revision think block; final = note as the "
                          "closing thought after a shared reasoning draft "
                          "(Amendment AB Revision 1)")
+    ap.add_argument("--note-variant", choices=["v0", "v1", "v2", "v3"],
+                    default="v0",
+                    help="injection note template: v0 = registered AA telemetry "
+                         "note; v1-v3 = Amendment AB banded first-person prose")
     ap.add_argument("--eval-pool", choices=["gate", "dial"], required=True)
     ap.add_argument("--n-unknown", type=int, default=300)
     ap.add_argument("--n-known", type=int, default=300)
@@ -282,6 +295,7 @@ def main(argv=None) -> int:
         "cell": a.cell,
         "signal": a.signal,
         "position": a.position,
+        "note_variant": a.note_variant,
         "model": a.model,
         "direction": str(a.direction),
         "direction_layer": meta.get("best_layer"),
@@ -408,6 +422,7 @@ def main(argv=None) -> int:
         probe_score_fn=probe_score_fn,
         generate_fn=generate_fn,
         seed=a.seed,
+        note_variant=a.note_variant,
     )
 
     summary = summarize_arm_b(results, n_boot=a.n_boot, seed=a.seed)
