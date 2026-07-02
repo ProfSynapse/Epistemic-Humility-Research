@@ -153,12 +153,37 @@ parallel batch on HF Jobs, freeing the local GPU for the steering line
 - A10G (24GB) fits every ladder rung in bf16 (largest is 7B ≈ 14GB weights).
 
 Bring-up sequence (infrastructure, lab-notebook instrument — NOT Y evidence
-cells): (1) one tiny smoke job — `pythia-160m` (NOT in Y's cell list),
-bounded rows (~50), full clone->extract->score->upload path, expected <15 min
-on a10g-small, <$1; (2) if green, the era ladder runs as N parallel jobs when
-Y is signed. Each launch still requires explicit user approval naming
-cells/models/lane; the smoke requires its own approval as a cost-incurring
-cloud action.
+cells): (1) one tiny smoke job — `Qwen/Qwen3.5-0.8B-Base` (NOT in Y's cell
+list; current-gen, ungated, and exercises the recent-transformers image the
+real Arm A cells need), bounded rows (~50), full clone->extract->score->
+upload path, expected <15 min on a10g-small, <$1; (2) if green, the cells
+run as N parallel jobs when Y is signed. Each launch still requires explicit
+user approval naming cells/models/lane; the smoke requires its own approval
+as a cost-incurring cloud action.
+
+### Model list refresh (web-verified 2026-07-02; supersedes the draft's list)
+
+User directive: use the most current base models, not training-data-era
+defaults. Verified on HF:
+
+- **Arm A pairs (true pretrain-only base <-> vendor instruct sibling), three
+  of the four Z families now pairable:**
+  - `Qwen/Qwen3.5-4B-Base` <-> `Qwen/Qwen3.5-4B` — exact base sibling of the
+    Z/AA checkpoint; the priority pair. (Also 0.8B/2B/9B-Base siblings.)
+  - `google/gemma-4-E4B` (pt) <-> `google/gemma-4-E4B-it` (Z family).
+  - `Llama-3.2-3B` base (`unsloth/Llama-3.2-3B` mirror ungated) <->
+    `Llama-3.2-3B-Instruct` (Z family).
+  - Ministral-3-3B: no true base surfaced (Instruct/Reasoning only) — verify
+    before registration; drop from Arm A if none exists.
+  - `allenai/Olmo-3-1025-7B` (base) <-> `Olmo-3-7B-Instruct` — fully-open
+    pair, Apache 2.0.
+- **Arm B era ladder** keeps historical rungs BY DESIGN (gpt2 2019,
+  pythia-2.8b 2023, Llama-2-7B 2023, OLMo-2-7B 2025) but tops out at the
+  current generation: Olmo-3-7B base + Qwen3.5-4B-Base (2026).
+- **Future pre/post-damage arm unlocked:** OLMo 3 publishes the entire
+  training flow (base -> mid-trained -> long-context -> instruct/think with
+  intermediate checkpoints), i.e. the matched pre/post checkpoints of ONE run
+  that the damage question requires. Note for a follow-on amendment, not Y.
 
 Open questions for registration: exact image pin per arch; results dataset
 repo name; whether Arm A instruct siblings rerun in-cloud or reuse the local
