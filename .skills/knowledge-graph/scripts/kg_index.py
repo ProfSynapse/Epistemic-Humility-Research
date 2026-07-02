@@ -130,7 +130,14 @@ class ParsedFile:
 
 
 def repo_relative(path: Path, root: Path) -> str:
-    return path.resolve().relative_to(root.resolve()).as_posix()
+    # Fast path: index_root resolves root once and builds file paths under it,
+    # so plain relative_to avoids two per-file resolve() syscall chains that
+    # dominated no-change reindex time. Fall back to resolving for callers
+    # that pass unnormalized paths (symlinks, relative CWD paths).
+    try:
+        return path.relative_to(root).as_posix()
+    except ValueError:
+        return path.resolve().relative_to(root.resolve()).as_posix()
 
 
 def should_ignore(rel: str) -> bool:
@@ -933,9 +940,28 @@ def parse_file(root: Path, path: Path, rel: str) -> ParsedFile:
 def index_file(conn: sqlite3.Connection, root: Path, path: Path, force: bool = False) -> bool:
     rel = repo_relative(path, root)
     stat = path.stat()
+    row = conn.execute(
+        "SELECT size, mtime_ns, sha256, parser_version FROM files WHERE path = ?", (rel,)
+    ).fetchone()
+    # Stat short-circuit: skip hashing entirely when size + mtime_ns match the
+    # stored row. Hashing every file made the pre-search lazy reindex O(total
+    # repo bytes) per search, which grows with every dataset/output that lands.
+    if (
+        not force
+        and row
+        and row["parser_version"] == PARSER_VERSION
+        and row["size"] == stat.st_size
+        and row["mtime_ns"] == stat.st_mtime_ns
+    ):
+        return False
     digest = sha256_file(path)
-    row = conn.execute("SELECT sha256, parser_version FROM files WHERE path = ?", (rel,)).fetchone()
     if not force and row and row["sha256"] == digest and row["parser_version"] == PARSER_VERSION:
+        # Content unchanged but stat drifted (touch, fresh checkout): refresh
+        # the stored stat so future runs take the no-hash fast path.
+        conn.execute(
+            "UPDATE files SET size = ?, mtime_ns = ?, indexed_at = ? WHERE path = ?",
+            (stat.st_size, stat.st_mtime_ns, time.time(), rel),
+        )
         return False
     parsed = parse_file(root, path, rel)
     delete_file_rows(conn, rel)
