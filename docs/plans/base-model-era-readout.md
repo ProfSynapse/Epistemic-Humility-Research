@@ -128,7 +128,44 @@ report the curve.
 - Paper fit: extends Paper 3 (training-free → post-training-free) or a short
   standalone; decide at registration time.
 
+## Cloud lane option (design added 2026-07-02)
+
+The local-GPU sequencing above (2-3 overnight queues) can be collapsed to one
+parallel batch on HF Jobs, freeing the local GPU for the steering line
+(Amendment AA and its follow-ups). Verified prerequisites (2026-07-02):
+
+- The repo is PUBLIC (`ProfSynapse/Epistemic-Humility-Research`) — a job can
+  `git clone` at a pinned commit with no token plumbing.
+- All three pool sources are git-tracked and travel with the clone:
+  `datasets/popqa/test.jsonl`, `datasets/triviaqa-rc-nocontext/
+  cheng_test_gold.jsonl`, `datasets/selfaware/SelfAware.json`. No hub
+  publishing needed (contrast with the Phase-1 train lane).
+- Cell shape is self-contained: `amendment_x_cross_model_extract.py` (GPU)
+  then `amendment_x_cross_model_score.py` (CPU) producing a small tracked
+  result JSON. Job uploads ONLY the result JSON (+ direction fits) to a
+  results dataset repo via `HF_TOKEN` secret; the multi-hundred-MB extraction
+  dir stays remote/ephemeral (matches the untracked-outputs convention).
+- Era-ladder archs (gpt2, pythia, llama-2, olmo-2) are old enough for a
+  standard pytorch/transformers image; only the Qwen3-4B-Base Arm A cell
+  needs a recent-transformers image (the unsloth stable pin or unsloth-z).
+- Gated model (Llama-2-7B, access granted 2026-06-10) works via the same
+  `HF_TOKEN` secret.
+- A10G (24GB) fits every ladder rung in bf16 (largest is 7B ≈ 14GB weights).
+
+Bring-up sequence (infrastructure, lab-notebook instrument — NOT Y evidence
+cells): (1) one tiny smoke job — `pythia-160m` (NOT in Y's cell list),
+bounded rows (~50), full clone->extract->score->upload path, expected <15 min
+on a10g-small, <$1; (2) if green, the era ladder runs as N parallel jobs when
+Y is signed. Each launch still requires explicit user approval naming
+cells/models/lane; the smoke requires its own approval as a cost-incurring
+cloud action.
+
+Open questions for registration: exact image pin per arch; results dataset
+repo name; whether Arm A instruct siblings rerun in-cloud or reuse the local
+X/Z result JSONs (config-equality check per the comparability notes above).
+
 ## What was captured today (design only)
 
 This document. No amendment minted, no letter assigned, no extraction run, no
-recipe or protocol file touched.
+recipe or protocol file touched. (2026-07-02: cloud-lane option section added
+above; still design-only, nothing launched.)
