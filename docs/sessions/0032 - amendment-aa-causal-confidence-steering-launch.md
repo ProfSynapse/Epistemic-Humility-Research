@@ -4,7 +4,7 @@ session_id: '0032'
 title: Amendment AA — causal confidence steering signed + Stage-1 launched
 status: active
 created_at: '2026-07-01T21:30:00Z'
-updated_at: '2026-07-02T13:30:00Z'
+updated_at: '2026-07-02T14:45:00Z'
 phase: phase1
 question: Can the trust axis be WRITTEN, not just read — and is the causal effect
   position-locked (gate at the anchor, dial at the end) the way the readout
@@ -78,6 +78,28 @@ checkpoints:
     with the raw base''s answer-everything prior (Z: 2999/3000); the registered
     question lives at the full sweep (+/-4, n=300). AA-1 (8400 generations) in
     flight at close of this checkpoint.'
+- id: 005-result
+  at: '2026-07-02T14:45:00Z'
+  kind: result
+  title: AA-5 (Arm B gate@early, real+placebo) FLAT; first-person phrasing follow-up
+    drafted as a Tier-2-gated proposal
+  summary: 'First text-channel cell lands where all four Arm A activation cells
+    did: abstention_unknown delta +0.0033 (CI [0.0, 0.010] includes 0),
+    answer_rate_known 1.000 in both conditions, health checks pass (degenerate ~0,
+    coherence floor OK, gate adequacy 299 >= 100). Now 5/5 flat across two
+    intervention modalities. Caveat: abstention near-floor in BOTH conditions on
+    the gate pool, so detection room for suppression was limited; dial cells
+    (AA-7/8) carry the headroom. Named confound raised by the user: the registered
+    note is OOD telemetry ("[internal: gate 0.87 - confident - known]"), not
+    first-person reasoning. Drafted docs/plans/aa-followup-first-person-injection.md
+    - variants V1 (full first-person + percent + commitment clause) / V2
+    (commitment only) / V3 (voice only), same harness and score-permutation
+    placebo, prediction + falsifier + health gates pre-stated. Instrument ruling
+    CORRECTED after checking AMENDMENT-AA authorized knobs (alpha grid +
+    eval-subset sizes ONLY - the note template is not one): the phrasing variant
+    carries a distinct mechanistic rationale and adds evidence cells, so it
+    requires a NEW signed Tier-2 amendment before running, not tier-3 tuning
+    under AA. AA-6 (gate@late) auto-started from the queue.'
 notes:
 - 'Depth-profile side finding (descriptive, from Z surfaces, user question): the
   gate is a saturated 0.997+ PLATEAU spanning ~80% of depth in ALL four families

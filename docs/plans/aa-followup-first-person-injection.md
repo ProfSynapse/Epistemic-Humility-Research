@@ -6,12 +6,15 @@ recorded on the registered template — this diagnostic must not contaminate or
 reinterpret AA's pre-registered cells.
 
 **Instrument ruling (per `experiment-runner/reference/amendment-vs-lab-notebook.md`):**
-**lab-notebook diagnostic**, not a new amendment. `note_template` is an existing
-config knob in `cot_inject.py` (`InjectionConfig.note_template`); this proposal
-tunes that authorized knob on the same harness, same pools, same placebo design.
-It produces exploratory, report-only evidence. If a phrasing variant *moves*
-behavior, promoting that to a claim requires a fresh confirmatory cell
-registered before running it (standard exploratory→confirmatory rule).
+**Tier-2 Amendment required before running.** AMENDMENT-AA lists only the α grid
+and eval-subset sizes as authorized tier-3 knobs; the injection note template is
+NOT among them, and this proposal carries a distinct mechanistic rationale from
+AA (framing artifact vs. channel absence) and adds new evidence cells reported
+as evidence. It therefore does not qualify as tier-3 tuning under AA. This
+document is the design capture that becomes that amendment's draft (same path
+`docs/plans/confidence-steering-experiment.md` took before AMENDMENT-AA was
+signed). If a phrasing variant *moves* behavior, promoting that to a claim still
+requires a fresh confirmatory replication registered before running it.
 
 ## Motivation
 
@@ -108,8 +111,11 @@ attributable to the *true* probe value flowing through the new phrasing.
 
 1. AA-6..8 complete and AA close-out recorded (`amendment_aa_verdict.py` output
    + amendment §7 with the anchor-vs-end confound named).
-2. Explicit user launch approval for the GPU run(s), naming variant + cells.
-3. Branch discipline: runs land on their own branch off up-to-date `main`
+2. A signed Tier-2 amendment (this doc promoted to
+   `experiment/protocol/AMENDMENT-<letter>-...md` with the prediction,
+   falsifier, and gates above locked) — user sign-off required.
+3. Explicit user launch approval for the GPU run(s), naming variant + cells.
+4. Branch discipline: runs land on their own branch off up-to-date `main`
    after the AA PR merges (or on a successor branch if the queue of follow-ups
    is serialized) — never stacked mid-flight on the AA branch.
 
