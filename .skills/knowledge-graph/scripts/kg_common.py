@@ -14,7 +14,19 @@ except ImportError as exc:  # pragma: no cover - environment guard
 
 SCRIPT_DIR = Path(__file__).resolve().parent
 SKILL_DIR = SCRIPT_DIR.parent
-VAULT_ROOT = SKILL_DIR.parents[1]
+
+
+# Sentinel walk-up is location-robust — correct from the canonical .skills/
+# tree (2 deep to the root) AND both mirrors (3 deep), so default-root script
+# runs anchor on the repo checkout rather than on .agents/ or .claude/.
+def _find_vault_root() -> Path:
+    for parent in SKILL_DIR.parents:
+        if (parent / "bin" / "sync_skills.py").is_file() or (parent / ".git").exists():
+            return parent
+    return SKILL_DIR.parents[1]
+
+
+VAULT_ROOT = _find_vault_root()
 DEFAULT_ONTOLOGY = SKILL_DIR / "references" / "edge-ontology.yaml"
 
 FRONTMATTER_RE = re.compile(r"\A---[ \t]*\r?\n(?P<body>.*?)\r?\n---(?:\r?\n|\Z)", re.S)
@@ -139,8 +151,16 @@ def rel_path(path: Path, root: Path = VAULT_ROOT) -> str:
         return str(path)
 
 
-def is_ignored(path: Path) -> bool:
-    return any(part in IGNORED_DIRS for part in path.parts)
+def is_ignored(path: Path, root: Path | None = None) -> bool:
+    """Check ignore names against root-relative parts only, so an ancestor of
+    the vault itself (e.g. a checkout under /tmp) never suppresses its notes."""
+    parts = path.parts
+    if root is not None:
+        try:
+            parts = path.resolve().relative_to(root.resolve()).parts
+        except ValueError:
+            pass
+    return any(part in IGNORED_DIRS for part in parts)
 
 
 def iter_markdown(paths: list[Path], root: Path = VAULT_ROOT) -> list[Path]:
@@ -153,14 +173,14 @@ def iter_markdown(paths: list[Path], root: Path = VAULT_ROOT) -> list[Path]:
         if not path.exists():
             found.append(path)
             continue
-        if path.is_file() and path.suffix.lower() == ".md" and not is_ignored(path):
+        if path.is_file() and path.suffix.lower() == ".md" and not is_ignored(path, root):
             found.append(path)
         elif path.is_dir():
             found.extend(
                 sorted(
                     child
                     for child in path.rglob("*.md")
-                    if child.is_file() and not is_ignored(child)
+                    if child.is_file() and not is_ignored(child, root)
                 )
             )
     return found

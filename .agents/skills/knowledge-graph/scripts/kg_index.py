@@ -34,7 +34,19 @@ except ImportError:  # pragma: no cover - validated by existing KG scripts too
     yaml = None
 
 SCRIPT_DIR = Path(__file__).resolve().parent
-REPO_ROOT = SCRIPT_DIR.parents[3]
+
+
+# Sentinel walk-up is location-robust — correct from the canonical .skills/
+# tree (3 deep) AND both mirrors (4 deep), so DEFAULT_DB always lands on the
+# repo's .kg/ instead of a stray index above the checkout.
+def _find_repo_root() -> Path:
+    for parent in SCRIPT_DIR.parents:
+        if (parent / "bin" / "sync_skills.py").is_file() or (parent / ".git").exists():
+            return parent
+    return SCRIPT_DIR.parents[3]
+
+
+REPO_ROOT = _find_repo_root()
 DEFAULT_DB = REPO_ROOT / ".kg" / "index.sqlite"
 PARSER_VERSION = 2
 MAX_CONFIG_GRAPH_BYTES = 512 * 1024

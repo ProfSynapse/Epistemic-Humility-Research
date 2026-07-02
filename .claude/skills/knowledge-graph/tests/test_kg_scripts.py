@@ -30,6 +30,28 @@ def find_repo_root(path: Path) -> Path:
 
 
 class KnowledgeGraphScriptTests(unittest.TestCase):
+    def test_default_roots_resolve_to_repo_checkout_from_any_skill_tree(self) -> None:
+        import kg_common
+        import kg_index
+
+        repo_root = find_repo_root(SCRIPT_DIR)
+        self.assertEqual(repo_root, kg_index.REPO_ROOT)
+        self.assertEqual(repo_root, kg_common.VAULT_ROOT)
+        self.assertEqual(repo_root / ".kg" / "index.sqlite", kg_index.DEFAULT_DB)
+
+    def test_iter_markdown_ignores_relative_to_root_not_ancestors(self) -> None:
+        from kg_common import iter_markdown
+
+        with tempfile.TemporaryDirectory() as tmp:
+            vault = Path(tmp) / "tmp" / "vault"
+            (vault / "logs").mkdir(parents=True)
+            (vault / "note.md").write_text("# Note\n", encoding="utf-8")
+            (vault / "logs" / "ignored.md").write_text("# Ignored\n", encoding="utf-8")
+
+            found = iter_markdown([vault], root=vault)
+
+            self.assertEqual([vault / "note.md"], found)
+
     def test_canonical_relationships_validate_and_export(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
