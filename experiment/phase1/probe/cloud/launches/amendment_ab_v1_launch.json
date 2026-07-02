@@ -3,7 +3,9 @@
   "launched_utc": "2026-07-02T21:26:45Z",
   "lane": "hf-jobs a10g-small, sequential engine (precondition 6: batched harness not spot-checked; 'final' unsupported in arm_b_batched)",
   "approval": "user in-conversation 2026-07-02: 'lets toss arm b up on the cloud and run in parallel' + AskUserQuestion 'Launch all three' naming AB-1/AB-2/AB-3",
-  "repo_commit": "PENDING-ROUND-3",
+  "repo_commit": "d1943674160710e2f7bc95ce7668259dbc69dd6b",
+  "round3_launched_utc": "2026-07-02T22:20:00Z",
+  "round3_preflight": "all 11 in-job inputs verified present via git ls-tree of the pinned sha before launch",
   "model": "unsloth/Qwen3.5-4B",
   "note_variant": "v1",
   "seed": 20260701,
@@ -41,7 +43,7 @@
       "position": "early",
       "pool": "gate 300 unknown + 300 known",
       "n_generations": 2400,
-      "job_id": "PENDING-ROUND-3"
+      "job_id": "6a46dd19fb6818a83db309d8"
     },
     {
       "cell": "AB-2",
@@ -50,7 +52,7 @@
       "position": "late",
       "pool": "dial 500 answerable",
       "n_generations": 1500,
-      "job_id": "PENDING-ROUND-3"
+      "job_id": "6a46dd1afb6818a83db309da"
     },
     {
       "cell": "AB-3",
@@ -59,7 +61,7 @@
       "position": "final",
       "pool": "dial 500 answerable",
       "n_generations": 2000,
-      "job_id": "PENDING-ROUND-3"
+      "job_id": "6a46dd1a33c08a2c0dae1e74"
     }
   ]
 }
