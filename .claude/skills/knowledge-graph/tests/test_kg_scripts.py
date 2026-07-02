@@ -3,6 +3,7 @@ from __future__ import annotations
 
 import io
 from contextlib import redirect_stdout
+import sqlite3
 import tempfile
 import unittest
 from pathlib import Path
@@ -522,6 +523,162 @@ def unrelated():
             self.assertFalse(search(db, "concealedtoken", limit=3))
             self.assertTrue(search(db, "proceduraltoken", limit=3))
             self.assertTrue(search(db, "visibletoken", limit=3))
+
+    def _write_supersession_pair(self, root: Path, marker_in_new: bool = True) -> None:
+        concepts = root / "library" / "concepts"
+        concepts.mkdir(parents=True)
+        (concepts / "old-claim.md").write_text(
+            """---
+title: "Old Claim"
+tags:
+  - kg/claim
+kg:
+  id: claim:abstention-effect-v1
+  type: claim
+  status: deprecated
+  deprecated_by: claim:abstention-effect-v2
+---
+
+# Old Claim
+
+supersessionmarker stale narrative
+""",
+            encoding="utf-8",
+        )
+        new_body = "supersessionmarker current narrative" if marker_in_new else "current narrative only"
+        (concepts / "new-claim.md").write_text(
+            f"""---
+title: "New Claim"
+tags:
+  - kg/claim
+kg:
+  id: claim:abstention-effect-v2
+  type: claim
+  status: canonical
+---
+
+# New Claim
+
+{new_body}
+""",
+            encoding="utf-8",
+        )
+
+    def test_kg_search_excludes_deprecated_notes_by_default(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            db = root / ".kg" / "index.sqlite"
+            self._write_supersession_pair(root)
+
+            index_root(root, db)
+            default_paths = {result.path for result in search(db, "supersessionmarker", limit=5)}
+            self.assertIn("library/concepts/new-claim.md", default_paths)
+            self.assertNotIn("library/concepts/old-claim.md", default_paths)
+
+            included = search(db, "supersessionmarker", limit=5, include_deprecated=True)
+            by_path = {result.path: result for result in included}
+            self.assertIn("library/concepts/old-claim.md", by_path)
+            old = by_path["library/concepts/old-claim.md"]
+            self.assertEqual("deprecated", old.status)
+            self.assertEqual("claim:abstention-effect-v2", old.deprecated_by)
+
+            conn = connect(db)
+            try:
+                edge = conn.execute(
+                    "SELECT edge_type FROM edges WHERE source_id = ? AND target_id = ?",
+                    ("claim:abstention-effect-v1", "claim:abstention-effect-v2"),
+                ).fetchone()
+            finally:
+                conn.close()
+            self.assertIsNotNone(edge)
+            self.assertEqual("superseded_by", edge["edge_type"])
+
+    def test_kg_search_surfaces_successor_when_only_deprecated_note_matches(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            db = root / ".kg" / "index.sqlite"
+            self._write_supersession_pair(root, marker_in_new=False)
+
+            index_root(root, db)
+            paths = {result.path for result in search(db, "supersessionmarker", limit=5, traverse_depth=2)}
+            self.assertNotIn("library/concepts/old-claim.md", paths)
+            self.assertIn("library/concepts/new-claim.md", paths)
+
+    def test_kg_index_migrates_legacy_nodes_table(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            db = root / ".kg" / "index.sqlite"
+            db.parent.mkdir(parents=True)
+            legacy = sqlite3.connect(db)
+            legacy.execute(
+                """
+                CREATE TABLE nodes (
+                  node_id TEXT PRIMARY KEY,
+                  path TEXT NOT NULL,
+                  kind TEXT NOT NULL,
+                  label TEXT NOT NULL,
+                  node_type TEXT NOT NULL,
+                  line INTEGER NOT NULL
+                )
+                """
+            )
+            legacy.commit()
+            legacy.close()
+
+            conn = connect(db)
+            try:
+                columns = {row["name"] for row in conn.execute("PRAGMA table_info(nodes)").fetchall()}
+            finally:
+                conn.close()
+            self.assertIn("status", columns)
+            self.assertIn("deprecated_by", columns)
+
+    def test_validator_flags_deprecated_by_issues(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            (root / "Dangling.md").write_text(
+                """---
+title: "Dangling"
+tags:
+  - kg/claim
+kg:
+  id: claim:dangling
+  type: claim
+  deprecated_by: claim:nowhere
+---
+""",
+                encoding="utf-8",
+            )
+            (root / "SelfLoop.md").write_text(
+                """---
+title: "SelfLoop"
+tags:
+  - kg/claim
+kg:
+  id: claim:self-loop
+  type: claim
+  status: deprecated
+  deprecated_by: claim:self-loop
+---
+""",
+                encoding="utf-8",
+            )
+
+            ontology = load_ontology()
+            index = NoteIndex.build(root)
+            notes, _ = collect_graph_notes([root], root=root)
+            findings = []
+            for note in notes:
+                findings.extend(validate_note(note, ontology, index))
+            codes = {finding.code for finding in findings}
+
+            self.assertIn("KG114", codes)  # dangling successor id
+            self.assertIn("KG115", codes)  # deprecated_by without explicit status
+            self.assertIn("KG113", codes)  # self-supersession is an error
+            self.assertEqual(
+                ["KG113"],
+                [finding.code for finding in findings if finding.severity == "ERROR"],
+            )
 
     def test_kg_index_includes_fulltext_html_and_links_to_paper(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:

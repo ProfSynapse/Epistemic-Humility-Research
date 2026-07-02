@@ -71,6 +71,37 @@ Recommended namespaces:
 - `external`
 - `deprecated`
 
+## Supersession
+
+When a note is replaced by a revised claim, merged concept, or corrected atom,
+never delete it. Mark it deprecated and point at its successor:
+
+```yaml
+kg:
+  id: claim:dpo-reduces-abstention-v1
+  type: claim
+  status: deprecated
+  deprecated_by: claim:dpo-reduces-abstention-v2
+```
+
+Rules:
+
+- `kg.deprecated_by` holds the `kg.id` of the successor note. It is the
+  canonical machine pointer; the search indexer synthesizes a `superseded_by`
+  edge from it automatically.
+- Always set `kg.status: deprecated` alongside `kg.deprecated_by` (the tooling
+  treats a bare pointer as deprecated, but the explicit status keeps the note
+  readable).
+- `kg.status: deprecated` without `deprecated_by` is allowed when a note is
+  retired with no successor.
+- Default `bin/search` excludes deprecated notes so retrieval hits only the
+  current revision; pass `--include-deprecated` to audit superseded lineage.
+  Graph expansion still traverses deprecated notes, so a query matching stale
+  text can surface the successor.
+- Add an explicit `superseded_by` relationship object only when you also want
+  the lineage visible in Obsidian Graph view; the frontmatter field alone is
+  enough for search and export tooling.
+
 ## Relationships
 
 Use one object per edge:

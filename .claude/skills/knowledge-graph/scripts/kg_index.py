@@ -36,7 +36,7 @@ except ImportError:  # pragma: no cover - validated by existing KG scripts too
 SCRIPT_DIR = Path(__file__).resolve().parent
 REPO_ROOT = SCRIPT_DIR.parents[3]
 DEFAULT_DB = REPO_ROOT / ".kg" / "index.sqlite"
-PARSER_VERSION = 1
+PARSER_VERSION = 2
 MAX_CONFIG_GRAPH_BYTES = 512 * 1024
 MAX_CONFIG_KEYS = 300
 
@@ -97,6 +97,8 @@ class Node:
     label: str
     node_type: str
     line: int
+    status: str = ""
+    deprecated_by: str = ""
 
 
 @dataclass(frozen=True)
@@ -296,7 +298,9 @@ def ensure_schema(conn: sqlite3.Connection) -> None:
           kind TEXT NOT NULL,
           label TEXT NOT NULL,
           node_type TEXT NOT NULL,
-          line INTEGER NOT NULL
+          line INTEGER NOT NULL,
+          status TEXT NOT NULL DEFAULT '',
+          deprecated_by TEXT NOT NULL DEFAULT ''
         );
         CREATE TABLE IF NOT EXISTS edges (
           id INTEGER PRIMARY KEY,
@@ -347,6 +351,13 @@ def ensure_schema(conn: sqlite3.Connection) -> None:
     }
     if "lane_weights_json" not in columns:
         conn.execute("ALTER TABLE search_log ADD COLUMN lane_weights_json TEXT NOT NULL DEFAULT '{}'")
+    node_columns = {
+        row["name"]
+        for row in conn.execute("PRAGMA table_info(nodes)").fetchall()
+    }
+    for column in ("status", "deprecated_by"):
+        if column not in node_columns:
+            conn.execute(f"ALTER TABLE nodes ADD COLUMN {column} TEXT NOT NULL DEFAULT ''")
     ensure_fts(conn)
 
 
@@ -464,10 +475,10 @@ def insert_chunk(conn: sqlite3.Connection, chunk: Chunk) -> None:
 def insert_node(conn: sqlite3.Connection, node: Node) -> None:
     conn.execute(
         """
-        INSERT OR REPLACE INTO nodes(node_id, path, kind, label, node_type, line)
-        VALUES (?, ?, ?, ?, ?, ?)
+        INSERT OR REPLACE INTO nodes(node_id, path, kind, label, node_type, line, status, deprecated_by)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?)
         """,
-        (node.node_id, node.path, node.kind, node.label, node.node_type, node.line),
+        (node.node_id, node.path, node.kind, node.label, node.node_type, node.line, node.status, node.deprecated_by),
     )
 
 
@@ -708,8 +719,14 @@ def parse_frontmatter_kg(rel: str, text: str) -> tuple[list[Node], list[Edge]]:
         return [], []
     kg_id = str(kg["id"])
     title = str(fm.get("title") or Path(rel).stem)
-    nodes = [Node(kg_id, rel, "kg_note", title, str(kg.get("type") or "kg_note"), 1)]
+    deprecated_by = str(kg.get("deprecated_by") or "")
+    status = str(kg.get("status") or "")
+    if deprecated_by and not status:
+        status = "deprecated"
+    nodes = [Node(kg_id, rel, "kg_note", title, str(kg.get("type") or "kg_note"), 1, status, deprecated_by)]
     edges: list[Edge] = [Edge(f"file:{rel}", kg_id, "describes", rel, title)]
+    if deprecated_by and deprecated_by != kg_id:
+        edges.append(Edge(kg_id, deprecated_by, "superseded_by", rel, f"kg.deprecated_by in {rel}"))
     relationships = fm.get("relationships") or []
     if isinstance(relationships, list):
         for item in relationships:
