@@ -6,6 +6,7 @@
   "repo_commit": "d1943674160710e2f7bc95ce7668259dbc69dd6b",
   "round3_launched_utc": "2026-07-02T22:20:00Z",
   "round3_preflight": "all 11 in-job inputs verified present via git ls-tree of the pinned sha before launch",
+  "round3_outcome": "CANCELED by user directive 2026-07-02 ~22:35Z: all three cells cleared bootstrap + direction/pool load (the round-2 failure point) but then froze mid model-weight download for 35+ min with byte-identical durable logs (same A10G download pathology as the benched OLMo Y-cell). Amendment AB V1 cells moved to the LOCAL 3090 lane, queued behind the OLMo Y-cell extraction; cloud lane abandoned for AB V1.",
   "model": "unsloth/Qwen3.5-4B",
   "note_variant": "v1",
   "seed": 20260701,
