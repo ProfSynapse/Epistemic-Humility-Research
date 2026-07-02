@@ -3,9 +3,12 @@
 #
 # Runs AFTER the launcher's bootstrap has cloned this repo at a pinned commit
 # and cd'd into it. Executes the same extract -> score pair as the local
-# dgpu lane (Amendments X/Z/SR), then uploads ONLY the small result JSON +
-# manifest to a results dataset repo. The multi-hundred-MB extraction dir
-# stays on the ephemeral job disk (matches the untracked-outputs convention).
+# dgpu lane (Amendments X/Z/SR), then uploads ONLY the small artifacts —
+# result.json + manifest.json + rows.jsonl (~1.4 MB: per-question answers,
+# grades, provenance SHAs; required for per-cell text-baseline controls and
+# grading audits — the Y fleet discarded these and lost that analysis) — to a
+# results dataset repo. The multi-hundred-MB hidden-state tensors stay on the
+# ephemeral job disk (matches the untracked-outputs convention).
 #
 # Usage:
 #   hf_jobs_cell.sh <base-model> <gate-rows-relpath> <results-repo> <run-tag> \
@@ -37,10 +40,16 @@ python "${PROBE}/amendment_x_cross_model_score.py" \
 
 test -f "${OUT}/result.json" || { echo "[cloud-cell] FATAL: no result.json"; exit 1; }
 
+UPLOAD_FILES=(--file "${OUT}/result.json" --file "${OUT}/manifest.json")
+if [ -f "${OUT}/rows.jsonl" ]; then
+    UPLOAD_FILES+=(--file "${OUT}/rows.jsonl")
+else
+    echo "[cloud-cell] WARN: no rows.jsonl to upload (extractor variant without a row layer?)"
+fi
+
 python "${PROBE}/cloud/upload_result.py" \
     --repo "${RESULTS_REPO}" \
     --path-prefix "${RUN_TAG}" \
-    --file "${OUT}/result.json" \
-    --file "${OUT}/manifest.json"
+    "${UPLOAD_FILES[@]}"
 
 echo "[cloud-cell] DONE ${RUN_TAG}"
