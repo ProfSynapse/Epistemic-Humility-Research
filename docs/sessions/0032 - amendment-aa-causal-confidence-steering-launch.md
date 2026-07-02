@@ -4,7 +4,7 @@ session_id: '0032'
 title: Amendment AA — causal confidence steering signed + Stage-1 launched
 status: active
 created_at: '2026-07-01T21:30:00Z'
-updated_at: '2026-07-02T00:15:00Z'
+updated_at: '2026-07-02T13:30:00Z'
 phase: phase1
 question: Can the trust axis be WRITTEN, not just read — and is the causal effect
   position-locked (gate at the anchor, dial at the end) the way the readout
@@ -158,6 +158,40 @@ notes:
   token, dissolving the read-late/act-early dilemma; plus thinking-tuning
   (train the model to self-emit the AA Arm B injection note) if Arm B moves
   behavior.'
+- 'HF publication wave 2 executed (2026-07-02, user-approved): cloud-results
+  card published (rev af730952), eh-probe-directions (rev 033ae541; AA gate/
+  dial fits, 4 families) and eh-readout-rows (rev 808dd123; 31 folders,
+  79,015 rows — S/T/U/W/X/Z/SR/P surfaces + frozen probe pools, NO hidden
+  states, no Cheng/OpenMOSS content) now live. Manifest+README updated on
+  branch hf-publication-wave2 (fd06cc90, 5931e55b). Note: the auto-mode
+  classifier correctly blocked the first bulk-upload attempt pending explicit
+  user content review — publishing curated private-repo data needs the user
+  to see the exact contents, not a general go-ahead.'
+- 'Amendment Y fleet interim (5/10 cells landed, 0 failures, all PASS):
+  pretrain-only bases olmo-3-7b (gate 0.9975/dial 0.844/veto 0.803/ctl 0.791)
+  and llama-3.2-3b (0.9972/0.824/0.835/0.771) both PASS -> Arm A 2/4 toward
+  the >=3/4 bar. Era ladder: gpt2-xl 2019 (0.991/0.794/0.794) and pythia-2.8b
+  2023 (0.993/0.821/0.751) formally PASS but their within-SelfAware control
+  is ~0.59 (near chance) vs ~0.77-0.80 on 2024+ bases. EMERGING READING: gate/
+  dial are era-invariant back to GPT-2; what improves with era is the WITHIN-
+  DISTRIBUTION veto (control column), i.e. old models fake the veto with
+  dataset cues. Qwen chat-render sub-cell: 0.9977/0.851/0.867/0.796.'
+- 'Text-only baseline control (committed cceaaf76 on the Y branch,
+  amendment_y_text_baseline.py + result JSON): TF-IDF+LR on question surface
+  alone reads gate 0.964 (frozen SelfAware pool) and dial 0.75-0.78 (Z rows
+  per family). REFRAME: much of the absolute gate AUROC is benchmark surface
+  (SelfAware unknowns are lexically distinctive); the model signal is the
+  MARGIN above the text ceiling (error mass 3.6% -> 0.2% on modern bases,
+  and the margin itself grows with era: gpt2 0.991 < pythia 0.993 < modern
+  ~0.998) plus the S/T pre-vs-post gap which surface cannot produce. Softens
+  "era-invariant readout" into "era-invariant surface component + era-growing
+  hidden-state margin and within-dist veto".'
+- 'Cloud-lane artifact gap found+fixed (e2fa5c04 on Y branch): the Y fleet
+  uploads only result+manifest and DISCARDS rows.jsonl (~1.4 MB), which
+  blocks per-cell text baselines and grading audits. hf_jobs_cell.sh now
+  ships rows.jsonl; skill reference cloud-lane.md gained the probe-cell lane
+  section (artifact-completeness contract, extractor-DONE vs job-RUNNING
+  status semantics, timeout-as-cost-ceiling).'
 ---
 
 # Session 0032 — Amendment AA: causal confidence steering (Paper 5)

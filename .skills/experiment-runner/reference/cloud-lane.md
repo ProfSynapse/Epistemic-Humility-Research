@@ -1,5 +1,34 @@
 # HF Jobs / Cloud Lane
 
+## Probe/readout cell lane (validated 2026-07-02, Amendment Y fleet)
+
+Distinct from the tuner training lane below: GPU-light extract->score->upload
+cells run directly on HF Jobs via `huggingface_hub` (the local `hf` CLI is
+typer-broken; use the Python Jobs API).
+
+- Entry points: `experiment/phase1/probe/cloud/launch_hf_job.py` (local
+  submitter; pins repo commit, image, pip spec) and
+  `experiment/phase1/probe/cloud/hf_jobs_cell.sh` (in-job wrapper).
+- **Artifact-completeness contract:** every cell uploads `result.json` +
+  `manifest.json` + `rows.jsonl` to the results dataset repo
+  (`professorsynapse/epistemic-humility-cloud-results`, one folder per
+  run-tag). rows.jsonl is ~1.4 MB and REQUIRED — the first Y fleet discarded
+  it and lost per-cell text-baseline controls and grading audits. Only the
+  multi-hundred-MB hidden-state tensors stay ephemeral; publishing those is a
+  deliberate knob (wave-2d in `docs/plans/hf-publication-wave2.md`), not the
+  default.
+- **Status semantics gotcha:** the extractor prints `... DONE` when generation
+  finishes, but the JOB stays RUNNING through the score + upload stages
+  (minutes more). "Log says done, HF says running" is the normal in-between
+  state, not a hang. Only trust the job's terminal stage.
+- Job timeouts double as hard cost ceilings — size them per model class
+  (2h for ~1.5B, up to 5h for 7B-class on a10g-small).
+- Descriptive controls (e.g. the TF-IDF text baseline
+  `experiment/phase1/probe/amendment_y_text_baseline.py`) run locally on the
+  uploaded rows — another reason rows.jsonl must come back from every cell.
+
+## Tuner training lane
+
 - Use Synaptic Tuner's checked-in fine-tuning and dataset-publishing workflows
   for cloud runs; the runner should hand off through public tuner CLI behavior,
   not bespoke HF Jobs scripts in this repo.
