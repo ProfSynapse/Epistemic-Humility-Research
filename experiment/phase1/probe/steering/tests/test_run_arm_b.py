@@ -355,3 +355,127 @@ class TestDryRunCli:
         plan = json.loads(out.split("cell plan:\n", 1)[1].rsplit("[run_arm_b]", 1)[0])
         assert plan["n_generations"] == 10 * 3  # late: shared initial + 2 revisions
         assert plan["direction_signal"] == "dial"
+
+
+# ---------------------------------------------------------------------------
+# Final (think-end) injection — Amendment AB Revision 1
+# ---------------------------------------------------------------------------
+
+class RecordingGenFinal:
+    """Fake generate_fn for position='final' (accepts think_draft kwarg)."""
+
+    def __init__(self, initial_text="An initial guess.",
+                 think_text="<think>\nMY-REASONING\n</think>\nAn answer.",
+                 final_text="A final answer."):
+        self.initial_text = initial_text
+        self.think_text = think_text
+        self.final_text = final_text
+        self.calls: list[dict] = []
+
+    def __call__(self, item, initial_answer, pass_name, variant, note,
+                 think_draft=None):
+        self.calls.append({
+            "row_key": item["row_key"],
+            "pass": pass_name,
+            "variant": variant,
+            "note": note,
+            "got_initial": initial_answer,
+            "think_draft": think_draft,
+        })
+        if pass_name == "initial":
+            return self.initial_text
+        if pass_name == "revision_think":
+            return self.think_text
+        return self.final_text
+
+
+class TestFinalInjection:
+    def _run(self, n=4):
+        gen = RecordingGenFinal()
+        items = make_items(n, source="answerable", aliases=True)
+        results = run_arm_b_cell(items, "dial", "final", fake_score_fn, gen, seed=7)
+        return items, gen, results
+
+    def test_pass_sequence_per_item(self):
+        items, gen, _ = self._run(n=3)
+        # per item: 1 shared initial + 1 shared revision_think + 2 revision_final
+        assert len(gen.calls) == 3 * 4
+        for pass_name, variant, count in (
+                ("initial", "shared", 3),
+                ("revision_think", "shared", 3),
+                ("revision_final", "real", 3),
+                ("revision_final", "placebo", 3)):
+            got = [c for c in gen.calls
+                   if c["pass"] == pass_name and c["variant"] == variant]
+            assert len(got) == count, (pass_name, variant, len(got))
+
+    def test_shared_think_pass_is_plain(self):
+        _, gen, _ = self._run()
+        for c in gen.calls:
+            if c["pass"] == "revision_think":
+                assert c["note"] is None, "shared reasoning pass must be plain"
+
+    def test_final_pass_carries_note_and_shared_draft(self):
+        _, gen, _ = self._run()
+        finals = [c for c in gen.calls if c["pass"] == "revision_final"]
+        assert finals, "no revision_final calls recorded"
+        for c in finals:
+            assert c["note"] is not None
+            assert c["think_draft"] == "MY-REASONING", \
+                "draft must be the extracted think content, shared verbatim"
+
+    def test_real_placebo_share_identical_draft(self):
+        _, gen, _ = self._run(n=2)
+        by_item: dict[str, set] = {}
+        for c in gen.calls:
+            if c["pass"] == "revision_final":
+                by_item.setdefault(c["row_key"], set()).add(c["think_draft"])
+        for row_key, drafts in by_item.items():
+            assert len(drafts) == 1, \
+                f"{row_key}: real and placebo must share one draft, got {drafts}"
+
+    def test_post_answer_score_read(self):
+        items = make_items(2, source="answerable", aliases=True)
+        seen = []
+
+        def score_fn(item, initial_answer):
+            seen.append(initial_answer)
+            return 0.4
+
+        gen = RecordingGenFinal(initial_text="THE-INITIAL")
+        run_arm_b_cell(items, "dial", "final", score_fn, gen, seed=1)
+        assert seen == ["THE-INITIAL", "THE-INITIAL"]
+
+    def test_record_flags(self):
+        _, _, results = self._run(n=2)
+        for rec in results["real"] + results["placebo"]:
+            assert rec["shared_initial"] is True
+            assert rec["shared_think_draft"] is True
+
+    def test_placebo_scores_still_permuted(self):
+        _, _, results = self._run()
+        real = [r["real_score"] for r in results["real"]]
+        placebo = [r["injected_score"] for r in results["placebo"]]
+        assert sorted(placebo) == sorted(real)
+
+
+class TestDryRunFinal:
+    def test_dry_run_final_dial(self, tiny_direction_dir, synthetic_dial_pool_file,
+                                tmp_path, capsys):
+        rc = main([
+            "--model", "synthetic/tiny",
+            "--direction", str(tiny_direction_dir / "direction_dial.json"),
+            "--signal", "dial",
+            "--position", "final",
+            "--eval-pool", "dial",
+            "--n-answerable", "10",
+            "--pool-file", str(synthetic_dial_pool_file),
+            "--out", str(tmp_path / "out.json"),
+            "--dry-run",
+        ])
+        assert rc == 0
+        out = capsys.readouterr().out
+        plan = json.loads(out.split("cell plan:\n", 1)[1].rsplit("[run_arm_b]", 1)[0])
+        assert plan["position"] == "final"
+        # final: shared initial + shared revision_think + 2 forced answers
+        assert plan["n_generations"] == 10 * 4

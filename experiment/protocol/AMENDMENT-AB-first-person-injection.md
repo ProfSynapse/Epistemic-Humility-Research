@@ -9,6 +9,12 @@ decision-rule clauses fixed); the final rendered templates are shown at
 launch approval. NOT launched: preconditions 4–6 still open (launch approval
 per cell; branch off main; steering-harness batched spot check if batched).
 
+**Revision 1 SIGNED 2026-07-02** (user, in-conversation, pre-launch — no AB
+cell has run): adds the think-end (`final`) injection position, one V1 cell
+(dial@final), gate AB-G1f, and the position sub-question Q-B with its own
+pre-stated hypothesis and falsifier. Additive only; every original gate,
+template, band cut, and falsifier stands unchanged. See §Revision 1.
+
 Tier-2 amendment (per `amendment-vs-lab-notebook.md`): AMENDMENT-AA authorizes
 only the α grid and eval-subset sizes as tier-3 knobs; the injection note
 template is not among them, and this design carries a distinct mechanistic
@@ -254,6 +260,111 @@ behavior, position (#3) and phrasing (this) can be crossed in one small grid
 later. AA-6 (gate@late) was flat, so no re-scoping of positions is needed —
 the cells above stand as designed.
 
+## Revision 1 — think-end position + the position sub-question (SIGNED pre-launch, 2026-07-02)
+
+Signed by the user in-conversation 2026-07-02 ("yes amend our amendment"),
+BEFORE any AB cell has run — an additive pre-launch revision, not a goalpost
+move. All original content above stands as written.
+
+### Restructured questions
+
+The amendment now answers two nested questions (user framing, 2026-07-02):
+
+- **Q-A (channel):** does injecting the probe signal into the thinking
+  process influence the decision at all? Operationalized exactly as the
+  original design: any V1 cell passing its effect gate (now AB-G1, AB-G1f,
+  or AB-G2).
+- **Q-B (position):** does WHERE the injection lands in the think block
+  change how much it influences the decision? Pre-stated hypothesis (user,
+  2026-07-02): a note at the FRONT of the thinking changes the trajectory
+  of the reasoning but does not influence the final decision very much; a
+  note at the END — the model's final thought right before it commits to
+  an answer — is more likely to change the decision itself.
+
+### New position: `final` (think-end)
+
+Mechanics (implemented as `position="final"` in `cot_inject.py` +
+`run_arm_b.py`, CPU unit-tested with this revision):
+
+1. ONE shared plain initial pass per item (identical to `late`); the dial
+   score is read post-answer at the same anchor as `late`.
+2. ONE shared *thinking-enabled plain* revision-reasoning pass per item:
+   the model re-reasons about its answer with no note present; its think
+   content (up to `</think>` or the token budget,
+   `max_new_tokens_revision`) becomes the shared draft.
+3. Per variant (real/placebo), the V1 note — same banded dial templates as
+   above, wording unchanged — is appended AFTER the shared draft as the
+   final thought, the think block is CLOSED (`</think>`), and the model
+   generates the answer immediately.
+
+By construction the reasoning trajectory is byte-identical between real
+and placebo (and across score values): the ONLY difference between arms is
+the score carried by the final thought. This makes dial@final the cleanest
+causal read of decision-use in the design — any real-vs-placebo delta is
+attributable purely to the true probe value at the commit point, with zero
+trajectory confound. Contrast with dial@late, where the note sits at the
+TOP of the revision think block and the model reasons after it (the note
+can shape the trajectory AND the decision).
+
+### Cell + gate added
+
+- **dial@final (V1)**: dial pool, 500 answerable items, same decode
+  parameters, same placebo machinery, same adequacy floors as dial@late.
+  V1 is now 3 cells (gate@early, dial@late, dial@final); added cost
+  ≈ 2,000 generations (4 per item: shared initial + shared revision-think
+  + 2 forced answers).
+- **AB-G1f (V1 dial@final):** thresholds identical to AB-G1 — real vs
+  placebo appropriate-revision discrimination ≥ +10 points, CI excludes 0,
+  AND final answerable accuracy drop ≤ 5 points vs placebo. AB-G1
+  (dial@late) remains PRIMARY. AB-G3's trigger extends to "V1 passes G1,
+  G1f, or G2"; on a final-only hit, the V2–V4 decomposition runs at the
+  `final` position.
+
+### Q-B predictions (pre-stated) and falsifier
+
+1. **Decision-effect ordering:** delta(dial@final) ≥ delta(dial@late) on
+   appropriate-revision discrimination. Theoretical basis recorded before
+   the run: recency / serial-position effects on long contexts; the
+   Amendment S/T finding that the correctness signal is strongest read
+   AFTER the answer (post-generation advantage); and CoT-unfaithfulness —
+   a note early in the trajectory can be reasoned past and rationalized
+   away, a final thought adjacent to the commit point cannot.
+2. **Trajectory dissociation:** at dial@late, real-vs-placebo divergence in
+   the think-text continuation is expected even if the decision metric
+   stays flat (front changes trajectory, not decision); at dial@final,
+   trajectory divergence is structurally zero (shared draft). Trajectory
+   readout is DESCRIPTIVE, not a gate: real-vs-placebo differences in
+   (a) verification-move rate in the continuation (the mined native moves:
+   "let me think", "verify", "double-check", "I don't know") and
+   (b) continuation length.
+3. **Q-B falsifier:** dial@late passes AB-G1 while dial@final misses
+   AB-G1f with non-overlapping deltas → the final-thought/commit account
+   is wrong; the signal gets used at the front of thinking or not at all.
+   Both flat → the Q-A falsifier governs (position never gets a reading).
+   Both pass at similar magnitude → position does not matter (informative
+   null on Q-B, reported as such). Ordering readings with overlapping CIs
+   are reported descriptively, never as a pass.
+
+### Preconditions (extension)
+
+Precondition 6 extends to the new position: the batched steering harness
+(`arm_b_batched.py`, branch `steering-harness-batching`) implements only
+`early`/`late` today. A batched dial@final run requires adding `final`
+there AND passing the batched-vs-sequential spot check on it; otherwise
+run dial@final on the sequential engine.
+
+### Changelog
+
+- Added injection position `final` (think-end) to `cot_inject.py` and
+  `run_arm_b.py` (+ CPU unit tests); `early`/`late` behavior untouched.
+- Added V1 cell dial@final and gate AB-G1f (thresholds = AB-G1).
+- Added Q-B (position) hypothesis, ordering + dissociation predictions,
+  descriptive trajectory readout, and Q-B falsifier.
+- Extended AB-G3's trigger and precondition 6 to cover the new cell.
+- Absorbs queued follow-up #3 (think-end position) from the AA close-out.
+- No change to V1–V4 templates, band cuts, AB-G1/G2/G3 thresholds, the
+  placebo design, or the original falsifier.
+
 ## §7 Results (filled per cell as runs complete)
 
-*(empty — not signed, no run authorized)*
+*(empty — signed + Revision 1 signed; no run authorized yet)*

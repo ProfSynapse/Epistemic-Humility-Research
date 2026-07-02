@@ -26,6 +26,7 @@ if str(steering_dir) not in sys.path:
 
 from cot_inject import (
     InjectionConfig,
+    extract_think_content,
     build_think_prompt,
     build_placebo_prompt,
     build_injection_batch,
@@ -380,3 +381,80 @@ class TestScoreInterpretation:
         keywords = ("incorrect", "wrong", "revis")
         assert any(kw in interp.lower() for kw in keywords), \
             f"Expected correctness warning for low dial; got: {interp!r}"
+
+
+# ---------------------------------------------------------------------------
+# Final (think-end) injection — Amendment AB Revision 1
+# ---------------------------------------------------------------------------
+
+class TestBuildThinkPromptFinal:
+    """Final injection: draft first, note last, think block CLOSED."""
+
+    @pytest.fixture
+    def final_prompt(self):
+        cfg = InjectionConfig(signal="dial", score=0.31, position="final")
+        return build_think_prompt("What is dark matter?", cfg,
+                                  existing_draft="Dark matter is a placeholder.")
+
+    def test_position_final_is_valid(self):
+        cfg = InjectionConfig(signal="dial", score=0.5, position="final")
+        assert cfg.position == "final"
+
+    def test_prompt_contains_think_close(self, final_prompt):
+        assert _THINK_CLOSE in final_prompt, \
+            "final: the think block must be CLOSED so the model answers next"
+
+    def test_note_is_last_thought_before_close(self, final_prompt):
+        note = InjectionConfig(signal="dial", score=0.31,
+                               position="final").render_note()
+        think_part = final_prompt.split(_THINK_CLOSE)[0]
+        assert think_part.rstrip().endswith(note), \
+            f"note must be the last think content: {think_part!r}"
+
+    def test_draft_precedes_note(self, final_prompt):
+        assert final_prompt.index("placeholder") < final_prompt.index("0.31")
+
+    def test_prompt_ends_after_close(self, final_prompt):
+        after = final_prompt.split(_THINK_CLOSE, 1)[1]
+        assert after.strip() == "", \
+            "nothing but whitespace may follow </think> (the model answers)"
+
+    def test_empty_draft_still_closes(self):
+        cfg = InjectionConfig(signal="dial", score=0.9, position="final")
+        prompt = build_think_prompt("Q?", cfg, existing_draft=None)
+        assert _THINK_CLOSE in prompt
+        assert cfg.render_note() in prompt
+
+    def test_placebo_final_differs_only_in_score(self):
+        cfg = InjectionConfig(signal="dial", score=0.9, position="final")
+        real = build_think_prompt("Q?", cfg, existing_draft="draft.")
+        p_prompt, p_score = build_placebo_prompt(
+            "Q?", cfg, score_distribution=[0.1], rng=random.Random(0),
+            existing_draft="draft.")
+        assert p_score == 0.1
+        assert _THINK_CLOSE in p_prompt
+        assert real.replace("0.90", "") != p_prompt.replace("0.10", "") or \
+            real.count("0.90") == p_prompt.count("0.10")
+
+
+class TestExtractThinkContent:
+    """extract_think_content: recover the reasoning draft from a generation."""
+
+    def test_full_block(self):
+        text = "<think>\nsome reasoning\n</think>\nThe answer is 42."
+        assert extract_think_content(text) == "some reasoning"
+
+    def test_no_opener(self):
+        text = "reasoning without opener\n</think>\nanswer"
+        assert extract_think_content(text) == "reasoning without opener"
+
+    def test_truncated_before_close(self):
+        text = "<think>\nreasoning that got cut of"
+        assert extract_think_content(text) == "reasoning that got cut of"
+
+    def test_plain_text_passthrough(self):
+        assert extract_think_content("  just text  ") == "just text"
+
+    def test_only_first_close_used(self):
+        text = "<think>\ndraft\n</think>\nanswer mentions </think> again"
+        assert extract_think_content(text) == "draft"
