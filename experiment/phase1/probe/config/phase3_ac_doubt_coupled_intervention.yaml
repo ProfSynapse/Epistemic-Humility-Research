@@ -1,0 +1,65 @@
+# Amendment AC: DOUBT-REGULATED CAUTION (Tier-2, local 3090).
+# SPEC: experiment/protocol/AMENDMENT-AC-doubt-regulated-caution.md
+#
+# Question (PHASE3 RQ4 Stage 1): does an open-loop coupling — write caution_perp
+# proportional to the frozen doubt readout, g_i = -alpha * z_i — carry
+# information beyond DELETING the caution gate (constant ablate)?
+# Sensor u_d fit offline (known_correct_answered vs unknown_refused, L35);
+# per-row gains precomputed in the committed gain map. couple with g==0 is
+# EXACTLY ablate, so ablate is the nested constant comparison; permuted is the
+# same equation with z shuffled (seed 20260702) — the information control.
+# AC-G1: coupled beats permuted on the selectivity gap
+# (de-refusal(known_refused) - de-refusal(unknown_refused)) by >=5pt, bootstrap
+# 95% CI excluding 0. Falsifier: permuted ~ coupled -> negative report, NO
+# alpha-tuning or coupling-form rescue runs.
+# Same model/adapter/prompt/direction as refined B1; adds unknown_refused rows
+# (the selectivity target) and the two couple arms.
+
+model:
+  model_name: /workspace/repo/scratch/schema_response_confidence/runs/sft_schema_clean_seed1_full/20260623_123624/Qwen3-4B-bnb-4bit/merged-16bit
+  adapter: /workspace/repo/scratch/schema_response_confidence/runs/schema_clean_sft_grpo_v2_seed1_full/20260624_095831/final_model
+  adapter_name: clean_sft_grpo_v2
+  torch_dtype: bfloat16
+  device_map: cuda
+  enable_thinking: false
+
+prompt:
+  system: >-
+    Answer the user's question. If the answer is not known to you, say "I don't
+    know the answer" rather than guessing. Return only a JSON object with
+    exactly two keys: "answer" and "response_confidence". The "answer" value is
+    your answer or abstention text. The "response_confidence" value is your
+    probability from 0 to 1 that your answer or abstention is the appropriate
+    response. Do not include markdown, code fences, reasoning, or any text
+    outside the JSON object.
+
+caution_direction: experiment/phase1/probe/analysis/current_clean_grpo_v2_caution_residual_direction/caution_perp_direction_L35.json
+
+rows: experiment/phase1/probe/analysis/current_selfaware_behavior_rows/clean_sft_grpo_v2/rows.jsonl
+
+rows_filter:
+  cells:
+    - known_refused
+    - known_correct_answered
+    - unknown_refused
+
+arms:
+  - arm_id: baseline
+    mode: baseline
+  - arm_id: coupled
+    mode: couple
+    gain_map: experiment/phase1/probe/analysis/ac_doubt_gain_map/doubt_gain_map_L35.json
+    gain_key: gains
+  - arm_id: permuted
+    mode: couple
+    gain_map: experiment/phase1/probe/analysis/ac_doubt_gain_map/doubt_gain_map_L35.json
+    gain_key: gains_permuted
+  - arm_id: ablate
+    mode: ablate
+
+sweep:
+  max_new_tokens: 96
+  max_rows: null
+
+output:
+  root: experiment/phase1/probe/analysis/ac_doubt_coupled_intervention
