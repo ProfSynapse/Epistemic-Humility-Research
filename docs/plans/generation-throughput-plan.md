@@ -180,6 +180,42 @@ engine touches a registered cell:
 The in-flight `y-a-qwen3.5-4b-base-r2` finishes on the registered sequential
 config regardless — no mid-run engine swap inside Amendment Y's primary cell.
 
+### §5 outcome — gate PASSED with a user-waived per-row half (2026-07-02)
+
+Lab-notebook record of the equivalence run (HF Job `6a46ac1ffb6818a83db3065e`,
+a10g-small, created 18:21:19Z, COMPLETED ~18:55Z; repo pinned `7ae63720`,
+tuner pinned `6a1760a`; run tag `y-equiv-pythia-batched` on the cloud-results
+dataset; `--engine tuner-batched --batch-size 32`):
+
+- **Deviation from step 2 as written:** the per-row answer_text/outcome
+  comparison was **waived by the user** ("not sure we need to do the 1:1
+  compairson", 2026-07-02) after it turned out no completed Y cell has
+  rows.jsonl on the hub (all predate the upload fix e2fa5c04), so a
+  per-row-vs-history diff was impossible without a sequential re-run. The
+  adoption criterion became AUROC-level agreement plus manifest-count
+  agreement.
+- **Manifest agreement:** attempts/correct/wrong/halluc/known =
+  2996/309/1541/628/518 batched vs 2995/305/1545/627/518 original —
+  identical `kshot_sha` and `config_sha` (8911412301e514a5); ~0.13% outcome
+  drift = expected near-tie argmax flips under batched float reduction.
+- **Scored agreement (batched vs original, orig bootstrap CI half-width):**
+  gate 0.9938 vs 0.9927 (Δ+0.0011, hw 0.0036); dial 0.8277 vs 0.8206
+  (Δ+0.0071, hw 0.0261, best layer 11 both); veto 0.7887 vs 0.7511
+  (Δ+0.0376, hw 0.0331); control 0.6367 vs 0.5955 (Δ+0.0412, hw 0.0328).
+  Verdict PASS (all three gates) in both. Veto/control deltas sit just
+  outside the half-width but the 95% CIs overlap, the shift is upward, and
+  the veto is the known decode-sensitive metric (Amendment SR: greedy
+  understates the veto; per-row flips concentrate in near-ties). Note the
+  Δ confounds engine numerics with the 0.13% row drift — undecomposable
+  without the waived per-row half.
+- **Throughput:** extraction ~5 min at bs=32 (vs ~2.6 h sequential, ~30×),
+  zero OOM/auto-halving; total wall ~35 min, dominated by the then-serial
+  scorer (parallelized in `8dcbf580` after this job launched).
+- **Adopted** for the gemma-4-e4b-pt / olmo-2-7b / qwen3.5-4b-base re-runs
+  and future fleets, per the user's waiver. Any cell where the readout
+  verdict lands within a CI half-width of a gate boundary should be treated
+  as engine-sensitive and re-checked sequentially.
+
 ## 6. Order of work
 
 1. Phase 1 extractor change + local pythia equivalence run (one sitting; the
