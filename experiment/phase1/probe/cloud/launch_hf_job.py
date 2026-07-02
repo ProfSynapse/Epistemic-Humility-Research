@@ -30,6 +30,7 @@ import shlex
 import sys
 
 REPO_URL = "https://github.com/ProfSynapse/Epistemic-Humility-Research.git"
+TUNER_REPO_URL = "https://github.com/ProfSynapse/Synaptic-Tuner.git"
 DEFAULT_IMAGE = "pytorch/pytorch:2.9.0-cuda12.8-cudnn9-runtime"
 # transformers pin: 5.12.1 is the post-cutoff-arch version validated locally in
 # the unsloth-z image (Qwen3.5 / Gemma-4 loaders). Keep pinned; bump deliberately.
@@ -46,16 +47,24 @@ def build_command(args, extract_args: list[str]) -> list[str]:
         shlex.quote(args.run_tag),
         *[shlex.quote(a) for a in extract_args],
     ])
-    script = " && ".join([
+    steps = [
         "set -euo pipefail",
         "command -v git >/dev/null || (apt-get update -qq && apt-get install -yqq git)",
         f"pip install -q --no-cache-dir {PIP_SPEC}",
         f"git clone --filter=blob:none {REPO_URL} /tmp/repo",
         "cd /tmp/repo",
         f"git checkout --detach {shlex.quote(args.commit)}",
-        cell,
-    ])
-    return ["/bin/bash", "-c", script]
+    ]
+    if args.tuner_commit:
+        # The tuner-batched engine shells out to the Synaptic Tuner public CLI;
+        # clone it at a pinned commit next to the repo. Callers pass
+        # `--tuner-dir /tmp/synaptic-tuner` in the extract passthrough args.
+        steps += [
+            f"git clone --filter=blob:none {TUNER_REPO_URL} /tmp/synaptic-tuner",
+            f"git -C /tmp/synaptic-tuner checkout --detach {shlex.quote(args.tuner_commit)}",
+        ]
+    steps.append(cell)
+    return ["/bin/bash", "-c", " && ".join(steps)]
 
 
 def main() -> int:
@@ -71,6 +80,12 @@ def main() -> int:
     ap.add_argument("--image", default=DEFAULT_IMAGE)
     ap.add_argument("--flavor", default="a10g-small")
     ap.add_argument("--timeout", default="45m")
+    ap.add_argument("--tuner-commit", default=None,
+                    help="pin and clone Synaptic Tuner at this sha (pushed to its "
+                         "public remote) for --engine tuner-batched cells")
+    ap.add_argument("--log-push-interval", type=int, default=None,
+                    help="seconds between durable log pushes in-job (default 600; "
+                         "use 120 for short batched cells)")
     ap.add_argument("--dry-run", action="store_true",
                     help="print the job spec (sans secret) and exit without submitting")
     args, extract_args = ap.parse_known_args()
@@ -98,7 +113,9 @@ def main() -> int:
         flavor=args.flavor,
         timeout=args.timeout,
         secrets={"HF_TOKEN": tok},
-        env={"HF_HUB_ENABLE_HF_TRANSFER": "0"},
+        env={"HF_HUB_ENABLE_HF_TRANSFER": "0",
+             **({"LOG_PUSH_INTERVAL": str(args.log_push_interval)}
+                if args.log_push_interval else {})},
     )
     print(f"[launch] job id: {job.id}")
     print(f"[launch] url:    {getattr(job, 'url', '(see hf.co/jobs)')}")

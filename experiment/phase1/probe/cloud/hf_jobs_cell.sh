@@ -35,7 +35,7 @@ JOB_LOG="${OUT}/job_log_${BOOT_ID}.txt"
 exec > >(tee -a "${JOB_LOG}") 2>&1
 
 (
-    while sleep 600; do
+    while sleep "${LOG_PUSH_INTERVAL:-600}"; do
         python "${PROBE}/cloud/upload_result.py" \
             --repo "${RESULTS_REPO}" \
             --path-prefix "${RUN_TAG}/logs" \
