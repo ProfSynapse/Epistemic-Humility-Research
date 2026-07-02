@@ -22,8 +22,30 @@ MODEL="$1"; GATE_ROWS="$2"; RESULTS_REPO="$3"; RUN_TAG="$4"; shift 4
 
 PROBE="experiment/phase1/probe"
 OUT="/tmp/cell_${RUN_TAG}"
+mkdir -p "${OUT}"
 
-echo "[cloud-cell] model=${MODEL} gate_rows=${GATE_ROWS} run_tag=${RUN_TAG}"
+# Durable log capture (post-mortem 2026-07-02: HF preemption restarts a job
+# from scratch and WIPES its log stream, leaving no forensics). Tee everything
+# to a per-incarnation file and push it to the results repo every 10 min. A
+# restarted job gets a fresh BOOT_ID, so the preempted incarnation's last
+# pushed log survives at <run-tag>/logs/job_log_<boot>.txt — two log files
+# under one run tag IS the restart evidence, and the tail shows where it died.
+BOOT_ID="$(date -u +%Y%m%dT%H%M%SZ)"
+JOB_LOG="${OUT}/job_log_${BOOT_ID}.txt"
+exec > >(tee -a "${JOB_LOG}") 2>&1
+
+(
+    while sleep 600; do
+        python "${PROBE}/cloud/upload_result.py" \
+            --repo "${RESULTS_REPO}" \
+            --path-prefix "${RUN_TAG}/logs" \
+            --file "${JOB_LOG}" >/dev/null 2>&1 || true
+    done
+) &
+LOG_PUSHER_PID=$!
+trap 'kill "${LOG_PUSHER_PID}" 2>/dev/null || true' EXIT
+
+echo "[cloud-cell] boot=${BOOT_ID} model=${MODEL} gate_rows=${GATE_ROWS} run_tag=${RUN_TAG}"
 nvidia-smi --query-gpu=name,memory.total --format=csv,noheader || true
 
 python "${PROBE}/amendment_x_cross_model_extract.py" \
@@ -53,3 +75,9 @@ python "${PROBE}/cloud/upload_result.py" \
     "${UPLOAD_FILES[@]}"
 
 echo "[cloud-cell] DONE ${RUN_TAG}"
+
+# Final log push so the completed incarnation's full log is durable too.
+python "${PROBE}/cloud/upload_result.py" \
+    --repo "${RESULTS_REPO}" \
+    --path-prefix "${RUN_TAG}/logs" \
+    --file "${JOB_LOG}" || true
