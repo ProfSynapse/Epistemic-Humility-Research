@@ -779,14 +779,22 @@ Three readings, in increasing strength, all supported here:
    *policy* over a fixed epistemic signal. SFT installs a refusal routine
    gated on the signal; DPO/KTO/GRPO re-gate the routine; none of them
    touches the signal. This is why every arm lands on the same frontier.
-3. **Strategy:** the expensive part of epistemic humility (the internal
-   knowledge-boundary signal) is already paid for by pretraining. The
-   unsolved part is the *readout*: coupling output behavior and stated
-   confidence to a signal that is linearly available inside. Training the
-   readout by RL failed here (Section 7); reading it directly with a probe
-   trivially succeeds. Companion work in this program pursues the readout
-   line directly: characterizing which internal signals survive which
-   training stages, and whether a training-free probe readout can supply the
+3. **Strategy (open question):** these results are *consistent with* the
+   expensive part of epistemic humility (the internal knowledge-boundary
+   signal) being already paid for by pretraining — but they do not establish
+   it. Every checkpoint measured in this program so far, including every
+   "raw base," is a vendor *post-trained* instruct checkpoint; "training-free"
+   here means free of our training, not of post-training. Whether the signal
+   predates post-training or is installed by it is an open question this
+   paper poses rather than answers (a pre-registered pretrain-only
+   base-model contrast, Amendment Y, is designed to resolve it in either
+   direction). What these results do establish is where the unsolved part
+   sits: the *readout* — coupling output behavior and stated confidence to a
+   signal that is linearly available inside. Training the readout by RL
+   failed here (Section 7); reading it directly with a probe trivially
+   succeeds. Companion work in this program pursues the readout line
+   directly: characterizing which internal signals survive which training
+   stages, and whether a training-free probe readout can supply the
    calibrated gate/dial that output training could not.
 
 We flag the boundary conditions: these are single-seed, single-family (4B)
