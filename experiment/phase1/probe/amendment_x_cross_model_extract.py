@@ -24,6 +24,16 @@ Reuses W's raw-base load + S's grading/prompt/helpers + V's mixed-pool idea; the
 ONLY per-model knob is --base-model. Persists (gitignored model_tag subtree) for every
 ANSWERED row: rows.jsonl + <safe_key>__{pre,post}.safetensors + manifest.json.
 No training run.
+
+AMENDMENT Y ADDITION (backward-compatible, default OFF via --base-mode): a
+pretrain-only base-model prompting surface. Pretrain-only bases (gpt2-xl,
+pythia-2.8b, Llama-2-7B, OLMo-2-7B, and the Arm A bases) mostly ship no chat
+template, so the chat/system-prompt render path cannot run them. With --base-mode
+the script renders a FIXED handcrafted 5-shot trivia QA completion block (see
+_BASE_MODE_FEWSHOT; those exemplars are hand-written and deliberately NOT drawn
+from PopQA/TriviaQA/SelfAware, per the leakage rule) and parses the answer as the
+first line of the plain completion. When --base-mode is OFF the render, parse, and
+config_sha are byte-identical to the X/Z/SR chat-surface cells.
 """
 
 from __future__ import annotations
@@ -57,6 +67,84 @@ from amendment_u_unified_extract import load_selfaware_pool  # noqa: E402
 def _safe_model_tag(model_name: str) -> str:
     """unsloth/Qwen3-8B-bnb-4bit -> qwen3-8b-bnb-4bit (a filesystem-safe tag)."""
     return model_name.split("/")[-1].lower()
+
+
+# ---------------------------------------------------------------------------
+# Amendment Y base-mode prompting surface (default OFF; §6 of AMENDMENT-Y).
+#
+# Pretrain-only base models (gpt2-xl, pythia-2.8b, Llama-2-7B, OLMo-2-7B, and the
+# modern Arm A bases) mostly ship NO chat template, so the instruct render path
+# (render_probe_prompt -> apply_chat_template) cannot run them. Base-mode replaces
+# that surface with a FIXED few-shot QA completion block: a handcrafted 5-shot
+# trivia prefix followed by the target question and a bare "A:" answer cue, then
+# plain completion parsed at the first line.
+#
+# LEAKAGE RULE: these five demonstration QA pairs are hand-written here and are
+# deliberately NOT drawn from the PopQA, TriviaQA, or SelfAware evaluation pools,
+# so no evaluation item can appear as an in-context exemplar. They are generic
+# world-knowledge facts chosen to be unambiguous and short.
+_BASE_MODE_FEWSHOT: tuple[tuple[str, str], ...] = (
+    ("What is the largest planet in our solar system?", "Jupiter"),
+    ("How many sides does a hexagon have?", "Six"),
+    ("What is the chemical symbol for gold?", "Au"),
+    ("In what year did the Second World War end?", "1945"),
+    ("What is the tallest mountain on Earth?", "Mount Everest"),
+)
+
+
+def build_base_mode_prompt(question: str) -> str:
+    """Render the fixed k-shot QA completion block for one target question.
+
+    Format is a plain completion surface (no chat template, no system prompt):
+    each exemplar is "Q: <question>\\nA: <answer>\\n\\n", repeated for the five
+    frozen exemplars, then the target as "Q: <question>\\nA:" with a trailing
+    space so the model completes the answer inline. The continuation is parsed as
+    the FIRST LINE after this cue (see _first_line_content_end).
+    """
+    block = "".join(f"Q: {q}\nA: {a}\n\n" for q, a in _BASE_MODE_FEWSHOT)
+    return f"{block}Q: {question}\nA:"
+
+
+def base_mode_kshot_sha() -> str:
+    """Stable sha of the exact rendered k-shot exemplar block (answer-cue prefix
+    only, target-independent) so config_sha changes when base-mode is on and a
+    run record can prove which prompting surface a cell used."""
+    import hashlib
+    block = "".join(f"Q: {q}\nA: {a}\n\n" for q, a in _BASE_MODE_FEWSHOT)
+    return hashlib.sha256(block.encode("utf-8")).hexdigest()[:16]
+
+
+def _first_line_content_end(tokenizer, seq_ids, prompt_len: int,
+                            special_ids: set[int]) -> int | None:
+    """Index (into the full sequence) of the last CONTENT token of the FIRST LINE
+    of the base-mode continuation.
+
+    Base-mode completions babble past the answer (further "Q:/A:" pairs, prose),
+    so the post-gen read must stop at the first newline of the continuation rather
+    than at the whole generation's content end (_content_end_index's job for the
+    chat surface). A newline can live inside a multi-character token (byte-level
+    tokenizers like GPT-2 encode "\\n" as its own token, but SentencePiece merges
+    can bury it), so we decode the generated tail token-by-token and stop at the
+    FIRST token whose incremental decode introduces a newline. The boundary token
+    itself (the one carrying the newline) is excluded from the first line; then we
+    trim trailing specials from what remains. Returns None if the first line has
+    no content token (empty answer).
+    """
+    n = len(seq_ids)
+    # Walk the generated continuation; the newline may be introduced mid-token, so
+    # decode incrementally and detect the first token that adds a "\n" to the run.
+    end = n - 1
+    prev = ""
+    for i in range(prompt_len, n):
+        cur = tokenizer.decode(seq_ids[prompt_len:i + 1], skip_special_tokens=True)
+        added = cur[len(prev):]
+        if "\n" in added:
+            end = i - 1  # exclude the token that carries the newline
+            break
+        prev = cur
+    while end >= prompt_len and int(seq_ids[end]) in special_ids:
+        end -= 1
+    return end if end >= prompt_len else None
 
 
 def build_mixed_pool(datasets_root, gate_rows, n_answerable, seed):
@@ -96,7 +184,7 @@ def run(args) -> int:
         "adapter": "NONE-raw-instruct-base",
         "checkpoint": f"raw {model_name} (no adapter)",
         "model_tag": model_tag,
-        "system_prompt": SYSTEM_PROMPT,
+        "system_prompt": (None if args.base_mode else SYSTEM_PROMPT),
         "abstention_suppression": "NONE-base-is-pre-abstention",
         "pool_sources": ["popqa", "triviaqa", "selfaware_known", "selfaware_unknown"],
         "gate_rows_source": str(gate_rows),
@@ -109,6 +197,13 @@ def run(args) -> int:
         "decode": (f"sampled(temp={args.temperature},top_p={args.top_p})"
                    if args.do_sample else "greedy"),
     }
+    if args.base_mode:
+        # Amendment Y base-mode surface (§6): no chat template, fixed k-shot QA
+        # completion block. Record base_mode + a sha of the exact exemplar block
+        # so config_sha differs from the chat-surface X/Z/SR cells and a run record
+        # can prove which prompting surface produced a given extraction.
+        config_payload["base_mode"] = True
+        config_payload["kshot_sha"] = base_mode_kshot_sha()
     config_sha = _config_sha(config_payload)
 
     print(f"[amendment-x] loading RAW base {model_name} (no adapter) ...", flush=True)
@@ -164,6 +259,12 @@ def run(args) -> int:
     if isinstance(im_end, int) and im_end >= 0:
         eos_for_gen = ([tokenizer.eos_token_id, im_end]
                        if tokenizer.eos_token_id is not None else im_end)
+    # Pretrain-only bases (GPT-2) ship no pad token; generation needs one. Fall
+    # back to EOS for padding without mutating the special-id set (EOS already in
+    # special_ids). No effect on Qwen3 (pad_token_id already set), so X/Z/SR are
+    # unchanged. pad_token_id is read via `tokenizer.pad_token_id or eos` below.
+    if tokenizer.pad_token_id is None and tokenizer.eos_token_id is not None:
+        tokenizer.pad_token = tokenizer.eos_token
 
     # Seed the generation RNG per run so sampled decoding (Amendment SR) is a
     # reproducible independent draw. No effect on greedy runs (do_sample=False),
@@ -189,8 +290,11 @@ def run(args) -> int:
         for item in pool:
             if written >= args.max_attempts:
                 break
-            rendered, _mode = render_probe_prompt(
-                tokenizer, SYSTEM_PROMPT, item["question"], enable_thinking=False)
+            if args.base_mode:
+                rendered = build_base_mode_prompt(item["question"])
+            else:
+                rendered, _mode = render_probe_prompt(
+                    tokenizer, SYSTEM_PROMPT, item["question"], enable_thinking=False)
             enc = tokenizer(rendered, return_tensors="pt").to(device)
             prompt_len = int(enc["input_ids"].shape[1])
 
@@ -208,11 +312,21 @@ def run(args) -> int:
                 gen = model.generate(**enc, **gen_kw)
             full = gen.sequences[0]
             full_list = full.tolist()
-            answer_text = tokenizer.decode(
-                full_list[prompt_len:], skip_special_tokens=True).strip()
+            if args.base_mode:
+                # Base-mode: parse the answer as the FIRST LINE of the completion
+                # (strip, cut at first newline); trailing babble after the newline
+                # is discarded and NOT read into the post-gen position.
+                cont = tokenizer.decode(
+                    full_list[prompt_len:], skip_special_tokens=True)
+                answer_text = cont.split("\n", 1)[0].strip()
+                content_end = _first_line_content_end(
+                    tokenizer, full_list, prompt_len, special_ids)
+            else:
+                answer_text = tokenizer.decode(
+                    full_list[prompt_len:], skip_special_tokens=True).strip()
+                content_end = _content_end_index(full_list, prompt_len, special_ids)
 
             refused = scorers.is_stated_confidence_refusal(answer_text)
-            content_end = _content_end_index(full_list, prompt_len, special_ids)
             answered = (content_end is not None) and bool(answer_text) and not refused
 
             correct = None
@@ -314,6 +428,13 @@ def parse_args(argv=None):
     ap.add_argument("--wrong-floor", type=int, default=30)
     ap.add_argument("--hallucination-floor", type=int, default=50)
     ap.add_argument("--seed", type=int, default=20260630)
+    # Amendment Y: pretrain-only base-model surface. DEFAULT OFF; when off the
+    # render/parse path is byte-identical to X/Z/SR. When on, swaps the chat
+    # template for a fixed k-shot QA completion block and first-line parsing.
+    ap.add_argument("--base-mode", action="store_true",
+                    help="Amendment Y base-mode: fixed k-shot QA completion "
+                         "surface for pretrain-only bases with no chat template; "
+                         "default off = chat-template surface (X/Z/SR)")
     # Amendment SR: sampled-decode seed-robustness. Defaults preserve greedy X/Z.
     ap.add_argument("--do-sample", action="store_true",
                     help="sampled decoding (Amendment SR); default off = greedy (X/Z)")
