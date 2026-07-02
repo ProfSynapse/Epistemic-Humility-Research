@@ -200,4 +200,59 @@ mkdir. Single GPU — cells strictly sequential.
 
 ## §7 Results (filled per cell as runs complete)
 
+**Stage-1 verdict (registered roll-up, 2026-07-02): FALSIFIER-1 — the channel
+stays shut. No effect gate passed in any of the 8 cells; AA-G5 (PRIMARY) had
+zero eligible combinations.** Roll-up JSON:
+`experiment/phase1/probe/amendment_aa_qwen3.5-4b_result.json`
+(`amendment_aa_verdict.py`, missing_cells = []).
+
+Per cell (all Qwen/Qwen3.5-4B, seeds as registered, health gates passing
+unless noted):
+
+| Cell | Arm/signal/position | Result |
+|---|---|---|
+| AA-1 | A gate@anchor, α sweep −4..4 | FLAT: no α met the effect gate; no qualifying α* → fallback α*=−2.0 (descriptive only) |
+| AA-2 | A gate@end @α*=−2.0 | FLAT |
+| AA-3 | A dial@end, α sweep −4..4 | FLAT: no passing α (adequacy 351 wrong / 149 correct) |
+| AA-4 | A dial@anchor @α*=−2.0 | FLAT |
+| AA-5 | B gate@early (real vs placebo) | FLAT: abstention Δ +0.0033, CI [0.0000, 0.0104] |
+| AA-6 | B gate@late (real vs placebo) | FLAT |
+| AA-7 | B dial@late (real vs placebo) | FLAT: revision discrimination 0.000 in BOTH conditions; accuracy Δ −0.0066, CI [−0.0347, 0.021] (adequacy 358/140) |
+| AA-8 | B dial@early (real vs placebo) | FLAT: revision discrimination 0.000 in BOTH conditions; accuracy Δ −0.022, CI [−0.052, 0.004] (adequacy 389/107) |
+
+Findings that constrain interpretation (pre-stated caveats, not new gates):
+
+1. **Intervention-surface confound at the anchor (named per the close-out
+   requirement).** In the readout experiments the "anchor" is a one-token
+   surface in the k-shot render, and Arm A applies the steering direction at
+   that single token position. Arm A flatness at the anchor therefore does
+   not distinguish "the signal is causally inert" from "a one-token
+   intervention surface is too small to matter" — the anchor-vs-end causal
+   account is NOT falsified by AA-1/AA-4 alone; it remains untested at richer
+   intervention surfaces. This confound was identified during the run
+   (2026-07-02) and recorded before the verdict.
+2. **The revision floor.** Appropriate-revision discrimination is exactly
+   0.000 in every dial-cell condition, including placebo and α=0: under the
+   registered "Double-check your answer above" instruction this model never
+   revises anything. AA-G3/AA-G4 therefore had no detection room in practice
+   — the dial-side nulls are consistent with FALSIFIER-1 but are weaker
+   evidence than the gate-side nulls. Any follow-up must first move the
+   revision floor itself (see AMENDMENT-AB draft: score-conditional
+   decision-rule injection).
+3. **Gate-side abstention headroom.** AA-5/AA-6 abstention was near-floor in
+   both conditions (unknown items answered under control: 297–299 of 300),
+   so the +10-point gate had room to register but small effects would not.
+4. Falsifier-3 does not apply: no behavior moved even at coherence-violating
+   α, so there is no α-vs-coherence tradeoff curve to report.
+
+**Interpretation (registered wording):** the R-style channel cannot be forced
+open mechanically on this family — near-perfect latent answerability (gate
+AUROC 0.998) and usable correctness (dial 0.827) information do not translate
+into answer/abstain/revise behavior under either sub-symbolic (activation
+add) or symbolic (think-block telemetry note) injection. The steering line
+for Qwen3.5-4B dies here as designed; the reinforcing-negative report joins
+the Paper 5 line. Stage 2 (other families) is NOT run: the Stage-2 bar
+required a Stage-1 passing pattern to replicate. Follow-up routed to
+AMENDMENT-AB (first-person / decision-rule framing; drafted, unsigned).
+
 *(empty — no run authorized yet)*
