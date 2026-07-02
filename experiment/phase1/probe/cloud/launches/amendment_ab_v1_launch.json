@@ -1,0 +1,46 @@
+{
+  "amendment": "AB",
+  "launched_utc": "2026-07-02T21:26:45Z",
+  "lane": "hf-jobs a10g-small, sequential engine (precondition 6: batched harness not spot-checked; 'final' unsupported in arm_b_batched)",
+  "approval": "user in-conversation 2026-07-02: 'lets toss arm b up on the cloud and run in parallel' + AskUserQuestion 'Launch all three' naming AB-1/AB-2/AB-3",
+  "repo_commit": "7e61ad7a24e0d80f9835b8b3aa26ab7a04a63d70",
+  "model": "unsloth/Qwen3.5-4B",
+  "note_variant": "v1",
+  "seed": 20260701,
+  "decode": "sampled(temp=0.7, top_p=0.9), max_new 128/96",
+  "timeout": "5h",
+  "log_push_interval_s": 300,
+  "results_repo": "professorsynapse/epistemic-humility-cloud-results",
+  "cells": [
+    {
+      "cell": "AB-1",
+      "run_tag": "ab-1-gate-early-v1",
+      "signal": "gate",
+      "position": "early",
+      "pool": "gate 300 unknown + 300 known",
+      "n_generations": 2400,
+      "job_id": "6a46d79533c08a2c0dae1de1",
+      "outcome": null
+    },
+    {
+      "cell": "AB-2",
+      "run_tag": "ab-2-dial-late-v1",
+      "signal": "dial",
+      "position": "late",
+      "pool": "dial 500 answerable",
+      "n_generations": 1500,
+      "job_id": "6a46d79533c08a2c0dae1de3",
+      "outcome": null
+    },
+    {
+      "cell": "AB-3",
+      "run_tag": "ab-3-dial-final-v1",
+      "signal": "dial",
+      "position": "final",
+      "pool": "dial 500 answerable",
+      "n_generations": 2000,
+      "job_id": "6a46d79633c08a2c0dae1de5",
+      "outcome": null
+    }
+  ]
+}
