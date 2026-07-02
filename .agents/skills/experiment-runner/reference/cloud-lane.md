@@ -21,8 +21,21 @@ typer-broken; use the Python Jobs API).
   finishes, but the JOB stays RUNNING through the score + upload stages
   (minutes more). "Log says done, HF says running" is the normal in-between
   state, not a hang. Only trust the job's terminal stage.
+- **Preemption gotcha (Amendment Y fleet, 2026-07-02):** HF can reclaim the
+  node under a RUNNING job and silently restart it from scratch — the log
+  stream is WIPED (no crash trace survives), progress counters reset, and the
+  job stays RUNNING so nothing looks wrong unless you compare counters over
+  time. All three 4h+ jobs in the Y fleet were preempted ~3.3h in and
+  restarted at attempt 0; every ≤3h job completed untouched. With no resume in
+  the extractor this is unbounded compute waste, so the user canceled them.
+  **Lane rule: keep cloud cells ≤~2h of atomic work, or give the cell
+  checkpoint/resume, before sending it to HF Jobs. 4h+ atomic work belongs on
+  the local dgpu lane.** Detect a restart by polling progress counters (e.g.
+  `attempts=` lines) — a counter that goes backwards means the job restarted.
 - Job timeouts double as hard cost ceilings — size them per model class
-  (2h for ~1.5B, up to 5h for 7B-class on a10g-small).
+  (2h for ~1.5B, up to 5h for 7B-class on a10g-small) — but see the preemption
+  rule above: a timeout that long is itself a signal the cell is oversized for
+  this lane.
 - Descriptive controls (e.g. the TF-IDF text baseline
   `experiment/phase1/probe/amendment_y_text_baseline.py`) run locally on the
   uploaded rows — another reason rows.jsonl must come back from every cell.
