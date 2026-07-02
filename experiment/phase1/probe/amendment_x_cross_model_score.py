@@ -29,6 +29,7 @@ import sys
 from pathlib import Path
 
 import numpy as np
+from joblib import Parallel, delayed
 from sklearn.linear_model import LogisticRegression
 from sklearn.preprocessing import StandardScaler
 from sklearn.metrics import roc_auc_score
@@ -79,6 +80,10 @@ def main(argv=None):
                     help="post layer for the veto dial; default = best X-G2 layer")
     ap.add_argument("--seed", type=int, default=20260630)
     ap.add_argument("--n-boot", type=int, default=2000)
+    ap.add_argument("--n-jobs", type=int, default=-1,
+                    help="workers for the per-layer probe sweeps; layers are "
+                         "independent and seed-fixed, so any value returns "
+                         "identical numbers (-1 = all cores, 1 = old serial path)")
     ap.add_argument("--out", type=Path, default=None)
     a = ap.parse_args(argv)
 
@@ -94,10 +99,11 @@ def main(argv=None):
     dmask = np.isin(out_post, ["correct", "wrong"])
     yd = (out_post[dmask] == "correct").astype(int)
     n_correct, n_wrong = int((yd == 1).sum()), int((yd == 0).sum())
-    dial_surface = {}
-    for layer in sorted(Xpost):
-        oof = oof_probe(Xpost[layer][dmask], yd, a.seed)
-        dial_surface[layer] = float(roc_auc_score(yd, oof))
+    dial_layers = sorted(Xpost)
+    dial_oofs = Parallel(n_jobs=a.n_jobs)(
+        delayed(oof_probe)(Xpost[layer][dmask], yd, a.seed) for layer in dial_layers)
+    dial_surface = {layer: float(roc_auc_score(yd, oof))
+                    for layer, oof in zip(dial_layers, dial_oofs)}
     dial_best = max(dial_surface, key=dial_surface.get)
     dial_layer = a.dial_layer if a.dial_layer is not None else dial_best
     d_oof = oof_probe(Xpost[dial_layer][dmask], yd, a.seed)
@@ -134,10 +140,11 @@ def main(argv=None):
     gmask = np.isin(out_pre, ["known_answered", "hallucination"])
     yg = (out_pre[gmask] == "known_answered").astype(int)
     n_known_ans, n_unknown_ans = int((yg == 1).sum()), int((yg == 0).sum())
-    gate_surface = {}
-    for layer in sorted(Xpre):
-        oof = oof_probe(Xpre[layer][gmask], yg, a.seed)
-        gate_surface[layer] = float(roc_auc_score(yg, oof))
+    gate_layers = sorted(Xpre)
+    gate_oofs = Parallel(n_jobs=a.n_jobs)(
+        delayed(oof_probe)(Xpre[layer][gmask], yg, a.seed) for layer in gate_layers)
+    gate_surface = {layer: float(roc_auc_score(yg, oof))
+                    for layer, oof in zip(gate_layers, gate_oofs)}
     gate_best = max(gate_surface, key=gate_surface.get)
     g1 = boot_auroc_ci(yg, oof_probe(Xpre[gate_best][gmask], yg, a.seed), a.n_boot, a.seed)
 
