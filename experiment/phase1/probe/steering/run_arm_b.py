@@ -27,6 +27,20 @@ real vs placebo, never a no-injection baseline.
 Output: one JSON per cell (per-item paired records + real/placebo summaries +
 paired bootstrap 95% CIs, 2000 resamples).
 
+Engines (docs/plans/generation-throughput-plan.md §4, steering follow-up):
+the default --engine sequential is the original bs=1 loop, byte-identical to
+the pre-batching harness. --engine tuner-batched replaces ONLY the GPU inner
+loop with the synaptic-tuner PUBLIC CLI verbs (batch-generate/batch-capture;
+see arm_b_batched.py for the staged design and the tuner pin). SAMPLED-DECODE
+HONESTY: the tuner batch verbs take one GLOBAL --seed (no per-row seeds), so
+batched sampling does NOT reproduce the sequential per-item RNG streams —
+batched != sequential per-row under sampled decode. Equivalence is checked at
+the AGGREGATE level with spot_check_arm_b.py on a ~40-item slice run under
+both engines (rendered notes byte-identical, prompt token ids byte-identical
+on deterministic surfaces, metrics within binomial noise); see its docstring
+for the exact recipe. --emit-prompts records the spot-check surface from
+either engine.
+
 Example (Stage 1, AA-5 — DO NOT run without signed amendment + launch approval):
   python run_arm_b.py \
       --model unsloth/Qwen3.5-4B \
@@ -220,6 +234,33 @@ def parse_args(argv=None) -> argparse.Namespace:
     ap.add_argument("--temperature", type=float, default=1.0)
     ap.add_argument("--top-p", type=float, default=1.0)
     ap.add_argument("--device", default="cuda")
+    # Throughput plan §4 (steering follow-up): batched engine. The default
+    # 'sequential' is the original byte-identical bs=1 loop; 'tuner-batched'
+    # swaps ONLY the GPU inner loop for the synaptic-tuner batch verbs
+    # (public CLI subprocess; see arm_b_batched.py).
+    ap.add_argument("--engine", choices=["sequential", "tuner-batched"],
+                    default="sequential",
+                    help="GPU inner-loop engine: sequential (default, byte-"
+                         "identical bs=1) or tuner-batched (tuner batch verbs)")
+    ap.add_argument("--batch-size", type=int, default=32,
+                    help="micro-batch size for the tuner-batched engine "
+                         "(auto-halves on CUDA OOM in the tuner); ignored by "
+                         "the sequential engine")
+    ap.add_argument("--tuner-dir", type=Path, default=None,
+                    help="path to the synaptic-tuner checkout exposing batch-"
+                         "generate/batch-capture (tuner-batched engine only); "
+                         "default = <repo-root>/synaptic-tuner")
+    ap.add_argument("--scratch-dir", type=Path, default=None,
+                    help="fast local dir for the tuner-batched work dir "
+                         "(9P write-stall fix); default = system temp")
+    ap.add_argument("--keep-batch-artifacts", action="store_true",
+                    help="keep the tuner-batched work dir (prompts/"
+                         "completions/capture) instead of deleting it — the "
+                         "spot-check inspection surface")
+    ap.add_argument("--emit-prompts", type=Path, default=None,
+                    help="write a JSONL of every generation request's rendered "
+                         "prompt + prompt token ids (spot-check surface; works "
+                         "with BOTH engines; default off = unchanged behavior)")
     ap.add_argument("--out", type=Path, required=True)
     ap.add_argument("--dry-run", action="store_true",
                     help="CPU-only: load direction, build pool, print the cell "
@@ -264,11 +305,24 @@ def main(argv=None) -> int:
         "n_generations": len(items) * per_item_gens,
         "out": str(a.out),
     }
+    if a.engine != "sequential":
+        # Engine provenance ONLY when non-sequential (mirrors the Amendment X
+        # extractor's manifest): the sequential plan — and therefore its
+        # config_sha — is byte-identical to the pre-batching harness.
+        plan["engine"] = a.engine
+        plan["batch_size"] = a.batch_size
     print("[run_arm_b] cell plan:\n" + json.dumps(plan, indent=2), flush=True)
     if a.dry_run:
         print("[run_arm_b] dry-run: direction + pool OK; no model loaded.",
               flush=True)
         return 0
+
+    if a.engine == "tuner-batched":
+        # Batched engine: prompts/artifacts are handled in this process, the
+        # MODEL lives inside the tuner subprocess (public CLI only). Same
+        # signed-amendment + explicit-launch-approval requirement as below.
+        from arm_b_batched import main_tuner_batched
+        return main_tuner_batched(a, d_np, meta, items, plan)
 
     # ------------------------------------------------------------------
     # GPU path (signed amendment + explicit user launch approval required)
@@ -353,6 +407,14 @@ def main(argv=None) -> int:
         h = out.hidden_states[layer_idx][0, read_idx, :].float().cpu().numpy()
         return probe_score_from_hidden(h, np.asarray(d_np))
 
+    emit_rows: Optional[list] = [] if a.emit_prompts else None
+    if emit_rows is not None:
+        # Opt-in spot-check surface: record every generation request's rendered
+        # prompt + token ids around the UNMODIFIED generate_fn (default off).
+        from arm_b_batched import wrap_generate_for_emit
+        generate_fn = wrap_generate_for_emit(generate_fn, _render, tokenizer,
+                                             emit_rows)
+
     results = run_arm_b_cell(
         items=items,
         signal=a.signal,
@@ -361,6 +423,12 @@ def main(argv=None) -> int:
         generate_fn=generate_fn,
         seed=a.seed,
     )
+
+    if emit_rows is not None:
+        from arm_b_batched import write_emit_prompts
+        write_emit_prompts(Path(a.emit_prompts), emit_rows)
+        print(f"[run_arm_b] emitted {len(emit_rows)} prompt records -> "
+              f"{a.emit_prompts}", flush=True)
 
     summary = summarize_arm_b(results, n_boot=a.n_boot, seed=a.seed)
     payload = base_cell_payload(
