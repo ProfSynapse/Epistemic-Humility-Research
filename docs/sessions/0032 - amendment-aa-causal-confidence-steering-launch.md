@@ -118,6 +118,32 @@ notes:
   prediction: evidence variable steered, decision variable never consulted.
   FALSIFIER-1, if it lands, reads "doubt axis is not the action lever", not
   "steering does not work".'
+- 'Cloud lane bring-up GREEN + Amendment Y SIGNED (2026-07-02): HF Jobs
+  plumbing smoke (job 6a463f46fb6818a83db30027, Qwen3.5-0.8B-Base, 300 gate
+  rows + 150 answerable, a10g-small, ~25 min) ran the full clone-at-pinned-
+  commit -> extract -> score -> upload path end to end; result + manifest
+  landed in professorsynapse/epistemic-humility-cloud-results. Infra on
+  branch cloud-lane-y-smoke (22960dbf): in-job wrapper, uploader, launcher
+  (huggingface_hub Jobs API; the hf CLI is typer-broken locally), and
+  git-tracked distilled gate-row pools (full 1233-row frozen SelfAware set +
+  300-row smoke subset, provenance JSON). Lab-notebook instrument only.
+  Anecdotal smoke readout (NOT Y evidence: off-list model, bounded rows,
+  chat-template surface): gate 0.989 on a raw 0.8B BASE model, dial 0.70,
+  veto 0.46 on n=21 correct. Amendment Y then SIGNED in-session with
+  defaults (4 pairs, 3/4 bars, >=50/>=50 floors, dual-render sub-cell in,
+  cloud-primary lane); paper fit = fold into program papers, and the
+  regimen-paper section-8 pretraining-origin claim is downgraded to an OPEN
+  QUESTION pre-result (user-directed). The Y draft + paper edit are
+  uncommitted in the working tree ON PURPOSE: they ride the Y registration
+  branch off main after the AA PR merges. Launch approval for Y cells NOT
+  yet given.'
+- 'AA-2 (gate@end, fallback alpha -2.0, descriptive-only): FLAT like AA-1 —
+  abstention_unknown 0.0 vs control 0.0033 (delta -0.0033, CI includes 0),
+  answer_rate_known 1.0, zero degenerate, adequacy OK (299 unknowns answered
+  under control). Steering EVERY decode token still does not make the raw
+  base abstain, so Arm A flatness is not explained by the anchor cells''
+  one-token surface alone — consistent with the doubt-vs-caution two-axis
+  reading (evidence axis written, action gate never consulted).'
 - 'Follow-up directions queued behind the AA verdict + PR (user-proposed
   2026-07-02, none registered yet): (1) rerun AA cell structure on the TRAINED
   abstainer checkpoints (clean-SFT, SFT->GRPO-v2) where the caution gate is
