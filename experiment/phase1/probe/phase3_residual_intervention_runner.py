@@ -67,8 +67,10 @@ def load_direction(path: Path) -> dict[str, Any]:
 
 
 def load_rows(rows_path: Path, *, max_rows: int | None, labels: set[str] | None,
-              cells: set[str] | None) -> list[dict[str, Any]]:
+              cells: set[str] | None,
+              max_rows_per_cell: int | None = None) -> list[dict[str, Any]]:
     rows: list[dict[str, Any]] = []
+    per_cell: dict[str, int] = {}
     with rows_path.open(encoding="utf-8") as fh:
         for line in fh:
             if not line.strip():
@@ -78,6 +80,11 @@ def load_rows(rows_path: Path, *, max_rows: int | None, labels: set[str] | None,
                 continue
             if cells is not None and rec.get("behavior_cell") not in cells:
                 continue
+            if max_rows_per_cell is not None:
+                cell = str(rec.get("behavior_cell"))
+                if per_cell.get(cell, 0) >= max_rows_per_cell:
+                    continue
+                per_cell[cell] = per_cell.get(cell, 0) + 1
             rows.append(rec)
             if max_rows is not None and len(rows) >= max_rows:
                 break
@@ -189,11 +196,28 @@ def run_config(config_path: Path, *, fresh: bool = False) -> dict[str, Any]:
     rf = config.get("rows_filter", {})
     labels = set(rf["labels"]) if rf.get("labels") else None
     cells = set(rf["cells"]) if rf.get("cells") else None
+    max_rows_per_cell = rf.get("max_rows_per_cell")
+    max_rows_per_cell = int(max_rows_per_cell) if max_rows_per_cell is not None else None
 
     direction = load_direction(resolve_path(config["caution_direction"]))
     spec = ri.build_intervention_spec(direction)
     arms = ri.parse_arms(config["arms"])
-    rows = load_rows(resolve_path(config["rows"]), max_rows=max_rows, labels=labels, cells=cells)
+    rows = load_rows(resolve_path(config["rows"]), max_rows=max_rows, labels=labels, cells=cells,
+                     max_rows_per_cell=max_rows_per_cell)
+
+    # Amendment AC: couple arms resolve a per-row alpha from a doubt gain map.
+    # Load each arm's map once (keyed by arm_id, kept OFF the arm dict so the
+    # config fingerprint stays path-independent) and fail fast if any eval row
+    # is missing, before spending any GPU time.
+    gain_maps: dict[str, dict[str, Any]] = {}
+    for arm in arms:
+        if arm["mode"] != ri.MODE_COUPLE:
+            continue
+        with resolve_path(arm["gain_map"]).open(encoding="utf-8") as fh:
+            gain_maps[arm["arm_id"]] = json.load(fh)
+        for row in rows:
+            ri.resolve_couple_alpha(gain_maps[arm["arm_id"]], arm["gain_key"],
+                                    row["probe_pool_row_key"])
 
     output_root = resolve_path(config["output"]["root"])
     output_root.mkdir(parents=True, exist_ok=True)
@@ -241,15 +265,20 @@ def run_config(config_path: Path, *, fresh: bool = False) -> dict[str, Any]:
                     continue
                 if harness is None:
                     harness = ModelHarness(config)
+                effective_arm = arm
+                if arm["mode"] == ri.MODE_COUPLE:
+                    row_alpha = ri.resolve_couple_alpha(
+                        gain_maps[arm["arm_id"]], arm["gain_key"], key)
+                    effective_arm = {**arm, "alpha": row_alpha}
                 answer = harness.generate(
-                    row["question"], spec=spec, arm=arm, max_new_tokens=max_new_tokens
+                    row["question"], spec=spec, arm=effective_arm, max_new_tokens=max_new_tokens
                 )
                 cells_scored = score_generation(row, answer)
                 record = {
                     "probe_pool_row_key": key,
                     "arm_id": arm["arm_id"],
                     "arm_mode": arm["mode"],
-                    "arm_alpha": arm["alpha"],
+                    "arm_alpha": effective_arm["alpha"],
                     "label": row["label"],
                     "behavior_cell": row.get("behavior_cell"),
                     "generated_answer": answer,
@@ -261,7 +290,10 @@ def run_config(config_path: Path, *, fresh: bool = False) -> dict[str, Any]:
                 out_fh.write(json.dumps(record) + "\n")
                 out_fh.flush()
 
-    analysis = ri.analyze_arms(scored_rows)
+    observed_cells = {r.get("behavior_cell") for r in scored_rows}
+    groups = tuple(c for c in (ri.KNOWN_REFUSED, ri.KNOWN_ANSWERED, ri.UNKNOWN_REFUSED)
+                   if c in observed_cells) or ri.DEFAULT_GROUPS
+    analysis = ri.analyze_arms(scored_rows, groups=groups)
     summary = {
         "ok": True,
         "analysis_type": "phase3_residual_intervention_sweep",

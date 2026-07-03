@@ -44,6 +44,13 @@ BASELINE_ARM = "baseline"
 MODE_ABLATE = "ablate"
 MODE_SHIFT = "shift"
 MODE_BASELINE = "baseline"
+# Amendment AC: erase the theta component and write a per-row doubt-scaled
+# setpoint (alpha resolved per row from a gain map). couple with alpha=0 is
+# exactly ablate, so the constant comparison nests inside the coupling family.
+MODE_COUPLE = "couple"
+
+UNKNOWN_REFUSED = "unknown_refused"
+DEFAULT_GROUPS = (KNOWN_REFUSED, KNOWN_ANSWERED)
 
 
 class ResidualInterventionError(RuntimeError):
@@ -68,12 +75,18 @@ def apply_intervention(hidden: np.ndarray, theta: np.ndarray, *, mode: str,
     - ``ablate``: subtract the projection onto unit(theta) at every position
       (removes the caution component).
     - ``shift``: add ``alpha*sigma*unit(theta)`` at every position.
+    - ``couple``: erase the theta component AND add ``alpha*sigma*unit(theta)``
+      (set the theta coordinate to a doubt-scaled setpoint; Amendment AC).
+      ``couple`` with alpha=0 is identical to ``ablate``.
     """
     th = _unit(np.asarray(theta, dtype=np.float64))
     h = np.asarray(hidden, dtype=np.float64)
     if mode == MODE_ABLATE:
         proj = h @ th  # [...]
         return h - proj[..., None] * th
+    if mode == MODE_COUPLE:
+        proj = h @ th
+        return h - proj[..., None] * th + (alpha * sigma) * th
     if mode == MODE_SHIFT:
         return h + (alpha * sigma) * th
     if mode == MODE_BASELINE:
@@ -102,22 +115,47 @@ def parse_arms(arms: list[dict[str, Any]]) -> list[dict[str, Any]]:
     """Normalize arm dicts: each is ``{arm_id, mode, alpha}``.
 
     ``baseline`` registers no hook; ``ablate`` ignores alpha; ``shift`` uses alpha
-    (in sigma units, may be negative).
+    (in sigma units, may be negative). ``couple`` (Amendment AC) carries
+    ``gain_map`` (path to a doubt-gain-map JSON) + ``gain_key`` ("gains" or
+    "gains_permuted"); its per-row alpha is resolved by the runner and the
+    arm-level alpha stays 0.0.
     """
     out: list[dict[str, Any]] = []
     seen: set[str] = set()
     for arm in arms:
         arm_id = str(arm["arm_id"])
         mode = str(arm.get("mode", MODE_BASELINE))
-        if mode not in (MODE_BASELINE, MODE_ABLATE, MODE_SHIFT):
+        if mode not in (MODE_BASELINE, MODE_ABLATE, MODE_SHIFT, MODE_COUPLE):
             raise ResidualInterventionError(f"arm {arm_id!r}: unknown mode {mode!r}")
         if arm_id in seen:
             raise ResidualInterventionError(f"duplicate arm_id {arm_id!r}")
         seen.add(arm_id)
-        out.append({"arm_id": arm_id, "mode": mode, "alpha": float(arm.get("alpha", 0.0))})
+        rec = {"arm_id": arm_id, "mode": mode, "alpha": float(arm.get("alpha", 0.0))}
+        if mode == MODE_COUPLE:
+            if not arm.get("gain_map"):
+                raise ResidualInterventionError(f"arm {arm_id!r}: couple mode requires gain_map")
+            gain_key = str(arm.get("gain_key", "gains"))
+            if gain_key not in ("gains", "gains_permuted"):
+                raise ResidualInterventionError(
+                    f"arm {arm_id!r}: gain_key must be 'gains' or 'gains_permuted', got {gain_key!r}")
+            rec["gain_map"] = str(arm["gain_map"])
+            rec["gain_key"] = gain_key
+        out.append(rec)
     if not any(a["mode"] == MODE_BASELINE for a in out):
         raise ResidualInterventionError("arms must include a baseline (mode=baseline) arm")
     return out
+
+
+def resolve_couple_alpha(gain_map: dict[str, Any], gain_key: str, row_key: str) -> float:
+    """Per-row alpha for a couple arm. A row missing from the map is a HARD
+    error (never a silent 0-gain: that would quietly turn coupled into ablate)."""
+    gains = gain_map.get(gain_key)
+    if not isinstance(gains, dict):
+        raise ResidualInterventionError(f"gain map has no {gain_key!r} table")
+    entry = gains.get(row_key)
+    if entry is None:
+        raise ResidualInterventionError(f"row {row_key!r} missing from gain map {gain_key!r}")
+    return float(entry["gain"])
 
 
 def make_residual_write_hook(spec: dict[str, Any], arm: dict[str, Any]):
@@ -138,6 +176,9 @@ def make_residual_write_hook(spec: dict[str, Any], arm: dict[str, Any]):
         if mode == MODE_ABLATE:
             proj = hs @ th  # [batch, seq]
             hs2 = hs - proj.unsqueeze(-1) * th
+        elif mode == MODE_COUPLE:
+            proj = hs @ th  # [batch, seq]
+            hs2 = hs - proj.unsqueeze(-1) * th + (alpha * sigma) * th
         elif mode == MODE_SHIFT:
             hs2 = hs + (alpha * sigma) * th
         else:  # baseline should not register a hook, but be safe
@@ -179,14 +220,17 @@ def _rate(rows: list[dict[str, Any]], field: str) -> float:
     return float(np.mean(vals)) if vals else float("nan")
 
 
-def analyze_arms(rows: list[dict[str, Any]], *, drop_tol: float = 0.15) -> dict[str, Any]:
+def analyze_arms(rows: list[dict[str, Any]], *, drop_tol: float = 0.15,
+                 groups: tuple[str, ...] = DEFAULT_GROUPS) -> dict[str, Any]:
     """Refusal rate per (arm, baseline behavior group) + a load-bearing verdict.
 
     ``rows`` carry ``arm_id``, ``behavior_cell`` (the row's BASELINE group), and
-    ``refused``/``correct`` from re-scored generation under that arm.
+    ``refused``/``correct`` from re-scored generation under that arm. ``groups``
+    defaults to the B1 pair; Amendment AC passes the three-cell tuple including
+    ``unknown_refused`` (the verdict logic still keys on the B1 pair only).
     """
     arm_ids = sorted({r["arm_id"] for r in rows})
-    groups = [KNOWN_REFUSED, KNOWN_ANSWERED]
+    groups = list(groups)
     table: dict[str, dict[str, Any]] = {}
     for arm_id in arm_ids:
         arm_rows = [r for r in rows if r["arm_id"] == arm_id]
