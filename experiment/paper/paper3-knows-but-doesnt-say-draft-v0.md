@@ -23,13 +23,13 @@ notes: >
   SelfAware (n=3369) unless stated otherwise; this is a within-model mechanistic
   study, not a multi-seed effect-size estimate. Figures marked "directional" rest
   on small wrong-answer cells (n=16 on the held-in TriviaQA known set) and are
-  reported as such. Companion paper: the training-regimen paper ("Paper 1"), which
-  pairs a systematic evidence synthesis/review (source:
-  meta-analysis/paper/draft-v0.md) that defines the coherence axis this paper
-  measures with the full-regimen SFT/DPO/KTO/GRPO abstention experiment (source:
-  experiment/paper/paper1-training-regimen-draft-v1.md) that supplies the DPO/KTO
-  behavior results referenced in Section 7. This paper is Paper 2; the training-free
-  two-signal readout it motivates is Paper 3.
+  reported as such. Companion papers: Paper 1 (taxonomy/synthesis/framework,
+  experiment/paper/paper1-taxonomy-framework-draft-v0.md; source of record
+  meta-analysis/paper/draft-v0.md) defines the coherence axis this paper
+  measures; Paper 2 (the SFT/DPO/KTO/GRPO regimen experiment,
+  experiment/paper/paper2-training-regimen-draft-v2.md) supplies the DPO/KTO
+  behavior results referenced in Section 7. This paper is Paper 3; the
+  training-free two-signal readout it motivates is Paper 4.
 ---
 
 # Knows but Doesn't Say: A Training-Resistant Gap Between Internal and Stated Confidence in a Small Language Model
@@ -72,7 +72,9 @@ calibrated internal axis*, and we frame that experiment.
 
 The dominant way to teach a language model epistemic humility is to teach it to
 *act* humble: to abstain when it should, to hedge, to say "I don't know." Paper 1's
-review of the training literature [meta-analysis/paper/draft-v0.md] shows that
+review of the training literature
+[experiment/paper/paper1-taxonomy-framework-draft-v0.md; source of record
+meta-analysis/paper/draft-v0.md] shows that
 almost all of this work is measured at a single depth — a scalar confidence or a
 binary abstention — and that one axis is almost entirely unmeasured: *coherence*,
 whether the model's stated epistemic signal, its token-level signal, and its
@@ -161,9 +163,9 @@ sycophancy live in steerable internal subspaces [arXiv:2604.03147]. We use steer
 as a causal probe of our two-axis decomposition and report a clean asymmetry that,
 to our knowledge, has not been isolated for the abstention behavior specifically.
 
-**Abstention and preference training.** Paper 1's training experiment
-[experiment/paper/paper1-training-regimen-draft-v1.md] establishes, on the same
-model and data, that cold-start SFT induces abstention (and
+**Abstention and preference training.** Paper 2, the program's training-regimen
+experiment [experiment/paper/paper2-training-regimen-draft-v2.md], establishes,
+on the same model and data, that cold-start SFT induces abstention (and
 over-refusal), and that DPO and KTO reposition the abstention boundary rather than
 inducing the behavior. This paper builds on Paper 2 by asking what happens to the
 *confidence* channel under those and further objectives, and by adding the GRPO and

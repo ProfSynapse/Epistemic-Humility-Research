@@ -21,8 +21,8 @@ models:
 metrics:
 - auroc
 - expected-calibration-error
-fulltext: ../../experiment/paper/paper2-knows-but-doesnt-say-draft-v0.md
-provenance: 'Internal program paper (Paper 2 in the current 4-paper map; the "paper3" in this node slug is legacy and NOT renamed to preserve KG backlinks). Source of truth: experiment/paper/paper2-knows-but-doesnt-say-draft-v0.md. Evidence: experiment/protocol/AMENDMENT-{K,L,M,N}-*.md and experiment/phase1 probe/eval analyses. Not an external publication.'
+fulltext: ../../experiment/paper/paper3-knows-but-doesnt-say-draft-v0.md
+provenance: 'Internal program paper (Paper 3 in the five-paper map, 2026-07-01; the "paper3" node slug is again accurate). Source of truth: experiment/paper/paper3-knows-but-doesnt-say-draft-v0.md. Evidence: experiment/protocol/AMENDMENT-{K,L,M,N}-*.md and experiment/phase1 probe/eval analyses. Not an external publication.'
 related:
 - '[[verbalized-confidence-channel-bottleneck]]'
 - '[[caution-residual-ablation-relaxes-overrefusal-asymmetrically]]'
@@ -79,7 +79,7 @@ separates *performing* humility from *possessing* it in Qwen3-4B by reading thre
 signals on the same questions - an internal confidence axis (linear probe on hidden
 states), the stated confidence the model verbalizes, and the answer/abstain behavior
 - and shows the internal axis is calibrated while the stated channel is decoupled and
-training-resistant. Canonical text: `experiment/paper/paper2-knows-but-doesnt-say-draft-v0.md`.
+training-resistant. Canonical text: `experiment/paper/paper3-knows-but-doesnt-say-draft-v0.md`.
 
 ## Claims
 
