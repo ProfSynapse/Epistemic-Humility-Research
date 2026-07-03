@@ -1,3 +1,23 @@
+---
+amendment: G
+slug: best-stack-replication-scale-gate
+question: >-
+  Does the best seed-1 stack (clean SFT->GRPO v2->DPO) reproduce across seeds
+  and merit publication or 8B scaling?
+predictions:
+  orchestrator:
+    call: best seed-1 stack worth testing for cross-seed reproducibility before scaling
+  user:
+    call: null
+    note: >-
+      Predates the dual-prediction practice (adopted 2026-07-03 at AH
+      signing); no separately recorded user prediction.
+outcome: >-
+  DRAFT / NOT SIGNED; governs seed-2/3 replication and a narrow 8B/publication
+  scale gate, pending explicit launch approval.
+scoreboard: null
+---
+
 # Protocol Amendment G: Best-Stack Replication And Scale Gate
 
 **Status:** DRAFT / NOT SIGNED

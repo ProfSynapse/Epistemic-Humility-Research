@@ -1,3 +1,24 @@
+---
+amendment: O
+slug: probe-as-oracle-readout-ceiling
+question: >-
+  Does driving both decision channels from the linear probe readout clear
+  both gates on SelfAware, proving a latent passing policy?
+predictions:
+  orchestrator:
+    call: probe-readout oracle clears both gates (readout ceiling exists)
+  user:
+    call: null
+    note: >-
+      Predates the dual-prediction practice (adopted 2026-07-03 at AH
+      signing); no separately recorded user prediction.
+outcome: >-
+  SUCCESS — all 7 gates pass; probe-to-appropriateness AUROC 0.9967,
+  action margin +95pt (no trained arm reached it); non-circular
+  correctness AUROC only 0.640. In-distribution CV, single seed.
+scoreboard: null
+---
+
 # Amendment O — Probe-as-Oracle Readout-Ceiling Test
 
 **Status:** SIGNED 2026-06-29 (user: "signed off lets GOO"). Tier-2 exploratory cell

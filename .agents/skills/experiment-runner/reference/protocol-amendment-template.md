@@ -1,6 +1,37 @@
 # Protocol Amendment Template
 
+Every amendment doc starts with a YAML frontmatter block that makes the dual
+predictions and the outcome machine-queryable across the whole series (query
+with `yaml.safe_load` on the text before the closing `---`, or grep the keys).
+All frontmatter keys are LOWERCASE — the backlog indexer regex-matches
+capitalized `Status:` lines case-sensitively, so no frontmatter line may begin
+with the capitalized word "Status". Update `outcome` and `scoreboard` at
+resolution, together with the ledger row in `docs/prediction-scoreboard.md`.
+
 ```markdown
+---
+amendment: <LETTER>
+slug: <filename-slug>
+question: >-
+  <one-sentence condensation of what this amendment tests>
+predictions:
+  orchestrator:
+    call: <short prediction, <= 12 words>
+    confidence: "<rough %>"
+    recorded: <YYYY-MM-DD>
+    basis: >-
+      <one-line mechanistic why>
+  user:
+    call: <short prediction>
+    recorded: <YYYY-MM-DD>
+    quote: >-
+      <the user's prediction verbatim>
+outcome: pending
+scoreboard:
+  user: pending
+  orchestrator: pending
+---
+
 # Protocol Amendment <LETTER>: <Title>
 
 **Status:** DRAFT / NOT SIGNED

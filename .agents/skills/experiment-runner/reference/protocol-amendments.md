@@ -62,6 +62,11 @@ python3 bin/sync_skills.py --check --skill experiment-runner
   the gates are voided, or both predictions are equally right/wrong; ties
   score to neither side). Convergent predictions are fine — a result that
   surprises both parties carries full evidential weight and says so in the doc.
+  Predictions also live in the doc's YAML **frontmatter** (`predictions:`,
+  `outcome:`, `scoreboard:` — see the template) so they are queryable across
+  the whole amendment series; update the frontmatter `outcome`/`scoreboard`
+  fields at resolution together with the ledger. Frontmatter keys stay
+  lowercase (the backlog indexer matches capitalized `Status:` lines).
 - Promote an exploratory win to a claim only via a **confirmatory replication**
   registered before running it (fresh seeds, ideally the larger model / held-out
   set). A single-seed win is a lead, not a result.

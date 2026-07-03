@@ -1,3 +1,24 @@
+---
+amendment: R
+slug: phase-b-joint-aux-head
+question: >-
+  Does jointly co-training the aux_head into an unfrozen base change the
+  model's OWN emitted calibration/abstention behavior?
+predictions:
+  orchestrator:
+    call: >-
+      partial/likely-negative; head stays calibrated, emitted scalar barely moves
+  user:
+    call: null
+    note: >-
+      Predates the dual-prediction practice (adopted 2026-07-03 at AH
+      signing); no separately recorded user prediction.
+outcome: >-
+  FALSIFIED — A1-A2 +0.043 below the +0.05 bar and A1 below A0;
+  co-training shifts the action policy, not the emitted channel.
+scoreboard: null
+---
+
 # Amendment R — Phase B: Joint Co-Training of the aux_head (Native Behavior Change)
 
 **Status:** DRAFT (NOT signed). Pre-registration scope locked on the primary

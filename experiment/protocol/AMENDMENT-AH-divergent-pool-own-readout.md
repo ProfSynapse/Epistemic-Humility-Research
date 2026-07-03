@@ -1,9 +1,39 @@
+---
+amendment: AH
+slug: divergent-pool-own-readout
+question: >-
+  Does prime uptake consult the model's own readout (H-resonance) or is it
+  pure instruction compliance plus boundary distance (H-compliance)?
+predictions:
+  orchestrator:
+    call: H-compliance
+    confidence: "75-80%"
+    recorded: 2026-07-03
+    basis: >-
+      AG's doubt axis is anti-semantic and unmoved by primes; the pliability
+      law absorbs the hidden state into one boundary-distance scalar; the only
+      observed readout-behavior coupling (AC) was wired externally.
+  user:
+    call: H-compliance
+    recorded: 2026-07-03
+    quote: >-
+      I think prompt is like a shotgun here and overrides most other policies.
+      So I think we're still decoupled from internals, if there is something
+      it would be too weak I think to do anything about beyond like you say
+      maybe coming back to training.
+outcome: pending
+scoreboard:
+  user: pending
+  orchestrator: pending
+---
+
 # Amendment AH — Divergent-Pool Own-Readout Attribution (probe ≠ gold)
 
-**Status: SIGNED** (2026-07-03, both predictions recorded in §2; v1 queued
-PRs #169/#170; Stage-0 fired the D-under adequacy-floor STOP → user-directed
-redesign; pool v2.1 locked after user-approved dataset expansion. NOT
-LAUNCHED — main run awaits explicit approval, §7.8).
+**Status: SIGNED + LAUNCHED** (signed 2026-07-03, both predictions recorded
+in §2; v1 queued PRs #169/#170; Stage-0 fired the D-under adequacy-floor
+STOP → user-directed redesign; pool v2.1 locked after user-approved dataset
+expansion; main run launched 2026-07-03 on explicit user approval, §7.8 —
+3,324 generations on the frozen AF harness, results pending).
 **Tier:** A (new evidence cell; gates pre-stated before launch).
 **Branch:** `amendment-ah-divergent-pool`.
 **Depends on:** AF (PASS, channel-authority), AG (PASS, asymmetric compliance),

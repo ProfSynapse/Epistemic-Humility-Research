@@ -1,3 +1,24 @@
+---
+amendment: K
+slug: contrastive-sft-behavior-conditional-confidence
+question: >-
+  Can full contrastive schema-SFT install behavior-conditional response
+  confidence at the SFT stage while preserving behavior?
+predictions:
+  orchestrator:
+    call: contrast installs behavior-conditional confidence at SFT stage
+  user:
+    call: null
+    note: >-
+      Predates the dual-prediction practice (adopted 2026-07-03 at AH
+      signing); no separately recorded user prediction.
+outcome: >-
+  REJECTED — calibration gate PASSED 4/4 but behavior gate FAILED 3/4
+  (wrong-answer sub-span supervision degraded correctness / inflated
+  over-refusal); calibration mechanism validated.
+scoreboard: null
+---
+
 # Protocol Amendment K: Full Contrastive Schema-SFT for Behavior-Conditional Response Confidence
 
 **Status:** SIGNED — user-authorized 2026-06-27 ("Proceed")

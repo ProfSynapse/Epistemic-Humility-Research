@@ -1,3 +1,23 @@
+---
+amendment: D
+slug: schema-response-confidence
+question: >-
+  Can SFT, preference training, and GRPO all learn a schema-trained
+  answer + response_confidence contract with an ambiguous-middle signal?
+predictions:
+  orchestrator:
+    call: schema-trained non-endpoint response_confidence with ambiguous-middle signal
+  user:
+    call: null
+    note: >-
+      Predates the dual-prediction practice (adopted 2026-07-03 at AH
+      signing); no separately recorded user prediction.
+outcome: >-
+  DRAFT / NOT SIGNED; defines the corrective schema track, superseded by
+  Amendment E after constant-target scalar collapse.
+scoreboard: null
+---
+
 # Protocol Amendment D: Schema-Trained Response Confidence
 
 **Status:** DRAFT / NOT SIGNED

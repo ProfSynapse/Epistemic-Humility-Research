@@ -1,3 +1,24 @@
+---
+amendment: S
+slug: correctness-confidence-probe
+question: >-
+  Is per-attempt correctness linearly readable, and is it read more
+  strongly after the answer than before (self-eval gain)?
+predictions:
+  orchestrator:
+    call: >-
+      post-gen beats pre-gen; correctness readable, self-eval gain positive
+  user:
+    call: null
+    note: >-
+      Predates the dual-prediction practice (adopted 2026-07-03 at AH
+      signing); no separately recorded user prediction.
+outcome: >-
+  SUCCESS — post-gen AUROC 0.834, self-eval gain +0.065 (CI excludes 0);
+  G1+G2 pass, G3 misses by 0.001 (not a green-light gate).
+scoreboard: null
+---
+
 # Amendment S — Correctness-Confidence Probe (post- vs pre-generation readout)
 
 **Status:** RESOLVED — **SUCCESS** (run + scored 2026-06-30; see §7). Signed

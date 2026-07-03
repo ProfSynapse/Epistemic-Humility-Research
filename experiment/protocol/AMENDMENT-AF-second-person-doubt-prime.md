@@ -1,3 +1,25 @@
+---
+amendment: AF
+slug: second-person-doubt-prime
+question: >-
+  Does a high-authority second-person system-prompt doubt directive actuate
+  the read-out where within-generation text channels (AA/AB) could not?
+predictions:
+  orchestrator:
+    call: >-
+      small positive or null; base not RLHF-tuned to over-index system authority
+  user:
+    call: null
+    note: >-
+      Predates the dual-prediction practice (adopted 2026-07-03 at AH
+      signing); no separately recorded user prediction.
+outcome: >-
+  RESOLVED — AF-G1 PASS (channel-authority): system-prompt prime +18.0pt over
+  placebo, CI [+11.8,+24.7]; localizes AA/AB nulls to channel authority;
+  own-read-out attribution NOT established (probe coincides with gold 600/600).
+scoreboard: null
+---
+
 # Amendment AF — Second-Person Doubt Prime (the system-prompt instruction channel)
 
 Status: RESOLVED 2026-07-03 — AF-G1 PASS (channel-authority; own-read-out

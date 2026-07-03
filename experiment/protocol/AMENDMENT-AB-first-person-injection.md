@@ -1,3 +1,25 @@
+---
+amendment: AB
+slug: first-person-injection
+question: >-
+  Is AA's shut text channel a framing artifact — does first-person prose with
+  an interpretable percent and explicit action rule open it?
+predictions:
+  orchestrator:
+    call: >-
+      if framing artifact, V1 shows real-vs-placebo separation AA lacked
+  user:
+    call: null
+    note: >-
+      Predates the dual-prediction practice (adopted 2026-07-03 at AH
+      signing); no separately recorded user prediction.
+outcome: >-
+  AMBIGUOUS-LEANING-NEGATIVE — no V1 cell passes; first-person framing does not
+  open the text channel (dial@late instrument saturated, dial@final MISS,
+  gate@early only a ~2pt trickle); AA's presence-not-use conclusion strengthened.
+scoreboard: null
+---
+
 # Amendment AB — First-person confidence injection: is the shut text channel a framing artifact?
 
 **Status:** SIGNED 2026-07-02 (user, in-conversation, after the Amendment AA

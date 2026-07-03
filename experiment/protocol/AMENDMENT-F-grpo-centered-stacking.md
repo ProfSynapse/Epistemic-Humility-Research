@@ -1,3 +1,23 @@
+---
+amendment: F
+slug: grpo-centered-stacking
+question: >-
+  Can a GRPO-centered third stage (before or after a preference pass) beat
+  the two-stage arms on the refusal/known-answer tradeoff?
+predictions:
+  orchestrator:
+    call: a third GRPO-centered stage may combine effects better than two-stage
+  user:
+    call: null
+    note: >-
+      Predates the dual-prediction practice (adopted 2026-07-03 at AH
+      signing); no separately recorded user prediction.
+outcome: >-
+  SIGNED OFF (2026-06-24) for exploratory local seed-1 three-stage stacking
+  over the clean Amendment E lineage.
+scoreboard: null
+---
+
 # Protocol Amendment F: GRPO-Centered Three-Stage Stacking
 
 **Status:** SIGNED OFF

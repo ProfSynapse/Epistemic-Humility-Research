@@ -1,3 +1,24 @@
+---
+amendment: V
+slug: natural-answer-generalization
+question: >-
+  Does the forced-fit correctness dial transfer to the model's natural
+  (un-forced) answers on the deployed checkpoint?
+predictions:
+  orchestrator:
+    call: >-
+      PASS; dial is a post-gen representation property independent of eliciting prompt
+  user:
+    call: null
+    note: >-
+      Predates the dual-prediction practice (adopted 2026-07-03 at AH
+      signing); no separately recorded user prediction.
+outcome: >-
+  SHELVED — signed and gates locked but deferred unlaunched (data-starved
+  under natural prompt; superseded by Amendment W's training-free reframe).
+scoreboard: null
+---
+
 # Amendment V — Natural-Answer Generalization of the Two-Signal Mechanism
 
 **Status:** SHELVED (2026-06-30) — signed and gates locked, but DEFERRED unlaunched.

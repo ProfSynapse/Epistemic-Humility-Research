@@ -1,3 +1,23 @@
+---
+amendment: E
+slug: probe-scaled-response-confidence
+question: >-
+  Do probe-derived (32-sample p_correct) response-confidence targets fix the
+  Amendment D scalar collapse and produce calibrated scalar movement?
+predictions:
+  orchestrator:
+    call: probe-scaled targets should produce usable non-collapsed scalar movement
+  user:
+    call: null
+    note: >-
+      Predates the dual-prediction practice (adopted 2026-07-03 at AH
+      signing); no separately recorded user prediction.
+outcome: >-
+  DRAFT / NOT SIGNED; probe scaling alone insufficient (scalar still collapsed,
+  target-imbalance failure), v3 clean-SFT mainline reserved for later contrast.
+scoreboard: null
+---
+
 # Protocol Amendment E: Probe-Scaled Response Confidence Targets
 
 **Status:** DRAFT / NOT SIGNED
