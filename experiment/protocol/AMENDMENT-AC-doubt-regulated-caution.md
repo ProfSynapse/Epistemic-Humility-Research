@@ -200,7 +200,50 @@ curve of refusal vs written gain (binned g_i), coupled arm only.
 
 ## 8. Result
 
-(unfilled — no run authorized artifacts yet; smoke first, then full per §3)
+**AC-G1 PASS — the wire carries information.** Run 2026-07-03, local 3090,
+sequential registered instrument (engine PR #154's batched path was qualified
+by the equivalence spot check but not used for the evidence run). Smoke
+(25/cell) passed the §3 gate first: coupled gap +0.04 vs permuted −0.08,
+monotonic dose curve. Full run: 1217 rows (kr 168 / ka 373 / ur 676) × 4 arms
+= 4868 units, greedy, max_new_tokens 96. Analysis:
+`analyze_ac_doubt_coupled.py`, paired row-level bootstrap, 10k resamples,
+seed 20260703.
+
+| arm | kr refusal (n=168) | kr correct | ka refusal (n=373) | ka correct | ur refusal (n=676) | selectivity gap |
+|-----|-----|-----|-----|-----|-----|-----|
+| baseline | 0.994 | 0.000 | 0.003 | 0.997 | 1.000 | — |
+| coupled | 0.506 | 0.333 | 0.000 | 0.973 | **0.580** | **+0.068** |
+| permuted | 0.518 | 0.339 | 0.000 | 0.976 | 0.504 | −0.019 |
+| ablate | 0.536 | 0.327 | 0.000 | 0.973 | 0.503 | −0.039 |
+
+- **AC-G1 (gated): PASS.** Coupled − permuted selectivity-gap margin
+  **+8.7pt, 95% CI [+5.6, +12.0]** — ≥5pt and CI excludes 0. Landed inside
+  the pre-stated "most likely" band (5–15pt); well under the >25pt
+  check-for-leaks trigger.
+- **AC-G2 (estimate only, no gate): +10.7pt vs constant ablate, CI [+7.1,
+  +14.5].** The pre-stated expectation was ~0; the positive margin is upside.
+  Mechanistically the coupling's edge is on the unknown side: it PRESERVES
+  unknown_refused refusal (0.580) where ablate and permuted release it
+  indiscriminately (0.503/0.504), while matching their known_refused release.
+  De-refused correctness is flat across arms (coupled 0.675 [0.578, 0.771];
+  permuted 0.704; ablate 0.705 ≈ refined B1's 0.687) — the doubt signal
+  decides WHICH rows get released, not how well released rows answer.
+- **Specificity guard: PASS.** ka refusal rise −0.3pt (≤5pt); ka correctness
+  drop 2.4pt (≤3pt, close but under).
+- **Dose-response (descriptive, coupled arm):** monotone from refusal 0.000
+  at g∈[−2,−1.5] (n=98) through 0.465 at [−0.5,0) to 0.645 at [0,0.5), with
+  wobble above (0.585 / 0.483 at mid-positive bins, 0.800 in the small n=25
+  top bin). The written gain demonstrably drives refusal.
+- **Falsifier: NOT fired.** In-frame B1 replication held (ablate kr 0.994 →
+  0.536 vs refined B1's 0.994 → 0.524).
+
+**Verdict: RQ4 Stage 1 closes POSITIVE, at the pre-registered modest scale.**
+Making the caution gate a live function of the frozen doubt readout carries
+information beyond deleting the gate — the first use-the-signal result on
+this checkpoint family after M/N/R/AA went 0-for-4. Scope: in-distribution,
+one layer, one checkpoint, per-item open-loop gains (§ Limitations); a
+per-token online controller or held-out transfer is Stage-2 material and
+needs a new signed amendment.
 
 ## Limitations (pre-stated)
 
@@ -217,3 +260,5 @@ curve of refusal vs written gain (binned g_i), coupled arm only.
 ## Changelog
 
 - 2026-07-02: created and signed (conservative framing per user directive).
+- 2026-07-03: smoke passed §3 gate; full run (4868 units) + §8 verdict:
+  AC-G1 PASS (+8.7pt, CI [+5.6, +12.0]), guard PASS, falsifier not fired.
