@@ -18,20 +18,32 @@ substrate where our strongest result lives: the RAW instruct base.
 
 What is established, and what this cell adds:
 
-- The SENSOR is training-free. Amendments W/X/Y/Z/SR: the full two-signal
-  readout (gate 0.997, dial 0.834, veto) reads off raw untrained bases across
-  sizes and families; the boundary signal predates post-training (Y). Training
-  did not create these activations — it helped us find them.
-- The ACTUATOR is so far only proven on the trained checkpoint. caution_perp is
-  causally load-bearing there (refined B1: ablate drops known_refused refusal
-  0.994 -> 0.524 with specificity), but it was FIT from trained-model refusal
-  behavior and has never been fit or tested on the base. Untested is not
-  falsified: AA Arm A's flat result steered the DOUBT axis (surface-confounded,
-  and flatness was the two-axis prediction) — it says nothing about caution
-  steering on the base.
-- The base rarely refuses: on unanswerable questions it confabulates
-  (Amendment S/U surface — the U veto reads those confabulations as
-  lowest-trust, but the base still EMITS them).
+- The SENSOR is training-free. Amendment W (result table): answerability gate
+  known/unknown AUROC **0.997 @ L18** (pre-gen anchor, CI [0.995, 0.999]) on
+  the raw base; correctness dial 0.834 @ L20 post-gen (S); hallucination veto
+  0.7545 @ L20 (CI [0.728, 0.782]). X replicates the gates across 1.7B-14B; Y
+  shows the boundary signal predates post-training; Z/SR cross-family. W's own
+  headline: "the mechanism is a readout property of the untrained base ...
+  What GRPO training buys is *behavioral* abstention (the model refuses on its
+  own) and a *sharper* veto (+0.226) — not the latent signal itself"; gate
+  gain from training ~0 (0.997 -> 0.999).
+- The ACTUATOR is so far only proven on the trained checkpoint. caution_perp
+  is causally load-bearing there (refined B1: ablate drops known_refused
+  refusal 0.994 -> 0.524 with specificity), but it was FIT from trained-model
+  refusal behavior (pos=known_refused n=168, neg=known_correct_answered n=373,
+  doubt axis projected out; raw caution-doubt cos -0.83, perp fraction 0.558)
+  and has never been fit or tested on the base. Untested is not falsified:
+  AA Arm A steered the GATE/DIAL (answerability/trust) axes, not caution; its
+  flatness was surface-confounded and predicted by the two-axis view — it says
+  nothing about caution steering on the base.
+- The base's behavior under THIS amendment's prompt is uncharacterized, and we
+  say so rather than assume. The "answers freely / confabulates on
+  unanswerables" evidence (S: n_answered 1836, 500 correct / 1336 wrong; W's
+  forced-answer hallucination set) comes from ANSWER-ENCOURAGING or forced
+  surfaces on PopQA/TriviaQA-heavy pools. Under an abstention-AFFORDING prompt
+  on SelfAware, the instruct base may abstain more than those surfaces
+  suggest. The baseline-collection pass (§3) is the first measurement of this,
+  and the adequacy floors gate on its outcome in BOTH directions.
 
 So the test is: **can an inference-time doubt-coupled caution write CREATE
 calibrated abstention on a model that never trained on abstention?** Sensor
@@ -54,15 +66,38 @@ POSTURE — conservative, mirroring AC:
 
 ## 2. Mechanism (pre-registered; identical controller, new substrate)
 
-All quantities live in the L35 residual stream of the RAW base
-(`unsloth/Qwen3-4B-bnb-4bit`, NO adapter — the Amendment S/W surface,
-model_tag `qwen3-4b-instruct`).
+Substrate: the RAW base (`unsloth/Qwen3-4B-bnb-4bit`, NO adapter — the
+Amendment S/W checkpoint, model_tag `qwen3-4b-instruct`). The WRITE site is
+the L35 residual stream (fixed: it is where both caution directions live and
+where B1/AC intervened; no base evidence localizes a caution axis anywhere, so
+parallelism is the only non-arbitrary choice — named in Limitations). The READ
+layer is chosen by the pre-stated rule below and may differ from L35.
 
 Sensor (read, offline, CPU after one extraction pass): base doubt axis
 `u_d_base = unit(mean(h[known_correct_answered]) - mean(h[unknown_answered]))`
-fit on BASE activations over the base's own behavior cells (§3). Each eval
-row's knownness `d_i = h_i . u_d_base`, standardized over the eval-row
-population: `z_i = (d_i - mu_d) / sigma_d`.
+fit on BASE activations over the base's own behavior cells (§3).
+
+Two pre-stated deviations from the AC sensor, with reasons:
+
+- **Negative cell**: AC used `unknown_refused`; here it is `unknown_answered`,
+  because the base's unknown-refused cell may be tiny and unknown_answered is
+  the intervention target. This changes the axis semantics slightly
+  (knownness-vs-confabulation rather than knownness-vs-refused-unknown); it is
+  the base-appropriate mean-difference analog, not a swap made after seeing
+  results.
+- **Sensor read layer**: AC read at L35 because the trained doubt axis was
+  validated there (AUROC 0.972). There is NO base evidence at L35; the base
+  gate evidence is 0.997 @ L18 pre-gen (W). Rule, fixed before any
+  intervention run: read `u_d_base` at the layer maximizing known/unknown
+  AUROC on the frozen AE extraction (deterministic offline rule on the frozen
+  pool, computed once, before any intervention). Sensor adequacy floor:
+  that AUROC >= 0.90, else stop and report (no layer shopping beyond the one
+  pre-stated argmax rule, no intervention run on an inadequate sensor).
+
+Each eval row's knownness `d_i = h_i . u_d_base`, standardized over the
+eval-row population: `z_i = (d_i - mu_d) / sigma_d`. Read and write layers may
+differ; the read is offline from frozen activations before any intervention
+(the AC convention), so no within-item feedback exists either way.
 
 Actuator: two caution directions, each orthogonalized against `u_d_base`
 (re-orthogonalized in the BASE geometry, so the write never disturbs the
@@ -121,11 +156,18 @@ behavior cell. Primary eval cells:
   specificity cell: keep answering here.
 
 Adequacy floor (pre-stated): >= 150 rows in EACH primary cell under baseline
-collection; below floor on either, stop and report (no pool swap). The
-S-surface prior (base answers nearly everything; ~72% wrong on the free-answer
-set) makes both floors very likely to clear. The refused complement cells
-(`unknown_refused`, `known_refused`) are kept for the D-native fit and for
-descriptive tables, not gated.
+collection; below floor on either, stop and report (no pool swap). We do NOT
+predict the census: the S-surface prior ("answers freely") is from an
+answer-encouraging prompt on a different pool and may not transfer to an
+abstention-affording prompt on SelfAware. Both failure directions are live and
+pre-stated: (a) the base refuses almost never -> D-native falls under its
+40-row fit floor -> the PRIMARY cell is VOID (reported; D-transferred remains
+descriptive only; no silent promotion of D-transferred to primary); (b) the
+base refuses so much that unknown_answered falls under 150 -> stop and report
+(there is then little confabulation to suppress and the experiment's premise
+is thinner than assumed — itself an informative census). The refused
+complement cells (`unknown_refused`, `known_refused`) are kept for the
+D-native fit and descriptive tables, not gated.
 
 Arms (one pre-registered configuration; no alpha sweep, no coupling-form
 fishing), run for D-native and repeated for D-transferred:
@@ -210,13 +252,16 @@ other way: refusal rising with positive g). Baseline collection cell census
    (`build_base_behavior_overlay.py`, NEW, CPU) converts its rows.jsonl into
    the behavior-cell overlay consumed downstream (cell rules pre-stated: refused
    per existing grader; correct per existing grader; ungradeable tracked).
-2. Base extraction at L35, pre-answer position, on the same pool/prompt
-   (reuse the existing extraction machinery; W/S extractions are checked for
-   position/layer compatibility first and reused if they match, else ONE new
-   extraction pass — GPU, cheap).
-3. `build_doubt_gain_map.py` (EXISTS): reused unchanged with the base
-   extraction + base overlay (doubt_pos_cell known_correct_answered,
-   doubt_neg_cell unknown_answered) -> `doubt_gain_map_base_L35.json`.
+2. Base extraction, pre-gen anchor position, ALL layers, on THIS amendment's
+   pool + prompt (NEW pass — GPU, cheap). The S/W extractions canNOT be
+   reused: S is the answer-encouraging neutral prompt on PopQA/TriviaQA, W is
+   the forced-answer surface; the sensor must be read under the same rendered
+   prompt the intervention runs on. Use the R/session-0029 faithful pre-gen
+   anchor position (the cos-0.9998 render), as S did.
+3. `build_doubt_gain_map.py` (EXISTS): reused with the base extraction + base
+   overlay (doubt_pos_cell known_correct_answered, doubt_neg_cell
+   unknown_answered; sensor layer per the §2 argmax rule) ->
+   `doubt_gain_map_base.json`.
 4. `build_caution_perp_direction.py` machinery: D-native fit on base
    extraction/overlay (refused vs answered contrast, >= 40-row floor);
    D-transferred = committed trained direction re-orthogonalized against
@@ -235,17 +280,27 @@ other way: refusal rising with positive g). Baseline collection cell census
 
 ## 7. Provenance
 
-- Base surface: `unsloth/Qwen3-4B-bnb-4bit`, no adapter — Amendment S free-answer
-  surface; W ran the full two-signal readout on it (gate 0.997 / dial 0.834 /
-  veto 0.75).
+- Base checkpoint: `unsloth/Qwen3-4B-bnb-4bit`, no adapter (model_tag
+  `qwen3-4b-instruct`) — the S/W checkpoint. Note the SURFACES differ: S was
+  free-answer under an answer-encouraging neutral prompt (PopQA+TriviaQA,
+  n_answered 1836 -> 500 correct / 1336 wrong); W added forced-answer
+  generation for the veto set. AE's abstention-affording SelfAware surface is
+  new and gets its own baseline census + extraction.
+- Sensor-side training-free evidence (W result table): gate 0.997 @ L18
+  pre-gen CI [0.995, 0.999]; dial 0.834 @ L20 post-gen (S); veto 0.7545 @ L20
+  CI [0.728, 0.782]; training buys +0.226 veto sharpening and ~0 gate gain.
+  X (1.7B-14B), Y (pre-train-only era), Z+SR (cross-family, seed-robust).
 - Trained-side comparison constants: refined B1 (ablate 0.994 -> 0.524,
-  de-refused correctness 68.7%); AC's result lands in its own §8 and is the
-  trained-substrate twin of this cell.
-- Sensor-side training-free evidence: W (base), X (1.7B-14B), Y (pre-train-only
-  era), Z+SR (cross-family, seed-robust).
-- Direction-transfer prior: T (cold probe transfer 0.679, direction drift);
-  P (caution-direction cosine 0.185 across datasets while READOUT transfers) —
-  both argue D-transferred is the weaker horse, as pre-stated.
+  de-refused correctness 68.7%); caution_perp artifact:
+  `caution_perp_direction_L35.json` (L35, hidden 2560, sigma 25.53,
+  pos known_refused n=168, neg known_correct_answered n=373, raw
+  caution-doubt cos -0.83, perp fraction 0.558). AC's result lands in its own
+  §8 and is the trained-substrate twin of this cell.
+- Direction-transfer prior: T (S-fit dial probe applied cold across
+  checkpoints reads 0.679 — the transferable component drifts);
+  P (cross-DATASET caution-direction cosine 0.185 while the answerability
+  READOUT transfers near-fully) — both argue D-transferred is the weaker
+  horse, as pre-stated.
 - Analysis outputs stay untracked per the phase3 convention; summary numbers
   and the verdict land in this doc's §8 and the session note.
 
@@ -261,9 +316,15 @@ smoke, then full per §3)
   convention). A pass is a mechanism statement about this base, pool, and
   site — not a deployable training-free-abstention product claim; transfer
   needs a held-out replication.
-- Single layer, single base checkpoint, greedy decoding, per-item (not
+- Single write layer, single base checkpoint, greedy decoding, per-item (not
   per-token) gain; downstream layers recompute freely and may reconstruct or
   ignore the written gate — the most likely mechanical route to a null.
+- The L35 write site is an ASSUMPTION on the base: it is inherited from
+  B1/AC parallelism and from D-transferred living there, not from any base
+  localization evidence (the base's known readout peaks are L18 pre-gen /
+  L20 post-gen). A null here is therefore "no effect at this site with these
+  directions," not "no caution surface anywhere in the base"; a layer sweep
+  would be a new amendment.
 - Greedy may understate effects (SR: sampled decode revealed what greedy
   hid); if the result is a near-miss null, a sampled-decode replication is a
   legitimate NEW amendment, not a rescue of this one.
