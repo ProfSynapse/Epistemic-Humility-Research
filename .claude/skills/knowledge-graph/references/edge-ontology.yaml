@@ -332,3 +332,17 @@ edges:
   built_on_by:
     inverse: builds_on
     description: "Subject is built on by target experiment."
+
+  # Research extension: supersession lineage. A deprecated note points at its
+  # replacement; the note is never deleted so provenance survives consolidation.
+  # `kg.deprecated_by` frontmatter is the canonical machine pointer (the search
+  # indexer synthesizes a superseded_by edge from it); add an explicit
+  # relationship object only when Obsidian-visible lineage is wanted too.
+  supersedes:
+    inverse: superseded_by
+    aliases: [replaces]
+    description: "Subject is the current revision that replaces target (a deprecated note)."
+  superseded_by:
+    inverse: supersedes
+    aliases: [replaced_by]
+    description: "Subject (deprecated note) was replaced by target, the current revision."

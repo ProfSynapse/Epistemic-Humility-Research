@@ -26,6 +26,7 @@ Always choose the narrowest reference needed for the task:
 | Dry-run, count-check, or explain the locked matrix | [reference/matrix-expansion.md](reference/matrix-expansion.md) |
 | Gate/stage/launch a local or cloud cell | [reference/operator-discipline.md](reference/operator-discipline.md), then [reference/lanes.md](reference/lanes.md) |
 | Work on HF Jobs/cloud launch details | [reference/cloud-lane.md](reference/cloud-lane.md) |
+| Launch/monitor a probe readout cell on HF Jobs, or use the batched inference engine | [reference/probe-cloud-cells.md](reference/probe-cloud-cells.md) |
 | Work on Windows, Docker, local training, local eval, or GPU capacity | [reference/local-windows-gotchas.md](reference/local-windows-gotchas.md) |
 | Inspect or update run records | [reference/run-records.md](reference/run-records.md) |
 | Use common launch command patterns | [reference/common-patterns.md](reference/common-patterns.md) |
@@ -63,11 +64,13 @@ operation, then follow any further routing inside that reference.
   and 2 bridge cells. Never loosen these assertions to absorb a matrix edit.
 - Launch/cancel/delete actions require exact user approval in the current
   conversation, especially cost-incurring cloud actions.
-- One amendment/experiment = one branch off an up-to-date `main` = one PR,
-  MERGED before the next amendment branches. Do the full arc on that branch
-  (recipes, run records, scored results, doc verdict), then PR into protected
-  `main`; never stack a second amendment on an unmerged branch or push to `main`
-  directly. See [reference/operator-discipline.md](reference/operator-discipline.md).
+- One amendment/experiment = one branch off an up-to-date `origin/main` in its
+  OWN git worktree (`.worktrees/<branch>`) = one PR. NEVER swap branches in the
+  primary working tree — live GPU queues and monitors run scripts from it in
+  place. Do the full arc in that worktree (recipes, run records, scored
+  results, doc verdict), then PR into protected `main`; PRs still MERGE
+  serially, and never push to `main` directly. See
+  [reference/operator-discipline.md](reference/operator-discipline.md).
 - The no-pollution rule is sacrosanct: runner code may not import tuner
   internals, write committed files under `synaptic-tuner/`, or register
   Epistemic-specific tuner behavior. Ephemeral staging under already-gitignored

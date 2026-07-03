@@ -1,4 +1,4 @@
-# Paper 4 — Confidence Steering: Reading vs Writing the Trust Axis
+# Paper 5 — Confidence Steering: Reading vs Writing the Trust Axis
 
 **Status:** CODE SCAFFOLD ONLY. NOT registered. NOT authorized for GPU runs.
 
@@ -16,6 +16,9 @@ approval naming cells/lane.
 | `persist_probe_direction.py` | CPU-only. Fits gate + dial probes from an Amendment-Z extraction dir and persists unit-normed direction vectors. |
 | `confidence_steer.py` | Arm A harness. Registers a forward hook that adds `alpha * d` to the residual stream at inference. Unit-testable on synthetic modules. |
 | `cot_inject.py` | Arm B harness. Builds prompts with a confidence note injected into the think block (early or late), plus a placebo control. CPU / string-construction only. |
+| `steering_common.py` | Shared Amendment-AA plumbing: eval pools, grading (abstention/correctness/degenerate), two-pass protocol pieces, paired bootstrap CIs, cache-aware hook gating, cell-JSON output. CPU-only at import. |
+| `run_arm_a.py` | Amendment AA cells AA-1..AA-4: activation-steering orchestration (alpha sweep / alpha*, anchor vs end, alpha=0 control). GPU only inside guarded main(); `--dry-run` is CPU-only. |
+| `run_arm_b.py` | Amendment AA cells AA-5..AA-8: CoT-injection orchestration (real + placebo paired internally, early vs late). GPU only inside guarded main(); `--dry-run` is CPU-only. |
 | `tests/` | pytest unit tests, CPU-only, synthetic fixtures. |
 | `README.md` | This file. |
 
@@ -172,6 +175,17 @@ Tests cover:
 - `test_persist_probe_direction.py` — unit-norm, sane layer, calibration from synthetic fixture
 - `test_confidence_steer.py` — hook shifts target layer by exactly `alpha * d`; alpha scaling
 - `test_cot_inject.py` — note at correct position; placebo differs only in score value
+- `test_steering_common.py` — grading, degenerate detection, pools, paired bootstrap, hook gating
+- `test_run_arm_a.py` — pass gating per position, alpha* control, proportional alpha, cell JSON, dry-run
+- `test_run_arm_b.py` — injection position, shared initials, placebo determinism, pairing, dry-run
+
+Run with EXPLICIT file paths (an rtk-proxied bare directory glob can false-negative):
+
+```bash
+python3 -m pytest tests/test_persist_probe_direction.py tests/test_confidence_steer.py \
+    tests/test_cot_inject.py tests/test_steering_common.py \
+    tests/test_run_arm_a.py tests/test_run_arm_b.py -q
+```
 
 ---
 
@@ -192,39 +206,53 @@ Once authorized, the per-family GPU recipe is:
 # Step 1 (CPU): fit + persist directions (see above)
 
 # Step 2 (GPU, per family × per arm × per signal × per position):
-# Arm A — anchor gate steer
+# Arm A — anchor gate steer (AA-1 shape)
 python run_arm_a.py \
     --model <family_model_name> \
     --direction directions/<family>/direction_gate.json \
     --position anchor \
-    --alpha-sweep -2,0,1,2,4 \
-    --eval-dataset selfaware \
+    --alpha-sweep=-4,-2,-1,0,1,2,4 \
+    --eval-pool gate --n-unknown 300 --n-known 300 \
+    --gate-rows <selfaware rows.jsonl> \
+    --cell AA-1 --seed 20260701 --device cuda \
     --out results/arm_a_gate_anchor_<family>.json
 
-# Arm A — end dial steer
+# Arm A — end dial steer (AA-3 shape)
 python run_arm_a.py \
     --model <family_model_name> \
     --direction directions/<family>/direction_dial.json \
-    --position all_post \
-    --alpha-sweep -2,0,1,2,4 \
-    --eval-dataset popqa_triviaqa \
+    --position end \
+    --alpha-sweep=-4,-2,-1,0,1,2,4 \
+    --eval-pool dial --n-answerable 500 \
+    --cell AA-3 --seed 20260701 --device cuda \
     --out results/arm_a_dial_end_<family>.json
 
-# Arm B — early gate injection (real + placebo)
+# (off-position cells AA-2 / AA-4: same but --position end/anchor and
+#  --alpha <alpha*> — the alpha=0 control still runs automatically)
+
+# Arm B — early gate injection (real + placebo, paired internally)
 python run_arm_b.py \
     --model <family_model_name> \
+    --direction directions/<family>/direction_gate.json \
     --signal gate \
     --position early \
-    --eval-dataset selfaware \
+    --eval-pool gate --n-unknown 300 --n-known 300 \
+    --gate-rows <selfaware rows.jsonl> \
+    --cell AA-5 --seed 20260701 --device cuda \
     --out results/arm_b_gate_early_<family>.json
 
-# Arm B — late dial injection (real + placebo)
+# Arm B — late dial injection (real + placebo, paired internally)
 python run_arm_b.py \
     --model <family_model_name> \
+    --direction directions/<family>/direction_dial.json \
     --signal dial \
     --position late \
-    --eval-dataset popqa_triviaqa \
+    --eval-pool dial --n-answerable 500 \
+    --cell AA-7 --seed 20260701 --device cuda \
     --out results/arm_b_dial_late_<family>.json
+
+# CPU dry-run for any cell: append --dry-run (and optionally
+# --pool-file <items.jsonl> to override the dataset sources).
 ```
 
 Cross-family roll-up: SUCCESS requires the predicted position-asymmetry pattern to hold

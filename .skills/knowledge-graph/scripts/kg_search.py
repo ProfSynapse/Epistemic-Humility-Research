@@ -67,6 +67,8 @@ class SearchResult:
     snippet: str
     neighbors: list[str]
     memory_types: list[str]
+    status: str = ""
+    deprecated_by: str = ""
 
 
 EDGE_WEIGHTS = {
@@ -84,6 +86,8 @@ EDGE_WEIGHTS = {
     "evaluates_on": 1.25,
     "measures": 1.25,
     "studies": 1.25,
+    "superseded_by": 2.5,
+    "supersedes": 2.5,
 }
 MEMORY_LANES = (
     "semantic",
@@ -268,6 +272,25 @@ def final_rank_adjustment(row: sqlite3.Row, query: str) -> float:
     return adjustment
 
 
+def deprecation_by_path(conn: sqlite3.Connection) -> dict[str, tuple[str, str]]:
+    """Map path -> (status, deprecated_by) for notes whose kg node is deprecated.
+
+    A note counts as deprecated when its kg frontmatter carries
+    `status: deprecated` or a non-empty `deprecated_by` successor pointer.
+    Default search drops these paths from results (EverOS-style supersession);
+    graph expansion still traverses them so a hit on a stale atom can surface
+    its successor via the synthesized superseded_by edge.
+    """
+    rows = conn.execute(
+        """
+        SELECT path, status, deprecated_by
+        FROM nodes
+        WHERE status = 'deprecated' OR deprecated_by != ''
+        """
+    ).fetchall()
+    return {str(row["path"]): (str(row["status"]), str(row["deprecated_by"])) for row in rows}
+
+
 def graph_neighbors(conn: sqlite3.Connection, path: str, limit: int = 8) -> list[str]:
     node_rows = conn.execute("SELECT node_id FROM nodes WHERE path = ? LIMIT 20", (path,)).fetchall()
     node_ids = [row["node_id"] for row in node_rows]
@@ -419,10 +442,17 @@ def first_chunk_for_path(conn: sqlite3.Connection, path: str) -> sqlite3.Row | N
     ).fetchone()
 
 
-def search(db_path: Path, query: str, limit: int = 10, traverse_depth: int = 2) -> list[SearchResult]:
+def search(
+    db_path: Path,
+    query: str,
+    limit: int = 10,
+    traverse_depth: int = 2,
+    include_deprecated: bool = False,
+) -> list[SearchResult]:
     conn = connect(db_path)
     try:
         lane_weights = lane_weights_from_feedback(conn, query)
+        deprecated = deprecation_by_path(conn)
         candidates: dict[int, sqlite3.Row] = {}
         scores: dict[int, float] = {}
         seed_paths: dict[str, float] = {}
@@ -488,9 +518,15 @@ def search(db_path: Path, query: str, limit: int = 10, traverse_depth: int = 2) 
                 scores[rowid] = score
                 candidates[rowid] = row
 
-        ranked = sorted(candidates.values(), key=lambda row: scores[int(row["id"])], reverse=True)[:limit]
+        visible = [
+            row
+            for row in candidates.values()
+            if include_deprecated or str(row["path"]) not in deprecated
+        ]
+        ranked = sorted(visible, key=lambda row: scores[int(row["id"])], reverse=True)[:limit]
         results = []
         for row in ranked:
+            status, deprecated_by = deprecated.get(str(row["path"]), ("", ""))
             results.append(
                 SearchResult(
                     path=row["path"],
@@ -504,6 +540,8 @@ def search(db_path: Path, query: str, limit: int = 10, traverse_depth: int = 2) 
                     snippet=clean_snippet(row["text"]),
                     neighbors=graph_neighbors(conn, row["path"]),
                     memory_types=memory_types_for_path(conn, row["path"]),
+                    status=status,
+                    deprecated_by=deprecated_by,
                 )
             )
         conn.execute(
@@ -530,6 +568,9 @@ def format_results(results: list[SearchResult], query: str) -> str:
         loc = f"{item.path}:{item.start_line}" if item.start_line else item.path
         lanes = ",".join(item.memory_types) if item.memory_types else "unlabeled"
         lines.append(f"{idx}. {loc} [{item.kind}/{item.symbol_type}; {lanes}] score={item.score}")
+        if item.status == "deprecated" or item.deprecated_by:
+            successor = f" -> {item.deprecated_by}" if item.deprecated_by else ""
+            lines.append(f"   DEPRECATED{successor}")
         lines.append(f"   {item.title}")
         if item.snippet:
             lines.append(f"   {item.snippet}")
@@ -559,6 +600,12 @@ def main() -> int:
     parser.add_argument("--limit", type=int, default=10, help="Maximum results to show.")
     parser.add_argument("--traverse-depth", type=int, default=2, help="Graph traversal depth from seed files/nodes.")
     parser.add_argument("--no-update", action="store_true", help="Skip lazy changed-file indexing before search.")
+    parser.add_argument(
+        "--include-deprecated",
+        action="store_true",
+        help="Include notes marked kg.status: deprecated or carrying kg.deprecated_by. "
+        "Default search hides superseded notes; their successors still surface via graph expansion.",
+    )
     parser.add_argument("--json", action="store_true", help="Emit JSON results.")
     args = parser.parse_args()
 
@@ -571,7 +618,13 @@ def main() -> int:
             print(f"error: {exc}", file=sys.stderr)
             return 1
     query = " ".join(args.query)
-    results = search(db_path, query, limit=args.limit, traverse_depth=args.traverse_depth)
+    results = search(
+        db_path,
+        query,
+        limit=args.limit,
+        traverse_depth=args.traverse_depth,
+        include_deprecated=args.include_deprecated,
+    )
     if args.json:
         print(json.dumps([asdict(item) for item in results], ensure_ascii=False, indent=2))
     else:

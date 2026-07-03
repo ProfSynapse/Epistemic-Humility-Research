@@ -1,0 +1,44 @@
+{
+ "seed": 20260630,
+ "cv": "stratified 5-fold",
+ "model": "TF-IDF + LogisticRegression(C=1.0)",
+ "gate_baseline_frozen_pool": {
+  "n": 1233,
+  "n_known": 556,
+  "n_unknown": 677,
+  "tfidf_word_1_2": {
+   "auroc_mean": 0.9639,
+   "auroc_std": 0.0159
+  },
+  "tfidf_char_3_5": {
+   "auroc_mean": 0.9649,
+   "auroc_std": 0.0171
+  }
+ },
+ "dial_baseline_question_surface_z_rows": {
+  "qwen3.5-4b": {
+   "n": 1853,
+   "n_correct": 576,
+   "auroc_mean": 0.7619,
+   "auroc_std": 0.0156
+  },
+  "gemma-4-e4b": {
+   "n": 1852,
+   "n_correct": 462,
+   "auroc_mean": 0.7499,
+   "auroc_std": 0.0104
+  },
+  "llama-3.2-3b": {
+   "n": 1853,
+   "n_correct": 648,
+   "auroc_mean": 0.7551,
+   "auroc_std": 0.0146
+  },
+  "ministral-3-3b": {
+   "n": 1853,
+   "n_correct": 539,
+   "auroc_mean": 0.7752,
+   "auroc_std": 0.0283
+  }
+ }
+}

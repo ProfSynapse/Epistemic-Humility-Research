@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Arm B — chain-of-thought injection harness (Paper 4 / confidence-steering experiment).
+"""Arm B — chain-of-thought injection harness (Paper 5 / confidence-steering experiment).
 
 DESIGN REFERENCE: docs/plans/confidence-steering-experiment.md
 
@@ -16,11 +16,16 @@ note, and inject it into the model's reasoning trace at a configurable position:
   LATE  injection  — note inserted AFTER the model has drafted an answer inside
                      the think block (target: triggers self-revision / surfaced
                      confidence)
+  FINAL injection  — note appended after the draft as the model's LAST thought
+                     and the think block is CLOSED, so the very next tokens are
+                     the committed answer (Amendment AB Revision 1; target:
+                     decision-only use at the commit point, zero trajectory
+                     confound)
 
 The note format is:
   [internal: <signal_name> <score:.2f> — <interpretation>]
 
-Placebo control (Amendment Y / Paper 4 circularity check):
+Placebo control (Amendment Y / Paper 5 circularity check):
   Replace the real score with a SHUFFLED/RANDOM value from the score distribution
   to isolate the real signal from generic "be cautious" priming.  The only
   difference between placebo and real is the score value; the note structure and
@@ -88,7 +93,9 @@ class InjectionConfig:
     ----------
     signal         : 'gate' (answerability) or 'dial' (correctness)
     score          : float in [0, 1], the probe P(positive) for this input
-    position       : 'early' (pre-answer in think block) or 'late' (post-draft)
+    position       : 'early' (pre-answer in think block), 'late' (post-draft,
+                     model continues), or 'final' (post-draft, think block
+                     closed — the note is the last thought before the answer)
     interpretation : human-readable string; if None, auto-derived from score+signal
     note_template  : f-string template for the note; {signal}, {score}, {interp}
                      are available as format keys
@@ -102,8 +109,9 @@ class InjectionConfig:
     def __post_init__(self):
         if self.signal not in ("gate", "dial"):
             raise ValueError(f"signal must be 'gate' or 'dial', got {self.signal!r}")
-        if self.position not in ("early", "late"):
-            raise ValueError(f"position must be 'early' or 'late', got {self.position!r}")
+        if self.position not in ("early", "late", "final"):
+            raise ValueError(
+                f"position must be 'early', 'late', or 'final', got {self.position!r}")
         if not 0.0 <= self.score <= 1.0:
             raise ValueError(f"score must be in [0, 1], got {self.score}")
 
@@ -173,25 +181,58 @@ def build_think_prompt(
         [internal: dial 0.78 — probably correct]
 
         (model continues here)
+
+    Final injection (position='final', existing_draft="Dark matter is..."):
+        <user>: What is dark matter?
+        <assistant>: <think>
+        Dark matter is...
+
+        [internal: dial 0.78 — probably correct]
+        </think>
+        (model answers here — no further thinking possible)
     """
     note = config.render_note()
 
     if config.position == "early":
         # Note is the FIRST thing in the think block
         think_content = note + _NOTE_SEPARATOR
-    else:  # "late"
+    elif config.position == "late":
         draft = existing_draft or ""
         think_content = draft + _NOTE_SEPARATOR + note + _NOTE_SEPARATOR
+    else:  # "final"
+        # Note is the LAST thought: append after the draft and CLOSE the
+        # think block so the model must answer immediately.
+        draft = existing_draft or ""
+        think_content = (draft + _NOTE_SEPARATOR + note + "\n"
+                         + _THINK_CLOSE + "\n")
 
     # We open the think block and populate it up to the injection point.
-    # The model is expected to continue from here. We do NOT close </think>
-    # because the model must do that itself.
+    # For 'early'/'late' we do NOT close </think> (the model must do that
+    # itself); for 'final' the block is already closed above.
     injected_prompt = (
         f"{base_prompt}\n"
         f"{_THINK_OPEN}\n"
         f"{think_content}"
     )
     return injected_prompt
+
+
+def extract_think_content(generated_text: str) -> str:
+    """Extract the think-block content from a model generation.
+
+    Used by the 'final' position (Amendment AB Revision 1): a shared plain
+    thinking-enabled pass produces the reasoning draft; its think content is
+    re-used verbatim as the `existing_draft` for the note-then-close prompt.
+
+    Handles the generation starting with or without the '<think>' opener and
+    a draft truncated before '</think>' (the whole text is the draft then).
+    """
+    text = generated_text
+    if _THINK_CLOSE in text:
+        text = text.split(_THINK_CLOSE, 1)[0]
+    if _THINK_OPEN in text:
+        text = text.split(_THINK_OPEN, 1)[1]
+    return text.strip()
 
 
 def build_placebo_prompt(
@@ -344,7 +385,7 @@ def main(argv=None) -> int:
     demo = sub.add_parser("demo", help="Render an example injection prompt")
     demo.add_argument("--signal", choices=["gate", "dial"], default="gate")
     demo.add_argument("--score", type=float, default=0.23)
-    demo.add_argument("--position", choices=["early", "late"], default="early")
+    demo.add_argument("--position", choices=["early", "late", "final"], default="early")
     demo.add_argument("--question", default="What is dark matter?")
     demo.add_argument("--draft", default=None, help="Existing think-block draft (for late)")
     demo.add_argument("--placebo", action="store_true", help="Show placebo version too")
@@ -355,7 +396,7 @@ def main(argv=None) -> int:
                        help="Path to scored .jsonl (one JSON per line)")
     batch.add_argument("--output", required=True, type=str)
     batch.add_argument("--signal", choices=["gate", "dial"], required=True)
-    batch.add_argument("--position", choices=["early", "late"], required=True)
+    batch.add_argument("--position", choices=["early", "late", "final"], required=True)
     batch.add_argument("--placebo", action="store_true")
     batch.add_argument("--seed", type=int, default=20260630)
 

@@ -34,9 +34,21 @@ except ImportError:  # pragma: no cover - validated by existing KG scripts too
     yaml = None
 
 SCRIPT_DIR = Path(__file__).resolve().parent
-REPO_ROOT = SCRIPT_DIR.parents[3]
+
+
+# Sentinel walk-up is location-robust — correct from the canonical .skills/
+# tree (3 deep) AND both mirrors (4 deep), so DEFAULT_DB always lands on the
+# repo's .kg/ instead of a stray index above the checkout.
+def _find_repo_root() -> Path:
+    for parent in SCRIPT_DIR.parents:
+        if (parent / "bin" / "sync_skills.py").is_file() or (parent / ".git").exists():
+            return parent
+    return SCRIPT_DIR.parents[3]
+
+
+REPO_ROOT = _find_repo_root()
 DEFAULT_DB = REPO_ROOT / ".kg" / "index.sqlite"
-PARSER_VERSION = 1
+PARSER_VERSION = 2
 MAX_CONFIG_GRAPH_BYTES = 512 * 1024
 MAX_CONFIG_KEYS = 300
 
@@ -97,6 +109,8 @@ class Node:
     label: str
     node_type: str
     line: int
+    status: str = ""
+    deprecated_by: str = ""
 
 
 @dataclass(frozen=True)
@@ -116,7 +130,14 @@ class ParsedFile:
 
 
 def repo_relative(path: Path, root: Path) -> str:
-    return path.resolve().relative_to(root.resolve()).as_posix()
+    # Fast path: index_root resolves root once and builds file paths under it,
+    # so plain relative_to avoids two per-file resolve() syscall chains that
+    # dominated no-change reindex time. Fall back to resolving for callers
+    # that pass unnormalized paths (symlinks, relative CWD paths).
+    try:
+        return path.relative_to(root).as_posix()
+    except ValueError:
+        return path.resolve().relative_to(root.resolve()).as_posix()
 
 
 def should_ignore(rel: str) -> bool:
@@ -296,7 +317,9 @@ def ensure_schema(conn: sqlite3.Connection) -> None:
           kind TEXT NOT NULL,
           label TEXT NOT NULL,
           node_type TEXT NOT NULL,
-          line INTEGER NOT NULL
+          line INTEGER NOT NULL,
+          status TEXT NOT NULL DEFAULT '',
+          deprecated_by TEXT NOT NULL DEFAULT ''
         );
         CREATE TABLE IF NOT EXISTS edges (
           id INTEGER PRIMARY KEY,
@@ -347,6 +370,13 @@ def ensure_schema(conn: sqlite3.Connection) -> None:
     }
     if "lane_weights_json" not in columns:
         conn.execute("ALTER TABLE search_log ADD COLUMN lane_weights_json TEXT NOT NULL DEFAULT '{}'")
+    node_columns = {
+        row["name"]
+        for row in conn.execute("PRAGMA table_info(nodes)").fetchall()
+    }
+    for column in ("status", "deprecated_by"):
+        if column not in node_columns:
+            conn.execute(f"ALTER TABLE nodes ADD COLUMN {column} TEXT NOT NULL DEFAULT ''")
     ensure_fts(conn)
 
 
@@ -464,10 +494,10 @@ def insert_chunk(conn: sqlite3.Connection, chunk: Chunk) -> None:
 def insert_node(conn: sqlite3.Connection, node: Node) -> None:
     conn.execute(
         """
-        INSERT OR REPLACE INTO nodes(node_id, path, kind, label, node_type, line)
-        VALUES (?, ?, ?, ?, ?, ?)
+        INSERT OR REPLACE INTO nodes(node_id, path, kind, label, node_type, line, status, deprecated_by)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?)
         """,
-        (node.node_id, node.path, node.kind, node.label, node.node_type, node.line),
+        (node.node_id, node.path, node.kind, node.label, node.node_type, node.line, node.status, node.deprecated_by),
     )
 
 
@@ -708,8 +738,14 @@ def parse_frontmatter_kg(rel: str, text: str) -> tuple[list[Node], list[Edge]]:
         return [], []
     kg_id = str(kg["id"])
     title = str(fm.get("title") or Path(rel).stem)
-    nodes = [Node(kg_id, rel, "kg_note", title, str(kg.get("type") or "kg_note"), 1)]
+    deprecated_by = str(kg.get("deprecated_by") or "")
+    status = str(kg.get("status") or "")
+    if deprecated_by and not status:
+        status = "deprecated"
+    nodes = [Node(kg_id, rel, "kg_note", title, str(kg.get("type") or "kg_note"), 1, status, deprecated_by)]
     edges: list[Edge] = [Edge(f"file:{rel}", kg_id, "describes", rel, title)]
+    if deprecated_by and deprecated_by != kg_id:
+        edges.append(Edge(kg_id, deprecated_by, "superseded_by", rel, f"kg.deprecated_by in {rel}"))
     relationships = fm.get("relationships") or []
     if isinstance(relationships, list):
         for item in relationships:
@@ -904,9 +940,28 @@ def parse_file(root: Path, path: Path, rel: str) -> ParsedFile:
 def index_file(conn: sqlite3.Connection, root: Path, path: Path, force: bool = False) -> bool:
     rel = repo_relative(path, root)
     stat = path.stat()
+    row = conn.execute(
+        "SELECT size, mtime_ns, sha256, parser_version FROM files WHERE path = ?", (rel,)
+    ).fetchone()
+    # Stat short-circuit: skip hashing entirely when size + mtime_ns match the
+    # stored row. Hashing every file made the pre-search lazy reindex O(total
+    # repo bytes) per search, which grows with every dataset/output that lands.
+    if (
+        not force
+        and row
+        and row["parser_version"] == PARSER_VERSION
+        and row["size"] == stat.st_size
+        and row["mtime_ns"] == stat.st_mtime_ns
+    ):
+        return False
     digest = sha256_file(path)
-    row = conn.execute("SELECT sha256, parser_version FROM files WHERE path = ?", (rel,)).fetchone()
     if not force and row and row["sha256"] == digest and row["parser_version"] == PARSER_VERSION:
+        # Content unchanged but stat drifted (touch, fresh checkout): refresh
+        # the stored stat so future runs take the no-hash fast path.
+        conn.execute(
+            "UPDATE files SET size = ?, mtime_ns = ?, indexed_at = ? WHERE path = ?",
+            (stat.st_size, stat.st_mtime_ns, time.time(), rel),
+        )
         return False
     parsed = parse_file(root, path, rel)
     delete_file_rows(conn, rel)

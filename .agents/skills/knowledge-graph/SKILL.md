@@ -60,6 +60,12 @@ Required node fields for new graph notes:
 - `kg.id`
 - `kg.type`
 
+Supersession: never delete a superseded note. Set `kg.status: deprecated` and
+`kg.deprecated_by: <successor kg.id>` so provenance survives while default
+search hides the stale revision (see the Supersession section in
+`references/relationship-schema.md`). Use `bin/search ... --include-deprecated`
+to audit superseded lineage.
+
 Required relationship fields:
 
 - `type`

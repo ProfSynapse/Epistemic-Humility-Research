@@ -71,6 +71,20 @@ def validate_note(note: ParsedNote, ontology: dict[str, Any], index: NoteIndex) 
         if kg_status and kg_status not in KG_STATUS_VALUES:
             add("WARN", "KG109", note, f"kg.status should be one of {sorted(KG_STATUS_VALUES)}", findings)
 
+        deprecated_by = kg.get("deprecated_by")
+        if deprecated_by is not None:
+            if not isinstance(deprecated_by, str) or not deprecated_by:
+                add("ERROR", "KG111", note, "kg.deprecated_by must be a non-empty kg.id string", findings)
+            else:
+                if ":" not in deprecated_by:
+                    add("WARN", "KG112", note, "kg.deprecated_by should use namespace:value format", findings)
+                if kg_id and deprecated_by == kg_id:
+                    add("ERROR", "KG113", note, "kg.deprecated_by must not point at the note's own kg.id", findings)
+                elif deprecated_by not in index.by_id:
+                    add("WARN", "KG114", note, f"kg.deprecated_by {deprecated_by!r} does not resolve to a known kg.id", findings)
+                if kg_status != "deprecated":
+                    add("WARN", "KG115", note, "kg.deprecated_by is set; set kg.status: deprecated explicitly", findings)
+
         tags = frontmatter.get("tags") or []
         if isinstance(tags, str):
             tags = [tags]
