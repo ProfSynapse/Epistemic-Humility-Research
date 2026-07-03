@@ -318,6 +318,94 @@ def fig6_pipeline():
     plt.close(fig)
 
 
+# =========================================================================
+# FIG 7 — cross-family depth profile: gate plateau vs localized dial band
+# =========================================================================
+# family palette (consistent across both panels)
+C_FAM = {
+    "Llama-3.2-3B": "#4C72B0",
+    "Ministral-3-3B": "#DD8452",
+    "Qwen3.5-4B": "#55A868",
+    "Gemma-4-E4B": "#8172B3",
+}
+GATE_TOL = 0.005   # gate plateau = layers within 0.005 of that family's max
+DIAL_TOL = 0.02    # dial band    = layers within 0.02  of that family's max
+
+
+def _surface(d: dict, block: str):
+    """(fractional depths, aurocs, n_layers) for one family's auroc_surface."""
+    surf = {int(k): v for k, v in d[block]["auroc_surface"].items()}
+    n = max(surf)  # layer indices run 0..n; fractional depth = layer / n
+    layers = sorted(surf)
+    return [l / n for l in layers], [surf[l] for l in layers], n
+
+
+def _span(d: dict, block: str, tol: float):
+    """min/max layer within tol of the max, plus argmax layer and n_layers."""
+    surf = {int(k): v for k, v in d[block]["auroc_surface"].items()}
+    n = max(surf)
+    best = max(surf.values())
+    keep = [l for l in sorted(surf) if surf[l] >= best - tol]
+    return min(keep), max(keep), max(surf, key=surf.get), n
+
+
+def fig7_depth_profile():
+    fig, (axG, axD) = plt.subplots(1, 2, figsize=(11.0, 4.8), sharex=True)
+
+    for panel, (ax, block, tol) in enumerate([(axG, "X_G1_gate", GATE_TOL),
+                                              (axD, "X_G2_dial", DIAL_TOL)]):
+        for fi, (fam, d) in enumerate(Z.items()):
+            c = C_FAM[fam]
+            fx, fy, n = _surface(d, block)
+            lo, hi, am, _ = _span(d, block, tol)
+            ax.plot(fx, fy, "-", color=c, lw=1.6,
+                    label=f"{fam} ({n} blk)" if panel == 0 else None)
+            surf = d[block]["auroc_surface"]
+            ax.plot([am / n], [surf[str(am)]], "o", color=c, ms=7, zorder=5)
+            # per-family span bar (within-tol band), stacked under the curves
+            y0 = ax.get_ylim()  # placeholder; bars drawn after ylim set below
+            ax._span_bars = getattr(ax, "_span_bars", [])
+            ax._span_bars.append((lo / n, hi / n, c))
+        ax.set_xlabel("fractional depth  (layer / n_layers)")
+        ax.set_xlim(-0.02, 1.02)
+
+    axG.set_ylabel("answerability AUROC (gate)")
+    axG.set_ylim(0.96, 1.003)
+    axG.set_title(f"GATE: saturated plateau (within {GATE_TOL} of max)\n"
+                  "layer 0 sits at chance, below this zoomed axis", fontsize=10.5)
+    axD.set_ylabel("correctness AUROC (dial)")
+    axD.set_ylim(0.55, 0.90)
+    axD.set_title(f"DIAL: localized mid-to-late band (within {DIAL_TOL} of max)",
+                  fontsize=10.5)
+
+    # draw the stacked within-tol span bars now that ylims are fixed
+    for ax in (axG, axD):
+        y_lo, y_hi = ax.get_ylim()
+        h = (y_hi - y_lo) * 0.016
+        for i, (x0, x1, c) in enumerate(ax._span_bars):
+            y = y_lo + (i + 1.2) * h * 1.5
+            ax.plot([x0, x1], [y, y], "-", color=c, lw=3.2, alpha=0.65,
+                    solid_capstyle="butt", zorder=1)
+        del ax._span_bars
+
+    axG.legend(frameon=False, fontsize=8.5, loc="center right")
+    fig.suptitle("Where each signal lives: the gate plateaus from ~20% depth onward in all four "
+                 "families;\nthe dial concentrates in an overlapping mid-to-late band "
+                 "(dots = argmax layer; bars = within-tolerance span)",
+                 fontsize=11.5, y=1.06)
+    fig.tight_layout()
+    fig.savefig(OUT / "fig-p3-07-depth-profile.png", bbox_inches="tight")
+    plt.close(fig)
+
+    # provenance printout: recomputed spans backing the paper text
+    for fam, d in Z.items():
+        glo, ghi, gam, gn = _span(d, "X_G1_gate", GATE_TOL)
+        dlo, dhi, dam, dn = _span(d, "X_G2_dial", DIAL_TOL)
+        print(f"  fig7 {fam}: gate plateau L{glo}-{ghi}/{gn} (argmax L{gam}), "
+              f"dial band L{dlo}-{dhi}/{dn} (argmax L{dam})")
+
+
+
 if __name__ == "__main__":
     fig1_cross_family()
     fig2_dial_distribution()
@@ -325,6 +413,7 @@ if __name__ == "__main__":
     fig4_post_beats_pre()
     fig5_training_sharpens()
     fig6_pipeline()
+    fig7_depth_profile()
     print("figures written to", OUT)
     for p in sorted(OUT.glob("*.png")):
         print(" -", p.relative_to(ROOT), f"({p.stat().st_size // 1024} KB)")

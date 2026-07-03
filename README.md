@@ -155,6 +155,15 @@ Current public HF artifacts:
 - [Phase 1 Qwen3 4B training/dev data](https://huggingface.co/datasets/professorsynapse/epistemic-humility-phase1)
 - [Phase 1 evaluation analysis artifacts](https://huggingface.co/datasets/professorsynapse/epistemic-humility-phase1-evals)
 - [Phase 1 compact knowledge labels/probe manifests](https://huggingface.co/datasets/professorsynapse/epistemic-humility-phase1-labels)
+- [Cloud-lane per-cell readout results](https://huggingface.co/datasets/professorsynapse/epistemic-humility-cloud-results)
+  (per-model result/manifest JSONs from the HF Jobs evaluation lane; run-tag
+  prefixes map to signed amendment docs under `experiment/protocol/`)
+- [Two-signal probe directions](https://huggingface.co/datasets/professorsynapse/eh-probe-directions)
+  (gate/dial linear-probe directions per model family, with per-layer AUROC
+  fit metadata — replicate the readout with no GPU extraction)
+- [Readout row surfaces](https://huggingface.co/datasets/professorsynapse/eh-readout-rows)
+  (per-question question/answer/grade rows behind the amendment results — no
+  hidden-state tensors; audit grading or study answer behavior directly)
 
 Default policy:
 
