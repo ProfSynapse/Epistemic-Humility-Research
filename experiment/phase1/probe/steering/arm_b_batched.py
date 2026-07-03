@@ -130,6 +130,7 @@ def run_arm_b_cell_batched(
     probe_scores_batch_fn: Callable[[list[dict], Optional[list[str]]], list[float]],
     generate_batch_fn: Callable[[list[dict], str], list[str]],
     seed: int,
+    note_variant: str = "v0",
 ) -> dict[str, list[dict]]:
     """Batched mirror of run_arm_b.run_arm_b_cell (identical result structure).
 
@@ -172,7 +173,7 @@ def run_arm_b_cell_batched(
         for i, item in enumerate(items):
             for variant, score in (("real", real_scores[i]),
                                    ("placebo", placebo_scores[i])):
-                note = make_note(signal, score, position)
+                note = make_note(signal, score, position, note_variant)
                 init_reqs.append({
                     "pass_id": make_pass_id(item["row_key"], "initial", variant),
                     "item": item, "initial_answer": None,
@@ -195,11 +196,13 @@ def run_arm_b_cell_batched(
                     item, init_texts[k], rev_texts[k],
                     extra={
                         "variant": variant,
+                        "note_variant": note_variant,
                         "injected_score": float(score),
                         "real_score": float(real_scores[i]),
                         "placebo_score": float(placebo_scores[i]),
                         "injection_note": init_reqs[k]["note"],
                         "shared_initial": False,
+                        "shared_think_draft": False,
                     },
                 ))
                 k += 1
@@ -222,7 +225,7 @@ def run_arm_b_cell_batched(
     for i, item in enumerate(items):
         for variant, score in (("real", real_scores[i]),
                                ("placebo", placebo_scores[i])):
-            note = make_note(signal, score, position)
+            note = make_note(signal, score, position, note_variant)
             rev_reqs.append({
                 "pass_id": make_pass_id(item["row_key"], "revision", variant),
                 "item": item, "initial_answer": shared_texts[i] or "",
@@ -238,11 +241,13 @@ def run_arm_b_cell_batched(
                 item, initial_text, rev_texts[k],
                 extra={
                     "variant": variant,
+                    "note_variant": note_variant,
                     "injected_score": float(score),
                     "real_score": float(real_scores[i]),
                     "placebo_score": float(placebo_scores[i]),
                     "injection_note": rev_reqs[k]["note"],
                     "shared_initial": True,
+                    "shared_think_draft": False,
                 },
             ))
             k += 1
