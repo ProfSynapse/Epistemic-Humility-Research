@@ -1,0 +1,168 @@
+{
+ "source_result": "results/aa7_dial_late.json",
+ "cell": "AA-7",
+ "signal": "dial",
+ "position": "late",
+ "note_variant": null,
+ "config_sha": "8ef8286dd21def0c",
+ "created_utc": "2026-07-02T17:45:18Z",
+ "summary_as_recorded": {
+  "real": {
+   "n_items": 500,
+   "abstention_unknown": null,
+   "answer_rate_known": null,
+   "accuracy_known": null,
+   "accuracy_answerable": 0.2745,
+   "revision_discrimination": 0.0,
+   "degenerate_rate": 0.002,
+   "n_initial_wrong": 358,
+   "n_initial_correct": 141,
+   "coherence_floor_ok": true
+  },
+  "placebo": {
+   "n_items": 500,
+   "abstention_unknown": null,
+   "answer_rate_known": null,
+   "accuracy_known": null,
+   "accuracy_answerable": 0.2811,
+   "revision_discrimination": 0.0,
+   "degenerate_rate": 0.004,
+   "n_initial_wrong": 358,
+   "n_initial_correct": 140,
+   "coherence_floor_ok": true
+  },
+  "real_vs_placebo": {
+   "accuracy_answerable": {
+    "delta": -0.0066,
+    "ci_lo": -0.0347,
+    "ci_hi": 0.021,
+    "n_boot": 2000,
+    "ci_excludes_zero": false
+   },
+   "revision_discrimination": {
+    "delta": 0.0,
+    "ci_lo": 0.0,
+    "ci_hi": 0.0,
+    "n_boot": 2000,
+    "ci_excludes_zero": false
+   }
+  },
+  "adequacy": {
+   "n_initial_wrong": 358,
+   "n_initial_correct": 140,
+   "n_unknown_answered_control": 0,
+   "dial_adequate_ge_40_40": true,
+   "gate_adequate_ge_100_unknown_answered": false
+  }
+ },
+ "arms": {
+  "real": {
+   "marker_rates": {
+    "echo_pct": 0.026,
+    "echo_confidence_words": 0.216,
+    "verify_words": 0.792,
+    "wait": 0.28,
+    "idk_words": 0.008
+   },
+   "transition_flows": {
+    "correct->correct": 117,
+    "correct->wrong": 24,
+    "wrong->answered_ungraded": 1,
+    "wrong->correct": 20,
+    "wrong->wrong": 338
+   },
+   "conditional_rates": {
+    "p_final_correct_given_initial_wrong": 0.0557,
+    "p_final_abstain_given_initial_wrong": 0.0,
+    "n_initial_wrong": 359,
+    "p_final_correct_given_initial_correct": 0.8298,
+    "n_initial_correct": 141
+   },
+   "score_tercile_gradient": {
+    "lo_tercile": {
+     "score_range": [
+      0.351,
+      0.479
+     ],
+     "n_wrong": 156,
+     "wrong_to_correct": 0.0641
+    },
+    "hi_tercile": {
+     "score_range": [
+      0.516,
+      0.666
+     ],
+     "n_wrong": 62,
+     "wrong_to_correct": 0.129
+    }
+   },
+   "abstention_compliance": {
+    "n_final_abstain": 0,
+    "abstainer_injected_scores": [],
+    "abstainer_continuation_heads": []
+   },
+   "revised_flag_saturation": {
+    "n_items": 500,
+    "n_revised_true": 500,
+    "saturated": true
+   }
+  },
+  "placebo": {
+   "marker_rates": {
+    "echo_pct": 0.036,
+    "echo_confidence_words": 0.236,
+    "verify_words": 0.802,
+    "wait": 0.262,
+    "idk_words": 0.002
+   },
+   "transition_flows": {
+    "correct->answered_ungraded": 1,
+    "correct->correct": 118,
+    "correct->wrong": 22,
+    "wrong->abstain": 1,
+    "wrong->answered_ungraded": 1,
+    "wrong->correct": 22,
+    "wrong->wrong": 335
+   },
+   "conditional_rates": {
+    "p_final_correct_given_initial_wrong": 0.0613,
+    "p_final_abstain_given_initial_wrong": 0.0028,
+    "n_initial_wrong": 359,
+    "p_final_correct_given_initial_correct": 0.8369,
+    "n_initial_correct": 141
+   },
+   "score_tercile_gradient": {
+    "lo_tercile": {
+     "score_range": [
+      0.351,
+      0.479
+     ],
+     "n_wrong": 121,
+     "wrong_to_correct": 0.0661
+    },
+    "hi_tercile": {
+     "score_range": [
+      0.516,
+      0.666
+     ],
+     "n_wrong": 117,
+     "wrong_to_correct": 0.0598
+    }
+   },
+   "abstention_compliance": {
+    "n_final_abstain": 1,
+    "abstainer_injected_scores": [
+     0.471
+    ],
+    "abstainer_continuation_heads": [
+     "User asks: \"Who is the mother of Louis?\" I previously answered \"Marie Curie\". Th"
+    ]
+   },
+   "revised_flag_saturation": {
+    "n_items": 500,
+    "n_revised_true": 500,
+    "saturated": true
+   }
+  }
+ }
+}

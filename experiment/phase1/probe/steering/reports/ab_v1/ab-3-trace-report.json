@@ -1,0 +1,160 @@
+{
+ "source_result": "results/ab-3-dial-final-v1/result.json",
+ "cell": "AB-3",
+ "signal": "dial",
+ "position": "final",
+ "note_variant": "v1",
+ "config_sha": "2c6c3fae0d9e97bb",
+ "created_utc": "2026-07-03T09:12:09Z",
+ "summary_as_recorded": {
+  "real": {
+   "n_items": 500,
+   "abstention_unknown": null,
+   "answer_rate_known": null,
+   "accuracy_known": null,
+   "accuracy_answerable": 0.314,
+   "revision_discrimination": 0.1021,
+   "degenerate_rate": 0.0,
+   "n_initial_wrong": 357,
+   "n_initial_correct": 143,
+   "coherence_floor_ok": true
+  },
+  "placebo": {
+   "n_items": 500,
+   "abstention_unknown": null,
+   "answer_rate_known": null,
+   "accuracy_known": null,
+   "accuracy_answerable": 0.308,
+   "revision_discrimination": 0.1286,
+   "degenerate_rate": 0.0,
+   "n_initial_wrong": 357,
+   "n_initial_correct": 143,
+   "coherence_floor_ok": true
+  },
+  "real_vs_placebo": {
+   "accuracy_answerable": {
+    "delta": 0.006,
+    "ci_lo": -0.014,
+    "ci_hi": 0.026,
+    "n_boot": 2000,
+    "ci_excludes_zero": false
+   },
+   "revision_discrimination": {
+    "delta": -0.0266,
+    "ci_lo": -0.0982,
+    "ci_hi": 0.0429,
+    "n_boot": 2000,
+    "ci_excludes_zero": false
+   }
+  },
+  "adequacy": {
+   "n_initial_wrong": 357,
+   "n_initial_correct": 143,
+   "n_unknown_answered_control": 0,
+   "dial_adequate_ge_40_40": true,
+   "gate_adequate_ge_100_unknown_answered": false
+  }
+ },
+ "arms": {
+  "real": {
+   "marker_rates": {
+    "echo_pct": 0.01,
+    "echo_confidence_words": 0.67,
+    "verify_words": 0.112,
+    "wait": 0.102,
+    "idk_words": 0.0
+   },
+   "transition_flows": {
+    "correct->correct": 134,
+    "correct->wrong": 9,
+    "wrong->correct": 23,
+    "wrong->wrong": 334
+   },
+   "conditional_rates": {
+    "p_final_correct_given_initial_wrong": 0.0644,
+    "p_final_abstain_given_initial_wrong": 0.0,
+    "n_initial_wrong": 357,
+    "p_final_correct_given_initial_correct": 0.9371,
+    "n_initial_correct": 143
+   },
+   "score_tercile_gradient": {
+    "lo_tercile": {
+     "score_range": [
+      0.331,
+      0.482
+     ],
+     "n_wrong": 156,
+     "wrong_to_correct": 0.0641
+    },
+    "hi_tercile": {
+     "score_range": [
+      0.52,
+      0.667
+     ],
+     "n_wrong": 63,
+     "wrong_to_correct": 0.1111
+    }
+   },
+   "abstention_compliance": {
+    "n_final_abstain": 0,
+    "abstainer_injected_scores": [],
+    "abstainer_continuation_heads": []
+   },
+   "revised_flag_saturation": {
+    "n_items": 500,
+    "n_revised_true": 470,
+    "saturated": false
+   }
+  },
+  "placebo": {
+   "marker_rates": {
+    "echo_pct": 0.01,
+    "echo_confidence_words": 0.666,
+    "verify_words": 0.1,
+    "wait": 0.086,
+    "idk_words": 0.0
+   },
+   "transition_flows": {
+    "correct->correct": 132,
+    "correct->wrong": 11,
+    "wrong->correct": 22,
+    "wrong->wrong": 335
+   },
+   "conditional_rates": {
+    "p_final_correct_given_initial_wrong": 0.0616,
+    "p_final_abstain_given_initial_wrong": 0.0,
+    "n_initial_wrong": 357,
+    "p_final_correct_given_initial_correct": 0.9231,
+    "n_initial_correct": 143
+   },
+   "score_tercile_gradient": {
+    "lo_tercile": {
+     "score_range": [
+      0.331,
+      0.482
+     ],
+     "n_wrong": 119,
+     "wrong_to_correct": 0.0924
+    },
+    "hi_tercile": {
+     "score_range": [
+      0.52,
+      0.667
+     ],
+     "n_wrong": 118,
+     "wrong_to_correct": 0.0763
+    }
+   },
+   "abstention_compliance": {
+    "n_final_abstain": 0,
+    "abstainer_injected_scores": [],
+    "abstainer_continuation_heads": []
+   },
+   "revised_flag_saturation": {
+    "n_items": 500,
+    "n_revised_true": 469,
+    "saturated": false
+   }
+  }
+ }
+}
