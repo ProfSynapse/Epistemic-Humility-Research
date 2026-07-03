@@ -34,11 +34,13 @@ neither side and are tallied separately.
 |---|---|---|---|---|
 | AG (inverted prime) | "pure behavior not internal alignment" | _(not separately recorded — practice predates)_ | ASYMMETRIC COMPLIANCE; doubt axis unmoved | user ✓ / — |
 | AD (trained-checkpoint flip) | — | null (signed, shelved) | not launched | — |
-| AH (divergent-pool own-readout) | H-compliance, incl. crisp stratum ("prompt is like a shotgun") | H-compliance (~75–80%) | AMBIGUOUS — G2 a precise zero (−0.21pt, consistent with H-compliance) but G1 missed its floor (+15.65 vs +20), voiding certification per the locked §5 rule | **TIE / TIE** |
+| AH (divergent-pool own-readout) | H-compliance, incl. crisp stratum ("prompt is like a shotgun") | H-compliance (~75–80%) | **H-COMPLIANCE** (certified via Addendum A1) — G2 a precise zero (−0.21pt); initial G1 miss recalibrated on a representative stratum, +50.98pt vs +20pt floor | **WIN / WIN** |
+| AH Addendum A1 (G1 recalibration) | PASS — clears +20pt | PASS (~80%) | PASS +50.98pt; monotone caution-quintile gradient confirmed the population diagnosis | **WIN / WIN** |
 
-Running tally: **user 1 – orchestrator 0 – ties 1** (AG predates the
+Running tally: **user 3 – orchestrator 2 – ties 0** (AG predates the
 two-sided practice; the user gets the point, the orchestrator gets the
-excuse. AH: both called H-compliance and the evidence agrees, but the
-instrument gate voided certification — the gates, not the vibes, award
-points. A G1 recalibration cell is proposed in AH §9.4; if it passes and
-upgrades the verdict, this row upgrades to WIN/WIN.)
+excuse. AH resolved TIE/TIE at first adjudication — instrument voided at
+the locked gates — then upgraded to WIN/WIN when the pre-registered
+Addendum A1 recalibration certified the instrument on a fair population.
+The Addendum A1 row scores separately: a distinct pre-registered question
+with both predictions recorded before launch.)
