@@ -30,6 +30,25 @@ outcome: >-
 scoreboard:
   user: tie
   orchestrator: tie
+addendum_a1:
+  question: >-
+    Does the positive control clear the +20pt induced-refusal floor on a
+    caution-REPRESENTATIVE stratum (certifying the already-collected G2
+    reading)?
+  predictions:
+    orchestrator:
+      call: PASS
+      confidence: "~80%"
+      recorded: 2026-07-03
+      basis: >-
+        AG's +34pt was measured on an unfiltered known population; even the
+        hardest (low-caution) stratum gave +15.65pt, so a representative
+        stratum should recover well past +20pt.
+    user:
+      call: PASS
+      recorded: 2026-07-03
+      quote: "PASS — clears +20pt"
+  outcome: null
 ---
 
 # Amendment AH — Divergent-Pool Own-Readout Attribution (probe ≠ gold)
@@ -39,7 +58,8 @@ G2 release congruence = −0.21pt (CI [−4.45, +4.10], logistic coef CI
 [−0.555, +0.250]) — a precise zero consistent with H-COMPLIANCE — but G1
 positive control missed its locked +20pt floor (+15.65pt), so per the
 pre-stated §5 rule the reading is not gate-certified. Full result and
-adjudication in §9; G1 recalibration cell proposed in §9.4. (Signed
+adjudication in §9; G1 recalibration cell proposed in §9.4 and signed as
+Addendum A1 (§10, 2026-07-03) — in flight. (Signed
 2026-07-03, both predictions §2; Stage-0 D-under floor STOP → user-directed
 redesign; pool v2.1 locked; main run 3,324 gens on the frozen AF harness,
 launched on explicit user approval §7.8.)
@@ -491,3 +511,45 @@ movement on either readable axis.
   diagnostics + mining already complete; see `par_design/REPORT.md`).
 - Data exhaust: the 3,324-generation surface + instrumentation extractions
   join the AH release package (backlog row 23).
+
+## 10. Addendum A1 — G1 recalibration cell (pre-registered)
+
+**Status: SIGNED 2026-07-03 (user approval: "Do the addendum"); launched on
+signing.** Branch `amendment-ah-g1-recalibration`. Both predictions recorded
+in frontmatter (`addendum_a1`) BEFORE launch: orchestrator PASS ~80%, user
+PASS. Convergent again.
+
+### 10.1 Design (locked)
+
+Re-run ONLY the AH positive control on a caution-REPRESENTATIVE stratum of
+concordant-known rows, fixing the §9.2(1) population-calibration flaw. The
+G2 cells are untouched — no divergent row is regenerated, no scoring rule
+changes.
+
+- **Stratum (150 rows):** concordant-known rows (consensus L20/L24/L28
+  probe-confident, gold-answerable — the §3.3 readout rule verbatim) sampled
+  quantile-stratified on `caution_dist_z` — 30 rows per quintile of the
+  concordant-known population's caution distribution — balanced across the
+  four answerable sources (TriviaQA/SelfAware/KUQ/PopQA) as available within
+  each quintile, seed 0, EXCLUDING the 150 original positive-control rows.
+  This reproduces the population AG's +34pt (the floor's calibration) was
+  measured on: unfiltered by caution.
+- **Arms:** A0 + A-doubt per row (PRIME_LOW verbatim), byte-frozen AF
+  harness, batch-1 greedy — identical to §3.2. ~300 generations, ~10 min.
+- **Eligibility:** baseline-answered at A0 (as in the main run). Sanity
+  floor: ≥40 eligible rows (G0 rule).
+
+### 10.2 Gate and certification semantics (locked)
+
+- **A1-G1:** induced refusal (A0-answered → A-doubt-refused) ≥ **+20pt**
+  among eligible rows — the original G1 floor, unchanged.
+- **PASS ⇒** the instrument is certified on a fair population; the original
+  three-tier §5 rule applies to the ALREADY-COLLECTED G2 reading (a precise
+  null with a live release-direction instrument) ⇒ **verdict upgrades to
+  H-COMPLIANCE**; the scoreboard row upgrades TIE/TIE → WIN/WIN.
+- **FAIL (< +20pt) ⇒** verdict stays AMBIGUOUS permanently (no second
+  recalibration); the finding is then that the doubt prime's muzzle
+  authority on this pool is genuinely weaker than AG's TriviaQA-era
+  calibration — recorded as a descriptive result, no goalpost moved.
+- Secondary descriptive (non-gating): induced refusal per caution quintile,
+  to show the §9.2(1) gradient directly.
