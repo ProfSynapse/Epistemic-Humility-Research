@@ -508,7 +508,14 @@ not touch, and Section 5's probe observation (internal AUROC 0.972 against
 emitted 0.637 on the same rows) supports it: the stage decomposition is a
 decomposition of *policy* over an epistemic signal the training never moved.
 The companion diagnosis paper makes that case at the representation level;
-the behavioral fact stands on its own here.
+the behavioral fact stands on its own here. A pre-registered follow-up in the
+companion line has since located the signal's origin: read on *pre-instruction*
+bases across four model families, the known/unknown boundary is already
+linearly available at AUROC 0.997+ before any post-training occurs (Paper 4,
+§4.9). The frontier the SFT stage "created" is therefore better read as a
+frontier it *exposed* — the discriminative signal is already paid for by
+pretraining, and no objective in this study (nor, apparently, the vendors'
+own post-training) moves it.
 
 **Deployment reading.** For a practitioner at small scale the actionable
 summary is: (i) an SFT inducer stage is mandatory; (ii) choose the second
@@ -562,7 +569,10 @@ decision to answer, not the truth of the answer. Why the stated channel
 fails, whether any training can couple it to what the model knows, and how
 much a direct readout of the hidden states recovers, are the subjects of the
 companion diagnosis paper — which begins from the checkpoints this study
-trained.
+trained. The companion line has since answered the origin half of the
+question this paper leaves open: the epistemic signal the regimens gate on is
+present *before any post-training* (Paper 4, §4.9). Post-training sets the
+behavior; pretraining supplies the signal.
 
 ## References
 

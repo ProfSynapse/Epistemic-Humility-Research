@@ -28,7 +28,7 @@ unanswerable questions receive the lowest trust of any group (AUROC 0.980 after 
 training; 0.754 on the raw base). Fusing the two axes into one scalar *hurts* (Δ −0.014),
 so we deploy them as two sequential stages.
 
-Three findings make this a mechanism rather than a curiosity. **(1) It is training-free:**
+Four findings make this a mechanism rather than a curiosity. **(1) It is training-free:**
 the whole pipeline reads off the raw instruction-tuned base with no adapter and no
 abstention training of ours; our training only *sharpens* the veto (0.754 → 0.980), it
 does not create the signal. **(2) It is size-robust:** the readout passes on every Qwen3
@@ -45,7 +45,13 @@ sense of "can I answer this?" and "is this answer right?" is a universal, readab
 of the representation; its ability to distrust its own confident fabrications is present
 across families but decode- and seed-sensitive — it must be reported with seed spread and
 validated per model.** We give the descriptive mechanism (the correct-vs-hallucination gap
-in the dial distribution) that predicts where it is strong.
+in the dial distribution) that predicts where it is strong. **(4) It predates post-training
+entirely:** a pre-registered contrast on four *pre-instruction* bases (Qwen3.5, Gemma,
+Llama-3.2, Olmo-3) finds every readout already present — gate 0.997+, dial 0.82–0.87, veto
+passing on all four (0.67–0.87) — and the one clean base→instruct pair read under a single
+pipeline moves the veto *down* (0.803 → 0.731): generic vendor post-training does not create
+the signal and does not sharpen it; only targeted abstention training did. Descriptively, all
+three readouts are present as far back as GPT-2-XL (2019).
 
 ---
 
@@ -249,9 +255,12 @@ the *readable trust signal itself* is a property of the frozen representation (F
 
 We scope "training-free" precisely: the raw base is the *instruction-tuned* release, so
 "training-free" means "no abstention fine-tuning and no reinforcement learning of ours,"
-**not** "no training ever." The answerability axis may be in part a product of upstream
-instruction tuning. The claim is that *our* training regimen — the one the companion paper
-shows cannot close the verbalization gap — is not what puts the readable signal there.
+**not** "no training ever." At the time this section's numbers were produced, the
+answerability axis could in principle have been a product of upstream instruction tuning;
+§4.9's pre-registered pretrain-only contrast closes that question directly — read on
+*pre-instruction* bases, the axis is already there. The claim here is narrower and stands on
+its own: *our* training regimen — the one the companion paper shows cannot close the
+verbalization gap — is not what puts the readable signal there.
 
 ### 4.6 The readout is size-robust (1.7B–14B)
 
@@ -363,6 +372,65 @@ not fire: Ministral is the only status-flipping family. The Table 1 magnitudes a
 promoted from "single greedy decode" to **seed-robust under sampled decoding**
 (pre-registration and per-cell provenance: `AMENDMENT-SR-sampled-decode-seed-robustness.md`).
 
+### 4.9 The signal predates post-training: pretrain-only bases and an era ladder
+
+Every base so far — including every "raw" base in §§4.5–4.8 — is a vendor *post-trained*
+instruct release, so all of the above is compatible with the signal being installed by
+instruction tuning. We pre-registered the contrast that separates the hypotheses: the
+identical three-signal readout on four **pre-instruction** bases matched to the §4.7
+families (Qwen3.5-4B-Base, Gemma-4-E4B-pt, Llama-3.2-3B, Olmo-3-7B), with the primary
+hypothesis (H1) that the answerability gate is already present before any post-training,
+and the falsifier that a base reads < 0.75 while its instruct sibling reads ≥ 0.95. Base
+models were prompted with a k-shot plain-text render (they have no chat template); one
+dual-render control and one same-pipeline instruct sibling complete the design.
+
+**Table 3. Pretrain-only bases (greedy, single pipeline; AUROC at each model's best layer).**
+
+| Model | Gate | Dial | Veto | within-SA control |
+|---|---|---|---|---|
+| Qwen3.5-4B-Base (k-shot) | 0.9984 | 0.8725 | 0.6657 | 0.6196 |
+| Qwen3.5-4B-Base (chat-render control) | 0.9977 | 0.8511 | 0.8672 | 0.7961 |
+| Gemma-4-E4B (pt) | 0.9975 | 0.8633 | 0.8743 | 0.7824 |
+| Llama-3.2-3B (base) | 0.9972 | 0.8235 | 0.8354 | 0.7712 |
+| Olmo-3-7B (base) | 0.9975 | 0.8442 | 0.8029 | 0.7912 |
+| Olmo-3-7B-Instruct (same pipeline) | 0.9979 | 0.8103 | 0.7306 | 0.6741 |
+
+**H1 SUPPORTED 4/4; the falsifier fired on 0/4 pairs.** Every pre-instruction base reads
+the gate at 0.997+ — indistinguishable from the instruct releases. The veto also clears its
+bar on all four bases (0.666–0.874). The boundary signal is not installed by post-training;
+it is already in the pretrained representation, and instruction tuning at most re-renders it.
+
+**Post-training does not sharpen the readout — and can dull it.** The one clean
+base→instruct pair read under a single pipeline (Olmo-3, same seed, scorer, and render
+class) moves the veto **0.803 → 0.731** and the within-SelfAware control 0.791 → 0.674;
+the render-confounded cross-run pairs sit at or below their bases too. This resolves the
+tension with §4.5's "training sharpens" result: what sharpened the Qwen3-4B veto
+(0.754 → 0.980) was *targeted abstention training*, not post-training per se. Generic
+vendor post-training adds nothing to any of the three axes and moved the fragile one the
+wrong way — consistent with §4.6's non-monotonic scale result.
+
+**Part of the veto's fragility is the prompt surface, not the model.** The dual-render
+control shows Qwen3.5-Base's veto is render-sensitive (k-shot 0.666 vs chat-render 0.867)
+while its gate is render-invariant (0.998 under both). Per-model veto validation (§4.7's
+practitioner rule) should therefore fix the render before comparing numbers.
+
+**An era ladder, strictly descriptive.** Read the same panel down a ladder of historical
+bases and all three readouts stay above the 0.65 bar as far back as **GPT-2-XL (2019)**
+(gate 0.9911, dial 0.7940, veto 0.7936); Pythia-2.8B, Llama-2-7B, and OLMo-2-7B fill the
+rungs to the modern bases. The raw gate is nearly era-flat (0.991 → 0.998); what improves
+across eras is the *within-SelfAware* control (~0.59 on GPT-2/Pythia rising to ~0.71–0.82
+from Llama-2 onward) — the in-distribution separation of confident hallucinations from
+known answers, not the gross answerable/unanswerable split. No era claim is minted from
+this arm; it was registered as descriptive.
+
+**A text baseline bounds all of the above.** A TF-IDF classifier on the question surface
+alone reads the gate pool at **0.964 ± 0.016** and predicts dial correctness at 0.75–0.78
+per family. The hidden-state readouts sit above these bounds (gate 0.991–0.998, dial
+0.79–0.87), but the *margins* — not the raw AUROCs — are the honest effect sizes: much of
+the gate is surface-predictable on SelfAware, on any model of any era. (Pre-registration
+and per-cell provenance: `AMENDMENT-Y-pretrain-only-base-readout.md`;
+`experiment/phase1/probe/amendment_y_results/`.)
+
 ---
 
 ## 5. The deployable pipeline
@@ -399,10 +467,15 @@ how much should you trust this?" — is available from a frozen model with a lin
 
 **What training is for.** Our training is not wasted, but its role is narrow and specific: it
 *sharpens the veto* (0.754 → 0.980) and installs autonomous behavioral abstention. It does
-not create the gate, the dial, or the veto. This reframes the calibration-training question:
-the goal is not to teach the model what it knows (it already represents that), but to make
-its *behavior* and its *emitted signal* faithful to what it already represents — and, for the
-veto specifically, to sharpen a signal that is present but weak on some models out of the box.
+not create the gate, the dial, or the veto — and §4.9 sharpens the negative half further:
+the signal predates not just our training but *any* post-training (gate 0.997+ on four
+pre-instruction bases), and generic vendor post-training does not sharpen the readout either
+(the clean Olmo-3 base→instruct pair moves the veto 0.803 → 0.731). Sharpening is a property
+of *targeted* abstention training, not of post-training in general. This reframes the
+calibration-training question: the goal is not to teach the model what it knows (pretraining
+already put that there), but to make its *behavior* and its *emitted signal* faithful to what
+it already represents — and, for the veto specifically, to sharpen a signal that is present
+but weak on some models out of the box.
 
 **Universal axes vs a high-variance capability.** The cleanest scientific result is the
 split. "Can I answer this?" and "is this answer right?" are readable across four families
@@ -435,9 +508,12 @@ We state these plainly; several are the reason specific claims are scoped as the
    the +0.065 post-beats-pre gain) remain seed 1: the near-saturated effects (gate 0.997)
    are low seed-risk, and §4.8's spread measurements bound how much the seed-sensitive
    axes move, but a multi-seed pass on the deep-dive checkpoint itself has not been run.
-2. **"Training-free" is scoped.** It means no abstention-SFT or RL of ours, on an
-   *instruction-tuned* base. The answerability axis may partly reflect upstream instruction
-   tuning; we do not claim it exists in a pre-instruction base.
+2. **Base-model reads are render-sensitive, and the text baseline is high.** The original
+   scoping worry — that the axes might reflect upstream instruction tuning — is closed by
+   §4.9 (gate 0.997+ on four pre-instruction bases). What remains: base-model veto numbers
+   depend on the prompt render (k-shot vs chat, 0.666 vs 0.867 on Qwen3.5-Base), and a
+   question-surface TF-IDF baseline reads the gate pool at 0.964, so margins over that
+   baseline — not raw AUROCs — are the honest effect sizes for the gate.
 3. **The dial ranks, it does not calibrate.** ECE 0.151. We claim a *ranked* trust number,
    not a stated probability; a probability deliverable would need a downstream calibration map.
 4. **Structural hallucination label.** "unanswerable question ∧ model answered =
@@ -458,18 +534,20 @@ We state these plainly; several are the reason specific claims are scoped as the
 
 ## 8. Conclusion
 
-A small language model's trust signal does not have to be trained in — it is largely already
-present in the representation and can be read out. An answerability **gate** at the prompt
-anchor (AUROC ≈ 0.997) and a per-answer correctness **dial** after the answer (0.834, better
-after the answer than before) compose into a two-stage pipeline that needs no fine-tuning, is
-size-robust from 1.7B to 14B, and — for the gate and dial — replicates across four model
-families. The dial's **veto** on confident confabulation is real and, once sharpened by
-training, strong (0.980), but it is the fragile, model-dependent piece: it replicates on three
-of four families and is predicted by how far a model's confabulations fall below its correct
-answers on the dial. Training's contribution is to sharpen that veto and install behavioral
-abstention — not to create the underlying signal. The confidence, for the most part, is
-already there; the task is to read it, keep the two axes separate, and know which model's veto
-you can trust.
+A small language model's trust signal does not have to be trained in — it is already present
+in the representation and can be read out. An answerability **gate** at the prompt anchor
+(AUROC ≈ 0.997) and a per-answer correctness **dial** after the answer (0.834, better after
+the answer than before) compose into a two-stage pipeline that needs no fine-tuning, is
+size-robust from 1.7B to 14B, replicates across four model families — and, by the
+pre-registered pretrain-only contrast, is present *before any post-training at all*, readable
+(descriptively) as far back as GPT-2-XL. The dial's **veto** on confident confabulation is
+real and, once sharpened by targeted abstention training, strong (0.980), but it is the
+fragile, model-dependent piece: seed- and render-sensitive, non-monotonic in scale, and the
+one axis a vendor's own post-training moved the wrong way. Training's contribution — when it
+is aimed at abstention specifically — is to sharpen that veto and install behavioral
+abstention; post-training in general neither creates nor improves the underlying signal. The
+confidence is already there from pretraining; the task is to read it, keep the two axes
+separate, and know which model's veto you can trust.
 
 ---
 
@@ -486,12 +564,15 @@ Every figure and number is generated from tracked result artifacts. Figures are 
 | Training-free whole mechanism (W) | `amendment_w_base_model_result.json` |
 | Cross-size 1.7B/8B/14B (X) | `amendment_x_qwen3-{1.7b,8b,14b}-bnb-4bit_result.json` |
 | Cross-family (Z) | `amendment_z_{llama-3.2-3b,ministral-3-3b,qwen3.5-4b,gemma-4-e4b}_result.json` |
+| Pretrain-only bases + era ladder (Y) | `amendment_y_results/` (10 per-cell result JSONs + extraction manifest) |
 
 Governance: each result surface is a signed exploratory amendment under
 `experiment/protocol/` referencing the locked pre-registration; the cross-size and
 cross-family confirmatories (`AMENDMENT-X-*`, `AMENDMENT-Z-*`) pre-stated their prediction,
 falsifier, and gates before running, and their §7 verdicts record the outcome with bootstrap
-CIs and no post-hoc goalpost changes. Extraction tensors and per-row artifacts remain local
+CIs and no post-hoc goalpost changes; the pretrain-only contrast (`AMENDMENT-Y-*`)
+pre-registered its primary hypothesis, falsifier, and the descriptive-only status of the era
+ladder the same way. Extraction tensors and per-row artifacts remain local
 (gitignored `*_tag/` subtrees); the tracked result JSONs carry the full per-layer AUROC
 surfaces, CIs, and dial descriptives.
 
