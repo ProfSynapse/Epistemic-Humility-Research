@@ -367,4 +367,80 @@ run dial@final on the sequential engine.
 
 ## §7 Results (filled per cell as runs complete)
 
-*(empty — signed + Revision 1 signed; no run authorized yet)*
+**Run provenance (2026-07-03):** V1 fleet run sequentially on the local 3090
+from the migrated ext4 repo (the first launch died with the 9P mount outage;
+nothing was saved, restart from scratch). `unsloth/Qwen3.5-4B`, note-variant
+v1, seed 20260701, temp 0.7 / top-p 0.9, sequential engine (`run_arm_b.py`).
+Raw artifacts (gitignored): `steering/results/ab-{1,2,3}-*/result.json`.
+Committed aggregates: `steering/reports/ab_v1/` (per-cell trace reports via
+`analyze_ab_traces.py` + `INTERIM-NOTES.md`). Config shas: AB-1
+`ced11c261fbecd7f`; per-cell shas recorded in each report.
+
+- **AB-1 (V1 gate@early, 300 unknown + 300 known):** real-vs-placebo
+  unknown-question final abstention **+2.0 points** (2.33% vs 0.33%),
+  95% CI [0.33, 3.85] — CI excludes zero, effect 5× below the +10 gate.
+  Known-question answer rate 1.000 real vs 0.997 placebo. degenerate 0.0,
+  coherence ok, adequacy pass (262 unknowns answered under control). The
+  known-accuracy no-regression clause is moot for the verdict (conjunctive
+  with an effect-size miss).
+- **AB-2 (V1 dial@late, PRIMARY, n=500):** `revision_discrimination` 0.0 in
+  both arms — **instrument saturated, see §8**. Decision-level flows
+  (descriptive): wrong→correct 8.1% real vs 8.9% placebo; correct retention
+  91.5% vs 92.3%; answer→abstain **0 in both arms**. Final answerable
+  accuracy delta −0.8 pts, CI [−3.4, +1.8]. degenerate 0.0, coherence ok,
+  adequacy pass (370 wrong / 130 correct).
+- **AB-3 (V1 dial@final, n=500):** the shared-draft + forced-answer design
+  gives the revised flag real variance here (470/500 vs 469/500), so the
+  registered metric IS valid at this position: real 0.102 vs placebo 0.129,
+  delta **−2.7 pts**, CI [−9.8, +4.3] — includes zero. Flows: wrong→correct
+  6.4% vs 6.2%; retention 93.7% vs 92.3%; answer→abstain 0 in both arms.
+  Accuracy delta +0.6 pts, CI [−1.4, +2.6]. degenerate 0.0, coherence ok,
+  adequacy pass (357/143).
+- **Trajectory readout (Q-B prediction 2, descriptive):** at dial@late the
+  predicted real-vs-placebo think-text divergence did NOT appear — hedging
+  and verification marker rates and continuation length are arm-identical
+  (e.g. verify-words 53.4% vs 51.6%; mean length 241 vs 241 chars). The note
+  is absorbed without acknowledgment: 1.8% of real-arm continuations mention
+  any percent (placebo 4.8%). Full trace-pattern capture (verbatim
+  rule-following on all 7 AB-1 real-arm abstentions at ~2–3% compliance;
+  self-contradiction examples; the non-causal recoverability gradient) in
+  `steering/reports/ab_v1/INTERIM-NOTES.md`.
+
+## §8 Verdict (locked gates, goalposts unmoved)
+
+- **AB-G1 (dial@late, PRIMARY): UNMEASURABLE — instrument invalid.**
+  `compute_revised()` falls back to normalized-full-text inequality; under
+  the registered sampled decode a regenerated continuation never reproduces
+  the initial text, so `revised ≡ True` (500/500 both arms) and the metric
+  is 0 by construction with CI [0,0]. Reported per the pre-registered
+  UNDERPOWERED convention: excluded from pass/fail, not scored. The
+  decision-level flows (descriptive) show the cell flat regardless.
+  **Retroactive instrument note:** AA-7 shows the same saturation (500/500),
+  so AA-G4's flat reading was made on this dead instrument; AA's conclusion
+  survives on AB-2's flows, but the AA §verdict should carry a correction
+  pointer. Engine fix (answer-level revision detection) queued with the
+  pre-next-amendment batching work.
+- **AB-G1f (dial@final): MISS.** Valid instrument at this position; delta
+  −2.7 pts, CI includes zero (if anything the real note *suppresses*
+  discrimination, n.s.).
+- **AB-G2 (gate@early): MISS.** +2.0 pts with CI excluding zero vs the
+  ≥ +10 requirement.
+- **AB-G3 (decomposition): NOT TRIGGERED** — no V1 cell passed; V2–V4 do
+  not run.
+- **Q-B (position): NO READING** — both dial cells flat, so per the
+  pre-stated clause the Q-A falsifier governs. Descriptively, the
+  commit-point position did not rescue the effect (−2.7 vs ~0), against
+  Q-B prediction 1's direction.
+- **Overall: AMBIGUOUS-LEANING-NEGATIVE, reported as such per the locked
+  ambiguity clause.** SUCCESS (any of G1/G1f/G2 passing) is not met. The
+  strict falsifier wording ("all real-vs-placebo CIs include zero") is not
+  met either, solely because AB-1's +2.0-pt abstention delta is real. The
+  honest summary: first-person framing with an interpretable percent and an
+  explicit action rule does not open the text channel at the registered
+  thresholds; it leaks a ~2-pt, ~2–3%-compliance trickle of verbatim
+  rule-following on the gate cell and nothing on either dial cell. AA's
+  "presence ≠ use" conclusion is strengthened descriptively (now covering
+  the strongest natural-language framing), while noting the channel is
+  attenuated rather than perfectly sealed. Reinforcing negative for the
+  Paper 5 line; any promotion of the small gate@early effect would require
+  a fresh registered replication at adequate power.
