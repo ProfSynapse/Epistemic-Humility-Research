@@ -237,15 +237,32 @@ def compute_revised(
     initial_grade: dict,
     final_grade: dict,
 ) -> bool:
-    """Did the model revise between the initial and final pass?
+    """Did the model revise its ANSWER between the initial and final pass?
 
-    Revised iff the final pass abstains where the initial answered, OR the
-    normalized answer content changed (scorers.normalize space — the same
-    normalizer the correctness grader keys on).
+    ANSWER-LEVEL (grade-transition) detection. Revised iff:
+      - the abstention state flipped in either direction
+        (answered -> abstained, or abstained -> answered), or
+      - both passes are graded against gold aliases and correctness flipped.
+
+    The text arguments are accepted for call-site stability but deliberately
+    NOT compared: the pre-2026-07-03 fallback (normalized-full-text change)
+    saturates under sampled decode — a temp>0 regeneration never reproduces
+    the initial text, so `revised` was True on every record (AB-1 600/600,
+    AB-2 500/500, AA-7 500/500 retroactively) and revision_discrimination
+    read 0 by construction (Amendment AB §8). Result JSONs written with
+    that instrument are UNMEASURABLE on this metric; do not compare their
+    revision_discrimination numbers against post-fix runs.
+
+    Known limitation: a wrong -> different-wrong rewrite is undetectable
+    without answer extraction (both passes grade correct=False), as is any
+    rewrite on rows without gold aliases that does not flip abstention.
+    Revision counts are therefore conservative in BOTH arms; the paired
+    real-vs-placebo contrast is unaffected in expectation.
     """
-    if final_grade["abstained"] and initial_grade["answered"]:
+    if initial_grade["abstained"] != final_grade["abstained"]:
         return True
-    return scorers.normalize(initial_text or "") != scorers.normalize(final_text or "")
+    ci, cf = initial_grade["correct"], final_grade["correct"]
+    return ci is not None and cf is not None and ci != cf
 
 
 def make_flat_record(
