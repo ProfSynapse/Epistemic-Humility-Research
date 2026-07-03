@@ -79,7 +79,7 @@ _proposed — lead to confirm_.
 
 | # | Item | Tier | Blocker / dependency | Cost |
 |---|------|------|----------------------|------|
-| 19 | **Amendment AH — divergent-pool (probe ≠ gold)** — DRAFT written 2026-07-03 (`experiment/protocol/AMENDMENT-AH-divergent-pool-own-readout.md`): native-path gatekeeper (user rejected the prosthetic path); 2×2 cell×arm design decouples congruence from prime direction; consensus-divergence rule + AE-style adequacy floor (≥50/cell). Next: scout inventory → Stage-0 mining (needs launch approval) → lock gates → sign. | A | Stage-0 GPU mining approval | GPU |
+| 19 | **Amendment AH — divergent-pool (probe ≠ gold)** — DRAFT v2 REDESIGNED 2026-07-03 (`AMENDMENT-AH-divergent-pool-own-readout.md`): Stage-0 mined 5,000 items; D-over 253@consensus PASSES floor, D-under ~1/1000 true yield → v1 floor STOP fired, user adjudicated redesign. v2 holds direction constant, varies readout state within gold class (release + muzzle contrasts, caliper-matched on caution distance). Next: redesign-check numbers appended → gates locked → user prediction + sign → main-run launch approval (~3,600 gens, 4–5h 3090). | A | sign-off, then main-run launch approval | GPU |
 | 20 | **Generation-time displacement geometry** — the off-axis finding (92–99% of the prime's write misses the doubt/caution plane) holds at the pre-gen anchor only; extract generation-time positions and re-decompose. | L | one extraction pass | GPU |
 | 21 | **Sentence-panel neutral control** — bound sentence-choice variance on the single-sentence neutral-prepend result (PR #166). | L | none | GPU (1 forward pass) |
 
