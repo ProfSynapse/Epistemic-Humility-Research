@@ -255,3 +255,20 @@ training-free cells).
   Ops: cloud cells now upload `rows.jsonl` alongside result+manifest (e2fa5c04) — the first
   fleet discarded rows, which blocked per-cell text baselines; per-Y-cell dial baselines are
   therefore not computable for this batch (gate baseline unaffected: shared frozen pool).
+- 2026-07-02 (RESULT: Y COMPLETE — H_B1 SUPPORTED 4/4): **Amendment Y fleet all 10 cells
+  scored** (9 cloud + OLMo-2-7B local on the 3090 after the cloud cell was benched on
+  repeated A10G preemption/download stalls). Arm A: every base reads the gate at 0.997+
+  (H_B1 4/4, falsifier 0/4 — the boundary signal predates post-training on all four
+  families); base-fit veto passes 4/4 (H_B2; Qwen3.5 marginal 0.666 mirroring its Z greedy
+  margin). H_B3 (post-training sharpens) NOT SUPPORTED: deltas <= 0 on every pair — the
+  clean within-Y Olmo-3 pair moves veto 0.803 -> 0.731 (other pairs render-confounded).
+  Dual-render control: Qwen3.5-Base veto is render-SENSITIVE (k-shot 0.666 vs chat 0.867;
+  gate render-invariant) — part of the Z veto fragility is prompting surface, not model.
+  Arm B era ladder (descriptive): all three readouts above 0.65 back to GPT-2-XL (2019);
+  era signal confirmed to live in the within-SA control (0.589/0.596 old era -> 0.71-0.82
+  Llama-2 onward), gate near-flat next to the 0.964 text baseline. Batched-engine
+  equivalence cell matches sequential within noise. Roll-up + tables:
+  `experiment/protocol/AMENDMENT-Y-pretrain-only-base-readout.md` §9; per-cell artifacts
+  `experiment/phase1/probe/amendment_y_results/`. Paper hook: answers the regimen paper's
+  §8 open question in the "already present from pretraining" direction (paper text update
+  tracked on the paper line, not this branch).
