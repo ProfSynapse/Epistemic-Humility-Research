@@ -75,6 +75,14 @@ _proposed — lead to confirm_.
 | 17 | **Amendment AG — RESOLVED 2026-07-03, ASYMMETRIC COMPLIANCE** (doc §9). G1a PASS +34.0pt [26.5,41.5] (wrong muzzle obeyed); G1b PASS +26.1pt [18.0,34.6] (release resisted at +7.9pt); AG-G2 22/279 induced confabulations. §8 instrumentation: doubt axis unmoved/anti-semantic under primes, compliance travels through the caution axis (Δcaution AUROC 0.654; audit: baseline caution predisposition stronger at 0.749). User prediction "pure behavior not internal alignment" confirmed one level deeper: knows-it-knows-obeys-anyway. Opus red-team survived, 0 gate mismatches. Follow-ups minted §9.4: neutral-prepend control; divergent-pool design. | A | — done | — |
 | 18 | **Neutral-prepend extraction control** (AG §9.4) — **DONE 2026-07-03**: generic any-prepend component is real (neutral Δcaution −0.34z/−0.65z), but the prime differential vs neutral is semantically coherent on caution (HIGH↓ LOW↑) while doubt stays anti-semantic — §9.3 belief-vs-policy conclusion SHARPENED. Residual: single-sentence control; a sentence panel would bound variance. | L | — done | — |
 
+### Mech-interp follow-ups (session 0035, exploratory findings in analysis/mi_exploration_20260703/)
+
+| # | Item | Tier | Blocker / dependency | Cost |
+|---|------|------|----------------------|------|
+| 19 | **Amendment AH draft — divergent-pool (probe ≠ gold)** — the only clean own-readout vs gold-instruction separator (AF §8, AG §9.4); pliability adds a per-row prediction (flip prob ~ boundary distance) the design can exploit. | A | draft + sign + pool construction (find natural probe-error rows) | GPU |
+| 20 | **Generation-time displacement geometry** — the off-axis finding (92–99% of the prime's write misses the doubt/caution plane) holds at the pre-gen anchor only; extract generation-time positions and re-decompose. | L | one extraction pass | GPU |
+| 21 | **Sentence-panel neutral control** — bound sentence-choice variance on the single-sentence neutral-prepend result (PR #166). | L | none | GPU (1 forward pass) |
+
 ### Steering follow-ups (Paper 5 line, proposed in sessions 0032–0034)
 
 | # | Item | Tier | Blocker / dependency | Cost |
