@@ -1,3 +1,23 @@
+---
+amendment: H
+slug: thinking-enabled-parallel-arm
+question: >-
+  Does Qwen3 thinking mode change the observable knowledge boundary enough
+  to warrant a parallel thinking-derived training/eval branch?
+predictions:
+  orchestrator:
+    call: thinking perturbs the boundary enough to justify a parallel arm
+  user:
+    call: null
+    note: >-
+      Predates the dual-prediction practice (adopted 2026-07-03 at AH
+      signing); no separately recorded user prediction.
+outcome: >-
+  DRAFT / NOT SIGNED; bounded audit showed real perturbation, enough to define
+  a parallel arm but not to overwrite non-thinking evidence.
+scoreboard: null
+---
+
 # Protocol Amendment H: Thinking-Enabled Parallel Arm
 
 **Status:** DRAFT / NOT SIGNED

@@ -1,3 +1,24 @@
+---
+amendment: J
+slug: grpo-v3-proper-scoring-confidence
+question: >-
+  Does a proper-scoring (Brier) GRPO reward install calibrated,
+  behavior-conditional emitted response confidence on the clean-SFT base?
+predictions:
+  orchestrator:
+    call: emitted scalar moves toward calibrated internal doubt axis
+  user:
+    call: null
+    note: >-
+      Predates the dual-prediction practice (adopted 2026-07-03 at AH
+      signing); no separately recorded user prediction.
+outcome: >-
+  NEGATIVE — emitted confidence stayed collapsed (std 0.027, AUROC to
+  appropriateness 0.522, ECE worse); only answered-known correct-vs-wrong
+  AUROC moved 0.521 to 0.600.
+scoreboard: null
+---
+
 # Protocol Amendment J: Proper-Scoring (Brier) GRPO Reward for Response Confidence
 
 **Status:** SIGNED — user-authorized 2026-06-27 ("Let's finish b1 first since it

@@ -1,3 +1,28 @@
+---
+amendment: AG
+slug: oracle-dissociation-prime
+question: >-
+  Does the second-person doubt prime move behavior by aligning the internal
+  state (resonance) or by pure instruction compliance?
+predictions:
+  orchestrator:
+    call: null
+    note: >-
+      Predates the dual-prediction practice (adopted 2026-07-03 at AH
+      signing); no separately recorded orchestrator prediction.
+  user:
+    call: compliance, not resonance
+    recorded: 2026-07-03
+    quote: my gut says that its probably pure behavior not internal alignment
+outcome: >-
+  RESOLVED — ASYMMETRIC COMPLIANCE: muzzle obeyed +34.0pt, release resisted
+  (+7.9pt below gate); doubt axis unmoved and anti-semantic; compliance
+  travels through the caution axis.
+scoreboard:
+  user: win
+  orchestrator: null
+---
+
 # Amendment AG — Oracle Dissociation of the Second-Person Doubt Prime
 
 Status: RESOLVED 2026-07-03 — AG-G1a PASS (+34.0pt) and AG-G1b PASS

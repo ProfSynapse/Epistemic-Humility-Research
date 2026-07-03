@@ -1,3 +1,24 @@
+---
+amendment: W
+slug: base-model-training-free-mechanism
+question: >-
+  Does the full two-signal mechanism (gate + dial + hallucination veto)
+  hold on the raw untrained Instruct base with no adapter?
+predictions:
+  orchestrator:
+    call: >-
+      PASS; gate and dial are representation properties present pre-training
+  user:
+    call: null
+    note: >-
+      Predates the dual-prediction practice (adopted 2026-07-03 at AH
+      signing); no separately recorded user prediction.
+outcome: >-
+  SUCCESS — full mechanism reads training-free (gate 0.997, veto 0.754);
+  training does not create the veto, it sharpens it (0.754 to 0.980).
+scoreboard: null
+---
+
 # Amendment W — Training-Free Base-Model Two-Signal Mechanism
 
 **Status:** RESOLVED — SUCCESS (2026-06-30). Both locked gates passed; falsifier did

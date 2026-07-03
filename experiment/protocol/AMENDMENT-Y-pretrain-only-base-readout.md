@@ -1,3 +1,26 @@
+---
+amendment: Y
+slug: pretrain-only-base-readout
+question: >-
+  Does the knowledge-boundary signal predate post-training, i.e. is it
+  present on pretrain-only base models, not just instruct checkpoints?
+predictions:
+  orchestrator:
+    call: >-
+      pretraining-origin supported; base gate near-ceiling, veto present
+      pre-post-training
+  user:
+    call: null
+    note: >-
+      Predates the dual-prediction practice (adopted 2026-07-03 at AH
+      signing); no separately recorded user prediction.
+outcome: >-
+  COMPLETE — H_B1 SUPPORTED 4/4 (boundary signal predates post-training);
+  H_B2 veto SUPPORTED 4/4; H_B3 sharpening NOT SUPPORTED (post-training does
+  not sharpen, can dull the readout).
+scoreboard: null
+---
+
 # Protocol Amendment Y: Pretrain-Only Base-Model Readout (Era / Origin Test)
 
 **Status:** SIGNED 2026-07-02 (user in-session approval; launch approval

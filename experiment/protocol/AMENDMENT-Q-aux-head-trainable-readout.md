@@ -1,3 +1,24 @@
+---
+amendment: Q
+slug: aux-head-trainable-readout
+question: >-
+  Does the production aux_head training engine recover the latent O/P
+  answerability readout that offline sklearn probes proved is present?
+predictions:
+  orchestrator:
+    call: >-
+      transfer AUROC 0.95-0.985, near P's sklearn readout
+  user:
+    call: null
+    note: >-
+      Predates the dual-prediction practice (adopted 2026-07-03 at AH
+      signing); no separately recorded user prediction.
+outcome: >-
+  SUCCESS — trained head reproduces O/P ceiling (transfer AUROC 0.983,
+  ECE 0.023); falsifier (<0.90) dead by a wide margin.
+scoreboard: null
+---
+
 # Amendment Q — Trainable `aux_head` Readout (Engine Reproduction of the O/P Ceiling)
 
 **Status:** SIGNED 2026-06-29 (user: "proceed"; falsifier locked at transfer

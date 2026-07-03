@@ -1,3 +1,24 @@
+---
+amendment: X
+slug: cross-model-size-sweep
+question: >-
+  Does the training-free two-signal readout generalize across model
+  scale (Qwen3 1.7B-14B), or is it a 4B artifact?
+predictions:
+  orchestrator:
+    call: PASS at every size; veto plausibly sharpens with scale
+  user:
+    call: null
+    note: >-
+      Predates the dual-prediction practice (adopted 2026-07-03 at AH
+      signing); no separately recorded user prediction.
+outcome: >-
+  COMPLETE — all four sizes PASS all three gates (size-robust); scaling of
+  sharpness is non-monotonic (peaks at 8B), monotonic-sharpening expectation
+  not supported.
+scoreboard: null
+---
+
 # Amendment X — Cross-Size Generalization of the Training-Free Two-Signal Readout
 
 **Status:** COMPLETE (2026-06-30) — gates §4 LOCKED; all four sizes (1.7B/4B/8B/14B)

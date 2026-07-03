@@ -1,3 +1,23 @@
+---
+amendment: B
+slug: stated-confidence-grpo
+question: >-
+  Does a model's stated confidence track its known/unknown boundary and
+  the correctness of its answer, and can GRPO reward calibration?
+predictions:
+  orchestrator:
+    call: stated-confidence measurement layer plus prospective calibration reward
+  user:
+    call: null
+    note: >-
+      Predates the dual-prediction practice (adopted 2026-07-03 at AH
+      signing); no separately recorded user prediction.
+outcome: >-
+  SIGNED OFF for stated-confidence measurement and reporting; GRPO/RLVR
+  authorization prospective only, requires separate launch decision.
+scoreboard: null
+---
+
 # Protocol Amendment B: Stated Confidence and GRPO Calibration Reward
 
 **Status:** SIGNED OFF for stated-confidence measurement and reporting

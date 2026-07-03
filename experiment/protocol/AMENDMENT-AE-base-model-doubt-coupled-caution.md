@@ -1,3 +1,27 @@
+---
+amendment: AE
+slug: base-model-doubt-coupled-caution
+question: >-
+  Can an inference-time doubt-coupled caution write CREATE calibrated
+  abstention on a raw base model that never trained on abstention?
+predictions:
+  orchestrator:
+    call: >-
+      D-native passes AE-G1 small margin (5-15pt); D-transferred weaker or null
+  user:
+    call: null
+    note: >-
+      Predates the dual-prediction practice (adopted 2026-07-03 at AH
+      signing); no separately recorded user prediction.
+outcome: >-
+  COMPLETE — pre-stated adequacy-floor STOP fired at census: the raw base
+  already abstains ~93% on unknowns under the affording prompt (confabulates
+  21/300), so the primary cells sit under the >=150 floor and the actuator
+  question stays OPEN. Resolution recorded in the backlog (commit aca6f4dc,
+  PR #157 arc); this doc's own result section was never backfilled.
+scoreboard: null
+---
+
 # Amendment AE — Training-Free Doubt-Coupled Caution on the Raw Base
 
 Status: SIGNED 2026-07-03 (user, in-conversation: "Sign it and boot it up";

@@ -1,3 +1,23 @@
+---
+amendment: C
+slug: crossover-preference-stacking
+question: >-
+  Can a cross-over second preference stage (SFT->DPO->KTO or SFT->KTO->DPO)
+  combine complementary corrections better than either first-stage arm?
+predictions:
+  orchestrator:
+    call: DPO and KTO may apply complementary corrections, better balance
+  user:
+    call: null
+    note: >-
+      Predates the dual-prediction practice (adopted 2026-07-03 at AH
+      signing); no separately recorded user prediction.
+outcome: >-
+  DRAFT / NOT SIGNED / DEPRIORITIZED; reciprocal preference stacking not in
+  active near-term matrix as of 2026-06-25.
+scoreboard: null
+---
+
 # Protocol Amendment C: Cross-Over Preference Stacking
 
 **Status:** DRAFT / NOT SIGNED / DEPRIORITIZED. This amendment is a proposed

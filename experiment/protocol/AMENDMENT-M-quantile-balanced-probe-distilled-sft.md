@@ -1,3 +1,24 @@
+---
+amendment: M
+slug: quantile-balanced-probe-distilled-sft
+question: >-
+  Can distilling the calibrated internal factual/doubt axis into the SFT
+  stated-confidence token install calibration while preserving behavior?
+predictions:
+  orchestrator:
+    call: direct factual target installs discrimination, keeps behavior
+  user:
+    call: null
+    note: >-
+      Predates the dual-prediction practice (adopted 2026-07-03 at AH
+      signing); no separately recorded user prediction.
+outcome: >-
+  FALSIFIER FIRED — behavior PASSED 4/4 (action margin +31pt) but
+  calibration failed (correctness AUROC 0.504, 3 distinct values); scalar
+  collapsed onto the action; bottleneck is channel/loss, not target.
+scoreboard: null
+---
+
 # Protocol Amendment M: Quantile-Balanced Probe-Distilled Stated Confidence (SFT)
 
 **Status:** Revision 1 SIGNED — user-authorized 2026-06-27 ("Yes approve"). Revision 2

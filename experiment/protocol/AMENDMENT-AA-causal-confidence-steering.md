@@ -1,3 +1,26 @@
+---
+amendment: AA
+slug: causal-confidence-steering
+question: >-
+  Can writing the trust axis back in (activation steering / CoT injection)
+  move behavior position-specifically, showing causal use not just presence?
+predictions:
+  orchestrator:
+    call: >-
+      gate@anchor and dial@end move behavior; muted at wrong position;
+      both arms
+  user:
+    call: null
+    note: >-
+      Predates the dual-prediction practice (adopted 2026-07-03 at AH
+      signing); no separately recorded user prediction.
+outcome: >-
+  FALSIFIER-1 — the channel stays shut; no effect gate passed in any of the 8
+  cells; latent gate/dial info does not translate into answer/abstain/revise
+  behavior under either injection arm.
+scoreboard: null
+---
+
 # Amendment AA — Causal confidence steering: writing the trust axis (Paper 5)
 
 **Status:** SIGNED (2026-07-01, user approval in session). Gates LOCKED as

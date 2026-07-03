@@ -1,3 +1,24 @@
+---
+amendment: P
+slug: xdataset-probe-transfer
+question: >-
+  Does an answerability probe fit on KUQ transfer cold to SelfAware,
+  showing Amendment O's ceiling is not an in-distribution-CV artifact?
+predictions:
+  orchestrator:
+    call: partial transfer, AUROC 0.80-0.92, margin +40-75pt
+  user:
+    call: null
+    note: >-
+      Predates the dual-prediction practice (adopted 2026-07-03 at AH
+      signing); no separately recorded user prediction.
+outcome: >-
+  SUCCESS — cold transfer AUROC 0.9834 (near in-distribution ceiling),
+  action margin +89.6pt; beat the pre-stated partial-transfer call. Axis
+  not dataset-specific; still not correctness-ranking.
+scoreboard: null
+---
+
 # Amendment P — Cross-Dataset Answerability-Probe Transfer Test
 
 **Status:** SIGNED 2026-06-29 (user: "proceed"). Tier-2 exploratory cell

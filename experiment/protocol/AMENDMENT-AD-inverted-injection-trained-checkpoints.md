@@ -1,3 +1,24 @@
+---
+amendment: AD
+slug: inverted-injection-trained-checkpoints
+question: >-
+  Is the shut text channel bidirectional — does a pro-answer injection move
+  an over-refusing trained checkpoint?
+predictions:
+  orchestrator:
+    call: no change (null result)
+    recorded: 2026-07-03
+    note: Joint prediction stated at drafting; doc predates the dual-prediction practice.
+  user:
+    call: no change (null result)
+    recorded: 2026-07-03
+    quote: We predict it will have NO change.
+outcome: not launched (signed; preconditions open; shelved behind AC/AH)
+scoreboard:
+  user: pending
+  orchestrator: pending
+---
+
 # Amendment AD — Inverted (pro-answer) injection on abstention-trained checkpoints: is the shut text channel bidirectional?
 
 **Status:** SIGNED 2026-07-03 (user, in-conversation: "Signed, push,

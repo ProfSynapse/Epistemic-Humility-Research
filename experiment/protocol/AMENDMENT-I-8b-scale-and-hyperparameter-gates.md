@@ -1,3 +1,23 @@
+---
+amendment: I
+slug: 8b-scale-and-hyperparameter-gates
+question: >-
+  Which 8B response-confidence/thinking variants are worth preparing, and
+  should hyperparameter sweeps run before a pre-run audit?
+predictions:
+  orchestrator:
+    call: tiered 8B gates plus mandatory pre-sweep hyperparameter audit
+  user:
+    call: null
+    note: >-
+      Predates the dual-prediction practice (adopted 2026-07-03 at AH
+      signing); no separately recorded user prediction.
+outcome: >-
+  DRAFT / NOT SIGNED; defines 8B variant tiers and a hyperparameter gate,
+  authorizes no training.
+scoreboard: null
+---
+
 # Protocol Amendment I: 8B Scale And Hyperparameter Gates
 
 **Status:** DRAFT / NOT SIGNED

@@ -1,3 +1,25 @@
+---
+amendment: U
+slug: unified-two-signal-dial-veto
+question: >-
+  Does the correctness dial flag hallucinated answers to unanswerable
+  questions as low-trust (independent hallucination defense)?
+predictions:
+  orchestrator:
+    call: >-
+      PASS in 0.65-0.85 band; risk falsifier fires on confident confabulation
+  user:
+    call: null
+    note: >-
+      Predates the dual-prediction practice (adopted 2026-07-03 at AH
+      signing); no separately recorded user prediction.
+outcome: >-
+  SUCCESS — dial flags hallucinations as lowest-trust of all (U-G3 AUROC
+  0.980, within-SelfAware control 0.93); confident confabulation reads
+  opposite to correctness.
+scoreboard: null
+---
+
 # Amendment U — Unified Single-Stream Two-Signal Mechanism (Dial-Veto on Unknowns)
 
 **Status:** RESOLVED — SUCCESS (2026-06-30). The correctness dial flags

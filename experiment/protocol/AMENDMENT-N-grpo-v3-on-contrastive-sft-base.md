@@ -1,3 +1,24 @@
+---
+amendment: N
+slug: grpo-v3-on-contrastive-sft-base
+question: >-
+  Does GRPO v3 on the calibrated Amendment K base retain its stated
+  calibration while repairing behavior into one coherent model?
+predictions:
+  orchestrator:
+    call: retains K calibration and repairs behavior gate
+  user:
+    call: null
+    note: >-
+      Predates the dual-prediction practice (adopted 2026-07-03 at AH
+      signing); no separately recorded user prediction.
+outcome: >-
+  PARTIAL then STOP — calibration RETAINED 4/4, behavior REPAIR FAILED 2/4;
+  beta 0.05 re-run fired the margin falsifier (+3pt, not +14.5), so the
+  action/knowledge decoupling is structural, not a KL artifact.
+scoreboard: null
+---
+
 # Protocol Amendment N: GRPO v3 Reward on the Amendment K (Contrastive-SFT) Base
 
 **Status:** SIGNED — user-authorized 2026-06-28 ("draft amendment/session/

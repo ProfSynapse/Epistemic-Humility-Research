@@ -1,3 +1,24 @@
+---
+amendment: Z
+slug: cross-family-confirmatory
+question: >-
+  Does the training-free two-signal readout replicate across model
+  families, or is it a Qwen3-lineage idiosyncrasy?
+predictions:
+  orchestrator:
+    call: readout holds across families; veto PASS on at least 3 of 4
+  user:
+    call: null
+    note: >-
+      Predates the dual-prediction practice (adopted 2026-07-03 at AH
+      signing); no separately recorded user prediction.
+outcome: >-
+  COMPLETE — SUCCESS; veto PASS 3/4 (Ministral, Qwen3.5, Gemma; Llama fails),
+  gate and dial 4/4; readout promoted to a cross-family claim, veto the
+  fragile model-dependent axis.
+scoreboard: null
+---
+
 # Amendment Z — Cross-FAMILY confirmatory of the training-free two-signal readout
 
 **Status:** PRE-REGISTERED (2026-06-30), training-free readout, local Docker GPU

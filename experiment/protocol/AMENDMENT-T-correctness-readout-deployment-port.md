@@ -1,3 +1,24 @@
+---
+amendment: T
+slug: correctness-readout-deployment-port
+question: >-
+  Does the Amendment S correctness readout survive calibration training
+  on the deployed clean-SFT to GRPO-v2 checkpoint?
+predictions:
+  orchestrator:
+    call: >-
+      PASS on both; GRPO-v2 moves policy, not factual representation
+  user:
+    call: null
+    note: >-
+      Predates the dual-prediction practice (adopted 2026-07-03 at AH
+      signing); no separately recorded user prediction.
+outcome: >-
+  SUCCESS — post-gen AUROC 0.819, self-eval gain +0.074 (CI excludes 0);
+  readout survives, direction drifts across checkpoints (cold transfer 0.68).
+scoreboard: null
+---
+
 # Amendment T — Correctness-Readout Deployment-Checkpoint Port
 
 **Status:** RESOLVED — SUCCESS (2026-06-30). The correctness readout SURVIVES on
