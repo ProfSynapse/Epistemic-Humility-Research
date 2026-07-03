@@ -66,7 +66,7 @@ _proposed — lead to confirm_.
 
 | # | Item | Tier | Blocker / dependency | Cost |
 |---|------|------|----------------------|------|
-| 1 | **Amendment AE census write-up** — base-model doubt-coupled caution hit its pre-stated adequacy-floor stop; the census (base refuses too much for the `unknown_answered` cell) *is* the informative result. Finish §8 verdict + PR #157. | A | none — being written up now | CPU |
+| 1 | **Amendment AE — COMPLETE** (adequacy-floor STOP; §8 written, PR #157 open). Base-model doubt-coupled caution stopped at its pre-stated baseline census: under an abstention-affording prompt the raw base already abstains on 93% of unknowns (confabulates 21/300), so both primary cells fell under floor and no intervention arm ran. The census *is* the informative result. Merge PR #157. | A | none — merge PR #157 | CPU |
 | 2 | **Amendment AD launch** — inverted (pro-answer) injection on abstention-trained checkpoints; doc SIGNED (PR #155 merged the prereg), launch deferred behind AE. Predicts NO change (bidirectional-channel test). | A | AE closes; preconditions 2–6 open | GPU |
 
 ### Steering follow-ups (Paper 5 line, proposed in sessions 0032–0034)
@@ -78,6 +78,7 @@ _proposed — lead to confirm_.
 | 5 | **Think-end position injection** — read/steer at the last thinking token (post-formation, before the first visible token) to dissolve the read-late/act-early dilemma. | A | new amendment; native-thinking model | GPU |
 | 6 | **First-person injection phrasing variants (V1/V2/V3)** — AA follow-up isolating the confound flagged in AB; draft exists (`docs/plans/aa-followup-first-person-injection.md`), NOT signed. AB V1 already came back ambiguous-leaning-negative, so reassess whether this is worth a letter. | A | new amendment; reassess post-AB verdict | GPU |
 | 7 | **Alpha dose-response sweep** — finer α grid on the AA cells (+ plateau-center variant for Llama if Stage 2 runs). | L | under AA's authorized knobs if Stage 2 launches | GPU |
+| 15 | **Amendment AF (proposed) — second-person doubt-prime (system-prompt channel)** — the missing high-authority text channel: render the probe-derived per-item doubt read-out into a second-person SYSTEM prompt on the raw base, with a label-shuffled placebo arm (non-circular). Live cell per AE census = KNOWN-side release (base over-refuses 124 knowns). Draft in scratch; mints on its own branch after AE merges. Falsifier: true ≈ permuted → text channel shut even at max authority. | A | AE PR #157 merges (branch discipline); base pre-gen probe fit | GPU |
 
 ### Diagnostics / lab-notebook (proposed, not registered)
 
