@@ -1,16 +1,15 @@
 # Amendment AF — Second-Person Doubt Prime (the system-prompt instruction channel)
 
-Status: SIGNED 2026-07-03 (user, in-conversation: "sign the draft"). Prediction,
-falsifier, gates, adequacy floor, and the placebo permutation seed are LOCKED as
-written. Tier-2 exploratory local mechanism evidence under
+Status: RESOLVED 2026-07-03 — AF-G1 PASS (channel-authority; own-read-out
+attribution NOT established, see §8). Signed earlier the same day (user,
+in-conversation: "sign the draft"); launched on explicit user approval ("yes get
+the next experiment running"); run + scoring executed as locked, adversarially
+audited, nothing tuned. Tier-2 exploratory local mechanism evidence under
 `PHASE3-control-system-protocol.md` (RQ4, base-model substrate). Not headline
 evidence; never pooled with the locked Phase 1 matrix.
 
-Run lane: LOCAL 3090 only. No cloud spend. NOT YET LAUNCHED — signing
-pre-registers the design; the GPU run (base pre-gen probe fit + three generation
-arms) awaits a separate explicit launch approval. Branch discipline satisfied:
-AC (#156), AE (#157), and the backlog-index infra (#158) are all MERGED, so this
-is a clean branch off an up-to-date `main`.
+Run lane: LOCAL 3090 (native, no docker). Successor: AMENDMENT-AG (DRAFT,
+queued) adjudicates the oracle question this run cannot (§8).
 
 ## 1. Motivation and posture
 
@@ -154,3 +153,52 @@ Stage-2 proposal must be a new signed amendment.
 3. Rendering harness verified byte-identical to AE/AC except the one prepended
    sentence; placebo shuffle uses seed 20260703 and preserves label marginals.
 4. Explicit user launch approval for the LOCAL 3090 run (signing ≠ launch).
+
+## 8. RESULT (2026-07-03): AF-G1 PASS — adjudicated post-audit
+
+Run: raw base, native 3090, greedy, all constants as locked. Preconditions:
+sensor argmax L24, held-out AUROC 0.9945 (5-fold CV; ≥0.986 across L17–L36) ≥
+0.90 → PASS; `known_refused` n=124 ≥ 100 → PASS.
+
+Refusal rates (arm × cell) and releases vs the AF baseline arm:
+
+| cell | baseline | true | permuted | release true | release perm |
+|------|----------|------|----------|--------------|--------------|
+| known_refused (124) | 99.2% | 76.6% | 90.3% | +22.6pt | +8.9pt |
+| known_correct_answered (147) | 2.0% | 0.7% | 22.4% | — | — |
+| unknown_refused (279) | 99.6% | 100.0% | 95.7% | −0.4pt | +3.9pt |
+
+Selectivity gap: true +22.9pt, permuted +4.9pt → **diff +18.0pt, row-level
+bootstrap 95% CI [+11.8, +24.7] (10k, seed 20260703) excludes 0 → AF-G1 PASS.**
+Guards: specificity PASS (correctness drop 0.0pt; induced-refusal −1.4pt);
+degeneracy PASS (0 ungradeable in every arm). AF-G2 estimate: released-known
+correctness 24/28 = 0.857 (one audit-identified hyphen-sensitive alias
+false-negative would make it 25/28; not a gate). True arm answered 0/279
+`unknown_refused` rows (no induced confabulation); permuted answered 12.
+
+**Mandatory oracle audit (fired at 22.9pt > 20pt), adversarial review verdict:
+AF-G1 PASS SURVIVES.** Label lineage clean (per-item label is purely the probe
+projection of the model's own baseline-prompt pre-gen activations at the
+population median; gold enters only as the probe's training target). Every
+headline number independently re-derived (0 mismatches, incl. an independent
+refusal re-implementation over all 1800 rows); bootstrap seed-robust; join
+denominators exact; prompt byte-identity verified (463-char baseline + the two
+§3 sentences).
+
+**Adjudicated claim boundary.** Because the sensor is near-ceiling, the
+median-threshold label coincides with gold known/unknown on 600/600 rows: the
+true arm is operationally a gold-answerability prime and there are ZERO
+probe-vs-gold disagreement rows to test which one behavior tracks. What
+survives: the CHANNEL-AUTHORITY claim — a high-authority, second-person,
+pre-generation system-prompt directive produces a selective, item-aligned
+policy shift (+18.0pt over the alignment-matched placebo), unlike the AA/AB
+within-generation text nulls, which are hereby localized to channel authority
+rather than to text per se. What is NOT established: that the model uses its
+OWN read-out delivered as text (vs following a correct instruction). That
+dissociation is AMENDMENT-AG (DRAFT, queued): inverted primes + a Stage-0
+conditional-compliance analysis of this run's permuted arm.
+
+Committed artifacts: the four `amendment_af_*.py` scripts and
+`amendment_af_result.json` (copy of the scored result). Extraction tensors,
+labels, and per-arm generations remain gitignored under
+`analysis/af_base_pregen/` and `analysis/af_generation/`.
