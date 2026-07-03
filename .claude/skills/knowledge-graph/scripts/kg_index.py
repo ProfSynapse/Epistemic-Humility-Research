@@ -538,11 +538,23 @@ def node_id_for_symbol(rel: str, name: str) -> str:
     return f"code:{rel}:{name}"
 
 
+def _exists_safe(candidate: Path) -> bool:
+    """exists() that treats an unreadable path as absent.
+
+    Config values can name absolute paths on dead mounts (e.g. a stale
+    network/9P mount), where stat() raises OSError instead of returning
+    False; the indexer must not die on someone else's provenance string."""
+    try:
+        return candidate.exists()
+    except OSError:
+        return False
+
+
 def module_to_internal_rel(root: Path, module: str) -> str | None:
     module_path = Path(*module.split("."))
     candidates = [root / f"{module_path}.py", root / module_path / "__init__.py"]
     for candidate in candidates:
-        if candidate.exists() and candidate.is_file():
+        if _exists_safe(candidate) and candidate.is_file():
             return repo_relative(candidate, root)
     return None
 
@@ -658,15 +670,15 @@ def normalize_config_path_ref(root: Path, rel: str, value: str) -> str:
         if parts:
             candidates.append(root.joinpath(*parts))
     for candidate in candidates:
-        if candidate.exists():
+        if _exists_safe(candidate):
             try:
                 return repo_relative(candidate.resolve(), root)
-            except ValueError:
+            except (ValueError, OSError):
                 return value
     fallback = candidates[0]
     try:
         return repo_relative(fallback.resolve(), root)
-    except ValueError:
+    except (ValueError, OSError):
         return value
 
 
