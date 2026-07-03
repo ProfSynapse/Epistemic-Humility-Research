@@ -21,19 +21,28 @@ predictions:
       So I think we're still decoupled from internals, if there is something
       it would be too weak I think to do anything about beyond like you say
       maybe coming back to training.
-outcome: pending
+outcome: >-
+  AMBIGUOUS — instrument-qualified null. G2 release congruence is a precise
+  zero (-0.21pt, CI [-4.45, +4.10]) consistent with H-compliance, but G1
+  missed its +20pt floor (+15.65pt on a low-caution stratum harder than the
+  floor's AG calibration), voiding gate certification per §5. No claim
+  promoted; G1 recalibration cell proposed (§9.4).
 scoreboard:
-  user: pending
-  orchestrator: pending
+  user: tie
+  orchestrator: tie
 ---
 
 # Amendment AH — Divergent-Pool Own-Readout Attribution (probe ≠ gold)
 
-**Status: SIGNED + LAUNCHED** (signed 2026-07-03, both predictions recorded
-in §2; v1 queued PRs #169/#170; Stage-0 fired the D-under adequacy-floor
-STOP → user-directed redesign; pool v2.1 locked after user-approved dataset
-expansion; main run launched 2026-07-03 on explicit user approval, §7.8 —
-3,324 generations on the frozen AF harness, results pending).
+**Status: RESOLVED 2026-07-03 — AMBIGUOUS (instrument-qualified null)**.
+G2 release congruence = −0.21pt (CI [−4.45, +4.10], logistic coef CI
+[−0.555, +0.250]) — a precise zero consistent with H-COMPLIANCE — but G1
+positive control missed its locked +20pt floor (+15.65pt), so per the
+pre-stated §5 rule the reading is not gate-certified. Full result and
+adjudication in §9; G1 recalibration cell proposed in §9.4. (Signed
+2026-07-03, both predictions §2; Stage-0 D-under floor STOP → user-directed
+redesign; pool v2.1 locked; main run 3,324 gens on the frozen AF harness,
+launched on explicit user approval §7.8.)
 **Tier:** A (new evidence cell; gates pre-stated before launch).
 **Branch:** `amendment-ah-divergent-pool`.
 **Depends on:** AF (PASS, channel-authority), AG (PASS, asymmetric compliance),
@@ -393,4 +402,92 @@ picture where instruction fights readout. Descriptive only.
 
 ## 9. Result
 
-_(empty until run)_
+**VERDICT: AMBIGUOUS — INSTRUMENT-QUALIFIED NULL (mechanical §5 label:
+`INSTRUMENT_INVALID (G1 fail)`). The pre-stated tier rule is applied as
+written: G1 missed its floor, so the G2 reading is not gate-certified.
+Reported alongside it, as exploratory evidence: the release congruence
+differential is a precise zero, consistent with H-COMPLIANCE and
+inconsistent with H-RESONANCE at any detectable magnitude.**
+
+Run: 2026-07-03, 3,324 generations (A0 1,662 / A-certain 1,338 / A-doubt
+324), frozen AF harness, byte-exact spec §3.2. One SIGABRT crash at
+A-certain 256/1,338 (dmesg signal 6, NOT OOM; transient native abort in the
+WSL bitsandbytes path); deterministic skip-resume added (commit c352463e),
+config SHAs verified identical, A0 untouched. Degeneracy: 0 in all arms.
+All gate numbers independently recomputed by the lead from raw rows +
+pool_v21 before adjudication: exact reproduction.
+
+### 9.1 Gates as locked
+
+| Gate | Locked threshold | Result | Pass |
+|---|---|---|---|
+| G0 release (cong/incong) | ≥40 eligible/cell | 525 / 504 | PASS |
+| G0 muzzle (cong/incong) | ≥40 eligible/cell | 14 / 14 | FAIL (pre-stated expected path §4.7 → verdict rests on release) |
+| G0 positive control | ≥40 eligible | 147 | PASS |
+| G1 positive control | induced refusal ≥ +20pt | **+15.65pt** (0.0% → 15.65%, 23/147) | **FAIL (−4.4pt)** |
+| G2 release congruence | ≥ +10pt AND both CIs exclude 0 | **−0.21pt**, bootstrap CI [−4.45, +4.10], logistic coef −0.150 CI [−0.555, +0.250] | **FAIL (null)** |
+
+Baseline census (A0): 1,178 refused / 484 answered / 0 ungradeable;
+89/324 graded correct on answerable; 309 confab-on-unanswerable.
+
+### 9.2 Adjudication
+
+The goalposts do not move: G1's +20pt floor was locked at signing, it
+missed, and the §5 rule voids gate certification of the G2 reading. The
+result is therefore filed as AMBIGUOUS, not as a certified H-COMPLIANCE.
+
+Two facts are recorded for interpretation, both visible only after the run:
+
+1. **The G1 miss has an identifiable population cause (pre-registered, its
+   consequence unnoticed at signing).** The positive-control stratum was
+   drawn from the LOW-caution end of concordant-known rows (§3.3; mean
+   caution_dist_z −1.31, min −2.07) — the rows most confidently answered
+   and hence hardest to muzzle. AG's +34pt muzzle number, from which the
+   +20pt floor was derived, was measured on an unfiltered known population.
+   The floor was calibrated against an easier population than the control
+   was drawn from. This is a design-calibration flaw in the control, not
+   evidence the prime is inert: the same A-doubt prime still induced
+   +15.65pt refusal on the most muzzle-resistant stratum available.
+2. **The instrument was demonstrably live in the release direction — the
+   direction that carries the verdict.** The A-certain prime flipped 14.5%
+   of baseline-refused release rows to answering and induced +150
+   confabulations on gold-unanswerables (309 → 459). A dead instrument
+   cannot explain the G2 zero.
+
+Given (2), the G2 result is informative even though not gate-certified: the
+congruence differential is −0.21pt with a ±4.3pt CI — a *precise* zero, not
+an underpowered smear. Primes aligned with the model's own readout received
+exactly the uptake of primes opposed to it. The crisp stratum agrees
+(−2.29pt, CI [−12.1, +8.0]). Both pre-registered predictions (§2, both
+H-compliance) are consistent with this pattern, but per the pre-stated TIE
+semantics (instrument voided at gates) the scoreboard scores **TIE** for
+both parties — the gates, not the vibes, certify wins.
+
+### 9.3 Instrumentation (§6, descriptive)
+
+The primed pre-gen readout deltas replicate AG's belief-vs-policy picture
+on the divergent pool: the certainty prime writes a large answer-direction
+caution shift that is **unmodulated by the model's own readout state**
+(release congruent −9.21 raw / z −0.74 vs incongruent −8.65 / z −0.70 —
+near-identical), while doubt-axis deltas stay small (−0.25 vs +1.12).
+Muzzle-direction doubt deltas differ by congruence (+5.40 vs +2.62,
+consistent with congruent rows already sitting at the prime-aligned end);
+positive-control deltas ≈ 0 (+0.27 doubt, +0.05z caution) — notable in
+itself: the prime induced +15.65pt refusal on this stratum with almost no
+movement on either readable axis.
+
+### 9.4 Consequences and follow-ups
+
+- **No claim is promoted.** H-compliance remains the working hypothesis
+  (AG certified + this exploratory zero), not a certified AH result.
+- **G1 recalibration cell (proposed, cheap):** re-run the positive control
+  on a caution-REPRESENTATIVE stratum of concordant-known rows (~150 rows,
+  ~300 gens, ~10 min GPU), pre-registering that a pass certifies the
+  already-collected G2 reading (G2 rows untouched by the control). If it
+  passes, the verdict upgrades to H-COMPLIANCE by the original three-tier
+  rule; if it fails, the prime's muzzle authority on confident rows is
+  itself the finding. Requires user sign-off as an AH addendum.
+- **Probe-as-reward proceeds** as the native-path mainline (design
+  diagnostics + mining already complete; see `par_design/REPORT.md`).
+- Data exhaust: the 3,324-generation surface + instrumentation extractions
+  join the AH release package (backlog row 23).

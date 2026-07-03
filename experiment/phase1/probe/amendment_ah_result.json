@@ -1,0 +1,175 @@
+{
+  "amendment": "AH",
+  "stage": "main_score",
+  "floor": 40,
+  "n_pool": 1662,
+  "AH_G0": {
+    "cells": {
+      "release_congruent": {
+        "n_cell": 669,
+        "n_eligible": 525,
+        "floor": 40,
+        "pass": true
+      },
+      "release_incongruent": {
+        "n_cell": 669,
+        "n_eligible": 504,
+        "floor": 40,
+        "pass": true
+      },
+      "muzzle_congruent": {
+        "n_cell": 87,
+        "n_eligible": 14,
+        "floor": 40,
+        "pass": false
+      },
+      "muzzle_incongruent": {
+        "n_cell": 87,
+        "n_eligible": 14,
+        "floor": 40,
+        "pass": false
+      },
+      "positive_control": {
+        "n_cell": 150,
+        "n_eligible": 147,
+        "floor": 40,
+        "pass": true
+      }
+    },
+    "release_pass": true,
+    "muzzle_pass": false
+  },
+  "AH_G1_positive_control": {
+    "n": 147,
+    "a0_refusal_rate": 0.0,
+    "adoubt_refusal_rate": 0.1565,
+    "induced_refusal_pp": 15.646,
+    "threshold_pp": 20.0,
+    "pass": false
+  },
+  "AH_G2_release_congruence": {
+    "n_congruent_eligible": 525,
+    "n_incongruent_eligible": 504,
+    "uptake_congruent": 0.1448,
+    "uptake_incongruent": 0.1468,
+    "differential_pp": -0.206,
+    "threshold_pp": 10.0,
+    "bootstrap": {
+      "point_pp": -0.206,
+      "ci95_pp": [
+        -4.445,
+        4.103
+      ],
+      "excludes_zero": false
+    },
+    "logistic_congruence": {
+      "coef": -0.1502,
+      "ci95": [
+        -0.5546,
+        0.2502
+      ],
+      "excludes_zero": false,
+      "n_boot_valid": 2000
+    },
+    "pass": false
+  },
+  "verdict_descriptive": "INSTRUMENT_INVALID (G1 fail)",
+  "muzzle_contrast": {
+    "g0_pass": false,
+    "note": "muzzle contrast not measurable (G0 fail) \u2014 EXPECTED per \u00a74.7; verdict on release"
+  },
+  "crisp_stratum_secondary": {
+    "n_congruent": 65,
+    "n_incongruent": 232,
+    "uptake_congruent": 0.1538,
+    "uptake_incongruent": 0.1767,
+    "differential_pp": -2.288,
+    "bootstrap": {
+      "point_pp": -2.288,
+      "ci95_pp": [
+        -12.135,
+        7.991
+      ],
+      "excludes_zero": false
+    }
+  },
+  "covariate_model_secondary": {
+    "coef": -0.1502,
+    "ci95": [
+      -0.5546,
+      0.2502
+    ],
+    "excludes_zero": false,
+    "n_boot_valid": 2000
+  },
+  "stratified_uptake_tables": {
+    "release_congruent_by_category": {
+      "ambiguous": {
+        "uptake": 0.0963,
+        "n": 270
+      },
+      "controversial": {
+        "uptake": 0.268,
+        "n": 97
+      },
+      "unsolved_problem": {
+        "uptake": 0.1833,
+        "n": 60
+      },
+      "false_assumption": {
+        "uptake": 0.1579,
+        "n": 38
+      },
+      "future_unknown": {
+        "uptake": 0.0909,
+        "n": 33
+      },
+      "counterfactual": {
+        "uptake": 0.1304,
+        "n": 23
+      },
+      "(none)": {
+        "uptake": 0.25,
+        "n": 4
+      }
+    },
+    "release_congruent_by_source": {
+      "kuq_ku_unknown_x": {
+        "uptake": 0.1514,
+        "n": 317
+      },
+      "kuq_ku_unknown": {
+        "uptake": 0.1324,
+        "n": 204
+      },
+      "selfaware_unanswerable": {
+        "uptake": 0.25,
+        "n": 4
+      }
+    },
+    "release_incongruent_by_source": {
+      "kuq_ku_unknown_x": {
+        "uptake": 0.1852,
+        "n": 243
+      },
+      "kuq_ku_unknown": {
+        "uptake": 0.1011,
+        "n": 178
+      },
+      "selfaware_unanswerable": {
+        "uptake": 0.1325,
+        "n": 83
+      }
+    }
+  },
+  "induced_confabulation": {
+    "A-certain_release_confab": 459,
+    "A0_release_confab": 309
+  },
+  "degeneracy_counts": {
+    "A0": 0,
+    "A-certain": 0,
+    "A-doubt": 0
+  },
+  "note": "NUMBERS ONLY. verdict_descriptive is a mechanical label from the pre-stated three-tier rule (\u00a75); adjudication is the orchestrator's."
+}

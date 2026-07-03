@@ -34,8 +34,11 @@ neither side and are tallied separately.
 |---|---|---|---|---|
 | AG (inverted prime) | "pure behavior not internal alignment" | _(not separately recorded — practice predates)_ | ASYMMETRIC COMPLIANCE; doubt axis unmoved | user ✓ / — |
 | AD (trained-checkpoint flip) | — | null (signed, shelved) | not launched | — |
-| AH (divergent-pool own-readout) | H-compliance, incl. crisp stratum ("prompt is like a shotgun") | H-compliance (~75–80%) | _pending_ | _pending_ |
+| AH (divergent-pool own-readout) | H-compliance, incl. crisp stratum ("prompt is like a shotgun") | H-compliance (~75–80%) | AMBIGUOUS — G2 a precise zero (−0.21pt, consistent with H-compliance) but G1 missed its floor (+15.65 vs +20), voiding certification per the locked §5 rule | **TIE / TIE** |
 
-Running tally: **user 1 – orchestrator 0 – ties 0** (AG predates the
+Running tally: **user 1 – orchestrator 0 – ties 1** (AG predates the
 two-sided practice; the user gets the point, the orchestrator gets the
-excuse).
+excuse. AH: both called H-compliance and the evidence agrees, but the
+instrument gate voided certification — the gates, not the vibes, award
+points. A G1 recalibration cell is proposed in AH §9.4; if it passes and
+upgrades the verdict, this row upgrades to WIN/WIN.)
