@@ -1,13 +1,18 @@
 # Amendment AG — Oracle Dissociation of the Second-Person Doubt Prime
 
-Status: SIGNED 2026-07-03 (user, in-conversation: "B" — selecting the
-two-directional-gate design after reviewing the Stage-0 calibration; queued
-earlier the same day: "might as well add that experiment to the queue then so
-we can really put the oracle to the test"). Gates in §4 are LOCKED as written.
-The §4 gate structure was recalibrated from the draft's single-band sketch
-using Stage-0, inside the pre-declared recalibration window ("Stage 0 may
-recalibrate the band BEFORE signing only"); nothing may change after launch.
-NOT YET LAUNCHED — the single GPU arm awaits separate explicit launch approval.
+Status: RESOLVED 2026-07-03 — AG-G1a PASS (+34.0pt) and AG-G1b PASS
+(+26.1pt) → **ASYMMETRIC COMPLIANCE** per the pre-stated §4 adjudication map.
+Full result in §9; §8 instrumentation results (doubt axis unmoved/anti-semantic,
+compliance travels through the caution axis) in §9.3. Opus red-team audit
+survived with 0 recomputation mismatches; two non-gate findings folded into
+§8/§9. Signed earlier the same day (user, in-conversation: "B" — selecting the
+two-directional-gate design after reviewing the Stage-0 calibration; queued:
+"might as well add that experiment to the queue then so we can really put the
+oracle to the test"); launched same day with separate explicit user approval
+("proceed thisll be a good one"). Gates in §4 were LOCKED as written at
+signing; the gate structure was recalibrated from the draft's single-band
+sketch using Stage-0, inside the pre-declared recalibration window; nothing
+changed after launch.
 Tier-2 exploratory local mechanism evidence under
 `PHASE3-control-system-protocol.md` (RQ4, base-model substrate). Not headline
 evidence; never pooled with the locked Phase 1 matrix.
@@ -190,7 +195,7 @@ no threshold search after launch. A follow-up needs a new signed amendment.
 3. Stage 0 conditional-compliance analysis computed and recorded. — DONE (§3a).
 4. Explicit user sign-off on the locked gates — DONE ("B", 2026-07-03) — then
    separate explicit GPU launch approval for the single inverted arm
-   (signing ≠ launch). — **PENDING: launch approval is the only open item.**
+   (signing ≠ launch). — DONE ("proceed thisll be a good one", 2026-07-03).
 
 ## 8. Internal-state instrumentation (added pre-launch at user request, 2026-07-03; observational, GATE-FREE)
 
@@ -206,8 +211,10 @@ Axes (both fit on FROZEN pre-launch artifacts, CPU):
 - **Caution axis:** refused-vs-answered direction fit from the SAME frozen
   baseline-prompt tensors joined to the AE census actions (difference-in-means
   and logistic readout, reported at L24 and at the argmax refusal-AUROC layer;
-  the AE census adequacy for this contrast passed at n=403 refused / 179
-  answered).
+  the AE census adequacy for this contrast passed at n=403 refused / 197
+  answered — the signing draft wrote "179", a typo that omitted the 18
+  non-known-correct answered rows; adjudicated by the red-team audit, no code
+  effect since the fit uses the census `refused` field over all 600 rows).
 
 Measurement (piggybacks on the launch, tiny GPU cost — forward passes only,
 no extra generation): for all 600 pool rows, extract the pre-gen anchor
@@ -232,3 +239,107 @@ Pre-stated observational questions (estimates with bootstrap CIs, no gates):
 Interpretation boundary (pre-stated): these are correlational readouts on two
 linear axes; they cannot establish mediation causally and a null Δ on these
 axes does not exclude movement elsewhere in the residual stream.
+
+## 9. RESULT (2026-07-03) — ASYMMETRIC COMPLIANCE
+
+Run: local 3090, single inverted arm (600 rows, greedy, batch=1, byte-identical
+harness delta on AF — audited) + two forward-only primed extraction passes.
+Scripts `amendment_ag_generate.py`, `amendment_ag_primed_extract.py`,
+`amendment_ag_score.py`, `amendment_ag_state_analysis.py`; committed result
+copies `amendment_ag_result.json`, `amendment_ag_state_result.json`. Inverted
+arm counts: 153 answered / 447 refused / 0 ungradeable. Pre-stated STOP checks
+held (known_correct_answered n=147, unknown_refused n=279; 600/600 row join).
+
+### 9.1 Gates (bootstrap 10k, seed 20260703)
+
+| quantity | cell (n) | point | CI95 | gate | verdict |
+|---|---|---|---|---|---|
+| AG-G1a induced refusal | known_correct_answered (147) | **+34.0pt** | [+26.5, +41.5] | ≥ +20, CI excl 0 | **PASS** |
+| release | unknown_refused (279) | +7.9pt | [+5.0, +11.1] | reported | — |
+| AG-G1b asymmetry | joint | **+26.1pt** | [+18.0, +34.6] | ≥ +15, CI excl 0 | **PASS** |
+| degeneracy guard | all 600 | +0.0pt | — | ≤ 5pt rise | PASS |
+
+Cell refusal rates (baseline → inverted): known_correct_answered 2.0% → 36.1%;
+unknown_refused 99.6% → 91.8%; known_refused 99.2% → 100.0% (0/124 released
+under LOW — ceiling, as Stage-0 (b) predicted). Reported AG-G2: 22/279
+unknown_refused rows answered under the inverted HIGH prime (0.079) — all
+confabulations by construction; the cost of a wrong oracle, read against
+AF-G2's 0.857 released-known correctness under a right one.
+
+**Adjudication (pre-stated map, G1a PASS + G1b PASS): ASYMMETRIC COMPLIANCE.**
+Caution is installable from outside against the model's own knowledge (the
+wrong muzzle is obeyed at +34pt), while release toward answering is
+comparatively state-gated (+7.9pt), subject to the §3a capacity confound which
+this claim carries. AF's own-read-out attribution stays NOT established for the
+muzzle direction (pure obedience there) and gains qualified, confound-limited
+support for the release direction. Dose-response note: full-dose muzzle
+compliance (+34.0pt) ≈ Stage-0 half-dose (+36.6pt) — roughly flat, i.e. the
+muzzle saturates near a ~36% flip rate rather than scaling with dose.
+
+### 9.2 Audit
+
+Opus red-team recomputed §4 from raw rows: 0 mismatches to full printed
+precision; harness byte-audit clean (inversion applied to `certainty_true`,
+0/600 mismatches; inverted≡permuted only 302/600 ≈ chance, ruling out arm
+mix-up; primes/decode byte-identical to AF; frozen-baseline provenance
+config_sha verified). §8 reproductions exact (doubt 0.9945, caution L24
+0.9374, Q2 AUROCs 0.654/0.478, z-standardization verified; axes fit only on
+baseline tensors — no primed-tensor leakage). Two non-gate findings, folded
+below and in §8: the census-split typo (179→197) and the Q2 baseline-caution
+confound qualification (§9.3).
+
+### 9.3 §8 instrumentation results (observational, gate-free)
+
+Axes: doubt L24 held-out AUROC 0.9945 (sanity floor 0.98 passed); caution
+refused-vs-answered L24 CV AUROC 0.9374, argmax layer L35 (0.9497), monotone
+rise to ~L25 then plateau. All Δ below in SD units of the baseline projection.
+
+**Q1 — the prompt moves the state, but the two axes tell opposite stories.**
+All 8 prime×label cells move with CIs excluding 0 on both axes, but:
+- **Doubt axis: unmoved-to-ANTI-semantic.** Shifts are small and mostly point
+  AGAINST the prime's meaning — LOW ("your knowledge is unreliable") on
+  unknowns moves +0.455z TOWARD the known side; HIGH-on-known moves −0.064z
+  away from it. The prompt does not rewrite the self-assessment in the
+  instructed direction; the belief stands.
+- **Caution axis: moves NEGATIVE under every prime** (HIGH −0.58z/−0.70z,
+  LOW −0.13z/−0.35z), with the DIFFERENTIAL in the semantically right
+  direction (HIGH suppresses caution more than LOW). Audit qualification
+  (residual confound, could not be closed with existing tensors): robust to
+  prompt length (LOW adds more tokens yet shifts less; corr(len, proj)=0.08)
+  but NOT proven prime-specific vs a generic any-prepend effect — no
+  neutral-sentence control was extracted. A neutral-prepend control belongs in
+  any follow-up.
+
+**Q2 — muzzle compliance travels through the caution axis, not the doubt
+axis.** Among the 147 known_correct_answered rows under the LOW muzzle (53
+flipped to refusal, 94 resisted): Δdoubt does not separate them (AUROC 0.478,
+diff CI spans 0 — flippers and resisters are equally "sure they know");
+Δcaution does (AUROC 0.654, diff +0.103z, CI [+0.043, +0.163]). Audit
+qualification (FINDING #2): the BASELINE caution projection alone is the
+stronger predictor (AUROC 0.749; CV: baseline-only 0.741, delta-only 0.646,
+both 0.765) — rows already sitting closer to refusal flip more easily — and
+Δcaution retains only a smaller independent increment after residualizing
+(residual AUROC 0.637, r=0.242, p=0.003). Honest statement: predisposition
+first, prompt-induced shift second.
+
+**Q3 — release side null.** Released (23) vs resisted (256) unknowns separate
+on neither axis (both CIs span 0, AUROCs 0.44/0.53); low power and the §3a
+capacity confound apply.
+
+**Reading against the user's pre-registered prediction ("pure behavior not
+internal alignment"):** confirmed one level deeper — the instruction never
+touches the belief (doubt axis), and the behavioral flip is carried by the
+policy layer (caution axis): *knows it knows, obeys anyway.* For the
+compound-caution hypothesis: the text channel re-weights the caution compound
+from outside while the doubt element holds still — the compliance direction of
+§6's fork, now with the internal readout to show it.
+
+### 9.4 Follow-ups minted (not signed)
+
+- Neutral-prepend extraction control (closes the any-prepend confound on the
+  Q1 caution shift; CPU+small GPU forward pass only).
+- Divergent-pool design (probe≠gold rows) — still the only clean separator of
+  own-read-out vs gold-instruction, per AF §8; AG's asymmetry makes the
+  release direction the interesting half.
+- AD (SIGNED, trained-checkpoint twin) should be read side by side with AG
+  when launched, per §6.
