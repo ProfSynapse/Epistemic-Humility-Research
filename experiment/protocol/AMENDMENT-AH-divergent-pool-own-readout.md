@@ -18,7 +18,20 @@ known-correct +34.0pt) and that the belief axis never moves — compliance
 travels through the caution/policy axis. Neither experiment can answer the
 question that now matters most, because on the AF/AG pool the probe label and
 the gold label agree on 600/600 rows: a prime aligned with the model's OWN
-internal readout is byte-identical to a prime aligned with ground truth. The
+internal readout is byte-identical to a prime aligned with ground truth.
+
+> **Scout correction (2026-07-03, verified by the orchestrator):** the 600/600
+> figure is an IN-SAMPLE artifact — the probe scoring its own training rows.
+> Under honest out-of-fold scoring (5-fold, `random_state=0`, AG's own CV
+> recipe; OOF AUROC 0.9945 reproduces AG's reported value exactly) the same
+> pool contains **16/600 natural divergences** (6 D-over, 10 D-under). This
+> does not change AF/AG's adjudications — 584/600 concordance still means the
+> two prime framings were indistinguishable in those runs — but the correct
+> statement is "probe ≡ gold in-sample; ~97% concordant out-of-fold", and it
+> establishes that natural probe-vs-gold divergence EXISTS at a low rate on
+> the SelfAware distribution.
+
+The
 two hypotheses — "the model consults its own readout when deciding whether to
 take up the prime" vs "the model obeys instruction content, full stop" — make
 identical predictions on a concordant pool.
@@ -68,7 +81,12 @@ genuine surprise. User prediction to be recorded at signing.
 
 Two divergent cells, defined against the FROZEN AF doubt probe (L24 logistic,
 pre-generation anchor, operating threshold frozen from the AF calibration
-artifacts — no refitting to manufacture divergence):
+artifacts — no refitting to manufacture divergence). **Honest-threshold rule
+(scout caution, binding):** divergence for a mined row must be assessed by a
+probe fit on data DISJOINT from that row — for fresh mined items, the probe
+frozen on the AF 600 is automatically out-of-sample; for any reuse of the AF
+600 rows themselves, only out-of-fold scores count. Scoring rows with a probe
+that trained on them reproduces the 0/600 in-sample illusion (§1):
 
 - **D-over** — probe says HIGH certainty; gold says unanswerable. The readout
   overestimates. Gold-unanswerable is definitional (e.g. SelfAware
@@ -157,12 +175,27 @@ uptake differential per direction; interaction congruence × direction.
 
 GPU work; requires separate explicit launch approval (§7).
 
-1. **Mine:** score a candidate set of a few thousand items (on-disk pools:
-   KUQ, SelfAware splits, and answerable sets with gold labels; exact
-   inventory from the session-0036 scout, appended at signing) with one
-   pre-generation extraction pass on the raw base + the frozen probes;
-   baseline generation + forced-best-guess verification for D-under
-   candidates.
+1. **Mine:** score a candidate set of ~5,000 items with one pre-generation
+   extraction pass on the raw base + the frozen probes; baseline generation +
+   forced-best-guess verification for D-under candidates.
+
+   **Scout inventory (session 0036, CPU, verified 2026-07-03):**
+   - Existing artifacts alone do NOT reach the floor: the af_base_pregen
+     surface (the AF/AG 600) yields 6 D-over / 10 D-under out-of-fold.
+   - Honest yield estimate on the SelfAware distribution (per 1000 mined at
+     a 500/500 split): ~10 D-over (2.0% of unanswerable, 95% CI
+     [0.84%, 4.08%]) and ~17 D-under (3.3% of answerable, CI [1.73%, 5.83%]).
+     **D-over is the binding cell** — size the pass around it: ~5,000 items
+     for ≥50 D-over; D-under clears by ~3,000.
+   - Sources on disk: `datasets/selfaware/SelfAware.json` (3,369 items with
+     per-item `answerable`; ~2,769 unused beyond the AF 600 → expected ~28
+     D-over alone) topped up from `datasets/kuq/` (knowns_unknowns.jsonl
+     6,884 + unknowns_all.jsonl 6,363; out-of-domain vs SelfAware, likely a
+     higher divergence rate — domain composition of the final pool reported
+     descriptively).
+   - Margin tail is thin (gold-unanswerable: only 4/300 within |score|<2 of
+     threshold; mass sits at |score|≈12–15), consistent with low but nonzero
+     natural error rates.
 2. **Assemble:** apply margin band + consensus rule + gold audit.
 3. **Adequacy floor (AE precedent, pre-stated):** ≥50 audited rows in EACH
    divergent cell. If the full candidate set cannot reach the floor, STOP and
@@ -205,7 +238,9 @@ whether that picture holds when instruction fights belief. Descriptive only.
 ## 7. Preconditions and approvals
 
 1. This DRAFT merged to main (PR; queue convention).
-2. Stage-0 scout inventory appended (session-0036 scout, CPU, running).
+2. Stage-0 scout inventory appended — DONE 2026-07-03 (§4; scout numbers
+   independently recomputed by the orchestrator from the saved OOF arrays;
+   scratch preserved in canonical `analysis/ah_scout/`).
 3. Stage-0 GPU mining pass: **separate explicit user launch approval.**
 4. Post-Stage-0: gates locked, margin/consensus instantiated, user prediction
    recorded, user sign-off.
