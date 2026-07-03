@@ -143,6 +143,15 @@ def test_bad_batch_size_raises(tmp_path, monkeypatch):
         runner.run_config(cfg)
 
 
+def test_resolve_model_ref():
+    # existing repo-relative dir -> absolute; hub id / missing path untouched
+    rel = "experiment/phase1/probe"
+    resolved = runner.resolve_model_ref(rel)
+    assert Path(resolved).is_absolute() and resolved.endswith(rel)
+    assert runner.resolve_model_ref("unsloth/Qwen3-4B") == "unsloth/Qwen3-4B"
+    assert runner.resolve_model_ref(None) is None
+
+
 def test_fingerprint_sequential_stable_batched_differs():
     config = {"model": {"model_name": "m"}, "rows": "r.jsonl"}
     kw = dict(direction={"layer": 3, "sigma": 1.0},

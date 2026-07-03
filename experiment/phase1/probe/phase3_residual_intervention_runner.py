@@ -50,6 +50,16 @@ def resolve_path(value: str | Path) -> Path:
     return path if path.is_absolute() else _repo_root() / path
 
 
+def resolve_model_ref(value: str | None) -> str | None:
+    """Repo-relative checkpoint dirs -> absolute paths (from_pretrained
+    resolves relative paths against the process CWD, not the repo root);
+    HF hub ids and absolute paths pass through untouched."""
+    if not value:
+        return value
+    cand = resolve_path(value)
+    return str(cand) if cand.exists() else value
+
+
 def load_config(path: Path) -> dict[str, Any]:
     with path.open(encoding="utf-8") as fh:
         payload = yaml.safe_load(fh)
@@ -101,8 +111,8 @@ class ModelHarness:
 
         self.torch = torch
         model_cfg = config["model"]
-        model_name = model_cfg["model_name"]
-        adapter = model_cfg.get("adapter")
+        model_name = resolve_model_ref(model_cfg["model_name"])
+        adapter = resolve_model_ref(model_cfg.get("adapter"))
         dtype = getattr(torch, model_cfg.get("torch_dtype", "bfloat16"))
         self.tokenizer = AutoTokenizer.from_pretrained(model_name)
         base = AutoModelForCausalLM.from_pretrained(
