@@ -22,14 +22,16 @@ predictions:
       it would be too weak I think to do anything about beyond like you say
       maybe coming back to training.
 outcome: >-
-  AMBIGUOUS — instrument-qualified null. G2 release congruence is a precise
-  zero (-0.21pt, CI [-4.45, +4.10]) consistent with H-compliance, but G1
-  missed its +20pt floor (+15.65pt on a low-caution stratum harder than the
-  floor's AG calibration), voiding gate certification per §5. No claim
-  promoted; G1 recalibration cell proposed (§9.4).
+  H-COMPLIANCE (certified via Addendum A1). G2 release congruence is a
+  precise zero (-0.21pt, CI [-4.45, +4.10]); the initial G1 miss (+15.65pt
+  on a low-caution stratum) was recalibrated on a caution-representative
+  stratum in pre-registered Addendum A1 and passed decisively (+50.98pt vs
+  +20pt floor), certifying the instrument and upgrading the verdict per the
+  locked §10.2 semantics. Prime uptake does not consult the model's own
+  readout.
 scoreboard:
-  user: tie
-  orchestrator: tie
+  user: win
+  orchestrator: win
 addendum_a1:
   question: >-
     Does the positive control clear the +20pt induced-refusal floor on a
@@ -48,18 +50,23 @@ addendum_a1:
       call: PASS
       recorded: 2026-07-03
       quote: "PASS — clears +20pt"
-  outcome: null
+  outcome: >-
+    PASS — induced refusal +50.98pt (26/51 eligible) vs +20pt floor;
+    monotone caution-quintile gradient (Q1 37.0 -> Q4 100.0) confirms the
+    §9.2(1) population diagnosis. Verdict upgraded to H-COMPLIANCE;
+    scoreboard row upgraded to WIN/WIN.
 ---
 
 # Amendment AH — Divergent-Pool Own-Readout Attribution (probe ≠ gold)
 
-**Status: RESOLVED 2026-07-03 — AMBIGUOUS (instrument-qualified null)**.
+**Status: RESOLVED 2026-07-03 — H-COMPLIANCE (certified via Addendum A1)**.
 G2 release congruence = −0.21pt (CI [−4.45, +4.10], logistic coef CI
-[−0.555, +0.250]) — a precise zero consistent with H-COMPLIANCE — but G1
-positive control missed its locked +20pt floor (+15.65pt), so per the
-pre-stated §5 rule the reading is not gate-certified. Full result and
-adjudication in §9; G1 recalibration cell proposed in §9.4 and signed as
-Addendum A1 (§10, 2026-07-03) — in flight. (Signed
+[−0.555, +0.250]) — a precise zero. The initial G1 miss (+15.65pt on a
+low-caution stratum) was recalibrated in pre-registered Addendum A1 on a
+caution-representative stratum and PASSED (+50.98pt vs the unchanged +20pt
+floor), certifying the instrument and upgrading the verdict per the locked
+§10.2 semantics. Main result in §9 (verdict there superseded by §10.3);
+addendum design, gate, and result in §10. (Signed
 2026-07-03, both predictions §2; Stage-0 D-under floor STOP → user-directed
 redesign; pool v2.1 locked; main run 3,324 gens on the frozen AF harness,
 launched on explicit user approval §7.8.)
@@ -553,3 +560,37 @@ changes.
   calibration — recorded as a descriptive result, no goalpost moved.
 - Secondary descriptive (non-gating): induced refusal per caution quintile,
   to show the §9.2(1) gradient directly.
+
+### 10.3 Result — A1-G1 PASS; verdict upgraded to H-COMPLIANCE
+
+Run 2026-07-03, 300 generations (150 A0 + 150 A-doubt), frozen AF harness,
+degeneracy 0, GPU ~10 min. Stratum delivered exactly per §10.1: 30 rows per
+quintile, sources TriviaQA 40 / SelfAware 40 / KUQ 35 / PopQA 35, seed 0,
+original 150 excluded; selected mean caution_z +0.467 vs the original
+stratum's −1.31. Gate numbers independently recomputed by the lead from raw
+rows (`amendment_ah_addendum_a1_result.json`).
+
+| Gate | Locked threshold | Result | Pass |
+|---|---|---|---|
+| A1-G0 eligibility | ≥40 eligible | 51 (99/150 baseline-refused) | PASS |
+| A1-G1 induced refusal | ≥ +20pt | **+50.98pt** (26/51) | **PASS (+31.0pt margin)** |
+
+Per-quintile induced refusal (descriptive): Q1 37.0pt (10/27), Q2 53.3pt
+(8/15), Q3 85.7pt (6/7), Q4 100pt (2/2), Q5 no eligible rows (all
+baseline-refused). The gradient is monotone in caution distance — muzzle
+uptake rises with baseline proximity to the refusal boundary — directly
+confirming the §9.2(1) diagnosis: the original control stratum (mean z
+−1.31, below Q1's range) was drawn from the most muzzle-resistant rows
+available, and the +15.65pt miss was a population-calibration artifact, not
+a weak prime.
+
+**Certification (per locked §10.2):** the instrument is certified on a fair
+population; the §5 three-tier rule applied to the already-collected G2
+reading (precise null, live instrument in both directions) yields
+**H-COMPLIANCE**: prime uptake does not consult the model's own readout —
+compliance is instruction-following plus boundary distance, replicating and
+extending AG's belief-vs-policy dissociation onto the divergent pool.
+Scoreboard: both parties predicted PASS (frontmatter `addendum_a1`) and both
+predicted H-compliance at the original signing → the AH row upgrades
+TIE/TIE → **WIN/WIN**, and Addendum A1 scores as its own WIN/WIN row
+(tally: user 3 – orchestrator 2 – ties 0).
