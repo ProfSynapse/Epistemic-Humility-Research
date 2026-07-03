@@ -65,6 +65,24 @@ amendments — AA, AB — declare `SIGNED` in the doc but their verdicts live in
 session notes; the table shows `SIGNED` with an empty Verdict, which is the
 honest committed-doc state.)
 
+### Checked-out (worktree) annotation
+
+The generated table has a `WT` column and a "Checked out now" summary line,
+derived live from `git worktree list --porcelain`. An amendment is **checked
+out** when a live worktree has its `amendment-<letter>-*` branch open; the row
+shows 🔨. This makes the "one amendment = one branch = one worktree" discipline
+visible in the index: creating the worktree for an experiment *is* the
+check-out, and removing it (on merge) is the check-in — there is no separate
+ledger, so the annotation can never drift from actual worktree state.
+
+Design consequence: unlike the amendment rows (sourced from committed doc text),
+the `WT` column is a function of the machine's *current* worktrees, so `--write`
+/ `--check` output varies with worktree state. Regenerate after any
+`git worktree add`/`remove`. Branches that are not `amendment-*` (infra branches,
+detached HEADs) are surfaced under "Other worktrees" and never mapped to a row.
+`parse_worktree_porcelain` is covered by `--selftest`; git failure or a
+non-repo checkout degrades silently to no annotation (the index still renders).
+
 ## Keeping it current (cheap conventions)
 
 1. When an amendment doc's `Status:` line or `## 8. Result` changes, re-run

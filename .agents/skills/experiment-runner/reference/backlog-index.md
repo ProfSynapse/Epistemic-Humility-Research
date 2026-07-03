@@ -12,7 +12,36 @@ open work. It has two parts, and the split is what keeps it cheap to maintain:
    item: what/why, tier (A = amendment / L = lab-notebook / P = paper-infra),
    blocker, cost (CPU / GPU / cloud). Survives regeneration.
 
+The generated block also carries a **`WT` (checked-out)** column, derived live
+from `git worktree list`: an amendment shows 🔨 when a worktree has its
+`amendment-<letter>-*` branch open, and a "Checked out now" line summarizes the
+live worktrees. See "Checking out an amendment" below.
+
 Design rationale and status vocabulary: `docs/backlog/PLAN.md`.
+
+## Checking out an amendment (worktree = checkout)
+
+One amendment = one branch = one worktree. **Creating the worktree IS the
+check-out** — there is no separate ledger to maintain, so the index can never
+drift from reality. The convention:
+
+```bash
+# CHECK OUT amendment AF: make its branch + worktree off up-to-date main
+git worktree add ../ehr-worktrees/amendment-af -b amendment-af-<slug> main
+python3 bin/build_backlog_index.py --write   # AF now shows 🔨 in TODO.md
+```
+
+```bash
+# CHECK IN when the PR merges: remove the worktree, then regen
+git worktree remove ../ehr-worktrees/amendment-af
+python3 bin/build_backlog_index.py --write   # 🔨 clears on AF
+```
+
+Because the `WT` column reflects *live* worktree state, `--write` / `--check`
+results depend on which worktrees exist right now. Regenerate after any
+`git worktree add`/`remove` so the committed `TODO.md` matches what is actually
+in flight. Branches that are not `amendment-*` (infra branches, detached HEADs)
+are listed under "Other worktrees", never mapped to an amendment row.
 
 ## When to run the script
 
