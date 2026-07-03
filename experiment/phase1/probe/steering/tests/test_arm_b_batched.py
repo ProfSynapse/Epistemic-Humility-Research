@@ -663,7 +663,8 @@ TINY_CHAT_MODEL = "trl-internal-testing/tiny-Qwen2ForCausalLM-2.5"
 @pytest.mark.skipif(
     not (_cuda and _tuner_present),
     reason="needs CUDA (sequential load is device_map=cuda) + a tuner checkout")
-def test_sequential_vs_tuner_batched_e2e_spot_check(tmp_path):
+@pytest.mark.parametrize("position", ["early", "final"])
+def test_sequential_vs_tuner_batched_e2e_spot_check(tmp_path, position):
     from transformers import AutoConfig
 
     from spot_check_arm_b import main as spot_main
@@ -685,7 +686,7 @@ def test_sequential_vs_tuner_batched_e2e_spot_check(tmp_path):
         argv = [
             "--model", TINY_CHAT_MODEL,
             "--direction", str(ddir / "direction_gate.json"),
-            "--signal", "gate", "--position", "early", "--eval-pool", "gate",
+            "--signal", "gate", "--position", position, "--eval-pool", "gate",
             "--n-unknown", "4", "--n-known", "4",
             "--pool-file", str(pool),
             "--seed", "20260701", "--greedy",
@@ -707,12 +708,19 @@ def test_sequential_vs_tuner_batched_e2e_spot_check(tmp_path):
     assert "engine" not in seq["config"]
     assert bat["config"]["engine"] == "tuner-batched"
 
+    # No --gate-revision-prompts here: revision prompts embed model-GENERATED
+    # text (initial answer / think draft), and on this random-weight tiny model
+    # the near-flat logits let batched left-padded numerics flip greedy argmax,
+    # so cross-engine generation identity is a lottery (final-position run:
+    # divergence began mid-generation with identical scaffold around it).
+    # Construction identity given a fixed draft is proven by the CPU parity
+    # tests above; use --gate-revision-prompts on real-checkpoint spot checks
+    # where greedy decode is stable.
     rc = spot_main([
         "--sequential", str(tmp_path / "seq.json"),
         "--batched", str(tmp_path / "bat.json"),
         "--emit-sequential", str(tmp_path / "seq_prompts.jsonl"),
         "--emit-batched", str(tmp_path / "bat_prompts.jsonl"),
-        "--gate-revision-prompts",
         "--out", str(tmp_path / "verdict.json"),
     ])
     verdict = json.loads((tmp_path / "verdict.json").read_text())
