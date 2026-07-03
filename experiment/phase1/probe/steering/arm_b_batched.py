@@ -30,6 +30,17 @@ Staged batch-pass design (mirrors run_arm_b.run_arm_b_cell phase-for-phase):
     3. permute_scores — same placebo permutation as sequential
     4. batch-generate — injected REVISION passes, real + placebo (2N prompts)
 
+  position=final (4 generations/item — Amendment AB Revision 1):
+    1. batch-generate — ONE shared plain initial pass per item (N prompts)
+    2. batch-capture  — post-answer read (as for 'late')
+    3. batch-generate — ONE shared thinking-enabled PLAIN revision reasoning
+                        pass per item (N prompts); extract_think_content of
+                        each output is the frozen draft both variants share
+    4. permute_scores — same placebo permutation as sequential
+    5. batch-generate — REVISION_FINAL passes, real + placebo (2N prompts):
+                        shared draft + note as the final thought, think block
+                        CLOSED so the model must answer immediately
+
 Render / note construction / grading / coherence checks / placebo semantics /
 result-JSON schema are the sequential engine's own functions (imported, not
 reimplemented); the ONLY thing this module swaps is the GPU inner loop.
@@ -77,6 +88,7 @@ from steering_common import (  # noqa: E402
 # The sequential engine's own note/permutation functions (identical semantics
 # by construction — imported, never reimplemented). run_arm_b imports THIS
 # module only lazily inside main(), so there is no import cycle.
+from cot_inject import extract_think_content  # noqa: E402
 from run_arm_b import make_note, permute_scores, summarize_arm_b  # noqa: E402
 
 
@@ -97,6 +109,7 @@ def render_pass_prompt(
     initial_answer: Optional[str],
     pass_name: str,
     note: Optional[str],
+    think_draft: Optional[str] = None,
 ) -> str:
     """Render one generation request's prompt EXACTLY as the sequential engine.
 
@@ -105,13 +118,21 @@ def render_pass_prompt(
     injected pass renders with enable_thinking=True and opens the think block
     seeded with the note ("<think>\\n" + note + "\\n\\n"), matching
     cot_inject.build_think_prompt's layout — identical to run_arm_b.main's
-    generate_fn.
+    generate_fn. 'revision_think' is the shared thinking-enabled PLAIN pass
+    (position=final); 'revision_final' appends the frozen draft + note and
+    CLOSES the think block, matching build_think_prompt(position='final').
     """
     if pass_name == "initial":
         messages = build_initial_messages(item["question"], SYSTEM_PROMPT)
     else:
         messages = build_revision_messages(
             item["question"], initial_answer or "", SYSTEM_PROMPT)
+    if pass_name == "revision_think":
+        return render(messages, enable_thinking=True)
+    if pass_name == "revision_final":
+        base = render(messages, enable_thinking=True)
+        return (base + "<think>\n" + (think_draft or "") + "\n\n"
+                + (note or "") + "\n</think>\n")
     if note is None:
         return render(messages, enable_thinking=False)
     return render(messages, enable_thinking=True) + "<think>\n" + note + "\n\n"
@@ -158,8 +179,9 @@ def run_arm_b_cell_batched(
     """
     if signal not in ("gate", "dial"):
         raise ValueError(f"signal must be 'gate' or 'dial', got {signal!r}")
-    if position not in ("early", "late"):
-        raise ValueError(f"position must be 'early' or 'late', got {position!r}")
+    if position not in ("early", "late", "final"):
+        raise ValueError(
+            f"position must be 'early', 'late', or 'final', got {position!r}")
 
     results: dict[str, list[dict]] = {"real": [], "placebo": []}
 
@@ -208,7 +230,7 @@ def run_arm_b_cell_batched(
                 k += 1
         return results
 
-    # position == "late"
+    # position in ("late", "final")
     # Phase 1a — ONE shared plain initial pass per item (one batch).
     shared_reqs = [{
         "pass_id": make_pass_id(item["row_key"], "initial", "shared"),
@@ -218,20 +240,38 @@ def run_arm_b_cell_batched(
     shared_texts = generate_batch_fn(shared_reqs, "initial")
     # Phase 1b — real scores at the post-answer read (batched capture).
     real_scores = [float(s) for s in probe_scores_batch_fn(items, shared_texts)]
+    # Phase 1c (final only) — ONE shared thinking-enabled PLAIN revision
+    # reasoning pass per item; extract_think_content of each output is the
+    # frozen draft both variants share verbatim (mirrors run_arm_b_cell's
+    # phase-1 loop, same extractor).
+    shared_think_drafts: list[Optional[str]] = [None] * len(items)
+    if position == "final":
+        think_reqs = [{
+            "pass_id": make_pass_id(item["row_key"], "revision_think", "shared"),
+            "item": item, "initial_answer": shared_texts[i] or "",
+            "pass_name": "revision_think", "variant": "shared", "note": None,
+        } for i, item in enumerate(items)]
+        think_texts = generate_batch_fn(think_reqs, "revision_think")
+        shared_think_drafts = [extract_think_content(t) for t in think_texts]
     # Phase 2 — placebo permutation (same as sequential).
     placebo_scores = permute_scores(real_scores, seed)
-    # Phase 3 — injected REVISION passes for both variants (one batch).
+    # Phase 3 — injected passes for both variants (one batch): plain-note
+    # REVISION for 'late'; draft+note-then-close REVISION_FINAL for 'final'.
+    rev_pass = "revision" if position == "late" else "revision_final"
     rev_reqs = []
     for i, item in enumerate(items):
         for variant, score in (("real", real_scores[i]),
                                ("placebo", placebo_scores[i])):
             note = make_note(signal, score, position, note_variant)
-            rev_reqs.append({
-                "pass_id": make_pass_id(item["row_key"], "revision", variant),
+            req = {
+                "pass_id": make_pass_id(item["row_key"], rev_pass, variant),
                 "item": item, "initial_answer": shared_texts[i] or "",
-                "pass_name": "revision", "variant": variant, "note": note,
-            })
-    rev_texts = generate_batch_fn(rev_reqs, "revision")
+                "pass_name": rev_pass, "variant": variant, "note": note,
+            }
+            if position == "final":
+                req["think_draft"] = shared_think_drafts[i] or ""
+            rev_reqs.append(req)
+    rev_texts = generate_batch_fn(rev_reqs, rev_pass)
     k = 0
     for i, item in enumerate(items):
         initial_text = shared_texts[i] or ""
@@ -247,7 +287,7 @@ def run_arm_b_cell_batched(
                     "placebo_score": float(placebo_scores[i]),
                     "injection_note": rev_reqs[k]["note"],
                     "shared_initial": True,
-                    "shared_think_draft": False,
+                    "shared_think_draft": position == "final",
                 },
             ))
             k += 1
@@ -292,13 +332,18 @@ def wrap_generate_for_emit(inner, render, tokenizer, emit_rows: list[dict]):
     the emit row, then delegates to the unmodified inner callable. Only active
     when --emit-prompts is set, so the default path is untouched.
     """
-    def wrapped(item, initial_answer, pass_name, variant, note):
-        prompt = render_pass_prompt(render, item, initial_answer, pass_name, note)
+    def wrapped(item, initial_answer, pass_name, variant, note,
+                think_draft=None):
+        prompt = render_pass_prompt(render, item, initial_answer, pass_name,
+                                    note, think_draft)
         emit_rows.append(make_emit_row(tokenizer, {
             "pass_id": make_pass_id(item["row_key"], pass_name, variant),
             "item": item, "pass_name": pass_name,
             "variant": variant, "note": note,
         }, prompt))
+        if pass_name == "revision_final":
+            return inner(item, initial_answer, pass_name, variant, note,
+                         think_draft=think_draft)
         return inner(item, initial_answer, pass_name, variant, note)
     return wrapped
 
@@ -397,7 +442,8 @@ def tuner_generate_requests(
     with prompts_path.open("w", encoding="utf-8") as fh:
         for r in requests:
             prompt = render_pass_prompt(
-                render, r["item"], r["initial_answer"], r["pass_name"], r["note"])
+                render, r["item"], r["initial_answer"], r["pass_name"],
+                r["note"], r.get("think_draft"))
             fh.write(json.dumps({"id": r["pass_id"], "prompt": prompt},
                                 ensure_ascii=False) + "\n")
             if emit_rows is not None:
@@ -558,7 +604,8 @@ def main_tuner_batched(a, d_np, meta, items: list[dict], plan: dict) -> int:
         results = run_arm_b_cell_batched(
             items=items, signal=a.signal, position=a.position,
             probe_scores_batch_fn=probe_scores_batch_fn,
-            generate_batch_fn=generate_batch_fn, seed=a.seed)
+            generate_batch_fn=generate_batch_fn, seed=a.seed,
+            note_variant=a.note_variant)
     finally:
         if getattr(a, "keep_batch_artifacts", False):
             print(f"[run_arm_b] batch artifacts kept at {work_dir}", flush=True)
