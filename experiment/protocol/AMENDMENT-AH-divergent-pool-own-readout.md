@@ -1,9 +1,9 @@
 # Amendment AH — Divergent-Pool Own-Readout Attribution (probe ≠ gold)
 
-**Status: DRAFT v2 (redesigned)** (v1 queued 2026-07-03 PR #169/#170; Stage-0
-run 2026-07-03 fired the adequacy-floor STOP for the D-under cell; user
-directed a pre-signing redesign — "redesign", 2026-07-03. Not signed, not
-launched).
+**Status: SIGNED** (2026-07-03, both predictions recorded in §2; v1 queued
+PRs #169/#170; Stage-0 fired the D-under adequacy-floor STOP → user-directed
+redesign; pool v2.1 locked after user-approved dataset expansion. NOT
+LAUNCHED — main run awaits explicit approval, §7.8).
 **Tier:** A (new evidence cell; gates pre-stated before launch).
 **Branch:** `amendment-ah-divergent-pool`.
 **Depends on:** AF (PASS, channel-authority), AG (PASS, asymmetric compliance),
@@ -72,11 +72,28 @@ internal state (§8 caveat 1 qualifies this).
   systematically more uptake than incongruent primes, beyond what direction
   and boundary distance explain.
 
-**Orchestrator prediction (pre-stated):** H-compliance. AG showed the model
-obeys a gold-anti-aligned prime against its own demonstrable knowledge while
-the doubt readout stays anti-semantic; nothing yet observed suggests the
-policy consults the readout. Recording this so a resonance result counts as a
-genuine surprise. User prediction to be recorded at signing.
+**Orchestrator prediction (pre-stated):** H-compliance (~75–80%). AG showed
+the model obeys a gold-anti-aligned prime against its own demonstrable
+knowledge while the doubt readout stays anti-semantic; the pliability law
+absorbed the full hidden state into one boundary-distance scalar; the only
+observed readout→behavior coupling (AC) was wired externally. Residual
+uncertainty: release has never been tested on internally-certain rows.
+
+**User prediction (recorded verbatim, 2026-07-03):** H-compliance, including
+on the crisp stratum. "I think prompt is like a shotgun here and overrides
+most other policies. So I think we're still decoupled from internals, if
+there is something it would be too weak I think to do anything about beyond
+like you say maybe coming back to training." Clarification of the earlier
+"internally would make a difference" remark: it was representational, not
+behavioral — "I would bet different kinds of question activate different
+kinds of areas that if possible we should map out, but like DOUBT i don't
+feel like they really bear on the ultimate behavior." (That mapping objective
+is backlog row 22, not an AH gate.)
+
+Both predictions land on H-compliance; a resonance result would surprise both
+parties and carries full evidential weight either way. Dual independent
+predictions (orchestrator + user, recorded before launch) are adopted as
+standing practice for future amendments.
 
 ## 3. Design (v2 — redesigned after Stage-0; supersedes the v1 2×2)
 
@@ -308,7 +325,9 @@ picture where instruction fights readout. Descriptive only.
 4. Adequacy-floor STOP adjudicated by user → redesign — DONE ("redesign").
 5. Redesign check appended — DONE (§4.7); rule/caliper/pool/gates locked
    (§3.3, §5).
-6. User prediction recorded; user sign-off. _(pending)_
+6. User prediction recorded; user sign-off — DONE 2026-07-03 (§2; both
+   predictions H-compliance; scoreboard entry in
+   `docs/prediction-scoreboard.md`).
 7. Dataset expansion (user: "run it") — DONE (§4.8); pool re-locked at v2.1
    (§3.3).
 8. Main run (3,324 generations: 1,662 rows × 2 renderings, ~3.5–4 h on the
