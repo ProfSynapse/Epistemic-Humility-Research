@@ -38,6 +38,7 @@ Always choose the narrowest reference needed for the task:
 | Publish or document public HF artifacts | [reference/hf-publication.md](reference/hf-publication.md) |
 | Decide whether work needs an Amendment, a protocol revision, or just a lab-notebook entry | [reference/amendment-vs-lab-notebook.md](reference/amendment-vs-lab-notebook.md) |
 | Make governed protocol, output-contract, or rerun-scope changes | [reference/protocol-amendments.md](reference/protocol-amendments.md) |
+| Refresh the amendment status index / add a backlog item to `TODO.md` | [reference/backlog-index.md](reference/backlog-index.md) |
 
 Do not preload all references. Read only the files needed for the user's current
 operation, then follow any further routing inside that reference.
