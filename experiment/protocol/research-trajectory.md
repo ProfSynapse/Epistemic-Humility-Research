@@ -1,5 +1,9 @@
 # Research Trajectory — Epistemic Humility Program
 
+> **SUPERSEDED 2026-07-03:** the living trajectory is now
+> [`docs/research-trajectory.md`](../../docs/research-trajectory.md). This file is the
+> historical staged plan, preserved as a record.
+
 Captured 2026-06-10 from the trajectory conversation. This is the staged
 plan that paper 1's §8 will announce and the experiment program executes.
 Each phase consumes the previous phase's artifacts.

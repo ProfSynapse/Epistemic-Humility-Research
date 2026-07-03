@@ -263,9 +263,10 @@ def render_block(
         checkout_line = f"Checked out now (live worktrees): {co}."
     else:
         checkout_line = "Checked out now (live worktrees): none."
-    if other_worktrees:
+    filtered_others = [b for b in other_worktrees if b not in ("main", "master")]
+    if filtered_others:
         checkout_line += " Other worktrees: " + ", ".join(
-            f"`{b}`" for b in other_worktrees
+            f"`{b}`" for b in filtered_others
         ) + "."
     lines += ["", checkout_line, ""]
 
