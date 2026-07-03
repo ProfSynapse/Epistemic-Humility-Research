@@ -105,6 +105,11 @@ class TestGradeOutput:
 
 
 class TestComputeRevised:
+    """Answer-level (grade-transition) contract — the post-AB instrument.
+
+    Text is never compared: the old normalized-full-text fallback saturated
+    under sampled decode (revised was True on 100% of records)."""
+
     def _grades(self, initial, final, aliases=()):
         return grade_output(initial, list(aliases)), grade_output(final, list(aliases))
 
@@ -116,13 +121,38 @@ class TestComputeRevised:
         gi, gf = self._grades("Paris.", "paris")
         assert compute_revised("Paris.", "paris", gi, gf) is False
 
-    def test_changed_answer_is_revised(self):
-        gi, gf = self._grades("Lyon.", "Paris.")
+    def test_sampled_decode_paraphrase_same_grade_not_revised(self):
+        # THE saturation regression: temp>0 rewords everything; same graded
+        # answer must NOT count as a revision.
+        a, b = "The capital of France is Paris.", "Paris is France's capital."
+        gi, gf = self._grades(a, b, aliases=("paris",))
+        assert gi["correct"] and gf["correct"]
+        assert compute_revised(a, b, gi, gf) is False
+
+    def test_correctness_flip_is_revised(self):
+        gi, gf = self._grades("Lyon.", "Paris.", aliases=("paris",))
         assert compute_revised("Lyon.", "Paris.", gi, gf) is True
+        gi, gf = self._grades("Paris.", "Lyon.", aliases=("paris",))
+        assert compute_revised("Paris.", "Lyon.", gi, gf) is True
 
     def test_final_abstention_after_answer_is_revised(self):
         gi, gf = self._grades("Lyon.", "I don't know.")
         assert compute_revised("Lyon.", "I don't know.", gi, gf) is True
+
+    def test_answer_after_abstention_is_revised(self):
+        gi, gf = self._grades("I don't know.", "Paris.")
+        assert compute_revised("I don't know.", "Paris.", gi, gf) is True
+
+    def test_wrong_to_different_wrong_undetectable(self):
+        # Documented limitation: no answer extraction, so a different wrong
+        # answer is invisible (both grade correct=False).
+        gi, gf = self._grades("Lyon.", "Marseille.", aliases=("paris",))
+        assert compute_revised("Lyon.", "Marseille.", gi, gf) is False
+
+    def test_ungraded_text_change_not_revised(self):
+        # No gold aliases (gate rows): only abstention flips are detectable.
+        gi, gf = self._grades("Lyon.", "Paris.")
+        assert compute_revised("Lyon.", "Paris.", gi, gf) is False
 
 
 # ---------------------------------------------------------------------------

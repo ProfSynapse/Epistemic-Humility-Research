@@ -50,6 +50,16 @@ def resolve_path(value: str | Path) -> Path:
     return path if path.is_absolute() else _repo_root() / path
 
 
+def resolve_model_ref(value: str | None) -> str | None:
+    """Repo-relative checkpoint dirs -> absolute paths (from_pretrained
+    resolves relative paths against the process CWD, not the repo root);
+    HF hub ids and absolute paths pass through untouched."""
+    if not value:
+        return value
+    cand = resolve_path(value)
+    return str(cand) if cand.exists() else value
+
+
 def load_config(path: Path) -> dict[str, Any]:
     with path.open(encoding="utf-8") as fh:
         payload = yaml.safe_load(fh)
@@ -101,8 +111,8 @@ class ModelHarness:
 
         self.torch = torch
         model_cfg = config["model"]
-        model_name = model_cfg["model_name"]
-        adapter = model_cfg.get("adapter")
+        model_name = resolve_model_ref(model_cfg["model_name"])
+        adapter = resolve_model_ref(model_cfg.get("adapter"))
         dtype = getattr(torch, model_cfg.get("torch_dtype", "bfloat16"))
         self.tokenizer = AutoTokenizer.from_pretrained(model_name)
         base = AutoModelForCausalLM.from_pretrained(
@@ -139,9 +149,49 @@ class ModelHarness:
             output_ids[0, prompt_len:], skip_special_tokens=True
         ).strip()
 
+    def generate_batch(self, questions: list[str], *, spec: dict[str, Any],
+                       arm: dict[str, Any], max_new_tokens: int) -> list[str]:
+        """One hooked forward over a left-padded batch of prompts.
+
+        For couple arms ``arm["alpha"]`` is a list aligned to ``questions``
+        (per-row gains); the write hook broadcasts each row's alpha over its
+        positions. Greedy decode, same flags as the sequential path.
+        """
+        rendered = []
+        for q in questions:
+            r, mode = render_probe_prompt(
+                self.tokenizer, self.system_prompt, q,
+                enable_thinking=self.enable_thinking, mode=self._render_mode,
+            )
+            if mode is not None:
+                self._render_mode = mode
+            rendered.append(r)
+        tok = self.tokenizer
+        if tok.pad_token_id is None:
+            tok.pad_token = tok.eos_token
+        prev_side = tok.padding_side
+        tok.padding_side = "left"  # decoder-only: completions stay contiguous
+        try:
+            inputs = tok(rendered, return_tensors="pt", padding=True).to(self.device)
+        finally:
+            tok.padding_side = prev_side
+        prompt_len = inputs["input_ids"].shape[1]
+        with ri.residual_intervention(self.model, spec, arm):
+            with self.torch.no_grad():
+                output_ids = self.model.generate(
+                    **inputs, do_sample=False, max_new_tokens=max_new_tokens,
+                    pad_token_id=tok.eos_token_id,
+                )
+        return [
+            self.tokenizer.decode(output_ids[i, prompt_len:],
+                                  skip_special_tokens=True).strip()
+            for i in range(len(questions))
+        ]
+
 
 def _config_fingerprint(config: dict[str, Any], *, direction: dict[str, Any],
-                        arms: list[dict[str, Any]], max_new_tokens: int) -> str:
+                        arms: list[dict[str, Any]], max_new_tokens: int,
+                        batch_size: int = 1) -> str:
     model_cfg = config.get("model", {})
     payload = {
         "model_name": model_cfg.get("model_name"),
@@ -156,6 +206,10 @@ def _config_fingerprint(config: dict[str, Any], *, direction: dict[str, Any],
         "rows_filter": config.get("rows_filter"),
         "max_new_tokens": max_new_tokens,
     }
+    if batch_size != 1:
+        # sequential (=1) keeps the historical fingerprint; a batched run is a
+        # different decode regime and must not resume a sequential partial.
+        payload["batch_size"] = batch_size
     blob = json.dumps(payload, sort_keys=True, ensure_ascii=True)
     return hashlib.sha256(blob.encode("utf-8")).hexdigest()[:16]
 
@@ -192,6 +246,9 @@ def run_config(config_path: Path, *, fresh: bool = False) -> dict[str, Any]:
     max_new_tokens = int(sweep.get("max_new_tokens", 96))
     max_rows = sweep.get("max_rows")
     max_rows = int(max_rows) if max_rows is not None else None
+    batch_size = int(sweep.get("batch_size", 1))
+    if batch_size < 1:
+        raise ResidualInterventionRunError(f"batch_size must be >= 1, got {batch_size}")
 
     rf = config.get("rows_filter", {})
     labels = set(rf["labels"]) if rf.get("labels") else None
@@ -223,7 +280,8 @@ def run_config(config_path: Path, *, fresh: bool = False) -> dict[str, Any]:
     output_root.mkdir(parents=True, exist_ok=True)
     rows_path = output_root / "rows.jsonl"
     ckpt_path = output_root / "checkpoint.json"
-    fingerprint = _config_fingerprint(config, direction=direction, arms=arms, max_new_tokens=max_new_tokens)
+    fingerprint = _config_fingerprint(config, direction=direction, arms=arms,
+                                      max_new_tokens=max_new_tokens, batch_size=batch_size)
 
     completed: set[str] = set()
     scored_rows: list[dict[str, Any]] = []
@@ -258,36 +316,48 @@ def run_config(config_path: Path, *, fresh: bool = False) -> dict[str, Any]:
             out_fh.write(json.dumps(rec) + "\n")
         out_fh.flush()
         for arm in arms:
-            for row in rows:
-                key = row["probe_pool_row_key"]
-                uk = _unit_key(key, arm["arm_id"])
-                if uk in completed:
-                    continue
+            pending = [row for row in rows
+                       if _unit_key(row["probe_pool_row_key"], arm["arm_id"]) not in completed]
+            for start in range(0, len(pending), batch_size):
+                chunk = pending[start:start + batch_size]
                 if harness is None:
                     harness = ModelHarness(config)
-                effective_arm = arm
                 if arm["mode"] == ri.MODE_COUPLE:
-                    row_alpha = ri.resolve_couple_alpha(
-                        gain_maps[arm["arm_id"]], arm["gain_key"], key)
-                    effective_arm = {**arm, "alpha": row_alpha}
-                answer = harness.generate(
-                    row["question"], spec=spec, arm=effective_arm, max_new_tokens=max_new_tokens
-                )
-                cells_scored = score_generation(row, answer)
-                record = {
-                    "probe_pool_row_key": key,
-                    "arm_id": arm["arm_id"],
-                    "arm_mode": arm["mode"],
-                    "arm_alpha": effective_arm["alpha"],
-                    "label": row["label"],
-                    "behavior_cell": row.get("behavior_cell"),
-                    "generated_answer": answer,
-                    **cells_scored,
-                }
-                scored_rows.append(record)
-                completed.add(uk)
-                generated += 1
-                out_fh.write(json.dumps(record) + "\n")
+                    alphas = [ri.resolve_couple_alpha(
+                        gain_maps[arm["arm_id"]], arm["gain_key"],
+                        r["probe_pool_row_key"]) for r in chunk]
+                    # scalar for a 1-row forward (the sequential contract);
+                    # per-row vector otherwise (the hook broadcasts it).
+                    effective_arm = {**arm, "alpha": (alphas[0] if len(chunk) == 1
+                                                      else alphas)}
+                else:
+                    alphas = [arm["alpha"]] * len(chunk)
+                    effective_arm = arm
+                if batch_size == 1:
+                    answers = [harness.generate(
+                        chunk[0]["question"], spec=spec, arm=effective_arm,
+                        max_new_tokens=max_new_tokens)]
+                else:
+                    answers = harness.generate_batch(
+                        [r["question"] for r in chunk], spec=spec,
+                        arm=effective_arm, max_new_tokens=max_new_tokens)
+                for row, answer, row_alpha in zip(chunk, answers, alphas):
+                    key = row["probe_pool_row_key"]
+                    cells_scored = score_generation(row, answer)
+                    record = {
+                        "probe_pool_row_key": key,
+                        "arm_id": arm["arm_id"],
+                        "arm_mode": arm["mode"],
+                        "arm_alpha": float(row_alpha),
+                        "label": row["label"],
+                        "behavior_cell": row.get("behavior_cell"),
+                        "generated_answer": answer,
+                        **cells_scored,
+                    }
+                    scored_rows.append(record)
+                    completed.add(_unit_key(key, arm["arm_id"]))
+                    generated += 1
+                    out_fh.write(json.dumps(record) + "\n")
                 out_fh.flush()
 
     observed_cells = {r.get("behavior_cell") for r in scored_rows}

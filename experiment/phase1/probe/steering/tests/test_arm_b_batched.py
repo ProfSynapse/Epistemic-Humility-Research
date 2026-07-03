@@ -88,12 +88,14 @@ def det_score_fn(item, initial_answer):
     return (i + 1) / 10.0 + (0.05 if initial_answer is not None else 0.0)
 
 
-def det_text_fn(item, initial_answer, pass_name, variant, note):
+def det_text_fn(item, initial_answer, pass_name, variant, note,
+                think_draft=None):
     """Deterministic text keyed on EVERYTHING the request carries, so any
     engine divergence in request construction shows up as a text diff."""
     return (f"{pass_name}|{variant}|{item['row_key']}"
             f"|note={'-' if note is None else note}"
-            f"|init={'-' if initial_answer is None else initial_answer[:40]}")
+            f"|init={'-' if initial_answer is None else initial_answer[:40]}"
+            f"|draft={'-' if think_draft is None else think_draft[:40]}")
 
 
 def batch_callables():
@@ -105,7 +107,8 @@ def batch_callables():
     def gen_batch(requests, pass_name):
         assert all(r["pass_name"] == pass_name for r in requests)
         return [det_text_fn(r["item"], r["initial_answer"], r["pass_name"],
-                            r["variant"], r["note"]) for r in requests]
+                            r["variant"], r["note"], r.get("think_draft"))
+                for r in requests]
     return probe_scores, gen_batch
 
 
@@ -117,8 +120,10 @@ class TestEngineParity:
     @pytest.mark.parametrize("signal,position,source,aliases", [
         ("gate", "early", "selfaware_unknown", False),
         ("gate", "late", "selfaware_unknown", False),
+        ("gate", "final", "selfaware_unknown", False),
         ("dial", "early", "answerable", True),
         ("dial", "late", "answerable", True),
+        ("dial", "final", "answerable", True),
     ])
     def test_batched_matches_sequential(self, signal, position, source, aliases):
         items = make_items(6, source=source, aliases=aliases)
@@ -190,8 +195,30 @@ class TestRequestAssembly:
         assert len(rev) == 2 * len(items)
         assert all(r["note"] is not None for r in rev)
 
+    def test_final_three_stages_with_shared_think_draft(self):
+        items, seen = self._capture_requests("final")
+        assert [s[0] for s in seen] == ["initial", "revision_think",
+                                        "revision_final"]
+        shared, think, rev = seen[0][1], seen[1][1], seen[2][1]
+        assert len(shared) == len(think) == len(items)
+        # the shared think pass is plain (no note) and carries the initial
+        assert all(r["variant"] == "shared" and r["note"] is None
+                   for r in think)
+        for sr, tr in zip(shared, think):
+            assert tr["initial_answer"] == det_text_fn(
+                sr["item"], None, "initial", "shared", None)
+        # both variants of each item carry the SAME frozen draft + a note
+        assert len(rev) == 2 * len(items)
+        assert all(r["note"] is not None for r in rev)
+        by_item: dict[str, set[str]] = {}
+        for r in rev:
+            assert r["think_draft"]  # non-empty frozen draft
+            by_item.setdefault(r["item"]["row_key"], set()).add(
+                r["think_draft"])
+        assert all(len(drafts) == 1 for drafts in by_item.values())
+
     def test_pass_ids_unique(self):
-        for position in ("early", "late"):
+        for position in ("early", "late", "final"):
             _, seen = self._capture_requests(position)
             ids = [r["pass_id"] for _, reqs in seen for r in reqs]
             assert len(ids) == len(set(ids))
@@ -256,6 +283,37 @@ class TestRenderPassPrompt:
         ab.render_pass_prompt(r, item, None, "revision", None)
         messages, _ = r.calls[0]
         assert messages[2] == {"role": "assistant", "content": ""}
+
+    def test_revision_think_is_plain_thinking_enabled(self):
+        r = FakeRender()
+        item = make_items(1)[0]
+        prompt = ab.render_pass_prompt(r, item, "MY INITIAL", "revision_think",
+                                       None)
+        messages, thinking = r.calls[0]
+        assert thinking is True
+        assert messages[2] == {"role": "assistant", "content": "MY INITIAL"}
+        assert messages[3] == {"role": "user", "content": REVISION_INSTRUCTION}
+        assert "<think>" not in prompt  # no injection; the model thinks freely
+
+    def test_revision_final_closes_think_block_with_draft_then_note(self):
+        r = FakeRender()
+        item = make_items(1)[0]
+        note = "[internal: dial 0.78 — probably correct]"
+        draft = "step 1... step 2..."
+        prompt = ab.render_pass_prompt(r, item, "MY INITIAL", "revision_final",
+                                       note, draft)
+        _, thinking = r.calls[0]
+        assert thinking is True
+        # sequential layout: base + <think>\n draft \n\n note \n</think>\n
+        assert prompt.endswith(
+            "<think>\n" + draft + "\n\n" + note + "\n</think>\n")
+
+    def test_revision_final_tolerates_empty_draft_and_note(self):
+        r = FakeRender()
+        item = make_items(1)[0]
+        prompt = ab.render_pass_prompt(r, item, "MY INITIAL", "revision_final",
+                                       None, None)
+        assert prompt.endswith("<think>\n\n\n\n</think>\n")
 
 
 # ---------------------------------------------------------------------------
@@ -516,6 +574,30 @@ class TestEmitWrapper:
             else:
                 assert e["note"] is None
 
+    def test_wrapper_passes_think_draft_for_final(self, tmp_path):
+        items = make_items(2)
+        seen_drafts = []
+
+        def inner(item, initial_answer, pass_name, variant, note,
+                  think_draft=None):
+            if pass_name == "revision_final":
+                seen_drafts.append(think_draft)
+            return det_text_fn(item, initial_answer, pass_name, variant, note,
+                               think_draft)
+
+        emit: list[dict] = []
+        wrapped = ab.wrap_generate_for_emit(inner, FakeRender(), None, emit)
+        results = run_arm_b_cell(items, "dial", "final",
+                                 det_score_fn, wrapped, seed=5)
+        # final: 4 generations/item (initial + think + 2 revision_final)
+        assert len(emit) == 4 * len(items)
+        assert len(seen_drafts) == 2 * len(items)
+        assert all(d for d in seen_drafts)  # frozen drafts reached the inner
+        plain = run_arm_b_cell(items, "dial", "final",
+                               det_score_fn, det_text_fn, seed=5)
+        assert json.dumps(results, sort_keys=True) == \
+            json.dumps(plain, sort_keys=True)
+
     def test_emit_round_trip(self, tmp_path):
         rows = [ab.make_emit_row(StubTokenizer(), {
             "pass_id": "k::initial::real",
@@ -581,7 +663,8 @@ TINY_CHAT_MODEL = "trl-internal-testing/tiny-Qwen2ForCausalLM-2.5"
 @pytest.mark.skipif(
     not (_cuda and _tuner_present),
     reason="needs CUDA (sequential load is device_map=cuda) + a tuner checkout")
-def test_sequential_vs_tuner_batched_e2e_spot_check(tmp_path):
+@pytest.mark.parametrize("position", ["early", "final"])
+def test_sequential_vs_tuner_batched_e2e_spot_check(tmp_path, position):
     from transformers import AutoConfig
 
     from spot_check_arm_b import main as spot_main
@@ -603,7 +686,7 @@ def test_sequential_vs_tuner_batched_e2e_spot_check(tmp_path):
         argv = [
             "--model", TINY_CHAT_MODEL,
             "--direction", str(ddir / "direction_gate.json"),
-            "--signal", "gate", "--position", "early", "--eval-pool", "gate",
+            "--signal", "gate", "--position", position, "--eval-pool", "gate",
             "--n-unknown", "4", "--n-known", "4",
             "--pool-file", str(pool),
             "--seed", "20260701", "--greedy",
@@ -625,12 +708,19 @@ def test_sequential_vs_tuner_batched_e2e_spot_check(tmp_path):
     assert "engine" not in seq["config"]
     assert bat["config"]["engine"] == "tuner-batched"
 
+    # No --gate-revision-prompts here: revision prompts embed model-GENERATED
+    # text (initial answer / think draft), and on this random-weight tiny model
+    # the near-flat logits let batched left-padded numerics flip greedy argmax,
+    # so cross-engine generation identity is a lottery (final-position run:
+    # divergence began mid-generation with identical scaffold around it).
+    # Construction identity given a fixed draft is proven by the CPU parity
+    # tests above; use --gate-revision-prompts on real-checkpoint spot checks
+    # where greedy decode is stable.
     rc = spot_main([
         "--sequential", str(tmp_path / "seq.json"),
         "--batched", str(tmp_path / "bat.json"),
         "--emit-sequential", str(tmp_path / "seq_prompts.jsonl"),
         "--emit-batched", str(tmp_path / "bat_prompts.jsonl"),
-        "--gate-revision-prompts",
         "--out", str(tmp_path / "verdict.json"),
     ])
     verdict = json.loads((tmp_path / "verdict.json").read_text())

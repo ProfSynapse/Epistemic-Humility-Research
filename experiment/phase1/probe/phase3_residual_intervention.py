@@ -29,7 +29,7 @@ import json
 import sys
 from contextlib import contextmanager
 from pathlib import Path
-from typing import Any
+from typing import Any, Optional
 
 import numpy as np
 
@@ -78,17 +78,31 @@ def apply_intervention(hidden: np.ndarray, theta: np.ndarray, *, mode: str,
     - ``couple``: erase the theta component AND add ``alpha*sigma*unit(theta)``
       (set the theta coordinate to a doubt-scaled setpoint; Amendment AC).
       ``couple`` with alpha=0 is identical to ``ablate``.
+
+    ``alpha`` may be a scalar or a 1-D vector of length hidden.shape[0]
+    (one value per leading batch element, broadcast over positions) so a
+    batch of rows with DIFFERENT per-row gains runs in one forward.
     """
     th = _unit(np.asarray(theta, dtype=np.float64))
     h = np.asarray(hidden, dtype=np.float64)
+    a = np.asarray(alpha, dtype=np.float64)
+    if a.ndim not in (0, 1):
+        raise ResidualInterventionError(
+            f"alpha must be a scalar or a 1-D per-batch vector, got ndim={a.ndim}")
+    if a.ndim == 1:
+        if h.ndim < 2 or a.shape[0] != h.shape[0]:
+            raise ResidualInterventionError(
+                f"alpha vector length {a.shape[0]} does not match batch size "
+                f"{h.shape[0] if h.ndim >= 2 else '<no batch dim>'}")
+        a = a.reshape((h.shape[0],) + (1,) * (h.ndim - 1))
     if mode == MODE_ABLATE:
         proj = h @ th  # [...]
         return h - proj[..., None] * th
     if mode == MODE_COUPLE:
         proj = h @ th
-        return h - proj[..., None] * th + (alpha * sigma) * th
+        return h - proj[..., None] * th + (a * sigma) * th
     if mode == MODE_SHIFT:
-        return h + (alpha * sigma) * th
+        return h + (a * sigma) * th
     if mode == MODE_BASELINE:
         return h
     raise ResidualInterventionError(f"unknown mode {mode!r}")
@@ -163,11 +177,31 @@ def make_residual_write_hook(spec: dict[str, Any], arm: dict[str, Any]):
 
     Applies at EVERY position in the forward (prefill: all prompt positions;
     decode: the new position) so the intervention shapes the whole trajectory.
+
+    ``arm["alpha"]`` may be a scalar or a list/tuple with one alpha per batch
+    element (batched couple arms: rows with different per-row gains in one
+    forward). A vector alpha must match the batch size seen by the hook.
     """
     mode = arm["mode"]
-    alpha = float(arm["alpha"])
+    raw_alpha = arm["alpha"]
+    alpha_vec: Optional[list[float]] = (
+        [float(v) for v in raw_alpha]
+        if isinstance(raw_alpha, (list, tuple)) else None)
+    alpha_scalar = 0.0 if alpha_vec is not None else float(raw_alpha)
     sigma = float(spec["sigma"])
     theta_list = spec["theta"]
+
+    def _alpha_sigma(hs: Any):
+        """Scalar alpha*sigma, or a [batch, 1, ..., 1] tensor of per-row
+        alpha*sigma broadcasting over positions."""
+        if alpha_vec is None:
+            return alpha_scalar * sigma
+        if hs.shape[0] != len(alpha_vec):
+            raise ResidualInterventionError(
+                f"alpha vector length {len(alpha_vec)} does not match "
+                f"batch size {hs.shape[0]}")
+        a = hs.new_tensor(alpha_vec)
+        return a.reshape([hs.shape[0]] + [1] * (hs.dim() - 1)) * sigma
 
     def _hook(_module: Any, _args: tuple[Any, ...], output: Any):
         is_tuple = isinstance(output, tuple)
@@ -178,9 +212,9 @@ def make_residual_write_hook(spec: dict[str, Any], arm: dict[str, Any]):
             hs2 = hs - proj.unsqueeze(-1) * th
         elif mode == MODE_COUPLE:
             proj = hs @ th  # [batch, seq]
-            hs2 = hs - proj.unsqueeze(-1) * th + (alpha * sigma) * th
+            hs2 = hs - proj.unsqueeze(-1) * th + _alpha_sigma(hs) * th
         elif mode == MODE_SHIFT:
-            hs2 = hs + (alpha * sigma) * th
+            hs2 = hs + _alpha_sigma(hs) * th
         else:  # baseline should not register a hook, but be safe
             return None
         return (hs2, *output[1:]) if is_tuple else hs2
