@@ -1,9 +1,10 @@
 # Amendment AE — Training-Free Doubt-Coupled Caution on the Raw Base
 
-Status: DRAFT (unsigned). Prediction, falsifier, gates, and controller constants
-lock at signing. Tier-2 exploratory local mechanism evidence under
-`PHASE3-control-system-protocol.md` (RQ4 Stage 1, base-model substrate). Not
-headline evidence; never pooled with the locked Phase 1 matrix.
+Status: SIGNED 2026-07-03 (user, in-conversation: "Sign it and boot it up";
+launch approved in the same message). Prediction, falsifier, gates, and
+controller constants are LOCKED as written. Tier-2 exploratory local mechanism
+evidence under `PHASE3-control-system-protocol.md` (RQ4 Stage 1, base-model
+substrate). Not headline evidence; never pooled with the locked Phase 1 matrix.
 
 Run lane: LOCAL 3090 only. No cloud spend. Amendment AC's PR (#156) is MERGED
 with AC-G1 PASS, so the one-merged-PR-at-a-time discipline is satisfied; the
