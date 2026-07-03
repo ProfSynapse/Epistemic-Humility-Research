@@ -192,10 +192,62 @@ def run(args) -> int:
         counts = {"answered": 0, "refused": 0, "ungradeable": 0,
                   "degenerate": 0, "correct": 0, "graded_answerable": 0,
                   "confab_on_unanswerable": 0}
+
+        # --- RESUME: skip rows already present (valid JSON) for this arm ---
+        # Deterministic batch-1 greedy makes skip-resume byte-identical to a
+        # fresh run. We rewrite existing valid rows first (dropping any trailing
+        # partial line), then continue with the remaining work items, so the
+        # per-arm config SHA is verified consistent for the whole file.
+        done_keys = set()
+        prior_rows = []
+        if rows_path.exists() and not args.overwrite:
+            for ln in rows_path.read_text(encoding="utf-8").splitlines():
+                ln = ln.strip()
+                if not ln:
+                    continue
+                try:
+                    pr = json.loads(ln)
+                except json.JSONDecodeError:
+                    continue  # trailing partial line -> dropped
+                if pr.get("arm") != arm:
+                    continue
+                if pr.get("config_sha") != config_sha:
+                    raise RuntimeError(
+                        f"resume config_sha mismatch in {rows_path}: "
+                        f"row {pr.get('row_key')} has {pr.get('config_sha')} "
+                        f"!= current {config_sha}")
+                if pr["row_key"] in done_keys:
+                    continue
+                done_keys.add(pr["row_key"])
+                prior_rows.append(pr)
+                # fold prior counts back in so the manifest total is correct
+                if pr.get("answered"):
+                    counts["answered"] += 1
+                elif pr.get("refused"):
+                    counts["refused"] += 1
+                else:
+                    counts["ungradeable"] += 1
+                if pr.get("degenerate"):
+                    counts["degenerate"] += 1
+                if pr.get("confab_on_unanswerable"):
+                    counts["confab_on_unanswerable"] += 1
+                if pr.get("gold_class") == "answerable" and pr.get("correct") is not None:
+                    counts["graded_answerable"] += 1
+                    if pr.get("correct"):
+                        counts["correct"] += 1
+        remaining = [it for it in work if it["row_key"] not in done_keys]
+        if done_keys:
+            print(f"[ah/main] arm={arm} RESUME: {len(done_keys)} present, "
+                  f"{len(remaining)} remaining (of {len(work)})", flush=True)
+
         t0 = time.time()
-        written = 0
+        written = len(done_keys)
+        # Rewrite clean (validated prior rows) then append remaining.
         with rows_path.open("w", encoding="utf-8") as rows_fh:
-            for item in work:
+            for pr in prior_rows:
+                rows_fh.write(json.dumps(pr, ensure_ascii=False) + "\n")
+            rows_fh.flush()
+            for item in remaining:
                 c = cand[item["row_key"]]
                 question = c["question"]
                 rendered, _mode = render_probe_prompt(
@@ -261,10 +313,13 @@ def run(args) -> int:
                 }, ensure_ascii=False) + "\n")
                 rows_fh.flush()
                 written += 1
-                if written % 100 == 0 or written == len(work):
+                new_written = written - len(done_keys)
+                if new_written % 100 == 0 or written == len(work):
                     el = time.time() - t0
+                    rate = new_written / el if el else 0
                     print(f"[ah/main] arm={arm} {written}/{len(work)} "
-                          f"{el:.0f}s ({written/el:.2f}/s) {counts}", flush=True)
+                          f"(+{new_written} this run) {el:.0f}s ({rate:.2f}/s) "
+                          f"{counts}", flush=True)
         manifest["arms"][arm] = {
             **payload, "config_sha": config_sha, "n": len(work),
             "counts": counts, "rows": str(rows_path),
@@ -288,6 +343,8 @@ def parse_args(argv=None):
     ap.add_argument("--max-new-tokens", type=int, default=96)
     ap.add_argument("--skip-count-check", action="store_true",
                     help="smoke only: bypass the 1,662-row pool guard")
+    ap.add_argument("--overwrite", action="store_true",
+                    help="ignore existing rows and regenerate every arm from scratch")
     return ap.parse_args(argv)
 
 
