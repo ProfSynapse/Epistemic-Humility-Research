@@ -307,8 +307,11 @@ All 8 prime×label cells move with CIs excluding 0 on both axes, but:
   (residual confound, could not be closed with existing tensors): robust to
   prompt length (LOW adds more tokens yet shifts less; corr(len, proj)=0.08)
   but NOT proven prime-specific vs a generic any-prepend effect — no
-  neutral-sentence control was extracted. A neutral-prepend control belongs in
-  any follow-up.
+  neutral-sentence control was extracted at resolution time. CLOSED same day
+  by the §9.4 neutral-prepend control: the generic component is real and
+  large, and the prime-differential relative to neutral is semantically
+  coherent on the caution axis (HIGH down, LOW up) while the doubt axis stays
+  anti-semantic — see §9.4.
 
 **Q2 — muzzle compliance travels through the caution axis, not the doubt
 axis.** Among the 147 known_correct_answered rows under the LOW muzzle (53
@@ -337,7 +340,26 @@ from outside while the doubt element holds still — the compliance direction of
 ### 9.4 Follow-ups minted (not signed)
 
 - Neutral-prepend extraction control (closes the any-prepend confound on the
-  Q1 caution shift; CPU+small GPU forward pass only).
+  Q1 caution shift; CPU+small GPU forward pass only). — **DONE 2026-07-03
+  (lab notebook, same day; script `amendment_ag_neutral_control.py`, result
+  `amendment_ag_neutral_result.json`).** Neutral sentence ("The following
+  question was selected from a large general collection of questions for use
+  in this study."; +18 tokens, matching HIGH's +18) produces Δcaution known
+  −0.341z / unknown −0.649z — i.e. the generic any-prepend component is REAL
+  and carries most of the raw shift. But re-referencing the primes to NEUTRAL
+  instead of bare baseline flips the reading of §9.3-Q1 in the coherent
+  direction: relative to neutral, HIGH moves caution DOWN (known −0.24z,
+  unknown −0.05z) and LOW moves caution UP (known +0.21z, unknown +0.30z) —
+  the prime-specific caution differential is semantically CORRECT and matches
+  the behavioral direction. The doubt axis stays anti-semantic after the same
+  correction (e.g. HIGH-on-unknown −0.20z relative, toward unknown-like;
+  LOW-on-known +0.10z relative, toward known-like), so the §9.3 conclusion —
+  belief unmoved, policy axis carries the effect — SHARPENS rather than
+  weakens. Differentials are point differences of cell means (per-cell CIs
+  ±≈0.03z, so differentials ≥0.1z are far beyond overlap; the HIGH-vs-neutral
+  unknown cell at −0.05z is the one marginal entry). Caveat: one neutral
+  sentence, not a panel; a sentence-panel control would bound sentence-choice
+  variance.
 - Divergent-pool design (probe≠gold rows) — still the only clean separator of
   own-read-out vs gold-instruction, per AF §8; AG's asymmetry makes the
   release direction the interesting half.
