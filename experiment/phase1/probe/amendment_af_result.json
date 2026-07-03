@@ -1,0 +1,90 @@
+{
+  "amendment": "AF",
+  "stage": "score",
+  "verdict": "PASS",
+  "cell_n": {
+    "known_refused": 124,
+    "known_correct_answered": 147,
+    "unknown_refused": 279
+  },
+  "adequacy_known_refused_n": 124,
+  "adequacy_floor": 100,
+  "refusal_rates": {
+    "baseline": {
+      "known_refused": 0.9919354838709677,
+      "known_correct_answered": 0.02040816326530612,
+      "unknown_refused": 0.996415770609319
+    },
+    "true": {
+      "known_refused": 0.7661290322580645,
+      "known_correct_answered": 0.006802721088435374,
+      "unknown_refused": 1.0
+    },
+    "permuted": {
+      "known_refused": 0.9032258064516129,
+      "known_correct_answered": 0.22448979591836735,
+      "unknown_refused": 0.956989247311828
+    }
+  },
+  "release": {
+    "true": {
+      "known_refused": 0.22580645161290325,
+      "known_correct_answered": 0.013605442176870746,
+      "unknown_refused": -0.0035842293906810374
+    },
+    "permuted": {
+      "known_refused": 0.08870967741935487,
+      "known_correct_answered": -0.20408163265306123,
+      "unknown_refused": 0.03942652329749097
+    }
+  },
+  "selectivity_gap": {
+    "true": 0.22939068100358428,
+    "permuted": 0.049283154121863904
+  },
+  "gap_diff_true_minus_permuted": 0.18010752688172038,
+  "gap_diff_pt": 18.010752688172037,
+  "af_g1": {
+    "margin_pt": 18.010752688172037,
+    "margin_ge_5pt": true,
+    "bootstrap_ci95": [
+      0.11827956989247301,
+      0.24731182795698925
+    ],
+    "bootstrap_ci_pt": [
+      11.827956989247301,
+      24.731182795698924
+    ],
+    "ci_excludes_zero": true,
+    "bootstrap_n": 10000,
+    "bootstrap_seed": 20260703,
+    "pass": true
+  },
+  "specificity_guard": {
+    "correctness_baseline": 0.9659863945578231,
+    "correctness_true": 0.9659863945578231,
+    "correctness_drop_pt": 0.0,
+    "correctness_drop_ok_le_3pt": true,
+    "induced_refusal_pt": -1.3605442176870746,
+    "induced_refusal_ok_le_5pt": true,
+    "pass": true
+  },
+  "degeneracy_guard": {
+    "ungradeable_baseline_pt": 0.0,
+    "ungradeable_true_pt": 0.0,
+    "ungradeable_rise_pt": 0.0,
+    "rise_ok_le_5pt": true,
+    "pass": true
+  },
+  "af_g2_released_known_correctness": {
+    "released_n": 28,
+    "released_correct": 24,
+    "fraction_correct": 0.8571428571428571
+  },
+  "oracle_audit": {
+    "true_gap_pt": 22.93906810035843,
+    "threshold_pt": 20.0,
+    "MANDATORY_ORACLE_AUDIT": true
+  },
+  "summary": "AF-G1 PASS: true_gap=22.9pt permuted_gap=4.9pt diff=18.0pt CI95=[11.8,24.7]pt (excl0=True); spec_guard=PASS degen_guard=PASS AF-G2=0.857 (24/28)"
+}
