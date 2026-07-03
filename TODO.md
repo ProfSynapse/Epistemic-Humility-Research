@@ -79,7 +79,7 @@ _proposed — lead to confirm_.
 
 | # | Item | Tier | Blocker / dependency | Cost |
 |---|------|------|----------------------|------|
-| 19 | **Amendment AH draft — divergent-pool (probe ≠ gold)** — the only clean own-readout vs gold-instruction separator (AF §8, AG §9.4); pliability adds a per-row prediction (flip prob ~ boundary distance) the design can exploit. | A | draft + sign + pool construction (find natural probe-error rows) | GPU |
+| 19 | **Amendment AH — divergent-pool (probe ≠ gold)** — DRAFT written 2026-07-03 (`experiment/protocol/AMENDMENT-AH-divergent-pool-own-readout.md`): native-path gatekeeper (user rejected the prosthetic path); 2×2 cell×arm design decouples congruence from prime direction; consensus-divergence rule + AE-style adequacy floor (≥50/cell). Next: scout inventory → Stage-0 mining (needs launch approval) → lock gates → sign. | A | Stage-0 GPU mining approval | GPU |
 | 20 | **Generation-time displacement geometry** — the off-axis finding (92–99% of the prime's write misses the doubt/caution plane) holds at the pre-gen anchor only; extract generation-time positions and re-decompose. | L | one extraction pass | GPU |
 | 21 | **Sentence-panel neutral control** — bound sentence-choice variance on the single-sentence neutral-prepend result (PR #166). | L | none | GPU (1 forward pass) |
 
