@@ -46,6 +46,30 @@ def test_baseline_is_noop():
     assert np.allclose(ri.apply_intervention(h, np.array([1.0, 0.0]), mode="baseline"), h)
 
 
+def test_vector_alpha_equals_per_row_scalar():
+    """A [batch] alpha vector must reproduce row-by-row scalar application
+    (couple AND shift) — the batched-runner equivalence contract."""
+    rng = np.random.default_rng(7)
+    theta = rng.normal(size=6)
+    h = rng.normal(size=(3, 4, 6))  # [batch, seq, hidden]
+    alphas = np.array([-1.5, 0.0, 2.25])
+    for mode in ("couple", "shift"):
+        vec = ri.apply_intervention(h, theta, mode=mode, alpha=alphas, sigma=1.7)
+        per_row = np.stack([
+            ri.apply_intervention(h[i], theta, mode=mode, alpha=float(alphas[i]), sigma=1.7)
+            for i in range(3)])
+        assert np.allclose(vec, per_row, atol=1e-12)
+
+
+def test_vector_alpha_length_mismatch_raises():
+    h = np.zeros((3, 2, 4))
+    theta = np.array([1.0, 0.0, 0.0, 0.0])
+    with pytest.raises(ri.ResidualInterventionError, match="length"):
+        ri.apply_intervention(h, theta, mode="couple", alpha=np.array([1.0, 2.0]))
+    with pytest.raises(ri.ResidualInterventionError, match="scalar or a 1-D"):
+        ri.apply_intervention(h, theta, mode="couple", alpha=np.ones((2, 2)))
+
+
 def test_unknown_mode_raises():
     with pytest.raises(ri.ResidualInterventionError):
         ri.apply_intervention(np.zeros((1, 2)), np.array([1.0, 0.0]), mode="nope")
@@ -90,6 +114,16 @@ class _FakeTensor:
     def __init__(self, arr):
         self.arr = np.asarray(arr, dtype=np.float64)
 
+    @property
+    def shape(self):
+        return self.arr.shape
+
+    def dim(self):
+        return self.arr.ndim
+
+    def reshape(self, shape):
+        return _FakeTensor(self.arr.reshape(shape))
+
     def new_tensor(self, data):
         return _FakeTensor(data)
 
@@ -129,6 +163,28 @@ def test_write_hook_shift_matches_reference():
     out = hook(None, (None,), (hs,))
     ref = ri.apply_intervention(hs.arr, np.array(spec["theta"]), mode="shift", alpha=3.0, sigma=2.0)
     assert np.allclose(out[0].arr, ref)
+
+
+def test_write_hook_vector_alpha_matches_reference():
+    spec = ri.build_intervention_spec({"layer": 3, "theta": [1.0, 2.0, 0.0], "sigma": 1.5})
+    alphas = [0.5, -2.0]
+    hook = ri.make_residual_write_hook(
+        spec, {"arm_id": "coupled", "mode": "couple", "alpha": alphas})
+    hs = _FakeTensor([[[5.0, 2.0, 1.0], [9.0, -1.0, 4.0]],
+                      [[0.5, 0.0, -3.0], [1.0, 1.0, 1.0]]])
+    out = hook(None, (None,), (hs,))
+    ref = ri.apply_intervention(hs.arr, np.array(spec["theta"]), mode="couple",
+                                alpha=np.array(alphas), sigma=1.5)
+    assert np.allclose(out[0].arr, ref)
+
+
+def test_write_hook_vector_alpha_batch_mismatch_raises():
+    spec = ri.build_intervention_spec({"layer": 3, "theta": [1.0, 0.0, 0.0], "sigma": 1.0})
+    hook = ri.make_residual_write_hook(
+        spec, {"arm_id": "coupled", "mode": "couple", "alpha": [1.0, 2.0, 3.0]})
+    hs = _FakeTensor([[[5.0, 2.0, 1.0]], [[1.0, 1.0, 1.0]]])  # batch of 2
+    with pytest.raises(ri.ResidualInterventionError, match="length"):
+        hook(None, (None,), (hs,))
 
 
 # --- analysis / verdict --------------------------------------------------
