@@ -53,6 +53,15 @@ python3 bin/sync_skills.py --check --skill experiment-runner
 - Pre-state a prediction, a falsifier (the result that kills the line), and the
   pass/fail gates BEFORE the run. Do not move the goalposts after seeing the
   result; report ambiguous results as ambiguous.
+- **Dual predictions (standing practice, adopted 2026-07-03):** BOTH the
+  orchestrator and the user record an independent prediction in the amendment
+  doc before launch. State the orchestrator's prediction (with rough
+  confidence) FIRST, then elicit the user's in their own words and record it
+  verbatim. After resolution, score both in `docs/prediction-scoreboard.md`
+  (outcomes per party: WIN / LOSS / TIE — a TIE when the result is ambiguous,
+  the gates are voided, or both predictions are equally right/wrong; ties
+  score to neither side). Convergent predictions are fine — a result that
+  surprises both parties carries full evidential weight and says so in the doc.
 - Promote an exploratory win to a claim only via a **confirmatory replication**
   registered before running it (fresh seeds, ideally the larger model / held-out
   set). A single-seed win is a lead, not a result.
