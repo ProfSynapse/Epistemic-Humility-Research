@@ -149,19 +149,29 @@ already supplies the noise robustness the margin band was for. No
 cell-specific rule relaxation (relaxing only the scarce cell to L24-alone
 would trade pre-registration cleanliness for n).
 
-- **Matched core (648 rows)** = `redesign_check/pool_proposal.jsonl`: greedy
-  1:1 nearest-neighbor caliper match on caution distance (caliper 0.25·SD =
-  3.10). Release contrast 249+249; muzzle contrast 75+75 (all available
-  congruent-muzzle rows). Post-match positivity is excellent (overlap 0.960 /
-  0.973; separability AUC 0.500 both contrasts).
-- **Positive-control stratum (150 rows):** concordant-known rows sampled from
-  the LOW-caution end (likely baseline-answered), for AH-G1 — the matched
-  muzzle-incongruent cell sits at high caution by construction and is the
-  wrong population for replicating AG's muzzle effect.
+- **Matched core (v2.1, 1,512 rows)** = `expansion/pool_v21.jsonl` (supersedes
+  the 648-row v2 proposal after the user-approved dataset expansion, §4.8):
+  greedy 1:1 nearest-neighbor caliper match on caution distance (caliper
+  0.25·SD = 3.10) over the 18,496-row union surface. Release contrast
+  669+669 (3 D-over unmatched within caliper); muzzle contrast 87+87 (all
+  available congruent-muzzle rows). Post-match positivity: overlap 0.985 /
+  1.000, separability AUC 0.500 both contrasts — caution distance fully
+  balanced, so the readout-state contrast is cleanly separated from
+  boundary distance.
+- **Crisp stratum (pre-registered secondary):** congruent-release rows
+  flagged crisp = false_assumption (42) + counterfactual (34) + SelfAware
+  (12) = 88, vs soft = ambiguous/controversial/unsolved/future (581). KUQ
+  categories canonicalized across the two source files; raw strings carried
+  per row as `category_raw`.
+- **Positive-control stratum (150 rows):** concordant-known rows from the
+  LOW-caution end (likely baseline-answered), for AH-G1, sampled across all
+  four answerable sources (TriviaQA 39 / SelfAware 37 / KUQ 37 / PopQA 37) —
+  the matched muzzle-incongruent cell sits at high caution by construction
+  and is the wrong population for replicating AG's muzzle effect.
 
 Renderings per row: A0 + the row's contrast-relevant prime only (release rows
-get A-certain, muzzle and positive-control rows get A-doubt) ≈ 1,596
-generations, ~2–2.5 h on the 3090 at the frozen batch-1 harness.
+get A-certain, muzzle and positive-control rows get A-doubt) = 1,662 × 2 =
+3,324 generations, ~3.5–4 h on the 3090 at the frozen batch-1 harness.
 
 ### 3.4 Primary analysis
 
@@ -238,6 +248,21 @@ Runner: ah-stage0-runner; artifacts in canonical
      the release contrast) is therefore the EXPECTED path, not an edge case —
      recorded before launch so it cannot read as post-hoc.
 
+8. **Expansion pass — RESULT (2026-07-03, user approval "run it"; code
+   `amendment_ah_stage0_expand_*.py`, artifacts `expansion/`):** +13,496 rows
+   (3,496 remaining KUQ unknowns with categories carried; 6,000 TriviaQA +
+   4,000 PopQA factoids); union surface 18,496. New D-over at consensus =
+   419 (all KUQ; ambiguous 231, controversial 85, unsolved 49, counterfactual
+   24, future 17, false-assumption 13). **Muzzle rescue failed informatively:
+   12/10,000 fresh factoids read probe-uncertain at consensus** (all
+   TriviaQA; PopQA 0) — replicating the one-sided-readout finding on clean
+   out-of-source items: the readout almost never underestimates on
+   demonstrably-answerable questions. Congruent-muzzle grows only 75→87;
+   muzzle scarcity is a property of the readout, not the candidate pool.
+   Release contrast grows 249→669 matched pairs with the crisp stratum at 88.
+   Orchestrator verified pool composition against `pool_v21.jsonl` (1,662
+   rows; cell counts exact).
+
 ## 5. Gates (v2 LOCKED values — effective at signing)
 
 - **AH-G0 (feasibility, post-A0):** ≥40 eligible rows per cell (release cells
@@ -284,8 +309,10 @@ picture where instruction fights readout. Descriptive only.
 5. Redesign check appended — DONE (§4.7); rule/caliper/pool/gates locked
    (§3.3, §5).
 6. User prediction recorded; user sign-off. _(pending)_
-7. Main run (~1,596 generations, ~800 rows × 2 renderings each, ~2–2.5 h on
-   the 3090): **separate explicit launch approval.** Signing ≠ launch.
+7. Dataset expansion (user: "run it") — DONE (§4.8); pool re-locked at v2.1
+   (§3.3).
+8. Main run (3,324 generations: 1,662 rows × 2 renderings, ~3.5–4 h on the
+   3090): **separate explicit launch approval.** Signing ≠ launch.
 
 ## 8. Interpretive caveats (pre-stated)
 
