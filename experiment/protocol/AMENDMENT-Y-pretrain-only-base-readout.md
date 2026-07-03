@@ -216,3 +216,77 @@ Gate/dial/veto AUROCs exactly as X/Z/SR define them. Interpretation rules:
 - adequacy-gate row minimums frozen: >= 50 correct AND >= 50
   wrong/hallucination rows per cell; below floor = INELIGIBLE (excluded from
   H_B1/H_B2 denominators), never a negative
+
+## 9. Result — fleet COMPLETE 2026-07-02, H_B1 SUPPORTED 4/4
+
+All 10 evidence cells scored (9 cloud A10G + OLMo-2-7B run locally on the 3090
+after two cloud preemptions benched the cloud cell; identical extractor,
+engine `tuner-batched`, seed 20260630, greedy). Every cell clears the adequacy
+floors by wide margins (min class count 234; floor 50). Per-cell artifacts:
+`experiment/phase1/probe/amendment_y_results/`.
+
+### Arm A — paired base-vs-instruct (gated)
+
+| Cell | best L | gate | dial | veto | within-SA ctrl |
+|---|---|---|---|---|---|
+| Qwen3.5-4B-Base (r3, k-shot) | 17 | 0.9984 | 0.8725 | 0.6657 | 0.6196 |
+| Qwen3.5-4B-Base (chat-render control) | 21 | 0.9977 | 0.8511 | 0.8672 | 0.7961 |
+| Gemma-4-E4B (pt, r2) | 24 | 0.9975 | 0.8633 | 0.8743 | 0.7824 |
+| Llama-3.2-3B (base) | 14 | 0.9972 | 0.8235 | 0.8354 | 0.7712 |
+| Olmo-3-7B (base) | 17 | 0.9975 | 0.8442 | 0.8029 | 0.7912 |
+| Olmo-3-7B-Instruct | 21 | 0.9979 | 0.8103 | 0.7306 | 0.6741 |
+
+- **H_B1 (pretraining origin, PRIMARY): SUPPORTED 4/4.** Every Arm A base
+  reads the answerability gate at 0.997+ (bar 0.90 on >= 3/4). The falsifier
+  (base < 0.75 while instruct >= 0.95) fires on 0/4 pairs. The boundary
+  signal predates post-training on all four families.
+- **H_B2 (veto pre-post-training): SUPPORTED 4/4.** Base-fit veto 0.666
+  (Qwen3.5, marginal — mirrors its Z greedy margin) / 0.874 (Gemma) / 0.835
+  (Llama-3.2) / 0.803 (Olmo-3); bar 0.65 on >= 3/4.
+- **H_B3 (post-training sharpens, report-only): NOT SUPPORTED — deltas <= 0
+  on every pair.** The clean within-Y pair (Olmo-3 base->instruct, same seed
+  and scorer) moves veto 0.803 -> 0.731 and within-SA control 0.791 -> 0.674.
+  Z-anchored instruct siblings (greedy) sit at or below their Y bases too
+  (Qwen3.5 0.666 vs 0.666; Gemma 0.871 vs 0.874; Llama-3.2 0.633 vs 0.835).
+  Caveat: cross-run pairs differ in render (base k-shot vs instruct chat
+  template) so those deltas are render-confounded; the Olmo-3 pair is the
+  supported statement. Direction consistent with X's non-monotonicity:
+  post-training does not sharpen the trust readout, and can dull it.
+- **Render sensitivity (descriptive):** the dual-render control shows
+  Qwen3.5-Base's veto is render-sensitive (k-shot 0.666 vs chat-render
+  0.867), while its gate is render-invariant (0.998 both). The veto's
+  fragility (Z finding) is partly a prompting-surface effect, not purely a
+  model property.
+
+### Arm B — era ladder (descriptive only, no gate, no claim)
+
+| Rung (year) | best L | gate | dial | veto | within-SA ctrl |
+|---|---|---|---|---|---|
+| GPT-2-XL (2019) | 23 | 0.9911 | 0.7940 | 0.7936 | 0.5886 |
+| Pythia-2.8B (2023) | 10 | 0.9927 | 0.8206 | 0.7511 | 0.5955 |
+| Llama-2-7B (2023) | 15 | 0.9977 | 0.8267 | 0.8666 | 0.8184 |
+| OLMo-2-7B (2025, LOCAL) | 16 | 0.9982 | 0.8580 | 0.7752 | 0.7107 |
+| (top rungs = Arm A bases, 2026) | — | 0.997+ | 0.82-0.87 | 0.67-0.87 | 0.62-0.79 |
+
+- Even GPT-2-XL carries all three readouts above W's 0.65 bar. The raw gate
+  AUROC is nearly era-flat (0.991 -> 0.998); the era signal lives in the
+  within-SelfAware control (~0.59 on 2019-2023-era GPT-2/Pythia rising to
+  ~0.71-0.82 from Llama-2 onward), i.e. what improves across eras is the
+  in-distribution separation of confident hallucinations from known answers,
+  not the gross answerable/unanswerable split.
+- **Text baseline bound (report rule):** a TF-IDF question-surface classifier
+  reads the frozen gate pool at 0.964 +/- 0.016, and question-surface predicts
+  dial correctness at 0.75-0.78 per family. The hidden-state gate (0.991-0.998)
+  and dial (0.79-0.87) sit above these bounds, but the margins — not the raw
+  AUROCs — are the honest effect sizes: much of the gate is
+  surface-predictable on SelfAware.
+- Engine equivalence: `y-equiv-pythia-batched` (batched engine re-run of the
+  sequential Pythia cell) matches within noise (gate 0.9938 vs 0.9927, dial
+  0.8277 vs 0.8206, veto 0.7887 vs 0.7511), supporting the batched-engine
+  adoption for the fleet.
+
+Per §5, Arm B stays descriptive: no era claim is minted here; a confirmatory
+registration would be required. Per §7's paper rule, these results answer the
+regimen paper's §8 open question (origin of the boundary signal) in the
+"already present from pretraining" direction — paper text update tracked
+separately on the paper line.
