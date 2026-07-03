@@ -5,9 +5,10 @@ lock at signing. Tier-2 exploratory local mechanism evidence under
 `PHASE3-control-system-protocol.md` (RQ4 Stage 1, base-model substrate). Not
 headline evidence; never pooled with the locked Phase 1 matrix.
 
-Run lane: LOCAL 3090 only. No cloud spend. Queued behind Amendment AC's PR
-(one amendment = one branch = one merged PR before the next launches); relative
-order vs Amendment AD's launch is the user's call at sign-time.
+Run lane: LOCAL 3090 only. No cloud spend. Amendment AC's PR (#156) is MERGED
+with AC-G1 PASS, so the one-merged-PR-at-a-time discipline is satisfied; the
+user prioritized AE ahead of Amendment AD's launch (2026-07-03, "let's skip to
+AE since we found something useable").
 
 ## 1. Motivation and posture
 
@@ -53,10 +54,22 @@ training-free control story at one site; if not, the caution gate is something
 post-training ASSEMBLES rather than merely sharpens — which is itself the
 cleanest statement of what training buys that we would have on record.
 
-POSTURE — conservative, mirroring AC:
+POSTURE — conservative, updated for AC's result (2026-07-03, its §8):
 
-- The use-the-signal side is 0-for-4 on trained checkpoints (M, N, R, AA); AC
-  is in flight. We pre-state that prior.
+- The use-the-signal record is now 1-for-5: M, N, R, AA failed, then **AC
+  PASSED** — coupled beat permuted +8.7pt (CI [+5.6, +12.0]) and beat constant
+  ablate +10.7pt (CI [+7.1, +14.5]). The SAME controller equation, gain
+  machinery, and erase+write hook AE uses just carried information on the
+  trained substrate. The updated prior, stated honestly: the WIRE is proven;
+  what remains untested is whether the base has a control surface for it to
+  actuate.
+- AC's mechanism decomposition is the directly load-relevant precedent: the
+  coupling's entire edge was on the POSITIVE-gain side — writing the gate
+  HIGH on high-doubt rows HELD unknown_refused refusal at 0.580 where
+  constant ablate released it to 0.503. That is existence proof that the
+  caution WRITE (not just the erase) causally raises refusal on the trained
+  model. AE's actionable side is exactly that positive-gain write; the
+  substrate changes, the actuation direction does not.
 - The named spoiler: writing caution into a base that never expresses refusal
   may push it OFF-POLICY — degenerate JSON, garbled text — rather than into
   clean abstention. A degeneracy guard is gated for exactly this.
@@ -224,14 +237,21 @@ this amendment; any Stage-2 proposal must be a new signed amendment engaging
 with this null. D-transferred failing while D-native passes (or vice versa) is
 reported as-is — the claim rides on D-native alone.
 
-Prediction (cautiously optimistic, ordered):
+Prediction (cautiously optimistic, ordered; bands unchanged by AC's pass —
+the evidence moved our confidence in the WIRE, not in the base's surface):
 
 1. Most likely: D-native passes AE-G1 with a small margin (5-15pt) with some
    degeneracy pressure visible but under the guard; D-transferred weaker or
-   null (T-precedent direction drift).
-2. Second: the falsifier fires — the base has the sensor but no assembled
-   control surface; training builds the actuator. (This closes the
-   training-free claim at the readout boundary, cleanly.)
+   null (T-precedent direction drift). AC's quantitative anchor: on the
+   trained substrate the positive-gain write was worth ~8pt of held refusal
+   over no-modulation (ur 0.580 vs 0.503); a base effect of similar order is
+   the optimistic case, since there the write must overcome a never-trained
+   policy rather than reinforce a trained one.
+2. Second: the falsifier fires — the base has the sensor but no ASSEMBLED
+   control surface (W's "training buys behavioral abstention" as substrate
+   fact, not just behavior description); training builds the actuator. This
+   closes the training-free claim at the readout boundary, cleanly, and
+   makes the AC-vs-AE contrast the paper's sensor/actuator asymmetry figure.
 3. A large margin (>25pt) or a squeaky-clean degeneracy profile would be a
    surprise: check gain-map row alignment, permutation correctness, and the
    refusal grader on base idiom before believing it.
@@ -294,8 +314,13 @@ other way: refusal rising with positive g). Baseline collection cell census
   de-refused correctness 68.7%); caution_perp artifact:
   `caution_perp_direction_L35.json` (L35, hidden 2560, sigma 25.53,
   pos known_refused n=168, neg known_correct_answered n=373, raw
-  caution-doubt cos -0.83, perp fraction 0.558). AC's result lands in its own
-  §8 and is the trained-substrate twin of this cell.
+  caution-doubt cos -0.83, perp fraction 0.558).
+- AC result (trained-substrate twin, its §8, 2026-07-03, PR #156): AC-G1 PASS
+  +8.7pt CI [+5.6, +12.0] over permuted; +10.7pt CI [+7.1, +14.5] over
+  constant ablate; the edge lives on the positive-gain side (coupled held
+  unknown_refused at 0.580 vs ablate 0.503); dose-response monotone through
+  the actionable range; de-refused correctness flat across arms (~0.67-0.70).
+  In-frame B1 replication: ablate kr 0.994 -> 0.536.
 - Direction-transfer prior: T (S-fit dial probe applied cold across
   checkpoints reads 0.679 — the transferable component drifts);
   P (cross-DATASET caution-direction cosine 0.185 while the answerability
@@ -337,3 +362,11 @@ smoke, then full per §3)
 - 2026-07-03: drafted (user-directed: base-model mirror of AC; "everything we
   found around answerability doubt and caution showed up with no training" —
   this cell tests exactly whether that extends from sensor to actuator).
+- 2026-07-03: corrected against primary sources (W/S/B1/T/P): sensor layer
+  rule + floor, census language neutralized, extraction reuse ruled out.
+- 2026-07-03: updated for AC's result before signing (user: "Before signing
+  anything we should change based on our results"): posture now 1-for-5 with
+  the wire proven; AC's positive-gain-write evidence (ur 0.580 vs 0.503)
+  named as the direct precedent for AE's actionable side; quantitative anchor
+  added to prediction 1; AC constants added to §7. Gates, falsifier, bands,
+  and controller constants UNCHANGED by the update.
