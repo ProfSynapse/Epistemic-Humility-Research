@@ -225,3 +225,33 @@ training-free cells).
     **VERDICT DEFERRED:** the strict per-seed clause (c, ≥3/4 veto PASS on every seed) hinges
     on Gemma — seeds 702/703 are 3/3 but seed 701 is 2/3 (Ministral FAILs), so Gemma-701 must
     PASS to clear ≥3/4. Re-run Gemma before calling the verdict.
+
+- **Amendment Y (pretrain-only base readout) — INTERIM, fleet in flight (2026-07-02).**
+  10-cell HF Jobs fleet (a10g-small, pinned 3bb2fc76, seed 20260630 greedy, k-shot base-mode
+  surface for bases). Results land in `professorsynapse/epistemic-humility-cloud-results`
+  per run-tag; roll-up pending. Landed 5/10, 0 failures, all formally PASS all three gates:
+  | cell | year | gate | dial | veto | within-dist control |
+  |---|---|---|---|---|---|
+  | y-b-gpt2-xl | 2019 | 0.991 (L23) | 0.794 | 0.794 | **0.589** |
+  | y-b-pythia-2.8b | 2023 | 0.993 (L10) | 0.821 | 0.751 | **0.596** |
+  | y-a-llama-3.2-3b-base | 2024 | 0.997 (L14) | 0.824 | 0.835 | 0.771 |
+  | y-a-olmo-3-7b-base | 2025 | 0.998 (L17) | 0.844 | 0.803 | 0.791 |
+  | y-a-qwen3.5-4b chat-render sub-cell | 2026 | 0.998 (L21) | 0.851 | 0.867 | 0.796 |
+  Arm A official tally 2/4 toward the ≥3/4 H_B1/H_B2 bar (Qwen k-shot primary + Gemma-pt
+  still running; chat-render is the report-only confound cell).
+  **Two interim findings that shape the paper reading:**
+  1. **Era gradient lives in the within-distribution control, not the headline AUROCs.**
+     Gate/dial are near-flat back to GPT-2, but the within-SelfAware control (known-answered
+     vs hallucination inside one dataset) climbs ~0.59 → ~0.79 across eras: old models
+     separate hallucinations mostly via dataset cues; modern pretraining makes the veto hold
+     in-distribution.
+  2. **Text-only baseline bounds the surface share** (`amendment_y_text_baseline.py`,
+     cceaaf76; descriptive, lab-notebook): TF-IDF+LR on question text alone reads gate
+     **0.964** on the frozen pool and dial **0.75–0.78** on Z rows. So the era-invariant part
+     of the gate is substantially benchmark surface; the model-attributable signal is the
+     margin above the text ceiling (error mass 3.6% → ~0.2% on modern bases; margin itself
+     grows with era) plus the answer-dependent S/T pre-vs-post gap. Roll-up tables must
+     report hidden-state AUROC NEXT TO the text baseline.
+  Ops: cloud cells now upload `rows.jsonl` alongside result+manifest (e2fa5c04) — the first
+  fleet discarded rows, which blocked per-cell text baselines; per-Y-cell dial baselines are
+  therefore not computable for this batch (gate baseline unaffected: shared frozen pool).
