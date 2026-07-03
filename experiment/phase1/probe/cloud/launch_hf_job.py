@@ -40,7 +40,7 @@ DEFAULT_RESULTS_REPO = "professorsynapse/epistemic-humility-cloud-results"
 
 def build_command(args, extract_args: list[str]) -> list[str]:
     cell = " ".join([
-        "bash experiment/phase1/probe/cloud/hf_jobs_cell.sh",
+        f"bash experiment/phase1/probe/cloud/{args.cell_script}",
         shlex.quote(args.model),
         shlex.quote(args.gate_rows),
         shlex.quote(args.results_repo),
@@ -76,6 +76,11 @@ def main() -> int:
     ap.add_argument("--commit", required=True,
                     help="commit sha pinning the clone; MUST be pushed to the public remote")
     ap.add_argument("--run-tag", required=True)
+    ap.add_argument("--cell-script", default="hf_jobs_cell.sh",
+                    choices=["hf_jobs_cell.sh", "hf_jobs_arm_b.sh"],
+                    help="in-job wrapper: hf_jobs_cell.sh = extract->score "
+                         "readout cell; hf_jobs_arm_b.sh = Arm B CoT-injection "
+                         "cell (run_arm_b.py)")
     ap.add_argument("--results-repo", default=DEFAULT_RESULTS_REPO)
     ap.add_argument("--image", default=DEFAULT_IMAGE)
     ap.add_argument("--flavor", default="a10g-small")

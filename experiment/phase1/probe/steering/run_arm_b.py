@@ -17,6 +17,14 @@ Protocol per item (unified two-pass; injection via cot_inject.py notes):
   position=late  -> ONE shared plain initial pass per item; the probe score is
                     read post-answer; the note is injected into the REVISION
                     pass's think block for the real and placebo variants.
+  position=final -> Amendment AB Revision 1 (think-end): ONE shared plain
+                    initial pass per item (score read post-answer, as late)
+                    PLUS one shared thinking-enabled plain revision-reasoning
+                    pass; per variant the note is appended AFTER the shared
+                    think draft as the final thought and the think block is
+                    CLOSED, forcing the immediate answer. The reasoning
+                    trajectory is byte-identical across variants; only the
+                    final-thought score differs.
 
 Placebo control (handled INTERNALLY, paired over the same items): identical
 note structure with the real per-item scores PERMUTED across items
@@ -46,7 +54,8 @@ import sys
 from pathlib import Path
 from typing import Callable, Optional
 
-from cot_inject import InjectionConfig
+from ab_templates import render_note as render_note_variant
+from cot_inject import InjectionConfig, extract_think_content
 from steering_common import (
     N_BOOT_DEFAULT,
     SYSTEM_PROMPT,
@@ -74,13 +83,19 @@ def permute_scores(real_scores: list[float], seed: int) -> list[float]:
     return placebo
 
 
-def make_note(signal: str, score: float, position: str) -> str:
-    """Render the injection note via cot_inject.InjectionConfig.
+def make_note(signal: str, score: float, position: str,
+              variant: str = "v0") -> str:
+    """Render the injection note.
 
-    The runner's 'early'/'late' cell position maps directly onto the
-    InjectionConfig position of the pass the note lands in."""
-    cfg = InjectionConfig(signal=signal, score=float(score), position=position)
-    return cfg.render_note()
+    variant='v0' is the registered AA telemetry template, rendered via
+    cot_inject.InjectionConfig (byte-identical to the AA cells). Amendment AB
+    variants v1-v3 render banded first-person prose via ab_templates.
+    The runner's cell position maps directly onto the position of the pass
+    the note lands in."""
+    if variant == "v0":
+        cfg = InjectionConfig(signal=signal, score=float(score), position=position)
+        return cfg.render_note()
+    return render_note_variant(variant, signal, float(score), position)
 
 
 # ---------------------------------------------------------------------------
@@ -94,6 +109,7 @@ def run_arm_b_cell(
     probe_score_fn: Callable[[dict, Optional[str]], float],
     generate_fn: Callable[[dict, Optional[str], str, str, Optional[str]], str],
     seed: int,
+    note_variant: str = "v0",
 ) -> dict[str, list[dict]]:
     """Run paired real + placebo two-pass generation over the same items.
 
@@ -102,14 +118,21 @@ def run_arm_b_cell(
     items          : eval pool (row_key, question, source, aliases_norm)
     signal         : 'gate' | 'dial' (note wording + which score is rendered)
     position       : 'early' (note in initial pass) | 'late' (note in revision)
+                     | 'final' (note as the closing thought of the revision
+                     think block, after a SHARED thinking-enabled plain
+                     reasoning pass — Amendment AB Revision 1)
     probe_score_fn : (item, initial_answer_or_None) -> probe P(positive).
                      Called with None for 'early' (pre-answer anchor read) and
-                     with the shared initial answer for 'late' (post-answer read).
+                     with the shared initial answer for 'late'/'final'
+                     (post-answer read).
     generate_fn    : (item, initial_answer_or_None, pass_name, variant, note)
-                     -> generated text. pass_name in {'initial','revision'},
-                     variant in {'real','placebo','shared'}, note is the
-                     injection note string or None (plain pass). The callable
-                     owns prompt rendering + think-block injection + decoding.
+                     -> generated text. pass_name in {'initial','revision',
+                     'revision_think','revision_final'}, variant in
+                     {'real','placebo','shared'}, note is the injection note
+                     string or None (plain pass). For 'revision_final' the
+                     shared think draft is passed as the keyword argument
+                     `think_draft`. The callable owns prompt rendering +
+                     think-block injection + decoding.
     seed           : placebo permutation seed (determinism contract).
 
     Returns
@@ -119,11 +142,15 @@ def run_arm_b_cell(
     """
     if signal not in ("gate", "dial"):
         raise ValueError(f"signal must be 'gate' or 'dial', got {signal!r}")
-    if position not in ("early", "late"):
-        raise ValueError(f"position must be 'early' or 'late', got {position!r}")
+    if position not in ("early", "late", "final"):
+        raise ValueError(
+            f"position must be 'early', 'late', or 'final', got {position!r}")
 
-    # Phase 1 — real scores (and, for 'late', the shared plain initial pass).
+    # Phase 1 — real scores (and, for 'late'/'final', the shared plain initial
+    # pass; for 'final', additionally the shared thinking-enabled plain
+    # revision-reasoning pass whose think content is the frozen draft).
     shared_initials: list[Optional[str]] = [None] * len(items)
+    shared_think_drafts: list[Optional[str]] = [None] * len(items)
     real_scores: list[float] = []
     if position == "early":
         for item in items:
@@ -133,6 +160,10 @@ def run_arm_b_cell(
             initial = generate_fn(item, None, "initial", "shared", None)
             shared_initials[i] = initial
             real_scores.append(float(probe_score_fn(item, initial)))
+            if position == "final":
+                think_full = generate_fn(item, initial, "revision_think",
+                                         "shared", None)
+                shared_think_drafts[i] = extract_think_content(think_full)
 
     # Phase 2 — placebo scores: within-batch permutation of the real scores.
     placebo_scores = permute_scores(real_scores, seed)
@@ -142,22 +173,29 @@ def run_arm_b_cell(
     for i, item in enumerate(items):
         for variant, score in (("real", real_scores[i]),
                                ("placebo", placebo_scores[i])):
-            note = make_note(signal, score, position)
+            note = make_note(signal, score, position, note_variant)
             if position == "early":
                 initial_text = generate_fn(item, None, "initial", variant, note)
                 final_text = generate_fn(item, initial_text, "revision", variant, None)
-            else:
+            elif position == "late":
                 initial_text = shared_initials[i] or ""
                 final_text = generate_fn(item, initial_text, "revision", variant, note)
+            else:  # final
+                initial_text = shared_initials[i] or ""
+                final_text = generate_fn(
+                    item, initial_text, "revision_final", variant, note,
+                    think_draft=shared_think_drafts[i] or "")
             results[variant].append(make_flat_record(
                 item, initial_text, final_text,
                 extra={
                     "variant": variant,
+                    "note_variant": note_variant,
                     "injected_score": float(score),
                     "real_score": float(real_scores[i]),
                     "placebo_score": float(placebo_scores[i]),
                     "injection_note": note,
-                    "shared_initial": position == "late",
+                    "shared_initial": position in ("late", "final"),
+                    "shared_think_draft": position == "final",
                 },
             ))
     return results
@@ -196,8 +234,15 @@ def parse_args(argv=None) -> argparse.Namespace:
     ap.add_argument("--direction", required=True, type=Path,
                     help="direction_<signal>.json (probe scoring source)")
     ap.add_argument("--signal", choices=["gate", "dial"], required=True)
-    ap.add_argument("--position", choices=["early", "late"], required=True,
-                    help="early = note in initial pass; late = note in revision")
+    ap.add_argument("--position", choices=["early", "late", "final"], required=True,
+                    help="early = note in initial pass; late = note at the top "
+                         "of the revision think block; final = note as the "
+                         "closing thought after a shared reasoning draft "
+                         "(Amendment AB Revision 1)")
+    ap.add_argument("--note-variant", choices=["v0", "v1", "v2", "v3"],
+                    default="v0",
+                    help="injection note template: v0 = registered AA telemetry "
+                         "note; v1-v3 = Amendment AB banded first-person prose")
     ap.add_argument("--eval-pool", choices=["gate", "dial"], required=True)
     ap.add_argument("--n-unknown", type=int, default=300)
     ap.add_argument("--n-known", type=int, default=300)
@@ -242,13 +287,15 @@ def main(argv=None) -> int:
         gate_rows=a.gate_rows,
     )
 
-    # Per item: early = 2 variants x 2 passes; late = 1 shared + 2 revisions.
-    per_item_gens = 4 if a.position == "early" else 3
+    # Per item: early = 2 variants x 2 passes; late = 1 shared + 2 revisions;
+    # final = 1 shared initial + 1 shared revision-think + 2 forced answers.
+    per_item_gens = 3 if a.position == "late" else 4
     plan = {
         "arm": "B",
         "cell": a.cell,
         "signal": a.signal,
         "position": a.position,
+        "note_variant": a.note_variant,
         "model": a.model,
         "direction": str(a.direction),
         "direction_layer": meta.get("best_layer"),
@@ -311,7 +358,8 @@ def main(argv=None) -> int:
                                 skip_special_tokens=True).strip()
 
     def generate_fn(item: dict, initial_answer: Optional[str], pass_name: str,
-                    variant: str, note: Optional[str]) -> str:
+                    variant: str, note: Optional[str],
+                    think_draft: Optional[str] = None) -> str:
         if pass_name == "initial":
             messages = build_initial_messages(item["question"], SYSTEM_PROMPT)
             max_new = a.max_new_tokens_initial
@@ -319,6 +367,20 @@ def main(argv=None) -> int:
             messages = build_revision_messages(
                 item["question"], initial_answer or "", SYSTEM_PROMPT)
             max_new = a.max_new_tokens_revision
+        if pass_name == "revision_think":
+            # Shared thinking-enabled PLAIN reasoning pass (position=final):
+            # the model re-reasons with no note; the think content becomes the
+            # frozen draft shared verbatim by the real and placebo variants.
+            return _generate(_render(messages, enable_thinking=True), max_new)
+        if pass_name == "revision_final":
+            # Think-end injection (Amendment AB Revision 1): shared draft +
+            # note as the final thought, block CLOSED, matching
+            # cot_inject.build_think_prompt(position='final'); the model must
+            # answer immediately.
+            base = _render(messages, enable_thinking=True)
+            prompt = (base + "<think>\n" + (think_draft or "") + "\n\n"
+                      + (note or "") + "\n</think>\n")
+            return _generate(prompt, max_new)
         if note is None:
             return _generate(_render(messages, enable_thinking=False), max_new)
         # Injected pass: open the think block and seed it with the rendered
@@ -360,6 +422,7 @@ def main(argv=None) -> int:
         probe_score_fn=probe_score_fn,
         generate_fn=generate_fn,
         seed=a.seed,
+        note_variant=a.note_variant,
     )
 
     summary = summarize_arm_b(results, n_boot=a.n_boot, seed=a.seed)
