@@ -141,16 +141,27 @@ A-certain on baseline-refused rows; muzzle uptake = answered→refused under
 A-doubt on baseline-answered rows. Degeneracy and induced-confabulation
 counts tracked (AG grading lineage).
 
-### 3.3 Pool
+### 3.3 Pool (locked from the redesign check, pending signing)
 
-A stratified subset of the mined 5,000 (~1,200 rows; exact list locked at
-signing from the Stage-0 `redesign_check/pool_proposal.jsonl`):
-all consensus-rule D-over rows, plus concordant-unknown, probe-uncertain, and
-concordant-known strata **caliper-matched on the caution-axis boundary
-distance** to the cells they contrast with, to guarantee covariate overlap
-(positivity) rather than relying on extrapolation. Distance distributions per
-cell are reported; run cost ≈ 3 × 1,200 = 3,600 greedy generations
-(~4–5 h on the 3090).
+Readout rule: **consensus(L20/L24/L28) at margin band 0** everywhere — band
+0.5z crushes the binding cell (18 rows), and the three-layer consensus
+already supplies the noise robustness the margin band was for. No
+cell-specific rule relaxation (relaxing only the scarce cell to L24-alone
+would trade pre-registration cleanliness for n).
+
+- **Matched core (648 rows)** = `redesign_check/pool_proposal.jsonl`: greedy
+  1:1 nearest-neighbor caliper match on caution distance (caliper 0.25·SD =
+  3.10). Release contrast 249+249; muzzle contrast 75+75 (all available
+  congruent-muzzle rows). Post-match positivity is excellent (overlap 0.960 /
+  0.973; separability AUC 0.500 both contrasts).
+- **Positive-control stratum (150 rows):** concordant-known rows sampled from
+  the LOW-caution end (likely baseline-answered), for AH-G1 — the matched
+  muzzle-incongruent cell sits at high caution by construction and is the
+  wrong population for replicating AG's muzzle effect.
+
+Renderings per row: A0 + the row's contrast-relevant prime only (release rows
+get A-certain, muzzle and positive-control rows get A-doubt) ≈ 1,596
+generations, ~2–2.5 h on the 3090 at the frozen batch-1 harness.
 
 ### 3.4 Primary analysis
 
@@ -205,29 +216,55 @@ Runner: ah-stage0-runner; artifacts in canonical
    vs 27 SelfAware; consensus@1z: 16/16 KUQ), and the KUQ rows are largely
    debatable/unsolved/future questions — "no consensus answer" rather than
    crisply unanswerable. Handled in §8 caveat 4.
-7. **Redesign check (collinearity/overlap/pool proposal):** appended at
-   signing from `redesign_check/` (in flight).
+7. **Redesign check — RESULT (2026-07-03, `redesign_check/`):** caution axis
+   rebuilt to AG spec (CV AUROC 0.9374 and base SD 12.395 reproduce AG
+   exactly), applied out-of-sample to all 5,000 mined states.
+   - *Collinearity (doubt score vs caution distance):* overall −0.465
+     Pearson, but nearly vanishes INSIDE the release-contrast cells
+     (D-over −0.149 n.s.; concordant-unknown +0.042) and stays strong inside
+     concordant-known (−0.501). The release contrast is the statistically
+     clean side.
+   - *Positivity:* release contrast good raw (overlap 0.752, AUC 0.457);
+     muzzle contrast has a raw positivity problem (congruent cell sits ~10
+     caution-units higher than concordant knowns; AUC 0.704) — fixed by
+     caliper matching (post-match AUC 0.500 both contrasts) at the cost of
+     pool size (648, muzzle-limited).
+   - *Binding cell:* probe-uncertain & gold-answerable (congruent muzzle) =
+     75 rows at consensus/band0 (18 at 0.5z) — caps the design.
+   - *Expected attrition (pre-stated):* the congruent-muzzle cell's mean
+     caution (+14.5, ≈+1.2z refusal-side) predicts most of its rows REFUSE at
+     baseline, so its post-A0 eligible count will likely fall under the G0
+     floor. The pre-stated fallback (muzzle contrast descriptive, verdict on
+     the release contrast) is therefore the EXPECTED path, not an edge case —
+     recorded before launch so it cannot read as post-hoc.
 
-## 5. Gates (v2 sketch — locked at signing with the redesign-check numbers)
+## 5. Gates (v2 LOCKED values — effective at signing)
 
-- **AH-G0 (feasibility, post-A0):** ≥40 rows in each of the four cells after
-  baseline conditioning. If ONLY congruent-muzzle fails, the muzzle contrast
-  is reported descriptively and the verdict rests on the release contrast
-  (pre-stated fallback); if a release cell fails, STOP.
-- **AH-G1 (positive control):** incongruent-muzzle replicates AG: induced
-  refusal ≥ +20pt vs baseline on concordant knowns. Fail → run invalid.
-- **AH-G2 (congruence, primary):** pooled congruent-minus-incongruent uptake
-  differential ≥ +10pt with bootstrap 95% CI excluding 0, AND the congruence
-  coefficient in the distance-adjusted model (§3.4) has 95% CI excluding 0.
-  Both required. PASS → H-resonance.
-- **Falsifier (for H-resonance; the predicted outcome):** AH-G1 passes while
-  AH-G2 fails → H-compliance verdict: the text channel does not consult the
-  model's own readout even when readout and instruction conflict. Native path
-  via prompting is closed; probe-as-reward dependency engineering becomes the
-  mainline.
-- **Ambiguity guard:** opposite-signed congruence effects across the two
-  contrasts → AMBIGUOUS, not a pass (pre-stated against post-hoc
-  contrast-picking).
+- **AH-G0 (feasibility, post-A0):** ≥40 eligible rows per cell (release cells
+  need baseline-refused; muzzle cells baseline-answered). If ONLY
+  congruent-muzzle fails (the EXPECTED path per §4.7), the muzzle contrast is
+  reported descriptively and the verdict rests on the release contrast; if a
+  release cell fails, STOP, no verdict.
+- **AH-G1 (positive control):** on baseline-answered rows of the
+  positive-control stratum (§3.3), A-doubt induces refusal ≥ +20pt vs A0
+  (AG replication). Fail → instrument invalid, no reading on G2.
+- **AH-G2 (congruence, primary — release contrast on the matched core):**
+  congruent-minus-incongruent uptake differential ≥ +10pt with bootstrap 95%
+  CI excluding 0, AND the congruence coefficient in
+  `flip ~ distance_z + congruence` has 95% CI excluding 0. Both required.
+  PASS → H-resonance. Matched pool is the primary population; the covariate
+  model on all eligible rows is the pre-registered secondary.
+- **Three-tier verdict (pre-stated to avoid mislabeling small effects):**
+  (i) G2 PASS → H-RESONANCE. (ii) congruence CI excludes 0 but differential
+  < +10pt → WEAK RESONANCE (ambiguous; does not close the native path, does
+  not open it). (iii) congruence CI includes 0 → H-COMPLIANCE.
+- **Falsifier (for H-resonance; the predicted outcome):** G1 passes, tier
+  (iii) obtains → the text channel does not consult the model's own readout
+  even when readout and instruction conflict. Native path via prompting is
+  closed; probe-as-reward dependency engineering becomes the mainline.
+- **Ambiguity guard:** if the muzzle contrast is measurable (its G0 passes)
+  and its congruence effect is opposite-signed vs release → AMBIGUOUS, not a
+  pass (pre-stated against post-hoc contrast-picking).
 
 ## 6. Instrumentation (§8-style, gate-free)
 
@@ -244,10 +281,11 @@ picture where instruction fights readout. Descriptive only.
    `analysis/ah_scout/`).
 3. Stage-0 GPU mining pass — DONE 2026-07-03 (user approval "proceed"; §4).
 4. Adequacy-floor STOP adjudicated by user → redesign — DONE ("redesign").
-5. Redesign check (collinearity/overlap/pool) appended; gates locked; margin
-   band + consensus rule locked; user prediction recorded; user sign-off.
-6. Main run (3 renderings × ~1,200 rows on the 3090): **separate explicit
-   launch approval.** Signing ≠ launch.
+5. Redesign check appended — DONE (§4.7); rule/caliper/pool/gates locked
+   (§3.3, §5).
+6. User prediction recorded; user sign-off. _(pending)_
+7. Main run (~1,596 generations, ~800 rows × 2 renderings each, ~2–2.5 h on
+   the 3090): **separate explicit launch approval.** Signing ≠ launch.
 
 ## 8. Interpretive caveats (pre-stated)
 
