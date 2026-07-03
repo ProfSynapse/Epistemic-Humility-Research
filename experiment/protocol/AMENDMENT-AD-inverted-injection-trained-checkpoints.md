@@ -1,12 +1,15 @@
 # Amendment AD — Inverted (pro-answer) injection on abstention-trained checkpoints: is the shut text channel bidirectional?
 
-**Status:** DRAFT pre-registration 2026-07-03 (user-directed in-conversation:
-"redo our thought injection test with our fine tuned models … since those are
-'primed' to refuse with an issue of overrefusing we likely have to do the
-opposite — encourage it to answer when it knows … We predict it will have NO
-change. Same setup with think injected beginning or end of thought."). NOT
-SIGNED. Prediction, falsifier, gates, and band cuts below LOCK at signing;
-goalposts do not move after the result.
+**Status:** SIGNED 2026-07-03 (user, in-conversation: "Signed, push,
+approved"). Prediction, falsifier, gates, and band cuts are LOCKED as
+written; goalposts do not move after the result. Drafted the same day,
+user-directed in-conversation: "redo our thought injection test with our
+fine tuned models … since those are 'primed' to refuse with an issue of
+overrefusing we likely have to do the opposite — encourage it to answer
+when it knows … We predict it will have NO change. Same setup with think
+injected beginning or end of thought." NOT launched: preconditions 2–6
+still open (engine PR merge, per-checkpoint direction refit, harness
+smoke, v1r wording finalization at launch approval, AC-first ordering).
 
 Tier-2 amendment (per `amendment-vs-lab-notebook.md`): new evidence cells on
 new checkpoints with a pre-stated prediction and falsifier. One branch off
