@@ -181,4 +181,42 @@ inspection or fixture debugging.
   held-out) registered before running it.
 - When tests appear absent or oddly skipped, verify with an explicit test file or
   non-wrapper command before concluding there is no test coverage.
+
+## Delegation And Context Protection (Lead = Orchestrator)
+
+The lead session is an ORCHESTRATOR, not a worker. Its context is the scarcest
+resource in the project: it holds protocol authority, cross-amendment memory,
+and the user relationship. Protect it.
+
+- Default to delegation. Any task that is (a) well-specified, (b) verifiable
+  from its artifacts, and (c) longer than a few tool calls goes to a subagent.
+  The lead writes the spec, spawns the agent (background for long GPU/build
+  work), and reviews the structured report — it does not read the interim file
+  dumps, run the loops, or debug line-by-line unless review fails.
+- The lead KEEPS (never delegates): protocol interpretation and verdicts,
+  amendment signing, gate/falsifier adjudication, git commit / PR / merge of
+  evidence, GPU or cloud launch approval relays, memory writes, and anything
+  lifted to the user for decision.
+- Project agent roles live in `.claude/agents/` (one file per role, with a
+  pinned model tier). Use them instead of ad-hoc general-purpose prompts when
+  a task matches a role; extend a role file when a new durable task shape
+  appears.
+- Assign the model to the task's judgment density, not its length:
+  - `opus` — adversarial review, oracle-leak/circularity audits, design work,
+    gnarly failure diagnosis. Anything where a wrong-but-plausible answer is
+    expensive.
+  - `sonnet` — skilled constrained execution: harness building against a
+    locked spec, scoring/stats, KG ingest, doc drafting.
+  - `haiku` — mechanical sweeps: locate/inventory/format checks, read-only
+    search fan-outs.
+- Every delegation prompt restates the binding invariants for that task
+  (locked constants, no-goalpost rule, KG-search-first, no-commit rule, output
+  contract) — subagents do not inherit lead context and must not rediscover or
+  reinterpret the protocol.
+- Subagents report; the lead adjudicates. A subagent's final message is
+  evidence to verify (spot-check artifacts, re-derive one number), never a
+  verdict to relay verbatim. Nulls and falsifiers are reported straight.
+- Do not poll harness-tracked background agents; completion notifications
+  arrive. While one runs, the lead stays free for the user: guiding, reviewing,
+  and lifting decisions up rather than doing the work itself.
 <!-- PROJECT_ORCHESTRATOR_END -->
