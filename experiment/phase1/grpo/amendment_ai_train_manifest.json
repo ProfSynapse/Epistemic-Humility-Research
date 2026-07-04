@@ -1,0 +1,33 @@
+{
+  "amendment": "AI",
+  "stage": "prepare_train",
+  "gen_system_prompt_sha": "96c8df24d9169547236314bacd0d2ea7421324d6a27e09f64e484cf95252c18e",
+  "counts": {
+    "train_total": 23472,
+    "divergent_unique": 2102,
+    "divergent_slots_oversampled": 6807,
+    "train_concordant": 16665,
+    "target_divergent_frac": 0.29,
+    "achieved_divergent_frac": 0.29,
+    "oversample_factor": 3.238,
+    "gold_answerable_with_aliases": 2247,
+    "falseqa_rows_train_only": 833,
+    "audit_set": 500,
+    "audit_per_class": 250
+  },
+  "compose_seed": 1,
+  "split_by_origin": {
+    "divergent_unique": {
+      "mining": 2102
+    },
+    "concordant": {
+      "union": 16665
+    }
+  },
+  "audit_seed": 0,
+  "audit_row_keys_sha": "ef74bb6eecfadd40476da28a21f46dce4586a30345f6a9b5893a51e5bce4a1d3",
+  "train_row_keys_sha": "033d1b2f451d6a9b95713fa177c45e27086982e148b4eb8a10fcf94378738dbd",
+  "train_file": "/home/profsynapse/code/Epistemic-Humility-Research/experiment/phase1/probe/analysis/amendment_ai/train/par_train.jsonl",
+  "audit_file": "/home/profsynapse/code/Epistemic-Humility-Research/experiment/phase1/probe/analysis/amendment_ai/train/audit_set.jsonl",
+  "note": "par_train.jsonl + audit_set.jsonl are gitignored (FalseQA text is train-only, NO LICENSE); this manifest carries counts + SHAs only. divergent_frac is the pool ratio; the trainer sampler draws 29.0% divergent per batch (sampler seed 1)."
+}
