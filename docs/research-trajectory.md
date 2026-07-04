@@ -31,7 +31,7 @@ Draft: `paper2-training-regimen-draft-v2.md`. Figures: `fig-p1-*` (legacy prefix
 
 ---
 
-## Paper 3 — "Knows but Doesn't Say" (draft complete; bibliography + provenance pass remaining)
+## Paper 3 — "Knows but Doesn't Say" (draft complete incl. bibliography; provenance pass remaining)
 
 Internal axis encodes answerability at AUROC 0.997, transfers cross-dataset cold
 (Amendment P: KUQ→SelfAware 0.983), and predates post-training (Amendment Y: present on
@@ -41,8 +41,10 @@ headline: DPO/KTO/GRPO/contrastive-SFT/proper-scoring all fail to couple the cha
 is installable; accurate emitted confidence is not. §7–8 absorption (proper-scoring,
 contrastive, RL-on-contrastive depth) DONE via PR #151; Amendment Y now cited for the
 "paid for by pretraining" claim; data availability lists the published HF releases.
-Remaining before submission: compile the bibliography (References is a stub) and run
-the provenance reconciliation pass against `results-provenance-inventory.md`.
+Citation-gap audit (2026-07-04) wove 34 missed citations into §2/§3/§7/§8 and
+compiled the 43-entry bibliography from the KG (inline↔list verified 1:1).
+Remaining before submission: the provenance reconciliation pass against
+`results-provenance-inventory.md`.
 Draft: `paper3-knows-but-doesnt-say-draft-v0.md`. Figures: `fig-p2-*` (legacy prefix,
 all five built).
 
