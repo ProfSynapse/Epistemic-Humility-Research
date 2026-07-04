@@ -62,11 +62,15 @@ import joblib
 PROBE_DIR = Path(__file__).resolve().parent
 CANONICAL = Path("/home/profsynapse/code/Epistemic-Humility-Research")
 REFIT_ROOT = CANONICAL / "experiment/phase1/probe/analysis/par_sensor_refit"
-UNION_DIR = REFIT_ROOT / "union_pregen"
-MINING_DIR = REFIT_ROOT / "mining_pregen"
-PROBES_OUT = REFIT_ROOT / "probes"
-RESULT = REFIT_ROOT / "refit_result.json"
-RESULT_COPY = PROBE_DIR / "par_sensor_refit.json"
+# v2 defaults: training-configuration (4-bit) states; --variant v1 restores
+VARIANTS = {
+    "v1": {"union": "union_pregen", "mining": "mining_pregen",
+            "probes": "probes", "result": "refit_result.json",
+            "copy": "par_sensor_refit.json", "suffix": "cleansft"},
+    "v2": {"union": "union_pregen_4bit", "mining": "mining_pregen_4bit",
+            "probes": "probes_v2", "result": "refit_result_v2.json",
+            "copy": "par_sensor_refit_v2.json", "suffix": "cleansft4bit"},
+}
 
 LAYERS = ["L20", "L24", "L28"]
 SENSOR_LAYER = "L24"
@@ -133,6 +137,14 @@ def largest_w_within_budget(p, w_grid, budget):
 
 
 def run(args) -> int:
+    v = VARIANTS[args.variant]
+    global UNION_DIR, MINING_DIR, PROBES_OUT, RESULT, RESULT_COPY, SUFFIX
+    UNION_DIR = REFIT_ROOT / v["union"]
+    MINING_DIR = REFIT_ROOT / v["mining"]
+    PROBES_OUT = REFIT_ROOT / v["probes"]
+    RESULT = REFIT_ROOT / v["result"]
+    RESULT_COPY = PROBE_DIR / v["copy"]
+    SUFFIX = v["suffix"]
     PROBES_OUT.mkdir(parents=True, exist_ok=True)
 
     print("[refit] loading union surface ...", flush=True)
@@ -160,8 +172,8 @@ def run(args) -> int:
         train_auroc = roc_auc_score(y, clf.decision_function(sc.transform(X[l])))
         joblib.dump({"scaler": sc, "clf": clf, "layer": l,
                      "fit_surface": "par_sensor_refit/union_pregen",
-                     "checkpoint": "clean-sft-merged-base"},
-                    PROBES_OUT / f"probe_{l}_cleansft.joblib")
+                     "checkpoint": f"clean-sft-merged-base-{SUFFIX}"},
+                    PROBES_OUT / f"probe_{l}_{SUFFIX}.joblib")
         result["layers"][l] = {
             "oof_auroc": round(float(auroc), 4),
             "train_auroc": round(float(train_auroc), 4),
@@ -182,7 +194,7 @@ def run(args) -> int:
     gold_unans = (y == 0)
     gold_ans = (y == 1)
 
-    with (REFIT_ROOT / "union_refit_rows.jsonl").open("w") as fh:
+    with (REFIT_ROOT / f"union_refit_rows_{SUFFIX}.jsonl").open("w") as fh:
         for i, r in enumerate(rows):
             fh.write(json.dumps({
                 "row_key": r["row_key"], "source": r.get("source"),
@@ -253,7 +265,7 @@ def run(args) -> int:
         print(f"[refit] scoring mining surface ({n_mining_done} rows) ...",
               flush=True)
         mrows, MX = load_surface(MINING_DIR, LAYERS)
-        probes = {l: joblib.load(PROBES_OUT / f"probe_{l}_cleansft.joblib")
+        probes = {l: joblib.load(PROBES_OUT / f"probe_{l}_{SUFFIX}.joblib")
                   for l in LAYERS}
         ms = {l: probes[l]["clf"].decision_function(
                   probes[l]["scaler"].transform(MX[l])) for l in LAYERS}
@@ -263,7 +275,7 @@ def run(args) -> int:
         sensor_dover = mp < 0.5
         # consensus variant (matches the historical mining D-over rule shape)
         consensus_dover = ((ms["L20"] > 0) & (ms["L24"] > 0) & (ms["L28"] > 0))
-        with (REFIT_ROOT / "mining_refit_rows.jsonl").open("w") as fh:
+        with (REFIT_ROOT / f"mining_refit_rows_{SUFFIX}.jsonl").open("w") as fh:
             for i, r in enumerate(mrows):
                 fh.write(json.dumps({
                     "row_key": r["row_key"], "source": r.get("source"),
@@ -308,4 +320,5 @@ def run(args) -> int:
 
 if __name__ == "__main__":
     ap = argparse.ArgumentParser()
+    ap.add_argument("--variant", choices=["v1", "v2"], default="v2")
     sys.exit(run(ap.parse_args()))

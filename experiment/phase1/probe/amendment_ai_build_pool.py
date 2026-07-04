@@ -45,6 +45,17 @@ A1_STRATUM = PROBE_ROOT / "analysis/ah_addendum_a1/stratum.jsonl"
 OUT_DIR = PROBE_ROOT / "analysis/amendment_ai/pool"
 MANIFEST = Path(__file__).resolve().parent / "amendment_ai_pool_manifest.json"
 
+import argparse
+
+VARIANTS = {
+    "v1": {"union_dir": "union_pregen", "mining_dir": "mining_pregen",
+            "union_rows": "union_refit_rows_cleansft.jsonl",
+            "mining_rows": "mining_refit_rows_cleansft.jsonl"},
+    "v2": {"union_dir": "union_pregen_4bit", "mining_dir": "mining_pregen_4bit",
+            "union_rows": "union_refit_rows_cleansft4bit.jsonl",
+            "mining_rows": "mining_refit_rows_cleansft4bit.jsonl"},
+}
+
 SEED = 0
 HOLDOUT_N = 400
 CATEGORY_CAP = 0.60
@@ -91,16 +102,19 @@ def stratified_take(rows, n, seed):
 
 
 def main() -> int:
+    ap = argparse.ArgumentParser()
+    ap.add_argument("--variant", choices=["v1", "v2"], default="v2")
+    v = VARIANTS[ap.parse_args().variant]
     OUT_DIR.mkdir(parents=True, exist_ok=True)
     rng = random.Random(SEED)
 
     excluded_keys = {r["row_key"] for r in load_jsonl(AH_POOL)}
     excluded_keys |= {r["row_key"] for r in load_jsonl(A1_STRATUM)}
 
-    union_text = {r["row_key"]: r for r in load_jsonl(REFIT / "union_pregen/rows.jsonl")}
-    mining_text = {r["row_key"]: r for r in load_jsonl(REFIT / "mining_pregen/rows.jsonl")}
-    union_refit = load_jsonl(REFIT / "union_refit_rows.jsonl")
-    mining_refit = load_jsonl(REFIT / "mining_refit_rows.jsonl")
+    union_text = {r["row_key"]: r for r in load_jsonl(REFIT / v["union_dir"] / "rows.jsonl")}
+    mining_text = {r["row_key"]: r for r in load_jsonl(REFIT / v["mining_dir"] / "rows.jsonl")}
+    union_refit = load_jsonl(REFIT / v["union_rows"])
+    mining_refit = load_jsonl(REFIT / v["mining_rows"])
 
     n_excluded_ah = 0
     divergent, concordant = [], []
@@ -177,6 +191,7 @@ def main() -> int:
 
     manifest = {
         "amendment": "AI", "stage": "build_pool", "seed": SEED,
+        "sensor_variant": ap.parse_args().variant,
         "mixture_divergent": MIXTURE, "category_cap": CATEGORY_CAP,
         "holdout_n": len(holdout),
         "counts": {
