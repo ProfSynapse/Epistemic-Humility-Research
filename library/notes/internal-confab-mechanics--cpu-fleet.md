@@ -116,6 +116,13 @@ through (re-derived veto).
 - Evidence label: familiarity proxies on matched pairs (arm B). Joint familiarity
   features predict confab-vs-refuse at 0.682 (p=0.0099) at matched doubt, supporting
   the entity-recognition account; the frozen knowledge probe is largely null.
+- Evidence label: whitened direction geometry with rank-1 removal (n=328 matched,
+  follow-on). The internal familiarity axis is whitened-orthogonal to the doubt
+  trunk, caution axis, and commitment direction (all cosines within 0.045 of zero
+  at L20/24/28); projecting it out leaves the commitment probe at 0.834 (survival
+  1.00), and its own projection reads confab-vs-refuse at only 0.571. The
+  commitment direction's only geometric relative is the doubt trunk (whitened cos
+  0.64 at L20 decaying to 0.30 at L28).
 - Evidence label: cross-position probe transfer on cached S/T/U/W tensors (item 31).
   The correctness/veto axis fails position transfer (0.58-0.64 vs 0.81-0.86
   in-position) while answerability transports at 0.96-0.99; post-read advantage

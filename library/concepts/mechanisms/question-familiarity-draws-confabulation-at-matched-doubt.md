@@ -51,3 +51,15 @@ to the pre-generation commitment state rather than the whole of it. The frozen
 knowledge probe was largely null on the same contrast, separating familiarity from
 parametric knowledge. Proxies are corpus-internal, not web frequencies; single
 surface; correlational.
+
+Geometry refinement (same session, analysis/mi_familiarity_geometry_20260704/):
+the INTERNAL familiarity axis (a direction fit to predict corpus frequency from
+the activations) is whitened-orthogonal to the doubt trunk, the caution axis, and
+the commitment direction (all cosines within 0.045 of zero at L20/24/28), and
+projecting it out leaves the commitment probe untouched (0.834 to 0.834). So
+familiarity influences the commitment state at the information level without the
+commitment direction being a familiarity readout: the two are separate axes, and
+steering interventions on the confab decision should target the commitment
+direction, not a familiarity vector (its own projection reads the contrast at only
+0.571). Rank-1 removal with a frequency-proxy construct; a richer
+entity-recognition axis could differ.
