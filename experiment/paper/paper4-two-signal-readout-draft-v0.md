@@ -73,7 +73,8 @@ model's internal activations separates answerable from unanswerable questions al
 perfectly (AUROC ≈ 0.997) with a well-calibrated readout (ECE ≈ 0.004), while the model's
 *verbalized* confidence stays near 0.52–0.56 across the board. The internal estimate is
 there; the emitted one is not a faithful copy of it. And the gap is *training-resistant*:
-it survives supervised fine-tuning, DPO, KTO, and three generations of GRPO. Two opposite
+it survives supervised fine-tuning, DPO (Rafailov et al., 2023), KTO (Ethayarajh et al.,
+2024), and three generations of GRPO (Shao et al., 2024). Two opposite
 training pressures fail on the same channel: reinforcement learning preserves stated
 calibration but never installs knowledge-conditioned *action*, while distilling the
 internal axis into the emitted token installs the action but collapses the confidence
@@ -111,15 +112,17 @@ fine-tuning run is required.
 ## 2. Related work
 
 **Verbalized confidence and calibration.** A line of work asks models to state their
-confidence in words or tokens and measures its calibration; the recurring finding is that
+confidence in words or tokens and measures its calibration (Lin et al., 2022; Xiong et
+al., 2023); the recurring finding is that
 verbalized confidence is poorly calibrated and often flat, especially for smaller models.
 Our companion diagnosis localizes *why* in this model family: the internal estimate is
 calibrated, the emitted token is not, and the loss on that token does not transmit the
 internal estimate faithfully. This paper is the constructive complement: bypass the token.
 
 **Probing internal states / latent knowledge.** A large body of work reads factual and
-truth-related structure out of hidden activations with linear probes (e.g. truthfulness
-directions, P(True)-style self-evaluation). Two points differentiate what we do. First, we
+truth-related structure out of hidden activations with linear probes, for example
+truthfulness directions (Burns et al., 2022; Marks et al., 2023) and P(True)-style
+self-evaluation (Kadavath et al., 2022). Two points differentiate what we do. First, we
 separate *answerability* (a property of the question, read before generation) from
 *per-answer correctness* (a property of the produced answer, read after it), and show they
 are distinct axes at distinct token positions. Second, we find that correctness reads
@@ -127,13 +130,15 @@ are distinct axes at distinct token positions. Second, we find that correctness 
 we quantify the gain.
 
 **Abstention and selective prediction.** Selective-prediction methods learn or threshold a
-confidence to abstain. Our gate is a selective-prediction front-end, but the emphasis is
+confidence to abstain (Wen et al., 2024). Our gate is a selective-prediction front-end, but the emphasis is
 that it needs no training to install: it is a threshold on an axis the base model already
-carries. This connects to hallucination-detection work; our veto is a hallucination
+carries. This connects to hallucination-detection work (Orgad et al., 2024); our veto is a
+hallucination
 detector expressed inside the same correctness axis rather than as a separate module.
 
 **Steering and representation engineering.** Reading a direction out of activations is one
-half of representation engineering; writing along it (steering) is the other. This paper is
+half of representation engineering (Zou et al., 2023); writing along it (steering) is the
+other (Turner et al., 2023). This paper is
 strictly the *reading* half. The companion diagnosis shows the answerability/caution axis
 is causally steerable but only *asymmetrically* (excess caution can be relaxed; missing
 caution cannot be installed by steering). We cite that result as motivation for a follow-on
@@ -151,9 +156,10 @@ checkpoint (clean supervised fine-tune → GRPO). The size study uses the raw Qw
 comparable scale (Llama-3.2-3B, Ministral-3-3B, Qwen3.5-4B, and Gemma-4-E4B), read
 training-free, exactly as the base-model condition.
 
-**Data and labels.** Answerable questions come from PopQA and TriviaQA, graded against gold
+**Data and labels.** Answerable questions come from PopQA (Mallen et al., 2022) and
+TriviaQA (Joshi et al., 2017), graded against gold
 answer aliases into *correct* / *wrong*. Intrinsic answerable-vs-unanswerable structure and
-the hallucination class come from SelfAware: questions it marks unanswerable, when the model
+the hallucination class come from SelfAware (Yin et al., 2023): questions it marks unanswerable, when the model
 answers them anyway, are labeled *hallucinations* (a structural label: the model produced
 a confident answer to a question with no answer). This gives three groups for the
 correctness axis: correct answers, wrong answers, and confident confabulations.
@@ -575,6 +581,27 @@ is aimed at abstention specifically, is to sharpen that veto and install behavio
 abstention; post-training in general neither creates nor improves the underlying signal. The
 confidence is already there from pretraining; the task is to read it, keep the two axes
 separate, and know which model's veto you can trust.
+
+---
+
+## References
+
+- Burns et al. (2022). Discovering Latent Knowledge in Language Models Without Supervision. arXiv:2212.03827.
+- Ethayarajh et al. (2024). KTO: Model Alignment as Prospect Theoretic Optimization. arXiv:2402.01306.
+- Joshi et al. (2017). TriviaQA: A Large Scale Distantly Supervised Challenge Dataset for Reading Comprehension. arXiv:1705.03551.
+- Kadavath et al. (2022). Language Models (Mostly) Know What They Know. arXiv:2207.05221.
+- Lin et al. (2022). Teaching Models to Express Their Uncertainty in Words. arXiv:2205.14334.
+- Mallen et al. (2022). When Not to Trust Language Models: Investigating Effectiveness of Parametric and Non-Parametric Memories. arXiv:2212.10511.
+- Marks et al. (2023). The Geometry of Truth: Emergent Linear Structure in Large Language Model Representations of True/False Datasets. arXiv:2310.06824.
+- Orgad et al. (2024). LLMs Know More Than They Show: On the Intrinsic Representation of LLM Hallucinations. arXiv:2410.02707.
+- Rafailov et al. (2023). Direct Preference Optimization: Your Language Model is Secretly a Reward Model. arXiv:2305.18290.
+- Rosenbaum (2026). Knows but Doesn't Say: A Training-Resistant Gap Between Internal and Stated Confidence in a Small Language Model. Companion draft, this repository: [paper3-knows-but-doesnt-say-draft-v0.md](paper3-knows-but-doesnt-say-draft-v0.md).
+- Shao et al. (2024). DeepSeekMath: Pushing the Limits of Mathematical Reasoning in Open Language Models. arXiv:2402.03300.
+- Turner et al. (2023). Steering Language Models With Activation Engineering. arXiv:2308.10248.
+- Wen et al. (2024). Know Your Limits: A Survey of Abstention in Large Language Models. arXiv:2407.18418.
+- Xiong et al. (2023). Can LLMs Express Their Uncertainty? An Empirical Evaluation of Confidence Elicitation in LLMs. arXiv:2306.13063.
+- Yin et al. (2023). Do Large Language Models Know What They Don't Know?. arXiv:2305.18153.
+- Zou et al. (2023). Representation Engineering: A Top-Down Approach to AI Transparency. arXiv:2310.01405.
 
 ---
 
