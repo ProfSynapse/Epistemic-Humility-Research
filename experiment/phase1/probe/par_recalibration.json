@@ -1,0 +1,173 @@
+{
+  "stage": "par_recalibration_pass2",
+  "branch": "par-mining-recalibration",
+  "p_definition": "p_unanswerable = sigmoid(-score_L24), frozen AF-600 L24 probe",
+  "surfaces_scored": {
+    "T_grpo_v2": {
+      "n": 1488,
+      "missing": 7060,
+      "answered_only": true
+    },
+    "S_instruct": {
+      "n": 1836,
+      "missing": 0,
+      "answered_only": false
+    }
+  },
+  "per_checkpoint": {
+    "T_grpo_v2": {
+      "checkpoint": "clean-SFT->GRPO-v2",
+      "answered_only": true,
+      "n_scored": 1488,
+      "n_rows_total": 8548,
+      "n_missing_states": 7060,
+      "p_unanswerable": {
+        "mean": 0.9991,
+        "median": 1.0,
+        "frac_lt_0.1": 0.0007,
+        "frac_gt_0.9": 0.998,
+        "saturation_bimodal_frac": 0.9987
+      },
+      "mean_abs_2p_minus_1": 0.9993,
+      "D1_answer_side_flip_curve": {
+        "0.05": 0.0,
+        "0.10": 0.0,
+        "0.15": 0.0,
+        "0.20": 0.0,
+        "0.25": 0.0,
+        "0.30": 0.0,
+        "0.35": 0.0,
+        "0.40": 0.0,
+        "0.45": 0.0,
+        "0.50": 0.0
+      },
+      "D1_E_correct_given_answered": {
+        "n_answered_graded": 1488,
+        "overall_Ecorrect": 0.664,
+        "curve_by_pbin": {
+          "0": {
+            "correct": 1,
+            "n": 1,
+            "rate": 1.0
+          },
+          "8": {
+            "correct": 1,
+            "n": 2,
+            "rate": 0.5
+          },
+          "9": {
+            "correct": 986,
+            "n": 1485,
+            "rate": 0.664
+          }
+        }
+      }
+    },
+    "S_instruct": {
+      "checkpoint": "Qwen3-4B-Instruct base",
+      "answered_only": false,
+      "n_scored": 1836,
+      "n_rows_total": 1836,
+      "n_missing_states": 0,
+      "p_unanswerable": {
+        "mean": 0.7402,
+        "median": 0.9779,
+        "frac_lt_0.1": 0.1329,
+        "frac_gt_0.9": 0.6002,
+        "saturation_bimodal_frac": 0.7331
+      },
+      "mean_abs_2p_minus_1": 0.8342,
+      "D1_answer_side_flip_curve": {
+        "0.05": 0.0131,
+        "0.10": 0.0229,
+        "0.15": 0.0321,
+        "0.20": 0.0479,
+        "0.25": 0.0605,
+        "0.30": 0.0763,
+        "0.35": 0.0937,
+        "0.40": 0.1073,
+        "0.45": 0.1176,
+        "0.50": 0.1296
+      },
+      "D1_E_correct_given_answered": {
+        "n_answered_graded": 1836,
+        "overall_Ecorrect": 0.2723,
+        "curve_by_pbin": {
+          "0": {
+            "correct": 41,
+            "n": 244,
+            "rate": 0.168
+          },
+          "1": {
+            "correct": 12,
+            "n": 76,
+            "rate": 0.1579
+          },
+          "2": {
+            "correct": 10,
+            "n": 43,
+            "rate": 0.2326
+          },
+          "3": {
+            "correct": 7,
+            "n": 58,
+            "rate": 0.1207
+          },
+          "4": {
+            "correct": 5,
+            "n": 34,
+            "rate": 0.1471
+          },
+          "5": {
+            "correct": 7,
+            "n": 54,
+            "rate": 0.1296
+          },
+          "6": {
+            "correct": 10,
+            "n": 51,
+            "rate": 0.1961
+          },
+          "7": {
+            "correct": 19,
+            "n": 74,
+            "rate": 0.2568
+          },
+          "8": {
+            "correct": 22,
+            "n": 100,
+            "rate": 0.22
+          },
+          "9": {
+            "correct": 367,
+            "n": 1102,
+            "rate": 0.333
+          }
+        }
+      }
+    }
+  },
+  "pooled_E_correct_given_answered": 0.4477,
+  "report_estimates": {
+    "p_saturation_frac_bimodal": 0.93,
+    "mean_abs_2p_minus_1": 0.956,
+    "E_correct_given_answered_pooled": 0.544,
+    "correctness_bonus_cap_w": 0.2,
+    "abstention_bonus_w_a": 0.2,
+    "unanswerable_flip_at_w020_pct": 4.35
+  },
+  "constant_drift": {
+    "E_correct_given_answered_pooled": {
+      "report_estimate": 0.544,
+      "recalibrated": 0.4477,
+      "delta": -0.0963,
+      "note": "pooled over T+S answered-graded; T is answered-subset only"
+    },
+    "correctness_bonus_cap_w_0.20_survives": {
+      "test": "unanswerable-stratum flip fraction at w=0.20 <= 2%",
+      "report_estimate_pct": 4.35,
+      "note": "recalibrated per-checkpoint answer-side flip at w=0.20 in each ckpt's D1_answer_side_flip_curve['0.20']; compare there. Full gold-unanswerable-stratum flip needs the refused rows (T: unavailable \u2014 see answered_only)."
+    }
+  },
+  "coverage_caveat": "T = answered subset (1,488/8,548); the 7,060 refused rows lack saved states and the checkpoint is not local. D4/D4b abstain cells (over-refusal quadrant) NOT reconstructable for T from this subset. S is complete."
+}
