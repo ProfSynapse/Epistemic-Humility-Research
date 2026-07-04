@@ -126,6 +126,25 @@ refit-classified divergent rows (category-stratified, seed 0) for the
 verdict eval. FalseQA rows are train-only (NO LICENSE: question text never
 enters committed files or any publication).
 
+**POOL v2.1 (pre-launch correction, 2026-07-04, before any arm step).**
+The v2 pool classified union-origin membership by OOF scores, but the
+in-loop sensor is the FULL-FIT probe (train AUROC 1.0 — it memorizes the
+union fit surface), under which 0/18,496 union rows are divergent
+(`union_inloop_rows_cleansft4bit.jsonl`; the 320 union rows sitting in v2
+train_divergent verified 0/320 divergent under the actual reward read).
+Enforcing the recorded rule above — membership under the sensor the reward
+actually reads — union rows are re-classified full-fit: all → concordant;
+divergent supply is mining-only (mining was already classified full-fit).
+The 60% category cap is re-applied on the mining-only supply (a plain
+union-row drop would have left ambiguous at 67%). The 400-row holdout is
+PINNED to the v2 draw (locked row_keys; its union rows are re-classified
+by the FRESH eval probe at verdict time per AI-G1, so no redraw). Rebuild:
+`amendment_ai_build_pool.py --variant v2 --union-classify inloop
+--pin-holdout`. Final pool: **2,102 train divergent** (ambiguous 1,261 =
+60.0% capped / false_premise 833 / unsolved_other 8), **16,665 concordant**,
+holdout 400 unchanged. Mixture stays 29.0% (its derivation rule was
+pre-stated on the OOF distribution). No gate, floor, or constant changes.
+
 ### 1.4 Arms
 
 clean-SFT → GRPO-probe(TRUE sensor) vs clean-SFT → GRPO-probe(PERMUTED
@@ -175,11 +194,13 @@ GRPO-v2 lineage recipe (single seed, as the line's GRPO runs are).
 3. w_c / w_a / mixture derived and recorded in this doc per §1.2–1.3 rules
    BEFORE the arms start. **SATISFIED under sensor v2 (same rules):
    w_c = w_a = 0.50 (gold-unanswerable stratum flip 1.3% at grid max —
-   budget still unbinding); mixture 29.0%; pool = 2,902 train divergent
-   (ambiguous capped at 60%: 1,741 / false_premise 833 / unsolved_other
-   328), 16,345 concordant, 400-row category-stratified holdout (seed 0);
-   TruthfulQA excluded (now audit-CONFIRMED: 0/82 sampled rows genuinely
+   budget still unbinding); mixture 29.0%; pool = **v2.1 (§1.3 pre-launch
+   correction): 2,102 train divergent (mining-only, in-loop-sensor
+   classified; ambiguous capped at 60.0%: 1,261 / false_premise 833 /
+   unsolved_other 8), 16,665 concordant, 400-row holdout pinned to the v2
+   draw**; TruthfulQA excluded (audit-CONFIRMED: 0/82 sampled rows genuinely
    unanswerable — `amendment_ai_truthfulqa_audit.md`); v1 values (mixture
-   30.5%, pool 2,909) superseded.**
+   30.5%, pool 2,909) and v2 pool (2,902/16,345, OOF-classified union rows)
+   superseded before any arm step.**
 
 Any condition failing ⇒ no launch; doc holds as DRAFT for morning review.

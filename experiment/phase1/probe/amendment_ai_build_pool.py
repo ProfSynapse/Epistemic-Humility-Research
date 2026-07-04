@@ -50,16 +50,18 @@ import argparse
 VARIANTS = {
     "v1": {"union_dir": "union_pregen", "mining_dir": "mining_pregen",
             "union_rows": "union_refit_rows_cleansft.jsonl",
-            "mining_rows": "mining_refit_rows_cleansft.jsonl"},
+            "mining_rows": "mining_refit_rows_cleansft.jsonl",
+            "mixture": 0.305},
     "v2": {"union_dir": "union_pregen_4bit", "mining_dir": "mining_pregen_4bit",
             "union_rows": "union_refit_rows_cleansft4bit.jsonl",
-            "mining_rows": "mining_refit_rows_cleansft4bit.jsonl"},
+            "union_inloop": "union_inloop_rows_cleansft4bit.jsonl",
+            "mining_rows": "mining_refit_rows_cleansft4bit.jsonl",
+            "mixture": 0.290},
 }
 
 SEED = 0
 HOLDOUT_N = 400
 CATEGORY_CAP = 0.60
-MIXTURE = 0.305
 EXCLUDE_MINING_SOURCES = {
     "truthfulqa_misconception",          # quarantined pending construct audit
     "kuq_ku_unknown_mine",               # v1 remnants: dupes of locked AH pool
@@ -104,21 +106,43 @@ def stratified_take(rows, n, seed):
 def main() -> int:
     ap = argparse.ArgumentParser()
     ap.add_argument("--variant", choices=["v1", "v2"], default="v2")
-    v = VARIANTS[ap.parse_args().variant]
+    ap.add_argument("--union-classify", choices=["oof", "inloop"], default="oof",
+                    help="inloop = classify union membership under the FULL-FIT "
+                         "frozen probe (the sensor the reward reads, prereg "
+                         "section 1.3); oof = v1/v2.0 behavior")
+    ap.add_argument("--pin-holdout", action="store_true",
+                    help="reuse holdout_row_keys from the existing manifest "
+                         "(locked holdout); holdout_eval.jsonl is not rewritten")
+    args = ap.parse_args()
+    v = VARIANTS[args.variant]
     OUT_DIR.mkdir(parents=True, exist_ok=True)
     rng = random.Random(SEED)
 
     excluded_keys = {r["row_key"] for r in load_jsonl(AH_POOL)}
     excluded_keys |= {r["row_key"] for r in load_jsonl(A1_STRATUM)}
 
+    pinned_holdout_keys = None
+    if args.pin_holdout:
+        prior = json.loads(MANIFEST.read_text())
+        pinned_holdout_keys = set(prior["holdout_row_keys"])
+        pinned_holdout_by_cat = prior["holdout_by_category"]
+        excluded_keys = excluded_keys | pinned_holdout_keys
+
     union_text = {r["row_key"]: r for r in load_jsonl(REFIT / v["union_dir"] / "rows.jsonl")}
     mining_text = {r["row_key"]: r for r in load_jsonl(REFIT / v["mining_dir"] / "rows.jsonl")}
-    union_refit = load_jsonl(REFIT / v["union_rows"])
+    if args.union_classify == "inloop":
+        union_refit = load_jsonl(REFIT / v["union_inloop"])
+    else:
+        union_refit = load_jsonl(REFIT / v["union_rows"])
     mining_refit = load_jsonl(REFIT / v["mining_rows"])
 
     n_excluded_ah = 0
+    n_excluded_pinned = 0
     divergent, concordant = [], []
     for r in union_refit:
+        if pinned_holdout_keys is not None and r["row_key"] in pinned_holdout_keys:
+            n_excluded_pinned += 1
+            continue
         if r["row_key"] in excluded_keys:
             n_excluded_ah += 1
             continue
@@ -139,6 +163,9 @@ def main() -> int:
         if r["source"] in EXCLUDE_MINING_SOURCES:
             n_mining_excluded_src += 1
             continue
+        if pinned_holdout_keys is not None and r["row_key"] in pinned_holdout_keys:
+            n_excluded_pinned += 1
+            continue
         if r["row_key"] in excluded_keys:
             n_excluded_ah += 1
             continue
@@ -153,8 +180,11 @@ def main() -> int:
             "origin": "mining",
         })
 
-    # holdout BEFORE the cap
-    holdout, remaining = stratified_take(divergent, HOLDOUT_N, SEED)
+    # holdout BEFORE the cap (or pinned: locked keys already excluded above)
+    if pinned_holdout_keys is not None:
+        holdout, remaining = [], divergent
+    else:
+        holdout, remaining = stratified_take(divergent, HOLDOUT_N, SEED)
 
     # 60% category-mass cap on training divergent (down-sample oversized cats)
     cats = Counter(r["category"] for r in remaining)
@@ -187,29 +217,39 @@ def main() -> int:
 
     dump("train_divergent.jsonl", capped)
     dump("train_concordant.jsonl", concordant)
-    dump("holdout_eval.jsonl", holdout)
+    if pinned_holdout_keys is None:
+        dump("holdout_eval.jsonl", holdout)
 
     manifest = {
         "amendment": "AI", "stage": "build_pool", "seed": SEED,
-        "sensor_variant": ap.parse_args().variant,
-        "mixture_divergent": MIXTURE, "category_cap": CATEGORY_CAP,
-        "holdout_n": len(holdout),
+        "sensor_variant": args.variant,
+        "union_classify": args.union_classify,
+        "holdout_pinned": pinned_holdout_keys is not None,
+        "mixture_divergent": v["mixture"], "category_cap": CATEGORY_CAP,
+        "holdout_n": (len(pinned_holdout_keys) if pinned_holdout_keys is not None
+                      else len(holdout)),
         "counts": {
             "train_divergent": len(capped),
             "train_concordant": len(concordant),
-            "holdout_eval": len(holdout),
+            "holdout_eval": (len(pinned_holdout_keys)
+                             if pinned_holdout_keys is not None else len(holdout)),
             "dropped_by_category_cap": dropped_by_cap,
             "excluded_ah_pool_or_a1": n_excluded_ah,
+            "excluded_pinned_holdout": n_excluded_pinned,
             "excluded_mining_sources": n_mining_excluded_src,
         },
         "train_divergent_by_category": dict(final_cats),
-        "holdout_by_category": dict(Counter(r["category"] for r in holdout)),
+        "holdout_by_category": (pinned_holdout_by_cat
+                                if pinned_holdout_keys is not None
+                                else dict(Counter(r["category"] for r in holdout))),
         "train_divergent_by_origin": dict(Counter(r["origin"] for r in capped)),
         "exclusion_sources": sorted(EXCLUDE_MINING_SOURCES),
         "ah_pool_file": str(AH_POOL), "a1_stratum_file": str(A1_STRATUM),
         "note": "pool jsonl files are gitignored (FalseQA text is train-only, "
                 "NO LICENSE); this manifest carries counts only",
-        "holdout_row_keys": sorted(r["row_key"] for r in holdout),
+        "holdout_row_keys": (sorted(pinned_holdout_keys)
+                             if pinned_holdout_keys is not None
+                             else sorted(r["row_key"] for r in holdout)),
     }
     MANIFEST.write_text(json.dumps(manifest, indent=2) + "\n")
     print(json.dumps({k: manifest[k] for k in

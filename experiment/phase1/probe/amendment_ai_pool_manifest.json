@@ -3,21 +3,24 @@
   "stage": "build_pool",
   "seed": 0,
   "sensor_variant": "v2",
-  "mixture_divergent": 0.305,
+  "union_classify": "inloop",
+  "holdout_pinned": true,
+  "mixture_divergent": 0.29,
   "category_cap": 0.6,
   "holdout_n": 400,
   "counts": {
-    "train_divergent": 2902,
-    "train_concordant": 16345,
+    "train_divergent": 2102,
+    "train_concordant": 16665,
     "holdout_eval": 400,
-    "dropped_by_category_cap": 3129,
+    "dropped_by_category_cap": 3609,
     "excluded_ah_pool_or_a1": 1810,
+    "excluded_pinned_holdout": 400,
     "excluded_mining_sources": 1089
   },
   "train_divergent_by_category": {
-    "unsolved_other": 328,
     "false_premise": 833,
-    "ambiguous": 1741
+    "ambiguous": 1261,
+    "unsolved_other": 8
   },
   "holdout_by_category": {
     "unsolved_other": 22,
@@ -25,8 +28,7 @@
     "ambiguous": 323
   },
   "train_divergent_by_origin": {
-    "union": 320,
-    "mining": 2582
+    "mining": 2102
   },
   "exclusion_sources": [
     "kuq_ku_unknown_mine",
