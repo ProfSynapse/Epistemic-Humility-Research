@@ -22,15 +22,17 @@ predictions:
     call: SURVIVES (AJ-G2 PASS)
     recorded: 2026-07-04
     quote: "AJ survived I agree worth being optimistic here."
-outcome: null
+outcome: AMBIGUOUS zone (Section 4) — caution AUROC 0.858 >= 0.70 but
+  random-control gap 0.053 > 0.05; awaiting user adjudication
 ---
 
 # Amendment AJ — Knowledge-Subspace Erasure (rank-1 → certified linear erasure)
 
-Status: SIGNED 2026-07-04 — dual predictions recorded (both SURVIVES); user
-sign-off given; CPU-only analysis run launched 2026-07-04. Instrument note:
-a row-key sanitization bug in the harness loader (`::` vs `__`) was found and
-fixed pre-launch (PR #187); gates untouched.
+Status: RUN COMPLETE 2026-07-04 — landed in the pre-stated AMBIGUOUS zone
+(Section 9); verdict awaits user adjudication. Dual predictions recorded
+pre-launch (both SURVIVES). Instrument note: a row-key sanitization bug in
+the harness loader (`::` vs `__`) was found and fixed pre-launch (PR #187);
+gates untouched.
 
 ## 1. Motivation and strategic position
 
@@ -192,4 +194,45 @@ Both regimes correctly classified; instrument validated end-to-end.
 
 ## 9. Result
 
-(To be filled after the run; gates as locked in Section 4.)
+Run 2026-07-04, harness as committed (PR #185, loader fix PR #187), seed
+20260704, 1233 rows loaded (541 caution rows), d = 2560. Artifact:
+`experiment/phase1/probe/analysis/amendment_aj_subspace_erasure/result.json`
+(untracked per Section 7.3).
+
+| quantity | value |
+|---|---|
+| knowledge probe, baseline (OOF) | 0.996 |
+| **AJ-G1 certificate** (post-LEACE knowledge, OOF) | **0.496** — PASS (≤ 0.55), no Section 3.3 knobs used |
+| caution probe, baseline (OOF) | 0.912 |
+| **post-LEACE caution (OOF)** | **0.858**, bootstrap CI95 [0.823, 0.890] |
+| random-control mean (20 repeats) | 0.911 |
+| random-control gap (random − LEACE) | **0.053**, CI95 [0.032, 0.076] |
+
+Gate outcomes, exactly as locked in Section 4:
+
+- **AJ-G1 PASS.** LEACE fully erased the linearly readable answerability
+  content in one rank (0.996 → 0.496) on the first attempt.
+- **AJ-G2 NOT PASS.** The AUROC condition clears with room (0.858 ≥ 0.70)
+  but the gap condition misses by 0.003 (0.053 > 0.05); the gap CI95
+  [0.032, 0.076] straddles the 0.05 line, so the miss is within resampling
+  uncertainty of the threshold in both directions.
+- **Falsifier NOT FIRED** (0.858 is nowhere near < 0.65).
+- **Verdict: AMBIGUOUS zone** ("AUROC ≥ 0.70 with a gap > 0.05"),
+  adjudicated by the user per Section 4. No goalposts move.
+
+Descriptive instrumentation (Section 6): the INLP curve never certifies —
+after 40 iterative logistic nullspace projections the fresh knowledge probe
+still reads 0.813 (k = 1: 0.988), confirming the hydra pattern for the
+knowledge concept and the necessity of the whitened closed-form eraser;
+caution along the INLP curve degrades only from 0.912 to 0.898 while the
+matched random-rank curve stays flat at 0.912.
+
+Reading (pre-adjudication): the substantive picture favors H-independent —
+certified erasure of a concept read at 0.996 costs the caution readout 5.5
+points, leaving it at 0.858, far above both the survival floor and the
+falsifier. The gap condition was pre-stated to catch exactly this quantity,
+and it says the knowledge subspace carries a small but statistically real
+share of caution's separability (gap CI excludes 0). Both pre-registered
+predictions called SURVIVES (AJ-G2 PASS); under a strict gate reading
+neither is confirmed, and the adjudication decides how the scoreboard and
+the paper3 Section 9 caveat are updated.
