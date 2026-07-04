@@ -167,7 +167,7 @@ def load_real_surface(rows_path, extraction_dir):
     X, z, cell = [], [], []
     missing = 0
     for r in rows:
-        key = r.get("probe_pool_row_key") or r["row_key"]
+        key = (r.get("probe_pool_row_key") or r["row_key"]).replace("::", "__")
         p = Path(extraction_dir) / f"{key}{TENSOR_SUFFIX}"
         if not p.exists():
             missing += 1
