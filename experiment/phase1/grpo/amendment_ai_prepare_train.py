@@ -126,6 +126,7 @@ def main() -> int:
                 "split": split,
                 "origin": r.get("origin", "union"),
                 "source": r.get("source"),
+                "p_unanswerable": r.get("p_unanswerable"),
             })
         return out
 
@@ -162,30 +163,33 @@ def main() -> int:
         for r in all_rows:
             fh.write(json.dumps(r, ensure_ascii=False) + "\n")
 
-    # ---- frozen sensor-integrity audit set (prereg §1.5; smoke C3 construct) ----
-    # Carries the question text so the tripwire callback can read live p at the
-    # probe-render anchor. Audit is drawn from the UNION surface (no FalseQA), so
-    # this text is license-clean; the file is gitignored regardless.
-    refit = load_jsonl(V2_REFIT_ROWS)
-    union_q = {r["row_key"]: r["question"]
-               for r in load_jsonl(REFIT / "union_pregen_4bit/rows.jsonl")}
+    # ---- frozen sensor-integrity audit set (prereg §1.5) ----
+    # Pool v2.1 substitution (team-lead GO): the fixed 500-row integrity audit is
+    # re-drawn FROM THE v2.1 TRAIN POOL (stratified by gold class, seed 0, chosen
+    # once, logged) because pool membership changed when union rows moved to the
+    # concordant side. The tripwire reads LIVE p at the probe-render anchor on
+    # these rows every 100 steps and checks AUROC vs gold; a class-balanced draw
+    # keeps that AUROC well-defined. Carries question text (license-clean vs the
+    # gitignored file); FalseQA rows may appear (train pool includes mining
+    # FalseQA) — counted in the manifest, text stays out of committed files.
+    pool_rows = divergent + concordant     # the v2.1 training universe (unique rows)
     rng = random.Random(AUDIT_SEED)
-    known = [r for r in refit if r["label"] == "known"]
-    unknown = [r for r in refit if r["label"] == "unknown"]
+    known = [r for r in pool_rows if r["label"] == "known"]
+    unknown = [r for r in pool_rows if r["label"] == "unknown"]
     per_class = min(AUDIT_PER_CLASS, len(known), len(unknown))
     rng.shuffle(known); rng.shuffle(unknown)
     audit = known[:per_class] + unknown[:per_class]
     n_audit_falseqa = sum(1 for r in audit if "falseqa" in str(r.get("source", "")).lower())
-    if n_audit_falseqa:
-        raise SystemExit(f"audit set has {n_audit_falseqa} FalseQA rows — union "
-                         "surface should have none; investigate before launch.")
     audit_path = OUT_DIR / "audit_set.jsonl"
     with audit_path.open("w", encoding="utf-8") as fh:
         for r in audit:
             fh.write(json.dumps({
                 "row_key": r["row_key"], "label": r["label"],
-                "question": union_q.get(r["row_key"], ""),
-                "p_unanswerable_oof": float(r["p_unanswerable"]),
+                "question": r["question"],
+                "gold_answerable": r["gold_answerable"],
+                "split": r["split"], "source": r.get("source"),
+                "p_unanswerable_oof": float(r["p_unanswerable"])
+                if r.get("p_unanswerable") is not None else None,
             }, ensure_ascii=False) + "\n")
 
     # counts over UNIQUE rows (not oversampled duplicates)
@@ -206,12 +210,16 @@ def main() -> int:
             "gold_answerable_with_aliases": n_alias,
             "falseqa_rows_train_only": n_falseqa,
             "audit_set": len(audit), "audit_per_class": per_class,
+            "audit_falseqa_rows": n_audit_falseqa,
+            "audit_by_split": dict(Counter(r["split"] for r in audit)),
         },
         "compose_seed": COMPOSE_SEED,
         "split_by_origin": {
             "divergent_unique": dict(Counter(r["origin"] for r in divergent)),
             "concordant": dict(Counter(r["origin"] for r in concordant)),
         },
+        "pool_version": "v2.1",
+        "audit_source": "v2.1_train_pool_stratified_by_gold_class",
         "audit_seed": AUDIT_SEED,
         "audit_row_keys_sha": sha_of_rowkeys(r["row_key"] for r in audit),
         "train_row_keys_sha": sha_of_rowkeys(r["row_key"] for r in unique_rows),
@@ -219,7 +227,10 @@ def main() -> int:
         "note": "par_train.jsonl + audit_set.jsonl are gitignored (FalseQA text "
                 "is train-only, NO LICENSE); this manifest carries counts + SHAs "
                 "only. divergent_frac is the pool ratio; the trainer sampler "
-                "draws 29.0% divergent per batch (sampler seed 1).",
+                "draws 29.0% divergent per batch (sampler seed 1). Pool v2.1: "
+                "union rows are concordant under the in-loop full-fit sensor; the "
+                "500-row integrity audit is re-drawn from the v2.1 train pool "
+                "(stratified by gold class, seed 0).",
     }
     MANIFEST.write_text(json.dumps(manifest, indent=2) + "\n", encoding="utf-8")
     print(json.dumps(manifest["counts"], indent=2))

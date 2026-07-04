@@ -13,7 +13,12 @@
     "gold_answerable_with_aliases": 2247,
     "falseqa_rows_train_only": 833,
     "audit_set": 500,
-    "audit_per_class": 250
+    "audit_per_class": 250,
+    "audit_falseqa_rows": 31,
+    "audit_by_split": {
+      "concordant": 418,
+      "divergent": 82
+    }
   },
   "compose_seed": 1,
   "split_by_origin": {
@@ -24,10 +29,12 @@
       "union": 16665
     }
   },
+  "pool_version": "v2.1",
+  "audit_source": "v2.1_train_pool_stratified_by_gold_class",
   "audit_seed": 0,
-  "audit_row_keys_sha": "ef74bb6eecfadd40476da28a21f46dce4586a30345f6a9b5893a51e5bce4a1d3",
+  "audit_row_keys_sha": "18c8539808fc265a8085c847b55eaa9a215e6ffee15cc0a067106d632753193c",
   "train_row_keys_sha": "033d1b2f451d6a9b95713fa177c45e27086982e148b4eb8a10fcf94378738dbd",
   "train_file": "/home/profsynapse/code/Epistemic-Humility-Research/experiment/phase1/probe/analysis/amendment_ai/train/par_train.jsonl",
   "audit_file": "/home/profsynapse/code/Epistemic-Humility-Research/experiment/phase1/probe/analysis/amendment_ai/train/audit_set.jsonl",
-  "note": "par_train.jsonl + audit_set.jsonl are gitignored (FalseQA text is train-only, NO LICENSE); this manifest carries counts + SHAs only. divergent_frac is the pool ratio; the trainer sampler draws 29.0% divergent per batch (sampler seed 1)."
+  "note": "par_train.jsonl + audit_set.jsonl are gitignored (FalseQA text is train-only, NO LICENSE); this manifest carries counts + SHAs only. divergent_frac is the pool ratio; the trainer sampler draws 29.0% divergent per batch (sampler seed 1). Pool v2.1: union rows are concordant under the in-loop full-fit sensor; the 500-row integrity audit is re-drawn from the v2.1 train pool (stratified by gold class, seed 0)."
 }
