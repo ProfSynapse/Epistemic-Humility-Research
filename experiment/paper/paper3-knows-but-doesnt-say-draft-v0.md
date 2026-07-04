@@ -159,14 +159,29 @@ couples them.
 
 **Latent knowledge and probing.** A line of work shows that a model's hidden states
 linearly encode whether it is being truthful or whether it knows an answer
-[arXiv:2304.13734, arXiv:2212.03827, arXiv:2310.06824, arXiv:2207.05221]. Our
-internal axis is in this family (a logistic probe on residual activations). Our
-question is downstream of probing: granting that the knowledge is decodable, *why
-does the model not say it*, and can training make it say it.
+[arXiv:2304.13734, arXiv:2212.03827, arXiv:2310.06824, arXiv:2207.05221], with
+theoretical grounding for why such directions are linear [arXiv:2403.03867] and
+evidence that truth directions generalize across tasks [arXiv:2407.08582]; a
+mechanistic literature localizes factual recall itself to identifiable components
+[arXiv:2202.05262, arXiv:2104.08696, arXiv:2309.08600]. Two findings are directly
+concurrent with ours: a linear probe reads answerability even while the output
+hallucinates [arXiv:2310.11877], and internal truthfulness readouts exceed what
+outputs express [arXiv:2410.02707]; a complementary result shows fine-tuning
+*suppresses* rather than destroys the boundary-tracking structure
+[arXiv:2511.12991]. Our internal axis is in this family (a logistic probe on
+residual activations). Our question is downstream of probing: granting that the
+knowledge is decodable, *why does the model not say it*, and can training make it
+say it — the training-resistance depth (seven objectives on one model, with refit
+probes held fixed) is the part this literature has not measured.
 
 **Activation steering.** Inference-time intervention along a learned direction can
-change model behavior [arXiv:2306.03341], and humility-adjacent behaviors such as
-sycophancy live in steerable internal subspaces [arXiv:2604.03147]. We use steering
+change model behavior [arXiv:2306.03341, arXiv:2308.10248, arXiv:2312.06681], and
+humility-adjacent behaviors such as
+sycophancy live in steerable internal subspaces [arXiv:2604.03147]. Closest to our
+result, refusal itself is mediated by a single causally steerable direction
+[arXiv:2406.11717] — though single-direction framings deserve caution
+[arXiv:2602.02132], and intervention conclusions are sensitive to methodological
+choices [arXiv:2309.16042]. We use steering
 as a causal probe of our two-axis decomposition and report a clean asymmetry that,
 to our knowledge, has not been isolated for the abstention behavior specifically.
 
@@ -174,7 +189,23 @@ to our knowledge, has not been isolated for the abstention behavior specifically
 experiment [experiment/paper/paper2-training-regimen-draft-v2.md], establishes,
 on the same model and data, that cold-start SFT induces abstention (and
 over-refusal), and that DPO and KTO reposition the abstention boundary rather than
-inducing the behavior. This paper builds on Paper 2 by asking what happens to the
+inducing the behavior. The broader literature agrees that training moves
+*abstention behavior*: IDK-labeled fine-tuning and honesty alignment install
+refusal (with over-refusal as the standard side effect) [arXiv:2312.07000,
+arXiv:2401.13275, arXiv:2603.17504], while reasoning-focused post-training
+degrades it [arXiv:2506.09038]; surveys catalogue the design space
+[arXiv:2407.18418]. A separate line trains models to *verbalize* confidence
+[arXiv:2205.14334, arXiv:2306.13063, arXiv:2405.20974, arXiv:2405.21028,
+arXiv:2406.08391], typically reporting improved calibration on the trained
+distribution without testing whether the emitted scalar tracks the model's
+internal state — the coherence question this paper measures. Consistent with our
+RL nulls, ternary abstention rewards under GRPO also fail to couple abstention to
+confidence [arXiv:2511.11500], and there are structural reasons to expect the
+output channel to resist: calibrated models must hallucinate at a floor set by
+their miscalibration [arXiv:2311.14648], alignment stages degrade calibration
+[arXiv:2311.13240], and fine-tuning perturbs overlapping representations rather
+than writing new signal [arXiv:2604.15574].
+This paper builds on Paper 2 by asking what happens to the
 *confidence* channel under those and further objectives, and by adding the GRPO and
 contrastive-SFT cells.
 
@@ -182,9 +213,11 @@ contrastive-SFT cells.
 
 **Model and data.** All experiments use `unsloth/Qwen3-4B-bnb-4bit` with LoRA
 adapters (r = 32, α = 64, dropout = 0.05, all-linear targets). Training data for the
-abstention/confidence cells is built from TriviaQA-RC (no-context) following the
+abstention/confidence cells is built from TriviaQA-RC (no-context)
+[arXiv:1705.03551] following the
 Cheng recipe (reusing the data-construction recipe, not released labels). The
-out-of-distribution evaluation is SelfAware (n = 3369; 1032 unknown-labeled, 2337
+out-of-distribution evaluation is SelfAware [arXiv:2305.18153] (n = 3369; 1032
+unknown-labeled, 2337
 known-labeled), scored with the Phase-1 eval harness
 [experiment/phase1/eval/run_eval.py]. Probe and geometry work uses hidden-state
 extractions from the merged models (extraction `55254a04aa1f`), best layer L35
@@ -397,12 +430,12 @@ opposite sides in a way that localizes the mechanism.
 
 **The seven interventions.**
 
-1–2. **DPO, KTO.** Paper 2 shows these reposition the abstention boundary rather
+1–2. **DPO [arXiv:2305.18290], KTO [arXiv:2402.01306].** Paper 2 shows these reposition the abstention boundary rather
 than inducing abstention; on the confidence channel the emitted scalar remains a
 flat high value across outcome cells (e.g. known-wrong ≈ 0.83) — repositioned
 behavior, unchanged stated confidence [experiment/paper/analysis/amendment_b_confidence_alignment_by_outcome.csv].
 
-3–4. **GRPO v1/v2.** Reward shaping over the behavior leaves the stated scalar
+3–4. **GRPO v1/v2 [arXiv:2402.03300].** Reward shaping over the behavior leaves the stated scalar
 collapsed: on the full evaluation GRPO-v2 emits mean ≈ 0.813 with std ≈ 0.013 —
 a near-constant ~0.8 regardless of input — ranks appropriateness at
 AUROC ≈ 0.520 with ECE ≈ 0.403, and ranks its own correct vs wrong among
@@ -419,7 +452,7 @@ optimum of the objective as specified.
 
 5. **GRPO v3 (proper scoring).** If the fixed-target confidence term makes a
 constant reward-optimal, the obvious repair — and the one the verifiable-RL
-literature reaches for (Damani et al., 2025) — is to make calibration itself the
+literature reaches for [arXiv:2507.16806] — is to make calibration itself the
 optimum: replace the fixed targets with a Brier proper score of emitted
 confidence against realized appropriateness,
 
@@ -798,7 +831,10 @@ routine gated on the signal; preference and reward objectives re-gate the
 routine (Paper 2); none of them touches the signal, which is why the refit
 probes are identical across arms (Section 4) while refusal rates move by tens
 of points. Third, as *strategy*: the expensive part of epistemic humility —
-the internal knowledge-boundary signal — is already paid for by pretraining.
+the internal knowledge-boundary signal — is already paid for by pretraining:
+the same answerability readout is present in pretrain-only base weights, before
+any instruction tuning or preference training, replicated across four bases
+spanning families and eras (Appendix A).
 The unsolved part is the *readout*: coupling stated confidence and action to a
 signal that is linearly available inside. Training the readout failed here in
 seven variants; reading it directly with a probe trivially succeeds. Paper 4
@@ -806,7 +842,8 @@ pursues that readout line directly — whether a training-free probe readout can
 supply the calibrated gate and dial that output training could not — and takes
 on the transfer questions (across datasets, model sizes, and families) that
 this single-model study leaves open; the standard probing cautions (a probe can
-read recall rather than truth-tracking; transfer must be tested, not assumed)
+read recall rather than truth-tracking [arXiv:2510.09033]; transfer must be
+tested, not assumed)
 carry over to it.
 
 **Implications beyond this model.** If the pattern generalizes (Section 9 is honest
@@ -892,13 +929,69 @@ repository [https://github.com/ProfSynapse/Epistemic-Humility-Research] under
 `experiment/phase1/` and `experiment/protocol/`. The per-cell stated-confidence
 calibration reports are at `experiment/phase1/eval/analysis/calibration_gap_*.json`;
 the internal-axis and steering artifacts are under
-`experiment/phase1/probe/analysis/`. Restricted or gitignored datasets (e.g. bridge
+`experiment/phase1/probe/analysis/`.
+
+Published dataset releases on Hugging Face (the repo-side manifest with pinned
+revisions is `docs/public-artifacts.md`):
+`professorsynapse/epistemic-humility-phase1` (training/dev data),
+`professorsynapse/epistemic-humility-phase1-labels` (frozen question split and
+knowledge labels), `professorsynapse/epistemic-humility-phase1-evals` (eval
+analysis layer), `professorsynapse/eh-probe-directions` (per-layer probe
+directions with fit metadata — replicate the internal-axis readout without GPU
+extraction), and `professorsynapse/eh-readout-rows` (per-question
+question/answer/grade rows behind the readout results).
+
+Restricted or gitignored datasets (e.g. bridge
 sets) are not redistributed. This is draft-v1; numbers are current as of 2026-07-02.
 
 ## References
 
-(Shared bibliography with Paper 1; arXiv identifiers are cited inline. To be
-compiled for submission.)
+(Compiled 2026-07-04 from the program's knowledge-graph library; every entry
+has an ingested note under `library/notes/`. Cited inline as [arXiv:id].)
+
+- Arditi et al. (2024). Refusal in Language Models Is Mediated by a Single Direction. arXiv:2406.11717.
+- Azaria et al. (2023). The Internal State of an LLM Knows When It's Lying. arXiv:2304.13734.
+- Burns et al. (2022). Discovering Latent Knowledge in Language Models Without Supervision. arXiv:2212.03827.
+- Cheang et al. (2025). Do LLMs Really Know What They Don't Know? Internal States Mainly Reflect Knowledge Recall Rather Than Truthfulness. arXiv:2510.09033.
+- Cheng et al. (2024). Can AI Assistants Know What They Don't Know?. arXiv:2401.13275.
+- Cunningham et al. (2023). Sparse Autoencoders Find Highly Interpretable Features in Language Models. arXiv:2309.08600.
+- Dai et al. (2021). Knowledge Neurons in Pretrained Transformers. arXiv:2104.08696.
+- Damani et al. (2025). Beyond Binary Rewards: Training LMs to Reason About Their Uncertainty. arXiv:2507.16806.
+- Ethayarajh et al. (2024). KTO: Model Alignment as Prospect Theoretic Optimization. arXiv:2402.01306.
+- Gani et al. (2026). Quantifying Faithful Confidence Expression in Large Reasoning Models. arXiv:2606.03969.
+- Jiang et al. (2024). On the Origins of Linear Representations in Large Language Models. arXiv:2403.03867.
+- Joad et al. (2026). There Is More to Refusal in Large Language Models than a Single Direction. arXiv:2602.02132.
+- Joshi et al. (2017). TriviaQA: A Large Scale Distantly Supervised Challenge Dataset for Reading Comprehension. arXiv:1705.03551.
+- Kadavath et al. (2022). Language Models (Mostly) Know What They Know. arXiv:2207.05221.
+- Kalai and Vempala (2023). Calibrated Language Models Must Hallucinate. arXiv:2311.14648.
+- Kaplan et al. (2026). Why Fine-Tuning Encourages Hallucinations and How to Fix It. arXiv:2604.15574.
+- Kapoor et al. (2024). Large Language Models Must Be Taught to Know What They Don't Know. arXiv:2406.08391.
+- Kirichenko et al. (2025). AbstentionBench: Reasoning LLMs Fail on Unanswerable Questions. arXiv:2506.09038.
+- Lacombe et al. (2025). Don't Think Twice! Over-Reasoning Impairs Confidence Calibration. arXiv:2508.15050.
+- Li et al. (2023). Inference-Time Intervention: Eliciting Truthful Answers from a Language Model. arXiv:2306.03341.
+- Lin et al. (2022). Teaching Models to Express Their Uncertainty in Words. arXiv:2205.14334.
+- Liu et al. (2024). On the Universal Truthfulness Hyperplane Inside LLMs. arXiv:2407.08582.
+- Marks et al. (2023). The Geometry of Truth: Emergent Linear Structure in Large Language Model Representations of True/False Datasets. arXiv:2310.06824.
+- Mei et al. (2025). Reasoning about Uncertainty: Do Reasoning Models Know When They Don't Know?. arXiv:2506.18183.
+- Meng et al. (2022). Locating and Editing Factual Associations in GPT. arXiv:2202.05262.
+- Mohamadi et al. (2025). Honesty over Accuracy: Trustworthy Language Models through Reinforced Hesitation. arXiv:2511.11500.
+- Orgad et al. (2024). LLMs Know More Than They Show: On the Intrinsic Representation of LLM Hallucinations. arXiv:2410.02707.
+- Panickssery et al. (2023). Steering Llama 2 via Contrastive Activation Addition. arXiv:2312.06681.
+- Rafailov et al. (2023). Direct Preference Optimization: Your Language Model is Secretly a Reward Model. arXiv:2305.18290.
+- Shao et al. (2024). DeepSeekMath: Pushing the Limits of Mathematical Reasoning in Open Language Models. arXiv:2402.03300.
+- Shi et al. (2025). Fine-Tuned LLMs Know They Don't Know: A Parameter-Efficient Approach to Recovering Honesty. arXiv:2511.12991.
+- Slobodkin et al. (2023). The Curious Case of Hallucinatory (Un)answerability: Finding Truths in the Hidden States of Over-Confident Large Language Models. arXiv:2310.11877.
+- Stengel-Eskin et al. (2024). LACIE: Listener-Aware Finetuning for Confidence Calibration in Large Language Models. arXiv:2405.21028.
+- Sun et al. (2026). Valence-Arousal Subspace in LLMs: Circular Emotion Geometry and Multi-Behavioral Control. arXiv:2604.03147.
+- Turner et al. (2023). Steering Language Models With Activation Engineering. arXiv:2308.10248.
+- Uluoglakci et al. (2026). Inducing Epistemological Humility in Large Language Models: A Targeted SFT Approach to Reducing Hallucination. arXiv:2603.17504.
+- Wen et al. (2024). Know Your Limits: A Survey of Abstention in Large Language Models. arXiv:2407.18418.
+- Xiong et al. (2023). Can LLMs Express Their Uncertainty? An Empirical Evaluation of Confidence Elicitation in LLMs. arXiv:2306.13063.
+- Xu et al. (2024). SaySelf: Teaching LLMs to Express Confidence with Self-Reflective Rationales. arXiv:2405.20974.
+- Yang et al. (2023). Alignment for Honesty. arXiv:2312.07000.
+- Yin et al. (2023). Do Large Language Models Know What They Don't Know?. arXiv:2305.18153.
+- Zhang et al. (2023). Towards Best Practices of Activation Patching in Language Models: Metrics and Methods. arXiv:2309.16042.
+- Zhu et al. (2023). On the Calibration of Large Language Models and Alignment. arXiv:2311.13240.
 
 ## Appendix A: Provenance (internal labels to artifacts)
 
@@ -916,6 +1009,7 @@ protocol document and scored artifact:
 | §7 interventions 6–7 (contrastive SFT, answer-supervised / answer-masked) | Amendments K and L | `experiment/protocol/AMENDMENT-K-contrastive-sft-behavior-conditional-confidence.md`; `experiment/protocol/AMENDMENT-L-answer-subspan-masked-contrastive-sft.md` | `calibration_gap_contrastive_sft_seed1.json`; `calibration_gap_contrastive_masked_sft_seed1.json`; `results_amendment_k_*`; `results_amendment_l_*` |
 | §7 RL-on-calibrated-base follow-on, incl. the β 0.10 → 0.05 falsifier re-run (Table 2, Figs. 4–6; Fig. 7 spans arms) | Amendment N (incl. β 0.05 arm) | `experiment/protocol/AMENDMENT-N-grpo-v3-on-contrastive-sft-base.md` (results tables §7) | result tables embedded in the amendment document; `results_amendment_n_*`; run records under `experiment/phase1/run_records/` |
 | §7 probe-axis distillation mirror (Table 3) | Amendment M, Revision 3 | `experiment/protocol/AMENDMENT-M-quantile-balanced-probe-distilled-sft.md` | `results_amendment_m_*_probe_factual_sft_seed1_merged_full_4b` |
+| §8 "paid for by pretraining" (signal present in pretrain-only base weights, 4/4 bases) | Amendment Y | `experiment/protocol/AMENDMENT-Y-pretrain-only-base-readout.md` (SUPPORTED 4/4) | `experiment/phase1/probe/amendment_y_results/` |
 
 Governance notes: Amendments B/E/J/K/L/M/N are exploratory single-seed evidence
 cells with pre-stated predictions and falsifiers, reported here as exploratory

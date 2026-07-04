@@ -164,6 +164,10 @@ Current public HF artifacts:
 - [Readout row surfaces](https://huggingface.co/datasets/professorsynapse/eh-readout-rows)
   (per-question question/answer/grade rows behind the amendment results — no
   hidden-state tensors; audit grading or study answer behavior directly)
+- [Doubt on command — Amendment AH exhaust](https://huggingface.co/datasets/professorsynapse/eh-doubt-on-command)
+  (5,436 per-row generations + primed-readout instrumentation behind the
+  H-compliance result: doubt primes are obeyed without consulting the model's
+  own internal readout; includes datasheet and per-source license audit)
 
 Default policy:
 

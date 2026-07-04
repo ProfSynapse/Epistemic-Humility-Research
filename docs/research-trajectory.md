@@ -31,16 +31,22 @@ Draft: `paper2-training-regimen-draft-v2.md`. Figures: `fig-p1-*` (legacy prefix
 
 ---
 
-## Paper 3 — "Knows but Doesn't Say" (diagnosis complete; §7–8 absorption pending)
+## Paper 3 — "Knows but Doesn't Say" (draft complete incl. bibliography; provenance pass remaining)
 
 Internal axis encodes answerability at AUROC 0.997, transfers cross-dataset cold
 (Amendment P: KUQ→SelfAware 0.983), and predates post-training (Amendment Y: present on
 the pre-trained base). Stated confidence stays decoupled. Training-resistance is the
 headline: DPO/KTO/GRPO/contrastive-SFT/proper-scoring all fail to couple the channel
 (Amendments M/R FALSIFIED; Phase B joint co-training FALSIFIED). Behavioral abstention
-is installable; accurate emitted confidence is not. Backlog item 12: absorb old
-draft-v2 §7–8 (proper-scoring, contrastive, RL-on-contrastive depth).
-Draft: `paper3-knows-but-doesnt-say-draft-v0.md`. Figures: `fig-p2-*` (legacy prefix).
+is installable; accurate emitted confidence is not. §7–8 absorption (proper-scoring,
+contrastive, RL-on-contrastive depth) DONE via PR #151; Amendment Y now cited for the
+"paid for by pretraining" claim; data availability lists the published HF releases.
+Citation-gap audit (2026-07-04) wove 34 missed citations into §2/§3/§7/§8 and
+compiled the 43-entry bibliography from the KG (inline↔list verified 1:1).
+Remaining before submission: the provenance reconciliation pass against
+`results-provenance-inventory.md`.
+Draft: `paper3-knows-but-doesnt-say-draft-v0.md`. Figures: `fig-p2-*` (legacy prefix,
+all five built).
 
 ---
 
@@ -118,9 +124,26 @@ any-prepend component is real and large, but re-referenced to neutral the primes
 the caution axis in the semantically correct directions (HIGH down, LOW up) while the
 doubt axis stays anti-semantic — the belief-vs-policy dissociation sharpened.
 
+**AH (H-COMPLIANCE, certified via Addendum A1):** the divergent-pool (probe ≠ gold)
+own-readout attribution design AF/AG called for. G2 release congruence is a precise
+zero (−0.21pt, CI [−4.45, +4.10]) — prime uptake does NOT consult the model's own
+readout; the recalibrated positive control passes decisively (+50.98pt vs +20pt floor,
+monotone across caution quintiles). Closes the AF/AG attribution question on the
+compliance side. Source: `AMENDMENT-AH-divergent-pool-own-readout.md`.
+**Data exhaust published** (user-approved 2026-07-04):
+[`professorsynapse/eh-doubt-on-command`](https://huggingface.co/datasets/professorsynapse/eh-doubt-on-command)
+— 5,436 per-row generations + primed-readout instrumentation + A1 stratum, with
+datasheet and license audit.
+
+**AI (RUNNING, 2026-07-04):** probe-as-reward — with the text/prompt channel ruled
+compliance-only by AH, AI tests the reward channel: GRPO with the frozen doubt-probe
+readout as the reward signal (TRUE vs PERMUTED sensor arms). Verdict-eval locked
+pre-outcome (prereg §4). Source: `AMENDMENT-AI-probe-as-reward.md`.
+
 **Open questions for Paper 5:** Does a trained-checkpoint steering arm move the gate?
 (AA was flat on the raw base; trained checkpoints have a live gate — backlog item 3.)
-Divergent-pool (probe ≠ gold) design for true own-readout attribution (AF §8 / AG §9.4).
+Whether ANY channel couples behavior to the model's own readout — text/prompt is
+compliance-only (AH); the reward channel is under test (AI).
 
 ---
 
