@@ -798,7 +798,10 @@ routine gated on the signal; preference and reward objectives re-gate the
 routine (Paper 2); none of them touches the signal, which is why the refit
 probes are identical across arms (Section 4) while refusal rates move by tens
 of points. Third, as *strategy*: the expensive part of epistemic humility —
-the internal knowledge-boundary signal — is already paid for by pretraining.
+the internal knowledge-boundary signal — is already paid for by pretraining:
+the same answerability readout is present in pretrain-only base weights, before
+any instruction tuning or preference training, replicated across four bases
+spanning families and eras (Appendix A).
 The unsolved part is the *readout*: coupling stated confidence and action to a
 signal that is linearly available inside. Training the readout failed here in
 seven variants; reading it directly with a probe trivially succeeds. Paper 4
@@ -892,7 +895,19 @@ repository [https://github.com/ProfSynapse/Epistemic-Humility-Research] under
 `experiment/phase1/` and `experiment/protocol/`. The per-cell stated-confidence
 calibration reports are at `experiment/phase1/eval/analysis/calibration_gap_*.json`;
 the internal-axis and steering artifacts are under
-`experiment/phase1/probe/analysis/`. Restricted or gitignored datasets (e.g. bridge
+`experiment/phase1/probe/analysis/`.
+
+Published dataset releases on Hugging Face (the repo-side manifest with pinned
+revisions is `docs/public-artifacts.md`):
+`professorsynapse/epistemic-humility-phase1` (training/dev data),
+`professorsynapse/epistemic-humility-phase1-labels` (frozen question split and
+knowledge labels), `professorsynapse/epistemic-humility-phase1-evals` (eval
+analysis layer), `professorsynapse/eh-probe-directions` (per-layer probe
+directions with fit metadata — replicate the internal-axis readout without GPU
+extraction), and `professorsynapse/eh-readout-rows` (per-question
+question/answer/grade rows behind the readout results).
+
+Restricted or gitignored datasets (e.g. bridge
 sets) are not redistributed. This is draft-v1; numbers are current as of 2026-07-02.
 
 ## References
@@ -916,6 +931,7 @@ protocol document and scored artifact:
 | §7 interventions 6–7 (contrastive SFT, answer-supervised / answer-masked) | Amendments K and L | `experiment/protocol/AMENDMENT-K-contrastive-sft-behavior-conditional-confidence.md`; `experiment/protocol/AMENDMENT-L-answer-subspan-masked-contrastive-sft.md` | `calibration_gap_contrastive_sft_seed1.json`; `calibration_gap_contrastive_masked_sft_seed1.json`; `results_amendment_k_*`; `results_amendment_l_*` |
 | §7 RL-on-calibrated-base follow-on, incl. the β 0.10 → 0.05 falsifier re-run (Table 2, Figs. 4–6; Fig. 7 spans arms) | Amendment N (incl. β 0.05 arm) | `experiment/protocol/AMENDMENT-N-grpo-v3-on-contrastive-sft-base.md` (results tables §7) | result tables embedded in the amendment document; `results_amendment_n_*`; run records under `experiment/phase1/run_records/` |
 | §7 probe-axis distillation mirror (Table 3) | Amendment M, Revision 3 | `experiment/protocol/AMENDMENT-M-quantile-balanced-probe-distilled-sft.md` | `results_amendment_m_*_probe_factual_sft_seed1_merged_full_4b` |
+| §8 "paid for by pretraining" (signal present in pretrain-only base weights, 4/4 bases) | Amendment Y | `experiment/protocol/AMENDMENT-Y-pretrain-only-base-readout.md` (SUPPORTED 4/4) | `experiment/phase1/probe/amendment_y_results/` |
 
 Governance notes: Amendments B/E/J/K/L/M/N are exploratory single-seed evidence
 cells with pre-stated predictions and falsifiers, reported here as exploratory
