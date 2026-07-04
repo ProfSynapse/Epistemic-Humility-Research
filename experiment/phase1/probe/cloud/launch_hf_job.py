@@ -45,8 +45,10 @@ AI_VERDICT_IMAGE = ("unsloth/unsloth:2026.1.2-pt2.9.0-cu12.8-update@sha256:"
 # The stable Unsloth image already carries unsloth + a matched transformers/
 # torch/peft stack; only add the small CPU-side deps the cells import at the
 # top level. Do NOT --upgrade the ML stack (cloud-lane.md: mid-session numpy/
-# transformers upgrades have failed jobs).
-AI_VERDICT_PIP_SPEC = "scikit-learn 'huggingface_hub>=1.5' pyyaml"
+# transformers upgrades have failed jobs). huggingface_hub must stay <1.0:
+# transformers 4.57 requires it, and the first launch attempt proved >=1.5
+# upgrades the image's hub to 1.22 and breaks that constraint.
+AI_VERDICT_PIP_SPEC = "scikit-learn 'huggingface_hub>=0.34,<1.0' pyyaml"
 DEFAULT_STAGING_REPO = "professorsynapse/eh-ai-verdict-staging"
 
 
