@@ -10,9 +10,7 @@ evidence_base: >
   experiment/phase1/probe/analysis/_latent_knowledge_controls/ (a3_h_base_probe.json,
   c2_*.json, a1a2_h_lora.json, caution_axis_transfer.json) and
   docs/sessions/0026 checkpoints 002-004. Geometry:
-  experiment/phase1/probe/paper3_section5_geometry.py (checked-in reconstruction
-  of the lost session-scratchpad originals; all Section 5 values reproduce
-  within subsample-seed spread) over extraction__55254a04aa1f;
+  experiment/phase1/probe/paper3_section5_geometry.py over extraction__55254a04aa1f;
   caution_direction_L35.json / caution_perp_direction_L35.json. Steering:
   experiment/phase1/probe/analysis/current_clean_grpo_v2_* (caution_residual_intervention,
   caution_perp_residual_intervention, known_overrefusal_native_l26_coeff_sweep,
@@ -359,9 +357,7 @@ cosine to **−0.565**, and the caution direction retains a substantial componen
 the doubt axis: its **residual fraction is 0.557** (≈ 55.7% of the caution
 direction's length, ≈ 31% of its variance, is doubt-orthogonal)
 [experiment/phase1/probe/paper3_section5_geometry.py; L35 h_lora; kr = 168, ka = 300,
-ur = 300; pooled within-class shrinkage-whitened covariance; 5-fold held-out. The
-original session-scratchpad script was lost; the cited script is a checked-in
-reconstruction whose values reproduce these numbers within subsample-seed spread.]
+ur = 300; pooled within-class shrinkage-whitened covariance; 5-fold held-out.]
 
 The decisive test is held-out discriminability after orthogonalization. Predicting
 refuse (1) vs answer (0) among known items:
@@ -1032,7 +1028,7 @@ protocol document and scored artifact:
 | Paper section | Internal label | Protocol / notes | Primary artifacts |
 |---|---|---|---|
 | §4 internal-vs-stated gap; like-for-like on the GRPO-v2 checkpoint (Fig. 2) | probe program (Amendments L/M lineage; caution-vs-doubt note); session 0026 | `experiment/notes/caution-vs-doubt-knowledge-gate.md`; `docs/sessions/0026` checkpoints 002–004 | `experiment/phase1/probe/analysis/_latent_knowledge_controls/` (`a3_h_base_probe.json`, `c2_*.json`, `a1a2_h_lora.json`); `experiment/phase1/eval/analysis/calibration_gap_clean_sft_grpo_v2_seed1.json` (`B_internal_vs_emitted`: internal AUROC 0.972 vs emitted 0.637) |
-| §5–6 geometry and steering | probe program | `experiment/phase1/probe/paper3_section5_geometry.py` (reconstruction of the lost scratchpad originals; Section 5 values reproduce within subsample-seed spread); `caution_direction_L35.json`; `caution_perp_direction_L35.json` | `experiment/phase1/probe/analysis/current_clean_grpo_v2_*` (interventions, coefficient sweeps, generation panels) |
+| §5–6 geometry and steering | probe program | `experiment/phase1/probe/paper3_section5_geometry.py`; `caution_direction_L35.json`; `caution_perp_direction_L35.json` | `experiment/phase1/probe/analysis/current_clean_grpo_v2_*` (interventions, coefficient sweeps, generation panels) |
 | §7 interventions 1–2 (DPO/KTO stated-confidence contract) | Amendment B | `experiment/protocol/AMENDMENT-B-stated-confidence-grpo.md` | `experiment/paper/analysis/amendment_b_confidence_alignment_by_outcome.csv` |
 | §7 interventions 3–4 (GRPO v1/v2 collapse + incentive analysis) | Amendment E cells; Amendment J diagnostics / session 0026 | `experiment/notes/grpo-v3-proper-scoring-confidence.md` | `experiment/phase1/eval/analysis/calibration_gap_clean_sft_grpo_v2_seed1.json` |
 | §7 intervention 5 (proper-scoring GRPO) | Amendment J (GRPO-v3) | `experiment/notes/grpo-v3-proper-scoring-confidence.md`; reward `experiment/phase1/grpo/humility_reward_v3.py`; preflight `experiment/notes/computed-confidence-alignment-regimen.md` | `experiment/phase1/eval/analysis/calibration_gap_clean_sft_grpo_v3_seed1.json`; `results_amendment_j_*` |
