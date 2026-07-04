@@ -19,17 +19,30 @@ predictions:
       whitened rank-1 erasure is strictly stronger than the raw mass-mean
       projection those priors used.
   user:
-    call: PENDING (record before launch)
-    recorded: null
-outcome: null
+    call: SURVIVES (AJ-G2 PASS)
+    recorded: 2026-07-04
+    quote: "AJ survived I agree worth being optimistic here."
+outcome: SURVIVES (user-adjudicated 2026-07-04) — caution 0.858 post-erasure,
+  knowledge carries a small quantified share (gap 0.054 +/- 0.006, sitting on
+  the pre-stated 0.05 line per Addendum A1); strict AJ-G2 ambiguous, so the
+  scoreboard scores TIE/TIE
+scoreboard: TIE / TIE (both called strict AJ-G2 PASS; gap statistic landed
+  statistically indistinguishable from the threshold)
 ---
 
 # Amendment AJ — Knowledge-Subspace Erasure (rank-1 → certified linear erasure)
 
-Status: DRAFT — pre-registration complete 2026-07-04; smoke green; awaiting
-user prediction + sign-off. Launch is a CPU-only analysis run on cached
-tensors (no GPU, no generation); it may run while the Amendment AI arms hold
-the GPU.
+Status: RESOLVED 2026-07-04 — user adjudicated **SURVIVES with the
+dependency quantified**: certified linear erasure of answerability costs the
+caution readout 5.4 ± 0.6 points of 91 (Addendum A1), leaving it at ~0.86;
+caution is not reducible to the knowledge readout. Strict AJ-G2 landed in
+the pre-registered ambiguous zone (gap statistically indistinguishable from
+the 0.05 threshold), so the prediction scoreboard scores TIE/TIE. Process
+lesson recorded in the scoreboard: choose gate thresholds against expected
+effect sizes, not round defaults. Dual predictions recorded pre-launch
+(both SURVIVES). Instrument note: a row-key sanitization bug in the harness
+loader (`::` vs `__`) was found and fixed pre-launch (PR #187); gates
+untouched.
 
 ## 1. Motivation and strategic position
 
@@ -191,4 +204,69 @@ Both regimes correctly classified; instrument validated end-to-end.
 
 ## 9. Result
 
-(To be filled after the run; gates as locked in Section 4.)
+Run 2026-07-04, harness as committed (PR #185, loader fix PR #187), seed
+20260704, 1233 rows loaded (541 caution rows), d = 2560. Artifact:
+`experiment/phase1/probe/analysis/amendment_aj_subspace_erasure/result.json`
+(untracked per Section 7.3).
+
+| quantity | value |
+|---|---|
+| knowledge probe, baseline (OOF) | 0.996 |
+| **AJ-G1 certificate** (post-LEACE knowledge, OOF) | **0.496** — PASS (≤ 0.55), no Section 3.3 knobs used |
+| caution probe, baseline (OOF) | 0.912 |
+| **post-LEACE caution (OOF)** | **0.858**, bootstrap CI95 [0.823, 0.890] |
+| random-control mean (20 repeats) | 0.911 |
+| random-control gap (random − LEACE) | **0.053**, CI95 [0.032, 0.076] |
+
+Gate outcomes, exactly as locked in Section 4:
+
+- **AJ-G1 PASS.** LEACE fully erased the linearly readable answerability
+  content in one rank (0.996 → 0.496) on the first attempt.
+- **AJ-G2 NOT PASS.** The AUROC condition clears with room (0.858 ≥ 0.70)
+  but the gap condition misses by 0.003 (0.053 > 0.05); the gap CI95
+  [0.032, 0.076] straddles the 0.05 line, so the miss is within resampling
+  uncertainty of the threshold in both directions.
+- **Falsifier NOT FIRED** (0.858 is nowhere near < 0.65).
+- **Verdict: AMBIGUOUS zone** ("AUROC ≥ 0.70 with a gap > 0.05"),
+  adjudicated by the user per Section 4. No goalposts move.
+
+Descriptive instrumentation (Section 6): the INLP curve never certifies —
+after 40 iterative logistic nullspace projections the fresh knowledge probe
+still reads 0.813 (k = 1: 0.988), confirming the hydra pattern for the
+knowledge concept and the necessity of the whitened closed-form eraser;
+caution along the INLP curve degrades only from 0.912 to 0.898 while the
+matched random-rank curve stays flat at 0.912.
+
+### 9.1 Addendum A1: sampling distribution of the gap statistic (gate-free)
+
+Run 2026-07-04 on user request, harness
+`experiment/phase1/probe/amendment_aj_addendum_gap_distribution.py`
+(committed on this branch); descriptive input to the ambiguous-zone
+adjudication, no gate constant touched. Artifact:
+`analysis/amendment_aj_subspace_erasure/addendum_a1_gap_distribution.json`.
+
+- **24-CV-seed sweep** (identical pipeline, no INLP, 10 random controls per
+  seed): gap mean **0.0538**, sd **0.0060**, range [0.041, 0.068];
+  **7 of 24 seeds (29%)** land at or below the 0.05 threshold. Certificates
+  pass at every seed (0.485–0.528); post-LEACE caution is stable at every
+  seed (0.845–0.869, never near the 0.70 floor).
+- **Bootstrap probability mass at the primary seed**: median gap 0.0525,
+  **P(gap ≤ 0.05) = 0.415** over 2000 row resamples.
+
+Reading: the miss is neither fold luck nor a clean stable exceedance. The
+gap statistic sits essentially on the pre-stated line (threshold ≈ 0.6 sd
+below the sweep mean; a row-resample passes 41.5% of the time), leaning
+above it. The stable substantive facts across every seed are (a) erasure
+always certifies, (b) caution always survives far above the floor, and
+(c) knowledge carries a small (~5 point) share of caution's separability
+whose size is statistically indistinguishable from the 0.05 threshold.
+
+Reading (pre-adjudication): the substantive picture favors H-independent —
+certified erasure of a concept read at 0.996 costs the caution readout 5.5
+points, leaving it at 0.858, far above both the survival floor and the
+falsifier. The gap condition was pre-stated to catch exactly this quantity,
+and it says the knowledge subspace carries a small but statistically real
+share of caution's separability (gap CI excludes 0). Both pre-registered
+predictions called SURVIVES (AJ-G2 PASS); under a strict gate reading
+neither is confirmed, and the adjudication decides how the scoreboard and
+the paper3 Section 9 caveat are updated.
