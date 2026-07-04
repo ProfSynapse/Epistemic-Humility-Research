@@ -30,11 +30,10 @@ scoreboard: null
 
 # Amendment AI — Probe-as-Reward (PAR): training the model to consult its own readout
 
-**Status: SIGNED-AT-LAUNCH PENDING SMOKE — launch conditions 2 and 3 are
-satisfied below; condition 1 (reward-plumbing smoke) is the remaining gate.
-If it goes green the arms launch under the user's 2026-07-03 pre-authorization
-(recorded in frontmatter); if it fails, this doc holds as DRAFT for morning
-review.**
+**Status: SIGNED — all three launch conditions verified 2026-07-04
+(smoke v2 all-green, sensor v2 AUROC 0.9945, constants recorded §1.2–1.3);
+arms launched under the user's 2026-07-03 pre-authorization (frontmatter).
+Gates §2 locked as written; verdict adjudication waits for the user.**
 **Tier:** A (new evidence cell; gates pre-stated before launch).
 **Branch:** `amendment-ai-probe-as-reward` (off main after PR #178).
 **Depends on:** AH (H-COMPLIANCE certified via A1 — the text channel does not
@@ -162,9 +161,14 @@ GRPO-v2 lineage recipe (single seed, as the line's GRPO runs are).
 
 1. Reward-plumbing smoke green (probe-in-loop micro-run: R varies within
    groups, advantages nonzero, tripwires demonstrably fire on synthetic
-   trigger). **Smoke v1 (`amendment_ai_smoke.json`): criteria 1/3/4 green,
-   criterion 2 (in-loop p faithfulness) FAILED on the 4-bit serving mismatch
-   (§1.1 sensor v2 fix). RE-RUN with sensor v2 pending.**
+   trigger). **SATISFIED — smoke v2 (`amendment_ai_smoke_v2.json`)
+   all-green with the v2 sensor: reward variance 71.9% of steps (mean group
+   std 0.417); in-loop p exact-zero diff vs the persisted serving-aligned
+   states (8/8); integrity audit 0.99 on the 500-row balanced set with both
+   tripwire halts demonstrably firing (shuffled sensor 0.479 < 0.8; forced
+   invalid 1.0 > 0.1); checkpoint save/load clean. Smoke v1
+   (`amendment_ai_smoke.json`) is retained as the honest record of the
+   serving-mismatch catch.**
 2. Refit sensor held-out AUROC ≥ 0.9 vs gold. **SATISFIED under sensor v2:
    0.9945 on 4-bit training-configuration states (§1.1; v1 16-bit value
    0.9947 retained as provenance).**
