@@ -8,22 +8,22 @@
     "w_c": 0.5,
     "w_a": 0.5,
     "format_gate": -1.0,
-    "n_prompts": 4,
+    "n_prompts": 64,
     "sensor": "/home/profsynapse/code/Epistemic-Humility-Research/experiment/phase1/probe/analysis/par_sensor_refit/probes/probe_L24_cleansft.joblib"
   },
   "criterion_1_reward_variance": {
-    "frac_steps_nonzero_group_std": 0.75,
-    "n_groups": 4,
+    "frac_steps_nonzero_group_std": 0.6719,
+    "n_groups": 64,
     "threshold": 0.3,
-    "mean_group_std": 0.2885,
+    "mean_group_std": 0.3899,
     "passed": true
   },
   "criterion_2_inloop_p_faithful": {
-    "n_spot_checked": 4,
-    "max_abs_diff": 0.9665441314743827,
+    "n_spot_checked": 8,
+    "max_abs_diff": 0.0,
     "threshold": 0.0001,
-    "passed": false,
-    "note": "offline = frozen refit probe on persisted union_pregen L24 state"
+    "passed": true,
+    "note": "offline recompute = same 4-bit model + probe render + frozen sensor (in-loop recipe); p_bf16_union_pregen_context is the un-quantized-base value, reported for context only"
   },
   "criterion_3_tripwires_fire": {
     "sensor_integrity": {
@@ -46,31 +46,63 @@
     "saved_lora_tensors": 504,
     "micro_run_crashed": false
   },
-  "all_green": false,
+  "all_green": true,
   "spot_checks": [
     {
       "row_key": "ah::selfaware_answerable::000294",
       "p_inloop": 0.9665629182905193,
-      "p_offline": 1.8786816136662327e-05,
-      "abs_diff": 0.9665441314743827
+      "p_recompute": 0.9665629182905193,
+      "abs_diff": 0.0,
+      "p_bf16_union_pregen_context": 1.8786816136662327e-05
     },
     {
       "row_key": "ah::selfaware_answerable::004629",
       "p_inloop": 0.006460458857604095,
-      "p_offline": 0.00020562124195643743,
-      "abs_diff": 0.006254837615647658
+      "p_recompute": 0.006460458857604095,
+      "abs_diff": 0.0,
+      "p_bf16_union_pregen_context": 0.00020562124195643743
     },
     {
       "row_key": "ah::selfaware_answerable::002689",
       "p_inloop": 0.015322690120427657,
-      "p_offline": 0.0005866174202504935,
-      "abs_diff": 0.014736072700177164
+      "p_recompute": 0.015322690120427657,
+      "abs_diff": 0.0,
+      "p_bf16_union_pregen_context": 0.0005866174202504935
     },
     {
       "row_key": "ah::kuq_ku_known::000659",
       "p_inloop": 3.819010225252922e-09,
-      "p_offline": 1.9603508821116174e-12,
-      "abs_diff": 3.81704987437081e-09
+      "p_recompute": 3.819010225252922e-09,
+      "abs_diff": 0.0,
+      "p_bf16_union_pregen_context": 1.9603508821116174e-12
+    },
+    {
+      "row_key": "ah::kuq_ku_known::004644",
+      "p_inloop": 1.3623875195214079e-08,
+      "p_recompute": 1.3623875195214079e-08,
+      "abs_diff": 0.0,
+      "p_bf16_union_pregen_context": 6.74102973464825e-11
+    },
+    {
+      "row_key": "ah::kuq_ku_known::001455",
+      "p_inloop": 5.898350595029878e-09,
+      "p_recompute": 5.898350595029878e-09,
+      "abs_diff": 0.0,
+      "p_bf16_union_pregen_context": 4.322320283191957e-13
+    },
+    {
+      "row_key": "ah::kuq_ku_known::000193",
+      "p_inloop": 0.02037235868564095,
+      "p_recompute": 0.02037235868564095,
+      "abs_diff": 0.0,
+      "p_bf16_union_pregen_context": 2.569780438856571e-08
+    },
+    {
+      "row_key": "ah::kuq_ku_known::002273",
+      "p_inloop": 0.41452384423510047,
+      "p_recompute": 0.41452384423510047,
+      "abs_diff": 0.0,
+      "p_bf16_union_pregen_context": 0.0002724461875613614
     }
   ]
 }
