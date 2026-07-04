@@ -23,6 +23,21 @@ Idle notifications are themselves noisy: they fire at every turn boundary
 duplicates or out of order relative to content messages. An idle notification
 means "my turn ended," not "my work is done."
 
+A corollary that has now destroyed real work: **queued directives can be
+executed after the world has moved past them.** A runner processed a HOLD
+one wake-cycle after it had already satisfied the follow-up GO (it launched
+the corrected run, went idle, then woke on the stale HOLD and killed that
+correct run at step 4). Mitigations, all three:
+
+- **Sequence-stamp directives with a monotonic identifier** — a git SHA is
+  ideal ("pull before acting; this order applies at 67c08f92"). State
+  explicitly that when two directives conflict, the later-SHA one wins.
+- **Make destructive directives self-invalidating**: "stop the run UNLESS it
+  was launched from ≥ <SHA> / with <property>" rather than "stop the run."
+- **Receivers check world-state before destructive execution**: before
+  killing a run, read its manifest — if it already satisfies the correction
+  the HOLD was protecting, the HOLD is moot; ask instead of acting.
+
 ## Division of labor (the rules)
 
 - **Runners launch GPU jobs and write scripts. The lead owns every analysis
