@@ -5,7 +5,7 @@ title: 'AH close-out to Amendment AI: sensor refit v1/v2, 4-bit serving catch, p
   v2.1, arms launch'
 status: active
 created_at: '2026-07-04T03:13:55Z'
-updated_at: '2026-07-04T03:38:20Z'
+updated_at: '2026-07-04T03:48:08Z'
 phase: phase1
 question: Can GRPO with a probe-agreement reward (frozen refit L24 sensor read from
   the policy's own pre-generation states) train the model to consult its own readout,
@@ -15,6 +15,7 @@ tags:
 - amendment-ai
 run_ids:
 - amendment_ai_grpo_true_seed1_20260703_233256
+- amendment_ai_grpo_true_seed1_20260703_234149
 trajectory:
   anchor: experiment/protocol/research-trajectory.md
   current_position: ''
@@ -184,6 +185,26 @@ checkpoints:
   decisions: []
   next_steps: []
   signals: {}
+- id: 011-recovery
+  at: '2026-07-04T03:48:08Z'
+  kind: recovery
+  title: Stale-HOLD kill and TRUE relaunch; live run is 234149
+  summary: A queued stale HOLD was executed by the runner one wake-cycle after its
+    GO was already satisfied, killing the correctly-launched TRUE run (233256) at
+    step 4; nothing was deleted and the pool/train data were already v2.1, so TRUE
+    was relaunched fresh from step 0. The live run is runs/amendment_ai_grpo_true_seed1/20260703_234149
+    (first steps sane; 232457 = 16-step launch verification and 233256 = step-4 kill
+    are retained as provenance). Incident + mitigations recorded in the subagent-orchestration
+    doctrine (SHA-stamped directives, self-invalidating destructive orders, world-state
+    checks).
+  evidence:
+  - .skills/experiment-runner/reference/subagent-orchestration.md
+  run_ids:
+  - amendment_ai_grpo_true_seed1_20260703_234149
+  commands: []
+  decisions: []
+  next_steps: []
+  signals: {}
 ---
 # AH close-out to Amendment AI: sensor refit v1/v2, 4-bit serving catch, pool v2.1, arms launch
 
@@ -274,3 +295,12 @@ Full overnight arc under the user's conditional pre-authorization: clean-SFT sta
   - `amendment_ai_grpo_true_seed1_20260703_233256`
 - evidence:
   - `experiment/phase1/grpo/amendment_ai_train_manifest.json`
+### 011-recovery - Stale-HOLD kill and TRUE relaunch; live run is 234149
+
+- at: `2026-07-04T03:48:08Z`
+- kind: `recovery`
+- summary: A queued stale HOLD was executed by the runner one wake-cycle after its GO was already satisfied, killing the correctly-launched TRUE run (233256) at step 4; nothing was deleted and the pool/train data were already v2.1, so TRUE was relaunched fresh from step 0. The live run is runs/amendment_ai_grpo_true_seed1/20260703_234149 (first steps sane; 232457 = 16-step launch verification and 233256 = step-4 kill are retained as provenance). Incident + mitigations recorded in the subagent-orchestration doctrine (SHA-stamped directives, self-invalidating destructive orders, world-state checks).
+- run ids:
+  - `amendment_ai_grpo_true_seed1_20260703_234149`
+- evidence:
+  - `.skills/experiment-runner/reference/subagent-orchestration.md`
