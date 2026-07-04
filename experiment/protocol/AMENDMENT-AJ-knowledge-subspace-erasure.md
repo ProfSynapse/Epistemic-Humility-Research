@@ -22,17 +22,27 @@ predictions:
     call: SURVIVES (AJ-G2 PASS)
     recorded: 2026-07-04
     quote: "AJ survived I agree worth being optimistic here."
-outcome: AMBIGUOUS zone (Section 4) — caution AUROC 0.858 >= 0.70 but
-  random-control gap 0.053 > 0.05; awaiting user adjudication
+outcome: SURVIVES (user-adjudicated 2026-07-04) — caution 0.858 post-erasure,
+  knowledge carries a small quantified share (gap 0.054 +/- 0.006, sitting on
+  the pre-stated 0.05 line per Addendum A1); strict AJ-G2 ambiguous, so the
+  scoreboard scores TIE/TIE
+scoreboard: TIE / TIE (both called strict AJ-G2 PASS; gap statistic landed
+  statistically indistinguishable from the threshold)
 ---
 
 # Amendment AJ — Knowledge-Subspace Erasure (rank-1 → certified linear erasure)
 
-Status: RUN COMPLETE 2026-07-04 — landed in the pre-stated AMBIGUOUS zone
-(Section 9); verdict awaits user adjudication. Dual predictions recorded
-pre-launch (both SURVIVES). Instrument note: a row-key sanitization bug in
-the harness loader (`::` vs `__`) was found and fixed pre-launch (PR #187);
-gates untouched.
+Status: RESOLVED 2026-07-04 — user adjudicated **SURVIVES with the
+dependency quantified**: certified linear erasure of answerability costs the
+caution readout 5.4 ± 0.6 points of 91 (Addendum A1), leaving it at ~0.86;
+caution is not reducible to the knowledge readout. Strict AJ-G2 landed in
+the pre-registered ambiguous zone (gap statistically indistinguishable from
+the 0.05 threshold), so the prediction scoreboard scores TIE/TIE. Process
+lesson recorded in the scoreboard: choose gate thresholds against expected
+effect sizes, not round defaults. Dual predictions recorded pre-launch
+(both SURVIVES). Instrument note: a row-key sanitization bug in the harness
+loader (`::` vs `__`) was found and fixed pre-launch (PR #187); gates
+untouched.
 
 ## 1. Motivation and strategic position
 
