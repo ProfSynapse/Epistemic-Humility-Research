@@ -5,7 +5,7 @@ title: 'AH close-out to Amendment AI: sensor refit v1/v2, 4-bit serving catch, p
   v2.1, arms launch'
 status: active
 created_at: '2026-07-04T03:13:55Z'
-updated_at: '2026-07-04T03:14:48Z'
+updated_at: '2026-07-04T03:38:20Z'
 phase: phase1
 question: Can GRPO with a probe-agreement reward (frozen refit L24 sensor read from
   the policy's own pre-generation states) train the model to consult its own readout,
@@ -13,7 +13,8 @@ question: Can GRPO with a probe-agreement reward (frozen refit L24 sensor read f
 tags:
 - experiment-runner
 - amendment-ai
-run_ids: []
+run_ids:
+- amendment_ai_grpo_true_seed1_20260703_233256
 trajectory:
   anchor: experiment/protocol/research-trajectory.md
   current_position: ''
@@ -163,6 +164,26 @@ checkpoints:
   - Verdict eval (AI-G0/G1/G2) with a fresh-refit eval probe when both arms complete;
     user adjudicates
   signals: {}
+- id: 010-observation
+  at: '2026-07-04T03:38:20Z'
+  kind: observation
+  title: TRUE arm live; scheduled steps 2,934; env provenance
+  summary: 'Full TRUE arm running at runs/amendment_ai_grpo_true_seed1/20260703_233256
+    after a 16-step launch verification (kept as provenance at 20260703_232457): ~16s/step,
+    first steps sane (reward variance healthy, schema-valid 95.3%, p spans [0,1] tracking
+    the live policy). Scheduled steps are 2,934 (recipe rule num_train_epochs=1 on
+    the 23,472-row composed set), so AI-G0''s 90% floor means >= 2,641. Env provenance:
+    trainer runs in conda unsloth_env; joblib/scipy/scikit-learn 1.8.0 installed --no-deps
+    for the pickled sensor, verified bit-identical to the fitting env (max_abs_diff
+    0.0 on 8 seeded vectors); relaunches must use the unsloth_env interpreter.'
+  evidence:
+  - experiment/phase1/grpo/amendment_ai_train_manifest.json
+  run_ids:
+  - amendment_ai_grpo_true_seed1_20260703_233256
+  commands: []
+  decisions: []
+  next_steps: []
+  signals: {}
 ---
 # AH close-out to Amendment AI: sensor refit v1/v2, 4-bit serving catch, pool v2.1, arms launch
 
@@ -244,3 +265,12 @@ Full overnight arc under the user's conditional pre-authorization: clean-SFT sta
   - `experiment/protocol/AMENDMENT-AI-probe-as-reward.md`
 - next steps:
   - Verdict eval (AI-G0/G1/G2) with a fresh-refit eval probe when both arms complete; user adjudicates
+### 010-observation - TRUE arm live; scheduled steps 2,934; env provenance
+
+- at: `2026-07-04T03:38:20Z`
+- kind: `observation`
+- summary: Full TRUE arm running at runs/amendment_ai_grpo_true_seed1/20260703_233256 after a 16-step launch verification (kept as provenance at 20260703_232457): ~16s/step, first steps sane (reward variance healthy, schema-valid 95.3%, p spans [0,1] tracking the live policy). Scheduled steps are 2,934 (recipe rule num_train_epochs=1 on the 23,472-row composed set), so AI-G0's 90% floor means >= 2,641. Env provenance: trainer runs in conda unsloth_env; joblib/scipy/scikit-learn 1.8.0 installed --no-deps for the pickled sensor, verified bit-identical to the fitting env (max_abs_diff 0.0 on 8 seeded vectors); relaunches must use the unsloth_env interpreter.
+- run ids:
+  - `amendment_ai_grpo_true_seed1_20260703_233256`
+- evidence:
+  - `experiment/phase1/grpo/amendment_ai_train_manifest.json`
