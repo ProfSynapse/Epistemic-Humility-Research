@@ -119,39 +119,125 @@ class SteeringHook:
 
     The hook is position-aware:
       - ``position="anchor"`` — steer only at the single token index stored in
-        ``self.anchor_token_idx``; if None, steer at the LAST position.
+        ``self.anchor_token_idx``; if None, steer at the LAST position. Applies
+        the SAME index to every batch row (no padding awareness) — correct for
+        a single left-padded prefill where the anchor is a shared offset, kept
+        for backward compatibility.
       - ``position="all_post"`` — steer every position whose index >= anchor_start
         (i.e., in the post-answer generation stream).
+      - ``position="final"`` — steer ONLY each batch row's true last non-pad
+        token. The per-row final index is taken from ``self.final_positions``
+        (a length-`batch` sequence of ints, set externally from the batch's
+        attention mask); if that is None, the hook derives it from
+        ``self.attention_mask`` ((batch, seq_len), 1 = real token) handling both
+        left and right padding; if BOTH are None it falls back to the last
+        position of every row (the no-padding batch-of-1 / already-trimmed case).
+
+    Per-element alpha
+    -----------------
+    ``alpha`` may be a Python float (one magnitude for the whole batch, the
+    original contract) OR a per-batch-element vector of length `batch` (a list,
+    numpy array, or 1-D torch tensor). A vector is broadcast so row ``b`` is
+    shifted by ``alpha[b] * d`` at its steered positions; a scalar behaves
+    exactly as before. This lets the caller pass compute_proportional_alpha's
+    per-row effective alphas in a single batched forward.
 
     Args
     ----
     d              : unit-norm direction as a torch Tensor (hidden_dim,)
-    alpha          : steering magnitude (can be negative to push toward negative class)
-    position       : "anchor" | "all_post"
+    alpha          : steering magnitude — scalar (all rows) or length-`batch`
+                     vector (per row). Negative pushes toward the negative class.
+    position       : "anchor" | "all_post" | "final"
     anchor_token_idx: integer token index to steer at (for "anchor" mode);
                       if None, uses last token; updated externally between calls
     anchor_start   : for "all_post" mode, steer positions >= this index
+    final_positions: for "final" mode, per-row last-non-pad token indices
+                     (length `batch`); set externally between calls
+    attention_mask : for "final" mode, (batch, seq_len) mask (1 = real token)
+                     used to derive per-row final positions when
+                     final_positions is None; set externally between calls
     verbose        : print steering events (useful for debugging)
     """
 
     def __init__(
         self,
         d: "torch.Tensor",
-        alpha: float = 1.0,
+        alpha: Union[float, "torch.Tensor", list, np.ndarray] = 1.0,
         position: str = "anchor",
         anchor_token_idx: Optional[int] = None,
         anchor_start: Optional[int] = None,
+        final_positions: Optional[Union["torch.Tensor", list, np.ndarray]] = None,
+        attention_mask: Optional["torch.Tensor"] = None,
         verbose: bool = False,
     ) -> None:
-        if position not in ("anchor", "all_post"):
-            raise ValueError(f"position must be 'anchor' or 'all_post', got {position!r}")
+        if position not in ("anchor", "all_post", "final"):
+            raise ValueError(
+                "position must be 'anchor', 'all_post', or 'final', "
+                f"got {position!r}")
         self.d = d  # shape (hidden_dim,)
         self.alpha = alpha
         self.position = position
         self.anchor_token_idx = anchor_token_idx
         self.anchor_start = anchor_start
+        self.final_positions = final_positions
+        self.attention_mask = attention_mask
         self.verbose = verbose
         self._call_count = 0
+
+    # -- per-row final-position resolution ---------------------------------
+
+    def _resolve_final_positions(self, batch: int, seq_len: int,
+                                 device) -> "torch.Tensor":
+        """Return a length-`batch` LongTensor of last-non-pad indices per row.
+
+        Priority: explicit self.final_positions > derived from
+        self.attention_mask > last position of every row (no-padding fallback).
+        A negative index is wrapped modulo seq_len (parity with anchor mode).
+        """
+        if self.final_positions is not None:
+            pos = torch.as_tensor(self.final_positions, device=device,
+                                  dtype=torch.long).reshape(-1)
+            if pos.numel() != batch:
+                raise ValueError(
+                    f"final_positions has length {pos.numel()}, expected "
+                    f"batch={batch}")
+            return pos % seq_len
+        if self.attention_mask is not None:
+            am = torch.as_tensor(self.attention_mask, device=device)
+            if am.shape[0] != batch:
+                raise ValueError(
+                    f"attention_mask batch dim {am.shape[0]} != hidden batch "
+                    f"{batch}")
+            # Last index where the mask is 1, per row. Works for left AND right
+            # padding: argmax over reversed row finds the last real token.
+            am_bool = am.to(torch.bool)
+            seq = am_bool.shape[1]
+            flipped = torch.flip(am_bool.to(torch.int64), dims=[1])
+            # first real token from the right -> convert back to a forward index
+            last_from_right = torch.argmax(flipped, dim=1)
+            pos = (seq - 1) - last_from_right
+            # a fully-padded row (no real token) has no final position; clamp to
+            # the last index rather than steer a pad (degenerate, should not occur)
+            has_real = am_bool.any(dim=1)
+            pos = torch.where(has_real, pos, torch.full_like(pos, seq - 1))
+            return pos
+        # No padding info: every row's last position.
+        return torch.full((batch,), seq_len - 1, dtype=torch.long,
+                          device=device)
+
+    def _alpha_per_row(self, batch: int, device, dtype) -> "torch.Tensor":
+        """Return a length-`batch` alpha tensor (scalar alpha broadcast)."""
+        a = self.alpha
+        if isinstance(a, (int, float)):
+            return torch.full((batch,), float(a), device=device, dtype=dtype)
+        a = torch.as_tensor(a, device=device, dtype=dtype).reshape(-1)
+        if a.numel() == 1:
+            return a.expand(batch)
+        if a.numel() != batch:
+            raise ValueError(
+                f"alpha vector has length {a.numel()}, expected batch={batch} "
+                "(or a scalar)")
+        return a
 
     def __call__(self, module, input, output):
         """Hook callback: output is (hidden_states, ...) or just hidden_states."""
@@ -166,8 +252,31 @@ class SteeringHook:
 
         batch, seq_len, hidden_dim = hidden.shape
         d = self.d.to(hidden.device).to(hidden.dtype)
+        alpha_row = self._alpha_per_row(batch, hidden.device, hidden.dtype)
 
-        # Build a mask: which positions get the perturbation
+        if self.position == "final":
+            # Per-row edit at each row's true last non-pad token. A shared
+            # position mask cannot express different indices per row, so edit
+            # rows in one gather/scatter instead.
+            final_pos = self._resolve_final_positions(batch, seq_len,
+                                                       hidden.device)
+            active = alpha_row != 0.0
+            n_steered = int(active.sum().item())
+            if n_steered > 0:
+                hidden = hidden.clone()
+                rows = torch.arange(batch, device=hidden.device)[active]
+                cols = final_pos[active]
+                delta = alpha_row[active].unsqueeze(1) * d.unsqueeze(0)
+                hidden[rows, cols, :] = hidden[rows, cols, :] + delta
+            if self.verbose:
+                print(f"[SteeringHook] call={self._call_count} position=final "
+                      f"steered {n_steered}/{batch} rows at per-row last tokens",
+                      flush=True)
+            if rest is not None:
+                return (hidden,) + rest
+            return hidden
+
+        # Shared-position modes: same steered columns for every batch row.
         mask = torch.zeros(seq_len, dtype=torch.bool, device=hidden.device)
         if self.position == "anchor":
             idx = self.anchor_token_idx if self.anchor_token_idx is not None else (seq_len - 1)
@@ -179,12 +288,17 @@ class SteeringHook:
 
         n_steered = int(mask.sum().item())
         if n_steered > 0:
-            # hidden[batch, positions_to_steer, :] += alpha * d
+            # hidden[batch, positions_to_steer, :] += alpha_row * d, with
+            # alpha_row broadcast over positions and hidden_dim.
             hidden = hidden.clone()
-            hidden[:, mask, :] = hidden[:, mask, :] + self.alpha * d.unsqueeze(0)
+            add = alpha_row.view(batch, 1, 1) * d.view(1, 1, hidden_dim)
+            hidden[:, mask, :] = hidden[:, mask, :] + add
             if self.verbose:
+                a = self.alpha
+                a_str = (f"{float(a):.4f}" if isinstance(a, (int, float))
+                         else f"vector[{batch}]")
                 print(f"[SteeringHook] call={self._call_count} "
-                      f"steered {n_steered} positions, alpha={self.alpha:.4f}",
+                      f"steered {n_steered} positions, alpha={a_str}",
                       flush=True)
 
         if rest is not None:
