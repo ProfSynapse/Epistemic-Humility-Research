@@ -54,13 +54,26 @@ AF-600 lineage byte-matched (StandardScaler + LogisticRegression C=1.0
 max_iter=5000, known=1, p_unanswerable = sigmoid(−score)) on union-surface
 clean-SFT pre-gen states (18,496 rows, gold answerable/unanswerable labels).
 
-**REFIT RESULT (2026-07-04, `par_sensor_refit.json`): L24 held-out (5-fold
-OOF, rs=0) AUROC = 0.9947 vs gold ≥ the 0.9 acceptance floor → LAUNCH
-CONDITION 2 SATISFIED.** (L20 0.9934, L28 0.9945 fit as provenance /
-consensus sensitivity.) Frozen sensor artifact:
-`analysis/par_sensor_refit/probes/probe_L24_cleansft.joblib`. All derived
-statistics below use OOF scores (each row scored by a fold model that never
-trained on it) so constants are not inflated by in-sample saturation.
+**REFIT RESULT v1 (2026-07-04, `par_sensor_refit.json`): L24 held-out (5-fold
+OOF, rs=0) AUROC = 0.9947 vs gold ≥ the 0.9 acceptance floor.** (L20 0.9934,
+L28 0.9945 fit as provenance / consensus sensitivity.) All derived statistics
+use OOF scores (each row scored by a fold model that never trained on it) so
+constants are not inflated by in-sample saturation.
+
+**SENSOR v2 (pre-launch instrument fix, 2026-07-04).** Smoke v1 failed
+criterion 2 (in-loop p unfaithful, max_abs_diff 0.97): the GRPO trainer
+loads the checkpoint 4-BIT (QLoRA lineage recipe) while the v1 sensor was
+fit on merged-16bit batch-1 states — a serving-configuration mismatch
+(sensor-integrity audit read 0.815 in-loop vs 0.9947 on faithful states).
+Fix extends Amendment T's refit-per-checkpoint to refit-per-serving-
+configuration: re-extract the union + mining pre-gen states through the
+4-bit-loaded model (batch-1, eval mode, same anchor/prompts/config) and
+refit the sensor on those states. Launch conditions 2 and 3 are
+RE-ADJUDICATED under sensor v2 (same rules, same floors) before any arm
+starts; the in-loop reward read is a dedicated batch-1 prompt-only forward
+so it is byte-reproducible against the v2 offline reference. No gate or
+floor changes — this is instrument alignment before launch, with v1 numbers
+retained above for provenance.
 
 ### 1.2 Reward
 
@@ -139,10 +152,14 @@ GRPO-v2 lineage recipe (single seed, as the line's GRPO runs are).
 
 1. Reward-plumbing smoke green (probe-in-loop micro-run: R varies within
    groups, advantages nonzero, tripwires demonstrably fire on synthetic
-   trigger). **PENDING — the only remaining gate.**
-2. Refit sensor held-out AUROC ≥ 0.9 vs gold. **SATISFIED: 0.9947 (§1.1).**
+   trigger). **Smoke v1 (`amendment_ai_smoke.json`): criteria 1/3/4 green,
+   criterion 2 (in-loop p faithfulness) FAILED on the 4-bit serving mismatch
+   (§1.1 sensor v2 fix). RE-RUN with sensor v2 pending.**
+2. Refit sensor held-out AUROC ≥ 0.9 vs gold. **v1: 0.9947. RE-ADJUDICATE
+   under sensor v2 (4-bit training-configuration states), same floor.**
 3. w_c / w_a / mixture derived and recorded in this doc per §1.2–1.3 rules
-   BEFORE the arms start. **SATISFIED: w_c = w_a = 0.50, mixture 30.5%,
-   60% category cap, holdouts (§1.2–1.3).**
+   BEFORE the arms start. **v1: w_c = w_a = 0.50, mixture 30.5%, 60%
+   category cap, holdouts. RE-DERIVE under sensor v2, same rules; this doc
+   is updated with the v2 values before any arm starts.**
 
 Any condition failing ⇒ no launch; doc holds as DRAFT for morning review.
