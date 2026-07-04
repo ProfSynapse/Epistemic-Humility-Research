@@ -88,11 +88,25 @@ test -f "${OUT}/data/rows.jsonl"   || { echo "[ai-verdict] FATAL: no rows.jsonl"
 # Upload the WHOLE data dir (tensors + rows.jsonl + manifest.json) to the
 # private staging repo. The scorer consumes this dir verbatim as
 # --*-fit-states / --*-holdout-states / --*-gen.
-python "${PROBE}/cloud/upload_folder.py" \
-    --repo "${STAGING_REPO}" \
-    --folder "${OUT}/data" \
-    --path-in-repo "${RUN_TAG}/data" \
-    --private
+# HF rejects commits with >10,000 files in one repo directory, and the union
+# extract writes one tensor file per row (18,496) — oversized dirs ship as a
+# single tarball instead, which the scorer host untars back to the same layout.
+N_FILES=$(find "${OUT}/data" -type f | wc -l)
+if [ "${N_FILES}" -gt 9500 ]; then
+    echo "[ai-verdict] data dir has ${N_FILES} files (>9500); uploading as tarball"
+    TARBALL="${OUT}/data.tar.gz"
+    tar -C "${OUT}" -czf "${TARBALL}" data
+    python "${PROBE}/cloud/upload_result.py" \
+        --repo "${STAGING_REPO}" \
+        --path-prefix "${RUN_TAG}" \
+        --file "${TARBALL}"
+else
+    python "${PROBE}/cloud/upload_folder.py" \
+        --repo "${STAGING_REPO}" \
+        --folder "${OUT}/data" \
+        --path-in-repo "${RUN_TAG}/data" \
+        --private
+fi
 
 echo "[ai-verdict] DONE ${RUN_TAG}"
 
