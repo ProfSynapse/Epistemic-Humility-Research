@@ -4,7 +4,7 @@ session_id: '0037'
 title: Hallucination-mechanics CPU fleet (confab phenotypes, commitment signal, veto transport)
 status: complete
 created_at: '2026-07-04T16:00:00Z'
-updated_at: '2026-07-04T17:00:00Z'
+updated_at: '2026-07-04T20:00:00Z'
 phase: phase1
 question: >-
   What happens mechanically between the model knowing a question is
@@ -119,7 +119,28 @@ checkpoints:
     want different commitment points. Ops lesson saved to memory - harness
     blocks subagent Write for report files (heredoc workaround) and
     background agents must end with an explicit send to main.
+- id: 006-result
+  at: '2026-07-04T20:00:00Z'
+  kind: result
+  title: 'Follow-on: the commitment direction is NOT internal familiarity - familiarity axis whitened-orthogonal to the whole decision geometry'
+  summary: >-
+    Post-signing de-risk for AK Stage 2 (user-approved CPU follow-on,
+    analysis/mi_familiarity_geometry_20260704/). An internal familiarity
+    direction (Ridge of corpus-internal mean log frequency onto PCA-128
+    activations, matched set reproduced exactly at 328 rows) is
+    whitened-orthogonal to EVERYTHING - cosines to the doubt trunk 0.005 to
+    0.031, caution axis -0.045 to 0.010, commitment direction -0.035 to
+    -0.020 across L20/24/28. Projecting it out leaves the commitment probe
+    untouched (0.834 to 0.834, survival 1.00); its own projection reads
+    confab-vs-refuse at only 0.571 (perm p=0.0099), weaker than the 0.682
+    text proxies it was fit from. The commitment direction's only geometric
+    relative is the doubt trunk (whitened cos 0.64 at L20 decaying to 0.30
+    at L28). AK implication - steer the commitment direction, not a
+    familiarity vector; a familiarity vector is near-orthogonal and moves a
+    weak sub-0.6 signal. Caveats - frequency-proxy familiarity (rank-1, not
+    a subspace erasure), diagonal whitening at n=328.
 artifacts:
+- experiment/phase1/probe/analysis/mi_familiarity_geometry_20260704/ (untracked scratch; script committed)
 - experiment/phase1/probe/analysis/mi_confab_phenotypes_20260704/ (untracked scratch; script committed)
 - experiment/phase1/probe/analysis/mi_confab_signature_20260704/ (untracked scratch; script committed)
 - experiment/phase1/probe/analysis/mi_veto_transport_20260704/ (untracked scratch; scripts committed)
