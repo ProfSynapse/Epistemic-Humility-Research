@@ -28,6 +28,7 @@ question text). The committed smoke result references only counts / row_keys.
 
 from __future__ import annotations
 
+import argparse
 import json
 import sys
 from pathlib import Path
@@ -37,10 +38,19 @@ import numpy as np
 CANONICAL = Path("/home/profsynapse/code/Epistemic-Humility-Research")
 PROBE_ROOT = CANONICAL / "experiment/phase1/probe"
 REFIT = PROBE_ROOT / "analysis/par_sensor_refit"
-REFIT_ROWS = REFIT / "union_refit_rows.jsonl"
-UNION_PREGEN_ROWS = REFIT / "union_pregen/rows.jsonl"
 AH_SCORED = PROBE_ROOT / "analysis/ah_stage0/score/scored_rows.jsonl"
-OUT = REFIT / "ai_smoke_slice.jsonl"
+
+# Variant selects the sensor whose p decides cell membership + the offline value
+# carried for C3's integrity audit. v2 = the 4-bit serving sensor the reward
+# reads (union_refit_rows_cleansft4bit.jsonl + union_pregen_4bit states).
+VARIANTS = {
+    "v1": {"refit_rows": REFIT / "union_refit_rows.jsonl",
+           "union_pregen_rows": REFIT / "union_pregen/rows.jsonl",
+           "out": REFIT / "ai_smoke_slice.jsonl"},
+    "v2": {"refit_rows": REFIT / "union_refit_rows_cleansft4bit.jsonl",
+           "union_pregen_rows": REFIT / "union_pregen_4bit/rows.jsonl",
+           "out": REFIT / "ai_smoke_slice.jsonl"},
+}
 
 SEED = 0
 N_CONCORDANT = 40
@@ -53,9 +63,14 @@ def load_jsonl(p: Path):
 
 
 def main() -> int:
+    ap = argparse.ArgumentParser()
+    ap.add_argument("--variant", choices=list(VARIANTS), default="v2")
+    v = VARIANTS[ap.parse_args().variant]
+    OUT = v["out"]
     rng = np.random.default_rng(SEED)
-    refit = load_jsonl(REFIT_ROWS)
-    q_by_key = {r["row_key"]: r["question"] for r in load_jsonl(UNION_PREGEN_ROWS)}
+    refit = load_jsonl(v["refit_rows"])
+    q_by_key = {r["row_key"]: r["question"]
+                for r in load_jsonl(v["union_pregen_rows"])}
     aliases_by_key = {}
     for r in load_jsonl(AH_SCORED):
         aliases_by_key[r["row_key"]] = r.get("aliases", []) or []

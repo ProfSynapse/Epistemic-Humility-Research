@@ -60,11 +60,29 @@ CLEAN_SFT_BASE = (CANONICAL / "scratch/schema_response_confidence/runs/"
                   "sft_schema_clean_seed1_full/20260623_123624/"
                   "Qwen3-4B-bnb-4bit/merged-16bit")
 REFIT = CANONICAL / "experiment/phase1/probe/analysis/par_sensor_refit"
-SENSOR = REFIT / "probes/probe_L24_cleansft.joblib"
 SLICE = REFIT / "ai_smoke_slice.jsonl"
-UNION_PREGEN = REFIT / "union_pregen"
-RESULT_JSON = PROBE_DIR / "amendment_ai_smoke.json"
 SCRATCH = REFIT / "ai_smoke"
+
+# Sensor variants. v1 = probe refit on the un-quantized merged-16bit union states
+# (the smoke v1 sensor; C2 failed on it because the reward reads the 4-bit-served
+# model). v2 = probe refit on the 4-bit SERVING states (union_pregen_4bit) — the
+# distribution the reward actually reads, so C2's persisted-state reference is
+# serving-aligned by construction and must hit <= 1e-4.
+VARIANTS = {
+    "v1": {"sensor": REFIT / "probes/probe_L24_cleansft.joblib",
+           "union_pregen": REFIT / "union_pregen",
+           "result": PROBE_DIR / "amendment_ai_smoke.json"},
+    "v2": {"sensor": REFIT / "probes_v2/probe_L24_cleansft4bit.joblib",
+           "union_pregen": REFIT / "union_pregen_4bit",
+           "result": PROBE_DIR / "amendment_ai_smoke_v2.json"},
+}
+
+# refit rows (OOF p, gold label) per variant — the representative sensor-
+# integrity audit for criterion 3 draws a class-balanced sample from these.
+REFIT_ROWS_BY_VARIANT = {
+    "v1": REFIT / "union_refit_rows.jsonl",
+    "v2": REFIT / "union_refit_rows_cleansft4bit.jsonl",
+}
 
 W_C = 0.50   # correctness bonus (prereg §1.2, derived)
 W_A = 0.50   # right-abstention bonus
@@ -122,13 +140,21 @@ def run(args) -> int:
     from amendment_ah_stage0_extract import load_baseline_system_prompt
     from safetensors import safe_open
 
+    variant = args.variant
+    vspec = VARIANTS[variant]
+    sensor_path = vspec["sensor"]
+    union_pregen = vspec["union_pregen"]
+    result_json = vspec["result"]
+
     SCRATCH.mkdir(parents=True, exist_ok=True)
-    result: dict = {"stage": "amendment_ai_condition1_smoke", "branch": "amendment-ai-probe-as-reward"}
+    result: dict = {"stage": "amendment_ai_condition1_smoke",
+                    "branch": "amendment-ai-probe-as-reward",
+                    "sensor_variant": variant}
 
     rows = load_jsonl(SLICE)
     if args.limit:
         rows = rows[: args.limit]
-    probe = joblib.load(SENSOR)
+    probe = joblib.load(sensor_path)
     scaler, clf = probe["scaler"], probe["clf"]
     baseline_system = load_baseline_system_prompt()
 
@@ -225,61 +251,89 @@ def run(args) -> int:
           "mean_group_std": round(float(np.mean(group_stds)), 4),
           "passed": bool(frac_nonzero >= 0.30)}
 
-    # ===== CRITERION 2: in-loop p == offline recompute (>=8 spot-checks) =====
-    # Faithfulness = the reward's in-loop p read is reproducible via the SAME
-    # recipe (same 4-bit LoRA-wrapped model, same probe render, same frozen
-    # sensor). We recompute pregen_p offline (a fresh forward on the same model)
-    # and require max_abs_diff <= 1e-4 — proving the in-loop read is byte-faithful
-    # to the recipe, not a stale/mis-wired scalar. We ALSO report the bf16
-    # union_pregen p (extracted on the un-quantized base) as context only: it
-    # differs by 4-bit-vs-bf16 quantization and is NOT the pass/fail reference.
+    # ===== CRITERION 2: in-loop p == offline reference (>=8 spot-checks) =====
+    # PASS/FAIL reference (v2) = the frozen sensor applied to the PERSISTED
+    # union_pregen state for the same row_key. Under v2 that persisted state is
+    # the 4-bit SERVING state the sensor was fit on and the reward reads, so the
+    # in-loop p must reproduce it (serving-aligned by construction, <= 1e-4).
+    # SECOND field = same-recipe recompute (a fresh forward on the same 4-bit
+    # LoRA-wrapped model): reproducibility of the read itself. Both reported.
+    # (Under v1 the persisted state is the un-quantized-base value; the reference
+    # diff will be large — that is the instrument mismatch v1 exposed.)
     spot = []
-    max_abs_diff = 0.0
+    max_abs_diff_persisted = 0.0     # v2 pass/fail: in-loop vs persisted-state ref
+    max_abs_diff_recompute = 0.0     # second field: in-loop vs same-recipe forward
+    n_persisted = 0
     for r in rows[: max(16, args.spot_n)]:
         rk = r["row_key"]
         if rk not in p_inloop:
             continue
         p_recompute, _ = pregen_p(q_inloop[rk])       # same recipe, fresh forward
-        d = abs(p_recompute - p_inloop[rk])
-        max_abs_diff = max(max_abs_diff, d)
-        # context: bf16 union_pregen state through the same sensor
-        p_bf16 = None
+        d_recompute = abs(p_recompute - p_inloop[rk])
+        max_abs_diff_recompute = max(max_abs_diff_recompute, d_recompute)
+        # pass/fail reference: frozen sensor on the persisted union_pregen state
+        p_persisted = None
+        d_persisted = None
         sk = rk.replace("::", "__").replace("|", "_")
-        stf = UNION_PREGEN / f"{sk}__pre.safetensors"
+        stf = union_pregen / f"{sk}__pre.safetensors"
         if stf.exists():
             with safe_open(str(stf), "pt") as st:
                 vec = st.get_tensor("L24").float().numpy().astype(np.float64)
-            p_bf16 = p_from_state(vec)
+            p_persisted = p_from_state(vec)
+            d_persisted = abs(p_persisted - p_inloop[rk])
+            max_abs_diff_persisted = max(max_abs_diff_persisted, d_persisted)
+            n_persisted += 1
         spot.append({"row_key": rk, "p_inloop": p_inloop[rk],
-                     "p_recompute": p_recompute, "abs_diff": d,
-                     "p_bf16_union_pregen_context": p_bf16})
+                     "p_persisted_ref": p_persisted, "abs_diff_persisted": d_persisted,
+                     "p_recompute": p_recompute, "abs_diff_recompute": d_recompute})
         if len(spot) >= max(8, args.spot_n):
             break
-    c2 = {"n_spot_checked": len(spot), "max_abs_diff": max_abs_diff,
+    c2 = {"n_spot_checked": len(spot), "n_persisted_ref": n_persisted,
+          "max_abs_diff_persisted": max_abs_diff_persisted,
+          "max_abs_diff_recompute": max_abs_diff_recompute,
           "threshold": 1e-4,
-          "passed": bool(len(spot) >= 8 and max_abs_diff <= 1e-4),
-          "note": "offline recompute = same 4-bit model + probe render + frozen "
-                  "sensor (in-loop recipe); p_bf16_union_pregen_context is the "
-                  "un-quantized-base value, reported for context only"}
+          "passed": bool(n_persisted >= 8 and max_abs_diff_persisted <= 1e-4),
+          "note": "PASS/FAIL = in-loop p vs frozen sensor on the persisted "
+                  f"{union_pregen.name} state (v2: 4-bit serving-aligned); "
+                  "max_abs_diff_recompute is the same-recipe fresh-forward "
+                  "reproducibility of the read, reported as a second field"}
 
     # ===== CRITERION 3: tripwires fire on synthetic triggers =====
-    # (a) shuffled-sensor batch => sensor-integrity AUROC audit < 0.8 => halt path
-    audit = load_jsonl(SLICE)
-    labels_answerable = np.array([1 if a["gold_answerable"] else 0 for a in audit])
-    # true sensor scores on the audit set: use the OFFLINE p (higher p => unanswerable)
-    # answerable label=1 should get LOW p; so score for "answerable" = 1 - p.
-    true_p = np.array([a["p_unanswerable_offline"] for a in audit])
-    auroc_true = auroc(1.0 - true_p, labels_answerable)
+    # (a) shuffled-sensor => sensor-integrity AUROC audit < 0.8 => halt path.
+    # The AUDIT set is REPRESENTATIVE (class-balanced draw from the full v2 refit
+    # rows via OOF p) — the same construct as the production §1.5 tripwire
+    # (500-row audit every 100 steps). NOT the smoke slice: the slice is 37.5%
+    # deliberately OOF-divergent, so a slice-based audit understates sensor
+    # health. auroc_true here is the honest sensor-separating-power number
+    # (expected ~0.99). The slice-based value is also reported for context.
+    audit_rows = load_jsonl(REFIT_ROWS_BY_VARIANT[variant])
     rng = np.random.default_rng(0)
+    known = [r for r in audit_rows if r["label"] == "known"]
+    unknown = [r for r in audit_rows if r["label"] == "unknown"]
+    per_class = min(250, len(known), len(unknown))
+    idx_k = rng.permutation(len(known))[:per_class]
+    idx_u = rng.permutation(len(unknown))[:per_class]
+    audit = [known[i] for i in idx_k] + [unknown[i] for i in idx_u]
+    labels_answerable = np.array([1 if a["label"] == "known" else 0 for a in audit])
+    true_p = np.array([float(a["p_unanswerable"]) for a in audit])   # OOF p
+    auroc_true = auroc(1.0 - true_p, labels_answerable)
     shuffled = true_p.copy(); rng.shuffle(shuffled)
     auroc_shuffled = auroc(1.0 - shuffled, labels_answerable)
     halt_a = bool(auroc_shuffled < SENSOR_AUDIT_HALT)
+    # context: the same audit on the divergent-heavy smoke slice (understates)
+    sl = load_jsonl(SLICE)
+    sl_lab = np.array([1 if s["gold_answerable"] else 0 for s in sl])
+    sl_p = np.array([s["p_unanswerable_offline"] for s in sl])
+    auroc_true_slice = auroc(1.0 - sl_p, sl_lab)
     # (b) forced schema-invalid window => degeneracy halt
     forced_invalid = ["not json at all"] * 20
     inv_frac = float(np.mean([not hr.parse_completion(c).valid_json for c in forced_invalid]))
     halt_b = bool(inv_frac > DEGENERACY_HALT_FRAC)
     c3 = {
         "sensor_integrity": {"auroc_true": round(auroc_true, 4),
+                             "audit_set": "representative_class_balanced_v2_refit",
+                             "audit_n": len(audit), "per_class": per_class,
+                             "auroc_true_smoke_slice_context": round(auroc_true_slice, 4),
                              "auroc_shuffled": round(auroc_shuffled, 4),
                              "halt_threshold": SENSOR_AUDIT_HALT,
                              "halt_fired": halt_a},
@@ -309,7 +363,8 @@ def run(args) -> int:
     result.update({
         "config": {"G": G, "temperature": TEMPERATURE, "max_new_tokens": MAX_NEW_TOKENS,
                    "w_c": W_C, "w_a": W_A, "format_gate": FORMAT_GATE,
-                   "n_prompts": len(rows), "sensor": str(SENSOR)},
+                   "n_prompts": len(rows), "sensor": str(sensor_path),
+                   "union_pregen": str(union_pregen)},
         "criterion_1_reward_variance": c1,
         "criterion_2_inloop_p_faithful": c2,
         "criterion_3_tripwires_fire": c3,
@@ -317,15 +372,18 @@ def run(args) -> int:
         "all_green": bool(c1["passed"] and c2["passed"] and c3["passed"] and c4["passed"]),
         "spot_checks": spot,
     })
-    RESULT_JSON.write_text(json.dumps(result, indent=2), encoding="utf-8")
+    result_json.write_text(json.dumps(result, indent=2), encoding="utf-8")
     print(json.dumps({k: v for k, v in result.items() if k != "spot_checks"}, indent=2),
           flush=True)
-    print(f"[ai/smoke] DONE all_green={result['all_green']} -> {RESULT_JSON}", flush=True)
+    print(f"[ai/smoke] DONE variant={variant} all_green={result['all_green']} "
+          f"-> {result_json}", flush=True)
     return 0
 
 
 def parse_args(argv=None):
     ap = argparse.ArgumentParser(description=__doc__)
+    ap.add_argument("--variant", choices=list(VARIANTS), default="v2",
+                    help="sensor variant: v2 = 4-bit serving sensor (the reward's)")
     ap.add_argument("--limit", type=int, default=0, help="cap prompts (debug)")
     ap.add_argument("--spot-n", type=int, default=8)
     return ap.parse_args(argv)
