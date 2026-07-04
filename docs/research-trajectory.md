@@ -118,9 +118,26 @@ any-prepend component is real and large, but re-referenced to neutral the primes
 the caution axis in the semantically correct directions (HIGH down, LOW up) while the
 doubt axis stays anti-semantic — the belief-vs-policy dissociation sharpened.
 
+**AH (H-COMPLIANCE, certified via Addendum A1):** the divergent-pool (probe ≠ gold)
+own-readout attribution design AF/AG called for. G2 release congruence is a precise
+zero (−0.21pt, CI [−4.45, +4.10]) — prime uptake does NOT consult the model's own
+readout; the recalibrated positive control passes decisively (+50.98pt vs +20pt floor,
+monotone across caution quintiles). Closes the AF/AG attribution question on the
+compliance side. Source: `AMENDMENT-AH-divergent-pool-own-readout.md`.
+**Data exhaust published** (user-approved 2026-07-04):
+[`professorsynapse/eh-doubt-on-command`](https://huggingface.co/datasets/professorsynapse/eh-doubt-on-command)
+— 5,436 per-row generations + primed-readout instrumentation + A1 stratum, with
+datasheet and license audit.
+
+**AI (RUNNING, 2026-07-04):** probe-as-reward — with the text/prompt channel ruled
+compliance-only by AH, AI tests the reward channel: GRPO with the frozen doubt-probe
+readout as the reward signal (TRUE vs PERMUTED sensor arms). Verdict-eval locked
+pre-outcome (prereg §4). Source: `AMENDMENT-AI-probe-as-reward.md`.
+
 **Open questions for Paper 5:** Does a trained-checkpoint steering arm move the gate?
 (AA was flat on the raw base; trained checkpoints have a live gate — backlog item 3.)
-Divergent-pool (probe ≠ gold) design for true own-readout attribution (AF §8 / AG §9.4).
+Whether ANY channel couples behavior to the model's own readout — text/prompt is
+compliance-only (AH); the reward channel is under test (AI).
 
 ---
 
