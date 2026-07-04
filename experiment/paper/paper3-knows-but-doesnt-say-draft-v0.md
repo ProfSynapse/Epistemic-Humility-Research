@@ -66,7 +66,7 @@ confused: questions the model over-refuses despite knowing them sit at an intern
 separable axes: a graded *doubt* axis (how known an item is) and a partially
 independent *caution* gate (the refuse/answer decision); raw cosine overstates
 their collinearity at −0.83, but held-out discriminability after orthogonalization
-shows a genuine caution-specific component (refuse/answer AUROC 0.825 after
+shows a genuine caution-specific component (refuse/answer AUROC ≈ 0.80 after
 projecting out doubt). **(3)** We show behavior is *causally* steerable but
 *asymmetrically*: ablating the caution residual cuts over-refusal on known
 questions from 0.994 to 0.030 with clean specificity, yet no intervention we tried
@@ -114,7 +114,7 @@ Our contributions, each a section below:
 - **The geometry (Section 5).** The internal signal decomposes into a graded
   *doubt* axis and a separable *caution* gate. We show why the naive measurement
   (raw cosine = −0.83, "they're the same axis") is wrong and the held-out
-  orthogonalization measurement (caution-specific refuse/answer AUROC = 0.825) is
+  orthogonalization measurement (caution-specific refuse/answer AUROC ≈ 0.80) is
   right, a methodological caution about cosine in high-dimensional activation
   space.
 - **Steerability (Section 6).** Behavior is causally controllable along the
@@ -353,31 +353,37 @@ refusal is simply the low-known tail of a single graded doubt axis.
 That reading is an artifact of the instrument. Raw cosine in high-dimensional
 activation space is dominated by a few shared high-variance dimensions and
 overstates collinearity. Whitening the covariance (shrinkage λ = 0.1) drops the
-cosine to **−0.565**, and the caution direction retains a substantial component off
-the doubt axis: its **residual fraction is 0.557** (≈ 55.7% of the caution
-direction's length, ≈ 31% of its variance, is doubt-orthogonal)
-[experiment/phase1/probe/paper3_section5_geometry.py; L35 h_lora; kr = 168, ka = 300,
-ur = 300; pooled within-class shrinkage-whitened covariance; 5-fold held-out.]
+cosine to **−0.61** on the full sample (subsampling to 300/300 for the AUROC
+protocol gives −0.56 to −0.61 depending on subsample seed), and the caution
+direction retains a substantial component off the doubt axis: its **residual
+fraction is 0.557** (≈ 55.7% of the caution direction's length, ≈ 31% of its
+variance, is doubt-orthogonal; subsample-invariant)
+[experiment/phase1/probe/paper3_section5_geometry.py; L35 h_lora; full cells
+kr = 168, ka = 373, ur = 676 for geometry, ka/ur subsampled to 300/300 for AUROC;
+pooled within-class shrinkage-whitened covariance; 5-fold held-out.]
 
 The decisive test is held-out discriminability after orthogonalization. Predicting
 refuse (1) vs answer (0) among known items:
 
-| direction | held-out refuse/answer AUROC |
+| direction | held-out refuse/answer AUROC, mean (range over 4 fold seeds) |
 |---|---|
-| knowledge/doubt axis alone | 0.875 (strong: refuse = less-known) |
-| caution orthogonalized to doubt (`caution_perp`) | **0.825** |
-| full caution | 0.894 |
+| knowledge/doubt axis alone | 0.866 (0.861–0.872) (strong: refuse = less-known) |
+| caution orthogonalized to doubt (`caution_perp`) | **0.798 (0.788–0.826)** |
+| full caution | 0.885 (0.881–0.892) |
 
 Removing the *entire* rank-1 doubt direction barely dents refuse/answer
-separability (0.894 → 0.825), so the refuse/answer decision is not confined to the
-doubt axis: a genuine caution-specific gate exists [paper3_section5_geometry.py].
-The two are correlated (both are elevated on the low-known tail) but separable.
+separability (0.885 → 0.798, means over fold seeds), so the refuse/answer decision
+is not confined to the doubt axis: a genuine caution-specific gate exists
+[paper3_section5_geometry.py; an independent reconstruction,
+experiment/phase1/probe/analysis/p3_section5_provenance_20260704/reconstruct_section5_geometry.py,
+reproduces the pipeline and supplies the fold-seed spread]. The two are correlated
+(both are elevated on the low-known tail) but separable.
 
 **Method lesson.** Raw cosine said "one axis" (−0.83); held-out discriminability
 after orthogonalization says "two axes." The reliable instrument for "is direction
 B reducible to direction A" is not cosine but whether B still discriminates its
 target after A is projected out. Stronger whitening monotonically pushes the cosine
-−0.83 → −0.56 → toward 0, re-validating an independent near-orthogonality estimate
+−0.83 → −0.61 → toward 0, re-validating an independent near-orthogonality estimate
 (≈ 0.02) from a separate analysis. The stronger reducibility test, certified
 linear erasure of the full answerability concept (LEACE), confirms this: erasing
 everything a linear probe can use to read known/unknown (probe AUROC 0.996 to
