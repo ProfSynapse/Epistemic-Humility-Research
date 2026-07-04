@@ -638,7 +638,7 @@ Atomic notes extracted from the library papers via the Agents-K1 ingestion skill
 - [[valence-arousal-subspace]] : A two-dimensional linear subspace in LLM activation space spanned by a recovered valence axis (pleasure-displeasure) and arousal axis (activ
 - [[world-model-hallucination-modes]] : A three-type taxonomy of failure modes in generative world models, each anchored to a different pipeline stage. Perceptual hallucination occ
 
-## Mechanisms (cause -> effect) (352)
+## Mechanisms (cause -> effect) (356)
 
 - [[abstention-generalization-failure]] : 'instruction-tuning for abstention on a narrow, homogeneous set of refusal expressions and task formats' **prevents** Abstention ability does not generalize to 
 - [[abstract-representations-enable-zero-shot-generalization]] : High degree of abstract (parallel) representation in ANN hidden layers, as measured by parallelism-score, indicating that compositional rule dimensions are enco
@@ -774,6 +774,7 @@ Atomic notes extracted from the library papers via the Agents-K1 ingestion skill
 - [[instruction-tuning-improves-self-knowledge]] : 'instruction-tuning applied to a base LLM (e.g., LLaMA to Alpaca/Vicuna, gpt-3 to instructgpt)' **increases** Increased self-knowledge-f1 on unanswerable questi
 - [[instruction-tuning-increases-conformal-uncertainty]] : Instruction fine-tuning of a pretrained LLM (either Chat-V1 instruction-format or Chat-V2 base-format prompting on the chat checkpoint) **increases** Average co
 - [[instruction-tuning-induces-calibration-collapse]] : Instruction tuning (SFT on instruction-following data or chat-style pairs) applied to a base pretrained model on tasks requiring structured reasoning **increase
+- [[internal-doubt-degrades-fabrication-specificity]] : Higher pre-generation doubt-trunk projection on questions where the model nevertheless commits to answering an unanswerable question. **decreases** The resultin
 - [[joint-selection-head-training-lowers-selective-risk]] : Training a selection (reject-option) head jointly with the predictor under a selective loss with an explicit target-coverage constraint, rather than thresholdin
 - [[knowledge-circuit-isolation-preserves-performance]] : Using only the sparse knowledge circuit subgraph (less than 10% of full graph) in isolation **enables** Model maintains more than 70% of its original factual-re
 - [[knowledge-conflict-induces-abstention]] : Presenting an LLM with alternative answers and supporting passages that conflict with its parametric knowledge **enables** LLMs that are swayed by conflicting i
@@ -852,8 +853,10 @@ Atomic notes extracted from the library papers via the Agents-K1 ingestion skill
 - [[policy-entropy-collapse-narrows-rlvr-reasoning-paths]] : Standard RLVR training (e.g., GRPO) optimizing for verifiable reward without entropy regularization **decreases** Premature concentration of the policy on narro
 - [[pos-scrubbing-raises-perplexity]] : Linearly erasing part-of-speech information from every transformer layer via concept-scrubbing. **increases** Large increase in autoregressive language model pe
 - [[position-aware-entropy-penalty-preserves-exploration]] : Applying a one-sided quadratic lower-bound entropy penalty only at token positions identified as decision-sensitive by the soft mask (high nucleus entropy, smal
+- [[post-generation-veto-is-rederived-not-carried]] : Generation of an answer between the pre-generation anchor read and the post-generation veto read (cross-position probe transfer, axis geometry, and residualizat
 - [[ppo-clip-prevents-large-policy-updates]] : 'clipped-surrogate-objective bounding the probability ratio within [1-epsilon, 1+epsilon]' **prevents** Policy updates remain within a trust region without requ
 - [[ppo-ptx-mitigates-alignment-tax]] : Mixing pretraining distribution gradients into PPO updates (PPO-ptx) **prevents** Performance regressions on public NLP benchmarks captured by the alignment-tax
+- [[pre-generation-commitment-signal-predicts-confabulation]] : Matching confabulating and refusing rows 1-to-1 on caution boundary distance within each unanswerability flavor (removing the threshold explanation), then probi
 - [[prediction-depth-correlates-with-example-difficulty]] : Examples that require more training steps to learn also require more layers for the tuned lens to converge on a prediction **increases** Prediction depth (tuned
 - [[prediction-trajectory-detects-prompt-injection]] : Prompt injection attacks alter the model's layer-by-layer prediction trajectory in a detectable way relative to normal prompts **enables** An anomaly detector t
 - [[preference-collapse-causes-alignment-overconfidence]] : Preference alignment via RLHF or direct-preference-optimization trains the model to assign disproportionately high probability to one response option, collapsin
@@ -871,6 +874,7 @@ Atomic notes extracted from the library papers via the Agents-K1 ingestion skill
 - [[proper-scoring-rule-rl-reward-calibrates-verbalized-confidence]] : Using the log-likelihood of the correct answer under a surrogate forecaster as the PPO reward for a long-form generation policy (instead of binary correctness),
 - [[proper-scoring-sft-calibration-transfers-to-unseen-confidence-formats]] : Fine-tuning on numerical verbalized confidence (0-100%) using a proper scoring rule (tokenized Brier score) **enables** The resulting calibration transfers to l
 - [[question-difficulty-alone-predicts-llm-confidence]] : Training the auxiliary calibrator on the question text only, with the LLM's generated answer omitted. **enables** The calibrator already attains respectable cal
+- [[question-familiarity-draws-confabulation-at-matched-doubt]] : Higher surface familiarity of an unanswerable question (corpus-internal token frequency and neighbor proxies), with internal doubt level held fixed by caution-d
 - [[rag-supervision-induces-hallucination-via-unfamiliar-knowledge]] : Fine-tuning a pre-trained LLM on responses generated by a retrieval-augmented model (or on human-authored responses containing facts beyond the model's parametr
 - [[rank1-projection-sufficient-for-linear-concept-erasure]] : Applying a rank-1 orthogonal projection (removing a single direction found by rlace) to GloVe or BERT representations **enables** Any linear classifier's gender
 - [[rdo-reduces-capability-side-effects]] : Optimising a refusal-direction-optimization direction with an explicit retain loss (KL penalty on safe-prompt behaviour) rather than using directional-ablation 
