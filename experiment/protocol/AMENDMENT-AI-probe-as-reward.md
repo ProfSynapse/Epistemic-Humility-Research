@@ -204,3 +204,45 @@ GRPO-v2 lineage recipe (single seed, as the line's GRPO runs are).
    superseded before any arm step.**
 
 Any condition failing ⇒ no launch; doc holds as DRAFT for morning review.
+
+## 4. Verdict-eval operationalization (locked pre-outcome, 2026-07-04)
+
+Written and committed while the TRUE arm was at ~step 30 of 2,934 — no arm
+has completed, no gate quantity has been observed. This section pins
+procedure only; it changes no gate, floor, or constant. Scorer:
+`experiment/phase1/probe/amendment_ai_verdict_score.py` (CPU; the lead runs
+it and recomputes all gate arithmetic from raw rows; the user adjudicates).
+
+- **Fresh eval probe (per arm):** re-extract the union refit surface through
+  the arm's FINAL checkpoint in the 4-bit serving configuration (Amendment T
+  refit-per-checkpoint; sensor-v2 serving alignment), exclude the 400 locked
+  holdout row_keys from the fit, fit L24 with the sensor-lineage recipe
+  (StandardScaler + LogisticRegression C=1.0, known=1,
+  p_unans = sigmoid(−score)); 5-fold OOF AUROC vs gold is the **AI-G0
+  falsifier** number (≥ 0.8, both arms).
+- **AI-G0 arithmetic:** steps logged in `logs/par_reward_steps.jsonl`
+  ≥ 2,641 (90% of 2,934) per arm; no `HALT.json` in either run dir;
+  falsifier above.
+- **Generation:** each arm's final checkpoint generates on the locked
+  400-row `holdout_eval.jsonl` — greedy, batch 1, schema contract,
+  `render_probe_prompt(..., enable_thinking=False)`, refusal via
+  `scorers.is_stated_confidence_refusal()`.
+- **Congruence (per row, per arm):** own-readout consistency against the
+  arm's OWN fresh eval probe scored on the arm's own pre-generation states
+  of the holdout rows: (probe says unknown, p_unans > 0.5, ∧ refused) ∨
+  (probe says known ∧ answered). `schema_valid == False` counts as
+  incongruent.
+- **AI-G1 arithmetic:** primary = TRUE congruence rate − PERMUTED congruence
+  rate on all 400 rows; 10,000-resample paired row bootstrap (seed 0), gate
+  = point ≥ +10pt ∧ 95% CI excludes 0. Descriptive strata (NOT gates):
+  rows still divergent under the fresh TRUE probe; D-over vs D-under at
+  training classification; union vs mining origin.
+- **AI-G2 arithmetic:** the standard behavior-panel trio for TRUE and the
+  GRPO-v2 reference are computed on the SAME eval surface by the existing
+  eval pipeline; the scorer takes both trios as JSON and applies
+  |Δ| ≤ 5pt to each of abstain-when-unanswerable, answer-when-answerable,
+  correctness-among-answered.
+- **Division of labor:** GPU steps (final-checkpoint extraction +
+  generation) run per the lead's completion-time order; the scorer input
+  contract is documented in the script header. Verdict tiers computed
+  mechanically per §2; adjudication is the user's.
