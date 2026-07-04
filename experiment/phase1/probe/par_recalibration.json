@@ -4,9 +4,9 @@
   "p_definition": "p_unanswerable = sigmoid(-score_L24), frozen AF-600 L24 probe",
   "surfaces_scored": {
     "T_grpo_v2": {
-      "n": 1488,
-      "missing": 7060,
-      "answered_only": true
+      "n": 8548,
+      "missing": 0,
+      "answered_only": false
     },
     "S_instruct": {
       "n": 1836,
@@ -17,18 +17,18 @@
   "per_checkpoint": {
     "T_grpo_v2": {
       "checkpoint": "clean-SFT->GRPO-v2",
-      "answered_only": true,
-      "n_scored": 1488,
+      "answered_only": false,
+      "n_scored": 8548,
       "n_rows_total": 8548,
-      "n_missing_states": 7060,
+      "n_missing_states": 0,
       "p_unanswerable": {
-        "mean": 0.9991,
+        "mean": 0.9994,
         "median": 1.0,
-        "frac_lt_0.1": 0.0007,
-        "frac_gt_0.9": 0.998,
-        "saturation_bimodal_frac": 0.9987
+        "frac_lt_0.1": 0.0004,
+        "frac_gt_0.9": 0.9992,
+        "saturation_bimodal_frac": 0.9995
       },
-      "mean_abs_2p_minus_1": 0.9993,
+      "mean_abs_2p_minus_1": 0.9996,
       "D1_answer_side_flip_curve": {
         "0.05": 0.0,
         "0.10": 0.0,
@@ -38,8 +38,8 @@
         "0.30": 0.0,
         "0.35": 0.0,
         "0.40": 0.0,
-        "0.45": 0.0,
-        "0.50": 0.0
+        "0.45": 0.0001,
+        "0.50": 0.0002
       },
       "D1_E_correct_given_answered": {
         "n_answered_graded": 1488,
@@ -50,16 +50,25 @@
             "n": 1,
             "rate": 1.0
           },
-          "8": {
-            "correct": 1,
-            "n": 2,
-            "rate": 0.5
-          },
           "9": {
-            "correct": 986,
-            "n": 1485,
-            "rate": 0.664
+            "correct": 987,
+            "n": 1487,
+            "rate": 0.6638
           }
+        }
+      },
+      "D4b_gold_cube_answerable_surface": {
+        "note": "gold-answerable factoid surface; unanswerable columns structurally empty. confident=p<0.5.",
+        "n": 8548,
+        "cells": {
+          "over_refusal_confident(abstain,confident,answerable)": 3,
+          "honest_ignorance(abstain,doubting,answerable)": 7057,
+          "answer_confident_answerable": 1,
+          "answer_confident_answerable_correct": 1,
+          "answer_confident_answerable_wrong": 0,
+          "answer_doubting_answerable": 1487,
+          "answer_doubting_answerable_correct": 987,
+          "answer_doubting_answerable_wrong": 500
         }
       }
     },
@@ -144,6 +153,20 @@
             "rate": 0.333
           }
         }
+      },
+      "D4b_gold_cube_answerable_surface": {
+        "note": "gold-answerable factoid surface; unanswerable columns structurally empty. confident=p<0.5.",
+        "n": 1836,
+        "cells": {
+          "over_refusal_confident(abstain,confident,answerable)": 0,
+          "honest_ignorance(abstain,doubting,answerable)": 0,
+          "answer_confident_answerable": 455,
+          "answer_confident_answerable_correct": 75,
+          "answer_confident_answerable_wrong": 380,
+          "answer_doubting_answerable": 1381,
+          "answer_doubting_answerable_correct": 425,
+          "answer_doubting_answerable_wrong": 956
+        }
       }
     }
   },
@@ -161,13 +184,13 @@
       "report_estimate": 0.544,
       "recalibrated": 0.4477,
       "delta": -0.0963,
-      "note": "pooled over T+S answered-graded; T is answered-subset only"
+      "note": "pooled over T+S answered-graded (E[correct] is defined only on answered rows on both surfaces)"
     },
     "correctness_bonus_cap_w_0.20_survives": {
       "test": "unanswerable-stratum flip fraction at w=0.20 <= 2%",
       "report_estimate_pct": 4.35,
-      "note": "recalibrated per-checkpoint answer-side flip at w=0.20 in each ckpt's D1_answer_side_flip_curve['0.20']; compare there. Full gold-unanswerable-stratum flip needs the refused rows (T: unavailable \u2014 see answered_only)."
+      "note": "recalibrated per-checkpoint answer-side flip at w=0.20 in each ckpt's D1_answer_side_flip_curve['0.20']; compare there."
     }
   },
-  "coverage_caveat": "T = answered subset (1,488/8,548); the 7,060 refused rows lack saved states and the checkpoint is not local. D4/D4b abstain cells (over-refusal quadrant) NOT reconstructable for T from this subset. S is complete."
+  "coverage_caveat": "T = FULL surface (8548 rows, all pre-gen states re-extracted on the local deployed checkpoint; identity guard cos>=0.999 vs the original answered-row states); the 7,060 refused rows are now included, so the D4/D4b abstain cells (over-refusal quadrant) ARE reconstructed. S = 1836 rows, complete."
 }

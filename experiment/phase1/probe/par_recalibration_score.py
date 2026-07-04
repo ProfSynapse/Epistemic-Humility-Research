@@ -15,14 +15,16 @@ Surfaces (states already materialized by amendments T and S):
   T  qwen3-4b-clean-sft-grpo-v2/amendment_t/stage2/  (clean-SFT->GRPO-v2)
   S  qwen3-4b-instruct/amendment_s/stage2/           (Instruct base)
 
-Coverage note (see the manifest.answered_only flag): the T extractor only
-persisted pre-gen states for ANSWERED rows (1,488 of 8,548; the 7,060 refused
-rows have no saved states and the checkpoint is not local to re-extract). The T
-recalibration here therefore covers the ANSWERED subset only — the D1 E[correct|
-answered] curve and the answer-side flip curve are complete, but the D4/D4b
-abstain cells (the over-refusal quadrant) are NOT reconstructable from the
-answered subset and are reported as UNAVAILABLE for T. The S surface is complete
-(all 1,836 rows have states).
+Coverage: the T surface is now FULL. The original amendment-T extractor only
+persisted pre-gen states for ANSWERED rows (1,488 of 8,548). PASS-2 re-extracted
+all 8,548 T pre-gen states on the LOCAL deployed checkpoint (merged clean-SFT
+base + active GRPO-v2 adapter; par_recalibration_t_extract.py), gated by an
+identity guard (cos>=0.999 vs the stored answered-row states). When
+t_full_pregen/rows.jsonl is present it supersedes the answered-only stage2 dir,
+so the 7,060 refused rows ARE included and the D4/D4b abstain cells (the
+over-refusal quadrant the PAR reward targets) ARE reconstructed. E[correct|
+answered] is still defined only on answered rows (1,488 T / 1,836 S). The S
+surface (Instruct base) is complete (all 1,836 rows have states).
 
 Writes analysis/par_recalibration/:
   <tag>_recal_rows.jsonl   per-row p, |2p-1|, label, correct (gitignored)
@@ -51,11 +53,16 @@ PROBES = STAGE0 / "probes"
 OUT_DIR = PROBE_ROOT / "analysis/par_recalibration"
 RESULT_COPY = PROBE_DIR / "par_recalibration.json"
 
+T_FULL_PREGEN = OUT_DIR / "t_full_pregen"
+
 SURFACES = {
     "T_grpo_v2": {
-        "dir": PROBE_ROOT / "qwen3-4b-clean-sft-grpo-v2/amendment_t/stage2",
+        # prefer the full re-extraction (all 8,548 incl. refused) if present;
+        # else fall back to the answered-only stage2 states.
+        "dir": (T_FULL_PREGEN if (T_FULL_PREGEN / "rows.jsonl").exists()
+                else PROBE_ROOT / "qwen3-4b-clean-sft-grpo-v2/amendment_t/stage2"),
         "checkpoint": "clean-SFT->GRPO-v2",
-        "answered_only": True,   # refused rows have no saved states
+        "answered_only": not (T_FULL_PREGEN / "rows.jsonl").exists(),
     },
     "S_instruct": {
         "dir": PROBE_ROOT / "qwen3-4b-instruct/amendment_s/stage2",
@@ -122,7 +129,7 @@ def run(args) -> int:
         scoreable = []
         X = []
         for r in rows:
-            sk = r["row_key"].replace("::", "__").replace("|", "_")
+            sk = r.get("safe_key") or r["row_key"].replace("::", "__").replace("|", "_")
             pf = d / f"{sk}__pre.safetensors"
             if not pf.exists():
                 continue
@@ -183,6 +190,45 @@ def run(args) -> int:
                                   for k, v in sorted(bins.items())},
             }
 
+        # D4/D4b gold-cube occupancy (needs abstain-cell states => only meaningful
+        # when refused rows are present, i.e. not answered_only). The T/S surfaces
+        # are gold-ANSWERABLE factoids, so the "unanswerable" cube columns are
+        # structurally empty (not findings) — matches REPORT's note. confident =
+        # p_unanswerable < 0.5, doubting = p_unanswerable >= 0.5; abstain/answer
+        # from the row's answered flag.
+        if not spec["answered_only"]:
+            cube = {
+                "over_refusal_confident(abstain,confident,answerable)": 0,
+                "honest_ignorance(abstain,doubting,answerable)": 0,
+                "answer_confident_answerable": 0,
+                "answer_confident_answerable_correct": 0,
+                "answer_confident_answerable_wrong": 0,
+                "answer_doubting_answerable": 0,
+                "answer_doubting_answerable_correct": 0,
+                "answer_doubting_answerable_wrong": 0,
+            }
+            for i, r in enumerate(scoreable):
+                confident = p_unans[i] < 0.5
+                answered_row = bool(r.get("answered"))
+                correct = r.get("correct")
+                if not answered_row:  # abstain / refused
+                    if confident:
+                        cube["over_refusal_confident(abstain,confident,answerable)"] += 1
+                    else:
+                        cube["honest_ignorance(abstain,doubting,answerable)"] += 1
+                else:
+                    side = "confident" if confident else "doubting"
+                    cube[f"answer_{side}_answerable"] += 1
+                    if correct is True:
+                        cube[f"answer_{side}_answerable_correct"] += 1
+                    elif correct is False:
+                        cube[f"answer_{side}_answerable_wrong"] += 1
+            summary["D4b_gold_cube_answerable_surface"] = {
+                "note": "gold-answerable factoid surface; unanswerable columns "
+                        "structurally empty. confident=p<0.5.",
+                "n": int(len(scoreable)), "cells": cube,
+            }
+
         per_ckpt[tag] = summary
 
     # pooled E[correct|answered] across T+S answered-graded (matches REPORT pooled)
@@ -202,15 +248,14 @@ def run(args) -> int:
             "delta": (round(pooled_Ecorrect
                             - REPORT_ESTIMATES["E_correct_given_answered_pooled"], 4)
                       if pooled_Ecorrect is not None else None),
-            "note": "pooled over T+S answered-graded; T is answered-subset only",
+            "note": "pooled over T+S answered-graded (E[correct] is defined only on "
+                    "answered rows on both surfaces)",
         },
         "correctness_bonus_cap_w_0.20_survives": {
             "test": "unanswerable-stratum flip fraction at w=0.20 <= 2%",
             "report_estimate_pct": REPORT_ESTIMATES["unanswerable_flip_at_w020_pct"],
             "note": "recalibrated per-checkpoint answer-side flip at w=0.20 in "
-                    "each ckpt's D1_answer_side_flip_curve['0.20']; compare there. "
-                    "Full gold-unanswerable-stratum flip needs the refused rows "
-                    "(T: unavailable — see answered_only).",
+                    "each ckpt's D1_answer_side_flip_curve['0.20']; compare there.",
         },
     }
 
@@ -226,10 +271,14 @@ def run(args) -> int:
         "pooled_E_correct_given_answered": pooled_Ecorrect,
         "report_estimates": REPORT_ESTIMATES,
         "constant_drift": drift,
-        "coverage_caveat": "T = answered subset (1,488/8,548); the 7,060 refused "
-                           "rows lack saved states and the checkpoint is not local. "
-                           "D4/D4b abstain cells (over-refusal quadrant) NOT "
-                           "reconstructable for T from this subset. S is complete.",
+        "coverage_caveat": (
+            f"T = FULL surface ({per_ckpt['T_grpo_v2']['n_scored']} rows, "
+            f"all pre-gen states re-extracted on the local deployed checkpoint; "
+            f"identity guard cos>=0.999 vs the original answered-row states); the "
+            f"7,060 refused rows are now included, so the D4/D4b abstain cells "
+            f"(over-refusal quadrant) ARE reconstructed. S = "
+            f"{per_ckpt['S_instruct']['n_scored']} rows, complete."
+        ),
     }
     (OUT_DIR / "recalibration.json").write_text(json.dumps(result, indent=2),
                                                encoding="utf-8")
