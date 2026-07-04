@@ -328,3 +328,12 @@ Full overnight arc under the user's conditional pre-authorization: clean-SFT sta
 - summary: The 234149 dir named in the recovery checkpoint was the runner's 16-step v2.1 launch verification, not the full arm; the live full TRUE run is runs/amendment_ai_grpo_true_seed1/20260703_234933 (PID confirmed, 19 steps sane at verification: reward_mean band 0.375-0.937, schema-valid 94.2%, 2,934 scheduled steps). Runner re-prepped against pool v2.1 and re-drew the 500-row integrity audit set (250/gold-class, seed 0) at f8d26f95.
 - run ids:
   - `amendment_ai_grpo_true_seed1_20260703_234933`
+### 013-decision - Verdict-eval locked pre-outcome
+
+- at: `2026-07-04T05:10:00Z`
+- kind: `decision`
+- summary: The full AI-G0/G1/G2 verdict-eval was written, self-tested, and committed while the TRUE arm was at steps ~30-80 of 2,934 (no outcome observed), making the analysis procedure effectively pre-registered. Scorer amendment_ai_verdict_score.py (fresh eval probe per arm refit on the FINAL checkpoint per Amendment T with holdout excluded from fit = G0 falsifier; G1 own-readout congruence differential on the locked 400-row holdout, 10,000-boot paired bootstrap seed 0, schema-invalid counts incongruent; descriptive strata labeled NOT gates) passed synthetic self-tests (bootstrap point/CI/determinism, G2 tolerance both sides, congruence truth table). The G2 no-regression reference was PINNED to the Amendment E corrected-base full SelfAware eval of GRPO-v2 (93.41/33.38/53.85, formulas + counts committed) so no verdict-time freedom remains in the comparison. Prereg gained §4 (operationalization only; no gate/floor/constant changes). Commits 1327f15c + 254380da. TRUE arm healthy at last disk check (80 steps, no HALT, reward_mean 0.656, group-std nonzero 75%).
+- evidence:
+  - `experiment/phase1/probe/amendment_ai_verdict_score.py`
+  - `experiment/phase1/probe/amendment_ai_g2_reference_grpo_v2.json`
+  - `experiment/protocol/AMENDMENT-AI-probe-as-reward.md`
