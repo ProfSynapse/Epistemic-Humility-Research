@@ -31,16 +31,20 @@ Draft: `paper2-training-regimen-draft-v2.md`. Figures: `fig-p1-*` (legacy prefix
 
 ---
 
-## Paper 3 — "Knows but Doesn't Say" (diagnosis complete; §7–8 absorption pending)
+## Paper 3 — "Knows but Doesn't Say" (draft complete; bibliography + provenance pass remaining)
 
 Internal axis encodes answerability at AUROC 0.997, transfers cross-dataset cold
 (Amendment P: KUQ→SelfAware 0.983), and predates post-training (Amendment Y: present on
 the pre-trained base). Stated confidence stays decoupled. Training-resistance is the
 headline: DPO/KTO/GRPO/contrastive-SFT/proper-scoring all fail to couple the channel
 (Amendments M/R FALSIFIED; Phase B joint co-training FALSIFIED). Behavioral abstention
-is installable; accurate emitted confidence is not. Backlog item 12: absorb old
-draft-v2 §7–8 (proper-scoring, contrastive, RL-on-contrastive depth).
-Draft: `paper3-knows-but-doesnt-say-draft-v0.md`. Figures: `fig-p2-*` (legacy prefix).
+is installable; accurate emitted confidence is not. §7–8 absorption (proper-scoring,
+contrastive, RL-on-contrastive depth) DONE via PR #151; Amendment Y now cited for the
+"paid for by pretraining" claim; data availability lists the published HF releases.
+Remaining before submission: compile the bibliography (References is a stub) and run
+the provenance reconciliation pass against `results-provenance-inventory.md`.
+Draft: `paper3-knows-but-doesnt-say-draft-v0.md`. Figures: `fig-p2-*` (legacy prefix,
+all five built).
 
 ---
 
