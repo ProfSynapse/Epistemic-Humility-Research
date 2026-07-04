@@ -192,5 +192,5 @@
       "note": "recalibrated per-checkpoint answer-side flip at w=0.20 in each ckpt's D1_answer_side_flip_curve['0.20']; compare there."
     }
   },
-  "coverage_caveat": "T = FULL surface (8548 rows, all pre-gen states re-extracted on the local deployed checkpoint; identity guard cos>=0.999 vs the original answered-row states); the 7,060 refused rows are now included, so the D4/D4b abstain cells (over-refusal quadrant) ARE reconstructed. S = 1836 rows, complete."
+  "coverage_caveat": "T re-extracted in full on the local checkpoint (8,548/8,548, identity check cos>=0.9997); S complete. HEADLINE: the frozen raw-base AF-600 probe reads p~1.0 on 99.9% of the trained-lineage (GRPO-v2) states -> mean|2p-1| 0.9996, no per-row variance -> the PAR reward sensor MUST be refit on the training-start (clean-SFT) checkpoint and frozen there; mined D-over must be re-classified with the refit sensor."
 }
