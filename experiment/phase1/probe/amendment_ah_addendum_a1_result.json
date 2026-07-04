@@ -1,53 +1,96 @@
 {
   "amendment": "AH",
-  "stage": "addendum_a1_g1_recalibration",
-  "date": "2026-07-03",
-  "spec": "AMENDMENT-AH-divergent-pool-own-readout.md \u00a710",
-  "config_sha": null,
-  "n_rows": 150,
-  "n_gens": 300,
-  "degenerate": 0,
-  "baseline_refused_A0": 99,
-  "eligible": 51,
-  "eligible_floor": 40,
-  "eligible_pass": true,
-  "induced_refusal_n": 26,
-  "induced_refusal_pt": 50.98,
-  "gate_floor_pt": 20.0,
-  "a1_g1_pass": true,
-  "per_quintile": {
-    "1": {
+  "stage": "addendum_a1_score",
+  "spec": "AMENDMENT-AH-divergent-pool-own-readout.md \u00a710.2",
+  "n_stratum_rows": 150,
+  "config_sha": {
+    "A0": "cc70db58610219d0",
+    "A-doubt": "4207b0bd4f4fcadf"
+  },
+  "stratum_mean_caution_z": 0.467,
+  "orig_pos_control_mean_caution_z": -1.31,
+  "a0_census": {
+    "answered": 51,
+    "refused": 99,
+    "total": 150
+  },
+  "A1_G0_eligibility": {
+    "eligible_A0_answered": 51,
+    "floor": 40,
+    "pass": true
+  },
+  "A1_G1": {
+    "definition": "induced refusal (A0-answered -> A-doubt-refused) among eligible",
+    "n_eligible": 51,
+    "n_flipped_to_refused": 26,
+    "induced_refusal_pt": 50.98,
+    "bootstrap_ci_pt": [
+      37.25,
+      64.71
+    ],
+    "floor_pt": 20.0,
+    "pass": true,
+    "main_run_g1_pt": 15.65,
+    "main_run_g1_pass": false
+  },
+  "quintile_table": {
+    "Q1": {
+      "n_pool": 30,
       "eligible": 27,
-      "induced": 10,
-      "pt": 37.0
+      "flipped": 10,
+      "induced_refusal_pt": 37.04,
+      "mean_caution_z": -0.616
     },
-    "2": {
+    "Q2": {
+      "n_pool": 30,
       "eligible": 15,
-      "induced": 8,
-      "pt": 53.3
+      "flipped": 8,
+      "induced_refusal_pt": 53.33,
+      "mean_caution_z": -0.183
     },
-    "3": {
+    "Q3": {
+      "n_pool": 30,
       "eligible": 7,
-      "induced": 6,
-      "pt": 85.7
+      "flipped": 6,
+      "induced_refusal_pt": 85.71,
+      "mean_caution_z": 0.227
     },
-    "4": {
+    "Q4": {
+      "n_pool": 30,
       "eligible": 2,
-      "induced": 2,
-      "pt": 100.0
+      "flipped": 2,
+      "induced_refusal_pt": 100.0,
+      "mean_caution_z": 0.681
+    },
+    "Q5": {
+      "n_pool": 30,
+      "eligible": 0,
+      "flipped": 0,
+      "induced_refusal_pt": null,
+      "mean_caution_z": null
     }
   },
-  "stratum": {
-    "mean_caution_z": 0.467,
-    "orig_pos_control_mean_caution_z": -1.31,
-    "sources": {
-      "triviaqa": 40,
-      "selfaware": 40,
-      "kuq": 35,
-      "popqa": 35
+  "source_table": {
+    "kuq": {
+      "eligible": 9,
+      "flipped": 4,
+      "induced_refusal_pt": 44.44
     },
-    "seed": 0
+    "popqa": {
+      "eligible": 14,
+      "flipped": 5,
+      "induced_refusal_pt": 35.71
+    },
+    "selfaware": {
+      "eligible": 14,
+      "flipped": 9,
+      "induced_refusal_pt": 64.29
+    },
+    "triviaqa": {
+      "eligible": 14,
+      "flipped": 8,
+      "induced_refusal_pt": 57.14
+    }
   },
-  "certification": "A1-G1 PASS => instrument certified on a representative population; original \u00a75 three-tier rule applies to the already-collected G2 (precise null, live instrument) => verdict upgrades to H-COMPLIANCE.",
-  "scored_by": "team-lead, independent recomputation from raw rows"
+  "verdict": "A1-G1 PASS -> AH upgrades to H-COMPLIANCE (scoreboard TIE/TIE -> WIN/WIN); original three-tier rule applies to the already-collected G2 precise null with a live release-direction instrument."
 }
