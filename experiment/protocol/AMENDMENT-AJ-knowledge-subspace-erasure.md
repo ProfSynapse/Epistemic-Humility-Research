@@ -19,17 +19,18 @@ predictions:
       whitened rank-1 erasure is strictly stronger than the raw mass-mean
       projection those priors used.
   user:
-    call: PENDING (record before launch)
-    recorded: null
+    call: SURVIVES (AJ-G2 PASS)
+    recorded: 2026-07-04
+    quote: "AJ survived I agree worth being optimistic here."
 outcome: null
 ---
 
 # Amendment AJ — Knowledge-Subspace Erasure (rank-1 → certified linear erasure)
 
-Status: DRAFT — pre-registration complete 2026-07-04; smoke green; awaiting
-user prediction + sign-off. Launch is a CPU-only analysis run on cached
-tensors (no GPU, no generation); it may run while the Amendment AI arms hold
-the GPU.
+Status: SIGNED 2026-07-04 — dual predictions recorded (both SURVIVES); user
+sign-off given; CPU-only analysis run launched 2026-07-04. Instrument note:
+a row-key sanitization bug in the harness loader (`::` vs `__`) was found and
+fixed pre-launch (PR #187); gates untouched.
 
 ## 1. Motivation and strategic position
 
