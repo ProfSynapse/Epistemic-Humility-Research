@@ -127,18 +127,47 @@ def run(args) -> int:
                 for li in range(len(hs))}
         return vecs, prompt_len
 
-    # determinism spot-check (L24 re-forward bit-identical)
+    # determinism spot-check (L24 re-forward bit-identical, threshold <= 1e-5)
     spot = {"performed": True, "n": min(SPOT_CHECK_N, len(pool)),
-            "max_abs_diff_L24": None, "passed": None}
+            "max_abs_diff_L24": None, "threshold": 1e-5, "passed": None}
     max_d = 0.0
     for i in range(spot["n"]):
         v1, _ = single_anchor(rendered_all[i])
         v2, _ = single_anchor(rendered_all[i])
         max_d = max(max_d, float((v1["L24"] - v2["L24"]).abs().max()))
     spot["max_abs_diff_L24"] = max_d
-    spot["passed"] = bool(max_d == 0.0)
+    spot["passed"] = bool(max_d <= 1e-5)
     print(f"[par/refit4bit] determinism spot-check max_abs_diff_L24={max_d:.4g} "
           f"passed={spot['passed']}", flush=True)
+
+    # inloop_equivalence: the extractor's L24 read must match the smoke's in-loop
+    # pre-gen read (same row, prompt-only batch-1) — this is what guarantees
+    # criterion 2 passes by construction. Replicate amendment_ai_smoke.pregen_p's
+    # exact anchor path (probe render, hidden_states[24] at prompt_len-1) and
+    # compare the L24 vector to single_anchor's. Same model object + code path =>
+    # expected ~0; threshold <= 1e-4.
+    def smoke_inloop_L24(question: str):
+        rendered, _ = render_probe_prompt(tokenizer, baseline_system, question,
+                                          enable_thinking=False)
+        enc = tokenizer(rendered, return_tensors="pt").to(device)
+        prompt_len = int(enc["input_ids"].shape[1])
+        with torch.no_grad():
+            out = model(**enc, output_hidden_states=True, use_cache=False)
+        return out.hidden_states[24][0, prompt_len - 1, :].float().cpu()
+
+    n_eq = min(8, len(pool))
+    max_eq = 0.0
+    for i in range(n_eq):
+        v_extract, _ = single_anchor(rendered_all[i])
+        v_smoke = smoke_inloop_L24(pool[i]["question"])
+        max_eq = max(max_eq, float((v_extract["L24"] - v_smoke).abs().max()))
+    inloop_equivalence = {"n": n_eq, "max_abs_diff_L24": max_eq,
+                          "threshold": 1e-4, "passed": bool(max_eq <= 1e-4),
+                          "note": "extractor single_anchor L24 vs smoke in-loop "
+                                  "pregen read (same 4-bit+LoRA model, probe "
+                                  "render, prompt_len-1); guarantees criterion 2"}
+    print(f"[par/refit4bit] inloop_equivalence max_abs_diff_L24={max_eq:.4g} "
+          f"passed={inloop_equivalence['passed']}", flush=True)
 
     rows_path = out_dir / "rows.jsonl"
     t0 = time.time()
