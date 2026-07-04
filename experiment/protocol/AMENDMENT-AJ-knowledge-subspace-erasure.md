@@ -227,6 +227,30 @@ knowledge concept and the necessity of the whitened closed-form eraser;
 caution along the INLP curve degrades only from 0.912 to 0.898 while the
 matched random-rank curve stays flat at 0.912.
 
+### 9.1 Addendum A1: sampling distribution of the gap statistic (gate-free)
+
+Run 2026-07-04 on user request, harness
+`experiment/phase1/probe/amendment_aj_addendum_gap_distribution.py`
+(committed on this branch); descriptive input to the ambiguous-zone
+adjudication, no gate constant touched. Artifact:
+`analysis/amendment_aj_subspace_erasure/addendum_a1_gap_distribution.json`.
+
+- **24-CV-seed sweep** (identical pipeline, no INLP, 10 random controls per
+  seed): gap mean **0.0538**, sd **0.0060**, range [0.041, 0.068];
+  **7 of 24 seeds (29%)** land at or below the 0.05 threshold. Certificates
+  pass at every seed (0.485–0.528); post-LEACE caution is stable at every
+  seed (0.845–0.869, never near the 0.70 floor).
+- **Bootstrap probability mass at the primary seed**: median gap 0.0525,
+  **P(gap ≤ 0.05) = 0.415** over 2000 row resamples.
+
+Reading: the miss is neither fold luck nor a clean stable exceedance. The
+gap statistic sits essentially on the pre-stated line (threshold ≈ 0.6 sd
+below the sweep mean; a row-resample passes 41.5% of the time), leaning
+above it. The stable substantive facts across every seed are (a) erasure
+always certifies, (b) caution always survives far above the floor, and
+(c) knowledge carries a small (~5 point) share of caution's separability
+whose size is statistically indistinguishable from the 0.05 threshold.
+
 Reading (pre-adjudication): the substantive picture favors H-independent —
 certified erasure of a concept read at 0.996 costs the caution readout 5.5
 points, leaving it at 0.858, far above both the survival floor and the
