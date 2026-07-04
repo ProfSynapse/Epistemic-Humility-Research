@@ -1,0 +1,142 @@
+{
+  "stage": "par_sensor_refit",
+  "checkpoint": "clean-SFT merged base (PAR training start)",
+  "recipe": "StandardScaler+LogisticRegression(C=1.0,max_iter=5000); OOF=StratifiedKFold(5,shuffle,rs=0); known=1; p_unans=sigmoid(-score); stats on OOF scores",
+  "n_union": 18496,
+  "n_known": 12500,
+  "n_unknown": 5996,
+  "layers": {
+    "L20": {
+      "oof_auroc": 0.9922,
+      "train_auroc": 1.0
+    },
+    "L24": {
+      "oof_auroc": 0.9945,
+      "train_auroc": 1.0
+    },
+    "L28": {
+      "oof_auroc": 0.9935,
+      "train_auroc": 1.0
+    }
+  },
+  "sensor_layer": "L24",
+  "launch_condition_2": {
+    "rule": "L24 held-out (OOF) AUROC >= 0.9",
+    "value": 0.9945,
+    "pass": true
+  },
+  "p_distribution_oof": {
+    "mean": 0.3262,
+    "median": 0.0,
+    "frac_lt_0.1": 0.6625,
+    "frac_gt_0.9": 0.3155,
+    "saturation_bimodal_frac": 0.978,
+    "mean_abs_2p_minus_1": 0.9862
+  },
+  "flip_curves": {
+    "overall": {
+      "0.05": 0.0008,
+      "0.10": 0.0019,
+      "0.15": 0.0027,
+      "0.20": 0.0034,
+      "0.25": 0.0044,
+      "0.30": 0.0051,
+      "0.35": 0.0062,
+      "0.40": 0.0076,
+      "0.45": 0.0084,
+      "0.50": 0.0094
+    },
+    "gold_unanswerable_stratum": {
+      "0.05": 0.0017,
+      "0.10": 0.0035,
+      "0.15": 0.005,
+      "0.20": 0.0057,
+      "0.25": 0.007,
+      "0.30": 0.0082,
+      "0.35": 0.0093,
+      "0.40": 0.011,
+      "0.45": 0.0122,
+      "0.50": 0.013
+    },
+    "gold_answerable_stratum": {
+      "0.05": 0.0004,
+      "0.10": 0.0012,
+      "0.15": 0.0016,
+      "0.20": 0.0023,
+      "0.25": 0.0031,
+      "0.30": 0.0036,
+      "0.35": 0.0046,
+      "0.40": 0.0059,
+      "0.45": 0.0066,
+      "0.50": 0.0077
+    }
+  },
+  "derived_constants": {
+    "w_c": 0.5,
+    "w_c_rule": "largest grid w with flip<=2% on gold-unanswerable stratum",
+    "w_a": 0.5,
+    "w_a_rule": "symmetric with w_c unless gold-answerable stratum binds",
+    "flip_budget": 0.02,
+    "w_grid": [
+      0.05,
+      0.1,
+      0.15,
+      0.2,
+      0.25,
+      0.3,
+      0.35,
+      0.4,
+      0.45,
+      0.5
+    ]
+  },
+  "divergent_union_refit": {
+    "n_divergent": 519,
+    "n_d_over": 244,
+    "n_d_under": 275,
+    "divergent_frac": 0.0281,
+    "mean_margin_divergent": 0.8141,
+    "mean_margin_concordant": 0.9912,
+    "mixture_for_25pct_mass": 0.29,
+    "mixture_rule": "smallest m with m*mu_d/(m*mu_d+(1-m)*mu_c) >= 0.25"
+  },
+  "mining_reclassification_refit": {
+    "n_scored": 9397,
+    "sensor_dover_total": 6532,
+    "consensus_dover_total": 5578,
+    "note": "sensor_dover (refit-L24 p<0.5) is the operative count for the training mixture; consensus is sensitivity.",
+    "by_source": {
+      "kuq_ku_unknown_mine": {
+        "n": 45,
+        "sensor_dover": 3,
+        "consensus_dover": 3
+      },
+      "selfaware_unanswerable_mine": {
+        "n": 255,
+        "sensor_dover": 10,
+        "consensus_dover": 6
+      },
+      "falseqa_false_premise": {
+        "n": 2365,
+        "sensor_dover": 888,
+        "consensus_dover": 611
+      },
+      "ambigqa_ambiguous": {
+        "n": 5920,
+        "sensor_dover": 5193,
+        "consensus_dover": 4627
+      },
+      "bigbench_known_unknowns": {
+        "n": 23,
+        "sensor_dover": 9,
+        "consensus_dover": 7
+      },
+      "truthfulqa_misconception": {
+        "n": 789,
+        "sensor_dover": 429,
+        "consensus_dover": 324
+      }
+    },
+    "mean_margin_sensor_dover": 0.9541
+  }
+}

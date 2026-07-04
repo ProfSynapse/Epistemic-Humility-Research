@@ -75,6 +75,16 @@ so it is byte-reproducible against the v2 offline reference. No gate or
 floor changes — this is instrument alignment before launch, with v1 numbers
 retained above for provenance.
 
+**SENSOR v2 RESULT (2026-07-04, `par_sensor_refit_v2.json`): L24 held-out
+OOF AUROC = 0.9945 on the 4-bit training-configuration states → LAUNCH
+CONDITION 2 RE-SATISFIED** (quantization costs the readout essentially
+nothing: 0.9947 → 0.9945; L20 0.9922, L28 0.9935). Frozen sensor:
+`analysis/par_sensor_refit/probes_v2/probe_L24_cleansft4bit.joblib`.
+Extraction provenance: runner's `par_sensor_refit_extract_4bit.py`
+(byte-identical model load to the trainer: unsloth load_in_4bit +
+train-time LoRA identity + for_inference, batch-1, determinism spot-check
+max_abs_diff 0.0 both surfaces).
+
 ### 1.2 Reward
 
 Per rollout, with p = P(unanswerable) = sigmoid(−score_L24) read at the
@@ -155,11 +165,17 @@ GRPO-v2 lineage recipe (single seed, as the line's GRPO runs are).
    trigger). **Smoke v1 (`amendment_ai_smoke.json`): criteria 1/3/4 green,
    criterion 2 (in-loop p faithfulness) FAILED on the 4-bit serving mismatch
    (§1.1 sensor v2 fix). RE-RUN with sensor v2 pending.**
-2. Refit sensor held-out AUROC ≥ 0.9 vs gold. **v1: 0.9947. RE-ADJUDICATE
-   under sensor v2 (4-bit training-configuration states), same floor.**
+2. Refit sensor held-out AUROC ≥ 0.9 vs gold. **SATISFIED under sensor v2:
+   0.9945 on 4-bit training-configuration states (§1.1; v1 16-bit value
+   0.9947 retained as provenance).**
 3. w_c / w_a / mixture derived and recorded in this doc per §1.2–1.3 rules
-   BEFORE the arms start. **v1: w_c = w_a = 0.50, mixture 30.5%, 60%
-   category cap, holdouts. RE-DERIVE under sensor v2, same rules; this doc
-   is updated with the v2 values before any arm starts.**
+   BEFORE the arms start. **SATISFIED under sensor v2 (same rules):
+   w_c = w_a = 0.50 (gold-unanswerable stratum flip 1.3% at grid max —
+   budget still unbinding); mixture 29.0%; pool = 2,902 train divergent
+   (ambiguous capped at 60%: 1,741 / false_premise 833 / unsolved_other
+   328), 16,345 concordant, 400-row category-stratified holdout (seed 0);
+   TruthfulQA excluded (now audit-CONFIRMED: 0/82 sampled rows genuinely
+   unanswerable — `amendment_ai_truthfulqa_audit.md`); v1 values (mixture
+   30.5%, pool 2,909) superseded.**
 
 Any condition failing ⇒ no launch; doc holds as DRAFT for morning review.
