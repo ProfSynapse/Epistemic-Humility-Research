@@ -241,7 +241,11 @@ it and recomputes all gate arithmetic from raw rows; the user adjudicates).
   GRPO-v2 reference are computed on the SAME eval surface by the existing
   eval pipeline; the scorer takes both trios as JSON and applies
   |Δ| ≤ 5pt to each of abstain-when-unanswerable, answer-when-answerable,
-  correctness-among-answered.
+  correctness-among-answered. **Reference PINNED pre-outcome** in
+  `amendment_ai_g2_reference_grpo_v2.json`: the Amendment E corrected-base
+  FULL SelfAware eval (n=3,369) of the GRPO-v2 lineage arm — 93.41 /
+  33.38 / 53.85, with formulas and counts recorded; the TRUE-arm panel is
+  the same pipeline + config on the same surface, checkpoint swapped.
 - **Division of labor:** GPU steps (final-checkpoint extraction +
   generation) run per the lead's completion-time order; the scorer input
   contract is documented in the script header. Verdict tiers computed

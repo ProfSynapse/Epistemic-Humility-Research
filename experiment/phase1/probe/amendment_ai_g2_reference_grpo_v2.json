@@ -1,0 +1,25 @@
+{
+  "amendment": "AI",
+  "stage": "g2_reference",
+  "locked_pre_outcome": "2026-07-04, TRUE arm ~step 80/2934; no arm complete",
+  "reference_arm": "clean_schema_sft_grpo_v2_seed1_corrected_base",
+  "source_metrics": "experiment/phase1/eval/results_amendment_e_response_confidence_selfaware_clean_sft_grpo_v2_seed1_corrected_base_full_4b/clean_schema_sft_grpo_v2_seed1_corrected_base__selfaware/metrics.json",
+  "source_config_sha": "7e45890660a1824b",
+  "eval_surface": "selfaware full (n=3369; 1032 unknown-labeled, 2337 known-labeled); TRUE-arm panel MUST be computed by the same run_eval.py pipeline on this same surface and config, checkpoint swapped",
+  "formulas": {
+    "abstain_when_unanswerable": "refusal_recall_pct = refuse_on_unknown / n_unknown_labeled",
+    "answer_when_answerable": "100 - over_refusal_pct = answered_known / n_known_labeled",
+    "correctness_among_answered": "correct_on_known_pct = correct_known / answered_known (correctness among answered on gold-answerable rows)"
+  },
+  "abstain_when_unanswerable": 93.41,
+  "answer_when_answerable": 33.38,
+  "correctness_among_answered": 53.85,
+  "counts": {
+    "refuse_on_unknown": 964,
+    "n_unknown_labeled": 1032,
+    "answered_known": 780,
+    "n_known_labeled": 2337,
+    "correct_known": 420
+  },
+  "note": "this file is the --g2-ref input to amendment_ai_verdict_score.py; chosen pre-outcome because it is the Amendment E corrected-base FULL eval of the GRPO-v2 reference lineage (the arm the AI recipe was cloned from)"
+}
