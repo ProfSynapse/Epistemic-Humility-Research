@@ -1,7 +1,7 @@
 ---
 title: "Teaching Small Language Models to Say I Don't Know: A Controlled Comparison of SFT, DPO, KTO, and GRPO on Model-Specific Abstention Data"
 author: "Joseph Rosenbaum (Synaptic Labs)"
-status: draft-v2 (Paper 2 of the program; restructured 2026-07-01 — the evidence-synthesis Part I split out to Paper 1, the confidence-channel and probe depth moved out to Paper 3)
+status: draft-v2 (restructured 2026-07-01; the evidence-synthesis Part I split out to paper1-taxonomy-framework-draft-v0.md, the confidence-channel and probe depth moved out to paper3-knows-but-doesnt-say-draft-v0.md)
 date: 2026-07-01
 supersedes: paper2-training-regimen-draft-v1.md (experiment portion)
 repository: https://github.com/ProfSynapse/Epistemic-Humility-Research
@@ -16,7 +16,8 @@ reproducibility: >
 notes: >
   Numbers discipline: every quantitative claim traces to a metrics.json,
   results table, or calibration-gap JSON named in Appendix A; background
-  claims from the evidence synthesis trace through Paper 1 to
+  claims from the evidence synthesis trace through
+  paper1-taxonomy-framework-draft-v0.md to
   meta-analysis/evidence/effects.csv. Reader-facing prose carries no internal
   amendment labels; the label-to-artifact map lives only in Appendix A. Math
   is set in LaTeX (inline $...$ / display $$...$$, pandoc-compatible).
@@ -79,9 +80,12 @@ ignorance (cf. Kalai et al., 2025, who derive the same incentive from
 binary-graded evaluation).
 The contention of this research program is that these failures are primarily
 facts about *training*, specifically post-training. The program's companion
-synthesis paper (Paper 1) argues that contention from the published evidence:
-a systematic extraction of 78 quantitative effects from 39 studies across the
-calibration, abstention, hallucination, and sycophancy literatures. This paper
+taxonomy and evidence-synthesis paper, [*The Depths of Ignorance: A Taxonomy,
+Systematic Evidence Synthesis, and Research Agenda for Epistemic Humility in
+Language Models*](paper1-taxonomy-framework-draft-v0.md), argues that
+contention from the published evidence: a systematic extraction of 78
+quantitative effects from 39 studies across the calibration, abstention,
+hallucination, and sycophancy literatures. This paper
 runs the experiment that synthesis shows to be missing.
 
 Three strands of the published evidence converge on training as the causal
@@ -108,7 +112,8 @@ less reliable about its own reliability at the same time.
 deliberately improve.** Refusal-aware tuning (Zhang et al., 2023),
 factuality-aware DPO (Tian et al., 2023), calibrated reward models, and
 listener-aware preference pairs consistently improve humility metrics, often
-by large margins (Paper 1, family C5).
+by large margins ([*The Depths of
+Ignorance*](paper1-taxonomy-framework-draft-v0.md), family C5).
 
 What has been missing is the experiment the synthesis most directly calls
 for: the same base model, the same model-specific abstention data, every
@@ -129,34 +134,41 @@ Contributions:
 3. A stated-confidence measurement after the same runs showing that emitted
    confidence tracks the decision to answer, not the truth of the answer, so
    repositioning toward answering masquerades as confidence (Sections 4.2
-   and 5) — the observation the program's companion diagnosis paper (Paper 3)
-   pursues to the representation level.
+   and 5). This is the observation that the program's companion diagnosis
+   paper, [*Knows but Doesn't Say: A Training-Resistant Gap Between
+   Internal and Stated Confidence in a Small Language
+   Model*](paper3-knows-but-doesnt-say-draft-v0.md), pursues to the
+   representation level.
 
 ## 2. Background: what the evidence says, and what was missing
 
-The program's synthesis paper (Paper 1) extracts 78 quantitative effects from
-39 studies (2021–2026) into five claim families; three of them, plus two of
-its reanalysis lessons, fix this experiment's design. *Post-training* here
-covers supervised/instruction fine-tuning (SFT); preference optimization,
-including direct preference optimization (DPO) (Rafailov et al., 2023) and
-Kahneman-Tversky optimization (KTO) (Ethayarajh et al., 2024); and RL with
-programmable rewards, group relative policy optimization (GRPO)
-(Shao et al., 2024) in particular.
+The program's synthesis paper, [*The Depths of
+Ignorance*](paper1-taxonomy-framework-draft-v0.md), extracts 78 quantitative
+effects from 39 studies (2021–2026) into five claim families; three of them,
+plus two of its reanalysis lessons, fix this experiment's design.
+*Post-training* here covers supervised/instruction fine-tuning (SFT);
+preference optimization, including direct preference optimization (DPO)
+(Rafailov et al., 2023) and Kahneman-Tversky optimization (KTO)
+(Ethayarajh et al., 2024); and RL with programmable rewards, group relative
+policy optimization (GRPO) (Shao et al., 2024) in particular.
 
 **The families.** Instruction tuning and RLHF degrade token-probability
 calibration, and the mechanism is the relationship between the tuning data
 and *this model's* knowledge: fine-tuning on facts the model does not know
 causally drives hallucination (Gekhman et al., 2024), while data aligned with
-prior knowledge induces overconfidence (Wang et al., 2025) — which is why
+prior knowledge induces overconfidence (Wang et al., 2025), which is why
 every successful abstention method builds *model-specific* training splits
 (family C1). Preference-based methods beat SFT on abstention and truthfulness
 quality, anchored by the model-specific IDK tournament of Cheng et al. (2024)
-and confirmed in Paper 1's reanalysis of AbstentionBench (Kirichenko et al.,
-2025), but the median improvement is an order of magnitude smaller than the
-calibration damage (C2). And Paper 1's output-level reanalysis of Cheng et
-al.'s released artifacts shows the improvement is a *trade*: DPO cuts
+and confirmed in the [*Depths of
+Ignorance*](paper1-taxonomy-framework-draft-v0.md) reanalysis of
+AbstentionBench (Kirichenko et al., 2025), but the median improvement is an
+order of magnitude smaller than the calibration damage (C2). And the same
+synthesis paper's output-level reanalysis of Cheng et al.'s released
+artifacts shows the improvement is a *trade*: DPO cuts
 SFT-induced over-refusal nearly in half while giving up a third of refusal
-recall — movement along a refusal ROC curve, not better discrimination (C3).
+recall, movement along a refusal ROC curve rather than better
+discrimination (C3).
 
 **The reanalysis lessons.** Single-scalar abstention metrics hide which
 failure a model makes (recall and precision are decoupled across 20 models,
@@ -166,7 +178,8 @@ of answers on unknown-labeled questions in the released artifacts were in
 fact correct), which flattens all recall/over-refusal numbers toward the
 middle.
 
-**The gaps this experiment closes.** Paper 1's gap analysis verifies six
+**The gaps this experiment closes.** The gap analysis in [*The Depths of
+Ignorance*](paper1-taxonomy-framework-draft-v0.md) verifies six
 experiments absent from the literature as of June 2026; this study is built
 on the first three. *Gap 1:* KTO has never been applied to abstention,
 honesty, or calibration training, despite consuming exactly the unpaired
@@ -470,14 +483,14 @@ answer, not the truth of the answer.** Every regimen is highly confident
 whenever it answers, including on wrong answers and on unanswerable
 questions; refusals get near-zero confidence. Under the response-confidence
 contract the best-behaved checkpoint in the study, rebalanced-reward GRPO,
-emits confidence with standard deviation 0.013 across 3,369 rows — a
+emits confidence with standard deviation 0.013 across 3,369 rows: a
 near-constant ~0.8 whose AUROC against response appropriateness is 0.520, a
 coin flip. The confidence token is decorative, and Section 4.2's DPO
 signature is the same fact from the other side: repositioning toward
 answering *looks like* rising confidence while correctness-conditioned
 calibration worsens.
 
-This is a diagnosis-sized question, not a paragraph-sized one — why RL
+This is a diagnosis-sized question, not a paragraph-sized one: why RL
 rewards cannot install the coupling (including a proper scoring rule for
 which calibrated confidence is the mathematical optimum), what supervision
 can and cannot do about it, and how much more the model's hidden states know
@@ -511,11 +524,13 @@ The companion diagnosis paper makes that case at the representation level;
 the behavioral fact stands on its own here. A pre-registered follow-up in the
 companion line has since located the signal's origin: read on *pre-instruction*
 bases across four model families, the known/unknown boundary is already
-linearly available at AUROC 0.997+ before any post-training occurs (Paper 4,
-§4.9). The frontier the SFT stage "created" is therefore better read as a
-frontier it *exposed* — the discriminative signal is already paid for by
-pretraining, and no objective in this study (nor, apparently, the vendors'
-own post-training) moves it.
+linearly available at AUROC 0.997+ before any post-training occurs (§4.9 of
+the program's training-free readout paper, [*The Confidence Is Already
+There: A Training-Free Two-Signal Readout for Epistemic Humility in Small
+Language Models*](paper4-two-signal-readout-draft-v0.md)). The frontier the
+SFT stage "created" is therefore better read as a frontier it *exposed*: the
+discriminative signal is already paid for by pretraining, and no objective
+in this study (nor, apparently, the vendors' own post-training) moves it.
 
 **Deployment reading.** For a practitioner at small scale the actionable
 summary is: (i) an SFT inducer stage is mandatory; (ii) choose the second
@@ -547,7 +562,8 @@ to 51.3% of "unknown" answers being correct in released artifacts of the
 lineage we follow), which flattens all recall/over-refusal numbers toward
 the middle; our labels are regenerated per-model but not immune to the same
 effect. The limitations of the evidence synthesis this experiment is built
-on are discussed in Paper 1.
+on are discussed in [*The Depths of
+Ignorance*](paper1-taxonomy-framework-draft-v0.md).
 
 ## 8. Conclusion
 
@@ -568,11 +584,13 @@ every regimen tested, the confidence number the model writes out tracks the
 decision to answer, not the truth of the answer. Why the stated channel
 fails, whether any training can couple it to what the model knows, and how
 much a direct readout of the hidden states recovers, are the subjects of the
-companion diagnosis paper — which begins from the checkpoints this study
-trained. The companion line has since answered the origin half of the
-question this paper leaves open: the epistemic signal the regimens gate on is
-present *before any post-training* (Paper 4, §4.9). Post-training sets the
-behavior; pretraining supplies the signal.
+companion diagnosis paper, [*Knows but Doesn't
+Say*](paper3-knows-but-doesnt-say-draft-v0.md), which begins from the
+checkpoints this study trained. The companion line has since answered the
+origin half of the question this paper leaves open: the epistemic signal the
+regimens gate on is present *before any post-training* ([*The Confidence Is
+Already There*](paper4-two-signal-readout-draft-v0.md), §4.9). Post-training
+sets the behavior; pretraining supplies the signal.
 
 ## References
 
@@ -622,6 +640,21 @@ OpenAI (2023). *GPT-4 Technical Report*. arXiv:2303.08774.
 Rafailov, R., Sharma, A., Mitchell, E., Ermon, S., Manning, C. D., & Finn, C.
 (2023). *Direct Preference Optimization: Your Language Model is Secretly a
 Reward Model*. arXiv:2305.18290.
+
+Rosenbaum, J. (2026). *The Depths of Ignorance: A Taxonomy, Systematic
+Evidence Synthesis, and Research Agenda for Epistemic Humility in Language
+Models*. Companion draft, this repository:
+[paper1-taxonomy-framework-draft-v0.md](paper1-taxonomy-framework-draft-v0.md).
+
+Rosenbaum, J. (2026). *Knows but Doesn't Say: A Training-Resistant Gap
+Between Internal and Stated Confidence in a Small Language Model*. Companion
+draft, this repository:
+[paper3-knows-but-doesnt-say-draft-v0.md](paper3-knows-but-doesnt-say-draft-v0.md).
+
+Rosenbaum, J. (2026). *The Confidence Is Already There: A Training-Free
+Two-Signal Readout for Epistemic Humility in Small Language Models*.
+Companion draft, this repository:
+[paper4-two-signal-readout-draft-v0.md](paper4-two-signal-readout-draft-v0.md).
 
 Shao, Z., et al. (2024). *DeepSeekMath: Pushing the Limits of Mathematical
 Reasoning in Open Language Models* (GRPO). arXiv:2402.03300.
@@ -674,14 +707,19 @@ evidence cells with pre-stated predictions and falsifiers, reported here as
 exploratory and never pooled with the headline block. The confidence-channel
 training variants (proper-scoring GRPO, contrastive SFT, RL-on-contrastive;
 Amendments J/K/N) and the probe program are reported in full in the
-companion diagnosis paper (Paper 3), with the readout and steering work in
-Papers 4 and 5 of this research line, maintained in the same repository.
+companion diagnosis paper, [*Knows but Doesn't
+Say*](paper3-knows-but-doesnt-say-draft-v0.md); the readout work is reported
+in [*The Confidence Is Already
+There*](paper4-two-signal-readout-draft-v0.md) and the steering work in a
+fifth companion paper of this research line, maintained in the same
+repository.
 
 ## Appendix B: Evidence-synthesis pointer
 
 The systematic evidence synthesis this experiment is designed against is
-Paper 1 of this program (taxonomy, claim families C1–C5, and the six-gap
-analysis), whose source-of-record apparatus lives at
+the program's companion synthesis paper, [*The Depths of
+Ignorance*](paper1-taxonomy-framework-draft-v0.md) (taxonomy, claim families
+C1–C5, and the six-gap analysis), whose source-of-record apparatus lives at
 `meta-analysis/paper/draft-v0.md` with evidence tables under
 `meta-analysis/evidence/` and analysis scripts under
 `meta-analysis/analysis/`.
