@@ -1,7 +1,7 @@
 ---
 title: "The Depths of Ignorance: A Taxonomy, Systematic Evidence Synthesis, and Research Agenda for Epistemic Humility in Language Models"
 author: "Joseph Rosenbaum (Synaptic Labs)"
-status: draft-v0 (Paper 1 of the program; created 2026-07-01 by splitting paper2-training-regimen-draft-v2.md Part I back out as the standalone framing paper)
+status: draft-v0 (created 2026-07-01 by splitting paper2-training-regimen-draft-v2.md Part I back out as the standalone framing paper)
 date: 2026-07-01
 repository: https://github.com/ProfSynapse/Epistemic-Humility-Research
 target: arXiv (cs.CL / cs.AI)
@@ -31,8 +31,8 @@ Synaptic Labs
 
 ## Abstract
 
-Language models acquire most of their epistemic character — how confident they
-sound, when they refuse, how readily they capitulate — not from pretraining but
+Language models acquire most of their epistemic character (how confident they
+sound, when they refuse, how readily they capitulate) not from pretraining but
 from post-training. We organize the evidence for that claim into a single
 framework. First, a taxonomy: four *depths* at which a model can express
 ignorance (scalar confidence, structured gap-naming, distributional failure
@@ -49,10 +49,10 @@ optimization beats SFT on abstention quality but by an order of magnitude less
 than the calibration damage; the improvement is a trade along a
 recall/over-refusal frontier rather than better discrimination; scale alone
 does not produce humility; and targeted interventions reliably do ($p = 0.001$,
-median |effect| 40%). The families combine into an unreconciled tension — the
-methods that best teach a model to *say* "I don't know" are the documented
-destroyers of the signal that *knows* — which no study in the corpus measures
-within a single run. We formalize this as a policy-versus-signal framework
+median |effect| 40%). The families combine into an unreconciled tension, one
+that no study in the corpus measures within a single run: the methods that
+best teach a model to *say* "I don't know" are the documented destroyers of
+the signal that *knows*. We formalize this as a policy-versus-signal framework
 with three testable propositions, verify six specific experiments the field
 has not run, and set the agenda that the empirical papers of this program
 execute.
@@ -99,15 +99,15 @@ humility metrics, often by large margins (Section 4, family C5).
 
 What has been missing is a synthesis that treats the calibration, abstention,
 hallucination, sycophancy, and method-comparison literatures as one evidence
-base about a single underlying construct — and a conceptual frame precise
-enough to say what that construct *is*, which of its parts training touches,
-and which experiments would decide between the readings the evidence leaves
-open. This paper supplies both.
+base about a single underlying construct, together with a conceptual frame
+precise enough to say what that construct *is*, which of its parts training
+touches, and which experiments would decide between the readings the evidence
+leaves open. This paper supplies both.
 
 Contributions:
 
-1. **A taxonomy of expressed ignorance** — four depths crossed with a
-   coherence/faithfulness axis — that locates nearly all existing training
+1. **A taxonomy of expressed ignorance** (four depths crossed with a
+   coherence/faithfulness axis) that locates nearly all existing training
    work at the shallowest depth and exposes coherence as the unmeasured
    dimension (Section 2).
 2. **A unified extraction of 78 quantitative effects from 39 studies** into a
@@ -120,8 +120,8 @@ Contributions:
    study measures both after the same run (Section 4).
 4. **A verified gap analysis**: six specific, falsifiable claims about
    experiments absent from the literature as of June 2026 (Section 5).
-5. **A theoretical framework** — expression policy over a fixed epistemic
-   signal — stated as three testable propositions, with the research agenda
+5. **A theoretical framework** (expression policy over a fixed epistemic
+   signal) stated as three testable propositions, with the research agenda
    they generate. The empirical papers of this program execute that agenda
    (Section 6).
 
@@ -162,12 +162,12 @@ level one can ask whether the model's *stated* signal, its *token-level*
 signal, and its *hidden-state* signal agree. Token-probability, hidden-state,
 and sampled-consistency estimators of internal confidence are documented to
 diverge on the same reasoning traces (Gani et al., 2026). The coherence axis is
-what distinguishes *possessed* humility from *performed* humility — Plato's
+what distinguishes *possessed* humility from *performed* humility: Plato's
 distinction, operationalized. The *Meno* closes on exactly this point: true
 opinions, Socrates says, are like the statues of Daedalus, which run away
 unless tethered by working out the reason (*Meno* 97d–98a; Plato, trans.
 Grube, 1997). A humility behavior not anchored to the model's internal state
-is an untethered statue — the right answer today, a runaway under
+is an untethered statue: the right answer today, a runaway under
 distribution shift. The mapping exercise below shows this axis is almost
 entirely unmeasured in the training literature; measuring it is the first
 item of the agenda in Section 6.
@@ -341,24 +341,24 @@ The five families and six gaps compress into a single conceptual picture.
 Distinguish two objects inside a trained model:
 
 - the **epistemic signal**: whatever function of the input and the model's
-  internal state actually tracks "can this model answer this correctly?" —
-  the thing calibration is calibration *of*;
+  internal state actually tracks "can this model answer this correctly?"
+  (the thing calibration is calibration *of*);
 - the **expression policy**: the learned mapping from that signal (and
-  everything else) to observable behavior — answering, refusing, hedging, and
-  the confidence the model verbalizes.
+  everything else) to observable behavior, that is, answering, refusing,
+  hedging, and the confidence the model verbalizes.
 
 The evidence reads naturally as claims about which object each intervention
 touches. C1's mechanism (Kadavath et al., 2022) is explicit that RLHF damages
 the *readout* while the signal survives (temperature repair). C2/C3's trades
-move operating points without improving discrimination — policy movement on a
+move operating points without improving discrimination: policy movement on a
 fixed signal. C4 says the signal's mere growth with scale does not deliver the
 policy. C5's wins are policy installations. The coherence axis of Section 2 is
 exactly the question of how well the policy's outputs track the signal.
 
 We state the picture as three propositions, each falsifiable:
 
-- **P1 (locus).** A model's epistemic character — its calibration, abstention,
-  and capitulation behavior — is predominantly set by post-training, not by
+- **P1 (locus).** A model's epistemic character (its calibration, abstention,
+  and capitulation behavior) is predominantly set by post-training, not by
   scale or pretraining. *(Supported directly by C1, C4, C5; a base-model
   falsification test is to measure the signal before any post-training.)*
 - **P2 (policy, not signal).** Post-training objectives act on the expression
@@ -369,8 +369,8 @@ We state the picture as three propositions, each falsifiable:
   that improves known/unknown discrimination itself.)*
 - **P3 (readout).** If P2 holds, the binding constraint on epistemic humility
   is not training pressure but *readout*: the internal signal is present and
-  linearly accessible, and coupling behavior and stated confidence to it —
-  rather than training the output channel harder — is the productive
+  linearly accessible, and coupling behavior and stated confidence to it,
+  rather than training the output channel harder, is the productive
   engineering target. *(Motivated by the temperature-repair result and the
   probing literature; falsified if the internal signal proves weak, incoherent
   across estimators (Gani et al., 2026), or non-transferable.)*
@@ -380,22 +380,31 @@ The propositions generate a concrete agenda, ordered by the gaps:
 1. **Run the missing comparison** (Gaps 1–3): every major post-training
    objective on the same base model and the same model-specific abstention
    data, measuring behavior, stated confidence, and hidden-state signal after
-   the same runs — the direct within-run test of the C1-versus-C2/C3 tension
-   and of P2. This is the program's training-regimen study (Paper 2).
+   the same runs. This is the direct within-run test of the C1-versus-C2/C3
+   tension and of P2, and it is the program's training-regimen experiment,
+   [*Teaching Small Language Models to Say I Don't Know: A Controlled
+   Comparison of SFT, DPO, KTO, and GRPO on Model-Specific Abstention
+   Data*](paper2-training-regimen-draft-v2.md).
 2. **Measure the coherence axis directly** (Gap 4): quantify the gap between
    internal and stated confidence on identical rows, and test whether any
-   training regimen closes it — the diagnosis study (Paper 3).
+   training regimen closes it. This is the program's diagnosis experiment,
+   [*Knows but Doesn't Say: A Training-Resistant Gap Between Internal and
+   Stated Confidence in a Small Language
+   Model*](paper3-knows-but-doesnt-say-draft-v0.md).
 3. **Test the readout constructively** (P3): if the signal is present and the
    channel is the problem, a training-free readout should recover calibrated
-   gating and trust from frozen models; test its transfer across datasets,
-   scales, and families — the readout study (Paper 4) — and its causal
-   writability (Paper 5).
+   gating and trust from frozen models. The program's readout experiment,
+   [*The Confidence Is Already There: A Training-Free Two-Signal Readout for
+   Epistemic Humility in Small Language
+   Models*](paper4-two-signal-readout-draft-v0.md), tests its transfer across
+   datasets, scales, and families; a planned steering study tests its causal
+   writability.
 4. **Fill the remaining measurement gaps** (Gaps 5–6): dose-response over the
    IDK fraction, small-model coverage, and OOD stress tests.
 
 The framework also disciplines interpretation in advance: if the missing
 comparison finds that objectives merely relocate operating points, league
-tables comparing "which objective wins" are category errors — the right
+tables comparing "which objective wins" are category errors: the right
 comparanda are *regimens* (inducer + repositioner + amplifier stages), and the
 right report is an operating point with both error rates, never a single
 scalar.
@@ -527,6 +536,21 @@ G. M. A. Grube, in *Plato: Complete Works*, ed. J. M. Cooper, Hackett, 1997.
 Rafailov, R., Sharma, A., Mitchell, E., Ermon, S., Manning, C. D., & Finn, C.
 (2023). *Direct Preference Optimization: Your Language Model is Secretly a
 Reward Model*. arXiv:2305.18290.
+
+Rosenbaum, J. (2026). *Knows but Doesn't Say: A Training-Resistant Gap
+Between Internal and Stated Confidence in a Small Language Model*. Companion
+draft, this repository:
+[paper3-knows-but-doesnt-say-draft-v0.md](paper3-knows-but-doesnt-say-draft-v0.md).
+
+Rosenbaum, J. (2026). *Teaching Small Language Models to Say I Don't Know: A
+Controlled Comparison of SFT, DPO, KTO, and GRPO on Model-Specific Abstention
+Data*. Companion draft, this repository:
+[paper2-training-regimen-draft-v2.md](paper2-training-regimen-draft-v2.md).
+
+Rosenbaum, J. (2026). *The Confidence Is Already There: A Training-Free
+Two-Signal Readout for Epistemic Humility in Small Language Models*.
+Companion draft, this repository:
+[paper4-two-signal-readout-draft-v0.md](paper4-two-signal-readout-draft-v0.md).
 
 Saeidi, A., Verma, S., Uddin, M. N., & Baral, C. (2024). *Insights into
 Alignment: Evaluating DPO and its Variants Across Multiple Tasks*.
