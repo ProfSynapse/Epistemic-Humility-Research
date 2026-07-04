@@ -638,7 +638,7 @@ Atomic notes extracted from the library papers via the Agents-K1 ingestion skill
 - [[valence-arousal-subspace]] : A two-dimensional linear subspace in LLM activation space spanned by a recovered valence axis (pleasure-displeasure) and arousal axis (activ
 - [[world-model-hallucination-modes]] : A three-type taxonomy of failure modes in generative world models, each anchored to a different pipeline stage. Perceptual hallucination occ
 
-## Mechanisms (cause -> effect) (346)
+## Mechanisms (cause -> effect) (352)
 
 - [[abstention-generalization-failure]] : 'instruction-tuning for abstention on a narrow, homogeneous set of refusal expressions and task formats' **prevents** Abstention ability does not generalize to 
 - [[abstract-representations-enable-zero-shot-generalization]] : High degree of abstract (parallel) representation in ANN hidden layers, as measured by parallelism-score, indicating that compositional rule dimensions are enco
@@ -653,6 +653,7 @@ Atomic notes extracted from the library papers via the Agents-K1 ingestion skill
 - [[answerability-and-correctness-are-orthogonal-readout-axes]] : Fusing the answerability readout scalar (read at the prompt anchor) and the correctness readout scalar (read post-generation) into a single combined confidence 
 - [[answerability-axis-present-without-task-training]] : Reading a linear probe on residual-stream activations at the prompt anchor of an instruction-tuned base model, with no abstention-SFT and no reinforcement learn
 - [[answerability-probe-transfers-across-qa-datasets]] : Fitting a linear answerability probe on one QA dataset and applying it to held-out QA datasets. **enables** The probe retains high answerability-decoding accura
+- [[answerability-probe-under-flags-ambiguous-questions]] : Reading ambiguous/underspecified unknown questions with a frozen linear answerability probe fit on the general known/unknown boundary (L20/24/28, raw instruct b
 - [[answerability-subspace-erasure-degrades-answerability-behavior]] : Applying linear concept erasure (LEACE) to remove the linearly-decodable answerability direction from the hidden state. **decreases** The model's ability to beh
 - [[arousal-axis-monotonically-controls-refusal-and-sycophancy]] : Steering LLM activations along the arousal axis of the VA subspace (increasing or decreasing arousal coordinate). **mediates** Refusal rate and sycophancy rate 
 - [[attention-head-truthfulness-concentration]] : Selecting 1 or 2 attention-head output positions (out of 1,024 candidates across 32 layers and 32 heads) as features for a linear truthfulness probe **enables**
@@ -730,6 +731,7 @@ Atomic notes extracted from the library papers via the Agents-K1 ingestion skill
 - [[fine-grained-semantic-confidence-reward]] : Replacing a coarse global entropy reward with a per-sample cluster-size-based confidence reward within GRPO abstention training (FiSCoRe) **increases** OOD reli
 - [[fine-tuning-sacrifices-specificity]] : Applying standard fine-tuning (FT) to insert a new fact into an LLM **decreases** Near-perfect efficacy (ES=100%) but severely degraded specificity -- roughly 6
 - [[finetuning-induces-persona-shift]] : Training on trait-expressing or domain-flawed data shifting model activations along persona-vectors directions **increases** Elevated post-finetuning behavioura
+- [[flavor-specific-doubt-residuals-persist]] : Projecting the shared known/unknown trunk direction out of each unanswerability flavor's whitened doubt direction (L20/24/28, raw instruct base). **enables** Ea
 - [[format-induced-reasoning-trace-collapse]] : The format used to represent missing reasoning traces in fine-tuning data (empty-think: empty <think> block included; no-think: reasoning tags omitted entirely)
 - [[full-sft-on-noncompliance-data-causes-over-refusal]] : Full continued SFT of an instruction-tuned model on a noncompliance-only dataset (CoCoNot) without a contrastive compliance signal **enables** Model over-genera
 - [[functional-cooccurrence-drives-spatial-clustering]] : SAE features that tend to fire together within documents (functional co-occurrence, measured by phi-coefficient-cooccurrence) share semantic content **enables**
@@ -878,6 +880,7 @@ Atomic notes extracted from the library papers via the Agents-K1 ingestion skill
 - [[reasoning-training-decouples-decisiveness-from-confidence]] : Reasoning fine-tuning (SFT on chain-of-thought traces, knowledge distillation from a reasoning teacher) that optimizes for answer correctness rather than faithf
 - [[refusal-direction-mediates-refusal]] : A one-dimensional refusal-direction in model activations is added, removed, or suppressed. **mediates** safety-refusal behavior increases or decreases.
 - [[refusal-directions-are-geometrically-distinct]] : Different refusal and non-compliance categories are represented in activation space. **complicates** A single refusal-direction account can be incomplete across
+- [[refusal-threshold-varies-by-unanswerability-flavor]] : Regressing refuse/answer behavior on caution boundary distance jointly with unanswerability flavor (942 eligible generations, instruction-tuned checkpoint on th
 - [[refusal-tuning-fails-to-generalize-across-hallucination-types]] : UHs occupy a common activation subspace across different subjects (because they share weak subject-information propagation), while AHs have diverse, subject-spe
 - [[relative-framing-unlocks-linear-probing]] : Framing board state relative to the current player (Mine/Yours/Empty) rather than absolute colour (Black/White/Empty) **increases** Linear probes achieve approx
 - [[repind-directions-are-input-accessible]] : GCG adversarial suffix optimisation with an added loss term penalising representation of RepInd-1 in residual-stream activations **enables** Suffixes reduce cos
@@ -918,6 +921,7 @@ Atomic notes extracted from the library papers via the Agents-K1 ingestion skill
 - [[sae-sparsity-increases-feature-interpretability]] : Training an overcomplete autoencoder with an L1 sparsity penalty on internal LM activations **increases** Recovered dictionary features are more monosemantic an
 - [[sae-width-increase-causes-feature-splitting]] : Increasing the sparse-autoencoder dictionary size from a 1x expansion factor to 256x (512 to 131,072 features) **enables** Coarse features split into finer sub-
 - [[safety-finetuning-low-rank-activation-changes]] : Supervised safety fine-tuning (SSFT) on harmful vs. harmless prompt pairs updating model weights to distinguish safe from unsafe requests **decreases** Low effe
+- [[scalar-readout-compression-mimics-second-mechanism]] : Compressing a multi-dimensional internal doubt geometry into a single scalar readout (caution boundary distance) whose fidelity varies across question flavors. 
 - [[scale-improves-accuracy-not-honesty]] : Increasing training compute (FLOPs) across LLM families **mediates** Factual accuracy rises strongly (Spearman +87.3%) while honesty under pressure declines (Sp
 - [[scale-increases-representational-sparsity]] : Increasing LLM parameter count (model scale) from 70M to 6.9B **increases** 'Average representational sparsity increases (features can be decoded by fewer neuro
 - [[scale-threshold-for-above-chance-mmlu-accuracy]] : Increasing GPT-3 model size from 2.7B through 6.7B and 13B to 175B parameters, evaluated few-shot on the 57-subject MMLU benchmark **enables** Accuracy remains 
@@ -973,6 +977,8 @@ Atomic notes extracted from the library papers via the Agents-K1 ingestion skill
 - [[truthfulness-helpfulness-tradeoff-under-activation-steering]] : Increasing the strength (alpha) of activation steering along a truth-correlated direction during inference with inference-time-intervention. **mediates** The mo
 - [[tuned-lens-affine-correction-restores-fidelity]] : Training a per-layer affine translator (A_l, b_l) to minimize cross-entropy between the lens output and the final layer distribution **increases** Tuned lens fe
 - [[typed-scientific-kg-preserves-reasoning-provenance]] : An agent-native-scientific-knowledge-graph preserves typed entities, claims, evidence, mechanisms, and method lineages. **enables** Scientific reasoning provena
+- [[unanswerability-detection-shares-one-axis-across-flavors]] : Training a linear known/unknown detector on questions of a single unanswerability flavor and evaluating it on every other flavor (L20/24/28, raw instruct base, 
+- [[unanswerability-flavor-is-early-content-encoding]] : Probing the six KUQ-derived unanswerability flavors (ambiguous, controversial, unsolved problem, false assumption, future unknown, counterfactual) across all la
 - [[uncertainty-training-improves-calibration]] : Including uncertainty-labeled examples (with 'I don't know' suffixes) in supervised-finetuning training **enables** Better-calibrated model that estimates calib
 - [[unfamiliar-ft-examples-drive-hallucination-character]] : Supervising unfamiliar-finetuning-examples with ground-truth labels in supervised-finetuning **increases** Model's default hedged-prediction mirrors ground-trut
 - [[unknown-examples-learned-slower]] : Fine-tuning examples that introduce new factual knowledge (Unknown in slick) rather than reinforcing existing parametric knowledge **decreases** Slower gradient
