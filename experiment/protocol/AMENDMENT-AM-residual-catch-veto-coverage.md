@@ -126,13 +126,25 @@ post-generation readout.
 - Checkpoint: the raw `unsloth/Qwen3-4B-bnb-4bit` instruct base, no adapter,
   identical to the A0 arm of `ah_main` (`ah_main/manifest.json`,
   `base_model: unsloth/Qwen3-4B-bnb-4bit`, `adapter: NONE-raw-instruct-base`).
-- Generation surface: byte-identical to the A0 cell. The AH baseline
-  abstention-affording system prompt, `enable_thinking=false`, greedy decode,
-  `max_new_tokens=96`, seed matched to the A0 config
+- Generation surface: same prompt/decode contract as the A0 cell. The AH
+  baseline abstention-affording system prompt, `enable_thinking=false`, greedy
+  decode, `max_new_tokens=96`, seed matched to the A0 config
   (`config_sha: 68847c8396f688d4`). The A0 answered-row grades reproduce from
   regeneration on the same grader; any regeneration drift is absorbed by
   comparing the veto against a permutation null computed on the same regenerated
   rows.
+- Batched generation config (registered from the start; AM is a new surface,
+  not parity-locked to the batch-1 A0 run, so it registers an efficient config
+  rather than inheriting batch-1): HuggingFace `generate` with left-padding,
+  `batch_size = 12` for the 4B base on the A10G (a middle-of-range value in the
+  8 to 16 window that fits the A10G comfortably at 96 new tokens; if the chosen
+  GPU is smaller, the numerics smoke in section 5 sets the largest batch that
+  agrees and that value is recorded here at launch). Greedy decode is
+  deterministic, so batching must not change token output; the section 5
+  precondition enforces token-level agreement with batch-1 before the full run.
+  Batch size is part of the frozen config: the value that passes the smoke is
+  recorded and does not change mid-run. Left-padding with the batch is the only
+  deviation from the A0 batch-1 mechanics, and it is validated, not assumed.
 - The residual set (frozen, deterministic, pre-registered from cached A0
   behavior): the gate-miss confabs are the confabulations on unanswerable
   questions that read as answerable to the answerability gate at the balanced
@@ -253,15 +265,34 @@ report it as ambiguous and let the user adjudicate.
 2. Modal only; the local GPU is off limits (live experiment). Wait for any
    in-flight Modal app (currently `eh-al-true-a0`) to finish before launching so
    the run does not contend.
-3. Pre-registered cost cap: **$5 of Modal credit**. The run is one container:
+3. Numerics smoke before the full run (protects the surface definition without
+   burning the cell): on a fixed 20-row subset of the A0 pool, generate greedy
+   at batch-1 and at the registered `batch_size = 12` (left-padded) in the same
+   container, and require **token-level agreement** on all 20 rows (identical
+   generated token ids, hence identical `answer_text` and identical grades). If
+   greedy outputs agree, proceed to the full batched run at the registered
+   batch. If they diverge on any row, fall back to the **largest batch that
+   agrees** (bisect downward: 8, then 4, then 2, then 1), record that value as
+   the frozen batch in section 3.1, and run at it. The smoke is a few seconds of
+   generation and is part of the same container as the full run, so it does not
+   add a separate spend. Rationale: greedy decode is deterministic and batching
+   with left-padding must not change token output; the smoke turns that
+   invariant into a checked precondition rather than an assumption, so the
+   surface the veto is fit on is provably the same surface batch-1 would have
+   produced.
+4. Pre-registered cost cap: **$5 of Modal credit**. The run is one container:
    generate + post-L20 extract on 484 answered rows of the 4-bit base
-   (T4 if it fits, else L4 / A10G). If the pre-launch estimate exceeds $5, stop
-   and report rather than launch.
-4. Container env (mandatory): `HF_HUB_DISABLE_XET=1` and
+   (T4 if it fits, else L4 / A10G). Batched generation (registered
+   `batch_size = 12`, left-padded) is expected to cut the generation wall time
+   by roughly 4x to 8x versus the A0 batch-1 run, so the cap gains margin;
+   post-generation extraction is a single forward per answered row and is the
+   same cost as batch-1. If the pre-launch estimate still exceeds $5, stop and
+   report rather than launch.
+5. Container env (mandatory): `HF_HUB_DISABLE_XET=1` and
    `HF_HUB_ENABLE_HF_TRANSFER=0` (hf_xet hangs multi-GB downloads);
    `UNSLOTH_COMPILE_DISABLE=1` if on T4. Secrets via environment, never printed;
    logs redacted through `sed 's/hf_[A-Za-z0-9]*/hf_[REDACTED]/g'`.
-5. Grader identical to the A0 cell; grading config byte-pinned. Correctness
+6. Grader identical to the A0 cell; grading config byte-pinned. Correctness
    labeling of answered rows uses that grader's `correct` field.
 
 ## 6. Instrumentation (descriptive, gate-free)
