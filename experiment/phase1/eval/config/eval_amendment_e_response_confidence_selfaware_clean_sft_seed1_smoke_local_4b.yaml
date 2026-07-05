@@ -48,6 +48,7 @@ arms:
   - name: clean_schema_sft_seed1
     method: clean_schema_sft
     model: qwen3-4b-instruct
+    # staged on HF: professorsynapse/eh-qwen3-4b-clean-sft-seed1-lora @ 869ddf2b02d34072cdd085f1642d67611df6975c
     adapter: /workspace/repo/scratch/schema_response_confidence/runs/sft_schema_clean_seed1_full/20260623_123624/final_model
 
 eval_sets:

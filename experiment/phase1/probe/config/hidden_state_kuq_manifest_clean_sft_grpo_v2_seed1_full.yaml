@@ -9,6 +9,7 @@
 
 model:
   model_tag: qwen3-4b-clean-sft-grpo-v2-seed1-kuq
+  # staged on HF: professorsynapse/eh-qwen3-4b-clean-sft-seed1-merged-16bit @ ac361232c001af0ed5b0386b06dafc35d5cd31ea
   model_name: /workspace/repo/scratch/schema_response_confidence/runs/sft_schema_clean_seed1_full/20260623_123624/Qwen3-4B-bnb-4bit/merged-16bit
   revision: null
   enable_thinking: false

@@ -27,7 +27,7 @@ Use lowercase, queryable names. Record the exact HF revision after every upload.
 | Artifact family | Proposed HF repo | Status | Local provenance | Notes |
 |---|---|---|---|---|
 | Hidden-state tensors | `professorsynapse/eh-hidden-states-<family>` | planned (wave 2d) | extraction dirs under `experiment/phase1/probe/` | ~2 GB per model; Z families first. Y cloud cells discard extraction dirs by design — publishing Y tensors would need the upload knob flipped in `hf_jobs_cell.sh` for future cells. |
-| Adapter repos | one repo per evaluated adapter | gated | run record + `training_lineage.json` + exact eval result path | Hold until the run-record/eval provenance gates below pass. Prefer LoRA-only repos first. |
+| Adapter repos | one repo per evaluated adapter | private-staged (2026-07-05) | run record + `training_lineage.json` + exact eval result path | 33 Qwen3-4B LoRA/merged checkpoints are now PRIVATELY staged on HF; the master mapping (HF repo @ revision <-> local source run dir <-> amendment/paper it backs) is [docs/checkpoint-staging.md](checkpoint-staging.md). Public release of any of these remains a separate per-release user approval and would be recorded as its own row here. |
 
 ## Adapter Naming
 

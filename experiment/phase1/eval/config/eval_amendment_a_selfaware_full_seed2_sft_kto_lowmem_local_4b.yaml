@@ -35,6 +35,7 @@ arms:
   - name: sft_kto_seed2_lowmem
     method: kto
     model: qwen3-4b-sft-merged-seed2-lowmem
+    # staged on HF: professorsynapse/eh-qwen3-4b-seq-sft-kto-seed2-lora @ c9b38352ba852f427e0c3ed802d038f94ebf9997
     adapter: /workspace/repo/synaptic-tuner/toolset-training-artifacts/runs/local/4b/sft_kto__4b__amendment_a__seed2/20260616_183650/final_model
 
 eval_sets:

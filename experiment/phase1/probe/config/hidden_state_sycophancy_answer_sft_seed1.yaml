@@ -28,6 +28,7 @@ arms:
     adapter: null
   - name: sft_seed1
     adapter_state: active
+    # staged on HF: professorsynapse/eh-qwen3-4b-headline-sft-seed1-lora @ 535dfabec0365b80663df618880ac2ad0976eb51
     adapter: /workspace/repo/synaptic-tuner/toolset-training-artifacts/runs/local/4b/sft__4b__headline__seed1/20260614_053221/final_model
 
 eval_arms_source: null
