@@ -68,5 +68,3 @@ removes thin slivers. The correct unified statement is that caution and refusal
 form a low-rank readout riding on many collinear carriers in the native basis,
 not a many-headed compound of independent discriminative axes; doubt reads as a
 correlate of that readout rather than a separable removable element.
-</content>
-</invoke>

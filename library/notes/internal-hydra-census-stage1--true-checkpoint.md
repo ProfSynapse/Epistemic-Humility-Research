@@ -167,5 +167,3 @@ caution-orthogonal, stable, and population-predictive was found, so this does no
 warrant a signed follow-up on current evidence. Caveats: one checkpoint, one
 seed, CPU only, readout not causal, and the ICA panel under-detects by
 construction.
-</content>
-</invoke>
