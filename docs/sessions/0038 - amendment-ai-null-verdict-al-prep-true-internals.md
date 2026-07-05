@@ -4,7 +4,7 @@ session_id: '0038'
 title: Amendment AI NULL verdict (G1 inverted) and AL prep on the TRUE checkpoint (internals characterization + drift decomposition)
 status: active
 created_at: '2026-07-05T09:00:00Z'
-updated_at: '2026-07-05T17:10:00Z'
+updated_at: '2026-07-05T19:45:00Z'
 phase: phase1
 question: >-
   Amendment AI adjudication: did probe-as-reward GRPO train the model to
@@ -259,6 +259,47 @@ checkpoints:
     sensor against a known-good case before indicting the platform.
     Launcher PR into the tuner skill proceeds after r4 completes
     end-to-end.
+- id: 013-result
+  at: '2026-07-05T19:45:00Z'
+  kind: result
+  title: 'Confab cloud characterized; "commitment" renamed confabulation propensity on scope-check evidence; ungated ceiling quantified (clean channel, modest reach, only honest zero-collateral point)'
+  summary: >-
+    Three CPU instruments closed the AL control-law design loop on the
+    TRUE surface. (1) familiarity_vs_knowing: the blind-spot confabs
+    (user-coined "confab cloud") are boundary-elevated without knowledge
+    (doubt means: correct 2.22 / wrong 1.55 / confab 0.34 / refused
+    -0.35; actually-knowing axis reads confabs at refusal level, 0.46);
+    familiarity is flat (0.51 alone; internal-direction residualization
+    moves 0.84 to only 0.83) though raw text-surface features soak part
+    of the elevation (0.84 to 0.68-0.70) - refines, does not contradict,
+    the 0037 matched-doubt familiarity result. (2) commitment_scope_check
+    (user prompted the naming question): the fabricate-vs-refuse
+    direction is confabulation-SPECIFIC, not generic answer-commitment -
+    negative alignment with the answer-vs-refuse direction (cos -0.35),
+    chance transfer at matched caution (0.46/0.51), raw transfer inverted
+    (0.30). Renamed confabulation-propensity direction; KG ingest
+    committed (3cfb56d9): internal evidence note + 2 terms (confab-cloud,
+    confabulation-propensity-direction) + 4 mechanisms + reciprocal edges
+    into the 0037 atoms. (3) Ceiling sims: a clean-cell mean-diff gate
+    (correct-vs-confab AUROC 0.926) reaches FEWER confabs than the
+    logistic gate at 1 collateral (31 vs 46, permute-gate p=1.0 both) -
+    the blind spot is tail overlap, robust to gate construction; the
+    UNGATED anti-propensity law (agent-built, d999c10a) is
+    permutation-real at every point (p=0.005) but modest: balanced 30/116
+    at 1 collateral (ties meandiff-gated, loses to logistic-gated 46),
+    and its distinguishing offer is the only honest zero-collateral point
+    (5/116; gated "zero-collateral" reach was gate-driven and
+    chance-indistinguishable). One high-propensity correct answer (prop
+    2.50) caps the zero-collateral region. Aim-small: conservative
+    infeasible (half-effect CI floor 0), balanced gates {collateral<=3,
+    >=5 confabs killed}. AL design fork now a user decision: honest-floor
+    ungated vs max-reach gated-logistic primary. Infra: r4 parity cell
+    died on a bad host (real signal this time - probe booted 15s);
+    launcher gained boot-fail host recycling (max 3); r5 launched
+    (user-approved). Modal credentials refreshed by user; smoke + PR of
+    fix/modal-remote-shared-import delegated to a background agent.
+    User feedback pinned to memory: delegate more, protect main-loop
+    context.
 - id: 007-checkpoint
   at: '2026-07-05T12:45:00Z'
   kind: checkpoint
