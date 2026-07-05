@@ -9,8 +9,9 @@ evidence_base: >
   Phase-1/Phase-3 artifacts under experiment/phase1/. Internal-axis numbers:
   experiment/phase1/probe/analysis/_latent_knowledge_controls/ (a3_h_base_probe.json,
   c2_*.json, a1a2_h_lora.json, caution_axis_transfer.json) and
-  docs/sessions/0026 checkpoints 002-004. Geometry: scratchpad/caution_residual_geometry.py
-  over extraction__55254a04aa1f; caution_direction_L35.json. Steering:
+  docs/sessions/0026 checkpoints 002-004. Geometry:
+  experiment/phase1/probe/paper3_section5_geometry.py over extraction__55254a04aa1f;
+  caution_direction_L35.json / caution_perp_direction_L35.json. Steering:
   experiment/phase1/probe/analysis/current_clean_grpo_v2_* (caution_residual_intervention,
   caution_perp_residual_intervention, known_overrefusal_native_l26_coeff_sweep,
   l26_double_orthogonalized_panel_{a,b,c}_generation, knowledge_boundary_steer).
@@ -65,7 +66,7 @@ confused: questions the model over-refuses despite knowing them sit at an intern
 separable axes: a graded *doubt* axis (how known an item is) and a partially
 independent *caution* gate (the refuse/answer decision); raw cosine overstates
 their collinearity at −0.83, but held-out discriminability after orthogonalization
-shows a genuine caution-specific component (refuse/answer AUROC 0.825 after
+shows a genuine caution-specific component (refuse/answer AUROC ≈ 0.80 after
 projecting out doubt). **(3)** We show behavior is *causally* steerable but
 *asymmetrically*: ablating the caution residual cuts over-refusal on known
 questions from 0.994 to 0.030 with clean specificity, yet no intervention we tried
@@ -113,7 +114,7 @@ Our contributions, each a section below:
 - **The geometry (Section 5).** The internal signal decomposes into a graded
   *doubt* axis and a separable *caution* gate. We show why the naive measurement
   (raw cosine = −0.83, "they're the same axis") is wrong and the held-out
-  orthogonalization measurement (caution-specific refuse/answer AUROC = 0.825) is
+  orthogonalization measurement (caution-specific refuse/answer AUROC ≈ 0.80) is
   right, a methodological caution about cosine in high-dimensional activation
   space.
 - **Steerability (Section 6).** Behavior is causally controllable along the
@@ -346,40 +347,51 @@ Reading "how known is this item" and "did the model refuse" as one axis would be
 the parsimonious story, and the first measurement appears to support it: the raw
 mass-mean cosine between the caution direction (refuse vs answer among knowns) and
 the knowledge/doubt direction is **−0.83**, i.e. nearly collinear, opposite sign
-[scratchpad/confidence_vs_axes.py; caution_direction_L35.json]. Under that reading,
+[experiment/phase1/probe/paper3_section5_geometry.py; caution_direction_L35.json]. Under that reading,
 refusal is simply the low-known tail of a single graded doubt axis.
 
 That reading is an artifact of the instrument. Raw cosine in high-dimensional
 activation space is dominated by a few shared high-variance dimensions and
 overstates collinearity. Whitening the covariance (shrinkage λ = 0.1) drops the
-cosine to **−0.565**, and the caution direction retains a substantial component off
-the doubt axis: its **residual fraction is 0.557** (≈ 55.7% of the caution
-direction's length, ≈ 31% of its variance, is doubt-orthogonal)
-[scratchpad/caution_residual_geometry.py; L35 h_lora; kr = 168, ka = 300, ur = 300;
-5-fold held-out].
+cosine to **−0.61** on the full sample (subsampling to 300/300 for the AUROC
+protocol gives −0.56 to −0.61 depending on subsample seed), and the caution
+direction retains a substantial component off the doubt axis: its **residual
+fraction is 0.557** (≈ 55.7% of the caution direction's length, ≈ 31% of its
+variance, is doubt-orthogonal; subsample-invariant)
+[experiment/phase1/probe/paper3_section5_geometry.py; L35 h_lora; full cells
+kr = 168, ka = 373, ur = 676 for geometry, ka/ur subsampled to 300/300 for AUROC;
+pooled within-class shrinkage-whitened covariance; 5-fold held-out.]
 
 The decisive test is held-out discriminability after orthogonalization. Predicting
 refuse (1) vs answer (0) among known items:
 
-| direction | held-out refuse/answer AUROC |
+| direction | held-out refuse/answer AUROC, mean (range over 4 fold seeds) |
 |---|---|
-| knowledge/doubt axis alone | 0.875 (strong: refuse = less-known) |
-| caution orthogonalized to doubt (`caution_perp`) | **0.825** |
-| full caution | 0.894 |
+| knowledge/doubt axis alone | 0.866 (0.861–0.872) (strong: refuse = less-known) |
+| caution orthogonalized to doubt (`caution_perp`) | **0.798 (0.788–0.826)** |
+| full caution | 0.885 (0.881–0.892) |
 
 Removing the *entire* rank-1 doubt direction barely dents refuse/answer
-separability (0.894 → 0.825), so the refuse/answer decision is not confined to the
-doubt axis: a genuine caution-specific gate exists [caution_residual_geometry.py].
-The two are correlated (both are elevated on the low-known tail) but separable.
+separability (0.885 → 0.798, means over fold seeds), so the refuse/answer decision
+is not confined to the doubt axis: a genuine caution-specific gate exists
+[paper3_section5_geometry.py; an independent reconstruction,
+experiment/phase1/probe/analysis/p3_section5_provenance_20260704/reconstruct_section5_geometry.py,
+reproduces the pipeline and supplies the fold-seed spread]. The two are correlated
+(both are elevated on the low-known tail) but separable.
 
 **Method lesson.** Raw cosine said "one axis" (−0.83); held-out discriminability
 after orthogonalization says "two axes." The reliable instrument for "is direction
 B reducible to direction A" is not cosine but whether B still discriminates its
 target after A is projected out. Stronger whitening monotonically pushes the cosine
-−0.83 → −0.56 → toward 0, re-validating an independent near-orthogonality estimate
-(≈ 0.02) from a separate analysis. (Caveat carried to Section 9: we projected out
-only the rank-1 mass-mean doubt direction; removing a full multi-dimensional
-knowledge-probe subspace is the stronger reducibility test and is not yet done.)
+−0.83 → −0.61 → toward 0, re-validating an independent near-orthogonality estimate
+(≈ 0.02) from a separate analysis. The stronger reducibility test, certified
+linear erasure of the full answerability concept (LEACE), confirms this: erasing
+everything a linear probe can use to read known/unknown (probe AUROC 0.996 to
+0.496 post-erasure) costs the caution readout 5.4 ± 0.6 points of 91, leaving
+refuse/answer discrimination at 0.858 held-out
+[experiment/protocol/AMENDMENT-AJ-knowledge-subspace-erasure.md;
+amendment_aj_subspace_erasure.py]. Caution's linear separability is not carried
+by the knowledge readout, which contributes only a small quantified share.
 
 **The caution axis is shared across training regimens.** The caution direction
 recovered independently from SFT, GRPO-DPO, and GRPO-v2 models points the same way
@@ -889,10 +901,16 @@ require (more caution), and we could not install the hard direction.
   as directional. The full-eval AUROC numbers (n ≈ 3369) are not affected.
 - **SelfAware-only OOD surface.** Behavior and stated-calibration numbers are on one
   OOD benchmark. Generalization to other known/unknown surfaces is untested.
-- **Rank-1 doubt projection.** The two-axis separability (Section 5) projects out
-  only the rank-1 mass-mean doubt direction. The stronger test (removing a full
-  multi-dimensional knowledge-probe subspace and re-checking `caution_perp`) is
-  not yet done; it could shrink the caution-specific residual.
+- **Knowledge erasure is linear-only.** The stronger reducibility test is now
+  done: certified linear erasure (LEACE) of the full answerability concept
+  leaves the caution readout at 0.858 held-out (baseline 0.912), with the
+  knowledge subspace contributing a small quantified share (5.4 ± 0.6 points
+  across 24 fold assignments)
+  [experiment/protocol/AMENDMENT-AJ-knowledge-subspace-erasure.md]. The
+  remaining caveat is that the erasure certificate is linear: a nonlinear
+  probe could still read answerability from the erased states, so the
+  independence claim is about linear readouts, matching the linear
+  instruments used throughout.
 - **Probe could read outcome leakage.** The internal axis is fit on activations; we
   control for lexical baselines and fit the readout without correct/wrong leakage,
   but probe-based "knowledge" claims always carry the risk that the probe reads a
@@ -1027,7 +1045,8 @@ protocol document and scored artifact:
 | Paper section | Internal label | Protocol / notes | Primary artifacts |
 |---|---|---|---|
 | §4 internal-vs-stated gap; like-for-like on the GRPO-v2 checkpoint (Fig. 2) | probe program (Amendments L/M lineage; caution-vs-doubt note); session 0026 | `experiment/notes/caution-vs-doubt-knowledge-gate.md`; `docs/sessions/0026` checkpoints 002–004 | `experiment/phase1/probe/analysis/_latent_knowledge_controls/` (`a3_h_base_probe.json`, `c2_*.json`, `a1a2_h_lora.json`); `experiment/phase1/eval/analysis/calibration_gap_clean_sft_grpo_v2_seed1.json` (`B_internal_vs_emitted`: internal AUROC 0.972 vs emitted 0.637) |
-| §5–6 geometry and steering | probe program | `scratchpad/caution_residual_geometry.py`; `caution_direction_L35.json` | `experiment/phase1/probe/analysis/current_clean_grpo_v2_*` (interventions, coefficient sweeps, generation panels) |
+| §5–6 geometry and steering | probe program | `experiment/phase1/probe/paper3_section5_geometry.py`; `caution_direction_L35.json`; `caution_perp_direction_L35.json` | `experiment/phase1/probe/analysis/current_clean_grpo_v2_*` (interventions, coefficient sweeps, generation panels) |
+| §5 knowledge-subspace erasure (LEACE) | Amendment AJ | `experiment/protocol/AMENDMENT-AJ-knowledge-subspace-erasure.md`; `experiment/phase1/probe/amendment_aj_subspace_erasure.py`; `amendment_aj_addendum_gap_distribution.py` | `experiment/phase1/probe/analysis/amendment_aj_subspace_erasure/` (`result.json`, `addendum_a1_gap_distribution.json`) |
 | §7 interventions 1–2 (DPO/KTO stated-confidence contract) | Amendment B | `experiment/protocol/AMENDMENT-B-stated-confidence-grpo.md` | `experiment/paper/analysis/amendment_b_confidence_alignment_by_outcome.csv` |
 | §7 interventions 3–4 (GRPO v1/v2 collapse + incentive analysis) | Amendment E cells; Amendment J diagnostics / session 0026 | `experiment/notes/grpo-v3-proper-scoring-confidence.md` | `experiment/phase1/eval/analysis/calibration_gap_clean_sft_grpo_v2_seed1.json` |
 | §7 intervention 5 (proper-scoring GRPO) | Amendment J (GRPO-v3) | `experiment/notes/grpo-v3-proper-scoring-confidence.md`; reward `experiment/phase1/grpo/humility_reward_v3.py`; preflight `experiment/notes/computed-confidence-alignment-regimen.md` | `experiment/phase1/eval/analysis/calibration_gap_clean_sft_grpo_v3_seed1.json`; `results_amendment_j_*` |

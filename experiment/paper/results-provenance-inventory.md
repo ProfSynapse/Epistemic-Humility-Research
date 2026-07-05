@@ -1,8 +1,13 @@
 # Phase 1 Results Provenance Inventory
 
-Status: draft companion note for paper writing
+Status: RETIRED 2026-07-04. Superseded by the per-paper provenance appendices
+(Appendix A of `paper3-knows-but-doesnt-say-draft-v0.md` and
+`paper4-two-signal-readout-draft-v0.md`), which map every published number to
+its protocol document and on-disk artifact. This file predates the amendment
+series from C onward and is kept as a historical record of the 2026-06-18
+claim-tier rules; do not use it to gate what a draft may cite.
 Created: 2026-06-18
-Scope: claim-tier and provenance guide only; not a results source by itself
+Scope (historical): claim-tier and provenance guide only; not a results source by itself
 
 ## Use Rule
 
