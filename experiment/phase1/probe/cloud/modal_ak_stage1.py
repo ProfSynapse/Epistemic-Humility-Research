@@ -311,5 +311,10 @@ def main(checkpoint: str = "raw-base"):
     print(f"[modal-ak] launching AK Stage 1 on A10G, checkpoint={checkpoint}, "
           f"run_tag={_run_tag(checkpoint)}")
     print(f"[modal-ak] repo@{REPO_COMMIT[:12]} pool={POOL_IN_REPO}")
-    result = run_stage1.remote(checkpoint)
-    print(f"[modal-ak] result: {result}")
+    # .spawn(), not .remote(): the client exits right after scheduling, so a
+    # dying client (graceful signal or not) has no in-flight input to cancel.
+    # Requires --detach so the app outlives the client. Monitor via
+    # `modal app logs` + the Volume checkpoint; completion = DONE marker.
+    call = run_stage1.spawn(checkpoint)
+    print(f"[modal-ak] spawned function call {call.object_id}; client exiting. "
+          f"Monitor: modal app logs / volume ckpt DONE marker.")
