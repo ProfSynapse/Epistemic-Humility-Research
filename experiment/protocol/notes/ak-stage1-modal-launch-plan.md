@@ -143,7 +143,9 @@ Preconditions before either command:
     --path-prefix pools \
     --file /home/profsynapse/code/Epistemic-Humility-Research/experiment/phase1/probe/analysis/ak_stage1/ak_stage1_pool.jsonl
   ```
-- Pin `REPO_COMMIT` in `modal_ak_stage1.py` to this branch's pushed commit.
+- `REPO_COMMIT` in `modal_ak_stage1.py` is pinned to `0a9ac393` (the AK Stage 1
+  prep commit). Re-pin only if the branch moves before launch. The raw-base arm
+  needs only on-branch files (runner + pool builder), which this commit carries.
 
 raw-base arm (launch-ready once the above land):
 ```bash
@@ -179,7 +181,7 @@ DONE marker), which AK reuses verbatim, demonstrated end-to-end.
    `docs/public-artifacts.md` (no grpo-v2 LoRA published). Resolve by publishing
    / privately staging the grpo-v2 LoRA and recording repo+revision, or by
    pointing at the exact staging artifact. The raw-base arm is unblocked.
-2. **REPO_COMMIT pin.** Placeholder until the branch is pushed; the wrapper
-   refuses to launch until it is a real commit.
+2. **REPO_COMMIT pin.** Pinned to `0a9ac393` (pushed). Re-pin if the branch
+   moves before launch.
 3. **Pool upload.** The pool exists locally; it must be uploaded to the private
    staging repo before launch (command above).
