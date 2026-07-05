@@ -113,6 +113,21 @@ local RTX 3090 (batch-1 greedy, comparable max_new_tokens) ~= 1.76 s/row.
   Well within a single A10G session; A10G is sufficient (states are float32 cpu,
   no large-VRAM tensors) so no A100 is justified.
 
+## Cross-check surface (separate run, do NOT fold in)
+
+The lab-diagnostics-bundle branch (commit eb102f7b) ships a SEPARATE script,
+`amendment_ak_gentime_positions_extract.py`, that does a COARSE 6-position
+re-forward sweep (anchor / first_vis / mid25 / mid50 / mid75 / answer_end) via
+the Amendment S/R faithful re-forward, launched on RunPod as run-tag
+`diag-item20-gentime-r1` (600 rows, deployed grpo-v2 checkpoint) for backlog
+item 20 (displacement geometry). It is NOT the AK-2 token-granular runner and
+does NOT replace this Stage 1 work; AK Stage 1 stays token-granular per the AK
+doc. Its output lands in the SAME staging repo (`eh-al-prep-staging`, under
+`diag-item20-gentime-r1`), so mind the run-tag distinction: AK Stage 1 uses
+`ak-stage1-<checkpoint>-r1`. The coarse sweep is a useful cross-check surface for
+the AK position curve (its 6 coarse positions should track the AK curve at the
+shared anchor / first-visible / answer-end anchors), not an input to the gates.
+
 ## Pilot-first requirement (LOCKED, do not skip)
 
 The AK-G2 floor is pilot-locked. Sequence:
