@@ -40,7 +40,7 @@ import modal
 REPO_URL = "https://github.com/ProfSynapse/Epistemic-Humility-Research.git"
 # Pin to the AK branch commit at launch time (filled by the launch plan; the
 # raw-base arm needs only the AK Stage 1 runner + pool builder, both on-branch).
-REPO_COMMIT = "0a9ac393"  # AK Stage 1 prep commit; re-pin if the branch moves
+REPO_COMMIT = "ac94b70c"  # grpo-v2 provenance commit; re-pin if the branch moves
 STAGING_REPO = "professorsynapse/eh-al-prep-staging"  # reuse the AL prep repo
 # The Stage 1 pool the CPU builder emits, uploaded to the private staging repo.
 POOL_IN_REPO = "pools/ak_stage1_pool.jsonl"

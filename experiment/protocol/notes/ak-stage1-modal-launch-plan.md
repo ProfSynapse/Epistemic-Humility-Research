@@ -158,10 +158,10 @@ Preconditions before either command:
     --path-prefix pools \
     --file /home/profsynapse/code/Epistemic-Humility-Research/experiment/phase1/probe/analysis/ak_stage1/ak_stage1_pool.jsonl
   ```
-- `REPO_COMMIT` in `modal_ak_stage1.py` is pinned to `AK_STAGE1_COMMIT_SHA` (the
-  commit that fills the grpo-v2 provenance; see the reply that reports it).
-  Re-pin only if the branch moves before launch. Both arms need only on-branch
-  files (runner + pool builder), which this commit carries.
+- `REPO_COMMIT` in `modal_ak_stage1.py` is pinned to `ac94b70c` (the commit that
+  fills the grpo-v2 provenance). Re-pin only if the branch moves before launch.
+  Both arms need only on-branch files (runner + pool builder), which this commit
+  carries.
 
 BOTH arms are now unblocked (grpo-v2 provenance filled; see below). Remaining
 launch gates are identical for both: pool upload above + Modal proven + explicit
