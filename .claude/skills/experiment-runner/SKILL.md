@@ -31,6 +31,7 @@ Always choose the narrowest reference needed for the task:
 | Inspect or update run records | [reference/run-records.md](reference/run-records.md) |
 | Use common launch command patterns | [reference/common-patterns.md](reference/common-patterns.md) |
 | Prepare/gate hidden-state extraction | [reference/hidden-state-probe-smoke.md](reference/hidden-state-probe-smoke.md) |
+| Decide batch-1 vs batched generation for a GPU cell (parity rules, vLLM/HF lanes, numerics smoke) | [reference/batched-generation.md](reference/batched-generation.md) |
 | Stage an aux_head co-training arm (Phase B: build dataset + A0/A1/A2 recipes + launch prereqs) | [reference/aux-head-cotraining-arms.md](reference/aux-head-cotraining-arms.md) |
 | Plan Phase 3 causal-pilot sweeps | [reference/phase3-causal-pilot-sweeps.md](reference/phase3-causal-pilot-sweeps.md) |
 | Record durable research-session memory | [reference/research-sessions.md](reference/research-sessions.md) |
