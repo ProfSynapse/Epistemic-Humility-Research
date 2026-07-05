@@ -4,7 +4,7 @@ session_id: '0038'
 title: Amendment AI NULL verdict (G1 inverted) and AL prep on the TRUE checkpoint (internals characterization + drift decomposition)
 status: active
 created_at: '2026-07-05T09:00:00Z'
-updated_at: '2026-07-05T15:55:00Z'
+updated_at: '2026-07-05T17:10:00Z'
 phase: phase1
 question: >-
   Amendment AI adjudication: did probe-as-reward GRPO train the model to
@@ -229,6 +229,36 @@ checkpoints:
     log API exists - uptime is the only boot signal). Next discriminator
     (needs approval): one non-3090 SECURE probe and/or one probe without
     the entrypoint override.
+- id: 012-result
+  at: '2026-07-05T17:10:00Z'
+  kind: result
+  title: 'RunPod exonerated: the entire 10-pod boot-failure saga was launcher instrumentation; fixed probe boots in under 2 minutes; TRUE A0 parity cell relaunched (r4)'
+  summary: >-
+    CORRECTS the failure attribution in checkpoints 010-011. The approved
+    discriminator batch (probe D SECURE A5000 with entrypoint override,
+    probe E SECURE 3090 official image without it) "failed" identically,
+    which eliminated the last two platform hypotheses and forced an audit
+    of the sensor itself: the REST /pods response carries NO uptime field
+    at all (docs confirm; only desiredStatus/lastStartedAt), so the
+    launcher's uptimeSeconds boot check read every pod - healthy or not -
+    as never-booted and killed it at the 900s timeout. All six REST-era
+    "boot failures" (probes 2/3, sleep probe, C, D, E) were self-inflicted;
+    the GraphQL-era failures have separate mundane explanations (r1/r2:
+    20GB image pull with no min-download filter; probe A: image ENTRYPOINT
+    crash-looping on command-as-args). Fix: create/terminate stay on REST
+    (JSON body + dockerEntrypoint override), boot polling moves to GraphQL
+    runtime.uptimeInSeconds - which needs the SDK-style api_key query
+    param (Bearer header alone 403s) AND a custom User-Agent (Cloudflare
+    403s default Python-urllib). Verification (user-approved): fixed probe
+    on a community 3090 booted in <2 min (PROBE BOOT OK, uptime 15s,
+    self-terminated); the chained TRUE A0 parity cell relaunched as r4
+    (pod u0bi6ss3wdxs7n, $0.22/hr, 180-min cap), uploading to the private
+    staging repo for the cross-lane parity check against the local TRUE
+    surface. Methodological lesson recorded: hypotheses were "eliminated"
+    for hours through a detector that could not fire; verify the failure
+    sensor against a known-good case before indicting the platform.
+    Launcher PR into the tuner skill proceeds after r4 completes
+    end-to-end.
 - id: 007-checkpoint
   at: '2026-07-05T12:45:00Z'
   kind: checkpoint
