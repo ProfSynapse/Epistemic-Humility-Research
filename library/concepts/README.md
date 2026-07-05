@@ -638,7 +638,7 @@ Atomic notes extracted from the library papers via the Agents-K1 ingestion skill
 - [[valence-arousal-subspace]] : A two-dimensional linear subspace in LLM activation space spanned by a recovered valence axis (pleasure-displeasure) and arousal axis (activ
 - [[world-model-hallucination-modes]] : A three-type taxonomy of failure modes in generative world models, each anchored to a different pipeline stage. Perceptual hallucination occ
 
-## Mechanisms (cause -> effect) (356)
+## Mechanisms (cause -> effect) (358)
 
 - [[abstention-generalization-failure]] : 'instruction-tuning for abstention on a narrow, homogeneous set of refusal expressions and task formats' **prevents** Abstention ability does not generalize to 
 - [[abstract-representations-enable-zero-shot-generalization]] : High degree of abstract (parallel) representation in ANN hidden layers, as measured by parallelism-score, indicating that compositional rule dimensions are enco
@@ -737,6 +737,7 @@ Atomic notes extracted from the library papers via the Agents-K1 ingestion skill
 - [[functional-cooccurrence-drives-spatial-clustering]] : SAE features that tend to fire together within documents (functional co-occurrence, measured by phi-coefficient-cooccurrence) share semantic content **enables**
 - [[gender-bias-spans-many-directions]] : Gender information encoded in glove-word-embeddings **enables** Single-direction projection (e.g. he-she) leaves substantial residual linear gender signal; full
 - [[gender-erasure-reduces-tpr-gap]] : Applying leace to remove gender information from BERT CLS embeddings **decreases** TPR-Gap drops from 0.198 to 0.084 in a downstream profession classifier while
+- [[generation-time-computation-loads-off-the-epistemic-plane]] : Autoregressive generation of an answer to an unanswerable question on a clean-SFT to GRPO-v2 checkpoint, measured as the hidden-state displacement from the pre-
 - [[generator-size-dominates-verifier-size]] : Independently scaling the generator versus the verifier model size in a sample-and-rank pipeline. **increases** Solve rate improves more from a larger generator
 - [[global-conformal-threshold-fails-conditional-coverage]] : A single globally calibrated conformal threshold applied uniformly across heterogeneous prompt categories **prevents** Systematic over-coverage in easier catego
 - [[gpt-input-discarded-immediately]] : Autoregressive next-token prediction objective requiring conversion of input token representations to predicted-output representations **enables** After the ver
@@ -949,6 +950,7 @@ Atomic notes extracted from the library papers via the Agents-K1 ingestion skill
 - [[sft-cold-start-enables-rlvr-clarification]] : Supervised fine-tuning on structured abstention-and-clarification traces before GRPO training **enables** Post-refusal clarification quality (U-Clar) is preserv
 - [[sft-knowledge-state-shifts-during-training]] : Supervised fine-tuning causes the model's internal knowledge state to evolve, turning some initially-unknown questions into answerable ones **increases** Traini
 - [[sft-known-examples-improve-knowledge-utilization]] : 'supervised-finetuning on examples within the model''s knowledge-boundary (Known examples in slick)' **increases** Better test-time accuracy on held-out questio
+- [[sft-rotates-boundary-readout-rl-rides-it]] : Instruction supervised fine-tuning applied to a base model whose answerability (known-vs-unknown) readout is already present at full strength. **mediates** The 
 - [[sft-suppresses-honesty-expression]] : Domain-specific supervised-finetuning perturbs neurons that govern the expression of knowledge-boundary awareness **prevents** The model produces confident fabr
 - [[sft-unknown-examples-drive-hallucination]] : 'supervised-finetuning on examples outside the model''s knowledge-boundary (Unknown examples in slick)' **increases** Increased hallucination on closed-book QA 
 - [[shift-ablation-removes-spurious-gender-signal]] : Human-guided ablation of spurious SAE features identified via sparse feature circuit on an ambiguous (gender-predictive) training set **enables** Classifier wor
