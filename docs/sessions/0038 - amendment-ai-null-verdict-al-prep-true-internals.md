@@ -4,7 +4,7 @@ session_id: '0038'
 title: Amendment AI NULL verdict (G1 inverted) and AL prep on the TRUE checkpoint (internals characterization + drift decomposition)
 status: active
 created_at: '2026-07-05T09:00:00Z'
-updated_at: '2026-07-05T14:05:00Z'
+updated_at: '2026-07-05T14:55:00Z'
 phase: phase1
 question: >-
   Amendment AI adjudication: did probe-as-reward GRPO train the model to
@@ -168,6 +168,31 @@ checkpoints:
     PopQA - no FalseQA). Est ~2h / ~$0.60, 180-min timeout,
     terminate-in-finally. This is the deliberate smoke of the workload
     class that died on HF Jobs networking.
+- id: 010-checkpoint
+  at: '2026-07-05T14:55:00Z'
+  kind: checkpoint
+  title: 'RunPod boot failures diagnosed (no min_download floor + launcher boot-detection bug); prioritized path reassigned to local GPU, RunPod demoted to lane-debug'
+  summary: >-
+    Pods r1 (58evmk39j8odgx) and r2 (luiec5fy5ob38e) both stalled forever
+    pulling the ~20GB pinned unsloth image on community RTX 3090 hosts
+    (desiredStatus RUNNING, uptime 0s, no log push; a documented RunPod
+    community-cloud failure mode). Two root causes: (1) the launcher never
+    set create_pod min_download/min_upload, so slow-network hosts win the
+    bid; (2) launcher counted status==RUNNING with an empty-uptime runtime
+    dict as booted, disarming the 600s boot timeout, so a stalled pull
+    polls to the 180-min cap (r1's launcher also died at compaction,
+    skipping terminate-in-finally - the orphan was killed manually).
+    Launcher patched (scratchpad test copy, to be PR'd into the tuner
+    skill after a green run): min_download 700 / min_upload 200 Mbps
+    floors, booted requires uptimeInSeconds > 0, boot timeout 900s.
+    User-directed lane split: local 3090 carries the prioritized AL path
+    (PERMUTED A0 cell running, TRUE A0 cell chained behind it, identical
+    two-stage runs, outputs under analysis/amendment_al_prep/); RunPod r3
+    (pod zdpe0yxma9gjl8, user-approved) reruns the TRUE cell as a
+    non-blocking lane test that doubles as a cross-lane parity check
+    against the local TRUE surface. Modal lane paused by the user (token
+    pair in .env rejected by the API as nonexistent; needs a fresh
+    dashboard token).
 - id: 007-checkpoint
   at: '2026-07-05T12:45:00Z'
   kind: checkpoint
