@@ -34,6 +34,17 @@ Data (untracked, canonical checkout): the TRUE A0 surface. gen graded rows +
 full-stack (L0..L36) pre-gen safetensors. Loaders reuse
 amendment_al_prep_doubt_axis_check (load_a0_stack, load_jsonl, auroc).
 
+Reconciliation with the prior MI fog-of-war result ("caution survives 40
+direction removals"): NOT a conflict, one signal in two spaces. That removal ran
+in RAW 2560-dim where caution is spread across ~40 near-degenerate, highly
+collinear carriers (each removal peels one thin sliver -> survives many). This
+census first reduces with label-agnostic PCA-128, which concentrates those
+carriers, so caution is a rank-1-to-2 discriminative readout and the deflation
+curve is a permutation-controlled cliff (~0.95 -> ~0.60 after one -> floor at
+two). Unified statement: caution/refusal is a LOW-RANK readout that in the native
+basis rides on many collinear carriers, not a many-headed compound of independent
+discriminative axes.
+
 Usage:
   python hydra_census_stage1.py [--out <dir>] [--quick]
 """
