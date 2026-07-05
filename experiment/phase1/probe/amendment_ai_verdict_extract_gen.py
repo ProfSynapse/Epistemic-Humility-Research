@@ -157,6 +157,12 @@ def run_extract(args) -> int:
     if args.limit:
         pool = pool[: args.limit]
 
+    # --layers keeps the verdict default (L20,L24,L28) byte-identical in the
+    # config payload; an explicit wider list (e.g. L0..L36 for the AL-prep
+    # full-stack surface) changes config_sha, which is correct — it is a
+    # different extraction config.
+    layers = tuple(s.strip() for s in args.layers.split(",") if s.strip())
+
     config_payload = {
         "stage": "amendment_ai_verdict_extract", "surface": args.surface,
         "base_model": args.base_model, "load_in_4bit": True,
@@ -165,7 +171,7 @@ def run_extract(args) -> int:
         "prime": "NONE-baseline-only", "enable_thinking": False,
         "anchor_position": "prompt_len-1", "persist_dtype": "float32",
         "generation": "NONE-forward-only", "batch_size": 1,
-        "layers": list(LAYERS),
+        "layers": list(layers),
     }
     config_sha = _config_sha(config_payload)
 
@@ -176,7 +182,7 @@ def run_extract(args) -> int:
                                    args.adapter_revision)
     device = next(model.parameters()).device
     n_layers = model.config.num_hidden_layers
-    for lk in LAYERS:
+    for lk in layers:
         li = int(lk[1:])
         if li > n_layers:
             raise RuntimeError(f"layer {lk} > n_layers {n_layers}")
@@ -192,7 +198,7 @@ def run_extract(args) -> int:
             out = model(**enc, output_hidden_states=True, use_cache=False)
         hs = out.hidden_states
         vecs = {lk: hs[int(lk[1:])][0, prompt_len - 1, :].float().cpu().contiguous()
-                for lk in LAYERS}
+                for lk in layers}
         return vecs, prompt_len
 
     # determinism spot-check (L24 re-forward bit-identical, threshold <= 1e-5)
@@ -264,7 +270,7 @@ def run_extract(args) -> int:
         "hidden_dim": model.config.hidden_size, "n_pool": len(pool),
         "n_written": written, "determinism_spot_check": spot,
         "runtime_sec": round(time.time() - t0, 1), "out_dir": str(out_dir),
-        "tensor_layer_keys": list(LAYERS),
+        "tensor_layer_keys": list(layers),
     }
     (out_dir / "manifest.json").write_text(json.dumps(manifest, indent=2),
                                            encoding="utf-8")
@@ -436,6 +442,11 @@ def parse_args(argv=None):
     ap.add_argument("--out-dir", required=True)
     ap.add_argument("--limit", type=int, default=0)
     ap.add_argument("--overwrite", action="store_true")
+    ap.add_argument("--layers", default=",".join(LAYERS),
+                    help="comma-separated hidden-state keys to persist for "
+                         "--stage extract (default keeps the verdict trio; "
+                         "pass an explicit wider list like L0,L1,...,L36 for "
+                         "the AL-prep full-stack surface)")
     args = ap.parse_args(argv)
     if args.stage == "extract" and not args.surface:
         ap.error("--stage extract requires --surface")
