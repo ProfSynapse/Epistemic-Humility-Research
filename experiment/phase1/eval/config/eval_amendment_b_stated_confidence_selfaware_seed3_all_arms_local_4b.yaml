@@ -53,14 +53,17 @@ arms:
   - name: sft_seed3
     method: sft
     model: qwen3-4b-instruct
+    # staged on HF: professorsynapse/eh-qwen3-4b-headline-sft-seed3-lora @ b3efd6e7aa133c8ad17d35ec569335b6a858d423
     adapter: /workspace/repo/synaptic-tuner/toolset-training-artifacts/runs/local/4b/sft__4b__headline__seed3/20260615_104507/final_model
   - name: dpo_seed3
     method: dpo
     model: qwen3-4b-instruct
+    # staged on HF: professorsynapse/eh-qwen3-4b-headline-dpo-seed3-lora @ dc95b05729a9b45e9335d3ac5ed84cc55f84ac81
     adapter: /workspace/repo/synaptic-tuner/toolset-training-artifacts/runs/local/4b/dpo__4b__headline__seed3/20260615_130441/final_model
   - name: kto_seed3
     method: kto
     model: qwen3-4b-instruct
+    # staged on HF: professorsynapse/eh-qwen3-4b-headline-kto-seed3-lora @ ce68f04723cd9cad30ff58d8037a8629a6adb486
     adapter: /workspace/repo/synaptic-tuner/toolset-training-artifacts/runs/local/4b/kto__4b__headline__seed3/20260615_204215_logging_patch/final_model
 
 eval_sets:

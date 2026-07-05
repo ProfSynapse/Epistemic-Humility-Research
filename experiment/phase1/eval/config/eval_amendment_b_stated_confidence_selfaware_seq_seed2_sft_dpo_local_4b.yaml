@@ -48,6 +48,7 @@ arms:
   - name: sft_dpo_seed2
     method: dpo
     model: qwen3-4b-sft-merged-seed2-lowmem
+    # staged on HF: professorsynapse/eh-qwen3-4b-seq-sft-dpo-seed2-lora @ 62c2cf65d93509ee86bdedb257512f9055a4ff1a
     adapter: /workspace/repo/synaptic-tuner/toolset-training-artifacts/runs/local/4b/sft_dpo__4b__amendment_a__seed2/20260616_164539/final_model
 
 eval_sets:

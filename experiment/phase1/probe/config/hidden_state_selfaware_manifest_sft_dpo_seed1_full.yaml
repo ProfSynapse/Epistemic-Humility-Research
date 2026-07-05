@@ -25,6 +25,7 @@ arms:
     adapter: null
   - name: sft_dpo_seed1
     adapter_state: active
+    # staged on HF: professorsynapse/eh-qwen3-4b-seq-sft-dpo-seed1-lora @ 45138e73be9d28fcf9537a9d2de49d90ebf8601b
     adapter: /workspace/repo/synaptic-tuner/toolset-training-artifacts/runs/local/4b/sft_dpo__4b__amendment_a__seed1/20260614_074933/final_model
 
 eval_arms_source: null

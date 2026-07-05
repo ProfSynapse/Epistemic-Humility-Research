@@ -56,6 +56,7 @@ arms:
   - name: grpo_v3_beta005_on_contrastive_sft_seed1
     method: contrastive_schema_sft_grpo_v3_beta005
     model: qwen3-4b-contrastive-schema-sft-merged-seed1
+    # staged on HF: professorsynapse/eh-qwen3-4b-contrastive-sft-grpo-v3-beta005-seed1-lora @ b158a9a88cfab36ea089f014d228ddf5ca76809a
     adapter: /workspace/repo/scratch/schema_response_confidence/runs/schema_contrastive_sft_grpo_v3_beta005_seed1_full/20260629_010141/final_model
 
 eval_sets:

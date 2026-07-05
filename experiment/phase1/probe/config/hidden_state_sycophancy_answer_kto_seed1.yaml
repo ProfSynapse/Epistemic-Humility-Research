@@ -28,6 +28,7 @@ arms:
     adapter: null
   - name: kto_seed1
     adapter_state: active
+    # staged on HF: professorsynapse/eh-qwen3-4b-headline-kto-seed1-lora @ ebfa75363afe9a92c97b7032acd608359b2026f6
     adapter: /workspace/repo/synaptic-tuner/toolset-training-artifacts/runs/local/4b/kto__4b__headline__seed1/20260613_151337_logging_patch/final_model
 
 eval_arms_source: null
