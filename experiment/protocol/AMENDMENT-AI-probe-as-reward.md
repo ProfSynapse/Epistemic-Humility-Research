@@ -24,16 +24,22 @@ predictions:
       Pre-authorize: I predict TRUE wins (recorded pre-launch via the
       overnight authorization; launch conditional on smoke green + refit
       sensor AUROC >= 0.9 + constants derived per the pre-stated rules).
-outcome: null
-scoreboard: null
+outcome: >-
+  NULL (G1 fail, G0 pass) — adjudicated by the user 2026-07-05. The reward
+  channel also does not couple the readout: TRUE-arm congruence 59.75% vs
+  PERMUTED 76.75%, differential −17.0pt (10k paired bootstrap CI
+  [−21.5, −12.5], excludes 0 on the wrong side; gate needed ≥ +10pt).
+  Instrument valid (fresh per-arm probes OOF AUROC 0.9948/0.9946, both arms
+  full 2934 steps, no halts). G2 fails for both arms (over-refusal released;
+  abstain-when-unanswerable preserved at +0.49pt). Strengthens H-compliance
+  generality across channels (M, N, R, AA/AB text, AI reward).
+scoreboard: TIE/TIE — both predicted TRUE wins; both wrong.
 ---
 
 # Amendment AI — Probe-as-Reward (PAR): training the model to consult its own readout
 
-**Status: SIGNED — all three launch conditions verified 2026-07-04
-(smoke v2 all-green, sensor v2 AUROC 0.9945, constants recorded §1.2–1.3);
-arms launched under the user's 2026-07-03 pre-authorization (frontmatter).
-Gates §2 locked as written; verdict adjudication waits for the user.**
+**Status: RESOLVED — NULL (G1 fail, G0 pass), adjudicated by the user
+2026-07-05. Gates §2 scored as locked; full verdict in §5.**
 **Tier:** A (new evidence cell; gates pre-stated before launch).
 **Branch:** `amendment-ai-probe-as-reward` (off main after PR #178).
 **Depends on:** AH (H-COMPLIANCE certified via A1 — the text channel does not
@@ -250,3 +256,81 @@ it and recomputes all gate arithmetic from raw rows; the user adjudicates).
   generation) run per the lead's completion-time order; the scorer input
   contract is documented in the script header. Verdict tiers computed
   mechanically per §2; adjudication is the user's.
+
+## 5. Verdict (scored 2026-07-05; adjudicated NULL by the user 2026-07-05)
+
+Mechanical tier per §2: **NULL (G1 fail, G0 pass)**. Scorer:
+`amendment_ai_verdict_score.py` over the all-local evidence set (both arms'
+generations and all four extraction cells run on the identical local lane
+after repeated HF Jobs node failures; symmetric instrument). Report:
+`analysis/amendment_ai/verdict/verdict_report.json` (untracked analysis
+output).
+
+### AI-G0 — PASS (both arms)
+
+| arm | steps | halted | fresh-probe OOF AUROC (n=18,475) | pass |
+|---|---|---|---|---|
+| TRUE | 2934/2934 | no | 0.9948 | yes |
+| PERMUTED | 2934/2934 | no | 0.9946 | yes |
+
+Training destroyed nothing: a probe refit on each FINAL checkpoint still
+reads gold near-perfectly. The G1 result is signal, not instrument failure.
+
+### AI-G1 — FAIL, significantly inverted
+
+TRUE congruence **59.75%** vs PERMUTED **76.75%** on the 400-row gold-labeled
+holdout; differential **−17.0pt**, 10k paired bootstrap 95% CI
+**[−21.5, −12.5]** (seed 0). The gate required ≥ +10pt with CI excluding 0;
+the CI excludes 0 on the opposite side. Every descriptive stratum points the
+same direction (fresh-divergent −18.1, D-over −16.5, D-under −30.8, union
+origin −23.8, mining origin −16.6); this is not one stratum.
+
+Composition note recorded for honest reading (post-hoc, not a gate): 387/400
+holdout rows are D-over (readout says answerable, gold unknown), so on this
+pool congruence-with-own-readout numerically tracks answer rate (TRUE
+answered 238/400, PERMUTED 316/400). The negative differential therefore has
+a mechanistic reading: the TRUE arm learned to REFUSE divergent rows whose
+own readout still says "answer" — anti-congruent by the locked measure,
+boundary-preserving in behavior. The gate stands as locked; this note is
+context for §5.4, not a re-scoring.
+
+### AI-G2 — FAIL (both arms; TRUE scored, PERMUTED descriptive)
+
+vs pinned GRPO-v2 reference 93.41 / 33.38 / 53.85 (n=3,369 SelfAware, same
+pipeline/config/surface, checkpoint swapped):
+
+| trio | TRUE | Δ | within 5pt |
+|---|---|---|---|
+| abstain-when-unanswerable | 93.90 | +0.49 | yes |
+| answer-when-answerable | 71.25 | +37.87 | no |
+| correctness-among-answered | 33.63 | −20.22 | no |
+
+PERMUTED (descriptive): 89.73 / 86.22 / 27.99. Both arms release
+over-refusal (generic GRPO answer-more drift; the control drifts harder);
+the TRUE arm alone preserves the refusal boundary (+0.49pt; hallucinations
+on unknowns 63 vs PERMUTED 106, 40% fewer) and holds higher precision among
+answered (33.6 vs 28.0).
+
+### 5.4 Interpretation
+
+The pre-registered question was "can the model be trained to consult its own
+readout?" and the pre-registered answer is **no**: with the most direct
+incentive available — the reward IS the readout, computed from the policy's
+own pre-generation states — the trained policy ends up LESS congruent with
+its readout than a random-reward control. The differential behavior the
+sensor reward did buy (boundary held, fewer hallucinations, higher
+precision) is consistent with GRPO teaching the semantic correlates of what
+the sensor fires on, not readout consultation: on rows where readout and
+content dissociate (D-over), the TRUE arm sides with content against its own
+readout. This is the same knows-but-doesn't-consult shape AH certified for
+the instruction channel, now extended to the reward channel. Use-the-signal
+nulls across channels: M (SFT distillation), N (KL), R (co-train), AA/AB
+(text self-report), AI (reward). The positive results remain external:
+AC (coupled prompt), O (probe-as-oracle), the gate/dial/veto pipeline.
+
+Both frontmatter predictions called TRUE wins; both were wrong: **TIE/TIE**
+(ledger updated). Seed replication explicitly deferred to backlog by the
+user 2026-07-05 ("I honestly trust this ... this lined up with all our
+previous evidence that at least these training types can't access the
+internals"); the program pivots to radial steering (Amendment AL) as the
+highest-leverage direction.
