@@ -54,3 +54,6 @@ __pycache__/
 unsloth_compiled_cache/
 
 .obsidian/
+
+# web-app bundle dump (log-viewer artifact; not experiment data)
+experiment/phase1/probe/assets/
