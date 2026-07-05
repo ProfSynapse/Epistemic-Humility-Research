@@ -1,9 +1,10 @@
 ---
 amendment: AL
 slug: radial-anti-propensity-steering
-status: DRAFT 2026-07-05 — awaiting user sign-off and the user's pre-launch
-  prediction; control-law choice (ungated primary + gated secondary) approved
-  by the user 2026-07-05 from the ceiling-table comparison
+status: SIGNED 2026-07-05 (user recorded predictions and answered "Sign and
+  launch"; local GPU runs authorized, no cloud spend); gates in section 4
+  LOCKED as drafted; control-law choice (ungated primary + gated secondary)
+  approved by the user 2026-07-05 from the ceiling-table comparison
 question: >-
   Does pushing against the confabulation-propensity direction at generation
   time causally convert residual confabulations into refusals on the AI-TRUE
@@ -27,9 +28,15 @@ predictions:
       caution-residualized by construction, so its behavioral lever is
       unproven and the sim kill models assume what G2 tests.
   user:
-    calls: null
-    recorded: null
-    quote: null
+    calls:
+      AL-G1: PASS
+      AL-G2: PASS
+      AL-G3: PASS
+    recorded: 2026-07-05
+    quote: >-
+      All three gates called PASS at signing ("Sign and launch"), followed
+      by "LETS BE BOLD!" - the user takes the actuation bet at full
+      confidence where the orchestrator sits at 45-50% on G2/G3.
 outcome: null
 scoreboard: pending
 ---

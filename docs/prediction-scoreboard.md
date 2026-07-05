@@ -39,6 +39,7 @@ neither side and are tallied separately.
 | AJ (knowledge-subspace erasure) | SURVIVES (AJ-G2 PASS) | SURVIVES (AJ-G2 PASS, ~85%) | Adjudicated **SURVIVES, dependency quantified**: certificate PASS (0.996 → 0.496), caution 0.858 post-erasure, but the random-control gap landed ON the pre-stated 0.05 line (0.054 ± 0.006 across 24 seeds; P(≤0.05) = 0.415) — strict G2 ambiguous | **TIE / TIE** |
 | AK (commitment-point) — SIGNED, not launched | G1 PASS; G2 path **H-rise** ("I bet doubt increases"); G3 PASS | G1 PASS (~80%); G2 path **H-flat-then-rise** (~55%, second pick H-rise); G3 PASS (~75%) | _pending — launch gated behind Amendment AI arc + GPU approval_ | — |
 | AI (probe-as-reward) | TRUE wins | TRUE wins (~65%) | **NULL, G1 inverted**: TRUE congruence 59.75% vs PERMUTED 76.75%, differential −17.0pt (CI [−21.5, −12.5] excludes 0 on the wrong side); G0 valid (fresh probes 0.9948/0.9946); G2 fails both arms (over-refusal released) though TRUE alone holds the refusal boundary (+0.49pt, 40% fewer hallucinations than control). Reward channel doesn't couple the readout | **TIE / TIE** |
+| AL (radial anti-propensity steering) — SIGNED 2026-07-05, launched | G1 PASS; G2 PASS; G3 PASS ("LETS BE BOLD!") | G1 PASS (~75%); G2 PASS (~45%); G3 PASS (~50%) | _pending — local GPU steering arms running_ | — |
 
 Running tally: **user 3 – orchestrator 2 – ties 2** (AG predates the
 two-sided practice; the user gets the point, the orchestrator gets the
