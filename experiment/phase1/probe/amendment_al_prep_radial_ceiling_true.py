@@ -90,6 +90,17 @@ def main() -> int:
     ap = argparse.ArgumentParser(description=__doc__)
     ap.add_argument("--arm", default="true_a0")
     ap.add_argument("--al-prep-dir", default=str(DEFAULT_AL_PREP))
+    ap.add_argument("--gate", default="logistic", choices=["logistic", "meandiff"],
+                    help="gate score construction. 'logistic' trains on the raw "
+                         "answerable/unanswerable label over ALL rows, which "
+                         "pulls confabs (unanswerable rows that look answerable) "
+                         "onto the answerable side -- the blind spot found in "
+                         "the first run. 'meandiff' projects onto the OOF "
+                         "correct-answered minus refused-unanswerable cell-mean "
+                         "direction, fit only on behaviorally clean cells "
+                         "(ans_correct-vs-confab AUROC 0.926 in the "
+                         "familiarity_vs_knowing report vs 0.34-above-refusals "
+                         "for confabs).")
     args = ap.parse_args()
     al_prep = Path(args.al_prep_dir)
     rng_global = np.random.default_rng(SEED)
@@ -114,12 +125,31 @@ def main() -> int:
     y_ans = np.array([1 if r["gold_class"] == "answerable" else 0 for r in rows])
     y_ref = np.array([1 if r["refused"] else 0 for r in rows])
 
-    g_all = oof_logistic(P24, y_ans, SEED)
+    if args.gate == "logistic":
+        g_all = oof_logistic(P24, y_ans, SEED)
+    else:
+        from amendment_al_prep_familiarity_vs_knowing import oof_meandiff_proj
+        P24s = StandardScaler().fit_transform(P24)
+        ka_idx = np.array([i for i, r in enumerate(rows)
+                           if r["gold_class"] == "answerable" and r["answered"]
+                           and r["correct"] is True])
+        ur_idx = np.array([i for i, r in enumerate(rows)
+                           if r["gold_class"] == "unanswerable" and r["refused"]])
+        g_all = oof_meandiff_proj(P24s, ka_idx, ur_idx, SEED)
     c_raw = oof_logistic(P35, y_ref, SEED + 1)
     c_all = (c_raw - c_raw.mean()) / c_raw.std()
 
+    confab_idx = np.array([i for i, r in enumerate(rows)
+                           if r["gold_class"] == "unanswerable" and r["answered"]])
+    kacorr_idx = np.array([i for i, r in enumerate(rows)
+                           if r["gold_class"] == "answerable" and r["answered"]
+                           and r["correct"] is True])
+    findings["gate_kind"] = args.gate
     findings["readout_quality"] = {
         "g_oof_auroc_answerable": round(float(roc_auc_score(y_ans, g_all)), 4),
+        "g_auroc_anscorrect_vs_confab": round(float(roc_auc_score(
+            np.r_[np.ones(len(kacorr_idx)), np.zeros(len(confab_idx))],
+            np.r_[g_all[kacorr_idx], g_all[confab_idx]])), 4),
         "c_oof_auroc_refused": round(float(roc_auc_score(y_ref, c_raw)), 4),
     }
 
@@ -412,7 +442,8 @@ def main() -> int:
               f"{json.dumps(findings['aim_small_gate_derivation'][label]['suggested_gates'])}",
               flush=True)
 
-    out_dir = al_prep / "radial_ceiling_true"
+    out_dir = al_prep / ("radial_ceiling_true" if args.gate == "logistic"
+                         else f"radial_ceiling_true_gate_{args.gate}")
     out_dir.mkdir(parents=True, exist_ok=True)
     (out_dir / "findings.json").write_text(json.dumps(findings, indent=2))
     print(f"WROTE {out_dir / 'findings.json'}", flush=True)
