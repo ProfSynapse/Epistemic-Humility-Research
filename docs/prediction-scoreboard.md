@@ -38,8 +38,9 @@ neither side and are tallied separately.
 | AH Addendum A1 (G1 recalibration) | PASS — clears +20pt | PASS (~80%) | PASS +50.98pt; monotone caution-quintile gradient confirmed the population diagnosis | **WIN / WIN** |
 | AJ (knowledge-subspace erasure) | SURVIVES (AJ-G2 PASS) | SURVIVES (AJ-G2 PASS, ~85%) | Adjudicated **SURVIVES, dependency quantified**: certificate PASS (0.996 → 0.496), caution 0.858 post-erasure, but the random-control gap landed ON the pre-stated 0.05 line (0.054 ± 0.006 across 24 seeds; P(≤0.05) = 0.415) — strict G2 ambiguous | **TIE / TIE** |
 | AK (commitment-point) — SIGNED, not launched | G1 PASS; G2 path **H-rise** ("I bet doubt increases"); G3 PASS | G1 PASS (~80%); G2 path **H-flat-then-rise** (~55%, second pick H-rise); G3 PASS (~75%) | _pending — launch gated behind Amendment AI arc + GPU approval_ | — |
+| AI (probe-as-reward) | TRUE wins | TRUE wins (~65%) | **NULL, G1 inverted**: TRUE congruence 59.75% vs PERMUTED 76.75%, differential −17.0pt (CI [−21.5, −12.5] excludes 0 on the wrong side); G0 valid (fresh probes 0.9948/0.9946); G2 fails both arms (over-refusal released) though TRUE alone holds the refusal boundary (+0.49pt, 40% fewer hallucinations than control). Reward channel doesn't couple the readout | **TIE / TIE** |
 
-Running tally: **user 3 – orchestrator 2 – ties 1** (AG predates the
+Running tally: **user 3 – orchestrator 2 – ties 2** (AG predates the
 two-sided practice; the user gets the point, the orchestrator gets the
 excuse. AH resolved TIE/TIE at first adjudication — instrument voided at
 the locked gates — then upgraded to WIN/WIN when the pre-registered
@@ -47,7 +48,9 @@ Addendum A1 recalibration certified the instrument on a fair population.
 The Addendum A1 row scores separately: a distinct pre-registered question
 with both predictions recorded before launch. AJ scores TIE/TIE: both
 called the same strict gate outcome and the gate statistic landed
-statistically indistinguishable from its threshold.)
+statistically indistinguishable from its threshold. AI scores TIE/TIE:
+convergent predictions that both missed — both called TRUE wins and the
+gate came back significantly inverted.)
 
 Threshold-setting lesson (AJ, 2026-07-04): both predictions were
 substantively right and the gate still failed to certify, because the

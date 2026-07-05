@@ -37,6 +37,20 @@ DEFAULT_IMAGE = "pytorch/pytorch:2.9.0-cuda12.8-cudnn9-runtime"
 PIP_SPEC = "'transformers==5.12.1' accelerate safetensors scikit-learn 'huggingface_hub>=1.5'"
 DEFAULT_RESULTS_REPO = "professorsynapse/epistemic-humility-cloud-results"
 
+# Amendment AI verdict lane: the cells load the clean-SFT base 4-bit through
+# unsloth (sensor-v2 serving lineage), so they need the pinned stable Unsloth
+# image, not the plain pytorch base. Image + digest per cloud-lane.md.
+AI_VERDICT_IMAGE = ("unsloth/unsloth:2026.1.2-pt2.9.0-cu12.8-update@sha256:"
+                    "5266c57be21059bfb407d80dc2f448868a5c2e2dbe7b2aa27780f48b48cbec39")
+# The stable Unsloth image already carries unsloth + a matched transformers/
+# torch/peft stack; only add the small CPU-side deps the cells import at the
+# top level. Do NOT --upgrade the ML stack (cloud-lane.md: mid-session numpy/
+# transformers upgrades have failed jobs). huggingface_hub must stay <1.0:
+# transformers 4.57 requires it, and the first launch attempt proved >=1.5
+# upgrades the image's hub to 1.22 and breaks that constraint.
+AI_VERDICT_PIP_SPEC = "scikit-learn 'huggingface_hub>=0.34,<1.0' pyyaml"
+DEFAULT_STAGING_REPO = "professorsynapse/eh-ai-verdict-staging"
+
 
 def build_command(args, extract_args: list[str]) -> list[str]:
     cell = " ".join([
@@ -67,15 +81,72 @@ def build_command(args, extract_args: list[str]) -> list[str]:
     return ["/bin/bash", "-c", " && ".join(steps)]
 
 
+def build_ai_verdict_command(args) -> list[str]:
+    """Amendment AI verdict cell: hf_jobs_ai_verdict.sh (extract | generate).
+
+    Positional contract matches the wrapper:
+      <stage> <surface|-> <arm_tag> <staging_repo> <base_model>
+      <adapter_repo|-> <adapter_revision|-> <pool_path_in_repo>
+    """
+    cell = " ".join([
+        "bash experiment/phase1/probe/cloud/hf_jobs_ai_verdict.sh",
+        shlex.quote(args.stage),
+        shlex.quote(args.surface or "-"),
+        shlex.quote(args.arm_tag),
+        shlex.quote(args.staging_repo),
+        shlex.quote(args.base_model),
+        shlex.quote(args.adapter_repo or "-"),
+        shlex.quote(args.adapter_revision or "-"),
+        shlex.quote(args.pool_in_repo),
+    ])
+    steps = [
+        "set -euo pipefail",
+        "command -v git >/dev/null || (apt-get update -qq && apt-get install -yqq git)",
+        # Unsloth image already has the ML stack; add only CPU-side deps
+        # (no --upgrade; cloud-lane.md).
+        f"pip install -q --no-cache-dir {AI_VERDICT_PIP_SPEC}",
+        f"git clone --filter=blob:none {REPO_URL} /tmp/repo",
+        "cd /tmp/repo",
+        f"git checkout --detach {shlex.quote(args.commit)}",
+        cell,
+    ]
+    return ["/bin/bash", "-c", " && ".join(steps)]
+
+
 def main() -> int:
     ap = argparse.ArgumentParser(description=__doc__,
                                  formatter_class=argparse.RawDescriptionHelpFormatter)
-    ap.add_argument("--model", required=True)
-    ap.add_argument("--gate-rows", required=True,
-                    help="repo-relative path to a tracked gate-rows pool file")
+    ap.add_argument("--model", default=None,
+                    help="serving base (required for the X/readout lane)")
+    ap.add_argument("--gate-rows", default=None,
+                    help="repo-relative path to a tracked gate-rows pool file "
+                         "(X/readout lane)")
     ap.add_argument("--commit", required=True,
                     help="commit sha pinning the clone; MUST be pushed to the public remote")
-    ap.add_argument("--run-tag", required=True)
+    ap.add_argument("--run-tag", default=None,
+                    help="run tag (X/readout lane; the AI lane derives its own)")
+
+    # --- Amendment AI verdict lane (extract | generate) ---
+    ai = ap.add_argument_group("amendment AI verdict lane")
+    ai.add_argument("--ai-verdict", action="store_true",
+                    help="launch an Amendment AI verdict cell "
+                         "(hf_jobs_ai_verdict.sh) instead of the X/readout cell")
+    ai.add_argument("--stage", choices=["extract", "generate"],
+                    help="AI verdict stage")
+    ai.add_argument("--surface", choices=["union", "holdout"],
+                    help="AI verdict extract surface (omit for --stage generate)")
+    ai.add_argument("--arm-tag", choices=["true", "permuted"],
+                    help="which arm this cell is for (namespaces the staging upload)")
+    ai.add_argument("--base-model",
+                    help="clean-SFT merged base HF repo id (AI lane)")
+    ai.add_argument("--adapter-repo", default=None,
+                    help="trained LoRA adapter HF repo id (AI lane; the arm under eval)")
+    ai.add_argument("--adapter-revision", default=None,
+                    help="adapter repo revision/commit to pin (AI lane)")
+    ai.add_argument("--staging-repo", default=DEFAULT_STAGING_REPO,
+                    help="private staging dataset repo for AI verdict IO")
+    ai.add_argument("--pool-in-repo",
+                    help="path (inside the staging repo) of the input pool jsonl")
     ap.add_argument("--cell-script", default="hf_jobs_cell.sh",
                     choices=["hf_jobs_cell.sh", "hf_jobs_arm_b.sh"],
                     help="in-job wrapper: hf_jobs_cell.sh = extract->score "
@@ -97,12 +168,35 @@ def main() -> int:
     if extract_args and extract_args[0] == "--":
         extract_args = extract_args[1:]
 
+    if args.ai_verdict:
+        required = {"--stage": args.stage, "--arm-tag": args.arm_tag,
+                    "--base-model": args.base_model,
+                    "--pool-in-repo": args.pool_in_repo}
+        missing = [k for k, v in required.items() if not v]
+        if args.stage == "extract" and not args.surface:
+            missing.append("--surface (required for --stage extract)")
+        if missing:
+            print(f"FATAL: --ai-verdict requires: {', '.join(missing)}",
+                  file=sys.stderr)
+            return 2
+        if args.image == DEFAULT_IMAGE:      # not overridden -> use the AI image
+            args.image = AI_VERDICT_IMAGE
+    else:
+        missing = [k for k, v in (("--model", args.model),
+                                  ("--gate-rows", args.gate_rows),
+                                  ("--run-tag", args.run_tag)) if not v]
+        if missing:
+            print(f"FATAL: the X/readout lane requires: {', '.join(missing)}",
+                  file=sys.stderr)
+            return 2
+
     tok = os.environ.get("HF_TOKEN")
     if not tok and not args.dry_run:
         print("FATAL: HF_TOKEN not in environment", file=sys.stderr)
         return 2
 
-    command = build_command(args, extract_args)
+    command = (build_ai_verdict_command(args) if args.ai_verdict
+               else build_command(args, extract_args))
     print(f"[launch] image={args.image} flavor={args.flavor} timeout={args.timeout}")
     print(f"[launch] command: {command[2]}")
     if args.dry_run:
