@@ -4,7 +4,7 @@ session_id: '0038'
 title: Amendment AI NULL verdict (G1 inverted) and AL prep on the TRUE checkpoint (internals characterization + drift decomposition)
 status: active
 created_at: '2026-07-05T09:00:00Z'
-updated_at: '2026-07-05T14:55:00Z'
+updated_at: '2026-07-05T15:55:00Z'
 phase: phase1
 question: >-
   Amendment AI adjudication: did probe-as-reward GRPO train the model to
@@ -193,6 +193,42 @@ checkpoints:
     against the local TRUE surface. Modal lane paused by the user (token
     pair in .env rejected by the API as nonexistent; needs a fresh
     dashboard token).
+- id: 011-result
+  at: '2026-07-05T15:55:00Z'
+  kind: result
+  title: 'Local A0 cells complete + graded; L35 doubt-axis check lands; RunPod boot failure survives every isolation probe including SECURE cloud'
+  summary: >-
+    Prioritized path: both local A0 cells finished (PERMUTED then TRUE,
+    chained; 1,662 rows each, greedy gen + full-stack L0..L36 pre-gen
+    extraction, integrity-verified). AH-lineage grading
+    (amendment_al_prep_grade_a0_generations.py): TRUE answers 64.8% of
+    answerables at 42.9% accuracy-among-graded and confabulates 8.7% of
+    unanswerables; PERMUTED 75.9% / 38.2% / 15.2% - the sensor arm's
+    hold-back trades ~11pt answering for ~halved confabulation. Doubt-axis
+    check (amendment_al_prep_doubt_axis_check.py): arm-local L35 doubt
+    axis reads answerable-vs-unanswerable at 0.90 AUROC and, within
+    unanswerables, confab-vs-refused at 0.84 (confabs sit on the
+    reads-as-known side - the radial/gated intervention has signal);
+    local caution reads refusal 0.93. grpo_v2 reference axes transfer
+    weakly (0.68/0.65, direction cos ~0.17/0.05; cross-surface AND
+    cross-checkpoint - refit per checkpoint confirmed). TRUE and PERMUTED
+    local axes are near-identical (cos 0.99/0.97/0.95): the reward
+    mapping does not rotate the readable geometry. Row-aligned TRUE-PERM
+    drift peaks mid-network (L19-23, rel 0.12-0.13, echoing the 008
+    4-way decomposition) and at L35 is mostly OFF-axis (variance fraction
+    2-5%; mean drift cos -0.26 with doubt / +0.27 with caution, signs
+    matching the behavioral hold-back). RunPod lane: probes 2/3 (REST
+    dockerEntrypoint override; official cached runpod/pytorch image), a
+    4-min sleep probe, and probe C on SECURE cloud ALL fail identically
+    (RUNNING, uptime 0, 900s timeout, self-terminated) - community-pool,
+    image-pull, entrypoint-crash-loop, and fast-exit explanations
+    eliminated; every dead pod shares RTX 3090 + dockerEntrypoint
+    override as the last untested variables. Launcher rewritten on the
+    REST API along the way (JSON body kills the SDK's unescaped
+    dockerArgs GraphQL bug; allowedCudaVersions enum caps at 13.0; no
+    log API exists - uptime is the only boot signal). Next discriminator
+    (needs approval): one non-3090 SECURE probe and/or one probe without
+    the entrypoint override.
 - id: 007-checkpoint
   at: '2026-07-05T12:45:00Z'
   kind: checkpoint
