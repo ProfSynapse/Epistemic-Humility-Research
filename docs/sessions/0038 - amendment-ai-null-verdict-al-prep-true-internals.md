@@ -4,7 +4,7 @@ session_id: '0038'
 title: Amendment AI NULL verdict (G1 inverted) and AL prep on the TRUE checkpoint (internals characterization + drift decomposition)
 status: active
 created_at: '2026-07-05T09:00:00Z'
-updated_at: '2026-07-05T12:45:00Z'
+updated_at: '2026-07-05T14:05:00Z'
 phase: phase1
 question: >-
   Amendment AI adjudication: did probe-as-reward GRPO train the model to
@@ -133,6 +133,41 @@ checkpoints:
     analysis/amendment_al_prep/grpo_v2_extract_union/data. Adds the
     deployment checkpoint's drift on the same pool; both characterization
     scripts then extend to the four-way (drift script takes --grpo-dir).
+- id: 008-result
+  at: '2026-07-05T13:30:00Z'
+  kind: result
+  title: 'Four-way decomposition CORRECTS the generic-drift reading: label-signed caution/commitment reshaping is PAR-curriculum drift, absent in GRPO-v2'
+  summary: >-
+    With the GRPO-v2 union extraction added (18,496 rows, local GPU,
+    user-approved), the deployment checkpoint's drift looks nothing like the
+    PAR arms: smaller (norm 7.1 vs 10.9/12.1), bank fraction 1.8 percent,
+    commitment known -0.15 / unknown +0.03 (opposite sign pattern, near
+    zero), caution uniformly slightly UP on both classes (+0.10/+0.06,
+    matching its over-refusal profile), and PC1 essentially label-agnostic
+    (corr_label 0.06 vs 0.76 TRUE / 0.63 PERMUTED). So the label-signed
+    caution/commitment reshaping in checkpoint 005 is NOT generic GRPO
+    drift: it is shared by the two PAR arms because both trained on the
+    same union pool + reward scaffold (even a permuted probe signal leaves
+    pool exposure organizing drift by label). Revised attribution:
+    label-signed epistemic reshaping = PAR curriculum; hold-back
+    (anti-commitment, toward-unanswerable) = the sensor signal
+    specifically; diffuse label-agnostic drift = GRPO generally. Report:
+    analysis/amendment_al_prep/drift_decomposition_4way_report.json
+    (untracked).
+- id: 009-launch
+  at: '2026-07-05T14:05:00Z'
+  kind: launch
+  title: 'RunPod lane first paid launch: TRUE A0-surface cell live on an RTX 3090 (pod 58evmk39j8odgx)'
+  summary: >-
+    User added RUNPOD_API_KEY (test key, rotates with HF) and directed RTX
+    3090 community for local-setup parity. Cell = runpod_al_true_a0.sh at
+    pinned sha c2699603: greedy generation (raw answer_text, graded
+    locally) + full-stack L0..L36 pre-gen extraction on the 1,662-row A0
+    pool with the TRUE LoRA, uploading to the new PRIVATE staging repo
+    professorsynapse/eh-al-prep-staging (pool is KUQ/SelfAware/TriviaQA/
+    PopQA - no FalseQA). Est ~2h / ~$0.60, 180-min timeout,
+    terminate-in-finally. This is the deliberate smoke of the workload
+    class that died on HF Jobs networking.
 - id: 007-checkpoint
   at: '2026-07-05T12:45:00Z'
   kind: checkpoint
