@@ -1,0 +1,11 @@
+
+[a1_lexical_baseline] source=h_lora
+  residual best L35 AUROC=0.9971  lexical AUROC=0.9641  margin=+0.0330
+  VERDICT [INTERNAL-STATE]: residual probe BEATS the lexical baseline by +0.033 (0.997 vs 0.964); the boundary code carries internal state beyond surface question vocabulary.
+
+[a2_within_known_refused_vs_answered] source=h_lora
+  residual best L35 AUROC=0.9193  lexical AUROC=0.6409  margin=+0.2784
+  VERDICT [INTERNAL-STATE]: residual probe BEATS the lexical baseline by +0.278 (0.919 vs 0.641); the boundary code carries internal state beyond surface question vocabulary.
+
+[axis_geometry] L35  |cos(knowledge, over-refusal)|=0.0349
+  VERDICT [ORTHOGONAL]: |cos|=0.035: the over-refusal 'caution' axis is DISTINCT from the known/unknown axis — a separate internal signal, not a re-read of knowledge.
