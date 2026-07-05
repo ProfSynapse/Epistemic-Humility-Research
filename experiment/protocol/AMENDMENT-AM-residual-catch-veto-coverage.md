@@ -2,9 +2,9 @@
 amendment: AM
 slug: residual-catch-veto-coverage
 status: >-
-  DRAFT (this file signs when the user records a prediction and says proceed;
-  gates in section 4 lock at signing). Run stays gated on user signing plus
-  dual predictions; no launch, no PR yet; PR merge order serialized behind AL.
+  DRAFT, predictions recorded 2026-07-05; signs (gates in section 4 lock) when
+  Amendment AL resolves and its PR merges; launch after signing, Modal lane
+  clear, $5 cap. No launch, no PR yet; PR merge order serialized behind AL.
 question: >-
   Of the residual confabulations the pre-generation radial controller cannot
   reach (the gate-miss set the answerability gate misreads as answerable, 43
@@ -33,10 +33,16 @@ predictions:
       is that it is the hard tail the pre-gen controller could not carve out.
   user:
     calls:
-      AM-G1: null
-      AM-G2: null
-    recorded: null
-    quote: null
+      AM-G1: PASS
+      AM-G2: PASS
+    recorded: 2026-07-05
+    basis: >-
+      The user confirmed all four drafted design choices as-is (derived gates
+      AUROC 0.62 / bootstrap CI-LB 0.55 / permutation p 0.01, the deterministic
+      43-row gate-miss residual, the correct-answerable-only good class, and
+      Modal-only at the $5 cap with regeneration plus the batch-12 numerics
+      smoke) and called both gates PASS, taking the coverage bet at full
+      confidence where the orchestrator sits at 70/60.
 outcome: null
 scoreboard: pending
 ---
