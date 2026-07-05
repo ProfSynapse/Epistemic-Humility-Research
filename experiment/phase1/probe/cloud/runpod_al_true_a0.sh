@@ -50,6 +50,17 @@ exec > >(tee -a "${JOB_LOG}") 2>&1
 LOG_PUSHER_PID=$!
 trap 'kill "${LOG_PUSHER_PID}" 2>/dev/null || true' EXIT
 
+# Best-effort failure telemetry: RunPod has no logs API, so on ANY nonzero exit
+# ship a redacted marker + log tail to <run_tag>/_failure/ in the staging repo.
+# Chains onto the log-pusher EXIT trap above; never masks the original exit code.
+# shellcheck source=experiment/phase1/probe/cloud/job_failure_trap.sh
+source "${PROBE}/cloud/job_failure_trap.sh"
+FAIL_STAGING_REPO="${STAGING_REPO}"
+FAIL_RUN_TAG="${RUN_TAG}"
+FAIL_JOB_LOG="${JOB_LOG}"
+FAIL_UPLOADER="${PROBE}/cloud/upload_result.py"
+install_failure_trap
+
 echo "[al-a0] boot=${BOOT_ID} run_tag=${RUN_TAG}"
 echo "[al-a0] base=${BASE_MODEL} adapter=${ADAPTER_REPO}@${ADAPTER_REV}"
 echo "[al-a0] staging=${STAGING_REPO} pool=${POOL_IN_REPO} layers=L0..L${NUM_LAYERS}"
