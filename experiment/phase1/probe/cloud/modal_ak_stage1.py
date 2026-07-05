@@ -25,11 +25,11 @@ Launch DETACHED so the app survives client death:
     modal run --detach modal_ak_stage1.py --checkpoint grpo-v2
 (HF_TOKEN must be exported in the launching env; forwarded as a scoped Secret.)
 
-grpo-v2 CHECKPOINT PROVENANCE IS AN OPEN ITEM: the deployed clean-SFT->GRPO-v2
-base+adapter+revision are NOT yet fixed in this file. Fill GRPOV2_BASE_MODEL /
-GRPOV2_ADAPTER_REPO / GRPOV2_ADAPTER_REV from the public-artifacts manifest (or
-a private staging adapter) before launching the grpo-v2 arm. The raw-base arm is
-fully specified and launch-ready.
+Both arms are now fully specified. The grpo-v2 deployed clean-SFT->GRPO-v2 seed1
+LoRA is staged privately (GRPOV2_ADAPTER_REPO/REV below); the raw-base arm uses
+the public raw instruct base. Remaining launch gates are unchanged: pool upload
+to the private staging repo at launch time, Modal proven end-to-end, and
+explicit user GPU approval.
 """
 
 import os
@@ -48,10 +48,17 @@ POOL_IN_REPO = "pools/ak_stage1_pool.jsonl"
 # raw-base arm (arm-B native surface) -- public, launch-ready.
 RAWBASE_MODEL = "unsloth/Qwen3-4B-bnb-4bit"
 
-# grpo-v2 arm (AK-G1 gate surface) -- provenance OPEN, fill before launch.
+# grpo-v2 arm (AK-G1 gate surface). Provenance: adapter uploaded from the
+# canonical local run scratch/schema_response_confidence/runs/
+# schema_clean_sft_grpo_v2_seed1_full/20260624_095831/final_model (the checkpoint
+# the probe configs deploy, e.g. hidden_state_kuq_manifest_clean_sft_grpo_v2_
+# seed1_full.yaml). The adapter's training config points at the clean-SFT
+# merged-16bit base below (confirmed). README.md/training_args.bin were excluded
+# from the upload (auto-README's local-path base_model fails HF YAML validation);
+# the base model is passed explicitly here so nothing needs them.
 GRPOV2_BASE_MODEL = "professorsynapse/eh-qwen3-4b-clean-sft-seed1-merged-16bit"
-GRPOV2_ADAPTER_REPO = "REPLACE_WITH_GRPO_V2_LORA_REPO"
-GRPOV2_ADAPTER_REV = "REPLACE_WITH_GRPO_V2_LORA_REVISION"
+GRPOV2_ADAPTER_REPO = "professorsynapse/eh-qwen3-4b-clean-sft-grpo-v2-seed1-lora"
+GRPOV2_ADAPTER_REV = "8914081dfcec4f1f025f2dbe4195d4f7aa8d210e"
 
 LAYERS = "L16,L20,L24,L28,L34"
 ANSWER_STRIDE = 4

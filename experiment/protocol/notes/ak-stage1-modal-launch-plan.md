@@ -158,17 +158,22 @@ Preconditions before either command:
     --path-prefix pools \
     --file /home/profsynapse/code/Epistemic-Humility-Research/experiment/phase1/probe/analysis/ak_stage1/ak_stage1_pool.jsonl
   ```
-- `REPO_COMMIT` in `modal_ak_stage1.py` is pinned to `0a9ac393` (the AK Stage 1
-  prep commit). Re-pin only if the branch moves before launch. The raw-base arm
-  needs only on-branch files (runner + pool builder), which this commit carries.
+- `REPO_COMMIT` in `modal_ak_stage1.py` is pinned to `AK_STAGE1_COMMIT_SHA` (the
+  commit that fills the grpo-v2 provenance; see the reply that reports it).
+  Re-pin only if the branch moves before launch. Both arms need only on-branch
+  files (runner + pool builder), which this commit carries.
 
-raw-base arm (launch-ready once the above land):
+BOTH arms are now unblocked (grpo-v2 provenance filled; see below). Remaining
+launch gates are identical for both: pool upload above + Modal proven + explicit
+user GPU approval.
+
+raw-base arm:
 ```bash
 cd /home/profsynapse/code/ehr-worktrees/amendment-ak-commitment-point/experiment/phase1/probe/cloud
 modal run --detach modal_ak_stage1.py --checkpoint raw-base
 ```
 
-grpo-v2 arm (BLOCKED until grpo-v2 provenance is filled - see below):
+grpo-v2 arm (AK-G1 gate surface):
 ```bash
 modal run --detach modal_ak_stage1.py --checkpoint grpo-v2
 ```
@@ -186,17 +191,21 @@ DONE marker), which AK reuses verbatim, demonstrated end-to-end.
 
 ## Blockers
 
-1. **grpo-v2 checkpoint provenance (blocks the AK-G1 gate arm).** The deployed
-   clean-SFT->GRPO-v2 base+adapter+revision that Modal can fetch are NOT fixed.
-   `modal_ak_stage1.py` has `GRPOV2_ADAPTER_REPO` / `GRPOV2_ADAPTER_REV` as
-   `REPLACE_WITH_*` placeholders and refuses to launch the grpo-v2 arm until they
-   are filled; `GRPOV2_BASE_MODEL` is set to the AL clean-SFT merged base
-   (`professorsynapse/eh-qwen3-4b-clean-sft-seed1-merged-16bit`) but must be
-   confirmed as the grpo-v2 base. Adapter repos are "gated" in
-   `docs/public-artifacts.md` (no grpo-v2 LoRA published). Resolve by publishing
-   / privately staging the grpo-v2 LoRA and recording repo+revision, or by
-   pointing at the exact staging artifact. The raw-base arm is unblocked.
-2. **REPO_COMMIT pin.** Pinned to `0a9ac393` (pushed). Re-pin if the branch
-   moves before launch.
+1. **grpo-v2 checkpoint provenance - RESOLVED 2026-07-05.** The deployed
+   clean-SFT->GRPO-v2 seed1 LoRA is staged privately and pinned in
+   `modal_ak_stage1.py`:
+   - `GRPOV2_ADAPTER_REPO = professorsynapse/eh-qwen3-4b-clean-sft-grpo-v2-seed1-lora`
+   - `GRPOV2_ADAPTER_REV  = 8914081dfcec4f1f025f2dbe4195d4f7aa8d210e`
+   - `GRPOV2_BASE_MODEL   = professorsynapse/eh-qwen3-4b-clean-sft-seed1-merged-16bit`
+     (confirmed: the adapter's training config points at the clean-SFT
+     merged-16bit base, which is what that published repo is).
+   Uploaded from the canonical local run
+   `scratch/schema_response_confidence/runs/schema_clean_sft_grpo_v2_seed1_full/
+   20260624_095831/final_model` (the checkpoint the probe configs deploy). The
+   refuse-to-launch guard now passes for the grpo-v2 arm (unit-tested in
+   `tests/test_ak_stage1_extract.py::test_modal_grpo_v2_provenance_filled`).
+   Both arms are unblocked.
+2. **REPO_COMMIT pin.** Re-pinned to the commit that fills the grpo-v2 provenance
+   (reported to the team lead). Re-pin if the branch moves before launch.
 3. **Pool upload.** The pool exists locally; it must be uploaded to the private
    staging repo before launch (command above).
