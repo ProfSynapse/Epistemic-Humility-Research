@@ -7,7 +7,11 @@ question: >-
   live proportional controller (mirroring AC's doubt coupling) suppress residual
   confabulations on the AI-TRUE checkpoint, once a caution direction is first
   validated as a behavioral lever there (the step AN skipped)?
-prediction: ''
+prediction: >-
+  User (2026-07-06): Stage 1 PASS (a caution lever exists on AI-TRUE) and Stage 2
+  PASS (propensity coupling beats the permuted placebo). Orchestrator: Stage 1
+  weak-lever PASS, Stage 2 small positive margin (3-10pt), with a nontrivial
+  chance Stage 1 fails.
 falsifier: >-
   Given Stage 1 validates a caution lever: coupled is within the G1 margin of the
   permuted placebo (below floor or CI includes 0), so propensity coupling adds
@@ -15,12 +19,40 @@ falsifier: >-
   finds no caution lever on AI-TRUE, the coupling stage does not run and the
   result is "no caution actuator on this checkpoint."
 checkpoint:
-  repo: ''
-  revision: ''
+  repo: professorsynapse/eh-qwen3-4b-clean-sft-grpo-par-true-seed1-lora
+  revision: 7e31d3cf62395275d4ba3d1d9ec8f95287188805
 instrument:
-  configs: []
-  modules: []
+  configs:
+    - cell.yaml
+    - gates.yaml
+  modules:
+    - ao_grader.py
   pins: {}
-inputs: []
+# `inputs:` lists this cell's OWN staged prep artifacts (gitignored, built by
+# the scripts named below, present in THIS checkout). The Stage-0 CPU-only
+# build reads several canonical-checkout-only upstream sources that do NOT
+# exist in every checkout by design (gitignored analysis/ scratch, and the
+# 611M extraction is deliberately referenced by absolute path rather than
+# duplicated) -- `bin/exp validate`'s inputs check requires on-disk existence,
+# so those upstream sources are recorded as provenance in
+# analysis/amendment_ao_prep/prep_manifest.json (absolute canonical paths,
+# sha256 where copied) and in AMENDMENT.md/cell.yaml comments instead of here.
+inputs:
+  # Stage-1 candidate #1: AN's doubt-orthogonalized caution refit on AI-TRUE,
+  # staged locally by stage_directions.py (copy of the AN-prep original;
+  # source path + sha256 in prep_manifest.json).
+  - experiments/ao-propensity-regulated-caution/analysis/amendment_ao_prep/caution_perp_direction_L35_ai_true.json
+  # Confab-propensity direction (L24, unit), staged locally by the same script.
+  - experiments/ao-propensity-regulated-caution/analysis/amendment_ao_prep/d_raw.npy
+  # Stage-1 candidate #2 (fallback lever): plain mass-mean answer-vs-refuse
+  # direction at L35, fit locally by fit_fallback_direction.py.
+  - experiments/ao-propensity-regulated-caution/analysis/amendment_ao_prep/fallback_mass_mean_direction_L35_ai_true.json
+  # cell.yaml's surface.rows_path: 320-row eval pool (confab / answerable_refused
+  # / known_correct_answered) with the standardized prop_z gain field, built
+  # locally by build_rows_pool.py from canonical-checkout-only upstream
+  # sources (see that script's docstring for the FalseQA-containment check).
+  - experiments/ao-propensity-regulated-caution/analysis/amendment_ao_prep/prop_z_gain_map_rows.jsonl
+  # Exact provenance of everything above (source paths, sha256, seeds).
+  - experiments/ao-propensity-regulated-caution/analysis/amendment_ao_prep/prep_manifest.json
 verdict: ''
 kg: []

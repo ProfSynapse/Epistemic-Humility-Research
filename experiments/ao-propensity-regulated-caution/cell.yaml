@@ -3,33 +3,35 @@
 # AMENDMENT's Design / STAGE 2 mechanism against the tuner's generic
 # continuous-per-row-gain-arm feature (synaptic-tuner PR
 # feat/proportional-gain-arm: ArmConfig.gain_field / gain_clip / force_active,
-# MechInterp/cell.py, MechInterp/intervention/hooks.py). AC used the FROZEN
-# legacy phase3 machinery for the analogous doubt-coupling cell; this is that
-# same erase-write-couple idea re-homed on the generic tuner schema, not a
-# rerun of AC.
+# MechInterp/cell.py, MechInterp/intervention/hooks.py; submodule pinned at
+# 294a653). AC used the FROZEN legacy phase3 machinery for the analogous
+# doubt-coupling cell; this is that same erase-write-couple idea re-homed on
+# the generic tuner schema, not a rerun of AC.
 #
-# STAGE 0/1 PREP REMAINING (not produced by this file; CPU-only once the
-# frozen AI-TRUE extraction exists on disk -- it is NOT present in this
-# checkout as of this draft):
-#   - Stage 1 knob-validation (AMENDMENT G0): fit and validate a caution
-#     direction on the AI-TRUE checkpoint (its own separate prep step, run and
-#     adjudicated BEFORE this cell; G0 is not scored by gates.yaml). AN's
-#     refit (cosine -0.064 with AC's GRPO-v2 direction) is a DIFFERENT,
-#     unvalidated vector and must not be assumed here.
-#   - build/confirm the caution direction JSON this cell reads. Placeholder
-#     path below follows the AMENDMENT's named location.
-#   - build the prop_z gain-map rows JSONL (one row per eval item, carrying a
-#     standardized confab-propensity projection field "prop_z", computed
-#     offline from the frozen AI-TRUE pre-generation extraction, mirroring the
-#     AL/AN prep pool-assembly convention, e.g.
-#     amendment_al_prep_grade_a0_generations.py). Unlike the legacy AC gain-map
-#     JSON (which precomputed a separate gains_permuted column), the tuner's
-#     generic permuted_control_of shuffles prop_z at resolution time from this
-#     ONE field, so the pool needs only "row_key", "cell", "prop_z" (plus
-#     whatever the grader needs, e.g. a gold-answer field for correctness).
-#   - port a real grader from the frozen steering harness
-#     (experiment/phase1/probe/steering/steering_common.py) into ao_grader.py;
-#     the stub shipped alongside this file documents exactly what is missing.
+# STAGE 0 PREP DONE (CPU-only, this session; see
+# experiments/ao-propensity-regulated-caution/analysis/amendment_ao_prep/
+# prep_manifest.json for exact provenance -- gitignored, not committed):
+#   - staged copies of d_raw.npy (confab-propensity direction, L24) and
+#     caution_perp_direction_L35_ai_true.json (Stage-1 candidate #1, AN's
+#     doubt-orthogonalized refit) via stage_directions.py.
+#   - fit a Stage-1 candidate #2 (fallback lever): the plain mass-mean
+#     answer-vs-refuse direction at L35, NOT doubt-orthogonalized, via
+#     fit_fallback_direction.py -> fallback_mass_mean_direction_L35_ai_true.json.
+#   - built prop_z_gain_map_rows.jsonl (320 rows: 116 confab + 114
+#     answerable_refused + 90 known_correct_answered, counts verified against
+#     per_row_exhaust.jsonl) via build_rows_pool.py: prop_z = z-score(L24
+#     pre-gen activation . unit(d_raw)) over exactly these 320 rows. Verified
+#     containment-clean (no FalseQA; all 7 source tags are KUQ/SelfAware/
+#     TriviaQA/PopQA -- see that script's docstring).
+#   - ported a real grader into ao_grader.py (see that module's docstring).
+#
+# STAGE 1 REMAINING (GPU, NOT done by this file): knob-validation (AMENDMENT
+# G0) -- apply AC's constant writes (ablate, fixed +/- gain) with EACH Stage-1
+# candidate direction and measure whether refuse/answer behavior moves with
+# specificity on THIS checkpoint. Whichever candidate (if any) G0 validates is
+# the one `readouts:` below should point at; it need not be caution_perp_ai_true
+# (the wiring below is a starting point, not a foregone conclusion -- see
+# AMENDMENT.md STAGE 1). Only after G0 passes does this cell (Stage 2) run.
 #
 # Validate parsing (CPU, no GPU):
 #   cd synaptic-tuner && python -c "from MechInterp.config import load_steer_config; \
@@ -37,13 +39,11 @@
 
 # 1. surface: where rows come from + the reproducibility contract.
 surface:
-  # PLACEHOLDER -- Stage-0 prep output, not yet built (see header). Carries the
-  # AL A0 baseline pool's three cells this AMENDMENT gates on: the 116 residual
-  # confabs ("confab", the should-refuse-more tail), the 114 answerable-refused
-  # rows ("answerable_refused", the should-refuse-less tail), and
-  # known_correct_answered (the specificity guard population), each row tagged
-  # with its standardized prop_z field.
-  rows_path: experiment/phase1/probe/analysis/amendment_ao_prep/prop_z_gain_map_rows.jsonl
+  # Built by build_rows_pool.py (Stage-0, this session); 320 rows, three
+  # cells (confab=116, answerable_refused=114, known_correct_answered=90),
+  # each carrying the standardized prop_z field. Gitignored (analysis/), not
+  # committed -- rebuild with the script named above before a real run.
+  rows_path: experiments/ao-propensity-regulated-caution/analysis/amendment_ao_prep/prop_z_gain_map_rows.jsonl
   seed: 20260706
   generation:
     max_new_tokens: 96
@@ -52,14 +52,17 @@ surface:
   # amendment doc at `exp sign`.
   # expected_config_sha: <sha256-of-this-file-at-signing>
 
-# 2. readouts: the Stage-1-validated caution direction (mechinterp-direction/v1).
+# 2. readouts: the Stage-1 candidate caution direction (mechinterp-direction/v1).
 readouts:
-  # PLACEHOLDER path per the AMENDMENT's named Stage-1 output location. Frozen
-  # at sign once G0 (knob-validation) passes; whichever direction G0 validates
-  # is the one referenced here (it need not be this exact refit if a different
-  # candidate wins G0 -- see AMENDMENT STAGE 1).
+  # Stage-1 candidate #1 (AN's doubt-orthogonalized caution refit on AI-TRUE),
+  # staged locally by stage_directions.py. NOT yet validated as a behavioral
+  # lever on this checkpoint -- that is the GPU Stage-1 knob-validation screen
+  # (AMENDMENT G0), still to run. A second candidate (the un-orthogonalized
+  # mass-mean answer-vs-refuse contrast) is staged alongside it at
+  # analysis/amendment_ao_prep/fallback_mass_mean_direction_L35_ai_true.json;
+  # if G0 prefers it instead, point this readout there and re-smoke.
   - name: caution_perp_ai_true
-    path: experiment/phase1/probe/analysis/amendment_an_prep/caution_perp_direction_L35_ai_true.json
+    path: experiments/ao-propensity-regulated-caution/analysis/amendment_ao_prep/caution_perp_direction_L35_ai_true.json
 
 # 3. law: erase_write along the Stage-1 direction, written at every generated
 #    position (the AC/AO couple mechanism), matching the example-cell's
@@ -106,9 +109,9 @@ arms:
 execution:
   output_path: experiments/ao-propensity-regulated-caution/analysis/rows_out.jsonl
   resume: true
-  # STUB, not a real grader yet -- see ao_grader.py in this directory for
-  # exactly what porting work remains (refusal/correctness detection from the
-  # frozen steering harness). Resolved via importlib against sys.path:
+  # Ported from steering_common.py (see ao_grader.py's module docstring for
+  # the exact port + the cross-arm baseline-join mechanism it implements).
+  # Resolved via importlib against sys.path:
   #   PYTHONPATH=experiments/ao-propensity-regulated-caution
   grader: ao_grader:grade
 

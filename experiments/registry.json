@@ -3,14 +3,25 @@
   "experiments": [
     {
       "checkpoint": {
-        "repo": "",
-        "revision": ""
+        "repo": "professorsynapse/eh-qwen3-4b-clean-sft-grpo-par-true-seed1-lora",
+        "revision": "7e31d3cf62395275d4ba3d1d9ec8f95287188805"
       },
       "falsifier": "Given Stage 1 validates a caution lever: coupled is within the G1 margin of the permuted placebo (below floor or CI includes 0), so propensity coupling adds nothing beyond a constant caution write (a clean null, unlike AN). If Stage 1 finds no caution lever on AI-TRUE, the coupling stage does not run and the result is \"no caution actuator on this checkpoint.\"",
-      "inputs": [],
+      "inputs": [
+        "experiments/ao-propensity-regulated-caution/analysis/amendment_ao_prep/caution_perp_direction_L35_ai_true.json",
+        "experiments/ao-propensity-regulated-caution/analysis/amendment_ao_prep/d_raw.npy",
+        "experiments/ao-propensity-regulated-caution/analysis/amendment_ao_prep/fallback_mass_mean_direction_L35_ai_true.json",
+        "experiments/ao-propensity-regulated-caution/analysis/amendment_ao_prep/prop_z_gain_map_rows.jsonl",
+        "experiments/ao-propensity-regulated-caution/analysis/amendment_ao_prep/prep_manifest.json"
+      ],
       "instrument": {
-        "configs": [],
-        "modules": [],
+        "configs": [
+          "cell.yaml",
+          "gates.yaml"
+        ],
+        "modules": [
+          "ao_grader.py"
+        ],
         "pins": {}
       },
       "kg": [],
