@@ -2,9 +2,10 @@
 amendment: AN
 slug: selected-setpoint-regulator
 status: >-
-  DRAFT (this file signs when the user records a prediction and says proceed;
-  gates in section 4 lock at signing). One amendment = one branch = one PR at
-  resolution.
+  SIGNED 2026-07-05 (user recorded predictions "I agree on all passing" after
+  reviewing the operating point, derived gates, and the entrenched-answer
+  caveat; gates in section 4 LOCKED as drafted). One amendment = one branch =
+  one PR at resolution.
 question: >-
   Does propensity-SELECTED, caution-ACTUATED regulation convert residual
   confabulations into refusals at low collateral on the AI-TRUE checkpoint,
@@ -14,26 +15,39 @@ question: >-
 predictions:
   orchestrator:
     calls:
-      AN-G1: null
-      AN-G2: null
-      AN-G3: null
-    recorded: null
-    basis: null
+      AN-G1: PASS (~70%)
+      AN-G2: PASS (~40%)
+      AN-G3: PASS (~40%)
+    recorded: 2026-07-05
+    basis: >-
+      G1 leans PASS because AC's only direct evidence on answering rows is
+      0/7 flips under positive gain (answers resist) and just 4 corrects are
+      exposed. G2/G3 sit under 50% for the same reason inverted: AN's central
+      bet is that the caution setpoint can flip ENTRENCHED answering rows
+      (the residual confabs), and the 0.16 compliance feeding the G2 floor
+      was measured as refusal RESTORATION (coupled vs ablate), not as
+      flipping established answers; if true flip compliance is half the
+      estimate, expected kills fall to ~3.8 versus a floor of 5. G3 mostly
+      rides G2: any kills that do happen should be selective.
   user:
     calls:
-      AN-G1: null
-      AN-G2: null
-      AN-G3: null
-    recorded: null
-    quote: null
+      AN-G1: PASS
+      AN-G2: PASS
+      AN-G3: PASS
+    recorded: 2026-07-05
+    quote: >-
+      "I agree on all passing" - all three gates called PASS, taking the
+      actuation bet at full confidence again where the orchestrator sits at
+      40% on G2/G3 (same disagreement shape as AL, opposite mechanism: there
+      the user bet on a new knob; here the bet is the proven knob reaching a
+      new population).
 outcome: null
 scoreboard: null
 ---
 
 # Amendment AN - Selected-setpoint regulator on the AI-TRUE checkpoint
 
-**Status:** DRAFT (signs when the user records a prediction and says proceed;
-gates in section 4 lock at signing).
+**Status:** SIGNED 2026-07-05; gates in section 4 LOCKED.
 **Tier:** A (new evidence cell; causal intervention; gates pre-stated).
 **Branch:** `amendment-an-selected-setpoint-regulator` (one amendment, one
 branch, one PR at resolution).
