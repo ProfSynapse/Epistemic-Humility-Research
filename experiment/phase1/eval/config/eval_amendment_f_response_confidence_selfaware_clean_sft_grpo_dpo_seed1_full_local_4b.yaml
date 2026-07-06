@@ -45,6 +45,7 @@ arms:
   - name: clean_sft_grpo_dpo_seed1
     method: clean_sft_grpo_dpo
     model: qwen3-4b-clean-sft-grpo-v2-merged-seed1
+    # staged on HF: professorsynapse/eh-qwen3-4b-clean-sft-grpo-dpo-seed1-lora @ 865aa404abf7159704c5be531c6dd3c5f9944205
     adapter: /workspace/repo/scratch/schema_response_confidence/runs/clean_sft_grpo_dpo_seed1_full/20260625_031724/final_model
 
 eval_sets:

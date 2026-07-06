@@ -1,0 +1,12 @@
+
+L35 caution-axis cross-regimen agreement
+  |cos|                      sft|sft = 1.0000  (rand 1.0000)
+  |cos|                 sft|grpo_dpo = 0.6713  (rand 0.0104)
+  |cos|                  sft|grpo_v2 = 0.5762  (rand 0.0144)
+  |cos|                 grpo_dpo|sft = 0.6713  (rand 0.0104)
+  |cos|            grpo_dpo|grpo_dpo = 1.0000  (rand 1.0000)
+  |cos|             grpo_dpo|grpo_v2 = 0.8566  (rand 0.0184)
+  |cos|                  grpo_v2|sft = 0.5762  (rand 0.0144)
+  |cos|             grpo_v2|grpo_dpo = 0.8566  (rand 0.0184)
+  |cos|              grpo_v2|grpo_v2 = 1.0000  (rand 1.0000)
+VERDICT [SHARED-AXIS]: mean cross-regimen |cos|=0.701 (random floor 0.014); the caution directions POINT THE SAME WAY across regimens — one shared mechanism the regimens inherit, not regimen-specific axes.

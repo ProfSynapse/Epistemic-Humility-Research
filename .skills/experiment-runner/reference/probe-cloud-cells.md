@@ -6,6 +6,12 @@ a single HF Job. It is separate from the tuner `cloud-pipeline` training lane
 (see [cloud-lane.md](cloud-lane.md)); the only tuner involvement is the
 optional batched inference engine, reached through the public tuner CLI.
 
+HF Jobs is one of three cloud providers for probe cells, not the only one:
+RunPod (byte-exact parity with local 3090) and Modal (crash-proof long runs) are
+the other two. See [runpod-modal-lanes.md](runpod-modal-lanes.md) for
+provider choice, launch discipline, and checkpoint staging; keep a 4h+ atomic
+cell off HF Jobs (preemption gotcha below).
+
 ## Launching a cell
 
 Launcher: `experiment/phase1/probe/cloud/launch_hf_job.py` (uses the

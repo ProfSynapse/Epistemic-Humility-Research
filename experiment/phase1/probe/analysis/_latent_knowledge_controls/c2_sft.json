@@ -1,0 +1,344 @@
+{
+  "ok": true,
+  "analysis_type": "phase3_latent_knowledge_controls",
+  "source": "h_lora",
+  "extraction_dir": "experiment/phase1/probe/qwen3-4b-clean-sft-seed1-selfaware/hidden_states_selfaware_clean_sft_full/extraction__8dbd3f623393",
+  "a1_lexical_baseline": {
+    "control": "a1_lexical_baseline",
+    "source": "h_lora",
+    "n_rows": 1233,
+    "label_counts": {
+      "known": 556,
+      "unknown": 677
+    },
+    "residual_auroc_by_layer": [
+      {
+        "layer": 0,
+        "auroc": 0.4984
+      },
+      {
+        "layer": 1,
+        "auroc": 0.9807
+      },
+      {
+        "layer": 2,
+        "auroc": 0.9855
+      },
+      {
+        "layer": 3,
+        "auroc": 0.9881
+      },
+      {
+        "layer": 4,
+        "auroc": 0.9896
+      },
+      {
+        "layer": 5,
+        "auroc": 0.992
+      },
+      {
+        "layer": 6,
+        "auroc": 0.9935
+      },
+      {
+        "layer": 7,
+        "auroc": 0.9903
+      },
+      {
+        "layer": 8,
+        "auroc": 0.99
+      },
+      {
+        "layer": 9,
+        "auroc": 0.9898
+      },
+      {
+        "layer": 10,
+        "auroc": 0.9879
+      },
+      {
+        "layer": 11,
+        "auroc": 0.9806
+      },
+      {
+        "layer": 12,
+        "auroc": 0.9812
+      },
+      {
+        "layer": 13,
+        "auroc": 0.9839
+      },
+      {
+        "layer": 14,
+        "auroc": 0.9856
+      },
+      {
+        "layer": 15,
+        "auroc": 0.9887
+      },
+      {
+        "layer": 16,
+        "auroc": 0.9897
+      },
+      {
+        "layer": 17,
+        "auroc": 0.9944
+      },
+      {
+        "layer": 18,
+        "auroc": 0.9922
+      },
+      {
+        "layer": 19,
+        "auroc": 0.9931
+      },
+      {
+        "layer": 20,
+        "auroc": 0.9928
+      },
+      {
+        "layer": 21,
+        "auroc": 0.9949
+      },
+      {
+        "layer": 22,
+        "auroc": 0.9945
+      },
+      {
+        "layer": 23,
+        "auroc": 0.9956
+      },
+      {
+        "layer": 24,
+        "auroc": 0.9956
+      },
+      {
+        "layer": 25,
+        "auroc": 0.9956
+      },
+      {
+        "layer": 26,
+        "auroc": 0.996
+      },
+      {
+        "layer": 27,
+        "auroc": 0.9959
+      },
+      {
+        "layer": 28,
+        "auroc": 0.9962
+      },
+      {
+        "layer": 29,
+        "auroc": 0.9959
+      },
+      {
+        "layer": 30,
+        "auroc": 0.9957
+      },
+      {
+        "layer": 31,
+        "auroc": 0.9958
+      },
+      {
+        "layer": 32,
+        "auroc": 0.9957
+      },
+      {
+        "layer": 33,
+        "auroc": 0.9961
+      },
+      {
+        "layer": 34,
+        "auroc": 0.996
+      },
+      {
+        "layer": 35,
+        "auroc": 0.9968
+      },
+      {
+        "layer": 36,
+        "auroc": 0.9961
+      }
+    ],
+    "residual_best": {
+      "layer": 35,
+      "auroc": 0.9968
+    },
+    "lexical_auroc": 0.9641,
+    "internal_state_margin": 0.0327,
+    "verdict": "INTERNAL-STATE",
+    "verdict_msg": "residual probe BEATS the lexical baseline by +0.033 (0.997 vs 0.964); the boundary code carries internal state beyond surface question vocabulary."
+  },
+  "a2_within_known": {
+    "control": "a2_within_known_refused_vs_answered",
+    "source": "h_lora",
+    "n_known_refused": 127,
+    "n_known_answered": 429,
+    "residual_auroc_by_layer": [
+      {
+        "layer": 0,
+        "auroc": 0.4943
+      },
+      {
+        "layer": 1,
+        "auroc": 0.6384
+      },
+      {
+        "layer": 2,
+        "auroc": 0.6963
+      },
+      {
+        "layer": 3,
+        "auroc": 0.7142
+      },
+      {
+        "layer": 4,
+        "auroc": 0.6936
+      },
+      {
+        "layer": 5,
+        "auroc": 0.7125
+      },
+      {
+        "layer": 6,
+        "auroc": 0.7207
+      },
+      {
+        "layer": 7,
+        "auroc": 0.6876
+      },
+      {
+        "layer": 8,
+        "auroc": 0.7088
+      },
+      {
+        "layer": 9,
+        "auroc": 0.6702
+      },
+      {
+        "layer": 10,
+        "auroc": 0.7019
+      },
+      {
+        "layer": 11,
+        "auroc": 0.6992
+      },
+      {
+        "layer": 12,
+        "auroc": 0.755
+      },
+      {
+        "layer": 13,
+        "auroc": 0.7433
+      },
+      {
+        "layer": 14,
+        "auroc": 0.7681
+      },
+      {
+        "layer": 15,
+        "auroc": 0.7695
+      },
+      {
+        "layer": 16,
+        "auroc": 0.7707
+      },
+      {
+        "layer": 17,
+        "auroc": 0.771
+      },
+      {
+        "layer": 18,
+        "auroc": 0.8109
+      },
+      {
+        "layer": 19,
+        "auroc": 0.8275
+      },
+      {
+        "layer": 20,
+        "auroc": 0.8379
+      },
+      {
+        "layer": 21,
+        "auroc": 0.835
+      },
+      {
+        "layer": 22,
+        "auroc": 0.853
+      },
+      {
+        "layer": 23,
+        "auroc": 0.8553
+      },
+      {
+        "layer": 24,
+        "auroc": 0.8614
+      },
+      {
+        "layer": 25,
+        "auroc": 0.8645
+      },
+      {
+        "layer": 26,
+        "auroc": 0.8803
+      },
+      {
+        "layer": 27,
+        "auroc": 0.883
+      },
+      {
+        "layer": 28,
+        "auroc": 0.8792
+      },
+      {
+        "layer": 29,
+        "auroc": 0.8745
+      },
+      {
+        "layer": 30,
+        "auroc": 0.8814
+      },
+      {
+        "layer": 31,
+        "auroc": 0.8886
+      },
+      {
+        "layer": 32,
+        "auroc": 0.8869
+      },
+      {
+        "layer": 33,
+        "auroc": 0.898
+      },
+      {
+        "layer": 34,
+        "auroc": 0.8986
+      },
+      {
+        "layer": 35,
+        "auroc": 0.9006
+      },
+      {
+        "layer": 36,
+        "auroc": 0.8901
+      }
+    ],
+    "residual_best": {
+      "layer": 35,
+      "auroc": 0.9006
+    },
+    "lexical_auroc": 0.6441,
+    "internal_state_margin": 0.2565,
+    "verdict": "INTERNAL-STATE",
+    "verdict_msg": "residual probe BEATS the lexical baseline by +0.256 (0.901 vs 0.644); the boundary code carries internal state beyond surface question vocabulary."
+  },
+  "axis_geometry": {
+    "control": "axis_geometry",
+    "layer": 35,
+    "abs_cosine": 0.0869,
+    "verdict": "ORTHOGONAL",
+    "verdict_msg": "|cos|=0.087: the over-refusal 'caution' axis is DISTINCT from the known/unknown axis \u2014 a separate internal signal, not a re-read of knowledge."
+  }
+}
