@@ -212,7 +212,13 @@ degrades it [arXiv:2506.09038]; surveys catalogue the design space
 [arXiv:2205.14334, arXiv:2306.13063, arXiv:2405.20974, arXiv:2405.21028,
 arXiv:2406.08391], typically reporting improved calibration on the trained
 distribution without testing whether the emitted scalar tracks the model's
-internal state (the coherence question this paper measures). Consistent with our
+internal state (the coherence question this paper measures). Two newer RL
+variants sharpen the contrast: Rewarding Doubt optimizes a logarithmic scoring
+rule for direct confidence expression [arXiv:2503.02623], while RLMF uses
+metacognitive self-judgment to improve faithful uncertainty expression over
+standard RL [arXiv:2606.32032]. We treat these as positive controls for what
+output-policy training can move, not as evidence that the emitted channel is
+coupled to a hidden-state answerability or correctness signal. Consistent with our
 RL nulls, ternary abstention rewards under GRPO also fail to couple abstention to
 confidence [arXiv:2511.11500], and there are structural reasons to expect the
 output channel to resist: calibrated models must hallucinate at a floor set by
@@ -480,8 +486,8 @@ optimum of the objective as specified.
 
 5. **GRPO v3 (proper scoring).** If the fixed-target confidence term makes a
 constant reward-optimal, the obvious repair (and the one the verifiable-RL
-literature reaches for [arXiv:2507.16806]) is to make calibration itself the
-optimum: replace the fixed targets with a Brier proper score of emitted
+literature reaches for [arXiv:2507.16806, arXiv:2503.02623]) is to make
+calibration itself the optimum: replace the fixed targets with a Brier proper score of emitted
 confidence against realized appropriateness,
 
 $$r_{\text{conf}} = 1 - (c - a)^2, \qquad c \in [0, 1],\; a \in \{0, 1\},$$
@@ -707,6 +713,10 @@ stated confidence move on separate channels throughout. The stated channel is
 never coupled to the epistemic state in the first place unless supervision
 explicitly constructs the coupling, and the one supervision that constructs it
 does so by a binding (the wrong-answer text) that breaks behavior.
+This is a local claim about coupling in this model and channel: it does not deny
+that RLMF-style objectives can improve faithful uncertainty metrics, but it says
+that output-level improvement is not yet the same thing as wiring the model's
+internal signal to both action and stated confidence.
 
 ![[figures/fig-p1-08-confidence-channel.png]]
 
@@ -991,6 +1001,7 @@ has an ingested note under `library/notes/`. Cited inline as [arXiv:id].)
 
 - Arditi et al. (2024). Refusal in Language Models Is Mediated by a Single Direction. arXiv:2406.11717.
 - Azaria et al. (2023). The Internal State of an LLM Knows When It's Lying. arXiv:2304.13734.
+- Bani-Harouni et al. (2025). Rewarding Doubt: A Reinforcement Learning Approach to Calibrated Confidence Expression of Large Language Models. arXiv:2503.02623.
 - Burns et al. (2022). Discovering Latent Knowledge in Language Models Without Supervision. arXiv:2212.03827.
 - Cheang et al. (2025). Do LLMs Really Know What They Don't Know? Internal States Mainly Reflect Knowledge Recall Rather Than Truthfulness. arXiv:2510.09033.
 - Cheng et al. (2024). Can AI Assistants Know What They Don't Know?. arXiv:2401.13275.
@@ -1010,6 +1021,7 @@ has an ingested note under `library/notes/`. Cited inline as [arXiv:id].)
 - Lacombe et al. (2025). Don't Think Twice! Over-Reasoning Impairs Confidence Calibration. arXiv:2508.15050.
 - Li et al. (2023). Inference-Time Intervention: Eliciting Truthful Answers from a Language Model. arXiv:2306.03341.
 - Lin et al. (2022). Teaching Models to Express Their Uncertainty in Words. arXiv:2205.14334.
+- Liu et al. (2026). Reinforcement Learning with Metacognitive Feedback Elicits Faithful Uncertainty Expression in LLMs. arXiv:2606.32032.
 - Liu et al. (2024). On the Universal Truthfulness Hyperplane Inside LLMs. arXiv:2407.08582.
 - Marks et al. (2023). The Geometry of Truth: Emergent Linear Structure in Large Language Model Representations of True/False Datasets. arXiv:2310.06824.
 - Mei et al. (2025). Reasoning about Uncertainty: Do Reasoning Models Know When They Don't Know?. arXiv:2506.18183.
