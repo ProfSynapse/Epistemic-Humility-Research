@@ -1,0 +1,71 @@
+# AO -- Stage 1, knob-validation, candidate #2 (fallback_mass_mean_ai_true).
+# DRAFT, NOT a registered instrument until `bin/exp sign` (see AMENDMENT.md;
+# status: draft). Same purpose and arm shape as cell_stage1_caution_perp.yaml
+# (read that file's header for the full rationale, the cell-name mapping, and
+# the schema blocker); this file differs ONLY in which candidate direction it
+# steers along. Two separate cell files because the tuner's SteerCellConfig
+# has exactly one `law.readout` per cell (MechInterp/config.py); a single file
+# cannot steer two directions from one arm set.
+#
+# Candidate direction provenance (Stage-0 prep, see
+# analysis/amendment_ao_prep/prep_manifest.json / fit_fallback_direction.py):
+# the plain mass-mean answer-vs-refuse contrast at L35 on the AI-TRUE
+# checkpoint, NOT doubt-orthogonalized (unlike caution_perp) -- the
+# AMENDMENT's "fallback lever" candidate. Fit on the SAME two populations as
+# candidate #1: pos_cell=known_refused (n=114) == this pool's
+# answerable_refused, neg_cell=known_correct_answered (n=90).
+#
+# SCHEMA BLOCKER: this candidate's JSON also uses the legacy "theta" field
+# (schema_version phase3-residual-caution-direction/v1), not the tuner's own
+# "vector" field that MechInterp.probe.fit.load_frozen_direction requires --
+# see cell_stage1_caution_perp.yaml's header for the reproduction command and
+# the cross-file (Stage 1 + Stage 2) scope of this blocker.
+#
+# Validate parsing (CPU, no GPU):
+#   cd synaptic-tuner && python3 -c "from MechInterp.config import load_steer_config; \
+#     load_steer_config('../experiments/ao-propensity-regulated-caution/cell_stage1_fallback_mass_mean.yaml'); print('cell ok')"
+
+surface:
+  rows_path: experiments/ao-propensity-regulated-caution/analysis/amendment_ao_prep/prop_z_gain_map_rows.jsonl
+  seed: 20260706
+  generation:
+    max_new_tokens: 96
+    do_sample: false
+
+readouts:
+  - name: fallback_mass_mean_ai_true
+    path: experiments/ao-propensity-regulated-caution/analysis/amendment_ao_prep/fallback_mass_mean_direction_L35_ai_true.json
+
+law:
+  kind: erase_write
+  readout: fallback_mass_mean_ai_true
+  position: answer_window
+  generation_mode: gen_stream
+
+# Same arm shape and rationale as candidate #1 (see that file's comment).
+arms:
+  - name: baseline
+    strength: 0.0
+
+  - name: ablate
+    strength: 0.0
+    force_active: true
+
+  - name: shift_up
+    strength: 2.0
+
+  - name: shift_down
+    strength: -2.0
+
+execution:
+  output_path: experiments/ao-propensity-regulated-caution/analysis/rows_out_stage1_fallback_mass_mean.jsonl
+  resume: true
+  # Same ao_grader.py _OUTPUT_PATH caveat as candidate #1 -- see that file's
+  # execution: comment; not repeated in full here.
+  grader: ao_grader:grade
+
+smoke:
+  n_rows: 25
+  write_rel_tol: 0.05
+  write_abs_floor: 0.5
+  offtarget_tol: 0.001

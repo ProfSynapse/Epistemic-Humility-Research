@@ -25,6 +25,14 @@ instrument:
   configs:
     - cell.yaml
     - gates.yaml
+    # Stage-1 knob-validation screen (AMENDMENT G0), added this session. Two
+    # cell files because the tuner's SteerCellConfig has one law.readout per
+    # file (MechInterp/config.py); one candidate direction each. gates_stage1
+    # is adjudicated twice, once per cell's output_path -- see that file's
+    # header comment for the exact procedure.
+    - cell_stage1_caution_perp.yaml
+    - cell_stage1_fallback_mass_mean.yaml
+    - gates_stage1.yaml
   modules:
     - ao_grader.py
   pins: {}
