@@ -11,6 +11,17 @@
             "statusMessage": "Checking write target is not agent memory..."
           }
         ]
+      },
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "$CLAUDE_PROJECT_DIR/.claude/hooks/launch_guard.sh",
+            "timeout": 10,
+            "statusMessage": "Checking launch is doc-recorded before running..."
+          }
+        ]
       }
     ],
     "UserPromptSubmit": [
