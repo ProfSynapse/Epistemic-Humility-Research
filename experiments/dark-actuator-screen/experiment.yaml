@@ -9,8 +9,9 @@ question: >-
 prediction: >-
   Orchestrator: most likely 0 candidates beat the random control (small chance
   L34 succ pc0 registers a weak hit); positive control (answer-vs-refuse) moves
-  behavior, negative controls (random, propensity) sit at the floor. User:
-  PENDING.
+  behavior, negative controls (random, propensity) sit at the floor. User
+  (2026-07-06): SEVERAL candidates graduate (the dark subspace holds real
+  behavioral levers).
 falsifier: >-
   Screen, so the bar is graduation: a candidate graduates iff its flip rate
   exceeds the random-direction control with bootstrap 95% CI excluding 0. No

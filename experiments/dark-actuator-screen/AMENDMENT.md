@@ -66,7 +66,15 @@ small chance the strongest by within-checkpoint consistency (`L34 succ pc0`)
 registers a weak hit. The positive control (answer-vs-refuse) moves behavior; the
 negative controls (random, propensity) sit at the floor.
 
-(user) PENDING.
+(user, recorded 2026-07-06) SEVERAL candidates graduate: the dark subspace holds
+real behavioral levers, worth a cluster of follow-up amendments. This is a sharp
+disagreement with the orchestrator's mostly-null call and the census weak-prior
+read; scored on the graduation count.
+
+Positive-control decision (user, 2026-07-06): proceed with the raw-base
+answer-vs-refuse mass-mean axis as the positive control (do not add a separate
+lever-validation pre-step); the honest limitation below stands and the negative
+controls bound the candidate verdicts.
 
 ## Falsifier / graduation criterion
 
@@ -103,7 +111,7 @@ negative controls still bound the candidate verdicts.
 | Predictor | Call |
 |-----------|------|
 | orchestrator | 0 graduate (small chance L34 succ pc0); controls behave |
-| user | PENDING |
+| user | Several graduate (dark subspace holds real levers) |
 
 ## Outcome
 
