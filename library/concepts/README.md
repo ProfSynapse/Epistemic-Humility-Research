@@ -673,7 +673,7 @@ Atomic notes extracted from the library papers via the Agents-K1 ingestion skill
 - [[valence-arousal-subspace]] : A two-dimensional linear subspace in LLM activation space spanned by a recovered valence axis (pleasure-displeasure) and arousal axis (activ
 - [[world-model-hallucination-modes]] : A three-type taxonomy of failure modes in generative world models, each anchored to a different pipeline stage. Perceptual hallucination occ
 
-## Mechanisms (cause -> effect) (383)
+## Mechanisms (cause -> effect) (387)
 
 - [[abstention-generalization-failure]] : 'instruction-tuning for abstention on a narrow, homogeneous set of refusal expressions and task formats' **prevents** Abstention ability does not generalize to 
 - [[abstract-representations-enable-zero-shot-generalization]] : High degree of abstract (parallel) representation in ANN hidden layers, as measured by parallelism-score, indicating that compositional rule dimensions are enco
@@ -741,6 +741,7 @@ Atomic notes extracted from the library papers via the Agents-K1 ingestion skill
 - [[diverse-training-enables-universal-probe-generalization]] : Training a linear truthfulness probe on a large collection of diverse datasets spanning many task types and domains **enables** Cross-task and cross-domain prob
 - [[dominant-uncertainty-source-shifts-with-model-scale]] : Increasing model scale (number of parameters) and task type (factual QA vs mathematical reasoning) **mediates** The dominant uncertainty source shifts: smaller 
 - [[dormant-features-compensate-for-ablated-features]] : Ablation of the primary active causal sparse-autoencoder|SAE refusal feature set, removing their contribution to the refusal-direction **prevents** Previously z
+- [[doubt-regulated-caution-coupling-actuates-selective-refusal-release]] : On clean-SFT -> GRPO-v2 seed1, erasing the caution_perp projection from the L35 residual stream at every position and writing a doubt-proportional setpoint in i
 - [[dpo-beta-should-follow-pair-quality]] : Preference-pair datasets mix closely matched informative pairs, easy high-gap pairs, and outliers under one static DPO beta. **causes** The same beta can under-
 - [[dpo-choice-induces-severe-answer-uncertainty-shift]] : Direct preference optimization using pairs that share the same format but differ in which choice is labeled preferred (DPO-Choice scheme) **increases** The mode
 - [[dpo-concentrates-persona-suppression]] : direct-preference-optimization (DPO) alignment stage with preference signals against harmful content, applied after SFT and before RLVR **decreases** Significan
@@ -775,6 +776,7 @@ Atomic notes extracted from the library papers via the Agents-K1 ingestion skill
 - [[fine-grained-semantic-confidence-reward]] : Replacing a coarse global entropy reward with a per-sample cluster-size-based confidence reward within GRPO abstention training (FiSCoRe) **increases** OOD reli
 - [[fine-tuning-sacrifices-specificity]] : Applying standard fine-tuning (FT) to insert a new fact into an LLM **decreases** Near-perfect efficacy (ES=100%) but severely degraded specificity -- roughly 6
 - [[finetuning-induces-persona-shift]] : Training on trait-expressing or domain-flawed data shifting model activations along persona-vectors directions **increases** Elevated post-finetuning behavioura
+- [[first-person-framed-probe-score-injection-does-not-open-text-channel]] : On Qwen3.5-4B (Amendment AB), injecting a first-person recall-experience note that names the gate or dial probe score as a percent and states a score-conditiona
 - [[flavor-specific-doubt-residuals-persist]] : Projecting the shared known/unknown trunk direction out of each unanswerability flavor's whitened doubt direction (L20/24/28, raw instruct base). **enables** Ea
 - [[format-induced-reasoning-trace-collapse]] : The format used to represent missing reasoning traces in fine-tuning data (empty-think: empty <think> block included; no-think: reasoning tags omitted entirely)
 - [[full-sft-on-noncompliance-data-causes-over-refusal]] : Full continued SFT of an instruction-tuned model on a noncompliance-only dataset (CoCoNot) without a contrastive compliance signal **enables** Model over-genera
@@ -922,6 +924,7 @@ Atomic notes extracted from the library papers via the Agents-K1 ingestion skill
 - [[preventative-steering-cancels-trait-drift]] : Adding the persona vector to hidden states during fine-tuning training steps (preventative-steering) to counteract the gradient's tendency to shift activations 
 - [[primitives-pretraining-increases-parallelism-score]] : primitives-pretraining (exposure to 1-rule and 2-rule subtask variants before the full C-PRO compositional task) providing the model with decomposed rule compon
 - [[probability-maximization-does-not-transfer-to-accuracy]] : Selecting or tuning a decoding method to produce higher-probability sequences **prevents** Reliable accuracy improvement on downstream question-answering benchm
+- [[probe-agreement-reward-does-not-couple-policy-to-its-own-readout]] : Training a Qwen3-4B clean-SFT policy with GRPO using a probe-agreement reward (R_agree = p if abstained else 1-p, p = P(unanswerable) read at the pre-generation
 - [[probe-calibration-enables-early-exit]] : A well-calibrated attention-probing|attention probe whose confidence closely tracks forced-answer accuracy step-by-step throughout the reasoning trace **enables
 - [[probe-reads-recall-not-truth]] : LLMs use the same subject-driven information-flow pathway (early-layer subject-token MLP activations \u2192 mid-layer attention propagation \u2192 late-layer la
 - [[prompt-cannot-override-rlvr-abstention-deficit]] : RLVR training with binary rewards (+1 correct, 0 wrong) that treat abstention as failure, repeated across thousands of training steps **prevents** The resulting
@@ -1037,6 +1040,7 @@ Atomic notes extracted from the library papers via the Agents-K1 ingestion skill
 - [[training-away-sycophancy-reduces-but-does-not-eliminate-reward-tampering]] : Collecting 2,500 negative sycophancy examples from early-curriculum environments and fine-tuning the curriculum-trained model on them to suppress gaming behavio
 - [[transformer-advantage-in-disentanglement]] : Transformer (GPT-2) architecture processing multi-task evidence-accumulation-task|evidence accumulation, whose attention mechanism can selectively route task-re
 - [[trigger-tokens-drive-safety-generalization]] : Presence of surface-form trigger tokens in jailbreak prompts that strongly activate the dominant-refusal-direction during safety fine-tuning **enables** Safety 
+- [[trust-axis-injection-does-not-move-answer-abstain-revise-behavior]] : On Qwen3.5-4B (Amendment AA Stage 1), writing the gate (answerability, L14 probe AUROC 0.998) and dial (correctness, L16 probe AUROC 0.827) directions back into
 - [[truth-cooccurrence-enables-linear-encoding]] : Training data in which true statements co-occur with true statements and false with false, giving the model a loss-reduction incentive to track a latent truth v
 - [[truth-direction-causally-mediates-model-truth-output]] : Intervening on a truth-direction in model representations. **mediates** The model treats false statements as true or true statements as false.
 - [[truthfulness-helpfulness-tradeoff-under-activation-steering]] : Increasing the strength (alpha) of activation steering along a truth-correlated direction during inference with inference-time-intervention. **mediates** The mo
