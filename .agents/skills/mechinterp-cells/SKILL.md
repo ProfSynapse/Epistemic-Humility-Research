@@ -91,6 +91,16 @@ independent). Blocks map 1:1 to the tuner Pydantic schema
    arms until a smoke passes for this exact config sha; `--force-full-run`
    overrides (do not use `--force-full-run` for a signed cell).
 
+## Dosing an erase_write cell
+
+`erase_write` writes an absolute coordinate, so the behavioral response is
+threshold-then-collapse, not proportional to `strength`: a direction has a narrow
+**coherent window** between inert and degenerate output, and a coarse absolute
+ladder can jump clean over it (falsely reading a real lever as inert / voiding a
+screen's positive control). Dose ambient-relative and pilot-sweep the window
+first. Full method, measured numbers, and the smoke-is-write-accuracy caveat:
+[reference/dose-calibration.md](reference/dose-calibration.md).
+
 ## Plug-in points (project code, not the tuner)
 
 The tuner ships no notion of what a prompt looks like, what "correct" means, or
@@ -297,3 +307,6 @@ reader can consume.
 - FalseQA text is never committed; keep row pools with restricted text untracked.
 - The GPU verbs need `--i-know-this-runs-on-gpu`; treat that flag as a
   deliberate, per-run acknowledgement, not a default.
+- A passing smoke readback is write-accuracy, not a behavioral effect; calibrate
+  the dose to the direction's coherent window before the real ladder
+  ([reference/dose-calibration.md](reference/dose-calibration.md)).
