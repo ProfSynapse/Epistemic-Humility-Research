@@ -45,6 +45,7 @@ arms:
   - name: clean_sft_grpo_kto_seed1
     method: clean_sft_grpo_kto
     model: qwen3-4b-clean-sft-grpo-v2-merged-seed1
+    # staged on HF: professorsynapse/eh-qwen3-4b-clean-sft-grpo-kto-seed1-lora @ 1a7bcf65d4436649f902b6f424ec8c8618ff4263
     adapter: /workspace/repo/scratch/schema_response_confidence/runs/clean_sft_grpo_kto_seed1_full/20260625_052610/final_model
 
 eval_sets:

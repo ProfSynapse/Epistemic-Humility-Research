@@ -215,6 +215,22 @@ checkpoint transfers only partially (0.679): the correctness *direction* drifts 
 training even though the *readout* remains strong when refit. The axis exists on both
 checkpoints, but the probe should be refit per checkpoint rather than transported.
 
+Exploratory lab-notebook diagnostics locate the source of this drift for the
+answerability readout specifically. Tracking the known-vs-unknown direction across
+four training stages in a shared basis (raw base, clean-SFT, GRPO-v2, GRPO-par-true),
+the readout is already at full strength in the raw base (mid-to-late CV AUROC mean
+0.951) and no stage sharpens it (clean-SFT 0.922, GRPO-v2 0.923, GRPO-par-true 0.926),
+consistent with the training-free reading in §4.5. The direction, however, rotates
+once and near-orthogonally at instruction SFT (raw-to-clean-SFT cosine falling to
+0.06-0.25 across mid and late layers) and is then ridden almost unchanged by both
+GRPO variants (clean-SFT-to-GRPO-v2 cosine 0.91-0.997). The per-checkpoint refit is
+therefore required by a single SFT rotation event, not gradual accumulation across
+training, which is why cold transport degrades while a refit probe stays strong. This
+is exploratory internal evidence (script `diag_item9_caution_timeline.py`, commit
+`a354ad73`; staging `professorsynapse/eh-al-prep-staging` tags `diag-item9-*-r3`;
+extraction commit `d5a90b3b`), reported separately from and never pooled with the
+locked headline numbers.
+
 One honest caveat carried from the start: the dial *ranks* correctness well (AUROC) but is
 not a calibrated *probability* (ECE 0.151 on the base). For a thresholdable trust number,
 ranking is the operative property; a stated probability would need a downstream calibration

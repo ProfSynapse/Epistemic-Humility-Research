@@ -52,10 +52,12 @@ arms:
   - name: sft_dpo_seed1
     method: dpo
     model: qwen3-4b-sft-merged-seed1
+    # staged on HF: professorsynapse/eh-qwen3-4b-seq-sft-dpo-seed1-lora @ 45138e73be9d28fcf9537a9d2de49d90ebf8601b
     adapter: /workspace/repo/synaptic-tuner/toolset-training-artifacts/runs/local/4b/sft_dpo__4b__amendment_a__seed1/20260614_074933/final_model
   - name: sft_kto_seed1
     method: kto
     model: qwen3-4b-sft-merged-seed1
+    # staged on HF: professorsynapse/eh-qwen3-4b-seq-sft-kto-seed1-lora @ 2ccb2ec3883bf004feb545fb555ea3846e8c39fb
     adapter: /workspace/repo/synaptic-tuner/toolset-training-artifacts/runs/local/4b/sft_kto__4b__amendment_a__seed1/20260614_085358/final_model
 
 eval_sets:

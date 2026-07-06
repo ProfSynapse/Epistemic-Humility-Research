@@ -472,7 +472,7 @@ Atomic notes extracted from the library papers via the Agents-K1 ingestion skill
 - [[stable-diffusion]] : Stable Diffusion is a large-scale text-to-image latent diffusion model that generates images by running an iterative denoising process in a 
 - [[unifiedqa]] : A T5-based question-answering model finetuned by Khashabi et al. on a diverse collection of NLP QA datasets (including SQuAD, NaturalQuestio
 
-## Terms (163)
+## Terms (165)
 
 - [[abstain-qa]] : AbstainQA is a task formulation in which a model is given a question and must
 - [[abstention]] : Abstention is the behavior of an LLM deliberately declining to provide a
@@ -497,6 +497,8 @@ Atomic notes extracted from the library papers via the Agents-K1 ingestion skill
 - [[concept-orthogonality]] : Concept orthogonality is the empirical and theoretical finding that semantically unrelated (statistically independent) concepts tend to be r
 - [[concepts-as-subspaces]] : The concepts-as-subspaces hypothesis holds that high-level semantic concepts (e.g., sex, artistic style, subject identity) correspond to lin
 - [[conditional-coverage]] : A stronger calibration guarantee than marginal coverage, requiring that a prediction set or filtering rule achieves the target error rate no
+- [[confab-cloud]] : The confab cloud is the region of pre-generation activation space occupied by
+- [[confabulation-propensity-direction]] : The confabulation-propensity direction is the pre-generation activation
 - [[contextual-noncompliance-taxonomy]] : A structured five-category taxonomy of situations where language models should not directly comply with user requests: (1) Incomplete reques
 - [[continuous-attractor]] : A continuous attractor network (CAN) is a dynamical system whose set of stable fixed
 - [[conversational-representation-dynamics]] : Conversational representation dynamics refers to the systematic change of linear
@@ -638,7 +640,7 @@ Atomic notes extracted from the library papers via the Agents-K1 ingestion skill
 - [[valence-arousal-subspace]] : A two-dimensional linear subspace in LLM activation space spanned by a recovered valence axis (pleasure-displeasure) and arousal axis (activ
 - [[world-model-hallucination-modes]] : A three-type taxonomy of failure modes in generative world models, each anchored to a different pipeline stage. Perceptual hallucination occ
 
-## Mechanisms (cause -> effect) (356)
+## Mechanisms (cause -> effect) (366)
 
 - [[abstention-generalization-failure]] : 'instruction-tuning for abstention on a narrow, homogeneous set of refusal expressions and task formats' **prevents** Abstention ability does not generalize to 
 - [[abstract-representations-enable-zero-shot-generalization]] : High degree of abstract (parallel) representation in ANN hidden layers, as measured by parallelism-score, indicating that compositional rule dimensions are enco
@@ -649,6 +651,7 @@ Atomic notes extracted from the library papers via the Agents-K1 ingestion skill
 - [[alignment-training-saturates-on-small-data]] : Applying RL-free alignment methods (DPO, KTO, IPO, CPO) to an SFT-warmed model across increasing training-set sizes from hundreds to tens of thousands of prefer
 - [[alignment-tuning-amplifies-multi-turn-sycophancy]] : RLHF-style alignment tuning (instruction tuning via preference optimization) **increases** Increased sycophantic stance abandonment under sustained multi-turn c
 - [[answer-commitment-bias-undermines-epistemic-humility]] : A learned bias toward always selecting one of the presented answer options, reinforced by recognition-focused training and evaluation that reward picking a list
+- [[answer-protecting-gate-shelters-confab-cloud]] : Thresholding any answerability or knowledge-boundary readout so that correct answers are protected (collateral tolerance about 1 of 90 correct rows), as in the 
 - [[answer-relabeling-enables-abstention]] : Relabeling unfamiliar-finetuning-examples with 'I don't know' before supervised-finetuning (answer-relabeling) **enables** Model's default hedged-prediction bec
 - [[answerability-and-correctness-are-orthogonal-readout-axes]] : Fusing the answerability readout scalar (read at the prompt anchor) and the correctness readout scalar (read post-generation) into a single combined confidence 
 - [[answerability-axis-present-without-task-training]] : Reading a linear probe on residual-stream activations at the prompt anchor of an instruction-tuned base model, with no abstention-SFT and no reinforcement learn
@@ -672,6 +675,7 @@ Atomic notes extracted from the library papers via the Agents-K1 ingestion skill
 - [[calibration-hallucination-tradeoff]] : Post-training alignment (RLHF or similar) applied to a calibrated pretrained language model to reduce hallucination on arbitrary facts **mediates** Calibration 
 - [[calibration-tuning-generalizes-across-models]] : Fine-tuning a model on graded correctness data via calibration tuning (LoRA + Prompt) **enables** The resulting calibration tuner can estimate the uncertainty o
 - [[causal-separability-enables-faithful-editing]] : Two concepts satisfying causal-separability (intervening on one does not affect the marginal distribution of the other in the score representation) **enables** 
+- [[caution-readout-is-low-rank-on-collinear-carriers]] : Recomputing direction-removal robustness in a label-agnostic randomized PCA-128 basis instead of the raw 2,560-dimensional activation space. **mediates** The ca
 - [[caution-residual-ablation-relaxes-overrefusal-asymmetrically]] : Ablating the caution residual direction (activation steering at inference) in a small instruction-tuned model that over-refuses known questions. **decreases** O
 - [[citation-rebuttal-drives-regressive-sycophancy]] : A rebuttal that includes a fabricated citation and abstract, signaling external authority, presented to an LLM that initially produced the correct answer **incr
 - [[clustering-question-embeddings-yields-graded-calibration-targets]] : Clustering normalized sentence embeddings of questions with HDBSCAN and assigning each input the target LLM's observed accuracy over its cluster as the calibrat
@@ -680,6 +684,9 @@ Atomic notes extracted from the library papers via the Agents-K1 ingestion skill
 - [[code-pretraining-benefits-math-reasoning]] : Pre-training on code tokens before math-domain continual pre-training on the deepseekmath-corpus **increases** Improved mathematical reasoning performance on ma
 - [[composed-steering-preserves-linguistic-ability]] : Injecting a steer2adapt composed steering vector learned from ~12 examples via Bayesian optimisation over a domain-matched semantic-prior-subspace **enables** A
 - [[computational-buffer-improves-recall]] : Conditioning the final answer on extra reasoning tokens that carry no task-relevant semantic content (a dummy 'Let me think.' trace repeated to length), in reas
+- [[confab-boundary-elevation-lacks-knowledge-signal]] : Reading blind-spot confabulations on two separate axes: the knowledge-boundary (doubt) axis and an actually-knowing axis fit on correct-vs-wrong answers within 
+- [[confab-propensity-is-not-generic-answer-commitment]] : Fitting the fabricate-vs-refuse direction within unanswerables and the answer-vs-refuse direction within answerables on the same caution-residualized feature sp
+- [[confab-propensity-push-reaches-confab-cloud]] : Adding a push against the confabulation-propensity direction (region R3 of the radial control law) on top of caution-based steering, in the radial ceiling simul
 - [[conservative-rm-improves-rl-factuality]] : Training a conservative-reward-model to underestimate rewards on unfamiliar inputs **increases** RL finetuning steers policy toward abstention|abstaining on unf
 - [[consistency-over-verbalization-arithmetic]] : Using self-consistency response consistency rather than direct verbalized-confidence for arithmetic reasoning tasks like gsm8k **increases** 'auroc improves fro
 - [[contrastive-activation-addition-steers-alignment-behaviors]] : A contrastive-activation-addition vector is computed from contrasting behavior examples. **enables** Alignment-relevant behaviors shift during evaluation or gen
@@ -737,6 +744,7 @@ Atomic notes extracted from the library papers via the Agents-K1 ingestion skill
 - [[functional-cooccurrence-drives-spatial-clustering]] : SAE features that tend to fire together within documents (functional co-occurrence, measured by phi-coefficient-cooccurrence) share semantic content **enables**
 - [[gender-bias-spans-many-directions]] : Gender information encoded in glove-word-embeddings **enables** Single-direction projection (e.g. he-she) leaves substantial residual linear gender signal; full
 - [[gender-erasure-reduces-tpr-gap]] : Applying leace to remove gender information from BERT CLS embeddings **decreases** TPR-Gap drops from 0.198 to 0.084 in a downstream profession classifier while
+- [[generation-time-computation-loads-off-the-epistemic-plane]] : Autoregressive generation of an answer to an unanswerable question on a clean-SFT to GRPO-v2 checkpoint, measured as the hidden-state displacement from the pre-
 - [[generator-size-dominates-verifier-size]] : Independently scaling the generator versus the verifier model size in a sample-and-rank pipeline. **increases** Solve rate improves more from a larger generator
 - [[global-conformal-threshold-fails-conditional-coverage]] : A single globally calibrated conformal threshold applied uniformly across heterogeneous prompt categories **prevents** Systematic over-coverage in easier catego
 - [[gpt-input-discarded-immediately]] : Autoregressive next-token prediction objective requiring conversion of input token representations to predicted-output representations **enables** After the ver
@@ -871,6 +879,7 @@ Atomic notes extracted from the library papers via the Agents-K1 ingestion skill
 - [[probability-maximization-does-not-transfer-to-accuracy]] : Selecting or tuning a decoding method to produce higher-probability sequences **prevents** Reliable accuracy improvement on downstream question-answering benchm
 - [[probe-reads-recall-not-truth]] : LLMs use the same subject-driven information-flow pathway (early-layer subject-token MLP activations \u2192 mid-layer attention propagation \u2192 late-layer la
 - [[prompt-cannot-override-rlvr-abstention-deficit]] : RLVR training with binary rewards (+1 correct, 0 wrong) that treat abstention as failure, repeated across thousands of training steps **prevents** The resulting
+- [[propensity-direction-reads-but-does-not-actuate-fabrication]] : Subtracting the raw-space preimage of the L24 caution-residualized confabulation-propensity direction from the residual stream at generation time (pre-generatio
 - [[proper-scoring-rule-rl-reward-calibrates-verbalized-confidence]] : Using the log-likelihood of the correct answer under a surrogate forecaster as the PPO reward for a long-form generation policy (instead of binary correctness),
 - [[proper-scoring-sft-calibration-transfers-to-unseen-confidence-formats]] : Fine-tuning on numerical verbalized confidence (0-100%) using a proper scoring rule (tokenized Brier score) **enables** The resulting calibration transfers to l
 - [[question-difficulty-alone-predicts-llm-confidence]] : Training the auxiliary calibrator on the question text only, with the LLM's generated answer omitted. **enables** The calibrator already attains respectable cal
@@ -949,6 +958,7 @@ Atomic notes extracted from the library papers via the Agents-K1 ingestion skill
 - [[sft-cold-start-enables-rlvr-clarification]] : Supervised fine-tuning on structured abstention-and-clarification traces before GRPO training **enables** Post-refusal clarification quality (U-Clar) is preserv
 - [[sft-knowledge-state-shifts-during-training]] : Supervised fine-tuning causes the model's internal knowledge state to evolve, turning some initially-unknown questions into answerable ones **increases** Traini
 - [[sft-known-examples-improve-knowledge-utilization]] : 'supervised-finetuning on examples within the model''s knowledge-boundary (Known examples in slick)' **increases** Better test-time accuracy on held-out questio
+- [[sft-rotates-boundary-readout-rl-rides-it]] : Instruction supervised fine-tuning applied to a base model whose answerability (known-vs-unknown) readout is already present at full strength. **mediates** The 
 - [[sft-suppresses-honesty-expression]] : Domain-specific supervised-finetuning perturbs neurons that govern the expression of knowledge-boundary awareness **prevents** The model produces confident fabr
 - [[sft-unknown-examples-drive-hallucination]] : 'supervised-finetuning on examples outside the model''s knowledge-boundary (Unknown examples in slick)' **increases** Increased hallucination on closed-book QA 
 - [[shift-ablation-removes-spurious-gender-signal]] : Human-guided ablation of spurious SAE features identified via sparse feature circuit on an ambiguous (gender-predictive) training set **enables** Classifier wor
@@ -971,6 +981,7 @@ Atomic notes extracted from the library papers via the Agents-K1 ingestion skill
 - [[task-training-sharpens-not-creates-hallucination-veto]] : Applying abstention-SFT plus GRPO on top of the instruction-tuned base, then reading the post-generation correctness probe on confidently-answered unanswerable 
 - [[ternary-reward-enables-abstention-over-hallucination]] : A ternary reward (+1 correct, 0 abstain, -1 hallucinate) inside GRPO's group-relative advantage estimation **enables** Abstention receives strictly higher group
 - [[test-time-scaling-worsens-abstention]] : Increasing the reasoning token budget (from 512 to 4096 tokens) allocated to chain-of-thought generation before the final answer **decreases** Improved response
+- [[text-surface-form-predicts-boundary-elevation]] : Regressing the confab cloud's knowledge-boundary projection on raw text-surface features of the question (rare-word fraction, corpus log-frequency, proper-noun 
 - [[token-bottleneck-restores-diffusion-transparency]] : Mapping information between DiffusionGemma denoising steps through an interpretable token bottleneck **enables** The model's effective opaque serial depth drops
 - [[tokenized-brier-score-is-proper-scoring-rule-for-verbalized-calibration]] : Fine-tuning an LLM on the tokenized Brier score loss, which penalizes the expected squared error between the model's confidence-token probability distribution a
 - [[training-away-sycophancy-reduces-but-does-not-eliminate-reward-tampering]] : Collecting 2,500 negative sycophancy examples from early-curriculum environments and fine-tuning the curriculum-trained model on them to suppress gaming behavio
@@ -995,6 +1006,7 @@ Atomic notes extracted from the library papers via the Agents-K1 ingestion skill
 - [[verbalized-confidence-imitation-overconfidence]] : LLMs trained on human-generated text where confidence expressions cluster at round high values (e.g., 95%) **increases** LLMs produce verbalized-confidence scor
 - [[verbalized-prob-generalizes-logit-overfits-distribution-shift]] : Finetuning gpt-3 to output verbalized-confidence using per-task empirical accuracy labels **enables** 'calibration generalizes under distribution shift (better 
 - [[verification-advantage-over-generation]] : Increasing language model parameter count (800M to 52B) while evaluating P(True) self-evaluation on sampling-based tasks at unit temperature **increases** The g
+- [[veto-saturates-by-first-visible-token]] : Reading the post-generation correctness/veto axis at token granularity across the answer window (first visible token through answer end, veto axis refit per pos
 - [[within-sample-correlation-symmetry-limits-probability-voting]] : Within-sample log-probability/correctness correlations distributed symmetrically around zero across diverse benchmarks **decreases** Reliability of probability-
 
 ## Gaps (verified literature absences) (1)

@@ -58,16 +58,49 @@ Result: **91 passed** for the parity + `test_confidence_steer` +
 **35 passed, 2 skipped** (the 2 skips are the CUDA-gated e2e, correctly skipped
 on CPU).
 
-## GPU equivalence cell (PREPARED, NOT RUN)
+## GPU equivalence cell (methodology fixed after r1; engine parity intact)
 
 `gpu_equivalence_cell.py` — loud DO-NOT-RUN docstring + a required
 `--i-know-this-runs-on-gpu` flag (refuses to run without it). On a handful of
-real prompts it compares the batched final-position + per-row-alpha edit at the
-direction's `best_layer` against a one-prompt-at-a-time reference, and reports
-per-row and overall max abs divergence at each row's last real token. Expected
-result is the model's own batched-vs-unbatched numeric floor, orders of
-magnitude below the steering magnitude. Launch only under a signed amendment +
-explicit user approval, and only when the GPU is free.
+real prompts it verifies the batched final-position + per-row-alpha edit at the
+direction's `best_layer`. Launch only under a signed amendment + explicit user
+approval, and only when the GPU is free.
+
+### r1 mis-fire and the fix (cell methodology, NOT the engine)
+
+The first GPU launch (r1, Modal A10G, real clean-SFT + grpo-v2 lineage) reported
+per-row divergences `[2, 6, 4, 1, 2]` and overall `6.0` vs the `1e-2` floor —
+FAIL. Diagnosis (CPU-reproduced on a tiny bf16 Qwen3 model, no GPU, no real
+checkpoint): the cell had compared **absolute steered hidden states** between a
+padded batched forward and unpadded single forwards. Those two forwards are NOT
+bit-identical in bf16 even with correct masking (attention softmax over a longer
+padded key set, RoPE offsets, float reduction order), and at layer 34 of a 4B
+model the residual magnitude is large, so this legitimate batched-vs-unbatched
+numeric noise is integer-scale in bf16. The `SteeringHook` was applying the
+correct per-row alpha at the correct token the whole time — the max component of
+the unit-norm `direction_caution` is only `0.18`, so no per-row-alpha
+misassignment (max swap `4*0.18 = 0.72`) could produce a `6.0` divergence; the
+`6.0` was pure model noise, not a steering bug.
+
+The fix compares the **steering delta** (steered − unsteered) at each row's final
+real token against the analytic expectation `alpha_i * d`, and cross-checks the
+batched delta against the unbatched delta. The delta cancels the model's shared
+forward numerics and isolates exactly the hook's edit, so the `1e-2` floor stays
+tight and now actually means "the hook applied `alpha_i * d`." The cell also pins
+`tokenizer.padding_side = "right"` (the cleaner apples-to-apples capture; the
+delta is robust to either side). On a tiny bf16 Qwen3 model the fixed cell
+reports ~5e-3 vs-analytic / ~8e-3 batched-vs-unbatched — PASS.
+
+**Scope:** this was a *cell* (measurement) bug, not an *engine* bug. The
+`SteeringHook` batched final-position + per-row-alpha path is unchanged and still
+proven by the CPU parity tests below; no registered/scientific run consumed the
+batched path (it is unrun AK-Stage-2 prep; the AL arms used batch-1 generation).
+
+New regression tests (`TestGpuEquivalenceCellMethodology`, tiny real bf16 Qwen3,
+no download / no GPU) would have caught it: they assert the delta comparison is
+floor-tight under both padding sides and that the old absolute comparison is
+strictly noisier under bf16 left padding. Runnable without pytest via
+`python experiment/phase1/probe/steering/tests/test_arm_b_batched_parity.py`.
 
 ## Files changed
 - `experiment/phase1/probe/steering/confidence_steer.py` (SteeringHook: final
