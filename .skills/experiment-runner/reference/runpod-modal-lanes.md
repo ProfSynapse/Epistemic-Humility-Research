@@ -30,6 +30,30 @@ The Modal crash-proof skeleton for probe cells lives at
 branch). Clone it for a new cell rather than writing a Modal app from scratch, as
 `modal_ak_stage1.py` did.
 
+## Wrapper-authoring checklist (each item has killed a paid run)
+
+Check every NEW Modal/cloud wrapper against all of these before launch; each
+one is cheap to verify by eye and expensive to learn live:
+
+1. **Idempotent clone.** Retries land on a WARM container where the workspace
+   already exists; a bare `git clone` dies with exit 128 and every retry
+   repeats it, so the app stops silently (dashboard shows no live app). Guard:
+   `if not os.path.isdir(os.path.join(workspace, ".git")): clone`, then
+   `fetch` (check=False) + `checkout <pin>`. (Killed item-11 r1 retries AND
+   AK Stage 2 r1 retries.)
+2. **argparse negative-leading values.** A dose grid like `-2,-1,0,1,2` passed
+   as a separate argv entry (`["--alphas", ALPHAS]`) is read as a new flag:
+   "expected one argument". Always use the equals form
+   (`[f"--alphas={ALPHAS}"]`) for any value that can start with `-`. (Killed
+   the AK Stage 2 r1 full sweep after its smoke had already passed.)
+3. **`.spawn()` in the local_entrypoint, plus `modal run --detach`.** A client
+   that dies (gracefully or not) with `.remote()` in flight cancels the input;
+   spawn-then-exit leaves nothing to cancel. (Killed both AK Stage 1 arms.)
+4. **xet off in the image env AND re-exported in the function**:
+   `HF_HUB_DISABLE_XET=1`, `HF_HUB_ENABLE_HF_TRANSFER=0`.
+5. **Verify staging inputs exist before launch** (see the check-before-prep
+   step below) — a missing input caught at launch time wastes a paid boot.
+
 ## Launch discipline
 
 - **Fresh approval, every paid launch.** Each cost-incurring launch needs
