@@ -41,7 +41,7 @@ REPO_URL = "https://github.com/ProfSynapse/Epistemic-Humility-Research.git"
 # Pin to the AK branch commit carrying amendment_ak_stage2_steer.py at launch
 # time. Filled in a SECOND commit once the branch is pushed and the SHA exists;
 # the runtime guard below refuses to run while this is a placeholder.
-REPO_COMMIT = "REPLACE_WITH_AK_STAGE2_COMMIT"
+REPO_COMMIT = "fdace0de5a79f91c1ae62ed3306936c36cd0e659"  # carries the Stage 2 runner
 STAGING_REPO = "professorsynapse/eh-al-prep-staging"  # reuse the AL/AK prep repo
 
 # Stage 2 staging inputs (all already uploaded by the Stage 1 pipeline / prep).
