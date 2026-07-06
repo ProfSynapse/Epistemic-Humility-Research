@@ -52,8 +52,8 @@ outcome: >-
 scoreboard: >-
   AL-G1 both hit. AL-G2 and AL-G3: user missed at full confidence ("LETS BE
   BOLD"); orchestrator sat at ~45% and ~50% PASS (leaned miss on G2, coin
-  flip on G3). Proposed score LOSS/WIN (user-orchestrator), subject to user
-  adjudication at merge.
+  flip on G3). Score LOSS/WIN (user-orchestrator), adjudicated by the user
+  2026-07-05 ("you best me on this one"). Tally 3-3-2.
 ---
 
 # Amendment AL — Radial anti-propensity steering on the AI-TRUE checkpoint
