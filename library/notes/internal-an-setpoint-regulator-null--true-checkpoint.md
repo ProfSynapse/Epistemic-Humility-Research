@@ -1,5 +1,5 @@
 ---
-title: 'Propensity-Selected, Caution-Actuated Regulator Does Not Reach the Confab Cloud (Amendment AN, TRUE checkpoint)'
+title: 'Propensity-Selected Caution Setpoint Write Did Not Regulate Confabulation, but the Null Is Confounded by an Unvalidated Actuator (Amendment AN, TRUE checkpoint)'
 tags:
 - kg/paper
 - paper
@@ -73,28 +73,27 @@ relationships:
 
 ## Summary
 
-Amendment AN tested the surviving combination Amendment AL's same-direction
-push and Amendment AI's reward-channel test each left open: select residual
-confabulations with the sensor that has proven statistical reach into the
-confab cloud (the confabulation-propensity direction), then correct them with
-the actuator Amendment AC proved moves behavior on its own population (an
-erase-and-write setpoint on the doubt-orthogonalized caution_perp coordinate,
-refit on the AI-TRUE checkpoint, cos -0.064 to the GRPO-v2 direction it
-replaces). The result is a clean null in both directions: the setpoint write
-does not convert any of the 116 baseline confabs into refusals, and the same
-actuator run in reverse does not release any of the 114 baseline
-answerable-refused rows into answers. A precision readback confirms the write
-landed on-axis (observed setpoint within 0.58 of a sigma-22.13 scale of the
-commanded value), so this is not an injection-fidelity failure: the write is
-verified precise and visibly changes the generated text (every flagged confab
-becomes a different confab), yet the fabricate-vs-refuse decision itself never
-moves. caution_perp is a correlate of the caution behavior it was fit on, not
-a general-purpose lever the confab cloud answers to when addressed through a
-different sensor. This is the strongest form yet of the program's "reads but
-does not actuate" pattern: it closes both the imprecise-injection escape (AL
-already ruled this out; AN reconfirms it with a fresh readback) and the
-wrong-actuator escape (AC's actuator is independently proven to move
-behavior) that earlier write-side nulls left open.
+Amendment AN selected residual confabulations with the confabulation-propensity
+sensor (prop_z >= 1.00) and applied an erase-and-write setpoint on the
+doubt-orthogonalized caution_perp coordinate, refit on the AI-TRUE checkpoint.
+On the numbers the setpoint write did not convert any of the 116 baseline
+confabs into refusals, and the reverse push did not release any of the 114
+baseline answerable-refused rows. A precision readback confirms the write landed
+on-axis (observed setpoint within 0.58 of a sigma-22.13 scale of the commanded
+value), so this is not an injection-fidelity failure.
+
+This null is CONFOUNDED and is reported as such, not as a mechanism claim. The
+actuator direction was caution_perp refit on the AI-TRUE checkpoint, cosine
+-0.064 with AC's validated GRPO-v2 direction: essentially a different, orthogonal
+vector. AC's win validated AC's direction as a lever (refined B1: ablation moves
+known_refused refusal 0.994 -> 0.524 with specificity); it does NOT establish
+that AN's refit direction is a lever, and the positive-control screen that would
+have (section 6) was deferred, not run. So the null cannot separate "the caution
+axis cannot suppress confabulation" from "this refit direction is a dead
+actuator." Crucially, this is NOT evidence for an "input-side actuates,
+write-side nulls" rule: AC is itself a write-side erase-write on caution_perp
+and it PASSED at +8.7pt. Write-side activation edits are not uniformly null; AC
+is the standing counterexample.
 
 ## Claims
 
@@ -127,18 +126,17 @@ behavior) that earlier write-side nulls left open.
 
 ## Relevance to experiment
 
-Falsifier fired as pre-registered (AN-G2 AND AN-G3 both missing): the caution
-setpoint does not reach the confab cloud selectively even when aimed there by
-the reaching sensor, so caution_perp joins the correlate pile alongside the
-Amendment AL propensity-direction null and the Amendment AI reward-channel
-null. The framing distinction the program should carry forward: every WRITE-
-side activation-edit tested on an isolated axis so far (AA/AB first-person and
-activation injection, AL radial anti-propensity, AI reward-channel coupling,
-AN this result) is null, while every INPUT-side / TEXT-channel intervention
-tested (AF system-prompt doubt-prime, AC doubt-coupled caution itself, AG
-asymmetric compliance) has actuated. AN failing is consistent with, not
-contradictory to, those prime-channel wins - it narrows the open question to
-why the residual-stream write path stays decision-inert for this behavior
-while the same information delivered through the prompt or through the
-model's own generated context moves it. Single checkpoint (AI-TRUE), single
-seed; Tier-2 exploratory, not pooled with the locked Phase 1 matrix.
+The gate outcomes (AN-G2 and AN-G3 both missing) are real, but their
+interpretation is bounded by the confound above: AN used an actuator direction
+never validated as a lever on this checkpoint, so it cannot license the claim
+that the caution axis is decision-inert for confabulation. The program should
+NOT carry forward any "input-side actuates, write-side nulls" taxonomy; that
+taxonomy is falsified by AC, a write-side erase-write on caution_perp that
+passed at +8.7pt. What AN actually leaves is a sharpened next experiment: first
+validate a caution actuator on the AI-TRUE checkpoint (the deferred section 6
+positive-control screen), then couple that validated actuator to the
+confab-propensity readout exactly as AC coupled the doubt readout to its
+validated caution_perp. Until that validation exists, treat AN as one
+confounded data point, not as evidence about the caution axis. Single checkpoint
+(AI-TRUE), single seed; Tier-2 exploratory, not pooled with the locked Phase 1
+matrix.

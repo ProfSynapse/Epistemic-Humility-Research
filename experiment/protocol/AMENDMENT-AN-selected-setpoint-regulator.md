@@ -57,14 +57,21 @@ outcome: >-
   lands precisely on-axis (mean observed setpoint 43.98 vs commanded 44.26,
   max abs error 0.58 against sigma 22.13; unflagged rows show zero shift),
   ruling out an injection-fidelity failure. caution_perp, reached this
-  precisely on propensity-flagged rows, still does not carry the
-  fabricate-vs-refuse decision: it is a correlate of the caution behavior it
-  was fit on, not a general-purpose lever. Closes the imprecise-injection
-  escape (already ruled out by AL, reconfirmed here) and the wrong-actuator
-  escape (AC's actuator independently moves behavior on its own population)
-  that earlier write-side nulls left open; consistent with, not contradicted
-  by, the AF/AC/AG prime-channel wins, which are input-side rather than
-  write-side.
+  precisely on propensity-flagged rows, did not convert any flagged
+  confabulation to a refusal. This null is CONFOUNDED and must be read as such:
+  the actuator direction was the caution_perp REFIT on the AI-TRUE checkpoint,
+  which has cosine -0.064 with AC's validated GRPO-v2 direction (essentially
+  orthogonal), and it was never independently shown to be a behavioral lever on
+  this checkpoint. AC's win validates AC's direction; it does not transfer to
+  AN's refit direction, and the section 6 positive-control screen that would
+  have validated it was deferred, not run. AN therefore cannot distinguish "the
+  caution axis cannot suppress confabulation" from "this refit direction is a
+  dead actuator." Do NOT read AN as evidence for any input-side-vs-write-side
+  rule: AC is itself a WRITE-side erase-write on caution_perp and it PASSED
+  (+8.7pt), so write-side activation edits are not uniformly null. The honest
+  open question AN leaves is whether a caution actuator validated as a lever on
+  this checkpoint, coupled to the confab-propensity readout the way AC coupled
+  the doubt readout, can regulate confabulation.
 scoreboard: >-
   AN-G1 both hit (pass is vacuous, so this is not a substantive win for
   either side). AN-G2/AN-G3, the central bet: the user called PASS at full
@@ -320,8 +327,13 @@ direction control graduates to its own signed amendment.
 
 ### 6.1 Candidate directions (K ~ 9-11)
 
-1. `caution_perp` (AI-TRUE refit) - positive control; AC proved it moves
-   behavior, so it must register as a hit or the screen instrument is broken.
+1. `caution_perp` (AI-TRUE refit) - intended positive control, but see the
+   caveat: AC validated the GRPO-v2 caution_perp, and this AI-TRUE refit has
+   cosine -0.064 with it (essentially orthogonal), so AC's win does NOT
+   guarantee this direction moves behavior. Whether it registers as a hit is an
+   open empirical question, and it is exactly the validation AN skipped by
+   deferring this screen. Also include the GRPO-v2 caution_perp itself as a
+   true positive control that AC proved.
 2. `answer-vs-refuse` axis (behavior direction, answered vs refused mass-mean).
 3. `dial` / post-generation correctness axis (Amendment S/T readout).
 4. `doubt` axis (`u_d`, known vs unknown mass-mean).
@@ -393,9 +405,14 @@ carries no gates.
 - Single checkpoint (AI-TRUE), single seed; a pass licenses a mechanism claim
   on this checkpoint only, with multi-seed replication required before any
   headline. Tier-2 exploratory, never pooled with the locked Phase 1 matrix.
-- The caution_perp actuator is refit on this checkpoint (cos -0.064 to the
-  GRPO-v2 direction); portability of the regulator across checkpoints is a
-  separate question from whether it reaches here.
+- CONFOUND (the load on any conclusion): the caution_perp actuator is refit on
+  this checkpoint (cos -0.064 to the GRPO-v2 direction, i.e. essentially a
+  different, orthogonal vector). AC validated the GRPO-v2 direction as a lever;
+  it did not validate this refit direction, and the section 6 positive-control
+  screen that would have was deferred, not run. A null with an unvalidated
+  actuator cannot be attributed to the caution axis rather than to a dead
+  actuator. This is the single largest caveat and the reason AN's null is
+  reported as confounded rather than as a mechanism claim.
 - The propensity flag is frozen from AL's read pass; the primary arm re-reads
   caution on the same rows to confirm the write landed, but the FLAG itself is
   not recomputed under intervention (open-loop selection, matching AC's
@@ -482,20 +499,36 @@ null.
 ### 11.3 Interpretation
 
 The pre-registered question was whether pairing the sensor with proven reach
-(confabulation propensity) with the actuator with proven force (AC's caution
-setpoint) closes the loop AL's same-direction pairing could not. It does not:
-even reached this precisely, the caution setpoint does not carry the
-fabricate-vs-refuse decision for the propensity-flagged population.
-caution_perp is a correlate of the caution behavior it was fit on, not a
-general-purpose lever the confab cloud answers to when addressed through a
-different sensor. This closes both escapes earlier write-side nulls left
-open: an imprecise write (AL already ruled this out; this smoke reconfirms
-it) and a weak or wrong actuator (AC's actuator independently moves behavior
-on its own population, so it is not weak in general). Framing for the
-program: every WRITE-side activation-edit tested on an isolated axis so far
-(AA/AB, AL, AI, AN) is null; every INPUT-side / TEXT-channel intervention
-tested (AF, AC itself, AG) has actuated. AN's null is consistent with, not
-contradicted by, those prime-channel wins.
+(confabulation propensity) with a caution setpoint write closes the loop AL's
+same-direction pairing could not. On the numbers it does not: even reached this
+precisely, the caution setpoint write did not convert any flagged confabulation
+to a refusal.
+
+This null is CONFOUNDED, and the amendment reports it as such rather than as a
+clean mechanism statement. The actuator was NOT AC's actuator. AC coupled the
+doubt readout to caution_perp fit on the GRPO-v2 checkpoint, a direction that
+refined B1 had already validated as a behavioral lever (ablating it moves
+known_refused refusal 0.994 -> 0.524 with specificity intact). AN's actuator is
+caution_perp REFIT on the AI-TRUE checkpoint, which has cosine -0.064 with AC's
+direction: essentially orthogonal, a different vector. AC's win therefore does
+NOT establish that AN's actuator is a lever, and the section 6 positive-control
+screen that would have tested AN's refit direction on its own population was
+deferred, not run. So the null cannot separate the two live explanations: (a)
+the caution axis genuinely cannot suppress confabulation on this checkpoint, or
+(b) this refit direction is a dead actuator and never had force to begin with.
+Distinguishing them requires validating a caution actuator on the AI-TRUE
+checkpoint first (the section 6 screen), then coupling it to the propensity
+sensor.
+
+Do NOT read this result through any "input-side actuates, write-side nulls"
+lens. That lens is false: AC is itself a WRITE-side erase-write on caution_perp
+and it PASSED at +8.7pt (AC-G1, CI [+5.6, +12.0]). Write-side activation edits
+are not uniformly null; AC is the standing counterexample. The prime-channel
+wins (AF system-prompt doubt-prime, AG asymmetric compliance) are a separate,
+also-actuating channel, and AN speaks to neither. AN's honest contribution is
+one confounded data point plus a sharpened next experiment: couple a validated
+caution actuator to the confab-propensity readout, mirroring AC's doubt
+coupling.
 
 Both predictions called AN-G2/AN-G3 PASS; both missed. The user called PASS
 at full confidence; the orchestrator called PASS but at ~40% (an implied lean
