@@ -2,9 +2,13 @@
 amendment: AK
 slug: commitment-point
 status: SIGNED 2026-07-04 (user directive "Proceed" after the pre-signing
-  options review) — NOT LAUNCHED; launch gated behind Amendment AI resolution
-  and explicit user GPU approval; AK-G2's effect-size floor locks from the
-  pre-stated pilot formula before any full-run readout
+  options review). LAUNCHED 2026-07-06 with explicit user GPU approval; Stage 2
+  ran on Modal (ephemeral app eh-ak-stage2, ap-jPgOtPQGaWu4yeC3YX7q7j, started
+  07:26 EDT, app stopped same day). Outputs land in the private staging repo
+  professorsynapse/eh-al-prep-staging; run success (DONE marker + uploaded
+  artifacts) and the AK-G1/G2/G3 verdict are PENDING scoring. AK-G2's
+  effect-size floor locks from the pre-stated pilot formula before any full-run
+  readout
 question: >-
   Where along the generation trajectory does the fabricate-anyway commitment
   happen: does the post-generation veto crystallize across the answer tokens
