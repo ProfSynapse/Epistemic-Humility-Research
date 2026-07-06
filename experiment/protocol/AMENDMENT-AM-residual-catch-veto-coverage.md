@@ -2,9 +2,12 @@
 amendment: AM
 slug: residual-catch-veto-coverage
 status: >-
-  DRAFT, predictions recorded 2026-07-05; signs (gates in section 4 lock) when
-  Amendment AL resolves and its PR merges; launch after signing, Modal lane
-  clear, $5 cap. No launch, no PR yet; PR merge order serialized behind AL.
+  SIGNED 2026-07-06 (user, in-conversation: "can we sign and toss AM up on
+  modal?" — the signing precondition, AL resolved + PR #214 merged, was met
+  2026-07-05). Gates in section 4 LOCKED as drafted; predictions were
+  recorded 2026-07-05 before signing. Launch authorized on Modal at the
+  pre-registered $5 cap; batch-12 numerics smoke runs in the same container
+  before the full pass per section 5.3.
 question: >-
   Of the residual confabulations the pre-generation radial controller cannot
   reach (the gate-miss set the answerability gate misreads as answerable, 43
