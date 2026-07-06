@@ -115,9 +115,12 @@ next_actions:
 - 'SAE decomposition of caution (backlog item 8, cloud): the hydra result says
   linear rank is high; SAE features are the natural next basis and directly test
   compound-caution''s decomposability prediction.'
-- 'Paper 5 framing note: read-anywhere/write-everywhere - redundancy explains why
-  reading is robust (S-Z arc), single-direction writes fail (AA), and distributed
-  prompt writes succeed (AF/AG).'
+- 'Paper 5 framing note (CORRECTED): redundancy explains why reading is robust
+  (S-Z arc). Do NOT generalize to "single-direction writes fail": AA''s ADDITIVE
+  activation write was flat, but AC is a single-direction activation erase-write
+  on caution_perp that SUCCEEDED (+8.7pt). AF/AG are prompt/text-channel primes,
+  a separate channel, not activation writes. The honest split is by axis and
+  write-form and outcome, not a clean input-vs-write binary.'
 - 'AD stays signed-on-shelf (user: not interesting under the training-free focus).'
 ---
 
@@ -145,6 +148,10 @@ confound: unknowns resist release mostly because they start ~0.5z deeper in
 the refusal basin, and the 23 that did release were exactly the shallow ones
 (AUROC 0.843).
 
-Strategic reading for Paper 5: redundancy is why reading is robust and
-single-direction writing (AA) was doomed, while the prompt — a distributed,
-high-rank write — moves behavior at will. Read anywhere; write everywhere.
+Strategic reading for Paper 5 (CORRECTED): redundancy is why reading is robust.
+AA's ADDITIVE single-direction write was flat, and the prompt (a distributed,
+high-rank text-channel prime) moves behavior. But do not read this as "activation
+writes fail": AC is a single-direction activation erase-write on caution_perp
+that succeeded (+8.7pt), so the activation channel does actuate when it erases
+and writes a validated direction. Frame by axis x write-form x outcome, not a
+clean input-vs-write binary.
