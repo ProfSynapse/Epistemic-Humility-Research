@@ -21,6 +21,14 @@ falsifier: >-
 checkpoint:
   repo: professorsynapse/eh-qwen3-4b-clean-sft-grpo-par-true-seed1-lora
   revision: 7e31d3cf62395275d4ba3d1d9ec8f95287188805
+  # KNOWN PROVENANCE CAVEAT (flagged, not fixed here -- do not edit the tuner
+  # submodule to fix it): synaptic-tuner's steer path calls
+  # PeftModel.from_pretrained(model, adapter) with no revision= argument, so
+  # this pinned revision is not enforced at load time; the loaded adapter
+  # could silently be a later commit on the same repo. Capture the actually
+  # resolved adapter commit sha after any real GPU run and record it
+  # alongside the result. A tuner follow-up should add revision= support to
+  # that PeftModel.from_pretrained call.
 instrument:
   configs:
     - cell.yaml

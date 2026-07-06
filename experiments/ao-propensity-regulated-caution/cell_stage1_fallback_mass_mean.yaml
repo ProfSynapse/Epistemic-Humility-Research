@@ -15,11 +15,13 @@
 # candidate #1: pos_cell=known_refused (n=114) == this pool's
 # answerable_refused, neg_cell=known_correct_answered (n=90).
 #
-# SCHEMA BLOCKER: this candidate's JSON also uses the legacy "theta" field
-# (schema_version phase3-residual-caution-direction/v1), not the tuner's own
-# "vector" field that MechInterp.probe.fit.load_frozen_direction requires --
-# see cell_stage1_caution_perp.yaml's header for the reproduction command and
-# the cross-file (Stage 1 + Stage 2) scope of this blocker.
+# SCHEMA BLOCKER (RESOLVED, this session): this candidate's JSON also used the
+# legacy "theta" field (schema_version phase3-residual-mass-mean-direction/v1),
+# not the tuner's own "vector" field that MechInterp.probe.fit.
+# load_frozen_direction requires -- see cell_stage1_caution_perp.yaml's header
+# for the fix (convert_directions_to_tuner_schema.py) and the cross-file
+# (Stage 1 + Stage 2) scope of this blocker. The readouts block below points
+# at the converted fallback_mass_mean_direction_L35_ai_true.tuner.json.
 #
 # Validate parsing (CPU, no GPU):
 #   cd synaptic-tuner && python3 -c "from MechInterp.config import load_steer_config; \
@@ -34,7 +36,7 @@ surface:
 
 readouts:
   - name: fallback_mass_mean_ai_true
-    path: experiments/ao-propensity-regulated-caution/analysis/amendment_ao_prep/fallback_mass_mean_direction_L35_ai_true.json
+    path: experiments/ao-propensity-regulated-caution/analysis/amendment_ao_prep/fallback_mass_mean_direction_L35_ai_true.tuner.json
 
 law:
   kind: erase_write
@@ -60,8 +62,10 @@ arms:
 execution:
   output_path: experiments/ao-propensity-regulated-caution/analysis/rows_out_stage1_fallback_mass_mean.jsonl
   resume: true
-  # Same ao_grader.py _OUTPUT_PATH caveat as candidate #1 -- see that file's
-  # execution: comment; not repeated in full here.
+  # Same ao_grader.py priming-path fix as candidate #1 -- see that file's
+  # execution: comment for the AO_GRADER_OUTPUT_PATH mechanism; set it to
+  # this cell's own output_path (rows_out_stage1_fallback_mass_mean.jsonl)
+  # before invoking `mechinterp steer` on THIS file.
   grader: ao_grader:grade
 
 smoke:

@@ -52,12 +52,28 @@ row_key" is available except by remembering it. This module keeps a
 module-level cache keyed by row_key, populated the moment a baseline-arm row
 is graded, and consulted for every later arm's row. On a RESUMED run in a
 fresh process, the cache is lazily re-primed by reading any baseline rows
-already present in ``execution.output_path`` (hardcoded below, matching
-cell.yaml) the first time ``grade()`` is called. This reproduces, within the
-tuner's one-row-at-a-time contract, the same "rows already carry their own
-baseline join, no separate post-pass" property the AL/AN scripts get for
-free by operating over a full rows.jsonl at once
+already present on disk the first time ``grade()`` is called. This
+reproduces, within the tuner's one-row-at-a-time contract, the same "rows
+already carry their own baseline join, no separate post-pass" property the
+AL/AN scripts get for free by operating over a full rows.jsonl at once
 (``amendment_al_grade_and_gates.py``, ``amendment_an_grade_and_gates.py``).
+
+Priming path (config-driven, not hardcoded): ``grader(row)`` receives only the
+per-row record (``MechInterp/cli.py:360``, ``rec.update(grader(rec))``) --
+there is no channel from the tuner for a grader to read the calling cell's own
+``execution.output_path``. Three cells share this grader module (Stage-2's
+``cell.yaml`` -> ``analysis/rows_out.jsonl``, and the two Stage-1 cells ->
+``analysis/rows_out_stage1_caution_perp.jsonl`` /
+``analysis/rows_out_stage1_fallback_mass_mean.jsonl``), so priming from one
+hardcoded path silently fails to re-prime a DIFFERENT cell's resumed run
+(KeyError on the first non-baseline row graded after a restart, even though
+that cell's own baseline rows are sitting on disk under its own path). Fixed
+by reading the path from the ``AO_GRADER_OUTPUT_PATH`` environment variable,
+set by the invoker to match whichever cell.yaml's ``execution.output_path``
+is actually being run; see ``_resolve_output_path`` below. Falls back to
+Stage-2's own default path if unset, so an invocation that forgets to set it
+still behaves exactly as before (a loud KeyError on a crash-and-resume in a
+fresh process, never a silent wrong-file read).
 
 FLAG FOR REVIEW: the AMENDMENT does not spell out this join mechanism; it is
 a Stage-0 CPU judgment call, not itself pinned by the amendment text. If a
@@ -69,6 +85,7 @@ literally), swap this cache for a script run between the GPU generation and
 from __future__ import annotations
 
 import json
+import os
 import re
 import sys
 from pathlib import Path
@@ -79,12 +96,27 @@ if str(EVAL_DIR) not in sys.path:
     sys.path.insert(0, str(EVAL_DIR))
 import scorers  # noqa: E402  (eval/scorers.py -- Cheng-validated port, dependency-free)
 
-# The path cell.yaml's execution.output_path points at (see cell.yaml `execution:`).
-# Hardcoded here (not read from cell.yaml) so this module stays import-light and
-# usable standalone in tests; keep in sync if that path ever changes.
-_OUTPUT_PATH = (
+# Stage-2's own output path (cell.yaml's execution.output_path), used as the
+# fallback default when AO_GRADER_OUTPUT_PATH is unset -- see
+# _resolve_output_path below and the "Priming path" section of this module's
+# docstring for why a single hardcoded path cannot serve all three cells that
+# share this grader.
+_DEFAULT_OUTPUT_PATH = (
     Path(__file__).resolve().parent / "analysis" / "rows_out.jsonl"
 )
+
+
+def _resolve_output_path() -> Path:
+    """The CURRENT cell's own output_path, read from the environment.
+
+    Set AO_GRADER_OUTPUT_PATH to the exact value of the cell.yaml being run's
+    execution.output_path before invoking `mechinterp steer` (or `score-gates`
+    tooling that re-primes this module), so a resumed run in a fresh process
+    re-primes the baseline cache from THIS cell's own rows, not Stage-2's.
+    """
+    raw = os.environ.get("AO_GRADER_OUTPUT_PATH")
+    return Path(raw) if raw else _DEFAULT_OUTPUT_PATH
+
 
 # ---------------------------------------------------------------------------
 # is_degenerate -- verbatim port from steering_common.py (_MAX_NGRAM=5,
@@ -150,9 +182,10 @@ _cache_primed = False
 def _prime_cache_from_disk() -> None:
     global _cache_primed
     _cache_primed = True
-    if not _OUTPUT_PATH.is_file():
+    output_path = _resolve_output_path()
+    if not output_path.is_file():
         return
-    with _OUTPUT_PATH.open(encoding="utf-8") as fh:
+    with output_path.open(encoding="utf-8") as fh:
         for line in fh:
             line = line.strip()
             if not line:

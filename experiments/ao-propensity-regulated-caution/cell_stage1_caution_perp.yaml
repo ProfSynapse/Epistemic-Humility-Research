@@ -23,21 +23,19 @@
 # on. gates_stage1.yaml's G0 gates read "answerable_refused" as that mapped
 # population.
 #
-# SCHEMA BLOCKER (flagged, not fixed here -- see the build report): this
-# candidate's JSON (analysis/amendment_ao_prep/caution_perp_direction_L35_ai_true.json)
-# is written in the legacy "phase3-residual-caution-direction/v1" schema
-# (field "theta", not "vector"). The tuner's own MechInterp.probe.fit.
-# load_frozen_direction (called by MechInterp/cli.py:run_steer, the same path
-# the Stage-2 cell.yaml already depends on) requires a "vector" key and raises
-# KeyError: 'vector' on this file as staged. Reproduced on CPU, no GPU
-# involved:
-#   cd synaptic-tuner && python3 -c "from MechInterp.probe.fit import load_frozen_direction; \
-#     load_frozen_direction('../experiments/ao-propensity-regulated-caution/analysis/amendment_ao_prep/caution_perp_direction_L35_ai_true.json')"
-# This blocks BOTH Stage 1 (this file) and the already-committed Stage 2
-# cell.yaml equally (same two staged direction files). Needs a lead decision
-# (regenerate via freeze_direction, add a compat shim to load_frozen_direction,
-# or a small local schema-conversion script) before ANY GPU run, smoke
-# included.
+# SCHEMA BLOCKER (RESOLVED, this session): this candidate's original JSON
+# (analysis/amendment_ao_prep/caution_perp_direction_L35_ai_true.json) is
+# written in the legacy "phase3-residual-caution-direction/v1" schema (field
+# "theta", not "vector"), which made MechInterp.probe.fit.load_frozen_direction
+# raise KeyError: 'vector'. Fixed with a local converter,
+# analysis/amendment_ao_prep/convert_directions_to_tuner_schema.py (gitignored,
+# same tree as the other Stage-0 prep scripts), which writes
+# caution_perp_direction_L35_ai_true.tuner.json in the tuner's own
+# mechinterp-direction/v1 schema (vector = unit(theta), layer = the source's
+# own 0-indexed "block" field) and verifies it loads with
+# load_frozen_direction. The readouts block below points at the converted
+# file; see prep_manifest.json's direction_schema_conversion entry for the
+# exact transform and source sha.
 #
 # Validate parsing (CPU, no GPU):
 #   cd synaptic-tuner && python3 -c "from MechInterp.config import load_steer_config; \
@@ -55,7 +53,7 @@ surface:
 
 readouts:
   - name: caution_perp_ai_true
-    path: experiments/ao-propensity-regulated-caution/analysis/amendment_ao_prep/caution_perp_direction_L35_ai_true.json
+    path: experiments/ao-propensity-regulated-caution/analysis/amendment_ao_prep/caution_perp_direction_L35_ai_true.tuner.json
 
 law:
   kind: erase_write
@@ -92,16 +90,12 @@ arms:
 execution:
   output_path: experiments/ao-propensity-regulated-caution/analysis/rows_out_stage1_caution_perp.jsonl
   resume: true
-  # Reused from Stage 2, see ao_grader.py's docstring for the cross-arm
-  # baseline-join mechanism. FLAG: that module's _OUTPUT_PATH constant is
-  # hardcoded to analysis/rows_out.jsonl (the STAGE-2 file), not this cell's
-  # output_path, so a crash-and-resume of THIS cell in a fresh process will
-  # fail to re-prime the baseline cache from disk (KeyError on the first
-  # non-baseline row graded after restart) even though the baseline rows are
-  # sitting right here in rows_out_stage1_caution_perp.jsonl. Harmless for an
-  # uninterrupted single-process run (arms list baseline first, cache fills
-  # live); a real risk only on resume-after-crash. Not fixed here per the
-  # task's "reuse it" instruction for ao_grader.py; flagged for the lead.
+  # Reused from Stage 2; see ao_grader.py's docstring ("Priming path") for the
+  # cross-arm baseline-join mechanism. RESOLVED (this session): the grader now
+  # reads its priming path from the AO_GRADER_OUTPUT_PATH environment
+  # variable instead of a hardcoded Stage-2 path. Set it to THIS cell's own
+  # output_path before invoking `mechinterp steer` on this file, e.g.:
+  #   AO_GRADER_OUTPUT_PATH=experiments/ao-propensity-regulated-caution/analysis/rows_out_stage1_caution_perp.jsonl
   grader: ao_grader:grade
 
 # Technical write-check smoke (readback tolerances), same convention as the
