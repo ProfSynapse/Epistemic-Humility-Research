@@ -1,14 +1,13 @@
 ---
 amendment: AK
 slug: commitment-point
-status: SIGNED 2026-07-04 (user directive "Proceed" after the pre-signing
-  options review). LAUNCHED 2026-07-06 with explicit user GPU approval; Stage 2
-  ran on Modal (ephemeral app eh-ak-stage2, ap-jPgOtPQGaWu4yeC3YX7q7j, started
-  07:26 EDT, app stopped same day). Outputs land in the private staging repo
-  professorsynapse/eh-al-prep-staging; run success (DONE marker + uploaded
-  artifacts) and the AK-G1/G2/G3 verdict are PENDING scoring. AK-G2's
-  effect-size floor locks from the pre-stated pilot formula before any full-run
-  readout
+status: RESOLVED 2026-07-06. AK-G1 MISS, AK-G2 MISS (floor not cleared),
+  AK-G3 MISS-with-confound (see outcome + section 8). Stage 1 scored commit
+  069427dd; Stage 2 ran on Modal (ephemeral app eh-ak-stage2,
+  ap-jPgOtPQGaWu4yeC3YX7q7j, started 07:26 EDT, app stopped same day) and was
+  scored CPU-side against the pulled staging artifacts. AK-G2's effect-size
+  floor was locked from the pre-stated pilot formula (COMMITTED_FLOOR =
+  5.291963) before the full-run G2 readout, per plan.
 question: >-
   Where along the generation trajectory does the fabricate-anyway commitment
   happen: does the post-generation veto crystallize across the answer tokens
@@ -39,9 +38,25 @@ predictions:
       argues against overwrite and for a carried, largely flat trunk
       reading, with the Amendment U high-distrust endpoint pulling the tail
       upward.
-outcome: null
-scoreboard: pending — G2 path is a genuine partial disagreement (user
-  rise-throughout vs orchestrator flat-then-rise); G1/G3 both called PASS
+outcome: >-
+  AK-G1 MISS (delta -0.0175 on grpo-v2, need >= +0.10); AK-G2 MISS, floor not
+  cleared (|contrast| 4.6234 < floor 5.291963, though perm p < 0.01); AK-G3
+  MISS on the pre-registered ratio test (every dose ratio 0/nan, no CI clears
+  2.0) but the gen_stream arm shows a diagnosed instrumentation confound
+  (100% of 328 matched rows are byte-identical across all seven alphas,
+  versus 24% varying under anchor-only), so the G3 MISS is not adopted as a
+  confirmed causal null pending a real-generate() hook-firing check. Both the
+  user's and the orchestrator's AK-G1 call (PASS) missed; AK-G2's fork is
+  unadjudicated (gate MISS); AK-G3 is unresolved pending the confound.
+scoreboard: >-
+  G1 both predictions wrong (both called PASS, actual MISS). G2 gate MISS on
+  the gated arm -- no path claimed; descriptively the gated arm's confab
+  stratum slope is +11.78 (rising), nominally consistent in sign with the
+  user's H-rise, but the refuse stratum rises faster (+16.41), which is why
+  the contrast misses the floor -- neither H-rise-throughout nor
+  H-flat-then-rise is licensed by a MISS. G3 computed MISS but confounded by
+  a likely gen_stream hook-firing bug (see section 8); not treated as
+  adjudicating the scoreboard or the falsifier.
 ---
 
 # Amendment AK — Commitment-Point Extraction
@@ -199,3 +214,135 @@ it in the right window should move the confab rate.
   to position drift — the per-position refit comparison is the check.
 - Single seed, single model family until the item-24/28 replication program
   reaches this line.
+
+## 8. Result
+
+Scored CPU-only from committed/pulled artifacts; no GPU touched for scoring.
+Scripts: `amendment_ak_stage1_analyze.py` (Stage 1, seed 20260705, commit
+069427dd) and `amendment_ak_stage2_score.py` (Stage 2, seed 20260706, run
+2026-07-06). Stage 2 inputs pulled from the private staging repo
+`professorsynapse/eh-al-prep-staging` path `ak-stage2-raw-base-r1/data/`
+(`rows.jsonl`, `manifest.json`, `direction.json`; 4,592 rows = 328 matched
+rows x 2 positions x 7 alphas, config_sha `cf36fc82cd0e3b6e`).
+
+### AK-G1 (crystallization, gated on grpo-v2) -- MISS
+
+Veto AUROC at answer-end minus first-visible on grpo-v2: **-0.0175**
+(first-visible 0.9424 [0.9299, 0.9534]; answer-end 0.9248 [0.9084, 0.9390]).
+Need >= +0.10. The veto is already near-saturated at the first visible token
+and drifts slightly down by answer-end -- it does not crystallize across the
+answer window at this granularity on the gated arm. Raw-base (descriptive)
+rises +0.0341, still far under the bar.
+Source: `analysis-committed/ak_stage1_gate_report.json` (`AK_G1`),
+`analysis-committed/ak_stage1_gate_verdicts.md`.
+
+### AK-G2 (doubt-trajectory discriminability, three-way fork) -- MISS (floor not cleared)
+
+Gated arm (grpo-v2): confab-vs-refuse slope contrast **-4.6234**, CI95
+[-5.382, -3.884], permutation p = 1.0e-04. COMMITTED_FLOOR = 5.291963 (locked
+pre-full-run from the ~50-row pilot via 3 x SE(slope contrast), see
+`analysis-committed/ak_stage1_pilot_floor.json`). Condition (b) p < 0.01
+holds; condition (a) |contrast| >= floor fails (4.6234 < 5.292). The doc
+requires both, so this is a MISS and **no doubt-trajectory path is claimed**
+on the gated arm.
+
+Descriptive context only (not the gate surface): on grpo-v2 both strata rise
+across the answer window (confab mean slope +11.78, refuse +16.41) -- the
+contrast is negative because refuse rises faster, not because confab is
+flat or dropping. Raw-base (descriptive) shows confab dropping (-3.50) while
+refuse rises (+5.82), a contrast that does clear the floor. The gated and
+descriptive arms disagree in direction on the confab stratum; per doc §4
+this divergence is reported, not adjudicated, here.
+Source: `analysis-committed/ak_stage1_gate_report.json` (`AK_G2`).
+
+### AK-G3 (steering asymmetry, Stage 2) -- MISS, with a diagnosed instrumentation confound
+
+Pre-registered statistic: ratio = |shift(gen_stream)| / |shift(anchor)| on
+the matched confab-rate shift from the alpha=0 baseline, paired row-level
+bootstrap (2000 resamples, seed 20260706). Guards: schema_ok=True,
+coherence_ok=True (0% degenerate every arm).
+
+| dose | sign | shift anchor | shift window | ratio | ratio CI95 |
+|---|---|---|---|---|---|
+| 0.5 | + | 0.0 | 0.0 | nan | [0.0, 0.0] |
+| 0.5 | - | 0.0 | 0.0 | nan | [0.0, 0.0] |
+| 1.0 | + | 0.0 | 0.0 | nan | [0.0, 0.0] |
+| 1.0 | - | 0.0 | 0.0 | nan | [0.0, 0.0] |
+| 2.0 | + | 0.0 | 0.0 | nan | [0.0, 0.0] |
+| 2.0 | - | 0.003 | 0.0 | 0.0 | [0.0, 0.0] |
+
+No dose clears the >= 2.0 ratio floor; point estimate at every dose is 0 or
+undefined. On the face of it this is a MISS.
+
+**Confound, diagnosed from the raw rows (not fabricated, computed from
+`rows.jsonl`)**: 328/328 (100%) of gen_stream-condition matched rows are
+byte-identical (confab, refused, answered, AND n_generated all equal) across
+every one of the seven alphas from -2 to +2 sigma. The anchor condition,
+steering only the single prefill token with the same alpha*sigma dose, shows
+variation in 79/328 rows (24%). A per-decode-step push of up to 2 sigma
+(~8.9 raw units at L24) sustained across the whole answer window changing
+*nothing* in *any* of 328 rows, while a *single-token* push of the same
+per-step magnitude already changes 24% of rows, is not a plausible causal
+null; it is the signature of the intervention not reaching the model during
+generation. The pre-launch readback check (`_readback_check` /
+`smoke_manifest.json`) verified only the anchor mode, via a raw
+`model(..., use_cache=False)` forward call -- explicitly NOT the gen_stream
+decode path (the script's own comment: "gen_stream per-decode steering is
+exercised by the full-run pass_log and the CPU controller regression test").
+That regression test (`test_gen_stream_is_the_answer_window_condition`)
+exercises only the pure-Python `GenerationHookController` dispatch logic on
+synthetic zero-tensors; it does not confirm the registered forward hook
+fires during Unsloth `FastLanguageModel.for_inference`'s real cached
+`generate()` decode loop. The most likely mechanism is that the optimized
+decode path does not route through the hooked module's `forward()` the way
+the anchor-mode prefill call does.
+
+**Disposition**: AK-G3 is reported as a computed MISS per the pre-registered
+formula (no goalpost moved), but is **not adopted as a confirmed causal
+finding**. The falsifier's second leg ("no steering asymmetry") is not
+treated as established until the gen_stream hook is verified against a real
+`model.generate()` call (e.g., compare logits/hidden states with and without
+the hook mid-decode) and, if the confound is real, Stage 2 is rerun.
+Source: `experiment/phase1/probe/analysis/ak_stage2/ak_stage2_g3_report.{json,md}`
+(untracked, reproducible via `amendment_ak_stage2_score.py --rows
+<pulled rows.jsonl> --out-dir <dir>`).
+
+### Falsifier
+
+Doc §4: "flat crystallization curve (G1 miss) AND no steering asymmetry (G3
+miss)". G1 is a clean MISS. G3 is a computed MISS but confounded (above).
+**The falsifier's wording is technically matched by the numbers, but is NOT
+treated as adjudicated** given the G3 confound -- calling the
+commitment/veto middle "not token-localized" on a null that is plausibly an
+instrumentation artifact would misrepresent a data-quality problem as a
+scientific finding.
+
+### Predictions vs actual
+
+| gate | user called | orchestrator called | actual |
+|---|---|---|---|
+| AK-G1 | PASS | PASS (~80%) | **MISS** -- both wrong |
+| AK-G2 path | H-rise | H-flat-then-rise (~55%) | **MISS on floor** -- no path adjudicated; gated-arm confab slope is directionally rising (+11.78), nominally closer to the user's call in sign, but the gate cannot license either pick |
+| AK-G3 | PASS | PASS (~75%) | **MISS, confounded** -- neither call confirmed; verdict pending confound resolution |
+
+**One-sentence verdict**: AK-G1 and AK-G2 are clean MISSes on the
+pre-registered gates (the veto is already assembled at the first visible
+token and the doubt-trajectory contrast does not clear its pilot-locked
+floor), AK-G1 falsifying both predictions outright, while AK-G3 is a MISS by
+the formula but is confounded by a likely gen_stream hook-firing bug and
+should not be read as evidence against token-localized commitment until
+that is checked.
+
+## Changelog
+
+- 2026-07-04: created and signed (three-way G2 fork restructure at signing;
+  dual predictions recorded).
+- 2026-07-05: Stage 1 gate analysis committed (commit 069427dd): AK-G1 MISS,
+  AK-G2 MISS (floor not cleared); pilot floor locked before the full-run
+  readout.
+- 2026-07-06: Stage 2 launched and ran on Modal (app eh-ak-stage2); AK-G3
+  scored CPU-side from the pulled staging outputs: MISS by the
+  pre-registered formula, flagged with a diagnosed gen_stream
+  instrumentation confound (section 8). Full outcome + section 8 written;
+  falsifier wording matched numerically but not adjudicated pending the
+  confound check.
