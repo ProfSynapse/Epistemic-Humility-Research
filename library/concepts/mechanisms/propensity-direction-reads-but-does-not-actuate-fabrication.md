@@ -21,6 +21,10 @@ related:
 - '[[confab-propensity-is-not-generic-answer-commitment]]'
 - '[[pre-generation-commitment-signal-predicts-confabulation]]'
 - '[[activation-steering]]'
+- '[[trust-axis-injection-does-not-move-answer-abstain-revise-behavior]]'
+- '[[first-person-framed-probe-score-injection-does-not-open-text-channel]]'
+- '[[probe-agreement-reward-does-not-couple-policy-to-its-own-readout]]'
+- '[[doubt-regulated-caution-coupling-actuates-selective-refusal-release]]'
 relationships:
 - type: supported_by
   target: '[[internal-al-injection-null--true-checkpoint]]'
@@ -42,6 +46,22 @@ relationships:
   target: '[[pre-generation-commitment-signal-predicts-confabulation]]'
   target_id: mechanism:pre-generation-commitment-signal-predicts-confabulation
   confidence: high
+- type: related_to
+  target: '[[trust-axis-injection-does-not-move-answer-abstain-revise-behavior]]'
+  target_id: mechanism:trust-axis-injection-does-not-move-answer-abstain-revise-behavior
+  confidence: high
+- type: related_to
+  target: '[[first-person-framed-probe-score-injection-does-not-open-text-channel]]'
+  target_id: mechanism:first-person-framed-probe-score-injection-does-not-open-text-channel
+  confidence: high
+- type: related_to
+  target: '[[probe-agreement-reward-does-not-couple-policy-to-its-own-readout]]'
+  target_id: mechanism:probe-agreement-reward-does-not-couple-policy-to-its-own-readout
+  confidence: high
+- type: related_to
+  target: '[[doubt-regulated-caution-coupling-actuates-selective-refusal-release]]'
+  target_id: mechanism:doubt-regulated-caution-coupling-actuates-selective-refusal-release
+  confidence: high
 ---
 
 Amendment AL (experiment/protocol/AMENDMENT-AL-radial-anti-propensity-steering.md,
@@ -54,4 +74,19 @@ control 0, bootstrap CI [0.00, 0.00]), while collateral stayed clean (AL-G1 PASS
 0 of 90 correct rows flipped). Moving the readout by the commanded amount does not
 move the fabricate-vs-refuse behavior, so the propensity direction actuates
 nothing on this checkpoint: a causal, not instrumental, null.
+
+This is the first null on the write side (injection), scoped to the confabulation-
+propensity axis on the Amendment AI TRUE-mapping checkpoint. It joins a family of
+resolved write-side nulls on other entry points and axes:
+[[trust-axis-injection-does-not-move-answer-abstain-revise-behavior]] (Amendment
+AA, activation add and CoT text injection of the gate/dial trust axis on
+Qwen3.5-4B), [[first-person-framed-probe-score-injection-does-not-open-text-channel]]
+(Amendment AB, first-person text injection of the same trust axis), and
+[[probe-agreement-reward-does-not-couple-policy-to-its-own-readout]] (Amendment
+AI, reward-channel training on the answerability axis). None of these generalizes
+into a claim that write-side activation edits fail as a class: Amendment AC's
+closed-loop erase-and-write on doubt-regulated caution
+([[doubt-regulated-caution-coupling-actuates-selective-refusal-release]]) succeeded
+on a different axis and checkpoint, so each null here is scoped to its own
+entry-point, axis, write-form, and population.
 </content>
