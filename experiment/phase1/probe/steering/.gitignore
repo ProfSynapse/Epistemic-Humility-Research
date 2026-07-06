@@ -20,6 +20,16 @@ directions/qwen3.5-4b/*
 !directions/qwen3.5-4b/direction_dial.json
 !directions/qwen3.5-4b/direction_dial.safetensors
 
+# EXCEPTION: the deployed Qwen3-4B clean-SFT->GRPO-v2 caution_perp direction
+# (unit-normalized, best_layer 34) shipped for the TODO item-11 GPU batching-
+# parity self-check (modal_item11_equivalence.py). The Modal container loads it
+# from a fresh clone at the pinned commit, so it must be tracked; the .npy holds
+# the unit vector and is reproducible via build_equiv_direction.py.
+!directions/qwen3-4b-grpo-v2/
+directions/qwen3-4b-grpo-v2/*
+!directions/qwen3-4b-grpo-v2/direction_caution.json
+!directions/qwen3-4b-grpo-v2/direction_caution.npy
+
 # pytest cache
 .pytest_cache/
 __pycache__/
