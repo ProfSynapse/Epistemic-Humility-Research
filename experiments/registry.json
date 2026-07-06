@@ -14,7 +14,7 @@
         "pins": {}
       },
       "kg": [],
-      "prediction": "",
+      "prediction": "User (2026-07-06): Stage 1 PASS (a caution lever exists on AI-TRUE) and Stage 2 PASS (propensity coupling beats the permuted placebo). Orchestrator: Stage 1 weak-lever PASS, Stage 2 small positive margin (3-10pt), with a nontrivial chance Stage 1 fails.",
       "question": "Does wiring the confabulation-propensity readout to the caution setpoint as a live proportional controller (mirroring AC's doubt coupling) suppress residual confabulations on the AI-TRUE checkpoint, once a caution direction is first validated as a behavioral lever there (the step AN skipped)?",
       "registered": true,
       "slug": "ao-propensity-regulated-caution",

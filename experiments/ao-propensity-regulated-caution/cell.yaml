@@ -1,0 +1,123 @@
+# AO -- propensity-regulated caution. DRAFT, NOT a registered instrument until
+# `bin/exp sign` (see AMENDMENT.md; status: draft). This file expresses the
+# AMENDMENT's Design / STAGE 2 mechanism against the tuner's generic
+# continuous-per-row-gain-arm feature (synaptic-tuner PR
+# feat/proportional-gain-arm: ArmConfig.gain_field / gain_clip / force_active,
+# MechInterp/cell.py, MechInterp/intervention/hooks.py). AC used the FROZEN
+# legacy phase3 machinery for the analogous doubt-coupling cell; this is that
+# same erase-write-couple idea re-homed on the generic tuner schema, not a
+# rerun of AC.
+#
+# STAGE 0/1 PREP REMAINING (not produced by this file; CPU-only once the
+# frozen AI-TRUE extraction exists on disk -- it is NOT present in this
+# checkout as of this draft):
+#   - Stage 1 knob-validation (AMENDMENT G0): fit and validate a caution
+#     direction on the AI-TRUE checkpoint (its own separate prep step, run and
+#     adjudicated BEFORE this cell; G0 is not scored by gates.yaml). AN's
+#     refit (cosine -0.064 with AC's GRPO-v2 direction) is a DIFFERENT,
+#     unvalidated vector and must not be assumed here.
+#   - build/confirm the caution direction JSON this cell reads. Placeholder
+#     path below follows the AMENDMENT's named location.
+#   - build the prop_z gain-map rows JSONL (one row per eval item, carrying a
+#     standardized confab-propensity projection field "prop_z", computed
+#     offline from the frozen AI-TRUE pre-generation extraction, mirroring the
+#     AL/AN prep pool-assembly convention, e.g.
+#     amendment_al_prep_grade_a0_generations.py). Unlike the legacy AC gain-map
+#     JSON (which precomputed a separate gains_permuted column), the tuner's
+#     generic permuted_control_of shuffles prop_z at resolution time from this
+#     ONE field, so the pool needs only "row_key", "cell", "prop_z" (plus
+#     whatever the grader needs, e.g. a gold-answer field for correctness).
+#   - port a real grader from the frozen steering harness
+#     (experiment/phase1/probe/steering/steering_common.py) into ao_grader.py;
+#     the stub shipped alongside this file documents exactly what is missing.
+#
+# Validate parsing (CPU, no GPU):
+#   cd synaptic-tuner && python -c "from MechInterp.config import load_steer_config; \
+#     load_steer_config('../experiments/ao-propensity-regulated-caution/cell.yaml'); print('cell ok')"
+
+# 1. surface: where rows come from + the reproducibility contract.
+surface:
+  # PLACEHOLDER -- Stage-0 prep output, not yet built (see header). Carries the
+  # AL A0 baseline pool's three cells this AMENDMENT gates on: the 116 residual
+  # confabs ("confab", the should-refuse-more tail), the 114 answerable-refused
+  # rows ("answerable_refused", the should-refuse-less tail), and
+  # known_correct_answered (the specificity guard population), each row tagged
+  # with its standardized prop_z field.
+  rows_path: experiment/phase1/probe/analysis/amendment_ao_prep/prop_z_gain_map_rows.jsonl
+  seed: 20260706
+  generation:
+    max_new_tokens: 96
+    do_sample: false
+  # expected_config_sha is filled AFTER the smoke run and pinned in the
+  # amendment doc at `exp sign`.
+  # expected_config_sha: <sha256-of-this-file-at-signing>
+
+# 2. readouts: the Stage-1-validated caution direction (mechinterp-direction/v1).
+readouts:
+  # PLACEHOLDER path per the AMENDMENT's named Stage-1 output location. Frozen
+  # at sign once G0 (knob-validation) passes; whichever direction G0 validates
+  # is the one referenced here (it need not be this exact refit if a different
+  # candidate wins G0 -- see AMENDMENT STAGE 1).
+  - name: caution_perp_ai_true
+    path: experiment/phase1/probe/analysis/amendment_an_prep/caution_perp_direction_L35_ai_true.json
+
+# 3. law: erase_write along the Stage-1 direction, written at every generated
+#    position (the AC/AO couple mechanism), matching the example-cell's
+#    AN-style gen_stream convention.
+law:
+  kind: erase_write
+  readout: caution_perp_ai_true
+  position: answer_window   # only the generated tokens (window_start set upstream)
+  generation_mode: gen_stream
+
+# 4. arms: baseline no-op / coupled continuous gain / permuted-gain placebo /
+#    ablate (couple with g==0, applied not skipped). One pre-registered
+#    configuration per the AMENDMENT -- no alpha sweep, no coupling-form
+#    fishing.
+arms:
+  - name: baseline
+    strength: 0.0
+
+  - name: coupled
+    strength: 1.0            # alpha, pre-registered (AMENDMENT STAGE 2)
+    gain_field: prop_z        # g_i = alpha * prop_z_i, standardized confab-propensity
+    gain_clip: 2.0            # clipped to [-2, +2]
+
+  - name: permuted
+    strength: 1.0
+    permuted_control_of: coupled
+    # PLACEHOLDER seed -- pin the real value at `exp sign`. Shuffles the
+    # coupled arm's per-row prop_z-derived gains across the same row
+    # population (identical distribution, scrambled pairing): the placebo the
+    # AMENDMENT's Gates section calls "same gain distribution with the signal
+    # scrambled".
+    control_seed: 20260706
+
+  - name: ablate
+    strength: 0.0
+    # force_active: apply erase_write with a ZERO setpoint (erase the
+    # projection, write nothing back) rather than a true no-op. This is the
+    # "couple with g==0" constant comparison nested inside the coupling
+    # family per the AMENDMENT's Design section -- distinct from "baseline",
+    # which never touches the residual stream.
+    force_active: true
+
+# 5. execution: per-row output JSONL (untracked) + the project grader.
+execution:
+  output_path: experiments/ao-propensity-regulated-caution/analysis/rows_out.jsonl
+  resume: true
+  # STUB, not a real grader yet -- see ao_grader.py in this directory for
+  # exactly what porting work remains (refusal/correctness detection from the
+  # frozen steering harness). Resolved via importlib against sys.path:
+  #   PYTHONPATH=experiments/ao-propensity-regulated-caution
+  grader: ao_grader:grade
+
+# 6. smoke: readback tolerances that gate the full arms. n_rows=25 matches the
+#    AMENDMENT's pre-full-run smoke gate (25 rows/cell x 4 arms = 300 units;
+#    the cell-count multiplication happens across the 3 cells in the rows
+#    pool, this n_rows is per the smoke helper's flat row slice).
+smoke:
+  n_rows: 25
+  write_rel_tol: 0.05
+  write_abs_floor: 0.5
+  offtarget_tol: 0.001
