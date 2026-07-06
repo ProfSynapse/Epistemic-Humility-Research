@@ -343,3 +343,193 @@ class TestBatchVsLoopEquivalence:
                             hidden[b:b + 1])
             loop[b] = edited[0]
         assert torch.allclose(batched, loop, atol=1e-6)
+
+
+# ---------------------------------------------------------------------------
+# Regression: the GPU equivalence CELL's comparison methodology
+#
+# TODO item 11 r1 mis-fired: the cell compared ABSOLUTE steered hidden states
+# between a padded batched forward and unpadded single forwards. In bf16 at a
+# deep layer of a real model those two forwards legitimately differ by
+# integer-scale amounts (batched-vs-unbatched numeric noise, worse under left
+# padding), which the r1 cell reported as 1-6 units of "divergence" (FAIL)
+# although the SteeringHook was correct. The fix compares the STEERING DELTA
+# (steered - unsteered), which cancels that shared model noise.
+#
+# These tests run a TINY real Qwen3 model in bf16 (no download of the real
+# checkpoint, no GPU) so they exercise the same failure condition the r1 GPU run
+# hit, and prove: (1) the old absolute comparison IS noisy under bf16 left
+# padding, and (2) the new delta comparison is tight and padding-independent.
+# ---------------------------------------------------------------------------
+
+def _tiny_qwen3_bf16():
+    """A small real Qwen3ForCausalLM in bf16 + the Qwen3 tokenizer.
+
+    Weights are randomly initialized (no download of any large checkpoint); the
+    tokenizer is the tiny Qwen3-0.6B tokenizer. Deep enough (12 layers) and wide
+    enough that bf16 residual magnitudes reproduce the batched-vs-unbatched noise
+    the real 4B run hit.
+    """
+    from transformers import (Qwen3Config, Qwen3ForCausalLM,  # noqa: PLC0415
+                              AutoTokenizer)
+    torch.manual_seed(0)
+    cfg = Qwen3Config(
+        vocab_size=151936, hidden_size=512, intermediate_size=1024,
+        num_hidden_layers=12, num_attention_heads=8, num_key_value_heads=2,
+        head_dim=64, max_position_embeddings=4096, attn_implementation="sdpa")
+    model = Qwen3ForCausalLM(cfg).eval().to(torch.bfloat16)
+    tok = AutoTokenizer.from_pretrained("Qwen/Qwen3-0.6B")
+    if tok.pad_token_id is None:
+        tok.pad_token = tok.eos_token
+    return model, tok
+
+
+def _cell_equiv(model, tok, layer_idx, d, prompts, alphas, padding_side, delta):
+    """Reproduce the cell's capture logic; return (max_vs_analytic, max_bvu).
+
+    delta=True  -> compare steering delta (steered - unsteered), the FIX.
+    delta=False -> compare absolute steered states, the r1 bug (batched steered
+                   vs unbatched steered at the final token).
+    """
+    from confidence_steer import get_decoder_layer  # noqa: PLC0415
+    tok.padding_side = padding_side
+    layer = get_decoder_layer(model, layer_idx)
+
+    def last_idx(am):
+        am = am.to(torch.bool)
+        seq = am.shape[1]
+        return (seq - 1) - torch.argmax(torch.flip(am.to(torch.int64),
+                                                    dims=[1]), dim=1)
+
+    class _Cap:
+        def __init__(self):
+            self.h = None
+
+        def __call__(self, m, i, o):
+            self.h = (o[0] if isinstance(o, tuple) else o).detach().float()
+            return o
+
+    def cap_final(enc, steer_hook):
+        fi = last_idx(enc["attention_mask"])
+        c = _Cap()
+        handles = []
+        if steer_hook is not None:
+            handles.append(layer.register_forward_hook(steer_hook))
+        handles.append(layer.register_forward_hook(c))
+        with torch.no_grad():
+            model(**enc)
+        for h in handles:
+            h.remove()
+        return torch.stack([c.h[b, fi[b].item(), :]
+                            for b in range(enc["attention_mask"].shape[0])])
+
+    encB = tok(prompts, return_tensors="pt", padding=True)
+    steer = SteeringHook(d=d, alpha=alphas, position="final",
+                         attention_mask=encB["attention_mask"])
+    bat_steered = cap_final(encB, steer)
+
+    unb_steered = []
+    unb_base = []
+    bat_base = cap_final(encB, None) if delta else None
+    for i, p in enumerate(prompts):
+        e1 = tok(p, return_tensors="pt")
+        s1 = SteeringHook(d=d, alpha=float(alphas[i]), position="final",
+                          attention_mask=e1["attention_mask"])
+        unb_steered.append(cap_final(e1, s1)[0])
+        if delta:
+            unb_base.append(cap_final(e1, None)[0])
+    unb_steered = torch.stack(unb_steered)
+
+    d_cpu = d.detach().float().cpu()
+    expected = torch.stack([float(alphas[i]) * d_cpu
+                            for i in range(len(prompts))])
+    if delta:
+        bat = bat_steered - bat_base
+        unb = unb_steered - torch.stack(unb_base)
+    else:
+        bat = bat_steered
+        unb = unb_steered
+        expected = None  # absolute states have no clean analytic target
+    max_bvu = float((bat - unb).abs().max())
+    max_vs_analytic = (float((bat - expected).abs().max())
+                       if expected is not None else float("nan"))
+    return max_vs_analytic, max_bvu
+
+
+class TestGpuEquivalenceCellMethodology:
+    """Tiny real Qwen3 bf16 forward; no download, no GPU, no real checkpoint."""
+
+    PROMPTS = [
+        "The capital of France is",
+        "Pride and Prejudice was written by a famous English author named",
+        "A random stock price next Tuesday will probably be about",
+        "Gold",
+        "Mars has this many moons and a little extra text:",
+    ]
+    ALPHAS = [4.0 * (1.0 + 0.25 * i) for i in range(5)]
+    FLOOR = 1e-2
+
+    def _setup(self):
+        pytest.importorskip("transformers",
+                            reason="transformers required for tiny-model test")
+        model, tok = _tiny_qwen3_bf16()
+        d = _unit_direction(model.config.hidden_size, seed=13)
+        return model, tok, d
+
+    def test_delta_comparison_tight_both_padding_sides(self):
+        """The FIX: delta comparison is under floor for right AND left padding."""
+        model, tok, d = self._setup()
+        for side in ("right", "left"):
+            va, bvu = _cell_equiv(model, tok, 10, d, self.PROMPTS, self.ALPHAS,
+                                  side, delta=True)
+            assert va < self.FLOOR, (side, "vs-analytic", va)
+            assert bvu < self.FLOOR, (side, "batched-vs-unbatched", bvu)
+
+    def test_absolute_comparison_is_noisy_under_bf16_left_padding(self):
+        """The r1 BUG: absolute steered-state comparison is NOT floor-tight.
+
+        This documents WHY the delta fix is needed: the same tiny model, same
+        hook, but comparing absolute states inflates the reported divergence
+        well past the delta result under bf16 left padding.
+        """
+        model, tok, d = self._setup()
+        _, abs_bvu = _cell_equiv(model, tok, 10, d, self.PROMPTS, self.ALPHAS,
+                                 "left", delta=False)
+        _, delta_bvu = _cell_equiv(model, tok, 10, d, self.PROMPTS, self.ALPHAS,
+                                   "left", delta=True)
+        # Absolute comparison carries the model's bf16 batched-vs-unbatched noise
+        # that the delta comparison cancels; it is strictly larger.
+        assert abs_bvu > delta_bvu, (abs_bvu, delta_bvu)
+
+
+def _run_without_pytest() -> int:
+    """Plain runner (pytest is not installed in local envs): python -m ...
+
+    Runs the two methodology regression tests and the batch-vs-loop check and
+    prints PASS/FAIL. Returns a nonzero exit code on any failure.
+    """
+    import traceback
+    failures = 0
+    t = TestGpuEquivalenceCellMethodology()
+    checks = [
+        ("delta_comparison_tight_both_padding_sides",
+         t.test_delta_comparison_tight_both_padding_sides),
+        ("absolute_comparison_is_noisy_under_bf16_left_padding",
+         t.test_absolute_comparison_is_noisy_under_bf16_left_padding),
+        ("final_position_per_row_alpha_matches_loop",
+         TestBatchVsLoopEquivalence().test_final_position_per_row_alpha_matches_loop),
+    ]
+    for name, fn in checks:
+        try:
+            fn()
+            print(f"PASS {name}")
+        except Exception:  # noqa: BLE001
+            failures += 1
+            print(f"FAIL {name}")
+            traceback.print_exc()
+    print(f"\n{len(checks) - failures}/{len(checks)} passed")
+    return 1 if failures else 0
+
+
+if __name__ == "__main__":
+    sys.exit(_run_without_pytest())

@@ -18,25 +18,34 @@ holds on the real model's true layer geometry and real padding.
 
 What it checks
 --------------
-On a handful of real prompts, at the direction's `best_layer`, it compares the
-NEW batched SteeringHook edit against a one-prompt-at-a-time reference:
+On a handful of real prompts, at the direction's `best_layer`, it verifies that
+the NEW batched SteeringHook applies EXACTLY ``alpha_i * d`` at each row's true
+last non-pad token. The key is that we compare the STEERING DELTA (steered minus
+unsteered), not the absolute steered hidden states:
 
-  (A) BATCHED: tokenize all prompts together (padded), one forward, hook in
-      position="final" with a per-row attention mask and a per-row alpha
-      vector -> capture the edited layer output at each row's last real token.
+  For each of the batched (A) and unbatched (B) passes we run the layer TWICE at
+  the direction's best_layer -- once with the SteeringHook, once without -- and
+  take the difference at each row's final real token. That difference is the
+  edit the hook applied and NOTHING else: the model's own forward numerics
+  cancel out. We then check two things:
 
-  (B) UNBATCHED: tokenize each prompt alone (no padding), one forward per
-      prompt, hook in position="final" (single row) with that row's scalar
-      alpha -> capture the edited layer output at the last token.
+    delta_batched   ~= alpha_i * d      (the hook did exactly what it promised)
+    delta_batched   ~= delta_unbatched  (batched == one-prompt-at-a-time)
 
-It reports the max abs divergence between the steered hidden states from (A)
-and (B) at each row's final real token. Padding/masking correctness means the
-batched final-position edit lands on the same token content the unbatched pass
-edits, so divergence should be at the model's own batched-vs-unbatched numeric
-floor (typically < ~1e-2 in bf16, far below any steering magnitude).
-
-It also spot-checks per-element alpha by giving each row a distinct alpha and
-verifying the batched edit reproduces each row's unbatched scalar-alpha edit.
+Why the delta and not the absolute hidden state
+-----------------------------------------------
+A padded batched forward and an unpadded single-prompt forward are NOT
+bit-identical in bf16, even with correct masking: the attention softmax runs
+over a longer (padded) key set, RoPE position offsets differ, and float
+reduction order changes. At a deep layer of a multi-billion-parameter model the
+residual-stream magnitude is large (O(10-100)), so this legitimate
+batched-vs-unbatched numeric noise is INTEGER-scale in bf16 -- it has nothing to
+do with the steering edit and would swamp any absolute-hidden-state comparison
+(the r1 run of this cell mis-fired exactly this way: it compared absolute steered
+states and reported 1-6 units of "divergence" that were entirely the model's
+bf16 batched-vs-unbatched noise, not a steering bug). Subtracting the unsteered
+pass removes that shared noise and isolates the hook's edit, so the floor can
+stay tight (~1e-2) and actually mean something.
 
 Usage (ONLY after approval)
 ---------------------------
@@ -146,6 +155,11 @@ def main(argv=None) -> int:
     d = torch.from_numpy(d_np).to(device)
     if tokenizer.pad_token_id is None:
         tokenizer.pad_token = tokenizer.eos_token
+    # Right padding keeps each row's real-token positions (and thus RoPE offsets)
+    # identical to the unpadded single-prompt pass, minimizing the model's own
+    # batched-vs-unbatched numeric noise. The delta comparison below is robust to
+    # either side, but right padding is the cleaner apples-to-apples capture.
+    tokenizer.padding_side = "right"
 
     questions = DEFAULT_QUESTIONS
     prompts = [_render(tokenizer, q) for q in questions]
@@ -154,50 +168,76 @@ def main(argv=None) -> int:
 
     layer = get_decoder_layer(model, layer_idx)
 
+    def _capture_final(enc, steer_hook):
+        """Run one forward at best_layer; return final-real-token hidden per row.
+
+        steer_hook=None -> unsteered baseline forward. Otherwise the SteeringHook
+        runs first and the _Capture hook (registered after) records the EDITED
+        layer output.
+        """
+        attn = enc["attention_mask"]
+        final_idx = _last_real_indices(attn)
+        cap = _Capture()
+        handles = []
+        if steer_hook is not None:
+            handles.append(layer.register_forward_hook(steer_hook))
+        handles.append(layer.register_forward_hook(cap))  # runs last -> edited
+        with torch.no_grad():
+            model(**enc)
+        for h in handles:
+            h.remove()
+        return torch.stack([cap.hidden[b, final_idx[b].item(), :]
+                            for b in range(attn.shape[0])])
+
     # ---- (A) BATCHED: one padded forward, position="final", per-row alpha ----
+    # Compare the STEERING DELTA (steered - unsteered), which cancels the model's
+    # forward numerics and isolates exactly the edit the hook applied.
     enc = tokenizer(prompts, return_tensors="pt", padding=True).to(device)
     attn = enc["attention_mask"]
-    final_idx = _last_real_indices(attn)
     steer = SteeringHook(d=d, alpha=alphas, position="final",
                          attention_mask=attn)
-    cap = _Capture()
-    h_steer = layer.register_forward_hook(steer)
-    h_cap = layer.register_forward_hook(cap)   # runs AFTER steer (edited output)
-    with torch.no_grad():
-        model(**enc)
-    h_steer.remove()
-    h_cap.remove()
-    batched_final = torch.stack([cap.hidden[b, final_idx[b].item(), :]
-                                 for b in range(len(prompts))])
+    batched_steered = _capture_final(enc, steer)
+    batched_base = _capture_final(enc, None)
+    batched_delta = batched_steered - batched_base
 
     # ---- (B) UNBATCHED: one forward per prompt, scalar alpha, last token ----
-    unbatched_final = []
+    unbatched_delta = []
     for i, prompt in enumerate(prompts):
         enc1 = tokenizer(prompt, return_tensors="pt").to(device)
         steer1 = SteeringHook(d=d, alpha=float(alphas[i]), position="final",
                               attention_mask=enc1["attention_mask"])
-        cap1 = _Capture()
-        hs = layer.register_forward_hook(steer1)
-        hc = layer.register_forward_hook(cap1)
-        with torch.no_grad():
-            model(**enc1)
-        hs.remove()
-        hc.remove()
-        last = _last_real_indices(enc1["attention_mask"])[0].item()
-        unbatched_final.append(cap1.hidden[0, last, :])
-    unbatched_final = torch.stack(unbatched_final)
+        s1 = _capture_final(enc1, steer1)
+        b1 = _capture_final(enc1, None)
+        unbatched_delta.append((s1 - b1)[0])
+    unbatched_delta = torch.stack(unbatched_delta)
 
-    diff = (batched_final - unbatched_final).abs()
-    per_row = diff.amax(dim=1).numpy()
-    max_abs = float(diff.max().item())
+    # ---- Expected analytic edit: row i shifted by exactly alpha_i * d ----
+    d_cpu = d.detach().float().cpu()
+    expected_delta = torch.stack([float(alphas[i]) * d_cpu
+                                  for i in range(len(prompts))])
+
+    # (1) Hook applied exactly alpha_i * d (batched path).
+    err_expected = (batched_delta - expected_delta).abs()
+    # (2) Batched delta == one-prompt-at-a-time delta.
+    err_bvu = (batched_delta - unbatched_delta).abs()
+
+    per_row_expected = err_expected.amax(dim=1).numpy()
+    per_row_bvu = err_bvu.amax(dim=1).numpy()
+    max_expected = float(err_expected.max().item())
+    max_bvu = float(err_bvu.max().item())
+    max_abs = max(max_expected, max_bvu)
     passed = max_abs < a.floor
-    print("[gpu-equiv] per-row max abs divergence at final real token:",
-          np.round(per_row, 6).tolist(), flush=True)
-    print(f"[gpu-equiv] OVERALL max abs divergence = {max_abs:.6e}", flush=True)
+    print("[gpu-equiv] per-row |batched_delta - alpha_i*d| :",
+          np.round(per_row_expected, 6).tolist(), flush=True)
+    print("[gpu-equiv] per-row |batched_delta - unbatched_delta| :",
+          np.round(per_row_bvu, 6).tolist(), flush=True)
+    print(f"[gpu-equiv] OVERALL max abs divergence = {max_abs:.6e} "
+          f"(vs-analytic={max_expected:.3e}, batched-vs-unbatched="
+          f"{max_bvu:.3e})", flush=True)
     print(f"[gpu-equiv] floor = {a.floor:.3e}  ->  "
           f"{'PASS' if passed else 'FAIL'}", flush=True)
-    print("[gpu-equiv] (expected: model's batched-vs-unbatched numeric floor, "
-          "orders of magnitude below the steering magnitude)", flush=True)
+    print("[gpu-equiv] (expected: bf16 rounding of alpha*d into a large residual "
+          "value, orders of magnitude below the steering magnitude)", flush=True)
 
     if a.result_json is not None:
         result = {
@@ -210,8 +250,12 @@ def main(argv=None) -> int:
             "dtype": a.dtype,
             "alpha_base": a.alpha_base,
             "n_prompts": len(prompts),
-            "per_row_max_abs_divergence": [float(x) for x in per_row],
+            "per_row_abs_err_vs_analytic": [float(x) for x in per_row_expected],
+            "per_row_abs_err_batched_vs_unbatched": [float(x) for x in per_row_bvu],
             "overall_max_abs_divergence": max_abs,
+            "max_abs_err_vs_analytic": max_expected,
+            "max_abs_err_batched_vs_unbatched": max_bvu,
+            "comparison": "steering_delta (steered - unsteered), not absolute hidden state",
             "floor": a.floor,
             "passed": bool(passed),
         }
