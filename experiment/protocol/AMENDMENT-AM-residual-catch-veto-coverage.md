@@ -51,8 +51,22 @@ predictions:
       Modal-only at the $5 cap with regeneration plus the batch-12 numerics
       smoke) and called both gates PASS, taking the coverage bet at full
       confidence where the orchestrator sits at 70/60.
-outcome: null
-scoreboard: pending
+outcome: >-
+  AM-G1 PASS (OOF veto AUROC 0.9168, CI [0.854, 0.963]) and AM-G2 PASS
+  (permutation p=0.001) as literally pre-registered. BUT an adversarial audit
+  before recording found the residual-vs-good separation is dominated by an
+  UNDISCLOSED answer-length confound (answer length alone separates at AUROC
+  0.943, higher than the veto's 0.917; the veto reads the hidden state at
+  content_end, whose position encodes length). The suspected score_L24-selection
+  circularity was refuted (full-pop AUROC 0.916 == residual 0.917). Gates pass;
+  the mechanistic two-signal-coverage claim is NOT established, because the catch
+  is length-driven not content-driven. Honest non-length content signal ~0.77
+  (broader hallucination population, length-matched). Tier-A exploratory, single
+  seed, never pooled with the locked matrix or PR #205. See section 9.
+scoreboard: >-
+  orchestrator AM-G1 PASS / AM-G2 PASS (both correct as worded); user AM-G1 PASS
+  / AM-G2 PASS (both correct as worded). Gate-level predictions hit; the length
+  confound was foreseen by neither.
 ---
 
 # Amendment AM: Post-generation veto coverage of the radial-unreachable residual confabs
@@ -377,4 +391,64 @@ report it as ambiguous and let the user adjudicate.
   is byte-identical to A0. `am_pool.jsonl` is built by `amendment_am_build_pool.py`
   from the same `pool_v21.jsonl` A0 questions, so the regenerated pool is the A0
   pool.
-  absolute catch count is reported with this caveat.
+
+## 9. Result and adjudication (2026-07-06)
+
+Run: Modal A10G, `config_sha 14e5afab67484380` (matches the A0 surface, section
+8). The numerics smoke fell back to batch=1 per section 5.3 (batch 12/8/4/2 did
+not reach 20/20 token agreement, so no speedup; correctness unaffected, batch-1
+greedy is ground truth). Full A0 pool 1662/1662; 489 answered rows extracted
+dual-position; good class 88 correct-answerable (section 4 pre-authorized
+regeneration drift from the cached 89); residual 43 by the frozen rule
+(`confab_on_unanswerable AND score_L24 >= 6.559`).
+
+Gates as literally pre-registered:
+- AM-G1 (OOF veto AUROC >= 0.62 AND bootstrap CI-LB > 0.55): PASS. Residual-vs-good
+  post-L20 veto AUROC 0.9168, 95% CI [0.8541, 0.9633] (1000 resamples, seed 20260705).
+- AM-G2 (permutation p <= 0.01): PASS. p = 0.001 (0/1000 perms reached 0.9168).
+- Descriptive catch-fraction at the aim-small precision-floor operating point: 43/43.
+
+Adversarial audit before recording (the large margin over the 0.768 anchor
+triggered the too-good check). Two findings:
+
+1. The suspected `score_L24`-selection circularity is REFUTED. `score_L24` is
+   carried from the pool as a pre-generation scalar and is NOT a veto feature
+   (features are raw post-L20 hidden states); the OOF pipeline fits PCA/scaler/LR
+   inside each fold; the full-population veto AUROC (401 halluc vs 88 good) is
+   0.9162, essentially equal to residual-vs-good 0.9168, so the cut did not
+   hand-pick a specially separable subset (residual `score_L24` mean 10.75 is
+   lower than good's 20.9, not pushed toward the good region). No feature leak;
+   the permutation null is legitimate for what it tests.
+
+2. UNDISCLOSED LENGTH CONFOUND (materially weakens the interpretation; the design
+   neither controls nor discloses it). The residual (confab-on-unanswerable, long
+   rambles: answer-token median 94, 47% truncated at the 96 cap) and the good
+   class (correct-answerable, short facts: median 24) are nearly length-disjoint.
+   The veto reads the hidden state at `content_end`, whose position encodes answer
+   length. Answer length ALONE separates residual-vs-good at AUROC 0.943, HIGHER
+   than the veto's 0.917 (corr(veto, answer_len) 0.645). A genuine non-length
+   content signal exists (length-matched bands in the broader halluc-vs-good
+   population: veto ~0.77 at [17,30] tokens where length-only is ~0.57), but within
+   residual-vs-good specifically length and the veto are collinear and cannot be
+   decoupled from this run, because the residual is all-long by construction.
+
+ADJUDICATION: AM-G1 and AM-G2 pass as worded and are recorded as PASS; no goalpost
+is moved in either direction. BUT the mechanistic claim the gates were meant to
+license -- that the post-generation content-trust veto (the S/W/U dial) catches
+the radial controller's residual blind spot -- is NOT established, because the
+demonstrated separation is dominated by answer length/truncation, not epistemic
+content. A length veto would also miss the dangerous case (short, confident, wrong
+confabs), so the "backstop" framing is overstated. Honest content-signal estimate
+is ~0.77 (broader hallucination population, length-matched), far below the 0.92
+headline. AM therefore provides only weak, confounded support for two-signal
+coverage on the raw base; it does not demonstrate it. A clean test would
+length-match or length-partial the residual-vs-good comparison, which this design
+cannot do post hoc (no length overlap); a follow-up would need a length-balanced
+residual/good construction.
+
+Predictions scored straight: orchestrator AM-G1 PASS / AM-G2 PASS and user AM-G1
+PASS / AM-G2 PASS -- both hit at the gate level as worded; the length confound was
+foreseen by neither.
+
+Tier-A exploratory, single seed; never pooled with the locked Phase 1 matrix or
+the PR #205 published veto operating characteristics.
