@@ -341,7 +341,9 @@ def compute_proportional_alpha(
 # Model loader (reuses Amendment X pattern: multimodal fallback, dtype kwarg)
 # ---------------------------------------------------------------------------
 
-def load_model_and_tokenizer(model_name: str, device: str = "cpu"):
+def load_model_and_tokenizer(model_name: str, device: str = "cpu",
+                             adapter: Optional[str] = None,
+                             adapter_revision: Optional[str] = None):
     """Load model + tokenizer with the Amendment X backward-compatible recipe.
 
     Tries AutoModelForCausalLM first, then multimodal fallbacks.
@@ -351,6 +353,16 @@ def load_model_and_tokenizer(model_name: str, device: str = "cpu"):
     NOTE: For real GPU runs, the Amendment Z extractor already has the canonical
     version of this loader. Use this for the steer harness which needs the same
     model object.
+
+    Adapter (LoRA) support
+    ----------------------
+    When ``adapter`` is given, a PEFT LoRA adapter is applied on top of the base
+    with ``PeftModel.from_pretrained(model, adapter, revision=adapter_revision)``
+    — the same attach path the AK/AL/AG extraction harnesses use for the
+    deployed clean-SFT->GRPO-v2 lineage (base = the merged-16bit clean-SFT model,
+    adapter = the trained grpo-v2 LoRA at a pinned revision). Leave ``adapter``
+    None (the default) for the raw single-checkpoint path; every existing call
+    site is unaffected.
     """
     if not _TORCH_AVAILABLE:
         raise ImportError("torch is required for model loading")
@@ -380,6 +392,13 @@ def load_model_and_tokenizer(model_name: str, device: str = "cpu"):
         raise RuntimeError(
             f"Could not load {model_name} via any of {_classes}: {last_err}"
         )
+
+    if adapter:
+        from peft import PeftModel
+        model = PeftModel.from_pretrained(model, adapter,
+                                          revision=adapter_revision)
+        print(f"[confidence_steer] attached adapter {adapter}"
+              f"@{adapter_revision}", flush=True)
 
     from transformers import AutoTokenizer
     tokenizer = AutoTokenizer.from_pretrained(model_name)

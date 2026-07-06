@@ -48,6 +48,7 @@ Usage (ONLY after approval)
 from __future__ import annotations
 
 import argparse
+import json
 import sys
 from pathlib import Path
 
@@ -105,10 +106,22 @@ def _last_real_indices(attn):
 def main(argv=None) -> int:
     ap = argparse.ArgumentParser(description=__doc__)
     ap.add_argument("--model", required=True)
+    ap.add_argument("--adapter", default=None,
+                    help="Optional PEFT LoRA adapter repo/path applied on top of "
+                         "--model (deployed clean-SFT->GRPO-v2 lineage).")
+    ap.add_argument("--adapter-revision", default=None,
+                    help="Pinned revision for --adapter.")
     ap.add_argument("--direction", required=True, type=Path)
     ap.add_argument("--device", default="cuda")
     ap.add_argument("--dtype", default="bfloat16")
     ap.add_argument("--alpha-base", type=float, default=4.0)
+    ap.add_argument("--floor", type=float, default=1e-2,
+                    help="Max acceptable overall abs divergence (bf16 numeric "
+                         "floor). main() returns nonzero above this so a failed "
+                         "parity check is unmissable.")
+    ap.add_argument("--result-json", type=Path, default=None,
+                    help="Optional path to write a machine-readable result "
+                         "(divergence, floor, pass/fail, provenance).")
     ap.add_argument("--i-know-this-runs-on-gpu", action="store_true",
                     help="Required acknowledgement that this loads a model on "
                          "the GPU. Refuses to run without it.")
@@ -126,7 +139,9 @@ def main(argv=None) -> int:
     layer_idx = meta["best_layer"]
     print(f"[gpu-equiv] direction layer={layer_idx} model={a.model}", flush=True)
 
-    model, tokenizer = load_model_and_tokenizer(a.model, device=a.device)
+    model, tokenizer = load_model_and_tokenizer(
+        a.model, device=a.device,
+        adapter=a.adapter, adapter_revision=a.adapter_revision)
     device = next(model.parameters()).device
     d = torch.from_numpy(d_np).to(device)
     if tokenizer.pad_token_id is None:
@@ -175,12 +190,36 @@ def main(argv=None) -> int:
     diff = (batched_final - unbatched_final).abs()
     per_row = diff.amax(dim=1).numpy()
     max_abs = float(diff.max().item())
+    passed = max_abs < a.floor
     print("[gpu-equiv] per-row max abs divergence at final real token:",
           np.round(per_row, 6).tolist(), flush=True)
     print(f"[gpu-equiv] OVERALL max abs divergence = {max_abs:.6e}", flush=True)
+    print(f"[gpu-equiv] floor = {a.floor:.3e}  ->  "
+          f"{'PASS' if passed else 'FAIL'}", flush=True)
     print("[gpu-equiv] (expected: model's batched-vs-unbatched numeric floor, "
           "orders of magnitude below the steering magnitude)", flush=True)
-    return 0
+
+    if a.result_json is not None:
+        result = {
+            "cell": "gpu_equivalence_cell",
+            "model": a.model,
+            "adapter": a.adapter,
+            "adapter_revision": a.adapter_revision,
+            "direction": str(a.direction),
+            "best_layer": int(layer_idx),
+            "dtype": a.dtype,
+            "alpha_base": a.alpha_base,
+            "n_prompts": len(prompts),
+            "per_row_max_abs_divergence": [float(x) for x in per_row],
+            "overall_max_abs_divergence": max_abs,
+            "floor": a.floor,
+            "passed": bool(passed),
+        }
+        a.result_json.parent.mkdir(parents=True, exist_ok=True)
+        a.result_json.write_text(json.dumps(result, indent=2))
+        print(f"[gpu-equiv] wrote result JSON -> {a.result_json}", flush=True)
+
+    return 0 if passed else 1
 
 
 if __name__ == "__main__":
