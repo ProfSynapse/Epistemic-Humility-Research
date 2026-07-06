@@ -84,8 +84,16 @@ Use artifact type to choose where to look:
   `CONTRIBUTING.md`, and nearby architecture notes.
 - Research synthesis: `meta-analysis/`, especially evidence tables, analysis
   scripts, paper drafts, and provenance reports.
-- Experiment design and execution: `experiment/`, especially protocols,
-  architecture docs, phase directories, configs, recipes, and run records.
+- New experiments (any evidence-producing type: steering cell, training run,
+  eval, probe-fit, lab diagnostic): the experiments-first tree `experiments/`,
+  one self-contained directory per experiment holding a signed `AMENDMENT.md`, a
+  machine-readable `experiment.yaml` manifest, pinned instrument configs, and a
+  generated registry. Scaffold and manage them with `bin/exp` (the `experiments`
+  skill). This is where new evidence-producing work goes.
+- Locked Phase 1 protocol and its records: `experiment/`, especially protocols,
+  architecture docs, phase directories, configs, recipes, and run records. This
+  tree is retained for the locked Phase 1 matrix and its historical amendments;
+  do not add new experiments here, use `experiments/` instead.
 - Literature graph and concepts: `library/`, including paper notes, concept
   notes, schema docs, manifests, and fulltext where available.
 - Datasets: `datasets/`, using dataset cards, loaders, schemas, and configs
@@ -105,6 +113,12 @@ governed: changes need explicit rationale, changelog, and user approval.
   its `reference/amendment-vs-lab-notebook.md` to pick the right instrument
   (signed protocol revision vs Amendment vs lab-notebook entry) — do not mint a
   new amendment for a smoke, diagnostic, re-run, or authorized-knob tuning.
+- `experiments`: use to scaffold, sign, list, show, resolve, and validate a new
+  experiment of any type under `experiments/<slug>/`, and to regenerate the
+  experiments registry. New amendments go through `bin/exp new/sign/resolve` with
+  the `AMENDMENT.md` and `experiment.yaml` manifest co-located in the experiment
+  directory. Pick the tier first with the experiment-runner
+  `reference/amendment-vs-lab-notebook.md`.
 - `knowledge-graph`: use for validating, exporting, analyzing, or searching the
   typed research graph.
 - `kg-ingest`: use when adding or backfilling papers into the library as typed

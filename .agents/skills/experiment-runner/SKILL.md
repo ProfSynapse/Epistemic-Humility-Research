@@ -41,6 +41,7 @@ Always choose the narrowest reference needed for the task:
 | Create or update experiment notes | [reference/experiment-notes.md](reference/experiment-notes.md) |
 | Publish or document public HF artifacts | [reference/hf-publication.md](reference/hf-publication.md) |
 | Decide whether work needs an Amendment, a protocol revision, or just a lab-notebook entry | [reference/amendment-vs-lab-notebook.md](reference/amendment-vs-lab-notebook.md) |
+| Scaffold, sign, or resolve a new experiment/amendment (any type) | the `experiments` skill (`bin/exp new/sign/resolve`); pick the tier first with [reference/amendment-vs-lab-notebook.md](reference/amendment-vs-lab-notebook.md) |
 | Make governed protocol, output-contract, or rerun-scope changes | [reference/protocol-amendments.md](reference/protocol-amendments.md) |
 | Refresh the amendment status index / add a backlog item to `TODO.md` | [reference/backlog-index.md](reference/backlog-index.md) |
 
