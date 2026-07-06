@@ -22,6 +22,16 @@ hallucinating, and we should wire that readout to caution the same way AC wired
 doubt, so it regulates the caution setpoint directly and proportionally, per
 row.
 
+The goal is CALIBRATION, both directions, not one-way confab suppression. This
+is how AC actually won: its headline was a selectivity gap, releasing refusal on
+known_refused (things it should answer) while preserving refusal on
+unknown_refused (things it should not). AO targets the same bidirectional
+alignment with the propensity signal: the single continuous coupling should
+refuse MORE where confab-propensity is high (the model reads as knowing it is
+fabricating) and refuse LESS where propensity is low (it actually knows), and it
+should beat a permuted placebo on that propensity-conditioned selectivity. A
+one-way "kill confabs" count (AN's framing) is not the metric.
+
 Amendment AN attempted a version of this and produced a NULL, but that null is
 confounded and does not test the hypothesis: AN wrote on a `caution_perp` refit
 on the AI-TRUE checkpoint whose cosine with AC's validated direction is -0.064
@@ -36,10 +46,18 @@ step in frame.
 ## Design
 
 Substrate: the AI-TRUE checkpoint (same one used by AL and AN, where the confab
-cloud and the confabulation-propensity direction are characterized; 116 residual
-confabulations on the 1,662-row AL A0 baseline pool). Same system prompt, greedy
-decoding, and grader as the AL A0 cell. Local RTX 3090, single seed. Pinned at
-`exp sign`.
+cloud and the confabulation-propensity direction are characterized). It carries
+BOTH calibration tails on the 1,662-row AL A0 baseline pool: 116 residual
+confabulations (should refuse, currently answering) and 114 answerable-refused
+rows (should answer, currently refusing). Both are needed to measure the
+bidirectional selectivity gap. Same system prompt, greedy decoding, and grader
+as the AL A0 cell. Local RTX 3090, single seed. Pinned at `exp sign`.
+
+GRPO-v2 is a pre-planned fast-follow (its own later cell), not part of this one:
+it already has AC's validated caution lever, but its calibration problem is the
+over-refusal tail only, and its confab-propensity direction has to be refit
+there first. AO establishes the mechanism on AI-TRUE (both tails) before that
+replication.
 
 Two stages, each gated. Stage 2 runs only if Stage 1 passes.
 
@@ -101,8 +119,8 @@ risk that Stage 1 finds no lever, in which case AN's null is explained as a dead
 actuator and the hypothesis is untestable on this checkpoint until a caution
 lever exists.
 
-(user) PENDING. State your call on Stage 1 (is there a caution lever on AI-TRUE)
-and Stage 2 (does propensity coupling beat the placebo) before signing.
+(user, recorded 2026-07-06) Stage 1 PASS (there is a caution lever on AI-TRUE)
+and Stage 2 PASS (propensity coupling beats the placebo). "yes and yes."
 
 ## Falsifier
 
@@ -119,24 +137,40 @@ is the clean explanation AN could not provide.
 
 ## Gates
 
+Selectivity gap (the primary metric, bidirectional, analogous to AC-G1). Define
+per arm:
+
+```
+gap = (delta_refusal on high-propensity confab rows)
+      - (delta_refusal on low-propensity answerable-refused rows)
+```
+
+where `delta_refusal = refusal_arm - refusal_baseline` on that cell. A
+well-calibrated coupling drives delta_refusal UP on confabs (refuse the
+fabrications) and DOWN on answerable-refused (release the knowable), so a large
+positive gap means the propensity signal is moving refusal the right way on both
+tails at once. The permuted arm has the same gain distribution with the signal
+scrambled, so any coupled-minus-permuted gap is attributable to the signal.
+
 - G0 (Stage 1, precondition, pass/fail): at least one caution direction moves
   the refusal rate on this checkpoint by a margin whose bootstrap CI excludes 0,
   with specificity intact (correct-answered refusal rise <= 5pt). Exact
   effect-size floor locks from the Stage-1 pilot via a pre-stated formula before
   the Stage-2 readout, so no goalpost can move.
-- G1 (Stage 2, primary): coupled beats permuted on the confab-suppression
-  selectivity gap by >= 5pt, row-level bootstrap 95% CI (10k resamples)
-  excluding 0. This is the whole claim: the propensity wire carries information
-  beyond a constant caution write.
-- G2 (Stage 2, specificity guard, pass/fail): correct-answered refusal rise
-  <= 5pt and correctness drop <= 3pt vs baseline (the B1 and AC convention).
+- G1 (Stage 2, primary): coupled beats permuted on the bidirectional selectivity
+  gap by >= 5pt, row-level bootstrap 95% CI (10k resamples) excluding 0. This is
+  the whole claim: the propensity wire carries calibration information beyond a
+  constant caution write, in both directions.
+- G2 (Stage 2, specificity guard, pass/fail): on known_correct_answered rows,
+  refusal rise <= 5pt and correctness drop <= 3pt vs baseline (the B1 and AC
+  convention). The coupling must not sacrifice rows the model already gets right.
 
 ## Predictions scoreboard
 
 | Predictor | Call |
 |-----------|------|
 | orchestrator | Stage 1 weak-lever PASS; Stage 2 small positive (3-10pt); nontrivial chance Stage 1 fails |
-| user | PENDING |
+| user | Stage 1 PASS; Stage 2 PASS (yes and yes) |
 
 ## Outcome
 
