@@ -182,8 +182,11 @@ def run_stage2():
     ckpt_thread = threading.Thread(target=_ckpt_loop, daemon=True)
     ckpt_thread.start()
 
-    # 1. clone repo at the pinned commit
-    sh(["git", "clone", REPO_URL, workspace])
+    # 1. clone repo at the pinned commit. Idempotent: a retry lands on a warm
+    # container where the clone already exists (the item-11 r1 lesson).
+    if not os.path.isdir(os.path.join(workspace, ".git")):
+        sh(["git", "clone", REPO_URL, workspace])
+    sh(["git", "fetch", "origin"], cwd=workspace, check=False)
     sh(["git", "checkout", REPO_COMMIT], cwd=workspace)
 
     probe = os.path.join(workspace, "experiment/phase1/probe")
@@ -245,8 +248,10 @@ def run_stage2():
     print(f"[modal-ak2] readback smoke PASSED {rb}", flush=True)
 
     # --- FULL arm sweep (Volume checkpoint each 120s) ---
+    # --alphas=<v> equals form: argparse rejects a separate value starting
+    # with "-" ("expected one argument"), which killed r1's full sweep.
     t0 = time.time()
-    sh(common + ["--alphas", ALPHAS, "--out-dir", data_dir])
+    sh(common + [f"--alphas={ALPHAS}", "--out-dir", data_dir])
     if not os.path.isfile(f"{data_dir}/manifest.json"):
         raise RuntimeError("no stage2 manifest")
     t_run = time.time() - t0
