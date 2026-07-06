@@ -31,7 +31,7 @@ import modal
 REPO_URL = "https://github.com/ProfSynapse/Epistemic-Humility-Research.git"
 # Pin to the lab-diagnostics-bundle commit that carries this app + the shipped
 # direction JSON + the confidence_steer adapter support. Filled at push time.
-REPO_COMMIT = "050ad09e"  # this app's parent; re-pin if the branch moves
+REPO_COMMIT = "595a416445797e3e43e20a87295eb6fd9709dcd2"  # carries the PEFT-unwrap fix
 STAGING_REPO = "professorsynapse/eh-al-prep-staging"
 
 # Deployed clean-SFT->GRPO-v2 seed1 lineage (the production steering surface).
