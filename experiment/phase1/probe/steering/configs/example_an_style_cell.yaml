@@ -1,0 +1,102 @@
+# Example steer-cell: AN-style propensity-selected, caution-actuated regulator.
+#
+# DOCUMENTATION ONLY. This reproduces the ARM STRUCTURE of Amendment AN
+# declaratively so a reader can see how the six blocks map onto a real steering
+# experiment. It is NOT the registered AN instrument: the signed AN run is the
+# hand-built amendment_an_*.py harness in the amendment-an worktree, and this
+# file's numbers/paths are illustrative. Do not cite results produced from this
+# example as AN; a real amendment signs its own cell.yaml and pins its sha.
+#
+# Mechanism recap (Amendment AC couple, section 3.2):
+#   h' = h - (h . c_hat) c_hat + g * sigma * c_hat   at L35, anchor onward.
+# Selection (section 3.3): flag rows with prop_z >= 1.0, write the caution_perp
+# setpoint g*sigma on them; leave every other row untouched.
+
+name: an_style_example
+
+surface:
+  # the frozen baseline surface: questions + baseline grades (the AL A0 rows).
+  rows_file: ../../analysis/amendment_al_prep/true_a0/gen/data/rows_graded.jsonl
+  question_field: question
+  row_key_field: row_key
+  generation:
+    # deployed clean-SFT merged base + the AI-TRUE grpo LoRA at a pinned revision
+    model: professorsynapse/eh-qwen3-4b-clean-sft-seed1-merged-16bit
+    adapter: professorsynapse/eh-qwen3-4b-clean-sft-grpo-par-true-seed1-lora
+    adapter_revision: 7e31d3cf62395275d4ba3d1d9ec8f95287188805
+    system_prompt_ref: amendment_ah_stage0_extract:load_baseline_system_prompt
+    enable_thinking: false
+    max_new_tokens: 96
+    seed: 20260705
+    decode:
+      do_sample: false
+      num_beams: 1
+    # a signed amendment fills this with the sha of this exact file; the runner
+    # refuses `run` when the file no longer hashes to it.
+    # expected_config_sha: <64-hex committed at signing>
+
+readouts:
+  # the AN caution_perp direction (AI-TRUE refit) fit at L35 with its scale.
+  - name: prop            # propensity readout for SELECTION (prop_z in the law)
+    path: ../../analysis/amendment_an_prep/caution_perp_direction_L35_ai_true.json
+    layer: 35
+    record_readback: true
+
+law:
+  # base law inherited by every arm; arms override selection + gain.
+  actuation: setpoint         # erase-and-write couple (AC/AN)
+  actuation_readout: prop
+  position: anchor_onward     # anchor at prefill + every decode step
+  gain: 2.0                   # +2 setpoint UP toward refusal
+
+arms:
+  - tag: primary
+    description: "prop_z >= 1.0 flagged, setpoint g=+2 (confab-kill arm)"
+    row_subset: flagged_only
+    law:
+      selection:
+        expression: "prop_z >= 1.0"
+
+  - tag: control
+    description: "count-matched uniform draw, same g=+2 (specificity control)"
+    row_subset: flagged_only
+    law:
+      selection:
+        permuted:
+          match_count: null   # runner matches the primary flag count at run time
+      gain: 2.0
+
+  - tag: primary_gain_p1
+    description: "descriptive dose ladder: flagged confabs only, g=+1"
+    row_subset: flagged_only
+    law:
+      gain: 1.0
+      selection:
+        flag_file: ../../analysis/amendment_an_prep/amendment_an_run/primary_confab_keys.json
+
+  - tag: primary_gain_p3
+    description: "descriptive dose ladder: flagged confabs only, g=+3"
+    row_subset: flagged_only
+    law:
+      gain: 3.0
+      selection:
+        flag_file: ../../analysis/amendment_an_prep/amendment_an_run/primary_confab_keys.json
+
+  - tag: bidirectional
+    description: "answerable-refused cell, setpoint DOWN g=-2 (over-refusal repair)"
+    row_subset: flagged_only
+    law:
+      gain: -2.0
+      selection:
+        flag_file: ../../analysis/amendment_an_prep/amendment_an_run/answerable_refused_keys.json
+
+smoke:
+  n: 40
+  # setpoint readback: post-write anchor coordinate must land within tol of the
+  # commanded g*sigma; off-target parity is checked by the runner (unflagged
+  # rows do not move).
+  readback_tolerance: 0.5
+  offtarget_parity: 0.001
+
+outputs:
+  dir: ../../analysis/steer_cells/an_style_example

@@ -1,0 +1,60 @@
+# Example steer-cell: readout-only extraction (AM-style), no steering.
+#
+# DOCUMENTATION ONLY. Shows the degenerate case of the six-block model where the
+# law's actuation is "none": the runner generates every row UNTOUCHED and records
+# each readout's pre-generation anchor score into the per-row provenance. This is
+# the extraction surface an AM-style residual-catch / correlate-mapping amendment
+# needs before it steers anything, and it needs no GPU-side hook.
+#
+# NOT a registered instrument. Paths/model are illustrative.
+
+name: readout_only_example
+
+surface:
+  rows_file: ../../analysis/amendment_al_prep/true_a0/gen/data/rows_graded.jsonl
+  question_field: question
+  row_key_field: row_key
+  generation:
+    model: professorsynapse/eh-qwen3-4b-clean-sft-seed1-merged-16bit
+    adapter: professorsynapse/eh-qwen3-4b-clean-sft-grpo-par-true-seed1-lora
+    adapter_revision: 7e31d3cf62395275d4ba3d1d9ec8f95287188805
+    system_prompt_ref: amendment_ah_stage0_extract:load_baseline_system_prompt
+    enable_thinking: false
+    max_new_tokens: 96
+    seed: 20260705
+    decode:
+      do_sample: false
+      num_beams: 1
+
+readouts:
+  # score two frozen directions at the anchor: caution_perp and a correctness
+  # dial. Both land in every row's "scores" block as <name>_raw and <name>_z.
+  - name: prop
+    path: ../../analysis/amendment_an_prep/caution_perp_direction_L35_ai_true.json
+    layer: 35
+  - name: dial
+    path: ../directions/correctness_dial_L22.json
+    layer: 22
+
+law:
+  # no steering: generate untouched, only record readout scores.
+  actuation: none
+  selection:
+    all: true
+
+arms:
+  - tag: extract
+    description: "readout-only pass over all rows (no hook, no gain)"
+    law:
+      actuation: none
+      selection:
+        all: true
+
+smoke:
+  # a readout-only smoke has no hook to read back; the runner records a trivial
+  # pass (readout_only) so the full pass is allowed. n bounds the smoke slice.
+  n: 20
+  readback_tolerance: 0.5
+
+outputs:
+  dir: ../../analysis/steer_cells/readout_only_example

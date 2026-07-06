@@ -42,6 +42,7 @@ Always choose the narrowest reference needed for the task:
 | Decide whether work needs an Amendment, a protocol revision, or just a lab-notebook entry | [reference/amendment-vs-lab-notebook.md](reference/amendment-vs-lab-notebook.md) |
 | Make governed protocol, output-contract, or rerun-scope changes | [reference/protocol-amendments.md](reference/protocol-amendments.md) |
 | Refresh the amendment status index / add a backlog item to `TODO.md` | [reference/backlog-index.md](reference/backlog-index.md) |
+| Build/run a steering or readout cell from a declarative YAML (activation steering, setpoint/couple write, additive push, readout-only, permuted control) instead of a bespoke harness | the `steering-cell` skill (`.skills/steering-cell/SKILL.md`) |
 
 Do not preload all references. Read only the files needed for the user's current
 operation, then follow any further routing inside that reference.
