@@ -37,8 +37,23 @@ predictions:
       All three gates called PASS at signing ("Sign and launch"), followed
       by "LETS BE BOLD!" - the user takes the actuation bet at full
       confidence where the orchestrator sits at 45-50% on G2/G3.
-outcome: null
-scoreboard: pending
+outcome: >-
+  USE-THE-SIGNAL NULL (injection channel), resolved 2026-07-05. AL-G1 PASS
+  (collateral 0 of allowed 3). AL-G2 MISS (0 of 116 baseline confabs killed;
+  dose ladder 0.5x/1.0x/2.0x kills 0/0/1 of 30 pushed confabs). AL-G3 MISS
+  (primary minus control kill diff 0, bootstrap 95% CI [0.00, 0.00]).
+  The null is causal, not instrumental: smoke readback shows the pushed-anchor
+  propensity projection moved -2.7133 vs commanded -2.7110 (ratio 1.0008),
+  unpushed shift exactly 0.0000, and all 1,564 unpushed rows reproduce the
+  baseline grade (1564/1564 parity). The direction moves the internal readout
+  by the commanded amount but does not actuate the fabricate-vs-refuse
+  choice. Sixth use-the-signal null; first in the activation-injection
+  channel. Grading commits fa82c629 / 7b4be949 / e9141fff.
+scoreboard: >-
+  AL-G1 both hit. AL-G2 and AL-G3: user missed at full confidence ("LETS BE
+  BOLD"); orchestrator sat at ~45% and ~50% PASS (leaned miss on G2, coin
+  flip on G3). Proposed score LOSS/WIN (user-orchestrator), subject to user
+  adjudication at merge.
 ---
 
 # Amendment AL — Radial anti-propensity steering on the AI-TRUE checkpoint
