@@ -142,8 +142,10 @@ post-generation readout.
   `base_model: unsloth/Qwen3-4B-bnb-4bit`, `adapter: NONE-raw-instruct-base`).
 - Generation surface: same prompt/decode contract as the A0 cell. The AH
   baseline abstention-affording system prompt, `enable_thinking=false`, greedy
-  decode, `max_new_tokens=96`, seed matched to the A0 config
-  (`config_sha: 68847c8396f688d4`). The A0 answered-row grades reproduce from
+  decode, `max_new_tokens=96`, seed matched to the A0 config. The A0 surface is
+  pinned by a prompt/decode-contract sha (`config_sha: 14e5afab67484380`; the
+  ah_main record shows `68847c8396f688d4`, which also hashed the pool file path,
+  a non-surface element corrected post-signing, see §8). The A0 answered-row grades reproduce from
   regeneration on the same grader; any regeneration drift is absorbed by
   comparing the veto against a permutation null computed on the same regenerated
   rows.
@@ -353,4 +355,26 @@ report it as ambiguous and let the user adjudicate.
   regenerating on Modal may shift which rows confabulate. The residual is
   recomputed on the regenerated rows by the frozen rule, and the permutation null
   shares any regeneration drift, so the specificity gate is robust to it. The
+  absolute catch count is reported with this caveat.
+
+## 8. Harness corrections (post-signing)
+
+- 2026-07-06, surface-sha path de-tainting (harness bug fix, surface unchanged).
+  The first Modal launch aborted on the §3.1 A0-surface guard:
+  `A0 surface drift: regenerated config_sha=d0d4f3d6 != A0 68847c83`. Root cause:
+  `amendment_am_extract.py` hashed the absolute `pool_source` FILE PATH into the
+  surface-contract sha. That path is a non-surface element and legitimately
+  differs between the host (`.../ah_stage0/expansion/pool_v21.jsonl`, where the
+  historical `68847c83` was baked) and the Modal container's staging pool
+  (`am_pool.jsonl`), so the guard could never pass regardless of whether the
+  prompt/decode surface matched. Fix: exclude `pool_source` from the surface sha
+  (it is retained in `manifest.json` as provenance only). Verified: (a) the
+  path-tainted payload reproduces the historical `68847c8396f688d4` exactly when
+  the pool path is re-added, confirming `pool_source` was the sole diff; (b) the
+  path-independent surface sha is `14e5afab67484380`. No hypothesis, gate,
+  falsifier, residual definition, or reported statistic changes; the generation
+  surface (model, tag, baseline system prompt, prime, thinking, tokens, decode)
+  is byte-identical to A0. `am_pool.jsonl` is built by `amendment_am_build_pool.py`
+  from the same `pool_v21.jsonl` A0 questions, so the regenerated pool is the A0
+  pool.
   absolute catch count is reported with this caveat.

@@ -68,9 +68,16 @@ from amendment_s_correctness_probe_extract import (  # noqa: E402
     MODEL_NAME, MODEL_TAG, _config_sha, _content_end_index,
 )
 
-# The A0 config_sha (from ah_main/manifest.json arm A0). The regenerated config
+# The A0 prompt/decode SURFACE contract sha (base model, tag, baseline system
+# prompt, prime, enable_thinking, max_new_tokens, decode). Per AMENDMENT §3.1 the
+# pin is the generation SURFACE, not the pool file location. The regenerated
 # payload must reproduce this SHA or the surface has drifted; fail loud if not.
-A0_CONFIG_SHA = "68847c8396f688d4"
+# NOTE: ah_main/manifest.json arm A0 records 68847c8396f688d4, which additionally
+# hashed the absolute pool_source PATH (not a surface element; it differs by host
+# vs Modal container and legitimately differs for AM's staging pool). Excluding
+# the path yields this path-independent surface sha; verified to reproduce the
+# historical 68847c83 when the pool_source path is re-added.
+A0_CONFIG_SHA = "14e5afab67484380"
 # Byte-frozen A0 surface: 96 new tokens, greedy, enable_thinking false.
 MAX_NEW_TOKENS = 96
 # The baseline system prompt is loaded from the same config the AH main run used.
@@ -192,12 +199,14 @@ def run(args) -> int:
     if args.limit:
         pool = pool[:args.limit]
 
-    # Reproduce the A0 config payload/SHA (arm A0 of ah_main). Must match.
+    # Reproduce the A0 SURFACE contract payload/SHA (arm A0 of ah_main). The pool
+    # FILE LOCATION is provenance (recorded in the manifest below), not part of
+    # the prompt/decode surface, so it is excluded from the surface sha. Must match.
     config_payload = {
         "amendment": "AH", "stage": "main_generate", "arm": "A0",
         "base_model": model_name, "adapter": "NONE-raw-instruct-base",
         "model_tag": MODEL_TAG, "baseline_system_prompt": baseline_system,
-        "prime": None, "pool_source": str(pool_path), "enable_thinking": False,
+        "prime": None, "enable_thinking": False,
         "max_new_tokens": MAX_NEW_TOKENS, "decode": "greedy",
     }
     config_sha = _config_sha(config_payload)
@@ -361,6 +370,7 @@ def run(args) -> int:
 
     manifest = {
         **config_payload, "config_sha": config_sha,
+        "pool_source": str(pool_path),  # provenance only; excluded from surface sha
         "n_layers": n_layers, "hidden_dim": model.config.hidden_size,
         "n_pool": len(pool), "n_written": written, "counts": counts,
         "n_extracted": n_extracted, "frozen_batch": frozen_batch,
