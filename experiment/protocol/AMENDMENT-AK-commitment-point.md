@@ -61,13 +61,16 @@ scoreboard: >-
 
 # Amendment AK — Commitment-Point Extraction
 
-Status: **SIGNED, NOT LAUNCHED.** Signed 2026-07-04 after a pre-signing
-options review that restructured AK-G2 from a directional gate into a
-three-way pre-registered fork (see §4). Launch preconditions in §5 remain
-open: the Amendment AI arc must resolve first (GPU sequestered) and the GPU
-launch needs explicit user approval. The AK-G2 effect-size floor locks from
-the pilot via the formula pre-stated in §4 — locking it is a computation,
-not a judgment call, so no goalpost can move.
+Status: **RESOLVED 2026-07-06** (AK-G1 MISS, AK-G2 MISS, AK-G3
+MISS-with-confound; the authoritative status block and scoring provenance are
+in the frontmatter above, the verdict detail in §8). Signed 2026-07-04 after a
+pre-signing options review that restructured AK-G2 from a directional gate into
+a three-way pre-registered fork (see §4). The §5 launch preconditions were
+subsequently met: the Amendment AI arc resolved and the GPU launch was
+approved; Stage 1 was scored at commit 069427dd and Stage 2 ran on Modal and
+was scored CPU-side against the pulled staging artifacts. The AK-G2 effect-size
+floor locked from the pilot via the formula pre-stated in §4, a computation and
+not a judgment call, so no goalpost moved.
 
 ## 1. Motivation and strategic position
 
