@@ -1,6 +1,6 @@
 slug: ap-veto-length-balanced-confirmatory
 type: probe-fit
-status: signed
+status: resolved
 registered: true
 question: On the raw base, does the post-generation correctness veto (post-L20 S/W/U
   dial) separate hallucinated answers from good answers by CONTENT rather than by
@@ -31,5 +31,11 @@ instrument:
     cloud/modal_ap_veto_length_balanced.py: 6bfb6d01e73bfb5fec8ae127d1272629e9620412aba820ff71f09eaae99ba5d5
 inputs:
 - experiments/ap-veto-length-balanced-confirmatory/analysis/ap_pool.jsonl
-verdict: ''
+verdict: 'CONFIRMED with answerability caveat: gates all PASS; the content-trust veto
+  adds genuine signal over BOTH length and answerability (answerability-controlled
+  AUROC ~0.74, margin +0.24, 95% CI [0.12,0.37] excludes 0), promoting AM''s ~0.77
+  length-matched estimate on a fresh 192-token generation. The 0.86/+0.37 headline
+  is answerability-inflated (37% of matched halluc are unanswerable-confabs, veto
+  ~0.99 on those) and must not be cited as the content characteristic; honest number
+  ~0.74.'
 kg: []

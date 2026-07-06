@@ -115,6 +115,57 @@ Modal cost cap pre-registered at $10 (user, 2026-07-06); auto-kill at the cap.
 
 ## Outcome
 
-Filled at resolve. Record the verdict, the gate results, the residual
-truncation rate in the matched set, and the one-sentence summary that also goes
-into `verdict:` in the manifest.
+RESOLVED 2026-07-06. All three gates PASS as literally worded, on a fresh
+raw-base 192-token generation (answered=489, matching AM's 489; config_sha
+9d753f2348391187; staging professorsynapse/eh-al-prep-staging under
+ap-veto-lb-confirm-r1). Population: hallucination 401 (313 unanswerable-confab +
+88 wrong-answerable), good 88 correct-answerable; caliper match 78 pairs (156
+rows), truncation 0/156 at 192 tokens.
+
+- AP-G0 PASS: length-only AUROC 0.492 (chance); the caliper match neutralized
+  length and the 192-token budget eliminated truncation, so AM's
+  length/truncation artifact is defeated.
+- AP-G1 PASS: OOF veto AUROC 0.8616, bootstrap 95% CI [0.802, 0.915].
+- AP-G2 PASS: paired margin +0.3696, bootstrap 95% CI [0.262, 0.476].
+
+CAVEAT (adversarial audit before resolution; red-team answerable-only slice +
+independent oracle re-audit). The 0.86 / +0.37 headline is inflated by a second,
+undisclosed nuisance: ANSWERABILITY. 37% of the matched hallucination rows are
+confabs on UNANSWERABLE questions, which the veto separates from good answers at
+AUROC ~0.99 (a carried question property, matching AM item-31's ~0.96
+answerability transport). The headline is a blend of ~0.99 answerability and the
+genuine content signal. The answerability-controlled clean slice
+(wrong_on_answerable 88 vs correct-answerable 88, both answerable, same caliper
+match + OOF pipeline; 65 matched pairs) isolates the content-trust signal:
+length-only AUROC 0.493, veto AUROC 0.737 (CI [0.650, 0.815]), paired margin
++0.244 (CI [0.120, 0.367], excludes 0). This STILL clears AP's own gates (G1
+0.737 >= 0.68, CI-LB 0.65 > 0.60; G2 +0.244 >= 0.10, CI excludes 0), so the
+binary confirmation is robust; only the magnitude was confounded. The controlled
+0.737 lands on AM's ~0.77 length-matched anchor and inside AP's own 0.72-0.80
+prediction band, which is exactly why controlling answerability removes the
+"too-good" overshoot.
+
+Verified clean by the audit: feature matrix is post-L20 hidden states only (no
+answer length, no score_L24 in X); StratifiedKFold folds hold out cleanly (no
+cross-fold contamination); seed pinned (SEED 20260706); no goalpost drift
+(scorer computes the pre-registered population and gate constants exactly). Not
+bit-reproducible on saga LR (no random_state, inherited from AM; ~0.0002 jitter,
+far from every gate floor).
+
+VERDICT: AP CONFIRMS a genuine post-generation content-trust signal on the raw
+base (answerability- and length-controlled veto AUROC ~0.74, +0.24 over both
+nuisances, bootstrap 95% CI excluding 0), promoting AM's exploratory ~0.77
+length-matched estimate to a fresh 192-token generation. The 0.86 / +0.37
+headline overstates it and must NOT be cited as the content-trust
+characteristic: the honest number is ~0.74. Like AM (which fixed nothing and
+disclosed length), AP fixed length but a second nuisance rode in; unlike AM, the
+content signal here is affirmatively isolated and still significant after
+controlling both length and answerability. Tier-2 exploratory-confirmatory,
+single seed; never pooled with the locked Phase 1 matrix or the PR #205 veto
+operating characteristics.
+
+Scoreboard: user AP-G1/G2 PASS and orchestrator AP-G1 PASS / AP-G2 pass-but-tight
+were both correct on the binary gate verdict (G2 was in fact comfortable, +0.24
+CI-excluding-0 even after controlling answerability). The answerability confound
+was foreseen by neither predictor at prediction time; the orchestrator flagged it
+in adjudication and commissioned the red-team before resolving.
