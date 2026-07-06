@@ -41,9 +41,9 @@ neither side and are tallied separately.
 | AI (probe-as-reward) | TRUE wins | TRUE wins (~65%) | **NULL, G1 inverted**: TRUE congruence 59.75% vs PERMUTED 76.75%, differential −17.0pt (CI [−21.5, −12.5] excludes 0 on the wrong side); G0 valid (fresh probes 0.9948/0.9946); G2 fails both arms (over-refusal released) though TRUE alone holds the refusal boundary (+0.49pt, 40% fewer hallucinations than control). Reward channel doesn't couple the readout | **TIE / TIE** |
 | AL (radial anti-propensity steering) | G1 PASS; G2 PASS; G3 PASS ("LETS BE BOLD!") | G1 PASS (~75%); G2 PASS (~45%); G3 PASS (~50%) | **USE-THE-SIGNAL NULL (injection channel)**: G1 PASS (0 collateral), G2 MISS (0/116 kills; 2x dose flips 1/30), G3 MISS (diff 0, CI [0.00, 0.00]). Injection verified precise (readback ratio 1.0008; 1564/1564 unpushed parity), so the propensity readout does not actuate the fabricate-vs-refuse choice. Sixth use-the-signal null | **LOSS / WIN** (adjudicated by the user 2026-07-05, "you best me on this one": both hit G1; on G2/G3 the user bet PASS at full confidence, the orchestrator leaned miss at 45%/50%) |
 
-| AN (selected-setpoint regulator) - SIGNED 2026-07-05, not launched | G1 PASS; G2 PASS; G3 PASS ("I agree on all passing") | G1 PASS (~70%); G2 PASS (~40%); G3 PASS (~40%) | _pending - launch awaits GPU free + user approval_ | - |
+| AN (selected-setpoint regulator) | G1 PASS; G2 PASS; G3 PASS ("I agree on all passing") | G1 PASS (~70%); G2 PASS (~40%); G3 PASS (~40%) | **NULL, falsifier fired**: AN-G1 PASS (0 collateral) but VACUOUS - zero effect on the write means zero collateral by construction; AN-G2 MISS (0/116 confabs killed, floor 5; dose ladder 0/0/0 at g=+1/+2/+3); AN-G3 MISS (primary-minus-control diff 0, CI [0.0, 0.0], floor 5). Smoke readback confirms the write lands precisely on-axis (max abs error 0.58 vs sigma 22.13); descriptive bidirectional arm also de-refuses 0/114. Pairing AL's reaching sensor with AC's proven actuator still does not reach the confab cloud | **LOSS / WIN** (user called PASS at full confidence on the central bet; orchestrator's ~40% on G2/G3 was the directionally correct lean, same disagreement shape as AL) |
 
-Running tally: **user 3 – orchestrator 3 – ties 2** (AG predates the
+Running tally: **user 3 – orchestrator 4 – ties 2** (AG predates the
 two-sided practice; the user gets the point, the orchestrator gets the
 excuse. AH resolved TIE/TIE at first adjudication — instrument voided at
 the locked gates — then upgraded to WIN/WIN when the pre-registered
@@ -53,7 +53,11 @@ with both predictions recorded before launch. AJ scores TIE/TIE: both
 called the same strict gate outcome and the gate statistic landed
 statistically indistinguishable from its threshold. AI scores TIE/TIE:
 convergent predictions that both missed — both called TRUE wins and the
-gate came back significantly inverted.)
+gate came back significantly inverted. AN scores LOSS/WIN: both called
+AN-G2/AN-G3 PASS, both missed, but the orchestrator's recorded confidence sat
+below 50% on those two gates, the same sub-50%-counts-as-a-lean convention
+already applied to AL's G2/G3 calls, so the orchestrator's directional lean
+is scored a win even though the literal call label was "PASS".)
 
 Threshold-setting lesson (AJ, 2026-07-04): both predictions were
 substantively right and the gate still failed to certify, because the

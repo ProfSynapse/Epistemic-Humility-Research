@@ -41,8 +41,41 @@ predictions:
       40% on G2/G3 (same disagreement shape as AL, opposite mechanism: there
       the user bet on a new knob; here the bet is the proven knob reaching a
       new population).
-outcome: null
-scoreboard: null
+outcome: >-
+  NULL (falsifier fired), resolved 2026-07-06. AN-G1 PASS (collateral 0 of
+  allowed 2) but VACUOUS: zero effect on the write means zero collateral by
+  construction, not a real honesty guarantee, since the corrects it was
+  guarding were never actually at risk. AN-G2 MISS (0 of 116 baseline confabs
+  killed against a floor of 5; descriptive dose ladder g=+1/+2/+3 kills
+  0/0/0 of the 47 flagged confabs). AN-G3 MISS (primary-minus-control kill
+  diff 0, 1,000-resample row bootstrap 95% CI [0.0, 0.0] against a floor of 5
+  with CI excluding zero). Primary arm: 244 flagged rows (47 confabs, 4
+  corrects, 11 wrong, 18 answerable-refused, 164 unanswerable-refused); all 47
+  flagged confabs land in confab_to_different_confab, never a refusal.
+  Descriptive bidirectional arm: the same actuator at g=-2 de-refuses 0 of
+  114 baseline answerable-refused rows. Smoke readback confirms the write
+  lands precisely on-axis (mean observed setpoint 43.98 vs commanded 44.26,
+  max abs error 0.58 against sigma 22.13; unflagged rows show zero shift),
+  ruling out an injection-fidelity failure. caution_perp, reached this
+  precisely on propensity-flagged rows, still does not carry the
+  fabricate-vs-refuse decision: it is a correlate of the caution behavior it
+  was fit on, not a general-purpose lever. Closes the imprecise-injection
+  escape (already ruled out by AL, reconfirmed here) and the wrong-actuator
+  escape (AC's actuator independently moves behavior on its own population)
+  that earlier write-side nulls left open; consistent with, not contradicted
+  by, the AF/AC/AG prime-channel wins, which are input-side rather than
+  write-side.
+scoreboard: >-
+  AN-G1 both hit (pass is vacuous, so this is not a substantive win for
+  either side). AN-G2/AN-G3, the central bet: the user called PASS at full
+  confidence ("I agree on all passing"); the orchestrator called PASS but at
+  only ~40% (implied lean toward miss). Both literal PASS calls missed; the
+  orchestrator's sub-50% confidence was the directionally correct lean, same
+  disagreement shape as AL and explicitly anticipated in the recorded basis
+  ("same disagreement shape as AL, opposite mechanism: there the user bet on
+  a new knob; here the bet is the proven knob reaching a new population").
+  Score LOSS/WIN (user-orchestrator), same scoring convention applied to AL's
+  sub-50%-counts-as-a-lean G2/G3 calls. Tally 3-4-2.
 ---
 
 # Amendment AN - Selected-setpoint regulator on the AI-TRUE checkpoint
@@ -393,9 +426,93 @@ carries no gates.
 - Analysis (built at signing): confab-kill / collateral / specificity tally
   with the AN-G3 row bootstrap, mirroring AL's analysis script.
 
-## 11. Changelog
+## 11. Outcome (resolved 2026-07-06)
+
+Mechanical tier per section 4: **NULL, falsifier fired** (AN-G2 and AN-G3
+both missing). Scorer output:
+`analysis/amendment_an_prep/amendment_an_run/gates_report.json`. Smoke
+readback: `analysis/amendment_an_prep/amendment_an_run/smoke_primary/readback.json`.
+
+### 11.1 Baseline and arms
+
+| | confab | correct | wrong | answerable-refused |
+|---|---|---|---|---|
+| baseline (n=1,662) | 116 | 90 | 120 | 114 |
+| primary flagged (n=244) | 47 | 4 | 11 | 18 |
+| control flagged (n=244) | 21 | 17 | - | - |
+
+### 11.2 Gates
+
+| gate | value | threshold | result |
+|---|---|---|---|
+| AN-G1 collateral | 0 | <= 2 | PASS (vacuous) |
+| AN-G2 reach | 0 confabs killed | >= 5 | FAIL |
+| AN-G3 specificity | diff 0, CI [0.0, 0.0] | diff >= 5, CI excludes 0 | FAIL |
+| overall | - | - | **FAIL** |
+
+**AN-G1: PASS, but vacuous.** None of the 4 flagged baseline-correct rows
+flip to refusal. This is not evidence the selector spares honest answers
+under a real write; it is the arithmetic consequence of a write that changes
+nothing for anyone, confab or correct. The gate's honesty guarantee was never
+tested because the risk it guards against never materialized.
+
+**AN-G2: FAIL.** 0 of 116 baseline confabs killed in the primary arm, against
+a floor of 5. All 47 flagged confabs land in `confab_to_different_confab`:
+the write changes the generated fabrication but never converts it to a
+refusal. The descriptive dose ladder (g in {+1, +2, +3}) kills 0 confabs at
+every gain tested, so this is not a dosing problem within the range checked.
+
+**AN-G3: FAIL.** Primary-minus-control kill difference is 0 (primary kills
+0, the permuted-flag control also kills 0 of its 21 flagged confabs), with a
+1,000-resample row bootstrap 95% CI of [0.0, 0.0] against a floor of 5 with
+CI excluding zero.
+
+**Descriptive bidirectional arm (never gated).** The same actuator run in
+reverse (g=-2, setpoint DOWN) on the 114 baseline answerable-refused rows
+de-refuses 0 of 114 (rate 0.0), with 0 becoming correct answers. The null
+holds in both directions of the same write.
+
+**Injection-fidelity smoke.** 20 flagged / 8 unflagged rows re-read after the
+write: mean observed setpoint on flagged rows 43.98 vs commanded 44.26 (max
+abs error 0.58 against sigma 22.13); unflagged rows show zero coordinate
+shift (mean abs shift 0.0). The write lands precisely on-axis and touches
+only the intended rows, ruling out an injection-fidelity explanation for the
+null.
+
+### 11.3 Interpretation
+
+The pre-registered question was whether pairing the sensor with proven reach
+(confabulation propensity) with the actuator with proven force (AC's caution
+setpoint) closes the loop AL's same-direction pairing could not. It does not:
+even reached this precisely, the caution setpoint does not carry the
+fabricate-vs-refuse decision for the propensity-flagged population.
+caution_perp is a correlate of the caution behavior it was fit on, not a
+general-purpose lever the confab cloud answers to when addressed through a
+different sensor. This closes both escapes earlier write-side nulls left
+open: an imprecise write (AL already ruled this out; this smoke reconfirms
+it) and a weak or wrong actuator (AC's actuator independently moves behavior
+on its own population, so it is not weak in general). Framing for the
+program: every WRITE-side activation-edit tested on an isolated axis so far
+(AA/AB, AL, AI, AN) is null; every INPUT-side / TEXT-channel intervention
+tested (AF, AC itself, AG) has actuated. AN's null is consistent with, not
+contradicted by, those prime-channel wins.
+
+Both predictions called AN-G2/AN-G3 PASS; both missed. The user called PASS
+at full confidence; the orchestrator called PASS but at ~40% (an implied lean
+toward miss). Scored **LOSS/WIN** (user-orchestrator), the same convention
+applied to AL's sub-50%-counts-as-a-lean calls; see the frontmatter
+`scoreboard` field and `docs/prediction-scoreboard.md` for the ledger entry.
+No goalposts moved: the gates and floors above are exactly those locked in
+section 4 at signing.
+
+## 12. Changelog
 
 - 2026-07-05: created (DRAFT). caution_perp refit on AI-TRUE (cos -0.064 to
   GRPO-v2), selector table built (operating point prop_z >= 1.00: 47 confabs /
   4 corrects flagged), gates derived aim-small from the selector table and the
   AC setpoint-compliance measurement. Not signed; predictions unrecorded.
+- 2026-07-05: SIGNED. User recorded predictions ("I agree on all passing");
+  gates in section 4 locked as drafted.
+- 2026-07-06: RESOLVED - NULL, falsifier fired (AN-G2 and AN-G3 both missing).
+  See section 11. Scored LOSS/WIN (user-orchestrator); ledger updated in
+  `docs/prediction-scoreboard.md`.

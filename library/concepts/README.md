@@ -640,7 +640,7 @@ Atomic notes extracted from the library papers via the Agents-K1 ingestion skill
 - [[valence-arousal-subspace]] : A two-dimensional linear subspace in LLM activation space spanned by a recovered valence axis (pleasure-displeasure) and arousal axis (activ
 - [[world-model-hallucination-modes]] : A three-type taxonomy of failure modes in generative world models, each anchored to a different pipeline stage. Perceptual hallucination occ
 
-## Mechanisms (cause -> effect) (362)
+## Mechanisms (cause -> effect) (363)
 
 - [[abstention-generalization-failure]] : 'instruction-tuning for abstention on a narrow, homogeneous set of refusal expressions and task formats' **prevents** Abstention ability does not generalize to 
 - [[abstract-representations-enable-zero-shot-generalization]] : High degree of abstract (parallel) representation in ANN hidden layers, as measured by parallelism-score, indicating that compositional rule dimensions are enco
@@ -950,6 +950,7 @@ Atomic notes extracted from the library papers via the Agents-K1 ingestion skill
 - [[semantic-overlap-drives-sft-forgetting]] : SFT updates for new facts whose entity names share token substrings with pre-trained entity representations **increases** Cosine drift in held-out entity hidden
 - [[semantic-subspace-mismatch-degrades-steering]] : Applying a domain-mismatched semantic-prior-subspace (e.g., safety concept vectors) to steer a different target domain (e.g., reasoning tasks) via activation-st
 - [[sentence-probability-confounds-truth-detection]] : LLM-assigned sentence probability depends on token frequency and sentence length as well as factual correctness **prevents** Raw sentence probability is unrelia
+- [[setpoint-write-on-caution-perp-does-not-actuate-fabrication]] : An erase-and-write setpoint push (h' = h - (h.c_hat)c_hat + g*sigma_c*c_hat, g=+2, clipped) on the doubt-orthogonalized caution_perp coordinate at L35, applied 
 - [[sft-abstention-causes-over-refusal]] : 'supervised-finetuning on the idk-dataset to teach abstention' **increases** Model becomes overly conservative, incorrectly refusing questions it actually knows
 - [[sft-abstention-overfits-indomain]] : 'supervised-finetuning on rejection examples from in-domain arithmetic questions' **decreases** Model becomes over-conservative on out-of-domain tasks (gsm8k), 
 - [[sft-beyond-knowledge-boundary-hallucination]] : Standard instruction-tuning that forces answers on questions outside the model's knowledge-boundary **increases** Model learns to hallucination|hallucinate conf
