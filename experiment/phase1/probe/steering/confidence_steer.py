@@ -417,7 +417,12 @@ def get_decoder_layer(model, layer_idx: int):
       - model.model.layers[i]  (LLaMA / Qwen3 / Ministral / most transformers)
       - model.language_model.model.layers[i]  (some multimodal wrappers)
       - model.model.decoder.layers[i]  (OPT-style)
+      - PEFT-wrapped models (PeftModelForCausalLM) are unwrapped first
     """
+    # PEFT wraps the causal-LM as PeftModelForCausalLM -> LoraModel -> base;
+    # unwrap so the attribute probes below see the real architecture.
+    if hasattr(model, "get_base_model"):
+        model = model.get_base_model()
     # Try common patterns in order
     for attr_path in (
         ["model", "layers"],

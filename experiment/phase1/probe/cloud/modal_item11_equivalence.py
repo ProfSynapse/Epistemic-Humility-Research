@@ -107,8 +107,11 @@ def run_equivalence():
     sh(["nvidia-smi", "--query-gpu=name,memory.total",
         "--format=csv,noheader"], check=False)
 
-    # 1. clone repo at the pinned commit (ships the cell + direction JSON)
-    sh(["git", "clone", REPO_URL, workspace])
+    # 1. clone repo at the pinned commit (ships the cell + direction JSON).
+    # Idempotent: a retry lands on a warm container where the clone exists.
+    if not os.path.isdir(os.path.join(workspace, ".git")):
+        sh(["git", "clone", REPO_URL, workspace])
+    sh(["git", "fetch", "origin"], cwd=workspace, check=False)
     sh(["git", "checkout", REPO_COMMIT], cwd=workspace)
 
     probe = os.path.join(workspace, "experiment/phase1/probe")
