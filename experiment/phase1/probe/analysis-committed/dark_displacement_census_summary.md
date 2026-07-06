@@ -109,6 +109,77 @@ strongest by within-checkpoint consistency is `L34 succ pc0`
 (consistency 1.000, transfer 0.475, rising trajectory); by transfer,
 `L20 succ pc5` and `L28 arel pc11` (both ~0.515).
 
+## Screens against the dark-displacement literature map
+
+Before treating any of the 12 candidates as undiscovered epistemic structure,
+each is walked through the three decision signatures the companion
+[dark-displacement literature map](../../../../docs/research/dark-displacement-literature-map.md)
+names as the cheapest nuisance identities to rule out. The screens run PER
+CANDIDATE DIRECTION, so the candidate set is exactly the 12 above; the screens
+judge them, they do not redefine them.
+
+- **Input linear-predictability** (SAE dark matter, litmap row 4). Out-of-fold
+  R^2 of a ridge map from the row anchor (the last prompt-token hidden state at
+  the same layer) to the candidate's per-position activation, on a fold-local
+  label-agnostic input PCA. A direction whose activation is a linear image of the
+  input is bookkeeping, not a knob. Ceiling: R^2 < 0.50. The anchor is constant
+  within a row (these captures hold no per-position pre-layer input), so this
+  screen targets row-level input-linear bookkeeping; position-varying bookkeeping
+  is the positional screen's job.
+- **Positional carrier** (position/context bookkeeping, litmap row 2). Out-of-fold
+  R^2 of a low-frequency Fourier basis of the absolute token index. A direction
+  tracking position is a spiral carrier, not epistemic content. Ceiling: R^2 < 0.30.
+- **Rogue load** (massive activations / rogue dimensions, litmap row 1). Fraction
+  of the direction's L2 energy sitting on the layer's rogue coordinates (max over
+  positions >= 100x the median coordinate mean-magnitude, or extreme kurtosis),
+  plus the overlap of its top-20 loadings with that rogue set. A direction that is
+  mostly a few massive coordinates is a nuisance. Ceilings: energy fraction < 0.50,
+  top-20 overlap < 10.
+
+**Result: all 12 raw-base candidates survive all three screens.** Input
+linear-predictability R^2 lands in [-0.011, +0.027], positional R^2 in
+[0.006, 0.099], and rogue-energy fraction in [0.000, 0.040] (top-20 overlap at
+most 2 of 20). Every candidate clears every ceiling by a wide margin, so none is
+input-linear bookkeeping, a positional carrier, or rogue-loaded. Seed 20260706;
+per-candidate numbers are in `census_report.json` (`candidate_screen_summary`)
+and in each frozen candidate JSON's provenance.
+
+A divergence from the literature worth recording: the SAE dark-matter family
+predicts the out-of-span residual is roughly half to mostly recoverable by a
+linear map from the input (R^2 about 0.7 to 0.95 at mid layers). On this surface
+it is not. Family-level input R^2 of the whole span-residual is about -0.01 for
+the successive family and +0.02 to +0.12 for the anchor-relative family; the
+family positional variance explained is 0.03 to 0.18; and each layer carries only
+2 to 5 rogue coordinates, which the candidates do not load on. The dark remainder
+here is genuinely not a linear image of the input, so the row-4 identity does not
+apply to this span-projected per-position generation displacement on
+unanswerable prompts.
+
+Surviving the three screens rules out the cheap nuisance identities; it does NOT
+promote a candidate to a knob. The positive row-6 signature (a curved,
+irreducible low-dimensional feature manifold confirmed by separability and
+geodesic tests, then a causal subspace intervention) was not established here and
+is the AN section-6 screen's job. Survivors keep the committed weak-prior
+profile: modest pooled confab-vs-refuse AUROC (0.60 to 0.72), within-checkpoint
+half-fit consistency 0.83 to 1.00, and poor cross-checkpoint transfer (0.15 to
+0.52). grpo-v2 clears zero candidates through the original gate, so its screen
+set is empty.
+
+| candidate (raw-base) | pooled AUROC | input R^2 | position R^2 | rogue energy (top20 overlap) | trajectory | transfer | verdict |
+|---|---|---|---|---|---|---|---|
+| L16 arel pc7 | 0.64 | +0.000 | 0.057 | 0.011 (0/20) | flat | 0.272 | survives |
+| L20 arel pc5 | 0.63 | +0.006 | 0.031 | 0.005 (0/20) | rise | 0.309 | survives |
+| L20 arel pc8 | 0.63 | +0.027 | 0.043 | 0.014 (1/20) | rise | 0.331 | survives |
+| L20 succ pc5 | 0.62 | -0.008 | 0.095 | 0.005 (0/20) | decay | 0.515 | survives |
+| L24 arel pc5 | 0.63 | +0.016 | 0.023 | 0.016 (1/20) | flat | 0.270 | survives |
+| L24 arel pc7 | 0.72 | +0.003 | 0.090 | 0.000 (0/20) | flat | 0.147 | survives |
+| L24 succ pc4 | 0.63 | -0.008 | 0.068 | 0.011 (1/20) | flat | 0.493 | survives |
+| L28 arel pc11 | 0.61 | +0.000 | 0.046 | 0.001 (0/20) | decay | 0.515 | survives |
+| L28 succ pc0 | 0.60 | -0.010 | 0.028 | 0.030 (2/20) | rise | 0.250 | survives |
+| L28 succ pc3 | 0.62 | -0.011 | 0.030 | 0.002 (0/20) | decay | 0.165 | survives |
+| L28 succ pc4 | 0.63 | -0.006 | 0.099 | 0.040 (2/20) | flat | 0.359 | survives |
+| L34 succ pc0 | 0.61 | -0.011 | 0.006 | 0.003 (0/20) | rise | 0.475 | survives |
+
 ## What could not be done with these captures
 
 - **No correct/wrong or answered-on-answerable axis.** The AK pool is
