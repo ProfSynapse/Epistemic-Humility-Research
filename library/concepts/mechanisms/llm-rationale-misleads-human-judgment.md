@@ -14,10 +14,15 @@ effect: Human accuracy on known-vs-unknown perception drops when the rationale i
 polarity: decreases
 related:
 - '[[2305.13712--kuq-knowledge-of-knowledge]]'
+- '[[2305.04388--language-models-don-t-always-say-what]]'
 relationships:
 - type: supported_by
   target: '[[2305.13712--kuq-knowledge-of-knowledge]]'
   target_id: paper:2305.13712
+  confidence: high
+- type: supported_by
+  target: '[[2305.04388--language-models-don-t-always-say-what]]'
+  target_id: paper:2305.04388
   confidence: high
 ---
 
