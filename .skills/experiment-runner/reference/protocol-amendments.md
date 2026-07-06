@@ -24,12 +24,20 @@ Protocol amendments are separate from durable session notes:
    produce durable protocol decisions. See `reference/research-sessions.md`.
 2. Read the active protocol and any existing amendments that the new amendment
    touches.
-3. Copy or follow `reference/protocol-amendment-template.md`.
-4. Save the amendment under `experiment/protocol/AMENDMENT-<LETTER>-<slug>.md`.
-5. Mark the status explicitly:
-   - `DRAFT / NOT SIGNED`
-   - `READY FOR USER SIGN-OFF / NOT SIGNED`
-   - `SIGNED OFF` with approval date
+3. Scaffold the experiment with `bin/exp new <slug> --type <t>`. This creates
+   `experiments/<slug>/` with an `AMENDMENT.md` (cover the same ground as
+   `reference/protocol-amendment-template.md`) and a thin `experiment.yaml`
+   manifest. Do NOT hand-author under `experiment/protocol/`; that tree is
+   retained for the locked Phase 1 protocol and its historical amendments only.
+4. Write the prose in `AMENDMENT.md`, then mirror the one-sentence question,
+   prediction, and falsifier into the manifest and list the instrument config
+   paths under `instrument.configs`. The manifest `status` field is the
+   machine-readable state (`draft` until sign-off).
+5. On user sign-off, run `bin/exp sign <slug>`: it pins the instrument configs by
+   sha256 and flips the status `draft -> signed`, refusing while the prediction
+   or falsifier is empty. Record the approval date in `AMENDMENT.md`. At
+   resolution, `bin/exp resolve <slug> --verdict "..."` stamps the verdict and
+   the terminal status (`resolved` / `null-result` / `falsified`).
 6. State the relationship to prior protocol documents. Be explicit about what
    does and does not supersede the locked matrix or prior amendments.
 7. Include a rerun/launch policy. If old artifacts cannot answer the new
@@ -39,6 +47,7 @@ Protocol amendments are separate from durable session notes:
 
 ```bash
 python3 .agents/skills/experiment-runner/scripts/research_session.py validate docs/sessions
+bin/exp validate
 python3 bin/sync_skills.py --check --skill experiment-runner
 ```
 
@@ -62,11 +71,11 @@ python3 bin/sync_skills.py --check --skill experiment-runner
   the gates are voided, or both predictions are equally right/wrong; ties
   score to neither side). Convergent predictions are fine — a result that
   surprises both parties carries full evidential weight and says so in the doc.
-  Predictions also live in the doc's YAML **frontmatter** (`predictions:`,
-  `outcome:`, `scoreboard:` — see the template) so they are queryable across
-  the whole amendment series; update the frontmatter `outcome`/`scoreboard`
-  fields at resolution together with the ledger. Frontmatter keys stay
-  lowercase (the backlog indexer matches capitalized `Status:` lines).
+  Record both parties in the `AMENDMENT.md` "Predictions scoreboard" table. The
+  manifest carries the canonical one-sentence `prediction:` and, at resolution,
+  the `verdict:`; the generated `experiments/registry.json` makes those
+  queryable across the whole experiment series, so no separate doc frontmatter is
+  needed. Update `docs/prediction-scoreboard.md` at resolution.
 - Promote an exploratory win to a claim only via a **confirmatory replication**
   registered before running it (fresh seeds, ideally the larger model / held-out
   set). A single-seed win is a lead, not a result.
