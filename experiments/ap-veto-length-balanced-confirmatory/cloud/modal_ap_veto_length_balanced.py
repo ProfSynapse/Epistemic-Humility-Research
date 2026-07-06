@@ -55,7 +55,7 @@ import modal
 # a second commit after the harness itself lands, so the pin always points at
 # a commit that actually contains this file) ---------------------------------
 REPO_URL = "https://github.com/ProfSynapse/Epistemic-Humility-Research.git"
-REPO_COMMIT = "REPLACE_WITH_COMMIT_AFTER_AP_HARNESS_LANDS"
+REPO_COMMIT = "3462d4c9f3eab9acaf959392d2a354d02c46ada0"
 STAGING_REPO = "professorsynapse/eh-al-prep-staging"  # reuse the AL prep repo
 POOL_IN_REPO = "ap-veto-lb-confirm-r1/ap_pool.jsonl"   # host-built, uploaded pre-launch
 RESULT_PREFIX = "ap-veto-lb-confirm-r1"                # staging path prefix for outputs
