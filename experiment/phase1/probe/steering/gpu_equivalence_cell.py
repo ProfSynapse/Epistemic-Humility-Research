@@ -57,6 +57,7 @@ Usage (ONLY after approval)
 from __future__ import annotations
 
 import argparse
+import math
 import json
 import sys
 from pathlib import Path
@@ -125,9 +126,15 @@ def main(argv=None) -> int:
     ap.add_argument("--dtype", default="bfloat16")
     ap.add_argument("--alpha-base", type=float, default=4.0)
     ap.add_argument("--floor", type=float, default=1e-2,
-                    help="Max acceptable overall abs divergence (bf16 numeric "
-                         "floor). main() returns nonzero above this so a failed "
-                         "parity check is unmissable.")
+                    help="Legacy absolute fallback used only if the hidden-state "
+                         "magnitude is degenerate (max|h| == 0). The operative "
+                         "criterion is --ulp-budget.")
+    ap.add_argument("--ulp-budget", type=float, default=4.0,
+                    help="Max acceptable divergence in bf16 ULPs of the observed "
+                         "final-token hidden magnitude (r3 re-dimensioning: an "
+                         "absolute floor is unachievable in bf16 at real "
+                         "residual magnitudes). main() returns nonzero above "
+                         "this so a failed parity check is unmissable.")
     ap.add_argument("--result-json", type=Path, default=None,
                     help="Optional path to write a machine-readable result "
                          "(divergence, floor, pass/fail, provenance).")
@@ -226,7 +233,23 @@ def main(argv=None) -> int:
     max_expected = float(err_expected.max().item())
     max_bvu = float(err_bvu.max().item())
     max_abs = max(max_expected, max_bvu)
-    passed = max_abs < a.floor
+
+    # ---- ULP-relative floor (r3 re-dimensioning, user-approved 2026-07-05) ----
+    # An absolute floor cannot certify a bf16 edit: writing alpha*d into a
+    # residual entry of magnitude ~2^k rounds at ULP = 2^(k-7), which at real
+    # layer-34 magnitudes (O(100)) is 0.25-1.0, above any small absolute
+    # constant for EVERY implementation, including a perfect one. The floor is
+    # therefore dimensioned in ULPs of the observed final-token hidden
+    # magnitude: both error legs must sit within --ulp-budget ULPs.
+    max_h = float(torch.stack([batched_steered, batched_base])
+                  .abs().max().item())
+    if max_h > 0:
+        ulp = 2.0 ** (math.floor(math.log2(max_h)) - 7)
+        ulp_floor = a.ulp_budget * ulp
+    else:
+        ulp = None
+        ulp_floor = a.floor
+    passed = max_abs < ulp_floor
     print("[gpu-equiv] per-row |batched_delta - alpha_i*d| :",
           np.round(per_row_expected, 6).tolist(), flush=True)
     print("[gpu-equiv] per-row |batched_delta - unbatched_delta| :",
@@ -234,10 +257,9 @@ def main(argv=None) -> int:
     print(f"[gpu-equiv] OVERALL max abs divergence = {max_abs:.6e} "
           f"(vs-analytic={max_expected:.3e}, batched-vs-unbatched="
           f"{max_bvu:.3e})", flush=True)
-    print(f"[gpu-equiv] floor = {a.floor:.3e}  ->  "
-          f"{'PASS' if passed else 'FAIL'}", flush=True)
-    print("[gpu-equiv] (expected: bf16 rounding of alpha*d into a large residual "
-          "value, orders of magnitude below the steering magnitude)", flush=True)
+    print(f"[gpu-equiv] max|h| at final tokens = {max_h:.1f}; bf16 ULP = "
+          f"{ulp if ulp is not None else 'n/a'}; floor = {a.ulp_budget} x ULP "
+          f"= {ulp_floor:.4f}  ->  {'PASS' if passed else 'FAIL'}", flush=True)
 
     if a.result_json is not None:
         result = {
@@ -256,6 +278,12 @@ def main(argv=None) -> int:
             "max_abs_err_vs_analytic": max_expected,
             "max_abs_err_batched_vs_unbatched": max_bvu,
             "comparison": "steering_delta (steered - unsteered), not absolute hidden state",
+            "max_abs_hidden_at_final": max_h,
+            "bf16_ulp_at_max_hidden": ulp,
+            "ulp_budget": a.ulp_budget,
+            "floor_effective": ulp_floor,
+            "floor_criterion": "ulp_budget x bf16 ULP(max|h|) (r3 re-dimensioning; "
+                               "absolute --floor is a degenerate-magnitude fallback)",
             "floor": a.floor,
             "passed": bool(passed),
         }
