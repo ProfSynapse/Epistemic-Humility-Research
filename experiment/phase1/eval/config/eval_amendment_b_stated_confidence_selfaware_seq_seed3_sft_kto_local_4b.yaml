@@ -48,6 +48,7 @@ arms:
   - name: sft_kto_seed3
     method: kto
     model: qwen3-4b-sft-merged-seed3
+    # staged on HF: professorsynapse/eh-qwen3-4b-seq-sft-kto-seed3-lora @ cb6c246e0e566908f7a4e4844a892d811667cf2d
     adapter: /workspace/repo/synaptic-tuner/toolset-training-artifacts/runs/local/4b/sft_kto__4b__amendment_a__seed3/20260617_070334/final_model
 
 eval_sets:

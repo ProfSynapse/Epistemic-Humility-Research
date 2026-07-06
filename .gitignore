@@ -57,3 +57,20 @@ unsloth_compiled_cache/
 
 # web-app bundle dump (log-viewer artifact; not experiment data)
 experiment/phase1/probe/assets/
+# Housekeeping 2026-07-05 (dirt audit): fetched mining datasets are re-downloadable;
+# FalseQA additionally carries no upstream license (do not redistribute).
+datasets/falseqa/
+datasets/ambigqa/
+datasets/bigbench-known-unknowns/
+# marimo dashboard runtime cache + exported web bundle boilerplate (regenerable)
+experiment/phase1/probe/__marimo__/
+experiment/phase1/probe/sae_dashboard.html
+experiment/phase1/probe/.nojekyll
+experiment/phase1/probe/favicon*
+experiment/phase1/probe/logo.png
+experiment/phase1/probe/manifest.json
+experiment/phase1/probe/site.webmanifest
+experiment/phase1/probe/android-chrome-*.png
+experiment/phase1/probe/apple-touch-icon.png
+# local-scope agent instructions for the probe dir
+experiment/phase1/probe/CLAUDE.md

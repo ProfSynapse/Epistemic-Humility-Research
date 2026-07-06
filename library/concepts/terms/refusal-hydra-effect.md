@@ -14,10 +14,15 @@ kg:
 area: mechanistic-interpretability
 related:
 - '[[2509.09708--beyond-i-m-sorry-i-can-t]]'
+- '[[caution-readout-is-low-rank-on-collinear-carriers]]'
 relationships:
 - type: proposed_by
   target: '[[2509.09708--beyond-i-m-sorry-i-can-t]]'
   target_id: paper:2509.09708
+  confidence: high
+- type: related_to
+  target: '[[caution-readout-is-low-rank-on-collinear-carriers]]'
+  target_id: mechanism:caution-readout-is-low-rank-on-collinear-carriers
   confidence: high
 ---
 

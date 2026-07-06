@@ -26,11 +26,13 @@ Always choose the narrowest reference needed for the task:
 | Dry-run, count-check, or explain the locked matrix | [reference/matrix-expansion.md](reference/matrix-expansion.md) |
 | Gate/stage/launch a local or cloud cell | [reference/operator-discipline.md](reference/operator-discipline.md), then [reference/lanes.md](reference/lanes.md) |
 | Work on HF Jobs/cloud launch details | [reference/cloud-lane.md](reference/cloud-lane.md) |
+| Choose a cloud provider (RunPod vs Modal), or observe launch discipline / checkpoint staging | [reference/runpod-modal-lanes.md](reference/runpod-modal-lanes.md) |
 | Launch/monitor a probe readout cell on HF Jobs, or use the batched inference engine | [reference/probe-cloud-cells.md](reference/probe-cloud-cells.md) |
 | Work on Windows, Docker, local training, local eval, or GPU capacity | [reference/local-windows-gotchas.md](reference/local-windows-gotchas.md) |
 | Inspect or update run records | [reference/run-records.md](reference/run-records.md) |
 | Use common launch command patterns | [reference/common-patterns.md](reference/common-patterns.md) |
 | Prepare/gate hidden-state extraction | [reference/hidden-state-probe-smoke.md](reference/hidden-state-probe-smoke.md) |
+| Decide batch-1 vs batched generation for a GPU cell (parity rules, vLLM/HF lanes, numerics smoke) | [reference/batched-generation.md](reference/batched-generation.md) |
 | Stage an aux_head co-training arm (Phase B: build dataset + A0/A1/A2 recipes + launch prereqs) | [reference/aux-head-cotraining-arms.md](reference/aux-head-cotraining-arms.md) |
 | Plan Phase 3 causal-pilot sweeps | [reference/phase3-causal-pilot-sweeps.md](reference/phase3-causal-pilot-sweeps.md) |
 | Record durable research-session memory | [reference/research-sessions.md](reference/research-sessions.md) |

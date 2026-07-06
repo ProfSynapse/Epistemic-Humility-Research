@@ -4,6 +4,7 @@
 # Evaluate the KTO LoRA on the merged clean-SFT base, not the original Qwen base.
 
 model_tag: qwen3-4b-clean-schema-sft-merged-seed1
+# staged on HF: professorsynapse/eh-qwen3-4b-clean-sft-seed1-merged-16bit @ ac361232c001af0ed5b0386b06dafc35d5cd31ea
 model_name: /workspace/repo/scratch/schema_response_confidence/runs/sft_schema_clean_seed1_full/20260623_123624/Qwen3-4B-bnb-4bit/merged-16bit
 gold_path: ../../../datasets/triviaqa-rc-nocontext/cheng_test_gold.jsonl
 results_dir: results_amendment_e_response_confidence_selfaware_clean_sft_kto_seed1_corrected_base_full_4b
@@ -47,6 +48,7 @@ arms:
   - name: clean_schema_sft_kto_seed1_corrected_base
     method: clean_schema_sft_kto
     model: qwen3-4b-clean-schema-sft-merged-seed1
+    # staged on HF: professorsynapse/eh-qwen3-4b-clean-sft-kto-seed1-lora @ 8c3243055e39b81f2f80eb9af6445a75052ff9ce
     adapter: /workspace/repo/scratch/schema_response_confidence/runs/schema_clean_sft_kto_seed1_full/20260623_200200/final_model
 
 eval_sets:

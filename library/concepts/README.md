@@ -640,7 +640,7 @@ Atomic notes extracted from the library papers via the Agents-K1 ingestion skill
 - [[valence-arousal-subspace]] : A two-dimensional linear subspace in LLM activation space spanned by a recovered valence axis (pleasure-displeasure) and arousal axis (activ
 - [[world-model-hallucination-modes]] : A three-type taxonomy of failure modes in generative world models, each anchored to a different pipeline stage. Perceptual hallucination occ
 
-## Mechanisms (cause -> effect) (361)
+## Mechanisms (cause -> effect) (362)
 
 - [[abstention-generalization-failure]] : 'instruction-tuning for abstention on a narrow, homogeneous set of refusal expressions and task formats' **prevents** Abstention ability does not generalize to 
 - [[abstract-representations-enable-zero-shot-generalization]] : High degree of abstract (parallel) representation in ANN hidden layers, as measured by parallelism-score, indicating that compositional rule dimensions are enco
@@ -675,6 +675,7 @@ Atomic notes extracted from the library papers via the Agents-K1 ingestion skill
 - [[calibration-hallucination-tradeoff]] : Post-training alignment (RLHF or similar) applied to a calibrated pretrained language model to reduce hallucination on arbitrary facts **mediates** Calibration 
 - [[calibration-tuning-generalizes-across-models]] : Fine-tuning a model on graded correctness data via calibration tuning (LoRA + Prompt) **enables** The resulting calibration tuner can estimate the uncertainty o
 - [[causal-separability-enables-faithful-editing]] : Two concepts satisfying causal-separability (intervening on one does not affect the marginal distribution of the other in the score representation) **enables** 
+- [[caution-readout-is-low-rank-on-collinear-carriers]] : Recomputing direction-removal robustness in a label-agnostic randomized PCA-128 basis instead of the raw 2,560-dimensional activation space. **mediates** The ca
 - [[caution-residual-ablation-relaxes-overrefusal-asymmetrically]] : Ablating the caution residual direction (activation steering at inference) in a small instruction-tuned model that over-refuses known questions. **decreases** O
 - [[citation-rebuttal-drives-regressive-sycophancy]] : A rebuttal that includes a fabricated citation and abstract, signaling external authority, presented to an LLM that initially produced the correct answer **incr
 - [[clustering-question-embeddings-yields-graded-calibration-targets]] : Clustering normalized sentence embeddings of questions with HDBSCAN and assigning each input the target LLM's observed accuracy over its cluster as the calibrat

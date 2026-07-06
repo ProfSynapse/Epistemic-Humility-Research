@@ -48,6 +48,7 @@ arms:
   - name: clean_schema_sft_dpo_seed1
     method: clean_schema_sft_dpo
     model: qwen3-4b-instruct
+    # staged on HF: professorsynapse/eh-qwen3-4b-clean-sft-dpo-seed1-lora @ 5808fcf931794027cb2c14c35796d771904dbf9c
     adapter: /workspace/repo/scratch/schema_response_confidence/runs/schema_clean_sft_dpo_seed1_full/20260623_132930/final_model
 
 eval_sets:
