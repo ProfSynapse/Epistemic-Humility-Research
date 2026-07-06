@@ -174,4 +174,63 @@ scrambled, so any coupled-minus-permuted gap is attributable to the signal.
 
 ## Outcome
 
-Filled at resolve.
+Stage 1 (knob validation): RESOLVED — NULL. No caution direction validates as a
+behavioral lever on the AI-TRUE checkpoint. Stage 2 does NOT run, per the
+Falsifier pre-registration ("If Stage 1 fails ... the coupling stage does not
+run; the reported result is 'no caution actuator on this checkpoint'").
+
+Run: local RTX 3090, single seed, 2026-07-06. Two candidate directions
+(caution_perp refit; mass-mean answer-vs-refuse fallback), four arms each
+(baseline/ablate/shift_up/shift_down), 320 rows/arm = 1280 rows/candidate. Both
+runs completed 1280/1280 with smoke passed (write_ok, parity_ok, gen_stream_fired
+all true, write error within tolerance), so the intervention provably fired and
+wrote: the null is a behavioral no-move, not an instrument failure.
+
+G0 movement leg (bidirectional_gap_diff, seed 20260706, n_boot 10000,
+pos_cell=known_correct_answered, neg_cell=answerable_refused, indicator=refused):
+FAILS for all four candidate x arm combinations. Every bootstrap CI includes 0.
+
+| candidate | arm | diff | 95% CI | excludes 0 |
+|-----------|-----|------|--------|-----------|
+| caution_perp | ablate | 0.0380 | [-0.0129, 0.0936] | no |
+| caution_perp | shift_down | 0.0269 | [-0.0176, 0.0801] | no |
+| fallback_mass_mean | ablate | 0.0047 | [-0.0327, 0.0444] | no |
+| fallback_mass_mean | shift_down | 0.0000 | [-0.0263, 0.0263] | no |
+
+Baseline refusal is at ceiling on the over-refusal tail (answerable_refused
+111/114 = 0.974) and floor on known_correct_answered (0/90 = 0.000) for both
+candidates (byte-identical baselines from independent processes, a determinism
+cross-check). The point effects are near zero, not merely wide-CI, so this is a
+genuine no-effect rather than an underpowered real effect.
+
+Specificity legs:
+- Refusal-rise on known_correct_answered (measured): caution_perp/ablate
+  5/90 = 0.056 FAILS its own <=0.05 threshold; caution_perp/shift_down
+  4/90 = 0.044, fallback both arms pass. Moot for the verdict, movement already
+  fails.
+- Correctness-drop: UNMEASURED / N/A. A tuner grader bug (below) left
+  correct/baseline_correct null on every row, so this leg could not be computed.
+  It is NOT recorded as a pass.
+
+Independent verification: the G0 movement numbers were reproduced to the 4th
+decimal by two independent code paths (a fresh re-implementation calling the
+tuner's own bidirectional_gap_diff, and the run agent's diagnostic); pool-to-row
+join 320/320 unambiguous on both candidates.
+
+Two tuner infra defects surfaced by this run (both fixed on tuner main AFTER the
+run, so they do not affect the recorded numbers, which were recovered by joining
+the class label back from the pool on row_key):
+- Grader row-context: MechInterp/cli._run_one_pass dropped pool-row fields
+  (cell/aliases) before grading, so cell was null on every row (score-gates could
+  not group) and correctness was ungradeable. Fixed: tuner PR #136 (f59cb22).
+- Config-sha drift guard was self-referential (hashed expected_config_sha into
+  its own hash), so it could never be satisfied. The guard was left unset for
+  this run (skipped), so the run is valid. Fixed: tuner PR #137 (a6e9464).
+
+Scope: whether a caution lever exists on any raw-base / instruct surface remains
+OPEN and is pursued separately (dark actuator screen on the AK Stage-1
+confab-rich surface, 309 confab). The GRPO-v2 fast-follow is not licensed by this
+cell, since Stage 1 did not establish a lever on AI-TRUE.
+
+Predictions scored straight: orchestrator called "nontrivial chance Stage 1
+fails" (partial credit); user called "Stage 1 PASS" (missed).
