@@ -3,14 +3,23 @@
   "experiments": [
     {
       "checkpoint": {
-        "repo": "",
-        "revision": ""
+        "repo": "unsloth/Qwen3-4B-bnb-4bit",
+        "revision": "raw-base (no adapter; checkpoint_tag \"raw-base\" per AK Stage 1 manifest)"
       },
       "falsifier": "Screen, so the bar is graduation: a candidate graduates iff its flip rate exceeds the random-direction control with bootstrap 95% CI excluding 0. No graduations means the dark subspace is ruled out as a near-term actuator. If the positive control does not move behavior the screen is void.",
-      "inputs": [],
+      "inputs": [
+        "experiment/phase1/probe/dark_displacement_census.py",
+        "experiment/phase1/probe/analysis-committed/dark_displacement_census_summary.md",
+        "experiment/phase1/eval/scorers.py"
+      ],
       "instrument": {
-        "configs": [],
-        "modules": [],
+        "configs": [
+          "cell.yaml",
+          "gates.yaml"
+        ],
+        "modules": [
+          "../common/graders/dark_actuator_grader.py"
+        ],
         "pins": {}
       },
       "kg": [],

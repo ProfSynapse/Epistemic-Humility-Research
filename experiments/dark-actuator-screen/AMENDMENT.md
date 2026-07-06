@@ -113,6 +113,51 @@ negative controls still bound the candidate verdicts.
 | orchestrator | 0 graduate (small chance L34 succ pc0); controls behave |
 | user | Several graduate (dark subspace holds real levers) |
 
+## Build notes (config staging, CPU-only, no GPU launch)
+
+Recorded here for review before sign, not part of the locked prediction/
+falsifier/gates prose above.
+
+- **Authoritative candidate copy**: two non-identical `dark_cand_raw-base_*`
+  copies existed on disk (main checkout vs the `lab-dark-displacement-census`
+  worktree). The worktree copy (HEAD `787f4b6d`, merged as PR #222) is
+  authoritative: its per-candidate provenance (`screen_input_linear_r2`,
+  `screen_position_r2`, `screen_rogue_energy_frac`, `screen_verdict`) and its
+  `census_report.json` headline (`n_survive_all_screens: 12`) reproduce the
+  committed `analysis-committed/dark_displacement_census_summary.md` table
+  exactly (spot-checked `L16 arel pc7`, `L34 succ pc0`). The main-checkout copy
+  predates the three-screen commit and carries no screen fields at all.
+- **Positive/negative controls are fit per capture layer** (L16/L20/L24/L28/
+  L34), one pair per layer, using the exact pre-QR `refuse`/`propensity`
+  formulas at `dark_displacement_census.py:206-215` (`build_span`) on the same
+  raw-base pool -- not the QR-orthogonalized span basis `build_span` returns.
+  Each candidate is screened against the positive/negative control fit at ITS
+  OWN layer. The AMENDMENT text names these controls in the singular; per-layer
+  fitting was chosen because `build_span` is inherently per-layer and this is
+  the literal, lowest-risk-of-misinterpretation reading of "reusing the census
+  `build_span()` logic."
+- **Random-direction controls**: one seeded unit vector per candidate (not one
+  global random direction), matched to the candidate's own layer/hidden_dim,
+  seed derived from `sha256(f"20260706:{candidate_name}")`.
+- **Layer/block adapter**: the census candidate JSON's `layer` field is the
+  1-indexed AK Stage-1 capture label (e.g. `L16` -> 16); the tuner's
+  `InterventionHook`/`get_decoder_layer` need the 0-indexed decoder-module
+  index. Every direction JSON staged for this screen carries the tuner's
+  `layer` field set to the census's `block` (`lnum - 1`), not its `layer`
+  (`lnum`) -- see `build_directions.py` docstring "ADAPTER NOTE."
+- **One steer cell per direction**: `synaptic-tuner` `SteerCellConfig` binds
+  exactly one `law.readout` per run, so `cell.yaml` is the shared PATTERN for
+  all 34 directions (12 candidates + 5 positive + 5 negative + 12 random
+  controls), not 34 separate committed files. `law.readout` defaults to
+  `L34_succ_pc0` (parseable on its own). Landing every direction's dose-ladder
+  rows in the ONE `execution.output_path` `gates.yaml` reads requires a
+  launch-time wrapper that overrides `law.readout` and prefixes each arm name
+  with the direction name (`<direction>__baseline`, `<direction>__dose3`, ...)
+  per sub-run. That wrapper is NOT built yet -- see NOTEBOOK.md.
+- `gates.yaml` was validated end-to-end against that arm-naming convention
+  with `evaluate_gates()` on synthetic rows (both pass and fail branches
+  exercised); no real rows exist yet.
+
 ## Outcome
 
 Filled at resolve.
