@@ -171,6 +171,10 @@ execution:
   # module name resolves (dark_actuator_grader imports experiment/phase1/eval
   # scorers.py directly).
   grader: dark_actuator_grader:grade
+  # Authorized-knob (execution only, not a gate/population/seed/law change):
+  # batched generation, proven greedy-equivalent to batch-1 (PR #135). 12 is
+  # the 4B-on-3090 value from the lead's launch brief.
+  batch_size: 12
 
 # 6. smoke: readback tolerances. gen_stream cells additionally get the
 #   fail-closed decode-hook-firing guard (pinned tuner 294a653) before the

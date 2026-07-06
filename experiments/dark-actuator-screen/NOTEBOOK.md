@@ -6,6 +6,86 @@ in `experiment.yaml`.
 
 ## Entries
 
+### 2026-07-06 -- GPU dose diagnostic (free 3090): positive control HAS a narrow coherent steering window; default dose ladder must be recalibrated or the screen voids
+
+Diagnostic only (free local 3090, no `exp sign`, no screen arms run, no tuner
+code changed, nothing committed). This is a pre-flight for the **G-instrument
+gate**: the screen's positive control is `pos_ctrl_L34` (the raw-base
+answer-vs-refuse mass-mean axis), and G-instrument voids the whole screen if that
+control does not move behavior. We tested whether it moves, and at what dose.
+
+**Machinery (real, not synthetic):** loaded `directions/pos_ctrl_L34.json`
+(layer=33 0-indexed, hidden_dim=2560, sigma=1.0, unit vector,
+provenance.role=positive_control) via `MechInterp.probe.load_frozen_direction`;
+registered the real `MechInterp.intervention.GenerationInterventionController`
+wrapping `InterventionHook(law="erase_write", position=anchor_onward,
+measure_readback=True)` on `get_decoder_layer(model, 33)`, gen_stream mode --
+matching `pos_ctrl_L34.yaml`'s law block exactly. Tuner pinned `f59cb229` (the
+dark-screen worktree submodule). Prompts rendered via
+`ak_stage1_raw_base_render:render` from `analysis/rows_pool.jsonl`. Hook fired
+15-16/16 decode steps at every strength on every config (no Unsloth/device_map
+bypass -- confirmed separately).
+
+**Finding -- the positive control DOES move behavior, in a narrow coherent
+window, on BOTH substrates:**
+
+| substrate | inert | coherent refusal-shift window | collapse |
+|-----------|-------|-------------------------------|----------|
+| bnb-4bit (screen substrate) | setpoint <=100 | **~150-300** | >=400 |
+| bf16 (Qwen3-4B reference) | <=20 | **~100** | >=500 |
+
+In the coherent window the dosed output is well-formed and on-target for a
+refuse-vs-confab axis (baseline `{"answer": "Yes, certain parenting styles..."` ->
+dosed `{"answer": "I don't know the answer", ...`). Above the window both
+substrates collapse into the SAME degenerate attractor (repeated token id 40 =
+"I", `{\nIIIIIIII...`) on all 3 prompts -- a generic over-drive artifact, not
+prompt-specific.
+
+**Scale comparability:** ambient projection along `pos_ctrl` is ~19-27 (mean) on
+both substrates, so setpoints are directly comparable; the window is at roughly
+**7-14x the ambient projection**. Quantization shifts the window modestly higher
+(4-bit ~150-300 vs bf16 ~100) but does not remove it. The write is faithful
+throughout (`max_write_err` 0.1-0.2 across the whole coherent window -- that
+metric is the hook's commanded-vs-measured write accuracy, NOT the size of the
+behavioral perturbation, so a small value there is not evidence of an inert
+write).
+
+**Correction of an intermediate read:** a first coarse ladder ({4,20,100,500,...})
+reported "NO CLEAN WINDOW -> looks like a base-lever null," because it sampled
+100 and 500 -- which straddle the ~150-350 window -- and saw only inert-then-garbage.
+That verdict was a **granularity artifact** and is retracted. A finer sweep
+({150,200,250,300,400}) recovered the coherent window. Lesson for the screen: an
+absolute, coarse dose ladder can jump clean over the only usable regime.
+
+**Consequences for the screen (actionable):**
+1. **G-instrument is satisfiable** -- the positive control moves behavior
+   coherently on the 4-bit screen substrate. This partly relieves the pre-stated
+   "Honest limitation" (an unvalidated, possibly-weak positive control): it is
+   weak-but-real, with a real coherent-steering regime, not floor-inert.
+2. **The dose ladder in `cell.yaml` must be recalibrated** to bracket the narrow
+   coherent window and must be **ambient-relative per direction** (setpoint =
+   k * that direction's ambient projection, k in roughly [5,15]), not a single
+   absolute strength. A coarse absolute ladder risks (a) falsely failing
+   G-instrument (voiding the screen) and (b) scoring every candidate at a dose
+   that is either inert or already collapsed -- both would mislabel real
+   candidates. This is a real change needed before `exp sign`.
+3. This tests only that the INSTRUMENT works; whether the 12 dark candidates are
+   levers is still exactly what the screen decides, now with a dose ladder that
+   can actually land in the coherent regime.
+
+**Pending:** a per-prompt ambient-relative calibration sweep (k*ambient for k in
+{3,5,7,9,11,13,15} across ~24 pool rows) is running on the free 3090 to fix the
+recommended ladder and report how many rows have a usable coherent window at all
+(the 4-bit fine sweep so far is confirmed on prompt 0 only; bf16 confirmed prompt
+0 + partial prompt 1). Result folds into the recalibrated `cell.yaml` dose block.
+
+**Provenance (all gitignored scratch, redacted of tokens):** scripts
+`dose_escalation_pos_ctrl.py` / `dose_escalation_v2.py`; result JSONs
+`dose_ladder_4bit_results.json`, `dose_ladder_4bit_v2_results.json`,
+`dose_ladder_bf16_results.json`; run logs `dose_escalation_*_run.log` -- under the
+session scratchpad `/tmp/claude-.../scratchpad/`. Diagnostic, lab-tier, no claim;
+does not touch the signed prediction/falsifier/gates prose in `AMENDMENT.md`.
+
 ### 2026-07-06 -- CPU build: launch wrapper, render plug-in, staged rows_pool.jsonl
 
 Build-only (no GPU, no `exp sign`, no steering arms run). Closes items 1-2 of
