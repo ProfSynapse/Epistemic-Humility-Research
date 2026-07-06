@@ -1,5 +1,10 @@
 # HF Jobs / Cloud Lane
 
+> New steering / extraction / probe-fit cells launch through the tuner
+> `mechinterp` verbs (see the `mechinterp-cells` skill); this cloud-lane
+> checklist still governs the paid-run discipline (detach, hf_xet, Volume
+> commits, artifact completeness) for those launches.
+
 ## Probe/readout cell lane (validated 2026-07-02, Amendment Y fleet)
 
 Distinct from the tuner training lane below: GPU-light extract->score->upload

@@ -1,0 +1,45 @@
+# EXAMPLE GATES - NOT A REGISTERED INSTRUMENT.
+#
+# Declarative pass/fail policy over the per-row output JSONL, grouped by the
+# "arm" field. Scored independently of the run so a run and its adjudication stay
+# separate. overall_pass is true only if every gate passes. Every primitive is
+# seeded, so a verdict is reproducible from its recorded seed.
+#
+# Adjudicate (CPU, no GPU) with:
+#   cd synaptic-tuner && python tuner.py mechinterp score-gates \
+#     --gates-config ../experiments/example-cell/gates.yaml \
+#     --rows-path ../experiments/example-cell/analysis/rows_out.jsonl
+
+seed: 20260706
+n_boot: 1000
+n_perm: 1000
+
+gates:
+  # G1 reach: how many primary rows flipped a monitored predicate.
+  - name: reach
+    primitive: count_flips
+    arm: primary
+    before: baseline_abstained
+    after: abstained
+    from_state: true
+    to_state: false
+    pass_if: ">= 5"
+
+  # G2 specificity: primary vs seeded control kill difference; CI excludes zero.
+  - name: specificity
+    primitive: kill_diff_vs_control
+    primary_arm: primary
+    control_arm: control
+    primary_indicator: confabulated
+    control_indicator: confabulated
+    pass_if_diff: ">= 5"
+    pass_if_ci_excludes_zero: true
+
+  # G3 readout floor: does the selection score separate the two classes?
+  - name: readout_floor
+    primitive: auroc_floor
+    arm: primary
+    label: label
+    score: selector_score
+    pass_if_auroc: ">= 0.75"
+    pass_if_floor: ">= 0.6"

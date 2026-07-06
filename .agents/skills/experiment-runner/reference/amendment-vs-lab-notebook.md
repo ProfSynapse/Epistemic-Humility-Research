@@ -15,10 +15,14 @@ directions:
   presenting the result as if it were confirmatory. That is the "garden of
   forking paths," and it is what turns iteration into rifling-in-the-dark.
 
-The instruments already exist; this guide routes work to the right one. No new
-file type is introduced — "lab notebook" means the existing
-[research-sessions.md](research-sessions.md) checkpoints + [run-records.md](run-records.md)
-+ [experiment-notes.md](experiment-notes.md).
+The instruments already exist; this guide routes work to the right one. "Lab
+notebook" means the existing [research-sessions.md](research-sessions.md)
+checkpoints plus [run-records.md](run-records.md) and
+[experiment-notes.md](experiment-notes.md). A tier-2 amendment is now scaffolded
+and tracked through the `experiments` skill (`bin/exp`): its signed
+`AMENDMENT.md` prose and machine-readable `experiment.yaml` manifest live
+together in `experiments/<slug>/`. See
+[Where a tier-2 amendment lives](#where-a-tier-2-amendment-lives).
 
 ## The three tiers
 
@@ -64,6 +68,29 @@ Stating the kill-condition *before* seeing data is the single thing that
 separates science from rifling. Corollary: **do not move the goalposts** —
 redefining a gate after seeing the result voids the test. If a result is
 ambiguous, report it as ambiguous; do not retune the gate to manufacture a pass.
+
+## Where a tier-2 amendment lives
+
+Amendments use the experiments-first layout. Do not hand-author a file under
+`experiment/protocol/`; that tree is retained for the locked Phase 1 protocol and
+its historical amendments only. For a new amendment:
+
+1. `bin/exp new <slug> --type <t>` scaffolds `experiments/<slug>/` with an
+   `AMENDMENT.md` template (Motivation, Design, Prediction, Falsifier, Gates,
+   Predictions scoreboard, Outcome), a thin `experiment.yaml` manifest, and a
+   `NOTEBOOK.md`.
+2. Fill the prose in `AMENDMENT.md`, copy the one-sentence question, prediction,
+   and falsifier into the manifest, and list the instrument config paths under
+   `instrument.configs`.
+3. `bin/exp sign <slug>` pins each instrument config by sha256 and flips the
+   status to `signed`, refusing while the prediction or falsifier is empty. This
+   is the machine-checked form of the pre-stated-falsifier discipline below.
+4. At resolution, `bin/exp resolve <slug> --verdict "..."` stamps the verdict and
+   the terminal status (`resolved` / `null-result` / `falsified`) and prints the
+   kg-ingest checklist.
+
+The pre-commit hook validates every manifest and keeps `experiments/REGISTRY.md`
+current. See the `experiments` skill for the full schema and lifecycle.
 
 ## Promotion: exploration → claim
 

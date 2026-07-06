@@ -32,6 +32,7 @@ Always choose the narrowest reference needed for the task:
 | Inspect or update run records | [reference/run-records.md](reference/run-records.md) |
 | Use common launch command patterns | [reference/common-patterns.md](reference/common-patterns.md) |
 | Prepare/gate hidden-state extraction | [reference/hidden-state-probe-smoke.md](reference/hidden-state-probe-smoke.md) |
+| Author a NEW steering / extraction / probe-fit / gate-scoring cell (tuner-backed) | the `mechinterp-cells` skill (`.skills/mechinterp-cells/SKILL.md`) |
 | Decide batch-1 vs batched generation for a GPU cell (parity rules, vLLM/HF lanes, numerics smoke) | [reference/batched-generation.md](reference/batched-generation.md) |
 | Stage an aux_head co-training arm (Phase B: build dataset + A0/A1/A2 recipes + launch prereqs) | [reference/aux-head-cotraining-arms.md](reference/aux-head-cotraining-arms.md) |
 | Plan Phase 3 causal-pilot sweeps | [reference/phase3-causal-pilot-sweeps.md](reference/phase3-causal-pilot-sweeps.md) |
@@ -40,6 +41,7 @@ Always choose the narrowest reference needed for the task:
 | Create or update experiment notes | [reference/experiment-notes.md](reference/experiment-notes.md) |
 | Publish or document public HF artifacts | [reference/hf-publication.md](reference/hf-publication.md) |
 | Decide whether work needs an Amendment, a protocol revision, or just a lab-notebook entry | [reference/amendment-vs-lab-notebook.md](reference/amendment-vs-lab-notebook.md) |
+| Scaffold, sign, or resolve a new experiment/amendment (any type) | the `experiments` skill (`bin/exp new/sign/resolve`); pick the tier first with [reference/amendment-vs-lab-notebook.md](reference/amendment-vs-lab-notebook.md) |
 | Make governed protocol, output-contract, or rerun-scope changes | [reference/protocol-amendments.md](reference/protocol-amendments.md) |
 | Refresh the amendment status index / add a backlog item to `TODO.md` | [reference/backlog-index.md](reference/backlog-index.md) |
 

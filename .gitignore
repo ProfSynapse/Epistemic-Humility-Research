@@ -34,6 +34,12 @@ experiment/phase1/probe/config/*_rows.jsonl
 experiment/phase1/probe/config/*_scored_rows.jsonl
 experiment/phase1/probe/manifests/
 
+# Experiments-first tree (experiments/<slug>/). Per-experiment run outputs and
+# fitted direction data are untracked, mirroring the Phase 3 analysis convention;
+# the manifest, amendment, configs, notebook, and shared common/ code stay tracked.
+experiments/*/analysis/
+experiments/*/directions/
+
 # git worktrees (PACT feature isolation)
 .worktrees/
 
