@@ -38,6 +38,7 @@ arms:
     adapter: null
   - name: clean_sft_kto_grpo_seed1
     adapter_state: active
+    # staged on HF: professorsynapse/eh-qwen3-4b-clean-sft-kto-grpo-seed1-lora @ 674d38e956e161b7dfa23b3266681a99e97769ff
     adapter: /workspace/repo/scratch/schema_response_confidence/runs/clean_sft_kto_grpo_seed1_full/20260625_012319/final_model
 
 eval_arms_source: null

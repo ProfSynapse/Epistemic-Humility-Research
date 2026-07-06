@@ -2,6 +2,7 @@
 aliases:
 - Pre-generation commitment signal predicts confabulation
 - activations predict fabricate-vs-refuse beyond the caution threshold
+- pre-generation confabulation-propensity signal (session 0038 name)
 tags:
 - kg/mechanism
 - concept
@@ -20,6 +21,8 @@ related:
 - '[[scalar-readout-compression-mimics-second-mechanism]]'
 - '[[hidden-state-linearly-encodes-unanswerability-despite-hallucination]]'
 - '[[question-familiarity-draws-confabulation-at-matched-doubt]]'
+- '[[confabulation-propensity-direction]]'
+- '[[confab-propensity-is-not-generic-answer-commitment]]'
 relationships:
 - type: supported_by
   target: '[[internal-confab-mechanics--cpu-fleet]]'
@@ -44,6 +47,14 @@ relationships:
 - type: related_to
   target: '[[question-familiarity-draws-confabulation-at-matched-doubt]]'
   target_id: mechanism:question-familiarity-draws-confabulation-at-matched-doubt
+  confidence: high
+- type: related_to
+  target: '[[confabulation-propensity-direction]]'
+  target_id: term:confabulation-propensity-direction
+  confidence: high
+- type: related_to
+  target: '[[confab-propensity-is-not-generic-answer-commitment]]'
+  target_id: mechanism:confab-propensity-is-not-generic-answer-commitment
   confidence: high
 ---
 

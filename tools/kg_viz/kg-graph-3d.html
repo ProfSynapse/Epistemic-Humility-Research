@@ -1,0 +1,371 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Epistemic-Humility KG explorer (3D)</title>
+<!--
+  3D sibling of kg-graph.html. Renders the SAME typed research graph in WebGL
+  using 3d-force-graph (Three.js + d3-force-3d). The extra dimension gives the
+  force simulation room the 2D layout doesn't have, which is what spreads the
+  dense hub cores apart.
+
+  DATA LOADING (tried in order), identical contract to the 2D page:
+    1. window.KG_DATA         - inline elements object for a single-file artifact
+    2. fetch('data/graph.cytoscape.json')
+                              - works when served over http:
+                                cd tools/kg_viz && python3 -m http.server
+                                then open http://localhost:8000/kg-graph-3d.html
+    3. file picker / drag-drop - for a double-clicked file:// page
+
+  Regenerate the data with:  python3 tools/kg_viz/convert.py
+  The data is the SAME cytoscape elements file the 2D page uses; we transform it
+  to 3d-force-graph's {nodes, links} shape in the browser.
+
+  Encoding: node COLOUR = type, node SIZE = degree (√-scaled, same as 2D),
+  link COLOUR = edge type. Hover a node for its label/type/degree.
+-->
+<!-- vendored locally (same-origin) so runtime errors aren't masked as a generic
+     "Script error." and so the page works fully offline. Re-fetch with:
+     curl -sL https://cdn.jsdelivr.net/npm/3d-force-graph@1.73.4/dist/3d-force-graph.min.js -o 3d-force-graph.min.js -->
+<script src="3d-force-graph.min.js"></script>
+<style>
+  html, body { margin:0; height:100%; font-family:system-ui, -apple-system, Segoe UI, Roboto, sans-serif; }
+  #app { display:flex; height:100vh; }
+  #sidebar { width:280px; flex:0 0 280px; border-right:1px solid #333; padding:14px; overflow-y:auto;
+             background:#141414; color:#e8e8e8; box-sizing:border-box; }
+  #graph { flex:1; min-width:0; background:#000; }
+  h1 { font-size:16px; margin:0 0 2px; }
+  h2 { font-size:12px; text-transform:uppercase; letter-spacing:.05em; color:#9a9a9a; margin:16px 0 6px; }
+  .sub { font-size:12px; color:#9a9a9a; margin:0 0 8px; }
+  .group { border-top:1px solid #2a2a2a; padding-top:6px; }
+  input[type=search] { width:100%; padding:6px 8px; border:1px solid #444; border-radius:6px;
+                       font-size:13px; background:#0d0d0d; color:#e8e8e8; box-sizing:border-box; }
+  .filter-item { display:flex; align-items:center; gap:6px; font-size:13px; padding:2px 0; cursor:pointer; }
+  .filter-item .count { margin-left:auto; color:#888; font-variant-numeric:tabular-nums; }
+  .swatch { width:11px; height:11px; border-radius:3px; display:inline-block; flex:0 0 auto; }
+  button { font-size:12px; padding:5px 9px; border:1px solid #444; background:#1e1e1e; color:#e8e8e8;
+           border-radius:6px; cursor:pointer; margin:0 4px 4px 0; }
+  button:hover { background:#2a2a2a; }
+  #drop { border:2px dashed #444; border-radius:8px; padding:14px; text-align:center; color:#888; font-size:12px; }
+  code { background:#222; padding:1px 4px; border-radius:3px; }
+  #status { font-size:12px; color:#7fb27f; margin-top:6px; }
+</style>
+</head>
+<body>
+<div id="app">
+  <div id="sidebar">
+    <h1>KG explorer · 3D</h1>
+    <p class="sub" id="counts">loading…</p>
+
+    <div class="group">
+      <h2>Search</h2>
+      <input id="search" type="search" placeholder="highlight nodes by label / id…" autocomplete="off" />
+    </div>
+
+    <div class="group">
+      <h2>Node types</h2>
+      <div id="filters"></div>
+    </div>
+
+    <div class="group">
+      <h2>Prune by connections</h2>
+      <label class="filter-item" style="display:block">
+        min degree: <b id="mindeg-val">1</b>
+        <input id="mindeg" type="range" min="1" max="20" value="1" step="1" style="width:100%">
+      </label>
+      <p class="sub" id="mindeg-hint" style="margin:4px 0 0">showing all nodes</p>
+    </div>
+
+    <div class="group">
+      <h2>Controls</h2>
+      <button id="fit">Fit view</button>
+      <button id="reheat">Re-layout</button>
+      <button id="reset">Reset</button>
+      <div id="status"></div>
+      <p class="sub" style="margin-top:8px">drag to orbit · scroll to zoom · click a node to fly to it</p>
+    </div>
+
+    <div class="group" id="loader" style="display:none">
+      <h2>Load data</h2>
+      <div id="drop">Drop <code>graph.cytoscape.json</code> here, or
+        <input id="file" type="file" accept="application/json,.json" />
+      </div>
+    </div>
+  </div>
+  <div id="graph"></div>
+</div>
+
+<script>
+// Surface any runtime error into the sidebar so a black canvas is never silent.
+window.addEventListener('error', e => {
+  const s = document.getElementById('status');
+  if (s) { s.style.color = '#ff8a8a'; s.textContent = 'JS error: ' + (e.message || e.error); }
+});
+if (typeof ForceGraph3D === 'undefined') {
+  document.addEventListener('DOMContentLoaded', () => {
+    const s = document.getElementById('status');
+    if (s) { s.style.color = '#ff8a8a'; s.textContent = '3d-force-graph failed to load (offline? CDN blocked?)'; }
+  });
+}
+
+const TYPE_COLORS = {
+  paper:'#4e79a7', method:'#f28e2b', metric:'#59a14f', dataset:'#e15759',
+  model:'#b07aa1', term:'#76b7b2', mechanism:'#edc948', unknown:'#9c9c9c'
+};
+const EDGE_PALETTE = [
+  '#8c8c8c','#1f77b4','#ff7f0e','#2ca02c','#d62728','#9467bd',
+  '#8c564b','#e377c2','#17becf','#bcbd22','#7f7f7f'
+];
+
+// Node render value scales with degree; 3d-force-graph maps sphere radius to
+// cbrt(val), so passing (1+degree) gives hubs bigger spheres without ballooning.
+const nodeVal = d => 1 + d;
+
+let Graph = null;
+let MASTER = { nodes: [], links: [] };   // live objects; positions persist across filters
+let EDGE_COLORS = {};
+let highlightIds = null;                 // Set of matched ids, or null when search empty
+
+// ── transform cytoscape elements -> {nodes, links} + degree ────────────────
+function toForceGraph(elements) {
+  const nodes = elements.nodes.map(n => Object.assign({}, n.data));
+  const links = elements.edges.map(e => {
+    const d = Object.assign({}, e.data);
+    d._s = d.source; d._t = d.target;    // stable string ids for filtering
+    return d;
+  });
+  const deg = {};
+  links.forEach(l => { deg[l._s] = (deg[l._s]||0)+1; deg[l._t] = (deg[l._t]||0)+1; });
+  nodes.forEach(n => { n.degree = deg[n.id] || 0; });
+  return { nodes, links };
+}
+
+function edgeColorMap(links) {
+  const types = [...new Set(links.map(l => l.edge_type))].sort();
+  const map = {};
+  types.forEach((t, i) => { map[t] = EDGE_PALETTE[i % EDGE_PALETTE.length]; });
+  return map;
+}
+
+// ── filtering: rebuild the subset from MASTER (reuses live objects) ─────────
+function activeTypes() {
+  return new Set([...document.querySelectorAll('#filters input:checked')].map(i => i.dataset.type));
+}
+function currentSubset() {
+  const active = activeTypes();
+  const minDeg = parseInt(document.getElementById('mindeg').value, 10) || 1;
+  const nodes = MASTER.nodes.filter(n => active.has(n.type) && n.degree >= minDeg);
+  const keep = new Set(nodes.map(n => n.id));
+  const links = MASTER.links.filter(l => keep.has(l._s) && keep.has(l._t));
+  const total = MASTER.nodes.length;
+  document.getElementById('mindeg-hint').textContent =
+    (minDeg <= 1 && nodes.length === total)
+      ? `showing all ${total} nodes`
+      : `showing ${nodes.length} of ${total} nodes`;
+  return { nodes, links };
+}
+function applyFilters() {
+  if (Graph) { _tick = 0; Graph.graphData(currentSubset()); }
+}
+
+function nodeColor(n) {
+  if (highlightIds && !highlightIds.has(n.id)) return 'rgba(130,130,130,0.12)';
+  return TYPE_COLORS[n.type] || TYPE_COLORS.unknown;
+}
+function linkColor(l) {
+  const s = typeof l.source === 'object' ? l.source.id : l.source;
+  const t = typeof l.target === 'object' ? l.target.id : l.target;
+  if (highlightIds && !(highlightIds.has(s) && highlightIds.has(t))) return 'rgba(130,130,130,0.05)';
+  return EDGE_COLORS[l.edge_type] || '#8c8c8c';
+}
+
+function webglAvailable() {
+  try {
+    const c = document.createElement('canvas');
+    return !!(window.WebGLRenderingContext &&
+      (c.getContext('webgl2') || c.getContext('webgl') || c.getContext('experimental-webgl')));
+  } catch (_) { return false; }
+}
+
+function fatal(msg) {
+  const el = document.getElementById('graph');
+  el.style.display = 'flex';
+  el.innerHTML = `<div style="margin:auto;max-width:520px;color:#e8e8e8;font-size:14px;
+    padding:24px;text-align:center;line-height:1.5">${msg}</div>`;
+  const s = document.getElementById('status');
+  if (s) { s.style.color = '#ff8a8a'; s.textContent = 'WebGL unavailable'; }
+}
+
+function render(elements) {
+  document.getElementById('loader').style.display = 'none';
+  MASTER = toForceGraph(elements);
+  EDGE_COLORS = edgeColorMap(MASTER.links);
+
+  if (!webglAvailable()) {
+    fatal(`<b>This 3D view needs WebGL, which your browser isn't providing.</b><br><br>
+      The 2D explorer works because it uses Canvas 2D, but 3D needs a GPU context.<br><br>
+      <b>Fix:</b> enable hardware acceleration in your browser<br>
+      (Chrome/Edge → Settings → System → “Use graphics acceleration when available”, then relaunch),<br>
+      or open this page in a browser on the host OS with GPU access.<br><br>
+      Then hard-refresh. Meanwhile the 2D view at
+      <code style="color:#9cf">kg-graph.html</code> remains available.`);
+    return;
+  }
+
+  const el = document.getElementById('graph');
+  let Graph3D;
+  try {
+    Graph3D = ForceGraph3D()(el);
+  } catch (err) {
+    fatal(`<b>3D renderer failed to initialise.</b><br><br>${err && err.message ? err.message : err}<br><br>
+      This is usually a WebGL / hardware-acceleration issue. The 2D view at
+      <code style="color:#9cf">kg-graph.html</code> still works.`);
+    return;
+  }
+  Graph = Graph3D
+    .width(el.clientWidth).height(el.clientHeight)
+    .backgroundColor('#000006')
+    .nodeRelSize(3)
+    .nodeVal(n => nodeVal(n.degree))
+    .nodeColor(nodeColor)
+    .nodeOpacity(0.92)
+    .nodeLabel(n => `<b>${n.label || n.id}</b><br>type: ${n.type}<br>degree: ${n.degree}` +
+                    (n.status ? `<br>status: ${n.status}` : ''))
+    .linkColor(linkColor)
+    .linkOpacity(0.35)
+    .linkWidth(0.4)
+    .linkDirectionalArrowLength(2.2)
+    .linkDirectionalArrowRelPos(1)
+    .onNodeClick(flyTo)
+    .onEngineTick(frameWhileSettling)
+    .onEngineStop(() => Graph.zoomToFit(500, 60))
+    .graphData(currentSubset());
+
+  // degree-aware 3D forces: hubs repel harder, their edges are longer, so the
+  // dense cores fan out through the extra dimension instead of knotting up.
+  // Kept moderate so the layout stays in camera range (very strong charge
+  // scatters nodes off-screen -> apparent black screen).
+  Graph.d3Force('charge').strength(n => Math.max(-350, -35 - 9 * (n.degree || 0)));
+  Graph.d3Force('link').distance(l => {
+    const sd = (l.source && l.source.degree) || 0, td = (l.target && l.target.degree) || 0;
+    return Math.min(160, 24 + 4 * (sd + td));
+  });
+  Graph.d3ReheatSimulation();
+
+  // counts + type filter legend
+  const byType = {};
+  MASTER.nodes.forEach(n => { byType[n.type] = (byType[n.type]||0)+1; });
+  document.getElementById('counts').textContent =
+    `${MASTER.nodes.length} nodes · ${MASTER.links.length} edges`;
+
+  const filters = document.getElementById('filters');
+  filters.innerHTML = '';
+  Object.keys(TYPE_COLORS).filter(t => byType[t]).sort().forEach(type => {
+    const row = document.createElement('label');
+    row.className = 'filter-item';
+    row.innerHTML =
+      `<input type="checkbox" checked data-type="${type}">` +
+      `<span class="swatch" style="background:${TYPE_COLORS[type]}"></span>` +
+      `<span>${type}</span><span class="count">${byType[type]}</span>`;
+    row.querySelector('input').addEventListener('change', applyFilters);
+    filters.appendChild(row);
+  });
+
+  wireControls();
+  document.getElementById('status').textContent = 'ready';
+}
+
+// Re-frame the camera at a few early ticks so you SEE the graph immediately as
+// it expands, rather than staring at black until the engine fully cools.
+let _tick = 0;
+function frameWhileSettling() {
+  _tick++;
+  if (_tick === 1 || _tick === 6 || _tick === 20 || _tick === 60) Graph.zoomToFit(300, 60);
+}
+
+function flyTo(node) {
+  const dist = 120;
+  const r = Math.hypot(node.x, node.y, node.z) || 1;
+  const k = 1 + dist / r;
+  Graph.cameraPosition({ x: node.x * k, y: node.y * k, z: node.z * k }, node, 1200);
+}
+
+function refreshColors() {
+  // re-assign the same accessors to force a colour re-evaluation
+  Graph.nodeColor(nodeColor).linkColor(linkColor);
+}
+
+function wireControls() {
+  const mindeg = document.getElementById('mindeg');
+  mindeg.addEventListener('input', () => {
+    document.getElementById('mindeg-val').textContent = mindeg.value;
+    applyFilters();
+  });
+
+  document.getElementById('search').addEventListener('input', e => {
+    const q = e.target.value.trim().toLowerCase();
+    if (!q) { highlightIds = null; refreshColors(); return; }
+    highlightIds = new Set(
+      MASTER.nodes
+        .filter(n => (n.label||'').toLowerCase().includes(q) || (n.id||'').toLowerCase().includes(q))
+        .map(n => n.id)
+    );
+    refreshColors();
+  });
+
+  document.getElementById('fit').onclick = () => Graph.zoomToFit(600, 40);
+  document.getElementById('reheat').onclick = () => Graph.d3ReheatSimulation();
+  document.getElementById('reset').onclick = () => {
+    document.querySelectorAll('#filters input').forEach(i => i.checked = true);
+    document.getElementById('search').value = '';
+    mindeg.value = 1;
+    document.getElementById('mindeg-val').textContent = '1';
+    highlightIds = null;
+    applyFilters();
+    refreshColors();
+    Graph.zoomToFit(600, 40);
+  };
+
+  window.addEventListener('resize', () => {
+    const el = document.getElementById('graph');
+    Graph.width(el.clientWidth).height(el.clientHeight);
+  });
+}
+
+// ── data loading: inline -> fetch -> file picker ───────────────────────────
+function loadFromFile(file) {
+  const reader = new FileReader();
+  reader.onload = () => { try { render(JSON.parse(reader.result)); }
+    catch (err) { alert('Invalid JSON: ' + err.message); } };
+  reader.readAsText(file);
+}
+function showLoader(msg) {
+  document.getElementById('loader').style.display = 'block';
+  document.getElementById('status').textContent = msg || '';
+}
+
+(function init() {
+  if (window.KG_DATA) { render(window.KG_DATA); return; }
+
+  fetch('data/graph.cytoscape.json')
+    .then(r => { if (!r.ok) throw new Error(r.status); return r.json(); })
+    .then(render)
+    .catch(() => {
+      showLoader('could not fetch data/graph.cytoscape.json — load it manually');
+      const drop = document.getElementById('drop');
+      document.getElementById('file').addEventListener('change', e => {
+        if (e.target.files[0]) loadFromFile(e.target.files[0]);
+      });
+      ['dragover','dragenter'].forEach(ev =>
+        drop.addEventListener(ev, e => { e.preventDefault(); drop.style.borderColor = '#7fb27f'; }));
+      ['dragleave','drop'].forEach(ev =>
+        drop.addEventListener(ev, e => { e.preventDefault(); drop.style.borderColor = '#444'; }));
+      drop.addEventListener('drop', e => {
+        if (e.dataTransfer.files[0]) loadFromFile(e.dataTransfer.files[0]);
+      });
+    });
+})();
+</script>
+</body>
+</html>
