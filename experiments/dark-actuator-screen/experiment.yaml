@@ -1,0 +1,28 @@
+slug: dark-actuator-screen
+type: lab-diagnostic
+status: draft
+registered: true
+question: >-
+  Do any of the 12 frozen dark-displacement candidate directions causally actuate
+  the fabricate-vs-refuse behavior on the raw-base checkpoint, above a
+  random-direction control, at matched norm?
+prediction: >-
+  Orchestrator: most likely 0 candidates beat the random control (small chance
+  L34 succ pc0 registers a weak hit); positive control (answer-vs-refuse) moves
+  behavior, negative controls (random, propensity) sit at the floor. User:
+  PENDING.
+falsifier: >-
+  Screen, so the bar is graduation: a candidate graduates iff its flip rate
+  exceeds the random-direction control with bootstrap 95% CI excluding 0. No
+  graduations means the dark subspace is ruled out as a near-term actuator. If
+  the positive control does not move behavior the screen is void.
+checkpoint:
+  repo: ''
+  revision: ''
+instrument:
+  configs: []
+  modules: []
+  pins: {}
+inputs: []
+verdict: ''
+kg: []

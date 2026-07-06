@@ -6,6 +6,27 @@
         "repo": "",
         "revision": ""
       },
+      "falsifier": "Screen, so the bar is graduation: a candidate graduates iff its flip rate exceeds the random-direction control with bootstrap 95% CI excluding 0. No graduations means the dark subspace is ruled out as a near-term actuator. If the positive control does not move behavior the screen is void.",
+      "inputs": [],
+      "instrument": {
+        "configs": [],
+        "modules": [],
+        "pins": {}
+      },
+      "kg": [],
+      "prediction": "Orchestrator: most likely 0 candidates beat the random control (small chance L34 succ pc0 registers a weak hit); positive control (answer-vs-refuse) moves behavior, negative controls (random, propensity) sit at the floor. User: PENDING.",
+      "question": "Do any of the 12 frozen dark-displacement candidate directions causally actuate the fabricate-vs-refuse behavior on the raw-base checkpoint, above a random-direction control, at matched norm?",
+      "registered": true,
+      "slug": "dark-actuator-screen",
+      "status": "draft",
+      "type": "lab-diagnostic",
+      "verdict": ""
+    },
+    {
+      "checkpoint": {
+        "repo": "",
+        "revision": ""
+      },
       "falsifier": "",
       "inputs": [],
       "instrument": {
