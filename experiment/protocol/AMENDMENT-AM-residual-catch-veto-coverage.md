@@ -2,12 +2,17 @@
 amendment: AM
 slug: residual-catch-veto-coverage
 status: >-
-  SIGNED 2026-07-06 (user, in-conversation: "can we sign and toss AM up on
-  modal?" — the signing precondition, AL resolved + PR #214 merged, was met
-  2026-07-05). Gates in section 4 LOCKED as drafted; predictions were
-  recorded 2026-07-05 before signing. Launch authorized on Modal at the
-  pre-registered $5 cap; batch-12 numerics smoke runs in the same container
-  before the full pass per section 5.3.
+  LAUNCHED 2026-07-06 (user fresh in-conversation approval "if not you can get
+  up and running", after confirming AM is not impacted by the gen_stream
+  decode-hook confound: AM does no steering write and reads activations via a
+  clean output_hidden_states forward pass, not a decode-loop hook). SIGNED
+  2026-07-06 (user, in-conversation: "can we sign and toss AM up on modal?" —
+  the signing precondition, AL resolved + PR #214 merged, was met 2026-07-05).
+  Gates in section 4 LOCKED as drafted; predictions were recorded 2026-07-05
+  before signing. Launched on Modal at the pre-registered $5 cap; batch-12
+  numerics smoke runs in the same container before the full pass per section
+  5.3. Pool uploaded to staging repo (am-residual-catch-r1/am_pool.jsonl)
+  2026-07-06 before launch.
 question: >-
   Of the residual confabulations the pre-generation radial controller cannot
   reach (the gate-miss set the answerability gate misreads as answerable, 43
