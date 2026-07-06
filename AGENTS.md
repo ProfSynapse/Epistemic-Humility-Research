@@ -63,6 +63,15 @@ workspace first and a software project second: claims need provenance, scripts
 need reproducibility, and changes should preserve the line from source evidence
 to paper text to experiment artifacts.
 
+## Environment
+
+- The canonical working checkout is `/home/profsynapse/code/Epistemic-Humility-Research`
+  (ext4). The `/mnt/f/Code/Epistemic-Humility-Research` mount is a FROZEN backup;
+  do not run experiments or commit from it. The shell may start with its cwd at
+  the `/mnt/f` path and reset there between calls, so always `cd` to the canonical
+  checkout explicitly. Amendment worktrees live under
+  `/home/profsynapse/code/ehr-worktrees/`.
+
 ## Boundaries
 
 - Work from the root project unless a task explicitly requires entering another
@@ -179,6 +188,21 @@ inspection or fixture debugging.
 
 ## Research Guardrails
 
+- READ BEFORE YOU CITE. Before stating any fact about a prior experiment or
+  amendment (its design, mechanism, checkpoint, gates, result, verdict, or what
+  it "showed" / "proved" / "worked"), open and read its governed doc first:
+  `experiment/protocol/AMENDMENT-*.md` (pre-migration) or
+  `experiments/<slug>/AMENDMENT.md` (new layout). The amendment/protocol docs are
+  the SOLE source of truth for experimental facts. Memory, session notes, the
+  knowledge graph, prior chat summaries, and this file's Retrieved/Working Memory
+  are navigation aids ONLY: they point you to the doc, they are never themselves
+  citable as an experimental result, and they may be stale or imprecise. This
+  applies with special force to cross-experiment claims ("X actuated because Y",
+  "these all null for the same reason"): reconstruct the taxonomy from each doc,
+  never pattern-match it from memory. Every delegation prompt that references a
+  prior result MUST instruct the subagent to read that doc first and MUST NOT
+  hand it a remembered interpretation to cement. If you cannot cite the doc line
+  you read it from, you do not know it yet.
 - Do not commit or redistribute restricted or gitignored data.
 - Keep exact provenance for quantitative claims, dataset transformations, and
   reported results.

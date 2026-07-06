@@ -32,6 +32,10 @@ related:
 - '[[unanswerable-questions]]'
 - '[[linear-probe]]'
 - '[[auroc]]'
+- '[[internal-ai-probe-as-reward-null--true-vs-permuted]]'
+- '[[internal-ac-doubt-regulated-caution--coupled-write]]'
+- '[[internal-aa-causal-confidence-steering-null--qwen3.5-4b]]'
+- '[[internal-ab-first-person-injection--ambiguous-negative]]'
 relationships:
 - type: supports
   target: '[[propensity-direction-reads-but-does-not-actuate-fabrication]]'
@@ -73,6 +77,22 @@ relationships:
   target: '[[auroc]]'
   target_id: metric:auroc
   confidence: high
+- type: related_to
+  target: '[[internal-ai-probe-as-reward-null--true-vs-permuted]]'
+  target_id: paper:internal-ai-probe-as-reward-null
+  confidence: medium
+- type: related_to
+  target: '[[internal-ac-doubt-regulated-caution--coupled-write]]'
+  target_id: paper:internal-ac-doubt-regulated-caution
+  confidence: medium
+- type: related_to
+  target: '[[internal-aa-causal-confidence-steering-null--qwen3.5-4b]]'
+  target_id: paper:internal-aa-causal-confidence-steering-null
+  confidence: medium
+- type: related_to
+  target: '[[internal-ab-first-person-injection--ambiguous-negative]]'
+  target_id: paper:internal-ab-first-person-injection
+  confidence: medium
 ---
 
 ## Summary
@@ -91,7 +111,14 @@ the sixth use-the-signal null in the research program and the first on the write
 side (activation injection); the five prior nulls asked the model to consult its
 own readout, whereas AL directly injected the direction and still moved no
 behavior. The propensity direction joins the correlate pile as a control handle,
-and the write-side steering line needs a different lever.
+and the write-side steering line needs a different lever. This null is scoped to
+the confabulation-propensity axis on the Amendment AI TRUE-mapping checkpoint; it
+sits alongside sibling nulls on other axes and write-forms
+([[internal-aa-causal-confidence-steering-null--qwen3.5-4b]],
+[[internal-ab-first-person-injection--ambiguous-negative]],
+[[internal-ai-probe-as-reward-null--true-vs-permuted]]) and against the program's
+standing write-side win, [[internal-ac-doubt-regulated-caution--coupled-write]],
+which succeeded on a different axis and checkpoint.
 
 ## Claims
 

@@ -115,6 +115,9 @@ fine-tuning run is required.
 confidence in words or tokens and measures its calibration (Lin et al., 2022; Xiong et
 al., 2023); the recurring finding is that
 verbalized confidence is poorly calibrated and often flat, especially for smaller models.
+Recent faithful-uncertainty work makes the target sharper by asking whether expressed
+uncertainty tracks intrinsic uncertainty, and shows that metacognitive RL can improve
+that output metric (Gani et al., 2026; Liu et al., 2026; Yona et al., 2026).
 Our companion diagnosis localizes *why* in this model family: the internal estimate is
 calibrated, the emitted token is not, and the loss on that token does not transmit the
 internal estimate faithfully. This paper is the constructive complement: bypass the token.
@@ -604,9 +607,11 @@ separate, and know which model's veto you can trust.
 
 - Burns et al. (2022). Discovering Latent Knowledge in Language Models Without Supervision. arXiv:2212.03827.
 - Ethayarajh et al. (2024). KTO: Model Alignment as Prospect Theoretic Optimization. arXiv:2402.01306.
+- Gani et al. (2026). Quantifying Faithful Confidence Expression in Large Reasoning Models. arXiv:2606.03969.
 - Joshi et al. (2017). TriviaQA: A Large Scale Distantly Supervised Challenge Dataset for Reading Comprehension. arXiv:1705.03551.
 - Kadavath et al. (2022). Language Models (Mostly) Know What They Know. arXiv:2207.05221.
 - Lin et al. (2022). Teaching Models to Express Their Uncertainty in Words. arXiv:2205.14334.
+- Liu et al. (2026). Reinforcement Learning with Metacognitive Feedback Elicits Faithful Uncertainty Expression in LLMs. arXiv:2606.32032.
 - Mallen et al. (2022). When Not to Trust Language Models: Investigating Effectiveness of Parametric and Non-Parametric Memories. arXiv:2212.10511.
 - Marks et al. (2023). The Geometry of Truth: Emergent Linear Structure in Large Language Model Representations of True/False Datasets. arXiv:2310.06824.
 - Orgad et al. (2024). LLMs Know More Than They Show: On the Intrinsic Representation of LLM Hallucinations. arXiv:2410.02707.
@@ -617,6 +622,7 @@ separate, and know which model's veto you can trust.
 - Wen et al. (2024). Know Your Limits: A Survey of Abstention in Large Language Models. arXiv:2407.18418.
 - Xiong et al. (2023). Can LLMs Express Their Uncertainty? An Empirical Evaluation of Confidence Elicitation in LLMs. arXiv:2306.13063.
 - Yin et al. (2023). Do Large Language Models Know What They Don't Know?. arXiv:2305.18153.
+- Yona et al. (2026). Hallucinations Undermine Trust; Metacognition is a Way Forward. arXiv:2605.01428.
 - Zou et al. (2023). Representation Engineering: A Top-Down Approach to AI Transparency. arXiv:2310.01405.
 
 ---
