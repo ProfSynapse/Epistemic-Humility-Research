@@ -1,4 +1,29 @@
 {
   "_generated": "GENERATED - do not edit; run bin/exp regen and stage the result",
-  "experiments": []
+  "experiments": [
+    {
+      "checkpoint": {
+        "repo": "",
+        "revision": ""
+      },
+      "falsifier": "",
+      "inputs": [],
+      "instrument": {
+        "configs": [
+          "cell.yaml",
+          "gates.yaml"
+        ],
+        "modules": [],
+        "pins": {}
+      },
+      "kg": [],
+      "prediction": "",
+      "question": "Teaching artifact for the mechinterp-cells skill; parses against the real tuner schema and runs end to end, but is never signed and never launched as confirmatory.",
+      "registered": false,
+      "slug": "example-cell",
+      "status": "draft",
+      "type": "steer-cell",
+      "verdict": ""
+    }
+  ]
 }

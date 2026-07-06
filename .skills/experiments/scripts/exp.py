@@ -32,6 +32,13 @@ MANIFEST_NAME = "experiment.yaml"
 REGISTRY_MD_NAME = "REGISTRY.md"
 REGISTRY_JSON_NAME = "registry.json"
 
+# Reserved directory names under experiments/ that are never themselves an
+# experiment: common/ is the shared cross-experiment code home (graders, renders,
+# promoted directions). They carry no manifest and are excluded from validation,
+# the manifest scan, and the registry.
+RESERVED_DIRNAMES = frozenset({"common"})
+_SKIP_DIRNAMES = frozenset({"__pycache__"}) | RESERVED_DIRNAMES
+
 TYPES = ("steer-cell", "training-run", "eval", "probe-fit", "lab-diagnostic")
 STATUSES = ("draft", "signed", "running", "resolved", "null-result", "falsified")
 # Statuses at or beyond signing: pins are expected to exist and still match.
@@ -104,6 +111,8 @@ def iter_manifests(root: Path) -> list[tuple[str, Path, dict]]:
     out: list[tuple[str, Path, dict]] = []
     for child in sorted(base.iterdir(), key=lambda p: p.name):
         if not child.is_dir():
+            continue
+        if child.name in _SKIP_DIRNAMES:
             continue
         mpath = child / MANIFEST_NAME
         if not mpath.is_file():
@@ -359,7 +368,7 @@ def validate(root: Path) -> int:
         for child in sorted(base.iterdir(), key=lambda p: p.name):
             if not child.is_dir():
                 continue
-            if child.name in {"__pycache__"}:
+            if child.name in _SKIP_DIRNAMES:
                 continue
             if not (child / MANIFEST_NAME).is_file():
                 problems.append(f"{child}: missing {MANIFEST_NAME}")
@@ -396,6 +405,10 @@ def render_registry_md(root: Path) -> str:
     for slug, _mpath, data in iter_manifests(root):
         question = str(data.get("question", "") or "").replace("|", "\\|").strip()
         verdict = str(data.get("verdict", "") or "").replace("|", "\\|").strip()
+        # registered:false rows stay in the inventory but are marked so they are
+        # never read as a claim.
+        if data.get("registered") is False:
+            question = f"teaching artifact: {question}".strip()
         row = [
             slug,
             str(data.get("type", "") or ""),

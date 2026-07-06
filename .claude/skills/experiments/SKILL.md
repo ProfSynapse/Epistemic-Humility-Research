@@ -49,7 +49,14 @@ manifests and are the only files you must not edit by hand.
 
 A teaching or example artifact sets `registered: false` in its manifest. It still
 validates structurally but is excluded from claim requirements (it does not need
-a prediction, falsifier, or verdict) and should not be read as evidence.
+a prediction, falsifier, or verdict) and should not be read as evidence. It still
+appears in the generated registry, marked `teaching artifact:`, so the inventory
+stays complete.
+
+`experiments/common/` is a reserved directory, not an experiment: it is the
+shared cross-experiment code home (`graders/`, `renders/`, and promoted
+`directions/`). It carries no manifest and is excluded from validation, the
+manifest scan, and the registry.
 
 ## Manifest schema
 
@@ -102,7 +109,10 @@ draft ──sign──> signed ──run──> running ──resolve──> res
 machine dump) are GENERATED from the manifests by `exp regen`, sorted by slug and
 free of timestamps so they are byte-stable. Both carry a "GENERATED - do not
 edit" header. Never hand-edit them: change a manifest, then run `bin/exp regen`
-and stage the result.
+and stage the result. The reserved `experiments/common/` directory is skipped,
+and `registered: false` rows are rendered with a `teaching artifact:` marker, so
+the registry stays a complete inventory without presenting teaching artifacts as
+claims.
 
 The `.githooks/pre-commit` hook enforces this. When `experiments/` exists it runs
 `exp validate` and `exp regen --check`; a stale registry fails the commit with an

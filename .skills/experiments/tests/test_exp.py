@@ -197,6 +197,58 @@ def test_validate_flags_dir_without_manifest(repo: Path):
     assert _run(repo, "validate") == 1
 
 
+# --- reserved common/ dir + teaching-artifact rendering ----------------------
+
+def test_validate_exempts_common_dir(repo: Path):
+    # experiments/common/ is the shared code home; it has no manifest and must
+    # not be flagged as a missing-manifest experiment.
+    common = exp.experiments_dir(repo) / "common"
+    (common / "graders").mkdir(parents=True)
+    (common / "graders" / "example_grader.py").write_text("# grader\n", encoding="utf-8")
+    assert _run(repo, "validate") == 0
+    # common/ is also excluded from the manifest scan / registry.
+    assert all(slug != "common" for slug, _p, _d in exp.iter_manifests(repo))
+
+
+def test_example_cell_style_manifest_validates(repo: Path):
+    # A registered:false, draft, unsigned teaching artifact with configs but no
+    # pins (the shape of experiments/example-cell/) must pass validate.
+    _run(repo, "new", "example-cell", "--type", "steer-cell")
+    d = exp.experiments_dir(repo) / "example-cell"
+    (d / "cell.yaml").write_text("surface:\n  seed: 1\n", encoding="utf-8")
+    (d / "gates.yaml").write_text("gates: []\n", encoding="utf-8")
+    m = _manifest(repo, "example-cell")
+    m["question"] = "Teaching artifact for the mechinterp-cells skill."
+    m["registered"] = False
+    m["instrument"]["configs"] = ["cell.yaml", "gates.yaml"]
+    _write_manifest(repo, "example-cell", m)
+    assert _run(repo, "validate") == 0
+
+
+def test_registry_marks_registered_false_rows(repo: Path):
+    _run(repo, "new", "teach", "--type", "steer-cell")
+    m = _manifest(repo, "teach")
+    m["question"] = "Example question."
+    m["registered"] = False
+    _write_manifest(repo, "teach", m)
+    md = exp.render_registry_md(repo)
+    # Row is present (complete inventory) and clearly marked.
+    assert "teach" in md
+    assert "teaching artifact:" in md
+
+
+def test_registry_omits_common_dir(repo: Path):
+    (exp.experiments_dir(repo) / "common" / "renders").mkdir(parents=True)
+    _run(repo, "new", "real", "--type", "eval")
+    m = _manifest(repo, "real")
+    m["question"] = "A real one."
+    _write_manifest(repo, "real", m)
+    md = exp.render_registry_md(repo)
+    assert "real" in md
+    # common/ never appears as a registry row.
+    assert "| common |" not in md
+
+
 # --- resolve -----------------------------------------------------------------
 
 def test_resolve_stamps_verdict_and_status(repo: Path, capsys):
