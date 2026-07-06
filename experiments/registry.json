@@ -6,6 +6,27 @@
         "repo": "",
         "revision": ""
       },
+      "falsifier": "Given Stage 1 validates a caution lever: coupled is within the G1 margin of the permuted placebo (below floor or CI includes 0), so propensity coupling adds nothing beyond a constant caution write (a clean null, unlike AN). If Stage 1 finds no caution lever on AI-TRUE, the coupling stage does not run and the result is \"no caution actuator on this checkpoint.\"",
+      "inputs": [],
+      "instrument": {
+        "configs": [],
+        "modules": [],
+        "pins": {}
+      },
+      "kg": [],
+      "prediction": "",
+      "question": "Does wiring the confabulation-propensity readout to the caution setpoint as a live proportional controller (mirroring AC's doubt coupling) suppress residual confabulations on the AI-TRUE checkpoint, once a caution direction is first validated as a behavioral lever there (the step AN skipped)?",
+      "registered": true,
+      "slug": "ao-propensity-regulated-caution",
+      "status": "draft",
+      "type": "steer-cell",
+      "verdict": ""
+    },
+    {
+      "checkpoint": {
+        "repo": "",
+        "revision": ""
+      },
       "falsifier": "",
       "inputs": [],
       "instrument": {
