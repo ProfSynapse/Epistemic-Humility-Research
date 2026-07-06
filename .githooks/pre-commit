@@ -22,6 +22,13 @@ if [ -d experiment/notes ]; then
   $PYTHON bin/validate_experiments.py experiment/notes
 fi
 
+# Experiments-first layout: validate every manifest and confirm the generated
+# registry is current. Only runs when the experiments/ tree exists.
+if [ -d experiments ]; then
+  $PYTHON .agents/skills/experiments/scripts/exp.py validate
+  $PYTHON .agents/skills/experiments/scripts/exp.py regen --check
+fi
+
 # Typed-graph frontmatter/edge validation across the library and experiment notes.
 # This vault carries many non-fatal KG331 ambiguity warnings; only surface output
 # when it actually fails (non-zero exit = an ERROR), so commits stay quiet.
