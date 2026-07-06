@@ -55,6 +55,8 @@ unsloth_compiled_cache/
 
 .obsidian/
 
+# web-app bundle dump (log-viewer artifact; not experiment data)
+experiment/phase1/probe/assets/
 # Housekeeping 2026-07-05 (dirt audit): fetched mining datasets are re-downloadable;
 # FalseQA additionally carries no upstream license (do not redistribute).
 datasets/falseqa/

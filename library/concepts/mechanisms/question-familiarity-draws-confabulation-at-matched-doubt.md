@@ -19,6 +19,7 @@ related:
 - '[[entity-recognition-direction]]'
 - '[[unfamiliar-ft-examples-drive-hallucination-character]]'
 - '[[pre-generation-commitment-signal-predicts-confabulation]]'
+- '[[text-surface-form-predicts-boundary-elevation]]'
 relationships:
 - type: supported_by
   target: '[[internal-confab-mechanics--cpu-fleet]]'
@@ -39,6 +40,10 @@ relationships:
 - type: related_to
   target: '[[pre-generation-commitment-signal-predicts-confabulation]]'
   target_id: mechanism:pre-generation-commitment-signal-predicts-confabulation
+  confidence: high
+- type: related_to
+  target: '[[text-surface-form-predicts-boundary-elevation]]'
+  target_id: mechanism:text-surface-form-predicts-boundary-elevation
   confidence: high
 ---
 
