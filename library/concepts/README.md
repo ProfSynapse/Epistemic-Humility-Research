@@ -640,7 +640,7 @@ Atomic notes extracted from the library papers via the Agents-K1 ingestion skill
 - [[valence-arousal-subspace]] : A two-dimensional linear subspace in LLM activation space spanned by a recovered valence axis (pleasure-displeasure) and arousal axis (activ
 - [[world-model-hallucination-modes]] : A three-type taxonomy of failure modes in generative world models, each anchored to a different pipeline stage. Perceptual hallucination occ
 
-## Mechanisms (cause -> effect) (364)
+## Mechanisms (cause -> effect) (366)
 
 - [[abstention-generalization-failure]] : 'instruction-tuning for abstention on a narrow, homogeneous set of refusal expressions and task formats' **prevents** Abstention ability does not generalize to 
 - [[abstract-representations-enable-zero-shot-generalization]] : High degree of abstract (parallel) representation in ANN hidden layers, as measured by parallelism-score, indicating that compositional rule dimensions are enco
@@ -879,6 +879,7 @@ Atomic notes extracted from the library papers via the Agents-K1 ingestion skill
 - [[probability-maximization-does-not-transfer-to-accuracy]] : Selecting or tuning a decoding method to produce higher-probability sequences **prevents** Reliable accuracy improvement on downstream question-answering benchm
 - [[probe-reads-recall-not-truth]] : LLMs use the same subject-driven information-flow pathway (early-layer subject-token MLP activations \u2192 mid-layer attention propagation \u2192 late-layer la
 - [[prompt-cannot-override-rlvr-abstention-deficit]] : RLVR training with binary rewards (+1 correct, 0 wrong) that treat abstention as failure, repeated across thousands of training steps **prevents** The resulting
+- [[propensity-direction-reads-but-does-not-actuate-fabrication]] : Subtracting the raw-space preimage of the L24 caution-residualized confabulation-propensity direction from the residual stream at generation time (pre-generatio
 - [[proper-scoring-rule-rl-reward-calibrates-verbalized-confidence]] : Using the log-likelihood of the correct answer under a surrogate forecaster as the PPO reward for a long-form generation policy (instead of binary correctness),
 - [[proper-scoring-sft-calibration-transfers-to-unseen-confidence-formats]] : Fine-tuning on numerical verbalized confidence (0-100%) using a proper scoring rule (tokenized Brier score) **enables** The resulting calibration transfers to l
 - [[question-difficulty-alone-predicts-llm-confidence]] : Training the auxiliary calibrator on the question text only, with the LLM's generated answer omitted. **enables** The calibrator already attains respectable cal
@@ -1005,6 +1006,7 @@ Atomic notes extracted from the library papers via the Agents-K1 ingestion skill
 - [[verbalized-confidence-imitation-overconfidence]] : LLMs trained on human-generated text where confidence expressions cluster at round high values (e.g., 95%) **increases** LLMs produce verbalized-confidence scor
 - [[verbalized-prob-generalizes-logit-overfits-distribution-shift]] : Finetuning gpt-3 to output verbalized-confidence using per-task empirical accuracy labels **enables** 'calibration generalizes under distribution shift (better 
 - [[verification-advantage-over-generation]] : Increasing language model parameter count (800M to 52B) while evaluating P(True) self-evaluation on sampling-based tasks at unit temperature **increases** The g
+- [[veto-saturates-by-first-visible-token]] : Reading the post-generation correctness/veto axis at token granularity across the answer window (first visible token through answer end, veto axis refit per pos
 - [[within-sample-correlation-symmetry-limits-probability-voting]] : Within-sample log-probability/correctness correlations distributed symmetrically around zero across diverse benchmarks **decreases** Reliability of probability-
 
 ## Gaps (verified literature absences) (1)
