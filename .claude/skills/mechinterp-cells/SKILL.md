@@ -174,42 +174,57 @@ instrument** - a teaching artifact, never launched as confirmatory. It ships:
   `experiments/common/renders/example_render.py`.
 
 Validate CPU-side (no GPU) that the config and gates parse against the real
-schema:
+schema.
+
+> **Run tuner commands from the REPO ROOT (or the experiment worktree root),
+> never from inside `synaptic-tuner/`.** A cell's internal paths
+> (`surface.rows_path`, `execution.output_path`, every `readouts[*].path`) are
+> written repo-root-relative, and the tuner opens them at the process working
+> directory. A `cd synaptic-tuner` first would silently resolve every one of
+> them against the wrong directory and miss the files. Invoking
+> `python synaptic-tuner/tuner.py ...` keeps the CWD at the repo root while
+> still making `MechInterp` importable (Python adds the script's own directory
+> to `sys.path`). For the parse-only import checks, put the tuner on
+> `PYTHONPATH` instead of `cd`-ing into it.
 
 ```bash
-cd synaptic-tuner
-python -c "from MechInterp.config import load_steer_config; \
-  load_steer_config('../experiments/example-cell/cell.yaml'); print('cell ok')"
-python -c "from MechInterp.stats.evaluator import load_gates_config; \
-  load_gates_config('../experiments/example-cell/gates.yaml'); print('gates ok')"
-python tuner.py mechinterp list-configs   # lists the bundled tuner templates
+# from the repo root (or the experiment worktree root)
+PYTHONPATH=synaptic-tuner python -c "from MechInterp.config import load_steer_config; \
+  load_steer_config('experiments/example-cell/cell.yaml'); print('cell ok')"
+PYTHONPATH=synaptic-tuner python -c "from MechInterp.stats.evaluator import load_gates_config; \
+  load_gates_config('experiments/example-cell/gates.yaml'); print('gates ok')"
+python synaptic-tuner/tuner.py mechinterp list-configs   # bundled tuner templates
 ```
 
 ## Typical workflow
 
+Run every command from the REPO ROOT (see the CWD warning above). Set
+`PYTHONPATH` to wherever your `--render-fn` / grader modules live (for example
+`experiments/common/renders`, or the cell's own directory).
+
 ```bash
 # 1. Extract hidden states over a labeled row pool (GPU).
-cd synaptic-tuner && python tuner.py mechinterp extract \
-  --mi-config ../experiments/<slug>/extract.yaml \
+PYTHONPATH=experiments/common/renders python synaptic-tuner/tuner.py mechinterp extract \
+  --mi-config experiments/<slug>/extract.yaml \
   --model <base-model> \
   --render-fn example_render:render \
   --i-know-this-runs-on-gpu
 
 # 2. Fit a linear readout and freeze a direction (CPU).
-python tuner.py mechinterp probe-fit \
-  --mi-config ../experiments/<slug>/probe_fit.yaml
+python synaptic-tuner/tuner.py mechinterp probe-fit \
+  --mi-config experiments/<slug>/probe_fit.yaml
 
 # 3. Run the intervention cell: smoke first, then the full arms (GPU).
-python tuner.py mechinterp steer \
-  --mi-config ../experiments/<slug>/cell.yaml \
+PYTHONPATH=experiments/common/renders python synaptic-tuner/tuner.py mechinterp steer \
+  --mi-config experiments/<slug>/cell.yaml \
   --model <base-model> \
   --render-fn example_render:render \
   --i-know-this-runs-on-gpu
 
 # 4. Adjudicate with declarative gates (CPU).
-python tuner.py mechinterp score-gates \
-  --gates-config ../experiments/<slug>/gates.yaml \
-  --rows-path ../experiments/<slug>/analysis/rows_out.jsonl
+python synaptic-tuner/tuner.py mechinterp score-gates \
+  --gates-config experiments/<slug>/gates.yaml \
+  --rows-path experiments/<slug>/analysis/rows_out.jsonl
 ```
 
 Run the `mechinterp` verbs from the `synaptic-tuner/` dir (that is where
