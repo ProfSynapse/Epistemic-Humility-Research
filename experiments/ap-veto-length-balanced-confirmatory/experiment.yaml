@@ -1,0 +1,35 @@
+slug: ap-veto-length-balanced-confirmatory
+type: probe-fit
+status: draft
+registered: true
+question: >-
+  On the raw base, does the post-generation correctness veto (post-L20 S/W/U
+  dial) separate hallucinated answers from good answers by CONTENT rather than
+  by answer length, once the classes are length-balanced and the 96-token
+  truncation artifact is removed by extending the token budget?
+prediction: >-
+  On the length-matched, extended-token construction the refit veto retains a
+  genuine content signal (OOF AUROC ~0.72-0.80) that beats length-only
+  (~0.50-0.58) by a margin whose bootstrap 95% CI excludes 0, confirming AM's
+  ~0.77 length-matched estimate as real rather than a length/truncation
+  artifact.
+falsifier: >-
+  On the length-neutralized matched set (AP-G0 passing), veto AUROC < 0.68 or
+  the veto-minus-length margin CI includes 0 means AM's separation was
+  length/truncation-driven with no genuine content signal; the two-signal
+  backstop claim is retracted. AP-G0 failing voids the run.
+checkpoint:
+  repo: unsloth/Qwen3-4B-bnb-4bit
+  revision: ''  # raw base; AM pins no HF revision either (config_sha hashes model_name, not revision)
+instrument:
+  configs: []
+  modules:
+  - ap_build_pool.py
+  - ap_extract.py
+  - ap_grade_and_gates.py
+  - cloud/modal_ap_veto_length_balanced.py
+  pins: {}
+inputs:
+- experiments/ap-veto-length-balanced-confirmatory/analysis/ap_pool.jsonl
+verdict: ''
+kg: []
