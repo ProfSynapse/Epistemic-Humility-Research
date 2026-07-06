@@ -38,7 +38,7 @@ import modal
 # --- provenance pins (REPO_COMMIT filled in a second commit after the first
 # AM commit lands, same REPLACE_WITH guard the AK/item-11 wrappers use) ---------
 REPO_URL = "https://github.com/ProfSynapse/Epistemic-Humility-Research.git"
-REPO_COMMIT = "091ab78dd789a533d319a4631312203a496bfc80"  # AM harness commit; re-pin if the branch moves
+REPO_COMMIT = "70c7eac0a3065fe734133c92924650534a064c05"  # AM harness + surface-sha fix (de-taint pool_source); re-pin if the branch moves
 STAGING_REPO = "professorsynapse/eh-al-prep-staging"  # reuse the AL prep repo
 POOL_IN_REPO = "am-residual-catch-r1/am_pool.jsonl"  # host-built, uploaded pre-launch
 RESULT_PREFIX = "am-residual-catch-r1"               # staging path prefix for outputs
