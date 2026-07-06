@@ -1,226 +1,219 @@
-# Epistemic Humility in LLM Training and Fine-Tuning
+# Epistemic Humility Research
 
-A research program on a simple question with a messy evidence base: **can we
-train language models to know what they don't know, and what does that
-training cost us?**
+This repository is a research workspace for a single through-line:
 
-Models that confidently answer questions beyond their knowledge are the root
-of much of what gets called "hallucination." A growing literature tries to
-fix this by fine-tuning models to abstain ("I don't know"), to calibrate
-their confidence, or to resist sycophantic agreement. But that literature is
-fragmented across metrics, models, and methods, and some of its central
-tensions have never been measured in a single study. This repo holds our
-attempt to (a) synthesize that literature rigorously and (b) run the
-experiments the synthesis says are missing.
+**Can language models represent what they do and do not know, and can that
+epistemic state be made visible in behavior, confidence, and deployment-time
+trust decisions?**
 
-## What we're focused on
+The project started as a literature synthesis plus an abstention-training
+experiment. It has since evolved into a five-paper program on calibration,
+abstention, hidden-state readouts, faithful uncertainty, and the limits of
+post-training.
 
-Five threads, and the gaps between them:
+For the current state, read [docs/research-trajectory.md](docs/research-trajectory.md)
+first. The older locked Phase 1 protocol remains in `experiment/protocol/`; it is
+historical and governed, not the entry point for new work.
 
-- **Calibration**: does the model's confidence track its accuracy
-  (ECE, Brier, AUROC)?
-- **Abstention / IDK fine-tuning**: teaching models to refuse questions
-  outside their knowledge, without over-refusing ones they can answer.
-- **Fine-tuning-induced hallucination**: SFT on facts the model doesn't
-  already know causally drives hallucination, so training data must be
-  split by *this specific model's* knowledge boundary.
-- **Sycophancy under preference training**: RLHF-style training can teach
-  models to agree rather than to be right.
-- **Knowledge-boundary self-awareness**: can a model report what it knows?
+## Current Through-Line
 
-The headline tension motivating the experimental work: RLHF degrades
-token-level calibration roughly 10x (GPT-4's ECE went from 0.007 to 0.074)
-while *improving* abstention behavior, and no paper measures both after the
-same training run. Meanwhile **KTO has never been applied to
-abstention/IDK/calibration training at all** (verified gap as of June 2026).
-That is the hole paper 2 fills.
+The short version:
 
-## The two deliverables
+1. We trained abstention on Qwen3-4B with SFT, DPO, KTO, and GRPO.
+2. Training moved behavior, but exposed a persistent gap: the model's hidden
+   states encode answerability clearly while its emitted confidence stays
+   decoupled.
+3. Mechanistic probes showed the internal signal is already present, robust, and
+   often available before post-training.
+4. The practical pivot is readout: use a two-signal trust pipeline that reads the
+   model's internal answerability and answer-correctness signals directly.
+5. The open frontier is actuation: can any channel write to, route, or obey that
+   internal signal without collapsing into mere compliance or surface policy?
 
-1. **Meta-analysis** (`meta-analysis/`, paper 1): a systematic search and
-   quantitative synthesis of the literature above. Because the primary
-   studies rarely report variances, there is nothing to pool in the
-   classical sense; the synthesis is SWiM-conformant vote counting by
-   direction of effect, exact binomial sign tests, and descriptive
-   normalization. Every number in the evidence table
-   (`meta-analysis/evidence/effects.csv`) carries source, exact metric,
-   model, method, URL, and a per-row `verified` flag. We also reanalyzed
-   four sets of released artifacts (Cheng et al.'s model outputs,
-   AbstentionBench results, FActScore generations, a reward-calibration
-   training-data audit) rather than trusting reported numbers. Draft:
-   `meta-analysis/paper/draft-v0.md`.
+The working thesis is not "models do not know." It is closer to: **small open
+models often know more than they say, and current training objectives move the
+policy without reliably wiring that internal signal to stated confidence or
+action.**
 
-2. **Experiment program** (`experiment/`, paper 2): a controlled three-way
-   comparison of **SFT vs DPO vs KTO** for abstention training, on IDK data
-   split by each model's own knowledge boundary (Qwen3 4B/8B, plus a
-   Llama-2-7b-chat bridge arm that replicates Cheng et al. before any novel
-   result is claimed). The design is pre-registered and locked in
-   `experiment/protocol/PROTOCOL.md`; the staged plan through phases 2-4
-   (dose-response, probe-transfer mechanism, cross-architecture
-   generalization) lives in `experiment/protocol/research-trajectory.md`.
+## Paper Line
 
-## Navigating the repo
+The canonical paper map is maintained in
+[docs/research-trajectory.md](docs/research-trajectory.md).
 
-**If you're a returning session or collaborator picking up the work: read
-`HANDOFF.md` first.** It is the single re-entry point and always reflects
-current state.
+| Paper | Scope | Draft |
+|---|---|---|
+| P1 | Taxonomy, evidence synthesis, and the policy-vs-signal framework | [experiment/paper/paper1-taxonomy-framework-draft-v0.md](experiment/paper/paper1-taxonomy-framework-draft-v0.md) |
+| P2 | Training regimen: SFT/DPO/KTO/GRPO for abstention | [experiment/paper/paper2-training-regimen-draft-v2.md](experiment/paper/paper2-training-regimen-draft-v2.md) |
+| P3 | "Knows but Doesn't Say": internal-vs-stated confidence gap and training resistance | [experiment/paper/paper3-knows-but-doesnt-say-draft-v0.md](experiment/paper/paper3-knows-but-doesnt-say-draft-v0.md) |
+| P4 | Training-free two-signal readout: gate, dial, and veto | [experiment/paper/paper4-two-signal-readout-draft-v0.md](experiment/paper/paper4-two-signal-readout-draft-v0.md) |
+| P5 | Steering, actuation, and whether the internal signal can be routed into behavior | scaffold in progress |
 
-```
+Legacy figure prefixes are not paper numbers: `fig-p1-*` currently belongs to
+Paper 2, `fig-p2-*` to Paper 3, and `fig-p3-*` to Paper 4.
+
+## Main Results At A Glance
+
+**Training regimen (Paper 2).** SFT induces abstention; DPO and KTO reposition
+the boundary after SFT; GRPO amplifies the abstention routine. None escapes the
+recall/over-refusal tradeoff. Emitted confidence tracks the decision to answer
+more than it tracks truth.
+
+**Internal-vs-stated gap (Paper 3).** On SelfAware, a hidden-state answerability
+axis separates known from unknown items at about AUROC 0.997 and can be
+well-calibrated by a one-dimensional readout. The model's own stated confidence
+is near-flat and barely discriminative. The gap survives DPO, KTO, GRPO,
+contrastive SFT, proper-scoring reward variants, and direct attempts to distill
+the internal axis into the emitted confidence token.
+
+**Two-signal readout (Paper 4).** A training-free trust pipeline reads two
+signals from activations:
+
+- **Gate:** pre-generation answerability, near-ceiling on the base model.
+- **Dial:** post-generation answer correctness, strongest after the answer is
+  produced.
+- **Veto:** the dial assigns confident confabulations low trust; this signal is
+  present but higher-variance across models and decodes.
+
+The readout generalizes across Qwen3 sizes and across several model families.
+Targeted training can sharpen parts of the signal, but does not create the core
+readout.
+
+**Actuation frontier (Paper 5).** Steering and text/prompt interventions show a
+sharp distinction between reading a signal, obeying an external directive, and
+actually using the model's own readout. Some prompt channels move policy, but
+current evidence says they behave like compliance channels rather than internal
+belief alignment.
+
+## Repository Map
+
+```text
 .
-├── README.md                  # this file: orientation
-├── HANDOFF.md                 # live state + next steps (read this first)
-├── LICENSE                    # MIT (code/docs; vendored data keeps its own)
-├── CONTRIBUTING.md            # how to contribute + ground rules
-├── meta-analysis/             # PAPER 1
-│   ├── evidence/              #   effects.csv (per-row verified flags),
-│   │                          #   reanalysis reports, PRISMA flow
-│   ├── analysis/              #   deterministic scripts + generated figures
-│   └── paper/                 #   draft-v0.md + TODO.md checklist
-├── experiment/                # PAPER 2
-│   ├── protocol/              #   PROTOCOL.md (pre-registered, LOCKED),
-│   │                          #   research-trajectory.md (phases 1-4)
-│   └── phase1/                #   probe/ data/ eval/ recipes/ run_records/
-├── docs/                      # architecture decisions, prep research,
-│                              #   peer-review records for the pipeline
-├── library/                   # Obsidian-style knowledge graph (see SCHEMA.md)
-│   ├── notes/                 #   per-paper notes (frontmatter + typed edges)
-│   ├── concepts/              #   atomic notes: methods/ metrics/ datasets/
-│   │                          #   models/ terms/ mechanisms/  (+ README map)
-│   ├── SCHEMA.md              #   the graph ontology + frontmatter templates
-│   ├── manifest.yaml          #   paper registry
-│   ├── pdfs/                  #   gitignored; refetch via library/scripts/
-│   └── fulltext/              #   gitignored; same
-├── datasets/                  # eval/training data, one dir per source;
-│                              #   each carries dataset.md provenance
-│                              #   (source, license, fetch date, schema)
-├── essays/                    # companion long-form essay material
-├── scratch/                   # gitignored working space
-└── synaptic-tuner/            # git submodule: training/eval infrastructure
-                               #   (kept experiment-agnostic)
+|-- README.md                  # this orientation
+|-- TODO.md                    # amendment index + live backlog
+|-- docs/
+|   |-- research-trajectory.md # current program map; read this first
+|   |-- public-artifacts.md    # Hugging Face release manifest
+|   |-- sessions/              # lab/session notes and running synthesis
+|   |-- architecture/          # design notes for runtime/readout systems
+|   `-- review/                # review records
+|-- experiment/
+|   |-- paper/                 # active paper drafts, figures, analysis tables
+|   |-- protocol/              # locked protocol + signed amendments
+|   `-- phase1/                # training/eval/probe artifacts and scripts
+|-- experiments/               # experiments-first tree for new evidence cells
+|-- meta-analysis/             # original systematic synthesis and evidence table
+|-- library/
+|   |-- notes/                 # one research note per paper/internal result
+|   |-- concepts/              # typed method/metric/dataset/model/mechanism atoms
+|   |-- SCHEMA.md              # library schema
+|   |-- pdfs/                  # gitignored local PDFs
+|   `-- fulltext/              # gitignored local HTML/text
+|-- datasets/                  # dataset cards, loaders, schemas, and fixtures
+|-- synaptic-tuner/            # submodule: generic training/eval infrastructure
+`-- scratch/                   # gitignored local work
 ```
 
-Suggested reading order for a newcomer:
+## Knowledge Graph
 
-1. This README, then `HANDOFF.md` for current state.
-2. `meta-analysis/paper/draft-v0.md` for the synthesis and the gap analysis.
-3. `experiment/protocol/PROTOCOL.md` for the locked experimental design.
-4. `docs/architecture/phase1-pipeline.md` for how the pipeline implements it.
+The default discovery path is the local typed knowledge graph, not broad grep.
+Use:
 
-### The library as a knowledge graph
+```powershell
+bin\search.cmd "query terms" --limit 10
+```
 
-`library/` is not a flat reading list. It is an Obsidian-style vault where each
-paper note carries typed `relationships` (`proposes`, `evaluates_on`, `measures`,
-`derived_from`, `supports`, ...) to atomic concept notes for the methods,
-metrics, datasets, terms, and causal mechanisms it touches. The design follows
-**Agents-K1: Towards Agent-native Knowledge Orchestration**
-([arXiv:2606.13669](https://arxiv.org/abs/2606.13669)), which argues for
-capturing entities, claims, evidence, mechanisms, and method lineages rather than
-reducing papers to abstracts and flat `cites` edges. This makes the literature
-traversable (what derives from DPO? which papers measure ECE? what mechanism
-explains finetuning-induced hallucination?) for both humans and agents.
+Paper notes in `library/notes/` link to atomic concepts in `library/concepts/`
+with typed edges such as `proposes`, `evaluates_on`, `measures`, `supports`, and
+`uses`. This keeps the literature and internal results queryable by method,
+metric, dataset, model, and mechanism.
 
-The graph uses the governed `kg` / `relationships` / `related` schema from the
-vendored `knowledge-graph` skill, so it is validatable and analyzable:
-`validate_kg_relationships.py`, `export_kg.py` (triples), and `analyze_kg.py`
-(centrality, orphans, ontology drift) all run over `library/`. The domain overlay
-is in `library/SCHEMA.md`; new papers are folded in with the `kg-ingest` skill.
-Start at `library/concepts/README.md` for the map.
+Useful graph commands:
 
-## Running experiments
+```powershell
+python .agents\skills\knowledge-graph\scripts\validate_kg_relationships.py --root F:\Code\Epistemic-Humility-Research\library
+python .agents\skills\knowledge-graph\scripts\analyze_kg.py --root library
+python .agents\skills\knowledge-graph\scripts\kg_index.py
+```
 
-Training and evaluation run inside the
+For paper ingestion, use the repo skill `kg-ingest`; do not add flat paper notes
+without concept atoms and typed relationships.
+
+## Experiments And Governance
+
+The old Phase 1 confirmatory protocol is locked:
+
+- [experiment/protocol/PROTOCOL.md](experiment/protocol/PROTOCOL.md)
+
+New evidence-producing work should normally go through the experiments-first or
+amendment workflow, depending on the tier:
+
+- use `experiments/` for new standalone evidence cells;
+- use signed `experiment/protocol/AMENDMENT-*.md` docs for governed protocol
+  extensions;
+- use lab/session notes for diagnostics, smokes, reruns, and non-claim work.
+
+Current amendment status and backlog live in [TODO.md](TODO.md). Do not infer
+claim status from scratch outputs or local run products; use the signed amendment
+docs, result summaries, and paper provenance appendices.
+
+## Running Code
+
+Training and evaluation infrastructure lives in the
 [Synaptic Tuner](https://github.com/ProfSynapse/Synaptic-Tuner) submodule:
 
-```bash
-git submodule update --init          # first checkout
+```powershell
+git submodule update --init
 cd synaptic-tuner
-./run.sh status                      # health check
 ```
 
-The Phase 1 run matrix (probe → dataset builds → matrix gate → training
-cells) is driven by the experiment-runner scripts under
-`.claude/skills/experiment-runner/`; dataset format requirements (KTO
-interleaving etc.) are documented at
-`synaptic-tuner/.skills/fine-tuning/reference/dataset-formats.md`.
+Keep `synaptic-tuner/` generic. Project-specific protocols, paper claims, and
+Epistemic-Humility orchestration belong in the root repository, not inside the
+submodule.
 
-## Public artifacts
+Before trusting an experimental number:
 
-The project is designed for public replication, but HF Hub publication is a
-gated release step rather than a scratch-artifact dump. Publication candidates,
-repo naming, license boundaries, and current status are tracked in
-[`docs/public-artifacts.md`](docs/public-artifacts.md).
+1. Find the signed amendment, lab note, or paper provenance row.
+2. Trace config -> builder/evaluator -> generated file -> trainer/eval loader.
+3. Re-run the relevant deterministic analysis script where available.
+4. Keep confirmatory, exploratory, and diagnostic results separate.
 
-Current public HF artifacts:
+## Public Artifacts
 
-- [Phase 1 Qwen3 4B training/dev data](https://huggingface.co/datasets/professorsynapse/epistemic-humility-phase1)
-- [Phase 1 evaluation analysis artifacts](https://huggingface.co/datasets/professorsynapse/epistemic-humility-phase1-evals)
-- [Phase 1 compact knowledge labels/probe manifests](https://huggingface.co/datasets/professorsynapse/epistemic-humility-phase1-labels)
-- [Cloud-lane per-cell readout results](https://huggingface.co/datasets/professorsynapse/epistemic-humility-cloud-results)
-  (per-model result/manifest JSONs from the HF Jobs evaluation lane; run-tag
-  prefixes map to signed amendment docs under `experiment/protocol/`)
-- [Two-signal probe directions](https://huggingface.co/datasets/professorsynapse/eh-probe-directions)
-  (gate/dial linear-probe directions per model family, with per-layer AUROC
-  fit metadata — replicate the readout with no GPU extraction)
-- [Readout row surfaces](https://huggingface.co/datasets/professorsynapse/eh-readout-rows)
-  (per-question question/answer/grade rows behind the amendment results — no
-  hidden-state tensors; audit grading or study answer behavior directly)
-- [Doubt on command — Amendment AH exhaust](https://huggingface.co/datasets/professorsynapse/eh-doubt-on-command)
-  (5,436 per-row generations + primed-readout instrumentation behind the
-  H-compliance result: doubt primes are obeyed without consulting the model's
-  own internal readout; includes datasheet and per-source license audit)
+The repo-side manifest is [docs/public-artifacts.md](docs/public-artifacts.md).
+Published artifacts include:
 
-Default policy:
+- Phase 1 Qwen3 4B training/dev data.
+- Phase 1 evaluation analysis artifacts.
+- Phase 1 compact knowledge labels and probe manifests.
+- Cloud-lane per-cell readout results.
+- Two-signal probe directions.
+- Readout row surfaces.
+- Amendment AH "doubt on command" exhaust.
 
-- Publish redistributable datasets, per-model knowledge labels, scored eval
-  outputs, aggregate CSVs, and evaluated LoRA adapters.
-- Prefer adapter-only model repos first; publish merged checkpoints only for
-  deliberate reference releases.
-- Do not publish restricted bridge/OpenMOSS/Cheng data or gitignored local cache
-  artifacts.
-- Record every uploaded artifact with an HF repo URL/revision and the local run
-  record or analysis file that produced it.
+Publication is a release gate, not a scratch dump. Do not publish restricted
+bridge/OpenMOSS/Cheng raw data, local HF caches, hidden-state tensors, or
+unreviewed checkpoints without explicit approval and provenance.
 
 ## Contributing
 
-Contributions, corrections, and replication attempts are welcome; see
-[CONTRIBUTING.md](CONTRIBUTING.md) for the full guide. The most useful ones
-right now:
+See [CONTRIBUTING.md](CONTRIBUTING.md). The highest-value contributions are:
 
-- **Evidence corrections**: if a number in
-  `meta-analysis/evidence/effects.csv` misstates a primary source, open an
-  issue with the source passage. Rows that fail verification get corrected
-  or dropped; that is the point of the `verified` flag.
-- **Missed studies**: papers on calibration, abstention training,
-  fine-tuning-induced hallucination, or sycophancy that the search missed
-  (inclusion criteria are in the paper's methods section and
-  `meta-analysis/evidence/prisma-flow.md`).
-- **Replication**: the analysis scripts are deterministic (CSV in, figures
-  out) and the experiment pipeline is built to be re-runnable. If something
-  doesn't reproduce, that's a bug report we want.
+- primary-source corrections to evidence rows or paper claims;
+- missed literature with precise citations;
+- replication of figures, training cells, or graph validations;
+- bug fixes to deterministic analysis, dataset, eval, or probe scripts.
 
-Ground rules for PRs:
+Ground rules:
 
-- `experiment/protocol/PROTOCOL.md` is a signed pre-registration and is
-  **locked**: changes to hypotheses, falsifiers, or the headline run matrix
-  require a new signed revision with a changelog, not an edit.
-- Every quantitative claim needs provenance (see below). PRs that add
-  numbers without sources won't be merged.
-- Some vendored data is do-not-redistribute (notably the OpenMOSS IDK
-  data) and is deliberately gitignored. Don't commit it, and don't build
-  anything that requires redistributing it.
+- Every quantitative claim needs provenance.
+- Do not edit locked protocols without a signed revision.
+- Do not commit restricted or gitignored data.
+- Do not hand-edit generated results.
+- Keep `synaptic-tuner/` experiment-agnostic.
 
-## Provenance rules (non-negotiable for arXiv)
+## Maintenance Notes
 
-- Every number in `meta-analysis/evidence/effects.csv` carries source,
-  exact metric, model, method, URL, and a `verified` flag. Numbers failing
-  primary-source verification get corrected or dropped from pooled stats;
-  the raw reports keep the audit trail.
-- Analysis scripts are deterministic and re-runnable: data in, figures out.
-  No hand-edited results.
-- Datasets carry `dataset.md` provenance files (source, license, fetch
-  date, schema).
-- Gitignored binaries are re-fetchable:
-  `SSL_CERT_FILE=$(python3 -m certifi) python3 library/scripts/fetch_library.py --enrich`
-- Everything paper 2 produces (per-model knowledge labels, adapters, eval
-  harness) gets released; paper 1 documents the field failing at exactly
-  this.
+This repository is intentionally research-first. Claims should point to evidence,
+scripts should be reproducible, and paper prose should not depend on hidden local
+state. When in doubt, update the knowledge graph, the paper provenance appendix,
+or `docs/research-trajectory.md` rather than adding another untracked scratch note.
