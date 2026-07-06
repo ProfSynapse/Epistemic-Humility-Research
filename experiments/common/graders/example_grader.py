@@ -1,7 +1,7 @@
 """Example project grader for a tuner mechinterp steer cell.
 
 NOT a registered instrument. This is the teaching companion to
-experiment/phase1/cells/example-cell/. It shows the grader contract the tuner
+experiments/example-cell/. It shows the grader contract the tuner
 expects: a callable that maps one per-row output dict to a grade dict, which the
 CLI merges back into the row so the declarative gates can read the added fields.
 

@@ -26,6 +26,6 @@
     "C": 1.0
   },
   "provenance": {
-    "note": "STUB. NOT fitted on real data; hand-written so the example cell parses and runs end to end. A real cell references a probe-fit output under experiment/phase1/probe/steering/directions/<checkpoint>/."
+    "note": "STUB. NOT fitted on real data; hand-written so the example cell parses and runs end to end. A real cell references a probe-fit output under its own experiments/<slug>/directions/ (gitignored data), promoted to experiments/common/directions/<checkpoint>/ once a second experiment consumes it."
   }
 }

@@ -7,8 +7,8 @@
 #
 # Adjudicate (CPU, no GPU) with:
 #   cd synaptic-tuner && python tuner.py mechinterp score-gates \
-#     --gates-config ../experiment/phase1/cells/example-cell/gates.yaml \
-#     --rows-path ../experiment/phase1/probe/analysis/example-cell/rows_out.jsonl
+#     --gates-config ../experiments/example-cell/gates.yaml \
+#     --rows-path ../experiments/example-cell/analysis/rows_out.jsonl
 
 seed: 20260706
 n_boot: 1000

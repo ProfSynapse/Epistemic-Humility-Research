@@ -10,7 +10,7 @@ The steer and extract verbs call the render function per row to build the prompt
 that is tokenized and generated over. Resolved via importlib against sys.path,
 so keep the graders/renders dirs on PYTHONPATH:
 
-    PYTHONPATH=experiment/phase1/probe/graders:experiment/phase1/probe/renders
+    PYTHONPATH=experiments/common/graders:experiments/common/renders
 
 A real render for this research line would apply the checkpoint's chat template
 (the frozen harness does this in steering_common.py). This example keeps it to a

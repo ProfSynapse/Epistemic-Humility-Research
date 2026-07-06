@@ -98,12 +98,12 @@ which rows matter. Each is a callable or file named in the recipe:
 
 - **render function** (`--render-fn module:callable`): maps a row dict to a
   prompt string; apply your chat template here. Home:
-  `experiment/phase1/probe/renders/`.
+  `experiments/common/renders/`.
 - **content-end resolver** (`content_end_fn` in an extract recipe): maps
   `(full_ids, prompt_len, tokenizer)` to the index of the last content token.
 - **grader** (`grader: module:callable` in a steer recipe): maps a per-row output
   dict to a grade dict, merged back so gates can read it. Home:
-  `experiment/phase1/probe/graders/`.
+  `experiments/common/graders/`.
 - **row pool** (`rows_path`): any JSONL your project produces, one object per row
   with a `row_key` (or `id`/`key`).
 
@@ -113,42 +113,53 @@ Render and grader callables are resolved with `importlib.import_module` against
 frozen `steering/` dir:
 
 ```bash
-PYTHONPATH=experiment/phase1/probe/graders:experiment/phase1/probe/renders
+PYTHONPATH=experiments/common/graders:experiments/common/renders
 ```
 
 ## Organization principles
 
-The user asked for crisp conventions. These are the rules for where a cell's
-pieces live and how signing keeps goalposts from moving.
+New evidence-producing work follows the **experiments-first** layout: one
+self-contained directory per experiment at the repo top level,
+`experiments/<slug>/`, holding the signed `AMENDMENT.md`, the `experiment.yaml`
+manifest, a `NOTEBOOK.md`, and the cell configs. The `experiment/phase1/` tree
+(singular) is frozen as the historical Phase 1 record; nothing new lands there.
 
-- **Cell configs are committed, one dir per registered cell.** Home:
-  `experiment/phase1/cells/<amendment-or-diagnostic-slug>/{cell.yaml, gates.yaml}`.
-  The slug matches the amendment letter (e.g. `amendment-an`) or the
-  lab-notebook slug for a diagnostic. One directory per registered cell.
-- **Frozen direction JSONs are DATA.**
-  `experiment/phase1/probe/steering/directions/<checkpoint>/...` stays their home,
-  in `mechinterp-direction/v1` format going forward. Recipes reference them by
-  relative repo path. (These dirs are gitignored except for pinned amendment
-  inputs; a real cell's direction is an input artifact, reproducible from an
-  extraction dir.)
-- **Graders are project modules** under `experiment/phase1/probe/graders/`,
-  referenced as `module:callable` in the recipe. A signed cell **byte-pins** the
-  grader: record the grader file's sha256 in the amendment doc alongside the
-  config shas.
+The layout and lifecycle (directory shape, manifest fields, generated indices,
+the `bin/exp` tooling) are governed by the `experiments` skill (PR in flight; see
+`.skills/experiments/` once merged). This section keeps only the
+**mechinterp-specific** rules for where a cell's pieces live and how signing keeps
+goalposts from moving.
+
+- **Cell configs live with the experiment.** Home:
+  `experiments/<amendment-or-diagnostic-slug>/{cell.yaml, gates.yaml}`, co-located
+  with that experiment's `AMENDMENT.md` and `experiment.yaml` manifest. The slug
+  matches the amendment letter (e.g. `amendment-an`) or the lab-notebook slug for
+  a diagnostic.
+- **Direction JSONs are DATA** in `mechinterp-direction/v1` format. Their first
+  home is the consuming experiment's own `experiments/<slug>/directions/`
+  (gitignored data, reproducible from an extraction dir). The first time a SECOND
+  experiment consumes the same direction, promote it to
+  `experiments/common/directions/<checkpoint>/...` and record the originating
+  experiment in its provenance. Recipes reference directions by relative repo path.
+- **Shared graders and renders** live under
+  `experiments/common/{graders,renders}/`, referenced as `module:callable` in the
+  recipe (put those dirs on `PYTHONPATH`). A signed cell **byte-pins** the grader:
+  record the grader file's sha256 in the amendment doc alongside the config shas.
 - **Signing discipline.** At signing, the amendment doc pins `sha256` of
   `cell.yaml` + `gates.yaml` + the grader (and any render module). Set the cell's
   `surface.expected_config_sha` to the cell.yaml pin; the tuner enforces it at
   run time, so the config cannot drift silently and the goalposts cannot move
   after the result.
-- **Outputs are untracked** under `experiment/phase1/probe/analysis/<slug>/`
-  (existing convention). Staging uploads are namespaced by `RUN_TAG`.
+- **Outputs are untracked** under the experiment's own
+  `experiments/<slug>/analysis/` (gitignored). Staging uploads are namespaced by
+  `RUN_TAG`.
 - **Naming.** Run tags are `<slug>-r<N>` (e.g. `amendment-an-r2`). Smoke-state
   files live with the outputs, never committed.
 
 ## Worked example
 
-`experiment/phase1/cells/example-cell/` is a complete, parseable AN-style cell
-expressed against the real tuner schema. It is clearly marked **NOT a registered
+`experiments/example-cell/` is a complete, parseable AN-style cell expressed
+against the real tuner schema. It is clearly marked **NOT a registered
 instrument** - a teaching artifact, never launched as confirmatory. It ships:
 
 - `cell.yaml` - six-block steer cell (erase_write setpoint on `answer_window`,
@@ -158,8 +169,9 @@ instrument** - a teaching artifact, never launched as confirmatory. It ships:
   readout floor (`auroc_floor`).
 - `direction_stub.json` - a hand-written `mechinterp-direction/v1` stub so the
   cell runs end to end without a fitted direction.
-- companion plug-ins: `experiment/phase1/probe/graders/example_grader.py` and
-  `experiment/phase1/probe/renders/example_render.py`.
+- companion plug-ins under the shared home:
+  `experiments/common/graders/example_grader.py` and
+  `experiments/common/renders/example_render.py`.
 
 Validate CPU-side (no GPU) that the config and gates parse against the real
 schema:
@@ -167,9 +179,9 @@ schema:
 ```bash
 cd synaptic-tuner
 python -c "from MechInterp.config import load_steer_config; \
-  load_steer_config('../experiment/phase1/cells/example-cell/cell.yaml'); print('cell ok')"
+  load_steer_config('../experiments/example-cell/cell.yaml'); print('cell ok')"
 python -c "from MechInterp.stats.evaluator import load_gates_config; \
-  load_gates_config('../experiment/phase1/cells/example-cell/gates.yaml'); print('gates ok')"
+  load_gates_config('../experiments/example-cell/gates.yaml'); print('gates ok')"
 python tuner.py mechinterp list-configs   # lists the bundled tuner templates
 ```
 
@@ -178,26 +190,26 @@ python tuner.py mechinterp list-configs   # lists the bundled tuner templates
 ```bash
 # 1. Extract hidden states over a labeled row pool (GPU).
 cd synaptic-tuner && python tuner.py mechinterp extract \
-  --mi-config ../experiment/phase1/cells/<slug>/extract.yaml \
+  --mi-config ../experiments/<slug>/extract.yaml \
   --model <base-model> \
   --render-fn example_render:render \
   --i-know-this-runs-on-gpu
 
 # 2. Fit a linear readout and freeze a direction (CPU).
 python tuner.py mechinterp probe-fit \
-  --mi-config ../experiment/phase1/cells/<slug>/probe_fit.yaml
+  --mi-config ../experiments/<slug>/probe_fit.yaml
 
 # 3. Run the intervention cell: smoke first, then the full arms (GPU).
 python tuner.py mechinterp steer \
-  --mi-config ../experiment/phase1/cells/<slug>/cell.yaml \
+  --mi-config ../experiments/<slug>/cell.yaml \
   --model <base-model> \
   --render-fn example_render:render \
   --i-know-this-runs-on-gpu
 
 # 4. Adjudicate with declarative gates (CPU).
 python tuner.py mechinterp score-gates \
-  --gates-config ../experiment/phase1/cells/<slug>/gates.yaml \
-  --rows-path ../experiment/phase1/probe/analysis/<slug>/rows_out.jsonl
+  --gates-config ../experiments/<slug>/gates.yaml \
+  --rows-path ../experiments/<slug>/analysis/rows_out.jsonl
 ```
 
 Run the `mechinterp` verbs from the `synaptic-tuner/` dir (that is where
