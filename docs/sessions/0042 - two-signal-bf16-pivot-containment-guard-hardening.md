@@ -5,7 +5,7 @@ title: Two-signal bf16 substrate pivot; dataset containment + guard/skill harden
   J-lens built
 status: active
 created_at: '2026-07-07T12:36:11Z'
-updated_at: '2026-07-07T14:44:04Z'
+updated_at: '2026-07-07T17:24:49Z'
 phase: CODE
 question: Does two-signal caution regulation actuate bidirectionally on raw-base Qwen3-4B
   once the whole instrument is moved to full bf16 (unifying substrate with the bf16-only
@@ -251,6 +251,49 @@ checkpoints:
   decisions: []
   next_steps: []
   signals: {}
+- id: 007-checkpoint
+  at: '2026-07-07T17:24:49Z'
+  kind: checkpoint
+  title: Checkpoint
+  summary: "DIAGNOSTIC COMPLETE -- gate-and-snap tighten is VIABLE; decided to draft\
+    \ a fresh pre-registered amendment.\n\nFINAL step-3 payoff frontier (anchor_onward,\
+    \ FIXED generation EOS-on, n=80/cell, local 3090):\n  dose 200: confab clean_tighten\
+    \ 82.5% [73,89]; known-correct false-refuse 36.2% [27,47]; gated~ 78% tighten\
+    \ / 1.6% false-refuse\n  dose 230: 86.2% [77,92]; 45.0% [35,56]; gated~ 82% /\
+    \ 2.0%\n  dose 260: 87.5% [78,93]; 56.2% [45,67]; gated~ 83% / 2.5%\nDiminishing\
+    \ returns: tighten +5pt from 200->260 while false-refuse +20pt. DOSE ~200 = selectivity\
+    \ sweet spot.\n\nVERDICT: on bf16 raw-base, TRAINING-FREE, gate-and-snap tightens\
+    \ selectively. Gate = DOUBT threshold (AUC 0.976; catches ~95% confab, flags ~5%\
+    \ known-correct); snap = anchor_onward caution write at realized projection ~200;\
+    \ generation EOS-enabled. Estimated gated: ~78% of confabs -> clean terminating\
+    \ refusal, ~1.6% of correct answers wrongly refused. The write itself is NON-selective\
+    \ (dosing a correct row refuses it 36% of the time); ALL selectivity comes from\
+    \ the gate. RELEASE half remains a genuine null (documented). Diagnostic key corrections\
+    \ vs the original proportional two-signal: (1) dose-units KILL fixed; (2) \"degeneration\"\
+    \ was a harness bug (min_new_tokens==max_new_tokens suppressed EOS; 0/12->12/12\
+    \ clean termination once fixed); (3) proportional scalar scattered dose (the 1/6\
+    \ was scatter, not a ceiling); (4) the two-signal collapsed to a ONE-signal doubt\
+    \ gate + caution snap; (5) neg_ctrl confirmed healthy on its OWN contrast (confab-vs-refuse\
+    \ AUC 1.0 in-sample), just off-task for tighten.\n\nCAVEAT: gated numbers are\
+    \ ESTIMATES (product of two separately-measured rates). Confirmatory needs an\
+    \ END-TO-END gated run (gate decides dosing) on HELD-OUT, plus defects fixed:\
+    \ pin random_state (reproducible directions), bake the generation fix into the\
+    \ instrument, pre-register tau + dose 200.\n\nDECISION (user, 2026-07-07): DRAFT\
+    \ a fresh pre-registered gate-and-snap amendment now (tighten-only, NON-AQ slug\
+    \ -- user separately writing AQ), design = doubt-gated caution snap, confirmatory\
+    \ = end-to-end gated pipeline on held-out with pre-stated tighten floor + false-refusal\
+    \ ceiling + placebo (permuted-gate / random-direction) controls. Then user prediction\
+    \ + exp sign + GPU approval (local 3090 free). #8 (old proportional-scalar sign)\
+    \ stays superseded/BLOCKED.\n\nAll diagnostic artifacts under experiments/two-signal-caution-regulation-instruct/analysis/\
+    \ (gitignored scratch): tighten_step1_* (gen fix), tighten_step2_* (dose x scope),\
+    \ tighten_step3_d{200,230,260}_* (payoff), tighten_step4a/b (regrade + propensity\
+    \ AUC), tighten_gen_lib.py (fixed generation)."
+  evidence: []
+  run_ids: []
+  commands: []
+  decisions: []
+  next_steps: []
+  signals: {}
 ---
 # Two-signal bf16 substrate pivot; dataset containment + guard/skill hardening; J-lens built
 
@@ -336,3 +379,22 @@ ROUND 2 dispatched (agent a3ef6d5e62793f6d4, RUNNING, free local 3090, scratch o
 DECIDES: is there a (dose,scope) with high clean_tighten AND low false-refusal -> viable gate-and-snap tighten instrument, promote to a FRESH pre-registered amendment (NON-AQ; user is separately writing amendment AQ, do not collide). Else -> clean negative finding (caution write cannot induce a terminating refusal on bf16 raw-base).
 
 #8 two-signal sign remains BLOCKED (do not sign the proportional-scalar instrument; it is superseded by the gate-and-snap redesign under test).
+### 007-checkpoint - Checkpoint
+
+- at: `2026-07-07T17:24:49Z`
+- kind: `checkpoint`
+- summary: DIAGNOSTIC COMPLETE -- gate-and-snap tighten is VIABLE; decided to draft a fresh pre-registered amendment.
+
+FINAL step-3 payoff frontier (anchor_onward, FIXED generation EOS-on, n=80/cell, local 3090):
+  dose 200: confab clean_tighten 82.5% [73,89]; known-correct false-refuse 36.2% [27,47]; gated~ 78% tighten / 1.6% false-refuse
+  dose 230: 86.2% [77,92]; 45.0% [35,56]; gated~ 82% / 2.0%
+  dose 260: 87.5% [78,93]; 56.2% [45,67]; gated~ 83% / 2.5%
+Diminishing returns: tighten +5pt from 200->260 while false-refuse +20pt. DOSE ~200 = selectivity sweet spot.
+
+VERDICT: on bf16 raw-base, TRAINING-FREE, gate-and-snap tightens selectively. Gate = DOUBT threshold (AUC 0.976; catches ~95% confab, flags ~5% known-correct); snap = anchor_onward caution write at realized projection ~200; generation EOS-enabled. Estimated gated: ~78% of confabs -> clean terminating refusal, ~1.6% of correct answers wrongly refused. The write itself is NON-selective (dosing a correct row refuses it 36% of the time); ALL selectivity comes from the gate. RELEASE half remains a genuine null (documented). Diagnostic key corrections vs the original proportional two-signal: (1) dose-units KILL fixed; (2) "degeneration" was a harness bug (min_new_tokens==max_new_tokens suppressed EOS; 0/12->12/12 clean termination once fixed); (3) proportional scalar scattered dose (the 1/6 was scatter, not a ceiling); (4) the two-signal collapsed to a ONE-signal doubt gate + caution snap; (5) neg_ctrl confirmed healthy on its OWN contrast (confab-vs-refuse AUC 1.0 in-sample), just off-task for tighten.
+
+CAVEAT: gated numbers are ESTIMATES (product of two separately-measured rates). Confirmatory needs an END-TO-END gated run (gate decides dosing) on HELD-OUT, plus defects fixed: pin random_state (reproducible directions), bake the generation fix into the instrument, pre-register tau + dose 200.
+
+DECISION (user, 2026-07-07): DRAFT a fresh pre-registered gate-and-snap amendment now (tighten-only, NON-AQ slug -- user separately writing AQ), design = doubt-gated caution snap, confirmatory = end-to-end gated pipeline on held-out with pre-stated tighten floor + false-refusal ceiling + placebo (permuted-gate / random-direction) controls. Then user prediction + exp sign + GPU approval (local 3090 free). #8 (old proportional-scalar sign) stays superseded/BLOCKED.
+
+All diagnostic artifacts under experiments/two-signal-caution-regulation-instruct/analysis/ (gitignored scratch): tighten_step1_* (gen fix), tighten_step2_* (dose x scope), tighten_step3_d{200,230,260}_* (payoff), tighten_step4a/b (regrade + propensity AUC), tighten_gen_lib.py (fixed generation).
