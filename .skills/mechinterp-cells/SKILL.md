@@ -149,6 +149,16 @@ independent). Blocks map 1:1 to the tuner Pydantic schema
    arms until a smoke passes for this exact config sha; `--force-full-run`
    overrides (do not use `--force-full-run` for a signed cell).
 
+## Dosing an erase_write cell
+
+`erase_write` writes an absolute coordinate, so the behavioral response is
+threshold-then-collapse, not proportional to `strength`: a direction has a narrow
+**coherent window** between inert and degenerate output, and a coarse absolute
+ladder can jump clean over it (falsely reading a real lever as inert / voiding a
+screen's positive control). Dose ambient-relative and pilot-sweep the window
+first. Full method, measured numbers, and the smoke-is-write-accuracy caveat:
+[reference/dose-calibration.md](reference/dose-calibration.md).
+
 ## Plug-in points (project code, not the tuner)
 
 The tuner ships no notion of what a prompt looks like, what "correct" means, or
@@ -232,37 +242,57 @@ instrument** - a teaching artifact, never launched as confirmatory. It ships:
   `experiments/common/renders/example_render.py`.
 
 Validate CPU-side (no GPU) that the config and gates parse against the real
-schema:
+schema.
+
+> **Run tuner commands from the REPO ROOT (or the experiment worktree root),
+> never from inside `synaptic-tuner/`.** A cell's internal paths
+> (`surface.rows_path`, `execution.output_path`, every `readouts[*].path`) are
+> written repo-root-relative, and the tuner opens them at the process working
+> directory. A `cd synaptic-tuner` first would silently resolve every one of
+> them against the wrong directory and miss the files. Invoking
+> `python synaptic-tuner/tuner.py ...` keeps the CWD at the repo root while
+> still making `MechInterp` importable (Python adds the script's own directory
+> to `sys.path`). For the parse-only import checks, put the tuner on
+> `PYTHONPATH` instead of `cd`-ing into it.
 
 ```bash
-cd synaptic-tuner
-python -c "from MechInterp.config import load_steer_config; \
-  load_steer_config('../experiments/example-cell/cell.yaml'); print('cell ok')"
-python -c "from MechInterp.stats.evaluator import load_gates_config; \
-  load_gates_config('../experiments/example-cell/gates.yaml'); print('gates ok')"
-python tuner.py mechinterp list-configs   # lists the bundled tuner templates
+# from the repo root (or the experiment worktree root)
+PYTHONPATH=synaptic-tuner python -c "from MechInterp.config import load_steer_config; \
+  load_steer_config('experiments/example-cell/cell.yaml'); print('cell ok')"
+PYTHONPATH=synaptic-tuner python -c "from MechInterp.stats.evaluator import load_gates_config; \
+  load_gates_config('experiments/example-cell/gates.yaml'); print('gates ok')"
+python synaptic-tuner/tuner.py mechinterp list-configs   # bundled tuner templates
 ```
 
 ## Typical workflow
 
 For new cells, make `pipeline.yaml` the default launch artifact and use stage
-selection flags for iteration:
+selection flags for iteration. Run every command from the REPO ROOT (see the CWD
+warning above). For project-local configs, set `runtime.workdir: ..` in the
+pipeline YAML so stages execute against the research repo root while the tuner
+entrypoint remains `synaptic-tuner/tuner.py`.
 
 ```bash
-cd synaptic-tuner
-python tuner.py mechinterp run \
-  --config ../experiments/<slug>/pipeline.yaml \
+python synaptic-tuner/tuner.py mechinterp run \
+  --config experiments/<slug>/pipeline.yaml \
   --provider local \
   --dry-run
 
-python tuner.py mechinterp run \
-  --config ../experiments/<slug>/pipeline.yaml \
+python synaptic-tuner/tuner.py mechinterp run \
+  --config experiments/<slug>/pipeline.yaml \
   --provider local \
   --only-step fit \
   --yes
+```
 
-python tuner.py mechinterp run \
-  --config ../experiments/<slug>/pipeline.yaml \
+Modal submission is for GPU-backed runs and currently clones the pushed tuner
+repo/commit. Use it only when the selected pipeline config and referenced stage
+configs are available in that cloned repo, or after adding an explicit generic
+artifact-staging/experiment-repo mechanism.
+
+```bash
+python synaptic-tuner/tuner.py mechinterp run \
+  --config synaptic-tuner/MechInterp/configs/templates/pipeline.yaml \
   --provider modal \
   --repo-commit <pushed-synaptic-tuner-sha> \
   --i-know-this-runs-on-gpu \
@@ -270,35 +300,33 @@ python tuner.py mechinterp run \
 ```
 
 The lower-level verb sequence is still useful when debugging a stage directly:
+set `PYTHONPATH` to wherever your `--render-fn` / grader modules live (for
+example `experiments/common/renders`, or the cell's own directory).
 
 ```bash
 # 1. Extract hidden states over a labeled row pool (GPU).
-cd synaptic-tuner && python tuner.py mechinterp extract \
-  --mi-config ../experiments/<slug>/extract.yaml \
+PYTHONPATH=experiments/common/renders python synaptic-tuner/tuner.py mechinterp extract \
+  --mi-config experiments/<slug>/extract.yaml \
   --model <base-model> \
   --render-fn example_render:render \
   --i-know-this-runs-on-gpu
 
 # 2. Fit a linear readout and freeze a direction (CPU).
-python tuner.py mechinterp probe-fit \
-  --mi-config ../experiments/<slug>/probe_fit.yaml
+python synaptic-tuner/tuner.py mechinterp probe-fit \
+  --mi-config experiments/<slug>/probe_fit.yaml
 
 # 3. Run the intervention cell: smoke first, then the full arms (GPU).
-python tuner.py mechinterp steer \
-  --mi-config ../experiments/<slug>/cell.yaml \
+PYTHONPATH=experiments/common/renders python synaptic-tuner/tuner.py mechinterp steer \
+  --mi-config experiments/<slug>/cell.yaml \
   --model <base-model> \
   --render-fn example_render:render \
   --i-know-this-runs-on-gpu
 
 # 4. Adjudicate with declarative gates (CPU).
-python tuner.py mechinterp score-gates \
-  --gates-config ../experiments/<slug>/gates.yaml \
-  --rows-path ../experiments/<slug>/analysis/rows_out.jsonl
+python synaptic-tuner/tuner.py mechinterp score-gates \
+  --gates-config experiments/<slug>/gates.yaml \
+  --rows-path experiments/<slug>/analysis/rows_out.jsonl
 ```
-
-Run the `mechinterp` verbs from the `synaptic-tuner/` dir (that is where
-`tuner.py` and the `MechInterp` package resolve); set `PYTHONPATH` to the project
-graders/renders dirs so the flat plug-in module names resolve.
 
 ## Gates
 
@@ -368,3 +396,6 @@ reader can consume.
 - FalseQA text is never committed; keep row pools with restricted text untracked.
 - The GPU verbs need `--i-know-this-runs-on-gpu`; treat that flag as a
   deliberate, per-run acknowledgement, not a default.
+- A passing smoke readback is write-accuracy, not a behavioral effect; calibrate
+  the dose to the direction's coherent window before the real ladder
+  ([reference/dose-calibration.md](reference/dose-calibration.md)).

@@ -1,0 +1,175 @@
+# dark-actuator-screen gates -- Tier-2 exploratory dose SCREEN. DRAFT (not
+# signed); do not launch as confirmatory evidence. See AMENDMENT.md.
+#
+# Reads ONE combined per-row output JSONL (cell.yaml execution.output_path)
+# that a launch-time wrapper (not yet built -- see NOTEBOOK.md) fills by
+# running every direction in cell.yaml's `readouts:` through the SAME
+# baseline+dose-ladder arms, with each direction's arm names PREFIXED by the
+# direction name: "<direction>__baseline", "<direction>__dose1", ...,
+# "<direction>__dose3". Every gate below names its exact (primary, control)
+# arm-name pair against that convention.
+#
+# Adjudicate (CPU, no GPU) once the combined output exists:
+#   cd synaptic-tuner && python tuner.py mechinterp score-gates \
+#     --gates-config ../experiments/dark-actuator-screen/gates.yaml \
+#     --rows-path ../experiments/dark-actuator-screen/analysis/rows_out.jsonl
+#
+# Every primitive here is kill_diff_vs_control (positive-count difference plus
+# a seeded row-bootstrap CI) on the grader's "flipped" indicator (see
+# experiments/common/graders/dark_actuator_grader.py): True iff a row moved
+# confab -> refuse or refuse -> answer relative to its AK Stage-1 baseline
+# label. Cross-direction comparisons (candidate vs its matched random
+# control) need both arms in the SAME output file, which the arm-naming
+# convention above provides without a cross-file primitive.
+
+seed: 20260706
+n_boot: 2000
+
+gates:
+  # --- G-instrument (precondition; screen is VOID if this fails) -----------
+  # Positive control: raw-base answer-vs-refuse mass-mean must move the flip
+  # rate at the top dose, CI excluding zero (AMENDMENT G-instrument).
+  # Representative layer L34 (matches the cell.yaml law.readout default and
+  # the strongest candidate by within-checkpoint consistency).
+  - name: instrument_positive_control_moves
+    primitive: kill_diff_vs_control
+    primary_arm: pos_ctrl_L34__dose3
+    control_arm: pos_ctrl_L34__baseline
+    primary_indicator: flipped
+    control_indicator: flipped
+    pass_if_diff: ">= 5"
+    pass_if_ci_excludes_zero: true
+
+  # Negative control 1/2: raw-base confab-propensity (AL: reads but does not
+  # actuate) must sit at the random floor -- small diff vs its own baseline,
+  # no CI-exclusion requirement (a null result is the PASS here).
+  - name: instrument_negative_propensity_at_floor
+    primitive: kill_diff_vs_control
+    primary_arm: neg_ctrl_L34__dose3
+    control_arm: neg_ctrl_L34__baseline
+    primary_indicator: flipped
+    control_indicator: flipped
+    pass_if_diff: "<= 2"
+
+  # Negative control 2/2: a representative seeded random unit direction
+  # (paired with the strongest candidate, L34_succ_pc0) must also sit at the
+  # floor.
+  - name: instrument_random_direction_at_floor
+    primitive: kill_diff_vs_control
+    primary_arm: randctrl_L34_succ_pc0__dose3
+    control_arm: randctrl_L34_succ_pc0__baseline
+    primary_indicator: flipped
+    control_indicator: flipped
+    pass_if_diff: "<= 2"
+
+  # --- G-screen (descriptive, per candidate) --------------------------------
+  # Graduation bar (AMENDMENT): flip rate exceeds the random-direction
+  # control at matched norm, bootstrap 95% CI excluding 0. One gate per
+  # candidate, top dose (dose3) vs its paired random control at the same dose.
+  - name: screen_L16_arel_pc7
+    primitive: kill_diff_vs_control
+    primary_arm: L16_arel_pc7__dose3
+    control_arm: randctrl_L16_arel_pc7__dose3
+    primary_indicator: flipped
+    control_indicator: flipped
+    pass_if_diff: ">= 1"
+    pass_if_ci_excludes_zero: true
+
+  - name: screen_L20_arel_pc5
+    primitive: kill_diff_vs_control
+    primary_arm: L20_arel_pc5__dose3
+    control_arm: randctrl_L20_arel_pc5__dose3
+    primary_indicator: flipped
+    control_indicator: flipped
+    pass_if_diff: ">= 1"
+    pass_if_ci_excludes_zero: true
+
+  - name: screen_L20_arel_pc8
+    primitive: kill_diff_vs_control
+    primary_arm: L20_arel_pc8__dose3
+    control_arm: randctrl_L20_arel_pc8__dose3
+    primary_indicator: flipped
+    control_indicator: flipped
+    pass_if_diff: ">= 1"
+    pass_if_ci_excludes_zero: true
+
+  - name: screen_L20_succ_pc5
+    primitive: kill_diff_vs_control
+    primary_arm: L20_succ_pc5__dose3
+    control_arm: randctrl_L20_succ_pc5__dose3
+    primary_indicator: flipped
+    control_indicator: flipped
+    pass_if_diff: ">= 1"
+    pass_if_ci_excludes_zero: true
+
+  - name: screen_L24_arel_pc5
+    primitive: kill_diff_vs_control
+    primary_arm: L24_arel_pc5__dose3
+    control_arm: randctrl_L24_arel_pc5__dose3
+    primary_indicator: flipped
+    control_indicator: flipped
+    pass_if_diff: ">= 1"
+    pass_if_ci_excludes_zero: true
+
+  - name: screen_L24_arel_pc7
+    primitive: kill_diff_vs_control
+    primary_arm: L24_arel_pc7__dose3
+    control_arm: randctrl_L24_arel_pc7__dose3
+    primary_indicator: flipped
+    control_indicator: flipped
+    pass_if_diff: ">= 1"
+    pass_if_ci_excludes_zero: true
+
+  - name: screen_L24_succ_pc4
+    primitive: kill_diff_vs_control
+    primary_arm: L24_succ_pc4__dose3
+    control_arm: randctrl_L24_succ_pc4__dose3
+    primary_indicator: flipped
+    control_indicator: flipped
+    pass_if_diff: ">= 1"
+    pass_if_ci_excludes_zero: true
+
+  - name: screen_L28_arel_pc11
+    primitive: kill_diff_vs_control
+    primary_arm: L28_arel_pc11__dose3
+    control_arm: randctrl_L28_arel_pc11__dose3
+    primary_indicator: flipped
+    control_indicator: flipped
+    pass_if_diff: ">= 1"
+    pass_if_ci_excludes_zero: true
+
+  - name: screen_L28_succ_pc0
+    primitive: kill_diff_vs_control
+    primary_arm: L28_succ_pc0__dose3
+    control_arm: randctrl_L28_succ_pc0__dose3
+    primary_indicator: flipped
+    control_indicator: flipped
+    pass_if_diff: ">= 1"
+    pass_if_ci_excludes_zero: true
+
+  - name: screen_L28_succ_pc3
+    primitive: kill_diff_vs_control
+    primary_arm: L28_succ_pc3__dose3
+    control_arm: randctrl_L28_succ_pc3__dose3
+    primary_indicator: flipped
+    control_indicator: flipped
+    pass_if_diff: ">= 1"
+    pass_if_ci_excludes_zero: true
+
+  - name: screen_L28_succ_pc4
+    primitive: kill_diff_vs_control
+    primary_arm: L28_succ_pc4__dose3
+    control_arm: randctrl_L28_succ_pc4__dose3
+    primary_indicator: flipped
+    control_indicator: flipped
+    pass_if_diff: ">= 1"
+    pass_if_ci_excludes_zero: true
+
+  - name: screen_L34_succ_pc0
+    primitive: kill_diff_vs_control
+    primary_arm: L34_succ_pc0__dose3
+    control_arm: randctrl_L34_succ_pc0__dose3
+    primary_indicator: flipped
+    control_indicator: flipped
+    pass_if_diff: ">= 1"
+    pass_if_ci_excludes_zero: true
