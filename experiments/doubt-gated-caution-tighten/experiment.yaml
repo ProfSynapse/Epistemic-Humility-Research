@@ -1,0 +1,44 @@
+slug: doubt-gated-caution-tighten
+type: steer-cell
+status: resolved
+registered: true
+question: On the raw-base untrained instruct (Qwen3-4B, no adapter), does a doubt-threshold
+  GATE that snaps only fired rows to a fixed caution-direction setpoint, measured
+  end-to-end on a held-out split the direction fit and tau choice never touched, selectively
+  tighten confabulations into coherent refusals while leaving known-correct answers
+  largely unrefused?
+prediction: On held-out, net confab clean_tighten >= 60% (diagnostic estimate ~78%)
+  and net known-correct false-refusal <= 5% (diagnostic estimate ~1.6%), with placebo
+  controls (random-direction, permuted-gate) showing no selective tightening.
+falsifier: G1 fails (net confab clean_tighten < 60% or its Wilson lower CI does not
+  exceed 50%) OR G2 fails (net known-correct false-refusal > 5% or its Wilson upper
+  CI is not below 10%) - doubt-gated snap is not a selective tighten instrument on
+  this substrate (null). No goalpost-moving after the result.
+checkpoint:
+  repo: unsloth/Qwen3-4B
+  revision: raw-base (no adapter; bf16, no 4-bit quantization)
+instrument:
+  configs:
+  - cell.yaml
+  - gates.yaml
+  modules:
+  - gen_lib.py
+  - grader.py
+  - model_lib.py
+  pins:
+    cell.yaml: a6d3ddc4030442757549d05ac8ac4c58d0c535401c5d86f532490744e82e14ee
+    gates.yaml: 48b65487b9b5b20693645e42ef0c8a4387446638db7c500721d74001fd331c4d
+    gen_lib.py: 6cffc7282591ca3b0db79d985a024ca2b63cab8afc1c5f5085d13cbdb98b79ce
+    grader.py: ad6cfdf197b775f1bc41850729f58ddd9f81a6e2db583d91cff91e94154a29f8
+    model_lib.py: ce71f6d02d97efdabb3d05e9709eff0dc0d50f2710eed4fe82f06df68389a047
+inputs:
+- experiments/doubt-gated-caution-tighten/analysis-committed/split_manifest.json
+- experiments/doubt-gated-caution-tighten/analysis-committed/u_d_L34.json
+- experiments/doubt-gated-caution-tighten/analysis-committed/c_hat_L34.json
+- experiments/doubt-gated-caution-tighten/analysis-committed/random_direction_L34.json
+- experiments/doubt-gated-caution-tighten/analysis-committed/gate_fit.json
+- experiments/doubt-gated-caution-tighten/analysis-committed/build_manifest.json
+verdict: 'Doubt-gated caution snap passed as a training-free selective tighten instrument
+  on bf16 raw-base Qwen3-4B: G1 73.5% clean_tighten, G2 3.1% false-refusal with Wilson
+  UCB 6.0%, and G3 placebos clean.'
+kg: []

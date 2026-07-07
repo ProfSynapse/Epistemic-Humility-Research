@@ -1,0 +1,115 @@
+# doubt-gated-caution-tighten. DRAFT, NOT a registered instrument until
+# `bin/exp sign` (see AMENDMENT.md; status: draft). Substrate: raw-base
+# untrained instruct, unsloth/Qwen3-4B (full bf16, no 4-bit quant), no adapter.
+#
+# UNLIKE the sibling two-signal-caution-regulation-instruct cell.yaml, this
+# instrument's per-row dosing decision is NOT a precomputed continuous gain
+# column: it is a THRESHOLD GATE (fire iff a doubt score clears a FROZEN tau)
+# that snaps a fired row to a FIXED realized projection. That control flow
+# (a FIT/HELD-OUT split gating the direction fit AND the tau choice, then an
+# end-to-end pipeline that decides dosing per held-out row) is executed by
+# this experiment's own scripts (pipeline.py, using the tuner's
+# InterventionHook / GenerationInterventionController primitives directly,
+# unmodified) rather than the tuner's `mechinterp steer` declarative
+# gain_field/permuted_control_of surface, which assumes a precomputed
+# per-row gain over one fixed population and does not natively express a
+# tau chosen on a disjoint FIT split or the random-direction / permuted-gate
+# placebo arms (a second readout swapped in on the SAME gated rows; a
+# same-total-fire-count random reassignment across a MIXED confab+known
+# population). This file pins the instrument's PARAMETERS (read by
+# pipeline.py at run time), not a tuner recipe.
+#
+# OFFLINE PREP (see each script's own docstring for full provenance):
+#   1. extract_l34_anchor.py       -- GPU: L34 anchor activations for
+#      known_correct_answered (89) / unknown_refused (1029) / confab (309).
+#      No answerable_refused (release is abandoned; tighten-only).
+#   2. split_fit_heldout.py        -- CPU: stratified FIT/HELD-OUT split of
+#      confab and known_correct_answered (unknown_refused is 100% fit-only
+#      scaffold, never split). fit_frac=0.40, seed=20260707.
+#      analysis-committed/split_manifest.json (ID-only).
+#   3. build_directions.py         -- CPU: refits u_d (doubt axis),
+#      pos_ctrl/neg_ctrl (AK-Stage-1-style refuse/propensity), c_hat
+#      (caution write direction, 2-D orthogonalized against u_d + neg_ctrl)
+#      ALL on the FIT split ONLY. LogisticRegression random_state PINNED
+#      (defect fix vs the superseded two-signal build) --
+#      `--verify-reproducible` fits twice and asserts byte-identical.
+#      analysis-committed/{u_d_L34.json,c_hat_L34.json,
+#      source_directions/{pos_ctrl,neg_ctrl}_L34.json,build_manifest.json}.
+#   4. gate_fit.py                 -- CPU: Youden-J tau on
+#      score = neg_z_d = -z_d (confab rows have LOW doubt), fit on the SAME
+#      FIT split, standardized with build_directions.py's FIT-pool
+#      mu_d/sigma_d. analysis-committed/gate_fit.json.
+#   5. build_random_direction.py   -- CPU: fixed-seed random unit direction
+#      for the G3(i) placebo (sigma=1.0, not fit from data).
+#      analysis-committed/random_direction_L34.json.
+#   6. materialize_rows.py         -- fetches question text (private HF
+#      staging repo) + local aliases (canonical AH A0 checkout, never
+#      committed) for every row in split_manifest.json.
+#      analysis/rows_with_text.jsonl (LOCAL, GITIGNORED).
+#
+# Validate config load (CPU, no GPU):
+#   python -c "import yaml; yaml.safe_load(open('cell.yaml'))"
+#
+# Launch (GPU; local 3090, free):
+#   python pipeline.py --mode smoke --n-rows 8 --dose 200
+#   python pipeline.py --mode full --dose 200 --i-know-this-is-the-confirmatory-run
+#     (NOT launched by the harness-build task; confirmatory, needs sign-off)
+
+surface:
+  # HELD-OUT rows only (analysis/rows_with_text.jsonl, filtered by
+  # split_manifest.json's split=="held_out"); FIT rows are consumed only by
+  # build_directions.py / gate_fit.py, never generated against.
+  rows_path: experiments/doubt-gated-caution-tighten/analysis/rows_with_text.jsonl
+  split_manifest: experiments/doubt-gated-caution-tighten/analysis-committed/split_manifest.json
+  seed: 20260707
+  generation:
+    max_new_tokens: 200
+    min_new_tokens: 1
+    do_sample: false
+    eos_includes_im_end: true
+    enable_thinking: false
+
+readouts:
+  - name: u_d
+    path: experiments/doubt-gated-caution-tighten/analysis-committed/u_d_L34.json
+    role: gate_sensor_doubt
+  - name: c_hat
+    path: experiments/doubt-gated-caution-tighten/analysis-committed/c_hat_L34.json
+    role: snap_write_direction
+  - name: random_direction
+    path: experiments/doubt-gated-caution-tighten/analysis-committed/random_direction_L34.json
+    role: g3i_placebo_write_direction
+
+gate:
+  score: neg_z_d   # = -z_d; confab rows have LOW doubt vs known_correct_answered
+  standardization_source: analysis-committed/build_manifest.json  # mu_d/sigma_d, FIT pool
+  tau_source: analysis-committed/gate_fit.json  # tau_frozen, Youden-J on FIT
+  fire_rule: "score >= tau"
+
+snap:
+  law: erase_write
+  position: anchor_onward
+  dose_target: 200.0   # realized |projection|, readback units (diagnostic sweet spot)
+  scope: anchor_onward
+
+arms:
+  - name: gated
+    description: real instrument (doubt gate -> c_hat snap at dose_target)
+  - name: random_direction
+    description: G3(i) placebo -- SAME fired rows, write along random_direction
+                 at matched realized magnitude instead of c_hat
+  - name: permuted_gate
+    description: G3(ii) placebo -- SAME total fire count across the combined
+                 confab_held + known_held pool, chosen uniformly at random
+                 (seed 20260707), same c_hat snap
+
+execution:
+  smoke_output_path: experiments/doubt-gated-caution-tighten/analysis/smoke_rows.jsonl
+  full_output_path: experiments/doubt-gated-caution-tighten/analysis/full_summary.json
+  grader: grader:grade_one
+  clean_tighten_metric: gen_lib:grade_clean_tighten
+
+smoke:
+  n_rows: 8
+  write_rel_tol: 0.05
+  write_abs_floor: 0.5
