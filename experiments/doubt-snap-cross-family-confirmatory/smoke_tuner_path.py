@@ -178,7 +178,7 @@ def main() -> int:
             "write_rel_tol": 0.05,
             "write_abs_floor": 0.5,
             "offtarget_tol": 0.001,
-            "gen_stream_probe_strength": 1.0,
+            "gen_stream_probe_strength": 250.0,
         },
     }
     config_path.write_text(yaml.safe_dump(config, sort_keys=False), encoding="utf-8")
