@@ -504,13 +504,14 @@ Atomic notes extracted from the library papers via the Agents-K1 ingestion skill
 - [[stable-diffusion]] : Stable Diffusion is a large-scale text-to-image latent diffusion model that generates images by running an iterative denoising process in a 
 - [[unifiedqa]] : A T5-based question-answering model finetuned by Khashabi et al. on a diverse collection of NLP QA datasets (including SQuAD, NaturalQuestio
 
-## Terms (183)
+## Terms (189)
 
 - [[abstain-qa]] : AbstainQA is a task formulation in which a model is given a question and must
 - [[abstention]] : Abstention is the behavior of an LLM deliberately declining to provide a
 - [[abstract-representations]] : Abstract representations are neural encodings in which changing one compositional variable produces the same directional shift in activation
 - [[activation-engineering]] : Activation engineering is the practice of steering or analyzing model behavior
 - [[ah-uh-hallucination-taxonomy]] : A three-category classification of LLM outputs on factual queries based on correctness and reliance on subject representation: Factual Assoc
+- [[ai-moral-status]] : AI moral status is the question of whether artificial systems have interests or welfare-relevant states that morality requires humans to con
 - [[aleatoric-uncertainty]] : Uncertainty that arises from intrinsic randomness or ambiguity in the data-generating process rather than from model ignorance. Aleatoric un
 - [[alignment-tax]] : The alignment tax is the performance degradation on public NLP benchmarks (e.g., SQuAD, DROP, HellaSwag, WMT) that results from RLHF fine-tu
 - [[answer-uncertainty]] : In the MCQ setting, the component of a language model's predictive probability that reflects how the model ranks candidate answers given tha
@@ -526,6 +527,8 @@ Atomic notes extracted from the library papers via the Agents-K1 ingestion skill
 - [[causal-separability]] : Two concept variables Z and W are causally separable if varying Z does not affect the distribution over W in the data-generating process, an
 - [[chain-of-thought-faithfulness]] : Chain-of-thought faithfulness is the degree to which a model's stated reasoning
 - [[clipped-surrogate-objective]] : The clipped surrogate objective is the core PPO training loss: min(r_t * A_t, clip(r_t, 1-epsilon, 1+epsilon) * A_t), where r_t is the proba
+- [[cognitive-access]] : Cognitive access is the functional availability of a representation for flexible reasoning, action control, and report. In the workspace com
+- [[cognitive-space]] : Cognitive space is Neel Nanda's term for a model-internal working memory where intermediate variables are stored during a forward pass. In t
 - [[compositional-generalization]] : Compositional generalization is the ability of a steering or training method to satisfy novel combinations of behaviors at inference time wi
 - [[computational-buffer-effect]] : A content-independent mechanism by which a reasoning model uses the act of generating extra reasoning tokens to perform additional latent co
 - [[concept-orthogonality]] : Concept orthogonality is the empirical and theoretical finding that semantically unrelated (statistically independent) concepts tend to be r
@@ -580,6 +583,7 @@ Atomic notes extracted from the library papers via the Agents-K1 ingestion skill
 - [[implicit-bias-gradient-descent]] : The implicit bias of gradient descent refers to the tendency of gradient descent applied to separable data under cross-entropy or exponentia
 - [[input-ambiguity]] : A component of LLM uncertainty arising from vagueness or underspecification in the input prompt, measured as semantic disagreement across K 
 - [[input-discarding]] : Input discarding is the empirical observation that GPT-style transformers
+- [[interpretative-meta-tokens]] : Interpretative meta-tokens are high-information tokens surfaced by a jacobian-lens readout that appear to name the kind of interpretive oper
 - [[intra-layer-memory-composition]] : Intra-layer memory composition is the process by which a single feed-forward layer combines hundreds of simultaneously active memory cells v
 - [[iterative-inference]] : Iterative inference is a theoretical framing of transformer forward passes as a
 - [[iterative-refinement-transformers]] : Iterative refinement in transformers is the view that a transformer's forward
@@ -616,12 +620,14 @@ Atomic notes extracted from the library papers via the Agents-K1 ingestion skill
 - [[over-hedging]] : Over-hedging is a failure mode in which a model trained to reward epistemic humility adds excessive caveats or claims there is no clear answ
 - [[overconfidence]] : Overconfidence is a calibration failure in which a model's expressed confidence is systematically higher than its actual accuracy. In a well
 - [[performative-chain-of-thought]] : A performative chain-of-thought is a mismatch between a model's internal belief
+- [[phenomenal-consciousness]] : Phenomenal consciousness is subjective experience: the question of whether there is something it is like to be in a mental or computational
 - [[policy-entropy-collapse]] : A training pathology in reinforcement learning with verifiable rewards (RLVR) where the policy's output distribution prematurely concentrate
 - [[polysemanticity]] : Polysemanticity is the property of a single model component (neuron, attention head, or direction) responding to multiple unrelated semantic
 - [[post-hoc-reasoning]] : Post-hoc reasoning describes the phenomenon where a model generates explanatory
 - [[prediction-trajectory]] : A prediction trajectory is the sequence of per-layer vocabulary distributions
 - [[pretraining-co-occurrence-threshold]] : The pretraining co-occurrence threshold is the empirically identified subject-object co-occurrence count above which LRE causality consisten
 - [[privileged-basis]] : A privileged basis is a property of a neural network representation in which there exists a natural coordinate system, typically the neuron-
+- [[privileged-stream]] : A privileged stream is a proposed stronger structure than a mere set of accessible representations: a unified, evolving group of cognitive-a
 - [[probing-accuracy-task-importance-disconnect]] : The probing-accuracy/task-importance disconnect is the empirically demonstrated
 - [[progressive-regressive-sycophancy-taxonomy]] : A two-way decomposition of sycophantic capitulation by epistemic direction. Progressive sycophancy occurs when a model that initially answer
 - [[prospect-theory]] : Prospect theory (Kahneman and Tversky, 1979; extended to cumulative prospect theory in 1992) describes how humans evaluate uncertain outcome
@@ -690,7 +696,7 @@ Atomic notes extracted from the library papers via the Agents-K1 ingestion skill
 - [[valence-arousal-subspace]] : A two-dimensional linear subspace in LLM activation space spanned by a recovered valence axis (pleasure-displeasure) and arousal axis (activ
 - [[world-model-hallucination-modes]] : A three-type taxonomy of failure modes in generative world models, each anchored to a different pipeline stage. Perceptual hallucination occ
 
-## Mechanisms (cause -> effect) (395)
+## Mechanisms (cause -> effect) (403)
 
 - [[abstention-generalization-failure]] : 'instruction-tuning for abstention on a narrow, homogeneous set of refusal expressions and task formats' **prevents** Abstention ability does not generalize to 
 - [[abstract-representations-enable-zero-shot-generalization]] : High degree of abstract (parallel) representation in ANN hidden layers, as measured by parallelism-score, indicating that compositional rule dimensions are enco
@@ -736,6 +742,7 @@ Atomic notes extracted from the library papers via the Agents-K1 ingestion skill
 - [[co-occurrence-frequency-drives-lre-formation]] : High subject-object-co-occurrence-frequency between a subject entity and its relational object in pretraining data **increases** Formation of high-quality (high
 - [[coarse-linguistic-confidence-degrades-selective-classification]] : Closed-source LLMs emitting linguistically verbalized confidence scores that cluster at a small number of discrete values (e.g., GPT-4 outputs 0.9 for 50% of ex
 - [[code-pretraining-benefits-math-reasoning]] : Pre-training on code tokens before math-domain continual pre-training on the deepseekmath-corpus **increases** Improved mathematical reasoning performance on ma
+- [[cognitive-access-evidence-raises-ai-moral-status-priority]] : Mechanistic evidence shows cognitively accessible representations, self-monitoring-like conflict signals, and workspace-mediated deliberation in some LLMs **inc
 - [[composed-steering-preserves-linguistic-ability]] : Injecting a steer2adapt composed steering vector learned from ~12 examples via Bayesian optimisation over a domain-matched semantic-prior-subspace **enables** A
 - [[computational-buffer-improves-recall]] : Conditioning the final answer on extra reasoning tokens that carry no task-relevant semantic content (a dummy 'Let me think.' trace repeated to length), in reas
 - [[confab-boundary-elevation-lacks-knowledge-signal]] : Reading blind-spot confabulations on two separate axes: the knowledge-boundary (doubt) axis and an actually-knowing axis fit on correct-vs-wrong answers within 
@@ -843,7 +850,13 @@ Atomic notes extracted from the library papers via the Agents-K1 ingestion skill
 - [[instruction-tuning-increases-conformal-uncertainty]] : Instruction fine-tuning of a pretrained LLM (either Chat-V1 instruction-format or Chat-V2 base-format prompting on the chat checkpoint) **increases** Average co
 - [[instruction-tuning-induces-calibration-collapse]] : Instruction tuning (SFT on instruction-following data or chat-style pairs) applied to a base pretrained model on tasks requiring structured reasoning **increase
 - [[internal-doubt-degrades-fabrication-specificity]] : Higher pre-generation doubt-trunk projection on questions where the model nevertheless commits to answering an unanswerable question. **decreases** The resultin
+- [[interpretative-meta-tokens-mediate-ambiguity-disambiguation]] : J-lens exposes high-information Chinese tokens such as 'what does it mean' around ambiguous sentences in Qwen **mediates** negative steering on those meta-token
+- [[j-lens-approximates-cognitive-space-via-token-jacobians]] : Intermediate variables in multi-step language-model computation are stored in reusable residual-stream concept directions, and some of those directions are alig
+- [[j-lens-is-auditor-hypothesis-generation-not-verification]] : J-lens can expose otherwise unvoiced prompt-injection, self-preservation, reward-model-appeasement, and eval-awareness tokens during suspicious model behavior *
 - [[j-lens-vector-swap-redirects-verbal-report]] : Swapping a concept's J-lens vector for a different concept's J-lens vector at a matched layer of the residual stream **enables** the model's verbalized top-5 ou
+- [[j-space-parallels-gnw-but-leaves-ignition-and-autonomy-open]] : The Anthropic workspace paper finds reportability, limited capacity, broad downstream influence, and flexible internal reasoning in J-space **mediates** Dehaene
+- [[j-space-self-monitoring-signals-support-c2-candidate]] : J-space readouts contain covert assessment, deception, prompt-injection, failure, and preference-conflict tokens that are not necessarily verbalized **enables**
+- [[j-space-supports-privileged-set-not-yet-full-workspace]] : J-lens identifies representations that are reportable, instruction-responsive, causally involved in internal reasoning, broadly influential, and used for flexib
 - [[joint-selection-head-training-lowers-selective-risk]] : Training a selection (reject-option) head jointly with the predictor under a selective loss with an explicit target-coverage constraint, rather than thresholdin
 - [[knowledge-circuit-isolation-preserves-performance]] : Using only the sparse knowledge circuit subgraph (less than 10% of full graph) in isolation **enables** Model maintains more than 70% of its original factual-re
 - [[knowledge-conflict-induces-abstention]] : Presenting an LLM with alternative answers and supporting passages that conflict with its parametric knowledge **enables** LLMs that are swayed by conflicting i
@@ -957,6 +970,7 @@ Atomic notes extracted from the library papers via the Agents-K1 ingestion skill
 - [[proper-scoring-sft-calibration-transfers-to-unseen-confidence-formats]] : Fine-tuning on numerical verbalized confidence (0-100%) using a proper scoring rule (tokenized Brier score) **enables** The resulting calibration transfers to l
 - [[question-difficulty-alone-predicts-llm-confidence]] : Training the auxiliary calibrator on the question text only, with the LLM's generated answer omitted. **enables** The calibrator already attains respectable cal
 - [[question-familiarity-draws-confabulation-at-matched-doubt]] : Higher surface familiarity of an unanswerable question (corpus-internal token frequency and neighbor proxies), with internal doubt level held fixed by caution-d
+- [[qwen-j-lens-replication-supports-cross-model-cognitive-space]] : Nanda, Blank, and Bhatia implemented J-lens on Qwen 3.6 27B using 25 Pile prompts and penultimate-layer Jacobians **supports** they report partial replication o
 - [[rag-supervision-induces-hallucination-via-unfamiliar-knowledge]] : Fine-tuning a pre-trained LLM on responses generated by a retrieval-augmented model (or on human-authored responses containing facts beyond the model's parametr
 - [[rank1-projection-sufficient-for-linear-concept-erasure]] : Applying a rank-1 orthogonal projection (removing a single direction found by rlace) to GloVe or BERT representations **enables** Any linear classifier's gender
 - [[rdo-reduces-capability-side-effects]] : Optimising a refusal-direction-optimization direction with an explicit retain loss (KL penalty on safe-prompt behaviour) rather than using directional-ablation 
