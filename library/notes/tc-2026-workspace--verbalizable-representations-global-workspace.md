@@ -50,6 +50,9 @@ related:
 - '[[j-lens-vector-swap-redirects-verbal-report]]'
 - '[[global-workspace-mediates-intermediate-reasoning-steps]]'
 - '[[global-workspace-ablation-impairs-flexible-cognition]]'
+- '[[tc-2026-workspace-commentary-dehaene-naccache--does-claude-possess-conscious-global-workspace]]'
+- '[[tc-2026-workspace-commentary-butlin-shiller-plunkett-long--consciousness-cognitive-access-llms]]'
+- '[[tc-2026-workspace-commentary-nanda--cognitive-space-j-lens-replication]]'
 relationships:
 - type: proposes
   target: '[[jacobian-lens]]'
@@ -110,6 +113,18 @@ relationships:
 - type: supports
   target: '[[global-workspace-ablation-impairs-flexible-cognition]]'
   target_id: mechanism:global-workspace-ablation-impairs-flexible-cognition
+  confidence: high
+- type: related_to
+  target: '[[tc-2026-workspace-commentary-dehaene-naccache--does-claude-possess-conscious-global-workspace]]'
+  target_id: paper:tc-2026-workspace-commentary-dehaene-naccache
+  confidence: high
+- type: related_to
+  target: '[[tc-2026-workspace-commentary-butlin-shiller-plunkett-long--consciousness-cognitive-access-llms]]'
+  target_id: paper:tc-2026-workspace-commentary-butlin-shiller-plunkett-long
+  confidence: high
+- type: related_to
+  target: '[[tc-2026-workspace-commentary-nanda--cognitive-space-j-lens-replication]]'
+  target_id: paper:tc-2026-workspace-commentary-nanda
   confidence: high
 ---
 ## Abstract
@@ -266,3 +281,9 @@ activations.
   between discrete interpretations once the middle band is reached, rather
   than varying smoothly as it does in early layers (Figure 28; Figure 29)
   [[global-workspace]]
+
+## External commentary
+
+- [[tc-2026-workspace-commentary-dehaene-naccache--does-claude-possess-conscious-global-workspace]]: cognitive-neuroscience commentary relating J-space to the global neuronal workspace, with proposed ignition, bottleneck, trace-conditioning, inclusion/exclusion, and self-monitoring tests.
+- [[tc-2026-workspace-commentary-butlin-shiller-plunkett-long--consciousness-cognitive-access-llms]]: Eleos AI Research commentary separating [[cognitive-access]], [[phenomenal-consciousness]], [[privileged-stream|privileged stream]], and [[ai-moral-status]] implications.
+- [[tc-2026-workspace-commentary-nanda--cognitive-space-j-lens-replication]]: interpretability commentary and Qwen replication framing J-space as a [[cognitive-space|cognitive space]], with [[interpretative-meta-tokens]] as a preliminary extension.

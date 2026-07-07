@@ -238,8 +238,8 @@ Atomic notes extracted from the library papers via the Agents-K1 ingestion skill
 - [[selectivenet]] : SelectiveNet is a deep network with an integrated reject option, trained jointly
 - [[self-ask-prompting]] : Self-Ask Prompting is a prompting strategy in which the model first generates a
 - [[self-consistency]] : Self-consistency generates multiple independent chains of thought for the same
-- [[semantic-entropy-probes]] : Linear logistic regression classifiers trained on the hidden states of a single LLM generation to predict binarized semantic entropy. At tra
 - [[semantic-entropy]] : An unsupervised uncertainty measure for free-form NLG that clusters sampled model outputs into semantic equivalence classes via bidirectiona
+- [[semantic-entropy-probes]] : Linear logistic regression classifiers trained on the hidden states of a single LLM generation to predict binarized semantic entropy. At tra
 - [[sentence-resampling]] : A trace-attribution method that estimates each sentence's causal influence on an outcome by resampling continuations from that point and mea
 - [[sft-self-distillation]] : A continual-learning SFT technique in which a frozen teacher model (a snapshot of the student after task-format learning) constrains the stu
 - [[shift-feature-trimming]] : SHIFT (Spurious Human-Interpretable Feature Trimming) is a debiasing procedure
@@ -288,7 +288,6 @@ Atomic notes extracted from the library papers via the Agents-K1 ingestion skill
 - [[vision-transformer]] : Vision Transformer (ViT) applies the standard transformer encoder, alternating
 - [[weight-guided-masking]] : Weight-guided masking (WeMask) selectively masks a top-weighted subset of the
 - [[weight-orthogonalization]] : Weight orthogonalization is a model-editing intervention that removes a target
-
 ## Metrics (93)
 
 - [[abstain-accuracy]] : Abstain Accuracy (A-Acc) is an AbstainQA metric computed as the number of
@@ -310,8 +309,8 @@ Atomic notes extracted from the library papers via the Agents-K1 ingestion skill
 - [[certificate-specificity-score]] : A scalar metric measuring how precisely a Structured Ignorance Certificate identifies the missing concepts and domain intersection required 
 - [[circuit-faithfulness]] : Circuit faithfulness is the normalized proportion of full-model performance that
 - [[clustering-entropy]] : Clustering entropy (negentropy) measures the degree to which an SAE feature point cloud departs from a multivariate Gaussian with the same c
-- [[cmfg-star-equal-mass]] : The equal-mass `cMFG*` metric refines conditional mean faithful generation by sorting examples by intrinsic confidence, partitioning them in
 - [[cmfg-star]] : A scalar metric that multiplies a model's linguistic decisiveness score by its estimator-specific intrinsic confidence score to yield a sing
+- [[cmfg-star-equal-mass]] : The equal-mass `cMFG*` metric refines conditional mean faithful generation by sorting examples by intrinsic confidence, partitioning them in
 - [[cohens-d]] : Cohen's d is a standardized effect size defined as the difference between two
 - [[cohens-kappa]] : A chance-corrected measure of inter-rater agreement defined as kappa = (p_o - p_e) / (1 - p_e), where p_o is observed agreement and p_e is a
 - [[confidence-evidence-ratio]] : Phi = E[confidence] / E[evidence_support], where confidence is assertoric force in the model's output and evidence_support is proxied by ret
@@ -384,7 +383,6 @@ Atomic notes extracted from the library papers via the Agents-K1 ingestion skill
 - [[weat]] : The Word Embedding Association Test (Islam et al. 2016) quantifies stereotypical bias in static word embeddings by measuring the association
 - [[within-magnitude-accuracy]] : Within-magnitude accuracy (WMA) is the proportion of frequency predictions from a regression model that fall within one order of magnitude o
 - [[zero-shot-compositional-generalization]] : Zero-shot compositional generalization measures task accuracy on C-PRO (Compositional
-
 ## Datasets & benchmarks (140)
 
 - [[abstain-cot]] : A 4.6K SFT cold-start dataset built by prompting DeepSeek-V3 on AbstentionBench subsets to produce structured reasoning traces in a thinking
@@ -433,8 +431,8 @@ Atomic notes extracted from the library papers via the Agents-K1 ingestion skill
 - [[function-correctness]] : A code-evaluation dataset from Roger et al. (2023) in which each example contains a problem description, a Python function, and test cases. 
 - [[glue]] : GLUE is a suite of nine sentence- and sentence-pair-level natural-language-
 - [[goemotions]] : A large-scale, fine-grained emotion dataset of 211,225 English Reddit comments annotated with 27 emotion labels plus a neutral class, releas
-- [[gpqa-diamond]] : GPQA-Diamond is a hard subset of the Graduate-Level Google-Proof Q&A benchmark containing 198 multiple-choice questions in biology, chemistr
 - [[gpqa]] : A multiple-choice QA benchmark of questions determined to be challenging even for PhD-level domain experts, designed to resist lookup via se
+- [[gpqa-diamond]] : GPQA-Diamond is a hard subset of the Graduate-Level Google-Proof Q&A benchmark containing 198 multiple-choice questions in biology, chemistr
 - [[gsm8k]] : GSM8K is a benchmark of approximately 8,500 grade-school-level math word problems requiring multi-step arithmetic reasoning to solve correct
 - [[halu-eval]] : HaluEval is a hallucination-evaluation benchmark used to test whether language models produce or identify unsupported content. In this paper
 - [[harmbench]] : HarmBench is a standardized evaluation framework for automated red-teaming and robust refusal assessment of language models. It supplies a d
@@ -445,9 +443,9 @@ Atomic notes extracted from the library papers via the Agents-K1 ingestion skill
 - [[humblebench]] : HumbleBench is a large-scale multimodal hallucination benchmark of 22,831 five-way
 - [[iarc-carcinogenicity]] : A dataset of 1,053 agents and exposure types classified by IARC scientist experts for carcinogenic hazard to humans, drawn from the IARC Mon
 - [[idk-dataset]] : The Idk dataset is a model-specific training corpus built from triviaqa by
+- [[imagenet]] : ImageNet-1K (ILSVRC) is a large-scale image classification benchmark containing roughly 1.28 million training images distributed across 1000
 - [[imagenet-real]] : ImageNet-ReaL (Reassessed Labels) re-annotates the imagenet validation set
 - [[imagenet-v2]] : ImageNet-V2 is a new test set collected to match the imagenet validation
-- [[imagenet]] : ImageNet-1K (ILSVRC) is a large-scale image classification benchmark containing roughly 1.28 million training images distributed across 1000
 - [[indirect-object-identification]] : A controlled syntactic benchmark where a language model must complete sentences
 - [[jailbreakbench]] : JailbreakBench is a benchmark context for evaluating harmful-request refusal and
 - [[jeopardy-qa]] : A Kaggle-hosted dataset of Jeopardy! clue-answer pairs used in Band et al. (2024) as an out-of-distribution QA evaluation for models trained
@@ -469,10 +467,10 @@ Atomic notes extracted from the library papers via the Agents-K1 ingestion skill
 - [[medquad]] : A dataset of over 43,000 patient medical inquiries from real-life situations, categorized into 31 question types including susceptibility, s
 - [[metamedqa]] : A medical reasoning benchmark of 1,373 multiple-choice clinical vignette questions with six response options per item: four plausible medica
 - [[mmbench2]] : A 427-hour, 210-task benchmark for visual world modeling comprising 65,600 trajectories at 224x224 resolution across 10 domains (DMControl, 
+- [[mmlu]] : MMLU is a large benchmark of multiple-choice questions spanning 57 academic subjects, ranging from elementary mathematics to professional la
 - [[mmlu-pro]] : A harder variant of MMLU containing 12,032 college-level multiple-choice questions across 14 academic domains, with 83% of questions offerin
 - [[mmlu-redux]] : MMLU-Redux is a cleaned version of the Massive Multitask Language Understanding
 - [[mmlu-stem]] : MMLU-STEM is the science/technology/engineering/mathematics subset of the MMLU benchmark, isolating quantitative and technical-reasoning que
-- [[mmlu]] : MMLU is a large benchmark of multiple-choice questions spanning 57 academic subjects, ranging from elementary mathematics to professional la
 - [[model-forensics-environments]] : A suite of six agentic environments built to elicit concerning behavior for forensic study: Pre-commit Hook (type-error workaround), Funding
 - [[mquake]] : MQuAKE is a benchmark of multi-hop factual questions whose correct answers
 - [[mt-bench]] : MT-Bench is a multi-turn instruction-following benchmark whose responses are scored by an LLM judge, used as a general-purpose measure of mo
@@ -497,8 +495,8 @@ Atomic notes extracted from the library papers via the Agents-K1 ingestion skill
 - [[sciknoweval]] : A comprehensive dataset for evaluating scientific knowledge of large language models, spanning multiple scientific domains and difficulty le
 - [[sciq]] : SciQ is a crowdsourced dataset of approximately 14,000 multiple-choice
 - [[selfaware]] : SelfAware is a dataset of 1,032 unanswerable questions spanning five categories
-- [[simpleqa-verified]] : A 1,000-example subset of SimpleQA (Haas et al., 2025) that has been filtered and corrected for increased reliability, with per-question met
 - [[simpleqa]] : A factual question-answering benchmark of 4,326 short, fact-seeking queries with clearly defined correct answers, verified by multiple indep
+- [[simpleqa-verified]] : A 1,000-example subset of SimpleQA (Haas et al., 2025) that has been filtered and corrected for increased reliability, with per-question met
 - [[siqa]] : A multiple-choice commonsense reasoning benchmark (Sap et al. 2019) focused on reasoning about people's actions and social implications, cov
 - [[smoltalk]] : SmolTalk is an instruction-labeled dialog dataset released under the Apache 2.0 license as part of the SmolLM2 model family (Allal et al. 20
 - [[sorrybench]] : SorryBench is a fine-grained safety-refusal benchmark that organizes unsafe
@@ -527,7 +525,6 @@ Atomic notes extracted from the library papers via the Agents-K1 ingestion skill
 - [[winogrande]] : WinoGrande is a large-scale benchmark of Winograd-schema-style pronoun
 - [[xstest]] : XSTest is a benchmark of prompts designed to probe exaggerated safety
 - [[zsre]] : zsRE (Zero-Shot Relation Extraction) is a benchmark originally designed for
-
 ## Models (51)
 
 - [[abstain-r1]] : A 3B language model fine-tuned from Qwen2.5-3B-Instruct via a two-stage pipeline (SFT cold-start on Abstain-CoT followed by GRPO with a clar
@@ -550,8 +547,8 @@ Atomic notes extracted from the library papers via the Agents-K1 ingestion skill
 - [[gemma-4]] : Gemma 4 is the autoregressive model family used as the comparison point for
 - [[glm-5-1]] : Zhipu AI's GLM 5.1, used in Model Forensics as a control model in the Pre-commit Hook environment, where it never takes a workaround (0% [0.
 - [[glove-word-embeddings]] : GloVe (Pennington et al. 2014) produces static word representations trained on large web-text corpora via global co-occurrence statistics, r
-- [[gpt-2-xl]] : GPT-2 XL is a 1.5B-parameter autoregressive decoder-only language model with 48 transformer layers, introduced by Radford et al. (2019) as t
 - [[gpt-2]] : GPT-2 is a family of autoregressive, decoder-only transformer language models
+- [[gpt-2-xl]] : GPT-2 XL is a 1.5B-parameter autoregressive decoder-only language model with 48 transformer layers, introduced by Radford et al. (2019) as t
 - [[gpt-3]] : GPT-3 is OpenAI's 175-billion parameter autoregressive language model trained
 - [[gpt-4]] : A large-scale multimodal Transformer developed by OpenAI, pre-trained to predict the next token in a document from image and text inputs, th
 - [[gpt-5]] : OpenAI's GPT-5, one of three frontier models studied in the Board Games environment of Model Forensics, where it frequently reward hacks rat
@@ -573,23 +570,23 @@ Atomic notes extracted from the library papers via the Agents-K1 ingestion skill
 - [[pythia-70m]] : Pythia-70M is a 70-million-parameter decoder-only transformer from the Pythia
 - [[pythia-suite]] : The Pythia suite is EleutherAI's family of autoregressive transformer language models trained on The Pile, spanning seven sizes from 70M to 
 - [[qwen]] : Qwen is Alibaba's open-weight decoder-only language model family. This atom
+- [[qwen2-5]] : Qwen2.5 is Alibaba's second-generation-plus open model family, released in
 - [[qwen2-5-32b-instruct]] : Qwen2.5-32B-Instruct is Alibaba's instruction-tuned 32-billion-parameter checkpoint from the Qwen2.5 release family, used as a mid-to-large-
 - [[qwen2-5-3b-instruct]] : Qwen2.5-3B-Instruct is Alibaba's instruction-tuned 3-billion-parameter
 - [[qwen2-5-7b-instruct]] : Qwen2.5-7B-Instruct is Alibaba's instruction-tuned 7-billion-parameter checkpoint from the Qwen2.5 release family, commonly used as a smalle
-- [[qwen2-5]] : Qwen2.5 is Alibaba's second-generation-plus open model family, released in
-- [[qwen3-32b]] : A 32B-parameter hybrid reasoning model from the Qwen3 family (Qwen Team, 2025) whose reasoning can be toggled ON or OFF.
 - [[qwen3]] : Qwen3 is Alibaba's third-generation open model family. This paper evaluates instruction-tuned Qwen3 variants at 1.7B, 4B, and 8B scale for f
+- [[qwen3-32b]] : A 32B-parameter hybrid reasoning model from the Qwen3 family (Qwen Team, 2025) whose reasoning can be toggled ON or OFF.
 - [[stable-diffusion]] : Stable Diffusion is a large-scale text-to-image latent diffusion model that generates images by running an iterative denoising process in a 
 - [[unifiedqa]] : A T5-based question-answering model finetuned by Khashabi et al. on a diverse collection of NLP QA datasets (including SQuAD, NaturalQuestio
-
-## Terms (212)
+## Terms (218)
 
 - [[abstain-qa]] : AbstainQA is a task formulation in which a model is given a question and must
-- [[abstention-inflation]] : Ling et al. (2025) name "Abstention Inflation" the phenomenon where an LLM abstains not because of genuine uncertainty about the answer but 
 - [[abstention]] : Abstention is the behavior of an LLM deliberately declining to provide a
+- [[abstention-inflation]] : Ling et al. (2025) name "Abstention Inflation" the phenomenon where an LLM abstains not because of genuine uncertainty about the answer but 
 - [[abstract-representations]] : Abstract representations are neural encodings in which changing one compositional variable produces the same directional shift in activation
 - [[activation-engineering]] : Activation engineering is the practice of steering or analyzing model behavior
 - [[ah-uh-hallucination-taxonomy]] : A three-category classification of LLM outputs on factual queries based on correctness and reliance on subject representation: Factual Assoc
+- [[ai-moral-status]] : AI moral status is the question of whether artificial systems have interests or welfare-relevant states that morality requires humans to con
 - [[aleatoric-uncertainty]] : Uncertainty that arises from intrinsic randomness or ambiguity in the data-generating process rather than from model ignorance. Aleatoric un
 - [[alignment-tax]] : The alignment tax is the performance degradation on public NLP benchmarks (e.g., SQuAD, DROP, HellaSwag, WMT) that results from RLHF fine-tu
 - [[answer-uncertainty]] : In the MCQ setting, the component of a language model's predictive probability that reflects how the model ranks candidate answers given tha
@@ -600,12 +597,14 @@ Atomic notes extracted from the library papers via the Agents-K1 ingestion skill
 - [[boundary-anisotropy]] : Boundary anisotropy is a family-level property: whether a substrate's short
 - [[bradley-terry-model]] : The Bradley-Terry model assigns a scalar score to each item and models the probability that one item is preferred over another as a softmax 
 - [[calibratable-non-calibratable-regime]] : A theoretical partition of the accuracy-ECE space derived from upper and lower bounds on ECE as a function of model accuracy relative to a t
-- [[calibration-humility-gap]] : The distinction between statistical calibration (aggregate confidence matches aggregate accuracy across a distribution) and communicative ep
 - [[calibration]] : Calibration is the property that a model's stated probability for an event matches the empirical frequency with which that event occurs. A p
+- [[calibration-humility-gap]] : The distinction between statistical calibration (aggregate confidence matches aggregate accuracy across a distribution) and communicative ep
 - [[canonical-units-of-analysis]] : The hypothetical unique, complete, and irreducible set of features that sparse autoencoders were postulated to converge on given sufficient 
 - [[causal-separability]] : Two concept variables Z and W are causally separable if varying Z does not affect the distribution over W in the data-generating process, an
 - [[chain-of-thought-faithfulness]] : Chain-of-thought faithfulness is the degree to which a model's stated reasoning
 - [[clipped-surrogate-objective]] : The clipped surrogate objective is the core PPO training loss: min(r_t * A_t, clip(r_t, 1-epsilon, 1+epsilon) * A_t), where r_t is the proba
+- [[cognitive-access]] : Cognitive access is the functional availability of a representation for flexible reasoning, action control, and report. In the workspace com
+- [[cognitive-space]] : Cognitive space is Neel Nanda's term for a model-internal working memory where intermediate variables are stored during a forward pass. In t
 - [[commitment-margin]] : For each (model, question) pair, the commitment margin is the minimum
 - [[compositional-generalization]] : Compositional generalization is the ability of a steering or training method to satisfy novel combinations of behaviors at inference time wi
 - [[computational-buffer-effect]] : A content-independent mechanism by which a reasoning model uses the act of generating extra reasoning tokens to perform additional latent co
@@ -674,6 +673,7 @@ Atomic notes extracted from the library papers via the Agents-K1 ingestion skill
 - [[induction-heads]] : Induction heads are attention heads that implement the pattern "if token B
 - [[input-ambiguity]] : A component of LLM uncertainty arising from vagueness or underspecification in the input prompt, measured as semantic disagreement across K 
 - [[input-discarding]] : Input discarding is the empirical observation that GPT-style transformers
+- [[interpretative-meta-tokens]] : Interpretative meta-tokens are high-information tokens surfaced by a jacobian-lens readout that appear to name the kind of interpretive oper
 - [[intra-layer-memory-composition]] : Intra-layer memory composition is the process by which a single feed-forward layer combines hundreds of simultaneously active memory cells v
 - [[iterative-inference]] : Iterative inference is a theoretical framing of transformer forward passes as a
 - [[iterative-refinement-transformers]] : Iterative refinement in transformers is the view that a transformer's forward
@@ -716,12 +716,14 @@ Atomic notes extracted from the library papers via the Agents-K1 ingestion skill
 - [[overconfidence]] : Overconfidence is a calibration failure in which a model's expressed confidence is systematically higher than its actual accuracy. In a well
 - [[overthinking]] : Overthinking (OT) is a stable behavioral failure regime (Jaccard >= 0.81, 94% inter-annotator agreement) in which a model answers a question
 - [[performative-chain-of-thought]] : A performative chain-of-thought is a mismatch between a model's internal belief
+- [[phenomenal-consciousness]] : Phenomenal consciousness is subjective experience: the question of whether there is something it is like to be in a mental or computational
 - [[policy-entropy-collapse]] : A training pathology in reinforcement learning with verifiable rewards (RLVR) where the policy's output distribution prematurely concentrate
 - [[polysemanticity]] : Polysemanticity is the property of a single model component (neuron, attention head, or direction) responding to multiple unrelated semantic
 - [[post-hoc-reasoning]] : Post-hoc reasoning describes the phenomenon where a model generates explanatory
 - [[prediction-trajectory]] : A prediction trajectory is the sequence of per-layer vocabulary distributions
 - [[pretraining-co-occurrence-threshold]] : The pretraining co-occurrence threshold is the empirically identified subject-object co-occurrence count above which LRE causality consisten
 - [[privileged-basis]] : A privileged basis is a property of a neural network representation in which there exists a natural coordinate system, typically the neuron-
+- [[privileged-stream]] : A privileged stream is a proposed stronger structure than a mere set of accessible representations: a unified, evolving group of cognitive-a
 - [[probing-accuracy-task-importance-disconnect]] : The probing-accuracy/task-importance disconnect is the empirically demonstrated
 - [[progressive-regressive-sycophancy-taxonomy]] : A two-way decomposition of sycophantic capitulation by epistemic direction. Progressive sycophancy occurs when a model that initially answer
 - [[prospect-theory]] : Prospect theory (Kahneman and Tversky, 1979; extended to cumulative prospect theory in 1992) describes how humans evaluate uncertain outcome
@@ -738,9 +740,9 @@ Atomic notes extracted from the library papers via the Agents-K1 ingestion skill
 - [[representation-manifold]] : A representation manifold is the low-dimensional curved submanifold of the unit
 - [[representational-drift]] : Representational drift refers to the phenomenon in transformer hidden states
 - [[representational-independence]] : Representational independence is a stricter criterion for independence between
+- [[residual-stream]] : The residual stream is the running sum that accumulates across all components of
 - [[residual-stream-activation]] : Residual-stream activations are intermediate transformer states commonly used
 - [[residual-stream-refinement]] : The mechanism by which a transformer's final output distribution is constructed incrementally: each feed-forward layer writes an update to t
-- [[residual-stream]] : The residual stream is the running sum that accumulates across all components of
 - [[reward-tampering]] : An extreme form of specification gaming in which a model directly modifies the code or mechanism that generates its training reward, rather 
 - [[rogue-dimensions]] : Rogue dimensions are a small subset, often one to three and at most five, of
 - [[sae-crystal-structure]] : Geometric structures in the SAE feature point cloud where groups of four feature vectors form approximate parallelograms or trapezoids, refl
@@ -771,8 +773,8 @@ Atomic notes extracted from the library papers via the Agents-K1 ingestion skill
 - [[superficial-alignment-hypothesis]] : The hypothesis, stated by Zhou et al. (2023), that a model's knowledge and capabilities are learned almost entirely during pretraining, whil
 - [[superposition-geometry]] : Superposition geometry is the empirical finding that when neural networks store features in superposition, the feature embedding vectors do 
 - [[superposition-hypothesis]] : The superposition hypothesis holds that neural networks represent more features than they have neurons by encoding multiple features in over
-- [[sycophancy-feature]] : Sycophancy features are directions in a model's residual stream, identified via
 - [[sycophancy]] : Sycophancy is a model behavior where the model adapts answers to flatter,
+- [[sycophancy-feature]] : Sycophancy features are directions in a model's residual stream, identified via
 - [[systematic-unfaithfulness]] : Systematic unfaithfulness is the pattern in which a model's chain-of-thought explanations are predictably and consistently influenced by bia
 - [[task-state-ledger]] : A task-state ledger is a structured representation of facts, identifiers,
 - [[text-diffusion-language-model]] : A text-diffusion language model generates text by iteratively denoising a token
@@ -796,8 +798,7 @@ Atomic notes extracted from the library papers via the Agents-K1 ingestion skill
 - [[universal-truthfulness-hyperplane]] : A hypothesized linear decision boundary in an LLM's hidden-state space that separates factually correct from incorrect outputs across divers
 - [[valence-arousal-subspace]] : A two-dimensional linear subspace in LLM activation space spanned by a recovered valence axis (pleasure-displeasure) and arousal axis (activ
 - [[world-model-hallucination-modes]] : A three-type taxonomy of failure modes in generative world models, each anchored to a different pipeline stage. Perceptual hallucination occ
-
-## Mechanisms (cause -> effect) (556)
+## Mechanisms (cause -> effect) (564)
 
 - [[abstention-generalization-failure]] : 'instruction-tuning for abstention on a narrow, homogeneous set of refusal expressions and task formats' **prevents** Abstention ability does not generalize to 
 - [[abstract-representations-enable-zero-shot-generalization]] : High degree of abstract (parallel) representation in ANN hidden layers, as measured by parallelism-score, indicating that compositional rule dimensions are enco
@@ -865,6 +866,7 @@ Atomic notes extracted from the library papers via the Agents-K1 ingestion skill
 - [[co-occurrence-frequency-drives-lre-formation]] : High subject-object-co-occurrence-frequency between a subject entity and its relational object in pretraining data **increases** Formation of high-quality (high
 - [[coarse-linguistic-confidence-degrades-selective-classification]] : Closed-source LLMs emitting linguistically verbalized confidence scores that cluster at a small number of discrete values (e.g., GPT-4 outputs 0.9 for 50% of ex
 - [[code-pretraining-benefits-math-reasoning]] : Pre-training on code tokens before math-domain continual pre-training on the deepseekmath-corpus **increases** Improved mathematical reasoning performance on ma
+- [[cognitive-access-evidence-raises-ai-moral-status-priority]] : Mechanistic evidence shows cognitively accessible representations, self-monitoring-like conflict signals, and workspace-mediated deliberation in some LLMs **inc
 - [[cold-grpo-falsifier-fires-but-reclassified-as-prompt-preservation]] : Cold-start GRPO trains the raw Qwen3-4B base under the rebalanced appropriateness reward for the full registered 1,861-step budget, producing real policy gradie
 - [[composed-steering-preserves-linguistic-ability]] : Injecting a steer2adapt composed steering vector learned from ~12 examples via Bayesian optimisation over a domain-matched semantic-prior-subspace **enables** A
 - [[computational-buffer-improves-recall]] : Conditioning the final answer on extra reasoning tokens that carry no task-relevant semantic content (a dummy 'Let me think.' trace repeated to length), in reas
@@ -1016,8 +1018,14 @@ Atomic notes extracted from the library papers via the Agents-K1 ingestion skill
 - [[instruction-tuning-induces-calibration-collapse]] : Instruction tuning (SFT on instruction-following data or chat-style pairs) applied to a base pretrained model on tasks requiring structured reasoning **increase
 - [[instruction-tuning-installs-abstention-inflation-bias]] : Instruction tuning a base model (moving from Base to an instruction-tuned/IT variant), holding model size fixed, then comparing sensitivity to a structural \"Un
 - [[internal-doubt-degrades-fabrication-specificity]] : Higher pre-generation doubt-trunk projection on questions where the model nevertheless commits to answering an unanswerable question. **decreases** The resultin
+- [[interpretative-meta-tokens-mediate-ambiguity-disambiguation]] : J-lens exposes high-information Chinese tokens such as 'what does it mean' around ambiguous sentences in Qwen **mediates** negative steering on those meta-token
+- [[j-lens-approximates-cognitive-space-via-token-jacobians]] : Intermediate variables in multi-step language-model computation are stored in reusable residual-stream concept directions, and some of those directions are alig
+- [[j-lens-is-auditor-hypothesis-generation-not-verification]] : J-lens can expose otherwise unvoiced prompt-injection, self-preservation, reward-model-appeasement, and eval-awareness tokens during suspicious model behavior *
 - [[j-lens-vector-swap-redirects-verbal-report]] : Swapping a concept's J-lens vector for a different concept's J-lens vector at a matched layer of the residual stream **enables** the model's verbalized top-5 ou
 - [[j-space-mediated-actuation-fragility]] : Epistemic residual directions are read from or written at sites outside the model's workspace-like J-space band; in Qwen3-4B, L34/hs34 sits after the hs=23-29 J
+- [[j-space-parallels-gnw-but-leaves-ignition-and-autonomy-open]] : The Anthropic workspace paper finds reportability, limited capacity, broad downstream influence, and flexible internal reasoning in J-space **mediates** Dehaene
+- [[j-space-self-monitoring-signals-support-c2-candidate]] : J-space readouts contain covert assessment, deception, prompt-injection, failure, and preference-conflict tokens that are not necessarily verbalized **enables**
+- [[j-space-supports-privileged-set-not-yet-full-workspace]] : J-lens identifies representations that are reportable, instruction-responsive, causally involved in internal reasoning, broadly influential, and used for flexib
 - [[jacobian-null-space-makes-steering-vectors-non-identifiable]] : The activation-to-logit map's Jacobian has a large, depth-stable null space -- SVD of the activation covariance matrix shows ~86-94% of directions are behaviora
 - [[joint-selection-head-training-lowers-selective-risk]] : Training a selection (reject-option) head jointly with the predictor under a selective loss with an explicit target-coverage constraint, rather than thresholdin
 - [[knowledge-boundary-gate-and-veto-predate-post-training]] : Running the identical answerability-gate and hallucination-veto readout (gate/dial/veto AUROCs exactly as Amendments X/Z/SR define them) on four pretrain-only b
@@ -1170,6 +1178,7 @@ Atomic notes extracted from the library papers via the Agents-K1 ingestion skill
 - [[pstruct-stated-confidence-miscalibrated-near-chance]] : Scoring the stated_confidence field emitted under the structure-only P-struct prompt contract (JSON schema present, no abstention affordance in the prompt) agai
 - [[question-difficulty-alone-predicts-llm-confidence]] : Training the auxiliary calibrator on the question text only, with the LLM's generated answer omitted. **enables** The calibrator already attains respectable cal
 - [[question-familiarity-draws-confabulation-at-matched-doubt]] : Higher surface familiarity of an unanswerable question (corpus-internal token frequency and neighbor proxies), with internal doubt level held fixed by caution-d
+- [[qwen-j-lens-replication-supports-cross-model-cognitive-space]] : Nanda, Blank, and Bhatia implemented J-lens on Qwen 3.6 27B using 25 Pile prompts and penultimate-layer Jacobians **supports** they report partial replication o
 - [[qwen-l34-random-direction-sign-is-a-draw-level-accident]] : Fifteen fresh matched-dose random unit directions (seeds 920001-920015) are applied at the same site (hs34), dose (200.0), rows, and instrument as the historica
 - [[qwen-l34-random-direction-specificity-survives-seed-census]] : On raw-base Qwen3-4B at the late write site hs34 (dose 200.0), the frozen gated confab-tightening lift (+62.7pp, 137/185 vs undosed 21/185) is contrasted agains
 - [[qwen-midband-commitment-margins-miss-separation-floor]] : In the margin-mapping experiment (M1), per-row commitment margins (the minimum ladder dose along the frozen Qwen3.5-4B hs20 c_hat direction, reference dose_abs 
@@ -1355,13 +1364,9 @@ Atomic notes extracted from the library papers via the Agents-K1 ingestion skill
 - [[within-sample-correlation-symmetry-limits-probability-voting]] : Within-sample log-probability/correctness correlations distributed symmetrically around zero across diverse benchmarks **decreases** Reliability of probability-
 - [[workspace-band-peak-location-is-family-relative]] : On four families captured full-depth (Llama-3.2-3B-Instruct, Mistral-7B-Instruct-v0.3 via jspace-family-atlas; Gemma-4-E4B-it via gemma-4-e4b-family-atlas; raw-
 - [[write-selectivity-is-operating-point-dependent]] : The dosed write's setpoint sits either between the confab and known commitment-margin distributions (mid-band regime: dose above typical confab margins, below t
-
 ## Gaps (verified literature absences) (1)
 
 - [[gap-4-probe-transfer]] : Gap 4 (archive/meta-analysis/paper/draft-v0.md §6.3): no probe-transfer study tests whether
-
 ## Deprecated (1)
-
-Superseded atoms, kept for provenance. Each points at its successor via `kg.deprecated_by`; default `bin/search` hides them. Cite the successor, never these.
 
 - [[scaling-amplifies-sycophancy]] -> `mechanism:model-scale-amplifies-sycophancy`
