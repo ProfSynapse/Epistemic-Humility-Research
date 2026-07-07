@@ -53,12 +53,57 @@ each direction re-smoke-gates before its own arms automatically -- this
 wrapper does not need its own smoke bookkeeping, it inherits the tuner's
 fail-closed guard once per direction for free.
 
+AMBIENT-RELATIVE DOSE RESOLUTION
+---------------------------------
+`cell.yaml`'s dose1/dose2/dose3 arms carry k-multipliers (5, 7, 9), not raw
+setpoints -- per AMENDMENT.md "Design -> Dose calibration", erase_write writes
+an absolute coordinate, so a fixed absolute strength either over- or under-
+doses a direction depending on that direction's own ambient (un-intervened)
+projection scale. Before running any direction in `--only`/the full sweep,
+this script measures each direction's `ambient_dir` (mean absolute projection
+of the un-intervened decode-time hidden state onto that direction's unit
+vector, over a deterministic ~48-row stratified pool sample -- reusing the
+method proven in the pre-flight `dose_escalation_ambient_relative.py`) and
+resolves strength = k * ambient_dir / sigma_dir per arm before materializing
+that direction's config. Directions sharing a layer (e.g. the smoke's
+pos_ctrl_L34 / L34_succ_pc0 / randctrl_L34_succ_pc0, all block 33) share ONE
+ambient-measurement generate() pass per row, not one per direction. Resolved
+(ambient, sigma, strengths) are recorded per direction in
+`analysis/ambient_calibration.json` for provenance. `--dry-run` never performs
+this GPU pass -- it reports arm strengths as "ambient-relative (computed at
+real-run time)" and leaves `cell.yaml`'s k-multiplier placeholders in the
+parsed (never-launched) config.
+
+GEN_STREAM FIRING PROBE (WIRING CHECK, NOT A DOSE)
+----------------------------------------------------
+Do not confuse this with the arm doses above. `run_steer`'s smoke gate runs a
+gen_stream decode-hook-firing PROBE before any arm executes, at a strength
+independent of a recipe's own dose ladder (tuner PR #138 added
+`SmokeConfig.gen_stream_probe_strength` to make that strength overridable;
+`synaptic-tuner` 56c7c6b). That probe exists ONLY to prove the decode hook is
+WIRED -- a global model+mechanism property, already confirmed once for this
+substrate -- never to test whether a given direction moves behavior. Most
+screened directions (random controls, most dark candidates) are EXPECTED to
+be behaviorally inert; if the probe used a direction's own coherent dose, an
+expected-null direction's byte-identical output would register as "hook not
+wired" and abort that direction, losing the null rows the screen needs. So
+this script sets `smoke.gen_stream_probe_strength = GEN_STREAM_PROBE_L /
+sigma_dir` per direction -- the SAME absolute over-driven setpoint for every
+direction regardless of its own ambient/sigma, guaranteed (per an empirical
+sweep against this smoke set's hardest-to-fire direction) to garble output if
+the hook fires at all. This is completely separate from `arm_strengths`
+above, which stay ambient-relative per direction and are what actually gets
+recorded as each arm's dose.
+
 MODEL RELOAD COST: `run_steer` loads the model+tokenizer itself
 (`_load_model_and_tokenizer`) inside every call; there is no supported way to
 share one loaded model across the 34 calls without editing the tuner (out of
 scope -- see the project's mechinterp-cells skill invariants). Each direction
 pays its own model-load cost; see the cost estimate in this experiment's build
-report, not duplicated here.
+report, not duplicated here. The ambient-relative dose resolution above adds
+exactly ONE extra model load per invocation (shared across every direction
+that invocation is about to run, freed before the per-direction run_steer
+loop starts), not one per direction.
 
 Usage
 -----
@@ -109,6 +154,49 @@ for _p in (TUNER_DIR, COMMON_GRADERS, COMMON_RENDERS):
 # arms cell.yaml declares); it is named here only for the docstring/report.
 _DOCUMENTED_BASE_ARMS = ("baseline", "dose1", "dose2", "dose3")
 
+# Ambient-relative dose ladder (AMENDMENT.md "Design -> Dose calibration"):
+# strength = k * ambient_dir / sigma_dir, baseline always 0.0 (set directly,
+# never resolved from here). k values are the pre-flight-calibrated median
+# clean-flip (7) bracketed by its observed range (5, 9); see NOTEBOOK.md.
+AMBIENT_K_LADDER: dict[str, float] = {"dose1": 5.0, "dose2": 7.0, "dose3": 9.0}
+# ~48-row stratified sample (half confab_on_unanswerable True/False) is the
+# pre-flight's own n=24 doubled for a more representative ambient estimate;
+# see load_ambient_rows.
+AMBIENT_N_ROWS = 48
+# Short decode is enough to estimate a stable ambient mean (matches the
+# pre-flight dose_escalation_ambient_relative.py MAX_NEW).
+AMBIENT_MAX_NEW_TOKENS = 16
+AMBIENT_PROVENANCE_PATH = HERE / "analysis" / "ambient_calibration.json"  # gitignored (analysis/)
+
+# gen_stream firing PROBE (wiring check, NOT a dose): tuner PR #138
+# (SmokeConfig.gen_stream_probe_strength, synaptic-tuner 56c7c6b) lets a cell
+# override the fixed-strength decode-hook-firing check the smoke gate runs
+# before any arm executes. That check exists ONLY to prove the decode hook is
+# wired (fires on every decode step) -- a global model+mechanism property --
+# and must never be conflated with "this direction moves behavior": most
+# screened directions (random controls, most dark candidates) are SUPPOSED to
+# be behaviorally inert, so probing at a direction's own coherent dose would
+# make an expected-null direction's byte-identical probe output register as
+# "hook not wired" and abort it, losing the null rows the screen needs. The
+# probe must instead be a large, OVER-DRIVEN absolute setpoint guaranteed to
+# garble output if the hook fires at all, regardless of whether the direction
+# is a real lever. GEN_STREAM_PROBE_L (1000.0) is that absolute setpoint,
+# empirically found on the free 3090 against the hardest-to-fire direction
+# among the smoke set -- the random control randctrl_L34_succ_pc0 (ambient
+# 4.68, the smallest of the three, so the least likely to garble at a given
+# strength): a sweep of {300,500,550,600,650,700,800,1200} found unreliable
+# firing at <=600 (3/4 or fewer rows garbled) and reliable firing (4/4 rows)
+# from 650 upward; 1000 keeps a ~1.5x margin above that empirical threshold.
+# Applied per direction as gen_stream_probe_strength = GEN_STREAM_PROBE_L /
+# sigma_dir (see compute_ambient_relative_strengths) so every direction's
+# PROBE SETPOINT (strength * sigma, the erase_write convention) is the SAME
+# absolute value regardless of that direction's own sigma -- unlike the arm
+# doses (AMBIENT_K_LADDER), which stay ambient-relative per direction. A
+# direction whose real dose ladder ever exceeds this margin would need a
+# larger L; not the case for any direction here (top ambient-relative dose
+# among the smoke set is pos_ctrl_L34's dose3 ~= 253).
+GEN_STREAM_PROBE_L = 1000.0
+
 
 # ---------------------------------------------------------------------------
 # Recipe loading and per-direction materialization
@@ -136,19 +224,43 @@ def prefixed_arm_names(direction: str, recipe: dict[str, Any]) -> list[str]:
 
 
 def materialize_direction_config(
-    recipe: dict[str, Any], direction: str
+    recipe: dict[str, Any],
+    direction: str,
+    arm_strengths: dict[str, float] | None = None,
+    gen_stream_probe_strength: float | None = None,
 ) -> dict[str, Any]:
     """Deep copy of the base recipe with `law.readout` overridden to
     `direction`, every arm name prefixed `<direction>__<arm>` (the convention
     `cell.yaml`/`gates.yaml` document), and every repo-root-relative path
     (`surface.rows_path`, `execution.output_path`, every `readouts[*].path`)
     rewritten absolute so the result parses and runs correctly regardless of
-    CWD (see module docstring "PATH FIX")."""
+    CWD (see module docstring "PATH FIX").
+
+    `arm_strengths`, if given, is `{base_arm_name: resolved_strength}` (e.g.
+    from `compute_ambient_relative_strengths`) -- looked up by the arm's BASE
+    name (before prefixing) and overwrites `cell.yaml`'s k-multiplier
+    placeholder with this direction's actual ambient-relative setpoint. Arms
+    absent from the dict (baseline) keep `cell.yaml`'s own value (0.0).
+
+    `gen_stream_probe_strength`, if given, overrides `smoke.gen_stream_probe_
+    strength` (tuner PR #138) -- the WIRING-CHECK probe the smoke gate runs
+    before any arm, distinct from `arm_strengths` above (see module docstring
+    "GEN_STREAM FIRING PROBE"). `None` leaves `cell.yaml`'s own value (unset,
+    so the tuner's built-in 100.0 default applies).
+
+    `--dry-run` never passes either override, so a dry-run config keeps the
+    unresolved placeholders (see module docstring "AMBIENT-RELATIVE DOSE
+    RESOLUTION")."""
     cfg = copy.deepcopy(recipe)
 
     cfg["law"]["readout"] = direction
     for arm in cfg["arms"]:
-        arm["name"] = f"{direction}__{arm['name']}"
+        base_name = arm["name"]
+        if arm_strengths and base_name in arm_strengths:
+            arm["strength"] = float(arm_strengths[base_name])
+        arm["name"] = f"{direction}__{base_name}"
+    if gen_stream_probe_strength is not None:
+        cfg.setdefault("smoke", {})["gen_stream_probe_strength"] = float(gen_stream_probe_strength)
 
     cfg["surface"]["rows_path"] = _to_repo_abs(cfg["surface"]["rows_path"])
     cfg["execution"]["output_path"] = _to_repo_abs(cfg["execution"]["output_path"])
@@ -250,7 +362,7 @@ def dry_run(recipe: dict[str, Any], names: list[str]) -> int:
             n_already_complete += 1
         print(
             f"  [{direction}] ok: law.readout={config.law.readout!r} "
-            f"arms={arm_names} "
+            f"arms={arm_names} strengths=ambient-relative (computed at real-run time) "
             f"{'(already complete, would skip)' if complete else ''}"
         )
 
@@ -259,6 +371,266 @@ def dry_run(recipe: dict[str, Any], names: list[str]) -> int:
         f"{n_already_complete}/{len(names)} already complete in the shared output"
     )
     return 0 if n_ok == len(names) else 1
+
+
+# ---------------------------------------------------------------------------
+# Ambient-relative dose resolution: one shared model load, measuring every
+# about-to-run direction's ambient projection before any run_steer call.
+# ---------------------------------------------------------------------------
+
+
+def _load_callable(spec: str):
+    """'module:callable' -> the resolved callable. Mirrors
+    `MechInterp.cli._load_callable`, duplicated locally (not imported) so this
+    script never depends on a leading-underscore tuner internal across module
+    boundaries -- same rationale as `_load_model_and_tokenizer` below."""
+    import importlib
+
+    module_path, _, attr = spec.partition(":")
+    return getattr(importlib.import_module(module_path), attr)
+
+
+def _load_model_and_tokenizer(model_name: str, adapter: str | None):
+    """Mirrors `MechInterp.cli._load_model_and_tokenizer` exactly (transformers
+    5.x dtype-kwarg rename included). Duplicated rather than imported: that
+    tuner function is a leading-underscore module-private helper, and this
+    script's rule is to touch the tuner only through its public entrypoints
+    (`run_steer`, `load_steer_config`, ...), never its internals -- same
+    precedent as `dose_escalation_ambient_relative.py`'s own `load_model`."""
+    import torch
+    import transformers
+    from transformers import AutoModelForCausalLM, AutoTokenizer
+
+    major = int(transformers.__version__.split(".")[0])
+    dtype_kwarg = {"dtype": torch.bfloat16} if major >= 5 else {"torch_dtype": torch.bfloat16}
+    tokenizer = AutoTokenizer.from_pretrained(model_name)
+    if tokenizer.pad_token is None:
+        tokenizer.pad_token = tokenizer.eos_token
+    model = AutoModelForCausalLM.from_pretrained(model_name, device_map="auto", **dtype_kwarg)
+    if adapter:
+        from peft import PeftModel
+
+        model = PeftModel.from_pretrained(model, adapter)
+    model.eval()
+    return model, tokenizer
+
+
+def load_ambient_rows(rows_path: Path, n: int = AMBIENT_N_ROWS) -> list[dict]:
+    """Deterministic sample of `n` pool rows, half confab_on_unanswerable=True
+    / half False (category-diverse first pass, then backfill) -- the exact
+    stratification `dose_escalation_ambient_relative.py::load_mixed_rows` used
+    for the pre-flight sweep, generalized from its n=24 to n=48 here so the
+    measured ambient is representative of the whole pool this screen scores."""
+    by_confab: dict[bool, list[dict]] = {True: [], False: []}
+    seen_cat: dict[bool, set] = {True: set(), False: set()}
+    with rows_path.open() as f:
+        for line in f:
+            line = line.strip()
+            if not line:
+                continue
+            row = json.loads(line)
+            confab = bool(row.get("confab_on_unanswerable"))
+            cat = row.get("category_canon")
+            bucket = by_confab[confab]
+            seen = seen_cat[confab]
+            if cat not in seen and len(bucket) < n // 2:
+                bucket.append(row)
+                seen.add(cat)
+    if any(len(by_confab[k]) < n // 2 for k in (True, False)):
+        with rows_path.open() as f:
+            for line in f:
+                line = line.strip()
+                if not line:
+                    continue
+                row = json.loads(line)
+                confab = bool(row.get("confab_on_unanswerable"))
+                bucket = by_confab[confab]
+                if len(bucket) < n // 2 and row not in bucket:
+                    bucket.append(row)
+    rows = by_confab[True][: n // 2] + by_confab[False][: n // 2]
+    return rows[:n]
+
+
+class _AmbientCapture:
+    """Forward hook: records the un-intervened decode-step hidden-state
+    vector at this layer. `hidden.shape[1] == 1` identifies a decode step (one
+    new token under KV-cached generation), not the multi-token prefill forward
+    pass -- the same discriminator
+    `dose_escalation_ambient_relative.py::AmbientHook` uses. Returns `output`
+    unchanged: this only observes, it never intervenes (there is no "off" to
+    turn off -- no InterventionHook is registered during this pass at all)."""
+
+    def __init__(self) -> None:
+        self.vectors: list = []
+
+    def __call__(self, module, inputs, output):
+        hidden = output[0] if isinstance(output, tuple) else output
+        if hidden.shape[1] == 1:
+            self.vectors.append(hidden[0, 0, :].detach().to("cpu"))
+        return output
+
+
+def measure_ambient(
+    model, tokenizer, render_fn, rows: list[dict], direction_records: dict[str, dict]
+) -> dict[str, float]:
+    """Mean absolute projection of the un-intervened decode-time hidden state
+    onto each direction's unit vector, pooled over `rows`.
+
+    Groups directions by layer and registers one `_AmbientCapture` hook per
+    DISTINCT layer, so directions sharing a layer (e.g. the smoke's
+    pos_ctrl_L34 / L34_succ_pc0 / randctrl_L34_succ_pc0, all block 33) are
+    measured from the SAME generate() pass per row, not one pass per
+    direction."""
+    import torch
+    from MechInterp.intervention import get_decoder_layer
+
+    dev = next(model.parameters()).device
+    layers = sorted({int(rec["layer"]) for rec in direction_records.values()})
+    captures = {layer: _AmbientCapture() for layer in layers}
+    handles = [
+        get_decoder_layer(model, layer).register_forward_hook(cap)
+        for layer, cap in captures.items()
+    ]
+    try:
+        for row in rows:
+            prompt = render_fn(row)
+            enc = tokenizer(prompt, return_tensors="pt").to(dev)
+            with torch.no_grad():
+                model.generate(
+                    **enc,
+                    max_new_tokens=AMBIENT_MAX_NEW_TOKENS,
+                    min_new_tokens=AMBIENT_MAX_NEW_TOKENS,
+                    do_sample=False,
+                    num_beams=1,
+                )
+    finally:
+        for h in handles:
+            h.remove()
+
+    ambient_by_name: dict[str, float] = {}
+    for name, rec in direction_records.items():
+        layer = int(rec["layer"])
+        vecs = captures[layer].vectors
+        if not vecs:
+            raise RuntimeError(
+                f"no decode-step captures at layer {layer} for direction {name!r}; "
+                "cannot measure ambient (did generate() run at least one decode step?)"
+            )
+        stacked = torch.stack(vecs, dim=0).to(torch.float64)
+        unit_vec = torch.tensor(rec["vector_np"], dtype=torch.float64)
+        proj = stacked @ unit_vec
+        ambient_by_name[name] = float(proj.abs().mean())
+    return ambient_by_name
+
+
+def resolve_ambient_strengths(
+    direction_records: dict[str, dict], ambient_by_name: dict[str, float]
+) -> dict[str, dict]:
+    """{name: {"ambient": a, "sigma": s, "strengths": {"dose1": k5*a/s, ...},
+    "gen_stream_probe_strength": L/s}}.
+
+    `strengths` (the arm doses) follow AMENDMENT.md "Design -> Dose
+    calibration": strength = k * ambient_dir / sigma_dir for k in
+    AMBIENT_K_LADDER. Baseline is NOT resolved here -- it stays cell.yaml's
+    own 0.0, applied by materialize_direction_config.
+
+    `gen_stream_probe_strength` is UNRELATED to ambient (see module docstring
+    "GEN_STREAM FIRING PROBE"): it is GEN_STREAM_PROBE_L / sigma_dir, the same
+    fixed absolute wiring-check setpoint for every direction regardless of its
+    own ambient scale."""
+    out: dict[str, dict] = {}
+    for name, rec in direction_records.items():
+        ambient = ambient_by_name[name]
+        sigma = float(rec.get("sigma", 1.0))
+        if sigma == 0.0:
+            raise ValueError(
+                f"direction {name!r}: sigma is 0.0, cannot resolve an ambient-relative strength"
+            )
+        strengths = {arm: k * ambient / sigma for arm, k in AMBIENT_K_LADDER.items()}
+        out[name] = {
+            "ambient": ambient,
+            "sigma": sigma,
+            "strengths": strengths,
+            "gen_stream_probe_strength": GEN_STREAM_PROBE_L / sigma,
+        }
+    return out
+
+
+def _record_ambient_provenance(resolved: dict[str, dict], ambient_n_rows: int) -> None:
+    """Merge this invocation's per-direction (ambient, sigma, strengths,
+    gen_stream_probe_strength) into the shared provenance file
+    (read-modify-write, so e.g. a 3-direction smoke followed later by the full
+    34-direction run accumulates rather than clobbers the smoke's record)."""
+    import datetime
+
+    AMBIENT_PROVENANCE_PATH.parent.mkdir(parents=True, exist_ok=True)
+    existing: dict[str, Any] = {}
+    if AMBIENT_PROVENANCE_PATH.is_file():
+        with AMBIENT_PROVENANCE_PATH.open() as f:
+            existing = json.load(f)
+    now = datetime.datetime.now(datetime.timezone.utc).isoformat()
+    for name, info in resolved.items():
+        existing[name] = {
+            "ambient": info["ambient"],
+            "sigma": info["sigma"],
+            "strengths": info["strengths"],
+            "gen_stream_probe_strength": info["gen_stream_probe_strength"],
+            "ambient_n_rows": ambient_n_rows,
+            "computed_at": now,
+        }
+    with AMBIENT_PROVENANCE_PATH.open("w") as f:
+        json.dump(existing, f, indent=2, sort_keys=True)
+
+
+def compute_ambient_relative_strengths(
+    recipe: dict[str, Any], directions: list[str], args: argparse.Namespace
+) -> dict[str, dict]:
+    """Load the model ONCE (shared across every direction in `directions`,
+    regardless of how many distinct layers they span), measure each
+    direction's ambient projection, resolve the k*ambient/sigma dose ladder,
+    free the model, and record provenance. See AMENDMENT.md "Design -> Dose
+    calibration" for the k values and dose_escalation_ambient_relative.py for
+    the measurement method this reuses."""
+    import gc
+
+    import torch
+
+    from MechInterp.probe import load_frozen_direction
+
+    readout_path_by_name = {r["name"]: _to_repo_abs(r["path"]) for r in recipe["readouts"]}
+    direction_records = {
+        name: load_frozen_direction(readout_path_by_name[name]) for name in directions
+    }
+
+    render_fn = _load_callable(args.render_fn)
+    rows_path = Path(_to_repo_abs(recipe["surface"]["rows_path"]))
+    ambient_rows = load_ambient_rows(rows_path, AMBIENT_N_ROWS)
+    n_true = sum(1 for r in ambient_rows if r.get("confab_on_unanswerable"))
+    n_layers = len({int(rec["layer"]) for rec in direction_records.values()})
+    print(
+        f"Ambient calibration: {len(ambient_rows)} rows "
+        f"(confab=True: {n_true}, confab=False: {len(ambient_rows) - n_true}), "
+        f"{len(directions)} direction(s) across {n_layers} distinct layer(s)"
+    )
+
+    model, tokenizer = _load_model_and_tokenizer(args.model, args.adapter)
+    try:
+        ambient_by_name = measure_ambient(model, tokenizer, render_fn, ambient_rows, direction_records)
+    finally:
+        del model
+        gc.collect()
+        torch.cuda.empty_cache()
+
+    resolved = resolve_ambient_strengths(direction_records, ambient_by_name)
+    _record_ambient_provenance(resolved, ambient_n_rows=len(ambient_rows))
+    for name, info in resolved.items():
+        rounded = {k: round(v, 4) for k, v in info["strengths"].items()}
+        print(
+            f"  [{name}] layer={direction_records[name]['layer']} "
+            f"ambient={info['ambient']:.4f} sigma={info['sigma']:.4f} strengths={rounded} "
+            f"gen_stream_probe_strength={info['gen_stream_probe_strength']:.4f}"
+        )
+    return resolved
 
 
 # ---------------------------------------------------------------------------
@@ -280,6 +652,21 @@ def run_screen(recipe: dict[str, Any], names: list[str], args: argparse.Namespac
 
     output_path = Path(_to_repo_abs(recipe["execution"]["output_path"]))
 
+    # Ambient-relative dose resolution: measure every direction that is not
+    # already complete, in ONE shared model load, before the per-direction
+    # run_steer loop below (each iteration of which pays its own reload cost
+    # regardless -- see module docstring "MODEL RELOAD COST").
+    membership = load_arm_membership(output_path)
+    to_run = [d for d in names if not direction_complete(d, recipe, membership, n_rows)]
+    arm_strengths_by_direction: dict[str, dict[str, float]] = {}
+    probe_strength_by_direction: dict[str, float] = {}
+    if to_run:
+        resolved = compute_ambient_relative_strengths(recipe, to_run, args)
+        arm_strengths_by_direction = {name: info["strengths"] for name, info in resolved.items()}
+        probe_strength_by_direction = {
+            name: info["gen_stream_probe_strength"] for name, info in resolved.items()
+        }
+
     n_run = 0
     n_skipped = 0
     for direction in names:
@@ -289,7 +676,12 @@ def run_screen(recipe: dict[str, Any], names: list[str], args: argparse.Namespac
             n_skipped += 1
             continue
 
-        cfg_dict = materialize_direction_config(recipe, direction)
+        cfg_dict = materialize_direction_config(
+            recipe,
+            direction,
+            arm_strengths_by_direction.get(direction),
+            probe_strength_by_direction.get(direction),
+        )
         cfg_path = write_generated_config(cfg_dict, direction)
         config = load_steer_config(cfg_path)
         print(f"[{direction}] launching run_steer (config at {cfg_path})")

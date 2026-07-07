@@ -6,6 +6,108 @@ in `experiment.yaml`.
 
 ## Entries
 
+### 2026-07-06 -- 3-direction wiring smoke PASSED (gen_stream fixed); full 34-direction screen launched on a documented 160-row subsample
+
+**3-direction smoke (`pos_ctrl_L34`, `L34_succ_pc0`, `randctrl_L34_succ_pc0`), 200-row
+pool, free 3090, tuner `56c7c6b`:** all 3 directions passed the smoke gate
+(`gen_stream_fired: true`, `write_ok`/`parity_ok` true, `max_write_error`
+0.02-0.12) -- the earlier `gen_stream decode hook did not fire` failure (see
+`analysis/pilot_run.log`, pinned tuner `294a653`) is resolved by tuner PR #138
+(`SmokeConfig.gen_stream_probe_strength`, this worktree's submodule now
+`56c7c6b`) plus `run_screen.py`'s per-direction `GEN_STREAM_PROBE_L=1000`
+override. Confab-baseline flip rate (`baseline_confab=True` rows only) by dose:
+
+| direction | baseline | dose1 | dose2 | dose3 | degenerate (all doses) |
+|---|---|---|---|---|---|
+| `pos_ctrl_L34` | 2% | 60% | 91% | 99% | 0% |
+| `L34_succ_pc0` (dark candidate) | 2% | 3% | 4% | 4% | 0% |
+| `randctrl_L34_succ_pc0` | 2% | 4% | 4% | 3% | 0% |
+
+**G-instrument pattern confirmed**: the positive control moves confab->refuse
+strongly with 0% degeneracy; the paired random control sits at floor
+(3-4%, indistinguishable from its own 2% baseline noise). `L34_succ_pc0`
+(one of the 12 dark candidates) shows a SEPARATE, unexpected effect not
+captured by the confab-flip metric: its `nonconfab` (baseline-refuse) flip
+rate (refuse->answer) rises 2%->4%->5%->23% with dose while its confab-flip
+stays at floor -- flagged for the full screen's per-candidate table, not
+adjudicated here (3-direction smoke is a wiring check only, no gate
+adjudication).
+(Raw rows/logs: gitignored session scratchpad, not this repo --
+`smoke_rows_out_3dir.jsonl` / `smoke_3dir_probe_fixed.log`, referenced for
+provenance only.)
+
+**Firing probe vs. arm dose -- two unrelated numbers, do not conflate (see
+`run_screen.py` module docstring "GEN_STREAM FIRING PROBE" for the full
+derivation):**
+- **Arm doses** (`baseline`/`dose1`/`dose2`/`dose3`, the actual per-direction
+  strengths reported in `analysis/ambient_calibration.json`) are
+  ambient-relative: `k * ambient_dir / sigma_dir`, k in {5,7,9}, DIFFERENT per
+  direction because each direction's own ambient projection scale differs.
+  This is the number that answers "does this direction move behavior."
+- **`gen_stream_probe_strength`** is a SEPARATE, fixed, deliberately
+  over-driven wiring-check setpoint (`GEN_STREAM_PROBE_L=1000 / sigma_dir`)
+  the tuner's smoke gate runs BEFORE any arm, to prove the decode hook fires
+  on every step -- a property of the model/mechanism, not of whether a given
+  direction is a real lever. It must be large enough to garble output
+  regardless of direction, because most of the 34 directions (random
+  controls, most dark candidates) are EXPECTED to be behaviorally inert at
+  their own dose ladder; if the probe used a direction's own (small, possibly
+  inert) dose, an expected-null direction's unperturbed output would
+  wrongly read as "hook not wired" and abort that direction, losing exactly
+  the null rows the screen needs to score. 1000 was picked empirically
+  against this smoke's hardest-to-fire direction (`randctrl_L34_succ_pc0`,
+  smallest ambient of the three): a sweep found unreliable firing at <=600
+  and reliable firing (4/4 rows) from 650 up, so 1000 keeps a ~1.5x margin.
+  This number never appears in `gates.yaml` and is not a claim about any
+  direction's effect size.
+
+**Full-screen pool subsample (documented, not silent):** the full pool is
+1,338 rows (309 `confab_on_unanswerable=True` / 1,029 `False`). Running the
+full pool through all 34 directions x 4 arms was estimated by the dispatching
+message at ~19h wall-clock, with a ~2-3h target for this screen (graduates
+get their own signed full-pool amendment, so this run is a ranked shortlist,
+not a confirmatory number). The dispatch also asked for "~300 confab rows +
+count-matched refuse" for bootstrap-CI power. **Those two asks are in tension
+given this hardware's measured throughput**: the 3-direction smoke (200-row
+pool: 100 confab-stratified + 100 count-matched, via
+`run_screen.py::load_ambient_rows`) took 300s / 415s / 353s per direction
+(mean 356s) end-to-end (model load + smoke gate + 4 arms x 200 rows,
+`batch_size=12`, `max_new_tokens=96`). Extrapolating that measured rate
+linearly across 34 directions, a 300+300=600-row pool projects to
+~9-10h (matches the dispatch's own ~19h full-pool estimate scaled by
+600/1,338), not 2-3h. Sizing instead for the stated **2-3h wall-clock
+ceiling** (treated as the harder constraint; the confab-count ask is
+described in the dispatch as being "sized for bootstrap-CI power," i.e. in
+service of the wall-clock-bounded run, not an independent floor):
+subsampled to **160 rows total (80 `confab_on_unanswerable=True` + 80
+count-matched `False`, category-diverse-first)**, via the SAME
+`run_screen.py::load_ambient_rows` stratification the smoke already
+GPU-validated at n=200 (deterministic by construction -- first-per-category
+pass over the pool file in on-disk order, then backfill; no RNG, so no seed
+knob applies beyond `cell.yaml`'s existing `surface.seed: 20260706`), written
+to `analysis/screen_pool_n160.jsonl` (gitignored). Category composition of
+the 80 confab rows: controversial 22, ambiguous 14, unsolved_problem 15,
+`(none)` 14, counterfactual 9, false_assumption 5, future_unknown 1 (mirrors
+the full pool's confab-row category skew -- future_unknown is rare among
+confab rows, 11/309 pool-wide). `cell.yaml`'s `surface.rows_path` was
+repointed at this subsample (full-pool path `rows_pool.jsonl` preserved on
+disk, untouched) with an inline comment noting it MUST be restored before
+any `exp sign`. Extrapolating the measured per-direction rate (356s mean,
+range 300-415s across the 3 smoked direction-types) to all 34 directions at
+n=160 (roughly linear after a small fixed model-load/smoke-gate overhead):
+**projected ETA ~2.6-3.5h**, centered close to but potentially slightly over
+the stated 2-3h ceiling -- flagged here rather than silently shrunk further,
+since 160 already leaves thin per-category N (as few as 1 `future_unknown`
+confab row) and a smaller subsample would erode per-category bootstrap power
+without closing the gap to "~300 confab" regardless.
+
+Launched detached (`nohup`, log `analysis/full_screen_run.log`, PID recorded
+at launch) via `run_screen.py` (no `--only`, all 34 directions, resumable,
+`--i-know-this-runs-on-gpu`, no `--force-full-run` so every direction still
+smoke-gates). `execution.output_path` (`analysis/rows_out.jsonl`) was empty
+before this launch (only a stale `.smoke_ok.json` sidecar from the pre-fix
+pilot attempt existed, harmless -- config_sha differs so it re-smoke-gates).
+
 ### 2026-07-06 -- GPU dose diagnostic (free 3090): positive control HAS a narrow coherent steering window; default dose ladder must be recalibrated or the screen voids
 
 Diagnostic only (free local 3090, no `exp sign`, no screen arms run, no tuner

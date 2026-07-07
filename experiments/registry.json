@@ -20,16 +20,20 @@
         "modules": [
           "../common/graders/dark_actuator_grader.py"
         ],
-        "pins": {}
+        "pins": {
+          "../common/graders/dark_actuator_grader.py": "f5521a691d1c5610e4b4b27592583e699d2c45745761beba233074a37a55c515",
+          "cell.yaml": "cf047c8725f97c9950f25a2b8d0fe4cfd725ad5e0e7e6f1621a8410331530b53",
+          "gates.yaml": "a70634ea376e7df7cc6383f367be8a8e87bc371e3439cea22e0dc374f0eb2b87"
+        }
       },
       "kg": [],
       "prediction": "Orchestrator: most likely 0 candidates beat the random control (small chance L34 succ pc0 registers a weak hit); positive control (answer-vs-refuse) moves behavior, negative controls (random, propensity) sit at the floor. User (2026-07-06): SEVERAL candidates graduate (the dark subspace holds real behavioral levers).",
       "question": "Do any of the 12 frozen dark-displacement candidate directions causally actuate the fabricate-vs-refuse behavior on the raw-base checkpoint, above a random-direction control, at matched norm?",
       "registered": true,
       "slug": "dark-actuator-screen",
-      "status": "draft",
+      "status": "null-result",
       "type": "lab-diagnostic",
-      "verdict": ""
+      "verdict": "NULL. G-instrument valid (pos_ctrl kills 79/80 confabs into coherent 'I dont know' refusals, confidence->0.0; controls at floor), screen not void. The 9 candidates clearing the raw graduation bar are an artifact: grader coherence gap (refuse->answer flips are malformed spam scored as answers, well-formed 0-17% vs 76% baseline), under-dosed random control (cand dose3 setpoints 34-219 vs paired random 4-42), off-manifold over-drive on exactly-off-axis weak directions (census AUROC 0.60-0.72). Promote none; dark subspace shelved. Orchestrator 0-graduate correct; user several-graduate missed."
     },
     {
       "checkpoint": {

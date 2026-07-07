@@ -36,12 +36,31 @@ fabricate-vs-refuse behavior to move. Same system prompt, greedy decoding, grade
 as the AK Stage-1 raw-base cell. Local RTX 3090, single seed.
 
 A causal actuation (dose) screen. For each screened direction, apply the tuner's
-fixed-strength erase_write (or additive push) at matched norms across a small dose
-ladder, at the pre-generation anchor onward, and score the behavioral flip rate
-(confab -> refuse, and refuse -> answer) on the pool. This uses the EXISTING
-tuner fixed-strength arm machinery (not AO's proportional-gain feature); a screen
-is about whether a direction moves behavior at all, not about proportional
-control.
+erase_write at an AMBIENT-RELATIVE dose across a small ladder, at the
+pre-generation anchor onward, and score the behavioral flip rate (confab ->
+refuse, and refuse -> answer) on the pool. This uses the EXISTING tuner
+fixed-strength arm machinery (not AO's proportional-gain feature): the strength is
+fixed per direction, not per row; a screen is about whether a direction moves
+behavior at all, not about proportional control.
+
+Dose calibration (pre-flight, 2026-07-06; see NOTEBOOK.md). erase_write writes an
+absolute coordinate (setpoint = strength * sigma), so behavior is
+inert-then-coherent-then-collapse in the setpoint, and the coherent window scales
+with the direction's own ambient projection, NOT with a fixed absolute strength.
+On the positive control (answer-vs-refuse mass-mean, `pos_ctrl_L34`), a free-3090
+sweep over 24 pool rows found the clean confab -> refuse flip at setpoint ~= k *
+ambient with k in {5,7,9} (median 7), collapse only at k >= 13-15, and 12/12
+confab rows flipping cleanly while already-refusing rows stay unchanged until
+k >= 9 (the selectivity G-instrument needs). Therefore the dose ladder is set per
+direction as strength = k * ambient_dir / sigma_dir for k in {5,7,9} (plus the
+k=0 baseline), where `ambient_dir` is that direction's mean absolute projection
+measured over the pool at the write positions during un-intervened decode. This
+replaces the earlier absolute {1,2,4} placeholder ladder, which the pre-flight
+showed is entirely in the inert regime (it would have failed the positive control
+and voided the screen). A single absolute strength is NOT used because the 34
+directions have different ambient scales: it would over-dose small-scale
+directions into degenerate output (a false "moves behavior" hit) and under-dose
+large-scale ones.
 
 Directions screened (the candidate set is exactly the 12; controls calibrate the
 instrument):
@@ -154,10 +173,98 @@ falsifier/gates prose above.
   launch-time wrapper that overrides `law.readout` and prefixes each arm name
   with the direction name (`<direction>__baseline`, `<direction>__dose3`, ...)
   per sub-run. That wrapper is NOT built yet -- see NOTEBOOK.md.
+  [SUPERSEDED 2026-07-06: the wrapper was built and the screen executed; see
+  Outcome.]
 - `gates.yaml` was validated end-to-end against that arm-naming convention
   with `evaluate_gates()` on synthetic rows (both pass and fail branches
-  exercised); no real rows exist yet.
+  exercised); no real rows exist yet. [SUPERSEDED 2026-07-06: the full 21760-row
+  screen ran and was scored; see Outcome.]
 
 ## Outcome
 
-Filled at resolve.
+RESOLVED 2026-07-06. NULL. Local RTX 3090, single seed 20260706, raw-base
+bnb-4bit on the AK Stage-1 confab-rich surface. 34 directions (12 dark
+candidates + 5 pos_ctrl + 5 neg_ctrl + 12 random controls) times 4 arms (k=0
+baseline plus dose1/2/3 at k=5/7/9) times n=160 stratified subsample (80 confab
++ 80 refuse) = 21760 rows. rows_out.jsonl sha256
+302fc7084672a7e8c1ab2a4fbbb9ffda6f07e08deb2aee176c0ee6b4fbe01ab5. Gate report
+and lead verification banked under analysis-committed/ (score_gates_report.json,
+verification_summary.json).
+
+G-instrument PASSES, so the screen is VALID (not void). pos_ctrl_L34 at dose3
+flips 79/80 confab rows to refuse (diff +77, CI [64, 90]); both negative controls
+sit at the floor (neg_ctrl diff 0; randctrl diff 2, CI [0, 5]). The positive
+control is independently verified as a genuine, coherent lever, not gobbledegook:
+79/79 of its confab-origin abstentions are clean "I don't know the answer"
+refusals with response_confidence driven to 0.0 from baseline confident answers,
+against a baseline natural-refusal coherence of 78/78.
+
+Verdict: NULL. The nine candidates that clear the raw graduation bar are an
+artifact; none is promoted. score_gates_report.json records nine candidate
+screen-gates passing (flip rate above the paired random control, CI excluding 0)
+and three failing outright (degenerate). All nine apparent graduations fail on
+verification, through three compounding failure modes. This is a lead
+re-derivation corroborating the dark-redteam adversarial audit.
+
+1. Grader coherence gap (decisive). Every graduating flip is refuse-to-answer,
+   and the "answers" are malformed output the grader miscounts. The
+   well-formed-answer rate (answer field is a real natural-language sentence, over
+   60 percent alphabetic) on the dose3 refuse-origin "answered" rows is 0/79,
+   0/66, 0/80, 3/72, 0/80, 1/80, 0/76, 10/80, 3/18 across the nine candidates,
+   against a 61/80 (76 percent) baseline yardstick. The text is number-spam
+   ("0.5,0.8}0.5,0.8}"), decimal loops (":0.85:0.85"), quote-spam, and
+   mangled-refusal loops ("i don't don't don't"). The grader's is_degenerate
+   (experiments/common/graders/dark_actuator_grader.py:76-154) only catches pure
+   whole-string repetition, so a valid JSON prefix followed by collapse scores as
+   not degenerate, the mangled wrapper defeats the refusal regex so the row scores
+   as not abstained, and the row is therefore counted answered and flipped. The
+   reported near-zero degenerate rate is this scoring gap, not clean output. The
+   uniform refuse-to-answer polarity is itself a symptom: garbage can only score
+   as "answered", which only refuse rows can flip into.
+
+2. Under-dosed random control (matched-norm violated). The dose ladder is
+   strength = k times ambient, so at dose3 the candidates write absolute setpoints
+   of 34 to 219 while their paired random controls write only 4 to 42, roughly 5
+   to 10 times weaker. The random control was never exercised at the candidate's
+   own magnitude, so "beats its random control" is confounded by write magnitude
+   rather than direction quality. Per-candidate setpoints are in
+   verification_summary.json.
+
+3. Off-manifold over-drive, not a graded lever. The refuse-to-answer rate is not
+   dose-graded (it saturates at dose1 for several candidates and collapses for
+   others; three candidates are 98 to 100 percent degenerate at dose3 and
+   correctly fail their gates). The candidates are exactly off-axis (absolute
+   cosine 0.000 to the pos_ctrl answer/refuse axis and to the propensity axis,
+   orthogonal by census construction) and only weakly outcome-linked (census
+   AUROC 0.60 to 0.72). A weak off-axis correlational signal cannot produce a real
+   near-100-percent behavioral flip; over-writing an off-manifold direction pushes
+   the hidden state off-manifold into grader-miscounted garbage. This matches the
+   census read exactly: worth a screen, not a claim.
+
+Scoreboard, scored straight: the orchestrator's call ("0 graduate; controls
+behave") is correct; the user's call ("several graduate") missed. The user's
+separate strategic read, that the dark subspace is not a source of taggable
+features or actuators, is affirmed by this null.
+
+Disposition: SHELVED. The dark subspace is ruled out as a near-term actuator or
+feature source, and no candidate earns a follow-up amendment. The only
+predictable, coherent lever surfaced by the screen is the on-manifold
+answer/refuse axis (pos_ctrl), which was already known. Any future re-screen
+requires two harness fixes as preconditions: (1) a magnitude-matched random
+control written at the same absolute setpoint and the same layer as the
+candidate, not merely the same k; (2) a coherence gate that catches
+partial-repetition and malformed-JSON collapse, since the current is_degenerate
+is defeated by any structured prefix.
+
+Provenance: analysis/ and directions/ are gitignored for data containment; the
+raw rows_out.jsonl is recorded by the sha256 above, and the gate report plus the
+lead verification are committed under analysis-committed/. The expected_config_sha
+in gates.yaml and experiment.yaml was left as a placeholder for this run, and the
+config-sha drift guard was not enforced, consistent with a lab-notebook
+diagnostic rather than signed confirmatory evidence. The run is therefore not
+bit-reproducible from committed files alone (raw rows and direction JSONs are
+gitignored); the banked reports and recorded SHA are the provenance record.
+
+Attribution: dark-redteam adversarial audit (candidate cosine matrix,
+dose-response curves, degeneracy detector) plus lead independent re-derivation of
+the two decisive claims (the grader coherence gap and the magnitude mismatch).

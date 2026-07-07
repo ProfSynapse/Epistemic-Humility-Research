@@ -32,7 +32,21 @@
 #    the AK Stage-1 raw-base capture (checkpoint_tag "raw-base",
 #    unsloth/Qwen3-4B-bnb-4bit, no adapter).
 surface:
-  rows_path: experiments/dark-actuator-screen/analysis/rows_pool.jsonl
+  # SCREEN SUBSAMPLE (2026-07-06, harness-builder dispatch): pointed at a
+  # 160-row deterministic stratified subsample of the full 1,338-row pool
+  # (80 confab_on_unanswerable=True + 80 count-matched False, via
+  # run_screen.py::load_ambient_rows -- the SAME method/category-diversity-
+  # first stratification already GPU-validated by the 3-direction smoke,
+  # extended from its n=200 to n=160 to fit the 34-direction x 4-arm wall-
+  # clock budget; see NOTEBOOK.md "Full-screen pool subsample" for the exact
+  # rationale, row counts, and the empirical per-row rate this was sized
+  # against). Graduates of this screen would each get their OWN signed
+  # full-pool amendment before any confirmatory claim. This screen resolved
+  # NULL (no graduates; see AMENDMENT.md Outcome), so no confirmatory promotion
+  # occurs; the sign step here pins the exact n160 diagnostic instrument that
+  # produced the null, for provenance. Any future confirmatory re-screen must
+  # restore rows_path to rows_pool.jsonl (the full pool) and re-sign.
+  rows_path: experiments/dark-actuator-screen/analysis/screen_pool_n160.jsonl
   seed: 20260706
   generation:
     max_new_tokens: 96
@@ -137,12 +151,29 @@ law:
   position: anchor_onward
   generation_mode: gen_stream
 
-# 4. arms: baseline (strength 0) + a small fixed-strength dose ladder, every
+# 4. arms: baseline (strength 0) + a small ambient-relative dose ladder, every
 #    row active (fixed strength, no score/flag selection -- the screen scores
 #    the WHOLE unanswerable pool at each dose, per AMENDMENT "Design": "score
 #    the behavioral flip rate ... on the pool").
 #
-#    ARM-NAMING CONVENTION (launch-time wrapper, not yet built -- see
+#    AMBIENT-RELATIVE DOSING (AMENDMENT "Design -> Dose calibration"): erase_write
+#    writes an absolute setpoint = strength * sigma, and the coherent
+#    behavioral window scales with each direction's OWN ambient (un-intervened)
+#    projection, not with a fixed absolute strength -- a single absolute ladder
+#    over- or under-doses depending on a direction's scale (a free-3090
+#    pre-flight showed the earlier absolute {1,2,4} ladder is entirely inert
+#    for pos_ctrl_L34, which would have voided the screen). The dose1/dose2/
+#    dose3 `strength` values below are therefore the K-MULTIPLIER (5, 7, 9 --
+#    pre-flight-calibrated clean-flip range, median 7; see NOTEBOOK.md), NOT a
+#    raw setpoint: run_screen.py's ambient-relative dose resolution measures
+#    each direction's ambient_dir before materializing its config and
+#    OVERWRITES this placeholder with strength = k * ambient_dir / sigma_dir
+#    (run_screen.py::compute_ambient_relative_strengths /
+#    resolve_ambient_strengths). Baseline's 0.0 is never overwritten. A
+#    standalone parse of this file (e.g. `--dry-run`) sees these k-multiplier
+#    placeholders, never the resolved per-direction setpoint.
+#
+#    ARM-NAMING CONVENTION (launch-time wrapper -- see run_screen.py /
 #    NOTEBOOK.md): every direction's sub-run must land its rows in the SAME
 #    execution.output_path (append + resume=true) with arm names PREFIXED by
 #    the direction name, e.g. "L34_succ_pc0__baseline",
@@ -154,12 +185,12 @@ law:
 arms:
   - name: baseline
     strength: 0.0
-  - name: dose1
-    strength: 1.0
-  - name: dose2
-    strength: 2.0
-  - name: dose3
-    strength: 4.0
+  - name: dose1  # k=5; resolved to 5 * ambient_dir / sigma_dir at run time
+    strength: 5.0
+  - name: dose2  # k=7; resolved to 7 * ambient_dir / sigma_dir at run time
+    strength: 7.0
+  - name: dose3  # k=9; resolved to 9 * ambient_dir / sigma_dir at run time
+    strength: 9.0
 
 # 5. execution: per-row output JSONL (untracked; shared across every
 #    direction's sub-run once the launch-time wrapper exists) + the project
@@ -178,7 +209,18 @@ execution:
 
 # 6. smoke: readback tolerances. gen_stream cells additionally get the
 #   fail-closed decode-hook-firing guard (pinned tuner 294a653) before the
-#   full arms run.
+#   full arms run. That guard's own probe strength (tuner PR #138,
+#   SmokeConfig.gen_stream_probe_strength, synaptic-tuner 56c7c6b) is left
+#   UNSET here (None -> tuner's built-in 100.0 default) and OVERWRITTEN by
+#   run_screen.py per direction at real-run time to GEN_STREAM_PROBE_L /
+#   sigma_dir -- a fixed, over-driven absolute wiring-check setpoint, the same
+#   for every direction regardless of ambient/sigma. This is NOT a dose (see
+#   run_screen.py module docstring "GEN_STREAM FIRING PROBE"): a direction
+#   expected to be behaviorally inert (most candidates, the random controls)
+#   must still pass this check, since it only proves the decode hook is
+#   wired, not that this direction moves behavior. `--dry-run` never performs
+#   the GPU sweep this needs, so a standalone parse of this file always sees
+#   the tuner's built-in 100.0 default here.
 smoke:
   n_rows: 8
   write_rel_tol: 0.05
