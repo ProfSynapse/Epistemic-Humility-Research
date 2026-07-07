@@ -1,0 +1,10 @@
+# Fitted directions and other large local data for this experiment.
+directions/
+# Local analysis scratch; keep untracked, promote real outputs deliberately.
+analysis/
+# unsloth JIT compile cache (build byproduct of extract_l34_anchor.py's
+# unsloth import), not source or output.
+unsloth_compiled_cache/
+# Python bytecode cache.
+__pycache__/
+*.pyc

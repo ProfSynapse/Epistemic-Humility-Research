@@ -1,0 +1,19 @@
+{
+  "substrate": "bf16",
+  "base_model": "unsloth/Qwen3-4B",
+  "random_state": 20260707,
+  "n_known_correct_answered_fit": 172,
+  "n_confab_fit": 124,
+  "n_unknown_refused": 1029,
+  "cos_u_d_u_p": 0.05792211248474835,
+  "cos_caution_dir_c_hat": 0.9130679152990262,
+  "mu_d": -26.999811383638065,
+  "sigma_d": 16.115344237771755,
+  "mu_p": 9.072523785361074,
+  "sigma_p": 0.9118295798233742,
+  "mu_c": -11.827935550091084,
+  "sigma_c": 13.23002622164185,
+  "reproducibility_verified": true,
+  "extract_manifest_sha256": "cbf4092f437d9a28b09c121d629a8820c76b28ad021ad3f56365e143b68dcc71",
+  "split_manifest_sha256": "5bb5510a90891b934a3334f508848f5aca94179978401582b53a9631c98fb49b"
+}
