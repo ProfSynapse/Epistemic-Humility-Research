@@ -93,12 +93,10 @@ import modal
 # in a second commit after the harness itself lands, so the pin always
 # points at a commit that actually contains this file) ----------------------
 REPO_URL = "https://github.com/ProfSynapse/Epistemic-Humility-Research.git"
-# Commit that added this harness (branch exp/j-space-localization-qwen3-4b).
-# NOT YET PUSHED to origin as of this pin -- `git clone` in run_jlens() below
-# fetches from REPO_URL (GitHub), so this branch/commit MUST be pushed (or
-# merged) before this script can actually launch; the harness-builder agent
-# that wrote this file did not push it (see this repo's binding invariants).
-REPO_COMMIT = "a0fead1469fa056882c2319f09e48a7c047c7b6d"
+# Input-bearing commit for this run (branch exp/j-space-localization-qwen3-4b):
+# contains the bf16-refit direction swap, runtime-HF corpus fetch, and the
+# J-lens code Modal will execute after cloning from REPO_URL.
+REPO_COMMIT = "40da3ee87127d13f9bd2198c7838ae73096eb71d"
 MODEL_BF16 = "unsloth/Qwen3-4B"
 EXPERIMENT_SLUG = "j-space-localization-qwen3-4b"
 RUN_TAG = "jspace-jlens-r1"
