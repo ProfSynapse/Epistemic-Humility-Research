@@ -311,9 +311,23 @@ def dtype_kw() -> str:
 
 def load_model_and_tokenizer(model_name: str, revision: str):
     import transformers as tf
-    from transformers import AutoTokenizer
+    from huggingface_hub import hf_hub_download
+    from transformers import AutoTokenizer, PreTrainedTokenizerFast
 
-    tokenizer = AutoTokenizer.from_pretrained(model_name, revision=revision, trust_remote_code=True)
+    try:
+        tokenizer = AutoTokenizer.from_pretrained(model_name, revision=revision, trust_remote_code=True)
+    except ValueError as exc:
+        if "TokenizersBackend" not in str(exc):
+            raise
+        tok_json = hf_hub_download(model_name, "tokenizer.json", revision=revision)
+        tok_cfg_path = hf_hub_download(model_name, "tokenizer_config.json", revision=revision)
+        tok_cfg = json.loads(Path(tok_cfg_path).read_text(encoding="utf-8"))
+        tokenizer = PreTrainedTokenizerFast(tokenizer_file=tok_json)
+        for attr in ("bos_token", "eos_token", "pad_token", "unk_token"):
+            val = tok_cfg.get(attr)
+            if isinstance(val, str) and val:
+                setattr(tokenizer, attr, val)
+        print(f"[load] {model_name} tokenizer loaded via tokenizer.json fallback", flush=True)
     tokenizer.padding_side = "left"
     if tokenizer.pad_token_id is None and tokenizer.eos_token_id is not None:
         tokenizer.pad_token = tokenizer.eos_token

@@ -27,10 +27,13 @@ RUN_TAG = "doubt-snap-cross-family-r1"
 
 IMAGE = "unsloth/unsloth:2026.1.2-pt2.9.0-cu12.8-update"
 PIP = [
+    "git+https://github.com/huggingface/transformers.git",
+    "accelerate>=1.0",
     "huggingface_hub>=0.34,<1.0",
     "pyyaml",
     "scikit-learn",
     "safetensors",
+    "tokenizers>=0.22.0",
 ]
 HOURS = 60 * 60
 
