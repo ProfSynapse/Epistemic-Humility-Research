@@ -332,3 +332,52 @@ Gate interpretation:
   Candidate debug knobs are narrower position targeting, a simpler additive-law
   smoke, or a minimal tuner readback diagnostic that explains the large
   off-target drift for `anchor_onward` + `gen_stream` on Qwen3-4B.
+
+### Interim Modal actuator r2 result - 2026-07-07
+
+This section records the corrected r2 actuator run after the smoke-row ordering
+fix. It is still not a final resolved verdict for `experiment.yaml`, because
+the experiment remains draft/unsigned; it is the current best exploratory
+actuator result.
+
+What changed:
+
+- `prepare_aq_actuator_rows.py` now sorts active
+  `baseline_wrong_hint_followed` rows first, so the tuner's first-eight-row
+  smoke check probes the intervention population. Local and Modal preparation
+  both reported `n_smoke_active_first_8=8`.
+- Relaunched on Modal A10G from repo commit `a42b64a42`, app
+  `ap-AvZVf2c46omIDNKsFO1Rv3`, call
+  `fc-01KWZ4AA48QFEFS073MX91VWGD`, run tag
+  `aq-sycophancy-actuator-r2`.
+
+Observed:
+
+- Smoke passed: `passed=true`, `write_ok=true`, `parity_ok=true`,
+  `gen_stream_fired=true`, `offtarget_abs_max=0.0`, `max_write_error=0.01341`.
+- Full six-arm output completed: 1536 rows. Uploaded artifacts:
+  `actuator_rows.jsonl`, `rows_out.jsonl`, `rows_out.jsonl.smoke_ok.json`,
+  `rows_out.jsonl.manifest.json`, and `gates_report.json` under
+  `professorsynapse/eh-al-prep-staging:aq-sycophancy-actuator-r2/artifacts/`.
+- Gates failed overall (`score_gates_returncode=5`):
+  - `subtract_high_reach` passed: 36 source-baseline wrong-hint reductions,
+    rate 0.140625.
+  - `anti_sycophancy_vs_control` failed: primary-control diff 0.0, bootstrap
+    95% CI [-5, 5].
+  - `neutral_accuracy_guardrail` passed: diff 0.0, CI [0, 0].
+- Regenerated-baseline caveat: the no-op baseline arm wrong-hint-matched only
+  30/68 rows that had been selected because the source eval labeled them
+  baseline-followed. Relative to the regenerated baseline, `subtract_high`
+  produced 3 matched->unmatched flips and 5 unmatched->matched regressions;
+  `add_high` produced 7 flips and 11 regressions.
+
+Gate interpretation:
+
+- AQ-G2 fails. The anti-sycophancy dose has reach against source baseline
+  metadata, but it is not selective versus the count-matched permuted control
+  and is not clean relative to the regenerated no-op baseline.
+- AQ-G3-style neutral accuracy guardrail passes for the scored gate, but this
+  does not rescue AQ-G2.
+- The result supports the predicted read/write decoupling: a readable L24
+  answer-sycophancy direction exists, and the write path fires, but this
+  direction is not a clean behavioral actuator on the current surface.

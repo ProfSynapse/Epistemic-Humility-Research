@@ -6,6 +6,37 @@ in `experiment.yaml`.
 
 ## Entries
 
+### 2026-07-07 - Modal actuator r2 completed; gates failed
+
+- Fixed the smoke-gate failure by sorting `actuator_rows.jsonl` so the first
+  eight smoke rows are all `baseline_wrong_hint_followed` active rows. This
+  targets the tuner smoke check at the intervention population instead of
+  inactive rows' natural baseline projection.
+- Relaunched the actuator path on Modal A10G from repo commit `a42b64a42`, app
+  `ap-AvZVf2c46omIDNKsFO1Rv3`, call
+  `fc-01KWZ4AA48QFEFS073MX91VWGD`, run tag
+  `aq-sycophancy-actuator-r2`.
+- Smoke passed: `write_ok=true`, `parity_ok=true`, `gen_stream_fired=true`,
+  `offtarget_abs_max=0.0`, and `max_write_error=0.01341` over eight active
+  rows. The full six-arm run completed with 1536 rows and wrote/uploaded the
+  manifest, smoke record, rows, and gates report.
+- `mechinterp score-gates` returned 5 (`overall_pass=false`). Gate results:
+  `subtract_high_reach` passed with 36 source-baseline reductions
+  (14.1% of all rows), `neutral_accuracy_guardrail` passed with diff 0, but
+  `anti_sycophancy_vs_control` failed with primary-control diff 0.0 and
+  bootstrap CI [-5, 5].
+- Important instrumentation caveat: the regenerated no-op baseline itself only
+  wrong-hint-matched 30/68 rows that the source eval had labeled as
+  baseline-followed. Against this regenerated baseline, `subtract_high` had
+  3 matched->unmatched flips but 5 unmatched->matched regressions; `add_high`
+  had 7 flips and 11 regressions. So the formal reach count is mostly measured
+  against source baseline metadata, not a stable regenerated baseline.
+- Interpretation: AQ has a readable L24 sycophancy-related direction and a
+  technically working write path, but no clean actuator. The anti-sycophancy
+  arm is not better than the permuted control, and the regenerated baseline
+  drift means this should be treated as a decoupled/null actuator result with
+  an instrument caveat, not as a behavioral success.
+
 ### 2026-07-07 - Modal actuator smoke-gated
 
 - Launched the AQ actuator path on Modal A10G after explicit user approval,

@@ -4,7 +4,7 @@ session_id: '0043'
 title: AQ sycophancy Modal pilot readout
 status: active
 created_at: '2026-07-07T17:20:14Z'
-updated_at: '2026-07-07T20:19:23Z'
+updated_at: '2026-07-07T20:59:02Z'
 phase: phase1
 question: Can the AQ answer-sycophancy pilot produce a separable activation readout on official Qwen3-4B, and is the row pool sufficient to license steering?
 tags:
@@ -21,10 +21,12 @@ run_ids:
 - fc-01KWYTYS8F050TK9E072C14JAZ
 - ap-Gk0B98l6fRfLflfcF3L2LQ
 - fc-01KWZ2YK61JG04RER3QJV9ZM9B
+- ap-AvZVf2c46omIDNKsFO1Rv3
+- fc-01KWZ4AA48QFEFS073MX91VWGD
 trajectory:
   anchor: experiment/protocol/research-trajectory.md
   current_position: AQ is an exploratory sycophancy read-vs-write cell, separate from the locked Phase 1 headline matrix.
-  changed_by_session: R1 found an underpowered readout lead; r2 cleared AQ-G0 and recovered a larger-pool readout direction. Local recovered-artifact diagnostics pass AQ-G1 but show a strong anchor prompt-condition confound. A readout-only hydra/isolation panel found that paired deltas survive, broad condition removal alone does not kill the signal, but behavior/correctness residualization largely attenuates it. The Modal actuator path was approved and launched, but the tuner smoke gate failed before full arms because writeback passed while parity/offtarget isolation failed.
+  changed_by_session: R1 found an underpowered readout lead; r2 cleared AQ-G0 and recovered a larger-pool readout direction. Local recovered-artifact diagnostics pass AQ-G1 but show a strong anchor prompt-condition confound. A readout-only hydra/isolation panel found that paired deltas survive, broad condition removal alone does not kill the signal, but behavior/correctness residualization largely attenuates it. The first Modal actuator launch exposed a smoke-row ordering issue; the corrected launch passed smoke and ran full arms, but AQ-G2 specificity failed against the permuted control, supporting a read/write decoupling null with a regenerated-baseline caveat.
 checkpoints:
 - id: 001-launch
   at: '2026-07-07T17:20:14Z'
@@ -345,6 +347,48 @@ checkpoints:
     max_write_error: 0.010230378732117629
     offtarget_abs_max: 7.2005182495340705
     gen_stream_fired: null
+- id: 013-actuator-r2-result
+  at: '2026-07-07T20:59:02Z'
+  kind: result
+  title: Corrected Modal actuator completed; AQ-G2 failed
+  summary: >-
+    The smoke-row ordering fix was committed as a42b64a42 and relaunched on
+    Modal A10G. Smoke passed with gen_stream_fired=true and offtarget_abs_max=0,
+    the full six-arm run completed 1536 rows, and artifacts uploaded under
+    aq-sycophancy-actuator-r2. Score-gates returned 5: reach and neutral
+    guardrail passed, but anti-sycophancy versus permuted control failed with
+    diff 0.0 and CI [-5, 5]. Regenerated no-op baseline drifted materially,
+    with only 30/68 source-followed rows still wrong-hint-matching.
+  evidence:
+  - experiments/aq-sycophancy-activation-actuator/analysis/rows_out.jsonl
+  - experiments/aq-sycophancy-activation-actuator/analysis/gates_report.json
+  - experiments/aq-sycophancy-activation-actuator/analysis/rows_out.jsonl.smoke_ok.json
+  - experiments/aq-sycophancy-activation-actuator/NOTEBOOK.md
+  - experiments/aq-sycophancy-activation-actuator/AMENDMENT.md
+  run_ids:
+  - ap-AvZVf2c46omIDNKsFO1Rv3
+  - fc-01KWZ4AA48QFEFS073MX91VWGD
+  commands:
+  - modal run --detach experiments\aq-sycophancy-activation-actuator\cloud\modal_aq_sycophancy_activation_actuator.py --actuator --repo-commit=a42b64a42 --cost-cap-usd=10
+  - modal volume get eh-aq-sycophancy-smoke-logs /ckpt/aq-sycophancy-actuator-r2/data/experiments/aq-sycophancy-activation-actuator/analysis/rows_out.jsonl experiments\aq-sycophancy-activation-actuator\analysis\rows_out.jsonl --force
+  decisions:
+  - Treat the actuator result as AQ-G2 failure / exploratory decoupling null, not as a clean behavioral success.
+  - Preserve the regenerated-baseline drift caveat before any formal resolution.
+  next_steps:
+  - Decide whether AQ should resolve as an exploratory null or whether a redesigned actuator surface should first align baseline regeneration with the source eval.
+  signals:
+    smoke_passed: true
+    gen_stream_fired: true
+    offtarget_abs_max: 0.0
+    rows_out: 1536
+    score_gates_returncode: 5
+    overall_pass: false
+    subtract_high_reach_count: 36
+    anti_sycophancy_control_diff: 0.0
+    anti_sycophancy_control_ci_lo: -5.0
+    anti_sycophancy_control_ci_hi: 5.0
+    regenerated_baseline_wrong_hint_matches: 30
+    source_followed_rows: 68
 ---
 # AQ sycophancy Modal pilot readout
 
@@ -373,10 +417,11 @@ that paired deltas survive (AUROC 0.778) and broad hint-vs-neutral condition
 removal alone does not kill the signal (AUROC 0.815), but residualizing
 correctness/refusal/length/confidence attenuates it (AUROC 0.600). The
 remaining structure looks more like prompt conflict plus correction/resistance
-than a clean standalone sycophancy actuator. The actuator path was approved and
-launched on Modal A10G, but the tuner smoke gate failed before full arms:
-writeback passed while parity/offtarget isolation failed, so no AQ-G2/AQ-G3
-behavioral verdict exists.
+than a clean standalone sycophancy actuator. The first actuator launch exposed a
+smoke-row ordering issue; after fixing that, the corrected Modal run passed
+smoke and completed full arms, but AQ-G2 specificity failed against the permuted
+control. The current actuator result is therefore an exploratory decoupling null
+with a regenerated-baseline caveat, not a clean behavioral success.
 
 ## Checkpoints
 
@@ -558,3 +603,26 @@ behavioral verdict exists.
   - Do not use `--force-full-run`; debug the smoke readback first.
 - next steps:
   - Run a smoke-level diagnostic for the Qwen3-4B `anchor_onward` + `gen_stream` intervention path, likely comparing narrower position targeting and additive-vs-erase/write laws before any full actuator relaunch.
+
+### 013-actuator-r2-result - Corrected Modal actuator completed; AQ-G2 failed
+
+- at: `2026-07-07T20:59:02Z`
+- kind: `result`
+- summary: The smoke-row ordering fix was committed as `a42b64a42` and relaunched on Modal A10G. Smoke passed with `gen_stream_fired=true` and `offtarget_abs_max=0`, the full six-arm run completed 1536 rows, and artifacts uploaded under `aq-sycophancy-actuator-r2`. Score-gates returned 5: reach and neutral guardrail passed, but anti-sycophancy versus permuted control failed with diff 0.0 and CI [-5, 5]. Regenerated no-op baseline drifted materially, with only 30/68 source-followed rows still wrong-hint-matching.
+- evidence:
+  - `experiments/aq-sycophancy-activation-actuator/analysis/rows_out.jsonl`
+  - `experiments/aq-sycophancy-activation-actuator/analysis/gates_report.json`
+  - `experiments/aq-sycophancy-activation-actuator/analysis/rows_out.jsonl.smoke_ok.json`
+  - `experiments/aq-sycophancy-activation-actuator/NOTEBOOK.md`
+  - `experiments/aq-sycophancy-activation-actuator/AMENDMENT.md`
+- run ids:
+  - `ap-AvZVf2c46omIDNKsFO1Rv3`
+  - `fc-01KWZ4AA48QFEFS073MX91VWGD`
+- commands:
+  - `modal run --detach experiments\aq-sycophancy-activation-actuator\cloud\modal_aq_sycophancy_activation_actuator.py --actuator --repo-commit=a42b64a42 --cost-cap-usd=10`
+  - `modal volume get eh-aq-sycophancy-smoke-logs /ckpt/aq-sycophancy-actuator-r2/data/experiments/aq-sycophancy-activation-actuator/analysis/rows_out.jsonl experiments\aq-sycophancy-activation-actuator\analysis\rows_out.jsonl --force`
+- decisions:
+  - Treat the actuator result as AQ-G2 failure / exploratory decoupling null, not as a clean behavioral success.
+  - Preserve the regenerated-baseline drift caveat before any formal resolution.
+- next steps:
+  - Decide whether AQ should resolve as an exploratory null or whether a redesigned actuator surface should first align baseline regeneration with the source eval.
