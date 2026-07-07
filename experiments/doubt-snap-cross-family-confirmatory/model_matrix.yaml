@@ -1,0 +1,81 @@
+# Cross-family matrix for doubt-snap-cross-family-confirmatory.
+# Repos and revisions were resolved live with huggingface_hub on 2026-07-07.
+# Gated repos require an access check before Modal launch. If access is absent,
+# the cell is marked ineligible before results are known; it is not replaced
+# after seeing outcomes.
+
+seed: 20260707
+
+scale_tiers:
+  small:
+    description: Prior cross-family "Knows but Doesn't Say" panel scale.
+  mid:
+    description: 8B-ish sibling or nearest available mid-size member.
+    minimum_eligible_cells_for_headline: 3
+
+cells:
+  - cell_id: llama32_3b_instruct
+    family: llama
+    scale_tier: small
+    repo: unsloth/Llama-3.2-3B-Instruct
+    revision: 006f5dcd1393c3add266de40994ba96225e9689d
+    gated_access: false
+    panel_role: direct_Z_panel_match
+
+  - cell_id: llama31_8b_instruct
+    family: llama
+    scale_tier: mid
+    repo: meta-llama/Llama-3.1-8B-Instruct
+    revision: 0e9e39f249a16976918f6564b8830bc894c89659
+    gated_access: manual
+    panel_role: mid_size_sibling
+    eligibility_note: Requires HF token access before launch.
+
+  - cell_id: ministral3_3b_instruct
+    family: ministral
+    scale_tier: small
+    repo: mistralai/Ministral-3-3B-Instruct-2512
+    revision: 7046a0e237b436c8fb4927061ab3773772e53741
+    gated_access: false
+    panel_role: direct_Z_panel_match
+
+  - cell_id: ministral3_8b_instruct
+    family: ministral
+    scale_tier: mid
+    repo: mistralai/Ministral-3-8B-Instruct-2512
+    revision: aae06a2125402f2a89efbacf0881623c15a711d0
+    gated_access: false
+    panel_role: mid_size_sibling
+
+  - cell_id: qwen35_4b
+    family: qwen3_5
+    scale_tier: small
+    repo: Qwen/Qwen3.5-4B
+    revision: 851bf6e806efd8d0a36b00ddf55e13ccb7b8cd0a
+    gated_access: false
+    panel_role: direct_Z_panel_match
+
+  - cell_id: qwen35_9b
+    family: qwen3_5
+    scale_tier: mid
+    repo: Qwen/Qwen3.5-9B
+    revision: c202236235762e1c871ad0ccb60c8ee5ba337b9a
+    gated_access: false
+    panel_role: mid_size_sibling
+
+  - cell_id: gemma4_e4b_it
+    family: gemma
+    scale_tier: small
+    repo: google/gemma-4-E4B-it
+    revision: fee6332c1abaafb77f6f9624236c63aa2f1d0187
+    gated_access: false
+    panel_role: direct_Z_panel_match
+
+  - cell_id: gemma3_12b_it
+    family: gemma
+    scale_tier: mid
+    repo: google/gemma-3-12b-it
+    revision: 96b6f1eccf38110c56df3a15bffe176da04bfd80
+    gated_access: manual
+    panel_role: nearest_mid_size_control
+    eligibility_note: Cross-generation mid-size Gemma control; requires HF token access.
