@@ -87,6 +87,7 @@ def run_one_cell(
         sh(["git", "clone", REPO_URL, str(workspace)])
     sh(["git", "fetch", "--all", "--tags"], cwd=workspace, check=False)
     sh(["git", "checkout", repo_commit], cwd=workspace)
+    sh(["git", "submodule", "update", "--init", "synaptic-tuner"], cwd=workspace)
 
     exp_dir = workspace / "experiments" / EXPERIMENT_SLUG
     pipeline = exp_dir / "pipeline.py"

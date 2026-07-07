@@ -166,7 +166,7 @@
         "pins": {
           "cell.yaml": "b3b4980616856875740a214e4c0fa0757761f1f9a28451fbcd4eb07d0cffaf86",
           "cloud/README.md": "ccc38f9f9bfff6d4c71f91daeaa7ba6df0cc879eecf6c8a52a3ebb3c3da89c4d",
-          "cloud/modal_doubt_snap_cross_family.py": "3a5fcdc3cdf2f829d3eadeee4c49697522046bfbd1a0c0699adbddc0cdbaf038",
+          "cloud/modal_doubt_snap_cross_family.py": "50784b93bce0278b8e6edc3cacc7eb8f798869c0c05518f8daccb651c49b7bc4",
           "gates.yaml": "fb3e63eac6bba873c9f98616beb542ebf70bb0ade01a30e7cc80601095c2ff89",
           "gen_lib.py": "6cffc7282591ca3b0db79d985a024ca2b63cab8afc1c5f5085d13cbdb98b79ce",
           "grader.py": "ad6cfdf197b775f1bc41850729f58ddd9f81a6e2db583d91cff91e94154a29f8",
