@@ -139,7 +139,7 @@ def main() -> int:
             "split": "smoke",
             "source": "synthetic_smoke",
             "category_canon": "synthetic_smoke",
-            "fire": False,
+            "fire": True,
         },
     ]
     write_jsonl(rows_path, rows)
