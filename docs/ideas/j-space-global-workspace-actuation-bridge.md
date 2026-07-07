@@ -1,8 +1,7 @@
 # J-space (global workspace) as an actuation bridge
 
-Status: QUEUED research direction (raised by user 2026-07-06). Not scheduled before
-the two-signal caution-regulation experiment resolves. This note is an idea home,
-not a signed protocol.
+Status: H1 localization resolved 2026-07-07; bridge actuation tests still
+queued. This note is an idea home, not a signed protocol.
 
 ## Source
 
@@ -78,15 +77,33 @@ choice for every actuation cell, including the two-signal experiment.
 
 ## First experiments, cheap to expensive
 
-1. Reimplement a minimal J-lens on open-weight Qwen3-4B via Jacobian-vector
-   products (we have full weight access, so we are better positioned than external
-   readers). Validate it reproduces logit-lens-like behavior at late layers and
-   diverges at mid layers.
-2. H1 read: J-lens the validated caution / doubt / propensity directions. Free.
+1. **DONE 2026-07-07**: Reimplemented a minimal J-lens on open-weight
+   Qwen3-4B via Jacobian-vector products and validated it against the
+   final-layer logit/unembed baseline. Full-corpus Modal smoke:
+   mean cosine 0.9811, mean top-10 overlap 0.82, top-1 match 3/5.
+2. **DONE 2026-07-07**: H1 read on same-substrate bf16 directions. `pos_ctrl`
+   and `c_hat` verbalize as self/absence/error/impossibility-like; `u_d` is
+   answer/reply-like; `neg_ctrl` is a noisy local null. Layer profile localizes
+   the Qwen3-4B workspace-like effective-dimensionality band to hs=23-29,
+   peaking at hs=26; L34 maps to hs=34 and is just after that band.
 3. Layer sweep of the existing caution write across mid vs late layers on the
    two-signal both-tail surface, testing the motor-regime prediction.
 4. H2 injection head-to-head: workspace injection of an abstention concept vs
    erase-write caution, same surface, same selectivity gates.
+
+## H1 result update (2026-07-07)
+
+The J-space localization experiment resolved as an exploratory lab diagnostic:
+`experiments/j-space-localization-qwen3-4b/AMENDMENT.md`. The result strengthens
+the bridge hypothesis enough to justify a causal successor, but it does not by
+itself prove that J-space writes will work.
+
+The actionable refinement is layer choice. The original idea predicted that L34
+may be late/motor-adjacent; the actual Qwen3-4B profile put the
+effective-dimensionality peak at hs=26, with a broader hs=23-29 band and decline
+by hs=35/36. Therefore the next write test should not simply repeat L34 with a
+new vector. It should compare mid-band writes, especially hs=23/26/29, against
+the existing L34/hs34 site on identical gates.
 
 ## Feasibility and caveats
 

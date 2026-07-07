@@ -191,7 +191,11 @@
           "jlens.py": "a92f4383108a4b46861e745939bb22d99d351ab53a3cc41c513d92980d8ecc2b"
         }
       },
-      "kg": [],
+      "kg": [
+        "mechanism:j-space-mediated-actuation-fragility",
+        "term:global-workspace",
+        "method:jacobian-lens"
+      ],
       "prediction": "Final-layer J-lens will closely track the logit lens (high cosine similarity / top-k overlap between verbalize() and direct unembed()); the workspace band will locate mid-to-late but short of the final layers, putting L34 (this project's existing write layer) near or past the workspace/motor boundary; pos_ctrl and c_hat (caution-flavored directions) will verbalize as first-person-hedge/abstention/error-adjacent tokens more clearly than u_d (doubt) or neg_ctrl (confab-propensity).",
       "question": "Read-only characterization on Qwen3-4B (bf16 sibling of our raw-base): (1) does a from-scratch J-lens (Jacobian lens) implementation reduce to the logit lens at the final layer and run end to end on this model; (2) where across depth does a workspace-like band (rising kurtosis/sparsity/effective dimensionality of the J-lens readout) locate, relative to our own L34 write layer; (3) do our fitted epistemic directions (u_d doubt, pos_ctrl caution/ answer-vs-refuse, neg_ctrl confab-propensity, c_hat orthogonalized caution write) verbalize as uncertainty/abstention-flavored tokens under the J-lens at L34 and nearby layers (H1 from docs/ideas/j-space-global-workspace-actuation-bridge.md)? No writes/injections anywhere; this is a lab-diagnostic characterization, not a gated claim.",
       "registered": true,
