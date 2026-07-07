@@ -46,4 +46,7 @@ verdict: 'Full-corpus J-lens characterization completed on Modal: smoke reproduc
   answer/reply-like, pos_ctrl/c_hat as self-empty-impossible/error-like, neg_ctrl
   as noisy, and profile localized the effective-dimension peak at hs=26 with L34/hs34
   just after the hs=23-29 workspace-like band.'
-kg: []
+kg:
+- mechanism:j-space-mediated-actuation-fragility
+- term:global-workspace
+- method:jacobian-lens
