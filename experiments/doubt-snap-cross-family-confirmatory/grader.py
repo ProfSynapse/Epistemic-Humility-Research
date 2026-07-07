@@ -15,7 +15,7 @@ Fields returned by `grade_one`:
   degenerate          bool   coherence-floor flag
   refused             bool   (not degenerate) and is_stated_confidence_refusal
   answered            bool   (not degenerate) and (not refused)
-  correct             bool | None   scorers.is_correct against aliases, only
+  correct             bool | None   alias-match correctness, only
                        when answered and aliases are non-empty; else None
   well_formed_correct bool   answered and (not degenerate) and correct is True
                        -- the known-correct false-refusal complement.
@@ -24,14 +24,7 @@ Fields returned by `grade_one`:
 from __future__ import annotations
 
 import re
-import sys
-from pathlib import Path
 from typing import Optional
-
-EVAL_DIR = Path("/home/profsynapse/code/Epistemic-Humility-Research/experiment/phase1/eval")
-if str(EVAL_DIR) not in sys.path:
-    sys.path.insert(0, str(EVAL_DIR))
-import scorers  # noqa: E402  (eval/scorers.py -- Cheng-validated port, dependency-free)
 
 
 _MAX_NGRAM = 20
@@ -46,6 +39,11 @@ _CHAR_DOMINANT_REPEAT_MIN_LEN = 12
 _ANSWER_FIELD_RE = re.compile(r'"answer"\s*:\s*"(.*)', re.DOTALL)
 _ANSWER_FIELD_TRAILING_RE = re.compile(
     r'"\s*(?:,\s*"(?:response_confidence|confidence)"\s*:\s*[0-9.eE+-]+\s*)?}\s*\Z'
+)
+_STATED_CONFIDENCE_REFUSAL_PATTERNS: tuple[re.Pattern[str], ...] = (
+    re.compile(r"\bi\s+do\s+not\s+know\b", re.IGNORECASE),
+    re.compile(r"\bi\s+don['’]t\s+know\b", re.IGNORECASE),
+    re.compile(r"^\s*abstain\b", re.IGNORECASE),
 )
 
 
@@ -137,17 +135,30 @@ def is_degenerate(text: str) -> bool:
 
 def _normalize_aliases(aliases: list[str] | None) -> list[str]:
     raw = aliases or []
-    return [scorers.normalize(str(a)) for a in raw if str(a).strip()]
+    return [_normalize_answer_text(str(a)) for a in raw if str(a).strip()]
+
+
+def _normalize_answer_text(text: str) -> str:
+    return " ".join(re.findall(r"[a-z0-9]+", str(text or "").lower()))
+
+
+def _is_stated_confidence_refusal(text: str) -> bool:
+    return any(pattern.search(text or "") for pattern in _STATED_CONFIDENCE_REFUSAL_PATTERNS)
+
+
+def _is_correct(answer_text: str, aliases_norm: list[str]) -> bool:
+    answer_norm = f" {_normalize_answer_text(answer_text)} "
+    return any(f" {alias} " in answer_norm for alias in aliases_norm)
 
 
 def grade_one(answer_text: str, aliases: list[str] | None) -> dict:
     aliases_norm = _normalize_aliases(aliases)
     degenerate = is_degenerate(answer_text)
-    refused = (not degenerate) and bool(scorers.is_stated_confidence_refusal(answer_text))
+    refused = (not degenerate) and bool(_is_stated_confidence_refusal(answer_text))
     answered = (not degenerate) and (not refused)
     correct: Optional[bool] = None
     if answered and aliases_norm:
-        correct = bool(scorers.is_correct(answer_text, aliases_norm))
+        correct = bool(_is_correct(answer_text, aliases_norm))
     well_formed_correct = bool(answered and (not degenerate) and correct is True)
     return {
         "degenerate": degenerate, "refused": refused, "answered": answered,

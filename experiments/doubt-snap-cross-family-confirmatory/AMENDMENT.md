@@ -52,6 +52,12 @@ with the access request awaiting review. It was replaced before any Llama-8B
 behavioral outcome was observed with the accessible pinned
 `unsloth/Llama-3.1-8B-Instruct` causal-LM mirror.
 
+Post-launch pre-outcome harness-portability fix: the grader's dependency on
+the legacy Phase-1 eval scorer module was removed after the first Llama-3B
+dose-sweep attempt failed inside Modal at import time. The cross-family grader
+now carries the small refusal and alias-match primitives it needs locally. No
+held-out intervention outcome was scored before this fix.
+
 The instrument is the same mechanism class as the merged Qwen amendment:
 
 1. GATE: a doubt readout `z_d`, fired as `neg_z_d = -z_d >= tau` because
