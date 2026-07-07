@@ -6,6 +6,19 @@ in `experiment.yaml`.
 
 ## Entries
 
+### 2026-07-07 - G0 stop
+
+Local run reached smoke after successful extraction, direction build,
+random-direction build, gate fit, and row materialization. Smoke readback was
+accurate at all four layers, but hs23 and hs26 collapsed every dosed smoke row at
+the inherited absolute dose 200. Since G0 required zero collapse on dosed smoke,
+the full held-out run was interrupted before completion. `analysis/full_summary.json`
+does not exist.
+
+Interpretation: the failed assumption is dose portability across layer sites,
+not the J-space layer-site hypothesis itself. Need a follow-up that calibrates a
+coherent setpoint window per layer before any full layer contrast.
+
 ### 2026-07-07 - local launch
 
 User explicitly approved running `j-space-midband-write-sweep-qwen3-4b` locally.

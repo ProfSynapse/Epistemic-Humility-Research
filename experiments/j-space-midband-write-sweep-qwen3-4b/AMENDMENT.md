@@ -112,5 +112,33 @@ interpretable evidence about J-space mid-band superiority.
 
 ## Outcome
 
-Filled at resolve. Record the verdict, the gate results, and the one-sentence
-summary that also goes into `verdict:` in the manifest.
+Resolved 2026-07-07 as a pre-outcome G0 stop (`null-result`). Aggregate public
+artifacts are committed under `analysis-committed/`; row text, activation
+scratch, and run logs remain gitignored under `analysis/`.
+
+Preparation succeeded:
+
+- Extraction captured 1,768 rows across hs23/hs26/hs29/hs34, producing 7,072
+  activation vectors.
+- Direction refits were byte-identical for all four layers.
+- FIT gate AUC exceeded the G0 floor at every layer: hs23 0.9905, hs26
+  0.9970, hs29 0.9984, hs34 0.9955.
+- Runtime row materialization had missing_question=0 and
+  missing_alias_on_known_correct_answered=0.
+
+The signed dose-200 smoke then failed G0. Readback was accurate at every layer,
+but collapse was not:
+
+| layer | fired smoke rows | readback mean | readback within tolerance | collapse on dosed rows | confab clean_tighten |
+|---|---:|---:|---:|---:|---:|
+| hs23 | 3 | 200.018 | 100% | 100% | 0/4 |
+| hs26 | 4 | 199.987 | 100% | 100% | 0/4 |
+| hs29 | 4 | 200.027 | 100% | 0% | 4/4 |
+| hs34 | 3 | 200.112 | 100% | 0% | 3/4 |
+
+Because G0 pre-stated `collapse rate on dosed smoke rows is 0`, the full
+held-out layer contrast was stopped and no `analysis/full_summary.json` was
+completed. The conclusion is not that mid-band writing fails behaviorally; it
+is that the predecessor's absolute dose-200 setpoint is not portable across
+layer sites. hs23 and hs26 need their own coherent-window calibration before
+the J-space layer-site hypothesis can be tested.

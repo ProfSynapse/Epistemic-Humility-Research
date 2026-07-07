@@ -30,8 +30,8 @@ Committed outputs after a run:
 - Per-layer fitted direction JSONs under `analysis-committed/layers/`.
 - `analysis-committed/build_manifest_layers.json`.
 - `analysis-committed/gate_fit_layers.json`.
-- A redacted aggregate result summary may be promoted from
-  `analysis/full_summary.json` after resolution.
+- `analysis-committed/smoke_summary.json`, promoted after the pre-outcome G0
+  stop. No full held-out summary exists for this run.
 
 Containment:
 
