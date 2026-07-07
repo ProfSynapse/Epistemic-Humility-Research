@@ -108,7 +108,7 @@ if modal is not None:
     image = (
         modal.Image.from_registry(VLLM_IMAGE, add_python=None)
         .entrypoint([])
-        .pip_install(*PIP_DEPS)
+        .run_commands("python3 -m pip install " + " ".join(PIP_DEPS))
         .apt_install("git")
         .env({"HF_HUB_DISABLE_XET": "1", "HF_HUB_ENABLE_HF_TRANSFER": "0"})
     )
@@ -219,7 +219,7 @@ if modal is not None:
         try:
             sh(["nvidia-smi", "--query-gpu=name,memory.total", "--format=csv,noheader"], check=False)
             sh([
-                "python",
+                "python3",
                 "experiment/phase1/eval/run_eval.py",
                 "--config",
                 EVAL_CONFIG,
@@ -228,7 +228,7 @@ if modal is not None:
             checkpoint_once("(post-eval)")
 
             sh([
-                "python",
+                "python3",
                 "experiment/phase1/eval/analysis/sycophancy_answer_analysis.py",
                 "--results-dir",
                 RESULTS_DIR,
@@ -236,7 +236,7 @@ if modal is not None:
                 SYC_ANALYSIS_DIR,
             ], cwd=workspace)
             sh([
-                "python",
+                "python3",
                 f"{EXP_DIR}/build_aq_row_pool.py",
                 "--results-dir",
                 RESULTS_DIR,
@@ -264,7 +264,7 @@ if modal is not None:
                 ROW_POOL_SUMMARY,
             ]
             upload_cmd = [
-                "python",
+                "python3",
                 upload,
                 "--repo",
                 STAGING_REPO,
