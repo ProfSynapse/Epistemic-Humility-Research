@@ -34,17 +34,23 @@ before launch. The small tier mirrors the prior cross-family panel:
 `unsloth/Llama-3.2-3B-Instruct`,
 `mistralai/Mistral-7B-Instruct-v0.3`, `Qwen/Qwen3.5-4B`, and
 `google/gemma-4-E4B-it`. The mid tier is
-`meta-llama/Llama-3.1-8B-Instruct`,
+`unsloth/Llama-3.1-8B-Instruct`,
 `mistralai/Ministral-8B-Instruct-2410`, `Qwen/Qwen3.5-9B`, and
-`google/gemma-3-12b-it`. The Llama-8B and Gemma-12B cells require gated HF
-access before launch; if access is absent, those cells are ineligible before
-outcome scoring and are not replaced after seeing results.
+`google/gemma-3-12b-it`. The Gemma-12B cell requires gated HF access before
+launch; if access is absent, that cell is ineligible before outcome scoring and
+is not replaced after seeing results.
 
 Pre-outcome loader-eligibility note: the initially drafted Mistral-family
 Ministral-3 cells expose `Mistral3ForConditionalGeneration`, not a causal-LM
 substrate for the registered raw-text activation write path. They were replaced
 before any Mistral-family behavioral outcome was observed with the pinned
 causal-LM Mistral/Ministral cells listed in `model_matrix.yaml`.
+
+Pre-outcome access note: the initially drafted
+`meta-llama/Llama-3.1-8B-Instruct` cell remained gated for the launch HF token
+with the access request awaiting review. It was replaced before any Llama-8B
+behavioral outcome was observed with the accessible pinned
+`unsloth/Llama-3.1-8B-Instruct` causal-LM mirror.
 
 The instrument is the same mechanism class as the merged Qwen amendment:
 

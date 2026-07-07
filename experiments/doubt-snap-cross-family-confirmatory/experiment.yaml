@@ -32,7 +32,7 @@ instrument:
   - grader.py
   - render.py
   pins:
-    model_matrix.yaml: 4b0a4a1557f309181c4cbd6fcbea8a0c829af5cafcaedf911214a5ad9abb8800
+    model_matrix.yaml: 2f54278b9e7bec54d29e16159cd57c772938821bf40d602a9f7020d7999cf53a
     cell.yaml: ce5370a9b18f406698f5544c89f4245a724041889fea9247b8c475c3a9d2bb41
     gates.yaml: fb3e63eac6bba873c9f98616beb542ebf70bb0ade01a30e7cc80601095c2ff89
     cloud/README.md: 6ee3615bd2ff19c92cff813c5e0e3f51897da90c4ef1eaf8c83d5d329abcf532
