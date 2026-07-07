@@ -107,8 +107,8 @@ interpretable evidence about J-space mid-band superiority.
 
 | Predictor | Call |
 |-----------|------|
-| orchestrator | Mid-band improves over hs34, with hs26 most likely best; hs34 remains viable. |
-| user | |
+| orchestrator | Option 1: mid-band wins cleanly. hs26 is most likely best; hs29 close; hs34 remains viable but not optimal. |
+| user | Option 2: mid-band works but is not better than hs34. |
 
 ## Outcome
 
