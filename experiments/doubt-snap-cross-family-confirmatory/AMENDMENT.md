@@ -89,7 +89,7 @@ baseline generation and hidden-state capture use the existing Synaptic-Tuner
 batch verbs (`batch-generate` / `batch-capture`, or vLLM where the stage is
 generation-only and does not need hidden states), and activation writing uses
 the generic tuner `mechinterp steer` cell. The pinned Synaptic-Tuner submodule
-commit for this run is `aa93103` on branch
+commit for this run is `9a97540` on branch
 `feature/doubt-snap-batch-mechinterp`, which combines the existing batch verbs,
 config-first mechinterp cells, batched steer generation, generation stop
 metadata, and model-revision pins for batch and steer loads. Intervention

@@ -22,19 +22,26 @@ BASELINE_SYSTEM_PROMPT = (
 )
 
 _TOKENIZER = None
-_TOKENIZER_MODEL = None
+_TOKENIZER_KEY = None
 
 
 def _tokenizer():
-    global _TOKENIZER, _TOKENIZER_MODEL
+    global _TOKENIZER, _TOKENIZER_KEY
     model = os.environ.get("DOUBT_SNAP_RENDER_MODEL")
     if not model:
         raise RuntimeError("DOUBT_SNAP_RENDER_MODEL must name the HF tokenizer repo")
-    if _TOKENIZER is None or _TOKENIZER_MODEL != model:
+    revision = os.environ.get("DOUBT_SNAP_RENDER_REVISION") or None
+    key = (model, revision)
+    if _TOKENIZER is None or _TOKENIZER_KEY != key:
         from transformers import AutoTokenizer
 
-        _TOKENIZER = AutoTokenizer.from_pretrained(model, trust_remote_code=True)
-        _TOKENIZER_MODEL = model
+        _TOKENIZER = AutoTokenizer.from_pretrained(
+            model,
+            revision=revision,
+            token=os.environ.get("HF_TOKEN") or None,
+            trust_remote_code=True,
+        )
+        _TOKENIZER_KEY = key
     return _TOKENIZER
 
 

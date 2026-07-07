@@ -215,7 +215,12 @@ def build_candidate_pool(max_answerable: int, max_unanswerable: int) -> list[dic
 def model_shape(cell: dict[str, Any]) -> tuple[int, int, int]:
     from transformers import AutoConfig
 
-    cfg = AutoConfig.from_pretrained(cell["repo"], revision=cell.get("revision"), trust_remote_code=True)
+    cfg = AutoConfig.from_pretrained(
+        cell["repo"],
+        revision=cell.get("revision"),
+        token=os.environ.get("HF_TOKEN") or None,
+        trust_remote_code=True,
+    )
     text_cfg = getattr(cfg, "text_config", cfg)
     n_layers = int(getattr(text_cfg, "num_hidden_layers"))
     hidden_dim = int(getattr(text_cfg, "hidden_size"))
@@ -226,7 +231,12 @@ def model_shape(cell: dict[str, Any]) -> tuple[int, int, int]:
 def tokenizer_for(cell: dict[str, Any]):
     from transformers import AutoTokenizer
 
-    tok = AutoTokenizer.from_pretrained(cell["repo"], revision=cell.get("revision"), trust_remote_code=True)
+    tok = AutoTokenizer.from_pretrained(
+        cell["repo"],
+        revision=cell.get("revision"),
+        token=os.environ.get("HF_TOKEN") or None,
+        trust_remote_code=True,
+    )
     if tok.pad_token_id is None and tok.eos_token is not None:
         tok.pad_token = tok.eos_token
     return tok
@@ -235,6 +245,7 @@ def tokenizer_for(cell: dict[str, Any]):
 def render_pool(cell: dict[str, Any], rows: list[dict[str, Any]], out_path: Path) -> None:
     env_model = cell["repo"]
     os.environ["DOUBT_SNAP_RENDER_MODEL"] = env_model
+    os.environ["DOUBT_SNAP_RENDER_REVISION"] = cell["revision"]
     rendered = []
     for row in rows:
         rendered.append({"id": row["row_key"], "prompt": render_mod.render(row)})
@@ -387,6 +398,7 @@ def capture_anchor(cell: dict[str, Any], rows: list[dict[str, Any]], layer_idx: 
     pdir = private_dir(cell["cell_id"])
     tok = tokenizer_for(cell)
     os.environ["DOUBT_SNAP_RENDER_MODEL"] = cell["repo"]
+    os.environ["DOUBT_SNAP_RENDER_REVISION"] = cell["revision"]
     cap_rows = []
     for row in rows:
         prompt = render_mod.render(row)

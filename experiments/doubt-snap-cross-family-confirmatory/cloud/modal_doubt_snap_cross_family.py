@@ -20,6 +20,7 @@ RUN_TAG = "doubt-snap-cross-family-r1"
 
 IMAGE = "unsloth/unsloth:2026.1.2-pt2.9.0-cu12.8-update"
 PIP = [
+    "git+https://github.com/huggingface/transformers.git",
     "pyyaml",
     "pydantic",
     "safetensors",
@@ -108,6 +109,7 @@ def run_one_cell(
     env = {
         "PYTHONPATH": f"{exp_dir}{os.pathsep}{os.environ.get('PYTHONPATH', '')}",
         "DOUBT_SNAP_RENDER_MODEL": cell["repo"],
+        "DOUBT_SNAP_RENDER_REVISION": cell["revision"],
     }
 
     prep = exp_dir / "prep_tuner_cell.py"
