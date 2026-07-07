@@ -1,0 +1,44 @@
+slug: ao-propensity-regulated-caution
+type: steer-cell
+status: signed
+registered: true
+question: Does wiring the confabulation-propensity readout to the caution setpoint
+  as a live proportional controller (mirroring AC's doubt coupling) suppress residual
+  confabulations on the AI-TRUE checkpoint, once a caution direction is first validated
+  as a behavioral lever there (the step AN skipped)?
+prediction: 'User (2026-07-06): Stage 1 PASS (a caution lever exists on AI-TRUE) and
+  Stage 2 PASS (propensity coupling beats the permuted placebo). Orchestrator: Stage
+  1 weak-lever PASS, Stage 2 small positive margin (3-10pt), with a nontrivial chance
+  Stage 1 fails.'
+falsifier: 'Given Stage 1 validates a caution lever: coupled is within the G1 margin
+  of the permuted placebo (below floor or CI includes 0), so propensity coupling adds
+  nothing beyond a constant caution write (a clean null, unlike AN). If Stage 1 finds
+  no caution lever on AI-TRUE, the coupling stage does not run and the result is "no
+  caution actuator on this checkpoint."'
+checkpoint:
+  repo: professorsynapse/eh-qwen3-4b-clean-sft-grpo-par-true-seed1-lora
+  revision: 7e31d3cf62395275d4ba3d1d9ec8f95287188805
+instrument:
+  configs:
+  - cell.yaml
+  - gates.yaml
+  - cell_stage1_caution_perp.yaml
+  - cell_stage1_fallback_mass_mean.yaml
+  - gates_stage1.yaml
+  modules:
+  - ao_grader.py
+  pins:
+    cell.yaml: ce82a86b6a7aa2d235cb59764064996c5a3ec9bf18566e52a226729dd344d5b6
+    gates.yaml: a4e11a6daee8bb6160654ac034c4bb6db3c0c7b29333752c0e3e19240c299a13
+    cell_stage1_caution_perp.yaml: 22af96bf9898df1f5e99941b4624717eb8bb28fcb8c88166176c83509d747cab
+    cell_stage1_fallback_mass_mean.yaml: 5409a82b3f4b4b88cdded517b759f358dd253175a68acb07cb7399bd78afc5a7
+    gates_stage1.yaml: b8ebdde41ef0c92809a2c9b2653a716da12a03f85d8be0c46a2db571df3f6526
+    ao_grader.py: c3c65dd636e88d900087cae6229913129039e44b9e0feb3037ec1be966c17547
+inputs:
+- experiments/ao-propensity-regulated-caution/analysis/amendment_ao_prep/caution_perp_direction_L35_ai_true.json
+- experiments/ao-propensity-regulated-caution/analysis/amendment_ao_prep/d_raw.npy
+- experiments/ao-propensity-regulated-caution/analysis/amendment_ao_prep/fallback_mass_mean_direction_L35_ai_true.json
+- experiments/ao-propensity-regulated-caution/analysis/amendment_ao_prep/prop_z_gain_map_rows.jsonl
+- experiments/ao-propensity-regulated-caution/analysis/amendment_ao_prep/prep_manifest.json
+verdict: ''
+kg: []
