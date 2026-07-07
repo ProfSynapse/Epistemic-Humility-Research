@@ -62,6 +62,10 @@ ARTIFACT_FILES = [
     LABELS_OUT,
     ROW_POOL_SUMMARY,
 ]
+OPTIONAL_ARTIFACT_FILES = [
+    f"{RESULTS_DIR}/{ARM_NAME}__{EVAL_SET}/generations.jsonl",
+]
+REQUIRED_ARTIFACT_FILES = [rel for rel in ARTIFACT_FILES if rel not in OPTIONAL_ARTIFACT_FILES]
 VLLM_IMAGE = "vllm/vllm-openai:v0.17.1"
 VLLM_DIST_PACKAGES = "/usr/local/lib/python3.12/dist-packages"
 PIP_DEPS = [
@@ -121,7 +125,15 @@ def build_spec(repo_commit: str, cost_cap_usd: float | None) -> dict:
     }
 
 
-def build_upload_cmd(workspace: str) -> list[str]:
+def existing_artifacts(workspace: str) -> list[str]:
+    return [rel for rel in ARTIFACT_FILES if os.path.isfile(os.path.join(workspace, rel))]
+
+
+def missing_required_artifacts(workspace: str) -> list[str]:
+    return [rel for rel in REQUIRED_ARTIFACT_FILES if not os.path.isfile(os.path.join(workspace, rel))]
+
+
+def build_upload_cmd(workspace: str, artifact_files: list[str]) -> list[str]:
     upload_cmd = [
         "python3",
         "experiment/phase1/probe/cloud/upload_result.py",
@@ -130,7 +142,7 @@ def build_upload_cmd(workspace: str) -> list[str]:
         "--path-prefix",
         f"{RUN_TAG}/artifacts",
     ]
-    for rel in ARTIFACT_FILES:
+    for rel in artifact_files:
         upload_cmd.extend(["--file", os.path.join(workspace, rel)])
     return upload_cmd
 
@@ -274,7 +286,14 @@ if modal is not None:
             ], cwd=workspace)
             checkpoint_once("(post-row-pool)")
 
-            sh(build_upload_cmd(workspace), cwd=workspace)
+            missing = missing_required_artifacts(workspace)
+            if missing:
+                raise RuntimeError(f"missing required upload artifacts: {missing}")
+            upload_files = existing_artifacts(workspace)
+            skipped = [rel for rel in OPTIONAL_ARTIFACT_FILES if rel not in upload_files]
+            if skipped:
+                print(f"[modal-aq] optional artifacts absent, skipping upload: {skipped}", flush=True)
+            sh(build_upload_cmd(workspace, upload_files), cwd=workspace)
 
             done = f"{CKPT}/DONE"
             os.makedirs(os.path.dirname(done), exist_ok=True)
@@ -344,11 +363,15 @@ if modal is not None:
 
         restored = copy_tree_into(ckpt_data, workspace)
         print(f"[modal-aq-upload] restored {restored} files from checkpoint", flush=True)
-        missing = [rel for rel in ARTIFACT_FILES if not os.path.isfile(os.path.join(workspace, rel))]
+        missing = missing_required_artifacts(workspace)
         if missing:
             raise RuntimeError(f"checkpoint missing upload artifacts: {missing}")
+        upload_files = existing_artifacts(workspace)
+        skipped = [rel for rel in OPTIONAL_ARTIFACT_FILES if rel not in upload_files]
+        if skipped:
+            print(f"[modal-aq-upload] optional artifacts absent, skipping upload: {skipped}", flush=True)
 
-        sh(build_upload_cmd(workspace), cwd=workspace)
+        sh(build_upload_cmd(workspace, upload_files), cwd=workspace)
         done = f"{CKPT}/DONE"
         os.makedirs(os.path.dirname(done), exist_ok=True)
         with open(done, "w", encoding="utf-8") as fh:
