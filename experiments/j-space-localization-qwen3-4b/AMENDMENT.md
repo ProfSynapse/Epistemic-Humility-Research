@@ -63,9 +63,12 @@ needed -- final-token logits from the prompt's own forward pass are the
 Stage-1 pool (diverse in topic: ambiguous, controversial, unsolved_problem,
 future_unknown, false_assumption, counterfactual categories; no clean
 pre-existing general-diversity prompt set was found via `bin/search`).
-Committed under `analysis-committed/corpus/jlens_corpus_pool.jsonl` (question
-text only, no labels) -- see PROVENANCE.md there for source/license
-(CC-BY-NC-4.0, non-commercial).
+NOT committed as text (this repo is PUBLIC). The pool is fetched at runtime from
+the private HF staging repo `professorsynapse/eh-al-prep-staging`
+(`pools/ak_stage1_pool.jsonl`) and the exact 1000-row sample is reproduced
+deterministically from the committed `analysis-committed/corpus/jlens_corpus_manifest.json`
+(seed + n + source + selected row-keys, no question text) -- see PROVENANCE.md
+there for source/license (CC-BY-NC-4.0, non-commercial).
 
 **Arms / directions tested (H1)**: the four fitted directions from the
 sibling two-signal-caution-regulation-instruct experiment, copied into

@@ -148,6 +148,7 @@ launch_guard and this repo's binding invariants reserve the launch decision
 for the lead.
 
 Artifacts: jlens.py, cloud/modal_jlens.py, analysis-committed/corpus/
-(jlens_corpus_pool.jsonl + PROVENANCE.md), analysis-committed/source_directions/
+(jlens_corpus_manifest.json + PROVENANCE.md; the corpus itself is fetched from
+private HF at runtime, never committed), analysis-committed/source_directions/
 (u_d_L34.json, pos_ctrl_L34.json, neg_ctrl_L34.json, c_hat_L34.json, copied
 from the sibling two-signal worktree for self-containment).
