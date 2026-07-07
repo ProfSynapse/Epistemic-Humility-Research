@@ -29,7 +29,7 @@ IMAGE = "unsloth/unsloth:2026.1.2-pt2.9.0-cu12.8-update"
 PIP = [
     "git+https://github.com/huggingface/transformers.git",
     "accelerate>=1.0",
-    "huggingface_hub>=0.34,<1.0",
+    "huggingface_hub>=1.5,<2.0",
     "pyyaml",
     "scikit-learn",
     "safetensors",
