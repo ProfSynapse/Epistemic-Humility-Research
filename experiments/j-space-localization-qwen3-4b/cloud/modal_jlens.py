@@ -257,7 +257,7 @@ def run_jlens():
     sh([sys.executable, jlens_script, "h1",
         "--corpus", corpus_path, "--n-prompts", str(N_PROMPTS_FULL),
         "--directions-dir", directions_dir,
-        "--layer-offsets", H1_LAYER_OFFSETS, "--seed", str(SEED),
+        f"--layer-offsets={H1_LAYER_OFFSETS}", "--seed", str(SEED),
         "--out", h1_out])
     checkpoint_once(tag="(post-h1)")
 
