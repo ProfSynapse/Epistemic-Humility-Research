@@ -5,7 +5,7 @@ title: Two-signal bf16 substrate pivot; dataset containment + guard/skill harden
   J-lens built
 status: active
 created_at: '2026-07-07T12:36:11Z'
-updated_at: '2026-07-07T14:03:39Z'
+updated_at: '2026-07-07T14:44:04Z'
 phase: CODE
 question: Does two-signal caution regulation actuate bidirectionally on raw-base Qwen3-4B
   once the whole instrument is moved to full bf16 (unifying substrate with the bf16-only
@@ -175,6 +175,82 @@ checkpoints:
   decisions: []
   next_steps: []
   signals: {}
+- id: 006-checkpoint
+  at: '2026-07-07T14:44:04Z'
+  kind: checkpoint
+  title: Checkpoint
+  summary: 'Gate-and-snap diagnostic round 1 (agent a7d9699, DONE, free local 3090,
+    exploratory scratch -- NO amendment/sign/commit) + round 2 dispatched.
+
+
+    ROUND 1 FINDINGS:
+
+    - GATE = a DOUBT threshold, and it is strong. Separability of confab vs known_correct_answered:
+    neg_z_d (doubt) AUC 0.976; combined (z_p - z_d) 0.867; z_p (confab-propensity)
+    alone 0.213 (inverted/off-task). Youden tau: 94.5% of confabs caught, 4.5% of
+    known-correct false-flagged. So the tighten gate is effectively ONE-signal (doubt);
+    the "two-signal" coupling does not survive the data for tighten. Caveat: known_correct
+    is in-sample to the u_d fit, so 0.976 is a bit optimistic.
+
+    - CONFAB-PROPENSITY (neg_ctrl) is NOT junk -- it was tested on the wrong contrast.
+    neg_ctrl was fit (build L280-285) as logistic confab(1) vs unknown_refused(0)
+    over the 1,338-row AK Stage-1 pool -- i.e. among non-answers, fabricate vs abstain.
+    That is its designed job; it is merely off-task for confab-vs-correct (the doubt
+    axis owns that). Round 2 will confirm its AUC on its own held-out contrast.
+
+    - TIGHTEN is real and dose-dependent. Semantic refuse (first parsed answer field):
+    8% @readback50, 25%@100, 58%@150, 71%@200, 79%@250, 83%@300-350, then collapse
+    (0%, 22/24 garbage) @600. So the earlier scalar 1/6 was a dose-SCATTER artifact
+    (only 1 of 6 confab rows landed near the coherent band), NOT a ceiling -- the
+    reframe is vindicated on the semantic axis.
+
+    - BUT the "clean stop" problem was mostly a HARNESS BUG, not the caution write.
+    dose_escalation_bf16_ambient_relative.py:148 sets min_new_tokens=MAX_NEW alongside
+    max_new_tokens=MAX_NEW, which FORCES exactly MAX_NEW tokens and SUPPRESSES EOS:
+    the model produces a clean first JSON answer, cannot stop, and is forced to emit
+    filler -- repeated answer + stray </think> at baseline (16/24 undosed rows), `}-empty`
+    loops at dose 150-200, phrase-looping at 250+. The FIRST JSON object is clean
+    at every non-collapse dose. So the "degeneration onset at 150" is largely a forced-continuation
+    measurement artifact. (Ruled out enable_thinking scaffold as the cause: the </think>
+    appears AFTER a complete answer, and baseline has no `-empty`.)
+
+    - Step-3 payoff (old anchor_onward @ fixed readback 250, gate-free control): confab
+    clean_flip (old detector) 28/80 = 35% (Wilson 25-46%); known_correct dosed at
+    250 -> false_refusal 79/80 = 98.75%. So a fixed 250 write is a blunt hammer that
+    nukes correct answers -- the gate is essential and 250 is too high.
+
+
+    DEFECTS confirmed: (a) build LogisticRegression(saga) has no random_state -> neg_ctrl/c_hat
+    non-reproducible (committed c_hat/neg_ctrl were rewritten in commit 8f277410);
+    must pin before any signed instrument. (b) generation harness min_new_tokens bug
+    (above). (c) release pool false-premise contamination (noted earlier).
+
+
+    ROUND 2 dispatched (agent a3ef6d5e62793f6d4, RUNNING, free local 3090, scratch
+    only): Step1 FIX generation -- remove min_new_tokens, enable EOS/<|im_end|> stop,
+    enable_thinking=False, verify baseline terminates cleanly. Step2 dose(80-260)
+    x write-scope(anchor_onward vs prompt-only-released-during-decode vs short-decay)
+    sweep, honest metric clean_tighten = refuse AND natural termination. Step3 payoff
+    at best cell: clean_tighten + Wilson CI on confab (~80) + false-refusal cost on
+    known_correct (~80). Step4 CPU: re-grade old anchor@250 with clean_tighten; propensity-own-contrast
+    AUC (confab vs unknown_refused).
+
+
+    DECIDES: is there a (dose,scope) with high clean_tighten AND low false-refusal
+    -> viable gate-and-snap tighten instrument, promote to a FRESH pre-registered
+    amendment (NON-AQ; user is separately writing amendment AQ, do not collide). Else
+    -> clean negative finding (caution write cannot induce a terminating refusal on
+    bf16 raw-base).
+
+
+    #8 two-signal sign remains BLOCKED (do not sign the proportional-scalar instrument;
+    it is superseded by the gate-and-snap redesign under test).'
+  evidence: []
+  run_ids: []
+  commands: []
+  decisions: []
+  next_steps: []
+  signals: {}
 ---
 # Two-signal bf16 substrate pivot; dataset containment + guard/skill hardening; J-lens built
 
@@ -240,3 +316,23 @@ DIAGNOSTIC running (agent a7d9699da37b1549f, free local 3090, exploratory scratc
 OTHER DEFECTS found: (a) build_two_signal_directions.py LogisticRegression(saga) has no random_state -> neg_ctrl/c_hat non-reproducible (committed vectors cannot be regenerated); must pin before any signed instrument. (b) release pool appears contaminated with false-premise items (Who made the first telephone call to the Moon?) where release would be wrong anyway.
 
 NEXT: read diagnostic result. If gate-and-snap clearly beats 1/6 with acceptable false-refusal -> promote to a FRESH pre-registered amendment (thresholded-gate law) -- user is separately working on amendment AQ, so pick a NON-AQ slug and check the registry first. If not -> write the current two-signal up as a documented null (readout portable, single caution axis only adds refusal weakly, cannot release).
+### 006-checkpoint - Checkpoint
+
+- at: `2026-07-07T14:44:04Z`
+- kind: `checkpoint`
+- summary: Gate-and-snap diagnostic round 1 (agent a7d9699, DONE, free local 3090, exploratory scratch -- NO amendment/sign/commit) + round 2 dispatched.
+
+ROUND 1 FINDINGS:
+- GATE = a DOUBT threshold, and it is strong. Separability of confab vs known_correct_answered: neg_z_d (doubt) AUC 0.976; combined (z_p - z_d) 0.867; z_p (confab-propensity) alone 0.213 (inverted/off-task). Youden tau: 94.5% of confabs caught, 4.5% of known-correct false-flagged. So the tighten gate is effectively ONE-signal (doubt); the "two-signal" coupling does not survive the data for tighten. Caveat: known_correct is in-sample to the u_d fit, so 0.976 is a bit optimistic.
+- CONFAB-PROPENSITY (neg_ctrl) is NOT junk -- it was tested on the wrong contrast. neg_ctrl was fit (build L280-285) as logistic confab(1) vs unknown_refused(0) over the 1,338-row AK Stage-1 pool -- i.e. among non-answers, fabricate vs abstain. That is its designed job; it is merely off-task for confab-vs-correct (the doubt axis owns that). Round 2 will confirm its AUC on its own held-out contrast.
+- TIGHTEN is real and dose-dependent. Semantic refuse (first parsed answer field): 8% @readback50, 25%@100, 58%@150, 71%@200, 79%@250, 83%@300-350, then collapse (0%, 22/24 garbage) @600. So the earlier scalar 1/6 was a dose-SCATTER artifact (only 1 of 6 confab rows landed near the coherent band), NOT a ceiling -- the reframe is vindicated on the semantic axis.
+- BUT the "clean stop" problem was mostly a HARNESS BUG, not the caution write. dose_escalation_bf16_ambient_relative.py:148 sets min_new_tokens=MAX_NEW alongside max_new_tokens=MAX_NEW, which FORCES exactly MAX_NEW tokens and SUPPRESSES EOS: the model produces a clean first JSON answer, cannot stop, and is forced to emit filler -- repeated answer + stray </think> at baseline (16/24 undosed rows), `}-empty` loops at dose 150-200, phrase-looping at 250+. The FIRST JSON object is clean at every non-collapse dose. So the "degeneration onset at 150" is largely a forced-continuation measurement artifact. (Ruled out enable_thinking scaffold as the cause: the </think> appears AFTER a complete answer, and baseline has no `-empty`.)
+- Step-3 payoff (old anchor_onward @ fixed readback 250, gate-free control): confab clean_flip (old detector) 28/80 = 35% (Wilson 25-46%); known_correct dosed at 250 -> false_refusal 79/80 = 98.75%. So a fixed 250 write is a blunt hammer that nukes correct answers -- the gate is essential and 250 is too high.
+
+DEFECTS confirmed: (a) build LogisticRegression(saga) has no random_state -> neg_ctrl/c_hat non-reproducible (committed c_hat/neg_ctrl were rewritten in commit 8f277410); must pin before any signed instrument. (b) generation harness min_new_tokens bug (above). (c) release pool false-premise contamination (noted earlier).
+
+ROUND 2 dispatched (agent a3ef6d5e62793f6d4, RUNNING, free local 3090, scratch only): Step1 FIX generation -- remove min_new_tokens, enable EOS/<|im_end|> stop, enable_thinking=False, verify baseline terminates cleanly. Step2 dose(80-260) x write-scope(anchor_onward vs prompt-only-released-during-decode vs short-decay) sweep, honest metric clean_tighten = refuse AND natural termination. Step3 payoff at best cell: clean_tighten + Wilson CI on confab (~80) + false-refusal cost on known_correct (~80). Step4 CPU: re-grade old anchor@250 with clean_tighten; propensity-own-contrast AUC (confab vs unknown_refused).
+
+DECIDES: is there a (dose,scope) with high clean_tighten AND low false-refusal -> viable gate-and-snap tighten instrument, promote to a FRESH pre-registered amendment (NON-AQ; user is separately writing amendment AQ, do not collide). Else -> clean negative finding (caution write cannot induce a terminating refusal on bf16 raw-base).
+
+#8 two-signal sign remains BLOCKED (do not sign the proportional-scalar instrument; it is superseded by the gate-and-snap redesign under test).
