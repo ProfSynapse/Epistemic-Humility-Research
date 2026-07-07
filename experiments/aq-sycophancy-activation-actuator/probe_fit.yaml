@@ -1,0 +1,16 @@
+# AQ probe-fit recipe. DRAFT until `bin/exp sign`.
+#
+# Schema: synaptic-tuner MechInterp.config.ProbeFitConfig @ submodule 56c7c6b.
+# The labels JSONL is produced from row_pool.yaml and must carry row_key + label.
+
+activations_path: experiments/aq-sycophancy-activation-actuator/analysis/extraction
+labels_path: experiments/aq-sycophancy-activation-actuator/analysis/probe_fit_labels.jsonl
+position_family: anchor
+n_components: 128
+n_splits: 5
+seed: 20260707
+solver: saga
+tol: 0.001
+C: 1.0
+output_direction: experiments/aq-sycophancy-activation-actuator/directions/sycophancy_answer_direction.json
+normalize: true
