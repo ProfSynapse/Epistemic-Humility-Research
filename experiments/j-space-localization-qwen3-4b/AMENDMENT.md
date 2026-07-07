@@ -1,6 +1,6 @@
 # j-space-localization-qwen3-4b
 
-Status: draft (not signed; do not launch as confirmatory evidence).
+Status: resolved (exploratory lab-diagnostic; not confirmatory evidence).
 
 Keep this document the prose home for the experiment. The machine state lives in
 `experiment.yaml` and is never duplicated here.
@@ -22,11 +22,10 @@ works on exactly one checkpoint and comes back null or fragile elsewhere. The
 idea doc's H1 is the cheapest test of whether that split has a J-space
 explanation: are our fitted directions J-space concepts (do they verbalize as
 uncertainty/abstention tokens), and where does L34 (our existing write layer)
-sit relative to the workspace band. This experiment builds and validates the
-instrument and runs a small local read; it does NOT run the full-corpus
-characterization (that is Modal-gated, pending the lead's launch decision --
-see Outcome). No claim here is promoted to a confirmatory result; this is
-"find it and poke around."
+sit relative to the workspace band. This experiment built and validated the
+instrument locally, then ran the full-corpus characterization on Modal. No
+claim here is promoted to a confirmatory result; this is "find it and poke
+around."
 
 ## Design
 
@@ -114,9 +113,9 @@ correctness smoke's cosine similarity and top-k overlap between
 verbalize(final_layer, v) and unembed(v) needed to show a strong,
 non-coincidental match (informally, well above chance-level top-k overlap
 and a clearly positive cosine similarity) for the implementation to be
-trusted enough to prep the Modal run. Observed: mean cosine similarity
-0.981, mean top-10 overlap 0.82 (n=20 prompts, 5 random directions) -- a
-clear pass.
+trusted enough to prep the Modal run. The local smoke passed, and the
+full-corpus Modal smoke reproduced it: mean cosine similarity 0.9811, mean
+top-10 overlap 0.82, top-1 match 3/5 (n=1000 prompts, 5 random directions).
 
 ## Predictions scoreboard
 
@@ -127,5 +126,43 @@ clear pass.
 
 ## Outcome
 
-Filled at resolve. Record the verdict, the gate results, and the one-sentence
-summary that also goes into `verdict:` in the manifest.
+Resolved 2026-07-07. Artifacts are committed under
+`analysis-committed/results/jspace-jlens-r1/`:
+`smoke_full.json`, `h1_full.json`, `profile_full.json`, `job_log.txt`, and
+`DONE`. The Modal run used `run_tag=jspace-jlens-r1`, seed 20260707,
+model `unsloth/Qwen3-4B`, n_prompts=1000, and completed in 10760.2 seconds
+on an A10/A10G-class Modal GPU.
+
+**Instrument check**: the full-corpus final-layer correctness smoke passed:
+mean cosine similarity 0.9811, mean top-10 overlap 0.82, and top-1 match 3/5
+between `verbalize(final_layer, v)` and direct unembed for 5 random
+directions.
+
+**H1 direction verbalization**: the same-substrate bf16 H1 read shows a
+split. `u_d_L34` verbalizes mostly as answer/reply tokens, especially
+Chinese answer words: `答案` (answer), `回答` (reply/answer), `的答案` (the
+answer), plus `answer`. It is therefore an answer/readout axis more than an
+explicit abstention phrase axis. `pos_ctrl_L34` verbalizes as first-person
+and absence/impossibility tokens: `I`, `我` (I/me), `empty`, `空` (empty),
+and `impossible`. `c_hat_L34` is similar but more error/absence-weighted:
+`empty`, `error`, `impossible`, `空`, and `不到` (cannot reach/cannot get).
+`neg_ctrl_L34` is a local null for clean verbalization, dominated by noisy
+fragments and unrelated Chinese/code-ish tokens such as `hotspot`/`热点`.
+
+**Layer profile / workspace location**: effective-dimensionality fraction
+stays very low through early and early-middle layers (roughly 0.0025 to
+0.0035 from hs=2 through hs=20), rises sharply in the mid-late band
+(0.00593 at hs=23, peak 0.01057 at hs=26, 0.00802 at hs=29), then falls
+again toward the final layers (0.00586 at hs=32, 0.00229 at hs=35, 0.00100
+at hs=36). Kurtosis declines across this same late band (0.478 at hs=20,
+0.385 at hs=23, 0.276 at hs=26, about 0.225 by hs=29/32/36), while Hoyer
+sparsity rises and stays high from hs=23 onward. On this characterization,
+the workspace-like dimensionality band centers around hs=23-29 and peaks at
+hs=26. This project's L34 direction layer maps to hs=34, so L34 sits just
+past the peak workspace band, in the declining late-layer / motor-adjacent
+regime rather than at the final layer itself.
+
+Verdict: full-corpus J-lens characterization completed; the instrument smoke
+passed, caution directions have clear self/absence/error verbalizable
+J-space projections, `u_d` is answer/reply-like, `neg_ctrl` is not cleanly
+verbalizable, and L34 lies just after the hs=23-29 workspace-like band.

@@ -6,6 +6,48 @@ in `experiment.yaml`.
 
 ## Entries
 
+### 2026-07-07 -- Modal full-corpus J-lens run completed and resolved
+
+Launched the full-corpus Modal run after swapping H1 inputs to the
+same-substrate bf16 directions from `two-signal-caution-regulation-instruct`.
+The first image build exposed a package-index bug in `cloud/modal_jlens.py`
+(`accelerate` was looked up on the PyTorch CUDA wheel index); fixed by
+installing torch from the CUDA index separately from PyPI packages. The first
+spawn then reached full-corpus smoke but failed at H1 because
+`--layer-offsets -4,-2,0,2` was parsed as an option value starting with `-`;
+fixed to `--layer-offsets=-4,-2,0,2`. The old auto-retry app was stopped
+after the fixed relaunch was confirmed healthy.
+
+Final successful run: Modal app `ap-vnvIl5WaUIDDwhEN2UWwFF`, function call
+`fc-01KWZ03RBXAK7HQKV7SQ4AM9GX`, run tag `jspace-jlens-r1`, seed 20260707,
+model `unsloth/Qwen3-4B`, n_prompts=1000. DONE marker written at 2026-07-07
+18:15:46 America/New_York; job log reports `total_sec=10760.2`.
+Artifacts pulled from `eh-jspace-jlens-logs/ckpt/jspace-jlens-r1` and
+committed under `analysis-committed/results/jspace-jlens-r1/`. Containment
+check: the committed results contain metrics, token strings, and provenance
+metadata only, not question text, aliases, prompts, or row keys.
+
+Full-corpus smoke reproduced the local implementation check: mean cosine
+similarity 0.9811, mean top-10 overlap 0.82, and top-1 match 3/5 between the
+final-layer J-lens and the direct unembed baseline over 5 random directions.
+
+H1 direction read: `u_d_L34` verbalizes as an answer/reply axis, strongest at
+and after its fit layer (`答案`, `回答`, `的答案`, `answer`, `your/你的`).
+`pos_ctrl_L34` verbalizes as first-person and absence/impossibility (`I`,
+`我`, `empty`, `空`, `impossible`). `c_hat_L34` is similar but more
+error/absence-weighted (`empty`, `error`, `impossible`, `空`, `不到`).
+`neg_ctrl_L34` remains a null/noisy verbalization, with unrelated fragments
+such as `hotspot`/`热点`, `津`, and code-ish/proper-name-ish pieces.
+
+Layer profile: effective-dimensionality fraction peaks in the mid-late band,
+not at L34 or the final layer: hs=23 0.00593, hs=26 0.01057 (peak), hs=29
+0.00802, then hs=32 0.00586, hs=35 0.00229, hs=36 0.00100. Early and
+early-middle layers stay around 0.0025-0.0035. Kurtosis declines through the
+same band, and Hoyer sparsity rises from hs=23 onward. Read: the
+workspace-like dimensionality band is centered around hs=23-29 and peaks at
+hs=26; L34 maps to hs=34, so it sits just after the workspace peak in a
+late/motor-adjacent declining regime.
+
 ### 2026-07-07 -- J-lens build, correctness smoke, local H1 read, Modal prep (STOPPED before launch)
 
 Built `jlens.py`: a from-scratch, read-only Jacobian lens for Qwen3-4B, per
