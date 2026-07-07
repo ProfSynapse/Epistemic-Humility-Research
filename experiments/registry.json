@@ -43,9 +43,7 @@
         "revision": ""
       },
       "falsifier": "On the length-neutralized matched set (AP-G0 passing), veto AUROC < 0.68 or the veto-minus-length margin CI includes 0 means AM's separation was length/truncation-driven with no genuine content signal; the two-signal backstop claim is retracted. AP-G0 failing voids the run.",
-      "inputs": [
-        "experiments/ap-veto-length-balanced-confirmatory/analysis/ap_pool.jsonl"
-      ],
+      "inputs": [],
       "instrument": {
         "configs": [],
         "modules": [
@@ -69,6 +67,40 @@
       "status": "resolved",
       "type": "probe-fit",
       "verdict": "CONFIRMED with answerability caveat: gates all PASS; the content-trust veto adds genuine signal over BOTH length and answerability (answerability-controlled AUROC ~0.74, margin +0.24, 95% CI [0.12,0.37] excludes 0), promoting AM's ~0.77 length-matched estimate on a fresh 192-token generation. The 0.86/+0.37 headline is answerability-inflated (37% of matched halluc are unanswerable-confabs, veto ~0.99 on those) and must not be cited as the content characteristic; honest number ~0.74."
+    },
+    {
+      "checkpoint": {
+        "repo": "unsloth/Qwen3-4B-bnb-4bit",
+        "revision": "raw-base (no adapter; checkpoint_tag \"raw-base\" per AK Stage 1 manifest)"
+      },
+      "falsifier": "Screen, so the bar is graduation: a candidate graduates iff its flip rate exceeds the random-direction control with bootstrap 95% CI excluding 0. No graduations means the dark subspace is ruled out as a near-term actuator. If the positive control does not move behavior the screen is void.",
+      "inputs": [
+        "experiment/phase1/probe/dark_displacement_census.py",
+        "experiment/phase1/probe/analysis-committed/dark_displacement_census_summary.md",
+        "experiment/phase1/eval/scorers.py"
+      ],
+      "instrument": {
+        "configs": [
+          "cell.yaml",
+          "gates.yaml"
+        ],
+        "modules": [
+          "../common/graders/dark_actuator_grader.py"
+        ],
+        "pins": {
+          "../common/graders/dark_actuator_grader.py": "f5521a691d1c5610e4b4b27592583e699d2c45745761beba233074a37a55c515",
+          "cell.yaml": "cf047c8725f97c9950f25a2b8d0fe4cfd725ad5e0e7e6f1621a8410331530b53",
+          "gates.yaml": "a70634ea376e7df7cc6383f367be8a8e87bc371e3439cea22e0dc374f0eb2b87"
+        }
+      },
+      "kg": [],
+      "prediction": "Orchestrator: most likely 0 candidates beat the random control (small chance L34 succ pc0 registers a weak hit); positive control (answer-vs-refuse) moves behavior, negative controls (random, propensity) sit at the floor. User (2026-07-06): SEVERAL candidates graduate (the dark subspace holds real behavioral levers).",
+      "question": "Do any of the 12 frozen dark-displacement candidate directions causally actuate the fabricate-vs-refuse behavior on the raw-base checkpoint, above a random-direction control, at matched norm?",
+      "registered": true,
+      "slug": "dark-actuator-screen",
+      "status": "null-result",
+      "type": "lab-diagnostic",
+      "verdict": "NULL. G-instrument valid (pos_ctrl kills 79/80 confabs into coherent 'I dont know' refusals, confidence->0.0; controls at floor), screen not void. The 9 candidates clearing the raw graduation bar are an artifact: grader coherence gap (refuse->answer flips are malformed spam scored as answers, well-formed 0-17% vs 76% baseline), under-dosed random control (cand dose3 setpoints 34-219 vs paired random 4-42), off-manifold over-drive on exactly-off-axis weak directions (census AUROC 0.60-0.72). Promote none; dark subspace shelved. Orchestrator 0-graduate correct; user several-graduate missed."
     },
     {
       "checkpoint": {
