@@ -2,9 +2,9 @@
 schema_version: research-session/v1
 session_id: jspace-jlens-r1-findings
 title: J-space J-lens r1 findings
-status: complete
+status: active
 created_at: '2026-07-07T22:42:40Z'
-updated_at: '2026-07-07T22:42:40Z'
+updated_at: '2026-07-07T23:28:42Z'
 phase: phase1
 question: What did the full-corpus Qwen3-4B J-lens characterization say about epistemic
   directions, the workspace-like band, and the L34 write layer?
@@ -19,7 +19,9 @@ trajectory:
     line and the fragile activation-write line.
   changed_by_session: Localized the Qwen3-4B workspace-like band to hs=23-29
     and placed the existing L34/hs34 write layer just after the peak, making
-    a mid-band write-layer sweep the immediate next actuator test.
+    a mid-band write-layer sweep the immediate next actuator test. The first
+    sweep stopped at G0 because dose 200 collapsed hs23/hs26, so the immediate
+    successor is layer-wise dose calibration on FIT rows.
 checkpoints:
 - id: 001-result
   at: '2026-07-07T22:42:40Z'
@@ -95,6 +97,67 @@ checkpoints:
     pos_ctrl_theme: self/absence/impossibility
     c_hat_theme: self/absence/error/impossibility
     neg_ctrl_theme: noisy-local-null
+- id: 004-result
+  at: '2026-07-07T23:28:42Z'
+  kind: result
+  title: Mid-band write sweep stopped at G0
+  summary: The signed hs23/hs26/hs29/hs34 dose-200 layer sweep prepared
+    successfully, but smoke collapsed every dosed hs23 and hs26 row. The full
+    held-out contrast was interrupted before completion, so this is a
+    pre-outcome G0 null-result rather than evidence against the J-space
+    layer-site hypothesis.
+  evidence:
+  - experiments/j-space-midband-write-sweep-qwen3-4b/AMENDMENT.md
+  - experiments/j-space-midband-write-sweep-qwen3-4b/NOTEBOOK.md
+  - experiments/j-space-midband-write-sweep-qwen3-4b/analysis-committed/smoke_summary.json
+  run_ids:
+  - jspace-midband-write-sweep-r1
+  commands:
+  - python3 extract_layer_sweep_anchor.py
+  - python3 build_directions.py --verify-reproducible
+  - python3 gate_fit.py
+  - python3 pipeline.py --mode smoke --n-rows 8 --dose 200
+  decisions:
+  - Stop the full held-out run because G0 required zero collapse on dosed smoke
+    rows.
+  next_steps:
+  - Register and run a layer-wise dose calibration on FIT rows only before any
+    held-out layer contrast.
+  signals:
+    hs23_collapse_on_dosed: 1.0
+    hs26_collapse_on_dosed: 1.0
+    hs29_collapse_on_dosed: 0.0
+    hs34_collapse_on_dosed: 0.0
+    hs23_readback_mean: 200.01800448639005
+    hs26_readback_mean: 199.98736937793728
+    hs29_readback_mean: 200.02690423151944
+    hs34_readback_mean: 200.11175295058638
+- id: 005-decision
+  at: '2026-07-07T23:28:42Z'
+  kind: decision
+  title: Signed FIT-only dose calibration successor
+  summary: Created and signed `j-space-midband-dose-calibration-qwen3-4b` to
+    find layer-specific non-collapsing setpoints on FIT rows. Held-out rows stay
+    untouched until a later calibrated layer contrast.
+  evidence:
+  - experiments/j-space-midband-dose-calibration-qwen3-4b/AMENDMENT.md
+  - experiments/j-space-midband-dose-calibration-qwen3-4b/experiment.yaml
+  run_ids:
+  - jspace-midband-dose-calibration-r1
+  commands:
+  - bin/exp sign j-space-midband-dose-calibration-qwen3-4b
+  decisions:
+  - Do not reinterpret the dose-200 G0 stop as a behavioral mid-band null.
+  - Treat the failed assumption as absolute-dose portability across layer sites.
+  next_steps:
+  - Run the signed local dose calibration after explicit local launch approval.
+  - If all layers receive usable setpoints, register the calibrated held-out
+    layer contrast as the next causal test.
+  signals:
+    dose_ladder: 25,50,75,100,125,150,175,200
+    calibration_split: fit
+    n_confab_fit_rows: 8
+    n_known_fit_rows: 8
 ---
 # J-space J-lens r1 findings
 
@@ -128,6 +191,11 @@ existing L34 direction layer maps to hs=34, just after that bump. This makes the
 next causal question sharp: if actuation has been fragile because we wrote too
 late, mid-band writes at hs=23/26/29 should beat or at least differ cleanly from
 the L34/hs34 write.
+
+The first causal successor exposed a prior assumption rather than resolving the
+layer question: dose 200 transferred to hs29/hs34 smoke but collapsed hs23/hs26.
+That makes layer-wise dose calibration the immediate next step. Held-out
+mid-band superiority remains untested until setpoints are chosen on FIT rows.
 
 ## Checkpoints
 
@@ -181,3 +249,40 @@ the L34/hs34 write.
 - next steps:
   - If confab propensity remains central, refit or decompose it before assuming
     it has a single clean verbalizable workspace direction.
+
+### 004-result - Mid-band write sweep stopped at G0
+
+- at: `2026-07-07T23:28:42Z`
+- kind: `result`
+- summary: The signed hs23/hs26/hs29/hs34 dose-200 layer sweep prepared
+  successfully, but smoke collapsed every dosed hs23 and hs26 row. The full
+  held-out contrast was interrupted before completion, so this is a pre-outcome
+  G0 null-result rather than evidence against the J-space layer-site hypothesis.
+- evidence:
+  - `experiments/j-space-midband-write-sweep-qwen3-4b/AMENDMENT.md`
+  - `experiments/j-space-midband-write-sweep-qwen3-4b/NOTEBOOK.md`
+  - `experiments/j-space-midband-write-sweep-qwen3-4b/analysis-committed/smoke_summary.json`
+- decisions:
+  - Stop the full held-out run because G0 required zero collapse on dosed smoke
+    rows.
+- next steps:
+  - Register and run a layer-wise dose calibration on FIT rows only before any
+    held-out layer contrast.
+
+### 005-decision - Signed FIT-only dose calibration successor
+
+- at: `2026-07-07T23:28:42Z`
+- kind: `decision`
+- summary: Created and signed `j-space-midband-dose-calibration-qwen3-4b` to
+  find layer-specific non-collapsing setpoints on FIT rows. Held-out rows stay
+  untouched until a later calibrated layer contrast.
+- evidence:
+  - `experiments/j-space-midband-dose-calibration-qwen3-4b/AMENDMENT.md`
+  - `experiments/j-space-midband-dose-calibration-qwen3-4b/experiment.yaml`
+- decisions:
+  - Do not reinterpret the dose-200 G0 stop as a behavioral mid-band null.
+  - Treat the failed assumption as absolute-dose portability across layer sites.
+- next steps:
+  - Run the signed local dose calibration.
+  - If all layers receive usable setpoints, register the calibrated held-out
+    layer contrast as the next causal test.

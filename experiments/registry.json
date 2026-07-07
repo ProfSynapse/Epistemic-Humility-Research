@@ -248,6 +248,44 @@
         "repo": "unsloth/Qwen3-4B",
         "revision": "raw-base (bf16, no adapter, no 4-bit quantization)"
       },
+      "falsifier": "Any layer has no usable dose on the pre-stated ladder, or hs23/hs26 still select 200 or fail to recover from dose-200 collapse.",
+      "inputs": [
+        "experiments/j-space-midband-write-sweep-qwen3-4b/analysis-committed/build_manifest_layers.json",
+        "experiments/j-space-midband-write-sweep-qwen3-4b/analysis-committed/gate_fit_layers.json",
+        "experiments/j-space-midband-write-sweep-qwen3-4b/analysis-committed/smoke_summary.json",
+        "experiments/j-space-midband-write-sweep-qwen3-4b/analysis-committed/PROVENANCE.md",
+        "experiments/j-space-midband-write-sweep-qwen3-4b/AMENDMENT.md"
+      ],
+      "instrument": {
+        "configs": [
+          "cell.yaml",
+          "gates.yaml"
+        ],
+        "modules": [
+          "calibrate_dose.py"
+        ],
+        "pins": {
+          "calibrate_dose.py": "e8942c3f9fe6e0a87bbbcdc993b92cf30956d50d583019fa09fcc0ad7a42e853",
+          "cell.yaml": "cf3622aabddd6aa607d5526658c753be771da6c77d34a37f642b01814543cbcf",
+          "gates.yaml": "2d8e825c430f383f7a51a8d376e0afe1389a3a0051a9e666d61f0747df1926d5"
+        }
+      },
+      "kg": [
+        "mechanism:j-space-mediated-actuation-fragility"
+      ],
+      "prediction": "Layer-specific calibration will recover non-collapsing usable setpoints for all four layers, with hs23 and hs26 selecting doses below 200.",
+      "question": "On raw-base Qwen3-4B, can layer-specific dose calibration recover non-collapsing usable erase-write setpoints for hs23/hs26/hs29/hs34 after dose 200 collapsed hs23 and hs26 in the J-space mid-band sweep smoke?",
+      "registered": true,
+      "slug": "j-space-midband-dose-calibration-qwen3-4b",
+      "status": "signed",
+      "type": "steer-cell",
+      "verdict": ""
+    },
+    {
+      "checkpoint": {
+        "repo": "unsloth/Qwen3-4B",
+        "revision": "raw-base (bf16, no adapter, no 4-bit quantization)"
+      },
       "falsifier": "Best mid-band layer improves confab clean_tighten by less than 10 points over hs34, or increases known-correct false-refusal by more than 2 points. If hs34 fails predecessor viability, the run is a reference replication failure rather than evidence about J-space mid-band superiority.",
       "inputs": [
         "experiments/common/doubt-gated-caution-tighten-heldout-split/split_manifest.json",
