@@ -1,7 +1,8 @@
 # HF Jobs / Cloud Lane
 
 > New steering / extraction / probe-fit cells launch through the tuner
-> `mechinterp` verbs (see the `mechinterp-cells` skill); this cloud-lane
+> `mechinterp run --provider modal` pipeline surface when possible (see the
+> `mechinterp-cells` skill); this cloud-lane
 > checklist still governs the paid-run discipline (detach, hf_xet, Volume
 > commits, artifact completeness) for those launches.
 
