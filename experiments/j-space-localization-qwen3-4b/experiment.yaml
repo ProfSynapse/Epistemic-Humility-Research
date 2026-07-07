@@ -36,7 +36,7 @@ instrument:
   - cloud/modal_jlens.py
   pins:
     jlens.py: ef5e84a6baaa53395c5ab9ef9b5cf183c0a06aa74633300b2e45526d60b8bd81
-    cloud/modal_jlens.py: 9a5ac8b1e27e7ab062ab31ec61785ae323fc6b7a266301252489cc4efe6e3bfe
+    cloud/modal_jlens.py: ce84b1641270c4dc0339c31c7ff424fdac015e9cf5f98037998ee84c0124fedc
 # The corpus (jlens_corpus_pool.jsonl) and the four fitted directions are
 # committed under analysis-committed/ (unlike the AP/AK/AM lineage, which
 # stages its pools to an external HF dataset repo) so the Modal container's
