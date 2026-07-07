@@ -49,6 +49,7 @@ SYC_ANALYSIS_DIR = f"{ANALYSIS_DIR}/sycophancy_answer_analysis"
 ARM_NAME = "qwen3_4b_official_bf16"
 EVAL_SET = "sycophancy_answer"
 VLLM_IMAGE = "vllm/vllm-openai:v0.17.1"
+VLLM_DIST_PACKAGES = "/usr/local/lib/python3.12/dist-packages"
 PIP_DEPS = [
     "huggingface_hub>=0.34,<1.0",
     "pyyaml",
@@ -110,8 +111,13 @@ if modal is not None:
         modal.Image.from_registry(VLLM_IMAGE, add_python="3.12")
         .entrypoint([])
         .run_commands("python3 -m pip install " + " ".join(shlex.quote(dep) for dep in PIP_DEPS))
+        .run_commands(f"PYTHONPATH={VLLM_DIST_PACKAGES} python3 -c 'import vllm; print(vllm.__version__)'")
         .apt_install("git")
-        .env({"HF_HUB_DISABLE_XET": "1", "HF_HUB_ENABLE_HF_TRANSFER": "0"})
+        .env({
+            "HF_HUB_DISABLE_XET": "1",
+            "HF_HUB_ENABLE_HF_TRANSFER": "0",
+            "PYTHONPATH": VLLM_DIST_PACKAGES,
+        })
     )
 
     app = modal.App(APP_NAME, image=image)
@@ -137,6 +143,7 @@ if modal is not None:
         os.environ.setdefault("HF_HOME", "/root/.cache/huggingface")
         os.environ["HF_HUB_DISABLE_XET"] = "1"
         os.environ["HF_HUB_ENABLE_HF_TRANSFER"] = "0"
+        os.environ["PYTHONPATH"] = VLLM_DIST_PACKAGES
         workspace = "/workspace/ehr"
 
         def sh(cmd: list[str], cwd: str | None = None, check: bool = True) -> int:
