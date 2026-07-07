@@ -29,10 +29,30 @@
 # but that number is NOT itself locked by the AMENDMENT text and needs
 # explicit sign-off, not silent adoption.
 #
+# DISCOVERED LIMITATION (read before adjudicating): MechInterp/stats/
+# evaluator.py's `_eval_kill_diff` (the kill_diff_vs_control dispatcher) does
+# NOT read `cell_field`/`cell` from the gate dict -- it only filters rows by
+# arm (`_rows_for_arm(rows, gate.get("primary_arm", ...), arm_field)`, no
+# extra_field argument), unlike `_eval_count_flips` and
+# `_eval_bidirectional_gap_diff`, which both DO support that filter. The
+# `cell_field: cell` / `cell: confab` keys on the three gates below are
+# therefore SILENTLY IGNORED by `tuner.py mechinterp score-gates` at this
+# submodule pin (56c7c6b) -- running that CLI directly against a full-run
+# rows_out.jsonl (which mixes BOTH cells under one arm name, since this
+# cell's surface is one combined 458-row pool) would compute each gate over
+# ALL 458 rows, not the intended cell subset, silently misadjudicating every
+# G1/G2 gate. Use `score_gates_by_cell.py` (this directory) instead once a
+# full run exists -- it imports the SAME `MechInterp.stats.gates.
+# kill_diff_vs_control` primitive directly (no reimplementation, no tuner
+# edit) but does the cell filtering itself before calling it, and reads its
+# thresholds from THIS file so gates.yaml stays the single source of truth.
+# The `cell_field`/`cell` keys below are consumed by that script; kept here
+# (not stripped) precisely because that script's contract depends on them.
+#
 # Adjudicate (CPU, no GPU), once a full run exists:
-#   cd synaptic-tuner && python tuner.py mechinterp score-gates \
-#     --gates-config ../experiments/two-signal-caution-regulation-instruct/gates.yaml \
-#     --rows-path ../experiments/two-signal-caution-regulation-instruct/analysis/rows_out.jsonl
+#   python experiments/two-signal-caution-regulation-instruct/score_gates_by_cell.py \
+#     --gates-config experiments/two-signal-caution-regulation-instruct/gates.yaml \
+#     --rows-path experiments/two-signal-caution-regulation-instruct/analysis/rows_out.jsonl
 #
 # kill_diff_vs_control's own "diff" is a raw ROW-COUNT difference between two
 # arms over the SAME population (not a rate/percentage). Both arms below run

@@ -96,13 +96,38 @@ HIDDEN_DIM = 2560
 Z_CLIP = 2.0
 
 # Shared alpha_d == alpha_p (single pre-registered scalar, no per-sensor
-# sweep). Reasoning (see this script's printed report / build_manifest.json):
-# pos_ctrl_L34's own coherent-refusal window is ~150-300, described as
-# k * ambient_projection for k in [5, 15] (ambient ~19-27). A single-sensor
-# fully-clipped row (|z| = 2, the OTHER sensor near its own population mean)
-# writes a marginal setpoint of 2 * ALPHA * sigma_c. Targeting the MIDDLE of
-# the k-range (k = 10) at |z| = 2 gives 2 * ALPHA = 10 -> ALPHA = 5.0.
-ALPHA = 5.0
+# sweep). REVISED (2026-07-07, lead-directed dose-fix -- see NOTEBOOK.md):
+# the first pass (ALPHA=5.0, no hard clip) put only ~24% of the both-tail
+# pool's |marginal_write| inside the dark-screen's validated 150-300 coherent
+# window, with a 553-magnitude outlier well past the 400 collapse floor.
+# ALPHA is retuned upward (per-cell median |write| ~150-300, targeting the
+# 200-225 middle) and a HARD CLIP is added (see MARGINAL_WRITE_CLIP) so no
+# row's commanded write can enter the collapse regime regardless of how
+# extreme its (z_p, z_d) pair is. Calibration sweep (this script's own
+# printed report at each candidate ALPHA, on the FIXED z_d/z_p columns --
+# not a gate sweep, no gates were evaluated while choosing this):
+#   ALPHA= 8: confab median|write|=140  (just under window) 9%  clipped
+#   ALPHA= 9: confab median|write|=158, release median=244, 15%/32% clipped
+#   ALPHA=10: confab median|write|=175, release median=272, 18%/37% clipped
+#   ALPHA=12: confab median|write|=210, release median=326 (drifts ABOVE the
+#             300 window edge, into the un-validated 300-400 gray zone)
+# ALPHA=10.0 is picked: both cells' medians land inside [150, 300] (175 / 272)
+# without either drifting above the window, and a MAJORITY of each cell
+# (81.6% confab / 63.1% release) stays below the hard clip, i.e. still
+# z-proportional rather than pinned -- the clip caps only the extreme tail,
+# it does not flatten the bulk of the distribution. See build_manifest.json
+# "marginal_write_distribution" for the realized numbers this run.
+ALPHA = 10.0
+
+# Hard collapse-safety clip on the FINAL marginal write (post gain-sum,
+# post-sigma_c), applied unconditionally regardless of ALPHA: no row may
+# command a write at or above the dark-screen's observed collapse floor
+# (>=400). 350 keeps a documented margin below that floor. The clip is
+# applied to marginal_write and then divided back through sigma_c to get the
+# CLIPPED g_two_signal value actually stored in the eval pool / read by the
+# tuner's gain_field -- the write the model receives always respects this
+# clip; it is not merely a post-hoc reporting clip.
+MARGINAL_WRITE_CLIP = 350.0
 
 
 def _sha256_file(path: Path) -> str:
@@ -225,8 +250,15 @@ def main() -> int:
 
     z_d = np.clip((proj_d - mu_d) / sigma_d, -Z_CLIP, Z_CLIP)
     z_p = np.clip((proj_p - mu_p) / sigma_p, -Z_CLIP, Z_CLIP)
-    g_row = -ALPHA * z_d + ALPHA * z_p  # = ALPHA * (z_p - z_d)
-    marginal_write = g_row * sigma_c
+    g_row_unclipped = -ALPHA * z_d + ALPHA * z_p  # = ALPHA * (z_p - z_d)
+    marginal_write_unclipped = g_row_unclipped * sigma_c
+    # Hard collapse-safety clip on the WRITE the model actually receives:
+    # clip marginal_write to +/- MARGINAL_WRITE_CLIP, then divide back through
+    # sigma_c to get the gain value stored in g_two_signal (the field the
+    # tuner's gain_field reads) -- the clip binds the real write, not just a
+    # reported number.
+    marginal_write = np.clip(marginal_write_unclipped, -MARGINAL_WRITE_CLIP, MARGINAL_WRITE_CLIP)
+    g_row = marginal_write / sigma_c
 
     # -- 5. write eval_pool_both_tail.jsonl --------------------------------
     out_path = COMMITTED / "eval_pool_both_tail.jsonl"
@@ -253,6 +285,9 @@ def main() -> int:
                 "z_d": float(z_d[i]), "z_p": float(z_p[i]),
                 "g_two_signal": float(g_row[i]),
                 "marginal_write": float(marginal_write[i]),
+                "g_two_signal_unclipped": float(g_row_unclipped[i]),
+                "marginal_write_unclipped": float(marginal_write_unclipped[i]),
+                "clipped": bool(abs(marginal_write_unclipped[i]) > MARGINAL_WRITE_CLIP),
             }
             fh.write(json.dumps(rec, ensure_ascii=False) + "\n")
     # every question must be present (answerable_refused rows carry it
@@ -306,7 +341,26 @@ def main() -> int:
     (COMMITTED / "c_hat_L34.json").write_text(json.dumps(c_hat_json, indent=2))
 
     # -- 7. report + manifest ----------------------------------------------
-    mw = marginal_write
+    cell_arr = np.array([r[1] for r in eval_rows])
+
+    def _dist(mask: np.ndarray, mw_arr: np.ndarray, mw_unclipped_arr: np.ndarray) -> dict:
+        sub = mw_arr[mask]
+        sub_unclipped = mw_unclipped_arr[mask]
+        return {
+            "n": int(mask.sum()),
+            "min": float(sub.min()), "p10": float(np.percentile(sub, 10)),
+            "p25": float(np.percentile(sub, 25)), "median": float(np.median(sub)),
+            "p75": float(np.percentile(sub, 75)), "p90": float(np.percentile(sub, 90)),
+            "max": float(sub.max()),
+            "mean": float(sub.mean()),
+            "abs_median": float(np.median(np.abs(sub))),
+            "abs_mean": float(np.abs(sub).mean()),
+            "frac_positive": float((sub > 0).mean()),
+            "frac_abs_in_150_300": float(np.mean((np.abs(sub) >= 150) & (np.abs(sub) <= 300))),
+            "frac_abs_ge_400": float(np.mean(np.abs(sub) >= 400)),
+            "frac_clipped": float(np.mean(np.abs(sub_unclipped) > MARGINAL_WRITE_CLIP)),
+        }
+
     report = {
         "n_known_correct_answered": len(known_correct_answered),
         "n_unknown_refused": len(unknown_refused),
@@ -319,14 +373,11 @@ def main() -> int:
         "mu_p": mu_p, "sigma_p": sigma_p,
         "mu_c": mu_c, "sigma_c": sigma_c,
         "alpha_d": ALPHA, "alpha_p": ALPHA,
+        "marginal_write_clip": MARGINAL_WRITE_CLIP,
         "marginal_write_distribution": {
-            "min": float(mw.min()), "p10": float(np.percentile(mw, 10)),
-            "p25": float(np.percentile(mw, 25)), "median": float(np.median(mw)),
-            "p75": float(np.percentile(mw, 75)), "p90": float(np.percentile(mw, 90)),
-            "max": float(mw.max()),
-            "abs_mean": float(np.abs(mw).mean()),
-            "frac_abs_in_150_300": float(np.mean((np.abs(mw) >= 150) & (np.abs(mw) <= 300))),
-            "frac_abs_ge_400": float(np.mean(np.abs(mw) >= 400)),
+            "overall": _dist(np.ones(len(eval_rows), dtype=bool), marginal_write, marginal_write_unclipped),
+            "confab": _dist(cell_arr == "confab", marginal_write, marginal_write_unclipped),
+            "answerable_refused": _dist(cell_arr == "answerable_refused", marginal_write, marginal_write_unclipped),
         },
         "fresh_extract_manifest_sha256": _sha256_file(EXTRACT_MANIFEST),
         "pos_ctrl_src_sha256": _sha256_file(pos_ctrl_src),

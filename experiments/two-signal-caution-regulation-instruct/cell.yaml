@@ -26,23 +26,32 @@
 #      formula (gain * sigma * c_hat) reproduces the AMENDMENT's
 #      g_i * sigma_c * c_hat exactly when gain_field carries g_i directly.
 #   4. Per-example gain g_two_signal = -alpha_d*z_d,i + alpha_p*z_p,i
-#      (alpha_d == alpha_p == 5.0, a single pre-registered scalar; z_d/z_p
-#      each clipped to [-2,+2] before combining), precomputed and stored as a
-#      column on analysis-committed/eval_pool_both_tail.jsonl -- ALREADY
-#      alpha-scaled, hence `arms.coupled.strength: 1.0` below, NOT 5.0 (do
-#      not double-apply alpha).
+#      (alpha_d == alpha_p == 10.0, a single pre-registered scalar, RETUNED
+#      2026-07-07 from an initial 5.0 -- see build_two_signal_directions.py's
+#      own header note for the calibration sweep and NOTEBOOK.md for the
+#      dose-fix entry; z_d/z_p each clipped to [-2,+2] before combining, and
+#      the resulting marginal write hard-clipped to +/-350 -- collapse-safety
+#      margin below the dark-screen's observed >=400 collapse floor), all
+#      precomputed and stored as a column on
+#      analysis-committed/eval_pool_both_tail.jsonl -- ALREADY alpha-scaled
+#      AND clip-applied, hence `arms.coupled.strength: 1.0` below, NOT 10.0
+#      (do not double-apply alpha, and do not re-clip: the clip already binds
+#      the stored gain, not just a reported number).
 #
 # Validate (CPU, no GPU):
 #   cd synaptic-tuner && python -c "from MechInterp.config import load_steer_config; \
 #     load_steer_config('../experiments/two-signal-caution-regulation-instruct/cell.yaml'); \
 #     print('cell ok')"
 #
-# Launch (GPU; render-fn is a CLI arg, not part of this YAML -- see
-# MechInterp/cli.py run_steer):
-#   cd synaptic-tuner && python tuner.py mechinterp steer \
+# Launch (GPU; render-fn/grader are CLI-resolved flat module specs via
+# importlib.import_module, not dotted package paths -- see MechInterp/cli.py
+# _load_callable / run_steer; "experiments" has no __init__.py so a dotted
+# "experiments.common.renders...." spec will NOT import):
+#   cd synaptic-tuner && PYTHONPATH=../experiments/two-signal-caution-regulation-instruct:../experiments/common/renders \
+#     python tuner.py mechinterp steer \
 #     --mi-config ../experiments/two-signal-caution-regulation-instruct/cell.yaml \
-#     --render-fn experiments.common.renders.ah_a0_raw_base_render:render \
-#     --model unsloth/Qwen3-4B-bnb-4bit --gpu-ack
+#     --render-fn ah_a0_raw_base_render:render \
+#     --model unsloth/Qwen3-4B-bnb-4bit --i-know-this-runs-on-gpu
 
 # 1. surface: the committed both-tail eval pool (458 rows: 309 confab
 #    "tighten" tail + 149 answerable_refused "release" tail). Built by
@@ -126,8 +135,8 @@ smoke:
   # default is a GAIN (pre-sigma) value; the tuner multiplies it by this
   # cell's own readout sigma (c_hat_L34.json's sigma = sigma_c = 36.18) to
   # get the probe's commanded write, i.e. 100 * 36.18 = 3618 -- comfortably
-  # above this cell's real |marginal_write| range (max ~554, see
-  # build_manifest.json), so the built-in default already clears the "large
+  # above this cell's real |marginal_write| range (hard-clipped to +/-350,
+  # see build_manifest.json), so the built-in default already clears the "large
   # relative to the real dose ladder" bar without an override. This is a
   # different situation from dark-actuator-screen's cells, whose direction
   # JSONs all had sigma=1.0 (hence needed a raw-gain override like 1000 to
