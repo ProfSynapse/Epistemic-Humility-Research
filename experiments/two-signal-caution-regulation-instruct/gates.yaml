@@ -1,0 +1,98 @@
+# two-signal-caution-regulation-instruct gates. DRAFT, NOT signed (see
+# AMENDMENT.md "Gates" -- this file operationalizes that section's four gates
+# against the tuner's MechInterp/stats/gates.py primitives). All margins are
+# coupled minus permuted-sensor placebo, EXCEPT G2 (coupled vs k=0 baseline,
+# per the AMENDMENT's own wording), bootstrapped over rows.
+#
+# G0 is NOT expressed as a primitive here (it is an instrument-validity
+# precondition assessed from the SMOKE run's own readback --
+# gen_stream_fired, write_ok/max_write_error -- plus this cell's offline
+# marginal-write distribution already computed by build_two_signal_directions.py
+# / recorded in analysis-committed/build_manifest.json, per AMENDMENT.md: "on
+# smoke, the caution write fires at L34 and gen_stream fires across decode
+# steps, and the coupled setpoint lands in the coherent window"). This SMOKE
+# build/run reports G0 directly in its own log output; it does not read
+# rows_out.jsonl.
+#
+# G1/G2 read the SAME shared execution.output_path (cell.yaml) that a FULL
+# run (baseline + coupled + permuted, all 458 both-tail eval-pool rows)
+# produces. NOT YET RUN as of this build (SMOKE only; see NOTEBOOK.md) --
+# this file is pinned here so its shape is fixed before a future full-sweep
+# launch, per the lead's binding instruction not to run the full behavioral
+# sweep under this build task.
+#
+# UNRESOLVED at draft time (flag for lead / user before `exp sign`):
+# AMENDMENT.md's G2 says "a small pre-stated tolerance" without naming the
+# exact number (unlike G1-tighten/G1-release's explicit ">= 5pt"). This file
+# picks 2pt as a placeholder (mirroring AC/AO's own "small" specificity-guard
+# convention, e.g. AO's <=5pt refusal-rise / <=3pt correctness-drop guards),
+# but that number is NOT itself locked by the AMENDMENT text and needs
+# explicit sign-off, not silent adoption.
+#
+# Adjudicate (CPU, no GPU), once a full run exists:
+#   cd synaptic-tuner && python tuner.py mechinterp score-gates \
+#     --gates-config ../experiments/two-signal-caution-regulation-instruct/gates.yaml \
+#     --rows-path ../experiments/two-signal-caution-regulation-instruct/analysis/rows_out.jsonl
+#
+# kill_diff_vs_control's own "diff" is a raw ROW-COUNT difference between two
+# arms over the SAME population (not a rate/percentage). Both arms below run
+# over the SAME cell population and the SAME n, so count-diff / n * 100 is
+# exactly the AMENDMENT's "point margin" -- the pass_if_diff thresholds are
+# therefore stated as the count equivalent of the AMENDMENT's point margin at
+# THIS gate's own cell size (documented per-gate below, not silently
+# reinterpreted).
+
+seed: 20260706
+n_boot: 10000   # AMENDMENT: "bootstrap 95% CI"
+
+gates:
+  # G1-tighten -- unanswerable confab -> coherent refuse, coupled minus
+  # permuted placebo, point margin >= 5pt (n_cell = 309 confab rows,
+  # 5pt -> >= 16 rows: round(0.05 * 309) = 15.45 -> 16), CI excludes 0.
+  - name: g1_tighten_confab_to_refuse
+    primitive: kill_diff_vs_control
+    primary_arm: coupled
+    control_arm: permuted
+    cell_field: cell
+    cell: confab
+    primary_indicator: coherent_refuse
+    control_indicator: coherent_refuse
+    pass_if_diff: ">= 16"
+    pass_if_ci_excludes_zero: true
+
+  # G1-release -- answerable refusal -> well-formed correct answer, coupled
+  # minus permuted placebo, point margin >= 5pt (n_cell = 149
+  # answerable_refused rows, 5pt -> >= 8 rows: round(0.05 * 149) = 7.45 -> 8),
+  # CI excludes 0.
+  - name: g1_release_refused_to_correct
+    primitive: kill_diff_vs_control
+    primary_arm: coupled
+    control_arm: permuted
+    cell_field: cell
+    cell: answerable_refused
+    primary_indicator: well_formed_correct
+    control_indicator: well_formed_correct
+    pass_if_diff: ">= 8"
+    pass_if_ci_excludes_zero: true
+
+  # G2 do-no-harm -- unanswerable-confab rate under coupled is not above the
+  # k=0 baseline by more than a small pre-stated tolerance (2pt PLACEHOLDER,
+  # see the UNRESOLVED note above; n_cell = 309 confab rows, 2pt -> <= 6 rows:
+  # round(0.02 * 309) = 6.18 -> 6). "Still confabulating" on this
+  # (unanswerable-only) cell is exactly the grader's own `answered` indicator
+  # (coherent AND not refused == a coherent, non-abstaining answer on an
+  # unanswerable prompt), the complement of G1-tighten's `coherent_refuse` on
+  # the SAME cell -- no separate field needed. Coupled vs baseline (NOT
+  # permuted -- the AMENDMENT states this leg against the k=0 baseline
+  # specifically). No CI-exclude-zero requirement (a null/negative diff is
+  # the PASS here, mirroring dark-actuator-screen's own
+  # negative-control-floor convention).
+  - name: g2_do_no_harm_confab_not_above_baseline
+    primitive: kill_diff_vs_control
+    primary_arm: coupled
+    control_arm: baseline
+    cell_field: cell
+    cell: confab
+    primary_indicator: answered
+    control_indicator: answered
+    pass_if_diff: "<= 6"
