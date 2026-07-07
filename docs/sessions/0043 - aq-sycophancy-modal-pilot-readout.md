@@ -4,7 +4,7 @@ session_id: '0043'
 title: AQ sycophancy Modal pilot readout
 status: active
 created_at: '2026-07-07T17:20:14Z'
-updated_at: '2026-07-07T18:26:29Z'
+updated_at: '2026-07-07T19:06:07Z'
 phase: phase1
 question: Can the AQ answer-sycophancy pilot produce a separable activation readout on official Qwen3-4B, and is the row pool sufficient to license steering?
 tags:
@@ -22,7 +22,7 @@ run_ids:
 trajectory:
   anchor: experiment/protocol/research-trajectory.md
   current_position: AQ is an exploratory sycophancy read-vs-write cell, separate from the locked Phase 1 headline matrix.
-  changed_by_session: R1 found an underpowered readout lead; r2 cleared AQ-G0 and recovered a larger-pool readout direction, but HF artifact publication failed before DONE due per-file commit rate limits. Actuator launch is still unapproved.
+  changed_by_session: R1 found an underpowered readout lead; r2 cleared AQ-G0 and recovered a larger-pool readout direction. Local recovered-artifact diagnostics pass AQ-G1 but show a strong anchor prompt-condition confound. Actuator launch is still unapproved.
 checkpoints:
 - id: 001-launch
   at: '2026-07-07T17:20:14Z'
@@ -169,6 +169,40 @@ checkpoints:
   next_steps:
   - Commit and push the wrapper fix plus r2 documentation.
   signals: {}
+- id: 008-local-diagnostics
+  at: '2026-07-07T19:06:07Z'
+  kind: observation
+  title: R2 local diagnostics pass AQ-G1 with confounds
+  summary: >-
+    Local CPU diagnostics over recovered r2 artifacts recomputed the selected
+    layer-24 anchor readout with OOF AUROC 0.819 and bootstrap 95% CI
+    [0.742, 0.886], so AQ-G1 passes as a readout screen. The same score almost
+    perfectly separates incorrect-hint from neutral prompts at the anchor
+    position (AUROC 0.988), while answer_end loses both label signal and prompt
+    condition separation. Inside baseline-incorrect rows only, OOF AUROC 0.723
+    for wrong-hint-followed vs other wrong answers suggests some
+    sycophancy-specific signal beyond generic wrongness, but the readout is not
+    clean enough to treat as causal evidence.
+  evidence:
+  - experiments/aq-sycophancy-activation-actuator/analyze_aq_readout.py
+  - experiments/aq-sycophancy-activation-actuator/analysis/readout_diagnostics/summary.json
+  - experiments/aq-sycophancy-activation-actuator/NOTEBOOK.md
+  run_ids: []
+  commands:
+  - py -3.12 experiments\aq-sycophancy-activation-actuator\analyze_aq_readout.py
+  decisions:
+  - Treat AQ-G1 as passed for the r2 readout screen, not as causal evidence.
+  - Keep actuator launch blocked pending explicit approval.
+  next_steps:
+  - If launching an actuator, carry strict neutral/correctness guardrails and a manual audit because the anchor readout is prompt-condition confounded.
+  signals:
+    selected_layer: 24
+    oof_auroc: 0.8186274509803921
+    bootstrap_ci_lo: 0.7421499970470116
+    bootstrap_ci_hi: 0.8859277708592778
+    condition_anchor_auroc: 0.98773193359375
+    condition_answer_end_auroc: 0.45294189453125
+    incorrect_only_oof_auroc: 0.7225935828877005
 ---
 # AQ sycophancy Modal pilot readout
 
@@ -189,10 +223,10 @@ The r1 Modal pilot found a strong but underpowered activation readout: layer 20
 AUROC 1.00 over 9 positive and 7 negative labels. The scaled r2 pass fixed the
 AQ-G0 row-count problem, producing 68 positive and 60 negative labels, and still
 found a separable readout: selected layer 24, AUROC 0.846, separation 7.63,
-sigma 4.15. R2 artifact publication failed after computation because the wrapper
-committed each tensor separately to Hugging Face and hit the repository
-commit-rate limit. The direction is recoverable from the Modal volume; actuator
-launch remains unapproved.
+sigma 4.15. Local recovered-artifact diagnostics pass AQ-G1 on OOF scores
+(AUROC 0.819, 95% CI [0.742, 0.886]) but show a strong anchor prompt-condition
+confound (`incorrect_hint` vs neutral AUROC 0.988). The direction is available
+locally from the Modal volume; actuator launch remains unapproved.
 
 ## Checkpoints
 
@@ -291,3 +325,18 @@ launch remains unapproved.
   - `experiments/aq-sycophancy-activation-actuator/cloud/modal_aq_sycophancy_activation_actuator.py`
 - decisions:
   - Stop the stale Modal app that was retrying the old per-file uploader.
+
+### 008-local-diagnostics - R2 local diagnostics pass AQ-G1 with confounds
+
+- at: `2026-07-07T19:06:07Z`
+- kind: `observation`
+- summary: Local CPU diagnostics over recovered r2 artifacts recomputed the selected layer-24 anchor readout with OOF AUROC 0.819 and bootstrap 95% CI [0.742, 0.886], so AQ-G1 passes as a readout screen. The same score almost perfectly separates incorrect-hint from neutral prompts at the anchor position (AUROC 0.988), while `answer_end` loses both label signal and prompt condition separation. Inside baseline-incorrect rows only, OOF AUROC 0.723 for wrong-hint-followed vs other wrong answers suggests some sycophancy-specific signal beyond generic wrongness, but the readout is not clean enough to treat as causal evidence.
+- evidence:
+  - `experiments/aq-sycophancy-activation-actuator/analyze_aq_readout.py`
+  - `experiments/aq-sycophancy-activation-actuator/analysis/readout_diagnostics/summary.json`
+  - `experiments/aq-sycophancy-activation-actuator/NOTEBOOK.md`
+- commands:
+  - `py -3.12 experiments\aq-sycophancy-activation-actuator\analyze_aq_readout.py`
+- decisions:
+  - Treat AQ-G1 as passed for the r2 readout screen, not as causal evidence.
+  - Keep actuator launch blocked pending explicit approval.

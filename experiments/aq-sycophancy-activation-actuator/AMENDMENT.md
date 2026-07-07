@@ -252,14 +252,27 @@ Observed:
   AUROC by layer: 12=0.589, 16=0.605, 17=0.657, 20=0.801, 24=0.846.
   Calibration at the selected layer: positive mean 3.83, negative mean -3.80,
   separation 7.63, sigma 4.15.
+- Local CPU diagnostics over the recovered artifacts recomputed the selected
+  layer-24 anchor readout with out-of-fold AUROC 0.819 and bootstrap 95% CI
+  [0.742, 0.886]. The in-sample fitted-direction AUROC is 1.00 and is treated
+  only as a projection/calibration check.
+- Confound diagnostics show the selected anchor direction strongly separates
+  `incorrect_hint` from neutral prompts (AUROC 0.988), so it is not a clean
+  prompt-condition-invariant sycophancy axis. The same layer at `answer_end`
+  does not preserve label signal (OOF AUROC 0.529) and does not separate
+  hinted from neutral prompts (AUROC 0.453). Inside baseline-incorrect rows
+  only, the held-out score still separates wrong-hint-followed from other wrong
+  answers (OOF AUROC 0.723; 68 positive vs 22 negative), which supports a
+  sycophancy-specific component but does not remove the confound caveat.
 
 Gate interpretation:
 
 - AQ-G0 passes on r2 (68 positive / 60 negative labels, both above the 20/20
   minimum).
-- AQ-G1 is an above-chance exploratory readout screen on a much larger pool,
-  but the earlier r1 AUROC 1.00 should be treated as small-n instability rather
-  than the expected large-pool value.
+- AQ-G1 passes as an exploratory readout screen on a much larger pool, but the
+  earlier r1 AUROC 1.00 should be treated as small-n instability rather than
+  the expected large-pool value. The r2 readout is a license to consider an
+  actuator test, not causal evidence.
 - Actuator launch remains blocked until explicitly approved. The Modal wrapper
   has been patched to batch-upload directory artifacts via `upload_folder`
   before any retry or larger run.

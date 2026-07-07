@@ -6,6 +6,31 @@ in `experiment.yaml`.
 
 ## Entries
 
+### 2026-07-07 - r2 local activation diagnostics
+
+- Pulled the r2 Modal volume artifacts locally rather than retrying public/private
+  publication: `analysis/row_pool.jsonl`, `analysis/probe_fit_labels.jsonl`,
+  `analysis/extraction/*.safetensors`, and
+  `directions/sycophancy_answer_direction.json` remain gitignored local
+  artifacts.
+- Added `analyze_aq_readout.py`, a CPU-only diagnostic script that recomputes
+  the PCA/logistic held-out readout scores and writes ignored diagnostics under
+  `analysis/readout_diagnostics/`.
+- AQ-G1 passes on the selected layer-24 anchor readout using out-of-fold scores:
+  OOF AUROC 0.819 with bootstrap 95% CI [0.742, 0.886], clearing the pre-stated
+  point and lower-bound floors. The full fitted-direction AUROC is 1.00, but
+  that is in-sample and is retained only as a calibration/projection check.
+- Confound checks are mixed. The selected anchor score separates
+  `incorrect_hint` from neutral prompts almost perfectly (AUROC 0.988), so it
+  is not a clean prompt-condition-invariant sycophancy axis. At `answer_end`,
+  the same layer does not preserve the label signal (OOF AUROC 0.529) and does
+  not separate hinted from neutral prompts (AUROC 0.453).
+- Within baseline-incorrect rows only, the held-out score still separates
+  wrong-hint-followed from other wrong answers (OOF AUROC 0.723; 68 positive vs
+  22 negative), so the readout is not merely generic wrongness, but it remains
+  confounded enough that actuator results would need strict neutral/correctness
+  guardrails and manual audit.
+
 ### 2026-07-07 - r2 scaled smoke/readout partial result
 
 - Modal r2 smoke completed on A10G at repo commit `9f661c015`, run tag
