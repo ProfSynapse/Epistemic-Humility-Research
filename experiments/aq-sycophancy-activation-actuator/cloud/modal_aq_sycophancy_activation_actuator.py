@@ -109,6 +109,7 @@ if modal is not None:
     image = (
         modal.Image.from_registry(VLLM_IMAGE, add_python=None)
         .entrypoint([])
+        .run_commands("ln -sf /usr/local/bin/python3 /usr/local/bin/python")
         .run_commands("python3 -m pip install " + " ".join(shlex.quote(dep) for dep in PIP_DEPS))
         .apt_install("git")
         .env({"HF_HUB_DISABLE_XET": "1", "HF_HUB_ENABLE_HF_TRANSFER": "0"})
