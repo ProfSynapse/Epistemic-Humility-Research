@@ -1,0 +1,108 @@
+# AO -- Stage 1, knob-validation, candidate #1 (caution_perp_ai_true). DRAFT,
+# NOT a registered instrument until `bin/exp sign` (see AMENDMENT.md; status:
+# draft). Implements AMENDMENT.md's Design / "STAGE 1, knob validation"
+# paragraph and the Gates section's G0: apply AC's CONSTANT writes (ablate,
+# fixed +/- gain) to this candidate caution direction and measure whether
+# refuse/answer behavior moves with specificity on the AI-TRUE checkpoint,
+# exactly as refined B1 did on GRPO-v2 -- NOT the Stage-2 propensity-coupled
+# mechanism (no gain_field, no prop_z; see cell.yaml for that).
+#
+# Candidate direction provenance (Stage-0 prep, see
+# analysis/amendment_ao_prep/prep_manifest.json): AN's doubt-orthogonalized
+# caution refit on the AI-TRUE checkpoint pre-generation extraction,
+# perp_fraction_of_caution 0.673, fit on pos_cell=known_refused (n=114),
+# neg_cell=known_correct_answered (n=90) from AL's frozen A0 grades.
+#
+# CELL-NAME MAPPING (flagged for lead review, not stated verbatim in the
+# AMENDMENT text): B1/AC's "known_refused" (things it should answer but
+# currently refuses) is THIS pool's "answerable_refused" cell -- confirmed
+# exactly, not just by analogy: this direction's own fit metadata records
+# pos_cell=known_refused with n_pos=114, and the 320-row prop_z pool
+# (prop_z_gain_map_rows.jsonl) has exactly 114 answerable_refused rows and 90
+# known_correct_answered rows, the SAME two populations this direction was fit
+# on. gates_stage1.yaml's G0 gates read "answerable_refused" as that mapped
+# population.
+#
+# SCHEMA BLOCKER (RESOLVED, this session): this candidate's original JSON
+# (analysis/amendment_ao_prep/caution_perp_direction_L35_ai_true.json) is
+# written in the legacy "phase3-residual-caution-direction/v1" schema (field
+# "theta", not "vector"), which made MechInterp.probe.fit.load_frozen_direction
+# raise KeyError: 'vector'. Fixed with a local converter,
+# analysis/amendment_ao_prep/convert_directions_to_tuner_schema.py (gitignored,
+# same tree as the other Stage-0 prep scripts), which writes
+# caution_perp_direction_L35_ai_true.tuner.json in the tuner's own
+# mechinterp-direction/v1 schema (vector = unit(theta), layer = the source's
+# own 0-indexed "block" field) and verifies it loads with
+# load_frozen_direction. The readouts block below points at the converted
+# file; see prep_manifest.json's direction_schema_conversion entry for the
+# exact transform and source sha.
+#
+# Validate parsing (CPU, no GPU):
+#   cd synaptic-tuner && python3 -c "from MechInterp.config import load_steer_config; \
+#     load_steer_config('../experiments/ao-propensity-regulated-caution/cell_stage1_caution_perp.yaml'); print('cell ok')"
+
+surface:
+  # Same 320-row prop_z pool as Stage 2 (this cell does not read the prop_z
+  # field; the constant arms below apply a fixed strength to every row).
+  rows_path: experiments/ao-propensity-regulated-caution/analysis/amendment_ao_prep/prop_z_gain_map_rows.jsonl
+  seed: 20260706
+  generation:
+    max_new_tokens: 96
+    do_sample: false
+  # expected_config_sha filled after the smoke run, pinned at `exp sign`.
+
+readouts:
+  - name: caution_perp_ai_true
+    path: experiments/ao-propensity-regulated-caution/analysis/amendment_ao_prep/caution_perp_direction_L35_ai_true.tuner.json
+
+law:
+  kind: erase_write
+  readout: caution_perp_ai_true
+  position: answer_window   # same as the Stage-2 cell
+  generation_mode: gen_stream
+
+# Arms mirror AC's constant writes / refined B1's dose ladder exactly (no
+# propensity gain_field here -- that is Stage 2's mechanism):
+#   baseline   no-op.
+#   ablate     erase_write with a ZERO setpoint (force_active), the "couple
+#              with g==0" constant comparison -- B1's strongest de-refusal arm.
+#   shift_up   fixed +2.0 gain (setpoint = +2*sigma), B1's shift_plus2
+#              convention -- expected to INDUCE refusal (more caution).
+#   shift_down fixed -2.0 gain (setpoint = -2*sigma), B1's shift_minus2
+#              convention -- expected to partially de-refuse.
+# +/-2.0 is not a new number: it is B1's own shift_plus2/shift_minus2
+# magnitude and matches AC's Stage-2 gain_clip (2.0) already pinned in this
+# amendment's cell.yaml -- reused, not invented.
+arms:
+  - name: baseline
+    strength: 0.0
+
+  - name: ablate
+    strength: 0.0
+    force_active: true
+
+  - name: shift_up
+    strength: 2.0
+
+  - name: shift_down
+    strength: -2.0
+
+execution:
+  output_path: experiments/ao-propensity-regulated-caution/analysis/rows_out_stage1_caution_perp.jsonl
+  resume: true
+  # Reused from Stage 2; see ao_grader.py's docstring ("Priming path") for the
+  # cross-arm baseline-join mechanism. RESOLVED (this session): the grader now
+  # reads its priming path from the AO_GRADER_OUTPUT_PATH environment
+  # variable instead of a hardcoded Stage-2 path. Set it to THIS cell's own
+  # output_path before invoking `mechinterp steer` on this file, e.g.:
+  #   AO_GRADER_OUTPUT_PATH=experiments/ao-propensity-regulated-caution/analysis/rows_out_stage1_caution_perp.jsonl
+  grader: ao_grader:grade
+
+# Technical write-check smoke (readback tolerances), same convention as the
+# Stage-2 cell -- NOT the same thing as the "Stage-1 PILOT" gates_stage1.yaml
+# uses to size the G0 effect-size floor (see that file's header comment).
+smoke:
+  n_rows: 25
+  write_rel_tol: 0.05
+  write_abs_floor: 0.5
+  offtarget_tol: 0.001
