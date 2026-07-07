@@ -72,7 +72,9 @@ REQUIRED_ARTIFACT_FILES = [rel for rel in ARTIFACT_FILES if rel not in OPTIONAL_
 VLLM_IMAGE = "vllm/vllm-openai:v0.17.1"
 VLLM_DIST_PACKAGES = "/usr/local/lib/python3.12/dist-packages"
 PIP_DEPS = [
+    "asciimatics",
     "huggingface_hub>=0.34,<1.0",
+    "pandas",
     "pyyaml",
     "scipy",
     "scikit-learn",
