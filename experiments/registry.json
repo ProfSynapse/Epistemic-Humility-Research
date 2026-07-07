@@ -146,8 +146,8 @@
           "cloud/modal_jlens.py"
         ],
         "pins": {
-          "cloud/modal_jlens.py": "2b77c3c996785347bf7f4e67dc3327158d5d8db90d51fae0d8c037ab77556683",
-          "jlens.py": "44253eba2090a268ea2f81e6d7f380879bb0832680e7cb07151f8617865e5cdb"
+          "cloud/modal_jlens.py": "19c2577ee9eebf0931659904428bb850a2bca63c94a5acb2e95dbe848cc49ecd",
+          "jlens.py": "a92f4383108a4b46861e745939bb22d99d351ab53a3cc41c513d92980d8ecc2b"
         }
       },
       "kg": [],
@@ -157,7 +157,7 @@
       "slug": "j-space-localization-qwen3-4b",
       "status": "draft",
       "type": "lab-diagnostic",
-      "verdict": "PREP COMPLETE, NOT YET RUN AT SCALE. Correctness smoke PASSED locally (n=20 prompts, 5 random directions, final layer: mean cosine similarity 0.981, mean top-10 overlap 0.82, top-1 match 3/5) -- the J-lens implementation is validated against the logit lens and runs end to end. Small local layer_profile (n=50 prompts, 4 random directions, 10 layers) and H1 direction check (n=100 prompts) both ran and produced coherent, reportable signal (pos_ctrl/c_hat verbalize clearly as first-person/error/abstention tokens including literal \"我不知道\"/\"I don't know\"; u_d and neg_ctrl are weaker/noisier), but at these small local sample sizes this is exploratory poking-around, not a resolved characterization. The Modal script (cloud/modal_jlens.py) is written, cost-estimated (~2.3-2.5h GPU-busy, ~$3-4 of the $25 cap) from an actual local-3090 benchmark, and launch-gated on EHR_LAUNCH_OK + MODAL_COST_CAP_USD; it has NOT been run. This experiment stays in status=draft until the lead reviews and fires it, then this verdict is replaced with the full-corpus result."
+      "verdict": "PREP COMPLETE, NOT YET RUN AT SCALE. Correctness smoke PASSED locally (n=20 prompts, 5 random directions, final layer: mean cosine similarity 0.981, mean top-10 overlap 0.82, top-1 match 3/5) -- the J-lens implementation is validated against the logit lens and runs end to end. Small local layer_profile (n=50 prompts, 4 random directions, 10 layers) ran and produced coherent workspace-band signal. The pre-swap H1 local spot-check (n=100 prompts) also produced useful orientation, but those H1 notes used the older direction inputs and are not the launch input result. Before Modal launch, the four direction inputs were swapped to the two-signal bf16 refit on unsloth/Qwen3-4B, making the full-corpus H1 run same-substrate bf16. The Modal script (cloud/modal_jlens.py) is written, cost-estimated (~2.3-2.5h GPU-busy, ~$3-4 of the $25 cap) from an actual local-3090 benchmark, and launch-gated on EHR_LAUNCH_OK + MODAL_COST_CAP_USD; it has NOT been run. This experiment stays in status=draft until the lead reviews and fires it, then this verdict is replaced with the full-corpus result."
     }
   ]
 }

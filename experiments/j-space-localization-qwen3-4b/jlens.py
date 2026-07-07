@@ -62,13 +62,14 @@ Why layer_profile uses random probes, not self-JVP:
     faithful, cheap proxy for "is this layer's J-lens operator peaky /
     concentrated (workspace-like) or flat / noisy", without the degeneracy.
 
-Cross-quantization substrate caveat (read before interpreting H1 results):
-our fitted directions (u_d, pos_ctrl, neg_ctrl, c_hat) were computed on
-bnb-4bit activations (unsloth/Qwen3-4B-bnb-4bit); this module runs the J-lens
-on the UNQUANTIZED bf16 sibling (unsloth/Qwen3-4B) because autograd/JVPs do
-not work cleanly through bnb-4bit quantized weights. Passing a bnb-4bit-
-fitted direction through a bf16 J-lens is an approximate cross-quantization
-check, not an exact same-substrate readout. Report it as such.
+Substrate note (read before interpreting H1 results):
+this module runs the J-lens on the UNQUANTIZED bf16 sibling
+(unsloth/Qwen3-4B) because autograd/JVPs do not work cleanly through
+bnb-4bit quantized weights. The full-corpus launch uses the sibling
+two-signal-caution-regulation-instruct bf16-refit directions, so H1 is a
+same-substrate bf16 characterization. Earlier local H1 spot-checks used the
+older bnb/4-bit-derived direction copies and should be read only as
+pre-swap orientation.
 """
 
 from __future__ import annotations

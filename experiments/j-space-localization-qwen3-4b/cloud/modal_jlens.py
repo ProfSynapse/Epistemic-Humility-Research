@@ -37,8 +37,9 @@ READ-ONLY, no training, no injection: this container runs
 subcommands already validated locally on the 3090, see NOTEBOOK.md) against
 the bf16 sibling of the raw-base model (unsloth/Qwen3-4B, NOT the bnb-4bit
 quantized raw-base -- autograd/JVPs do not work cleanly through bnb-4bit;
-see jlens.py's module docstring for the cross-quantization substrate
-caveat this implies for the H1 read).
+see jlens.py's module docstring). The H1 direction inputs are the sibling
+two-signal-caution-regulation-instruct bf16 refit, so the full-corpus H1 read
+is same-substrate bf16.
 
 COST ESTIMATE (derived from an ACTUAL local-3090 benchmark, not a guess --
 see NOTEBOOK.md "Modal cost estimate" entry for the raw numbers):

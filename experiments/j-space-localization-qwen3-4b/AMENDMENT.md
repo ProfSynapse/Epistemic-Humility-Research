@@ -30,13 +30,15 @@ see Outcome). No claim here is promoted to a confirmatory result; this is
 
 ## Design
 
-**Substrate**: unsloth/Qwen3-4B (bf16), NOT the bnb-4bit raw-base
-(unsloth/Qwen3-4B-bnb-4bit) our fitted directions were computed on --
-autograd/JVPs do not work cleanly through bnb-4bit quantized weights. Same
-architecture/config (36 layers, hidden 2560, vocab 151936, tied embeddings,
-Qwen3ForCausalLM) confirmed by direct inspection. Any H1 number is therefore
-an approximate CROSS-QUANTIZATION check, not a same-substrate readout --
-flagged throughout jlens.py and NOTEBOOK.md, never presented as exact.
+**Substrate**: unsloth/Qwen3-4B (bf16). Autograd/JVPs do not work cleanly
+through bnb-4bit quantized weights, so the J-lens itself runs on the
+unquantized bf16 sibling of the raw-base. Same architecture/config as
+unsloth/Qwen3-4B-bnb-4bit (36 layers, hidden 2560, vocab 151936, tied
+embeddings, Qwen3ForCausalLM) confirmed by direct inspection. The H1
+directions were swapped before full-corpus launch to the sibling
+two-signal-caution-regulation-instruct bf16 refit, so the Modal H1 read is a
+same-substrate bf16 characterization, not the earlier cross-quantization
+approximation used in the local spot-check.
 
 **Signal / instrument**: `jlens.py`, a from-scratch J-lens implementation.
 `verbalize(layer, direction)` computes the corpus-averaged Jacobian-vector
@@ -76,9 +78,9 @@ sibling two-signal-caution-regulation-instruct experiment, copied into
 (doubt: known-correct vs unknown-refused mean difference), `pos_ctrl_L34`
 (caution / answer-vs-refuse mass-mean), `neg_ctrl_L34` (confab-propensity,
 logistic), `c_hat_L34` (orthogonalized caution write direction). All four
-confirmed fit on `unsloth/Qwen3-4B-bnb-4bit`, raw-base arm, decoder block
-index 33 (this project's "L34" naming; hs_index = block_index + 1 = 34 in
-this module's own indexing convention, see `direction_layer_field_to_hs_index`).
+confirmed fit on `unsloth/Qwen3-4B` bf16, raw-base arm, decoder block index
+33 (this project's "L34" naming; hs_index = block_index + 1 = 34 in this
+module's own indexing convention, see `direction_layer_field_to_hs_index`).
 
 **Controls**: correctness smoke (verbalize at the final layer vs the naive
 logit lens -- unembed(v) = model's own final RMSNorm + lm_head applied
