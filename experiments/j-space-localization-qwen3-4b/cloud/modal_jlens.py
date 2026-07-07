@@ -121,9 +121,12 @@ ASSUMED_A10G_USD_PER_HOUR = 1.50  # conservative; not a live Modal billing API
 image = (
     modal.Image.debian_slim(python_version="3.11")
     .pip_install(
-        "torch==2.9.1", "transformers==4.57.1", "accelerate",
-        "huggingface_hub>=0.34,<1.0", "safetensors",
+        "torch==2.9.1",
         index_url="https://download.pytorch.org/whl/cu128",
+    )
+    .pip_install(
+        "transformers==4.57.1", "accelerate",
+        "huggingface_hub>=0.34,<1.0", "safetensors",
     )
     .apt_install("git")
     .env({"HF_HUB_DISABLE_XET": "1", "HF_HUB_ENABLE_HF_TRANSFER": "0"})
