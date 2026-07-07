@@ -4,7 +4,7 @@ session_id: '0043'
 title: AQ sycophancy Modal pilot readout
 status: active
 created_at: '2026-07-07T17:20:14Z'
-updated_at: '2026-07-07T19:37:00Z'
+updated_at: '2026-07-07T20:19:23Z'
 phase: phase1
 question: Can the AQ answer-sycophancy pilot produce a separable activation readout on official Qwen3-4B, and is the row pool sufficient to license steering?
 tags:
@@ -19,10 +19,12 @@ run_ids:
 - fc-01KWYT9RT4M79C0CWGXYGGPKMS
 - ap-AhHmUkNR7ruGzGW66vikmM
 - fc-01KWYTYS8F050TK9E072C14JAZ
+- ap-Gk0B98l6fRfLflfcF3L2LQ
+- fc-01KWZ2YK61JG04RER3QJV9ZM9B
 trajectory:
   anchor: experiment/protocol/research-trajectory.md
   current_position: AQ is an exploratory sycophancy read-vs-write cell, separate from the locked Phase 1 headline matrix.
-  changed_by_session: R1 found an underpowered readout lead; r2 cleared AQ-G0 and recovered a larger-pool readout direction. Local recovered-artifact diagnostics pass AQ-G1 but show a strong anchor prompt-condition confound. A readout-only hydra/isolation panel found that paired deltas survive, broad condition removal alone does not kill the signal, but behavior/correctness residualization largely attenuates it. The Modal actuator path is now prepared and dry-run checked, but actuator launch is still unapproved.
+  changed_by_session: R1 found an underpowered readout lead; r2 cleared AQ-G0 and recovered a larger-pool readout direction. Local recovered-artifact diagnostics pass AQ-G1 but show a strong anchor prompt-condition confound. A readout-only hydra/isolation panel found that paired deltas survive, broad condition removal alone does not kill the signal, but behavior/correctness residualization largely attenuates it. The Modal actuator path was approved and launched, but the tuner smoke gate failed before full arms because writeback passed while parity/offtarget isolation failed.
 checkpoints:
 - id: 001-launch
   at: '2026-07-07T17:20:14Z'
@@ -310,6 +312,39 @@ checkpoints:
     gate_count: 3
     actuator_run_tag: aq-sycophancy-actuator-r2
     modal_dry_run_app: ap-34vtwn4UfC8VAH01CqgdKN
+- id: 012-actuator-smoke-fail
+  at: '2026-07-07T20:19:23Z'
+  kind: gate
+  title: Modal actuator launch stopped at smoke gate
+  summary: >-
+    User-approved live actuator launch ran on Modal A10G against official
+    Qwen/Qwen3-4B at repo commit 440b88ab6, but `mechinterp steer` refused the
+    full arms during smoke. The write target was reached within tolerance, but
+    parity/offtarget isolation failed (`offtarget_abs_max=7.2005`,
+    `gen_stream_fired=null`), so no full `rows_out.jsonl`, AQ-G2, or AQ-G3
+    behavioral result exists.
+  evidence:
+  - experiments/aq-sycophancy-activation-actuator/analysis/rows_out.jsonl.smoke_ok.json
+  - experiments/aq-sycophancy-activation-actuator/NOTEBOOK.md
+  - experiments/aq-sycophancy-activation-actuator/AMENDMENT.md
+  run_ids:
+  - ap-Gk0B98l6fRfLflfcF3L2LQ
+  - fc-01KWZ2YK61JG04RER3QJV9ZM9B
+  commands:
+  - modal run --detach experiments\aq-sycophancy-activation-actuator\cloud\modal_aq_sycophancy_activation_actuator.py --actuator --repo-commit=440b88ab6 --cost-cap-usd=10
+  - modal volume get eh-aq-sycophancy-smoke-logs /ckpt/aq-sycophancy-actuator-r2/data/experiments/aq-sycophancy-activation-actuator/analysis/rows_out.jsonl.smoke_ok.json experiments\aq-sycophancy-activation-actuator\analysis\rows_out.jsonl.smoke_ok.json --force
+  decisions:
+  - Treat this as a smoke/instrument isolation failure, not as evidence for or against AQ-G2/AQ-G3.
+  - Do not use `--force-full-run`; debug the smoke readback first.
+  next_steps:
+  - Run a smoke-level diagnostic for the Qwen3-4B `anchor_onward` + `gen_stream` intervention path, likely comparing narrower position targeting and additive-vs-erase/write laws before any full actuator relaunch.
+  signals:
+    smoke_passed: false
+    write_ok: true
+    parity_ok: false
+    max_write_error: 0.010230378732117629
+    offtarget_abs_max: 7.2005182495340705
+    gen_stream_fired: null
 ---
 # AQ sycophancy Modal pilot readout
 
@@ -338,8 +373,10 @@ that paired deltas survive (AUROC 0.778) and broad hint-vs-neutral condition
 removal alone does not kill the signal (AUROC 0.815), but residualizing
 correctness/refusal/length/confidence attenuates it (AUROC 0.600). The
 remaining structure looks more like prompt conflict plus correction/resistance
-than a clean standalone sycophancy actuator. The actuator path is now prepared
-for a Modal A10G run, but live actuator launch remains unapproved.
+than a clean standalone sycophancy actuator. The actuator path was approved and
+launched on Modal A10G, but the tuner smoke gate failed before full arms:
+writeback passed while parity/offtarget isolation failed, so no AQ-G2/AQ-G3
+behavioral verdict exists.
 
 ## Checkpoints
 
@@ -500,3 +537,24 @@ for a Modal A10G run, but live actuator launch remains unapproved.
   - Keep AQ-G1/readout-floor adjudication in the readout diagnostics rather than in post-steering `gates.yaml`.
   - Do not launch the live Modal actuator until the user gives explicit approval naming AQ, Modal A10G, official Qwen/Qwen3-4B, and the cost cap.
 - note: The first Modal CLI dry-run attempt failed on Windows console encoding (`charmap` could not print a checkmark). Rerunning with `PYTHONUTF8=1` and `PYTHONIOENCODING=utf-8` succeeded, initialized dry-run app `ap-34vtwn4UfC8VAH01CqgdKN`, printed the actuator spec, and exited without spawning GPU work.
+
+### 012-actuator-smoke-fail - Modal actuator launch stopped at smoke gate
+
+- at: `2026-07-07T20:19:23Z`
+- kind: `gate`
+- summary: User-approved live actuator launch ran on Modal A10G against official Qwen3-4B at repo commit `440b88ab6`, but `mechinterp steer` refused the full arms during smoke. The write target was reached within tolerance, but parity/offtarget isolation failed (`offtarget_abs_max=7.2005`, `gen_stream_fired=null`), so no full `rows_out.jsonl`, AQ-G2, or AQ-G3 behavioral result exists.
+- evidence:
+  - `experiments/aq-sycophancy-activation-actuator/analysis/rows_out.jsonl.smoke_ok.json`
+  - `experiments/aq-sycophancy-activation-actuator/NOTEBOOK.md`
+  - `experiments/aq-sycophancy-activation-actuator/AMENDMENT.md`
+- run ids:
+  - `ap-Gk0B98l6fRfLflfcF3L2LQ`
+  - `fc-01KWZ2YK61JG04RER3QJV9ZM9B`
+- commands:
+  - `modal run --detach experiments\aq-sycophancy-activation-actuator\cloud\modal_aq_sycophancy_activation_actuator.py --actuator --repo-commit=440b88ab6 --cost-cap-usd=10`
+  - `modal volume get eh-aq-sycophancy-smoke-logs /ckpt/aq-sycophancy-actuator-r2/data/experiments/aq-sycophancy-activation-actuator/analysis/rows_out.jsonl.smoke_ok.json experiments\aq-sycophancy-activation-actuator\analysis\rows_out.jsonl.smoke_ok.json --force`
+- decisions:
+  - Treat this as a smoke/instrument isolation failure, not as evidence for or against AQ-G2/AQ-G3.
+  - Do not use `--force-full-run`; debug the smoke readback first.
+- next steps:
+  - Run a smoke-level diagnostic for the Qwen3-4B `anchor_onward` + `gen_stream` intervention path, likely comparing narrower position targeting and additive-vs-erase/write laws before any full actuator relaunch.

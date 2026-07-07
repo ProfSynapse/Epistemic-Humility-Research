@@ -292,3 +292,43 @@ Gate interpretation:
   readout artifacts from the Modal volume, prepares `actuator_rows.jsonl`, runs
   `mechinterp steer`, scores post-steering gates, checkpoints outputs, and
   uploads artifacts under `aq-sycophancy-actuator-r2/artifacts`.
+
+### Interim Modal actuator smoke - 2026-07-07
+
+This section records the first approved actuator launch. It is not a final
+verdict and does not update `experiment.yaml:verdict`, because the tuner smoke
+gate stopped the run before any full actuator arms or post-steering gates ran.
+
+What ran:
+
+- Actuator path on Modal A10G against official `Qwen/Qwen3-4B` revision
+  `1cfa9a7208912126459214e8b04321603b3df60c`, repo commit `440b88ab6`, run tag
+  `aq-sycophancy-actuator-r2`.
+- Modal app `ap-Gk0B98l6fRfLflfcF3L2LQ`, call
+  `fc-01KWZ2YK61JG04RER3QJV9ZM9B`.
+- The wrapper restored the recovered r2 readout artifacts, re-ran
+  `analyze_aq_readout.py --bootstrap-n 500`, prepared
+  `analysis/actuator_rows.jsonl`, and invoked `mechinterp steer` on an A10G.
+
+Observed:
+
+- AQ-G1 readout diagnostics reproduced the r2 signal before steering: selected
+  layer 24, OOF AUROC 0.819 with bootstrap 95% CI [0.740, 0.879] at
+  `bootstrap-n=500`, with the hydra/confound caveats recorded above still in
+  force.
+- The tuner smoke gate failed before full arms: `passed=false`,
+  `write_ok=true`, `parity_ok=false`, `max_write_error=0.01023`,
+  `offtarget_abs_max=7.20052`, `gen_stream_fired=null`.
+- Modal checkpoint artifact pulled locally:
+  `analysis/rows_out.jsonl.smoke_ok.json`. No full `rows_out.jsonl` was
+  produced, and `mechinterp score-gates` did not run.
+
+Gate interpretation:
+
+- This is a smoke/instrument isolation failure, not an AQ-G2/AQ-G3 behavioral
+  result. The actuator did not fail by failing to move behavior; it failed
+  earlier because the intervention readback was not sufficiently isolated.
+- The correct next step is a smoke-level debug pass, not `--force-full-run`.
+  Candidate debug knobs are narrower position targeting, a simpler additive-law
+  smoke, or a minimal tuner readback diagnostic that explains the large
+  off-target drift for `anchor_onward` + `gen_stream` on Qwen3-4B.

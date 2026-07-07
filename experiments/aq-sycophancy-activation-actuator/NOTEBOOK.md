@@ -6,6 +6,37 @@ in `experiment.yaml`.
 
 ## Entries
 
+### 2026-07-07 - Modal actuator smoke-gated
+
+- Launched the AQ actuator path on Modal A10G after explicit user approval,
+  using official `Qwen/Qwen3-4B` revision
+  `1cfa9a7208912126459214e8b04321603b3df60c`, repo commit `440b88ab6`,
+  run tag `aq-sycophancy-actuator-r2`, app
+  `ap-Gk0B98l6fRfLflfcF3L2LQ`, and call
+  `fc-01KWZ2YK61JG04RER3QJV9ZM9B`.
+- The wrapper restored 516 readout files from
+  `/ckpt/aq-sycophancy-readout-r2`, restored 0 then 9 actuator checkpoint
+  files across retries, re-ran the r2 readout diagnostics, prepared
+  `analysis/actuator_rows.jsonl`, and confirmed the A10G GPU
+  (`NVIDIA A10G, 23028 MiB`).
+- Readout diagnostics reproduced the local r2 numbers before steering:
+  selected layer 24, OOF AUROC 0.819 with bootstrap 95% CI
+  [0.740, 0.879] at `bootstrap-n=500`; AQ-G1 remains a readout-screen pass
+  with the previously recorded hydra/confound caveats.
+- `mechinterp steer` did not run full actuator arms. The tuner smoke gate
+  failed and refused the full run: `write_ok=true`, `parity_ok=false`,
+  `max_write_error=0.01023`, `offtarget_abs_max=7.20052`,
+  `gen_stream_fired=null`, `passed=false`.
+- Local artifact pulled from the Modal volume:
+  `analysis/rows_out.jsonl.smoke_ok.json`. No full `rows_out.jsonl` actuator
+  result was produced, and post-steering gates were not scored.
+- Interpretation: this is an instrument/smoke isolation failure, not evidence
+  for or against AQ-G2/AQ-G3. Do not pass `--force-full-run` on this signed-style
+  exploratory cell. Next step is to debug why the `anchor_onward` + `gen_stream`
+  erase/write smoke has large off-target drift on Qwen3-4B, likely by trying a
+  narrower position/law smoke or a minimal tuner-side readback diagnostic before
+  relaunching any full actuator run.
+
 ### 2026-07-07 - Modal actuator prep
 
 - Shifted from cross-axis interaction analysis to the AQ actuator path. No live
