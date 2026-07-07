@@ -35,6 +35,7 @@ def content_end(full_ids, prompt_len: int, tokenizer) -> int:
     """
 
     del tokenizer
-    if not full_ids:
+    n_tokens = int(full_ids.numel()) if hasattr(full_ids, "numel") else len(full_ids)
+    if n_tokens == 0:
         return max(0, prompt_len - 1)
-    return max(0, len(full_ids) - 1)
+    return max(0, n_tokens - 1)
