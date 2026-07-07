@@ -1,6 +1,6 @@
 ---
 schema_version: research-session/v1
-session_id: 0040-dark-dose-calibration-tuner-probe-worktree-cleanup
+session_id: 0041-dark-dose-calibration-tuner-probe-worktree-cleanup
 title: Dark-screen dose calibration, tuner firing-probe fix, worktree cleanup
 status: active
 created_at: '2026-07-06T20:41:08Z'

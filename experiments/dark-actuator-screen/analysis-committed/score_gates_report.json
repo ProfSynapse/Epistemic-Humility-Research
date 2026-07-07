@@ -1,0 +1,200 @@
+{
+  "gates": {
+    "instrument_positive_control_moves": {
+      "value": {
+        "diff": 77.0,
+        "ci_lo": 63.975000000000044,
+        "ci_hi": 90.0,
+        "ci_level": 0.95,
+        "n_boot": 2000,
+        "seed": 20260706,
+        "n_rows": 160
+      },
+      "passed": true,
+      "primitive": "kill_diff_vs_control"
+    },
+    "instrument_negative_propensity_at_floor": {
+      "value": {
+        "diff": 0.0,
+        "ci_lo": 0.0,
+        "ci_hi": 0.0,
+        "ci_level": 0.95,
+        "n_boot": 2000,
+        "seed": 20260706,
+        "n_rows": 160
+      },
+      "passed": true,
+      "primitive": "kill_diff_vs_control"
+    },
+    "instrument_random_direction_at_floor": {
+      "value": {
+        "diff": 2.0,
+        "ci_lo": 0.0,
+        "ci_hi": 5.0,
+        "ci_level": 0.95,
+        "n_boot": 2000,
+        "seed": 20260706,
+        "n_rows": 160
+      },
+      "passed": true,
+      "primitive": "kill_diff_vs_control"
+    },
+    "screen_L16_arel_pc7": {
+      "value": {
+        "diff": 74.0,
+        "ci_lo": 62.0,
+        "ci_hi": 87.0,
+        "ci_level": 0.95,
+        "n_boot": 2000,
+        "seed": 20260706,
+        "n_rows": 160
+      },
+      "passed": true,
+      "primitive": "kill_diff_vs_control"
+    },
+    "screen_L20_arel_pc5": {
+      "value": {
+        "diff": 61.0,
+        "ci_lo": 49.975000000000044,
+        "ci_hi": 73.0,
+        "ci_level": 0.95,
+        "n_boot": 2000,
+        "seed": 20260706,
+        "n_rows": 160
+      },
+      "passed": true,
+      "primitive": "kill_diff_vs_control"
+    },
+    "screen_L20_arel_pc8": {
+      "value": {
+        "diff": -11.0,
+        "ci_lo": -18.0,
+        "ci_hi": -5.0,
+        "ci_level": 0.95,
+        "n_boot": 2000,
+        "seed": 20260706,
+        "n_rows": 160
+      },
+      "passed": false,
+      "primitive": "kill_diff_vs_control"
+    },
+    "screen_L20_succ_pc5": {
+      "value": {
+        "diff": 59.0,
+        "ci_lo": 41.0,
+        "ci_hi": 77.0,
+        "ci_level": 0.95,
+        "n_boot": 2000,
+        "seed": 20260706,
+        "n_rows": 160
+      },
+      "passed": true,
+      "primitive": "kill_diff_vs_control"
+    },
+    "screen_L24_arel_pc5": {
+      "value": {
+        "diff": -5.0,
+        "ci_lo": -11.0,
+        "ci_hi": 0.0,
+        "ci_level": 0.95,
+        "n_boot": 2000,
+        "seed": 20260706,
+        "n_rows": 160
+      },
+      "passed": false,
+      "primitive": "kill_diff_vs_control"
+    },
+    "screen_L24_arel_pc7": {
+      "value": {
+        "diff": 67.0,
+        "ci_lo": 55.0,
+        "ci_hi": 79.0,
+        "ci_level": 0.95,
+        "n_boot": 2000,
+        "seed": 20260706,
+        "n_rows": 160
+      },
+      "passed": true,
+      "primitive": "kill_diff_vs_control"
+    },
+    "screen_L24_succ_pc4": {
+      "value": {
+        "diff": 64.0,
+        "ci_lo": 48.0,
+        "ci_hi": 81.0,
+        "ci_level": 0.95,
+        "n_boot": 2000,
+        "seed": 20260706,
+        "n_rows": 160
+      },
+      "passed": true,
+      "primitive": "kill_diff_vs_control"
+    },
+    "screen_L28_arel_pc11": {
+      "value": {
+        "diff": 77.0,
+        "ci_lo": 65.0,
+        "ci_hi": 90.0,
+        "ci_level": 0.95,
+        "n_boot": 2000,
+        "seed": 20260706,
+        "n_rows": 160
+      },
+      "passed": true,
+      "primitive": "kill_diff_vs_control"
+    },
+    "screen_L28_succ_pc0": {
+      "value": {
+        "diff": -4.0,
+        "ci_lo": -8.0,
+        "ci_hi": -1.0,
+        "ci_level": 0.95,
+        "n_boot": 2000,
+        "seed": 20260706,
+        "n_rows": 160
+      },
+      "passed": false,
+      "primitive": "kill_diff_vs_control"
+    },
+    "screen_L28_succ_pc3": {
+      "value": {
+        "diff": 71.0,
+        "ci_lo": 58.0,
+        "ci_hi": 85.0,
+        "ci_level": 0.95,
+        "n_boot": 2000,
+        "seed": 20260706,
+        "n_rows": 160
+      },
+      "passed": true,
+      "primitive": "kill_diff_vs_control"
+    },
+    "screen_L28_succ_pc4": {
+      "value": {
+        "diff": 73.0,
+        "ci_lo": 61.0,
+        "ci_hi": 85.02499999999986,
+        "ci_level": 0.95,
+        "n_boot": 2000,
+        "seed": 20260706,
+        "n_rows": 160
+      },
+      "passed": true,
+      "primitive": "kill_diff_vs_control"
+    },
+    "screen_L34_succ_pc0": {
+      "value": {
+        "diff": 17.0,
+        "ci_lo": 10.0,
+        "ci_hi": 25.0,
+        "ci_level": 0.95,
+        "n_boot": 2000,
+        "seed": 20260706,
+        "n_rows": 160
+      },
+      "passed": true,
+      "primitive": "kill_diff_vs_control"
+    }
+  },
+  "overall_pass": false
+}
