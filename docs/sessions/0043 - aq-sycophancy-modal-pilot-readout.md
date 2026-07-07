@@ -4,7 +4,7 @@ session_id: '0043'
 title: AQ sycophancy Modal pilot readout
 status: active
 created_at: '2026-07-07T17:20:14Z'
-updated_at: '2026-07-07T17:20:14Z'
+updated_at: '2026-07-07T18:26:29Z'
 phase: phase1
 question: Can the AQ answer-sycophancy pilot produce a separable activation readout on official Qwen3-4B, and is the row pool sufficient to license steering?
 tags:
@@ -15,10 +15,14 @@ tags:
 run_ids:
 - ap-JqoCvvgwbGHSKqkCux9CcM
 - fc-01KWYMPM3A5P5QFPZD29AGXS9M
+- ap-0gq6CSDwbQSV12mwChhlSe
+- fc-01KWYT9RT4M79C0CWGXYGGPKMS
+- ap-AhHmUkNR7ruGzGW66vikmM
+- fc-01KWYTYS8F050TK9E072C14JAZ
 trajectory:
   anchor: experiment/protocol/research-trajectory.md
   current_position: AQ is an exploratory sycophancy read-vs-write cell, separate from the locked Phase 1 headline matrix.
-  changed_by_session: Readout signal found on the pilot pool, but AQ-G0 row-count gate failed; actuator launch is not licensed from this pool.
+  changed_by_session: R1 found an underpowered readout lead; r2 cleared AQ-G0 and recovered a larger-pool readout direction, but HF artifact publication failed before DONE due per-file commit rate limits. Actuator launch is still unapproved.
 checkpoints:
 - id: 001-launch
   at: '2026-07-07T17:20:14Z'
@@ -89,6 +93,82 @@ checkpoints:
   - Validate and dry-run the r2 wrapper.
   - After user approval, launch r2 smoke/readout on Modal.
   signals: {}
+- id: 005-r2-smoke
+  at: '2026-07-07T18:26:29Z'
+  kind: result
+  title: R2 smoke cleared AQ-G0
+  summary: >-
+    Scaled r2 smoke at limit 512 completed on Modal A10G against official
+    Qwen3-4B at repo commit 9f661c015. It produced 512 scored rows and a
+    256-row pool with 128 probe labels: 68 positive and 60 negative, clearing
+    the 20/20 AQ-G0 minimum.
+  evidence:
+  - professorsynapse/eh-al-prep-staging:aq-sycophancy-actuator-smoke-r2/artifacts/experiments/aq-sycophancy-activation-actuator/analysis/row_pool_summary.json
+  - experiments/aq-sycophancy-activation-actuator/NOTEBOOK.md
+  run_ids:
+  - ap-0gq6CSDwbQSV12mwChhlSe
+  - fc-01KWYT9RT4M79C0CWGXYGGPKMS
+  commands:
+  - modal run --detach experiments\aq-sycophancy-activation-actuator\cloud\modal_aq_sycophancy_activation_actuator.py --repo-commit=9f661c015 --cost-cap-usd=10
+  decisions:
+  - AQ-G0 is no longer the blocker for the scaled r2 pool.
+  next_steps:
+  - Compare r2 readout against r1.
+  signals:
+    paired_question_count: 128
+    row_pool_count: 256
+    label_count: 128
+    n_positive: 68
+    n_negative: 60
+- id: 006-r2-readout-partial
+  at: '2026-07-07T18:26:29Z'
+  kind: result
+  title: R2 readout direction recovered; publish failed
+  summary: >-
+    R2 readout extracted and fit a direction, recovered from the Modal volume
+    after HF artifact publication failed with 429 Too Many Requests from the
+    dataset repo commit limit. The selected direction moved from r1 L20 to r2
+    L24; AUROC is 0.846 on 68/60 labels, preserving signal but removing the r1
+    tiny-n perfect AUROC.
+  evidence:
+  - /ckpt/aq-sycophancy-readout-r2/data/experiments/aq-sycophancy-activation-actuator/directions/sycophancy_answer_direction.json
+  - experiments/aq-sycophancy-activation-actuator/NOTEBOOK.md
+  run_ids:
+  - ap-AhHmUkNR7ruGzGW66vikmM
+  - fc-01KWYTYS8F050TK9E072C14JAZ
+  commands:
+  - modal run --detach experiments\aq-sycophancy-activation-actuator\cloud\modal_aq_sycophancy_activation_actuator.py --readout --repo-commit=9f661c015 --cost-cap-usd=10
+  - modal app stop --yes ap-AhHmUkNR7ruGzGW66vikmM
+  decisions:
+  - Treat r2 as a computed readout with incomplete artifact publication, not as a clean DONE-marked run.
+  - Do not launch actuator without fresh explicit approval.
+  next_steps:
+  - Retry publication only after the HF commit-rate window clears and the batch-upload wrapper commit is pushed.
+  signals:
+    selected_layer: 24
+    auroc: 0.8458791208791208
+    n_positive: 68
+    n_negative: 60
+    separation: 7.6320638677996335
+    sigma: 4.152135594300958
+- id: 007-wrapper-fix
+  at: '2026-07-07T18:26:29Z'
+  kind: decision
+  title: Batch HF readout uploads
+  summary: >-
+    The AQ Modal wrapper now uploads directory artifacts with Hugging Face
+    upload_folder instead of committing every extracted tensor individually,
+    avoiding the 256-commits-per-hour failure mode on scaled readouts.
+  evidence:
+  - experiments/aq-sycophancy-activation-actuator/cloud/modal_aq_sycophancy_activation_actuator.py
+  run_ids: []
+  commands:
+  - python -m py_compile experiments\aq-sycophancy-activation-actuator\cloud\modal_aq_sycophancy_activation_actuator.py
+  decisions:
+  - Stop the stale Modal app that was retrying the old per-file uploader.
+  next_steps:
+  - Commit and push the wrapper fix plus r2 documentation.
+  signals: {}
 ---
 # AQ sycophancy Modal pilot readout
 
@@ -105,11 +185,14 @@ a resolved amendment verdict.
 
 ## Summary
 
-The Modal run completed and found a strong activation readout on the pilot pool:
-layer 20 AUROC 1.00 over 9 positive and 7 negative labels, with 32/32 rows
-captured. The registered AQ gate does not pass because AQ-G0 requires at least
-20 positive and 20 negative incorrect-hint rows. The honest state is "readout
-signal found; row pool underpowered; actuator not licensed yet."
+The r1 Modal pilot found a strong but underpowered activation readout: layer 20
+AUROC 1.00 over 9 positive and 7 negative labels. The scaled r2 pass fixed the
+AQ-G0 row-count problem, producing 68 positive and 60 negative labels, and still
+found a separable readout: selected layer 24, AUROC 0.846, separation 7.63,
+sigma 4.15. R2 artifact publication failed after computation because the wrapper
+committed each tensor separately to Hugging Face and hit the repository
+commit-rate limit. The direction is recoverable from the Modal volume; actuator
+launch remains unapproved.
 
 ## Checkpoints
 
@@ -169,3 +252,42 @@ signal found; row pool underpowered; actuator not licensed yet."
 - next steps:
   - Validate and dry-run the r2 wrapper.
   - After user approval, launch r2 smoke/readout on Modal.
+
+### 005-r2-smoke - R2 smoke cleared AQ-G0
+
+- at: `2026-07-07T18:26:29Z`
+- kind: `result`
+- summary: Scaled r2 smoke at `limit: 512` completed on Modal A10G against official Qwen3-4B at repo commit `9f661c015`. It produced 512 scored rows and a 256-row pool with 128 probe labels: 68 positive and 60 negative, clearing the 20/20 AQ-G0 minimum.
+- evidence:
+  - `professorsynapse/eh-al-prep-staging:aq-sycophancy-actuator-smoke-r2/artifacts/experiments/aq-sycophancy-activation-actuator/analysis/row_pool_summary.json`
+  - `experiments/aq-sycophancy-activation-actuator/NOTEBOOK.md`
+- run ids:
+  - `ap-0gq6CSDwbQSV12mwChhlSe`
+  - `fc-01KWYT9RT4M79C0CWGXYGGPKMS`
+- decisions:
+  - AQ-G0 is no longer the blocker for the scaled r2 pool.
+
+### 006-r2-readout-partial - R2 readout direction recovered; publish failed
+
+- at: `2026-07-07T18:26:29Z`
+- kind: `result`
+- summary: R2 readout extracted and fit a direction, recovered from the Modal volume after HF artifact publication failed with `429 Too Many Requests` from the dataset repo commit limit. The selected direction moved from r1 L20 to r2 L24; AUROC is 0.846 on 68/60 labels, preserving signal but removing the r1 tiny-n perfect AUROC.
+- evidence:
+  - `/ckpt/aq-sycophancy-readout-r2/data/experiments/aq-sycophancy-activation-actuator/directions/sycophancy_answer_direction.json`
+  - `experiments/aq-sycophancy-activation-actuator/NOTEBOOK.md`
+- run ids:
+  - `ap-AhHmUkNR7ruGzGW66vikmM`
+  - `fc-01KWYTYS8F050TK9E072C14JAZ`
+- decisions:
+  - Treat r2 as a computed readout with incomplete artifact publication, not as a clean DONE-marked run.
+  - Do not launch actuator without fresh explicit approval.
+
+### 007-wrapper-fix - Batch HF readout uploads
+
+- at: `2026-07-07T18:26:29Z`
+- kind: `decision`
+- summary: The AQ Modal wrapper now uploads directory artifacts with Hugging Face `upload_folder` instead of committing every extracted tensor individually, avoiding the 256-commits-per-hour failure mode on scaled readouts.
+- evidence:
+  - `experiments/aq-sycophancy-activation-actuator/cloud/modal_aq_sycophancy_activation_actuator.py`
+- decisions:
+  - Stop the stale Modal app that was retrying the old per-file uploader.

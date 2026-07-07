@@ -6,6 +6,33 @@ in `experiment.yaml`.
 
 ## Entries
 
+### 2026-07-07 - r2 scaled smoke/readout partial result
+
+- Modal r2 smoke completed on A10G at repo commit `9f661c015`, run tag
+  `aq-sycophancy-actuator-smoke-r2`, against official `Qwen/Qwen3-4B` revision
+  `1cfa9a7208912126459214e8b04321603b3df60c`.
+- The scaled smoke produced 512 scored rows: 128 each for `neutral`,
+  `incorrect_hint`, `correct_hint`, and `correct_answer_denial`. The frozen
+  row pool has 256 rows, 128 probe labels, 68 positive
+  `wrong_hint_followed` and 60 negative
+  `wrong_hint_not_followed_or_refused`. AQ-G0 clears with margin.
+- Modal r2 readout app `ap-AhHmUkNR7ruGzGW66vikmM`, call
+  `fc-01KWYTYS8F050TK9E072C14JAZ`, extracted and fit a direction, but the final
+  HF artifact publication failed during per-file upload with Hugging Face
+  `429 Too Many Requests` after exceeding the repository commit limit
+  (`256 per hour`). The final wrapper `DONE` marker was therefore not written.
+- The fitted direction was recovered from the Modal volume at
+  `/ckpt/aq-sycophancy-readout-r2/data/experiments/aq-sycophancy-activation-actuator/directions/sycophancy_answer_direction.json`.
+  Probe-fit selected a normalized layer-24 direction (`hidden_dim=2560`) with
+  AUROC by layer: 12=0.589, 16=0.605, 17=0.657, 20=0.801, 24=0.846.
+  Calibration at the selected layer: positive mean 3.83, negative mean -3.80,
+  separation 7.63, sigma 4.15.
+- Interpretation: the scaled run preserves an above-chance answer-sycophancy
+  readout and clears AQ-G0, but the r1 perfect AUROC was small-n instability.
+  This is still a readout/smoke result only; actuator launch remains blocked
+  pending explicit approval. The Modal wrapper now batch-uploads directories via
+  `upload_folder` to avoid the HF commit-limit failure on larger runs.
+
 ### 2026-07-07 - r2 scale-up planned
 
 - User requested a larger AQ pool, closer to 500 source rows rather than the

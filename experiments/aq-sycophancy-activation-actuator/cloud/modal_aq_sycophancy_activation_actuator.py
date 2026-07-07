@@ -171,18 +171,15 @@ def upload_tree_to_hf(repo_id: str, path_prefix: str, root: str, *, base_dir: st
         )
         print(f"[modal-aq] uploaded {root} -> {repo_id}:{remote_path}", flush=True)
         return
-    for dirpath, _dirnames, filenames in os.walk(root):
-        for filename in filenames:
-            local_path = os.path.join(dirpath, filename)
-            rel = os.path.relpath(local_path, base_dir).replace(os.sep, "/")
-            remote_path = f"{path_prefix}/{rel}"
-            api.upload_file(
-                path_or_fileobj=local_path,
-                path_in_repo=remote_path,
-                repo_id=repo_id,
-                repo_type="dataset",
-            )
-            print(f"[modal-aq] uploaded {local_path} -> {repo_id}:{remote_path}", flush=True)
+    rel_root = os.path.relpath(root, base_dir).replace(os.sep, "/")
+    remote_root = f"{path_prefix}/{rel_root}"
+    api.upload_folder(
+        folder_path=root,
+        path_in_repo=remote_root,
+        repo_id=repo_id,
+        repo_type="dataset",
+    )
+    print(f"[modal-aq] uploaded folder {root} -> {repo_id}:{remote_root}", flush=True)
 
 
 if modal is not None:

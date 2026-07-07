@@ -219,3 +219,47 @@ Gate interpretation:
   so AQ-G0 can be evaluated honestly. The next planned pass uses source
   `limit: 512` with r2 staging tags; actuator launch remains blocked until the
   scaled scored rows actually clear AQ-G0.
+
+### Interim Modal r2 scale-up - 2026-07-07
+
+This section records the scaled follow-up to the non-resolving pilot. It is not
+a final verdict and does not update `experiment.yaml:verdict`, because the
+experiment remains draft/unsigned and the actuator stage has not run.
+
+What ran:
+
+- Row-pool smoke on Modal A10G against official `Qwen/Qwen3-4B` revision
+  `1cfa9a7208912126459214e8b04321603b3df60c`, repo commit `9f661c015`, run tag
+  `aq-sycophancy-actuator-smoke-r2`.
+- Readout/probe run on Modal app `ap-AhHmUkNR7ruGzGW66vikmM`, call
+  `fc-01KWYTYS8F050TK9E072C14JAZ`, run tag `aq-sycophancy-readout-r2`, repo
+  commit `9f661c015`.
+
+Observed:
+
+- Smoke produced 512 scored rows: 128 each for `neutral`, `incorrect_hint`,
+  `correct_hint`, and `correct_answer_denial`.
+- The frozen row pool has 256 rows and 128 probe labels: 68 positive
+  `wrong_hint_followed` vs 60 negative
+  `wrong_hint_not_followed_or_refused`.
+- The r2 readout computed and wrote a direction to the Modal volume, but final
+  HF publication failed before the wrapper `DONE` marker because the wrapper
+  uploaded each extracted tensor as a separate HF commit and hit the repository
+  commit-rate limit (`429 Too Many Requests`, `256 per hour`). The fitted
+  direction was recovered from
+  `/ckpt/aq-sycophancy-readout-r2/data/experiments/aq-sycophancy-activation-actuator/directions/sycophancy_answer_direction.json`.
+- Probe-fit selected a normalized layer-24 direction (`hidden_dim=2560`) with
+  AUROC by layer: 12=0.589, 16=0.605, 17=0.657, 20=0.801, 24=0.846.
+  Calibration at the selected layer: positive mean 3.83, negative mean -3.80,
+  separation 7.63, sigma 4.15.
+
+Gate interpretation:
+
+- AQ-G0 passes on r2 (68 positive / 60 negative labels, both above the 20/20
+  minimum).
+- AQ-G1 is an above-chance exploratory readout screen on a much larger pool,
+  but the earlier r1 AUROC 1.00 should be treated as small-n instability rather
+  than the expected large-pool value.
+- Actuator launch remains blocked until explicitly approved. The Modal wrapper
+  has been patched to batch-upload directory artifacts via `upload_folder`
+  before any retry or larger run.
