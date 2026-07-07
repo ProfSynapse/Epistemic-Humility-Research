@@ -77,6 +77,20 @@ def main() -> int:
             enriched["selector_paired_delta_score"] = None
         out_rows.append(enriched)
 
+    # The tuner smoke gate probes the first n rows. Put the actuator-selected
+    # population first so smoke readback checks real write rows, not natural
+    # baseline projection on inactive rows.
+    out_rows.sort(
+        key=lambda row: (
+            not bool(row.get("baseline_wrong_hint_followed")),
+            str(row.get("row_key", "")),
+        )
+    )
+    smoke_n = 8
+    n_smoke_active = sum(
+        1 for row in out_rows[:smoke_n] if bool(row.get("baseline_wrong_hint_followed"))
+    )
+
     args.out.parent.mkdir(parents=True, exist_ok=True)
     with args.out.open("w", encoding="utf-8") as fh:
         for row in out_rows:
@@ -91,6 +105,7 @@ def main() -> int:
                 "n_rows": len(out_rows),
                 "n_probe_rows": n_probe,
                 "n_rows_with_selector_scores": n_scored,
+                "n_smoke_active_first_8": n_smoke_active,
             },
             indent=2,
             sort_keys=True,
