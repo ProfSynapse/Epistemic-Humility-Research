@@ -242,6 +242,61 @@
       "status": "resolved",
       "type": "lab-diagnostic",
       "verdict": "Full-corpus J-lens characterization completed on Modal: smoke reproduced logit-lens agreement (mean cosine 0.9811, top-10 overlap 0.82), H1 showed u_d as answer/reply-like, pos_ctrl/c_hat as self-empty-impossible/error-like, neg_ctrl as noisy, and profile localized the effective-dimension peak at hs=26 with L34/hs34 just after the hs=23-29 workspace-like band."
+    },
+    {
+      "checkpoint": {
+        "repo": "unsloth/Qwen3-4B",
+        "revision": "raw-base (bf16, no adapter, no 4-bit quantization)"
+      },
+      "falsifier": "Best mid-band layer improves confab clean_tighten by less than 10 points over hs34, or increases known-correct false-refusal by more than 2 points. If hs34 fails predecessor viability, the run is a reference replication failure rather than evidence about J-space mid-band superiority.",
+      "inputs": [
+        "experiments/common/doubt-gated-caution-tighten-heldout-split/split_manifest.json",
+        "experiments/common/doubt-gated-caution-tighten-heldout-split/PROVENANCE.md",
+        "experiments/doubt-gated-caution-tighten/analysis-committed/full_summary.json",
+        "experiments/doubt-gated-caution-tighten/analysis-committed/PROVENANCE.md"
+      ],
+      "instrument": {
+        "configs": [
+          "cell.yaml",
+          "gates.yaml"
+        ],
+        "modules": [
+          "layers.py",
+          "extract_layer_sweep_anchor.py",
+          "build_directions.py",
+          "gate_fit.py",
+          "build_random_direction.py",
+          "materialize_rows.py",
+          "pipeline.py",
+          "gen_lib.py",
+          "grader.py",
+          "model_lib.py"
+        ],
+        "pins": {
+          "build_directions.py": "844236a449ebaf350bc5571992ce115b7125dd2a8cf301ebdf6a8efae0e2cfe4",
+          "build_random_direction.py": "504c4471f1999e28fcd3fe33d54e259a57a01f03d75ef59350a5c79de5bdb316",
+          "cell.yaml": "96f1764a0796ca57bd5feed826f28c4988783fc11c428c0107020393c643df2f",
+          "extract_layer_sweep_anchor.py": "1599cf46fc8b35e4983a12bdcdbd254430e0b0f18da313e93ff478568aa78575",
+          "gate_fit.py": "13c6dd304085d22e0b3ab75360cdd34d42f14b97a3dedf2e5f7460a3a7a85fdf",
+          "gates.yaml": "18f4f60e4e9667e40cce38e7822e4c69f038c956da99671c4260caba38ec9621",
+          "gen_lib.py": "dbcd12b49b4ea655b681bc93853c4bb9742988918c8d228d796ad87289451856",
+          "grader.py": "d76e3a89787e6d8b38aa9707b18aa73d882ed84fab283f720a349676e253f831",
+          "layers.py": "79ecc7603449768ed662fff8c3ea455222d81d3e91a6e5c711dccc83b771556b",
+          "materialize_rows.py": "b63b37abdba280ada63c59f1d892cc5ae27350432ed812f062fdd06a83a10ecc",
+          "model_lib.py": "3dde37349942774ea7b044392051af4151eeebb6e5afb05d808aeff835c65a60",
+          "pipeline.py": "5d20680e375d374114ddd7df86ee78a4dbc42389519d09501fcf29c7fe6911e7"
+        }
+      },
+      "kg": [
+        "mechanism:j-space-mediated-actuation-fragility"
+      ],
+      "prediction": "Best mid-band layer (hs23/26/29, expected hs26) improves held-out confab clean_tighten over hs34 by at least 10 percentage points without increasing known-correct false-refusal by more than 2 percentage points; hs34 remains viable under the predecessor gate.",
+      "question": "On raw-base Qwen3-4B, does moving the resolved doubt-gated caution snap from the existing hs34/L34 write site into the J-space mid-band (hs23/26/29, peak hs26) improve confab-to-refusal tightening without increasing known-correct false-refusal?",
+      "registered": true,
+      "slug": "j-space-midband-write-sweep-qwen3-4b",
+      "status": "signed",
+      "type": "steer-cell",
+      "verdict": ""
     }
   ]
 }
