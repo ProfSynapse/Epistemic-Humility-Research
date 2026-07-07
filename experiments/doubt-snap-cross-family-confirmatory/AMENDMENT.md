@@ -18,7 +18,7 @@ false-refusal with Wilson UCB 6.0%, and clean G3 placebo behavior.
 That is not yet a headline family claim. This amendment asks whether the same
 class of training-free instrument survives a fresh, registered cross-family
 replication on the family panel used by the prior "Knows but Doesn't Say"
-cross-family confirmatory surface: Llama, Ministral, Qwen3.5, and Gemma, plus
+cross-family confirmatory surface: Llama, Mistral/Ministral, Qwen3.5, and Gemma, plus
 8B-ish or nearest mid-size siblings where available.
 
 Posture: confirmatory cross-family promotion. The prior Qwen3-4B exploratory
@@ -32,13 +32,19 @@ held-out scoring.
 Substrates are listed in `model_matrix.yaml`, with Hugging Face revisions pinned
 before launch. The small tier mirrors the prior cross-family panel:
 `unsloth/Llama-3.2-3B-Instruct`,
-`mistralai/Ministral-3-3B-Instruct-2512`, `Qwen/Qwen3.5-4B`, and
+`mistralai/Mistral-7B-Instruct-v0.3`, `Qwen/Qwen3.5-4B`, and
 `google/gemma-4-E4B-it`. The mid tier is
 `meta-llama/Llama-3.1-8B-Instruct`,
-`mistralai/Ministral-3-8B-Instruct-2512`, `Qwen/Qwen3.5-9B`, and
+`mistralai/Ministral-8B-Instruct-2410`, `Qwen/Qwen3.5-9B`, and
 `google/gemma-3-12b-it`. The Llama-8B and Gemma-12B cells require gated HF
 access before launch; if access is absent, those cells are ineligible before
 outcome scoring and are not replaced after seeing results.
+
+Pre-outcome loader-eligibility note: the initially drafted Mistral-family
+Ministral-3 cells expose `Mistral3ForConditionalGeneration`, not a causal-LM
+substrate for the registered raw-text activation write path. They were replaced
+before any Mistral-family behavioral outcome was observed with the pinned
+causal-LM Mistral/Ministral cells listed in `model_matrix.yaml`.
 
 The instrument is the same mechanism class as the merged Qwen amendment:
 

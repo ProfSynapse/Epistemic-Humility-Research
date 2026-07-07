@@ -31,21 +31,23 @@ cells:
     panel_role: mid_size_sibling
     eligibility_note: Requires HF token access before launch.
 
-  - cell_id: ministral3_3b_instruct
-    family: ministral
+  - cell_id: mistral7b_instruct_v03
+    family: mistral
     scale_tier: small
-    repo: mistralai/Ministral-3-3B-Instruct-2512
-    revision: 7046a0e237b436c8fb4927061ab3773772e53741
+    repo: mistralai/Mistral-7B-Instruct-v0.3
+    revision: c170c708c41dac9275d15a8fff4eca08d52bab71
     gated_access: false
-    panel_role: direct_Z_panel_match
+    panel_role: loader_compatible_family_replacement
+    eligibility_note: Replaces the pre-outcome-ineligible Ministral-3-3B cell, whose Mistral3ForConditionalGeneration architecture is not a CausalLM substrate.
 
-  - cell_id: ministral3_8b_instruct
-    family: ministral
+  - cell_id: ministral8b_instruct_2410
+    family: mistral
     scale_tier: mid
-    repo: mistralai/Ministral-3-8B-Instruct-2512
-    revision: aae06a2125402f2a89efbacf0881623c15a711d0
+    repo: mistralai/Ministral-8B-Instruct-2410
+    revision: 2f494a194c5b980dfb9772cb92d26cbb671fce5a
     gated_access: false
-    panel_role: mid_size_sibling
+    panel_role: loader_compatible_mid_size_sibling
+    eligibility_note: Replaces the pre-outcome-ineligible Ministral-3-8B cell, whose Mistral3ForConditionalGeneration architecture is not a CausalLM substrate.
 
   - cell_id: qwen35_4b
     family: qwen3_5
