@@ -1,6 +1,6 @@
 # Research Trajectory — Epistemic Humility Program
 
-_Updated 2026-07-03. Replaces the stale 2026-06-10/06-30 versions. Every claim traces
+_Updated 2026-07-07. Replaces the stale 2026-06-10/06-30 versions. Every claim traces
 to a protocol doc; nothing is invented. The original Phases 1–4 plan (staged design) is
 preserved in `experiment/protocol/research-trajectory.md`._
 
@@ -17,7 +17,11 @@ is size-robust (Qwen3 1.7–14B), seed-robust under sampled decode, and cross-fa
 (Llama/Ministral/Qwen3.5/Gemma). That is Paper 4. The program then asked: can we WRITE
 to the axis? The text channel is shut (AA/AB null); the system-prompt authority channel
 works selectively (AF PASS); compliance is asymmetric — wrong muzzles are obeyed,
-release is resisted (AG PASS). That is Paper 5's open question.
+release is resisted (AG PASS). The next mechanistic refinement asks whether the write
+site itself is wrong: a J-lens/J-space localization diagnostic found the Qwen3-4B
+workspace-like band around hs=23-29, peaking at hs=26, while the existing L34 write site
+maps to hs=34 just after that band. That is Paper 5's current actuation fork: channel
+authority, reward coupling, and now workspace-band write location.
 
 ---
 
@@ -140,10 +144,27 @@ compliance-only by AH, AI tests the reward channel: GRPO with the frozen doubt-p
 readout as the reward signal (TRUE vs PERMUTED sensor arms). Verdict-eval locked
 pre-outcome (prereg §4). Source: `AMENDMENT-AI-probe-as-reward.md`.
 
+**J-space localization (RESOLVED exploratory lab diagnostic, 2026-07-07):** a
+from-scratch Jacobian lens on Qwen3-4B bf16 passed its final-layer logit/unembed smoke
+(mean cosine 0.9811, mean top-10 overlap 0.82, top-1 match 3/5 over 1000 prompts).
+Same-substrate bf16 fitted directions split cleanly: `pos_ctrl_L34` and `c_hat_L34`
+verbalize as self/absence/error/impossibility-like tokens; `u_d_L34` verbalizes as
+answer/reply-like; `neg_ctrl_L34` is a noisy local null. The layer profile localizes
+the workspace-like effective-dimensionality band to hs=23-29 with a peak at hs=26.
+This project's L34 direction layer maps to hs=34, just after that band. Interpretation:
+the result does not prove J-space writes will work, but it gives a concrete layer-site
+hypothesis for the readout-portable/write-fragile split. Sources:
+`experiments/j-space-localization-qwen3-4b/AMENDMENT.md`,
+`docs/sessions/0043 - j-space-j-lens-r1-findings.md`, and
+`library/concepts/mechanisms/j-space-mediated-actuation-fragility.md`.
+
 **Open questions for Paper 5:** Does a trained-checkpoint steering arm move the gate?
 (AA was flat on the raw base; trained checkpoints have a live gate — backlog item 3.)
 Whether ANY channel couples behavior to the model's own readout — text/prompt is
-compliance-only (AH); the reward channel is under test (AI).
+compliance-only (AH); the reward channel is under test (AI). The new J-space fork asks
+whether prior residual writes were aimed too late: the next causal successor should
+compare mid-band writes (especially hs=23/26/29) against L34/hs34 on the same
+two-signal both-tail selectivity surface before claiming a workspace actuator.
 
 ---
 
