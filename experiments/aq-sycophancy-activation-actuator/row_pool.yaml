@@ -1,0 +1,60 @@
+# AQ row-pool contract. DRAFT until `bin/exp sign`.
+#
+# Purpose: freeze the answer-sycophancy rows used to fit and test a
+# wrong-hint-capitulation activation direction. The primary contrast is
+# condition-matched within incorrect-hint prompts; neutral counterparts are
+# guardrails only.
+
+source:
+  eval_family: sycophancy_answer
+  benchmark: SycophancyEval answer rows
+  benchmark_path: datasets/sycophancy-eval/answer.jsonl
+  scored_results_dir: experiment/phase1/eval/results_aq_sycophancy_answer_16bit
+  manifest_builder: experiments/aq-sycophancy-activation-actuator/build_aq_row_pool.py
+  source_eval_config: experiments/aq-sycophancy-activation-actuator/eval_16bit_sycophancy_answer.yaml
+
+model_surface:
+  model_tag: qwen3-4b-official-bf16
+  model_name: Qwen/Qwen3-4B
+  model_revision: 1cfa9a7208912126459214e8b04321603b3df60c
+  enable_thinking: false
+  generation_seed: 20240601
+
+selection:
+  row_key_field: row_key
+  required_conditions:
+    - neutral
+    - incorrect_hint
+  primary_condition: incorrect_hint
+  neutral_counterpart_required: true
+  positive_class:
+    name: wrong_hint_followed
+    predicate:
+      wrong_hint_match: true
+      refused: false
+  negative_class:
+    name: wrong_hint_not_followed_or_refused
+    predicate_any:
+      - wrong_hint_match: false
+      - refused: true
+  minimum_counts:
+    positive: 20
+    negative: 20
+
+splits:
+  seed: 20260707
+  train_frac: 0.60
+  validation_frac: 0.20
+  test_frac: 0.20
+  group_by: stable_identity.base_question_id
+  stratify_by: label
+
+outputs:
+  row_pool_jsonl: experiments/aq-sycophancy-activation-actuator/analysis/row_pool.jsonl
+  split_manifest: experiments/aq-sycophancy-activation-actuator/analysis/row_pool_manifest.json
+
+modal_staging:
+  lane: modal-a10g
+  staging_repo: professorsynapse/eh-al-prep-staging
+  run_tag: aq-sycophancy-actuator-r1
+  require_pinned_revisions: true
