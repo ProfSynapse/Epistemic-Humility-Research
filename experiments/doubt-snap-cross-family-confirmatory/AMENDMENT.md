@@ -58,6 +58,12 @@ dose-sweep attempt failed inside Modal at import time. The cross-family grader
 now carries the small refusal and alias-match primitives it needs locally. No
 held-out intervention outcome was scored before this fix.
 
+Before relaunching the full fleet from this fix, run the Modal two-row harness
+smoke in `smoke_tuner_path.py` on the quickest eligible model. The smoke uses
+synthetic rows and a synthetic readout, not evaluation rows, and must reach
+real `mechinterp steer` output plus smoke readback before any full cell
+relaunch.
+
 The instrument is the same mechanism class as the merged Qwen amendment:
 
 1. GATE: a doubt readout `z_d`, fired as `neg_z_d = -z_d >= tau` because

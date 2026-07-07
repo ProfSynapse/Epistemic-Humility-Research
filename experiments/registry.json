@@ -161,6 +161,7 @@
           "cloud/modal_doubt_snap_cross_family.py",
           "prep_tuner_cell.py",
           "materialize_tuner_cells.py",
+          "smoke_tuner_path.py",
           "gen_lib.py",
           "grader.py",
           "render.py"
@@ -168,14 +169,15 @@
         "pins": {
           "cell.yaml": "ce5370a9b18f406698f5544c89f4245a724041889fea9247b8c475c3a9d2bb41",
           "cloud/README.md": "6ee3615bd2ff19c92cff813c5e0e3f51897da90c4ef1eaf8c83d5d329abcf532",
-          "cloud/modal_doubt_snap_cross_family.py": "970c17522945ed319c6cd0cb27bd5c1edf253d7697f4157909b618f7a7896a73",
+          "cloud/modal_doubt_snap_cross_family.py": "15646993cd15c54e3822deed93ce3c9570b54e4c0920a292bd75174811dd02f4",
           "gates.yaml": "fb3e63eac6bba873c9f98616beb542ebf70bb0ade01a30e7cc80601095c2ff89",
           "gen_lib.py": "6cffc7282591ca3b0db79d985a024ca2b63cab8afc1c5f5085d13cbdb98b79ce",
           "grader.py": "ab0dea1c3efc841e943fccf8f5830c92715fac413e8ac80b2dbd72b113e6e2b3",
           "materialize_tuner_cells.py": "48f9501f7c663b1c791b0bbcb88b9fb53d1c18b17013deb8b6ca025201521c86",
           "model_matrix.yaml": "2f54278b9e7bec54d29e16159cd57c772938821bf40d602a9f7020d7999cf53a",
           "prep_tuner_cell.py": "87abfaa0b3ceba715c396ca822c6df657e79a785ba701bf7c5a0041e30f652e1",
-          "render.py": "95169ec4698fc28d08eb947e37d0f1021a8f418b8a6fcaa530cec88f639c457b"
+          "render.py": "95169ec4698fc28d08eb947e37d0f1021a8f418b8a6fcaa530cec88f639c457b",
+          "smoke_tuner_path.py": "f6592a0082ec747f47a55df6bbe51dde29f2d1d4eb2cf8e411b978d02fc5182f"
         }
       },
       "kg": [],

@@ -56,6 +56,7 @@ def run_one_cell(
     from_step: str = "",
     batch_size: int = 8,
     dry_run: bool = False,
+    smoke_only: bool = False,
 ) -> None:
     import re
     import shutil
@@ -111,6 +112,29 @@ def run_one_cell(
         "DOUBT_SNAP_RENDER_MODEL": cell["repo"],
         "DOUBT_SNAP_RENDER_REVISION": cell["revision"],
     }
+
+    if smoke_only:
+        smoke = exp_dir / "smoke_tuner_path.py"
+        sh(
+            [
+                sys.executable,
+                str(smoke),
+                f"--cell-id={cell_id}",
+                f"--batch-size={min(batch_size, 2)}",
+            ],
+            cwd=workspace,
+            env=env,
+        )
+        dst = Path(VOL_MOUNT) / RUN_TAG / cell_id / "modal_harness_smoke"
+        dst.mkdir(parents=True, exist_ok=True)
+        src = exp_dir / "analysis" / cell_id / "modal_harness_smoke"
+        target = dst / "analysis"
+        if target.exists():
+            shutil.rmtree(target)
+        shutil.copytree(src, target)
+        vol.commit()
+        print(f"[modal-doubt-snap] committed smoke outputs to {dst}", flush=True)
+        return
 
     prep = exp_dir / "prep_tuner_cell.py"
     sh(
@@ -210,6 +234,7 @@ def main(
     from_step: str = "",
     batch_size: int = 8,
     dry_run: bool = False,
+    smoke_only: bool = False,
 ) -> None:
     if os.environ.get("EHR_LAUNCH_OK") != EXPERIMENT_SLUG:
         raise SystemExit(f"set EHR_LAUNCH_OK={EXPERIMENT_SLUG} before spawning")
@@ -228,5 +253,6 @@ def main(
             from_step=from_step,
             batch_size=batch_size,
             dry_run=dry_run,
+            smoke_only=smoke_only,
         )
-        print(f"spawned {cid} only_step={only_step} from_step={from_step}", flush=True)
+        print(f"spawned {cid} only_step={only_step} from_step={from_step} smoke_only={smoke_only}", flush=True)
