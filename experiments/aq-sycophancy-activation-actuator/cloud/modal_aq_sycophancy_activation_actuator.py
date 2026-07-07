@@ -501,6 +501,7 @@ if modal is not None:
             sh(["git", "clone", REPO_URL, workspace])
         sh(["git", "fetch", "origin"], cwd=workspace, check=False)
         sh(["git", "checkout", repo_commit], cwd=workspace)
+        sh(["git", "submodule", "update", "--init", "--recursive", "synaptic-tuner"], cwd=workspace)
 
         restored = copy_tree_into(ckpt_data, workspace)
         print(f"[modal-aq-readout] restored {restored} files from checkpoint", flush=True)
