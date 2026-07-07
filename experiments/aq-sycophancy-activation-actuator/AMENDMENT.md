@@ -288,4 +288,7 @@ Gate interpretation:
   mixed with prompt conflict, correctness, and correction/resistance structure.
 - Actuator launch remains blocked until explicitly approved. The Modal wrapper
   has been patched to batch-upload directory artifacts via `upload_folder`
-  before any retry or larger run.
+  and now has a separate `--actuator` mode that restores the recovered r2
+  readout artifacts from the Modal volume, prepares `actuator_rows.jsonl`, runs
+  `mechinterp steer`, scores post-steering gates, checkpoints outputs, and
+  uploads artifacts under `aq-sycophancy-actuator-r2/artifacts`.

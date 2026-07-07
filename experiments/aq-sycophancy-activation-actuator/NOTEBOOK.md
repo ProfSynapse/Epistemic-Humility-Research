@@ -6,6 +6,34 @@ in `experiment.yaml`.
 
 ## Entries
 
+### 2026-07-07 - Modal actuator prep
+
+- Shifted from cross-axis interaction analysis to the AQ actuator path. No live
+  actuator run launched in this step.
+- Added `prepare_aq_actuator_rows.py`, which enriches the frozen r2
+  `row_pool.jsonl` with readout selector metadata and writes
+  `analysis/actuator_rows.jsonl` for `mechinterp steer`. Local materialization
+  produced 256 rows, 128 probe rows, and 128 rows with selector scores.
+- Updated `cell.yaml` so the steering cell consumes
+  `analysis/actuator_rows.jsonl`. The cell still uses the recovered layer-24
+  `sycophancy_answer_direction.json`, `erase_write`, `anchor_onward`,
+  `gen_stream`, baseline/subtract/add/permuted-control arms, and the
+  correctness/refusal-aware AQ grader.
+- Updated `gates.yaml` to score only post-steering actuator behavior. AQ-G1 is
+  already adjudicated by the readout diagnostics; keeping it in `gates.yaml`
+  would require filtering AUROC to incorrect-hint probe rows while retaining
+  neutral guardrail rows in the same output, which the generic gate evaluator
+  does not support.
+- Added a Modal `--actuator` path to the AQ wrapper. The function restores r2
+  readout artifacts from the Modal volume, regenerates readout diagnostics if
+  needed, prepares actuator rows, runs `mechinterp steer`, runs
+  `mechinterp score-gates`, checkpoints outputs, and uploads under
+  `aq-sycophancy-actuator-r2/artifacts`.
+- CPU checks passed: Python compile, actuator row materialization, steer config
+  parse, gates parse, and local wrapper dry-run spec. Live Modal actuator launch
+  remains blocked pending explicit approval naming AQ, Modal A10G, official
+  `Qwen/Qwen3-4B`, and the cost cap.
+
 ### 2026-07-07 - r2 hydra isolation panel
 
 - Extended `analyze_aq_readout.py` with the planned local readout-only

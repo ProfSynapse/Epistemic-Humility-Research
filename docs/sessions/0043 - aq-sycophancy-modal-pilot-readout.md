@@ -4,7 +4,7 @@ session_id: '0043'
 title: AQ sycophancy Modal pilot readout
 status: active
 created_at: '2026-07-07T17:20:14Z'
-updated_at: '2026-07-07T19:23:11Z'
+updated_at: '2026-07-07T19:37:00Z'
 phase: phase1
 question: Can the AQ answer-sycophancy pilot produce a separable activation readout on official Qwen3-4B, and is the row pool sufficient to license steering?
 tags:
@@ -22,7 +22,7 @@ run_ids:
 trajectory:
   anchor: experiment/protocol/research-trajectory.md
   current_position: AQ is an exploratory sycophancy read-vs-write cell, separate from the locked Phase 1 headline matrix.
-  changed_by_session: R1 found an underpowered readout lead; r2 cleared AQ-G0 and recovered a larger-pool readout direction. Local recovered-artifact diagnostics pass AQ-G1 but show a strong anchor prompt-condition confound. A readout-only hydra/isolation panel found that paired deltas survive, broad condition removal alone does not kill the signal, but behavior/correctness residualization largely attenuates it. Actuator launch is still unapproved.
+  changed_by_session: R1 found an underpowered readout lead; r2 cleared AQ-G0 and recovered a larger-pool readout direction. Local recovered-artifact diagnostics pass AQ-G1 but show a strong anchor prompt-condition confound. A readout-only hydra/isolation panel found that paired deltas survive, broad condition removal alone does not kill the signal, but behavior/correctness residualization largely attenuates it. The Modal actuator path is now prepared and dry-run checked, but actuator launch is still unapproved.
 checkpoints:
 - id: 001-launch
   at: '2026-07-07T17:20:14Z'
@@ -270,6 +270,44 @@ checkpoints:
     hydra_hint_followed_residualized_oof_auroc: 0.690863579474343
     hydra_hint_resisted_correct_residualized_oof_auroc: 0.7839208112023177
     hydra_hint_other_wrong_residualized_oof_auroc: 0.4349261849261849
+- id: 011-actuator-prep
+  at: '2026-07-07T19:37:00Z'
+  kind: infrastructure
+  title: Modal actuator path prepared
+  summary: >-
+    Shifted from cross-axis analysis toward actuation. Added an actuator row
+    materializer that enriches the frozen r2 row pool with selector metadata
+    from readout diagnostics, moved the steer cell to consume
+    `analysis/actuator_rows.jsonl`, removed the stale readout-floor gate from
+    post-steering gates because AQ-G1 is already adjudicated offline, and added
+    a Modal `--actuator` path. The actuator function restores the r2 readout
+    checkpoint from the Modal volume, re-runs readout diagnostics if needed,
+    prepares actuator rows, runs `mechinterp steer`, scores gates, checkpoints
+    outputs, and uploads actuator artifacts under
+    `aq-sycophancy-actuator-r2/artifacts`.
+  evidence:
+  - experiments/aq-sycophancy-activation-actuator/prepare_aq_actuator_rows.py
+  - experiments/aq-sycophancy-activation-actuator/cell.yaml
+  - experiments/aq-sycophancy-activation-actuator/gates.yaml
+  - experiments/aq-sycophancy-activation-actuator/cloud/modal_aq_sycophancy_activation_actuator.py
+  run_ids: []
+  commands:
+  - py -3.12 experiments\aq-sycophancy-activation-actuator\prepare_aq_actuator_rows.py
+  - py -3.12 -c "from MechInterp.config import load_steer_config; c=load_steer_config('../experiments/aq-sycophancy-activation-actuator/cell.yaml'); print('cell ok', c.surface.rows_path, len(c.arms))"
+  - py -3.12 -c "from MechInterp.stats.evaluator import load_gates_config; g=load_gates_config('../experiments/aq-sycophancy-activation-actuator/gates.yaml'); print('gates ok', len(g['gates']), [x['name'] for x in g['gates']])"
+  - py -3.12 experiments\aq-sycophancy-activation-actuator\cloud\modal_aq_sycophancy_activation_actuator.py --dry-run --actuator --repo-commit=3041c5dab --cost-cap-usd=10
+  decisions:
+  - Keep AQ-G1/readout-floor adjudication in the readout diagnostics rather than in post-steering `gates.yaml`.
+  - Do not launch the live Modal actuator until the user gives explicit approval naming AQ, Modal A10G, official Qwen/Qwen3-4B, and the cost cap.
+  next_steps:
+  - Commit and push the actuator-prep changes.
+  - Run a Modal CLI dry-run from the pushed commit, then request explicit live launch approval.
+  signals:
+    actuator_rows: 256
+    actuator_probe_rows: 128
+    actuator_rows_with_selector_scores: 128
+    gate_count: 3
+    actuator_run_tag: aq-sycophancy-actuator-r2
 ---
 # AQ sycophancy Modal pilot readout
 
@@ -298,8 +336,8 @@ that paired deltas survive (AUROC 0.778) and broad hint-vs-neutral condition
 removal alone does not kill the signal (AUROC 0.815), but residualizing
 correctness/refusal/length/confidence attenuates it (AUROC 0.600). The
 remaining structure looks more like prompt conflict plus correction/resistance
-than a clean standalone sycophancy actuator. Actuator launch remains
-unapproved.
+than a clean standalone sycophancy actuator. The actuator path is now prepared
+for a Modal A10G run, but live actuator launch remains unapproved.
 
 ## Checkpoints
 
@@ -441,3 +479,20 @@ unapproved.
 - decisions:
   - Interpret the L24 AQ readout as a mixed prompt-conflict/correctness-resistance structure, not a clean standalone sycophancy actuator.
   - Keep actuator launch blocked pending explicit approval and use strict guardrails if it is later launched.
+
+### 011-actuator-prep - Modal actuator path prepared
+
+- at: `2026-07-07T19:37:00Z`
+- kind: `infrastructure`
+- summary: Shifted from cross-axis analysis toward actuation. Added an actuator row materializer that enriches the frozen r2 row pool with selector metadata from readout diagnostics, moved the steer cell to consume `analysis/actuator_rows.jsonl`, removed the stale readout-floor gate from post-steering gates because AQ-G1 is already adjudicated offline, and added a Modal `--actuator` path. The actuator function restores the r2 readout checkpoint from the Modal volume, re-runs readout diagnostics if needed, prepares actuator rows, runs `mechinterp steer`, scores gates, checkpoints outputs, and uploads actuator artifacts under `aq-sycophancy-actuator-r2/artifacts`.
+- evidence:
+  - `experiments/aq-sycophancy-activation-actuator/prepare_aq_actuator_rows.py`
+  - `experiments/aq-sycophancy-activation-actuator/cell.yaml`
+  - `experiments/aq-sycophancy-activation-actuator/gates.yaml`
+  - `experiments/aq-sycophancy-activation-actuator/cloud/modal_aq_sycophancy_activation_actuator.py`
+- commands:
+  - `py -3.12 experiments\aq-sycophancy-activation-actuator\prepare_aq_actuator_rows.py`
+  - `py -3.12 experiments\aq-sycophancy-activation-actuator\cloud\modal_aq_sycophancy_activation_actuator.py --dry-run --actuator --repo-commit=3041c5dab --cost-cap-usd=10`
+- decisions:
+  - Keep AQ-G1/readout-floor adjudication in the readout diagnostics rather than in post-steering `gates.yaml`.
+  - Do not launch the live Modal actuator until the user gives explicit approval naming AQ, Modal A10G, official Qwen/Qwen3-4B, and the cost cap.

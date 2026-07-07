@@ -33,6 +33,7 @@ except Exception:  # pragma: no cover - exercised on hosts without modal
 
 RUN_TAG = "aq-sycophancy-actuator-smoke-r2"
 READOUT_RUN_TAG = "aq-sycophancy-readout-r2"
+ACTUATOR_RUN_TAG = "aq-sycophancy-actuator-r2"
 APP_NAME = "eh-aq-sycophancy-smoke"
 REPO_URL = "https://github.com/ProfSynapse/Epistemic-Humility-Research.git"
 DEFAULT_REPO_COMMIT = "REPLACE_WITH_PUSHED_AQ_COMMIT"
@@ -45,11 +46,17 @@ EVAL_CONFIG = f"{EXP_DIR}/eval_16bit_sycophancy_answer.yaml"
 RESULTS_DIR = "experiment/phase1/eval/results_aq_sycophancy_answer_16bit"
 ANALYSIS_DIR = f"{EXP_DIR}/analysis"
 ROW_POOL_OUT = f"{ANALYSIS_DIR}/row_pool.jsonl"
+ACTUATOR_ROWS_OUT = f"{ANALYSIS_DIR}/actuator_rows.jsonl"
 LABELS_OUT = f"{ANALYSIS_DIR}/probe_fit_labels.jsonl"
 ROW_POOL_SUMMARY = f"{ANALYSIS_DIR}/row_pool_summary.json"
 SYC_ANALYSIS_DIR = f"{ANALYSIS_DIR}/sycophancy_answer_analysis"
 EXTRACTION_DIR = f"{ANALYSIS_DIR}/extraction"
+READOUT_DIAGNOSTICS_DIR = f"{ANALYSIS_DIR}/readout_diagnostics"
 DIRECTION_OUT = f"{EXP_DIR}/directions/sycophancy_answer_direction.json"
+CELL_CONFIG = f"{EXP_DIR}/cell.yaml"
+GATES_CONFIG = f"{EXP_DIR}/gates.yaml"
+ACTUATOR_OUTPUT = f"{ANALYSIS_DIR}/rows_out.jsonl"
+ACTUATOR_GATES_REPORT = f"{ANALYSIS_DIR}/gates_report.json"
 ARM_NAME = "qwen3_4b_official_bf16"
 EVAL_SET = "sycophancy_answer"
 ARTIFACT_FILES = [
@@ -107,6 +114,7 @@ def build_spec(repo_commit: str, cost_cap_usd: float | None) -> dict:
         "app": APP_NAME,
         "run_tag": RUN_TAG,
         "readout_run_tag": READOUT_RUN_TAG,
+        "actuator_run_tag": ACTUATOR_RUN_TAG,
         "repo_url": REPO_URL,
         "repo_commit": repo_commit,
         "local_head": local_repo_commit(),
@@ -123,6 +131,11 @@ def build_spec(repo_commit: str, cost_cap_usd: float | None) -> dict:
         "labels_out": LABELS_OUT,
         "extraction_dir": EXTRACTION_DIR,
         "direction_out": DIRECTION_OUT,
+        "cell_config": CELL_CONFIG,
+        "gates_config": GATES_CONFIG,
+        "actuator_rows_out": ACTUATOR_ROWS_OUT,
+        "actuator_output": ACTUATOR_OUTPUT,
+        "actuator_gates_report": ACTUATOR_GATES_REPORT,
         "env": {
             "HF_HUB_DISABLE_XET": "1",
             "HF_HUB_ENABLE_HF_TRANSFER": "0",
@@ -201,6 +214,7 @@ if modal is not None:
     VOL_MOUNT = "/vol/aqlogs"
     CKPT = f"{VOL_MOUNT}/ckpt/{RUN_TAG}"
     READOUT_CKPT = f"{VOL_MOUNT}/ckpt/{READOUT_RUN_TAG}"
+    ACTUATOR_CKPT = f"{VOL_MOUNT}/ckpt/{ACTUATOR_RUN_TAG}"
 
     @app.function(
         gpu="A10G",
@@ -591,6 +605,222 @@ if modal is not None:
             "artifact_prefix": f"{READOUT_RUN_TAG}/artifacts",
         }
 
+    @app.function(
+        gpu="A10G",
+        timeout=3 * HOURS,
+        volumes={VOL_MOUNT: vol},
+        secrets=[modal.Secret.from_name(HF_SECRET_NAME)],
+        retries=modal.Retries(max_retries=2, backoff_coefficient=1.0, initial_delay=10.0),
+    )
+    def run_aq_actuator(repo_commit: str) -> dict:
+        import shutil
+
+        if repo_commit.startswith("REPLACE_WITH"):
+            raise RuntimeError("repo_commit is a placeholder; pass --repo-commit=<pushed sha>")
+
+        os.environ.setdefault("HF_HOME", "/root/.cache/huggingface")
+        os.environ["HF_HUB_DISABLE_XET"] = "1"
+        os.environ["HF_HUB_ENABLE_HF_TRANSFER"] = "0"
+        os.environ["PYTHONPATH"] = f"{EXP_DIR}:{VLLM_DIST_PACKAGES}"
+
+        workspace = "/workspace/ehr-actuator"
+        readout_ckpt_data = f"{READOUT_CKPT}/data"
+        actuator_ckpt_data = f"{ACTUATOR_CKPT}/data"
+
+        def sh(cmd: list[str], cwd: str | None = None, check: bool = True) -> int:
+            printable = " ".join(cmd)
+            print(f"[modal-aq-actuator] $ {printable}", flush=True)
+            result = subprocess.run(cmd, cwd=cwd)
+            if check and result.returncode != 0:
+                raise RuntimeError(f"command failed ({result.returncode}): {printable}")
+            return result.returncode
+
+        def sh_capture(cmd: list[str], out_file: str, cwd: str | None = None) -> int:
+            printable = " ".join(cmd)
+            print(f"[modal-aq-actuator] $ {printable} > {out_file}", flush=True)
+            os.makedirs(os.path.dirname(out_file), exist_ok=True)
+            with open(out_file, "w", encoding="utf-8") as fh:
+                result = subprocess.run(cmd, cwd=cwd, stdout=fh, stderr=subprocess.STDOUT)
+            return result.returncode
+
+        def copy_tree_into(src: str, dst: str) -> int:
+            n = 0
+            if not os.path.isdir(src):
+                return 0
+            for root, _dirs, files in os.walk(src):
+                rel = os.path.relpath(root, src)
+                target_dir = dst if rel == "." else os.path.join(dst, rel)
+                os.makedirs(target_dir, exist_ok=True)
+                for filename in files:
+                    shutil.copyfile(os.path.join(root, filename), os.path.join(target_dir, filename))
+                    n += 1
+            return n
+
+        def mirror_rel(rel: str) -> None:
+            src = os.path.join(workspace, rel)
+            if not os.path.exists(src):
+                return
+            dst = os.path.join(actuator_ckpt_data, rel)
+            if os.path.isdir(src):
+                if os.path.isdir(dst):
+                    shutil.rmtree(dst)
+                shutil.copytree(src, dst)
+            else:
+                os.makedirs(os.path.dirname(dst), exist_ok=True)
+                shutil.copyfile(src, dst)
+
+        def checkpoint_once(tag: str = "") -> None:
+            try:
+                for rel in (
+                    ROW_POOL_OUT,
+                    LABELS_OUT,
+                    DIRECTION_OUT,
+                    READOUT_DIAGNOSTICS_DIR,
+                    ACTUATOR_ROWS_OUT,
+                    ACTUATOR_OUTPUT,
+                    f"{ACTUATOR_OUTPUT}.smoke_ok.json",
+                    f"{ACTUATOR_OUTPUT}.manifest.json",
+                    ACTUATOR_GATES_REPORT,
+                ):
+                    mirror_rel(rel)
+                vol.commit()
+                print(f"[modal-aq-actuator] checkpoint committed {tag}".rstrip(), flush=True)
+            except Exception as exc:  # noqa: BLE001
+                print(f"[modal-aq-actuator] checkpoint FAILED (non-fatal) {tag}: {exc}", flush=True)
+
+        try:
+            vol.reload()
+        except Exception as exc:  # noqa: BLE001
+            print(f"[modal-aq-actuator] vol.reload() failed at restore (non-fatal): {exc}", flush=True)
+
+        if not os.path.isdir(os.path.join(workspace, ".git")):
+            sh(["git", "clone", REPO_URL, workspace])
+        sh(["git", "fetch", "origin"], cwd=workspace, check=False)
+        sh(["git", "checkout", repo_commit], cwd=workspace)
+        sh(["git", "submodule", "update", "--init", "--recursive", "synaptic-tuner"], cwd=workspace)
+
+        restored_readout = copy_tree_into(readout_ckpt_data, workspace)
+        restored_actuator = copy_tree_into(actuator_ckpt_data, workspace)
+        print(
+            f"[modal-aq-actuator] restored readout={restored_readout} "
+            f"actuator={restored_actuator} files from checkpoint",
+            flush=True,
+        )
+
+        from huggingface_hub import hf_hub_download, snapshot_download
+
+        if not os.path.isfile(os.path.join(workspace, ROW_POOL_OUT)):
+            local = hf_hub_download(
+                repo_id=STAGING_REPO,
+                repo_type="dataset",
+                filename=f"{RUN_TAG}/artifacts/row_pool.jsonl",
+            )
+            target = os.path.join(workspace, ROW_POOL_OUT)
+            os.makedirs(os.path.dirname(target), exist_ok=True)
+            shutil.copyfile(local, target)
+            print(f"[modal-aq-actuator] staged row_pool.jsonl -> {ROW_POOL_OUT}", flush=True)
+
+        if not os.path.isfile(os.path.join(workspace, LABELS_OUT)):
+            local = hf_hub_download(
+                repo_id=STAGING_REPO,
+                repo_type="dataset",
+                filename=f"{RUN_TAG}/artifacts/probe_fit_labels.jsonl",
+            )
+            target = os.path.join(workspace, LABELS_OUT)
+            os.makedirs(os.path.dirname(target), exist_ok=True)
+            shutil.copyfile(local, target)
+            print(f"[modal-aq-actuator] staged probe_fit_labels.jsonl -> {LABELS_OUT}", flush=True)
+
+        required_readout = [
+            os.path.join(workspace, DIRECTION_OUT),
+            os.path.join(workspace, EXTRACTION_DIR, "manifest.json"),
+        ]
+        missing_readout = [p for p in required_readout if not os.path.isfile(p)]
+        if missing_readout:
+            raise RuntimeError(
+                "actuator needs recovered r2 readout artifacts in the Modal "
+                f"volume before launch; missing {missing_readout}"
+            )
+
+        model_path = snapshot_download(repo_id=MODEL_REPO, revision=MODEL_REVISION)
+        print(f"[modal-aq-actuator] staged model snapshot {MODEL_REPO}@{MODEL_REVISION}: {model_path}", flush=True)
+
+        sh([
+            "python3",
+            f"{EXP_DIR}/analyze_aq_readout.py",
+            "--bootstrap-n",
+            "500",
+        ], cwd=workspace)
+        sh([
+            "python3",
+            f"{EXP_DIR}/prepare_aq_actuator_rows.py",
+        ], cwd=workspace)
+        checkpoint_once("(post-prepare)")
+
+        sh(["nvidia-smi", "--query-gpu=name,memory.total", "--format=csv,noheader"], check=False)
+        sh([
+            "python3",
+            "synaptic-tuner/tuner.py",
+            "mechinterp",
+            "steer",
+            "--mi-config",
+            CELL_CONFIG,
+            "--model",
+            model_path,
+            "--render-fn",
+            "sycophancy_answer_render:render",
+            "--i-know-this-runs-on-gpu",
+        ], cwd=workspace)
+        checkpoint_once("(post-steer)")
+
+        gate_rc = sh_capture([
+            "python3",
+            "synaptic-tuner/tuner.py",
+            "mechinterp",
+            "score-gates",
+            "--gates-config",
+            GATES_CONFIG,
+            "--rows-path",
+            ACTUATOR_OUTPUT,
+        ], os.path.join(workspace, ACTUATOR_GATES_REPORT), cwd=workspace)
+        print(f"[modal-aq-actuator] score-gates rc={gate_rc}", flush=True)
+        checkpoint_once("(post-gates)")
+
+        for rel in (
+            ACTUATOR_ROWS_OUT,
+            ACTUATOR_OUTPUT,
+            f"{ACTUATOR_OUTPUT}.smoke_ok.json",
+            f"{ACTUATOR_OUTPUT}.manifest.json",
+            ACTUATOR_GATES_REPORT,
+        ):
+            path = os.path.join(workspace, rel)
+            if os.path.exists(path):
+                upload_tree_to_hf(
+                    STAGING_REPO,
+                    f"{ACTUATOR_RUN_TAG}/artifacts",
+                    path,
+                    base_dir=workspace,
+                )
+
+        done = f"{ACTUATOR_CKPT}/DONE"
+        os.makedirs(os.path.dirname(done), exist_ok=True)
+        with open(done, "w", encoding="utf-8") as fh:
+            fh.write(
+                f"repo_commit={repo_commit}\n"
+                f"run_tag={ACTUATOR_RUN_TAG}\n"
+                f"score_gates_returncode={gate_rc}\n"
+            )
+        vol.commit()
+        return {
+            "ok": gate_rc in (0, 5),
+            "mode": "actuator",
+            "run_tag": ACTUATOR_RUN_TAG,
+            "repo_commit": repo_commit,
+            "score_gates_returncode": gate_rc,
+            "staging_repo": STAGING_REPO,
+            "artifact_prefix": f"{ACTUATOR_RUN_TAG}/artifacts",
+        }
+
     @app.local_entrypoint()
     def modal_entrypoint(
         dry_run: bool = False,
@@ -598,9 +828,12 @@ if modal is not None:
         cost_cap_usd: float = 10.0,
         upload_only: bool = False,
         readout: bool = False,
+        actuator: bool = False,
     ) -> None:
         spec = build_spec(repo_commit, cost_cap_usd)
-        if readout:
+        if actuator:
+            spec["mode"] = "actuator"
+        elif readout:
             spec["mode"] = "readout"
         elif upload_only:
             spec["mode"] = "upload_only"
@@ -611,7 +844,9 @@ if modal is not None:
             return
         if repo_commit.startswith("REPLACE_WITH"):
             raise SystemExit("Pass --repo-commit=<pushed AQ branch sha> before launching paid Modal work.")
-        if readout:
+        if actuator:
+            call = run_aq_actuator.spawn(repo_commit)
+        elif readout:
             call = run_aq_readout.spawn(repo_commit)
         elif upload_only:
             call = upload_aq_checkpoint.spawn(repo_commit)
@@ -625,12 +860,24 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--dry-run", action="store_true")
     parser.add_argument("--repo-commit", default=DEFAULT_REPO_COMMIT)
     parser.add_argument("--cost-cap-usd", type=float, default=float(os.environ.get("MODAL_COST_CAP_USD", "10")))
+    parser.add_argument("--upload-only", action="store_true")
+    parser.add_argument("--readout", action="store_true")
+    parser.add_argument("--actuator", action="store_true")
     return parser.parse_args()
 
 
 def main() -> int:
     args = parse_args()
-    print(json.dumps(build_spec(args.repo_commit, args.cost_cap_usd), indent=2, sort_keys=True))
+    spec = build_spec(args.repo_commit, args.cost_cap_usd)
+    if args.actuator:
+        spec["mode"] = "actuator"
+    elif args.readout:
+        spec["mode"] = "readout"
+    elif args.upload_only:
+        spec["mode"] = "upload_only"
+    else:
+        spec["mode"] = "run_eval_and_upload"
+    print(json.dumps(spec, indent=2, sort_keys=True))
     if args.dry_run:
         return 0
     raise SystemExit("Use `modal run --detach ... --repo-commit=<pushed sha>` for real submission.")

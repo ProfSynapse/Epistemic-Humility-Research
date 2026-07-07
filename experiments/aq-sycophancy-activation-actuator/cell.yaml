@@ -6,7 +6,7 @@
 #     load_steer_config('../experiments/aq-sycophancy-activation-actuator/cell.yaml'); print('cell ok')"
 
 surface:
-  rows_path: experiments/aq-sycophancy-activation-actuator/analysis/row_pool.jsonl
+  rows_path: experiments/aq-sycophancy-activation-actuator/analysis/actuator_rows.jsonl
   seed: 20260707
   generation:
     max_new_tokens: 128
