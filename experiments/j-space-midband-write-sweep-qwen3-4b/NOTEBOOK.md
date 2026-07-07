@@ -6,6 +6,15 @@ in `experiment.yaml`.
 
 ## Entries
 
+### 2026-07-07 - local launch
+
+User explicitly approved running `j-space-midband-write-sweep-qwen3-4b` locally.
+Status moved to `running` before launch. Planned locked sequence:
+`extract_layer_sweep_anchor.py` -> `build_directions.py --verify-reproducible`
+-> `build_random_direction.py` -> `gate_fit.py` -> `materialize_rows.py` ->
+`pipeline.py --mode smoke --n-rows 8 --dose 200` ->
+`pipeline.py --mode full --dose 200 --i-know-this-is-the-confirmatory-run`.
+
 ### 2026-07-07 - signed, prelaunch
 
 Scaffolded and signed the exploratory layer-site amendment. Direct predecessor

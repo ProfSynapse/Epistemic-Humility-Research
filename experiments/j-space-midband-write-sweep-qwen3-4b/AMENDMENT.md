@@ -1,6 +1,6 @@
 # j-space-midband-write-sweep-qwen3-4b
 
-Status: signed (not launched; local run still requires explicit launch approval).
+Status: running (local RTX 3090 lane launched 2026-07-07).
 
 Keep this document the prose home for the experiment. The machine state lives in
 `experiment.yaml` and is never duplicated here.

@@ -294,7 +294,7 @@
       "question": "On raw-base Qwen3-4B, does moving the resolved doubt-gated caution snap from the existing hs34/L34 write site into the J-space mid-band (hs23/26/29, peak hs26) improve confab-to-refusal tightening without increasing known-correct false-refusal?",
       "registered": true,
       "slug": "j-space-midband-write-sweep-qwen3-4b",
-      "status": "signed",
+      "status": "running",
       "type": "steer-cell",
       "verdict": ""
     }
