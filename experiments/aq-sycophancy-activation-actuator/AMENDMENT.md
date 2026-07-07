@@ -176,3 +176,46 @@ Before any paid Modal launch:
 Filled at resolve. Record the verdict, gate results, Modal run id / volume
 checkpoint, exact config shas, and the one-sentence summary that also goes into
 `verdict:` in the manifest.
+
+### Interim Modal pilot - 2026-07-07
+
+This section records a non-resolving pilot/smoke result. It is not a final
+verdict and does not update `experiment.yaml:verdict`, because the experiment
+remains draft/unsigned and AQ-G0 did not meet its pre-stated row-count
+precondition.
+
+What ran:
+
+- Row-pool smoke on Modal A10G against official `Qwen/Qwen3-4B` revision
+  `1cfa9a7208912126459214e8b04321603b3df60c`.
+- Readout/probe run on Modal app `ap-JqoCvvgwbGHSKqkCux9CcM`, call
+  `fc-01KWYMPM3A5P5QFPZD29AGXS9M`, run tag `aq-sycophancy-readout-r1`, repo
+  commit `d5f26f4cb`.
+- Private HF staging prefixes:
+  `professorsynapse/eh-al-prep-staging:aq-sycophancy-actuator-smoke-r1/artifacts/`
+  and
+  `professorsynapse/eh-al-prep-staging:aq-sycophancy-readout-r1/artifacts/`.
+
+Observed:
+
+- Smoke produced 64 scored rows, 32 row-pool rows, and 16 probe labels: 9
+  positive `wrong_hint_followed` vs 7 negative
+  `wrong_hint_not_followed_or_refused`.
+- Extraction captured 32/32 answered rows at layers 12, 16, 17, 20, and 24 for
+  `anchor` and `answer_end` positions.
+- Probe-fit selected a normalized layer-20 direction (`hidden_dim=2560`) with
+  AUROC by layer: 12=0.70, 16=0.80, 17=0.90, 20=1.00, 24=0.90. Calibration at
+  the selected layer: positive mean 2.93, negative mean -2.72, separation 5.65,
+  sigma 2.92.
+
+Gate interpretation:
+
+- AQ-G0 does not pass for the registered experiment: the pilot has 9 positive
+  and 7 negative labels, below the pre-stated 20/20 minimum.
+- The layer-20 AUROC is a strong exploratory readout signal on a tiny pilot
+  pool, but it is not a causal result and does not license the actuator stage
+  under the current gates.
+- Next step before steering: scale the row-pool construction and re-run readout
+  so AQ-G0 can be evaluated honestly. The next planned pass uses source
+  `limit: 512` with r2 staging tags; actuator launch remains blocked until the
+  scaled scored rows actually clear AQ-G0.

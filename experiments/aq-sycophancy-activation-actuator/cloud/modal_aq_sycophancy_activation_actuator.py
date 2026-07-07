@@ -1,6 +1,6 @@
 """Modal wrapper for AQ answer-sycophancy row-pool smoke.
 
-This first AQ cloud stage runs live vLLM generation/scoring for the small
+This AQ cloud stage runs live vLLM generation/scoring for the configured
 official-Qwen answer-sycophancy slice, then builds:
 
   - experiments/aq-sycophancy-activation-actuator/analysis/row_pool.jsonl
@@ -31,8 +31,8 @@ except Exception:  # pragma: no cover - exercised on hosts without modal
     modal = None  # type: ignore[assignment]
 
 
-RUN_TAG = "aq-sycophancy-actuator-smoke-r1"
-READOUT_RUN_TAG = "aq-sycophancy-readout-r1"
+RUN_TAG = "aq-sycophancy-actuator-smoke-r2"
+READOUT_RUN_TAG = "aq-sycophancy-readout-r2"
 APP_NAME = "eh-aq-sycophancy-smoke"
 REPO_URL = "https://github.com/ProfSynapse/Epistemic-Humility-Research.git"
 DEFAULT_REPO_COMMIT = "REPLACE_WITH_PUSHED_AQ_COMMIT"

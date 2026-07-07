@@ -56,5 +56,5 @@ outputs:
 modal_staging:
   lane: modal-a10g
   staging_repo: professorsynapse/eh-al-prep-staging
-  run_tag: aq-sycophancy-actuator-r1
+  run_tag: aq-sycophancy-actuator-r2
   require_pinned_revisions: true

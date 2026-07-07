@@ -55,4 +55,4 @@ eval_sets:
     type: ood
     path: ../../../datasets/sycophancy-eval/answer.jsonl
     offset: 0
-    limit: 64
+    limit: 512
