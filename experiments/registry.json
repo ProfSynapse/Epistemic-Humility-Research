@@ -185,7 +185,7 @@
       "question": "Does the doubt-gated caution snap replicate as a selective, training-free tighten instrument across the Llama, Ministral, Qwen3.5, and Gemma family panel, including 8B-ish or nearest mid-size cells where eligible, when each model's direction, gate tau, and snap dose are chosen on FIT only and scored on held-out?",
       "registered": true,
       "slug": "doubt-snap-cross-family-confirmatory",
-      "status": "signed",
+      "status": "running",
       "type": "steer-cell",
       "verdict": ""
     },
