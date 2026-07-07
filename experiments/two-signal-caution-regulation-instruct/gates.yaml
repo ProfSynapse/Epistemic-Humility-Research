@@ -21,13 +21,13 @@
 # launch, per the lead's binding instruction not to run the full behavioral
 # sweep under this build task.
 #
-# UNRESOLVED at draft time (flag for lead / user before `exp sign`):
-# AMENDMENT.md's G2 says "a small pre-stated tolerance" without naming the
-# exact number (unlike G1-tighten/G1-release's explicit ">= 5pt"). This file
-# picks 2pt as a placeholder (mirroring AC/AO's own "small" specificity-guard
-# convention, e.g. AO's <=5pt refusal-rise / <=3pt correctness-drop guards),
-# but that number is NOT itself locked by the AMENDMENT text and needs
-# explicit sign-off, not silent adoption.
+# G2 tolerance LOCKED (lead, 2026-07-07, pre-run): AMENDMENT.md's G2 says "a
+# small pre-stated tolerance" without naming the exact number in prose (unlike
+# G1-tighten/G1-release's explicit ">= 5pt"). The lead has finalized that
+# number at 2pt, mirroring AC/AO's own "small" specificity-guard convention
+# (e.g. AO's <=5pt refusal-rise / <=3pt correctness-drop guards). This is the
+# pre-registered tolerance, fixed before the full run; see AMENDMENT.md's
+# Gates section G2 line for the same number stated in prose.
 #
 # DISCOVERED LIMITATION (read before adjudicating): MechInterp/stats/
 # evaluator.py's `_eval_kill_diff` (the kill_diff_vs_control dispatcher) does
@@ -96,8 +96,8 @@ gates:
     pass_if_ci_excludes_zero: true
 
   # G2 do-no-harm -- unanswerable-confab rate under coupled is not above the
-  # k=0 baseline by more than a small pre-stated tolerance (2pt PLACEHOLDER,
-  # see the UNRESOLVED note above; n_cell = 309 confab rows, 2pt -> <= 6 rows:
+  # k=0 baseline by more than a small pre-stated tolerance (2pt, LOCKED, see
+  # the note above; n_cell = 309 confab rows, 2pt -> <= 6 rows:
   # round(0.02 * 309) = 6.18 -> 6). "Still confabulating" on this
   # (unanswerable-only) cell is exactly the grader's own `answered` indicator
   # (coherent AND not refused == a coherent, non-abstaining answer on an

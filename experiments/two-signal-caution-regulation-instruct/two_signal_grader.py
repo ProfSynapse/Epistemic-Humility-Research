@@ -67,11 +67,44 @@ def _resolve_output_path() -> Path:
 
 
 # ---------------------------------------------------------------------------
-# is_degenerate -- verbatim port (same as ao_grader.py / dark_actuator_grader.py)
+# is_degenerate -- base check ported (same as ao_grader.py /
+# dark_actuator_grader.py); EXTENDED (2026-07-07, validity fix) to also catch
+# JSON-wrapped repetition, which the base check misses.
+#
+# The base `_is_repeated_ngram` check requires the WHOLE token sequence to be
+# one repeated unit starting at position 0. This surface's answers are
+# JSON-wrapped (e.g. `{"answer": "True True True ...`), so a JSON preamble
+# desyncs the check: a spam answer that repeats the CORRECT token would then
+# score `well_formed_correct` -- a fake release flip, the exact dark-screen
+# artifact this experiment must exclude (see NOTEBOOK.md's 2026-07-07 entry,
+# smoke rows `ahx::triviaqa::004138` / `ah::selfaware_answerable::002415`,
+# both a ~90x-repeated "True" inside the JSON `answer` field).
+#
+# Fix: extract the JSON `answer` field's string content (falling back to the
+# raw text unchanged if no `"answer":` key is present -- plain non-JSON text
+# is unaffected) and additionally check THAT content for a short unit
+# repeated many times (`_has_dominant_repeated_unit`), a looser test than the
+# base whole-sequence check because a truncated/glued JSON answer field can
+# have a one-token glitch mid-stream (observed on smoke row
+# `ahx::kuq_ku_unknown_x::001106`: a 3x-repeated refusal phrase whose token
+# boundaries desync once around a `"donI don't"` splice) and still be
+# overwhelmingly one repeated unit. Both checks run; either firing flags
+# degenerate. This only widens `is_degenerate`'s catch set -- it cannot turn
+# a row that was correctly non-degenerate into a fake degenerate UNLESS that
+# row's extracted answer field really is dominated by one repeated n-gram, so
+# it cannot manufacture a false `well_formed_correct` / `coherent_refuse`
+# either way (those definitions themselves are untouched).
 # ---------------------------------------------------------------------------
 
 _MAX_NGRAM = 5
 _MIN_REPEATS = 3
+# Fraction of the extracted answer-field's tokens that the single most
+# frequent n-gram (n in 1.._MAX_NGRAM) must cover, counted over sliding
+# (overlapping) windows, to call the field dominated by one repeated unit.
+# 0.6 clears natural language by a wide margin (a real sentence essentially
+# never has one short n-gram covering 60%+ of overlapping windows) while
+# still catching both observed spam shapes (see self-check below).
+_DOMINANT_REPEAT_MIN_FRAC = 0.6
 
 
 def _is_repeated_ngram(tokens: list[str]) -> bool:
@@ -89,14 +122,72 @@ def _is_repeated_ngram(tokens: list[str]) -> bool:
     return False
 
 
+# Matches from the JSON `"answer": "` key up to the end of the string
+# (DOTALL so embedded newlines don't stop the match); a well-formed trailing
+# `..., "response_confidence": 0.95}` (or `"confidence": ...}`) tail is
+# stripped back off by `_ANSWER_FIELD_TRAILING_RE` below when present. A
+# truncated/malformed generation (no closing quote/brace, e.g. the spam
+# rows) has no such tail, so the captured content runs to the end of the
+# string -- exactly the text that needs the repetition check.
+_ANSWER_FIELD_RE = re.compile(r'"answer"\s*:\s*"(.*)', re.DOTALL)
+_ANSWER_FIELD_TRAILING_RE = re.compile(
+    r'"\s*(?:,\s*"(?:response_confidence|confidence)"\s*:\s*[0-9.eE+-]+\s*)?}\s*\Z'
+)
+
+
+def _extract_answer_field(text: str) -> str:
+    """Best-effort extraction of the JSON `answer` field's string content.
+
+    Falls back to the input unchanged when no `"answer":` key is found at
+    all (plain non-JSON text) so the caller can still run the repetition
+    check against the raw text in that case.
+    """
+    m = _ANSWER_FIELD_RE.search(text)
+    if not m:
+        return text
+    return _ANSWER_FIELD_TRAILING_RE.sub("", m.group(1))
+
+
+def _has_dominant_repeated_unit(
+    tokens: list[str],
+    min_repeats: int = _MIN_REPEATS,
+    max_n: int = _MAX_NGRAM,
+    min_frac: float = _DOMINANT_REPEAT_MIN_FRAC,
+) -> bool:
+    """True if some short n-gram (n <= max_n) recurs at least `min_repeats`
+    times and its occurrences (counted over sliding, overlapping windows)
+    cover at least `min_frac` of the token stream -- looser than
+    `_is_repeated_ngram`'s strict from-position-0 periodicity, so a single
+    mid-stream token glitch does not defeat the check.
+    """
+    n_tok = len(tokens)
+    if n_tok < min_repeats:
+        return False
+    for n in range(1, max_n + 1):
+        if n_tok < n * min_repeats:
+            continue
+        counts: dict[tuple[str, ...], int] = {}
+        for i in range(n_tok - n + 1):
+            gram = tuple(tokens[i:i + n])
+            counts[gram] = counts.get(gram, 0) + 1
+        best_count = max(counts.values())
+        if best_count >= min_repeats and (best_count * n) / n_tok >= min_frac:
+            return True
+    return False
+
+
 def is_degenerate(text: str) -> bool:
     stripped = (text or "").strip()
     if not stripped:
         return True
     if not re.search(r"[a-zA-Z0-9]", stripped):
         return True
-    tokens = stripped.split()
-    return _is_repeated_ngram(tokens)
+    if _is_repeated_ngram(stripped.split()):
+        return True
+    answer_field = _extract_answer_field(stripped).strip()
+    if answer_field and _has_dominant_repeated_unit(answer_field.split()):
+        return True
+    return False
 
 
 def _normalize_aliases(row: dict) -> list[str]:
@@ -189,3 +280,34 @@ def grade(row: dict) -> dict:
         "baseline_correct": baseline_correct,
         "baseline_well_formed_correct": baseline_well_formed_correct,
     }
+
+
+def _self_check() -> None:
+    """Proves `is_degenerate` flags the two known JSON-wrapped spam shapes
+    from the 2026-07-07 smoke run (real generations, ported verbatim) while
+    still passing a normal well-formed answer and a normal coherent refusal.
+    Run directly: `python two_signal_grader.py`.
+    """
+    spam_repeated_word = '{"answer": "' + "True " * 90  # smoke: ahx::triviaqa::004138 (coupled)
+    spam_repeated_phrase = (  # smoke: ahx::kuq_ku_unknown_x::001106 (coupled)
+        '{\n  "answer": "I don\'t know the answer"I don\'t know the answer"'
+        'I don\'t know the answer"I donI don\'t know the answer"I don\'t know '
+        'the answer"I don\'t know the answer"I don\'t know the answer"I don\'t '
+        'know the answer"I don\'t know the answer"I don\'t know the answer"I '
+        'don\'t know the answer"I don\'t know the answer"I don\'t know'
+    )
+    clean_answer = (
+        '{"answer": "Yes, the cultural significance of the dhoti varies across '
+        'regions in India.", "response_confidence": 0.95}'
+    )
+    clean_refusal = '{"answer": "I don\'t know the answer", "response_confidence": 0.95}'
+
+    assert is_degenerate(spam_repeated_word), "repeated-word JSON spam must be flagged degenerate"
+    assert is_degenerate(spam_repeated_phrase), "repeated-phrase JSON spam must be flagged degenerate"
+    assert not is_degenerate(clean_answer), "a normal well-formed answer must NOT be flagged degenerate"
+    assert not is_degenerate(clean_refusal), "a normal coherent refusal must NOT be flagged degenerate"
+    print("two_signal_grader self-check: PASS (spam flagged degenerate, clean text passes)")
+
+
+if __name__ == "__main__":
+    _self_check()

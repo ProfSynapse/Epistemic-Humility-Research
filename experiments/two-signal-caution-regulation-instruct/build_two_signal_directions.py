@@ -122,12 +122,17 @@ ALPHA = 10.0
 # Hard collapse-safety clip on the FINAL marginal write (post gain-sum,
 # post-sigma_c), applied unconditionally regardless of ALPHA: no row may
 # command a write at or above the dark-screen's observed collapse floor
-# (>=400). 350 keeps a documented margin below that floor. The clip is
-# applied to marginal_write and then divided back through sigma_c to get the
-# CLIPPED g_two_signal value actually stored in the eval pool / read by the
-# tuner's gain_field -- the write the model receives always respects this
-# clip; it is not merely a post-hoc reporting clip.
-MARGINAL_WRITE_CLIP = 350.0
+# (>=400). REVISED (2026-07-07, validity fix -- see NOTEBOOK.md): the first
+# clip value (350) sits in the 300-400 gray zone ABOVE the dark-screen's own
+# validated coherent window (150-300); smoke rows pinned at 350 produced
+# collapse-adjacent repetitive spam ("True" x90 and a 3x-repeated refusal
+# phrase). The clip is lowered to 300, the coherent-window's own top edge, so
+# no row's commanded write can land outside the validated window at all. The
+# clip is applied to marginal_write and then divided back through sigma_c to
+# get the CLIPPED g_two_signal value actually stored in the eval pool / read
+# by the tuner's gain_field -- the write the model receives always respects
+# this clip; it is not merely a post-hoc reporting clip.
+MARGINAL_WRITE_CLIP = 300.0
 
 
 def _sha256_file(path: Path) -> str:
