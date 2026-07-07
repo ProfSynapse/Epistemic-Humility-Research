@@ -34,7 +34,7 @@ instrument:
     cell.yaml: b3b4980616856875740a214e4c0fa0757761f1f9a28451fbcd4eb07d0cffaf86
     gates.yaml: fb3e63eac6bba873c9f98616beb542ebf70bb0ade01a30e7cc80601095c2ff89
     cloud/README.md: ccc38f9f9bfff6d4c71f91daeaa7ba6df0cc879eecf6c8a52a3ebb3c3da89c4d
-    cloud/modal_doubt_snap_cross_family.py: c6f11b40ae66e2461de2ca65d26ac28290e4f210143f839de9f3dde2349b85c9
+    cloud/modal_doubt_snap_cross_family.py: 1160547641bde3af66769177cef2b39b31a7df10c8ef41053094d3cdeec0fd85
     pipeline.py: 89b04446e49d7844c8dc02826215fa69db670a6c4f8e9b17ee021f9195310169
     gen_lib.py: 6cffc7282591ca3b0db79d985a024ca2b63cab8afc1c5f5085d13cbdb98b79ce
     grader.py: ad6cfdf197b775f1bc41850729f58ddd9f81a6e2db583d91cff91e94154a29f8

@@ -6,7 +6,7 @@ Launch only after the amendment is signed and the repo commit is pinned:
     export MODAL_COST_CAP_USD=<approved cap>
     export EHR_REPO_COMMIT=<signed commit sha>
     modal run --detach cloud/modal_doubt_snap_cross_family.py \
-      --cell-id=qwen35_4b --cell-id=ministral3_8b_instruct
+      --cell-ids=qwen35_4b,ministral3_8b_instruct
 
 This wrapper deliberately supports multiple `--cell-id` values. Each selected
 cell is spawned as its own detached Modal function so model families run in
@@ -116,7 +116,7 @@ def run_one_cell(cell_id: str, stage: str = "full", dry_run: bool = False) -> No
 
 @app.local_entrypoint()
 def main(
-    cell_id: list[str],
+    cell_ids: str,
     stage: str = "full",
     dry_run: bool = False,
 ) -> None:
@@ -126,8 +126,9 @@ def main(
         raise SystemExit("set MODAL_COST_CAP_USD to the approved cap before spawning")
     if not os.environ.get("EHR_REPO_COMMIT"):
         raise SystemExit("set EHR_REPO_COMMIT to the signed commit sha before spawning")
-    if not cell_id:
-        raise SystemExit("pass at least one --cell-id")
-    for cid in cell_id:
+    cell_id_list = [c.strip() for c in cell_ids.split(",") if c.strip()]
+    if not cell_id_list:
+        raise SystemExit("pass at least one --cell-ids value")
+    for cid in cell_id_list:
         run_one_cell.spawn(cid, stage=stage, dry_run=dry_run)
         print(f"spawned {cid} stage={stage} dry_run={dry_run}", flush=True)
