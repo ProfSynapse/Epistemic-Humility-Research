@@ -1,0 +1,63 @@
+{
+  "gated": {
+    "confab_tighten": {
+      "n": 185,
+      "successes": 136,
+      "rate": 0.7351351351351352,
+      "wilson_ci_95": [
+        0.6672350299153391,
+        0.7934688882989707
+      ]
+    },
+    "known_correct_cost_control": {
+      "n": 258,
+      "successes": 8,
+      "rate": 0.031007751937984496,
+      "wilson_ci_95": [
+        0.015794214423464188,
+        0.059982398302640884
+      ]
+    }
+  },
+  "random_direction": {
+    "confab_tighten": {
+      "n": 185,
+      "successes": 13,
+      "rate": 0.07027027027027027,
+      "wilson_ci_95": [
+        0.04152295900807136,
+        0.1165009146002592
+      ]
+    },
+    "known_correct_cost_control": {
+      "n": 258,
+      "successes": 6,
+      "rate": 0.023255813953488372,
+      "wilson_ci_95": [
+        0.010700928222073445,
+        0.04979926487966972
+      ]
+    }
+  },
+  "permuted_gate": {
+    "n_fired_total": 172,
+    "confab_tighten": {
+      "n": 185,
+      "successes": 74,
+      "rate": 0.4,
+      "wilson_ci_95": [
+        0.33213231902702467,
+        0.47193612954849895
+      ]
+    },
+    "known_correct_cost_control": {
+      "n": 258,
+      "successes": 59,
+      "rate": 0.22868217054263565,
+      "wilson_ci_95": [
+        0.18163716298386515,
+        0.2836881501634683
+      ]
+    }
+  }
+}

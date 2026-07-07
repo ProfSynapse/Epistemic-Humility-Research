@@ -1,6 +1,6 @@
 slug: doubt-gated-caution-tighten
 type: steer-cell
-status: signed
+status: resolved
 registered: true
 question: On the raw-base untrained instruct (Qwen3-4B, no adapter), does a doubt-threshold
   GATE that snaps only fired rows to a fixed caution-direction setpoint, measured
@@ -38,5 +38,7 @@ inputs:
 - experiments/doubt-gated-caution-tighten/analysis-committed/random_direction_L34.json
 - experiments/doubt-gated-caution-tighten/analysis-committed/gate_fit.json
 - experiments/doubt-gated-caution-tighten/analysis-committed/build_manifest.json
-verdict: ''
+verdict: 'Doubt-gated caution snap passed as a training-free selective tighten instrument
+  on bf16 raw-base Qwen3-4B: G1 73.5% clean_tighten, G2 3.1% false-refusal with Wilson
+  UCB 6.0%, and G3 placebos clean.'
 kg: []

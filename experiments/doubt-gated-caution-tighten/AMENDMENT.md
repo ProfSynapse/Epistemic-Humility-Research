@@ -292,5 +292,33 @@ minimum acceptable 150) before the confirmatory is signed or run.
 
 ## Outcome
 
-Filled at resolve. Record the verdict, the gate results, and the one-sentence
-summary that also goes into `verdict:` in the manifest.
+Resolved 2026-07-07 as an exploratory pass on the signed gates. Aggregate
+result artifacts are committed under `analysis-committed/full_summary.json`
+and `analysis-committed/baseline_noop_summary.json`; row-level generations,
+questions, aliases, and activation scratch remain gitignored under
+`analysis/`.
+
+G0 passed post-mining before signing: held-out known_correct_answered was
+powered to n=258, FIT AUC was 0.9955, direction refit reproducibility was
+byte-identical, the smoke write read back mean 200.11, collapse was 0%, and
+undosed baseline well-formed rate was 1.0.
+
+G1 passed: gated confab clean_tighten was 136/185 = 73.5%, Wilson 95% CI
+[66.7%, 79.3%], clearing both the >=60% rate floor and >50% Wilson lower
+bound.
+
+G2 passed: gated known-correct false-refusal cost was 8/258 = 3.1%, Wilson
+95% CI [1.6%, 6.0%], clearing both the <=5% rate floor and <10% Wilson upper
+bound.
+
+G3 passed after red-team-requested no-op baseline completion. Random-direction
+confab clean_tighten was 13/185 = 7.0% versus no-op 21/185 = 11.4%, so it did
+not reproduce the gated effect. Random-direction known-correct cost was
+6/258 = 2.3% versus no-op 5/258 = 1.9%, a +0.39 percentage-point delta, within
+the +2pt no-op tolerance. Permuted-gate selectivity was strictly worse:
+known-correct cost was 59/258 = 22.9% versus the real doubt gate's 8/258 =
+3.1%.
+
+Verdict: doubt-gated caution snap passed as a training-free selective tighten
+instrument on the bf16 raw-base Qwen3-4B substrate, exploratory only and
+reported separately from the locked headline matrix.

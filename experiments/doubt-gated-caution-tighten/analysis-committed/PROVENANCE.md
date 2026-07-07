@@ -27,6 +27,10 @@ migration (worktree `/home/profsynapse/code/ehr-worktrees/two-signal`,
   cosines, mu/sigma (standardization stats used by both the gate and the
   snap), reproducibility-check status.
 - `gate_fit.json` -- tau (Youden-J, frozen) + AUC, fit on the FIT split only.
+- `full_summary.json` -- aggregate confirmatory gate summary only: per-arm
+  denominators, success counts, rates, and Wilson intervals. No row text.
+- `baseline_noop_summary.json` -- aggregate no-op baseline summary used to
+  adjudicate G3(i)'s random-direction-vs-no-op comparison. No row text.
 - `PROVENANCE.md` -- this file.
 
 All of the above are this experiment's OWN fitted/derived output (numeric
