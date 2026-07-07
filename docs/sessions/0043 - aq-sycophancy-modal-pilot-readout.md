@@ -4,7 +4,7 @@ session_id: '0043'
 title: AQ sycophancy Modal pilot readout
 status: active
 created_at: '2026-07-07T17:20:14Z'
-updated_at: '2026-07-07T19:06:07Z'
+updated_at: '2026-07-07T19:23:11Z'
 phase: phase1
 question: Can the AQ answer-sycophancy pilot produce a separable activation readout on official Qwen3-4B, and is the row pool sufficient to license steering?
 tags:
@@ -22,7 +22,7 @@ run_ids:
 trajectory:
   anchor: experiment/protocol/research-trajectory.md
   current_position: AQ is an exploratory sycophancy read-vs-write cell, separate from the locked Phase 1 headline matrix.
-  changed_by_session: R1 found an underpowered readout lead; r2 cleared AQ-G0 and recovered a larger-pool readout direction. Local recovered-artifact diagnostics pass AQ-G1 but show a strong anchor prompt-condition confound. Actuator launch is still unapproved.
+  changed_by_session: R1 found an underpowered readout lead; r2 cleared AQ-G0 and recovered a larger-pool readout direction. Local recovered-artifact diagnostics pass AQ-G1 but show a strong anchor prompt-condition confound. A readout-only hydra/isolation panel found that paired deltas survive, broad condition removal alone does not kill the signal, but behavior/correctness residualization largely attenuates it. Actuator launch is still unapproved.
 checkpoints:
 - id: 001-launch
   at: '2026-07-07T17:20:14Z'
@@ -203,6 +203,73 @@ checkpoints:
     condition_anchor_auroc: 0.98773193359375
     condition_answer_end_auroc: 0.45294189453125
     incorrect_only_oof_auroc: 0.7225935828877005
+- id: 009-hydra-isolation-plan
+  at: '2026-07-07T19:17:52Z'
+  kind: planning
+  title: Plan readout-only hydra isolation panel
+  summary: >-
+    Before any actuator launch, run a local readout-only panel to separate the
+    current L24 answer-sycophancy signal from prompt-condition, correctness,
+    refusal, and generic wrongness confounds. The panel should compare raw
+    anchor readout, paired incorrect-minus-neutral delta readout, condition-axis
+    residualized readout, condition+correctness+refusal/length residualized
+    readout, an incorrect-only matched/sliced readout, and a small one-vs-rest
+    component map for wrong-hint-following, correction/resistance,
+    refusal/avoidance, generic wrongness, and correct answering.
+  evidence:
+  - experiments/aq-sycophancy-activation-actuator/analyze_aq_readout.py
+  - experiments/aq-sycophancy-activation-actuator/analysis/readout_diagnostics/summary.json
+  run_ids: []
+  commands: []
+  decisions:
+  - Treat this as local screening/localization only, not actuator or causal evidence.
+  - Prefer paired/residualized controls over adding more rows before interpreting the L24 signal.
+  next_steps:
+  - Extend `analyze_aq_readout.py` with paired-delta, residualized, incorrect-only, and hydra component diagnostics.
+  - Run the CPU-only analysis on the recovered r2 artifacts.
+  signals: {}
+- id: 010-hydra-isolation-result
+  at: '2026-07-07T19:23:11Z'
+  kind: observation
+  title: Hydra isolation panel run locally
+  summary: >-
+    The readout-only isolation panel ran on the recovered r2 artifacts. Raw L24
+    anchor OOF AUROC stayed 0.819. Matched incorrect-minus-neutral paired
+    deltas survived at AUROC 0.778, and projecting out the broad
+    incorrect-hint-vs-neutral condition axis left AUROC 0.815. Adding
+    fold-local residualization for correctness, refusal, answer length, prompt
+    length, and parsed confidence attenuated the readout to AUROC 0.600.
+    Incorrect-only refits were weaker (raw 0.626, condition-residualized 0.614),
+    while length/confidence-matched incorrect-only 22/22 slices were stronger
+    but small (raw 0.729, condition-residualized 0.725). The component map says
+    the residualized signal is cleaner for hint resistance/correction
+    (`hint_resisted_correct` AUROC 0.784) than for hint following
+    (`hint_followed` AUROC 0.691); generic hinted wrongness collapses below
+    chance (0.435).
+  evidence:
+  - experiments/aq-sycophancy-activation-actuator/analyze_aq_readout.py
+  - experiments/aq-sycophancy-activation-actuator/analysis/readout_diagnostics/summary.json
+  - experiments/aq-sycophancy-activation-actuator/analysis/readout_diagnostics/hydra_component_map.csv
+  run_ids: []
+  commands:
+  - py -3.12 experiments\aq-sycophancy-activation-actuator\analyze_aq_readout.py
+  decisions:
+  - Interpret the L24 AQ readout as a mixed prompt-conflict/correctness-resistance structure, not a clean standalone sycophancy actuator.
+  - Keep actuator launch blocked pending explicit approval and use strict guardrails if it is later launched.
+  next_steps:
+  - Consider token-timeline or richer label panels before actuator launch if the goal is mechanism mapping rather than fast steering.
+  signals:
+    raw_anchor_oof_auroc: 0.8186274509803921
+    paired_delta_oof_auroc: 0.7781862745098039
+    condition_residualized_oof_auroc: 0.8154411764705882
+    condition_behavior_residualized_oof_auroc: 0.5997549019607843
+    incorrect_only_raw_oof_auroc: 0.6263368983957219
+    incorrect_only_condition_residualized_oof_auroc: 0.6143048128342246
+    incorrect_only_matched_raw_oof_auroc: 0.7293388429752066
+    incorrect_only_matched_condition_residualized_oof_auroc: 0.7252066115702479
+    hydra_hint_followed_residualized_oof_auroc: 0.690863579474343
+    hydra_hint_resisted_correct_residualized_oof_auroc: 0.7839208112023177
+    hydra_hint_other_wrong_residualized_oof_auroc: 0.4349261849261849
 ---
 # AQ sycophancy Modal pilot readout
 
@@ -226,7 +293,13 @@ found a separable readout: selected layer 24, AUROC 0.846, separation 7.63,
 sigma 4.15. Local recovered-artifact diagnostics pass AQ-G1 on OOF scores
 (AUROC 0.819, 95% CI [0.742, 0.886]) but show a strong anchor prompt-condition
 confound (`incorrect_hint` vs neutral AUROC 0.988). The direction is available
-locally from the Modal volume; actuator launch remains unapproved.
+locally from the Modal volume. The readout-only hydra isolation panel found
+that paired deltas survive (AUROC 0.778) and broad hint-vs-neutral condition
+removal alone does not kill the signal (AUROC 0.815), but residualizing
+correctness/refusal/length/confidence attenuates it (AUROC 0.600). The
+remaining structure looks more like prompt conflict plus correction/resistance
+than a clean standalone sycophancy actuator. Actuator launch remains
+unapproved.
 
 ## Checkpoints
 
@@ -340,3 +413,31 @@ locally from the Modal volume; actuator launch remains unapproved.
 - decisions:
   - Treat AQ-G1 as passed for the r2 readout screen, not as causal evidence.
   - Keep actuator launch blocked pending explicit approval.
+
+### 009-hydra-isolation-plan - Plan readout-only hydra isolation panel
+
+- at: `2026-07-07T19:17:52Z`
+- kind: `planning`
+- summary: Before any actuator launch, run a local readout-only panel to separate the current L24 answer-sycophancy signal from prompt-condition, correctness, refusal, and generic wrongness confounds. The panel should compare raw anchor readout, paired incorrect-minus-neutral delta readout, condition-axis residualized readout, condition+correctness+refusal/length residualized readout, an incorrect-only matched/sliced readout, and a small one-vs-rest component map for wrong-hint-following, correction/resistance, refusal/avoidance, generic wrongness, and correct answering.
+- evidence:
+  - `experiments/aq-sycophancy-activation-actuator/analyze_aq_readout.py`
+  - `experiments/aq-sycophancy-activation-actuator/analysis/readout_diagnostics/summary.json`
+- decisions:
+  - Treat this as local screening/localization only, not actuator or causal evidence.
+  - Prefer paired/residualized controls over adding more rows before interpreting the L24 signal.
+  - Keep actuator launch blocked pending explicit approval.
+
+### 010-hydra-isolation-result - Hydra isolation panel run locally
+
+- at: `2026-07-07T19:23:11Z`
+- kind: `observation`
+- summary: The readout-only isolation panel ran on the recovered r2 artifacts. Raw L24 anchor OOF AUROC stayed 0.819. Matched incorrect-minus-neutral paired deltas survived at AUROC 0.778, and projecting out the broad incorrect-hint-vs-neutral condition axis left AUROC 0.815. Adding fold-local residualization for correctness, refusal, answer length, prompt length, and parsed confidence attenuated the readout to AUROC 0.600. Incorrect-only refits were weaker (raw 0.626, condition-residualized 0.614), while length/confidence-matched incorrect-only 22/22 slices were stronger but small (raw 0.729, condition-residualized 0.725). The component map says the residualized signal is cleaner for hint resistance/correction (`hint_resisted_correct` AUROC 0.784) than for hint following (`hint_followed` AUROC 0.691); generic hinted wrongness collapses below chance (0.435).
+- evidence:
+  - `experiments/aq-sycophancy-activation-actuator/analyze_aq_readout.py`
+  - `experiments/aq-sycophancy-activation-actuator/analysis/readout_diagnostics/summary.json`
+  - `experiments/aq-sycophancy-activation-actuator/analysis/readout_diagnostics/hydra_component_map.csv`
+- commands:
+  - `py -3.12 experiments\aq-sycophancy-activation-actuator\analyze_aq_readout.py`
+- decisions:
+  - Interpret the L24 AQ readout as a mixed prompt-conflict/correctness-resistance structure, not a clean standalone sycophancy actuator.
+  - Keep actuator launch blocked pending explicit approval and use strict guardrails if it is later launched.

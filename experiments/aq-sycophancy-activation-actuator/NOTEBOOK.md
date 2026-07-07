@@ -6,6 +6,34 @@ in `experiment.yaml`.
 
 ## Entries
 
+### 2026-07-07 - r2 hydra isolation panel
+
+- Extended `analyze_aq_readout.py` with the planned local readout-only
+  isolation panel: raw anchor, incorrect-minus-neutral paired deltas,
+  condition-axis projection, fold-local residualization for behavior/length
+  covariates, incorrect-only refits, length/confidence-matched incorrect-only
+  slices, and a one-vs-rest hydra component map.
+- Raw L24 anchor OOF AUROC remains 0.819. The matched paired-delta readout
+  survives at AUROC 0.778, with a layer pattern that still peaks at L24
+  (L12=0.507, L16=0.522, L17=0.550, L20=0.657, L24=0.778).
+- Projecting out the broad `incorrect_hint` vs neutral condition axis leaves
+  AUROC 0.815, so the broad prompt-condition axis alone does not explain the
+  readout. However, adding fold-local residualization for baseline correctness,
+  refusal, answer length, prompt length, and parsed confidence attenuates the
+  readout to AUROC 0.600.
+- Incorrect-only refits are weaker than the original all-probe readout:
+  raw AUROC 0.626 and condition-residualized AUROC 0.614. A deterministic
+  22/22 length/prompt/confidence-matched incorrect-only slice is stronger
+  (raw AUROC 0.729, condition-residualized AUROC 0.725) but small enough to
+  treat as hypothesis-shaping rather than a stable estimate.
+- Hydra map over all r2 rows: raw one-vs-rest probes mostly re-read prompt
+  condition. After condition residualization, `hint_resisted_correct` remains
+  stronger (AUROC 0.784), `hint_followed` is moderate (0.691), neutral correct
+  and neutral wrong are weak (~0.59/0.56), and `hint_other_wrong` collapses
+  below chance (0.435). Interpretation: the L24 AQ signal looks like mixed
+  prompt-conflict / correctness-resistance structure, not a clean standalone
+  sycophancy actuator.
+
 ### 2026-07-07 - r2 local activation diagnostics
 
 - Pulled the r2 Modal volume artifacts locally rather than retrying public/private

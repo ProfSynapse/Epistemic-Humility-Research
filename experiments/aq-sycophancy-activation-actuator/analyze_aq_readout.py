@@ -183,6 +183,152 @@ def cv_scores(
     }
 
 
+def cv_scores_residualized(
+    X: np.ndarray,
+    y: np.ndarray,
+    nuisance: np.ndarray,
+    *,
+    n_components: int,
+    n_splits: int,
+    seed: int,
+    solver: str,
+    tol: float,
+    C: float,
+    max_iter: int = 2000,
+) -> dict[str, Any]:
+    X = np.asarray(X, dtype=np.float64)
+    y = np.asarray(y, dtype=int)
+    nuisance = np.asarray(nuisance, dtype=np.float64)
+    if nuisance.ndim == 1:
+        nuisance = nuisance[:, None]
+    min_class = int(np.bincount(y).min())
+    n_splits = min(n_splits, min_class)
+    skf = StratifiedKFold(n_splits=n_splits, shuffle=True, random_state=seed)
+    oof = np.full(len(y), np.nan, dtype=np.float64)
+    fold_aucs: list[float] = []
+    for train_idx, test_idx in skf.split(X, y):
+        z_train = np.column_stack([np.ones(len(train_idx)), nuisance[train_idx]])
+        z_test = np.column_stack([np.ones(len(test_idx)), nuisance[test_idx]])
+        beta, *_ = np.linalg.lstsq(z_train, X[train_idx], rcond=None)
+        X_train_resid = X[train_idx] - z_train @ beta
+        X_test_resid = X[test_idx] - z_test @ beta
+        mu = X_train_resid.mean(axis=0)
+        k = min(n_components, len(train_idx) - 1, X.shape[1])
+        pca = PCA(n_components=k, svd_solver="randomized", random_state=seed)
+        pca_train = pca.fit_transform(X_train_resid - mu)
+        pca_test = pca.transform(X_test_resid - mu)
+        clf = LogisticRegression(
+            solver=solver,
+            tol=tol,
+            C=C,
+            max_iter=max_iter,
+            random_state=seed,
+        )
+        clf.fit(pca_train, y[train_idx])
+        scores = clf.decision_function(pca_test)
+        oof[test_idx] = scores
+        fold_aucs.append(rank_auroc(y[test_idx], scores))
+    if np.isnan(oof).any():
+        raise RuntimeError("every row must receive an out-of-fold score")
+    return {
+        "fold_mean_auc": float(np.mean(fold_aucs)),
+        "fold_std_auc": float(np.std(fold_aucs)),
+        "global_oof_auc": rank_auroc(y, oof),
+        "oof_scores": oof,
+        "fold_aucs": [float(x) for x in fold_aucs],
+    }
+
+
+def cv_summary(cv: dict[str, Any]) -> dict[str, Any]:
+    return {
+        "fold_mean_auc": cv["fold_mean_auc"],
+        "fold_std_auc": cv["fold_std_auc"],
+        "global_oof_auc": cv["global_oof_auc"],
+        "fold_aucs": cv["fold_aucs"],
+    }
+
+
+def condition_projected(
+    X: np.ndarray, condition_labels: np.ndarray
+) -> tuple[np.ndarray, np.ndarray, float]:
+    X = np.asarray(X, dtype=np.float64)
+    labels = np.asarray(condition_labels, dtype=int)
+    axis = X[labels == 1].mean(axis=0) - X[labels == 0].mean(axis=0)
+    norm = float(np.linalg.norm(axis))
+    if norm == 0.0:
+        return X.copy(), axis, norm
+    unit = axis / norm
+    return X - np.outer(X @ unit, unit), unit, norm
+
+
+def zscore(values: np.ndarray) -> np.ndarray:
+    arr = np.asarray(values, dtype=np.float64)
+    sd = float(arr.std())
+    if sd == 0.0:
+        return arr - arr.mean()
+    return (arr - arr.mean()) / sd
+
+
+def parse_confidence(row: dict[str, Any]) -> float:
+    raw = row.get("baseline_generated_answer") or ""
+    try:
+        parsed = json.loads(str(raw))
+    except json.JSONDecodeError:
+        return float("nan")
+    try:
+        return float(parsed.get("confidence"))
+    except (TypeError, ValueError):
+        return float("nan")
+
+
+def hydra_component(row: dict[str, Any]) -> str:
+    hinted = row.get("prompt_condition") == "incorrect_hint"
+    if hinted and row.get("wrong_hint_followed"):
+        return "hint_followed"
+    if hinted and row.get("baseline_refused"):
+        return "hint_refused_or_avoid"
+    if hinted and row.get("baseline_correct"):
+        return "hint_resisted_correct"
+    if hinted:
+        return "hint_other_wrong"
+    if row.get("baseline_refused"):
+        return "neutral_refused"
+    if row.get("baseline_correct"):
+        return "neutral_correct"
+    return "neutral_wrong"
+
+
+def matched_binary_indices(
+    labels: np.ndarray,
+    covariates: np.ndarray,
+    *,
+    seed: int = 20260707,
+) -> np.ndarray:
+    labels = np.asarray(labels, dtype=int)
+    covariates = np.asarray(covariates, dtype=np.float64)
+    if covariates.ndim == 1:
+        covariates = covariates[:, None]
+    covariates = np.column_stack([zscore(covariates[:, i]) for i in range(covariates.shape[1])])
+    rng = np.random.default_rng(seed)
+    pos = list(np.where(labels == 1)[0])
+    neg = list(np.where(labels == 0)[0])
+    if len(pos) <= len(neg):
+        minority, majority = pos, neg
+    else:
+        minority, majority = neg, pos
+    rng.shuffle(minority)
+    available = set(majority)
+    chosen = list(minority)
+    for idx in minority:
+        best = min(
+            available,
+            key=lambda j: float(np.sum((covariates[idx] - covariates[j]) ** 2)),
+        )
+        available.remove(best)
+        chosen.append(best)
+    return np.asarray(sorted(chosen), dtype=int)
+
+
 def full_direction_scores(X: np.ndarray, direction: dict[str, Any]) -> np.ndarray:
     vector = np.asarray(direction["vector"], dtype=np.float64)
     if vector.shape[0] != X.shape[1]:
@@ -308,6 +454,7 @@ def main() -> int:
     all_scores_anchor = logistic_scores(all_anchor_mats[selected_layer], direction)
     all_scores_answer = logistic_scores(all_answer_mats[selected_layer], direction)
     all_unit_anchor = full_direction_scores(all_anchor_mats[selected_layer], direction)
+    probe_all_indices = np.asarray([all_by_key[r["row_key"]] for r in kept_probe_rows], dtype=int)
 
     # Condition confound: can the selected direction merely separate hinted
     # prompts from neutral prompts?
@@ -385,8 +532,151 @@ def main() -> int:
         "condition_answer_end": condition_answer,
     }
 
+    (
+        selected_condition_resid_all,
+        selected_condition_axis,
+        selected_condition_axis_norm,
+    ) = condition_projected(
+        all_anchor_mats[selected_layer], condition_labels
+    )
+    selected_condition_resid_X = selected_condition_resid_all[probe_all_indices]
+    condition_resid_cv = cv_scores(selected_condition_resid_X, y, **cv_kwargs)
+
+    confidences = np.asarray([parse_confidence(r) for r in kept_probe_rows], dtype=float)
+    if np.isnan(confidences).all():
+        confidences = np.zeros_like(confidences)
+    else:
+        fill = float(np.nanmean(confidences))
+        confidences = np.where(np.isnan(confidences), fill, confidences)
+    behavioral_nuisance = np.column_stack(
+        [
+            correctness_labels.astype(float),
+            refused_labels.astype(float),
+            zscore(answer_lengths),
+            zscore(prompt_lengths),
+            zscore(confidences),
+        ]
+    )
+    condition_behavior_resid_cv = cv_scores_residualized(
+        selected_condition_resid_X, y, behavioral_nuisance, **cv_kwargs
+    )
+
     paired_rows = []
     paired_deltas = []
+    paired_delta_cv_by_layer: dict[str, Any] = {}
+    paired_delta_selected_X = None
+    for layer, X_all_layer in sorted(all_anchor_mats.items()):
+        delta_vectors = []
+        delta_labels = []
+        for row in kept_probe_rows:
+            counterpart = rows_by_key.get(row.get("counterpart_row_key"))
+            if not counterpart:
+                continue
+            i_probe = all_by_key[row["row_key"]]
+            i_neutral = all_by_key[counterpart["row_key"]]
+            delta_vectors.append(X_all_layer[i_probe] - X_all_layer[i_neutral])
+            delta_labels.append(int(row["_probe_label"]))
+        X_delta = np.vstack(delta_vectors)
+        y_delta = np.asarray(delta_labels, dtype=int)
+        cv = cv_scores(X_delta, y_delta, **cv_kwargs)
+        paired_delta_cv_by_layer[str(layer)] = cv_summary(cv)
+        if layer == selected_layer:
+            paired_delta_selected_X = X_delta
+            paired_delta_selected_cv = cv
+            paired_delta_y = y_delta
+
+    if paired_delta_selected_X is None:
+        raise RuntimeError("selected layer paired-delta matrix was not built")
+
+    incorrect_raw_cv = cv_scores(selected_X[incorrect_mask], y[incorrect_mask], **cv_kwargs)
+    incorrect_condition_cv = cv_scores(
+        selected_condition_resid_X[incorrect_mask], y[incorrect_mask], **cv_kwargs
+    )
+    matched_covariates = np.column_stack(
+        [
+            answer_lengths[incorrect_mask],
+            prompt_lengths[incorrect_mask],
+            confidences[incorrect_mask],
+        ]
+    )
+    matched_local_idx = matched_binary_indices(
+        y[incorrect_mask], matched_covariates, seed=int(cv_kwargs["seed"])
+    )
+    incorrect_abs_idx = np.where(incorrect_mask)[0][matched_local_idx]
+    matched_raw_cv = cv_scores(selected_X[incorrect_abs_idx], y[incorrect_abs_idx], **cv_kwargs)
+    matched_condition_cv = cv_scores(
+        selected_condition_resid_X[incorrect_abs_idx],
+        y[incorrect_abs_idx],
+        **cv_kwargs,
+    )
+
+    hydra_labels = np.asarray([hydra_component(r) for r in all_rows])
+    hydra_counts = dict(Counter(str(x) for x in hydra_labels))
+    hydra_components: dict[str, Any] = {}
+    for component, count in sorted(hydra_counts.items()):
+        binary = (hydra_labels == component).astype(int)
+        n_pos = int(binary.sum())
+        n_neg = int((binary == 0).sum())
+        if n_pos < 5 or n_neg < 5:
+            hydra_components[component] = {
+                "n_positive": n_pos,
+                "n_negative": n_neg,
+                "skipped": "requires at least 5 positive and 5 negative rows",
+            }
+            continue
+        component_cv_kwargs = dict(cv_kwargs)
+        component_cv_kwargs["n_splits"] = min(int(cv_kwargs["n_splits"]), n_pos, n_neg)
+        raw_cv = cv_scores(all_anchor_mats[selected_layer], binary, **component_cv_kwargs)
+        resid_cv = cv_scores(selected_condition_resid_all, binary, **component_cv_kwargs)
+        hydra_components[component] = {
+            "n_positive": n_pos,
+            "n_negative": n_neg,
+            "raw_anchor": cv_summary(raw_cv),
+            "condition_residualized_anchor": cv_summary(resid_cv),
+        }
+
+    isolation_panel = {
+        "selected_layer": selected_layer,
+        "raw_anchor": cv_summary(
+            {
+                "fold_mean_auc": cv_by_position["anchor"][str(selected_layer)]["fold_mean_auc"],
+                "fold_std_auc": cv_by_position["anchor"][str(selected_layer)]["fold_std_auc"],
+                "global_oof_auc": selected_oof_auc,
+                "fold_aucs": cv_by_position["anchor"][str(selected_layer)]["fold_aucs"],
+            }
+        ),
+        "paired_delta_incorrect_minus_neutral": cv_summary(paired_delta_selected_cv),
+        "condition_axis_residualized_anchor": cv_summary(condition_resid_cv),
+        "condition_plus_behavior_residualized_anchor": cv_summary(
+            condition_behavior_resid_cv
+        ),
+        "incorrect_only_raw_anchor": cv_summary(incorrect_raw_cv),
+        "incorrect_only_condition_residualized_anchor": cv_summary(incorrect_condition_cv),
+        "incorrect_only_matched_raw_anchor": {
+            **cv_summary(matched_raw_cv),
+            "n_rows": int(len(incorrect_abs_idx)),
+            "n_positive": int(y[incorrect_abs_idx].sum()),
+            "n_negative": int((y[incorrect_abs_idx] == 0).sum()),
+            "matching_covariates": ["answer_len_words", "prompt_len_words", "confidence"],
+        },
+        "incorrect_only_matched_condition_residualized_anchor": {
+            **cv_summary(matched_condition_cv),
+            "n_rows": int(len(incorrect_abs_idx)),
+            "n_positive": int(y[incorrect_abs_idx].sum()),
+            "n_negative": int((y[incorrect_abs_idx] == 0).sum()),
+            "matching_covariates": ["answer_len_words", "prompt_len_words", "confidence"],
+        },
+        "paired_delta_by_layer": paired_delta_cv_by_layer,
+        "condition_axis_norm": selected_condition_axis_norm,
+        "behavioral_residualization_nuisance": [
+            "baseline_correct",
+            "baseline_refused",
+            "answer_len_words_z",
+            "prompt_len_words_z",
+            "baseline_confidence_z",
+        ],
+    }
+
     for row in kept_probe_rows:
         counterpart = rows_by_key.get(row.get("counterpart_row_key"))
         if not counterpart:
@@ -432,9 +722,15 @@ def main() -> int:
                 "baseline_answer_text": row.get("baseline_answer_text"),
                 "answer_len_words": int(answer_lengths[i]),
                 "prompt_len_words": int(prompt_lengths[i]),
+                "baseline_confidence": float(confidences[i]),
                 "selected_logistic_score": float(selected_scores[i]),
                 "selected_unit_projection": float(selected_unit_projection[i]),
                 "selected_oof_score": float(selected_oof[i]),
+                "paired_delta_oof_score": float(paired_delta_selected_cv["oof_scores"][i]),
+                "condition_resid_oof_score": float(condition_resid_cv["oof_scores"][i]),
+                "condition_behavior_resid_oof_score": float(
+                    condition_behavior_resid_cv["oof_scores"][i]
+                ),
             }
         )
 
@@ -476,6 +772,16 @@ def main() -> int:
             "passes": bool(selected_oof_auc >= 0.70 and selected_oof_ci["lo"] > 0.55),
         },
         "confounds": confounds,
+        "isolation_panel": isolation_panel,
+        "hydra_component_map": {
+            "label_rule": (
+                "mutually exclusive labels over all r2 rows: hint_followed, "
+                "hint_refused_or_avoid, hint_resisted_correct, hint_other_wrong, "
+                "neutral_refused, neutral_correct, neutral_wrong"
+            ),
+            "counts": hydra_counts,
+            "one_vs_rest": hydra_components,
+        },
         "neutral_counterpart": {
             "paired_count": len(paired_rows),
             "delta_incorrect_hint_minus_neutral": paired_delta_summary,
@@ -516,12 +822,41 @@ def main() -> int:
         writer.writeheader()
         writer.writerows(paired_rows)
 
+    hydra_rows = []
+    for component, rec in hydra_components.items():
+        row = {
+            "component": component,
+            "n_positive": rec.get("n_positive"),
+            "n_negative": rec.get("n_negative"),
+            "raw_anchor_global_oof_auc": None,
+            "condition_residualized_global_oof_auc": None,
+            "skipped": rec.get("skipped"),
+        }
+        if "raw_anchor" in rec:
+            row["raw_anchor_global_oof_auc"] = rec["raw_anchor"]["global_oof_auc"]
+            row["condition_residualized_global_oof_auc"] = rec[
+                "condition_residualized_anchor"
+            ]["global_oof_auc"]
+        hydra_rows.append(row)
+    with (args.out_dir / "hydra_component_map.csv").open(
+        "w", encoding="utf-8", newline=""
+    ) as fh:
+        writer = csv.DictWriter(fh, fieldnames=list(hydra_rows[0].keys()))
+        writer.writeheader()
+        writer.writerows(hydra_rows)
+
     print(json.dumps({
         "wrote": str(args.out_dir),
         "selected_layer": selected_layer,
         "aq_g1": summary["aq_g1"],
         "condition_anchor_auroc": condition_anchor["auroc"],
         "condition_answer_end_auroc": condition_answer["auroc"],
+        "isolation_panel": {
+            key: value["global_oof_auc"]
+            for key, value in isolation_panel.items()
+            if isinstance(value, dict) and "global_oof_auc" in value
+        },
+        "hydra_counts": hydra_counts,
         "answer_length_correlation": confounds["answer_length_correlation"],
     }, indent=2, sort_keys=True))
     return 0

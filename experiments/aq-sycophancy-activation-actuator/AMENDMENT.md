@@ -264,6 +264,17 @@ Observed:
   only, the held-out score still separates wrong-hint-followed from other wrong
   answers (OOF AUROC 0.723; 68 positive vs 22 negative), which supports a
   sycophancy-specific component but does not remove the confound caveat.
+- A follow-up readout-only hydra isolation panel found: paired
+  incorrect-minus-neutral deltas survive at AUROC 0.778; projecting out the
+  broad `incorrect_hint` vs neutral condition axis leaves AUROC 0.815; adding
+  fold-local residualization for baseline correctness, refusal, answer length,
+  prompt length, and parsed confidence attenuates the readout to AUROC 0.600.
+  Incorrect-only refits are weaker (raw 0.626, condition-residualized 0.614),
+  while a deterministic 22/22 length/prompt/confidence-matched incorrect-only
+  slice is stronger but small (raw 0.729, condition-residualized 0.725).
+  Component mapping after condition residualization separates
+  `hint_resisted_correct` more cleanly (AUROC 0.784) than `hint_followed`
+  (0.691), while generic hinted wrongness collapses below chance (0.435).
 
 Gate interpretation:
 
@@ -272,7 +283,9 @@ Gate interpretation:
 - AQ-G1 passes as an exploratory readout screen on a much larger pool, but the
   earlier r1 AUROC 1.00 should be treated as small-n instability rather than
   the expected large-pool value. The r2 readout is a license to consider an
-  actuator test, not causal evidence.
+  actuator test, not causal evidence. The isolation panel weakens the case that
+  AQ has found a clean standalone sycophancy actuator; the local signal looks
+  mixed with prompt conflict, correctness, and correction/resistance structure.
 - Actuator launch remains blocked until explicitly approved. The Modal wrapper
   has been patched to batch-upload directory artifacts via `upload_folder`
   before any retry or larger run.
