@@ -1,0 +1,48 @@
+#!/bin/sh
+# Warm the repo-local KG search index for newly-created worktrees.
+#
+# `git worktree add` performs a checkout, so this hook runs when a fresh
+# worktree appears. Each worktree has its own `.kg/` local state; without this,
+# the first `bin/search` call pays the full cold-index cost and can be killed by
+# short command timeouts.
+
+set -u
+
+ROOT="$(git rev-parse --show-toplevel 2>/dev/null || pwd)"
+
+case "$ROOT" in
+  */.worktrees/*|*/ehr-worktrees/*) ;;
+  *) exit 0 ;;
+esac
+
+cd "$ROOT" || exit 0
+
+if command -v python >/dev/null 2>&1; then
+  PYTHON="python"
+elif command -v python3 >/dev/null 2>&1; then
+  PYTHON="python3"
+else
+  PYTHON="py -3"
+fi
+
+DB=".kg/index.sqlite"
+NEEDS_WARMUP=0
+
+if [ ! -s "$DB" ]; then
+  NEEDS_WARMUP=1
+else
+  # A 4 KB main DB with a large WAL is the usual signature of an interrupted
+  # cold rebuild. Use Python for the size check because Git's hook shell on
+  # Windows can have a minimal PATH without coreutils such as `wc`.
+  SIZE="$($PYTHON -c "import os, sys; print(os.path.getsize(sys.argv[1]) if os.path.exists(sys.argv[1]) else 0)" "$DB" 2>/dev/null || echo 0)"
+  if [ "${SIZE:-0}" -lt 1048576 ]; then
+    NEEDS_WARMUP=1
+  fi
+fi
+
+if [ "$NEEDS_WARMUP" -ne 1 ]; then
+  exit 0
+fi
+
+printf '%s\n' "warming KG search index for worktree: $ROOT"
+$PYTHON .agents/skills/knowledge-graph/scripts/kg_index.py --root "$ROOT" --json >/dev/null 2>&1 || true
