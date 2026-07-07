@@ -3,6 +3,73 @@
   "experiments": [
     {
       "checkpoint": {
+        "repo": "professorsynapse/eh-qwen3-4b-clean-sft-grpo-par-true-seed1-lora",
+        "revision": "7e31d3cf62395275d4ba3d1d9ec8f95287188805"
+      },
+      "falsifier": "Given Stage 1 validates a caution lever: coupled is within the G1 margin of the permuted placebo (below floor or CI includes 0), so propensity coupling adds nothing beyond a constant caution write (a clean null, unlike AN). If Stage 1 finds no caution lever on AI-TRUE, the coupling stage does not run and the result is \"no caution actuator on this checkpoint.\"",
+      "inputs": [],
+      "instrument": {
+        "configs": [
+          "cell.yaml",
+          "gates.yaml",
+          "cell_stage1_caution_perp.yaml",
+          "cell_stage1_fallback_mass_mean.yaml",
+          "gates_stage1.yaml"
+        ],
+        "modules": [
+          "ao_grader.py"
+        ],
+        "pins": {
+          "ao_grader.py": "c3c65dd636e88d900087cae6229913129039e44b9e0feb3037ec1be966c17547",
+          "cell.yaml": "ce82a86b6a7aa2d235cb59764064996c5a3ec9bf18566e52a226729dd344d5b6",
+          "cell_stage1_caution_perp.yaml": "22af96bf9898df1f5e99941b4624717eb8bb28fcb8c88166176c83509d747cab",
+          "cell_stage1_fallback_mass_mean.yaml": "5409a82b3f4b4b88cdded517b759f358dd253175a68acb07cb7399bd78afc5a7",
+          "gates.yaml": "a4e11a6daee8bb6160654ac034c4bb6db3c0c7b29333752c0e3e19240c299a13",
+          "gates_stage1.yaml": "b8ebdde41ef0c92809a2c9b2653a716da12a03f85d8be0c46a2db571df3f6526"
+        }
+      },
+      "kg": [],
+      "prediction": "User (2026-07-06): Stage 1 PASS (a caution lever exists on AI-TRUE) and Stage 2 PASS (propensity coupling beats the permuted placebo). Orchestrator: Stage 1 weak-lever PASS, Stage 2 small positive margin (3-10pt), with a nontrivial chance Stage 1 fails.",
+      "question": "Does wiring the confabulation-propensity readout to the caution setpoint as a live proportional controller (mirroring AC's doubt coupling) suppress residual confabulations on the AI-TRUE checkpoint, once a caution direction is first validated as a behavioral lever there (the step AN skipped)?",
+      "registered": true,
+      "slug": "ao-propensity-regulated-caution",
+      "status": "null-result",
+      "type": "steer-cell",
+      "verdict": "NULL (Stage-1 knob validation). No caution direction validates as a behavioral lever on the AI-TRUE checkpoint (clean-SFT->GRPO probe-as-reward-TRUE): ablating caution does not release the over-refusal tail (answerable_refused 0.974 unmoved despite headroom), point effects near zero with bootstrap CIs including 0 across both candidates x arms. Smoke passed (write fired, gen_stream_fired), so it is a behavioral no-move, not an instrument failure. Stage 2 did not run per the falsifier. Orchestrator partial credit (flagged nontrivial Stage-1-fail chance); user Stage-1 PASS missed."
+    },
+    {
+      "checkpoint": {
+        "repo": "unsloth/Qwen3-4B-bnb-4bit",
+        "revision": ""
+      },
+      "falsifier": "On the length-neutralized matched set (AP-G0 passing), veto AUROC < 0.68 or the veto-minus-length margin CI includes 0 means AM's separation was length/truncation-driven with no genuine content signal; the two-signal backstop claim is retracted. AP-G0 failing voids the run.",
+      "inputs": [],
+      "instrument": {
+        "configs": [],
+        "modules": [
+          "ap_build_pool.py",
+          "ap_extract.py",
+          "ap_grade_and_gates.py",
+          "cloud/modal_ap_veto_length_balanced.py"
+        ],
+        "pins": {
+          "ap_build_pool.py": "f77112529bf3d8241468813fc35b5ea6aae14cb62591408c5fb22a7e39de5e5b",
+          "ap_extract.py": "fdac4a6c8280b5c2cb7c2ec5ce944bf2b00e0d3ad2bcf01611d32b221ab1bbfe",
+          "ap_grade_and_gates.py": "60477c817327f83c9c5b7fa90aacd91e0e04d3a6b0d47f3cc6ee12d550af2269",
+          "cloud/modal_ap_veto_length_balanced.py": "6bfb6d01e73bfb5fec8ae127d1272629e9620412aba820ff71f09eaae99ba5d5"
+        }
+      },
+      "kg": [],
+      "prediction": "On the length-matched, extended-token construction the refit veto retains a genuine content signal (OOF AUROC ~0.72-0.80) that beats length-only (~0.50-0.58) by a margin whose bootstrap 95% CI excludes 0, confirming AM's ~0.77 length-matched estimate as real rather than a length/truncation artifact.",
+      "question": "On the raw base, does the post-generation correctness veto (post-L20 S/W/U dial) separate hallucinated answers from good answers by CONTENT rather than by answer length, once the classes are length-balanced and the 96-token truncation artifact is removed by extending the token budget?",
+      "registered": true,
+      "slug": "ap-veto-length-balanced-confirmatory",
+      "status": "resolved",
+      "type": "probe-fit",
+      "verdict": "CONFIRMED with answerability caveat: gates all PASS; the content-trust veto adds genuine signal over BOTH length and answerability (answerability-controlled AUROC ~0.74, margin +0.24, 95% CI [0.12,0.37] excludes 0), promoting AM's ~0.77 length-matched estimate on a fresh 192-token generation. The 0.86/+0.37 headline is answerability-inflated (37% of matched halluc are unanswerable-confabs, veto ~0.99 on those) and must not be cited as the content characteristic; honest number ~0.74."
+    },
+    {
+      "checkpoint": {
         "repo": "unsloth/Qwen3-4B-bnb-4bit",
         "revision": "raw-base (no adapter; checkpoint_tag \"raw-base\" per AK Stage 1 manifest)"
       },
