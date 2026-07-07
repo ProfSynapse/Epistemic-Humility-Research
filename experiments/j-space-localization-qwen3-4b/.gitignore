@@ -2,3 +2,8 @@
 directions/
 # Local analysis scratch; keep untracked, promote real outputs deliberately.
 analysis/
+# Question-text corpus is fetched at runtime from the private HF staging
+# repo and re-sampled deterministically (see jlens.py build_corpus /
+# analysis-committed/corpus/jlens_corpus_manifest.json); a local copy may
+# exist on disk (e.g. under --corpus) but must never be committed here.
+analysis-committed/corpus/jlens_corpus_pool.jsonl

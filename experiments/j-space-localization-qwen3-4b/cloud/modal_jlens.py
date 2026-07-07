@@ -8,20 +8,29 @@ marker) ported from
 experiments/ap-veto-length-balanced-confirmatory/cloud/modal_ap_veto_length_balanced.py
 (read that file's own docstring for the lineage back through AM/AL/AK).
 
-WHAT'S DIFFERENT FROM THE AP/AK/AM LINEAGE THIS BORROWS STRUCTURE FROM:
-this run needs NO pool-fetch step and pushes NO results to any external
-staging repo. Both inputs it needs -- the 1000-question corpus and the four
-fitted directions (u_d, pos_ctrl, neg_ctrl, c_hat) -- are committed directly
-into this experiment's own analysis-committed/ tree (see
-analysis-committed/corpus/PROVENANCE.md and NOTEBOOK.md for why), so the
-container's `git clone` at the pinned commit already has everything it
-needs. Results are written to the Modal Volume this function mounts (the
-SAME mechanism AP/AM/AK use for their own checkpoint/logs/manifest side-
-channel) and pulled back from there --
+WHAT'S DIFFERENT FROM THE AP/AK/AM LINEAGE THIS BORROWS STRUCTURE FROM: this
+run pushes NO results to any external staging repo (unlike AP/AK/AM). It
+DOES need one HF pool-fetch step, same as AK: the 1000-question corpus is
+never committed to this public repo (question text is forbidden in this
+repo, see analysis-committed/corpus/PROVENANCE.md); the container fetches
+the source pool from the private HF staging repo
+(professorsynapse/eh-al-prep-staging:pools/ak_stage1_pool.jsonl, via
+jlens.py's own `build-corpus` subcommand, which calls hf_hub_download
+exactly like experiment/phase1/probe/cloud/modal_ak_stage1.py's pool fetch)
+and deterministically re-samples the SAME 1000-row corpus (seed 20260707)
+this experiment's local runs use -- see analysis-committed/corpus/
+jlens_corpus_manifest.json for the exact row-id manifest that verifies the
+sample without storing any question text. The four fitted directions
+(u_d, pos_ctrl, neg_ctrl, c_hat) remain committed directly into this
+experiment's own analysis-committed/source_directions/ (those are our own
+fitted artifacts, not dataset/question text), so the container's
+`git clone` at the pinned commit already has them. Results are written to
+the Modal Volume this function mounts (the SAME mechanism AP/AM/AK use for
+their own checkpoint/logs/manifest side-channel) and pulled back from
+there --
     modal volume get eh-jspace-jlens-logs ckpt/<RUN_TAG> <local-dest>
-No huggingface_hub upload of either inputs or outputs happens anywhere in
-this script; everything either comes from the pinned git commit or goes to
-the Modal Volume.
+No huggingface_hub UPLOAD of outputs happens anywhere in this script (only
+the one pool download); results either go to the Modal Volume.
 
 READ-ONLY, no training, no injection: this container runs
 `jlens.py smoke`, `jlens.py profile`, and `jlens.py h1` (all three CLI
@@ -58,8 +67,9 @@ explicit launch confirmation and the pre-registered cost cap are set:
     export EHR_LAUNCH_OK=j-space-localization-qwen3-4b
     export MODAL_COST_CAP_USD=25
     modal run --detach cloud/modal_jlens.py
-(HF_TOKEN must also be exported; forwarded as a scoped Secret -- needed only
-to pull the ungated unsloth/Qwen3-4B weights, no dataset fetch.) THE AGENT
+(HF_TOKEN must also be exported; forwarded as a scoped Secret -- needed both
+to pull the ungated unsloth/Qwen3-4B weights AND to fetch the private
+source-pool dataset professorsynapse/eh-al-prep-staging.) THE AGENT
 THAT WROTE THIS SCRIPT DID NOT RUN modal run: the harness-builder agent is
 explicitly barred from firing cloud/paid launches (launch_guard blocks
 modal run/deploy unless EHR_LAUNCH_OK is present, and this repo's binding
@@ -208,19 +218,27 @@ def run_jlens():
 
     exp_dir = os.path.join(workspace, "experiments/j-space-localization-qwen3-4b")
     jlens_script = os.path.join(exp_dir, "jlens.py")
-    corpus_path = os.path.join(exp_dir, "analysis-committed/corpus/jlens_corpus_pool.jsonl")
     directions_dir = os.path.join(exp_dir, "analysis-committed")
-
-    if not os.path.isfile(corpus_path):
-        raise RuntimeError(f"[modal-jlens] committed corpus missing at "
-                           f"{corpus_path}; this run does not fetch any "
-                           "external pool -- the commit checked out must "
-                           "include analysis-committed/corpus/.")
+    # Ephemeral, container-local corpus (never a repo path): built fresh
+    # each run by jlens.py build-corpus, which fetches the source pool from
+    # the private HF staging repo (STAGING_REPO/POOL_IN_REPO in jlens.py)
+    # and re-derives the SAME deterministic 1000-row sample (seed SEED) the
+    # local runs use -- see analysis-committed/corpus/
+    # jlens_corpus_manifest.json for the row-id manifest that verifies this
+    # without any question text living in the repo.
+    corpus_path = f"{out}/corpus_pool.jsonl"
 
     sh(["nvidia-smi", "--query-gpu=name,memory.total", "--format=csv,noheader"],
        check=False)
 
     t0 = time.time()
+
+    # 1b. build the corpus (HF fetch + deterministic re-sample); logged as
+    #     its own step so the fetch and row count are visible before any
+    #     GPU-heavy stage runs.
+    sh([sys.executable, jlens_script, "build-corpus", "--out", corpus_path,
+        "--n", str(N_PROMPTS_FULL), "--seed", str(SEED)])
+    checkpoint_once(tag="(post-build-corpus)")
 
     # 2. correctness smoke, full corpus (repeats the local validation at
     #    scale; cheap, final layer only).

@@ -133,7 +133,7 @@
       },
       "falsifier": "No falsifier is pre-registered (lab-diagnostic characterization, not a gated confirmatory claim) -- but the correctness smoke has its own internal go/no-go: if the final-layer J-lens does NOT track the logit lens (near-zero or negative cosine similarity, near-chance top-k overlap), the implementation is broken and the Modal prep must stop rather than proceed to characterize a broken instrument. That smoke PASSED locally (see Outcome).",
       "inputs": [
-        "experiments/j-space-localization-qwen3-4b/analysis-committed/corpus/jlens_corpus_pool.jsonl",
+        "experiments/j-space-localization-qwen3-4b/analysis-committed/corpus/jlens_corpus_manifest.json",
         "experiments/j-space-localization-qwen3-4b/analysis-committed/source_directions/u_d_L34.json",
         "experiments/j-space-localization-qwen3-4b/analysis-committed/source_directions/c_hat_L34.json",
         "experiments/j-space-localization-qwen3-4b/analysis-committed/source_directions/pos_ctrl_L34.json",
@@ -146,8 +146,8 @@
           "cloud/modal_jlens.py"
         ],
         "pins": {
-          "cloud/modal_jlens.py": "ce84b1641270c4dc0339c31c7ff424fdac015e9cf5f98037998ee84c0124fedc",
-          "jlens.py": "ef5e84a6baaa53395c5ab9ef9b5cf183c0a06aa74633300b2e45526d60b8bd81"
+          "cloud/modal_jlens.py": "2b77c3c996785347bf7f4e67dc3327158d5d8db90d51fae0d8c037ab77556683",
+          "jlens.py": "44253eba2090a268ea2f81e6d7f380879bb0832680e7cb07151f8617865e5cdb"
         }
       },
       "kg": [],

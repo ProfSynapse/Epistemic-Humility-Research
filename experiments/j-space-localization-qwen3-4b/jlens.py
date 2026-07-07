@@ -86,6 +86,16 @@ import torch
 MODEL_BF16 = "unsloth/Qwen3-4B"  # bf16 sibling of the bnb-4bit raw-base
 MODEL_BNB4BIT_RAW_BASE = "unsloth/Qwen3-4B-bnb-4bit"  # for provenance notes only
 
+# Private HF dataset repo the AH/AK Stage-1 question pool is staged to (same
+# repo/pattern experiment/phase1/probe/cloud/modal_ak_stage1.py fetches from
+# for its own pool). This is the ONLY source of the source pool now -- no
+# question text is committed to this public repo (see
+# analysis-committed/corpus/PROVENANCE.md); both local and Modal runs fetch
+# via hf_hub_download and re-derive the SAME deterministic 1000-row sample
+# (seed 20260707) rather than reading a committed file.
+STAGING_REPO = "professorsynapse/eh-al-prep-staging"
+POOL_IN_REPO = "pools/ak_stage1_pool.jsonl"
+
 THIS_DIR = Path(__file__).resolve().parent
 # Local, gitignored (analysis/) copy this experiment builds for itself via
 # the `build-corpus` subcommand -- decouples smoke/profile/h1 runs from
@@ -93,13 +103,6 @@ THIS_DIR = Path(__file__).resolve().parent
 # (worktrees do not share gitignored files with each other or with a fresh
 # Modal clone). See build-corpus / NOTEBOOK.md for the source pool choice.
 DEFAULT_CORPUS_PATH = THIS_DIR / "analysis" / "corpus_pool.jsonl"
-# Fallback source pool on the CANONICAL checkout (not this worktree, and not
-# present in a fresh git clone -- analysis/ is gitignored repo-wide). Used
-# only as build-corpus's own default --source.
-DEFAULT_SOURCE_POOL = (
-    "/home/profsynapse/code/Epistemic-Humility-Research/"
-    "experiment/phase1/probe/analysis/ak_stage1/ak_stage1_pool.jsonl"
-)
 
 
 # --------------------------------------------------------------------------
@@ -411,6 +414,21 @@ def layer_profile(model, tokenizer, prompts: list[str], hs_indices: list[int],
 # Corpus loading
 # --------------------------------------------------------------------------
 
+def fetch_source_pool() -> Path:
+    """Fetch the AH/AK Stage-1 question pool from the private HF staging
+    repo (STAGING_REPO/POOL_IN_REPO) via hf_hub_download, the ONLY source of
+    this experiment's corpus -- no question text is committed to this
+    public repo (see analysis-committed/corpus/PROVENANCE.md). Requires
+    HF_TOKEN in the environment; huggingface_hub reads it automatically
+    (same pattern as experiment/phase1/probe/cloud/modal_ak_stage1.py's own
+    pool fetch). Returns the local (huggingface_hub-cached) path."""
+    from huggingface_hub import hf_hub_download
+
+    p = hf_hub_download(repo_id=STAGING_REPO, filename=POOL_IN_REPO,
+                         repo_type="dataset")
+    return Path(p)
+
+
 def load_corpus(path: Path, n: int, seed: int = 20260707) -> list[str]:
     """Read up to n question strings, in file order, from a local corpus
     JSONL already produced by build_corpus() (a flat {"question": ...} per
@@ -419,13 +437,15 @@ def load_corpus(path: Path, n: int, seed: int = 20260707) -> list[str]:
     letting a small --n-prompts smoke run and a large full run share the
     same leading rows). `seed` is accepted for CLI symmetry with
     build-corpus but unused here (the file's own row order already encodes
-    the one random shuffle). Falls back to auto-building the corpus from
-    DEFAULT_SOURCE_POOL if `path` does not exist yet (first-run
-    convenience; see build-corpus for the documented default pool choice)."""
+    the one random shuffle). Falls back to auto-building the corpus (fetch
+    + deterministic re-sample from the private HF staging pool, see
+    fetch_source_pool/build_corpus) if `path` does not exist yet (first-run
+    convenience, identical on a local checkout or a fresh Modal clone)."""
     if not path.exists():
-        print(f"[jlens] corpus {path} not found; building it from "
-              f"{DEFAULT_SOURCE_POOL} (n={n}, seed={seed})", flush=True)
-        build_corpus(Path(DEFAULT_SOURCE_POOL), path, n=max(n, 1000), seed=seed)
+        print(f"[jlens] corpus {path} not found; building it from the "
+              f"HF-staged source pool {STAGING_REPO}:{POOL_IN_REPO} "
+              f"(n={n}, seed={seed})", flush=True)
+        build_corpus(path, n=max(n, 1000), seed=seed)
     rows = []
     with path.open("r", encoding="utf-8") as fh:
         for line in fh:
@@ -441,13 +461,20 @@ def load_corpus(path: Path, n: int, seed: int = 20260707) -> list[str]:
     return rows
 
 
-def build_corpus(source: Path, out_path: Path, n: int, seed: int = 20260707) -> int:
-    """Sample n question strings from a source JSONL pool (any row with a
+def build_corpus(out_path: Path, n: int, seed: int = 20260707,
+                  source: Path | None = None) -> int:
+    """Sample n question strings from the source JSONL pool (any row with a
     `question` field) and write them as a flat local JSONL
     ({"question": ...} per line) this experiment owns (under its own
-    gitignored analysis/). Deterministic given (source, n, seed)."""
+    gitignored analysis/). Deterministic given (source, n, seed). `source`
+    defaults to fetch_source_pool() (the private HF staging repo); pass an
+    explicit local path only to override for testing against a different
+    pool file -- production local runs and Modal runs both use the HF
+    fetch, so they re-derive the identical sample from the identical
+    source, never a locally-committed copy."""
+    src_path = Path(source) if source is not None else fetch_source_pool()
     rows = []
-    with Path(source).open("r", encoding="utf-8") as fh:
+    with src_path.open("r", encoding="utf-8") as fh:
         for line in fh:
             line = line.strip()
             if not line:
@@ -627,14 +654,20 @@ def main():
         p.add_argument("--seed", type=int, default=20260707)
         p.add_argument("--out", required=True)
 
-    p_build = sub.add_parser("build-corpus", help="sample+write this "
-                              "experiment's own local prompt corpus (CPU-only)")
-    p_build.add_argument("--source", default=DEFAULT_SOURCE_POOL)
+    p_build = sub.add_parser("build-corpus", help="fetch the source pool "
+                              "from the private HF staging repo and sample"
+                              "+write this experiment's own local prompt "
+                              "corpus (CPU-only)")
+    p_build.add_argument("--source", default=None,
+                          help="local override path for the source pool "
+                          "(testing only); default fetches "
+                          f"{STAGING_REPO}:{POOL_IN_REPO} via hf_hub_download")
     p_build.add_argument("--out", default=str(DEFAULT_CORPUS_PATH))
     p_build.add_argument("--n", type=int, default=1000)
     p_build.add_argument("--seed", type=int, default=20260707)
     p_build.set_defaults(func=lambda a: print(
-        f"[jlens/build-corpus] wrote {build_corpus(Path(a.source), Path(a.out), a.n, a.seed)} "
+        f"[jlens/build-corpus] wrote "
+        f"{build_corpus(Path(a.out), a.n, a.seed, source=Path(a.source) if a.source else None)} "
         f"questions -> {a.out}"))
 
     p_smoke = sub.add_parser("smoke", help="correctness smoke: final-layer "
