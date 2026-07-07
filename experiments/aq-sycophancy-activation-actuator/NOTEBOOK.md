@@ -33,6 +33,10 @@ in `experiment.yaml`.
   parse, gates parse, and local wrapper dry-run spec. Live Modal actuator launch
   remains blocked pending explicit approval naming AQ, Modal A10G, official
   `Qwen/Qwen3-4B`, and the cost cap.
+- Modal CLI dry-run from pushed commit `e108f15f4` succeeded as app
+  `ap-34vtwn4UfC8VAH01CqgdKN` after setting `PYTHONUTF8=1` and
+  `PYTHONIOENCODING=utf-8`; it printed the resolved actuator spec and exited
+  without spawning GPU work.
 
 ### 2026-07-07 - r2 hydra isolation panel
 

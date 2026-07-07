@@ -296,18 +296,20 @@ checkpoints:
   - py -3.12 -c "from MechInterp.config import load_steer_config; c=load_steer_config('../experiments/aq-sycophancy-activation-actuator/cell.yaml'); print('cell ok', c.surface.rows_path, len(c.arms))"
   - py -3.12 -c "from MechInterp.stats.evaluator import load_gates_config; g=load_gates_config('../experiments/aq-sycophancy-activation-actuator/gates.yaml'); print('gates ok', len(g['gates']), [x['name'] for x in g['gates']])"
   - py -3.12 experiments\aq-sycophancy-activation-actuator\cloud\modal_aq_sycophancy_activation_actuator.py --dry-run --actuator --repo-commit=3041c5dab --cost-cap-usd=10
+  - modal run experiments\aq-sycophancy-activation-actuator\cloud\modal_aq_sycophancy_activation_actuator.py --dry-run --actuator --repo-commit=e108f15f4 --cost-cap-usd=10
   decisions:
   - Keep AQ-G1/readout-floor adjudication in the readout diagnostics rather than in post-steering `gates.yaml`.
   - Do not launch the live Modal actuator until the user gives explicit approval naming AQ, Modal A10G, official Qwen/Qwen3-4B, and the cost cap.
   next_steps:
   - Commit and push the actuator-prep changes.
-  - Run a Modal CLI dry-run from the pushed commit, then request explicit live launch approval.
+  - Request explicit live launch approval.
   signals:
     actuator_rows: 256
     actuator_probe_rows: 128
     actuator_rows_with_selector_scores: 128
     gate_count: 3
     actuator_run_tag: aq-sycophancy-actuator-r2
+    modal_dry_run_app: ap-34vtwn4UfC8VAH01CqgdKN
 ---
 # AQ sycophancy Modal pilot readout
 
@@ -493,6 +495,8 @@ for a Modal A10G run, but live actuator launch remains unapproved.
 - commands:
   - `py -3.12 experiments\aq-sycophancy-activation-actuator\prepare_aq_actuator_rows.py`
   - `py -3.12 experiments\aq-sycophancy-activation-actuator\cloud\modal_aq_sycophancy_activation_actuator.py --dry-run --actuator --repo-commit=3041c5dab --cost-cap-usd=10`
+  - `modal run experiments\aq-sycophancy-activation-actuator\cloud\modal_aq_sycophancy_activation_actuator.py --dry-run --actuator --repo-commit=e108f15f4 --cost-cap-usd=10`
 - decisions:
   - Keep AQ-G1/readout-floor adjudication in the readout diagnostics rather than in post-steering `gates.yaml`.
   - Do not launch the live Modal actuator until the user gives explicit approval naming AQ, Modal A10G, official Qwen/Qwen3-4B, and the cost cap.
+- note: The first Modal CLI dry-run attempt failed on Windows console encoding (`charmap` could not print a checkmark). Rerunning with `PYTHONUTF8=1` and `PYTHONIOENCODING=utf-8` succeeded, initialized dry-run app `ap-34vtwn4UfC8VAH01CqgdKN`, printed the actuator spec, and exited without spawning GPU work.
