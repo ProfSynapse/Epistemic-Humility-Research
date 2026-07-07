@@ -5,7 +5,7 @@ title: Two-signal bf16 substrate pivot; dataset containment + guard/skill harden
   J-lens built
 status: active
 created_at: '2026-07-07T12:36:11Z'
-updated_at: '2026-07-07T12:36:11Z'
+updated_at: '2026-07-07T14:03:39Z'
 phase: CODE
 question: Does two-signal caution regulation actuate bidirectionally on raw-base Qwen3-4B
   once the whole instrument is moved to full bf16 (unifying substrate with the bf16-only
@@ -105,6 +105,76 @@ checkpoints:
   - Await red-team; sign + local sweep; then resolve. J-lens Modal launch pending
     bf16-direction swap + user approval.
   signals: {}
+- id: 005-checkpoint
+  at: '2026-07-07T14:03:39Z'
+  kind: checkpoint
+  title: Checkpoint
+  summary: 'Two-signal red-team -> KILL confirmed -> fixed -> corrected-dose smoke
+    exposed a deeper viability failure -> user reframe to gate-and-snap -> free diagnostic
+    running.
+
+
+    RED-TEAM KILL (confirmed in tuner source): the bf16 dose sweep fed strength=k*ambient
+    as the GAIN into the real erase_write hook (sigma=21.36), and hooks.py docstring
+    L7-12 shows the law writes gain*sigma as the realized projection. So the sweep
+    coherent-move at strength ~24.8 realized a projection ~530, but the run commanded
+    marginal_write ~25 (smoke readback 24.95) -> ~20x under-dosed, guaranteed false
+    null on the novel release half. 0/12 tighten flips in the prior smoke was the
+    signature.
+
+
+    FIX (commit 8f277410 on exp/two-signal-caution-regulation-instruct): added hook.last_readback
+    logging, re-ran sweep in readback units (coherent move median |readback|=531.9,
+    collapse median 952, confab-cell collapse 808 the tighter bound). ALPHA 2.0->40.0,
+    MARGINAL_WRITE_CLIP 40.0->750.0. materialize_eval_pool.py now hard-fails on empty
+    aliases. AMENDMENT/cell.yaml/NOTEBOOK G0 window reconciled to readback units.
+
+
+    VIABILITY FAILURE (reading the actual generations, not the summary): corrected-dose
+    re-smoke -> RELEASE half 0/6 at every dose: negating c_hat leaves refusal intact
+    at low write or shatters into token-spam (yes yes yes / I-don-t-know xN) at high
+    write; never synthesizes a correct answer (even Terry Gilliam->Time Bandits produced
+    yes-yes-yes at -750). TIGHTEN 1/6 clean, and the degeneracy detector UNDER-COUNTS:
+    4/6 confab rows scored deg=0 were actually I"I"I token-spam garbage. Mechanism:
+    c_hat is functionally a say-I-dont-know axis; +c_hat weakly tightens then spams
+    the I token, -c_hat cannot manufacture knowledge. VERDICT: DO NOT SIGN / DO NOT
+    RUN as configured. #8 sign BLOCKED.
+
+
+    KEY REFRAME (user): the scalar SCATTERS dose. Of 6 confab rows only the one at
+    realized proj ~229 flipped clean; ~7 did nothing, 518/606/647/750 all garbaged.
+    So the 1/6 is a dose-scatter artifact, not a ceiling. Redesign = GATE (fire when
+    sensor evidence clears threshold tau) + SNAP to a FIXED optimal setpoint s* (sweet
+    spot, NOT the maximum which is garbage). Both numbers are mathable: tau from ROC/Youden
+    on existing z_doubt/z_confab vs confab labels (CPU), s* from a dose-response P(clean
+    refuse) curve peak (local 3090). Release abandoned; tighten-only.
+
+
+    DIAGNOSTIC running (agent a7d9699da37b1549f, free local 3090, exploratory scratch,
+    NO amendment/sign/commit): step0 fix detector (verify vs known smoke rows), step1
+    fit tau + false-flag cost on known-correct, step2 s* dose-response curve, step3
+    headline = clean-flip rate at s* (Wilson CI) vs scalar 1/6 + false-refusal cost.
+    Uses committed directions at 8f277410, no rebuild.
+
+
+    OTHER DEFECTS found: (a) build_two_signal_directions.py LogisticRegression(saga)
+    has no random_state -> neg_ctrl/c_hat non-reproducible (committed vectors cannot
+    be regenerated); must pin before any signed instrument. (b) release pool appears
+    contaminated with false-premise items (Who made the first telephone call to the
+    Moon?) where release would be wrong anyway.
+
+
+    NEXT: read diagnostic result. If gate-and-snap clearly beats 1/6 with acceptable
+    false-refusal -> promote to a FRESH pre-registered amendment (thresholded-gate
+    law) -- user is separately working on amendment AQ, so pick a NON-AQ slug and
+    check the registry first. If not -> write the current two-signal up as a documented
+    null (readout portable, single caution axis only adds refusal weakly, cannot release).'
+  evidence: []
+  run_ids: []
+  commands: []
+  decisions: []
+  next_steps: []
+  signals: {}
 ---
 # Two-signal bf16 substrate pivot; dataset containment + guard/skill hardening; J-lens built
 
@@ -151,3 +221,22 @@ _No summary yet._
 - summary: Red-team of the bf16 instrument is running (oracle-leak/circularity, dose sub-threshold vs collapse-adjacent-clip, grader is_degenerate JSON strip, placebo integrity, gates-unchanged). On clear: lead signs (user pre-authorized) then runs the 458-row sweep on the free local 3090, red-teams the results, resolves and PRs (squash-merge to keep intermediate question-text blobs off public main). J-lens (branch exp/j-space-localization-qwen3-4b; harness + containment done, doc fixes at 6c2f42f9) ships to Modal AFTER the bf16 directions are swapped in, REPO_COMMIT re-pinned, and the branch pushed; needs fresh user launch approval (~3-4 USD, 25 USD cap).
 - next steps:
   - Await red-team; sign + local sweep; then resolve. J-lens Modal launch pending bf16-direction swap + user approval.
+### 005-checkpoint - Checkpoint
+
+- at: `2026-07-07T14:03:39Z`
+- kind: `checkpoint`
+- summary: Two-signal red-team -> KILL confirmed -> fixed -> corrected-dose smoke exposed a deeper viability failure -> user reframe to gate-and-snap -> free diagnostic running.
+
+RED-TEAM KILL (confirmed in tuner source): the bf16 dose sweep fed strength=k*ambient as the GAIN into the real erase_write hook (sigma=21.36), and hooks.py docstring L7-12 shows the law writes gain*sigma as the realized projection. So the sweep coherent-move at strength ~24.8 realized a projection ~530, but the run commanded marginal_write ~25 (smoke readback 24.95) -> ~20x under-dosed, guaranteed false null on the novel release half. 0/12 tighten flips in the prior smoke was the signature.
+
+FIX (commit 8f277410 on exp/two-signal-caution-regulation-instruct): added hook.last_readback logging, re-ran sweep in readback units (coherent move median |readback|=531.9, collapse median 952, confab-cell collapse 808 the tighter bound). ALPHA 2.0->40.0, MARGINAL_WRITE_CLIP 40.0->750.0. materialize_eval_pool.py now hard-fails on empty aliases. AMENDMENT/cell.yaml/NOTEBOOK G0 window reconciled to readback units.
+
+VIABILITY FAILURE (reading the actual generations, not the summary): corrected-dose re-smoke -> RELEASE half 0/6 at every dose: negating c_hat leaves refusal intact at low write or shatters into token-spam (yes yes yes / I-don-t-know xN) at high write; never synthesizes a correct answer (even Terry Gilliam->Time Bandits produced yes-yes-yes at -750). TIGHTEN 1/6 clean, and the degeneracy detector UNDER-COUNTS: 4/6 confab rows scored deg=0 were actually I"I"I token-spam garbage. Mechanism: c_hat is functionally a say-I-dont-know axis; +c_hat weakly tightens then spams the I token, -c_hat cannot manufacture knowledge. VERDICT: DO NOT SIGN / DO NOT RUN as configured. #8 sign BLOCKED.
+
+KEY REFRAME (user): the scalar SCATTERS dose. Of 6 confab rows only the one at realized proj ~229 flipped clean; ~7 did nothing, 518/606/647/750 all garbaged. So the 1/6 is a dose-scatter artifact, not a ceiling. Redesign = GATE (fire when sensor evidence clears threshold tau) + SNAP to a FIXED optimal setpoint s* (sweet spot, NOT the maximum which is garbage). Both numbers are mathable: tau from ROC/Youden on existing z_doubt/z_confab vs confab labels (CPU), s* from a dose-response P(clean refuse) curve peak (local 3090). Release abandoned; tighten-only.
+
+DIAGNOSTIC running (agent a7d9699da37b1549f, free local 3090, exploratory scratch, NO amendment/sign/commit): step0 fix detector (verify vs known smoke rows), step1 fit tau + false-flag cost on known-correct, step2 s* dose-response curve, step3 headline = clean-flip rate at s* (Wilson CI) vs scalar 1/6 + false-refusal cost. Uses committed directions at 8f277410, no rebuild.
+
+OTHER DEFECTS found: (a) build_two_signal_directions.py LogisticRegression(saga) has no random_state -> neg_ctrl/c_hat non-reproducible (committed vectors cannot be regenerated); must pin before any signed instrument. (b) release pool appears contaminated with false-premise items (Who made the first telephone call to the Moon?) where release would be wrong anyway.
+
+NEXT: read diagnostic result. If gate-and-snap clearly beats 1/6 with acceptable false-refusal -> promote to a FRESH pre-registered amendment (thresholded-gate law) -- user is separately working on amendment AQ, so pick a NON-AQ slug and check the registry first. If not -> write the current two-signal up as a documented null (readout portable, single caution axis only adds refusal weakly, cannot release).
