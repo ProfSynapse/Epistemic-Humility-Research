@@ -37,15 +37,73 @@ cells.
 
 | Verb | GPU? | What it does |
 |------|------|--------------|
+| `mechinterp run` | depends on stages/provider | run a multi-stage `mechinterp-pipeline/v1` YAML locally or submit it to Modal |
 | `mechinterp extract` | yes (`--i-know-this-runs-on-gpu`) | generate over rows, capture hidden states to safetensors + a manifest |
 | `mechinterp probe-fit` | no (CPU) | fit a linear readout from extracted activations, freeze a `mechinterp-direction/v1` JSON |
 | `mechinterp steer` | yes (`--i-know-this-runs-on-gpu`) | run the six-block declarative intervention cell (smoke-gated) |
 | `mechinterp score-gates` | no (CPU) | evaluate a `gates.yaml` against a per-row output JSONL |
 | `mechinterp list-configs` | no (CPU) | list the bundled example recipes |
 
+Prefer `mechinterp run --config <pipeline.yaml>` as the outer operator surface
+for new cells. It keeps orchestration config-first: the YAML declares stages,
+stage configs, Modal image/GPU/timeout, checkpoint paths, environment, and
+plug-in paths; CLI flags supply late-bound facts only (`--provider`,
+`--repo-commit`, `--only-step`, `--from-step`, `--skip-step`, `--yes`, and the
+per-run GPU acknowledgement). Use the individual verbs directly for focused
+debugging, diagnostics, or when a single stage is genuinely all you need.
+
 `extract` and `steer` refuse to run without `--i-know-this-runs-on-gpu`.
 `probe-fit` and `score-gates` are CPU-only, so they are the parts you iterate on
 locally without a GPU.
+
+## Pipeline config
+
+A pipeline config has schema `mechinterp-pipeline/v1` and belongs beside the
+experiment's cell configs, for example `experiments/<slug>/pipeline.yaml`. Keep
+it generic: it may reference project-owned rows, renders, graders, and gates,
+but the Synaptic Tuner runner itself stays experiment-agnostic.
+
+Use pipeline stages to sequence:
+
+- `kind: command` for CPU/local smokes, preflight checks, or project-side
+  deterministic transforms.
+- `kind: mechinterp.extract` for activation capture.
+- `kind: mechinterp.probe-fit` for direction fitting.
+- `kind: mechinterp.steer` for intervention cells. Put `execution.render_fn` in
+  the steer cell config, or `render_fn` on the pipeline stage, so launchers do
+  not need wrapper flags for project prompt rendering.
+- `kind: mechinterp.score-gates` for declarative adjudication.
+
+Minimal operator commands:
+
+```bash
+cd synaptic-tuner
+
+# Inspect the exact stage plan without touching GPU or cloud.
+python tuner.py mechinterp run \
+  --config ../experiments/<slug>/pipeline.yaml \
+  --provider local \
+  --dry-run
+
+# Run a CPU-only stage locally.
+python tuner.py mechinterp run \
+  --config ../experiments/<slug>/pipeline.yaml \
+  --provider local \
+  --only-step fit \
+  --yes
+
+# Submit a GPU pipeline to Modal from an exact pushed tuner commit.
+python tuner.py mechinterp run \
+  --config ../experiments/<slug>/pipeline.yaml \
+  --provider modal \
+  --repo-commit <pushed-synaptic-tuner-sha> \
+  --i-know-this-runs-on-gpu \
+  --yes
+```
+
+Do not use Modal just to test CPU config plumbing. Run a local `command` stage
+smoke first; reserve Modal for a GPU-backed extract/steer path after the plan is
+clean and the exact commit is pushed.
 
 ## The six-block steer cell
 
@@ -208,9 +266,42 @@ python synaptic-tuner/tuner.py mechinterp list-configs   # bundled tuner templat
 
 ## Typical workflow
 
-Run every command from the REPO ROOT (see the CWD warning above). Set
-`PYTHONPATH` to wherever your `--render-fn` / grader modules live (for example
-`experiments/common/renders`, or the cell's own directory).
+For new cells, make `pipeline.yaml` the default launch artifact and use stage
+selection flags for iteration. Run every command from the REPO ROOT (see the CWD
+warning above). For project-local configs, set `runtime.workdir: ..` in the
+pipeline YAML so stages execute against the research repo root while the tuner
+entrypoint remains `synaptic-tuner/tuner.py`.
+
+```bash
+python synaptic-tuner/tuner.py mechinterp run \
+  --config experiments/<slug>/pipeline.yaml \
+  --provider local \
+  --dry-run
+
+python synaptic-tuner/tuner.py mechinterp run \
+  --config experiments/<slug>/pipeline.yaml \
+  --provider local \
+  --only-step fit \
+  --yes
+```
+
+Modal submission is for GPU-backed runs and currently clones the pushed tuner
+repo/commit. Use it only when the selected pipeline config and referenced stage
+configs are available in that cloned repo, or after adding an explicit generic
+artifact-staging/experiment-repo mechanism.
+
+```bash
+python synaptic-tuner/tuner.py mechinterp run \
+  --config synaptic-tuner/MechInterp/configs/templates/pipeline.yaml \
+  --provider modal \
+  --repo-commit <pushed-synaptic-tuner-sha> \
+  --i-know-this-runs-on-gpu \
+  --yes
+```
+
+The lower-level verb sequence is still useful when debugging a stage directly:
+set `PYTHONPATH` to wherever your `--render-fn` / grader modules live (for
+example `experiments/common/renders`, or the cell's own directory).
 
 ```bash
 # 1. Extract hidden states over a labeled row pool (GPU).
@@ -236,10 +327,6 @@ python synaptic-tuner/tuner.py mechinterp score-gates \
   --gates-config experiments/<slug>/gates.yaml \
   --rows-path experiments/<slug>/analysis/rows_out.jsonl
 ```
-
-Run the `mechinterp` verbs from the `synaptic-tuner/` dir (that is where
-`tuner.py` and the `MechInterp` package resolve); set `PYTHONPATH` to the project
-graders/renders dirs so the flat plug-in module names resolve.
 
 ## Gates
 
@@ -273,10 +360,12 @@ reader can consume.
 
 - **Local** (RTX 3090): run the GPU verbs directly with
   `--i-know-this-runs-on-gpu`. Iterate the CPU verbs (`probe-fit`,
-  `score-gates`) freely; they need no GPU.
+  `score-gates`) freely; they need no GPU. Use local `mechinterp run` smokes for
+  command/config plumbing before involving Modal.
 - **Modal / cloud**: new cells launch through the tuner `mechinterp` verbs inside
-  the Modal harness. Before any paid run, walk the wrapper-authoring checklist
-  in the experiment-runner skill:
+  the Modal harness, preferably via `mechinterp run --provider modal` against an
+  exact pushed Synaptic Tuner commit. Before any paid run, walk the
+  wrapper-authoring checklist in the experiment-runner skill:
   [reference/runpod-modal-lanes.md](../experiment-runner/reference/runpod-modal-lanes.md)
   (five paid-run killers: idempotent clone under retries, argparse equals form
   for negative-leading values, spawn+detach reap-proofing, xet-off in image AND
