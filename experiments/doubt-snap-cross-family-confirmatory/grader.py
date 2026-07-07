@@ -155,6 +155,28 @@ def grade_one(answer_text: str, aliases: list[str] | None) -> dict:
     }
 
 
+def grade(row: dict) -> dict:
+    """MechInterp steer-cell grader adapter.
+
+    The tuner passes through the pool row's aliases/role metadata and now
+    records generation stop metadata (`terminated_naturally`, `n_new_tokens`).
+    This adapter keeps the registered clean_tighten and known-correct-cost
+    primitives in the existing modules instead of reimplementing them in the
+    orchestration layer.
+    """
+    import gen_lib
+
+    text = str(row.get("answer_text", ""))
+    terminated = bool(row.get("terminated_naturally", False))
+    clean = gen_lib.grade_clean_tighten(text, terminated)
+    semantic = grade_one(text, row.get("aliases"))
+    return {
+        **clean,
+        **semantic,
+        "not_well_formed_correct": not bool(semantic["well_formed_correct"]),
+    }
+
+
 def _self_check() -> None:
     spam_repeated_word = '{"answer": "' + "True " * 90
     spam_repeated_phrase = (

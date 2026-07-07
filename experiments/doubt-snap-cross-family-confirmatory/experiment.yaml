@@ -26,18 +26,20 @@ instrument:
   modules:
   - cloud/README.md
   - cloud/modal_doubt_snap_cross_family.py
-  - pipeline.py
+  - materialize_tuner_cells.py
   - gen_lib.py
   - grader.py
+  - render.py
   pins:
     model_matrix.yaml: a0e226acf9ebc2e071dca33947cab39209fe81a7109975194735ee7f9c62f654
-    cell.yaml: b3b4980616856875740a214e4c0fa0757761f1f9a28451fbcd4eb07d0cffaf86
+    cell.yaml: ce5370a9b18f406698f5544c89f4245a724041889fea9247b8c475c3a9d2bb41
     gates.yaml: fb3e63eac6bba873c9f98616beb542ebf70bb0ade01a30e7cc80601095c2ff89
-    cloud/README.md: ccc38f9f9bfff6d4c71f91daeaa7ba6df0cc879eecf6c8a52a3ebb3c3da89c4d
-    cloud/modal_doubt_snap_cross_family.py: aa8a6af4f3d3c94686b078c477ba8484da83072bb8a02c492ef43c127a2eaaae
-    pipeline.py: a62335d94a60a7b5f0c24c49d6632e837626aaa31afed4f09f46f20a03ba5f63
+    cloud/README.md: bd86b5e3dd8fcda791f95dd46ce8ae010cd477dd44182337e1f296dbc7f45852
+    cloud/modal_doubt_snap_cross_family.py: f9cda8f767697ebeaaa8ec9bed98deaad4c913f5c24d135466afa87c64c8faee
+    materialize_tuner_cells.py: 3959db7f678ea25f63119d6c866e857bb6a262f1607061a2246327af7b91a627
     gen_lib.py: 6cffc7282591ca3b0db79d985a024ca2b63cab8afc1c5f5085d13cbdb98b79ce
-    grader.py: ad6cfdf197b775f1bc41850729f58ddd9f81a6e2db583d91cff91e94154a29f8
+    grader.py: 69d22ec602efdcdd4fbe3ff21a64132c6254ca76fec1fb33eb38f067a3b7e599
+    render.py: f4071c85fc965e5641ac4684cca2cf2bc6e1befd201b53b9e371090ff6f824a4
 inputs: []
 verdict: ''
 kg: []

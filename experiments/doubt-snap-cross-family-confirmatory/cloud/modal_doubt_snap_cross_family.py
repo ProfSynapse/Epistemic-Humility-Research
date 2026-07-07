@@ -1,17 +1,9 @@
-"""Modal fan-out wrapper for doubt-snap-cross-family-confirmatory.
+"""Thin Modal fan-out wrapper for tuner-backed doubt-snap cells.
 
-Launch only after the amendment is signed and the repo commit is pinned:
-
-    export EHR_LAUNCH_OK=doubt-snap-cross-family-confirmatory
-    export MODAL_COST_CAP_USD=<approved cap>
-    export EHR_REPO_COMMIT=<signed commit sha>
-    modal run --detach cloud/modal_doubt_snap_cross_family.py \
-      --cell-ids=qwen35_4b,ministral3_8b_instruct
-
-This wrapper deliberately supports multiple `--cell-id` values. Each selected
-cell is spawned as its own detached Modal function so model families run in
-parallel. Inside the cell, the registered pipeline batches generation and hidden
-state extraction according to `cell.yaml`.
+This wrapper owns cloud process shape only. It clones the EHR repo at an exact
+commit, initializes the pinned Synaptic-Tuner submodule, materializes the
+per-cell `mechinterp steer` configs from frozen artifacts, and delegates model
+execution to `python synaptic-tuner/tuner.py mechinterp run`.
 """
 
 from __future__ import annotations
@@ -27,13 +19,11 @@ RUN_TAG = "doubt-snap-cross-family-r1"
 
 IMAGE = "unsloth/unsloth:2026.1.2-pt2.9.0-cu12.8-update"
 PIP = [
-    "git+https://github.com/huggingface/transformers.git",
-    "accelerate>=1.0",
-    "huggingface_hub>=1.5,<2.0",
     "pyyaml",
-    "scikit-learn",
+    "pydantic",
     "safetensors",
-    "tokenizers>=0.22.0",
+    "scikit-learn",
+    "accelerate",
 ]
 HOURS = 60 * 60
 
@@ -46,7 +36,7 @@ image = (
 )
 
 app = modal.App("eh-doubt-snap-cross-family", image=image)
-vol = modal.Volume.from_name("eh-doubt-snap-cross-family-logs", create_if_missing=True)
+vol = modal.Volume.from_name("eh-doubt-snap-cross-family", create_if_missing=True)
 VOL_MOUNT = "/vol/doubt_snap_cross_family"
 
 
@@ -60,7 +50,9 @@ VOL_MOUNT = "/vol/doubt_snap_cross_family"
 def run_one_cell(
     cell_id: str,
     repo_commit: str,
-    stage: str = "full",
+    only_step: str = "",
+    from_step: str = "",
+    batch_size: int = 8,
     dry_run: bool = False,
 ) -> None:
     import re
@@ -79,8 +71,7 @@ def run_one_cell(
     workspace = Path("/workspace/ehr")
 
     def sh(cmd: list[str], cwd: Path | None = None, check: bool = True) -> None:
-        printable = " ".join(cmd)
-        printable = re.sub(r"hf_[A-Za-z0-9]+", "hf_[REDACTED]", printable)
+        printable = re.sub(r"hf_[A-Za-z0-9]+", "hf_[REDACTED]", " ".join(cmd))
         print(f"[modal-doubt-snap] $ {printable}", flush=True)
         result = subprocess.run(cmd, cwd=str(cwd) if cwd else None)
         if check and result.returncode != 0:
@@ -93,14 +84,34 @@ def run_one_cell(
     sh(["git", "submodule", "update", "--init", "synaptic-tuner"], cwd=workspace)
 
     exp_dir = workspace / "experiments" / EXPERIMENT_SLUG
-    pipeline = exp_dir / "pipeline.py"
+    materializer = exp_dir / "materialize_tuner_cells.py"
+    sh(
+        [
+            sys.executable,
+            str(materializer),
+            f"--cell-id={cell_id}",
+            f"--batch-size={batch_size}",
+        ],
+        cwd=workspace,
+    )
+
+    pipeline = exp_dir / "analysis" / cell_id / "pipeline.yaml"
     cmd = [
         sys.executable,
+        str(workspace / "synaptic-tuner" / "tuner.py"),
+        "mechinterp",
+        "run",
+        "--config",
         str(pipeline),
-        "run-cell",
-        f"--cell-id={cell_id}",
-        f"--stage={stage}",
+        "--provider",
+        "local",
+        "--yes",
+        "--i-know-this-runs-on-gpu",
     ]
+    if only_step:
+        cmd.extend(["--only-step", only_step])
+    if from_step:
+        cmd.extend(["--from-step", from_step])
     if dry_run:
         cmd.append("--dry-run")
     sh(cmd, cwd=workspace)
@@ -125,7 +136,9 @@ def run_one_cell(
 @app.local_entrypoint()
 def main(
     cell_ids: str,
-    stage: str = "full",
+    only_step: str = "",
+    from_step: str = "",
+    batch_size: int = 8,
     dry_run: bool = False,
 ) -> None:
     if os.environ.get("EHR_LAUNCH_OK") != EXPERIMENT_SLUG:
@@ -134,10 +147,16 @@ def main(
         raise SystemExit("set MODAL_COST_CAP_USD to the approved cap before spawning")
     if not os.environ.get("EHR_REPO_COMMIT"):
         raise SystemExit("set EHR_REPO_COMMIT to the signed commit sha before spawning")
-    cell_id_list = [c.strip() for c in cell_ids.split(",") if c.strip()]
-    if not cell_id_list:
+    ids = [c.strip() for c in cell_ids.split(",") if c.strip()]
+    if not ids:
         raise SystemExit("pass at least one --cell-ids value")
-    repo_commit = os.environ["EHR_REPO_COMMIT"]
-    for cid in cell_id_list:
-        run_one_cell.spawn(cid, repo_commit, stage=stage, dry_run=dry_run)
-        print(f"spawned {cid} stage={stage} dry_run={dry_run}", flush=True)
+    for cid in ids:
+        run_one_cell.spawn(
+            cid,
+            os.environ["EHR_REPO_COMMIT"],
+            only_step=only_step,
+            from_step=from_step,
+            batch_size=batch_size,
+            dry_run=dry_run,
+        )
+        print(f"spawned {cid} only_step={only_step} from_step={from_step}", flush=True)

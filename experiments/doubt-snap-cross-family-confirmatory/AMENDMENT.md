@@ -84,15 +84,20 @@ Arms:
   held-out confab and known-correct rows.
 
 Execution is Modal-first on A100. Cells run in parallel, one detached Modal
-function per model cell. Within each cell, baseline generation and activation
-extraction are batched. Intervention generation uses the tuner's per-row
-erase/write hook mask in batches; every batch carries row-local active flags and
-strengths, so failed cells can be relaunched by `--cell-id` without rerunning the
-matrix. Each family loader must pass a sequential-vs-batch parity smoke before
-full held-out scoring.
+function per model cell. The EHR side owns orchestration and scoring only:
+baseline generation and hidden-state capture use the existing Synaptic-Tuner
+batch verbs (`batch-generate` / `batch-capture`, or vLLM where the stage is
+generation-only and does not need hidden states), and activation writing uses
+the generic tuner `mechinterp steer` cell. Intervention generation is batched
+through the tuner steer path with per-row active masks and strengths; every
+model writes restartable per-cell configs under `analysis/<cell_id>/`, so a
+failed cell or arm can be relaunched without rerunning the family matrix. Each
+family loader must pass a sequential-vs-batch parity smoke before full held-out
+scoring.
 
-Instrument config files pinned at sign: `model_matrix.yaml`, `cell.yaml`,
-`gates.yaml`.
+Instrument files pinned at sign: `model_matrix.yaml`, `cell.yaml`,
+`gates.yaml`, the thin Modal wrapper, the tuner-cell materializer, render and
+grader adapters, and the pinned Synaptic-Tuner submodule commit.
 
 ## Prediction
 

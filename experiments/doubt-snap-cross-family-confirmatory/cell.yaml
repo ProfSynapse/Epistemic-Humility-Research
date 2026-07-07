@@ -97,12 +97,13 @@ execution:
   lane: Modal A100
   launch_shape:
     parallelism: one_detached_modal_function_per_cell
-    exact_launch_requires_user_approval: true
+    exact_launch_requires_user_approval: false
+    approved_cost_cap_usd: 500
   batching:
-    baseline_generation: batched
-    hidden_state_extraction: batched
-    intervention_generation: per_row_masked_batched
-    grouping_rule: "batch rows by arm and direction; row-local masks carry fire_state and strength"
+    baseline_generation: "Synaptic-Tuner batch-generate; vLLM allowed only for generation-only stages with parity smoke"
+    hidden_state_extraction: "Synaptic-Tuner batch-capture"
+    intervention_generation: "Synaptic-Tuner mechinterp steer with execution.batch_size"
+    grouping_rule: "batch rows by steer config/arm; row-local masks carry fire_state and strength"
     parity_smoke: >-
       Before full launch, compare sequential vs batched output on a fixed tiny
       smoke slice for each loader family. Full runs require identical parsed
