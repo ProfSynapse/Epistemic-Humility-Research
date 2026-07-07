@@ -7,16 +7,17 @@ Those live in the pinned Synaptic-Tuner submodule.
 Planned execution shape:
 
 1. One detached Modal function per `model_matrix.yaml` cell.
-2. Prep stages use existing tuner batch verbs (`batch-generate` and
+2. `prep_tuner_cell.py` uses existing tuner batch verbs (`batch-generate` and
    `batch-capture`) plus project scoring code to mine baseline roles, extract
-   the registered layer activations, fit directions on FIT, fit tau on FIT, and
-   choose dose on FIT.
-3. `materialize_tuner_cells.py` writes restartable `mechinterp steer` configs
+   the registered layer activations, fit directions on FIT, and fit tau on FIT.
+3. The wrapper runs a FIT-only `mechinterp steer` dose sweep, then
+   `prep_tuner_cell.py select-dose` freezes the lowest viable dose.
+4. `materialize_tuner_cells.py` writes restartable `mechinterp steer` configs
    for c-hat and random-direction arms from frozen FIT artifacts.
-4. The Modal wrapper runs `python synaptic-tuner/tuner.py mechinterp run` on
+5. The Modal wrapper runs `python synaptic-tuner/tuner.py mechinterp run` on
    those configs. Intervention generation batches rows through the tuner's
    row-local active masks and strengths.
-5. Private row text, aliases, and generations stay in HF/private Modal artifacts
+6. Private row text, aliases, and generations stay in HF/private Modal artifacts
    or local gitignored `analysis/`. Public committed outputs are ID manifests,
    direction vectors, fit summaries, gate summaries, and aggregate result JSON.
 

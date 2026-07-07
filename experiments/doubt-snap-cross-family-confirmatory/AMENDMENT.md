@@ -1,6 +1,6 @@
 # doubt-snap-cross-family-confirmatory
 
-Status: draft (not signed; do not launch as confirmatory evidence).
+Status: signed (launchable as confirmatory evidence once the pinned runner state is committed).
 
 Keep this document the prose home for the experiment. The machine state lives in
 `experiment.yaml` and is never duplicated here.
@@ -89,14 +89,15 @@ baseline generation and hidden-state capture use the existing Synaptic-Tuner
 batch verbs (`batch-generate` / `batch-capture`, or vLLM where the stage is
 generation-only and does not need hidden states), and activation writing uses
 the generic tuner `mechinterp steer` cell. The pinned Synaptic-Tuner submodule
-commit for this run is `be733fe` on branch
+commit for this run is `aa93103` on branch
 `feature/doubt-snap-batch-mechinterp`, which combines the existing batch verbs,
-config-first mechinterp cells, batched steer generation, and generation stop
-metadata. Intervention generation is batched through the tuner steer path with
-per-row active masks and strengths; every model writes restartable per-cell
-configs under `analysis/<cell_id>/`, so a failed cell or arm can be relaunched
-without rerunning the family matrix. Each family loader must pass a
-sequential-vs-batch parity smoke before full held-out scoring.
+config-first mechinterp cells, batched steer generation, generation stop
+metadata, and model-revision pins for batch and steer loads. Intervention
+generation is batched through the tuner steer path with per-row active masks
+and strengths; every model writes restartable per-cell configs under
+`analysis/<cell_id>/`, so a failed cell or arm can be relaunched without
+rerunning the family matrix. Each family loader must pass a sequential-vs-batch
+parity smoke before full held-out scoring.
 
 Instrument files pinned at sign: `model_matrix.yaml`, `cell.yaml`,
 `gates.yaml`, the thin Modal wrapper, the tuner-cell materializer, render and

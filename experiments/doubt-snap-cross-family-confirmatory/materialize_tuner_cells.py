@@ -192,6 +192,7 @@ def materialize(cell_id: str, batch_size: int) -> dict[str, str]:
             "schema_version": "mechinterp-pipeline/v1",
             "name": f"doubt-snap-{cell_id}",
             "model": cell["repo"],
+            "model_revision": cell.get("revision"),
             "runtime": {
                 "provider": "local",
                 "python": "python",

@@ -1,9 +1,10 @@
 """Thin Modal fan-out wrapper for tuner-backed doubt-snap cells.
 
 This wrapper owns cloud process shape only. It clones the EHR repo at an exact
-commit, initializes the pinned Synaptic-Tuner submodule, materializes the
-per-cell `mechinterp steer` configs from frozen artifacts, and delegates model
-execution to `python synaptic-tuner/tuner.py mechinterp run`.
+commit, initializes the pinned Synaptic-Tuner submodule, then runs one complete
+restartable cell: baseline mining/capture, FIT dose sweep, dose selection,
+held-out steering, and scoring. Model work stays delegated to Synaptic-Tuner
+verbs.
 """
 
 from __future__ import annotations
@@ -70,10 +71,16 @@ def run_one_cell(
 
     workspace = Path("/workspace/ehr")
 
-    def sh(cmd: list[str], cwd: Path | None = None, check: bool = True) -> None:
+    def sh(
+        cmd: list[str],
+        cwd: Path | None = None,
+        check: bool = True,
+        env: dict[str, str] | None = None,
+    ) -> None:
         printable = re.sub(r"hf_[A-Za-z0-9]+", "hf_[REDACTED]", " ".join(cmd))
         print(f"[modal-doubt-snap] $ {printable}", flush=True)
-        result = subprocess.run(cmd, cwd=str(cwd) if cwd else None)
+        merged_env = {**os.environ, **(env or {})}
+        result = subprocess.run(cmd, cwd=str(cwd) if cwd else None, env=merged_env)
         if check and result.returncode != 0:
             raise RuntimeError(f"command failed ({result.returncode})")
 
@@ -84,6 +91,62 @@ def run_one_cell(
     sh(["git", "submodule", "update", "--init", "synaptic-tuner"], cwd=workspace)
 
     exp_dir = workspace / "experiments" / EXPERIMENT_SLUG
+    if dry_run:
+        print(
+            f"[modal-doubt-snap] dry run: would prepare, dose, materialize, steer, score {cell_id}",
+            flush=True,
+        )
+        return
+
+    import yaml
+
+    matrix = yaml.safe_load((exp_dir / "model_matrix.yaml").read_text())
+    cells = {c["cell_id"]: c for c in matrix["cells"]}
+    if cell_id not in cells:
+        raise RuntimeError(f"unknown cell_id: {cell_id}")
+    cell = cells[cell_id]
+    env = {
+        "PYTHONPATH": f"{exp_dir}{os.pathsep}{os.environ.get('PYTHONPATH', '')}",
+        "DOUBT_SNAP_RENDER_MODEL": cell["repo"],
+    }
+
+    prep = exp_dir / "prep_tuner_cell.py"
+    sh(
+        [
+            sys.executable,
+            str(prep),
+            "prepare",
+            f"--cell-id={cell_id}",
+            f"--batch-size={batch_size}",
+        ],
+        cwd=workspace,
+        env=env,
+    )
+
+    dose_cfg = exp_dir / "analysis" / cell_id / "steer_dose_fit.yaml"
+    sh(
+        [
+            sys.executable,
+            str(workspace / "synaptic-tuner" / "tuner.py"),
+            "mechinterp",
+            "steer",
+            "--mi-config",
+            str(dose_cfg),
+            "--model",
+            cell["repo"],
+            "--model-revision",
+            cell["revision"],
+            "--i-know-this-runs-on-gpu",
+        ],
+        cwd=workspace,
+        env=env,
+    )
+    sh(
+        [sys.executable, str(prep), "select-dose", f"--cell-id={cell_id}"],
+        cwd=workspace,
+        env=env,
+    )
+
     materializer = exp_dir / "materialize_tuner_cells.py"
     sh(
         [
@@ -93,6 +156,7 @@ def run_one_cell(
             f"--batch-size={batch_size}",
         ],
         cwd=workspace,
+        env=env,
     )
 
     pipeline = exp_dir / "analysis" / cell_id / "pipeline.yaml"
@@ -112,9 +176,13 @@ def run_one_cell(
         cmd.extend(["--only-step", only_step])
     if from_step:
         cmd.extend(["--from-step", from_step])
-    if dry_run:
-        cmd.append("--dry-run")
-    sh(cmd, cwd=workspace)
+    sh(cmd, cwd=workspace, env=env)
+
+    sh(
+        [sys.executable, str(prep), "score-heldout", f"--cell-id={cell_id}"],
+        cwd=workspace,
+        env=env,
+    )
 
     dst = Path(VOL_MOUNT) / RUN_TAG / cell_id
     dst.mkdir(parents=True, exist_ok=True)
