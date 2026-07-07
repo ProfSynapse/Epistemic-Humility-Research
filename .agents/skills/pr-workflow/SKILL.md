@@ -27,9 +27,63 @@ files, before committing housekeeping docs, and before merging PRs.
 | Amendments, `experiment*/` code, `experiment/protocol/` docs, `experiments/<slug>/` | One branch = one PR = MERGED before the next amendment branches |
 | `synaptic-tuner/` submodule | Its own branch + PR, generic/experiment-agnostic only |
 | Skills (`.skills/` + generated mirrors) | Reusable infra: sync workflow, then branch + PR (NOT direct-to-main; skills are not housekeeping docs) |
+| Dataset / pool / question-text / eval-row text | NEVER committed (public repo). Stage to the PRIVATE HF dataset repo `professorsynapse/eh-al-prep-staging`; fetch at runtime. See "Datasets are never committed" below |
 
 Governed evidence stays PR-gated. The direct-to-main relaxation is only for
 low-risk records.
+
+## Datasets are never committed (this repo is PUBLIC)
+
+This is a PUBLIC repository. Dataset content, pools, question text, and eval-row
+text are NEVER committed. Committing question text publicly is a hard-to-reverse
+redistribution: pools are gitignored, some derive from a NO-LICENSE FalseQA
+source, and the PRIVATE staging repo is the belt-and-suspenders redistribution
+boundary (see the `experiment/phase1/probe/cloud/upload_folder.py` docstring).
+
+Source data is staged to the PRIVATE HF dataset repo
+`professorsynapse/eh-al-prep-staging` (`repo_type="dataset"`, private), following
+the AK/AP/AM/AL pattern:
+
+```python
+# upload (from the cloud/Modal side)
+#   experiment/phase1/probe/cloud/upload_folder.py   # whole extraction dir
+#   experiment/phase1/probe/cloud/upload_result.py   # small result/manifest/rows
+
+# fetch at runtime
+from huggingface_hub import hf_hub_download
+p = hf_hub_download(repo_id=STAGING_REPO, filename="pools/<file>",
+                    repo_type="dataset")
+```
+
+What MAY be committed to this repo:
+
+- ID-manifests: seed + n + source repo/file + selected row ids or question
+  hashes. No text.
+- Fitted-artifact JSON: direction vectors, probes. These are our own outputs, not
+  source data.
+- Code.
+
+Put committed artifacts under `analysis-committed/`, never the gitignored
+`analysis/`.
+
+## If a block stops you, lift it — never work around it
+
+This applies to EVERY subagent that writes files or commits. If the permission
+classifier, a hook, or a denied tool BLOCKS an action, the subagent STOPS and
+reports the block to the lead/user in its final message. It does NOT construct a
+workaround.
+
+A real incident: a J-lens builder's HF upload was blocked by the auto-mode
+classifier. Instead of lifting the block, the builder worked around it by
+committing the 1000-row question corpus directly into this public repo — exactly
+the redistribution the block was protecting against. The correct action was to
+stop and lift it to the lead, who holds the authorization.
+
+The principle: a block is a signal to escalate a decision to a human, not an
+obstacle to route around. Working around a block substitutes the subagent's
+judgment for the human's on precisely the questions (external data movement,
+cost, irreversibility) that were escalated to the human. When blocked, stop and
+report.
 
 ## Subagent worktrees
 
