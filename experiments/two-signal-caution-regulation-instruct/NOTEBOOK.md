@@ -6,6 +6,131 @@ in `experiment.yaml`.
 
 ## Entries
 
+- 2026-07-07 -- BF16 DOSE-UNITS BUG FIX (red-team-caught) + readback-logged
+  dose re-sweep + ALPHA/CLIP recalibration + re-smoke. Supersedes the dose
+  numbers in the entry immediately below (that entry's ALPHA=2.0/CLIP=40.0
+  build is now known to be ~20x under-dosed; its other content -- the
+  extraction, direction refits, containment migration -- is unaffected and
+  NOT redone here). Same pass also carries two other red-team-flagged minor
+  fixes, unrelated to the dose bug: (a) `materialize_eval_pool.py` now
+  HARD-FAILS (nonzero exit) if any answerable_refused row has empty aliases
+  after the local AH A0 join, rather than only warning -- a missing/broken
+  canonical pool could otherwise silently produce a clean-looking but
+  vacuous release-tail null; (b) `AMENDMENT.md`'s Design section now
+  discloses that the same 309 confab rows are in-sample to BOTH the
+  pos_ctrl/neg_ctrl direction fit and the G1-tighten eval tail -- not an
+  outcome leak (grading is independent of the fit labels, the permuted
+  placebo destroys the fit's own row-gain pairing, and the tighten claim
+  already rests on the dark-screen's held-out positive control, not this
+  in-sample fit) but disclosed rather than left implicit.
+
+  **The bug.** The tuner's erase_write law writes `gain*sigma` as the
+  realized post-write projection onto the direction, exactly
+  (`synaptic-tuner/MechInterp/intervention/hooks.py` docstring lines 7-12).
+  `analysis/dose_escalation_bf16_ambient_relative.py` constructs the REAL
+  tuner `InterventionHook` with this experiment's own `sigma=21.36` and
+  passes `strength = k * ambient_mean` as the GAIN argument -- so the
+  sweep's own printed "strength" column (which the entry below, and this
+  file's superseded bf16-pivot text, read as if it were the realized write)
+  was actually a GAIN requiring a further `*sigma_c` (~21x) to become the
+  real setpoint. The prior ALPHA=2.0/MARGINAL_WRITE_CLIP=40.0 build
+  calibrated directly against those un-multiplied numbers, so the real run
+  wrote setpoints ~20x smaller than the confirmed coherent window. This is
+  exactly the confirming signature behind the prior smoke's 0/12 tighten
+  flips: the near-proven tighten half (dark-screen's own positive control:
+  79/80 confab->refuse flips) produced ZERO flips at smoke scale because the
+  dose was ~20x too small to ever leave the "inert" zone.
+
+  **The fix.** Extended `dose_escalation_bf16_ambient_relative.py` to record
+  `hook.last_readback` (the GPU-measured, POST-write projection -- the
+  ground-truth unit, immune to any gain/setpoint confusion) into `per_k` and
+  the row summary, then reran it unchanged otherwise (same c_hat_L34.json,
+  same 24-row half-confab/half-answerable_refused draw, same K_LIST, local
+  3090). 24/24 rows processed, 21/24 usable (3 rows never registered a clean
+  move within K_LIST -- ambient projection too small on those particular
+  rows to reach a coherent move by k=15; not investigated further, same
+  per-row-heterogeneity character as the entry below). Results:
+  `analysis/dose_ladder_bf16_readback_results.jsonl`.
+
+  Readback-unit coherent window (n=21 usable):
+  - first-coherent-move |readback|: median=531.9, p25=452.0, p75=587.9
+    (confab median=456.0, n=9; answerable_refused median=546.0, n=12).
+  - first-garbage-collapse |readback|: median=952.0, p25=743.8, p90=1112.0
+    (confab median=808.0, n=9 -- the LOWER of the two cells; answerable_refused
+    median=997.9, n=12).
+  - Order-of-hundreds, consistent with the dark-screen's own bf16
+    un-orthogonalized pos_ctrl_L34 prior (coherent~100, collapse>=500) scaled
+    by this direction's own sigma_c, and with the hand-derived 530/843
+    estimate from `strength * sigma_c` arithmetic on the entry-below sweep's
+    own numbers.
+  - Fragility finding (not used to set the clip, same convention as the
+    entry below's own low-collapse-outlier discussion): row
+    `ahx::kuq_ku_unknown_x::000518` shows a NON-MONOTONIC garbage flag --
+    garbage at readback -374 (k=7), clears (non-garbage) at -588 (k=11) and
+    -696 (k=13), then re-collapses at -800 (k=15). This reads as a
+    heuristic-detector glitch (the token-collapse/phrase-loop regex checks
+    are not guaranteed monotonic in dose), not a real early collapse floor.
+
+  **Recalibration.** `build_two_signal_directions.py`: `ALPHA` 2.0 -> 40.0,
+  `MARGINAL_WRITE_CLIP` 40.0 -> 750.0 (below BOTH cells' median collapse
+  floors, margin ~58 below confab's own 808 -- the tighter constraint;
+  ~248 below answerable_refused's 998). Also fixed the report function's
+  own `frac_abs_in_bf16_window_ge_15_le_40` / `frac_abs_ge_45` fields, which
+  were hardcoded to the OLD, wrong-unit window -- renamed to
+  `frac_abs_in_bf16_readback_window_ge_452_le_808` / `frac_abs_ge_808` so the
+  committed `build_manifest.json` does not silently re-report the bug's own
+  numbers as if they were still meaningful. Regenerated
+  `analysis-committed/{build_manifest.json,eval_pool_manifest.jsonl}` and
+  re-ran `materialize_eval_pool.py` (458/458 rows, 0 missing question, 0
+  missing alias on answerable_refused). New per-cell distribution: confab
+  (n=309) abs_median|marginal_write|=505.9 (23.3% clipped, 0% reach 808);
+  answerable_refused (n=149) abs_median|marginal_write|=622.6 (43.6% clipped,
+  0% reach 808); overall abs_median=541.2, 57.0% of the pool in [452,808].
+  Both medians land inside the confirmed window and preserve the prior
+  build's orientation and clip-fraction character (majority of rows below
+  the clip in both cells).
+
+  **Re-smoke** (local 3090, free, SAME 12-row stratified subset as both
+  prior smokes -- `analysis/eval_pool_smoke12.jsonl` regenerated from the
+  recalibrated pool by row_key, not reselected, so this is a clean
+  before/after comparison; `analysis/cell_smoke.yaml` regenerated from the
+  updated `cell.yaml` with `surface.rows_path`/`execution.output_path`/
+  `smoke.n_rows` repointed, same convention as all three prior smokes). G0
+  PASSES: `write_ok: True`, `parity_ok: True`, `gen_stream_fired: True`,
+  `offtarget_abs_max: 0.0`, `max_write_error: 2.157` (well within the
+  effective relative tolerance: `write_rel_tol=0.05` times the coupled arm's
+  own mean |commanded| of 450.9, i.e. an envelope of 22.5). Realized
+  |marginal_write| on the smoke's 12 coupled-arm rows: min=6.7, median=499.2,
+  max=750.0 (3 rows pinned exactly at the +/-750 clip, all on the
+  answerable_refused cell) -- comfortably inside the readback-confirmed
+  window at the aggregate level.
+
+  **THE KEY CHECK (falsifier-relevant): tighten-flip count at an in-window
+  dose.** 1/6 confab-cell smoke rows flip baseline-confabulated ->
+  coupled-coherent-refuse (`ah::selfaware_unanswerable::002663`, mw=229.2 --
+  note this flip fired at a BELOW-median dose, not the highest; several
+  higher-dose confab rows, up to mw=750.0, did NOT flip). This is NONZERO,
+  so the step-3 stop-gate ("if the re-smoke still shows ~0 tighten flips at
+  an in-window dose, STOP") does NOT fire -- the dose is live. 1/6 at n=6 is
+  a small-sample proof-of-life only, not a gate result (G1-tighten reads the
+  full 309-row confab cell with a bootstrap CI, not this smoke). Release-flip
+  count: 0/6 (`well_formed_correct`) -- expected at this scale, since the
+  release half is the genuinely open, non-near-proven claim; not smoke-gate
+  relevant either. Degenerate coupled-arm rows: 4/12, concentrated on the
+  answerable_refused cell at/near the +/-750 clip (2 of the 3 clip-pinned
+  rows -- `ahx::triviaqa::005236`, `ahx::triviaqa::004138` -- are degenerate
+  repetition spam; the third clip-pinned row, `ahx::kuq_ku_unknown_x::001029`,
+  a confab row at mw=750.0, is NOT degenerate). Open finding, not gate
+  relevant at smoke scale: the clip ceiling (750) is close enough to some
+  individual rows' own (heterogeneous, per-row) collapse floor that
+  clip-pinned rows show a real, elevated collapse rate -- the same
+  per-row-fragility character flagged throughout this experiment's dose
+  work, now visible in actual generations rather than only the dose-sweep's
+  probe rows.
+
+  Not run: the full 458-row behavioral sweep and `bin/exp sign`; both remain
+  out of scope for this build task, left for the lead to schedule.
+
 - 2026-07-07 -- BF16 SUBSTRATE PIVOT: full refit + dose recalibration +
   eval-pool containment migration + re-smoke.
 

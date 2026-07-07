@@ -109,44 +109,75 @@ HIDDEN_DIM = 2560
 Z_CLIP = 2.0
 
 # Shared alpha_d == alpha_p (single pre-registered scalar, no per-sensor
-# sweep). BF16 RETUNE (2026-07-07, substrate pivot -- see NOTEBOOK.md's bf16
-# dose-calibration entry for the full sweep this constant was picked from).
-# Seeded by the dark-screen's own bf16 characterization of its (different,
-# non-orthogonalized) pos_ctrl_L34 direction (coherent window ~100, collapse
-# >=500, vs 4-bit's 150-300 window / >=400 collapse). This experiment's own
-# fresh 24-row ambient-relative dose escalation
-# (analysis/dose_escalation_bf16_ambient_relative.py ->
-# analysis/dose_ladder_bf16_ambient_relative_results.jsonl) on the ACTUAL
-# refit+orthogonalized c_hat_L34 direction (cos 0.87 with the un-orthogonalized
-# caution_dir, not identical) found a substantially NARROWER and LOWER window
-# than the seed prior: median first-coherent-move strength ~20-27 (k_move
-# median 3x ambient), median first-garbage-collapse strength ~40-43 (k_collapse
-# median 7x ambient), with real per-row heterogeneity (one outlier row
-# collapsed as early as strength ~17.5, a few rows never produced a clean move
-# before collapsing). ALPHA=2.0 (down from an initial ALPHA=4.0 guess seeded
-# from the 4-bit ALPHA=10.0 by a naive linear substrate-window rescale, which
-# overshot the REAL confirmed window by ~2x) puts this eval pool's own
-# abs_median marginal write at 25.3 (confab) / 31.1 (answerable_refused) --
-# inside the confirmed coherent-move zone (~20-35) and comfortably below the
-# confirmed median collapse floor (~40-43).
-ALPHA = 2.0
+# sweep). BF16 DOSE-UNITS FIX (2026-07-07, red-team-confirmed bug, see
+# NOTEBOOK.md's bf16 dose-calibration-fix entry for the full derivation).
+#
+# THE BUG (now fixed): the tuner's erase_write law writes gain*sigma as the
+# realized projection (synaptic-tuner/MechInterp/intervention/hooks.py
+# docstring lines 7-12) -- the commanded setpoint is gain*sigma, NOT gain.
+# analysis/dose_escalation_bf16_ambient_relative.py constructs the REAL
+# tuner InterventionHook with this experiment's own sigma_c=21.36 and passes
+# `strength = k * ambient_mean` as the GAIN argument, so the sweep's printed
+# "strength" column (and the "median first-coherent-move strength ~20-27 /
+# median first-garbage-collapse strength ~40-43" language in the prior
+# version of this comment and in NOTEBOOK.md's superseded bf16-pivot entry)
+# was a GAIN, not a realized write. The PRIOR ALPHA=2.0/CLIP=40.0 build
+# treated those gain numbers as if they were setpoints and calibrated
+# directly against them -- an ~sigma_c-factor (~21x) unit conflation that
+# left the real run ~20x under-dosed (realized median write ~25-31, nowhere
+# near the real coherent window).
+#
+# THE FIX: the sweep script was extended to record `hook.last_readback`
+# (the GPU-measured, POST-write projection onto c_hat_L34 -- the ground-truth
+# unit) per k, then rerun (24 rows, same method, same c_hat_L34.json,
+# 21/24 usable). In REALIZED-READBACK units the coherent window is:
+#   first-coherent-move |readback|: n=21, median=531.9 (confab median=456.0,
+#     answerable_refused median=546.0), p25=452.0, p75=587.9.
+#   first-garbage-collapse |readback|: n=21, median=952.0 (confab
+#     median=808.0, answerable_refused median=997.9), p25=743.8, p90=1112.0.
+# (Order-of-hundreds, consistent with the dark-screen's own bf16
+# un-orthogonalized pos_ctrl_L34 prior of coherent~100/collapse>=500 scaled by
+# this direction's own sigma_c, and with the hand-computed 530/843 estimate
+# from the same strength*sigma_c arithmetic.) One row
+# (ahx::kuq_ku_unknown_x::000518) shows a non-monotonic garbage flag around
+# readback ~-374 to -588 (recovers to non-garbage at a HIGHER dose before
+# re-collapsing at -800) -- a per-row heuristic-detector fragility, not a
+# real early collapse; per the same convention as the prior build's
+# discussion of its own low-collapse outlier, this is flagged as an open
+# per-row-fragility finding (NOTEBOOK.md), NOT used to set the clip floor
+# (doing so would suppress the whole effect).
+#
+# ALPHA retuned from 2.0 to 40.0 (z_d/z_p and their [-2,+2] clip are
+# unchanged; only this scalar and MARGINAL_WRITE_CLIP move). At ALPHA=40.0 /
+# MARGINAL_WRITE_CLIP=750.0, this eval pool's own abs_median REALIZED write
+# (== marginal_write, since the tuner writes gain*sigma == marginal_write
+# exactly) is 506.5 (confab, n=309, 23.0% clipped) / 624.7 (answerable_refused,
+# n=149, 44.3% clipped) / 541.1 overall -- both cell medians land inside the
+# confirmed coherent-move-to-collapse window (above each cell's own median
+# move readback, below each cell's own median collapse readback) and no row
+# in the pool reaches 998 (answerable_refused's own median collapse floor).
+ALPHA = 40.0
 
 # Hard collapse-safety clip on the FINAL marginal write (post gain-sum,
-# post-sigma_c), applied unconditionally regardless of ALPHA: no row may
-# command a write at or above the bf16 collapse floor observed by this
-# experiment's own dose sweep (median k_collapse=7x ambient, median strength
-# ~40-43; see NOTEBOOK.md and
-# analysis/dose_ladder_bf16_ambient_relative_results.jsonl). 40.0 sits just
-# below that median collapse floor (the sweep's own outlier low-collapse row
-# at ~17.5 is NOT used as the clip floor -- doing so would suppress the whole
-# effect; that row is flagged as an open per-row-fragility finding in
-# NOTEBOOK.md instead, mirroring how the 4-bit build's own two clip-pinned
-# spam rows were reported as a finding rather than folded into a lower global
-# clip). The clip is applied to marginal_write and then divided back through
-# sigma_c to get the CLIPPED g_two_signal value actually stored in the eval
-# pool / read by the tuner's gain_field -- the write the model receives
-# always respects this clip; it is not merely a post-hoc reporting clip.
-MARGINAL_WRITE_CLIP = 40.0
+# post-sigma_c; this quantity IS the realized readback the tuner's erase_write
+# law will write, per hooks.py's gain*sigma law -- see the ALPHA comment
+# above for the full readback-unit derivation), applied unconditionally
+# regardless of ALPHA: no row may command a write at or above this
+# experiment's own confirmed bf16 collapse floor
+# (analysis/dose_ladder_bf16_readback_results.jsonl: median
+# first-garbage-collapse |readback|=808.0 on the confab cell, the LOWER of
+# the two cells' medians; 997.9 on answerable_refused). 750.0 sits below BOTH
+# cells' median collapse floors (margin ~58 below confab's, the tighter
+# constraint; ~248 below answerable_refused's) -- the single fragility
+# outlier discussed above (readback ~-374 to -588, non-monotonic) is NOT
+# used as the clip floor, mirroring the prior build's own convention (an
+# outlier-driven clip would suppress the whole effect; it is reported as an
+# open finding in NOTEBOOK.md instead). The clip is applied to marginal_write
+# and then divided back through sigma_c to get the CLIPPED g_two_signal value
+# actually stored in the eval pool / read by the tuner's gain_field -- the
+# write the model receives always respects this clip; it is not merely a
+# post-hoc reporting clip.
+MARGINAL_WRITE_CLIP = 750.0
 
 
 def _sha256_file(path: Path) -> str:
@@ -397,8 +428,18 @@ def main() -> int:
             "abs_median": float(np.median(np.abs(sub))),
             "abs_mean": float(np.abs(sub).mean()),
             "frac_positive": float((sub > 0).mean()),
-            "frac_abs_in_bf16_window_ge_15_le_40": float(np.mean((np.abs(sub) >= 15) & (np.abs(sub) <= 40))),
-            "frac_abs_ge_45": float(np.mean(np.abs(sub) >= 45)),
+            # Readback-unit coherent window (corrected 2026-07-07, see the
+            # ALPHA/MARGINAL_WRITE_CLIP comments above for the full
+            # dose_ladder_bf16_readback_results.jsonl derivation): move
+            # readback median 531.9 (p25=452.0), collapse readback median
+            # 952.0 (confab cell's own, lower, collapse median is 808.0).
+            # These bounds replace the STALE [15,40]/[>=45] gain-unit
+            # thresholds from the pre-fix build (that window was itself the
+            # bug this fix corrects; keeping the old numbers here would be
+            # silently re-committing the unit error into the report).
+            "frac_abs_in_bf16_readback_window_ge_452_le_808": float(
+                np.mean((np.abs(sub) >= 452) & (np.abs(sub) <= 808))),
+            "frac_abs_ge_808": float(np.mean(np.abs(sub) >= 808)),
             "frac_clipped": float(np.mean(np.abs(sub_unclipped) > MARGINAL_WRITE_CLIP)),
         }
 

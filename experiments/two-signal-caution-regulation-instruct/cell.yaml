@@ -33,20 +33,27 @@
 #      AMENDMENT's g_i * sigma_c * c_hat exactly when gain_field carries g_i
 #      directly.
 #   4. Per-example gain g_two_signal = -alpha_d*z_d,i + alpha_p*z_p,i
-#      (alpha_d == alpha_p == 2.0, BF16 RETUNE from the 4-bit build's 10.0 --
-#      see build_two_signal_directions.py's own header note for the full
-#      calibration reasoning, seeded by the dark-screen's bf16 prior
-#      (window ~100) then corrected by this experiment's OWN fresh
-#      ambient-relative dose sweep on the refit c_hat_L34 direction, which
-#      found a narrower real window (~20-35 coherent, ~40-43 median
-#      collapse); z_d/z_p each clipped to [-2,+2] before combining, and the
-#      resulting marginal write hard-clipped to +/-40 -- collapse-safety
-#      margin below this experiment's own confirmed collapse floor), all
-#      precomputed and stored as a column on
-#      analysis-committed/eval_pool_manifest.jsonl -- ALREADY alpha-scaled
-#      AND clip-applied, hence `arms.coupled.strength: 1.0` below, NOT 2.0
-#      (do not double-apply alpha, and do not re-clip: the clip already binds
-#      the stored gain, not just a reported number).
+#      (alpha_d == alpha_p == 40.0, BF16 DOSE-UNITS FIX 2026-07-07 -- the
+#      prior ALPHA=2.0/clip=40 build calibrated against the dose sweep's own
+#      printed "strength" column, a GAIN, as if it were already the realized
+#      write; the tuner's erase_write law writes gain*sigma
+#      (synaptic-tuner MechInterp/intervention/hooks.py docstring lines
+#      7-12), so that was an ~sigma_c-factor (~21x) unit conflation. Fixed
+#      by logging `hook.last_readback` (the GPU-measured post-write
+#      projection) directly in the sweep; see
+#      build_two_signal_directions.py's own header note for the full
+#      derivation. In that ground-truth readback unit, the real window is:
+#      median first-coherent-move |readback|=531.9 (confab median=456.0,
+#      answerable_refused median=546.0), median first-garbage-collapse
+#      |readback|=952.0 (confab median=808.0, answerable_refused
+#      median=997.9); z_d/z_p each clipped to [-2,+2] before combining, and
+#      the resulting marginal write hard-clipped to +/-750 -- collapse-safety
+#      margin below this experiment's own confirmed collapse floor (the
+#      LOWER of the two cells' medians, 808), all precomputed and stored as
+#      a column on analysis-committed/eval_pool_manifest.jsonl -- ALREADY
+#      alpha-scaled AND clip-applied, hence `arms.coupled.strength: 1.0`
+#      below, NOT 40.0 (do not double-apply alpha, and do not re-clip: the
+#      clip already binds the stored gain, not just a reported number).
 #   5. eval_pool_manifest.jsonl (COMMITTED) carries ID + derived columns
 #      ONLY -- no question text, no aliases (this repo is PUBLIC; see
 #      analysis-committed/PROVENANCE.md). `surface.rows_path` below points at
@@ -148,10 +155,12 @@ execution:
 # 6. smoke: readback tolerances that gate the full arms. n_rows=25 is a
 #    working default (not itself a locked AMENDMENT number); the AMENDMENT's
 #    G0 instrument-validity check additionally requires gen_stream_fired and
-#    the coupled setpoint landing in the coherent window (bf16: ~20-40 along
-#    c_hat, confirmed by this experiment's own dose sweep; see NOTEBOOK.md) --
-#    checked from the smoke readback + this cell's own build_manifest.json
-#    marginal-write distribution, not encoded as a tuner smoke tolerance.
+#    the coupled setpoint landing in the coherent window (bf16: realized
+#    |marginal write| ~452-808 along c_hat, this experiment's own
+#    readback-calibrated window; see NOTEBOOK.md's bf16 dose-calibration-fix
+#    entry) -- checked from the smoke readback + this cell's own
+#    build_manifest.json marginal-write distribution, not encoded as a tuner
+#    smoke tolerance.
 smoke:
   n_rows: 25
   write_rel_tol: 0.05
@@ -162,7 +171,7 @@ smoke:
   # cell's own readout sigma (c_hat_L34.json's sigma = sigma_c = 21.36, bf16;
   # was 36.18 under 4-bit) to get the probe's commanded write, i.e.
   # 100 * 21.36 = 2136 -- comfortably above this cell's real
-  # |marginal_write| range (hard-clipped to +/-40, see build_manifest.json),
+  # |marginal_write| range (hard-clipped to +/-750, see build_manifest.json),
   # so the built-in default already clears the "large relative to the real
   # dose ladder" bar without an override. This is a different situation from
   # dark-actuator-screen's cells, whose direction JSONs all had sigma=1.0

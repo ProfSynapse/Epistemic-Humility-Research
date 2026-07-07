@@ -137,6 +137,24 @@ def main() -> int:
         print(f"[materialize] ERROR: {n_missing_q} rows have no question text "
               "after the HF join.", file=sys.stderr)
         return 1
+    if n_missing_alias_answerable:
+        # HARD-FAIL, not a warning: an answerable_refused row with empty
+        # aliases cannot be correctness-graded on the release tail (G1-release
+        # needs `well_formed_correct`, which requires a gold alias to check
+        # against). A silent warning here would let a broken/missing canonical
+        # AH A0 pool produce a clean-looking but vacuous release-tail null
+        # (every row ungradeable -> correct=False by default -> G1-release
+        # reads as a real failure instead of a missing-input failure). Red-team
+        # flagged this 2026-07-07; see NOTEBOOK.md.
+        print(
+            f"[materialize] ERROR: {n_missing_alias_answerable} answerable_refused "
+            "rows have empty aliases after the local AH A0 join -- correctness "
+            "grading on the release tail cannot proceed. This is a HARD FAIL, not "
+            "a warning: check that the canonical checkout's "
+            f"{AH_A0_ROWS} is present and up to date.",
+            file=sys.stderr,
+        )
+        return 1
     return 0
 
 
