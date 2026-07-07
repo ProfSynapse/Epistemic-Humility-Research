@@ -22,7 +22,6 @@ import modal
 
 
 REPO_URL = "https://github.com/ProfSynapse/Epistemic-Humility-Research.git"
-REPO_COMMIT = os.environ.get("EHR_REPO_COMMIT", "")
 EXPERIMENT_SLUG = "doubt-snap-cross-family-confirmatory"
 RUN_TAG = "doubt-snap-cross-family-r1"
 
@@ -55,14 +54,19 @@ VOL_MOUNT = "/vol/doubt_snap_cross_family"
     secrets=[modal.Secret.from_dict({"HF_TOKEN": os.environ.get("HF_TOKEN", "")})],
     retries=modal.Retries(max_retries=2, backoff_coefficient=1.0, initial_delay=10.0),
 )
-def run_one_cell(cell_id: str, stage: str = "full", dry_run: bool = False) -> None:
+def run_one_cell(
+    cell_id: str,
+    repo_commit: str,
+    stage: str = "full",
+    dry_run: bool = False,
+) -> None:
     import re
     import shutil
     import subprocess
     import sys
     from pathlib import Path
 
-    if not REPO_COMMIT or len(REPO_COMMIT) < 12:
+    if not repo_commit or len(repo_commit) < 12:
         raise RuntimeError("EHR_REPO_COMMIT must pin the signed commit before launch")
 
     os.environ.setdefault("HF_HOME", "/root/.cache/huggingface")
@@ -82,7 +86,7 @@ def run_one_cell(cell_id: str, stage: str = "full", dry_run: bool = False) -> No
     if not (workspace / ".git").is_dir():
         sh(["git", "clone", REPO_URL, str(workspace)])
     sh(["git", "fetch", "--all", "--tags"], cwd=workspace, check=False)
-    sh(["git", "checkout", REPO_COMMIT], cwd=workspace)
+    sh(["git", "checkout", repo_commit], cwd=workspace)
 
     exp_dir = workspace / "experiments" / EXPERIMENT_SLUG
     pipeline = exp_dir / "pipeline.py"
@@ -129,6 +133,7 @@ def main(
     cell_id_list = [c.strip() for c in cell_ids.split(",") if c.strip()]
     if not cell_id_list:
         raise SystemExit("pass at least one --cell-ids value")
+    repo_commit = os.environ["EHR_REPO_COMMIT"]
     for cid in cell_id_list:
-        run_one_cell.spawn(cid, stage=stage, dry_run=dry_run)
+        run_one_cell.spawn(cid, repo_commit, stage=stage, dry_run=dry_run)
         print(f"spawned {cid} stage={stage} dry_run={dry_run}", flush=True)
