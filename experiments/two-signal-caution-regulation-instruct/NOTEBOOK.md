@@ -6,7 +6,135 @@ in `experiment.yaml`.
 
 ## Entries
 
-- 2026-07-07 -- Three validity fixes (lead-directed) + re-smoke.
+- 2026-07-07 -- BF16 SUBSTRATE PIVOT: full refit + dose recalibration +
+  eval-pool containment migration + re-smoke.
+
+  Moved the entire experiment off `unsloth/Qwen3-4B-bnb-4bit` (4-bit) onto
+  `unsloth/Qwen3-4B` (full bf16, `load_in_4bit=False`, `dtype=torch.bfloat16`).
+  Design (prediction/falsifier/gates prose) UNCHANGED; only the substrate,
+  the fitted directions, and the dose calibration changed.
+
+  1. **Extraction (`extract_l34_anchor.py`, rewritten).** The prior 4-bit
+     build only filled the two "answerable-side" roles it lacked a cache for
+     (known_correct_answered=89, answerable_refused=149) and read the
+     unanswerable side (unknown_refused=1029, confab=309) from the AK
+     Stage-1 tensor cache -- a 4-bit capture, not reusable under bf16. This
+     rewrite extracts ALL FOUR roles fresh (1,576 rows total) via
+     `unsloth.FastLanguageModel.from_pretrained(unsloth/Qwen3-4B,
+     dtype=torch.bfloat16, load_in_4bit=False)`, same render/anchor
+     convention as before (`render_probe_prompt` + baseline system prompt,
+     anchor at prompt_len-1, hs[34]). Local 3090, 77s total. Counts verified:
+     89/1029/309/149, matching the original AK Stage-1 / AH A0 manifests
+     exactly.
+  2. **Direction refits (`build_two_signal_directions.py`, rewritten).** u_d
+     refit as before (mean-diff, now bf16-only H). pos_ctrl (caution_dir) and
+     neg_ctrl (u_p) are NO LONGER copied from the dark-actuator-screen's
+     4-bit fit -- both refit fresh on this experiment's own bf16 AK Stage-1
+     extraction (1,338 rows), using the dark-screen's own
+     `_raw_refuse_and_propensity` method VERBATIM (mass-mean refuse_dir;
+     StandardScaler + `LogisticRegression(solver="saga", tol=1e-3,
+     max_iter=5000, C=1.0)` propensity direction), read in full from
+     `/home/profsynapse/code/ehr-worktrees/dark-screen/experiments/
+     dark-actuator-screen/build_directions.py:149-165` before writing this.
+     c_hat = 2-D Gram-Schmidt orthogonalization of caution_dir against {u_d,
+     u_p}, unchanged method. Fit provenances (all `substrate: "bf16"`,
+     `base_model: "unsloth/Qwen3-4B"`):
+       - u_d_L34.json: n_known_correct_answered=89, n_unknown_refused=1029.
+       - source_directions/pos_ctrl_L34.json,
+         source_directions/neg_ctrl_L34.json: n_confab=309, n_refuse=1029,
+         same logreg hyperparams as the dark-screen.
+       - c_hat_L34.json: cos(caution_dir, c_hat)=0.872, cos(u_d,u_p)=0.093,
+         sigma_c=21.36 over the 458-row eval pool (was 36.18 under 4-bit).
+  3. **Dose calibration.** Seeded from the dark-screen's own bf16
+     characterization of ITS (un-orthogonalized) pos_ctrl_L34: coherent
+     window ~100, ambient ~19-27, collapse >=500
+     (`/tmp/.../scratchpad/dose_ladder_bf16_results.json`, a 3-prompt fixed
+     ladder against `Qwen/Qwen3-4B`). A naive linear rescale from the 4-bit
+     ALPHA=10.0 gave an initial ALPHA=4.0 guess -- checked against a FRESH
+     24-row ambient-relative dose escalation
+     (`analysis/dose_escalation_bf16_ambient_relative.py`, mirroring the
+     dark-screen's own `dose_escalation_ambient_relative.py` method exactly:
+     k in {3,5,7,9,11,13,15} x each row's own natural ambient projection,
+     half confab / half answerable_refused, on THIS experiment's own refit
+     c_hat_L34 direction). First attempt used unsloth's
+     `FastLanguageModel.for_inference` and produced ZERO ambient signal on
+     every row (0/24 usable) -- unsloth's fused inference `generate()` path
+     does not reliably fire the per-decode-step forward hooks this
+     diagnostic (and the tuner's own intervention machinery) depend on.
+     Switched to plain `AutoModelForCausalLM.from_pretrained(...,
+     dtype=torch.bfloat16)` (matching BOTH the dark-screen's own diagnostic
+     scripts AND `synaptic-tuner/MechInterp/cli.py`'s real model-loading
+     path -- confirmed by reading that file: the tuner never uses unsloth for
+     steer cells), which fixed it: 21/24 rows produced a usable coherent
+     window. Result: this experiment's c_hat_L34 (post-orthogonalization,
+     cos 0.872 with the un-orthogonalized caution_dir) has a substantially
+     NARROWER and LOWER window than the seed prior -- median
+     first-coherent-move strength ~20-27 (k_move median 3x ambient), median
+     first-garbage-collapse strength ~40-43 (k_collapse median 7x ambient),
+     with real per-row heterogeneity (one outlier row collapsed as early as
+     strength ~17.5; two rows never registered a clean "move" before
+     collapsing). ALPHA retuned to 2.0 (from the 4.0 naive-rescale guess) and
+     MARGINAL_WRITE_CLIP to 40.0 (from an initial 150.0 guess), landing this
+     eval pool's abs_median marginal write at 25.3 (confab, n=309, 68.6% in
+     [15,40]) / 31.1 (answerable_refused, n=149, 74.5% in [15,40]), 0% >=45,
+     comfortably inside the confirmed coherent zone and below the confirmed
+     median collapse floor. Raw results:
+     `analysis/dose_ladder_bf16_ambient_relative_results.jsonl` (gitignored
+     scratch, not committed -- reproducible by rerunning the script against
+     the committed c_hat_L34.json).
+  4. **Eval-pool containment migration.** `analysis-committed/
+     eval_pool_both_tail.jsonl` used to commit `question` and `aliases` text
+     directly (this repo is PUBLIC; forbidden per `.skills/pr-workflow/
+     SKILL.md`). Removed from git (`git rm --cached`). Replaced with
+     `analysis-committed/eval_pool_manifest.jsonl` (458 rows, ID + derived
+     columns only -- row_key/safe_key/cell/gold_class/category_canon/source/
+     proj_d/proj_p/proj_c/z_d/z_p/g_two_signal/marginal_write/
+     g_two_signal_unclipped/marginal_write_unclipped/clipped -- no question,
+     no aliases). New `materialize_eval_pool.py` joins that manifest against
+     question text fetched via `hf_hub_download(repo_id=
+     "professorsynapse/eh-al-prep-staging",
+     filename="pools/a0_pool_v21_questions.jsonl", repo_type="dataset")`
+     (verified to cover all 458 row_keys with text byte-identical to the
+     local AH A0 pool) and aliases read from the local canonical-checkout AH
+     A0 pool (itself sourced from this repo's own already-committed
+     `datasets/kuq/` / `datasets/selfaware/`), writing the full local pool to
+     the gitignored `analysis/eval_pool_both_tail.jsonl` that `cell.yaml`'s
+     `surface.rows_path` now points at. Mirrors the
+     `j-space-localization-qwen3-4b` containment migration exactly (commit
+     `88c98cdc`). `git grep` confirms no question/answer text remains tracked
+     anywhere in this experiment's directory or the shared render module.
+  5. **`ah_a0_raw_base_render.py`** (shared render, only consumer is this
+     experiment): `_MODEL_NAME` updated to `unsloth/Qwen3-4B`; docstring
+     updated for the materialized-pool path. Tokenizer vocab/chat template is
+     unchanged between the 4-bit and bf16 repo ids.
+  6. **`cell.yaml`**: model -> `unsloth/Qwen3-4B` (bf16, no 4-bit); dose block
+     updated to ALPHA=2.0/clip=40; `surface.rows_path` repointed at the
+     gitignored materialized pool; smoke commentary sigma updated to 21.36.
+     Loads clean via `MechInterp.config.load_steer_config` (CPU check).
+
+  **Re-smoke** (local 3090, free, 12-row stratified subset --
+  `analysis/eval_pool_smoke12.jsonl`, 6 confab + 6 answerable_refused --
+  `analysis/cell_smoke.yaml`, gitignored ephemeral config copied from
+  `cell.yaml` with `surface.rows_path`/`execution.output_path` repointed at
+  the smoke-scale files, same convention as the two prior 4-bit smokes). Run
+  from the worktree root (NOT `cd synaptic-tuner`, per the dark-screen's own
+  documented path-resolution gotcha: `cell.yaml` paths are repo-root-relative
+  and a plain `open()` resolves them against the process CWD). G0 PASSES:
+  `write_ok: True`, `parity_ok: True`, `gen_stream_fired: True`,
+  `offtarget_abs_max: 0.0`, `max_write_error: 0.1353` (well within
+  `write_abs_floor=0.5`). Realized commanded writes on the smoke's 12
+  coupled-arm rows: min=0.31, p25=8.85, median=24.95, p75=38.11, max=40.00
+  (2 rows pinned exactly at the +/-40 clip); 66.7% of the 12 smoke rows in
+  [15,40]. 0/12 coupled-arm rows graded `degenerate` (0% collapse). This is
+  G0 instrument-validity only -- no G1/G2 behavioral claim; the 12-row smoke
+  did not flip any confab row to refusal (expected at this scale/dose, not a
+  gate result).
+
+  Not run: the full 458-row behavioral sweep and `bin/exp sign`, both
+  explicitly out of scope for this build task; left for the lead to schedule.
+
+- 2026-07-07 -- Three validity fixes (lead-directed) + re-smoke. **4-BIT
+  ERA -- superseded by the bf16 pivot above; kept for history.**
 
   1. **Clip lowered 350 -> 300.** `build_two_signal_directions.py`'s
      `MARGINAL_WRITE_CLIP` moves from 350 (in the un-validated 300-400 gray

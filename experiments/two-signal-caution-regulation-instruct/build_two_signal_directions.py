@@ -1,7 +1,16 @@
 #!/usr/bin/env python3
 """Two-signal caution regulation -- CPU offline build (step 2/2, after
-extract_l34_anchor.py). Fits u_d, loads u_p + caution_dir, computes the 2-D
-orthogonalized write direction c_hat, and materializes the per-example gain
+extract_l34_anchor.py). BF16 SUBSTRATE (2026-07-07 pivot from 4-bit).
+
+Fits u_d, pos_ctrl (caution write direction), and neg_ctrl (confab-propensity)
+ALL FRESH on this experiment's own bf16 L34 extraction (the prior 4-bit build
+copied pos_ctrl/neg_ctrl from the dark-actuator-screen's 4-bit fit; that fit is
+not reusable under bf16, so this build refits both, mirroring the
+dark-actuator-screen's own fitting method EXACTLY -- see
+`_raw_refuse_and_propensity` below, ported verbatim from
+/home/profsynapse/code/ehr-worktrees/dark-screen/experiments/dark-actuator-screen/
+build_directions.py:149-165, read in full before writing this). Computes the
+2-D orthogonalized write direction c_hat, and materializes the per-example gain
 for the both-tail eval pool. All computation is offline / one-shot, per
 AMENDMENT.md section 2 (the couple math is read-only at inference time; only
 the write is live).
@@ -12,27 +21,25 @@ Inputs
                        (1,662 rows; canonical checkout only, gitignored)
   AK Stage-1 pool      experiment/phase1/probe/analysis/ak_stage1/ak_stage1_pool.jsonl
                        (1,338-row unanswerable-only subset with confab labels)
-  AK Stage-1 tensors   $HOME/ak_census_data/ak-stage1-raw-base-r1/tensors/extracted/
-                       *.safetensors, key "L34@anchor" (cached, 1,338 rows)
-  fresh extraction     analysis/l34_anchor_extract.safetensors (this experiment's
-                       extract_l34_anchor.py output, 238 rows: 89
-                       known_correct_answered + 149 answerable_refused)
-  dark-actuator-screen directions (fitted, null-result experiment; copied here
-                       for provenance -- NOT re-fit): pos_ctrl_L34.json
-                       (caution_dir, refuse_vs_confab mass-mean) and
-                       neg_ctrl_L34.json (u_p, confab-propensity logistic),
-                       both fit on the SAME 1,338-row AK Stage-1 pool. Source:
-                       /home/profsynapse/code/ehr-worktrees/dark-screen/
-                       experiments/dark-actuator-screen/directions/ (gitignored
-                       worktree output of that experiment's build_directions.py).
+  fresh bf16 extraction analysis/l34_anchor_extract.safetensors (this
+                       experiment's own extract_l34_anchor.py output, 1,576
+                       rows: 89 known_correct_answered + 1,029 unknown_refused
+                       + 309 confab + 149 answerable_refused, ALL bf16,
+                       unsloth/Qwen3-4B, no adapter)
 
 Computation (AMENDMENT.md "Design", the two-signal control law)
 -----------------------------------------------------------------
   1. u_d = unit(mean(H[known_correct_answered]) - mean(H[unknown_refused]))
      at L34 -- a fresh mean-diff refit (mirrors AK/dark-screen's own
      refuse_dir formula: mean(class0) - mean(class1), unit-normalized).
-  2. u_p = neg_ctrl_L34's vector (confab-propensity logistic direction),
-     caution_dir = pos_ctrl_L34's vector (refuse_vs_confab mass-mean).
+  2. pos_ctrl / neg_ctrl refit at L34 on the full 1,338-row AK Stage-1
+     population (309 confab + 1,029 refuse), verbatim
+     dark-actuator-screen build_directions.py method:
+       refuse_dir  = unit(mean(H[refuse]) - mean(H[confab]))        (mass-mean)
+       prop_dir    = unit(LogisticRegression(saga, C=1.0, tol=1e-3,
+                     max_iter=5000).fit(StandardScaler-transformed H, y_confab)
+                     .coef_ / scaler.scale_)                        (standardized logistic)
+     caution_dir := refuse_dir (pos_ctrl); u_p := prop_dir (neg_ctrl).
   3. c_hat = unit(caution_dir orthogonalized against BOTH u_d and u_p), a 2-D
      Gram-Schmidt erase: build an orthonormal basis Q of span(u_d, u_p) via
      QR, then c_hat = unit(caution_dir - Q @ (Q.T @ caution_dir)).
@@ -43,13 +50,15 @@ Computation (AMENDMENT.md "Design", the two-signal control law)
      (mirrors AC/AO's per-sensor clip). sigma_c = std(proj_c) over the same
      population (AC's "row-population std of the projection onto c_hat").
   5. g_i = -alpha_d * z_d,i + alpha_p * z_p,i. This build uses a single shared
-     alpha_d == alpha_p == ALPHA (see ALPHA below) -- see this script's
-     printed report / the build manifest for the reasoning and the resulting
-     marginal-write distribution (g_i * sigma_c along c_hat).
+     alpha_d == alpha_p == ALPHA, retuned to the bf16 coherent window (~100,
+     see NOTEBOOK.md's bf16 dose-calibration entry) -- see ALPHA/
+     MARGINAL_WRITE_CLIP below and NOTEBOOK.md for the calibration sweep.
 
 Outputs (committed, tracked -- NOT the gitignored analysis/ or directions/):
-  analysis-committed/source_directions/pos_ctrl_L34.json   (copied, sha recorded)
-  analysis-committed/source_directions/neg_ctrl_L34.json   (copied, sha recorded)
+  analysis-committed/source_directions/pos_ctrl_L34.json  (fresh bf16 fit,
+                                          NOT copied from dark-screen -- see
+                                          provenance.method)
+  analysis-committed/source_directions/neg_ctrl_L34.json  (fresh bf16 fit)
   analysis-committed/u_d_L34.json         fitted doubt axis (mechinterp-direction/v1)
   analysis-committed/c_hat_L34.json       the write direction the cell.yaml reads;
                                           "sigma" field = sigma_c so the tuner's
@@ -57,7 +66,17 @@ Outputs (committed, tracked -- NOT the gitignored analysis/ or directions/):
                                           (gain*sigma*c_hat) reproduces
                                           g_i*sigma_c*c_hat with gain_field=g_row
                                           and arm strength=ALPHA.
-  analysis-committed/eval_pool_both_tail.jsonl   458-row surface.rows_path pool
+  analysis-committed/eval_pool_manifest.jsonl   458-row DERIVED-COLUMNS-ONLY
+                                          manifest (row_key/cell/gold_class/
+                                          projections/gains -- NO question
+                                          text, NO aliases; see PROVENANCE.md
+                                          and materialize_eval_pool.py, which
+                                          joins this back to question text
+                                          fetched from the private HF staging
+                                          repo at run time to produce the
+                                          gitignored local
+                                          analysis/eval_pool_both_tail.jsonl
+                                          cell.yaml's surface.rows_path reads).
   analysis-committed/build_manifest.json   full fit provenance + report numbers
 """
 
@@ -81,12 +100,6 @@ COMMITTED = HERE / "analysis-committed"
 
 AH_A0_ROWS = PROBE_DIR / "analysis" / "ah_main" / "gen_A0" / "rows.jsonl"
 AK_STAGE1_POOL = PROBE_DIR / "analysis" / "ak_stage1" / "ak_stage1_pool.jsonl"
-AK_TENSORS_DIR = Path.home() / "ak_census_data" / "ak-stage1-raw-base-r1" / "tensors" / "extracted"
-
-DARK_SCREEN_DIRECTIONS = Path(
-    "/home/profsynapse/code/ehr-worktrees/dark-screen/experiments/"
-    "dark-actuator-screen/directions"
-)
 
 EXTRACT_TENSORS = ANALYSIS / "l34_anchor_extract.safetensors"
 EXTRACT_MANIFEST = ANALYSIS / "l34_anchor_extract_manifest.json"
@@ -96,43 +109,44 @@ HIDDEN_DIM = 2560
 Z_CLIP = 2.0
 
 # Shared alpha_d == alpha_p (single pre-registered scalar, no per-sensor
-# sweep). REVISED (2026-07-07, lead-directed dose-fix -- see NOTEBOOK.md):
-# the first pass (ALPHA=5.0, no hard clip) put only ~24% of the both-tail
-# pool's |marginal_write| inside the dark-screen's validated 150-300 coherent
-# window, with a 553-magnitude outlier well past the 400 collapse floor.
-# ALPHA is retuned upward (per-cell median |write| ~150-300, targeting the
-# 200-225 middle) and a HARD CLIP is added (see MARGINAL_WRITE_CLIP) so no
-# row's commanded write can enter the collapse regime regardless of how
-# extreme its (z_p, z_d) pair is. Calibration sweep (this script's own
-# printed report at each candidate ALPHA, on the FIXED z_d/z_p columns --
-# not a gate sweep, no gates were evaluated while choosing this):
-#   ALPHA= 8: confab median|write|=140  (just under window) 9%  clipped
-#   ALPHA= 9: confab median|write|=158, release median=244, 15%/32% clipped
-#   ALPHA=10: confab median|write|=175, release median=272, 18%/37% clipped
-#   ALPHA=12: confab median|write|=210, release median=326 (drifts ABOVE the
-#             300 window edge, into the un-validated 300-400 gray zone)
-# ALPHA=10.0 is picked: both cells' medians land inside [150, 300] (175 / 272)
-# without either drifting above the window, and a MAJORITY of each cell
-# (81.6% confab / 63.1% release) stays below the hard clip, i.e. still
-# z-proportional rather than pinned -- the clip caps only the extreme tail,
-# it does not flatten the bulk of the distribution. See build_manifest.json
-# "marginal_write_distribution" for the realized numbers this run.
-ALPHA = 10.0
+# sweep). BF16 RETUNE (2026-07-07, substrate pivot -- see NOTEBOOK.md's bf16
+# dose-calibration entry for the full sweep this constant was picked from).
+# Seeded by the dark-screen's own bf16 characterization of its (different,
+# non-orthogonalized) pos_ctrl_L34 direction (coherent window ~100, collapse
+# >=500, vs 4-bit's 150-300 window / >=400 collapse). This experiment's own
+# fresh 24-row ambient-relative dose escalation
+# (analysis/dose_escalation_bf16_ambient_relative.py ->
+# analysis/dose_ladder_bf16_ambient_relative_results.jsonl) on the ACTUAL
+# refit+orthogonalized c_hat_L34 direction (cos 0.87 with the un-orthogonalized
+# caution_dir, not identical) found a substantially NARROWER and LOWER window
+# than the seed prior: median first-coherent-move strength ~20-27 (k_move
+# median 3x ambient), median first-garbage-collapse strength ~40-43 (k_collapse
+# median 7x ambient), with real per-row heterogeneity (one outlier row
+# collapsed as early as strength ~17.5, a few rows never produced a clean move
+# before collapsing). ALPHA=2.0 (down from an initial ALPHA=4.0 guess seeded
+# from the 4-bit ALPHA=10.0 by a naive linear substrate-window rescale, which
+# overshot the REAL confirmed window by ~2x) puts this eval pool's own
+# abs_median marginal write at 25.3 (confab) / 31.1 (answerable_refused) --
+# inside the confirmed coherent-move zone (~20-35) and comfortably below the
+# confirmed median collapse floor (~40-43).
+ALPHA = 2.0
 
 # Hard collapse-safety clip on the FINAL marginal write (post gain-sum,
 # post-sigma_c), applied unconditionally regardless of ALPHA: no row may
-# command a write at or above the dark-screen's observed collapse floor
-# (>=400). REVISED (2026-07-07, validity fix -- see NOTEBOOK.md): the first
-# clip value (350) sits in the 300-400 gray zone ABOVE the dark-screen's own
-# validated coherent window (150-300); smoke rows pinned at 350 produced
-# collapse-adjacent repetitive spam ("True" x90 and a 3x-repeated refusal
-# phrase). The clip is lowered to 300, the coherent-window's own top edge, so
-# no row's commanded write can land outside the validated window at all. The
-# clip is applied to marginal_write and then divided back through sigma_c to
-# get the CLIPPED g_two_signal value actually stored in the eval pool / read
-# by the tuner's gain_field -- the write the model receives always respects
-# this clip; it is not merely a post-hoc reporting clip.
-MARGINAL_WRITE_CLIP = 300.0
+# command a write at or above the bf16 collapse floor observed by this
+# experiment's own dose sweep (median k_collapse=7x ambient, median strength
+# ~40-43; see NOTEBOOK.md and
+# analysis/dose_ladder_bf16_ambient_relative_results.jsonl). 40.0 sits just
+# below that median collapse floor (the sweep's own outlier low-collapse row
+# at ~17.5 is NOT used as the clip floor -- doing so would suppress the whole
+# effect; that row is flagged as an open per-row-fragility finding in
+# NOTEBOOK.md instead, mirroring how the 4-bit build's own two clip-pinned
+# spam rows were reported as a finding rather than folded into a lower global
+# clip). The clip is applied to marginal_write and then divided back through
+# sigma_c to get the CLIPPED g_two_signal value actually stored in the eval
+# pool / read by the tuner's gain_field -- the write the model receives
+# always respects this clip; it is not merely a post-hoc reporting clip.
+MARGINAL_WRITE_CLIP = 40.0
 
 
 def _sha256_file(path: Path) -> str:
@@ -148,6 +162,39 @@ def load_jsonl(p: Path) -> list[dict]:
     return [json.loads(ln) for ln in p.open(encoding="utf-8") if ln.strip()]
 
 
+def _sanitize_key(row_key: str) -> str:
+    return row_key.replace(":", "_")
+
+
+# ---------------------------------------------------------------------------
+# pos_ctrl / neg_ctrl fit -- VERBATIM the dark-actuator-screen's
+# build_directions.py:_raw_refuse_and_propensity (pre-QR refuse/propensity
+# directions, before that screen's own QR mix). Same formulas, this
+# experiment's own bf16 activations + AK Stage-1 confab_on_unanswerable
+# labels (not a re-derivation of a different method).
+# ---------------------------------------------------------------------------
+
+def _raw_refuse_and_propensity(H_anchor: np.ndarray, y_confab: np.ndarray
+                               ) -> tuple[np.ndarray, np.ndarray, dict]:
+    from sklearn.linear_model import LogisticRegression
+    from sklearn.preprocessing import StandardScaler
+
+    refuse_mean = H_anchor[y_confab == 0].mean(0)
+    confab_mean = H_anchor[y_confab == 1].mean(0)
+    refuse_dir = unit(refuse_mean - confab_mean)
+
+    sc = StandardScaler().fit(H_anchor)
+    Z = sc.transform(H_anchor)
+    clf = LogisticRegression(solver="saga", tol=1e-3, max_iter=5000, C=1.0).fit(Z, y_confab)
+    prop_raw = clf.coef_.ravel() / sc.scale_
+    prop_dir = unit(prop_raw)
+    fit_info = {
+        "n_confab": int(y_confab.sum()), "n_refuse": int((1 - y_confab).sum()),
+        "logreg": {"solver": "saga", "tol": 1e-3, "max_iter": 5000, "C": 1.0},
+    }
+    return refuse_dir, prop_dir, fit_info
+
+
 # ---------------------------------------------------------------------------
 # Load activations
 # ---------------------------------------------------------------------------
@@ -156,23 +203,6 @@ def load_fresh_extract() -> dict[str, np.ndarray]:
     from safetensors.numpy import load_file
     t = load_file(str(EXTRACT_TENSORS))
     return {k: np.asarray(v, dtype=np.float64) for k, v in t.items()}
-
-
-def load_ak_cached_anchor(row_key: str) -> np.ndarray | None:
-    skey = safe_key_for(row_key)
-    path = AK_TENSORS_DIR / f"{skey}.safetensors"
-    if not path.is_file():
-        return None
-    from safetensors.numpy import load_file
-    t = load_file(str(path))
-    key = "L34@anchor"
-    if key not in t:
-        return None
-    return np.asarray(t[key], dtype=np.float64)
-
-
-def _sanitize_key(row_key: str) -> str:
-    return row_key.replace(":", "_")
 
 
 def main() -> int:
@@ -187,6 +217,8 @@ def main() -> int:
 
     fresh = load_fresh_extract()
     extract_manifest = json.loads(EXTRACT_MANIFEST.read_text())
+    assert extract_manifest["substrate"] == "bf16"
+    assert extract_manifest["base_model"] == "unsloth/Qwen3-4B"
     role_by_key = {rm["row_key"]: rm["role"] for rm in extract_manifest["rows"]}
 
     known_correct_answered = [
@@ -195,8 +227,8 @@ def main() -> int:
     answerable_refused = [
         rk for rk, role in role_by_key.items() if role == "answerable_refused"
     ]
-    unknown_refused = [r["row_key"] for r in ak_pool if not r["confab_on_unanswerable"]]
-    confab = [r["row_key"] for r in ak_pool if r["confab_on_unanswerable"]]
+    unknown_refused = [rk for rk, role in role_by_key.items() if role == "unknown_refused"]
+    confab = [rk for rk, role in role_by_key.items() if role == "confab"]
 
     print(f"[build] known_correct_answered={len(known_correct_answered)} "
           f"unknown_refused={len(unknown_refused)} confab={len(confab)} "
@@ -208,22 +240,18 @@ def main() -> int:
 
     # -- 1. fit u_d ------------------------------------------------------
     H_known = np.stack([fresh[_sanitize_key(rk)] for rk in known_correct_answered])
-    H_unknown = np.stack([load_ak_cached_anchor(rk) for rk in unknown_refused])
-    assert not any(v is None for v in H_unknown), "missing cached AK anchor tensor"
-    u_d = unit(H_known.mean(0) - H_unknown.mean(0))
+    H_unknown_refused = np.stack([fresh[_sanitize_key(rk)] for rk in unknown_refused])
+    u_d = unit(H_known.mean(0) - H_unknown_refused.mean(0))
 
-    # -- 2. load u_p / caution_dir, copy for provenance -------------------
-    pos_ctrl_src = DARK_SCREEN_DIRECTIONS / "pos_ctrl_L34.json"
-    neg_ctrl_src = DARK_SCREEN_DIRECTIONS / "neg_ctrl_L34.json"
-    pos_ctrl = json.loads(pos_ctrl_src.read_text())
-    neg_ctrl = json.loads(neg_ctrl_src.read_text())
-    assert pos_ctrl["layer"] == LAYER_BLOCK and neg_ctrl["layer"] == LAYER_BLOCK
-    caution_dir = np.asarray(pos_ctrl["vector"], dtype=np.float64)
-    u_p = np.asarray(neg_ctrl["vector"], dtype=np.float64)
-
-    for src, name in ((pos_ctrl_src, "pos_ctrl_L34.json"), (neg_ctrl_src, "neg_ctrl_L34.json")):
-        dst = COMMITTED / "source_directions" / name
-        dst.write_text(src.read_text())
+    # -- 2. fit pos_ctrl (caution_dir) / neg_ctrl (u_p) on the FULL AK
+    #    Stage-1 population (1,338 = 309 confab + 1,029 refuse), fresh bf16 --
+    #    order matters only for the row<->label pairing, not the math.
+    ak_rows_in_order = unknown_refused + confab
+    H_ak = np.stack([fresh[_sanitize_key(rk)] for rk in ak_rows_in_order])
+    y_confab = np.array(
+        [0] * len(unknown_refused) + [1] * len(confab), dtype=int
+    )
+    caution_dir, u_p, ctrl_fit_info = _raw_refuse_and_propensity(H_ak, y_confab)
 
     # -- 3. 2-D Gram-Schmidt: c_hat = caution_dir orthogonalized vs {u_d, u_p} --
     M = np.stack([u_d, u_p], axis=1)  # dim x 2
@@ -237,8 +265,7 @@ def main() -> int:
     # -- 4. both-tail eval pool: gather activations + projections ---------
     eval_rows = []
     for rk in confab:
-        H = load_ak_cached_anchor(rk)
-        assert H is not None
+        H = fresh[_sanitize_key(rk)]
         eval_rows.append((rk, "confab", H, ak_by_key[rk]))
     for rk in answerable_refused:
         H = fresh[_sanitize_key(rk)]
@@ -257,31 +284,18 @@ def main() -> int:
     z_p = np.clip((proj_p - mu_p) / sigma_p, -Z_CLIP, Z_CLIP)
     g_row_unclipped = -ALPHA * z_d + ALPHA * z_p  # = ALPHA * (z_p - z_d)
     marginal_write_unclipped = g_row_unclipped * sigma_c
-    # Hard collapse-safety clip on the WRITE the model actually receives:
-    # clip marginal_write to +/- MARGINAL_WRITE_CLIP, then divide back through
-    # sigma_c to get the gain value stored in g_two_signal (the field the
-    # tuner's gain_field reads) -- the clip binds the real write, not just a
-    # reported number.
     marginal_write = np.clip(marginal_write_unclipped, -MARGINAL_WRITE_CLIP, MARGINAL_WRITE_CLIP)
     g_row = marginal_write / sigma_c
 
-    # -- 5. write eval_pool_both_tail.jsonl --------------------------------
-    out_path = COMMITTED / "eval_pool_both_tail.jsonl"
+    # -- 5. write eval_pool_manifest.jsonl (COMMITTED, derived columns ONLY --
+    #    no question text, no aliases; see PROVENANCE.md) ------------------
+    out_path = COMMITTED / "eval_pool_manifest.jsonl"
     with out_path.open("w", encoding="utf-8") as fh:
         for i, (rk, cell, H, src_row) in enumerate(eval_rows):
             rec = {
                 "row_key": rk,
                 "safe_key": safe_key_for(rk),
                 "cell": cell,
-                "question": (
-                    src_row.get("question")
-                    if cell == "answerable_refused"
-                    else ah_a0_by_key.get(rk, {}).get("question")
-                ),
-                "aliases": (
-                    ah_a0_by_key.get(rk, {}).get("aliases", [])
-                    if cell == "answerable_refused" else []
-                ),
                 "gold_class": "unanswerable" if cell == "confab" else "answerable",
                 "category_canon": src_row.get("category_canon"),
                 "source": src_row.get("source"),
@@ -295,11 +309,6 @@ def main() -> int:
                 "clipped": bool(abs(marginal_write_unclipped[i]) > MARGINAL_WRITE_CLIP),
             }
             fh.write(json.dumps(rec, ensure_ascii=False) + "\n")
-    # every question must be present (answerable_refused rows carry it
-    # directly on the AH A0 row; confab rows join it back from the AH A0 pool
-    # by row_key -- AK Stage-1 itself excludes question text, AH A0 does not).
-    missing_q = sum(1 for r in load_jsonl(out_path) if not r.get("question"))
-    assert missing_q == 0, f"{missing_q} eval-pool rows missing question text"
 
     # -- 6. write direction JSONs ------------------------------------------
     def direction_json(vector: np.ndarray, sigma: float, role: str, extra_prov: dict) -> dict:
@@ -316,6 +325,7 @@ def main() -> int:
             "calibration": {},
             "recipe": {"source": "build_two_signal_directions.py"},
             "provenance": {"role": role, "amendment": "two-signal-caution-regulation-instruct",
+                          "substrate": "bf16", "base_model": "unsloth/Qwen3-4B",
                           **extra_prov},
         }
 
@@ -324,7 +334,7 @@ def main() -> int:
         {"method": "mean(H[known_correct_answered]) - mean(H[unknown_refused]), unit-normalized",
          "n_known_correct_answered": len(known_correct_answered),
          "n_unknown_refused": len(unknown_refused),
-         "layer_label": "L34", "fit_pool": "AH A0 (known) / AK Stage-1 (unknown)",
+         "layer_label": "L34", "fit_pool": "AH A0 (known) / AK Stage-1 (unknown), bf16 refit",
          "fit_pool_sha256": {
              "ah_a0_rows": _sha256_file(AH_A0_ROWS),
              "ak_stage1_pool": _sha256_file(AK_STAGE1_POOL),
@@ -334,13 +344,39 @@ def main() -> int:
     )
     (COMMITTED / "u_d_L34.json").write_text(json.dumps(u_d_json, indent=2))
 
+    pos_ctrl_json = direction_json(
+        caution_dir, 1.0, "positive_control",
+        {"signal": "refuse_vs_confab_mass_mean",
+         "method": "dark-actuator-screen build_directions.py:_raw_refuse_and_propensity "
+                    "(pre-QR refuse direction), verbatim, refit on this experiment's own "
+                    "bf16 AK Stage-1 extraction (NOT copied from the dark-screen's 4-bit fit)",
+         "layer_label": "L34", "fit_pool": "AK Stage-1 (1,338 rows: 309 confab + 1,029 refuse)",
+         "fit_pool_sha256": _sha256_file(AK_STAGE1_POOL),
+         **ctrl_fit_info},
+    )
+    (COMMITTED / "source_directions" / "pos_ctrl_L34.json").write_text(
+        json.dumps(pos_ctrl_json, indent=2))
+
+    neg_ctrl_json = direction_json(
+        u_p, 1.0, "negative_control",
+        {"signal": "confab_propensity_logistic",
+         "method": "dark-actuator-screen build_directions.py:_raw_refuse_and_propensity "
+                    "(pre-QR propensity direction), verbatim, refit on this experiment's own "
+                    "bf16 AK Stage-1 extraction (NOT copied from the dark-screen's 4-bit fit)",
+         "layer_label": "L34", "fit_pool": "AK Stage-1 (1,338 rows: 309 confab + 1,029 refuse)",
+         "fit_pool_sha256": _sha256_file(AK_STAGE1_POOL),
+         **ctrl_fit_info},
+    )
+    (COMMITTED / "source_directions" / "neg_ctrl_L34.json").write_text(
+        json.dumps(neg_ctrl_json, indent=2))
+
     c_hat_json = direction_json(
         c_hat, sigma_c, "caution_write_c_hat",
         {"orthogonalized_against": ["u_d_L34.json", "source_directions/neg_ctrl_L34.json"],
          "source_caution_dir": "source_directions/pos_ctrl_L34.json",
          "cos_caution_dir_c_hat": cos_caution_chat,
          "mu_c_over_eval_pool": mu_c, "sigma_c_over_eval_pool": sigma_c,
-         "eval_pool": "analysis-committed/eval_pool_both_tail.jsonl",
+         "eval_pool_manifest": "analysis-committed/eval_pool_manifest.jsonl",
          "n_eval_pool": len(eval_rows)},
     )
     (COMMITTED / "c_hat_L34.json").write_text(json.dumps(c_hat_json, indent=2))
@@ -361,12 +397,13 @@ def main() -> int:
             "abs_median": float(np.median(np.abs(sub))),
             "abs_mean": float(np.abs(sub).mean()),
             "frac_positive": float((sub > 0).mean()),
-            "frac_abs_in_150_300": float(np.mean((np.abs(sub) >= 150) & (np.abs(sub) <= 300))),
-            "frac_abs_ge_400": float(np.mean(np.abs(sub) >= 400)),
+            "frac_abs_in_bf16_window_ge_15_le_40": float(np.mean((np.abs(sub) >= 15) & (np.abs(sub) <= 40))),
+            "frac_abs_ge_45": float(np.mean(np.abs(sub) >= 45)),
             "frac_clipped": float(np.mean(np.abs(sub_unclipped) > MARGINAL_WRITE_CLIP)),
         }
 
     report = {
+        "substrate": "bf16", "base_model": "unsloth/Qwen3-4B",
         "n_known_correct_answered": len(known_correct_answered),
         "n_unknown_refused": len(unknown_refused),
         "n_confab_tighten_tail": len(confab),
@@ -384,9 +421,7 @@ def main() -> int:
             "confab": _dist(cell_arr == "confab", marginal_write, marginal_write_unclipped),
             "answerable_refused": _dist(cell_arr == "answerable_refused", marginal_write, marginal_write_unclipped),
         },
-        "fresh_extract_manifest_sha256": _sha256_file(EXTRACT_MANIFEST),
-        "pos_ctrl_src_sha256": _sha256_file(pos_ctrl_src),
-        "neg_ctrl_src_sha256": _sha256_file(neg_ctrl_src),
+        "extract_manifest_sha256": _sha256_file(EXTRACT_MANIFEST),
         "ah_a0_rows_sha256": _sha256_file(AH_A0_ROWS),
         "ak_stage1_pool_sha256": _sha256_file(AK_STAGE1_POOL),
     }
