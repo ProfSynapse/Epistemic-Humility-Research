@@ -43,7 +43,7 @@ per_cell_gates:
   - name: g3i_specificity_random_direction
     primitive: rate_over_population
     arm: random_direction
-    compare_against: baseline_same_fired_rows
+    compare_against: baseline_over_same_held_out_population
     tolerance_pt: 2
     pass_if: "random_direction rate - baseline rate <= 0.02, both populations"
 

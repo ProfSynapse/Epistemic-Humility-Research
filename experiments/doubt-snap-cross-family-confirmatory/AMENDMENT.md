@@ -65,11 +65,15 @@ Cross-family constants:
   `{100,150,200,250}`. The selected dose is the lowest dose with FIT gated
   clean_tighten >= 60% and FIT known-correct false-refusal <= 10%. If no dose
   qualifies, the cell fails G0 viability before held-out scoring.
-- Populations: mine fresh answerable and unanswerable candidate pools from
-  KUQ, SelfAware, TriviaQA, and NaturalQuestions. Each eligible cell must have
-  held-out confab >=150 and held-out known-correct >=250 before outcome scoring.
-  Public commits contain ID-only manifests and aggregate summaries, never row
-  text, answer aliases, or generation text.
+- Populations: mine fresh behavior-defined roles per model from checked-in
+  public dataset files. Answerable candidates come from TriviaQA and PopQA and
+  enter `known_correct_answered` only if that model's undosed baseline answer is
+  well-formed and correct. Unanswerable candidates come from KUQ and enter
+  `unknown_refused` or `confab` according to that model's undosed baseline
+  behavior. Each eligible cell must have held-out confab >=150 and held-out
+  known-correct >=250 before outcome scoring. Public commits contain ID-only
+  manifests and aggregate summaries, never row text, answer aliases, or
+  generation text.
 
 Arms:
 
@@ -79,11 +83,13 @@ Arms:
 - `permuted_gate`: same total fire count, uniformly permuted over combined
   held-out confab and known-correct rows.
 
-Execution is Modal-first. Cells run in parallel, one detached Modal function per
-model cell. Within each cell, baseline generation and activation extraction are
-batched. Intervention generation is grouped-batched by arm, direction,
-fire-state, and frozen dose. Each family loader must pass a sequential-vs-batch
-parity smoke before full held-out scoring.
+Execution is Modal-first on A100. Cells run in parallel, one detached Modal
+function per model cell. Within each cell, baseline generation and activation
+extraction are batched. Intervention generation uses the tuner's per-row
+erase/write hook mask in batches; every batch carries row-local active flags and
+strengths, so failed cells can be relaunched by `--cell-id` without rerunning the
+matrix. Each family loader must pass a sequential-vs-batch parity smoke before
+full held-out scoring.
 
 Instrument config files pinned at sign: `model_matrix.yaml`, `cell.yaml`,
 `gates.yaml`.

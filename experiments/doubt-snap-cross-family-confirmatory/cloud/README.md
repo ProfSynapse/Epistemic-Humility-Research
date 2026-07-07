@@ -9,8 +9,8 @@ Planned execution shape:
    registered layer activations, fit directions on FIT, fit tau on FIT, choose
    dose on FIT, run G0, then score held-out G1/G2/G3.
 3. Inside each function, generation and extraction are batched. Intervention
-   generation is grouped by `(arm, direction, fire_state, dose)` so rows with
-   the same hook configuration decode in one batch.
+   generation batches rows by arm/direction and passes row-local active masks
+   and strengths through the intervention hook.
 4. Private row text, aliases, and generations stay in HF/private Modal artifacts
    or local gitignored `analysis/`. Public committed outputs are ID manifests,
    direction vectors, fit summaries, gate summaries, and aggregate result JSON.

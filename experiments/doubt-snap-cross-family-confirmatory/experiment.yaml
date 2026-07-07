@@ -1,21 +1,20 @@
 slug: doubt-snap-cross-family-confirmatory
 type: steer-cell
-status: draft
+status: signed
 registered: true
-question: ''
 question: Does the doubt-gated caution snap replicate as a selective, training-free
   tighten instrument across the Llama, Ministral, Qwen3.5, and Gemma family panel,
-  including 8B-ish or nearest mid-size cells where eligible, when each model's
-  direction, gate tau, and snap dose are chosen on FIT only and scored on held-out?
+  including 8B-ish or nearest mid-size cells where eligible, when each model's direction,
+  gate tau, and snap dose are chosen on FIT only and scored on held-out?
 prediction: The doubt-gated caution snap will replicate as a selective, training-free
-  tighten instrument across model families; at least 3 of 4 small-tier families
-  and at least 3 eligible mid-tier cells will pass G1/G2/G3, with at least one
-  passing mid-tier family outside Qwen.
+  tighten instrument across model families; at least 3 of 4 small-tier families and
+  at least 3 eligible mid-tier cells will pass G1/G2/G3, with at least one passing
+  mid-tier family outside Qwen.
 falsifier: The headline claim is falsified if at least 2 eligible small-tier families
-  fail, or at least 2 eligible mid-tier cells fail, or Qwen is the only passing
-  eligible mid-tier family. A cell fails if G1, G2, G3(i), or G3(ii) fails on
-  held-out. If fewer than 3 mid-tier cells are eligible before held-out scoring,
-  the mid-tier claim is underpowered rather than passed.
+  fail, or at least 2 eligible mid-tier cells fail, or Qwen is the only passing eligible
+  mid-tier family. A cell fails if G1, G2, G3(i), or G3(ii) fails on held-out. If
+  fewer than 3 mid-tier cells are eligible before held-out scoring, the mid-tier claim
+  is underpowered rather than passed.
 checkpoint:
   repo: cross-family matrix
   revision: see model_matrix.yaml
@@ -28,7 +27,17 @@ instrument:
   - cloud/README.md
   - cloud/modal_doubt_snap_cross_family.py
   - pipeline.py
-  pins: {}
+  - gen_lib.py
+  - grader.py
+  pins:
+    model_matrix.yaml: a0e226acf9ebc2e071dca33947cab39209fe81a7109975194735ee7f9c62f654
+    cell.yaml: b3b4980616856875740a214e4c0fa0757761f1f9a28451fbcd4eb07d0cffaf86
+    gates.yaml: fb3e63eac6bba873c9f98616beb542ebf70bb0ade01a30e7cc80601095c2ff89
+    cloud/README.md: ccc38f9f9bfff6d4c71f91daeaa7ba6df0cc879eecf6c8a52a3ebb3c3da89c4d
+    cloud/modal_doubt_snap_cross_family.py: c6f11b40ae66e2461de2ca65d26ac28290e4f210143f839de9f3dde2349b85c9
+    pipeline.py: 89b04446e49d7844c8dc02826215fa69db670a6c4f8e9b17ee021f9195310169
+    gen_lib.py: 6cffc7282591ca3b0db79d985a024ca2b63cab8afc1c5f5085d13cbdb98b79ce
+    grader.py: ad6cfdf197b775f1bc41850729f58ddd9f81a6e2db583d91cff91e94154a29f8
 inputs: []
 verdict: ''
 kg: []

@@ -4,6 +4,7 @@ Launch only after the amendment is signed and the repo commit is pinned:
 
     export EHR_LAUNCH_OK=doubt-snap-cross-family-confirmatory
     export MODAL_COST_CAP_USD=<approved cap>
+    export EHR_REPO_COMMIT=<signed commit sha>
     modal run --detach cloud/modal_doubt_snap_cross_family.py \
       --cell-id=qwen35_4b --cell-id=ministral3_8b_instruct
 
@@ -21,7 +22,7 @@ import modal
 
 
 REPO_URL = "https://github.com/ProfSynapse/Epistemic-Humility-Research.git"
-REPO_COMMIT = "REPLACE_WITH_SIGNED_COMMIT"
+REPO_COMMIT = os.environ.get("EHR_REPO_COMMIT", "")
 EXPERIMENT_SLUG = "doubt-snap-cross-family-confirmatory"
 RUN_TAG = "doubt-snap-cross-family-r1"
 
@@ -48,7 +49,7 @@ VOL_MOUNT = "/vol/doubt_snap_cross_family"
 
 
 @app.function(
-    gpu="A10G",
+    gpu="A100",
     timeout=8 * HOURS,
     volumes={VOL_MOUNT: vol},
     secrets=[modal.Secret.from_dict({"HF_TOKEN": os.environ.get("HF_TOKEN", "")})],
@@ -56,12 +57,13 @@ VOL_MOUNT = "/vol/doubt_snap_cross_family"
 )
 def run_one_cell(cell_id: str, stage: str = "full", dry_run: bool = False) -> None:
     import re
+    import shutil
     import subprocess
     import sys
     from pathlib import Path
 
-    if REPO_COMMIT.startswith("REPLACE_WITH"):
-        raise RuntimeError("REPO_COMMIT must be pinned to the signed commit before launch")
+    if not REPO_COMMIT or len(REPO_COMMIT) < 12:
+        raise RuntimeError("EHR_REPO_COMMIT must pin the signed commit before launch")
 
     os.environ.setdefault("HF_HOME", "/root/.cache/huggingface")
     os.environ["HF_HUB_DISABLE_XET"] = "1"
@@ -95,6 +97,22 @@ def run_one_cell(cell_id: str, stage: str = "full", dry_run: bool = False) -> No
         cmd.append("--dry-run")
     sh(cmd, cwd=workspace)
 
+    dst = Path(VOL_MOUNT) / RUN_TAG / cell_id
+    dst.mkdir(parents=True, exist_ok=True)
+    for rel in (
+        Path("experiments") / EXPERIMENT_SLUG / "analysis-committed" / cell_id,
+        Path("experiments") / EXPERIMENT_SLUG / "analysis" / cell_id,
+    ):
+        src = workspace / rel
+        if not src.exists():
+            continue
+        target = dst / rel.name
+        if target.exists():
+            shutil.rmtree(target)
+        shutil.copytree(src, target)
+    vol.commit()
+    print(f"[modal-doubt-snap] committed outputs to {dst}", flush=True)
+
 
 @app.local_entrypoint()
 def main(
@@ -106,6 +124,8 @@ def main(
         raise SystemExit(f"set EHR_LAUNCH_OK={EXPERIMENT_SLUG} before spawning")
     if not os.environ.get("MODAL_COST_CAP_USD"):
         raise SystemExit("set MODAL_COST_CAP_USD to the approved cap before spawning")
+    if not os.environ.get("EHR_REPO_COMMIT"):
+        raise SystemExit("set EHR_REPO_COMMIT to the signed commit sha before spawning")
     if not cell_id:
         raise SystemExit("pass at least one --cell-id")
     for cid in cell_id:

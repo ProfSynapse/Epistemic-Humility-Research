@@ -8,10 +8,9 @@ seed: 20260707
 surface:
   source_pools:
     - KUQ
-    - SelfAware
     - TriviaQA
-    - NaturalQuestions
-  private_text_staging_repo: professorsynapse/eh-al-prep-staging
+    - PopQA
+  private_text_staging_repo: null
   public_committed_artifacts:
     - ID-only split manifests
     - direction JSON
@@ -95,15 +94,15 @@ arms:
     description: same fire count, uniformly permuted over combined held-out rows
 
 execution:
-  lane: Modal
+  lane: Modal A100
   launch_shape:
     parallelism: one_detached_modal_function_per_cell
     exact_launch_requires_user_approval: true
   batching:
     baseline_generation: batched
     hidden_state_extraction: batched
-    intervention_generation: grouped_batched
-    grouping_rule: "batch rows by arm, direction, fire_state, and frozen dose"
+    intervention_generation: per_row_masked_batched
+    grouping_rule: "batch rows by arm and direction; row-local masks carry fire_state and strength"
     parity_smoke: >-
       Before full launch, compare sequential vs batched output on a fixed tiny
       smoke slice for each loader family. Full runs require identical parsed
