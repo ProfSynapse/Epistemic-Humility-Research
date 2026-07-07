@@ -38,6 +38,7 @@ DEFAULT_REPO_COMMIT = "REPLACE_WITH_PUSHED_AQ_COMMIT"
 MODEL_REPO = "Qwen/Qwen3-4B"
 MODEL_REVISION = "1cfa9a7208912126459214e8b04321603b3df60c"
 STAGING_REPO = "professorsynapse/eh-al-prep-staging"
+HF_SECRET_NAME = "hf-token"
 EXP_DIR = "experiments/aq-sycophancy-activation-actuator"
 EVAL_CONFIG = f"{EXP_DIR}/eval_16bit_sycophancy_answer.yaml"
 RESULTS_DIR = "experiment/phase1/eval/results_aq_sycophancy_answer_16bit"
@@ -48,6 +49,19 @@ ROW_POOL_SUMMARY = f"{ANALYSIS_DIR}/row_pool_summary.json"
 SYC_ANALYSIS_DIR = f"{ANALYSIS_DIR}/sycophancy_answer_analysis"
 ARM_NAME = "qwen3_4b_official_bf16"
 EVAL_SET = "sycophancy_answer"
+ARTIFACT_FILES = [
+    f"{RESULTS_DIR}/{ARM_NAME}__{EVAL_SET}/generations.jsonl",
+    f"{RESULTS_DIR}/{ARM_NAME}__{EVAL_SET}/scored_rows.jsonl",
+    f"{RESULTS_DIR}/{ARM_NAME}__{EVAL_SET}/metrics.json",
+    f"{RESULTS_DIR}/{ARM_NAME}__{EVAL_SET}/bootstrap_ci.json",
+    f"{RESULTS_DIR}/comparisons/summary_table.csv",
+    f"{SYC_ANALYSIS_DIR}/summary.json",
+    f"{SYC_ANALYSIS_DIR}/sycophancy_answer_summary.csv",
+    f"{SYC_ANALYSIS_DIR}/sycophancy_answer_pairs.jsonl",
+    ROW_POOL_OUT,
+    LABELS_OUT,
+    ROW_POOL_SUMMARY,
+]
 VLLM_IMAGE = "vllm/vllm-openai:v0.17.1"
 VLLM_DIST_PACKAGES = "/usr/local/lib/python3.12/dist-packages"
 PIP_DEPS = [
@@ -92,6 +106,7 @@ def build_spec(repo_commit: str, cost_cap_usd: float | None) -> dict:
         "model_repo": MODEL_REPO,
         "model_revision": MODEL_REVISION,
         "staging_repo": STAGING_REPO,
+        "hf_secret_name": HF_SECRET_NAME,
         "eval_config": EVAL_CONFIG,
         "results_dir": RESULTS_DIR,
         "row_pool_out": ROW_POOL_OUT,
@@ -104,6 +119,20 @@ def build_spec(repo_commit: str, cost_cap_usd: float | None) -> dict:
         "derived_timeout_hours": timeout_hours,
         "status": "BLOCKED_UNPINNED_REPO_COMMIT" if blocked else "READY_FOR_MODAL_SUBMIT",
     }
+
+
+def build_upload_cmd(workspace: str) -> list[str]:
+    upload_cmd = [
+        "python3",
+        "experiment/phase1/probe/cloud/upload_result.py",
+        "--repo",
+        STAGING_REPO,
+        "--path-prefix",
+        f"{RUN_TAG}/artifacts",
+    ]
+    for rel in ARTIFACT_FILES:
+        upload_cmd.extend(["--file", os.path.join(workspace, rel)])
+    return upload_cmd
 
 
 if modal is not None:
@@ -129,7 +158,7 @@ if modal is not None:
         gpu="A10G",
         timeout=3 * HOURS,
         volumes={VOL_MOUNT: vol},
-        secrets=[modal.Secret.from_dict({"HF_TOKEN": os.environ.get("HF_TOKEN", "")})],
+        secrets=[modal.Secret.from_name(HF_SECRET_NAME)],
         retries=modal.Retries(max_retries=3, backoff_coefficient=1.0, initial_delay=10.0),
     )
     def run_aq_smoke(repo_commit: str) -> dict:
@@ -196,19 +225,7 @@ if modal is not None:
 
         def checkpoint_once(tag: str = "") -> None:
             try:
-                for rel in (
-                    f"{RESULTS_DIR}/{ARM_NAME}__{EVAL_SET}/generations.jsonl",
-                    f"{RESULTS_DIR}/{ARM_NAME}__{EVAL_SET}/scored_rows.jsonl",
-                    f"{RESULTS_DIR}/{ARM_NAME}__{EVAL_SET}/metrics.json",
-                    f"{RESULTS_DIR}/{ARM_NAME}__{EVAL_SET}/bootstrap_ci.json",
-                    f"{RESULTS_DIR}/comparisons/summary_table.csv",
-                    f"{SYC_ANALYSIS_DIR}/summary.json",
-                    f"{SYC_ANALYSIS_DIR}/sycophancy_answer_summary.csv",
-                    f"{SYC_ANALYSIS_DIR}/sycophancy_answer_pairs.jsonl",
-                    ROW_POOL_OUT,
-                    LABELS_OUT,
-                    ROW_POOL_SUMMARY,
-                ):
+                for rel in ARTIFACT_FILES:
                     mirror_file(os.path.join(workspace, rel), ckpt_data)
                 vol.commit()
                 print(f"[modal-aq] checkpoint committed {tag}".rstrip(), flush=True)
@@ -257,31 +274,7 @@ if modal is not None:
             ], cwd=workspace)
             checkpoint_once("(post-row-pool)")
 
-            upload = "experiment/phase1/probe/cloud/upload_result.py"
-            artifact_files = [
-                f"{RESULTS_DIR}/{ARM_NAME}__{EVAL_SET}/generations.jsonl",
-                f"{RESULTS_DIR}/{ARM_NAME}__{EVAL_SET}/scored_rows.jsonl",
-                f"{RESULTS_DIR}/{ARM_NAME}__{EVAL_SET}/metrics.json",
-                f"{RESULTS_DIR}/{ARM_NAME}__{EVAL_SET}/bootstrap_ci.json",
-                f"{RESULTS_DIR}/comparisons/summary_table.csv",
-                f"{SYC_ANALYSIS_DIR}/summary.json",
-                f"{SYC_ANALYSIS_DIR}/sycophancy_answer_summary.csv",
-                f"{SYC_ANALYSIS_DIR}/sycophancy_answer_pairs.jsonl",
-                ROW_POOL_OUT,
-                LABELS_OUT,
-                ROW_POOL_SUMMARY,
-            ]
-            upload_cmd = [
-                "python3",
-                upload,
-                "--repo",
-                STAGING_REPO,
-                "--path-prefix",
-                f"{RUN_TAG}/artifacts",
-            ]
-            for rel in artifact_files:
-                upload_cmd.extend(["--file", os.path.join(workspace, rel)])
-            sh(upload_cmd, cwd=workspace)
+            sh(build_upload_cmd(workspace), cwd=workspace)
 
             done = f"{CKPT}/DONE"
             os.makedirs(os.path.dirname(done), exist_ok=True)
@@ -300,19 +293,91 @@ if modal is not None:
             thread.join(timeout=30)
             checkpoint_once("(final)")
 
+    @app.function(
+        timeout=30 * 60,
+        volumes={VOL_MOUNT: vol},
+        secrets=[modal.Secret.from_name(HF_SECRET_NAME)],
+        retries=modal.Retries(max_retries=1, backoff_coefficient=1.0, initial_delay=10.0),
+    )
+    def upload_aq_checkpoint(repo_commit: str) -> dict:
+        import shutil
+
+        if repo_commit.startswith("REPLACE_WITH"):
+            raise RuntimeError("repo_commit is a placeholder; pass --repo-commit=<pushed sha>")
+
+        os.environ.setdefault("HF_HOME", "/root/.cache/huggingface")
+        os.environ["HF_HUB_DISABLE_XET"] = "1"
+        os.environ["HF_HUB_ENABLE_HF_TRANSFER"] = "0"
+        workspace = "/workspace/ehr-upload"
+        ckpt_data = f"{CKPT}/data"
+
+        def sh(cmd: list[str], cwd: str | None = None, check: bool = True) -> int:
+            printable = " ".join(cmd)
+            print(f"[modal-aq-upload] $ {printable}", flush=True)
+            result = subprocess.run(cmd, cwd=cwd)
+            if check and result.returncode != 0:
+                raise RuntimeError(f"command failed ({result.returncode}): {printable}")
+            return result.returncode
+
+        def copy_tree_into(src: str, dst: str) -> int:
+            n = 0
+            if not os.path.isdir(src):
+                return 0
+            for root, _dirs, files in os.walk(src):
+                rel = os.path.relpath(root, src)
+                target_dir = dst if rel == "." else os.path.join(dst, rel)
+                os.makedirs(target_dir, exist_ok=True)
+                for filename in files:
+                    shutil.copyfile(os.path.join(root, filename), os.path.join(target_dir, filename))
+                    n += 1
+            return n
+
+        try:
+            vol.reload()
+        except Exception as exc:  # noqa: BLE001
+            print(f"[modal-aq-upload] vol.reload() failed at restore (non-fatal): {exc}", flush=True)
+
+        if not os.path.isdir(os.path.join(workspace, ".git")):
+            sh(["git", "clone", REPO_URL, workspace])
+        sh(["git", "fetch", "origin"], cwd=workspace, check=False)
+        sh(["git", "checkout", repo_commit], cwd=workspace)
+
+        restored = copy_tree_into(ckpt_data, workspace)
+        print(f"[modal-aq-upload] restored {restored} files from checkpoint", flush=True)
+        missing = [rel for rel in ARTIFACT_FILES if not os.path.isfile(os.path.join(workspace, rel))]
+        if missing:
+            raise RuntimeError(f"checkpoint missing upload artifacts: {missing}")
+
+        sh(build_upload_cmd(workspace), cwd=workspace)
+        done = f"{CKPT}/DONE"
+        os.makedirs(os.path.dirname(done), exist_ok=True)
+        with open(done, "w", encoding="utf-8") as fh:
+            fh.write(f"repo_commit={repo_commit}\nrun_tag={RUN_TAG}\nupload_only=true\n")
+        vol.commit()
+        return {
+            "ok": True,
+            "mode": "upload_only",
+            "run_tag": RUN_TAG,
+            "repo_commit": repo_commit,
+            "staging_repo": STAGING_REPO,
+            "artifact_prefix": f"{RUN_TAG}/artifacts",
+        }
+
     @app.local_entrypoint()
     def modal_entrypoint(
         dry_run: bool = False,
         repo_commit: str = DEFAULT_REPO_COMMIT,
         cost_cap_usd: float = 10.0,
+        upload_only: bool = False,
     ) -> None:
         spec = build_spec(repo_commit, cost_cap_usd)
+        spec["mode"] = "upload_only" if upload_only else "run_eval_and_upload"
         print(json.dumps(spec, indent=2, sort_keys=True))
         if dry_run:
             return
         if repo_commit.startswith("REPLACE_WITH"):
             raise SystemExit("Pass --repo-commit=<pushed AQ branch sha> before launching paid Modal work.")
-        call = run_aq_smoke.spawn(repo_commit)
+        call = upload_aq_checkpoint.spawn(repo_commit) if upload_only else run_aq_smoke.spawn(repo_commit)
         print(f"spawned {call.object_id}")
 
 
