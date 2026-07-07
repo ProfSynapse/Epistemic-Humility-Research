@@ -32,6 +32,7 @@ except Exception:  # pragma: no cover - exercised on hosts without modal
 
 
 RUN_TAG = "aq-sycophancy-actuator-smoke-r1"
+READOUT_RUN_TAG = "aq-sycophancy-readout-r1"
 APP_NAME = "eh-aq-sycophancy-smoke"
 REPO_URL = "https://github.com/ProfSynapse/Epistemic-Humility-Research.git"
 DEFAULT_REPO_COMMIT = "REPLACE_WITH_PUSHED_AQ_COMMIT"
@@ -47,6 +48,8 @@ ROW_POOL_OUT = f"{ANALYSIS_DIR}/row_pool.jsonl"
 LABELS_OUT = f"{ANALYSIS_DIR}/probe_fit_labels.jsonl"
 ROW_POOL_SUMMARY = f"{ANALYSIS_DIR}/row_pool_summary.json"
 SYC_ANALYSIS_DIR = f"{ANALYSIS_DIR}/sycophancy_answer_analysis"
+EXTRACTION_DIR = f"{ANALYSIS_DIR}/extraction"
+DIRECTION_OUT = f"{EXP_DIR}/directions/sycophancy_answer_direction.json"
 ARM_NAME = "qwen3_4b_official_bf16"
 EVAL_SET = "sycophancy_answer"
 ARTIFACT_FILES = [
@@ -101,6 +104,7 @@ def build_spec(repo_commit: str, cost_cap_usd: float | None) -> dict:
     return {
         "app": APP_NAME,
         "run_tag": RUN_TAG,
+        "readout_run_tag": READOUT_RUN_TAG,
         "repo_url": REPO_URL,
         "repo_commit": repo_commit,
         "local_head": local_repo_commit(),
@@ -115,6 +119,8 @@ def build_spec(repo_commit: str, cost_cap_usd: float | None) -> dict:
         "results_dir": RESULTS_DIR,
         "row_pool_out": ROW_POOL_OUT,
         "labels_out": LABELS_OUT,
+        "extraction_dir": EXTRACTION_DIR,
+        "direction_out": DIRECTION_OUT,
         "env": {
             "HF_HUB_DISABLE_XET": "1",
             "HF_HUB_ENABLE_HF_TRANSFER": "0",
@@ -147,6 +153,36 @@ def build_upload_cmd(workspace: str, artifact_files: list[str]) -> list[str]:
     return upload_cmd
 
 
+def upload_tree_to_hf(repo_id: str, path_prefix: str, root: str, *, base_dir: str) -> None:
+    from huggingface_hub import HfApi
+
+    api = HfApi()
+    api.create_repo(repo_id, repo_type="dataset", exist_ok=True)
+    if os.path.isfile(root):
+        rel = os.path.relpath(root, base_dir).replace(os.sep, "/")
+        remote_path = f"{path_prefix}/{rel}"
+        api.upload_file(
+            path_or_fileobj=root,
+            path_in_repo=remote_path,
+            repo_id=repo_id,
+            repo_type="dataset",
+        )
+        print(f"[modal-aq] uploaded {root} -> {repo_id}:{remote_path}", flush=True)
+        return
+    for dirpath, _dirnames, filenames in os.walk(root):
+        for filename in filenames:
+            local_path = os.path.join(dirpath, filename)
+            rel = os.path.relpath(local_path, base_dir).replace(os.sep, "/")
+            remote_path = f"{path_prefix}/{rel}"
+            api.upload_file(
+                path_or_fileobj=local_path,
+                path_in_repo=remote_path,
+                repo_id=repo_id,
+                repo_type="dataset",
+            )
+            print(f"[modal-aq] uploaded {local_path} -> {repo_id}:{remote_path}", flush=True)
+
+
 if modal is not None:
     image = (
         modal.Image.from_registry(VLLM_IMAGE, add_python="3.12")
@@ -165,6 +201,7 @@ if modal is not None:
     vol = modal.Volume.from_name("eh-aq-sycophancy-smoke-logs", create_if_missing=True)
     VOL_MOUNT = "/vol/aqlogs"
     CKPT = f"{VOL_MOUNT}/ckpt/{RUN_TAG}"
+    READOUT_CKPT = f"{VOL_MOUNT}/ckpt/{READOUT_RUN_TAG}"
 
     @app.function(
         gpu="A10G",
@@ -386,21 +423,200 @@ if modal is not None:
             "artifact_prefix": f"{RUN_TAG}/artifacts",
         }
 
+    @app.function(
+        gpu="A10G",
+        timeout=3 * HOURS,
+        volumes={VOL_MOUNT: vol},
+        secrets=[modal.Secret.from_name(HF_SECRET_NAME)],
+        retries=modal.Retries(max_retries=2, backoff_coefficient=1.0, initial_delay=10.0),
+    )
+    def run_aq_readout(repo_commit: str) -> dict:
+        import shutil
+
+        if repo_commit.startswith("REPLACE_WITH"):
+            raise RuntimeError("repo_commit is a placeholder; pass --repo-commit=<pushed sha>")
+
+        os.environ.setdefault("HF_HOME", "/root/.cache/huggingface")
+        os.environ["HF_HUB_DISABLE_XET"] = "1"
+        os.environ["HF_HUB_ENABLE_HF_TRANSFER"] = "0"
+        os.environ["PYTHONPATH"] = f"{EXP_DIR}:{VLLM_DIST_PACKAGES}"
+
+        workspace = "/workspace/ehr-readout"
+        ckpt_data = f"{READOUT_CKPT}/data"
+
+        def sh(cmd: list[str], cwd: str | None = None, check: bool = True) -> int:
+            printable = " ".join(cmd)
+            print(f"[modal-aq-readout] $ {printable}", flush=True)
+            result = subprocess.run(cmd, cwd=cwd)
+            if check and result.returncode != 0:
+                raise RuntimeError(f"command failed ({result.returncode}): {printable}")
+            return result.returncode
+
+        def copy_tree_into(src: str, dst: str) -> int:
+            n = 0
+            if not os.path.isdir(src):
+                return 0
+            for root, _dirs, files in os.walk(src):
+                rel = os.path.relpath(root, src)
+                target_dir = dst if rel == "." else os.path.join(dst, rel)
+                os.makedirs(target_dir, exist_ok=True)
+                for filename in files:
+                    shutil.copyfile(os.path.join(root, filename), os.path.join(target_dir, filename))
+                    n += 1
+            return n
+
+        def mirror_rel(rel: str) -> None:
+            src = os.path.join(workspace, rel)
+            if not os.path.exists(src):
+                return
+            dst = os.path.join(ckpt_data, rel)
+            if os.path.isdir(src):
+                if os.path.isdir(dst):
+                    shutil.rmtree(dst)
+                shutil.copytree(src, dst)
+            else:
+                os.makedirs(os.path.dirname(dst), exist_ok=True)
+                shutil.copyfile(src, dst)
+
+        def checkpoint_once(tag: str = "") -> None:
+            try:
+                for rel in (
+                    ROW_POOL_OUT,
+                    LABELS_OUT,
+                    EXTRACTION_DIR,
+                    DIRECTION_OUT,
+                ):
+                    mirror_rel(rel)
+                vol.commit()
+                print(f"[modal-aq-readout] checkpoint committed {tag}".rstrip(), flush=True)
+            except Exception as exc:  # noqa: BLE001
+                print(f"[modal-aq-readout] checkpoint FAILED (non-fatal) {tag}: {exc}", flush=True)
+
+        try:
+            vol.reload()
+        except Exception as exc:  # noqa: BLE001
+            print(f"[modal-aq-readout] vol.reload() failed at restore (non-fatal): {exc}", flush=True)
+
+        if not os.path.isdir(os.path.join(workspace, ".git")):
+            sh(["git", "clone", REPO_URL, workspace])
+        sh(["git", "fetch", "origin"], cwd=workspace, check=False)
+        sh(["git", "checkout", repo_commit], cwd=workspace)
+
+        restored = copy_tree_into(ckpt_data, workspace)
+        print(f"[modal-aq-readout] restored {restored} files from checkpoint", flush=True)
+
+        from huggingface_hub import hf_hub_download, snapshot_download
+
+        for filename, target_rel in (
+            ("row_pool.jsonl", ROW_POOL_OUT),
+            ("probe_fit_labels.jsonl", LABELS_OUT),
+        ):
+            local = hf_hub_download(
+                repo_id=STAGING_REPO,
+                repo_type="dataset",
+                filename=f"{RUN_TAG}/artifacts/{filename}",
+            )
+            target = os.path.join(workspace, target_rel)
+            os.makedirs(os.path.dirname(target), exist_ok=True)
+            shutil.copyfile(local, target)
+            print(f"[modal-aq-readout] staged {filename} -> {target_rel}", flush=True)
+
+        model_path = snapshot_download(repo_id=MODEL_REPO, revision=MODEL_REVISION)
+        print(f"[modal-aq-readout] staged model snapshot {MODEL_REPO}@{MODEL_REVISION}: {model_path}", flush=True)
+
+        sh(["nvidia-smi", "--query-gpu=name,memory.total", "--format=csv,noheader"], check=False)
+        if not os.path.isfile(os.path.join(workspace, EXTRACTION_DIR, "manifest.json")):
+            sh([
+                "python3",
+                "synaptic-tuner/tuner.py",
+                "mechinterp",
+                "extract",
+                "--mi-config",
+                "experiments/aq-sycophancy-activation-actuator/extract.yaml",
+                "--model",
+                model_path,
+                "--render-fn",
+                "sycophancy_answer_render:render",
+                "--i-know-this-runs-on-gpu",
+            ], cwd=workspace)
+            checkpoint_once("(post-extract)")
+        else:
+            print("[modal-aq-readout] extraction manifest present; skipping extract", flush=True)
+
+        if not os.path.isfile(os.path.join(workspace, DIRECTION_OUT)):
+            sh([
+                "python3",
+                "synaptic-tuner/tuner.py",
+                "mechinterp",
+                "probe-fit",
+                "--mi-config",
+                "experiments/aq-sycophancy-activation-actuator/probe_fit.yaml",
+            ], cwd=workspace)
+            checkpoint_once("(post-probe-fit)")
+        else:
+            print("[modal-aq-readout] direction present; skipping probe-fit", flush=True)
+
+        required = [
+            os.path.join(workspace, EXTRACTION_DIR, "manifest.json"),
+            os.path.join(workspace, DIRECTION_OUT),
+        ]
+        missing = [p for p in required if not os.path.isfile(p)]
+        if missing:
+            raise RuntimeError(f"readout missing required outputs: {missing}")
+
+        upload_tree_to_hf(
+            STAGING_REPO,
+            f"{READOUT_RUN_TAG}/artifacts",
+            os.path.join(workspace, ANALYSIS_DIR),
+            base_dir=workspace,
+        )
+        upload_tree_to_hf(
+            STAGING_REPO,
+            f"{READOUT_RUN_TAG}/artifacts",
+            os.path.join(workspace, DIRECTION_OUT),
+            base_dir=workspace,
+        )
+
+        done = f"{READOUT_CKPT}/DONE"
+        os.makedirs(os.path.dirname(done), exist_ok=True)
+        with open(done, "w", encoding="utf-8") as fh:
+            fh.write(f"repo_commit={repo_commit}\nrun_tag={READOUT_RUN_TAG}\n")
+        vol.commit()
+        return {
+            "ok": True,
+            "mode": "readout",
+            "run_tag": READOUT_RUN_TAG,
+            "repo_commit": repo_commit,
+            "staging_repo": STAGING_REPO,
+            "artifact_prefix": f"{READOUT_RUN_TAG}/artifacts",
+        }
+
     @app.local_entrypoint()
     def modal_entrypoint(
         dry_run: bool = False,
         repo_commit: str = DEFAULT_REPO_COMMIT,
         cost_cap_usd: float = 10.0,
         upload_only: bool = False,
+        readout: bool = False,
     ) -> None:
         spec = build_spec(repo_commit, cost_cap_usd)
-        spec["mode"] = "upload_only" if upload_only else "run_eval_and_upload"
+        if readout:
+            spec["mode"] = "readout"
+        elif upload_only:
+            spec["mode"] = "upload_only"
+        else:
+            spec["mode"] = "run_eval_and_upload"
         print(json.dumps(spec, indent=2, sort_keys=True))
         if dry_run:
             return
         if repo_commit.startswith("REPLACE_WITH"):
             raise SystemExit("Pass --repo-commit=<pushed AQ branch sha> before launching paid Modal work.")
-        call = upload_aq_checkpoint.spawn(repo_commit) if upload_only else run_aq_smoke.spawn(repo_commit)
+        if readout:
+            call = run_aq_readout.spawn(repo_commit)
+        elif upload_only:
+            call = upload_aq_checkpoint.spawn(repo_commit)
+        else:
+            call = run_aq_smoke.spawn(repo_commit)
         print(f"spawned {call.object_id}")
 
 
