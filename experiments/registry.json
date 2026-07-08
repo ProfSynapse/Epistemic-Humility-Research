@@ -250,6 +250,44 @@
     {
       "checkpoint": {
         "repo": "unsloth/Qwen3-4B",
+        "revision": "raw-base (bf16, no adapter, no 4-bit quantization)"
+      },
+      "falsifier": "If the best mid-band layer beats hs34 by less than 10 percentage points on fresh confab clean_tighten, or increases known-correct false-refusal cost by more than 2 percentage points, the same-model layer-site result does not replicate.",
+      "inputs": [
+        "experiments/j-space-calibrated-layer-contrast-qwen3-4b/AMENDMENT.md",
+        "experiments/j-space-calibrated-layer-contrast-qwen3-4b/analysis-committed/full_summary.json",
+        "experiments/j-space-midband-write-sweep-qwen3-4b/AMENDMENT.md",
+        "experiments/j-space-midband-write-sweep-qwen3-4b/analysis-committed/build_manifest_layers.json",
+        "experiments/j-space-midband-write-sweep-qwen3-4b/analysis-committed/gate_fit_layers.json",
+        "experiments/j-space-midband-write-sweep-qwen3-4b/analysis-committed/PROVENANCE.md",
+        "experiments/j-space-midband-dose-calibration-qwen3-4b/AMENDMENT.md",
+        "experiments/j-space-midband-dose-calibration-qwen3-4b/analysis-committed/dose_calibration_summary.json",
+        "experiments/common/doubt-gated-caution-tighten-heldout-split/split_manifest.json"
+      ],
+      "instrument": {
+        "configs": [
+          "cell.yaml",
+          "gates.yaml"
+        ],
+        "modules": [
+          "mine_fresh_eval_pool.py",
+          "extract_fresh_anchor.py",
+          "run_contrast.py"
+        ],
+        "pins": {}
+      },
+      "kg": [],
+      "prediction": "With predecessor directions, gates, and calibrated doses frozen, the best mid-band layer will beat hs34 by at least 10 percentage points on fresh confab clean_tighten without increasing known-correct false-refusal cost by more than 2 percentage points; hs34 will remain viable.",
+      "question": "On raw-base Qwen3-4B, does the calibrated J-space mid-band write-site advantage replicate on a fresh private evaluation pool whose row keys are disjoint from the predecessor fit and held-out split?",
+      "registered": true,
+      "slug": "j-space-layer-contrast-replication-qwen3-4b",
+      "status": "draft",
+      "type": "steer-cell",
+      "verdict": ""
+    },
+    {
+      "checkpoint": {
+        "repo": "unsloth/Qwen3-4B",
         "revision": ""
       },
       "falsifier": "No falsifier is pre-registered (lab-diagnostic characterization, not a gated confirmatory claim) -- but the correctness smoke has its own internal go/no-go: if the final-layer J-lens does NOT track the logit lens (near-zero or negative cosine similarity, near-chance top-k overlap), the implementation is broken and the Modal prep must stop rather than proceed to characterize a broken instrument. That smoke PASSED locally (see Outcome).",

@@ -1,0 +1,38 @@
+slug: j-space-layer-contrast-replication-qwen3-4b
+type: steer-cell
+status: draft
+registered: true
+question: On raw-base Qwen3-4B, does the calibrated J-space mid-band write-site
+  advantage replicate on a fresh private evaluation pool whose row keys are disjoint
+  from the predecessor fit and held-out split?
+prediction: With predecessor directions, gates, and calibrated doses frozen, the
+  best mid-band layer will beat hs34 by at least 10 percentage points on fresh
+  confab clean_tighten without increasing known-correct false-refusal cost by more
+  than 2 percentage points; hs34 will remain viable.
+falsifier: If the best mid-band layer beats hs34 by less than 10 percentage points
+  on fresh confab clean_tighten, or increases known-correct false-refusal cost by
+  more than 2 percentage points, the same-model layer-site result does not replicate.
+checkpoint:
+  repo: unsloth/Qwen3-4B
+  revision: raw-base (bf16, no adapter, no 4-bit quantization)
+instrument:
+  configs:
+  - cell.yaml
+  - gates.yaml
+  modules:
+  - mine_fresh_eval_pool.py
+  - extract_fresh_anchor.py
+  - run_contrast.py
+  pins: {}
+inputs:
+- experiments/j-space-calibrated-layer-contrast-qwen3-4b/AMENDMENT.md
+- experiments/j-space-calibrated-layer-contrast-qwen3-4b/analysis-committed/full_summary.json
+- experiments/j-space-midband-write-sweep-qwen3-4b/AMENDMENT.md
+- experiments/j-space-midband-write-sweep-qwen3-4b/analysis-committed/build_manifest_layers.json
+- experiments/j-space-midband-write-sweep-qwen3-4b/analysis-committed/gate_fit_layers.json
+- experiments/j-space-midband-write-sweep-qwen3-4b/analysis-committed/PROVENANCE.md
+- experiments/j-space-midband-dose-calibration-qwen3-4b/AMENDMENT.md
+- experiments/j-space-midband-dose-calibration-qwen3-4b/analysis-committed/dose_calibration_summary.json
+- experiments/common/doubt-gated-caution-tighten-heldout-split/split_manifest.json
+verdict: ''
+kg: []
