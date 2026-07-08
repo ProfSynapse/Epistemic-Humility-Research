@@ -79,6 +79,11 @@ candidates, selecting 306 fresh `confab` rows and 1,957
 published at `professorsynapse/eh-jspace-fresh-pool-census-qwen3-4b` revision
 `3add102ce930f73a29013f572f03e7325da30825`.
 
+Pre-sign prep result: fresh anchor extraction covered all 2,263 selected rows at
+hs23/26/29/34. Smoke G0 passed with readback means hs23=24.9998, hs26=74.9788,
+hs29=125.0104, hs34=174.9906, `frac_readback_within_tol=1.0` for every layer,
+and dosed-row collapse 0.0 for every layer.
+
 Layer contrast:
 
 - hs23 gated snap at absolute setpoint 25.
