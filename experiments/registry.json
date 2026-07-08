@@ -209,6 +209,47 @@
     {
       "checkpoint": {
         "repo": "unsloth/Qwen3-4B",
+        "revision": "raw-base (bf16, no adapter, no 4-bit quantization)"
+      },
+      "falsifier": "If the best mid-band layer improves confab clean_tighten by less than 10 percentage points over hs34, or increases known-correct false-refusal cost by more than 2 percentage points, the calibrated J-space layer-site hypothesis is not supported; if hs34 fails the viability floor, the run is a reference replication failure.",
+      "inputs": [
+        "experiments/j-space-localization-qwen3-4b/AMENDMENT.md",
+        "experiments/j-space-midband-write-sweep-qwen3-4b/AMENDMENT.md",
+        "experiments/j-space-midband-write-sweep-qwen3-4b/analysis-committed/build_manifest_layers.json",
+        "experiments/j-space-midband-write-sweep-qwen3-4b/analysis-committed/gate_fit_layers.json",
+        "experiments/j-space-midband-write-sweep-qwen3-4b/analysis-committed/smoke_summary.json",
+        "experiments/j-space-midband-write-sweep-qwen3-4b/analysis-committed/PROVENANCE.md",
+        "experiments/j-space-midband-dose-calibration-qwen3-4b/AMENDMENT.md",
+        "experiments/j-space-midband-dose-calibration-qwen3-4b/analysis-committed/dose_calibration_summary.json"
+      ],
+      "instrument": {
+        "configs": [
+          "cell.yaml",
+          "gates.yaml"
+        ],
+        "modules": [
+          "run_contrast.py"
+        ],
+        "pins": {
+          "cell.yaml": "326aec44129dcf931e58306ad19decf23b09b137f62f2af55d8dbbc058a9dc3d",
+          "gates.yaml": "4d0dc924183f923cdf075b6509f264d8df7b305d966d52499d9da72cb5af3493",
+          "run_contrast.py": "1a7fb3be02a4228c4cd0a991ac5023bd67e35d15f4079f39e3673129b156bf50"
+        }
+      },
+      "kg": [
+        "mechanism:j-space-mediated-actuation-fragility"
+      ],
+      "prediction": "With layer-specific setpoints fixed before held-out evaluation, the best mid-band layer will improve held-out confab clean_tighten over hs34 by at least 10 percentage points without increasing known-correct false-refusal cost by more than 2 percentage points; hs34 will remain a viable predecessor reference.",
+      "question": "On raw-base Qwen3-4B, do calibrated J-space mid-band write sites hs23/hs26/hs29 outperform the calibrated late hs34 reference on held-out confab tightening without a known-correct cost regression?",
+      "registered": true,
+      "slug": "j-space-calibrated-layer-contrast-qwen3-4b",
+      "status": "signed",
+      "type": "steer-cell",
+      "verdict": ""
+    },
+    {
+      "checkpoint": {
+        "repo": "unsloth/Qwen3-4B",
         "revision": ""
       },
       "falsifier": "No falsifier is pre-registered (lab-diagnostic characterization, not a gated confirmatory claim) -- but the correctness smoke has its own internal go/no-go: if the final-layer J-lens does NOT track the logit lens (near-zero or negative cosine similarity, near-chance top-k overlap), the implementation is broken and the Modal prep must stop rather than proceed to characterize a broken instrument. That smoke PASSED locally (see Outcome).",

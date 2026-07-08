@@ -172,14 +172,21 @@ superiority remains untested. Sources:
 `experiments/j-space-midband-dose-calibration-qwen3-4b/analysis-committed/dose_calibration_summary.json`,
 and `experiment/notes/j-space-midband-dose-calibration-qwen3-4b.md`.
 
+**J-space calibrated layer contrast (SIGNED, not yet launched, 2026-07-08):**
+the next held-out causal test is now registered as
+`j-space-calibrated-layer-contrast-qwen3-4b`. It compares hs23=25, hs26=75,
+hs29=125 against the late hs34=175 reference on the held-out confab and
+known-correct rows, with a smoke G0 before the full run. Prediction: the best
+mid-band layer beats hs34 by at least 10pp clean_tighten without more than 2pp
+known-correct cost regression, while hs34 remains viable. No outcome evidence
+exists until the local RTX 3090 run is explicitly launched and resolved.
+
 **Open questions for Paper 5:** Does a trained-checkpoint steering arm move the gate?
 (AA was flat on the raw base; trained checkpoints have a live gate — backlog item 3.)
 Whether ANY channel couples behavior to the model's own readout — text/prompt is
 compliance-only (AH); the reward channel is under test (AI). The new J-space fork asks
-whether prior residual writes were aimed too late: the next causal successor should
-register a calibrated held-out contrast comparing hs23=25, hs26=75, hs29=125
-against hs34=175 on the same two-signal both-tail selectivity surface before
-claiming a workspace actuator.
+whether prior residual writes were aimed too late: the signed calibrated held-out
+contrast should now run before claiming a workspace actuator.
 
 ---
 

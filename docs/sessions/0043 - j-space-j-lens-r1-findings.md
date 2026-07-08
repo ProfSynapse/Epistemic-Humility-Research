@@ -4,7 +4,7 @@ session_id: jspace-jlens-r1-findings
 title: J-space J-lens r1 findings
 status: active
 created_at: '2026-07-07T22:42:40Z'
-updated_at: '2026-07-08T10:40:26Z'
+updated_at: '2026-07-08T11:05:00Z'
 phase: phase1
 question: What did the full-corpus Qwen3-4B J-lens characterization say about epistemic
   directions, the workspace-like band, and the L34 write layer?
@@ -24,8 +24,8 @@ trajectory:
     successor is layer-wise dose calibration on FIT rows. During that local
     calibration, the generic tuner gained a resumable config-driven dose
     calibration verb for future cells. The FIT calibration then recovered
-    usable setpoints for every layer, making a calibrated held-out layer
-    contrast the next registered causal test.
+    usable setpoints for every layer. The calibrated held-out layer contrast is
+    now signed and launch-gated on explicit local RTX 3090 approval.
 checkpoints:
 - id: 001-result
   at: '2026-07-07T22:42:40Z'
@@ -224,6 +224,34 @@ checkpoints:
     hs26_selected_confab_clean_tighten: 8/8
     hs29_selected_confab_clean_tighten: 8/8
     hs34_selected_confab_clean_tighten: 7/8
+- id: 008-decision
+  at: '2026-07-08T11:05:00Z'
+  kind: decision
+  title: Calibrated held-out layer contrast signed
+  summary: Signed `j-space-calibrated-layer-contrast-qwen3-4b` as the held-out
+    causal contrast using the FIT-selected setpoints hs23=25, hs26=75,
+    hs29=125, and hs34=175. The run is not launched; local RTX 3090 launch
+    still requires explicit approval for this exact signed cell.
+  evidence:
+  - experiments/j-space-calibrated-layer-contrast-qwen3-4b/AMENDMENT.md
+  - experiments/j-space-calibrated-layer-contrast-qwen3-4b/experiment.yaml
+  run_ids: []
+  commands:
+  - bin/exp sign j-space-calibrated-layer-contrast-qwen3-4b
+  - bin/exp validate
+  - bin/exp regen
+  decisions:
+  - Keep this as exploratory Tier-2 held-out evidence, not a headline claim.
+  - Do not start the local GPU run without a fresh exact launch approval.
+  next_steps:
+  - On approval, run the smoke command first; if G0 passes, run full mode with
+    `--i-know-this-is-the-held-out-run`.
+  signals:
+    expected_selected_doses:
+      hs23: 25
+      hs26: 75
+      hs29: 125
+      hs34: 175
 ---
 # J-space J-lens r1 findings
 
@@ -272,7 +300,12 @@ holding all metrics in memory.
 The FIT-only dose calibration then passed: hs23 selected 25, hs26 selected 75,
 hs29 selected 125, and hs34 selected 175. This narrows the predecessor failure to
 dose portability and leaves the layer-site hypothesis alive, but it still does
-not test held-out mid-band superiority. That requires the next signed contrast.
+not test held-out mid-band superiority.
+
+The held-out contrast is now signed as
+`j-space-calibrated-layer-contrast-qwen3-4b`. It is launch-gated, local RTX 3090
+only, and will smoke on 8 held-out rows before the full run. No outcome evidence
+exists yet.
 
 ## Checkpoints
 
@@ -403,3 +436,25 @@ not test held-out mid-band superiority. That requires the next signed contrast.
 - next steps:
   - Draft and sign the calibrated held-out layer contrast using hs23=25,
     hs26=75, hs29=125, and hs34=175.
+
+### 008-decision - Calibrated held-out layer contrast signed
+
+- at: `2026-07-08T11:05:00Z`
+- kind: `decision`
+- summary: Signed `j-space-calibrated-layer-contrast-qwen3-4b` as the held-out
+  causal contrast using the FIT-selected setpoints hs23=25, hs26=75, hs29=125,
+  and hs34=175. The run is not launched; local RTX 3090 launch still requires
+  explicit approval for this exact signed cell.
+- evidence:
+  - `experiments/j-space-calibrated-layer-contrast-qwen3-4b/AMENDMENT.md`
+  - `experiments/j-space-calibrated-layer-contrast-qwen3-4b/experiment.yaml`
+- commands:
+  - `bin/exp sign j-space-calibrated-layer-contrast-qwen3-4b`
+  - `bin/exp validate`
+  - `bin/exp regen`
+- decisions:
+  - Keep this as exploratory Tier-2 held-out evidence, not a headline claim.
+  - Do not start the local GPU run without a fresh exact launch approval.
+- next steps:
+  - On approval, run the smoke command first; if G0 passes, run full mode with
+    `--i-know-this-is-the-held-out-run`.
