@@ -1,0 +1,1544 @@
+{
+  "schema": "jspace-token-target-fit-calibration/v1",
+  "doses": [
+    {
+      "schema": "jspace-token-target-summary/v1",
+      "mode": "fit_dose_5",
+      "j_token_dose": 5.0,
+      "arms": {
+        "c_hat_only_hs23": {
+          "n_rows": 296,
+          "n_fired": 120,
+          "readbacks": {
+            "c_hat": {
+              "n": 120,
+              "mean": 24.999609595934512,
+              "frac_within_tol": 1.0
+            }
+          },
+          "confab_tighten": {
+            "n": 124,
+            "successes": 118,
+            "rate": 0.9516129032258065,
+            "wilson_ci_95": [
+              0.8984475321621598,
+              0.9776375894656152
+            ]
+          },
+          "known_correct_cost_control": {
+            "n": 172,
+            "successes": 3,
+            "rate": 0.01744186046511628,
+            "wilson_ci_95": [
+              0.005949242317427092,
+              0.05001855325647952
+            ]
+          },
+          "malformed_json": {
+            "n": 296,
+            "successes": 0,
+            "rate": 0.0,
+            "wilson_ci_95": [
+              0.0,
+              0.012811633307158257
+            ]
+          },
+          "forced_continuation": {
+            "n": 296,
+            "successes": 0,
+            "rate": 0.0,
+            "wilson_ci_95": [
+              0.0,
+              0.012811633307158257
+            ]
+          },
+          "non_target_language_drift": {
+            "n": 296,
+            "successes": 0,
+            "rate": 0.0,
+            "wilson_ci_95": [
+              0.0,
+              0.012811633307158257
+            ]
+          },
+          "collapse_rate_on_dosed": 0.0
+        },
+        "c_hat_plus_j_token_hs23": {
+          "n_rows": 296,
+          "n_fired": 120,
+          "readbacks": {
+            "c_hat": {
+              "n": 120,
+              "mean": 24.99832992879498,
+              "frac_within_tol": 1.0
+            },
+            "j_token": {
+              "n": 120,
+              "mean": 4.996470225205655,
+              "frac_within_tol": 1.0
+            }
+          },
+          "confab_tighten": {
+            "n": 124,
+            "successes": 119,
+            "rate": 0.9596774193548387,
+            "wilson_ci_95": [
+              0.9090738373814525,
+              0.982655661418247
+            ]
+          },
+          "known_correct_cost_control": {
+            "n": 172,
+            "successes": 3,
+            "rate": 0.01744186046511628,
+            "wilson_ci_95": [
+              0.005949242317427092,
+              0.05001855325647952
+            ]
+          },
+          "malformed_json": {
+            "n": 296,
+            "successes": 0,
+            "rate": 0.0,
+            "wilson_ci_95": [
+              0.0,
+              0.012811633307158257
+            ]
+          },
+          "forced_continuation": {
+            "n": 296,
+            "successes": 0,
+            "rate": 0.0,
+            "wilson_ci_95": [
+              0.0,
+              0.012811633307158257
+            ]
+          },
+          "non_target_language_drift": {
+            "n": 296,
+            "successes": 0,
+            "rate": 0.0,
+            "wilson_ci_95": [
+              0.0,
+              0.012811633307158257
+            ]
+          },
+          "collapse_rate_on_dosed": 0.0
+        },
+        "c_hat_plus_random_j_hs23": {
+          "n_rows": 296,
+          "n_fired": 120,
+          "readbacks": {
+            "c_hat": {
+              "n": 120,
+              "mean": 25.000005633511805,
+              "frac_within_tol": 1.0
+            },
+            "random_j": {
+              "n": 120,
+              "mean": 5.003371177845535,
+              "frac_within_tol": 1.0
+            }
+          },
+          "confab_tighten": {
+            "n": 124,
+            "successes": 117,
+            "rate": 0.9435483870967742,
+            "wilson_ci_95": [
+              0.8880520154039525,
+              0.9723887290518981
+            ]
+          },
+          "known_correct_cost_control": {
+            "n": 172,
+            "successes": 3,
+            "rate": 0.01744186046511628,
+            "wilson_ci_95": [
+              0.005949242317427092,
+              0.05001855325647952
+            ]
+          },
+          "malformed_json": {
+            "n": 296,
+            "successes": 1,
+            "rate": 0.0033783783783783786,
+            "wilson_ci_95": [
+              0.0005966158805932702,
+              0.018885209093408514
+            ]
+          },
+          "forced_continuation": {
+            "n": 296,
+            "successes": 0,
+            "rate": 0.0,
+            "wilson_ci_95": [
+              0.0,
+              0.012811633307158257
+            ]
+          },
+          "non_target_language_drift": {
+            "n": 296,
+            "successes": 0,
+            "rate": 0.0,
+            "wilson_ci_95": [
+              0.0,
+              0.012811633307158257
+            ]
+          },
+          "collapse_rate_on_dosed": 0.0
+        },
+        "j_token_only_hs23": {
+          "n_rows": 296,
+          "n_fired": 120,
+          "readbacks": {
+            "j_token": {
+              "n": 120,
+              "mean": 4.996315644032558,
+              "frac_within_tol": 1.0
+            }
+          },
+          "confab_tighten": {
+            "n": 124,
+            "successes": 71,
+            "rate": 0.5725806451612904,
+            "wilson_ci_95": [
+              0.4846173228363051,
+              0.6561820717110161
+            ]
+          },
+          "known_correct_cost_control": {
+            "n": 172,
+            "successes": 3,
+            "rate": 0.01744186046511628,
+            "wilson_ci_95": [
+              0.005949242317427092,
+              0.05001855325647952
+            ]
+          },
+          "malformed_json": {
+            "n": 296,
+            "successes": 0,
+            "rate": 0.0,
+            "wilson_ci_95": [
+              0.0,
+              0.012811633307158257
+            ]
+          },
+          "forced_continuation": {
+            "n": 296,
+            "successes": 0,
+            "rate": 0.0,
+            "wilson_ci_95": [
+              0.0,
+              0.012811633307158257
+            ]
+          },
+          "non_target_language_drift": {
+            "n": 296,
+            "successes": 0,
+            "rate": 0.0,
+            "wilson_ci_95": [
+              0.0,
+              0.012811633307158257
+            ]
+          },
+          "collapse_rate_on_dosed": 0.0
+        }
+      },
+      "contrast": {
+        "tighten_delta_hybrid_minus_baseline": 0.008064516129032251,
+        "cost_delta_hybrid_minus_baseline": 0.0,
+        "random_control_tighten_delta": -0.008064516129032251,
+        "g1_pass": false,
+        "g2_pass": true,
+        "g3_pass": false,
+        "g4_pass": true
+      },
+      "row_text_committed": false,
+      "baseline_source_mode": "fit_baseline_c_hat_only_hs23"
+    },
+    {
+      "schema": "jspace-token-target-summary/v1",
+      "mode": "fit_dose_10",
+      "j_token_dose": 10.0,
+      "arms": {
+        "c_hat_only_hs23": {
+          "n_rows": 296,
+          "n_fired": 120,
+          "readbacks": {
+            "c_hat": {
+              "n": 120,
+              "mean": 24.999609595934512,
+              "frac_within_tol": 1.0
+            }
+          },
+          "confab_tighten": {
+            "n": 124,
+            "successes": 118,
+            "rate": 0.9516129032258065,
+            "wilson_ci_95": [
+              0.8984475321621598,
+              0.9776375894656152
+            ]
+          },
+          "known_correct_cost_control": {
+            "n": 172,
+            "successes": 3,
+            "rate": 0.01744186046511628,
+            "wilson_ci_95": [
+              0.005949242317427092,
+              0.05001855325647952
+            ]
+          },
+          "malformed_json": {
+            "n": 296,
+            "successes": 0,
+            "rate": 0.0,
+            "wilson_ci_95": [
+              0.0,
+              0.012811633307158257
+            ]
+          },
+          "forced_continuation": {
+            "n": 296,
+            "successes": 0,
+            "rate": 0.0,
+            "wilson_ci_95": [
+              0.0,
+              0.012811633307158257
+            ]
+          },
+          "non_target_language_drift": {
+            "n": 296,
+            "successes": 0,
+            "rate": 0.0,
+            "wilson_ci_95": [
+              0.0,
+              0.012811633307158257
+            ]
+          },
+          "collapse_rate_on_dosed": 0.0
+        },
+        "c_hat_plus_j_token_hs23": {
+          "n_rows": 296,
+          "n_fired": 120,
+          "readbacks": {
+            "c_hat": {
+              "n": 120,
+              "mean": 24.99749897716537,
+              "frac_within_tol": 1.0
+            },
+            "j_token": {
+              "n": 120,
+              "mean": 9.995899554153652,
+              "frac_within_tol": 1.0
+            }
+          },
+          "confab_tighten": {
+            "n": 124,
+            "successes": 119,
+            "rate": 0.9596774193548387,
+            "wilson_ci_95": [
+              0.9090738373814525,
+              0.982655661418247
+            ]
+          },
+          "known_correct_cost_control": {
+            "n": 172,
+            "successes": 3,
+            "rate": 0.01744186046511628,
+            "wilson_ci_95": [
+              0.005949242317427092,
+              0.05001855325647952
+            ]
+          },
+          "malformed_json": {
+            "n": 296,
+            "successes": 0,
+            "rate": 0.0,
+            "wilson_ci_95": [
+              0.0,
+              0.012811633307158257
+            ]
+          },
+          "forced_continuation": {
+            "n": 296,
+            "successes": 0,
+            "rate": 0.0,
+            "wilson_ci_95": [
+              0.0,
+              0.012811633307158257
+            ]
+          },
+          "non_target_language_drift": {
+            "n": 296,
+            "successes": 0,
+            "rate": 0.0,
+            "wilson_ci_95": [
+              0.0,
+              0.012811633307158257
+            ]
+          },
+          "collapse_rate_on_dosed": 0.0
+        },
+        "c_hat_plus_random_j_hs23": {
+          "n_rows": 296,
+          "n_fired": 120,
+          "readbacks": {
+            "c_hat": {
+              "n": 120,
+              "mean": 25.00010136152705,
+              "frac_within_tol": 1.0
+            },
+            "random_j": {
+              "n": 120,
+              "mean": 9.999514053674284,
+              "frac_within_tol": 1.0
+            }
+          },
+          "confab_tighten": {
+            "n": 124,
+            "successes": 118,
+            "rate": 0.9516129032258065,
+            "wilson_ci_95": [
+              0.8984475321621598,
+              0.9776375894656152
+            ]
+          },
+          "known_correct_cost_control": {
+            "n": 172,
+            "successes": 3,
+            "rate": 0.01744186046511628,
+            "wilson_ci_95": [
+              0.005949242317427092,
+              0.05001855325647952
+            ]
+          },
+          "malformed_json": {
+            "n": 296,
+            "successes": 0,
+            "rate": 0.0,
+            "wilson_ci_95": [
+              0.0,
+              0.012811633307158257
+            ]
+          },
+          "forced_continuation": {
+            "n": 296,
+            "successes": 0,
+            "rate": 0.0,
+            "wilson_ci_95": [
+              0.0,
+              0.012811633307158257
+            ]
+          },
+          "non_target_language_drift": {
+            "n": 296,
+            "successes": 0,
+            "rate": 0.0,
+            "wilson_ci_95": [
+              0.0,
+              0.012811633307158257
+            ]
+          },
+          "collapse_rate_on_dosed": 0.0
+        },
+        "j_token_only_hs23": {
+          "n_rows": 296,
+          "n_fired": 120,
+          "readbacks": {
+            "j_token": {
+              "n": 120,
+              "mean": 9.993307925858925,
+              "frac_within_tol": 1.0
+            }
+          },
+          "confab_tighten": {
+            "n": 124,
+            "successes": 97,
+            "rate": 0.782258064516129,
+            "wilson_ci_95": [
+              0.7017340613261022,
+              0.8458191396912572
+            ]
+          },
+          "known_correct_cost_control": {
+            "n": 172,
+            "successes": 3,
+            "rate": 0.01744186046511628,
+            "wilson_ci_95": [
+              0.005949242317427092,
+              0.05001855325647952
+            ]
+          },
+          "malformed_json": {
+            "n": 296,
+            "successes": 0,
+            "rate": 0.0,
+            "wilson_ci_95": [
+              0.0,
+              0.012811633307158257
+            ]
+          },
+          "forced_continuation": {
+            "n": 296,
+            "successes": 0,
+            "rate": 0.0,
+            "wilson_ci_95": [
+              0.0,
+              0.012811633307158257
+            ]
+          },
+          "non_target_language_drift": {
+            "n": 296,
+            "successes": 0,
+            "rate": 0.0,
+            "wilson_ci_95": [
+              0.0,
+              0.012811633307158257
+            ]
+          },
+          "collapse_rate_on_dosed": 0.0
+        }
+      },
+      "contrast": {
+        "tighten_delta_hybrid_minus_baseline": 0.008064516129032251,
+        "cost_delta_hybrid_minus_baseline": 0.0,
+        "random_control_tighten_delta": 0.0,
+        "g1_pass": false,
+        "g2_pass": true,
+        "g3_pass": false,
+        "g4_pass": true
+      },
+      "row_text_committed": false,
+      "baseline_source_mode": "fit_baseline_c_hat_only_hs23"
+    },
+    {
+      "schema": "jspace-token-target-summary/v1",
+      "mode": "fit_dose_15",
+      "j_token_dose": 15.0,
+      "arms": {
+        "c_hat_only_hs23": {
+          "n_rows": 296,
+          "n_fired": 120,
+          "readbacks": {
+            "c_hat": {
+              "n": 120,
+              "mean": 24.999609595934512,
+              "frac_within_tol": 1.0
+            }
+          },
+          "confab_tighten": {
+            "n": 124,
+            "successes": 118,
+            "rate": 0.9516129032258065,
+            "wilson_ci_95": [
+              0.8984475321621598,
+              0.9776375894656152
+            ]
+          },
+          "known_correct_cost_control": {
+            "n": 172,
+            "successes": 3,
+            "rate": 0.01744186046511628,
+            "wilson_ci_95": [
+              0.005949242317427092,
+              0.05001855325647952
+            ]
+          },
+          "malformed_json": {
+            "n": 296,
+            "successes": 0,
+            "rate": 0.0,
+            "wilson_ci_95": [
+              0.0,
+              0.012811633307158257
+            ]
+          },
+          "forced_continuation": {
+            "n": 296,
+            "successes": 0,
+            "rate": 0.0,
+            "wilson_ci_95": [
+              0.0,
+              0.012811633307158257
+            ]
+          },
+          "non_target_language_drift": {
+            "n": 296,
+            "successes": 0,
+            "rate": 0.0,
+            "wilson_ci_95": [
+              0.0,
+              0.012811633307158257
+            ]
+          },
+          "collapse_rate_on_dosed": 0.0
+        },
+        "c_hat_plus_j_token_hs23": {
+          "n_rows": 296,
+          "n_fired": 120,
+          "readbacks": {
+            "c_hat": {
+              "n": 120,
+              "mean": 24.99670425029198,
+              "frac_within_tol": 1.0
+            },
+            "j_token": {
+              "n": 120,
+              "mean": 14.996540616701896,
+              "frac_within_tol": 1.0
+            }
+          },
+          "confab_tighten": {
+            "n": 124,
+            "successes": 119,
+            "rate": 0.9596774193548387,
+            "wilson_ci_95": [
+              0.9090738373814525,
+              0.982655661418247
+            ]
+          },
+          "known_correct_cost_control": {
+            "n": 172,
+            "successes": 3,
+            "rate": 0.01744186046511628,
+            "wilson_ci_95": [
+              0.005949242317427092,
+              0.05001855325647952
+            ]
+          },
+          "malformed_json": {
+            "n": 296,
+            "successes": 0,
+            "rate": 0.0,
+            "wilson_ci_95": [
+              0.0,
+              0.012811633307158257
+            ]
+          },
+          "forced_continuation": {
+            "n": 296,
+            "successes": 0,
+            "rate": 0.0,
+            "wilson_ci_95": [
+              0.0,
+              0.012811633307158257
+            ]
+          },
+          "non_target_language_drift": {
+            "n": 296,
+            "successes": 0,
+            "rate": 0.0,
+            "wilson_ci_95": [
+              0.0,
+              0.012811633307158257
+            ]
+          },
+          "collapse_rate_on_dosed": 0.0
+        },
+        "c_hat_plus_random_j_hs23": {
+          "n_rows": 296,
+          "n_fired": 120,
+          "readbacks": {
+            "c_hat": {
+              "n": 120,
+              "mean": 25.00092622716541,
+              "frac_within_tol": 1.0
+            },
+            "random_j": {
+              "n": 120,
+              "mean": 14.937692803169679,
+              "frac_within_tol": 1.0
+            }
+          },
+          "confab_tighten": {
+            "n": 124,
+            "successes": 118,
+            "rate": 0.9516129032258065,
+            "wilson_ci_95": [
+              0.8984475321621598,
+              0.9776375894656152
+            ]
+          },
+          "known_correct_cost_control": {
+            "n": 172,
+            "successes": 3,
+            "rate": 0.01744186046511628,
+            "wilson_ci_95": [
+              0.005949242317427092,
+              0.05001855325647952
+            ]
+          },
+          "malformed_json": {
+            "n": 296,
+            "successes": 1,
+            "rate": 0.0033783783783783786,
+            "wilson_ci_95": [
+              0.0005966158805932702,
+              0.018885209093408514
+            ]
+          },
+          "forced_continuation": {
+            "n": 296,
+            "successes": 0,
+            "rate": 0.0,
+            "wilson_ci_95": [
+              0.0,
+              0.012811633307158257
+            ]
+          },
+          "non_target_language_drift": {
+            "n": 296,
+            "successes": 0,
+            "rate": 0.0,
+            "wilson_ci_95": [
+              0.0,
+              0.012811633307158257
+            ]
+          },
+          "collapse_rate_on_dosed": 0.0
+        },
+        "j_token_only_hs23": {
+          "n_rows": 296,
+          "n_fired": 120,
+          "readbacks": {
+            "j_token": {
+              "n": 120,
+              "mean": 14.993455434323925,
+              "frac_within_tol": 1.0
+            }
+          },
+          "confab_tighten": {
+            "n": 124,
+            "successes": 114,
+            "rate": 0.9193548387096774,
+            "wilson_ci_95": [
+              0.8579005977090514,
+              0.9556070152310253
+            ]
+          },
+          "known_correct_cost_control": {
+            "n": 172,
+            "successes": 3,
+            "rate": 0.01744186046511628,
+            "wilson_ci_95": [
+              0.005949242317427092,
+              0.05001855325647952
+            ]
+          },
+          "malformed_json": {
+            "n": 296,
+            "successes": 0,
+            "rate": 0.0,
+            "wilson_ci_95": [
+              0.0,
+              0.012811633307158257
+            ]
+          },
+          "forced_continuation": {
+            "n": 296,
+            "successes": 0,
+            "rate": 0.0,
+            "wilson_ci_95": [
+              0.0,
+              0.012811633307158257
+            ]
+          },
+          "non_target_language_drift": {
+            "n": 296,
+            "successes": 0,
+            "rate": 0.0,
+            "wilson_ci_95": [
+              0.0,
+              0.012811633307158257
+            ]
+          },
+          "collapse_rate_on_dosed": 0.0
+        }
+      },
+      "contrast": {
+        "tighten_delta_hybrid_minus_baseline": 0.008064516129032251,
+        "cost_delta_hybrid_minus_baseline": 0.0,
+        "random_control_tighten_delta": 0.0,
+        "g1_pass": false,
+        "g2_pass": true,
+        "g3_pass": false,
+        "g4_pass": true
+      },
+      "row_text_committed": false,
+      "baseline_source_mode": "fit_baseline_c_hat_only_hs23"
+    },
+    {
+      "schema": "jspace-token-target-summary/v1",
+      "mode": "fit_dose_25",
+      "j_token_dose": 25.0,
+      "arms": {
+        "c_hat_only_hs23": {
+          "n_rows": 296,
+          "n_fired": 120,
+          "readbacks": {
+            "c_hat": {
+              "n": 120,
+              "mean": 24.999609595934512,
+              "frac_within_tol": 1.0
+            }
+          },
+          "confab_tighten": {
+            "n": 124,
+            "successes": 118,
+            "rate": 0.9516129032258065,
+            "wilson_ci_95": [
+              0.8984475321621598,
+              0.9776375894656152
+            ]
+          },
+          "known_correct_cost_control": {
+            "n": 172,
+            "successes": 3,
+            "rate": 0.01744186046511628,
+            "wilson_ci_95": [
+              0.005949242317427092,
+              0.05001855325647952
+            ]
+          },
+          "malformed_json": {
+            "n": 296,
+            "successes": 0,
+            "rate": 0.0,
+            "wilson_ci_95": [
+              0.0,
+              0.012811633307158257
+            ]
+          },
+          "forced_continuation": {
+            "n": 296,
+            "successes": 0,
+            "rate": 0.0,
+            "wilson_ci_95": [
+              0.0,
+              0.012811633307158257
+            ]
+          },
+          "non_target_language_drift": {
+            "n": 296,
+            "successes": 0,
+            "rate": 0.0,
+            "wilson_ci_95": [
+              0.0,
+              0.012811633307158257
+            ]
+          },
+          "collapse_rate_on_dosed": 0.0
+        },
+        "c_hat_plus_j_token_hs23": {
+          "n_rows": 296,
+          "n_fired": 120,
+          "readbacks": {
+            "c_hat": {
+              "n": 120,
+              "mean": 25.00059348633128,
+              "frac_within_tol": 1.0
+            },
+            "j_token": {
+              "n": 120,
+              "mean": 24.86776731251965,
+              "frac_within_tol": 1.0
+            }
+          },
+          "confab_tighten": {
+            "n": 124,
+            "successes": 44,
+            "rate": 0.3548387096774194,
+            "wilson_ci_95": [
+              0.2761463969444141,
+              0.4422548139609439
+            ]
+          },
+          "known_correct_cost_control": {
+            "n": 172,
+            "successes": 3,
+            "rate": 0.01744186046511628,
+            "wilson_ci_95": [
+              0.005949242317427092,
+              0.05001855325647952
+            ]
+          },
+          "malformed_json": {
+            "n": 296,
+            "successes": 77,
+            "rate": 0.26013513513513514,
+            "wilson_ci_95": [
+              0.21345648488947072,
+              0.3129599067646391
+            ]
+          },
+          "forced_continuation": {
+            "n": 296,
+            "successes": 0,
+            "rate": 0.0,
+            "wilson_ci_95": [
+              0.0,
+              0.012811633307158257
+            ]
+          },
+          "non_target_language_drift": {
+            "n": 296,
+            "successes": 0,
+            "rate": 0.0,
+            "wilson_ci_95": [
+              0.0,
+              0.012811633307158257
+            ]
+          },
+          "collapse_rate_on_dosed": 0.0
+        },
+        "c_hat_plus_random_j_hs23": {
+          "n_rows": 296,
+          "n_fired": 120,
+          "readbacks": {
+            "c_hat": {
+              "n": 120,
+              "mean": 25.001053461671713,
+              "frac_within_tol": 1.0
+            },
+            "random_j": {
+              "n": 120,
+              "mean": 24.999218480849837,
+              "frac_within_tol": 1.0
+            }
+          },
+          "confab_tighten": {
+            "n": 124,
+            "successes": 118,
+            "rate": 0.9516129032258065,
+            "wilson_ci_95": [
+              0.8984475321621598,
+              0.9776375894656152
+            ]
+          },
+          "known_correct_cost_control": {
+            "n": 172,
+            "successes": 3,
+            "rate": 0.01744186046511628,
+            "wilson_ci_95": [
+              0.005949242317427092,
+              0.05001855325647952
+            ]
+          },
+          "malformed_json": {
+            "n": 296,
+            "successes": 0,
+            "rate": 0.0,
+            "wilson_ci_95": [
+              0.0,
+              0.012811633307158257
+            ]
+          },
+          "forced_continuation": {
+            "n": 296,
+            "successes": 0,
+            "rate": 0.0,
+            "wilson_ci_95": [
+              0.0,
+              0.012811633307158257
+            ]
+          },
+          "non_target_language_drift": {
+            "n": 296,
+            "successes": 0,
+            "rate": 0.0,
+            "wilson_ci_95": [
+              0.0,
+              0.012811633307158257
+            ]
+          },
+          "collapse_rate_on_dosed": 0.0
+        },
+        "j_token_only_hs23": {
+          "n_rows": 296,
+          "n_fired": 120,
+          "readbacks": {
+            "j_token": {
+              "n": 120,
+              "mean": 24.863585734259004,
+              "frac_within_tol": 1.0
+            }
+          },
+          "confab_tighten": {
+            "n": 124,
+            "successes": 1,
+            "rate": 0.008064516129032258,
+            "wilson_ci_95": [
+              0.0014250064581251692,
+              0.04426798605447708
+            ]
+          },
+          "known_correct_cost_control": {
+            "n": 172,
+            "successes": 3,
+            "rate": 0.01744186046511628,
+            "wilson_ci_95": [
+              0.005949242317427092,
+              0.05001855325647952
+            ]
+          },
+          "malformed_json": {
+            "n": 296,
+            "successes": 119,
+            "rate": 0.40202702702702703,
+            "wilson_ci_95": [
+              0.3477708817218565,
+              0.45879355993968135
+            ]
+          },
+          "forced_continuation": {
+            "n": 296,
+            "successes": 0,
+            "rate": 0.0,
+            "wilson_ci_95": [
+              0.0,
+              0.012811633307158257
+            ]
+          },
+          "non_target_language_drift": {
+            "n": 296,
+            "successes": 0,
+            "rate": 0.0,
+            "wilson_ci_95": [
+              0.0,
+              0.012811633307158257
+            ]
+          },
+          "collapse_rate_on_dosed": 0.0
+        }
+      },
+      "contrast": {
+        "tighten_delta_hybrid_minus_baseline": -0.5967741935483871,
+        "cost_delta_hybrid_minus_baseline": 0.0,
+        "random_control_tighten_delta": 0.0,
+        "g1_pass": false,
+        "g2_pass": true,
+        "g3_pass": false,
+        "g4_pass": false
+      },
+      "row_text_committed": false,
+      "baseline_source_mode": "fit_baseline_c_hat_only_hs23"
+    },
+    {
+      "schema": "jspace-token-target-summary/v1",
+      "mode": "fit_dose_40",
+      "j_token_dose": 40.0,
+      "arms": {
+        "c_hat_only_hs23": {
+          "n_rows": 296,
+          "n_fired": 120,
+          "readbacks": {
+            "c_hat": {
+              "n": 120,
+              "mean": 24.999609595934512,
+              "frac_within_tol": 1.0
+            }
+          },
+          "confab_tighten": {
+            "n": 124,
+            "successes": 118,
+            "rate": 0.9516129032258065,
+            "wilson_ci_95": [
+              0.8984475321621598,
+              0.9776375894656152
+            ]
+          },
+          "known_correct_cost_control": {
+            "n": 172,
+            "successes": 3,
+            "rate": 0.01744186046511628,
+            "wilson_ci_95": [
+              0.005949242317427092,
+              0.05001855325647952
+            ]
+          },
+          "malformed_json": {
+            "n": 296,
+            "successes": 0,
+            "rate": 0.0,
+            "wilson_ci_95": [
+              0.0,
+              0.012811633307158257
+            ]
+          },
+          "forced_continuation": {
+            "n": 296,
+            "successes": 0,
+            "rate": 0.0,
+            "wilson_ci_95": [
+              0.0,
+              0.012811633307158257
+            ]
+          },
+          "non_target_language_drift": {
+            "n": 296,
+            "successes": 0,
+            "rate": 0.0,
+            "wilson_ci_95": [
+              0.0,
+              0.012811633307158257
+            ]
+          },
+          "collapse_rate_on_dosed": 0.0
+        },
+        "c_hat_plus_j_token_hs23": {
+          "n_rows": 296,
+          "n_fired": 120,
+          "readbacks": {
+            "c_hat": {
+              "n": 120,
+              "mean": 25.003275934666817,
+              "frac_within_tol": 1.0
+            },
+            "j_token": {
+              "n": 120,
+              "mean": 39.98679755693149,
+              "frac_within_tol": 1.0
+            }
+          },
+          "confab_tighten": {
+            "n": 124,
+            "successes": 1,
+            "rate": 0.008064516129032258,
+            "wilson_ci_95": [
+              0.0014250064581251692,
+              0.04426798605447708
+            ]
+          },
+          "known_correct_cost_control": {
+            "n": 172,
+            "successes": 3,
+            "rate": 0.01744186046511628,
+            "wilson_ci_95": [
+              0.005949242317427092,
+              0.05001855325647952
+            ]
+          },
+          "malformed_json": {
+            "n": 296,
+            "successes": 120,
+            "rate": 0.40540540540540543,
+            "wilson_ci_95": [
+              0.35103191568984027,
+              0.46220271763854115
+            ]
+          },
+          "forced_continuation": {
+            "n": 296,
+            "successes": 0,
+            "rate": 0.0,
+            "wilson_ci_95": [
+              0.0,
+              0.012811633307158257
+            ]
+          },
+          "non_target_language_drift": {
+            "n": 296,
+            "successes": 0,
+            "rate": 0.0,
+            "wilson_ci_95": [
+              0.0,
+              0.012811633307158257
+            ]
+          },
+          "collapse_rate_on_dosed": 0.0
+        },
+        "c_hat_plus_random_j_hs23": {
+          "n_rows": 296,
+          "n_fired": 120,
+          "readbacks": {
+            "c_hat": {
+              "n": 120,
+              "mean": 25.003537395328447,
+              "frac_within_tol": 1.0
+            },
+            "random_j": {
+              "n": 120,
+              "mean": 39.99708137186944,
+              "frac_within_tol": 1.0
+            }
+          },
+          "confab_tighten": {
+            "n": 124,
+            "successes": 117,
+            "rate": 0.9435483870967742,
+            "wilson_ci_95": [
+              0.8880520154039525,
+              0.9723887290518981
+            ]
+          },
+          "known_correct_cost_control": {
+            "n": 172,
+            "successes": 3,
+            "rate": 0.01744186046511628,
+            "wilson_ci_95": [
+              0.005949242317427092,
+              0.05001855325647952
+            ]
+          },
+          "malformed_json": {
+            "n": 296,
+            "successes": 1,
+            "rate": 0.0033783783783783786,
+            "wilson_ci_95": [
+              0.0005966158805932702,
+              0.018885209093408514
+            ]
+          },
+          "forced_continuation": {
+            "n": 296,
+            "successes": 1,
+            "rate": 0.0033783783783783786,
+            "wilson_ci_95": [
+              0.0005966158805932702,
+              0.018885209093408514
+            ]
+          },
+          "non_target_language_drift": {
+            "n": 296,
+            "successes": 0,
+            "rate": 0.0,
+            "wilson_ci_95": [
+              0.0,
+              0.012811633307158257
+            ]
+          },
+          "collapse_rate_on_dosed": 0.0
+        },
+        "j_token_only_hs23": {
+          "n_rows": 296,
+          "n_fired": 120,
+          "readbacks": {
+            "j_token": {
+              "n": 120,
+              "mean": 39.981480627729134,
+              "frac_within_tol": 1.0
+            }
+          },
+          "confab_tighten": {
+            "n": 124,
+            "successes": 1,
+            "rate": 0.008064516129032258,
+            "wilson_ci_95": [
+              0.0014250064581251692,
+              0.04426798605447708
+            ]
+          },
+          "known_correct_cost_control": {
+            "n": 172,
+            "successes": 3,
+            "rate": 0.01744186046511628,
+            "wilson_ci_95": [
+              0.005949242317427092,
+              0.05001855325647952
+            ]
+          },
+          "malformed_json": {
+            "n": 296,
+            "successes": 120,
+            "rate": 0.40540540540540543,
+            "wilson_ci_95": [
+              0.35103191568984027,
+              0.46220271763854115
+            ]
+          },
+          "forced_continuation": {
+            "n": 296,
+            "successes": 1,
+            "rate": 0.0033783783783783786,
+            "wilson_ci_95": [
+              0.0005966158805932702,
+              0.018885209093408514
+            ]
+          },
+          "non_target_language_drift": {
+            "n": 296,
+            "successes": 0,
+            "rate": 0.0,
+            "wilson_ci_95": [
+              0.0,
+              0.012811633307158257
+            ]
+          },
+          "collapse_rate_on_dosed": 0.0
+        }
+      },
+      "contrast": {
+        "tighten_delta_hybrid_minus_baseline": -0.9435483870967742,
+        "cost_delta_hybrid_minus_baseline": 0.0,
+        "random_control_tighten_delta": -0.008064516129032251,
+        "g1_pass": false,
+        "g2_pass": true,
+        "g3_pass": false,
+        "g4_pass": false
+      },
+      "row_text_committed": false,
+      "baseline_source_mode": "fit_baseline_c_hat_only_hs23"
+    },
+    {
+      "schema": "jspace-token-target-summary/v1",
+      "mode": "fit_dose_60",
+      "j_token_dose": 60.0,
+      "arms": {
+        "c_hat_only_hs23": {
+          "n_rows": 296,
+          "n_fired": 120,
+          "readbacks": {
+            "c_hat": {
+              "n": 120,
+              "mean": 24.999609595934512,
+              "frac_within_tol": 1.0
+            }
+          },
+          "confab_tighten": {
+            "n": 124,
+            "successes": 118,
+            "rate": 0.9516129032258065,
+            "wilson_ci_95": [
+              0.8984475321621598,
+              0.9776375894656152
+            ]
+          },
+          "known_correct_cost_control": {
+            "n": 172,
+            "successes": 3,
+            "rate": 0.01744186046511628,
+            "wilson_ci_95": [
+              0.005949242317427092,
+              0.05001855325647952
+            ]
+          },
+          "malformed_json": {
+            "n": 296,
+            "successes": 0,
+            "rate": 0.0,
+            "wilson_ci_95": [
+              0.0,
+              0.012811633307158257
+            ]
+          },
+          "forced_continuation": {
+            "n": 296,
+            "successes": 0,
+            "rate": 0.0,
+            "wilson_ci_95": [
+              0.0,
+              0.012811633307158257
+            ]
+          },
+          "non_target_language_drift": {
+            "n": 296,
+            "successes": 0,
+            "rate": 0.0,
+            "wilson_ci_95": [
+              0.0,
+              0.012811633307158257
+            ]
+          },
+          "collapse_rate_on_dosed": 0.0
+        },
+        "c_hat_plus_j_token_hs23": {
+          "n_rows": 296,
+          "n_fired": 120,
+          "readbacks": {
+            "c_hat": {
+              "n": 120,
+              "mean": 25.000728549795586,
+              "frac_within_tol": 1.0
+            },
+            "j_token": {
+              "n": 120,
+              "mean": 59.978649665523456,
+              "frac_within_tol": 1.0
+            }
+          },
+          "confab_tighten": {
+            "n": 124,
+            "successes": 1,
+            "rate": 0.008064516129032258,
+            "wilson_ci_95": [
+              0.0014250064581251692,
+              0.04426798605447708
+            ]
+          },
+          "known_correct_cost_control": {
+            "n": 172,
+            "successes": 3,
+            "rate": 0.01744186046511628,
+            "wilson_ci_95": [
+              0.005949242317427092,
+              0.05001855325647952
+            ]
+          },
+          "malformed_json": {
+            "n": 296,
+            "successes": 120,
+            "rate": 0.40540540540540543,
+            "wilson_ci_95": [
+              0.35103191568984027,
+              0.46220271763854115
+            ]
+          },
+          "forced_continuation": {
+            "n": 296,
+            "successes": 7,
+            "rate": 0.02364864864864865,
+            "wilson_ci_95": [
+              0.011501626098972977,
+              0.048001348876089964
+            ]
+          },
+          "non_target_language_drift": {
+            "n": 296,
+            "successes": 0,
+            "rate": 0.0,
+            "wilson_ci_95": [
+              0.0,
+              0.012811633307158257
+            ]
+          },
+          "collapse_rate_on_dosed": 0.016666666666666666
+        },
+        "c_hat_plus_random_j_hs23": {
+          "n_rows": 296,
+          "n_fired": 120,
+          "readbacks": {
+            "c_hat": {
+              "n": 120,
+              "mean": 25.0034429407091,
+              "frac_within_tol": 1.0
+            },
+            "random_j": {
+              "n": 120,
+              "mean": 59.75285666516059,
+              "frac_within_tol": 1.0
+            }
+          },
+          "confab_tighten": {
+            "n": 124,
+            "successes": 115,
+            "rate": 0.9274193548387096,
+            "wilson_ci_95": [
+              0.8678041533840009,
+              0.9613478367280004
+            ]
+          },
+          "known_correct_cost_control": {
+            "n": 172,
+            "successes": 3,
+            "rate": 0.01744186046511628,
+            "wilson_ci_95": [
+              0.005949242317427092,
+              0.05001855325647952
+            ]
+          },
+          "malformed_json": {
+            "n": 296,
+            "successes": 2,
+            "rate": 0.006756756756756757,
+            "wilson_ci_95": [
+              0.0018549062808743601,
+              0.024297110359970946
+            ]
+          },
+          "forced_continuation": {
+            "n": 296,
+            "successes": 1,
+            "rate": 0.0033783783783783786,
+            "wilson_ci_95": [
+              0.0005966158805932702,
+              0.018885209093408514
+            ]
+          },
+          "non_target_language_drift": {
+            "n": 296,
+            "successes": 0,
+            "rate": 0.0,
+            "wilson_ci_95": [
+              0.0,
+              0.012811633307158257
+            ]
+          },
+          "collapse_rate_on_dosed": 0.0
+        },
+        "j_token_only_hs23": {
+          "n_rows": 296,
+          "n_fired": 120,
+          "readbacks": {
+            "j_token": {
+              "n": 120,
+              "mean": 59.97630986388578,
+              "frac_within_tol": 1.0
+            }
+          },
+          "confab_tighten": {
+            "n": 124,
+            "successes": 1,
+            "rate": 0.008064516129032258,
+            "wilson_ci_95": [
+              0.0014250064581251692,
+              0.04426798605447708
+            ]
+          },
+          "known_correct_cost_control": {
+            "n": 172,
+            "successes": 3,
+            "rate": 0.01744186046511628,
+            "wilson_ci_95": [
+              0.005949242317427092,
+              0.05001855325647952
+            ]
+          },
+          "malformed_json": {
+            "n": 296,
+            "successes": 120,
+            "rate": 0.40540540540540543,
+            "wilson_ci_95": [
+              0.35103191568984027,
+              0.46220271763854115
+            ]
+          },
+          "forced_continuation": {
+            "n": 296,
+            "successes": 1,
+            "rate": 0.0033783783783783786,
+            "wilson_ci_95": [
+              0.0005966158805932702,
+              0.018885209093408514
+            ]
+          },
+          "non_target_language_drift": {
+            "n": 296,
+            "successes": 0,
+            "rate": 0.0,
+            "wilson_ci_95": [
+              0.0,
+              0.012811633307158257
+            ]
+          },
+          "collapse_rate_on_dosed": 0.008333333333333333
+        }
+      },
+      "contrast": {
+        "tighten_delta_hybrid_minus_baseline": -0.9435483870967742,
+        "cost_delta_hybrid_minus_baseline": 0.0,
+        "random_control_tighten_delta": -0.024193548387096864,
+        "g1_pass": false,
+        "g2_pass": true,
+        "g3_pass": false,
+        "g4_pass": false
+      },
+      "row_text_committed": false,
+      "baseline_source_mode": "fit_baseline_c_hat_only_hs23"
+    }
+  ],
+  "selected_j_token_dose": 5.0,
+  "selection_rule": "max hybrid clean_tighten among zero-collapse doses with known cost <= c_hat_only+0.02; tie chooses lower dose",
+  "row_text_committed": false
+}

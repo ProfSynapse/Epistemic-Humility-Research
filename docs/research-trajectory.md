@@ -191,15 +191,23 @@ compliance-only (AH); the reward channel is under test (AI). The J-space fork no
 surface-local causal support that prior residual writes were aimed too late; the next
 question is whether the mid-band advantage replicates beyond raw-base Qwen3-4B.
 
-**Next drafted J-space actuator (DRAFT, not signed, 2026-07-08):**
-`j-space-token-targeted-refusal-qwen3-4b` follows the internal-token option rather
-than an external decode-time logit bias. It proposes using the J-lens backward to
-construct an hs23 hidden direction that raises refusal/unknown/JSON-supporting token
-targets and lowers answer/reply/continuation token targets, then testing
-`c_hat_only` against `J-token only`, `c_hat + J-token`, and a matched random-J
-control under the same doubt gate. It is not launchable until the runner is
-implemented with row-level checkpoint/resume semantics and the token bundles are
-frozen before FIT dose calibration.
+**J-space token-targeted refusal write (RESOLVED exploratory falsification,
+2026-07-08):** `j-space-token-targeted-refusal-qwen3-4b` tested the internal-token
+option rather than an external decode-time logit bias. A J-lens backward direction
+was fit from the model's observed natural refusal/absence tokens against
+answer/reply continuation tokens, then composed with the hs23 `c_hat` snap under
+the same doubt gate. The direction wrote accurately and safely at FIT-selected
+dose 5.0, but did not add useful lift over `c_hat_only`: held-out hs23
+`c_hat_plus_j_token` reached 166/185 = 89.7% confab clean_tighten vs
+`c_hat_only` 165/185 = 89.2% (+0.54pp, below the +4pp gate), known-correct cost
+was 10/258 = 3.9% vs 9/258 = 3.5% (+0.39pp), and random-J matched the baseline.
+`j_token_only` was non-inert at 88/185 = 47.6%, so the token-target actuator is
+real, but the natural-token version is mostly redundant once the stronger
+workspace-band `c_hat` write is active. Source:
+`experiments/j-space-token-targeted-refusal-qwen3-4b/AMENDMENT.md`.
+Abstract English labels (`doubt`, `caution`, `uncertainty`) and compact
+multilingual refusal/uncertainty tokens remain a separate follow-up screen, not a
+retroactive goalpost shift for this result.
 
 ---
 

@@ -18,6 +18,7 @@ related:
 - '[[j-space-localization-qwen3-4b]]'
 - '[[j-space-midband-dose-calibration-qwen3-4b]]'
 - '[[j-space-calibrated-layer-contrast-qwen3-4b]]'
+- '[[j-space-token-targeted-refusal-qwen3-4b]]'
 - '[[tc-2026-workspace--verbalizable-representations-global-workspace]]'
 - '[[global-workspace]]'
 - '[[jacobian-lens]]'
@@ -46,6 +47,13 @@ relationships:
   evidence:
   - experiments/j-space-calibrated-layer-contrast-qwen3-4b/AMENDMENT.md#outcome
   - experiments/j-space-calibrated-layer-contrast-qwen3-4b/analysis-committed/full_summary.json
+- type: supported_by
+  target: '[[j-space-token-targeted-refusal-qwen3-4b]]'
+  target_id: experiment:j-space-token-targeted-refusal-qwen3-4b
+  confidence: low
+  evidence:
+  - experiments/j-space-token-targeted-refusal-qwen3-4b/AMENDMENT.md#outcome
+  - experiments/j-space-token-targeted-refusal-qwen3-4b/analysis-committed/full_summary.json
 - type: supported_by
   target: '[[tc-2026-workspace--verbalizable-representations-global-workspace]]'
   target_id: paper:tc-2026-workspace
@@ -97,5 +105,12 @@ that hs23/hs26 collapse at dose 200 is recoverable with lower layer-specific
 setpoints; and the held-out calibrated contrast found hs23 beating hs34
 clean_tighten by 22.7 percentage points with only +0.78 percentage points
 known-correct cost. That is the first causal support for the layer-site account
-on raw-base Qwen3-4B bf16, but it still needs replication beyond this surface
-before the mechanism should be treated as general.
+on raw-base Qwen3-4B bf16.
+
+The first token-targeted successor constrains the mechanism rather than
+overturning it: a J-lens backward direction aimed at observed refusal/absence
+tokens wrote accurately and was non-inert by itself, but it added only +0.54
+percentage points over the already strong hs23 `c_hat` snap. Natural token-target
+composition is therefore not enough, on this surface, to improve the actuator
+once the workspace-band caution write is active. The mechanism still needs
+replication beyond raw-base Qwen3-4B before it should be treated as general.
