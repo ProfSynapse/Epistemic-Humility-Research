@@ -4,7 +4,7 @@ session_id: 20260708T164625Z-paper-5-j-space-hardening
 title: Paper 5 J-space hardening
 status: active
 created_at: '2026-07-08T16:46:25Z'
-updated_at: '2026-07-08T17:58:00Z'
+updated_at: '2026-07-08T18:19:00Z'
 phase: phase1
 question: Which registered follow-up experiments harden the Paper 5 actuation thesis,
   starting with a fresh Qwen3-4B J-space layer-site replication?
@@ -174,3 +174,20 @@ rows before the layer contrast.
     exact process, paths, resume commands, and next steps for HF upload,
     publication-record PR/merge, signing, anchor extraction, smoke, and full
     layer contrast.
+
+### 008-publication - HF exporter prepared
+
+- time: 2026-07-08T18:19:00Z
+- kind: publication
+- evidence:
+  - `experiments/j-space-layer-contrast-replication-qwen3-4b/build_hf_public_census.py`
+  - `docs/datasets/jspace-fresh-pool-public-census-plan.md`
+  - `docs/public-artifacts.md`
+- summary: >
+    Added a deterministic exporter for the planned public-safe HF dataset:
+    `build_hf_public_census.py` reads the text-free manifest generated after
+    `mine_fresh_eval_pool.py --manifest-only` and writes an HF-ready directory
+    with `README.md`, `manifest.json`, `generated_rows.jsonl`, and
+    `selected_rows.jsonl`. `docs/public-artifacts.md` now lists the planned repo
+    `professorsynapse/eh-jspace-fresh-pool-census-qwen3-4b` with the same
+    no-text/no-alias/no-generation boundary.
