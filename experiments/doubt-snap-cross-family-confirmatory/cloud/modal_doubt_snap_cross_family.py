@@ -59,6 +59,7 @@ def run_one_cell(
     smoke_only: bool = False,
 ) -> None:
     import re
+    import json
     import shutil
     import subprocess
     import sys
@@ -85,6 +86,7 @@ def run_one_cell(
         result = subprocess.run(cmd, cwd=str(cwd) if cwd else None, env=merged_env)
         if check and result.returncode != 0:
             raise RuntimeError(f"command failed ({result.returncode})")
+        return result.returncode
 
     if not (workspace / ".git").is_dir():
         sh(["git", "clone", REPO_URL, str(workspace)])
@@ -112,6 +114,30 @@ def run_one_cell(
         "DOUBT_SNAP_RENDER_MODEL": cell["repo"],
         "DOUBT_SNAP_RENDER_REVISION": cell["revision"],
     }
+
+    def commit_outputs(status_marker: dict[str, object] | None = None) -> None:
+        if status_marker is not None:
+            cdir = exp_dir / "analysis-committed" / cell_id
+            cdir.mkdir(parents=True, exist_ok=True)
+            (cdir / "modal_status.json").write_text(
+                json.dumps(status_marker, indent=2, sort_keys=True),
+                encoding="utf-8",
+            )
+        dst = Path(VOL_MOUNT) / RUN_TAG / cell_id
+        dst.mkdir(parents=True, exist_ok=True)
+        for rel in (
+            Path("experiments") / EXPERIMENT_SLUG / "analysis-committed" / cell_id,
+            Path("experiments") / EXPERIMENT_SLUG / "analysis" / cell_id,
+        ):
+            src = workspace / rel
+            if not src.exists():
+                continue
+            target = dst / rel.name
+            if target.exists():
+                shutil.rmtree(target)
+            shutil.copytree(src, target)
+        vol.commit()
+        print(f"[modal-doubt-snap] committed outputs to {dst}", flush=True)
 
     if smoke_only:
         smoke = exp_dir / "smoke_tuner_path.py"
@@ -167,11 +193,31 @@ def run_one_cell(
         cwd=workspace,
         env=env,
     )
-    sh(
+    dose_select_rc = sh(
         [sys.executable, str(prep), "select-dose", f"--cell-id={cell_id}"],
         cwd=workspace,
         env=env,
+        check=False,
     )
+    dose_fit_path = exp_dir / "analysis-committed" / cell_id / "dose_fit.json"
+    dose_fit = json.loads(dose_fit_path.read_text(encoding="utf-8"))
+    if dose_fit.get("selected_dose") is None:
+        commit_outputs(
+            {
+                "cell_id": cell_id,
+                "status": "failed",
+                "failure_stage": "fit_dose_selection",
+                "reason": "no_registered_candidate_dose_met_fit_selection_criteria",
+                "dose_select_exit_code": dose_select_rc,
+            }
+        )
+        print(
+            f"[modal-doubt-snap] {cell_id}: no selected FIT dose; committed artifacts and stopping cell",
+            flush=True,
+        )
+        return
+    if dose_select_rc != 0:
+        raise RuntimeError(f"select-dose failed ({dose_select_rc}) despite selected dose")
 
     materializer = exp_dir / "materialize_tuner_cells.py"
     sh(
@@ -210,21 +256,7 @@ def run_one_cell(
         env=env,
     )
 
-    dst = Path(VOL_MOUNT) / RUN_TAG / cell_id
-    dst.mkdir(parents=True, exist_ok=True)
-    for rel in (
-        Path("experiments") / EXPERIMENT_SLUG / "analysis-committed" / cell_id,
-        Path("experiments") / EXPERIMENT_SLUG / "analysis" / cell_id,
-    ):
-        src = workspace / rel
-        if not src.exists():
-            continue
-        target = dst / rel.name
-        if target.exists():
-            shutil.rmtree(target)
-        shutil.copytree(src, target)
-    vol.commit()
-    print(f"[modal-doubt-snap] committed outputs to {dst}", flush=True)
+    commit_outputs({"cell_id": cell_id, "status": "completed"})
 
 
 @app.local_entrypoint()
