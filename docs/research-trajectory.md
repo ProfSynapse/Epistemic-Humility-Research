@@ -17,11 +17,12 @@ is size-robust (Qwen3 1.7–14B), seed-robust under sampled decode, and cross-fa
 (Llama/Ministral/Qwen3.5/Gemma). That is Paper 4. The program then asked: can we WRITE
 to the axis? The text channel is shut (AA/AB null); the system-prompt authority channel
 works selectively (AF PASS); compliance is asymmetric — wrong muzzles are obeyed,
-release is resisted (AG PASS). The next mechanistic refinement asks whether the write
-site itself is wrong: a J-lens/J-space localization diagnostic found the Qwen3-4B
-workspace-like band around hs=23-29, peaking at hs=26, while the existing L34 write site
-maps to hs=34 just after that band. That is Paper 5's current actuation fork: channel
-authority, reward coupling, and now workspace-band write location.
+release is resisted (AG PASS); and reward-on-readout did not train own-readout
+consultation (AI NULL). The current mechanistic refinement says the write site matters:
+a J-lens/J-space localization diagnostic found the Qwen3-4B workspace-like band around
+hs=23-29, and the held-out layer contrast found hs23 beats the inherited hs34 reference.
+That is Paper 5's current actuation fork: channel authority, gating, and workspace-band
+write location.
 
 ---
 
@@ -139,10 +140,13 @@ compliance side. Source: `AMENDMENT-AH-divergent-pool-own-readout.md`.
 — 5,436 per-row generations + primed-readout instrumentation + A1 stratum, with
 datasheet and license audit.
 
-**AI (RUNNING, 2026-07-04):** probe-as-reward — with the text/prompt channel ruled
-compliance-only by AH, AI tests the reward channel: GRPO with the frozen doubt-probe
-readout as the reward signal (TRUE vs PERMUTED sensor arms). Verdict-eval locked
-pre-outcome (prereg §4). Source: `AMENDMENT-AI-probe-as-reward.md`.
+**AI (NULL, 2026-07-05):** probe-as-reward tested whether GRPO with the frozen
+doubt-probe readout as reward would train consultation of the model's own readout.
+It did not. TRUE congruence was 59.75% vs PERMUTED 76.75%, differential -17.0pt
+(10k paired bootstrap CI [-21.5, -12.5]); the pre-registered TRUE-wins call was
+wrong. Mechanistic reading: the TRUE arm learned a useful behavioral refusal
+boundary, but this was not own-readout-consistent behavior. Source:
+`AMENDMENT-AI-probe-as-reward.md` §5.
 
 **J-space localization (RESOLVED exploratory lab diagnostic, 2026-07-07):** a
 from-scratch Jacobian lens on Qwen3-4B bf16 passed its final-layer logit/unembed smoke
@@ -219,7 +223,7 @@ retroactive goalpost shift for this result.
 | P2 | Training regimen (SFT/DPO/KTO/GRPO) | `paper2-training-regimen-draft-v2.md` |
 | P3 | "Knows but Doesn't Say" — internal gap + training-resistance | `paper3-knows-but-doesnt-say-draft-v0.md` |
 | P4 | Two-signal readout (training-free, cross-size/-family/-seed) | `paper4-two-signal-readout-draft-v0.md` |
-| P5 | Steering / actuation | scaffold on `experiment/paper5-confidence-steering` |
+| P5 | Steering / actuation | `paper5-actuation-draft-v0.md` |
 
 Figure/script prefixes are legacy (`fig-p1-*` = Paper 2, `fig-p2-*` = Paper 3,
 `fig-p3-*` = Paper 4). Amendment labels stay out of paper prose; traceability lives in
