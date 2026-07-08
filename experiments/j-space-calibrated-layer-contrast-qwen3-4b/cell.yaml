@@ -1,0 +1,71 @@
+# J-space calibrated held-out layer contrast. DRAFT until `bin/exp sign`.
+
+seed: 20260707
+
+surface:
+  model: unsloth/Qwen3-4B
+  substrate: bf16
+  adapter: none
+  source_experiment: experiments/j-space-midband-write-sweep-qwen3-4b
+  dose_source_experiment: experiments/j-space-midband-dose-calibration-qwen3-4b
+  evaluation_split: held_out
+  generation:
+    max_new_tokens: 200
+    min_new_tokens: 1
+    do_sample: false
+    eos_includes_im_end: true
+    enable_thinking: false
+  containment:
+    committed_row_text: forbidden
+    committed_aliases: forbidden
+    committed_generations: forbidden
+
+layers:
+  midband:
+    hs23:
+      dose_target: 25
+    hs26:
+      dose_target: 75
+    hs29:
+      dose_target: 125
+  late_reference:
+    hs34:
+      dose_target: 175
+  rationale: >-
+    j-space-localization-qwen3-4b localized the workspace-like band to hs23-29
+    with peak hs26. j-space-midband-dose-calibration-qwen3-4b selected these
+    FIT-only non-collapsing setpoints before any held-out layer contrast.
+
+readouts:
+  direction_source: experiments/j-space-midband-write-sweep-qwen3-4b/analysis-committed/layers/
+  gate_source: experiments/j-space-midband-write-sweep-qwen3-4b/analysis-committed/gate_fit_layers.json
+  build_source: experiments/j-space-midband-write-sweep-qwen3-4b/analysis-committed/build_manifest_layers.json
+  fire_rule: "score_neg_z_d >= tau_frozen"
+  write_direction: c_hat
+  law: erase_write
+  position: anchor_onward
+
+rows:
+  local_private_source: experiments/j-space-midband-write-sweep-qwen3-4b/analysis/rows_with_text.jsonl
+  split: held_out
+  populations:
+    - confab
+    - known_correct_answered
+  note: >-
+    Row text and aliases are runtime-only private inputs inherited from the
+    predecessor materialization; they are not committed.
+
+execution:
+  lane: local_3090
+  smoke_command: >-
+    PYTHONPATH=synaptic-tuner
+    python experiments/j-space-calibrated-layer-contrast-qwen3-4b/run_contrast.py
+    --mode smoke --n-rows 8
+  full_command: >-
+    PYTHONPATH=synaptic-tuner
+    python experiments/j-space-calibrated-layer-contrast-qwen3-4b/run_contrast.py
+    --mode full --i-know-this-is-the-held-out-run
+
+outputs:
+  local_private_dir: experiments/j-space-calibrated-layer-contrast-qwen3-4b/analysis/
+  committed_public_summary: experiments/j-space-calibrated-layer-contrast-qwen3-4b/analysis-committed/full_summary.json

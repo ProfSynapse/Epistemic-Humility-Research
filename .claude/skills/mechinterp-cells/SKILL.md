@@ -21,6 +21,8 @@ public CLI verbs; it never adds project-specific code or config to the submodule
 
 - Designing a new activation-**writing** cell (steering, setpoint regulation,
   ablation) -> `mechinterp steer`.
+- Designing a dose-calibration cell to find a direction/layer's coherent
+  erase-write window -> `mechinterp dose-calibrate`.
 - Designing a new activation-**reading** cell (capture hidden states, fit a
   linear readout, freeze a direction) -> `mechinterp extract` + `probe-fit`.
 - Adjudicating a per-row output against declarative gates -> `mechinterp
@@ -41,6 +43,7 @@ cells.
 | `mechinterp extract` | yes (`--i-know-this-runs-on-gpu`) | generate over rows, capture hidden states to safetensors + a manifest |
 | `mechinterp probe-fit` | no (CPU) | fit a linear readout from extracted activations, freeze a `mechinterp-direction/v1` JSON |
 | `mechinterp steer` | yes (`--i-know-this-runs-on-gpu`) | run the six-block declarative intervention cell (smoke-gated) |
+| `mechinterp dose-calibrate` | yes (`--i-know-this-runs-on-gpu`) | run a resumable dose ladder over one or more frozen readouts, with per-row JSONL checkpoints and aggregate summaries |
 | `mechinterp score-gates` | no (CPU) | evaluate a `gates.yaml` against a per-row output JSONL |
 | `mechinterp list-configs` | no (CPU) | list the bundled example recipes |
 
@@ -72,6 +75,8 @@ Use pipeline stages to sequence:
 - `kind: mechinterp.steer` for intervention cells. Put `execution.render_fn` in
   the steer cell config, or `render_fn` on the pipeline stage, so launchers do
   not need wrapper flags for project prompt rendering.
+- `kind: mechinterp.dose-calibrate` for coherent-window dose ladders over frozen
+  readouts before committing a real intervention ladder.
 - `kind: mechinterp.score-gates` for declarative adjudication.
 
 Minimal operator commands:
@@ -158,6 +163,50 @@ ladder can jump clean over it (falsely reading a real lever as inert / voiding a
 screen's positive control). Dose ambient-relative and pilot-sweep the window
 first. Full method, measured numbers, and the smoke-is-write-accuracy caveat:
 [reference/dose-calibration.md](reference/dose-calibration.md).
+
+## Config-driven dose calibration
+
+Use `mechinterp dose-calibrate` for new erase-write dose ladders instead of a
+bespoke script. The config schema is `DoseCalibrationConfig`:
+
+- `surface` - the same row pool and generation contract used by `steer`.
+- `readouts` - frozen `mechinterp-direction/v1` files.
+- `law` - intervention law, position, generation mode, and target readout.
+  `law.readout: "*"` sweeps every declared readout; a named readout limits the
+  run to that direction.
+- `calibration` - dose rungs plus optional row selection. `dose_kind:
+  setpoint` is the default; for `erase_write` the runner converts each dose to
+  `strength = dose / sigma`. `dose_kind: strength` passes values directly to the
+  hook.
+- `execution` - `output_path` per-row checkpoint JSONL, `summary_path`
+  aggregate JSON, `resume`, `render_fn`, optional `grader`, and `batch_size`.
+
+Resume is keyed by `(readout, dose, row_key)` against `execution.output_path`.
+Every completed row is fsynced as it lands, so interrupted runs continue from
+the last missing triple when `resume: true`.
+
+Minimal direct launch, from the repo root:
+
+```bash
+PYTHONPATH=experiments/common/renders:experiments/common/graders \
+python synaptic-tuner/tuner.py mechinterp dose-calibrate \
+  --mi-config experiments/<slug>/dose_calibration.yaml \
+  --model unsloth/Qwen3-4B \
+  --i-know-this-runs-on-gpu
+```
+
+Pipeline stage form:
+
+```yaml
+stages:
+  - name: calibrate
+    kind: mechinterp.dose-calibrate
+    config: experiments/<slug>/dose_calibration.yaml
+```
+
+Treat the summary as a calibration artifact, not a verdict. The next amendment
+or cell should pin selected setpoints and cite the committed aggregate summary,
+while keeping raw row text and per-row generations untracked when restricted.
 
 ## Plug-in points (project code, not the tuner)
 
@@ -322,7 +371,14 @@ PYTHONPATH=experiments/common/renders python synaptic-tuner/tuner.py mechinterp 
   --render-fn example_render:render \
   --i-know-this-runs-on-gpu
 
-# 4. Adjudicate with declarative gates (CPU).
+# 4. Optionally calibrate the dose ladder before locking a real steer run (GPU).
+PYTHONPATH=experiments/common/renders:experiments/common/graders \
+python synaptic-tuner/tuner.py mechinterp dose-calibrate \
+  --mi-config experiments/<slug>/dose_calibration.yaml \
+  --model <base-model> \
+  --i-know-this-runs-on-gpu
+
+# 5. Adjudicate with declarative gates (CPU).
 python synaptic-tuner/tuner.py mechinterp score-gates \
   --gates-config experiments/<slug>/gates.yaml \
   --rows-path experiments/<slug>/analysis/rows_out.jsonl
@@ -383,6 +439,7 @@ reader can consume.
 | `gpu_equivalence_cell.py` (CPU-vs-GPU hook check) | the built-in `steer` smoke readback / equivalence self-check |
 | `*_extract.py`, `amendment_*_primed_extract.py` | `mechinterp extract` (+ `content_end_fn` plug-in) |
 | `persist_probe_direction.py` (fit + persist direction) | `mechinterp probe-fit` -> frozen `mechinterp-direction/v1` JSON |
+| bespoke erase-write dose sweeps | `mechinterp dose-calibrate` with `calibration.doses`, `dose_kind`, checkpoint JSONL, and summary JSON |
 | `run_arm_a.py` / `run_arm_b.py` orchestration | `arms` block in one `cell.yaml` (fixed / score-thresholded / flagged / permuted-control) |
 
 ## Invariants

@@ -1,0 +1,111 @@
+# J-space internal token-targeted refusal write. DRAFT until `bin/exp sign`.
+# Do not launch: runner implementation and row-checkpointing are still pending.
+
+seed: 20260708
+
+surface:
+  model: unsloth/Qwen3-4B
+  substrate: bf16
+  adapter: none
+  evaluation_split: held_out
+  source_rows: experiments/j-space-midband-write-sweep-qwen3-4b/analysis/rows_with_text.jsonl
+  containment:
+    committed_row_text: forbidden
+    committed_aliases: forbidden
+    committed_generations: forbidden
+    committed_row_level_outputs: forbidden
+
+generation:
+  max_new_tokens: 200
+  min_new_tokens: 1
+  do_sample: false
+  eos_includes_im_end: true
+  enable_thinking: false
+
+layers:
+  primary: hs23
+  secondary_descriptive: hs29
+  late_reference_context: hs34
+
+resolved_baseline:
+  source: experiments/j-space-calibrated-layer-contrast-qwen3-4b/analysis-committed/full_summary.json
+  hs23_c_hat_dose: 25
+  hs29_c_hat_dose: 125
+  hs34_c_hat_dose: 175
+
+readouts:
+  gate_source: experiments/j-space-midband-write-sweep-qwen3-4b/analysis-committed/gate_fit_layers.json
+  direction_source: experiments/j-space-midband-write-sweep-qwen3-4b/analysis-committed/layers/
+  jlens_source: experiments/j-space-localization-qwen3-4b
+  fire_rule: "score_neg_z_d >= tau_frozen"
+  baseline_write_direction: c_hat
+  write_law: erase_write
+  position: anchor_onward
+
+token_target_direction:
+  primitive: jlens_target_minus_anti_target_hidden_direction
+  implementation_status: pending
+  positive_bundle:
+    description: refusal/abstention/unknown JSON-supporting tokens fixed before FIT calibration
+    examples:
+      - "I"
+      - "don't"
+      - "know"
+      - "cannot"
+      - "unknown"
+      - "null"
+      - "refusal"
+  negative_bundle:
+    description: answer/reply/continuation tokens fixed before FIT calibration
+    examples:
+      - "answer"
+      - "reply"
+      - "答案"
+      - "回答"
+  dose_selection:
+    split: fit_only
+    ladder: pending_runner
+    objective: maximize clean_tighten subject to zero collapse and known-correct cost guard
+
+arms:
+  - name: c_hat_only_hs23
+    layer: hs23
+    gate: frozen_doubt_gate
+    writes:
+      - direction: c_hat
+        dose: 25
+  - name: j_token_only_hs23
+    layer: hs23
+    gate: frozen_doubt_gate
+    writes:
+      - direction: jlens_token_target
+        dose: fit_selected
+  - name: c_hat_plus_j_token_hs23
+    layer: hs23
+    gate: frozen_doubt_gate
+    writes:
+      - direction: c_hat
+        dose: 25
+      - direction: jlens_token_target
+        dose: fit_selected
+  - name: c_hat_plus_random_j_hs23
+    layer: hs23
+    gate: frozen_doubt_gate
+    writes:
+      - direction: c_hat
+        dose: 25
+      - direction: random_j_space_control
+        dose: matched_token_target_norm
+  - name: c_hat_plus_j_token_hs29
+    layer: hs29
+    gate: frozen_doubt_gate
+    interpretation: descriptive_secondary
+    writes:
+      - direction: c_hat
+        dose: 125
+      - direction: jlens_token_target
+        dose: fit_selected
+
+outputs:
+  checkpointed_private_rows: experiments/j-space-token-targeted-refusal-qwen3-4b/analysis/
+  committed_public_summary: experiments/j-space-token-targeted-refusal-qwen3-4b/analysis-committed/full_summary.json

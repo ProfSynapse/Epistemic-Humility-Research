@@ -4,7 +4,7 @@ session_id: jspace-jlens-r1-findings
 title: J-space J-lens r1 findings
 status: active
 created_at: '2026-07-07T22:42:40Z'
-updated_at: '2026-07-08T10:40:26Z'
+updated_at: '2026-07-08T12:05:00Z'
 phase: phase1
 question: What did the full-corpus Qwen3-4B J-lens characterization say about epistemic
   directions, the workspace-like band, and the L34 write layer?
@@ -17,15 +17,18 @@ trajectory:
   anchor: docs/research-trajectory.md
   current_position: Mechanistic bridge work between the portable epistemic-readout
     line and the fragile activation-write line.
-  changed_by_session: Localized the Qwen3-4B workspace-like band to hs=23-29
+  changed_by_session: >-
+    Localized the Qwen3-4B workspace-like band to hs=23-29
     and placed the existing L34/hs34 write layer just after the peak, making
     a mid-band write-layer sweep the immediate next actuator test. The first
     sweep stopped at G0 because dose 200 collapsed hs23/hs26, so the immediate
     successor is layer-wise dose calibration on FIT rows. During that local
     calibration, the generic tuner gained a resumable config-driven dose
     calibration verb for future cells. The FIT calibration then recovered
-    usable setpoints for every layer, making a calibrated held-out layer
-    contrast the next registered causal test.
+    usable setpoints for every layer. The calibrated held-out layer contrast
+    passed on the local RTX 3090: hs23 beat hs34 by +22.7pp clean_tighten with
+    only +0.78pp known-correct cost, giving surface-local causal support for
+    the layer-site account.
 checkpoints:
 - id: 001-result
   at: '2026-07-07T22:42:40Z'
@@ -224,6 +227,73 @@ checkpoints:
     hs26_selected_confab_clean_tighten: 8/8
     hs29_selected_confab_clean_tighten: 8/8
     hs34_selected_confab_clean_tighten: 7/8
+- id: 008-decision
+  at: '2026-07-08T11:05:00Z'
+  kind: decision
+  title: Calibrated held-out layer contrast signed
+  summary: Signed `j-space-calibrated-layer-contrast-qwen3-4b` as the held-out
+    causal contrast using the FIT-selected setpoints hs23=25, hs26=75,
+    hs29=125, and hs34=175. The run is not launched; local RTX 3090 launch
+    still requires explicit approval for this exact signed cell.
+  evidence:
+  - experiments/j-space-calibrated-layer-contrast-qwen3-4b/AMENDMENT.md
+  - experiments/j-space-calibrated-layer-contrast-qwen3-4b/experiment.yaml
+  run_ids: []
+  commands:
+  - bin/exp sign j-space-calibrated-layer-contrast-qwen3-4b
+  - bin/exp validate
+  - bin/exp regen
+  decisions:
+  - Keep this as exploratory Tier-2 held-out evidence, not a headline claim.
+  - Do not start the local GPU run without a fresh exact launch approval.
+  next_steps:
+  - On approval, run the smoke command first; if G0 passes, run full mode with
+    `--i-know-this-is-the-held-out-run`.
+  signals:
+    expected_selected_doses:
+      hs23: 25
+      hs26: 75
+      hs29: 125
+      hs34: 175
+- id: 009-result
+  at: '2026-07-08T12:05:00Z'
+  kind: result
+  title: Calibrated held-out layer contrast passed
+  summary: The local RTX 3090 smoke and full held-out run resolved as an
+    exploratory pass. Best mid-band was hs23, which beat hs34 clean_tighten by
+    22.7pp with only +0.78pp known-correct cost; hs34 remained viable.
+  evidence:
+  - experiments/j-space-calibrated-layer-contrast-qwen3-4b/AMENDMENT.md
+  - experiments/j-space-calibrated-layer-contrast-qwen3-4b/analysis-committed/full_summary.json
+  run_ids:
+  - jspace-calibrated-layer-contrast-r1
+  commands:
+  - PYTHONPATH=synaptic-tuner python experiments/j-space-calibrated-layer-contrast-qwen3-4b/run_contrast.py --mode smoke --n-rows 8
+  - PYTHONPATH=synaptic-tuner python experiments/j-space-calibrated-layer-contrast-qwen3-4b/run_contrast.py --mode full --i-know-this-is-the-held-out-run
+  decisions:
+  - Treat this as exploratory surface-local causal support, not a headline
+    confirmatory claim.
+  - Future contrast cells should prefer the generic tuner checkpoint/resume
+    path when feasible; this bespoke runner wrote only an end-of-run aggregate.
+  next_steps:
+  - "Decide the replication surface for the mid-band advantage: same-model rerun, cross-family, or the two-signal surface."
+  signals:
+    n_rows: 443
+    selected_doses:
+      hs23: 25
+      hs26: 75
+      hs29: 125
+      hs34: 175
+    best_mid_layer: hs23
+    hs23_confab_clean_tighten: 165/185 = 89.2%
+    hs34_confab_clean_tighten: 123/185 = 66.5%
+    tighten_delta_best_mid_minus_hs34_pp: 22.7
+    hs23_known_correct_cost: 9/258 = 3.5%
+    hs34_known_correct_cost: 7/258 = 2.7%
+    cost_delta_best_mid_minus_hs34_pp: 0.78
+    g1_midband_superiority_pass: true
+    g2_no_cost_regression_pass: true
+    g3_predecessor_reference_viable_pass: true
 ---
 # J-space J-lens r1 findings
 
@@ -272,7 +342,14 @@ holding all metrics in memory.
 The FIT-only dose calibration then passed: hs23 selected 25, hs26 selected 75,
 hs29 selected 125, and hs34 selected 175. This narrows the predecessor failure to
 dose portability and leaves the layer-site hypothesis alive, but it still does
-not test held-out mid-band superiority. That requires the next signed contrast.
+not test held-out mid-band superiority.
+
+The held-out contrast resolved as an exploratory pass. Smoke G0 passed, then
+the full local RTX 3090 run completed over 443 held-out rows. Best mid-band was
+hs23: clean_tighten 165/185 = 89.2% vs hs34 123/185 = 66.5%, delta +22.7pp;
+known-correct cost 9/258 = 3.5% vs hs34 7/258 = 2.7%, delta +0.78pp. G1/G2/G3
+all passed and hs34 remained viable. This is surface-local causal support for
+the layer-site account, not a cross-family or headline confirmatory claim.
 
 ## Checkpoints
 
@@ -403,3 +480,51 @@ not test held-out mid-band superiority. That requires the next signed contrast.
 - next steps:
   - Draft and sign the calibrated held-out layer contrast using hs23=25,
     hs26=75, hs29=125, and hs34=175.
+
+### 008-decision - Calibrated held-out layer contrast signed
+
+- at: `2026-07-08T11:05:00Z`
+- kind: `decision`
+- summary: Signed `j-space-calibrated-layer-contrast-qwen3-4b` as the held-out
+  causal contrast using the FIT-selected setpoints hs23=25, hs26=75, hs29=125,
+  and hs34=175. The run is not launched; local RTX 3090 launch still requires
+  explicit approval for this exact signed cell.
+- evidence:
+  - `experiments/j-space-calibrated-layer-contrast-qwen3-4b/AMENDMENT.md`
+  - `experiments/j-space-calibrated-layer-contrast-qwen3-4b/experiment.yaml`
+- commands:
+  - `bin/exp sign j-space-calibrated-layer-contrast-qwen3-4b`
+  - `bin/exp validate`
+  - `bin/exp regen`
+- decisions:
+  - Keep this as exploratory Tier-2 held-out evidence, not a headline claim.
+  - Do not start the local GPU run without a fresh exact launch approval.
+- next steps:
+  - On approval, run the smoke command first; if G0 passes, run full mode with
+    `--i-know-this-is-the-held-out-run`.
+
+### 009-result - Calibrated held-out layer contrast passed
+
+- at: `2026-07-08T12:05:00Z`
+- kind: `result`
+- summary: The local RTX 3090 smoke and full held-out run resolved as an
+  exploratory pass. Best mid-band was hs23, which beat hs34 clean_tighten by
+  22.7pp with only +0.78pp known-correct cost; hs34 remained viable.
+- evidence:
+  - `experiments/j-space-calibrated-layer-contrast-qwen3-4b/AMENDMENT.md`
+  - `experiments/j-space-calibrated-layer-contrast-qwen3-4b/analysis-committed/full_summary.json`
+- commands:
+  - `PYTHONPATH=synaptic-tuner python experiments/j-space-calibrated-layer-contrast-qwen3-4b/run_contrast.py --mode smoke --n-rows 8`
+  - `PYTHONPATH=synaptic-tuner python experiments/j-space-calibrated-layer-contrast-qwen3-4b/run_contrast.py --mode full --i-know-this-is-the-held-out-run`
+- decisions:
+  - Treat this as exploratory surface-local causal support, not a headline
+    confirmatory claim.
+  - Future contrast cells should prefer the generic tuner checkpoint/resume path
+    where feasible; this bespoke runner wrote only an end-of-run aggregate.
+- signals: n=443; selected doses hs23=25, hs26=75, hs29=125, hs34=175; hs23
+  clean_tighten 165/185 = 89.2%; hs34 clean_tighten 123/185 = 66.5%; delta
+  +22.7pp; hs23 known-correct cost 9/258 = 3.5%; hs34 cost 7/258 = 2.7%; delta
+  +0.78pp; G1/G2/G3 all passed.
+- next steps:
+  - Decide the replication surface for the mid-band advantage: same-model rerun,
+    cross-family, or the two-signal surface.
