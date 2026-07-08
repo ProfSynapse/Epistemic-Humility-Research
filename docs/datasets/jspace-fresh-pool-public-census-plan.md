@@ -52,10 +52,12 @@ required notices.
 2. Keep private rows under the experiment's gitignored `analysis/` directory.
 3. Rebuild the public-safe manifest with `--manifest-only` after the scan if the
    manifest schema changed.
-4. Commit only `analysis-committed/fresh_eval_pool_manifest.json` or a sibling
+4. Build the HF-ready directory with
+   `experiments/j-space-layer-contrast-replication-qwen3-4b/build_hf_public_census.py`.
+5. Commit only `analysis-committed/fresh_eval_pool_manifest.json` or a sibling
    public manifest containing no text, aliases, or generation text.
-5. Add a datasheet before any external HF release.
-6. Require explicit release approval before uploading a public dataset.
+6. Add a datasheet before any external HF release.
+7. Require explicit release approval before uploading a public dataset.
 
 ## Current Consumer
 
