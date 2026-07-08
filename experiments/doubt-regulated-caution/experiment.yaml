@@ -1,0 +1,37 @@
+slug: doubt-regulated-caution
+title: Amendment AC — Doubt-Regulated Caution (closed-loop coupling at inference)
+type: historical-amendment
+status: historical
+registered: true
+created_at: '2026-07-08T17:40:52Z'
+legacy:
+  label: AC
+  path: experiment/protocol/AMENDMENT-AC-doubt-regulated-caution.md
+  migrated_to: experiments/doubt-regulated-caution/AMENDMENT.md
+migration:
+  needs_manual_review:
+  - falsifier
+  - experiment_type
+  - instrument_configs
+  - kg_ids
+  notes: Imported from legacy amendment prose. Do not infer missing machine fields
+    without hand-reading AMENDMENT.md.
+question: Does making the caution gate a live function of the doubt readout carry
+  information beyond simply deleting the gate, on the trained checkpoint?
+prediction: "orchestrator:\n  call: AC-G1 passes with a small margin (5-15pt); AC-G2\
+  \ ~0 vs constant ablate\nuser:\n  call: null\n  note: Predates the dual-prediction\
+  \ practice (adopted 2026-07-03 at AH signing);\n    no separately recorded user\
+  \ prediction."
+falsifier: ''
+checkpoint:
+  repo: ''
+  revision: ''
+instrument:
+  configs: []
+  modules: []
+  pins: {}
+inputs: []
+verdict: AC-G1 PASS — the wire carries information (coupled beats permuted +8.7pt,
+  CI [+5.6,+12.0]); guard PASS, falsifier not fired; RQ4 Stage 1 closes POSITIVE,
+  first use-the-signal win after M/N/R/AA.
+kg: []

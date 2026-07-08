@@ -5,7 +5,7 @@
 # Mirrors the Z queue: per-family compat smoke (greedy, loader/shape gate) once,
 # then per-seed sampled extraction (docker GPU) + CPU scoring (host).
 #
-# Pre-reg: experiment/protocol/AMENDMENT-SR-sampled-decode-seed-robustness.md
+# Pre-reg: experiments/sampled-decode-seed-robustness/AMENDMENT.md
 # Scope: dial + veto only (gate is decode-invariant; emitted as invariance check).
 # NOT to be run without explicit user launch approval.
 #

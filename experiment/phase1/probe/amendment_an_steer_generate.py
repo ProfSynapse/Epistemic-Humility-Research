@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Amendment AN: propensity-selected, caution-actuated steered generation (GPU).
 
-SPEC: experiment/protocol/AMENDMENT-AN-selected-setpoint-regulator.md sections
+SPEC: experiments/selected-setpoint-regulator/AMENDMENT.md sections
 3.2/3.3/4. Regenerates the AL-prep A0 surface (1,662 rows) under one AN arm,
 applying the AC COUPLE setpoint write to the arm's FLAGGED rows and generating
 every other row untouched. Byte-identical load path, prompt render, and decode

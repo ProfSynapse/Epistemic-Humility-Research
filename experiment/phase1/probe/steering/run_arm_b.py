@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Amendment AA — Arm B orchestration: CoT-injection cells AA-5..AA-8.
 
-SPEC: experiment/protocol/AMENDMENT-AA-causal-confidence-steering.md (Tier-2,
+SPEC: experiments/causal-confidence-steering/AMENDMENT.md (Tier-2,
 DRAFT — NOT signed). NO GPU cell may launch until the amendment is signed AND
 the user gives explicit launch approval naming the exact cells and lane.
 

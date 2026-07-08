@@ -1,0 +1,38 @@
+slug: sampled-decode-seed-robustness
+title: Amendment SR — Sampled-decode seed-robustness of the training-free two-signal
+  readout
+type: historical-amendment
+status: historical
+registered: true
+created_at: '2026-07-08T17:40:52Z'
+legacy:
+  label: SR
+  path: experiment/protocol/AMENDMENT-SR-sampled-decode-seed-robustness.md
+  migrated_to: experiments/sampled-decode-seed-robustness/AMENDMENT.md
+migration:
+  needs_manual_review:
+  - falsifier
+  - experiment_type
+  - instrument_configs
+  - kg_ids
+  notes: Imported from legacy amendment prose. Do not infer missing machine fields
+    without hand-reading AMENDMENT.md.
+question: Are the Z dial and veto magnitudes seed-robust under sampled decoding, or
+  was the single greedy decode a lucky draw?
+prediction: "orchestrator:\n  call: dial and veto seed-stable; Z SUCCESS verdict (veto\
+  \ >=3/4) holds every seed\nuser:\n  call: null\n  note: Predates the dual-prediction\
+  \ practice (adopted 2026-07-03 at AH signing);\n    no separately recorded user\
+  \ prediction."
+falsifier: ''
+checkpoint:
+  repo: ''
+  revision: ''
+instrument:
+  configs: []
+  modules: []
+  pins: {}
+inputs: []
+verdict: COMPLETE — SUCCESS; dial seed-stable 4/4, veto seed-stable 4/4, per-seed
+  majority >=3/4 every seed; greedy misses were decode artifacts (understated the
+  veto), Z magnitudes promoted to seed-robust.
+kg: []

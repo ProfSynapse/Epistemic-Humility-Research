@@ -1,0 +1,36 @@
+slug: cross-family-confirmatory
+title: Amendment Z — Cross-FAMILY confirmatory of the training-free two-signal readout
+type: historical-amendment
+status: historical
+registered: true
+created_at: '2026-07-08T17:40:52Z'
+legacy:
+  label: Z
+  path: experiment/protocol/AMENDMENT-Z-cross-family-confirmatory.md
+  migrated_to: experiments/cross-family-confirmatory/AMENDMENT.md
+migration:
+  needs_manual_review:
+  - falsifier
+  - experiment_type
+  - instrument_configs
+  - kg_ids
+  notes: Imported from legacy amendment prose. Do not infer missing machine fields
+    without hand-reading AMENDMENT.md.
+question: Does the training-free two-signal readout replicate across model families,
+  or is it a Qwen3-lineage idiosyncrasy?
+prediction: "orchestrator:\n  call: readout holds across families; veto PASS on at\
+  \ least 3 of 4\nuser:\n  call: null\n  note: Predates the dual-prediction practice\
+  \ (adopted 2026-07-03 at AH signing);\n    no separately recorded user prediction."
+falsifier: ''
+checkpoint:
+  repo: ''
+  revision: ''
+instrument:
+  configs: []
+  modules: []
+  pins: {}
+inputs: []
+verdict: COMPLETE — SUCCESS; veto PASS 3/4 (Ministral, Qwen3.5, Gemma; Llama fails),
+  gate and dial 4/4; readout promoted to a cross-family claim, veto the fragile model-dependent
+  axis.
+kg: []

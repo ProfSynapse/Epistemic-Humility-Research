@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Amendment AC — build the per-row doubt gain map for the coupled arm (CPU).
 
-SPEC: experiment/protocol/AMENDMENT-AC-doubt-regulated-caution.md §2/§6.
+SPEC: experiments/doubt-regulated-caution/AMENDMENT.md §2/§6.
 
 Sensor side of the doubt->caution loop. From the frozen L35 extraction +
 behavior overlay: fit the doubt axis u_d = unit(mean(known_correct_answered)

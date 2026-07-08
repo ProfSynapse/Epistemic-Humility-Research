@@ -20,8 +20,8 @@ models:
 - qwen3-4b
 metrics:
 - auroc
-fulltext: ../../experiment/protocol/AMENDMENT-AN-selected-setpoint-regulator.md
-provenance: 'Internal exploratory result (Tier-2, signed pre-registered amendment, not a paper draft). Source of truth: experiment/protocol/AMENDMENT-AN-selected-setpoint-regulator.md (signed 2026-07-05, resolved 2026-07-06) plus analysis/amendment_an_prep/amendment_an_run/ (gates_report.json, smoke_primary/readback.json). Surface: AL frozen AI-TRUE A0 baseline (1662 rows: 116 confab / 90 correct / 120 wrong / 114 answerable-refused / 1222 unanswerable-refused), regenerated under three arms (primary propensity-flagged, permuted-flag control, descriptive dose ladder) on the same checkpoint, system prompt, greedy decoding, and grader as the AL A0 cell. Single seed, local RTX 3090, no cloud spend. Scripts committed on branch amendment-an-selected-setpoint-regulator.'
+fulltext: ../../experiments/selected-setpoint-regulator/AMENDMENT.md
+provenance: 'Internal exploratory result (Tier-2, signed pre-registered amendment, not a paper draft). Source of truth: experiments/selected-setpoint-regulator/AMENDMENT.md (signed 2026-07-05, resolved 2026-07-06) plus analysis/amendment_an_prep/amendment_an_run/ (gates_report.json, smoke_primary/readback.json). Surface: AL frozen AI-TRUE A0 baseline (1662 rows: 116 confab / 90 correct / 120 wrong / 114 answerable-refused / 1222 unanswerable-refused), regenerated under three arms (primary propensity-flagged, permuted-flag control, descriptive dose ladder) on the same checkpoint, system prompt, greedy decoding, and grader as the AL A0 cell. Single seed, local RTX 3090, no cloud spend. Scripts committed on branch amendment-an-selected-setpoint-regulator.'
 related:
 - '[[setpoint-write-on-caution-perp-does-not-actuate-fabrication]]'
 - '[[confabulation-propensity-direction]]'

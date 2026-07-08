@@ -2,7 +2,7 @@
 """Amendment V — natural (un-forced) answer generation + dual-position extraction.
 
 Pre-registered in
-experiment/protocol/AMENDMENT-V-natural-answer-generalization.md (SIGNED 2026-06-30).
+experiments/natural-answer-generalization/AMENDMENT.md (SIGNED 2026-06-30).
 Exploratory, single-model, single-seed; reported separately from PROTOCOL v0.3.
 
 THE QUESTION (§2 H_V2, primary): the correctness dial fit on FORCED answers (T)

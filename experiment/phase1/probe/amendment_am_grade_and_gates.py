@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Amendment AM - CPU analysis + gates verdict (residual-catch veto coverage).
 
-Pre-registered: experiment/protocol/AMENDMENT-AM-residual-catch-veto-coverage.md
+Pre-registered: experiments/residual-catch-veto-coverage/AMENDMENT.md
 (SIGNED 2026-07-06; §3 statistics, §4 gates, §6 instrumentation). CPU-only; runs
 on the host from the canonical checkout after the Modal extract lands. Never
 touches the GPU. Results are reported separately from PROTOCOL v0.3 and from the

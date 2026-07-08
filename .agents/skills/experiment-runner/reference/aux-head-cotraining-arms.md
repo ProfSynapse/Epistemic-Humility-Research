@@ -74,7 +74,7 @@ tuner's `local_run_handler._build_trainer_command` forwards recipe keys to the
 trainer as `--flags` but does **not** forward any `aux_head` block. So a recipe's
 `aux_head:` is **inert on the standard lane** until:
 
-1. **ENGINE — `prompt_render: prompt_completion` mode** (`docs/sessions/0029`).
+1. **ENGINE — `prompt_render: prompt_completion` mode** (`docs/sessions/20260629T000000Z-phase-b-token-faithfulness-fix-handoff.md`).
    The default full-conversation render diverges from `add_generation_prompt=True`
    at the `</think>` newlines, so `end_of_prompt` lands one token short of the
    validated gen-prompt axis (cos 0.54 / AUROC 0.85 vs the 0.96 axis). The verified

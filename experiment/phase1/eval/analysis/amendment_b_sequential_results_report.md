@@ -12,7 +12,7 @@ artifact, not a protocol change and not a replacement for locked PROTOCOL v0.3
 headline evidence.
 
 Primary provenance is the durable session record:
-`docs/sessions/0004 - amendment-b-stated-confidence-eval-launch.md`.
+`docs/sessions/20260617T000000Z-amendment-b-stated-confidence-eval-launch.md`.
 
 ## Measurement Contract
 

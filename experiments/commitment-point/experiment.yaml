@@ -1,0 +1,52 @@
+slug: commitment-point
+title: Amendment AK — Commitment-Point Extraction
+type: historical-amendment
+status: historical
+registered: true
+created_at: '2026-07-08T17:40:52Z'
+legacy:
+  label: AK
+  path: experiment/protocol/AMENDMENT-AK-commitment-point.md
+  migrated_to: experiments/commitment-point/AMENDMENT.md
+migration:
+  needs_manual_review:
+  - falsifier
+  - experiment_type
+  - instrument_configs
+  - kg_ids
+  notes: Imported from legacy amendment prose. Do not infer missing machine fields
+    without hand-reading AMENDMENT.md.
+question: 'Where along the generation trajectory does the fabricate-anyway commitment
+  happen: does the post-generation veto crystallize across the answer tokens (as the
+  re-derivation result predicts), and what does the doubt-trunk reading do while the
+  fabrication is being written (rise, stay flat, or drop)?'
+prediction: "user:\n  calls:\n    AK-G1: PASS (crystallization rise)\n    AK-G2-path:\
+  \ H-rise — doubt increases across the confab answer window\n    AK-G3: PASS (window\
+  \ asymmetry)\n  recorded: 2026-07-04\n  quote: '\"I don''t think the lie overwrites\
+  \ doubt and I bet doubt increases. I will\n    be optimistic about the window asymmetry\
+  \ as well.\"'\norchestrator:\n  calls:\n    AK-G1: PASS (~80%)\n    AK-G2-path:\
+  \ H-flat-then-rise — mostly carried, climbing near answer end (~55%;\n      second\
+  \ pick H-rise throughout)\n    AK-G3: PASS (~75%)\n  recorded: 2026-07-04\n  basis:\
+  \ G1/G3 follow the item-31 re-derivation logic directly (transported floor\n   \
+  \ 0.58-0.64 vs in-position 0.81-0.86; carried fraction r ~ 0.34-0.37). On G2 the\n\
+  \    answerability-transport result (0.96-0.99) argues against overwrite and for\
+  \ a\n    carried, largely flat trunk reading, with the Amendment U high-distrust\
+  \ endpoint\n    pulling the tail upward."
+falsifier: ''
+checkpoint:
+  repo: ''
+  revision: ''
+instrument:
+  configs: []
+  modules: []
+  pins: {}
+inputs: []
+verdict: AK-G1 MISS (delta -0.0175 on grpo-v2, need >= +0.10); AK-G2 MISS, floor not
+  cleared (|contrast| 4.6234 < floor 5.291963, though perm p < 0.01); AK-G3 MISS on
+  the pre-registered ratio test (every dose ratio 0/nan, no CI clears 2.0) but the
+  gen_stream arm shows a diagnosed instrumentation confound (100% of 328 matched rows
+  are byte-identical across all seven alphas, versus 24% varying under anchor-only),
+  so the G3 MISS is not adopted as a confirmed causal null pending a real-generate()
+  hook-firing check. Both the user's and the orchestrator's AK-G1 call (PASS) missed;
+  AK-G2's fork is unadjudicated (gate MISS); AK-G3 is unresolved pending the confound.
+kg: []

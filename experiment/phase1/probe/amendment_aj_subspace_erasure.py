@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Amendment AJ: knowledge-subspace erasure test of caution's reducibility.
 
-Pre-registered in experiment/protocol/AMENDMENT-AJ-knowledge-subspace-erasure.md.
+Pre-registered in experiments/knowledge-subspace-erasure/AMENDMENT.md.
 CPU-only, runs on the cached L35 h_lora states of the clean-SFT -> GRPO-v2
 SelfAware extraction (extraction__55254a04aa1f) and the frozen behavior rows.
 

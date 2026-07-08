@@ -42,10 +42,10 @@ The canonical paper map is maintained in
 
 | Paper | Scope | Draft |
 |---|---|---|
-| P1 | Taxonomy, evidence synthesis, and the policy-vs-signal framework | [experiment/paper/paper1-taxonomy-framework-draft-v0.md](experiment/paper/paper1-taxonomy-framework-draft-v0.md) |
-| P2 | Training regimen: SFT/DPO/KTO/GRPO for abstention | [experiment/paper/paper2-training-regimen-draft-v2.md](experiment/paper/paper2-training-regimen-draft-v2.md) |
-| P3 | "Knows but Doesn't Say": internal-vs-stated confidence gap and training resistance | [experiment/paper/paper3-knows-but-doesnt-say-draft-v0.md](experiment/paper/paper3-knows-but-doesnt-say-draft-v0.md) |
-| P4 | Training-free two-signal readout: gate, dial, and veto | [experiment/paper/paper4-two-signal-readout-draft-v0.md](experiment/paper/paper4-two-signal-readout-draft-v0.md) |
+| P1 | Taxonomy, evidence synthesis, and the policy-vs-signal framework | [papers/paper-1-taxonomy-framework/manuscript.md](papers/paper-1-taxonomy-framework/manuscript.md) |
+| P2 | Training regimen: SFT/DPO/KTO/GRPO for abstention | [papers/paper-2-training-regimen/manuscript.md](papers/paper-2-training-regimen/manuscript.md) |
+| P3 | "Knows but Doesn't Say": internal-vs-stated confidence gap and training resistance | [papers/paper-3-knows-but-doesnt-say/manuscript.md](papers/paper-3-knows-but-doesnt-say/manuscript.md) |
+| P4 | Training-free two-signal readout: gate, dial, and veto | [papers/paper-4-two-signal-readout/manuscript.md](papers/paper-4-two-signal-readout/manuscript.md) |
 | P5 | Steering, actuation, and whether the internal signal can be routed into behavior | scaffold in progress |
 
 Legacy figure prefixes are not paper numbers: `fig-p1-*` currently belongs to
@@ -148,8 +148,8 @@ New evidence-producing work should normally go through the experiments-first or
 amendment workflow, depending on the tier:
 
 - use `experiments/` for new standalone evidence cells;
-- use signed `experiment/protocol/AMENDMENT-*.md` docs for governed protocol
-  extensions;
+- use signed `experiments/<slug>/AMENDMENT.md` docs for governed protocol
+  extensions and migrated historical amendments;
 - use lab/session notes for diagnostics, smokes, reruns, and non-claim work.
 
 Current amendment status and backlog live in [TODO.md](TODO.md). Do not infer

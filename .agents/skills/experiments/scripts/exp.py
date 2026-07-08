@@ -39,12 +39,19 @@ REGISTRY_JSON_NAME = "registry.json"
 RESERVED_DIRNAMES = frozenset({"common"})
 _SKIP_DIRNAMES = frozenset({"__pycache__"}) | RESERVED_DIRNAMES
 
-TYPES = ("steer-cell", "training-run", "eval", "probe-fit", "lab-diagnostic")
-STATUSES = ("draft", "signed", "running", "resolved", "null-result", "falsified")
+TYPES = (
+    "steer-cell",
+    "training-run",
+    "eval",
+    "probe-fit",
+    "lab-diagnostic",
+    "historical-amendment",
+)
+STATUSES = ("draft", "signed", "running", "resolved", "null-result", "falsified", "historical")
 # Statuses at or beyond signing: pins are expected to exist and still match.
 SIGNED_PLUS = frozenset({"signed", "running", "resolved", "null-result", "falsified"})
 # Terminal statuses that must carry a verdict.
-RESOLVED_STATES = frozenset({"resolved", "null-result", "falsified"})
+RESOLVED_STATES = frozenset({"resolved", "null-result", "falsified", "historical"})
 
 GENERATED_HEADER = "GENERATED - do not edit; run bin/exp regen and stage the result"
 
@@ -76,6 +83,19 @@ def experiments_dir(root: Path) -> Path:
 
 def _sha256(path: Path) -> str:
     return hashlib.sha256(path.read_bytes()).hexdigest()
+
+
+def now_utc() -> str:
+    from datetime import datetime, timezone
+
+    return datetime.now(timezone.utc).replace(microsecond=0).isoformat().replace("+00:00", "Z")
+
+
+def slugify(value: str) -> str:
+    import re
+
+    slug = re.sub(r"[^a-z0-9]+", "-", value.casefold()).strip("-")
+    return slug or "experiment"
 
 
 # --- manifest IO -------------------------------------------------------------
@@ -131,12 +151,14 @@ def _dump_manifest(manifest_path: Path, data: dict) -> None:
 
 # --- templates ---------------------------------------------------------------
 
-def _manifest_template(slug: str, exp_type: str) -> dict:
+def _manifest_template(slug: str, exp_type: str, title: str | None = None) -> dict:
     return {
         "slug": slug,
+        "title": title or slug,
         "type": exp_type,
         "status": "draft",
         "registered": True,
+        "created_at": now_utc(),
         "question": "",
         "prediction": "",
         "falsifier": "",
@@ -152,7 +174,7 @@ def _manifest_template(slug: str, exp_type: str) -> dict:
     }
 
 
-_AMENDMENT_TEMPLATE = """# {slug}
+_AMENDMENT_TEMPLATE = """# {title}
 
 Status: draft (not signed; do not launch as confirmatory evidence).
 
@@ -197,7 +219,7 @@ summary that also goes into `verdict:` in the manifest.
 """
 
 
-_NOTEBOOK_TEMPLATE = """# {slug} notebook
+_NOTEBOOK_TEMPLATE = """# {title} notebook
 
 Running log for this experiment. Newest entry first. This is a lab notebook, not
 a claims surface; the signed prose lives in `AMENDMENT.md` and the machine state
@@ -213,6 +235,23 @@ _GITIGNORE_TEMPLATE = """# Fitted directions and other large local data for this
 directions/
 # Local analysis scratch; keep untracked, promote real outputs deliberately.
 analysis/
+"""
+
+
+_CELL_TEMPLATE = """# TODO: replace this placeholder with the pinned experiment instrument.
+# Keep this file in the experiment directory unless the runner skill for this
+# experiment type requires a different config layout.
+#
+# Before signing:
+# - fill the actual runner/tuner config
+# - list this file under experiment.yaml instrument.configs
+# - run `bin/exp sign <slug>` to pin the final bytes
+"""
+
+
+_GATES_TEMPLATE = """# TODO: replace this placeholder with pre-stated gates.
+# Gates must be fixed before launch and should define the pass/fail thresholds
+# and falsifier boundary used by the amendment.
 """
 
 
@@ -459,30 +498,38 @@ def regen(root: Path, *, check: bool = False) -> int:
 
 # --- subcommands: new / sign / list / show / resolve -------------------------
 
-def cmd_new(root: Path, slug: str, exp_type: str) -> int:
+def cmd_new(root: Path, slug: str | None, exp_type: str, title: str | None = None) -> int:
     if exp_type not in TYPES:
         raise ExpError(f"type {exp_type!r} not one of {', '.join(TYPES)}")
+    if not slug:
+        if not title:
+            raise ExpError("provide a slug or --title")
+        slug = slugify(title)
     if not slug or not all(c.islower() or c.isdigit() or c == "-" for c in slug) or slug[0] == "-":
         raise ExpError(
             f"slug {slug!r} must be kebab-case (lowercase letters, digits, hyphens; "
             "not starting with a hyphen)"
         )
+    title = title or slug
     exp_dir = experiments_dir(root) / slug
     if exp_dir.exists():
         raise ExpError(f"experiment already exists: {exp_dir}")
 
     exp_dir.mkdir(parents=True)
-    _dump_manifest(exp_dir / MANIFEST_NAME, _manifest_template(slug, exp_type))
+    _dump_manifest(exp_dir / MANIFEST_NAME, _manifest_template(slug, exp_type, title))
     (exp_dir / "AMENDMENT.md").write_text(
-        _AMENDMENT_TEMPLATE.format(slug=slug, manifest=MANIFEST_NAME), encoding="utf-8"
+        _AMENDMENT_TEMPLATE.format(title=title, slug=slug, manifest=MANIFEST_NAME), encoding="utf-8"
     )
     (exp_dir / "NOTEBOOK.md").write_text(
-        _NOTEBOOK_TEMPLATE.format(slug=slug, manifest=MANIFEST_NAME), encoding="utf-8"
+        _NOTEBOOK_TEMPLATE.format(title=title, slug=slug, manifest=MANIFEST_NAME), encoding="utf-8"
     )
     (exp_dir / ".gitignore").write_text(_GITIGNORE_TEMPLATE, encoding="utf-8")
+    (exp_dir / "cell.yaml").write_text(_CELL_TEMPLATE, encoding="utf-8")
+    (exp_dir / "gates.yaml").write_text(_GATES_TEMPLATE, encoding="utf-8")
 
     print(f"exp new: scaffolded {exp_dir.relative_to(root)} (type={exp_type}, status=draft)")
-    print("  next: fill question/prediction/falsifier + instrument.configs, then `exp sign`")
+    print("  created: experiment.yaml, AMENDMENT.md, NOTEBOOK.md, cell.yaml, gates.yaml, .gitignore")
+    print("  next: fill question/prediction/falsifier + instrument.configs, then `bin/exp sign`")
     return 0
 
 
@@ -627,7 +674,8 @@ def _build_parser() -> argparse.ArgumentParser:
     sub = parser.add_subparsers(dest="command", required=True)
 
     p_new = sub.add_parser("new", help="scaffold a new experiment directory")
-    p_new.add_argument("slug")
+    p_new.add_argument("slug", nargs="?", help="experiment slug; defaults to slugified --title")
+    p_new.add_argument("--title", help="human title for AMENDMENT.md / NOTEBOOK.md; also used to derive slug if omitted")
     p_new.add_argument("--type", required=True, choices=TYPES, dest="exp_type")
 
     p_sign = sub.add_parser("sign", help="pin instrument configs and flip draft->signed")
@@ -663,7 +711,7 @@ def main(argv: list[str] | None = None) -> int:
     try:
         root = Path(args.root).resolve() if args.root else find_repo_root()
         if args.command == "new":
-            return cmd_new(root, args.slug, args.exp_type)
+            return cmd_new(root, args.slug, args.exp_type, title=args.title)
         if args.command == "sign":
             return cmd_sign(root, args.slug)
         if args.command == "list":

@@ -2,7 +2,7 @@
 """Amendment W — RAW-base forced-answer generation + dual-position extraction (GPU).
 
 Pre-registered in
-experiment/protocol/AMENDMENT-W-base-model-training-free-mechanism.md.
+experiments/base-model-training-free-mechanism/AMENDMENT.md.
 Exploratory, single-model, single-seed; reported separately from PROTOCOL v0.3.
 
 THE QUESTION (§2 H_W1, primary): does the correctness DIAL fit on the RAW Instruct

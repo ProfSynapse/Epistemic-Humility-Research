@@ -53,7 +53,7 @@ relationships:
   confidence: high
 ---
 
-Amendment AA (experiment/protocol/AMENDMENT-AA-causal-confidence-steering.md,
+Amendment AA (experiments/causal-confidence-steering/AMENDMENT.md,
 Stage-1 verdict 2026-07-02) turned the two-signal readout
 ([[answerability-and-correctness-are-orthogonal-readout-axes]]) around: it
 wrote the gate and dial probe directions back into Qwen3.5-4B's generation

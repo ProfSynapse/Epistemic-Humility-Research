@@ -1,6 +1,6 @@
 """Amendment AC offline tests: couple-mode math, doubt gain map, analysis.
 
-SPEC: experiment/protocol/AMENDMENT-AC-doubt-regulated-caution.md
+SPEC: experiments/doubt-regulated-caution/AMENDMENT.md
 """
 from __future__ import annotations
 

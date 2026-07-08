@@ -20,8 +20,8 @@ models:
 - qwen3-4b
 metrics:
 - auroc
-fulltext: ../../docs/sessions/0036 - amendment-aj-erasure-category-geometry-fleet.md
-provenance: 'Internal exploratory synthesis (Tier-1 lab notebook, not a paper draft). Source of truth: docs/sessions/0036 checkpoint 003 plus analysis/mi_category_geometry_20260704/ (flavor_readout, category_geometry, pliability arms) and analysis/mi_controversial_flips_20260704/ (item 22a resolution). Surface: Amendment AH stage-0 + expansion pregen extractions, raw Qwen3-4B instruct base, 11,996 rows x L0-L36. PRs #192, #193. Ungated exploratory evidence; feeds the Paper 5 steering line.'
+fulltext: ../../docs/sessions/20260704T120000Z-amendment-aj-erasure-category-geometry-fleet.md
+provenance: 'Internal exploratory synthesis (Tier-1 lab notebook, not a paper draft). Source of truth: docs/sessions/20260704T120000Z-amendment-aj-erasure-category-geometry-fleet.md checkpoint 003 plus analysis/mi_category_geometry_20260704/ (flavor_readout, category_geometry, pliability arms) and analysis/mi_controversial_flips_20260704/ (item 22a resolution). Surface: Amendment AH stage-0 + expansion pregen extractions, raw Qwen3-4B instruct base, 11,996 rows x L0-L36. PRs #192, #193. Ungated exploratory evidence; feeds the Paper 5 steering line.'
 related:
 - '[[unanswerability-flavor-is-early-content-encoding]]'
 - '[[unanswerability-detection-shares-one-axis-across-flavors]]'

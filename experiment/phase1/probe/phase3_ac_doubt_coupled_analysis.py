@@ -2,7 +2,7 @@
 """Amendment AC — CPU analysis: does the doubt->caution coupling carry
 information beyond deleting the gate?
 
-SPEC: experiment/protocol/AMENDMENT-AC-doubt-regulated-caution.md §4/§5.
+SPEC: experiments/doubt-regulated-caution/AMENDMENT.md §4/§5.
 
 Reads the intervention runner's rows.jsonl (arms x rows, paired by
 probe_pool_row_key) and computes:

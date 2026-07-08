@@ -1,6 +1,6 @@
 """Modal harness - Amendment AM residual-catch veto coverage (A0-surface extract).
 
-Pre-registered: experiment/protocol/AMENDMENT-AM-residual-catch-veto-coverage.md
+Pre-registered: experiments/residual-catch-veto-coverage/AMENDMENT.md
 (SIGNED 2026-07-06; §3 design, §5 preconditions, $5 cap). Cloned from the
 crash-proof modal_al_true_a0.py v2 skeleton (detached app, Volume checkpoint
 daemon @120s, retries with restore-before-start native resume, DONE marker,

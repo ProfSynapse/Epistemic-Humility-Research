@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Amendment X — cross-SIZE RAW-base mixed-pool generation + dual-position extraction.
 
-Pre-registered in experiment/protocol/AMENDMENT-X-cross-model-size-sweep.md.
+Pre-registered in experiments/cross-model-size-sweep/AMENDMENT.md.
 Exploratory, multi-model (one Qwen3 family), single-seed; reported separately from
 PROTOCOL v0.3.
 

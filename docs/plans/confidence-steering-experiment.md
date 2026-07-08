@@ -132,6 +132,6 @@ vs. late (after it has drafted one inside the think block). Adjacent to Amendmen
 ## What was captured today (design only)
 
 - This design doc.
-- Cross-link + "next axis" entry in `experiment/notes/two-signal-readout.md`.
+- Cross-link + "next axis" entry in `notes/experiments/two-signal-readout.md`.
 - Session 0030 checkpoint (design decision + instrument ruling).
 - Cross-session memory `confidence-steering-experiment-proposed`.

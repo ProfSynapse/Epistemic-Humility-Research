@@ -2,7 +2,7 @@
 """Amendment AH Stage-0 (script 3/4) — pre-generation anchor extraction (GPU).
 
 Pre-registered in
-experiment/protocol/AMENDMENT-AH-divergent-pool-own-readout.md (§4 step 3).
+experiments/divergent-pool-own-readout/AMENDMENT.md (§4 step 3).
 
 Byte-identical to the frozen AF/AG pre-gen extraction surface:
   - raw base unsloth/Qwen3-4B-bnb-4bit, no adapter, bfloat16, cuda

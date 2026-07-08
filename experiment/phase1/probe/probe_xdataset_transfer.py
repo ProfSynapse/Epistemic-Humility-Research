@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Amendment P — cross-dataset answerability-probe transfer test (CPU-only).
 
-Pre-registered in experiment/protocol/AMENDMENT-P-xdataset-probe-transfer.md.
+Pre-registered in experiments/xdataset-probe-transfer/AMENDMENT.md.
 Exploratory, single-model, single-seed; reported separately from the locked matrix.
 
 Question (the de-risking pre-check for the confidence-head engine change):

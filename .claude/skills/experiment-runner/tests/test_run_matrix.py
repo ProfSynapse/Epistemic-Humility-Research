@@ -83,10 +83,55 @@ def test_research_session_markdown_frontmatter_roundtrip(tmp_path):
     assert rs.validate_path(session) == []
 
 
-def test_research_session_default_path_uses_numbered_title_filename(tmp_path, monkeypatch):
+def test_research_session_default_path_uses_timestamped_session_id_filename(tmp_path, monkeypatch):
     monkeypatch.chdir(tmp_path)
-    path = rs.default_session_path("phase1-smoke", "Phase 1 Smoke")
+    session_id = rs.default_session_id("Phase 1 Smoke", timestamp="2026-07-08T17:15:28Z")
+    assert session_id == "20260708T171528Z-phase-1-smoke"
+    path = rs.default_session_path(
+        session_id,
+        "Phase 1 Smoke",
+        timestamp="2026-07-08T17:15:28Z",
+    )
+    assert path.as_posix() == "docs/sessions/20260708T171528Z-phase-1-smoke.md"
+
+
+def test_research_session_init_can_generate_session_id_from_title(tmp_path, monkeypatch):
+    monkeypatch.chdir(tmp_path)
+    monkeypatch.setattr(rs, "now_utc", lambda: "2026-07-08T17:15:28Z")
+    rc = rs.main([
+        "init",
+        "--title", "Phase 1 Smoke",
+        "--question", "Can the local lane prepare the first Phase 1 cell?",
+    ])
+    assert rc == 0
+    session = tmp_path / "docs" / "sessions" / "20260708T171528Z-phase-1-smoke.md"
+    frontmatter, _ = rs.load_session(session)
+    assert frontmatter["session_id"] == "20260708T171528Z-phase-1-smoke"
+
+
+def test_research_session_default_path_can_use_legacy_numbered_filename(tmp_path, monkeypatch):
+    monkeypatch.chdir(tmp_path)
+    path = rs.default_session_path("phase1-smoke", "Phase 1 Smoke", filename_mode="numbered")
     assert path.as_posix() == "docs/sessions/0001 - phase-1-smoke.md"
+
+
+def test_research_session_validate_path_rejects_duplicate_session_id(tmp_path):
+    first = tmp_path / "docs" / "sessions" / "20260708T171528Z-first.md"
+    second = tmp_path / "docs" / "sessions" / "20260708T171529Z-second.md"
+    rs.create_session(
+        first,
+        session_id="duplicate",
+        title="First",
+        question="First question?",
+    )
+    rs.create_session(
+        second,
+        session_id="duplicate",
+        title="Second",
+        question="Second question?",
+    )
+    errors = rs.validate_path(tmp_path / "docs" / "sessions")
+    assert any("duplicates" in error for error in errors)
 
 
 def test_research_session_accepts_extended_checkpoint_taxonomy(tmp_path):

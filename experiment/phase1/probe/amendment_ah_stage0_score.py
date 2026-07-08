@@ -2,7 +2,7 @@
 """Amendment AH Stage-0 (script 4/4) — score + flag divergence grid (CPU).
 
 Pre-registered in
-experiment/protocol/AMENDMENT-AH-divergent-pool-own-readout.md (§4 step 4).
+experiments/divergent-pool-own-readout/AMENDMENT.md (§4 step 4).
 
 Scores every extracted candidate with the three frozen layer-probes (L20/L24/
 L28) and the 5-fold L24 ensemble, then reports the divergence yield GRID. Does

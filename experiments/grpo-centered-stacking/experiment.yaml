@@ -1,0 +1,36 @@
+slug: grpo-centered-stacking
+title: 'Protocol Amendment F: GRPO-Centered Three-Stage Stacking'
+type: historical-amendment
+status: historical
+registered: true
+created_at: '2026-07-08T17:40:52Z'
+legacy:
+  label: F
+  path: experiment/protocol/AMENDMENT-F-grpo-centered-stacking.md
+  migrated_to: experiments/grpo-centered-stacking/AMENDMENT.md
+migration:
+  needs_manual_review:
+  - falsifier
+  - experiment_type
+  - instrument_configs
+  - kg_ids
+  notes: Imported from legacy amendment prose. Do not infer missing machine fields
+    without hand-reading AMENDMENT.md.
+question: Can a GRPO-centered third stage (before or after a preference pass) beat
+  the two-stage arms on the refusal/known-answer tradeoff?
+prediction: "orchestrator:\n  call: a third GRPO-centered stage may combine effects\
+  \ better than two-stage\nuser:\n  call: null\n  note: Predates the dual-prediction\
+  \ practice (adopted 2026-07-03 at AH signing);\n    no separately recorded user\
+  \ prediction."
+falsifier: ''
+checkpoint:
+  repo: ''
+  revision: ''
+instrument:
+  configs: []
+  modules: []
+  pins: {}
+inputs: []
+verdict: SIGNED OFF (2026-06-24) for exploratory local seed-1 three-stage stacking
+  over the clean Amendment E lineage.
+kg: []

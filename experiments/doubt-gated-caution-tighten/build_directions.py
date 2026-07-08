@@ -37,7 +37,7 @@ DEFECT FIX (this instrument, vs the superseded two-signal build): the prior
 build's LogisticRegression(solver="saga", ...) had NO random_state, so
 neg_ctrl/c_hat were NOT REPRODUCIBLE -- a re-run could silently produce a
 different committed vector (confirmed as a live defect, see NOTEBOOK.md /
-docs/sessions/0042 checkpoint 005-checkpoint "OTHER DEFECTS found"). Fixed
+docs/sessions/20260707T123611Z-two-signal-bf16-pivot-containment-guard-hardening.md checkpoint 005-checkpoint "OTHER DEFECTS found"). Fixed
 here by pinning RANDOM_STATE; `--verify-reproducible` runs the fit TWICE and
 asserts the two neg_ctrl/pos_ctrl/c_hat vectors are byte-identical before
 writing anything.

@@ -3,7 +3,7 @@
 
 Pre-registered: experiments/ap-veto-length-balanced-confirmatory/AMENDMENT.md.
 Confirmatory follow-up to Amendment AM
-(experiment/protocol/AMENDMENT-AM-residual-catch-veto-coverage.md). Tier-2
+(experiments/residual-catch-veto-coverage/AMENDMENT.md). Tier-2
 confirmatory cell; results reported separately from PROTOCOL v0.3 and from the
 PR #205 published veto operating characteristics, and never pooled with AM.
 

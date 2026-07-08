@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Amendment O — probe-as-oracle readout-ceiling test (CPU-only).
 
-Pre-registered in experiment/protocol/AMENDMENT-O-probe-as-oracle-readout-ceiling.md
+Pre-registered in experiments/probe-as-oracle-readout-ceiling/AMENDMENT.md
 (SIGNED 2026-06-29). Exploratory, single-model, single-seed; reported separately
 from the locked matrix.
 

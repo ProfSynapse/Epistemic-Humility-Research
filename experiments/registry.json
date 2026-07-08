@@ -3,6 +3,80 @@
   "experiments": [
     {
       "checkpoint": {
+        "repo": "",
+        "revision": ""
+      },
+      "created_at": "2026-07-08T17:40:52Z",
+      "falsifier": "",
+      "inputs": [],
+      "instrument": {
+        "configs": [],
+        "modules": [],
+        "pins": {}
+      },
+      "kg": [],
+      "legacy": {
+        "label": "I",
+        "migrated_to": "experiments/8b-scale-and-hyperparameter-gates/AMENDMENT.md",
+        "path": "experiment/protocol/AMENDMENT-I-8b-scale-and-hyperparameter-gates.md"
+      },
+      "migration": {
+        "needs_manual_review": [
+          "falsifier",
+          "experiment_type",
+          "instrument_configs",
+          "kg_ids"
+        ],
+        "notes": "Imported from legacy amendment prose. Do not infer missing machine fields without hand-reading AMENDMENT.md."
+      },
+      "prediction": "orchestrator:\n  call: tiered 8B gates plus mandatory pre-sweep hyperparameter audit\nuser:\n  call: null\n  note: Predates the dual-prediction practice (adopted 2026-07-03 at AH signing);\n    no separately recorded user prediction.",
+      "question": "Which 8B response-confidence/thinking variants are worth preparing, and should hyperparameter sweeps run before a pre-run audit?",
+      "registered": true,
+      "slug": "8b-scale-and-hyperparameter-gates",
+      "status": "historical",
+      "title": "Protocol Amendment I: 8B Scale And Hyperparameter Gates",
+      "type": "historical-amendment",
+      "verdict": "DRAFT / NOT SIGNED; defines 8B variant tiers and a hyperparameter gate, authorizes no training."
+    },
+    {
+      "checkpoint": {
+        "repo": "",
+        "revision": ""
+      },
+      "created_at": "2026-07-08T17:40:52Z",
+      "falsifier": "",
+      "inputs": [],
+      "instrument": {
+        "configs": [],
+        "modules": [],
+        "pins": {}
+      },
+      "kg": [],
+      "legacy": {
+        "label": "L",
+        "migrated_to": "experiments/answer-subspan-masked-contrastive-sft/AMENDMENT.md",
+        "path": "experiment/protocol/AMENDMENT-L-answer-subspan-masked-contrastive-sft.md"
+      },
+      "migration": {
+        "needs_manual_review": [
+          "falsifier",
+          "experiment_type",
+          "instrument_configs",
+          "kg_ids"
+        ],
+        "notes": "Imported from legacy amendment prose. Do not infer missing machine fields without hand-reading AMENDMENT.md."
+      },
+      "prediction": "orchestrator:\n  call: masking retains calibration and recovers behavior gate\nuser:\n  call: null\n  note: Predates the dual-prediction practice (adopted 2026-07-03 at AH signing);\n    no separately recorded user prediction.",
+      "question": "Does masking the wrong-answer sub-span in contrastive SFT recover behavior while retaining Amendment K's calibration win?",
+      "registered": true,
+      "slug": "answer-subspan-masked-contrastive-sft",
+      "status": "historical",
+      "title": "Protocol Amendment L: Answer-Sub-Span-Masked Contrastive Schema-SFT",
+      "type": "historical-amendment",
+      "verdict": "Per Amendment N table, behavior PASSED but calibration went to chance (AUROC 0.552) with inverted cell ordering — masking recovered behavior but destroyed the calibration carrier."
+    },
+    {
+      "checkpoint": {
         "repo": "professorsynapse/eh-qwen3-4b-clean-sft-grpo-par-true-seed1-lora",
         "revision": "7e31d3cf62395275d4ba3d1d9ec8f95287188805"
       },
@@ -53,10 +127,10 @@
           "cloud/modal_ap_veto_length_balanced.py"
         ],
         "pins": {
-          "ap_build_pool.py": "f77112529bf3d8241468813fc35b5ea6aae14cb62591408c5fb22a7e39de5e5b",
-          "ap_extract.py": "fdac4a6c8280b5c2cb7c2ec5ce944bf2b00e0d3ad2bcf01611d32b221ab1bbfe",
-          "ap_grade_and_gates.py": "60477c817327f83c9c5b7fa90aacd91e0e04d3a6b0d47f3cc6ee12d550af2269",
-          "cloud/modal_ap_veto_length_balanced.py": "6bfb6d01e73bfb5fec8ae127d1272629e9620412aba820ff71f09eaae99ba5d5"
+          "ap_build_pool.py": "0f992ffc343f72539ac38fbc3463ea6da55fc9cd55fc00ac3432475efd5f2217",
+          "ap_extract.py": "b28a6132278f8ffcf988aaf14c9e059a35d0945f112da7640620f8b28f80f009",
+          "ap_grade_and_gates.py": "aba2fee0838ddd1f469ce030490c9ff101013a8c01b10e722aad4c671e2a7dac",
+          "cloud/modal_ap_veto_length_balanced.py": "41bc174b5cf053f7c3045611d00846fbadc3068da35ffc1f4b99d4c328962a99"
         }
       },
       "kg": [],
@@ -109,6 +183,450 @@
     },
     {
       "checkpoint": {
+        "repo": "",
+        "revision": ""
+      },
+      "created_at": "2026-07-08T17:40:52Z",
+      "falsifier": "",
+      "inputs": [],
+      "instrument": {
+        "configs": [],
+        "modules": [],
+        "pins": {}
+      },
+      "kg": [],
+      "legacy": {
+        "label": "Q",
+        "migrated_to": "experiments/aux-head-trainable-readout/AMENDMENT.md",
+        "path": "experiment/protocol/AMENDMENT-Q-aux-head-trainable-readout.md"
+      },
+      "migration": {
+        "needs_manual_review": [
+          "falsifier",
+          "experiment_type",
+          "instrument_configs",
+          "kg_ids"
+        ],
+        "notes": "Imported from legacy amendment prose. Do not infer missing machine fields without hand-reading AMENDMENT.md."
+      },
+      "prediction": "orchestrator:\n  call: transfer AUROC 0.95-0.985, near P's sklearn readout\nuser:\n  call: null\n  note: Predates the dual-prediction practice (adopted 2026-07-03 at AH signing);\n    no separately recorded user prediction.",
+      "question": "Does the production aux_head training engine recover the latent O/P answerability readout that offline sklearn probes proved is present?",
+      "registered": true,
+      "slug": "aux-head-trainable-readout",
+      "status": "historical",
+      "title": "Amendment Q — Trainable `aux_head` Readout (Engine Reproduction of the O/P Ceiling)",
+      "type": "historical-amendment",
+      "verdict": "SUCCESS — trained head reproduces O/P ceiling (transfer AUROC 0.983, ECE 0.023); falsifier (<0.90) dead by a wide margin."
+    },
+    {
+      "checkpoint": {
+        "repo": "",
+        "revision": ""
+      },
+      "created_at": "2026-07-08T17:40:52Z",
+      "falsifier": "",
+      "inputs": [],
+      "instrument": {
+        "configs": [],
+        "modules": [],
+        "pins": {}
+      },
+      "kg": [],
+      "legacy": {
+        "label": "AE",
+        "migrated_to": "experiments/base-model-doubt-coupled-caution/AMENDMENT.md",
+        "path": "experiment/protocol/AMENDMENT-AE-base-model-doubt-coupled-caution.md"
+      },
+      "migration": {
+        "needs_manual_review": [
+          "falsifier",
+          "experiment_type",
+          "instrument_configs",
+          "kg_ids"
+        ],
+        "notes": "Imported from legacy amendment prose. Do not infer missing machine fields without hand-reading AMENDMENT.md."
+      },
+      "prediction": "orchestrator:\n  call: D-native passes AE-G1 small margin (5-15pt); D-transferred weaker or null\nuser:\n  call: null\n  note: Predates the dual-prediction practice (adopted 2026-07-03 at AH signing);\n    no separately recorded user prediction.",
+      "question": "Can an inference-time doubt-coupled caution write CREATE calibrated abstention on a raw base model that never trained on abstention?",
+      "registered": true,
+      "slug": "base-model-doubt-coupled-caution",
+      "status": "historical",
+      "title": "Amendment AE — Training-Free Doubt-Coupled Caution on the Raw Base",
+      "type": "historical-amendment",
+      "verdict": "COMPLETE — pre-stated adequacy-floor STOP fired at census: the raw base already abstains ~93% on unknowns under the affording prompt (confabulates 21/300), so the primary cells sit under the >=150 floor and the actuator question stays OPEN. Resolution recorded in the backlog (commit aca6f4dc, PR #157 arc); this doc's own result section was never backfilled."
+    },
+    {
+      "checkpoint": {
+        "repo": "",
+        "revision": ""
+      },
+      "created_at": "2026-07-08T17:40:52Z",
+      "falsifier": "",
+      "inputs": [],
+      "instrument": {
+        "configs": [],
+        "modules": [],
+        "pins": {}
+      },
+      "kg": [],
+      "legacy": {
+        "label": "W",
+        "migrated_to": "experiments/base-model-training-free-mechanism/AMENDMENT.md",
+        "path": "experiment/protocol/AMENDMENT-W-base-model-training-free-mechanism.md"
+      },
+      "migration": {
+        "needs_manual_review": [
+          "falsifier",
+          "experiment_type",
+          "instrument_configs",
+          "kg_ids"
+        ],
+        "notes": "Imported from legacy amendment prose. Do not infer missing machine fields without hand-reading AMENDMENT.md."
+      },
+      "prediction": "orchestrator:\n  call: PASS; gate and dial are representation properties present pre-training\nuser:\n  call: null\n  note: Predates the dual-prediction practice (adopted 2026-07-03 at AH signing);\n    no separately recorded user prediction.",
+      "question": "Does the full two-signal mechanism (gate + dial + hallucination veto) hold on the raw untrained Instruct base with no adapter?",
+      "registered": true,
+      "slug": "base-model-training-free-mechanism",
+      "status": "historical",
+      "title": "Amendment W — Training-Free Base-Model Two-Signal Mechanism",
+      "type": "historical-amendment",
+      "verdict": "SUCCESS — full mechanism reads training-free (gate 0.997, veto 0.754); training does not create the veto, it sharpens it (0.754 to 0.980)."
+    },
+    {
+      "checkpoint": {
+        "repo": "",
+        "revision": ""
+      },
+      "created_at": "2026-07-08T17:40:52Z",
+      "falsifier": "",
+      "inputs": [],
+      "instrument": {
+        "configs": [],
+        "modules": [],
+        "pins": {}
+      },
+      "kg": [],
+      "legacy": {
+        "label": "G",
+        "migrated_to": "experiments/best-stack-replication-scale-gate/AMENDMENT.md",
+        "path": "experiment/protocol/AMENDMENT-G-best-stack-replication-scale-gate.md"
+      },
+      "migration": {
+        "needs_manual_review": [
+          "falsifier",
+          "experiment_type",
+          "instrument_configs",
+          "kg_ids"
+        ],
+        "notes": "Imported from legacy amendment prose. Do not infer missing machine fields without hand-reading AMENDMENT.md."
+      },
+      "prediction": "orchestrator:\n  call: best seed-1 stack worth testing for cross-seed reproducibility before scaling\nuser:\n  call: null\n  note: Predates the dual-prediction practice (adopted 2026-07-03 at AH signing);\n    no separately recorded user prediction.",
+      "question": "Does the best seed-1 stack (clean SFT->GRPO v2->DPO) reproduce across seeds and merit publication or 8B scaling?",
+      "registered": true,
+      "slug": "best-stack-replication-scale-gate",
+      "status": "historical",
+      "title": "Protocol Amendment G: Best-Stack Replication And Scale Gate",
+      "type": "historical-amendment",
+      "verdict": "DRAFT / NOT SIGNED; governs seed-2/3 replication and a narrow 8B/publication scale gate, pending explicit launch approval."
+    },
+    {
+      "checkpoint": {
+        "repo": "",
+        "revision": ""
+      },
+      "created_at": "2026-07-08T17:40:52Z",
+      "falsifier": "",
+      "inputs": [],
+      "instrument": {
+        "configs": [],
+        "modules": [],
+        "pins": {}
+      },
+      "kg": [],
+      "legacy": {
+        "label": "AA",
+        "migrated_to": "experiments/causal-confidence-steering/AMENDMENT.md",
+        "path": "experiment/protocol/AMENDMENT-AA-causal-confidence-steering.md"
+      },
+      "migration": {
+        "needs_manual_review": [
+          "falsifier",
+          "experiment_type",
+          "instrument_configs",
+          "kg_ids"
+        ],
+        "notes": "Imported from legacy amendment prose. Do not infer missing machine fields without hand-reading AMENDMENT.md."
+      },
+      "prediction": "orchestrator:\n  call: gate@anchor and dial@end move behavior; muted at wrong position; both arms\nuser:\n  call: null\n  note: Predates the dual-prediction practice (adopted 2026-07-03 at AH signing);\n    no separately recorded user prediction.",
+      "question": "Can writing the trust axis back in (activation steering / CoT injection) move behavior position-specifically, showing causal use not just presence?",
+      "registered": true,
+      "slug": "causal-confidence-steering",
+      "status": "historical",
+      "title": "Amendment AA — Causal confidence steering: writing the trust axis (Paper 5)",
+      "type": "historical-amendment",
+      "verdict": "FALSIFIER-1 — the channel stays shut; no effect gate passed in any of the 8 cells; latent gate/dial info does not translate into answer/abstain/revise behavior under either injection arm."
+    },
+    {
+      "checkpoint": {
+        "repo": "",
+        "revision": ""
+      },
+      "created_at": "2026-07-08T17:40:52Z",
+      "falsifier": "",
+      "inputs": [],
+      "instrument": {
+        "configs": [],
+        "modules": [],
+        "pins": {}
+      },
+      "kg": [],
+      "legacy": {
+        "label": "AK",
+        "migrated_to": "experiments/commitment-point/AMENDMENT.md",
+        "path": "experiment/protocol/AMENDMENT-AK-commitment-point.md"
+      },
+      "migration": {
+        "needs_manual_review": [
+          "falsifier",
+          "experiment_type",
+          "instrument_configs",
+          "kg_ids"
+        ],
+        "notes": "Imported from legacy amendment prose. Do not infer missing machine fields without hand-reading AMENDMENT.md."
+      },
+      "prediction": "user:\n  calls:\n    AK-G1: PASS (crystallization rise)\n    AK-G2-path: H-rise — doubt increases across the confab answer window\n    AK-G3: PASS (window asymmetry)\n  recorded: 2026-07-04\n  quote: '\"I don''t think the lie overwrites doubt and I bet doubt increases. I will\n    be optimistic about the window asymmetry as well.\"'\norchestrator:\n  calls:\n    AK-G1: PASS (~80%)\n    AK-G2-path: H-flat-then-rise — mostly carried, climbing near answer end (~55%;\n      second pick H-rise throughout)\n    AK-G3: PASS (~75%)\n  recorded: 2026-07-04\n  basis: G1/G3 follow the item-31 re-derivation logic directly (transported floor\n    0.58-0.64 vs in-position 0.81-0.86; carried fraction r ~ 0.34-0.37). On G2 the\n    answerability-transport result (0.96-0.99) argues against overwrite and for a\n    carried, largely flat trunk reading, with the Amendment U high-distrust endpoint\n    pulling the tail upward.",
+      "question": "Where along the generation trajectory does the fabricate-anyway commitment happen: does the post-generation veto crystallize across the answer tokens (as the re-derivation result predicts), and what does the doubt-trunk reading do while the fabrication is being written (rise, stay flat, or drop)?",
+      "registered": true,
+      "slug": "commitment-point",
+      "status": "historical",
+      "title": "Amendment AK — Commitment-Point Extraction",
+      "type": "historical-amendment",
+      "verdict": "AK-G1 MISS (delta -0.0175 on grpo-v2, need >= +0.10); AK-G2 MISS, floor not cleared (|contrast| 4.6234 < floor 5.291963, though perm p < 0.01); AK-G3 MISS on the pre-registered ratio test (every dose ratio 0/nan, no CI clears 2.0) but the gen_stream arm shows a diagnosed instrumentation confound (100% of 328 matched rows are byte-identical across all seven alphas, versus 24% varying under anchor-only), so the G3 MISS is not adopted as a confirmed causal null pending a real-generate() hook-firing check. Both the user's and the orchestrator's AK-G1 call (PASS) missed; AK-G2's fork is unadjudicated (gate MISS); AK-G3 is unresolved pending the confound."
+    },
+    {
+      "checkpoint": {
+        "repo": "",
+        "revision": ""
+      },
+      "created_at": "2026-07-08T17:40:52Z",
+      "falsifier": "",
+      "inputs": [],
+      "instrument": {
+        "configs": [],
+        "modules": [],
+        "pins": {}
+      },
+      "kg": [],
+      "legacy": {
+        "label": "K",
+        "migrated_to": "experiments/contrastive-sft-behavior-conditional-confidence/AMENDMENT.md",
+        "path": "experiment/protocol/AMENDMENT-K-contrastive-sft-behavior-conditional-confidence.md"
+      },
+      "migration": {
+        "needs_manual_review": [
+          "falsifier",
+          "experiment_type",
+          "instrument_configs",
+          "kg_ids"
+        ],
+        "notes": "Imported from legacy amendment prose. Do not infer missing machine fields without hand-reading AMENDMENT.md."
+      },
+      "prediction": "orchestrator:\n  call: contrast installs behavior-conditional confidence at SFT stage\nuser:\n  call: null\n  note: Predates the dual-prediction practice (adopted 2026-07-03 at AH signing);\n    no separately recorded user prediction.",
+      "question": "Can full contrastive schema-SFT install behavior-conditional response confidence at the SFT stage while preserving behavior?",
+      "registered": true,
+      "slug": "contrastive-sft-behavior-conditional-confidence",
+      "status": "historical",
+      "title": "Protocol Amendment K: Full Contrastive Schema-SFT for Behavior-Conditional Response Confidence",
+      "type": "historical-amendment",
+      "verdict": "REJECTED — calibration gate PASSED 4/4 but behavior gate FAILED 3/4 (wrong-answer sub-span supervision degraded correctness / inflated over-refusal); calibration mechanism validated."
+    },
+    {
+      "checkpoint": {
+        "repo": "",
+        "revision": ""
+      },
+      "created_at": "2026-07-08T17:40:52Z",
+      "falsifier": "",
+      "inputs": [],
+      "instrument": {
+        "configs": [],
+        "modules": [],
+        "pins": {}
+      },
+      "kg": [],
+      "legacy": {
+        "label": "S",
+        "migrated_to": "experiments/correctness-confidence-probe/AMENDMENT.md",
+        "path": "experiment/protocol/AMENDMENT-S-correctness-confidence-probe.md"
+      },
+      "migration": {
+        "needs_manual_review": [
+          "falsifier",
+          "experiment_type",
+          "instrument_configs",
+          "kg_ids"
+        ],
+        "notes": "Imported from legacy amendment prose. Do not infer missing machine fields without hand-reading AMENDMENT.md."
+      },
+      "prediction": "orchestrator:\n  call: post-gen beats pre-gen; correctness readable, self-eval gain positive\nuser:\n  call: null\n  note: Predates the dual-prediction practice (adopted 2026-07-03 at AH signing);\n    no separately recorded user prediction.",
+      "question": "Is per-attempt correctness linearly readable, and is it read more strongly after the answer than before (self-eval gain)?",
+      "registered": true,
+      "slug": "correctness-confidence-probe",
+      "status": "historical",
+      "title": "Amendment S — Correctness-Confidence Probe (post- vs pre-generation readout)",
+      "type": "historical-amendment",
+      "verdict": "SUCCESS — post-gen AUROC 0.834, self-eval gain +0.065 (CI excludes 0); G1+G2 pass, G3 misses by 0.001 (not a green-light gate)."
+    },
+    {
+      "checkpoint": {
+        "repo": "",
+        "revision": ""
+      },
+      "created_at": "2026-07-08T17:40:52Z",
+      "falsifier": "",
+      "inputs": [],
+      "instrument": {
+        "configs": [],
+        "modules": [],
+        "pins": {}
+      },
+      "kg": [],
+      "legacy": {
+        "label": "T",
+        "migrated_to": "experiments/correctness-readout-deployment-port/AMENDMENT.md",
+        "path": "experiment/protocol/AMENDMENT-T-correctness-readout-deployment-port.md"
+      },
+      "migration": {
+        "needs_manual_review": [
+          "falsifier",
+          "experiment_type",
+          "instrument_configs",
+          "kg_ids"
+        ],
+        "notes": "Imported from legacy amendment prose. Do not infer missing machine fields without hand-reading AMENDMENT.md."
+      },
+      "prediction": "orchestrator:\n  call: PASS on both; GRPO-v2 moves policy, not factual representation\nuser:\n  call: null\n  note: Predates the dual-prediction practice (adopted 2026-07-03 at AH signing);\n    no separately recorded user prediction.",
+      "question": "Does the Amendment S correctness readout survive calibration training on the deployed clean-SFT to GRPO-v2 checkpoint?",
+      "registered": true,
+      "slug": "correctness-readout-deployment-port",
+      "status": "historical",
+      "title": "Amendment T — Correctness-Readout Deployment-Checkpoint Port",
+      "type": "historical-amendment",
+      "verdict": "SUCCESS — post-gen AUROC 0.819, self-eval gain +0.074 (CI excludes 0); readout survives, direction drifts across checkpoints (cold transfer 0.68)."
+    },
+    {
+      "checkpoint": {
+        "repo": "",
+        "revision": ""
+      },
+      "created_at": "2026-07-08T17:40:52Z",
+      "falsifier": "",
+      "inputs": [],
+      "instrument": {
+        "configs": [],
+        "modules": [],
+        "pins": {}
+      },
+      "kg": [],
+      "legacy": {
+        "label": "Z",
+        "migrated_to": "experiments/cross-family-confirmatory/AMENDMENT.md",
+        "path": "experiment/protocol/AMENDMENT-Z-cross-family-confirmatory.md"
+      },
+      "migration": {
+        "needs_manual_review": [
+          "falsifier",
+          "experiment_type",
+          "instrument_configs",
+          "kg_ids"
+        ],
+        "notes": "Imported from legacy amendment prose. Do not infer missing machine fields without hand-reading AMENDMENT.md."
+      },
+      "prediction": "orchestrator:\n  call: readout holds across families; veto PASS on at least 3 of 4\nuser:\n  call: null\n  note: Predates the dual-prediction practice (adopted 2026-07-03 at AH signing);\n    no separately recorded user prediction.",
+      "question": "Does the training-free two-signal readout replicate across model families, or is it a Qwen3-lineage idiosyncrasy?",
+      "registered": true,
+      "slug": "cross-family-confirmatory",
+      "status": "historical",
+      "title": "Amendment Z — Cross-FAMILY confirmatory of the training-free two-signal readout",
+      "type": "historical-amendment",
+      "verdict": "COMPLETE — SUCCESS; veto PASS 3/4 (Ministral, Qwen3.5, Gemma; Llama fails), gate and dial 4/4; readout promoted to a cross-family claim, veto the fragile model-dependent axis."
+    },
+    {
+      "checkpoint": {
+        "repo": "",
+        "revision": ""
+      },
+      "created_at": "2026-07-08T17:40:52Z",
+      "falsifier": "",
+      "inputs": [],
+      "instrument": {
+        "configs": [],
+        "modules": [],
+        "pins": {}
+      },
+      "kg": [],
+      "legacy": {
+        "label": "X",
+        "migrated_to": "experiments/cross-model-size-sweep/AMENDMENT.md",
+        "path": "experiment/protocol/AMENDMENT-X-cross-model-size-sweep.md"
+      },
+      "migration": {
+        "needs_manual_review": [
+          "falsifier",
+          "experiment_type",
+          "instrument_configs",
+          "kg_ids"
+        ],
+        "notes": "Imported from legacy amendment prose. Do not infer missing machine fields without hand-reading AMENDMENT.md."
+      },
+      "prediction": "orchestrator:\n  call: PASS at every size; veto plausibly sharpens with scale\nuser:\n  call: null\n  note: Predates the dual-prediction practice (adopted 2026-07-03 at AH signing);\n    no separately recorded user prediction.",
+      "question": "Does the training-free two-signal readout generalize across model scale (Qwen3 1.7B-14B), or is it a 4B artifact?",
+      "registered": true,
+      "slug": "cross-model-size-sweep",
+      "status": "historical",
+      "title": "Amendment X — Cross-Size Generalization of the Training-Free Two-Signal Readout",
+      "type": "historical-amendment",
+      "verdict": "COMPLETE — all four sizes PASS all three gates (size-robust); scaling of sharpness is non-monotonic (peaks at 8B), monotonic-sharpening expectation not supported."
+    },
+    {
+      "checkpoint": {
+        "repo": "",
+        "revision": ""
+      },
+      "created_at": "2026-07-08T17:40:52Z",
+      "falsifier": "",
+      "inputs": [],
+      "instrument": {
+        "configs": [],
+        "modules": [],
+        "pins": {}
+      },
+      "kg": [],
+      "legacy": {
+        "label": "C",
+        "migrated_to": "experiments/crossover-preference-stacking/AMENDMENT.md",
+        "path": "experiment/protocol/AMENDMENT-C-crossover-preference-stacking.md"
+      },
+      "migration": {
+        "needs_manual_review": [
+          "falsifier",
+          "experiment_type",
+          "instrument_configs",
+          "kg_ids"
+        ],
+        "notes": "Imported from legacy amendment prose. Do not infer missing machine fields without hand-reading AMENDMENT.md."
+      },
+      "prediction": "orchestrator:\n  call: DPO and KTO may apply complementary corrections, better balance\nuser:\n  call: null\n  note: Predates the dual-prediction practice (adopted 2026-07-03 at AH signing);\n    no separately recorded user prediction.",
+      "question": "Can a cross-over second preference stage (SFT->DPO->KTO or SFT->KTO->DPO) combine complementary corrections better than either first-stage arm?",
+      "registered": true,
+      "slug": "crossover-preference-stacking",
+      "status": "historical",
+      "title": "Protocol Amendment C: Cross-Over Preference Stacking",
+      "type": "historical-amendment",
+      "verdict": "DRAFT / NOT SIGNED / DEPRIORITIZED; reciprocal preference stacking not in active near-term matrix as of 2026-06-25."
+    },
+    {
+      "checkpoint": {
         "repo": "unsloth/Qwen3-4B-bnb-4bit",
         "revision": "raw-base (no adapter; checkpoint_tag \"raw-base\" per AK Stage 1 manifest)"
       },
@@ -140,6 +658,43 @@
       "status": "null-result",
       "type": "lab-diagnostic",
       "verdict": "NULL. G-instrument valid (pos_ctrl kills 79/80 confabs into coherent 'I dont know' refusals, confidence->0.0; controls at floor), screen not void. The 9 candidates clearing the raw graduation bar are an artifact: grader coherence gap (refuse->answer flips are malformed spam scored as answers, well-formed 0-17% vs 76% baseline), under-dosed random control (cand dose3 setpoints 34-219 vs paired random 4-42), off-manifold over-drive on exactly-off-axis weak directions (census AUROC 0.60-0.72). Promote none; dark subspace shelved. Orchestrator 0-graduate correct; user several-graduate missed."
+    },
+    {
+      "checkpoint": {
+        "repo": "",
+        "revision": ""
+      },
+      "created_at": "2026-07-08T17:40:52Z",
+      "falsifier": "",
+      "inputs": [],
+      "instrument": {
+        "configs": [],
+        "modules": [],
+        "pins": {}
+      },
+      "kg": [],
+      "legacy": {
+        "label": "AH",
+        "migrated_to": "experiments/divergent-pool-own-readout/AMENDMENT.md",
+        "path": "experiment/protocol/AMENDMENT-AH-divergent-pool-own-readout.md"
+      },
+      "migration": {
+        "needs_manual_review": [
+          "falsifier",
+          "experiment_type",
+          "instrument_configs",
+          "kg_ids"
+        ],
+        "notes": "Imported from legacy amendment prose. Do not infer missing machine fields without hand-reading AMENDMENT.md."
+      },
+      "prediction": "orchestrator:\n  call: H-compliance\n  confidence: 75-80%\n  recorded: 2026-07-03\n  basis: AG's doubt axis is anti-semantic and unmoved by primes; the pliability law\n    absorbs the hidden state into one boundary-distance scalar; the only observed\n    readout-behavior coupling (AC) was wired externally.\nuser:\n  call: H-compliance\n  recorded: 2026-07-03\n  quote: I think prompt is like a shotgun here and overrides most other policies.\n    So I think we're still decoupled from internals, if there is something it would\n    be too weak I think to do anything about beyond like you say maybe coming back\n    to training.",
+      "question": "Does prime uptake consult the model's own readout (H-resonance) or is it pure instruction compliance plus boundary distance (H-compliance)?",
+      "registered": true,
+      "slug": "divergent-pool-own-readout",
+      "status": "historical",
+      "title": "Amendment AH — Divergent-Pool Own-Readout Attribution (probe ≠ gold)",
+      "type": "historical-amendment",
+      "verdict": "H-COMPLIANCE (certified via Addendum A1). G2 release congruence is a precise zero (-0.21pt, CI [-4.45, +4.10]); the initial G1 miss (+15.65pt on a low-caution stratum) was recalibrated on a caution-representative stratum in pre-registered Addendum A1 and passed decisively (+50.98pt vs +20pt floor), certifying the instrument and upgrading the verdict per the locked §10.2 semantics. Prime uptake does not consult the model's own readout."
     },
     {
       "checkpoint": {
@@ -187,6 +742,43 @@
         "repo": "",
         "revision": ""
       },
+      "created_at": "2026-07-08T17:40:52Z",
+      "falsifier": "",
+      "inputs": [],
+      "instrument": {
+        "configs": [],
+        "modules": [],
+        "pins": {}
+      },
+      "kg": [],
+      "legacy": {
+        "label": "AC",
+        "migrated_to": "experiments/doubt-regulated-caution/AMENDMENT.md",
+        "path": "experiment/protocol/AMENDMENT-AC-doubt-regulated-caution.md"
+      },
+      "migration": {
+        "needs_manual_review": [
+          "falsifier",
+          "experiment_type",
+          "instrument_configs",
+          "kg_ids"
+        ],
+        "notes": "Imported from legacy amendment prose. Do not infer missing machine fields without hand-reading AMENDMENT.md."
+      },
+      "prediction": "orchestrator:\n  call: AC-G1 passes with a small margin (5-15pt); AC-G2 ~0 vs constant ablate\nuser:\n  call: null\n  note: Predates the dual-prediction practice (adopted 2026-07-03 at AH signing);\n    no separately recorded user prediction.",
+      "question": "Does making the caution gate a live function of the doubt readout carry information beyond simply deleting the gate, on the trained checkpoint?",
+      "registered": true,
+      "slug": "doubt-regulated-caution",
+      "status": "historical",
+      "title": "Amendment AC — Doubt-Regulated Caution (closed-loop coupling at inference)",
+      "type": "historical-amendment",
+      "verdict": "AC-G1 PASS — the wire carries information (coupled beats permuted +8.7pt, CI [+5.6,+12.0]); guard PASS, falsifier not fired; RQ4 Stage 1 closes POSITIVE, first use-the-signal win after M/N/R/AA."
+    },
+    {
+      "checkpoint": {
+        "repo": "",
+        "revision": ""
+      },
       "falsifier": "",
       "inputs": [],
       "instrument": {
@@ -205,6 +797,191 @@
       "status": "draft",
       "type": "steer-cell",
       "verdict": ""
+    },
+    {
+      "checkpoint": {
+        "repo": "",
+        "revision": ""
+      },
+      "created_at": "2026-07-08T17:40:52Z",
+      "falsifier": "",
+      "inputs": [],
+      "instrument": {
+        "configs": [],
+        "modules": [],
+        "pins": {}
+      },
+      "kg": [],
+      "legacy": {
+        "label": "AB",
+        "migrated_to": "experiments/first-person-injection/AMENDMENT.md",
+        "path": "experiment/protocol/AMENDMENT-AB-first-person-injection.md"
+      },
+      "migration": {
+        "needs_manual_review": [
+          "falsifier",
+          "experiment_type",
+          "instrument_configs",
+          "kg_ids"
+        ],
+        "notes": "Imported from legacy amendment prose. Do not infer missing machine fields without hand-reading AMENDMENT.md."
+      },
+      "prediction": "orchestrator:\n  call: if framing artifact, V1 shows real-vs-placebo separation AA lacked\nuser:\n  call: null\n  note: Predates the dual-prediction practice (adopted 2026-07-03 at AH signing);\n    no separately recorded user prediction.",
+      "question": "Is AA's shut text channel a framing artifact — does first-person prose with an interpretable percent and explicit action rule open it?",
+      "registered": true,
+      "slug": "first-person-injection",
+      "status": "historical",
+      "title": "Amendment AB — First-person confidence injection: is the shut text channel a framing artifact?",
+      "type": "historical-amendment",
+      "verdict": "AMBIGUOUS-LEANING-NEGATIVE — no V1 cell passes; first-person framing does not open the text channel (dial@late instrument saturated, dial@final MISS, gate@early only a ~2pt trickle); AA's presence-not-use conclusion strengthened."
+    },
+    {
+      "checkpoint": {
+        "repo": "",
+        "revision": ""
+      },
+      "created_at": "2026-07-08T17:40:52Z",
+      "falsifier": "",
+      "inputs": [],
+      "instrument": {
+        "configs": [],
+        "modules": [],
+        "pins": {}
+      },
+      "kg": [],
+      "legacy": {
+        "label": "F",
+        "migrated_to": "experiments/grpo-centered-stacking/AMENDMENT.md",
+        "path": "experiment/protocol/AMENDMENT-F-grpo-centered-stacking.md"
+      },
+      "migration": {
+        "needs_manual_review": [
+          "falsifier",
+          "experiment_type",
+          "instrument_configs",
+          "kg_ids"
+        ],
+        "notes": "Imported from legacy amendment prose. Do not infer missing machine fields without hand-reading AMENDMENT.md."
+      },
+      "prediction": "orchestrator:\n  call: a third GRPO-centered stage may combine effects better than two-stage\nuser:\n  call: null\n  note: Predates the dual-prediction practice (adopted 2026-07-03 at AH signing);\n    no separately recorded user prediction.",
+      "question": "Can a GRPO-centered third stage (before or after a preference pass) beat the two-stage arms on the refusal/known-answer tradeoff?",
+      "registered": true,
+      "slug": "grpo-centered-stacking",
+      "status": "historical",
+      "title": "Protocol Amendment F: GRPO-Centered Three-Stage Stacking",
+      "type": "historical-amendment",
+      "verdict": "SIGNED OFF (2026-06-24) for exploratory local seed-1 three-stage stacking over the clean Amendment E lineage."
+    },
+    {
+      "checkpoint": {
+        "repo": "",
+        "revision": ""
+      },
+      "created_at": "2026-07-08T17:40:52Z",
+      "falsifier": "",
+      "inputs": [],
+      "instrument": {
+        "configs": [],
+        "modules": [],
+        "pins": {}
+      },
+      "kg": [],
+      "legacy": {
+        "label": "N",
+        "migrated_to": "experiments/grpo-v3-on-contrastive-sft-base/AMENDMENT.md",
+        "path": "experiment/protocol/AMENDMENT-N-grpo-v3-on-contrastive-sft-base.md"
+      },
+      "migration": {
+        "needs_manual_review": [
+          "falsifier",
+          "experiment_type",
+          "instrument_configs",
+          "kg_ids"
+        ],
+        "notes": "Imported from legacy amendment prose. Do not infer missing machine fields without hand-reading AMENDMENT.md."
+      },
+      "prediction": "orchestrator:\n  call: retains K calibration and repairs behavior gate\nuser:\n  call: null\n  note: Predates the dual-prediction practice (adopted 2026-07-03 at AH signing);\n    no separately recorded user prediction.",
+      "question": "Does GRPO v3 on the calibrated Amendment K base retain its stated calibration while repairing behavior into one coherent model?",
+      "registered": true,
+      "slug": "grpo-v3-on-contrastive-sft-base",
+      "status": "historical",
+      "title": "Protocol Amendment N: GRPO v3 Reward on the Amendment K (Contrastive-SFT) Base",
+      "type": "historical-amendment",
+      "verdict": "PARTIAL then STOP — calibration RETAINED 4/4, behavior REPAIR FAILED 2/4; beta 0.05 re-run fired the margin falsifier (+3pt, not +14.5), so the action/knowledge decoupling is structural, not a KL artifact."
+    },
+    {
+      "checkpoint": {
+        "repo": "",
+        "revision": ""
+      },
+      "created_at": "2026-07-08T17:40:52Z",
+      "falsifier": "",
+      "inputs": [],
+      "instrument": {
+        "configs": [],
+        "modules": [],
+        "pins": {}
+      },
+      "kg": [],
+      "legacy": {
+        "label": "J",
+        "migrated_to": "experiments/grpo-v3-proper-scoring-confidence/AMENDMENT.md",
+        "path": "experiment/protocol/AMENDMENT-J-grpo-v3-proper-scoring-confidence.md"
+      },
+      "migration": {
+        "needs_manual_review": [
+          "falsifier",
+          "experiment_type",
+          "instrument_configs",
+          "kg_ids"
+        ],
+        "notes": "Imported from legacy amendment prose. Do not infer missing machine fields without hand-reading AMENDMENT.md."
+      },
+      "prediction": "orchestrator:\n  call: emitted scalar moves toward calibrated internal doubt axis\nuser:\n  call: null\n  note: Predates the dual-prediction practice (adopted 2026-07-03 at AH signing);\n    no separately recorded user prediction.",
+      "question": "Does a proper-scoring (Brier) GRPO reward install calibrated, behavior-conditional emitted response confidence on the clean-SFT base?",
+      "registered": true,
+      "slug": "grpo-v3-proper-scoring-confidence",
+      "status": "historical",
+      "title": "Protocol Amendment J: Proper-Scoring (Brier) GRPO Reward for Response Confidence",
+      "type": "historical-amendment",
+      "verdict": "NEGATIVE — emitted confidence stayed collapsed (std 0.027, AUROC to appropriateness 0.522, ECE worse); only answered-known correct-vs-wrong AUROC moved 0.521 to 0.600."
+    },
+    {
+      "checkpoint": {
+        "repo": "",
+        "revision": ""
+      },
+      "created_at": "2026-07-08T17:40:52Z",
+      "falsifier": "",
+      "inputs": [],
+      "instrument": {
+        "configs": [],
+        "modules": [],
+        "pins": {}
+      },
+      "kg": [],
+      "legacy": {
+        "label": "AD",
+        "migrated_to": "experiments/inverted-injection-trained-checkpoints/AMENDMENT.md",
+        "path": "experiment/protocol/AMENDMENT-AD-inverted-injection-trained-checkpoints.md"
+      },
+      "migration": {
+        "needs_manual_review": [
+          "falsifier",
+          "experiment_type",
+          "instrument_configs",
+          "kg_ids"
+        ],
+        "notes": "Imported from legacy amendment prose. Do not infer missing machine fields without hand-reading AMENDMENT.md."
+      },
+      "prediction": "orchestrator:\n  call: no change (null result)\n  recorded: 2026-07-03\n  note: Joint prediction stated at drafting; doc predates the dual-prediction practice.\nuser:\n  call: no change (null result)\n  recorded: 2026-07-03\n  quote: We predict it will have NO change.",
+      "question": "Is the shut text channel bidirectional — does a pro-answer injection move an over-refusing trained checkpoint?",
+      "registered": true,
+      "slug": "inverted-injection-trained-checkpoints",
+      "status": "historical",
+      "title": "Amendment AD — Inverted (pro-answer) injection on abstention-trained checkpoints: is the shut text channel bidirectional?",
+      "type": "historical-amendment",
+      "verdict": "not launched (signed; preconditions open; shelved behind AC/AH)"
     },
     {
       "checkpoint": {
@@ -458,6 +1235,709 @@
       "status": "falsified",
       "type": "steer-cell",
       "verdict": "Exploratory falsification: the hs23 J-token hybrid wrote accurately and safely but improved clean_tighten by only +0.54pp over c_hat_only, below the pre-stated +4pp threshold."
+    },
+    {
+      "checkpoint": {
+        "repo": "",
+        "revision": ""
+      },
+      "created_at": "2026-07-08T17:40:52Z",
+      "falsifier": "",
+      "inputs": [],
+      "instrument": {
+        "configs": [],
+        "modules": [],
+        "pins": {}
+      },
+      "kg": [],
+      "legacy": {
+        "label": "AJ",
+        "migrated_to": "experiments/knowledge-subspace-erasure/AMENDMENT.md",
+        "path": "experiment/protocol/AMENDMENT-AJ-knowledge-subspace-erasure.md"
+      },
+      "migration": {
+        "needs_manual_review": [
+          "falsifier",
+          "experiment_type",
+          "instrument_configs",
+          "kg_ids"
+        ],
+        "notes": "Imported from legacy amendment prose. Do not infer missing machine fields without hand-reading AMENDMENT.md."
+      },
+      "prediction": "orchestrator:\n  call: SURVIVES (AJ-G2 PASS)\n  confidence: ~85%\n  recorded: 2026-07-04\n  basis: 'Three converging priors: B1 held rank-1 doubt projection at 0.825 held-out;\n    the session 0035 hydra result kept refuse/answer AUROC ~0.90 through 40 iterative\n    direction removals; and the paper3 Section 5 knowledge-orthogonality check found\n    |cos| ~ 0.04-0.09 between caution_perp and the knowledge probe axis. Residual\n    risk: LEACE''s whitened rank-1 erasure is strictly stronger than the raw mass-mean\n    projection those priors used.'\nuser:\n  call: SURVIVES (AJ-G2 PASS)\n  recorded: 2026-07-04\n  quote: AJ survived I agree worth being optimistic here.",
+      "question": "Does the caution readout (refuse vs answer among known questions) survive certified erasure of the full linearly readable knowledge/answerability content, or was its separability carried by that content all along?",
+      "registered": true,
+      "slug": "knowledge-subspace-erasure",
+      "status": "historical",
+      "title": "Amendment AJ — Knowledge-Subspace Erasure (rank-1 → certified linear erasure)",
+      "type": "historical-amendment",
+      "verdict": "SURVIVES (user-adjudicated 2026-07-04) — caution 0.858 post-erasure, knowledge carries a small quantified share (gap 0.054 +/- 0.006, sitting on the pre-stated 0.05 line per Addendum A1); strict AJ-G2 ambiguous, so the scoreboard scores TIE/TIE"
+    },
+    {
+      "checkpoint": {
+        "repo": "",
+        "revision": ""
+      },
+      "created_at": "2026-07-08T17:40:52Z",
+      "falsifier": "",
+      "inputs": [],
+      "instrument": {
+        "configs": [],
+        "modules": [],
+        "pins": {}
+      },
+      "kg": [],
+      "legacy": {
+        "label": "V",
+        "migrated_to": "experiments/natural-answer-generalization/AMENDMENT.md",
+        "path": "experiment/protocol/AMENDMENT-V-natural-answer-generalization.md"
+      },
+      "migration": {
+        "needs_manual_review": [
+          "falsifier",
+          "experiment_type",
+          "instrument_configs",
+          "kg_ids"
+        ],
+        "notes": "Imported from legacy amendment prose. Do not infer missing machine fields without hand-reading AMENDMENT.md."
+      },
+      "prediction": "orchestrator:\n  call: PASS; dial is a post-gen representation property independent of eliciting\n    prompt\nuser:\n  call: null\n  note: Predates the dual-prediction practice (adopted 2026-07-03 at AH signing);\n    no separately recorded user prediction.",
+      "question": "Does the forced-fit correctness dial transfer to the model's natural (un-forced) answers on the deployed checkpoint?",
+      "registered": true,
+      "slug": "natural-answer-generalization",
+      "status": "historical",
+      "title": "Amendment V — Natural-Answer Generalization of the Two-Signal Mechanism",
+      "type": "historical-amendment",
+      "verdict": "SHELVED — signed and gates locked but deferred unlaunched (data-starved under natural prompt; superseded by Amendment W's training-free reframe)."
+    },
+    {
+      "checkpoint": {
+        "repo": "",
+        "revision": ""
+      },
+      "created_at": "2026-07-08T17:40:52Z",
+      "falsifier": "",
+      "inputs": [],
+      "instrument": {
+        "configs": [],
+        "modules": [],
+        "pins": {}
+      },
+      "kg": [],
+      "legacy": {
+        "label": "AG",
+        "migrated_to": "experiments/oracle-dissociation-prime/AMENDMENT.md",
+        "path": "experiment/protocol/AMENDMENT-AG-oracle-dissociation-prime.md"
+      },
+      "migration": {
+        "needs_manual_review": [
+          "falsifier",
+          "experiment_type",
+          "instrument_configs",
+          "kg_ids"
+        ],
+        "notes": "Imported from legacy amendment prose. Do not infer missing machine fields without hand-reading AMENDMENT.md."
+      },
+      "prediction": "orchestrator:\n  call: null\n  note: Predates the dual-prediction practice (adopted 2026-07-03 at AH signing);\n    no separately recorded orchestrator prediction.\nuser:\n  call: compliance, not resonance\n  recorded: 2026-07-03\n  quote: my gut says that its probably pure behavior not internal alignment",
+      "question": "Does the second-person doubt prime move behavior by aligning the internal state (resonance) or by pure instruction compliance?",
+      "registered": true,
+      "slug": "oracle-dissociation-prime",
+      "status": "historical",
+      "title": "Amendment AG — Oracle Dissociation of the Second-Person Doubt Prime",
+      "type": "historical-amendment",
+      "verdict": "RESOLVED — ASYMMETRIC COMPLIANCE: muzzle obeyed +34.0pt, release resisted (+7.9pt below gate); doubt axis unmoved and anti-semantic; compliance travels through the caution axis."
+    },
+    {
+      "checkpoint": {
+        "repo": "",
+        "revision": ""
+      },
+      "created_at": "2026-07-08T17:40:52Z",
+      "falsifier": "",
+      "inputs": [],
+      "instrument": {
+        "configs": [],
+        "modules": [],
+        "pins": {}
+      },
+      "kg": [],
+      "legacy": {
+        "label": "R",
+        "migrated_to": "experiments/phase-b-joint-aux-head/AMENDMENT.md",
+        "path": "experiment/protocol/AMENDMENT-R-phase-b-joint-aux-head.md"
+      },
+      "migration": {
+        "needs_manual_review": [
+          "falsifier",
+          "experiment_type",
+          "instrument_configs",
+          "kg_ids"
+        ],
+        "notes": "Imported from legacy amendment prose. Do not infer missing machine fields without hand-reading AMENDMENT.md."
+      },
+      "prediction": "orchestrator:\n  call: partial/likely-negative; head stays calibrated, emitted scalar barely moves\nuser:\n  call: null\n  note: Predates the dual-prediction practice (adopted 2026-07-03 at AH signing);\n    no separately recorded user prediction.",
+      "question": "Does jointly co-training the aux_head into an unfrozen base change the model's OWN emitted calibration/abstention behavior?",
+      "registered": true,
+      "slug": "phase-b-joint-aux-head",
+      "status": "historical",
+      "title": "Amendment R — Phase B: Joint Co-Training of the aux_head (Native Behavior Change)",
+      "type": "historical-amendment",
+      "verdict": "FALSIFIED — A1-A2 +0.043 below the +0.05 bar and A1 below A0; co-training shifts the action policy, not the emitted channel."
+    },
+    {
+      "checkpoint": {
+        "repo": "",
+        "revision": ""
+      },
+      "created_at": "2026-07-08T17:40:52Z",
+      "falsifier": "",
+      "inputs": [],
+      "instrument": {
+        "configs": [],
+        "modules": [],
+        "pins": {}
+      },
+      "kg": [],
+      "legacy": {
+        "label": "Y",
+        "migrated_to": "experiments/pretrain-only-base-readout/AMENDMENT.md",
+        "path": "experiment/protocol/AMENDMENT-Y-pretrain-only-base-readout.md"
+      },
+      "migration": {
+        "needs_manual_review": [
+          "falsifier",
+          "experiment_type",
+          "instrument_configs",
+          "kg_ids"
+        ],
+        "notes": "Imported from legacy amendment prose. Do not infer missing machine fields without hand-reading AMENDMENT.md."
+      },
+      "prediction": "orchestrator:\n  call: pretraining-origin supported; base gate near-ceiling, veto present pre-post-training\nuser:\n  call: null\n  note: Predates the dual-prediction practice (adopted 2026-07-03 at AH signing);\n    no separately recorded user prediction.",
+      "question": "Does the knowledge-boundary signal predate post-training, i.e. is it present on pretrain-only base models, not just instruct checkpoints?",
+      "registered": true,
+      "slug": "pretrain-only-base-readout",
+      "status": "historical",
+      "title": "Protocol Amendment Y: Pretrain-Only Base-Model Readout (Era / Origin Test)",
+      "type": "historical-amendment",
+      "verdict": "COMPLETE — H_B1 SUPPORTED 4/4 (boundary signal predates post-training); H_B2 veto SUPPORTED 4/4; H_B3 sharpening NOT SUPPORTED (post-training does not sharpen, can dull the readout)."
+    },
+    {
+      "checkpoint": {
+        "repo": "",
+        "revision": ""
+      },
+      "created_at": "2026-07-08T17:40:52Z",
+      "falsifier": "",
+      "inputs": [],
+      "instrument": {
+        "configs": [],
+        "modules": [],
+        "pins": {}
+      },
+      "kg": [],
+      "legacy": {
+        "label": "O",
+        "migrated_to": "experiments/probe-as-oracle-readout-ceiling/AMENDMENT.md",
+        "path": "experiment/protocol/AMENDMENT-O-probe-as-oracle-readout-ceiling.md"
+      },
+      "migration": {
+        "needs_manual_review": [
+          "falsifier",
+          "experiment_type",
+          "instrument_configs",
+          "kg_ids"
+        ],
+        "notes": "Imported from legacy amendment prose. Do not infer missing machine fields without hand-reading AMENDMENT.md."
+      },
+      "prediction": "orchestrator:\n  call: probe-readout oracle clears both gates (readout ceiling exists)\nuser:\n  call: null\n  note: Predates the dual-prediction practice (adopted 2026-07-03 at AH signing);\n    no separately recorded user prediction.",
+      "question": "Does driving both decision channels from the linear probe readout clear both gates on SelfAware, proving a latent passing policy?",
+      "registered": true,
+      "slug": "probe-as-oracle-readout-ceiling",
+      "status": "historical",
+      "title": "Amendment O — Probe-as-Oracle Readout-Ceiling Test",
+      "type": "historical-amendment",
+      "verdict": "SUCCESS — all 7 gates pass; probe-to-appropriateness AUROC 0.9967, action margin +95pt (no trained arm reached it); non-circular correctness AUROC only 0.640. In-distribution CV, single seed."
+    },
+    {
+      "checkpoint": {
+        "repo": "",
+        "revision": ""
+      },
+      "created_at": "2026-07-08T17:40:52Z",
+      "falsifier": "",
+      "inputs": [],
+      "instrument": {
+        "configs": [],
+        "modules": [],
+        "pins": {}
+      },
+      "kg": [],
+      "legacy": {
+        "label": "AI",
+        "migrated_to": "experiments/probe-as-reward/AMENDMENT.md",
+        "path": "experiment/protocol/AMENDMENT-AI-probe-as-reward.md"
+      },
+      "migration": {
+        "needs_manual_review": [
+          "falsifier",
+          "experiment_type",
+          "instrument_configs",
+          "kg_ids"
+        ],
+        "notes": "Imported from legacy amendment prose. Do not infer missing machine fields without hand-reading AMENDMENT.md."
+      },
+      "prediction": "orchestrator:\n  call: TRUE wins\n  confidence: ~65%\n  recorded: 2026-07-03\n  basis: AC showed the first use-the-signal win when the coupling was wired externally\n    (+8.7pt over permuted); GRPO-v2's stuck quadrant is over-refusal at 77% occupancy,\n    which the agreement reward directly prices; but the N/M history (scalar collapses\n    onto the action) keeps confidence moderate — the reward channel may reproduce\n    the collapse.\nuser:\n  call: TRUE wins\n  recorded: 2026-07-03\n  quote: 'Pre-authorize: I predict TRUE wins (recorded pre-launch via the overnight\n    authorization; launch conditional on smoke green + refit sensor AUROC >= 0.9 +\n    constants derived per the pre-stated rules).'",
+      "question": "Does GRPO with a probe-agreement reward (read from the policy's own pre-generation states by a sensor refit on the training-start checkpoint) beat the same reward computed from a permuted sensor on the AH congruence eval — i.e., can the model be trained to consult its own readout?",
+      "registered": true,
+      "slug": "probe-as-reward",
+      "status": "historical",
+      "title": "Amendment AI — Probe-as-Reward (PAR): training the model to consult its own readout",
+      "type": "historical-amendment",
+      "verdict": "NULL (G1 fail, G0 pass) — adjudicated by the user 2026-07-05. The reward channel also does not couple the readout: TRUE-arm congruence 59.75% vs PERMUTED 76.75%, differential −17.0pt (10k paired bootstrap CI [−21.5, −12.5], excludes 0 on the wrong side; gate needed ≥ +10pt). Instrument valid (fresh per-arm probes OOF AUROC 0.9948/0.9946, both arms full 2934 steps, no halts). G2 fails for both arms (over-refusal released; abstain-when-unanswerable preserved at +0.49pt). Strengthens H-compliance generality across channels (M, N, R, AA/AB text, AI reward)."
+    },
+    {
+      "checkpoint": {
+        "repo": "",
+        "revision": ""
+      },
+      "created_at": "2026-07-08T17:40:52Z",
+      "falsifier": "",
+      "inputs": [],
+      "instrument": {
+        "configs": [],
+        "modules": [],
+        "pins": {}
+      },
+      "kg": [],
+      "legacy": {
+        "label": "E",
+        "migrated_to": "experiments/probe-scaled-response-confidence/AMENDMENT.md",
+        "path": "experiment/protocol/AMENDMENT-E-probe-scaled-response-confidence.md"
+      },
+      "migration": {
+        "needs_manual_review": [
+          "falsifier",
+          "experiment_type",
+          "instrument_configs",
+          "kg_ids"
+        ],
+        "notes": "Imported from legacy amendment prose. Do not infer missing machine fields without hand-reading AMENDMENT.md."
+      },
+      "prediction": "orchestrator:\n  call: probe-scaled targets should produce usable non-collapsed scalar movement\nuser:\n  call: null\n  note: Predates the dual-prediction practice (adopted 2026-07-03 at AH signing);\n    no separately recorded user prediction.",
+      "question": "Do probe-derived (32-sample p_correct) response-confidence targets fix the Amendment D scalar collapse and produce calibrated scalar movement?",
+      "registered": true,
+      "slug": "probe-scaled-response-confidence",
+      "status": "historical",
+      "title": "Protocol Amendment E: Probe-Scaled Response Confidence Targets",
+      "type": "historical-amendment",
+      "verdict": "DRAFT / NOT SIGNED; probe scaling alone insufficient (scalar still collapsed, target-imbalance failure), v3 clean-SFT mainline reserved for later contrast."
+    },
+    {
+      "checkpoint": {
+        "repo": "",
+        "revision": ""
+      },
+      "created_at": "2026-07-08T17:40:52Z",
+      "falsifier": "",
+      "inputs": [],
+      "instrument": {
+        "configs": [],
+        "modules": [],
+        "pins": {}
+      },
+      "kg": [],
+      "legacy": {
+        "label": "M",
+        "migrated_to": "experiments/quantile-balanced-probe-distilled-sft/AMENDMENT.md",
+        "path": "experiment/protocol/AMENDMENT-M-quantile-balanced-probe-distilled-sft.md"
+      },
+      "migration": {
+        "needs_manual_review": [
+          "falsifier",
+          "experiment_type",
+          "instrument_configs",
+          "kg_ids"
+        ],
+        "notes": "Imported from legacy amendment prose. Do not infer missing machine fields without hand-reading AMENDMENT.md."
+      },
+      "prediction": "orchestrator:\n  call: direct factual target installs discrimination, keeps behavior\nuser:\n  call: null\n  note: Predates the dual-prediction practice (adopted 2026-07-03 at AH signing);\n    no separately recorded user prediction.",
+      "question": "Can distilling the calibrated internal factual/doubt axis into the SFT stated-confidence token install calibration while preserving behavior?",
+      "registered": true,
+      "slug": "quantile-balanced-probe-distilled-sft",
+      "status": "historical",
+      "title": "Protocol Amendment M: Quantile-Balanced Probe-Distilled Stated Confidence (SFT)",
+      "type": "historical-amendment",
+      "verdict": "FALSIFIER FIRED — behavior PASSED 4/4 (action margin +31pt) but calibration failed (correctness AUROC 0.504, 3 distinct values); scalar collapsed onto the action; bottleneck is channel/loss, not target."
+    },
+    {
+      "checkpoint": {
+        "repo": "",
+        "revision": ""
+      },
+      "created_at": "2026-07-08T17:40:52Z",
+      "falsifier": "",
+      "inputs": [],
+      "instrument": {
+        "configs": [],
+        "modules": [],
+        "pins": {}
+      },
+      "kg": [],
+      "legacy": {
+        "label": "AL",
+        "migrated_to": "experiments/radial-anti-propensity-steering/AMENDMENT.md",
+        "path": "experiment/protocol/AMENDMENT-AL-radial-anti-propensity-steering.md"
+      },
+      "migration": {
+        "needs_manual_review": [
+          "falsifier",
+          "experiment_type",
+          "instrument_configs",
+          "kg_ids"
+        ],
+        "notes": "Imported from legacy amendment prose. Do not infer missing machine fields without hand-reading AMENDMENT.md."
+      },
+      "prediction": "orchestrator:\n  calls:\n    AL-G1: PASS (~75%)\n    AL-G2: PASS (~45%)\n    AL-G3: PASS (~50%)\n  recorded: 2026-07-05\n  basis: 'The scope check says the direction is anti-aligned with the answer-vs-refuse\n    axis, so collateral should stay low even if the push does nothing useful (G1 easy).\n    Actuation is the real bet: five use-the-signal channels failed, but those asked\n    the model to CONSULT its readout; direct activation injection has better precedent\n    (AG muzzle +34pt moved behavior through the caution axis, AC external coupling\n    +8.7pt). Against that, the propensity direction is caution-residualized by construction,\n    so its behavioral lever is unproven and the sim kill models assume what G2 tests.'\nuser:\n  calls:\n    AL-G1: PASS\n    AL-G2: PASS\n    AL-G3: PASS\n  recorded: 2026-07-05\n  quote: All three gates called PASS at signing (\"Sign and launch\"), followed by \"LETS\n    BE BOLD!\" - the user takes the actuation bet at full confidence where the orchestrator\n    sits at 45-50% on G2/G3.",
+      "question": "Does pushing against the confabulation-propensity direction at generation time causally convert residual confabulations into refusals on the AI-TRUE checkpoint, at the low collateral the ceiling simulations predict, or is the propensity readout one more correlate that does not actuate?",
+      "registered": true,
+      "slug": "radial-anti-propensity-steering",
+      "status": "historical",
+      "title": "Amendment AL — Radial anti-propensity steering on the AI-TRUE checkpoint",
+      "type": "historical-amendment",
+      "verdict": "USE-THE-SIGNAL NULL (injection channel), resolved 2026-07-05. AL-G1 PASS (collateral 0 of allowed 3). AL-G2 MISS (0 of 116 baseline confabs killed; dose ladder 0.5x/1.0x/2.0x kills 0/0/1 of 30 pushed confabs). AL-G3 MISS (primary minus control kill diff 0, bootstrap 95% CI [0.00, 0.00]). The null is causal, not instrumental: smoke readback shows the pushed-anchor propensity projection moved -2.7133 vs commanded -2.7110 (ratio 1.0008), unpushed shift exactly 0.0000, and all 1,564 unpushed rows reproduce the baseline grade (1564/1564 parity). The direction moves the internal readout by the commanded amount but does not actuate the fabricate-vs-refuse choice. Sixth use-the-signal null; first in the activation-injection channel. Grading commits fa82c629 / 7b4be949 / e9141fff."
+    },
+    {
+      "checkpoint": {
+        "repo": "",
+        "revision": ""
+      },
+      "created_at": "2026-07-08T17:40:52Z",
+      "falsifier": "",
+      "inputs": [],
+      "instrument": {
+        "configs": [],
+        "modules": [],
+        "pins": {}
+      },
+      "kg": [],
+      "legacy": {
+        "label": "AM",
+        "migrated_to": "experiments/residual-catch-veto-coverage/AMENDMENT.md",
+        "path": "experiment/protocol/AMENDMENT-AM-residual-catch-veto-coverage.md"
+      },
+      "migration": {
+        "needs_manual_review": [
+          "falsifier",
+          "experiment_type",
+          "instrument_configs",
+          "kg_ids"
+        ],
+        "notes": "Imported from legacy amendment prose. Do not infer missing machine fields without hand-reading AMENDMENT.md."
+      },
+      "prediction": "orchestrator:\n  calls:\n    AM-G1: PASS (~70%)\n    AM-G2: PASS (~60%)\n  recorded: 2026-07-05\n  basis: The veto reads post-generation content and the residual confabs are answered\n    fabrications, so the content signal the S/W/U veto keys on should be present regardless\n    of why the pre-gen gate missed the question (the gate reads pre-generation answerability;\n    the veto reads the emitted answer, a different object). The raw-base transfer\n    AUROC is 0.768 on the full W population and a same-surface refit should meet or\n    beat that, so an AUROC floor of 0.62 has real headroom (AM-G1 ~70%). The bet that\n    is genuinely open is whether the ambiguous-flavor residual specifically still\n    reads low-trust; ambiguous questions may produce plausible-sounding confabs whose\n    content looks answerable, which is the exact failure mode that could pull AM-G2\n    down (only ~60%). The whole point of the residual is that it is the hard tail\n    the pre-gen controller could not carve out.\nuser:\n  calls:\n    AM-G1: PASS\n    AM-G2: PASS\n  recorded: 2026-07-05\n  basis: The user confirmed all four drafted design choices as-is (derived gates AUROC\n    0.62 / bootstrap CI-LB 0.55 / permutation p 0.01, the deterministic 43-row gate-miss\n    residual, the correct-answerable-only good class, and Modal-only at the $5 cap\n    with regeneration plus the batch-12 numerics smoke) and called both gates PASS,\n    taking the coverage bet at full confidence where the orchestrator sits at 70/60.",
+      "question": "Of the residual confabulations the pre-generation radial controller cannot reach (the gate-miss set the answerability gate misreads as answerable, 43 rows on the A0 raw-base surface, ambiguous-flavor concentrated), does a post-generation correctness veto refit on the A0 generation surface separate those residual confabs from good answers, or is the veto blind exactly where the pre-gen gate is blind?",
+      "registered": true,
+      "slug": "residual-catch-veto-coverage",
+      "status": "historical",
+      "title": "Amendment AM: Post-generation veto coverage of the radial-unreachable residual confabs",
+      "type": "historical-amendment",
+      "verdict": "AM-G1 PASS (OOF veto AUROC 0.9168, CI [0.854, 0.963]) and AM-G2 PASS (permutation p=0.001) as literally pre-registered. BUT an adversarial audit before recording found the residual-vs-good separation is dominated by an UNDISCLOSED answer-length confound (answer length alone separates at AUROC 0.943, higher than the veto's 0.917; the veto reads the hidden state at content_end, whose position encodes length). The suspected score_L24-selection circularity was refuted (full-pop AUROC 0.916 == residual 0.917). Gates pass; the mechanistic two-signal-coverage claim is NOT established, because the catch is length-driven not content-driven. Honest non-length content signal ~0.77 (broader hallucination population, length-matched). Tier-A exploratory, single seed, never pooled with the locked matrix or PR #205. See section 9."
+    },
+    {
+      "checkpoint": {
+        "repo": "",
+        "revision": ""
+      },
+      "created_at": "2026-07-08T17:40:52Z",
+      "falsifier": "",
+      "inputs": [],
+      "instrument": {
+        "configs": [],
+        "modules": [],
+        "pins": {}
+      },
+      "kg": [],
+      "legacy": {
+        "label": "SR",
+        "migrated_to": "experiments/sampled-decode-seed-robustness/AMENDMENT.md",
+        "path": "experiment/protocol/AMENDMENT-SR-sampled-decode-seed-robustness.md"
+      },
+      "migration": {
+        "needs_manual_review": [
+          "falsifier",
+          "experiment_type",
+          "instrument_configs",
+          "kg_ids"
+        ],
+        "notes": "Imported from legacy amendment prose. Do not infer missing machine fields without hand-reading AMENDMENT.md."
+      },
+      "prediction": "orchestrator:\n  call: dial and veto seed-stable; Z SUCCESS verdict (veto >=3/4) holds every seed\nuser:\n  call: null\n  note: Predates the dual-prediction practice (adopted 2026-07-03 at AH signing);\n    no separately recorded user prediction.",
+      "question": "Are the Z dial and veto magnitudes seed-robust under sampled decoding, or was the single greedy decode a lucky draw?",
+      "registered": true,
+      "slug": "sampled-decode-seed-robustness",
+      "status": "historical",
+      "title": "Amendment SR — Sampled-decode seed-robustness of the training-free two-signal readout",
+      "type": "historical-amendment",
+      "verdict": "COMPLETE — SUCCESS; dial seed-stable 4/4, veto seed-stable 4/4, per-seed majority >=3/4 every seed; greedy misses were decode artifacts (understated the veto), Z magnitudes promoted to seed-robust."
+    },
+    {
+      "checkpoint": {
+        "repo": "",
+        "revision": ""
+      },
+      "created_at": "2026-07-08T17:40:52Z",
+      "falsifier": "",
+      "inputs": [],
+      "instrument": {
+        "configs": [],
+        "modules": [],
+        "pins": {}
+      },
+      "kg": [],
+      "legacy": {
+        "label": "D",
+        "migrated_to": "experiments/schema-response-confidence/AMENDMENT.md",
+        "path": "experiment/protocol/AMENDMENT-D-schema-response-confidence.md"
+      },
+      "migration": {
+        "needs_manual_review": [
+          "falsifier",
+          "experiment_type",
+          "instrument_configs",
+          "kg_ids"
+        ],
+        "notes": "Imported from legacy amendment prose. Do not infer missing machine fields without hand-reading AMENDMENT.md."
+      },
+      "prediction": "orchestrator:\n  call: schema-trained non-endpoint response_confidence with ambiguous-middle signal\nuser:\n  call: null\n  note: Predates the dual-prediction practice (adopted 2026-07-03 at AH signing);\n    no separately recorded user prediction.",
+      "question": "Can SFT, preference training, and GRPO all learn a schema-trained answer + response_confidence contract with an ambiguous-middle signal?",
+      "registered": true,
+      "slug": "schema-response-confidence",
+      "status": "historical",
+      "title": "Protocol Amendment D: Schema-Trained Response Confidence",
+      "type": "historical-amendment",
+      "verdict": "DRAFT / NOT SIGNED; defines the corrective schema track, superseded by Amendment E after constant-target scalar collapse."
+    },
+    {
+      "checkpoint": {
+        "repo": "",
+        "revision": ""
+      },
+      "created_at": "2026-07-08T17:40:52Z",
+      "falsifier": "",
+      "inputs": [],
+      "instrument": {
+        "configs": [],
+        "modules": [],
+        "pins": {}
+      },
+      "kg": [],
+      "legacy": {
+        "label": "AF",
+        "migrated_to": "experiments/second-person-doubt-prime/AMENDMENT.md",
+        "path": "experiment/protocol/AMENDMENT-AF-second-person-doubt-prime.md"
+      },
+      "migration": {
+        "needs_manual_review": [
+          "falsifier",
+          "experiment_type",
+          "instrument_configs",
+          "kg_ids"
+        ],
+        "notes": "Imported from legacy amendment prose. Do not infer missing machine fields without hand-reading AMENDMENT.md."
+      },
+      "prediction": "orchestrator:\n  call: small positive or null; base not RLHF-tuned to over-index system authority\nuser:\n  call: null\n  note: Predates the dual-prediction practice (adopted 2026-07-03 at AH signing);\n    no separately recorded user prediction.",
+      "question": "Does a high-authority second-person system-prompt doubt directive actuate the read-out where within-generation text channels (AA/AB) could not?",
+      "registered": true,
+      "slug": "second-person-doubt-prime",
+      "status": "historical",
+      "title": "Amendment AF — Second-Person Doubt Prime (the system-prompt instruction channel)",
+      "type": "historical-amendment",
+      "verdict": "RESOLVED — AF-G1 PASS (channel-authority): system-prompt prime +18.0pt over placebo, CI [+11.8,+24.7]; localizes AA/AB nulls to channel authority; own-read-out attribution NOT established (probe coincides with gold 600/600)."
+    },
+    {
+      "checkpoint": {
+        "repo": "",
+        "revision": ""
+      },
+      "created_at": "2026-07-08T17:40:52Z",
+      "falsifier": "",
+      "inputs": [],
+      "instrument": {
+        "configs": [],
+        "modules": [],
+        "pins": {}
+      },
+      "kg": [],
+      "legacy": {
+        "label": "AN",
+        "migrated_to": "experiments/selected-setpoint-regulator/AMENDMENT.md",
+        "path": "experiment/protocol/AMENDMENT-AN-selected-setpoint-regulator.md"
+      },
+      "migration": {
+        "needs_manual_review": [
+          "falsifier",
+          "experiment_type",
+          "instrument_configs",
+          "kg_ids"
+        ],
+        "notes": "Imported from legacy amendment prose. Do not infer missing machine fields without hand-reading AMENDMENT.md."
+      },
+      "prediction": "orchestrator:\n  calls:\n    AN-G1: PASS (~70%)\n    AN-G2: PASS (~40%)\n    AN-G3: PASS (~40%)\n  recorded: 2026-07-05\n  basis: 'G1 leans PASS because AC''s only direct evidence on answering rows is 0/7\n    flips under positive gain (answers resist) and just 4 corrects are exposed. G2/G3\n    sit under 50% for the same reason inverted: AN''s central bet is that the caution\n    setpoint can flip ENTRENCHED answering rows (the residual confabs), and the 0.16\n    compliance feeding the G2 floor was measured as refusal RESTORATION (coupled vs\n    ablate), not as flipping established answers; if true flip compliance is half\n    the estimate, expected kills fall to ~3.8 versus a floor of 5. G3 mostly rides\n    G2: any kills that do happen should be selective.'\nuser:\n  calls:\n    AN-G1: PASS\n    AN-G2: PASS\n    AN-G3: PASS\n  recorded: 2026-07-05\n  quote: '\"I agree on all passing\" - all three gates called PASS, taking the actuation\n    bet at full confidence again where the orchestrator sits at 40% on G2/G3 (same\n    disagreement shape as AL, opposite mechanism: there the user bet on a new knob;\n    here the bet is the proven knob reaching a new population).'",
+      "question": "Does propensity-SELECTED, caution-ACTUATED regulation convert residual confabulations into refusals at low collateral on the AI-TRUE checkpoint, i.e. does writing the caution setpoint UP (AC's proven knob) on rows flagged by the confabulation-propensity readout (AL's proven sensor) reach the confab cloud where pushing along the propensity direction itself (AL) did nothing?",
+      "registered": true,
+      "slug": "selected-setpoint-regulator",
+      "status": "historical",
+      "title": "Amendment AN - Selected-setpoint regulator on the AI-TRUE checkpoint",
+      "type": "historical-amendment",
+      "verdict": "NULL (falsifier fired), resolved 2026-07-06. AN-G1 PASS (collateral 0 of allowed 2) but VACUOUS: zero effect on the write means zero collateral by construction, not a real honesty guarantee, since the corrects it was guarding were never actually at risk. AN-G2 MISS (0 of 116 baseline confabs killed against a floor of 5; descriptive dose ladder g=+1/+2/+3 kills 0/0/0 of the 47 flagged confabs). AN-G3 MISS (primary-minus-control kill diff 0, 1,000-resample row bootstrap 95% CI [0.0, 0.0] against a floor of 5 with CI excluding zero). Primary arm: 244 flagged rows (47 confabs, 4 corrects, 11 wrong, 18 answerable-refused, 164 unanswerable-refused); all 47 flagged confabs land in confab_to_different_confab, never a refusal. Descriptive bidirectional arm: the same actuator at g=-2 de-refuses 0 of 114 baseline answerable-refused rows. Smoke readback confirms the write lands precisely on-axis (mean observed setpoint 43.98 vs commanded 44.26, max abs error 0.58 against sigma 22.13; unflagged rows show zero shift), ruling out an injection-fidelity failure. caution_perp, reached this precisely on propensity-flagged rows, did not convert any flagged confabulation to a refusal. This null is CONFOUNDED and must be read as such: the actuator direction was the caution_perp REFIT on the AI-TRUE checkpoint, which has cosine -0.064 with AC's validated GRPO-v2 direction (essentially orthogonal), and it was never independently shown to be a behavioral lever on this checkpoint. AC's win validates AC's direction; it does not transfer to AN's refit direction, and the section 6 positive-control screen that would have validated it was deferred, not run. AN therefore cannot distinguish \"the caution axis cannot suppress confabulation\" from \"this refit direction is a dead actuator.\" Do NOT read AN as evidence for any input-side-vs-write-side rule: AC is itself a WRITE-side erase-write on caution_perp and it PASSED (+8.7pt), so write-side activation edits are not uniformly null. The honest open question AN leaves is whether a caution actuator validated as a lever on this checkpoint, coupled to the confab-propensity readout the way AC coupled the doubt readout, can regulate confabulation."
+    },
+    {
+      "checkpoint": {
+        "repo": "",
+        "revision": ""
+      },
+      "created_at": "2026-07-08T17:40:52Z",
+      "falsifier": "",
+      "inputs": [],
+      "instrument": {
+        "configs": [],
+        "modules": [],
+        "pins": {}
+      },
+      "kg": [],
+      "legacy": {
+        "label": "B",
+        "migrated_to": "experiments/stated-confidence-grpo/AMENDMENT.md",
+        "path": "experiment/protocol/AMENDMENT-B-stated-confidence-grpo.md"
+      },
+      "migration": {
+        "needs_manual_review": [
+          "falsifier",
+          "experiment_type",
+          "instrument_configs",
+          "kg_ids"
+        ],
+        "notes": "Imported from legacy amendment prose. Do not infer missing machine fields without hand-reading AMENDMENT.md."
+      },
+      "prediction": "orchestrator:\n  call: stated-confidence measurement layer plus prospective calibration reward\nuser:\n  call: null\n  note: Predates the dual-prediction practice (adopted 2026-07-03 at AH signing);\n    no separately recorded user prediction.",
+      "question": "Does a model's stated confidence track its known/unknown boundary and the correctness of its answer, and can GRPO reward calibration?",
+      "registered": true,
+      "slug": "stated-confidence-grpo",
+      "status": "historical",
+      "title": "Protocol Amendment B: Stated Confidence and GRPO Calibration Reward",
+      "type": "historical-amendment",
+      "verdict": "SIGNED OFF for stated-confidence measurement and reporting; GRPO/RLVR authorization prospective only, requires separate launch decision."
+    },
+    {
+      "checkpoint": {
+        "repo": "",
+        "revision": ""
+      },
+      "created_at": "2026-07-08T17:40:52Z",
+      "falsifier": "",
+      "inputs": [],
+      "instrument": {
+        "configs": [],
+        "modules": [],
+        "pins": {}
+      },
+      "kg": [],
+      "legacy": {
+        "label": "H",
+        "migrated_to": "experiments/thinking-enabled-parallel-arm/AMENDMENT.md",
+        "path": "experiment/protocol/AMENDMENT-H-thinking-enabled-parallel-arm.md"
+      },
+      "migration": {
+        "needs_manual_review": [
+          "falsifier",
+          "experiment_type",
+          "instrument_configs",
+          "kg_ids"
+        ],
+        "notes": "Imported from legacy amendment prose. Do not infer missing machine fields without hand-reading AMENDMENT.md."
+      },
+      "prediction": "orchestrator:\n  call: thinking perturbs the boundary enough to justify a parallel arm\nuser:\n  call: null\n  note: Predates the dual-prediction practice (adopted 2026-07-03 at AH signing);\n    no separately recorded user prediction.",
+      "question": "Does Qwen3 thinking mode change the observable knowledge boundary enough to warrant a parallel thinking-derived training/eval branch?",
+      "registered": true,
+      "slug": "thinking-enabled-parallel-arm",
+      "status": "historical",
+      "title": "Protocol Amendment H: Thinking-Enabled Parallel Arm",
+      "type": "historical-amendment",
+      "verdict": "DRAFT / NOT SIGNED; bounded audit showed real perturbation, enough to define a parallel arm but not to overwrite non-thinking evidence."
+    },
+    {
+      "checkpoint": {
+        "repo": "",
+        "revision": ""
+      },
+      "created_at": "2026-07-08T17:40:52Z",
+      "falsifier": "",
+      "inputs": [],
+      "instrument": {
+        "configs": [],
+        "modules": [],
+        "pins": {}
+      },
+      "kg": [],
+      "legacy": {
+        "label": "U",
+        "migrated_to": "experiments/unified-two-signal-dial-veto/AMENDMENT.md",
+        "path": "experiment/protocol/AMENDMENT-U-unified-two-signal-dial-veto.md"
+      },
+      "migration": {
+        "needs_manual_review": [
+          "falsifier",
+          "experiment_type",
+          "instrument_configs",
+          "kg_ids"
+        ],
+        "notes": "Imported from legacy amendment prose. Do not infer missing machine fields without hand-reading AMENDMENT.md."
+      },
+      "prediction": "orchestrator:\n  call: PASS in 0.65-0.85 band; risk falsifier fires on confident confabulation\nuser:\n  call: null\n  note: Predates the dual-prediction practice (adopted 2026-07-03 at AH signing);\n    no separately recorded user prediction.",
+      "question": "Does the correctness dial flag hallucinated answers to unanswerable questions as low-trust (independent hallucination defense)?",
+      "registered": true,
+      "slug": "unified-two-signal-dial-veto",
+      "status": "historical",
+      "title": "Amendment U — Unified Single-Stream Two-Signal Mechanism (Dial-Veto on Unknowns)",
+      "type": "historical-amendment",
+      "verdict": "SUCCESS — dial flags hallucinations as lowest-trust of all (U-G3 AUROC 0.980, within-SelfAware control 0.93); confident confabulation reads opposite to correctness."
+    },
+    {
+      "checkpoint": {
+        "repo": "",
+        "revision": ""
+      },
+      "created_at": "2026-07-08T17:40:52Z",
+      "falsifier": "",
+      "inputs": [],
+      "instrument": {
+        "configs": [],
+        "modules": [],
+        "pins": {}
+      },
+      "kg": [],
+      "legacy": {
+        "label": "P",
+        "migrated_to": "experiments/xdataset-probe-transfer/AMENDMENT.md",
+        "path": "experiment/protocol/AMENDMENT-P-xdataset-probe-transfer.md"
+      },
+      "migration": {
+        "needs_manual_review": [
+          "falsifier",
+          "experiment_type",
+          "instrument_configs",
+          "kg_ids"
+        ],
+        "notes": "Imported from legacy amendment prose. Do not infer missing machine fields without hand-reading AMENDMENT.md."
+      },
+      "prediction": "orchestrator:\n  call: partial transfer, AUROC 0.80-0.92, margin +40-75pt\nuser:\n  call: null\n  note: Predates the dual-prediction practice (adopted 2026-07-03 at AH signing);\n    no separately recorded user prediction.",
+      "question": "Does an answerability probe fit on KUQ transfer cold to SelfAware, showing Amendment O's ceiling is not an in-distribution-CV artifact?",
+      "registered": true,
+      "slug": "xdataset-probe-transfer",
+      "status": "historical",
+      "title": "Amendment P — Cross-Dataset Answerability-Probe Transfer Test",
+      "type": "historical-amendment",
+      "verdict": "SUCCESS — cold transfer AUROC 0.9834 (near in-distribution ceiling), action margin +89.6pt; beat the pre-stated partial-transfer call. Axis not dataset-specific; still not correctness-ranking."
     }
   ]
 }

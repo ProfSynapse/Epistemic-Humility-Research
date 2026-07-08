@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Amendment AM - build the self-contained A0-surface pool for the Modal harness (CPU).
 
-Pre-registered: experiment/protocol/AMENDMENT-AM-residual-catch-veto-coverage.md.
+Pre-registered: experiments/residual-catch-veto-coverage/AMENDMENT.md.
 
 The Modal container regenerates the A0 question pool on the raw base and extracts
 dual-position hidden states, then grades answerable rows. The inputs it needs

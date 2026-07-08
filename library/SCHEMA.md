@@ -33,7 +33,7 @@ is `namespace:slug` and survives renames.
 | Term of art | `term` | `term:knowledge-boundary` | `library/concepts/terms/` |
 | Mechanism (cause -> effect) | `mechanism` | `mechanism:ft-unknown-facts-drives-hallucination` | `library/concepts/mechanisms/` |
 | Gap (verified literature absence) | `gap` | `gap:4-probe-transfer` | `library/concepts/gaps/` |
-| Experiment (note) | `experiment` | `experiment:gradient-probe-coherence` | `experiment/notes/` |
+| Experiment (note) | `experiment` | `experiment:gradient-probe-coherence` | `notes/experiments/` |
 
 Atoms are atomic: one concept per file, reused by many papers. A paper note
 *references* atoms through edges; it does not redefine them.
@@ -41,7 +41,7 @@ Atoms are atomic: one concept per file, reused by many papers. A paper note
 Gaps and experiments are graph nodes too: a gap is a verified absence drawn from
 the meta-analysis, and an experiment note `tests` a gap (or mechanism) and
 `builds_on` the papers it draws from. Experiment notes live under
-`experiment/notes/` (outside `library/`), so validation must include both trees
+`notes/experiments/` (outside `library/`), so validation must include both trees
 (see Tooling).
 
 ## Edge vocabulary (research overlay)
@@ -91,9 +91,9 @@ python3 .agents/skills/knowledge-graph/scripts/analyze_kg.py  --root library
 python3 .agents/skills/knowledge-graph/scripts/export_kg.py   --root library --format csv --output /tmp/eh-kg.csv
 # validate library AND experiment notes (experiment/ lives outside library/, so
 # pass both trees as positional paths)
-python3 .agents/skills/knowledge-graph/scripts/validate_kg_relationships.py library experiment/notes
+python3 .agents/skills/knowledge-graph/scripts/validate_kg_relationships.py library notes/experiments
 ```
 
 New papers are folded in with the `kg-ingest` skill, which emits this exact
 shape. The map of all atoms is `library/concepts/README.md`; experiment notes are
-indexed in `experiment/notes/README.md`.
+indexed in `notes/experiments/README.md`.

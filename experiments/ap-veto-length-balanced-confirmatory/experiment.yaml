@@ -25,10 +25,10 @@ instrument:
   - ap_grade_and_gates.py
   - cloud/modal_ap_veto_length_balanced.py
   pins:
-    ap_build_pool.py: f77112529bf3d8241468813fc35b5ea6aae14cb62591408c5fb22a7e39de5e5b
-    ap_extract.py: fdac4a6c8280b5c2cb7c2ec5ce944bf2b00e0d3ad2bcf01611d32b221ab1bbfe
-    ap_grade_and_gates.py: 60477c817327f83c9c5b7fa90aacd91e0e04d3a6b0d47f3cc6ee12d550af2269
-    cloud/modal_ap_veto_length_balanced.py: 6bfb6d01e73bfb5fec8ae127d1272629e9620412aba820ff71f09eaae99ba5d5
+    ap_build_pool.py: 0f992ffc343f72539ac38fbc3463ea6da55fc9cd55fc00ac3432475efd5f2217
+    ap_extract.py: b28a6132278f8ffcf988aaf14c9e059a35d0945f112da7640620f8b28f80f009
+    ap_grade_and_gates.py: aba2fee0838ddd1f469ce030490c9ff101013a8c01b10e722aad4c671e2a7dac
+    cloud/modal_ap_veto_length_balanced.py: 41bc174b5cf053f7c3045611d00846fbadc3068da35ffc1f4b99d4c328962a99
 # The generation pool (ap_pool.jsonl) lives under the gitignored analysis/
 # (data containment: it carries pool text) and is staged to the private HF
 # staging repo for the Modal run; it is derived local data, not a committed

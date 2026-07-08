@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Amendment S — correctness-probe fit + locked-gate scoring (CPU-only).
 
-Pre-registered in experiment/protocol/AMENDMENT-S-correctness-confidence-probe.md
+Pre-registered in experiments/correctness-confidence-probe/AMENDMENT.md
 (SIGNED 2026-06-30). Reads the extraction produced by
 amendment_s_correctness_probe_extract.py and answers the §4 gates.
 

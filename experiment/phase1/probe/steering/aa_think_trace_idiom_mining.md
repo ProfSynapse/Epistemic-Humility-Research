@@ -57,7 +57,7 @@ native moves "let me think", "I need to verify", and "say I don't know".
 Keep the percent (the design requires the score value to be conveyed) but
 embed it as the *reason* inside the confidence frame rather than as a bare
 telemetry number. Final wording is recorded in
-`experiment/protocol/AMENDMENT-AB-first-person-injection.md` §V1 templates.
+`experiments/first-person-injection/AMENDMENT.md` §V1 templates.
 
 ## Provenance
 

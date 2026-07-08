@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Amendment AH MAIN RUN (script 1/3) — three-arm divergent-pool generation (GPU).
 
-Locked spec: experiment/protocol/AMENDMENT-AH-divergent-pool-own-readout.md §3.2-3.3.
+Locked spec: experiments/divergent-pool-own-readout/AMENDMENT.md §3.2-3.3.
 SIGNED (PR #174), launch approved 2026-07-03. Runner owns build+run+score;
 adjudication is the orchestrator's.
 

@@ -1,6 +1,6 @@
 # Experiment Notes
 
-Use this reference when creating or editing files under `experiment/notes/`.
+Use this reference when creating or editing files under `notes/experiments/`.
 Experiment notes are runnable research specs, not scratch notes: they should let
 a future agent set up, run, validate, and document one experiment family without
 reconstructing project conventions from memory.
@@ -9,8 +9,8 @@ reconstructing project conventions from memory.
 
 Read these before editing:
 
-- `experiment/notes/_SCHEMA.md`
-- `experiment/notes/_TEMPLATE.md` when creating a new note
+- `notes/experiments/_SCHEMA.md`
+- `notes/experiments/_TEMPLATE.md` when creating a new note
 - `.skills/knowledge-graph/references/edge-ontology.yaml` when choosing KG edges
 
 ## Authoring rules
@@ -32,9 +32,9 @@ Read these before editing:
 Run these before committing:
 
 ```bash
-python3 .agents/skills/experiment-runner/scripts/validate_experiment_notes.py experiment/notes
-python3 .agents/skills/experiment-runner/scripts/validate_experiment_notes.py experiment/notes --emit-index
-python3 .agents/skills/knowledge-graph/scripts/validate_kg_relationships.py library experiment/notes
+python3 .agents/skills/experiment-runner/scripts/validate_experiment_notes.py notes/experiments
+python3 .agents/skills/experiment-runner/scripts/validate_experiment_notes.py notes/experiments --emit-index
+python3 .agents/skills/knowledge-graph/scripts/validate_kg_relationships.py library notes/experiments
 python3 bin/validate_kg.py
 ```
 

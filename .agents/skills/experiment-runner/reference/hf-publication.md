@@ -7,7 +7,7 @@ Synaptic Tuner's `upload-deployment` skill and CLI for the upload itself.
 ## Source of truth
 
 - Repo manifest: `docs/public-artifacts.md`
-- Provenance readiness: `experiment/paper/results-provenance-inventory.md`
+- Provenance readiness: `archive/papers/retired/results-provenance-inventory.md`
 - Run records: `experiment/phase1/run_records/`
 - Tuner upload workflow: `synaptic-tuner/.skills/upload-deployment/SKILL.md`
 

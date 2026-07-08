@@ -2,7 +2,7 @@
 """Amendment AG (script 2/3) — primed anchor extraction (GPU), §8 instrumentation.
 
 Pre-registered in
-experiment/protocol/AMENDMENT-AG-oracle-dissociation-prime.md (§8).
+experiments/oracle-dissociation-prime/AMENDMENT.md (§8).
 
 Observational, GATE-FREE. For each of two renderings —
   high: every row gets PRIME_HIGH + " " + baseline system prompt

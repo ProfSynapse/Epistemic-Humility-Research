@@ -3,7 +3,7 @@
 dual-position hidden-state reads over the SelfAware pool (GPU).
 
 Pre-registered in
-experiment/protocol/AMENDMENT-U-unified-two-signal-dial-veto.md.
+experiments/unified-two-signal-dial-veto/AMENDMENT.md.
 Exploratory, single-model, single-seed; reported separately from PROTOCOL v0.3.
 
 THE QUESTION (§2 H_U3, primary): does the correctness DIAL — fit on answerable

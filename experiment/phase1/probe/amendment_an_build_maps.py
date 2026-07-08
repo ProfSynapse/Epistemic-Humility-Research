@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Amendment AN: build the selection manifest + per-arm gain maps (CPU).
 
-SPEC: experiment/protocol/AMENDMENT-AN-selected-setpoint-regulator.md sections
+SPEC: experiments/selected-setpoint-regulator/AMENDMENT.md sections
 3.3 and 4. Selection side of the propensity-selected, caution-actuated
 regulator. Reads the FROZEN AL A0 per-row exhaust (prop_z, caution_z, baseline
 grades) and emits one manifest that the AN couple-steer harness consumes.

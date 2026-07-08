@@ -32,7 +32,7 @@ jobs:
         run: python .agents/skills/experiment-runner/scripts/research_session.py validate docs/sessions
 
       - name: Experiment notes
-        run: python .agents/skills/experiment-runner/scripts/validate_experiment_notes.py experiment/notes
+        run: python .agents/skills/experiment-runner/scripts/validate_experiment_notes.py notes/experiments
 
       - name: Typed-graph frontmatter + edges (library + experiment notes)
-        run: python .agents/skills/knowledge-graph/scripts/validate_kg_relationships.py library experiment/notes
+        run: python .agents/skills/knowledge-graph/scripts/validate_kg_relationships.py library notes/experiments

@@ -14,7 +14,7 @@ Artifacts:
   `experiment/phase1/probe/qwen3-4b-instruct-thinking-audit-128-1024/probe_manifest.json`
 - summary: `summary.json`
 - joined row comparison: `row_comparison.csv`
-- session: `docs/sessions/0021 - triviaqa-thinking-knowledge-audit.md`
+- session: `docs/sessions/20260625T122352Z-triviaqa-thinking-knowledge-audit.md`
 
 Headline result:
 

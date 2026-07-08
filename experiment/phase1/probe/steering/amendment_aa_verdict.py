@@ -2,7 +2,7 @@
 """Amendment AA — mechanical Stage-1 verdict roll-up (CPU-only).
 
 Reads the eight cell JSONs produced by run_arm_a.py / run_arm_b.py and applies
-the LOCKED gates of experiment/protocol/AMENDMENT-AA-causal-confidence-steering.md
+the LOCKED gates of experiments/causal-confidence-steering/AMENDMENT.md
 exactly as pre-registered. WRITTEN AND TESTED BEFORE ANY STAGE-1 RESULT EXISTED
 (2026-07-02, while AA-1 was in flight) so the analysis cannot drift after the
 data lands.

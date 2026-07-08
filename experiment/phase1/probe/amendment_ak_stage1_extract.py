@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Amendment AK Stage 1 - commitment-point position-sweep extraction (GPU).
 
-Pre-registered in experiment/protocol/AMENDMENT-AK-commitment-point.md §3.1.
+Pre-registered in experiments/commitment-point/AMENDMENT.md §3.1.
 This is the GPU half: it produces the per-token hidden states the CPU scorer
 projects onto the four AK axes (doubt trunk, caution, arm-B commitment, veto/
 correctness) to build the crystallization curve (AK-G1), the doubt-trajectory

@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Amendment AG §8 — Internal-state instrumentation (observational, gate-free).
 
-Spec: experiment/protocol/AMENDMENT-AG-oracle-dissociation-prime.md §8.
+Spec: experiments/oracle-dissociation-prime/AMENDMENT.md §8.
 Procedure: see amendment_af_probe_fit_labels.py for the frozen AF fitting logic.
 
 Steps:

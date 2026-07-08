@@ -2,7 +2,7 @@
 """Amendment AF (script 3/4) — three-arm second-person doubt-prime generation (GPU).
 
 Pre-registered in
-experiment/protocol/AMENDMENT-AF-second-person-doubt-prime.md (§4).
+experiments/second-person-doubt-prime/AMENDMENT.md (§4).
 
 Three arms over all 600 frozen AE pool rows, greedy decode, max_new_tokens=96,
 enable_thinking=False, raw base (no adapter):

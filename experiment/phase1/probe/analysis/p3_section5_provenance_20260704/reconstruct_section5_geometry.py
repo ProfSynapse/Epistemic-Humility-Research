@@ -76,7 +76,7 @@ UR_N = 300
 SEEDS = [0, 1, 2, 20260704]
 LAMBDA = 0.1
 
-# Published Section 5 values (paper3-knows-but-doesnt-say-draft-v0.md, Section 5).
+# Published Section 5 values (papers/paper-3-knows-but-doesnt-say/manuscript.md, Section 5).
 PUBLISHED = {
     "raw_cos": -0.83,
     "whitened_cos": -0.565,

@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # Amendment AA — Stage-1 causal confidence-steering queue (Qwen3.5-4B).
-# Cells AA-1..AA-8 per experiment/protocol/AMENDMENT-AA-causal-confidence-steering.md
+# Cells AA-1..AA-8 per experiments/causal-confidence-steering/AMENDMENT.md
 # (SIGNED 2026-07-01; Stage-1 launch approved: AA-1..AA-8, Qwen3.5-4B, local
 # Docker GPU lane, sequential).
 #

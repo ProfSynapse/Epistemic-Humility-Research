@@ -2,7 +2,7 @@
 """Amendment T — deployment-checkpoint correctness-readout extraction (GPU).
 
 Pre-registered in
-experiment/protocol/AMENDMENT-T-correctness-readout-deployment-port.md
+experiments/correctness-readout-deployment-port/AMENDMENT.md
 (SIGNED 2026-06-30). Exploratory, single-model, single-seed; reported separately
 from the locked PROTOCOL v0.3 matrix.
 

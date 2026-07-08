@@ -5,7 +5,7 @@ position-sweep extraction) on the Modal lane. Everything here is prepared; no
 paid compute has run. Launch is gated on the AK doc preconditions plus explicit
 user GPU approval and Modal being proven by the in-flight A0 v2 parity run.
 
-Authority for design is `experiment/protocol/AMENDMENT-AK-commitment-point.md`.
+Authority for design is `experiments/commitment-point/AMENDMENT.md`.
 Where this note and the doc disagree, the doc wins.
 
 ## What the AK doc specifies for Stage 1 (§3.1, §4)

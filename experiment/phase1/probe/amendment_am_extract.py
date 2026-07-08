@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Amendment AM - A0-surface regeneration + dual-position extraction (GPU).
 
-Pre-registered: experiment/protocol/AMENDMENT-AM-residual-catch-veto-coverage.md
+Pre-registered: experiments/residual-catch-veto-coverage/AMENDMENT.md
 (SIGNED 2026-07-06, §3 design, §5 preconditions). Tier-A exploratory cell;
 results reported separately from PROTOCOL v0.3 and from the PR #205 veto numbers.
 

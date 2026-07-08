@@ -2,7 +2,7 @@
 """Amendment T — SECONDARY cross-checkpoint cold-transfer (CPU, descriptive).
 
 Pre-registered in
-experiment/protocol/AMENDMENT-T-correctness-readout-deployment-port.md §3 step 5
+experiments/correctness-readout-deployment-port/AMENDMENT.md §3 step 5
 / §4 "Secondary (descriptive, NOT gated)". This is NOT a gate — it reports
 whether the correctness-readout DIRECTION is shared across checkpoints.
 

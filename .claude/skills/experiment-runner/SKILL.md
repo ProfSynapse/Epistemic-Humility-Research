@@ -37,6 +37,7 @@ Always choose the narrowest reference needed for the task:
 | Stage an aux_head co-training arm (Phase B: build dataset + A0/A1/A2 recipes + launch prereqs) | [reference/aux-head-cotraining-arms.md](reference/aux-head-cotraining-arms.md) |
 | Plan Phase 3 causal-pilot sweeps | [reference/phase3-causal-pilot-sweeps.md](reference/phase3-causal-pilot-sweeps.md) |
 | Record durable research-session memory | [reference/research-sessions.md](reference/research-sessions.md) |
+| Audit experiment/session provenance before migration | `python3 .agents/skills/experiment-runner/scripts/provenance_audit.py [--json]` |
 | Orchestrate a GPU-runner subagent (watchers, messaging, division of labor) | [reference/subagent-orchestration.md](reference/subagent-orchestration.md) |
 | Create or update experiment notes | [reference/experiment-notes.md](reference/experiment-notes.md) |
 | Publish or document public HF artifacts | [reference/hf-publication.md](reference/hf-publication.md) |

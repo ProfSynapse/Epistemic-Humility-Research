@@ -2,7 +2,7 @@
 """Amendment AP - build the self-contained A0-surface pool for the Modal harness (CPU).
 
 Pre-registered: experiments/ap-veto-length-balanced-confirmatory/AMENDMENT.md.
-Confirmatory follow-up to Amendment AM (experiment/protocol/AMENDMENT-AM-residual-catch-veto-coverage.md).
+Confirmatory follow-up to Amendment AM (experiments/residual-catch-veto-coverage/AMENDMENT.md).
 
 AP screens the SAME frozen A0 question pool AM used (1662 rows, same
 row_key/question/aliases/gold_class/category_canon join), not AM's 43-row

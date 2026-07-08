@@ -3,7 +3,7 @@
 # Status: PILOT TRUNCATED / DO NOT USE FOR LABEL-MIGRATION INTERPRETATION.
 # Early rows showed many generated traces opened <think> without reaching
 # </think> within 384 tokens, so this config mainly measures token-budget
-# truncation. It is retained only as provenance for docs/sessions/0021.
+# truncation. It is retained only as provenance for docs/sessions/20260625T122352Z-triviaqa-thinking-knowledge-audit.md.
 #
 # This is NOT a replacement for the locked Phase 1 probe config. It reuses the
 # same model, sampling seed, label bands, and deterministic subset order as

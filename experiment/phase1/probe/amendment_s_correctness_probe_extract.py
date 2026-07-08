@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Amendment S — free-answer generation + dual-position hidden-state extraction (GPU).
 
-Pre-registered in experiment/protocol/AMENDMENT-S-correctness-confidence-probe.md
+Pre-registered in experiments/correctness-confidence-probe/AMENDMENT.md
 (SIGNED 2026-06-30). Exploratory, single-model, single-seed; reported separately
 from the locked PROTOCOL v0.3 matrix.
 

@@ -2,7 +2,7 @@
 """Amendment AH Stage-0 (script 1/4) — candidate-set assembly (CPU).
 
 Pre-registered in
-experiment/protocol/AMENDMENT-AH-divergent-pool-own-readout.md (§4 step 1).
+experiments/divergent-pool-own-readout/AMENDMENT.md (§4 step 1).
 
 Builds the ~5,000-item candidate pool for the divergent-row mining pass:
   - SelfAware.json items NOT in the frozen AF 600 (join by normalized question).

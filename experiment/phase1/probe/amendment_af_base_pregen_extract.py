@@ -2,7 +2,7 @@
 """Amendment AF (script 1/4) — RAW-base pre-generation anchor extraction (GPU).
 
 Pre-registered in
-experiment/protocol/AMENDMENT-AF-second-person-doubt-prime.md.
+experiments/second-person-doubt-prime/AMENDMENT.md.
 Tier-2 exploratory local mechanism evidence (RQ4, base-model substrate).
 
 THE READ (protocol §3): the per-item doubt/answerability label AF renders to text

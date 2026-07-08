@@ -2,7 +2,7 @@
 """Amendment AF (script 2/4) — base doubt probe fit + per-item certainty labels (CPU).
 
 Pre-registered in
-experiment/protocol/AMENDMENT-AF-second-person-doubt-prime.md (§3, §4, §7).
+experiments/second-person-doubt-prime/AMENDMENT.md (§3, §4, §7).
 
 Loads the pre-gen anchor tensors from script 1. For EACH layer, fits a logistic
 regression known(1) vs unknown(0) and scores held-out AUROC via stratified 5-fold

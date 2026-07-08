@@ -2,7 +2,7 @@
 """Amendment AH Stage-0 (script 6) — gold-audit sample (CPU).
 
 Pre-registered in
-experiment/protocol/AMENDMENT-AH-divergent-pool-own-readout.md (§4 step 6).
+experiments/divergent-pool-own-readout/AMENDMENT.md (§4 step 6).
 
 Dumps 20 random D-over and 20 random D-under rows for the orchestrator's manual
 gold-label audit. Each row: question, gold label, probe scores (L20/L24/L28 +

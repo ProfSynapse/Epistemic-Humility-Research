@@ -1,8 +1,8 @@
 # Two-Signal Trust Readout: Inference & Serving Architecture
 
 Status: design note (2026-06-30). Engineering/design companion to the research
-plan in `experiment/paper/paper-series-plan.md` and the mechanism synthesis in
-`experiment/paper/two-signal-readout-framework.md`. This describes how the
+plan in `papers/series/plan.md` and the mechanism synthesis in
+`papers/paper-4-two-signal-readout/notes/framework.md`. This describes how the
 validated readout mechanism would be wired into a live inference path. It marks
 clearly what is **validated offline** vs **proposed for deployment** (not yet
 built or load-tested in a serving stack).
@@ -255,8 +255,8 @@ multi-sample methods are too expensive.
 
 ## References
 
-- Research plan and claims audit: `experiment/paper/paper-series-plan.md`
-- Mechanism synthesis: `experiment/paper/two-signal-readout-framework.md`
+- Research plan and claims audit: `papers/series/plan.md`
+- Mechanism synthesis: `papers/paper-4-two-signal-readout/notes/framework.md`
 - aux_head engine design: `docs/architecture/aux-head-prompt-completion-render.md`
 - Probe pipeline + offline scorers: `experiment/phase1/probe/`
-- Cross-size evidence: `experiment/protocol/AMENDMENT-X-cross-model-size-sweep.md`
+- Cross-size evidence: `experiments/cross-model-size-sweep/AMENDMENT.md`

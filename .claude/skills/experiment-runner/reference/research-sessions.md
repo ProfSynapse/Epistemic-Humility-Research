@@ -38,16 +38,18 @@ Workflow:
 
 ```bash
 python3 .agents/skills/experiment-runner/scripts/research_session.py init \
-  --session-id <lowercase-session-id> \
   --title "<Session Title>" \
   --question "<What workflow state or research question is this tracking?>" \
-  --phase phase1 \
   --tag experiment-runner
 ```
 
-4. Save it under `docs/sessions/0001 - <session-title>.md` or the next
-   available number. If another unmerged machine already used the next number,
-   intentionally skip ahead to avoid filename collisions.
+4. By default, the helper saves the note under
+   `docs/sessions/YYYYMMDDTHHMMSSZ-<title-slug>.md` and uses the same stem as
+   `session_id`. The timestamped stem is both the multiplayer-safe sort key and
+   the durable machine identity. You may pass `--session-id` when resuming or
+   intentionally naming a known thread, but do not append a second date suffix.
+   Legacy numbered filenames remain valid for existing notes and can still be
+   requested with `--filename-mode numbered`, but do not use them for new work.
 5. Add checkpoints as the experiment workflow progresses.
 6. Validate before committing:
 
@@ -65,3 +67,8 @@ python3 .agents/skills/experiment-runner/scripts/run_matrix.py \
 ```
 
 The pre-commit hook also validates session notes when `docs/sessions/` exists.
+
+Validation enforces that every `session_id` is unique across `docs/sessions/`.
+Legacy filename sequence numbers are not treated as identity and may collide in
+old notes during migration; new notes should use the timestamped filename form so
+that filename collisions do not occur in parallel branches.

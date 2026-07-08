@@ -1,0 +1,44 @@
+slug: divergent-pool-own-readout
+title: Amendment AH — Divergent-Pool Own-Readout Attribution (probe ≠ gold)
+type: historical-amendment
+status: historical
+registered: true
+created_at: '2026-07-08T17:40:52Z'
+legacy:
+  label: AH
+  path: experiment/protocol/AMENDMENT-AH-divergent-pool-own-readout.md
+  migrated_to: experiments/divergent-pool-own-readout/AMENDMENT.md
+migration:
+  needs_manual_review:
+  - falsifier
+  - experiment_type
+  - instrument_configs
+  - kg_ids
+  notes: Imported from legacy amendment prose. Do not infer missing machine fields
+    without hand-reading AMENDMENT.md.
+question: Does prime uptake consult the model's own readout (H-resonance) or is it
+  pure instruction compliance plus boundary distance (H-compliance)?
+prediction: "orchestrator:\n  call: H-compliance\n  confidence: 75-80%\n  recorded:\
+  \ 2026-07-03\n  basis: AG's doubt axis is anti-semantic and unmoved by primes; the\
+  \ pliability law\n    absorbs the hidden state into one boundary-distance scalar;\
+  \ the only observed\n    readout-behavior coupling (AC) was wired externally.\n\
+  user:\n  call: H-compliance\n  recorded: 2026-07-03\n  quote: I think prompt is\
+  \ like a shotgun here and overrides most other policies.\n    So I think we're still\
+  \ decoupled from internals, if there is something it would\n    be too weak I think\
+  \ to do anything about beyond like you say maybe coming back\n    to training."
+falsifier: ''
+checkpoint:
+  repo: ''
+  revision: ''
+instrument:
+  configs: []
+  modules: []
+  pins: {}
+inputs: []
+verdict: H-COMPLIANCE (certified via Addendum A1). G2 release congruence is a precise
+  zero (-0.21pt, CI [-4.45, +4.10]); the initial G1 miss (+15.65pt on a low-caution
+  stratum) was recalibrated on a caution-representative stratum in pre-registered
+  Addendum A1 and passed decisively (+50.98pt vs +20pt floor), certifying the instrument
+  and upgrading the verdict per the locked §10.2 semantics. Prime uptake does not
+  consult the model's own readout.
+kg: []

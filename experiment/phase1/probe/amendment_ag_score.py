@@ -2,7 +2,7 @@
 """Amendment AG (script 3/3) — scoring: §4 quantities, AG-G1a/G1b, guards (CPU).
 
 Pre-registered in
-experiment/protocol/AMENDMENT-AG-oracle-dissociation-prime.md (§4).
+experiments/oracle-dissociation-prime/AMENDMENT.md (§4).
 
 Joins the inverted arm generation to the AE census cells (row key ==
 census probe_pool_row_key). Uses FROZEN AF baseline arm as the reference.

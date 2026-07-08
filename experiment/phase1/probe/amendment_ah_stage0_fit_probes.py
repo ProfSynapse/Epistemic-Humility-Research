@@ -2,7 +2,7 @@
 """Amendment AH Stage-0 (script 2/4) — frozen probe fitting (CPU).
 
 Pre-registered in
-experiment/protocol/AMENDMENT-AH-divergent-pool-own-readout.md (§4 step 2).
+experiments/divergent-pool-own-readout/AMENDMENT.md (§4 step 2).
 
 Fits the FROZEN doubt probes on the FULL AF-600 pre-gen surface (all 600 rows;
 legitimate because every mined candidate is disjoint -> automatically

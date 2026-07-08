@@ -1,5 +1,5 @@
 # Amendment AC SMOKE: 25 rows/cell x 3 cells x 4 arms = 300 generation units.
-# SPEC: experiment/protocol/AMENDMENT-AC-doubt-regulated-caution.md §3.
+# SPEC: experiments/doubt-regulated-caution/AMENDMENT.md §3.
 # Pass gate: mechanics run end-to-end AND any directional coupled-vs-permuted
 # separation. The falsifier CAN fire early here (permuted ~ coupled on 25/cell
 # is a warning, not yet a verdict — the full run decides).

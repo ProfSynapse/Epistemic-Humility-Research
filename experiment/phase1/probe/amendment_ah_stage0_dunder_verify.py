@@ -2,7 +2,7 @@
 """Amendment AH Stage-0 (script 5) — D-under behavioral verification (GPU).
 
 Pre-registered in
-experiment/protocol/AMENDMENT-AH-divergent-pool-own-readout.md (§4 step 5).
+experiments/divergent-pool-own-readout/AMENDMENT.md (§4 step 5).
 
 For every D-under candidate under the LOOSEST rule (L24 alone, band 0; from
 score/dunder_candidates.jsonl), run greedy forced-best-guess generation and

@@ -5,7 +5,6 @@ title: Replace With Session Title
 status: active
 created_at: "YYYY-MM-DDTHH:MM:SSZ"
 updated_at: "YYYY-MM-DDTHH:MM:SSZ"
-phase: phase1
 question: What research question or workflow state is this session tracking?
 tags:
   - experiment-runner

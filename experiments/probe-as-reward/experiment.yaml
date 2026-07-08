@@ -1,0 +1,49 @@
+slug: probe-as-reward
+title: 'Amendment AI — Probe-as-Reward (PAR): training the model to consult its own
+  readout'
+type: historical-amendment
+status: historical
+registered: true
+created_at: '2026-07-08T17:40:52Z'
+legacy:
+  label: AI
+  path: experiment/protocol/AMENDMENT-AI-probe-as-reward.md
+  migrated_to: experiments/probe-as-reward/AMENDMENT.md
+migration:
+  needs_manual_review:
+  - falsifier
+  - experiment_type
+  - instrument_configs
+  - kg_ids
+  notes: Imported from legacy amendment prose. Do not infer missing machine fields
+    without hand-reading AMENDMENT.md.
+question: Does GRPO with a probe-agreement reward (read from the policy's own pre-generation
+  states by a sensor refit on the training-start checkpoint) beat the same reward
+  computed from a permuted sensor on the AH congruence eval — i.e., can the model
+  be trained to consult its own readout?
+prediction: "orchestrator:\n  call: TRUE wins\n  confidence: ~65%\n  recorded: 2026-07-03\n\
+  \  basis: AC showed the first use-the-signal win when the coupling was wired externally\n\
+  \    (+8.7pt over permuted); GRPO-v2's stuck quadrant is over-refusal at 77% occupancy,\n\
+  \    which the agreement reward directly prices; but the N/M history (scalar collapses\n\
+  \    onto the action) keeps confidence moderate — the reward channel may reproduce\n\
+  \    the collapse.\nuser:\n  call: TRUE wins\n  recorded: 2026-07-03\n  quote: 'Pre-authorize:\
+  \ I predict TRUE wins (recorded pre-launch via the overnight\n    authorization;\
+  \ launch conditional on smoke green + refit sensor AUROC >= 0.9 +\n    constants\
+  \ derived per the pre-stated rules).'"
+falsifier: ''
+checkpoint:
+  repo: ''
+  revision: ''
+instrument:
+  configs: []
+  modules: []
+  pins: {}
+inputs: []
+verdict: 'NULL (G1 fail, G0 pass) — adjudicated by the user 2026-07-05. The reward
+  channel also does not couple the readout: TRUE-arm congruence 59.75% vs PERMUTED
+  76.75%, differential −17.0pt (10k paired bootstrap CI [−21.5, −12.5], excludes 0
+  on the wrong side; gate needed ≥ +10pt). Instrument valid (fresh per-arm probes
+  OOF AUROC 0.9948/0.9946, both arms full 2934 steps, no halts). G2 fails for both
+  arms (over-refusal released; abstain-when-unanswerable preserved at +0.49pt). Strengthens
+  H-compliance generality across channels (M, N, R, AA/AB text, AI reward).'
+kg: []

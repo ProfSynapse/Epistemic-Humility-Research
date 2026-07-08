@@ -20,7 +20,7 @@ https://github.com/ProfSynapse/Epistemic-Humility-Research
 Local provenance:
 
 - Analysis root: `experiment/phase1/eval/analysis/`
-- Results provenance inventory: `experiment/paper/results-provenance-inventory.md`
+- Results provenance inventory: `archive/papers/retired/results-provenance-inventory.md`
 - Public artifact manifest: `docs/public-artifacts.md`
 
 ## Contents

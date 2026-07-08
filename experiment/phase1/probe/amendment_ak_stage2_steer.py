@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Amendment AK Stage 2 - answer-window commitment steering (GPU intervention).
 
-Pre-registered in experiment/protocol/AMENDMENT-AK-commitment-point.md §3.2 and
+Pre-registered in experiments/commitment-point/AMENDMENT.md §3.2 and
 gated by AK-G3 (§4). Stage 1 is RESOLVED (G1 MISS, G2 MISS-on-floor); Stage 2 is
 the causal test of whether the commitment/veto middle is TOKEN-LOCALIZED:
 

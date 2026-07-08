@@ -1,0 +1,37 @@
+slug: pretrain-only-base-readout
+title: 'Protocol Amendment Y: Pretrain-Only Base-Model Readout (Era / Origin Test)'
+type: historical-amendment
+status: historical
+registered: true
+created_at: '2026-07-08T17:40:52Z'
+legacy:
+  label: Y
+  path: experiment/protocol/AMENDMENT-Y-pretrain-only-base-readout.md
+  migrated_to: experiments/pretrain-only-base-readout/AMENDMENT.md
+migration:
+  needs_manual_review:
+  - falsifier
+  - experiment_type
+  - instrument_configs
+  - kg_ids
+  notes: Imported from legacy amendment prose. Do not infer missing machine fields
+    without hand-reading AMENDMENT.md.
+question: Does the knowledge-boundary signal predate post-training, i.e. is it present
+  on pretrain-only base models, not just instruct checkpoints?
+prediction: "orchestrator:\n  call: pretraining-origin supported; base gate near-ceiling,\
+  \ veto present pre-post-training\nuser:\n  call: null\n  note: Predates the dual-prediction\
+  \ practice (adopted 2026-07-03 at AH signing);\n    no separately recorded user\
+  \ prediction."
+falsifier: ''
+checkpoint:
+  repo: ''
+  revision: ''
+instrument:
+  configs: []
+  modules: []
+  pins: {}
+inputs: []
+verdict: COMPLETE — H_B1 SUPPORTED 4/4 (boundary signal predates post-training); H_B2
+  veto SUPPORTED 4/4; H_B3 sharpening NOT SUPPORTED (post-training does not sharpen,
+  can dull the readout).
+kg: []

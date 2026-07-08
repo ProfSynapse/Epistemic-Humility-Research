@@ -1,7 +1,7 @@
 ---
 title: "Epistemic Humility in Large Language Models: A Systematic Evidence Synthesis of Training Effects, Interventions, and Open Gaps"
 author: "Joseph Rosenbaum (Synaptic Labs)"
-status: source-of-record for Paper 1 (experiment/paper/paper1-taxonomy-framework-draft-v0.md, 2026-07-01); un-archived when the program moved to the five-paper line
+status: source-of-record for Paper 1 (papers/paper-1-taxonomy-framework/manuscript.md, 2026-07-01); un-archived when the program moved to the five-paper line
 date: 2026-06-10
 target: arXiv (cs.CL / cs.AI)
 evidence_base: meta-analysis/evidence/effects.csv (78 rows, 39 studies), meta-analysis/evidence/idk-method-reanalysis.csv
@@ -26,7 +26,7 @@ notes: >
 *Draft v0. Not for distribution.*
 
 > **SOURCE OF RECORD FOR PAPER 1 (2026-07-01).** The program's reader-facing
-> framing paper is `experiment/paper/paper1-taxonomy-framework-draft-v0.md`
+> framing paper is `papers/paper-1-taxonomy-framework/manuscript.md`
 > (Paper 1: taxonomy, evidence synthesis, and theoretical framework), built
 > on this document. This file remains the provenance source of record for
 > every synthesis number (search protocol, flow accounting, extraction

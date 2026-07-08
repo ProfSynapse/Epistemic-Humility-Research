@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Amendment AN: grade steered arms, score gates G1/G2/G3, exhaust (CPU).
 
-SPEC: experiment/protocol/AMENDMENT-AN-selected-setpoint-regulator.md section 4
+SPEC: experiments/selected-setpoint-regulator/AMENDMENT.md section 4
 (gates LOCKED). Grades every AN arm's generations with the SAME byte-pinned
 grader as the AL A0 baseline (amendment_al_grade_and_gates.grade_row): Cheng
 scorers.is_correct on gold-answerable rows carrying aliases; confab_on_unanswerable

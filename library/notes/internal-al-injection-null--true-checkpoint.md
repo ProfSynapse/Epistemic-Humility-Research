@@ -20,7 +20,7 @@ models:
 - qwen3-4b
 metrics:
 - auroc
-provenance: 'Internal amendment (Tier-A causal intervention). Source of truth: experiment/protocol/AMENDMENT-AL-radial-anti-propensity-steering.md (merged PR #214 to main). Surface: the session-0038 AL-prep A0 TRUE-mapping GRPO checkpoint surface (1,662 rows: 90 correct, 120 wrong, 114 answerable-refused, 1,222 unanswerable-refused, 116 confabs). Steering: subtract alpha times the raw-space preimage of the L24 caution-residualized confabulation-propensity direction (PCA-128 randomized seed 20260705) from the residual stream at layer 24, pre-generation anchor onward, selected rows only. Grading commits fa82c629 / 7b4be949 / e9141fff. Ungated exploratory evidence, never pooled with the locked headline matrix.'
+provenance: 'Internal amendment (Tier-A causal intervention). Source of truth: experiments/radial-anti-propensity-steering/AMENDMENT.md (merged PR #214 to main). Surface: the session-0038 AL-prep A0 TRUE-mapping GRPO checkpoint surface (1,662 rows: 90 correct, 120 wrong, 114 answerable-refused, 1,222 unanswerable-refused, 116 confabs). Steering: subtract alpha times the raw-space preimage of the L24 caution-residualized confabulation-propensity direction (PCA-128 randomized seed 20260705) from the residual stream at layer 24, pre-generation anchor onward, selected rows only. Grading commits fa82c629 / 7b4be949 / e9141fff. Ungated exploratory evidence, never pooled with the locked headline matrix.'
 related:
 - '[[propensity-direction-reads-but-does-not-actuate-fabrication]]'
 - '[[confabulation-propensity-direction]]'
@@ -124,7 +124,7 @@ which succeeded on a different axis and checkpoint.
 
 - Evidence label: pre-registered honesty-floor gate (AL-G1). At most 3 of the 90
   baseline-correct rows were allowed to flip to refusal in the primary arm; 0
-  flipped, so AL-G1 PASS. (experiment/protocol/AMENDMENT-AL-radial-anti-propensity-steering.md,
+  flipped, so AL-G1 PASS. (experiments/radial-anti-propensity-steering/AMENDMENT.md,
   merged PR #214; grading commits fa82c629 / 7b4be949 / e9141fff.)
 - Evidence label: pre-registered reach gate (AL-G2). At least 5 of the 116
   baseline confabulations had to be killed in the primary arm; 0 were killed, so

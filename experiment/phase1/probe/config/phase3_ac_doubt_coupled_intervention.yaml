@@ -1,5 +1,5 @@
 # Amendment AC: DOUBT-REGULATED CAUTION (Tier-2, local 3090).
-# SPEC: experiment/protocol/AMENDMENT-AC-doubt-regulated-caution.md
+# SPEC: experiments/doubt-regulated-caution/AMENDMENT.md
 #
 # Question (PHASE3 RQ4 Stage 1): does an open-loop coupling — write caution_perp
 # proportional to the frozen doubt readout, g_i = -alpha * z_i — carry

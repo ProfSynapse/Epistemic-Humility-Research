@@ -4,7 +4,7 @@ Prep doc for the HF Jobs cloud half of the Amendment AI verdict eval. Produces
 exactly the inputs the CPU scorer
 `experiment/phase1/probe/amendment_ai_verdict_score.py` consumes for gates
 AI-G0 / AI-G1 / AI-G2, per the locked spec section 4 of
-`experiment/protocol/AMENDMENT-AI-probe-as-reward.md`. CPU-only authoring; no
+`experiments/probe-as-reward/AMENDMENT.md`. CPU-only authoring; no
 model was run, no GPU touched, no HF Job submitted, no git command run.
 
 ## What the scorer needs (input contract, restated)

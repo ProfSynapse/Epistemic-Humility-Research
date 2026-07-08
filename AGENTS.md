@@ -92,7 +92,14 @@ Use artifact type to choose where to look:
 - Orientation and contribution norms: root docs such as `README.md`,
   `CONTRIBUTING.md`, and nearby architecture notes.
 - Research synthesis: `meta-analysis/`, especially evidence tables, analysis
-  scripts, paper drafts, and provenance reports.
+  scripts, and source-of-record synthesis apparatus.
+- Paper production: `papers/`, organized one directory per paper with
+  `manuscript.md`, `analysis/`, `figures/`, `scripts/`, and paper-specific
+  `notes/`. Shared writing conventions live in `papers/common/`; series-level
+  planning lives in `papers/series/`.
+- Notes by type: `docs/sessions/` for chronological session logs,
+  `notes/experiments/` for reusable experiment-family runbooks/spec notes, and
+  `library/notes/` for KG-backed literature/internal synthesis notes.
 - New experiments (any evidence-producing type: steering cell, training run,
   eval, probe-fit, lab diagnostic): the experiments-first tree `experiments/`,
   one self-contained directory per experiment holding a signed `AMENDMENT.md`, a
@@ -109,6 +116,9 @@ Use artifact type to choose where to look:
   before reading raw rows.
 - Skills and agent workflows: `.skills/` as canonical source, with generated
   mirrors under agent-specific directories.
+- Archive: `archive/` holds superseded files retained for provenance. Do not use
+  archived files as current sources of truth unless the citing text explicitly
+  says it is referring to a superseded or retired artifact.
 
 When protocol, preregistration, or paper-claim files are involved, read the
 local instructions in that area before editing. Treat registered study design as
@@ -191,8 +201,7 @@ inspection or fixture debugging.
 - READ BEFORE YOU CITE. Before stating any fact about a prior experiment or
   amendment (its design, mechanism, checkpoint, gates, result, verdict, or what
   it "showed" / "proved" / "worked"), open and read its governed doc first:
-  `experiment/protocol/AMENDMENT-*.md` (pre-migration) or
-  `experiments/<slug>/AMENDMENT.md` (new layout). The amendment/protocol docs are
+  `experiments/<slug>/AMENDMENT.md`. The amendment/protocol docs are
   the SOLE source of truth for experimental facts. Memory, session notes, the
   knowledge graph, prior chat summaries, and this file's Retrieved/Working Memory
   are navigation aids ONLY: they point you to the doc, they are never themselves

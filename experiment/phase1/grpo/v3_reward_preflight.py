@@ -3,7 +3,7 @@
 
 Re-scores REAL GRPO rollouts (a `reward_debug` JSONL) with the v3 reward and
 answers the three gating questions from
-`experiment/notes/computed-confidence-alignment-regimen.md`:
+`notes/experiments/computed-confidence-alignment-regimen.md`:
 
   Q1 (THE RISK): do the v3 `group` targets actually SPREAD across prompts? If every
       prompt's mean-appropriateness is ~the same, the Brier optimum is ~constant and

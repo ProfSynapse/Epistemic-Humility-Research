@@ -2,7 +2,7 @@
 """Amendment AG (script 1/3) — inverted-arm generation (GPU).
 
 Pre-registered in
-experiment/protocol/AMENDMENT-AG-oracle-dissociation-prime.md (§2, §4).
+experiments/oracle-dissociation-prime/AMENDMENT.md (§2, §4).
 
 ONE arm: inverted. For each row, takes labels[row_key]["certainty_true"] and
 INVERTS it (HIGH->LOW, LOW->HIGH), then builds the system prompt exactly as AF

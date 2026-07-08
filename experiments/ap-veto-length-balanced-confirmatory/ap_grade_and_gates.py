@@ -4,7 +4,7 @@
 Pre-registered: experiments/ap-veto-length-balanced-confirmatory/AMENDMENT.md.
 CPU-only; runs on the host from the canonical checkout after the Modal extract
 lands. Never touches the GPU. Confirmatory follow-up to Amendment AM
-(experiment/protocol/AMENDMENT-AM-residual-catch-veto-coverage.md); reported
+(experiments/residual-catch-veto-coverage/AMENDMENT.md); reported
 separately and never pooled with AM, PROTOCOL v0.3, or the PR #205 published
 veto operating characteristics.
 

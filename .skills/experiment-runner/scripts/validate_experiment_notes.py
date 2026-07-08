@@ -1,17 +1,17 @@
 #!/usr/bin/env python3
 """Validate experiment notes and regenerate their registry index.
 
-Experiment notes are checked-in Markdown files under experiment/notes/ with YAML
+Experiment notes are checked-in Markdown files under notes/experiments/ with YAML
 frontmatter. They are the agent-runnable spec + runbook for one experiment family
-(see experiment/notes/_SCHEMA.md). This validator enforces the schema so the
+(see notes/experiments/_SCHEMA.md). This validator enforces the schema so the
 structure holds at commit time (.githooks/pre-commit) and on every PR
 (.github/workflows/validate.yml). Generic kg/edge correctness is left to
 validate_kg_relationships.py; this checks the experiment-note-specific contract.
 
 Usage (run from repo root):
-    python3 .agents/skills/experiment-runner/scripts/validate_experiment_notes.py experiment/notes
-    python3 .agents/skills/experiment-runner/scripts/validate_experiment_notes.py experiment/notes --emit-index
-    python3 .agents/skills/experiment-runner/scripts/validate_experiment_notes.py experiment/notes --json
+    python3 .agents/skills/experiment-runner/scripts/validate_experiment_notes.py notes/experiments
+    python3 .agents/skills/experiment-runner/scripts/validate_experiment_notes.py notes/experiments --emit-index
+    python3 .agents/skills/experiment-runner/scripts/validate_experiment_notes.py notes/experiments --json
 
 Exit code 1 if any note fails (mirrors research_session.py validate); else 0.
 """
@@ -49,8 +49,9 @@ HEADING_RE = re.compile(r"^##\s+(.+?)\s*$", re.M)
 BACKTICK_RE = re.compile(r"`([^`]+)`")
 # repo-root-relative path prefixes whose backticked references must exist on disk
 PATH_PREFIXES = (
-    "experiment/", "library/", "meta-analysis/", "bin/", "tools/", "docs/",
-    ".agents/", ".skills/", ".claude/", ".github/",
+    "experiment/", "experiments/", "library/", "meta-analysis/", "bin/",
+    "tools/", "docs/", "notes/", "papers/", "archive/", ".agents/",
+    ".skills/", ".claude/", ".github/",
 )
 
 
@@ -269,8 +270,8 @@ def emit_index(path: Path) -> str:
 
 def main(argv: list[str] | None = None) -> int:
     ap = argparse.ArgumentParser(description="Validate experiment notes; regenerate the registry.")
-    ap.add_argument("path", nargs="?", default="experiment/notes")
-    ap.add_argument("--emit-index", action="store_true", help="regenerate experiment/notes/README.md")
+    ap.add_argument("path", nargs="?", default="notes/experiments")
+    ap.add_argument("--emit-index", action="store_true", help="regenerate notes/experiments/README.md")
     ap.add_argument("--json", action="store_true")
     args = ap.parse_args(argv)
 

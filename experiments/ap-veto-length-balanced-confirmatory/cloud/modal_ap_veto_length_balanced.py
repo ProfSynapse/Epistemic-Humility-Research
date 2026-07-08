@@ -3,7 +3,7 @@
 
 Pre-registered: experiments/ap-veto-length-balanced-confirmatory/AMENDMENT.md.
 Confirmatory follow-up to Amendment AM
-(experiment/protocol/AMENDMENT-AM-residual-catch-veto-coverage.md). Ported
+(experiments/residual-catch-veto-coverage/AMENDMENT.md). Ported
 (structure, not import) from
 experiment/phase1/probe/cloud/modal_am_residual_catch.py (read-only reference
 on the unmerged amendment-am branch; that script's own docstring records it

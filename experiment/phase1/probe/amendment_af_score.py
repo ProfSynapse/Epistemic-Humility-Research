@@ -2,7 +2,7 @@
 """Amendment AF (script 4/4) — scoring: selectivity gap, AF-G1, guards (CPU).
 
 Pre-registered in
-experiment/protocol/AMENDMENT-AF-second-person-doubt-prime.md (§4, §5).
+experiments/second-person-doubt-prime/AMENDMENT.md (§4, §5).
 
 Joins the three-arm generations (script 3) to the AE behavior census cells via the
 pool row key (== census probe_pool_row_key). Scoring cells:

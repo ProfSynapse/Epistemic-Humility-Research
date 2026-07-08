@@ -1,6 +1,6 @@
 """Amendment AC analysis: selectivity gaps, AC-G1/AC-G2, specificity guard, dose-response.
 
-SPEC: experiment/protocol/AMENDMENT-AC-doubt-regulated-caution.md §4-§5.
+SPEC: experiments/doubt-regulated-caution/AMENDMENT.md §4-§5.
 
 Definitions (pre-registered):
 - de-refusal(arm, cell) = refusal_rate(baseline, cell) - refusal_rate(arm, cell)

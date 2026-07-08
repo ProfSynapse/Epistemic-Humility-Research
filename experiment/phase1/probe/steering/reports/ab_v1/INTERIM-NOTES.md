@@ -2,7 +2,7 @@
 
 Status: **complete** 2026-07-03 (begun as an interim capture while AB-3 ran).
 The formal verdict against the locked gates is in
-`experiment/protocol/AMENDMENT-AB-first-person-injection.md` §8: G1
+`experiments/first-person-injection/AMENDMENT.md` §8: G1
 UNMEASURABLE (saturated instrument) / G1f MISS / G2 MISS / G3 not triggered /
 Q-B no reading — overall ambiguous-leaning-negative. Raw `result.json` artifacts are gitignored (dataset row
 text); the committed evidence is the per-cell trace reports in this directory
