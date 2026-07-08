@@ -1,0 +1,70 @@
+{
+  "substrate": "bf16",
+  "base_model": "unsloth/Qwen3-4B",
+  "random_state": 20260707,
+  "reproducibility_verified": true,
+  "extract_manifest_sha256": "3bb170c8cf6303aebabf4ea71890161e21f29a092f43b6a4674b48f1159a30ef",
+  "split_manifest_sha256": "5bb5510a90891b934a3334f508848f5aca94179978401582b53a9631c98fb49b",
+  "layers": {
+    "hs23": {
+      "hs_index": 23,
+      "decoder_block_index": 22,
+      "n_known_correct_answered_fit": 172,
+      "n_confab_fit": 124,
+      "n_unknown_refused": 1029,
+      "cos_u_d_u_p": 0.06934434979534077,
+      "cos_caution_dir_c_hat": 0.9919880856174931,
+      "mu_d": -4.70611970775164,
+      "sigma_d": 3.8417068134570616,
+      "mu_p": 1.8013381291971515,
+      "sigma_p": 0.18440804449187792,
+      "mu_c": -8.12313908046552,
+      "sigma_c": 2.0297737163412064
+    },
+    "hs26": {
+      "hs_index": 26,
+      "decoder_block_index": 25,
+      "n_known_correct_answered_fit": 172,
+      "n_confab_fit": 124,
+      "n_unknown_refused": 1029,
+      "cos_u_d_u_p": 0.04851232209930592,
+      "cos_caution_dir_c_hat": 0.9660363124075311,
+      "mu_d": 2.5051292673151284,
+      "sigma_d": 7.104662176523588,
+      "mu_p": 3.4325092045971375,
+      "sigma_p": 0.30715066880797076,
+      "mu_c": -5.868090527101967,
+      "sigma_c": 4.440034036942466
+    },
+    "hs29": {
+      "hs_index": 29,
+      "decoder_block_index": 28,
+      "n_known_correct_answered_fit": 172,
+      "n_confab_fit": 124,
+      "n_unknown_refused": 1029,
+      "cos_u_d_u_p": 0.05027070738780978,
+      "cos_caution_dir_c_hat": 0.9379488951037538,
+      "mu_d": 1.5350614339389947,
+      "sigma_d": 10.566303356690538,
+      "mu_p": 0.6412887895395611,
+      "sigma_p": 0.5230922258046762,
+      "mu_c": -2.4832648764146836,
+      "sigma_c": 7.811584135836962
+    },
+    "hs34": {
+      "hs_index": 34,
+      "decoder_block_index": 33,
+      "n_known_correct_answered_fit": 172,
+      "n_confab_fit": 124,
+      "n_unknown_refused": 1029,
+      "cos_u_d_u_p": 0.05792211248474835,
+      "cos_caution_dir_c_hat": 0.9130679152990262,
+      "mu_d": -26.999811383638065,
+      "sigma_d": 16.115344237771755,
+      "mu_p": 9.072523785361074,
+      "sigma_p": 0.9118295798233742,
+      "mu_c": -11.827935550091084,
+      "sigma_c": 13.23002622164185
+    }
+  }
+}

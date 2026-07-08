@@ -1,0 +1,52 @@
+slug: j-space-localization-qwen3-4b
+type: lab-diagnostic
+status: resolved
+registered: true
+question: 'Read-only characterization on Qwen3-4B (bf16 sibling of our raw-base):
+  (1) does a from-scratch J-lens (Jacobian lens) implementation reduce to the logit
+  lens at the final layer and run end to end on this model; (2) where across depth
+  does a workspace-like band (rising kurtosis/sparsity/effective dimensionality of
+  the J-lens readout) locate, relative to our own L34 write layer; (3) do our fitted
+  epistemic directions (u_d doubt, pos_ctrl caution/ answer-vs-refuse, neg_ctrl confab-propensity,
+  c_hat orthogonalized caution write) verbalize as uncertainty/abstention-flavored
+  tokens under the J-lens at L34 and nearby layers (H1 from docs/ideas/j-space-global-workspace-actuation-bridge.md)?
+  No writes/injections anywhere; this is a lab-diagnostic characterization, not a
+  gated claim.'
+prediction: Final-layer J-lens will closely track the logit lens (high cosine similarity
+  / top-k overlap between verbalize() and direct unembed()); the workspace band will
+  locate mid-to-late but short of the final layers, putting L34 (this project's existing
+  write layer) near or past the workspace/motor boundary; pos_ctrl and c_hat (caution-flavored
+  directions) will verbalize as first-person-hedge/abstention/error-adjacent tokens
+  more clearly than u_d (doubt) or neg_ctrl (confab-propensity).
+falsifier: 'No falsifier is pre-registered (lab-diagnostic characterization, not a
+  gated confirmatory claim) -- but the correctness smoke has its own internal go/no-go:
+  if the final-layer J-lens does NOT track the logit lens (near-zero or negative cosine
+  similarity, near-chance top-k overlap), the implementation is broken and the Modal
+  prep must stop rather than proceed to characterize a broken instrument. That smoke
+  PASSED locally (see Outcome).'
+checkpoint:
+  repo: unsloth/Qwen3-4B
+  revision: ''
+instrument:
+  configs: []
+  modules:
+  - jlens.py
+  - cloud/modal_jlens.py
+  pins:
+    jlens.py: a92f4383108a4b46861e745939bb22d99d351ab53a3cc41c513d92980d8ecc2b
+    cloud/modal_jlens.py: 97f57c40dc6cd86b8f5b367d16ee3f1b01669cd68c24bbe336a5064feeff1720
+inputs:
+- experiments/j-space-localization-qwen3-4b/analysis-committed/corpus/jlens_corpus_manifest.json
+- experiments/j-space-localization-qwen3-4b/analysis-committed/source_directions/u_d_L34.json
+- experiments/j-space-localization-qwen3-4b/analysis-committed/source_directions/c_hat_L34.json
+- experiments/j-space-localization-qwen3-4b/analysis-committed/source_directions/pos_ctrl_L34.json
+- experiments/j-space-localization-qwen3-4b/analysis-committed/source_directions/neg_ctrl_L34.json
+verdict: 'Full-corpus J-lens characterization completed on Modal: smoke reproduced
+  logit-lens agreement (mean cosine 0.9811, top-10 overlap 0.82), H1 showed u_d as
+  answer/reply-like, pos_ctrl/c_hat as self-empty-impossible/error-like, neg_ctrl
+  as noisy, and profile localized the effective-dimension peak at hs=26 with L34/hs34
+  just after the hs=23-29 workspace-like band.'
+kg:
+- mechanism:j-space-mediated-actuation-fragility
+- term:global-workspace
+- method:jacobian-lens

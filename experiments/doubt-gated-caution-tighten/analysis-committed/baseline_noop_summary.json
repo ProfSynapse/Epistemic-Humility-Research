@@ -1,0 +1,23 @@
+{
+  "baseline_noop": {
+    "confab_tighten": {
+      "n": 185,
+      "successes": 21,
+      "rate": 0.11351351351351352,
+      "wilson_ci_95": [
+        0.07545368763448693,
+        0.16729734334659027
+      ]
+    },
+    "known_correct_cost_control": {
+      "n": 258,
+      "successes": 5,
+      "rate": 0.01937984496124031,
+      "wilson_ci_95": [
+        0.008305622283778815,
+        0.04455636100578339
+      ]
+    }
+  },
+  "source": "supplementary no-op baseline for pre-stated G3(i); no intervention, same held-out rows"
+}

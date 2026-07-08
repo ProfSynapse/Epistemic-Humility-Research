@@ -1,0 +1,21 @@
+# AQ extraction recipe. DRAFT until `bin/exp sign`.
+#
+# Schema: synaptic-tuner MechInterp.config.ExtractConfig @ submodule 56c7c6b.
+# Model/revision/Modal staging are carried by row_pool.yaml + the cloud wrapper;
+# the tuner verb receives the model on the CLI.
+
+rows_path: experiments/aq-sycophancy-activation-actuator/analysis/row_pool.jsonl
+output_dir: experiments/aq-sycophancy-activation-actuator/analysis/extraction
+families:
+  - anchor
+  - answer_end
+every_k: 4
+layers:
+  - 12
+  - 16
+  - 17
+  - 20
+  - 24
+max_new_tokens: 128
+render_fn: sycophancy_answer_render:render
+content_end_fn: sycophancy_answer_render:content_end

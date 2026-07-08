@@ -539,8 +539,12 @@ def cmd_sign(root: Path, slug: str) -> int:
         print(f"  {rel}: {sha}")
     for rel in steer_cells:
         print(
-            f"  reminder: {rel} is a tuner steer cell; set surface.expected_config_sha "
-            f"to its pin ({pins[rel]}) so the tuner aborts on drift"
+            f"  reminder: {rel} is a tuner steer cell. The pin above is a file-integrity "
+            "hash of the YAML bytes, not the value surface.expected_config_sha checks "
+            "(that compares against compute_config_sha over the parsed config, a "
+            "different hash). To set expected_config_sha: run the cell once with it "
+            "unset, copy the config_sha the tuner prints on completion "
+            '("Steer cell complete. Output ..., config_sha <X>"), and hand-fill that value.'
         )
     return 0
 
