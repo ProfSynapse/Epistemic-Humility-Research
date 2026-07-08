@@ -4,7 +4,7 @@ session_id: 20260708T164625Z-paper-5-j-space-hardening
 title: Paper 5 J-space hardening
 status: active
 created_at: '2026-07-08T16:46:25Z'
-updated_at: '2026-07-08T18:19:00Z'
+updated_at: '2026-07-08T20:46:47Z'
 phase: phase1
 question: Which registered follow-up experiments harden the Paper 5 actuation thesis,
   starting with a fresh Qwen3-4B J-space layer-site replication?
@@ -191,3 +191,36 @@ rows before the layer contrast.
     `selected_rows.jsonl`. `docs/public-artifacts.md` now lists the planned repo
     `professorsynapse/eh-jspace-fresh-pool-census-qwen3-4b` with the same
     no-text/no-alias/no-generation boundary.
+
+### 009-publication - Exhaustive census published
+
+- time: 2026-07-08T20:07:00Z
+- kind: publication
+- evidence:
+  - `experiments/j-space-layer-contrast-replication-qwen3-4b/analysis-committed/fresh_eval_pool_manifest.json`
+  - `docs/public-artifacts.md`
+  - `https://huggingface.co/datasets/professorsynapse/eh-jspace-fresh-pool-census-qwen3-4b`
+- summary: >
+    Exhaustive fresh-pool census completed: 12,923 generated candidates
+    (3,305 unknown, 9,618 known), selecting 306 fresh confabs and 1,957
+    known_correct_answered rows. Public-safe HF dataset uploaded to
+    `professorsynapse/eh-jspace-fresh-pool-census-qwen3-4b` at revision
+    `3add102ce930f73a29013f572f03e7325da30825`. Upload contains only
+    ID/provenance/role/behavior flags and excludes question text, aliases,
+    prompt text, generation text, hidden states, and intervention outputs.
+
+### 010-prep - Anchor extraction and smoke pass
+
+- time: 2026-07-08T20:46:47Z
+- kind: prep
+- evidence:
+  - `experiments/j-space-layer-contrast-replication-qwen3-4b/analysis/fresh_anchor_extract_manifest.json`
+  - `experiments/j-space-layer-contrast-replication-qwen3-4b/analysis/smoke_summary.json`
+- summary: >
+    Local 3090 prep completed over the full selected fresh pool. Anchor
+    extraction covered all 2,263 selected rows at hs23/26/29/34 in 83.2s. Smoke
+    contrast passed G0: `g0_smoke_pass=true`, readback means were hs23=24.9998,
+    hs26=74.9788, hs29=125.0104, hs34=174.9906, every layer had
+    `frac_readback_within_tol=1.0`, and dosed-row collapse was 0.0 for every
+    layer. Full outcome run remains held until the user prediction is recorded
+    and the amendment is signed.

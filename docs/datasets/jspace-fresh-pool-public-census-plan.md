@@ -1,6 +1,9 @@
 # J-space Fresh-Pool Public Census Plan
 
-Status: draft plan. This is not a dataset release.
+Status: published public-safe dataset release.
+
+HF repo: `professorsynapse/eh-jspace-fresh-pool-census-qwen3-4b`
+Revision: `3add102ce930f73a29013f572f03e7325da30825`
 
 ## Purpose
 
@@ -64,3 +67,11 @@ required notices.
 The immediate consumer is
 `experiments/j-space-layer-contrast-replication-qwen3-4b/`. Its signed evidence
 gate remains a minimum fresh-pool floor, not a publication claim.
+
+Published release counts:
+
+- generated candidates: 12,923
+- generated unknown: 3,305
+- generated known: 9,618
+- selected confab: 306
+- selected known_correct_answered: 1,957
