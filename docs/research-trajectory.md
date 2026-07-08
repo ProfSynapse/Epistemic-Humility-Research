@@ -172,21 +172,24 @@ superiority remains untested. Sources:
 `experiments/j-space-midband-dose-calibration-qwen3-4b/analysis-committed/dose_calibration_summary.json`,
 and `experiment/notes/j-space-midband-dose-calibration-qwen3-4b.md`.
 
-**J-space calibrated layer contrast (SIGNED, not yet launched, 2026-07-08):**
-the next held-out causal test is now registered as
-`j-space-calibrated-layer-contrast-qwen3-4b`. It compares hs23=25, hs26=75,
-hs29=125 against the late hs34=175 reference on the held-out confab and
-known-correct rows, with a smoke G0 before the full run. Prediction: the best
-mid-band layer beats hs34 by at least 10pp clean_tighten without more than 2pp
-known-correct cost regression, while hs34 remains viable. No outcome evidence
-exists until the local RTX 3090 run is explicitly launched and resolved.
+**J-space calibrated layer contrast (RESOLVED exploratory pass, 2026-07-08):**
+the held-out causal test `j-space-calibrated-layer-contrast-qwen3-4b` passed on
+raw-base Qwen3-4B bf16. Smoke G0 passed first, then the full local RTX 3090 run
+used the FIT-selected setpoints hs23=25, hs26=75, hs29=125, and hs34=175 over
+443 held-out rows. Best mid-band was hs23: confab clean_tighten 165/185 = 89.2%
+vs hs34 123/185 = 66.5%, delta +22.7pp; known-correct cost 9/258 = 3.5% vs
+hs34 7/258 = 2.7%, delta +0.78pp. G1/G2/G3 all passed, and hs34 remained a
+viable predecessor reference. Interpretation: this is first causal support for
+the layer-site account on this surface, not yet a cross-family or headline
+claim. Source:
+`experiments/j-space-calibrated-layer-contrast-qwen3-4b/AMENDMENT.md`.
 
 **Open questions for Paper 5:** Does a trained-checkpoint steering arm move the gate?
 (AA was flat on the raw base; trained checkpoints have a live gate — backlog item 3.)
 Whether ANY channel couples behavior to the model's own readout — text/prompt is
-compliance-only (AH); the reward channel is under test (AI). The new J-space fork asks
-whether prior residual writes were aimed too late: the signed calibrated held-out
-contrast should now run before claiming a workspace actuator.
+compliance-only (AH); the reward channel is under test (AI). The J-space fork now has
+surface-local causal support that prior residual writes were aimed too late; the next
+question is whether the mid-band advantage replicates beyond raw-base Qwen3-4B.
 
 ---
 

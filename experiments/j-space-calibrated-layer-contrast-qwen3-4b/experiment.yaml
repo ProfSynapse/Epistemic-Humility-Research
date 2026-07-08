@@ -1,6 +1,6 @@
 slug: j-space-calibrated-layer-contrast-qwen3-4b
 type: steer-cell
-status: signed
+status: resolved
 registered: true
 question: On raw-base Qwen3-4B, do calibrated J-space mid-band write sites hs23/hs26/hs29
   outperform the calibrated late hs34 reference on held-out confab tightening without
@@ -35,6 +35,7 @@ inputs:
 - experiments/j-space-midband-write-sweep-qwen3-4b/analysis-committed/PROVENANCE.md
 - experiments/j-space-midband-dose-calibration-qwen3-4b/AMENDMENT.md
 - experiments/j-space-midband-dose-calibration-qwen3-4b/analysis-committed/dose_calibration_summary.json
-verdict: ''
+verdict: 'Exploratory pass: hs23 was the best calibrated mid-band site, beating hs34
+  clean_tighten by 22.7pp with only +0.78pp known-correct cost; hs34 remained viable.'
 kg:
 - mechanism:j-space-mediated-actuation-fragility

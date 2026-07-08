@@ -1,6 +1,6 @@
 # j-space-calibrated-layer-contrast-qwen3-4b
 
-Status: signed (launch-gated; not yet run).
+Status: resolved (exploratory pass; local RTX 3090 run completed 2026-07-08).
 
 Keep this document the prose home for the experiment. The machine state lives in
 `experiment.yaml` and is never duplicated here.
@@ -98,5 +98,37 @@ interpretable evidence about mid-band superiority.
 
 ## Outcome
 
-Filled at resolve. Record the verdict, the gate results, and the one-sentence
-summary that also goes into `verdict:` in the manifest.
+Resolved as an exploratory pass on 2026-07-08. The smoke G0 passed first, then
+the full held-out run completed over 443 rows (185 confab, 258 known-correct).
+All selected doses matched the FIT calibration, every layer had readback within
+tolerance, and dosed-row collapse was 0 for every layer.
+
+Gate results:
+
+- **G1 passed**: best mid-band layer was hs23. It improved held-out confab
+  clean_tighten over hs34 by 22.7 percentage points: hs23 165/185 = 89.2%
+  (Wilson 95% CI [83.9%, 92.9%]) vs hs34 123/185 = 66.5% (Wilson 95% CI
+  [59.4%, 72.9%]).
+- **G2 passed**: known-correct false-refusal cost for the best mid-band layer
+  increased by only 0.78 percentage points over hs34: hs23 9/258 = 3.5% vs
+  hs34 7/258 = 2.7%.
+- **G3 passed**: hs34 remained a viable predecessor reference: 66.5%
+  clean_tighten with Wilson lower bound 59.4%, above the 60% rate and 50%
+  lower-bound floors.
+
+Descriptive layer ordering: hs23 was best on the registered contrast, followed
+closely by hs29 (163/185 = 88.1% clean_tighten, 10/258 = 3.9% cost), then hs26
+(150/185 = 81.1%, 8/258 = 3.1%), then hs34 (123/185 = 66.5%, 7/258 = 2.7%).
+
+Interpretation: on this raw-base Qwen3-4B bf16 surface, calibrated mid-band
+J-space writes beat the late hs34 reference on held-out confab tightening
+without a meaningful known-correct cost regression. This supports the layer-site
+part of the J-space actuation-bridge hypothesis for this surface. It remains
+exploratory Tier-2 evidence, not a headline confirmatory claim or cross-family
+result.
+
+Run limitation: this bespoke runner was not row-checkpointed. It wrote the
+public aggregate only at completion; future dose/contrast cells should use the
+generic tuner checkpoint/resume path where feasible.
+
+Public aggregate: `analysis-committed/full_summary.json`.
