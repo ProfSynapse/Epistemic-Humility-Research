@@ -38,9 +38,9 @@ Empirical anchors from 2026-07-08:
 - `Qwen/Qwen3.5-4B` baseline generation at batch 80 completed with peak GPU
   memory about 13.8/39.5 GiB. Start future 4B-class cells around batch 160, then
   adjust after the first persisted batch and peak-memory marker.
-- `Qwen/Qwen3.5-9B` baseline generation is running at batch 48 on A100-class
-  hardware. Start future 8B/9B-class cells at batch 64-96 when the first
-  peak-memory marker shows enough headroom; otherwise keep 48.
+- `Qwen/Qwen3.5-9B` baseline generation and anchor capture completed at batch
+  48 with capture peak about 22.3/39.5 GiB. Relaunch 9B-class cells at batch 96
+  unless steer-stage memory pressure appears.
 
 Generation, capture, and steering can have different memory curves, so treat
 baseline headroom as a launch heuristic rather than a guarantee for every stage.

@@ -6,6 +6,17 @@ in `experiment.yaml`.
 
 ## Entries
 
+- 2026-07-08 08:55 EDT: Qwen3.5 4B and 9B stopped at the pre-outcome
+  `batched_parity_smoke` guard after baseline generation, anchor capture,
+  direction fitting, and FIT gate fitting all completed. This was not an OOM,
+  model-load failure, or intervention failure; no held-out steering outcome was
+  run. The guard implementation compared exact generated token IDs, while the
+  registered gate in `gates.yaml` specifies identical parsed answers plus stop
+  reasons. Updated `prep_tuner_cell.py` to enforce the registered semantic
+  parity criterion. Existing volume-backed baseline/capture artifacts are
+  resumable; relaunch should re-enter prep, re-check parity, and proceed to FIT
+  dose sweep if the semantic smoke passes.
+
 - 2026-07-08 08:40 EDT: Batch-sizing lesson from the first Qwen3.5 Modal
   cells: after the live-volume durability fix, do not use conservative smoke
   batch sizes as production defaults. Qwen3.5 4B baseline generation completed

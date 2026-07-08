@@ -342,16 +342,23 @@ def run_batch_parity_smoke(cell: dict[str, Any], reference_rows: list[dict[str, 
     seq = {r["id"]: r for r in load_jsonl(gen_dir / "completions.jsonl")}
     mismatches = []
     for row in smoke_rows:
-        ref_ids = [int(x) for x in row.get("baseline_token_ids", [])]
+        ref_answer = parsed_answer_value(row.get("baseline_text", ""))
         seq_row = seq[row["row_key"]]
-        seq_ids = [int(x) for x in seq_row.get("completion_token_ids", [])]
-        if ref_ids != seq_ids or row.get("baseline_finish_reason") != seq_row.get("finish_reason"):
+        seq_answer = parsed_answer_value(seq_row.get("completion_text", ""))
+        if ref_answer != seq_answer or row.get("baseline_finish_reason") != seq_row.get("finish_reason"):
             mismatches.append(row["row_key"])
     return {
         "passed": not mismatches,
         "n_rows": len(smoke_rows),
         "mismatches": mismatches[:10],
     }
+
+
+def parsed_answer_value(text: str) -> str | None:
+    obj, _ = gen_lib._find_first_json_object(str(text or ""))
+    if isinstance(obj, dict) and "answer" in obj:
+        return str(obj["answer"])
+    return None
 
 
 def assign_roles(graded: list[dict[str, Any]]) -> list[dict[str, Any]]:
