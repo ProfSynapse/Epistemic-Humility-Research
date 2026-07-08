@@ -1,5 +1,5 @@
 # J-space internal token-targeted refusal write. DRAFT until `bin/exp sign`.
-# Do not launch: runner implementation and row-checkpointing are still pending.
+# Full held-out launch requires the signed amendment gate.
 
 seed: 20260708
 
@@ -44,28 +44,16 @@ readouts:
 
 token_target_direction:
   primitive: jlens_target_minus_anti_target_hidden_direction
-  implementation_status: pending
-  positive_bundle:
-    description: refusal/abstention/unknown JSON-supporting tokens fixed before FIT calibration
-    examples:
-      - "I"
-      - "don't"
-      - "know"
-      - "cannot"
-      - "unknown"
-      - "null"
-      - "refusal"
-  negative_bundle:
-    description: answer/reply/continuation tokens fixed before FIT calibration
-    examples:
-      - "answer"
-      - "reply"
-      - "答案"
-      - "回答"
+  implementation_status: implemented_project_runner
+  bundle_config: experiments/j-space-token-targeted-refusal-qwen3-4b/token_bundle.yaml
+  selected_primary_bundle: concrete_refusal_surface
+  bundle_scope: observed_natural_tokens_only
   dose_selection:
     split: fit_only
-    ladder: pending_runner
+    ladder: [5, 10, 15, 25, 40, 60]
     objective: maximize clean_tighten subject to zero collapse and known-correct cost guard
+    selected_j_token_dose: 5.0
+    selected_from: experiments/j-space-token-targeted-refusal-qwen3-4b/analysis-committed/fit_calibration_summary.json
 
 arms:
   - name: c_hat_only_hs23
@@ -79,7 +67,7 @@ arms:
     gate: frozen_doubt_gate
     writes:
       - direction: jlens_token_target
-        dose: fit_selected
+        dose: 5.0
   - name: c_hat_plus_j_token_hs23
     layer: hs23
     gate: frozen_doubt_gate
@@ -87,7 +75,7 @@ arms:
       - direction: c_hat
         dose: 25
       - direction: jlens_token_target
-        dose: fit_selected
+        dose: 5.0
   - name: c_hat_plus_random_j_hs23
     layer: hs23
     gate: frozen_doubt_gate
@@ -95,7 +83,7 @@ arms:
       - direction: c_hat
         dose: 25
       - direction: random_j_space_control
-        dose: matched_token_target_norm
+        dose: 5.0
   - name: c_hat_plus_j_token_hs29
     layer: hs29
     gate: frozen_doubt_gate
@@ -104,8 +92,12 @@ arms:
       - direction: c_hat
         dose: 125
       - direction: jlens_token_target
-        dose: fit_selected
+        dose: 5.0
 
 outputs:
   checkpointed_private_rows: experiments/j-space-token-targeted-refusal-qwen3-4b/analysis/
   committed_public_summary: experiments/j-space-token-targeted-refusal-qwen3-4b/analysis-committed/full_summary.json
+  row_checkpoint_policy: private_jsonl_fsync_resume_sanitized_no_prompt_alias_or_decoded_answer_text
+  resume_optimizations:
+    - shared_fit_c_hat_baseline
+    - same_layer_gate_inactive_noop_seed_records

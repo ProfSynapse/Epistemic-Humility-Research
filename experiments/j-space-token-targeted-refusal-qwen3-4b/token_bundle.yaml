@@ -1,0 +1,44 @@
+# J-space token-target bundle. DRAFT until `bin/exp sign`.
+schema: jspace-token-bundle/v1
+seed: 20260708
+model: unsloth/Qwen3-4B
+tokenizer_source: unsloth/Qwen3-4B
+selection_basis:
+  - Same-substrate J-lens H1 readout from j-space-localization-qwen3-4b.
+  - Qwen3 tokenizer single-piece audit for observed refusal/absence and answer tokens.
+  - First run uses the model's natural observed J-space tokens only; abstract
+    and multilingual dense-token variants are deferred to a separate experiment.
+
+primary_bundle:
+  name: concrete_refusal_surface
+  role: held_out_token_target
+  construction: weighted_positive_minus_negative
+  positive_tokens:
+    - {text: "\"I", token_id: 7044, weight: 1.0, role: json_refusal_prefix}
+    - {text: " I", token_id: 358, weight: 1.0, role: first_person_refusal}
+    - {text: " know", token_id: 1414, weight: 1.0, role: idk_phrase_piece}
+    - {text: " cannot", token_id: 4157, weight: 1.0, role: inability_refusal}
+    - {text: " unable", token_id: 11889, weight: 1.0, role: inability_refusal}
+    - {text: " impossible", token_id: 11997, weight: 1.0, role: impossibility_refusal}
+    - {text: " unknown", token_id: 9788, weight: 1.0, role: unknown_refusal}
+    - {text: " insufficient", token_id: 38313, weight: 1.0, role: evidence_lack}
+    - {text: " null", token_id: 845, weight: 0.5, role: json_absence_support}
+  negative_tokens:
+    - {text: " answer", token_id: 4226, weight: 1.0, role: answer_continuation}
+    - {text: "answer", token_id: 9217, weight: 1.0, role: answer_continuation}
+    - {text: " answers", token_id: 11253, weight: 1.0, role: answer_continuation}
+    - {text: "_answer", token_id: 28534, weight: 1.0, role: answer_field_continuation}
+    - {text: " reply", token_id: 9851, weight: 1.0, role: reply_continuation}
+    - {text: "reply", token_id: 21034, weight: 1.0, role: reply_continuation}
+    - {text: " response", token_id: 2033, weight: 0.5, role: response_continuation}
+    - {text: "答案", token_id: 102349, weight: 1.0, role: observed_answer_axis_token}
+    - {text: "回答", token_id: 102104, weight: 1.0, role: observed_answer_axis_token}
+    - {text: "的答案", token_id: 111230, weight: 1.0, role: observed_answer_axis_token}
+    - {text: "的回答", token_id: 111423, weight: 1.0, role: observed_answer_axis_token}
+    - {text: "ANS", token_id: 11692, weight: 0.5, role: answer_fragment}
+
+deferred_followup: >
+  Dense English labels, Chinese/Japanese/Korean refusal tokens, and other
+  multilingual compact-token bundles are intentionally out of scope for this
+  first causal run. They should be screened in a later experiment after the
+  natural-token target is measured.

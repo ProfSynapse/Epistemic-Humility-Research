@@ -1,0 +1,19 @@
+{
+  "schema": "jspace-token-target-direction-manifest/v1",
+  "bundle": "/home/profsynapse/code/ehr-worktrees/j-space/experiments/j-space-token-targeted-refusal-qwen3-4b/token_bundle.yaml",
+  "layers": {
+    "hs23": {
+      "path": "/home/profsynapse/code/ehr-worktrees/j-space/experiments/j-space-token-targeted-refusal-qwen3-4b/analysis-committed/token_directions/token_target_hs23.json",
+      "sigma": 0.15878787436592814,
+      "raw_grad_norm": 0.4237491424429734,
+      "n_fit_rows": 296
+    },
+    "hs29": {
+      "path": "/home/profsynapse/code/ehr-worktrees/j-space/experiments/j-space-token-targeted-refusal-qwen3-4b/analysis-committed/token_directions/token_target_hs29.json",
+      "sigma": 0.9635361806502942,
+      "raw_grad_norm": 0.12217967002253374,
+      "n_fit_rows": 296
+    }
+  },
+  "row_text_committed": false
+}

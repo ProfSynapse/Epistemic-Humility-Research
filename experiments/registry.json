@@ -395,10 +395,20 @@
       "instrument": {
         "configs": [
           "cell.yaml",
-          "gates.yaml"
+          "gates.yaml",
+          "token_bundle.yaml"
         ],
-        "modules": [],
-        "pins": {}
+        "modules": [
+          "token_bundle_audit.py",
+          "run_token_target.py"
+        ],
+        "pins": {
+          "cell.yaml": "214d13e6cc61c1b145905ef0d2155aa69b43fd981f83ff4b15df91e31e8e9673",
+          "gates.yaml": "87548f7a226f798ecbf393e5070021034d1fd463cb0a8053524053e8b176dc0e",
+          "run_token_target.py": "8c5c29c50a7dc76d7a1365ab0b25e4e3f3d54385c68d3f8ac51779f41b1155df",
+          "token_bundle.yaml": "c9132a5d95a3ed481abdeb30dcd713090b4b25a88feae76f0b8cc2351c1f31e4",
+          "token_bundle_audit.py": "999e0116a2285c148336f77c1a9b881d95bc5e14aca04150fcad607cf583eeb7"
+        }
       },
       "kg": [
         "mechanism:j-space-mediated-actuation-fragility"
@@ -407,9 +417,9 @@
       "question": "On raw-base Qwen3-4B, can an internal J-lens token-target refusal write at hs23 improve the resolved doubt-gated caution snap without increasing known-correct cost?",
       "registered": true,
       "slug": "j-space-token-targeted-refusal-qwen3-4b",
-      "status": "draft",
+      "status": "falsified",
       "type": "steer-cell",
-      "verdict": ""
+      "verdict": "Exploratory falsification: the hs23 J-token hybrid wrote accurately and safely but improved clean_tighten by only +0.54pp over c_hat_only, below the pre-stated +4pp threshold."
     }
   ]
 }

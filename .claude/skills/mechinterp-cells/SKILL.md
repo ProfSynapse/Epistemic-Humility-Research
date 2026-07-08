@@ -147,7 +147,11 @@ independent). Blocks map 1:1 to the tuner Pydantic schema
    - `permuted_control_of` + `control_seed` (a seeded, count-matched random draw
      that probes the same dose on a different population).
 5. **execution** - `output_path` (the per-row JSONL), `resume` (skip rows already
-   present), and an optional `grader` (`module:callable`).
+   present), optional `grader` (`module:callable`), and optional
+   `redact_fields` (recursive field names to drop before per-row records are
+   persisted, e.g. restricted `answer_text`, `aliases`, `answer_value`, or
+   `raw_output` fields that a grader may need transiently but the checkpoint
+   must not retain).
 6. **smoke** - readback tolerances (`n_rows`, `write_rel_tol`, `write_abs_floor`,
    `offtarget_tol`). Before the full arms run, a small smoke pass applies the
    intervention and reads back the realized projection. `steer` refuses the full
@@ -179,11 +183,14 @@ bespoke script. The config schema is `DoseCalibrationConfig`:
   `strength = dose / sigma`. `dose_kind: strength` passes values directly to the
   hook.
 - `execution` - `output_path` per-row checkpoint JSONL, `summary_path`
-  aggregate JSON, `resume`, `render_fn`, optional `grader`, and `batch_size`.
+  aggregate JSON, `resume`, `render_fn`, optional `grader`, `batch_size`, and
+  optional `redact_fields` for restricted per-row fields.
 
 Resume is keyed by `(readout, dose, row_key)` against `execution.output_path`.
 Every completed row is fsynced as it lands, so interrupted runs continue from
-the last missing triple when `resume: true`.
+the last missing triple when `resume: true`. If the row pool or grader carries
+restricted text, set `execution.redact_fields` so the grader can use those fields
+in memory while the persisted checkpoint remains safe to keep under `analysis/`.
 
 Minimal direct launch, from the repo root:
 
@@ -473,6 +480,28 @@ reader can consume.
 | `persist_probe_direction.py` (fit + persist direction) | `mechinterp probe-fit` -> frozen `mechinterp-direction/v1` JSON |
 | bespoke erase-write dose sweeps | `mechinterp dose-calibrate` with `calibration.doses`, `dose_kind`, checkpoint JSONL, and summary JSON |
 | `run_arm_a.py` / `run_arm_b.py` orchestration | `arms` block in one `cell.yaml` (fixed / score-thresholded / flagged / permuted-control) |
+
+Current genericization gap: compound multi-write arms (for example `c_hat` plus
+a second token-target direction in one generation pass) and J-lens/token-target
+direction builders are not yet first-class tuner verbs. The reusable shape is:
+
+- tuner-owned: schema for one arm carrying multiple readout writes, each with
+  its own readout, layer override, setpoint/strength, and optional readback;
+- project-owned: prompt rendering, row splits, gates, graders, and token/J-lens
+  bundles;
+- tuner-owned: deterministic checkpoint/resume, recursive `redact_fields`, and
+  smoke/readback validation;
+- project-owned: which fields are restricted and which aggregate metrics define
+  a given amendment's gates.
+
+Do not promote experiment-local no-op record seeding until the runner can assert
+the generation contract is deterministic (`do_sample: false`) and the arm is
+provably off for that row. Under sampling, copied no-op rows are not a valid
+resume optimization.
+
+Keep one-off versions project-side only long enough to settle the interface,
+then promote the interface as a config-driven tuner surface rather than copying
+another bespoke runner.
 
 ## Invariants
 
