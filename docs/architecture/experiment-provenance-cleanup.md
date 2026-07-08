@@ -23,7 +23,7 @@ Implementation status:
   `status: historical` records, wrote `docs/migration/experiment-path-map.json`,
   and rewrote active references across `docs/`, `experiment/`, `experiments/`,
   `library/`, skill docs, and scripts.
-- Post-migration audit: 51 experiments-first manifests, 0 legacy amendment files,
+- Post-migration audit: 52 experiments-first manifests, 0 legacy amendment files,
   0 active legacy amendment link targets. Remaining legacy paths are
   compatibility metadata only: migration map, test fixtures, generated registry
   metadata, and imported manifest `legacy.path`.
@@ -31,7 +31,7 @@ Implementation status:
   into timestamped stems, wrote `docs/migration/session-path-map.json`, preserved
   prior identity under `legacy_session`, and rewrote live references across the
   repo.
-- Post-session audit: 50 session files, 0 legacy numbered filenames, 0 duplicate
+- Post-session audit: 51 session files, 0 legacy numbered filenames, 0 duplicate
   session IDs, 0 serial-only session IDs, 0 active numeric shorthand session
   references. Remaining numeric shorthand references are compatibility examples
   inside the migration tool and its tests.
