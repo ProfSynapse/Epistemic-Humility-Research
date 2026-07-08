@@ -125,14 +125,17 @@ def run_one_cell(
             )
         dst = Path(VOL_MOUNT) / RUN_TAG / cell_id
         dst.mkdir(parents=True, exist_ok=True)
-        for rel in (
-            Path("experiments") / EXPERIMENT_SLUG / "analysis-committed" / cell_id,
-            Path("experiments") / EXPERIMENT_SLUG / "analysis" / cell_id,
+        for target_name, rel in (
+            (
+                "analysis-committed",
+                Path("experiments") / EXPERIMENT_SLUG / "analysis-committed" / cell_id,
+            ),
+            ("analysis", Path("experiments") / EXPERIMENT_SLUG / "analysis" / cell_id),
         ):
             src = workspace / rel
             if not src.exists():
                 continue
-            target = dst / rel.name
+            target = dst / target_name
             if target.exists():
                 shutil.rmtree(target)
             shutil.copytree(src, target)
