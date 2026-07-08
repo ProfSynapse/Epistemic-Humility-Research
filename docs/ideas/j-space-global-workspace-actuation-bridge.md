@@ -1,7 +1,8 @@
 # J-space (global workspace) as an actuation bridge
 
-Status: H1 localization resolved 2026-07-07; bridge actuation tests still
-queued. This note is an idea home, not a signed protocol.
+Status: H1 localization resolved 2026-07-07; FIT-only dose calibration resolved
+2026-07-08; calibrated held-out bridge actuation contrast is next. This note is
+an idea home, not a signed protocol.
 
 ## Source
 
@@ -86,9 +87,17 @@ choice for every actuation cell, including the two-signal experiment.
    answer/reply-like; `neg_ctrl` is a noisy local null. Layer profile localizes
    the Qwen3-4B workspace-like effective-dimensionality band to hs=23-29,
    peaking at hs=26; L34 maps to hs=34 and is just after that band.
-3. Layer sweep of the existing caution write across mid vs late layers on the
-   two-signal both-tail surface, testing the motor-regime prediction.
-4. H2 injection head-to-head: workspace injection of an abstention concept vs
+3. **G0 stop 2026-07-07**: Initial mid-band layer sweep at absolute dose 200
+   prepared successfully and read back accurately, but collapsed hs23/hs26
+   before held-out outcome. This identified dose portability as the immediate
+   failure mode.
+4. **DONE 2026-07-08**: FIT-only dose calibration recovered usable
+   non-collapsing setpoints for all layers: hs23=25, hs26=75, hs29=125,
+   hs34=175. This keeps the layer-site hypothesis alive but does not test
+   held-out mid-band superiority.
+5. Calibrated held-out layer contrast: compare hs23=25, hs26=75, hs29=125
+   against hs34=175 on the two-signal both-tail surface.
+6. H2 injection head-to-head: workspace injection of an abstention concept vs
    erase-write caution, same surface, same selectivity gates.
 
 ## H1 result update (2026-07-07)
@@ -104,6 +113,15 @@ effective-dimensionality peak at hs=26, with a broader hs=23-29 band and decline
 by hs=35/36. Therefore the next write test should not simply repeat L34 with a
 new vector. It should compare mid-band writes, especially hs=23/26/29, against
 the existing L34/hs34 site on identical gates.
+
+## Dose-calibration update (2026-07-08)
+
+The first causal successor exposed an instrumental assumption: absolute dose 200
+is not portable across layer sites. hs23 and hs26 collapsed at dose 200, so the
+held-out contrast stopped at G0. A FIT-only calibration then recovered usable
+setpoints for every site: hs23=25, hs26=75, hs29=125, hs34=175. The correct next
+test is therefore not "does dose 200 work mid-band?" but "with calibrated
+setpoints, do mid-band writes beat or differ from hs34 on held-out rows?"
 
 ## Feasibility and caveats
 

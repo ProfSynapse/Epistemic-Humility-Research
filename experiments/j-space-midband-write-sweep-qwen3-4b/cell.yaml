@@ -1,0 +1,86 @@
+# J-space mid-band write sweep. DRAFT until `bin/exp sign`.
+# Local raw-base Qwen3-4B only; direct predecessor is
+# experiments/doubt-gated-caution-tighten, not the old trained-checkpoint cells.
+
+seed: 20260707
+
+surface:
+  model: unsloth/Qwen3-4B
+  substrate: bf16
+  adapter: none
+  source_split_manifest: experiments/common/doubt-gated-caution-tighten-heldout-split/split_manifest.json
+  local_rows_path: experiments/j-space-midband-write-sweep-qwen3-4b/analysis/rows_with_text.jsonl
+  generation:
+    max_new_tokens: 200
+    min_new_tokens: 1
+    do_sample: false
+    eos_includes_im_end: true
+    enable_thinking: false
+  containment:
+    committed_row_text: forbidden
+    committed_aliases: forbidden
+
+layers:
+  j_space_midband_hs:
+    - 23
+    - 26
+    - 29
+  late_reference_hs: 34
+  rationale: >-
+    j-space-localization-qwen3-4b found the workspace-like band at hs=23-29
+    with peak hs=26, while the predecessor write site L34 maps to hs=34.
+
+readouts:
+  fit_per_layer: true
+  fit_population: FIT split only
+  u_d:
+    role: doubt gate sensor
+    fit: "unit(mean(H[known_correct_answered FIT]) - mean(H[unknown_refused]))"
+  pos_ctrl:
+    role: source caution direction
+    fit: "mass-mean unknown_refused minus confab FIT"
+  neg_ctrl:
+    role: confab-propensity orthogonalizer
+    fit: "standardized logistic direction, FIT confab vs unknown_refused"
+  c_hat:
+    role: snap write direction
+    fit: "unit(pos_ctrl orthogonalized against {u_d, neg_ctrl})"
+
+gate:
+  score: neg_z_d
+  fire_rule: "score >= tau"
+  tau_fit: Youden-J on FIT confab vs known_correct_answered, separately per layer
+  min_fit_auc: 0.90
+
+snap:
+  law: erase_write
+  position: anchor_onward
+  dose_target: 200.0
+  dose_source: predecessor coherent-window sweet spot from doubt-gated-caution-tighten
+  note: >-
+    Fixed dose preserves the predecessor mechanism while testing layer site.
+    A failed smoke/readback at a mid-band layer is G0, not a behavioral result.
+
+arms:
+  - name: hs23_gated
+    hs_index: 23
+  - name: hs26_gated
+    hs_index: 26
+  - name: hs29_gated
+    hs_index: 29
+  - name: hs34_gated_reference
+    hs_index: 34
+
+execution:
+  lane: local_3090
+  extract_script: experiments/j-space-midband-write-sweep-qwen3-4b/extract_layer_sweep_anchor.py
+  direction_script: experiments/j-space-midband-write-sweep-qwen3-4b/build_directions.py
+  gate_script: experiments/j-space-midband-write-sweep-qwen3-4b/gate_fit.py
+  materialize_script: experiments/j-space-midband-write-sweep-qwen3-4b/materialize_rows.py
+  run_script: experiments/j-space-midband-write-sweep-qwen3-4b/pipeline.py
+  smoke_command: "python pipeline.py --mode smoke --n-rows 8 --dose 200"
+  full_command: "python pipeline.py --mode full --dose 200 --i-know-this-is-the-confirmatory-run"
+
+outputs:
+  local_private_dir: experiments/j-space-midband-write-sweep-qwen3-4b/analysis/
+  committed_public_dir: experiments/j-space-midband-write-sweep-qwen3-4b/analysis-committed/

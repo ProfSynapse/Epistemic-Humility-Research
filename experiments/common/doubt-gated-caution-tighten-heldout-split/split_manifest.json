@@ -1,0 +1,3719 @@
+{
+  "seed": 20260707,
+  "fit_frac": 0.4,
+  "gate_roles": [
+    "confab",
+    "known_correct_answered"
+  ],
+  "counts": {
+    "confab": {
+      "n_total": 309,
+      "n_fit": 124,
+      "n_held_out": 185
+    },
+    "known_correct_answered": {
+      "n_total": 430,
+      "n_fit": 172,
+      "n_held_out": 258
+    }
+  },
+  "n_unknown_refused_fit_only": 1029,
+  "extract_manifest_n_rows_extracted": 1768,
+  "rows": [
+    {
+      "row_key": "ahx::kuq_ku_unknown_x::001893",
+      "role": "confab",
+      "split": "fit"
+    },
+    {
+      "row_key": "ah::kuq_ku_unknown::001938",
+      "role": "confab",
+      "split": "fit"
+    },
+    {
+      "row_key": "ahx::kuq_ku_unknown_x::001106",
+      "role": "confab",
+      "split": "fit"
+    },
+    {
+      "row_key": "ahx::kuq_ku_unknown_x::002650",
+      "role": "confab",
+      "split": "held_out"
+    },
+    {
+      "row_key": "ahx::kuq_ku_unknown_x::002751",
+      "role": "confab",
+      "split": "fit"
+    },
+    {
+      "row_key": "ahx::kuq_ku_unknown_x::001029",
+      "role": "confab",
+      "split": "held_out"
+    },
+    {
+      "row_key": "ahx::kuq_ku_unknown_x::001110",
+      "role": "confab",
+      "split": "held_out"
+    },
+    {
+      "row_key": "ahx::kuq_ku_unknown_x::001741",
+      "role": "confab",
+      "split": "fit"
+    },
+    {
+      "row_key": "ah::selfaware_unanswerable::002663",
+      "role": "confab",
+      "split": "held_out"
+    },
+    {
+      "row_key": "ahx::kuq_ku_unknown_x::000518",
+      "role": "confab",
+      "split": "fit"
+    },
+    {
+      "row_key": "ah::kuq_ku_unknown::002896",
+      "role": "confab",
+      "split": "held_out"
+    },
+    {
+      "row_key": "ah::selfaware_unanswerable::003031",
+      "role": "confab",
+      "split": "fit"
+    },
+    {
+      "row_key": "ahx::kuq_ku_unknown_x::003422",
+      "role": "confab",
+      "split": "fit"
+    },
+    {
+      "row_key": "ahx::kuq_ku_unknown_x::000118",
+      "role": "confab",
+      "split": "held_out"
+    },
+    {
+      "row_key": "ah::kuq_ku_unknown::003436",
+      "role": "confab",
+      "split": "fit"
+    },
+    {
+      "row_key": "ahx::kuq_ku_unknown_x::001957",
+      "role": "confab",
+      "split": "fit"
+    },
+    {
+      "row_key": "ahx::kuq_ku_unknown_x::001020",
+      "role": "confab",
+      "split": "held_out"
+    },
+    {
+      "row_key": "ah::selfaware_unanswerable::003060",
+      "role": "confab",
+      "split": "held_out"
+    },
+    {
+      "row_key": "ah::kuq_ku_unknown::002826",
+      "role": "confab",
+      "split": "held_out"
+    },
+    {
+      "row_key": "ahx::kuq_ku_unknown_x::001003",
+      "role": "confab",
+      "split": "held_out"
+    },
+    {
+      "row_key": "ah::kuq_ku_unknown::002504",
+      "role": "confab",
+      "split": "fit"
+    },
+    {
+      "row_key": "ahx::kuq_ku_unknown_x::001250",
+      "role": "confab",
+      "split": "held_out"
+    },
+    {
+      "row_key": "ahx::kuq_ku_unknown_x::003415",
+      "role": "confab",
+      "split": "held_out"
+    },
+    {
+      "row_key": "ah::selfaware_unanswerable::002701",
+      "role": "confab",
+      "split": "held_out"
+    },
+    {
+      "row_key": "ahx::kuq_ku_unknown_x::003492",
+      "role": "confab",
+      "split": "held_out"
+    },
+    {
+      "row_key": "ahx::kuq_ku_unknown_x::001083",
+      "role": "confab",
+      "split": "fit"
+    },
+    {
+      "row_key": "ah::selfaware_unanswerable::002328",
+      "role": "confab",
+      "split": "fit"
+    },
+    {
+      "row_key": "ahx::kuq_ku_unknown_x::002089",
+      "role": "confab",
+      "split": "held_out"
+    },
+    {
+      "row_key": "ahx::kuq_ku_unknown_x::002856",
+      "role": "confab",
+      "split": "held_out"
+    },
+    {
+      "row_key": "ahx::kuq_ku_unknown_x::002021",
+      "role": "confab",
+      "split": "held_out"
+    },
+    {
+      "row_key": "ahx::kuq_ku_unknown_x::002592",
+      "role": "confab",
+      "split": "held_out"
+    },
+    {
+      "row_key": "ahx::kuq_ku_unknown_x::001195",
+      "role": "confab",
+      "split": "held_out"
+    },
+    {
+      "row_key": "ah::selfaware_unanswerable::001427",
+      "role": "confab",
+      "split": "held_out"
+    },
+    {
+      "row_key": "ah::kuq_ku_unknown::003845",
+      "role": "confab",
+      "split": "fit"
+    },
+    {
+      "row_key": "ahx::kuq_ku_unknown_x::001886",
+      "role": "confab",
+      "split": "held_out"
+    },
+    {
+      "row_key": "ahx::kuq_ku_unknown_x::002185",
+      "role": "confab",
+      "split": "held_out"
+    },
+    {
+      "row_key": "ah::selfaware_unanswerable::003485",
+      "role": "confab",
+      "split": "held_out"
+    },
+    {
+      "row_key": "ahx::kuq_ku_unknown_x::002012",
+      "role": "confab",
+      "split": "held_out"
+    },
+    {
+      "row_key": "ahx::kuq_ku_unknown_x::002901",
+      "role": "confab",
+      "split": "held_out"
+    },
+    {
+      "row_key": "ah::kuq_ku_unknown::002522",
+      "role": "confab",
+      "split": "fit"
+    },
+    {
+      "row_key": "ah::kuq_ku_unknown::000179",
+      "role": "confab",
+      "split": "held_out"
+    },
+    {
+      "row_key": "ah::selfaware_unanswerable::002265",
+      "role": "confab",
+      "split": "held_out"
+    },
+    {
+      "row_key": "ah::kuq_ku_unknown::002731",
+      "role": "confab",
+      "split": "fit"
+    },
+    {
+      "row_key": "ahx::kuq_ku_unknown_x::003123",
+      "role": "confab",
+      "split": "fit"
+    },
+    {
+      "row_key": "ahx::kuq_ku_unknown_x::002744",
+      "role": "confab",
+      "split": "held_out"
+    },
+    {
+      "row_key": "ahx::kuq_ku_unknown_x::002758",
+      "role": "confab",
+      "split": "fit"
+    },
+    {
+      "row_key": "ahx::kuq_ku_unknown_x::002044",
+      "role": "confab",
+      "split": "held_out"
+    },
+    {
+      "row_key": "ah::kuq_ku_unknown::001446",
+      "role": "confab",
+      "split": "held_out"
+    },
+    {
+      "row_key": "ahx::kuq_ku_unknown_x::001038",
+      "role": "confab",
+      "split": "fit"
+    },
+    {
+      "row_key": "ahx::kuq_ku_unknown_x::001627",
+      "role": "confab",
+      "split": "fit"
+    },
+    {
+      "row_key": "ahx::kuq_ku_unknown_x::002902",
+      "role": "confab",
+      "split": "fit"
+    },
+    {
+      "row_key": "ah::kuq_ku_unknown::000708",
+      "role": "confab",
+      "split": "held_out"
+    },
+    {
+      "row_key": "ah::kuq_ku_unknown::001425",
+      "role": "confab",
+      "split": "held_out"
+    },
+    {
+      "row_key": "ahx::kuq_ku_unknown_x::000619",
+      "role": "confab",
+      "split": "fit"
+    },
+    {
+      "row_key": "ah::kuq_ku_unknown::001996",
+      "role": "confab",
+      "split": "held_out"
+    },
+    {
+      "row_key": "ah::kuq_ku_unknown::001885",
+      "role": "confab",
+      "split": "held_out"
+    },
+    {
+      "row_key": "ah::selfaware_unanswerable::003930",
+      "role": "confab",
+      "split": "held_out"
+    },
+    {
+      "row_key": "ahx::kuq_ku_unknown_x::000850",
+      "role": "confab",
+      "split": "held_out"
+    },
+    {
+      "row_key": "ahx::kuq_ku_unknown_x::002043",
+      "role": "confab",
+      "split": "held_out"
+    },
+    {
+      "row_key": "ah::selfaware_unanswerable::003892",
+      "role": "confab",
+      "split": "fit"
+    },
+    {
+      "row_key": "ahx::kuq_ku_unknown_x::002915",
+      "role": "confab",
+      "split": "fit"
+    },
+    {
+      "row_key": "ah::kuq_ku_unknown::000540",
+      "role": "confab",
+      "split": "fit"
+    },
+    {
+      "row_key": "ah::selfaware_unanswerable::003273",
+      "role": "confab",
+      "split": "held_out"
+    },
+    {
+      "row_key": "ah::kuq_ku_unknown::002711",
+      "role": "confab",
+      "split": "held_out"
+    },
+    {
+      "row_key": "ahx::kuq_ku_unknown_x::002640",
+      "role": "confab",
+      "split": "fit"
+    },
+    {
+      "row_key": "ahx::kuq_ku_unknown_x::001943",
+      "role": "confab",
+      "split": "held_out"
+    },
+    {
+      "row_key": "ah::selfaware_unanswerable::000648",
+      "role": "confab",
+      "split": "held_out"
+    },
+    {
+      "row_key": "ahx::kuq_ku_unknown_x::000840",
+      "role": "confab",
+      "split": "held_out"
+    },
+    {
+      "row_key": "ah::selfaware_unanswerable::002505",
+      "role": "confab",
+      "split": "fit"
+    },
+    {
+      "row_key": "ahx::kuq_ku_unknown_x::001189",
+      "role": "confab",
+      "split": "fit"
+    },
+    {
+      "row_key": "ahx::kuq_ku_unknown_x::002265",
+      "role": "confab",
+      "split": "held_out"
+    },
+    {
+      "row_key": "ahx::kuq_ku_unknown_x::001903",
+      "role": "confab",
+      "split": "fit"
+    },
+    {
+      "row_key": "ah::kuq_ku_unknown::000041",
+      "role": "confab",
+      "split": "fit"
+    },
+    {
+      "row_key": "ah::kuq_ku_unknown::000802",
+      "role": "confab",
+      "split": "fit"
+    },
+    {
+      "row_key": "ahx::kuq_ku_unknown_x::001017",
+      "role": "confab",
+      "split": "fit"
+    },
+    {
+      "row_key": "ahx::kuq_ku_unknown_x::000136",
+      "role": "confab",
+      "split": "fit"
+    },
+    {
+      "row_key": "ahx::kuq_ku_unknown_x::003085",
+      "role": "confab",
+      "split": "fit"
+    },
+    {
+      "row_key": "ahx::kuq_ku_unknown_x::002582",
+      "role": "confab",
+      "split": "fit"
+    },
+    {
+      "row_key": "ahx::kuq_ku_unknown_x::002845",
+      "role": "confab",
+      "split": "held_out"
+    },
+    {
+      "row_key": "ah::selfaware_unanswerable::004056",
+      "role": "confab",
+      "split": "fit"
+    },
+    {
+      "row_key": "ahx::kuq_ku_unknown_x::001317",
+      "role": "confab",
+      "split": "held_out"
+    },
+    {
+      "row_key": "ahx::kuq_ku_unknown_x::001153",
+      "role": "confab",
+      "split": "fit"
+    },
+    {
+      "row_key": "ah::kuq_ku_unknown::003349",
+      "role": "confab",
+      "split": "fit"
+    },
+    {
+      "row_key": "ahx::kuq_ku_unknown_x::001053",
+      "role": "confab",
+      "split": "held_out"
+    },
+    {
+      "row_key": "ah::selfaware_unanswerable::001595",
+      "role": "confab",
+      "split": "held_out"
+    },
+    {
+      "row_key": "ahx::kuq_ku_unknown_x::001699",
+      "role": "confab",
+      "split": "held_out"
+    },
+    {
+      "row_key": "ahx::kuq_ku_unknown_x::000480",
+      "role": "confab",
+      "split": "held_out"
+    },
+    {
+      "row_key": "ah::selfaware_unanswerable::001411",
+      "role": "confab",
+      "split": "held_out"
+    },
+    {
+      "row_key": "ahx::kuq_ku_unknown_x::000778",
+      "role": "confab",
+      "split": "fit"
+    },
+    {
+      "row_key": "ahx::kuq_ku_unknown_x::003104",
+      "role": "confab",
+      "split": "held_out"
+    },
+    {
+      "row_key": "ah::selfaware_unanswerable::003032",
+      "role": "confab",
+      "split": "held_out"
+    },
+    {
+      "row_key": "ah::kuq_ku_unknown::003124",
+      "role": "confab",
+      "split": "held_out"
+    },
+    {
+      "row_key": "ahx::kuq_ku_unknown_x::000134",
+      "role": "confab",
+      "split": "fit"
+    },
+    {
+      "row_key": "ah::selfaware_unanswerable::000514",
+      "role": "confab",
+      "split": "fit"
+    },
+    {
+      "row_key": "ahx::kuq_ku_unknown_x::001382",
+      "role": "confab",
+      "split": "fit"
+    },
+    {
+      "row_key": "ahx::kuq_ku_unknown_x::000506",
+      "role": "confab",
+      "split": "held_out"
+    },
+    {
+      "row_key": "ahx::kuq_ku_unknown_x::000416",
+      "role": "confab",
+      "split": "held_out"
+    },
+    {
+      "row_key": "ahx::kuq_ku_unknown_x::001891",
+      "role": "confab",
+      "split": "held_out"
+    },
+    {
+      "row_key": "ahx::kuq_ku_unknown_x::000036",
+      "role": "confab",
+      "split": "fit"
+    },
+    {
+      "row_key": "ahx::kuq_ku_unknown_x::003468",
+      "role": "confab",
+      "split": "held_out"
+    },
+    {
+      "row_key": "ahx::kuq_ku_unknown_x::002641",
+      "role": "confab",
+      "split": "held_out"
+    },
+    {
+      "row_key": "ahx::kuq_ku_unknown_x::000759",
+      "role": "confab",
+      "split": "held_out"
+    },
+    {
+      "row_key": "ah::kuq_ku_unknown::003984",
+      "role": "confab",
+      "split": "fit"
+    },
+    {
+      "row_key": "ah::selfaware_unanswerable::002173",
+      "role": "confab",
+      "split": "held_out"
+    },
+    {
+      "row_key": "ahx::kuq_ku_unknown_x::001933",
+      "role": "confab",
+      "split": "held_out"
+    },
+    {
+      "row_key": "ahx::kuq_ku_unknown_x::000644",
+      "role": "confab",
+      "split": "fit"
+    },
+    {
+      "row_key": "ah::selfaware_unanswerable::000817",
+      "role": "confab",
+      "split": "held_out"
+    },
+    {
+      "row_key": "ah::selfaware_unanswerable::004715",
+      "role": "confab",
+      "split": "held_out"
+    },
+    {
+      "row_key": "ahx::kuq_ku_unknown_x::001041",
+      "role": "confab",
+      "split": "fit"
+    },
+    {
+      "row_key": "ahx::kuq_ku_unknown_x::002215",
+      "role": "confab",
+      "split": "fit"
+    },
+    {
+      "row_key": "ahx::kuq_ku_unknown_x::003018",
+      "role": "confab",
+      "split": "fit"
+    },
+    {
+      "row_key": "ahx::kuq_ku_unknown_x::001685",
+      "role": "confab",
+      "split": "held_out"
+    },
+    {
+      "row_key": "ahx::kuq_ku_unknown_x::002899",
+      "role": "confab",
+      "split": "fit"
+    },
+    {
+      "row_key": "ah::kuq_ku_unknown::000424",
+      "role": "confab",
+      "split": "held_out"
+    },
+    {
+      "row_key": "ahx::kuq_ku_unknown_x::001270",
+      "role": "confab",
+      "split": "held_out"
+    },
+    {
+      "row_key": "ah::selfaware_unanswerable::001349",
+      "role": "confab",
+      "split": "held_out"
+    },
+    {
+      "row_key": "ah::kuq_ku_unknown::000032",
+      "role": "confab",
+      "split": "held_out"
+    },
+    {
+      "row_key": "ahx::kuq_ku_unknown_x::002741",
+      "role": "confab",
+      "split": "held_out"
+    },
+    {
+      "row_key": "ah::kuq_ku_unknown::003209",
+      "role": "confab",
+      "split": "fit"
+    },
+    {
+      "row_key": "ahx::kuq_ku_unknown_x::000240",
+      "role": "confab",
+      "split": "held_out"
+    },
+    {
+      "row_key": "ahx::kuq_ku_unknown_x::001123",
+      "role": "confab",
+      "split": "held_out"
+    },
+    {
+      "row_key": "ahx::kuq_ku_unknown_x::003073",
+      "role": "confab",
+      "split": "held_out"
+    },
+    {
+      "row_key": "ahx::kuq_ku_unknown_x::003017",
+      "role": "confab",
+      "split": "held_out"
+    },
+    {
+      "row_key": "ahx::kuq_ku_unknown_x::002082",
+      "role": "confab",
+      "split": "held_out"
+    },
+    {
+      "row_key": "ahx::kuq_ku_unknown_x::000787",
+      "role": "confab",
+      "split": "fit"
+    },
+    {
+      "row_key": "ah::kuq_ku_unknown::004549",
+      "role": "confab",
+      "split": "fit"
+    },
+    {
+      "row_key": "ahx::kuq_ku_unknown_x::002945",
+      "role": "confab",
+      "split": "fit"
+    },
+    {
+      "row_key": "ahx::kuq_ku_unknown_x::002545",
+      "role": "confab",
+      "split": "held_out"
+    },
+    {
+      "row_key": "ah::kuq_ku_unknown::001647",
+      "role": "confab",
+      "split": "held_out"
+    },
+    {
+      "row_key": "ahx::kuq_ku_unknown_x::000657",
+      "role": "confab",
+      "split": "held_out"
+    },
+    {
+      "row_key": "ahx::kuq_ku_unknown_x::000992",
+      "role": "confab",
+      "split": "held_out"
+    },
+    {
+      "row_key": "ahx::kuq_ku_unknown_x::002920",
+      "role": "confab",
+      "split": "fit"
+    },
+    {
+      "row_key": "ahx::kuq_ku_unknown_x::000844",
+      "role": "confab",
+      "split": "held_out"
+    },
+    {
+      "row_key": "ahx::kuq_ku_unknown_x::002209",
+      "role": "confab",
+      "split": "fit"
+    },
+    {
+      "row_key": "ahx::kuq_ku_unknown_x::000892",
+      "role": "confab",
+      "split": "held_out"
+    },
+    {
+      "row_key": "ah::selfaware_unanswerable::002670",
+      "role": "confab",
+      "split": "held_out"
+    },
+    {
+      "row_key": "ah::kuq_ku_unknown::002377",
+      "role": "confab",
+      "split": "held_out"
+    },
+    {
+      "row_key": "ah::kuq_ku_unknown::002474",
+      "role": "confab",
+      "split": "held_out"
+    },
+    {
+      "row_key": "ahx::kuq_ku_unknown_x::003476",
+      "role": "confab",
+      "split": "held_out"
+    },
+    {
+      "row_key": "ahx::kuq_ku_unknown_x::001897",
+      "role": "confab",
+      "split": "held_out"
+    },
+    {
+      "row_key": "ah::selfaware_unanswerable::001971",
+      "role": "confab",
+      "split": "held_out"
+    },
+    {
+      "row_key": "ahx::kuq_ku_unknown_x::002719",
+      "role": "confab",
+      "split": "fit"
+    },
+    {
+      "row_key": "ahx::kuq_ku_unknown_x::002105",
+      "role": "confab",
+      "split": "fit"
+    },
+    {
+      "row_key": "ah::kuq_ku_unknown::001432",
+      "role": "confab",
+      "split": "fit"
+    },
+    {
+      "row_key": "ahx::kuq_ku_unknown_x::003471",
+      "role": "confab",
+      "split": "held_out"
+    },
+    {
+      "row_key": "ahx::kuq_ku_unknown_x::000890",
+      "role": "confab",
+      "split": "fit"
+    },
+    {
+      "row_key": "ah::kuq_ku_unknown::002044",
+      "role": "confab",
+      "split": "held_out"
+    },
+    {
+      "row_key": "ahx::kuq_ku_unknown_x::000861",
+      "role": "confab",
+      "split": "held_out"
+    },
+    {
+      "row_key": "ahx::kuq_ku_unknown_x::000711",
+      "role": "confab",
+      "split": "held_out"
+    },
+    {
+      "row_key": "ah::kuq_ku_unknown::001854",
+      "role": "confab",
+      "split": "held_out"
+    },
+    {
+      "row_key": "ah::selfaware_unanswerable::002039",
+      "role": "confab",
+      "split": "held_out"
+    },
+    {
+      "row_key": "ah::kuq_ku_unknown::002101",
+      "role": "confab",
+      "split": "held_out"
+    },
+    {
+      "row_key": "ah::selfaware_unanswerable::000134",
+      "role": "confab",
+      "split": "fit"
+    },
+    {
+      "row_key": "ahx::kuq_ku_unknown_x::000774",
+      "role": "confab",
+      "split": "fit"
+    },
+    {
+      "row_key": "ahx::kuq_ku_unknown_x::003198",
+      "role": "confab",
+      "split": "held_out"
+    },
+    {
+      "row_key": "ah::selfaware_unanswerable::004641",
+      "role": "confab",
+      "split": "fit"
+    },
+    {
+      "row_key": "ah::kuq_ku_unknown::001628",
+      "role": "confab",
+      "split": "held_out"
+    },
+    {
+      "row_key": "ahx::kuq_ku_unknown_x::002210",
+      "role": "confab",
+      "split": "fit"
+    },
+    {
+      "row_key": "ahx::kuq_ku_unknown_x::001795",
+      "role": "confab",
+      "split": "held_out"
+    },
+    {
+      "row_key": "ahx::kuq_ku_unknown_x::000140",
+      "role": "confab",
+      "split": "fit"
+    },
+    {
+      "row_key": "ahx::kuq_ku_unknown_x::002583",
+      "role": "confab",
+      "split": "fit"
+    },
+    {
+      "row_key": "ahx::kuq_ku_unknown_x::002714",
+      "role": "confab",
+      "split": "fit"
+    },
+    {
+      "row_key": "ahx::kuq_ku_unknown_x::001684",
+      "role": "confab",
+      "split": "held_out"
+    },
+    {
+      "row_key": "ahx::kuq_ku_unknown_x::002039",
+      "role": "confab",
+      "split": "held_out"
+    },
+    {
+      "row_key": "ahx::kuq_ku_unknown_x::002332",
+      "role": "confab",
+      "split": "held_out"
+    },
+    {
+      "row_key": "ahx::kuq_ku_unknown_x::000251",
+      "role": "confab",
+      "split": "held_out"
+    },
+    {
+      "row_key": "ah::kuq_ku_unknown::003573",
+      "role": "confab",
+      "split": "fit"
+    },
+    {
+      "row_key": "ahx::kuq_ku_unknown_x::000811",
+      "role": "confab",
+      "split": "held_out"
+    },
+    {
+      "row_key": "ahx::kuq_ku_unknown_x::002911",
+      "role": "confab",
+      "split": "fit"
+    },
+    {
+      "row_key": "ahx::kuq_ku_unknown_x::002979",
+      "role": "confab",
+      "split": "held_out"
+    },
+    {
+      "row_key": "ahx::kuq_ku_unknown_x::002177",
+      "role": "confab",
+      "split": "held_out"
+    },
+    {
+      "row_key": "ah::kuq_ku_unknown::002994",
+      "role": "confab",
+      "split": "held_out"
+    },
+    {
+      "row_key": "ahx::kuq_ku_unknown_x::000053",
+      "role": "confab",
+      "split": "fit"
+    },
+    {
+      "row_key": "ah::kuq_ku_unknown::000299",
+      "role": "confab",
+      "split": "held_out"
+    },
+    {
+      "row_key": "ah::selfaware_unanswerable::000178",
+      "role": "confab",
+      "split": "held_out"
+    },
+    {
+      "row_key": "ah::kuq_ku_unknown::002302",
+      "role": "confab",
+      "split": "held_out"
+    },
+    {
+      "row_key": "ahx::kuq_ku_unknown_x::001073",
+      "role": "confab",
+      "split": "held_out"
+    },
+    {
+      "row_key": "ahx::kuq_ku_unknown_x::001912",
+      "role": "confab",
+      "split": "held_out"
+    },
+    {
+      "row_key": "ahx::kuq_ku_unknown_x::000060",
+      "role": "confab",
+      "split": "fit"
+    },
+    {
+      "row_key": "ahx::kuq_ku_unknown_x::001244",
+      "role": "confab",
+      "split": "held_out"
+    },
+    {
+      "row_key": "ahx::kuq_ku_unknown_x::000854",
+      "role": "confab",
+      "split": "fit"
+    },
+    {
+      "row_key": "ahx::kuq_ku_unknown_x::002616",
+      "role": "confab",
+      "split": "fit"
+    },
+    {
+      "row_key": "ahx::kuq_ku_unknown_x::001057",
+      "role": "confab",
+      "split": "fit"
+    },
+    {
+      "row_key": "ah::kuq_ku_unknown::004558",
+      "role": "confab",
+      "split": "held_out"
+    },
+    {
+      "row_key": "ahx::kuq_ku_unknown_x::001874",
+      "role": "confab",
+      "split": "held_out"
+    },
+    {
+      "row_key": "ahx::kuq_ku_unknown_x::002162",
+      "role": "confab",
+      "split": "held_out"
+    },
+    {
+      "row_key": "ah::kuq_ku_unknown::000988",
+      "role": "confab",
+      "split": "held_out"
+    },
+    {
+      "row_key": "ah::selfaware_unanswerable::001391",
+      "role": "confab",
+      "split": "fit"
+    },
+    {
+      "row_key": "ahx::kuq_ku_unknown_x::001085",
+      "role": "confab",
+      "split": "fit"
+    },
+    {
+      "row_key": "ah::kuq_ku_unknown::001878",
+      "role": "confab",
+      "split": "fit"
+    },
+    {
+      "row_key": "ahx::kuq_ku_unknown_x::000141",
+      "role": "confab",
+      "split": "held_out"
+    },
+    {
+      "row_key": "ahx::kuq_ku_unknown_x::001935",
+      "role": "confab",
+      "split": "fit"
+    },
+    {
+      "row_key": "ah::kuq_ku_unknown::003440",
+      "role": "confab",
+      "split": "held_out"
+    },
+    {
+      "row_key": "ah::selfaware_unanswerable::001305",
+      "role": "confab",
+      "split": "fit"
+    },
+    {
+      "row_key": "ahx::kuq_ku_unknown_x::001271",
+      "role": "confab",
+      "split": "held_out"
+    },
+    {
+      "row_key": "ahx::kuq_ku_unknown_x::002939",
+      "role": "confab",
+      "split": "held_out"
+    },
+    {
+      "row_key": "ahx::kuq_ku_unknown_x::003096",
+      "role": "confab",
+      "split": "fit"
+    },
+    {
+      "row_key": "ahx::kuq_ku_unknown_x::001242",
+      "role": "confab",
+      "split": "fit"
+    },
+    {
+      "row_key": "ahx::kuq_ku_unknown_x::003399",
+      "role": "confab",
+      "split": "held_out"
+    },
+    {
+      "row_key": "ahx::kuq_ku_unknown_x::002778",
+      "role": "confab",
+      "split": "fit"
+    },
+    {
+      "row_key": "ahx::kuq_ku_unknown_x::002884",
+      "role": "confab",
+      "split": "held_out"
+    },
+    {
+      "row_key": "ahx::kuq_ku_unknown_x::002186",
+      "role": "confab",
+      "split": "held_out"
+    },
+    {
+      "row_key": "ahx::kuq_ku_unknown_x::003467",
+      "role": "confab",
+      "split": "held_out"
+    },
+    {
+      "row_key": "ahx::kuq_ku_unknown_x::003124",
+      "role": "confab",
+      "split": "fit"
+    },
+    {
+      "row_key": "ah::selfaware_unanswerable::001668",
+      "role": "confab",
+      "split": "held_out"
+    },
+    {
+      "row_key": "ah::kuq_ku_unknown::001622",
+      "role": "confab",
+      "split": "held_out"
+    },
+    {
+      "row_key": "ah::selfaware_unanswerable::003087",
+      "role": "confab",
+      "split": "held_out"
+    },
+    {
+      "row_key": "ahx::kuq_ku_unknown_x::002608",
+      "role": "confab",
+      "split": "held_out"
+    },
+    {
+      "row_key": "ahx::kuq_ku_unknown_x::001372",
+      "role": "confab",
+      "split": "held_out"
+    },
+    {
+      "row_key": "ahx::kuq_ku_unknown_x::000025",
+      "role": "confab",
+      "split": "held_out"
+    },
+    {
+      "row_key": "ahx::kuq_ku_unknown_x::003077",
+      "role": "confab",
+      "split": "fit"
+    },
+    {
+      "row_key": "ah::kuq_ku_unknown::000766",
+      "role": "confab",
+      "split": "held_out"
+    },
+    {
+      "row_key": "ahx::kuq_ku_unknown_x::000152",
+      "role": "confab",
+      "split": "held_out"
+    },
+    {
+      "row_key": "ah::selfaware_unanswerable::000382",
+      "role": "confab",
+      "split": "held_out"
+    },
+    {
+      "row_key": "ahx::kuq_ku_unknown_x::002855",
+      "role": "confab",
+      "split": "held_out"
+    },
+    {
+      "row_key": "ahx::kuq_ku_unknown_x::000762",
+      "role": "confab",
+      "split": "held_out"
+    },
+    {
+      "row_key": "ahx::kuq_ku_unknown_x::003135",
+      "role": "confab",
+      "split": "held_out"
+    },
+    {
+      "row_key": "ah::kuq_ku_unknown::003797",
+      "role": "confab",
+      "split": "fit"
+    },
+    {
+      "row_key": "ah::kuq_ku_unknown::003731",
+      "role": "confab",
+      "split": "held_out"
+    },
+    {
+      "row_key": "ahx::kuq_ku_unknown_x::001061",
+      "role": "confab",
+      "split": "fit"
+    },
+    {
+      "row_key": "ahx::kuq_ku_unknown_x::001982",
+      "role": "confab",
+      "split": "held_out"
+    },
+    {
+      "row_key": "ah::kuq_ku_unknown::004725",
+      "role": "confab",
+      "split": "fit"
+    },
+    {
+      "row_key": "ah::selfaware_unanswerable::004987",
+      "role": "confab",
+      "split": "held_out"
+    },
+    {
+      "row_key": "ah::kuq_ku_unknown::001297",
+      "role": "confab",
+      "split": "held_out"
+    },
+    {
+      "row_key": "ahx::kuq_ku_unknown_x::000331",
+      "role": "confab",
+      "split": "fit"
+    },
+    {
+      "row_key": "ahx::kuq_ku_unknown_x::002181",
+      "role": "confab",
+      "split": "held_out"
+    },
+    {
+      "row_key": "ah::selfaware_unanswerable::000537",
+      "role": "confab",
+      "split": "fit"
+    },
+    {
+      "row_key": "ahx::kuq_ku_unknown_x::000827",
+      "role": "confab",
+      "split": "fit"
+    },
+    {
+      "row_key": "ahx::kuq_ku_unknown_x::003389",
+      "role": "confab",
+      "split": "fit"
+    },
+    {
+      "row_key": "ah::kuq_ku_unknown::000593",
+      "role": "confab",
+      "split": "held_out"
+    },
+    {
+      "row_key": "ahx::kuq_ku_unknown_x::002165",
+      "role": "confab",
+      "split": "fit"
+    },
+    {
+      "row_key": "ahx::kuq_ku_unknown_x::001060",
+      "role": "confab",
+      "split": "fit"
+    },
+    {
+      "row_key": "ah::kuq_ku_unknown::002621",
+      "role": "confab",
+      "split": "fit"
+    },
+    {
+      "row_key": "ahx::kuq_ku_unknown_x::002817",
+      "role": "confab",
+      "split": "held_out"
+    },
+    {
+      "row_key": "ahx::kuq_ku_unknown_x::002190",
+      "role": "confab",
+      "split": "fit"
+    },
+    {
+      "row_key": "ahx::kuq_ku_unknown_x::001022",
+      "role": "confab",
+      "split": "fit"
+    },
+    {
+      "row_key": "ahx::kuq_ku_unknown_x::001415",
+      "role": "confab",
+      "split": "fit"
+    },
+    {
+      "row_key": "ahx::kuq_ku_unknown_x::001280",
+      "role": "confab",
+      "split": "fit"
+    },
+    {
+      "row_key": "ahx::kuq_ku_unknown_x::001254",
+      "role": "confab",
+      "split": "fit"
+    },
+    {
+      "row_key": "ah::selfaware_unanswerable::003455",
+      "role": "confab",
+      "split": "fit"
+    },
+    {
+      "row_key": "ah::kuq_ku_unknown::002575",
+      "role": "confab",
+      "split": "held_out"
+    },
+    {
+      "row_key": "ah::kuq_ku_unknown::001146",
+      "role": "confab",
+      "split": "held_out"
+    },
+    {
+      "row_key": "ah::selfaware_unanswerable::000185",
+      "role": "confab",
+      "split": "fit"
+    },
+    {
+      "row_key": "ah::kuq_ku_unknown::000184",
+      "role": "confab",
+      "split": "fit"
+    },
+    {
+      "row_key": "ah::selfaware_unanswerable::000151",
+      "role": "confab",
+      "split": "fit"
+    },
+    {
+      "row_key": "ahx::kuq_ku_unknown_x::000342",
+      "role": "confab",
+      "split": "held_out"
+    },
+    {
+      "row_key": "ahx::kuq_ku_unknown_x::001603",
+      "role": "confab",
+      "split": "held_out"
+    },
+    {
+      "row_key": "ah::selfaware_unanswerable::000588",
+      "role": "confab",
+      "split": "held_out"
+    },
+    {
+      "row_key": "ah::kuq_ku_unknown::000849",
+      "role": "confab",
+      "split": "fit"
+    },
+    {
+      "row_key": "ah::selfaware_unanswerable::003308",
+      "role": "confab",
+      "split": "fit"
+    },
+    {
+      "row_key": "ahx::kuq_ku_unknown_x::000247",
+      "role": "confab",
+      "split": "held_out"
+    },
+    {
+      "row_key": "ah::kuq_ku_unknown::000884",
+      "role": "confab",
+      "split": "held_out"
+    },
+    {
+      "row_key": "ahx::kuq_ku_unknown_x::002001",
+      "role": "confab",
+      "split": "held_out"
+    },
+    {
+      "row_key": "ah::kuq_ku_unknown::000157",
+      "role": "confab",
+      "split": "fit"
+    },
+    {
+      "row_key": "ah::kuq_ku_unknown::002777",
+      "role": "confab",
+      "split": "fit"
+    },
+    {
+      "row_key": "ah::kuq_ku_unknown::003724",
+      "role": "confab",
+      "split": "held_out"
+    },
+    {
+      "row_key": "ah::kuq_ku_unknown::002821",
+      "role": "confab",
+      "split": "held_out"
+    },
+    {
+      "row_key": "ahx::kuq_ku_unknown_x::000857",
+      "role": "confab",
+      "split": "held_out"
+    },
+    {
+      "row_key": "ah::selfaware_unanswerable::002547",
+      "role": "confab",
+      "split": "fit"
+    },
+    {
+      "row_key": "ahx::kuq_ku_unknown_x::000137",
+      "role": "confab",
+      "split": "held_out"
+    },
+    {
+      "row_key": "ah::kuq_ku_unknown::003277",
+      "role": "confab",
+      "split": "fit"
+    },
+    {
+      "row_key": "ah::kuq_ku_unknown::002198",
+      "role": "confab",
+      "split": "fit"
+    },
+    {
+      "row_key": "ahx::kuq_ku_unknown_x::002219",
+      "role": "confab",
+      "split": "fit"
+    },
+    {
+      "row_key": "ah::kuq_ku_unknown::002322",
+      "role": "confab",
+      "split": "held_out"
+    },
+    {
+      "row_key": "ahx::kuq_ku_unknown_x::000901",
+      "role": "confab",
+      "split": "fit"
+    },
+    {
+      "row_key": "ahx::kuq_ku_unknown_x::002546",
+      "role": "confab",
+      "split": "held_out"
+    },
+    {
+      "row_key": "ah::selfaware_unanswerable::004195",
+      "role": "confab",
+      "split": "held_out"
+    },
+    {
+      "row_key": "ahx::kuq_ku_unknown_x::000413",
+      "role": "confab",
+      "split": "fit"
+    },
+    {
+      "row_key": "ah::kuq_ku_unknown::000079",
+      "role": "confab",
+      "split": "held_out"
+    },
+    {
+      "row_key": "ahx::kuq_ku_unknown_x::002184",
+      "role": "confab",
+      "split": "held_out"
+    },
+    {
+      "row_key": "ah::kuq_ku_unknown::000492",
+      "role": "confab",
+      "split": "held_out"
+    },
+    {
+      "row_key": "ahx::kuq_ku_unknown_x::002187",
+      "role": "confab",
+      "split": "fit"
+    },
+    {
+      "row_key": "ah::selfaware_unanswerable::003943",
+      "role": "confab",
+      "split": "held_out"
+    },
+    {
+      "row_key": "ahx::kuq_ku_unknown_x::000780",
+      "role": "confab",
+      "split": "held_out"
+    },
+    {
+      "row_key": "ah::selfaware_unanswerable::000943",
+      "role": "confab",
+      "split": "held_out"
+    },
+    {
+      "row_key": "ahx::kuq_ku_unknown_x::001940",
+      "role": "confab",
+      "split": "held_out"
+    },
+    {
+      "row_key": "ahx::kuq_ku_unknown_x::002895",
+      "role": "confab",
+      "split": "held_out"
+    },
+    {
+      "row_key": "ah::kuq_ku_unknown::001553",
+      "role": "confab",
+      "split": "fit"
+    },
+    {
+      "row_key": "ahx::kuq_ku_unknown_x::000867",
+      "role": "confab",
+      "split": "held_out"
+    },
+    {
+      "row_key": "ahx::kuq_ku_unknown_x::000616",
+      "role": "confab",
+      "split": "held_out"
+    },
+    {
+      "row_key": "ahx::kuq_ku_unknown_x::001088",
+      "role": "confab",
+      "split": "fit"
+    },
+    {
+      "row_key": "ahx::kuq_ku_unknown_x::001558",
+      "role": "confab",
+      "split": "fit"
+    },
+    {
+      "row_key": "ah::kuq_ku_unknown::004735",
+      "role": "confab",
+      "split": "held_out"
+    },
+    {
+      "row_key": "ah::kuq_ku_unknown::003564",
+      "role": "confab",
+      "split": "held_out"
+    },
+    {
+      "row_key": "ahx::kuq_ku_unknown_x::000642",
+      "role": "confab",
+      "split": "held_out"
+    },
+    {
+      "row_key": "ah::kuq_ku_unknown::004729",
+      "role": "confab",
+      "split": "held_out"
+    },
+    {
+      "row_key": "ahx::kuq_ku_unknown_x::000348",
+      "role": "confab",
+      "split": "held_out"
+    },
+    {
+      "row_key": "ahx::kuq_ku_unknown_x::002831",
+      "role": "confab",
+      "split": "fit"
+    },
+    {
+      "row_key": "ahx::kuq_ku_unknown_x::000684",
+      "role": "confab",
+      "split": "held_out"
+    },
+    {
+      "row_key": "ahx::kuq_ku_unknown_x::001056",
+      "role": "confab",
+      "split": "fit"
+    },
+    {
+      "row_key": "ah::selfaware_unanswerable::002089",
+      "role": "confab",
+      "split": "held_out"
+    },
+    {
+      "row_key": "ahx::kuq_ku_unknown_x::001146",
+      "role": "confab",
+      "split": "held_out"
+    },
+    {
+      "row_key": "ahx::kuq_ku_unknown_x::001811",
+      "role": "confab",
+      "split": "fit"
+    },
+    {
+      "row_key": "ahx::kuq_ku_unknown_x::002821",
+      "role": "confab",
+      "split": "held_out"
+    },
+    {
+      "row_key": "ahx::kuq_ku_unknown_x::003197",
+      "role": "confab",
+      "split": "held_out"
+    },
+    {
+      "row_key": "ah::kuq_ku_unknown::002732",
+      "role": "confab",
+      "split": "fit"
+    },
+    {
+      "row_key": "ah::kuq_ku_unknown::002910",
+      "role": "confab",
+      "split": "held_out"
+    },
+    {
+      "row_key": "ahx::kuq_ku_unknown_x::003042",
+      "role": "confab",
+      "split": "held_out"
+    },
+    {
+      "row_key": "ahx::kuq_ku_unknown_x::003095",
+      "role": "confab",
+      "split": "held_out"
+    },
+    {
+      "row_key": "ahx::kuq_ku_unknown_x::001160",
+      "role": "confab",
+      "split": "fit"
+    },
+    {
+      "row_key": "ah::kuq_ku_unknown::002716",
+      "role": "confab",
+      "split": "fit"
+    },
+    {
+      "row_key": "ahx::kuq_ku_unknown_x::002921",
+      "role": "confab",
+      "split": "held_out"
+    },
+    {
+      "row_key": "ah::kuq_ku_unknown::003592",
+      "role": "confab",
+      "split": "held_out"
+    },
+    {
+      "row_key": "ah::kuq_ku_unknown::001292",
+      "role": "confab",
+      "split": "held_out"
+    },
+    {
+      "row_key": "ah::kuq_ku_unknown::001860",
+      "role": "confab",
+      "split": "fit"
+    },
+    {
+      "row_key": "ahx::kuq_ku_unknown_x::000335",
+      "role": "confab",
+      "split": "held_out"
+    },
+    {
+      "row_key": "ahx::kuq_ku_unknown_x::002699",
+      "role": "confab",
+      "split": "held_out"
+    },
+    {
+      "row_key": "ahx::kuq_ku_unknown_x::002937",
+      "role": "confab",
+      "split": "fit"
+    },
+    {
+      "row_key": "ahx::kuq_ku_unknown_x::003417",
+      "role": "confab",
+      "split": "held_out"
+    },
+    {
+      "row_key": "ah::kuq_ku_known::003361",
+      "role": "known_correct_answered",
+      "split": "held_out"
+    },
+    {
+      "row_key": "ah::selfaware_answerable::001874",
+      "role": "known_correct_answered",
+      "split": "held_out"
+    },
+    {
+      "row_key": "ahx::popqa::011604",
+      "role": "known_correct_answered",
+      "split": "held_out"
+    },
+    {
+      "row_key": "ahx::triviaqa::006787",
+      "role": "known_correct_answered",
+      "split": "fit"
+    },
+    {
+      "row_key": "ahx::triviaqa::004677",
+      "role": "known_correct_answered",
+      "split": "held_out"
+    },
+    {
+      "row_key": "ahx::popqa::011500",
+      "role": "known_correct_answered",
+      "split": "fit"
+    },
+    {
+      "row_key": "ah::kuq_ku_known::003376",
+      "role": "known_correct_answered",
+      "split": "held_out"
+    },
+    {
+      "row_key": "ah::selfaware_answerable::003132",
+      "role": "known_correct_answered",
+      "split": "held_out"
+    },
+    {
+      "row_key": "ahx::triviaqa::006205",
+      "role": "known_correct_answered",
+      "split": "held_out"
+    },
+    {
+      "row_key": "ah::selfaware_answerable::003697",
+      "role": "known_correct_answered",
+      "split": "held_out"
+    },
+    {
+      "row_key": "ah::selfaware_answerable::001713",
+      "role": "known_correct_answered",
+      "split": "held_out"
+    },
+    {
+      "row_key": "ah::selfaware_answerable::002368",
+      "role": "known_correct_answered",
+      "split": "fit"
+    },
+    {
+      "row_key": "ah::selfaware_answerable::002287",
+      "role": "known_correct_answered",
+      "split": "fit"
+    },
+    {
+      "row_key": "ah::selfaware_answerable::003168",
+      "role": "known_correct_answered",
+      "split": "held_out"
+    },
+    {
+      "row_key": "ah::selfaware_answerable::003280",
+      "role": "known_correct_answered",
+      "split": "fit"
+    },
+    {
+      "row_key": "ah::selfaware_answerable::000930",
+      "role": "known_correct_answered",
+      "split": "held_out"
+    },
+    {
+      "row_key": "ah::selfaware_answerable::000248",
+      "role": "known_correct_answered",
+      "split": "held_out"
+    },
+    {
+      "row_key": "ah::selfaware_answerable::004399",
+      "role": "known_correct_answered",
+      "split": "held_out"
+    },
+    {
+      "row_key": "ah::selfaware_answerable::001225",
+      "role": "known_correct_answered",
+      "split": "held_out"
+    },
+    {
+      "row_key": "ah::selfaware_answerable::000535",
+      "role": "known_correct_answered",
+      "split": "fit"
+    },
+    {
+      "row_key": "ah::selfaware_answerable::002516",
+      "role": "known_correct_answered",
+      "split": "held_out"
+    },
+    {
+      "row_key": "ah::selfaware_answerable::000990",
+      "role": "known_correct_answered",
+      "split": "fit"
+    },
+    {
+      "row_key": "ah::selfaware_answerable::002789",
+      "role": "known_correct_answered",
+      "split": "held_out"
+    },
+    {
+      "row_key": "ah::selfaware_answerable::002381",
+      "role": "known_correct_answered",
+      "split": "held_out"
+    },
+    {
+      "row_key": "ah::selfaware_answerable::004613",
+      "role": "known_correct_answered",
+      "split": "fit"
+    },
+    {
+      "row_key": "ah::selfaware_answerable::004294",
+      "role": "known_correct_answered",
+      "split": "held_out"
+    },
+    {
+      "row_key": "ah::selfaware_answerable::004998",
+      "role": "known_correct_answered",
+      "split": "held_out"
+    },
+    {
+      "row_key": "ah::selfaware_answerable::001203",
+      "role": "known_correct_answered",
+      "split": "fit"
+    },
+    {
+      "row_key": "ah::selfaware_answerable::003555",
+      "role": "known_correct_answered",
+      "split": "held_out"
+    },
+    {
+      "row_key": "ah::kuq_ku_known::002292",
+      "role": "known_correct_answered",
+      "split": "fit"
+    },
+    {
+      "row_key": "ah::kuq_ku_known::002845",
+      "role": "known_correct_answered",
+      "split": "held_out"
+    },
+    {
+      "row_key": "ah::kuq_ku_known::004147",
+      "role": "known_correct_answered",
+      "split": "held_out"
+    },
+    {
+      "row_key": "ah::kuq_ku_known::003019",
+      "role": "known_correct_answered",
+      "split": "held_out"
+    },
+    {
+      "row_key": "ah::kuq_ku_known::002433",
+      "role": "known_correct_answered",
+      "split": "fit"
+    },
+    {
+      "row_key": "ah::kuq_ku_known::001985",
+      "role": "known_correct_answered",
+      "split": "held_out"
+    },
+    {
+      "row_key": "ah::kuq_ku_known::001677",
+      "role": "known_correct_answered",
+      "split": "held_out"
+    },
+    {
+      "row_key": "ah::kuq_ku_known::000121",
+      "role": "known_correct_answered",
+      "split": "held_out"
+    },
+    {
+      "row_key": "ah::kuq_ku_known::001959",
+      "role": "known_correct_answered",
+      "split": "held_out"
+    },
+    {
+      "row_key": "ah::kuq_ku_known::003203",
+      "role": "known_correct_answered",
+      "split": "held_out"
+    },
+    {
+      "row_key": "ah::kuq_ku_known::001763",
+      "role": "known_correct_answered",
+      "split": "held_out"
+    },
+    {
+      "row_key": "ah::kuq_ku_known::000587",
+      "role": "known_correct_answered",
+      "split": "held_out"
+    },
+    {
+      "row_key": "ah::kuq_ku_known::004412",
+      "role": "known_correct_answered",
+      "split": "fit"
+    },
+    {
+      "row_key": "ah::kuq_ku_known::000534",
+      "role": "known_correct_answered",
+      "split": "held_out"
+    },
+    {
+      "row_key": "ah::kuq_ku_known::004914",
+      "role": "known_correct_answered",
+      "split": "held_out"
+    },
+    {
+      "row_key": "ah::kuq_ku_known::000303",
+      "role": "known_correct_answered",
+      "split": "fit"
+    },
+    {
+      "row_key": "ah::kuq_ku_known::001905",
+      "role": "known_correct_answered",
+      "split": "held_out"
+    },
+    {
+      "row_key": "ah::kuq_ku_known::003852",
+      "role": "known_correct_answered",
+      "split": "fit"
+    },
+    {
+      "row_key": "ah::kuq_ku_known::004983",
+      "role": "known_correct_answered",
+      "split": "fit"
+    },
+    {
+      "row_key": "ah::kuq_ku_known::001418",
+      "role": "known_correct_answered",
+      "split": "fit"
+    },
+    {
+      "row_key": "ah::kuq_ku_known::004466",
+      "role": "known_correct_answered",
+      "split": "held_out"
+    },
+    {
+      "row_key": "ah::kuq_ku_known::004689",
+      "role": "known_correct_answered",
+      "split": "held_out"
+    },
+    {
+      "row_key": "ah::kuq_ku_known::001488",
+      "role": "known_correct_answered",
+      "split": "fit"
+    },
+    {
+      "row_key": "ah::kuq_ku_known::003715",
+      "role": "known_correct_answered",
+      "split": "fit"
+    },
+    {
+      "row_key": "ahx::triviaqa::003798",
+      "role": "known_correct_answered",
+      "split": "held_out"
+    },
+    {
+      "row_key": "ahx::triviaqa::006988",
+      "role": "known_correct_answered",
+      "split": "held_out"
+    },
+    {
+      "row_key": "ahx::triviaqa::004511",
+      "role": "known_correct_answered",
+      "split": "held_out"
+    },
+    {
+      "row_key": "ahx::triviaqa::008292",
+      "role": "known_correct_answered",
+      "split": "fit"
+    },
+    {
+      "row_key": "ahx::triviaqa::006323",
+      "role": "known_correct_answered",
+      "split": "held_out"
+    },
+    {
+      "row_key": "ahx::triviaqa::003759",
+      "role": "known_correct_answered",
+      "split": "fit"
+    },
+    {
+      "row_key": "ahx::triviaqa::007832",
+      "role": "known_correct_answered",
+      "split": "fit"
+    },
+    {
+      "row_key": "ahx::triviaqa::004111",
+      "role": "known_correct_answered",
+      "split": "held_out"
+    },
+    {
+      "row_key": "ahx::triviaqa::006100",
+      "role": "known_correct_answered",
+      "split": "fit"
+    },
+    {
+      "row_key": "ahx::triviaqa::005733",
+      "role": "known_correct_answered",
+      "split": "fit"
+    },
+    {
+      "row_key": "ahx::triviaqa::007229",
+      "role": "known_correct_answered",
+      "split": "fit"
+    },
+    {
+      "row_key": "ahx::triviaqa::006190",
+      "role": "known_correct_answered",
+      "split": "fit"
+    },
+    {
+      "row_key": "ahx::triviaqa::008607",
+      "role": "known_correct_answered",
+      "split": "fit"
+    },
+    {
+      "row_key": "ahx::triviaqa::004800",
+      "role": "known_correct_answered",
+      "split": "held_out"
+    },
+    {
+      "row_key": "ahx::triviaqa::008856",
+      "role": "known_correct_answered",
+      "split": "held_out"
+    },
+    {
+      "row_key": "ahx::triviaqa::008543",
+      "role": "known_correct_answered",
+      "split": "held_out"
+    },
+    {
+      "row_key": "ahx::triviaqa::008596",
+      "role": "known_correct_answered",
+      "split": "held_out"
+    },
+    {
+      "row_key": "ahx::triviaqa::005166",
+      "role": "known_correct_answered",
+      "split": "held_out"
+    },
+    {
+      "row_key": "ahx::triviaqa::008570",
+      "role": "known_correct_answered",
+      "split": "held_out"
+    },
+    {
+      "row_key": "ahx::triviaqa::004307",
+      "role": "known_correct_answered",
+      "split": "held_out"
+    },
+    {
+      "row_key": "ahx::triviaqa::006701",
+      "role": "known_correct_answered",
+      "split": "held_out"
+    },
+    {
+      "row_key": "ahx::triviaqa::008178",
+      "role": "known_correct_answered",
+      "split": "held_out"
+    },
+    {
+      "row_key": "ahx::triviaqa::004716",
+      "role": "known_correct_answered",
+      "split": "fit"
+    },
+    {
+      "row_key": "ahx::triviaqa::005127",
+      "role": "known_correct_answered",
+      "split": "fit"
+    },
+    {
+      "row_key": "ahx::popqa::013403",
+      "role": "known_correct_answered",
+      "split": "held_out"
+    },
+    {
+      "row_key": "ahx::popqa::012863",
+      "role": "known_correct_answered",
+      "split": "held_out"
+    },
+    {
+      "row_key": "ahx::popqa::012785",
+      "role": "known_correct_answered",
+      "split": "held_out"
+    },
+    {
+      "row_key": "ahx::popqa::013065",
+      "role": "known_correct_answered",
+      "split": "held_out"
+    },
+    {
+      "row_key": "ahx::popqa::013088",
+      "role": "known_correct_answered",
+      "split": "fit"
+    },
+    {
+      "row_key": "ahx::popqa::012981",
+      "role": "known_correct_answered",
+      "split": "held_out"
+    },
+    {
+      "row_key": "ahx::popqa::013078",
+      "role": "known_correct_answered",
+      "split": "held_out"
+    },
+    {
+      "row_key": "ahx::popqa::013188",
+      "role": "known_correct_answered",
+      "split": "held_out"
+    },
+    {
+      "row_key": "ahx::popqa::013299",
+      "role": "known_correct_answered",
+      "split": "fit"
+    },
+    {
+      "row_key": "ahx::popqa::012750",
+      "role": "known_correct_answered",
+      "split": "held_out"
+    },
+    {
+      "row_key": "ahx::triviaqa::008368",
+      "role": "known_correct_answered",
+      "split": "held_out"
+    },
+    {
+      "row_key": "ahx::triviaqa::005071",
+      "role": "known_correct_answered",
+      "split": "fit"
+    },
+    {
+      "row_key": "ahx::triviaqa::003504",
+      "role": "known_correct_answered",
+      "split": "held_out"
+    },
+    {
+      "row_key": "ahx::triviaqa::003506",
+      "role": "known_correct_answered",
+      "split": "held_out"
+    },
+    {
+      "row_key": "ahx::triviaqa::003508",
+      "role": "known_correct_answered",
+      "split": "held_out"
+    },
+    {
+      "row_key": "ahx::triviaqa::003509",
+      "role": "known_correct_answered",
+      "split": "held_out"
+    },
+    {
+      "row_key": "ahx::triviaqa::003510",
+      "role": "known_correct_answered",
+      "split": "fit"
+    },
+    {
+      "row_key": "ahx::triviaqa::003516",
+      "role": "known_correct_answered",
+      "split": "held_out"
+    },
+    {
+      "row_key": "ahx::triviaqa::003518",
+      "role": "known_correct_answered",
+      "split": "held_out"
+    },
+    {
+      "row_key": "ahx::triviaqa::003524",
+      "role": "known_correct_answered",
+      "split": "fit"
+    },
+    {
+      "row_key": "ahx::triviaqa::003534",
+      "role": "known_correct_answered",
+      "split": "held_out"
+    },
+    {
+      "row_key": "ahx::triviaqa::003541",
+      "role": "known_correct_answered",
+      "split": "fit"
+    },
+    {
+      "row_key": "ahx::triviaqa::003542",
+      "role": "known_correct_answered",
+      "split": "fit"
+    },
+    {
+      "row_key": "ahx::triviaqa::003545",
+      "role": "known_correct_answered",
+      "split": "held_out"
+    },
+    {
+      "row_key": "ahx::triviaqa::003556",
+      "role": "known_correct_answered",
+      "split": "held_out"
+    },
+    {
+      "row_key": "ahx::triviaqa::003572",
+      "role": "known_correct_answered",
+      "split": "held_out"
+    },
+    {
+      "row_key": "ahx::triviaqa::003573",
+      "role": "known_correct_answered",
+      "split": "held_out"
+    },
+    {
+      "row_key": "ahx::triviaqa::003574",
+      "role": "known_correct_answered",
+      "split": "fit"
+    },
+    {
+      "row_key": "ahx::triviaqa::003576",
+      "role": "known_correct_answered",
+      "split": "held_out"
+    },
+    {
+      "row_key": "ahx::triviaqa::003578",
+      "role": "known_correct_answered",
+      "split": "held_out"
+    },
+    {
+      "row_key": "ahx::triviaqa::003584",
+      "role": "known_correct_answered",
+      "split": "fit"
+    },
+    {
+      "row_key": "ahx::triviaqa::003593",
+      "role": "known_correct_answered",
+      "split": "held_out"
+    },
+    {
+      "row_key": "ahx::triviaqa::003614",
+      "role": "known_correct_answered",
+      "split": "held_out"
+    },
+    {
+      "row_key": "ahx::triviaqa::003618",
+      "role": "known_correct_answered",
+      "split": "fit"
+    },
+    {
+      "row_key": "ahx::triviaqa::003619",
+      "role": "known_correct_answered",
+      "split": "fit"
+    },
+    {
+      "row_key": "ahx::triviaqa::003624",
+      "role": "known_correct_answered",
+      "split": "held_out"
+    },
+    {
+      "row_key": "ahx::triviaqa::003644",
+      "role": "known_correct_answered",
+      "split": "held_out"
+    },
+    {
+      "row_key": "ahx::triviaqa::003648",
+      "role": "known_correct_answered",
+      "split": "held_out"
+    },
+    {
+      "row_key": "ahx::triviaqa::003649",
+      "role": "known_correct_answered",
+      "split": "held_out"
+    },
+    {
+      "row_key": "ahx::triviaqa::003651",
+      "role": "known_correct_answered",
+      "split": "held_out"
+    },
+    {
+      "row_key": "ahx::triviaqa::003653",
+      "role": "known_correct_answered",
+      "split": "fit"
+    },
+    {
+      "row_key": "ahx::triviaqa::003658",
+      "role": "known_correct_answered",
+      "split": "held_out"
+    },
+    {
+      "row_key": "ahx::triviaqa::003662",
+      "role": "known_correct_answered",
+      "split": "held_out"
+    },
+    {
+      "row_key": "ahx::triviaqa::003664",
+      "role": "known_correct_answered",
+      "split": "held_out"
+    },
+    {
+      "row_key": "ahx::triviaqa::003665",
+      "role": "known_correct_answered",
+      "split": "held_out"
+    },
+    {
+      "row_key": "ahx::triviaqa::003678",
+      "role": "known_correct_answered",
+      "split": "held_out"
+    },
+    {
+      "row_key": "ahx::triviaqa::003683",
+      "role": "known_correct_answered",
+      "split": "fit"
+    },
+    {
+      "row_key": "ahx::triviaqa::003687",
+      "role": "known_correct_answered",
+      "split": "held_out"
+    },
+    {
+      "row_key": "ahx::triviaqa::003692",
+      "role": "known_correct_answered",
+      "split": "fit"
+    },
+    {
+      "row_key": "ahx::triviaqa::003693",
+      "role": "known_correct_answered",
+      "split": "fit"
+    },
+    {
+      "row_key": "ahx::triviaqa::003694",
+      "role": "known_correct_answered",
+      "split": "held_out"
+    },
+    {
+      "row_key": "ahx::triviaqa::003702",
+      "role": "known_correct_answered",
+      "split": "held_out"
+    },
+    {
+      "row_key": "ahx::triviaqa::003703",
+      "role": "known_correct_answered",
+      "split": "fit"
+    },
+    {
+      "row_key": "ahx::triviaqa::003705",
+      "role": "known_correct_answered",
+      "split": "held_out"
+    },
+    {
+      "row_key": "ahx::triviaqa::003706",
+      "role": "known_correct_answered",
+      "split": "fit"
+    },
+    {
+      "row_key": "ahx::triviaqa::003707",
+      "role": "known_correct_answered",
+      "split": "held_out"
+    },
+    {
+      "row_key": "ahx::triviaqa::003709",
+      "role": "known_correct_answered",
+      "split": "held_out"
+    },
+    {
+      "row_key": "ahx::triviaqa::003712",
+      "role": "known_correct_answered",
+      "split": "fit"
+    },
+    {
+      "row_key": "ahx::triviaqa::003713",
+      "role": "known_correct_answered",
+      "split": "fit"
+    },
+    {
+      "row_key": "ahx::triviaqa::003717",
+      "role": "known_correct_answered",
+      "split": "held_out"
+    },
+    {
+      "row_key": "ahx::triviaqa::003720",
+      "role": "known_correct_answered",
+      "split": "held_out"
+    },
+    {
+      "row_key": "ahx::triviaqa::003723",
+      "role": "known_correct_answered",
+      "split": "held_out"
+    },
+    {
+      "row_key": "ahx::triviaqa::003725",
+      "role": "known_correct_answered",
+      "split": "fit"
+    },
+    {
+      "row_key": "ahx::triviaqa::003726",
+      "role": "known_correct_answered",
+      "split": "fit"
+    },
+    {
+      "row_key": "ahx::triviaqa::003729",
+      "role": "known_correct_answered",
+      "split": "held_out"
+    },
+    {
+      "row_key": "ahx::triviaqa::003731",
+      "role": "known_correct_answered",
+      "split": "fit"
+    },
+    {
+      "row_key": "ahx::triviaqa::003732",
+      "role": "known_correct_answered",
+      "split": "fit"
+    },
+    {
+      "row_key": "ahx::triviaqa::003734",
+      "role": "known_correct_answered",
+      "split": "fit"
+    },
+    {
+      "row_key": "ahx::triviaqa::003736",
+      "role": "known_correct_answered",
+      "split": "fit"
+    },
+    {
+      "row_key": "ahx::triviaqa::003738",
+      "role": "known_correct_answered",
+      "split": "held_out"
+    },
+    {
+      "row_key": "ahx::triviaqa::003739",
+      "role": "known_correct_answered",
+      "split": "held_out"
+    },
+    {
+      "row_key": "ahx::triviaqa::003741",
+      "role": "known_correct_answered",
+      "split": "fit"
+    },
+    {
+      "row_key": "ahx::triviaqa::003743",
+      "role": "known_correct_answered",
+      "split": "held_out"
+    },
+    {
+      "row_key": "ahx::triviaqa::003744",
+      "role": "known_correct_answered",
+      "split": "fit"
+    },
+    {
+      "row_key": "ahx::triviaqa::003745",
+      "role": "known_correct_answered",
+      "split": "held_out"
+    },
+    {
+      "row_key": "ahx::triviaqa::003746",
+      "role": "known_correct_answered",
+      "split": "held_out"
+    },
+    {
+      "row_key": "ahx::triviaqa::003747",
+      "role": "known_correct_answered",
+      "split": "held_out"
+    },
+    {
+      "row_key": "ahx::triviaqa::003748",
+      "role": "known_correct_answered",
+      "split": "fit"
+    },
+    {
+      "row_key": "ahx::triviaqa::003749",
+      "role": "known_correct_answered",
+      "split": "held_out"
+    },
+    {
+      "row_key": "ahx::triviaqa::003750",
+      "role": "known_correct_answered",
+      "split": "fit"
+    },
+    {
+      "row_key": "ahx::triviaqa::003752",
+      "role": "known_correct_answered",
+      "split": "held_out"
+    },
+    {
+      "row_key": "ahx::triviaqa::003754",
+      "role": "known_correct_answered",
+      "split": "held_out"
+    },
+    {
+      "row_key": "ahx::triviaqa::003756",
+      "role": "known_correct_answered",
+      "split": "fit"
+    },
+    {
+      "row_key": "ahx::triviaqa::003758",
+      "role": "known_correct_answered",
+      "split": "held_out"
+    },
+    {
+      "row_key": "ahx::triviaqa::003761",
+      "role": "known_correct_answered",
+      "split": "held_out"
+    },
+    {
+      "row_key": "ahx::triviaqa::003767",
+      "role": "known_correct_answered",
+      "split": "fit"
+    },
+    {
+      "row_key": "ahx::triviaqa::003773",
+      "role": "known_correct_answered",
+      "split": "held_out"
+    },
+    {
+      "row_key": "ahx::triviaqa::003774",
+      "role": "known_correct_answered",
+      "split": "fit"
+    },
+    {
+      "row_key": "ahx::triviaqa::003778",
+      "role": "known_correct_answered",
+      "split": "held_out"
+    },
+    {
+      "row_key": "ahx::triviaqa::003780",
+      "role": "known_correct_answered",
+      "split": "held_out"
+    },
+    {
+      "row_key": "ahx::triviaqa::003783",
+      "role": "known_correct_answered",
+      "split": "fit"
+    },
+    {
+      "row_key": "ahx::triviaqa::003789",
+      "role": "known_correct_answered",
+      "split": "fit"
+    },
+    {
+      "row_key": "ahx::triviaqa::003792",
+      "role": "known_correct_answered",
+      "split": "held_out"
+    },
+    {
+      "row_key": "ahx::triviaqa::003797",
+      "role": "known_correct_answered",
+      "split": "fit"
+    },
+    {
+      "row_key": "ahx::triviaqa::003799",
+      "role": "known_correct_answered",
+      "split": "held_out"
+    },
+    {
+      "row_key": "ahx::triviaqa::003803",
+      "role": "known_correct_answered",
+      "split": "fit"
+    },
+    {
+      "row_key": "ahx::triviaqa::003804",
+      "role": "known_correct_answered",
+      "split": "held_out"
+    },
+    {
+      "row_key": "ahx::triviaqa::003805",
+      "role": "known_correct_answered",
+      "split": "held_out"
+    },
+    {
+      "row_key": "ahx::triviaqa::003833",
+      "role": "known_correct_answered",
+      "split": "fit"
+    },
+    {
+      "row_key": "ahx::triviaqa::003834",
+      "role": "known_correct_answered",
+      "split": "fit"
+    },
+    {
+      "row_key": "ahx::triviaqa::003835",
+      "role": "known_correct_answered",
+      "split": "held_out"
+    },
+    {
+      "row_key": "ahx::triviaqa::003837",
+      "role": "known_correct_answered",
+      "split": "held_out"
+    },
+    {
+      "row_key": "ahx::triviaqa::003845",
+      "role": "known_correct_answered",
+      "split": "held_out"
+    },
+    {
+      "row_key": "ahx::triviaqa::003853",
+      "role": "known_correct_answered",
+      "split": "fit"
+    },
+    {
+      "row_key": "ahx::triviaqa::003857",
+      "role": "known_correct_answered",
+      "split": "held_out"
+    },
+    {
+      "row_key": "ahx::triviaqa::003860",
+      "role": "known_correct_answered",
+      "split": "held_out"
+    },
+    {
+      "row_key": "ahx::triviaqa::003866",
+      "role": "known_correct_answered",
+      "split": "held_out"
+    },
+    {
+      "row_key": "ahx::triviaqa::003867",
+      "role": "known_correct_answered",
+      "split": "fit"
+    },
+    {
+      "row_key": "ahx::triviaqa::003868",
+      "role": "known_correct_answered",
+      "split": "fit"
+    },
+    {
+      "row_key": "ahx::triviaqa::003871",
+      "role": "known_correct_answered",
+      "split": "fit"
+    },
+    {
+      "row_key": "ahx::triviaqa::003873",
+      "role": "known_correct_answered",
+      "split": "fit"
+    },
+    {
+      "row_key": "ahx::triviaqa::003884",
+      "role": "known_correct_answered",
+      "split": "held_out"
+    },
+    {
+      "row_key": "ahx::triviaqa::003886",
+      "role": "known_correct_answered",
+      "split": "fit"
+    },
+    {
+      "row_key": "ahx::triviaqa::003890",
+      "role": "known_correct_answered",
+      "split": "held_out"
+    },
+    {
+      "row_key": "ahx::triviaqa::003891",
+      "role": "known_correct_answered",
+      "split": "held_out"
+    },
+    {
+      "row_key": "ahx::triviaqa::003892",
+      "role": "known_correct_answered",
+      "split": "held_out"
+    },
+    {
+      "row_key": "ahx::triviaqa::003896",
+      "role": "known_correct_answered",
+      "split": "held_out"
+    },
+    {
+      "row_key": "ahx::triviaqa::003901",
+      "role": "known_correct_answered",
+      "split": "held_out"
+    },
+    {
+      "row_key": "ahx::triviaqa::003902",
+      "role": "known_correct_answered",
+      "split": "held_out"
+    },
+    {
+      "row_key": "ahx::triviaqa::003905",
+      "role": "known_correct_answered",
+      "split": "fit"
+    },
+    {
+      "row_key": "ahx::triviaqa::003909",
+      "role": "known_correct_answered",
+      "split": "held_out"
+    },
+    {
+      "row_key": "ahx::triviaqa::003910",
+      "role": "known_correct_answered",
+      "split": "held_out"
+    },
+    {
+      "row_key": "ahx::triviaqa::003913",
+      "role": "known_correct_answered",
+      "split": "fit"
+    },
+    {
+      "row_key": "ahx::triviaqa::003919",
+      "role": "known_correct_answered",
+      "split": "fit"
+    },
+    {
+      "row_key": "ahx::triviaqa::003920",
+      "role": "known_correct_answered",
+      "split": "fit"
+    },
+    {
+      "row_key": "ahx::triviaqa::003939",
+      "role": "known_correct_answered",
+      "split": "fit"
+    },
+    {
+      "row_key": "ahx::triviaqa::003948",
+      "role": "known_correct_answered",
+      "split": "fit"
+    },
+    {
+      "row_key": "ahx::triviaqa::003952",
+      "role": "known_correct_answered",
+      "split": "held_out"
+    },
+    {
+      "row_key": "ahx::triviaqa::003954",
+      "role": "known_correct_answered",
+      "split": "fit"
+    },
+    {
+      "row_key": "ahx::triviaqa::003955",
+      "role": "known_correct_answered",
+      "split": "held_out"
+    },
+    {
+      "row_key": "ahx::triviaqa::003961",
+      "role": "known_correct_answered",
+      "split": "held_out"
+    },
+    {
+      "row_key": "ahx::triviaqa::003964",
+      "role": "known_correct_answered",
+      "split": "fit"
+    },
+    {
+      "row_key": "ahx::triviaqa::003971",
+      "role": "known_correct_answered",
+      "split": "fit"
+    },
+    {
+      "row_key": "ahx::triviaqa::003972",
+      "role": "known_correct_answered",
+      "split": "fit"
+    },
+    {
+      "row_key": "ahx::triviaqa::003979",
+      "role": "known_correct_answered",
+      "split": "held_out"
+    },
+    {
+      "row_key": "ahx::triviaqa::003980",
+      "role": "known_correct_answered",
+      "split": "held_out"
+    },
+    {
+      "row_key": "ahx::triviaqa::003986",
+      "role": "known_correct_answered",
+      "split": "held_out"
+    },
+    {
+      "row_key": "ahx::triviaqa::003988",
+      "role": "known_correct_answered",
+      "split": "held_out"
+    },
+    {
+      "row_key": "ahx::triviaqa::003992",
+      "role": "known_correct_answered",
+      "split": "fit"
+    },
+    {
+      "row_key": "ahx::triviaqa::003994",
+      "role": "known_correct_answered",
+      "split": "held_out"
+    },
+    {
+      "row_key": "ahx::triviaqa::003995",
+      "role": "known_correct_answered",
+      "split": "held_out"
+    },
+    {
+      "row_key": "ahx::triviaqa::003998",
+      "role": "known_correct_answered",
+      "split": "held_out"
+    },
+    {
+      "row_key": "ahx::triviaqa::004013",
+      "role": "known_correct_answered",
+      "split": "fit"
+    },
+    {
+      "row_key": "ahx::triviaqa::004015",
+      "role": "known_correct_answered",
+      "split": "fit"
+    },
+    {
+      "row_key": "ahx::triviaqa::004022",
+      "role": "known_correct_answered",
+      "split": "fit"
+    },
+    {
+      "row_key": "ahx::triviaqa::004025",
+      "role": "known_correct_answered",
+      "split": "held_out"
+    },
+    {
+      "row_key": "ahx::triviaqa::004028",
+      "role": "known_correct_answered",
+      "split": "held_out"
+    },
+    {
+      "row_key": "ahx::triviaqa::004048",
+      "role": "known_correct_answered",
+      "split": "held_out"
+    },
+    {
+      "row_key": "ahx::triviaqa::004049",
+      "role": "known_correct_answered",
+      "split": "held_out"
+    },
+    {
+      "row_key": "ahx::triviaqa::004052",
+      "role": "known_correct_answered",
+      "split": "held_out"
+    },
+    {
+      "row_key": "ahx::triviaqa::004054",
+      "role": "known_correct_answered",
+      "split": "held_out"
+    },
+    {
+      "row_key": "ahx::triviaqa::004055",
+      "role": "known_correct_answered",
+      "split": "fit"
+    },
+    {
+      "row_key": "ahx::triviaqa::004056",
+      "role": "known_correct_answered",
+      "split": "fit"
+    },
+    {
+      "row_key": "ahx::triviaqa::004057",
+      "role": "known_correct_answered",
+      "split": "held_out"
+    },
+    {
+      "row_key": "ahx::triviaqa::004065",
+      "role": "known_correct_answered",
+      "split": "fit"
+    },
+    {
+      "row_key": "ahx::triviaqa::004066",
+      "role": "known_correct_answered",
+      "split": "held_out"
+    },
+    {
+      "row_key": "ahx::triviaqa::004078",
+      "role": "known_correct_answered",
+      "split": "held_out"
+    },
+    {
+      "row_key": "ahx::triviaqa::004080",
+      "role": "known_correct_answered",
+      "split": "held_out"
+    },
+    {
+      "row_key": "ahx::triviaqa::004081",
+      "role": "known_correct_answered",
+      "split": "held_out"
+    },
+    {
+      "row_key": "ahx::triviaqa::004086",
+      "role": "known_correct_answered",
+      "split": "fit"
+    },
+    {
+      "row_key": "ahx::triviaqa::004088",
+      "role": "known_correct_answered",
+      "split": "held_out"
+    },
+    {
+      "row_key": "ahx::triviaqa::004089",
+      "role": "known_correct_answered",
+      "split": "held_out"
+    },
+    {
+      "row_key": "ahx::triviaqa::004090",
+      "role": "known_correct_answered",
+      "split": "fit"
+    },
+    {
+      "row_key": "ahx::triviaqa::004093",
+      "role": "known_correct_answered",
+      "split": "held_out"
+    },
+    {
+      "row_key": "ahx::triviaqa::004096",
+      "role": "known_correct_answered",
+      "split": "fit"
+    },
+    {
+      "row_key": "ahx::triviaqa::004106",
+      "role": "known_correct_answered",
+      "split": "held_out"
+    },
+    {
+      "row_key": "ahx::triviaqa::004108",
+      "role": "known_correct_answered",
+      "split": "fit"
+    },
+    {
+      "row_key": "ahx::triviaqa::004109",
+      "role": "known_correct_answered",
+      "split": "held_out"
+    },
+    {
+      "row_key": "ahx::triviaqa::004114",
+      "role": "known_correct_answered",
+      "split": "fit"
+    },
+    {
+      "row_key": "ahx::triviaqa::004116",
+      "role": "known_correct_answered",
+      "split": "fit"
+    },
+    {
+      "row_key": "ahx::triviaqa::004119",
+      "role": "known_correct_answered",
+      "split": "held_out"
+    },
+    {
+      "row_key": "ahx::triviaqa::004122",
+      "role": "known_correct_answered",
+      "split": "held_out"
+    },
+    {
+      "row_key": "ahx::triviaqa::004123",
+      "role": "known_correct_answered",
+      "split": "held_out"
+    },
+    {
+      "row_key": "ahx::triviaqa::004124",
+      "role": "known_correct_answered",
+      "split": "held_out"
+    },
+    {
+      "row_key": "ahx::triviaqa::004131",
+      "role": "known_correct_answered",
+      "split": "fit"
+    },
+    {
+      "row_key": "ahx::triviaqa::004132",
+      "role": "known_correct_answered",
+      "split": "held_out"
+    },
+    {
+      "row_key": "ahx::triviaqa::004133",
+      "role": "known_correct_answered",
+      "split": "fit"
+    },
+    {
+      "row_key": "ahx::triviaqa::004135",
+      "role": "known_correct_answered",
+      "split": "fit"
+    },
+    {
+      "row_key": "ahx::triviaqa::004142",
+      "role": "known_correct_answered",
+      "split": "held_out"
+    },
+    {
+      "row_key": "ahx::triviaqa::004146",
+      "role": "known_correct_answered",
+      "split": "fit"
+    },
+    {
+      "row_key": "ahx::triviaqa::004147",
+      "role": "known_correct_answered",
+      "split": "fit"
+    },
+    {
+      "row_key": "ahx::triviaqa::004158",
+      "role": "known_correct_answered",
+      "split": "held_out"
+    },
+    {
+      "row_key": "ahx::triviaqa::004159",
+      "role": "known_correct_answered",
+      "split": "fit"
+    },
+    {
+      "row_key": "ahx::triviaqa::004160",
+      "role": "known_correct_answered",
+      "split": "fit"
+    },
+    {
+      "row_key": "ahx::triviaqa::004161",
+      "role": "known_correct_answered",
+      "split": "held_out"
+    },
+    {
+      "row_key": "ahx::triviaqa::004162",
+      "role": "known_correct_answered",
+      "split": "held_out"
+    },
+    {
+      "row_key": "ahx::triviaqa::004170",
+      "role": "known_correct_answered",
+      "split": "held_out"
+    },
+    {
+      "row_key": "ahx::triviaqa::004172",
+      "role": "known_correct_answered",
+      "split": "held_out"
+    },
+    {
+      "row_key": "ahx::triviaqa::004175",
+      "role": "known_correct_answered",
+      "split": "fit"
+    },
+    {
+      "row_key": "ahx::triviaqa::004176",
+      "role": "known_correct_answered",
+      "split": "fit"
+    },
+    {
+      "row_key": "ahx::triviaqa::004177",
+      "role": "known_correct_answered",
+      "split": "held_out"
+    },
+    {
+      "row_key": "ahx::triviaqa::004180",
+      "role": "known_correct_answered",
+      "split": "fit"
+    },
+    {
+      "row_key": "ahx::triviaqa::004183",
+      "role": "known_correct_answered",
+      "split": "held_out"
+    },
+    {
+      "row_key": "ahx::triviaqa::004185",
+      "role": "known_correct_answered",
+      "split": "held_out"
+    },
+    {
+      "row_key": "ahx::triviaqa::004187",
+      "role": "known_correct_answered",
+      "split": "held_out"
+    },
+    {
+      "row_key": "ahx::triviaqa::004188",
+      "role": "known_correct_answered",
+      "split": "held_out"
+    },
+    {
+      "row_key": "ahx::triviaqa::004189",
+      "role": "known_correct_answered",
+      "split": "fit"
+    },
+    {
+      "row_key": "ahx::triviaqa::004198",
+      "role": "known_correct_answered",
+      "split": "held_out"
+    },
+    {
+      "row_key": "ahx::triviaqa::004200",
+      "role": "known_correct_answered",
+      "split": "fit"
+    },
+    {
+      "row_key": "ahx::triviaqa::004201",
+      "role": "known_correct_answered",
+      "split": "held_out"
+    },
+    {
+      "row_key": "ahx::triviaqa::004202",
+      "role": "known_correct_answered",
+      "split": "fit"
+    },
+    {
+      "row_key": "ahx::triviaqa::004203",
+      "role": "known_correct_answered",
+      "split": "held_out"
+    },
+    {
+      "row_key": "ahx::triviaqa::004209",
+      "role": "known_correct_answered",
+      "split": "fit"
+    },
+    {
+      "row_key": "ahx::triviaqa::004212",
+      "role": "known_correct_answered",
+      "split": "fit"
+    },
+    {
+      "row_key": "ahx::triviaqa::004218",
+      "role": "known_correct_answered",
+      "split": "held_out"
+    },
+    {
+      "row_key": "ahx::triviaqa::004219",
+      "role": "known_correct_answered",
+      "split": "held_out"
+    },
+    {
+      "row_key": "ahx::triviaqa::004223",
+      "role": "known_correct_answered",
+      "split": "held_out"
+    },
+    {
+      "row_key": "ahx::triviaqa::004226",
+      "role": "known_correct_answered",
+      "split": "fit"
+    },
+    {
+      "row_key": "ahx::triviaqa::004227",
+      "role": "known_correct_answered",
+      "split": "fit"
+    },
+    {
+      "row_key": "ahx::triviaqa::004228",
+      "role": "known_correct_answered",
+      "split": "held_out"
+    },
+    {
+      "row_key": "ahx::triviaqa::004230",
+      "role": "known_correct_answered",
+      "split": "held_out"
+    },
+    {
+      "row_key": "ahx::triviaqa::004235",
+      "role": "known_correct_answered",
+      "split": "held_out"
+    },
+    {
+      "row_key": "ahx::triviaqa::004237",
+      "role": "known_correct_answered",
+      "split": "held_out"
+    },
+    {
+      "row_key": "ahx::triviaqa::004240",
+      "role": "known_correct_answered",
+      "split": "fit"
+    },
+    {
+      "row_key": "ahx::triviaqa::004241",
+      "role": "known_correct_answered",
+      "split": "held_out"
+    },
+    {
+      "row_key": "ahx::triviaqa::004243",
+      "role": "known_correct_answered",
+      "split": "held_out"
+    },
+    {
+      "row_key": "ahx::triviaqa::004249",
+      "role": "known_correct_answered",
+      "split": "fit"
+    },
+    {
+      "row_key": "ahx::triviaqa::004253",
+      "role": "known_correct_answered",
+      "split": "held_out"
+    },
+    {
+      "row_key": "ahx::triviaqa::004254",
+      "role": "known_correct_answered",
+      "split": "held_out"
+    },
+    {
+      "row_key": "ahx::triviaqa::004255",
+      "role": "known_correct_answered",
+      "split": "fit"
+    },
+    {
+      "row_key": "ahx::triviaqa::004258",
+      "role": "known_correct_answered",
+      "split": "held_out"
+    },
+    {
+      "row_key": "ahx::triviaqa::004260",
+      "role": "known_correct_answered",
+      "split": "fit"
+    },
+    {
+      "row_key": "ahx::triviaqa::004264",
+      "role": "known_correct_answered",
+      "split": "held_out"
+    },
+    {
+      "row_key": "ahx::triviaqa::004265",
+      "role": "known_correct_answered",
+      "split": "fit"
+    },
+    {
+      "row_key": "ahx::triviaqa::004269",
+      "role": "known_correct_answered",
+      "split": "held_out"
+    },
+    {
+      "row_key": "ahx::triviaqa::004271",
+      "role": "known_correct_answered",
+      "split": "held_out"
+    },
+    {
+      "row_key": "ahx::triviaqa::004272",
+      "role": "known_correct_answered",
+      "split": "fit"
+    },
+    {
+      "row_key": "ahx::triviaqa::004274",
+      "role": "known_correct_answered",
+      "split": "held_out"
+    },
+    {
+      "row_key": "ahx::triviaqa::004275",
+      "role": "known_correct_answered",
+      "split": "held_out"
+    },
+    {
+      "row_key": "ahx::triviaqa::004276",
+      "role": "known_correct_answered",
+      "split": "fit"
+    },
+    {
+      "row_key": "ahx::triviaqa::004277",
+      "role": "known_correct_answered",
+      "split": "fit"
+    },
+    {
+      "row_key": "ahx::triviaqa::004279",
+      "role": "known_correct_answered",
+      "split": "held_out"
+    },
+    {
+      "row_key": "ahx::triviaqa::004284",
+      "role": "known_correct_answered",
+      "split": "held_out"
+    },
+    {
+      "row_key": "ahx::triviaqa::004285",
+      "role": "known_correct_answered",
+      "split": "fit"
+    },
+    {
+      "row_key": "ahx::triviaqa::004286",
+      "role": "known_correct_answered",
+      "split": "held_out"
+    },
+    {
+      "row_key": "ahx::triviaqa::004289",
+      "role": "known_correct_answered",
+      "split": "held_out"
+    },
+    {
+      "row_key": "ahx::triviaqa::004300",
+      "role": "known_correct_answered",
+      "split": "fit"
+    },
+    {
+      "row_key": "ahx::triviaqa::004306",
+      "role": "known_correct_answered",
+      "split": "held_out"
+    },
+    {
+      "row_key": "ahx::triviaqa::004309",
+      "role": "known_correct_answered",
+      "split": "fit"
+    },
+    {
+      "row_key": "ahx::triviaqa::004310",
+      "role": "known_correct_answered",
+      "split": "held_out"
+    },
+    {
+      "row_key": "ahx::triviaqa::004317",
+      "role": "known_correct_answered",
+      "split": "held_out"
+    },
+    {
+      "row_key": "ahx::triviaqa::004323",
+      "role": "known_correct_answered",
+      "split": "fit"
+    },
+    {
+      "row_key": "ahx::triviaqa::004324",
+      "role": "known_correct_answered",
+      "split": "held_out"
+    },
+    {
+      "row_key": "ahx::triviaqa::004330",
+      "role": "known_correct_answered",
+      "split": "held_out"
+    },
+    {
+      "row_key": "ahx::triviaqa::004331",
+      "role": "known_correct_answered",
+      "split": "held_out"
+    },
+    {
+      "row_key": "ahx::triviaqa::004333",
+      "role": "known_correct_answered",
+      "split": "held_out"
+    },
+    {
+      "row_key": "ahx::triviaqa::004334",
+      "role": "known_correct_answered",
+      "split": "fit"
+    },
+    {
+      "row_key": "ahx::triviaqa::004337",
+      "role": "known_correct_answered",
+      "split": "held_out"
+    },
+    {
+      "row_key": "ahx::triviaqa::004341",
+      "role": "known_correct_answered",
+      "split": "held_out"
+    },
+    {
+      "row_key": "ahx::triviaqa::004345",
+      "role": "known_correct_answered",
+      "split": "fit"
+    },
+    {
+      "row_key": "ahx::triviaqa::004347",
+      "role": "known_correct_answered",
+      "split": "fit"
+    },
+    {
+      "row_key": "ahx::triviaqa::004354",
+      "role": "known_correct_answered",
+      "split": "fit"
+    },
+    {
+      "row_key": "ahx::triviaqa::004356",
+      "role": "known_correct_answered",
+      "split": "fit"
+    },
+    {
+      "row_key": "ahx::triviaqa::004357",
+      "role": "known_correct_answered",
+      "split": "held_out"
+    },
+    {
+      "row_key": "ahx::triviaqa::004362",
+      "role": "known_correct_answered",
+      "split": "fit"
+    },
+    {
+      "row_key": "ahx::triviaqa::004364",
+      "role": "known_correct_answered",
+      "split": "fit"
+    },
+    {
+      "row_key": "ahx::triviaqa::004365",
+      "role": "known_correct_answered",
+      "split": "fit"
+    },
+    {
+      "row_key": "ahx::triviaqa::004366",
+      "role": "known_correct_answered",
+      "split": "held_out"
+    },
+    {
+      "row_key": "ahx::triviaqa::004367",
+      "role": "known_correct_answered",
+      "split": "fit"
+    },
+    {
+      "row_key": "ahx::triviaqa::004372",
+      "role": "known_correct_answered",
+      "split": "fit"
+    },
+    {
+      "row_key": "ahx::triviaqa::004381",
+      "role": "known_correct_answered",
+      "split": "held_out"
+    },
+    {
+      "row_key": "ahx::triviaqa::004386",
+      "role": "known_correct_answered",
+      "split": "held_out"
+    },
+    {
+      "row_key": "ahx::triviaqa::004387",
+      "role": "known_correct_answered",
+      "split": "held_out"
+    },
+    {
+      "row_key": "ahx::triviaqa::004391",
+      "role": "known_correct_answered",
+      "split": "fit"
+    },
+    {
+      "row_key": "ahx::triviaqa::004393",
+      "role": "known_correct_answered",
+      "split": "held_out"
+    },
+    {
+      "row_key": "ahx::triviaqa::004395",
+      "role": "known_correct_answered",
+      "split": "held_out"
+    },
+    {
+      "row_key": "ahx::triviaqa::004396",
+      "role": "known_correct_answered",
+      "split": "held_out"
+    },
+    {
+      "row_key": "ahx::triviaqa::004398",
+      "role": "known_correct_answered",
+      "split": "fit"
+    },
+    {
+      "row_key": "ahx::triviaqa::004402",
+      "role": "known_correct_answered",
+      "split": "fit"
+    },
+    {
+      "row_key": "ahx::triviaqa::004403",
+      "role": "known_correct_answered",
+      "split": "fit"
+    },
+    {
+      "row_key": "ahx::triviaqa::004405",
+      "role": "known_correct_answered",
+      "split": "held_out"
+    },
+    {
+      "row_key": "ahx::triviaqa::004406",
+      "role": "known_correct_answered",
+      "split": "fit"
+    },
+    {
+      "row_key": "ahx::triviaqa::004407",
+      "role": "known_correct_answered",
+      "split": "held_out"
+    },
+    {
+      "row_key": "ahx::triviaqa::004409",
+      "role": "known_correct_answered",
+      "split": "fit"
+    },
+    {
+      "row_key": "ahx::triviaqa::004411",
+      "role": "known_correct_answered",
+      "split": "fit"
+    },
+    {
+      "row_key": "ahx::triviaqa::004413",
+      "role": "known_correct_answered",
+      "split": "held_out"
+    },
+    {
+      "row_key": "ahx::triviaqa::004415",
+      "role": "known_correct_answered",
+      "split": "fit"
+    },
+    {
+      "row_key": "ahx::triviaqa::004418",
+      "role": "known_correct_answered",
+      "split": "held_out"
+    },
+    {
+      "row_key": "ahx::triviaqa::004419",
+      "role": "known_correct_answered",
+      "split": "held_out"
+    },
+    {
+      "row_key": "ahx::triviaqa::004421",
+      "role": "known_correct_answered",
+      "split": "held_out"
+    },
+    {
+      "row_key": "ahx::triviaqa::004422",
+      "role": "known_correct_answered",
+      "split": "held_out"
+    },
+    {
+      "row_key": "ahx::triviaqa::004423",
+      "role": "known_correct_answered",
+      "split": "held_out"
+    },
+    {
+      "row_key": "ahx::triviaqa::004426",
+      "role": "known_correct_answered",
+      "split": "held_out"
+    },
+    {
+      "row_key": "ahx::triviaqa::004429",
+      "role": "known_correct_answered",
+      "split": "held_out"
+    },
+    {
+      "row_key": "ahx::triviaqa::004432",
+      "role": "known_correct_answered",
+      "split": "fit"
+    },
+    {
+      "row_key": "ahx::triviaqa::004439",
+      "role": "known_correct_answered",
+      "split": "fit"
+    },
+    {
+      "row_key": "ahx::triviaqa::004440",
+      "role": "known_correct_answered",
+      "split": "held_out"
+    },
+    {
+      "row_key": "ahx::triviaqa::004442",
+      "role": "known_correct_answered",
+      "split": "held_out"
+    },
+    {
+      "row_key": "ahx::triviaqa::004446",
+      "role": "known_correct_answered",
+      "split": "fit"
+    },
+    {
+      "row_key": "ahx::triviaqa::004447",
+      "role": "known_correct_answered",
+      "split": "held_out"
+    },
+    {
+      "row_key": "ahx::triviaqa::004449",
+      "role": "known_correct_answered",
+      "split": "fit"
+    },
+    {
+      "row_key": "ahx::triviaqa::004450",
+      "role": "known_correct_answered",
+      "split": "fit"
+    },
+    {
+      "row_key": "ahx::triviaqa::004451",
+      "role": "known_correct_answered",
+      "split": "held_out"
+    },
+    {
+      "row_key": "ahx::triviaqa::004452",
+      "role": "known_correct_answered",
+      "split": "fit"
+    },
+    {
+      "row_key": "ahx::triviaqa::004458",
+      "role": "known_correct_answered",
+      "split": "fit"
+    },
+    {
+      "row_key": "ahx::triviaqa::004459",
+      "role": "known_correct_answered",
+      "split": "held_out"
+    },
+    {
+      "row_key": "ahx::triviaqa::004464",
+      "role": "known_correct_answered",
+      "split": "held_out"
+    },
+    {
+      "row_key": "ahx::triviaqa::004466",
+      "role": "known_correct_answered",
+      "split": "held_out"
+    },
+    {
+      "row_key": "ahx::triviaqa::004467",
+      "role": "known_correct_answered",
+      "split": "held_out"
+    },
+    {
+      "row_key": "ahx::triviaqa::004469",
+      "role": "known_correct_answered",
+      "split": "held_out"
+    },
+    {
+      "row_key": "ahx::triviaqa::004477",
+      "role": "known_correct_answered",
+      "split": "held_out"
+    },
+    {
+      "row_key": "ahx::triviaqa::004478",
+      "role": "known_correct_answered",
+      "split": "fit"
+    },
+    {
+      "row_key": "ahx::triviaqa::004482",
+      "role": "known_correct_answered",
+      "split": "fit"
+    },
+    {
+      "row_key": "ahx::triviaqa::004486",
+      "role": "known_correct_answered",
+      "split": "fit"
+    },
+    {
+      "row_key": "ahx::triviaqa::004487",
+      "role": "known_correct_answered",
+      "split": "fit"
+    },
+    {
+      "row_key": "ahx::triviaqa::004488",
+      "role": "known_correct_answered",
+      "split": "fit"
+    },
+    {
+      "row_key": "ahx::triviaqa::004489",
+      "role": "known_correct_answered",
+      "split": "held_out"
+    },
+    {
+      "row_key": "ahx::triviaqa::004492",
+      "role": "known_correct_answered",
+      "split": "held_out"
+    },
+    {
+      "row_key": "ahx::triviaqa::004494",
+      "role": "known_correct_answered",
+      "split": "fit"
+    },
+    {
+      "row_key": "ahx::triviaqa::004497",
+      "role": "known_correct_answered",
+      "split": "held_out"
+    },
+    {
+      "row_key": "ahx::triviaqa::004505",
+      "role": "known_correct_answered",
+      "split": "held_out"
+    },
+    {
+      "row_key": "ahx::triviaqa::004507",
+      "role": "known_correct_answered",
+      "split": "fit"
+    },
+    {
+      "row_key": "ahx::triviaqa::004509",
+      "role": "known_correct_answered",
+      "split": "held_out"
+    },
+    {
+      "row_key": "ahx::triviaqa::004510",
+      "role": "known_correct_answered",
+      "split": "fit"
+    },
+    {
+      "row_key": "ahx::triviaqa::004512",
+      "role": "known_correct_answered",
+      "split": "fit"
+    },
+    {
+      "row_key": "ahx::triviaqa::004513",
+      "role": "known_correct_answered",
+      "split": "fit"
+    },
+    {
+      "row_key": "ahx::triviaqa::004514",
+      "role": "known_correct_answered",
+      "split": "held_out"
+    },
+    {
+      "row_key": "ahx::triviaqa::004519",
+      "role": "known_correct_answered",
+      "split": "fit"
+    },
+    {
+      "row_key": "ahx::triviaqa::004520",
+      "role": "known_correct_answered",
+      "split": "fit"
+    },
+    {
+      "row_key": "ahx::triviaqa::004525",
+      "role": "known_correct_answered",
+      "split": "held_out"
+    },
+    {
+      "row_key": "ahx::triviaqa::004527",
+      "role": "known_correct_answered",
+      "split": "fit"
+    },
+    {
+      "row_key": "ahx::triviaqa::004529",
+      "role": "known_correct_answered",
+      "split": "held_out"
+    },
+    {
+      "row_key": "ahx::triviaqa::004534",
+      "role": "known_correct_answered",
+      "split": "held_out"
+    },
+    {
+      "row_key": "ahx::triviaqa::004538",
+      "role": "known_correct_answered",
+      "split": "held_out"
+    },
+    {
+      "row_key": "ahx::triviaqa::004539",
+      "role": "known_correct_answered",
+      "split": "held_out"
+    },
+    {
+      "row_key": "ahx::triviaqa::004540",
+      "role": "known_correct_answered",
+      "split": "fit"
+    },
+    {
+      "row_key": "ahx::triviaqa::004541",
+      "role": "known_correct_answered",
+      "split": "held_out"
+    },
+    {
+      "row_key": "ahx::triviaqa::004547",
+      "role": "known_correct_answered",
+      "split": "held_out"
+    },
+    {
+      "row_key": "ahx::triviaqa::004548",
+      "role": "known_correct_answered",
+      "split": "held_out"
+    },
+    {
+      "row_key": "ahx::triviaqa::004549",
+      "role": "known_correct_answered",
+      "split": "held_out"
+    },
+    {
+      "row_key": "ahx::triviaqa::004551",
+      "role": "known_correct_answered",
+      "split": "fit"
+    },
+    {
+      "row_key": "ahx::triviaqa::004552",
+      "role": "known_correct_answered",
+      "split": "held_out"
+    },
+    {
+      "row_key": "ahx::triviaqa::004554",
+      "role": "known_correct_answered",
+      "split": "fit"
+    },
+    {
+      "row_key": "ahx::triviaqa::004556",
+      "role": "known_correct_answered",
+      "split": "held_out"
+    },
+    {
+      "row_key": "ahx::triviaqa::004557",
+      "role": "known_correct_answered",
+      "split": "held_out"
+    },
+    {
+      "row_key": "ahx::triviaqa::004566",
+      "role": "known_correct_answered",
+      "split": "held_out"
+    },
+    {
+      "row_key": "ahx::triviaqa::004567",
+      "role": "known_correct_answered",
+      "split": "held_out"
+    },
+    {
+      "row_key": "ahx::triviaqa::004569",
+      "role": "known_correct_answered",
+      "split": "held_out"
+    },
+    {
+      "row_key": "ahx::triviaqa::004571",
+      "role": "known_correct_answered",
+      "split": "held_out"
+    },
+    {
+      "row_key": "ahx::triviaqa::004573",
+      "role": "known_correct_answered",
+      "split": "held_out"
+    },
+    {
+      "row_key": "ahx::triviaqa::004581",
+      "role": "known_correct_answered",
+      "split": "held_out"
+    },
+    {
+      "row_key": "ahx::triviaqa::004582",
+      "role": "known_correct_answered",
+      "split": "held_out"
+    },
+    {
+      "row_key": "ahx::triviaqa::004584",
+      "role": "known_correct_answered",
+      "split": "fit"
+    },
+    {
+      "row_key": "ahx::triviaqa::004587",
+      "role": "known_correct_answered",
+      "split": "fit"
+    },
+    {
+      "row_key": "ahx::triviaqa::004588",
+      "role": "known_correct_answered",
+      "split": "fit"
+    },
+    {
+      "row_key": "ahx::triviaqa::004597",
+      "role": "known_correct_answered",
+      "split": "fit"
+    },
+    {
+      "row_key": "ahx::triviaqa::004598",
+      "role": "known_correct_answered",
+      "split": "fit"
+    },
+    {
+      "row_key": "ahx::triviaqa::004599",
+      "role": "known_correct_answered",
+      "split": "held_out"
+    },
+    {
+      "row_key": "ahx::triviaqa::004602",
+      "role": "known_correct_answered",
+      "split": "held_out"
+    },
+    {
+      "row_key": "ahx::triviaqa::004603",
+      "role": "known_correct_answered",
+      "split": "held_out"
+    },
+    {
+      "row_key": "ahx::triviaqa::004604",
+      "role": "known_correct_answered",
+      "split": "held_out"
+    },
+    {
+      "row_key": "ahx::triviaqa::004610",
+      "role": "known_correct_answered",
+      "split": "fit"
+    },
+    {
+      "row_key": "ahx::triviaqa::004613",
+      "role": "known_correct_answered",
+      "split": "fit"
+    }
+  ]
+}
