@@ -2,9 +2,10 @@
 
 This wrapper owns cloud process shape only. It clones the EHR repo at an exact
 commit, initializes the pinned Synaptic-Tuner submodule, then runs one complete
-restartable cell: baseline mining/capture, FIT dose sweep, dose selection,
-held-out steering, and scoring. Model work stays delegated to Synaptic-Tuner
-verbs.
+cell: baseline mining/capture, FIT dose sweep, dose selection, held-out
+steering, and scoring. Model work stays delegated to Synaptic-Tuner verbs.
+Per-cell analysis directories are symlinked onto the Modal volume before GPU
+work starts so tuner-level `--resume` can survive worker preemption.
 """
 
 from __future__ import annotations
@@ -63,6 +64,7 @@ def run_one_cell(
     import shutil
     import subprocess
     import sys
+    import threading
     from pathlib import Path
 
     if not repo_commit or len(repo_commit) < 12:
@@ -115,6 +117,46 @@ def run_one_cell(
         "DOUBT_SNAP_RENDER_REVISION": cell["revision"],
     }
 
+    live_root = Path(VOL_MOUNT) / RUN_TAG / "_live" / cell_id
+
+    def link_live_dir(link: Path, target: Path) -> None:
+        target.mkdir(parents=True, exist_ok=True)
+        link.parent.mkdir(parents=True, exist_ok=True)
+        if link.is_symlink():
+            if link.resolve() == target.resolve():
+                return
+            link.unlink()
+        elif link.exists():
+            if link.is_dir():
+                shutil.copytree(link, target, dirs_exist_ok=True)
+                shutil.rmtree(link)
+            else:
+                shutil.copy2(link, target / link.name)
+                link.unlink()
+        link.symlink_to(target, target_is_directory=True)
+
+    link_live_dir(exp_dir / "analysis" / cell_id, live_root / "analysis")
+    link_live_dir(exp_dir / "analysis-committed" / cell_id, live_root / "analysis-committed")
+    vol.commit()
+    print(f"[modal-doubt-snap] live analysis dirs mounted at {live_root}", flush=True)
+
+    stop_commits = threading.Event()
+
+    def periodic_volume_commit() -> None:
+        while not stop_commits.wait(60.0):
+            try:
+                vol.commit()
+                print("[modal-doubt-snap] periodic volume commit", flush=True)
+            except Exception as exc:  # pragma: no cover - defensive cloud logging
+                print(f"[modal-doubt-snap] periodic volume commit failed: {exc}", flush=True)
+
+    commit_thread = threading.Thread(target=periodic_volume_commit, daemon=True)
+    commit_thread.start()
+
+    def stop_periodic_commits() -> None:
+        stop_commits.set()
+        commit_thread.join(timeout=5.0)
+
     def commit_outputs(status_marker: dict[str, object] | None = None) -> None:
         if status_marker is not None:
             cdir = exp_dir / "analysis-committed" / cell_id
@@ -163,6 +205,7 @@ def run_one_cell(
         shutil.copytree(src, target)
         vol.commit()
         print(f"[modal-doubt-snap] committed smoke outputs to {dst}", flush=True)
+        stop_periodic_commits()
         return
 
     prep = exp_dir / "prep_tuner_cell.py"
@@ -218,6 +261,7 @@ def run_one_cell(
             f"[modal-doubt-snap] {cell_id}: no selected FIT dose; committed artifacts and stopping cell",
             flush=True,
         )
+        stop_periodic_commits()
         return
     if dose_select_rc != 0:
         raise RuntimeError(f"select-dose failed ({dose_select_rc}) despite selected dose")
@@ -260,6 +304,7 @@ def run_one_cell(
     )
 
     commit_outputs({"cell_id": cell_id, "status": "completed"})
+    stop_periodic_commits()
 
 
 @app.local_entrypoint()

@@ -37,7 +37,7 @@ instrument:
     cell.yaml: ce5370a9b18f406698f5544c89f4245a724041889fea9247b8c475c3a9d2bb41
     gates.yaml: fb3e63eac6bba873c9f98616beb542ebf70bb0ade01a30e7cc80601095c2ff89
     cloud/README.md: 6ee3615bd2ff19c92cff813c5e0e3f51897da90c4ef1eaf8c83d5d329abcf532
-    cloud/modal_doubt_snap_cross_family.py: dd15dc73969a1b97ee14fc7b1231eb319c1cbc71278185e75b4e62efc0136dec
+    cloud/modal_doubt_snap_cross_family.py: 02197e0e629a8a654ea197d97ac117e4161ab6dc2dc3da33a2db3f746786ea42
     prep_tuner_cell.py: 87abfaa0b3ceba715c396ca822c6df657e79a785ba701bf7c5a0041e30f652e1
     materialize_tuner_cells.py: 48f9501f7c663b1c791b0bbcb88b9fb53d1c18b17013deb8b6ca025201521c86
     smoke_tuner_path.py: 7e412e7b3ffeb71b52b56cb3ec84089f80127192c3e169dcb1ece2dff90fc4c1
