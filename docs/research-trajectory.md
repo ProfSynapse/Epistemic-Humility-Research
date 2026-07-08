@@ -191,6 +191,16 @@ compliance-only (AH); the reward channel is under test (AI). The J-space fork no
 surface-local causal support that prior residual writes were aimed too late; the next
 question is whether the mid-band advantage replicates beyond raw-base Qwen3-4B.
 
+**Next drafted J-space actuator (DRAFT, not signed, 2026-07-08):**
+`j-space-token-targeted-refusal-qwen3-4b` follows the internal-token option rather
+than an external decode-time logit bias. It proposes using the J-lens backward to
+construct an hs23 hidden direction that raises refusal/unknown/JSON-supporting token
+targets and lowers answer/reply/continuation token targets, then testing
+`c_hat_only` against `J-token only`, `c_hat + J-token`, and a matched random-J
+control under the same doubt gate. It is not launchable until the runner is
+implemented with row-level checkpoint/resume semantics and the token bundles are
+frozen before FIT dose calibration.
+
 ---
 
 ## Five-paper line (canonical as of 2026-07-01)
