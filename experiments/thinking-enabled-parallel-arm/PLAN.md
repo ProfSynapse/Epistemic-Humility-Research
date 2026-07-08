@@ -1,7 +1,7 @@
 ---
-title: 'Thinking-enabled training regimen replication'
+title: 'Thinking-enabled TriviaQA source probe'
 kg:
-  id: experiment:thinking-enabled-training-replication
+  id: experiment:thinking-triviaqa-source-probe
   type: experiment
   status: canonical
 tags:
@@ -10,22 +10,123 @@ status: proposed
 governance: amendment
 phase: phase1
 lane: local
-est_compute: '~30+ local RTX 3090 GPU-hours for seed-1 replication of the approved regimen family; seeds 2/3 add proportionally'
+est_compute: '~10-20 local RTX 3090 GPU-hours for a full 20k-row thinking probe, depending on token budget'
 relationships:
   - type: tests
     target: '[[generation-discrimination-gap]]'
     target_id: term:generation-discrimination-gap
     confidence: high
-  - type: tests
-    target: '[[grpo-composite-reward-installs-epistemic-output-schema]]'
-    target_id: mechanism:grpo-composite-reward-installs-epistemic-output-schema
-    confidence: medium
 related:
   - '[[generation-discrimination-gap]]'
-  - '[[grpo-composite-reward-installs-epistemic-output-schema]]'
 ---
 
 ## Question & Hypothesis
+
+Does enabling Qwen3 thinking materially change the TriviaQA known/unknown source
+labels that feed the Phase 1 epistemic-humility datasets?
+
+This is an Amendment H experiment under
+`experiments/thinking-enabled-parallel-arm/AMENDMENT.md`; it is
+outside locked PROTOCOL v0.3 headline reporting.
+
+The motivating literature includes
+`library/notes/2410.02707--llms-know-more-than-they-show.md`, which supports
+the concern that generation can understate latent knowledge.
+
+- **Hypothesis.** Thinking mode will move some non-thinking unknown rows into
+  discard or known because the model can recover final answers after an
+  explicit reasoning trace.
+- **Falsifier.** The thinking-aware label-transition table is mostly identity,
+  or movement is dominated by trace truncation and exact-alias scorer artifacts.
+
+## Design
+
+Rerun the TriviaQA source probe on the same Qwen3 base family with
+`enable_thinking: true`, preserving raw generations and scoring only final
+answer text after the last `</think>`.
+
+The bounded 2026-06-25 pilot already established the required implementation
+posture:
+
+- `max_new_tokens: 384` was invalid for interpretation because traces often did
+  not close.
+- `max_new_tokens: 1024` was usable but imperfect on 128 rows:
+  3,303/4,096 sampled generations reached `post_think`.
+- Exact TriviaQA alias scoring is conservative and should be interpreted with
+  row-level examples when labels change.
+
+Full-run acceptance should be based on extraction quality, label-transition
+rates, and row review, not only aggregate counts.
+
+## Prerequisites & Gating
+
+- Non-thinking source probe exists at
+  `experiment/phase1/probe/qwen3-4b-instruct/probe_results.jsonl`.
+- Thinking extraction support exists in `experiment/phase1/probe/probe.py` and
+  `experiment/phase1/probe/backends.py`.
+- Probe tests pass:
+  `python -m pytest experiment/phase1/probe/tests/test_probe_smoke.py -q`.
+- The bounded audit artifacts exist under
+  `experiment/phase1/probe/analysis/thinking_audit_128_1024/`.
+- GPU is idle and Docker is available before launch.
+
+## Runbook
+
+1. Read `experiments/thinking-enabled-parallel-arm/AMENDMENT.md`.
+2. Inspect bounded audit results in
+   `experiment/phase1/probe/analysis/thinking_audit_128_1024/README.md`.
+3. Create a full thinking-probe config by following the pattern in
+   `experiment/phase1/probe/config/probe_thinking_audit_128_1024.yaml` and
+   changing only `model.model_tag`, `probe_pool.max_questions`, and any
+   explicitly approved token-budget values.
+4. Run the probe with `experiment/phase1/probe/probe.py` inside the local Docker
+   vLLM image, using a fresh output directory.
+5. Compare thinking rows against the locked non-thinking rows with
+   `experiment/phase1/probe/compare_thinking_probe_results.py`.
+6. Review extraction-status counts and label-transition examples before
+   deciding whether to rebuild datasets.
+7. Record launch, heartbeat, result, and interpretation checkpoints in
+   `docs/sessions/`.
+
+## Validation contract
+
+- **Pre-run.** Config has `model.enable_thinking: true`, unique `model_tag`,
+  same `probe_pool.subset_seed` as the locked probe, and no existing output rows
+  outside the configured subset.
+- **During run.** Early rows show mostly `post_think` extraction; if
+  `unterminated_thinking` dominates, stop and revise token budget or design.
+- **Post-run.** Manifest exists, `n_questions` matches the configured cap,
+  comparison `summary.json` exists, and row-level CSV joins by
+  `probe_pool_row_key`.
+- **Definition of done.** A session checkpoint states whether thinking-derived
+  labels are accepted for downstream dataset rebuild, rejected, or require a
+  larger token-budget/scorer-sensitivity study.
+
+## Outputs & provenance
+
+- Probe output: `experiment/phase1/probe/<thinking-model-tag>/`.
+- Comparison output: `experiment/phase1/probe/analysis/<thinking-analysis-tag>/`.
+- Session notes: `docs/sessions/`.
+- Amendment: `experiments/thinking-enabled-parallel-arm/AMENDMENT.md`.
+
+Results remain Amendment H exploratory evidence and do not replace locked
+non-thinking source labels unless a later signed amendment explicitly says so.
+
+## Variations
+
+- Bounded 128-row / 1024-token audit: completed 2026-06-25.
+- Full 20k-row / approved-token-budget probe: proposed.
+- Optional scorer-sensitivity pass: proposed, only after the locked-scorer
+  comparison is complete.
+
+## Status log
+
+- 2026-06-25: created after bounded audit showed moderate label movement but no
+  basis for replacing the non-thinking source labels.
+
+## Thinking-enabled training replication
+
+### Question & Hypothesis
 
 Do the current non-thinking fine-tuning results hold when the source labels,
 training/eval prompts, and final measurements are built under a thinking-enabled
@@ -46,11 +147,10 @@ bounded audit in `experiment/phase1/probe/analysis/thinking_audit_128_1024/`.
   appears under thinking with no material behavior or confidence deltas beyond
   normal seed variance.
 
-## Design
+### Design
 
-This note covers the downstream branch after
-`notes/experiments/thinking-triviaqa-source-probe.md` accepts a thinking-derived
-source-label set.
+This plan covers the downstream branch after the source-probe section above
+accepts a thinking-derived source-label set.
 
 The branch mirrors the active non-thinking response-confidence family rather
 than replacing it. Seed 1 is the first plumbing and behavior screen. Seeds 2/3
@@ -82,9 +182,9 @@ amendment explicitly adds synthetic reasoning traces. The thinking branch is
 about the model operating with thinking enabled, not about inventing unverified
 chain-of-thought supervision.
 
-## Prerequisites & Gating
+### Prerequisites & Gating
 
-- `notes/experiments/thinking-triviaqa-source-probe.md` is complete or explicitly
+- The source-probe section in this plan is complete or explicitly
   approved for the subset used.
 - Thinking-derived datasets are rebuilt with leakage checks and provenance.
 - Tuner/eval configs clearly label `thinking` in run IDs, output directories,
@@ -95,11 +195,11 @@ chain-of-thought supervision.
   from; lineage must be checked before launch.
 - GPU/Docker is idle before each local launch.
 
-## Runbook
+### Runbook
 
 1. Read `experiments/thinking-enabled-parallel-arm/AMENDMENT.md`.
-2. Confirm the accepted source-label artifact from
-   `notes/experiments/thinking-triviaqa-source-probe.md`.
+2. Confirm the accepted source-label artifact from the source-probe section of
+   this plan.
 3. Build thinking-derived SFT/DPO/KTO/GRPO datasets using checked-in data-build
    scripts under `experiment/phase1/data/`.
 4. Launch the seed-1 thinking SFT through the existing local training recipe
@@ -116,7 +216,7 @@ chain-of-thought supervision.
 9. Record run records and session checkpoints under `experiment/phase1/run_records/`
    and `docs/sessions/`.
 
-## Validation contract
+### Validation contract
 
 - **Pre-run.** Dataset provenance points to the thinking source probe; configs
   include thinking labels in output paths; lineage points to the intended
@@ -129,7 +229,7 @@ chain-of-thought supervision.
   its matched non-thinking controls and states whether the same next-best arm is
   still favored.
 
-## Outputs & provenance
+### Outputs & provenance
 
 - Run records: `experiment/phase1/run_records/`.
 - Training/eval configs: `experiment/phase1/`.
@@ -142,7 +242,7 @@ chain-of-thought supervision.
 Results remain Amendment H exploratory evidence. They should be reported beside
 the non-thinking branch, not pooled with it.
 
-## Variations
+### Variations
 
 - Seed-1 full branch: proposed.
 - Seed-2/3 best-arm replication: deferred until seed-1 thinking branch is
@@ -151,7 +251,7 @@ the non-thinking branch, not pooled with it.
 - Thinking-at-eval-only control: optional diagnostic if training reruns are too
   costly or if source-label effects remain small.
 
-## Status log
+### Status log
 
 - 2026-06-25: created as the downstream Amendment H parallel-arm runbook. No
   training launch is authorized by this note.

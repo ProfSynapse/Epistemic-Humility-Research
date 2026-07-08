@@ -1,13 +1,14 @@
 #!/usr/bin/env python3
-"""Generate the figures for the two-signal-readout paper (Paper 3).
+"""Generate the figures for the two-signal-readout paper (Paper 4).
 
-Reads the committed amendment result JSONs under experiment/phase1/probe/ and
-emits publication figures to papers/paper-4-two-signal-readout/figures/. Deterministic: no
-randomness, no network, CPU only. Regenerate with:
+Reads the committed amendment result JSONs under the paper-local
+analysis/source-artifacts/ snapshot and emits publication figures to
+papers/paper-4-two-signal-readout/figures/. Deterministic: no randomness, no
+network, CPU only. Regenerate with:
 
     python3 papers/paper-4-two-signal-readout/scripts/build_figures.py
 
-Every number in every figure traces to a specific amendment_*_result.json.
+Every number in every figure traces to a specific source artifact.
 """
 from __future__ import annotations
 
@@ -21,8 +22,9 @@ import matplotlib.pyplot as plt
 from matplotlib.patches import FancyArrowPatch, FancyBboxPatch
 
 ROOT = Path(__file__).resolve().parents[3]
-PROBE = ROOT / "experiment" / "phase1" / "probe"
-OUT = ROOT / "papers" / "paper-4-two-signal-readout" / "figures"
+PAPER = ROOT / "papers" / "paper-4-two-signal-readout"
+PROBE = PAPER / "analysis" / "source-artifacts" / "probe"
+OUT = PAPER / "figures"
 OUT.mkdir(parents=True, exist_ok=True)
 
 # ---- palette -------------------------------------------------------------

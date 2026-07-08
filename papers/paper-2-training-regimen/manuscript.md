@@ -696,8 +696,8 @@ protocol document and scored artifact:
 | 4.3 GRPO first reward (schema base) | Amendment D | `experiments/schema-response-confidence/AMENDMENT.md` | `results_amendment_d_response_confidence_selfaware_schema_sft_grpo_seed1_full_4b/` |
 | 4.3 clean-SFT baseline + GRPO v1/v2 | Amendment E | `experiments/probe-scaled-response-confidence/AMENDMENT.md` | `results_amendment_e_response_confidence_selfaware_clean_sft_{merged,dpo,kto,grpo,grpo_v2}_seed1_*_full_4b/` |
 | 4.3 stacking null (one sentence) | Amendment F | `experiments/grpo-centered-stacking/AMENDMENT.md` | `results_amendment_f_response_confidence_selfaware_clean_sft_{dpo_grpo,grpo_dpo,grpo_kto,kto_grpo}_seed1_full_4b/` |
-| 5 confidence collapse (GRPO v2) | Amendment J diagnostics / session 0026 | `notes/experiments/grpo-v3-proper-scoring-confidence.md` | `experiment/phase1/eval/analysis/calibration_gap_clean_sft_grpo_v2_seed1.json` |
-| 5 probe vs emitted channel | probe program (caution-vs-doubt note) | `notes/experiments/caution-vs-doubt-knowledge-gate.md` | `calibration_gap_clean_sft_grpo_v2_seed1.json` (`B_internal_vs_emitted`: internal AUROC 0.972 vs emitted 0.637) |
+| 5 confidence collapse (GRPO v2) | Amendment J diagnostics / session 0026 | `experiments/grpo-v3-proper-scoring-confidence/RUNBOOK.md` | `experiment/phase1/eval/analysis/calibration_gap_clean_sft_grpo_v2_seed1.json` |
+| 5 probe vs emitted channel | probe program (caution-vs-doubt note) | `archive/notes/experiments/caution-vs-doubt-knowledge-gate.md` | `calibration_gap_clean_sft_grpo_v2_seed1.json` (`B_internal_vs_emitted`: internal AUROC 0.972 vs emitted 0.637) |
 | grouped behavioral inventory | all of the above | | `experiment/phase1/eval/analysis/selfaware_full_run_comparison_grouped.csv` |
 
 Governance notes: the three-seed cold-start block is the pre-registered

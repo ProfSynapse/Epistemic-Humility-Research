@@ -3,7 +3,7 @@
 Load this when deciding whether a candidate direction is a real result. These
 rules are timeless and apply to any mech-interp experiment in this repository.
 They are NOT a snapshot of any single run's findings; current results live in
-`docs/sessions/` and `notes/experiments/`.
+`docs/sessions/` and experiment-local docs under `experiments/<slug>/`.
 
 ## Research Target
 

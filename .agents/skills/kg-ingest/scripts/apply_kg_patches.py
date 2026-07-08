@@ -105,8 +105,8 @@ def apply_mech_support(additions):
 
 def valid_targets():
     # any markdown anywhere in the vault is a legal wikilink target (SCHEMA, READMEs,
-    # notes/experiments, ...). The repo root is the Obsidian vault, so a library note may
-    # legitimately link a sibling tree (e.g. a gap note -> notes/experiments/<exp>.md).
+    # experiment runbooks, archived notes, ...). The repo root is the Obsidian vault,
+    # so a library note may legitimately link a sibling tree.
     # Exclude the synaptic-tuner submodule (separate vault and ownership boundary).
     targets = set()
     for p in glob.glob("**/*.md", recursive=True):

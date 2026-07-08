@@ -158,7 +158,7 @@ Project-local implementation may include:
 
 - probe configs under `experiment/phase1/probe/config/`;
 - probe comparison scripts under `experiment/phase1/probe/`;
-- experiment notes under `notes/experiments/`;
+- experiment-local runbooks/plans under `experiments/<slug>/`;
 - protocol/session docs under `experiment/protocol/` and `docs/sessions/`;
 - analysis summaries under `experiment/phase1/probe/analysis/` and
   `experiment/phase1/eval/analysis/`.

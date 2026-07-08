@@ -43,9 +43,11 @@ Implementation status:
   with local `manuscript.md`, `analysis/`, `figures/`, `scripts/`, and `notes/`.
   Superseded paper drafts and retired inventories live under visible `archive/`
   rather than a hidden dot-directory.
-- Experiment-family runbook notes now live under `notes/experiments/`; the
-  chronological log remains `docs/sessions/`, and KG literature/internal
-  synthesis notes remain under `library/notes/`.
+- Experiment-family runbooks/plans now live beside their experiments under
+  `experiments/<slug>/`; unresolved or superseded top-level experiment notes
+  live under `archive/notes/experiments/`. The chronological log remains
+  `docs/sessions/`, and KG literature/internal synthesis notes remain under
+  `library/notes/`.
 
 ## Problem
 
@@ -253,8 +255,8 @@ Updated project instructions and skills:
 - `.skills/experiment-runner/reference/research-sessions.md`
 - `.skills/experiment-runner/reference/protocol-amendments.md`
 - `.skills/experiments/SKILL.md`
-- `notes/experiments/_SCHEMA.md` if notes should point at resolver IDs instead
-  of exact paths in new runbooks
+- `experiments/<slug>/RUNBOOK.md` / `PLAN.md` when reusable operating notes
+  need local experiment context
 
 The docs now say:
 
@@ -282,8 +284,9 @@ tree:
   folder
 - moved paper-specific planning/audit notes into `papers/<paper>/notes/`
 - moved superseded paper drafts and retired inventories into `archive/papers/`
-- moved experiment-family runbook notes from `experiment/notes/` to
-  `notes/experiments/`
+- moved reusable experiment-family runbook/planning notes from `experiment/notes/`
+  and `notes/experiments/` into experiment-local `RUNBOOK.md` / `PLAN.md` files,
+  preserving unresolved or superseded notes under `archive/notes/experiments/`
 - wrote `docs/migration/paper-path-map.json` and
   `docs/migration/notes-path-map.json`
 - updated CI, pre-commit, KG schema docs, skill docs, README, AGENTS/CLAUDE, and
@@ -326,5 +329,6 @@ tree:
 7. Migrate session filenames/IDs after experiment references are stable. (done)
 8. Move paper production to top-level `papers/` and archive superseded drafts.
    (done)
-9. Move reusable experiment notes to `notes/experiments/`. (done)
+9. Move reusable experiment notes into experiment-local runbooks/plans and
+   archive unresolved or superseded top-level notes. (done)
 10. Decide whether to add a generated session registry.

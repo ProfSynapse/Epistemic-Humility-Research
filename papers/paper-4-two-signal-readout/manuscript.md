@@ -481,7 +481,7 @@ per family. The hidden-state readouts sit above these bounds (gate 0.991–0.998
 0.79–0.87), but the *margins*, not the raw AUROCs, are the honest effect sizes: much of
 the gate is surface-predictable on SelfAware, on any model of any era. (Pre-registration
 and per-cell provenance: `AMENDMENT-Y-pretrain-only-base-readout.md`;
-`experiment/phase1/probe/amendment_y_results/`.)
+`papers/paper-4-two-signal-readout/analysis/source-artifacts/probe/amendment_y_results/`.)
 
 ---
 
@@ -632,7 +632,7 @@ separate, and know which model's veto you can trust.
 Every figure and number is generated from tracked result artifacts. Figures are produced by
 `papers/paper-4-two-signal-readout/scripts/build_figures.py`, which reads the per-cell result JSONs directly:
 
-| Result surface | Artifact (under `experiment/phase1/probe/`) |
+| Result surface | Artifact (under `papers/paper-4-two-signal-readout/analysis/source-artifacts/probe/`) |
 |---|---|
 | Correctness dial, base (S) | `amendment_s_stage2_result.json` |
 | Correctness dial, deployed (T) | `amendment_t_stage2_result.json` |
@@ -640,7 +640,7 @@ Every figure and number is generated from tracked result artifacts. Figures are 
 | Training-free whole mechanism (W) | `amendment_w_base_model_result.json` |
 | Cross-size 1.7B/8B/14B (X) | `amendment_x_qwen3-{1.7b,8b,14b}-bnb-4bit_result.json` |
 | Cross-family (Z) | `amendment_z_{llama-3.2-3b,ministral-3-3b,qwen3.5-4b,gemma-4-e4b}_result.json` |
-| Pretrain-only bases + era ladder (Y) | `amendment_y_results/` (10 per-cell result JSONs + extraction manifest) |
+| Pretrain-only bases + era ladder (Y) | `amendment_y_results/` (per-cell result JSONs + extraction manifest) |
 
 Governance: each result surface is a signed exploratory amendment under
 `experiment/protocol/` referencing the locked pre-registration; the cross-size and

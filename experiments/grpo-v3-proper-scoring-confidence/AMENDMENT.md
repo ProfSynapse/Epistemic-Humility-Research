@@ -38,8 +38,8 @@ PROTOCOL v0.3 / Amendment E artifact.
 **Session note:** `docs/sessions/20260627T093723Z-caution-vs-doubt-knowledge-gate.md`
 
 **Design note (non-governed):**
-`notes/experiments/grpo-v3-proper-scoring-confidence.md`,
-`notes/experiments/computed-confidence-alignment-regimen.md`
+`experiments/grpo-v3-proper-scoring-confidence/RUNBOOK.md`,
+`archive/notes/experiments/computed-confidence-alignment-regimen.md`
 
 ---
 

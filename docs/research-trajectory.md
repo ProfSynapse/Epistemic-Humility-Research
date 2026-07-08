@@ -174,7 +174,7 @@ unusable. This is still FIT-only calibration evidence; held-out mid-band
 superiority remains untested. Sources:
 `experiments/j-space-midband-dose-calibration-qwen3-4b/AMENDMENT.md`,
 `experiments/j-space-midband-dose-calibration-qwen3-4b/analysis-committed/dose_calibration_summary.json`,
-and `notes/experiments/j-space-midband-dose-calibration-qwen3-4b.md`.
+and `experiments/j-space-midband-dose-calibration-qwen3-4b/RUNBOOK.md`.
 
 **J-space calibrated layer contrast (RESOLVED exploratory pass, 2026-07-08):**
 the held-out causal test `j-space-calibrated-layer-contrast-qwen3-4b` passed on

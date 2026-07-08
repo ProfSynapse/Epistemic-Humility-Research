@@ -184,5 +184,7 @@ def test_subprocess_env_forces_utf8(monkeypatch):
     assert env["PYTHONUTF8"] == "1"
     assert env["PYTHONIOENCODING"] == "utf-8"
     assert env["PYTHONUNBUFFERED"] == "1"
-    assert Path(captured["kwargs"]["cwd"]).name == "Epistemic-Humility-Research"
+    cwd = Path(captured["kwargs"]["cwd"])
+    assert (cwd / "AGENTS.md").is_file()
+    assert (cwd / "experiment").is_dir()
     assert os.environ["PYTHONIOENCODING"] == "cp1252"

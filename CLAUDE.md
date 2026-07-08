@@ -52,8 +52,9 @@ Use artifact type to choose where to look:
   `notes/`. Shared writing conventions live in `papers/common/`; series-level
   planning lives in `papers/series/`.
 - Notes by type: `docs/sessions/` for chronological session logs,
-  `notes/experiments/` for reusable experiment-family runbooks/spec notes, and
-  `library/notes/` for KG-backed literature/internal synthesis notes.
+  `experiments/<slug>/RUNBOOK.md` and `experiments/<slug>/PLAN.md` for reusable
+  experiment-local operating specs, and `library/notes/` for KG-backed
+  literature/internal synthesis notes.
 - New experiments (any evidence-producing type: steering cell, training run,
   eval, probe-fit, lab diagnostic): the experiments-first tree `experiments/`,
   one self-contained directory per experiment holding a signed `AMENDMENT.md`, a

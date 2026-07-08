@@ -499,12 +499,12 @@ appropriate is not merely encouraged but is the optimum, so a near-constant is
 provably sub-optimal. v3 adds exactly this term; by design it is sub-dominant
 to the behavior reward (confidence
 weight 1.2, explicitly kept below the behavior magnitudes so behavior is not traded
-away) [notes/experiments/grpo-v3-proper-scoring-confidence.md]. Importantly, the
+away) [experiments/grpo-v3-proper-scoring-confidence/RUNBOOK.md]. Importantly, the
 failure here is not a degenerate target: a CPU preflight re-scoring 19,904 real
 rollouts confirmed the per-prompt targets have real dynamic range (group-target
 std 0.320 over 4211 prompts, 65.6% in [0.2,0.8]) and that emitting the calibrated
 target strictly beats a flat 0.82 on 4211/4211 prompts (mean Brier gain +0.394)
-[notes/experiments/computed-confidence-alignment-regimen.md]. Yet after training,
+[archive/notes/experiments/computed-confidence-alignment-regimen.md]. Yet after training,
 behavior is fine (truthful 40.99, correct_on_known 52.52, over_refusal 65.13,
 refusal_recall 92.34) while the stated scalar stays high and flat (mean ≈ 0.849,
 std ≈ 0.027) and still ranks appropriateness at AUROC ≈ 0.522 with ECE 0.440
@@ -829,7 +829,7 @@ The design needed two corrections on the way, both instructive. First, a *naive*
 probe-scaled target (response_confidence = 0.1 + 0.8·appropriateness_p) collapses to
 a single emitted value (0.8765) because the target *distribution* is imbalanced: most
 known items are answerable, so most targets land in a high band, and cross-entropy is
-minimized by emitting that mode [notes/experiments/computed-confidence-alignment-regimen.md,
+minimized by emitting that mode [archive/notes/experiments/computed-confidence-alignment-regimen.md,
 §004]. The intended fix was to quantile-balance the target onto a spread band so that
 emitting a constant is penalized; but a CPU preflight on the real pool showed the
 *source* axis it balanced (appropriateness on all-appropriate clean-SFT
@@ -1056,12 +1056,12 @@ protocol document and scored artifact:
 
 | Paper section | Internal label | Protocol / notes | Primary artifacts |
 |---|---|---|---|
-| §4 internal-vs-stated gap; like-for-like on the GRPO-v2 checkpoint (Fig. 2) | probe program (Amendments L/M lineage; caution-vs-doubt note); session 20260627T093723Z | `notes/experiments/caution-vs-doubt-knowledge-gate.md`; `docs/sessions/20260627T093723Z-caution-vs-doubt-knowledge-gate.md` checkpoints 002–004 | `experiment/phase1/probe/analysis/_latent_knowledge_controls/` (`a3_h_base_probe.json`, `c2_*.json`, `a1a2_h_lora.json`); `experiment/phase1/eval/analysis/calibration_gap_clean_sft_grpo_v2_seed1.json` (`B_internal_vs_emitted`: internal AUROC 0.972 vs emitted 0.637) |
+| §4 internal-vs-stated gap; like-for-like on the GRPO-v2 checkpoint (Fig. 2) | probe program (Amendments L/M lineage; caution-vs-doubt note); session 20260627T093723Z | `archive/notes/experiments/caution-vs-doubt-knowledge-gate.md`; `docs/sessions/20260627T093723Z-caution-vs-doubt-knowledge-gate.md` checkpoints 002–004 | `experiment/phase1/probe/analysis/_latent_knowledge_controls/` (`a3_h_base_probe.json`, `c2_*.json`, `a1a2_h_lora.json`); `experiment/phase1/eval/analysis/calibration_gap_clean_sft_grpo_v2_seed1.json` (`B_internal_vs_emitted`: internal AUROC 0.972 vs emitted 0.637) |
 | §5–6 geometry and steering | probe program | `experiment/phase1/probe/paper3_section5_geometry.py`; `caution_direction_L35.json`; `caution_perp_direction_L35.json` | `experiment/phase1/probe/analysis/current_clean_grpo_v2_*` (interventions, coefficient sweeps, generation panels) |
 | §5 knowledge-subspace erasure (LEACE) | Amendment AJ | `experiments/knowledge-subspace-erasure/AMENDMENT.md`; `experiment/phase1/probe/amendment_aj_subspace_erasure.py`; `amendment_aj_addendum_gap_distribution.py` | `experiment/phase1/probe/analysis/amendment_aj_subspace_erasure/` (`result.json`, `addendum_a1_gap_distribution.json`) |
 | §7 interventions 1–2 (DPO/KTO stated-confidence contract) | Amendment B | `experiments/stated-confidence-grpo/AMENDMENT.md` | `papers/paper-2-training-regimen/analysis/amendment_b_confidence_alignment_by_outcome.csv` |
-| §7 interventions 3–4 (GRPO v1/v2 collapse + incentive analysis) | Amendment E cells; Amendment J diagnostics / session 0026 | `notes/experiments/grpo-v3-proper-scoring-confidence.md` | `experiment/phase1/eval/analysis/calibration_gap_clean_sft_grpo_v2_seed1.json` |
-| §7 intervention 5 (proper-scoring GRPO) | Amendment J (GRPO-v3) | `notes/experiments/grpo-v3-proper-scoring-confidence.md`; reward `experiment/phase1/grpo/humility_reward_v3.py`; preflight `notes/experiments/computed-confidence-alignment-regimen.md` | `experiment/phase1/eval/analysis/calibration_gap_clean_sft_grpo_v3_seed1.json`; `results_amendment_j_*` |
+| §7 interventions 3–4 (GRPO v1/v2 collapse + incentive analysis) | Amendment E cells; Amendment J diagnostics / session 0026 | `experiments/grpo-v3-proper-scoring-confidence/RUNBOOK.md` | `experiment/phase1/eval/analysis/calibration_gap_clean_sft_grpo_v2_seed1.json` |
+| §7 intervention 5 (proper-scoring GRPO) | Amendment J (GRPO-v3) | `experiments/grpo-v3-proper-scoring-confidence/RUNBOOK.md`; reward `experiment/phase1/grpo/humility_reward_v3.py`; preflight `archive/notes/experiments/computed-confidence-alignment-regimen.md` | `experiment/phase1/eval/analysis/calibration_gap_clean_sft_grpo_v3_seed1.json`; `results_amendment_j_*` |
 | §7 interventions 6–7 (contrastive SFT, answer-supervised / answer-masked) | Amendments K and L | `experiments/contrastive-sft-behavior-conditional-confidence/AMENDMENT.md`; `experiments/answer-subspan-masked-contrastive-sft/AMENDMENT.md` | `calibration_gap_contrastive_sft_seed1.json`; `calibration_gap_contrastive_masked_sft_seed1.json`; `results_amendment_k_*`; `results_amendment_l_*` |
 | §7 RL-on-calibrated-base follow-on, incl. the β 0.10 → 0.05 falsifier re-run (Table 2, Figs. 4–6; Fig. 7 spans arms) | Amendment N (incl. β 0.05 arm) | `experiments/grpo-v3-on-contrastive-sft-base/AMENDMENT.md` (results tables §7) | result tables embedded in the amendment document; `results_amendment_n_*`; run records under `experiment/phase1/run_records/` |
 | §7 probe-axis distillation mirror (Table 3) | Amendment M, Revision 3 | `experiments/quantile-balanced-probe-distilled-sft/AMENDMENT.md` | `results_amendment_m_*_probe_factual_sft_seed1_merged_full_4b` |

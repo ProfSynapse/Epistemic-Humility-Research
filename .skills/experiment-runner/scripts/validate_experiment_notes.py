@@ -1,17 +1,16 @@
 #!/usr/bin/env python3
-"""Validate experiment notes and regenerate their registry index.
+"""Validate legacy archived experiment notes and regenerate their registry index.
 
-Experiment notes are checked-in Markdown files under notes/experiments/ with YAML
-frontmatter. They are the agent-runnable spec + runbook for one experiment family
-(see notes/experiments/_SCHEMA.md). This validator enforces the schema so the
-structure holds at commit time (.githooks/pre-commit) and on every PR
-(.github/workflows/validate.yml). Generic kg/edge correctness is left to
-validate_kg_relationships.py; this checks the experiment-note-specific contract.
+Experiment notes used to be checked-in Markdown files under notes/experiments/
+with YAML frontmatter. They were retired in favor of experiment-local
+`RUNBOOK.md` and `PLAN.md` files under `experiments/<slug>/`, with unresolved or
+superseded notes preserved under `archive/notes/experiments/` for provenance.
+This validator is retained for archival checks and migration review only.
+Generic kg/edge correctness is left to validate_kg_relationships.py.
 
 Usage (run from repo root):
-    python3 .agents/skills/experiment-runner/scripts/validate_experiment_notes.py notes/experiments
-    python3 .agents/skills/experiment-runner/scripts/validate_experiment_notes.py notes/experiments --emit-index
-    python3 .agents/skills/experiment-runner/scripts/validate_experiment_notes.py notes/experiments --json
+    python3 .agents/skills/experiment-runner/scripts/validate_experiment_notes.py archive/notes/experiments
+    python3 .agents/skills/experiment-runner/scripts/validate_experiment_notes.py archive/notes/experiments --json
 
 Exit code 1 if any note fails (mirrors research_session.py validate); else 0.
 """
@@ -269,9 +268,9 @@ def emit_index(path: Path) -> str:
 
 
 def main(argv: list[str] | None = None) -> int:
-    ap = argparse.ArgumentParser(description="Validate experiment notes; regenerate the registry.")
-    ap.add_argument("path", nargs="?", default="notes/experiments")
-    ap.add_argument("--emit-index", action="store_true", help="regenerate notes/experiments/README.md")
+    ap = argparse.ArgumentParser(description="Validate archived legacy experiment notes.")
+    ap.add_argument("path", nargs="?", default="archive/notes/experiments")
+    ap.add_argument("--emit-index", action="store_true", help="regenerate the archived notes README.md")
     ap.add_argument("--json", action="store_true")
     args = ap.parse_args(argv)
 

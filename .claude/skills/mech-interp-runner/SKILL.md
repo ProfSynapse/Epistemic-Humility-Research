@@ -15,7 +15,8 @@ Use the checked-in scripts and configs to plan, gate, run, and aggregate local
 Phase 3 mech-interp work. Do not hand-roll terminal loops. This `SKILL.md` is a
 progressive-disclosure router: it carries the invariants and routing only.
 Procedural detail lives in `references/`, and current results live in
-`docs/sessions/` and `notes/experiments/` — never inline run history here.
+`docs/sessions/` and experiment-local docs under `experiments/<slug>/` - never
+inline run history here.
 
 ## Start Here
 
@@ -113,8 +114,8 @@ After context compaction or degraded memory:
    results if they affect the next experiment.
 3. Set up or run the current local experiment with checked-in scripts/configs.
 4. Analyze outputs against the research target (interpretation-invariants).
-5. Update session notes, experiment notes, and this skill when a durable
-   procedure or gotcha changes.
+5. Update session notes, experiment-local runbooks/plans, and this skill when a
+   durable procedure or gotcha changes.
 6. Choose the next highest-ROI local slice from the evidence and repeat.
 
 ## Skill Maintenance
@@ -126,7 +127,8 @@ Edit the canonical tree under `.skills/mech-interp-runner/` only; `.agents/` and
 - Put durable procedure and gotchas in one-level `references/*.md` files and
   link them from `Start Here`.
 - Put current findings, numeric results, and interpretation snapshots in
-  `docs/sessions/*.md` and `notes/experiments/*.md` — not in the skill.
+  `docs/sessions/*.md` and experiment-local docs under `experiments/<slug>/` -
+  not in the skill.
 - Put reusable analysis logic in checked-in scripts/configs, not prose.
 - If a section grows because of one experiment, move the details to a session or
   experiment note and leave only the general rule plus the reference path.

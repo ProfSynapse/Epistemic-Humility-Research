@@ -1,46 +1,140 @@
 ---
-title: 'Training exhaust and hyperparameter audit'
+title: 'Qwen3-8B response-confidence scale map'
 kg:
-  id: experiment:training-exhaust-hyperparameter-audit
+  id: experiment:qwen3-8b-response-confidence-scale-map
   type: experiment
   status: canonical
 tags:
   - kg/experiment
 status: proposed
-governance: exploratory
+governance: amendment
 phase: phase1
-lane: local
-est_compute: 'No GPU required unless follow-up diagnostics are approved'
+lane: either
+est_compute: 'Tiered: Tier 1 is at least three 8B train/eval cells; Tier 2 and thinking variants add substantial local or HF Jobs compute'
 relationships:
   - type: tests
-    target: '[[reverse-kl-narrows-policy-to-single-mode]]'
-    target_id: mechanism:reverse-kl-narrows-policy-to-single-mode
-    confidence: medium
-  - type: tests
-    target: '[[dpo-diversity-cost-depends-on-upstream-sft-state]]'
-    target_id: mechanism:dpo-diversity-cost-depends-on-upstream-sft-state
+    target: '[[grpo-composite-reward-installs-epistemic-output-schema]]'
+    target_id: mechanism:grpo-composite-reward-installs-epistemic-output-schema
     confidence: high
   - type: tests
-    target: '[[lora-regularizes-calibration]]'
-    target_id: mechanism:lora-regularizes-calibration
+    target: '[[generation-discrimination-gap]]'
+    target_id: term:generation-discrimination-gap
     confidence: medium
-  - type: builds_on
-    target: '[[lora-rank-changes-require-learning-rate-retuning]]'
-    target_id: mechanism:lora-rank-changes-require-learning-rate-retuning
-    confidence: high
-  - type: builds_on
-    target: '[[dpo-beta-should-follow-pair-quality]]'
-    target_id: mechanism:dpo-beta-should-follow-pair-quality
-    confidence: high
 related:
-  - '[[reverse-kl-narrows-policy-to-single-mode]]'
-  - '[[dpo-diversity-cost-depends-on-upstream-sft-state]]'
-  - '[[lora-regularizes-calibration]]'
-  - '[[lora-rank-changes-require-learning-rate-retuning]]'
-  - '[[dpo-beta-should-follow-pair-quality]]'
+  - '[[grpo-composite-reward-installs-epistemic-output-schema]]'
+  - '[[generation-discrimination-gap]]'
 ---
 
 ## Question & Hypothesis
+
+Do the clean response-confidence and GRPO-centered findings from Qwen3-4B become
+larger, cleaner, or more calibratable at Qwen3-8B?
+
+This is an Amendment I planning note under
+`experiments/8b-scale-and-hyperparameter-gates/AMENDMENT.md`; it does
+not authorize local or cloud launches.
+
+- **Hypothesis.** 8B has enough capacity that clean SFT and GRPO-centered stacks
+  will move the refusal/known-answer tradeoff more cleanly than 4B, and may show
+  less confidence collapse.
+- **Falsifier.** The 8B Tier 1 screen reproduces the same small behavioral gains
+  and high-confidence collapse as 4B, or source-label differences make the
+  comparison uninterpretable.
+
+The scale question is also informed by
+`library/notes/2604.16027--posttraining-diversity-collapse.md`, which cautions
+that post-training effects can be dominated by data composition and upstream
+state rather than the nominal training method alone.
+
+## Design
+
+Use tiers rather than a flat matrix.
+
+Tier 0 is the locked PROTOCOL v0.3 plain-answer 8B confirm: SFT, DPO, and KTO
+across seeds 1-3. It remains separate from this response-confidence scale map.
+
+Tier 1 is the minimal clean response-confidence 8B screen:
+
+| Arm | Role |
+|---|---|
+| `8b_clean_sft` | Establish 8B schema, abstention, and confidence behavior. |
+| `8b_clean_sft_grpo_v2` | Test whether GRPO v2 reward shaping has more leverage at 8B. |
+| `8b_clean_sft_grpo_dpo` | Test whether the best 4B seed-1 stack scales. |
+
+Tier 2 is the full seed-1 8B mirror of the 4B clean matrix:
+
+| Arm | Role |
+|---|---|
+| `8b_clean_sft_dpo` | Two-stage DPO comparator. |
+| `8b_clean_sft_kto` | Two-stage KTO comparator. |
+| `8b_clean_sft_dpo_grpo` | Preference -> RL crossing. |
+| `8b_clean_sft_kto_grpo` | Preference -> RL crossing. |
+| `8b_clean_sft_grpo_kto` | RL -> preference crossing. |
+
+Tier 3 is the 8B thinking-enabled branch. It starts with 8B source probes, not
+training: Qwen3-8B non-thinking TriviaQA, Qwen3-8B thinking TriviaQA, row-level
+label-transition review, then thinking-derived dataset builds. Training mirrors
+Tier 1 first.
+
+## Prerequisites & Gating
+
+- Amendment I must be signed or exact cells must be approved before launch.
+- Confirm Docker/GPU or HF Jobs lane separately for each 8B cell.
+- Build or verify Qwen3-8B source labels before response-confidence training.
+- Thinking 8B must have its own accepted source probe; 4B thinking labels are
+  comparators only.
+- Run the hyperparameter/training-exhaust audit summarized in this plan before adding new
+  LR, beta, KL, reward-weight, epoch, or LoRA-rank variants.
+
+## Runbook
+
+1. Read `experiments/8b-scale-and-hyperparameter-gates/AMENDMENT.md`.
+2. Compare current 4B results in
+   `experiment/phase1/eval/analysis/selfaware_full_run_comparison_grouped.csv`.
+3. Check existing 8B recipes under `experiment/phase1/recipes/`.
+4. For thinking variants, follow
+   `experiments/thinking-enabled-parallel-arm/PLAN.md` and adapt the source
+   probe to Qwen3-8B before building datasets.
+5. For non-thinking Tier 1, prepare exact configs and run records only after
+   source labels, lane, seed, and output paths are approved.
+6. After each cell, run full SelfAware response-confidence eval and rebuild
+   `experiment/phase1/eval/analysis/selfaware_full_run_comparison.csv`.
+7. Checkpoint results in
+   `docs/sessions/20260625T141548Z-8b-scale-and-hyperparameter-planning.md` or a later
+   launch-specific session note.
+
+## Validation contract
+
+- **Pre-run.** Source labels and dataset cards are model-size-specific; configs
+  name Qwen3-8B; output paths encode 8B, thinking mode, seed, and tier.
+- **Post-run.** Eval has `n=3369` where SelfAware full eval is used, response
+  confidence coverage is reported, and row-level transitions compare against
+  matched 4B and same-size source arms.
+- **Definition of done.** Tier 1 has enough evidence to decide whether 8B scale
+  justifies Tier 2, thinking 8B, or HF Jobs parallelization.
+
+## Outputs & provenance
+
+- Protocol: `experiments/8b-scale-and-hyperparameter-gates/AMENDMENT.md`.
+- Session: `docs/sessions/20260625T141548Z-8b-scale-and-hyperparameter-planning.md`.
+- Run records: `experiment/phase1/run_records/`.
+- Eval analysis: `experiment/phase1/eval/analysis/`.
+- No model weights, raw generated rows, or large artifacts should be committed.
+
+## Variations
+
+- Tier 1 non-thinking seed 1: proposed.
+- Tier 2 non-thinking seed 1: deferred until Tier 1.
+- Tier 3 thinking 8B source probe: proposed before any thinking 8B training.
+- HF Jobs lane: deferred until local process and artifact policy are settled.
+
+## Status log
+
+- 2026-06-25: created as the 8B variant map. No launch authorized.
+
+## Training exhaust and hyperparameter audit
+
+### Question & Hypothesis
 
 Before spending compute on LR, beta, KL, reward-weight, epoch, batch, or LoRA
 rank sweeps, what do the existing local training logs and relevant literature
@@ -55,7 +149,7 @@ say is most likely to move behavior?
   from undertraining, or literature points to a different missing variable that
   we are not logging.
 
-## Design
+### Design
 
 This is an offline audit over:
 
@@ -76,7 +170,7 @@ Questions to answer by arm:
 | GRPO | reward component variance, group reward spread, schema validity, behavior reward vs confidence reward, KL/beta effects. |
 | Stacks | whether later stages overwrite, preserve, or merely re-confidence the source behavior. |
 
-## Prerequisites & Gating
+### Prerequisites & Gating
 
 - Do not launch new sweeps while this audit is incomplete unless the user gives
   an exact override.
@@ -86,7 +180,7 @@ Questions to answer by arm:
 - If external papers are newly relied on, ingest them with `kg-ingest` before
   using them as durable rationale.
 
-## Runbook
+### Runbook
 
 1. Read current aggregate metrics from
    `experiment/phase1/eval/analysis/selfaware_full_run_comparison_grouped.csv`.
@@ -119,7 +213,7 @@ Initial external ingestion candidates from the 2026-06-25 arXiv check:
 as durable rationale. `2602.04998` and `2502.13177` remain candidates, not
 launch rationale.
 
-## Interim recommendation
+### Interim recommendation
 
 - Do not blanket-increase batch size. DPO has local headroom and can be probed
   upward only after the objective/reward target is worth rerunning; KTO is near
@@ -133,7 +227,7 @@ launch rationale.
   interp, not a blind 4B LR/beta/rank grid. A bounded 4B diagnostic is justified
   only if it answers a specific design question for 8B.
 
-## Validation contract
+### Validation contract
 
 - **Pre-analysis.** Every included run has an identifiable config, output path,
   and eval metrics or is labeled as smoke/excluded.
@@ -143,7 +237,7 @@ launch rationale.
 - **Definition of done.** We can say whether LR/beta/KL/reward/LoRA changes are
   worth running before 8B, and why.
 
-## Outputs & provenance
+### Outputs & provenance
 
 - Session checkpoint:
   `docs/sessions/20260625T141548Z-8b-scale-and-hyperparameter-planning.md`.
@@ -151,14 +245,14 @@ launch rationale.
   created.
 - No raw logs, raw completions, model weights, or scratch artifacts committed.
 
-## Variations
+### Variations
 
 - Config-only audit: first pass, no scratch parsing.
 - Scratch-log audit: parse local JSONL and trainer logs.
 - Literature-backed sweep proposal: only after KG/arXiv review.
 - Bounded smoke sweep: requires exact user approval for a named knob and arm.
 
-## Status log
+### Status log
 
 - 2026-06-25: created as a no-GPU audit plan before additional sensitivity runs.
 - 2026-06-25: arXiv check identified four new candidate papers for LR/LoRA and

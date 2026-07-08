@@ -126,7 +126,7 @@ Project-local artifacts may include:
 - seed-specific training/eval configs under `experiment/phase1/`;
 - run records under `experiment/phase1/run_records/`;
 - session notes under `docs/sessions/`;
-- experiment notes under `notes/experiments/`;
+- experiment-local runbooks/plans under `experiments/<slug>/`;
 - analysis CSVs under `experiment/phase1/eval/analysis/`.
 
 Do not commit model weights, scratch run products, restricted data, or large
