@@ -4,7 +4,7 @@ session_id: jspace-jlens-r1-findings
 title: J-space J-lens r1 findings
 status: active
 created_at: '2026-07-07T22:42:40Z'
-updated_at: '2026-07-07T23:28:42Z'
+updated_at: '2026-07-08T10:34:16Z'
 phase: phase1
 question: What did the full-corpus Qwen3-4B J-lens characterization say about epistemic
   directions, the workspace-like band, and the L34 write layer?
@@ -21,7 +21,9 @@ trajectory:
     and placed the existing L34/hs34 write layer just after the peak, making
     a mid-band write-layer sweep the immediate next actuator test. The first
     sweep stopped at G0 because dose 200 collapsed hs23/hs26, so the immediate
-    successor is layer-wise dose calibration on FIT rows.
+    successor is layer-wise dose calibration on FIT rows. During that local
+    calibration, the generic tuner gained a resumable config-driven dose
+    calibration verb for future cells.
 checkpoints:
 - id: 001-result
   at: '2026-07-07T22:42:40Z'
@@ -158,6 +160,33 @@ checkpoints:
     calibration_split: fit
     n_confab_fit_rows: 8
     n_known_fit_rows: 8
+- id: 006-infrastructure
+  at: '2026-07-08T10:34:16Z'
+  kind: infrastructure
+  title: Generic tuner dose-calibration verb added
+  summary: Added `mechinterp dose-calibrate` to the generic synaptic-tuner
+    submodule so future activation-write dose ladders can be config-driven,
+    checkpoint each readout/dose/row record to JSONL, resume after crashes, and
+    emit aggregate summaries and manifests without bespoke project scripts.
+  evidence:
+  - synaptic-tuner
+  - https://github.com/ProfSynapse/Synaptic-Tuner/pull/140
+  - https://github.com/ProfSynapse/Epistemic-Humility-Research/pull/253
+  run_ids: []
+  commands:
+  - pytest tests/mech_interp -q
+  - python tuner.py mechinterp list-configs
+  decisions:
+  - Keep project-specific renderers, graders, row staging, and experiment
+    claims outside the generic tuner; the tuner owns only the config schema,
+    execution loop, checkpoint/resume semantics, and summaries.
+  next_steps:
+  - Use `mechinterp dose-calibrate` for the next dose-ladder cell after this
+    bespoke local calibration run finishes.
+  signals:
+    tuner_commit: f09db5f920fc356be710f3f7b9b631eeff9ef9e4
+    parent_commit: b9ce0d64
+    mechinterp_tests: 157 passed
 ---
 # J-space J-lens r1 findings
 
@@ -196,6 +225,12 @@ The first causal successor exposed a prior assumption rather than resolving the
 layer question: dose 200 transferred to hs29/hs34 smoke but collapsed hs23/hs26.
 That makes layer-wise dose calibration the immediate next step. Held-out
 mid-band superiority remains untested until setpoints are chosen on FIT rows.
+
+While that local calibration was running, the generic tuner gained a
+config-driven `mechinterp dose-calibrate` verb. Future dose ladders should use
+that path: it writes each readout/dose/row result as an immediate checkpoint,
+resumes by completed triples, and summarizes from the durable JSONL rather than
+holding all metrics in memory.
 
 ## Checkpoints
 
@@ -286,3 +321,25 @@ mid-band superiority remains untested until setpoints are chosen on FIT rows.
   - Run the signed local dose calibration.
   - If all layers receive usable setpoints, register the calibrated held-out
     layer contrast as the next causal test.
+
+### 006-infrastructure - Generic tuner dose-calibration verb added
+
+- at: `2026-07-08T10:34:16Z`
+- kind: `infrastructure`
+- summary: Added `mechinterp dose-calibrate` to the generic synaptic-tuner
+  submodule so future activation-write dose ladders can be config-driven,
+  checkpoint each readout/dose/row record to JSONL, resume after crashes, and
+  emit aggregate summaries/manifests without bespoke project scripts.
+- evidence:
+  - `synaptic-tuner`
+  - `https://github.com/ProfSynapse/Synaptic-Tuner/pull/140`
+  - `https://github.com/ProfSynapse/Epistemic-Humility-Research/pull/253`
+- commands:
+  - `pytest tests/mech_interp -q`
+  - `python tuner.py mechinterp list-configs`
+- decisions:
+  - Keep project-specific renderers, graders, row staging, and experiment claims
+    outside the generic tuner.
+- next steps:
+  - Use `mechinterp dose-calibrate` for the next dose-ladder cell after this
+    bespoke local calibration run finishes.
