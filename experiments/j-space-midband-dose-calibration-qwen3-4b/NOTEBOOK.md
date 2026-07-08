@@ -6,6 +6,14 @@ in `experiment.yaml`.
 
 ## Entries
 
+### 2026-07-08 - local launch
+
+User approved launching `j-space-midband-dose-calibration-qwen3-4b` on the local
+RTX 3090. Status moved to `running` before launch. Command:
+`PYTHONPATH=/home/profsynapse/code/ehr-worktrees/j-space/synaptic-tuner python
+calibrate_dose.py --n-confab 8 --n-known 8 --doses 25 50 75 100 125 150 175
+200`.
+
 ### 2026-07-07 - signed
 
 Signed the FIT-only dose-calibration instrument. Pinned files:

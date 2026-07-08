@@ -1,6 +1,6 @@
 slug: j-space-midband-dose-calibration-qwen3-4b
 type: steer-cell
-status: signed
+status: running
 registered: true
 question: On raw-base Qwen3-4B, can layer-specific dose calibration recover non-collapsing
   usable erase-write setpoints for hs23/hs26/hs29/hs34 after dose 200 collapsed hs23
