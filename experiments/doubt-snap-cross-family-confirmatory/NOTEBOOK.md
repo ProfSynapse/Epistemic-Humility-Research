@@ -6,6 +6,18 @@ in `experiment.yaml`.
 
 ## Entries
 
+- 2026-07-08 08:40 EDT: Batch-sizing lesson from the first Qwen3.5 Modal
+  cells: after the live-volume durability fix, do not use conservative smoke
+  batch sizes as production defaults. Qwen3.5 4B baseline generation completed
+  cleanly at batch 80 with peak GPU memory about 13.8/39.5 GiB, after resuming
+  from 80 already-written rows on the volume. Qwen3.5 9B is running at batch 48
+  with live volume commits. Next Modal cells should start aggressively, verify
+  the first persisted batch and peak memory, then back off only on OOM, stalls,
+  or later-stage capture/steering pressure. Provisional next-start targets:
+  4B-class cells batch 160, 8B/9B-class cells batch 64-96 depending on first
+  peak, with the caveat that capture and steering can have different memory
+  curves than baseline generation.
+
 - 2026-07-08 08:15 EDT: Refreshed the pinned hash for
   `cloud/modal_doubt_snap_cross_family.py` after Qwen3.5 4B exposed a Modal
   preemption edge case. The interrupted worker had generated partial baseline
