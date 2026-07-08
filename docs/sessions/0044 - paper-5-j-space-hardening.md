@@ -4,7 +4,7 @@ session_id: paper5-jspace-hardening
 title: Paper 5 J-space hardening
 status: active
 created_at: '2026-07-08T16:46:25Z'
-updated_at: '2026-07-08T17:53:28Z'
+updated_at: '2026-07-08T17:58:00Z'
 phase: phase1
 question: Which registered follow-up experiments harden the Paper 5 actuation thesis,
   starting with a fresh Qwen3-4B J-space layer-site replication?
@@ -153,3 +153,21 @@ rows before the layer contrast.
     upload that public-safe dataset artifact, record the HF repo and revision in
     docs, then PR and merge the publication record before launching the signed
     layer-contrast experiment.
+
+### 007-handoff - Census run checkpoint
+
+- time: 2026-07-08T17:58:00Z
+- kind: handoff
+- evidence:
+  - `HANDOFF-jspace-layer-replication-qwen3-4b.md`
+  - `/home/profsynapse/code/ehr-worktrees/jspace-layer-replication/experiments/j-space-layer-contrast-replication-qwen3-4b/analysis/fresh_pool_generations.jsonl`
+  - `/home/profsynapse/code/ehr-worktrees/jspace-layer-replication/experiments/j-space-layer-contrast-replication-qwen3-4b/analysis/fresh_eval_rows.jsonl`
+- summary: >
+    PR #256 merged the scaffold to main as 253dfc27. Exhaustive fresh-pool
+    census continues locally in the jspace-layer-replication worktree. Latest
+    persisted checkpoint: 3,730 generated rows, 306 selected confabs, and 37
+    selected known_correct_answered rows. The confab side of G0 is cleared; the
+    known-correct side is still running toward 300. Root handoff note records
+    exact process, paths, resume commands, and next steps for HF upload,
+    publication-record PR/merge, signing, anchor extraction, smoke, and full
+    layer contrast.
