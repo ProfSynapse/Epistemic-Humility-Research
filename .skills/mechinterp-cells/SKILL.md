@@ -430,6 +430,38 @@ reader can consume.
   local 3090 / RunPod-3090). [reference/cloud-lane.md](../experiment-runner/reference/cloud-lane.md)
   covers the HF Jobs training lane. Do not duplicate those checklists here.
 
+### Modal cell gotchas
+
+- Launch long-running Modal cells as detached remote functions, not as a
+  local-entrypoint that calls `.spawn()` and exits unless that exact pattern has
+  just been verified. A reliable direct shape is:
+  `modal run --detach path/to/modal_app.py::run_one_cell --cell-id ...`.
+  Local-entrypoint `spawn()` can leave an app record with zero tasks after the
+  parent exits; always confirm with `modal app list` and `modal app logs`.
+- Keep exactly one active writer per `(run_tag, cell_id)` Volume namespace. If a
+  launch looked dead and you relaunch, re-check `modal app list` and stop the
+  ambiguous earlier app before the replacement starts writing the same
+  checkpoint files.
+- Put every resumable per-cell output directory on a Modal Volume before GPU
+  work starts (`analysis/<cell_id>` and `analysis-committed/<cell_id>` for
+  experiment cells), and commit the volume periodically during long subprocesses.
+  A retry can otherwise restart from zero even when the tuner verb itself has
+  `--resume`, because completed rows were only on container scratch.
+- Batch-parity smokes should enforce the registered gate semantics. If the gate
+  says "same parsed answer and stop reason," do not compare exact token IDs:
+  greedy batched generation can differ in harmless formatting while preserving
+  the adjudicated answer. Conversely, if byte/token parity is the registered
+  requirement, state that explicitly before launch.
+- Push batch sizes aggressively only after the live-volume resume path is working.
+  Use first-batch peak memory as a stage-specific signal: generation, capture,
+  and steering can have different memory curves. If 8B/9B capture is at roughly
+  half of GPU memory, doubling the next retry is reasonable, but watch the first
+  steer smoke before treating that as the new default.
+- Any change to a signed helper that is listed in `instrument.modules` must be
+  followed by a refreshed sha pin, `bin/exp regen`, validation, commit, push, and
+  relaunch from the pushed commit. Modal clones the commit you pass; local fixes
+  do nothing until the commit exists remotely.
+
 ## Migration map (legacy -> tuner)
 
 | Legacy file (frozen) | Tuner replacement |
