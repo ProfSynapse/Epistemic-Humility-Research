@@ -6,4 +6,9 @@ in `experiment.yaml`.
 
 ## Entries
 
+- 2026-07-08: exhaustive fresh-pool census completed. Generated 12,923
+  candidates (3,305 unknown, 9,618 known), selecting 306 fresh confabs and
+  1,957 known_correct_answered rows. Public-safe text-free census uploaded to
+  `professorsynapse/eh-jspace-fresh-pool-census-qwen3-4b` at revision
+  `3add102ce930f73a29013f572f03e7325da30825`.
 - (add dated entries as the experiment progresses)

@@ -58,6 +58,7 @@ DEFAULT_GENERATIONS = ANALYSIS / "fresh_pool_generations.jsonl"
 DEFAULT_ROWS = ANALYSIS / "fresh_eval_rows.jsonl"
 DEFAULT_PRIVATE_MANIFEST = ANALYSIS / "fresh_eval_pool_private_manifest.json"
 DEFAULT_PUBLIC_MANIFEST = COMMITTED / "fresh_eval_pool_manifest.json"
+REPO_ROOT = HERE.parents[1]
 
 
 def load_jsonl(path: Path) -> list[dict]:
@@ -225,6 +226,16 @@ def public_generated_row(row: dict, role_by_key: dict[str, str]) -> dict:
     }
 
 
+def display_path(path: Path) -> str:
+    resolved = path.resolve()
+    for root in (REPO_ROOT.resolve(), CANONICAL.resolve()):
+        try:
+            return str(resolved.relative_to(root))
+        except ValueError:
+            continue
+    return str(path)
+
+
 def write_manifests(args: argparse.Namespace, generated: list[dict], selected: list[dict], runtime: float) -> None:
     role_by_key = {row["row_key"]: row["role"] for row in selected}
     counts = {
@@ -241,8 +252,8 @@ def write_manifests(args: argparse.Namespace, generated: list[dict], selected: l
         "stage": "j_space_layer_contrast_replication_fresh_eval_pool",
         "model_name": MODEL_NAME,
         "substrate": "bf16",
-        "predecessor_split_excluded": str(PREDECESSOR_SPLIT),
-        "candidate_source": str(EXPANSION_CANDIDATES),
+        "predecessor_split_excluded": display_path(PREDECESSOR_SPLIT),
+        "candidate_source": display_path(EXPANSION_CANDIDATES),
         "target_confab": args.target_confab,
         "target_known_correct": args.target_known_correct,
         "max_unknown_candidates": args.max_unknown_candidates,

@@ -72,6 +72,13 @@ public-facing artifact remains ID/provenance/role metadata only unless and
 until each source dataset's redistribution terms are audited; text, aliases,
 and model generations stay private under `analysis/`.
 
+Pre-sign census result: exhaustive mining completed over 12,923 fresh
+candidates, selecting 306 fresh `confab` rows and 1,957
+`known_correct_answered` rows. The text-free public manifest is committed at
+`analysis-committed/fresh_eval_pool_manifest.json`; a public-safe HF copy is
+published at `professorsynapse/eh-jspace-fresh-pool-census-qwen3-4b` revision
+`3add102ce930f73a29013f572f03e7325da30825`.
+
 Layer contrast:
 
 - hs23 gated snap at absolute setpoint 25.
