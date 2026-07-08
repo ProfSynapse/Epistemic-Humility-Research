@@ -1,6 +1,6 @@
 # Handoff: jspace-layer-replication-qwen3-4b
 
-Status as of 2026-07-08T20:07Z.
+Status as of 2026-07-08T20:46Z.
 
 ## Current State
 
@@ -73,6 +73,25 @@ python3 experiments/j-space-layer-contrast-replication-qwen3-4b/mine_fresh_eval_
 
 ## Next Steps
 
-1. PR and merge the census manifest + HF publication record.
-2. Record user prediction, sign the amendment, extract fresh anchors, smoke, and
-   launch the full layer contrast locally.
+Prep completed after the HF release:
+
+- Fresh anchor extraction: completed for all 2,263 selected rows at
+  hs23/26/29/34.
+- Smoke summary: `analysis/smoke_summary.json`
+- Smoke result: `g0_smoke_pass=true`
+- Readback means: hs23=24.9998, hs26=74.9788, hs29=125.0104, hs34=174.9906.
+- Dosed-row collapse: 0.0 for every layer.
+
+Next steps:
+
+1. PR and merge the prep checkpoint docs.
+2. Record the user's prediction in the amendment scoreboard.
+3. Run `bin/exp sign j-space-layer-contrast-replication-qwen3-4b`.
+4. Launch the full layer contrast locally:
+
+```bash
+cd /home/profsynapse/code/ehr-worktrees/jspace-layer-replication
+python3 experiments/j-space-layer-contrast-replication-qwen3-4b/run_contrast.py \
+  --mode full \
+  --i-know-this-is-the-fresh-replication-run
+```
