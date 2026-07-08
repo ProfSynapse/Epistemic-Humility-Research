@@ -6,6 +6,17 @@ in `experiment.yaml`.
 
 ## Entries
 
+### 2026-07-08 - resolved
+
+Local run completed at 2026-07-08T10:36:46Z and wrote
+`analysis-committed/dose_calibration_summary.json`. All gates passed:
+G1 all layers had usable setpoints, G2 hs23/hs26 recovered below dose 200, and
+G3 selected doses were reported for all layers.
+
+Selected absolute setpoints: hs23=25, hs26=75, hs29=125, hs34=175. This remains
+FIT-only calibration evidence; held-out layer-site behavior is reserved for a
+new signed contrast.
+
 ### 2026-07-08 - local launch
 
 User approved launching `j-space-midband-dose-calibration-qwen3-4b` on the local

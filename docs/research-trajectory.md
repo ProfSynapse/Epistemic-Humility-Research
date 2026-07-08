@@ -1,6 +1,6 @@
 # Research Trajectory — Epistemic Humility Program
 
-_Updated 2026-07-07. Replaces the stale 2026-06-10/06-30 versions. Every claim traces
+_Updated 2026-07-08. Replaces the stale 2026-06-10/06-30 versions. Every claim traces
 to a protocol doc; nothing is invented. The original Phases 1–4 plan (staged design) is
 preserved in `experiment/protocol/research-trajectory.md`._
 
@@ -158,13 +158,28 @@ hypothesis for the readout-portable/write-fragile split. Sources:
 `docs/sessions/0043 - j-space-j-lens-r1-findings.md`, and
 `library/concepts/mechanisms/j-space-mediated-actuation-fragility.md`.
 
+**J-space dose calibration (RESOLVED exploratory FIT-only calibration,
+2026-07-08):** the first causal successor stopped at G0 because absolute dose 200
+collapsed hs23/hs26 before any held-out contrast. A FIT-only local calibration
+then recovered usable non-collapsing setpoints for every layer: hs23=25,
+hs26=75, hs29=125, hs34=175. At the selected doses, collapse on dosed rows was
+0, clean_tighten was 8/8 for hs23/hs26/hs29 and 7/8 for hs34, and known-correct
+cost was 1/8 for each layer. Interpretation: the failed assumption was dose
+portability across layer sites, not evidence that the mid-band sites are
+unusable. This is still FIT-only calibration evidence; held-out mid-band
+superiority remains untested. Sources:
+`experiments/j-space-midband-dose-calibration-qwen3-4b/AMENDMENT.md`,
+`experiments/j-space-midband-dose-calibration-qwen3-4b/analysis-committed/dose_calibration_summary.json`,
+and `experiment/notes/j-space-midband-dose-calibration-qwen3-4b.md`.
+
 **Open questions for Paper 5:** Does a trained-checkpoint steering arm move the gate?
 (AA was flat on the raw base; trained checkpoints have a live gate — backlog item 3.)
 Whether ANY channel couples behavior to the model's own readout — text/prompt is
 compliance-only (AH); the reward channel is under test (AI). The new J-space fork asks
 whether prior residual writes were aimed too late: the next causal successor should
-compare mid-band writes (especially hs=23/26/29) against L34/hs34 on the same
-two-signal both-tail selectivity surface before claiming a workspace actuator.
+register a calibrated held-out contrast comparing hs23=25, hs26=75, hs29=125
+against hs34=175 on the same two-signal both-tail selectivity surface before
+claiming a workspace actuator.
 
 ---
 

@@ -1,6 +1,6 @@
 slug: j-space-midband-dose-calibration-qwen3-4b
 type: steer-cell
-status: running
+status: resolved
 registered: true
 question: On raw-base Qwen3-4B, can layer-specific dose calibration recover non-collapsing
   usable erase-write setpoints for hs23/hs26/hs29/hs34 after dose 200 collapsed hs23
@@ -28,6 +28,8 @@ inputs:
 - experiments/j-space-midband-write-sweep-qwen3-4b/analysis-committed/smoke_summary.json
 - experiments/j-space-midband-write-sweep-qwen3-4b/analysis-committed/PROVENANCE.md
 - experiments/j-space-midband-write-sweep-qwen3-4b/AMENDMENT.md
-verdict: ''
+verdict: 'Exploratory FIT-only calibration pass: all layers recovered usable non-collapsing
+  setpoints (hs23=25, hs26=75, hs29=125, hs34=175); hs23/hs26 recovered below dose
+  200, so a calibrated held-out layer contrast can be registered next.'
 kg:
 - mechanism:j-space-mediated-actuation-fragility

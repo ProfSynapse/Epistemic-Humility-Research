@@ -23,3 +23,9 @@ Containment:
   `analysis-committed/`.
 - Row text, aliases, raw generations, and logs remain under gitignored
   `analysis/`.
+
+Committed output:
+
+- `dose_calibration_summary.json`: aggregate FIT-only dose calibration summary
+  with selected setpoints hs23=25, hs26=75, hs29=125, hs34=175. It contains no
+  row text, aliases, or raw generations.

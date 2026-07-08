@@ -4,7 +4,7 @@ session_id: jspace-jlens-r1-findings
 title: J-space J-lens r1 findings
 status: active
 created_at: '2026-07-07T22:42:40Z'
-updated_at: '2026-07-08T10:34:16Z'
+updated_at: '2026-07-08T10:40:26Z'
 phase: phase1
 question: What did the full-corpus Qwen3-4B J-lens characterization say about epistemic
   directions, the workspace-like band, and the L34 write layer?
@@ -23,7 +23,9 @@ trajectory:
     sweep stopped at G0 because dose 200 collapsed hs23/hs26, so the immediate
     successor is layer-wise dose calibration on FIT rows. During that local
     calibration, the generic tuner gained a resumable config-driven dose
-    calibration verb for future cells.
+    calibration verb for future cells. The FIT calibration then recovered
+    usable setpoints for every layer, making a calibrated held-out layer
+    contrast the next registered causal test.
 checkpoints:
 - id: 001-result
   at: '2026-07-07T22:42:40Z'
@@ -187,6 +189,41 @@ checkpoints:
     tuner_commit: f09db5f920fc356be710f3f7b9b631eeff9ef9e4
     parent_commit: b9ce0d64
     mechinterp_tests: 157 passed
+- id: 007-result
+  at: '2026-07-08T10:40:26Z'
+  kind: result
+  title: FIT dose calibration recovered all layer setpoints
+  summary: The local RTX 3090 FIT-only calibration resolved as an exploratory
+    pass. All four layers had usable non-collapsing setpoints; hs23 and hs26
+    recovered below the collapsed dose-200 rung.
+  evidence:
+  - experiments/j-space-midband-dose-calibration-qwen3-4b/AMENDMENT.md
+  - experiments/j-space-midband-dose-calibration-qwen3-4b/analysis-committed/dose_calibration_summary.json
+  - experiment/notes/j-space-midband-dose-calibration-qwen3-4b.md
+  run_ids:
+  - jspace-midband-dose-calibration-r1
+  commands:
+  - python calibrate_dose.py --n-confab 8 --n-known 8 --doses 25 50 75 100 125 150 175 200
+  - bin/exp resolve j-space-midband-dose-calibration-qwen3-4b --status resolved --verdict ...
+  decisions:
+  - Treat this as FIT-only dose calibration evidence, not held-out layer-site
+    superiority.
+  - Register the calibrated held-out hs23/hs26/hs29 vs hs34 contrast next.
+  next_steps:
+  - Draft and sign the calibrated held-out layer contrast using hs23=25,
+    hs26=75, hs29=125, and hs34=175.
+  signals:
+    selected_doses:
+      hs23: 25
+      hs26: 75
+      hs29: 125
+      hs34: 175
+    all_layers_have_usable_dose: true
+    collapsed_at_200_recovered: true
+    hs23_selected_confab_clean_tighten: 8/8
+    hs26_selected_confab_clean_tighten: 8/8
+    hs29_selected_confab_clean_tighten: 8/8
+    hs34_selected_confab_clean_tighten: 7/8
 ---
 # J-space J-lens r1 findings
 
@@ -231,6 +268,11 @@ config-driven `mechinterp dose-calibrate` verb. Future dose ladders should use
 that path: it writes each readout/dose/row result as an immediate checkpoint,
 resumes by completed triples, and summarizes from the durable JSONL rather than
 holding all metrics in memory.
+
+The FIT-only dose calibration then passed: hs23 selected 25, hs26 selected 75,
+hs29 selected 125, and hs34 selected 175. This narrows the predecessor failure to
+dose portability and leaves the layer-site hypothesis alive, but it still does
+not test held-out mid-band superiority. That requires the next signed contrast.
 
 ## Checkpoints
 
@@ -343,3 +385,21 @@ holding all metrics in memory.
 - next steps:
   - Use `mechinterp dose-calibrate` for the next dose-ladder cell after this
     bespoke local calibration run finishes.
+
+### 007-result - FIT dose calibration recovered all layer setpoints
+
+- at: `2026-07-08T10:40:26Z`
+- kind: `result`
+- summary: The local RTX 3090 FIT-only calibration resolved as an exploratory
+  pass. All four layers had usable non-collapsing setpoints; hs23 and hs26
+  recovered below the collapsed dose-200 rung.
+- evidence:
+  - `experiments/j-space-midband-dose-calibration-qwen3-4b/AMENDMENT.md`
+  - `experiments/j-space-midband-dose-calibration-qwen3-4b/analysis-committed/dose_calibration_summary.json`
+  - `experiment/notes/j-space-midband-dose-calibration-qwen3-4b.md`
+- signals: selected doses hs23=25, hs26=75, hs29=125, hs34=175; all layers have
+  usable doses; dose-200 collapse recovered for hs23/hs26; selected-dose
+  clean_tighten was hs23 8/8, hs26 8/8, hs29 8/8, hs34 7/8.
+- next steps:
+  - Draft and sign the calibrated held-out layer contrast using hs23=25,
+    hs26=75, hs29=125, and hs34=175.

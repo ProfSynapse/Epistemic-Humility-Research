@@ -1,6 +1,6 @@
 # j-space-midband-dose-calibration-qwen3-4b
 
-Status: running (local RTX 3090 lane launched 2026-07-08).
+Status: resolved (exploratory FIT-only calibration pass, 2026-07-08).
 
 Keep this document the prose home for the experiment. The machine state lives in
 `experiment.yaml` and is never duplicated here.
@@ -91,5 +91,42 @@ mid-band contrast cannot proceed on this calibration scheme.
 
 ## Outcome
 
-Filled at resolve. Record the verdict, the gate results, and the one-sentence
-summary that also goes into `verdict:` in the manifest.
+Resolved 2026-07-08 as an exploratory FIT-only calibration pass.
+
+Summary: layer-specific calibration recovered non-collapsing usable setpoints
+for all four layers, and the two layers that collapsed at dose 200 recovered at
+lower doses. Selected absolute setpoints are hs23=25, hs26=75, hs29=125, and
+hs34=175.
+
+Committed artifact:
+
+- `analysis-committed/dose_calibration_summary.json`
+
+Gate results:
+
+- **G0 input validity**: passed. The run used committed directions/build/gate
+  artifacts from `j-space-midband-write-sweep-qwen3-4b`; row text remained local
+  under gitignored `analysis/`; calibration rows were FIT rows only.
+- **G1 usable setpoint per layer**: passed. All four layers have at least one
+  usable dose by the pre-stated rule.
+- **G2 collapse recovery where needed**: passed. hs23 selected 25 and hs26
+  selected 75; both are below 200 and have zero collapse on dosed rows. At dose
+  200, hs23 and hs26 both still had collapse_rate_on_dosed=1.0, confirming that
+  the lower-dose recovery, not a changed classifier, is what cleared the gate.
+- **G3 actionable output**: passed. The summary reports selected doses for all
+  four layers.
+
+Selected-dose table on the 8 FIT confab + 8 FIT known-correct calibration rows:
+
+| Layer | Selected dose | Readback mean | Collapse on dosed | Confab clean_tighten | Known-correct cost |
+|-------|---------------|---------------|-------------------|----------------------|--------------------|
+| hs23 | 25 | 25.0055 | 0/9 | 8/8 | 1/8 |
+| hs26 | 75 | 74.9836 | 0/9 | 8/8 | 1/8 |
+| hs29 | 125 | 125.0173 | 0/9 | 8/8 | 1/8 |
+| hs34 | 175 | 175.0389 | 0/9 | 7/8 | 1/8 |
+
+Interpretation: the G0 stop in the predecessor sweep was a dose-portability
+failure, not evidence that hs23/hs26 are unusable write sites. Lower setpoints
+restore coherent behavior at the mid-band sites on FIT rows. This does not test
+held-out layer superiority; the next evidence-producing step is a fresh signed
+held-out hs23/hs26/hs29 vs hs34 contrast using the calibrated setpoints.
