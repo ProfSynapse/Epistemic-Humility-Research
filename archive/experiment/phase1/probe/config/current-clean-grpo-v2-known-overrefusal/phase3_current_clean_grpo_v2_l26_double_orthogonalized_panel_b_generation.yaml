@@ -1,12 +1,12 @@
-# Panel-C generated-answer replay for the L26 known-overrefusal repair vector
+# Panel-B generated-answer replay for the L26 known-overrefusal repair vector
 # after removing same-layer broad unknown-refusal and known-wrong components.
 
 sweep:
-  name: phase3_current_clean_grpo_v2_l26_double_orthogonalized_panel_c_generation
+  name: phase3_current_clean_grpo_v2_l26_double_orthogonalized_panel_b_generation
   evidence_tier: tier2_exploratory_local
-  runner_config: experiment/phase1/probe/config/phase3_current_clean_known_overrefusal_logit_diagnostic.yaml
-  candidate_source_config: experiment/phase1/probe/config/phase3_current_clean_grpo_v2_l26_double_orthogonalized_candidates.yaml
-  output_root: experiment/phase1/probe/analysis/current_clean_grpo_v2_l26_double_orthogonalized_panel_c_generation
+  runner_config: archive/experiment/phase1/probe/config/current-clean-grpo-v2-known-overrefusal/phase3_current_clean_known_overrefusal_logit_diagnostic.yaml
+  candidate_source_config: archive/experiment/phase1/probe/config/current-clean-grpo-v2-known-overrefusal/phase3_current_clean_grpo_v2_l26_double_orthogonalized_candidates.yaml
+  output_root: experiment/phase1/probe/analysis/current_clean_grpo_v2_l26_double_orthogonalized_panel_b_generation
   candidates:
     - clean_sft_grpo_v2_l26_known_repair_orthogonal_to_unknown_refusal_and_known_wrong
   execution:
@@ -22,12 +22,12 @@ sweep:
       max_rows_default: 96
       probe_results: experiment/phase1/probe/analysis/current_selfaware_behavior_rows/clean_sft_grpo_v2/rows.jsonl
       row_keys_by_candidate: null
-      row_keys_file: experiment/phase1/probe/config/phase3_current_clean_grpo_v2_known_overrefusal_replay_96_panel_c_row_keys.txt
+      row_keys_file: archive/experiment/phase1/probe/config/current-clean-grpo-v2-known-overrefusal/phase3_current_clean_grpo_v2_known_overrefusal_replay_96_panel_b_row_keys.txt
   modes:
     - name: generation
       max_rows: 96
       max_new_tokens: 96
-      coefficients: [10.0]
+      coefficients: [10.0, 15.0, 20.0]
       controls:
         - no_vector_baseline
         - activation_subtraction

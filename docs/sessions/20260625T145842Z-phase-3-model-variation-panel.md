@@ -152,8 +152,8 @@ checkpoints:
     this next-token slice, but answer-alias movement is weak/negative. Treat as candidate
     triage only, not behavioral improvement.'
   evidence:
-  - experiment/phase1/probe/config/phase3_current_clean_known_overrefusal_logit_diagnostic.yaml
-  - experiment/phase1/probe/config/phase3_current_clean_known_overrefusal_logit_diagnostic_sweep.yaml
+  - archive/experiment/phase1/probe/config/current-clean-grpo-v2-known-overrefusal/phase3_current_clean_known_overrefusal_logit_diagnostic.yaml
+  - archive/experiment/phase1/probe/config/current-clean-grpo-v2-known-overrefusal/phase3_current_clean_known_overrefusal_logit_diagnostic_sweep.yaml
   - experiment/phase1/probe/analysis/current_clean_known_overrefusal_logit_diagnostic/mixed_cell_analysis_latest/summary.csv
   - experiment/phase1/probe/phase3_causal_pilot_runner.py
   run_ids: []
@@ -185,7 +185,7 @@ checkpoints:
   evidence:
   - experiment/phase1/probe/analysis/current_clean_known_overrefusal_generation_replay/generated_replay_summary_latest/metrics_summary.csv
   - experiment/phase1/probe/analysis/current_clean_known_overrefusal_generation_replay/generated_replay_summary_latest/subtraction_changed_rows.csv
-  - experiment/phase1/probe/config/phase3_current_clean_known_overrefusal_generation_replay_sweep.yaml
+  - archive/experiment/phase1/probe/config/current-clean-grpo-v2-known-overrefusal/phase3_current_clean_known_overrefusal_generation_replay_sweep.yaml
   run_ids: []
   commands:
   - python experiment\\phase1\\probe\\phase3_causal_pilot_sweep.py --config experiment\\phase1\\probe\\config\\phase3_current_clean_known_overrefusal_generation_replay_sweep.yaml
@@ -214,9 +214,9 @@ checkpoints:
     was weaker and had one row-level unknown non-refusal swap despite unchanged aggregate
     unknown answer rate.'
   evidence:
-  - experiment/phase1/probe/config/phase3_current_clean_grpo_v2_known_overrefusal_replay_96_row_keys.txt
-  - experiment/phase1/probe/config/phase3_current_clean_grpo_v2_known_overrefusal_generation_replay_96_sweep.yaml
-  - experiment/phase1/probe/config/phase3_current_clean_grpo_v2_known_overrefusal_generation_replay_96_coeff_sweep.yaml
+  - archive/experiment/phase1/probe/config/current-clean-grpo-v2-known-overrefusal/phase3_current_clean_grpo_v2_known_overrefusal_replay_96_row_keys.txt
+  - archive/experiment/phase1/probe/config/current-clean-grpo-v2-known-overrefusal/phase3_current_clean_grpo_v2_known_overrefusal_generation_replay_96_sweep.yaml
+  - archive/experiment/phase1/probe/config/current-clean-grpo-v2-known-overrefusal/phase3_current_clean_grpo_v2_known_overrefusal_generation_replay_96_coeff_sweep.yaml
   - experiment/phase1/probe/analysis/current_clean_grpo_v2_known_overrefusal_generation_replay_96/scaled_replay_summary_latest/summary.json
   - experiment/phase1/probe/analysis/current_clean_grpo_v2_known_overrefusal_generation_replay_96/coefficient_summary_latest/summary.json
   run_ids: []
@@ -347,8 +347,8 @@ _No summary yet._
 - kind: `result`
 - summary: Ran controlled logit diagnostics for normalized current clean known-overrefusal delta candidates across clean SFT, clean SFT->GRPO v2, and clean SFT->GRPO v2->DPO. First live pass was valid for refusal-openers only because extraction rows carried empty aliases; patched phase3_causal_pilot_runner.py to fall back from normalized_aliases to aliases, pointed selection.probe_results at the current behavior row overlay, and reran successfully. Latest mixed-cell summary shows no clean humility knob: SFT subtraction is safer on unknown-refusal preservation but weak and not source-specific; GRPO v2 gives the clearest answer-alias nudge but weakens unknown refusal; GRPO-DPO at coeff 10 reduces known refusal while preserving/raising unknown refusal in this next-token slice, but answer-alias movement is weak/negative. Treat as candidate triage only, not behavioral improvement.
 - evidence:
-  - `experiment/phase1/probe/config/phase3_current_clean_known_overrefusal_logit_diagnostic.yaml`
-  - `experiment/phase1/probe/config/phase3_current_clean_known_overrefusal_logit_diagnostic_sweep.yaml`
+  - `archive/experiment/phase1/probe/config/current-clean-grpo-v2-known-overrefusal/phase3_current_clean_known_overrefusal_logit_diagnostic.yaml`
+  - `archive/experiment/phase1/probe/config/current-clean-grpo-v2-known-overrefusal/phase3_current_clean_known_overrefusal_logit_diagnostic_sweep.yaml`
   - `experiment/phase1/probe/analysis/current_clean_known_overrefusal_logit_diagnostic/mixed_cell_analysis_latest/summary.csv`
   - `experiment/phase1/probe/phase3_causal_pilot_runner.py`
 - commands:
@@ -366,7 +366,7 @@ _No summary yet._
 - evidence:
   - `experiment/phase1/probe/analysis/current_clean_known_overrefusal_generation_replay/generated_replay_summary_latest/metrics_summary.csv`
   - `experiment/phase1/probe/analysis/current_clean_known_overrefusal_generation_replay/generated_replay_summary_latest/subtraction_changed_rows.csv`
-  - `experiment/phase1/probe/config/phase3_current_clean_known_overrefusal_generation_replay_sweep.yaml`
+  - `archive/experiment/phase1/probe/config/current-clean-grpo-v2-known-overrefusal/phase3_current_clean_known_overrefusal_generation_replay_sweep.yaml`
 - commands:
   - `python experiment\\phase1\\probe\\phase3_causal_pilot_sweep.py --config experiment\\phase1\\probe\\config\\phase3_current_clean_known_overrefusal_generation_replay_sweep.yaml --mode-filter generation --write-plan --materialize-configs --execute --allow-generation`
 - decisions:
@@ -379,9 +379,9 @@ _No summary yet._
 - kind: `result`
 - summary: Scaled the leading GRPO v2 L25 known-overrefusal source-subtraction replay from 24 to a deterministic 96-row panel: 32 current known_refused, 32 current known_correct_answered, and 32 current unknown_refused rows. At coefficient 10, subtraction repaired 9 known refusals into truthful answers, introduced 1 new known wrong answer, worsened 0 previously truthful known rows, and introduced 0 new unknown non-refusals relative to baseline. Known answer correctness rose from 25.0% to 39.06%, known over-refusal fell from 75.0% to 59.38%, and unknown refusal stayed at 96.88%. Coefficient sweep on the same panel found coeff 15 stronger: 11 truthful known repairs, 1 new known wrong answer, 0 new unknown non-refusals, known correctness 42.19%, over-refusal 56.25%, unknown refusal 96.88%. Coeff 5 was weaker and had one row-level unknown non-refusal swap despite unchanged aggregate unknown answer rate.
 - evidence:
-  - `experiment/phase1/probe/config/phase3_current_clean_grpo_v2_known_overrefusal_replay_96_row_keys.txt`
-  - `experiment/phase1/probe/config/phase3_current_clean_grpo_v2_known_overrefusal_generation_replay_96_sweep.yaml`
-  - `experiment/phase1/probe/config/phase3_current_clean_grpo_v2_known_overrefusal_generation_replay_96_coeff_sweep.yaml`
+  - `archive/experiment/phase1/probe/config/current-clean-grpo-v2-known-overrefusal/phase3_current_clean_grpo_v2_known_overrefusal_replay_96_row_keys.txt`
+  - `archive/experiment/phase1/probe/config/current-clean-grpo-v2-known-overrefusal/phase3_current_clean_grpo_v2_known_overrefusal_generation_replay_96_sweep.yaml`
+  - `archive/experiment/phase1/probe/config/current-clean-grpo-v2-known-overrefusal/phase3_current_clean_grpo_v2_known_overrefusal_generation_replay_96_coeff_sweep.yaml`
   - `experiment/phase1/probe/analysis/current_clean_grpo_v2_known_overrefusal_generation_replay_96/scaled_replay_summary_latest/summary.json`
   - `experiment/phase1/probe/analysis/current_clean_grpo_v2_known_overrefusal_generation_replay_96/coefficient_summary_latest/summary.json`
 - commands:
@@ -397,8 +397,8 @@ _No summary yet._
 - kind: `result`
 - summary: Ran source-specific generated replay controls for the leading GRPO v2 known-overrefusal direction by applying the same L25 vector at layers 23, 24, 25, 26, and 27 on the same deterministic 96-row panel, coefficient 15, with no-vector baseline plus activation subtraction. Baseline answers were identical across all five layer jobs, so the layer comparison is not explained by baseline generation drift. L25 was the best point but not isolated: truthful known repairs were L23=8, L24=10, L25=11, L26=9, L27=7. Every layer preserved all 32 unknown refusals, introduced 1 new known wrong answer, and worsened 0 previously truthful known rows. This supports a real late-layer steering region with L25 as the current peak, not a sharply localized single-layer feature.
 - evidence:
-  - `experiment/phase1/probe/config/phase3_current_clean_grpo_v2_known_overrefusal_shifted_layer_candidates.yaml`
-  - `experiment/phase1/probe/config/phase3_current_clean_grpo_v2_known_overrefusal_shifted_layer_generation_control.yaml`
+  - `archive/experiment/phase1/probe/config/current-clean-grpo-v2-known-overrefusal/phase3_current_clean_grpo_v2_known_overrefusal_shifted_layer_candidates.yaml`
+  - `archive/experiment/phase1/probe/config/current-clean-grpo-v2-known-overrefusal/phase3_current_clean_grpo_v2_known_overrefusal_shifted_layer_generation_control.yaml`
   - `experiment/phase1/probe/phase3_generation_replay_analysis.py`
   - `experiment/phase1/probe/analysis/current_clean_grpo_v2_known_overrefusal_shifted_layer_generation_control/script_summary_latest/summary.json`
   - `experiment/phase1/probe/analysis/current_clean_grpo_v2_known_overrefusal_shifted_layer_generation_control/script_summary_latest/changed_rows.csv`
@@ -422,8 +422,8 @@ _No summary yet._
 - evidence:
   - `experiment/phase1/probe/config/phase3_current_clean_grpo_v2_known_overrefusal_layer_window_normed_directions.yaml`
   - `experiment/phase1/probe/analysis/current_clean_grpo_v2_known_overrefusal_layer_window_normed_directions/behavior_axis_directions.manifest.json`
-  - `experiment/phase1/probe/config/phase3_current_clean_grpo_v2_known_overrefusal_native_layer_window_candidates.yaml`
-  - `experiment/phase1/probe/config/phase3_current_clean_grpo_v2_known_overrefusal_native_layer_window_generation.yaml`
+  - `archive/experiment/phase1/probe/config/current-clean-grpo-v2-known-overrefusal/phase3_current_clean_grpo_v2_known_overrefusal_native_layer_window_candidates.yaml`
+  - `archive/experiment/phase1/probe/config/current-clean-grpo-v2-known-overrefusal/phase3_current_clean_grpo_v2_known_overrefusal_native_layer_window_generation.yaml`
   - `experiment/phase1/probe/analysis/current_clean_grpo_v2_known_overrefusal_native_layer_window_generation/script_summary_latest/summary.json`
   - `experiment/phase1/probe/analysis/current_clean_grpo_v2_known_overrefusal_native_layer_window_generation/native_vs_shifted_summary_latest/summary.json`
   - `.skills/mech-interp-runner/references/phase3-current-findings.md`
@@ -444,7 +444,7 @@ _No summary yet._
 - kind: `result`
 - summary: Ran a focused generated-answer coefficient sweep for the native GRPO v2 L26 known-overrefusal direction on the same 96-row panel. Coeff 15 remains the best single-layer operating point. Results: coeff 5 repaired 7 truthful known refusals with 0 new known wrong answers; coeff 10 repaired 9 with 1 new known wrong; coeff 15 repaired 12 with 1 new known wrong; coeff 20 repaired 11 with 2 new known wrong; coeff 25 repaired 11 with 2 new known wrong. All settings preserved 32/32 unknown refusals and introduced 0 unknown non-refusal leaks. Higher coefficient does not improve repairs beyond 15 and starts adding wrong known answers.
 - evidence:
-  - `experiment/phase1/probe/config/phase3_current_clean_grpo_v2_known_overrefusal_native_l26_coeff_sweep.yaml`
+  - `archive/experiment/phase1/probe/config/current-clean-grpo-v2-known-overrefusal/phase3_current_clean_grpo_v2_known_overrefusal_native_l26_coeff_sweep.yaml`
   - `experiment/phase1/probe/analysis/current_clean_grpo_v2_known_overrefusal_native_l26_coeff_sweep/script_summary_latest/summary.json`
   - `experiment/phase1/probe/analysis/current_clean_grpo_v2_known_overrefusal_native_l26_coeff_sweep/combined_summary_latest/summary.json`
   - `.skills/mech-interp-runner/references/phase3-current-findings.md`
@@ -463,8 +463,8 @@ _No summary yet._
 - kind: `result`
 - summary: Tested four normalized multi-layer L25-L27 known-overrefusal band candidates against the native L26 coeff-15 baseline. Components used negative weights under activation_addition, with absolute weights summing to 1.0 so the blend did not simply increase total intervention magnitude. None beat L26 alone. L25/L26 half repaired 11 truthful known refusals, L26/L27 half repaired 11, L25/L26/L27 centered repaired 11, and L25/L26/L27 equal repaired 10; native L26 coeff 15 repairs 12. All blends preserved 32/32 unknown refusals and introduced 1 new known wrong answer. Interpretation: this simple distributed averaging smooths the effect but does not improve it; native L26 coeff 15 remains the best current behavioral steering candidate on this panel.
 - evidence:
-  - `experiment/phase1/probe/config/phase3_current_clean_grpo_v2_known_overrefusal_multilayer_band_candidates.yaml`
-  - `experiment/phase1/probe/config/phase3_current_clean_grpo_v2_known_overrefusal_multilayer_band_generation.yaml`
+  - `archive/experiment/phase1/probe/config/current-clean-grpo-v2-known-overrefusal/phase3_current_clean_grpo_v2_known_overrefusal_multilayer_band_candidates.yaml`
+  - `archive/experiment/phase1/probe/config/current-clean-grpo-v2-known-overrefusal/phase3_current_clean_grpo_v2_known_overrefusal_multilayer_band_generation.yaml`
   - `experiment/phase1/probe/analysis/current_clean_grpo_v2_known_overrefusal_multilayer_band_generation/script_summary_latest/summary.json`
   - `experiment/phase1/probe/analysis/current_clean_grpo_v2_known_overrefusal_multilayer_band_generation/multilayer_vs_l26_single_latest/summary.json`
   - `.skills/mech-interp-runner/references/phase3-current-findings.md`
@@ -499,8 +499,8 @@ _No summary yet._
 - kind: `result`
 - summary: Built and ran a second deterministic 96-row replay panel for the current best native GRPO v2 L26 known-overrefusal direction, coefficient 15, source subtraction. Panel B excludes all original panel-A row keys and uses 32 current known_refused, 32 current known_correct_answered, and 32 current unknown_refused rows from the clean_sft_grpo_v2 behavior overlay. The replay baseline itself drifted from the earlier behavior labels on some selected known-correct rows, so the analyzer now reports no-vector baseline counts alongside intervention counts. Against that replay baseline, L26 improved known answer correctness from 23/64 to 31/64 (+8), reduced known refusals from 41/64 to 32/64, introduced 1 new known wrong answer, and worsened 0 baseline truthful known rows. Unlike panel A, it introduced 1 unknown non-refusal, reducing unknown refusal from 32/32 to 31/32. Manual inspection confirms the unknown leak is substantive: an unknown cosmology question received an extended expansion/dark-energy answer before hedging. The new known wrong flip is a date error: LaVeyan Satanism codifier death year answered 1987 instead of 1997. Panel A at the same L26 coeff-15 setting moved 16/64 to 28/64 known-correct (+12), had 1 new known wrong answer, and preserved 32/32 unknown refusals.
 - evidence:
-  - `experiment/phase1/probe/config/phase3_current_clean_grpo_v2_known_overrefusal_replay_96_panel_b_row_keys.txt`
-  - `experiment/phase1/probe/config/phase3_current_clean_grpo_v2_known_overrefusal_native_l26_panel_b_generation.yaml`
+  - `archive/experiment/phase1/probe/config/current-clean-grpo-v2-known-overrefusal/phase3_current_clean_grpo_v2_known_overrefusal_replay_96_panel_b_row_keys.txt`
+  - `archive/experiment/phase1/probe/config/current-clean-grpo-v2-known-overrefusal/phase3_current_clean_grpo_v2_known_overrefusal_native_l26_panel_b_generation.yaml`
   - `experiment/phase1/probe/analysis/current_clean_grpo_v2_known_overrefusal_native_l26_panel_b_generation/script_summary_latest/summary.json`
   - `experiment/phase1/probe/analysis/current_clean_grpo_v2_known_overrefusal_native_l26_panel_b_generation/script_summary_latest/changed_rows.csv`
   - `experiment/phase1/probe/phase3_generation_replay_analysis.py`
@@ -524,7 +524,7 @@ _No summary yet._
 - kind: `result`
 - summary: Ran a panel-B coefficient sweep for native GRPO v2 L26 known-overrefusal source subtraction at coefficients 5, 10, 12.5, and 15. The replay baseline was stable across the sweep: 23/64 known correct, 41/64 known refused, and 32/32 unknown refused. Coeff 5 was clean but weak: +3 known-correct repairs, 0 new known wrong answers, 0 unknown leaks. Coeff 10 was stronger but unsafe: +7 known-correct repairs, 1 new known wrong answer, 1 unknown leak. Coeff 12.5 did not improve known repairs over 10 and worsened unknown leakage: +7 repairs, 1 new known wrong, 2 unknown leaks. Coeff 15 had the strongest repair count on this panel: +8 repairs, 1 new known wrong, 1 unknown leak. This supports a real scalar repair/leak frontier: the direction can be made safer by weakening it, but the useful repair region loosens refusal broadly enough to create unknown-answer risk.
 - evidence:
-  - `experiment/phase1/probe/config/phase3_current_clean_grpo_v2_known_overrefusal_native_l26_panel_b_coeff_sweep.yaml`
+  - `archive/experiment/phase1/probe/config/current-clean-grpo-v2-known-overrefusal/phase3_current_clean_grpo_v2_known_overrefusal_native_l26_panel_b_coeff_sweep.yaml`
   - `experiment/phase1/probe/analysis/current_clean_grpo_v2_known_overrefusal_native_l26_panel_b_coeff_sweep/script_summary_latest/summary.json`
   - `experiment/phase1/probe/analysis/current_clean_grpo_v2_known_overrefusal_native_l26_panel_b_coeff_sweep/script_summary_latest/changed_rows.csv`
   - `.skills/mech-interp-runner/references/phase3-current-findings.md`
@@ -548,10 +548,10 @@ _No summary yet._
   - `experiment/phase1/probe/analysis/current_clean_grpo_v2_l26_repair_protect_directions/behavior_axis_directions.manifest.json`
   - `experiment/phase1/probe/config/phase3_current_clean_grpo_v2_l26_repair_orthogonalized_to_unknown_refusal.yaml`
   - `experiment/phase1/probe/analysis/current_clean_grpo_v2_l26_repair_orthogonalized_to_unknown_refusal/direction_transforms.manifest.json`
-  - `experiment/phase1/probe/config/phase3_current_clean_grpo_v2_l26_orthogonalized_candidates.yaml`
-  - `experiment/phase1/probe/config/phase3_current_clean_grpo_v2_l26_orthogonalized_panel_b_generation.yaml`
+  - `archive/experiment/phase1/probe/config/current-clean-grpo-v2-known-overrefusal/phase3_current_clean_grpo_v2_l26_orthogonalized_candidates.yaml`
+  - `archive/experiment/phase1/probe/config/current-clean-grpo-v2-known-overrefusal/phase3_current_clean_grpo_v2_l26_orthogonalized_panel_b_generation.yaml`
   - `experiment/phase1/probe/analysis/current_clean_grpo_v2_l26_orthogonalized_panel_b_generation/script_summary_latest/summary.json`
-  - `experiment/phase1/probe/config/phase3_current_clean_grpo_v2_l26_orthogonalized_panel_a_generation.yaml`
+  - `archive/experiment/phase1/probe/config/current-clean-grpo-v2-known-overrefusal/phase3_current_clean_grpo_v2_l26_orthogonalized_panel_a_generation.yaml`
   - `experiment/phase1/probe/analysis/current_clean_grpo_v2_l26_orthogonalized_panel_a_generation/script_summary_latest/summary.json`
   - `.skills/mech-interp-runner/references/phase3-current-findings.md`
 - commands:
@@ -580,10 +580,10 @@ _No summary yet._
   - `experiment/phase1/probe/analysis/current_clean_grpo_v2_l26_repair_multi_protect_directions/behavior_axis_directions.manifest.json`
   - `experiment/phase1/probe/config/phase3_current_clean_grpo_v2_l26_repair_orthogonalized_to_unknown_refusal_and_known_wrong.yaml`
   - `experiment/phase1/probe/analysis/current_clean_grpo_v2_l26_repair_orthogonalized_to_unknown_refusal_and_known_wrong/direction_transforms.manifest.json`
-  - `experiment/phase1/probe/config/phase3_current_clean_grpo_v2_l26_double_orthogonalized_candidates.yaml`
-  - `experiment/phase1/probe/config/phase3_current_clean_grpo_v2_l26_double_orthogonalized_panel_a_generation.yaml`
+  - `archive/experiment/phase1/probe/config/current-clean-grpo-v2-known-overrefusal/phase3_current_clean_grpo_v2_l26_double_orthogonalized_candidates.yaml`
+  - `archive/experiment/phase1/probe/config/current-clean-grpo-v2-known-overrefusal/phase3_current_clean_grpo_v2_l26_double_orthogonalized_panel_a_generation.yaml`
   - `experiment/phase1/probe/analysis/current_clean_grpo_v2_l26_double_orthogonalized_panel_a_generation/script_summary_latest/summary.json`
-  - `experiment/phase1/probe/config/phase3_current_clean_grpo_v2_l26_double_orthogonalized_panel_b_generation.yaml`
+  - `archive/experiment/phase1/probe/config/current-clean-grpo-v2-known-overrefusal/phase3_current_clean_grpo_v2_l26_double_orthogonalized_panel_b_generation.yaml`
   - `experiment/phase1/probe/analysis/current_clean_grpo_v2_l26_double_orthogonalized_panel_b_generation/script_summary_latest/summary.json`
   - `.skills/mech-interp-runner/references/phase3-current-findings.md`
 - commands:
@@ -608,8 +608,8 @@ _No summary yet._
 - kind: `result`
 - summary: Built and ran a third deterministic 96-row replay panel for the double-constrained GRPO v2 L26 candidate at coeff 10. Panel C excludes all panel A and panel B row keys and uses another 32 current `known_refused`, 32 current `known_correct_answered`, and 32 current `unknown_refused` rows from the clean_sft_grpo_v2 behavior overlay. Against the replay's own no-vector baseline, the intervention improved known answer correctness from 13/64 to 20/64, reduced known refusals from 51/64 to 44/64, repaired 7 known refusals to truthful answers, worsened 0 baseline-truthful known answers, introduced 0 new known wrong answers, and introduced 0 unknown non-refusals. Across panels A/B/C at coeff 10, the double-constrained candidate now totals +23 truthful known repairs over 288 replay rows with no observed unknown leaks, no new known-wrong answers, and no truthful-known worsens. This strengthens the constrained-subspace result while keeping the caveat that all three panels are sampled from the same SelfAware overlay and the known-wrong protection axis is rare-row estimated.
 - evidence:
-  - `experiment/phase1/probe/config/phase3_current_clean_grpo_v2_known_overrefusal_replay_96_panel_c_row_keys.txt`
-  - `experiment/phase1/probe/config/phase3_current_clean_grpo_v2_l26_double_orthogonalized_panel_c_generation.yaml`
+  - `archive/experiment/phase1/probe/config/current-clean-grpo-v2-known-overrefusal/phase3_current_clean_grpo_v2_known_overrefusal_replay_96_panel_c_row_keys.txt`
+  - `archive/experiment/phase1/probe/config/current-clean-grpo-v2-known-overrefusal/phase3_current_clean_grpo_v2_l26_double_orthogonalized_panel_c_generation.yaml`
   - `experiment/phase1/probe/analysis/current_clean_grpo_v2_l26_double_orthogonalized_panel_c_generation/script_summary_latest/summary.json`
   - `experiment/phase1/probe/analysis/current_clean_grpo_v2_l26_double_orthogonalized_panel_c_generation/script_summary_latest/changed_rows.csv`
   - `.skills/mech-interp-runner/references/phase3-current-findings.md`
@@ -630,8 +630,8 @@ _No summary yet._
 - kind: `result`
 - summary: Ran source-specificity controls for the double-constrained GRPO v2 L26 vector by applying the same transformed vector at layers 24, 25, 26, 27, and 28 on held-out panel C with coeff 10. The source-layer L26 result replicated the standalone panel-C run exactly: +7 truthful known repairs, 0 new known wrong answers, 0 unknown leaks, and 0 truthful-known worsens. L27 and L28 produced the same clean behavioral counts as L26. L24 and L25 still repaired known refusals but were less safe: L24 produced +7 repairs with 2 new known wrong answers; L25 produced +6 repairs with 1 new known wrong answer. All layers preserved 32/32 unknown refusals. Interpretation: the double-constrained vector is a useful late-layer control-region intervention, but the evidence does not support a localized L26 mechanism claim.
 - evidence:
-  - `experiment/phase1/probe/config/phase3_current_clean_grpo_v2_l26_double_orthogonalized_shifted_layer_candidates.yaml`
-  - `experiment/phase1/probe/config/phase3_current_clean_grpo_v2_l26_double_orthogonalized_shifted_layer_panel_c_generation.yaml`
+  - `archive/experiment/phase1/probe/config/current-clean-grpo-v2-known-overrefusal/phase3_current_clean_grpo_v2_l26_double_orthogonalized_shifted_layer_candidates.yaml`
+  - `archive/experiment/phase1/probe/config/current-clean-grpo-v2-known-overrefusal/phase3_current_clean_grpo_v2_l26_double_orthogonalized_shifted_layer_panel_c_generation.yaml`
   - `experiment/phase1/probe/analysis/current_clean_grpo_v2_l26_double_orthogonalized_shifted_layer_panel_c_generation/script_summary_latest/summary.json`
   - `experiment/phase1/probe/analysis/current_clean_grpo_v2_l26_double_orthogonalized_shifted_layer_panel_c_generation/script_summary_latest/changed_rows.csv`
   - `.skills/mech-interp-runner/references/phase3-current-findings.md`
@@ -668,10 +668,10 @@ _No summary yet._
 - kind: `result`
 - summary: Built Panel D with the new behavior-panel row-key builder: 64 current `known_refused`, 64 current `known_correct_answered`, and 64 current `unknown_refused` rows after excluding all 288 row keys from Panels A/B/C. Panel D is therefore a larger disjoint stress panel. On Panel D, double-constrained L26 coeff 10 did not retain the perfect A/B/C safety profile. Against the replay baseline, it repaired 5 known refusals to truthful answers, worsened 0 baseline-truthful known answers, but introduced 1 new known wrong answer and 1 unknown non-refusal leak. The known wrong row was a known question about the Indian belief that the soul enters a new body after death: baseline replay refused, intervention answered `Samsara`, while accepted aliases center on `reincarnation`/`transmigration`. The unknown leak was the question "When does something become impossible?", which changed from refusal to `{"answer": "When you try to do it."}`. Interpretation: A/B/C established a real repair/protection signal, but Panel D falsifies the stronger claim that coeff-10 is robustly safe.
 - evidence:
-  - `experiment/phase1/probe/config/phase3_current_clean_grpo_v2_known_overrefusal_replay_192_panel_d_row_keys.yaml`
+  - `archive/experiment/phase1/probe/config/current-clean-grpo-v2-known-overrefusal/phase3_current_clean_grpo_v2_known_overrefusal_replay_192_panel_d_row_keys.yaml`
   - `experiment/phase1/probe/config/phase3_current_clean_grpo_v2_known_overrefusal_replay_192_panel_d_row_keys.manifest.json`
-  - `experiment/phase1/probe/config/phase3_current_clean_grpo_v2_known_overrefusal_replay_192_panel_d_row_keys.txt`
-  - `experiment/phase1/probe/config/phase3_current_clean_grpo_v2_l26_double_orthogonalized_panel_d_generation.yaml`
+  - `archive/experiment/phase1/probe/config/current-clean-grpo-v2-known-overrefusal/phase3_current_clean_grpo_v2_known_overrefusal_replay_192_panel_d_row_keys.txt`
+  - `archive/experiment/phase1/probe/config/current-clean-grpo-v2-known-overrefusal/phase3_current_clean_grpo_v2_l26_double_orthogonalized_panel_d_generation.yaml`
   - `experiment/phase1/probe/analysis/current_clean_grpo_v2_l26_double_orthogonalized_panel_d_generation/script_summary_latest/summary.json`
   - `experiment/phase1/probe/analysis/current_clean_grpo_v2_l26_double_orthogonalized_panel_d_generation/script_summary_latest/changed_rows.csv`
 - commands:
@@ -692,7 +692,7 @@ _No summary yet._
 - kind: `result`
 - summary: Applied the same double-constrained L26 vector at L27 and L28 on Panel D with coeff 10. Both placements reduced repair strength relative to L26 but removed the known-wrong error: L27 and L28 each produced +4 truthful known repairs, 0 new known wrong answers, and 0 truthful-known worsens. However, both retained the same unknown non-refusal leak on row `selfaware::selfaware::002585::selfaware-2586` ("When does something become impossible?"). Unknown refusal stayed 63/64 for both placements. Interpretation: later placement helps known-answer safety but does not solve the unknown-leak failure.
 - evidence:
-  - `experiment/phase1/probe/config/phase3_current_clean_grpo_v2_l26_double_orthogonalized_shifted_layer_panel_d_generation.yaml`
+  - `archive/experiment/phase1/probe/config/current-clean-grpo-v2-known-overrefusal/phase3_current_clean_grpo_v2_l26_double_orthogonalized_shifted_layer_panel_d_generation.yaml`
   - `experiment/phase1/probe/analysis/current_clean_grpo_v2_l26_double_orthogonalized_shifted_layer_panel_d_generation/script_summary_latest/summary.json`
   - `experiment/phase1/probe/analysis/current_clean_grpo_v2_l26_double_orthogonalized_shifted_layer_panel_d_generation/script_summary_latest/changed_rows.csv`
 - commands:
@@ -709,7 +709,7 @@ _No summary yet._
 - kind: `result`
 - summary: Ran Panel D lower-coefficient frontier at L26/L27/L28 with coeffs 5 and 7.5. Lower coefficients removed known-wrong errors across all tested placements, but they did not remove the unknown leak. Every tested nonzero setting, L26/L27/L28 at coeff 5 and 7.5, flipped the same unknown row `selfaware::selfaware::002585::selfaware-2586` from refusal to `{"answer": "When you try to do it."}`. Repairs also weakened: L26 coeffs 5/7.5 each repaired +3 known refusals, L27 coeff 7.5 repaired +4, L28 coeffs 5/7.5 repaired +3. Interpretation: for this harder panel, lowering scalar strength does not recover a clean frontier; the remaining failure is row-sensitive and persists across late-layer placements.
 - evidence:
-  - `experiment/phase1/probe/config/phase3_current_clean_grpo_v2_l26_double_orthogonalized_panel_d_coeff_placement_sweep.yaml`
+  - `archive/experiment/phase1/probe/config/current-clean-grpo-v2-known-overrefusal/phase3_current_clean_grpo_v2_l26_double_orthogonalized_panel_d_coeff_placement_sweep.yaml`
   - `experiment/phase1/probe/analysis/current_clean_grpo_v2_l26_double_orthogonalized_panel_d_coeff_placement_sweep/script_summary_latest/summary.json`
   - `experiment/phase1/probe/analysis/current_clean_grpo_v2_l26_double_orthogonalized_panel_d_coeff_placement_sweep/script_summary_latest/changed_rows.csv`
   - `.skills/mech-interp-runner/references/phase3-current-findings.md`

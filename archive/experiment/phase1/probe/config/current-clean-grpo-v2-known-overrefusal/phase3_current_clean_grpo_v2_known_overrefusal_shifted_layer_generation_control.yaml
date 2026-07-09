@@ -5,8 +5,8 @@
 sweep:
   name: phase3_current_clean_grpo_v2_known_overrefusal_shifted_layer_generation_control
   evidence_tier: tier2_exploratory_local
-  runner_config: experiment/phase1/probe/config/phase3_current_clean_known_overrefusal_logit_diagnostic.yaml
-  candidate_source_config: experiment/phase1/probe/config/phase3_current_clean_grpo_v2_known_overrefusal_shifted_layer_candidates.yaml
+  runner_config: archive/experiment/phase1/probe/config/current-clean-grpo-v2-known-overrefusal/phase3_current_clean_known_overrefusal_logit_diagnostic.yaml
+  candidate_source_config: archive/experiment/phase1/probe/config/current-clean-grpo-v2-known-overrefusal/phase3_current_clean_grpo_v2_known_overrefusal_shifted_layer_candidates.yaml
   output_root: experiment/phase1/probe/analysis/current_clean_grpo_v2_known_overrefusal_shifted_layer_generation_control
   candidates:
     - clean_sft_grpo_v2_l23_shift_control_known_overrefusal_l25_vector
@@ -27,7 +27,7 @@ sweep:
       max_rows_default: 96
       probe_results: experiment/phase1/probe/analysis/current_selfaware_behavior_rows/clean_sft_grpo_v2/rows.jsonl
       row_keys_by_candidate: null
-      row_keys_file: experiment/phase1/probe/config/phase3_current_clean_grpo_v2_known_overrefusal_replay_96_row_keys.txt
+      row_keys_file: archive/experiment/phase1/probe/config/current-clean-grpo-v2-known-overrefusal/phase3_current_clean_grpo_v2_known_overrefusal_replay_96_row_keys.txt
   modes:
     - name: generation
       max_rows: 96
