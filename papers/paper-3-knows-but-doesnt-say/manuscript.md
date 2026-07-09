@@ -7,7 +7,7 @@ repository: https://github.com/ProfSynapse/Epistemic-Humility-Research
 target: arXiv (cs.CL / cs.AI)
 evidence_base: >
   Phase-1/Phase-3 artifacts under experiment/phase1/. Internal-axis numbers:
-  experiment/phase1/probe/analysis/_latent_knowledge_controls/ (a3_h_base_probe.json,
+  experiments/selfaware-latent-knowledge-controls/artifacts/latent_knowledge_controls/ (a3_h_base_probe.json,
   c2_*.json, a1a2_h_lora.json, caution_axis_transfer.json) and
   docs/sessions/20260627T093723Z-caution-vs-doubt-knowledge-gate.md checkpoints 002-004. Geometry:
   experiment/phase1/probe/paper3_section5_geometry.py over extraction__55254a04aa1f;
@@ -249,7 +249,7 @@ unless noted.
 - *Internal confidence (doubt axis).* A logistic probe fit on residual-stream
   activations to separate known-answerable from unknown questions, read at the
   generation position. Reported as known/unknown AUROC and as the calibration (ECE)
-  of a 1-D readout along the axis [experiment/phase1/probe/analysis/_latent_knowledge_controls/].
+  of a 1-D readout along the axis [experiments/selfaware-latent-knowledge-controls/artifacts/latent_knowledge_controls/].
 - *Stated confidence.* The model is prompted to return JSON with an `answer` and a
   `response_confidence` ∈ [0,1] (its stated probability that its response is
   appropriate). We read the emitted scalar directly from scored rows
@@ -1056,7 +1056,7 @@ protocol document and scored artifact:
 
 | Paper section | Internal label | Protocol / notes | Primary artifacts |
 |---|---|---|---|
-| §4 internal-vs-stated gap; like-for-like on the GRPO-v2 checkpoint (Fig. 2) | probe program (Amendments L/M lineage; caution-vs-doubt note); session 20260627T093723Z | `archive/notes/experiments/caution-vs-doubt-knowledge-gate.md`; `docs/sessions/20260627T093723Z-caution-vs-doubt-knowledge-gate.md` checkpoints 002–004 | `experiment/phase1/probe/analysis/_latent_knowledge_controls/` (`a3_h_base_probe.json`, `c2_*.json`, `a1a2_h_lora.json`); `experiment/phase1/eval/analysis/calibration_gap_clean_sft_grpo_v2_seed1.json` (`B_internal_vs_emitted`: internal AUROC 0.972 vs emitted 0.637) |
+| §4 internal-vs-stated gap; like-for-like on the GRPO-v2 checkpoint (Fig. 2) | probe program (Amendments L/M lineage; caution-vs-doubt note); session 20260627T093723Z | `archive/notes/experiments/caution-vs-doubt-knowledge-gate.md`; `docs/sessions/20260627T093723Z-caution-vs-doubt-knowledge-gate.md` checkpoints 002–004 | `experiments/selfaware-latent-knowledge-controls/artifacts/latent_knowledge_controls/` (`a3_h_base_probe.json`, `c2_*.json`, `a1a2_h_lora.json`); `experiment/phase1/eval/analysis/calibration_gap_clean_sft_grpo_v2_seed1.json` (`B_internal_vs_emitted`: internal AUROC 0.972 vs emitted 0.637) |
 | §5–6 geometry and steering | probe program | `experiment/phase1/probe/paper3_section5_geometry.py`; `caution_direction_L35.json`; `caution_perp_direction_L35.json` | `experiment/phase1/probe/analysis/current_clean_grpo_v2_*` (interventions, coefficient sweeps, generation panels) |
 | §5 knowledge-subspace erasure (LEACE) | Amendment AJ | `experiments/knowledge-subspace-erasure/AMENDMENT.md`; `experiment/phase1/probe/amendment_aj_subspace_erasure.py`; `amendment_aj_addendum_gap_distribution.py` | `experiment/phase1/probe/analysis/amendment_aj_subspace_erasure/` (`result.json`, `addendum_a1_gap_distribution.json`) |
 | §7 interventions 1–2 (DPO/KTO stated-confidence contract) | Amendment B | `experiments/stated-confidence-grpo/AMENDMENT.md` | `papers/paper-2-training-regimen/analysis/amendment_b_confidence_alignment_by_outcome.csv` |

@@ -82,7 +82,9 @@ def _bar_labels(ax, bars, fmt="{:.2f}", dy=0.0):
 # ============================================================ Figure 1 — the gap
 def fig1_internal_vs_stated():
     # Provenance: paper §4 / Abstract. Internal probe L35 known/unknown
-    # AUROC 0.997, ECE 0.004 [c2_sft.json]; stated->appropriateness AUROC ~0.52,
+    # AUROC 0.997, ECE 0.004
+    # [experiments/selfaware-latent-knowledge-controls/artifacts/latent_knowledge_controls/c2_sft.json];
+    # stated->appropriateness AUROC ~0.52,
     # own correct-vs-wrong ECE 0.142 [checkpoint calibration_gap reports].
     fig, (axL, axR) = plt.subplots(1, 2, figsize=(8.4, 4.2))
 

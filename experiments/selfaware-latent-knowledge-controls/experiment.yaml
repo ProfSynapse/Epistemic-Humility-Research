@@ -1,0 +1,31 @@
+slug: selfaware-latent-knowledge-controls
+title: SelfAware Latent Knowledge Controls
+type: lab-diagnostic
+status: historical
+registered: true
+created_at: '2026-07-09T02:35:52Z'
+question: Do SelfAware hidden states carry a robust internal known-vs-unknown readout
+  after lexical, over-refusal, cross-regimen, and caution-axis controls?
+prediction: ''
+falsifier: ''
+checkpoint:
+  repo: local Phase 3 SelfAware hidden-state extractions
+  revision: historical
+instrument:
+  configs: []
+  modules: []
+  pins: {}
+inputs:
+- experiment/phase1/probe/phase3_latent_knowledge_probe.py
+- experiment/phase1/probe/phase3_latent_knowledge_controls.py
+- experiment/phase1/probe/phase3_caution_axis_transfer.py
+- experiments/selfaware-latent-knowledge-controls/artifacts/latent_knowledge_controls/a1a2_h_lora.json
+- experiments/selfaware-latent-knowledge-controls/artifacts/latent_knowledge_controls/a3_h_base_probe.json
+- experiments/selfaware-latent-knowledge-controls/artifacts/latent_knowledge_controls/c2_gap_sft.json
+- experiments/selfaware-latent-knowledge-controls/artifacts/latent_knowledge_controls/c2_gap_grpo_dpo.json
+- experiments/selfaware-latent-knowledge-controls/artifacts/latent_knowledge_controls/c2_sft.json
+- experiments/selfaware-latent-knowledge-controls/artifacts/latent_knowledge_controls/c2_grpo_dpo.json
+- experiments/selfaware-latent-knowledge-controls/artifacts/latent_knowledge_controls/c2_grpo_v2.json
+- experiments/selfaware-latent-knowledge-controls/artifacts/latent_knowledge_controls/caution_axis_transfer.json
+verdict: Historical control package banked; latent knowledge-boundary readout remains strong across controls and regimens, with over-refused known items near the known pole and caution-axis transfer recorded separately.
+kg: []
