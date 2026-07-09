@@ -875,13 +875,13 @@ _No summary yet._
 - kind: `method`
 - summary: Confirmed current KTO adapter artifacts exist under `scratch/schema_response_confidence/runs/schema_clean_sft_kto_seed1_full/20260623_200200/final_model`, so there is no need to rely on legacy Amendment A hidden-state extractions. Built a prompt-matched `clean_sft_kto` rare-cell manifest from the current Amendment E full SelfAware scored rows. KTO has 196 available `unknown_answered_wrong` rows, much more headroom than GRPO v2 or GRPO-DPO, but this first comparison keeps the same 64-per-cell balanced 256-row panel for comparability. Hidden-state preflight passed with config hash prefix `1a7322f28ac0175e`, 256 rows, and source arms restricted to `clean_sft_kto`.
 - evidence:
-  - `experiment/phase1/probe/config/phase3_current_clean_kto_unknown_failure_selfaware_manifest.yaml`
-  - `experiment/phase1/probe/config/phase3_current_clean_kto_unknown_failure_selfaware_manifest.summary.json`
+  - `archive/experiment/phase1/probe/config/current-clean-kto-unknown-failure/phase3_current_clean_kto_unknown_failure_selfaware_manifest.yaml`
+  - `archive/experiment/phase1/probe/config/current-clean-kto-unknown-failure/phase3_current_clean_kto_unknown_failure_selfaware_manifest.summary.json`
   - `experiment/phase1/probe/config/hidden_state_selfaware_manifest_clean_sft_kto_unknown_failure_panel_prompt_matched.yaml`
   - `experiment/phase1/probe/config/phase3_current_clean_kto_unknown_failure_prompt_matched_behavior_axis_scan.yaml`
   - `experiment/phase1/probe/config/phase3_current_clean_kto_unknown_failure_prompt_matched_multicell_readout.yaml`
 - commands:
-  - `python experiment\\phase1\\probe\\phase3_selfaware_behavior_manifest.py --config experiment\\phase1\\probe\\config\\phase3_current_clean_kto_unknown_failure_selfaware_manifest.yaml`
+  - `python experiment\\phase1\\probe\\phase3_selfaware_behavior_manifest.py --config archive\\experiment\\phase1\\probe\\config\\current-clean-kto-unknown-failure\\phase3_current_clean_kto_unknown_failure_selfaware_manifest.yaml`
   - `PYTHONPATH=experiment/phase1/probe hidden_state_probe preflight via parse_config/select_matched_slice`
 - decisions:
   - Use current KTO artifacts instead of legacy KTO hidden states.
@@ -920,14 +920,14 @@ _No summary yet._
 - evidence:
   - `experiment/phase1/probe/config/phase3_current_clean_kto_unknown_failure_prompt_matched_directions.yaml`
   - `experiment/phase1/probe/analysis/current_clean_kto_unknown_failure_prompt_matched_directions/behavior_axis_directions.manifest.json`
-  - `experiment/phase1/probe/config/phase3_current_clean_kto_unknown_failure_prompt_matched_candidates.yaml`
-  - `experiment/phase1/probe/config/phase3_current_clean_kto_unknown_failure_prompt_matched_generation_replay.yaml`
+  - `archive/experiment/phase1/probe/config/current-clean-kto-unknown-failure/phase3_current_clean_kto_unknown_failure_prompt_matched_candidates.yaml`
+  - `archive/experiment/phase1/probe/config/current-clean-kto-unknown-failure/phase3_current_clean_kto_unknown_failure_prompt_matched_generation_replay.yaml`
   - `experiment/phase1/probe/analysis/current_clean_kto_unknown_failure_prompt_matched_generation_replay/summary_latest/summary.json`
   - `experiment/phase1/probe/analysis/current_clean_kto_unknown_failure_prompt_matched_generation_replay/summary_latest/changed_rows.csv`
 - commands:
   - `python experiment\\phase1\\probe\\phase3_behavior_axis_directions.py --config experiment\\phase1\\probe\\config\\phase3_current_clean_kto_unknown_failure_prompt_matched_directions.yaml`
-  - `python experiment\\phase1\\probe\\phase3_causal_pilot_sweep.py --config experiment\\phase1\\probe\\config\\phase3_current_clean_kto_unknown_failure_prompt_matched_generation_replay.yaml --mode-filter generation --write-plan --materialize-configs`
-  - `python experiment\\phase1\\probe\\phase3_causal_pilot_sweep.py --config experiment\\phase1\\probe\\config\\phase3_current_clean_kto_unknown_failure_prompt_matched_generation_replay.yaml --mode-filter generation --write-plan --materialize-configs --execute --allow-generation`
+  - `python experiment\\phase1\\probe\\phase3_causal_pilot_sweep.py --config archive\\experiment\\phase1\\probe\\config\\current-clean-kto-unknown-failure\\phase3_current_clean_kto_unknown_failure_prompt_matched_generation_replay.yaml --mode-filter generation --write-plan --materialize-configs`
+  - `python experiment\\phase1\\probe\\phase3_causal_pilot_sweep.py --config archive\\experiment\\phase1\\probe\\config\\current-clean-kto-unknown-failure\\phase3_current_clean_kto_unknown_failure_prompt_matched_generation_replay.yaml --mode-filter generation --write-plan --materialize-configs --execute --allow-generation`
   - `python experiment\\phase1\\probe\\phase3_generation_replay_analysis.py --root experiment\\phase1\\probe\\analysis\\current_clean_kto_unknown_failure_prompt_matched_generation_replay --out experiment\\phase1\\probe\\analysis\\current_clean_kto_unknown_failure_prompt_matched_generation_replay\\summary_latest`
 - decisions:
   - Do not continue scalar tuning on KTO L11 as the next move.

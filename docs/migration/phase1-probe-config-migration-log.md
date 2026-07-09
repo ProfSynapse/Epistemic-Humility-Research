@@ -122,3 +122,37 @@ This log records migration batches after the terrain baseline in
   - Did not rewrite legacy causal-pilot output roots, extraction dirs, SAE output
     paths, or live runner-template references. Those paths preserve historical
     run provenance or belong to later live-default migration passes.
+
+## C012 - Current-Clean KTO Unknown-Failure
+
+- Date: 2026-07-09
+- Source component: `C012`
+- File count: 4
+- Source root: `experiment/phase1/probe/config/`
+- Destination:
+  `archive/experiment/phase1/probe/config/current-clean-kto-unknown-failure/`
+- Owner decision: archive-only historical provenance for the Phase 3
+  model-variation KTO prompt-matched arm; no migrated `experiments/<slug>`
+  owner was present, and the component was not a reusable shared input at
+  migration time.
+- Reason: historical exploratory Phase 3 KTO generated-replay component with
+  only historical session-note references outside the component.
+- Reference updates:
+  - Rewrote component-internal config path references to the archive path.
+  - Rewrote moved-file references and generated-output references in
+    `docs/sessions/20260625T145842Z-phase-3-model-variation-panel.md`.
+- Non-goals:
+  - Did not promote these configs to `experiments/common/`; they are provenance,
+    not reusable shared inputs.
+  - Did not rewrite legacy extraction dirs, analysis output roots, generated
+    manifest paths under `experiment/phase1/probe/manifests/`, or sibling KTO
+    direction/readout configs that belong to later component batches. Those
+    paths preserve historical run provenance or remain live until their own
+    migration pass.
+- Provenance gaps noted:
+  - `phase3_current_clean_kto_unknown_failure_selfaware_scored_rows.jsonl` was
+    referenced by the manifest config but was not tracked or present at
+    migration time.
+  - `phase3_current_clean_kto_unknown_failure_selfaware_manifest.summary.json`
+    was referenced by the manifest config and historical session note but was
+    not tracked or present at migration time.
