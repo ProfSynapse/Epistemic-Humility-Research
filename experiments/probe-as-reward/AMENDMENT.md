@@ -85,7 +85,8 @@ OOF AUROC = 0.9945 on the 4-bit training-configuration states → LAUNCH
 CONDITION 2 RE-SATISFIED** (quantization costs the readout essentially
 nothing: 0.9947 → 0.9945; L20 0.9922, L28 0.9935). Frozen sensor:
 `analysis/par_sensor_refit/probes_v2/probe_L24_cleansft4bit.joblib`.
-Extraction provenance: runner's `par_sensor_refit_extract_4bit.py`
+Extraction provenance: runner
+`experiments/probe-as-reward/scripts/par_sensor_refit_extract_4bit.py`
 (byte-identical model load to the trainer: unsloth load_in_4bit +
 train-time LoRA identity + for_inference, batch-1, determinism spot-check
 max_abs_diff 0.0 both surfaces).

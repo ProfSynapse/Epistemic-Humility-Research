@@ -13,7 +13,6 @@ migration:
   needs_manual_review:
   - falsifier
   - experiment_type
-  - instrument_configs
   - kg_ids
   notes: Imported from legacy amendment prose. Do not infer missing machine fields
     without hand-reading AMENDMENT.md.
@@ -36,8 +35,28 @@ checkpoint:
   revision: ''
 instrument:
   configs: []
-  modules: []
-  pins: {}
+  modules:
+  - scripts/par_mining_score.py
+  - scripts/par_recalibration_score.py
+  - scripts/par_recalibration_t_extract.py
+  - scripts/par_sensor_refit_4bit_inloop_check.py
+  - scripts/par_sensor_refit_extract.py
+  - scripts/par_sensor_refit_extract_4bit.py
+  - scripts/par_sensor_refit_fit.py
+  - scripts/par_sensor_refit_mining_step.py
+  - scripts/par_sensor_refit_union_inloop.py
+  - scripts/path_compat.py
+  pins:
+    scripts/par_mining_score.py: 9df23c695d4d793e16767b3a91de0cea5cc244b4f7451d5687fc251242cb8eee
+    scripts/par_recalibration_score.py: 3e0a5d14f8989e5d08bb6940c8c6fe508b4c1f40fd2151c065ae38dcd8148078
+    scripts/par_recalibration_t_extract.py: f7d4234dc5fad17e4fd07c05d8d7ea653d179180809dfb9833978cd4e8742e53
+    scripts/par_sensor_refit_4bit_inloop_check.py: 56c43469d83dc0ca0d757a1668a4a83703439ce8bf71ffa3d9ed2e67873d3731
+    scripts/par_sensor_refit_extract.py: 681959963d90d10ad1125ecb3f299083391266d5015b13edbb2b3f05962e7e07
+    scripts/par_sensor_refit_extract_4bit.py: c64948204b9e3a023eb1303a1c0398d8f974b68fc4df2861d0cb8741dcd76fb7
+    scripts/par_sensor_refit_fit.py: 91e5008c1cea3409f506eb9d5338c7baf8e3eeab9611522d213c379dde701bd0
+    scripts/par_sensor_refit_mining_step.py: ff603feae8190ae067bb7467e37d7294711a282a5ff99d28b80251c33a18c3a0
+    scripts/par_sensor_refit_union_inloop.py: 38366dfd6d6dad46259d22ac419aafe5e3449f3de2b7308af34d0cf0bb7b48f0
+    scripts/path_compat.py: 092d9274b7bb99f70c3de8bd9d490b240522e9514c418441c140fb8e667f0a2c
 inputs: []
 verdict: 'NULL (G1 fail, G0 pass) — adjudicated by the user 2026-07-05. The reward
   channel also does not couple the readout: TRUE-arm congruence 59.75% vs PERMUTED

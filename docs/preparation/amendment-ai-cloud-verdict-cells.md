@@ -35,7 +35,8 @@ New:
 - `archive/experiment/phase1/probe/amendments/amendment_ai_verdict_extract_gen.py` - the GPU entry
   script. `--stage extract --surface {union,holdout}` (CELL A) and
   `--stage generate` (CELL B). Load path is byte-matched to the sensor-v2
-  lineage (`par_sensor_refit_extract_4bit.py`: unsloth FastLanguageModel
+  lineage (`experiments/probe-as-reward/scripts/par_sensor_refit_extract_4bit.py`:
+  unsloth FastLanguageModel
   load_in_4bit=True, baseline unprimed system prompt,
   render_probe_prompt(enable_thinking=False), anchor prompt_len-1, forward-only
   extraction), and the generation path is byte-matched to the AH harness
