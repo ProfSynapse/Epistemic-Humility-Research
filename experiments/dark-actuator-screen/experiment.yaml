@@ -28,7 +28,7 @@ instrument:
     ../common/graders/dark_actuator_grader.py: f5521a691d1c5610e4b4b27592583e699d2c45745761beba233074a37a55c515
 inputs:
 - experiment/phase1/probe/dark_displacement_census.py
-- experiment/phase1/probe/analysis-committed/dark_displacement_census_summary.md
+- experiments/dark-actuator-screen/analysis-committed/dark_displacement_census_summary.md
 - experiment/phase1/eval/scorers.py
 verdict: 'NULL. G-instrument valid (pos_ctrl kills 79/80 confabs into coherent ''I
   dont know'' refusals, confidence->0.0; controls at floor), screen not void. The

@@ -11,6 +11,7 @@
   "experiment/phase1/probe/analysis-committed/ak_stage1_gate_report.json": "experiments/commitment-point/artifacts/stage1/ak_stage1_gate_report.json",
   "experiment/phase1/probe/analysis-committed/ak_stage1_gate_verdicts.md": "experiments/commitment-point/artifacts/stage1/ak_stage1_gate_verdicts.md",
   "experiment/phase1/probe/analysis-committed/ak_stage1_pilot_floor.json": "experiments/commitment-point/artifacts/stage1/ak_stage1_pilot_floor.json",
+  "experiment/phase1/probe/analysis-committed/dark_displacement_census_summary.md": "experiments/dark-actuator-screen/analysis-committed/dark_displacement_census_summary.md",
   "experiment/phase1/probe/amendment_ai_g2_reference_grpo_v2.json": "experiments/probe-as-reward/artifacts/amendment_ai_g2_reference_grpo_v2.json",
   "experiment/phase1/probe/amendment_ai_pool_manifest.json": "experiments/probe-as-reward/artifacts/amendment_ai_pool_manifest.json",
   "experiment/phase1/probe/amendment_ai_smoke.json": "experiments/probe-as-reward/artifacts/amendment_ai_smoke.json",
