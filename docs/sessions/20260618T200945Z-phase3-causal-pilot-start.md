@@ -320,10 +320,10 @@ checkpoints:
     +2 was attempted but failed closed because it would apply to layer 37, beyond
     the model's 36 decoder blocks.
   evidence:
-  - experiment/phase1/probe/config/phase3_dpo_delta_l35_nearby_layer_offset_m2.yaml
-  - experiment/phase1/probe/config/phase3_dpo_delta_l35_nearby_layer_offset_m1.yaml
-  - experiment/phase1/probe/config/phase3_dpo_delta_l35_nearby_layer_offset_p1.yaml
-  - experiment/phase1/probe/config/phase3_dpo_delta_l35_nearby_layer_offset_p2.yaml
+  - archive/experiment/phase1/probe/config/nearby-layer-offset-panels/phase3_dpo_delta_l35_nearby_layer_offset_m2.yaml
+  - archive/experiment/phase1/probe/config/nearby-layer-offset-panels/phase3_dpo_delta_l35_nearby_layer_offset_m1.yaml
+  - archive/experiment/phase1/probe/config/nearby-layer-offset-panels/phase3_dpo_delta_l35_nearby_layer_offset_p1.yaml
+  - archive/experiment/phase1/probe/config/nearby-layer-offset-panels/phase3_dpo_delta_l35_nearby_layer_offset_p2.yaml
   - experiment/phase1/probe/qwen3-4b-instruct/causal_pilots/phase3_dpo_delta_l35_nearby_layer_panel/offset_m2/run_20260619T091724Z
   - experiment/phase1/probe/qwen3-4b-instruct/causal_pilots/phase3_dpo_delta_l35_nearby_layer_panel/offset_m1/run_20260619T091933Z
   - experiment/phase1/probe/qwen3-4b-instruct/causal_pilots/phase3_dpo_delta_l35_nearby_layer_panel/offset_p1/run_20260619T092130Z
@@ -371,9 +371,9 @@ checkpoints:
   evidence:
   - experiment/phase1/probe/phase3_causal_pilot_runner.py
   - experiment/phase1/probe/tests/test_phase3_causal_pilot_runner.py
-  - experiment/phase1/probe/config/phase3_kto_h_lora_l35_nearby_layer_offset_m2.yaml
-  - experiment/phase1/probe/config/phase3_kto_h_lora_l35_nearby_layer_offset_m1.yaml
-  - experiment/phase1/probe/config/phase3_kto_h_lora_l35_nearby_layer_offset_p1.yaml
+  - archive/experiment/phase1/probe/config/nearby-layer-offset-panels/phase3_kto_h_lora_l35_nearby_layer_offset_m2.yaml
+  - archive/experiment/phase1/probe/config/nearby-layer-offset-panels/phase3_kto_h_lora_l35_nearby_layer_offset_m1.yaml
+  - archive/experiment/phase1/probe/config/nearby-layer-offset-panels/phase3_kto_h_lora_l35_nearby_layer_offset_p1.yaml
   - experiment/phase1/probe/qwen3-4b-instruct/causal_pilots/phase3_kto_h_lora_l35_nearby_layer_panel/offset_m2/run_20260619T093626Z
   - experiment/phase1/probe/qwen3-4b-instruct/causal_pilots/phase3_kto_h_lora_l35_nearby_layer_panel/offset_m1/run_20260619T093834Z
   - experiment/phase1/probe/qwen3-4b-instruct/causal_pilots/phase3_kto_h_lora_l35_nearby_layer_panel/offset_p1/run_20260619T094047Z
@@ -851,10 +851,10 @@ correlational until a controlled intervention changes behavior.
   `36`. Offset `+2` was attempted but failed closed because it maps to layer
   `37`, beyond the model's `36` decoder blocks.
 - evidence:
-  - `experiment/phase1/probe/config/phase3_dpo_delta_l35_nearby_layer_offset_m2.yaml`
-  - `experiment/phase1/probe/config/phase3_dpo_delta_l35_nearby_layer_offset_m1.yaml`
-  - `experiment/phase1/probe/config/phase3_dpo_delta_l35_nearby_layer_offset_p1.yaml`
-  - `experiment/phase1/probe/config/phase3_dpo_delta_l35_nearby_layer_offset_p2.yaml`
+  - `archive/experiment/phase1/probe/config/nearby-layer-offset-panels/phase3_dpo_delta_l35_nearby_layer_offset_m2.yaml`
+  - `archive/experiment/phase1/probe/config/nearby-layer-offset-panels/phase3_dpo_delta_l35_nearby_layer_offset_m1.yaml`
+  - `archive/experiment/phase1/probe/config/nearby-layer-offset-panels/phase3_dpo_delta_l35_nearby_layer_offset_p1.yaml`
+  - `archive/experiment/phase1/probe/config/nearby-layer-offset-panels/phase3_dpo_delta_l35_nearby_layer_offset_p2.yaml`
   - `experiment/phase1/probe/qwen3-4b-instruct/causal_pilots/phase3_dpo_delta_l35_nearby_layer_panel/offset_m2/run_20260619T091724Z`
   - `experiment/phase1/probe/qwen3-4b-instruct/causal_pilots/phase3_dpo_delta_l35_nearby_layer_panel/offset_m1/run_20260619T091933Z`
   - `experiment/phase1/probe/qwen3-4b-instruct/causal_pilots/phase3_dpo_delta_l35_nearby_layer_panel/offset_p1/run_20260619T092130Z`
@@ -915,9 +915,9 @@ correlational until a controlled intervention changes behavior.
 - evidence:
   - `experiment/phase1/probe/phase3_causal_pilot_runner.py`
   - `experiment/phase1/probe/tests/test_phase3_causal_pilot_runner.py`
-  - `experiment/phase1/probe/config/phase3_kto_h_lora_l35_nearby_layer_offset_m2.yaml`
-  - `experiment/phase1/probe/config/phase3_kto_h_lora_l35_nearby_layer_offset_m1.yaml`
-  - `experiment/phase1/probe/config/phase3_kto_h_lora_l35_nearby_layer_offset_p1.yaml`
+  - `archive/experiment/phase1/probe/config/nearby-layer-offset-panels/phase3_kto_h_lora_l35_nearby_layer_offset_m2.yaml`
+  - `archive/experiment/phase1/probe/config/nearby-layer-offset-panels/phase3_kto_h_lora_l35_nearby_layer_offset_m1.yaml`
+  - `archive/experiment/phase1/probe/config/nearby-layer-offset-panels/phase3_kto_h_lora_l35_nearby_layer_offset_p1.yaml`
   - `experiment/phase1/probe/qwen3-4b-instruct/causal_pilots/phase3_kto_h_lora_l35_nearby_layer_panel/offset_m2/run_20260619T093626Z`
   - `experiment/phase1/probe/qwen3-4b-instruct/causal_pilots/phase3_kto_h_lora_l35_nearby_layer_panel/offset_m1/run_20260619T093834Z`
   - `experiment/phase1/probe/qwen3-4b-instruct/causal_pilots/phase3_kto_h_lora_l35_nearby_layer_panel/offset_p1/run_20260619T094047Z`

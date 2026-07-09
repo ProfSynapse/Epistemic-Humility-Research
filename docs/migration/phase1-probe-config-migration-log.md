@@ -933,3 +933,28 @@ This log records migration batches after the terrain baseline in
   - Did not move generated direction-geometry outputs, calibrated-expression
     plane outputs, or direction-transform outputs under
     `experiment/phase1/probe/qwen3-4b-sft-merged-seed1-selfaware/`.
+
+## C001g - Nearby-Layer Offset Runner Configs
+
+- Date: 2026-07-09
+- Source component: `C001` subset
+- File count: 7
+- Source root: `experiment/phase1/probe/config/`
+- Destination:
+  `archive/experiment/phase1/probe/config/nearby-layer-offset-panels/`
+- Owner decision: archive-only historical provenance for Qwen3-4B instruct
+  DPO-delta and KTO h_lora L35 nearby-layer logit-diagnostic panels. No
+  migrated `experiments/<slug>` owner was present, and these are not reusable
+  shared defaults.
+- Reason: these files are bounded historical runner configs for nearby-layer
+  controls recorded in the June 18 causal-pilot session; they have no live code,
+  test, skill, or experiment-manifest references outside historical notes.
+- Reference updates:
+  - Rewrote moved-config references and command paths in
+    `docs/sessions/20260618T200945Z-phase3-causal-pilot-start.md`.
+  - Updated the checked-in causal-pilot sweep test fixture path for the already
+    archived local sweep config.
+  - Added a destination archive README.
+- Non-goals:
+  - Did not move generated causal-pilot outputs under
+    `experiment/phase1/probe/qwen3-4b-instruct/`.

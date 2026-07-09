@@ -260,7 +260,16 @@ def test_build_jobs_reports_skipped_candidates(tmp_path):
 
 
 def test_checked_in_full_sweep_inventory_counts():
-    config_path = PROBE_DIR / "config" / "phase3_causal_pilot_local_sweep.yaml"
+    config_path = (
+        sweep.REPO_ROOT
+        / "archive"
+        / "experiment"
+        / "phase1"
+        / "probe"
+        / "config"
+        / "causal-pilot-core"
+        / "phase3_causal_pilot_local_sweep.yaml"
+    )
 
     plan = sweep.build_jobs(config_path)
 
@@ -298,7 +307,16 @@ def test_checked_in_full_sweep_inventory_counts():
 
 
 def test_checked_in_full_sweep_uses_docker_commands():
-    config_path = PROBE_DIR / "config" / "phase3_causal_pilot_local_sweep.yaml"
+    config_path = (
+        sweep.REPO_ROOT
+        / "archive"
+        / "experiment"
+        / "phase1"
+        / "probe"
+        / "config"
+        / "causal-pilot-core"
+        / "phase3_causal_pilot_local_sweep.yaml"
+    )
 
     plan = sweep.build_jobs(config_path)
     command = plan["jobs"][0]["command"]
@@ -392,7 +410,16 @@ def test_docker_runner_config_rewrites_repo_paths_for_container():
 
 
 def test_checked_in_full_sweep_mode_filter_limits_to_logit_diagnostic():
-    config_path = PROBE_DIR / "config" / "phase3_causal_pilot_local_sweep.yaml"
+    config_path = (
+        sweep.REPO_ROOT
+        / "archive"
+        / "experiment"
+        / "phase1"
+        / "probe"
+        / "config"
+        / "causal-pilot-core"
+        / "phase3_causal_pilot_local_sweep.yaml"
+    )
 
     plan = sweep.build_jobs(config_path, mode_filter={"logit_diagnostic"})
 
