@@ -26,9 +26,11 @@ checkpoint:
   revision: ''
 instrument:
   configs:
+  - phase3_xdataset_kuq_baseline_generation.yaml
   - hidden_state_kuq_manifest_clean_sft_grpo_v2_seed1_full.yaml
   modules: []
   pins:
+    phase3_xdataset_kuq_baseline_generation.yaml: 06394187296778a3bb765bf33bf26833be50d7967341fbd6d39d79b7820bcedc
     hidden_state_kuq_manifest_clean_sft_grpo_v2_seed1_full.yaml: 8eaf9a5047d7e7ce98d6463ee35f16eaae042908c79fbdded9425c4b7c949dd3
 inputs:
 - experiments/xdataset-probe-transfer/artifacts/kuq_panel/gen_rows.jsonl

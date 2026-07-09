@@ -45,8 +45,10 @@ the A2 caution-axis split, and its size is unknown before generation).
 
 ## 2. Baseline generation (Docker/GPU; needs approval)
 
-Copy `config/phase3_xdataset_kuq_baseline_generation.yaml` to a new
-`<ds>` config: point `rows:` at the panel `gen_rows.jsonl`, set `output.root`
+Use
+`experiments/xdataset-probe-transfer/phase3_xdataset_kuq_baseline_generation.yaml`
+as the KUQ template for a new `<ds>` config: point `rows:` at the panel
+`gen_rows.jsonl`, set `output.root`
 under `xdataset/<ds>_generation`, keep `sweep.alphas: [0.0]` (the no-hook
 baseline — `by_block={}`, so the reused `steering_directions` are loaded but
 never applied). Then run the head-intervention runner in Docker (see

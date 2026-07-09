@@ -756,3 +756,25 @@ This log records migration batches after the terrain baseline in
   - Did not move generated SAE outputs or analysis directories.
   - Did not move the downstream SAE feature logit-diagnostic configs; those were
     already archived in `selfaware-sae-feature-logit-diagnostics/`.
+
+## C003d - KUQ Cross-Dataset Baseline Generation Config
+
+- Date: 2026-07-09
+- Source component: `C003` subset
+- File count: 1
+- Source root: `experiment/phase1/probe/config/`
+- Destination:
+  `experiments/xdataset-probe-transfer/`
+- Owner decision: experiment-associated instrument config for migrated Amendment
+  P (`xdataset-probe-transfer`), not archive-only. The config generates the
+  no-hook KUQ baseline answers consumed by the cross-dataset behavior assembly.
+- Reason: this file is Step 2 of the Amendment P cross-dataset protocol and
+  belongs with the KUQ panel artifacts and hidden-state extraction config.
+- Reference updates:
+  - Added the config to `experiments/xdataset-probe-transfer/experiment.yaml`
+    under `instrument.configs` and recorded its SHA-256 pin.
+  - Updated the canonical mech-interp-runner cross-dataset reference and synced
+    generated skill mirrors.
+- Non-goals:
+  - Did not move generated KUQ baseline outputs under
+    `experiments/xdataset-probe-transfer/analysis/`.
