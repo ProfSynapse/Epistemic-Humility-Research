@@ -17,6 +17,7 @@
   "experiment/phase1/probe/analysis/_latent_knowledge_controls/": "experiments/selfaware-latent-knowledge-controls/artifacts/latent_knowledge_controls/",
   "experiment/phase1/probe/analysis/model_variation_inventory.md": "docs/research/phase3-model-variation-inventory.md",
   "experiment/phase1/probe/analysis/build_model_variation_inventory.py": "docs/research/scripts/phase3/build_model_variation_inventory.py",
+  "experiment/phase1/probe/analysis/p3_section5_provenance_20260704/reconstruct_section5_geometry.py": "papers/paper-3-knows-but-doesnt-say/analysis/provenance/p3_section5_provenance_20260704/reconstruct_section5_geometry.py",
   "experiment/phase1/probe/analysis/thinking_audit_128_1024/": "experiments/thinking-enabled-parallel-arm/artifacts/thinking_audit_128_1024/",
   "experiment/phase1/probe/cloud/DIAG-BUNDLE-NOTES.md": "docs/preparation/diagnostics-bundle-launch-plan.md",
   "experiment/phase1/probe/cloud/launches/amendment_ab_v1_launch.json": "experiments/first-person-injection/artifacts/cloud_launches/amendment_ab_v1_launch.json",

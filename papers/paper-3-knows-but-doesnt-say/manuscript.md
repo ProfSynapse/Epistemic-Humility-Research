@@ -381,7 +381,7 @@ Removing the *entire* rank-1 doubt direction barely dents refuse/answer
 separability (0.885 → 0.798, means over fold seeds), so the refuse/answer decision
 is not confined to the doubt axis: a genuine caution-specific gate exists
 [paper3_section5_geometry.py; an independent reconstruction,
-experiment/phase1/probe/analysis/p3_section5_provenance_20260704/reconstruct_section5_geometry.py,
+papers/paper-3-knows-but-doesnt-say/analysis/provenance/p3_section5_provenance_20260704/reconstruct_section5_geometry.py,
 reproduces the pipeline and supplies the fold-seed spread]. The two are correlated
 (both are elevated on the low-known tail) but separable.
 
