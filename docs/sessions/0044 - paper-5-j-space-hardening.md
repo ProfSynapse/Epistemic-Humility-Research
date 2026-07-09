@@ -4,7 +4,7 @@ session_id: paper5-jspace-hardening
 title: Paper 5 J-space hardening
 status: active
 created_at: '2026-07-08T16:46:25Z'
-updated_at: '2026-07-09T17:28:55Z'
+updated_at: '2026-07-09T19:21:21Z'
 phase: phase1
 question: Which registered follow-up experiments harden the Paper 5 actuation thesis,
   starting with a fresh Qwen3-4B J-space layer-site replication?
@@ -68,6 +68,39 @@ checkpoints:
   evidence:
   - experiments/j-space-layer-contrast-replication-qwen3-4b/AMENDMENT.md
   - https://github.com/ProfSynapse/Epistemic-Humility-Research/pull/263
+  run_ids: []
+  commands: []
+  decisions: []
+  next_steps: []
+  signals: {}
+- id: 003-interpretation
+  at: '2026-07-09T19:21:21Z'
+  kind: interpretation
+  title: Interpretation
+  summary: 'Qwen3.5 doubt-snap dose-fit failure audited: overdose collapse, NOT a
+    family null and NOT an inert write. Opus audit of the Modal artifacts falsified
+    the hook-path/inert-write hypothesis (readback write_ok=true, commanded ~100 realized
+    99.96-100.04, layer 29 correctly derived from nested text_config) and the grader/render
+    hypothesis (baseline well-formed 0.995/0.987). Root cause for BOTH cells: the
+    registered absolute dose grid {100,150,200,250} is mis-scaled to Qwen3.5 residual
+    geometry. Qwen3.5-4B sigma_c=2.80 (4.7x smaller than the working Qwen3-4B reference)
+    puts even dose 100 at 38-sigma: 854/854 fired confabs degenerate (repeating I-dont-know
+    token to cap). Qwen3.5-9B shows textbook dose-graded collapse: refused 18->363->886
+    across 100->150->200 while well_formed falls 886->503->2 (JSON colon corrupts
+    before content); peak clean 5.1% at dose 150; its coherent window sits below/between
+    the grid. Key science: sigma-distance is NOT portable across models (9B at 15.8
+    sigma matched the reference''s working point and still collapsed); usable windows
+    are absolute and model-specific, consistent with the J-space dose-calibration
+    prior. Disposition: instrument failure, NOT-RUN candidates, must not be reported
+    as doubt-snap-null-on-Qwen3.5 (9B refuses 97% of confabs on command). Honest limit:
+    no proof a window clearing 60%/10% exists; grid never sampled below 100. Gap found:
+    Modal rows carry no per-row readback field (smoke-only), unlike the local pipeline.
+    Proposed (NOT run): finer low grids (4B ~10-75, 9B ~60-140) reusing volume artifacts,
+    ~1-2 GPU-h ~$1-3/cell, but this changes the LOCKED grid and needs a signed revision
+    -- lifted to user.'
+  evidence:
+  - /home/profsynapse/code/ehr-worktrees/doubt-snap-cross-family/experiments/doubt-snap-cross-family-confirmatory/analysis/from_modal/qwen35_4b/committed/dose_fit.json
+  - /home/profsynapse/code/ehr-worktrees/doubt-snap-cross-family/experiments/doubt-snap-cross-family-confirmatory/analysis/from_modal/qwen35_9b/committed/build_manifest.json
   run_ids: []
   commands: []
   decisions: []
@@ -291,3 +324,11 @@ rows before the layer contrast.
 - evidence:
   - `experiments/j-space-layer-contrast-replication-qwen3-4b/AMENDMENT.md`
   - `https://github.com/ProfSynapse/Epistemic-Humility-Research/pull/263`
+### 003-interpretation - Interpretation
+
+- at: `2026-07-09T19:21:21Z`
+- kind: `interpretation`
+- summary: Qwen3.5 doubt-snap dose-fit failure audited: overdose collapse, NOT a family null and NOT an inert write. Opus audit of the Modal artifacts falsified the hook-path/inert-write hypothesis (readback write_ok=true, commanded ~100 realized 99.96-100.04, layer 29 correctly derived from nested text_config) and the grader/render hypothesis (baseline well-formed 0.995/0.987). Root cause for BOTH cells: the registered absolute dose grid {100,150,200,250} is mis-scaled to Qwen3.5 residual geometry. Qwen3.5-4B sigma_c=2.80 (4.7x smaller than the working Qwen3-4B reference) puts even dose 100 at 38-sigma: 854/854 fired confabs degenerate (repeating I-dont-know token to cap). Qwen3.5-9B shows textbook dose-graded collapse: refused 18->363->886 across 100->150->200 while well_formed falls 886->503->2 (JSON colon corrupts before content); peak clean 5.1% at dose 150; its coherent window sits below/between the grid. Key science: sigma-distance is NOT portable across models (9B at 15.8 sigma matched the reference's working point and still collapsed); usable windows are absolute and model-specific, consistent with the J-space dose-calibration prior. Disposition: instrument failure, NOT-RUN candidates, must not be reported as doubt-snap-null-on-Qwen3.5 (9B refuses 97% of confabs on command). Honest limit: no proof a window clearing 60%/10% exists; grid never sampled below 100. Gap found: Modal rows carry no per-row readback field (smoke-only), unlike the local pipeline. Proposed (NOT run): finer low grids (4B ~10-75, 9B ~60-140) reusing volume artifacts, ~1-2 GPU-h ~$1-3/cell, but this changes the LOCKED grid and needs a signed revision -- lifted to user.
+- evidence:
+  - `/home/profsynapse/code/ehr-worktrees/doubt-snap-cross-family/experiments/doubt-snap-cross-family-confirmatory/analysis/from_modal/qwen35_4b/committed/dose_fit.json`
+  - `/home/profsynapse/code/ehr-worktrees/doubt-snap-cross-family/experiments/doubt-snap-cross-family-confirmatory/analysis/from_modal/qwen35_9b/committed/build_manifest.json`
