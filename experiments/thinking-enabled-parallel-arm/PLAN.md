@@ -76,7 +76,7 @@ rates, and row review, not only aggregate counts.
 2. Inspect bounded audit results in
    `experiments/thinking-enabled-parallel-arm/artifacts/thinking_audit_128_1024/README.md`.
 3. Create a full thinking-probe config by following the pattern in
-   `experiment/phase1/probe/config/probe_thinking_audit_128_1024.yaml` and
+   `experiments/thinking-enabled-parallel-arm/artifacts/configs/probe_thinking_audit_128_1024.yaml` and
    changing only `model.model_tag`, `probe_pool.max_questions`, and any
    explicitly approved token-budget values.
 4. Run the probe with `experiment/phase1/probe/probe.py` inside the local Docker

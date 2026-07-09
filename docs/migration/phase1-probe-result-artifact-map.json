@@ -28,6 +28,8 @@
   "experiment/phase1/probe/analysis/mi_confab_signature_20260704/": "experiments/confab-mechanics-cpu-fleet/analysis-committed/confab-signature/",
   "experiment/phase1/probe/analysis/mi_familiarity_geometry_20260704/": "experiments/confab-mechanics-cpu-fleet/analysis-committed/familiarity-geometry/",
   "experiment/phase1/probe/analysis/thinking_audit_128_1024/": "experiments/thinking-enabled-parallel-arm/artifacts/thinking_audit_128_1024/",
+  "experiment/phase1/probe/config/probe_thinking_audit_128_1024.yaml": "experiments/thinking-enabled-parallel-arm/artifacts/configs/probe_thinking_audit_128_1024.yaml",
+  "experiment/phase1/probe/config/probe_thinking_audit_512.yaml": "experiments/thinking-enabled-parallel-arm/artifacts/configs/probe_thinking_audit_512.yaml",
   "experiment/phase1/probe/cloud/DIAG-BUNDLE-NOTES.md": "docs/preparation/diagnostics-bundle-launch-plan.md",
   "experiment/phase1/probe/cloud/launches/amendment_ab_v1_launch.json": "experiments/first-person-injection/artifacts/cloud_launches/amendment_ab_v1_launch.json",
   "experiment/phase1/probe/cloud/launches/amendment_y_stage1_launch.json": "experiments/pretrain-only-base-readout/artifacts/cloud_launches/amendment_y_stage1_launch.json",

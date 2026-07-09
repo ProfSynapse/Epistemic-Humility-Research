@@ -2043,7 +2043,8 @@
       "created_at": "2026-07-08T17:40:52Z",
       "falsifier": "",
       "inputs": [
-        "experiment/phase1/probe/config/probe_thinking_audit_128_1024.yaml",
+        "experiments/thinking-enabled-parallel-arm/artifacts/configs/probe_thinking_audit_128_1024.yaml",
+        "experiments/thinking-enabled-parallel-arm/artifacts/configs/probe_thinking_audit_512.yaml",
         "experiment/phase1/probe/compare_thinking_probe_results.py",
         "experiments/thinking-enabled-parallel-arm/artifacts/thinking_audit_128_1024/README.md"
       ],

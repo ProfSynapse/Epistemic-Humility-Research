@@ -9,7 +9,7 @@ probe-pool selection method, with `max_new_tokens: 1024`.
 
 Artifacts:
 
-- config: `experiment/phase1/probe/config/probe_thinking_audit_128_1024.yaml`
+- config: `experiments/thinking-enabled-parallel-arm/artifacts/configs/probe_thinking_audit_128_1024.yaml`
 - thinking manifest:
   `experiment/phase1/probe/qwen3-4b-instruct-thinking-audit-128-1024/probe_manifest.json`
 - summary: `summary.json`
