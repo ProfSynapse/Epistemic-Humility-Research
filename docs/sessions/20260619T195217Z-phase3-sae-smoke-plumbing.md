@@ -628,15 +628,15 @@ plumbing can read and write the expected artifacts.
 - evidence:
   - `experiment/phase1/probe/phase3_direction_geometry.py`
   - `experiment/phase1/probe/tests/test_phase3_direction_geometry.py`
-  - `experiment/phase1/probe/config/phase3_selfaware_direction_geometry.yaml`
-  - `experiment/phase1/probe/config/phase3_selfaware_direction_geometry_all_delta_layers.yaml`
+  - `archive/experiment/phase1/probe/config/selfaware-geometry-and-subspace/phase3_selfaware_direction_geometry.yaml`
+  - `archive/experiment/phase1/probe/config/selfaware-geometry-and-subspace/phase3_selfaware_direction_geometry_all_delta_layers.yaml`
   - `experiment/phase1/probe/qwen3-4b-sft-merged-seed1-selfaware/direction_geometry/phase3_selfaware_direction_geometry/summary.json`
   - `experiment/phase1/probe/qwen3-4b-sft-merged-seed1-selfaware/direction_geometry/phase3_selfaware_direction_geometry_all_delta_layers/summary.json`
 - commands:
   - `python -m pytest experiment\phase1\probe\tests\test_phase3_direction_geometry.py -q`
   - `python -m py_compile experiment\phase1\probe\phase3_direction_geometry.py`
-  - `python experiment\phase1\probe\phase3_direction_geometry.py --config experiment\phase1\probe\config\phase3_selfaware_direction_geometry.yaml`
-  - `python experiment\phase1\probe\phase3_direction_geometry.py --config experiment\phase1\probe\config\phase3_selfaware_direction_geometry_all_delta_layers.yaml`
+  - `python experiment\phase1\probe\phase3_direction_geometry.py --config archive\experiment\phase1\probe\config\selfaware-geometry-and-subspace\phase3_selfaware_direction_geometry.yaml`
+  - `python experiment\phase1\probe\phase3_direction_geometry.py --config archive\experiment\phase1\probe\config\selfaware-geometry-and-subspace\phase3_selfaware_direction_geometry_all_delta_layers.yaml`
 - decisions:
   - Treat geometry output as `DIRECTION_GEOMETRY_ANALYSIS_ONLY`: useful triage, not causal evidence.
   - Prioritize subspace diagnostics over one-feature claims because the best composite aligns with broad known/unknown deltas and with adjacent layers.
@@ -661,8 +661,8 @@ plumbing can read and write the expected artifacts.
 - evidence:
   - `experiment/phase1/probe/phase3_direction_transforms.py`
   - `experiment/phase1/probe/tests/test_phase3_direction_transforms.py`
-  - `experiment/phase1/probe/config/phase3_selfaware_dpo_subspace_direction_transforms.yaml`
-  - `experiment/phase1/probe/config/phase3_selfaware_kto_subspace_direction_transforms.yaml`
+  - `archive/experiment/phase1/probe/config/selfaware-geometry-and-subspace/phase3_selfaware_dpo_subspace_direction_transforms.yaml`
+  - `archive/experiment/phase1/probe/config/selfaware-geometry-and-subspace/phase3_selfaware_kto_subspace_direction_transforms.yaml`
   - `archive/experiment/phase1/probe/config/selfaware-subspace-logit-diagnostics/phase3_selfaware_subspace_normed_logit_diagnostic.yaml`
   - `archive/experiment/phase1/probe/config/selfaware-subspace-logit-diagnostics/phase3_selfaware_subspace_normed_logit_diagnostic_sweep.yaml`
   - `experiment/phase1/probe/qwen3-4b-sft-merged-seed1-selfaware/direction_transforms/phase3_selfaware_dpo_subspace_normed_to_sae_contrast/direction_transforms.manifest.json`
@@ -670,8 +670,8 @@ plumbing can read and write the expected artifacts.
   - `experiment/phase1/probe/qwen3-4b-sft-merged-seed1-selfaware/causal_pilots/phase3_selfaware_subspace_normed_logit_diagnostic/_execution_logs/execution_results.jsonl`
   - `experiment/phase1/probe/qwen3-4b-sft-merged-seed1-selfaware/causal_pilots/phase3_selfaware_subspace_normed_logit_diagnostic/summary.csv`
 - commands:
-  - `python experiment\phase1\probe\phase3_direction_transforms.py --config experiment\phase1\probe\config\phase3_selfaware_dpo_subspace_direction_transforms.yaml`
-  - `python experiment\phase1\probe\phase3_direction_transforms.py --config experiment\phase1\probe\config\phase3_selfaware_kto_subspace_direction_transforms.yaml`
+  - `python experiment\phase1\probe\phase3_direction_transforms.py --config archive\experiment\phase1\probe\config\selfaware-geometry-and-subspace\phase3_selfaware_dpo_subspace_direction_transforms.yaml`
+  - `python experiment\phase1\probe\phase3_direction_transforms.py --config archive\experiment\phase1\probe\config\selfaware-geometry-and-subspace\phase3_selfaware_kto_subspace_direction_transforms.yaml`
   - `python experiment\phase1\probe\phase3_causal_pilot_sweep.py --config experiment\phase1\probe\config\phase3_selfaware_subspace_normed_logit_diagnostic_sweep.yaml --mode-filter logit_diagnostic --write-plan --materialize-configs`
   - `python experiment\phase1\probe\phase3_causal_pilot_sweep.py --config experiment\phase1\probe\config\phase3_selfaware_subspace_normed_logit_diagnostic_sweep.yaml --mode-filter logit_diagnostic --write-plan --materialize-configs --execute --allow-logit-diagnostic`
   - `python experiment\phase1\probe\phase3_causal_pilot_aggregate.py --root experiment\phase1\probe\qwen3-4b-sft-merged-seed1-selfaware\causal_pilots\phase3_selfaware_subspace_normed_logit_diagnostic --out experiment\phase1\probe\qwen3-4b-sft-merged-seed1-selfaware\causal_pilots\phase3_selfaware_subspace_normed_logit_diagnostic\summary.csv`

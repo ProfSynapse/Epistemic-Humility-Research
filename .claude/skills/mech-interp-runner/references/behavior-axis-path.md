@@ -43,7 +43,7 @@ damage axes after direction export:
 
 ```bash
 python experiment/phase1/probe/phase3_calibrated_expression_plane.py \
-  --config experiment/phase1/probe/config/phase3_selfaware_calibrated_expression_plane.yaml
+  --config archive/experiment/phase1/probe/config/selfaware-geometry-and-subspace/phase3_selfaware_calibrated_expression_plane.yaml
 ```
 
 When one-axis or simple multi-hook interventions collapse into generic refusal

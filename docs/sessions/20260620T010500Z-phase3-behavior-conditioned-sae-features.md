@@ -74,14 +74,14 @@ checkpoints:
   evidence:
   - experiment/phase1/probe/phase3_sae_feature_directions.py
   - archive/experiment/phase1/probe/config/selfaware-sae-screens/phase3_selfaware_sae_behavior_feature_directions.yaml
-  - experiment/phase1/probe/config/phase3_selfaware_behavior_feature_direction_geometry.yaml
+  - archive/experiment/phase1/probe/config/selfaware-geometry-and-subspace/phase3_selfaware_behavior_feature_direction_geometry.yaml
   - experiment/phase1/probe/qwen3-4b-sft-merged-seed1-selfaware/sae_feature_directions/phase3_selfaware_delta_topk16_behavior_feature_directions/sae_feature_directions.manifest.json
   - experiment/phase1/probe/qwen3-4b-sft-merged-seed1-selfaware/direction_geometry/phase3_selfaware_behavior_feature_direction_geometry/summary.json
   commands:
   - python -m pytest experiment\phase1\probe\tests\test_phase3_sae_feature_directions.py
     experiment\phase1\probe\tests\test_phase3_sae_behavior_feature_analysis.py -q
   - python experiment\phase1\probe\phase3_sae_feature_directions.py --config archive\experiment\phase1\probe\config\selfaware-sae-screens\phase3_selfaware_sae_behavior_feature_directions.yaml
-  - python experiment\phase1\probe\phase3_direction_geometry.py --config experiment\phase1\probe\config\phase3_selfaware_behavior_feature_direction_geometry.yaml
+  - python experiment\phase1\probe\phase3_direction_geometry.py --config archive\experiment\phase1\probe\config\selfaware-geometry-and-subspace\phase3_selfaware_behavior_feature_direction_geometry.yaml
   gotchas:
   - Behavior ranking CSVs can contain the same feature once per contrast; explicit
     direction export must de-duplicate by feature ID or it writes duplicate vectors
@@ -828,18 +828,18 @@ checkpoints:
     '
   evidence:
   - archive/experiment/phase1/probe/config/selfaware-calibrated-expression-axis/phase3_selfaware_calibrated_expression_axis_directions.yaml
-  - experiment/phase1/probe/config/phase3_selfaware_calibrated_expression_direction_geometry.yaml
+  - archive/experiment/phase1/probe/config/selfaware-geometry-and-subspace/phase3_selfaware_calibrated_expression_direction_geometry.yaml
   - archive/experiment/phase1/probe/config/selfaware-calibrated-expression-axis/phase3_selfaware_calibrated_expression_hlora_window_directions.yaml
-  - experiment/phase1/probe/config/phase3_selfaware_calibrated_expression_hlora_window_geometry.yaml
+  - archive/experiment/phase1/probe/config/selfaware-geometry-and-subspace/phase3_selfaware_calibrated_expression_hlora_window_geometry.yaml
   - experiment/phase1/probe/qwen3-4b-sft-merged-seed1-selfaware/behavior_axis_directions/phase3_selfaware_calibrated_expression_axis_directions/behavior_axis_directions.manifest.json
   - experiment/phase1/probe/qwen3-4b-sft-merged-seed1-selfaware/behavior_axis_directions/phase3_selfaware_calibrated_expression_hlora_window_directions/behavior_axis_directions.manifest.json
   - experiment/phase1/probe/qwen3-4b-sft-merged-seed1-selfaware/direction_geometry/phase3_selfaware_calibrated_expression_direction_geometry/summary.json
   - experiment/phase1/probe/qwen3-4b-sft-merged-seed1-selfaware/direction_geometry/phase3_selfaware_calibrated_expression_hlora_window_geometry/pairwise_cosine.csv
   commands:
   - python .\experiment\phase1\probe\phase3_behavior_axis_directions.py --config .\archive\experiment\phase1\probe\config\selfaware-calibrated-expression-axis\phase3_selfaware_calibrated_expression_axis_directions.yaml
-  - python .\experiment\phase1\probe\phase3_direction_geometry.py --config .\experiment\phase1\probe\config\phase3_selfaware_calibrated_expression_direction_geometry.yaml
+  - python .\experiment\phase1\probe\phase3_direction_geometry.py --config .\archive\experiment\phase1\probe\config\selfaware-geometry-and-subspace\phase3_selfaware_calibrated_expression_direction_geometry.yaml
   - python .\experiment\phase1\probe\phase3_behavior_axis_directions.py --config .\archive\experiment\phase1\probe\config\selfaware-calibrated-expression-axis\phase3_selfaware_calibrated_expression_hlora_window_directions.yaml
-  - python .\experiment\phase1\probe\phase3_direction_geometry.py --config .\experiment\phase1\probe\config\phase3_selfaware_calibrated_expression_hlora_window_geometry.yaml
+  - python .\experiment\phase1\probe\phase3_direction_geometry.py --config .\archive\experiment\phase1\probe\config\selfaware-geometry-and-subspace\phase3_selfaware_calibrated_expression_hlora_window_geometry.yaml
   decisions:
   - Treat KTO h_lora L24-L27 as the current coherent calibrated-expression layer band.
   - Do not pursue a single-vector humility knob from these axes; same-layer damage
@@ -917,13 +917,13 @@ checkpoints:
     '
   evidence:
   - experiment/phase1/probe/phase3_calibrated_expression_plane.py
-  - experiment/phase1/probe/config/phase3_selfaware_calibrated_expression_plane.yaml
+  - archive/experiment/phase1/probe/config/selfaware-geometry-and-subspace/phase3_selfaware_calibrated_expression_plane.yaml
   - experiment/phase1/probe/qwen3-4b-sft-merged-seed1-selfaware/calibrated_expression_plane/phase3_selfaware_calibrated_expression_plane/summary.json
   - experiment/phase1/probe/qwen3-4b-sft-merged-seed1-selfaware/calibrated_expression_plane/phase3_selfaware_calibrated_expression_plane/plane_summary.csv
   - experiment/phase1/probe/qwen3-4b-sft-merged-seed1-selfaware/calibrated_expression_plane/phase3_selfaware_calibrated_expression_plane/plane_rows.csv
   commands:
   - python .\experiment\phase1\probe\phase3_calibrated_expression_plane.py --config
-    .\experiment\phase1\probe\config\phase3_selfaware_calibrated_expression_plane.yaml
+    .\archive\experiment\phase1\probe\config\selfaware-geometry-and-subspace\phase3_selfaware_calibrated_expression_plane.yaml
   decisions:
   - Treat the reusable plane output as the current provenance for KTO h_lora L24-L27
     calibrated-expression cell projections.

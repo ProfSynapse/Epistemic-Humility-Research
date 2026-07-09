@@ -905,3 +905,31 @@ This log records migration batches after the terrain baseline in
   - Did not move generated direction transforms, causal-pilot outputs,
     logit-cell outputs, sign-score outputs, or generation outputs under
     `experiment/phase1/probe/qwen3-4b-sft-merged-seed1-selfaware/`.
+
+## C019a/C025b - SelfAware Geometry And Subspace Configs
+
+- Date: 2026-07-09
+- Source components: SelfAware geometry and subspace subsets
+- File count: 8
+- Source root: `experiment/phase1/probe/config/`
+- Destination:
+  `archive/experiment/phase1/probe/config/selfaware-geometry-and-subspace/`
+- Owner decision: archive-only historical provenance for read-only SelfAware
+  direction-geometry, calibrated-expression plane, and DPO/KTO subspace
+  direction-transform diagnostics. No migrated `experiments/<slug>` owner was
+  present, and these are not reusable shared defaults.
+- Reason: these files are offline diagnostic/geometry instruments over already
+  generated SelfAware direction artifacts. Grouping them together keeps the
+  historical comparison surface discoverable without treating any as active
+  defaults.
+- Reference updates:
+  - Rewrote moved-config references and command paths in the June 19 SAE
+    smoke/plumbing session note and the June 20 behavior-conditioned session
+    note.
+  - Updated the canonical mech-interp behavior-axis reference and synced skill
+    mirrors.
+  - Added a destination archive README.
+- Non-goals:
+  - Did not move generated direction-geometry outputs, calibrated-expression
+    plane outputs, or direction-transform outputs under
+    `experiment/phase1/probe/qwen3-4b-sft-merged-seed1-selfaware/`.
