@@ -851,3 +851,31 @@ This log records migration batches after the terrain baseline in
   - Did not move generated hidden-state extractions, behavior panels,
     causal-pilot outputs, logit-cell outputs, multicell-readout outputs, or
     cell-sign-score outputs under `experiment/phase1/probe/qwen3-4b-instruct/`.
+
+## C013a/C001e3 - Gold-KTO Behavior And Composite Configs
+
+- Date: 2026-07-09
+- Source components: `C013` and `C001` subsets
+- File count: 3
+- Source root: `experiment/phase1/probe/config/`
+- Destinations:
+  - `archive/experiment/phase1/probe/config/gold-kto-calibrated-expression/`
+  - `archive/experiment/phase1/probe/config/gold-kto-calibrated-expression-logit-panels/`
+- Owner decision: archive-only historical provenance for the non-targeted
+  gold-backed KTO behavior-panel materializer, multicell readout, and composite
+  direction-transform config. No migrated `experiments/<slug>` owner was
+  present, and these are not reusable shared defaults.
+- Reason: the behavior-panel and multicell-readout configs are upstream
+  screening inputs for the archived calibrated-expression axis work; the
+  composite direction-transform config produces generated direction artifacts
+  consumed by the archived composite logit-panel candidate configs.
+- Reference updates:
+  - Updated the canonical mech-interp behavior-axis reference and synced skill
+    mirrors.
+  - Rewrote the June 20 behavior-conditioned session note path for the
+    multicell readout config.
+  - Updated destination archive READMEs.
+- Non-goals:
+  - Did not move generated behavior panels, direction-transform outputs,
+    multicell-readout outputs, or causal-pilot/logit outputs under
+    `experiment/phase1/probe/qwen3-4b-instruct/`.

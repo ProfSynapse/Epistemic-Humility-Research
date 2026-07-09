@@ -22,7 +22,7 @@ before scanning. Use a no-vector baseline generation pass with
 
 ```bash
 python experiment/phase1/probe/phase3_gold_behavior_panel.py \
-  --config experiment/phase1/probe/config/phase3_gold_kto_behavior_panel.yaml
+  --config archive/experiment/phase1/probe/config/gold-kto-calibrated-expression/phase3_gold_kto_behavior_panel.yaml
 ```
 
 Pass the resulting `rows.jsonl` as `extractions[].rows_path` in behavior-axis
@@ -51,7 +51,7 @@ pressure, run a multicell readout before designing more steering candidates:
 
 ```bash
 python .skills/mech-interp-runner/scripts/phase3_cli.py multicell-readout \
-  --config experiment/phase1/probe/config/phase3_gold_kto_multicell_readout.yaml
+  --config archive/experiment/phase1/probe/config/gold-kto-calibrated-expression/phase3_gold_kto_multicell_readout.yaml
 ```
 
 Compare rank-1 against low-rank and full readouts by behavior-cell macro

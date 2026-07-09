@@ -1658,7 +1658,7 @@ Work completed:
 
 Run:
 
-- Config: `experiment/phase1/probe/config/phase3_gold_kto_multicell_readout.yaml`.
+- Config: `archive/experiment/phase1/probe/config/gold-kto-calibrated-expression/phase3_gold_kto_multicell_readout.yaml`.
 - Input: KTO seed1 gold behavior panel over 256 generated rows.
 - Labeled rows used: 235.
 - Cell counts: `known_refused=7`, `known_correct_answered=104`,
