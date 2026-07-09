@@ -102,8 +102,8 @@ checkpoints:
     item-22 Tier-3 follow-ups).
 artifacts:
 - experiments/knowledge-subspace-erasure/AMENDMENT.md
-- experiment/phase1/probe/amendment_aj_subspace_erasure.py
-- experiment/phase1/probe/amendment_aj_addendum_gap_distribution.py
+- archive/experiment/phase1/probe/amendments/amendment_aj_subspace_erasure.py
+- archive/experiment/phase1/probe/amendments/amendment_aj_addendum_gap_distribution.py
 - experiment/phase1/probe/mi_category_geometry_prep.py
 - experiments/flavor-geometry-category-fleet/analysis-committed/category-geometry/ (committed scripts;
   scripts committed)

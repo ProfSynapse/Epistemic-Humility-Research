@@ -99,7 +99,7 @@ frontmatter before launch; ledger `docs/prediction-scoreboard.md`.
 
 ### 3.2 Procedure (all out-of-fold; harness is the SSOT)
 
-Harness: `experiment/phase1/probe/amendment_aj_subspace_erasure.py`
+Harness: `archive/experiment/phase1/probe/amendments/amendment_aj_subspace_erasure.py`
 (committed with this doc; locked gate constants are mirrored at the top of
 the file). 5-fold stratified CV (strata = label × caution-cell), seed
 20260704. Within each fold, fit on train only, evaluate on test only; all
@@ -240,7 +240,7 @@ matched random-rank curve stays flat at 0.912.
 ### 9.1 Addendum A1: sampling distribution of the gap statistic (gate-free)
 
 Run 2026-07-04 on user request, harness
-`experiment/phase1/probe/amendment_aj_addendum_gap_distribution.py`
+`archive/experiment/phase1/probe/amendments/amendment_aj_addendum_gap_distribution.py`
 (committed on this branch); descriptive input to the ambiguous-zone
 adjudication, no gate constant touched. Artifact:
 `analysis/amendment_aj_subspace_erasure/addendum_a1_gap_distribution.json`.

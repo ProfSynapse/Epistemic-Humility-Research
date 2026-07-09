@@ -25,7 +25,9 @@ from pathlib import Path
 
 import numpy as np
 
-REPO = Path(__file__).resolve().parents[3]
+from path_compat import repo_root  # noqa: E402
+
+REPO = repo_root()
 DEFAULT_ROWS = (
     REPO
     / "experiment/phase1/probe/analysis/current_selfaware_behavior_rows/clean_sft_grpo_v2/rows.jsonl"
