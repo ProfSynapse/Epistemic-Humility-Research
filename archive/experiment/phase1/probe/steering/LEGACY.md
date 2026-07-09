@@ -48,8 +48,10 @@ record; this table is a navigation aid, not the source of truth.
 ### Amendment scripts (`experiment/phase1/probe/amendment_*`)
 
 These live at the probe root, not in `steering/`. They are frozen on the same
-terms. Grouped by amendment (some scripts live only on their amendment branch /
-worktree, not on `main`):
+terms. As they migrate out of the live probe root, their archive home is the flat
+legacy namespace `archive/experiment/phase1/probe/amendments/`. Grouped by
+amendment (some scripts live only on their amendment branch / worktree, not on
+`main`):
 
 | Amendment | Scripts (prefix `amendment_`) | Status |
 |-----------|-------------------------------|--------|

@@ -95,7 +95,7 @@ natural local home anyway (see below).
 - Launch (local, from the canonical checkout with the worktree's script on path):
 
       cd /home/profsynapse/code/ehr-worktrees/lab-diagnostics-bundle
-      python experiment/phase1/probe/amendment_ag_neutral_panel.py --full
+      python archive/experiment/phase1/probe/amendments/amendment_ag_neutral_panel.py --full
 
   (smoke first without `--full`: 6 rows x panel, no analysis.) Outputs go to
   `analysis/ag_neutral_panel_pregen/` (untracked). If the AE pool / AF tensors
@@ -258,7 +258,7 @@ Cell 1 (LOCAL preferred; RunPod form if wanted):
 
 Cell 2 (LOCAL only):
 
-    python experiment/phase1/probe/amendment_ag_neutral_panel.py --full
+    python archive/experiment/phase1/probe/amendments/amendment_ag_neutral_panel.py --full
 
 Every RunPod command shows `--dry-run`; the orchestrator removes it to launch
 after reviewing the pod spec. Keep `terminate-in-finally` behavior (built into
