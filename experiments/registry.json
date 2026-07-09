@@ -1633,7 +1633,9 @@
       },
       "created_at": "2026-07-08T17:40:52Z",
       "falsifier": "",
-      "inputs": [],
+      "inputs": [
+        "experiments/radial-anti-propensity-steering/analysis-committed/radial-ceiling-sim/radial_ceiling_sim.py"
+      ],
       "instrument": {
         "configs": [],
         "modules": [],

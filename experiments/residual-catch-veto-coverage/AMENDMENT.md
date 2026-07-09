@@ -81,7 +81,8 @@ branch, one PR). PR merge order serialized behind AL.
 **Depends on:** the PR #205 veto-warning-policy characterization
 (`experiment/phase1/probe/analysis/veto_warning_policy_20260704/`), which
 marked this exact measurement GPU-BLOCKED (its report Section 6); the radial
-ceiling simulation (`experiment/phase1/probe/analysis/radial_ceiling_sim_20260704/`),
+ceiling simulation
+(`experiments/radial-anti-propensity-steering/analysis-committed/radial-ceiling-sim/`),
 which defines the unreachable residual; and the Amendment W raw-base
 generation + dual-position extraction instrument
 (`experiment/phase1/probe/amendment_w_base_model_extract.py`).

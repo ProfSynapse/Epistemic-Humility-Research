@@ -42,6 +42,7 @@ Seed 20260704.
 import warnings
 warnings.filterwarnings("ignore")
 import os
+from pathlib import Path
 os.environ.setdefault("OMP_NUM_THREADS", "8")
 os.environ.setdefault("OPENBLAS_NUM_THREADS", "8")
 os.environ.setdefault("MKL_NUM_THREADS", "8")
@@ -56,7 +57,10 @@ from sklearn.model_selection import StratifiedKFold
 SEED = 20260704
 rng_global = np.random.default_rng(SEED)
 BASE = os.path.dirname(os.path.abspath(__file__))
-AN = os.path.abspath(os.path.join(BASE, ".."))
+REPO = Path(__file__).resolve().parents[4]
+# Historical gitignored inputs remain in the legacy probe analysis tree. Keep
+# this dependency explicit until the AH/MI data clusters migrate together.
+AN = str(REPO / "experiment" / "phase1" / "probe" / "analysis")
 GEOM = os.path.join(AN, "mi_category_geometry_20260704")
 CACHE = os.path.join(GEOM, "cache")
 A0 = os.path.join(AN, "ah_main", "gen_A0", "rows.jsonl")

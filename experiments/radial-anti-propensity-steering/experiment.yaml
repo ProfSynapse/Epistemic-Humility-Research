@@ -42,7 +42,8 @@ instrument:
   configs: []
   modules: []
   pins: {}
-inputs: []
+inputs:
+- experiments/radial-anti-propensity-steering/analysis-committed/radial-ceiling-sim/radial_ceiling_sim.py
 verdict: 'USE-THE-SIGNAL NULL (injection channel), resolved 2026-07-05. AL-G1 PASS
   (collateral 0 of allowed 3). AL-G2 MISS (0 of 116 baseline confabs killed; dose
   ladder 0.5x/1.0x/2.0x kills 0/0/1 of 30 pushed confabs). AL-G3 MISS (primary minus

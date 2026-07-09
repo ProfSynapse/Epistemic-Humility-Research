@@ -1,7 +1,8 @@
 #!/usr/bin/env python3
 """AL prep: radial-steering ceiling table on the AI-TRUE A0 surface (CPU-only).
 
-Adapts the PR #204 offline ceiling audit (analysis/radial_ceiling_sim_20260704)
+Adapts the PR #204 offline ceiling audit
+(experiments/radial-anti-propensity-steering/analysis-committed/radial-ceiling-sim)
 from the GRPO-v2 surface to the checkpoint Amendment AL will actually steer:
 the AI-TRUE arm's A0 pool (1,662 rows, graded generations + full-stack pre-gen
 extracts). Same probe-as-oracle logic (Amendment O pattern), same three-region
