@@ -33,6 +33,7 @@ instrument:
 inputs:
 - experiments/pretrain-only-base-readout/artifacts/amendment_y_text_baseline_result.json
 - experiments/pretrain-only-base-readout/artifacts/cloud_launches/amendment_y_stage1_launch.json
+- experiments/pretrain-only-base-readout/artifacts/rubrics/cot_confidence.yaml
 - experiments/common/artifacts/selfaware_gate_pool/selfaware_gate_rows_frozen.jsonl
 verdict: COMPLETE — H_B1 SUPPORTED 4/4 (boundary signal predates post-training); H_B2
   veto SUPPORTED 4/4; H_B3 sharpening NOT SUPPORTED (post-training does not sharpen,

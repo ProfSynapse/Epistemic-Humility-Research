@@ -1517,6 +1517,7 @@
       "inputs": [
         "experiments/pretrain-only-base-readout/artifacts/amendment_y_text_baseline_result.json",
         "experiments/pretrain-only-base-readout/artifacts/cloud_launches/amendment_y_stage1_launch.json",
+        "experiments/pretrain-only-base-readout/artifacts/rubrics/cot_confidence.yaml",
         "experiments/common/artifacts/selfaware_gate_pool/selfaware_gate_rows_frozen.jsonl"
       ],
       "instrument": {
