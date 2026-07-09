@@ -33,7 +33,7 @@ This log records migration batches after the terrain baseline in
 - File count: 10
 - Source root: `experiment/phase1/probe/config/`
 - Destination:
-  `archive/experiment/phase1/probe/config/current-clean-grpo-v2-unknown-failure/`
+  `archive/experiment/phase1/probe/config/grpo-v2-head/`
 - Owner decision: archive-only historical provenance for the Phase 3 model-variation session; no migrated `experiments/<slug>` owner was present, and the component was not a reusable shared input.
 - Reason: historical exploratory Phase 3 config component with no live code,
   test, or skill references outside the component.
@@ -817,7 +817,8 @@ This log records migration batches after the terrain baseline in
   logit-panel family by co-locating the aggregation configs with the candidate
   and sweep configs whose diagnostic outputs they summarize.
 - Reference updates:
-  - Updated the destination archive README.
+  - Added a destination archive README and cross-linked it from the broader
+    GRPO v2 unknown-failure archive README.
   - No live docs, skills, tests, or experiment manifests referenced these moved
     config paths outside the generated terrain inventory.
 - Non-goals:
@@ -958,3 +959,28 @@ This log records migration batches after the terrain baseline in
 - Non-goals:
   - Did not move generated causal-pilot outputs under
     `experiment/phase1/probe/qwen3-4b-instruct/`.
+
+## C009d - GRPO v2 Unknown-Failure Attention-Head Configs
+
+- Date: 2026-07-09
+- Source component: `C009` subset
+- File count: 8
+- Source root: `experiment/phase1/probe/config/`
+- Destination:
+  `archive/experiment/phase1/probe/config/current-clean-grpo-v2-unknown-failure/`
+- Owner decision: archive-only historical provenance for prompt-matched GRPO v2
+  unknown-failure attention-head localization, steering-direction,
+  read-trajectory, and intervention-sweep configs. No migrated
+  `experiments/<slug>` owner was present, and these are not reusable shared
+  defaults.
+- Reason: these files are the attention-head follow-up surface for the already
+  archived GRPO v2 unknown-failure panel. They consume archived hidden-state
+  extraction and generated steering-direction artifacts rather than defining a
+  new active experiment.
+- Reference updates:
+  - Updated the destination archive README.
+  - No live docs, skills, tests, or experiment manifests referenced these moved
+    config paths outside the generated terrain inventory.
+- Non-goals:
+  - Did not move generated head-localization, steering-direction,
+    read-trajectory, or intervention outputs under `experiment/phase1/probe/`.

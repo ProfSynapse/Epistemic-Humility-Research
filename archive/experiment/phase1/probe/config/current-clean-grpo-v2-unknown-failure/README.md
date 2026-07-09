@@ -16,5 +16,9 @@ Additional migration batches:
 - `C009`: prompt-matched GRPO v2 unknown-failure behavior-axis scan plus simple and L26 multicell direction exports.
 - `C009b`: prompt-matched GRPO v2 unknown-failure multicell readout config.
 - `C009c`: generic and prompt-matched GRPO v2 unknown-failure logit-cell analysis configs.
+- `C009d`: prompt-matched attention-head localization, head steering-direction,
+  read-trajectory, and intervention sweep configs, including random-head
+  controls. These live in sibling archive folder `../grpo-v2-head/` to keep
+  Windows paths short enough for Git.
 
 These batches remain archive-only historical provenance for the Phase 3 GRPO v2 unknown-failure slice. They are kept here with the generated replay, logit diagnostic, and candidate configs that consume their analysis outputs.
