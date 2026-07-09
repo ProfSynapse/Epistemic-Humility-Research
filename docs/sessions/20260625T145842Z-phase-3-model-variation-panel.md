@@ -55,12 +55,12 @@ checkpoints:
     are legacy pre-schema candidates only and should be used as templates/priors,
     not current mechanism evidence.
   evidence:
-  - experiment/phase1/probe/analysis/build_model_variation_inventory.py
+  - docs/research/scripts/phase3/build_model_variation_inventory.py
   - docs/research/phase3-model-variation-inventory.csv
   - docs/research/phase3-model-variation-inventory.md
   run_ids: []
   commands:
-  - python experiment\\phase1\\probe\\analysis\\build_model_variation_inventory.py
+  - python docs\\research\\scripts\\phase3\\build_model_variation_inventory.py
   decisions:
   - Treat legacy SFT-DPO/KTO hidden states as config templates only; do not cite them
     as current JSON-output model evidence.
@@ -293,11 +293,11 @@ _No summary yet._
 - kind: `observation`
 - summary: Built a reproducible inventory joining self-aware eval metrics, training exhaust, and existing Phase 3 extraction manifests for the JSON-output model-variation panel. The inventory found eval coverage for all listed clean/refit variants, but no exact current hidden-state extraction coverage. Existing SFT-DPO/KTO manifests are legacy pre-schema candidates only and should be used as templates/priors, not current mechanism evidence.
 - evidence:
-  - `experiment/phase1/probe/analysis/build_model_variation_inventory.py`
+  - `docs/research/scripts/phase3/build_model_variation_inventory.py`
   - `docs/research/phase3-model-variation-inventory.csv`
   - `docs/research/phase3-model-variation-inventory.md`
 - commands:
-  - `python experiment\\phase1\\probe\\analysis\\build_model_variation_inventory.py`
+  - `python docs\\research\\scripts\\phase3\\build_model_variation_inventory.py`
 - decisions:
   - Treat legacy SFT-DPO/KTO hidden states as config templates only; do not cite them as current JSON-output model evidence.
   - Prioritize current hidden-state extraction for clean_sft_merged, clean_sft_grpo_v2, and clean_sft_grpo_dpo before causal or SAE claims.

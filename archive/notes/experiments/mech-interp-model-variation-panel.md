@@ -170,7 +170,7 @@ Primary analyses:
   `docs/research/phase3-model-variation-inventory.csv` and
   `docs/research/phase3-model-variation-inventory.md`.
 - Inventory script:
-  `experiment/phase1/probe/analysis/build_model_variation_inventory.py`.
+  `docs/research/scripts/phase3/build_model_variation_inventory.py`.
 - Prepared hidden-state extraction configs:
   `experiment/phase1/probe/config/hidden_state_selfaware_manifest_clean_sft_seed1_full.yaml`,
   `experiment/phase1/probe/config/hidden_state_selfaware_manifest_clean_sft_grpo_v2_seed1_full.yaml`,
