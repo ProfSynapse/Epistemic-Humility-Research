@@ -45,7 +45,7 @@ first_smoke:
 selection:
   max_rows_default: 256
   probe_results: experiment/phase1/probe/qwen3-4b-clean-sft-grpo-v2-seed1-selfaware/hidden_states_selfaware_clean_sft_grpo_v2_unknown_failure_panel_prompt_matched/extraction__88649d66a6fb/rows.jsonl
-  row_keys_file: experiment/phase1/probe/config/phase3_current_clean_grpo_v2_unknown_failure_selfaware_row_keys.txt
+  row_keys_file: archive/experiment/phase1/probe/config/current-clean-grpo-v2-unknown-failure/phase3_current_clean_grpo_v2_unknown_failure_selfaware_row_keys.txt
 
 coefficient_grid:
   values: [5.0, 10.0, 25.0]

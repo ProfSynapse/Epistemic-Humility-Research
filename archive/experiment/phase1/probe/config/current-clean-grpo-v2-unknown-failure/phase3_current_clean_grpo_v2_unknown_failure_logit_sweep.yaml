@@ -1,11 +1,11 @@
-# GRPO v2 unknown-answering failure prompt-matched logit diagnostic sweep.
+# GRPO v2 unknown-answering failure logit diagnostic sweep.
 
 sweep:
-  name: phase3_current_clean_grpo_v2_unknown_failure_prompt_matched_logit_diagnostic
+  name: phase3_current_clean_grpo_v2_unknown_failure_logit_diagnostic
   evidence_tier: tier2_exploratory_local
-  runner_config: experiment/phase1/probe/config/phase3_current_clean_grpo_v2_unknown_failure_prompt_matched_logit_candidates.yaml
-  candidate_source_config: experiment/phase1/probe/config/phase3_current_clean_grpo_v2_unknown_failure_prompt_matched_logit_candidates.yaml
-  output_root: experiment/phase1/probe/analysis/current_clean_grpo_v2_unknown_failure_prompt_matched_logit_diagnostic
+  runner_config: archive/experiment/phase1/probe/config/current-clean-grpo-v2-unknown-failure/phase3_current_clean_grpo_v2_unknown_failure_logit_candidates.yaml
+  candidate_source_config: archive/experiment/phase1/probe/config/current-clean-grpo-v2-unknown-failure/phase3_current_clean_grpo_v2_unknown_failure_logit_candidates.yaml
+  output_root: experiment/phase1/probe/analysis/current_clean_grpo_v2_unknown_failure_logit_diagnostic
   candidates: all
   execution:
     backend: docker

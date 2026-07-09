@@ -733,9 +733,9 @@ _No summary yet._
 - evidence:
   - `experiment/phase1/probe/phase3_selfaware_behavior_manifest.py`
   - `experiment/phase1/probe/tests/test_phase3_selfaware_behavior_manifest.py`
-  - `experiment/phase1/probe/config/phase3_current_clean_grpo_v2_unknown_failure_selfaware_manifest.yaml`
+  - `archive/experiment/phase1/probe/config/current-clean-grpo-v2-unknown-failure/phase3_current_clean_grpo_v2_unknown_failure_selfaware_manifest.yaml`
   - `experiment/phase1/probe/manifests/phase3_current_clean_grpo_v2_unknown_failure_selfaware_manifest.json`
-  - `experiment/phase1/probe/config/phase3_current_clean_grpo_v2_unknown_failure_selfaware_row_keys.txt`
+  - `archive/experiment/phase1/probe/config/current-clean-grpo-v2-unknown-failure/phase3_current_clean_grpo_v2_unknown_failure_selfaware_row_keys.txt`
   - `experiment/phase1/probe/config/phase3_current_clean_grpo_v2_unknown_failure_selfaware_scored_rows.jsonl`
   - `experiment/phase1/probe/config/hidden_state_selfaware_manifest_clean_sft_grpo_v2_unknown_failure_panel.yaml`
   - `experiment/phase1/probe/config/phase3_current_clean_grpo_v2_unknown_failure_behavior_axis_scan.yaml`
@@ -762,8 +762,8 @@ _No summary yet._
   - `experiment/phase1/probe/config/hidden_state_selfaware_manifest_clean_sft_grpo_v2_unknown_failure_panel_prompt_matched.yaml`
   - `experiment/phase1/probe/config/phase3_current_clean_grpo_v2_unknown_failure_prompt_matched_behavior_axis_scan.yaml`
   - `experiment/phase1/probe/config/phase3_current_clean_grpo_v2_unknown_failure_prompt_matched_directions.yaml`
-  - `experiment/phase1/probe/config/phase3_current_clean_grpo_v2_unknown_failure_prompt_matched_logit_candidates.yaml`
-  - `experiment/phase1/probe/config/phase3_current_clean_grpo_v2_unknown_failure_prompt_matched_generation_replay.yaml`
+  - `archive/experiment/phase1/probe/config/current-clean-grpo-v2-unknown-failure/phase3_current_clean_grpo_v2_unknown_failure_prompt_matched_logit_candidates.yaml`
+  - `archive/experiment/phase1/probe/config/current-clean-grpo-v2-unknown-failure/phase3_current_clean_grpo_v2_unknown_failure_prompt_matched_generation_replay.yaml`
   - `experiment/phase1/probe/analysis/current_clean_grpo_v2_unknown_failure_prompt_matched_generation_replay/summary_latest/summary.csv`
   - `.skills/mech-interp-runner/references/phase3-current-findings.md`
 - commands:
@@ -790,7 +790,7 @@ _No summary yet._
   - `experiment/phase1/probe/analysis/current_clean_grpo_v2_unknown_failure_prompt_matched_multicell_readout/top_readouts_all.csv`
   - `experiment/phase1/probe/config/phase3_current_clean_grpo_v2_unknown_failure_prompt_matched_l26_multicell_directions.yaml`
   - `experiment/phase1/probe/config/phase3_current_clean_grpo_v2_unknown_failure_prompt_matched_l26_constrained_unknown_repair.yaml`
-  - `experiment/phase1/probe/config/phase3_current_clean_grpo_v2_unknown_failure_prompt_matched_l26_constrained_generation_replay.yaml`
+  - `archive/experiment/phase1/probe/config/current-clean-grpo-v2-unknown-failure/phase3_current_clean_grpo_v2_unknown_failure_prompt_matched_l26_constrained_generation_replay.yaml`
   - `experiment/phase1/probe/analysis/current_clean_grpo_v2_unknown_failure_prompt_matched_l26_constrained_generation_replay/summary_latest/summary.csv`
 - commands:
   - `python .skills\\mech-interp-runner\\scripts\\phase3_cli.py multicell-readout --config experiment\\phase1\\probe\\config\\phase3_current_clean_grpo_v2_unknown_failure_prompt_matched_multicell_readout.yaml`

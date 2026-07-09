@@ -6,6 +6,8 @@ known-overrefusal config component formerly stored under
 
 Migration batch: `C005` from `docs/migration/phase1-probe-config-terrain.md`.
 
+Owner decision: archive-only historical provenance for the Phase 3 model-variation session. No migrated experiments/<slug> owner was present, and this component was not a reusable shared input.
+
 The component contains exploratory logit diagnostics, generation replay sweeps,
 candidate configs, and row-key panels. It is archived as a connected config
 component because the files reference each other, but no live code, tests, or

@@ -23,6 +23,6 @@ quotas:
 
 output:
   manifest: manifests/phase3_current_clean_grpo_v2_unknown_failure_selfaware_manifest.json
-  row_keys_file: config/phase3_current_clean_grpo_v2_unknown_failure_selfaware_row_keys.txt
-  selected_scored_rows: config/phase3_current_clean_grpo_v2_unknown_failure_selfaware_scored_rows.jsonl
-  summary: config/phase3_current_clean_grpo_v2_unknown_failure_selfaware_manifest.summary.json
+  row_keys_file: archive/experiment/phase1/probe/config/current-clean-grpo-v2-unknown-failure/phase3_current_clean_grpo_v2_unknown_failure_selfaware_row_keys.txt
+  selected_scored_rows: archive/experiment/phase1/probe/config/current-clean-grpo-v2-unknown-failure/phase3_current_clean_grpo_v2_unknown_failure_selfaware_scored_rows.jsonl
+  summary: archive/experiment/phase1/probe/config/current-clean-grpo-v2-unknown-failure/phase3_current_clean_grpo_v2_unknown_failure_selfaware_manifest.summary.json

@@ -11,6 +11,7 @@ This log records migration batches after the terrain baseline in
 - Source root: `experiment/phase1/probe/config/`
 - Destination:
   `archive/experiment/phase1/probe/config/current-clean-grpo-v2-known-overrefusal/`
+- Owner decision: archive-only historical provenance for the Phase 3 model-variation session; no migrated experiments/<slug> owner was present, and the component was not a reusable shared input.
 - Reason: historical exploratory Phase 3 config component with no live code,
   test, or skill references outside the component.
 - Reference updates:
@@ -25,3 +26,28 @@ This log records migration batches after the terrain baseline in
     `experiment/phase1/probe/analysis/` archive migration.
 - Provenance gap noted:
   - `phase3_current_clean_grpo_v2_known_overrefusal_replay_192_panel_d_row_keys.manifest.json` was referenced by the historical session note and row-key config but was not tracked or present at migration time.
+## C008 - Current-Clean GRPO v2 Unknown-Failure
+
+- Date: 2026-07-09
+- Source component: `C008`
+- File count: 10
+- Source root: `experiment/phase1/probe/config/`
+- Destination:
+  `archive/experiment/phase1/probe/config/current-clean-grpo-v2-unknown-failure/`
+- Owner decision: archive-only historical provenance for the Phase 3 model-variation session; no migrated `experiments/<slug>` owner was present, and the component was not a reusable shared input.
+- Reason: historical exploratory Phase 3 config component with no live code,
+  test, or skill references outside the component.
+- Reference updates:
+  - Rewrote component-internal config path references to the archive path.
+  - Rewrote the historical session note
+    `docs/sessions/20260625T145842Z-phase-3-model-variation-panel.md`.
+- Non-goals:
+  - Did not promote these configs to `experiments/common/`; they are provenance,
+    not reusable shared inputs.
+  - Did not rewrite legacy analysis output roots, extraction dirs, or the
+    generated manifest under `experiment/phase1/probe/manifests/`. Those paths
+    preserve historical run provenance and will be handled with broader legacy
+    artifact archive passes.
+- Provenance gaps noted:
+  - `phase3_current_clean_grpo_v2_unknown_failure_selfaware_scored_rows.jsonl` was referenced by the historical session note and manifest config but was not tracked or present at migration time.
+  - `phase3_current_clean_grpo_v2_unknown_failure_selfaware_manifest.summary.json` was referenced by the manifest config but was not tracked or present at migration time.
