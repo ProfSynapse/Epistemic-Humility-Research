@@ -4,7 +4,7 @@
 # loss over the unfrozen LoRA base (total = lm_loss + lm_loss_weight * head_loss).
 # The head reads L35 at the gen-prompt token; targets are the per-row real
 # answerability label (1.0 answer / 0.0 abstain) produced by
-# `experiment/phase1/probe/amendment_r_build_phase_b_aux_dataset.py`.
+# `archive/experiment/phase1/probe/amendments/amendment_r_build_phase_b_aux_dataset.py`.
 #
 # B1 primary question: does native (emitted-scalar) calibration improve when the
 # head co-trains on REAL targets? Falsifier: A1 emitted-scalar AUROC-to-

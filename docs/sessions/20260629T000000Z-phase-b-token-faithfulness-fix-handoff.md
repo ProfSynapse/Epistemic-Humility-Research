@@ -82,7 +82,7 @@ The prompt segment now ends exactly at the generation-anchor token, so the engin
 faithful token. **No aux_head code change.**
 
 **Empirical confirmation** (research-side prototype
-`experiment/phase1/probe/amendment_r_phase_b_promptcompletion_proto.py`, n=400, L35,
+`archive/experiment/phase1/probe/amendments/amendment_r_phase_b_promptcompletion_proto.py`, n=400, L35,
 merged Qwen3-4B grpo-v2): boundary == last prompt token **400/400 rows**; end_of_prompt
 **CV AUROC 0.9380** vs cached 0.9389; **cos 0.9998**, mse 0.04. The full-conversation
 render gave cos 0.544 / AUROC 0.85 on the same rows.

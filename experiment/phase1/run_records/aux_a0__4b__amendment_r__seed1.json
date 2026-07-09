@@ -19,7 +19,7 @@
     "rows": 14395,
     "aux_target_field": "aux_target",
     "aux_target_note": "Column present but IGNORED by A0 (no aux_head attached). Same conversations as A1/A2.",
-    "builder": "experiment/phase1/probe/amendment_r_build_phase_b_aux_dataset.py"
+    "builder": "archive/experiment/phase1/probe/amendments/amendment_r_build_phase_b_aux_dataset.py"
   },
   "research_repo_commit": "2501d6507902d12817a6678dc96a6017427ea2ae",
   "submodule_commit": "3eb6e23c7ee47342377eec8887f9fe96837a889e",

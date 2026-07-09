@@ -180,7 +180,7 @@ Falsifier (transfer AUROC < 0.90) dead by a wide margin.** Run 2026-06-29, local
 grpo-v2 merged checkpoint, L35, KUQ→SelfAware cold. FIT = KUQ (n=1000, 600/400);
 TEST = SelfAware (n=1233, 556/677). Engine `AuxHead` (linear→sigmoid), BCE via the
 engine's `compute_aux_head_loss`, head-only Adam, saved/reloaded through the engine
-sidecar. Scripts: `experiment/phase1/probe/amendment_q_faithfulness_smoke.py`
+sidecar. Scripts: `archive/experiment/phase1/probe/amendments/amendment_q_faithfulness_smoke.py`
 (pre-flight) and `amendment_q_train_aux_head.py` (scored).
 
 **Pre-flight faithfulness smoke (lab-notebook, n=1000 KUQ, in-dist 5-fold CV):**

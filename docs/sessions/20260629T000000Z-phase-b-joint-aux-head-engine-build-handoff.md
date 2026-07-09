@@ -161,7 +161,7 @@ is needed.
 
 ## 5. Offline validation hook (optional but recommended)
 The downstream experiment's faithfulness check lives in the research repo at
-`experiment/phase1/probe/amendment_q_faithfulness_smoke.py` (reads a hidden layer at a
+`archive/experiment/phase1/probe/amendments/amendment_q_faithfulness_smoke.py` (reads a hidden layer at a
 token position and checks a linear readout AUROC). It is NOT part of the engine and
 must not be imported by engine code, but the builder may use it (or its logic) to
 sanity-check that the new `end_of_prompt` reduction reproduces the reference

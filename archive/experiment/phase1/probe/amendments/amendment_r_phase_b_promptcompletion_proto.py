@@ -29,7 +29,9 @@ from pathlib import Path
 import numpy as np
 import torch
 
-REPO = Path(__file__).resolve().parents[3]
+from path_compat import repo_root  # noqa: E402
+
+REPO = repo_root()
 sys.path.insert(0, str(REPO / "synaptic-tuner" / "Trainers" / "sft" / "src"))
 sys.path.insert(0, str(REPO / "synaptic-tuner"))
 from aux_head import prompt_end_indices, reduce_hidden_states  # noqa: E402

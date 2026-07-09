@@ -38,7 +38,9 @@ from sklearn.metrics import roc_auc_score
 from sklearn.model_selection import StratifiedKFold
 from sklearn.preprocessing import StandardScaler
 
-REPO = Path(__file__).resolve().parents[3]
+from path_compat import repo_root  # noqa: E402
+
+REPO = repo_root()
 # engine reduce path (the real one the trainer uses)
 sys.path.insert(0, str(REPO / "synaptic-tuner" / "Trainers" / "sft" / "src"))
 from aux_head import reduce_hidden_states  # noqa: E402

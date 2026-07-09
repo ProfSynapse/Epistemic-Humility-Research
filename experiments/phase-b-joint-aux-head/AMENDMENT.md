@@ -266,7 +266,7 @@ no replication registered.
 ### Pre-flight smoke finding (2026-06-29, lab-notebook — NOT verdict-bearing)
 
 Engine landed (PR #119, submodule `e95dbde`, 62 aux_head tests green). The pre-flight
-faithfulness smoke (`experiment/phase1/probe/amendment_r_phase_b_{smoke,offset_diag}.py`)
+faithfulness smoke (`archive/experiment/phase1/probe/amendments/amendment_r_phase_b_{smoke,offset_diag}.py`)
 routes real KUQ rows through the exact trainer preprocessing and reads L35 via the
 engine reduce path. It caught a **token-position confound before any scored run**
 (falsifier untouched — faithfulness clause):

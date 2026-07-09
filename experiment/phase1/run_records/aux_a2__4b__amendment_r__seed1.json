@@ -24,7 +24,7 @@
       "rows_target_unchanged_frac": 0.511,
       "note": "Seed-permuted targets: same marginal as A1, question<->target correspondence broken. ~0.506 coincidental match is expected for answerable_frac=0.5544."
     },
-    "builder": "experiment/phase1/probe/amendment_r_build_phase_b_aux_dataset.py"
+    "builder": "archive/experiment/phase1/probe/amendments/amendment_r_build_phase_b_aux_dataset.py"
   },
   "research_repo_commit": "2501d6507902d12817a6678dc96a6017427ea2ae",
   "submodule_commit": "3eb6e23c7ee47342377eec8887f9fe96837a889e",

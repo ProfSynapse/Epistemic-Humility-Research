@@ -18,7 +18,7 @@ the steps below generalize to any per-row scalar target.
 ## 1. Build the aux dataset (CLI)
 
 ```bash
-python3 experiment/phase1/probe/amendment_r_build_phase_b_aux_dataset.py \
+python3 archive/experiment/phase1/probe/amendments/amendment_r_build_phase_b_aux_dataset.py \
   --src experiment/phase1/data/qwen3-4b-instruct/sft_train.jsonl \
   --out-dir scratch/amendment_r/phase_b \
   --shuffle-seed 20260629

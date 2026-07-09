@@ -27,7 +27,9 @@ import torch
 from safetensors.torch import load_file
 from sklearn.metrics import roc_auc_score
 
-REPO = Path(__file__).resolve().parents[3]
+from path_compat import repo_root  # noqa: E402
+
+REPO = repo_root()
 sys.path.insert(0, str(REPO / "synaptic-tuner" / "Trainers" / "sft" / "src"))
 from aux_head import AuxHead, compute_aux_head_loss, load_aux_head, save_aux_head  # noqa: E402
 

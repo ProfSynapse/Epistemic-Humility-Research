@@ -25,7 +25,9 @@ import json
 import re
 from pathlib import Path
 
-REPO = Path(__file__).resolve().parents[3]
+from path_compat import repo_root  # noqa: E402
+
+REPO = repo_root()
 
 # Canonical refusal patterns — copied verbatim from
 # experiment/phase1/grpo/build_schema_response_confidence_datasets.py:81-89
