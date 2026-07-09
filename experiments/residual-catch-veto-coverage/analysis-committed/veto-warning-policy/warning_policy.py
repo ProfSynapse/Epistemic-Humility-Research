@@ -22,6 +22,7 @@ All probe scores used for grading are OUT-OF-FOLD or genuine cross-dataset OOS.
 Reuses vt_lib loaders from the veto-transport analysis.
 """
 import os, sys, json
+from pathlib import Path
 import numpy as np
 from sklearn.metrics import roc_auc_score, brier_score_loss
 from sklearn.model_selection import StratifiedKFold
@@ -29,9 +30,11 @@ from sklearn.linear_model import LogisticRegression
 from sklearn.isotonic import IsotonicRegression
 
 # reuse the transport loaders
-sys.path.insert(0, os.path.join(
-    "/home/profsynapse/code/Epistemic-Humility-Research",
-    "experiment/phase1/probe/analysis/mi_veto_transport_20260704"))
+REPO = Path(__file__).resolve().parents[4]
+sys.path.insert(
+    0,
+    str(REPO / "experiments" / "commitment-point" / "analysis-committed" / "veto-transport"),
+)
 import vt_lib as L
 
 OUT = os.path.dirname(os.path.abspath(__file__))

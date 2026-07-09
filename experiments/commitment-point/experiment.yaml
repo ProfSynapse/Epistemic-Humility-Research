@@ -40,7 +40,13 @@ instrument:
   configs: []
   modules: []
   pins: {}
-inputs: []
+inputs:
+- experiments/commitment-point/analysis-committed/veto-transport/analyze_core.py
+- experiments/commitment-point/analysis-committed/veto-transport/analyze_grpo_family.py
+- experiments/commitment-point/analysis-committed/veto-transport/analyze_heatmap.py
+- experiments/commitment-point/analysis-committed/veto-transport/analyze_transfer_clean.py
+- experiments/commitment-point/analysis-committed/veto-transport/merge_findings.py
+- experiments/commitment-point/analysis-committed/veto-transport/vt_lib.py
 verdict: AK-G1 MISS (delta -0.0175 on grpo-v2, need >= +0.10); AK-G2 MISS, floor not
   cleared (|contrast| 4.6234 < floor 5.291963, though perm p < 0.01); AK-G3 MISS on
   the pre-registered ratio test (every dose ratio 0/nan, no CI clears 2.0) but the

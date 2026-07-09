@@ -6,10 +6,14 @@ computes axis geometry. No model / GPU.
 """
 import os
 import json
+from pathlib import Path
 import numpy as np
 from safetensors.numpy import load_file
 
-REPO = "/home/profsynapse/code/Epistemic-Humility-Research"
+REPO = os.environ.get(
+    "EHR_REPO",
+    str(Path(__file__).resolve().parents[4]),
+)
 PROBE = os.path.join(REPO, "experiment/phase1/probe")
 
 S_DIR = os.path.join(PROBE, "qwen3-4b-instruct/amendment_s/stage2")

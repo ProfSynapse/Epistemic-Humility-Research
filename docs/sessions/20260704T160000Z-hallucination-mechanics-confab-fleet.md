@@ -133,7 +133,7 @@ artifacts:
   script committed)
 - experiment/phase1/probe/analysis/mi_confab_signature_20260704/ (untracked scratch;
   script committed)
-- experiment/phase1/probe/analysis/mi_veto_transport_20260704/ (untracked scratch;
+- experiments/commitment-point/analysis-committed/veto-transport/ (committed analysis;
   scripts committed)
 - TODO.md (items 30-32)
 legacy_session:

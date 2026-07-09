@@ -79,7 +79,7 @@ headline and from the PR #205 veto operating characteristics).
 **Branch:** `amendment-am-residual-catch` (this branch; one amendment, one
 branch, one PR). PR merge order serialized behind AL.
 **Depends on:** the PR #205 veto-warning-policy characterization
-(`experiment/phase1/probe/analysis/veto_warning_policy_20260704/`), which
+(`experiments/residual-catch-veto-coverage/analysis-committed/veto-warning-policy/`), which
 marked this exact measurement GPU-BLOCKED (its report Section 6); the radial
 ceiling simulation
 (`experiments/radial-anti-propensity-steering/analysis-committed/radial-ceiling-sim/`),

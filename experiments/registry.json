@@ -373,7 +373,14 @@
       },
       "created_at": "2026-07-08T17:40:52Z",
       "falsifier": "",
-      "inputs": [],
+      "inputs": [
+        "experiments/commitment-point/analysis-committed/veto-transport/analyze_core.py",
+        "experiments/commitment-point/analysis-committed/veto-transport/analyze_grpo_family.py",
+        "experiments/commitment-point/analysis-committed/veto-transport/analyze_heatmap.py",
+        "experiments/commitment-point/analysis-committed/veto-transport/analyze_transfer_clean.py",
+        "experiments/commitment-point/analysis-committed/veto-transport/merge_findings.py",
+        "experiments/commitment-point/analysis-committed/veto-transport/vt_lib.py"
+      ],
       "instrument": {
         "configs": [],
         "modules": [],
@@ -1672,7 +1679,9 @@
       },
       "created_at": "2026-07-08T17:40:52Z",
       "falsifier": "",
-      "inputs": [],
+      "inputs": [
+        "experiments/residual-catch-veto-coverage/analysis-committed/veto-warning-policy/warning_policy.py"
+      ],
       "instrument": {
         "configs": [],
         "modules": [],

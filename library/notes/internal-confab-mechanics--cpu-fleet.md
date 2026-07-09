@@ -21,7 +21,7 @@ models:
 metrics:
 - auroc
 fulltext: ../../docs/sessions/20260704T160000Z-hallucination-mechanics-confab-fleet.md
-provenance: 'Internal exploratory synthesis (Tier-1 lab notebook, not a paper draft). Source of truth: docs/sessions/20260704T160000Z-hallucination-mechanics-confab-fleet.md plus analysis/mi_confab_phenotypes_20260704/ (arm A), analysis/mi_confab_signature_20260704/ (arm B), analysis/mi_veto_transport_20260704/ (item 31). Surfaces: Amendment AH stage-0 pregen extractions (arms A/B, raw Qwen3-4B instruct base) and the cached Amendment S/T/U/W pre/post extraction tensors (item 31, raw base + clean-SFT-to-GRPO-v2). PR #196. Ungated exploratory evidence; feeds TODO item 32 (commitment-point extraction) and the Paper 5 steering line.'
+provenance: 'Internal exploratory synthesis (Tier-1 lab notebook, not a paper draft). Source of truth: docs/sessions/20260704T160000Z-hallucination-mechanics-confab-fleet.md plus analysis/mi_confab_phenotypes_20260704/ (arm A), analysis/mi_confab_signature_20260704/ (arm B), experiments/commitment-point/analysis-committed/veto-transport/ (item 31). Surfaces: Amendment AH stage-0 pregen extractions (arms A/B, raw Qwen3-4B instruct base) and the cached Amendment S/T/U/W pre/post extraction tensors (item 31, raw base + clean-SFT-to-GRPO-v2). PR #196. Ungated exploratory evidence; feeds TODO item 32 (commitment-point extraction) and the Paper 5 steering line.'
 related:
 - '[[pre-generation-commitment-signal-predicts-confabulation]]'
 - '[[internal-doubt-degrades-fabrication-specificity]]'
