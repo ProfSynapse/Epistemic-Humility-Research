@@ -501,3 +501,27 @@ This log records migration batches after the terrain baseline in
   - Did not move downstream gold, SelfAware, or sycophancy panel configs in this
     batch; those remain separate C001 sub-batches.
   - Did not move generated causal-pilot outputs under `experiment/phase1/probe/`.
+## C001b - Sycophancy Answer Logit/Replay Panel Configs
+
+- Date: 2026-07-09
+- Source component: `C001` subset
+- File count: 5
+- Source root: `experiment/phase1/probe/config/`
+- Destination:
+  `archive/experiment/phase1/probe/config/sycophancy-answer-logit-panels/`
+- Owner decision: archive-only historical provenance for the June 20 Phase 3
+  answer-sycophancy same-condition logit diagnostic and KTO wrong-hint replay
+  work. No migrated `experiments/<slug>` owner was present, and these files are
+  not reusable shared defaults.
+- Reason: these files form a bounded downstream panel: fixed row keys,
+  intervention candidates, one logit sweep, and one targeted generation replay.
+- Reference updates:
+  - Rewrote `candidate_source_config` and `row_keys_file` references to the
+    archive path.
+  - Rewrote moved-config references and command paths in
+    `docs/sessions/20260620T145500Z-sycophancy-helpfulness-probe.md`.
+  - Retained references to generated output roots under `experiment/phase1/probe/`.
+  - Added a README to the destination archive folder.
+- Non-goals:
+  - Did not move generated causal-pilot outputs under
+    `experiment/phase1/probe/qwen3-4b-instruct-sycophancy-answer/`.

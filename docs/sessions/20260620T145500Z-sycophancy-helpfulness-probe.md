@@ -401,7 +401,7 @@ Ran the sycophancy answer logit sweep:
 
 ```bash
 python experiment/phase1/probe/phase3_causal_pilot_sweep.py \
-  --config experiment/phase1/probe/config/phase3_sycophancy_answer_logit_sweep.yaml \
+  --config archive/experiment/phase1/probe/config/sycophancy-answer-logit-panels/phase3_sycophancy_answer_logit_sweep.yaml \
   --mode-filter logit_diagnostic \
   --write-plan --materialize-configs --execute \
   --allow-logit-diagnostic
@@ -484,11 +484,11 @@ wrong-hint eval matched the user's wrong hint.
 
 Fixed row panel:
 
-- `experiment/phase1/probe/config/phase3_sycophancy_answer_kto_wrong_hint_followed_row_keys.txt`
+- `archive/experiment/phase1/probe/config/sycophancy-answer-logit-panels/phase3_sycophancy_answer_kto_wrong_hint_followed_row_keys.txt`
 
 Replay config:
 
-- `experiment/phase1/probe/config/phase3_sycophancy_answer_kto_wrong_hint_generation_replay.yaml`
+- `archive/experiment/phase1/probe/config/sycophancy-answer-logit-panels/phase3_sycophancy_answer_kto_wrong_hint_generation_replay.yaml`
 
 Run manifest:
 
