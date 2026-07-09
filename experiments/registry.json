@@ -388,8 +388,14 @@
       ],
       "instrument": {
         "configs": [],
-        "modules": [],
-        "pins": {}
+        "modules": [
+          "cloud/modal_ak_stage1.py",
+          "cloud/modal_ak_stage2.py"
+        ],
+        "pins": {
+          "cloud/modal_ak_stage1.py": "7076236c31b684f50d5487d07d844a9ce2eb93a91f67fce776420f21e2c777f3",
+          "cloud/modal_ak_stage2.py": "c98adefc28af8c38c6b827afad91fdd1f3efaf2a047fe7f00c65a627bd9a98b9"
+        }
       },
       "kg": [],
       "legacy": {
@@ -401,7 +407,6 @@
         "needs_manual_review": [
           "falsifier",
           "experiment_type",
-          "instrument_configs",
           "kg_ids"
         ],
         "notes": "Imported from legacy amendment prose. Do not infer missing machine fields without hand-reading AMENDMENT.md."

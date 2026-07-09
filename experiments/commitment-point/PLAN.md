@@ -69,7 +69,7 @@ Where this note and the doc disagree, the doc wins.
   configurable). Per-row `<safe_key>.safetensors` with keys `<L>@<pos_name>`;
   rows.jsonl carries the position index map + labels + config_sha; native resume
   guarded by config_sha (AI pattern). NO question/answer text in outputs.
-- `experiment/phase1/probe/cloud/modal_ak_stage1.py` - Modal app cloned from the
+- `experiments/commitment-point/cloud/modal_ak_stage1.py` - Modal app cloned from the
   AL v2 crash-proof skeleton (detached, Volume checkpoint daemon @120s,
   retries=3 with restore-before-start, DONE marker, staging upload). One stage;
   parameterized by `--checkpoint raw-base|grpo-v2`. Runs a numerics-smoke
@@ -170,12 +170,12 @@ user GPU approval.
 raw-base arm:
 ```bash
 cd /home/profsynapse/code/ehr-worktrees/amendment-ak-commitment-point/experiment/phase1/probe/cloud
-modal run --detach modal_ak_stage1.py --checkpoint raw-base
+modal run --detach experiments/commitment-point/cloud/modal_ak_stage1.py --checkpoint raw-base
 ```
 
 grpo-v2 arm (AK-G1 gate surface):
 ```bash
-modal run --detach modal_ak_stage1.py --checkpoint grpo-v2
+modal run --detach experiments/commitment-point/cloud/modal_ak_stage1.py --checkpoint grpo-v2
 ```
 
 ## "Modal proven" means
