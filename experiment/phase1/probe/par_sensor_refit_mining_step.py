@@ -20,6 +20,8 @@ from safetensors import safe_open
 import joblib
 
 PROBE_DIR = Path(__file__).resolve().parent
+REPO = PROBE_DIR.parents[2]
+ARTIFACT_DIR = REPO / "experiments" / "probe-as-reward" / "artifacts"
 CANONICAL = Path("/home/profsynapse/code/Epistemic-Humility-Research")
 REFIT_ROOT = CANONICAL / "experiment/phase1/probe/analysis/par_sensor_refit"
 LAYERS = ["L20", "L24", "L28"]
@@ -97,9 +99,10 @@ def main() -> int:
             round(float(np.abs(2 * mp[sensor_dover] - 1).mean()), 4)
             if sensor_dover.any() else None),
     }
-    for path in (REFIT_ROOT / v["result"], PROBE_DIR / v["copy"]):
+    for path in (REFIT_ROOT / v["result"], ARTIFACT_DIR / v["copy"]):
         res = json.loads(path.read_text())
         res["mining_reclassification_refit"] = section
+        path.parent.mkdir(parents=True, exist_ok=True)
         path.write_text(json.dumps(res, indent=2) + "\n")
     print(json.dumps(section, indent=2))
     return 0

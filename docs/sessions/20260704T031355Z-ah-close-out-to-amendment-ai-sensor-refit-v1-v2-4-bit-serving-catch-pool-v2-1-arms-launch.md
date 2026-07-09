@@ -47,7 +47,7 @@ checkpoints:
     L24 held-out OOF AUROC 0.9947 vs gold, clearing the 0.9 floor. Mining + recalibration
     + refit v1 merged to main as PR #178.'
   evidence:
-  - experiment/phase1/probe/par_sensor_refit.json
+  - experiments/probe-as-reward/artifacts/par_sensor_refit.json
   run_ids: []
   commands: []
   decisions: []
@@ -62,7 +62,7 @@ checkpoints:
     v1 was fit on merged-16bit states; in-loop integrity read 0.815. The honest FAIL
     record is retained in amendment_ai_smoke.json.'
   evidence:
-  - experiment/phase1/probe/amendment_ai_smoke.json
+  - experiments/probe-as-reward/artifacts/amendment_ai_smoke.json
   run_ids: []
   commands: []
   decisions: []
@@ -78,7 +78,7 @@ checkpoints:
     Three-way byte identity verified: in-loop read = extractor read = persisted state,
     exact 0.0.'
   evidence:
-  - experiment/phase1/probe/par_sensor_refit_v2.json
+  - experiments/probe-as-reward/artifacts/par_sensor_refit_v2.json
   run_ids: []
   commands: []
   decisions: []
@@ -93,7 +93,7 @@ checkpoints:
     13.4% open-list with a true set); the D-over flag was the probe being correct.
     All 407 excluded from the training pool; audit memo committed.
   evidence:
-  - experiment/phase1/probe/amendment_ai_truthfulqa_audit.md
+  - experiments/probe-as-reward/artifacts/amendment_ai_truthfulqa_audit.md
   run_ids: []
   commands: []
   decisions: []
@@ -108,7 +108,7 @@ checkpoints:
     the 500-row balanced set with both tripwire halts demonstrably firing (shuffled
     sensor 0.479, forced-invalid 1.0); checkpoint save/load clean (504 LoRA tensors).
   evidence:
-  - experiment/phase1/probe/amendment_ai_smoke_v2.json
+  - experiments/probe-as-reward/artifacts/amendment_ai_smoke_v2.json
   run_ids: []
   commands: []
   decisions: []
@@ -142,7 +142,7 @@ checkpoints:
     ambiguous at 67%). Final pool: 2,102 divergent / 16,665 concordant / 400-row holdout
     pinned to the locked draw; committed at 67c08f92.'
   evidence:
-  - experiment/phase1/probe/amendment_ai_pool_manifest.json
+  - experiments/probe-as-reward/artifacts/amendment_ai_pool_manifest.json
   run_ids: []
   commands: []
   decisions: []
@@ -254,35 +254,35 @@ Full overnight arc under the user's conditional pre-authorization: clean-SFT sta
 - kind: `result`
 - summary: Union-surface extraction (18,496 rows) plus mining extraction (9,397) completed on the 3090; AF-600-lineage refit on clean-SFT pre-gen states gives L24 held-out OOF AUROC 0.9947 vs gold, clearing the 0.9 floor. Mining + recalibration + refit v1 merged to main as PR #178.
 - evidence:
-  - `experiment/phase1/probe/par_sensor_refit.json`
+  - `experiments/probe-as-reward/artifacts/par_sensor_refit.json`
 ### 003-gate - Smoke v1 FAIL: 4-bit serving mismatch caught
 
 - at: `2026-07-04T03:14:28Z`
 - kind: `gate`
 - summary: Smoke criterion 2 failed with in-loop p vs offline reference max_abs_diff 0.97: the GRPO trainer loads the checkpoint 4-bit (QLoRA lineage) while sensor v1 was fit on merged-16bit states; in-loop integrity read 0.815. The honest FAIL record is retained in amendment_ai_smoke.json.
 - evidence:
-  - `experiment/phase1/probe/amendment_ai_smoke.json`
+  - `experiments/probe-as-reward/artifacts/amendment_ai_smoke.json`
 ### 004-infrastructure - Sensor v2: refit-per-serving-configuration
 
 - at: `2026-07-04T03:14:28Z`
 - kind: `infrastructure`
 - summary: Extended Amendment T's refit-per-checkpoint to refit-per-serving-configuration: union + mining states re-extracted through the 4-bit-loaded model and the sensor refit on those states, giving L24 OOF AUROC 0.9945 (quantization costs ~0.0002). Three-way byte identity verified: in-loop read = extractor read = persisted state, exact 0.0.
 - evidence:
-  - `experiment/phase1/probe/par_sensor_refit_v2.json`
+  - `experiments/probe-as-reward/artifacts/par_sensor_refit_v2.json`
 ### 005-validation - TruthfulQA construct audit: EXCLUDE
 
 - at: `2026-07-04T03:14:48Z`
 - kind: `validation`
 - summary: Stratified 82-row audit of the 407 TruthfulQA D-over candidates found 0/82 genuinely unanswerable (58.5% misconception-loaded answerable, 28% plainly answerable, 13.4% open-list with a true set); the D-over flag was the probe being correct. All 407 excluded from the training pool; audit memo committed.
 - evidence:
-  - `experiment/phase1/probe/amendment_ai_truthfulqa_audit.md`
+  - `experiments/probe-as-reward/artifacts/amendment_ai_truthfulqa_audit.md`
 ### 006-gate - Smoke v2 all-green under sensor v2
 
 - at: `2026-07-04T03:14:48Z`
 - kind: `gate`
 - summary: Reward variance nonzero on 71.9% of steps (mean group std 0.417); in-loop p exact-zero diff vs persisted serving-aligned states; integrity audit 0.99 on the 500-row balanced set with both tripwire halts demonstrably firing (shuffled sensor 0.479, forced-invalid 1.0); checkpoint save/load clean (504 LoRA tensors).
 - evidence:
-  - `experiment/phase1/probe/amendment_ai_smoke_v2.json`
+  - `experiments/probe-as-reward/artifacts/amendment_ai_smoke_v2.json`
 ### 007-decision - Prereg SIGNED; constants locked
 
 - at: `2026-07-04T03:14:48Z`
@@ -296,7 +296,7 @@ Full overnight arc under the user's conditional pre-authorization: clean-SFT sta
 - kind: `amendment`
 - summary: Pre-launch correction (before any arm step): the full-fit in-loop probe memorizes the union fit surface (train AUROC 1.0), under which 0/18,496 union rows are divergent, so the 320 union-origin rows in v2 train_divergent were inert; enforcing the recorded membership rule, union rows re-classified concordant and the 60% category cap re-applied on mining-only supply (a plain drop would leave ambiguous at 67%). Final pool: 2,102 divergent / 16,665 concordant / 400-row holdout pinned to the locked draw; committed at 67c08f92.
 - evidence:
-  - `experiment/phase1/probe/amendment_ai_pool_manifest.json`
+  - `experiments/probe-as-reward/artifacts/amendment_ai_pool_manifest.json`
 ### 009-launch - Arms ordered: TRUE then PERMUTED
 
 - at: `2026-07-04T03:14:48Z`
@@ -338,5 +338,5 @@ Full overnight arc under the user's conditional pre-authorization: clean-SFT sta
 - summary: The full AI-G0/G1/G2 verdict-eval was written, self-tested, and committed while the TRUE arm was at steps ~30-80 of 2,934 (no outcome observed), making the analysis procedure effectively pre-registered. Scorer amendment_ai_verdict_score.py (fresh eval probe per arm refit on the FINAL checkpoint per Amendment T with holdout excluded from fit = G0 falsifier; G1 own-readout congruence differential on the locked 400-row holdout, 10,000-boot paired bootstrap seed 0, schema-invalid counts incongruent; descriptive strata labeled NOT gates) passed synthetic self-tests (bootstrap point/CI/determinism, G2 tolerance both sides, congruence truth table). The G2 no-regression reference was PINNED to the Amendment E corrected-base full SelfAware eval of GRPO-v2 (93.41/33.38/53.85, formulas + counts committed) so no verdict-time freedom remains in the comparison. Prereg gained §4 (operationalization only; no gate/floor/constant changes). Commits 1327f15c + 254380da. TRUE arm healthy at last disk check (80 steps, no HALT, reward_mean 0.656, group-std nonzero 75%).
 - evidence:
   - `experiment/phase1/probe/amendment_ai_verdict_score.py`
-  - `experiment/phase1/probe/amendment_ai_g2_reference_grpo_v2.json`
+  - `experiments/probe-as-reward/artifacts/amendment_ai_g2_reference_grpo_v2.json`
   - `experiments/probe-as-reward/AMENDMENT.md`

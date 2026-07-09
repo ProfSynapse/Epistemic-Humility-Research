@@ -28,7 +28,7 @@ surface (Instruct base) is complete (all 1,836 rows have states).
 
 Writes analysis/par_recalibration/:
   <tag>_recal_rows.jsonl   per-row p, |2p-1|, label, correct (gitignored)
-  recalibration.json       committed result copy (probe-dir top): per-checkpoint
+  recalibration.json       committed result copy (experiments/probe-as-reward/artifacts/par_recalibration.json): per-checkpoint
                            p summary, saturation, D1 flip curve, D1b (S full /
                            T answered), cube occupancy where available, and a
                            constant-drift table vs REPORT.md estimates.
@@ -46,12 +46,14 @@ from safetensors import safe_open
 import joblib
 
 PROBE_DIR = Path(__file__).resolve().parent
+REPO = PROBE_DIR.parents[2]
+ARTIFACT_DIR = REPO / "experiments" / "probe-as-reward" / "artifacts"
 CANONICAL = Path("/home/profsynapse/code/Epistemic-Humility-Research")
 PROBE_ROOT = CANONICAL / "experiment/phase1/probe"
 STAGE0 = PROBE_ROOT / "analysis/ah_stage0"
 PROBES = STAGE0 / "probes"
 OUT_DIR = PROBE_ROOT / "analysis/par_recalibration"
-RESULT_COPY = PROBE_DIR / "par_recalibration.json"
+RESULT_COPY = ARTIFACT_DIR / "par_recalibration.json"
 
 T_FULL_PREGEN = OUT_DIR / "t_full_pregen"
 
@@ -282,6 +284,7 @@ def run(args) -> int:
     }
     (OUT_DIR / "recalibration.json").write_text(json.dumps(result, indent=2),
                                                encoding="utf-8")
+    RESULT_COPY.parent.mkdir(parents=True, exist_ok=True)
     RESULT_COPY.write_text(json.dumps(result, indent=2), encoding="utf-8")
     print(json.dumps(result, indent=2), flush=True)
     print(f"[par/recal] DONE -> {OUT_DIR/'recalibration.json'} + {RESULT_COPY}",

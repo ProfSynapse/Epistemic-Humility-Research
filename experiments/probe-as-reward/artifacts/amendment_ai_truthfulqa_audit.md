@@ -10,7 +10,7 @@ TruthfulQA's construct is fundamentally incompatible with a gold-unanswerable la
 
 ## Sample design
 
-- **Population:** the exact 407 D-over row_keys for source `truthfulqa`, taken from `par_mining_yield.json → new_dover_row_keys_by_source.truthfulqa` (all 407 present), joined to question text in `analysis/par_sensor_refit/mining_pregen/rows.jsonl` (407/407 matched, 0 missing, 0 malformed lines).
+- **Population:** the exact 407 D-over row_keys for source `truthfulqa`, taken from `experiments/probe-as-reward/artifacts/par_mining_yield.json → new_dover_row_keys_by_source.truthfulqa` (all 407 present), joined to question text in `analysis/par_sensor_refit/mining_pregen/rows.jsonl` (407/407 matched, 0 missing, 0 malformed lines).
 - **Sample:** stratified by index across the sorted D-over set, every 5th row → **82 questions** (target was ≥60), spread evenly over the full range 000001–000785.
 - **Classification scheme:**
   - (a) genuinely unanswerable / indeterminate (no consensus true answer)
@@ -79,7 +79,7 @@ A mechanical filter (e.g. keep only category (a)) cannot rescue TruthfulQA here:
 **High.** The finding aligns with TruthfulQA's published design (imitative-falsehood benchmark; every question has a truthful reference answer). The 82-row stratified read is unanimous (0/82 unanswerable), and the D-over signal itself corroborates it — the probe reading these as answerable is the probe being right. The only residual uncertainty is at the (d) open-list boundary, but those rows also have true answers, so they do not shift the EXCLUDE conclusion.
 
 ## Provenance
-- D-over keys: `experiment/phase1/probe/par_mining_yield.json` → `new_dover_row_keys_by_source.truthfulqa` (407)
+- D-over keys: `experiments/probe-as-reward/artifacts/par_mining_yield.json` → `new_dover_row_keys_by_source.truthfulqa` (407)
 - Question text: `experiment/phase1/probe/analysis/par_sensor_refit/mining_pregen/rows.jsonl` (source `truthfulqa_misconception`)
 - D-over rule (scorer): `par_mining_score.py` — consensus L20/L24/L28 all > band 0 AND label ≠ known
 - Join artifact: `scratchpad/tq_dover_join.json`

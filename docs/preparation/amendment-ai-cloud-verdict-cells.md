@@ -23,7 +23,7 @@ Per arm (true, permuted), the scorer takes:
 - `--*-gen`: generation `rows.jsonl` for the 400 holdout rows, fields
   `row_key`, `refused` (bool), `answered` (bool), `schema_valid` (bool).
 - `--g2-true` / `--g2-ref`: behavior-panel trio JSONs (CELL C output; the ref
-  is already pinned in `amendment_ai_g2_reference_grpo_v2.json`).
+  is already pinned in `experiments/probe-as-reward/artifacts/amendment_ai_g2_reference_grpo_v2.json`).
 
 The scorer reads gold_label / origin / p_unanswerable for each holdout row from
 the LOCAL canonical `holdout_eval.jsonl`, NOT from the uploaded dirs, so the
@@ -173,7 +173,7 @@ Recommendation: run CELL C on the LOCAL dgpu lane, not cloud. Do not force it
 cloud-side.
 
 Why:
-- The pinned reference `amendment_ai_g2_reference_grpo_v2.json` was produced by
+- The pinned reference `experiments/probe-as-reward/artifacts/amendment_ai_g2_reference_grpo_v2.json` was produced by
   the Amendment E FULL SelfAware eval (n=3,369) via
   `experiment/phase1/eval/run_eval.py` with config
   `eval_amendment_e_response_confidence_selfaware_clean_sft_grpo_v2_seed1_corrected_base_full_local_4b.yaml`.

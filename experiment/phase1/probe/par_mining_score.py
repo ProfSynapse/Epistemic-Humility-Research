@@ -46,6 +46,8 @@ from safetensors import safe_open
 import joblib
 
 PROBE_DIR = Path(__file__).resolve().parent
+REPO = PROBE_DIR.parents[2]
+ARTIFACT_DIR = REPO / "experiments" / "probe-as-reward" / "artifacts"
 EVAL_DIR = PROBE_DIR.parent / "eval"
 for p in (str(PROBE_DIR), str(EVAL_DIR)):
     if p not in sys.path:
@@ -63,7 +65,7 @@ GRID = STAGE0 / "score" / "divergence_grid.json"
 POOL_V21 = STAGE0 / "expansion" / "pool_v21.jsonl"
 AH_BASE_SCORED = STAGE0 / "score" / "scored_rows.jsonl"
 AH_EXP_SCORED = STAGE0 / "expansion" / "score" / "scored_rows.jsonl"
-RESULT_COPY = PROBE_DIR / "par_mining_yield.json"
+RESULT_COPY = ARTIFACT_DIR / "par_mining_yield.json"
 
 LAYERS = ["L20", "L24", "L28"]
 
@@ -268,6 +270,7 @@ def run(args) -> int:
 
     (PAR_MINING / "mining_yield.json").write_text(json.dumps(result, indent=2),
                                                  encoding="utf-8")
+    RESULT_COPY.parent.mkdir(parents=True, exist_ok=True)
     RESULT_COPY.write_text(json.dumps(result, indent=2), encoding="utf-8")
     # print a compact summary (keys elided)
     summary = {k: v for k, v in result.items()

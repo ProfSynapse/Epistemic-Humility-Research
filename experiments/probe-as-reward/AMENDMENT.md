@@ -59,7 +59,7 @@ AF-600 lineage byte-matched (StandardScaler + LogisticRegression C=1.0
 max_iter=5000, known=1, p_unanswerable = sigmoid(−score)) on union-surface
 clean-SFT pre-gen states (18,496 rows, gold answerable/unanswerable labels).
 
-**REFIT RESULT v1 (2026-07-04, `par_sensor_refit.json`): L24 held-out (5-fold
+**REFIT RESULT v1 (2026-07-04, `experiments/probe-as-reward/artifacts/par_sensor_refit.json`): L24 held-out (5-fold
 OOF, rs=0) AUROC = 0.9947 vs gold ≥ the 0.9 acceptance floor.** (L20 0.9934,
 L28 0.9945 fit as provenance / consensus sensitivity.) All derived statistics
 use OOF scores (each row scored by a fold model that never trained on it) so
@@ -80,7 +80,7 @@ so it is byte-reproducible against the v2 offline reference. No gate or
 floor changes — this is instrument alignment before launch, with v1 numbers
 retained above for provenance.
 
-**SENSOR v2 RESULT (2026-07-04, `par_sensor_refit_v2.json`): L24 held-out
+**SENSOR v2 RESULT (2026-07-04, `experiments/probe-as-reward/artifacts/par_sensor_refit_v2.json`): L24 held-out
 OOF AUROC = 0.9945 on the 4-bit training-configuration states → LAUNCH
 CONDITION 2 RE-SATISFIED** (quantization costs the readout essentially
 nothing: 0.9947 → 0.9945; L20 0.9922, L28 0.9935). Frozen sensor:
@@ -186,13 +186,13 @@ GRPO-v2 lineage recipe (single seed, as the line's GRPO runs are).
 
 1. Reward-plumbing smoke green (probe-in-loop micro-run: R varies within
    groups, advantages nonzero, tripwires demonstrably fire on synthetic
-   trigger). **SATISFIED — smoke v2 (`amendment_ai_smoke_v2.json`)
+   trigger). **SATISFIED — smoke v2 (`experiments/probe-as-reward/artifacts/amendment_ai_smoke_v2.json`)
    all-green with the v2 sensor: reward variance 71.9% of steps (mean group
    std 0.417); in-loop p exact-zero diff vs the persisted serving-aligned
    states (8/8); integrity audit 0.99 on the 500-row balanced set with both
    tripwire halts demonstrably firing (shuffled sensor 0.479 < 0.8; forced
    invalid 1.0 > 0.1); checkpoint save/load clean. Smoke v1
-   (`amendment_ai_smoke.json`) is retained as the honest record of the
+   (`experiments/probe-as-reward/artifacts/amendment_ai_smoke.json`) is retained as the honest record of the
    serving-mismatch catch.**
 2. Refit sensor held-out AUROC ≥ 0.9 vs gold. **SATISFIED under sensor v2:
    0.9945 on 4-bit training-configuration states (§1.1; v1 16-bit value
@@ -205,7 +205,7 @@ GRPO-v2 lineage recipe (single seed, as the line's GRPO runs are).
    classified; ambiguous capped at 60.0%: 1,261 / false_premise 833 /
    unsolved_other 8), 16,665 concordant, 400-row holdout pinned to the v2
    draw**; TruthfulQA excluded (audit-CONFIRMED: 0/82 sampled rows genuinely
-   unanswerable — `amendment_ai_truthfulqa_audit.md`); v1 values (mixture
+   unanswerable — `experiments/probe-as-reward/artifacts/amendment_ai_truthfulqa_audit.md`); v1 values (mixture
    30.5%, pool 2,909) and v2 pool (2,902/16,345, OOF-classified union rows)
    superseded before any arm step.**
 
@@ -248,7 +248,7 @@ it and recomputes all gate arithmetic from raw rows; the user adjudicates).
   eval pipeline; the scorer takes both trios as JSON and applies
   |Δ| ≤ 5pt to each of abstain-when-unanswerable, answer-when-answerable,
   correctness-among-answered. **Reference PINNED pre-outcome** in
-  `amendment_ai_g2_reference_grpo_v2.json`: the Amendment E corrected-base
+  `experiments/probe-as-reward/artifacts/amendment_ai_g2_reference_grpo_v2.json`: the Amendment E corrected-base
   FULL SelfAware eval (n=3,369) of the GRPO-v2 lineage arm — 93.41 /
   33.38 / 53.85, with formulas and counts recorded; the TRUE-arm panel is
   the same pipeline + config on the same surface, checkpoint swapped.

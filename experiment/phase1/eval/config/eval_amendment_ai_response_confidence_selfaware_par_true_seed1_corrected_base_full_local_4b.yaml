@@ -5,7 +5,7 @@
 # merged clean-SFT base. Verbatim copy of the pinned G2 reference config
 # (eval_amendment_e_..._grpo_v2_seed1_corrected_base_full_local_4b.yaml, the
 # --g2-ref lineage); ONLY results_dir + arm name/method/adapter changed, per
-# the parity requirement in amendment_ai_g2_reference_grpo_v2.json.
+# the parity requirement in experiments/probe-as-reward/artifacts/amendment_ai_g2_reference_grpo_v2.json.
 
 model_tag: qwen3-4b-clean-schema-sft-merged-seed1
 # staged on HF: professorsynapse/eh-qwen3-4b-clean-sft-seed1-merged-16bit @ ac361232c001af0ed5b0386b06dafc35d5cd31ea

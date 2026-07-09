@@ -8,7 +8,7 @@ local 3090 — NOT a training result. Loads the clean-SFT model via unsloth
 at the pre-generation anchor from the SAME model object (refit L24 probe, probe
 render recipe — the surface the sensor was fit on), scores each rollout with the
 Amendment AI reward (§1.2 of the prereg), and verifies the four GREEN CRITERIA,
-writing a machine-readable result to experiment/phase1/probe/amendment_ai_smoke.json.
+writing a machine-readable result to experiments/probe-as-reward/artifacts/amendment_ai_smoke.json.
 
 GREEN CRITERIA:
   1. Reward varies WITHIN rollout groups on >=30% of steps (nonzero advantages)
@@ -47,6 +47,8 @@ from statistics import pstdev
 import numpy as np
 
 PROBE_DIR = Path(__file__).resolve().parent
+REPO = PROBE_DIR.parents[2]
+ARTIFACT_DIR = REPO / "experiments" / "probe-as-reward" / "artifacts"
 GRPO_DIR = PROBE_DIR.parent / "grpo"
 # render_probe_prompt lives in the probe dir's backends.py; the base reward in
 # the grpo dir. The synaptic-tuner submodule is EMPTY in this worktree, so we
@@ -71,10 +73,10 @@ SCRATCH = REFIT / "ai_smoke"
 VARIANTS = {
     "v1": {"sensor": REFIT / "probes/probe_L24_cleansft.joblib",
            "union_pregen": REFIT / "union_pregen",
-           "result": PROBE_DIR / "amendment_ai_smoke.json"},
+           "result": ARTIFACT_DIR / "amendment_ai_smoke.json"},
     "v2": {"sensor": REFIT / "probes_v2/probe_L24_cleansft4bit.joblib",
            "union_pregen": REFIT / "union_pregen_4bit",
-           "result": PROBE_DIR / "amendment_ai_smoke_v2.json"},
+           "result": ARTIFACT_DIR / "amendment_ai_smoke_v2.json"},
 }
 
 # refit rows (OOF p, gold label) per variant — the representative sensor-
@@ -372,6 +374,7 @@ def run(args) -> int:
         "all_green": bool(c1["passed"] and c2["passed"] and c3["passed"] and c4["passed"]),
         "spot_checks": spot,
     })
+    result_json.parent.mkdir(parents=True, exist_ok=True)
     result_json.write_text(json.dumps(result, indent=2), encoding="utf-8")
     print(json.dumps({k: v for k, v in result.items() if k != "spot_checks"}, indent=2),
           flush=True)

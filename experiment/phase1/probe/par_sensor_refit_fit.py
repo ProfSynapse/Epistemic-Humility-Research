@@ -41,7 +41,7 @@ Writes analysis/par_sensor_refit/:
   union_refit_rows.jsonl                       per-row OOF scores (gitignored)
   mining_refit_rows.jsonl                      per-row full-fit scores (when B done)
   refit_result.json                            full result
-and a committed copy par_sensor_refit.json at the probe dir top.
+and a committed copy under experiments/probe-as-reward/artifacts/.
 """
 
 from __future__ import annotations
@@ -60,6 +60,8 @@ from sklearn.metrics import roc_auc_score
 import joblib
 
 PROBE_DIR = Path(__file__).resolve().parent
+REPO = PROBE_DIR.parents[2]
+ARTIFACT_DIR = REPO / "experiments" / "probe-as-reward" / "artifacts"
 CANONICAL = Path("/home/profsynapse/code/Epistemic-Humility-Research")
 REFIT_ROOT = CANONICAL / "experiment/phase1/probe/analysis/par_sensor_refit"
 # v2 defaults: training-configuration (4-bit) states; --variant v1 restores
@@ -143,7 +145,7 @@ def run(args) -> int:
     MINING_DIR = REFIT_ROOT / v["mining"]
     PROBES_OUT = REFIT_ROOT / v["probes"]
     RESULT = REFIT_ROOT / v["result"]
-    RESULT_COPY = PROBE_DIR / v["copy"]
+    RESULT_COPY = ARTIFACT_DIR / v["copy"]
     SUFFIX = v["suffix"]
     PROBES_OUT.mkdir(parents=True, exist_ok=True)
 
@@ -309,6 +311,7 @@ def run(args) -> int:
         }
 
     RESULT.write_text(json.dumps(result, indent=2) + "\n")
+    RESULT_COPY.parent.mkdir(parents=True, exist_ok=True)
     RESULT_COPY.write_text(json.dumps(result, indent=2) + "\n")
     print(json.dumps({k: result[k] for k in
                       ("layers", "launch_condition_2", "p_distribution_oof",

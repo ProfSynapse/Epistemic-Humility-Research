@@ -25,7 +25,7 @@ Outputs:
   analysis/amendment_ai/pool/ (gitignored — FalseQA question text lives here)
       train_divergent.jsonl, train_concordant.jsonl, holdout_eval.jsonl
       rows: row_key, source, category, question, gold_label, p_unanswerable
-  experiment/phase1/probe/amendment_ai_pool_manifest.json (committed —
+  experiments/probe-as-reward/artifacts/amendment_ai_pool_manifest.json (committed —
       counts, category masses, exclusions, config; row_keys only, NO text)
 """
 
@@ -39,11 +39,13 @@ from pathlib import Path
 
 CANONICAL = Path("/home/profsynapse/code/Epistemic-Humility-Research")
 PROBE_ROOT = CANONICAL / "experiment/phase1/probe"
+REPO = Path(__file__).resolve().parents[3]
+ARTIFACT_DIR = REPO / "experiments" / "probe-as-reward" / "artifacts"
 REFIT = PROBE_ROOT / "analysis/par_sensor_refit"
 AH_POOL = PROBE_ROOT / "analysis/ah_stage0/expansion/pool_v21.jsonl"
 A1_STRATUM = PROBE_ROOT / "analysis/ah_addendum_a1/stratum.jsonl"
 OUT_DIR = PROBE_ROOT / "analysis/amendment_ai/pool"
-MANIFEST = Path(__file__).resolve().parent / "amendment_ai_pool_manifest.json"
+MANIFEST = ARTIFACT_DIR / "amendment_ai_pool_manifest.json"
 
 import argparse
 
@@ -251,6 +253,7 @@ def main() -> int:
                              if pinned_holdout_keys is not None
                              else sorted(r["row_key"] for r in holdout)),
     }
+    MANIFEST.parent.mkdir(parents=True, exist_ok=True)
     MANIFEST.write_text(json.dumps(manifest, indent=2) + "\n")
     print(json.dumps({k: manifest[k] for k in
                       ("counts", "train_divergent_by_category",
