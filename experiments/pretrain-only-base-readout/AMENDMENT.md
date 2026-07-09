@@ -184,7 +184,7 @@ Gate/dial/veto AUROCs exactly as X/Z/SR define them. Interpretation rules:
   `experiment/phase1/probe/cloud/hf_jobs_cell.sh` (clone public repo at a
   pinned commit → extract → score → upload only the small result JSON +
   manifest to `professorsynapse/epistemic-humility-cloud-results`; tracked
-  gate-rows pool `experiment/phase1/probe/pools/selfaware_gate_rows_frozen.jsonl`).
+  gate-rows pool `experiments/common/artifacts/selfaware_gate_pool/selfaware_gate_rows_frozen.jsonl`).
   Plumbing validated by the 2026-07-02 Qwen3.5-0.8B-Base smoke (lab-notebook
   instrument). Local single-GPU Docker (dgpu) is the fallback lane
   (~9 cells × 1.5–2h → 2–3 overnight queues) if cloud misbehaves.

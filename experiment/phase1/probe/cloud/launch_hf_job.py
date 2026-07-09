@@ -16,7 +16,7 @@ result upload only.
 Example (the Y-lane plumbing smoke):
   python3 experiment/phase1/probe/cloud/launch_hf_job.py \\
       --model Qwen/Qwen3.5-0.8B-Base \\
-      --gate-rows experiment/phase1/probe/pools/selfaware_gate_rows_smoke300.jsonl \\
+      --gate-rows experiments/common/artifacts/selfaware_gate_pool/selfaware_gate_rows_smoke300.jsonl \\
       --commit <sha-on-public-remote> \\
       --run-tag smoke-qwen3.5-0.8b-base \\
       --timeout 45m \\

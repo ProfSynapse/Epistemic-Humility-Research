@@ -4,7 +4,8 @@
   "pinned_commit": "3bb2fc76ee5f255c8bc1a4533bda46d6bafad0e5",
   "lane": "hf-jobs a10g-small",
   "image": "pytorch/pytorch:2.9.0-cuda12.8-cudnn9-runtime + transformers==5.12.1",
-  "gate_rows": "experiment/phase1/probe/pools/selfaware_gate_rows_frozen.jsonl",
+  "gate_rows": "experiments/common/artifacts/selfaware_gate_pool/selfaware_gate_rows_frozen.jsonl",
+  "legacy_gate_rows_at_pinned_commit": "experiment/phase1/probe/pools/selfaware_gate_rows_frozen.jsonl",
   "extract_args": [
     "--n-answerable",
     "2000",

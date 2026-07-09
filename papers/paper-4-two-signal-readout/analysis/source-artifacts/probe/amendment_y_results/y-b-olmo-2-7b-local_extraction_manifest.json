@@ -12,7 +12,8 @@
   "selfaware_known",
   "selfaware_unknown"
  ],
- "gate_rows_source": "/mnt/f/Code/Epistemic-Humility-Research/.worktrees/amendment-y-base-readout/experiment/phase1/probe/pools/selfaware_gate_rows_frozen.jsonl",
+ "gate_rows_source": "experiments/common/artifacts/selfaware_gate_pool/selfaware_gate_rows_frozen.jsonl",
+ "legacy_gate_rows_source": "/mnt/f/Code/Epistemic-Humility-Research/.worktrees/amendment-y-base-readout/experiment/phase1/probe/pools/selfaware_gate_rows_frozen.jsonl",
  "enable_thinking": false,
  "n_answerable": 2000,
  "max_new_tokens": 48,

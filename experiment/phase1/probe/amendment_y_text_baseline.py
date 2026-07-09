@@ -6,7 +6,7 @@ the Y extraction seed. Purely descriptive (lab-notebook instrument); feeds the
 Y roll-up table, changes no gate.
 
 - GATE baseline: known-vs-unknown on the exact frozen SelfAware pool every Y
-  cell uses (pools/selfaware_gate_rows_frozen.jsonl).
+  cell uses (experiments/common/artifacts/selfaware_gate_pool/selfaware_gate_rows_frozen.jsonl).
 - DIAL baseline: question-text -> correct-vs-wrong per model, using local
   Amendment Z row surfaces (gitignored local data; section skips silently if
   a family's rows are absent).
@@ -28,6 +28,7 @@ from sklearn.pipeline import make_pipeline
 PROBE_DIR = Path(__file__).resolve().parent
 REPO = PROBE_DIR.parents[2]
 DEFAULT_OUT = REPO / "experiments" / "pretrain-only-base-readout" / "artifacts" / "amendment_y_text_baseline_result.json"
+DEFAULT_GATE_POOL = REPO / "experiments" / "common" / "artifacts" / "selfaware_gate_pool" / "selfaware_gate_rows_frozen.jsonl"
 SEED = 20260630
 
 WORD = dict(analyzer="word", ngram_range=(1, 2), min_df=2)
@@ -59,7 +60,7 @@ def main() -> int:
     result = {"seed": SEED, "cv": "stratified 5-fold",
               "model": "TF-IDF + LogisticRegression(C=1.0)"}
 
-    pool_path = PROBE_DIR / "pools" / "selfaware_gate_rows_frozen.jsonl"
+    pool_path = DEFAULT_GATE_POOL
     pool = [json.loads(l) for l in open(pool_path, encoding="utf-8")]
     texts = [r["question"] for r in pool]
     y = [1 if r["label"] == "known" else 0 for r in pool]
