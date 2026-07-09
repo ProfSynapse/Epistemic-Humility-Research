@@ -1,6 +1,6 @@
 """Modal port of the TODO item-11 GPU batching-equivalence self-check.
 
-Runs experiment/phase1/probe/steering/gpu_equivalence_cell.py on an A10G against
+Runs archive/experiment/phase1/probe/steering/gpu_equivalence_cell.py on an A10G against
 the DEPLOYED Qwen3-4B clean-SFT->GRPO-v2 lineage (merged-16bit base + grpo-v2
 LoRA at a pinned revision), at the caution_perp direction's best_layer. It
 verifies the batched final-position + per-element-alpha SteeringHook edit matches

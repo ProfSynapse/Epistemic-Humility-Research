@@ -605,7 +605,7 @@ class TestEmitWrapper:
             "variant": "real", "note": "[internal: gate 0.10 — x]",
         }, "a b c")]
         out = ab.write_emit_prompts(tmp_path / "emit.jsonl", rows)
-        loaded = [json.loads(x) for x in out.read_text().splitlines()]
+        loaded = [json.loads(x) for x in out.read_text(encoding="utf-8").splitlines()]
         assert loaded == rows
         assert loaded[0]["prompt_token_ids"] == [100, 101, 102]
 

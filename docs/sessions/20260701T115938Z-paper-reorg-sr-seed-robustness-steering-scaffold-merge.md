@@ -22,7 +22,7 @@ checkpoints:
   kind: infrastructure
   title: "Steering scaffold (Paper 4) reviewed + merged; Paper 5\u21924 relabel"
   summary: "Reviewed the confidence-steering scaffold from the paper5 worktree: purely\
-    \ additive (10 files under experiment/phase1/probe/steering/), training-free by\
+    \ additive (10 files under archive/experiment/phase1/probe/steering/), training-free by\
     \ construction (Arm A forward-hook activation steering h\u2190h+alpha*d; Arm B\
     \ CoT text injection; zero weight updates), 88/88 CPU tests green. Merged via\
     \ PR #137, then relabeled Paper 5\u2192Paper 4 (canonical map) via PR #138. Design\
@@ -30,7 +30,7 @@ checkpoints:
     \ was already correctly numbered (the '#137 missing plan doc' flag was a wrong-branch\
     \ false alarm). Worktrees + branches cleaned up."
   evidence:
-  - experiment/phase1/probe/steering/README.md
+  - archive/experiment/phase1/probe/steering/README.md
   run_ids: []
   commands: []
   decisions:
@@ -130,9 +130,9 @@ _No summary yet._
 
 - at: `2026-07-01T12:00:08Z`
 - kind: `infrastructure`
-- summary: Reviewed the confidence-steering scaffold from the paper5 worktree: purely additive (10 files under experiment/phase1/probe/steering/), training-free by construction (Arm A forward-hook activation steering h←h+alpha*d; Arm B CoT text injection; zero weight updates), 88/88 CPU tests green. Merged via PR #137, then relabeled Paper 5→Paper 4 (canonical map) via PR #138. Design doc docs/plans/confidence-steering-experiment.md already existed on main and was already correctly numbered (the '#137 missing plan doc' flag was a wrong-branch false alarm). Worktrees + branches cleaned up.
+- summary: Reviewed the confidence-steering scaffold from the paper5 worktree: purely additive (10 files under archive/experiment/phase1/probe/steering/), training-free by construction (Arm A forward-hook activation steering h←h+alpha*d; Arm B CoT text injection; zero weight updates), 88/88 CPU tests green. Merged via PR #137, then relabeled Paper 5→Paper 4 (canonical map) via PR #138. Design doc docs/plans/confidence-steering-experiment.md already existed on main and was already correctly numbered (the '#137 missing plan doc' flag was a wrong-branch false alarm). Worktrees + branches cleaned up.
 - evidence:
-  - `experiment/phase1/probe/steering/README.md`
+  - `archive/experiment/phase1/probe/steering/README.md`
 - decisions:
   - Merge scaffolding to main now (user asked); training-free constraint baked in as a hard design rule for Paper 4; full pre-reg (gates/falsifiers) deferred until the steering amendment is minted.
 ### 002-launch - Amendment SR (sampled-decode seed-robustness) pre-registered + launched

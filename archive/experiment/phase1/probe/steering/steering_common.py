@@ -54,8 +54,10 @@ import numpy as np
 # ---------------------------------------------------------------------------
 
 STEERING_DIR = Path(__file__).resolve().parent
-PROBE_DIR = STEERING_DIR.parent
-EVAL_DIR = PROBE_DIR.parent / "eval"
+from path_compat import phase1_eval_dir, phase1_probe_dir  # noqa: E402
+
+PROBE_DIR = phase1_probe_dir()
+EVAL_DIR = phase1_eval_dir()
 for _p in (str(STEERING_DIR), str(PROBE_DIR), str(EVAL_DIR)):
     if _p not in sys.path:
         sys.path.insert(0, _p)

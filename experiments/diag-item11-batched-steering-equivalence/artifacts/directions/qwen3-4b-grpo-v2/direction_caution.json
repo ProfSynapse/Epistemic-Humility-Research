@@ -2574,7 +2574,7 @@
     "source_notice": "doubt-orthogonalized caution (caution_perp); rank-1 doubt axis removed; isolates the caution-specific gate for refined B1",
     "source_pos_cell": "known_refused",
     "source_neg_cell": "known_correct_answered",
-    "converter": "experiment/phase1/probe/steering/build_equiv_direction.py",
+    "converter": "archive/experiment/phase1/probe/steering/build_equiv_direction.py",
     "note": "Unit-normalized preimage of caution_perp theta. best_layer = source block (decoder layer whose output is hidden_states[source_layer]). For the GPU batching-parity self-check only; NOT a scientific readout."
   }
 }

@@ -61,7 +61,7 @@ telemetry number. Final wording is recorded in
 
 ## Provenance
 
-Inputs: `experiment/phase1/probe/steering/results/aa{5,6,7,8}_*.json`
+Inputs: `archive/experiment/phase1/probe/steering/results/aa{5,6,7,8}_*.json`
 (gitignored run products; hashes in each file's `config_sha`). Analysis:
 inline Python (regex families listed above), session
 `01K2Xg1nGJ556Nbcpd2xEYTD`, 2026-07-02. Numbers above are descriptive

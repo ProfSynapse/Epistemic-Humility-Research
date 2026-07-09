@@ -7,7 +7,7 @@ Question: does the batched final-position, per-row-alpha steering hook apply the
 same residual edit as the one-prompt-at-a-time reference path on the deployed
 Qwen3-4B clean-SFT to GRPO-v2 lineage?
 
-Instrument: `experiment/phase1/probe/steering/gpu_equivalence_cell.py`, launched
+Instrument: `archive/experiment/phase1/probe/steering/gpu_equivalence_cell.py`, launched
 through the RunPod/Modal wrappers under `experiment/phase1/probe/cloud/`. The
 cell compares steering deltas, not absolute hidden states, to avoid bf16
 padded-vs-unpadded forward noise.

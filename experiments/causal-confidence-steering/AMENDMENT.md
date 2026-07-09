@@ -33,7 +33,7 @@ Tier-2 amendment (per `amendment-vs-lab-notebook.md`: a new exploratory evidence
 line, reported separately from the locked PROTOCOL v0.3 headline surface). One
 branch (`amendment-aa-confidence-steering`, off `main` @ 0046a8fd), one PR.
 Design source: `docs/plans/confidence-steering-experiment.md` (design capture,
-2026-06-30). Code scaffold: `experiment/phase1/probe/steering/` (merged to main;
+2026-06-30). Code scaffold: `archive/experiment/phase1/probe/steering/` (merged to main;
 88 CPU unit tests green on 2026-07-01). This is the first experiment of the
 Paper 5 line (reading vs. writing the trust axis).
 

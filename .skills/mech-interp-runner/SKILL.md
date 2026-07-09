@@ -7,7 +7,7 @@ allowed-tools: Read, Bash, Write, Grep, Glob
 # Mech-Interp Runner
 
 > This skill drives the **frozen** bespoke Phase 3 machinery (see
-> `experiment/phase1/probe/steering/LEGACY.md`). It mints NO new cells. To author
+> `archive/experiment/phase1/probe/steering/LEGACY.md`). It mints NO new cells. To author
 > a NEW steering / extraction / probe-fit / gate-scoring cell, use the
 > `mechinterp-cells` skill (tuner-backed `mechinterp` verbs), not this one.
 

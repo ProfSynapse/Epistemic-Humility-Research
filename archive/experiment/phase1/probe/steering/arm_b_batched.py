@@ -75,6 +75,7 @@ STEERING_DIR = Path(__file__).resolve().parent
 if str(STEERING_DIR) not in sys.path:
     sys.path.insert(0, str(STEERING_DIR))
 
+from path_compat import tuner_dir as _default_tuner_dir  # noqa: E402
 from steering_common import (  # noqa: E402
     SYSTEM_PROMPT,
     _content_end_index,
@@ -356,11 +357,9 @@ def wrap_generate_for_emit(inner, render, tokenizer, emit_rows: list[dict]):
 def _tuner_repo_dir() -> Path:
     """Locate the synaptic-tuner checkout that owns the batch CLI verbs.
 
-    steering/ lives at experiment/phase1/probe/steering under the research
-    repo; the submodule is at <repo-root>/synaptic-tuner. Overridable via
-    --tuner-dir (cloud lane / uninitialized worktree submodule).
+    Overridable via --tuner-dir (cloud lane / uninitialized worktree submodule).
     """
-    return STEERING_DIR.parents[3] / "synaptic-tuner"
+    return _default_tuner_dir()
 
 
 def resolve_tuner_dir(args) -> Path:

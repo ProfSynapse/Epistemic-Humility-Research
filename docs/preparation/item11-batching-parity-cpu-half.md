@@ -102,11 +102,11 @@ New regression tests (`TestGpuEquivalenceCellMethodology`, tiny real bf16 Qwen3,
 no download / no GPU) would have caught it: they assert the delta comparison is
 floor-tight under both padding sides and that the old absolute comparison is
 strictly noisier under bf16 left padding. Runnable without pytest via
-`python experiment/phase1/probe/steering/tests/test_arm_b_batched_parity.py`.
+`python archive/experiment/phase1/probe/steering/tests/test_arm_b_batched_parity.py`.
 
 ## Files changed
-- `experiment/phase1/probe/steering/confidence_steer.py` (SteeringHook: final
+- `archive/experiment/phase1/probe/steering/confidence_steer.py` (SteeringHook: final
   position + per-element alpha; docstring + validation)
-- `experiment/phase1/probe/steering/tests/test_arm_b_batched_parity.py` (new)
-- `experiment/phase1/probe/steering/gpu_equivalence_cell.py` (new, DO-NOT-RUN)
+- `archive/experiment/phase1/probe/steering/tests/test_arm_b_batched_parity.py` (new)
+- `archive/experiment/phase1/probe/steering/gpu_equivalence_cell.py` (new, DO-NOT-RUN)
 - `docs/preparation/item11-batching-parity-cpu-half.md` (this doc)

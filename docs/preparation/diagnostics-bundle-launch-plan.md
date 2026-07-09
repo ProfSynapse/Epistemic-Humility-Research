@@ -244,7 +244,7 @@ Cell 3 (generation-time positions, deployed checkpoint):
 Cell 1 (LOCAL preferred; RunPod form if wanted):
 
     # LOCAL (recommended):
-    python experiment/phase1/probe/steering/gpu_equivalence_cell.py \
+    python archive/experiment/phase1/probe/steering/gpu_equivalence_cell.py \
       --model professorsynapse/eh-qwen3-4b-clean-sft-seed1-merged-16bit \
       --direction experiments/diag-item11-batched-steering-equivalence/artifacts/directions/qwen3-4b-grpo-v2/direction_caution.json \
       --device cuda --dtype bfloat16 --i-know-this-runs-on-gpu

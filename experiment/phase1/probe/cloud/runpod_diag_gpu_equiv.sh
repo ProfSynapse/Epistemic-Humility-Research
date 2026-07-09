@@ -6,7 +6,7 @@
 # one-prompt-at-a-time reference on the real model's layer geometry and padding.
 #
 # WHAT
-#   Runs experiment/phase1/probe/steering/gpu_equivalence_cell.py on a handful of
+#   Runs archive/experiment/phase1/probe/steering/gpu_equivalence_cell.py on a handful of
 #   fixed prompts at the direction's best_layer, comparing batched vs unbatched
 #   steered hidden states at each row's last real token. Expected result: the
 #   model's own batched-vs-unbatched numeric floor (<< the steering magnitude).

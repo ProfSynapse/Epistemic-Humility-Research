@@ -10,7 +10,7 @@ activation-writing cells through the `synaptic-tuner` `mechinterp` CLI family.
 The project supplies rows, renders, graders, gates, and experiment organization;
 the tuner owns generic execution through declarative YAML and public verbs.
 
-The bespoke machinery under `experiment/phase1/probe/steering/` is frozen for
+The bespoke machinery under `archive/experiment/phase1/probe/steering/` is frozen for
 provenance. Existing legacy sweeps may still be driven by the `mech-interp-runner`
 skill, but new cells use the tuner-backed path described here.
 
@@ -78,7 +78,7 @@ maintenance.
 ## Invariants
 
 - Never edit frozen legacy files listed by
-  `experiment/phase1/probe/steering/LEGACY.md` while authoring new cells.
+  `archive/experiment/phase1/probe/steering/LEGACY.md` while authoring new cells.
 - Never modify the `synaptic-tuner/` submodule from this skill; route project
   behavior through recipe YAML, rows, renders, graders, and gates.
 - Run tuner commands from the repo root or experiment worktree root unless a

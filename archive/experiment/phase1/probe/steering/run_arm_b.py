@@ -69,6 +69,7 @@ from pathlib import Path
 from typing import Callable, Optional
 
 from ab_templates import render_note as render_note_variant
+from path_compat import datasets_dir as _default_datasets_dir
 from cot_inject import InjectionConfig, extract_think_content
 from steering_common import (
     N_BOOT_DEFAULT,
@@ -266,7 +267,7 @@ def parse_args(argv=None) -> argparse.Namespace:
     ap.add_argument("--gate-rows", type=Path, default=None,
                     help="SelfAware frozen rows.jsonl (gate pool source)")
     ap.add_argument("--datasets-root", type=Path,
-                    default=Path(__file__).resolve().parents[3] / "datasets",
+                    default=_default_datasets_dir(),
                     help="root for the PopQA/TriviaQA dial pool")
     ap.add_argument("--cell", default=None, help="cell tag, e.g. AA-5 (provenance)")
     ap.add_argument("--seed", type=int, default=20260701,

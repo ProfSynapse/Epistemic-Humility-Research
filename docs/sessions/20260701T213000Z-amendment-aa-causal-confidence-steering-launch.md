@@ -209,5 +209,5 @@ signature + Stage-1 launch approval -> harness build (delegated) -> queue launch
 
 See checkpoints in frontmatter. Amendment:
 `experiments/causal-confidence-steering/AMENDMENT.md`. Queue:
-`experiment/phase1/probe/steering/amendment_aa_queue.sh`. Progress log:
-`experiment/phase1/probe/steering/aa_logs/PROGRESS.log`.
+`archive/experiment/phase1/probe/steering/amendment_aa_queue.sh`. Progress log:
+`archive/experiment/phase1/probe/steering/aa_logs/PROGRESS.log`.
