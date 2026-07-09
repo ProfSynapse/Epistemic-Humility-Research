@@ -1,0 +1,44 @@
+slug: j-space-layer-contrast-rep2-multisource
+type: steer-cell
+status: draft
+registered: true
+question: On raw-base Qwen3-4B, does the calibrated J-space mid-band write-site
+  advantage replicate on a fresh, MULTI-SOURCE private evaluation pool, using
+  ceiling-robust gates (McNemar paired test plus an interpretability branch)
+  instead of rep1's fixed point-estimate bar that saturated near ceiling?
+prediction: ''
+falsifier: If G1' fails on an interpretable pool (G3' status = viable), the
+  mid-band advantage does not replicate at meaningful magnitude on a comparable
+  multi-source confab distribution; report straight, exactly as registered,
+  with no goalpost movement.
+checkpoint:
+  repo: unsloth/Qwen3-4B
+  revision: raw-base (bf16, no adapter, no 4-bit quantization)
+instrument:
+  configs:
+  - cell.yaml
+  - gates.yaml
+  modules:
+  - mine_multisource_pool.py
+  - materialize_known_side_reuse.py
+  - extract_multisource_confab_anchor.py
+  - pipeline_multisource.py
+  - run_contrast.py
+  - analyze_paired_outcomes.py
+  pins: {}
+inputs:
+- experiments/j-space-calibrated-layer-contrast-qwen3-4b/AMENDMENT.md
+- experiments/j-space-calibrated-layer-contrast-qwen3-4b/analysis-committed/full_summary.json
+- experiments/j-space-layer-contrast-replication-qwen3-4b/AMENDMENT.md
+- experiments/j-space-layer-contrast-replication-qwen3-4b/analysis-committed/fresh_eval_pool_manifest.json
+- experiments/j-space-midband-write-sweep-qwen3-4b/AMENDMENT.md
+- experiments/j-space-midband-write-sweep-qwen3-4b/analysis-committed/build_manifest_layers.json
+- experiments/j-space-midband-write-sweep-qwen3-4b/analysis-committed/gate_fit_layers.json
+- experiments/j-space-midband-write-sweep-qwen3-4b/analysis-committed/PROVENANCE.md
+- experiments/j-space-midband-dose-calibration-qwen3-4b/AMENDMENT.md
+- experiments/j-space-midband-dose-calibration-qwen3-4b/analysis-committed/dose_calibration_summary.json
+- experiments/common/doubt-gated-caution-tighten-heldout-split/split_manifest.json
+- datasets/kuq/dataset.md
+- datasets/selfaware/dataset.md
+verdict: ''
+kg: []
