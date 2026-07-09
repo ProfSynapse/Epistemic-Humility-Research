@@ -1,14 +1,14 @@
 # Experiment-note schema
 
-An **experiment note** is the agent-runnable instruction manual for one experiment
-(and its variations). A collaborator points their agent at a note and the agent
-can set it up, run it, document it, and validate it without reconstructing repo
-conventions. One note per experiment family; variations live inside the note.
+An **experiment note** was the legacy agent-runnable instruction manual for one
+experiment family. Active experiment instructions now live with the governed
+experiment under `experiments/<slug>/` as `AMENDMENT.md`, `RUNBOOK.md`, `PLAN.md`,
+or `NOTEBOOK.md`. This schema is archived to explain the retained legacy notes.
 
-Notes live in `notes/experiments/<slug>.md` and are first-class knowledge-graph
-nodes (`kg.id: experiment:<slug>`). They are validated by
-`.agents/skills/experiment-runner/scripts/validate_experiment_notes.py` at commit
-(`.githooks/pre-commit`) and on every PR (`.github/workflows/validate.yml`).
+Retained legacy notes live in `archive/notes/experiments/<slug>.md` and remain
+first-class knowledge-graph nodes (`kg.id: experiment:<slug>`). They are
+validated by `.agents/skills/experiment-runner/scripts/validate_experiment_notes.py`
+only as archived provenance, not as the active surface for new experiments.
 
 This file is the contract the validator enforces. Files beginning with `_`
 (this file, `_TEMPLATE.md`) are scaffolding, not notes, and are skipped.
@@ -17,7 +17,7 @@ This file is the contract the validator enforces. Files beginning with `_`
 
 1. Engine = the `experiment-runner` skill (generic how-to-run).
 2. Governance = `docs/protocols/phase1/PROTOCOL.md` + `papers/common/amendment-governance.md`.
-3. **Experiment note = spec + runbook** (this artifact).
+3. **Legacy experiment note = spec + runbook** (this archived artifact).
 4. Instances = `experiment/phase1/run_records/` + `docs/sessions/`.
 
 A note *references* the protocol and recipes; it does not copy them.
@@ -96,16 +96,17 @@ paths are ignored. Keep brittle inline commands out; point at checked-in scripts
 
 ## Index
 
-`notes/experiments/README.md` is the auto-generated registry (status | phase | gap
-| lane). Regenerate it with:
+`archive/notes/experiments/README.md` records the retired note inventory and the
+experiment-local homes that replaced clear one-to-one notes. Validate retained
+archive notes with:
 
 ```bash
-python3 .agents/skills/experiment-runner/scripts/validate_experiment_notes.py notes/experiments --emit-index
+python3 .agents/skills/experiment-runner/scripts/validate_experiment_notes.py archive/notes/experiments
 ```
 
 Before committing new or edited notes, also run the KG relationship validator:
 
 ```bash
-python3 .agents/skills/knowledge-graph/scripts/validate_kg_relationships.py library notes/experiments
+python3 .agents/skills/knowledge-graph/scripts/validate_kg_relationships.py library archive/notes/experiments
 python3 bin/validate_kg.py
 ```

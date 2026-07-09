@@ -46,7 +46,7 @@ carries the headline.
   dial 0.834 / veto 0.754; training only SHARPENS the veto to 0.980). Synthesis:
   `papers/paper-4-two-signal-readout/notes/framework.md`; atomized into the KG as
   `paper:internal-twosignal` + `paper:internal-paper3` and six mechanism atoms. Runnable
-  family spec: `notes/experiments/two-signal-readout.md`.
+  family spec: `archive/notes/experiments/two-signal-readout.md`.
 - **Gap status.** Gap 4 (probe-transfer of humility) is RESOLVED in the strong form: the
   answerability axis transfers cross-dataset (Amendment P, KUQ->SelfAware 0.983) and the
   readout works training-free. Gaps 6/7 (small-model + cross-model coverage) are being

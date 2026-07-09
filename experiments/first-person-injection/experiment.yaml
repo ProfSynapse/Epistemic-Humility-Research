@@ -33,6 +33,12 @@ instrument:
   pins: {}
 inputs:
 - experiments/first-person-injection/artifacts/cloud_launches/amendment_ab_v1_launch.json
+- experiments/first-person-injection/artifacts/analysis/aa_think_trace_idiom_mining.md
+- experiments/first-person-injection/artifacts/trace_reports/ab_v1/INTERIM-NOTES.md
+- experiments/first-person-injection/artifacts/trace_reports/ab_v1/aa-7-trace-report.json
+- experiments/first-person-injection/artifacts/trace_reports/ab_v1/ab-1-trace-report.json
+- experiments/first-person-injection/artifacts/trace_reports/ab_v1/ab-2-trace-report.json
+- experiments/first-person-injection/artifacts/trace_reports/ab_v1/ab-3-trace-report.json
 verdict: AMBIGUOUS-LEANING-NEGATIVE — no V1 cell passes; first-person framing does
   not open the text channel (dial@late instrument saturated, dial@final MISS, gate@early
   only a ~2pt trickle); AA's presence-not-use conclusion strengthened.

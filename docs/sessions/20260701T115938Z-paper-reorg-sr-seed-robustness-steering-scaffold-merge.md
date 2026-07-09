@@ -168,8 +168,8 @@ _No summary yet._
 - kind: `result`
 - summary: Root cause of the Gemma "transient" fault found and fixed — probe/ ownership flipped to root:root on the 9P mount mid-day, so the image's uid 1001 could not mkdir; re-run container uses --user 0:0 (root) and cleared it. Seed 20260701 gate=0.998 dial=0.802 PASS veto=0.7618 PASS; seed 20260702 gate=0.998 dial=0.8385 PASS veto=0.7455 PASS (adequacy OK both). Verdict arithmetic: clause (c) per-seed veto majority now >=3/4 on EVERY seed (701 was the hinge — resolved YES); clause (b) veto seed-stable >=3/4 families now 4/4 (Gemma 2/2 secures >=2/3). Only clause (a) remains: Gemma dial 3/3 needs seed 20260703 dial >=0.65 (prior two: 0.802/0.839). Seed 703 extracting.
 - evidence:
-  - `experiment/phase1/probe/amendment_sr_gemma-4-e4b_seed20260701_result.json`
-  - `experiment/phase1/probe/amendment_sr_gemma-4-e4b_seed20260702_result.json`
+  - `experiments/sampled-decode-seed-robustness/artifacts/amendment_sr_gemma-4-e4b_seed20260701_result.json`
+  - `experiments/sampled-decode-seed-robustness/artifacts/amendment_sr_gemma-4-e4b_seed20260702_result.json`
   - `experiment/phase1/probe/sr_logs/PROGRESS.log`
 - next steps:
   - When seed 703 lands: fill Gemma rows in AMENDMENT-SR §7, compute the locked verdict, finalize paper3 §4.8 + §4.7/abstract, commit, open the SR PR, update the amendment-sr memory.
@@ -238,9 +238,9 @@ _No summary yet._
 - evidence:
   - `experiments/sampled-decode-seed-robustness/AMENDMENT.md`
   - `papers/paper-4-two-signal-readout/manuscript.md`
-  - `experiment/phase1/probe/amendment_sr_gemma-4-e4b_seed20260701_result.json`
-  - `experiment/phase1/probe/amendment_sr_gemma-4-e4b_seed20260702_result.json`
-  - `experiment/phase1/probe/amendment_sr_gemma-4-e4b_seed20260703_result.json`
+  - `experiments/sampled-decode-seed-robustness/artifacts/amendment_sr_gemma-4-e4b_seed20260701_result.json`
+  - `experiments/sampled-decode-seed-robustness/artifacts/amendment_sr_gemma-4-e4b_seed20260702_result.json`
+  - `experiments/sampled-decode-seed-robustness/artifacts/amendment_sr_gemma-4-e4b_seed20260703_result.json`
 ### 014-refactor - FIVE-paper line executed (Paper 1 split back out; Paper 2 slimmed)
 
 - at: `2026-07-02T00:45:00Z`

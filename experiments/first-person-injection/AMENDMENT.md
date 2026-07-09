@@ -120,7 +120,7 @@ at AUROC 0.998); the mid band exists for the dial cell, whose scores are
 continuous (AUROC 0.827). `{pct}` is the probe score rendered as a percent.
 
 Wording below is FINAL, grounded in the idiom-mining pass
-(`experiment/phase1/probe/steering/aa_think_trace_idiom_mining.md`,
+(`experiments/first-person-injection/artifacts/analysis/aa_think_trace_idiom_mining.md`,
 precondition #2, done 2026-07-02): it reuses the model's dominant native
 frame "I am (not) confident (in my previous answer) + reason", and its
 native moves "let me think", "I need to verify", and "say I don't know";
@@ -394,7 +394,7 @@ from the migrated ext4 repo (the first launch died with the 9P mount outage;
 nothing was saved, restart from scratch). `unsloth/Qwen3.5-4B`, note-variant
 v1, seed 20260701, temp 0.7 / top-p 0.9, sequential engine (`run_arm_b.py`).
 Raw artifacts (gitignored): `steering/results/ab-{1,2,3}-*/result.json`.
-Committed aggregates: `steering/reports/ab_v1/` (per-cell trace reports via
+Committed aggregates: `experiments/first-person-injection/artifacts/trace_reports/ab_v1/` (per-cell trace reports via
 `analyze_ab_traces.py` + `INTERIM-NOTES.md`). Config shas: AB-1
 `ced11c261fbecd7f`; per-cell shas recorded in each report.
 
@@ -426,7 +426,7 @@ Committed aggregates: `steering/reports/ab_v1/` (per-cell trace reports via
   any percent (placebo 4.8%). Full trace-pattern capture (verbatim
   rule-following on all 7 AB-1 real-arm abstentions at ~2–3% compliance;
   self-contradiction examples; the non-causal recoverability gradient) in
-  `steering/reports/ab_v1/INTERIM-NOTES.md`.
+  `experiments/first-person-injection/artifacts/trace_reports/ab_v1/INTERIM-NOTES.md`.
 
 ## §8 Verdict (locked gates, goalposts unmoved)
 

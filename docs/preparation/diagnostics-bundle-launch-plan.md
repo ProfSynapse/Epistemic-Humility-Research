@@ -28,7 +28,7 @@ Checkpoint provenance (published to HF; verified in TODO + AL session 0038):
 | PAR/TRUE    | `professorsynapse/eh-qwen3-4b-clean-sft-seed1-merged-16bit`| `professorsynapse/eh-qwen3-4b-clean-sft-grpo-par-true-seed1-lora` | `7e31d3cf62395275d4ba3d1d9ec8f95287188805` |
 
 GRPO-v2 == the plain-GRPO adapter over clean-SFT (the DEPLOYED checkpoint; the
-"v2" name is historical — confirmed in notes/experiments/two-signal-readout.md).
+"v2" name is historical — confirmed in archive/notes/experiments/two-signal-readout.md).
 
 ---
 

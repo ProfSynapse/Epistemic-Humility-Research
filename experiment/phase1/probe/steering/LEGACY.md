@@ -39,7 +39,7 @@ record; this table is a navigation aid, not the source of truth.
 | `cot_inject.py` | AA Arm B | CoT-injection prompt construction (early / late / placebo). String construction only. |
 | `run_arm_a.py` | AA-1..AA-4 | Activation-steering orchestration (alpha sweep, anchor vs end, alpha=0 control). GPU inside guarded `main()`; `--dry-run` CPU-only. |
 | `run_arm_b.py`, `arm_b_batched.py`, `spot_check_arm_b.py` | AA-5..AA-8 | CoT-injection orchestration (real + placebo paired, early vs late) and batched / spot-check variants. |
-| `ab_templates.py`, `analyze_ab_traces.py`, `aa_think_trace_idiom_mining.py` | AA / AB | Arm B template bank and think-trace idiom analysis. |
+| `ab_templates.py`, `analyze_ab_traces.py` | AA / AB | Arm B template bank and trace aggregation. The committed AA/AB idiom-mining artifact now lives at `experiments/first-person-injection/artifacts/analysis/aa_think_trace_idiom_mining.md`. |
 | `amendment_aa_verdict.py` | AA | Verdict adjudication for the AA cells. |
 | `persist_probe_direction.py` | Z-derived direction persistence (feeds AA/AL/AN) | Fits gate + dial probes from an extraction dir and persists unit-normed direction vectors. Legacy analogue of `mechinterp probe-fit`'s frozen-direction output. |
 | `gpu_equivalence_cell.py` | AA / AL harness self-check | CPU-vs-GPU hook-equivalence check. Legacy analogue of the tuner smoke readback / built-in equivalence self-check. |

@@ -3,7 +3,9 @@
 
 SPEC: experiments/first-person-injection/AMENDMENT.md (SIGNED
 2026-07-02 + Revision 1). Wording below is FINAL per the signed doc: V1 is
-grounded in the idiom-mining pass (aa_think_trace_idiom_mining.md); band cuts
+grounded in the idiom-mining pass
+(experiments/first-person-injection/artifacts/analysis/aa_think_trace_idiom_mining.md);
+band cuts
 are LOCKED at signing (low < 0.40, mid 0.40-0.70, high > 0.70). No em dashes
 in injected text.
 

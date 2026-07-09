@@ -20,7 +20,7 @@ models:
 - qwen3.5-4b
 metrics:
 - auroc
-provenance: 'Internal amendment (Tier-2, direct follow-up to Amendment AA). Source of truth: experiments/first-person-injection/AMENDMENT.md, section 7 (Results) and section 8 (Verdict, locked 2026-07-03). Same harness as AA Arm B (run_arm_b.py + cot_inject.py), same model, same frozen pools, same probe directions (gate L14 / dial L16), same sampled decode (temp 0.7, top_p 0.9, seed 20260701). Raw artifacts (gitignored): steering/results/ab-{1,2,3}-*/result.json. Committed aggregates: steering/reports/ab_v1/.'
+provenance: 'Internal amendment (Tier-2, direct follow-up to Amendment AA). Source of truth: experiments/first-person-injection/AMENDMENT.md, section 7 (Results) and section 8 (Verdict, locked 2026-07-03). Same harness as AA Arm B (run_arm_b.py + cot_inject.py), same model, same frozen pools, same probe directions (gate L14 / dial L16), same sampled decode (temp 0.7, top_p 0.9, seed 20260701). Raw artifacts (gitignored): steering/results/ab-{1,2,3}-*/result.json. Committed aggregates: experiments/first-person-injection/artifacts/trace_reports/ab_v1/.'
 related:
 - '[[first-person-framed-probe-score-injection-does-not-open-text-channel]]'
 - '[[trust-axis-injection-does-not-move-answer-abstain-revise-behavior]]'

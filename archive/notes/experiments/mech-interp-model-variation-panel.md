@@ -70,10 +70,10 @@ Initial model rows:
 | `clean_sft_kto` | clean SFT -> KTO | unpaired preference objective after SFT | missing per-model note |
 | `clean_sft_grpo_v1` | clean SFT -> GRPO v1 | first clean GRPO comparator | inventory comparator only |
 | `clean_sft_grpo_v2` | clean SFT -> GRPO v2 | strongest two-stage reward-shaped refusal boundary | missing per-model note |
-| `clean_sft_grpo_dpo` | clean SFT -> GRPO v2 -> DPO | current best seed-1 stack | `notes/experiments/clean-sft-grpo-dpo.md` |
-| `clean_sft_dpo_grpo` | clean SFT -> DPO -> GRPO v2 | preference then RL contrast | `notes/experiments/clean-sft-dpo-grpo.md` |
-| `clean_sft_grpo_kto` | clean SFT -> GRPO v2 -> KTO | RL then unpaired preference contrast | `notes/experiments/clean-sft-grpo-kto.md` |
-| `clean_sft_kto_grpo` | clean SFT -> KTO -> GRPO v2 | unpaired preference then RL contrast | `notes/experiments/clean-sft-kto-grpo.md` |
+| `clean_sft_grpo_dpo` | clean SFT -> GRPO v2 -> DPO | current best seed-1 stack | `experiments/grpo-centered-stacking/RUNBOOK.md` |
+| `clean_sft_dpo_grpo` | clean SFT -> DPO -> GRPO v2 | preference then RL contrast | `experiments/grpo-centered-stacking/RUNBOOK.md` |
+| `clean_sft_grpo_kto` | clean SFT -> GRPO v2 -> KTO | RL then unpaired preference contrast | `experiments/grpo-centered-stacking/RUNBOOK.md` |
+| `clean_sft_kto_grpo` | clean SFT -> KTO -> GRPO v2 | unpaired preference then RL contrast | `experiments/grpo-centered-stacking/RUNBOOK.md` |
 
 Legacy comparison rows may be used as historical controls only:
 
@@ -165,7 +165,7 @@ Primary analyses:
 ## Outputs & provenance
 
 - Session note: `docs/sessions/20260625T145842Z-phase-3-model-variation-panel.md`.
-- Experiment registry: `notes/experiments/README.md`.
+- Retired experiment-note registry: `archive/notes/experiments/README.md`.
 - Model-variation inventory:
   `docs/research/phase3-model-variation-inventory.csv` and
   `docs/research/phase3-model-variation-inventory.md`.
