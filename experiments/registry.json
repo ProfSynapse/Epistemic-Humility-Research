@@ -714,10 +714,13 @@
         "configs": [],
         "modules": [
           "archive/experiment/phase1/probe/steering/gpu_equivalence_cell.py",
-          "experiment/phase1/probe/cloud/modal_item11_equivalence.py",
-          "experiment/phase1/probe/cloud/runpod_diag_gpu_equiv.sh"
+          "cloud/modal_item11_equivalence.py",
+          "cloud/runpod_diag_gpu_equiv.sh"
         ],
-        "pins": {}
+        "pins": {
+          "cloud/modal_item11_equivalence.py": "5bfbba91b20c126f6e548b6d119dac681689c1feb2e455b9ad8e4fadd06f06fc",
+          "cloud/runpod_diag_gpu_equiv.sh": "56e4ac350ace454d2db4775b54f5aa09df7c43aee5c843f02e601fcbf7ee56e2"
+        }
       },
       "kg": [],
       "prediction": "",

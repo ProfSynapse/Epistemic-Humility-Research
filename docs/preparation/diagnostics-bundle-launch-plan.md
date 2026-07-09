@@ -252,7 +252,7 @@ Cell 1 (LOCAL preferred; RunPod form if wanted):
     # RunPod form:
     python $LAUNCHER --run-tag diag-item11-gpuequiv-r1 \
       --repo-url $REPO --commit $SHA \
-      --wrapper experiment/phase1/probe/cloud/runpod_diag_gpu_equiv.sh \
+      --wrapper experiments/diag-item11-batched-steering-equivalence/cloud/runpod_diag_gpu_equiv.sh \
       --wrapper-args "$STAGING professorsynapse/eh-qwen3-4b-clean-sft-seed1-merged-16bit experiments/diag-item11-batched-steering-equivalence/artifacts/directions/qwen3-4b-grpo-v2/direction_caution.json diag-item11-gpuequiv-r1" \
       --gpu "NVIDIA GeForce RTX 3090" --cloud-type COMMUNITY --timeout-min 30 --dry-run
 
