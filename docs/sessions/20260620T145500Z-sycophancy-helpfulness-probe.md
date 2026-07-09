@@ -314,7 +314,7 @@ Validated no-GPU:
 
 KTO expanded extraction:
 
-- Config: `experiment/phase1/probe/config/hidden_state_sycophancy_answer_kto_seed1.yaml`
+- Config: `archive/experiment/phase1/probe/config/sycophancy-hs/hidden_state_sycophancy_answer_kto_seed1.yaml`
 - SHA: `305d849601f706cf`
 - Output:
   `experiment/phase1/probe/qwen3-4b-instruct-sycophancy-answer-kto-seed1/hidden_states_sycophancy_answer/extraction__305d849601f7`
@@ -323,7 +323,7 @@ KTO expanded extraction:
 
 SFT expanded extraction:
 
-- Config: `experiment/phase1/probe/config/hidden_state_sycophancy_answer_sft_seed1.yaml`
+- Config: `archive/experiment/phase1/probe/config/sycophancy-hs/hidden_state_sycophancy_answer_sft_seed1.yaml`
 - SHA: `d0312c465c742acd`
 - Output:
   `experiment/phase1/probe/qwen3-4b-instruct-sycophancy-answer-sft-seed1/hidden_states_sycophancy_answer/extraction__d0312c465c74`

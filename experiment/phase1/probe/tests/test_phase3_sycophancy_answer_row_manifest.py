@@ -7,6 +7,7 @@ from pathlib import Path
 import pytest
 
 PROBE_DIR = Path(__file__).resolve().parents[1]
+REPO_ROOT = PROBE_DIR.parents[2]
 sys.path.insert(0, str(PROBE_DIR))
 
 import hidden_state_probe as hsp  # noqa: E402
@@ -129,8 +130,22 @@ def test_build_manifest_requires_all_arms(tmp_path: Path):
 
 def test_checked_in_sycophancy_hidden_state_configs_select_full_panel():
     for config_path in (
-        PROBE_DIR / "config" / "hidden_state_sycophancy_answer_sft_seed1.yaml",
-        PROBE_DIR / "config" / "hidden_state_sycophancy_answer_kto_seed1.yaml",
+        REPO_ROOT
+        / "archive"
+        / "experiment"
+        / "phase1"
+        / "probe"
+        / "config"
+        / "sycophancy-hs"
+        / "hidden_state_sycophancy_answer_sft_seed1.yaml",
+        REPO_ROOT
+        / "archive"
+        / "experiment"
+        / "phase1"
+        / "probe"
+        / "config"
+        / "sycophancy-hs"
+        / "hidden_state_sycophancy_answer_kto_seed1.yaml",
     ):
         config, cfg_sha = hsp.parse_config(config_path)
         rows = hsp.select_matched_slice(config)

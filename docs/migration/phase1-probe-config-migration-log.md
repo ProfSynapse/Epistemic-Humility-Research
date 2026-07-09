@@ -676,3 +676,24 @@ This log records migration batches after the terrain baseline in
   - Did not move the live/default `hidden_state_probe.yaml` runner config.
   - Did not move sycophancy hidden-state configs; they remain a separate slice
     because a dedicated sycophancy row-manifest test covers them.
+
+## C003c - Sycophancy Answer Hidden-State Extraction Configs
+
+- Date: 2026-07-09
+- Source component: `C003` subset
+- File count: 2
+- Source root: `experiment/phase1/probe/config/`
+- Destination:
+  `archive/experiment/phase1/probe/config/sycophancy-hs/`
+- Owner decision: archive-only historical provenance for Phase 3
+  answer-sycophancy hidden-state extraction prep configs. These are not reusable
+  shared defaults; they remain checked-in parser/selection fixtures via the
+  dedicated sycophancy row-manifest test.
+- Reason: the pair forms the bounded base-vs-SFT and base-vs-KTO seed-1
+  extraction prep surface over the shared answer-sycophancy row manifest.
+- Reference updates:
+  - Rewrote moved-config references in the sycophancy session note.
+  - Updated the dedicated sycophancy row-manifest unit test fixture paths.
+  - Added a README to the destination archive folder.
+- Non-goals:
+  - Did not move the live/default `hidden_state_probe.yaml` runner config.
