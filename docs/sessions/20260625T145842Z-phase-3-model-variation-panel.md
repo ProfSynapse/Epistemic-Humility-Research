@@ -830,12 +830,12 @@ _No summary yet._
 - kind: `method`
 - summary: Built the `clean_sft_grpo_dpo` full-eval SelfAware rare-cell manifest for the model-variation comparison pass. The source scored eval has 69 available `unknown_answered_wrong` rows, so the 64-row quota is tight but available. The selected panel is balanced at 256 rows: 64 `unknown_answered_wrong`, 64 `unknown_refused`, 64 `known_correct_answered`, and 64 `known_refused`. Created the prompt-matched hidden-state extraction config and model-free preflight passed with 256 rows, 128 known / 128 unknown, and source arms restricted to `clean_sft_grpo_dpo`.
 - evidence:
-  - `experiment/phase1/probe/config/phase3_current_clean_grpo_dpo_unknown_failure_selfaware_manifest.yaml`
-  - `experiment/phase1/probe/config/phase3_current_clean_grpo_dpo_unknown_failure_selfaware_manifest.summary.json`
+  - `experiments/grpo-centered-stacking/artifacts/configs/current-clean-grpo-dpo-unknown-failure/phase3_current_clean_grpo_dpo_unknown_failure_selfaware_manifest.yaml`
+  - `experiments/grpo-centered-stacking/artifacts/configs/current-clean-grpo-dpo-unknown-failure/phase3_current_clean_grpo_dpo_unknown_failure_selfaware_manifest.summary.json`
   - `experiment/phase1/probe/manifests/phase3_current_clean_grpo_dpo_unknown_failure_selfaware_manifest.json`
   - `experiment/phase1/probe/config/hidden_state_selfaware_manifest_clean_sft_grpo_dpo_unknown_failure_panel_prompt_matched.yaml`
 - commands:
-  - `python experiment\\phase1\\probe\\phase3_selfaware_behavior_manifest.py --config experiment\\phase1\\probe\\config\\phase3_current_clean_grpo_dpo_unknown_failure_selfaware_manifest.yaml`
+  - `python experiment\\phase1\\probe\\phase3_selfaware_behavior_manifest.py --config experiments\\grpo-centered-stacking\\artifacts\\configs\\current-clean-grpo-dpo-unknown-failure\\phase3_current_clean_grpo_dpo_unknown_failure_selfaware_manifest.yaml`
   - `PYTHONPATH=experiment/phase1/probe hidden_state_probe preflight via parse_config/select_matched_slice`
 - decisions:
   - Proceed to live Docker/GPU extraction for `extraction__ef1c54a85ce4`.

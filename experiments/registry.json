@@ -1007,7 +1007,9 @@
       "falsifier": "",
       "inputs": [
         "experiments/grpo-centered-stacking/artifacts/configs/current-clean-dpo-grpo-unknown-failure/phase3_current_clean_dpo_grpo_unknown_failure_selfaware_manifest.yaml",
-        "experiments/grpo-centered-stacking/artifacts/configs/current-clean-dpo-grpo-unknown-failure/phase3_current_clean_dpo_grpo_unknown_failure_selfaware_row_keys.txt"
+        "experiments/grpo-centered-stacking/artifacts/configs/current-clean-dpo-grpo-unknown-failure/phase3_current_clean_dpo_grpo_unknown_failure_selfaware_row_keys.txt",
+        "experiments/grpo-centered-stacking/artifacts/configs/current-clean-grpo-dpo-unknown-failure/phase3_current_clean_grpo_dpo_unknown_failure_selfaware_manifest.yaml",
+        "experiments/grpo-centered-stacking/artifacts/configs/current-clean-grpo-dpo-unknown-failure/phase3_current_clean_grpo_dpo_unknown_failure_selfaware_row_keys.txt"
       ],
       "instrument": {
         "configs": [],
