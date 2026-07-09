@@ -11,7 +11,7 @@ Y roll-up table, changes no gate.
   Amendment Z row surfaces (gitignored local data; section skips silently if
   a family's rows are absent).
 
-Run: python3 experiment/phase1/probe/amendment_y_text_baseline.py \
+Run: python3 archive/experiment/phase1/probe/amendments/amendment_y_text_baseline.py \
        [--out experiments/pretrain-only-base-readout/artifacts/amendment_y_text_baseline_result.json]
 """
 import argparse
@@ -25,8 +25,10 @@ from sklearn.metrics import roc_auc_score
 from sklearn.model_selection import StratifiedKFold
 from sklearn.pipeline import make_pipeline
 
-PROBE_DIR = Path(__file__).resolve().parent
-REPO = PROBE_DIR.parents[2]
+from path_compat import phase1_probe_dir, repo_root
+
+PROBE_DIR = phase1_probe_dir()
+REPO = repo_root()
 DEFAULT_OUT = REPO / "experiments" / "pretrain-only-base-readout" / "artifacts" / "amendment_y_text_baseline_result.json"
 DEFAULT_GATE_POOL = REPO / "experiments" / "common" / "artifacts" / "selfaware_gate_pool" / "selfaware_gate_rows_frozen.jsonl"
 SEED = 20260630

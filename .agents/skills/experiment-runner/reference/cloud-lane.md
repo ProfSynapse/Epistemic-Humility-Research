@@ -43,7 +43,7 @@ typer-broken; use the Python Jobs API).
   rule above: a timeout that long is itself a signal the cell is oversized for
   this lane.
 - Descriptive controls (e.g. the TF-IDF text baseline
-  `experiment/phase1/probe/amendment_y_text_baseline.py`) run locally on the
+  `archive/experiment/phase1/probe/amendments/amendment_y_text_baseline.py`) run locally on the
   uploaded rows — another reason rows.jsonl must come back from every cell.
 
 ## Tuner training lane

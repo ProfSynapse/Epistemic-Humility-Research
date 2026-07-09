@@ -56,7 +56,7 @@ checkpoints:
   - experiments/sampled-decode-seed-robustness/AMENDMENT.md
   run_ids: []
   commands:
-  - bash experiment/phase1/probe/amendment_sr_queue.sh
+  - bash archive/experiment/phase1/probe/amendments/amendment_sr_queue.sh
   decisions: []
   next_steps: []
   signals: {}
@@ -143,7 +143,7 @@ _No summary yet._
 - evidence:
   - `experiments/sampled-decode-seed-robustness/AMENDMENT.md`
 - commands:
-  - `bash experiment/phase1/probe/amendment_sr_queue.sh`
+  - `bash archive/experiment/phase1/probe/amendments/amendment_sr_queue.sh`
 ### 003-result - SR 3/12: Llama-3.2-3B veto flips greedy-FAIL → seed-stable PASS (3/3)
 
 - at: `2026-07-01T12:00:08Z`

@@ -7,5 +7,5 @@ Committed result artifacts for the historical Amendment Y pretrain-only base-rea
 Regenerate with:
 
 ```bash
-python experiment/phase1/probe/amendment_y_text_baseline.py --out experiments/pretrain-only-base-readout/artifacts/amendment_y_text_baseline_result.json
+python archive/experiment/phase1/probe/amendments/amendment_y_text_baseline.py --out experiments/pretrain-only-base-readout/artifacts/amendment_y_text_baseline_result.json
 ```

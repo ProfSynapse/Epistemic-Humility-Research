@@ -9,7 +9,7 @@
 # Scope: dial + veto only (gate is decode-invariant; emitted as invariance check).
 # NOT to be run without explicit user launch approval.
 #
-# Run from repo root:  bash experiment/phase1/probe/amendment_sr_queue.sh
+# Run from repo root:  bash archive/experiment/phase1/probe/amendments/amendment_sr_queue.sh
 set -uo pipefail
 
 REPO_WIN='F:\Code\Epistemic-Humility-Research'
