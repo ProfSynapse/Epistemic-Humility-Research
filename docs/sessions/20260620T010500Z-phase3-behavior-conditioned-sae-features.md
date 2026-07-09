@@ -1748,7 +1748,7 @@ Extraction and baseline generation:
 Actual generated behavior cells:
 
 - Behavior panel config:
-  `experiment/phase1/probe/config/phase3_gold_kto_targeted_behavior_panel.yaml`.
+  `archive/experiment/phase1/probe/config/gold-kto-targeted-rare-cell-panels/phase3_gold_kto_targeted_behavior_panel.yaml`.
 - Behavior panel output:
   `experiment/phase1/probe/qwen3-4b-instruct/gold_behavior_panels/phase3_gold_kto_targeted_behavior_panel`.
 - Counts:
@@ -1765,7 +1765,7 @@ Actual generated behavior cells:
 Targeted multicell readout:
 
 - Config:
-  `experiment/phase1/probe/config/phase3_gold_kto_targeted_multicell_readout.yaml`.
+  `archive/experiment/phase1/probe/config/gold-kto-targeted-rare-cell-panels/phase3_gold_kto_targeted_multicell_readout.yaml`.
 - Output:
   `experiment/phase1/probe/qwen3-4b-instruct/multicell_readout/phase3_gold_kto_targeted_multicell_readout`.
 - Four-cell labeled rows: `419`; unmatched rows: `29`.
@@ -1834,11 +1834,11 @@ Live diagnostic:
 Cell-level scoring:
 
 - Refusal cell-analysis config:
-  `experiment/phase1/probe/config/phase3_gold_kto_targeted_calibrated_expression_refusal_logit_cell_analysis.yaml`.
+  `archive/experiment/phase1/probe/config/gold-kto-targeted-rare-cell-panels/phase3_gold_kto_targeted_calibrated_expression_refusal_logit_cell_analysis.yaml`.
 - Answer-alias cell-analysis config:
-  `experiment/phase1/probe/config/phase3_gold_kto_targeted_calibrated_expression_answer_logit_cell_analysis.yaml`.
+  `archive/experiment/phase1/probe/config/gold-kto-targeted-rare-cell-panels/phase3_gold_kto_targeted_calibrated_expression_answer_logit_cell_analysis.yaml`.
 - Sign-score config:
-  `experiment/phase1/probe/config/phase3_gold_kto_targeted_cell_sign_score.yaml`.
+  `archive/experiment/phase1/probe/config/gold-kto-targeted-rare-cell-panels/phase3_gold_kto_targeted_cell_sign_score.yaml`.
 - Top source arm:
   `h_lora` L27 known-overrefusal axis, activation subtraction, coefficient
   `50`.

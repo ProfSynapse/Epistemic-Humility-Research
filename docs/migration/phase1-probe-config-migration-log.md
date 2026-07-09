@@ -824,3 +824,30 @@ This log records migration batches after the terrain baseline in
   - Did not move generated behavior panels, causal-pilot outputs,
     logit-diagnostic outputs, or cell-analysis outputs under
     `experiment/phase1/probe/qwen3-4b-instruct/`.
+
+## C001f2 - Gold-KTO Targeted Rare-Cell Scoring Configs
+
+- Date: 2026-07-09
+- Source component: `C001` subset
+- File count: 5
+- Source root: `experiment/phase1/probe/config/`
+- Destination:
+  `archive/experiment/phase1/probe/config/gold-kto-targeted-rare-cell-panels/`
+- Owner decision: archive-only historical provenance for the targeted 448-row
+  SFT->KTO gold behavior-panel, multicell-readout, logit-cell aggregation, and
+  sign-score configs. These complete the already archived targeted rare-cell
+  panel family and are not reusable shared defaults.
+- Reason: these files form the downstream scoring surface for the targeted
+  rare-cell pipeline already archived in `C001f`: materialize behavior labels,
+  fit the multicell readout, aggregate targeted logit diagnostics by behavior
+  cell, and rank candidate arms by sign goals.
+- Reference updates:
+  - Rewrote moved-config references in the June 20 behavior-conditioned session
+    note.
+  - Rewrote the archived model-variation note reference to the targeted
+    multicell readout.
+  - Updated the destination archive README.
+- Non-goals:
+  - Did not move generated hidden-state extractions, behavior panels,
+    causal-pilot outputs, logit-cell outputs, multicell-readout outputs, or
+    cell-sign-score outputs under `experiment/phase1/probe/qwen3-4b-instruct/`.
