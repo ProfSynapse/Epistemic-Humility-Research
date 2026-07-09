@@ -15,9 +15,13 @@ import pytest
 torch = pytest.importorskip("torch")
 import torch.nn as nn  # noqa: E402
 
-PROBE_DIR = Path(__file__).resolve().parent.parent
-if str(PROBE_DIR) not in sys.path:
-    sys.path.insert(0, str(PROBE_DIR))
+AMENDMENTS_DIR = Path(__file__).resolve().parent.parent
+if str(AMENDMENTS_DIR) not in sys.path:
+    sys.path.insert(0, str(AMENDMENTS_DIR))
+
+from path_compat import phase1_probe_dir  # noqa: E402
+
+PROBE_DIR = phase1_probe_dir()
 
 import amendment_ak_stage1_extract as ak  # noqa: E402
 
@@ -195,25 +199,28 @@ def test_pool_builder_filters_and_projects(tmp_path):
 # --------------------------------------------------------------------------
 def test_modal_grpo_v2_provenance_filled():
     """The wrapper's refuse-to-launch guard checks that the grpo-v2 constants do
-    not start with REPLACE_WITH. Import the module-level constants directly
-    (importing modal is fine on CPU; only the @app.function body needs a GPU) and
-    assert both arms are fully specified so the guard passes for grpo-v2."""
-    import importlib.util
+    not start with REPLACE_WITH. Parse the module-level constants directly so
+    this CPU test does not require the Modal package."""
+    import ast
 
     cloud = PROBE_DIR / "cloud" / "modal_ak_stage1.py"
-    spec = importlib.util.spec_from_file_location("modal_ak_stage1", cloud)
-    mod = importlib.util.module_from_spec(spec)
-    spec.loader.exec_module(mod)
+    tree = ast.parse(cloud.read_text(encoding="utf-8"))
+    constants = {}
+    for node in tree.body:
+        if isinstance(node, ast.Assign):
+            for target in node.targets:
+                if isinstance(target, ast.Name) and isinstance(node.value, ast.Constant):
+                    constants[target.id] = node.value.value
 
     for name in ("REPO_COMMIT", "GRPOV2_BASE_MODEL", "GRPOV2_ADAPTER_REPO",
                  "GRPOV2_ADAPTER_REV"):
-        val = getattr(mod, name)
+        val = constants[name]
         assert isinstance(val, str) and not val.startswith("REPLACE_WITH"), (
             f"{name} is still a placeholder: {val!r}")
     # the adapter revision is a full 40-char git/HF commit SHA
-    rev = mod.GRPOV2_ADAPTER_REV
+    rev = constants["GRPOV2_ADAPTER_REV"]
     assert len(rev) == 40 and all(c in "0123456789abcdef" for c in rev), rev
-    assert mod.GRPOV2_ADAPTER_REPO.startswith("professorsynapse/")
+    assert constants["GRPOV2_ADAPTER_REPO"].startswith("professorsynapse/")
 
 
 if __name__ == "__main__":

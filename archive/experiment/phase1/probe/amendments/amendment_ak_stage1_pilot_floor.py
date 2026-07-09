@@ -35,7 +35,9 @@ from pathlib import Path
 
 import amendment_ak_stage1_lib as ak
 
-WORKTREE = Path(__file__).resolve().parents[3]
+from path_compat import repo_root  # noqa: E402
+
+WORKTREE = repo_root()
 # Frozen AH answerability probes live in the canonical checkout's untracked
 # analysis tree (gitignored, shared across amendments); fall back to the
 # worktree copy if a run ever materializes them locally.

@@ -15,7 +15,7 @@ emitting an answer.
 
 Data (item-20 gentime capture, r2)
 ----------------------------------
-- Produced by experiment/phase1/probe/amendment_ak_gentime_positions_extract.py
+- Produced by archive/experiment/phase1/probe/amendments/amendment_ak_gentime_positions_extract.py
   (wrapper cloud/runpod_diag_gentime_positions.sh) at commit eb102f7b, on the
   deployed clean-SFT -> GRPO-v2 checkpoint, over pools/a0_pool_v21_questions.jsonl.
 - 6 positions per row: anchor, first_vis, mid25, mid50, mid75, answer_end.

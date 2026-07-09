@@ -1,6 +1,6 @@
 # Amendment AK Stage 1 - gate verdicts (committed record)
 
-Analysis: `experiment/phase1/probe/amendment_ak_stage1_analyze.py`
+Analysis: `archive/experiment/phase1/probe/amendments/amendment_ak_stage1_analyze.py`
 (seed 20260705, deterministic). Full machine-readable output and per-position
 CIs are in
 `experiments/commitment-point/artifacts/stage1/ak_stage1_gate_report.json`.

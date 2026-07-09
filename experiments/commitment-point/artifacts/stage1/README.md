@@ -9,8 +9,8 @@ Committed Stage 1 readout artifacts for the Amendment AK commitment-point experi
 The runnable analysis scripts remain in `experiment/phase1/probe/`:
 
 ```bash
-python experiment/phase1/probe/amendment_ak_stage1_pilot_floor.py --grpo-dir <grpo-v2-arm-dir> --raw-dir <raw-base-arm-dir>
-python experiment/phase1/probe/amendment_ak_stage1_analyze.py --grpo-dir <grpo-v2-arm-dir> --raw-dir <raw-base-arm-dir>
+python archive/experiment/phase1/probe/amendments/amendment_ak_stage1_pilot_floor.py --grpo-dir <grpo-v2-arm-dir> --raw-dir <raw-base-arm-dir>
+python archive/experiment/phase1/probe/amendments/amendment_ak_stage1_analyze.py --grpo-dir <grpo-v2-arm-dir> --raw-dir <raw-base-arm-dir>
 ```
 
 `amendment_ak_stage1_analyze.py` prints its generated Markdown summary to stdout.

@@ -57,12 +57,12 @@ Where this note and the doc disagree, the doc wins.
 
 ## What was built (this branch)
 
-- `experiment/phase1/probe/amendment_ak_build_pool.py` - CPU pool builder. Emits
+- `archive/experiment/phase1/probe/amendments/amendment_ak_build_pool.py` - CPU pool builder. Emits
   `analysis/ak_stage1/ak_stage1_pool.jsonl` (1,338 rows, verified) with
   row_key/question/label/gold_class/confab_on_unanswerable/caution_dist_z/
   category_canon/source. Question text is included ONLY for the private staging
   upload (GPU render needs it); extraction outputs never write it back.
-- `experiment/phase1/probe/amendment_ak_stage1_extract.py` - GPU runner. Greedy
+- `archive/experiment/phase1/probe/amendments/amendment_ak_stage1_extract.py` - GPU runner. Greedy
   batch-1 generation then a single full-sequence forward with
   `output_hidden_states=True`, slicing anchor / think-close / first-visible /
   every-stride-th / answer-end at the AK layer band (L16,L20,L24,L28,L34,
@@ -75,7 +75,7 @@ Where this note and the doc disagree, the doc wins.
   parameterized by `--checkpoint raw-base|grpo-v2`. Runs a numerics-smoke
   pre-stage (`--limit 20`) and asserts the determinism spot-check passed before
   the full pool.
-- `experiment/phase1/probe/tests/test_ak_stage1_extract.py` - CPU smoke, 8
+- `archive/experiment/phase1/probe/amendments/tests/test_ak_stage1_extract.py` - CPU smoke, 8
   tests GREEN: position selection, tiny-fake-model capture, the
   batch-1-vs-batch-N token-level agreement contract, and the pool-builder
   round-trip.

@@ -10,7 +10,7 @@ into the 1000-row corpus this module operates on.
 **Source pool**: `professorsynapse/eh-al-prep-staging`
 (`repo_type="dataset"`), file `pools/ak_stage1_pool.jsonl` -- the AH/AK
 Stage-1 commitment-point pool (built by
-`experiment/phase1/probe/amendment_ak_build_pool.py` from the AH stage-0
+`archive/experiment/phase1/probe/amendments/amendment_ak_build_pool.py` from the AH stage-0
 question pool; also fetched from this same staging repo by
 `experiment/phase1/probe/cloud/modal_ak_stage1.py`). Those questions
 originate from the KUQ (Known-Unknown Questions) and SelfAware datasets as

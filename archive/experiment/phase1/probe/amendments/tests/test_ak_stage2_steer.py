@@ -24,10 +24,16 @@ from pathlib import Path
 import numpy as np
 import pytest
 
-PROBE_DIR = Path(__file__).resolve().parents[1]
-EVAL_DIR = PROBE_DIR.parent / "eval"
-STEER_DIR = PROBE_DIR / "steering"
-for p in (str(PROBE_DIR), str(EVAL_DIR), str(STEER_DIR)):
+AMENDMENTS_DIR = Path(__file__).resolve().parents[1]
+if str(AMENDMENTS_DIR) not in sys.path:
+    sys.path.insert(0, str(AMENDMENTS_DIR))
+
+from path_compat import phase1_eval_dir, phase1_probe_dir, repo_root  # noqa: E402
+
+PROBE_DIR = phase1_probe_dir()
+EVAL_DIR = phase1_eval_dir()
+STEER_DIR = repo_root() / "archive/experiment/phase1/probe/steering"
+for p in (str(AMENDMENTS_DIR), str(PROBE_DIR), str(EVAL_DIR), str(STEER_DIR)):
     if p not in sys.path:
         sys.path.insert(0, p)
 

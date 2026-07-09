@@ -43,7 +43,9 @@ from sklearn.preprocessing import StandardScaler
 
 import amendment_ak_stage1_lib as ak
 
-WORKTREE = Path(__file__).resolve().parents[3]
+from path_compat import repo_root  # noqa: E402
+
+WORKTREE = repo_root()
 _CANON = Path("/home/profsynapse/code/Epistemic-Humility-Research")
 _PROBES_REL = "experiment/phase1/probe/analysis/ah_stage0/probes"
 PROBES_DIR = (_CANON / _PROBES_REL if (_CANON / _PROBES_REL).is_dir()
