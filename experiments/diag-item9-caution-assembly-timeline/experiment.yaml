@@ -1,0 +1,22 @@
+slug: diag-item9-caution-assembly-timeline
+title: Diagnostic Item 9 - Caution Assembly Timeline
+type: lab-diagnostic
+status: historical
+registered: true
+created_at: '2026-07-09T02:29:25Z'
+question: How does the caution/answerability readout develop across raw, clean-SFT,
+  GRPO-v2, and PAR-true training stages?
+prediction: ''
+falsifier: ''
+checkpoint:
+  repo: professorsynapse/eh-al-prep-staging
+  revision: diag-item9-{raw,cleansft,grpov2,partrue}-r3
+instrument:
+  configs: []
+  modules: []
+  pins: {}
+inputs:
+- experiment/phase1/probe/diag_item9_caution_timeline.py
+- experiments/diag-item9-caution-assembly-timeline/analysis-committed/diag_item9_caution_timeline.md
+verdict: Historical lab-notebook diagnostic banked; caution/answerability readout remains strong across stages, with most direction rotation from raw to clean-SFT and smaller rotation after GRPO-v2/PAR-true.
+kg: []

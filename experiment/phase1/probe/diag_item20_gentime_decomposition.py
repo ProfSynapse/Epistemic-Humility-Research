@@ -40,10 +40,12 @@ alongside for continuity with the raw-theta B1 line.
 Gentime capture layers are L0..L36, so L35 (the canonical axis layer) is present:
 NO refitting is done and NO nearest-layer fallback is needed.
 
-Outputs (untracked)
--------------------
-- analysis/diag_item20/gentime_decomposition.json  (full numeric report)
-- analysis/diag_item20/gentime_decomposition.md     (small tables)
+Outputs
+-------
+- experiments/diag-item20-gentime-displacement/analysis-committed/gentime_decomposition.json
+  (full numeric report, if promoted)
+- experiments/diag-item20-gentime-displacement/analysis-committed/gentime_decomposition.md
+  (small tables)
 
 Deterministic: fixed row order, seeded bootstrap for the CIs.
 """
@@ -60,7 +62,12 @@ from safetensors import safe_open
 PROBE_DIR = Path(__file__).resolve().parent
 AXIS_DIR = PROBE_DIR / "analysis/current_clean_grpo_v2_caution_residual_direction"
 DEFAULT_DATA = None  # required arg; points at the extracted gentime data/ dir
-OUT_DIR = PROBE_DIR / "analysis/diag_item20"
+OUT_DIR = (
+    PROBE_DIR.parents[2]
+    / "experiments"
+    / "diag-item20-gentime-displacement"
+    / "analysis-committed"
+)
 L = 35
 POSITIONS = ["anchor", "first_vis", "mid25", "mid50", "mid75", "answer_end"]
 GEN_POSITIONS = ["first_vis", "mid25", "mid50", "mid75", "answer_end"]

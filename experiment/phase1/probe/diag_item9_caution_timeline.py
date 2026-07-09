@@ -44,8 +44,10 @@ METHOD (per stage, per layer, deterministic + seeded):
   5. Class-balance guard: report AUROC only where BOTH classes have >= 30 rows;
      otherwise mark the cell underpowered. Never silently drop a stage.
 
-Outputs (UNTRACKED, under analysis/): diag_item9_caution_timeline.json plus a
-small markdown table diag_item9_caution_timeline.md.
+Outputs: caller-provided `--out-dir` receives diag_item9_caution_timeline.json
+plus a small markdown table diag_item9_caution_timeline.md. The committed
+historical table lives under
+experiments/diag-item9-caution-assembly-timeline/analysis-committed/.
 """
 from __future__ import annotations
 
