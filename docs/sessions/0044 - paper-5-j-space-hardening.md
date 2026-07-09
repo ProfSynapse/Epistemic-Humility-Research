@@ -4,7 +4,7 @@ session_id: paper5-jspace-hardening
 title: Paper 5 J-space hardening
 status: active
 created_at: '2026-07-08T16:46:25Z'
-updated_at: '2026-07-09T19:21:21Z'
+updated_at: '2026-07-09T20:59:59Z'
 phase: phase1
 question: Which registered follow-up experiments harden the Paper 5 actuation thesis,
   starting with a fresh Qwen3-4B J-space layer-site replication?
@@ -105,6 +105,26 @@ checkpoints:
   commands: []
   decisions: []
   next_steps: []
+  signals: {}
+- id: 004-amendment
+  at: '2026-07-09T20:59:59Z'
+  kind: amendment
+  title: Qwen3.5 dose-grid recalibration registered + relaunch dispatched
+  summary: 'Registered the pre-outcome Qwen3.5 dose-grid recalibration on doubt-snap-cross-family
+    (commit 8aa1dc02 on exp/doubt-snap-cross-family): per-cell FIT grids 4B {10,20,30,40,50,60,75}
+    / 9B {60,80,100,120,140}, selection rule and thresholds unchanged, A10G operational
+    change folded in. User approved the paid FIT-sweep-only Modal relaunch (~$1-3/cell);
+    relaunch executor dispatched to verify volume artifact reuse and launch both cells
+    at batch 1. Rep-2 multisource scaffold completed: 221 fresh confabs (139/6/76
+    across three sources), G0 mining floors pass, 8-row smoke green with RunLog per-row
+    persistence confirmed; awaiting rebase onto main + gate text + predictions + sign.'
+  evidence: []
+  run_ids: []
+  commands: []
+  decisions: []
+  next_steps:
+  - Report relaunch app IDs; then rep-2 sign flow (rebase, gate text to user, both
+    predictions, sign, launch on 3090).
   signals: {}
 ---
 # Paper 5 J-space hardening
@@ -332,3 +352,10 @@ rows before the layer contrast.
 - evidence:
   - `/home/profsynapse/code/ehr-worktrees/doubt-snap-cross-family/experiments/doubt-snap-cross-family-confirmatory/analysis/from_modal/qwen35_4b/committed/dose_fit.json`
   - `/home/profsynapse/code/ehr-worktrees/doubt-snap-cross-family/experiments/doubt-snap-cross-family-confirmatory/analysis/from_modal/qwen35_9b/committed/build_manifest.json`
+### 004-amendment - Qwen3.5 dose-grid recalibration registered + relaunch dispatched
+
+- at: `2026-07-09T20:59:59Z`
+- kind: `amendment`
+- summary: Registered the pre-outcome Qwen3.5 dose-grid recalibration on doubt-snap-cross-family (commit 8aa1dc02 on exp/doubt-snap-cross-family): per-cell FIT grids 4B {10,20,30,40,50,60,75} / 9B {60,80,100,120,140}, selection rule and thresholds unchanged, A10G operational change folded in. User approved the paid FIT-sweep-only Modal relaunch (~$1-3/cell); relaunch executor dispatched to verify volume artifact reuse and launch both cells at batch 1. Rep-2 multisource scaffold completed: 221 fresh confabs (139/6/76 across three sources), G0 mining floors pass, 8-row smoke green with RunLog per-row persistence confirmed; awaiting rebase onto main + gate text + predictions + sign.
+- next steps:
+  - Report relaunch app IDs; then rep-2 sign flow (rebase, gate text to user, both predictions, sign, launch on 3090).
