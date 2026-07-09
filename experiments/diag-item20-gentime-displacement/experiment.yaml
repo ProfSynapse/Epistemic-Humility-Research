@@ -13,8 +13,10 @@ checkpoint:
   revision: diag-item20-gentime-r2
 instrument:
   configs: []
-  modules: []
-  pins: {}
+  modules:
+  - cloud/runpod_diag_gentime_positions.sh
+  pins:
+    cloud/runpod_diag_gentime_positions.sh: b52a31af09fdef8fa924450068241cd5c829c3dcf24c7dd07f6f8a03d807736b
 inputs:
 - experiment/phase1/probe/diag_item20_gentime_decomposition.py
 - experiments/diag-item20-gentime-displacement/analysis-committed/gentime_decomposition.md

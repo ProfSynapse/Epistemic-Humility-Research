@@ -208,28 +208,28 @@ Cell 4 (repeat per stage — raw / clean-sft / grpo-v2 / par-true):
     # raw base (no adapter)
     python $LAUNCHER --run-tag diag-item9-raw-r1 \
       --repo-url $REPO --commit $SHA \
-      --wrapper experiment/phase1/probe/cloud/runpod_diag_caution_timeline.sh \
+      --wrapper experiments/diag-item9-caution-assembly-timeline/cloud/runpod_diag_caution_timeline.sh \
       --wrapper-args "$STAGING unsloth/Qwen3-4B-bnb-4bit - - $POOL raw diag-item9-raw-r1 36" \
       --gpu "NVIDIA GeForce RTX 3090" --cloud-type COMMUNITY --timeout-min 90 --dry-run
 
     # clean-SFT (merged; no adapter)
     python $LAUNCHER --run-tag diag-item9-cleansft-r1 \
       --repo-url $REPO --commit $SHA \
-      --wrapper experiment/phase1/probe/cloud/runpod_diag_caution_timeline.sh \
+      --wrapper experiments/diag-item9-caution-assembly-timeline/cloud/runpod_diag_caution_timeline.sh \
       --wrapper-args "$STAGING professorsynapse/eh-qwen3-4b-clean-sft-seed1-merged-16bit - - $POOL cleansft diag-item9-cleansft-r1 36" \
       --gpu "NVIDIA GeForce RTX 3090" --cloud-type COMMUNITY --timeout-min 90 --dry-run
 
     # GRPO-v2 (deployed)
     python $LAUNCHER --run-tag diag-item9-grpov2-r1 \
       --repo-url $REPO --commit $SHA \
-      --wrapper experiment/phase1/probe/cloud/runpod_diag_caution_timeline.sh \
+      --wrapper experiments/diag-item9-caution-assembly-timeline/cloud/runpod_diag_caution_timeline.sh \
       --wrapper-args "$STAGING professorsynapse/eh-qwen3-4b-clean-sft-seed1-merged-16bit professorsynapse/eh-qwen3-4b-clean-sft-grpo-seed1-lora main $POOL grpov2 diag-item9-grpov2-r1 36" \
       --gpu "NVIDIA GeForce RTX 3090" --cloud-type COMMUNITY --timeout-min 90 --dry-run
 
     # PAR/TRUE
     python $LAUNCHER --run-tag diag-item9-partrue-r1 \
       --repo-url $REPO --commit $SHA \
-      --wrapper experiment/phase1/probe/cloud/runpod_diag_caution_timeline.sh \
+      --wrapper experiments/diag-item9-caution-assembly-timeline/cloud/runpod_diag_caution_timeline.sh \
       --wrapper-args "$STAGING professorsynapse/eh-qwen3-4b-clean-sft-seed1-merged-16bit professorsynapse/eh-qwen3-4b-clean-sft-grpo-par-true-seed1-lora 7e31d3cf62395275d4ba3d1d9ec8f95287188805 $POOL partrue diag-item9-partrue-r1 36" \
       --gpu "NVIDIA GeForce RTX 3090" --cloud-type COMMUNITY --timeout-min 90 --dry-run
 
@@ -237,7 +237,7 @@ Cell 3 (generation-time positions, deployed checkpoint):
 
     python $LAUNCHER --run-tag diag-item20-gentime-r1 \
       --repo-url $REPO --commit $SHA \
-      --wrapper experiment/phase1/probe/cloud/runpod_diag_gentime_positions.sh \
+      --wrapper experiments/diag-item20-gentime-displacement/cloud/runpod_diag_gentime_positions.sh \
       --wrapper-args "$STAGING professorsynapse/eh-qwen3-4b-clean-sft-seed1-merged-16bit professorsynapse/eh-qwen3-4b-clean-sft-grpo-seed1-lora main $POOL diag-item20-gentime-r1 600" \
       --gpu "NVIDIA GeForce RTX 3090" --cloud-type COMMUNITY --timeout-min 180 --dry-run
 

@@ -13,8 +13,10 @@ checkpoint:
   revision: diag-item9-{raw,cleansft,grpov2,partrue}-r3
 instrument:
   configs: []
-  modules: []
-  pins: {}
+  modules:
+  - cloud/runpod_diag_caution_timeline.sh
+  pins:
+    cloud/runpod_diag_caution_timeline.sh: decee935e5fce79b8aa584f5e9271fcfc0c9df2ef9a21785300168633a9ceb53
 inputs:
 - experiment/phase1/probe/diag_item9_caution_timeline.py
 - experiments/diag-item9-caution-assembly-timeline/analysis-committed/diag_item9_caution_timeline.md
