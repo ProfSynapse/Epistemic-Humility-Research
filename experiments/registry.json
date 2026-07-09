@@ -272,7 +272,7 @@
           "cell.yaml",
           "gates.yaml",
           "families/llama-3.2-3b.yaml",
-          "families/ministral-3-3b.yaml",
+          "families/mistral-7b-v03.yaml",
           "families/qwen35-4b.yaml",
           "families/gemma4-e4b.yaml"
         ],

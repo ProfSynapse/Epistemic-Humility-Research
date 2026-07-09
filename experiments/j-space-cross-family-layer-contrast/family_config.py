@@ -24,11 +24,11 @@ import yaml
 HERE = Path(__file__).resolve().parent
 FAMILIES_DIR = HERE / "families"
 
-FAMILY_SLUGS = ["llama-3.2-3b", "ministral-3-3b", "qwen35-4b", "gemma4-e4b"]
+FAMILY_SLUGS = ["llama-3.2-3b", "mistral-7b-v03", "qwen35-4b", "gemma4-e4b"]
 
 # Amendment Z's risk order (lowest risk first): mirrors
 # experiment/protocol/AMENDMENT-Z-cross-family-confirmatory.md "Run order".
-RUN_ORDER = ["llama-3.2-3b", "ministral-3-3b", "qwen35-4b", "gemma4-e4b"]
+RUN_ORDER = ["llama-3.2-3b", "mistral-7b-v03", "qwen35-4b", "gemma4-e4b"]
 
 
 def family_config_path(family: str) -> Path:

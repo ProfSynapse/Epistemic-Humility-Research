@@ -16,7 +16,7 @@ surface:
   families_dir: families/
   families:
     - llama-3.2-3b
-    - ministral-3-3b
+    - mistral-7b-v03
     - qwen35-4b
     - gemma4-e4b
   run_order_source: experiment/protocol/AMENDMENT-Z-cross-family-confirmatory.md

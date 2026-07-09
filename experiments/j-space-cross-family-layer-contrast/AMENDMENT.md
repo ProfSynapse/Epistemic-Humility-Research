@@ -53,7 +53,7 @@ overlapping, extended with this experiment's own J-space-specific notes).
 | Family | Checkpoint | Scale | Loader / render notes | Risk order |
 |--------|-----------|-------|------------------------|-----------|
 | Meta Llama | `unsloth/Llama-3.2-3B-Instruct` (fallback `meta-llama/Llama-3.2-3B-Instruct`) | 3B | Text-only `LlamaForCausalLM`, lowest loader risk (Amendment Z). EOS needs `<\|eot_id\|>` in addition to the tokenizer's own `eos_token_id`. | 1 (run first) |
-| Mistral | `mistralai/Ministral-3-3B-Instruct-2512` | 3B | Apache-2.0, ungated; **weights shipped FP8 -- dtype-load risk** (Amendment Z). If the bf16 upcast load fails, this is a G0 loader blocker, recorded INELIGIBLE, not silently worked around. | 2 |
+| Mistral | `mistralai/Mistral-7B-Instruct-v0.3` | 7B | Apache-2.0, ungated, plain `MistralForCausalLM`, bf16-native. **Substituted pre-outcome for Amendment Z's `Ministral-3-3B-Instruct-2512`**: the doubt-snap-cross-family confirmatory found before any Mistral-family behavioral outcome that Ministral-3 exposes `Mistral3ForConditionalGeneration`, not a causal-LM substrate for the activation WRITE path (Amendment Z only read, so it never hit this). This experiment also writes, so it inherits that substitution and the same pinned replacement checkpoint. 7B is the VRAM-heaviest family here; the J-lens profile stage needs batching headroom (see `families/mistral-7b-v03.yaml`). | 2 |
 | Alibaba Qwen | `Qwen/Qwen3.5-4B` | 4B | **Different checkpoint from this project's usual `unsloth/Qwen3-4B`** -- same lineage, not the same model. Ungated + multimodal (native) -- loader risk (Amendment Z); needs the `AutoModelForImageTextToText`/`AutoModelForVision2Seq` fallback chain and `config.text_config` nesting for `hidden_size`/`num_hidden_layers`. `<\|im_end\|>` EOS convention expected but not assumed identical to Qwen3-4B's tokenizer. | 3 |
 | Google Gemma | `google/gemma-4-E4B-it` | E4B (~4B effective) | Apache-2.0, ungated (Amendment Z, verified 2026-06-30) + multimodal (Gemma4 conditional-gen) -- **loader risk only, but also this experiment's own flagged VRAM risk**: the multimodal wrapper may load a vision tower even for text-only prompts, which combined with the J-lens's extra double-backward-JVP activation memory could be tight on a 24GB 3090. `<end_of_turn>` EOS convention. | 4 (run last) |
 
@@ -63,9 +63,32 @@ all live in `families/<slug>.yaml` -- no other script in this experiment
 hardcodes a checkpoint string, hidden size, or layer index; every script
 reads a family only through `family_config.py`.
 
+### Pre-sign coordination note: reuse the doubt-snap cross-family FIT artifacts
+
+The signed `doubt-snap-cross-family-confirmatory` experiment is, at draft
+time, mid-run on Modal over an overlapping family panel (its small tier
+shares Llama-3.2-3B, Mistral-7B-v0.3, Qwen3.5-4B, and Gemma-4-E4B with this
+experiment). Its per-family FIT pipeline produces exactly the artifacts steps
+1 and 3-4 above would rebuild: per-family eval pools (confab /
+known_correct_answered role labels), FIT-split direction fits, frozen gate
+thresholds, and a calibrated dose at its fixed late write site
+(`round(0.94 * (num_hidden_layers - 1))`, the hs34 depth-fraction analog).
+
+This experiment therefore HOLDS unsigned until that run resolves, and before
+sign it must be revised to CONSUME those artifacts wherever they exist:
+reuse each family's mined pool and FIT/HELD-OUT split verbatim (pinned by
+manifest hash), reuse its late-site direction/tau/dose as this experiment's
+late-reference arm, and add only what is genuinely new here (the J-lens
+band localization per family, mid-band-layer direction fits and dose
+calibration, and the mid-band vs late contrast itself). If the doubt-snap
+run resolves with a family NOT-RUN or ineligible, that family enters this
+experiment with the same status rather than being re-attempted here without
+a fresh eligibility decision by the lead. This note is a design constraint
+on the sign-time revision, not a result claim about the running experiment.
+
 ### Per-family pipeline (FIT side, all pre-outcome)
 
-For each family, in Amendment Z's run order (Llama, Ministral, Qwen3.5,
+For each family, in Amendment Z's run order (Llama, Mistral, Qwen3.5,
 Gemma):
 
 1. **Mine a private eval pool** (`mine_eval_pool.py --family <slug>`): generate

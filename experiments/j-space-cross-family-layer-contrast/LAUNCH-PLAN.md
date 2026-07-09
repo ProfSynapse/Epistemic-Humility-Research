@@ -9,7 +9,7 @@ checkpoints.
 ## Run order (Amendment Z's risk order, unchanged)
 
 1. `llama-3.2-3b` -- `unsloth/Llama-3.2-3B-Instruct` (lowest risk, run first)
-2. `ministral-3-3b` -- `mistralai/Ministral-3-3B-Instruct-2512`
+2. `mistral-7b-v03` -- `mistralai/Mistral-7B-Instruct-v0.3` (substituted pre-outcome for Amendment Z's Ministral-3-3B: the doubt-snap-cross-family confirmatory found Ministral-3 exposes Mistral3ForConditionalGeneration, not a causal-LM write substrate; see families/mistral-7b-v03.yaml)
 3. `qwen35-4b` -- `Qwen/Qwen3.5-4B`
 4. `gemma4-e4b` -- `google/gemma-4-E4B-it` (highest risk, run last)
 
@@ -76,7 +76,7 @@ sweep on all four families.
 | Family | Params | Feasibility read |
 |---|---|---|
 | Llama-3.2-3B | 3.21B | Comfortable. ~6.4GB bf16 weights; plenty of headroom for activations, KV cache, and the steering hook's readback buffers. |
-| Ministral-3-3B | 3B | Comfortable IF the bf16 upcast load succeeds (see decision point below); the VRAM question is downstream of the loader question, not independent of it. |
+| Mistral-7B-v0.3 | 7B | The VRAM-heaviest family (~14-15GB bf16 weights). Generation and extraction fit a 24GB 3090; the J-lens profile stage's eager-attention double-backward is the pressure point, so budget for reduced batch or fewer random probe directions. A profile-stage OOM is a batching problem, not a G0 loader blocker. |
 | Qwen3.5-4B | 4B | Should fit for the text-only path; the multimodal loader may pull in a vision tower's weights even for text prompts, which is a decision point (see below), not resolved here. |
 | Gemma-4-E4B | ~4B effective | **FLAGGED, highest risk of the four.** The E4B multimodal architecture may load a vision encoder even for text-only prompts. Combined with the J-lens profile stage's extra double-backward-JVP activation memory (the localization experiment's own docstring notes this needs `attn_implementation="eager"`, which is generally MORE memory-hungry than fused SDPA attention), this could approach the 24GB ceiling. Amendment Z's own risk table lists this as "loader risk only" for its own (non-J-lens) extraction; the J-lens profile stage is this experiment's OWN additional risk on top of Amendment Z's, not something Amendment Z already validated. |
 
@@ -91,12 +91,13 @@ sweep on all four families.
    lead should decide whether 0.40/0.30 is the right floor, or whether it
    should be derived per-family from that family's own FIT-side dose
    calibration numbers before the held-out contrast runs.
-2. **Ministral-3-3B's FP8-to-bf16 load path is unverified.** If
-   `AutoModelForCausalLM.from_pretrained(..., dtype=torch.bfloat16)` does not
-   cleanly upcast the checkpoint's native FP8 tensors, this is a G0 loader
-   blocker (per Amendment Z's own disposition: recorded INELIGIBLE, not
-   silently substituted with a different dtype or family). This needs to be
-   confirmed on real GPU access, which this draft explicitly does not touch.
+2. **RESOLVED PRE-SIGN (was: Ministral-3-3B FP8 load risk).** The
+   Mistral-family cell was substituted to `mistralai/Mistral-7B-Instruct-v0.3`
+   before any Mistral-family run, inheriting the doubt-snap-cross-family
+   confirmatory's pre-outcome loader-eligibility finding (Ministral-3 exposes
+   `Mistral3ForConditionalGeneration`, not a causal-LM substrate for the
+   activation write path). Remaining Mistral-family question is only the 7B
+   VRAM headroom at the profile stage (see the feasibility table).
 3. **Qwen3.5-4B and Gemma-4-E4B's multimodal loader paths are unverified for
    the J-lens's `attn_implementation="eager"` requirement.** Amendment Z's
    own loader hardening was validated for its (non-J-lens) extraction script;
@@ -117,7 +118,7 @@ sweep on all four families.
      (`families/<slug>.yaml` "eos" block) is this drafting pass's best
      guess from general knowledge of each chat-template lineage
      (`<|eot_id|>` for Llama 3, `<|im_end|>` for Qwen, `<end_of_turn>` for
-     Gemma, no extra token assumed for Ministral) and has NOT been
+     Gemma, no extra token assumed for Mistral) and has NOT been
      confirmed against each checkpoint's actual
      `tokenizer.special_tokens_map` or `additional_special_tokens`. Confirm
      at extraction time, per each family YAML's own "notes" field.

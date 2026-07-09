@@ -39,7 +39,7 @@ render:
     Gemma chat templates have no native thinking-toggle kwarg (Gemma models
     are not "thinking" models in this project's sense); enable_thinking=False
     is expected to be a no-op tried first by render_probe_prompt's
-    mode-discovery loop, matching Llama/Ministral's posture.
+    mode-discovery loop, matching Llama/Mistral's posture.
   system_prompt_source: >-
     Same baseline system prompt string as the Qwen3-4B AH-A0 arm, reused
     verbatim (see llama-3.2-3b.yaml's identical note). NOTE: some Gemma chat
