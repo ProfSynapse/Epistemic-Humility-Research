@@ -1,11 +1,11 @@
 # Phase 3 full SelfAware delta nearby-layer logit-diagnostic sweep.
 
 sweep:
-  name: phase3_selfaware_full_delta_nearby_logit_diagnostic_offset_pos1
+  name: phase3_selfaware_full_delta_nearby_logit_diagnostic_offset_neg1
   evidence_tier: tier2_exploratory_local
-  runner_config: experiment/phase1/probe/config/phase3_selfaware_full_delta_nearby_logit_diagnostic_offset_pos1.yaml
-  candidate_source_config: experiment/phase1/probe/config/phase3_selfaware_full_delta_logit_diagnostic.yaml
-  output_root: experiment/phase1/probe/qwen3-4b-sft-merged-seed1-selfaware/causal_pilots/phase3_selfaware_full_delta_nearby_logit_diagnostic_offset_pos1
+  runner_config: archive/experiment/phase1/probe/config/selfaware-full-delta-logit-diagnostics/phase3_selfaware_full_delta_nearby_logit_diagnostic_offset_neg1.yaml
+  candidate_source_config: archive/experiment/phase1/probe/config/selfaware-full-delta-logit-diagnostics/phase3_selfaware_full_delta_logit_diagnostic.yaml
+  output_root: experiment/phase1/probe/qwen3-4b-sft-merged-seed1-selfaware/causal_pilots/phase3_selfaware_full_delta_nearby_logit_diagnostic_offset_neg1
   candidates: all
   execution:
     backend: docker

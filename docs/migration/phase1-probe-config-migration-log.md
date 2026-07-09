@@ -51,3 +51,26 @@ This log records migration batches after the terrain baseline in
 - Provenance gaps noted:
   - `phase3_current_clean_grpo_v2_unknown_failure_selfaware_scored_rows.jsonl` was referenced by the historical session note and manifest config but was not tracked or present at migration time.
   - `phase3_current_clean_grpo_v2_unknown_failure_selfaware_manifest.summary.json` was referenced by the manifest config but was not tracked or present at migration time.
+## C020 - SelfAware Full-Delta Logit Diagnostics
+
+- Date: 2026-07-09
+- Source component: `C020`
+- File count: 10
+- Source root: `experiment/phase1/probe/config/`
+- Destination:
+  `archive/experiment/phase1/probe/config/selfaware-full-delta-logit-diagnostics/`
+- Owner decision: archive-only historical provenance for the June 19 Phase 3
+  SelfAware stratified-row session; no migrated `experiments/<slug>` owner was
+  present, and the component was not a reusable shared input.
+- Reason: historical exploratory Phase 3 local logit-diagnostic config component
+  with no live code, test, or skill references outside the component.
+- Reference updates:
+  - Rewrote component-internal config path references to the archive path.
+  - Rewrote the historical session note
+    `docs/sessions/20260619T101926Z-phase-3-selfaware-stratified-row-manifest.md`.
+- Non-goals:
+  - Did not promote these configs to `experiments/common/`; they are provenance,
+    not reusable shared inputs.
+  - Did not rewrite legacy causal-pilot output roots or extraction artifact
+    paths. Those paths preserve historical run provenance and will be handled
+    with broader legacy artifact archive passes.

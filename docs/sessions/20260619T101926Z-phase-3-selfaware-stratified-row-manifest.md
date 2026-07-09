@@ -407,14 +407,14 @@ checkpoints:
     corresponds to pushing the known_unknown_diff direction toward the unknown side;
     subtraction corresponds to pushing toward known.
   evidence:
-  - experiment/phase1/probe/config/phase3_selfaware_full_delta_logit_diagnostic.yaml
-  - experiment/phase1/probe/config/phase3_selfaware_full_delta_logit_diagnostic_sweep.yaml
+  - archive/experiment/phase1/probe/config/selfaware-full-delta-logit-diagnostics/phase3_selfaware_full_delta_logit_diagnostic.yaml
+  - archive/experiment/phase1/probe/config/selfaware-full-delta-logit-diagnostics/phase3_selfaware_full_delta_logit_diagnostic_sweep.yaml
   - experiment/phase1/probe/qwen3-4b-sft-merged-seed1-selfaware/causal_pilots/phase3_selfaware_full_delta_logit_diagnostic/sft_dpo_selfaware_full_delta_l24/logit_diagnostic/run_20260619T185249Z/run_manifest.json
   - experiment/phase1/probe/qwen3-4b-sft-merged-seed1-selfaware/causal_pilots/phase3_selfaware_full_delta_logit_diagnostic/sft_kto_selfaware_full_delta_l25/logit_diagnostic/run_20260619T185413Z/run_manifest.json
   - experiment/phase1/probe/qwen3-4b-sft-merged-seed1-selfaware/causal_pilots/phase3_selfaware_full_delta_logit_diagnostic/_execution_logs/execution_results.jsonl
   run_ids: []
   commands:
-  - python experiment/phase1/probe/phase3_causal_pilot_sweep.py --config experiment/phase1/probe/config/phase3_selfaware_full_delta_logit_diagnostic_sweep.yaml
+  - python experiment/phase1/probe/phase3_causal_pilot_sweep.py --config archive/experiment/phase1/probe/config/selfaware-full-delta-logit-diagnostics/phase3_selfaware_full_delta_logit_diagnostic_sweep.yaml
     --mode-filter logit_diagnostic --write-plan --materialize-configs --execute --allow-logit-diagnostic
   decisions:
   - Treat these outputs as Tier 2 exploratory local logit diagnostics only, not generation
@@ -474,23 +474,23 @@ checkpoints:
     the source-layer refusal-opener probability deltas, so this panel does not support
     a source-layer-local claim.
   evidence:
-  - experiment/phase1/probe/config/phase3_selfaware_full_delta_nearby_logit_diagnostic_offset_neg2_sweep.yaml
-  - experiment/phase1/probe/config/phase3_selfaware_full_delta_nearby_logit_diagnostic_offset_neg1_sweep.yaml
-  - experiment/phase1/probe/config/phase3_selfaware_full_delta_nearby_logit_diagnostic_offset_pos1_sweep.yaml
-  - experiment/phase1/probe/config/phase3_selfaware_full_delta_nearby_logit_diagnostic_offset_pos2_sweep.yaml
+  - archive/experiment/phase1/probe/config/selfaware-full-delta-logit-diagnostics/phase3_selfaware_full_delta_nearby_logit_diagnostic_offset_neg2_sweep.yaml
+  - archive/experiment/phase1/probe/config/selfaware-full-delta-logit-diagnostics/phase3_selfaware_full_delta_nearby_logit_diagnostic_offset_neg1_sweep.yaml
+  - archive/experiment/phase1/probe/config/selfaware-full-delta-logit-diagnostics/phase3_selfaware_full_delta_nearby_logit_diagnostic_offset_pos1_sweep.yaml
+  - archive/experiment/phase1/probe/config/selfaware-full-delta-logit-diagnostics/phase3_selfaware_full_delta_nearby_logit_diagnostic_offset_pos2_sweep.yaml
   - experiment/phase1/probe/qwen3-4b-sft-merged-seed1-selfaware/causal_pilots/phase3_selfaware_full_delta_nearby_logit_diagnostic_offset_neg2/_execution_logs/execution_results.jsonl
   - experiment/phase1/probe/qwen3-4b-sft-merged-seed1-selfaware/causal_pilots/phase3_selfaware_full_delta_nearby_logit_diagnostic_offset_neg1/_execution_logs/execution_results.jsonl
   - experiment/phase1/probe/qwen3-4b-sft-merged-seed1-selfaware/causal_pilots/phase3_selfaware_full_delta_nearby_logit_diagnostic_offset_pos1/_execution_logs/execution_results.jsonl
   - experiment/phase1/probe/qwen3-4b-sft-merged-seed1-selfaware/causal_pilots/phase3_selfaware_full_delta_nearby_logit_diagnostic_offset_pos2/_execution_logs/execution_results.jsonl
   run_ids: []
   commands:
-  - python experiment/phase1/probe/phase3_causal_pilot_sweep.py --config experiment/phase1/probe/config/phase3_selfaware_full_delta_nearby_logit_diagnostic_offset_neg2_sweep.yaml
+  - python experiment/phase1/probe/phase3_causal_pilot_sweep.py --config archive/experiment/phase1/probe/config/selfaware-full-delta-logit-diagnostics/phase3_selfaware_full_delta_nearby_logit_diagnostic_offset_neg2_sweep.yaml
     --mode-filter logit_diagnostic --write-plan --materialize-configs --execute --allow-logit-diagnostic
-  - python experiment/phase1/probe/phase3_causal_pilot_sweep.py --config experiment/phase1/probe/config/phase3_selfaware_full_delta_nearby_logit_diagnostic_offset_neg1_sweep.yaml
+  - python experiment/phase1/probe/phase3_causal_pilot_sweep.py --config archive/experiment/phase1/probe/config/selfaware-full-delta-logit-diagnostics/phase3_selfaware_full_delta_nearby_logit_diagnostic_offset_neg1_sweep.yaml
     --mode-filter logit_diagnostic --write-plan --materialize-configs --execute --allow-logit-diagnostic
-  - python experiment/phase1/probe/phase3_causal_pilot_sweep.py --config experiment/phase1/probe/config/phase3_selfaware_full_delta_nearby_logit_diagnostic_offset_pos1_sweep.yaml
+  - python experiment/phase1/probe/phase3_causal_pilot_sweep.py --config archive/experiment/phase1/probe/config/selfaware-full-delta-logit-diagnostics/phase3_selfaware_full_delta_nearby_logit_diagnostic_offset_pos1_sweep.yaml
     --mode-filter logit_diagnostic --write-plan --materialize-configs --execute --allow-logit-diagnostic
-  - python experiment/phase1/probe/phase3_causal_pilot_sweep.py --config experiment/phase1/probe/config/phase3_selfaware_full_delta_nearby_logit_diagnostic_offset_pos2_sweep.yaml
+  - python experiment/phase1/probe/phase3_causal_pilot_sweep.py --config archive/experiment/phase1/probe/config/selfaware-full-delta-logit-diagnostics/phase3_selfaware_full_delta_nearby_logit_diagnostic_offset_pos2_sweep.yaml
     --mode-filter logit_diagnostic --write-plan --materialize-configs --execute --allow-logit-diagnostic
   decisions:
   - Treat these outputs as Tier 2 exploratory local logit diagnostics only, not generation
@@ -793,13 +793,13 @@ diagnostic/exploratory Phase 3 artifacts, not pre-registered headline evidence.
 - kind: `result`
 - summary: Local Docker logit diagnostics completed for the full SelfAware top delta candidates, SFT->DPO delta layer 24 and SFT->KTO delta layer 25. Both runs are `status=ok`, `generation_executed=false`, and `logit_diagnostic_executed=true`, with 18 arms over 16 rows each. The sign panel used no-vector baseline, activation addition/subtraction, sign-matched wrong-layer controls, and deterministic random matched-norm. Addition corresponds to pushing the `known_unknown_diff` direction toward the unknown side; subtraction corresponds to pushing toward known.
 - evidence:
-  - `experiment/phase1/probe/config/phase3_selfaware_full_delta_logit_diagnostic.yaml`
-  - `experiment/phase1/probe/config/phase3_selfaware_full_delta_logit_diagnostic_sweep.yaml`
+  - `archive/experiment/phase1/probe/config/selfaware-full-delta-logit-diagnostics/phase3_selfaware_full_delta_logit_diagnostic.yaml`
+  - `archive/experiment/phase1/probe/config/selfaware-full-delta-logit-diagnostics/phase3_selfaware_full_delta_logit_diagnostic_sweep.yaml`
   - `experiment/phase1/probe/qwen3-4b-sft-merged-seed1-selfaware/causal_pilots/phase3_selfaware_full_delta_logit_diagnostic/sft_dpo_selfaware_full_delta_l24/logit_diagnostic/run_20260619T185249Z/run_manifest.json`
   - `experiment/phase1/probe/qwen3-4b-sft-merged-seed1-selfaware/causal_pilots/phase3_selfaware_full_delta_logit_diagnostic/sft_kto_selfaware_full_delta_l25/logit_diagnostic/run_20260619T185413Z/run_manifest.json`
   - `experiment/phase1/probe/qwen3-4b-sft-merged-seed1-selfaware/causal_pilots/phase3_selfaware_full_delta_logit_diagnostic/_execution_logs/execution_results.jsonl`
 - commands:
-  - `python experiment/phase1/probe/phase3_causal_pilot_sweep.py --config experiment/phase1/probe/config/phase3_selfaware_full_delta_logit_diagnostic_sweep.yaml --mode-filter logit_diagnostic --write-plan --materialize-configs --execute --allow-logit-diagnostic`
+  - `python experiment/phase1/probe/phase3_causal_pilot_sweep.py --config archive/experiment/phase1/probe/config/selfaware-full-delta-logit-diagnostics/phase3_selfaware_full_delta_logit_diagnostic_sweep.yaml --mode-filter logit_diagnostic --write-plan --materialize-configs --execute --allow-logit-diagnostic`
 - decisions:
   - Treat these outputs as Tier 2 exploratory local logit diagnostics only, not generation evidence and not pre-registered headline evidence.
   - Answer-alias probability buckets were absent because the selected SelfAware rows did not carry aliases, so interpretation should use refusal-opener slices, top-k rows, and top-1 changes only.
@@ -818,19 +818,19 @@ diagnostic/exploratory Phase 3 artifacts, not pre-registered headline evidence.
 - kind: `result`
 - summary: Local Docker logit diagnostics completed for the full SelfAware top delta candidates across nearby wrong-layer offsets -2, -1, +1, and +2, with coefficients 2, 5, 10, and 20 over 16 rows per candidate. All eight candidate/offset runs are status ok, generation_executed=false, and logit_diagnostic_executed=true. The smaller grid preserved sign behavior for source activation arms, especially KTO L25, but nearby wrong-layer arms at adjacent lower layers often matched or exceeded the source-layer refusal-opener probability deltas, so this panel does not support a source-layer-local claim.
 - evidence:
-  - `experiment/phase1/probe/config/phase3_selfaware_full_delta_nearby_logit_diagnostic_offset_neg2_sweep.yaml`
-  - `experiment/phase1/probe/config/phase3_selfaware_full_delta_nearby_logit_diagnostic_offset_neg1_sweep.yaml`
-  - `experiment/phase1/probe/config/phase3_selfaware_full_delta_nearby_logit_diagnostic_offset_pos1_sweep.yaml`
-  - `experiment/phase1/probe/config/phase3_selfaware_full_delta_nearby_logit_diagnostic_offset_pos2_sweep.yaml`
+  - `archive/experiment/phase1/probe/config/selfaware-full-delta-logit-diagnostics/phase3_selfaware_full_delta_nearby_logit_diagnostic_offset_neg2_sweep.yaml`
+  - `archive/experiment/phase1/probe/config/selfaware-full-delta-logit-diagnostics/phase3_selfaware_full_delta_nearby_logit_diagnostic_offset_neg1_sweep.yaml`
+  - `archive/experiment/phase1/probe/config/selfaware-full-delta-logit-diagnostics/phase3_selfaware_full_delta_nearby_logit_diagnostic_offset_pos1_sweep.yaml`
+  - `archive/experiment/phase1/probe/config/selfaware-full-delta-logit-diagnostics/phase3_selfaware_full_delta_nearby_logit_diagnostic_offset_pos2_sweep.yaml`
   - `experiment/phase1/probe/qwen3-4b-sft-merged-seed1-selfaware/causal_pilots/phase3_selfaware_full_delta_nearby_logit_diagnostic_offset_neg2/_execution_logs/execution_results.jsonl`
   - `experiment/phase1/probe/qwen3-4b-sft-merged-seed1-selfaware/causal_pilots/phase3_selfaware_full_delta_nearby_logit_diagnostic_offset_neg1/_execution_logs/execution_results.jsonl`
   - `experiment/phase1/probe/qwen3-4b-sft-merged-seed1-selfaware/causal_pilots/phase3_selfaware_full_delta_nearby_logit_diagnostic_offset_pos1/_execution_logs/execution_results.jsonl`
   - `experiment/phase1/probe/qwen3-4b-sft-merged-seed1-selfaware/causal_pilots/phase3_selfaware_full_delta_nearby_logit_diagnostic_offset_pos2/_execution_logs/execution_results.jsonl`
 - commands:
-  - `python experiment/phase1/probe/phase3_causal_pilot_sweep.py --config experiment/phase1/probe/config/phase3_selfaware_full_delta_nearby_logit_diagnostic_offset_neg2_sweep.yaml --mode-filter logit_diagnostic --write-plan --materialize-configs --execute --allow-logit-diagnostic`
-  - `python experiment/phase1/probe/phase3_causal_pilot_sweep.py --config experiment/phase1/probe/config/phase3_selfaware_full_delta_nearby_logit_diagnostic_offset_neg1_sweep.yaml --mode-filter logit_diagnostic --write-plan --materialize-configs --execute --allow-logit-diagnostic`
-  - `python experiment/phase1/probe/phase3_causal_pilot_sweep.py --config experiment/phase1/probe/config/phase3_selfaware_full_delta_nearby_logit_diagnostic_offset_pos1_sweep.yaml --mode-filter logit_diagnostic --write-plan --materialize-configs --execute --allow-logit-diagnostic`
-  - `python experiment/phase1/probe/phase3_causal_pilot_sweep.py --config experiment/phase1/probe/config/phase3_selfaware_full_delta_nearby_logit_diagnostic_offset_pos2_sweep.yaml --mode-filter logit_diagnostic --write-plan --materialize-configs --execute --allow-logit-diagnostic`
+  - `python experiment/phase1/probe/phase3_causal_pilot_sweep.py --config archive/experiment/phase1/probe/config/selfaware-full-delta-logit-diagnostics/phase3_selfaware_full_delta_nearby_logit_diagnostic_offset_neg2_sweep.yaml --mode-filter logit_diagnostic --write-plan --materialize-configs --execute --allow-logit-diagnostic`
+  - `python experiment/phase1/probe/phase3_causal_pilot_sweep.py --config archive/experiment/phase1/probe/config/selfaware-full-delta-logit-diagnostics/phase3_selfaware_full_delta_nearby_logit_diagnostic_offset_neg1_sweep.yaml --mode-filter logit_diagnostic --write-plan --materialize-configs --execute --allow-logit-diagnostic`
+  - `python experiment/phase1/probe/phase3_causal_pilot_sweep.py --config archive/experiment/phase1/probe/config/selfaware-full-delta-logit-diagnostics/phase3_selfaware_full_delta_nearby_logit_diagnostic_offset_pos1_sweep.yaml --mode-filter logit_diagnostic --write-plan --materialize-configs --execute --allow-logit-diagnostic`
+  - `python experiment/phase1/probe/phase3_causal_pilot_sweep.py --config archive/experiment/phase1/probe/config/selfaware-full-delta-logit-diagnostics/phase3_selfaware_full_delta_nearby_logit_diagnostic_offset_pos2_sweep.yaml --mode-filter logit_diagnostic --write-plan --materialize-configs --execute --allow-logit-diagnostic`
 - decisions:
   - Treat these outputs as Tier 2 exploratory local logit diagnostics only, not generation evidence and not pre-registered headline evidence.
   - Do not make a source-layer-specific claim: nearby lower-layer wrong-layer controls were comparable to source-layer arms, and random matched-norm subtraction remained comparable to source subtraction in parts of the small grid.
