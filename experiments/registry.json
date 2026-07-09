@@ -274,16 +274,22 @@
           "extract_fresh_anchor.py",
           "run_contrast.py"
         ],
-        "pins": {}
+        "pins": {
+          "cell.yaml": "d3f0d2df4ccf26b4bdcb146690380292ab3dd65b1e7ed9bec0b4e651ce82bfe6",
+          "extract_fresh_anchor.py": "d2f70f7f3e6e4bb8bed3c238de62f732734cabd50fc94bd1e60d3c2563ccbecc",
+          "gates.yaml": "8b6581dd3d510fd30715a782fa48c98c907980919b19d4cbcfc6f2e15276c4d3",
+          "mine_fresh_eval_pool.py": "0f764957032e887c78a58be2d2483d265e13363baaf470ee1082c466974d1d94",
+          "run_contrast.py": "2a245968ebe0c97087cc89c915a983feccf778d4cb79a6e8e1729a4176bc05b4"
+        }
       },
       "kg": [],
       "prediction": "With predecessor directions, gates, and calibrated doses frozen, the best mid-band layer will beat hs34 by at least 10 percentage points on fresh confab clean_tighten without increasing known-correct false-refusal cost by more than 2 percentage points; hs34 will remain viable.",
       "question": "On raw-base Qwen3-4B, does the calibrated J-space mid-band write-site advantage replicate on a fresh private evaluation pool whose row keys are disjoint from the predecessor fit and held-out split?",
       "registered": true,
       "slug": "j-space-layer-contrast-replication-qwen3-4b",
-      "status": "draft",
+      "status": "null-result",
       "type": "steer-cell",
-      "verdict": ""
+      "verdict": "Registered G1 fail on a ceiling-saturated single-source fresh pool: best mid-band (hs29) beat hs34 by only +5.6pp (bar 10pp) with hs34 itself at 94.1%; direction replicates with CI separation at hs23/hs29 but magnitude is pool-dependent, and the fresh pool is a narrower confab distribution than the predecessor's."
     },
     {
       "checkpoint": {
