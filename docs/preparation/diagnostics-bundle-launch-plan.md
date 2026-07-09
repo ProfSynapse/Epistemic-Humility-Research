@@ -62,7 +62,8 @@ natural local home anyway (see below).
   `steering/gpu_equivalence_cell.py` (unchanged; the wrapper passes its required
   `--i-know-this-runs-on-gpu` guard flag, which the launch approval satisfies).
 - Inputs: the direction JSON is **committed in-repo**
-  (`steering/directions/qwen3.5-4b/direction_gate.json`, `best_layer=14`), so no
+  (`experiments/common/artifacts/two_signal_probe_directions/qwen3.5-4b/direction_gate.json`,
+  `best_layer=14`), so no
   pool fetch — only the checkpoint is pulled. It is a pure batched-vs-loop
   numeric self-check at one layer on ~5 fixed prompts.
 - Checkpoint: pass `Qwen/Qwen3.5-4B` (the direction's native base; ~36 layers so
@@ -245,14 +246,14 @@ Cell 1 (LOCAL preferred; RunPod form if wanted):
     # LOCAL (recommended):
     python experiment/phase1/probe/steering/gpu_equivalence_cell.py \
       --model Qwen/Qwen3.5-4B \
-      --direction experiment/phase1/probe/steering/directions/qwen3.5-4b/direction_gate.json \
+      --direction experiments/common/artifacts/two_signal_probe_directions/qwen3.5-4b/direction_gate.json \
       --device cuda --dtype bfloat16 --i-know-this-runs-on-gpu
 
     # RunPod form:
     python $LAUNCHER --run-tag diag-item11-gpuequiv-r1 \
       --repo-url $REPO --commit $SHA \
       --wrapper experiment/phase1/probe/cloud/runpod_diag_gpu_equiv.sh \
-      --wrapper-args "$STAGING Qwen/Qwen3.5-4B experiment/phase1/probe/steering/directions/qwen3.5-4b/direction_gate.json diag-item11-gpuequiv-r1" \
+      --wrapper-args "$STAGING Qwen/Qwen3.5-4B experiments/common/artifacts/two_signal_probe_directions/qwen3.5-4b/direction_gate.json diag-item11-gpuequiv-r1" \
       --gpu "NVIDIA GeForce RTX 3090" --cloud-type COMMUNITY --timeout-min 30 --dry-run
 
 Cell 2 (LOCAL only):

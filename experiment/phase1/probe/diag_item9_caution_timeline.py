@@ -37,7 +37,8 @@ METHOD (per stage, per layer, deterministic + seeded):
        - consecutive-stage cosines (raw->cleansft->grpov2, and ->partrue)
        - each stage vs grpov2 cosine
   4. Cosine of each stage's residual-space direction against the checked-in
-     canonical answerability axis (steering/directions/qwen3.5-4b/
+     canonical answerability axis
+     (experiments/common/artifacts/two_signal_probe_directions/qwen3.5-4b/
      direction_gate.safetensors, best_layer 14) at matched layer index. This is
      a CROSS-FAMILY axis (Qwen3.5-4B, not the Qwen3-4B extracted here) so it is
      a heuristic alignment check, flagged as such.
@@ -142,9 +143,9 @@ def cos(a: np.ndarray, b: np.ndarray) -> float:
 
 
 def load_canonical_gate(repo: Path) -> tuple[np.ndarray | None, int | None]:
-    p = repo / ("experiment/phase1/probe/steering/directions/qwen3.5-4b/"
+    p = repo / ("experiments/common/artifacts/two_signal_probe_directions/qwen3.5-4b/"
                 "direction_gate.safetensors")
-    j = repo / ("experiment/phase1/probe/steering/directions/qwen3.5-4b/"
+    j = repo / ("experiments/common/artifacts/two_signal_probe_directions/qwen3.5-4b/"
                 "direction_gate.json")
     if not p.exists():
         return None, None

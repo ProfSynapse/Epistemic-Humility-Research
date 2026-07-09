@@ -32,6 +32,10 @@ instrument:
   modules: []
   pins: {}
 inputs:
+- experiments/common/artifacts/two_signal_probe_directions/qwen3.5-4b/direction_gate.json
+- experiments/common/artifacts/two_signal_probe_directions/qwen3.5-4b/direction_gate.safetensors
+- experiments/common/artifacts/two_signal_probe_directions/qwen3.5-4b/direction_dial.json
+- experiments/common/artifacts/two_signal_probe_directions/qwen3.5-4b/direction_dial.safetensors
 - experiments/first-person-injection/artifacts/cloud_launches/amendment_ab_v1_launch.json
 - experiments/first-person-injection/artifacts/analysis/aa_think_trace_idiom_mining.md
 - experiments/first-person-injection/artifacts/trace_reports/ab_v1/INTERIM-NOTES.md

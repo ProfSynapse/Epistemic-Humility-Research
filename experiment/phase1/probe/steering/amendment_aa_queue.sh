@@ -27,8 +27,8 @@ IMAGE='unsloth-z:latest'
 STEER='experiment/phase1/probe/steering'
 MODEL='Qwen/Qwen3.5-4B'
 GATE_ROWS='/workspace/repo/experiment/phase1/probe/qwen3-4b-clean-sft-grpo-v2-seed1-selfaware/hidden_states_selfaware_clean_sft_grpo_v2_full/extraction__55254a04aa1f/rows.jsonl'
-DIR_GATE="/workspace/repo/$STEER/directions/qwen3.5-4b/direction_gate.json"
-DIR_DIAL="/workspace/repo/$STEER/directions/qwen3.5-4b/direction_dial.json"
+DIR_GATE="/workspace/repo/experiments/common/artifacts/two_signal_probe_directions/qwen3.5-4b/direction_gate.json"
+DIR_DIAL="/workspace/repo/experiments/common/artifacts/two_signal_probe_directions/qwen3.5-4b/direction_dial.json"
 RESULTS="$STEER/results"
 LOG_DIR="$STEER/aa_logs"
 mkdir -p "$LOG_DIR" "$RESULTS"

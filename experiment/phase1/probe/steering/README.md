@@ -81,7 +81,7 @@ python experiment/phase1/probe/steering/persist_probe_direction.py \
 
 python experiment/phase1/probe/steering/persist_probe_direction.py \
     --x-dir experiment/phase1/probe/z_qwen3.5-4b \
-    --out-dir experiment/phase1/probe/steering/directions/qwen3.5-4b \
+    --out-dir experiments/common/artifacts/two_signal_probe_directions/qwen3.5-4b \
     --seed 20260630
 
 python experiment/phase1/probe/steering/persist_probe_direction.py \

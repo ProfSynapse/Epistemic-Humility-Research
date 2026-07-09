@@ -17,7 +17,8 @@
 #
 # INPUTS
 #   The direction JSON is COMMITTED in-repo
-#   (steering/directions/<tag>/direction_gate.json), so no pool fetch is needed.
+#   (experiments/common/artifacts/two_signal_probe_directions/<tag>/direction_gate.json),
+#   so no pool fetch is needed.
 #   Only the checkpoint is pulled from HF. The gpu cell requires the explicit
 #   --i-know-this-runs-on-gpu acknowledgement flag (loud DO-NOT-RUN guard);
 #   this wrapper passes it because the launch is the user's explicit approval.
@@ -33,7 +34,7 @@
 #       cell loads a single --model with NO adapter, so to test a LoRA lineage
 #       pass a MERGED checkpoint here (see docs/preparation/diagnostics-bundle-launch-plan.md).
 #   direction_relpath : repo-relative path to a direction_*.json with best_layer,
-#       e.g. experiment/phase1/probe/steering/directions/qwen3.5-4b/direction_gate.json
+#       e.g. experiments/common/artifacts/two_signal_probe_directions/qwen3.5-4b/direction_gate.json
 set -euo pipefail
 
 STAGING_REPO="$1"; BASE_MODEL="$2"; DIRECTION_RELPATH="$3"

@@ -52,7 +52,7 @@ either engine.
 Example (Stage 1, AA-5 — DO NOT run without signed amendment + launch approval):
   python run_arm_b.py \
       --model unsloth/Qwen3.5-4B \
-      --direction directions/qwen3.5-4b/direction_gate.json \
+      --direction experiments/common/artifacts/two_signal_probe_directions/qwen3.5-4b/direction_gate.json \
       --signal gate --position early \
       --eval-pool gate --n-unknown 300 --n-known 300 \
       --gate-rows <selfaware rows.jsonl> \

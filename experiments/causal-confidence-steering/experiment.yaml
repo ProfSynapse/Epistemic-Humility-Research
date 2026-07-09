@@ -30,7 +30,11 @@ instrument:
   configs: []
   modules: []
   pins: {}
-inputs: []
+inputs:
+- experiments/common/artifacts/two_signal_probe_directions/qwen3.5-4b/direction_gate.json
+- experiments/common/artifacts/two_signal_probe_directions/qwen3.5-4b/direction_gate.safetensors
+- experiments/common/artifacts/two_signal_probe_directions/qwen3.5-4b/direction_dial.json
+- experiments/common/artifacts/two_signal_probe_directions/qwen3.5-4b/direction_dial.safetensors
 verdict: FALSIFIER-1 — the channel stays shut; no effect gate passed in any of the
   8 cells; latent gate/dial info does not translate into answer/abstain/revise behavior
   under either injection arm.

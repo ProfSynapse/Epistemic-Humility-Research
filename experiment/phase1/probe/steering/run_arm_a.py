@@ -30,7 +30,7 @@ bootstrap 95% CIs vs the alpha=0 control).
 Example (Stage 1, AA-1 — DO NOT run without signed amendment + launch approval):
   python run_arm_a.py \
       --model unsloth/Qwen3.5-4B \
-      --direction directions/qwen3.5-4b/direction_gate.json \
+      --direction experiments/common/artifacts/two_signal_probe_directions/qwen3.5-4b/direction_gate.json \
       --position anchor --alpha-sweep=-4,-2,-1,0,1,2,4 \
       --eval-pool gate --n-unknown 300 --n-known 300 \
       --gate-rows <selfaware rows.jsonl> \
