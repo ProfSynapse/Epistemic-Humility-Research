@@ -109,6 +109,24 @@ from hs_backends import (
 PROBE_DIR = Path(__file__).resolve().parent
 
 
+def resolve_probe_or_repo_path(path_value: str) -> Path:
+    """Resolve legacy probe-relative paths and explicit repo-relative paths."""
+    path = Path(path_value)
+    if path.is_absolute():
+        return path.resolve()
+    if path.parts and path.parts[0] in {
+        "archive",
+        "datasets",
+        "docs",
+        "experiment",
+        "experiments",
+        "library",
+        "papers",
+    }:
+        return (REPO_ROOT / path).resolve()
+    return (PROBE_DIR / path).resolve()
+
+
 # ---------------------------------------------------------------------------
 # Step 3 — config parse, extraction_config_sha, output-tree resolution
 # (PROBE_DIR-anchored resolvers; the PROBE_DIR-free primitives live in hs_config)
@@ -264,7 +282,7 @@ def select_selfaware_manifest_slice(config: dict) -> list[dict]:
     still preserves the original `row_key`, `stable_identity`, and `strata`.
     """
     sel = config["selection"]
-    manifest_path = (PROBE_DIR / sel["manifest"]).resolve()
+    manifest_path = resolve_probe_or_repo_path(sel["manifest"])
     wanted_strata = sel.get("strata")
     max_rows = sel.get("max_rows")
     if max_rows is not None and (
@@ -333,8 +351,8 @@ def selection_data_source(config: dict) -> Path:
     selection = config["selection"]
     source = selection.get("source", "probe_pool")
     if source == "selfaware_manifest":
-        return (PROBE_DIR / selection["manifest"]).resolve()
-    return (PROBE_DIR / selection["probe_results"]).resolve()
+        return resolve_probe_or_repo_path(selection["manifest"])
+    return resolve_probe_or_repo_path(selection["probe_results"])
 
 
 # ---------------------------------------------------------------------------

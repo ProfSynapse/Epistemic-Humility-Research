@@ -1,7 +1,7 @@
 # C1 cross-dataset transfer — KUQ frozen-manifest hidden-state extraction.
 #
 # Step 4 of the cross-dataset protocol. Mirrors the SelfAware GRPO v2 extraction
-# but consumes the KUQ panel manifest (phase3_xdataset_build_panel.py output).
+# but consumes the frozen KUQ panel manifest migrated under Amendment P.
 # GRPO adapter over the clean SFT merged base: h_base = schema SFT model,
 # h_lora = adapter-active (the surface the caution-axis probe reads), delta =
 # the reward-shaped GRPO surface. final_prompt_token residual stream, no
@@ -35,7 +35,7 @@ eval_arms_source: null
 
 selection:
   source: selfaware_manifest
-  manifest: xdataset/kuq_panel/manifest.json
+  manifest: experiments/xdataset-probe-transfer/artifacts/kuq_panel/manifest.json
 
 output:
   hidden_states_subdir: hidden_states_kuq_clean_sft_grpo_v2_full

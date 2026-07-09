@@ -1000,6 +1000,21 @@ def test_selfaware_manifest_config_parses_and_selects_no_gpu():
     )
 
 
+def test_repo_relative_manifest_config_parses_and_selects_no_gpu():
+    """Migrated experiment-local manifests can be referenced repo-relatively."""
+    config_path = PROBE_DIR / "config" / "hidden_state_kuq_manifest_clean_sft_grpo_v2_seed1_full.yaml"
+    config, cfg_sha = hsp.parse_config(config_path)
+    rows = hsp.select_matched_slice(config)
+
+    assert len(cfg_sha) == 16
+    assert config["selection"]["manifest"].startswith("experiments/")
+    assert len(rows) == 1000
+    assert rows[0]["row_key"].startswith("kuq::kuq::")
+    assert rows[0]["aligned_probe_config_sha"].startswith(
+        "selfaware-manifest-sha256:"
+    )
+
+
 def test_selfaware_manifest_stub_extraction_finalizes_with_manifest_provenance(
         monkeypatch, tmp_path):
     """SelfAware manifest selection supplies non-null finalize provenance."""

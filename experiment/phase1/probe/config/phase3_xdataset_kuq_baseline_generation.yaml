@@ -1,10 +1,10 @@
 # C1 cross-dataset transfer — KUQ baseline generation (GRPO v2, no-hook).
 #
 # Step 2 of the cross-dataset protocol. Generates clean (alpha=0.0, no
-# intervention) answers for the KUQ panel built by phase3_xdataset_build_panel.py
-# so behavior cells (known_refused / unknown_refused / ...) can be assembled on a
-# second dataset and the SelfAware caution-axis / belief-action-gap findings
-# tested for cross-dataset generalization.
+# intervention) answers for the frozen KUQ panel held by Amendment P, so behavior
+# cells (known_refused / unknown_refused / ...) can be assembled on a second
+# dataset and the SelfAware caution-axis / belief-action-gap findings tested for
+# cross-dataset generalization.
 #
 # alpha 0.0 is the ONLY sweep point: by_block={} so steering_directions are loaded
 # but never applied. We reuse the existing GRPO v2 head steering_directions.json
@@ -33,7 +33,7 @@ prompt:
 # unknown-failure head sweep solely to satisfy the loader.
 steering_directions: experiment/phase1/probe/analysis/current_clean_grpo_v2_unknown_failure_prompt_matched_head_steering_directions/clean_sft_grpo_v2_seed1_unknown_failure_prompt_matched_steering/steering_directions.json
 
-rows: experiment/phase1/probe/xdataset/kuq_panel/gen_rows.jsonl
+rows: experiments/xdataset-probe-transfer/artifacts/kuq_panel/gen_rows.jsonl
 
 sweep:
   alphas: [0.0]
@@ -41,4 +41,4 @@ sweep:
   max_rows: null
 
 output:
-  root: experiment/phase1/probe/xdataset/kuq_generation
+  root: experiments/xdataset-probe-transfer/analysis/kuq_generation

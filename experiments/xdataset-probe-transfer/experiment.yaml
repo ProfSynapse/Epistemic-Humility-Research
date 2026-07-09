@@ -29,7 +29,10 @@ instrument:
   configs: []
   modules: []
   pins: {}
-inputs: []
+inputs:
+- experiments/xdataset-probe-transfer/artifacts/kuq_panel/gen_rows.jsonl
+- experiments/xdataset-probe-transfer/artifacts/kuq_panel/manifest.json
+- experiments/xdataset-probe-transfer/artifacts/kuq_panel/panel_meta.json
 verdict: SUCCESS — cold transfer AUROC 0.9834 (near in-distribution ceiling), action
   margin +89.6pt; beat the pre-stated partial-transfer call. Axis not dataset-specific;
   still not correctness-ranking.

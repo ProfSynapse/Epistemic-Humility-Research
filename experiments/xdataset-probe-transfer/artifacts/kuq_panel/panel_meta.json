@@ -7,6 +7,6 @@
   "n_known": 600,
   "n_unknown": 400,
   "row_count": 1000,
-  "gen_rows": "experiment/phase1/probe/xdataset/kuq_panel/gen_rows.jsonl",
-  "manifest": "experiment/phase1/probe/xdataset/kuq_panel/manifest.json"
+  "gen_rows": "experiments/xdataset-probe-transfer/artifacts/kuq_panel/gen_rows.jsonl",
+  "manifest": "experiments/xdataset-probe-transfer/artifacts/kuq_panel/manifest.json"
 }

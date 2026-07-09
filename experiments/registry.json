@@ -2005,7 +2005,11 @@
       },
       "created_at": "2026-07-08T17:40:52Z",
       "falsifier": "",
-      "inputs": [],
+      "inputs": [
+        "experiments/xdataset-probe-transfer/artifacts/kuq_panel/gen_rows.jsonl",
+        "experiments/xdataset-probe-transfer/artifacts/kuq_panel/manifest.json",
+        "experiments/xdataset-probe-transfer/artifacts/kuq_panel/panel_meta.json"
+      ],
       "instrument": {
         "configs": [],
         "modules": [],
