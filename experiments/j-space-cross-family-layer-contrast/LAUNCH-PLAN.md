@@ -98,35 +98,109 @@ sweep on all four families.
    `Mistral3ForConditionalGeneration`, not a causal-LM substrate for the
    activation write path). Remaining Mistral-family question is only the 7B
    VRAM headroom at the profile stage (see the feasibility table).
-3. **Qwen3.5-4B and Gemma-4-E4B's multimodal loader paths are unverified for
-   the J-lens's `attn_implementation="eager"` requirement.** Amendment Z's
-   own loader hardening was validated for its (non-J-lens) extraction script;
-   it has not been confirmed that the multimodal wrapper classes
-   (`AutoModelForImageTextToText` / `AutoModelForVision2Seq`) accept or
-   respect `attn_implementation="eager"` the way `AutoModelForCausalLM` does.
-   If they do not, the J-lens profile stage (which needs eager attention for
-   the double-backward JVP trick on any non-final layer) may need a
-   different attention-implementation strategy for these two families, which
-   is a design question for the lead, not something this draft resolves.
-4. **Render-contract ambiguity per family**, specifically:
-   - Gemma's chat template may not support a separate system role (some
-     Gemma templates fold system content into the first user turn).
-     `backends.render_probe_prompt`'s own mode-discovery/fallback loop
-     SHOULD surface this as a template failure to try next, but this has
-     not been confirmed against the actual `google/gemma-4-E4B-it` tokenizer.
-   - Each family's actual EOS/end-of-turn token list
-     (`families/<slug>.yaml` "eos" block) is this drafting pass's best
-     guess from general knowledge of each chat-template lineage
-     (`<|eot_id|>` for Llama 3, `<|im_end|>` for Qwen, `<end_of_turn>` for
-     Gemma, no extra token assumed for Mistral) and has NOT been
-     confirmed against each checkpoint's actual
-     `tokenizer.special_tokens_map` or `additional_special_tokens`. Confirm
-     at extraction time, per each family YAML's own "notes" field.
-   - `families/llama-3.2-3b.yaml`'s `n_hidden_layers: 28` (used only to
-     estimate a late-reference depth fraction target before the profile
-     stage runs) is an UNCONFIRMED estimate, not read from the actual
-     config; the profile stage's own `model.config.num_hidden_layers` read
-     is the authoritative source once it runs.
+3. **VERIFIED 2026-07-09 (CPU-only, config/tokenizer JSON files + meta-device
+   model construction, no weights, no GPU, no generation).** Qwen3.5-4B and
+   Gemma-4-E4B's multimodal loader paths and config nesting were checked
+   against each checkpoint's `config.json`/`tokenizer_config.json`/
+   `chat_template.jinja`/`generation_config.json` (downloaded via
+   `hf_hub_download` per-file, never `snapshot_download`; cached under this
+   experiment's gitignored `analysis/tokenizer-config-verify/`). Findings:
+   - Both checkpoints nest `hidden_size`/`num_hidden_layers` under
+     `config.text_config` (confirming `nested_text_config: true` was
+     correct for both); `config.get_text_config()` is the confirmed
+     transformers-native accessor (checked directly, transformers 5.5.0).
+   - `AutoModelForCausalLM.from_config()` on the raw top-level config
+     **fails** for Qwen3.5-4B (`AttributeError: 'Qwen3_5Config' object has
+     no attribute 'vocab_size'` -- its resolved class expects a flat/text
+     config) but **succeeds** for Gemma-4-E4B (no error) -- however both
+     families' `AutoModelForImageTextToText.from_config()` call resolves
+     to the SAME full conditional-generation class
+     (`Qwen3_5ForConditionalGeneration` / `Gemma4ForConditionalGeneration`)
+     that `AutoModelForCausalLM` either falls through to (Qwen3.5) or
+     lands on directly anyway (Gemma4). For both families this means: a
+     real (non-meta) load materializes the non-text tower parameters
+     (vision for Qwen3.5; vision AND audio for Gemma4 -- Gemma-4-E4B's
+     `config.json` also carries a full `audio_config` block in addition to
+     `vision_config`, i.e. this checkpoint is TRIMODAL, not just
+     vision-multimodal) regardless of which `model_classes` entry actually
+     resolves. This firms up (does
+     not resolve the GB number for) the open VRAM question in the
+     feasibility table above -- the vision/audio towers ARE structurally
+     part of what gets loaded, not merely a config artifact.
+   - `attn_implementation="eager"` was passed to
+     `AutoModelForImageTextToText.from_config()` for both families and
+     accepted cleanly at construction time (meta-device, no weights),
+     propagating to both the top-level and nested text-config
+     `_attn_implementation` fields. This is verified only at
+     construction/config-propagation time; it does NOT verify eager
+     attention is actually used correctly during a real forward/backward
+     pass (double-backward JVP), which needs a GPU and remains unverified.
+   - Full findings and the exact commands run are recorded in each
+     family's `families/<slug>.yaml` "loader.notes" field.
+4. **VERIFIED 2026-07-09 (same CPU-only config/tokenizer fetch as point 3).**
+   Per-family EOS/end-of-turn tokens, layer counts, and render-contract
+   details:
+   - **Gemma system-role support: RESOLVED, and the concern was
+     UNFOUNDED for this checkpoint.** `google/gemma-4-E4B-it`'s
+     `chat_template.jinja` gives `system`/`developer` roles their own
+     dedicated turn block (`messages[0]['role'] in ['system', 'developer']`
+     triggers a distinct block), not folded into the first user turn. The
+     AMENDMENT.md family table did not carry this specific concern, so no
+     correction was needed there beyond the EOS-token fix noted below.
+   - **Gemma EOS token: CORRECTED, the draft's guess was WRONG.**
+     `<end_of_turn>`/`<start_of_turn>` do not appear anywhere in
+     `google/gemma-4-E4B-it`'s chat template (grepped, zero matches).
+     Gemma4 uses a different scheme: literal `<|turn>ROLE\n` /
+     `<turn|>\n` markers, and `tokenizer_config.json` has its own
+     `eot_token` field whose value is literally `"<turn|>"`. Updated
+     `families/gemma4-e4b.yaml`'s `eos.additional_end_of_turn_tokens` to
+     `["<turn|>"]`. Two of `generation_config.json`'s three
+     `eos_token_id` entries (ids 106 and 50) could not be resolved to
+     literal strings from the files this task is scoped to fetch
+     (`special_tokens_map.json` is absent from this repo and the full
+     tokenizer vocab was out of scope); this remains open, flagged in the
+     YAML, and should be resolved at extraction time with the actual
+     tokenizer loaded.
+   - **Gemma `enable_thinking`: CORRECTED, the draft's guess was WRONG.**
+     The family YAML claimed Gemma has no native thinking-toggle kwarg.
+     `google/gemma-4-E4B-it`'s chat template DOES have one: `enable_thinking`
+     gates a `<|think|>` token injection and the template separately
+     handles `reasoning`/`reasoning_content` message fields. Gemma4-E4B is
+     a reasoning-capable checkpoint, unlike the older Gemma 2/3 lineage the
+     original guess reasoned from.
+   - **Llama, Mistral, Qwen3.5 EOS guesses: CONFIRMED correct** (`<|eot_id|>`
+     for Llama, no extra token for Mistral, `<|im_end|>` for Qwen), with one
+     terminology nuance for both Llama and Qwen3.5: the tokenizer's own
+     default `eos_token` (per `tokenizer_config.json`/`special_tokens_map.json`)
+     is ALREADY the family's named end-of-turn token in both cases (`<|eot_id|>`
+     for Llama, `<|im_end|>` for Qwen3.5) -- so `include_tokenizer_eos: true`
+     alone already covers it, it is not purely "additional" the way the
+     YAML's field name implies. Llama's `generation_config.json` also lists
+     a third stop id (`<|eom_id|>`, end-of-message) not previously
+     recorded. See each family's `eos.notes` field for the full detail.
+   - **Qwen3.5's `enable_thinking` kwarg: CONFIRMED** present and matching
+     Qwen3-4B's lineage semantics exactly.
+   - **Mistral system-role: noted (not a decision point, found incidentally).**
+     Mistral's template accepts `messages[0]['role'] == 'system'` but folds
+     it into the first user turn's `[INST]` block rather than giving it a
+     separate turn (unlike Llama/Qwen/Gemma4). Not a template failure, just
+     a different render shape; noted in `families/mistral-7b-v03.yaml`.
+   - `families/llama-3.2-3b.yaml`'s `n_hidden_layers: 28` is now
+     CONFIRMED (not just an estimate) from the actual downloaded
+     `config.json`. `mistral-7b-v03.yaml`, `qwen35-4b.yaml`, and
+     `gemma4-e4b.yaml`'s previously-`null` `n_hidden_layers` are now filled
+     in and confirmed: 32 (Mistral, flat), 32 (Qwen3.5, nested under
+     `text_config`), 42 (Gemma4, nested under `text_config`). Each
+     family's `late_reference_hs_estimate` is recomputed accordingly
+     (`round(0.9444 * n_hidden_layers)`: 26 / 30 / 30 / 40 respectively);
+     these remain ESTIMATES for the profile stage to confirm/select
+     against, only the input layer count is now config-verified rather
+     than assumed. Note both Qwen3.5 and Gemma4's `text_config.layer_types`
+     alternate attention types across depth (Qwen3.5:
+     linear_attention/full_attention every 4th layer; Gemma4:
+     sliding_attention/full_attention every 6th layer) -- neither family's
+     42/32 layers are architecturally uniform, which the profile stage's
+     depth sweep should be aware of.
 5. **Eval-pool mining targets** (`--target-confab 200 --target-known-correct
    300`, this script's defaults) are carried over from the Qwen3-4B
    replication's own targets, not re-derived per family. A family whose raw

@@ -6,6 +6,53 @@ in `experiment.yaml`.
 
 ## Entries
 
+### 2026-07-09 -- tokenizer/config verification pass (CPU-only, no GPU work run)
+
+Resolved LAUNCH-PLAN.md decision points #3 (multimodal config nesting), #4
+(EOS lists + layer counts), and #5 (Gemma system-role support) by
+downloading ONLY `config.json`/`tokenizer_config.json`/
+`special_tokens_map.json`/`generation_config.json`/`chat_template.jinja`
+per checkpoint via `hf_hub_download` (never `snapshot_download`, no
+`*.safetensors`/`*.bin` touched) for all four checkpoints:
+`unsloth/Llama-3.2-3B-Instruct`, `mistralai/Mistral-7B-Instruct-v0.3`,
+`Qwen/Qwen3.5-4B`, `google/gemma-4-E4B-it`. All four repos were ungated
+(no 403s). Fetch script and cached files live under this experiment's
+gitignored `analysis/tokenizer-config-verify/` (fetch script:
+`fetch_configs.py`; not tracked, upstream artifacts only).
+
+Also ran a small number of meta-device (`torch.device("meta")`, no weight
+download, no GPU) `AutoModelForCausalLM`/`AutoModelForImageTextToText`
+construction checks against the downloaded configs to directly test the
+multimodal loader-class questions LAUNCH-PLAN.md flagged as unverified
+(`attn_implementation="eager"` acceptance, and whether the vision/audio
+towers are structurally part of the resolved model class) -- no weights
+were downloaded or instantiated with real data for this.
+
+Confirmed: Llama's `n_hidden_layers: 28` guess, Mistral's/Qwen3.5's EOS
+guesses, and Qwen3.5's `nested_text_config: true` + `enable_thinking`
+kwarg. Filled in previously-`null` layer counts for Mistral (32), Qwen3.5
+(32, nested), and Gemma4 (42, nested), each with a recomputed
+`round(0.9444 * n_hidden_layers)` late-reference estimate.
+
+Corrected two factually wrong guesses for `google/gemma-4-E4B-it`: (1) its
+EOS/end-of-turn token is `<turn|>` (per `tokenizer_config.json`'s own
+`eot_token` field and the live chat template), not the classic Gemma
+2/3 `<end_of_turn>` the draft assumed; (2) it DOES have a native
+`enable_thinking` kwarg (gates a `<|think|>` token injection), contrary to
+the draft's "Gemma has no thinking-toggle kwarg" claim. Also resolved
+decision point #5 in the affirmative (its template gives `system` its own
+turn, not folded into the first user turn -- the flagged concern was
+unfounded for this checkpoint) and found it is trimodal (vision + audio
+towers, not vision-only) -- both AMENDMENT.md's family table and
+`families/gemma4-e4b.yaml` were updated to flag these corrections
+prominently. Full detail in each `families/<slug>.yaml`'s per-section
+"VERIFIED"/"CORRECTED" notes and LAUNCH-PLAN.md's revised decision points
+#3/#4.
+
+Did NOT touch decision point #1 (G3 floor) or the VRAM GB estimates in the
+feasibility table (lead-kept); did NOT sign, did NOT run any model
+generation, did NOT touch the local 3090.
+
 ### 2026-07-09 -- draft scaffold written (no GPU work run)
 
 Scaffolded via `bin/exp new --type steer-cell j-space-cross-family-layer-contrast`

@@ -27,7 +27,13 @@ loader:
   dtype: bf16
   notes: >-
     Standard LlamaForCausalLM. No known loader risk (Amendment Z: "text-only,
-    standard LlamaForCausalLM -- lowest risk").
+    standard LlamaForCausalLM -- lowest risk"). VERIFIED 2026-07-09 against
+    unsloth/Llama-3.2-3B-Instruct's config.json/tokenizer_config.json/
+    special_tokens_map.json/generation_config.json/chat_template.jinja
+    (JSON/text config files only, no weights downloaded, no GPU, no
+    generation): "architectures" == ["LlamaForCausalLM"] exactly (no
+    ConditionalGeneration wrapper); hidden_size/num_hidden_layers are
+    flat top-level fields, confirming nested_text_config: false is correct.
 
 render:
   # backends.render_probe_prompt (experiment/phase1/probe/backends.py) is
@@ -40,7 +46,15 @@ render:
     Llama 3.2's chat template has no native thinking-toggle kwarg; the
     enable_thinking=False call is a harmless no-op tried first by
     render_probe_prompt's own mode-discovery loop, matching the family's
-    default (non-thinking) chat behavior.
+    default (non-thinking) chat behavior. VERIFIED 2026-07-09: no
+    "enable_thinking" or "<think" token/kwarg reference anywhere in the
+    downloaded chat_template.jinja.
+  system_role_support: >-
+    VERIFIED 2026-07-09 by reading chat_template.jinja directly (no
+    AutoTokenizer load needed): the template checks
+    `messages[0]['role'] == 'system'` and renders it in its own
+    `<|start_header_id|>system<|end_header_id|>` block distinct from the
+    first user turn. System role is natively supported, not folded.
   system_prompt_source: >-
     Same baseline system prompt string as the Qwen3-4B AH-A0 arm
     (amendment_ah_stage0_extract.load_baseline_system_prompt), reused
@@ -55,6 +69,20 @@ eos:
     Llama 3 chat models emit <|eot_id|> as the turn-end marker in addition
     to the tokenizer's own eos_token_id; both must be in eos_token_id passed
     to model.generate() or greedy decode will not stop naturally at turn end.
+    VERIFIED 2026-07-09 against unsloth/Llama-3.2-3B-Instruct's
+    special_tokens_map.json/tokenizer_config.json/generation_config.json
+    (JSON only, no weights): the draft's guess is directionally right but
+    the tokenizer's own default eos_token is ALREADY "<|eot_id|>" (id
+    128009, per special_tokens_map.json and tokenizer_config.json's
+    "eos_token" field) -- so include_tokenizer_eos: true already covers it,
+    it is not purely "additional". generation_config.json's own
+    eos_token_id list is actually THREE ids: [128001 "<|end_of_text|>",
+    128008 "<|eom_id|>", 128009 "<|eot_id|>"] (ids resolved via
+    tokenizer_config.json's added_tokens_decoder). If a caller relies on
+    generation_config defaults for stopping, <|eom_id|> (end-of-message,
+    relevant for tool-call continuations) is also in-scope, not just
+    <|eot_id|>; harmless to include all three in eos_token_id at generate()
+    time.
 
 band_selection:
   status: not_yet_run
@@ -69,7 +97,12 @@ band_selection:
     absolute layer indices.
   n_hidden_layers: 28
   late_reference_depth_fraction_target: 0.9444
-  late_reference_hs_estimate: "round(0.9444 * 28) = 26 (to be confirmed by the profile run, not assumed)"
+  late_reference_hs_estimate: >-
+    round(0.9444 * 28) = 26. n_hidden_layers=28 VERIFIED 2026-07-09 from
+    unsloth/Llama-3.2-3B-Instruct's config.json (top-level
+    num_hidden_layers field, hidden_size=3072); this estimate is still an
+    ESTIMATE for the profile stage to confirm/select against, only the
+    input layer count is now config-verified rather than assumed.
   midband_candidates_hs: null
   late_reference_hs: null
   effective_dim_peak_hs: null

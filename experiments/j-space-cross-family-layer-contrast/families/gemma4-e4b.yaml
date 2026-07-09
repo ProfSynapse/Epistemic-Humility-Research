@@ -31,7 +31,39 @@ loader:
     Gemma4 conditional-gen (multimodal) class; per Amendment Z this is a
     LOADER risk only (not a gating/license risk). J-lens's eager-attention
     requirement (see qwen35-4b.yaml note) applies here too and is unverified
-    for the Gemma4 wrapper class.
+    for the Gemma4 wrapper class. VERIFIED 2026-07-09 against
+    google/gemma-4-E4B-it's config.json/tokenizer_config.json/
+    chat_template.jinja/generation_config.json (JSON/text config files
+    only, no weights downloaded; special_tokens_map.json is ABSENT from
+    this repo -- 404/not-found, not a gating error): config.json
+    "architectures" == ["Gemma4ForConditionalGeneration"] (model_type
+    "gemma4"). CORRECTION to the "multimodal" framing: this checkpoint's
+    config.json also carries a full "audio_config" block (gemma4_audio,
+    12 layers, hidden_size=1024) IN ADDITION TO "vision_config" -- Gemma4-
+    E4B is TRIMODAL (text+vision+audio), not just vision-multimodal as
+    "conditional-gen (multimodal)" implies. hidden_size=2560 and
+    num_hidden_layers=42 are BOTH nested under config.text_config
+    (confirming nested_text_config: true), reachable via
+    `config.get_text_config()` (checked directly, transformers 5.5.0, no
+    weights). ADDITIONAL FINDING (CPU-only, meta-device model
+    construction, no weights downloaded, no GPU): UNLIKE Qwen3.5-4B,
+    `AutoModelForCausalLM.from_config(cfg)` on the raw top-level
+    Gemma4Config SUCCEEDS without error here -- but it resolves to
+    `Gemma4ForConditionalGeneration` (the SAME full trimodal class
+    `AutoModelForImageTextToText.from_config(cfg)` resolves to), not a
+    distinct text-only causal class. So for Gemma4 the model_classes
+    fallback chain's first entry does not error out, but it also does not
+    give a lighter-weight text-only load -- both entries land on the same
+    full trimodal module graph, meaning a real (non-meta) load
+    materializes vision AND audio tower parameters regardless of which
+    Auto* class is tried first. This firms up (does not resolve the GB
+    number for) this family's own flagged VRAM risk below.
+    `attn_implementation="eager"` was passed to
+    AutoModelForImageTextToText.from_config and accepted cleanly at
+    construction time, propagating to both the top-level and nested
+    text-config `_attn_implementation` fields (meta-device construction
+    only; NOT verified for an actual forward/backward pass, which needs a
+    GPU and is out of this task's scope).
 
 render:
   fn: "backends:render_probe_prompt"
@@ -40,22 +72,75 @@ render:
     are not "thinking" models in this project's sense); enable_thinking=False
     is expected to be a no-op tried first by render_probe_prompt's
     mode-discovery loop, matching Llama/Mistral's posture.
+    CORRECTED 2026-07-09: this guess is WRONG for google/gemma-4-E4B-it
+    specifically, verified by reading chat_template.jinja directly. The
+    template DOES have a native enable_thinking kwarg:
+    `{%- if (enable_thinking is defined and enable_thinking) or tools or
+    messages[0]['role'] in ['system', 'developer'] -%}` gates a system-turn
+    block, and inside it `{%- if enable_thinking is defined and
+    enable_thinking -%}` injects a literal `<|think|>\n` token at the top
+    of the first system turn. Gemma4-E4B is a reasoning-capable checkpoint
+    in this project's sense, unlike the older Gemma 2/3 lineage the draft's
+    guess was implicitly reasoning from -- render_probe_prompt's
+    enable_thinking=False call is no longer a guaranteed no-op for this
+    family and should be exercised (not assumed inert) at extraction time.
+    The template also handles `reasoning`/`reasoning_content` message
+    fields into a `<|channel>thought\n...\n<channel|>` block, mirroring a
+    thinking-model turn structure.
   system_prompt_source: >-
     Same baseline system prompt string as the Qwen3-4B AH-A0 arm, reused
-    verbatim (see llama-3.2-3b.yaml's identical note). NOTE: some Gemma chat
-    templates do not support a separate system role and fold it into the
-    first user turn; render_probe_prompt's discovery loop should surface
-    that as a template failure to try next, but confirm this at extraction
-    time rather than assuming System-role support.
+    verbatim (see llama-3.2-3b.yaml's identical note).
+  system_role_support: >-
+    RESOLVED 2026-07-09 (previously an open LAUNCH-PLAN decision point):
+    verified by reading chat_template.jinja directly (no AutoTokenizer/
+    vocab load needed) that google/gemma-4-E4B-it's template DOES give
+    system its own dedicated turn, contrary to the "some Gemma templates
+    fold system into the first user turn" concern this file previously
+    flagged. The template checks
+    `messages[0]['role'] in ['system', 'developer']` and renders it inside
+    a `<|turn>system\n...<turn|>\n` block (see the eos section below for
+    why this is `<|turn>`/`<turn|>` and not `<start_of_turn>`/
+    `<end_of_turn>`), separate from the first user turn. render_probe_prompt's
+    discovery/fallback loop will not need to fall back off system-role for
+    this checkpoint.
 
 eos:
   include_tokenizer_eos: true
-  additional_end_of_turn_tokens: ["<end_of_turn>"]
+  additional_end_of_turn_tokens: ["<turn|>"]
   notes: >-
     Gemma chat models use <end_of_turn> as their turn-end marker (Gemma
     lineage convention); confirm it resolves via
     tokenizer.convert_tokens_to_ids on this checkpoint before assuming it is
     present, mirroring gen_lib.py's existing im_end lookup pattern.
+    CORRECTED 2026-07-09: this guess is WRONG for google/gemma-4-E4B-it.
+    Verified against its tokenizer_config.json (special_tokens_map.json is
+    ABSENT from this repo -- 404/not-found, not a gating error) and
+    chat_template.jinja (JSON/text only, no weights): the classic Gemma
+    2/3 `<start_of_turn>`/`<end_of_turn>` token strings do NOT appear
+    anywhere in this checkpoint's chat_template.jinja (grepped, zero
+    matches). Gemma4 uses a DIFFERENT turn-delimiter scheme entirely: the
+    template hardcodes literal `<|turn>ROLE\n` ... `<turn|>\n` markers, and
+    tokenizer_config.json has its own dedicated "eot_token" field whose
+    value is literally "<turn|>" (paired with a "sot_token" field
+    ="<|turn>"), confirming this as the checkpoint's own declared
+    end-of-turn special token, not a scheme this drafting pass could have
+    inferred from general Gemma-lineage knowledge. Separately,
+    config.json's top-level eos_token_id=[1, 106], generation_config.json's
+    is [1, 106, 50], and tokenizer_config.json's own "eos_token" field is
+    "<eos>" (id 1, standard Gemma SentencePiece numbering where 0=pad,
+    1=eos, 2=bos). Ids 106 and 50 could NOT be resolved to literal token
+    strings from the files this task is scoped to fetch (no
+    added_tokens_decoder entry in tokenizer_config.json for this
+    checkpoint, and special_tokens_map.json / the full tokenizer.json
+    vocab are either absent or out of the authorized file list) --
+    id 106 is plausibly the legacy Gemma 2/3 `<end_of_turn>` id repurposed
+    or left vestigial in this vocab, but that is NOT confirmed here and
+    should not be assumed; id 50 is entirely unresolved. What IS confirmed
+    is that the LIVE chat template's actual end-of-turn marker is the
+    literal string "<turn|>", not "<end_of_turn>" -- use that string (not
+    an assumed token id) as this family's additional_end_of_turn_tokens
+    entry, and resolve its id via tokenizer.convert_tokens_to_ids at
+    extraction time as the notes above already recommend.
 
 band_selection:
   status: not_yet_run
@@ -63,9 +148,18 @@ band_selection:
     Same j-lens layer_profile() method as llama-3.2-3b.yaml. Resolve this
     family's own band from its own profile run; do not assume any transfer
     from the other three families or from Qwen3-4B.
-  n_hidden_layers: null
+  n_hidden_layers: 42
   late_reference_depth_fraction_target: 0.9444
-  late_reference_hs_estimate: "not yet resolved (config unread); resolve at profile time, not by assumption"
+  late_reference_hs_estimate: >-
+    round(0.9444 * 42) = 40. n_hidden_layers=42 VERIFIED 2026-07-09 from
+    google/gemma-4-E4B-it's config.json config.text_config.num_hidden_layers
+    (nested; text_config.hidden_size=2560). This estimate is still an
+    ESTIMATE for the profile stage to confirm/select against, only the
+    input layer count is now config-verified rather than assumed. Note
+    text_config.layer_types alternates sliding_attention/full_attention
+    (full_attention every 6th layer, sliding_window=512) -- the profile
+    stage's depth sweep should be aware layers are not architecturally
+    uniform.
   midband_candidates_hs: null
   late_reference_hs: null
   effective_dim_peak_hs: null
@@ -93,4 +187,15 @@ vram:
     the second derivative). This is the run order's highest-risk family on
     BOTH loader compatibility and VRAM headroom; run last per Amendment Z's
     order, and budget a possible OOM/loader-blocker as a real outcome, not
-    a rare edge case.
+    a rare edge case. PARTIALLY ANSWERED 2026-07-09 (config/class-registration
+    check only, no GPU, no actual weight load; see loader.notes above): the
+    resolved loader class (either Auto* entry tried) is
+    Gemma4ForConditionalGeneration, whose module graph structurally
+    includes BOTH a vision tower (vision_config, hidden_size=768, depth=16)
+    AND an audio tower (audio_config, hidden_size=1024, 12 layers) --
+    this checkpoint is trimodal, not just vision-multimodal as previously
+    framed, so a real load's non-text parameter overhead is larger than
+    "a vision encoder" alone. The actual GB delta is not measured here
+    (would need a real weight load); the VRAM floor number itself remains
+    the lead's open decision, this only firms up (and raises) the
+    "how much non-text weight gets pulled in" half of the question.

@@ -34,15 +34,36 @@ loader:
     wrapper problem. This is the same pinned checkpoint the running
     doubt-snap-cross-family confirmatory uses for its Mistral small-tier
     cell, so its loader behavior will have been exercised there first.
+    VERIFIED 2026-07-09 against mistralai/Mistral-7B-Instruct-v0.3's
+    config.json/tokenizer_config.json/special_tokens_map.json/
+    generation_config.json (JSON only, no weights): "architectures" ==
+    ["MistralForCausalLM"] exactly, confirming the substitution rationale.
+    hidden_size=4096, num_hidden_layers=32, both flat top-level fields
+    (nested_text_config: false confirmed correct).
 
 render:
   fn: "backends:render_probe_prompt"
   enable_thinking_equivalent: >-
     Mistral has no native thinking-toggle kwarg; enable_thinking=False is a
-    no-op tried first by render_probe_prompt's mode-discovery loop.
+    no-op tried first by render_probe_prompt's mode-discovery loop. VERIFIED
+    2026-07-09: no "enable_thinking" or thinking-token reference anywhere in
+    the tokenizer_config.json-embedded chat_template (Mistral ships its
+    template inline in tokenizer_config.json, not as a separate
+    chat_template.jinja file -- confirmed no separate file exists in the
+    repo).
   system_prompt_source: >-
     Same baseline system prompt string as the Qwen3-4B AH-A0 arm, reused
     verbatim (see llama-3.2-3b.yaml's identical note).
+  system_role_support: >-
+    VERIFIED 2026-07-09 by reading the chat_template embedded in
+    tokenizer_config.json directly: the template detects
+    `messages[0]["role"] == "system"` but does NOT give it its own turn
+    marker -- it FOLDS the system content into the first user turn's
+    `[INST] <system_message>\n\n<user_content>[/INST]` block. System role
+    is accepted but rendered differently from Llama/Qwen (which emit a
+    separate system turn); noted here since it changes what the rendered
+    prompt actually looks like even though render_probe_prompt's own
+    discovery loop should handle it without a fallback failure.
 
 eos:
   include_tokenizer_eos: true
@@ -52,7 +73,16 @@ eos:
     eos_token_id for turn end (no separate named end-of-turn token analogous
     to Llama's <|eot_id|> or Qwen's <|im_end|>); confirm against the actual
     tokenizer's special_tokens_map at extraction time rather than assuming
-    this list is complete.
+    this list is complete. VERIFIED 2026-07-09 against
+    mistralai/Mistral-7B-Instruct-v0.3's special_tokens_map.json/
+    tokenizer_config.json/generation_config.json (JSON only, no weights):
+    eos_token_id=2 ("</s>") at both config.json top level and
+    generation_config.json; special_tokens_map.json and tokenizer_config.json
+    agree the tokenizer's own eos_token is "</s>"; additional_special_tokens
+    is null/None. The draft's "no extra token" guess is CONFIRMED correct --
+    the chat template (embedded in tokenizer_config.json) appends eos_token
+    directly after each assistant turn and after tool-call blocks, with no
+    separate named end-of-turn token.
 
 band_selection:
   status: not_yet_run
@@ -62,9 +92,14 @@ band_selection:
     reference = the depth-fraction analog of Qwen3-4B's hs34
     (34/36 = 0.9444). This family's own n_hidden_layers determines its own
     absolute layer indices; hs23-29 does NOT transfer by assumption.
-  n_hidden_layers: null
+  n_hidden_layers: 32
   late_reference_depth_fraction_target: 0.9444
-  late_reference_hs_estimate: "not yet resolved (config unread); resolve at profile time, not by assumption"
+  late_reference_hs_estimate: >-
+    round(0.9444 * 32) = 30. n_hidden_layers=32 VERIFIED 2026-07-09 from
+    mistralai/Mistral-7B-Instruct-v0.3's config.json (top-level
+    num_hidden_layers field, hidden_size=4096); this estimate is still an
+    ESTIMATE for the profile stage to confirm/select against, only the
+    input layer count is now config-verified rather than assumed.
   midband_candidates_hs: null
   late_reference_hs: null
   effective_dim_peak_hs: null

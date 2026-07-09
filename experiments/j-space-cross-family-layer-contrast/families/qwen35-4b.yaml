@@ -38,6 +38,40 @@ loader:
     double-backward JVP machinery (jlens.py) additionally requires
     attn_implementation="eager" for any non-final layer -- confirm the
     multimodal wrapper class still accepts that kwarg before profiling.
+    VERIFIED 2026-07-09 against Qwen/Qwen3.5-4B's config.json/
+    tokenizer_config.json/chat_template.jinja/generation_config.json
+    (JSON/text config files only, no weights downloaded; special_tokens_map.json
+    and generation_config.json are ABSENT from this repo -- 404/not-found,
+    not a gating error): config.json "architectures" ==
+    ["Qwen3_5ForConditionalGeneration"] (model_type "qwen3_5"), confirming
+    this is a conditional-generation multimodal wrapper, not a plain
+    causal-LM class -- structurally the same category of risk flagged for
+    Ministral-3's Mistral3ForConditionalGeneration, though this experiment
+    already anticipated it via the 3-class fallback chain below.
+    hidden_size=2560, num_hidden_layers=32 are BOTH nested under
+    config.text_config (confirming nested_text_config: true), reachable at
+    runtime via transformers' own `config.get_text_config()` helper
+    (checked directly with AutoConfig + transformers 5.5.0, no weights).
+    ADDITIONAL FINDING (CPU-only, meta-device model construction, no
+    weights downloaded, no GPU): `AutoModelForCausalLM.from_config(cfg)`
+    on the raw top-level Qwen3_5Config FAILS with
+    `AttributeError: 'Qwen3_5Config' object has no attribute 'vocab_size'`
+    (its resolved class, Qwen3_5ForCausalLM, expects a flat/text config,
+    not the nested multimodal one) -- so the model_classes fallback chain
+    below is NOT just defensive, it is REQUIRED for this checkpoint: the
+    first class in the list will always error and fall through.
+    `AutoModelForImageTextToText.from_config(cfg)` on the same top-level
+    config SUCCEEDS and resolves to `Qwen3_5ForConditionalGeneration`
+    (the full multimodal class, vision tower included in the module
+    graph) -- meaning a real (non-meta) load will materialize vision-tower
+    parameters even for a text-only prompt, resolving this family's open
+    VRAM question in the affirmative (the vision tower IS part of what
+    gets loaded). `attn_implementation="eager"` was passed to
+    AutoModelForImageTextToText.from_config and accepted cleanly at
+    construction time, propagating to both the top-level and nested
+    text-config `_attn_implementation` fields (meta-device construction
+    only; NOT verified for an actual forward/backward pass, which needs a
+    GPU and is out of this task's scope).
 
 render:
   fn: "backends:render_probe_prompt"
@@ -47,9 +81,22 @@ render:
     enable_thinking=False path and its no-think-scaffolding self-check should
     apply directly. Confirm at extraction time rather than assuming template
     parity with Qwen3-4B given this is a different generation/checkpoint.
+    VERIFIED 2026-07-09 by reading chat_template.jinja directly: CONFIRMED,
+    the template has `{%- if enable_thinking is defined and enable_thinking
+    is false %}` guarding a `<think>\n\n</think>\n\n` empty-think-block
+    injection at the assistant generation prompt, else it opens an
+    unterminated `<think>\n` block (thinking mode default-on). The kwarg
+    name and semantics match Qwen3-4B's lineage exactly.
   system_prompt_source: >-
     Same baseline system prompt string as the Qwen3-4B AH-A0 arm, reused
     verbatim (see llama-3.2-3b.yaml's identical note).
+  system_role_support: >-
+    VERIFIED 2026-07-09 by reading chat_template.jinja directly: system
+    role is natively supported and rendered as its own
+    `<|im_start|>system\n...<|im_end|>\n` turn (both the tools-defined and
+    no-tools branches check `messages[0].role == 'system'` and emit this
+    block), matching the tokenizer_config.json declared tokenizer_class
+    "Qwen2Tokenizer".
 
 eos:
   include_tokenizer_eos: true
@@ -58,6 +105,20 @@ eos:
     Same <|im_end|> convention as unsloth/Qwen3-4B (Qwen lineage), but
     confirm the token still resolves via tokenizer.convert_tokens_to_ids on
     THIS checkpoint's tokenizer rather than assuming identity with Qwen3-4B.
+    VERIFIED 2026-07-09 against Qwen/Qwen3.5-4B's tokenizer_config.json
+    (JSON only, no weights; special_tokens_map.json is absent from this
+    repo so tokenizer_config.json's own added_tokens_decoder is the source
+    of truth here): "<|im_end|>" is a real added special token, id 248046
+    (tokenizer_class "Qwen2Tokenizer"). CONFIRMED, and more precisely:
+    tokenizer_config.json's own top-level "eos_token" field is ALREADY
+    "<|im_end|>" (not "<|endoftext|>"), so include_tokenizer_eos: true
+    alone already covers it via tokenizer.eos_token_id -- it is not purely
+    "additional". Separately, config.json's (and its text_config's)
+    eos_token_id=248044 resolves to "<|endoftext|>" (a different token,
+    used as the base sequence-end id, id 248044 per
+    added_tokens_decoder) -- both ids are legitimate stop candidates for
+    model.generate(), but <|im_end|> (248046) is the one that actually
+    terminates a chat turn per the rendered template.
 
 band_selection:
   status: not_yet_run
@@ -67,9 +128,18 @@ band_selection:
     NOT assumed to transfer to Qwen3.5-4B even within the same lineage --
     different checkpoint, possibly different depth/width and pretraining.
     Resolve this family's own band from its own profile run.
-  n_hidden_layers: null
+  n_hidden_layers: 32
   late_reference_depth_fraction_target: 0.9444
-  late_reference_hs_estimate: "not yet resolved (config unread); resolve at profile time, not by assumption"
+  late_reference_hs_estimate: >-
+    round(0.9444 * 32) = 30. n_hidden_layers=32 VERIFIED 2026-07-09 from
+    Qwen/Qwen3.5-4B's config.json config.text_config.num_hidden_layers
+    (nested; text_config.hidden_size=2560). This estimate is still an
+    ESTIMATE for the profile stage to confirm/select against, only the
+    input layer count is now config-verified rather than assumed. Note
+    text_config.layer_types alternates linear_attention/full_attention
+    (a hybrid linear-attention architecture, full_attention every 4th
+    layer) -- the profile stage's depth sweep should be aware layers are
+    not architecturally uniform.
   midband_candidates_hs: null
   late_reference_hs: null
   effective_dim_peak_hs: null
@@ -92,3 +162,13 @@ vram:
     Should fit a single RTX 3090 (24GB) for the text path; verify whether
     the multimodal loader path pulls in the vision tower's weights even
     when only text prompts are used, since that adds to the VRAM floor.
+    PARTIALLY ANSWERED 2026-07-09 (config/class-registration check only, no
+    GPU, no actual weight load): the resolved loader class is
+    Qwen3_5ForConditionalGeneration (see loader.notes), whose module graph
+    structurally includes the vision tower (config.vision_config,
+    hidden_size=1024, depth=24) -- so a real `.from_pretrained()` load DOES
+    materialize vision-tower parameters, this is not merely a config
+    artifact. The actual GB delta this adds is not measured here (would
+    need a real weight load); the VRAM floor number itself remains the
+    lead's open decision, this only firms up the "does it load the tower"
+    half of the question.
