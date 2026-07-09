@@ -67,12 +67,15 @@ from sklearn.metrics import roc_auc_score
 from sklearn.model_selection import KFold
 from sklearn.preprocessing import StandardScaler
 
-PROBE_DIR = Path(__file__).resolve().parent
-if str(PROBE_DIR) not in sys.path:
-    sys.path.insert(0, str(PROBE_DIR))
+ARCHIVE_AMENDMENTS_DIR = Path(__file__).resolve().parent
+if str(ARCHIVE_AMENDMENTS_DIR) not in sys.path:
+    sys.path.insert(0, str(ARCHIVE_AMENDMENTS_DIR))
+
+from path_compat import repo_root  # noqa: E402
+
 from amendment_al_prep_doubt_axis_check import load_a0_stack, load_jsonl, auroc  # noqa: E402
 
-CANONICAL = Path("/home/profsynapse/code/Epistemic-Humility-Research")
+CANONICAL = repo_root()
 DEFAULT_AL_PREP = CANONICAL / "experiment/phase1/probe/analysis/amendment_al_prep"
 SEED = 20260705
 N_PCA = 128

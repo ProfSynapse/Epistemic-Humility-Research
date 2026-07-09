@@ -47,15 +47,21 @@ from pathlib import Path
 
 import numpy as np
 
-PROBE_DIR = Path(__file__).resolve().parent
-EVAL_DIR = PROBE_DIR.parent / "eval"
+ARCHIVE_AMENDMENTS_DIR = Path(__file__).resolve().parent
+if str(ARCHIVE_AMENDMENTS_DIR) not in sys.path:
+    sys.path.insert(0, str(ARCHIVE_AMENDMENTS_DIR))
+
+from path_compat import phase1_eval_dir, phase1_probe_dir, repo_root  # noqa: E402
+
+PROBE_DIR = phase1_probe_dir()
+EVAL_DIR = phase1_eval_dir()
 for p in (str(PROBE_DIR), str(EVAL_DIR)):
     if p not in sys.path:
         sys.path.insert(0, p)
 
 import scorers  # noqa: E402
 
-CANONICAL = Path("/home/profsynapse/code/Epistemic-Humility-Research")
+CANONICAL = repo_root()
 AL_PREP = CANONICAL / "experiment/phase1/probe/analysis/amendment_al_prep"
 RUN_DIR = AL_PREP / "amendment_al_run"
 STAGE0 = CANONICAL / "experiment/phase1/probe/analysis/ah_stage0"

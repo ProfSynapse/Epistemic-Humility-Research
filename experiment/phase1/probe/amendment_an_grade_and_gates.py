@@ -47,7 +47,10 @@ import numpy as np
 
 PROBE_DIR = Path(__file__).resolve().parent
 EVAL_DIR = PROBE_DIR.parent / "eval"
-for p in (str(PROBE_DIR), str(EVAL_DIR)):
+ARCHIVE_AMENDMENTS_DIR = (
+    PROBE_DIR.parents[2] / "archive" / "experiment" / "phase1" / "probe" / "amendments"
+)
+for p in (str(ARCHIVE_AMENDMENTS_DIR), str(PROBE_DIR), str(EVAL_DIR)):
     if p not in sys.path:
         sys.path.insert(0, p)
 

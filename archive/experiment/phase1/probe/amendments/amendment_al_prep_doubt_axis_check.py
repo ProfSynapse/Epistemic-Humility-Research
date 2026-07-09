@@ -36,13 +36,19 @@ from pathlib import Path
 
 import numpy as np
 
-PROBE_DIR = Path(__file__).resolve().parent
+ARCHIVE_AMENDMENTS_DIR = Path(__file__).resolve().parent
+if str(ARCHIVE_AMENDMENTS_DIR) not in sys.path:
+    sys.path.insert(0, str(ARCHIVE_AMENDMENTS_DIR))
+
+from path_compat import phase1_probe_dir, repo_root  # noqa: E402
+
+PROBE_DIR = phase1_probe_dir()
 if str(PROBE_DIR) not in sys.path:
     sys.path.insert(0, str(PROBE_DIR))
 
 from phase3_latent_knowledge_probe import load_layers  # noqa: E402
 
-CANONICAL = Path("/home/profsynapse/code/Epistemic-Humility-Research")
+CANONICAL = repo_root()
 CPROBE = CANONICAL / "experiment/phase1/probe"
 REF_EXTRACT = (CPROBE / "qwen3-4b-clean-sft-grpo-v2-seed1-selfaware"
                / "hidden_states_selfaware_clean_sft_grpo_v2_full"
