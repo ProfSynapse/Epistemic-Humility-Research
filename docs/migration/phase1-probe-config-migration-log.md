@@ -226,3 +226,38 @@ This log records migration batches after the terrain baseline in
   - `phase3_current_clean_grpo_dpo_unknown_failure_selfaware_manifest.summary.json`
     was referenced by the manifest config and historical session note but was
     not tracked or present at migration time.
+
+## C010 - Current-Clean KTO-GRPO Unknown-Failure
+
+- Date: 2026-07-09
+- Source component: `C010`
+- File count: 2
+- Source root: `experiment/phase1/probe/config/`
+- Destination:
+  `experiments/grpo-centered-stacking/artifacts/configs/current-clean-kto-grpo-unknown-failure/`
+- Owner decision: moved into `experiments/grpo-centered-stacking` because
+  `AMENDMENT.md` governs the Amendment F `clean_sft_kto_grpo` arm and this
+  component is a downstream Phase 3 panel artifact for that arm.
+- Reason: owner experiment exists; the files are not reusable shared defaults
+  and should travel with the Amendment F provenance rather than the generic
+  archive.
+- Reference updates:
+  - Rewrote component-internal config path references to the experiment artifact
+    path.
+  - Rewrote moved-file command/reference paths in
+    `docs/sessions/20260625T145842Z-phase-3-model-variation-panel.md`.
+  - Added the moved config files to `experiments/grpo-centered-stacking/experiment.yaml`
+    `inputs`.
+- Non-goals:
+  - Did not move sibling hidden-state extraction, behavior-axis, or multicell
+    configs; they are separate terrain components and will be reviewed in their
+    own batches.
+  - Did not rewrite generated manifest paths under `experiment/phase1/probe/manifests/`
+    or legacy extraction/analysis artifact paths.
+- Provenance gaps noted:
+  - `phase3_current_clean_kto_grpo_unknown_failure_selfaware_scored_rows.jsonl`
+    was referenced by the manifest config but was not tracked or present at
+    migration time.
+  - `phase3_current_clean_kto_grpo_unknown_failure_selfaware_manifest.summary.json`
+    was referenced by the manifest config but was not tracked or present at
+    migration time.
