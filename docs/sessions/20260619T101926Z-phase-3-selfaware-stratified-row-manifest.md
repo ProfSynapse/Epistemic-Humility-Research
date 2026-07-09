@@ -149,7 +149,7 @@ checkpoints:
     without running model extraction.
   evidence:
   - experiment/phase1/probe/hidden_state_probe.py
-  - experiment/phase1/probe/config/hidden_state_selfaware_manifest_sft_dpo_seed1.yaml
+  - archive/experiment/phase1/probe/config/selfaware-hs/hidden_state_selfaware_manifest_sft_dpo_seed1.yaml
   - experiment/phase1/probe/tests/test_hidden_state_probe.py
   run_ids: []
   commands:
@@ -159,7 +159,7 @@ checkpoints:
   - python -c parse_config_and_select_hidden_state_selfaware_manifest_sft_dpo_seed1
   decisions:
   - Do not run extraction until an explicit GPU gate is approved; the future command
-    is python experiment/phase1/probe/hidden_state_probe.py --config experiment/phase1/probe/config/hidden_state_selfaware_manifest_sft_dpo_seed1.yaml
+    is python experiment/phase1/probe/hidden_state_probe.py --config archive/experiment/phase1/probe/config/selfaware-hs/hidden_state_selfaware_manifest_sft_dpo_seed1.yaml
     after verifying local model/adapter paths, disk budget, and whether max_rows should
     stay 128 or be raised.
   next_steps:
@@ -232,7 +232,7 @@ checkpoints:
     for both /workspace/repo and /workspace/repo/synaptic-tuner fixed provenance operationally,
     wrote 0 new rows, skipped 1233 existing rows, and finalized the manifest in 152.1s.
   evidence:
-  - experiment/phase1/probe/config/hidden_state_selfaware_manifest_sft_dpo_seed1_full.yaml
+  - archive/experiment/phase1/probe/config/selfaware-hs/hidden_state_selfaware_manifest_sft_dpo_seed1_full.yaml
   - experiment/phase1/probe/qwen3-4b-sft-merged-seed1-selfaware/hidden_states_selfaware_full/extraction__d3d0e6d19c0e
   run_ids: []
   commands: []
@@ -325,7 +325,7 @@ checkpoints:
     The finalized artifact has manifest status ok, verified true, 1233 rows, 3699
     safetensors, row provenance mismatches 0, and sampled delta tensors are nonzero.
   evidence:
-  - experiment/phase1/probe/config/hidden_state_selfaware_manifest_sft_kto_seed1_full.yaml
+  - archive/experiment/phase1/probe/config/selfaware-hs/hidden_state_selfaware_manifest_sft_kto_seed1_full.yaml
   - experiment/phase1/probe/qwen3-4b-sft-merged-seed1-selfaware/hidden_states_selfaware_full_kto/extraction__bb5e579fa10e
   run_ids: []
   commands: []
@@ -528,7 +528,7 @@ artifacts, and run a separate SelfAware hidden-state extraction path keyed by
 stable `selfaware::<eval_set>::<row_index>::<raw_id>` identities.
 
 Current state: the full frozen-manifest SelfAware extraction run is complete.
-`experiment/phase1/probe/config/hidden_state_selfaware_manifest_sft_dpo_seed1_full.yaml`
+`archive/experiment/phase1/probe/config/selfaware-hs/hidden_state_selfaware_manifest_sft_dpo_seed1_full.yaml`
 selected all 1233 frozen SelfAware manifest rows into
 `hidden_states_selfaware_full` with extraction config sha
 `d3d0e6d19c0eddb4`. The finalized artifact is
@@ -645,14 +645,14 @@ diagnostic/exploratory Phase 3 artifacts, not pre-registered headline evidence.
 - summary: Prepared a no-GPU dedicated hidden-state extraction path for the frozen SelfAware manifest. hidden_state_probe.py now supports selection.source=selfaware_manifest, converts frozen SelfAware rows into extraction rows while preserving row_key, stable_identity, strata, label, question/prompt, answer metadata, and source-arm evidence, and leaves the existing probe_pool selection path as the default. Added a concrete prep config for sft_dpo_seed1 selecting 128 rows from the frozen manifest without running model extraction.
 - evidence:
   - `experiment/phase1/probe/hidden_state_probe.py`
-  - `experiment/phase1/probe/config/hidden_state_selfaware_manifest_sft_dpo_seed1.yaml`
+  - `archive/experiment/phase1/probe/config/selfaware-hs/hidden_state_selfaware_manifest_sft_dpo_seed1.yaml`
   - `experiment/phase1/probe/tests/test_hidden_state_probe.py`
 - commands:
   - `python -m pytest experiment\\phase1\\probe\\tests\\test_hidden_state_probe.py -q`
   - `python -m py_compile experiment\\phase1\\probe\\hidden_state_probe.py`
   - `python -c parse_config_and_select_hidden_state_selfaware_manifest_sft_dpo_seed1`
 - decisions:
-  - Do not run extraction until an explicit GPU gate is approved; the future command is python experiment/phase1/probe/hidden_state_probe.py --config experiment/phase1/probe/config/hidden_state_selfaware_manifest_sft_dpo_seed1.yaml after verifying local model/adapter paths, disk budget, and whether max_rows should stay 128 or be raised.
+  - Do not run extraction until an explicit GPU gate is approved; the future command is python experiment/phase1/probe/hidden_state_probe.py --config archive/experiment/phase1/probe/config/selfaware-hs/hidden_state_selfaware_manifest_sft_dpo_seed1.yaml after verifying local model/adapter paths, disk budget, and whether max_rows should stay 128 or be raised.
 - next steps:
   - Open the GPU gate only after confirming the seed1 merged model and DPO adapter paths exist on the execution host, the frozen manifest is unchanged, and output space is sufficient for 128 rows x all layers x h_base/h_lora/delta.
 ### 007-bugfix - SelfAware Extraction Provenance Finalization Fixed
@@ -695,7 +695,7 @@ diagnostic/exploratory Phase 3 artifacts, not pre-registered headline evidence.
 - kind: `validation`
 - summary: Full frozen-manifest SelfAware extraction completed and finalized for the seed1 SFT->DPO artifact. The full config selects all 1233 frozen SelfAware manifest rows into hidden_states_selfaware_full with extraction config sha d3d0e6d19c0eddb4. The first full run produced all rows and tensors but failed finalization because Git provenance fields were null; Docker resume with safe.directory configured for both /workspace/repo and /workspace/repo/synaptic-tuner fixed provenance operationally, wrote 0 new rows, skipped 1233 existing rows, and finalized the manifest in 152.1s.
 - evidence:
-  - `experiment/phase1/probe/config/hidden_state_selfaware_manifest_sft_dpo_seed1_full.yaml`
+  - `archive/experiment/phase1/probe/config/selfaware-hs/hidden_state_selfaware_manifest_sft_dpo_seed1_full.yaml`
   - `experiment/phase1/probe/qwen3-4b-sft-merged-seed1-selfaware/hidden_states_selfaware_full/extraction__d3d0e6d19c0e`
 - decisions:
   - Treat the full extraction artifact as verified and finalized for downstream full-run analysis.
@@ -748,7 +748,7 @@ diagnostic/exploratory Phase 3 artifacts, not pre-registered headline evidence.
 - kind: `validation`
 - summary: Full frozen-manifest SelfAware extraction completed and finalized for the seed1 SFT->KTO artifact. The full config selects all 1233 frozen SelfAware manifest rows into `hidden_states_selfaware_full_kto` with extraction config sha `bb5e579fa10e33bb`. The finalized artifact has manifest status `ok`, `verified=true`, 1233 rows, 3699 safetensors, row provenance mismatches 0, and sampled delta tensors are nonzero.
 - evidence:
-  - `experiment/phase1/probe/config/hidden_state_selfaware_manifest_sft_kto_seed1_full.yaml`
+  - `archive/experiment/phase1/probe/config/selfaware-hs/hidden_state_selfaware_manifest_sft_kto_seed1_full.yaml`
   - `experiment/phase1/probe/qwen3-4b-sft-merged-seed1-selfaware/hidden_states_selfaware_full_kto/extraction__bb5e579fa10e`
 - decisions:
   - Treat the full SFT->KTO extraction artifact as verified and finalized for downstream full-run analysis.

@@ -23,6 +23,7 @@ from pathlib import Path
 import pytest
 
 PROBE_DIR = Path(__file__).resolve().parents[1]
+REPO_ROOT = PROBE_DIR.parents[2]
 sys.path.insert(0, str(PROBE_DIR))
 
 import hidden_state_probe as hsp  # noqa: E402
@@ -986,7 +987,16 @@ def test_selfaware_tensor_key_is_filesystem_safe():
 
 
 def test_selfaware_manifest_config_parses_and_selects_no_gpu():
-    config_path = PROBE_DIR / "config" / "hidden_state_selfaware_manifest_sft_dpo_seed1.yaml"
+    config_path = (
+        REPO_ROOT
+        / "archive"
+        / "experiment"
+        / "phase1"
+        / "probe"
+        / "config"
+        / "selfaware-hs"
+        / "hidden_state_selfaware_manifest_sft_dpo_seed1.yaml"
+    )
     config, cfg_sha = hsp.parse_config(config_path)
     rows = hsp.select_matched_slice(config)
 

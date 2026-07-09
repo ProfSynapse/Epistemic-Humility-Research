@@ -82,9 +82,9 @@ checkpoints:
     directories; each selected 1,233 rows. Also updated the mech-interp skill with
     the PYTHONPATH preflight gotcha for root-level imports of hidden_state_probe.py.'
   evidence:
-  - experiment/phase1/probe/config/hidden_state_selfaware_manifest_clean_sft_seed1_full.yaml
-  - experiment/phase1/probe/config/hidden_state_selfaware_manifest_clean_sft_grpo_v2_seed1_full.yaml
-  - experiment/phase1/probe/config/hidden_state_selfaware_manifest_clean_sft_grpo_dpo_seed1_full.yaml
+  - archive/experiment/phase1/probe/config/selfaware-hs/hidden_state_selfaware_manifest_clean_sft_seed1_full.yaml
+  - archive/experiment/phase1/probe/config/selfaware-hs/hidden_state_selfaware_manifest_clean_sft_grpo_v2_seed1_full.yaml
+  - archive/experiment/phase1/probe/config/selfaware-hs/hidden_state_selfaware_manifest_clean_sft_grpo_dpo_seed1_full.yaml
   - .skills/mech-interp-runner/SKILL.md
   run_ids: []
   commands:
@@ -309,9 +309,9 @@ _No summary yet._
 - kind: `infrastructure`
 - summary: Prepared three no-run hidden-state extraction configs for the first current JSON-output mech-interp slice: clean SFT as an adapter over original Qwen3-4B, clean SFT->GRPO v2 as an adapter over clean SFT merged, and clean SFT->GRPO v2->DPO as a DPO adapter over GRPO v2 merged. Model-free preflight parsed all configs, selected the frozen SelfAware manifest slice, and resolved deterministic output directories; each selected 1,233 rows. Also updated the mech-interp skill with the PYTHONPATH preflight gotcha for root-level imports of hidden_state_probe.py.
 - evidence:
-  - `experiment/phase1/probe/config/hidden_state_selfaware_manifest_clean_sft_seed1_full.yaml`
-  - `experiment/phase1/probe/config/hidden_state_selfaware_manifest_clean_sft_grpo_v2_seed1_full.yaml`
-  - `experiment/phase1/probe/config/hidden_state_selfaware_manifest_clean_sft_grpo_dpo_seed1_full.yaml`
+  - `archive/experiment/phase1/probe/config/selfaware-hs/hidden_state_selfaware_manifest_clean_sft_seed1_full.yaml`
+  - `archive/experiment/phase1/probe/config/selfaware-hs/hidden_state_selfaware_manifest_clean_sft_grpo_v2_seed1_full.yaml`
+  - `archive/experiment/phase1/probe/config/selfaware-hs/hidden_state_selfaware_manifest_clean_sft_grpo_dpo_seed1_full.yaml`
   - `.skills/mech-interp-runner/SKILL.md`
 - commands:
   - `='experiment/phase1/probe'; <model-free hidden_state_probe preflight>`
@@ -737,7 +737,7 @@ _No summary yet._
   - `experiment/phase1/probe/manifests/phase3_current_clean_grpo_v2_unknown_failure_selfaware_manifest.json`
   - `archive/experiment/phase1/probe/config/current-clean-grpo-v2-unknown-failure/phase3_current_clean_grpo_v2_unknown_failure_selfaware_row_keys.txt`
   - `experiment/phase1/probe/config/phase3_current_clean_grpo_v2_unknown_failure_selfaware_scored_rows.jsonl`
-  - `experiment/phase1/probe/config/hidden_state_selfaware_manifest_clean_sft_grpo_v2_unknown_failure_panel.yaml`
+  - `archive/experiment/phase1/probe/config/selfaware-hs/hidden_state_selfaware_manifest_clean_sft_grpo_v2_unknown_failure_panel.yaml`
   - `archive/experiment/phase1/probe/config/current-clean-grpo-v2-unknown-failure/phase3_current_clean_grpo_v2_unknown_failure_behavior_axis_scan.yaml`
 - commands:
   - `bin\\search.cmd "GRPO v2 unknown_answered_wrong row key panel targeted row keys selfaware eval results" --limit 10`
@@ -759,7 +759,7 @@ _No summary yet._
 - kind: `result`
 - summary: Re-ran the GRPO v2 unknown-failure hidden-state extraction and behavior-axis scan with the exact Amendment E JSON response-confidence eval prompt. This corrected a prompt-mismatch artifact from the first generic-prompt pass, where no-vector replay failed to reproduce the source behavior cells. Prompt-matched scan found strong separability for `unknown_answered_wrong` vs `unknown_refused`: delta L15 (`d ~= 2.39`, AUC `~0.985`), delta L14 (`d ~= 2.29`, AUC `~0.972`), and h_lora L22 (`d ~= 1.88`, AUC `~0.912`). Final-prompt refusal-opener logit diagnostics were near-zero and methodologically uninformative under the JSON schema prompt because the next token is the JSON scaffold, not the answer text. Generated replay on the balanced 256-row panel was the real gate: baseline replay refused 68/128 unknown rows and answered 60/128. Simple axes did not produce a useful intervention. Delta L15 addition coeff 10 repaired 2 unknown answering failures but caused 3 unknown-refusal leaks; delta L15 subtraction coeff 25 repaired 1 and leaked 1; h_lora L22 subtraction repaired 1 and leaked 1; h_lora L22 addition produced no unknown repairs and 3-4 leaks.
 - evidence:
-  - `experiment/phase1/probe/config/hidden_state_selfaware_manifest_clean_sft_grpo_v2_unknown_failure_panel_prompt_matched.yaml`
+  - `archive/experiment/phase1/probe/config/selfaware-hs/hidden_state_selfaware_manifest_clean_sft_grpo_v2_unknown_failure_panel_prompt_matched.yaml`
   - `archive/experiment/phase1/probe/config/current-clean-grpo-v2-unknown-failure/phase3_current_clean_grpo_v2_unknown_failure_prompt_matched_behavior_axis_scan.yaml`
   - `archive/experiment/phase1/probe/config/current-clean-grpo-v2-unknown-failure/phase3_current_clean_grpo_v2_unknown_failure_prompt_matched_directions.yaml`
   - `archive/experiment/phase1/probe/config/current-clean-grpo-v2-unknown-failure/phase3_current_clean_grpo_v2_unknown_failure_prompt_matched_logit_candidates.yaml`
@@ -813,8 +813,8 @@ _No summary yet._
 - summary: After the prompt-matched GRPO v2 unknown-failure panel failed both simple single-axis steering and the L26 constrained multicell hand-axis replay gate, the next mech-interp pass shifts to model-variation comparison instead of more scalar tuning on the same slice. First target is `clean_sft_grpo_dpo`, because it has exact-current extraction coverage and isolates the final DPO surface over the GRPO v2 merged base. The comparison will use a full-eval, quota-gated SelfAware rare-cell panel with the same four cells as the GRPO v2 pass: `unknown_answered_wrong`, `unknown_refused`, `known_correct_answered`, and `known_refused`.
 - evidence:
   - `notes/experiments/mech-interp-model-variation-panel.md`
-  - `experiment/phase1/probe/config/hidden_state_selfaware_manifest_clean_sft_grpo_dpo_seed1_full.yaml`
-  - `experiment/phase1/probe/config/hidden_state_selfaware_manifest_clean_sft_grpo_v2_unknown_failure_panel_prompt_matched.yaml`
+  - `archive/experiment/phase1/probe/config/selfaware-hs/hidden_state_selfaware_manifest_clean_sft_grpo_dpo_seed1_full.yaml`
+  - `archive/experiment/phase1/probe/config/selfaware-hs/hidden_state_selfaware_manifest_clean_sft_grpo_v2_unknown_failure_panel_prompt_matched.yaml`
 - decisions:
   - Use the exact Amendment E JSON response-confidence prompt for extraction and generated replay so behavior labels and replay are prompt-matched.
   - Start with `clean_sft_grpo_dpo`, then expand to `clean_sft_kto`, GRPO-order variants, and clean SFT control as quotas and current extraction coverage allow.
@@ -833,7 +833,7 @@ _No summary yet._
   - `experiments/grpo-centered-stacking/artifacts/configs/current-clean-grpo-dpo-unknown-failure/phase3_current_clean_grpo_dpo_unknown_failure_selfaware_manifest.yaml`
   - `experiments/grpo-centered-stacking/artifacts/configs/current-clean-grpo-dpo-unknown-failure/phase3_current_clean_grpo_dpo_unknown_failure_selfaware_manifest.summary.json`
   - `experiment/phase1/probe/manifests/phase3_current_clean_grpo_dpo_unknown_failure_selfaware_manifest.json`
-  - `experiment/phase1/probe/config/hidden_state_selfaware_manifest_clean_sft_grpo_dpo_unknown_failure_panel_prompt_matched.yaml`
+  - `archive/experiment/phase1/probe/config/selfaware-hs/hidden_state_selfaware_manifest_clean_sft_grpo_dpo_unknown_failure_panel_prompt_matched.yaml`
 - commands:
   - `python experiment\\phase1\\probe\\phase3_selfaware_behavior_manifest.py --config experiments\\grpo-centered-stacking\\artifacts\\configs\\current-clean-grpo-dpo-unknown-failure\\phase3_current_clean_grpo_dpo_unknown_failure_selfaware_manifest.yaml`
   - `PYTHONPATH=experiment/phase1/probe hidden_state_probe preflight via parse_config/select_matched_slice`
@@ -857,7 +857,7 @@ _No summary yet._
   - `experiment/phase1/probe/config/phase3_current_clean_grpo_dpo_unknown_failure_prompt_matched_multicell_readout.yaml`
   - `experiment/phase1/probe/analysis/current_clean_grpo_dpo_unknown_failure_prompt_matched_multicell_readout/top_readouts_all.csv`
 - commands:
-  - `docker run --rm --gpus all --ipc=host --entrypoint python -e HF_HOME=/workspace/repo/.cache/hf -e HUGGINGFACE_HUB_CACHE=/workspace/repo/.cache/hf/hub -v F:\\Code\\Epistemic-Humility-Research:/workspace/repo -w /workspace/repo unsloth/unsloth:latest /workspace/repo/experiment/phase1/probe/hidden_state_probe.py --config /workspace/repo/experiment/phase1/probe/config/hidden_state_selfaware_manifest_clean_sft_grpo_dpo_unknown_failure_panel_prompt_matched.yaml`
+  - `docker run --rm --gpus all --ipc=host --entrypoint python -e HF_HOME=/workspace/repo/.cache/hf -e HUGGINGFACE_HUB_CACHE=/workspace/repo/.cache/hf/hub -v F:\\Code\\Epistemic-Humility-Research:/workspace/repo -w /workspace/repo unsloth/unsloth:latest /workspace/repo/experiment/phase1/probe/hidden_state_probe.py --config /workspace/repo/archive/experiment/phase1/probe/config/selfaware-hs/hidden_state_selfaware_manifest_clean_sft_grpo_dpo_unknown_failure_panel_prompt_matched.yaml`
   - `python .skills\\mech-interp-runner\\scripts\\phase3_cli.py behavior-axis-scan --config experiment\\phase1\\probe\\config\\phase3_current_clean_grpo_dpo_unknown_failure_prompt_matched_behavior_axis_scan.yaml`
   - `python .skills\\mech-interp-runner\\scripts\\phase3_cli.py multicell-readout --config experiment\\phase1\\probe\\config\\phase3_current_clean_grpo_dpo_unknown_failure_prompt_matched_multicell_readout.yaml`
 - decisions:
@@ -877,7 +877,7 @@ _No summary yet._
 - evidence:
   - `archive/experiment/phase1/probe/config/current-clean-kto-unknown-failure/phase3_current_clean_kto_unknown_failure_selfaware_manifest.yaml`
   - `archive/experiment/phase1/probe/config/current-clean-kto-unknown-failure/phase3_current_clean_kto_unknown_failure_selfaware_manifest.summary.json`
-  - `experiment/phase1/probe/config/hidden_state_selfaware_manifest_clean_sft_kto_unknown_failure_panel_prompt_matched.yaml`
+  - `archive/experiment/phase1/probe/config/selfaware-hs/hidden_state_selfaware_manifest_clean_sft_kto_unknown_failure_panel_prompt_matched.yaml`
   - `archive/experiment/phase1/probe/config/current-clean-kto-unknown-failure/phase3_current_clean_kto_unknown_failure_prompt_matched_behavior_axis_scan.yaml`
   - `experiment/phase1/probe/config/phase3_current_clean_kto_unknown_failure_prompt_matched_multicell_readout.yaml`
 - commands:
@@ -901,7 +901,7 @@ _No summary yet._
   - `experiment/phase1/probe/analysis/current_clean_kto_unknown_failure_prompt_matched_behavior_axis_scan/top_layers_all.csv`
   - `experiment/phase1/probe/analysis/current_clean_kto_unknown_failure_prompt_matched_multicell_readout/top_readouts_all.csv`
 - commands:
-  - `docker run --rm --gpus all --ipc=host --entrypoint python -e HF_HOME=/workspace/repo/.cache/hf -e HUGGINGFACE_HUB_CACHE=/workspace/repo/.cache/hf/hub -v F:\\Code\\Epistemic-Humility-Research:/workspace/repo -w /workspace/repo unsloth/unsloth:latest /workspace/repo/experiment/phase1/probe/hidden_state_probe.py --config /workspace/repo/experiment/phase1/probe/config/hidden_state_selfaware_manifest_clean_sft_kto_unknown_failure_panel_prompt_matched.yaml`
+  - `docker run --rm --gpus all --ipc=host --entrypoint python -e HF_HOME=/workspace/repo/.cache/hf -e HUGGINGFACE_HUB_CACHE=/workspace/repo/.cache/hf/hub -v F:\\Code\\Epistemic-Humility-Research:/workspace/repo -w /workspace/repo unsloth/unsloth:latest /workspace/repo/experiment/phase1/probe/hidden_state_probe.py --config /workspace/repo/archive/experiment/phase1/probe/config/selfaware-hs/hidden_state_selfaware_manifest_clean_sft_kto_unknown_failure_panel_prompt_matched.yaml`
   - `python .skills\\mech-interp-runner\\scripts\\phase3_cli.py behavior-axis-scan --config archive\\experiment\\phase1\\probe\\config\\current-clean-kto-unknown-failure\\phase3_current_clean_kto_unknown_failure_prompt_matched_behavior_axis_scan.yaml`
   - `python .skills\\mech-interp-runner\\scripts\\phase3_cli.py multicell-readout --config experiment\\phase1\\probe\\config\\phase3_current_clean_kto_unknown_failure_prompt_matched_multicell_readout.yaml`
 - decisions:
@@ -942,8 +942,8 @@ _No summary yet._
 - kind: `result`
 - summary: Resumed from the 0024 handoff and chose option 1 (finish the regimen sweep, analysis-only, no generated replay). Built two new prompt-matched 256-row rare-cell panels (64/cell) from the Amendment F full SelfAware scored evals and ran live Docker extractions: `clean_sft_dpo_grpo` (SFT->DPO->GRPO; `extraction__7dfcdd2681a5`) and `clean_sft_kto_grpo` (SFT->KTO->GRPO; `extraction__481dd6eb764c`). Both manifests `status=ok`, `verified=true`, 256 rows. The final GRPO adapter sits over the SFT->DPO and SFT->KTO merged bases respectively, so delta isolates the final GRPO surface. Behavior-axis (best per contrast/role) and four-cell multicell readout (balanced ridge, CV=4) gave: dpo_grpo unknown-answering `delta` L14 `d=2.391` AUC `0.983` balacc `0.961`, known-overrefusal `delta` L13 `d=3.205` AUC `1.000`, best four-cell readout `h_lora` L21 full macro recall `0.648`; kto_grpo unknown-answering `delta` L14 `d=2.269` AUC `0.987` balacc `0.953`, known-overrefusal `delta` L12 AUC `1.000`, best four-cell readout `h_base` L6 rank-16 / `delta` L22 full macro recall `0.641`.
 - evidence:
-  - `experiment/phase1/probe/config/hidden_state_selfaware_manifest_clean_sft_dpo_grpo_unknown_failure_panel_prompt_matched.yaml`
-  - `experiment/phase1/probe/config/hidden_state_selfaware_manifest_clean_sft_kto_grpo_unknown_failure_panel_prompt_matched.yaml`
+  - `archive/experiment/phase1/probe/config/selfaware-hs/hidden_state_selfaware_manifest_clean_sft_dpo_grpo_unknown_failure_panel_prompt_matched.yaml`
+  - `archive/experiment/phase1/probe/config/selfaware-hs/hidden_state_selfaware_manifest_clean_sft_kto_grpo_unknown_failure_panel_prompt_matched.yaml`
   - `experiment/phase1/probe/qwen3-4b-clean-sft-dpo-grpo-seed1-selfaware/hidden_states_selfaware_clean_sft_dpo_grpo_unknown_failure_panel_prompt_matched/extraction__7dfcdd2681a5/manifest.json`
   - `experiment/phase1/probe/qwen3-4b-clean-sft-kto-grpo-seed1-selfaware/hidden_states_selfaware_clean_sft_kto_grpo_unknown_failure_panel_prompt_matched/extraction__481dd6eb764c/manifest.json`
   - `experiment/phase1/probe/analysis/current_clean_dpo_grpo_unknown_failure_prompt_matched_behavior_axis_scan/axis_scan_all.csv`
@@ -953,7 +953,7 @@ _No summary yet._
 - commands:
   - `python experiment\\phase1\\probe\\phase3_selfaware_behavior_manifest.py --config experiments\\grpo-centered-stacking\\artifacts\\configs\\current-clean-dpo-grpo-unknown-failure\\phase3_current_clean_dpo_grpo_unknown_failure_selfaware_manifest.yaml`
   - `python experiment\\phase1\\probe\\phase3_selfaware_behavior_manifest.py --config experiments\\grpo-centered-stacking\\artifacts\\configs\\current-clean-kto-grpo-unknown-failure\\phase3_current_clean_kto_grpo_unknown_failure_selfaware_manifest.yaml`
-  - `docker.exe run --rm --gpus all --ipc=host --entrypoint python -e HF_HOME=/workspace/repo/.cache/hf -e HUGGINGFACE_HUB_CACHE=/workspace/repo/.cache/hf/hub -v F:\\Code\\Epistemic-Humility-Research:/workspace/repo -w /workspace/repo unsloth/unsloth:latest /workspace/repo/experiment/phase1/probe/hidden_state_probe.py --config /workspace/repo/experiment/phase1/probe/config/hidden_state_selfaware_manifest_clean_sft_dpo_grpo_unknown_failure_panel_prompt_matched.yaml`
+  - `docker.exe run --rm --gpus all --ipc=host --entrypoint python -e HF_HOME=/workspace/repo/.cache/hf -e HUGGINGFACE_HUB_CACHE=/workspace/repo/.cache/hf/hub -v F:\\Code\\Epistemic-Humility-Research:/workspace/repo -w /workspace/repo unsloth/unsloth:latest /workspace/repo/experiment/phase1/probe/hidden_state_probe.py --config /workspace/repo/archive/experiment/phase1/probe/config/selfaware-hs/hidden_state_selfaware_manifest_clean_sft_dpo_grpo_unknown_failure_panel_prompt_matched.yaml`
   - `docker.exe run ... --config .../hidden_state_selfaware_manifest_clean_sft_kto_grpo_unknown_failure_panel_prompt_matched.yaml`
   - `python .skills\\mech-interp-runner\\scripts\\phase3_cli.py behavior-axis-scan --config experiment\\phase1\\probe\\config\\phase3_current_clean_{dpo_grpo,kto_grpo}_unknown_failure_prompt_matched_behavior_axis_scan.yaml`
   - `python .skills\\mech-interp-runner\\scripts\\phase3_cli.py multicell-readout --config experiment\\phase1\\probe\\config\\phase3_current_clean_{dpo_grpo,kto_grpo}_unknown_failure_prompt_matched_multicell_readout.yaml`

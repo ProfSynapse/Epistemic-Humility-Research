@@ -624,3 +624,30 @@ This log records migration batches after the terrain baseline in
   - Did not move generated hidden-state extractions, behavior panels,
     causal-pilot outputs, or downstream cell-analysis configs under
     `experiment/phase1/probe/qwen3-4b-instruct/`.
+
+## C003a - SelfAware Hidden-State Extraction Manifests
+
+- Date: 2026-07-09
+- Source component: `C003` subset
+- File count: 13
+- Source root: `experiment/phase1/probe/config/`
+- Destination:
+  `archive/experiment/phase1/probe/config/selfaware-hs/`
+- Owner decision: archive-only historical provenance for Phase 3 SelfAware
+  frozen-manifest hidden-state extraction prep and launch configs. These are not
+  reusable shared defaults; new evidence-producing extraction cells should pin
+  experiment-local configs under `experiments/<slug>/`.
+- Reason: these files form a bounded SelfAware extraction family spanning SFT,
+  SFT->DPO, SFT->KTO, clean-SFT, GRPO v2, GRPO-DPO, DPO-GRPO, KTO, and KTO-GRPO
+  surfaces, including prompt-matched rare-cell and attention-head variants.
+- Reference updates:
+  - Rewrote moved-config references and command paths in historical docs/session
+    notes found by exact path search.
+  - Updated the GPU-free hidden-state probe unit test fixture path for the
+    archived checked-in config.
+  - Added a README to the destination archive folder.
+- Non-goals:
+  - Did not move the live/default `hidden_state_probe.yaml` runner config.
+  - Did not move KUQ or sycophancy hidden-state configs; those require separate
+    owner decisions because KUQ belongs with the migrated xdataset transfer
+    amendment and sycophancy configs are covered by a dedicated checked-in test.

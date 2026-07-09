@@ -172,10 +172,10 @@ Primary analyses:
 - Inventory script:
   `docs/research/scripts/phase3/build_model_variation_inventory.py`.
 - Prepared hidden-state extraction configs:
-  `experiment/phase1/probe/config/hidden_state_selfaware_manifest_clean_sft_seed1_full.yaml`,
-  `experiment/phase1/probe/config/hidden_state_selfaware_manifest_clean_sft_grpo_v2_seed1_full.yaml`,
+  `archive/experiment/phase1/probe/config/selfaware-hs/hidden_state_selfaware_manifest_clean_sft_seed1_full.yaml`,
+  `archive/experiment/phase1/probe/config/selfaware-hs/hidden_state_selfaware_manifest_clean_sft_grpo_v2_seed1_full.yaml`,
   and
-  `experiment/phase1/probe/config/hidden_state_selfaware_manifest_clean_sft_grpo_dpo_seed1_full.yaml`.
+  `archive/experiment/phase1/probe/config/selfaware-hs/hidden_state_selfaware_manifest_clean_sft_grpo_dpo_seed1_full.yaml`.
 - Current behavior-row overlays:
   `experiment/phase1/probe/analysis/current_selfaware_behavior_rows/`.
 - Current clean behavior-axis scan:
