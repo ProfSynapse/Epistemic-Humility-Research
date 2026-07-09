@@ -128,7 +128,7 @@
         ],
         "pins": {
           "ap_build_pool.py": "0f992ffc343f72539ac38fbc3463ea6da55fc9cd55fc00ac3432475efd5f2217",
-          "ap_extract.py": "b28a6132278f8ffcf988aaf14c9e059a35d0945f112da7640620f8b28f80f009",
+          "ap_extract.py": "700999c944c1a5f7ef32bd95fdb311aa25f46defd9f6a46fddaf7f09f2f70419",
           "ap_grade_and_gates.py": "aba2fee0838ddd1f469ce030490c9ff101013a8c01b10e722aad4c671e2a7dac",
           "cloud/modal_ap_veto_length_balanced.py": "41bc174b5cf053f7c3045611d00846fbadc3068da35ffc1f4b99d4c328962a99"
         }
@@ -865,12 +865,20 @@
         "revision": ""
       },
       "created_at": "2026-07-08T17:40:52Z",
-      "falsifier": "",
+      "falsifier": "Permuted is approximately coupled on AC-G1 (margin below 5pt or CI includes 0), meaning the doubt readout contributes nothing at the intervention site; no alpha-tuning or alternative coupling rescue runs under this amendment.",
       "inputs": [],
       "instrument": {
-        "configs": [],
+        "configs": [
+          "phase3_ac_doubt_coupled_intervention.yaml",
+          "phase3_ac_doubt_coupled_intervention_smoke.yaml",
+          "phase3_ac_doubt_coupled_intervention_smoke_batched.yaml"
+        ],
         "modules": [],
-        "pins": {}
+        "pins": {
+          "phase3_ac_doubt_coupled_intervention.yaml": "1191c8bff05c2c11cfdb8bf71a6dc9a42f60c0435b49ec1a018379d1439c62f0",
+          "phase3_ac_doubt_coupled_intervention_smoke.yaml": "c5f0e4ef997d2521b22933b8ba8fe61e5edea365862b38b15582ee2f1424bb60",
+          "phase3_ac_doubt_coupled_intervention_smoke_batched.yaml": "b01a088a73736c3b7b80a229b55699f2e719da8acc7947623011b3bcceb0e782"
+        }
       },
       "kg": [],
       "legacy": {
@@ -880,12 +888,10 @@
       },
       "migration": {
         "needs_manual_review": [
-          "falsifier",
           "experiment_type",
-          "instrument_configs",
           "kg_ids"
         ],
-        "notes": "Imported from legacy amendment prose. Do not infer missing machine fields without hand-reading AMENDMENT.md."
+        "notes": "Imported from legacy amendment prose. Do not infer missing machine fields without hand-reading AMENDMENT.md. Instrument configs migrated from experiment/phase1/probe/config/ on 2026-07-09; the batched smoke is a companion equivalence check, not the registered evidence run."
       },
       "prediction": "orchestrator:\n  call: AC-G1 passes with a small margin (5-15pt); AC-G2 ~0 vs constant ablate\nuser:\n  call: null\n  note: Predates the dual-prediction practice (adopted 2026-07-03 at AH signing);\n    no separately recorded user prediction.",
       "question": "Does making the caution gate a live function of the doubt readout carry information beyond simply deleting the gate, on the trained checkpoint?",

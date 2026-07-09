@@ -36,7 +36,10 @@ from amendment_s_correctness_probe_extract import (  # noqa: E402
     _content_end_index,
 )
 
-AC_CONFIG = PROBE_DIR / "config" / "phase3_ac_doubt_coupled_intervention.yaml"
+AC_CONFIG = (
+    PROBE_DIR.parents[2]
+    / "experiments/doubt-regulated-caution/phase3_ac_doubt_coupled_intervention.yaml"
+)
 
 # Frozen inputs from canonical checkout
 CANONICAL = Path("/home/profsynapse/code/Epistemic-Humility-Research/"

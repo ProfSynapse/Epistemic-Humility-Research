@@ -47,7 +47,10 @@ from amendment_s_correctness_probe_extract import (  # noqa: E402
 
 # The BASELINE abstention-affording system prompt is read verbatim from the AC
 # config so it is byte-identical to what the AC/AE runner used (protocol §3).
-AC_CONFIG = PROBE_DIR / "config" / "phase3_ac_doubt_coupled_intervention.yaml"
+AC_CONFIG = (
+    PROBE_DIR.parents[2]
+    / "experiments/doubt-regulated-caution/phase3_ac_doubt_coupled_intervention.yaml"
+)
 DEFAULT_POOL = PROBE_DIR / "analysis" / "ae_base_pool" / "rows.jsonl"
 DEFAULT_OUT = PROBE_DIR / "analysis" / "af_base_pregen"
 

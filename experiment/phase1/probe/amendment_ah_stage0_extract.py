@@ -46,7 +46,10 @@ from amendment_s_correctness_probe_extract import (  # noqa: E402
 )
 
 CANONICAL = Path("/home/profsynapse/code/Epistemic-Humility-Research")
-AC_CONFIG = PROBE_DIR / "config" / "phase3_ac_doubt_coupled_intervention.yaml"
+AC_CONFIG = (
+    PROBE_DIR.parents[2]
+    / "experiments/doubt-regulated-caution/phase3_ac_doubt_coupled_intervention.yaml"
+)
 DEFAULT_POOL = CANONICAL / "experiment/phase1/probe/analysis/ah_stage0/candidates.jsonl"
 DEFAULT_OUT = CANONICAL / "experiment/phase1/probe/analysis/ah_stage0/pregen"
 

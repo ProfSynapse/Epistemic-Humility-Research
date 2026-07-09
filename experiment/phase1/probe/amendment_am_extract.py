@@ -26,7 +26,8 @@ WHAT THIS DOES (one GPU pass, run inside the Modal container):
 
 SURFACE PINNING (why this is a new cell, not a reuse):
   - The A0 rows were generated under the AH baseline system prompt (from
-    config/phase3_ac_doubt_coupled_intervention.yaml prompt.system), 96 new
+    experiments/doubt-regulated-caution/phase3_ac_doubt_coupled_intervention.yaml
+    prompt.system), 96 new
     tokens. Amendment W/S used a DIFFERENT (answer-encouraging) prompt at 48
     tokens. The correctness direction cold-transfers across surfaces at only
     ~0.679, so a valid veto number requires refitting on the A0 surface. This
@@ -81,7 +82,10 @@ A0_CONFIG_SHA = "14e5afab67484380"
 # Byte-frozen A0 surface: 96 new tokens, greedy, enable_thinking false.
 MAX_NEW_TOKENS = 96
 # The baseline system prompt is loaded from the same config the AH main run used.
-AC_CONFIG = PROBE_DIR / "config" / "phase3_ac_doubt_coupled_intervention.yaml"
+AC_CONFIG = (
+    PROBE_DIR.parents[2]
+    / "experiments/doubt-regulated-caution/phase3_ac_doubt_coupled_intervention.yaml"
+)
 SMOKE_N = 20
 BISECT_BATCHES = [12, 8, 4, 2, 1]  # registered batch first, then bisect down
 

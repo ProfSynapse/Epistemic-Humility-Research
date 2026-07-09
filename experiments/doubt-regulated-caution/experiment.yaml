@@ -10,26 +10,34 @@ legacy:
   migrated_to: experiments/doubt-regulated-caution/AMENDMENT.md
 migration:
   needs_manual_review:
-  - falsifier
   - experiment_type
-  - instrument_configs
   - kg_ids
   notes: Imported from legacy amendment prose. Do not infer missing machine fields
-    without hand-reading AMENDMENT.md.
+    without hand-reading AMENDMENT.md. Instrument configs migrated from
+    experiment/phase1/probe/config/ on 2026-07-09; the batched smoke is a companion
+    equivalence check, not the registered evidence run.
 question: Does making the caution gate a live function of the doubt readout carry
   information beyond simply deleting the gate, on the trained checkpoint?
 prediction: "orchestrator:\n  call: AC-G1 passes with a small margin (5-15pt); AC-G2\
   \ ~0 vs constant ablate\nuser:\n  call: null\n  note: Predates the dual-prediction\
   \ practice (adopted 2026-07-03 at AH signing);\n    no separately recorded user\
   \ prediction."
-falsifier: ''
+falsifier: Permuted is approximately coupled on AC-G1 (margin below 5pt or CI includes
+  0), meaning the doubt readout contributes nothing at the intervention site; no
+  alpha-tuning or alternative coupling rescue runs under this amendment.
 checkpoint:
   repo: ''
   revision: ''
 instrument:
-  configs: []
+  configs:
+  - phase3_ac_doubt_coupled_intervention.yaml
+  - phase3_ac_doubt_coupled_intervention_smoke.yaml
+  - phase3_ac_doubt_coupled_intervention_smoke_batched.yaml
   modules: []
-  pins: {}
+  pins:
+    phase3_ac_doubt_coupled_intervention.yaml: 1191c8bff05c2c11cfdb8bf71a6dc9a42f60c0435b49ec1a018379d1439c62f0
+    phase3_ac_doubt_coupled_intervention_smoke.yaml: c5f0e4ef997d2521b22933b8ba8fe61e5edea365862b38b15582ee2f1424bb60
+    phase3_ac_doubt_coupled_intervention_smoke_batched.yaml: b01a088a73736c3b7b80a229b55699f2e719da8acc7947623011b3bcceb0e782
 inputs: []
 verdict: AC-G1 PASS — the wire carries information (coupled beats permuted +8.7pt,
   CI [+5.6,+12.0]); guard PASS, falsifier not fired; RQ4 Stage 1 closes POSITIVE,

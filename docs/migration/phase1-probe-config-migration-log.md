@@ -1010,3 +1010,29 @@ This log records migration batches after the terrain baseline in
   - Did not move generated residual-direction, direction-transform,
     read-trajectory, steering, or intervention outputs under
     `experiment/phase1/probe/`.
+
+## AC - Doubt-Regulated Caution Instrument Configs
+
+- Date: 2026-07-09
+- Source component: `ac-doubt`
+- File count: 3
+- Source root: `experiment/phase1/probe/config/`
+- Destination: `experiments/doubt-regulated-caution/`
+- Owner decision: associate with the migrated historical Amendment AC
+  experiment. These files are not root defaults; the amendment names them as
+  the registered AC intervention config, sequential smoke, and batched
+  equivalence companion.
+- Reason: the configs implement the AC doubt-regulated caution control loop and
+  are explicitly cited by `experiments/doubt-regulated-caution/AMENDMENT.md`.
+  Keeping them under the experiment makes the governed record self-contained
+  and lets the manifest pin their hashes.
+- Reference updates:
+  - Updated AF/AG/AH/AM/AP downstream scripts that reuse the AC baseline system
+    prompt to read it from the experiment-owned config.
+  - Updated the AI-TRUE shared render docstring for the new config location.
+  - Added the three config paths and SHA-256 pins to
+    `experiments/doubt-regulated-caution/experiment.yaml`.
+- Non-goals:
+  - Did not move AC generated analysis outputs or frozen gain-map/direction row
+    artifacts under `experiment/phase1/probe/analysis/`; those remain local or
+    historical run products per the amendment's provenance notes.

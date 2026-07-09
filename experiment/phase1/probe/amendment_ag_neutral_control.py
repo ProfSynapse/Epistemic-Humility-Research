@@ -79,7 +79,10 @@ AE_CENSUS_ROWS  = CANONICAL / "experiment/phase1/probe/analysis/ae_base_behavior
 DEFAULT_POOL    = CANONICAL / "experiment/phase1/probe/analysis/ae_base_pool/rows.jsonl"
 DEFAULT_OUT_ROOT = WORKTREE / "experiment/phase1/probe/analysis/ag_neutral_pregen"
 
-AC_CONFIG = PROBE_DIR / "config" / "phase3_ac_doubt_coupled_intervention.yaml"
+AC_CONFIG = (
+    PROBE_DIR.parents[2]
+    / "experiments/doubt-regulated-caution/phase3_ac_doubt_coupled_intervention.yaml"
+)
 
 # ---------------------------------------------------------------------------
 # Locked constants

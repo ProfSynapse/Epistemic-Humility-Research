@@ -97,7 +97,10 @@ MAX_NEW_TOKENS = 192
 # The baseline system prompt is loaded from the same config the AH main run
 # used (AM's exact source; the AP AMENDMENT pins "the SAME ... generation
 # surface as AM").
-AC_CONFIG = PROBE_DIR / "config" / "phase3_ac_doubt_coupled_intervention.yaml"
+AC_CONFIG = (
+    PROBE_DIR.parents[2]
+    / "experiments/doubt-regulated-caution/phase3_ac_doubt_coupled_intervention.yaml"
+)
 SMOKE_N = 20
 BISECT_BATCHES = [12, 8, 4, 2, 1]  # registered batch first, then bisect down
 

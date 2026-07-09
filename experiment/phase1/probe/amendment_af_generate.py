@@ -46,7 +46,10 @@ from amendment_s_correctness_probe_extract import (  # noqa: E402
     _content_end_index,
 )
 
-AC_CONFIG = PROBE_DIR / "config" / "phase3_ac_doubt_coupled_intervention.yaml"
+AC_CONFIG = (
+    PROBE_DIR.parents[2]
+    / "experiments/doubt-regulated-caution/phase3_ac_doubt_coupled_intervention.yaml"
+)
 DEFAULT_POOL = PROBE_DIR / "analysis" / "ae_base_pool" / "rows.jsonl"
 DEFAULT_LABELS = PROBE_DIR / "analysis" / "af_base_pregen" / "af_labels.json"
 DEFAULT_OUT = PROBE_DIR / "analysis" / "af_generation"
