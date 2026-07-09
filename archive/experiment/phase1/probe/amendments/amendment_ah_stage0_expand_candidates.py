@@ -36,15 +36,17 @@ import sys
 from collections import Counter
 from pathlib import Path
 
-PROBE_DIR = Path(__file__).resolve().parent
-EVAL_DIR = PROBE_DIR.parent / "eval"
+from path_compat import phase1_eval_dir, phase1_probe_dir, repo_root
+
+PROBE_DIR = phase1_probe_dir()
+EVAL_DIR = phase1_eval_dir()
 for p in (str(PROBE_DIR), str(EVAL_DIR)):
     if p not in sys.path:
         sys.path.insert(0, p)
 
 import scorers  # noqa: E402
 
-CANONICAL = Path("/home/profsynapse/code/Epistemic-Humility-Research")
+CANONICAL = repo_root()
 DATASETS = CANONICAL / "datasets"
 STAGE0 = CANONICAL / "experiment/phase1/probe/analysis/ah_stage0"
 AF_ROWS = CANONICAL / "experiment/phase1/probe/analysis/af_base_pregen/rows.jsonl"

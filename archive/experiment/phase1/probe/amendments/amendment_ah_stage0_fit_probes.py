@@ -39,7 +39,9 @@ from sklearn.preprocessing import StandardScaler
 from sklearn.metrics import roc_auc_score
 import joblib
 
-CANONICAL = Path("/home/profsynapse/code/Epistemic-Humility-Research")
+from path_compat import repo_root
+
+CANONICAL = repo_root()
 AF_BASE = CANONICAL / "experiment/phase1/probe/analysis/af_base_pregen"
 DEFAULT_OUT = CANONICAL / "experiment/phase1/probe/analysis/ah_stage0"
 

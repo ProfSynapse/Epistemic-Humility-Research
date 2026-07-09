@@ -39,9 +39,11 @@ import yaml
 import joblib
 from safetensors import safe_open
 
-PROBE_DIR = Path(__file__).resolve().parent
-EVAL_DIR = PROBE_DIR.parent / "eval"
-ARCHIVE_AMENDMENTS_DIR = PROBE_DIR.parents[2] / "archive/experiment/phase1/probe/amendments"
+ARCHIVE_AMENDMENTS_DIR = Path(__file__).resolve().parent
+from path_compat import phase1_eval_dir, phase1_probe_dir, repo_root  # noqa: E402
+
+PROBE_DIR = phase1_probe_dir()
+EVAL_DIR = phase1_eval_dir()
 for p in (str(PROBE_DIR), str(EVAL_DIR), str(ARCHIVE_AMENDMENTS_DIR)):
     if p not in sys.path:
         sys.path.insert(0, p)
@@ -51,11 +53,8 @@ from amendment_s_correctness_probe_extract import MODEL_NAME  # noqa: E402
 from amendment_af_generate import PRIME_HIGH, PRIME_LOW  # noqa: E402
 from amendment_ah_redesign_collinearity import load_af_caution  # noqa: E402
 
-CANONICAL = Path("/home/profsynapse/code/Epistemic-Humility-Research")
-AC_CONFIG = (
-    PROBE_DIR.parents[2]
-    / "experiments/doubt-regulated-caution/phase3_ac_doubt_coupled_intervention.yaml"
-)
+CANONICAL = repo_root()
+AC_CONFIG = CANONICAL / "experiments/doubt-regulated-caution/phase3_ac_doubt_coupled_intervention.yaml"
 STAGE0 = CANONICAL / "experiment/phase1/probe/analysis/ah_stage0"
 DEFAULT_POOL = STAGE0 / "expansion" / "pool_v21.jsonl"
 CAND_FILES = [STAGE0 / "candidates.jsonl",

@@ -40,7 +40,9 @@ import numpy as np
 from safetensors import safe_open
 import joblib
 
-CANONICAL = Path("/home/profsynapse/code/Epistemic-Humility-Research")
+from path_compat import repo_root
+
+CANONICAL = repo_root()
 DEFAULT_ROOT = CANONICAL / "experiment/phase1/probe/analysis/ah_stage0"
 
 LAYERS = ["L20", "L24", "L28"]

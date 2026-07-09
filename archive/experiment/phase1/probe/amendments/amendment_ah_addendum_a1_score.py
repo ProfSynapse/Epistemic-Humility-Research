@@ -26,8 +26,9 @@ from pathlib import Path
 
 import numpy as np
 
-PROBE_DIR = Path(__file__).resolve().parent
-CANONICAL = Path("/home/profsynapse/code/Epistemic-Humility-Research")
+from path_compat import repo_root
+
+CANONICAL = repo_root()
 DEFAULT_DIR = CANONICAL / "experiment/phase1/probe/analysis/ah_addendum_a1"
 RESULT_COPY = CANONICAL / "experiments/divergent-pool-own-readout/artifacts/amendment_ah_addendum_a1_result.json"
 

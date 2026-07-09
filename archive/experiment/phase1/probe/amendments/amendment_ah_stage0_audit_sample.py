@@ -23,7 +23,9 @@ import random
 import sys
 from pathlib import Path
 
-CANONICAL = Path("/home/profsynapse/code/Epistemic-Humility-Research")
+from path_compat import repo_root
+
+CANONICAL = repo_root()
 DEFAULT_ROOT = CANONICAL / "experiment/phase1/probe/analysis/ah_stage0"
 SEED = 20260703
 N_PER_CELL = 20

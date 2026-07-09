@@ -26,9 +26,11 @@ import sys
 import time
 from pathlib import Path
 
-PROBE_DIR = Path(__file__).resolve().parent
-EVAL_DIR = PROBE_DIR.parent / "eval"
-ARCHIVE_AMENDMENTS_DIR = PROBE_DIR.parents[2] / "archive/experiment/phase1/probe/amendments"
+ARCHIVE_AMENDMENTS_DIR = Path(__file__).resolve().parent
+from path_compat import phase1_eval_dir, phase1_probe_dir, repo_root  # noqa: E402
+
+PROBE_DIR = phase1_probe_dir()
+EVAL_DIR = phase1_eval_dir()
 for p in (str(PROBE_DIR), str(EVAL_DIR), str(ARCHIVE_AMENDMENTS_DIR)):
     if p not in sys.path:
         sys.path.insert(0, p)
@@ -44,7 +46,7 @@ from amendment_ah_main_generate import (  # noqa: E402
     is_degenerate,
 )
 
-CANONICAL = Path("/home/profsynapse/code/Epistemic-Humility-Research")
+CANONICAL = repo_root()
 DEFAULT_OUT = CANONICAL / "experiment/phase1/probe/analysis/ah_addendum_a1"
 DEFAULT_STRATUM = DEFAULT_OUT / "stratum.jsonl"
 EXPECTED_STRATUM = 150

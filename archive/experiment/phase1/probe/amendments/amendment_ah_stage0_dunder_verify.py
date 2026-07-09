@@ -32,8 +32,14 @@ import sys
 import time
 from pathlib import Path
 
-PROBE_DIR = Path(__file__).resolve().parent
-EVAL_DIR = PROBE_DIR.parent / "eval"
+ARCHIVE_AMENDMENTS_DIR = Path(__file__).resolve().parent
+if str(ARCHIVE_AMENDMENTS_DIR) not in sys.path:
+    sys.path.insert(0, str(ARCHIVE_AMENDMENTS_DIR))
+
+from path_compat import phase1_eval_dir, phase1_probe_dir, repo_root  # noqa: E402
+
+PROBE_DIR = phase1_probe_dir()
+EVAL_DIR = phase1_eval_dir()
 for p in (str(PROBE_DIR), str(EVAL_DIR)):
     if p not in sys.path:
         sys.path.insert(0, p)
@@ -47,7 +53,7 @@ from amendment_t_correctness_readout_deployment_extract import (  # noqa: E402
     SYSTEM_PROMPT as FORCED_BEST_GUESS_PROMPT,
 )
 
-CANONICAL = Path("/home/profsynapse/code/Epistemic-Humility-Research")
+CANONICAL = repo_root()
 DEFAULT_ROOT = CANONICAL / "experiment/phase1/probe/analysis/ah_stage0"
 
 LAYERS = ["L20", "L24", "L28"]

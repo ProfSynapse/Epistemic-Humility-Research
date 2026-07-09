@@ -35,9 +35,10 @@ import numpy as np
 
 PROBE_DIR = Path(__file__).resolve().parent
 sys.path.insert(0, str(PROBE_DIR))
+from path_compat import repo_root  # noqa: E402
 from amendment_ah_stage0_expand_pool import build_union  # noqa: E402
 
-CANONICAL = Path("/home/profsynapse/code/Epistemic-Humility-Research")
+CANONICAL = repo_root()
 STAGE0 = CANONICAL / "experiment/phase1/probe/analysis/ah_stage0"
 POOL_V21 = STAGE0 / "expansion" / "pool_v21.jsonl"
 DEFAULT_OUT = CANONICAL / "experiment/phase1/probe/analysis/ah_addendum_a1"

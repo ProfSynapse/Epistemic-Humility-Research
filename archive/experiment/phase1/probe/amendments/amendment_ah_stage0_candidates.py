@@ -28,8 +28,10 @@ import json
 import sys
 from pathlib import Path
 
-PROBE_DIR = Path(__file__).resolve().parent
-EVAL_DIR = PROBE_DIR.parent / "eval"
+from path_compat import phase1_eval_dir, phase1_probe_dir, repo_root
+
+PROBE_DIR = phase1_probe_dir()
+EVAL_DIR = phase1_eval_dir()
 for p in (str(PROBE_DIR), str(EVAL_DIR)):
     if p not in sys.path:
         sys.path.insert(0, p)
@@ -37,7 +39,7 @@ for p in (str(PROBE_DIR), str(EVAL_DIR)):
 import scorers  # noqa: E402
 
 # Canonical checkout holds datasets + AF surface + output artifacts.
-CANONICAL = Path("/home/profsynapse/code/Epistemic-Humility-Research")
+CANONICAL = repo_root()
 DATASETS = CANONICAL / "datasets"
 AF_ROWS = CANONICAL / "experiment/phase1/probe/analysis/af_base_pregen/rows.jsonl"
 DEFAULT_OUT = CANONICAL / "experiment/phase1/probe/analysis/ah_stage0"

@@ -43,7 +43,9 @@ from pathlib import Path
 
 import numpy as np
 
-CANONICAL = Path("/home/profsynapse/code/Epistemic-Humility-Research")
+from path_compat import repo_root
+
+CANONICAL = repo_root()
 AH_MAIN = CANONICAL / "experiment/phase1/probe/analysis/ah_main"
 DEFAULT_OUT = AH_MAIN
 RESULT_COPY = CANONICAL / "experiments/divergent-pool-own-readout/artifacts/amendment_ah_result.json"

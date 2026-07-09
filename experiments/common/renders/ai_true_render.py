@@ -21,9 +21,10 @@ enable_thinking=False)``) and
 steer script for the SAME checkpoint and SAME caution-direction lineage).
 Both of those import ``render_probe_prompt`` from
 ``experiment/phase1/probe/backends.py`` and ``load_baseline_system_prompt``
-from ``experiment/phase1/probe/amendment_ah_stage0_extract.py``; this module
-imports the exact same two functions rather than re-deriving the prompt
-string, so a future change to either source stays in sync automatically.
+through the ``experiment/phase1/probe/amendment_ah_stage0_extract.py``
+compatibility wrapper for the archived AH implementation; this module imports
+the exact same two functions rather than re-deriving the prompt string, so a
+future change to either source stays in sync automatically.
 
 ``load_baseline_system_prompt`` reads the system prompt from
 ``experiments/doubt-regulated-caution/phase3_ac_doubt_coupled_intervention.yaml``'s
@@ -55,7 +56,19 @@ import os
 import sys
 from pathlib import Path
 
-CANONICAL = Path("/home/profsynapse/code/Epistemic-Humility-Research")
+
+def _repo_root() -> Path:
+    here = Path(__file__).resolve()
+    for candidate in (here, *here.parents):
+        if (
+            (candidate / "experiment" / "phase1" / "probe" / "backends.py").exists()
+            and (candidate / "experiments").is_dir()
+        ):
+            return candidate
+    raise RuntimeError(f"Could not locate repository root from {here}")
+
+
+CANONICAL = _repo_root()
 PROBE_DIR = CANONICAL / "experiment" / "phase1" / "probe"
 if str(PROBE_DIR) not in sys.path:
     sys.path.insert(0, str(PROBE_DIR))
