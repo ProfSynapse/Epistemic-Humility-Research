@@ -14,3 +14,8 @@ Known provenance gaps:
 
 - `phase3_current_clean_kto_unknown_failure_selfaware_scored_rows.jsonl` was referenced by the manifest config but was not tracked or present at migration time.
 - `phase3_current_clean_kto_unknown_failure_selfaware_manifest.summary.json` was referenced by the manifest config and historical session note but was not tracked or present at migration time.
+Additional migration batch:
+
+- `C011`: prompt-matched KTO unknown-failure behavior-axis scan and direction export.
+
+This batch remains archive-only historical provenance for the Phase 3 KTO unknown-failure generated replay slice. It is kept here with the replay candidate and generation configs that consume its direction outputs.

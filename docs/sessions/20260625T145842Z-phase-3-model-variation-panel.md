@@ -878,7 +878,7 @@ _No summary yet._
   - `archive/experiment/phase1/probe/config/current-clean-kto-unknown-failure/phase3_current_clean_kto_unknown_failure_selfaware_manifest.yaml`
   - `archive/experiment/phase1/probe/config/current-clean-kto-unknown-failure/phase3_current_clean_kto_unknown_failure_selfaware_manifest.summary.json`
   - `experiment/phase1/probe/config/hidden_state_selfaware_manifest_clean_sft_kto_unknown_failure_panel_prompt_matched.yaml`
-  - `experiment/phase1/probe/config/phase3_current_clean_kto_unknown_failure_prompt_matched_behavior_axis_scan.yaml`
+  - `archive/experiment/phase1/probe/config/current-clean-kto-unknown-failure/phase3_current_clean_kto_unknown_failure_prompt_matched_behavior_axis_scan.yaml`
   - `experiment/phase1/probe/config/phase3_current_clean_kto_unknown_failure_prompt_matched_multicell_readout.yaml`
 - commands:
   - `python experiment\\phase1\\probe\\phase3_selfaware_behavior_manifest.py --config archive\\experiment\\phase1\\probe\\config\\current-clean-kto-unknown-failure\\phase3_current_clean_kto_unknown_failure_selfaware_manifest.yaml`
@@ -902,7 +902,7 @@ _No summary yet._
   - `experiment/phase1/probe/analysis/current_clean_kto_unknown_failure_prompt_matched_multicell_readout/top_readouts_all.csv`
 - commands:
   - `docker run --rm --gpus all --ipc=host --entrypoint python -e HF_HOME=/workspace/repo/.cache/hf -e HUGGINGFACE_HUB_CACHE=/workspace/repo/.cache/hf/hub -v F:\\Code\\Epistemic-Humility-Research:/workspace/repo -w /workspace/repo unsloth/unsloth:latest /workspace/repo/experiment/phase1/probe/hidden_state_probe.py --config /workspace/repo/experiment/phase1/probe/config/hidden_state_selfaware_manifest_clean_sft_kto_unknown_failure_panel_prompt_matched.yaml`
-  - `python .skills\\mech-interp-runner\\scripts\\phase3_cli.py behavior-axis-scan --config experiment\\phase1\\probe\\config\\phase3_current_clean_kto_unknown_failure_prompt_matched_behavior_axis_scan.yaml`
+  - `python .skills\\mech-interp-runner\\scripts\\phase3_cli.py behavior-axis-scan --config archive\\experiment\\phase1\\probe\\config\\current-clean-kto-unknown-failure\\phase3_current_clean_kto_unknown_failure_prompt_matched_behavior_axis_scan.yaml`
   - `python .skills\\mech-interp-runner\\scripts\\phase3_cli.py multicell-readout --config experiment\\phase1\\probe\\config\\phase3_current_clean_kto_unknown_failure_prompt_matched_multicell_readout.yaml`
 - decisions:
   - Interpret KTO as a sharp pairwise behavior-boundary signal, not yet a coherent epistemic-humility surface.
@@ -918,14 +918,14 @@ _No summary yet._
 - kind: `result`
 - summary: Exported KTO prompt-matched unknown-failure directions and ran generated replay for the strongest pairwise axis, `delta` L11, with both signs and coefficients 5/10/25. The run completed with 2,304 scored rows because the runner repeats the no-vector baseline once per coefficient. Baseline replay had 65/128 unknown refusals and 63/128 unknown answers, plus 64/128 known refusals and 64/128 known answers. The best-looking arm was `activation_subtraction` coeff 25: unknown refusals increased from 65 to 67, with 3 unknown answer-to-refusal repairs but 1 unknown refusal-to-answer leak; known correctness improved by only one row and known refusal count did not move. All other signs/coefficients were flat or net negative. Interpretation: KTO's sharp L11 pairwise separability mostly changes generated wording and does not deliver robust calibrated-expression control.
 - evidence:
-  - `experiment/phase1/probe/config/phase3_current_clean_kto_unknown_failure_prompt_matched_directions.yaml`
+  - `archive/experiment/phase1/probe/config/current-clean-kto-unknown-failure/phase3_current_clean_kto_unknown_failure_prompt_matched_directions.yaml`
   - `experiment/phase1/probe/analysis/current_clean_kto_unknown_failure_prompt_matched_directions/behavior_axis_directions.manifest.json`
   - `archive/experiment/phase1/probe/config/current-clean-kto-unknown-failure/phase3_current_clean_kto_unknown_failure_prompt_matched_candidates.yaml`
   - `archive/experiment/phase1/probe/config/current-clean-kto-unknown-failure/phase3_current_clean_kto_unknown_failure_prompt_matched_generation_replay.yaml`
   - `experiment/phase1/probe/analysis/current_clean_kto_unknown_failure_prompt_matched_generation_replay/summary_latest/summary.json`
   - `experiment/phase1/probe/analysis/current_clean_kto_unknown_failure_prompt_matched_generation_replay/summary_latest/changed_rows.csv`
 - commands:
-  - `python experiment\\phase1\\probe\\phase3_behavior_axis_directions.py --config experiment\\phase1\\probe\\config\\phase3_current_clean_kto_unknown_failure_prompt_matched_directions.yaml`
+  - `python experiment\\phase1\\probe\\phase3_behavior_axis_directions.py --config archive\\experiment\\phase1\\probe\\config\\current-clean-kto-unknown-failure\\phase3_current_clean_kto_unknown_failure_prompt_matched_directions.yaml`
   - `python experiment\\phase1\\probe\\phase3_causal_pilot_sweep.py --config archive\\experiment\\phase1\\probe\\config\\current-clean-kto-unknown-failure\\phase3_current_clean_kto_unknown_failure_prompt_matched_generation_replay.yaml --mode-filter generation --write-plan --materialize-configs`
   - `python experiment\\phase1\\probe\\phase3_causal_pilot_sweep.py --config archive\\experiment\\phase1\\probe\\config\\current-clean-kto-unknown-failure\\phase3_current_clean_kto_unknown_failure_prompt_matched_generation_replay.yaml --mode-filter generation --write-plan --materialize-configs --execute --allow-generation`
   - `python experiment\\phase1\\probe\\phase3_generation_replay_analysis.py --root experiment\\phase1\\probe\\analysis\\current_clean_kto_unknown_failure_prompt_matched_generation_replay --out experiment\\phase1\\probe\\analysis\\current_clean_kto_unknown_failure_prompt_matched_generation_replay\\summary_latest`

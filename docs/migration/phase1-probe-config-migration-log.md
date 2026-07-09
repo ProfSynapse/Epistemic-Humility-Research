@@ -314,3 +314,29 @@ This log records migration batches after the terrain baseline in
   - Did not rewrite extraction dirs or analysis output roots. Those paths
     preserve historical run provenance and will be handled in broader artifact
     archive passes.
+## C011 - Current-Clean KTO Unknown-Failure Axis Configs
+
+- Date: 2026-07-09
+- Source component: `C011`
+- File count: 2
+- Source root: `experiment/phase1/probe/config/`
+- Destination:
+  `archive/experiment/phase1/probe/config/current-clean-kto-unknown-failure/`
+- Owner decision: archive-only historical provenance for the Phase 3 KTO
+  unknown-failure generated replay slice. No migrated `experiments/<slug>` owner
+  was present, and these files are not reusable shared defaults.
+- Reason: these configs produce the prompt-matched KTO unknown-failure
+  behavior-axis scan and direction export for the already archived replay
+  candidate/generation configs.
+- Reference updates:
+  - Rewrote component-internal `source_scan_config` references to the archive
+    path.
+  - Rewrote moved-file references and command paths in
+    `docs/sessions/20260625T145842Z-phase-3-model-variation-panel.md`.
+  - Updated the destination archive README to list the added batch.
+- Non-goals:
+  - Did not move the sibling multicell readout config; it is a separate terrain
+    component for later review.
+  - Did not rewrite extraction dirs or analysis output roots. Those paths
+    preserve historical run provenance and will be handled in broader artifact
+    archive passes.
