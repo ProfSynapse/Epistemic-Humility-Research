@@ -20,7 +20,15 @@ from typing import Any
 PROBE_DIR = Path(__file__).resolve().parent
 REPO_ROOT = PROBE_DIR.parents[2]
 EVAL_DIR = REPO_ROOT / "experiment" / "phase1" / "eval"
-DEFAULT_OUT = PROBE_DIR / "manifests" / "phase3_selfaware_frozen_row_manifest.json"
+DEFAULT_OUT = (
+    REPO_ROOT
+    / "experiments"
+    / "common"
+    / "artifacts"
+    / "row_manifests"
+    / "selfaware"
+    / "phase3_selfaware_frozen_row_manifest.json"
+)
 
 DEFAULT_SOURCES = {
     "sft_merged_seed1": EVAL_DIR / "results_amendment_b_stated_confidence_neutral_concise_schema_answer_confidence_selfaware_seq_seed1_4b" / "sft_merged_seed1__selfaware" / "scored_rows.jsonl",

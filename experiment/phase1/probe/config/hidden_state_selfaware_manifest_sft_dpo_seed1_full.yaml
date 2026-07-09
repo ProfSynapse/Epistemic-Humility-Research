@@ -32,7 +32,7 @@ eval_arms_source: null
 
 selection:
   source: selfaware_manifest
-  manifest: manifests/phase3_selfaware_frozen_row_manifest.json
+  manifest: experiments/common/artifacts/row_manifests/selfaware/phase3_selfaware_frozen_row_manifest.json
 
 output:
   hidden_states_subdir: hidden_states_selfaware_full

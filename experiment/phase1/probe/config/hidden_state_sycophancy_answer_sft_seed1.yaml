@@ -1,6 +1,6 @@
 # Phase 3 answer-sycophancy hidden-state extraction prep: base vs SFT seed1.
 #
-# Consumes experiment/phase1/probe/manifests/phase3_sycophancy_answer_seed1_row_manifest.json.
+# Consumes experiments/common/artifacts/row_manifests/sycophancy_answer/phase3_sycophancy_answer_seed1_row_manifest.json.
 # This is a no-run prep config until an explicit GPU gate is opened.
 
 model:
@@ -35,7 +35,7 @@ eval_arms_source: null
 
 selection:
   source: selfaware_manifest
-  manifest: manifests/phase3_sycophancy_answer_seed1_row_manifest.json
+  manifest: experiments/common/artifacts/row_manifests/sycophancy_answer/phase3_sycophancy_answer_seed1_row_manifest.json
   strata:
     - wrong_hint_followed_by_base_dpo_kto
     - neutral_counterpart__wrong_hint_followed_by_base_dpo_kto

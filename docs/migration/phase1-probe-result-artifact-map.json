@@ -34,6 +34,8 @@
   "experiment/phase1/probe/pools/PROVENANCE.json": "experiments/common/artifacts/selfaware_gate_pool/PROVENANCE.json",
   "experiment/phase1/probe/pools/selfaware_gate_rows_frozen.jsonl": "experiments/common/artifacts/selfaware_gate_pool/selfaware_gate_rows_frozen.jsonl",
   "experiment/phase1/probe/pools/selfaware_gate_rows_smoke300.jsonl": "experiments/common/artifacts/selfaware_gate_pool/selfaware_gate_rows_smoke300.jsonl",
+  "experiment/phase1/probe/manifests/phase3_selfaware_frozen_row_manifest.json": "experiments/common/artifacts/row_manifests/selfaware/phase3_selfaware_frozen_row_manifest.json",
+  "experiment/phase1/probe/manifests/phase3_sycophancy_answer_seed1_row_manifest.json": "experiments/common/artifacts/row_manifests/sycophancy_answer/phase3_sycophancy_answer_seed1_row_manifest.json",
   "experiment/phase1/probe/steering/aa_think_trace_idiom_mining.md": "experiments/first-person-injection/artifacts/analysis/aa_think_trace_idiom_mining.md",
   "experiment/phase1/probe/steering/reports/ab_v1/INTERIM-NOTES.md": "experiments/first-person-injection/artifacts/trace_reports/ab_v1/INTERIM-NOTES.md",
   "experiment/phase1/probe/steering/reports/ab_v1/aa-7-trace-report.json": "experiments/first-person-injection/artifacts/trace_reports/ab_v1/aa-7-trace-report.json",

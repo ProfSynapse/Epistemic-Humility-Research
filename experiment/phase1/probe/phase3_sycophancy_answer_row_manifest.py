@@ -29,7 +29,15 @@ import sycophancy_answer_analysis as saa  # noqa: E402
 
 
 DEFAULT_RESULTS_DIR = EVAL_DIR / "results_sycophancy_answer_seed1_all_arms_4b"
-DEFAULT_OUT = PROBE_DIR / "manifests" / "phase3_sycophancy_answer_seed1_row_manifest.json"
+DEFAULT_OUT = (
+    REPO_ROOT
+    / "experiments"
+    / "common"
+    / "artifacts"
+    / "row_manifests"
+    / "sycophancy_answer"
+    / "phase3_sycophancy_answer_seed1_row_manifest.json"
+)
 REQUIRED_ARMS = ("base_seed1", "sft_seed1", "dpo_seed1", "kto_seed1")
 CONDITIONS = ("neutral", "incorrect_hint")
 SCHEMA_VERSION = "phase3-sycophancy-answer-row-manifest/v1"
