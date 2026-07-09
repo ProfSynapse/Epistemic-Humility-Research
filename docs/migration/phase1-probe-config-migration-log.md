@@ -697,3 +697,37 @@ This log records migration batches after the terrain baseline in
   - Added a README to the destination archive folder.
 - Non-goals:
   - Did not move the live/default `hidden_state_probe.yaml` runner config.
+
+## C010a - Current-Clean Prompt-Matched Readout Configs
+
+- Date: 2026-07-09
+- Source component: `C010` subset
+- File count: 8
+- Source root: `experiment/phase1/probe/config/`
+- Destinations:
+  - Amendment F stacking arms:
+    `experiments/grpo-centered-stacking/artifacts/configs/mi-readouts/`
+  - GRPO v2 single-arm archive:
+    `archive/experiment/phase1/probe/config/current-clean-grpo-v2-unknown-failure/`
+  - KTO single-arm archive:
+    `archive/experiment/phase1/probe/config/current-clean-kto-unknown-failure/`
+- Owner decision: associate the DPO->GRPO, GRPO->DPO, and KTO->GRPO
+  prompt-matched behavior-axis/readout configs with migrated Amendment F
+  (`grpo-centered-stacking`). Keep the GRPO v2 and KTO single-arm readouts as
+  archive-only historical provenance beside their already-archived scan and
+  direction configs.
+- Reason: these files complete the prompt-matched model-variation comparison
+  readout surface: behavior-axis scan plus multicell readout for the three
+  Amendment F stacking arms, and matching multicell readouts for the GRPO v2 and
+  KTO single-arm baselines.
+- Reference updates:
+  - Rewrote moved-config references and command paths in the historical
+    model-variation session note.
+  - Added the Amendment F files to `experiments/grpo-centered-stacking` inputs
+    and regenerated the experiment registry.
+  - Updated destination README files.
+- Non-goals:
+  - Did not move generated extraction, analysis, or replay outputs under
+    `experiment/phase1/probe/`.
+  - Did not move AC coupled-intervention, head-intervention, logit-cell, SAE, or
+    direction-transform config families.

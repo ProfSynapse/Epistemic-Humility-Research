@@ -17,5 +17,6 @@ Known provenance gaps:
 Additional migration batch:
 
 - `C011`: prompt-matched KTO unknown-failure behavior-axis scan and direction export.
+- `C011b`: prompt-matched KTO unknown-failure multicell readout config.
 
 This batch remains archive-only historical provenance for the Phase 3 KTO unknown-failure generated replay slice. It is kept here with the replay candidate and generation configs that consume its direction outputs.

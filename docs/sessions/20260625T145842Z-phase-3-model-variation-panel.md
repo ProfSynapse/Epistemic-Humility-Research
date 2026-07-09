@@ -786,14 +786,14 @@ _No summary yet._
 - kind: `result`
 - summary: Ran a multicell readout on the same 256-row prompt-matched GRPO v2 unknown-failure panel to clarify the layer shift. The simple pairwise unknown-wrong-vs-refused contrast peaks earlier/mid, especially delta L15, but the four-cell behavior surface is best in a later delta band. Best readout was delta L26 full-rank with macro recall about 0.695; nearby delta L24-L30 followed. Exported same-layer L26 directions for unknown-wrong repair, unknown-refusal protection, and known-refusal/known-correct separation, then orthogonalized the unknown-repair source against both protection axes. Orthogonalization removed about 47% of the raw vector before rescaling. Generated replay was negative for the target behavior: the constrained vector produced no unknown answer-to-refusal repairs. Subtraction coeff 10 was safe but only repaired one known refusal; subtraction coeff 25 and both addition arms introduced two unknown-refusal leaks.
 - evidence:
-  - `experiment/phase1/probe/config/phase3_current_clean_grpo_v2_unknown_failure_prompt_matched_multicell_readout.yaml`
+  - `archive/experiment/phase1/probe/config/current-clean-grpo-v2-unknown-failure/phase3_current_clean_grpo_v2_unknown_failure_prompt_matched_multicell_readout.yaml`
   - `experiment/phase1/probe/analysis/current_clean_grpo_v2_unknown_failure_prompt_matched_multicell_readout/top_readouts_all.csv`
   - `archive/experiment/phase1/probe/config/current-clean-grpo-v2-unknown-failure/phase3_current_clean_grpo_v2_unknown_failure_prompt_matched_l26_multicell_directions.yaml`
   - `experiment/phase1/probe/config/phase3_current_clean_grpo_v2_unknown_failure_prompt_matched_l26_constrained_unknown_repair.yaml`
   - `archive/experiment/phase1/probe/config/current-clean-grpo-v2-unknown-failure/phase3_current_clean_grpo_v2_unknown_failure_prompt_matched_l26_constrained_generation_replay.yaml`
   - `experiment/phase1/probe/analysis/current_clean_grpo_v2_unknown_failure_prompt_matched_l26_constrained_generation_replay/summary_latest/summary.csv`
 - commands:
-  - `python .skills\\mech-interp-runner\\scripts\\phase3_cli.py multicell-readout --config experiment\\phase1\\probe\\config\\phase3_current_clean_grpo_v2_unknown_failure_prompt_matched_multicell_readout.yaml`
+  - `python .skills\\mech-interp-runner\\scripts\\phase3_cli.py multicell-readout --config archive\\experiment\\phase1\\probe\\config\\current-clean-grpo-v2-unknown-failure\\phase3_current_clean_grpo_v2_unknown_failure_prompt_matched_multicell_readout.yaml`
   - `python experiment\\phase1\\probe\\phase3_behavior_axis_directions.py --config archive\\experiment\\phase1\\probe\\config\\current-clean-grpo-v2-unknown-failure\\phase3_current_clean_grpo_v2_unknown_failure_prompt_matched_l26_multicell_directions.yaml`
   - `python experiment\\phase1\\probe\\phase3_direction_transforms.py --config experiment\\phase1\\probe\\config\\phase3_current_clean_grpo_v2_unknown_failure_prompt_matched_l26_constrained_unknown_repair.yaml`
   - `python experiment\\phase1\\probe\\phase3_causal_pilot_sweep.py --config experiment\\phase1\\probe\\config\\phase3_current_clean_grpo_v2_unknown_failure_prompt_matched_l26_constrained_generation_replay.yaml --mode-filter generation --write-plan --materialize-configs --execute --allow-generation`
@@ -852,14 +852,14 @@ _No summary yet._
 - summary: Live Docker extraction for the `clean_sft_grpo_dpo` prompt-matched rare-cell panel completed with 256 rows, manifest `status=ok`, and `verified=true`. Offline behavior-axis and multicell readouts then completed. Compared with GRPO v2, GRPO-DPO preserves the same broad geometry but does not improve it. The unknown-answering contrast remains strongest in the early/mid final-adapter band (`delta` L15), but the effect is weaker: GRPO v2 `d=2.388`, AUC `0.985`, balanced accuracy `0.914`; GRPO-DPO `d=2.280`, AUC `0.939`, balanced accuracy `0.867`. The final DPO delta also weakens the known-overrefusal contrast relative to GRPO v2 (`delta` best `d=1.956`, AUC `0.935` vs GRPO v2 `d=3.276`, AUC `0.999`). Four-cell readout remains readable but not cleaner: best GRPO-DPO delta is L24 full-rank macro recall `0.664`, below GRPO v2 delta L26 full-rank macro recall `0.695`.
 - evidence:
   - `experiment/phase1/probe/qwen3-4b-clean-sft-grpo-dpo-seed1-selfaware/hidden_states_selfaware_clean_sft_grpo_dpo_unknown_failure_panel_prompt_matched/extraction__ef1c54a85ce4/manifest.json`
-  - `experiment/phase1/probe/config/phase3_current_clean_grpo_dpo_unknown_failure_prompt_matched_behavior_axis_scan.yaml`
+  - `experiments/grpo-centered-stacking/artifacts/configs/mi-readouts/phase3_current_clean_grpo_dpo_unknown_failure_prompt_matched_behavior_axis_scan.yaml`
   - `experiment/phase1/probe/analysis/current_clean_grpo_dpo_unknown_failure_prompt_matched_behavior_axis_scan/top_layers_all.csv`
-  - `experiment/phase1/probe/config/phase3_current_clean_grpo_dpo_unknown_failure_prompt_matched_multicell_readout.yaml`
+  - `experiments/grpo-centered-stacking/artifacts/configs/mi-readouts/phase3_current_clean_grpo_dpo_unknown_failure_prompt_matched_multicell_readout.yaml`
   - `experiment/phase1/probe/analysis/current_clean_grpo_dpo_unknown_failure_prompt_matched_multicell_readout/top_readouts_all.csv`
 - commands:
   - `docker run --rm --gpus all --ipc=host --entrypoint python -e HF_HOME=/workspace/repo/.cache/hf -e HUGGINGFACE_HUB_CACHE=/workspace/repo/.cache/hf/hub -v F:\\Code\\Epistemic-Humility-Research:/workspace/repo -w /workspace/repo unsloth/unsloth:latest /workspace/repo/experiment/phase1/probe/hidden_state_probe.py --config /workspace/repo/archive/experiment/phase1/probe/config/selfaware-hs/hidden_state_selfaware_manifest_clean_sft_grpo_dpo_unknown_failure_panel_prompt_matched.yaml`
-  - `python .skills\\mech-interp-runner\\scripts\\phase3_cli.py behavior-axis-scan --config experiment\\phase1\\probe\\config\\phase3_current_clean_grpo_dpo_unknown_failure_prompt_matched_behavior_axis_scan.yaml`
-  - `python .skills\\mech-interp-runner\\scripts\\phase3_cli.py multicell-readout --config experiment\\phase1\\probe\\config\\phase3_current_clean_grpo_dpo_unknown_failure_prompt_matched_multicell_readout.yaml`
+  - `python .skills\\mech-interp-runner\\scripts\\phase3_cli.py behavior-axis-scan --config experiments\\grpo-centered-stacking\\artifacts\\configs\\mi-readouts\\phase3_current_clean_grpo_dpo_unknown_failure_prompt_matched_behavior_axis_scan.yaml`
+  - `python .skills\\mech-interp-runner\\scripts\\phase3_cli.py multicell-readout --config experiments\\grpo-centered-stacking\\artifacts\\configs\\mi-readouts\\phase3_current_clean_grpo_dpo_unknown_failure_prompt_matched_multicell_readout.yaml`
 - decisions:
   - Do not spend the next slice on GRPO-DPO generated replay unless a later comparison shows this regimen has a uniquely useful surface.
   - Treat GRPO-DPO as a weaker/broader version of GRPO v2 for this prompt-matched unknown-failure panel.
@@ -879,7 +879,7 @@ _No summary yet._
   - `archive/experiment/phase1/probe/config/current-clean-kto-unknown-failure/phase3_current_clean_kto_unknown_failure_selfaware_manifest.summary.json`
   - `archive/experiment/phase1/probe/config/selfaware-hs/hidden_state_selfaware_manifest_clean_sft_kto_unknown_failure_panel_prompt_matched.yaml`
   - `archive/experiment/phase1/probe/config/current-clean-kto-unknown-failure/phase3_current_clean_kto_unknown_failure_prompt_matched_behavior_axis_scan.yaml`
-  - `experiment/phase1/probe/config/phase3_current_clean_kto_unknown_failure_prompt_matched_multicell_readout.yaml`
+  - `archive/experiment/phase1/probe/config/current-clean-kto-unknown-failure/phase3_current_clean_kto_unknown_failure_prompt_matched_multicell_readout.yaml`
 - commands:
   - `python experiment\\phase1\\probe\\phase3_selfaware_behavior_manifest.py --config archive\\experiment\\phase1\\probe\\config\\current-clean-kto-unknown-failure\\phase3_current_clean_kto_unknown_failure_selfaware_manifest.yaml`
   - `PYTHONPATH=experiment/phase1/probe hidden_state_probe preflight via parse_config/select_matched_slice`
@@ -903,7 +903,7 @@ _No summary yet._
 - commands:
   - `docker run --rm --gpus all --ipc=host --entrypoint python -e HF_HOME=/workspace/repo/.cache/hf -e HUGGINGFACE_HUB_CACHE=/workspace/repo/.cache/hf/hub -v F:\\Code\\Epistemic-Humility-Research:/workspace/repo -w /workspace/repo unsloth/unsloth:latest /workspace/repo/experiment/phase1/probe/hidden_state_probe.py --config /workspace/repo/archive/experiment/phase1/probe/config/selfaware-hs/hidden_state_selfaware_manifest_clean_sft_kto_unknown_failure_panel_prompt_matched.yaml`
   - `python .skills\\mech-interp-runner\\scripts\\phase3_cli.py behavior-axis-scan --config archive\\experiment\\phase1\\probe\\config\\current-clean-kto-unknown-failure\\phase3_current_clean_kto_unknown_failure_prompt_matched_behavior_axis_scan.yaml`
-  - `python .skills\\mech-interp-runner\\scripts\\phase3_cli.py multicell-readout --config experiment\\phase1\\probe\\config\\phase3_current_clean_kto_unknown_failure_prompt_matched_multicell_readout.yaml`
+  - `python .skills\\mech-interp-runner\\scripts\\phase3_cli.py multicell-readout --config archive\\experiment\\phase1\\probe\\config\\current-clean-kto-unknown-failure\\phase3_current_clean_kto_unknown_failure_prompt_matched_multicell_readout.yaml`
 - decisions:
   - Interpret KTO as a sharp pairwise behavior-boundary signal, not yet a coherent epistemic-humility surface.
   - Gate the KTO `delta` L11 unknown-answering axis with generated replay before claiming useful controllability.
@@ -955,8 +955,10 @@ _No summary yet._
   - `python experiment\\phase1\\probe\\phase3_selfaware_behavior_manifest.py --config experiments\\grpo-centered-stacking\\artifacts\\configs\\current-clean-kto-grpo-unknown-failure\\phase3_current_clean_kto_grpo_unknown_failure_selfaware_manifest.yaml`
   - `docker.exe run --rm --gpus all --ipc=host --entrypoint python -e HF_HOME=/workspace/repo/.cache/hf -e HUGGINGFACE_HUB_CACHE=/workspace/repo/.cache/hf/hub -v F:\\Code\\Epistemic-Humility-Research:/workspace/repo -w /workspace/repo unsloth/unsloth:latest /workspace/repo/experiment/phase1/probe/hidden_state_probe.py --config /workspace/repo/archive/experiment/phase1/probe/config/selfaware-hs/hidden_state_selfaware_manifest_clean_sft_dpo_grpo_unknown_failure_panel_prompt_matched.yaml`
   - `docker.exe run ... --config .../hidden_state_selfaware_manifest_clean_sft_kto_grpo_unknown_failure_panel_prompt_matched.yaml`
-  - `python .skills\\mech-interp-runner\\scripts\\phase3_cli.py behavior-axis-scan --config experiment\\phase1\\probe\\config\\phase3_current_clean_{dpo_grpo,kto_grpo}_unknown_failure_prompt_matched_behavior_axis_scan.yaml`
-  - `python .skills\\mech-interp-runner\\scripts\\phase3_cli.py multicell-readout --config experiment\\phase1\\probe\\config\\phase3_current_clean_{dpo_grpo,kto_grpo}_unknown_failure_prompt_matched_multicell_readout.yaml`
+  - `python .skills\\mech-interp-runner\\scripts\\phase3_cli.py behavior-axis-scan --config experiments\\grpo-centered-stacking\\artifacts\\configs\\mi-readouts\\phase3_current_clean_dpo_grpo_unknown_failure_prompt_matched_behavior_axis_scan.yaml`
+  - `python .skills\\mech-interp-runner\\scripts\\phase3_cli.py behavior-axis-scan --config experiments\\grpo-centered-stacking\\artifacts\\configs\\mi-readouts\\phase3_current_clean_kto_grpo_unknown_failure_prompt_matched_behavior_axis_scan.yaml`
+  - `python .skills\\mech-interp-runner\\scripts\\phase3_cli.py multicell-readout --config experiments\\grpo-centered-stacking\\artifacts\\configs\\mi-readouts\\phase3_current_clean_dpo_grpo_unknown_failure_prompt_matched_multicell_readout.yaml`
+  - `python .skills\\mech-interp-runner\\scripts\\phase3_cli.py multicell-readout --config experiments\\grpo-centered-stacking\\artifacts\\configs\\mi-readouts\\phase3_current_clean_kto_grpo_unknown_failure_prompt_matched_multicell_readout.yaml`
 - decisions:
   - On WSL, Phase 3 GPU Docker runs use `docker.exe` (Docker Desktop) with the `F:\\` mount; the WSL `docker` CLI defaults to a dead colima context. Saved as project memory.
   - Defer the clean SFT control: its h_base is the original Qwen base (fail-closed adapterless path) plus a 4-bit-base vs 16-bit-merged quantization-parity confound the other regimens lack. Treat as a separate methodology decision.
