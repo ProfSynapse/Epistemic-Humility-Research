@@ -9,7 +9,10 @@ from pathlib import Path
 from typing import Any
 
 
-ROOT = Path(__file__).resolve().parents[4]
+ROOT = Path(__file__).resolve().parents[3]
+# The generated overlay remains at the legacy probe path because many Phase 3
+# configs consume it directly. Move the output only with a coordinated config
+# migration.
 OUT_ROOT = ROOT / "experiment" / "phase1" / "probe" / "analysis" / "current_selfaware_behavior_rows"
 
 
