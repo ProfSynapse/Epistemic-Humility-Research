@@ -31,7 +31,9 @@ from pathlib import Path
 
 import numpy as np
 
-PROBE_DIR = Path(__file__).resolve().parent
+from path_compat import phase1_probe_dir  # noqa: E402
+
+PROBE_DIR = phase1_probe_dir()
 DEFAULT_PREGEN = PROBE_DIR / "analysis" / "af_base_pregen"
 
 AUROC_GATE = 0.90
