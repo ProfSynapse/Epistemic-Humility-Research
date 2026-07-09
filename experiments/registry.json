@@ -1005,7 +1005,10 @@
       },
       "created_at": "2026-07-08T17:40:52Z",
       "falsifier": "",
-      "inputs": [],
+      "inputs": [
+        "experiments/grpo-centered-stacking/artifacts/configs/current-clean-dpo-grpo-unknown-failure/phase3_current_clean_dpo_grpo_unknown_failure_selfaware_manifest.yaml",
+        "experiments/grpo-centered-stacking/artifacts/configs/current-clean-dpo-grpo-unknown-failure/phase3_current_clean_dpo_grpo_unknown_failure_selfaware_row_keys.txt"
+      ],
       "instrument": {
         "configs": [],
         "modules": [],

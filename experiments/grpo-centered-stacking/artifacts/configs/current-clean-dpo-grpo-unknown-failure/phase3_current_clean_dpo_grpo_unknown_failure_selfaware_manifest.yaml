@@ -24,6 +24,6 @@ quotas:
 
 output:
   manifest: manifests/phase3_current_clean_dpo_grpo_unknown_failure_selfaware_manifest.json
-  row_keys_file: config/phase3_current_clean_dpo_grpo_unknown_failure_selfaware_row_keys.txt
-  selected_scored_rows: config/phase3_current_clean_dpo_grpo_unknown_failure_selfaware_scored_rows.jsonl
-  summary: config/phase3_current_clean_dpo_grpo_unknown_failure_selfaware_manifest.summary.json
+  row_keys_file: experiments/grpo-centered-stacking/artifacts/configs/current-clean-dpo-grpo-unknown-failure/phase3_current_clean_dpo_grpo_unknown_failure_selfaware_row_keys.txt
+  selected_scored_rows: experiments/grpo-centered-stacking/artifacts/configs/current-clean-dpo-grpo-unknown-failure/phase3_current_clean_dpo_grpo_unknown_failure_selfaware_scored_rows.jsonl
+  summary: experiments/grpo-centered-stacking/artifacts/configs/current-clean-dpo-grpo-unknown-failure/phase3_current_clean_dpo_grpo_unknown_failure_selfaware_manifest.summary.json

@@ -951,7 +951,7 @@ _No summary yet._
   - `experiment/phase1/probe/analysis/current_clean_kto_grpo_unknown_failure_prompt_matched_behavior_axis_scan/axis_scan_all.csv`
   - `experiment/phase1/probe/analysis/current_clean_kto_grpo_unknown_failure_prompt_matched_multicell_readout/top_readouts_all.csv`
 - commands:
-  - `python experiment\\phase1\\probe\\phase3_selfaware_behavior_manifest.py --config experiment\\phase1\\probe\\config\\phase3_current_clean_dpo_grpo_unknown_failure_selfaware_manifest.yaml`
+  - `python experiment\\phase1\\probe\\phase3_selfaware_behavior_manifest.py --config experiments\\grpo-centered-stacking\\artifacts\\configs\\current-clean-dpo-grpo-unknown-failure\\phase3_current_clean_dpo_grpo_unknown_failure_selfaware_manifest.yaml`
   - `python experiment\\phase1\\probe\\phase3_selfaware_behavior_manifest.py --config experiment\\phase1\\probe\\config\\phase3_current_clean_kto_grpo_unknown_failure_selfaware_manifest.yaml`
   - `docker.exe run --rm --gpus all --ipc=host --entrypoint python -e HF_HOME=/workspace/repo/.cache/hf -e HUGGINGFACE_HUB_CACHE=/workspace/repo/.cache/hf/hub -v F:\\Code\\Epistemic-Humility-Research:/workspace/repo -w /workspace/repo unsloth/unsloth:latest /workspace/repo/experiment/phase1/probe/hidden_state_probe.py --config /workspace/repo/experiment/phase1/probe/config/hidden_state_selfaware_manifest_clean_sft_dpo_grpo_unknown_failure_panel_prompt_matched.yaml`
   - `docker.exe run ... --config .../hidden_state_selfaware_manifest_clean_sft_kto_grpo_unknown_failure_panel_prompt_matched.yaml`

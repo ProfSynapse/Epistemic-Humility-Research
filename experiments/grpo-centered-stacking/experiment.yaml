@@ -30,7 +30,9 @@ instrument:
   configs: []
   modules: []
   pins: {}
-inputs: []
+inputs:
+- experiments/grpo-centered-stacking/artifacts/configs/current-clean-dpo-grpo-unknown-failure/phase3_current_clean_dpo_grpo_unknown_failure_selfaware_manifest.yaml
+- experiments/grpo-centered-stacking/artifacts/configs/current-clean-dpo-grpo-unknown-failure/phase3_current_clean_dpo_grpo_unknown_failure_selfaware_row_keys.txt
 verdict: SIGNED OFF (2026-06-24) for exploratory local seed-1 three-stage stacking
   over the clean Amendment E lineage.
 kg: []
