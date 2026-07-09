@@ -778,3 +778,24 @@ This log records migration batches after the terrain baseline in
 - Non-goals:
   - Did not move generated KUQ baseline outputs under
     `experiments/xdataset-probe-transfer/analysis/`.
+
+## C009c - Current-Clean GRPO v2 Unknown-Failure Logit-Cell Analyses
+
+- Date: 2026-07-09
+- Source component: `C009` subset
+- File count: 4
+- Source root: `experiment/phase1/probe/config/`
+- Destination:
+  `archive/experiment/phase1/probe/config/current-clean-grpo-v2-unknown-failure/`
+- Owner decision: archive-only historical provenance for generic and
+  prompt-matched GRPO v2 unknown-failure logit-cell aggregation configs. These
+  are downstream analyses over already archived candidate/sweep configs and are
+  not reusable shared defaults.
+- Reason: these files complete the logit-diagnostic aggregation surface for the
+  archived GRPO v2 unknown-failure slice.
+- Reference updates:
+  - Rewrote the historical model-variation session command path for the
+    prompt-matched refusal logit-cell analysis.
+  - Updated the destination archive README.
+- Non-goals:
+  - Did not move generated logit diagnostic outputs or cell-analysis outputs.

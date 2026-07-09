@@ -769,7 +769,7 @@ _No summary yet._
 - commands:
   - `python experiment\\phase1\\probe\\phase3_behavior_axis_directions.py --config archive\\experiment\\phase1\\probe\\config\\current-clean-grpo-v2-unknown-failure\\phase3_current_clean_grpo_v2_unknown_failure_prompt_matched_directions.yaml`
   - `python experiment\\phase1\\probe\\phase3_causal_pilot_sweep.py --config experiment\\phase1\\probe\\config\\phase3_current_clean_grpo_v2_unknown_failure_prompt_matched_logit_sweep.yaml --mode-filter logit_diagnostic --write-plan --materialize-configs --execute --allow-logit-diagnostic`
-  - `python experiment\\phase1\\probe\\phase3_logit_cell_analysis.py --config experiment\\phase1\\probe\\config\\phase3_current_clean_grpo_v2_unknown_failure_prompt_matched_logit_cell_analysis.yaml`
+  - `python experiment\\phase1\\probe\\phase3_logit_cell_analysis.py --config archive\\experiment\\phase1\\probe\\config\\current-clean-grpo-v2-unknown-failure\\phase3_current_clean_grpo_v2_unknown_failure_prompt_matched_logit_cell_analysis.yaml`
   - `python experiment\\phase1\\probe\\phase3_causal_pilot_sweep.py --config experiment\\phase1\\probe\\config\\phase3_current_clean_grpo_v2_unknown_failure_prompt_matched_generation_replay.yaml --mode-filter generation --write-plan --materialize-configs --execute --allow-generation`
   - `python experiment\\phase1\\probe\\phase3_generation_replay_analysis.py --root experiment\\phase1\\probe\\analysis\\current_clean_grpo_v2_unknown_failure_prompt_matched_generation_replay --out experiment\\phase1\\probe\\analysis\\current_clean_grpo_v2_unknown_failure_prompt_matched_generation_replay\\summary_latest`
 - decisions:

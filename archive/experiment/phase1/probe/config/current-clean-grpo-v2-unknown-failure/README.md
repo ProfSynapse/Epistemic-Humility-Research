@@ -15,5 +15,6 @@ Additional migration batches:
 - `C007`: generic-prompt GRPO v2 unknown-failure behavior-axis scan and direction export.
 - `C009`: prompt-matched GRPO v2 unknown-failure behavior-axis scan plus simple and L26 multicell direction exports.
 - `C009b`: prompt-matched GRPO v2 unknown-failure multicell readout config.
+- `C009c`: generic and prompt-matched GRPO v2 unknown-failure logit-cell analysis configs.
 
 These batches remain archive-only historical provenance for the Phase 3 GRPO v2 unknown-failure slice. They are kept here with the generated replay, logit diagnostic, and candidate configs that consume their analysis outputs.
