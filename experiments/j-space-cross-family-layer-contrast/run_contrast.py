@@ -66,7 +66,24 @@ def load_selected_doses(family: str) -> dict[str, float]:
     return selected
 
 
-def run_layers(family: str, rows: list[dict], selected_doses: dict[str, float]) -> dict[str, dict]:
+def run_layers(
+    family: str,
+    rows: list[dict],
+    selected_doses: dict[str, float],
+    *,
+    mode: str,
+    fresh: bool = False,
+) -> dict[str, dict]:
+    """Run every layer's dosed pass for one family, checkpointing per row.
+
+    Each layer gets its own run log under
+    `analysis/<family>/runlog/<mode>/<layer_name>.jsonl` (see
+    `experiments/common/README-runlog.md` in the root repo for the
+    convention), so a kill mid-arm loses at most the in-flight row instead
+    of the whole layer. `fresh=True` discards any existing log for this
+    family/mode/layer and starts over; the default resumes.
+    """
+    RunLog, _RunLogError = ml.load_run_log_class()
     model, tokenizer, _hidden_size, _n_layers = ml.load_model_and_tokenizer(family)
     try:
         layer_results: dict[str, dict] = {}
@@ -75,7 +92,23 @@ def run_layers(family: str, rows: list[dict], selected_doses: dict[str, float]) 
             dose = selected_doses[layer_name]
             print(f"[contrast:{family}] layer={layer_name} dose={dose}", flush=True)
             gate_rows = pl.compute_gate_decisions(family, rows, hs_index)
-            rec = pl.run_layer(family, model, tokenizer, hs_index, gate_rows, dose)
+            log_path = HERE / "analysis" / family / "runlog" / mode / f"{layer_name}.jsonl"
+            run_log = RunLog(
+                log_path,
+                run_config={
+                    "experiment": "j-space-cross-family-layer-contrast",
+                    "family": family,
+                    "mode": mode,
+                    "layer": layer_name,
+                    "hs_index": hs_index,
+                    "dose_target": dose,
+                },
+                fresh=fresh,
+            )
+            try:
+                rec = pl.run_layer(family, model, tokenizer, hs_index, gate_rows, dose, run_log=run_log)
+            finally:
+                run_log.close()
             rec["dose_target"] = dose
             layer_results[layer_name] = rec
     finally:
@@ -137,10 +170,10 @@ def write_summary(family: str, name: str, summary: dict, commit_public: bool) ->
         (committed / name).write_text(json.dumps(summary, indent=2))
 
 
-def run_smoke(family: str, n_rows: int) -> dict:
+def run_smoke(family: str, n_rows: int, *, fresh: bool = False) -> dict:
     selected_doses = load_selected_doses(family)
     rows = selected_rows(family, n_rows)
-    layer_results = run_layers(family, rows, selected_doses)
+    layer_results = run_layers(family, rows, selected_doses, mode="smoke", fresh=fresh)
     summary = {
         "family": family, "mode": "smoke", "selected_doses": selected_doses,
         "pool_counts": pool_counts(family), "n_rows": len(rows), "layers": layer_results,
@@ -151,12 +184,12 @@ def run_smoke(family: str, n_rows: int) -> dict:
     return summary
 
 
-def run_full(family: str) -> dict:
+def run_full(family: str, *, fresh: bool = False) -> dict:
     selected_doses = load_selected_doses(family)
     rows = selected_rows(family, None)
     rng = pyrandom.Random(20260708)
     rng.shuffle(rows)
-    layer_results = run_layers(family, rows, selected_doses)
+    layer_results = run_layers(family, rows, selected_doses, mode="full", fresh=fresh)
     contrast = evaluate_layer_contrast(family, layer_results)
     summary = {
         "family": family, "mode": "full", "selected_doses": selected_doses,
@@ -180,10 +213,21 @@ def main(argv=None) -> int:
     parser.add_argument("--mode", choices=["smoke", "full"], required=True)
     parser.add_argument("--n-rows", type=int, default=8, help="smoke mode only")
     parser.add_argument("--i-know-this-is-the-cross-family-run", action="store_true")
+    resume_group = parser.add_mutually_exclusive_group()
+    resume_group.add_argument(
+        "--resume", dest="fresh", action="store_false", default=False,
+        help="Resume from each layer's existing run log, skipping already-done "
+             "rows (default).",
+    )
+    resume_group.add_argument(
+        "--fresh", dest="fresh", action="store_true",
+        help="Discard each layer's existing run log for this family/mode and "
+             "start over.",
+    )
     args = parser.parse_args(argv)
 
     if args.mode == "smoke":
-        return 0 if run_smoke(args.family, args.n_rows)["g0_smoke_pass"] else 4
+        return 0 if run_smoke(args.family, args.n_rows, fresh=args.fresh)["g0_smoke_pass"] else 4
 
     if not args.i_know_this_is_the_cross_family_run:
         print(
@@ -192,7 +236,7 @@ def main(argv=None) -> int:
             file=sys.stderr,
         )
         return 2
-    run_full(args.family)
+    run_full(args.family, fresh=args.fresh)
     return 0
 
 

@@ -185,6 +185,32 @@ def decoder_layer_module(model, layer_idx: int):
     return get_decoder_layer(model, layer_idx)
 
 
+def load_run_log_class():
+    """Import the tuner's resumable per-item RunLog, at call time (not at
+    module import time) so a checkout without it only fails when resume
+    support is actually needed.
+
+    RunLog (`shared/utilities/run_log.py`) lives on the tuner branch
+    `feature/runlog`, not yet merged to the tuner's main branch. Until that
+    branch is merged and this repo's synaptic-tuner submodule pointer is
+    bumped, a `synaptic-tuner/` checkout at main will not have this module.
+    See `experiments/common/README-runlog.md` in the root repo for the
+    consumption convention this experiment follows.
+    """
+    try:
+        from shared.utilities.run_log import RunLog, RunLogError
+    except ImportError as exc:
+        raise ImportError(
+            "shared.utilities.run_log.RunLog is not available in this "
+            "synaptic-tuner checkout. It lives on the tuner branch "
+            "'feature/runlog' (not yet merged to main). Check out that "
+            "branch inside synaptic-tuner/, or wait for it to be merged and "
+            "the submodule pointer bumped, before running with resume "
+            "support here."
+        ) from exc
+    return RunLog, RunLogError
+
+
 def wilson_ci(successes: int, n: int, z: float = 1.959963984540054) -> tuple[float, float, float]:
     """Wilson score 95% CI for a binomial proportion. Returns (point, lo, hi)."""
     if n == 0:

@@ -153,7 +153,18 @@ def grade_population(records: list[dict], metric: str) -> dict:
 
 
 def run_layer(family: str, model, tokenizer, hs_index: int, rows: list[dict],
-              dose_target: float) -> dict:
+              dose_target: float, *, run_log=None) -> dict:
+    """Run one family+layer's rows through the dosed pass.
+
+    If `run_log` is given (a tuner `RunLog` opened by the caller at a
+    per-family/per-layer path), each row's result is appended and fsynced
+    as it completes and rows already recorded on a prior, killed run are
+    skipped -- see `experiments/common/README-runlog.md` in the root repo.
+    With `run_log=None` (the default, used by `calibrate_dose.py`'s
+    per-dose ladder where the same rows repeat under different doses and a
+    single run log path would collide), the whole-arm-in-memory behavior is
+    unchanged.
+    """
     layer_name = layer_dir_name(hs_index)
     build = json.loads((HERE / "analysis-committed" / family / "build_manifest_layers.json").read_text())
     build = build["layers"][layer_name]
@@ -166,8 +177,16 @@ def run_layer(family: str, model, tokenizer, hs_index: int, rows: list[dict],
     layer_module = get_decoder_layer(model, layer_idx)
     h_ctrl = layer_module.register_forward_hook(controller)
     try:
-        records = [run_one_row(family, model, controller, tokenizer, dev, eos_ids, r, strength)
-                   for r in rows]
+        if run_log is not None:
+            pending = list(run_log.iter_pending(rows, key_fn=lambda r: r["row_key"]))
+            for row in pending:
+                rec = run_one_row(family, model, controller, tokenizer, dev, eos_ids, row, strength)
+                run_log.record(row["row_key"], rec)
+            on_disk = {rec["key"]: rec for rec in load_jsonl(run_log.path)}
+            records = [on_disk[row["row_key"]] for row in rows]
+        else:
+            records = [run_one_row(family, model, controller, tokenizer, dev, eos_ids, r, strength)
+                       for r in rows]
     finally:
         h_ctrl.remove()
         controller.reset()

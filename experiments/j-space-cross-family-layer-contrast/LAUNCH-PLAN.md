@@ -210,6 +210,33 @@ sweep on all four families.
    the same targets, which is a runtime observation, not something this
    draft can predict.
 
+6. **NEW dependency: `run_contrast.py` now requires the tuner's RunLog
+   (added 2026-07-09, CPU-only wiring, no GPU work run).** Both smoke and
+   full mode route their per-layer row loop through
+   `shared/utilities/run_log.py`'s `RunLog` (per-row append+fsync,
+   resumable across a kill) instead of buffering the whole layer in
+   memory, with `--resume` (default) / `--fresh` CLI flags. `RunLog`
+   currently lives only on the tuner branch `feature/runlog`, not yet
+   merged to the tuner's main branch that this repo's submodule pins. The
+   import is deliberately lazy (`model_lib.load_run_log_class()`, called
+   at the start of `run_contrast.py`'s `run_layers()`), so it fails with a
+   clear message naming the required branch rather than breaking `--help`
+   or unrelated imports -- verified: `--help` still runs clean, and
+   calling it against this worktree's current submodule checkout (pinned
+   to a commit before `feature/runlog` branched) raises that exact
+   message. **Before this experiment can be signed and run for real, the
+   tuner branch `feature/runlog` must be merged and this repo's
+   `synaptic-tuner` submodule pointer bumped to include it** -- otherwise
+   `run_contrast.py` cannot run at all, in either mode. `calibrate_dose.py`
+   was deliberately left unwired: its dose ladder calls
+   `pipeline.py:run_layer` repeatedly for the SAME rows under DIFFERENT
+   doses, so a single per-layer run-log path would collide row keys across
+   doses (a row done at dose A would be wrongly treated as done at dose
+   B); `run_layer`'s new `run_log` parameter defaults to `None` and leaves
+   `calibrate_dose.py`'s in-memory behavior untouched. See
+   `experiments/common/README-runlog.md` in the root repo for the
+   consumption convention.
+
 None of the above is resolved by this scaffold; they are handed to the lead
 as open questions before any GPU work happens, per the task's explicit
 instruction to flag decision points rather than resolve them.
