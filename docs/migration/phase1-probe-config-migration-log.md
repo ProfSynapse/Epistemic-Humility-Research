@@ -370,3 +370,29 @@ This log records migration batches after the terrain baseline in
   - Did not rewrite legacy output roots under `experiment/phase1/probe/qwen3-4b-instruct/`.
     Those paths preserve historical run provenance and will be handled in broader
     artifact archive passes.
+## C021-C024 - SelfAware SAE Feature Logit-Diagnostic Configs
+
+- Date: 2026-07-09
+- Source components: `C021`, `C022`, `C023`, `C024`
+- File count: 8
+- Source root: `experiment/phase1/probe/config/`
+- Destination:
+  `archive/experiment/phase1/probe/config/selfaware-sae-feature-logit-diagnostics/`
+- Owner decision: archive-only historical provenance for the June 19/20 Phase 3
+  SAE feature diagnostic work. No migrated `experiments/<slug>` owner was
+  present, and these files are not reusable shared defaults.
+- Reason: these are diagnostic+sweep pairs for SelfAware SAE-feature causal-smoke
+  / logit-diagnostic work, with only historical session-note references and
+  component-internal sweep-to-candidate links.
+- Reference updates:
+  - Rewrote component-internal `runner_config` and `candidate_source_config`
+    references to the archive path.
+  - Rewrote moved-file references and command paths in
+    `docs/sessions/20260619T195217Z-phase3-sae-smoke-plumbing.md` and
+    `docs/sessions/20260620T010500Z-phase3-behavior-conditioned-sae-features.md`.
+  - Added a README to the destination archive folder.
+- Non-goals:
+  - Did not move SAE feature extraction/direction output roots or causal-pilot
+    outputs under `experiment/phase1/probe/qwen3-4b-sft-merged-seed1-selfaware/`.
+  - Did not move upstream SAE analysis/direction configs that are separate
+    terrain components for later review.

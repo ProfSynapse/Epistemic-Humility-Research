@@ -111,14 +111,14 @@ checkpoints:
 
     '
   evidence:
-  - experiment/phase1/probe/config/phase3_selfaware_sae_behavior_feature_logit_diagnostic.yaml
-  - experiment/phase1/probe/config/phase3_selfaware_sae_behavior_feature_logit_diagnostic_sweep.yaml
+  - archive/experiment/phase1/probe/config/selfaware-sae-feature-logit-diagnostics/phase3_selfaware_sae_behavior_feature_logit_diagnostic.yaml
+  - archive/experiment/phase1/probe/config/selfaware-sae-feature-logit-diagnostics/phase3_selfaware_sae_behavior_feature_logit_diagnostic_sweep.yaml
   - experiment/phase1/probe/qwen3-4b-sft-merged-seed1-selfaware/causal_pilots/phase3_selfaware_sae_behavior_feature_logit_diagnostic/summary.csv
   - experiment/phase1/probe/qwen3-4b-sft-merged-seed1-selfaware/causal_pilots/phase3_selfaware_sae_behavior_feature_logit_diagnostic/_execution_logs/execution_results.jsonl
   commands:
-  - python experiment\phase1\probe\phase3_causal_pilot_sweep.py --config experiment\phase1\probe\config\phase3_selfaware_sae_behavior_feature_logit_diagnostic_sweep.yaml
+  - python experiment\phase1\probe\phase3_causal_pilot_sweep.py --config archive\experiment\phase1\probe\config\selfaware-sae-feature-logit-diagnostics\phase3_selfaware_sae_behavior_feature_logit_diagnostic_sweep.yaml
     --mode-filter logit_diagnostic --write-plan --materialize-configs
-  - python experiment\phase1\probe\phase3_causal_pilot_sweep.py --config experiment\phase1\probe\config\phase3_selfaware_sae_behavior_feature_logit_diagnostic_sweep.yaml
+  - python experiment\phase1\probe\phase3_causal_pilot_sweep.py --config archive\experiment\phase1\probe\config\selfaware-sae-feature-logit-diagnostics\phase3_selfaware_sae_behavior_feature_logit_diagnostic_sweep.yaml
     --mode-filter logit_diagnostic --write-plan --materialize-configs --execute --allow-logit-diagnostic
   - python experiment\phase1\probe\phase3_causal_pilot_aggregate.py --root experiment\phase1\probe\qwen3-4b-sft-merged-seed1-selfaware\causal_pilots\phase3_selfaware_sae_behavior_feature_logit_diagnostic
     --out experiment\phase1\probe\qwen3-4b-sft-merged-seed1-selfaware\causal_pilots\phase3_selfaware_sae_behavior_feature_logit_diagnostic\summary.csv

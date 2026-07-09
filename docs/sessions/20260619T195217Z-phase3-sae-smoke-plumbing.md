@@ -498,12 +498,12 @@ plumbing can read and write the expected artifacts.
 - kind: `plan`
 - summary: Added a bounded logit-diagnostic config and Docker sweep over the 8 exported top-k16 SAE feature directions. The first live pass is a coefficient smoke, not a generation intervention: 4 top-activating rows per feature, coefficients `10.0` and `50.0`, and required controls for no-vector baseline, addition/subtraction, wrong-layer addition/subtraction, and deterministic random matched-norm.
 - evidence:
-  - `experiment/phase1/probe/config/phase3_selfaware_sae_feature_logit_diagnostic.yaml`
-  - `experiment/phase1/probe/config/phase3_selfaware_sae_feature_logit_diagnostic_sweep.yaml`
+  - `archive/experiment/phase1/probe/config/selfaware-sae-feature-logit-diagnostics/phase3_selfaware_sae_feature_logit_diagnostic.yaml`
+  - `archive/experiment/phase1/probe/config/selfaware-sae-feature-logit-diagnostics/phase3_selfaware_sae_feature_logit_diagnostic_sweep.yaml`
   - `experiment/phase1/probe/qwen3-4b-sft-merged-seed1-selfaware/causal_pilots/phase3_selfaware_sae_feature_logit_diagnostic/sweep_manifest.json`
   - `experiment/phase1/probe/qwen3-4b-sft-merged-seed1-selfaware/causal_pilots/phase3_selfaware_sae_feature_logit_diagnostic/planned_commands.jsonl`
 - commands:
-  - `python experiment\phase1\probe\phase3_causal_pilot_sweep.py --config experiment\phase1\probe\config\phase3_selfaware_sae_feature_logit_diagnostic_sweep.yaml --mode-filter logit_diagnostic --write-plan --materialize-configs`
+  - `python experiment\phase1\probe\phase3_causal_pilot_sweep.py --config archive\experiment\phase1\probe\config\selfaware-sae-feature-logit-diagnostics\phase3_selfaware_sae_feature_logit_diagnostic_sweep.yaml --mode-filter logit_diagnostic --write-plan --materialize-configs`
   - `python -m pytest experiment\phase1\probe\tests\test_phase3_causal_pilot_sweep.py experiment\phase1\probe\tests\test_phase3_causal_pilot_runner.py experiment\phase1\probe\tests\test_phase3_causal_pilot_dry_run.py -q`
   - `python -m py_compile experiment\phase1\probe\phase3_causal_pilot_sweep.py experiment\phase1\probe\phase3_causal_pilot_runner.py`
 - decisions:
@@ -525,15 +525,15 @@ plumbing can read and write the expected artifacts.
 - kind: `result`
 - summary: Ran the 8-candidate SAE feature logit-diagnostic sweep in Docker/GPU, then patched the runner so configured logit-target probability slices persist into `logit_metrics.json` summaries. Reran the sweep after the patch; all 8 candidates completed successfully. The strongest movement was DPO unknown-skewed feature 47 at coefficient `50.0`, but the adjacent wrong-layer control nearly matched the source-layer effect, so this is a non-localized steering signal rather than a clean feature mechanism.
 - evidence:
-  - `experiment/phase1/probe/config/phase3_selfaware_sae_feature_logit_diagnostic.yaml`
-  - `experiment/phase1/probe/config/phase3_selfaware_sae_feature_logit_diagnostic_sweep.yaml`
+  - `archive/experiment/phase1/probe/config/selfaware-sae-feature-logit-diagnostics/phase3_selfaware_sae_feature_logit_diagnostic.yaml`
+  - `archive/experiment/phase1/probe/config/selfaware-sae-feature-logit-diagnostics/phase3_selfaware_sae_feature_logit_diagnostic_sweep.yaml`
   - `experiment/phase1/probe/qwen3-4b-sft-merged-seed1-selfaware/causal_pilots/phase3_selfaware_sae_feature_logit_diagnostic/_execution_logs/execution_results.jsonl`
   - `experiment/phase1/probe/qwen3-4b-sft-merged-seed1-selfaware/causal_pilots/phase3_selfaware_sae_feature_logit_diagnostic/sft_dpo_selfaware_full_delta_l24_topk16__f047_unknown/logit_diagnostic/run_20260619T230129Z/logit_metrics.json`
   - `experiment/phase1/probe/qwen3-4b-sft-merged-seed1-selfaware/causal_pilots/phase3_selfaware_sae_feature_logit_diagnostic/summary.csv`
   - `experiment/phase1/probe/phase3_causal_pilot_runner.py`
   - `experiment/phase1/probe/tests/test_phase3_causal_pilot_runner.py`
 - commands:
-  - `python experiment\phase1\probe\phase3_causal_pilot_sweep.py --config experiment\phase1\probe\config\phase3_selfaware_sae_feature_logit_diagnostic_sweep.yaml --mode-filter logit_diagnostic --write-plan --materialize-configs --execute --allow-logit-diagnostic`
+  - `python experiment\phase1\probe\phase3_causal_pilot_sweep.py --config archive\experiment\phase1\probe\config\selfaware-sae-feature-logit-diagnostics\phase3_selfaware_sae_feature_logit_diagnostic_sweep.yaml --mode-filter logit_diagnostic --write-plan --materialize-configs --execute --allow-logit-diagnostic`
   - `python -m pytest experiment\phase1\probe\tests\test_phase3_causal_pilot_runner.py experiment\phase1\probe\tests\test_phase3_causal_pilot_sweep.py experiment\phase1\probe\tests\test_phase3_causal_pilot_dry_run.py -q`
   - `python experiment\phase1\probe\phase3_causal_pilot_aggregate.py --root experiment\phase1\probe\qwen3-4b-sft-merged-seed1-selfaware\causal_pilots\phase3_selfaware_sae_feature_logit_diagnostic --out experiment\phase1\probe\qwen3-4b-sft-merged-seed1-selfaware\causal_pilots\phase3_selfaware_sae_feature_logit_diagnostic\summary.csv`
 - decisions:
@@ -562,13 +562,13 @@ plumbing can read and write the expected artifacts.
 - evidence:
   - `experiment/phase1/probe/phase3_causal_pilot_runner.py`
   - `experiment/phase1/probe/tests/test_phase3_causal_pilot_runner.py`
-  - `experiment/phase1/probe/config/phase3_selfaware_sae_feature_f047_nearby_layer_logit_diagnostic.yaml`
-  - `experiment/phase1/probe/config/phase3_selfaware_sae_feature_f047_nearby_layer_logit_diagnostic_sweep.yaml`
+  - `archive/experiment/phase1/probe/config/selfaware-sae-feature-logit-diagnostics/phase3_selfaware_sae_feature_f047_nearby_layer_logit_diagnostic.yaml`
+  - `archive/experiment/phase1/probe/config/selfaware-sae-feature-logit-diagnostics/phase3_selfaware_sae_feature_f047_nearby_layer_logit_diagnostic_sweep.yaml`
   - `experiment/phase1/probe/qwen3-4b-sft-merged-seed1-selfaware/causal_pilots/phase3_selfaware_sae_feature_f047_nearby_layer_logit_diagnostic/sft_dpo_selfaware_full_delta_l24_topk16__f047_unknown/logit_diagnostic/run_20260619T231849Z/logit_metrics.json`
 - commands:
   - `python -m pytest experiment\phase1\probe\tests\test_phase3_causal_pilot_runner.py experiment\phase1\probe\tests\test_phase3_causal_pilot_sweep.py experiment\phase1\probe\tests\test_phase3_causal_pilot_dry_run.py -q`
-  - `python experiment\phase1\probe\phase3_causal_pilot_sweep.py --config experiment\phase1\probe\config\phase3_selfaware_sae_feature_f047_nearby_layer_logit_diagnostic_sweep.yaml --mode-filter logit_diagnostic --write-plan --materialize-configs`
-  - `python experiment\phase1\probe\phase3_causal_pilot_sweep.py --config experiment\phase1\probe\config\phase3_selfaware_sae_feature_f047_nearby_layer_logit_diagnostic_sweep.yaml --mode-filter logit_diagnostic --write-plan --materialize-configs --execute --allow-logit-diagnostic`
+  - `python experiment\phase1\probe\phase3_causal_pilot_sweep.py --config archive\experiment\phase1\probe\config\selfaware-sae-feature-logit-diagnostics\phase3_selfaware_sae_feature_f047_nearby_layer_logit_diagnostic_sweep.yaml --mode-filter logit_diagnostic --write-plan --materialize-configs`
+  - `python experiment\phase1\probe\phase3_causal_pilot_sweep.py --config archive\experiment\phase1\probe\config\selfaware-sae-feature-logit-diagnostics\phase3_selfaware_sae_feature_f047_nearby_layer_logit_diagnostic_sweep.yaml --mode-filter logit_diagnostic --write-plan --materialize-configs --execute --allow-logit-diagnostic`
 - decisions:
   - Treat feature 47 as a broad/non-local steering direction candidate, not a localized SAE feature knob.
   - Keep `control_settings.wrong_layer.layer_offsets` as reusable runner infrastructure for nearby-layer panels.
@@ -594,14 +594,14 @@ plumbing can read and write the expected artifacts.
   - `experiment/phase1/probe/phase3_sae_feature_composites.py`
   - `experiment/phase1/probe/tests/test_phase3_sae_feature_composites.py`
   - `experiment/phase1/probe/config/phase3_selfaware_sae_feature_composites.yaml`
-  - `experiment/phase1/probe/config/phase3_selfaware_sae_feature_composite_logit_diagnostic.yaml`
-  - `experiment/phase1/probe/config/phase3_selfaware_sae_feature_composite_logit_diagnostic_sweep.yaml`
+  - `archive/experiment/phase1/probe/config/selfaware-sae-feature-logit-diagnostics/phase3_selfaware_sae_feature_composite_logit_diagnostic.yaml`
+  - `archive/experiment/phase1/probe/config/selfaware-sae-feature-logit-diagnostics/phase3_selfaware_sae_feature_composite_logit_diagnostic_sweep.yaml`
   - `experiment/phase1/probe/qwen3-4b-sft-merged-seed1-selfaware/sae_feature_composites/phase3_selfaware_delta_topk16_feature_composites/sae_feature_composite_directions.manifest.json`
   - `experiment/phase1/probe/qwen3-4b-sft-merged-seed1-selfaware/causal_pilots/phase3_selfaware_sae_feature_composite_logit_diagnostic/summary.csv`
 - commands:
   - `python experiment\phase1\probe\phase3_sae_feature_composites.py --config experiment\phase1\probe\config\phase3_selfaware_sae_feature_composites.yaml`
   - `python -m pytest experiment\phase1\probe\tests\test_phase3_sae_feature_composites.py experiment\phase1\probe\tests\test_phase3_causal_pilot_runner.py experiment\phase1\probe\tests\test_phase3_causal_pilot_sweep.py experiment\phase1\probe\tests\test_phase3_causal_pilot_dry_run.py -q`
-  - `python experiment\phase1\probe\phase3_causal_pilot_sweep.py --config experiment\phase1\probe\config\phase3_selfaware_sae_feature_composite_logit_diagnostic_sweep.yaml --mode-filter logit_diagnostic --write-plan --materialize-configs --execute --allow-logit-diagnostic`
+  - `python experiment\phase1\probe\phase3_causal_pilot_sweep.py --config archive\experiment\phase1\probe\config\selfaware-sae-feature-logit-diagnostics\phase3_selfaware_sae_feature_composite_logit_diagnostic_sweep.yaml --mode-filter logit_diagnostic --write-plan --materialize-configs --execute --allow-logit-diagnostic`
   - `python experiment\phase1\probe\phase3_causal_pilot_aggregate.py --root experiment\phase1\probe\qwen3-4b-sft-merged-seed1-selfaware\causal_pilots\phase3_selfaware_sae_feature_composite_logit_diagnostic --out experiment\phase1\probe\qwen3-4b-sft-merged-seed1-selfaware\causal_pilots\phase3_selfaware_sae_feature_composite_logit_diagnostic\summary.csv`
 - decisions:
   - Keep composite directions as explicit bridge artifacts labeled `SAE_FEATURE_COMPOSITE_DIRECTION_CANDIDATES_ONLY`.
