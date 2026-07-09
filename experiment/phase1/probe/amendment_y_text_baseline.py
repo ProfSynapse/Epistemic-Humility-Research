@@ -12,7 +12,7 @@ Y roll-up table, changes no gate.
   a family's rows are absent).
 
 Run: python3 experiment/phase1/probe/amendment_y_text_baseline.py \
-       [--out experiment/phase1/probe/amendment_y_text_baseline_result.json]
+       [--out experiments/pretrain-only-base-readout/artifacts/amendment_y_text_baseline_result.json]
 """
 import argparse
 import json
@@ -26,6 +26,8 @@ from sklearn.model_selection import StratifiedKFold
 from sklearn.pipeline import make_pipeline
 
 PROBE_DIR = Path(__file__).resolve().parent
+REPO = PROBE_DIR.parents[2]
+DEFAULT_OUT = REPO / "experiments" / "pretrain-only-base-readout" / "artifacts" / "amendment_y_text_baseline_result.json"
 SEED = 20260630
 
 WORD = dict(analyzer="word", ngram_range=(1, 2), min_df=2)
@@ -49,7 +51,7 @@ def cv_auroc(texts, y, vec_kwargs, n_splits=5, seed=SEED):
 
 def main() -> int:
     ap = argparse.ArgumentParser()
-    ap.add_argument("--out", default=str(PROBE_DIR / "amendment_y_text_baseline_result.json"))
+    ap.add_argument("--out", default=str(DEFAULT_OUT))
     ap.add_argument("--z-rows-root", default=str(PROBE_DIR),
                     help="dir containing local z_<family>/rows.jsonl surfaces")
     args = ap.parse_args()
@@ -85,7 +87,9 @@ def main() -> int:
         print(f"DIAL {fam}: {mu:.4f} +/- {sd:.4f} (n={len(ans)})")
     result["dial_baseline_question_surface_z_rows"] = dial
 
-    Path(args.out).write_text(json.dumps(result, indent=1), encoding="utf-8")
+    out_path = Path(args.out)
+    out_path.parent.mkdir(parents=True, exist_ok=True)
+    out_path.write_text(json.dumps(result, indent=1), encoding="utf-8")
     print(f"wrote {args.out}")
     return 0
 
