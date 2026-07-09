@@ -15,6 +15,8 @@
   "experiment/phase1/probe/analysis/diag_item9/diag_item9_caution_timeline.md": "experiments/diag-item9-caution-assembly-timeline/analysis-committed/diag_item9_caution_timeline.md",
   "experiment/phase1/probe/analysis/diag_item20/gentime_decomposition.md": "experiments/diag-item20-gentime-displacement/analysis-committed/gentime_decomposition.md",
   "experiment/phase1/probe/analysis/_latent_knowledge_controls/": "experiments/selfaware-latent-knowledge-controls/artifacts/latent_knowledge_controls/",
+  "experiment/phase1/probe/analysis/model_variation_inventory.md": "docs/research/phase3-model-variation-inventory.md",
+  "experiment/phase1/probe/analysis/model_variation_inventory.csv": "docs/research/phase3-model-variation-inventory.csv",
   "experiment/phase1/probe/amendment_ai_g2_reference_grpo_v2.json": "experiments/probe-as-reward/artifacts/amendment_ai_g2_reference_grpo_v2.json",
   "experiment/phase1/probe/amendment_ai_pool_manifest.json": "experiments/probe-as-reward/artifacts/amendment_ai_pool_manifest.json",
   "experiment/phase1/probe/amendment_ai_smoke.json": "experiments/probe-as-reward/artifacts/amendment_ai_smoke.json",

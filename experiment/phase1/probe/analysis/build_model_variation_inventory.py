@@ -20,8 +20,8 @@ ROOT = Path(__file__).resolve().parents[4]
 EVAL_CSV = ROOT / "experiment" / "phase1" / "eval" / "analysis" / "selfaware_full_run_comparison.csv"
 TRAINING_CSV = ROOT / "experiment" / "phase1" / "analysis" / "training_exhaust_summary.csv"
 PROBE_ROOT = ROOT / "experiment" / "phase1" / "probe"
-OUT_CSV = PROBE_ROOT / "analysis" / "model_variation_inventory.csv"
-OUT_MD = PROBE_ROOT / "analysis" / "model_variation_inventory.md"
+OUT_CSV = ROOT / "docs" / "research" / "phase3-model-variation-inventory.csv"
+OUT_MD = ROOT / "docs" / "research" / "phase3-model-variation-inventory.md"
 
 
 MODEL_ROWS = [

@@ -31,7 +31,7 @@ as a template/prior.
 
 - Eval source: `experiment/phase1/eval/analysis/selfaware_full_run_comparison.csv`
 - Training exhaust source: `experiment/phase1/analysis/training_exhaust_summary.csv`
-- CSV output: `experiment/phase1/probe/analysis/model_variation_inventory.csv`
+- CSV output: `docs/research/phase3-model-variation-inventory.csv`
 
 ## Immediate Worklist
 

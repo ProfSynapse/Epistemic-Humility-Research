@@ -167,8 +167,8 @@ Primary analyses:
 - Session note: `docs/sessions/20260625T145842Z-phase-3-model-variation-panel.md`.
 - Experiment registry: `notes/experiments/README.md`.
 - Model-variation inventory:
-  `experiment/phase1/probe/analysis/model_variation_inventory.csv` and
-  `experiment/phase1/probe/analysis/model_variation_inventory.md`.
+  `docs/research/phase3-model-variation-inventory.csv` and
+  `docs/research/phase3-model-variation-inventory.md`.
 - Inventory script:
   `experiment/phase1/probe/analysis/build_model_variation_inventory.py`.
 - Prepared hidden-state extraction configs:
