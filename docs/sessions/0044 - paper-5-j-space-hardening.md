@@ -4,7 +4,7 @@ session_id: paper5-jspace-hardening
 title: Paper 5 J-space hardening
 status: active
 created_at: '2026-07-08T16:46:25Z'
-updated_at: '2026-07-09T13:54:25Z'
+updated_at: '2026-07-09T17:28:55Z'
 phase: phase1
 question: Which registered follow-up experiments harden the Paper 5 actuation thesis,
   starting with a fresh Qwen3-4B J-space layer-site replication?
@@ -41,6 +41,33 @@ checkpoints:
   - experiments/j-space-layer-contrast-replication-qwen3-4b/AMENDMENT.md
   - /home/profsynapse/code/ehr-worktrees/jspace-cross-family/experiments/j-space-cross-family-layer-contrast/AMENDMENT.md
   - /home/profsynapse/code/ehr-worktrees/doubt-snap-cross-family/experiments/doubt-snap-cross-family-confirmatory/AMENDMENT.md
+  run_ids: []
+  commands: []
+  decisions: []
+  next_steps: []
+  signals: {}
+- id: 002-result
+  at: '2026-07-09T17:28:55Z'
+  kind: result
+  title: Result
+  summary: 'Replication resolved: registered G1 FAIL (null-result), PR #263. Full
+    run completed flawlessly on the 3090 (exact readback, zero collapse, all 2,263
+    rows x 4 arms). Best mid-band hs29 99.67% vs hs34 94.12% = +5.6pp, under the 10pp
+    bar; G2/G3 passed; both scoreboard predictions wrong. Post-run red-team reproduced
+    every number and corrected the mechanism story before the Outcome was written:
+    ceiling effect with a structural cause (fresh confabs single-source kuq_ku_unknown_x,
+    the two harder predecessor sources absent from the candidate universe), so this
+    is a narrower-distribution replication; direction survives with CI separation
+    at hs23/hs29 (not hs26); hs34 deficit is write-effectiveness not gate-transfer;
+    hs29 has the worst known-correct cost. Carried forward: Paper 5 pool-sensitivity
+    caveat; cross-family experiment needs a ceiling-robust G1 (CI separation + failure-ratio)
+    and multi-source confab mining before sign. Infra shipped same session: tuner
+    RunLog (Synaptic-Tuner PR #141) + consumption/skill invariant (PR #262) after
+    catching the buffered-run risk mid-flight; per-row persistence gap in this run
+    is the motivating case.'
+  evidence:
+  - experiments/j-space-layer-contrast-replication-qwen3-4b/AMENDMENT.md
+  - https://github.com/ProfSynapse/Epistemic-Humility-Research/pull/263
   run_ids: []
   commands: []
   decisions: []
@@ -256,3 +283,11 @@ rows before the layer contrast.
   - `experiments/j-space-layer-contrast-replication-qwen3-4b/AMENDMENT.md`
   - `/home/profsynapse/code/ehr-worktrees/jspace-cross-family/experiments/j-space-cross-family-layer-contrast/AMENDMENT.md`
   - `/home/profsynapse/code/ehr-worktrees/doubt-snap-cross-family/experiments/doubt-snap-cross-family-confirmatory/AMENDMENT.md`
+### 002-result - Result
+
+- at: `2026-07-09T17:28:55Z`
+- kind: `result`
+- summary: Replication resolved: registered G1 FAIL (null-result), PR #263. Full run completed flawlessly on the 3090 (exact readback, zero collapse, all 2,263 rows x 4 arms). Best mid-band hs29 99.67% vs hs34 94.12% = +5.6pp, under the 10pp bar; G2/G3 passed; both scoreboard predictions wrong. Post-run red-team reproduced every number and corrected the mechanism story before the Outcome was written: ceiling effect with a structural cause (fresh confabs single-source kuq_ku_unknown_x, the two harder predecessor sources absent from the candidate universe), so this is a narrower-distribution replication; direction survives with CI separation at hs23/hs29 (not hs26); hs34 deficit is write-effectiveness not gate-transfer; hs29 has the worst known-correct cost. Carried forward: Paper 5 pool-sensitivity caveat; cross-family experiment needs a ceiling-robust G1 (CI separation + failure-ratio) and multi-source confab mining before sign. Infra shipped same session: tuner RunLog (Synaptic-Tuner PR #141) + consumption/skill invariant (PR #262) after catching the buffered-run risk mid-flight; per-row persistence gap in this run is the motivating case.
+- evidence:
+  - `experiments/j-space-layer-contrast-replication-qwen3-4b/AMENDMENT.md`
+  - `https://github.com/ProfSynapse/Epistemic-Humility-Research/pull/263`
