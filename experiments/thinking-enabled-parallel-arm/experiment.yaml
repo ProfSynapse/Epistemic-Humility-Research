@@ -29,7 +29,10 @@ instrument:
   configs: []
   modules: []
   pins: {}
-inputs: []
+inputs:
+- experiment/phase1/probe/config/probe_thinking_audit_128_1024.yaml
+- experiment/phase1/probe/compare_thinking_probe_results.py
+- experiments/thinking-enabled-parallel-arm/artifacts/thinking_audit_128_1024/README.md
 verdict: DRAFT / NOT SIGNED; bounded audit showed real perturbation, enough to define
   a parallel arm but not to overwrite non-thinking evidence.
 kg: []

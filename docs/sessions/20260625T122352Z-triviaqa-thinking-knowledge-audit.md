@@ -145,8 +145,8 @@ checkpoints:
     on 10 rows. Extraction remained imperfect but usable: 3303 sampled outputs reached
     post_think and 793 were unterminated.'
   evidence:
-  - experiment/phase1/probe/analysis/thinking_audit_128_1024/summary.json
-  - experiment/phase1/probe/analysis/thinking_audit_128_1024/README.md
+  - experiments/thinking-enabled-parallel-arm/artifacts/thinking_audit_128_1024/summary.json
+  - experiments/thinking-enabled-parallel-arm/artifacts/thinking_audit_128_1024/README.md
   - experiment/phase1/probe/qwen3-4b-instruct-thinking-audit-128-1024/probe_manifest.json
   run_ids: []
   commands:
@@ -301,8 +301,8 @@ _No summary yet._
 - kind: `result`
 - summary: The thinking-enabled Qwen3 TriviaQA audit completed 128/128 rows with 56 known, 33 unknown, and 39 discard labels under the locked scorer. Against the matching non-thinking rows, 1/47 base-unknown rows became thinking-known and 15/47 became thinking-discard; greedy correctness moved false->true on 13 rows and true->false on 10 rows. Extraction remained imperfect but usable: 3303 sampled outputs reached post_think and 793 were unterminated.
 - evidence:
-  - `experiment/phase1/probe/analysis/thinking_audit_128_1024/summary.json`
-  - `experiment/phase1/probe/analysis/thinking_audit_128_1024/README.md`
+  - `experiments/thinking-enabled-parallel-arm/artifacts/thinking_audit_128_1024/summary.json`
+  - `experiments/thinking-enabled-parallel-arm/artifacts/thinking_audit_128_1024/README.md`
   - `experiment/phase1/probe/qwen3-4b-instruct-thinking-audit-128-1024/probe_manifest.json`
 - commands:
   - `python experiment\\phase1\\probe\\compare_thinking_probe_results.py`

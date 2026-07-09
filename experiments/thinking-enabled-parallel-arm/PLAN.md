@@ -67,14 +67,14 @@ rates, and row review, not only aggregate counts.
 - Probe tests pass:
   `python -m pytest experiment/phase1/probe/tests/test_probe_smoke.py -q`.
 - The bounded audit artifacts exist under
-  `experiment/phase1/probe/analysis/thinking_audit_128_1024/`.
+  `experiments/thinking-enabled-parallel-arm/artifacts/thinking_audit_128_1024/`.
 - GPU is idle and Docker is available before launch.
 
 ## Runbook
 
 1. Read `experiments/thinking-enabled-parallel-arm/AMENDMENT.md`.
 2. Inspect bounded audit results in
-   `experiment/phase1/probe/analysis/thinking_audit_128_1024/README.md`.
+   `experiments/thinking-enabled-parallel-arm/artifacts/thinking_audit_128_1024/README.md`.
 3. Create a full thinking-probe config by following the pattern in
    `experiment/phase1/probe/config/probe_thinking_audit_128_1024.yaml` and
    changing only `model.model_tag`, `probe_pool.max_questions`, and any
@@ -138,7 +138,7 @@ outside locked PROTOCOL v0.3 headline reporting.
 
 The source-label concern is motivated by
 `library/notes/2410.02707--llms-know-more-than-they-show.md` and by the local
-bounded audit in `experiment/phase1/probe/analysis/thinking_audit_128_1024/`.
+bounded audit in `experiments/thinking-enabled-parallel-arm/artifacts/thinking_audit_128_1024/`.
 
 - **Hypothesis.** Thinking-derived labels and thinking-enabled evaluation will
   change the measured abstention boundary enough that at least one regimen's

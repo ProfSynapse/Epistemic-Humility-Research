@@ -11,11 +11,18 @@ from pathlib import Path
 
 
 PROBE_DIR = Path(__file__).resolve().parent
+REPO_ROOT = PROBE_DIR.parents[2]
 DEFAULT_BASE = PROBE_DIR / "qwen3-4b-instruct" / "probe_results.jsonl"
 DEFAULT_THINKING = (
     PROBE_DIR / "qwen3-4b-instruct-thinking-audit-128-1024" / "probe_results.jsonl"
 )
-DEFAULT_OUT = PROBE_DIR / "analysis" / "thinking_audit_128_1024"
+DEFAULT_OUT = (
+    REPO_ROOT
+    / "experiments"
+    / "thinking-enabled-parallel-arm"
+    / "artifacts"
+    / "thinking_audit_128_1024"
+)
 
 
 def read_jsonl(path: Path) -> list[dict]:
