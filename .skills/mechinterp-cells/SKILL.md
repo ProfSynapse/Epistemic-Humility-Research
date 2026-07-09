@@ -517,3 +517,23 @@ another bespoke runner.
 - A passing smoke readback is write-accuracy, not a behavioral effect; calibrate
   the dose to the direction's coherent window before the real ladder
   ([reference/dose-calibration.md](reference/dose-calibration.md)).
+- **Any local run longer than about 15 minutes writes per-item results
+  through the tuner's resumable run log** (`shared/utilities/run_log.py`
+  `RunLog`: append + fsync per item, atomic tmp+replace summary write, one
+  log per arm) instead of buffering results in memory and writing only at
+  the end. This is the LOCAL analog of the "Modal cell gotchas" volume rule
+  above -- the tuner-side counterpart of durably checkpointing a Modal
+  Volume before GPU work starts, ported to a local 3090 process that has no
+  volume to fall back on if it is killed. A held-out layer-contrast
+  replication cell in this project has exactly the shape this closes a gap
+  for (multiple arms, thousands of rows, hours of wall time per arm, one
+  generate-then-grade pass per row): a kill anywhere in that loop without a
+  run log loses the whole arm, not just the in-flight row. See
+  `experiments/common/README-runlog.md` in the root repo for the import
+  path and per-arm log-path convention, and
+  `experiments/j-space-cross-family-layer-contrast/run_contrast.py` for a
+  worked wiring (resume by default, `--fresh` to discard and restart).
+  **Sign-pinned instruments must adopt this BEFORE sign**: once a cell's
+  scripts are pinned in `instrument.modules` with a frozen sha, they cannot
+  be patched mid-run to add resumability after a crash has already
+  happened.
