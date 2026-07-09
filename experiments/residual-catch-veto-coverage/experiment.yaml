@@ -13,7 +13,6 @@ migration:
   needs_manual_review:
   - falsifier
   - experiment_type
-  - instrument_configs
   - kg_ids
   notes: Imported from legacy amendment prose. Do not infer missing machine fields
     without hand-reading AMENDMENT.md.
@@ -47,8 +46,10 @@ checkpoint:
   revision: ''
 instrument:
   configs: []
-  modules: []
-  pins: {}
+  modules:
+  - cloud/modal_am_residual_catch.py
+  pins:
+    cloud/modal_am_residual_catch.py: dddc271c01a43ea7ec451d6cac0ace12f21d9f3bb2edc659b7715874bf223132
 inputs:
 - experiments/residual-catch-veto-coverage/analysis-committed/veto-warning-policy/warning_policy.py
 verdict: 'AM-G1 PASS (OOF veto AUROC 0.9168, CI [0.854, 0.963]) and AM-G2 PASS (permutation
