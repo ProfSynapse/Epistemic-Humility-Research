@@ -1664,6 +1664,7 @@
       "instrument": {
         "configs": [],
         "modules": [
+          "cloud/hf_jobs_ai_verdict.sh",
           "scripts/par_mining_score.py",
           "scripts/par_recalibration_score.py",
           "scripts/par_recalibration_t_extract.py",
@@ -1676,6 +1677,7 @@
           "scripts/path_compat.py"
         ],
         "pins": {
+          "cloud/hf_jobs_ai_verdict.sh": "48d8cf02595e8c31ae9dac2df68d1ea0d8ca73c4b0d9fcc2a42268c658c9838f",
           "scripts/par_mining_score.py": "9df23c695d4d793e16767b3a91de0cea5cc244b4f7451d5687fc251242cb8eee",
           "scripts/par_recalibration_score.py": "3e0a5d14f8989e5d08bb6940c8c6fe508b4c1f40fd2151c065ae38dcd8148078",
           "scripts/par_recalibration_t_extract.py": "f7d4234dc5fad17e4fd07c05d8d7ea653d179180809dfb9833978cd4e8742e53",

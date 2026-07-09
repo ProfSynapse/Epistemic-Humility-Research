@@ -46,7 +46,7 @@ New:
   sensor extraction: the arm's TRAINED LoRA adapter is applied
   (PeftModel.from_pretrained with pinned revision), not the identity-at-init
   wrapper, because the verdict measures the trained policy.
-- `experiment/phase1/probe/cloud/hf_jobs_ai_verdict.sh` - in-job wrapper modeled
+- `experiments/probe-as-reward/cloud/hf_jobs_ai_verdict.sh` - in-job wrapper modeled
   on `hf_jobs_cell.sh` (boot-id log capture + periodic log push preserved).
   Fetches the input pool from the private staging repo, runs the stage, uploads
   the WHOLE data dir (tensors are the deliverable here, unlike the X lane).
