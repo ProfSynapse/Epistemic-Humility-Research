@@ -39,7 +39,9 @@ from pathlib import Path
 
 import numpy as np
 
-CANONICAL = Path("/home/profsynapse/code/Epistemic-Humility-Research")
+from path_compat import repo_root
+
+CANONICAL = repo_root()
 AL_PREP = CANONICAL / "experiment/phase1/probe/analysis/amendment_al_prep"
 AN_PREP = CANONICAL / "experiment/phase1/probe/analysis/amendment_an_prep"
 DEFAULT_EXHAUST = AL_PREP / "amendment_al_run/per_row_exhaust.jsonl"

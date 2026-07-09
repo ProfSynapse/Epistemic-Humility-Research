@@ -31,7 +31,7 @@ is recorded (never actuate the grpo-v2 direction on this checkpoint blind).
 CPU-only, deterministic (mass-mean; no fit randomness). No model load.
 
 Usage:
-  python experiment/phase1/probe/amendment_an_refit_caution_perp.py
+  python archive/experiment/phase1/probe/amendments/amendment_an_refit_caution_perp.py
 """
 from __future__ import annotations
 
@@ -42,11 +42,13 @@ from pathlib import Path
 
 import numpy as np
 
-PROBE_DIR = Path(__file__).resolve().parent
+from path_compat import phase1_probe_dir, repo_root
+
+PROBE_DIR = phase1_probe_dir()
 sys.path.insert(0, str(PROBE_DIR))
 from phase3_latent_knowledge_probe import load_layers  # noqa: E402
 
-REPO = PROBE_DIR.parents[2]
+REPO = repo_root()
 L = 35
 
 # AI-TRUE pre-generation extraction (all layers L0..L36 per row, anchor prompt_len-1)

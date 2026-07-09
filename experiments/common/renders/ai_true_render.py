@@ -17,7 +17,7 @@ render this exact AI-TRUE / A0 surface already uses at
 `run_extract`/`run_generate`, both of which call
 ``render_probe_prompt(tokenizer, baseline_system, item["question"],
 enable_thinking=False)``) and
-`experiment/phase1/probe/amendment_an_steer_generate.py` (the sibling AN
+`archive/experiment/phase1/probe/amendments/amendment_an_steer_generate.py` (the sibling AN
 steer script for the SAME checkpoint and SAME caution-direction lineage).
 Both of those import ``render_probe_prompt`` from
 ``experiment/phase1/probe/backends.py`` and ``load_baseline_system_prompt``

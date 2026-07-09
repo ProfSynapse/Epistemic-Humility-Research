@@ -22,7 +22,7 @@ reach) and marked in the output. The exact numbers at the chosen threshold are
 pre-registration constants that get copied INTO the amendment doc.
 
 Usage:
-  python experiment/phase1/probe/amendment_an_build_selector_table.py \
+  python archive/experiment/phase1/probe/amendments/amendment_an_build_selector_table.py \
       --exhaust <per_row_exhaust.jsonl> --out-dir <amendment_an_prep>
 """
 from __future__ import annotations
@@ -31,7 +31,9 @@ import argparse
 import json
 from pathlib import Path
 
-PROBE_DIR = Path(__file__).resolve().parent
+from path_compat import phase1_probe_dir
+
+PROBE_DIR = phase1_probe_dir()
 DEFAULT_EXHAUST = (PROBE_DIR
                    / "analysis/amendment_al_prep/amendment_al_run/per_row_exhaust.jsonl")
 DEFAULT_OUT = (PROBE_DIR / "analysis/amendment_an_prep")

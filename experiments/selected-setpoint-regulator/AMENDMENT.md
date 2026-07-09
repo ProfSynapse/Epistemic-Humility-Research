@@ -425,12 +425,12 @@ carries no gates.
 
 ## 10. Implementation plan
 
-- `experiment/phase1/probe/amendment_an_refit_caution_perp.py` (NEW, CPU,
+- `archive/experiment/phase1/probe/amendments/amendment_an_refit_caution_perp.py` (NEW, CPU,
   DONE this session): refits caution_perp on the AI-TRUE extraction, records
   the cosine to the GRPO-v2 direction. Output:
   `analysis/amendment_an_prep/caution_perp_direction_L35_ai_true.json`
   (untracked).
-- `experiment/phase1/probe/amendment_an_build_selector_table.py` (NEW, CPU,
+- `archive/experiment/phase1/probe/amendments/amendment_an_build_selector_table.py` (NEW, CPU,
   DONE this session): grids the propensity-z flag threshold vs AL baseline
   grades, marks the chosen operating point. Output:
   `analysis/amendment_an_prep/an_selector_table.{json,md}` (untracked). The
