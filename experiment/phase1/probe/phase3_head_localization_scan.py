@@ -2,7 +2,7 @@
 """Per-head behavior-axis localization scan over attention_head extractions.
 
 Step A.3 of the ITI-grounded mechanism response (see
-notes/experiments/mech-interp-model-variation-panel.md). This is an offline CPU
+archive/notes/experiments/mech-interp-model-variation-panel.md). This is an offline CPU
 analysis. It reads an ``attention_head``-granularity hidden-state extraction
 (one concatenated o_proj-input vector per decoder block, width
 ``num_attention_heads * head_dim``) and measures how separable configured
