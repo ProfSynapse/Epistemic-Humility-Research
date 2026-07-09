@@ -32,7 +32,7 @@ checkpoints:
     write claim-safe smoke manifests and metrics.
   evidence:
   - experiment/phase1/probe/phase3_sae_smoke.py
-  - experiment/phase1/probe/config/phase3_selfaware_sae_smoke.yaml
+  - archive/experiment/phase1/probe/config/selfaware-sae-screens/phase3_selfaware_sae_smoke.yaml
   run_ids: []
   commands: []
   decisions:
@@ -91,7 +91,7 @@ checkpoints:
   - experiment/phase1/probe/qwen3-4b-sft-merged-seed1-selfaware/sae_smokes/phase3_selfaware_delta_plumbing_smoke/sft_kto_selfaware_full_delta_l25/metrics.json
   run_ids: []
   commands:
-  - python experiment\phase1\probe\phase3_sae_smoke.py --config experiment\phase1\probe\config\phase3_selfaware_sae_smoke.yaml
+  - python experiment\phase1\probe\phase3_sae_smoke.py --config archive\experiment\phase1\probe\config\selfaware-sae-screens\phase3_selfaware_sae_smoke.yaml
   decisions:
   - Treat `sae_smokes` outputs as local generated artifacts and keep tensor slices
     out of git by default.
@@ -127,12 +127,12 @@ checkpoints:
     per validation row.'
   evidence:
   - experiment/phase1/probe/phase3_sae_train.py
-  - experiment/phase1/probe/config/phase3_selfaware_sae_pilot.yaml
+  - archive/experiment/phase1/probe/config/selfaware-sae-screens/phase3_selfaware_sae_pilot.yaml
   - experiment/phase1/probe/qwen3-4b-sft-merged-seed1-selfaware/sae_runs/phase3_selfaware_delta_sae_pilot_l1_0_1/sft_dpo_selfaware_full_delta_l24/metrics.json
   - experiment/phase1/probe/qwen3-4b-sft-merged-seed1-selfaware/sae_runs/phase3_selfaware_delta_sae_pilot_l1_0_1/sft_kto_selfaware_full_delta_l25/metrics.json
   run_ids: []
   commands:
-  - python experiment\phase1\probe\phase3_sae_train.py --config experiment\phase1\probe\config\phase3_selfaware_sae_pilot.yaml
+  - python experiment\phase1\probe\phase3_sae_train.py --config archive\experiment\phase1\probe\config\selfaware-sae-screens\phase3_selfaware_sae_pilot.yaml
   - python experiment\phase1\probe\phase3_sae_train.py --config .tmp\phase3_selfaware_sae_pilot_l1_0_01.yaml
   - python experiment\phase1\probe\phase3_sae_train.py --config .tmp\phase3_selfaware_sae_pilot_l1_0_1.yaml
   decisions:
@@ -165,7 +165,7 @@ checkpoints:
     pilot default because it gives exact 16/128 active features with moderate reconstruction
     cost, while k=32 is the softer reconstruction compromise.
   evidence:
-  - experiment/phase1/probe/config/phase3_selfaware_sae_pilot.yaml
+  - archive/experiment/phase1/probe/config/selfaware-sae-screens/phase3_selfaware_sae_pilot.yaml
   - experiment/phase1/probe/qwen3-4b-sft-merged-seed1-selfaware/sae_runs/phase3_selfaware_delta_sae_pilot_topk16/sft_dpo_selfaware_full_delta_l24/metrics.json
   - experiment/phase1/probe/qwen3-4b-sft-merged-seed1-selfaware/sae_runs/phase3_selfaware_delta_sae_pilot_topk16/sft_kto_selfaware_full_delta_l25/metrics.json
   - experiment/phase1/probe/qwen3-4b-sft-merged-seed1-selfaware/sae_runs/phase3_selfaware_delta_sae_pilot_topk32/sft_dpo_selfaware_full_delta_l24/metrics.json
@@ -206,12 +206,12 @@ checkpoints:
     plus causal/logit interventions before mechanism claims.
   evidence:
   - experiment/phase1/probe/phase3_sae_feature_analysis.py
-  - experiment/phase1/probe/config/phase3_selfaware_sae_feature_analysis.yaml
+  - archive/experiment/phase1/probe/config/selfaware-sae-screens/phase3_selfaware_sae_feature_analysis.yaml
   - experiment/phase1/probe/qwen3-4b-sft-merged-seed1-selfaware/sae_feature_analysis/phase3_selfaware_delta_topk16_features/sft_dpo_selfaware_full_delta_l24_topk16/summary.json
   - experiment/phase1/probe/qwen3-4b-sft-merged-seed1-selfaware/sae_feature_analysis/phase3_selfaware_delta_topk16_features/sft_kto_selfaware_full_delta_l25_topk16/summary.json
   run_ids: []
   commands:
-  - python experiment\phase1\probe\phase3_sae_feature_analysis.py --config experiment\phase1\probe\config\phase3_selfaware_sae_feature_analysis.yaml
+  - python experiment\phase1\probe\phase3_sae_feature_analysis.py --config archive\experiment\phase1\probe\config\selfaware-sae-screens\phase3_selfaware_sae_feature_analysis.yaml
   decisions:
   - Treat feature screen outputs as `SAE_FEATURE_ANALYSIS_ONLY`; do not promote them
     to causal or monosemantic-feature evidence.
@@ -249,12 +249,12 @@ checkpoints:
     interventions are run.
   evidence:
   - experiment/phase1/probe/phase3_sae_feature_directions.py
-  - experiment/phase1/probe/config/phase3_selfaware_sae_feature_directions.yaml
+  - archive/experiment/phase1/probe/config/selfaware-sae-screens/phase3_selfaware_sae_feature_directions.yaml
   - experiment/phase1/probe/qwen3-4b-sft-merged-seed1-selfaware/sae_feature_directions/phase3_selfaware_delta_topk16_feature_directions/sae_feature_directions.manifest.json
   - experiment/phase1/probe/qwen3-4b-sft-merged-seed1-selfaware/sae_feature_directions/phase3_selfaware_delta_topk16_feature_directions/sae_feature_directions.csv
   run_ids: []
   commands:
-  - python experiment\phase1\probe\phase3_sae_feature_directions.py --config experiment\phase1\probe\config\phase3_selfaware_sae_feature_directions.yaml
+  - python experiment\phase1\probe\phase3_sae_feature_directions.py --config archive\experiment\phase1\probe\config\selfaware-sae-screens\phase3_selfaware_sae_feature_directions.yaml
   decisions:
   - Keep exported feature directions labeled `SAE_FEATURE_DIRECTION_CANDIDATES_ONLY`.
   - Preserve feature polarity instead of flipping all vectors to an unknown-positive
@@ -319,7 +319,7 @@ plumbing can read and write the expected artifacts.
 - summary: Added deterministic numpy-only script/config plumbing for verified SelfAware extraction artifacts.
 - evidence:
   - `experiment/phase1/probe/phase3_sae_smoke.py`
-  - `experiment/phase1/probe/config/phase3_selfaware_sae_smoke.yaml`
+  - `archive/experiment/phase1/probe/config/selfaware-sae-screens/phase3_selfaware_sae_smoke.yaml`
 - decisions:
   - Mark outputs with `SAE_PLUMBING_SMOKE_ONLY` and `phase3_sae_plumbing_smoke_only`.
   - Keep the smoke independent of Docker, GPU, full SAE training, and external SAE libraries.
@@ -366,7 +366,7 @@ plumbing can read and write the expected artifacts.
   - `experiment/phase1/probe/qwen3-4b-sft-merged-seed1-selfaware/sae_smokes/phase3_selfaware_delta_plumbing_smoke/sft_dpo_selfaware_full_delta_l24/metrics.json`
   - `experiment/phase1/probe/qwen3-4b-sft-merged-seed1-selfaware/sae_smokes/phase3_selfaware_delta_plumbing_smoke/sft_kto_selfaware_full_delta_l25/metrics.json`
 - commands:
-  - `python experiment\phase1\probe\phase3_sae_smoke.py --config experiment\phase1\probe\config\phase3_selfaware_sae_smoke.yaml`
+  - `python experiment\phase1\probe\phase3_sae_smoke.py --config archive\experiment\phase1\probe\config\selfaware-sae-screens\phase3_selfaware_sae_smoke.yaml`
 - decisions:
   - Treat `sae_smokes` outputs as local generated artifacts and keep tensor slices out of git by default.
   - Do not interpret reconstruction metrics as SAE quality; they only show that the data path and output writing completed.
@@ -391,11 +391,11 @@ plumbing can read and write the expected artifacts.
 - summary: Added and ran a bounded PyTorch SAE training pilot over both verified SelfAware delta extraction slices. The pilot trained 128-feature ReLU SAEs for 80 epochs on CPU with deterministic train/validation splits. Training completed for DPO L24 and KTO L25, and local L1 sensitivity showed the simple ReLU+L1 setup trains but remains dense.
 - evidence:
   - `experiment/phase1/probe/phase3_sae_train.py`
-  - `experiment/phase1/probe/config/phase3_selfaware_sae_pilot.yaml`
+  - `archive/experiment/phase1/probe/config/selfaware-sae-screens/phase3_selfaware_sae_pilot.yaml`
   - `experiment/phase1/probe/qwen3-4b-sft-merged-seed1-selfaware/sae_runs/phase3_selfaware_delta_sae_pilot_l1_0_1/sft_dpo_selfaware_full_delta_l24/metrics.json`
   - `experiment/phase1/probe/qwen3-4b-sft-merged-seed1-selfaware/sae_runs/phase3_selfaware_delta_sae_pilot_l1_0_1/sft_kto_selfaware_full_delta_l25/metrics.json`
 - commands:
-  - `python experiment\phase1\probe\phase3_sae_train.py --config experiment\phase1\probe\config\phase3_selfaware_sae_pilot.yaml`
+  - `python experiment\phase1\probe\phase3_sae_train.py --config archive\experiment\phase1\probe\config\selfaware-sae-screens\phase3_selfaware_sae_pilot.yaml`
   - `python experiment\phase1\probe\phase3_sae_train.py --config .tmp\phase3_selfaware_sae_pilot_l1_0_01.yaml`
   - `python experiment\phase1\probe\phase3_sae_train.py --config .tmp\phase3_selfaware_sae_pilot_l1_0_1.yaml`
 - decisions:
@@ -421,7 +421,7 @@ plumbing can read and write the expected artifacts.
 - kind: `result`
 - summary: Added top-k ReLU activation support to the SAE pilot and ran local k=8, k=16, and k=32 sensitivity points over the same full DPO L24 and KTO L25 SelfAware delta slices. Top-k produced exact sparse codes. k=16 is now the checked-in interpretability pilot default because it gives exact 16/128 active features with moderate reconstruction cost, while k=32 is the softer reconstruction compromise.
 - evidence:
-  - `experiment/phase1/probe/config/phase3_selfaware_sae_pilot.yaml`
+  - `archive/experiment/phase1/probe/config/selfaware-sae-screens/phase3_selfaware_sae_pilot.yaml`
   - `experiment/phase1/probe/qwen3-4b-sft-merged-seed1-selfaware/sae_runs/phase3_selfaware_delta_sae_pilot_topk16/sft_dpo_selfaware_full_delta_l24/metrics.json`
   - `experiment/phase1/probe/qwen3-4b-sft-merged-seed1-selfaware/sae_runs/phase3_selfaware_delta_sae_pilot_topk16/sft_kto_selfaware_full_delta_l25/metrics.json`
   - `experiment/phase1/probe/qwen3-4b-sft-merged-seed1-selfaware/sae_runs/phase3_selfaware_delta_sae_pilot_topk32/sft_dpo_selfaware_full_delta_l24/metrics.json`
@@ -449,11 +449,11 @@ plumbing can read and write the expected artifacts.
 - summary: Added and ran a feature-analysis runner that reloads trained SAE weights, saved normalization tensors, selected rows, and verified hidden-state shards to recompute codes and rank SAE features by known/unknown activation separation. The checked-in analysis targets the current top-k16 DPO L24 and KTO L25 SelfAware delta SAE pilots.
 - evidence:
   - `experiment/phase1/probe/phase3_sae_feature_analysis.py`
-  - `experiment/phase1/probe/config/phase3_selfaware_sae_feature_analysis.yaml`
+  - `archive/experiment/phase1/probe/config/selfaware-sae-screens/phase3_selfaware_sae_feature_analysis.yaml`
   - `experiment/phase1/probe/qwen3-4b-sft-merged-seed1-selfaware/sae_feature_analysis/phase3_selfaware_delta_topk16_features/sft_dpo_selfaware_full_delta_l24_topk16/summary.json`
   - `experiment/phase1/probe/qwen3-4b-sft-merged-seed1-selfaware/sae_feature_analysis/phase3_selfaware_delta_topk16_features/sft_kto_selfaware_full_delta_l25_topk16/summary.json`
 - commands:
-  - `python experiment\phase1\probe\phase3_sae_feature_analysis.py --config experiment\phase1\probe\config\phase3_selfaware_sae_feature_analysis.yaml`
+  - `python experiment\phase1\probe\phase3_sae_feature_analysis.py --config archive\experiment\phase1\probe\config\selfaware-sae-screens\phase3_selfaware_sae_feature_analysis.yaml`
 - decisions:
   - Treat feature screen outputs as `SAE_FEATURE_ANALYSIS_ONLY`; they are candidate-feature prioritization, not causal or monosemantic-feature evidence.
   - Use the top separated features as a queue for controlled logit or activation-intervention diagnostics.
@@ -474,11 +474,11 @@ plumbing can read and write the expected artifacts.
 - summary: Added and ran a bridge exporter that converts selected SAE decoder columns from standardized SAE space back into raw hidden-state direction candidates by multiplying decoder columns by the saved training normalization scale. The checked-in config exports the top two unknown-skewed and top two known-skewed features for each DPO/KTO top-k16 SAE.
 - evidence:
   - `experiment/phase1/probe/phase3_sae_feature_directions.py`
-  - `experiment/phase1/probe/config/phase3_selfaware_sae_feature_directions.yaml`
+  - `archive/experiment/phase1/probe/config/selfaware-sae-screens/phase3_selfaware_sae_feature_directions.yaml`
   - `experiment/phase1/probe/qwen3-4b-sft-merged-seed1-selfaware/sae_feature_directions/phase3_selfaware_delta_topk16_feature_directions/sae_feature_directions.manifest.json`
   - `experiment/phase1/probe/qwen3-4b-sft-merged-seed1-selfaware/sae_feature_directions/phase3_selfaware_delta_topk16_feature_directions/sae_feature_directions.csv`
 - commands:
-  - `python experiment\phase1\probe\phase3_sae_feature_directions.py --config experiment\phase1\probe\config\phase3_selfaware_sae_feature_directions.yaml`
+  - `python experiment\phase1\probe\phase3_sae_feature_directions.py --config archive\experiment\phase1\probe\config\selfaware-sae-screens\phase3_selfaware_sae_feature_directions.yaml`
 - decisions:
   - Keep exported feature directions labeled `SAE_FEATURE_DIRECTION_CANDIDATES_ONLY`.
   - Preserve feature polarity instead of flipping all vectors to unknown-positive; addition/subtraction controls must be interpreted relative to `feature_skew_label`.
@@ -593,13 +593,13 @@ plumbing can read and write the expected artifacts.
 - evidence:
   - `experiment/phase1/probe/phase3_sae_feature_composites.py`
   - `experiment/phase1/probe/tests/test_phase3_sae_feature_composites.py`
-  - `experiment/phase1/probe/config/phase3_selfaware_sae_feature_composites.yaml`
+  - `archive/experiment/phase1/probe/config/selfaware-sae-screens/phase3_selfaware_sae_feature_composites.yaml`
   - `archive/experiment/phase1/probe/config/selfaware-sae-feature-logit-diagnostics/phase3_selfaware_sae_feature_composite_logit_diagnostic.yaml`
   - `archive/experiment/phase1/probe/config/selfaware-sae-feature-logit-diagnostics/phase3_selfaware_sae_feature_composite_logit_diagnostic_sweep.yaml`
   - `experiment/phase1/probe/qwen3-4b-sft-merged-seed1-selfaware/sae_feature_composites/phase3_selfaware_delta_topk16_feature_composites/sae_feature_composite_directions.manifest.json`
   - `experiment/phase1/probe/qwen3-4b-sft-merged-seed1-selfaware/causal_pilots/phase3_selfaware_sae_feature_composite_logit_diagnostic/summary.csv`
 - commands:
-  - `python experiment\phase1\probe\phase3_sae_feature_composites.py --config experiment\phase1\probe\config\phase3_selfaware_sae_feature_composites.yaml`
+  - `python experiment\phase1\probe\phase3_sae_feature_composites.py --config archive\experiment\phase1\probe\config\selfaware-sae-screens\phase3_selfaware_sae_feature_composites.yaml`
   - `python -m pytest experiment\phase1\probe\tests\test_phase3_sae_feature_composites.py experiment\phase1\probe\tests\test_phase3_causal_pilot_runner.py experiment\phase1\probe\tests\test_phase3_causal_pilot_sweep.py experiment\phase1\probe\tests\test_phase3_causal_pilot_dry_run.py -q`
   - `python experiment\phase1\probe\phase3_causal_pilot_sweep.py --config archive\experiment\phase1\probe\config\selfaware-sae-feature-logit-diagnostics\phase3_selfaware_sae_feature_composite_logit_diagnostic_sweep.yaml --mode-filter logit_diagnostic --write-plan --materialize-configs --execute --allow-logit-diagnostic`
   - `python experiment\phase1\probe\phase3_causal_pilot_aggregate.py --root experiment\phase1\probe\qwen3-4b-sft-merged-seed1-selfaware\causal_pilots\phase3_selfaware_sae_feature_composite_logit_diagnostic --out experiment\phase1\probe\qwen3-4b-sft-merged-seed1-selfaware\causal_pilots\phase3_selfaware_sae_feature_composite_logit_diagnostic\summary.csv`

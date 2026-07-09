@@ -35,7 +35,7 @@ checkpoints:
     '
   evidence:
   - experiment/phase1/probe/phase3_sae_behavior_feature_analysis.py
-  - experiment/phase1/probe/config/phase3_selfaware_sae_behavior_feature_analysis.yaml
+  - archive/experiment/phase1/probe/config/selfaware-sae-screens/phase3_selfaware_sae_behavior_feature_analysis.yaml
   - experiment/phase1/probe/qwen3-4b-sft-merged-seed1-selfaware/sae_behavior_feature_analysis/phase3_selfaware_delta_topk16_behavior_features/sft_dpo_selfaware_full_delta_l24_topk16_behavior/summary.json
   - experiment/phase1/probe/qwen3-4b-sft-merged-seed1-selfaware/sae_behavior_feature_analysis/phase3_selfaware_delta_topk16_behavior_features/sft_kto_selfaware_full_delta_l25_topk16_behavior/summary.json
   commands:
@@ -43,7 +43,7 @@ checkpoints:
     -q
   - python -m py_compile experiment\phase1\probe\phase3_sae_behavior_feature_analysis.py
   - python experiment\phase1\probe\phase3_sae_behavior_feature_analysis.py --config
-    experiment\phase1\probe\config\phase3_selfaware_sae_behavior_feature_analysis.yaml
+    archive\experiment\phase1\probe\config\selfaware-sae-screens\phase3_selfaware_sae_behavior_feature_analysis.yaml
   decisions:
   - Treat outputs as `SAE_BEHAVIOR_FEATURE_ANALYSIS_ONLY`.
   - Do not call these features monosemantic; top examples show content-family structure.
@@ -73,14 +73,14 @@ checkpoints:
     '
   evidence:
   - experiment/phase1/probe/phase3_sae_feature_directions.py
-  - experiment/phase1/probe/config/phase3_selfaware_sae_behavior_feature_directions.yaml
+  - archive/experiment/phase1/probe/config/selfaware-sae-screens/phase3_selfaware_sae_behavior_feature_directions.yaml
   - experiment/phase1/probe/config/phase3_selfaware_behavior_feature_direction_geometry.yaml
   - experiment/phase1/probe/qwen3-4b-sft-merged-seed1-selfaware/sae_feature_directions/phase3_selfaware_delta_topk16_behavior_feature_directions/sae_feature_directions.manifest.json
   - experiment/phase1/probe/qwen3-4b-sft-merged-seed1-selfaware/direction_geometry/phase3_selfaware_behavior_feature_direction_geometry/summary.json
   commands:
   - python -m pytest experiment\phase1\probe\tests\test_phase3_sae_feature_directions.py
     experiment\phase1\probe\tests\test_phase3_sae_behavior_feature_analysis.py -q
-  - python experiment\phase1\probe\phase3_sae_feature_directions.py --config experiment\phase1\probe\config\phase3_selfaware_sae_behavior_feature_directions.yaml
+  - python experiment\phase1\probe\phase3_sae_feature_directions.py --config archive\experiment\phase1\probe\config\selfaware-sae-screens\phase3_selfaware_sae_behavior_feature_directions.yaml
   - python experiment\phase1\probe\phase3_direction_geometry.py --config experiment\phase1\probe\config\phase3_selfaware_behavior_feature_direction_geometry.yaml
   gotchas:
   - Behavior ranking CSVs can contain the same feature once per contrast; explicit

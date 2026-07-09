@@ -731,3 +731,28 @@ This log records migration batches after the terrain baseline in
     `experiment/phase1/probe/`.
   - Did not move AC coupled-intervention, head-intervention, logit-cell, SAE, or
     direction-transform config families.
+
+## C025a - SelfAware SAE Screen Configs
+
+- Date: 2026-07-09
+- Source component: `C025` subset
+- File count: 7
+- Source root: `experiment/phase1/probe/config/`
+- Destination:
+  `archive/experiment/phase1/probe/config/selfaware-sae-screens/`
+- Owner decision: archive-only historical provenance for the June 19/20 Phase 3
+  SelfAware SAE smoke, pilot-training, feature-analysis, feature-direction, and
+  feature-composite screen sequence. No migrated `experiments/<slug>` owner was
+  present, and these are not reusable shared defaults.
+- Reason: these files form the upstream SAE screen family for the already
+  archived SAE feature logit-diagnostic configs.
+- Reference updates:
+  - Rewrote moved-config references and command paths in historical SAE session
+    notes and the model-variation note.
+  - Updated the canonical mech-interp-runner SAE reference and synced generated
+    skill mirrors.
+  - Added a README to the destination archive folder.
+- Non-goals:
+  - Did not move generated SAE outputs or analysis directories.
+  - Did not move the downstream SAE feature logit-diagnostic configs; those were
+    already archived in `selfaware-sae-feature-logit-diagnostics/`.
