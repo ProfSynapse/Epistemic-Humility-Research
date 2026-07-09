@@ -573,3 +573,26 @@ This log records migration batches after the terrain baseline in
 - Non-goals:
   - Did not move generated behavior panels or causal-pilot outputs under
     `experiment/phase1/probe/qwen3-4b-instruct/`.
+## C001e - Gold-KTO Calibrated-Expression Logit Panel Configs
+
+- Date: 2026-07-09
+- Source component: `C001` subset
+- File count: 8
+- Source root: `experiment/phase1/probe/config/`
+- Destination:
+  `archive/experiment/phase1/probe/config/gold-kto-calibrated-expression-logit-panels/`
+- Owner decision: archive-only historical provenance for gold-backed KTO
+  calibrated-expression simple, composite, same-layer, and multilayer logit
+  diagnostic work. No migrated `experiments/<slug>` owner was present, and these
+  files are not reusable shared defaults.
+- Reason: these files form bounded candidate/sweep pairs around generated
+  gold-KTO direction artifacts and the archived causal-pilot core runner.
+- Reference updates:
+  - Rewrote `candidate_source_config` references to the archive path.
+  - Rewrote moved-config references and command paths in historical docs/session
+    notes found by exact path search.
+  - Retained generated direction/output roots under `experiment/phase1/probe/`.
+  - Added a README to the destination archive folder.
+- Non-goals:
+  - Did not move generated direction transforms, causal-pilot outputs, or
+    cell-analysis configs under `experiment/phase1/probe/qwen3-4b-instruct/`.

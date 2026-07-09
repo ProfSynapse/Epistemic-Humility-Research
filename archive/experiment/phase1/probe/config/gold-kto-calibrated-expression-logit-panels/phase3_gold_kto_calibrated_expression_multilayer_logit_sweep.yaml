@@ -1,15 +1,14 @@
-# Same-layer single-axis causal sign map for gold-backed KTO behavior axes.
+# Multi-layer diagnostic for gold-backed KTO calibrated-expression cells.
 sweep:
-  name: phase3_gold_kto_calibrated_expression_same_layer_single_logit_sweep
+  name: phase3_gold_kto_calibrated_expression_multilayer_logit_sweep
   evidence_tier: tier2_exploratory_local
   runner_config: archive/experiment/phase1/probe/config/causal-pilot-core/phase3_causal_pilot_gpu_smoke.yaml
-  candidate_source_config: experiment/phase1/probe/config/phase3_gold_kto_calibrated_expression_same_layer_single_logit_candidates.yaml
-  output_root: experiment/phase1/probe/qwen3-4b-instruct/causal_pilots/phase3_gold_kto_calibrated_expression_same_layer_single_logit_sweep
+  candidate_source_config: archive/experiment/phase1/probe/config/gold-kto-calibrated-expression-logit-panels/phase3_gold_kto_calibrated_expression_multilayer_logit_candidates.yaml
+  output_root: experiment/phase1/probe/qwen3-4b-instruct/causal_pilots/phase3_gold_kto_calibrated_expression_multilayer_logit_sweep
   candidates:
-    - gold_kto_h_lora_known_refused_vs_correct_l27
-    - gold_kto_h_lora_known_refused_vs_correct_l28
-    - gold_kto_h_lora_unknown_wrong_vs_refused_l28
-    - gold_kto_h_lora_unknown_wrong_vs_refused_l36
+    - gold_kto_multilayer_known36_unknown28_w010
+    - gold_kto_multilayer_known36_unknown28_w025
+    - gold_kto_multilayer_known36_unknown28_w050
   execution:
     backend: docker
     docker:
@@ -50,7 +49,5 @@ sweep:
       controls:
         - no_vector_baseline
         - activation_addition
-        - activation_subtraction
         - wrong_layer
-        - wrong_layer_subtraction
         - random_matched_norm

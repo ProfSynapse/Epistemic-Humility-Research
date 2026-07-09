@@ -1608,7 +1608,7 @@ Why this rerun happened:
 Run:
 
 - Config:
-  `experiment/phase1/probe/config/phase3_gold_kto_calibrated_expression_multilayer_logit_sweep.yaml`.
+  `archive/experiment/phase1/probe/config/gold-kto-calibrated-expression-logit-panels/phase3_gold_kto_calibrated_expression_multilayer_logit_sweep.yaml`.
 - Candidates: L36 known-overrefusal repair plus L28 unknown-wrong repair with
   L28 weights `-0.10`, `-0.25`, and `-0.50`.
 - Live Docker execution completed all three jobs with return code `0`.
