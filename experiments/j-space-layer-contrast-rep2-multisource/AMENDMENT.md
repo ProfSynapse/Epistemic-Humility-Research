@@ -239,7 +239,7 @@ Instrument files pinned at sign: `cell.yaml`, `gates.yaml`,
 
 ## Prediction
 
-Blank at draft (locked design: both scoreboard rows filled only at sign).
+With rep1's frozen directions, gates, and calibrated doses unchanged, the harder-source-dominant multi-source pool will pull hs34 off the ceiling into the interpretable G3' window (roughly 55-80% clean_tighten), the best mid-band arm will beat hs34 on paired outcomes with late-only failures at least 3x mid-only failures and exact McNemar p < 0.05 (G1' pass), and the known-correct cost gap will stay within +2pp (G2' pass): the mid-band advantage replicates at meaningful magnitude.
 
 ## Falsifier
 
@@ -257,10 +257,10 @@ under "Ceiling-robust gates" above.
 
 | Predictor | Call |
 |-----------|------|
-| orchestrator | |
-| user | |
+| orchestrator | Full pass: the harder-source-dominant pool pulls hs34 off the ceiling into roughly 55-80% (G3' interpretable), G1' McNemar passes with late-only failures well above the 3x ratio and p < 0.05, and G2' passes since the known-correct side is rep-1's exact rows. Mid-band advantage replicates at meaningful magnitude. |
+| user | Full pass (agrees with orchestrator): G3' interpretable, G1' passes the 3x ratio and significance, G2' within +2pp. |
 
-Both rows blank at draft, per locked design; filled only at `bin/exp sign`.
+Filled at sign (2026-07-09), per locked design.
 
 ## Outcome
 
