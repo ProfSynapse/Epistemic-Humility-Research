@@ -131,7 +131,7 @@ Primary analyses:
    `archive/experiment/phase1/probe/config/selfaware-calibrated-expression-axis/phase3_selfaware_calibrated_expression_axis_scan.yaml`,
    `experiment/phase1/probe/config/phase3_selfaware_sae_smoke.yaml`,
    `experiment/phase1/probe/config/phase3_gold_kto_targeted_multicell_readout.yaml`,
-   and `experiment/phase1/probe/config/phase3_gold_kto_targeted_calibrated_expression_logit_sweep.yaml`.
+   and `archive/experiment/phase1/probe/config/gold-kto-targeted-rare-cell-panels/phase3_gold_kto_targeted_calibrated_expression_logit_sweep.yaml`.
 5. Materialize or update checked-in configs only after the inventory says which
    model rows have usable extraction artifacts and which require live extraction.
 6. Run non-GPU/offline scans first. Use live logit diagnostics only after a

@@ -596,3 +596,31 @@ This log records migration batches after the terrain baseline in
 - Non-goals:
   - Did not move generated direction transforms, causal-pilot outputs, or
     cell-analysis configs under `experiment/phase1/probe/qwen3-4b-instruct/`.
+## C001f - Gold-KTO Targeted Rare-Cell Panel Configs
+
+- Date: 2026-07-09
+- Source component: `C001` subset
+- File count: 9
+- Source root: `experiment/phase1/probe/config/`
+- Destination:
+  `archive/experiment/phase1/probe/config/gold-kto-targeted-rare-cell-panels/`
+- Owner decision: archive-only historical provenance for the targeted 448-row
+  SFT->KTO gold behavior panel and follow-on targeted calibrated-expression
+  logit triage. No migrated `experiments/<slug>` owner was present, and these
+  files/artifacts are not reusable shared defaults.
+- Reason: these files form a bounded targeted rare-cell pipeline: row-key
+  generator artifacts, targeted extraction config, targeted candidates, baseline
+  generation replay, and targeted calibrated-expression logit candidate/sweep
+  pair.
+- Reference updates:
+  - Rewrote `candidate_source_config`, `row_keys_file`, and moved-artifact
+    references to the archive path.
+  - Rewrote moved-config references and command paths in historical docs/session
+    notes found by exact path search.
+  - Retained generated extraction, behavior-panel, and causal-pilot output roots
+    under `experiment/phase1/probe/`.
+  - Added a README to the destination archive folder.
+- Non-goals:
+  - Did not move generated hidden-state extractions, behavior panels,
+    causal-pilot outputs, or downstream cell-analysis configs under
+    `experiment/phase1/probe/qwen3-4b-instruct/`.

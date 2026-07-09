@@ -1716,9 +1716,9 @@ Reusable plumbing added:
 Targeted row-key panel:
 
 - Config:
-  `experiment/phase1/probe/config/phase3_gold_kto_targeted_rare_cell_row_keys.yaml`.
+  `archive/experiment/phase1/probe/config/gold-kto-targeted-rare-cell-panels/phase3_gold_kto_targeted_rare_cell_row_keys.yaml`.
 - Output row keys:
-  `experiment/phase1/probe/config/phase3_gold_kto_targeted_rare_cell_row_keys.txt`.
+  `archive/experiment/phase1/probe/config/gold-kto-targeted-rare-cell-panels/phase3_gold_kto_targeted_rare_cell_row_keys.txt`.
 - The selector excluded the original 256-row KTO gold extraction.
 - Selected `448` rows, balanced `224` known / `224` unknown.
 - Heuristic buckets selected:
@@ -1730,15 +1730,15 @@ Targeted row-key panel:
 Extraction and baseline generation:
 
 - Hidden-state extraction config:
-  `experiment/phase1/probe/config/hidden_state_gold_kto_targeted_rare_cells.yaml`.
+  `archive/experiment/phase1/probe/config/gold-kto-targeted-rare-cell-panels/hidden_state_gold_kto_targeted_rare_cells.yaml`.
 - Extraction completed in Docker with manifest `status=ok`, `verified=true`.
 - Extraction output:
   `experiment/phase1/probe/qwen3-4b-instruct/hidden_states_gold_kto_targeted/extraction__9220ebb266f4`.
 - Candidate directions derived with `hidden_state_directions.py`.
 - New candidate source:
-  `experiment/phase1/probe/config/phase3_gold_kto_targeted_candidates.yaml`.
+  `archive/experiment/phase1/probe/config/gold-kto-targeted-rare-cell-panels/phase3_gold_kto_targeted_candidates.yaml`.
 - No-vector baseline generation config:
-  `experiment/phase1/probe/config/phase3_gold_kto_targeted_baseline_generation_replay.yaml`.
+  `archive/experiment/phase1/probe/config/gold-kto-targeted-rare-cell-panels/phase3_gold_kto_targeted_baseline_generation_replay.yaml`.
 - Initial generation launch correctly failed because the inherited template
   readiness check expected `row_count=256`; fixed by overriding
   `row_count=448` and label counts `known=224`, `unknown=224`.
@@ -1803,7 +1803,7 @@ Offline axis prep:
 - Direction export config:
   `archive/experiment/phase1/probe/config/gold-kto-targeted-calibrated-expression/phase3_gold_kto_targeted_calibrated_expression_axis_directions.yaml`.
 - Candidate source:
-  `experiment/phase1/probe/config/phase3_gold_kto_targeted_calibrated_expression_logit_candidates.yaml`.
+  `archive/experiment/phase1/probe/config/gold-kto-targeted-rare-cell-panels/phase3_gold_kto_targeted_calibrated_expression_logit_candidates.yaml`.
 - Tested simple axes:
   - `h_lora` L27 known-refused vs known-correct.
   - `h_lora` L27 unknown-wrong vs unknown-refused.
@@ -1822,7 +1822,7 @@ Offline axis prep:
 Live diagnostic:
 
 - Sweep config:
-  `experiment/phase1/probe/config/phase3_gold_kto_targeted_calibrated_expression_logit_sweep.yaml`.
+  `archive/experiment/phase1/probe/config/gold-kto-targeted-rare-cell-panels/phase3_gold_kto_targeted_calibrated_expression_logit_sweep.yaml`.
 - Exact row-key panel:
   `experiment/phase1/probe/qwen3-4b-instruct/gold_behavior_panels/phase3_gold_kto_targeted_behavior_panel/row_keys/calibrated_expression_four_cell_available_row_keys.txt`.
 - Rows: `124` total, `31` per target cell.

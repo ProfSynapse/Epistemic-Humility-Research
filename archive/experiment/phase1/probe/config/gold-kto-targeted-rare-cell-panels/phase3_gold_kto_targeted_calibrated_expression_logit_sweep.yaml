@@ -6,7 +6,7 @@ sweep:
   name: phase3_gold_kto_targeted_calibrated_expression_logit_sweep
   evidence_tier: tier2_exploratory_local
   runner_config: archive/experiment/phase1/probe/config/causal-pilot-core/phase3_causal_pilot_gpu_smoke.yaml
-  candidate_source_config: experiment/phase1/probe/config/phase3_gold_kto_targeted_calibrated_expression_logit_candidates.yaml
+  candidate_source_config: archive/experiment/phase1/probe/config/gold-kto-targeted-rare-cell-panels/phase3_gold_kto_targeted_calibrated_expression_logit_candidates.yaml
   output_root: experiment/phase1/probe/qwen3-4b-instruct/causal_pilots/phase3_gold_kto_targeted_calibrated_expression_logit_sweep
   candidates:
     - gold_kto_targeted_h_lora_known_refused_vs_correct_l27
