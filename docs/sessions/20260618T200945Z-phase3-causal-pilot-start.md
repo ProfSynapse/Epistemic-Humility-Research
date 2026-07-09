@@ -30,7 +30,7 @@ checkpoints:
   evidence:
   - docs/plans/phase3-interpretability-direction.md
   - docs/plans/phase3-interpretability-research-process.md
-  - experiment/phase1/probe/config/phase3_causal_pilot_smoke.yaml
+  - archive/experiment/phase1/probe/config/causal-pilot-core/phase3_causal_pilot_smoke.yaml
   run_ids: []
   commands: []
   decisions:
@@ -194,7 +194,7 @@ checkpoints:
     controls. The replay stayed logit-only on the existing 16-row slice and did not
     run generation.
   evidence:
-  - experiment/phase1/probe/config/phase3_causal_pilot_changed_row_probability_slice.yaml
+  - archive/experiment/phase1/probe/config/causal-pilot-core/phase3_causal_pilot_changed_row_probability_slice.yaml
   - experiment/phase1/probe/qwen3-4b-instruct/causal_pilots/phase3_changed_row_probability_slice/run_20260619T010135Z
   - experiment/phase1/probe/qwen3-4b-instruct/causal_pilots/phase3_changed_row_probability_slice/run_20260619T010351Z
   run_ids: []
@@ -236,7 +236,7 @@ checkpoints:
   evidence:
   - experiment/phase1/probe/phase3_causal_pilot_runner.py
   - experiment/phase1/probe/tests/test_phase3_causal_pilot_runner.py
-  - experiment/phase1/probe/config/phase3_causal_pilot_changed_row_probability_slice.yaml
+  - archive/experiment/phase1/probe/config/causal-pilot-core/phase3_causal_pilot_changed_row_probability_slice.yaml
   - experiment/phase1/probe/qwen3-4b-instruct/causal_pilots/phase3_changed_row_probability_slice/run_20260619T011956Z
   - experiment/phase1/probe/qwen3-4b-instruct/causal_pilots/phase3_changed_row_probability_slice/run_20260619T012206Z
   run_ids: []
@@ -276,7 +276,7 @@ checkpoints:
   evidence:
   - experiment/phase1/probe/phase3_causal_pilot_runner.py
   - experiment/phase1/probe/tests/test_phase3_causal_pilot_runner.py
-  - experiment/phase1/probe/config/phase3_causal_pilot_changed_row_probability_slice.yaml
+  - archive/experiment/phase1/probe/config/causal-pilot-core/phase3_causal_pilot_changed_row_probability_slice.yaml
   - experiment/phase1/probe/qwen3-4b-instruct/causal_pilots/phase3_changed_row_probability_slice/run_20260619T013022Z
   - experiment/phase1/probe/qwen3-4b-instruct/causal_pilots/phase3_changed_row_probability_slice/run_20260619T013300Z
   run_ids: []
@@ -445,7 +445,7 @@ correlational until a controlled intervention changes behavior.
 - evidence:
   - `docs/plans/phase3-interpretability-direction.md`
   - `docs/plans/phase3-interpretability-research-process.md`
-  - `experiment/phase1/probe/config/phase3_causal_pilot_smoke.yaml`
+  - `archive/experiment/phase1/probe/config/causal-pilot-core/phase3_causal_pilot_smoke.yaml`
 - decisions:
   - Reduce the broad 112-arm dry-run plan to a smoke-slice before any live model intervention.
 - next steps:
@@ -692,7 +692,7 @@ correlational until a controlled intervention changes behavior.
   activation-addition, and activation-subtraction controls. The replay stayed
   logit-only on the existing 16-row slice and did not run generation.
 - evidence:
-  - `experiment/phase1/probe/config/phase3_causal_pilot_changed_row_probability_slice.yaml`
+  - `archive/experiment/phase1/probe/config/causal-pilot-core/phase3_causal_pilot_changed_row_probability_slice.yaml`
   - `experiment/phase1/probe/qwen3-4b-instruct/causal_pilots/phase3_changed_row_probability_slice/run_20260619T010135Z`
   - `experiment/phase1/probe/qwen3-4b-instruct/causal_pilots/phase3_changed_row_probability_slice/run_20260619T010351Z`
 - commands:
@@ -750,7 +750,7 @@ correlational until a controlled intervention changes behavior.
 - evidence:
   - `experiment/phase1/probe/phase3_causal_pilot_runner.py`
   - `experiment/phase1/probe/tests/test_phase3_causal_pilot_runner.py`
-  - `experiment/phase1/probe/config/phase3_causal_pilot_changed_row_probability_slice.yaml`
+  - `archive/experiment/phase1/probe/config/causal-pilot-core/phase3_causal_pilot_changed_row_probability_slice.yaml`
   - `experiment/phase1/probe/qwen3-4b-instruct/causal_pilots/phase3_changed_row_probability_slice/run_20260619T011956Z`
   - `experiment/phase1/probe/qwen3-4b-instruct/causal_pilots/phase3_changed_row_probability_slice/run_20260619T012206Z`
 - commands:
@@ -805,7 +805,7 @@ correlational until a controlled intervention changes behavior.
 - evidence:
   - `experiment/phase1/probe/phase3_causal_pilot_runner.py`
   - `experiment/phase1/probe/tests/test_phase3_causal_pilot_runner.py`
-  - `experiment/phase1/probe/config/phase3_causal_pilot_changed_row_probability_slice.yaml`
+  - `archive/experiment/phase1/probe/config/causal-pilot-core/phase3_causal_pilot_changed_row_probability_slice.yaml`
   - `experiment/phase1/probe/qwen3-4b-instruct/causal_pilots/phase3_changed_row_probability_slice/run_20260619T013022Z`
   - `experiment/phase1/probe/qwen3-4b-instruct/causal_pilots/phase3_changed_row_probability_slice/run_20260619T013300Z`
 - commands:

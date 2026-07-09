@@ -426,7 +426,7 @@ checkpoints:
 
     '
   evidence:
-  - experiment/phase1/probe/config/phase3_causal_pilot_changed_row_probability_slice.yaml
+  - archive/experiment/phase1/probe/config/causal-pilot-core/phase3_causal_pilot_changed_row_probability_slice.yaml
   - experiment/phase1/probe/qwen3-4b-instruct/causal_pilots/phase3_changed_row_probability_slice/summary.csv
   - experiment/phase1/probe/qwen3-4b-instruct/causal_pilots/phase3_changed_row_probability_slice/run_20260620T101428Z/run_manifest.json
   - experiment/phase1/probe/qwen3-4b-instruct/causal_pilots/phase3_changed_row_probability_slice/run_20260620T101554Z/run_manifest.json
@@ -436,13 +436,13 @@ checkpoints:
   - docker run --rm --gpus all --ipc=host --entrypoint python -e HF_HOME=/workspace/repo/.cache/hf
     -e HUGGINGFACE_HUB_CACHE=/workspace/repo/.cache/hf/hub -v F:\Code\Epistemic-Humility-Research:/workspace/repo
     -w /workspace/repo unsloth/unsloth:latest /workspace/repo/experiment/phase1/probe/phase3_causal_pilot_runner.py
-    --mode logit_diagnostic --config /workspace/repo/experiment/phase1/probe/config/phase3_causal_pilot_changed_row_probability_slice.yaml
+    --mode logit_diagnostic --config /workspace/repo/archive/experiment/phase1/probe/config/causal-pilot-core/phase3_causal_pilot_changed_row_probability_slice.yaml
     --candidate sft_dpo_delta_l35 --coefficients 50.0 --controls no_vector_baseline,activation_addition,activation_subtraction,wrong_layer,random_matched_norm
     --max-rows 16 --allow-logit-diagnostic
   - docker run --rm --gpus all --ipc=host --entrypoint python -e HF_HOME=/workspace/repo/.cache/hf
     -e HUGGINGFACE_HUB_CACHE=/workspace/repo/.cache/hf/hub -v F:\Code\Epistemic-Humility-Research:/workspace/repo
     -w /workspace/repo unsloth/unsloth:latest /workspace/repo/experiment/phase1/probe/phase3_causal_pilot_runner.py
-    --mode logit_diagnostic --config /workspace/repo/experiment/phase1/probe/config/phase3_causal_pilot_changed_row_probability_slice.yaml
+    --mode logit_diagnostic --config /workspace/repo/archive/experiment/phase1/probe/config/causal-pilot-core/phase3_causal_pilot_changed_row_probability_slice.yaml
     --candidate sft_kto_h_lora_l35 --coefficients 50.0 --controls no_vector_baseline,activation_addition,activation_subtraction,wrong_layer,random_matched_norm
     --max-rows 16 --allow-logit-diagnostic
   decisions:

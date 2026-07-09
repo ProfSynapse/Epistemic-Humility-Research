@@ -400,7 +400,7 @@ Status update 2026-06-15:
 - Gate 6 readiness artifact produced:
   `docs/plans/phase3-causal-pilot-readiness.md`
 - First smoke config reference:
-  `experiment/phase1/probe/config/phase3_causal_pilot_smoke.yaml`
+  `archive/experiment/phase1/probe/config/causal-pilot-core/phase3_causal_pilot_smoke.yaml`
 - This status records readiness only. It does not claim intervention results,
   causal effects, Phase 1 headline evidence, or Tier 3 mechanism evidence.
 

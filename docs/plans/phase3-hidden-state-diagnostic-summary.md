@@ -67,7 +67,7 @@ The first causal-pilot readiness config prioritizes:
 Both directions come from
 `experiment/phase1/probe/qwen3-4b-instruct/hidden_states/extraction__12fb10b1c8c8/`
 and are already referenced by
-`experiment/phase1/probe/config/phase3_causal_pilot_smoke.yaml`.
+`archive/experiment/phase1/probe/config/causal-pilot-core/phase3_causal_pilot_smoke.yaml`.
 
 ## Interpretation Limits
 

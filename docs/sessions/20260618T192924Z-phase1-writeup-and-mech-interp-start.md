@@ -30,7 +30,7 @@ checkpoints:
   evidence:
   - experiment/phase1/probe/README.md
   - experiment/phase1/probe/config/hidden_state_probe.yaml
-  - experiment/phase1/probe/config/phase3_causal_pilot_smoke.yaml
+  - archive/experiment/phase1/probe/config/causal-pilot-core/phase3_causal_pilot_smoke.yaml
   run_ids: []
   commands:
   - python -m pytest experiment\\phase1\\probe\\tests\\test_hidden_state_probe.py
@@ -153,7 +153,7 @@ GPU execution.
 - evidence:
   - `experiment/phase1/probe/README.md`
   - `experiment/phase1/probe/config/hidden_state_probe.yaml`
-  - `experiment/phase1/probe/config/phase3_causal_pilot_smoke.yaml`
+  - `archive/experiment/phase1/probe/config/causal-pilot-core/phase3_causal_pilot_smoke.yaml`
 - commands:
   - `python -m pytest experiment\\phase1\\probe\\tests\\test_hidden_state_probe.py experiment\\phase1\\probe\\tests\\test_hidden_state_directions.py experiment\\phase1\\probe\\tests\\test_hidden_state_linear_probe.py experiment\\phase1\\probe\\tests\\test_phase3_causal_pilot_dry_run.py -q`
   - `python .agents\\skills\\experiment-runner\\scripts\\prepare_extraction_cell.py --config experiment\\phase1\\probe\\config\\hidden_state_probe.yaml`

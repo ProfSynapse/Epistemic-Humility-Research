@@ -1,6 +1,6 @@
 # Phase 3 causal-pilot smoke readiness spec.
 #
-# Location: experiment/phase1/probe/config/phase3_causal_pilot_smoke.yaml
+# Location: archive/experiment/phase1/probe/config/causal-pilot-core/phase3_causal_pilot_smoke.yaml
 # Intended consumer: future causal-pilot dry-run/runner implementation.
 #
 # This file is a machine-readable readiness spec, not an executable promise.

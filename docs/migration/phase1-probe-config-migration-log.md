@@ -1036,3 +1036,27 @@ This log records migration batches after the terrain baseline in
   - Did not move AC generated analysis outputs or frozen gain-map/direction row
     artifacts under `experiment/phase1/probe/analysis/`; those remain local or
     historical run products per the amendment's provenance notes.
+
+## C001h - Causal-Pilot Readiness And Changed-Row Diagnostic Configs
+
+- Date: 2026-07-09
+- Source component: `C001` residual root subset
+- File count: 2
+- Source root: `experiment/phase1/probe/config/`
+- Destination: `archive/experiment/phase1/probe/config/causal-pilot-core/`
+- Owner decision: archive-only historical provenance. `probe.yaml` and
+  `hidden_state_probe.yaml` remain root live defaults; these two causal-pilot
+  files are bounded historical Phase 3 configs superseded by the archived
+  causal-pilot core surface.
+- Reason: the readiness smoke was a non-executable planning spec and the
+  changed-row file was a logit-only diagnostic over a fixed 16-row slice. Both
+  belong with the already archived causal-pilot core runner/candidate/sweep
+  configs rather than in the root live-default config directory.
+- Reference updates:
+  - Rewrote historical session and plan-doc references to the archive path.
+  - Updated the causal-pilot core archive README.
+- Non-goals:
+  - Did not move generated causal-pilot outputs under
+    `experiment/phase1/probe/qwen3-4b-instruct/`.
+  - Did not move `probe.yaml` or `hidden_state_probe.yaml`; both are still live
+    SSOT/default entrypoints with code and skill references.

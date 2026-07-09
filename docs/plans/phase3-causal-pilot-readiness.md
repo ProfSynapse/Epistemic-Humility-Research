@@ -140,7 +140,7 @@ Stop before interpreting results if:
 ## Next Implementation Step
 
 Implement a minimal no-generation readiness runner or dry-run validator that
-loads `experiment/phase1/probe/config/phase3_causal_pilot_smoke.yaml`, verifies
+loads `archive/experiment/phase1/probe/config/causal-pilot-core/phase3_causal_pilot_smoke.yaml`, verifies
 the extraction and direction contracts, resolves row ids, materializes the
 planned arms and controls, and writes a dry-run manifest. Generation and GPU
 execution should remain a separate explicit approval step.
