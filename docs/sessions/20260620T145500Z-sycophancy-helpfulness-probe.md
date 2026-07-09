@@ -345,7 +345,7 @@ Ran:
 
 ```bash
 python experiment/phase1/probe/phase3_behavior_axis_scan.py \
-  --config experiment/phase1/probe/config/phase3_sycophancy_answer_behavior_axis_scan.yaml
+  --config archive/experiment/phase1/probe/config/sycophancy-answer-behavior-axis/phase3_sycophancy_answer_behavior_axis_scan.yaml
 ```
 
 Output:
@@ -378,7 +378,7 @@ Exported same-condition behavior directions for the sycophancy hidden-state
 panel:
 
 - Config:
-  `experiment/phase1/probe/config/phase3_sycophancy_answer_behavior_axis_directions.yaml`
+  `archive/experiment/phase1/probe/config/sycophancy-answer-behavior-axis/phase3_sycophancy_answer_behavior_axis_directions.yaml`
 - Output:
   `experiment/phase1/probe/qwen3-4b-instruct-sycophancy-answer/behavior_axis_directions/phase3_sycophancy_answer_behavior_axis_directions`
 - Direction CSV:

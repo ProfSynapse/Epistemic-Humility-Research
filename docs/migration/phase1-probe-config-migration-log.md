@@ -451,3 +451,27 @@ This log records migration batches after the terrain baseline in
     `experiment/phase1/probe/qwen3-4b-sft-merged-seed1-selfaware/`.
   - Did not move downstream calibrated-expression geometry, composite, candidate,
     or logit configs; those are separate terrain components for later review.
+## C026 - Sycophancy Answer Behavior-Axis Configs
+
+- Date: 2026-07-09
+- Source component: `C026`
+- File count: 2
+- Source root: `experiment/phase1/probe/config/`
+- Destination:
+  `archive/experiment/phase1/probe/config/sycophancy-answer-behavior-axis/`
+- Owner decision: archive-only historical provenance for the June 20 Phase 3
+  answer-sycophancy behavior-axis work. No migrated `experiments/<slug>` owner
+  was present, and these files are not reusable shared defaults.
+- Reason: these configs form a historical answer-sycophancy scan ->
+  direction-export pair. Downstream files reference generated direction manifests,
+  not these config files directly.
+- Reference updates:
+  - Rewrote the direction config's `source_scan_config` reference to the archive path.
+  - Rewrote moved-config references and command paths in
+    `docs/sessions/20260620T145500Z-sycophancy-helpfulness-probe.md`.
+  - Added a README to the destination archive folder.
+- Non-goals:
+  - Did not move scan or direction output roots under
+    `experiment/phase1/probe/qwen3-4b-instruct-sycophancy-answer/`.
+  - Did not move downstream answer-sycophancy candidate, logit, or replay configs;
+    those are separate terrain components for later review.
