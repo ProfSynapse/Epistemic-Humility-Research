@@ -43,7 +43,7 @@ record; this table is a navigation aid, not the source of truth.
 | `amendment_aa_verdict.py` | AA | Verdict adjudication for the AA cells. |
 | `persist_probe_direction.py` | Z-derived direction persistence (feeds AA/AL/AN) | Fits gate + dial probes from an extraction dir and persists unit-normed direction vectors. Legacy analogue of `mechinterp probe-fit`'s frozen-direction output. |
 | `gpu_equivalence_cell.py` | AA / AL harness self-check | CPU-vs-GPU hook-equivalence check. Legacy analogue of the tuner smoke readback / built-in equivalence self-check. |
-| `directions/` | AA / SR / Z / AL / AN | Frozen direction vectors per checkpoint. These are **data**, not code; going forward new directions are written as `mechinterp-direction/v1` JSON (see the organization principles in the `mechinterp-cells` skill). Existing files stay in place. |
+| `directions/` | legacy scratch only | Frozen tracked direction artifacts have moved to experiment-owned artifact homes (`experiments/common/artifacts/two_signal_probe_directions/` for AA/AB shared Qwen3.5 directions; `experiments/diag-item11-batched-steering-equivalence/artifacts/directions/` for the item-11 caution direction). New directions are written as `mechinterp-direction/v1` JSON (see the organization principles in the `mechinterp-cells` skill). |
 
 ### Amendment scripts (`experiment/phase1/probe/amendment_*`)
 

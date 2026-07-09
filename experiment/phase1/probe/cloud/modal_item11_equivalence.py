@@ -19,7 +19,7 @@ Launch DETACHED so the app survives client death:
 
 The shipped direction JSON (unit-normalized caution_perp preimage, best_layer=34)
 travels inside the repo clone at the pinned commit, under
-experiment/phase1/probe/steering/directions/qwen3-4b-grpo-v2/direction_caution.json
+experiments/diag-item11-batched-steering-equivalence/artifacts/directions/qwen3-4b-grpo-v2/direction_caution.json
 (+ .npy). Both HF model repos below are PRIVATE; HF_TOKEN must have read access.
 """
 
@@ -40,7 +40,7 @@ ADAPTER_REPO = "professorsynapse/eh-qwen3-4b-clean-sft-grpo-v2-seed1-lora"
 ADAPTER_REV = "8914081dfcec4f1f025f2dbe4195d4f7aa8d210e"
 
 # Shipped direction (unit-normalized caution_perp preimage, best_layer=34).
-DIRECTION_IN_REPO = ("experiment/phase1/probe/steering/directions/"
+DIRECTION_IN_REPO = ("experiments/diag-item11-batched-steering-equivalence/artifacts/directions/"
                      "qwen3-4b-grpo-v2/direction_caution.json")
 FLOOR = 1e-2  # bf16 batched-vs-unbatched numeric floor; cell exits nonzero above.
 

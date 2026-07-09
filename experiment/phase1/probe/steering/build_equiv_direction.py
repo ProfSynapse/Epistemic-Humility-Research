@@ -19,7 +19,7 @@ JSON + sibling ``.npy``. It is CPU-only and reads a small JSON (no GPU tensors).
 Usage:
   python build_equiv_direction.py \
       --source .../caution_perp_direction_L35.json \
-      --out directions/qwen3-4b-grpo-v2/direction_caution.json
+      --out experiments/diag-item11-batched-steering-equivalence/artifacts/directions/qwen3-4b-grpo-v2/direction_caution.json
 """
 from __future__ import annotations
 

@@ -78,7 +78,9 @@ padded key set, RoPE offsets, float reduction order), and at layer 34 of a 4B
 model the residual magnitude is large, so this legitimate batched-vs-unbatched
 numeric noise is integer-scale in bf16. The `SteeringHook` was applying the
 correct per-row alpha at the correct token the whole time — the max component of
-the unit-norm `direction_caution` is only `0.18`, so no per-row-alpha
+the unit-norm `direction_caution` in
+`experiments/diag-item11-batched-steering-equivalence/artifacts/directions/qwen3-4b-grpo-v2/`
+is only `0.18`, so no per-row-alpha
 misassignment (max swap `4*0.18 = 0.72`) could produce a `6.0` divergence; the
 `6.0` was pure model noise, not a steering bug.
 

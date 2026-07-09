@@ -51,6 +51,8 @@
   "experiment/phase1/probe/steering/directions/qwen3.5-4b/direction_gate.safetensors": "experiments/common/artifacts/two_signal_probe_directions/qwen3.5-4b/direction_gate.safetensors",
   "experiment/phase1/probe/steering/directions/qwen3.5-4b/direction_dial.json": "experiments/common/artifacts/two_signal_probe_directions/qwen3.5-4b/direction_dial.json",
   "experiment/phase1/probe/steering/directions/qwen3.5-4b/direction_dial.safetensors": "experiments/common/artifacts/two_signal_probe_directions/qwen3.5-4b/direction_dial.safetensors",
+  "experiment/phase1/probe/steering/directions/qwen3-4b-grpo-v2/direction_caution.json": "experiments/diag-item11-batched-steering-equivalence/artifacts/directions/qwen3-4b-grpo-v2/direction_caution.json",
+  "experiment/phase1/probe/steering/directions/qwen3-4b-grpo-v2/direction_caution.npy": "experiments/diag-item11-batched-steering-equivalence/artifacts/directions/qwen3-4b-grpo-v2/direction_caution.npy",
   "experiment/phase1/probe/xdataset/kuq_panel/gen_rows.jsonl": "experiments/xdataset-probe-transfer/artifacts/kuq_panel/gen_rows.jsonl",
   "experiment/phase1/probe/xdataset/kuq_panel/manifest.json": "experiments/xdataset-probe-transfer/artifacts/kuq_panel/manifest.json",
   "experiment/phase1/probe/xdataset/kuq_panel/panel_meta.json": "experiments/xdataset-probe-transfer/artifacts/kuq_panel/panel_meta.json",

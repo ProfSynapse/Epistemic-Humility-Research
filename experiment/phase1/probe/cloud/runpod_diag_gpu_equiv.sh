@@ -17,7 +17,7 @@
 #
 # INPUTS
 #   The direction JSON is COMMITTED in-repo
-#   (experiments/common/artifacts/two_signal_probe_directions/<tag>/direction_gate.json),
+#   (experiments/diag-item11-batched-steering-equivalence/artifacts/directions/<tag>/direction_caution.json),
 #   so no pool fetch is needed.
 #   Only the checkpoint is pulled from HF. The gpu cell requires the explicit
 #   --i-know-this-runs-on-gpu acknowledgement flag (loud DO-NOT-RUN guard);
@@ -28,13 +28,12 @@
 # staging upload.
 #
 # Usage:
-#   runpod_diag_gpu_equiv.sh <staging_repo> <base_model> <direction_relpath> \
-#       [adapter_repo] [adapter_revision] [run_tag]
+#   runpod_diag_gpu_equiv.sh <staging_repo> <base_model> <direction_relpath> [run_tag]
 #   base_model : HF repo id or local path of the checkpoint to load. The gpu
 #       cell loads a single --model with NO adapter, so to test a LoRA lineage
 #       pass a MERGED checkpoint here (see docs/preparation/diagnostics-bundle-launch-plan.md).
 #   direction_relpath : repo-relative path to a direction_*.json with best_layer,
-#       e.g. experiments/common/artifacts/two_signal_probe_directions/qwen3.5-4b/direction_gate.json
+#       e.g. experiments/diag-item11-batched-steering-equivalence/artifacts/directions/qwen3-4b-grpo-v2/direction_caution.json
 set -euo pipefail
 
 STAGING_REPO="$1"; BASE_MODEL="$2"; DIRECTION_RELPATH="$3"
