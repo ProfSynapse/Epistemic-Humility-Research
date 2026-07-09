@@ -2,7 +2,7 @@
 
 Prep doc for the HF Jobs cloud half of the Amendment AI verdict eval. Produces
 exactly the inputs the CPU scorer
-`experiment/phase1/probe/amendment_ai_verdict_score.py` consumes for gates
+`archive/experiment/phase1/probe/amendments/amendment_ai_verdict_score.py` consumes for gates
 AI-G0 / AI-G1 / AI-G2, per the locked spec section 4 of
 `experiments/probe-as-reward/AMENDMENT.md`. CPU-only authoring; no
 model was run, no GPU touched, no HF Job submitted, no git command run.
@@ -32,7 +32,7 @@ uploaded rows.jsonl deliberately omits question text (NO-LICENSE safe).
 ## Cell inventory (new / edited files, all uncommitted)
 
 New:
-- `experiment/phase1/probe/amendment_ai_verdict_extract_gen.py` - the GPU entry
+- `archive/experiment/phase1/probe/amendments/amendment_ai_verdict_extract_gen.py` - the GPU entry
   script. `--stage extract --surface {union,holdout}` (CELL A) and
   `--stage generate` (CELL B). Load path is byte-matched to the sensor-v2
   lineage (`par_sensor_refit_extract_4bit.py`: unsloth FastLanguageModel

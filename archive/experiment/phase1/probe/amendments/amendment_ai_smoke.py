@@ -46,8 +46,10 @@ from statistics import pstdev
 
 import numpy as np
 
-PROBE_DIR = Path(__file__).resolve().parent
-REPO = PROBE_DIR.parents[2]
+from path_compat import phase1_probe_dir, repo_root  # noqa: E402
+
+PROBE_DIR = phase1_probe_dir()
+REPO = repo_root()
 ARTIFACT_DIR = REPO / "experiments" / "probe-as-reward" / "artifacts"
 GRPO_DIR = PROBE_DIR.parent / "grpo"
 # render_probe_prompt lives in the probe dir's backends.py; the base reward in

@@ -216,7 +216,7 @@ Any condition failing ⇒ no launch; doc holds as DRAFT for morning review.
 Written and committed while the TRUE arm was at ~step 30 of 2,934 — no arm
 has completed, no gate quantity has been observed. This section pins
 procedure only; it changes no gate, floor, or constant. Scorer:
-`experiment/phase1/probe/amendment_ai_verdict_score.py` (CPU; the lead runs
+`archive/experiment/phase1/probe/amendments/amendment_ai_verdict_score.py` (CPU; the lead runs
 it and recomputes all gate arithmetic from raw rows; the user adjudicates).
 
 - **Fresh eval probe (per arm):** re-extract the union refit surface through

@@ -39,7 +39,9 @@ from pathlib import Path
 
 CANONICAL = Path("/home/profsynapse/code/Epistemic-Humility-Research")
 PROBE_ROOT = CANONICAL / "experiment/phase1/probe"
-REPO = Path(__file__).resolve().parents[3]
+from path_compat import repo_root  # noqa: E402
+
+REPO = repo_root()
 ARTIFACT_DIR = REPO / "experiments" / "probe-as-reward" / "artifacts"
 REFIT = PROBE_ROOT / "analysis/par_sensor_refit"
 AH_POOL = PROBE_ROOT / "analysis/ah_stage0/expansion/pool_v21.jsonl"

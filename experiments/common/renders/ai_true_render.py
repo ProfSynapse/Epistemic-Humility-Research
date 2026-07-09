@@ -13,7 +13,7 @@ scope.
 
 This is NOT a new prompt convention: it faithfully reproduces the byte-pinned
 render this exact AI-TRUE / A0 surface already uses at
-`experiment/phase1/probe/amendment_ai_verdict_extract_gen.py` (see its
+`archive/experiment/phase1/probe/amendments/amendment_ai_verdict_extract_gen.py` (see its
 `run_extract`/`run_generate`, both of which call
 ``render_probe_prompt(tokenizer, baseline_system, item["question"],
 enable_thinking=False)``) and
