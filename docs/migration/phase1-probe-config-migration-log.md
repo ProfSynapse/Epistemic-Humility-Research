@@ -799,3 +799,28 @@ This log records migration batches after the terrain baseline in
   - Updated the destination archive README.
 - Non-goals:
   - Did not move generated logit diagnostic outputs or cell-analysis outputs.
+
+## C001e2 - Gold-KTO Calibrated-Expression Logit-Cell Analyses
+
+- Date: 2026-07-09
+- Source component: `C001` subset
+- File count: 8
+- Source root: `experiment/phase1/probe/config/`
+- Destination:
+  `archive/experiment/phase1/probe/config/gold-kto-calibrated-expression-logit-panels/`
+- Owner decision: archive-only historical provenance for gold-backed KTO
+  calibrated-expression answer/refusal logit-cell aggregation configs. These
+  are downstream analyses over already archived simple, composite, same-layer,
+  and multilayer candidate/sweep configs, with no migrated `experiments/<slug>`
+  owner and no reusable shared-default role.
+- Reason: these files complete the archived Gold-KTO calibrated-expression
+  logit-panel family by co-locating the aggregation configs with the candidate
+  and sweep configs whose diagnostic outputs they summarize.
+- Reference updates:
+  - Updated the destination archive README.
+  - No live docs, skills, tests, or experiment manifests referenced these moved
+    config paths outside the generated terrain inventory.
+- Non-goals:
+  - Did not move generated behavior panels, causal-pilot outputs,
+    logit-diagnostic outputs, or cell-analysis outputs under
+    `experiment/phase1/probe/qwen3-4b-instruct/`.
