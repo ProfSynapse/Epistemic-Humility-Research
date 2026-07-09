@@ -22,3 +22,8 @@ evidence-producing cells belong under `experiments/<slug>/` or
 `experiments/common/` when promoted for shared reuse.
 
 Known provenance gap: `phase3_current_clean_grpo_v2_known_overrefusal_replay_192_panel_d_row_keys.manifest.json` was referenced by historical notes/config but was not tracked or present when this archive batch was created.
+Additional migration batch:
+
+- `C006`: same-layer GRPO v2 L26 known-overrefusal repair multi-protection behavior-axis scan and direction export.
+
+This batch remains archive-only historical provenance for the Phase 3 GRPO v2 known-overrefusal repair/protection slice. It is kept here with the native, orthogonalized, double-orthogonalized, and replay configs that consume its direction outputs.

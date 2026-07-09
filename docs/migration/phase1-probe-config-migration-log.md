@@ -288,3 +288,29 @@ This log records migration batches after the terrain baseline in
   - Did not rewrite extraction dirs or analysis output roots. Those paths
     preserve historical run provenance and will be handled in broader artifact
     archive passes.
+## C006 - Current-Clean GRPO v2 L26 Repair Multi-Protect Axis Configs
+
+- Date: 2026-07-09
+- Source component: `C006`
+- File count: 2
+- Source root: `experiment/phase1/probe/config/`
+- Destination:
+  `archive/experiment/phase1/probe/config/current-clean-grpo-v2-known-overrefusal/`
+- Owner decision: archive-only historical provenance for the Phase 3 GRPO v2
+  known-overrefusal repair/protection slice. No migrated `experiments/<slug>`
+  owner was present, and these files are not reusable shared defaults.
+- Reason: these configs produce the same-layer L26 known-repair, broad
+  unknown-refusal protection, and known-wrong protection axes for the already
+  archived GRPO v2 double-orthogonalized known-overrefusal replay configs.
+- Reference updates:
+  - Rewrote component-internal `source_scan_config` references to the archive
+    path.
+  - Rewrote moved-file references and command paths in
+    `docs/sessions/20260625T145842Z-phase-3-model-variation-panel.md`.
+  - Updated the destination archive README to list the added batch.
+- Non-goals:
+  - Did not move sibling transform configs or replay artifacts that remain in
+    separate terrain components; those will be reviewed in their own batches.
+  - Did not rewrite extraction dirs or analysis output roots. Those paths
+    preserve historical run provenance and will be handled in broader artifact
+    archive passes.
