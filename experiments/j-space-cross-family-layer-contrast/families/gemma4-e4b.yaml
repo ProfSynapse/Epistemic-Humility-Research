@@ -1,0 +1,96 @@
+# Family config: Google Gemma 4 E4B Instruct. DRAFT until `bin/exp sign`.
+#
+# Checkpoint and risk notes are transcribed verbatim from Amendment Z
+# (experiment/protocol/AMENDMENT-Z-cross-family-confirmatory.md, "Models" table
+# and "Run order"). This is Amendment Z's run-order position 4 (highest risk,
+# run last).
+
+family: gemma4-e4b
+risk_order: 4
+
+checkpoint:
+  repo: google/gemma-4-E4B-it
+  fallback_repo: null
+  revision: raw-base (Apache-2.0, ungated, no adapter, no 4-bit quantization)
+  scale_params_b: 4
+  effective_params_note: "E4B = ~4B effective parameters (Gemma4 conditional-gen architecture)"
+  hf_token_required: false
+
+loader:
+  # Amendment Z flags Gemma-4-E4B as "ungated (verified 2026-06-30) +
+  # multimodal (Gemma4 conditional-gen) -- loader risk only". Same
+  # AutoModelForCausalLM -> AutoModelForImageTextToText ->
+  # AutoModelForVision2Seq fallback chain, config.text_config nesting for
+  # hidden_size/num_hidden_layers.
+  model_classes: [AutoModelForCausalLM, AutoModelForImageTextToText, AutoModelForVision2Seq]
+  hidden_size_field: hidden_size
+  num_layers_field: num_hidden_layers
+  nested_text_config: true
+  dtype: bf16
+  notes: >-
+    Gemma4 conditional-gen (multimodal) class; per Amendment Z this is a
+    LOADER risk only (not a gating/license risk). J-lens's eager-attention
+    requirement (see qwen35-4b.yaml note) applies here too and is unverified
+    for the Gemma4 wrapper class.
+
+render:
+  fn: "backends:render_probe_prompt"
+  enable_thinking_equivalent: >-
+    Gemma chat templates have no native thinking-toggle kwarg (Gemma models
+    are not "thinking" models in this project's sense); enable_thinking=False
+    is expected to be a no-op tried first by render_probe_prompt's
+    mode-discovery loop, matching Llama/Ministral's posture.
+  system_prompt_source: >-
+    Same baseline system prompt string as the Qwen3-4B AH-A0 arm, reused
+    verbatim (see llama-3.2-3b.yaml's identical note). NOTE: some Gemma chat
+    templates do not support a separate system role and fold it into the
+    first user turn; render_probe_prompt's discovery loop should surface
+    that as a template failure to try next, but confirm this at extraction
+    time rather than assuming System-role support.
+
+eos:
+  include_tokenizer_eos: true
+  additional_end_of_turn_tokens: ["<end_of_turn>"]
+  notes: >-
+    Gemma chat models use <end_of_turn> as their turn-end marker (Gemma
+    lineage convention); confirm it resolves via
+    tokenizer.convert_tokens_to_ids on this checkpoint before assuming it is
+    present, mirroring gen_lib.py's existing im_end lookup pattern.
+
+band_selection:
+  status: not_yet_run
+  method: >-
+    Same j-lens layer_profile() method as llama-3.2-3b.yaml. Resolve this
+    family's own band from its own profile run; do not assume any transfer
+    from the other three families or from Qwen3-4B.
+  n_hidden_layers: null
+  late_reference_depth_fraction_target: 0.9444
+  late_reference_hs_estimate: "not yet resolved (config unread); resolve at profile time, not by assumption"
+  midband_candidates_hs: null
+  late_reference_hs: null
+  effective_dim_peak_hs: null
+
+doses:
+  status: not_yet_calibrated
+  ladder: [25, 50, 75, 100, 125, 150, 175, 200]
+  selected: {}
+
+g3_late_reference_floor:
+  clean_tighten_rate_floor: 0.40
+  wilson_lower_ci_floor: 0.30
+  note: >-
+    Same lowered floor as llama-3.2-3b.yaml; flagged to the lead, not
+    re-derived here.
+
+vram:
+  bf16_weights_estimate_gb: "~8-9GB at ~4B effective params, TIGHT if the multimodal loader also materializes a vision tower"
+  feasibility_note: >-
+    FLAGGED (per the lead's instruction): the E4B multimodal architecture
+    may load a vision encoder even for text-only prompts, which could push
+    combined weights + activations + KV cache + steering hook overhead
+    close to the RTX 3090's 24GB ceiling, especially during the J-lens
+    profile stage (double-backward JVP needs extra activation memory for
+    the second derivative). This is the run order's highest-risk family on
+    BOTH loader compatibility and VRAM headroom; run last per Amendment Z's
+    order, and budget a possible OOM/loader-blocker as a real outcome, not
+    a rare edge case.

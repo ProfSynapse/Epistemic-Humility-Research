@@ -1,0 +1,79 @@
+# Cross-family J-space layer contrast gates. DRAFT until `bin/exp sign`.
+#
+# Per-family gates G0-G3 mirror j-space-layer-contrast-replication-qwen3-4b/
+# gates.yaml exactly, generalized from one Qwen3-4B family to any of the four
+# families. G3's floor is intentionally LOWER than the Qwen3-4B predecessor's
+# own G3 (rate>=0.60, CI lower>0.50) because instruct families may differ;
+# see AMENDMENT.md "Gates" and LAUNCH-PLAN.md "Decision points for the lead".
+
+seed: 20260709
+alpha: 0.05
+
+per_family_gates:
+  - name: g0_instrument_validity
+    interpretation: stop_before_outcome
+    checks:
+      - id: family_loader_compat
+        pass_if: "the family's checkpoint loads via model_lib.load_model_and_tokenizer and yields a hidden_states tuple of length n_hidden_layers+1"
+      - id: eval_pool_powered
+        pass_if: "family eval pool contains at least 200 confab rows and at least 300 known_correct_answered rows"
+      - id: containment
+        pass_if: "no question text, aliases, raw generations, or row-level outputs are committed for this family"
+      - id: band_selection_resolved
+        pass_if: "families/<slug>.yaml band_selection.status == resolved before extract_anchor.py runs"
+      - id: direction_refit_reproducible
+        pass_if: "build_directions.py --verify-reproducible passes for every candidate layer"
+      - id: gate_auc_floor
+        pass_if: "gate_fit.py AUC (neg_z_d, FIT confab vs FIT known_correct_answered) >= 0.90 at every candidate layer"
+      - id: smoke_write_readback
+        pass_if: "all dosed smoke rows read back within 5% + 0.5 absolute of each layer's calibrated dose"
+      - id: smoke_no_collapse
+        pass_if: "collapse rate on dosed smoke rows is 0 for every candidate layer"
+
+  - name: g1_midband_superiority
+    primitive: layer_contrast
+    metric: confab_tighten.rate (clean_tighten)
+    pass_if: "best mid-band rate - late-reference rate >= 0.10"
+
+  - name: g2_no_selectivity_regression
+    primitive: layer_contrast
+    metric: known_correct_cost_control.rate (not_well_formed_correct)
+    pass_if: "best mid-band cost - late-reference cost <= 0.02"
+
+  - name: g3_late_reference_viable
+    primitive: rate_over_population
+    population: confab_tighten
+    pass_if_rate: ">= families/<slug>.yaml g3_late_reference_floor.clean_tighten_rate_floor (0.40 for every family at draft time)"
+    pass_if_wilson_lower_ci: "> families/<slug>.yaml g3_late_reference_floor.wilson_lower_ci_floor (0.30 for every family at draft time)"
+    note: >-
+      LOWERED from the Qwen3-4B predecessor's own 0.60/0.50 floor per the
+      locked design ("instruct families may differ"); flagged to the lead
+      as an open decision point in LAUNCH-PLAN.md, not re-derived here.
+
+per_family_disposition:
+  g0_fail: >-
+    A family that fails G0 after bounded debugging is recorded as NOT-RUN
+    (see analysis-committed/<family>/ for whatever partial artifacts exist
+    and a note of the exact blocker) and excluded from the cross-family
+    denominator -- never silently substituted with a different checkpoint
+    or dtype.
+
+cross_family_success_rule: >-
+  CROSS-FAMILY SUCCESS = G1 AND G2 pass in >=3 of 4 run families. If a
+  family did not run (G0 stop), the denominator becomes ">=3 of the
+  families that ran"; if fewer than 3 families ran at all, the experiment
+  is INCONCLUSIVE, not a pass.
+
+falsifier_rule: >-
+  If G1 AND G2 pass in <=1 of 4 run families, the mid-band advantage is
+  Qwen-specific or an artifact -- FALSIFIED. If exactly 2 of 4 pass, the
+  result is MIXED and no claim is promoted.
+
+summary_rule: >-
+  This cross-family experiment supports the J-space layer-site hypothesis
+  as a general (not Qwen3-specific) property only if the cross-family
+  success rule is met. G3 failing for a given family means that family's
+  G1/G2 numbers are read as a reference-replication problem for that
+  family specifically, not evidence against mid-band superiority in
+  general -- mirroring the same-model predecessor's own G3 disposition
+  rule, applied per family here instead of once.

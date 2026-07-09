@@ -1,0 +1,58 @@
+slug: j-space-cross-family-layer-contrast
+type: steer-cell
+status: draft
+registered: true
+question: Does the J-space mid-band write-site advantage found on raw-base Qwen3-4B
+  (calibrated mid-band gated caution snap beats a late-layer site on held-out confab
+  clean_tighten at matched selectivity cost) transfer across model families, or is
+  it Qwen3-4B-specific?
+prediction: For at least 3 of the 4 families that run past G0, that family's own
+  best calibrated mid-band write site will beat that family's own calibrated late-reference
+  site by at least 10 percentage points on held-out confab clean_tighten, without
+  increasing known-correct false-refusal cost by more than 2 percentage points.
+falsifier: If at most 1 of the 4 (or of however many run past G0) families passes
+  G1 AND G2, the mid-band write-site advantage is Qwen-specific or an artifact -
+  FALSIFIED. If exactly 2 of 4 pass, the result is MIXED and no claim is promoted.
+checkpoint:
+  repo: cross-family (4 checkpoints; see families/*.yaml and AMENDMENT.md "Family table")
+  revision: raw-base bf16 instruct, no adapter, no 4-bit quantization, no task training,
+    per family
+instrument:
+  configs:
+  - cell.yaml
+  - gates.yaml
+  - families/llama-3.2-3b.yaml
+  - families/ministral-3-3b.yaml
+  - families/qwen35-4b.yaml
+  - families/gemma4-e4b.yaml
+  modules:
+  - family_config.py
+  - model_lib.py
+  - gen_lib.py
+  - grader.py
+  - mine_eval_pool.py
+  - split_fit_heldout.py
+  - jlens_profile.py
+  - extract_anchor.py
+  - build_directions.py
+  - gate_fit.py
+  - calibrate_dose.py
+  - pipeline.py
+  - run_contrast.py
+  - cross_family_rollup.py
+  pins: {}
+inputs:
+- experiments/j-space-calibrated-layer-contrast-qwen3-4b/AMENDMENT.md
+- experiments/j-space-calibrated-layer-contrast-qwen3-4b/analysis-committed/full_summary.json
+- experiments/j-space-layer-contrast-replication-qwen3-4b/AMENDMENT.md
+- experiments/j-space-midband-dose-calibration-qwen3-4b/AMENDMENT.md
+- experiments/j-space-midband-dose-calibration-qwen3-4b/analysis-committed/dose_calibration_summary.json
+- experiments/j-space-midband-write-sweep-qwen3-4b/AMENDMENT.md
+- experiments/j-space-midband-write-sweep-qwen3-4b/analysis-committed/build_manifest_layers.json
+- experiments/j-space-midband-write-sweep-qwen3-4b/analysis-committed/gate_fit_layers.json
+- experiments/j-space-localization-qwen3-4b/AMENDMENT.md
+- experiments/j-space-localization-qwen3-4b/NOTEBOOK.md
+- experiments/doubt-gated-caution-tighten/AMENDMENT.md
+- experiment/protocol/AMENDMENT-Z-cross-family-confirmatory.md
+verdict: ''
+kg: []

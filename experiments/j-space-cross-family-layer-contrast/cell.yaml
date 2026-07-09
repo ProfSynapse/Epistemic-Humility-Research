@@ -1,0 +1,61 @@
+# Cross-family J-space layer contrast. DRAFT until `bin/exp sign`.
+#
+# This is a descriptive config (mirrors the same convention as
+# j-space-layer-contrast-replication-qwen3-4b/cell.yaml and
+# j-space-midband-write-sweep-qwen3-4b/cell.yaml, which document the run
+# shape rather than literally parsing against the tuner's SteerCellConfig
+# six-block schema). Per-family checkpoint/loader/render/band/dose facts
+# live in families/<slug>.yaml; this file holds what is IDENTICAL across
+# every family.
+
+seed: 20260709
+
+surface:
+  substrate: bf16
+  adapter: none
+  families_dir: families/
+  families:
+    - llama-3.2-3b
+    - ministral-3-3b
+    - qwen35-4b
+    - gemma4-e4b
+  run_order_source: experiment/protocol/AMENDMENT-Z-cross-family-confirmatory.md
+  generation:
+    max_new_tokens: 200
+    min_new_tokens: 1
+    do_sample: false
+    enable_thinking: false
+    eos_resolution: per_family (model_lib.resolve_eos_ids; see each families/<slug>.yaml eos block)
+  containment:
+    committed_row_text: forbidden
+    committed_aliases: forbidden
+    committed_generations: forbidden
+    committed_outputs: aggregate_and_id_manifest_only
+
+pipeline_stages:
+  - mine_eval_pool.py --family <slug>
+  - split_fit_heldout.py --family <slug>
+  - jlens_profile.py --family <slug>       # writes families/<slug>.yaml band_selection in place
+  - extract_anchor.py --family <slug>       # requires band_selection resolved
+  - build_directions.py --family <slug>
+  - gate_fit.py --family <slug>
+  - calibrate_dose.py --family <slug>
+  - run_contrast.py --family <slug> --mode smoke --n-rows 8
+  - run_contrast.py --family <slug> --mode full --i-know-this-is-the-cross-family-run
+  - cross_family_rollup.py   # run once, after every family has either a full_summary.json or a recorded G0 stop
+
+readouts:
+  method: >-
+    Per-family: u_d (doubt), pos_ctrl/neg_ctrl (caution/propensity), c_hat
+    (orthogonalized caution write direction), fit on that family's own FIT
+    split at that family's own resolved candidate layers. Identical fit
+    method to j-space-midband-write-sweep-qwen3-4b/build_directions.py,
+    generalized in build_directions.py.
+  fire_rule: "score_neg_z_d >= tau_frozen"
+  write_direction: c_hat
+  law: erase_write
+  position: anchor_onward
+
+execution:
+  lane: local_3090
+  gpu_work_by_this_agent: forbidden (draft scaffold only; see LAUNCH-PLAN.md)

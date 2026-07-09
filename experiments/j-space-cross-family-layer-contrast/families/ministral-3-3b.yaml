@@ -1,0 +1,85 @@
+# Family config: Mistral Ministral-3 3B Instruct. DRAFT until `bin/exp sign`.
+#
+# Checkpoint and risk notes are transcribed verbatim from Amendment Z
+# (experiment/protocol/AMENDMENT-Z-cross-family-confirmatory.md, "Models" table
+# and "Run order"). This is Amendment Z's run-order position 2.
+
+family: ministral-3-3b
+risk_order: 2
+
+checkpoint:
+  repo: mistralai/Ministral-3-3B-Instruct-2512
+  fallback_repo: null
+  revision: raw-base (Apache-2.0, ungated, no adapter, no 4-bit quantization)
+  scale_params_b: 3
+  hf_token_required: false
+
+loader:
+  model_classes: [AutoModelForCausalLM]
+  hidden_size_field: hidden_size
+  num_layers_field: num_hidden_layers
+  nested_text_config: false
+  dtype: bf16
+  notes: >-
+    Amendment Z's flagged risk: "weights shipped FP8 -- dtype-load risk."
+    The loader must attempt a bf16 load first (dtype=torch.bfloat16 /
+    dtype="auto" per the transformers 5.x dtype kwarg rename Amendment Z's
+    own loader handles); if the checkpoint's native FP8 tensors do not
+    upcast cleanly under AutoModelForCausalLM.from_pretrained(dtype=bf16),
+    that is a G0 loader blocker for this family, recorded as INELIGIBLE with
+    the explicit blocker (Amendment Z's own disposition for a smoke
+    failure), not silently substituted with a different family or dtype.
+    NOT resolved by this draft; flagged to the lead in LAUNCH-PLAN.md.
+
+render:
+  fn: "backends:render_probe_prompt"
+  enable_thinking_equivalent: >-
+    Ministral has no native thinking-toggle kwarg either; enable_thinking=False
+    is a no-op tried first by render_probe_prompt's mode-discovery loop.
+  system_prompt_source: >-
+    Same baseline system prompt string as the Qwen3-4B AH-A0 arm, reused
+    verbatim (see llama-3.2-3b.yaml's identical note).
+
+eos:
+  include_tokenizer_eos: true
+  additional_end_of_turn_tokens: []
+  notes: >-
+    Mistral instruct chat templates typically rely on the tokenizer's own
+    eos_token_id for turn end (no separate named end-of-turn token analogous
+    to Llama's <|eot_id|> or Qwen's <|im_end|>); confirm against the actual
+    tokenizer's special_tokens_map at extraction time rather than assuming
+    this list is complete.
+
+band_selection:
+  status: not_yet_run
+  method: >-
+    Same j-lens layer_profile() method as llama-3.2-3b.yaml: midband
+    candidates = effective-dim peak layer + adjacent profiled layers; late
+    reference = the depth-fraction analog of Qwen3-4B's hs34
+    (34/36 = 0.9444). This family's own n_hidden_layers determines its own
+    absolute layer indices; hs23-29 does NOT transfer by assumption.
+  n_hidden_layers: null
+  late_reference_depth_fraction_target: 0.9444
+  late_reference_hs_estimate: "not yet resolved (config unread); resolve at profile time, not by assumption"
+  midband_candidates_hs: null
+  late_reference_hs: null
+  effective_dim_peak_hs: null
+
+doses:
+  status: not_yet_calibrated
+  ladder: [25, 50, 75, 100, 125, 150, 175, 200]
+  selected: {}
+
+g3_late_reference_floor:
+  clean_tighten_rate_floor: 0.40
+  wilson_lower_ci_floor: 0.30
+  note: >-
+    Same lowered floor as llama-3.2-3b.yaml; flagged to the lead, not
+    re-derived here.
+
+vram:
+  bf16_weights_estimate_gb: "~6-7GB at 3B params if the bf16 upcast load succeeds"
+  feasibility_note: >-
+    Fits a single RTX 3090 (24GB) IF the bf16 load path works; the FP8
+    dtype-load risk (above) is a loader-stage question, not a VRAM-budget
+    question.

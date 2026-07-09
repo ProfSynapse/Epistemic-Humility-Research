@@ -1,0 +1,94 @@
+# Family config: Alibaba Qwen3.5-4B. DRAFT until `bin/exp sign`.
+#
+# Checkpoint and risk notes are transcribed verbatim from Amendment Z
+# (experiment/protocol/AMENDMENT-Z-cross-family-confirmatory.md, "Models" table
+# and "Run order"). This is Amendment Z's run-order position 3.
+#
+# NOTE: Qwen3.5-4B is a DIFFERENT checkpoint from this project's usual
+# unsloth/Qwen3-4B raw-base surface (all the predecessor J-space experiments
+# ran on unsloth/Qwen3-4B). It is in-lineage but not the same model; do not
+# conflate "same family" with "same checkpoint" when reading results.
+
+family: qwen35-4b
+risk_order: 3
+
+checkpoint:
+  repo: Qwen/Qwen3.5-4B
+  fallback_repo: null
+  revision: raw-base (ungated, no adapter, no 4-bit quantization)
+  scale_params_b: 4
+  hf_token_required: false
+
+loader:
+  # Amendment Z flags Qwen3.5-4B as "ungated + multimodal (native) -- loader
+  # risk; cross-GENERATION control within Qwen". Amendment Z's
+  # load_model_and_config() tries AutoModelForCausalLM first, then
+  # AutoModelForImageTextToText / AutoModelForVision2Seq, and reads
+  # num_hidden_layers/hidden_size from config.text_config when the
+  # top-level config lacks them (multimodal configs nest LM hyperparams
+  # there). Port that fallback chain verbatim; do not write a
+  # Qwen3.5-specific loader.
+  model_classes: [AutoModelForCausalLM, AutoModelForImageTextToText, AutoModelForVision2Seq]
+  hidden_size_field: hidden_size
+  num_layers_field: num_hidden_layers
+  nested_text_config: true
+  dtype: bf16
+  notes: >-
+    Multimodal (native) loader risk per Amendment Z; the J-lens's
+    double-backward JVP machinery (jlens.py) additionally requires
+    attn_implementation="eager" for any non-final layer -- confirm the
+    multimodal wrapper class still accepts that kwarg before profiling.
+
+render:
+  fn: "backends:render_probe_prompt"
+  enable_thinking_equivalent: >-
+    Qwen3.5's chat template is expected to carry forward Qwen3's native
+    enable_thinking kwarg (same lineage as unsloth/Qwen3-4B); render_probe_prompt's
+    enable_thinking=False path and its no-think-scaffolding self-check should
+    apply directly. Confirm at extraction time rather than assuming template
+    parity with Qwen3-4B given this is a different generation/checkpoint.
+  system_prompt_source: >-
+    Same baseline system prompt string as the Qwen3-4B AH-A0 arm, reused
+    verbatim (see llama-3.2-3b.yaml's identical note).
+
+eos:
+  include_tokenizer_eos: true
+  additional_end_of_turn_tokens: ["<|im_end|>"]
+  notes: >-
+    Same <|im_end|> convention as unsloth/Qwen3-4B (Qwen lineage), but
+    confirm the token still resolves via tokenizer.convert_tokens_to_ids on
+    THIS checkpoint's tokenizer rather than assuming identity with Qwen3-4B.
+
+band_selection:
+  status: not_yet_run
+  method: >-
+    Same j-lens layer_profile() method as llama-3.2-3b.yaml. Qwen3-4B's own
+    localization result (hs23-29 band, peak hs26, L34 late reference) is
+    NOT assumed to transfer to Qwen3.5-4B even within the same lineage --
+    different checkpoint, possibly different depth/width and pretraining.
+    Resolve this family's own band from its own profile run.
+  n_hidden_layers: null
+  late_reference_depth_fraction_target: 0.9444
+  late_reference_hs_estimate: "not yet resolved (config unread); resolve at profile time, not by assumption"
+  midband_candidates_hs: null
+  late_reference_hs: null
+  effective_dim_peak_hs: null
+
+doses:
+  status: not_yet_calibrated
+  ladder: [25, 50, 75, 100, 125, 150, 175, 200]
+  selected: {}
+
+g3_late_reference_floor:
+  clean_tighten_rate_floor: 0.40
+  wilson_lower_ci_floor: 0.30
+  note: >-
+    Same lowered floor as llama-3.2-3b.yaml; flagged to the lead, not
+    re-derived here.
+
+vram:
+  bf16_weights_estimate_gb: "~8GB at 4B params, plus multimodal tower overhead if the vision encoder loads even for a text-only run"
+  feasibility_note: >-
+    Should fit a single RTX 3090 (24GB) for the text path; verify whether
+    the multimodal loader path pulls in the vision tower's weights even
+    when only text prompts are used, since that adds to the VRAM floor.

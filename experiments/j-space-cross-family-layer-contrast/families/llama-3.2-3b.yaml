@@ -1,0 +1,95 @@
+# Family config: Meta Llama 3.2 3B Instruct. DRAFT until `bin/exp sign`.
+#
+# Checkpoint and risk notes are transcribed verbatim from Amendment Z
+# (experiment/protocol/AMENDMENT-Z-cross-family-confirmatory.md, "Models" table
+# and "Run order"). This is Amendment Z's run-order position 1 (lowest risk).
+
+family: llama-3.2-3b
+risk_order: 1
+
+checkpoint:
+  repo: unsloth/Llama-3.2-3B-Instruct
+  fallback_repo: meta-llama/Llama-3.2-3B-Instruct
+  revision: raw-base (bf16 instruct, no adapter, no 4-bit quantization)
+  scale_params_b: 3
+  hf_token_required: false
+
+loader:
+  # Amendment Z's load_model_and_config() order: AutoModelForCausalLM first,
+  # then AutoModelForImageTextToText / AutoModelForVision2Seq fallback for
+  # multimodal families. Llama-3.2-3B-Instruct is text-only LlamaForCausalLM,
+  # so it always resolves on the first class and is Amendment Z's "lowest
+  # risk -- first real data point" family.
+  model_classes: [AutoModelForCausalLM]
+  hidden_size_field: hidden_size
+  num_layers_field: num_hidden_layers
+  nested_text_config: false
+  dtype: bf16
+  notes: >-
+    Standard LlamaForCausalLM. No known loader risk (Amendment Z: "text-only,
+    standard LlamaForCausalLM -- lowest risk").
+
+render:
+  # backends.render_probe_prompt (experiment/phase1/probe/backends.py) is
+  # already model-agnostic: it drives tokenizer.apply_chat_template with a
+  # discovery/fallback over enable_thinking kwarg surfaces and self-checks
+  # that no <think> scaffolding leaks into the rendered prompt. Reused
+  # unchanged; do not fork a Llama-specific renderer.
+  fn: "backends:render_probe_prompt"
+  enable_thinking_equivalent: >-
+    Llama 3.2's chat template has no native thinking-toggle kwarg; the
+    enable_thinking=False call is a harmless no-op tried first by
+    render_probe_prompt's own mode-discovery loop, matching the family's
+    default (non-thinking) chat behavior.
+  system_prompt_source: >-
+    Same baseline system prompt string as the Qwen3-4B AH-A0 arm
+    (amendment_ah_stage0_extract.load_baseline_system_prompt), reused
+    verbatim so the ONLY delta between families is the checkpoint, matching
+    Amendment Z's own cross-family method note ("system prompt identical to
+    X").
+
+eos:
+  include_tokenizer_eos: true
+  additional_end_of_turn_tokens: ["<|eot_id|>"]
+  notes: >-
+    Llama 3 chat models emit <|eot_id|> as the turn-end marker in addition
+    to the tokenizer's own eos_token_id; both must be in eos_token_id passed
+    to model.generate() or greedy decode will not stop naturally at turn end.
+
+band_selection:
+  status: not_yet_run
+  method: >-
+    j-lens layer_profile() effective-dimensionality-fraction sweep across
+    depth (ported from jlens_profile.py, see j-space-localization-qwen3-4b's
+    jlens.py). Midband candidates = the profiled layer at the effective-dim
+    peak plus its immediately adjacent profiled layers. Late reference =
+    the depth-fraction analog of Qwen3-4B's hs34 (34/36 = 0.9444 of
+    num_hidden_layers, rounded to the nearest profiled layer). DO NOT assume
+    hs23-29 transfers; this family's own n_hidden_layers determines its own
+    absolute layer indices.
+  n_hidden_layers: 28
+  late_reference_depth_fraction_target: 0.9444
+  late_reference_hs_estimate: "round(0.9444 * 28) = 26 (to be confirmed by the profile run, not assumed)"
+  midband_candidates_hs: null
+  late_reference_hs: null
+  effective_dim_peak_hs: null
+
+doses:
+  status: not_yet_calibrated
+  ladder: [25, 50, 75, 100, 125, 150, 175, 200]
+  selected: {}
+
+g3_late_reference_floor:
+  clean_tighten_rate_floor: 0.40
+  wilson_lower_ci_floor: 0.30
+  note: >-
+    Lower than Qwen3-4B's own predecessor floor (rate >=0.60, CI lower >0.50)
+    per the lead's locked design ("instruct families may differ"). Flagged
+    to the lead in LAUNCH-PLAN.md as an open decision point, not re-derived
+    here.
+
+vram:
+  bf16_weights_estimate_gb: "~6.4GB (3.21B params x 2 bytes)"
+  feasibility_note: >-
+    Comfortably fits a single RTX 3090 (24GB) alongside activations, KV
+    cache, and the erase_write hook's readback buffers at this scale.
