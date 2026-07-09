@@ -1,6 +1,6 @@
 # j-space-layer-contrast-replication-qwen3-4b
 
-Status: draft (not signed; do not launch the full layer contrast as evidence).
+Status: signed (2026-07-09; both predictions recorded, instrument files pinned; full layer contrast authorized on the local RTX 3090 lane).
 
 Keep this document the prose home for the experiment. The machine state lives in
 `experiment.yaml` and is never duplicated here.
@@ -139,7 +139,7 @@ failure rather than interpretable evidence about mid-band superiority.
 | Predictor | Call |
 |-----------|------|
 | orchestrator | Replication holds but shrinks: hs23 or hs29 wins; best mid-band beats hs34 by roughly +10 to +18pp, with known-correct cost still within +2pp. |
-| user | Pending before full layer-contrast launch. |
+| user | Full replication: the mid-band advantage reproduces at near-predecessor size; best mid-band beats hs34 by roughly +18 to +25pp, known-correct cost within +2pp, hs34 viable. |
 
 ## Outcome
 
