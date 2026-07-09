@@ -15,7 +15,7 @@ tags:
 - grpo
 run_ids: []
 trajectory:
-  anchor: experiment/protocol/research-trajectory.md
+  anchor: docs/research-trajectory.md
   current_position: After Amendment E clean response-confidence SFT, DPO, KTO, GRPO
     v1, and GRPO v2 seed-1 evals; before any GRPO-centered three-stage launches.
   changed_by_session: Adds durable run comparison artifacts and drafts Amendment F

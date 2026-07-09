@@ -643,7 +643,7 @@ Every figure and number is generated from tracked result artifacts. Figures are 
 | Pretrain-only bases + era ladder (Y) | `amendment_y_results/` (per-cell result JSONs + extraction manifest) |
 
 Governance: each result surface is a signed exploratory amendment under
-`experiment/protocol/` referencing the locked pre-registration; the cross-size and
+`docs/protocols/` and `experiments/<slug>/` referencing the locked pre-registration; the cross-size and
 cross-family confirmatories (`AMENDMENT-X-*`, `AMENDMENT-Z-*`) pre-stated their prediction,
 falsifier, and gates before running, and their §7 verdicts record the outcome with bootstrap
 CIs and no post-hoc goalpost changes; the pretrain-only contrast (`AMENDMENT-Y-*`)

@@ -12,7 +12,7 @@ abstention, hidden-state readouts, faithful uncertainty, and the limits of
 post-training.
 
 For the current state, read [docs/research-trajectory.md](docs/research-trajectory.md)
-first. The older locked Phase 1 protocol remains in `experiment/protocol/`; it is
+first. The older locked Phase 1 protocol now lives in `docs/protocols/phase1/`; it is
 historical and governed, not the entry point for new work.
 
 ## Current Through-Line
@@ -142,7 +142,7 @@ without concept atoms and typed relationships.
 
 The old Phase 1 confirmatory protocol is locked:
 
-- [experiment/protocol/PROTOCOL.md](experiment/protocol/PROTOCOL.md)
+- [docs/protocols/phase1/PROTOCOL.md](docs/protocols/phase1/PROTOCOL.md)
 
 New evidence-producing work should normally go through the experiments-first or
 amendment workflow, depending on the tier:

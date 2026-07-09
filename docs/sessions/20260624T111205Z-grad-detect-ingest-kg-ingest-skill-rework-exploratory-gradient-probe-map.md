@@ -14,7 +14,7 @@ tags:
 - gap4
 run_ids: []
 trajectory:
-  anchor: experiment/protocol/research-trajectory.md
+  anchor: docs/research-trajectory.md
   current_position: ''
   changed_by_session: ''
 checkpoints:
@@ -80,7 +80,7 @@ checkpoints:
     on checkpoints), E4 layer-localization byproduct. Exploratory: not a v0.3 amendment,
     no runs.'
   evidence:
-  - experiment/protocol/EXPLORATORY-gradient-probes.md
+  - archive/docs/protocol/EXPLORATORY-gradient-probes.md
   run_ids: []
   commands: []
   decisions: []
@@ -93,7 +93,7 @@ checkpoints:
   at: '2026-06-24T11:41:59Z'
   kind: infrastructure
   title: Experiment-note infrastructure (pass 1) built + validated
-  summary: 'Built the experiment-note system: notes/experiments/_SCHEMA.md + _TEMPLATE.md
+  summary: 'Built the experiment-note system: archive/notes/experiments/_SCHEMA.md + _TEMPLATE.md
     contract; typed experiment + gap KG node types and tests/builds_on edges (edge-ontology.yaml
     synced across all 3 skill mirrors; convert.py + library/SCHEMA.md updated); gap:4-probe-transfer
     node; validate_experiment_notes.py (canonical in experiment-runner, synced) with
@@ -166,7 +166,7 @@ _No summary yet._
 - kind: `planning`
 - summary: Mapped four exploratory arms framing a gradient probe as a candidate L-gradient layer in the coherent-humility stack: E1 modality bake-off, E2 truth-vs-recall via PopQA popularity, E3 probe-transfer across SFT/DPO/KTO (Gap 4 / Phase 3, gated on checkpoints), E4 layer-localization byproduct. Exploratory: not a v0.3 amendment, no runs.
 - evidence:
-  - `experiment/protocol/EXPLORATORY-gradient-probes.md`
+  - `archive/docs/protocol/EXPLORATORY-gradient-probes.md`
 - next steps:
   - Pick base model (Qwen2.5-1.5B vs Gemma-2-2B) and lift the exact gradient-feature recipe from the paper appendix before building E1.
   - E3 waits on Phase-1 SFT/DPO/KTO checkpoints.
@@ -174,4 +174,4 @@ _No summary yet._
 
 - at: `2026-06-24T11:41:59Z`
 - kind: `infrastructure`
-- summary: Built the experiment-note system: notes/experiments/_SCHEMA.md + _TEMPLATE.md contract; typed experiment + gap KG node types and tests/builds_on edges (edge-ontology.yaml synced across all 3 skill mirrors; convert.py + library/SCHEMA.md updated); gap:4-probe-transfer node; validate_experiment_notes.py (canonical in experiment-runner, synced) with bin/validate-experiments{,.py,.cmd} wrappers checking frontmatter enums, required sections, governance rule, runbook-path existence, and a tests edge, plus --emit-index for notes/experiments/README.md. Wired into BOTH gates: .githooks/pre-commit and new .github/workflows/validate.yml CI for PR auto-reject. First real note gradient-probe-coherence.md migrated from EXPLORATORY-gradient-probes.md (now a pointer). Verified end-to-end: sync --check in sync; validate_kg exit 0; kg relationships 0 errors; emit-index OK; reindex surfaces the experiment + gap nodes; NEGATIVE tests confirm the validator AND the pre-commit hook reject a malformed note (missing sections / bad enum / bad runbook path) with clear messages, exit 1, and pass clean after removal.
+- summary: Built the experiment-note system: archive/notes/experiments/_SCHEMA.md + _TEMPLATE.md contract; typed experiment + gap KG node types and tests/builds_on edges (edge-ontology.yaml synced across all 3 skill mirrors; convert.py + library/SCHEMA.md updated); gap:4-probe-transfer node; validate_experiment_notes.py (canonical in experiment-runner, synced) with bin/validate-experiments{,.py,.cmd} wrappers checking frontmatter enums, required sections, governance rule, runbook-path existence, and a tests edge, plus --emit-index for notes/experiments/README.md. Wired into BOTH gates: .githooks/pre-commit and new .github/workflows/validate.yml CI for PR auto-reject. First real note gradient-probe-coherence.md migrated from EXPLORATORY-gradient-probes.md (now a pointer). Verified end-to-end: sync --check in sync; validate_kg exit 0; kg relationships 0 errors; emit-index OK; reindex surfaces the experiment + gap nodes; NEGATIVE tests confirm the validator AND the pre-commit hook reject a malformed note (missing sections / bad enum / bad runbook path) with clear messages, exit 1, and pass clean after removal.

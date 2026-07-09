@@ -15,7 +15,7 @@ tags:
 run_ids:
 - sft_kto__4b__amendment_a__seed3
 trajectory:
-  anchor: experiment/protocol/research-trajectory.md
+  anchor: docs/research-trajectory.md
   current_position: Phase 1 local work is completing the signed Amendment A three-seed
     sequential KTO arm after seed1 and clean seed2 showed high abstention retention
     with high over-refusal.

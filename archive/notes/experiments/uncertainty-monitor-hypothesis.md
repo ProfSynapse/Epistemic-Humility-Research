@@ -154,7 +154,7 @@ headline results. If any arm graduates to a signed experiment it goes through th
   same pinned checkpoints; Tier 3 additionally needs TriviaQA/bridge panels and
   the KTO/DPO regimen adapters staged.
 - Steering directions stay held-out; no probe enters a reward loop.
-- Read `experiment/protocol/PHASE3-control-system-protocol.md` before any GPU run;
+- Read `docs/protocols/phase3/control-system-protocol.md` before any GPU run;
   GPU runs are gated on explicit user approval.
 
 ## Runbook

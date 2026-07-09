@@ -51,7 +51,7 @@ own contribution flow; changes there must stay experiment-agnostic.
 
 These are not bureaucracy; they are what makes the papers defensible.
 
-- **The pre-registration is locked.** `experiment/protocol/PROTOCOL.md` is
+- **The pre-registration is locked.** `docs/protocols/phase1/PROTOCOL.md` is
   a signed pre-registration. PRs must not edit its hypotheses, falsifiers,
   or headline run matrix. Changes of that kind require a new signed
   revision with a changelog, agreed with the maintainer first.

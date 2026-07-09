@@ -16,7 +16,7 @@ tags:
 - selfaware
 run_ids: []
 trajectory:
-  anchor: experiment/protocol/research-trajectory.md
+  anchor: docs/research-trajectory.md
   current_position: Phase 1 training-regimen comparisons need a thinking-on eval layer
     before further training decisions.
   changed_by_session: Adds explicit thinking-on eval configs, parser support, Docker

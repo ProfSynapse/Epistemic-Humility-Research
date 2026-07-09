@@ -12,7 +12,7 @@ tags:
 - experiment-runner
 run_ids: []
 trajectory:
-  anchor: experiment/protocol/research-trajectory.md
+  anchor: docs/research-trajectory.md
   current_position: Amendment B GRPO eval follow-up after the first completed SFT
     JSON-bridge -> GRPO seed-1 full run.
   changed_by_session: Adds response-appropriateness confidence scoring and standard

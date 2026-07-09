@@ -589,5 +589,5 @@ been part of the 2026-06-10 pre-registration.
 
 Implementation blueprint, component contracts, directory layout, and the
 CODE-phase work breakdown: `docs/architecture/phase1-pipeline.md`. KTO mapping
-recipe and design tensions: `experiment/protocol/rewardcal-kto-recipe.md`. Staged
-program: `experiment/protocol/research-trajectory.md`.
+recipe and design tensions: `docs/protocols/phase1/rewardcal-kto-recipe.md`. Staged
+program: `docs/research-trajectory.md`.

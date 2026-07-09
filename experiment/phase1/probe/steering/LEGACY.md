@@ -27,7 +27,7 @@ frozen files themselves.
 ## Instrument -> amendment map
 
 Each major file below is the registered (or in-flight) instrument of the listed
-amendment. The amendment doc under `experiment/protocol/` is the governing
+amendment. The amendment doc under `experiments/<slug>/` is the governing
 record; this table is a navigation aid, not the source of truth.
 
 ### Steering harness (`experiment/phase1/probe/steering/`)

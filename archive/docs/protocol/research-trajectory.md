@@ -1,7 +1,7 @@
 # Research Trajectory — Epistemic Humility Program
 
 > **SUPERSEDED 2026-07-03:** the living trajectory is now
-> [`docs/research-trajectory.md`](../../docs/research-trajectory.md). This file is the
+> [`docs/research-trajectory.md`](../../../docs/research-trajectory.md). This file is the
 > historical staged plan, preserved as a record.
 
 Captured 2026-06-10 from the trajectory conversation. This is the staged
@@ -142,7 +142,7 @@ Jobs. KTO data per `.skills/fine-tuning/reference/dataset-formats.md`
 
 - Protocol pointer (2026-06-19): Phase 3 mechanism/control-system work is now
   governed as `OFFICIAL EXPLORATORY PROTOCOL`, draft v0.1, in
-  `experiment/protocol/PHASE3-control-system-protocol.md`. This is separate
+  `docs/protocols/phase3/control-system-protocol.md`. This is separate
   from signed Phase 1 `PROTOCOL.md` v0.3 and amendments unless later promoted
   by explicit signed revision.
 - Probe for an "I don't know" direction before/after each training method;
@@ -268,5 +268,5 @@ traceability lives in a methods/provenance appendix, not the prose.
 - In flight: Amendment X (cross-size readout generalization, 1.7B/8B/14B) — gates locked,
   pipeline GREEN, sequential extraction running.
 - Paper 1 §8 is stubbed; v0 text parked at
-  `experiment/protocol/future-work-section-v0.md`.
-- Pre-register hypotheses/amendments in `experiment/protocol/` before any run (held).
+  `archive/docs/protocol/future-work-section-v0.md`.
+- Pre-register hypotheses/amendments in governed experiment records before any run (held).

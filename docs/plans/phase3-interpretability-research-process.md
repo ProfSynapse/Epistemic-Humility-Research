@@ -13,10 +13,10 @@ provenance, causal-pilot gating, and evidence-tier control.
 
 The governing context is:
 
-- `experiment/protocol/PHASE3-control-system-protocol.md`
+- `docs/protocols/phase3/control-system-protocol.md`
 - `docs/plans/phase3-causal-interpretability-and-kg-plan.md`
 - `docs/plans/phase3-interpretability-direction.md`
-- `experiment/protocol/PROTOCOL.md` Amendment B draft text
+- `docs/protocols/phase1/PROTOCOL.md` Amendment B draft text
 - `.agents/skills/kg-ingest/SKILL.md`
 - `.agents/skills/knowledge-graph/SKILL.md`
 
@@ -25,7 +25,7 @@ training, encoder training, or claim promotion by itself.
 
 ## Non-Goals
 
-- Do not change `experiment/protocol/PROTOCOL.md`.
+- Do not change `docs/protocols/phase1/PROTOCOL.md`.
 - Do not run KG ingestion from this document-editing task.
 - Do not add, patch, or canonicalize paper notes here.
 - Do not change `library/`, `.agents/skills/`, experiment code, run records, or
@@ -91,7 +91,7 @@ Allowed `status` values:
 
 Immediate next batch steps:
 
-0. Treat `experiment/protocol/PHASE3-control-system-protocol.md` as the current
+0. Treat `docs/protocols/phase3/control-system-protocol.md` as the current
    Phase 3 exploratory mechanism/control-system protocol. It does not promote
    Phase 3 outputs into Phase 1 headline evidence, arm ranking, or reward-loop
    input.
@@ -149,7 +149,7 @@ Validation artifact:
 - Graph analyzer:
   `.agents/skills/knowledge-graph/scripts/analyze_kg.py`
 - Phase 3 process docs: `docs/plans/`
-- Protocol authority: `experiment/protocol/PROTOCOL.md`
+- Protocol authority: `docs/protocols/phase1/PROTOCOL.md`
 
 ## Evidence Tiers
 

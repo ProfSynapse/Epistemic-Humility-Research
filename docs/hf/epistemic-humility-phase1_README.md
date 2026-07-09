@@ -19,7 +19,7 @@ The files are generated from the local repository:
 - GitHub project: https://github.com/ProfSynapse/Epistemic-Humility-Research
 - Local provenance root: `experiment/phase1/data/qwen3-4b-instruct/`
 - Public artifact manifest: `docs/public-artifacts.md`
-- Protocol: `experiment/protocol/PROTOCOL.md`
+- Protocol: `docs/protocols/phase1/PROTOCOL.md`
 
 ## Contents
 

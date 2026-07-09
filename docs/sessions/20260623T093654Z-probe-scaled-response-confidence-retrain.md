@@ -12,7 +12,7 @@ tags:
 - experiment-runner
 run_ids: []
 trajectory:
-  anchor: experiment/protocol/research-trajectory.md
+  anchor: docs/research-trajectory.md
   current_position: Amendment D schema-response-confidence seed-1 showed output-contract
     learning but confidence collapse to constant 0.8 across schema-SFT, KTO, and GRPO
     evals.

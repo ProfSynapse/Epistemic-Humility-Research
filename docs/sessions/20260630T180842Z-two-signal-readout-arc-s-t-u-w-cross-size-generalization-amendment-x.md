@@ -15,7 +15,7 @@ tags:
 - experiment-runner
 run_ids: []
 trajectory:
-  anchor: experiment/protocol/research-trajectory.md
+  anchor: docs/research-trajectory.md
   current_position: The deliverable (a surfaced, thresholdable trust signal that tracks
     whether THIS answer is correct) is a training-free READOUT of two orthogonal internal
     axes - answerability (gate, read at the prompt anchor) and per-answer correctness
@@ -273,7 +273,7 @@ understood as a training-free READOUT of two orthogonal internal axes (answerabi
 the prompt anchor; per-answer correctness post-generation), validated on Qwen3-4B.
 Amendment X is the size-generalization test within Qwen3.
 
-The anchor doc `experiment/protocol/research-trajectory.md` is stale (last touched
+The anchor doc `docs/research-trajectory.md` is stale (last touched
 Jun 19; it predates Paper 3 finalization and this entire arc, and still frames "Paper 3
 = Phases 2+3" with open model-pin decisions). A governed refresh is an open item
 (handoff checkpoint 011); it is flagged, not silently rewritten.

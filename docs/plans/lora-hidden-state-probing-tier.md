@@ -143,7 +143,7 @@ revision says otherwise.
 - `docs/plans/lora-hidden-state-probing-tier.md`: keep this document as the
   controlling exploratory design note; update it before code if the target
   token rule, layer set, or intervention metric changes.
-- `experiment/protocol/research-trajectory.md`: continue to describe this as
+- `docs/research-trajectory.md`: continue to describe this as
   Phase 3 mechanism work, not a Phase 1 headline or Amendment A result.
 - `experiment/phase1/probe/README.md`: add a future section for hidden-state
   extraction once code exists, explicitly separating it from the existing

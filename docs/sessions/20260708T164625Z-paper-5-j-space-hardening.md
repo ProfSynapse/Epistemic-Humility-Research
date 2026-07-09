@@ -14,7 +14,7 @@ tags:
 - actuation
 run_ids: []
 trajectory:
-  anchor: experiment/protocol/research-trajectory.md
+  anchor: docs/research-trajectory.md
   current_position: Paper 5 draft merged to main; same-model J-space layer-site replication
     being registered before cross-family escalation.
   changed_by_session: Created the fresh-pool replication amendment scaffold and row-mining/extraction/contrast

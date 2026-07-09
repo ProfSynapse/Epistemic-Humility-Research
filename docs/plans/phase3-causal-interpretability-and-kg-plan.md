@@ -29,7 +29,7 @@ Each extraction has `hidden_state_candidate_directions.csv`,
 `hidden_state_candidate_directions.manifest.json`, and `directions/*.safetensors`.
 
 The current tier is exploratory. Behavioral claim-bearing evidence remains
-governed by `experiment/protocol/PROTOCOL.md`.
+governed by `docs/protocols/phase1/PROTOCOL.md`.
 
 ## Literature Baseline
 

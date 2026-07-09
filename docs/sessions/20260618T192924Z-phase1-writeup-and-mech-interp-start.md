@@ -13,7 +13,7 @@ tags:
 - knowledge-graph
 run_ids: []
 trajectory:
-  anchor: experiment/protocol/research-trajectory.md
+  anchor: docs/research-trajectory.md
   current_position: Amendment B sequential SelfAware reruns are complete; the next
     work is paper-facing synthesis and Phase 3 exploratory mechanism probing.
   changed_by_session: Creates a results writeup artifact and starts bounded GPU-free
@@ -131,7 +131,7 @@ GPU execution.
   existing probe infrastructure.
 - evidence:
   - `docs/sessions/20260617T000000Z-amendment-b-stated-confidence-eval-launch.md`
-  - `experiment/protocol/research-trajectory.md`
+  - `docs/research-trajectory.md`
   - `docs/plans/lora-hidden-state-probing-tier.md`
   - `docs/plans/phase3-causal-pilot-readiness.md`
   - `experiment/phase1/probe/README.md`

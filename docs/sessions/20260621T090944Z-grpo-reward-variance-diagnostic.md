@@ -13,7 +13,7 @@ tags:
 run_ids:
 - sft_json_bridge_seed1_20260621_102859
 trajectory:
-  anchor: experiment/protocol/research-trajectory.md
+  anchor: docs/research-trajectory.md
   current_position: Amendment B / GRPO bootstrap preflight after stated-confidence
     eval layer.
   changed_by_session: GRPO base smoke moved from infrastructure-only to nonzero reward-variance

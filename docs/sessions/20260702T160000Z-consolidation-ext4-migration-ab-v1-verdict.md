@@ -16,7 +16,7 @@ tags:
 - paper5
 run_ids: []
 trajectory:
-  anchor: experiment/protocol/research-trajectory.md
+  anchor: docs/research-trajectory.md
   current_position: 'main consolidated (all branches merged); repo on ext4; AB V1
     complete: ambiguous-leaning-negative, text channel stays shut'
   changed_by_session: fourth injection channel falsified at registered thresholds;

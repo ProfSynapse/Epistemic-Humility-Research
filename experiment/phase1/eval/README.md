@@ -6,7 +6,7 @@ Research-repo-native eval harness for the Phase-1 abstention experiment
 decomposition with paired confidence intervals, deterministically and committed.
 
 Design authority: `docs/architecture/phase1-pipeline.md` §6 (eval harness), §8
-(schemas). Metric definitions: `experiment/protocol/PROTOCOL.md` v0.2 §3.5.
+(schemas). Metric definitions: `docs/protocols/phase1/PROTOCOL.md` v0.2 §3.5.
 
 ## Modules
 

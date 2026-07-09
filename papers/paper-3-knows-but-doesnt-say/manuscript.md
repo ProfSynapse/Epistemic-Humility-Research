@@ -976,7 +976,7 @@ hidden state the internal axis is fit on, supervised by a regression loss agains
 All training configs, eval configs, reward definitions, probe/geometry/steering
 scripts, governed protocol amendments, and per-cell calibration reports are in the
 repository [https://github.com/ProfSynapse/Epistemic-Humility-Research] under
-`experiment/phase1/` and `experiment/protocol/`. The per-cell stated-confidence
+`experiment/phase1/`, `docs/protocols/`, and `experiments/<slug>/`. The per-cell stated-confidence
 calibration reports are at `experiment/phase1/eval/analysis/calibration_gap_*.json`;
 the internal-axis and steering artifacts are under
 `experiment/phase1/probe/analysis/`.

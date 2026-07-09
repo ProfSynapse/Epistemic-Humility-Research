@@ -30,7 +30,7 @@ covariate model over all eligible release rows, category/source uptake tables.
 Writes analysis/ah_main/:
   gates_result.json
 and a committed-result-copy staged at the probe dir top:
-  amendment_ah_result.json  (orchestrator commits it)
+  experiments/divergent-pool-own-readout/artifacts/amendment_ah_result.json
 """
 
 from __future__ import annotations
@@ -44,10 +44,9 @@ from pathlib import Path
 import numpy as np
 
 CANONICAL = Path("/home/profsynapse/code/Epistemic-Humility-Research")
-PROBE_DIR = Path("/home/profsynapse/code/ehr-worktrees/housekeeping/experiment/phase1/probe")
 AH_MAIN = CANONICAL / "experiment/phase1/probe/analysis/ah_main"
 DEFAULT_OUT = AH_MAIN
-RESULT_COPY = PROBE_DIR / "amendment_ah_result.json"
+RESULT_COPY = CANONICAL / "experiments/divergent-pool-own-readout/artifacts/amendment_ah_result.json"
 
 FLOOR = 40
 G1_THRESH = 20.0     # percentage points

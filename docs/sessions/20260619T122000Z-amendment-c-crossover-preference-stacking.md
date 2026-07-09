@@ -13,7 +13,7 @@ tags:
 - protocol-amendment
 run_ids: []
 trajectory:
-  anchor: experiment/protocol/research-trajectory.md
+  anchor: docs/research-trajectory.md
   current_position: Amendment C is an unsigned exploratory protocol draft only; no
     training or eval launch is authorized from this note.
   changed_by_session: Adds a protocol draft for SFT -> DPO -> KTO and SFT -> KTO ->

@@ -16,7 +16,7 @@ run_ids:
 - sft_dpo__4b__amendment_a__seed2
 - sft_kto__4b__amendment_a__seed2
 trajectory:
-  anchor: experiment/protocol/research-trajectory.md
+  anchor: docs/research-trajectory.md
   current_position: Phase 1 local work is testing the signed Amendment A question
     of whether sequential SFT-warmed preference training can preserve abstention while
     reducing SFT over-refusal.

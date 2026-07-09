@@ -18,7 +18,7 @@ tags:
 run_ids:
 - a4_randctl
 trajectory:
-  anchor: experiment/protocol/research-trajectory.md
+  anchor: docs/research-trajectory.md
   current_position: ''
   changed_by_session: ''
 checkpoints:

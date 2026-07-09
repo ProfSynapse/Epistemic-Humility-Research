@@ -64,7 +64,7 @@ for entry in "${MODELS[@]}"; do
   # 2) per-seed sampled extraction + CPU score
   for SEED in "${SEEDS[@]}"; do
     OUT="$PROBE/sr_${TAG}_seed${SEED}"
-    RES="$PROBE/amendment_sr_${TAG}_seed${SEED}_result.json"
+    RES="experiments/sampled-decode-seed-robustness/artifacts/amendment_sr_${TAG}_seed${SEED}_result.json"
     log "$TAG seed=$SEED: sampled extraction (temp $TEMP top_p $TOP_P, max-attempts 3000, n-answerable 2000) ..."
     dgpu /workspace/repo/$PROBE/amendment_x_cross_model_extract.py \
         --base-model "$REPO" --gate-rows "$GATE_ROWS" \

@@ -41,7 +41,7 @@ related:
 Does a gradient-based probe (Grad Detect) add a usable, truth-tracking signal to
 the coherent-humility stack, and does that signal survive humility fine-tuning?
 
-The coherent-humility frame (`experiment/protocol/RESEARCH-DIRECTIONS.md`)
+The coherent-humility frame (`archive/docs/protocol/RESEARCH-DIRECTIONS.md`)
 measures L-token, L-hidden, and L-stated on the same model and asks whether they
 agree. Grad Detect proposes a fourth modality, L-gradient: a per-layer gradient
 read of "is this output wrong / should I abstain," from a single forward-backward
@@ -80,7 +80,7 @@ headline results. If any arm graduates to a signed experiment it goes through th
 - Base-model weights and the four datasets staged locally.
 - E3 additionally requires the Phase-1 SFT/DPO/KTO checkpoints to exist.
 - Probes stay held-out evaluation and never enter a reward loop.
-- Read `experiment/protocol/PHASE3-control-system-protocol.md` before building.
+- Read `docs/protocols/phase3/control-system-protocol.md` before building.
 
 ## Runbook
 

@@ -53,7 +53,7 @@ def test_provenance_audit_detects_session_identity_debt(tmp_path: Path):
             "created_at: '2026-07-08T00:00:00Z'\n"
             "updated_at: '2026-07-08T00:00:00Z'\n"
             "question: q\n"
-            "trajectory: {anchor: experiment/protocol/research-trajectory.md}\n"
+            "trajectory: {anchor: docs/research-trajectory.md}\n"
             "checkpoints: []\n"
             "---\n",
             encoding="utf-8",

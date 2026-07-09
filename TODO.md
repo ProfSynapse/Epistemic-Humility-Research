@@ -177,7 +177,7 @@ item 27 (causal sweep) and item 29 (subspace erasure) are its partial mitigation
 | # | Item | Tier | Blocker / dependency | Cost |
 |---|------|------|----------------------|------|
 | 12 | **P3 absorb regimen-depth §7–8** — fold the old regimen-paper proper-scoring-negative / contrastive / RL-on-contrastive sections (+ Figs 7–8) into `papers/paper-3-knows-but-doesnt-say/manuscript.md`. Explicitly owed. | P | none | CPU |
-| 13 | **Refresh `research-trajectory.md`** — **DONE 2026-07-03**: living version rewritten at `docs/research-trajectory.md` (traces to amendment docs); old `experiment/protocol/` file kept as historical record with a superseded pointer. | P | — done | — |
+| 13 | **Refresh `research-trajectory.md`** — **DONE 2026-07-03**: living version rewritten at `docs/research-trajectory.md` (traces to amendment docs); old protocol-era trajectory file kept under `archive/docs/protocol/` with a superseded pointer. | P | — done | — |
 | 14 | **P4 two-signal readout finalize** — traceability appendix (S/T/U/W/X/Z/SR), six reproducible figures; prose carries no amendment labels. | P | SR merged (done) | CPU |
 
 ### Shelved / superseded

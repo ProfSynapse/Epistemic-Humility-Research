@@ -3,7 +3,7 @@
 **Author:** architect (PACT Architect, team pact-6d29f2e2)
 **Date:** 2026-06-10 · **Worktree:** `.worktrees/phase1-pipeline`
 **Status:** ARCHITECT deliverable for CODE phase. Companion pre-registration:
-`experiment/protocol/PROTOCOL.md` (v0.2 DRAFT). Upstream PREPARE docs:
+`docs/protocols/phase1/PROTOCOL.md` (v0.2 DRAFT). Upstream PREPARE docs:
 `docs/preparation/model-landscape.md`, `docs/preparation/infra-and-data.md`.
 
 > **Scope note.** This document is the implementation blueprint. It specifies

@@ -54,7 +54,7 @@ the final prompt token before any encoder, SAE, or broader tracing work.
 
 ## Exclusion Boundaries
 
-- Do not edit `experiment/protocol/PROTOCOL.md`.
+- Do not edit `docs/protocols/phase1/PROTOCOL.md`.
 - Do not edit `library/`, KG notes, source maps, run records, training queues,
   dashboard code, `synaptic-tuner`, hidden-state artifacts, or model artifacts.
 - Do not use Phase 3 outputs to rank Phase 1 arms or update Phase 1 headline

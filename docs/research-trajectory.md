@@ -2,7 +2,7 @@
 
 _Updated 2026-07-08. Replaces the stale 2026-06-10/06-30 versions. Every claim traces
 to a protocol doc; nothing is invented. The original Phases 1–4 plan (staged design) is
-preserved in `experiment/protocol/research-trajectory.md`._
+preserved in `archive/docs/protocol/research-trajectory.md`._
 
 ---
 

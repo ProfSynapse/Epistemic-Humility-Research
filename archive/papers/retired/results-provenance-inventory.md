@@ -19,11 +19,11 @@ records as publication-grade merely because they exist on disk.
 
 | Tier | Governing source | Evidence allowed | Claim language allowed | Not allowed |
 |---|---|---|---|---|
-| v0.3 headline | `experiment/protocol/PROTOCOL.md` signed 2026-06-10 | Pre-registered default-config v0.3 matrix only: 4B SFT/DPO/KTO headline seeds, with pre-registered analysis rules | Primary Phase 1 answer/refusal, calibration, and arm-comparison claims after reconciliation gates pass | Cherry-picked sensitivity cells, Amendment A/B results, mechanism diagnostics, incomplete 8B/bridge/panel evidence |
+| v0.3 headline | `docs/protocols/phase1/PROTOCOL.md` signed 2026-06-10 | Pre-registered default-config v0.3 matrix only: 4B SFT/DPO/KTO headline seeds, with pre-registered analysis rules | Primary Phase 1 answer/refusal, calibration, and arm-comparison claims after reconciliation gates pass | Cherry-picked sensitivity cells, Amendment A/B results, mechanism diagnostics, incomplete 8B/bridge/panel evidence |
 | v0.3 robustness | `PROTOCOL.md` section 3.1a | LR and beta sensitivity panels, one seed per cell, if completed and tied to configs/results | Robustness-only: whether headline direction appears stable to pre-registered perturbations | Headline numbers, best-cell reporting, seed-level CI claims |
 | Amendment A | `PROTOCOL.md` Amendment A / v0.4 status, signed 2026-06-14 | Sequential `SFT -> DPO` and `SFT -> KTO` runs/evals, reported separately | Prospective extension claims about sequential refinement after SFT | Retroactive v0.3 headline claims or silent replacement of the v0.3 matrix |
 | Amendment B / stated confidence | `experiments/stated-confidence-grpo/AMENDMENT.md` | Stated-confidence reruns and reports, explicitly labeled Amendment B; signed off for measurement/reporting on 2026-06-19 | Accepted stated-confidence measurement evidence and interface-effect caveats | GRPO claims, v0.3 headline replacements, claims that old plain-answer evals contain stated-confidence metrics |
-| Phase 3 mechanisms | `experiment/protocol/PHASE3-control-system-protocol.md` and probe plans | Hidden-state/probe/causal-pilot artifacts with verified manifests | Exploratory local mechanism evidence, tier-labeled | Phase 1 headline evidence, arm ranking, reward-loop input, validated mechanism claims without signed promotion |
+| Phase 3 mechanisms | `docs/protocols/phase3/control-system-protocol.md` and probe plans | Hidden-state/probe/causal-pilot artifacts with verified manifests | Exploratory local mechanism evidence, tier-labeled | Phase 1 headline evidence, arm ranking, reward-loop input, validated mechanism claims without signed promotion |
 
 ## Evidence Inventory
 

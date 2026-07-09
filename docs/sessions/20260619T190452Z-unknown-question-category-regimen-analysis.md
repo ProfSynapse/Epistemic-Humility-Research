@@ -15,7 +15,7 @@ tags:
 - semantic-labels
 run_ids: []
 trajectory:
-  anchor: experiment/protocol/research-trajectory.md
+  anchor: docs/research-trajectory.md
   current_position: Exploratory semantic category-regimen analysis exists for answered
     unknown-question rows using v3 labels, but is not publication-grade evidence.
   changed_by_session: Adds a documentation checkpoint for the category-regimen exploratory

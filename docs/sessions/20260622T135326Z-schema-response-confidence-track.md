@@ -12,7 +12,7 @@ tags:
 - experiment-runner
 run_ids: []
 trajectory:
-  anchor: experiment/protocol/research-trajectory.md
+  anchor: docs/research-trajectory.md
   current_position: Amendment D draft track after GRPO response-confidence endpoint-collapse
     failure.
   changed_by_session: Defines schema-trained response_confidence data/reward contract,

@@ -271,7 +271,8 @@ pre-stated.
 ### Data & provenance (to fill)
 
 - Scored result JSONs (tracked, at probe root), one per family × seed:
-  `amendment_sr_{family}_seed{N}_result.json` under `experiment/phase1/probe/`.
+  `amendment_sr_{family}_seed{N}_result.json` under
+  `experiments/sampled-decode-seed-robustness/artifacts/`.
 - Extraction outputs (local only, gitignored): `sr_{family}_seed{N}/` under
   `experiment/phase1/probe/`. Gemma's re-run cells live under
   `sr_rr_gemma-4-e4b_seed{N}/` (the `sr_gemma-4-e4b_seed{N}/` dirs are the

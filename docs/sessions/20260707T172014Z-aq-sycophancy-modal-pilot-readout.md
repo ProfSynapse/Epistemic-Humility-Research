@@ -25,7 +25,7 @@ run_ids:
 - ap-AvZVf2c46omIDNKsFO1Rv3
 - fc-01KWZ4AA48QFEFS073MX91VWGD
 trajectory:
-  anchor: experiment/protocol/research-trajectory.md
+  anchor: docs/research-trajectory.md
   current_position: AQ is an exploratory sycophancy read-vs-write cell, separate from
     the locked Phase 1 headline matrix.
   changed_by_session: R1 found an underpowered readout lead; r2 cleared AQ-G0 and

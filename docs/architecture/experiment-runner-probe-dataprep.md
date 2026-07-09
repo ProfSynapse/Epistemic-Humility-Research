@@ -796,7 +796,7 @@ is correctly framed as genuine net-new.
 
 **(3) PROTOCOL §5 / S5 — off-path CONFIRMED; the quarantine *rule* is a NEW
 proposal here, NOT a cited prior.** Re-verified against live files:
-- `experiment/protocol/PROTOCOL.md:498` — §5 is titled "Blockers / needs (before
+- `docs/protocols/phase1/PROTOCOL.md:498` — §5 is titled "Blockers / needs (before
   any TRAINING run)"; it gates the training/cloud-MATRIX launch and says NOTHING
   about an extraction verb, because extraction is not in the locked v0.3 scope.
 - `PROTOCOL.md:37` + `probe/README.md:59-64` document the probing tier as

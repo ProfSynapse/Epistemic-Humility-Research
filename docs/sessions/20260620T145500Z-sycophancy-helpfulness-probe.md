@@ -16,7 +16,7 @@ tags:
 - behavior-replay
 run_ids: []
 trajectory:
-  anchor: experiment/protocol/research-trajectory.md
+  anchor: docs/research-trajectory.md
   current_position: Phase 3 has separable behavior axes, but generated replay keeps
     falsifying simple steering interpretations.
   changed_by_session: Adds answer-sycophancy evals, hidden-state row manifests, same-condition

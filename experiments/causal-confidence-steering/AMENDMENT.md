@@ -226,7 +226,7 @@ mkdir. Single GPU — cells strictly sequential.
 **Stage-1 verdict (registered roll-up, 2026-07-02): FALSIFIER-1 — the channel
 stays shut. No effect gate passed in any of the 8 cells; AA-G5 (PRIMARY) had
 zero eligible combinations.** Roll-up JSON:
-`experiment/phase1/probe/amendment_aa_qwen3.5-4b_result.json`
+`experiments/causal-confidence-steering/artifacts/amendment_aa_qwen3.5-4b_result.json`
 (`amendment_aa_verdict.py`, missing_cells = []).
 
 Per cell (all Qwen/Qwen3.5-4B, seeds as registered, health gates passing

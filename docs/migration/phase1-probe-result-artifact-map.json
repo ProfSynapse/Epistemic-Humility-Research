@@ -1,0 +1,22 @@
+{
+  "experiment/phase1/probe/amendment_aa_qwen3.5-4b_result.json": "experiments/causal-confidence-steering/artifacts/amendment_aa_qwen3.5-4b_result.json",
+  "experiment/phase1/probe/amendment_af_result.json": "experiments/second-person-doubt-prime/artifacts/amendment_af_result.json",
+  "experiment/phase1/probe/amendment_ag_neutral_result.json": "experiments/oracle-dissociation-prime/artifacts/amendment_ag_neutral_result.json",
+  "experiment/phase1/probe/amendment_ag_result.json": "experiments/oracle-dissociation-prime/artifacts/amendment_ag_result.json",
+  "experiment/phase1/probe/amendment_ag_stage0_result.json": "experiments/oracle-dissociation-prime/artifacts/amendment_ag_stage0_result.json",
+  "experiment/phase1/probe/amendment_ag_state_result.json": "experiments/oracle-dissociation-prime/artifacts/amendment_ag_state_result.json",
+  "experiment/phase1/probe/amendment_ah_addendum_a1_result.json": "experiments/divergent-pool-own-readout/artifacts/amendment_ah_addendum_a1_result.json",
+  "experiment/phase1/probe/amendment_ah_result.json": "experiments/divergent-pool-own-readout/artifacts/amendment_ah_result.json",
+  "experiment/phase1/probe/amendment_sr_gemma-4-e4b_seed20260701_result.json": "experiments/sampled-decode-seed-robustness/artifacts/amendment_sr_gemma-4-e4b_seed20260701_result.json",
+  "experiment/phase1/probe/amendment_sr_gemma-4-e4b_seed20260702_result.json": "experiments/sampled-decode-seed-robustness/artifacts/amendment_sr_gemma-4-e4b_seed20260702_result.json",
+  "experiment/phase1/probe/amendment_sr_gemma-4-e4b_seed20260703_result.json": "experiments/sampled-decode-seed-robustness/artifacts/amendment_sr_gemma-4-e4b_seed20260703_result.json",
+  "experiment/phase1/probe/amendment_sr_llama-3.2-3b_seed20260701_result.json": "experiments/sampled-decode-seed-robustness/artifacts/amendment_sr_llama-3.2-3b_seed20260701_result.json",
+  "experiment/phase1/probe/amendment_sr_llama-3.2-3b_seed20260702_result.json": "experiments/sampled-decode-seed-robustness/artifacts/amendment_sr_llama-3.2-3b_seed20260702_result.json",
+  "experiment/phase1/probe/amendment_sr_llama-3.2-3b_seed20260703_result.json": "experiments/sampled-decode-seed-robustness/artifacts/amendment_sr_llama-3.2-3b_seed20260703_result.json",
+  "experiment/phase1/probe/amendment_sr_ministral-3-3b_seed20260701_result.json": "experiments/sampled-decode-seed-robustness/artifacts/amendment_sr_ministral-3-3b_seed20260701_result.json",
+  "experiment/phase1/probe/amendment_sr_ministral-3-3b_seed20260702_result.json": "experiments/sampled-decode-seed-robustness/artifacts/amendment_sr_ministral-3-3b_seed20260702_result.json",
+  "experiment/phase1/probe/amendment_sr_ministral-3-3b_seed20260703_result.json": "experiments/sampled-decode-seed-robustness/artifacts/amendment_sr_ministral-3-3b_seed20260703_result.json",
+  "experiment/phase1/probe/amendment_sr_qwen3.5-4b_seed20260701_result.json": "experiments/sampled-decode-seed-robustness/artifacts/amendment_sr_qwen3.5-4b_seed20260701_result.json",
+  "experiment/phase1/probe/amendment_sr_qwen3.5-4b_seed20260702_result.json": "experiments/sampled-decode-seed-robustness/artifacts/amendment_sr_qwen3.5-4b_seed20260702_result.json",
+  "experiment/phase1/probe/amendment_sr_qwen3.5-4b_seed20260703_result.json": "experiments/sampled-decode-seed-robustness/artifacts/amendment_sr_qwen3.5-4b_seed20260703_result.json"
+}

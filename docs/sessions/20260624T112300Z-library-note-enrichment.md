@@ -15,7 +15,7 @@ tags:
 - library
 run_ids: []
 trajectory:
-  anchor: experiment/protocol/research-trajectory.md
+  anchor: docs/research-trajectory.md
   current_position: The library has 121 paper notes and 208 concept atoms, but most
     paper notes are skeletons with empty analytical bodies. This session starts a
     cluster-by-cluster enrichment pass so each collected paper carries a verified

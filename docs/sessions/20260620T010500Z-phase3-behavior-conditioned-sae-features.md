@@ -16,7 +16,7 @@ tags:
 - causal-smoke
 run_ids: []
 trajectory:
-  anchor: experiment/protocol/research-trajectory.md
+  anchor: docs/research-trajectory.md
   current_position: Phase 3 has top-k16 SAE pilots, known/unknown feature screens,
     geometry maps, and same-norm subspace diagnostics.
   changed_by_session: Adds behavior-conditioned SAE feature ranking, behavior-feature

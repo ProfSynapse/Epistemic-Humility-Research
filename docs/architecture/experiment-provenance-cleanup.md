@@ -48,6 +48,10 @@ Implementation status:
   live under `archive/notes/experiments/`. The chronological log remains
   `docs/sessions/`, and KG literature/internal synthesis notes remain under
   `library/notes/`.
+- Cross-cutting protocol documents now live under `docs/protocols/`; superseded
+  protocol-era planning documents live under `archive/docs/protocol/`; the
+  AK launch plan moved beside its governed experiment at
+  `experiments/commitment-point/PLAN.md`.
 
 ## Problem
 
@@ -287,6 +291,12 @@ tree:
 - moved reusable experiment-family runbook/planning notes from `experiment/notes/`
   and `notes/experiments/` into experiment-local `RUNBOOK.md` / `PLAN.md` files,
   preserving unresolved or superseded notes under `archive/notes/experiments/`
+- moved protocol-era docs out of `experiment/protocol/` into `docs/protocols/`,
+  `archive/docs/protocol/`, or experiment-local planning docs, with
+  `docs/migration/protocol-path-map.json`
+- moved low-risk committed Phase 1 probe result JSONs into their owning
+  `experiments/<slug>/artifacts/` directories, with
+  `docs/migration/phase1-probe-result-artifact-map.json`
 - wrote `docs/migration/paper-path-map.json` and
   `docs/migration/notes-path-map.json`
 - updated CI, pre-commit, KG schema docs, skill docs, README, AGENTS/CLAUDE, and
@@ -331,4 +341,8 @@ tree:
    (done)
 9. Move reusable experiment notes into experiment-local runbooks/plans and
    archive unresolved or superseded top-level notes. (done)
-10. Decide whether to add a generated session registry.
+10. Move protocol-era docs out of `experiment/protocol/` and record a path map.
+    (done)
+11. Move low-risk committed Phase 1 probe result JSONs into experiment-local
+    artifact directories. (done)
+12. Decide whether to add a generated session registry.

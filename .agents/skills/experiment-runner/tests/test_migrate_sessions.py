@@ -20,7 +20,7 @@ def _session_repo(tmp_path: Path) -> Path:
         "created_at: '2026-07-08T17:27:24Z'\n"
         "updated_at: '2026-07-08T17:27:24Z'\n"
         "question: q\n"
-        "trajectory: {anchor: experiment/protocol/research-trajectory.md}\n"
+        "trajectory: {anchor: docs/research-trajectory.md}\n"
         "checkpoints: []\n"
         "---\n"
         "# Test Session\n",

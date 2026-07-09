@@ -15,7 +15,7 @@ run_ids:
 - amendment_b_seed2_all_arms
 - sft_kto__4b__amendment_a__seed3
 trajectory:
-  anchor: experiment/protocol/research-trajectory.md
+  anchor: docs/research-trajectory.md
   current_position: Amendment B confidence instrumentation reruns are being collected
     while Amendment A sequential KTO seed 3 continues locally.
   changed_by_session: Records the decision-enum measurement artifact and the answer/confidence-only

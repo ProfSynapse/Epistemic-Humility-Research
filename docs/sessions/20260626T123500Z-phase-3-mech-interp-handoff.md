@@ -12,7 +12,7 @@ tags:
 - mech-interp-runner
 run_ids: []
 trajectory:
-  anchor: experiment/protocol/research-trajectory.md
+  anchor: docs/research-trajectory.md
   current_position: GRPO-order regimen sweep complete; canonical detail in session
     note 0023 checkpoints 032-033.
   changed_by_session: Folded dpo_grpo/kto_grpo GRPO-order pass into 0023; closed the

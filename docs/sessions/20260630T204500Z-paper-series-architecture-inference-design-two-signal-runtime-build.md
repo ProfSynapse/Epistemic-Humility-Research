@@ -14,7 +14,7 @@ tags:
 - experiment-runner
 run_ids: []
 trajectory:
-  anchor: experiment/protocol/research-trajectory.md
+  anchor: docs/research-trajectory.md
   current_position: 'The deliverable (a surfaced, thresholdable trust number that
     tracks whether THIS answer is correct) is now both (a) re-architected into a 3-paper
     series leading to a flagship, with a confirmatory cross-family plan, and (b) realized

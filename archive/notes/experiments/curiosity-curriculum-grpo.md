@@ -158,7 +158,7 @@ invariant and the thing a reviewer should check first.
 - The curriculum is implemented as a sampler weight inside
   `experiment/phase1/grpo/build_grpo_dataset.py`; no experiment-specific code goes
   into the `synaptic-tuner` submodule.
-- Read `experiment/protocol/PHASE3-control-system-protocol.md` RQ5 gaming controls
+- Read `docs/protocols/phase3/control-system-protocol.md` RQ5 gaming controls
   before any online (A2) variant: a probe-readable signal entering the training
   loop must not let the model learn to merely look frontier.
 

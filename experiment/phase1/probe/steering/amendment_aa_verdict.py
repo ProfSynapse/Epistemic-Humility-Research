@@ -31,7 +31,7 @@ FALSIFIER 3 = effects exist only at alphas violating the coherence floor.
 Usage:
   python3 amendment_aa_verdict.py \
       --results-dir experiment/phase1/probe/steering/results \
-      --out experiment/phase1/probe/amendment_aa_qwen3.5-4b_result.json
+      --out experiments/causal-confidence-steering/artifacts/amendment_aa_qwen3.5-4b_result.json
 """
 from __future__ import annotations
 

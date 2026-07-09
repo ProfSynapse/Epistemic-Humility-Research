@@ -43,7 +43,7 @@
       entries resolved (2205.14334 + 2305.14251 now cited in C1/C2;
       2403.18349 RLKF cited in gap 3); 2606.03969 entry cleaned. §8 stubbed
       out pending the research-trajectory conversation (v0 text parked at
-      `experiment/protocol/future-work-section-v0.md`).
+      `archive/docs/protocol/future-work-section-v0.md`).
 - [ ] **Figure regeneration.** `forest.png` regenerated 2026-06-10 (67-row
       corpus). Still to add: (a) per-claim-family vote/sign-test figure — do
       this as a Cochrane ch. 12 effect-direction plot, the natively
@@ -130,7 +130,7 @@
       composition + KTO balance ablation, Gap 5; 8.3 probe-transfer mechanism,
       Gap 4; 8.4 rolling cross-architecture generalization + sycophancy +
       reasoning-trace axes, Gap 6; 8.5 standard inherited), sourced from
-      `experiment/protocol/research-trajectory.md`. Written forward-looking
+      `docs/research-trajectory.md`. Written forward-looking
       only (no mention of program status); v0 parked text marked superseded.
       Citation cross-check passes (all §8 IDs already in references).
 - [ ] **Backward-citation follow-ups:** (a) re-check 2505.23646 Table 6

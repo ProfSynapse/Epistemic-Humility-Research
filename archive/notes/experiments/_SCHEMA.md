@@ -16,7 +16,7 @@ This file is the contract the validator enforces. Files beginning with `_`
 ## The four layers (do not duplicate across them)
 
 1. Engine = the `experiment-runner` skill (generic how-to-run).
-2. Governance = `experiment/protocol/PROTOCOL.md` + `papers/common/amendment-governance.md`.
+2. Governance = `docs/protocols/phase1/PROTOCOL.md` + `papers/common/amendment-governance.md`.
 3. **Experiment note = spec + runbook** (this artifact).
 4. Instances = `experiment/phase1/run_records/` + `docs/sessions/`.
 

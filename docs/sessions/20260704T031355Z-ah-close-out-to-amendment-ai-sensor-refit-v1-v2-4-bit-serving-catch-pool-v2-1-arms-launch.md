@@ -18,7 +18,7 @@ run_ids:
 - amendment_ai_grpo_true_seed1_20260703_234149
 - amendment_ai_grpo_true_seed1_20260703_234933
 trajectory:
-  anchor: experiment/protocol/research-trajectory.md
+  anchor: docs/research-trajectory.md
   current_position: ''
   changed_by_session: ''
 checkpoints:

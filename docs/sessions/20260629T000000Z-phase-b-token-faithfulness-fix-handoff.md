@@ -20,7 +20,7 @@ tags:
 - handoff
 run_ids: []
 trajectory:
-  anchor: experiment/protocol/research-trajectory.md
+  anchor: docs/research-trajectory.md
   current_position: Phase B engine works, but the head reads the wrong token on full-conversation
     rows. A verified prompt/completion render mode restores faithfulness (cos 0.9998);
     this handoff specs it.

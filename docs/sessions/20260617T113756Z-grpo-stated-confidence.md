@@ -14,7 +14,7 @@ tags:
 - stated-confidence
 run_ids: []
 trajectory:
-  anchor: experiment/protocol/research-trajectory.md
+  anchor: docs/research-trajectory.md
   current_position: Amendment B is a prospective extension that adds GRPO reward design
     and stated-confidence measurement without changing the signed v0.3 headline matrix.
   changed_by_session: Added JSON-only answer/confidence contract, eval-side stated-confidence

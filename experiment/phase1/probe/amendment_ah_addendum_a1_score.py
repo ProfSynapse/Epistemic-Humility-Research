@@ -12,8 +12,8 @@ row_key): among rows answered at A0, the fraction that flip to refused under
 A-doubt. This is the +Npt figure the +20pt floor is stated against, identical to
 the main-run AH-G1 definition.
 
-Writes analysis/ah_addendum_a1/gates_result.json and a result copy
-amendment_ah_addendum_a1_result.json at the probe-dir top (team-lead commits).
+Writes analysis/ah_addendum_a1/gates_result.json and a committed result copy
+under experiments/divergent-pool-own-readout/artifacts/.
 """
 
 from __future__ import annotations
@@ -29,7 +29,7 @@ import numpy as np
 PROBE_DIR = Path(__file__).resolve().parent
 CANONICAL = Path("/home/profsynapse/code/Epistemic-Humility-Research")
 DEFAULT_DIR = CANONICAL / "experiment/phase1/probe/analysis/ah_addendum_a1"
-RESULT_COPY = PROBE_DIR / "amendment_ah_addendum_a1_result.json"
+RESULT_COPY = CANONICAL / "experiments/divergent-pool-own-readout/artifacts/amendment_ah_addendum_a1_result.json"
 
 G1_FLOOR_PT = 20.0
 G0_FLOOR_N = 40

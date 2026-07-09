@@ -690,7 +690,7 @@ protocol document and scored artifact:
 
 | Paper section | Internal label | Protocol / notes | Primary artifacts |
 |---|---|---|---|
-| 4.1 cold start (3 seeds) | headline matrix, PROTOCOL v0.3 | `experiment/protocol/PROTOCOL.md` | `experiment/phase1/eval/results_selfaware_full_seed{1,2}_all_arms_4b_20260615_2148/`, `..._seed3_..._20260616_0615/`; tables in `papers/paper-2-training-regimen/analysis/paper1_results_analysis.md` |
+| 4.1 cold start (3 seeds) | headline matrix, PROTOCOL v0.3 | `docs/protocols/phase1/PROTOCOL.md` | `experiment/phase1/eval/results_selfaware_full_seed{1,2}_all_arms_4b_20260615_2148/`, `..._seed3_..._20260616_0615/`; tables in `papers/paper-2-training-regimen/analysis/paper1_results_analysis.md` |
 | 4.2 SFT-warmed DPO/KTO | Amendment A | legacy session/artifact lineage; no governed amendment doc found during migration | `experiment/phase1/eval/results_amendment_a_selfaware_full_*` |
 | 4.2 stated-confidence contract | Amendment B | `experiments/stated-confidence-grpo/AMENDMENT.md` | `experiment/phase1/eval/results_amendment_b_stated_confidence_*` |
 | 4.3 GRPO first reward (schema base) | Amendment D | `experiments/schema-response-confidence/AMENDMENT.md` | `results_amendment_d_response_confidence_selfaware_schema_sft_grpo_seed1_full_4b/` |

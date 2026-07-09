@@ -13,7 +13,7 @@ tags:
 - experiment-runner
 run_ids: []
 trajectory:
-  anchor: experiment/protocol/research-trajectory.md
+  anchor: docs/research-trajectory.md
   current_position: ''
   changed_by_session: ''
 checkpoints:
@@ -249,4 +249,4 @@ _No summary yet._
 - evidence:
   - `papers/paper-1-taxonomy-framework/manuscript.md`
   - `papers/paper-2-training-regimen/manuscript.md`
-  - `experiment/protocol/research-trajectory.md`
+  - `docs/research-trajectory.md`

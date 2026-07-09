@@ -16,7 +16,7 @@ tags:
 - cpu-only
 run_ids: []
 trajectory:
-  anchor: experiment/protocol/research-trajectory.md
+  anchor: docs/research-trajectory.md
   current_position: Phase 3 has verified SelfAware hidden-state extraction artifacts
     and logit-diagnostic configs; SAE work remains future/governed.
   changed_by_session: Adds deterministic plumbing-only validation for extraction manifests,

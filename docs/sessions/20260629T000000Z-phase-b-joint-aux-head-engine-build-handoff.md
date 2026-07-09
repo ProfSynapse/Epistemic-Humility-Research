@@ -18,7 +18,7 @@ tags:
 - handoff
 run_ids: []
 trajectory:
-  anchor: experiment/protocol/research-trajectory.md
+  anchor: docs/research-trajectory.md
   current_position: "O/P/Q proved the answerability signal is latent and readable\
     \ by a bolted-on head (transfer AUROC 0.983). Phase B tests whether co-training\
     \ the head INTO the base changes the model's own behavior \u2014 gated on the\

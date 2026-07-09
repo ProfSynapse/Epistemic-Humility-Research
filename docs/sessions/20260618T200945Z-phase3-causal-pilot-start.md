@@ -13,7 +13,7 @@ tags:
 - knowledge-graph
 run_ids: []
 trajectory:
-  anchor: experiment/protocol/research-trajectory.md
+  anchor: docs/research-trajectory.md
   current_position: Phase 3 exploratory mechanism work is moving from verified hidden-state
     direction readiness into a small causal-pilot design.
   changed_by_session: Starts the causal-pilot session, records the smoke-slice decision,
@@ -673,8 +673,8 @@ correlational until a controlled intervention changes behavior.
   protocol authority and records that Tier 1/Tier 2 mechanism outputs are not
   headline evidence, arm ranking, or reward-loop input.
 - evidence:
-  - `experiment/protocol/PHASE3-control-system-protocol.md`
-  - `experiment/protocol/research-trajectory.md`
+  - `docs/protocols/phase3/control-system-protocol.md`
+  - `docs/research-trajectory.md`
   - `docs/plans/phase3-interpretability-research-process.md`
 - decisions:
   - Treat the new protocol as the current Phase 3 exploratory governance

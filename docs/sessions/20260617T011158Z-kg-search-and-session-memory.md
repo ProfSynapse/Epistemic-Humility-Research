@@ -13,7 +13,7 @@ tags:
 - experiment-runner
 run_ids: []
 trajectory:
-  anchor: experiment/protocol/research-trajectory.md
+  anchor: docs/research-trajectory.md
   current_position: Phase 1 infrastructure now has bounded search over research/code
     artifacts and a durable session-memory path for explaining how run states and
     decisions accumulate.

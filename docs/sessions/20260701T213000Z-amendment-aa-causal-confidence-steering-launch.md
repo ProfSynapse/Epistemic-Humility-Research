@@ -14,7 +14,7 @@ tags:
 - paper5
 run_ids: []
 trajectory:
-  anchor: experiment/protocol/research-trajectory.md
+  anchor: docs/research-trajectory.md
   current_position: 'Paper 5 first experiment: Amendment AA Stage-1 in flight'
   changed_by_session: steering line moves from scaffold/design to a signed, running
     amendment

@@ -537,7 +537,7 @@ def expand_and_report(args) -> int:
             f"Dry-run expanded {len(cells)} Phase 1 cells on lane={args.lane}; "
             "pre-registration count assertions passed and no launch occurred."
         ),
-        evidence=[args.matrix, args.recipes_dir, "experiment/protocol/research-trajectory.md"],
+        evidence=[args.matrix, args.recipes_dir, "docs/research-trajectory.md"],
         next_steps=["Run --check-only before preparing or launching cells."],
     )
     return 0

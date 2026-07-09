@@ -16,7 +16,7 @@ tags:
 - paper5
 run_ids: []
 trajectory:
-  anchor: experiment/protocol/research-trajectory.md
+  anchor: docs/research-trajectory.md
   current_position: Y closed (origin claim supported); AB running locally; AC implemented
     and queued
   changed_by_session: pretraining-origin question answered 4/4; cloud lane abandoned

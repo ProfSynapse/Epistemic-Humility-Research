@@ -14,7 +14,7 @@ tags:
 - engine-build
 run_ids: []
 trajectory:
-  anchor: experiment/protocol/research-trajectory.md
+  anchor: docs/research-trajectory.md
   current_position: Amendments O/P merged (readout ceiling + cold cross-dataset transfer);
     decided to productize the linear readout as a generic aux_head head.
   changed_by_session: Authored the build handoff for the generic aux_head feature

@@ -7,7 +7,7 @@ status: SUPERSEDED (migrated to an experiment note)
 # Moved
 
 This exploratory design is now a standardized **experiment note**:
-`notes/experiments/gradient-probe-coherence.md` (KG id
+`archive/notes/experiments/gradient-probe-coherence.md` (KG id
 `experiment:gradient-probe-coherence`). Experiment notes are the agent-runnable
-spec + runbook format; see `notes/experiments/_SCHEMA.md`. This pointer is kept so
+spec + runbook format; see `archive/notes/experiments/_SCHEMA.md`. This pointer is kept so
 existing links resolve.
