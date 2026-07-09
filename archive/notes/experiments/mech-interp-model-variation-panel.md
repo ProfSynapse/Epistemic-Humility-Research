@@ -127,7 +127,7 @@ Primary analyses:
    `experiment/phase1/analysis/training_exhaust_summary.csv`, and existing
    manifests under `experiment/phase1/probe/`.
 4. Reuse these prior config families as templates rather than conclusions:
-   `experiment/phase1/probe/config/phase3_selfaware_behavior_axis_scan.yaml`,
+   `archive/experiment/phase1/probe/config/selfaware-behavior-axis/phase3_selfaware_behavior_axis_scan.yaml`,
    `experiment/phase1/probe/config/phase3_selfaware_calibrated_expression_axis_scan.yaml`,
    `experiment/phase1/probe/config/phase3_selfaware_sae_smoke.yaml`,
    `experiment/phase1/probe/config/phase3_gold_kto_targeted_multicell_readout.yaml`,

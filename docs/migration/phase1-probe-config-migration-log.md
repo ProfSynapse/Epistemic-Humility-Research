@@ -396,3 +396,32 @@ This log records migration batches after the terrain baseline in
     outputs under `experiment/phase1/probe/qwen3-4b-sft-merged-seed1-selfaware/`.
   - Did not move upstream SAE analysis/direction configs that are separate
     terrain components for later review.
+
+## C015-C018 - SelfAware Behavior-Axis Configs
+
+- Date: 2026-07-09
+- Source components: `C015`, `C016`, `C017`, `C018`
+- File count: 10
+- Source root: `experiment/phase1/probe/config/`
+- Destination:
+  `archive/experiment/phase1/probe/config/selfaware-behavior-axis/`
+- Owner decision: archive-only historical provenance for the June 20 Phase 3
+  SelfAware behavior-axis work. No migrated `experiments/<slug>` owner was
+  present, and these files are not reusable shared defaults.
+- Reason: these configs form a historical scan -> direction-export -> exploratory
+  local logit-diagnostic chain for SelfAware behavior axes, with session-note
+  references and component-internal config links but no active experiment owner.
+- Reference updates:
+  - Rewrote component-internal `source_scan_config`, `runner_config`, and
+    `candidate_source_config` references to the archive path.
+  - Rewrote moved-config references and command paths in
+    `docs/sessions/20260620T010500Z-phase3-behavior-conditioned-sae-features.md`.
+  - Rewrote the moved scan-config reference in
+    `archive/notes/experiments/mech-interp-model-variation-panel.md`.
+  - Added a README to the destination archive folder.
+- Non-goals:
+  - Did not move scan, direction, or causal-pilot output roots under
+    `experiment/phase1/probe/qwen3-4b-sft-merged-seed1-selfaware/`.
+  - Did not move downstream calibrated-expression geometry configs that reference
+    generated behavior-axis direction manifests; those belong to separate terrain
+    components for later review.

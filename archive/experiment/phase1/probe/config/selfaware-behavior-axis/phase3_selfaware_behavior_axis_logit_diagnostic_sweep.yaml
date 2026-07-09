@@ -1,11 +1,11 @@
-# Phase 3 SelfAware behavior-axis nearby-layer and known-panel diagnostic sweep.
+# Phase 3 SelfAware behavior-axis logit-diagnostic sweep.
 
 sweep:
-  name: phase3_selfaware_behavior_axis_nearby_known_logit_diagnostic
+  name: phase3_selfaware_behavior_axis_logit_diagnostic
   evidence_tier: tier2_exploratory_local
-  runner_config: experiment/phase1/probe/config/phase3_selfaware_behavior_axis_nearby_known_logit_diagnostic.yaml
-  candidate_source_config: experiment/phase1/probe/config/phase3_selfaware_behavior_axis_nearby_known_logit_diagnostic.yaml
-  output_root: experiment/phase1/probe/qwen3-4b-sft-merged-seed1-selfaware/causal_pilots/phase3_selfaware_behavior_axis_nearby_known_logit_diagnostic
+  runner_config: archive/experiment/phase1/probe/config/selfaware-behavior-axis/phase3_selfaware_behavior_axis_logit_diagnostic.yaml
+  candidate_source_config: archive/experiment/phase1/probe/config/selfaware-behavior-axis/phase3_selfaware_behavior_axis_logit_diagnostic.yaml
+  output_root: experiment/phase1/probe/qwen3-4b-sft-merged-seed1-selfaware/causal_pilots/phase3_selfaware_behavior_axis_logit_diagnostic
   candidates: all
   execution:
     backend: docker
@@ -24,7 +24,7 @@ sweep:
   modes:
     - name: logit_diagnostic
       max_rows: 8
-      coefficients: [50.0]
+      coefficients: [25.0, 50.0]
       controls:
         - no_vector_baseline
         - activation_addition

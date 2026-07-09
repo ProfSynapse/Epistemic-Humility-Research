@@ -162,7 +162,7 @@ checkpoints:
     '
   evidence:
   - experiment/phase1/probe/phase3_behavior_axis_scan.py
-  - experiment/phase1/probe/config/phase3_selfaware_behavior_axis_scan.yaml
+  - archive/experiment/phase1/probe/config/selfaware-behavior-axis/phase3_selfaware_behavior_axis_scan.yaml
   - experiment/phase1/probe/qwen3-4b-sft-merged-seed1-selfaware/behavior_axis_scan/phase3_selfaware_behavior_axis_scan/summary.json
   - experiment/phase1/probe/qwen3-4b-sft-merged-seed1-selfaware/behavior_axis_scan/phase3_selfaware_behavior_axis_scan/top_layers_all.csv
   - experiment/phase1/probe/qwen3-4b-sft-merged-seed1-selfaware/behavior_axis_scan/phase3_selfaware_behavior_axis_scan/axis_scan_all.csv
@@ -170,7 +170,7 @@ checkpoints:
   - python -m pytest experiment\phase1\probe\tests\test_phase3_behavior_axis_scan.py
     -q
   - python -m py_compile experiment\phase1\probe\phase3_behavior_axis_scan.py
-  - python experiment\phase1\probe\phase3_behavior_axis_scan.py --config experiment\phase1\probe\config\phase3_selfaware_behavior_axis_scan.yaml
+  - python experiment\phase1\probe\phase3_behavior_axis_scan.py --config archive\experiment\phase1\probe\config\selfaware-behavior-axis\phase3_selfaware_behavior_axis_scan.yaml
   gotchas:
   - Current `h_base` for DPO/KTO extractions is the SFT-merged model before the preference
     adapter, not the original Qwen base model.
@@ -214,9 +214,9 @@ checkpoints:
     '
   evidence:
   - experiment/phase1/probe/phase3_behavior_axis_directions.py
-  - experiment/phase1/probe/config/phase3_selfaware_behavior_axis_directions.yaml
-  - experiment/phase1/probe/config/phase3_selfaware_behavior_axis_logit_diagnostic.yaml
-  - experiment/phase1/probe/config/phase3_selfaware_behavior_axis_logit_diagnostic_sweep.yaml
+  - archive/experiment/phase1/probe/config/selfaware-behavior-axis/phase3_selfaware_behavior_axis_directions.yaml
+  - archive/experiment/phase1/probe/config/selfaware-behavior-axis/phase3_selfaware_behavior_axis_logit_diagnostic.yaml
+  - archive/experiment/phase1/probe/config/selfaware-behavior-axis/phase3_selfaware_behavior_axis_logit_diagnostic_sweep.yaml
   - experiment/phase1/probe/qwen3-4b-sft-merged-seed1-selfaware/behavior_axis_directions/phase3_selfaware_behavior_axis_directions/behavior_axis_directions.manifest.json
   - experiment/phase1/probe/qwen3-4b-sft-merged-seed1-selfaware/causal_pilots/phase3_selfaware_behavior_axis_logit_diagnostic/summary.csv
   - experiment/phase1/probe/qwen3-4b-sft-merged-seed1-selfaware/causal_pilots/phase3_selfaware_behavior_axis_logit_diagnostic/_execution_logs/execution_results.jsonl
@@ -224,8 +224,8 @@ checkpoints:
   - python -m pytest experiment\phase1\probe\tests\test_phase3_behavior_axis_directions.py
     experiment\phase1\probe\tests\test_phase3_behavior_axis_scan.py -q
   - python -m py_compile experiment\phase1\probe\phase3_behavior_axis_scan.py experiment\phase1\probe\phase3_behavior_axis_directions.py
-  - python experiment\phase1\probe\phase3_behavior_axis_directions.py --config experiment\phase1\probe\config\phase3_selfaware_behavior_axis_directions.yaml
-  - python experiment\phase1\probe\phase3_causal_pilot_sweep.py --config experiment\phase1\probe\config\phase3_selfaware_behavior_axis_logit_diagnostic_sweep.yaml
+  - python experiment\phase1\probe\phase3_behavior_axis_directions.py --config archive\experiment\phase1\probe\config\selfaware-behavior-axis\phase3_selfaware_behavior_axis_directions.yaml
+  - python experiment\phase1\probe\phase3_causal_pilot_sweep.py --config archive\experiment\phase1\probe\config\selfaware-behavior-axis\phase3_selfaware_behavior_axis_logit_diagnostic_sweep.yaml
     --mode-filter logit_diagnostic --write-plan --materialize-configs --execute --allow-logit-diagnostic
   - python experiment\phase1\probe\phase3_causal_pilot_aggregate.py --root experiment\phase1\probe\qwen3-4b-sft-merged-seed1-selfaware\causal_pilots\phase3_selfaware_behavior_axis_logit_diagnostic
     --out experiment\phase1\probe\qwen3-4b-sft-merged-seed1-selfaware\causal_pilots\phase3_selfaware_behavior_axis_logit_diagnostic\summary.csv
@@ -270,14 +270,14 @@ checkpoints:
 
     '
   evidence:
-  - experiment/phase1/probe/config/phase3_selfaware_behavior_axis_nearby_known_logit_diagnostic.yaml
-  - experiment/phase1/probe/config/phase3_selfaware_behavior_axis_nearby_known_logit_diagnostic_sweep.yaml
+  - archive/experiment/phase1/probe/config/selfaware-behavior-axis/phase3_selfaware_behavior_axis_nearby_known_logit_diagnostic.yaml
+  - archive/experiment/phase1/probe/config/selfaware-behavior-axis/phase3_selfaware_behavior_axis_nearby_known_logit_diagnostic_sweep.yaml
   - experiment/phase1/probe/qwen3-4b-sft-merged-seed1-selfaware/causal_pilots/phase3_selfaware_behavior_axis_nearby_known_logit_diagnostic/summary.csv
   - experiment/phase1/probe/qwen3-4b-sft-merged-seed1-selfaware/causal_pilots/phase3_selfaware_behavior_axis_nearby_known_logit_diagnostic/_execution_logs/execution_results.jsonl
   commands:
-  - python experiment\phase1\probe\phase3_causal_pilot_sweep.py --config experiment\phase1\probe\config\phase3_selfaware_behavior_axis_nearby_known_logit_diagnostic_sweep.yaml
+  - python experiment\phase1\probe\phase3_causal_pilot_sweep.py --config archive\experiment\phase1\probe\config\selfaware-behavior-axis\phase3_selfaware_behavior_axis_nearby_known_logit_diagnostic_sweep.yaml
     --mode-filter logit_diagnostic --write-plan --materialize-configs
-  - python experiment\phase1\probe\phase3_causal_pilot_sweep.py --config experiment\phase1\probe\config\phase3_selfaware_behavior_axis_nearby_known_logit_diagnostic_sweep.yaml
+  - python experiment\phase1\probe\phase3_causal_pilot_sweep.py --config archive\experiment\phase1\probe\config\selfaware-behavior-axis\phase3_selfaware_behavior_axis_nearby_known_logit_diagnostic_sweep.yaml
     --mode-filter logit_diagnostic --write-plan --materialize-configs --execute --allow-logit-diagnostic
   - python experiment\phase1\probe\phase3_causal_pilot_aggregate.py --root experiment\phase1\probe\qwen3-4b-sft-merged-seed1-selfaware\causal_pilots\phase3_selfaware_behavior_axis_nearby_known_logit_diagnostic
     --out experiment\phase1\probe\qwen3-4b-sft-merged-seed1-selfaware\causal_pilots\phase3_selfaware_behavior_axis_nearby_known_logit_diagnostic\summary.csv
@@ -320,15 +320,15 @@ checkpoints:
 
     '
   evidence:
-  - experiment/phase1/probe/config/phase3_selfaware_behavior_axis_layer_window_directions.yaml
-  - experiment/phase1/probe/config/phase3_selfaware_behavior_axis_layer_window_logit_diagnostic.yaml
-  - experiment/phase1/probe/config/phase3_selfaware_behavior_axis_layer_window_logit_diagnostic_sweep.yaml
+  - archive/experiment/phase1/probe/config/selfaware-behavior-axis/phase3_selfaware_behavior_axis_layer_window_directions.yaml
+  - archive/experiment/phase1/probe/config/selfaware-behavior-axis/phase3_selfaware_behavior_axis_layer_window_logit_diagnostic.yaml
+  - archive/experiment/phase1/probe/config/selfaware-behavior-axis/phase3_selfaware_behavior_axis_layer_window_logit_diagnostic_sweep.yaml
   - experiment/phase1/probe/qwen3-4b-sft-merged-seed1-selfaware/behavior_axis_directions/phase3_selfaware_behavior_axis_layer_window_directions/behavior_axis_directions.manifest.json
   - experiment/phase1/probe/qwen3-4b-sft-merged-seed1-selfaware/causal_pilots/phase3_selfaware_behavior_axis_layer_window_logit_diagnostic/summary.csv
   - experiment/phase1/probe/qwen3-4b-sft-merged-seed1-selfaware/causal_pilots/phase3_selfaware_behavior_axis_layer_window_logit_diagnostic/_execution_logs/execution_results.jsonl
   commands:
-  - python experiment\phase1\probe\phase3_behavior_axis_directions.py --config experiment\phase1\probe\config\phase3_selfaware_behavior_axis_layer_window_directions.yaml
-  - python experiment\phase1\probe\phase3_causal_pilot_sweep.py --config experiment\phase1\probe\config\phase3_selfaware_behavior_axis_layer_window_logit_diagnostic_sweep.yaml
+  - python experiment\phase1\probe\phase3_behavior_axis_directions.py --config archive\experiment\phase1\probe\config\selfaware-behavior-axis\phase3_selfaware_behavior_axis_layer_window_directions.yaml
+  - python experiment\phase1\probe\phase3_causal_pilot_sweep.py --config archive\experiment\phase1\probe\config\selfaware-behavior-axis\phase3_selfaware_behavior_axis_layer_window_logit_diagnostic_sweep.yaml
     --mode-filter logit_diagnostic --write-plan --materialize-configs --execute --allow-logit-diagnostic
   - python experiment\phase1\probe\phase3_causal_pilot_aggregate.py --root experiment\phase1\probe\qwen3-4b-sft-merged-seed1-selfaware\causal_pilots\phase3_selfaware_behavior_axis_layer_window_logit_diagnostic
     --out experiment\phase1\probe\qwen3-4b-sft-merged-seed1-selfaware\causal_pilots\phase3_selfaware_behavior_axis_layer_window_logit_diagnostic\summary.csv
@@ -383,13 +383,13 @@ checkpoints:
 
     '
   evidence:
-  - experiment/phase1/probe/config/phase3_selfaware_behavior_axis_known_answer_logit_diagnostic_sweep.yaml
+  - archive/experiment/phase1/probe/config/selfaware-behavior-axis/phase3_selfaware_behavior_axis_known_answer_logit_diagnostic_sweep.yaml
   - experiment/phase1/probe/qwen3-4b-sft-merged-seed1-selfaware/causal_pilots/phase3_selfaware_behavior_axis_known_answer_logit_diagnostic/summary.csv
   - experiment/phase1/probe/qwen3-4b-sft-merged-seed1-selfaware/causal_pilots/phase3_selfaware_behavior_axis_known_answer_logit_diagnostic/_execution_logs/execution_results.jsonl
   commands:
-  - python experiment\phase1\probe\phase3_causal_pilot_sweep.py --config experiment\phase1\probe\config\phase3_selfaware_behavior_axis_known_answer_logit_diagnostic_sweep.yaml
+  - python experiment\phase1\probe\phase3_causal_pilot_sweep.py --config archive\experiment\phase1\probe\config\selfaware-behavior-axis\phase3_selfaware_behavior_axis_known_answer_logit_diagnostic_sweep.yaml
     --mode-filter logit_diagnostic --write-plan --materialize-configs
-  - python experiment\phase1\probe\phase3_causal_pilot_sweep.py --config experiment\phase1\probe\config\phase3_selfaware_behavior_axis_known_answer_logit_diagnostic_sweep.yaml
+  - python experiment\phase1\probe\phase3_causal_pilot_sweep.py --config archive\experiment\phase1\probe\config\selfaware-behavior-axis\phase3_selfaware_behavior_axis_known_answer_logit_diagnostic_sweep.yaml
     --mode-filter logit_diagnostic --write-plan --materialize-configs --execute --allow-logit-diagnostic
   - python experiment\phase1\probe\phase3_causal_pilot_aggregate.py --root experiment\phase1\probe\qwen3-4b-sft-merged-seed1-selfaware\causal_pilots\phase3_selfaware_behavior_axis_known_answer_logit_diagnostic
     --out experiment\phase1\probe\qwen3-4b-sft-merged-seed1-selfaware\causal_pilots\phase3_selfaware_behavior_axis_known_answer_logit_diagnostic\summary.csv

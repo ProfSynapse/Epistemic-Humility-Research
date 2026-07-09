@@ -3,8 +3,8 @@
 sweep:
   name: phase3_selfaware_behavior_axis_known_answer_logit_diagnostic
   evidence_tier: tier2_exploratory_local
-  runner_config: experiment/phase1/probe/config/phase3_selfaware_behavior_axis_layer_window_logit_diagnostic.yaml
-  candidate_source_config: experiment/phase1/probe/config/phase3_selfaware_behavior_axis_layer_window_logit_diagnostic.yaml
+  runner_config: archive/experiment/phase1/probe/config/selfaware-behavior-axis/phase3_selfaware_behavior_axis_layer_window_logit_diagnostic.yaml
+  candidate_source_config: archive/experiment/phase1/probe/config/selfaware-behavior-axis/phase3_selfaware_behavior_axis_layer_window_logit_diagnostic.yaml
   output_root: experiment/phase1/probe/qwen3-4b-sft-merged-seed1-selfaware/causal_pilots/phase3_selfaware_behavior_axis_known_answer_logit_diagnostic
   candidates:
     - sft_h_base_known_refused_vs_known_correct_l24_normed
