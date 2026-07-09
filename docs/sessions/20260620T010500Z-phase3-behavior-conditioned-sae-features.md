@@ -1000,13 +1000,13 @@ checkpoints:
   evidence:
   - archive/experiment/phase1/probe/config/selfaware-calibrated-expression-kto-panels/phase3_selfaware_calibrated_expression_kto_logit_candidates.yaml
   - archive/experiment/phase1/probe/config/selfaware-calibrated-expression-kto-panels/phase3_selfaware_calibrated_expression_kto_logit_sweep.yaml
-  - experiment/phase1/probe/config/phase3_selfaware_calibrated_expression_kto_logit_cell_analysis.yaml
+  - archive/experiment/phase1/probe/config/selfaware-calibrated-expression-kto-panels/phase3_selfaware_calibrated_expression_kto_logit_cell_analysis.yaml
   - experiment/phase1/probe/phase3_logit_cell_analysis.py
   - experiment/phase1/probe/qwen3-4b-sft-merged-seed1-selfaware/causal_pilots/phase3_selfaware_calibrated_expression_kto_logit_sweep/cell_analysis/cell_logit_summary.csv
   commands:
   - python .\experiment\phase1\probe\phase3_causal_pilot_sweep.py --config .\archive\experiment\phase1\probe\config\selfaware-calibrated-expression-kto-panels\phase3_selfaware_calibrated_expression_kto_logit_sweep.yaml
     --mode-filter logit_diagnostic --write-plan --materialize-configs --execute --allow-logit-diagnostic
-  - python .\experiment\phase1\probe\phase3_logit_cell_analysis.py --config .\experiment\phase1\probe\config\phase3_selfaware_calibrated_expression_kto_logit_cell_analysis.yaml
+  - python .\experiment\phase1\probe\phase3_logit_cell_analysis.py --config .\archive\experiment\phase1\probe\config\selfaware-calibrated-expression-kto-panels\phase3_selfaware_calibrated_expression_kto_logit_cell_analysis.yaml
   decisions:
   - Treat single-axis KTO steering as active but unsafe for calibrated humility because
     it improves one cell while damaging another.
@@ -1038,15 +1038,15 @@ checkpoints:
     '
   evidence:
   - experiment/phase1/probe/phase3_direction_transforms.py
-  - experiment/phase1/probe/config/phase3_selfaware_calibrated_expression_kto_composite_directions.yaml
-  - experiment/phase1/probe/config/phase3_selfaware_calibrated_expression_kto_composite_grid_directions.yaml
+  - archive/experiment/phase1/probe/config/selfaware-calibrated-expression-kto-panels/phase3_selfaware_calibrated_expression_kto_composite_directions.yaml
+  - archive/experiment/phase1/probe/config/selfaware-calibrated-expression-kto-panels/phase3_selfaware_calibrated_expression_kto_composite_grid_directions.yaml
   - archive/experiment/phase1/probe/config/selfaware-calibrated-expression-kto-panels/phase3_selfaware_calibrated_expression_kto_composite_grid_logit_sweep.yaml
   - experiment/phase1/probe/qwen3-4b-sft-merged-seed1-selfaware/causal_pilots/phase3_selfaware_calibrated_expression_kto_composite_grid_logit_sweep/cell_analysis/cell_logit_summary.csv
   commands:
-  - python .\experiment\phase1\probe\phase3_direction_transforms.py --config .\experiment\phase1\probe\config\phase3_selfaware_calibrated_expression_kto_composite_grid_directions.yaml
+  - python .\experiment\phase1\probe\phase3_direction_transforms.py --config .\archive\experiment\phase1\probe\config\selfaware-calibrated-expression-kto-panels\phase3_selfaware_calibrated_expression_kto_composite_grid_directions.yaml
   - python .\experiment\phase1\probe\phase3_causal_pilot_sweep.py --config .\archive\experiment\phase1\probe\config\selfaware-calibrated-expression-kto-panels\phase3_selfaware_calibrated_expression_kto_composite_grid_logit_sweep.yaml
     --mode-filter logit_diagnostic --write-plan --materialize-configs --execute --allow-logit-diagnostic
-  - python .\experiment\phase1\probe\phase3_logit_cell_analysis.py --config .\experiment\phase1\probe\config\phase3_selfaware_calibrated_expression_kto_composite_grid_logit_cell_analysis.yaml
+  - python .\experiment\phase1\probe\phase3_logit_cell_analysis.py --config .\archive\experiment\phase1\probe\config\selfaware-calibrated-expression-kto-panels\phase3_selfaware_calibrated_expression_kto_composite_grid_logit_cell_analysis.yaml
   decisions:
   - Do not use the equal-weight composite as a candidate; it cancels too much of the
     unknown-wrong repair.
@@ -1074,14 +1074,14 @@ checkpoints:
 
     '
   evidence:
-  - experiment/phase1/probe/config/phase3_selfaware_calibrated_expression_kto_composite125_layer_window_directions.yaml
+  - archive/experiment/phase1/probe/config/selfaware-calibrated-expression-kto-panels/phase3_selfaware_calibrated_expression_kto_composite125_layer_window_directions.yaml
   - archive/experiment/phase1/probe/config/selfaware-calibrated-expression-kto-panels/phase3_selfaware_calibrated_expression_kto_composite125_layer_window_logit_sweep.yaml
   - experiment/phase1/probe/qwen3-4b-sft-merged-seed1-selfaware/causal_pilots/phase3_selfaware_calibrated_expression_kto_composite125_layer_window_logit_sweep/cell_analysis/cell_logit_summary.csv
   commands:
-  - python .\experiment\phase1\probe\phase3_direction_transforms.py --config .\experiment\phase1\probe\config\phase3_selfaware_calibrated_expression_kto_composite125_layer_window_directions.yaml
+  - python .\experiment\phase1\probe\phase3_direction_transforms.py --config .\archive\experiment\phase1\probe\config\selfaware-calibrated-expression-kto-panels\phase3_selfaware_calibrated_expression_kto_composite125_layer_window_directions.yaml
   - python .\experiment\phase1\probe\phase3_causal_pilot_sweep.py --config .\archive\experiment\phase1\probe\config\selfaware-calibrated-expression-kto-panels\phase3_selfaware_calibrated_expression_kto_composite125_layer_window_logit_sweep.yaml
     --mode-filter logit_diagnostic --write-plan --materialize-configs --execute --allow-logit-diagnostic
-  - python .\experiment\phase1\probe\phase3_logit_cell_analysis.py --config .\experiment\phase1\probe\config\phase3_selfaware_calibrated_expression_kto_composite125_layer_window_logit_cell_analysis.yaml
+  - python .\experiment\phase1\probe\phase3_logit_cell_analysis.py --config .\archive\experiment\phase1\probe\config\selfaware-calibrated-expression-kto-panels\phase3_selfaware_calibrated_expression_kto_composite125_layer_window_logit_cell_analysis.yaml
   decisions:
   - Prioritize L24 for generated replay if testing this composite family.
   - Do not treat L27 as a candidate for calibrated abstention steering.

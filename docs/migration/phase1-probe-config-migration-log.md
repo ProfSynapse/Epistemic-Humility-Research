@@ -879,3 +879,29 @@ This log records migration batches after the terrain baseline in
   - Did not move generated behavior panels, direction-transform outputs,
     multicell-readout outputs, or causal-pilot/logit outputs under
     `experiment/phase1/probe/qwen3-4b-instruct/`.
+
+## C001c2 - SelfAware Calibrated-Expression KTO Downstream Configs
+
+- Date: 2026-07-09
+- Source component: `C001` subset
+- File count: 11
+- Source root: `experiment/phase1/probe/config/`
+- Destination:
+  `archive/experiment/phase1/probe/config/selfaware-calibrated-expression-kto-panels/`
+- Owner decision: archive-only historical provenance for SelfAware
+  calibrated-expression KTO direction-transform, logit-cell aggregation, and
+  sign-score configs. These complete the archived candidate/sweep/replay panel
+  family and are not reusable shared defaults.
+- Reason: the destination already owned the fixed 64-row panel, KTO candidates,
+  logit sweeps, and bounded generation replay. These moved files are the
+  downstream transform, aggregation, and triage configs over that same panel.
+- Reference updates:
+  - Rewrote moved-config paths and historical command lines in the June 20
+    behavior-conditioned session note.
+  - Updated the canonical mech-interp behavior-axis reference and synced skill
+    mirrors.
+  - Updated the destination archive README.
+- Non-goals:
+  - Did not move generated direction transforms, causal-pilot outputs,
+    logit-cell outputs, sign-score outputs, or generation outputs under
+    `experiment/phase1/probe/qwen3-4b-sft-merged-seed1-selfaware/`.
