@@ -9,7 +9,7 @@
 #   Feeds the CPU-side doubt/caution-plane re-decomposition (item 20) and the AK
 #   Stage 1 crystallization / doubt-trajectory curves.
 #
-# SCOPING NOTE (read DIAG-BUNDLE-NOTES.md): this is a COARSE position sweep via
+# SCOPING NOTE (read docs/preparation/diagnostics-bundle-launch-plan.md): this is a COARSE position sweep via
 # the validated Amendment S/R re-forward path, NOT the full per-token decode-step
 # capture that AK-2 (task #76) specifies. It answers item 20 (does the off-axis
 # geometry hold mid-generation) and gives AK Stage 1 its position curve at 6

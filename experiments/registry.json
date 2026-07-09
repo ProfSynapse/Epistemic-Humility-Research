@@ -857,7 +857,9 @@
       },
       "created_at": "2026-07-08T17:40:52Z",
       "falsifier": "",
-      "inputs": [],
+      "inputs": [
+        "experiments/first-person-injection/artifacts/cloud_launches/amendment_ab_v1_launch.json"
+      ],
       "instrument": {
         "configs": [],
         "modules": [],
@@ -1443,7 +1445,10 @@
       },
       "created_at": "2026-07-08T17:40:52Z",
       "falsifier": "",
-      "inputs": [],
+      "inputs": [
+        "experiments/pretrain-only-base-readout/artifacts/amendment_y_text_baseline_result.json",
+        "experiments/pretrain-only-base-readout/artifacts/cloud_launches/amendment_y_stage1_launch.json"
+      ],
       "instrument": {
         "configs": [],
         "modules": [],

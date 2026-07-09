@@ -31,7 +31,7 @@
 #       [adapter_repo] [adapter_revision] [run_tag]
 #   base_model : HF repo id or local path of the checkpoint to load. The gpu
 #       cell loads a single --model with NO adapter, so to test a LoRA lineage
-#       pass a MERGED checkpoint here (see DIAG-BUNDLE-NOTES.md).
+#       pass a MERGED checkpoint here (see docs/preparation/diagnostics-bundle-launch-plan.md).
 #   direction_relpath : repo-relative path to a direction_*.json with best_layer,
 #       e.g. experiment/phase1/probe/steering/directions/qwen3.5-4b/direction_gate.json
 set -euo pipefail

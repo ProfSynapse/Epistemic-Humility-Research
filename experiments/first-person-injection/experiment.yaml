@@ -31,7 +31,8 @@ instrument:
   configs: []
   modules: []
   pins: {}
-inputs: []
+inputs:
+- experiments/first-person-injection/artifacts/cloud_launches/amendment_ab_v1_launch.json
 verdict: AMBIGUOUS-LEANING-NEGATIVE — no V1 cell passes; first-person framing does
   not open the text channel (dial@late instrument saturated, dial@final MISS, gate@early
   only a ~2pt trickle); AA's presence-not-use conclusion strengthened.
