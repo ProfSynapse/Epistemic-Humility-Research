@@ -19,7 +19,8 @@ https://github.com/ProfSynapse/Epistemic-Humility-Research
 
 Local provenance:
 
-- Analysis root: `experiment/phase1/eval/analysis/`
+- Eval analysis scripts/root: `experiment/phase1/eval/analysis/`
+- Paper 2 row-pattern artifacts: `papers/paper-2-training-regimen/analysis/row-pattern/`
 - Results provenance inventory: `archive/papers/retired/results-provenance-inventory.md`
 - Public artifact manifest: `docs/public-artifacts.md`
 
@@ -30,10 +31,10 @@ analysis scripts used to produce them, including:
 
 - SelfAware full-run comparison tables.
 - Amendment A and Amendment B transition reports.
-- Row-pattern summaries and representative examples.
+- Paper 2 row-pattern summaries and representative examples.
 - Thinking-vs-nonthinking comparison summaries.
 - Sycophancy answer summaries.
-- Unknown-question label analyses.
+- Unknown-question label analyses tied to the Paper 2 row-pattern artifacts.
 
 ## Scope And Caveats
 

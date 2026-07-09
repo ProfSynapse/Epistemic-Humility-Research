@@ -17,8 +17,9 @@ from typing import Iterable
 
 
 ROOT = Path(__file__).resolve().parents[5]
-DEFAULT_INPUT_DIR = ROOT / "experiment" / "phase1" / "eval" / "analysis" / "row_pattern_outputs"
-DEFAULT_OUTPUT_DIR = ROOT / "experiment" / "phase1" / "eval" / "analysis" / "unknown_question_labels"
+ROW_PATTERN_ARTIFACT_ROOT = ROOT / "papers" / "paper-2-training-regimen" / "analysis" / "row-pattern"
+DEFAULT_INPUT_DIR = ROW_PATTERN_ARTIFACT_ROOT / "row_pattern_outputs"
+DEFAULT_OUTPUT_DIR = ROW_PATTERN_ARTIFACT_ROOT / "unknown_question_labels"
 
 DOMAINS = {
     "science_health",

@@ -19,17 +19,12 @@ from typing import Iterable
 
 
 ROOT = Path(__file__).resolve().parents[5]
+ROW_PATTERN_ARTIFACT_ROOT = ROOT / "papers" / "paper-2-training-regimen" / "analysis" / "row-pattern"
 DEFAULT_LABELS_PATH = (
-    ROOT
-    / "experiment"
-    / "phase1"
-    / "eval"
-    / "analysis"
-    / "unknown_question_labels"
-    / "llm_labeled_unknown_answered_questions_v3.csv"
+    ROW_PATTERN_ARTIFACT_ROOT / "unknown_question_labels" / "llm_labeled_unknown_answered_questions_v3.csv"
 )
-DEFAULT_ROW_DIR = ROOT / "experiment" / "phase1" / "eval" / "analysis" / "row_pattern_outputs"
-DEFAULT_OUTPUT_DIR = ROOT / "experiment" / "phase1" / "eval" / "analysis" / "unknown_question_labels"
+DEFAULT_ROW_DIR = ROW_PATTERN_ARTIFACT_ROOT / "row_pattern_outputs"
+DEFAULT_OUTPUT_DIR = ROW_PATTERN_ARTIFACT_ROOT / "unknown_question_labels"
 
 ARM_ORDER = ("sft_merged", "sft_dpo", "sft_kto")
 CATEGORY_AXES = ("primary_domain", "epistemic_type")

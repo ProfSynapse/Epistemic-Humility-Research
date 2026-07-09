@@ -74,6 +74,10 @@ def repo_root() -> Path:
     return Path(__file__).resolve().parents[4]
 
 
+def default_artifact_root() -> Path:
+    return repo_root() / "papers" / "paper-2-training-regimen" / "analysis" / "row-pattern"
+
+
 def load_manifest(path: Path) -> list[dict[str, Any]]:
     with path.open(encoding="utf-8") as f:
         data = json.load(f)
@@ -789,7 +793,7 @@ def parse_args() -> argparse.Namespace:
     here = Path(__file__).resolve().parent
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--input", type=Path, default=here / "row_pattern_inputs.json")
-    parser.add_argument("--output-dir", type=Path, default=here / "row_pattern_outputs")
+    parser.add_argument("--output-dir", type=Path, default=default_artifact_root() / "row_pattern_outputs")
     parser.add_argument("--write", action="store_true", help="emit CSV/JSON/Markdown outputs")
     return parser.parse_args()
 

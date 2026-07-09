@@ -38,7 +38,8 @@ The first serious analysis should start with Amendment A SelfAware row transitio
 | Component | Change Type | Impact |
 |-----------|-------------|--------|
 | `experiment/phase1/eval/results*` | Read | Source artifacts for row-level analysis |
-| `experiment/phase1/eval/analysis/` | Create | Store reproducible report and CSV summaries |
+| `experiment/phase1/eval/analysis/` | Create | Store reusable analysis scripts |
+| `papers/paper-2-training-regimen/analysis/row-pattern/` | Create | Store reproducible report and CSV summaries |
 | `experiment/phase1/eval/scorers.py` | Read | Authority for refusal/correct/truthful semantics |
 | `experiment/phase1/eval/README.md` | Read | Output contract and caveats |
 
@@ -65,8 +66,8 @@ Amendment B stated-confidence rows additionally provide: `answer_text`, `stated_
 | File | Purpose |
 |------|---------|
 | `experiment/phase1/eval/analysis/row_pattern_analysis.py` | Load rows, validate alignment, tag question types, compute metrics and transitions |
-| `experiment/phase1/eval/analysis/row_pattern_report.md` | Human-readable findings with caveats and representative examples |
-| `experiment/phase1/eval/analysis/row_pattern_outputs/*.csv` | Reproducible tables for schema audit, slice metrics, transitions, and examples |
+| `papers/paper-2-training-regimen/analysis/row-pattern/row_pattern_report.md` | Human-readable findings with caveats and representative examples |
+| `papers/paper-2-training-regimen/analysis/row-pattern/row_pattern_outputs/*.csv` | Reproducible tables for schema audit, slice metrics, transitions, and examples |
 
 #### Implementation Sequence
 1. Enumerate candidate result directories and write a schema audit.
