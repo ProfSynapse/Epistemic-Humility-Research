@@ -340,3 +340,33 @@ This log records migration batches after the terrain baseline in
   - Did not rewrite extraction dirs or analysis output roots. Those paths
     preserve historical run provenance and will be handled in broader artifact
     archive passes.
+## C013/C014 - Gold KTO Calibrated-Expression Axis Configs
+
+- Date: 2026-07-09
+- Source components: `C013`, `C014`
+- File count: 5
+- Source root: `experiment/phase1/probe/config/`
+- Destinations:
+  - `archive/experiment/phase1/probe/config/gold-kto-calibrated-expression/`
+  - `archive/experiment/phase1/probe/config/gold-kto-targeted-calibrated-expression/`
+- Owner decision: archive-only historical provenance for the June 20 Phase 3
+  gold-backed KTO calibrated-expression screening work. No migrated
+  `experiments/<slug>` owner was present, and these files are not reusable shared
+  defaults.
+- Reason: these configs are axis-scan and direction-export producers for the
+  gold-backed and targeted gold-backed KTO calibrated-expression slices; their
+  downstream configs consume generated direction artifacts, not the config files
+  directly.
+- Reference updates:
+  - Rewrote component-internal `source_scan_config` references to the archive
+    paths.
+  - Rewrote moved-file references in
+    `docs/sessions/20260620T010500Z-phase3-behavior-conditioned-sae-features.md`.
+  - Added README files to both destination archive folders.
+- Non-goals:
+  - Did not move downstream logit-candidate, logit-sweep, composite, multilayer,
+    or cell-analysis configs; those are separate terrain components for later
+    review.
+  - Did not rewrite legacy output roots under `experiment/phase1/probe/qwen3-4b-instruct/`.
+    Those paths preserve historical run provenance and will be handled in broader
+    artifact archive passes.

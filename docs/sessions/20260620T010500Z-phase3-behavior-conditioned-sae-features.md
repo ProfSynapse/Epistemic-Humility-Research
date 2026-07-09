@@ -1799,9 +1799,9 @@ multicell readout regions produce a calibrated-expression logit control?
 Offline axis prep:
 
 - Scan config:
-  `experiment/phase1/probe/config/phase3_gold_kto_targeted_calibrated_expression_axis_scan.yaml`.
+  `archive/experiment/phase1/probe/config/gold-kto-targeted-calibrated-expression/phase3_gold_kto_targeted_calibrated_expression_axis_scan.yaml`.
 - Direction export config:
-  `experiment/phase1/probe/config/phase3_gold_kto_targeted_calibrated_expression_axis_directions.yaml`.
+  `archive/experiment/phase1/probe/config/gold-kto-targeted-calibrated-expression/phase3_gold_kto_targeted_calibrated_expression_axis_directions.yaml`.
 - Candidate source:
   `experiment/phase1/probe/config/phase3_gold_kto_targeted_calibrated_expression_logit_candidates.yaml`.
 - Tested simple axes:
