@@ -98,7 +98,7 @@ provenance layer, because those are specific to this experiment.
 
 | Strategic choice | External support | Project anchor | Implementation implication |
 |---|---|---|---|
-| Use Transformers hidden states for the MVP. | Hugging Face Transformers documents `output_hidden_states=True` and returns per-layer `hidden_states` tensors in model outputs: <https://huggingface.co/docs/transformers/main_classes/output>. | The current probe is already config-driven and manifest-stamped in `experiment/phase1/probe/config/probe.yaml` and `experiment/phase1/probe/probe.py`. | Add hidden-state extraction as a separate probe-tier harness rather than mixing it into the stochastic knowledge probe. |
+| Use Transformers hidden states for the MVP. | Hugging Face Transformers documents `output_hidden_states=True` and returns per-layer `hidden_states` tensors in model outputs: <https://huggingface.co/docs/transformers/main_classes/output>. | The current probe is already config-driven and manifest-stamped in `experiments/common/configs/phase1-probe/probe.yaml` and `experiment/phase1/probe/probe.py`. | Add hidden-state extraction as a separate probe-tier harness rather than mixing it into the stochastic knowledge probe. |
 | Prefer unmerged PEFT adapters for attribution. | Hugging Face PEFT documents `PeftModel.set_adapter()`, `disable_adapter()`, and `merge_and_unload()`: <https://huggingface.co/docs/peft/package_reference/peft_model>. | Current eval uses explicit adapter paths per arm and vLLM LoRA requests in `experiment/phase1/eval/config/eval_smoke_local_4b.yaml` and `experiment/phase1/eval/run_eval.py`. | The primary contrast should be base-vs-active-adapter in one harness; merged checkpoints are sanity checks only. |
 | Treat LoRA deltas as adapter-attribution candidates, not proof by themselves. | Hu et al. define LoRA as frozen pretrained weights plus trainable low-rank matrices injected into Transformer layers: <https://arxiv.org/abs/2106.09685>. | The Phase 1 recipes pin identical LoRA budgets, for example `experiment/phase1/recipes/eh_phase1_qwen3_4b_sft.yaml`; architecture rationale is in `docs/architecture/phase1-pipeline.md`. | Record LoRA rank/alpha/dropout/target modules in every extraction manifest and compare `h_lora - h_base` under identical prompts. |
 | Use PyTorch hooks only when model-output hidden states are too coarse. | PyTorch documents `register_forward_hook` on `torch.nn.Module`: <https://docs.pytorch.org/docs/stable/generated/torch.nn.Module.html#torch.nn.Module.register_forward_hook>. | `experiment/phase1/probe/backends.py` already centralizes prompt rendering and thinking-tag checks; future module hooks should reuse the same prompt bytes. | Start with layer hidden states; add module hooks later for specific submodules such as attention or MLP outputs. |
@@ -151,7 +151,7 @@ revision says otherwise.
 
 ### Phase 1 - correlational extraction harness
 
-- `experiment/phase1/probe/config/hidden_state_probe.yaml` (new): define the
+- `experiments/common/configs/phase1-probe/hidden_state_probe.yaml` (new): define the
   hidden-state extraction config: `model_tag`, `model_name`, adapter arms,
   adapter paths, adapter state (`disabled`, `active`, optional `merged_sanity`),
   `enable_thinking: false`, layer list, token-position rule, dtype/device,

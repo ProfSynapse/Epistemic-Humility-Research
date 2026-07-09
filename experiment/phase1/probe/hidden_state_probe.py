@@ -2,7 +2,7 @@
 """Hidden-state probing tier harness (exploratory mechanism tier, MVP).
 
 Location: experiment/phase1/probe/hidden_state_probe.py
-Reads:    experiment/phase1/probe/config/hidden_state_probe.yaml
+Reads:    experiments/common/configs/phase1-probe/hidden_state_probe.yaml
           experiment/phase1/probe/<model_tag>/probe_results.jsonl (alignment, streamed)
           experiment/phase1/data/<model_tag>/questions_frozen.json (frozen split keys)
           experiment/phase1/eval/config/eval_smoke_local_4b.yaml (adapter paths, by-value)
@@ -525,7 +525,9 @@ def _validate_arm_tensors(backend, h_base, h_lora, token_rule,
 
 def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__)
-    default_config = PROBE_DIR / "config" / "hidden_state_probe.yaml"
+    default_config = (
+        REPO_ROOT / "experiments/common/configs/phase1-probe/hidden_state_probe.yaml"
+    )
     parser.add_argument("--config", type=Path, default=default_config,
                         help="path to hidden_state_probe.yaml")
     args = parser.parse_args()

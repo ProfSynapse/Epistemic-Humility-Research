@@ -138,7 +138,7 @@ pre-registration guard pristine (Open/Closed).
 
 ```
 python3 .agents/skills/experiment-runner/scripts/prepare_extraction_cell.py \
-    --config experiment/phase1/probe/config/hidden_state_probe.yaml \
+    --config experiments/common/configs/phase1-probe/hidden_state_probe.yaml \
     [--run-extraction]        # default OFF: gate + report only, GPU-free
     [--research-repo-root <path>]
 ```
@@ -711,7 +711,7 @@ stem before editing), CODE must preserve these pins:
   resolver lives in the RUNNER; the harness is consumed as-is via its CLI. Do NOT
   modify the harness to add resolution. (If the harness genuinely needs a hook,
   that is a flag-and-confirm to the lead, not a silent edit.)
-- **`experiment/phase1/probe/config/hidden_state_probe.yaml`** — keep
+- **`experiments/common/configs/phase1-probe/hidden_state_probe.yaml`** — keep
   `aligned_run_record_id: null` (placeholder + loud-fail contract, §9) and
   `model.revision: null` (pin-before-run). The runner writes an EFFECTIVE config
   (temp), never mutates this committed file. (E2 MAY add an optional

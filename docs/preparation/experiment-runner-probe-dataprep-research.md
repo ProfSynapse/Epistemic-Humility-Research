@@ -116,7 +116,8 @@ So the honest GO/NO-GO is:
 
 The harness already isolates its output: it writes to
 `experiment/phase1/probe/<model_tag>/hidden_states/<extraction_id>/`
-(`config/hidden_state_probe.yaml:91-96`, `output.hidden_states_subdir: hidden_states`), the
+(`experiments/common/configs/phase1-probe/hidden_state_probe.yaml:91-96`,
+`output.hidden_states_subdir: hidden_states`), the
 `*/hidden_states/` subtree is gitignored (`experiment/phase1/probe/.gitignore:14`), and the
 config header states *"EXPLORATORY TIER, NOT a protocol change … writes to its own output subtree
 and NEVER mutates run records"* (`:13-15`). The subsampled slice therefore inherits the right
@@ -203,7 +204,8 @@ outcome.adapter_path:   "…\runs\local\4b\dpo__4b__headline__seed1\20260611_211
 outcome.status:         "completed"
 ```
 
-The harness side already declares the link: `config/hidden_state_probe.yaml:98-114`
+The harness side already declares the link:
+`experiments/common/configs/phase1-probe/hidden_state_probe.yaml:98-114`
 (`manifest_provenance.aligned_run_record_id`, *"names the run record this extraction's adapter was
 trained by; the harness NEVER writes to it"*), and the finalize gate
 `validate_manifest(require_populated=True)` **loud-fails on null** by design (post-remediation,

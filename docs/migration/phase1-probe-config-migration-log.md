@@ -647,7 +647,8 @@ This log records migration batches after the terrain baseline in
     archived checked-in config.
   - Added a README to the destination archive folder.
 - Non-goals:
-  - Did not move the live/default `hidden_state_probe.yaml` runner config.
+  - Did not move the live/default `hidden_state_probe.yaml` runner config in
+    this slice; it was migrated later under the live-defaults slice below.
   - Did not move KUQ or sycophancy hidden-state configs; those require separate
     owner decisions because KUQ belongs with the migrated xdataset transfer
     amendment and sycophancy configs are covered by a dedicated checked-in test.
@@ -673,7 +674,8 @@ This log records migration batches after the terrain baseline in
   - Updated the canonical mech-interp-runner cross-dataset reference and synced
     generated skill mirrors.
 - Non-goals:
-  - Did not move the live/default `hidden_state_probe.yaml` runner config.
+  - Did not move the live/default `hidden_state_probe.yaml` runner config in
+    this slice; it was migrated later under the live-defaults slice below.
   - Did not move sycophancy hidden-state configs; they remain a separate slice
     because a dedicated sycophancy row-manifest test covers them.
 
@@ -696,7 +698,8 @@ This log records migration batches after the terrain baseline in
   - Updated the dedicated sycophancy row-manifest unit test fixture paths.
   - Added a README to the destination archive folder.
 - Non-goals:
-  - Did not move the live/default `hidden_state_probe.yaml` runner config.
+  - Did not move the live/default `hidden_state_probe.yaml` runner config in
+    this slice; it was migrated later under the live-defaults slice below.
 
 ## C010a - Current-Clean Prompt-Matched Readout Configs
 
@@ -1044,8 +1047,7 @@ This log records migration batches after the terrain baseline in
 - File count: 2
 - Source root: `experiment/phase1/probe/config/`
 - Destination: `archive/experiment/phase1/probe/config/causal-pilot-core/`
-- Owner decision: archive-only historical provenance. `probe.yaml` and
-  `hidden_state_probe.yaml` remain root live defaults; these two causal-pilot
+- Owner decision: archive-only historical provenance. These two causal-pilot
   files are bounded historical Phase 3 configs superseded by the archived
   causal-pilot core surface.
 - Reason: the readiness smoke was a non-executable planning spec and the
@@ -1058,5 +1060,30 @@ This log records migration batches after the terrain baseline in
 - Non-goals:
   - Did not move generated causal-pilot outputs under
     `experiment/phase1/probe/qwen3-4b-instruct/`.
-  - Did not move `probe.yaml` or `hidden_state_probe.yaml`; both are still live
-    SSOT/default entrypoints with code and skill references.
+  - Did not move `probe.yaml` or `hidden_state_probe.yaml` in this slice; both
+    were still live SSOT/default entrypoints and were migrated separately below.
+
+## C000 - Live Phase 1 Probe Default Configs
+
+- Date: 2026-07-09
+- Source component: `phase1-probe` live defaults
+- File count: 2
+- Source root: `experiment/phase1/probe/config/`
+- Destination: `experiments/common/configs/phase1-probe/`
+- Owner decision: move the two live SSOT/default configs to the shared
+  experiments-first common config home rather than archiving them. These remain
+  active defaults for the probe and hidden-state extraction harnesses.
+- Reason: after all historical/experiment-owned Phase 3 configs moved out of
+  root, `probe.yaml` and `hidden_state_probe.yaml` were the only remaining files
+  under `experiment/phase1/probe/config/`. They are reusable Phase 1 probe
+  defaults, not bounded historical run products. Their YAML bodies remain
+  semantically unchanged; comments/default paths were updated, so probe hashes
+  over parsed YAML stay stable.
+- Reference updates:
+  - Updated `probe.py` and `hidden_state_probe.py` default `--config` paths.
+  - Updated the canonical experiment-runner skill default hidden-state command
+    and synced `.agents/` / `.claude/` mirrors.
+  - Rewrote active docs and README examples to the new common config paths.
+- Non-goals:
+  - Did not move generated probe results, hidden-state tensors, or Phase 1 eval
+    configs in this slice.

@@ -37,7 +37,7 @@ Build the MVP of the LoRA hidden-state probing tier: a correlational extraction 
 #### Components Affected
 | Component | Change Type | Impact |
 |-----------|-------------|--------|
-| `probe/config/hidden_state_probe.yaml` | New | Pinned extraction config (the hashed SSOT) |
+| `experiments/common/configs/phase1-probe/hidden_state_probe.yaml` | New | Pinned extraction config (the hashed SSOT) |
 | `probe/hidden_state_probe.py` | New | Driver: lazy HF/PEFT load, deterministic forward, writer, resume, GPU-smoke `h_base≠h_lora` |
 | `probe/hidden_state_schema.py` | New | Model-free validation + manifest builder (testability keystone) |
 | `probe/tests/test_hidden_state_probe.py` | New | GPU-free fixture tests |
@@ -75,7 +75,7 @@ Build the MVP of the LoRA hidden-state probing tier: a correlational extraction 
 | File | Purpose |
 |------|---------|
 | `probe/hidden_state_schema.py` | Model-free validators (tensor shape, `len==N+1`, layer ids, token-position metadata, adapter-state enum + P0 pre-flight, prompt hash, manifest fields, safetensors round-trip contract) + manifest builder |
-| `probe/config/hidden_state_probe.yaml` | Pinned config; `extraction_config_sha` computed (probe.py `config_sha` pattern) |
+| `experiments/common/configs/phase1-probe/hidden_state_probe.yaml` | Pinned config; `extraction_config_sha` computed (probe.py `config_sha` pattern) |
 | `probe/hidden_state_probe.py` | `ExtractionBackend` Protocol + `TransformersPeftBackend` (lazy) + `StubExtractionBackend` + selection/alignment + manifest/rows writer + row-key resume |
 | `probe/tests/test_hidden_state_probe.py` | GPU-free tests via the stub |
 | `probe/requirements-hidden-state.txt` | Inference deps decoupled from trainer pins |
@@ -90,7 +90,7 @@ Build the MVP of the LoRA hidden-state probing tier: a correlational extraction 
 #### Implementation Sequence (CPU-first; each step GREEN before the GPU-only piece)
 1. Extract `render_probe_prompt` from `backends.py`; add byte-identical regression to `test_probe_smoke.py`; prove existing smoke suite inert/GREEN. *(smallest, highest churn-risk → first)*
 2. `hidden_state_schema.py` — pure validators + manifest builder + **P0 declared-adapter-state pre-flight**.
-3. `config/hidden_state_probe.yaml` + config parse + `extraction_config_sha` + output-tree path resolution.
+3. `experiments/common/configs/phase1-probe/hidden_state_probe.yaml` + config parse + `extraction_config_sha` + output-tree path resolution.
 4. Selection/alignment: read `questions_frozen.json` keys + **stream** `probe_results.jsonl` by `probe_pool_row_key` (123MB — never whole-load) to build matched known/unknown slice.
 5. `ExtractionBackend` Protocol + `StubExtractionBackend` (deterministic fixed-shape, no torch) + manifest/`rows.jsonl` writer + resume → end-to-end pipeline GREEN on CPU.
 6. `TransformersPeftBackend` (lazy torch/transformers/peft; batch=1, `eval()`, `use_cache=False`, `no_grad`, fp32, pinned device; `disable_adapter()`→`h_base`, active→`h_lora`; reuse render helper) + GPU-smoke `h_base≠h_lora` assertion. *(GPU-only; not in CI)*

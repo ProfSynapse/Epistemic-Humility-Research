@@ -46,7 +46,7 @@ import check_prereqs  # noqa: E402
 import resolve_run_record  # noqa: E402
 
 # Default extraction config + the merged harness, relative to the research repo.
-_DEFAULT_CONFIG_REL = "experiment/phase1/probe/config/hidden_state_probe.yaml"
+_DEFAULT_CONFIG_REL = "experiments/common/configs/phase1-probe/hidden_state_probe.yaml"
 _HARNESS_REL = "experiment/phase1/probe/hidden_state_probe.py"
 
 

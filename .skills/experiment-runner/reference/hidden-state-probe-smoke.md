@@ -37,7 +37,7 @@ probe run is unnecessary to validate the pipeline.
 # nothing. Exit 0 on PASS *and* on SKIP (a SKIP is an exploratory degrade, not an
 # error — e.g. probe_results.jsonl absent, or the run-record link unresolvable).
 python3 .agents/skills/experiment-runner/scripts/prepare_extraction_cell.py \
-    --config experiment/phase1/probe/config/hidden_state_probe.yaml
+    --config experiments/common/configs/phase1-probe/hidden_state_probe.yaml
 ```
 
 The report is JSON. On `"status": "PASS"` it carries `resolved_run_record_ids` and
@@ -60,7 +60,7 @@ The unverified escape hatch (e.g. the dpo arm whose run record is `verified=Fals
 
 ```bash
 python3 .agents/skills/experiment-runner/scripts/prepare_extraction_cell.py \
-    --config experiment/phase1/probe/config/hidden_state_probe.yaml \
+    --config experiments/common/configs/phase1-probe/hidden_state_probe.yaml \
     --allow-unverified        # opt-in; default is fail-closed
 ```
 
@@ -70,7 +70,7 @@ python3 .agents/skills/experiment-runner/scripts/prepare_extraction_cell.py \
 # GPU-REQUIRED. After the gate PASSes, shells out to the merged harness with the
 # temp effective config. On a SKIP the harness is NOT invoked (exit 0).
 python3 .agents/skills/experiment-runner/scripts/prepare_extraction_cell.py \
-    --config experiment/phase1/probe/config/hidden_state_probe.yaml \
+    --config experiments/common/configs/phase1-probe/hidden_state_probe.yaml \
     --run-extraction
 ```
 

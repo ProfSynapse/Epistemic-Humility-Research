@@ -500,6 +500,33 @@ def _resolve_against_probe_dir(probe_dir: Path, rel_or_abs: str) -> Path:
     return candidate if candidate.is_absolute() else (probe_dir / candidate)
 
 
+def _probe_dir_for_extraction_config(config_path: Path, research_repo_root: Path) -> Path:
+    """Return the harness probe dir for a hidden-state extraction config.
+
+    Legacy checked-in configs lived at probe/config/<file>.yaml, where
+    config_path.parent.parent was the probe dir. The live default now lives under
+    experiments/common/configs/phase1-probe/, but its relative paths still follow
+    the harness convention and resolve against experiment/phase1/probe.
+    """
+    resolved_config = config_path.resolve()
+    repo_probe_dir = (research_repo_root / "experiment" / "phase1" / "probe").resolve()
+    common_config_dir = (
+        research_repo_root / "experiments" / "common" / "configs" / "phase1-probe"
+    ).resolve()
+    try:
+        resolved_config.relative_to(common_config_dir)
+        return repo_probe_dir
+    except ValueError:
+        pass
+
+    legacy_probe_dir = resolved_config.parent.parent
+    if (legacy_probe_dir / "hidden_state_probe.py").is_file():
+        return legacy_probe_dir
+    if (repo_probe_dir / "hidden_state_probe.py").is_file():
+        return repo_probe_dir
+    return legacy_probe_dir
+
+
 def _first_probe_row_sha(results_path: Path) -> Optional[str]:
     """Stream the first non-empty JSONL row and return its probe_config_sha.
 
@@ -554,7 +581,7 @@ def check_extraction_cell(
     # the resolver is co-located in the same scripts/ dir (synced canonical tree).
     import resolve_run_record  # noqa: PLC0415  (local import: keep module light)
 
-    probe_dir = config_path.resolve().parent.parent  # config/<f>.yaml -> probe/
+    probe_dir = _probe_dir_for_extraction_config(config_path, research_repo_root)
     details: dict = {}
     warnings: list[str] = []
 

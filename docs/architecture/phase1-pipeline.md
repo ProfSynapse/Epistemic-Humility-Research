@@ -734,7 +734,7 @@ experiment/
     README.md                       # how to run the pipeline end to end
     probe/
       probe.py                      # Component A
-      config/probe.yaml             # pinned sampling config (N=32, T, thinking off)
+      experiments/common/configs/phase1-probe/probe.yaml  # pinned sampling config (N=32, T, thinking off)
       <model_tag>/probe_results.jsonl  probe_manifest.json
     data/
       build_datasets.py             # Component B (all 3 formats from probe_results)
@@ -1480,7 +1480,7 @@ Enforcement map per method:
 | **SFT** (train) | Generic config-driven passthrough | `chat_template_kwargs: {enable_thinking: false}` carried by the SFT recipes, threaded through `shared/sft_preprocessing.py` into both `apply_chat_template` calls (coder-cloud #45). No Qwen3 string in shared infra; the kwarg is model-agnostic. |
 | **DPO** (train) | **Document-and-accept, no code change** | The DPO loader feeds TRL the CONVERSATIONAL `prompt`/`chosen`/`rejected` message-list schema (`Trainers/dpo/src/data_loader.py:6-16,:24`). TRL templates the prompt with `add_generation_prompt=True`, so the unconditional empty marker lands at the PROMPT/completion boundary (the generation-prompt position), NOT inside `chosen`/`rejected`. The completions — the text the DPO preference loss actually shapes — are the clean IDK strings (gold answer / abstention), carrying no reasoning. The marker is the empty thinking-OFF signature (`\n\n` inner), so no thinking *behavior* is ever trained; train and eval prompts carry it identically. Thinking-free by construction. |
 | **KTO** (train) | **Document-and-accept, no code change** | Distinct from DPO: the implemented KTO loader transforms the WS-2 ChatML (`conversations` + `label`) into RAW-STRING `prompt`/`completion`, extracted directly from message `content` (`Trainers/kto/src/data_loader.py:185-189`), and hands those raw strings to TRL. TRL never applies `tokenizer.chat_template` to raw strings, so for KTO **no Qwen3 template is invoked at train time and NO marker is injected anywhere** — the empty-marker question is N/A for KTO. The only `apply_chat_template` calls on the KTO path are inference-only (`Trainers/kto/src/inference.py:82,142`), not training. The trained completion is therefore the literal IDK target string the WS-2 builder placed in the assistant `content` (`experiment/phase1/data/build_datasets.py:421-429`), consistent with the SFT/DPO targets; with no marker on either side of the KTO train path, there is no train/eval marker mismatch to reconcile. |
-| **Eval / probe** (inference) | Already pinned | `experiment/phase1/eval/config/eval.yaml:18` and `experiment/phase1/probe/config/probe.yaml:28` pin `enable_thinking: false`; the probe has a runtime self-check (`test_probe_smoke.py:109` raises if not honored). |
+| **Eval / probe** (inference) | Already pinned | `experiment/phase1/eval/config/eval.yaml:18` and `experiments/common/configs/phase1-probe/probe.yaml:28` pin `enable_thinking: false`; the probe has a runtime self-check (`test_probe_smoke.py:109` raises if not honored). |
 
 Why KTO/DPO is document-and-accept rather than code: forcing think-off at the
 tokenizer-template level (wrapping `chat_template` / `get_chat_template`) is the

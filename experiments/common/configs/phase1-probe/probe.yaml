@@ -1,6 +1,6 @@
 # Phase 1 knowledge-probe config (WS-1).
 #
-# Location: experiment/phase1/probe/config/probe.yaml
+# Location: experiments/common/configs/phase1-probe/probe.yaml
 # Consumed by: experiment/phase1/probe/probe.py
 # Produces:    experiment/phase1/probe/<model_tag>/probe_results.jsonl
 #              + probe_manifest.json sidecar

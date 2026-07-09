@@ -2,7 +2,7 @@
 """Phase 1 knowledge probe (Component A, WS-1).
 
 Location: experiment/phase1/probe/probe.py
-Reads:    experiment/phase1/probe/config/probe.yaml (pinned sampling config)
+Reads:    experiments/common/configs/phase1-probe/probe.yaml (pinned sampling config)
           datasets/triviaqa-rc-nocontext/train.jsonl (WS-0 fetch output)
 Writes:   experiment/phase1/probe/<model_tag>/probe_results.jsonl  (A -> B contract)
           experiment/phase1/probe/<model_tag>/probe_manifest.json
@@ -424,7 +424,9 @@ def finalize(config: dict, results_path: Path, out_dir: Path) -> None:
 
 def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__)
-    default_config = Path(__file__).resolve().parent / "config" / "probe.yaml"
+    default_config = (
+        REPO_ROOT / "experiments/common/configs/phase1-probe/probe.yaml"
+    )
     parser.add_argument("--config", type=Path, default=default_config,
                         help="path to probe.yaml")
     args = parser.parse_args()

@@ -1,6 +1,6 @@
 # Hidden-state probing tier config (exploratory mechanism tier, MVP).
 #
-# Location: experiment/phase1/probe/config/hidden_state_probe.yaml
+# Location: experiments/common/configs/phase1-probe/hidden_state_probe.yaml
 # Consumed by: experiment/phase1/probe/hidden_state_probe.py
 # Produces:    experiment/phase1/probe/<model_tag>/hidden_states/<extraction_id>/
 #                manifest.json + rows.jsonl + per-arm h_base/h_lora/delta.safetensors

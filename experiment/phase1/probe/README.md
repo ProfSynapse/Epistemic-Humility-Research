@@ -12,16 +12,16 @@ dataset builders consume.
 | `probe.py` | Driver: load pool, checkpointed probe, score, label, write outputs |
 | `backends.py` | vLLM (real GPU) and Stub (GPU-free) backends + the shared `render_probe_prompt` helper both tiers use |
 | `scoring.py` | Correctness primitives ported from the Cheng-validated scorer |
-| `config/probe.yaml` | Pinned, pre-registered sampling config (N=32, T=1.0, thinking off) |
+| `experiments/common/configs/phase1-probe/probe.yaml` | Pinned, pre-registered sampling config (N=32, T=1.0, thinking off) |
 | `hidden_state_probe.py` | Hidden-state extraction tier driver (HF+PEFT forward; base/LoRA/delta; exploratory) |
 | `hidden_state_schema.py` | Model-free validation + manifest builder for the hidden-state tier (GPU-free keystone) |
 | `hidden_state_linear_probe.py` | Diagnostic per-layer linear probes over extracted hidden states (smoke/analysis only) |
 | `hidden_state_directions.py` | Candidate direction data layer for later intervention pilots; no steering/generation |
 | `phase3_causal_pilot_sweep.py` | Non-GPU-by-default planner/executor for reusable local causal-pilot sweeps |
 | `phase3_causal_pilot_aggregate.py` | Offline aggregation of completed causal-pilot run manifests and metrics |
-| `config/hidden_state_probe.yaml` | Pinned hidden-state extraction config (hashed SSOT) |
-| `config/phase3_causal_pilot_full_candidates.yaml` | Full local candidate inventory for comparable Phase 3 causal-pilot sweeps |
-| `config/phase3_causal_pilot_local_sweep.yaml` | Reusable local mech-interp sweep plan across current candidate directions |
+| `experiments/common/configs/phase1-probe/hidden_state_probe.yaml` | Pinned hidden-state extraction config (hashed SSOT) |
+| `archive/experiment/phase1/probe/config/causal-pilot-core/phase3_causal_pilot_full_candidates.yaml` | Archived full local candidate inventory for comparable Phase 3 causal-pilot sweeps |
+| `archive/experiment/phase1/probe/config/causal-pilot-core/phase3_causal_pilot_local_sweep.yaml` | Archived local mech-interp sweep plan across current candidate directions |
 | `requirements-hidden-state.txt` | Inference deps for the hidden-state tier, decoupled from the trainer pins |
 | `tests/` | GPU-free smoke tests on a fixture |
 
@@ -36,8 +36,8 @@ dataset builders consume.
 ## Run (real probe, post sign-off)
 
 ```
-cd experiment/phase1/probe
-python probe.py --config config/probe.yaml
+python experiment/phase1/probe/probe.py \
+  --config experiments/common/configs/phase1-probe/probe.yaml
 ```
 
 Outputs land in `experiment/phase1/probe/<model_tag>/`:
@@ -114,8 +114,8 @@ Do not reopen that pivot.
 
 ```
 pip install -r experiment/phase1/probe/requirements-hidden-state.txt
-cd experiment/phase1/probe
-python hidden_state_probe.py --config config/hidden_state_probe.yaml
+python experiment/phase1/probe/hidden_state_probe.py \
+  --config experiments/common/configs/phase1-probe/hidden_state_probe.yaml
 ```
 
 On this Windows desktop, prefer the Docker/Unsloth path for real Qwen3-4B
@@ -246,12 +246,13 @@ python experiment/phase1/probe/phase3_causal_pilot_aggregate.py \
   --out experiment/phase1/probe/qwen3-4b-instruct/causal_pilots/phase3_local_mech_interp_sweep/summary.csv
 ```
 
-The default sweep config uses the 9-candidate inventory in
-`config/phase3_causal_pilot_full_candidates.yaml`, while materialized execution
-configs inherit the generation-enabled guardrails from
-`config/phase3_causal_pilot_gpu_smoke.yaml`. The checked-in sweep plans Docker
-commands for live GPU execution with `/workspace/repo/...` runner/config paths,
-not host Python commands. The base-original `h_base` candidate is inventoried
+The archived sweep config uses the 9-candidate inventory in
+`archive/experiment/phase1/probe/config/causal-pilot-core/phase3_causal_pilot_full_candidates.yaml`,
+while materialized execution configs inherit the generation-enabled guardrails
+from `archive/experiment/phase1/probe/config/causal-pilot-core/phase3_causal_pilot_gpu_smoke.yaml`.
+The checked-in sweep plans Docker commands for live GPU execution with
+`/workspace/repo/...` runner/config paths, not host Python commands. The
+base-original `h_base` candidate is inventoried
 but skipped by default because the current live runner loads adapter-backed
 models from extraction provenance and does not yet provide a safe adapterless
 base intervention path.

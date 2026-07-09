@@ -29,7 +29,7 @@ checkpoints:
     expected_probe_config_sha.
   evidence:
   - experiment/phase1/probe/README.md
-  - experiment/phase1/probe/config/hidden_state_probe.yaml
+  - experiments/common/configs/phase1-probe/hidden_state_probe.yaml
   - archive/experiment/phase1/probe/config/causal-pilot-core/phase3_causal_pilot_smoke.yaml
   run_ids: []
   commands:
@@ -152,7 +152,7 @@ GPU execution.
 - summary: GPU-free validation passed for the hidden-state probe suite, extraction gate, and Phase 3 causal-pilot dry-run. The extraction gate is PASS for the default SFT config, with reproducibility warnings for unpinned model.revision and null expected_probe_config_sha.
 - evidence:
   - `experiment/phase1/probe/README.md`
-  - `experiment/phase1/probe/config/hidden_state_probe.yaml`
+  - `experiments/common/configs/phase1-probe/hidden_state_probe.yaml`
   - `archive/experiment/phase1/probe/config/causal-pilot-core/phase3_causal_pilot_smoke.yaml`
 - commands:
   - `python -m pytest experiment\\phase1\\probe\\tests\\test_hidden_state_probe.py experiment\\phase1\\probe\\tests\\test_hidden_state_directions.py experiment\\phase1\\probe\\tests\\test_hidden_state_linear_probe.py experiment\\phase1\\probe\\tests\\test_phase3_causal_pilot_dry_run.py -q`
