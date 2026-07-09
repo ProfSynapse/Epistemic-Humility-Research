@@ -587,9 +587,15 @@ def counts_by_role(rows: list[dict[str, Any]]) -> dict[str, dict[str, int]]:
     }
 
 
+def dose_grid_for_cell(cfg: dict[str, Any], cell_id: str) -> list[float]:
+    sel = cfg["snap"]["dose_selection"]
+    per_cell = sel.get("per_cell_candidate_realized_projection_targets") or {}
+    return [float(x) for x in per_cell.get(cell_id, sel["candidate_realized_projection_targets"])]
+
+
 def materialize_dose_sweep(cell: dict[str, Any], rows_path: Path, batch_size: int) -> Path:
     cfg = load_yaml(ROOT / "cell.yaml")
-    dose_grid = [float(x) for x in cfg["snap"]["dose_selection"]["candidate_realized_projection_targets"]]
+    dose_grid = dose_grid_for_cell(cfg, cell["cell_id"])
     cdir = committed_dir(cell["cell_id"])
     pdir = private_dir(cell["cell_id"])
     c_hat = load_json(cdir / "c_hat.json")
@@ -687,7 +693,7 @@ def pop_summary(rows: list[dict[str, Any]], metric: str) -> dict[str, Any]:
 
 def select_dose(args: argparse.Namespace) -> None:
     cfg = load_yaml(ROOT / "cell.yaml")
-    dose_grid = [float(x) for x in cfg["snap"]["dose_selection"]["candidate_realized_projection_targets"]]
+    dose_grid = dose_grid_for_cell(cfg, args.cell_id)
     rows = load_jsonl(private_dir(args.cell_id) / "rows_out_dose_fit.jsonl")
     reports = []
     selected = None

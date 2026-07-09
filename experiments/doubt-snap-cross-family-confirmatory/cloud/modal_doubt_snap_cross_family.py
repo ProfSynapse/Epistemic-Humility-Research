@@ -18,6 +18,7 @@ import modal
 REPO_URL = "https://github.com/ProfSynapse/Epistemic-Humility-Research.git"
 EXPERIMENT_SLUG = "doubt-snap-cross-family-confirmatory"
 RUN_TAG = "doubt-snap-cross-family-r1"
+MODAL_GPU = os.environ.get("DOUBT_SNAP_MODAL_GPU", "A10G")
 
 IMAGE = "unsloth/unsloth:2026.1.2-pt2.9.0-cu12.8-update"
 PIP = [
@@ -44,7 +45,7 @@ VOL_MOUNT = "/vol/doubt_snap_cross_family"
 
 
 @app.function(
-    gpu="A100",
+    gpu=MODAL_GPU,
     timeout=8 * HOURS,
     volumes={VOL_MOUNT: vol},
     secrets=[modal.Secret.from_dict({"HF_TOKEN": os.environ.get("HF_TOKEN", "")})],

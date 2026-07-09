@@ -203,7 +203,7 @@ def materialize(cell_id: str, batch_size: int) -> dict[str, str]:
             "modal": {
                 "app_name": f"eh-doubt-snap-{cell_id}",
                 "image": "unsloth/unsloth:2026.1.2-pt2.9.0-cu12.8-update",
-                "gpu": "A100",
+                "gpu": "A10G",
                 "timeout_hours": 8,
                 "checkpoint_interval_sec": 120,
                 "volume_name": "eh-doubt-snap-cross-family",

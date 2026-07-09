@@ -29,18 +29,21 @@ Use the live-volume wrapper path before pushing batch size: each cell's
 `analysis/<cell_id>` and `analysis-committed/<cell_id>` directories must be on
 the Modal volume so a preempted worker can resume from already persisted rows.
 
-For production runs, start near the hardware limit and back off only after an
-actual OOM, stall, or later-stage capture/steering memory pressure. Do not carry
-forward conservative smoke-test batch sizes as defaults.
+For production runs after the Qwen3.5 parity failure, do not size generation
+from VRAM headroom alone. Use batch-1 generation unless that exact model has a
+passing registered batch-parity smoke at a larger batch. Since batch-1 generation
+underutilizes A100 memory, future batch-1 cells should run on Modal A10G by
+default; set `DOUBT_SNAP_MODAL_GPU=A100` only for an explicit exception.
 
 Empirical anchors from 2026-07-08:
 
 - `Qwen/Qwen3.5-4B` baseline generation at batch 80 completed with peak GPU
-  memory about 13.8/39.5 GiB. Start future 4B-class cells around batch 160, then
-  adjust after the first persisted batch and peak-memory marker.
+  memory about 13.8/39.5 GiB, but failed the registered semantic batch-parity
+  smoke at batch 8. Relaunched from a clean namespace at batch 1.
 - `Qwen/Qwen3.5-9B` baseline generation and anchor capture completed at batch
-  48 with capture peak about 22.3/39.5 GiB. Relaunch 9B-class cells at batch 96
-  unless steer-stage memory pressure appears.
+  48 with capture peak about 22.3/39.5 GiB, but failed the registered semantic
+  batch-parity smoke. A diagnostic sweep found batch 1 passed and batch 2 failed,
+  so batch 1 is the highest evidenced passing generation batch for this cell.
 
-Generation, capture, and steering can have different memory curves, so treat
-baseline headroom as a launch heuristic rather than a guarantee for every stage.
+Generation, capture, and steering can have different memory curves, but the
+governing constraint here is semantic batch parity, not memory.

@@ -64,6 +64,29 @@ synthetic rows and a synthetic readout, not evaluation rows, and must reach
 real `mechinterp steer` output plus smoke readback before any full cell
 relaunch.
 
+Pre-outcome dose-recalibration note (2026-07-09): the Qwen3.5-4B and
+Qwen3.5-9B cells failed the registered FIT dose-viability rule with zero
+qualifying doses. An audit of the committed FIT artifacts showed both failures
+are overdose collapse of the registered candidate grid on these substrates,
+not family nulls: Qwen3.5-4B fits `sigma_c = 2.80`, about 4.7x smaller than
+the exploratory Qwen3-4B reference, so the lowest registered dose (100)
+already commands a roughly 38-sigma write and all 854 fired FIT confabs
+produced degenerate repetition; Qwen3.5-9B shows dose-graded collapse across
+100/150/200 (refusal content rises 18 -> 363 -> 886 while well-formedness
+falls 886 -> 503 -> 2), placing any coherent operating window below or between
+the registered 50-unit grid steps. Readback confirms the write itself realized
+the commanded projection exactly on both cells. Because dose selection is
+registered as FIT-only and neither cell has seen held-out scoring, the
+candidate grid for these two cells only is recalibrated pre-outcome:
+Qwen3.5-4B `{10,20,30,40,50,60,75}` and Qwen3.5-9B `{60,80,100,120,140}`,
+recorded in `cell.yaml` under per-cell targets. The selection rule and
+thresholds (lowest dose with FIT gated clean_tighten >= 0.60 and FIT
+known-correct false-refusal <= 0.10) and every other gate are unchanged. All
+other cells keep the original grid, and no cell's grid changes after its
+held-out outcome is known. If no dose in the recalibrated grid qualifies, the
+cell fails G0 dose viability and is recorded as such without further grid
+changes.
+
 The instrument is the same mechanism class as the merged Qwen amendment:
 
 1. GATE: a doubt readout `z_d`, fired as `neg_z_d = -z_d >= tau` because
@@ -88,7 +111,9 @@ Cross-family constants:
   across model families, choose a model-local dose on FIT only from
   `{100,150,200,250}`. The selected dose is the lowest dose with FIT gated
   clean_tighten >= 60% and FIT known-correct false-refusal <= 10%. If no dose
-  qualifies, the cell fails G0 viability before held-out scoring.
+  qualifies, the cell fails G0 viability before held-out scoring. The Qwen3.5
+  cells carry a pre-outcome per-cell grid recalibration; see the dated
+  dose-recalibration note above.
 - Populations: mine fresh behavior-defined roles per model from checked-in
   public dataset files. Answerable candidates come from TriviaQA and PopQA and
   enter `known_correct_answered` only if that model's undosed baseline answer is
