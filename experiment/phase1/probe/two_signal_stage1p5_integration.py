@@ -48,6 +48,7 @@ from sklearn.preprocessing import StandardScaler
 from sklearn.metrics import roc_auc_score
 
 PROBE_DIR = Path(__file__).resolve().parent
+RESULT_DIR = PROBE_DIR.parents[2] / "experiments" / "unified-two-signal-dial-veto" / "artifacts"
 if str(PROBE_DIR) not in sys.path:
     sys.path.insert(0, str(PROBE_DIR))
 
@@ -222,7 +223,7 @@ def main(argv=None):
         ),
     }
     print(json.dumps(result, indent=2))
-    out = a.out or (PROBE_DIR / "two_signal_stage1p5_integration.json")
+    out = a.out or (RESULT_DIR / "two_signal_stage1p5_integration.json")
     try:
         out.write_text(json.dumps(result, indent=2), encoding="utf-8")
         print(f"\nwrote {out}")

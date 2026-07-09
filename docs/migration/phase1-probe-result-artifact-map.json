@@ -20,6 +20,8 @@
   "experiment/phase1/probe/par_recalibration.json": "experiments/probe-as-reward/artifacts/par_recalibration.json",
   "experiment/phase1/probe/par_sensor_refit.json": "experiments/probe-as-reward/artifacts/par_sensor_refit.json",
   "experiment/phase1/probe/par_sensor_refit_v2.json": "experiments/probe-as-reward/artifacts/par_sensor_refit_v2.json",
+  "experiment/phase1/probe/two_signal_stage1_diagnostic.json": "experiments/unified-two-signal-dial-veto/artifacts/two_signal_stage1_diagnostic.json",
+  "experiment/phase1/probe/two_signal_stage1p5_integration.json": "experiments/unified-two-signal-dial-veto/artifacts/two_signal_stage1p5_integration.json",
   "experiment/phase1/probe/amendment_sr_gemma-4-e4b_seed20260701_result.json": "experiments/sampled-decode-seed-robustness/artifacts/amendment_sr_gemma-4-e4b_seed20260701_result.json",
   "experiment/phase1/probe/amendment_sr_gemma-4-e4b_seed20260702_result.json": "experiments/sampled-decode-seed-robustness/artifacts/amendment_sr_gemma-4-e4b_seed20260702_result.json",
   "experiment/phase1/probe/amendment_sr_gemma-4-e4b_seed20260703_result.json": "experiments/sampled-decode-seed-robustness/artifacts/amendment_sr_gemma-4-e4b_seed20260703_result.json",
