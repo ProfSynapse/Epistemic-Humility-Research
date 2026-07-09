@@ -738,7 +738,7 @@ _No summary yet._
   - `archive/experiment/phase1/probe/config/current-clean-grpo-v2-unknown-failure/phase3_current_clean_grpo_v2_unknown_failure_selfaware_row_keys.txt`
   - `experiment/phase1/probe/config/phase3_current_clean_grpo_v2_unknown_failure_selfaware_scored_rows.jsonl`
   - `experiment/phase1/probe/config/hidden_state_selfaware_manifest_clean_sft_grpo_v2_unknown_failure_panel.yaml`
-  - `experiment/phase1/probe/config/phase3_current_clean_grpo_v2_unknown_failure_behavior_axis_scan.yaml`
+  - `archive/experiment/phase1/probe/config/current-clean-grpo-v2-unknown-failure/phase3_current_clean_grpo_v2_unknown_failure_behavior_axis_scan.yaml`
 - commands:
   - `bin\\search.cmd "GRPO v2 unknown_answered_wrong row key panel targeted row keys selfaware eval results" --limit 10`
   - `python experiment\\phase1\\probe\\phase3_selfaware_behavior_manifest.py --config experiment\\phase1\\probe\\config\\phase3_current_clean_grpo_v2_unknown_failure_selfaware_manifest.yaml`
@@ -760,14 +760,14 @@ _No summary yet._
 - summary: Re-ran the GRPO v2 unknown-failure hidden-state extraction and behavior-axis scan with the exact Amendment E JSON response-confidence eval prompt. This corrected a prompt-mismatch artifact from the first generic-prompt pass, where no-vector replay failed to reproduce the source behavior cells. Prompt-matched scan found strong separability for `unknown_answered_wrong` vs `unknown_refused`: delta L15 (`d ~= 2.39`, AUC `~0.985`), delta L14 (`d ~= 2.29`, AUC `~0.972`), and h_lora L22 (`d ~= 1.88`, AUC `~0.912`). Final-prompt refusal-opener logit diagnostics were near-zero and methodologically uninformative under the JSON schema prompt because the next token is the JSON scaffold, not the answer text. Generated replay on the balanced 256-row panel was the real gate: baseline replay refused 68/128 unknown rows and answered 60/128. Simple axes did not produce a useful intervention. Delta L15 addition coeff 10 repaired 2 unknown answering failures but caused 3 unknown-refusal leaks; delta L15 subtraction coeff 25 repaired 1 and leaked 1; h_lora L22 subtraction repaired 1 and leaked 1; h_lora L22 addition produced no unknown repairs and 3-4 leaks.
 - evidence:
   - `experiment/phase1/probe/config/hidden_state_selfaware_manifest_clean_sft_grpo_v2_unknown_failure_panel_prompt_matched.yaml`
-  - `experiment/phase1/probe/config/phase3_current_clean_grpo_v2_unknown_failure_prompt_matched_behavior_axis_scan.yaml`
-  - `experiment/phase1/probe/config/phase3_current_clean_grpo_v2_unknown_failure_prompt_matched_directions.yaml`
+  - `archive/experiment/phase1/probe/config/current-clean-grpo-v2-unknown-failure/phase3_current_clean_grpo_v2_unknown_failure_prompt_matched_behavior_axis_scan.yaml`
+  - `archive/experiment/phase1/probe/config/current-clean-grpo-v2-unknown-failure/phase3_current_clean_grpo_v2_unknown_failure_prompt_matched_directions.yaml`
   - `archive/experiment/phase1/probe/config/current-clean-grpo-v2-unknown-failure/phase3_current_clean_grpo_v2_unknown_failure_prompt_matched_logit_candidates.yaml`
   - `archive/experiment/phase1/probe/config/current-clean-grpo-v2-unknown-failure/phase3_current_clean_grpo_v2_unknown_failure_prompt_matched_generation_replay.yaml`
   - `experiment/phase1/probe/analysis/current_clean_grpo_v2_unknown_failure_prompt_matched_generation_replay/summary_latest/summary.csv`
   - `.skills/mech-interp-runner/references/phase3-current-findings.md`
 - commands:
-  - `python experiment\\phase1\\probe\\phase3_behavior_axis_directions.py --config experiment\\phase1\\probe\\config\\phase3_current_clean_grpo_v2_unknown_failure_prompt_matched_directions.yaml`
+  - `python experiment\\phase1\\probe\\phase3_behavior_axis_directions.py --config archive\\experiment\\phase1\\probe\\config\\current-clean-grpo-v2-unknown-failure\\phase3_current_clean_grpo_v2_unknown_failure_prompt_matched_directions.yaml`
   - `python experiment\\phase1\\probe\\phase3_causal_pilot_sweep.py --config experiment\\phase1\\probe\\config\\phase3_current_clean_grpo_v2_unknown_failure_prompt_matched_logit_sweep.yaml --mode-filter logit_diagnostic --write-plan --materialize-configs --execute --allow-logit-diagnostic`
   - `python experiment\\phase1\\probe\\phase3_logit_cell_analysis.py --config experiment\\phase1\\probe\\config\\phase3_current_clean_grpo_v2_unknown_failure_prompt_matched_logit_cell_analysis.yaml`
   - `python experiment\\phase1\\probe\\phase3_causal_pilot_sweep.py --config experiment\\phase1\\probe\\config\\phase3_current_clean_grpo_v2_unknown_failure_prompt_matched_generation_replay.yaml --mode-filter generation --write-plan --materialize-configs --execute --allow-generation`
@@ -788,13 +788,13 @@ _No summary yet._
 - evidence:
   - `experiment/phase1/probe/config/phase3_current_clean_grpo_v2_unknown_failure_prompt_matched_multicell_readout.yaml`
   - `experiment/phase1/probe/analysis/current_clean_grpo_v2_unknown_failure_prompt_matched_multicell_readout/top_readouts_all.csv`
-  - `experiment/phase1/probe/config/phase3_current_clean_grpo_v2_unknown_failure_prompt_matched_l26_multicell_directions.yaml`
+  - `archive/experiment/phase1/probe/config/current-clean-grpo-v2-unknown-failure/phase3_current_clean_grpo_v2_unknown_failure_prompt_matched_l26_multicell_directions.yaml`
   - `experiment/phase1/probe/config/phase3_current_clean_grpo_v2_unknown_failure_prompt_matched_l26_constrained_unknown_repair.yaml`
   - `archive/experiment/phase1/probe/config/current-clean-grpo-v2-unknown-failure/phase3_current_clean_grpo_v2_unknown_failure_prompt_matched_l26_constrained_generation_replay.yaml`
   - `experiment/phase1/probe/analysis/current_clean_grpo_v2_unknown_failure_prompt_matched_l26_constrained_generation_replay/summary_latest/summary.csv`
 - commands:
   - `python .skills\\mech-interp-runner\\scripts\\phase3_cli.py multicell-readout --config experiment\\phase1\\probe\\config\\phase3_current_clean_grpo_v2_unknown_failure_prompt_matched_multicell_readout.yaml`
-  - `python experiment\\phase1\\probe\\phase3_behavior_axis_directions.py --config experiment\\phase1\\probe\\config\\phase3_current_clean_grpo_v2_unknown_failure_prompt_matched_l26_multicell_directions.yaml`
+  - `python experiment\\phase1\\probe\\phase3_behavior_axis_directions.py --config archive\\experiment\\phase1\\probe\\config\\current-clean-grpo-v2-unknown-failure\\phase3_current_clean_grpo_v2_unknown_failure_prompt_matched_l26_multicell_directions.yaml`
   - `python experiment\\phase1\\probe\\phase3_direction_transforms.py --config experiment\\phase1\\probe\\config\\phase3_current_clean_grpo_v2_unknown_failure_prompt_matched_l26_constrained_unknown_repair.yaml`
   - `python experiment\\phase1\\probe\\phase3_causal_pilot_sweep.py --config experiment\\phase1\\probe\\config\\phase3_current_clean_grpo_v2_unknown_failure_prompt_matched_l26_constrained_generation_replay.yaml --mode-filter generation --write-plan --materialize-configs --execute --allow-generation`
   - `python experiment\\phase1\\probe\\phase3_generation_replay_analysis.py --root experiment\\phase1\\probe\\analysis\\current_clean_grpo_v2_unknown_failure_prompt_matched_l26_constrained_generation_replay --out experiment\\phase1\\probe\\analysis\\current_clean_grpo_v2_unknown_failure_prompt_matched_l26_constrained_generation_replay\\summary_latest`

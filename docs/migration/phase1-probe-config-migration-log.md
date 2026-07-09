@@ -261,3 +261,30 @@ This log records migration batches after the terrain baseline in
   - `phase3_current_clean_kto_grpo_unknown_failure_selfaware_manifest.summary.json`
     was referenced by the manifest config but was not tracked or present at
     migration time.
+## C007/C009 - Current-Clean GRPO v2 Unknown-Failure Axis And Direction Configs
+
+- Date: 2026-07-09
+- Source components: `C007`, `C009`
+- File count: 5
+- Source root: `experiment/phase1/probe/config/`
+- Destination:
+  `archive/experiment/phase1/probe/config/current-clean-grpo-v2-unknown-failure/`
+- Owner decision: archive-only historical provenance for the Phase 3 GRPO v2
+  unknown-failure slice. No migrated `experiments/<slug>` owner was present, and
+  these files are not reusable shared defaults.
+- Reason: these configs are the generic-prompt and prompt-matched behavior-axis
+  scan/direction-export producers for the already archived GRPO v2
+  unknown-failure replay/logit candidate configs.
+- Reference updates:
+  - Rewrote component-internal `source_scan_config` references to the archive
+    path.
+  - Rewrote moved-file references and command paths in
+    `docs/sessions/20260625T145842Z-phase-3-model-variation-panel.md`.
+  - Updated the destination archive README to list the added batches.
+- Non-goals:
+  - Did not move sibling hidden-state extraction, multicell readout,
+    constrained-repair transform, or head-localization configs; those remain
+    separate terrain components for later review.
+  - Did not rewrite extraction dirs or analysis output roots. Those paths
+    preserve historical run provenance and will be handled in broader artifact
+    archive passes.

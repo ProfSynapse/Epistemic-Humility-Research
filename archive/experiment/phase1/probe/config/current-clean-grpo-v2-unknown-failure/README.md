@@ -10,3 +10,9 @@ The component contains the GRPO v2 unknown-answering failure candidate inventory
 
 Keep these files as provenance for the historical Phase 3 model-variation work. Do not use this directory as the home for new experiment instruments; new evidence-producing cells belong under `experiments/<slug>/` or `experiments/common/` when promoted for shared reuse.
 Known provenance gaps: `phase3_current_clean_grpo_v2_unknown_failure_selfaware_scored_rows.jsonl` and `phase3_current_clean_grpo_v2_unknown_failure_selfaware_manifest.summary.json` were referenced by historical notes/config but were not tracked or present when this archive batch was created.
+Additional migration batches:
+
+- `C007`: generic-prompt GRPO v2 unknown-failure behavior-axis scan and direction export.
+- `C009`: prompt-matched GRPO v2 unknown-failure behavior-axis scan plus simple and L26 multicell direction exports.
+
+These batches remain archive-only historical provenance for the Phase 3 GRPO v2 unknown-failure slice. They are kept here with the generated replay, logit diagnostic, and candidate configs that consume their analysis outputs.

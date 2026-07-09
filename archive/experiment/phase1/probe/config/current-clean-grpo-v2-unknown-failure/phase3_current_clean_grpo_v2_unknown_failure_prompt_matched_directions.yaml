@@ -3,7 +3,7 @@ spec:
   analysis_type: phase3_behavior_axis_direction_export
   notice: BEHAVIOR_AXIS_DIRECTION_CANDIDATES_ONLY_GRPO_V2_UNKNOWN_FAILURE_PROMPT_MATCHED_PANEL
 
-source_scan_config: experiment/phase1/probe/config/phase3_current_clean_grpo_v2_unknown_failure_prompt_matched_behavior_axis_scan.yaml
+source_scan_config: archive/experiment/phase1/probe/config/current-clean-grpo-v2-unknown-failure/phase3_current_clean_grpo_v2_unknown_failure_prompt_matched_behavior_axis_scan.yaml
 
 axes:
   - label: clean_sft_grpo_v2_pm_delta_unknown_wrong_vs_refused_l15_normed
