@@ -31,7 +31,9 @@ import json
 import sys
 from pathlib import Path
 
-PROBE_DIR = Path(__file__).resolve().parent
+from path_compat import phase1_probe_dir  # noqa: E402
+
+PROBE_DIR = phase1_probe_dir()
 ANALYSIS = PROBE_DIR / "analysis"
 STAGE0 = ANALYSIS / "ah_stage0"
 DEFAULT_POOL = STAGE0 / "expansion" / "pool_v21.jsonl"
