@@ -9,7 +9,7 @@ Plan/materialize before live execution:
 
 ```bash
 python experiment/phase1/probe/phase3_causal_pilot_sweep.py \
-  --config experiment/phase1/probe/config/phase3_causal_pilot_local_sweep.yaml \
+  --config archive/experiment/phase1/probe/config/causal-pilot-core/phase3_causal_pilot_local_sweep.yaml \
   --mode-filter logit_diagnostic \
   --write-plan --materialize-configs
 ```
@@ -18,7 +18,7 @@ Only after approval, execute:
 
 ```bash
 python experiment/phase1/probe/phase3_causal_pilot_sweep.py \
-  --config experiment/phase1/probe/config/phase3_causal_pilot_local_sweep.yaml \
+  --config archive/experiment/phase1/probe/config/causal-pilot-core/phase3_causal_pilot_local_sweep.yaml \
   --mode-filter logit_diagnostic \
   --write-plan --materialize-configs --execute \
   --allow-logit-diagnostic

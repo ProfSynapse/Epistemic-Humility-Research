@@ -51,7 +51,7 @@ checkpoints:
   evidence:
   - docs/plans/phase3-causal-pilot-smoke-results.md
   - experiment/phase1/probe/phase3_causal_pilot_runner.py
-  - experiment/phase1/probe/config/phase3_causal_pilot_gpu_smoke.yaml
+  - archive/experiment/phase1/probe/config/causal-pilot-core/phase3_causal_pilot_gpu_smoke.yaml
   - experiment/phase1/probe/qwen3-4b-instruct/causal_pilots/phase3_sft_activation_addition_gpu_smoke/run_20260618T203542Z/metrics.json
   - experiment/phase1/probe/qwen3-4b-instruct/causal_pilots/phase3_sft_activation_addition_gpu_smoke/run_20260618T203936Z/scored_rows.jsonl
   run_ids: []
@@ -128,8 +128,8 @@ checkpoints:
   - .skills/mech-interp-runner/SKILL.md
   - experiment/phase1/probe/phase3_causal_pilot_sweep.py
   - experiment/phase1/probe/phase3_causal_pilot_aggregate.py
-  - experiment/phase1/probe/config/phase3_causal_pilot_full_candidates.yaml
-  - experiment/phase1/probe/config/phase3_causal_pilot_local_sweep.yaml
+  - archive/experiment/phase1/probe/config/causal-pilot-core/phase3_causal_pilot_full_candidates.yaml
+  - archive/experiment/phase1/probe/config/causal-pilot-core/phase3_causal_pilot_local_sweep.yaml
   run_ids: []
   commands:
   - python -m pytest experiment\\phase1\\probe\\tests\\test_phase3_causal_pilot_sweep.py
@@ -163,9 +163,9 @@ checkpoints:
   - experiment/phase1/probe/qwen3-4b-instruct/causal_pilots/phase3_local_mech_interp_sweep/sft_kto_h_lora_l35/generation/run_20260618T233700Z
   run_ids: []
   commands:
-  - python experiment\\phase1\\probe\\phase3_causal_pilot_sweep.py --config experiment\\phase1\\probe\\config\\phase3_causal_pilot_local_sweep.yaml
+  - python experiment\\phase1\\probe\\phase3_causal_pilot_sweep.py --config archive\\experiment\\phase1\\probe\\config\\causal-pilot-core\\phase3_causal_pilot_local_sweep.yaml
     --mode-filter logit_diagnostic --write-plan --materialize-configs --execute --allow-logit-diagnostic
-  - python experiment\\phase1\\probe\\phase3_causal_pilot_sweep.py --config experiment\\phase1\\probe\\config\\phase3_causal_pilot_local_sweep.yaml
+  - python experiment\\phase1\\probe\\phase3_causal_pilot_sweep.py --config archive\\experiment\\phase1\\probe\\config\\causal-pilot-core\\phase3_causal_pilot_local_sweep.yaml
     --mode-filter generation --write-plan --materialize-configs --execute --allow-generation
   - python experiment\\phase1\\probe\\phase3_causal_pilot_aggregate.py --root experiment\\phase1\\probe\\qwen3-4b-instruct\\causal_pilots\\phase3_local_mech_interp_sweep
     --out experiment\\phase1\\probe\\qwen3-4b-instruct\\causal_pilots\\phase3_local_mech_interp_sweep\\summary.csv
@@ -477,7 +477,7 @@ correlational until a controlled intervention changes behavior.
 - evidence:
   - `docs/plans/phase3-causal-pilot-smoke-results.md`
   - `experiment/phase1/probe/phase3_causal_pilot_runner.py`
-  - `experiment/phase1/probe/config/phase3_causal_pilot_gpu_smoke.yaml`
+  - `archive/experiment/phase1/probe/config/causal-pilot-core/phase3_causal_pilot_gpu_smoke.yaml`
   - `experiment/phase1/probe/qwen3-4b-instruct/causal_pilots/phase3_sft_activation_addition_gpu_smoke/run_20260618T203542Z/metrics.json`
   - `experiment/phase1/probe/qwen3-4b-instruct/causal_pilots/phase3_sft_activation_addition_gpu_smoke/run_20260618T203936Z/scored_rows.jsonl`
 - commands:
@@ -531,8 +531,8 @@ correlational until a controlled intervention changes behavior.
   - `.skills/mech-interp-runner/SKILL.md`
   - `experiment/phase1/probe/phase3_causal_pilot_sweep.py`
   - `experiment/phase1/probe/phase3_causal_pilot_aggregate.py`
-  - `experiment/phase1/probe/config/phase3_causal_pilot_full_candidates.yaml`
-  - `experiment/phase1/probe/config/phase3_causal_pilot_local_sweep.yaml`
+  - `archive/experiment/phase1/probe/config/causal-pilot-core/phase3_causal_pilot_full_candidates.yaml`
+  - `archive/experiment/phase1/probe/config/causal-pilot-core/phase3_causal_pilot_local_sweep.yaml`
 - commands:
   - `python -m pytest experiment\\phase1\\probe\\tests\\test_phase3_causal_pilot_sweep.py experiment\\phase1\\probe\\tests\\test_phase3_causal_pilot_runner.py experiment\\phase1\\probe\\tests\\test_phase3_causal_pilot_dry_run.py -q`
   - `python -m py_compile experiment\\phase1\\probe\\phase3_causal_pilot_sweep.py experiment\\phase1\\probe\\phase3_causal_pilot_aggregate.py`
@@ -556,8 +556,8 @@ correlational until a controlled intervention changes behavior.
   - `experiment/phase1/probe/qwen3-4b-instruct/causal_pilots/phase3_local_mech_interp_sweep/sft_dpo_delta_l35/generation/run_20260618T233308Z`
   - `experiment/phase1/probe/qwen3-4b-instruct/causal_pilots/phase3_local_mech_interp_sweep/sft_kto_h_lora_l35/generation/run_20260618T233700Z`
 - commands:
-  - `python experiment\\phase1\\probe\\phase3_causal_pilot_sweep.py --config experiment\\phase1\\probe\\config\\phase3_causal_pilot_local_sweep.yaml --mode-filter logit_diagnostic --write-plan --materialize-configs --execute --allow-logit-diagnostic`
-  - `python experiment\\phase1\\probe\\phase3_causal_pilot_sweep.py --config experiment\\phase1\\probe\\config\\phase3_causal_pilot_local_sweep.yaml --mode-filter generation --write-plan --materialize-configs --execute --allow-generation`
+  - `python experiment\\phase1\\probe\\phase3_causal_pilot_sweep.py --config archive\\experiment\\phase1\\probe\\config\\causal-pilot-core\\phase3_causal_pilot_local_sweep.yaml --mode-filter logit_diagnostic --write-plan --materialize-configs --execute --allow-logit-diagnostic`
+  - `python experiment\\phase1\\probe\\phase3_causal_pilot_sweep.py --config archive\\experiment\\phase1\\probe\\config\\causal-pilot-core\\phase3_causal_pilot_local_sweep.yaml --mode-filter generation --write-plan --materialize-configs --execute --allow-generation`
   - `python experiment\\phase1\\probe\\phase3_causal_pilot_aggregate.py --root experiment\\phase1\\probe\\qwen3-4b-instruct\\causal_pilots\\phase3_local_mech_interp_sweep --out experiment\\phase1\\probe\\qwen3-4b-instruct\\causal_pilots\\phase3_local_mech_interp_sweep\\summary.csv`
 - result:
   - Executed jobs: 16 total, all return code 0.
@@ -634,7 +634,7 @@ correlational until a controlled intervention changes behavior.
   answer aliases by default and records them as skipped targets.
 - evidence:
   - `experiment/phase1/probe/phase3_causal_pilot_runner.py`
-  - `experiment/phase1/probe/config/phase3_causal_pilot_gpu_smoke.yaml`
+  - `archive/experiment/phase1/probe/config/causal-pilot-core/phase3_causal_pilot_gpu_smoke.yaml`
   - `experiment/phase1/probe/tests/test_phase3_causal_pilot_runner.py`
   - `experiment/phase1/probe/qwen3-4b-instruct/causal_pilots/phase3_sft_activation_addition_gpu_smoke/run_20260619T002325Z/logit_diagnostics.jsonl`
   - `experiment/phase1/probe/qwen3-4b-instruct/causal_pilots/phase3_sft_activation_addition_gpu_smoke/run_20260619T002325Z/run_manifest.json`

@@ -3,8 +3,8 @@
 sweep:
   name: phase3_gold_answer_kto_random_seed_panel
   evidence_tier: tier2_exploratory_local
-  runner_config: experiment/phase1/probe/config/phase3_causal_pilot_gpu_smoke.yaml
-  candidate_source_config: experiment/phase1/probe/config/phase3_causal_pilot_full_candidates.yaml
+  runner_config: archive/experiment/phase1/probe/config/causal-pilot-core/phase3_causal_pilot_gpu_smoke.yaml
+  candidate_source_config: archive/experiment/phase1/probe/config/causal-pilot-core/phase3_causal_pilot_full_candidates.yaml
   output_root: experiment/phase1/probe/qwen3-4b-instruct/causal_pilots/phase3_gold_answer_kto_random_seed_panel
   candidates:
     - sft_kto_h_lora_l35

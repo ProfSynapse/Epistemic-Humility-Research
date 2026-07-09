@@ -17,14 +17,14 @@ Plan the current sweep:
 
 ```bash
 python experiment/phase1/probe/phase3_causal_pilot_sweep.py \
-  --config experiment/phase1/probe/config/phase3_causal_pilot_local_sweep.yaml
+  --config archive/experiment/phase1/probe/config/causal-pilot-core/phase3_causal_pilot_local_sweep.yaml
 ```
 
 Write the plan and materialized per-candidate runner configs without execution:
 
 ```bash
 python experiment/phase1/probe/phase3_causal_pilot_sweep.py \
-  --config experiment/phase1/probe/config/phase3_causal_pilot_local_sweep.yaml \
+  --config archive/experiment/phase1/probe/config/causal-pilot-core/phase3_causal_pilot_local_sweep.yaml \
   --write-plan --materialize-configs
 ```
 
@@ -32,12 +32,12 @@ For logit diagnostics only, filter before planning/materialization:
 
 ```bash
 python experiment/phase1/probe/phase3_causal_pilot_sweep.py \
-  --config experiment/phase1/probe/config/phase3_causal_pilot_local_sweep.yaml \
+  --config archive/experiment/phase1/probe/config/causal-pilot-core/phase3_causal_pilot_local_sweep.yaml \
   --mode-filter logit_diagnostic --write-plan --materialize-configs
 ```
 
 The sweep config reads candidate directions from
-`experiment/phase1/probe/config/phase3_causal_pilot_full_candidates.yaml` and
+`archive/experiment/phase1/probe/config/causal-pilot-core/phase3_causal_pilot_full_candidates.yaml` and
 uses the generation-enabled runner config as a template. This keeps the full
 candidate set reusable while preserving the live runner's explicit gates. The
 checked-in local sweep plans Docker commands for live GPU execution, not host
@@ -51,7 +51,7 @@ Only after explicit user approval, execute with the mode-specific gates:
 
 ```bash
 python experiment/phase1/probe/phase3_causal_pilot_sweep.py \
-  --config experiment/phase1/probe/config/phase3_causal_pilot_local_sweep.yaml \
+  --config archive/experiment/phase1/probe/config/causal-pilot-core/phase3_causal_pilot_local_sweep.yaml \
   --write-plan --materialize-configs --execute \
   --allow-logit-diagnostic --allow-generation
 ```

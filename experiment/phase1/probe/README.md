@@ -216,7 +216,7 @@ Plan the current local sweep without GPU/model loading:
 
 ```
 python experiment/phase1/probe/phase3_causal_pilot_sweep.py \
-  --config experiment/phase1/probe/config/phase3_causal_pilot_local_sweep.yaml
+  --config archive/experiment/phase1/probe/config/causal-pilot-core/phase3_causal_pilot_local_sweep.yaml
 ```
 
 Write a durable plan and per-candidate runner configs, still without running
@@ -224,7 +224,7 @@ generation or diagnostics:
 
 ```
 python experiment/phase1/probe/phase3_causal_pilot_sweep.py \
-  --config experiment/phase1/probe/config/phase3_causal_pilot_local_sweep.yaml \
+  --config archive/experiment/phase1/probe/config/causal-pilot-core/phase3_causal_pilot_local_sweep.yaml \
   --write-plan --materialize-configs
 ```
 
@@ -233,7 +233,7 @@ including generation jobs:
 
 ```
 python experiment/phase1/probe/phase3_causal_pilot_sweep.py \
-  --config experiment/phase1/probe/config/phase3_causal_pilot_local_sweep.yaml \
+  --config archive/experiment/phase1/probe/config/causal-pilot-core/phase3_causal_pilot_local_sweep.yaml \
   --mode-filter logit_diagnostic --write-plan --materialize-configs
 ```
 

@@ -10,7 +10,7 @@ The first live causal-pilot runner was implemented as a separate explicit
 generation path:
 
 - runner: `experiment/phase1/probe/phase3_causal_pilot_runner.py`
-- config: `experiment/phase1/probe/config/phase3_causal_pilot_gpu_smoke.yaml`
+- config: `archive/experiment/phase1/probe/config/causal-pilot-core/phase3_causal_pilot_gpu_smoke.yaml`
 - tests: `experiment/phase1/probe/tests/test_phase3_causal_pilot_runner.py`
 - candidate direction: `direction__9c8c74f718038292`
 - source extraction: `extraction__12fb10b1c8c8`
