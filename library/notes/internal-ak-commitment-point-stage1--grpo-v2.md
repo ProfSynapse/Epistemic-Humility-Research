@@ -20,7 +20,7 @@ models:
 - qwen3-4b
 metrics:
 - auroc
-provenance: 'Internal amendment, Stage 1 (readout, no intervention). Amendment doc experiments/commitment-point/AMENDMENT.md; Stage 1 analysis NOT yet merged to main, so provenance cites branch amendment-ak-commitment-point at analysis commit 069427dd. Committed record: experiment/phase1/probe/analysis-committed/ak_stage1_gate_verdicts.json plus ak_stage1_gate_verdicts.md; pilot floor analysis-committed/ak_stage1_pilot_floor.json (COMMITTED_FLOOR 5.291963, locked commit b6f560b8). Analysis script experiment/phase1/probe/amendment_ak_stage1_analyze.py (seed 20260705, deterministic). Data: raw-base config_sha 0dcb65d0062db64a, grpo-v2 config_sha 6394415378c83c96; 1,338 rows/arm (309 confab / 1,029 refuse), 50 pilot rows excluded from the AK-G2 test set. AK-G1 gates on grpo-v2; raw-base is descriptive. Exploratory lab-notebook evidence, never pooled with the locked headline matrix.'
+provenance: 'Internal amendment, Stage 1 (readout, no intervention). Amendment doc experiments/commitment-point/AMENDMENT.md; Stage 1 analysis NOT yet merged to main, so provenance cites branch amendment-ak-commitment-point at analysis commit 069427dd. Committed record: experiments/commitment-point/artifacts/stage1/ak_stage1_gate_report.json plus ak_stage1_gate_verdicts.md; pilot floor experiments/commitment-point/artifacts/stage1/ak_stage1_pilot_floor.json (COMMITTED_FLOOR 5.291963, locked commit b6f560b8). Analysis script experiment/phase1/probe/amendment_ak_stage1_analyze.py (seed 20260705, deterministic). Data: raw-base config_sha 0dcb65d0062db64a, grpo-v2 config_sha 6394415378c83c96; 1,338 rows/arm (309 confab / 1,029 refuse), 50 pilot rows excluded from the AK-G2 test set. AK-G1 gates on grpo-v2; raw-base is descriptive. Exploratory lab-notebook evidence, never pooled with the locked headline matrix.'
 related:
 - '[[veto-saturates-by-first-visible-token]]'
 - '[[post-generation-veto-is-rederived-not-carried]]'
@@ -95,7 +95,7 @@ run), so it has not fired.
   veto is already assembled at the first visible token (0.94) and does not rise
   across the answer window. The random-direction guards read cleanly at
   0.486/0.529. (branch amendment-ak-commitment-point, analysis commit 069427dd;
-  analysis-committed/ak_stage1_gate_verdicts.md; supports
+  experiments/commitment-point/artifacts/stage1/ak_stage1_gate_verdicts.md; supports
   [[veto-saturates-by-first-visible-token]].)
 - Evidence label: descriptive crystallization curve (raw-base, not the gate
   surface). The raw base rises across the window (+0.0341, from 0.9624 first-visible

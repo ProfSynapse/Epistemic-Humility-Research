@@ -5,7 +5,7 @@
   "trunk_layer": "L24",
   "g1_layer": "L24",
   "committed_floor": 5.291963083194524,
-  "committed_floor_sha_note": "floor from analysis-committed/ak_stage1_pilot_floor.json",
+  "committed_floor_sha_note": "floor from experiments/commitment-point/artifacts/stage1/ak_stage1_pilot_floor.json",
   "n_pilot_excluded": 50,
   "config_sha": {
     "grpo_v2": "6394415378c83c96",

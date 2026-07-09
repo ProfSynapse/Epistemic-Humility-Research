@@ -2,7 +2,7 @@
 """Amendment AK Stage 1 - full gate analysis (CPU, deterministic, seeded).
 
 Runs AFTER the AK-G2 pilot floor is locked and committed
-(analysis-committed/ak_stage1_pilot_floor.json). Evaluates, per
+(experiments/commitment-point/artifacts/stage1/ak_stage1_pilot_floor.json). Evaluates, per
 AMENDMENT-AK-commitment-point.md §4:
 
   AK-G1 (crystallization, GATED on grpo-v2):
@@ -24,10 +24,9 @@ AMENDMENT-AK-commitment-point.md §4:
 Raw-base is DESCRIPTIVE (doc §3.1: "AK-G1 gates on grpo-v2; the raw-base curve
 is reported descriptively alongside it"). Both arms are reported for G1 and G2.
 
-Outputs (UNTRACKED) under
-experiment/phase1/probe/analysis/ak_stage1/:
+Outputs under experiments/commitment-point/artifacts/stage1/ by default:
   ak_stage1_gate_report.json   machine-readable verdicts + curves + CIs
-  ak_stage1_gate_report.md     human summary
+  human summary printed to stdout; pass --report-md to persist it
 """
 
 from __future__ import annotations
@@ -49,9 +48,9 @@ _CANON = Path("/home/profsynapse/code/Epistemic-Humility-Research")
 _PROBES_REL = "experiment/phase1/probe/analysis/ah_stage0/probes"
 PROBES_DIR = (_CANON / _PROBES_REL if (_CANON / _PROBES_REL).is_dir()
               else WORKTREE / _PROBES_REL)
-FLOOR_JSON = (WORKTREE / "experiment/phase1/probe/analysis-committed/"
-              "ak_stage1_pilot_floor.json")
-OUT_DIR = (_CANON / "experiment/phase1/probe/analysis/ak_stage1")
+STAGE1_ARTIFACT_DIR = WORKTREE / "experiments/commitment-point/artifacts/stage1"
+FLOOR_JSON = STAGE1_ARTIFACT_DIR / "ak_stage1_pilot_floor.json"
+OUT_DIR = STAGE1_ARTIFACT_DIR
 
 SEED = 20260705
 N_PCA = 128
@@ -218,6 +217,8 @@ def main(argv=None) -> int:
                     help="override; default = the layer in the committed floor")
     ap.add_argument("--g1-layer", default=G1_LAYER)
     ap.add_argument("--out-dir", default=str(OUT_DIR))
+    ap.add_argument("--report-md", default=None,
+                    help="optional path for the generated Markdown summary")
     args = ap.parse_args(argv)
 
     floor_doc = json.loads(FLOOR_JSON.read_text())
@@ -238,7 +239,7 @@ def main(argv=None) -> int:
         "amendment": "AK", "stage": "stage1_gate_analysis",
         "seed": SEED, "trunk_layer": trunk_layer, "g1_layer": args.g1_layer,
         "committed_floor": floor,
-        "committed_floor_sha_note": "floor from analysis-committed/ak_stage1_pilot_floor.json",
+        "committed_floor_sha_note": "floor from experiments/commitment-point/artifacts/stage1/ak_stage1_pilot_floor.json",
         "n_pilot_excluded": len(pilot_keys),
         "config_sha": {"grpo_v2": grpo_rows[0]["config_sha"],
                        "raw_base": raw_rows[0]["config_sha"]},
@@ -303,8 +304,10 @@ def main(argv=None) -> int:
         f"{report['AK_G2']['raw_base_descriptive']['slope_contrast']:+.4f}, "
         f"perm p={report['AK_G2']['raw_base_descriptive']['permutation_p']:.4g}",
     ]
-    (out_dir / "ak_stage1_gate_report.md").write_text("\n".join(md) + "\n",
-                                                      encoding="utf-8")
+    if args.report_md:
+        report_md = Path(args.report_md)
+        report_md.parent.mkdir(parents=True, exist_ok=True)
+        report_md.write_text("\n".join(md) + "\n", encoding="utf-8")
     print("\n".join(md))
     return 0
 

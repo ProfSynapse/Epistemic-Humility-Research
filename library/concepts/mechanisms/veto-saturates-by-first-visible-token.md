@@ -39,7 +39,7 @@ relationships:
 ---
 
 Amendment AK Stage 1 (branch amendment-ak-commitment-point, analysis commit
-069427dd; committed record analysis-committed/ak_stage1_gate_verdicts.md) traced
+069427dd; committed record experiments/commitment-point/artifacts/stage1/ak_stage1_gate_verdicts.md) traced
 the veto axis token-by-token across the answer window. On the gated grpo-v2 arm the
 veto is already near its ceiling at the first visible token (AUROC 0.9424) and does
 not crystallize as the fabrication is written, drifting to 0.9248 by answer-end

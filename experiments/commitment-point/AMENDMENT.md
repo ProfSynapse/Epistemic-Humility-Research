@@ -236,15 +236,15 @@ Need >= +0.10. The veto is already near-saturated at the first visible token
 and drifts slightly down by answer-end -- it does not crystallize across the
 answer window at this granularity on the gated arm. Raw-base (descriptive)
 rises +0.0341, still far under the bar.
-Source: `analysis-committed/ak_stage1_gate_report.json` (`AK_G1`),
-`analysis-committed/ak_stage1_gate_verdicts.md`.
+Source: `experiments/commitment-point/artifacts/stage1/ak_stage1_gate_report.json` (`AK_G1`),
+`experiments/commitment-point/artifacts/stage1/ak_stage1_gate_verdicts.md`.
 
 ### AK-G2 (doubt-trajectory discriminability, three-way fork) -- MISS (floor not cleared)
 
 Gated arm (grpo-v2): confab-vs-refuse slope contrast **-4.6234**, CI95
 [-5.382, -3.884], permutation p = 1.0e-04. COMMITTED_FLOOR = 5.291963 (locked
 pre-full-run from the ~50-row pilot via 3 x SE(slope contrast), see
-`analysis-committed/ak_stage1_pilot_floor.json`). Condition (b) p < 0.01
+`experiments/commitment-point/artifacts/stage1/ak_stage1_pilot_floor.json`). Condition (b) p < 0.01
 holds; condition (a) |contrast| >= floor fails (4.6234 < 5.292). The doc
 requires both, so this is a MISS and **no doubt-trajectory path is claimed**
 on the gated arm.
@@ -256,7 +256,7 @@ flat or dropping. Raw-base (descriptive) shows confab dropping (-3.50) while
 refuse rises (+5.82), a contrast that does clear the floor. The gated and
 descriptive arms disagree in direction on the confab stratum; per doc §4
 this divergence is reported, not adjudicated, here.
-Source: `analysis-committed/ak_stage1_gate_report.json` (`AK_G2`).
+Source: `experiments/commitment-point/artifacts/stage1/ak_stage1_gate_report.json` (`AK_G2`).
 
 ### AK-G3 (steering asymmetry, Stage 2) -- MISS, with a diagnosed instrumentation confound
 

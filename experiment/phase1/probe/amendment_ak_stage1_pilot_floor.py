@@ -21,7 +21,7 @@ checkpoints. We lock the floor on the grpo-v2 arm (the AK-G1 gate surface and
 the deployed checkpoint) and record the raw-base pilot SE alongside as
 provenance. The committed number that gates AK-G2 is the grpo-v2 floor.
 
-Output: experiment/phase1/probe/analysis-committed/ak_stage1_pilot_floor.json
+Output: experiments/commitment-point/artifacts/stage1/ak_stage1_pilot_floor.json
 (tracked), carrying the pilot row_keys, the trunk layer, the pilot slope
 contrast + SE, floor = 3*SE, and a UTC timestamp.
 """
@@ -45,7 +45,7 @@ PROBES_DIR = (_CANON / _PROBES_REL if (_CANON / _PROBES_REL).is_dir()
               else WORKTREE / _PROBES_REL)
 DEFAULT_TRUNK_LAYER = "L24"   # arm-B doubt/commitment peak; frozen AH probe exists
 PILOT_N = 50                  # "first ~50 rows of the sweep" (§3.1)
-COMMIT_PATH = (WORKTREE / "experiment/phase1/probe/analysis-committed/"
+COMMIT_PATH = (WORKTREE / "experiments/commitment-point/artifacts/stage1/"
                "ak_stage1_pilot_floor.json")
 
 

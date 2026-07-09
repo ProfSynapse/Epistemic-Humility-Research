@@ -2,9 +2,9 @@
 
 Analysis: `experiment/phase1/probe/amendment_ak_stage1_analyze.py`
 (seed 20260705, deterministic). Full machine-readable output and per-position
-CIs are the untracked
-`experiment/phase1/probe/analysis/ak_stage1/ak_stage1_gate_report.{json,md}`.
-Pilot floor: `analysis-committed/ak_stage1_pilot_floor.json`
+CIs are in
+`experiments/commitment-point/artifacts/stage1/ak_stage1_gate_report.json`.
+Pilot floor: `experiments/commitment-point/artifacts/stage1/ak_stage1_pilot_floor.json`
 (COMMITTED_FLOOR = 5.291963, locked BEFORE this analysis, commit b6f560b8).
 
 Data: raw-base config_sha `0dcb65d0062db64a`, grpo-v2 config_sha
