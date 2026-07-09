@@ -4,7 +4,7 @@ session_id: paper5-jspace-hardening
 title: Paper 5 J-space hardening
 status: active
 created_at: '2026-07-08T16:46:25Z'
-updated_at: '2026-07-08T20:46:47Z'
+updated_at: '2026-07-09T13:54:25Z'
 phase: phase1
 question: Which registered follow-up experiments harden the Paper 5 actuation thesis,
   starting with a fresh Qwen3-4B J-space layer-site replication?
@@ -15,11 +15,37 @@ tags:
 run_ids: []
 trajectory:
   anchor: experiment/protocol/research-trajectory.md
-  current_position: Paper 5 draft merged to main; same-model J-space layer-site
-    replication being registered before cross-family escalation.
-  changed_by_session: Created the fresh-pool replication amendment scaffold and
-    row-mining/extraction/contrast instrument.
-checkpoints: []
+  current_position: Paper 5 draft merged to main; same-model J-space layer-site replication
+    being registered before cross-family escalation.
+  changed_by_session: Created the fresh-pool replication amendment scaffold and row-mining/extraction/contrast
+    instrument.
+checkpoints:
+- id: 001-decision
+  at: '2026-07-09T13:54:25Z'
+  kind: decision
+  title: Decision
+  summary: 'Replication signed and launched; cross-family queued with dedup constraint.
+    User prediction recorded (full replication, +18-25pp) alongside orchestrator (holds-but-shrinks,
+    +10-18pp); j-space-layer-contrast-replication signed (826d9a1c on agent/jspace-full-run)
+    and the full 4-layer contrast launched on the local 3090. Scaffolded j-space-cross-family-layer-contrast
+    (d2134050 on exp/j-space-cross-family-layer-contrast) using Amendment Z''s family
+    panel. Worktree audit found the signed doubt-snap-cross-family-confirmatory mid-run
+    on Modal over an overlapping panel: to avoid duplicating its per-family FIT pipeline,
+    the cross-family layer contrast HOLDS unsigned until that run resolves and is
+    revised to consume its pools/splits/late-site artifacts. Also inherited its pre-outcome
+    loader finding by substituting Mistral-7B-Instruct-v0.3 for Amendment Z''s Ministral-3-3B
+    (Mistral3ForConditionalGeneration is not a causal-LM write substrate). Open decision
+    points for sign time: G3 late-reference floor 0.40/0.30 is a draft guess; multimodal
+    loader paths and per-family EOS lists unverified.'
+  evidence:
+  - experiments/j-space-layer-contrast-replication-qwen3-4b/AMENDMENT.md
+  - /home/profsynapse/code/ehr-worktrees/jspace-cross-family/experiments/j-space-cross-family-layer-contrast/AMENDMENT.md
+  - /home/profsynapse/code/ehr-worktrees/doubt-snap-cross-family/experiments/doubt-snap-cross-family-confirmatory/AMENDMENT.md
+  run_ids: []
+  commands: []
+  decisions: []
+  next_steps: []
+  signals: {}
 ---
 # Paper 5 J-space hardening
 
@@ -221,3 +247,12 @@ rows before the layer contrast.
     `frac_readback_within_tol=1.0`, and dosed-row collapse was 0.0 for every
     layer. Full outcome run remains held until the user prediction is recorded
     and the amendment is signed.
+### 001-decision - Decision
+
+- at: `2026-07-09T13:54:25Z`
+- kind: `decision`
+- summary: Replication signed and launched; cross-family queued with dedup constraint. User prediction recorded (full replication, +18-25pp) alongside orchestrator (holds-but-shrinks, +10-18pp); j-space-layer-contrast-replication signed (826d9a1c on agent/jspace-full-run) and the full 4-layer contrast launched on the local 3090. Scaffolded j-space-cross-family-layer-contrast (d2134050 on exp/j-space-cross-family-layer-contrast) using Amendment Z's family panel. Worktree audit found the signed doubt-snap-cross-family-confirmatory mid-run on Modal over an overlapping panel: to avoid duplicating its per-family FIT pipeline, the cross-family layer contrast HOLDS unsigned until that run resolves and is revised to consume its pools/splits/late-site artifacts. Also inherited its pre-outcome loader finding by substituting Mistral-7B-Instruct-v0.3 for Amendment Z's Ministral-3-3B (Mistral3ForConditionalGeneration is not a causal-LM write substrate). Open decision points for sign time: G3 late-reference floor 0.40/0.30 is a draft guess; multimodal loader paths and per-family EOS lists unverified.
+- evidence:
+  - `experiments/j-space-layer-contrast-replication-qwen3-4b/AMENDMENT.md`
+  - `/home/profsynapse/code/ehr-worktrees/jspace-cross-family/experiments/j-space-cross-family-layer-contrast/AMENDMENT.md`
+  - `/home/profsynapse/code/ehr-worktrees/doubt-snap-cross-family/experiments/doubt-snap-cross-family-confirmatory/AMENDMENT.md`
