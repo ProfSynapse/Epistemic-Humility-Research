@@ -40,6 +40,7 @@ from sklearn.preprocessing import StandardScaler
 from sklearn.metrics import roc_auc_score
 
 PROBE_DIR = Path(__file__).resolve().parent
+REPO_DIR = PROBE_DIR.parents[2]
 if str(PROBE_DIR) not in sys.path:
     sys.path.insert(0, str(PROBE_DIR))
 
@@ -151,7 +152,11 @@ def main(argv=None) -> int:
     ap.add_argument("--model", default="unsloth/Qwen3-4B-bnb-4bit",
                     help="base model the artifact is for (recorded in the manifest)")
     ap.add_argument("--model-tag", default="qwen3-4b-instruct")
-    ap.add_argument("--out-dir", type=Path, default=PROBE_DIR / "two_signal_artifacts")
+    ap.add_argument(
+        "--out-dir",
+        type=Path,
+        default=REPO_DIR / "experiments" / "common" / "artifacts" / "two_signal_calibration",
+    )
     ap.add_argument("--seed", type=int, default=20260630)
     a = ap.parse_args(argv)
 

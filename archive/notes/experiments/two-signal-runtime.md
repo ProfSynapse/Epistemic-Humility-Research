@@ -71,7 +71,7 @@ Components (all under `experiment/phase1/probe/`):
 | `fit_calibration.py` | fit scaler+logistic+calibration-map per signal; honest nested-CV ECE; ship lower-ECE of Platt/isotonic; write portable artifact (npz + json) |
 | `two_signal_runtime.py` | `TwoSignalReadout` library: load base + artifacts; `generate_with_trust(q)` runs gate/generate/dial/veto |
 | `two_signal_cli.py` | talk-to-the-model REPL (`-q` one-shot); shows answerability, answer, trust, LOW-TRUST flag; `:set gate/veto` knobs |
-| `two_signal_artifacts/` | shipped artifacts (`gate__*`, `dial__*`); ~60 KB each |
+| `experiments/common/artifacts/two_signal_calibration/` | shipped artifacts (`gate__*`, `dial__*`); ~60 KB each |
 
 **Base model is never modified.** A signal is `sigmoid(w . normalize(h_L) + b)`
 followed by a calibration map, applied in numpy on one layer's residual-stream
@@ -136,7 +136,7 @@ preserved (AUROC unchanged).
 
 ## Outputs & provenance
 
-- Artifacts: `experiment/phase1/probe/two_signal_artifacts/{gate,dial}__qwen3-4b-instruct__*.{npz,json}`.
+- Artifacts: `experiments/common/artifacts/two_signal_calibration/{gate,dial}__qwen3-4b-instruct__*.{npz,json}`.
 - Code: the three files above.
 - Episodic record: `docs/sessions/20260630T204500Z-paper-series-architecture-inference-design-two-signal-runtime-build.md`.
 - Design: `docs/architecture/two-signal-readout-inference-serving.md`.

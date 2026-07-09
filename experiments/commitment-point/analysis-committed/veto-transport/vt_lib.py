@@ -20,7 +20,7 @@ S_DIR = os.path.join(PROBE, "qwen3-4b-instruct/amendment_s/stage2")
 W_DIR = os.path.join(PROBE, "qwen3-4b-instruct/amendment_w/stage2")
 T_DIR = os.path.join(PROBE, "qwen3-4b-clean-sft-grpo-v2/amendment_t/stage2")
 U_DIR = os.path.join(PROBE, "qwen3-4b-clean-sft-grpo-v2/amendment_u/stage2")
-TSA = os.path.join(PROBE, "two_signal_artifacts")
+TSA = os.path.join(REPO, "experiments/common/artifacts/two_signal_calibration")
 AXES = os.path.join(PROBE, "qwen3-4b-instruct/behavior_axis_directions")
 
 

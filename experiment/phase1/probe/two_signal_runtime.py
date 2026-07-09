@@ -32,6 +32,7 @@ from pathlib import Path
 import numpy as np
 
 PROBE_DIR = Path(__file__).resolve().parent
+REPO_DIR = PROBE_DIR.parents[2]
 EVAL_DIR = PROBE_DIR.parent / "eval"
 for _p in (str(PROBE_DIR), str(EVAL_DIR)):
     if _p not in sys.path:
@@ -43,7 +44,7 @@ from amendment_s_correctness_probe_extract import (  # noqa: E402
 )
 from backends import render_probe_prompt  # noqa: E402
 
-ARTIFACT_DIR = PROBE_DIR / "two_signal_artifacts"
+ARTIFACT_DIR = REPO_DIR / "experiments" / "common" / "artifacts" / "two_signal_calibration"
 _EPS = 1e-6
 
 

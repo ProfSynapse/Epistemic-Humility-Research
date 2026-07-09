@@ -15,7 +15,10 @@
     "experiment/phase1/probe/amendment_z_qwen3.5-4b_result.json": "papers/paper-4-two-signal-readout/analysis/source-artifacts/probe/amendment_z_qwen3.5-4b_result.json",
     "experiment/phase1/probe/amendment_y_results/": "papers/paper-4-two-signal-readout/analysis/source-artifacts/probe/amendment_y_results/"
   },
-  "not_moved": {
-    "experiment/phase1/probe/two_signal_artifacts/": "Not consumed by the Paper 4 builder or manuscript references in this migration lane."
+  "shared_runtime_artifacts": {
+    "experiment/phase1/probe/two_signal_artifacts/": {
+      "destination": "experiments/common/artifacts/two_signal_calibration/",
+      "note": "Reference runtime calibration artifacts; not consumed by the Paper 4 builder or manuscript references in this migration lane."
+    }
   }
 }

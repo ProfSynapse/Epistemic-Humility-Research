@@ -10,7 +10,7 @@ fitted gate/dial artifacts once, then type questions and see, per answer:
   * a LOW-TRUST flag when the dial vetoes a confident-looking confabulation
 
 Single-process reference pipeline (NOT production serving). Needs a GPU; the base
-model loads on start. Reads artifacts from experiment/phase1/probe/two_signal_artifacts/.
+model loads on start. Reads artifacts from experiments/common/artifacts/two_signal_calibration/.
 
 Usage:
   python3 experiment/phase1/probe/two_signal_cli.py                 # interactive REPL
