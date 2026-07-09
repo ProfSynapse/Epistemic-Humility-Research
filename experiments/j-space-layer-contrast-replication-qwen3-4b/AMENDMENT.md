@@ -1,6 +1,6 @@
 # j-space-layer-contrast-replication-qwen3-4b
 
-Status: signed (2026-07-09; both predictions recorded, instrument files pinned; full layer contrast authorized on the local RTX 3090 lane).
+Status: resolved null-result (2026-07-09; registered G1 fail on a ceiling-saturated fresh pool; direction replicates with CI separation at hs23/hs29, magnitude pool-dependent; see Outcome).
 
 Keep this document the prose home for the experiment. The machine state lives in
 `experiment.yaml` and is never duplicated here.
@@ -143,5 +143,63 @@ failure rather than interpretable evidence about mid-band superiority.
 
 ## Outcome
 
-Filled at resolve. Record the verdict, gate results, pool counts, and the
-one-sentence summary that also goes into `verdict:` in the manifest.
+**Registered verdict: G1 FAIL. The same-model layer-site result does not
+replicate at the registered effect size on this pool.** No goalposts moved:
+best mid-band (hs29, 305/306 = 99.67%) minus hs34 (288/306 = 94.12%) =
++5.6pp, below the registered 10pp bar. G2 passes (+1.43pp <= 2pp) and G3
+passes (hs34 at 94.12%, Wilson LCB 90.89%, far above the 60%/50% floor).
+Instrument was flawless: readback exact at all four setpoints
+(25.00/74.99/125.01/175.01), frac_readback_within_tol = 1.0 everywhere,
+collapse 0.0 everywhere. Both scoreboard predictions (orchestrator +10-18pp,
+user +18-25pp) were wrong.
+
+Full numbers (all 306 confab / 1,957 known-correct rows per arm): hs23
+304/306 = 99.35% tighten at 0.97% cost; hs26 299/306 = 97.71% at 1.99%;
+hs29 305/306 = 99.67% at 2.81%; hs34 288/306 = 94.12% at 1.38%.
+
+Adversarially audited interpretation (post-run red-team; the audit
+reproduced every committed number and the gate decisions from the frozen
+artifacts before this text was written):
+
+1. **Ceiling effect, structurally caused.** Every layer's rate jumped by
+   almost exactly its predecessor headroom (each closed 82-97% of its gap to
+   100%; hs34 moved most, +27.6pp, because it had the most room). With hs34
+   at 94.12%, the maximum achievable G1 delta was 5.9pp, so the registered
+   bar was arithmetically near-unreachable on this pool.
+2. **This is a narrower-distribution replication, not a same-distribution
+   one.** All 306 fresh confabs come from a single source
+   (kuq_ku_unknown_x); the predecessor held-out confabs mixed three sources
+   (112 kuq_ku_unknown_x, 44 kuq_ku_unknown, 29 selfaware_unanswerable),
+   and the two harder sources are entirely absent from the fresh candidate
+   universe (structural: the AH expansion candidates contain only
+   kuq_ku_unknown_x unknowns; nothing was cherry-picked). A G1 miss on a
+   narrower, easier confab distribution is a weaker refutation of the
+   mid-band thesis than a same-distribution miss would be, and downstream
+   text must not read this as "failed to replicate on comparable data."
+3. **Direction survives, non-uniformly.** hs23 and hs29 Wilson CIs separate
+   cleanly from hs34 (hs29 LCB 98.17% > hs34 UCB 96.25%); hs26 does not
+   (LCB 95.35% overlaps). Point-estimate ordering is mid > late at all
+   three. The hs34 deficit is a write-effectiveness effect, not a
+   gate-transfer effect: hs34 fires on 304/306 confabs (same as mid-band)
+   but converts fewer fired rows (94.74% vs 99.67% tighten-given-fired).
+4. **Selectivity is less flattering than G2 suggests.** The best mid-band
+   layer (hs29) has the highest known-correct cost of all four arms (2.81%,
+   about 2x hs34's 1.38%); the predecessor traded +22.7pp tighten for
+   +0.78pp cost, this pool trades +5.6pp for +1.43pp. G2 passes on the
+   looseness of the 2pp bar, not on a good tradeoff.
+5. **Known limitation:** per-row intervention outcomes were not persisted
+   (aggregates only), so the 16 fired-but-untightened hs34 failures cannot
+   be classified by failure text (answered-anyway vs malformed vs
+   non-termination) without a GPU re-run. Fired/non-fired classification
+   was recoverable: hs34's 18 failures = 2 gate-misses + 16 fired. This is
+   the buffered-run lesson already recorded in NOTEBOOK.md; successor runs
+   adopt the tuner RunLog before sign.
+
+Consequences carried forward: (a) Paper 5's layer-site claim keeps the
+predecessor exploratory result and gains this pool-sensitivity caveat; the
+claim "mid-band beats late site" is supported in direction on both pools
+but its magnitude is pool-dependent and unidentifiable near ceiling. (b)
+The queued cross-family layer-contrast experiment must replace or
+supplement its inherited fixed +10pp G1 bar with a ceiling-robust contrast
+(CI separation plus a failure-ratio measure) and must mine multi-source
+confab pools hard enough to keep the reference arm off the ceiling.

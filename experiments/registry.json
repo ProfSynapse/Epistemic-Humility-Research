@@ -287,9 +287,9 @@
       "question": "On raw-base Qwen3-4B, does the calibrated J-space mid-band write-site advantage replicate on a fresh private evaluation pool whose row keys are disjoint from the predecessor fit and held-out split?",
       "registered": true,
       "slug": "j-space-layer-contrast-replication-qwen3-4b",
-      "status": "signed",
+      "status": "null-result",
       "type": "steer-cell",
-      "verdict": ""
+      "verdict": "Registered G1 fail on a ceiling-saturated single-source fresh pool: best mid-band (hs29) beat hs34 by only +5.6pp (bar 10pp) with hs34 itself at 94.1%; direction replicates with CI separation at hs23/hs29 but magnitude is pool-dependent, and the fresh pool is a narrower confab distribution than the predecessor's."
     },
     {
       "checkpoint": {
