@@ -179,10 +179,10 @@ Primary analyses:
 - Current behavior-row overlays:
   `experiment/phase1/probe/analysis/current_selfaware_behavior_rows/`.
 - Current clean behavior-axis scan:
-  `experiment/phase1/probe/config/phase3_current_clean_behavior_axis_scan.yaml`
+  `archive/experiment/phase1/probe/config/current-clean-behavior-axis-directions/phase3_current_clean_behavior_axis_scan.yaml`
   and `experiment/phase1/probe/analysis/current_clean_behavior_axis_scan/`.
 - Current clean behavior-axis direction export:
-  `experiment/phase1/probe/config/phase3_current_clean_behavior_axis_directions.yaml`
+  `archive/experiment/phase1/probe/config/current-clean-behavior-axis-directions/phase3_current_clean_behavior_axis_directions.yaml`
   and
   `experiment/phase1/probe/analysis/current_clean_behavior_axis_directions/`.
 - Inventory and derived summaries should live under

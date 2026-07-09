@@ -420,7 +420,7 @@ _No summary yet._
 - kind: `result`
 - summary: Exported native same-layer GRPO v2 known-overrefusal directions at layers 23-27, all normalized to the original L25 intervention norm, then ran generated-answer replay on the same deterministic 96-row panel at coefficient 15. Native adjacent vectors are coherent but not identical: cosine L23-L24=0.761, L24-L25=0.853, L25-L26=0.852, L26-L27=0.922. Native replay baselines were identical across all five jobs and also identical to the shifted-L25-vector control sweep. Native L26 is now the best single-layer behavioral candidate: 12 truthful known repairs, 1 new known wrong answer, 0 unknown non-refusal leaks, 0 worsened previously truthful known rows, known correctness 43.75%, and known over-refusal 54.69%. Native layer results were L23=8, L24=9, L25=11, L26=12, L27=10 truthful repairs; all preserved 32/32 unknown refusals.
 - evidence:
-  - `experiment/phase1/probe/config/phase3_current_clean_grpo_v2_known_overrefusal_layer_window_normed_directions.yaml`
+  - `archive/experiment/phase1/probe/config/current-clean-behavior-axis-directions/phase3_current_clean_grpo_v2_known_overrefusal_layer_window_normed_directions.yaml`
   - `experiment/phase1/probe/analysis/current_clean_grpo_v2_known_overrefusal_layer_window_normed_directions/behavior_axis_directions.manifest.json`
   - `archive/experiment/phase1/probe/config/current-clean-grpo-v2-known-overrefusal/phase3_current_clean_grpo_v2_known_overrefusal_native_layer_window_candidates.yaml`
   - `archive/experiment/phase1/probe/config/current-clean-grpo-v2-known-overrefusal/phase3_current_clean_grpo_v2_known_overrefusal_native_layer_window_generation.yaml`
@@ -544,7 +544,7 @@ _No summary yet._
 - kind: `result`
 - summary: Exported a same-layer GRPO v2 L26 broad unknown-refusal protection axis (`unknown_refused_vs_known_correct_answered`) and orthogonalized the native L26 known-overrefusal repair vector against it. The native repair/protect cosine was ~0.707, and the transform removed ~70.7% of the repair vector component before rescaling back to the same norm. On panel B, the constrained vector at coeff 10 met the explicit falsifier: it beat the native safe coeff-5 repair count while matching zero-leak safety. Specifically, panel B coeff 10 produced +7 truthful known repairs, 0 new known wrong answers, 0 unknown leaks, and 0 truthful-known worsens. Native panel-B coeff 10 had the same +7 repairs but added 1 known wrong answer and 1 unknown leak; native coeff 5 was safe but only +3 repairs. On panel A, constrained coeff 10 matched native coeff 10: +9 truthful known repairs, 1 known wrong answer, 0 unknown leaks, and 0 truthful-known worsens. The remaining panel-A known-wrong flip is the same higher/lower parental-support semantic-direction error already seen in native L26.
 - evidence:
-  - `experiment/phase1/probe/config/phase3_current_clean_grpo_v2_l26_repair_protect_directions.yaml`
+  - `archive/experiment/phase1/probe/config/current-clean-behavior-axis-directions/phase3_current_clean_grpo_v2_l26_repair_protect_directions.yaml`
   - `experiment/phase1/probe/analysis/current_clean_grpo_v2_l26_repair_protect_directions/behavior_axis_directions.manifest.json`
   - `experiment/phase1/probe/config/phase3_current_clean_grpo_v2_l26_repair_orthogonalized_to_unknown_refusal.yaml`
   - `experiment/phase1/probe/analysis/current_clean_grpo_v2_l26_repair_orthogonalized_to_unknown_refusal/direction_transforms.manifest.json`

@@ -74,3 +74,28 @@ This log records migration batches after the terrain baseline in
   - Did not rewrite legacy causal-pilot output roots or extraction artifact
     paths. Those paths preserve historical run provenance and will be handled
     with broader legacy artifact archive passes.
+## C002 - Current-Clean Behavior-Axis Directions
+
+- Date: 2026-07-09
+- Source component: `C002`
+- File count: 5
+- Source root: `experiment/phase1/probe/config/`
+- Destination:
+  `archive/experiment/phase1/probe/config/current-clean-behavior-axis-directions/`
+- Owner decision: archive-only historical provenance for the Phase 3
+  model-variation and GRPO v2 known-overrefusal work; no migrated
+  `experiments/<slug>` owner was present, and the component was not a reusable
+  shared input at migration time.
+- Reason: historical exploratory Phase 3 behavior-axis scan/direction-export
+  component with only historical note references outside the component.
+- Reference updates:
+  - Rewrote component-internal config path references to the archive path.
+  - Rewrote historical references in
+    `docs/sessions/20260625T145842Z-phase-3-model-variation-panel.md` and
+    `archive/notes/experiments/mech-interp-model-variation-panel.md`.
+- Non-goals:
+  - Did not promote these configs to `experiments/common/`; they are provenance,
+    not reusable shared inputs.
+  - Did not rewrite legacy extraction dirs, row overlays, or analysis output
+    roots. Those paths preserve historical run provenance and will be handled
+    with broader legacy artifact archive passes.

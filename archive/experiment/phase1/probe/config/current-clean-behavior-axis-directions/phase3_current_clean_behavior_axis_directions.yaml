@@ -3,7 +3,7 @@ spec:
   analysis_type: phase3_behavior_axis_direction_export
   notice: BEHAVIOR_AXIS_DIRECTION_CANDIDATES_ONLY_CURRENT_CLEAN_PANEL
 
-source_scan_config: experiment/phase1/probe/config/phase3_current_clean_behavior_axis_scan.yaml
+source_scan_config: archive/experiment/phase1/probe/config/current-clean-behavior-axis-directions/phase3_current_clean_behavior_axis_scan.yaml
 
 axes:
   - label: clean_sft_delta_known_refused_vs_known_correct_l20
