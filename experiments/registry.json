@@ -2134,9 +2134,13 @@
         "experiments/xdataset-probe-transfer/artifacts/kuq_panel/panel_meta.json"
       ],
       "instrument": {
-        "configs": [],
+        "configs": [
+          "hidden_state_kuq_manifest_clean_sft_grpo_v2_seed1_full.yaml"
+        ],
         "modules": [],
-        "pins": {}
+        "pins": {
+          "hidden_state_kuq_manifest_clean_sft_grpo_v2_seed1_full.yaml": "8eaf9a5047d7e7ce98d6463ee35f16eaae042908c79fbdded9425c4b7c949dd3"
+        }
       },
       "kg": [],
       "legacy": {
@@ -2148,7 +2152,6 @@
         "needs_manual_review": [
           "falsifier",
           "experiment_type",
-          "instrument_configs",
           "kg_ids"
         ],
         "notes": "Imported from legacy amendment prose. Do not infer missing machine fields without hand-reading AMENDMENT.md."

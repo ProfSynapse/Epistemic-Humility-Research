@@ -51,8 +51,9 @@ RAWBASE_MODEL = "unsloth/Qwen3-4B-bnb-4bit"
 # grpo-v2 arm (AK-G1 gate surface). Provenance: adapter uploaded from the
 # canonical local run scratch/schema_response_confidence/runs/
 # schema_clean_sft_grpo_v2_seed1_full/20260624_095831/final_model (the checkpoint
-# the probe configs deploy, e.g. hidden_state_kuq_manifest_clean_sft_grpo_v2_
-# seed1_full.yaml). The adapter's training config points at the clean-SFT
+# the probe configs deploy, e.g. experiments/xdataset-probe-transfer/
+# hidden_state_kuq_manifest_clean_sft_grpo_v2_seed1_full.yaml). The adapter's
+# training config points at the clean-SFT
 # merged-16bit base below (confirmed). README.md/training_args.bin were excluded
 # from the upload (auto-README's local-path base_model fails HF YAML validation);
 # the base model is passed explicitly here so nothing needs them.

@@ -1012,7 +1012,12 @@ def test_selfaware_manifest_config_parses_and_selects_no_gpu():
 
 def test_repo_relative_manifest_config_parses_and_selects_no_gpu():
     """Migrated experiment-local manifests can be referenced repo-relatively."""
-    config_path = PROBE_DIR / "config" / "hidden_state_kuq_manifest_clean_sft_grpo_v2_seed1_full.yaml"
+    config_path = (
+        REPO_ROOT
+        / "experiments"
+        / "xdataset-probe-transfer"
+        / "hidden_state_kuq_manifest_clean_sft_grpo_v2_seed1_full.yaml"
+    )
     config, cfg_sha = hsp.parse_config(config_path)
     rows = hsp.select_matched_slice(config)
 

@@ -651,3 +651,28 @@ This log records migration batches after the terrain baseline in
   - Did not move KUQ or sycophancy hidden-state configs; those require separate
     owner decisions because KUQ belongs with the migrated xdataset transfer
     amendment and sycophancy configs are covered by a dedicated checked-in test.
+
+## C003b - KUQ Cross-Dataset Hidden-State Extraction Config
+
+- Date: 2026-07-09
+- Source component: `C003` subset
+- File count: 1
+- Source root: `experiment/phase1/probe/config/`
+- Destination:
+  `experiments/xdataset-probe-transfer/`
+- Owner decision: experiment-associated instrument config for migrated Amendment
+  P (`xdataset-probe-transfer`), not archive-only. The config consumes the
+  experiment-local KUQ panel manifest and is the FIT-side hidden-state extraction
+  instrument described by the amendment.
+- Reason: this file belongs with the evidence-producing experiment that owns the
+  KUQ panel artifacts and cross-dataset transfer record.
+- Reference updates:
+  - Added the config to `experiments/xdataset-probe-transfer/experiment.yaml`
+    under `instrument.configs` and recorded its SHA-256 pin.
+  - Rewrote the GPU-free hidden-state probe unit test fixture path.
+  - Updated the canonical mech-interp-runner cross-dataset reference and synced
+    generated skill mirrors.
+- Non-goals:
+  - Did not move the live/default `hidden_state_probe.yaml` runner config.
+  - Did not move sycophancy hidden-state configs; they remain a separate slice
+    because a dedicated sycophancy row-manifest test covers them.

@@ -70,7 +70,8 @@ the A2 split size — sanity-check it is large enough.
 
 ## 4. Extract hidden states (Docker/GPU; needs approval)
 
-Copy `config/hidden_state_kuq_manifest_clean_sft_grpo_v2_seed1_full.yaml`:
+Use `experiments/xdataset-probe-transfer/hidden_state_kuq_manifest_clean_sft_grpo_v2_seed1_full.yaml`
+as the KUQ template:
 set `model.model_tag` to a `<ds>`-specific, gitignored (`qwen3-4b-*`) tag,
 `selection.manifest` to the panel `manifest.json` (path is relative to the probe
 dir), and `output.hidden_states_subdir`. Keep both arms + `persist_delta: true`
