@@ -17,6 +17,7 @@ os.environ.setdefault("NUMEXPR_NUM_THREADS", "2")
 
 import json
 import re
+from pathlib import Path
 import numpy as np
 from collections import Counter, defaultdict
 from scipy.stats import spearmanr, mannwhitneyu
@@ -31,10 +32,11 @@ SEED = 20260704
 rng = np.random.default_rng(SEED)
 
 BASE = os.path.dirname(os.path.abspath(__file__))
-ANALYSIS = os.path.abspath(os.path.join(BASE, ".."))
-AH = os.path.join(ANALYSIS, "ah_main")
-CACHE = os.path.join(ANALYSIS, "mi_category_geometry_20260704", "cache")
-PROBES = os.path.join(ANALYSIS, "ah_stage0", "probes")
+REPO = Path(__file__).resolve().parents[4]
+LEGACY_ANALYSIS = REPO / "experiment" / "phase1" / "probe" / "analysis"
+AH = str(LEGACY_ANALYSIS / "ah_main")
+CACHE = str(LEGACY_ANALYSIS / "mi_category_geometry_20260704" / "cache")
+PROBES = str(LEGACY_ANALYSIS / "ah_stage0" / "probes")
 OUT = BASE
 
 PROBE_LAYERS = [20, 24, 28]

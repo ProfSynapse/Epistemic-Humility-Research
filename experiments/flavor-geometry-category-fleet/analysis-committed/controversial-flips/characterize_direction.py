@@ -11,14 +11,17 @@ characterization only), lifts it back to the 2560-d activation space, and asks:
 CPU only, one layer.
 """
 import json, os, numpy as np
+from pathlib import Path
 from sklearn.decomposition import PCA
 from sklearn.linear_model import LogisticRegression
 from sklearn.metrics import roc_auc_score
 
 SEED = 20260704
 HERE = os.path.dirname(os.path.abspath(__file__))
-GEN = os.path.abspath(os.path.join(HERE, "..", "ah_main"))
-CACHE = os.path.abspath(os.path.join(HERE, "..", "mi_category_geometry_20260704", "cache"))
+REPO = Path(__file__).resolve().parents[4]
+LEGACY_ANALYSIS = REPO / "experiment" / "phase1" / "probe" / "analysis"
+GEN = str(LEGACY_ANALYSIS / "ah_main")
+CACHE = str(LEGACY_ANALYSIS / "mi_category_geometry_20260704" / "cache")
 CATS = ["ambiguous", "controversial", "counterfactual",
         "false_assumption", "future_unknown", "unsolved_problem"]
 L = 20

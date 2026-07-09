@@ -40,6 +40,7 @@ os.environ.setdefault("MKL_NUM_THREADS", "2")
 import json
 import re
 import math
+from pathlib import Path
 import numpy as np
 from collections import Counter, defaultdict
 from sklearn.linear_model import LogisticRegression, LinearRegression
@@ -52,11 +53,16 @@ import joblib
 
 SEED = 20260704
 BASE = os.path.dirname(os.path.abspath(__file__))
-AN = os.path.abspath(os.path.join(BASE, ".."))
-GEOM = os.path.join(AN, "mi_category_geometry_20260704")
-CACHE = os.path.join(GEOM, "cache")
-PROBES = os.path.join(AN, "ah_stage0", "probes")
-A0 = os.path.join(AN, "ah_main", "gen_A0", "rows.jsonl")
+REPO = Path(__file__).resolve().parents[4]
+LEGACY_ANALYSIS = REPO / "experiment" / "phase1" / "probe" / "analysis"
+GEOM = str(LEGACY_ANALYSIS / "mi_category_geometry_20260704")
+CACHE = str(LEGACY_ANALYSIS / "mi_category_geometry_20260704" / "cache")
+PROBES = str(LEGACY_ANALYSIS / "ah_stage0" / "probes")
+A0 = str(LEGACY_ANALYSIS / "ah_main" / "gen_A0" / "rows.jsonl")
+CONTROVERSIAL_FINDINGS = (
+    REPO / "experiments" / "flavor-geometry-category-fleet" / "analysis-committed"
+    / "controversial-flips" / "findings.json"
+)
 
 LAYERS_SWEEP = [8, 16, 20, 24, 28, 34]
 PCA_DIM = 128
@@ -522,7 +528,7 @@ try:
     confab_dir = Xm_b[ym == 1].mean(0) - Xm_b[ym == 0].mean(0)
     cos = lambda a, b: round(float(a @ b / (np.linalg.norm(a) * np.linalg.norm(b) + 1e-12)), 4)
     charac = {"layer": f"L{Lb}", "cos_confabdir_trunk": cos(confab_dir, trunk_b)}
-    fl = json.load(open(os.path.join(AN, "mi_controversial_flips_20260704", "findings.json")))
+    fl = json.load(open(CONTROVERSIAL_FINDINGS))
     charac["item22a_flip_probe_best_layer"] = fl["controversial_predictors"][
         "_direct_activation_probe"]["best_layer"]
     charac["item22a_note"] = ("flip = refuse-then-answer under certainty prime "

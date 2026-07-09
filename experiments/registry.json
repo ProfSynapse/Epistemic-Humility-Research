@@ -412,6 +412,33 @@
     },
     {
       "checkpoint": {
+        "repo": "local AH stage-0/category geometry cached activations",
+        "revision": "historical"
+      },
+      "created_at": "2026-07-09T11:48:02Z",
+      "falsifier": "",
+      "inputs": [
+        "experiments/confab-mechanics-cpu-fleet/analysis-committed/confab-phenotypes/phenotype_analysis.py",
+        "experiments/confab-mechanics-cpu-fleet/analysis-committed/confab-signature/confab_signature_analysis.py",
+        "experiments/confab-mechanics-cpu-fleet/analysis-committed/familiarity-geometry/familiarity_geometry_analysis.py"
+      ],
+      "instrument": {
+        "configs": [],
+        "modules": [],
+        "pins": {}
+      },
+      "kg": [],
+      "prediction": "",
+      "question": "What internal-state signatures and text/familiarity proxies distinguish confabulations from refusals on the AH raw-base surface?",
+      "registered": true,
+      "slug": "confab-mechanics-cpu-fleet",
+      "status": "historical",
+      "title": "Confab Mechanics CPU Fleet",
+      "type": "lab-diagnostic",
+      "verdict": "Historical confab-mechanics CPU fleet banked; scripts preserve phenotype, confab-vs-refuse signature, and familiarity-geometry analyses over AH cached inputs."
+    },
+    {
+      "checkpoint": {
         "repo": "",
         "revision": ""
       },
@@ -895,6 +922,35 @@
       "title": "Amendment AB — First-person confidence injection: is the shut text channel a framing artifact?",
       "type": "historical-amendment",
       "verdict": "AMBIGUOUS-LEANING-NEGATIVE — no V1 cell passes; first-person framing does not open the text channel (dial@late instrument saturated, dial@final MISS, gate@early only a ~2pt trickle); AA's presence-not-use conclusion strengthened."
+    },
+    {
+      "checkpoint": {
+        "repo": "local AH stage-0/category geometry cached activations",
+        "revision": "historical"
+      },
+      "created_at": "2026-07-09T11:48:01Z",
+      "falsifier": "",
+      "inputs": [
+        "experiments/flavor-geometry-category-fleet/analysis-committed/category-geometry/category_geometry/category_geometry_analysis.py",
+        "experiments/flavor-geometry-category-fleet/analysis-committed/category-geometry/flavor_readout/flavor_readout_analysis.py",
+        "experiments/flavor-geometry-category-fleet/analysis-committed/category-geometry/pliability/pliability_analysis.py",
+        "experiments/flavor-geometry-category-fleet/analysis-committed/controversial-flips/characterize_direction.py",
+        "experiments/flavor-geometry-category-fleet/analysis-committed/controversial-flips/controversial_flip_hunt.py"
+      ],
+      "instrument": {
+        "configs": [],
+        "modules": [],
+        "pins": {}
+      },
+      "kg": [],
+      "prediction": "",
+      "question": "Do unanswerability categories share one known/unknown geometry, or do flavor-specific residual directions and controversial-prime flips expose category-conditioned structure?",
+      "registered": true,
+      "slug": "flavor-geometry-category-fleet",
+      "status": "historical",
+      "title": "Flavor Geometry Category Fleet",
+      "type": "lab-diagnostic",
+      "verdict": "Historical category-geometry diagnostic fleet banked; scripts preserve the flavor-readout, per-category geometry, pliability, and controversial-flip analyses over AH cached inputs."
     },
     {
       "checkpoint": {

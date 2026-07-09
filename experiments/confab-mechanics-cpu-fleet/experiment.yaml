@@ -1,0 +1,24 @@
+slug: confab-mechanics-cpu-fleet
+title: Confab Mechanics CPU Fleet
+type: lab-diagnostic
+status: historical
+registered: true
+created_at: '2026-07-09T11:48:02Z'
+question: What internal-state signatures and text/familiarity proxies distinguish
+  confabulations from refusals on the AH raw-base surface?
+prediction: ''
+falsifier: ''
+checkpoint:
+  repo: local AH stage-0/category geometry cached activations
+  revision: historical
+instrument:
+  configs: []
+  modules: []
+  pins: {}
+inputs:
+- experiments/confab-mechanics-cpu-fleet/analysis-committed/confab-phenotypes/phenotype_analysis.py
+- experiments/confab-mechanics-cpu-fleet/analysis-committed/confab-signature/confab_signature_analysis.py
+- experiments/confab-mechanics-cpu-fleet/analysis-committed/familiarity-geometry/familiarity_geometry_analysis.py
+verdict: Historical confab-mechanics CPU fleet banked; scripts preserve phenotype,
+  confab-vs-refuse signature, and familiarity-geometry analyses over AH cached inputs.
+kg: []

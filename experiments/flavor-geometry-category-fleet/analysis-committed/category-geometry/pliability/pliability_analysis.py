@@ -12,6 +12,7 @@ CPU only. Tier-1 lab-notebook: characterize + report, no gates.
 """
 import json
 import os
+from pathlib import Path
 import numpy as np
 from collections import Counter, defaultdict
 from scipy import stats
@@ -19,7 +20,9 @@ from sklearn.linear_model import LogisticRegression
 from sklearn.metrics import roc_auc_score
 
 HERE = os.path.dirname(os.path.abspath(__file__))
-BASE = os.path.abspath(os.path.join(HERE, "..", "..", "ah_main"))
+REPO = Path(__file__).resolve().parents[5]
+LEGACY_ANALYSIS = REPO / "experiment" / "phase1" / "probe" / "analysis"
+BASE = str(LEGACY_ANALYSIS / "ah_main")
 ARMS = ["A0", "Acertain", "Adoubt"]
 CATS = ["ambiguous", "controversial", "unsolved_problem",
         "false_assumption", "future_unknown", "counterfactual"]

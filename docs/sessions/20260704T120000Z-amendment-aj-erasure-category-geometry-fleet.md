@@ -61,7 +61,7 @@ checkpoints:
   title: 'Category-geometry MI fleet (backlog item 22, 3 CPU agents on the AH 18.5k
     surface): flavor readable from L1, shared trunk + per-flavor branches, one pliability
     curve with category offsets'
-  summary: 'Tier-1 lab-notebook, scratch in analysis/mi_category_geometry_20260704/
+  summary: 'Tier-1 lab-notebook, scripts now in experiments/flavor-geometry-category-fleet/analysis-committed/category-geometry/
     (cache: 11,996 rows x L0-L36; 5,264 categorized unknowns, 6 canonical flavors;
     6,000 known sample). (1) FLAVOR READOUT: flavor is linearly readable, macro-OvR-AUROC
     0.946 at L34 (perm chance 0.495, acc 0.772 vs 0.197 majority); already 0.904 at
@@ -105,7 +105,7 @@ artifacts:
 - experiment/phase1/probe/amendment_aj_subspace_erasure.py
 - experiment/phase1/probe/amendment_aj_addendum_gap_distribution.py
 - experiment/phase1/probe/mi_category_geometry_prep.py
-- experiment/phase1/probe/analysis/mi_category_geometry_20260704/ (untracked scratch;
+- experiments/flavor-geometry-category-fleet/analysis-committed/category-geometry/ (committed scripts;
   scripts committed)
 - docs/prediction-scoreboard.md
 legacy_session:

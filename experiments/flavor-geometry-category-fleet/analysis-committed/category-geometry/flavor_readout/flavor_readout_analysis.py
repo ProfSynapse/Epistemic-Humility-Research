@@ -12,6 +12,7 @@ import gc
 import json
 import os
 import time
+from pathlib import Path
 import numpy as np
 from collections import Counter, defaultdict
 
@@ -47,13 +48,13 @@ def reduce_features(X):
     return np.ascontiguousarray(Xp, dtype=np.float64)
 
 HERE = os.path.dirname(os.path.abspath(__file__))
-CACHE = os.path.join(HERE, "..", "cache")
-CACHE = os.path.abspath(CACHE)
+REPO = Path(__file__).resolve().parents[5]
+LEGACY_ANALYSIS = REPO / "experiment" / "phase1" / "probe" / "analysis"
+CACHE = str(LEGACY_ANALYSIS / "mi_category_geometry_20260704" / "cache")
 MANIFEST = os.path.join(CACHE, "manifest.jsonl")
 TEXT_FILES = [
-    os.path.abspath(os.path.join(HERE, "..", "..", "ah_stage0", "candidates.jsonl")),
-    os.path.abspath(os.path.join(HERE, "..", "..", "ah_stage0", "expansion",
-                                 "expansion_candidates.jsonl")),
+    str(LEGACY_ANALYSIS / "ah_stage0" / "candidates.jsonl"),
+    str(LEGACY_ANALYSIS / "ah_stage0" / "expansion" / "expansion_candidates.jsonl"),
 ]
 CANON = ["ambiguous", "controversial", "counterfactual",
          "false_assumption", "future_unknown", "unsolved_problem"]

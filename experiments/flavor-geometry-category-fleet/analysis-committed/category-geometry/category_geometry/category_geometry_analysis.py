@@ -8,6 +8,7 @@ Tier-1 lab-notebook. CPU only. Load one layer at a time. Seed 20260704.
 """
 import json
 import os
+from pathlib import Path
 import numpy as np
 from collections import Counter, defaultdict
 from sklearn.linear_model import LogisticRegression
@@ -19,8 +20,10 @@ SEED = 20260704
 rng = np.random.default_rng(SEED)
 
 BASE = os.path.dirname(os.path.abspath(__file__))
-CACHE = os.path.abspath(os.path.join(BASE, "..", "cache"))
-AH = os.path.abspath(os.path.join(BASE, "..", "..", "ah_stage0", "probes"))
+REPO = Path(__file__).resolve().parents[5]
+LEGACY_ANALYSIS = REPO / "experiment" / "phase1" / "probe" / "analysis"
+CACHE = str(LEGACY_ANALYSIS / "mi_category_geometry_20260704" / "cache")
+AH = str(LEGACY_ANALYSIS / "ah_stage0" / "probes")
 OUT = BASE
 
 LAYERS = [20, 24, 28]

@@ -36,6 +36,7 @@ os.environ.setdefault("MKL_NUM_THREADS", "6")
 import json
 import re
 import math
+from pathlib import Path
 import numpy as np
 from collections import Counter
 from sklearn.linear_model import LogisticRegression, LinearRegression, Ridge
@@ -47,11 +48,16 @@ import joblib
 
 SEED = 20260704
 BASE = os.path.dirname(os.path.abspath(__file__))
-AN = os.path.abspath(os.path.join(BASE, ".."))
-GEOM = os.path.join(AN, "mi_category_geometry_20260704")
-CACHE = os.path.join(GEOM, "cache")
-PROBES = os.path.join(AN, "ah_stage0", "probes")
-A0 = os.path.join(AN, "ah_main", "gen_A0", "rows.jsonl")
+REPO = Path(__file__).resolve().parents[4]
+LEGACY_ANALYSIS = REPO / "experiment" / "phase1" / "probe" / "analysis"
+GEOM = str(LEGACY_ANALYSIS / "mi_category_geometry_20260704")
+CACHE = str(LEGACY_ANALYSIS / "mi_category_geometry_20260704" / "cache")
+PROBES = str(LEGACY_ANALYSIS / "ah_stage0" / "probes")
+A0 = str(LEGACY_ANALYSIS / "ah_main" / "gen_A0" / "rows.jsonl")
+ARM_B_FINDINGS = (
+    REPO / "experiments" / "confab-mechanics-cpu-fleet" / "analysis-committed"
+    / "confab-signature" / "findings.json"
+)
 
 LAYERS = [20, 24, 28]
 PCA_DIM = 128
@@ -364,7 +370,7 @@ print("PERM commit_full", perm_commit_full, flush=True)
 print("PERM commit_famout", perm_commit_famout, flush=True)
 
 # ---------- reference numbers from arm B ----------
-armB = json.load(open(os.path.join(AN, "mi_confab_signature_20260704", "findings.json")))
+armB = json.load(open(ARM_B_FINDINGS))
 findings["armB_reference"] = {
     "commitment_probe_L28": armB["activation_probe_matched"]["by_layer"]["L28"]["cv"]["mean"],
     "text_familiarity_proxies_joint": armB["familiarity_proxies_matched"]["_joint_all5"]["cv"]["mean"],

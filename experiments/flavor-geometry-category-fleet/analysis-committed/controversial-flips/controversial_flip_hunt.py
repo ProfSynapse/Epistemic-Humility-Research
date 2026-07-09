@@ -30,6 +30,7 @@ CPU only. Load one activation layer at a time. Seed fixed. No gates, Tier-1 note
 import json
 import os
 import re
+from pathlib import Path
 import numpy as np
 from collections import Counter
 from sklearn.decomposition import PCA
@@ -44,9 +45,11 @@ SEED = 20260704
 rng = np.random.default_rng(SEED)
 
 HERE = os.path.dirname(os.path.abspath(__file__))
-GEN = os.path.abspath(os.path.join(HERE, "..", "ah_main"))
-CACHE = os.path.abspath(os.path.join(HERE, "..", "mi_category_geometry_20260704", "cache"))
-PROBES = os.path.abspath(os.path.join(HERE, "..", "ah_stage0", "probes"))
+REPO = Path(__file__).resolve().parents[4]
+LEGACY_ANALYSIS = REPO / "experiment" / "phase1" / "probe" / "analysis"
+GEN = str(LEGACY_ANALYSIS / "ah_main")
+CACHE = str(LEGACY_ANALYSIS / "mi_category_geometry_20260704" / "cache")
+PROBES = str(LEGACY_ANALYSIS / "ah_stage0" / "probes")
 
 CATS = ["ambiguous", "controversial", "unsolved_problem",
         "false_assumption", "future_unknown", "counterfactual"]
