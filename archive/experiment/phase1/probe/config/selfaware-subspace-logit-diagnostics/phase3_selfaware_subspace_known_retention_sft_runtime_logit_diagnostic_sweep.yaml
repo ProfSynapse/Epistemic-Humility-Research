@@ -7,8 +7,8 @@
 sweep:
   name: phase3_selfaware_subspace_known_retention_sft_runtime_logit_diagnostic
   evidence_tier: tier2_exploratory_local
-  runner_config: experiment/phase1/probe/config/phase3_selfaware_subspace_normed_logit_diagnostic.yaml
-  candidate_source_config: experiment/phase1/probe/config/phase3_selfaware_subspace_normed_logit_diagnostic.yaml
+  runner_config: archive/experiment/phase1/probe/config/selfaware-subspace-logit-diagnostics/phase3_selfaware_subspace_normed_logit_diagnostic.yaml
+  candidate_source_config: archive/experiment/phase1/probe/config/selfaware-subspace-logit-diagnostics/phase3_selfaware_subspace_normed_logit_diagnostic.yaml
   output_root: experiment/phase1/probe/qwen3-4b-sft-merged-seed1-selfaware/causal_pilots/phase3_selfaware_subspace_known_retention_sft_runtime_logit_diagnostic
   candidates: all
   runner_overrides:

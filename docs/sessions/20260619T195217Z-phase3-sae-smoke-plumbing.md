@@ -663,8 +663,8 @@ plumbing can read and write the expected artifacts.
   - `experiment/phase1/probe/tests/test_phase3_direction_transforms.py`
   - `experiment/phase1/probe/config/phase3_selfaware_dpo_subspace_direction_transforms.yaml`
   - `experiment/phase1/probe/config/phase3_selfaware_kto_subspace_direction_transforms.yaml`
-  - `experiment/phase1/probe/config/phase3_selfaware_subspace_normed_logit_diagnostic.yaml`
-  - `experiment/phase1/probe/config/phase3_selfaware_subspace_normed_logit_diagnostic_sweep.yaml`
+  - `archive/experiment/phase1/probe/config/selfaware-subspace-logit-diagnostics/phase3_selfaware_subspace_normed_logit_diagnostic.yaml`
+  - `archive/experiment/phase1/probe/config/selfaware-subspace-logit-diagnostics/phase3_selfaware_subspace_normed_logit_diagnostic_sweep.yaml`
   - `experiment/phase1/probe/qwen3-4b-sft-merged-seed1-selfaware/direction_transforms/phase3_selfaware_dpo_subspace_normed_to_sae_contrast/direction_transforms.manifest.json`
   - `experiment/phase1/probe/qwen3-4b-sft-merged-seed1-selfaware/direction_transforms/phase3_selfaware_kto_subspace_normed_to_sae_contrast/direction_transforms.manifest.json`
   - `experiment/phase1/probe/qwen3-4b-sft-merged-seed1-selfaware/causal_pilots/phase3_selfaware_subspace_normed_logit_diagnostic/_execution_logs/execution_results.jsonl`
@@ -706,7 +706,7 @@ plumbing can read and write the expected artifacts.
 - evidence:
   - `experiment/phase1/probe/phase3_causal_pilot_sweep.py`
   - `experiment/phase1/probe/tests/test_phase3_causal_pilot_sweep.py`
-  - `experiment/phase1/probe/config/phase3_selfaware_subspace_known_retention_logit_diagnostic_sweep.yaml`
+  - `archive/experiment/phase1/probe/config/selfaware-subspace-logit-diagnostics/phase3_selfaware_subspace_known_retention_logit_diagnostic_sweep.yaml`
   - `experiment/phase1/probe/qwen3-4b-sft-merged-seed1-selfaware/causal_pilots/phase3_selfaware_subspace_known_retention_logit_diagnostic/summary.csv`
 - commands:
   - `python -m pytest experiment\phase1\probe\tests\test_phase3_causal_pilot_sweep.py -q`
@@ -739,8 +739,8 @@ plumbing can read and write the expected artifacts.
 - evidence:
   - `experiment/phase1/probe/phase3_causal_pilot_runner.py`
   - `experiment/phase1/probe/tests/test_phase3_causal_pilot_runner.py`
-  - `experiment/phase1/probe/config/phase3_selfaware_subspace_normed_sft_runtime_logit_diagnostic_sweep.yaml`
-  - `experiment/phase1/probe/config/phase3_selfaware_subspace_known_retention_sft_runtime_logit_diagnostic_sweep.yaml`
+  - `archive/experiment/phase1/probe/config/selfaware-subspace-logit-diagnostics/phase3_selfaware_subspace_normed_sft_runtime_logit_diagnostic_sweep.yaml`
+  - `archive/experiment/phase1/probe/config/selfaware-subspace-logit-diagnostics/phase3_selfaware_subspace_known_retention_sft_runtime_logit_diagnostic_sweep.yaml`
   - `experiment/phase1/probe/qwen3-4b-sft-merged-seed1-selfaware/causal_pilots/phase3_selfaware_subspace_normed_sft_runtime_logit_diagnostic/summary.csv`
   - `experiment/phase1/probe/qwen3-4b-sft-merged-seed1-selfaware/causal_pilots/phase3_selfaware_subspace_known_retention_sft_runtime_logit_diagnostic/summary.csv`
 - commands:

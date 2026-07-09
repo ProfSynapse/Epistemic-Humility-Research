@@ -99,3 +99,26 @@ This log records migration batches after the terrain baseline in
   - Did not rewrite legacy extraction dirs, row overlays, or analysis output
     roots. Those paths preserve historical run provenance and will be handled
     with broader legacy artifact archive passes.
+## C025 - SelfAware Subspace Logit Diagnostics
+
+- Date: 2026-07-09
+- Source component: `C025`
+- File count: 5
+- Source root: `experiment/phase1/probe/config/`
+- Destination:
+  `archive/experiment/phase1/probe/config/selfaware-subspace-logit-diagnostics/`
+- Owner decision: archive-only historical provenance for the June 19 Phase 3 SAE
+  smoke/plumbing session; no migrated `experiments/<slug>` owner was present,
+  and the component was not a reusable shared input at migration time.
+- Reason: historical exploratory Phase 3 SAE/subspace local logit-diagnostic
+  component with only historical session-note references outside the component.
+- Reference updates:
+  - Rewrote component-internal config path references to the archive path.
+  - Rewrote the historical session note
+    `docs/sessions/20260619T195217Z-phase3-sae-smoke-plumbing.md`.
+- Non-goals:
+  - Did not promote these configs to `experiments/common/`; they are provenance,
+    not reusable shared inputs.
+  - Did not rewrite legacy causal-pilot output roots, extraction dirs, SAE output
+    paths, or live runner-template references. Those paths preserve historical
+    run provenance or belong to later live-default migration passes.
