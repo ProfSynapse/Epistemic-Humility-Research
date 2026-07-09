@@ -425,3 +425,29 @@ This log records migration batches after the terrain baseline in
   - Did not move downstream calibrated-expression geometry configs that reference
     generated behavior-axis direction manifests; those belong to separate terrain
     components for later review.
+## C019 - SelfAware Calibrated-Expression Axis Configs
+
+- Date: 2026-07-09
+- Source component: `C019`
+- File count: 3
+- Source root: `experiment/phase1/probe/config/`
+- Destination:
+  `archive/experiment/phase1/probe/config/selfaware-calibrated-expression-axis/`
+- Owner decision: archive-only historical provenance for the June 20 Phase 3
+  SelfAware calibrated-expression axis work. No migrated `experiments/<slug>`
+  owner was present, and these files are not reusable shared defaults.
+- Reason: these configs form a historical calibrated-expression scan ->
+  direction-export chain. Downstream files reference generated direction manifests,
+  not these config files directly.
+- Reference updates:
+  - Rewrote component-internal `source_scan_config` references to the archive path.
+  - Rewrote moved-config references and command paths in
+    `docs/sessions/20260620T010500Z-phase3-behavior-conditioned-sae-features.md`.
+  - Rewrote the moved scan-config reference in
+    `archive/notes/experiments/mech-interp-model-variation-panel.md`.
+  - Added a README to the destination archive folder.
+- Non-goals:
+  - Did not move scan or direction output roots under
+    `experiment/phase1/probe/qwen3-4b-sft-merged-seed1-selfaware/`.
+  - Did not move downstream calibrated-expression geometry, composite, candidate,
+    or logit configs; those are separate terrain components for later review.

@@ -785,12 +785,12 @@ checkpoints:
 
     '
   evidence:
-  - experiment/phase1/probe/config/phase3_selfaware_calibrated_expression_axis_scan.yaml
+  - archive/experiment/phase1/probe/config/selfaware-calibrated-expression-axis/phase3_selfaware_calibrated_expression_axis_scan.yaml
   - experiment/phase1/probe/qwen3-4b-sft-merged-seed1-selfaware/behavior_axis_scan/phase3_selfaware_calibrated_expression_axis_scan/summary.json
   - experiment/phase1/probe/qwen3-4b-sft-merged-seed1-selfaware/behavior_axis_scan/phase3_selfaware_calibrated_expression_axis_scan/top_layers_all.csv
   - experiment/phase1/probe/qwen3-4b-sft-merged-seed1-selfaware/behavior_axis_scan/phase3_selfaware_calibrated_expression_axis_scan/axis_scan_all.csv
   commands:
-  - python .\experiment\phase1\probe\phase3_behavior_axis_scan.py --config .\experiment\phase1\probe\config\phase3_selfaware_calibrated_expression_axis_scan.yaml
+  - python .\experiment\phase1\probe\phase3_behavior_axis_scan.py --config .\archive\experiment\phase1\probe\config\selfaware-calibrated-expression-axis\phase3_selfaware_calibrated_expression_axis_scan.yaml
   decisions:
   - Use calibrated-expression cells as the primary lens going forward, not refusal
     probability alone.
@@ -827,18 +827,18 @@ checkpoints:
 
     '
   evidence:
-  - experiment/phase1/probe/config/phase3_selfaware_calibrated_expression_axis_directions.yaml
+  - archive/experiment/phase1/probe/config/selfaware-calibrated-expression-axis/phase3_selfaware_calibrated_expression_axis_directions.yaml
   - experiment/phase1/probe/config/phase3_selfaware_calibrated_expression_direction_geometry.yaml
-  - experiment/phase1/probe/config/phase3_selfaware_calibrated_expression_hlora_window_directions.yaml
+  - archive/experiment/phase1/probe/config/selfaware-calibrated-expression-axis/phase3_selfaware_calibrated_expression_hlora_window_directions.yaml
   - experiment/phase1/probe/config/phase3_selfaware_calibrated_expression_hlora_window_geometry.yaml
   - experiment/phase1/probe/qwen3-4b-sft-merged-seed1-selfaware/behavior_axis_directions/phase3_selfaware_calibrated_expression_axis_directions/behavior_axis_directions.manifest.json
   - experiment/phase1/probe/qwen3-4b-sft-merged-seed1-selfaware/behavior_axis_directions/phase3_selfaware_calibrated_expression_hlora_window_directions/behavior_axis_directions.manifest.json
   - experiment/phase1/probe/qwen3-4b-sft-merged-seed1-selfaware/direction_geometry/phase3_selfaware_calibrated_expression_direction_geometry/summary.json
   - experiment/phase1/probe/qwen3-4b-sft-merged-seed1-selfaware/direction_geometry/phase3_selfaware_calibrated_expression_hlora_window_geometry/pairwise_cosine.csv
   commands:
-  - python .\experiment\phase1\probe\phase3_behavior_axis_directions.py --config .\experiment\phase1\probe\config\phase3_selfaware_calibrated_expression_axis_directions.yaml
+  - python .\experiment\phase1\probe\phase3_behavior_axis_directions.py --config .\archive\experiment\phase1\probe\config\selfaware-calibrated-expression-axis\phase3_selfaware_calibrated_expression_axis_directions.yaml
   - python .\experiment\phase1\probe\phase3_direction_geometry.py --config .\experiment\phase1\probe\config\phase3_selfaware_calibrated_expression_direction_geometry.yaml
-  - python .\experiment\phase1\probe\phase3_behavior_axis_directions.py --config .\experiment\phase1\probe\config\phase3_selfaware_calibrated_expression_hlora_window_directions.yaml
+  - python .\experiment\phase1\probe\phase3_behavior_axis_directions.py --config .\archive\experiment\phase1\probe\config\selfaware-calibrated-expression-axis\phase3_selfaware_calibrated_expression_hlora_window_directions.yaml
   - python .\experiment\phase1\probe\phase3_direction_geometry.py --config .\experiment\phase1\probe\config\phase3_selfaware_calibrated_expression_hlora_window_geometry.yaml
   decisions:
   - Treat KTO h_lora L24-L27 as the current coherent calibrated-expression layer band.

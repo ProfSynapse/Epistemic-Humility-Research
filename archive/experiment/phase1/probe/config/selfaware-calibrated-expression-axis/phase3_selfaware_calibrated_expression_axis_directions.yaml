@@ -3,7 +3,7 @@ spec:
   analysis_type: phase3_behavior_axis_direction_export
   notice: BEHAVIOR_AXIS_DIRECTION_CANDIDATES_ONLY
 
-source_scan_config: experiment/phase1/probe/config/phase3_selfaware_calibrated_expression_axis_scan.yaml
+source_scan_config: archive/experiment/phase1/probe/config/selfaware-calibrated-expression-axis/phase3_selfaware_calibrated_expression_axis_scan.yaml
 
 axes:
   - label: kto_delta_unknown_wrong_vs_refused_l23_normed
