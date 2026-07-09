@@ -546,7 +546,7 @@ _No summary yet._
 - evidence:
   - `archive/experiment/phase1/probe/config/current-clean-behavior-axis-directions/phase3_current_clean_grpo_v2_l26_repair_protect_directions.yaml`
   - `experiment/phase1/probe/analysis/current_clean_grpo_v2_l26_repair_protect_directions/behavior_axis_directions.manifest.json`
-  - `experiment/phase1/probe/config/phase3_current_clean_grpo_v2_l26_repair_orthogonalized_to_unknown_refusal.yaml`
+  - `archive/experiment/phase1/probe/config/grpo-v2-residual-repair/phase3_current_clean_grpo_v2_l26_repair_orthogonalized_to_unknown_refusal.yaml`
   - `experiment/phase1/probe/analysis/current_clean_grpo_v2_l26_repair_orthogonalized_to_unknown_refusal/direction_transforms.manifest.json`
   - `archive/experiment/phase1/probe/config/current-clean-grpo-v2-known-overrefusal/phase3_current_clean_grpo_v2_l26_orthogonalized_candidates.yaml`
   - `archive/experiment/phase1/probe/config/current-clean-grpo-v2-known-overrefusal/phase3_current_clean_grpo_v2_l26_orthogonalized_panel_b_generation.yaml`
@@ -556,7 +556,7 @@ _No summary yet._
   - `.skills/mech-interp-runner/references/phase3-current-findings.md`
 - commands:
   - `python experiment\\phase1\\probe\\phase3_behavior_axis_directions.py --config experiment\\phase1\\probe\\config\\phase3_current_clean_grpo_v2_l26_repair_protect_directions.yaml`
-  - `python experiment\\phase1\\probe\\phase3_direction_transforms.py --config experiment\\phase1\\probe\\config\\phase3_current_clean_grpo_v2_l26_repair_orthogonalized_to_unknown_refusal.yaml`
+  - `python experiment\\phase1\\probe\\phase3_direction_transforms.py --config archive\\experiment\\phase1\\probe\\config\\grpo-v2-residual-repair\\phase3_current_clean_grpo_v2_l26_repair_orthogonalized_to_unknown_refusal.yaml`
   - `python experiment\\phase1\\probe\\phase3_causal_pilot_sweep.py --config experiment\\phase1\\probe\\config\\phase3_current_clean_grpo_v2_l26_orthogonalized_panel_b_generation.yaml --mode-filter generation --write-plan --materialize-configs --execute --allow-generation`
   - `python experiment\\phase1\\probe\\phase3_generation_replay_analysis.py --root experiment\\phase1\\probe\\analysis\\current_clean_grpo_v2_l26_orthogonalized_panel_b_generation --out experiment\\phase1\\probe\\analysis\\current_clean_grpo_v2_l26_orthogonalized_panel_b_generation\\script_summary_latest`
   - `python experiment\\phase1\\probe\\phase3_causal_pilot_sweep.py --config experiment\\phase1\\probe\\config\\phase3_current_clean_grpo_v2_l26_orthogonalized_panel_a_generation.yaml --mode-filter generation --write-plan --materialize-configs --execute --allow-generation`
@@ -578,7 +578,7 @@ _No summary yet._
   - `archive/experiment/phase1/probe/config/current-clean-grpo-v2-known-overrefusal/phase3_current_clean_grpo_v2_l26_repair_multi_protect_scan.yaml`
   - `archive/experiment/phase1/probe/config/current-clean-grpo-v2-known-overrefusal/phase3_current_clean_grpo_v2_l26_repair_multi_protect_directions.yaml`
   - `experiment/phase1/probe/analysis/current_clean_grpo_v2_l26_repair_multi_protect_directions/behavior_axis_directions.manifest.json`
-  - `experiment/phase1/probe/config/phase3_current_clean_grpo_v2_l26_repair_orthogonalized_to_unknown_refusal_and_known_wrong.yaml`
+  - `archive/experiment/phase1/probe/config/grpo-v2-residual-repair/phase3_current_clean_grpo_v2_l26_repair_orthogonalized_to_unknown_refusal_and_known_wrong.yaml`
   - `experiment/phase1/probe/analysis/current_clean_grpo_v2_l26_repair_orthogonalized_to_unknown_refusal_and_known_wrong/direction_transforms.manifest.json`
   - `archive/experiment/phase1/probe/config/current-clean-grpo-v2-known-overrefusal/phase3_current_clean_grpo_v2_l26_double_orthogonalized_candidates.yaml`
   - `archive/experiment/phase1/probe/config/current-clean-grpo-v2-known-overrefusal/phase3_current_clean_grpo_v2_l26_double_orthogonalized_panel_a_generation.yaml`
@@ -589,7 +589,7 @@ _No summary yet._
 - commands:
   - `python experiment\\phase1\\probe\\phase3_behavior_axis_scan.py --config archive\\experiment\\phase1\\probe\\config\\current-clean-grpo-v2-known-overrefusal\\phase3_current_clean_grpo_v2_l26_repair_multi_protect_scan.yaml`
   - `python experiment\\phase1\\probe\\phase3_behavior_axis_directions.py --config archive\\experiment\\phase1\\probe\\config\\current-clean-grpo-v2-known-overrefusal\\phase3_current_clean_grpo_v2_l26_repair_multi_protect_directions.yaml`
-  - `python experiment\\phase1\\probe\\phase3_direction_transforms.py --config experiment\\phase1\\probe\\config\\phase3_current_clean_grpo_v2_l26_repair_orthogonalized_to_unknown_refusal_and_known_wrong.yaml`
+  - `python experiment\\phase1\\probe\\phase3_direction_transforms.py --config archive\\experiment\\phase1\\probe\\config\\grpo-v2-residual-repair\\phase3_current_clean_grpo_v2_l26_repair_orthogonalized_to_unknown_refusal_and_known_wrong.yaml`
   - `python experiment\\phase1\\probe\\phase3_causal_pilot_sweep.py --config experiment\\phase1\\probe\\config\\phase3_current_clean_grpo_v2_l26_double_orthogonalized_panel_a_generation.yaml --mode-filter generation --write-plan --materialize-configs --execute --allow-generation`
   - `python experiment\\phase1\\probe\\phase3_generation_replay_analysis.py --root experiment\\phase1\\probe\\analysis\\current_clean_grpo_v2_l26_double_orthogonalized_panel_a_generation --out experiment\\phase1\\probe\\analysis\\current_clean_grpo_v2_l26_double_orthogonalized_panel_a_generation\\script_summary_latest`
   - `python experiment\\phase1\\probe\\phase3_causal_pilot_sweep.py --config experiment\\phase1\\probe\\config\\phase3_current_clean_grpo_v2_l26_double_orthogonalized_panel_b_generation.yaml --mode-filter generation --write-plan --materialize-configs --execute --allow-generation`
@@ -789,13 +789,13 @@ _No summary yet._
   - `archive/experiment/phase1/probe/config/current-clean-grpo-v2-unknown-failure/phase3_current_clean_grpo_v2_unknown_failure_prompt_matched_multicell_readout.yaml`
   - `experiment/phase1/probe/analysis/current_clean_grpo_v2_unknown_failure_prompt_matched_multicell_readout/top_readouts_all.csv`
   - `archive/experiment/phase1/probe/config/current-clean-grpo-v2-unknown-failure/phase3_current_clean_grpo_v2_unknown_failure_prompt_matched_l26_multicell_directions.yaml`
-  - `experiment/phase1/probe/config/phase3_current_clean_grpo_v2_unknown_failure_prompt_matched_l26_constrained_unknown_repair.yaml`
+  - `archive/experiment/phase1/probe/config/grpo-v2-residual-repair/phase3_current_clean_grpo_v2_unknown_failure_prompt_matched_l26_constrained_unknown_repair.yaml`
   - `archive/experiment/phase1/probe/config/current-clean-grpo-v2-unknown-failure/phase3_current_clean_grpo_v2_unknown_failure_prompt_matched_l26_constrained_generation_replay.yaml`
   - `experiment/phase1/probe/analysis/current_clean_grpo_v2_unknown_failure_prompt_matched_l26_constrained_generation_replay/summary_latest/summary.csv`
 - commands:
   - `python .skills\\mech-interp-runner\\scripts\\phase3_cli.py multicell-readout --config archive\\experiment\\phase1\\probe\\config\\current-clean-grpo-v2-unknown-failure\\phase3_current_clean_grpo_v2_unknown_failure_prompt_matched_multicell_readout.yaml`
   - `python experiment\\phase1\\probe\\phase3_behavior_axis_directions.py --config archive\\experiment\\phase1\\probe\\config\\current-clean-grpo-v2-unknown-failure\\phase3_current_clean_grpo_v2_unknown_failure_prompt_matched_l26_multicell_directions.yaml`
-  - `python experiment\\phase1\\probe\\phase3_direction_transforms.py --config experiment\\phase1\\probe\\config\\phase3_current_clean_grpo_v2_unknown_failure_prompt_matched_l26_constrained_unknown_repair.yaml`
+  - `python experiment\\phase1\\probe\\phase3_direction_transforms.py --config archive\\experiment\\phase1\\probe\\config\\grpo-v2-residual-repair\\phase3_current_clean_grpo_v2_unknown_failure_prompt_matched_l26_constrained_unknown_repair.yaml`
   - `python experiment\\phase1\\probe\\phase3_causal_pilot_sweep.py --config experiment\\phase1\\probe\\config\\phase3_current_clean_grpo_v2_unknown_failure_prompt_matched_l26_constrained_generation_replay.yaml --mode-filter generation --write-plan --materialize-configs --execute --allow-generation`
   - `python experiment\\phase1\\probe\\phase3_generation_replay_analysis.py --root experiment\\phase1\\probe\\analysis\\current_clean_grpo_v2_unknown_failure_prompt_matched_l26_constrained_generation_replay --out experiment\\phase1\\probe\\analysis\\current_clean_grpo_v2_unknown_failure_prompt_matched_l26_constrained_generation_replay\\summary_latest`
 - decisions:

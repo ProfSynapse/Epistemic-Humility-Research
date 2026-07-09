@@ -43,7 +43,7 @@ anti-steerability problem that plagues causal handles):
    AUROC confirms the raw direction captures the same axis.
 
 2. **Run the trajectory (Docker/GPU; needs approval).** Copy
-   `config/phase3_current_clean_grpo_v2_caution_residual_read_trajectory.yaml`:
+   `archive/experiment/phase1/probe/config/grpo-v2-residual-repair/phase3_current_clean_grpo_v2_caution_residual_read_trajectory.yaml`:
    point `caution_direction` at the JSON, `rows` at the behavior rows,
    `rows_filter.label: known` (the contrast is known_refused vs
    known_correct_answered — unknown rows have no group membership and waste GPU),

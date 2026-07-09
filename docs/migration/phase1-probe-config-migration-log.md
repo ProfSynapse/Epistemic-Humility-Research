@@ -984,3 +984,29 @@ This log records migration batches after the terrain baseline in
 - Non-goals:
   - Did not move generated head-localization, steering-direction,
     read-trajectory, or intervention outputs under `experiment/phase1/probe/`.
+
+## C006b/C009e - GRPO v2 Residual And Repair Configs
+
+- Date: 2026-07-09
+- Source components: `C006`, `C009`, and current-clean GRPO v2 subsets
+- File count: 7
+- Source root: `experiment/phase1/probe/config/`
+- Destination:
+  `archive/experiment/phase1/probe/config/grpo-v2-residual-repair/`
+- Owner decision: archive-only historical provenance for GRPO v2 residual
+  caution, knowledge-boundary, and L26 repair direction/intervention configs.
+  No migrated `experiments/<slug>` owner was present, and these are not
+  reusable shared defaults.
+- Reason: these files are downstream diagnostic and repair follow-ups over the
+  already archived GRPO v2 known-overrefusal and unknown-failure panels. They
+  consume generated analysis artifacts and should not remain root defaults.
+- Reference updates:
+  - Rewrote moved-config references and command paths in historical session
+    notes and the archived uncertainty-monitor note.
+  - Updated the canonical mech-interp read-trajectory reference and synced skill
+    mirrors.
+  - Added a destination archive README.
+- Non-goals:
+  - Did not move generated residual-direction, direction-transform,
+    read-trajectory, steering, or intervention outputs under
+    `experiment/phase1/probe/`.
