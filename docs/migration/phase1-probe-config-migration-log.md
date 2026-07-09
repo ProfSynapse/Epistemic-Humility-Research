@@ -550,3 +550,26 @@ This log records migration batches after the terrain baseline in
 - Non-goals:
   - Did not move generated behavior-axis, direction-transform, causal-pilot, or
     generation outputs under `experiment/phase1/probe/`.
+## C001d - Gold-Answer KTO Panel Configs
+
+- Date: 2026-07-09
+- Source component: `C001` subset
+- File count: 6
+- Source root: `experiment/phase1/probe/config/`
+- Destination:
+  `archive/experiment/phase1/probe/config/gold-answer-kto-panels/`
+- Owner decision: archive-only historical provenance for gold-backed KTO
+  answer-start and generated-answer diagnostic work. No migrated
+  `experiments/<slug>` owner was present, and these files are not reusable shared
+  defaults.
+- Reason: these files form a bounded downstream panel around gold-backed first
+  token, fixed unknown-row, random-seed, baseline generation, and KTO unknown
+  generation replay diagnostics.
+- Reference updates:
+  - Rewrote moved-config references and command paths in historical docs/session
+    notes found by exact path search.
+  - Retained generated output roots under `experiment/phase1/probe/`.
+  - Added a README to the destination archive folder.
+- Non-goals:
+  - Did not move generated behavior panels or causal-pilot outputs under
+    `experiment/phase1/probe/qwen3-4b-instruct/`.

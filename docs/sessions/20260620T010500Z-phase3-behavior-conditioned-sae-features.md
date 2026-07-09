@@ -478,13 +478,13 @@ checkpoints:
 
     '
   evidence:
-  - experiment/phase1/probe/config/phase3_gold_answer_first_token_scaled_logit_diagnostic_sweep.yaml
+  - archive/experiment/phase1/probe/config/gold-answer-kto-panels/phase3_gold_answer_first_token_scaled_logit_diagnostic_sweep.yaml
   - experiment/phase1/probe/qwen3-4b-instruct/causal_pilots/phase3_gold_answer_first_token_scaled_logit_diagnostic/summary.csv
   - experiment/phase1/probe/qwen3-4b-instruct/causal_pilots/phase3_gold_answer_first_token_scaled_logit_diagnostic/_execution_logs/execution_results.jsonl
   commands:
-  - python experiment\phase1\probe\phase3_causal_pilot_sweep.py --config experiment\phase1\probe\config\phase3_gold_answer_first_token_scaled_logit_diagnostic_sweep.yaml
+  - python experiment\phase1\probe\phase3_causal_pilot_sweep.py --config archive\experiment\phase1\probe\config\gold-answer-kto-panels\phase3_gold_answer_first_token_scaled_logit_diagnostic_sweep.yaml
     --mode-filter logit_diagnostic --write-plan --materialize-configs
-  - python experiment\phase1\probe\phase3_causal_pilot_sweep.py --config experiment\phase1\probe\config\phase3_gold_answer_first_token_scaled_logit_diagnostic_sweep.yaml
+  - python experiment\phase1\probe\phase3_causal_pilot_sweep.py --config archive\experiment\phase1\probe\config\gold-answer-kto-panels\phase3_gold_answer_first_token_scaled_logit_diagnostic_sweep.yaml
     --mode-filter logit_diagnostic --write-plan --materialize-configs --execute --allow-logit-diagnostic
   - python experiment\phase1\probe\phase3_causal_pilot_aggregate.py --root experiment\phase1\probe\qwen3-4b-instruct\causal_pilots\phase3_gold_answer_first_token_scaled_logit_diagnostic
     --out experiment\phase1\probe\qwen3-4b-instruct\causal_pilots\phase3_gold_answer_first_token_scaled_logit_diagnostic\summary.csv
@@ -564,15 +564,15 @@ checkpoints:
 
     '
   evidence:
-  - experiment/phase1/probe/config/phase3_gold_answer_first_token_64_logit_diagnostic_sweep.yaml
+  - archive/experiment/phase1/probe/config/gold-answer-kto-panels/phase3_gold_answer_first_token_64_logit_diagnostic_sweep.yaml
   - experiment/phase1/probe/qwen3-4b-instruct/causal_pilots/phase3_gold_answer_first_token_64_logit_diagnostic/summary.csv
   - experiment/phase1/probe/qwen3-4b-instruct/causal_pilots/phase3_gold_answer_first_token_64_logit_diagnostic/row_stratification_summary.csv
   - experiment/phase1/probe/qwen3-4b-instruct/causal_pilots/phase3_gold_answer_first_token_64_logit_diagnostic/row_direction_counts.csv
   - experiment/phase1/probe/qwen3-4b-instruct/causal_pilots/phase3_gold_answer_first_token_64_logit_diagnostic/_execution_logs/execution_results.jsonl
   commands:
-  - python .\experiment\phase1\probe\phase3_causal_pilot_sweep.py --config .\experiment\phase1\probe\config\phase3_gold_answer_first_token_64_logit_diagnostic_sweep.yaml
+  - python .\experiment\phase1\probe\phase3_causal_pilot_sweep.py --config .\archive\experiment\phase1\probe\config\gold-answer-kto-panels\phase3_gold_answer_first_token_64_logit_diagnostic_sweep.yaml
     --mode-filter logit_diagnostic --write-plan --materialize-configs
-  - python .\experiment\phase1\probe\phase3_causal_pilot_sweep.py --config .\experiment\phase1\probe\config\phase3_gold_answer_first_token_64_logit_diagnostic_sweep.yaml
+  - python .\experiment\phase1\probe\phase3_causal_pilot_sweep.py --config .\archive\experiment\phase1\probe\config\gold-answer-kto-panels\phase3_gold_answer_first_token_64_logit_diagnostic_sweep.yaml
     --mode-filter logit_diagnostic --write-plan --materialize-configs --execute --allow-logit-diagnostic
   - python .\experiment\phase1\probe\phase3_causal_pilot_aggregate.py --root .\experiment\phase1\probe\qwen3-4b-instruct\causal_pilots\phase3_gold_answer_first_token_64_logit_diagnostic
     --out .\experiment\phase1\probe\qwen3-4b-instruct\causal_pilots\phase3_gold_answer_first_token_64_logit_diagnostic\summary.csv
@@ -618,14 +618,14 @@ checkpoints:
 
     '
   evidence:
-  - experiment/phase1/probe/config/phase3_gold_answer_unknown_coeff_sweep.yaml
+  - archive/experiment/phase1/probe/config/gold-answer-kto-panels/phase3_gold_answer_unknown_coeff_sweep.yaml
   - experiment/phase1/probe/qwen3-4b-instruct/causal_pilots/phase3_gold_answer_unknown_coeff_sweep/summary.csv
   - experiment/phase1/probe/qwen3-4b-instruct/causal_pilots/phase3_gold_answer_unknown_coeff_sweep/coefficient_curve_summary.csv
   - experiment/phase1/probe/qwen3-4b-instruct/causal_pilots/phase3_gold_answer_unknown_coeff_sweep/_execution_logs/execution_results.jsonl
   commands:
-  - python .\experiment\phase1\probe\phase3_causal_pilot_sweep.py --config .\experiment\phase1\probe\config\phase3_gold_answer_unknown_coeff_sweep.yaml
+  - python .\experiment\phase1\probe\phase3_causal_pilot_sweep.py --config .\archive\experiment\phase1\probe\config\gold-answer-kto-panels\phase3_gold_answer_unknown_coeff_sweep.yaml
     --mode-filter logit_diagnostic --write-plan --materialize-configs
-  - python .\experiment\phase1\probe\phase3_causal_pilot_sweep.py --config .\experiment\phase1\probe\config\phase3_gold_answer_unknown_coeff_sweep.yaml
+  - python .\experiment\phase1\probe\phase3_causal_pilot_sweep.py --config .\archive\experiment\phase1\probe\config\gold-answer-kto-panels\phase3_gold_answer_unknown_coeff_sweep.yaml
     --mode-filter logit_diagnostic --write-plan --materialize-configs --execute --allow-logit-diagnostic
   - python .\experiment\phase1\probe\phase3_causal_pilot_aggregate.py --root .\experiment\phase1\probe\qwen3-4b-instruct\causal_pilots\phase3_gold_answer_unknown_coeff_sweep
     --out .\experiment\phase1\probe\qwen3-4b-instruct\causal_pilots\phase3_gold_answer_unknown_coeff_sweep\summary.csv
@@ -675,16 +675,16 @@ checkpoints:
   evidence:
   - experiment/phase1/probe/phase3_causal_pilot_runner.py
   - experiment/phase1/probe/tests/test_phase3_causal_pilot_runner.py
-  - experiment/phase1/probe/config/phase3_gold_answer_kto_random_seed_panel.yaml
+  - archive/experiment/phase1/probe/config/gold-answer-kto-panels/phase3_gold_answer_kto_random_seed_panel.yaml
   - experiment/phase1/probe/qwen3-4b-instruct/causal_pilots/phase3_gold_answer_kto_random_seed_panel/summary.csv
   - experiment/phase1/probe/qwen3-4b-instruct/causal_pilots/phase3_gold_answer_kto_random_seed_panel/random_seed_panel_summary.csv
   - experiment/phase1/probe/qwen3-4b-instruct/causal_pilots/phase3_gold_answer_kto_random_seed_panel/_execution_logs/execution_results.jsonl
   commands:
   - python -m pytest .\experiment\phase1\probe\tests\test_phase3_causal_pilot_runner.py
     .\experiment\phase1\probe\tests\test_phase3_causal_pilot_sweep.py -q
-  - python .\experiment\phase1\probe\phase3_causal_pilot_sweep.py --config .\experiment\phase1\probe\config\phase3_gold_answer_kto_random_seed_panel.yaml
+  - python .\experiment\phase1\probe\phase3_causal_pilot_sweep.py --config .\archive\experiment\phase1\probe\config\gold-answer-kto-panels\phase3_gold_answer_kto_random_seed_panel.yaml
     --mode-filter logit_diagnostic --write-plan --materialize-configs
-  - python .\experiment\phase1\probe\phase3_causal_pilot_sweep.py --config .\experiment\phase1\probe\config\phase3_gold_answer_kto_random_seed_panel.yaml
+  - python .\experiment\phase1\probe\phase3_causal_pilot_sweep.py --config .\archive\experiment\phase1\probe\config\gold-answer-kto-panels\phase3_gold_answer_kto_random_seed_panel.yaml
     --mode-filter logit_diagnostic --write-plan --materialize-configs --execute --allow-logit-diagnostic
   - python .\experiment\phase1\probe\phase3_causal_pilot_aggregate.py --root .\experiment\phase1\probe\qwen3-4b-instruct\causal_pilots\phase3_gold_answer_kto_random_seed_panel
     --out .\experiment\phase1\probe\qwen3-4b-instruct\causal_pilots\phase3_gold_answer_kto_random_seed_panel\summary.csv
@@ -734,16 +734,16 @@ checkpoints:
 
     '
   evidence:
-  - experiment/phase1/probe/config/phase3_gold_answer_kto_unknown_generation_replay.yaml
+  - archive/experiment/phase1/probe/config/gold-answer-kto-panels/phase3_gold_answer_kto_unknown_generation_replay.yaml
   - experiment/phase1/probe/qwen3-4b-instruct/causal_pilots/phase3_gold_answer_kto_unknown_generation_replay/summary.csv
   - experiment/phase1/probe/qwen3-4b-instruct/causal_pilots/phase3_gold_answer_kto_unknown_generation_replay/generation_replay_summary.csv
   - experiment/phase1/probe/qwen3-4b-instruct/causal_pilots/phase3_gold_answer_kto_unknown_generation_replay/generation_changed_rows.csv
   - experiment/phase1/probe/qwen3-4b-instruct/causal_pilots/phase3_gold_answer_kto_unknown_generation_replay/sft_kto_h_lora_l35/generation/run_20260620T104743Z/scored_rows.jsonl
   - experiment/phase1/probe/qwen3-4b-instruct/causal_pilots/phase3_gold_answer_kto_unknown_generation_replay/_execution_logs/execution_results.jsonl
   commands:
-  - python .\experiment\phase1\probe\phase3_causal_pilot_sweep.py --config .\experiment\phase1\probe\config\phase3_gold_answer_kto_unknown_generation_replay.yaml
+  - python .\experiment\phase1\probe\phase3_causal_pilot_sweep.py --config .\archive\experiment\phase1\probe\config\gold-answer-kto-panels\phase3_gold_answer_kto_unknown_generation_replay.yaml
     --mode-filter generation --write-plan --materialize-configs
-  - python .\experiment\phase1\probe\phase3_causal_pilot_sweep.py --config .\experiment\phase1\probe\config\phase3_gold_answer_kto_unknown_generation_replay.yaml
+  - python .\experiment\phase1\probe\phase3_causal_pilot_sweep.py --config .\archive\experiment\phase1\probe\config\gold-answer-kto-panels\phase3_gold_answer_kto_unknown_generation_replay.yaml
     --mode-filter generation --write-plan --materialize-configs --execute --allow-generation
   - python .\experiment\phase1\probe\phase3_causal_pilot_aggregate.py --root .\experiment\phase1\probe\qwen3-4b-instruct\causal_pilots\phase3_gold_answer_kto_unknown_generation_replay
     --out .\experiment\phase1\probe\qwen3-4b-instruct\causal_pilots\phase3_gold_answer_kto_unknown_generation_replay\summary.csv
