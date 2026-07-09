@@ -2,7 +2,7 @@ sweep:
   name: phase3_selfaware_calibrated_expression_kto_composite125_layer_window_logit_sweep
   evidence_tier: tier2_exploratory_local
   runner_config: archive/experiment/phase1/probe/config/causal-pilot-core/phase3_causal_pilot_gpu_smoke.yaml
-  candidate_source_config: experiment/phase1/probe/config/phase3_selfaware_calibrated_expression_kto_composite125_layer_window_logit_candidates.yaml
+  candidate_source_config: archive/experiment/phase1/probe/config/selfaware-calibrated-expression-kto-panels/phase3_selfaware_calibrated_expression_kto_composite125_layer_window_logit_candidates.yaml
   output_root: experiment/phase1/probe/qwen3-4b-sft-merged-seed1-selfaware/causal_pilots/phase3_selfaware_calibrated_expression_kto_composite125_layer_window_logit_sweep
   candidates:
     - kto_h_lora_l24_composite_known1_unknown125_window_normed
@@ -20,7 +20,7 @@ sweep:
   runner_overrides:
     selection:
       probe_results: null
-      row_keys_file: experiment/phase1/probe/config/phase3_selfaware_calibrated_expression_kto_64_row_keys.txt
+      row_keys_file: archive/experiment/phase1/probe/config/selfaware-calibrated-expression-kto-panels/phase3_selfaware_calibrated_expression_kto_64_row_keys.txt
     readiness_checks:
       require_extraction_manifest:
         status: ok

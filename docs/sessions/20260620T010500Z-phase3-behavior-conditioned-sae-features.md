@@ -998,13 +998,13 @@ checkpoints:
 
     '
   evidence:
-  - experiment/phase1/probe/config/phase3_selfaware_calibrated_expression_kto_logit_candidates.yaml
-  - experiment/phase1/probe/config/phase3_selfaware_calibrated_expression_kto_logit_sweep.yaml
+  - archive/experiment/phase1/probe/config/selfaware-calibrated-expression-kto-panels/phase3_selfaware_calibrated_expression_kto_logit_candidates.yaml
+  - archive/experiment/phase1/probe/config/selfaware-calibrated-expression-kto-panels/phase3_selfaware_calibrated_expression_kto_logit_sweep.yaml
   - experiment/phase1/probe/config/phase3_selfaware_calibrated_expression_kto_logit_cell_analysis.yaml
   - experiment/phase1/probe/phase3_logit_cell_analysis.py
   - experiment/phase1/probe/qwen3-4b-sft-merged-seed1-selfaware/causal_pilots/phase3_selfaware_calibrated_expression_kto_logit_sweep/cell_analysis/cell_logit_summary.csv
   commands:
-  - python .\experiment\phase1\probe\phase3_causal_pilot_sweep.py --config .\experiment\phase1\probe\config\phase3_selfaware_calibrated_expression_kto_logit_sweep.yaml
+  - python .\experiment\phase1\probe\phase3_causal_pilot_sweep.py --config .\archive\experiment\phase1\probe\config\selfaware-calibrated-expression-kto-panels\phase3_selfaware_calibrated_expression_kto_logit_sweep.yaml
     --mode-filter logit_diagnostic --write-plan --materialize-configs --execute --allow-logit-diagnostic
   - python .\experiment\phase1\probe\phase3_logit_cell_analysis.py --config .\experiment\phase1\probe\config\phase3_selfaware_calibrated_expression_kto_logit_cell_analysis.yaml
   decisions:
@@ -1040,11 +1040,11 @@ checkpoints:
   - experiment/phase1/probe/phase3_direction_transforms.py
   - experiment/phase1/probe/config/phase3_selfaware_calibrated_expression_kto_composite_directions.yaml
   - experiment/phase1/probe/config/phase3_selfaware_calibrated_expression_kto_composite_grid_directions.yaml
-  - experiment/phase1/probe/config/phase3_selfaware_calibrated_expression_kto_composite_grid_logit_sweep.yaml
+  - archive/experiment/phase1/probe/config/selfaware-calibrated-expression-kto-panels/phase3_selfaware_calibrated_expression_kto_composite_grid_logit_sweep.yaml
   - experiment/phase1/probe/qwen3-4b-sft-merged-seed1-selfaware/causal_pilots/phase3_selfaware_calibrated_expression_kto_composite_grid_logit_sweep/cell_analysis/cell_logit_summary.csv
   commands:
   - python .\experiment\phase1\probe\phase3_direction_transforms.py --config .\experiment\phase1\probe\config\phase3_selfaware_calibrated_expression_kto_composite_grid_directions.yaml
-  - python .\experiment\phase1\probe\phase3_causal_pilot_sweep.py --config .\experiment\phase1\probe\config\phase3_selfaware_calibrated_expression_kto_composite_grid_logit_sweep.yaml
+  - python .\experiment\phase1\probe\phase3_causal_pilot_sweep.py --config .\archive\experiment\phase1\probe\config\selfaware-calibrated-expression-kto-panels\phase3_selfaware_calibrated_expression_kto_composite_grid_logit_sweep.yaml
     --mode-filter logit_diagnostic --write-plan --materialize-configs --execute --allow-logit-diagnostic
   - python .\experiment\phase1\probe\phase3_logit_cell_analysis.py --config .\experiment\phase1\probe\config\phase3_selfaware_calibrated_expression_kto_composite_grid_logit_cell_analysis.yaml
   decisions:
@@ -1075,11 +1075,11 @@ checkpoints:
     '
   evidence:
   - experiment/phase1/probe/config/phase3_selfaware_calibrated_expression_kto_composite125_layer_window_directions.yaml
-  - experiment/phase1/probe/config/phase3_selfaware_calibrated_expression_kto_composite125_layer_window_logit_sweep.yaml
+  - archive/experiment/phase1/probe/config/selfaware-calibrated-expression-kto-panels/phase3_selfaware_calibrated_expression_kto_composite125_layer_window_logit_sweep.yaml
   - experiment/phase1/probe/qwen3-4b-sft-merged-seed1-selfaware/causal_pilots/phase3_selfaware_calibrated_expression_kto_composite125_layer_window_logit_sweep/cell_analysis/cell_logit_summary.csv
   commands:
   - python .\experiment\phase1\probe\phase3_direction_transforms.py --config .\experiment\phase1\probe\config\phase3_selfaware_calibrated_expression_kto_composite125_layer_window_directions.yaml
-  - python .\experiment\phase1\probe\phase3_causal_pilot_sweep.py --config .\experiment\phase1\probe\config\phase3_selfaware_calibrated_expression_kto_composite125_layer_window_logit_sweep.yaml
+  - python .\experiment\phase1\probe\phase3_causal_pilot_sweep.py --config .\archive\experiment\phase1\probe\config\selfaware-calibrated-expression-kto-panels\phase3_selfaware_calibrated_expression_kto_composite125_layer_window_logit_sweep.yaml
     --mode-filter logit_diagnostic --write-plan --materialize-configs --execute --allow-logit-diagnostic
   - python .\experiment\phase1\probe\phase3_logit_cell_analysis.py --config .\experiment\phase1\probe\config\phase3_selfaware_calibrated_expression_kto_composite125_layer_window_logit_cell_analysis.yaml
   decisions:
@@ -1108,11 +1108,11 @@ checkpoints:
 
     '
   evidence:
-  - experiment/phase1/probe/config/phase3_selfaware_calibrated_expression_kto_composite125_l24_generation_replay.yaml
+  - archive/experiment/phase1/probe/config/selfaware-calibrated-expression-kto-panels/phase3_selfaware_calibrated_expression_kto_composite125_l24_generation_replay.yaml
   - experiment/phase1/probe/qwen3-4b-sft-merged-seed1-selfaware/causal_pilots/phase3_selfaware_calibrated_expression_kto_composite125_l24_generation_replay/kto_h_lora_l24_composite_known1_unknown125_window_normed/generation/run_20260620T123358Z/metrics.json
   - experiment/phase1/probe/qwen3-4b-sft-merged-seed1-selfaware/causal_pilots/phase3_selfaware_calibrated_expression_kto_composite125_l24_generation_replay/kto_h_lora_l24_composite_known1_unknown125_window_normed/generation/run_20260620T123358Z/scored_rows.jsonl
   commands:
-  - python .\experiment\phase1\probe\phase3_causal_pilot_sweep.py --config .\experiment\phase1\probe\config\phase3_selfaware_calibrated_expression_kto_composite125_l24_generation_replay.yaml
+  - python .\experiment\phase1\probe\phase3_causal_pilot_sweep.py --config .\archive\experiment\phase1\probe\config\selfaware-calibrated-expression-kto-panels\phase3_selfaware_calibrated_expression_kto_composite125_l24_generation_replay.yaml
     --mode-filter generation --write-plan --materialize-configs --execute --allow-generation
   decisions:
   - Do not promote the L24 1:1.25 composite as a steering intervention.
@@ -1511,7 +1511,7 @@ Validation:
   -> `5 passed`.
 - `python -m py_compile experiment/phase1/probe/phase3_direction_transforms.py`
   -> passed.
-- `python .skills/mech-interp-runner/scripts/phase3_cli.py causal-sweep --config experiment/phase1/probe/config/phase3_selfaware_calibrated_expression_kto_orthogonalized_window_logit_sweep.yaml --mode-filter logit_diagnostic --write-plan --materialize-configs`
+- `python .skills/mech-interp-runner/scripts/phase3_cli.py causal-sweep --config archive/experiment/phase1/probe/config/selfaware-calibrated-expression-kto-panels/phase3_selfaware_calibrated_expression_kto_orthogonalized_window_logit_sweep.yaml --mode-filter logit_diagnostic --write-plan --materialize-configs`
   -> six planned jobs, zero skipped, `executed=false`.
 
 Geometry result:

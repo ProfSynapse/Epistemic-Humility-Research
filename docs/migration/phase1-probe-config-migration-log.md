@@ -525,3 +525,28 @@ This log records migration batches after the terrain baseline in
 - Non-goals:
   - Did not move generated causal-pilot outputs under
     `experiment/phase1/probe/qwen3-4b-instruct-sycophancy-answer/`.
+## C001c - SelfAware Calibrated-Expression KTO Panel Configs
+
+- Date: 2026-07-09
+- Source component: `C001` subset
+- File count: 12
+- Source root: `experiment/phase1/probe/config/`
+- Destination:
+  `archive/experiment/phase1/probe/config/selfaware-calibrated-expression-kto-panels/`
+- Owner decision: archive-only historical provenance for the June 20 Phase 3
+  SelfAware KTO calibrated-expression logit/replay panel work. No migrated
+  `experiments/<slug>` owner was present, and these files are not reusable shared
+  defaults.
+- Reason: these files form a bounded downstream panel around the fixed 64-row
+  SelfAware behavior-cell set: candidate files, logit sweeps, composite/grid and
+  orthogonalized variants, and one bounded generation replay.
+- Reference updates:
+  - Rewrote `candidate_source_config` and `row_keys_file` references to the
+    archive path.
+  - Rewrote moved-config references and command paths in historical docs/session
+    notes found by exact path search.
+  - Retained generated direction/output roots under `experiment/phase1/probe/`.
+  - Added a README to the destination archive folder.
+- Non-goals:
+  - Did not move generated behavior-axis, direction-transform, causal-pilot, or
+    generation outputs under `experiment/phase1/probe/`.
