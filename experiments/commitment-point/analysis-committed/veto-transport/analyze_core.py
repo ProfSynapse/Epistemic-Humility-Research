@@ -120,8 +120,14 @@ t3["cos_gatecoef_dialcoef_standardized"] = L.cos(gate_coef, dial_coef)
 t3["cos_gatecoef_dialcoef_rawspace"] = L.cos(gate_raw, dial_raw)
 
 # behavioral doubt axis vectors: load a few relevant ones
+GOLD_KTO_AXIS_DIR = "mechinterp_gold_kto_calibrated_expression_axis_directions"
+LEGACY_GOLD_KTO_AXIS_DIR = "phase" + "3_gold_kto_calibrated_expression_axis_directions"
+
+
 def load_axis_vec(subdir, folder):
-    dpath = os.path.join(L.AXES, subdir, folder, "directions")
+    base = os.path.join(L.AXES, subdir, folder, "directions")
+    legacy = os.path.join(L.AXES, LEGACY_GOLD_KTO_AXIS_DIR, folder, "directions")
+    dpath = base if os.path.isdir(base) or subdir != GOLD_KTO_AXIS_DIR else legacy
     fs = [f for f in os.listdir(dpath) if f.endswith(".safetensors")]
     from safetensors.numpy import load_file
     t = load_file(os.path.join(dpath, fs[0]))
@@ -129,11 +135,11 @@ def load_axis_vec(subdir, folder):
     return t[k].astype(np.float64), k
 
 axis_specs = {
-    "unknown_wrong_vs_refused_l25": ("phase3_gold_kto_calibrated_expression_axis_directions", "gold_kto_h_lora_unknown_wrong_vs_refused_l25_normed"),
-    "unknown_wrong_vs_refused_l27": ("phase3_gold_kto_calibrated_expression_axis_directions", "gold_kto_h_lora_unknown_wrong_vs_refused_l27_normed"),
-    "known_wrong_vs_correct_l34": ("phase3_gold_kto_calibrated_expression_axis_directions", "gold_kto_h_lora_known_wrong_vs_correct_l34_normed"),
-    "unknown_refused_vs_known_correct_l36": ("phase3_gold_kto_calibrated_expression_axis_directions", "gold_kto_h_lora_unknown_refused_vs_known_correct_l36_normed"),
-    "known_refused_vs_correct_l32": ("phase3_gold_kto_calibrated_expression_axis_directions", "gold_kto_h_lora_known_refused_vs_correct_l32_normed"),
+    "unknown_wrong_vs_refused_l25": (GOLD_KTO_AXIS_DIR, "gold_kto_h_lora_unknown_wrong_vs_refused_l25_normed"),
+    "unknown_wrong_vs_refused_l27": (GOLD_KTO_AXIS_DIR, "gold_kto_h_lora_unknown_wrong_vs_refused_l27_normed"),
+    "known_wrong_vs_correct_l34": (GOLD_KTO_AXIS_DIR, "gold_kto_h_lora_known_wrong_vs_correct_l34_normed"),
+    "unknown_refused_vs_known_correct_l36": (GOLD_KTO_AXIS_DIR, "gold_kto_h_lora_unknown_refused_vs_known_correct_l36_normed"),
+    "known_refused_vs_correct_l32": (GOLD_KTO_AXIS_DIR, "gold_kto_h_lora_known_refused_vs_correct_l32_normed"),
 }
 axis_vecs = {}
 for name, (sub, fol) in axis_specs.items():

@@ -27,8 +27,8 @@ instrument:
   pins:
     cell.yaml: cf047c8725f97c9950f25a2b8d0fe4cfd725ad5e0e7e6f1621a8410331530b53
     gates.yaml: a70634ea376e7df7cc6383f367be8a8e87bc371e3439cea22e0dc374f0eb2b87
-    build_directions.py: cda74efaf4cf556ae5a239b5f67998d9338ff8df7599ddc9c4c58ed1de791451
-    dark_displacement_census.py: 63707003adad1aac3eec56743e3950dcd1e3cc457ec90dc4a32e0aeb85c38730
+    build_directions.py: 11a72cf4cbdcf2a9884f815b8c1d6037f112d657fa116e187f625f5838960044
+    dark_displacement_census.py: 1a0dff630550868f98a1d9dc5ab8631e22fc90cc28ad22d7ebcb7c15b68ec311
     ../common/graders/dark_actuator_grader.py: 68046befa27a8b7402837f87b23ba721cd907bc9cb1506f824a1803554826a0f
 inputs:
 - experiments/dark-actuator-screen/analysis-committed/dark_displacement_census_summary.md

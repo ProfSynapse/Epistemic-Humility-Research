@@ -208,7 +208,7 @@ def build_manifest(results_dir: Path) -> dict[str, Any]:
         "schema_version": "mechinterp-selfaware-frozen-row-manifest/v1",
         "created_at": datetime.now(timezone.utc).replace(microsecond=0).isoformat().replace("+00:00", "Z"),
         "scope": {
-            "phase": "phase3",
+            "program": "mechinterp",
             "source": "answer-sycophancy scored_rows",
             "source_schema_version": SCHEMA_VERSION,
             "no_gpu": True,

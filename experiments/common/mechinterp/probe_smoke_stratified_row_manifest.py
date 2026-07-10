@@ -220,7 +220,7 @@ def build_manifest(sweep_root: Path) -> dict[str, Any]:
         "schema_version": "mechinterp-probe-smoke-stratified-row-manifest/v1",
         "created_at": datetime.now(timezone.utc).replace(microsecond=0).isoformat().replace("+00:00", "Z"),
         "scope": {
-            "phase": "phase3",
+            "program": "mechinterp",
             "evidence_tier": "tier2_exploratory_local_prep",
             "no_gpu": True,
             "no_docker": True,

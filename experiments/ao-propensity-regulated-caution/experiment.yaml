@@ -28,10 +28,10 @@ instrument:
   modules:
   - ao_grader.py
   pins:
-    cell.yaml: ce82a86b6a7aa2d235cb59764064996c5a3ec9bf18566e52a226729dd344d5b6
+    cell.yaml: 9eaffd0674fd80aea3bc2fe6a438b81ad0c8c64bcb5e1b8902f8747ac0af3d0a
     gates.yaml: a4e11a6daee8bb6160654ac034c4bb6db3c0c7b29333752c0e3e19240c299a13
-    cell_stage1_caution_perp.yaml: 22af96bf9898df1f5e99941b4624717eb8bb28fcb8c88166176c83509d747cab
-    cell_stage1_fallback_mass_mean.yaml: 5409a82b3f4b4b88cdded517b759f358dd253175a68acb07cb7399bd78afc5a7
+    cell_stage1_caution_perp.yaml: 0b3b58d52b3f34d80a331f8dbeb596b58e9cb5b6b6186b4a2ff29e94c0280770
+    cell_stage1_fallback_mass_mean.yaml: f7c0f683c0b14fb9da757d3cac384f5ea4619e4b89e23be020a24d6f13f5c835
     gates_stage1.yaml: b8ebdde41ef0c92809a2c9b2653a716da12a03f85d8be0c46a2db571df3f6526
     ao_grader.py: 979e4130cde58e7220856de219279c603ec413960e5c28f89a16609cf378f01b
 inputs: []

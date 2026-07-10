@@ -96,7 +96,7 @@ Arms (proposed v3 training panel, one seed each, mirror the v2 cell otherwise):
 
 - `internal` / `blend` modes need an offline pass that writes `internal_confidence`
   per train prompt from the L35 doubt-axis logistic probe (reuse
-  `phase3_latent_knowledge_probe` + the ka-vs-ur axis). Gated, GPU for extraction.
+  `latent_knowledge_probe` + the ka-vs-ur axis). Gated, GPU for extraction.
 - TRL reward signature only receives completions/prompts/metadata — NOT hidden
   states. So `internal` targets MUST be precomputed offline and passed as a
   dataset column; do not attempt in-loop activation reads (would require a

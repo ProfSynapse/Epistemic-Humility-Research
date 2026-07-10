@@ -10,7 +10,7 @@ Three jobs, each documented where it runs:
 1. Stage the 12 AUTHORITATIVE frozen raw-base candidate JSONs (dark
    displacement census, PR #222) into this experiment's gitignored
    `directions/` dir, ADAPTING them from the census's own
-   `phase3-residual-caution-direction/v1` schema (field `theta`, capture-index
+   `mechinterp-residual-caution-direction/v1` schema (field `theta`, capture-index
    `layer`) to the tuner's `mechinterp-direction/v1` schema (field `vector`,
    0-indexed decoder-block `layer`). See ADAPTER NOTE below for the layer/block
    distinction -- getting this wrong silently hooks the wrong decoder block.

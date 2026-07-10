@@ -107,7 +107,7 @@ def build_artifacts(rows: list[dict[str, Any]], *, dataset: str,
         "dataset": dataset,
         "row_count": len(manifest_rows),
         "scope": {
-            "phase": "phase3",
+            "program": "mechinterp",
             "source": source_name,
             "no_gpu": True,
             "no_docker": True,

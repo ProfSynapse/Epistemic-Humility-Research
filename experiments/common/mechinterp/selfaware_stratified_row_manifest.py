@@ -276,7 +276,7 @@ def build_manifest(sources: dict[str, Path]) -> dict[str, Any]:
         "schema_version": "mechinterp-selfaware-frozen-row-manifest/v1",
         "created_at": datetime.now(timezone.utc).replace(microsecond=0).isoformat().replace("+00:00", "Z"),
         "scope": {
-            "phase": "phase3",
+            "program": "mechinterp",
             "source": "SelfAware row-level eval scored_rows only",
             "no_gpu": True,
             "no_docker": True,

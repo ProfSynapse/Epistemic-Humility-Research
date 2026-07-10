@@ -825,7 +825,7 @@ def freeze_candidates(store: dict, arm: str, layer_transfer: dict, out: Path,
                         xfer = lt["per_comp_best_abscos"][c["idx"]]
                     theta = np.asarray(c["vector"], dtype=np.float64)
                     rec = {
-                        "schema_version": "phase3-residual-caution-direction/v1",
+                        "schema_version": "mechinterp-residual-caution-direction/v1",
                         "layer": lnum,
                         "block": lnum - 1,
                         "source": "dark_displacement_residual_pca",
