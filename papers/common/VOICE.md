@@ -43,6 +43,28 @@ hiding it.
   what the falsifier was.
 - Exploratory and confirmatory are never blended. Say which one a number is.
 
+## Synthesis, not journey
+
+The paper is the synthesis; the repository is the journey. Signed experiment
+docs, notebooks, and run records already preserve every intermediate number,
+wrong turn, and superseding audit, and the paper points there once. On the
+page:
+
+- A superseded number does not appear. If an audit replaced a measurement
+  with a better-controlled one, the paper reports the controlled number as
+  the finding, full stop. Do not print the old number and narrate its
+  correction; the provenance trail holds that history for anyone who wants
+  it.
+- Registered predictions, gate misses, and falsifiers appear as compact
+  registered facts (a sentence, a table row), not as story arcs. "One
+  registered gate missed, by 0.001" is synthesis. Three paragraphs on how we
+  first believed X, then discovered Y, then reran Z is a lab chronicle and
+  belongs in the repo.
+- The one place process is narrated is the AI-workflow methods section,
+  because there the workflow IS the subject. Everywhere else, results
+  sections state what is true and how we know, not the order in which we
+  learned it.
+
 ## Sentence mechanics (this is most of the voice)
 
 1. Long-then-short rhythm. Build a paragraph of explanation, then close it
