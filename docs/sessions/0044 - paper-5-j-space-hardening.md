@@ -4,7 +4,7 @@ session_id: paper5-jspace-hardening
 title: Paper 5 J-space hardening
 status: active
 created_at: '2026-07-08T16:46:25Z'
-updated_at: '2026-07-10T14:15:52Z'
+updated_at: '2026-07-10T14:46:48Z'
 phase: phase1
 question: Which registered follow-up experiments harden the Paper 5 actuation thesis,
   starting with a fresh Qwen3-4B J-space layer-site replication?
@@ -255,6 +255,23 @@ checkpoints:
     caps), lead GPU smoke in-container passed (CUDA on 3090, qwen3_5 config parses,
     provenance JSON emitted); both branches pushed and PRs opened UNMERGED for user
     review: Synaptic-Tuner #143, EHR #266.'
+  evidence: []
+  run_ids: []
+  commands: []
+  decisions: []
+  next_steps: []
+  signals: {}
+- id: 011-checkpoint
+  at: '2026-07-10T14:46:48Z'
+  kind: checkpoint
+  title: Checkpoint
+  summary: 'User approved and lead merged all three open PRs: Synaptic-Tuner #143
+    (pinned mechinterp runner image, CUDA 12.8.1/torch 2.9.1/transformers 5.12.1),
+    EHR #266 (Docker local-lane skill invariant), EHR #264 (rep-2 j-space layer-contrast
+    FULL PASS evidence). Repo main now at 618b62bc; tuner submodule pin unchanged
+    at 86b134c (no pin bump needed; future experiments adopt the runner image from
+    tuner main). Docker directive is now fully on the record in skills; the qwen35-4b-midband
+    cell remains the one honored env-deviation exception.'
   evidence: []
   run_ids: []
   commands: []
@@ -534,3 +551,8 @@ rows before the layer contrast.
 - at: `2026-07-10T14:15:52Z`
 - kind: `checkpoint`
 - summary: Midband Stage A+B lead spot-check PASSED (build_manifest per-layer AUC/tau/sigma_c match report; reused_rows_manifest strictly ID-only; provenance pins verified). RunLog deviation for Stage A adjudicated ACCEPTABLE (per-layer JSON flush provides the crash-resume property at the loop's natural granularity); ruling to be recorded in experiment NOTEBOOK by the Stage C builder. Fresh stagec-builder agent dispatched to write and smoke run_dose_ladder.py (RunLog per-row, registered decomposed readouts, grader mirrored verbatim from doubt-snap cross-family) before sign. Docker lane closed out: mechinterp-runner:local built green (numpy 2.2.6 / sklearn 1.7.2 Python-3.10 caps), lead GPU smoke in-container passed (CUDA on 3090, qwen3_5 config parses, provenance JSON emitted); both branches pushed and PRs opened UNMERGED for user review: Synaptic-Tuner #143, EHR #266.
+### 011-checkpoint - Checkpoint
+
+- at: `2026-07-10T14:46:48Z`
+- kind: `checkpoint`
+- summary: User approved and lead merged all three open PRs: Synaptic-Tuner #143 (pinned mechinterp runner image, CUDA 12.8.1/torch 2.9.1/transformers 5.12.1), EHR #266 (Docker local-lane skill invariant), EHR #264 (rep-2 j-space layer-contrast FULL PASS evidence). Repo main now at 618b62bc; tuner submodule pin unchanged at 86b134c (no pin bump needed; future experiments adopt the runner image from tuner main). Docker directive is now fully on the record in skills; the qwen35-4b-midband cell remains the one honored env-deviation exception.
