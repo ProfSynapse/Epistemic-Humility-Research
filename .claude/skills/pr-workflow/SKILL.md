@@ -38,7 +38,7 @@ This is a PUBLIC repository. Dataset content, pools, question text, and eval-row
 text are NEVER committed. Committing question text publicly is a hard-to-reverse
 redistribution: pools are gitignored, some derive from a NO-LICENSE FalseQA
 source, and the PRIVATE staging repo is the belt-and-suspenders redistribution
-boundary (see the `experiment/phase1/probe/cloud/upload_folder.py` docstring).
+boundary (see the `experiments/common/cloud/upload_folder.py` docstring).
 
 Source data is staged to the PRIVATE HF dataset repo
 `professorsynapse/eh-al-prep-staging` (`repo_type="dataset"`, private), following
@@ -46,8 +46,8 @@ the AK/AP/AM/AL pattern:
 
 ```python
 # upload (from the cloud/Modal side)
-#   experiment/phase1/probe/cloud/upload_folder.py   # whole extraction dir
-#   experiment/phase1/probe/cloud/upload_result.py   # small result/manifest/rows
+#   experiments/common/cloud/upload_folder.py   # whole extraction dir
+#   experiments/common/cloud/upload_result.py   # small result/manifest/rows
 
 # fetch at runtime
 from huggingface_hub import hf_hub_download

@@ -26,8 +26,8 @@ re-validation. Modal A10G is fine for a NEW cell surface, but do not use it to
 regenerate a parity-locked result until Modal has its own parity evidence.
 
 The Modal crash-proof skeleton for probe cells lives at
-`experiment/phase1/probe/cloud/modal_al_true_a0.py` (on the `amendment-al`
-branch). Clone it for a new cell rather than writing a Modal app from scratch, as
+`experiments/radial-anti-propensity-steering/cloud/modal_al_true_a0.py`.
+Clone it for a new cell rather than writing a Modal app from scratch, as
 `modal_ak_stage1.py` did.
 
 ## Wrapper-authoring checklist (each item has killed a paid run)

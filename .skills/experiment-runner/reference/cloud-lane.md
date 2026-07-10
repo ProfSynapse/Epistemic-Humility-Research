@@ -12,9 +12,9 @@ Distinct from the tuner training lane below: GPU-light extract->score->upload
 cells run directly on HF Jobs via `huggingface_hub` (the local `hf` CLI is
 typer-broken; use the Python Jobs API).
 
-- Entry points: `experiment/phase1/probe/cloud/launch_hf_job.py` (local
+- Entry points: `experiments/common/cloud/launch_hf_job.py` (local
   submitter; pins repo commit, image, pip spec) and
-  `experiment/phase1/probe/cloud/hf_jobs_cell.sh` (in-job wrapper).
+  `experiments/common/cloud/hf_jobs_cell.sh` (in-job wrapper).
 - **Artifact-completeness contract:** every cell uploads `result.json` +
   `manifest.json` + `rows.jsonl` to the results dataset repo
   (`professorsynapse/epistemic-humility-cloud-results`, one folder per
