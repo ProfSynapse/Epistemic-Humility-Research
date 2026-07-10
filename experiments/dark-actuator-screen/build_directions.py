@@ -18,7 +18,7 @@ Three jobs, each documented where it runs:
 2. Fit the screen's positive control (raw-base answer-vs-refuse mass-mean) and
    negative control (raw-base confab-propensity) at every layer that hosts a
    frozen candidate, by calling the EXACT formulas at
-   experiment/phase1/probe/dark_displacement_census.py:206-215 (`build_span`'s
+   experiments/dark-actuator-screen/dark_displacement_census.py:206-215 (`build_span`'s
    pre-QR `refuse`/`propensity` directions) on the same raw-base pool the
    census used. Reusing build_span's own math (not the QR-mixed basis it
    returns) keeps these controls identical in derivation to the "named axes"
@@ -67,8 +67,8 @@ from pathlib import Path
 import numpy as np
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
-PROBE_DIR = REPO_ROOT / "experiment" / "phase1" / "probe"
-sys.path.insert(0, str(PROBE_DIR))
+THIS_DIR = Path(__file__).resolve().parent
+sys.path.insert(0, str(THIS_DIR))
 
 import dark_displacement_census as census  # noqa: E402  (reused, not reimplemented)
 
@@ -305,7 +305,7 @@ def main() -> int:
             r["candidate"]: r["authoritative_sha256"] for r in cand_records
         },
         "census_script_sha256": _sha256_file(
-            PROBE_DIR / "dark_displacement_census.py"
+            THIS_DIR / "dark_displacement_census.py"
         ),
         "pool_root": str(args.pool_root),
         "pool_data_dir": str(args.pool_root / "ak-stage1-raw-base-r1" / "data"),

@@ -19,7 +19,7 @@ carry the original input row's other fields, so this grader loads the row
 POOL once at import time and looks up each row's baseline (pre-intervention)
 confab/refuse label by row_key -- the AK Stage-1 `confab_on_unanswerable`
 field, present on every row in the AK Stage-1 raw-base pool this screen reads
-(experiment/phase1/probe/dark_displacement_census.py Surface).
+(experiments/dark-actuator-screen/dark_displacement_census.py surface).
 
 The pool path is resolved from the DARK_ACTUATOR_ROWS_POOL env var if set,
 else the default cell.yaml `surface.rows_path`

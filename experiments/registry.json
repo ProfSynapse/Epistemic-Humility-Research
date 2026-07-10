@@ -676,7 +676,6 @@
       },
       "falsifier": "Screen, so the bar is graduation: a candidate graduates iff its flip rate exceeds the random-direction control with bootstrap 95% CI excluding 0. No graduations means the dark subspace is ruled out as a near-term actuator. If the positive control does not move behavior the screen is void.",
       "inputs": [
-        "experiment/phase1/probe/dark_displacement_census.py",
         "experiments/dark-actuator-screen/analysis-committed/dark_displacement_census_summary.md",
         "experiment/phase1/eval/scorers.py"
       ],
@@ -686,11 +685,15 @@
           "gates.yaml"
         ],
         "modules": [
+          "build_directions.py",
+          "dark_displacement_census.py",
           "../common/graders/dark_actuator_grader.py"
         ],
         "pins": {
-          "../common/graders/dark_actuator_grader.py": "f5521a691d1c5610e4b4b27592583e699d2c45745761beba233074a37a55c515",
+          "../common/graders/dark_actuator_grader.py": "483078e211003b22e570f6362a5a0840fbb8c96c93f667e36b68a4c81956d51a",
+          "build_directions.py": "cda74efaf4cf556ae5a239b5f67998d9338ff8df7599ddc9c4c58ed1de791451",
           "cell.yaml": "cf047c8725f97c9950f25a2b8d0fe4cfd725ad5e0e7e6f1621a8410331530b53",
+          "dark_displacement_census.py": "90392e8640f3e48a8a6b6a46a59dc7d1b9e4881258b98069742798d7b119e554",
           "gates.yaml": "a70634ea376e7df7cc6383f367be8a8e87bc371e3439cea22e0dc374f0eb2b87"
         }
       },
