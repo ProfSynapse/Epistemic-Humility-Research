@@ -144,7 +144,7 @@ revision says otherwise.
   controlling exploratory design note; update it before code if the target
   token rule, layer set, or intervention metric changes.
 - `docs/research-trajectory.md`: continue to describe this as
-  Phase 3 mechanism work, not a Phase 1 headline or Amendment A result.
+  mechanism work, not a Phase 1 headline or Amendment A result.
 - `experiment/phase1/probe/README.md`: add a future section for hidden-state
   extraction once code exists, explicitly separating it from the existing
   stochastic knowledge probe.
@@ -187,7 +187,7 @@ revision says otherwise.
   configs: read adapter paths and `model_name` conventions from these configs
   when possible so extraction and behavioral eval point at the same artifacts.
 
-### Phase 3 - outputs and provenance
+### Mechanism outputs and provenance
 
 - `experiment/phase1/probe/<model_tag>/hidden_states/<extraction_id>/`
   (new output tree): write tensor shards plus a manifest. Prefer a tensor-native

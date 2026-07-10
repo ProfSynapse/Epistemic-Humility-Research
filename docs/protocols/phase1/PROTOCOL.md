@@ -43,7 +43,7 @@ separate from the signed v0.3 headline matrix and must be labeled as Amendment A
 4. Records that the post-sign-off evidence motivating this amendment is bounded
    local evidence, not headline, cloud, bridge, or full-matrix evidence.
 
-**Amendment B / Phase 3 causal interpretability status:** DRAFT ONLY as of
+**Amendment B / causal interpretability status:** DRAFT ONLY as of
 2026-06-15. This is a prospective mechanism-work amendment, not signed protocol
 and not a change to the v0.3 headline matrix or Amendment A / v0.4 sequential
 training track. It records the proposed next step after correlational
@@ -59,7 +59,7 @@ promotes it from exploratory mechanism evidence.
    directionally steerable residual-stream representations, but a diagnostic
    direction is not a mechanism unless causal intervention changes behavior
    under controls.
-2. Requires an arXiv and knowledge-graph ingestion gate before scaling Phase 3
+2. Requires an arXiv and knowledge-graph ingestion gate before scaling causal-interpretability work
    intervention work: relevant papers must be represented as typed graph atoms,
    claims, mechanisms, and method lineages where possible.
 3. Defines the first causal pilot as small local Tier 2 evidence, separated from
@@ -171,7 +171,7 @@ v0.3 hypothesis set):**
   behavior observed in bounded local evidence, staying base-like on refusal
   while failing to improve truthful rate.
 
-**Amendment B / Phase 3 hypothesis (draft exploratory mechanism extension, not
+**Amendment B / causal-interpretability hypothesis (draft exploratory mechanism extension, not
 signed and not part of v0.3 or Amendment A):**
 
 - **H6 (causal abstention direction):** The known/unknown separability observed
@@ -309,10 +309,10 @@ signed v0.4 revision explicitly decides whether the original matrix is
 superseded or whether v0.3 and Amendment A are reported as separate experimental
 tracks.
 
-### 3.1c Amendment B / Phase 3 causal interpretability draft
+### 3.1c Amendment B / causal interpretability draft
 
 This draft does not authorize claim-bearing mechanism results by itself. It
-records the intended Phase 3 path so exploratory work can proceed without
+records the intended causal-interpretability path so exploratory work can proceed without
 blurring evidence tiers.
 
 **Literature and KG gate.** Before scaling causal intervention work, the

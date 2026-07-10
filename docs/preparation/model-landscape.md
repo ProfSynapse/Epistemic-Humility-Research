@@ -143,7 +143,7 @@ Apache 2.0, text-only [b]; both released May 2025 and are first-class Unsloth ta
 dedicated fine-tune guide [i]. The 4B small size fits a 24GB 3090 under LoRA with wide headroom
 (Unsloth fits Qwen3-14B in 16GB). The one caveat — Qwen3's thinking/non-thinking toggle — is a
 feature we control: pin `enable_thinking=False` (or `/no_think`) so the abstention study runs on
-clean non-reasoning generations, and optionally keep the toggle as a free Phase 3 probe axis. It
+clean non-reasoning generations, and optionally keep the toggle as a free mechanism probe axis. It
 also minimizes tuner work: the SFT family-branching already has a `"qwen"` arm, and only the KTO
 preset (currently hardcoded to Qwen2.5) needs a new `--qwen3-4b` / `--qwen3-8b` entry.
 

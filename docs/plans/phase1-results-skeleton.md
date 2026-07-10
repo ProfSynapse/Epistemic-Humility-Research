@@ -187,7 +187,7 @@ Representative local numbers:
 
 Draft interpretation:
 
-These probes can motivate a mechanism section or future Phase 3 work, but they
+These probes can motivate a mechanism section or future mechanism work, but they
 should not be used to claim internalized epistemic humility. The cautious read
 is that SFT creates stronger known/unknown separability, cold-start preference
 training does not, and sequential preference training operates on the SFT-shaped
