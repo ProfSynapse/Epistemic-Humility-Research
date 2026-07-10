@@ -82,7 +82,7 @@ rates, and row review, not only aggregate counts.
 4. Run the probe with `experiment/phase1/probe/probe.py` inside the local Docker
    vLLM image, using a fresh output directory.
 5. Compare thinking rows against the locked non-thinking rows with
-   `experiment/phase1/probe/compare_thinking_probe_results.py`.
+   `experiments/thinking-enabled-parallel-arm/compare_thinking_probe_results.py`.
 6. Review extraction-status counts and label-transition examples before
    deciding whether to rebuild datasets.
 7. Record launch, heartbeat, result, and interpretation checkpoints in
