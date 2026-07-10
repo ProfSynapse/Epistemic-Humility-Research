@@ -297,9 +297,9 @@
       "question": "On raw-base Qwen3-4B, does the calibrated J-space mid-band write-site advantage replicate on a fresh, MULTI-SOURCE private evaluation pool, using ceiling-robust gates (McNemar paired test plus an interpretability branch) instead of rep1's fixed point-estimate bar that saturated near ceiling?",
       "registered": true,
       "slug": "j-space-layer-contrast-rep2-multisource",
-      "status": "signed",
+      "status": "resolved",
       "type": "steer-cell",
-      "verdict": ""
+      "verdict": "FULL PASS: mid-band advantage replicates off-ceiling on a multi-source pool (hs29 92.8% vs hs34 73.8%, +19.0pp; paired McNemar 42:0 discordants, p=4.5e-13; cost delta +1.43pp; hs34 interpretable at 73.8%)."
     },
     {
       "checkpoint": {

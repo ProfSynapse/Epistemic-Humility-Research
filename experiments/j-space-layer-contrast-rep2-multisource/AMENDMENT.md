@@ -1,6 +1,6 @@
 # j-space-layer-contrast-rep2-multisource
 
-Status: draft (not signed; do not launch the full layer contrast as evidence).
+Status: resolved (2026-07-09; registered FULL PASS: G0/G1'/G2'/G3' all pass on the multi-source pool; mid-band advantage replicates off-ceiling at +19.0pp with 42:0 discordant pairs; see Outcome).
 
 Keep this document the prose home for the experiment. The machine state lives in
 `experiment.yaml` and is never duplicated here.
@@ -264,6 +264,78 @@ Filled at sign (2026-07-09), per locked design.
 
 ## Outcome
 
-Filled at resolve. Record the verdict, the gate results (G0/G1'/G2'/G3'),
-the achieved per-source pool composition, the McNemar discordant-pair table,
-and the one-sentence summary that also goes into `verdict:` in the manifest.
+**Registered verdict: FULL PASS. The same-model mid-band layer-site advantage
+replicates at meaningful magnitude on an interpretable multi-source pool.**
+Both scoreboard predictions (orchestrator and user: full pass) were correct.
+Gate results, all registered bars unchanged:
+
+- G0 pass: dual exclusion zero overlap (independently re-verified against
+  rep1's full confab pool, rep1's known side, and the predecessor split);
+  221 fresh confabs (139 kuq_ku_unknown / 76 selfaware_unanswerable / 6
+  kuq_ku_unknown_x, floors met); doses exactly 25/75/125/175 with readback
+  frac_within_tol = 1.0 and collapse 0.0 on every arm; anchor coverage
+  complete; per-row RunLog persistence operative (2,178 rows per arm, zero
+  duplicate keys, identical keysets across arms).
+- G1' pass: paired hs29-vs-hs34 table over the 221 confabs = 163 both / 42
+  late-only-failure / 0 mid-only-failure / 16 neither; failure ratio
+  infinite (>= 3x bar), exact two-sided McNemar p = 4.5e-13.
+- G2' pass: known-correct cost delta +1.43pp (hs29 2.81% vs hs34 1.38%,
+  n = 1,957 each) <= 2pp; registered cost-per-win readout: 0.034pp of extra
+  known-correct cost per late-only failure converted.
+- G3' viable: hs34 at 163/221 = 73.76% (Wilson CI 67.6-79.1%), inside the
+  registered [40%, 90%] interpretability window.
+
+Per-arm confab clean_tighten: hs23 194/221 = 87.78% (known cost 0.97%),
+hs26 190/221 = 85.97% (1.99%), hs29 205/221 = 92.76% (2.81%), hs34 163/221
+= 73.76% (1.38%). Best mid-band (hs29) beats hs34 by +19.0pp, consistent
+with the predecessor's +22.7pp on its own mixed pool.
+
+Adversarially audited interpretation (post-run red-team; every gate number
+was reproduced from the raw per-row RunLog records before this text was
+written, and the lead independently re-derived the paired table):
+
+1. **The rep1 G1 miss is now cleanly attributable to pool ceiling.** With
+   the same frozen directions, taus, and doses, the advantage reappears at
+   near-predecessor magnitude the moment the reference arm has headroom
+   (hs34 at 73.8% here vs 94.1% on rep1's easy single-source pool). The
+   layer-site claim is supported in direction and magnitude on both
+   interpretable pools.
+2. **Paired dominance is genuine and fully intervention-attributable.**
+   Zero mid-only failures is a real row-ID cross-tab, not a summary
+   artifact; zero unfired confabs tightened in any arm, so every tightening
+   event sits on a dosed row. The verdict is also invariant to mid-arm
+   choice: all three mid arms independently pass McNemar against hs34
+   (hs23 p = 3.7e-8, hs26 p = 1.1e-7).
+3. **The advantage is source-uniform.** hs29-vs-hs34 per floored source:
+   94.2% vs 79.9% on kuq_ku_unknown (n = 139), 90.8% vs 61.8% on
+   selfaware_unanswerable (n = 76); the third source (n = 6) is too small
+   to read.
+4. **Selectivity disclosure.** hs29 is the most expensive mid arm on
+   knowns and roughly doubles hs34's absolute cost (2.81% vs 1.38%); G2'
+   passes on the registered delta bar, and the registered cost-per-win
+   tradeoff (0.034pp per converted failure) is favorable, but the absolute
+   doubling is stated here rather than hidden behind the delta.
+5. **Duplicate-normalized-question disclosure.** The 221 confab rows
+   contain 179 distinct normalized questions (42 dataset-native duplicate
+   pairs, predominantly within kuq_ku_unknown; confirmed native to the
+   source files, not a miner double-write; the registered exclusion rule
+   only deduplicated across pools and against kuq_ku_unknown_x). A
+   sensitivity collapse to one observation per duplicate group still
+   leaves >= 30 one-directional discordants, mid-only still 0, McNemar
+   p ~ 1.9e-9; the verdict is unchanged.
+6. **Provenance note.** The bespoke runner emits no tuner config_sha; the
+   binding per-arm provenance is the RunLog config fingerprints
+   (hs23 98de6a7c..., hs26 d03f7914..., hs29 740f7ab6...,
+   hs34 daee5aa3...). The RunLog `complete` meta flag never flipped on the
+   four arm files despite all rows being present and the final summary
+   written; recorded as a runner hygiene item, not an evidence gap.
+
+Consequences carried forward: (a) Paper 5's layer-site section can now pair
+rep1 and rep2 as a single pool-sensitivity story: magnitude is
+unidentifiable near ceiling, and replicates off-ceiling; the paired-McNemar
++ interpretability-window gate design validated here is the template. (b)
+The queued cross-family layer-contrast experiment inherits these
+ceiling-robust gates and the multi-source mining requirement as binding,
+now-tested requirements. (c) Successor pools should either register a
+within-source normalized-question dedup or pre-state the duplicate
+tolerance explicitly.
