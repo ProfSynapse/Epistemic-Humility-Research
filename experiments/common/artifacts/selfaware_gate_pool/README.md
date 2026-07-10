@@ -9,4 +9,4 @@ known-vs-unknown gate rows.
   distilled from.
 
 Origin before promotion:
-`experiment/phase1/probe/pools/`.
+`archive/experiment/phase1/probe/pools/`.

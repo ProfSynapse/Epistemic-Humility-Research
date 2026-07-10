@@ -7,9 +7,9 @@ artifact (the RL-on-contrastive calibration triple) are transcribed from the
 governing amendment document's result table and marked with their source.
 
 Reads:
-  experiment/phase1/eval/analysis/selfaware_full_run_comparison_grouped.csv
-  experiment/phase1/eval/analysis/calibration_gap_*.json
-  experiment/phase1/eval/results_amendment_{j,k,l,n}_*/**/metrics.json
+  archive/experiment/phase1/eval/analysis/selfaware_full_run_comparison_grouped.csv
+  archive/experiment/phase1/eval/analysis/calibration_gap_*.json
+  archive/experiment/phase1/eval/results_amendment_{j,k,l,n}_*/**/metrics.json
 
 Writes PNG+SVG to papers/paper-2-training-regimen/figures/.
 """
@@ -26,8 +26,8 @@ matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 
 REPO = Path(__file__).resolve().parents[3]
-ANALYSIS = REPO / "experiment" / "phase1" / "eval" / "analysis"
-EVAL_ROOT = REPO / "experiment" / "phase1" / "eval"
+ANALYSIS = REPO / "archive" / "experiment" / "phase1" / "eval" / "analysis"
+EVAL_ROOT = REPO / "archive" / "experiment" / "phase1" / "eval"
 FIGURES = REPO / "papers" / "paper-2-training-regimen" / "figures"
 
 COLORS = {

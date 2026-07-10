@@ -11,7 +11,7 @@ reproducibility: >
   papers/paper-2-training-regimen/analysis/ and papers/paper-2-training-regimen/figures/; Figure 6
   (regimen operating points) regenerates via
   papers/paper-2-training-regimen/scripts/build_extended_figures.py. The grouped run inventory is
-  experiment/phase1/eval/analysis/selfaware_full_run_comparison_grouped.csv.
+  archive/experiment/phase1/eval/analysis/selfaware_full_run_comparison_grouped.csv.
   Full amendment-to-artifact provenance is in Appendix A.
 notes: >
   Numbers discipline: every quantitative claim traces to a metrics.json,
@@ -239,7 +239,7 @@ only a reward over sampled completions.
 
 All arms use resource-feasible LoRA/QLoRA recipes on Qwen3-4B; recipes,
 seeds, and per-run records are committed in the repository
-(`experiment/phase1/recipes/`, `experiment/phase1/run_records/`). The
+(`archive/experiment/phase1/recipes/`, `archive/experiment/phase1/run_records/`). The
 comparison should be read as a replication-style stress test of the
 known/unknown supervision idea at small scale, not a bit-for-bit reproduction
 of any prior stack.
@@ -690,15 +690,15 @@ protocol document and scored artifact:
 
 | Paper section | Internal label | Protocol / notes | Primary artifacts |
 |---|---|---|---|
-| 4.1 cold start (3 seeds) | headline matrix, PROTOCOL v0.3 | `docs/protocols/phase1/PROTOCOL.md` | `experiment/phase1/eval/results_selfaware_full_seed{1,2}_all_arms_4b_20260615_2148/`, `..._seed3_..._20260616_0615/`; tables in `papers/paper-2-training-regimen/analysis/paper1_results_analysis.md` |
-| 4.2 SFT-warmed DPO/KTO | Amendment A | legacy session/artifact lineage; no governed amendment doc found during migration | `experiment/phase1/eval/results_amendment_a_selfaware_full_*` |
-| 4.2 stated-confidence contract | Amendment B | `experiments/stated-confidence-grpo/AMENDMENT.md` | `experiment/phase1/eval/results_amendment_b_stated_confidence_*` |
+| 4.1 cold start (3 seeds) | headline matrix, PROTOCOL v0.3 | `archive/docs/protocols/phase1/PROTOCOL.md` | `archive/experiment/phase1/eval/results_selfaware_full_seed{1,2}_all_arms_4b_20260615_2148/`, `..._seed3_..._20260616_0615/`; tables in `papers/paper-2-training-regimen/analysis/paper1_results_analysis.md` |
+| 4.2 SFT-warmed DPO/KTO | Amendment A | legacy session/artifact lineage; no governed amendment doc found during migration | `archive/experiment/phase1/eval/results_amendment_a_selfaware_full_*` |
+| 4.2 stated-confidence contract | Amendment B | `experiments/stated-confidence-grpo/AMENDMENT.md` | `archive/experiment/phase1/eval/results_amendment_b_stated_confidence_*` |
 | 4.3 GRPO first reward (schema base) | Amendment D | `experiments/schema-response-confidence/AMENDMENT.md` | `results_amendment_d_response_confidence_selfaware_schema_sft_grpo_seed1_full_4b/` |
 | 4.3 clean-SFT baseline + GRPO v1/v2 | Amendment E | `experiments/probe-scaled-response-confidence/AMENDMENT.md` | `results_amendment_e_response_confidence_selfaware_clean_sft_{merged,dpo,kto,grpo,grpo_v2}_seed1_*_full_4b/` |
 | 4.3 stacking null (one sentence) | Amendment F | `experiments/grpo-centered-stacking/AMENDMENT.md` | `results_amendment_f_response_confidence_selfaware_clean_sft_{dpo_grpo,grpo_dpo,grpo_kto,kto_grpo}_seed1_full_4b/` |
-| 5 confidence collapse (GRPO v2) | Amendment J diagnostics / session 0026 | `experiments/grpo-v3-proper-scoring-confidence/RUNBOOK.md` | `experiment/phase1/eval/analysis/calibration_gap_clean_sft_grpo_v2_seed1.json` |
+| 5 confidence collapse (GRPO v2) | Amendment J diagnostics / session 0026 | `experiments/grpo-v3-proper-scoring-confidence/RUNBOOK.md` | `archive/experiment/phase1/eval/analysis/calibration_gap_clean_sft_grpo_v2_seed1.json` |
 | 5 probe vs emitted channel | probe program (caution-vs-doubt note) | `archive/notes/experiments/caution-vs-doubt-knowledge-gate.md` | `calibration_gap_clean_sft_grpo_v2_seed1.json` (`B_internal_vs_emitted`: internal AUROC 0.972 vs emitted 0.637) |
-| grouped behavioral inventory | all of the above | | `experiment/phase1/eval/analysis/selfaware_full_run_comparison_grouped.csv` |
+| grouped behavioral inventory | all of the above | | `archive/experiment/phase1/eval/analysis/selfaware_full_run_comparison_grouped.csv` |
 
 Governance notes: the three-seed cold-start block is the pre-registered
 headline surface (PROTOCOL v0.3, signed 2026-06-10); Amendments A/B are signed

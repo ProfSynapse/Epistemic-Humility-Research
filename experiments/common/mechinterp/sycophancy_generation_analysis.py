@@ -17,7 +17,7 @@ from pathlib import Path
 from typing import Any, Iterable
 
 ROOT = Path(__file__).resolve().parents[3]
-EVAL_DIR = ROOT / "experiment" / "phase1" / "eval"
+EVAL_DIR = ROOT / "archive" / "experiment" / "phase1" / "eval"
 if str(EVAL_DIR) not in sys.path:
     sys.path.insert(0, str(EVAL_DIR))
 

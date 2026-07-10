@@ -5,7 +5,7 @@ title: AQ sycophancy Modal pilot readout
 status: active
 created_at: '2026-07-07T17:20:14Z'
 updated_at: '2026-07-07T20:59:02Z'
-phase: phase1
+track: research
 question: Can the AQ answer-sycophancy pilot produce a separable activation readout
   on official Qwen3-4B, and is the row pool sufficient to license steering?
 tags:
@@ -27,7 +27,7 @@ run_ids:
 trajectory:
   anchor: docs/research-trajectory.md
   current_position: AQ is an exploratory sycophancy read-vs-write cell, separate from
-    the locked Phase 1 headline matrix.
+    the locked training-regimen headline matrix.
   changed_by_session: R1 found an underpowered readout lead; r2 cleared AQ-G0 and
     recovered a larger-pool readout direction. Local recovered-artifact diagnostics
     pass AQ-G1 but show a strong anchor prompt-condition confound. A readout-only
@@ -432,7 +432,7 @@ official Qwen3-4B, and is the row pool sufficient to license steering?
 ## Trajectory Position
 
 AQ is a tier-2 exploratory sycophancy read-vs-write cell, separate from the
-locked Phase 1 headline matrix. This session records a pilot/smoke readout, not
+locked training-regimen headline matrix. This session records a pilot/smoke readout, not
 a resolved amendment verdict.
 
 ## Summary

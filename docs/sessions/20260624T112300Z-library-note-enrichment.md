@@ -5,7 +5,7 @@ title: Library Note Enrichment
 status: complete
 created_at: '2026-06-24T11:23:00Z'
 updated_at: '2026-06-24T17:44:37Z'
-phase: phase1
+track: research
 question: How do we bring the skeleton paper notes in library/notes up to the enriched
   exemplar standard (Summary / Extracted numbers / Relevance to experiment, plus concept
   atoms and typed edges), at scale and with verified provenance?

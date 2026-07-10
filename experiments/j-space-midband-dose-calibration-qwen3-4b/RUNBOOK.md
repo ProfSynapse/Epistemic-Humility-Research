@@ -8,7 +8,7 @@ tags:
   - kg/experiment
 status: done
 governance: exploratory
-phase: phase1
+track: mechanism
 lane: local
 est_compute: 'Completed locally on RTX 3090; FIT-only 4-layer x 8-dose calibration over 16 rows.'
 relationships:

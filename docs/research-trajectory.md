@@ -8,7 +8,7 @@ preserved in `archive/docs/protocol/research-trajectory.md`._
 
 ## Through-line
 
-The program trained abstention (Phase 1 SFT/DPO/KTO/GRPO, Paper 2), then found a
+The program trained abstention (locked training-regimen SFT/DPO/KTO/GRPO, Paper 2), then found a
 persistent internal-vs-stated gap: hidden states encode answerability clearly (AUROC
 0.997) while emitted confidence stays decoupled and training-resistant (Paper 3).
 The pivot: stop trying to wire the channel through training and instead READ the axis
@@ -42,7 +42,7 @@ Internal axis encodes answerability at AUROC 0.997, transfers cross-dataset cold
 (Amendment P: KUQ→SelfAware 0.983), and predates post-training (Amendment Y: present on
 the pre-trained base). Stated confidence stays decoupled. Training-resistance is the
 headline: DPO/KTO/GRPO/contrastive-SFT/proper-scoring all fail to couple the channel
-(Amendments M/R FALSIFIED; Phase B joint co-training FALSIFIED). Behavioral abstention
+(Amendments M/R FALSIFIED; aux-head joint co-training FALSIFIED). Behavioral abstention
 is installable; accurate emitted confidence is not. §7–8 absorption (proper-scoring,
 contrastive, RL-on-contrastive depth) DONE via PR #151; Amendment Y now cited for the
 "paid for by pretraining" claim; data availability lists the published HF releases.

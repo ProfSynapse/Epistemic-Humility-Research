@@ -37,6 +37,6 @@ The manuscript's numeric tables come from generated files under
 python experiment\paper\scripts\build_paper1_figures.py
 ```
 
-The script reads local eval artifacts under `experiment/phase1/eval/results_*`,
+The script reads local eval artifacts under `archive/experiment/phase1/eval/results_*`,
 including `summary_table.csv`, `metrics.json`, and `scored_rows.jsonl` where
 available.

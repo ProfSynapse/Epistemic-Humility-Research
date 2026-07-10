@@ -12,7 +12,7 @@ governed, an `experiment.yaml` manifest, `NOTEBOOK.md`, and mechinterp configs
 such as `pipeline.yaml`, `extract.yaml`, `probe_fit.yaml`, `cell.yaml`,
 `dose_calibration.yaml`, and `gates.yaml`.
 
-The singular `experiment/phase1/` tree is the historical Phase 1 record. Do not
+The singular `archive/experiment/phase1/` tree is the historical locked training-regimen record. Do not
 add new cells there.
 
 Use the `experiments` skill and `bin/exp` tooling for directory lifecycle,

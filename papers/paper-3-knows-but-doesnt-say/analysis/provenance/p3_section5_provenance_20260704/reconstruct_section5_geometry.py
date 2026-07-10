@@ -4,7 +4,7 @@
 Section 5 ("The internal signal is two axes") reports six quantitative claims
 whose two originating scratchpad scripts were never committed and were lost with
 the session temp dirs. A first reconstruction was committed as
-`experiment/phase1/probe/paper3_section5_geometry.py` (PR #187). This script is
+`archive/experiment/phase1/probe/paper3_section5_geometry.py` (PR #187). This script is
 an INDEPENDENT re-derivation written to the same durable inputs, so the paper's
 citations resolve to more than one runnable source and every printed value has a
 number-by-number MATCH/CLOSE/MISMATCH audit against the paper.
@@ -62,12 +62,12 @@ import numpy as np
 REPO = Path(__file__).resolve().parents[5]
 ROWS = (
     REPO
-    / "experiment/phase1/probe/analysis/current_selfaware_behavior_rows"
+    / "archive/experiment/phase1/probe/analysis/current_selfaware_behavior_rows"
     / "clean_sft_grpo_v2/rows.jsonl"
 )
 EXTRACTION = (
     REPO
-    / "experiment/phase1/probe/qwen3-4b-clean-sft-grpo-v2-seed1-selfaware"
+    / "archive/experiment/phase1/probe/qwen3-4b-clean-sft-grpo-v2-seed1-selfaware"
     / "hidden_states_selfaware_clean_sft_grpo_v2_full/extraction__55254a04aa1f"
 )
 LAYER = "L35"

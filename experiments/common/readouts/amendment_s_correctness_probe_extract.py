@@ -44,7 +44,7 @@ import random
 import sys
 from pathlib import Path
 
-# scorers + the shared render helper live in the Phase 1 probe/eval tree.
+# scorers + the shared render helper live in the locked training-regimen probe/eval tree.
 READOUTS_DIR = Path(__file__).resolve().parent
 if str(READOUTS_DIR) not in sys.path:
     sys.path.insert(0, str(READOUTS_DIR))
@@ -59,7 +59,7 @@ for p in (str(PROBE_DIR), str(EVAL_DIR)):
     if p not in sys.path:
         sys.path.insert(0, p)
 
-import scorers  # noqa: E402  (from experiment/phase1/eval)
+import scorers  # noqa: E402  (from archive/experiment/phase1/eval)
 from backends import render_probe_prompt  # noqa: E402  (from experiments/common/knowledge_probe)
 
 # Answer-encouraging neutral system prompt. DELIBERATELY does NOT solicit

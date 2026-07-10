@@ -5,7 +5,7 @@ title: Amendment A Seed2 Recovery
 status: active
 created_at: '2026-06-17T01:29:02Z'
 updated_at: '2026-06-17T10:01:08Z'
-phase: phase1
+track: research
 question: How did we recover clean Amendment A seed2 evidence after discovering the
   bad SFT seed2 merge?
 tags:
@@ -17,7 +17,7 @@ run_ids:
 - sft_kto__4b__amendment_a__seed2
 trajectory:
   anchor: docs/research-trajectory.md
-  current_position: Phase 1 local work is testing the signed Amendment A question
+  current_position: locked training-regimen local work is testing the signed Amendment A question
     of whether sequential SFT-warmed preference training can preserve abstention while
     reducing SFT over-refusal.
   changed_by_session: Reclassified the original seed2 sequential DPO/KTO artifacts
@@ -33,8 +33,8 @@ checkpoints:
     behaved base-like despite structural validity, so downstream sequential seed2
     artifacts using that merge were confounded.
   evidence:
-  - experiment/phase1/eval/results_sft_merged_seed2_selfaware_192_sanity
-  - experiment/phase1/run_records/sft_kto__4b__amendment_a__seed2.json
+  - archive/experiment/phase1/eval/results_sft_merged_seed2_selfaware_192_sanity
+  - archive/experiment/phase1/run_records/sft_kto__4b__amendment_a__seed2.json
   run_ids:
   - sft_dpo__4b__amendment_a__seed2
   - sft_kto__4b__amendment_a__seed2
@@ -55,9 +55,9 @@ checkpoints:
     seed2 training completed, and full SelfAware eval produced plausible seed2 metrics
     with no thinking-token contamination.
   evidence:
-  - experiment/phase1/eval/results_sft_merged_seed2_lowmem_selfaware_192_sanity
-  - experiment/phase1/eval/results_amendment_a_selfaware_full_seed2_sft_dpo_lowmem_local_4b/sft_dpo_seed2_lowmem__selfaware/metrics.json
-  - experiment/phase1/eval/analysis/amendment_a_transition_report.md
+  - archive/experiment/phase1/eval/results_sft_merged_seed2_lowmem_selfaware_192_sanity
+  - archive/experiment/phase1/eval/results_amendment_a_selfaware_full_seed2_sft_dpo_lowmem_local_4b/sft_dpo_seed2_lowmem__selfaware/metrics.json
+  - archive/experiment/phase1/eval/analysis/amendment_a_transition_report.md
   - TODO.md
   run_ids:
   - sft_dpo__4b__amendment_a__seed2
@@ -77,7 +77,7 @@ checkpoints:
     merged base; the latest heartbeat saw step 1300 of 3599 with low OOM risk and
     stable VRAM.
   evidence:
-  - experiment/phase1/run_records/sft_kto__4b__amendment_a__seed2.json
+  - archive/experiment/phase1/run_records/sft_kto__4b__amendment_a__seed2.json
   - synaptic-tuner/toolset-training-artifacts/runs/local/4b/sft_kto__4b__amendment_a__seed2/20260616_183650/logs/training_20260616_223856.jsonl
   - .codex/pact/session.md
   run_ids:
@@ -154,7 +154,7 @@ checkpoints:
     seed2 merged base, saved final adapter artifacts, and ended with low OOM risk;
     behavioral eval is still pending before scientific interpretation.
   evidence:
-  - experiment/phase1/run_records/sft_kto__4b__amendment_a__seed2.json
+  - archive/experiment/phase1/run_records/sft_kto__4b__amendment_a__seed2.json
   - synaptic-tuner/toolset-training-artifacts/runs/local/4b/sft_kto__4b__amendment_a__seed2/20260616_183650/logs/training_20260616_223856.jsonl
   - synaptic-tuner/toolset-training-artifacts/runs/local/4b/sft_kto__4b__amendment_a__seed2/20260616_183650/capacity_features.json
   - synaptic-tuner/toolset-training-artifacts/runs/local/4b/sft_kto__4b__amendment_a__seed2/20260616_183650/final_model/adapter_model.safetensors
@@ -188,16 +188,16 @@ checkpoints:
     contamination; behavior is consistent with seed1 KTO, preserving high unknown
     refusal while retaining high over-refusal.
   evidence:
-  - experiment/phase1/eval/config/eval_amendment_a_selfaware_full_seed2_sft_kto_lowmem_local_4b.yaml
-  - experiment/phase1/eval/results_amendment_a_selfaware_full_seed2_sft_kto_lowmem_local_4b/sft_kto_seed2_lowmem__selfaware/metrics.json
-  - experiment/phase1/eval/results_amendment_a_selfaware_full_seed2_sft_kto_lowmem_local_4b/sft_kto_seed2_lowmem__selfaware/scored_rows.jsonl
-  - experiment/phase1/run_records/sft_kto__4b__amendment_a__seed2.json
+  - archive/experiment/phase1/eval/config/eval_amendment_a_selfaware_full_seed2_sft_kto_lowmem_local_4b.yaml
+  - archive/experiment/phase1/eval/results_amendment_a_selfaware_full_seed2_sft_kto_lowmem_local_4b/sft_kto_seed2_lowmem__selfaware/metrics.json
+  - archive/experiment/phase1/eval/results_amendment_a_selfaware_full_seed2_sft_kto_lowmem_local_4b/sft_kto_seed2_lowmem__selfaware/scored_rows.jsonl
+  - archive/experiment/phase1/run_records/sft_kto__4b__amendment_a__seed2.json
   - TODO.md
   run_ids:
   - sft_kto__4b__amendment_a__seed2
   commands:
   - docker logs --tail 120 eh-amendment-kto-seed2-eval
-  - rg -n "<think>|</think>|reasoning_content" experiment/phase1/eval/results_amendment_a_selfaware_full_seed2_sft_kto_lowmem_local_4b
+  - rg -n "<think>|</think>|reasoning_content" archive/experiment/phase1/eval/results_amendment_a_selfaware_full_seed2_sft_kto_lowmem_local_4b
   decisions:
   - Treat clean KTO seed2 as bounded local behavioral evidence.
   - Keep KTO seed3 as the remaining clean KTO three-seed gap.
@@ -243,8 +243,8 @@ The original sequential seed2 DPO and KTO path was not clean evidence because th
 - kind: `result`
 - summary: Post-hoc sanity evaluation showed the original merged SFT seed2 checkpoint behaved base-like despite structural validity, so downstream sequential seed2 artifacts using that merge were confounded.
 - evidence:
-  - `experiment/phase1/eval/results_sft_merged_seed2_selfaware_192_sanity`
-  - `experiment/phase1/run_records/sft_kto__4b__amendment_a__seed2.json`
+  - `archive/experiment/phase1/eval/results_sft_merged_seed2_selfaware_192_sanity`
+  - `archive/experiment/phase1/run_records/sft_kto__4b__amendment_a__seed2.json`
 - decisions:
   - Exclude the original SFT->DPO seed2 result from clean sequential evidence.
   - Stop the active SFT->KTO seed2 run because it used the same bad merged base.
@@ -255,9 +255,9 @@ The original sequential seed2 DPO and KTO path was not clean evidence because th
 - kind: `result`
 - summary: The low-memory SFT seed2 merge passed behavioral sanity checks, clean SFT->DPO seed2 training completed, and full SelfAware eval produced plausible seed2 metrics with no thinking-token contamination.
 - evidence:
-  - `experiment/phase1/eval/results_sft_merged_seed2_lowmem_selfaware_192_sanity`
-  - `experiment/phase1/eval/results_amendment_a_selfaware_full_seed2_sft_dpo_lowmem_local_4b/sft_dpo_seed2_lowmem__selfaware/metrics.json`
-  - `experiment/phase1/eval/analysis/amendment_a_transition_report.md`
+  - `archive/experiment/phase1/eval/results_sft_merged_seed2_lowmem_selfaware_192_sanity`
+  - `archive/experiment/phase1/eval/results_amendment_a_selfaware_full_seed2_sft_dpo_lowmem_local_4b/sft_dpo_seed2_lowmem__selfaware/metrics.json`
+  - `archive/experiment/phase1/eval/analysis/amendment_a_transition_report.md`
   - `TODO.md`
 - metrics: refusal_recall 65.89, over_refusal 18.36, truthful 34.82.
 
@@ -267,7 +267,7 @@ The original sequential seed2 DPO and KTO path was not clean evidence because th
 - kind: `launch`
 - summary: Clean SFT->KTO seed2 is running from the verified low-memory SFT seed2 merged base; the latest heartbeat saw step 1300 of 3599 with low OOM risk and stable VRAM.
 - evidence:
-  - `experiment/phase1/run_records/sft_kto__4b__amendment_a__seed2.json`
+  - `archive/experiment/phase1/run_records/sft_kto__4b__amendment_a__seed2.json`
   - `synaptic-tuner/toolset-training-artifacts/runs/local/4b/sft_kto__4b__amendment_a__seed2/20260616_183650/logs/training_20260616_223856.jsonl`
   - `.codex/pact/session.md`
 - next steps:
@@ -302,7 +302,7 @@ The original sequential seed2 DPO and KTO path was not clean evidence because th
 - kind: `result`
 - summary: Clean SFT->KTO seed2 completed training from the verified low-memory SFT seed2 merged base, saved final adapter artifacts, and ended with low OOM risk; behavioral eval is still pending before scientific interpretation.
 - evidence:
-  - `experiment/phase1/run_records/sft_kto__4b__amendment_a__seed2.json`
+  - `archive/experiment/phase1/run_records/sft_kto__4b__amendment_a__seed2.json`
   - `synaptic-tuner/toolset-training-artifacts/runs/local/4b/sft_kto__4b__amendment_a__seed2/20260616_183650/logs/training_20260616_223856.jsonl`
   - `synaptic-tuner/toolset-training-artifacts/runs/local/4b/sft_kto__4b__amendment_a__seed2/20260616_183650/capacity_features.json`
   - `synaptic-tuner/toolset-training-artifacts/runs/local/4b/sft_kto__4b__amendment_a__seed2/20260616_183650/final_model/adapter_model.safetensors`
@@ -316,10 +316,10 @@ The original sequential seed2 DPO and KTO path was not clean evidence because th
 - kind: `result`
 - summary: Clean SFT->KTO seed2 full SelfAware eval completed with no thinking-token contamination; behavior is consistent with seed1 KTO, preserving high unknown refusal while retaining high over-refusal.
 - evidence:
-  - `experiment/phase1/eval/config/eval_amendment_a_selfaware_full_seed2_sft_kto_lowmem_local_4b.yaml`
-  - `experiment/phase1/eval/results_amendment_a_selfaware_full_seed2_sft_kto_lowmem_local_4b/sft_kto_seed2_lowmem__selfaware/metrics.json`
-  - `experiment/phase1/eval/results_amendment_a_selfaware_full_seed2_sft_kto_lowmem_local_4b/sft_kto_seed2_lowmem__selfaware/scored_rows.jsonl`
-  - `experiment/phase1/run_records/sft_kto__4b__amendment_a__seed2.json`
+  - `archive/experiment/phase1/eval/config/eval_amendment_a_selfaware_full_seed2_sft_kto_lowmem_local_4b.yaml`
+  - `archive/experiment/phase1/eval/results_amendment_a_selfaware_full_seed2_sft_kto_lowmem_local_4b/sft_kto_seed2_lowmem__selfaware/metrics.json`
+  - `archive/experiment/phase1/eval/results_amendment_a_selfaware_full_seed2_sft_kto_lowmem_local_4b/sft_kto_seed2_lowmem__selfaware/scored_rows.jsonl`
+  - `archive/experiment/phase1/run_records/sft_kto__4b__amendment_a__seed2.json`
 - metrics: n 3,369 = 1,032 unknown / 2,337 known; refusal_recall 78.68, answer_on_unknown 21.32, over_refusal 45.53, correct_on_known 37.16, truthful 38.14.
 - contamination: 0 matches for `<think>`, `</think>`, or `reasoning_content`.
 - next steps:

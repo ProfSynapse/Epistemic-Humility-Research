@@ -5,7 +5,7 @@ title: 8B scale and hyperparameter planning
 status: active
 created_at: '2026-06-25T14:15:48Z'
 updated_at: '2026-06-25T14:48:44Z'
-phase: phase1
+track: research
 question: Which 8B response-confidence and thinking-enabled variants should be prepared,
   and what local training exhaust plus literature should we inspect before spending
   compute on LR, beta, KL, reward, or LoRA sensitivity runs?
@@ -48,7 +48,7 @@ checkpoints:
   at: '2026-06-25T14:40:28Z'
   kind: result
   title: Training-exhaust audit derived from local scratch runs
-  summary: 'Built experiment/phase1/analysis/build_training_exhaust_audit.py and generated
+  summary: 'Built archive/experiment/phase1/analysis/build_training_exhaust_audit.py and generated
     training_exhaust_summary.csv plus training_exhaust_hyperparameter_report.md from
     32 local capacity/log artifacts joined to self-aware eval rollups. Main read:
     clean LoRA settings are constant (r32/alpha64/dropout0.05), so current data does
@@ -58,7 +58,7 @@ checkpoints:
     GRPO/stacks push refusal recall strongly but still trade off over-refusal and
     confidence calibration.'
   evidence:
-  - experiment/phase1/analysis/training_exhaust_summary.csv; experiment/phase1/analysis/training_exhaust_hyperparameter_report.md
+  - archive/experiment/phase1/analysis/training_exhaust_summary.csv; archive/experiment/phase1/analysis/training_exhaust_hyperparameter_report.md
   run_ids: []
   commands:
   - python experiment\\phase1\\analysis\\build_training_exhaust_audit.py
@@ -135,9 +135,9 @@ _No summary yet._
 
 - at: `2026-06-25T14:40:28Z`
 - kind: `result`
-- summary: Built experiment/phase1/analysis/build_training_exhaust_audit.py and generated training_exhaust_summary.csv plus training_exhaust_hyperparameter_report.md from 32 local capacity/log artifacts joined to self-aware eval rollups. Main read: clean LoRA settings are constant (r32/alpha64/dropout0.05), so current data does not identify a LoRA-rank effect; batch headroom is arm-specific (DPO low VRAM, GRPO batch32 plausible with guard, KTO batch12 already high/moderate risk); clean DPO/KTO generally optimize trainer objectives but move downstream behavior modestly; GRPO/stacks push refusal recall strongly but still trade off over-refusal and confidence calibration.
+- summary: Built archive/experiment/phase1/analysis/build_training_exhaust_audit.py and generated training_exhaust_summary.csv plus training_exhaust_hyperparameter_report.md from 32 local capacity/log artifacts joined to self-aware eval rollups. Main read: clean LoRA settings are constant (r32/alpha64/dropout0.05), so current data does not identify a LoRA-rank effect; batch headroom is arm-specific (DPO low VRAM, GRPO batch32 plausible with guard, KTO batch12 already high/moderate risk); clean DPO/KTO generally optimize trainer objectives but move downstream behavior modestly; GRPO/stacks push refusal recall strongly but still trade off over-refusal and confidence calibration.
 - evidence:
-  - `experiment/phase1/analysis/training_exhaust_summary.csv; experiment/phase1/analysis/training_exhaust_hyperparameter_report.md`
+  - `archive/experiment/phase1/analysis/training_exhaust_summary.csv; archive/experiment/phase1/analysis/training_exhaust_hyperparameter_report.md`
 - commands:
   - `python experiment\\phase1\\analysis\\build_training_exhaust_audit.py`
 - decisions:

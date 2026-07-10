@@ -8,7 +8,7 @@ tags:
   - kg/experiment
 status: proposed
 governance: amendment
-phase: phase1
+track: training-regimen
 lane: local
 est_compute: '~10-20 local RTX 3090 GPU-hours for a full 20k-row thinking probe, depending on token budget'
 relationships:
@@ -23,7 +23,7 @@ related:
 ## Question & Hypothesis
 
 Does enabling Qwen3 thinking materially change the TriviaQA known/unknown source
-labels that feed the Phase 1 epistemic-humility datasets?
+labels that feed the locked training-regimen epistemic-humility datasets?
 
 This is an Amendment H experiment under
 `experiments/thinking-enabled-parallel-arm/AMENDMENT.md`; it is
@@ -61,9 +61,9 @@ rates, and row review, not only aggregate counts.
 ## Prerequisites & Gating
 
 - Non-thinking source probe exists at
-  `experiment/phase1/probe/qwen3-4b-instruct/probe_results.jsonl`.
-- Thinking extraction support exists in `experiment/phase1/probe/probe.py` and
-  `experiment/phase1/probe/backends.py`.
+  `archive/experiment/phase1/probe/qwen3-4b-instruct/probe_results.jsonl`.
+- Thinking extraction support exists in `archive/experiment/phase1/probe/probe.py` and
+  `archive/experiment/phase1/probe/backends.py`.
 - Probe tests pass:
   `python -m pytest experiments/common/knowledge_probe/tests/test_probe_smoke.py -q`.
 - The bounded audit artifacts exist under
@@ -79,7 +79,7 @@ rates, and row review, not only aggregate counts.
    `experiments/thinking-enabled-parallel-arm/artifacts/configs/probe_thinking_audit_128_1024.yaml` and
    changing only `model.model_tag`, `probe_pool.max_questions`, and any
    explicitly approved token-budget values.
-4. Run the probe with `experiment/phase1/probe/probe.py` inside the local Docker
+4. Run the probe with `archive/experiment/phase1/probe/probe.py` inside the local Docker
    vLLM image, using a fresh output directory.
 5. Compare thinking rows against the locked non-thinking rows with
    `experiments/thinking-enabled-parallel-arm/compare_thinking_probe_results.py`.
@@ -104,8 +104,8 @@ rates, and row review, not only aggregate counts.
 
 ## Outputs & provenance
 
-- Probe output: `experiment/phase1/probe/<thinking-model-tag>/`.
-- Comparison output: `experiment/phase1/probe/analysis/<thinking-analysis-tag>/`.
+- Probe output: `archive/experiment/phase1/probe/<thinking-model-tag>/`.
+- Comparison output: `archive/experiment/phase1/probe/analysis/<thinking-analysis-tag>/`.
 - Session notes: `docs/sessions/`.
 - Amendment: `experiments/thinking-enabled-parallel-arm/AMENDMENT.md`.
 
@@ -201,9 +201,9 @@ chain-of-thought supervision.
 2. Confirm the accepted source-label artifact from the source-probe section of
    this plan.
 3. Build thinking-derived SFT/DPO/KTO/GRPO datasets using checked-in data-build
-   scripts under `experiment/phase1/data/`.
+   scripts under `archive/experiment/phase1/data/`.
 4. Launch the seed-1 thinking SFT through the existing local training recipe
-   pattern under `experiment/phase1/recipes/` or a documented Amendment H
+   pattern under `archive/experiment/phase1/recipes/` or a documented Amendment H
    materialized recipe.
 5. Merge the thinking SFT model and run a full thinking-enabled SelfAware eval
    before launching downstream preference/reward arms.
@@ -211,9 +211,9 @@ chain-of-thought supervision.
 7. For each stack, merge the intermediate model, run a bounded sanity eval, then
    train/eval the next stage.
 8. Rebuild comparison tables with
-   `experiment/phase1/eval/analysis/build_selfaware_full_run_comparison.py` and
+   `archive/experiment/phase1/eval/analysis/build_selfaware_full_run_comparison.py` and
    add a thinking-specific grouped comparison.
-9. Record run records and session checkpoints under `experiment/phase1/run_records/`
+9. Record run records and session checkpoints under `archive/experiment/phase1/run_records/`
    and `docs/sessions/`.
 
 ### Validation contract
@@ -231,9 +231,9 @@ chain-of-thought supervision.
 
 ### Outputs & provenance
 
-- Run records: `experiment/phase1/run_records/`.
-- Training/eval configs: `experiment/phase1/`.
-- Eval analysis: `experiment/phase1/eval/analysis/`.
+- Run records: `archive/experiment/phase1/run_records/`.
+- Training/eval configs: `archive/experiment/phase1/`.
+- Eval analysis: `archive/experiment/phase1/eval/analysis/`.
 - Session notes: `docs/sessions/`.
 - Public artifacts: deferred until a later publication decision; do not push
   thinking adapters or merged models before lineage, metrics, and model cards

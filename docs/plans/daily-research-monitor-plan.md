@@ -7,7 +7,7 @@
 
 Build a daily, discovery-only literature monitor for this repository. The monitor should detect new papers related to the project's epistemic-humility research trajectory, save candidate metadata with provenance, and queue candidates for human review.
 
-The monitor must not modify `docs/protocols/phase1/PROTOCOL.md`, hypotheses, falsifiers, headline matrix, evidence tables, or inclusion criteria. It surfaces candidates; Joseph or another named human decides whether each candidate is included, excluded, deferred, marked duplicate, or held for a future revision.
+The monitor must not modify `archive/docs/protocols/phase1/PROTOCOL.md`, hypotheses, falsifiers, headline matrix, evidence tables, or inclusion criteria. It surfaces candidates; Joseph or another named human decides whether each candidate is included, excluded, deferred, marked duplicate, or held for a future revision.
 
 ## Specialist Perspectives
 
@@ -18,7 +18,7 @@ The monitor must not modify `docs/protocols/phase1/PROTOCOL.md`, hypotheses, fal
 #### Research Needed
 
 - [ ] Finalize source scope: arXiv-only for v1, or arXiv plus OpenAlex, Semantic Scholar, Crossref, and/or PubMed.
-- [ ] Define the initial research trajectory profile from `docs/research-trajectory.md`, `docs/protocols/phase1/PROTOCOL.md`, `meta-analysis/paper/draft-v0.md`, and `library/manifest.yaml`.
+- [ ] Define the initial research trajectory profile from `docs/research-trajectory.md`, `archive/docs/protocols/phase1/PROTOCOL.md`, `meta-analysis/paper/draft-v0.md`, and `library/manifest.yaml`.
 - [ ] Confirm source terms for storing abstracts, raw payloads, and links.
 - [ ] Decide whether health/clinical literature should be in scope for this repo monitor.
 
@@ -26,7 +26,7 @@ The monitor must not modify `docs/protocols/phase1/PROTOCOL.md`, hypotheses, fal
 
 - Existing library lifecycle in `library/manifest.yaml`: `candidate -> stubbed -> fetched -> extracted -> verified`.
 - Existing enrichment pattern in `library/scripts/fetch_library.py`.
-- Locked protocol constraints in `docs/protocols/phase1/PROTOCOL.md`.
+- Locked protocol constraints in `archive/docs/protocols/phase1/PROTOCOL.md`.
 - Existing PRISMA/search accounting precedent in `meta-analysis/evidence/prisma-flow.md`.
 - External API documentation:
   - arXiv API manual: https://info.arxiv.org/help/api/user-manual.html
@@ -55,11 +55,11 @@ The monitor must not modify `docs/protocols/phase1/PROTOCOL.md`, hypotheses, fal
 | `.github/workflows/literature-discovery.yml` | New, optional | Daily scheduler if GitHub Actions is approved. |
 | GitHub Issues | Optional | Human review queue if issue-backed workflow is approved. |
 | `library/manifest.yaml` | Later guarded modify | Only after human include approval, as `status: candidate`. |
-| `docs/protocols/phase1/PROTOCOL.md` | Read-only | Must never be modified by the monitor. |
+| `archive/docs/protocols/phase1/PROTOCOL.md` | Read-only | Must never be modified by the monitor. |
 
 #### Design Approach
 
-Use a small repo-native monitor subsystem under `library/`, separate from experiment execution under `experiment/phase1/` and separate from the `synaptic-tuner` submodule.
+Use a small repo-native monitor subsystem under `library/`, separate from experiment execution under `archive/experiment/phase1/` and separate from the `synaptic-tuner` submodule.
 
 Recommended component flow:
 
@@ -137,7 +137,7 @@ Allowed status values:
 Guardrail contract:
 
 - The monitor may write only to allowlisted monitor output paths and, if approved, GitHub Issues.
-- The monitor may not write to `docs/protocols/phase1/PROTOCOL.md`, evidence tables, experiment configs, or run matrix files.
+- The monitor may not write to `archive/docs/protocols/phase1/PROTOCOL.md`, evidence tables, experiment configs, or run matrix files.
 - Human `include` means "approved for library admission or follow-up," not automatic protocol revision.
 
 ### Code Phase

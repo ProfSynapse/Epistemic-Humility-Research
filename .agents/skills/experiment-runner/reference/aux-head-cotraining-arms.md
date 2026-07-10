@@ -1,14 +1,14 @@
-# Preparing aux_head co-training arms (Phase B)
+# Preparing aux_head co-training arms
 
 Plug-and-play runbook for staging an `aux_head` scalar-readout co-training
-experiment (the Amendment R / "Phase B" shape: does jointly co-training a readout
+experiment (the Amendment R shape: does jointly co-training a readout
 head on an unfrozen base change *native* model behavior?). Follow this instead of
 re-deriving the data/recipe/engine integration each time.
 
 The canonical worked instance is **Amendment R** (answerability readout at L35);
 the steps below generalize to any per-row scalar target.
 
-## TL;DR — the four steps
+## Summary — the four steps
 
 1. **Build the aux dataset** (real + shuffled-placebo target columns) → gitignored scratch.
 2. **Draft three recipes** from the templates: A0 (head off), A1 (joint, real), A2 (joint, placebo).
@@ -19,7 +19,7 @@ the steps below generalize to any per-row scalar target.
 
 ```bash
 python3 archive/experiment/phase1/probe/amendments/amendment_r_build_phase_b_aux_dataset.py \
-  --src experiment/phase1/data/qwen3-4b-instruct/sft_train.jsonl \
+  --src archive/experiment/phase1/data/qwen3-4b-instruct/sft_train.jsonl \
   --out-dir scratch/amendment_r/phase_b \
   --shuffle-seed 20260629
 ```
@@ -49,7 +49,7 @@ attributable to the *information in the target* and A1 vs A0 attributable to the
 
 ## 2. Recipe templates
 
-Three checked-in recipes under `experiment/phase1/recipes/`:
+Three checked-in recipes under `archive/experiment/phase1/recipes/`:
 
 | Arm | Recipe | aux_head | dataset |
 |-----|--------|----------|---------|
@@ -74,7 +74,7 @@ tuner's `local_run_handler._build_trainer_command` forwards recipe keys to the
 trainer as `--flags` but does **not** forward any `aux_head` block. So a recipe's
 `aux_head:` is **inert on the standard lane** until:
 
-1. **ENGINE — `prompt_render: prompt_completion` mode** (`docs/sessions/20260629T000000Z-phase-b-token-faithfulness-fix-handoff.md`).
+1. **ENGINE - `prompt_render: prompt_completion` mode** (token-faithfulness handoff).
    The default full-conversation render diverges from `add_generation_prompt=True`
    at the `</think>` newlines, so `end_of_prompt` lands one token short of the
    validated gen-prompt axis (cos 0.54 / AUROC 0.85 vs the 0.96 axis). The verified
@@ -90,7 +90,7 @@ trainer as `--flags` but does **not** forward any `aux_head` block. So a recipe'
    engine work and belongs in the **submodule's own** `fine-tuning` skill +
    the builder PR — NOT installed from the root project (ownership boundary).
 
-Both are tracked in `AMENDMENT-R-phase-b-joint-aux-head.md §6` and the run records'
+Both are tracked in the Amendment R aux-head co-training record and the run records'
 `prereq_check`/`blocked_on`.
 
 ## 4. Smoke, lock the falsifier, launch
@@ -117,7 +117,7 @@ arm's LoRA, and the sidecar is irrelevant to scoring. Per arm, after `train_end`
    downstream eval base must be a standalone 16-bit model — same primitive the
    clean-SFT/GRPO bases use). Runs inside the unsloth container (GPU, ~1-2 min):
    ```
-   python3 experiment/phase1/grpo/merge_sft_adapter_16bit.py \
+   python3 archive/experiment/phase1/grpo/merge_sft_adapter_16bit.py \
      <run>/final_model  <run>/Qwen3-4B-bnb-4bit/merged-16bit
    ```
    The R arms train directly on `unsloth/Qwen3-4B-bnb-4bit` with no prior
@@ -128,20 +128,20 @@ arm's LoRA, and the sidecar is irrelevant to scoring. Per arm, after `train_end`
    B0/Amendment-J config exactly; only the merged base differs per arm). Instantiate
    `eval/config/eval_amendment_r_response_confidence_selfaware_full_local_4b.template.yaml`:
    ```
-   python experiment/phase1/eval/run_eval.py --config <arm-config>.yaml --live-vllm
+   python archive/experiment/phase1/eval/run_eval.py --config <arm-config>.yaml --live-vllm
    ```
    `scored_rows.jsonl` must carry `stated_confidence`, `refused`, `correct`, `label`,
    `id` for Analysis A.
 3. **Score** the non-circular metric:
    ```
-   python experiment/phase1/eval/analysis/calibration_gap_report.py \
+   python archive/experiment/phase1/eval/analysis/calibration_gap_report.py \
      --scored <results_dir>/<arm>__selfaware/scored_rows.jsonl \
-     --out experiment/phase1/eval/analysis/calibration_gap_amendment_r_<arm>.json
+     --out archive/experiment/phase1/eval/analysis/calibration_gap_amendment_r_<arm>.json
    ```
    The headline number is `A_full_eval.auroc_emitted_to_appropriateness`.
 4. **Evaluate the locked falsifier** once all three arms are scored:
    ```
-   python experiment/phase1/eval/analysis/amendment_r_falsifier_check.py \
+   python archive/experiment/phase1/eval/analysis/amendment_r_falsifier_check.py \
      --a0 <...a0.json> --a1 <...a1.json> --a2 <...a2.json>
    ```
    PRIMARY gate = A1 − A2 ≥ +0.05 (placebo contrast); §4 also requires A1 > A0.

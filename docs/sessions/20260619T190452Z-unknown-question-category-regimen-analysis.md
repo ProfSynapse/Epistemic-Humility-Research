@@ -5,7 +5,7 @@ title: Unknown-Question Category-Regimen Analysis
 status: active
 created_at: '2026-06-19T19:04:52Z'
 updated_at: '2026-06-19T19:04:52Z'
-phase: phase1
+track: research
 question: Capture exploratory row-pattern analysis of unknown-question semantic categories
   across SFT, DPO, and KTO regimens.
 tags:

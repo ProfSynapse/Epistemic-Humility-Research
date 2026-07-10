@@ -31,7 +31,7 @@ related:
 - '[[auroc]]'
 - '[[hallucination]]'
 - '[[abstention]]'
-provenance: 'Internal program paper (Paper 3, working). Evidence: experiments/probe-as-oracle-readout-ceiling/AMENDMENT.md, experiments/xdataset-probe-transfer/AMENDMENT.md, experiments/aux-head-trainable-readout/AMENDMENT.md, experiments/correctness-confidence-probe/AMENDMENT.md, experiments/correctness-readout-deployment-port/AMENDMENT.md, experiments/unified-two-signal-dial-veto/AMENDMENT.md, experiments/base-model-training-free-mechanism/AMENDMENT.md, the Stage 1.5 integration (PR #128), experiment/phase1/probe/amendment_*_result.json, and the synthesis papers/paper-4-two-signal-readout/notes/framework.md. Not an external publication.'
+provenance: 'Internal program paper (Paper 3, working). Evidence: experiments/probe-as-oracle-readout-ceiling/AMENDMENT.md, experiments/xdataset-probe-transfer/AMENDMENT.md, experiments/aux-head-trainable-readout/AMENDMENT.md, experiments/correctness-confidence-probe/AMENDMENT.md, experiments/correctness-readout-deployment-port/AMENDMENT.md, experiments/unified-two-signal-dial-veto/AMENDMENT.md, experiments/base-model-training-free-mechanism/AMENDMENT.md, the Stage 1.5 integration (PR #128), archive/experiment/phase1/probe/amendment_*_result.json, and the synthesis papers/paper-4-two-signal-readout/notes/framework.md. Not an external publication.'
 relationships:
 - type: supports
   target: '[[answerability-axis-present-without-task-training]]'

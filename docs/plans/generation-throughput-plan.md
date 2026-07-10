@@ -97,7 +97,7 @@ creates no new evidence-cell type, so it routes as lab-notebook
 infrastructure, not a Tier-2 amendment. If the vLLM engine ever changes
 *what* is measured (not just how fast), that re-opens the routing question.
 
-### Phase 1 — batched HF path (both lanes; the workhorse)
+### locked training-regimen — batched HF path (both lanes; the workhorse)
 
 Implement `batch-generate`/`batch-capture` (hf-batched engine) in the tuner;
 in this repo add to the extractor:
@@ -218,7 +218,7 @@ dataset; `--engine tuner-batched --batch-size 32`):
 
 ## 6. Order of work
 
-1. Phase 1 extractor change + local pythia equivalence run (one sitting; the
+1. locked training-regimen extractor change + local pythia equivalence run (one sitting; the
    equivalence run is ~20 min GPU after the AA queue drains, needs launch
    approval).
 2. Adopt for the two remaining Y re-runs (cloud, user approval; ~25 min cells

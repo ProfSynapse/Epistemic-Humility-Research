@@ -6,7 +6,7 @@ title: Amendment AJ resolved (caution survives certified knowledge erasure) + ca
 status: complete
 created_at: '2026-07-04T12:00:00Z'
 updated_at: '2026-07-04T15:30:00Z'
-phase: phase1
+track: research
 question: Does the caution readout survive certified erasure of the knowledge subspace,
   and does unanswerability FLAVOR (category) have its own linear structure in the
   raw base?
@@ -104,7 +104,7 @@ artifacts:
 - experiments/knowledge-subspace-erasure/AMENDMENT.md
 - archive/experiment/phase1/probe/amendments/amendment_aj_subspace_erasure.py
 - archive/experiment/phase1/probe/amendments/amendment_aj_addendum_gap_distribution.py
-- experiment/phase1/probe/mi_category_geometry_prep.py
+- archive/experiment/phase1/probe/mi_category_geometry_prep.py
 - experiments/flavor-geometry-category-fleet/analysis-committed/category-geometry/ (committed scripts;
   scripts committed)
 - docs/prediction-scoreboard.md

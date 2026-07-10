@@ -5,7 +5,7 @@ title: Amendment A KTO Seed3 Launch
 status: active
 created_at: '2026-06-17T11:12:05Z'
 updated_at: '2026-06-17T11:19:20Z'
-phase: phase1
+track: research
 question: Can clean SFT->KTO seed3 complete from the seed3 merged SFT base and close
   the KTO three-seed Amendment A evidence gap?
 tags:
@@ -16,7 +16,7 @@ run_ids:
 - sft_kto__4b__amendment_a__seed3
 trajectory:
   anchor: docs/research-trajectory.md
-  current_position: Phase 1 local work is completing the signed Amendment A three-seed
+  current_position: locked training-regimen local work is completing the signed Amendment A three-seed
     sequential KTO arm after seed1 and clean seed2 showed high abstention retention
     with high over-refusal.
   changed_by_session: Launched clean SFT->KTO seed3 locally and verified first optimizer-step
@@ -30,8 +30,8 @@ checkpoints:
     prepared Amendment A recipe settings; direct Docker launch was used because Windows
     PowerShell background launch routes did not persist from the Codex shell.
   evidence:
-  - experiment/phase1/run_records/sft_kto__4b__amendment_a__seed3.json
-  - experiment/phase1/run_records/materialized_recipes/sft_kto__4b__amendment_a__seed3.yaml
+  - archive/experiment/phase1/run_records/sft_kto__4b__amendment_a__seed3.json
+  - archive/experiment/phase1/run_records/materialized_recipes/sft_kto__4b__amendment_a__seed3.yaml
   - synaptic-tuner/toolset-training-artifacts/runs/local/4b/sft_kto__4b__amendment_a__seed3/20260617_070334/logs/training_20260617_110523.jsonl
   - TODO.md
   run_ids:
@@ -80,8 +80,8 @@ Clean SFT->KTO seed3 is running locally from the seed3 merged SFT base. Early ch
 - kind: `launch`
 - summary: Clean SFT->KTO seed3 was launched from the seed3 merged SFT base with prepared Amendment A recipe settings; direct Docker launch was used because Windows PowerShell background launch routes did not persist from the Codex shell.
 - evidence:
-  - `experiment/phase1/run_records/sft_kto__4b__amendment_a__seed3.json`
-  - `experiment/phase1/run_records/materialized_recipes/sft_kto__4b__amendment_a__seed3.yaml`
+  - `archive/experiment/phase1/run_records/sft_kto__4b__amendment_a__seed3.json`
+  - `archive/experiment/phase1/run_records/materialized_recipes/sft_kto__4b__amendment_a__seed3.yaml`
   - `synaptic-tuner/toolset-training-artifacts/runs/local/4b/sft_kto__4b__amendment_a__seed3/20260617_070334/logs/training_20260617_110523.jsonl`
 - metrics: step 95 / 3,599, loss 0.5014, reserved VRAM 4.385 GB, OOM risk low; checkpoints observed at 25, 50, and 75.
 - next steps:

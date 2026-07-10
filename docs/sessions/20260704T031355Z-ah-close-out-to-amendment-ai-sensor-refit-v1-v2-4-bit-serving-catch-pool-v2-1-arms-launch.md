@@ -6,7 +6,7 @@ title: 'AH close-out to Amendment AI: sensor refit v1/v2, 4-bit serving catch, p
 status: active
 created_at: '2026-07-04T03:13:55Z'
 updated_at: '2026-07-04T03:56:56Z'
-phase: phase1
+track: research
 question: Can GRPO with a probe-agreement reward (frozen refit L24 sensor read from
   the policy's own pre-generation states) train the model to consult its own readout,
   where every text-channel attempt failed?
@@ -179,7 +179,7 @@ checkpoints:
     for the pickled sensor, verified bit-identical to the fitting env (max_abs_diff
     0.0 on 8 seeded vectors); relaunches must use the unsloth_env interpreter.'
   evidence:
-  - experiment/phase1/grpo/amendment_ai_train_manifest.json
+  - archive/experiment/phase1/grpo/amendment_ai_train_manifest.json
   run_ids:
   - amendment_ai_grpo_true_seed1_20260703_233256
   commands: []
@@ -314,7 +314,7 @@ Full overnight arc under the user's conditional pre-authorization: clean-SFT sta
 - run ids:
   - `amendment_ai_grpo_true_seed1_20260703_233256`
 - evidence:
-  - `experiment/phase1/grpo/amendment_ai_train_manifest.json`
+  - `archive/experiment/phase1/grpo/amendment_ai_train_manifest.json`
 ### 011-recovery - Stale-HOLD kill and TRUE relaunch; live run is 234149
 
 - at: `2026-07-04T03:48:08Z`
@@ -335,7 +335,7 @@ Full overnight arc under the user's conditional pre-authorization: clean-SFT sta
 
 - at: `2026-07-04T05:10:00Z`
 - kind: `decision`
-- summary: The full AI-G0/G1/G2 verdict-eval was written, self-tested, and committed while the TRUE arm was at steps ~30-80 of 2,934 (no outcome observed), making the analysis procedure effectively pre-registered. Scorer amendment_ai_verdict_score.py (fresh eval probe per arm refit on the FINAL checkpoint per Amendment T with holdout excluded from fit = G0 falsifier; G1 own-readout congruence differential on the locked 400-row holdout, 10,000-boot paired bootstrap seed 0, schema-invalid counts incongruent; descriptive strata labeled NOT gates) passed synthetic self-tests (bootstrap point/CI/determinism, G2 tolerance both sides, congruence truth table). The G2 no-regression reference was PINNED to the Amendment E corrected-base full SelfAware eval of GRPO-v2 (93.41/33.38/53.85, formulas + counts committed) so no verdict-time freedom remains in the comparison. Prereg gained §4 (operationalization only; no gate/floor/constant changes). Commits 1327f15c + 254380da. TRUE arm healthy at last disk check (80 steps, no HALT, reward_mean 0.656, group-std nonzero 75%).
+- summary: The full AI-G0/G1/G2 verdict-eval was written, self-tested, and committed while the TRUE arm was at steps ~30-80 of 2,934 (no outcome observed), making the analysis procedure effectively pre-registered. Scorer amendment_ai_verdict_score.py (fresh eval probe per arm refit on the FINAL checkpoint per Amendment T with holdout excluded from fit = G0 falsifier; G1 own-readout congruence differential on the locked 400-row holdout, 10,000-boot paired bootstrap seed 0, schema-invalid counts incongruent; descriptive strata labeled NOT gates) passed synthetic self-tests (bootstrap point/CI/determinism, G2 tolerance both sides, congruence truth table). The G2 no-regression reference was PINNED to the Amendment E corrected-base full SelfAware eval of GRPO-v2 (93.41/33.38/53.85, formulas + counts committed) so no verdict-time freedom remains in the comparison. Prereg gained section 4 (operationalization only; no gate/floor/constant changes). Commits 1327f15c + 254380da. TRUE arm healthy at last disk check (80 steps, no HALT, reward_mean 0.656, group-std nonzero 75%).
 - evidence:
   - `archive/experiment/phase1/probe/amendments/amendment_ai_verdict_score.py`
   - `experiments/probe-as-reward/artifacts/amendment_ai_g2_reference_grpo_v2.json`

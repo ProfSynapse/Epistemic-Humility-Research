@@ -17,8 +17,8 @@ from S is the pool: the SelfAware frozen known/unknown manifest (read straight f
 the gate extraction's rows.jsonl, verbatim U path) instead of PopQA/TriviaQA.
 
 Outcome is structural (SelfAware rows are ungraded, verbatim U):
-  unknown âˆ§ answered = HALLUCINATION
-  known   âˆ§ answered = answerable_attempt (ungraded directional control)
+  unknown and answered = HALLUCINATION
+  known   and answered = answerable_attempt (ungraded directional control)
 
 Persists, under a gitignored model_tag subtree, for every ANSWERED row:
   <out_dir>/rows.jsonl                     one record per attempt

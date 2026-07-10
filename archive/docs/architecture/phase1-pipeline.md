@@ -30,7 +30,7 @@ trusted.
 The pipeline is four components connected by file-on-disk contracts:
 
 ```
-                         experiment/phase1/
+                         archive/experiment/phase1/
   +-------------------+   probe/        +-------------------+
   | (A) Knowledge     |---------------->| (B) Dataset       |
   |     Probe         | per-question    |     Builders      |
@@ -216,7 +216,7 @@ interruptible without losing work.
 
 ### 3.8 Output artifact (interface contract A -> B)
 
-`experiment/phase1/probe/<model_tag>/probe_results.jsonl`, one object per
+`archive/experiment/phase1/probe/<model_tag>/probe_results.jsonl`, one object per
 question:
 
 ```json
@@ -411,7 +411,7 @@ Cheng *test* evaluation (which is row-identical across arms by construction).
 ### 4.8 Output artifact (interface contract B -> C)
 
 ```
-experiment/phase1/data/<model_tag>/
+archive/experiment/phase1/data/<model_tag>/
   questions_frozen.json        # K/U question IDs + seed (the budget anchor)
   sft_train.jsonl  sft_dev.jsonl
   dpo_train.jsonl  dpo_dev.jsonl
@@ -625,7 +625,7 @@ Cheng-validated scorer so bridge-arm numbers are directly comparable.
 The metric suite (over-refusal decomposition, token ECE, OOD scorers) is NOT
 pre-built in the tuner's `Evaluator/` (PREPARE gap #6). Decision: build the
 Phase-1 scorers as **checked-in scripts in the research repo** under
-`experiment/phase1/eval/`, generating responses via vLLM (same backend as the
+`archive/experiment/phase1/eval/`, generating responses via vLLM (same backend as the
 probe) loading each adapter. This keeps the novel metrics in the repo that owns
 the paper and its provenance discipline, rather than forcing them into the
 tuner's YAML-assertion harness. The tuner `Evaluator/` is used only if a quick
@@ -714,11 +714,11 @@ protocol is the SSOT, this is the implementation view):
 ### 6.7 Output artifact
 
 ```
-experiment/phase1/eval/results/<arm>__<eval_set>/
+archive/experiment/phase1/eval/results/<arm>__<eval_set>/
   generations.jsonl     # raw model outputs (released)
   metrics.json          # the 6-metric suite + 4-quadrant counts
   bootstrap_ci.json     # per-metric CIs
-experiment/phase1/eval/results/comparisons/
+archive/experiment/phase1/eval/results/comparisons/
   mcnemar.csv           # pairwise arm comparisons
   summary_table.csv     # the paper's headline table (all arms x all metrics)
 ```
@@ -804,7 +804,7 @@ the recipe + trainer surface and consumes WS-2 outputs read-only.
 
 ### WS-1: knowledge probe (research repo)
 
-- Owns: `experiment/phase1/probe/` (probe.py, config, outputs).
+- Owns: `archive/experiment/phase1/probe/` (probe.py, config, outputs).
 - Depends on: WS-0 output (or the documented validation-remainder fallback).
 - Contract out: `probe_results.jsonl` (§3.8). Can be developed against a
   small hand-made `train.jsonl` fixture.
@@ -812,7 +812,7 @@ the recipe + trainer surface and consumes WS-2 outputs read-only.
 
 ### WS-2: dataset builders (research repo)
 
-- Owns: `experiment/phase1/data/` (build_datasets.py, config, abstention_bank).
+- Owns: `archive/experiment/phase1/data/` (build_datasets.py, config, abstention_bank).
 - Depends on: `probe_results.jsonl` SCHEMA (fixture, not real data).
 - Contract out: the 4 arms' train/dev JSONL + `build_manifest.json`.
 - Owns the leakage guard (§3.2), budget equalization (§4.2), abstention bank
@@ -837,7 +837,7 @@ the recipe + trainer surface and consumes WS-2 outputs read-only.
 
 ### WS-4: eval harness + stats (research repo)
 
-- Owns: `experiment/phase1/eval/` (run_eval.py, scorers.py, stats.py, config,
+- Owns: `archive/experiment/phase1/eval/` (run_eval.py, scorers.py, stats.py, config,
   results).
 - Depends on: trained adapters (C) for real runs; scorer logic depends only on
   the generations schema (fixture) and `cheng_test_gold.jsonl` (on disk).
@@ -901,7 +901,7 @@ per-run tuner invocations, on two execution lanes, with full provenance and
 prerequisite gating. It is orchestration GLUE packaged as a skill, not a
 framework. Hard boundary (user directive): the skill lives at
 `.claude/skills/experiment-runner/` in THIS repo, and the recipes + run records it
-operates on are repo content under `experiment/phase1/`. It adds NOTHING
+operates on are repo content under `archive/experiment/phase1/`. It adds NOTHING
 experiment-specific to the `synaptic-tuner/` submodule, which stays a clean general
 dependency invoked only through its existing public CLI (`tuner.py local-run`,
 `tuner.py cloud-pipeline` / `run-experiment`). The skill reads the tuner's patterns
@@ -932,9 +932,9 @@ target / method / model / dataset.local_file / training / lora / artifacts`, see
 **Recipes and run records are repo content, not skill internals.** Following the
 tuner's own convention (recipes live in `Trainers/recipes/` as repo content; the
 skill documents the workflow and carries only executable helpers), the per-arm
-DEFAULT recipes stay at `experiment/phase1/recipes/` (already relocated there by
+DEFAULT recipes stay at `archive/experiment/phase1/recipes/` (already relocated there by
 task #24) and the provenance run records are written to
-`experiment/phase1/run_records/` as committed artifacts the paper releases. The
+`archive/experiment/phase1/run_records/` as committed artifacts the paper releases. The
 skill folder holds the runbook, the matrix-expansion script, the matrix config,
 and reference docs -- NOT the recipes or the run records. This keeps the
 provenance spine (records) and the run inputs (recipes) as first-class,
@@ -957,7 +957,7 @@ version-controlled research artifacts independent of the skill packaging.
     lanes.md                             # local 3090 vs HF Jobs parallel lane deep-dive
     matrix-expansion.md                  # how matrix.yaml maps to PROTOCOL v0.3 cells + count assertions
 
-experiment/phase1/                       # repo content the skill operates on (NOT under the skill)
+archive/experiment/phase1/                       # repo content the skill operates on (NOT under the skill)
   recipes/                               # per-arm DEFAULT recipes (relocated here by task #24)
     eh_phase1_qwen3_4b_{sft,dpo,kto_congruence,kto_correctness_safe}.yaml
     eh_phase1_qwen3_8b_{sft,dpo,kto_congruence}.yaml
@@ -1033,7 +1033,7 @@ cells isolated). (`reference/matrix-expansion.md` documents the full
 matrix.yaml -> cell mapping and the count-assertion table.)
 
 Per-cell recipe generation: the script deep-copies the base recipe from
-`experiment/phase1/recipes/`, applies the single override (seed, or one of
+`archive/experiment/phase1/recipes/`, applies the single override (seed, or one of
 LR/beta), rewrites `name` and `artifacts.output_root` to embed the coordinate, and
 writes the materialized recipe to a work dir. It does NOT hand-maintain 30 recipe
 files; the 9 base recipes (repo content) plus matrix.yaml (skill config) are the
@@ -1122,7 +1122,7 @@ the tuner repo root. Local Docker bind-mounts `{tuner_repo_root}:/workspace/repo
 into `/workspace/repo` (`tuner/cloud/hf_jobs.py`). And `dataset.local_file` is
 resolved tuner-repo-relative inside the container -- `local_run_handler.py:502`
 hardcodes `container_dataset_path = /workspace/repo / local_file`. The research
-repo's `experiment/phase1/data/` is therefore NEVER visible to the tuner
+repo's `archive/experiment/phase1/data/` is therefore NEVER visible to the tuner
 container. A recipe whose `dataset.local_file` points at a research-repo-relative
 data path does NOT resolve. This makes data-feeding a WS-5 responsibility, handled
 differently per lane:
@@ -1144,7 +1144,7 @@ differently per lane:
   files is a staging placeholder the README documents as WS-5-rewritten.)
 - **Local lane: stage into the tuner working tree.** Per cell, `run_matrix.py`
   copies the resolved research-repo data file
-  (`experiment/phase1/data/<model_tag>/<method>_{train,dev}.jsonl`) into an
+  (`archive/experiment/phase1/data/<model_tag>/<method>_{train,dev}.jsonl`) into an
   EPHEMERAL gitignored scratch dir under the tuner working tree
   (`synaptic-tuner/.eh_staging/<run_id>/`), then sets the materialized recipe's
   `dataset.local_file` to that tuner-repo-relative staged path (so the
@@ -1266,7 +1266,7 @@ is withdrawn.
 #### (c) Provenance: per-run records (HANDOFF.md §5 SACROSANCT)
 
 Every launched cell emits a JSON run record to
-`experiment/phase1/run_records/<run_id>.json` (repo content, committed) BEFORE the
+`archive/experiment/phase1/run_records/<run_id>.json` (repo content, committed) BEFORE the
 tuner is invoked (so a crashed run still leaves a record), updated with the outcome
 after. (`reference/run-records.md` holds the full schema + the HANDOFF.md §5
 provenance discipline.)
@@ -1277,11 +1277,11 @@ provenance discipline.)
   "matrix_version": "phase1-v0.3",
   "coordinate": {"arm": "kto_congruence", "size": "4b", "cell_type": "lr_panel",
                  "seed": 1, "override": {"learning_rate": 2.0e-6}},
-  "source_recipe": "experiment/phase1/recipes/eh_phase1_qwen3_4b_kto_congruence.yaml",
+  "source_recipe": "archive/experiment/phase1/recipes/eh_phase1_qwen3_4b_kto_congruence.yaml",
   "materialized_recipe_sha": "<sha256 of the generated recipe>",
   "method": "kto", "model": "unsloth/Qwen3-4B-bnb-4bit",
   "lane": "cloud",
-  "data": {"source_data_file": "experiment/phase1/data/qwen3-4b-instruct/kto_train.jsonl",
+  "data": {"source_data_file": "archive/experiment/phase1/data/qwen3-4b-instruct/kto_train.jsonl",
            "staged_data_file": null,
            "hf_dataset_name": "<org>/eh-phase1-qwen3-4b-kto",
            "hf_dataset_revision": "<hub commit SHA of the published dataset; cloud cells>"},
@@ -1314,7 +1314,7 @@ present, and ABORTS the whole matrix (not just the cell) on any failure, with a
 clear message naming the missing prereq:
 
 1. **Datasets fetched:** the builder outputs for the cell's arm exist on disk
-   (`experiment/phase1/data/<model_tag>/<method>_train.jsonl` and `_dev.jsonl`),
+   (`archive/experiment/phase1/data/<model_tag>/<method>_train.jsonl` and `_dev.jsonl`),
    and the TriviaQA train split that fed the probe is present.
 2. **Leakage guard passed:** the `build_manifest.json` (§4.8) records the
    leakage-guard PASS (probe/train set disjoint from Cheng test). The gate
@@ -1416,8 +1416,8 @@ exact staging location against the tuner's `.gitignore` at CODE time.
 
 WS-5 is a research-repo-only workstream. Its owned surfaces are the skill package
 `.claude/skills/experiment-runner/` (runbook + scripts + config + reference) and
-the repo content it operates on: `experiment/phase1/recipes/` (relocated by
-task #24, now completed) and `experiment/phase1/run_records/` (provenance, new).
+the repo content it operates on: `archive/experiment/phase1/recipes/` (relocated by
+task #24, now completed) and `archive/experiment/phase1/run_records/` (provenance, new).
 It changes NO WS-1/WS-2/WS-3/WS-4 interface contract: it consumes the WS-2 builder
 outputs and `build_manifest.json` (read-only), produces materialized recipes + run
 records, and its run-id tagging is the coordinate the WS-4 eval harness already
@@ -1479,8 +1479,8 @@ Enforcement map per method:
 |---------|-------------|-----------|
 | **SFT** (train) | Generic config-driven passthrough | `chat_template_kwargs: {enable_thinking: false}` carried by the SFT recipes, threaded through `shared/sft_preprocessing.py` into both `apply_chat_template` calls (coder-cloud #45). No Qwen3 string in shared infra; the kwarg is model-agnostic. |
 | **DPO** (train) | **Document-and-accept, no code change** | The DPO loader feeds TRL the CONVERSATIONAL `prompt`/`chosen`/`rejected` message-list schema (`Trainers/dpo/src/data_loader.py:6-16,:24`). TRL templates the prompt with `add_generation_prompt=True`, so the unconditional empty marker lands at the PROMPT/completion boundary (the generation-prompt position), NOT inside `chosen`/`rejected`. The completions — the text the DPO preference loss actually shapes — are the clean IDK strings (gold answer / abstention), carrying no reasoning. The marker is the empty thinking-OFF signature (`\n\n` inner), so no thinking *behavior* is ever trained; train and eval prompts carry it identically. Thinking-free by construction. |
-| **KTO** (train) | **Document-and-accept, no code change** | Distinct from DPO: the implemented KTO loader transforms the WS-2 ChatML (`conversations` + `label`) into RAW-STRING `prompt`/`completion`, extracted directly from message `content` (`Trainers/kto/src/data_loader.py:185-189`), and hands those raw strings to TRL. TRL never applies `tokenizer.chat_template` to raw strings, so for KTO **no Qwen3 template is invoked at train time and NO marker is injected anywhere** — the empty-marker question is N/A for KTO. The only `apply_chat_template` calls on the KTO path are inference-only (`Trainers/kto/src/inference.py:82,142`), not training. The trained completion is therefore the literal IDK target string the WS-2 builder placed in the assistant `content` (`experiment/phase1/data/build_datasets.py:421-429`), consistent with the SFT/DPO targets; with no marker on either side of the KTO train path, there is no train/eval marker mismatch to reconcile. |
-| **Eval / probe** (inference) | Already pinned | `experiment/phase1/eval/config/eval.yaml:18` and `experiments/common/configs/phase1-probe/probe.yaml:28` pin `enable_thinking: false`; the probe has a runtime self-check (`test_probe_smoke.py:109` raises if not honored). |
+| **KTO** (train) | **Document-and-accept, no code change** | Distinct from DPO: the implemented KTO loader transforms the WS-2 ChatML (`conversations` + `label`) into RAW-STRING `prompt`/`completion`, extracted directly from message `content` (`Trainers/kto/src/data_loader.py:185-189`), and hands those raw strings to TRL. TRL never applies `tokenizer.chat_template` to raw strings, so for KTO **no Qwen3 template is invoked at train time and NO marker is injected anywhere** — the empty-marker question is N/A for KTO. The only `apply_chat_template` calls on the KTO path are inference-only (`Trainers/kto/src/inference.py:82,142`), not training. The trained completion is therefore the literal IDK target string the WS-2 builder placed in the assistant `content` (`archive/experiment/phase1/data/build_datasets.py:421-429`), consistent with the SFT/DPO targets; with no marker on either side of the KTO train path, there is no train/eval marker mismatch to reconcile. |
+| **Eval / probe** (inference) | Already pinned | `archive/experiment/phase1/eval/config/eval.yaml:18` and `experiments/common/configs/phase1-probe/probe.yaml:28` pin `enable_thinking: false`; the probe has a runtime self-check (`test_probe_smoke.py:109` raises if not honored). |
 
 Why KTO/DPO is document-and-accept rather than code: forcing think-off at the
 tokenizer-template level (wrapping `chat_template` / `get_chat_template`) is the
@@ -1500,7 +1500,7 @@ note in the four dpo/kto recipes records this as a deliberate, evidenced disposi
 (not an omission) and cites this ADR.
 
 Forward obligation (eval consistency): the post-sign-off `VLLMGenerator` real
-path in `experiment/phase1/eval/run_eval.py` (currently a stub, ~:111) MUST pass
+path in `archive/experiment/phase1/eval/run_eval.py` (currently a stub, ~:111) MUST pass
 `enable_thinking=False` (or `chat_template_kwargs={enable_thinking: false}`) into
 its `apply_chat_template` / vLLM chat call when implemented, with a self-check test
 mirroring the probe's so eval cannot silently regress. This obligation is tracked
@@ -1548,7 +1548,7 @@ for those trainers.
 | 3 | Probe/Cheng-test leakage | Disjoint train-split design + pre-registered, builder-enforced leakage guard — WS-2 (§3.2, §4.2) |
 | 4 | Cheng IDK training data not on disk | Recorded CODE prerequisite: fetch OpenMOSS Say-I-Dont-Know training data (license-gated, user sign-off) — WS-0 note (§2, §9) |
 | 5 | Llama-2-7b-chat gated + no preset | Bridge recipes use `--model-name` override + recorded license acceptance; HF_TOKEN via env — WS-3 (§5.6) |
-| 6 | Metric scorers not pre-built | Build Phase-1 scorers in research repo `experiment/phase1/eval/`, ported from Cheng reanalysis — WS-4 (§6.2, §6.3) |
+| 6 | Metric scorers not pre-built | Build Phase-1 scorers in research repo `archive/experiment/phase1/eval/`, ported from Cheng reanalysis — WS-4 (§6.2, §6.3) |
 | 7 | `Evaluator/recipes/` doc drift | Do not depend on it; use `Evaluator/config/` only if the tuner harness is touched; Phase-1 suite is research-repo native — WS-4 (§6.2) |
 
 ---

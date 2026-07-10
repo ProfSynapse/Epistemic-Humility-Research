@@ -73,14 +73,14 @@ arms:
 # arms[] carry the canonical adapter paths. The harness resolves each active
 # arm's adapter path from this file by matching arm name, so a path is declared
 # in exactly one place. Null disables mirroring (then arms[].adapter must be set).
-eval_arms_source: experiment/phase1/eval/config/eval_smoke_local_4b.yaml
+eval_arms_source: archive/experiment/phase1/eval/config/eval_smoke_local_4b.yaml
 
 selection:
   # Matched known/unknown slice from the FROZEN split (leakage discipline):
   # read these keys from questions_frozen.json and align to probe_results.jsonl
   # by probe_pool_row_key ONLY (never loose question text). probe_results.jsonl
   # is ~123MB; the harness streams it by key and never whole-loads it.
-  questions_frozen: experiment/phase1/data/qwen3-4b-instruct/questions_frozen.json
+  questions_frozen: archive/experiment/phase1/data/qwen3-4b-instruct/questions_frozen.json
   probe_results: experiments/common/artifacts/knowledge_probe/qwen3-4b-instruct/probe_results.jsonl
   # E2 provenance expectation (runner-side prepare_extraction_cell gate): the
   # probe_config_sha the streamed probe_results.jsonl rows MUST carry. The gate

@@ -8,7 +8,7 @@ tags:
   - kg/experiment
 status: done
 governance: exploratory
-phase: phase1
+track: mechanism
 lane: local
 est_compute: 'Completed locally on RTX 3090; 443-row held-out steer cell after FIT-only dose selection.'
 relationships:

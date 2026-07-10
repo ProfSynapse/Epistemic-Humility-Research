@@ -10,7 +10,7 @@ def repo_root(start: Path | None = None) -> Path:
     for candidate in (here, *here.parents):
         if (
             (candidate / "experiments" / "common" / "knowledge_probe").is_dir()
-            and (candidate / "experiment" / "phase1" / "eval" / "scorers.py").exists()
+            and (candidate / "archive" / "experiment" / "phase1" / "eval" / "scorers.py").exists()
         ):
             return candidate
     raise RuntimeError(
@@ -24,7 +24,7 @@ def knowledge_probe_dir() -> Path:
 
 
 def locked_eval_dir() -> Path:
-    return repo_root() / "experiment" / "phase1" / "eval"
+    return repo_root() / "archive" / "experiment" / "phase1" / "eval"
 
 
 def readouts_dir() -> Path:

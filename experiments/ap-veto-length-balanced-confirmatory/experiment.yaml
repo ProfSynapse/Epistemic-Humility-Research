@@ -26,7 +26,7 @@ instrument:
   - cloud/modal_ap_veto_length_balanced.py
   pins:
     ap_build_pool.py: 954cf4e62d34fcd17aab888ad52d769e9cf2236bf373d00633bfa152488486aa
-    ap_extract.py: 55ee8bed20cc36fb19846fdead528e34d405135c29c958c8d0c7f5da4ac95e5b
+    ap_extract.py: fc5b97e31048e29a00a08aba6e3750bfa37f10e2c7b4013b4fb13d6c3397eeb8
     ap_grade_and_gates.py: ca74bb4584a273268eefbb2f485f46c3c4084b13d855c9e0fdcbb91fffbcc19d
     cloud/modal_ap_veto_length_balanced.py: 8e7350ab838a8f6e8b17255d6c707c4be291fa29903d89ccc20162f2c37f1980
 # The generation pool (ap_pool.jsonl) lives under the gitignored analysis/

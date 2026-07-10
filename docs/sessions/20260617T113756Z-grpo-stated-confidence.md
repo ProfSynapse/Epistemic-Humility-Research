@@ -5,7 +5,7 @@ title: GRPO Stated Confidence
 status: active
 created_at: '2026-06-17T11:37:56Z'
 updated_at: '2026-06-17T11:47:49Z'
-phase: phase1
+track: research
 question: How should Amendment B add GRPO and stated-confidence tracking to the epistemic-humility
   framework?
 tags:
@@ -30,7 +30,7 @@ checkpoints:
     output contract for answer plus confidence.
   evidence:
   - experiments/stated-confidence-grpo/AMENDMENT.md
-  - experiment/phase1/grpo/README.md
+  - archive/experiment/phase1/grpo/README.md
   run_ids: []
   commands: []
   decisions:
@@ -48,9 +48,9 @@ checkpoints:
     answer and confidence fields. Removed the draft Confidence-line compatibility
     path because no Amendment B runs have used it.
   evidence:
-  - experiment/phase1/eval/scorers.py
-  - experiment/phase1/grpo/humility_reward.py
-  - experiment/phase1/grpo/build_grpo_dataset.py
+  - archive/experiment/phase1/eval/scorers.py
+  - archive/experiment/phase1/grpo/humility_reward.py
+  - archive/experiment/phase1/grpo/build_grpo_dataset.py
   - experiments/stated-confidence-grpo/AMENDMENT.md
   run_ids: []
   commands: []
@@ -70,7 +70,7 @@ checkpoints:
     before comparing GRPO stated-confidence behavior.
   evidence:
   - experiments/stated-confidence-grpo/AMENDMENT.md
-  - experiment/phase1/eval/scorers.py
+  - archive/experiment/phase1/eval/scorers.py
   run_ids: []
   commands: []
   decisions:
@@ -127,7 +127,7 @@ This session established a JSON-only output contract for stated-confidence rerun
 - summary: Opened an Amendment B session for GRPO and stated-confidence tracking. The working decision is to keep signed v0.3 results separate while adding a prospective output contract for answer plus confidence.
 - evidence:
   - `experiments/stated-confidence-grpo/AMENDMENT.md`
-  - `experiment/phase1/grpo/README.md`
+  - `archive/experiment/phase1/grpo/README.md`
 - decisions:
   - Treat stated-confidence reruns as Amendment B evidence, not a replacement for locked v0.3 headline results.
 - next steps:
@@ -138,9 +138,9 @@ This session established a JSON-only output contract for stated-confidence rerun
 - kind: `decision`
 - summary: Settled Amendment B stated-confidence output on a JSON-only contract with answer and confidence fields. Removed the draft Confidence-line compatibility path because no Amendment B runs have used it.
 - evidence:
-  - `experiment/phase1/eval/scorers.py`
-  - `experiment/phase1/grpo/humility_reward.py`
-  - `experiment/phase1/grpo/build_grpo_dataset.py`
+  - `archive/experiment/phase1/eval/scorers.py`
+  - `archive/experiment/phase1/grpo/humility_reward.py`
+  - `archive/experiment/phase1/grpo/build_grpo_dataset.py`
   - `experiments/stated-confidence-grpo/AMENDMENT.md`
 - decisions:
   - Use JSON-only output: {"answer": string, "confidence": number}; do not support the abandoned Confidence-line draft format.
@@ -153,7 +153,7 @@ This session established a JSON-only output contract for stated-confidence rerun
 - summary: Clarified that Amendment B requires rerunning the existing eval suite under the JSON answer/confidence contract across baseline training regimens and seeds before comparing GRPO stated-confidence behavior.
 - evidence:
   - `experiments/stated-confidence-grpo/AMENDMENT.md`
-  - `experiment/phase1/eval/scorers.py`
+  - `archive/experiment/phase1/eval/scorers.py`
 - decisions:
   - Do not retrofit old eval outputs into stated-confidence baselines; re-evaluate base, v0.3 SFT/DPO/KTO seeds, relevant Amendment A sequential cells, and future GRPO cells with the same JSON output prompt and scorer.
 - next steps:

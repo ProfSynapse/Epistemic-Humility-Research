@@ -6,7 +6,7 @@ title: Hallucination-mechanics CPU fleet (confab phenotypes, commitment signal, 
 status: complete
 created_at: '2026-07-04T16:00:00Z'
 updated_at: '2026-07-04T20:00:00Z'
-phase: phase1
+track: research
 question: What happens mechanically between the model knowing a question is unanswerable
   (pre-gen gate 0.997) and marking its own confabulation lowest-trust (veto 0.980)
   - the commitment-and-content middle the prior results corner but do not explain?

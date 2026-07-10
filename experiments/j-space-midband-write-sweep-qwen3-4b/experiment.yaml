@@ -42,7 +42,7 @@ instrument:
     materialize_rows.py: a0f8f33cf181af6d4f79a2e217fe60519d8a4ad99a1150bb472c923cd31c2604
     pipeline.py: 5d20680e375d374114ddd7df86ee78a4dbc42389519d09501fcf29c7fe6911e7
     gen_lib.py: dbcd12b49b4ea655b681bc93853c4bb9742988918c8d228d796ad87289451856
-    grader.py: d76e3a89787e6d8b38aa9707b18aa73d882ed84fab283f720a349676e253f831
+    grader.py: de6b62f79c7b3a20825a9dfec877f0fec474ab6b415835ed8177be845a7d96d1
     model_lib.py: 3dde37349942774ea7b044392051af4151eeebb6e5afb05d808aeff835c65a60
 inputs:
 - experiments/common/doubt-gated-caution-tighten-heldout-split/split_manifest.json

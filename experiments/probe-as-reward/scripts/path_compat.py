@@ -21,7 +21,7 @@ def knowledge_probe_dir() -> Path:
 
 
 def locked_eval_dir() -> Path:
-    return repo_root() / "experiment" / "phase1" / "eval"
+    return repo_root() / "archive" / "experiment" / "phase1" / "eval"
 
 
 def artifact_dir() -> Path:

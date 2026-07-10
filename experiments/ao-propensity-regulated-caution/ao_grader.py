@@ -10,7 +10,7 @@ imported directly because its module-level imports pull in unrelated
 dataset-builder machinery (``amendment_s_correctness_probe_extract``,
 ``amendment_u_unified_extract``, ``confidence_steer``); this module stays
 self-contained per the task's instruction, importing only the lightweight,
-dependency-free ``experiment/phase1/eval/scorers.py`` (the same import
+dependency-free ``archive/experiment/phase1/eval/scorers.py`` (the same import
 steering_common.py itself makes for ``is_stated_confidence_refusal`` /
 ``is_correct``).
 
@@ -91,7 +91,7 @@ import sys
 from pathlib import Path
 from typing import Optional
 
-EVAL_DIR = Path("/home/profsynapse/code/Epistemic-Humility-Research/experiment/phase1/eval")
+EVAL_DIR = Path("/home/profsynapse/code/Epistemic-Humility-Research/archive/experiment/phase1/eval")
 if str(EVAL_DIR) not in sys.path:
     sys.path.insert(0, str(EVAL_DIR))
 import scorers  # noqa: E402  (eval/scorers.py -- Cheng-validated port, dependency-free)

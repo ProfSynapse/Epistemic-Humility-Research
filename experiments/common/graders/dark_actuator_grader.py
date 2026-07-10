@@ -6,7 +6,7 @@ refusal-detection half of `archive/experiment/phase1/probe/steering/steering_com
 screen does not need that module's heavier import-time dependencies
 (amendment_s_correctness_probe_extract, amendment_u_unified_extract dataset
 builders). The refusal-marker regexes below are IMPORTED verbatim from
-`experiment/phase1/eval/scorers.py` (`is_stated_confidence_refusal`), the same
+`archive/experiment/phase1/eval/scorers.py` (`is_stated_confidence_refusal`), the same
 Cheng-validated primitive `grade_output` calls; only the degenerate-output
 check is a local, deliberately small port of `steering_common.is_degenerate`
 (same n-gram-repeat / no-alnum / empty rule).
@@ -37,7 +37,7 @@ from pathlib import Path
 from typing import Optional
 
 REPO_ROOT = Path(__file__).resolve().parents[3]
-EVAL_DIR = REPO_ROOT / "experiment" / "phase1" / "eval"
+EVAL_DIR = REPO_ROOT / "archive" / "experiment" / "phase1" / "eval"
 if str(EVAL_DIR) not in sys.path:
     sys.path.insert(0, str(EVAL_DIR))
 

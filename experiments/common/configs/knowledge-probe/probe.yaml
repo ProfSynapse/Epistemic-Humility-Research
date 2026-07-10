@@ -6,7 +6,7 @@
 #              + probe_manifest.json sidecar
 #
 # Every field here is pinned and pre-registered in
-# docs/protocols/phase1/PROTOCOL.md v0.3. The probe hashes this config
+# archive/docs/protocols/phase1/PROTOCOL.md v0.3. The probe hashes this config
 # (probe_config_sha) into every output row and the manifest so a run is
 # reproducible and tamper-evident. Do NOT hardcode any of these in code.
 #

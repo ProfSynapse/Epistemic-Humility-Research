@@ -4,8 +4,8 @@
 Location: experiments/common/knowledge_probe/hidden_state_probe.py
 Reads:    experiments/common/configs/knowledge-probe/hidden_state_probe.yaml
           <output.root>/<model_tag>/probe_results.jsonl (alignment, streamed)
-          experiment/phase1/data/<model_tag>/questions_frozen.json (frozen split keys)
-          experiment/phase1/eval/config/eval_smoke_local_4b.yaml (adapter paths, by-value)
+          archive/experiment/phase1/data/<model_tag>/questions_frozen.json (frozen split keys)
+          archive/experiment/phase1/eval/config/eval_smoke_local_4b.yaml (adapter paths, by-value)
 Writes:   <output.root>/<model_tag>/hidden_states/<extraction_id>/
             manifest.json + rows.jsonl + per-arm h_base/h_lora/delta.safetensors
 

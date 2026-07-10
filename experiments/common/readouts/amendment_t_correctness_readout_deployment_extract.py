@@ -55,7 +55,7 @@ for p in (str(PROBE_DIR), str(EVAL_DIR)):
     if p not in sys.path:
         sys.path.insert(0, p)
 
-import scorers  # noqa: E402  (from experiment/phase1/eval)
+import scorers  # noqa: E402  (from archive/experiment/phase1/eval)
 from backends import render_probe_prompt  # noqa: E402  (from experiments/common/knowledge_probe)
 # Reuse Amendment S's pure helpers verbatim so the surfaces stay identical.
 from amendment_s_correctness_probe_extract import (  # noqa: E402

@@ -5,7 +5,7 @@ title: Dark-screen dose calibration, tuner firing-probe fix, worktree cleanup
 status: active
 created_at: '2026-07-06T20:41:08Z'
 updated_at: '2026-07-06T20:42:18Z'
-phase: phase1
+track: research
 question: Can the raw-base dark-actuator-screen run on bnb-4bit, and what dose/instrument
   fixes does it need?
 tags:

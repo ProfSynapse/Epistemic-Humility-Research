@@ -6,4 +6,4 @@ Committed rubric artifacts for `experiments/pretrain-only-base-readout`.
   judge rubric used as the verbalized-confidence comparator in Amendment Y Arm B.
 
 Origin before promotion:
-`experiment/phase1/probe/rubrics/cot_confidence.yaml`.
+`archive/experiment/phase1/probe/rubrics/cot_confidence.yaml`.

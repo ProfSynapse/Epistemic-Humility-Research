@@ -176,7 +176,7 @@ cloud-side.
 Why:
 - The pinned reference `experiments/probe-as-reward/artifacts/amendment_ai_g2_reference_grpo_v2.json` was produced by
   the Amendment E FULL SelfAware eval (n=3,369) via
-  `experiment/phase1/eval/run_eval.py` with config
+  `archive/experiment/phase1/eval/run_eval.py` with config
   `eval_amendment_e_response_confidence_selfaware_clean_sft_grpo_v2_seed1_corrected_base_full_local_4b.yaml`.
 - That pipeline serves through vLLM (run_eval.py imports `vllm.LLM`,
   `LoRARequest`, `StructuredOutputsParams`) with structured-outputs stated-

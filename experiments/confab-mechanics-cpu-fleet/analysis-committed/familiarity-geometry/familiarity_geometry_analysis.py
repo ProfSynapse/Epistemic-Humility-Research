@@ -49,7 +49,7 @@ import joblib
 SEED = 20260704
 BASE = os.path.dirname(os.path.abspath(__file__))
 REPO = Path(__file__).resolve().parents[4]
-LEGACY_ANALYSIS = REPO / "experiment" / "phase1" / "probe" / "analysis"
+LEGACY_ANALYSIS = REPO / "archive" / "experiment" / "phase1" / "probe" / "analysis"
 GEOM = str(LEGACY_ANALYSIS / "mi_category_geometry_20260704")
 CACHE = str(LEGACY_ANALYSIS / "mi_category_geometry_20260704" / "cache")
 PROBES = str(LEGACY_ANALYSIS / "ah_stage0" / "probes")

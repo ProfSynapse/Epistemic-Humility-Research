@@ -6,7 +6,7 @@ title: Full branch consolidation + repo migration to ext4 + Amendment AB V1 flee
 status: complete
 created_at: '2026-07-02T16:00:00Z'
 updated_at: '2026-07-03T06:30:00Z'
-phase: phase1
+track: research
 question: Can everything in flight be merged to one current main? Can the repo escape
   the 9P mount that keeps stalling runs? Does first-person framing open the text channel
   (Amendment AB V1)?
@@ -89,7 +89,7 @@ legacy_session:
   id: '0034'
   path: docs/sessions/0034 - consolidation-ext4-migration-ab-v1-verdict.md
 ---
-# Session 0034 — consolidation, ext4 migration, AB V1 verdict
+# Session 0034 -- consolidation, ext4 migration, AB V1 verdict
 
 Arc: the merge-everything directive completed (main now carries every branch),
 the repo escaped the 9P mount that had been stalling long runs (and killed the

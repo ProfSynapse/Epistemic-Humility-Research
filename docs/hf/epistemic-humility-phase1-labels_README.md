@@ -1,6 +1,6 @@
 ---
 license: mit
-pretty_name: Epistemic Humility Phase 1 Knowledge Labels
+pretty_name: Epistemic Humility locked training-regimen Knowledge Labels
 tags:
 - epistemic-humility
 - knowledge-boundary
@@ -9,19 +9,19 @@ tags:
 - labels
 ---
 
-# Epistemic Humility Phase 1 Knowledge Labels
+# Epistemic Humility locked training-regimen Knowledge Labels
 
 This dataset repository publishes compact, reproducible label/probe artifacts
-for the Qwen3 4B Phase 1 knowledge-boundary split.
+for the Qwen3 4B locked training-regimen knowledge-boundary split.
 
 Source repository:
 https://github.com/ProfSynapse/Epistemic-Humility-Research
 
 Local provenance:
 
-- Frozen question split: `experiment/phase1/data/qwen3-4b-instruct/questions_frozen.json`
-- Probe manifest: `experiment/phase1/probe/qwen3-4b-instruct/probe_manifest.json`
-- Sensitivity grid: `experiment/phase1/probe/qwen3-4b-instruct/sensitivity_grid.json`
+- Frozen question split: `archive/experiment/phase1/data/qwen3-4b-instruct/questions_frozen.json`
+- Probe manifest: `archive/experiment/phase1/probe/qwen3-4b-instruct/probe_manifest.json`
+- Sensitivity grid: `archive/experiment/phase1/probe/qwen3-4b-instruct/sensitivity_grid.json`
 - Public artifact manifest: `docs/public-artifacts.md`
 
 ## Contents

@@ -20,7 +20,7 @@ from typing import Any
 
 REPO_ROOT = Path(__file__).resolve().parents[3]
 PROBE_DIR = REPO_ROOT / "archive/experiment/phase1/probe"
-EVAL_DIR = REPO_ROOT / "experiment" / "phase1" / "eval"
+EVAL_DIR = REPO_ROOT / "archive" / "experiment" / "phase1" / "eval"
 ANALYSIS_DIR = EVAL_DIR / "analysis"
 if str(ANALYSIS_DIR) not in sys.path:
     sys.path.insert(0, str(ANALYSIS_DIR))

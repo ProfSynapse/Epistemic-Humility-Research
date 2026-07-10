@@ -5,7 +5,7 @@ Lab-notebook diagnostic (no gates, no claims). Branch
 `experiments/dark-actuator-screen/dark_displacement_census.py`. Seed 20260706, CPU only.
 Full machine-readable output (spectra, per-component stats, frozen candidate
 direction JSONs) is UNTRACKED under
-`experiment/phase1/probe/analysis/dark_displacement_census/census_report.json`.
+`archive/experiment/phase1/probe/analysis/dark_displacement_census/census_report.json`.
 
 ## Question
 
@@ -206,6 +206,6 @@ Every number above comes from
 `census_report.json` (seed 20260706), produced by
 `experiments/dark-actuator-screen/dark_displacement_census.py` reading the two staging
 tarballs listed under Surface. Frozen doubt trunk: AH probes
-`experiment/phase1/probe/analysis/ah_stage0/probes/probe_L{20,24,28}.joblib`.
+`archive/experiment/phase1/probe/analysis/ah_stage0/probes/probe_L{20,24,28}.joblib`.
 CPU probe discipline: randomized PCA, `LogisticRegression(solver="saga",
 tol=1e-3)`; no full-dim lbfgs.

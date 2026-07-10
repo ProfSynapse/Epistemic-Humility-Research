@@ -5,9 +5,9 @@ title: TriviaQA Thinking Knowledge Audit
 status: active
 created_at: '2026-06-25T12:23:52Z'
 updated_at: '2026-06-25T13:59:42Z'
-phase: phase1
+track: research
 question: Does enabling Qwen3 thinking change the TriviaQA known/unknown labels used
-  as Phase 1 source of truth?
+  as locked training-regimen source of truth?
 tags:
 - experiment-runner
 - triviaqa
@@ -28,8 +28,8 @@ checkpoints:
     thinking runs, and plans a 512-row deterministic subset comparison before any
     protocol replacement.
   evidence:
-  - experiment/phase1/probe/config/probe_thinking_audit_512.yaml
-  - experiment/phase1/probe/compare_thinking_probe_results.py
+  - archive/experiment/phase1/probe/config/probe_thinking_audit_512.yaml
+  - archive/experiment/phase1/probe/compare_thinking_probe_results.py
   run_ids: []
   commands:
   - python -m pytest experiment\\phase1\\probe\\tests\\test_probe_smoke.py -q
@@ -48,11 +48,11 @@ checkpoints:
   summary: Launched local Docker container eh-triviaqa-thinking-audit-512-20260625a
     for the 512-row Qwen3 thinking-enabled TriviaQA probe audit.
   evidence:
-  - experiment/phase1/probe/config/probe_thinking_audit_512.yaml
+  - archive/experiment/phase1/probe/config/probe_thinking_audit_512.yaml
   run_ids: []
   commands:
   - docker run -d --name eh-triviaqa-thinking-audit-512-20260625a --gpus all --ipc=host
-    --entrypoint python3 ... experiment/phase1/probe/probe.py --config experiment/phase1/probe/config/probe_thinking_audit_512.yaml
+    --entrypoint python3 ... archive/experiment/phase1/probe/probe.py --config archive/experiment/phase1/probe/config/probe_thinking_audit_512.yaml
   decisions: []
   next_steps:
   - Inspect logs after warm-up, then compare thinking rows against the locked non-thinking
@@ -67,7 +67,7 @@ checkpoints:
     and sampled outputs were mostly unterminated. This means the 384-token audit would
     mainly measure trace truncation rather than latent knowledge under thinking.'
   evidence:
-  - experiment/phase1/probe/qwen3-4b-instruct-thinking-audit-512/probe_results.jsonl
+  - archive/experiment/phase1/probe/qwen3-4b-instruct-thinking-audit-512/probe_results.jsonl
   run_ids: []
   commands: []
   decisions:
@@ -84,12 +84,12 @@ checkpoints:
   summary: Relaunched the thinking-enabled TriviaQA audit as eh-triviaqa-thinking-audit-128-1024-20260625a
     using a 128-row deterministic subset and max_new_tokens=1024 to reduce trace truncation.
   evidence:
-  - experiment/phase1/probe/config/probe_thinking_audit_128_1024.yaml
+  - archive/experiment/phase1/probe/config/probe_thinking_audit_128_1024.yaml
   run_ids: []
   commands:
   - docker run -d --name eh-triviaqa-thinking-audit-128-1024-20260625a --gpus all
-    --ipc=host --entrypoint python3 ... experiment/phase1/probe/probe.py --config
-    experiment/phase1/probe/config/probe_thinking_audit_128_1024.yaml
+    --ipc=host --entrypoint python3 ... archive/experiment/phase1/probe/probe.py --config
+    archive/experiment/phase1/probe/config/probe_thinking_audit_128_1024.yaml
   decisions: []
   next_steps:
   - Inspect early rows for post_think extraction rates before interpreting any label
@@ -105,7 +105,7 @@ checkpoints:
     TriviaQA alias matching did not tolerate an inserted article, so label migration
     should be interpreted as conservative under the locked scorer.'
   evidence:
-  - experiment/phase1/probe/qwen3-4b-instruct-thinking-audit-128-1024/probe_results.jsonl
+  - archive/experiment/phase1/probe/qwen3-4b-instruct-thinking-audit-128-1024/probe_results.jsonl
   run_ids: []
   commands: []
   decisions:
@@ -124,7 +124,7 @@ checkpoints:
     row had yet crossed to thinking-known. Extraction was usable but imperfect, with
     713 post_think sampled outputs and 215 unterminated outputs.'
   evidence:
-  - experiment/phase1/probe/analysis/thinking_audit_128_1024_partial/summary.json
+  - archive/experiment/phase1/probe/analysis/thinking_audit_128_1024_partial/summary.json
   run_ids: []
   commands:
   - python experiment\\phase1\\probe\\compare_thinking_probe_results.py --out-dir
@@ -147,7 +147,7 @@ checkpoints:
   evidence:
   - experiments/thinking-enabled-parallel-arm/artifacts/thinking_audit_128_1024/summary.json
   - experiments/thinking-enabled-parallel-arm/artifacts/thinking_audit_128_1024/README.md
-  - experiment/phase1/probe/qwen3-4b-instruct-thinking-audit-128-1024/probe_manifest.json
+  - archive/experiment/phase1/probe/qwen3-4b-instruct-thinking-audit-128-1024/probe_manifest.json
   run_ids: []
   commands:
   - python experiment\\phase1\\probe\\compare_thinking_probe_results.py
@@ -215,7 +215,7 @@ legacy_session:
 
 ## Question
 
-Does enabling Qwen3 thinking change the TriviaQA known/unknown labels used as Phase 1 source of truth?
+Does enabling Qwen3 thinking change the TriviaQA known/unknown labels used as locked training-regimen source of truth?
 
 ## Trajectory Position
 
@@ -232,8 +232,8 @@ _No summary yet._
 - kind: `planning`
 - summary: Paused training to audit whether Qwen3 thinking mode changes TriviaQA knowledge-boundary labels derived from the locked non-thinking probe. Added a gated thinking-on probe path that keeps non-thinking strict, scores only post-</think> final answers for thinking runs, and plans a 512-row deterministic subset comparison before any protocol replacement.
 - evidence:
-  - `experiment/phase1/probe/config/probe_thinking_audit_512.yaml`
-  - `experiment/phase1/probe/compare_thinking_probe_results.py`
+  - `archive/experiment/phase1/probe/config/probe_thinking_audit_512.yaml`
+  - `archive/experiment/phase1/probe/compare_thinking_probe_results.py`
 - commands:
   - `python -m pytest experiment\\phase1\\probe\\tests\\test_probe_smoke.py -q`
 - decisions:
@@ -246,9 +246,9 @@ _No summary yet._
 - kind: `launch`
 - summary: Launched local Docker container eh-triviaqa-thinking-audit-512-20260625a for the 512-row Qwen3 thinking-enabled TriviaQA probe audit.
 - evidence:
-  - `experiment/phase1/probe/config/probe_thinking_audit_512.yaml`
+  - `archive/experiment/phase1/probe/config/probe_thinking_audit_512.yaml`
 - commands:
-  - `docker run -d --name eh-triviaqa-thinking-audit-512-20260625a --gpus all --ipc=host --entrypoint python3 ... experiment/phase1/probe/probe.py --config experiment/phase1/probe/config/probe_thinking_audit_512.yaml`
+  - `docker run -d --name eh-triviaqa-thinking-audit-512-20260625a --gpus all --ipc=host --entrypoint python3 ... archive/experiment/phase1/probe/probe.py --config archive/experiment/phase1/probe/config/probe_thinking_audit_512.yaml`
 - next steps:
   - Inspect logs after warm-up, then compare thinking rows against the locked non-thinking probe when complete.
 ### 003-observation - 384 Token Audit Pilot Invalid
@@ -257,7 +257,7 @@ _No summary yet._
 - kind: `observation`
 - summary: Early rows from the 512-row thinking audit showed systematic truncation: the first inspected greedy outputs opened <think> and never reached </think>, and sampled outputs were mostly unterminated. This means the 384-token audit would mainly measure trace truncation rather than latent knowledge under thinking.
 - evidence:
-  - `experiment/phase1/probe/qwen3-4b-instruct-thinking-audit-512/probe_results.jsonl`
+  - `archive/experiment/phase1/probe/qwen3-4b-instruct-thinking-audit-512/probe_results.jsonl`
 - decisions:
   - Stop the 512-row 384-token pilot and relaunch a smaller thinking audit with a larger max_new_tokens budget before interpreting label migration.
 - next steps:
@@ -268,9 +268,9 @@ _No summary yet._
 - kind: `launch`
 - summary: Relaunched the thinking-enabled TriviaQA audit as eh-triviaqa-thinking-audit-128-1024-20260625a using a 128-row deterministic subset and max_new_tokens=1024 to reduce trace truncation.
 - evidence:
-  - `experiment/phase1/probe/config/probe_thinking_audit_128_1024.yaml`
+  - `archive/experiment/phase1/probe/config/probe_thinking_audit_128_1024.yaml`
 - commands:
-  - `docker run -d --name eh-triviaqa-thinking-audit-128-1024-20260625a --gpus all --ipc=host --entrypoint python3 ... experiment/phase1/probe/probe.py --config experiment/phase1/probe/config/probe_thinking_audit_128_1024.yaml`
+  - `docker run -d --name eh-triviaqa-thinking-audit-128-1024-20260625a --gpus all --ipc=host --entrypoint python3 ... archive/experiment/phase1/probe/probe.py --config archive/experiment/phase1/probe/config/probe_thinking_audit_128_1024.yaml`
 - next steps:
   - Inspect early rows for post_think extraction rates before interpreting any label changes.
 ### 005-observation - Early 1024 Token QA
@@ -279,7 +279,7 @@ _No summary yet._
 - kind: `observation`
 - summary: The 128-row 1024-token audit produced usable early rows: 5/6 inspected greedy generations reached post_think and 131/192 sampled generations reached post_think. One visually correct title answer was scored wrong because existing TriviaQA alias matching did not tolerate an inserted article, so label migration should be interpreted as conservative under the locked scorer.
 - evidence:
-  - `experiment/phase1/probe/qwen3-4b-instruct-thinking-audit-128-1024/probe_results.jsonl`
+  - `archive/experiment/phase1/probe/qwen3-4b-instruct-thinking-audit-128-1024/probe_results.jsonl`
 - decisions:
   - Continue the 128-row audit with the locked scorer for comparability, and treat scorer alias/article sensitivity as a separate source-of-truth noise finding.
 - next steps:
@@ -290,7 +290,7 @@ _No summary yet._
 - kind: `observation`
 - summary: At 29 joined rows, thinking changed some TriviaQA outcomes: 3 rows moved greedy wrong->right, 2 base-unknown rows moved to discard, and no base-unknown row had yet crossed to thinking-known. Extraction was usable but imperfect, with 713 post_think sampled outputs and 215 unterminated outputs.
 - evidence:
-  - `experiment/phase1/probe/analysis/thinking_audit_128_1024_partial/summary.json`
+  - `archive/experiment/phase1/probe/analysis/thinking_audit_128_1024_partial/summary.json`
 - commands:
   - `python experiment\\phase1\\probe\\compare_thinking_probe_results.py --out-dir experiment\\phase1\\probe\\analysis\\thinking_audit_128_1024_partial`
 - next steps:
@@ -303,7 +303,7 @@ _No summary yet._
 - evidence:
   - `experiments/thinking-enabled-parallel-arm/artifacts/thinking_audit_128_1024/summary.json`
   - `experiments/thinking-enabled-parallel-arm/artifacts/thinking_audit_128_1024/README.md`
-  - `experiment/phase1/probe/qwen3-4b-instruct-thinking-audit-128-1024/probe_manifest.json`
+  - `archive/experiment/phase1/probe/qwen3-4b-instruct-thinking-audit-128-1024/probe_manifest.json`
 - commands:
   - `python experiment\\phase1\\probe\\compare_thinking_probe_results.py`
 - decisions:

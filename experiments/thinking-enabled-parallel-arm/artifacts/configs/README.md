@@ -7,4 +7,4 @@ Configuration artifacts for the thinking-enabled TriviaQA audit.
   for the committed thinking-audit comparison.
 
 These configs are historical inputs owned by the thinking-enabled parallel arm;
-they are not reusable defaults for the Phase 1 probe runner.
+they are not reusable defaults for the locked training-regimen probe runner.

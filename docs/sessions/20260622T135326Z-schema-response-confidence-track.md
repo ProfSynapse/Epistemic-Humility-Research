@@ -5,7 +5,7 @@ title: Schema Response-Confidence Track
 status: active
 created_at: '2026-06-22T13:53:26Z'
 updated_at: '2026-06-23T09:16:02Z'
-phase: phase1
+track: research
 question: Can a schema-trained SFT base plus DPO/KTO/GRPO variants learn response-appropriate
   confidence without endpoint collapse?
 tags:
@@ -55,8 +55,8 @@ batch 12.
 - summary: Started a new schema-trained track because old SFT/DPO/KTO models were not trained to emit the stated-confidence schema and Amendment B's generic `confidence` field was ambiguous.
 - evidence:
   - `experiments/schema-response-confidence/AMENDMENT.md`
-  - `experiment/phase1/grpo/build_schema_response_confidence_datasets.py`
-  - `experiment/phase1/grpo/humility_reward.py`
+  - `archive/experiment/phase1/grpo/build_schema_response_confidence_datasets.py`
+  - `archive/experiment/phase1/grpo/humility_reward.py`
 - decisions:
   - Preserve old SFT/DPO/KTO results as behavior evidence, not schema-learned confidence evidence.
   - Use `response_confidence` for new training/eval contracts.
@@ -69,9 +69,9 @@ batch 12.
 
 - at: `2026-06-22T14:14:49Z`
 - kind: `observation`
-- summary: The raw Qwen3-4B probe contains a third `discard` label that the locked Phase 1 dataset builder excluded from known/unknown training. The middle portion of this bucket is useful for response-confidence training.
+- summary: The raw Qwen3-4B probe contains a third `discard` label that the locked training-regimen dataset builder excluded from known/unknown training. The middle portion of this bucket is useful for response-confidence training.
 - evidence:
-  - `experiment/phase1/probe/qwen3-4b-instruct/probe_results.jsonl`
+  - `archive/experiment/phase1/probe/qwen3-4b-instruct/probe_results.jsonl`
   - `scratch/schema_response_confidence/qwen3-4b-instruct/response_confidence_schema_manifest.json`
   - `scratch/schema_response_confidence/qwen3-4b-instruct-grpo/grpo_manifest.json`
 - signals:
@@ -101,13 +101,13 @@ batch 12.
 - kind: `validation`
 - summary: Focused GRPO/eval tests passed after adding `response_confidence` parser support, schema data projection, ambiguous-middle rows, and banded reward targets.
 - evidence:
-  - `experiment/phase1/grpo/tests/test_build_schema_response_confidence_datasets.py`
-  - `experiment/phase1/grpo/tests/test_build_grpo_dataset.py`
-  - `experiment/phase1/grpo/tests/test_humility_reward.py`
-  - `experiment/phase1/eval/tests/test_scorers.py`
-  - `experiment/phase1/eval/tests/test_run_eval_e2e.py`
+  - `archive/experiment/phase1/grpo/tests/test_build_schema_response_confidence_datasets.py`
+  - `archive/experiment/phase1/grpo/tests/test_build_grpo_dataset.py`
+  - `archive/experiment/phase1/grpo/tests/test_humility_reward.py`
+  - `archive/experiment/phase1/eval/tests/test_scorers.py`
+  - `archive/experiment/phase1/eval/tests/test_run_eval_e2e.py`
 - commands:
-  - `python -m pytest experiment/phase1/grpo/tests/test_build_grpo_dataset.py experiment/phase1/grpo/tests/test_build_schema_response_confidence_datasets.py experiment/phase1/grpo/tests/test_humility_reward.py experiment/phase1/eval/tests/test_scorers.py experiment/phase1/eval/tests/test_run_eval_e2e.py -q`
+  - `python -m pytest archive/experiment/phase1/grpo/tests/test_build_grpo_dataset.py archive/experiment/phase1/grpo/tests/test_build_schema_response_confidence_datasets.py archive/experiment/phase1/grpo/tests/test_humility_reward.py archive/experiment/phase1/eval/tests/test_scorers.py archive/experiment/phase1/eval/tests/test_run_eval_e2e.py -q`
 - signals:
     tests_passed: 95
     warnings: 1
@@ -140,10 +140,10 @@ batch 12.
 - kind: `launch`
 - summary: Launched the first full local schema-SFT seed-1 run from Qwen3-4B base using the response-confidence dataset with ambiguous-middle rows.
 - evidence:
-  - `experiment/phase1/grpo/configs/sft_schema_response_confidence_seed1_full_config.py`
+  - `archive/experiment/phase1/grpo/configs/sft_schema_response_confidence_seed1_full_config.py`
   - `scratch/schema_response_confidence/qwen3-4b-instruct/sft_response_confidence_train.jsonl`
 - commands:
-  - `docker run -d --name eh-schema-sft-seed1-full-20260622101423 --gpus all --ipc=host --entrypoint python3 -e HF_HOME=/workspace/repo/.cache/hf -e HUGGINGFACE_HUB_CACHE=/workspace/repo/.cache/hf/hub -v "${PWD}:/workspace/repo" -w /workspace/repo unsloth/unsloth:latest synaptic-tuner/Trainers/sft/train_sft.py --config experiment/phase1/grpo/configs/sft_schema_response_confidence_seed1_full_config.py`
+  - `docker run -d --name eh-schema-sft-seed1-full-20260622101423 --gpus all --ipc=host --entrypoint python3 -e HF_HOME=/workspace/repo/.cache/hf -e HUGGINGFACE_HUB_CACHE=/workspace/repo/.cache/hf/hub -v "${PWD}:/workspace/repo" -w /workspace/repo unsloth/unsloth:latest synaptic-tuner/Trainers/sft/train_sft.py --config archive/experiment/phase1/grpo/configs/sft_schema_response_confidence_seed1_full_config.py`
 - signals:
     container: eh-schema-sft-seed1-full-20260622101423
     batch_size: 12
@@ -187,9 +187,9 @@ batch 12.
 - evidence:
   - `scratch/schema_response_confidence/runs/sft_schema_seed1_full/20260622_141511/final_model`
   - `scratch/schema_response_confidence/runs/sft_schema_seed1_full/20260622_141511/capacity_features.json`
-  - `experiment/phase1/eval/config/eval_amendment_d_response_confidence_selfaware_schema_sft_seed1_smoke_local_4b.yaml`
-  - `experiment/phase1/eval/results_amendment_d_response_confidence_selfaware_schema_sft_seed1_smoke_4b/schema_sft_seed1__selfaware/metrics.json`
-  - `experiment/phase1/eval/results_amendment_d_response_confidence_selfaware_schema_sft_seed1_smoke_4b/schema_sft_seed1__selfaware/scored_rows.jsonl`
+  - `archive/experiment/phase1/eval/config/eval_amendment_d_response_confidence_selfaware_schema_sft_seed1_smoke_local_4b.yaml`
+  - `archive/experiment/phase1/eval/results_amendment_d_response_confidence_selfaware_schema_sft_seed1_smoke_4b/schema_sft_seed1__selfaware/metrics.json`
+  - `archive/experiment/phase1/eval/results_amendment_d_response_confidence_selfaware_schema_sft_seed1_smoke_4b/schema_sft_seed1__selfaware/scored_rows.jsonl`
 - signals:
     training_exit_code: 0
     train_rows: 14943
@@ -256,8 +256,8 @@ batch 12.
 - summary: Merged the completed schema-SFT seed-1 LoRA into a standalone local model and ran a SelfAware mixed-slice smoke; merged behavior stayed close to the adapter smoke and preserved the JSON contract.
 - evidence:
   - `scratch/schema_response_confidence/runs/sft_schema_seed1_full/20260622_141511/Qwen3-4B-bnb-4bit/merged-16bit`
-  - `experiment/phase1/eval/config/eval_amendment_d_response_confidence_selfaware_schema_sft_seed1_merged_smoke_local_4b.yaml`
-  - `experiment/phase1/eval/results_amendment_d_response_confidence_selfaware_schema_sft_seed1_merged_smoke_4b/schema_sft_merged_seed1__selfaware/metrics.json`
+  - `archive/experiment/phase1/eval/config/eval_amendment_d_response_confidence_selfaware_schema_sft_seed1_merged_smoke_local_4b.yaml`
+  - `archive/experiment/phase1/eval/results_amendment_d_response_confidence_selfaware_schema_sft_seed1_merged_smoke_4b/schema_sft_merged_seed1__selfaware/metrics.json`
 - signals:
     eval_rows: 192
     stated_confidence_coverage_pct: 100.0
@@ -277,7 +277,7 @@ batch 12.
 - kind: `blocker`
 - summary: The first DPO smoke from the merged schema-SFT base failed before model loading because appended ambiguous rows added provenance columns that ordinary DPO rows did not have.
 - evidence:
-  - `experiment/phase1/grpo/build_schema_response_confidence_datasets.py`
+  - `archive/experiment/phase1/grpo/build_schema_response_confidence_datasets.py`
   - `scratch/schema_response_confidence/qwen3-4b-instruct/dpo_response_confidence_train.jsonl`
 - signals:
     trainer: dpo
@@ -298,13 +298,13 @@ batch 12.
 - kind: `validation`
 - summary: Fixed the schema-response-confidence JSONL projection with typed provenance sentinels, regenerated scratch datasets, and completed DPO smoke runs from the merged schema-SFT base.
 - evidence:
-  - `experiment/phase1/grpo/build_schema_response_confidence_datasets.py`
-  - `experiment/phase1/grpo/tests/test_build_schema_response_confidence_datasets.py`
+  - `archive/experiment/phase1/grpo/build_schema_response_confidence_datasets.py`
+  - `archive/experiment/phase1/grpo/tests/test_build_schema_response_confidence_datasets.py`
   - `scratch/schema_response_confidence/runs/schema_sft_dpo_seed1_smoke/20260622_batch4_step10_typedcols/capacity_features.json`
   - `scratch/schema_response_confidence/runs/schema_sft_dpo_seed1_smoke/20260622_batch8_step10_probe/capacity_features.json`
 - commands:
-  - `python -m pytest experiment/phase1/grpo/tests/test_build_schema_response_confidence_datasets.py experiment/phase1/grpo/tests/test_build_grpo_dataset.py experiment/phase1/grpo/tests/test_humility_reward.py -q`
-  - `python experiment/phase1/grpo/build_schema_response_confidence_datasets.py --output-dir scratch/schema_response_confidence/qwen3-4b-instruct --include-ambiguous-middle`
+  - `python -m pytest archive/experiment/phase1/grpo/tests/test_build_schema_response_confidence_datasets.py archive/experiment/phase1/grpo/tests/test_build_grpo_dataset.py archive/experiment/phase1/grpo/tests/test_humility_reward.py -q`
+  - `python archive/experiment/phase1/grpo/build_schema_response_confidence_datasets.py --output-dir scratch/schema_response_confidence/qwen3-4b-instruct --include-ambiguous-middle`
 - signals:
     tests_passed: 26
     dpo_batch4_accum2:
@@ -386,13 +386,13 @@ batch 12.
 - summary: The batch-2 DPO relaunch remained low-risk beyond 100 optimizer steps, and the Amendment D GRPO smoke plumbing was prepared with known/unknown/ambiguous coverage.
 - evidence:
   - `scratch/schema_response_confidence/runs/schema_sft_dpo_seed1_full/20260622_batch2_accum4_seed1/logs/training_20260622_154449.jsonl`
-  - `experiment/phase1/grpo/make_smoke_subset.py`
-  - `experiment/phase1/grpo/configs/grpo_schema_sft_merged_seed1_micro_smoke.yaml`
-  - `experiment/phase1/grpo/configs/grpo_schema_sft_merged_seed1_full.yaml`
+  - `archive/experiment/phase1/grpo/make_smoke_subset.py`
+  - `archive/experiment/phase1/grpo/configs/grpo_schema_sft_merged_seed1_micro_smoke.yaml`
+  - `archive/experiment/phase1/grpo/configs/grpo_schema_sft_merged_seed1_full.yaml`
   - `scratch/schema_response_confidence/qwen3-4b-instruct-grpo/grpo_train_smoke_48.jsonl`
 - commands:
-  - `python experiment/phase1/grpo/make_smoke_subset.py --input scratch/schema_response_confidence/qwen3-4b-instruct-grpo/grpo_train.jsonl --output scratch/schema_response_confidence/qwen3-4b-instruct-grpo/grpo_train_smoke_48.jsonl --per-label 16 --labels known,unknown,ambiguous`
-  - `python -m pytest experiment/phase1/grpo/tests/test_make_smoke_subset.py experiment/phase1/grpo/tests/test_build_grpo_dataset.py experiment/phase1/grpo/tests/test_humility_reward.py -q`
+  - `python archive/experiment/phase1/grpo/make_smoke_subset.py --input scratch/schema_response_confidence/qwen3-4b-instruct-grpo/grpo_train.jsonl --output scratch/schema_response_confidence/qwen3-4b-instruct-grpo/grpo_train_smoke_48.jsonl --per-label 16 --labels known,unknown,ambiguous`
+  - `python -m pytest archive/experiment/phase1/grpo/tests/test_make_smoke_subset.py archive/experiment/phase1/grpo/tests/test_build_grpo_dataset.py archive/experiment/phase1/grpo/tests/test_humility_reward.py -q`
 - signals:
     dpo_relaunch_step_checked: 145
     dpo_total_steps: 1868
@@ -442,9 +442,9 @@ batch 12.
 - evidence:
   - `scratch/schema_response_confidence/runs/schema_sft_dpo_seed1_full/20260622_batch2_accum4_seed1/final_model`
   - `scratch/schema_response_confidence/runs/schema_sft_dpo_seed1_full/20260622_batch2_accum4_seed1/capacity_features.json`
-  - `experiment/phase1/eval/config/eval_amendment_d_response_confidence_selfaware_schema_sft_dpo_seed1_smoke_local_4b.yaml`
-  - `experiment/phase1/eval/results_amendment_d_response_confidence_selfaware_schema_sft_dpo_seed1_smoke_4b/schema_sft_dpo_seed1__selfaware/metrics.json`
-  - `experiment/phase1/eval/results_amendment_d_response_confidence_selfaware_schema_sft_dpo_seed1_smoke_4b/schema_sft_dpo_seed1__selfaware/scored_rows.jsonl`
+  - `archive/experiment/phase1/eval/config/eval_amendment_d_response_confidence_selfaware_schema_sft_dpo_seed1_smoke_local_4b.yaml`
+  - `archive/experiment/phase1/eval/results_amendment_d_response_confidence_selfaware_schema_sft_dpo_seed1_smoke_4b/schema_sft_dpo_seed1__selfaware/metrics.json`
+  - `archive/experiment/phase1/eval/results_amendment_d_response_confidence_selfaware_schema_sft_dpo_seed1_smoke_4b/schema_sft_dpo_seed1__selfaware/scored_rows.jsonl`
 - signals:
     training:
       exit_code: 0
@@ -728,8 +728,8 @@ batch 12.
 - summary: The accepted schema-SFT->KTO seed-1 batch-12 run completed cleanly and its SelfAware schema smoke eval shows no meaningful confidence-calibration rescue relative to schema-SFT or schema-SFT->DPO.
 - evidence:
   - `scratch/schema_response_confidence/runs/schema_sft_kto_seed1_full/20260622_batch12_accum1_seed1/capacity_features.json`
-  - `experiment/phase1/eval/config/eval_amendment_d_response_confidence_selfaware_schema_sft_kto_seed1_smoke_local_4b.yaml`
-  - `experiment/phase1/eval/results_amendment_d_response_confidence_selfaware_schema_sft_kto_seed1_smoke_4b/schema_sft_kto_seed1__selfaware/metrics.json`
+  - `archive/experiment/phase1/eval/config/eval_amendment_d_response_confidence_selfaware_schema_sft_kto_seed1_smoke_local_4b.yaml`
+  - `archive/experiment/phase1/eval/results_amendment_d_response_confidence_selfaware_schema_sft_kto_seed1_smoke_4b/schema_sft_kto_seed1__selfaware/metrics.json`
 - signals:
     training:
       status_completed: 1
@@ -776,8 +776,8 @@ batch 12.
 - kind: `result`
 - summary: Ran the full SelfAware eval on the merged schema-SFT seed-1 model before launching another downstream fine-tune; the checkpoint is structurally usable but behaviorally over-refusal-heavy with collapsed confidence.
 - evidence:
-  - `experiment/phase1/eval/config/eval_amendment_d_response_confidence_selfaware_schema_sft_seed1_merged_full_local_4b.yaml`
-  - `experiment/phase1/eval/results_amendment_d_response_confidence_selfaware_schema_sft_seed1_merged_full_4b/schema_sft_merged_seed1__selfaware/metrics.json`
+  - `archive/experiment/phase1/eval/config/eval_amendment_d_response_confidence_selfaware_schema_sft_seed1_merged_full_local_4b.yaml`
+  - `archive/experiment/phase1/eval/results_amendment_d_response_confidence_selfaware_schema_sft_seed1_merged_full_4b/schema_sft_merged_seed1__selfaware/metrics.json`
 - signals:
     n: 3369
     known_rows: 2337
@@ -807,12 +807,12 @@ batch 12.
 - kind: `validation`
 - summary: The first full-dataset GRPO batch probe exposed a Hugging Face JSON schema mismatch because ambiguous rows had provenance fields that normal known/unknown rows lacked; the builder now emits stable typed columns for every row.
 - evidence:
-  - `experiment/phase1/grpo/build_grpo_dataset.py`
-  - `experiment/phase1/grpo/tests/test_build_grpo_dataset.py`
+  - `archive/experiment/phase1/grpo/build_grpo_dataset.py`
+  - `archive/experiment/phase1/grpo/tests/test_build_grpo_dataset.py`
   - `scratch/schema_response_confidence/qwen3-4b-instruct-grpo/grpo_train.jsonl`
 - commands:
-  - `python -m pytest experiment/phase1/grpo/tests/test_build_grpo_dataset.py experiment/phase1/grpo/tests/test_humility_reward.py -q`
-  - `py -3.11 experiment/phase1/grpo/build_grpo_dataset.py --model-tag qwen3-4b-instruct --output-dir scratch/schema_response_confidence/qwen3-4b-instruct-grpo --confidence-field response_confidence --include-ambiguous-middle`
+  - `python -m pytest archive/experiment/phase1/grpo/tests/test_build_grpo_dataset.py archive/experiment/phase1/grpo/tests/test_humility_reward.py -q`
+  - `py -3.11 archive/experiment/phase1/grpo/build_grpo_dataset.py --model-tag qwen3-4b-instruct --output-dir scratch/schema_response_confidence/qwen3-4b-instruct-grpo --confidence-field response_confidence --include-ambiguous-middle`
 - signals:
     tests_passed: 21
     regenerated_train_rows: 14888
@@ -876,11 +876,11 @@ batch 12.
 - kind: `launch`
 - summary: Launched the full local schema-SFT->GRPO seed-1 run at batch 32 after the full SFT eval gate and batch probes; early training telemetry is healthy.
 - evidence:
-  - `experiment/phase1/grpo/configs/grpo_schema_sft_merged_seed1_full.yaml`
+  - `archive/experiment/phase1/grpo/configs/grpo_schema_sft_merged_seed1_full.yaml`
   - `scratch/schema_response_confidence/runs/schema_sft_grpo_seed1_full/20260622_215344/logs/training_20260622_215457.jsonl`
   - `scratch/schema_response_confidence/reward_debug/schema_sft_grpo_seed1_full_b32_latest.jsonl`
 - commands:
-  - `docker run -d --name eh-schema-sft-grpo-seed1-full-b32-202606221753 --gpus all --ipc=host --entrypoint python3 ... synaptic-tuner/Trainers/grpo/train_grpo.py --config experiment/phase1/grpo/configs/grpo_schema_sft_merged_seed1_full.yaml`
+  - `docker run -d --name eh-schema-sft-grpo-seed1-full-b32-202606221753 --gpus all --ipc=host --entrypoint python3 ... synaptic-tuner/Trainers/grpo/train_grpo.py --config archive/experiment/phase1/grpo/configs/grpo_schema_sft_merged_seed1_full.yaml`
 - signals:
     container: eh-schema-sft-grpo-seed1-full-b32-202606221753
     run_dir: `scratch/schema_response_confidence/runs/schema_sft_grpo_seed1_full/20260622_215344`
@@ -913,8 +913,8 @@ batch 12.
 - evidence:
   - `scratch/schema_response_confidence/reward_debug/schema_sft_grpo_seed1_full_b32_latest.jsonl`
   - `scratch/schema_response_confidence/runs/schema_sft_grpo_seed1_full/20260622_215344/logs/training_20260622_215457.jsonl`
-  - `experiment/phase1/grpo/humility_reward.py`
-  - `experiment/phase1/grpo/tests/test_humility_reward.py`
+  - `archive/experiment/phase1/grpo/humility_reward.py`
+  - `archive/experiment/phase1/grpo/tests/test_humility_reward.py`
 - signals:
     stopped_container: eh-schema-sft-grpo-seed1-full-b32-202606221753
     stopped_exit_code: 137
@@ -952,7 +952,7 @@ batch 12.
 - commands:
   - `docker stop eh-schema-sft-grpo-seed1-full-b32-202606221753`
   - `docker stop eh-schema-sft-grpo-seed1-full-b32-retry1-202606222003`
-  - `python -m pytest experiment/phase1/grpo/tests/test_humility_reward.py experiment/phase1/grpo/tests/test_build_grpo_dataset.py -q`
+  - `python -m pytest archive/experiment/phase1/grpo/tests/test_humility_reward.py archive/experiment/phase1/grpo/tests/test_build_grpo_dataset.py -q`
 - decisions:
   - Discard the first GRPO full run and retry1 as flawed reward-contract evidence.
   - Relaunch GRPO from scratch after expanding the refusal matcher to semantic abstentions such as "I'm not sure", "not confident", "rather not guess", collective "none of us know", indirect "how can I know", and "can't answer reliably".
@@ -964,7 +964,7 @@ batch 12.
 - kind: `result`
 - summary: The corrected schema-SFT->GRPO seed-1 retry2 run completed locally from the merged schema-SFT base after the semantic-abstention reward matcher fix.
 - evidence:
-  - `experiment/phase1/grpo/configs/grpo_schema_sft_merged_seed1_full.yaml`
+  - `archive/experiment/phase1/grpo/configs/grpo_schema_sft_merged_seed1_full.yaml`
   - `scratch/schema_response_confidence/runs/schema_sft_grpo_seed1_full/20260623_001629/final_model`
   - `scratch/schema_response_confidence/runs/schema_sft_grpo_seed1_full/20260623_001629/capacity_features.json`
   - `scratch/schema_response_confidence/runs/schema_sft_grpo_seed1_full/20260623_001629/training_lineage.json`
@@ -1000,11 +1000,11 @@ batch 12.
 - kind: `result`
 - summary: GRPO seed 1 preserved the JSON schema and nearly eliminated answering unknown questions, but it did not learn confidence variation and pushed known-question over-refusal higher than the merged schema-SFT base.
 - evidence:
-  - `experiment/phase1/eval/config/eval_amendment_d_response_confidence_selfaware_schema_sft_grpo_seed1_smoke_local_4b.yaml`
-  - `experiment/phase1/eval/config/eval_amendment_d_response_confidence_selfaware_schema_sft_grpo_seed1_full_local_4b.yaml`
-  - `experiment/phase1/eval/results_amendment_d_response_confidence_selfaware_schema_sft_grpo_seed1_smoke_4b/schema_sft_grpo_seed1__selfaware/metrics.json`
-  - `experiment/phase1/eval/results_amendment_d_response_confidence_selfaware_schema_sft_grpo_seed1_full_4b/schema_sft_grpo_seed1__selfaware/metrics.json`
-  - `experiment/phase1/eval/results_amendment_d_response_confidence_selfaware_schema_sft_grpo_seed1_full_4b/schema_sft_grpo_seed1__selfaware/scored_rows.jsonl`
+  - `archive/experiment/phase1/eval/config/eval_amendment_d_response_confidence_selfaware_schema_sft_grpo_seed1_smoke_local_4b.yaml`
+  - `archive/experiment/phase1/eval/config/eval_amendment_d_response_confidence_selfaware_schema_sft_grpo_seed1_full_local_4b.yaml`
+  - `archive/experiment/phase1/eval/results_amendment_d_response_confidence_selfaware_schema_sft_grpo_seed1_smoke_4b/schema_sft_grpo_seed1__selfaware/metrics.json`
+  - `archive/experiment/phase1/eval/results_amendment_d_response_confidence_selfaware_schema_sft_grpo_seed1_full_4b/schema_sft_grpo_seed1__selfaware/metrics.json`
+  - `archive/experiment/phase1/eval/results_amendment_d_response_confidence_selfaware_schema_sft_grpo_seed1_full_4b/schema_sft_grpo_seed1__selfaware/scored_rows.jsonl`
 - signals:
     smoke_eval:
       n: 192

@@ -5,7 +5,7 @@ title: J-space J-lens r1 findings
 status: active
 created_at: '2026-07-07T22:42:40Z'
 updated_at: '2026-07-08T12:05:00Z'
-phase: phase1
+track: research
 question: What did the full-corpus Qwen3-4B J-lens characterization say about epistemic
   directions, the workspace-like band, and the L34 write layer?
 tags:
@@ -320,7 +320,7 @@ matches over 1000 prompts.
 The H1 verbalization split is interpretable but not the naive "all uncertainty
 tokens" story. `pos_ctrl_L34` and `c_hat_L34` are J-space-verbalizable as
 self/absence/error/impossibility directions. `u_d_L34` is answer/reply-like,
-especially around `答案` and `回答`, so it looks more like an answer/readout
+especially around `ç­”æ¡ˆ` and `å›žç­”`, so it looks more like an answer/readout
 axis than an explicit abstention phrase. `neg_ctrl_L34` is a noisy local null.
 
 The layer profile is the bigger planning result. The workspace-like

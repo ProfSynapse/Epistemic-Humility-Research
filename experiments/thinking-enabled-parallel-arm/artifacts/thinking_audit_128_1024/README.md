@@ -1,6 +1,6 @@
 # Thinking Audit 128/1024
 
-Exploratory source-of-truth audit for the Phase 1 TriviaQA probe labels.
+Exploratory source-of-truth audit for the locked training-regimen TriviaQA probe labels.
 
 This compares the locked non-thinking Qwen3-4B probe
 (`qwen3-4b-instruct/probe_results.jsonl`) against a thinking-enabled rerun on a
@@ -11,7 +11,7 @@ Artifacts:
 
 - config: `experiments/thinking-enabled-parallel-arm/artifacts/configs/probe_thinking_audit_128_1024.yaml`
 - thinking manifest:
-  `experiment/phase1/probe/qwen3-4b-instruct-thinking-audit-128-1024/probe_manifest.json`
+  `archive/experiment/phase1/probe/qwen3-4b-instruct-thinking-audit-128-1024/probe_manifest.json`
 - summary: `summary.json`
 - joined row comparison: `row_comparison.csv`
 - session: `docs/sessions/20260625T122352Z-triviaqa-thinking-knowledge-audit.md`

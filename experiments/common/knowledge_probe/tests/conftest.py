@@ -19,7 +19,7 @@ for path in (
     COMMON_READOUTS,
     DOUBT_REGULATED,
     SELFAWARE_CONTROLS,
-    ROOT / "experiment/phase1/eval",
+    ROOT / "archive/experiment/phase1/eval",
 ):
     text = str(path)
     if text not in sys.path:

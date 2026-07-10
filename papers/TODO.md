@@ -25,7 +25,7 @@ Created: 2026-06-18
 - [ ] Resolve the Amendment A clean DPO seed-2 provenance and exclude the bad
   merge attempt from publication-grade aggregates.
 - [ ] Resolve the Amendment A DPO refusal-recall aggregate discrepancy noted in
-  `experiment/phase1/eval/analysis/amendment_a_transition_report.md`.
+  `archive/experiment/phase1/eval/analysis/amendment_a_transition_report.md`.
 - [ ] Confirm whether all v0.3 required headline seeds are complete and
   reportable for SFT, DPO, and KTO.
 - [ ] Confirm whether 8B confirmation and bridge replication are complete,

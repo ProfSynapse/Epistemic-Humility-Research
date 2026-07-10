@@ -12,7 +12,7 @@
 
 ## 1. Executive Summary
 
-The merged hidden-state probe (`experiment/phase1/probe/hidden_state_probe.py`) is a
+The merged hidden-state probe (`archive/experiment/phase1/probe/hidden_state_probe.py`) is a
 standalone GPU harness with a single CLI entrypoint (`python hidden_state_probe.py
 --config <yaml>`). It is **not wired into the experiment-runner at all**: the runner
 (`run_matrix.py` / `check_prereqs.py` / `prepare_local_cell.py`) only knows
@@ -47,9 +47,9 @@ and cloud) is a deferred, explicitly GPU-required step. The GPU boundary is draw
 in §10.
 
 **Exploratory quarantine is sacrosanct.** Extraction output and any exploratory run
-records live in a **separate namespace** (`experiment/phase1/probe/<model_tag>/
+records live in a **separate namespace** (`archive/experiment/phase1/probe/<model_tag>/
 hidden_states/...` for tensors; a quarantined run-record dir for any link records),
-**never** alongside the signed v0.3 cells in `experiment/phase1/run_records/`.
+**never** alongside the signed v0.3 cells in `archive/experiment/phase1/run_records/`.
 
 ---
 
@@ -68,7 +68,7 @@ hidden_states/...` for tensors; a quarantined run-record dir for any link record
               (extraction YAML)   |                    | (link-never-mutate reads)
                                   v                    v
         +-------------------------+--+      +----------+-------------------------+
-        | hidden_state_probe.py      |      | experiment/phase1/run_records/     |
+        | hidden_state_probe.py      |      | archive/experiment/phase1/run_records/     |
         | (merged GPU harness, PR#28)|      | <id>.json  (signed v0.3 spine)     |
         |  parse -> select -> extract|      |  outcome.adapter_path  (READ ONLY) |
         |  -> D-bis finalize gate    |      +------------------------------------+
@@ -112,7 +112,7 @@ Discipline + the lead's standing constraints):**
 | **Open/Closed** | The extraction capability is added as NEW sibling functions/scripts + NEW gate predicates. The existing `check_cell` / `select_invocation` / count-assertion paths are **extended, never modified** in behavior for train/eval cells. |
 | **Dependency Inversion** | The cloud verb is consumed via the tuner's public CLI; the runner depends on the verb's CLI contract, not its implementation. The harness's `ExtractionBackend` Protocol is the existing GPU/stub seam. |
 | **Fail-closed** | Every prereq is verified against disk/source reality (not a flag/SHA), mirroring the existing live-probe philosophy. A prereq that cannot be confirmed SKIPs the cell. |
-| **Link-never-mutate** | The resolver and the prep script READ run records; they never write into `experiment/phase1/run_records/`. |
+| **Link-never-mutate** | The resolver and the prep script READ run records; they never write into `archive/experiment/phase1/run_records/`. |
 | **KISS** | The local prep script reuses `prepare_local_cell.py`'s shape; the resolver is a pure function; no new abstractions beyond what the four responsibilities require. |
 
 ---
@@ -148,11 +148,11 @@ python3 .agents/skills/experiment-runner/scripts/prepare_extraction_cell.py \
   with the resolved `aligned_run_record_id` and the gate findings. Launch nothing.
   This is the CI-testable path.
 - **`--run-extraction`**: GPU-required. After the gate PASSes, shell out to the
-  harness: `python3 experiment/phase1/probe/hidden_state_probe.py --config
+  harness: `python3 archive/experiment/phase1/probe/hidden_state_probe.py --config
   <effective-config>`. If the gate SKIPs, do **not** invoke the harness; print the
   skip reason and exit 0 (exploratory degrade, not error).
 
-The script never writes into `experiment/phase1/run_records/`. It MAY write a
+The script never writes into `archive/experiment/phase1/run_records/`. It MAY write a
 **quarantined exploratory link-record** (§4.5) — opt-in, off by default for MVP per
 the LINK-ONLY steer.
 
@@ -227,9 +227,9 @@ The extraction's provenance already lives in the harness manifest
 both commit SHAs, and the adapter path. That manifest is the extraction's record.
 
 If a future revision wants a runner-side exploratory link-record, it MUST go in a
-**separate quarantined namespace** — proposed `experiment/phase1/probe/
+**separate quarantined namespace** — proposed `archive/experiment/phase1/probe/
 <model_tag>/extraction_run_records/<extraction_id>.json` (under the
-already-gitignored probe subtree) — and **never** in `experiment/phase1/
+already-gitignored probe subtree) — and **never** in `archive/experiment/phase1/
 run_records/`. This is documented as a deferred extension, not built now.
 
 > **Provenance of this rule (reconciled §13):** the documented prior behavior is
@@ -707,7 +707,7 @@ GPU-required rows are deferred execution steps gated behind explicit flags
 Per the spec-completeness discipline (grep the test surface for each in-scope file
 stem before editing), CODE must preserve these pins:
 
-- **`experiment/phase1/probe/hidden_state_probe.py`** — merged PR #28 surface. The
+- **`archive/experiment/phase1/probe/hidden_state_probe.py`** — merged PR #28 surface. The
   resolver lives in the RUNNER; the harness is consumed as-is via its CLI. Do NOT
   modify the harness to add resolution. (If the harness genuinely needs a hook,
   that is a flag-and-confirm to the lead, not a silent edit.)
@@ -727,7 +727,7 @@ stem before editing), CODE must preserve these pins:
   Extraction is OFF-matrix; do NOT add an extraction cell to the expansion. Verify
   `tests/test_run_matrix.py`'s count + materialization + bridge-safety assertions
   still pass unchanged.
-- **`experiment/phase1/run_records/*.json`** — link-never-mutate. The resolver and
+- **`archive/experiment/phase1/run_records/*.json`** — link-never-mutate. The resolver and
   prep script READ only.
 - **Signed PROTOCOL v0.3 / Amendment A paths** — untouched.
 

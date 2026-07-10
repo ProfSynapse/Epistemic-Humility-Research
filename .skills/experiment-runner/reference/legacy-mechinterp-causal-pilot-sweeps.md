@@ -83,8 +83,8 @@ Aggregate completed run manifests offline:
 
 ```bash
 python experiments/common/mechinterp/causal_pilot_aggregate.py \
-  --root experiment/phase1/probe/qwen3-4b-instruct/causal_pilots/mechinterp_local_mech_interp_sweep \
-  --out experiment/phase1/probe/qwen3-4b-instruct/causal_pilots/mechinterp_local_mech_interp_sweep/summary.csv
+  --root archive/experiment/phase1/probe/qwen3-4b-instruct/causal_pilots/mechinterp_local_mech_interp_sweep \
+  --out archive/experiment/phase1/probe/qwen3-4b-instruct/causal_pilots/mechinterp_local_mech_interp_sweep/summary.csv
 ```
 
 Use the aggregate as a run index and sanity surface. Interpret from the original

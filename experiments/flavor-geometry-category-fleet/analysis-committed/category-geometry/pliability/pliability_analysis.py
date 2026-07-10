@@ -21,7 +21,7 @@ from sklearn.metrics import roc_auc_score
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 REPO = Path(__file__).resolve().parents[5]
-LEGACY_ANALYSIS = REPO / "experiment" / "phase1" / "probe" / "analysis"
+LEGACY_ANALYSIS = REPO / "archive" / "experiment" / "phase1" / "probe" / "analysis"
 BASE = str(LEGACY_ANALYSIS / "ah_main")
 ARMS = ["A0", "Acertain", "Adoubt"]
 CATS = ["ambiguous", "controversial", "unsolved_problem",

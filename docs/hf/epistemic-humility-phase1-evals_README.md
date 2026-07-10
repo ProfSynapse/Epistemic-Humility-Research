@@ -1,6 +1,6 @@
 ---
 license: mit
-pretty_name: Epistemic Humility Phase 1 Evaluation Artifacts
+pretty_name: Epistemic Humility locked training-regimen Evaluation Artifacts
 tags:
 - epistemic-humility
 - abstention
@@ -9,9 +9,9 @@ tags:
 - qwen3
 ---
 
-# Epistemic Humility Phase 1 Evaluation Artifacts
+# Epistemic Humility locked training-regimen Evaluation Artifacts
 
-This dataset repository publishes the release-safe Phase 1 evaluation analysis
+This dataset repository publishes the release-safe locked training-regimen evaluation analysis
 artifacts for the Epistemic Humility research program.
 
 Source repository:
@@ -19,7 +19,7 @@ https://github.com/ProfSynapse/Epistemic-Humility-Research
 
 Local provenance:
 
-- Eval analysis scripts/root: `experiment/phase1/eval/analysis/`
+- Eval analysis scripts/root: `archive/experiment/phase1/eval/analysis/`
 - Paper 2 row-pattern artifacts: `papers/paper-2-training-regimen/analysis/row-pattern/`
 - Results provenance inventory: `archive/papers/retired/results-provenance-inventory.md`
 - Public artifact manifest: `docs/public-artifacts.md`

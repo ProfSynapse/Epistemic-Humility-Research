@@ -12,7 +12,7 @@ abstention, hidden-state readouts, faithful uncertainty, and the limits of
 post-training.
 
 For the current state, read [docs/research-trajectory.md](docs/research-trajectory.md)
-first. The older locked Phase 1 protocol now lives in `docs/protocols/phase1/`; it is
+first. The older locked training-regimen protocol now lives in `archive/docs/protocols/phase1/`; it is
 historical and governed, not the entry point for new work.
 
 ## Current Through-Line
@@ -140,9 +140,9 @@ without concept atoms and typed relationships.
 
 ## Experiments And Governance
 
-The old Phase 1 confirmatory protocol is locked:
+The old locked training-regimen confirmatory protocol is locked:
 
-- [docs/protocols/phase1/PROTOCOL.md](docs/protocols/phase1/PROTOCOL.md)
+- [archive/docs/protocols/phase1/PROTOCOL.md](archive/docs/protocols/phase1/PROTOCOL.md)
 
 New evidence-producing work should normally go through the experiments-first or
 amendment workflow, depending on the tier:
@@ -182,9 +182,9 @@ Before trusting an experimental number:
 The repo-side manifest is [docs/public-artifacts.md](docs/public-artifacts.md).
 Published artifacts include:
 
-- Phase 1 Qwen3 4B training/dev data.
-- Phase 1 evaluation analysis artifacts.
-- Phase 1 compact knowledge labels and probe manifests.
+- locked training-regimen Qwen3 4B training/dev data.
+- locked training-regimen evaluation analysis artifacts.
+- locked training-regimen compact knowledge labels and probe manifests.
 - Cloud-lane per-cell readout results.
 - Two-signal probe directions.
 - Readout row surfaces.

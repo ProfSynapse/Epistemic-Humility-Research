@@ -991,9 +991,7 @@ def test_selfaware_tensor_key_is_filesystem_safe():
 def test_selfaware_manifest_config_parses_and_selects_no_gpu():
     config_path = (
         REPO_ROOT
-        / "archive"
-        / "experiment"
-        / "phase1"
+        / "archive" / "experiment" / "phase1"
         / "probe"
         / "config"
         / "selfaware-hs"

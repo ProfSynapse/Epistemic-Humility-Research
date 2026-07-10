@@ -262,9 +262,7 @@ def test_build_jobs_reports_skipped_candidates(tmp_path):
 def test_checked_in_full_sweep_inventory_counts():
     config_path = (
         sweep.REPO_ROOT
-        / "archive"
-        / "experiment"
-        / "phase1"
+        / "archive" / "experiment" / "phase1"
         / "probe"
         / "config"
         / "causal-pilot-core"
@@ -309,9 +307,7 @@ def test_checked_in_full_sweep_inventory_counts():
 def test_checked_in_full_sweep_uses_docker_commands():
     config_path = (
         sweep.REPO_ROOT
-        / "archive"
-        / "experiment"
-        / "phase1"
+        / "archive" / "experiment" / "phase1"
         / "probe"
         / "config"
         / "causal-pilot-core"
@@ -360,7 +356,7 @@ def test_docker_runner_config_rewrites_repo_paths_for_container():
         template_config={
             "spec": {"name": "template"},
             "runtime_model": {
-                "adapter_path": str(repo_root / "experiment" / "phase1" / "runs" / "adapter"),
+                "adapter_path": str(repo_root / "archive" / "experiment" / "phase1" / "runs" / "adapter"),
             },
             "selection": {
                 "probe_results": str(
@@ -396,7 +392,7 @@ def test_docker_runner_config_rewrites_repo_paths_for_container():
     encoded = yaml.safe_dump(config, sort_keys=True)
 
     assert config["output"]["root"] == "/workspace/repo/experiments/common/knowledge_probe/out/cand_a/logit_diagnostic"
-    assert config["runtime_model"]["adapter_path"] == "/workspace/repo/experiment/phase1/runs/adapter"
+    assert config["runtime_model"]["adapter_path"] == "/workspace/repo/archive/experiment/phase1/runs/adapter"
     assert config["selection"]["probe_results"].startswith("/workspace/repo/archive/")
     candidate = config["candidate_directions"][0]
     assert candidate["direction_file"].startswith("/workspace/repo/archive/")
@@ -412,9 +408,7 @@ def test_docker_runner_config_rewrites_repo_paths_for_container():
 def test_checked_in_full_sweep_mode_filter_limits_to_logit_diagnostic():
     config_path = (
         sweep.REPO_ROOT
-        / "archive"
-        / "experiment"
-        / "phase1"
+        / "archive" / "experiment" / "phase1"
         / "probe"
         / "config"
         / "causal-pilot-core"
@@ -700,7 +694,7 @@ def test_aggregate_collects_generation_and_logit_metrics(tmp_path):
 
 def test_aggregate_resolves_docker_manifest_output_paths(tmp_path, monkeypatch):
     monkeypatch.setattr(aggregate, "REPO_ROOT", tmp_path)
-    run_dir = tmp_path / "experiment" / "phase1" / "probe" / "out" / "cand_a" / "logit_diagnostic" / "run_1"
+    run_dir = tmp_path / "archive" / "experiment" / "phase1" / "probe" / "out" / "cand_a" / "logit_diagnostic" / "run_1"
     run_dir.mkdir(parents=True)
     metrics_path = run_dir / "logit_metrics.json"
     metrics_path.write_text(
@@ -723,7 +717,7 @@ def test_aggregate_resolves_docker_manifest_output_paths(tmp_path, monkeypatch):
         encoding="utf-8",
     )
 
-    rows = aggregate.collect_rows(tmp_path / "experiment" / "phase1" / "probe" / "out")
+    rows = aggregate.collect_rows(tmp_path / "archive" / "experiment" / "phase1" / "probe" / "out")
 
     assert len(rows) == 1
     assert rows[0]["candidate_label"] == "cand_a"

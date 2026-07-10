@@ -5,7 +5,7 @@ title: Amendment C Cross-Over Preference Stacking
 status: active
 created_at: '2026-06-19T12:20:00Z'
 updated_at: '2026-06-19T12:20:00Z'
-phase: phase1
+track: research
 question: Track the unsigned Amendment C draft proposing cross-over sequential preference
   stacking after Amendment A.
 tags:

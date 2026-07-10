@@ -19,7 +19,7 @@ from typing import Any
 
 REPO_ROOT = Path(__file__).resolve().parents[3]
 PROBE_DIR = REPO_ROOT / "archive/experiment/phase1/probe"
-EVAL_DIR = REPO_ROOT / "experiment" / "phase1" / "eval"
+EVAL_DIR = REPO_ROOT / "archive" / "experiment" / "phase1" / "eval"
 DEFAULT_OUT = (
     REPO_ROOT
     / "experiments"

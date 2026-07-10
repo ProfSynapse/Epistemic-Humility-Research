@@ -246,7 +246,7 @@ def grade_row(item, answer_text, content_end):
 
 # ---------------------------------------------------------------------------
 # Amendment throughput plan (docs/plans/generation-throughput-plan.md §4
-# Phase 1): the tuner-batched engine. Replaces ONLY the GPU inner loop with two
+# locked training-regimen): the tuner-batched engine. Replaces ONLY the GPU inner loop with two
 # public tuner CLI verbs (subprocess; never import tuner internals). Everything
 # experiment-specific — rendering, parsing, grading, row schema, safetensors
 # naming, manifest — stays here and produces the identical artifact schema.
@@ -612,7 +612,7 @@ def run(args) -> int:
     written = 0
 
     if args.engine == "tuner-batched":
-        # Throughput plan §4 Phase 1: replace ONLY the GPU inner loop. Render +
+        # Throughput plan §4 locked training-regimen: replace ONLY the GPU inner loop. Render +
         # parse + grade + schema come from the shared helpers above (identical to
         # the sequential path); the tuner batch verbs run the batched generate +
         # capture. Intermediate tuner out-dirs live under a temp work dir (scratch
@@ -815,7 +815,7 @@ def parse_args(argv=None):
                     help="sampled decoding (Amendment SR); default off = greedy (X/Z)")
     ap.add_argument("--temperature", type=float, default=1.0)
     ap.add_argument("--top-p", type=float, default=1.0)
-    # Throughput plan (docs/plans/generation-throughput-plan.md §4 Phase 1).
+    # Throughput plan (docs/plans/generation-throughput-plan.md §4 locked training-regimen).
     # --engine default is 'sequential' = today's byte-identical bs=1 loop; old
     # invocations are unchanged. 'tuner-batched' replaces ONLY the GPU inner loop
     # with the synaptic-tuner batch-generate / batch-capture public CLI verbs.

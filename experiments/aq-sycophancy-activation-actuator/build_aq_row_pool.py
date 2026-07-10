@@ -11,7 +11,7 @@ from typing import Any
 
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
-EVAL_ANALYSIS_DIR = REPO_ROOT / "experiment" / "phase1" / "eval" / "analysis"
+EVAL_ANALYSIS_DIR = REPO_ROOT / "archive" / "experiment" / "phase1" / "eval" / "analysis"
 if str(EVAL_ANALYSIS_DIR) not in sys.path:
     sys.path.insert(0, str(EVAL_ANALYSIS_DIR))
 

@@ -60,7 +60,7 @@ PR #28 already does.
 
 ### What the harness actually selects
 
-`select_matched_slice` (`experiment/phase1/probe/hidden_state_probe.py:155-189`) builds a
+`select_matched_slice` (`archive/experiment/phase1/probe/hidden_state_probe.py:155-189`) builds a
 matched known/unknown slice with **leakage-safe, key-only alignment**:
 
 1. Loads frozen keys from `selection.questions_frozen`
@@ -78,7 +78,7 @@ matched known/unknown slice with **leakage-safe, key-only alignment**:
 
 The lead asked me to **quantify the known/unknown yield caveat rather than assert a clean GO.**
 Here is the count, read directly from the committed frozen artifact
-(`experiment/phase1/data/qwen3-4b-instruct/questions_frozen.json`):
+(`archive/experiment/phase1/data/qwen3-4b-instruct/questions_frozen.json`):
 
 | Pool | Frozen keys available | Harness needs | Headroom |
 |------|----------------------:|--------------:|---------:|
@@ -87,15 +87,15 @@ Here is the count, read directly from the committed frozen artifact
 
 **There is no yield shortage.** The 16/16 slice is satisfiable many hundreds of times over, and
 `questions_frozen.json` is PRESENT and committed (it is the budget-anchor provenance artifact,
-force-added past `experiment/phase1/data/.gitignore:23-26`). So the selection math is a clean GO.
+force-added past `archive/experiment/phase1/data/.gitignore:23-26`). So the selection math is a clean GO.
 
 ### The real gate (this is the NO-GO-until condition)
 
 `probe_results.jsonl` for `qwen3-4b-instruct` is **ABSENT** from the tree:
 
 ```
-experiment/phase1/probe/qwen3-4b-instruct/   →  only README.md present
-ABSENT: experiment/phase1/probe/qwen3-4b-instruct/probe_results.jsonl
+archive/experiment/phase1/probe/qwen3-4b-instruct/   →  only README.md present
+ABSENT: archive/experiment/phase1/probe/qwen3-4b-instruct/probe_results.jsonl
 ```
 
 It is intentionally gitignored as a *large reproducible artifact* and is the WS-1 probe-tier
@@ -115,16 +115,16 @@ So the honest GO/NO-GO is:
 ### Exploratory quarantine (already correct in PR #28)
 
 The harness already isolates its output: it writes to
-`experiment/phase1/probe/<model_tag>/hidden_states/<extraction_id>/`
+`archive/experiment/phase1/probe/<model_tag>/hidden_states/<extraction_id>/`
 (`experiments/common/configs/phase1-probe/hidden_state_probe.yaml:91-96`,
 `output.hidden_states_subdir: hidden_states`), the
-`*/hidden_states/` subtree is gitignored (`experiment/phase1/probe/.gitignore:14`), and the
+`*/hidden_states/` subtree is gitignored (`archive/experiment/phase1/probe/.gitignore:14`), and the
 config header states *"EXPLORATORY TIER, NOT a protocol change … writes to its own output subtree
 and NEVER mutates run records"* (`:13-15`). The subsampled slice therefore inherits the right
 quarantine for free — no separate `model_tag`/output-dir engineering needed. **Recommendation:**
 keep the exploratory `extraction_id` namespacing as-is; the runner should write any extraction
 run record (if we add one) into a *separate* exploratory record namespace, never into
-`experiment/phase1/run_records/` alongside the signed v0.3 cells.
+`archive/experiment/phase1/run_records/` alongside the signed v0.3 cells.
 
 ---
 
@@ -135,7 +135,7 @@ run record (if we add one) into a *separate* exploratory record namespace, never
 From `reference/lanes.md`:
 
 - **Local lane** (`--lane local`): stage `<method>_train.jsonl`/`_dev.jsonl` from
-  `experiment/phase1/data/<model_tag>/` into the tuner's gitignored
+  `archive/experiment/phase1/data/<model_tag>/` into the tuner's gitignored
   `synaptic-tuner/scratch/eh_staging/<run_id>/`, rewrite the materialized recipe's
   `dataset.local_file` to the tuner-repo-relative staged path, then
   `python tuner.py local-run --job-config <materialized>.yaml --yes`.
@@ -194,7 +194,7 @@ nested effort. This keeps the MVP shippable and the no-pollution boundary intact
 
 ### The mapping is concrete and already populated
 
-Run records live at `experiment/phase1/run_records/<run_id>.json`. A real completed record
+Run records live at `archive/experiment/phase1/run_records/<run_id>.json`. A real completed record
 (`dpo__4b__headline__seed1.json`) shows the exact shape:
 
 ```
@@ -216,7 +216,7 @@ B2 fixed). Today this id is filled **by hand** before a GPU run.
 An `aligned_run_record_id` auto-resolver is a clean addition with two directions:
 
 - **Forward (recommended):** given `aligned_run_record_id` (e.g. `sft__4b__headline__seed1`), read
-  `experiment/phase1/run_records/<id>.json`, return `outcome.adapter_path` (and assert
+  `archive/experiment/phase1/run_records/<id>.json`, return `outcome.adapter_path` (and assert
   `outcome.status == "completed"`). This lets the extraction config name a *run_id* (stable,
   human-meaningful) instead of a brittle absolute Windows path, and the adapter path is resolved
   from the provenance spine — so extraction and the run record can never disagree.
@@ -284,7 +284,7 @@ resolved before, not during, the extraction work.
 - **R5 (scope guardrail):** Everything here stays OFF the signed PROTOCOL v0.3 / Amendment A
   paths. The extraction slice is EXPLORATORY — never pre-registered, never headline. Any
   extraction run record must use a separate exploratory namespace, never
-  `experiment/phase1/run_records/` alongside signed cells.
+  `archive/experiment/phase1/run_records/` alongside signed cells.
 - **R6 (worktree / CLAUDE.md):** CLAUDE.md is gitignored and absent in this worktree; I did not
   create or edit it. No CLAUDE.md-related need arose for this spike — no action required, flagged
   per directive.

@@ -33,15 +33,15 @@ def _adapter(run_id: str, ts: str) -> str:
 def probe_layout(tmp_path: Path):
     """A minimal repo layout the gate + harness mirror can resolve against.
 
-    Returns (config_path, repo_root). The probe dir is <root>/experiment/phase1/
+    Returns (config_path, repo_root). The probe dir is <root>/archive/experiment/phase1/
     probe with config/ and eval/config/ subtrees; run_records under
-    <root>/experiment/phase1/run_records.
+    <root>/archive/experiment/phase1/run_records.
     """
     root = tmp_path
-    probe = root / "experiment" / "phase1" / "probe"
+    probe = root / "archive" / "experiment" / "phase1" / "probe"
     (probe / "config").mkdir(parents=True)
     (probe / "eval" / "config").mkdir(parents=True)
-    records = root / "experiment" / "phase1" / "run_records"
+    records = root / "archive" / "experiment" / "phase1" / "run_records"
     records.mkdir(parents=True)
 
     # Real adapter dir on disk (so E4 can find adapter_config.json), located UNDER
@@ -104,14 +104,14 @@ def _load(config_path: Path) -> dict:
 def _add_harness_to_path(repo_root: Path, monkeypatch):
     """Stub the harness's resolve_eval_arm_adapters import the gate uses.
 
-    The real harness lives at experiment/phase1/probe/hidden_state_probe.py and
+    The real harness lives at archive/experiment/phase1/probe/hidden_state_probe.py and
     imports torch lazily; for a GPU-free unit test we install a tiny stub module
     exposing only resolve_eval_arm_adapters with the by-name mirror behavior.
     """
     import sys
     import types
 
-    probe_dir = repo_root / "experiment" / "phase1" / "probe"
+    probe_dir = repo_root / "archive" / "experiment" / "phase1" / "probe"
 
     def resolve_eval_arm_adapters(config, config_path):
         src = config.get("eval_arms_source")
@@ -154,7 +154,7 @@ def test_gate_resolves_common_config_paths_against_probe_dir(probe_layout, monke
 
     assert result.ok and not result.skip
     assert result.details["probe_results_path"] == str(
-        root / "experiment/phase1/probe/qwen3-4b-instruct/probe_results.jsonl"
+        root / "archive/experiment/phase1/probe/qwen3-4b-instruct/probe_results.jsonl"
     )
 
 
@@ -172,7 +172,7 @@ def test_null_revision_is_warn_not_skip(probe_layout, monkeypatch):
 def test_e1_skip_when_probe_results_absent(probe_layout, monkeypatch):
     config_path, root = probe_layout
     _add_harness_to_path(root, monkeypatch)
-    (root / "experiment/phase1/probe/qwen3-4b-instruct/probe_results.jsonl").unlink()
+    (root / "archive/experiment/phase1/probe/qwen3-4b-instruct/probe_results.jsonl").unlink()
     result = check_prereqs.check_extraction_cell(
         config=_load(config_path), config_path=config_path, research_repo_root=root)
     assert result.skip and "probe_results.jsonl absent" in result.skip_reason
@@ -203,7 +203,7 @@ def test_e3_skip_when_run_record_unresolvable(probe_layout, monkeypatch):
     config_path, root = probe_layout
     _add_harness_to_path(root, monkeypatch)
     # Remove the run record so the reverse-lookup zero-matches.
-    (root / "experiment/phase1/run_records/sft__4b__headline__seed1.json").unlink()
+    (root / "archive/experiment/phase1/run_records/sft__4b__headline__seed1.json").unlink()
     result = check_prereqs.check_extraction_cell(
         config=_load(config_path), config_path=config_path, research_repo_root=root)
     assert result.skip and "aligned_run_record_id unresolvable" in result.skip_reason
@@ -239,7 +239,7 @@ def test_e3_explicit_id_pointing_at_unverified_fails_closed(probe_layout, monkey
     config_path, root = probe_layout
     _add_harness_to_path(root, monkeypatch)
     # Flip the on-disk record to unverified while keeping the explicit pin.
-    rec = root / "experiment/phase1/run_records/sft__4b__headline__seed1.json"
+    rec = root / "archive/experiment/phase1/run_records/sft__4b__headline__seed1.json"
     data = json.loads(rec.read_text(encoding="utf-8"))
     data["outcome"]["verified"] = False
     rec.write_text(json.dumps(data), encoding="utf-8")
@@ -264,7 +264,7 @@ def test_e3_explicit_id_unverified_links_with_allow_unverified(probe_layout, mon
     links the pinned unverified record — the ONLY way to bypass the gate."""
     config_path, root = probe_layout
     _add_harness_to_path(root, monkeypatch)
-    rec = root / "experiment/phase1/run_records/sft__4b__headline__seed1.json"
+    rec = root / "archive/experiment/phase1/run_records/sft__4b__headline__seed1.json"
     data = json.loads(rec.read_text(encoding="utf-8"))
     data["outcome"]["verified"] = False
     rec.write_text(json.dumps(data), encoding="utf-8")
@@ -304,7 +304,7 @@ def test_gate_never_raises_prereqerror(probe_layout, monkeypatch):
     """Every failing path must SKIP, never raise PrereqError (§4.3)."""
     config_path, root = probe_layout
     _add_harness_to_path(root, monkeypatch)
-    (root / "experiment/phase1/probe/qwen3-4b-instruct/probe_results.jsonl").unlink()
+    (root / "archive/experiment/phase1/probe/qwen3-4b-instruct/probe_results.jsonl").unlink()
     try:
         result = check_prereqs.check_extraction_cell(
             config=_load(config_path), config_path=config_path, research_repo_root=root)

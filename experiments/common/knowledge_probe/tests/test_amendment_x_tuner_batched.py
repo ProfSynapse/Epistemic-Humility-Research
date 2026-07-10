@@ -1,6 +1,6 @@
 """Equivalence + wiring tests for the tuner-batched engine on the extractor.
 
-Covers the throughput-plan §4 Phase 1 addition to
+Covers the throughput-plan §4 locked training-regimen addition to
 amendment_x_cross_model_extract.py: the `--engine tuner-batched` path that
 replaces ONLY the GPU inner loop with the synaptic-tuner batch-generate /
 batch-capture public CLI verbs, plus `--scratch-dir` and the manifest

@@ -183,7 +183,7 @@ def command_args(args: argparse.Namespace) -> tuple[str, list[str]]:
             out.extend(["--results-dir", args.results_dir])
         for path in args.scored_rows or []:
             out.extend(["--scored-rows", path])
-        return "experiment/phase1/eval/analysis/sycophancy_answer_analysis.py", out
+        return "archive/experiment/phase1/eval/analysis/sycophancy_answer_analysis.py", out
     if command == "sycophancy-generation-analysis":
         out: list[str] = ["--output-root", args.output_root]
         for path in args.generations:

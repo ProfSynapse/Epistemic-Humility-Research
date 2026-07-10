@@ -2,7 +2,7 @@
 """CPU/GPU agnostic mechinterp sparse-autoencoder pilot.
 
 This trains a small SAE over already-extracted hidden states. It is a bounded
-exploratory pilot, not causal evidence and not Phase 1 headline evidence.
+exploratory pilot, not causal evidence and not locked training-regimen headline evidence.
 """
 
 from __future__ import annotations

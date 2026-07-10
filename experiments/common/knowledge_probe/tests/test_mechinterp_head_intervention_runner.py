@@ -11,7 +11,7 @@ PROBE_DIR = Path(__file__).resolve().parents[1]
 REPO_ROOT = PROBE_DIR.parents[2]
 if REPO_ROOT.name == "experiments":
     REPO_ROOT = REPO_ROOT.parent
-EVAL_DIR = REPO_ROOT / "experiment" / "phase1" / "eval"
+EVAL_DIR = REPO_ROOT / "archive" / "experiment" / "phase1" / "eval"
 for _dir in (PROBE_DIR, EVAL_DIR):
     if str(_dir) not in sys.path:
         sys.path.insert(0, str(_dir))

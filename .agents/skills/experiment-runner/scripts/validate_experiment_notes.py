@@ -169,7 +169,7 @@ def validate_note(path: Path, root: Path) -> list[str]:
         errors.append(f"{loc}governance must be one of {sorted(VALID_GOVERNANCE)}")
     if fm.get("lane") not in VALID_LANE:
         errors.append(f"{loc}lane must be one of {sorted(VALID_LANE)}")
-    for key in ("phase", "est_compute"):
+    for key in ("track", "est_compute"):
         if not fm.get(key):
             errors.append(f"{loc}{key} is required")
     tags = fm.get("tags")
@@ -235,7 +235,7 @@ def emit_index(path: Path) -> str:
             "title": fm.get("title", note.stem),
             "status": fm.get("status", "?"),
             "governance": fm.get("governance", "?"),
-            "phase": fm.get("phase", "?"),
+            "track": fm.get("track", "?"),
             "lane": fm.get("lane", "?"),
             "tests": tests_target(fm),
         })
@@ -253,13 +253,13 @@ def emit_index(path: Path) -> str:
         "",
         f"{len(rows)} experiment note(s).",
         "",
-        "| Experiment | Status | Governance | Phase | Lane | Tests |",
+        "| Experiment | Status | Governance | Track | Lane | Tests |",
         "|---|---|---|---|---|---|",
     ]
     for r in rows:
         out.append(
             f"| [[{r['stem']}]] | {r['status']} | {r['governance']} | "
-            f"{r['phase']} | {r['lane']} | {r['tests']} |"
+            f"{r['track']} | {r['lane']} | {r['tests']} |"
         )
     out.append("")
     text = "\n".join(out)

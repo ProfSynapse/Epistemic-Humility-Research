@@ -1,6 +1,6 @@
 # Legacy migration map
 
-Read this when replacing frozen bespoke Phase 3 machinery with tuner-backed
+Read this when replacing frozen bespoke legacy mech-interp machinery with tuner-backed
 configs, or when identifying a genericization gap.
 
 The legacy tree is frozen for provenance. Do not edit it while authoring new

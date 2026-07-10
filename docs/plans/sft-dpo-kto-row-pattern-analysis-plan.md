@@ -5,7 +5,7 @@
 
 ## Summary
 
-We have enough row-level data to analyze specific question behavior for several SFT, DPO, KTO, SFT->DPO, and SFT->KTO evaluations, but not for every historical diagnostic run. The main usable artifact is `scored_rows.jsonl`; main eval `generations.jsonl` files were not found under `experiment/phase1/eval/results*`, despite the README's ideal contract.
+We have enough row-level data to analyze specific question behavior for several SFT, DPO, KTO, SFT->DPO, and SFT->KTO evaluations, but not for every historical diagnostic run. The main usable artifact is `scored_rows.jsonl`; main eval `generations.jsonl` files were not found under `archive/experiment/phase1/eval/results*`, despite the README's ideal contract.
 
 The first serious analysis should start with Amendment A SelfAware row transitions, then add broader OOD rows and clean seed expansions after the method is validated. Results must be reported as local bounded evidence unless a governed protocol revision elevates them.
 
@@ -21,11 +21,11 @@ The first serious analysis should start with Amendment A SelfAware row transitio
 - [ ] Rejoin or derive richer question metadata where available.
 
 #### Known Usable Artifacts
-- `experiment/phase1/eval/results_amendment_a_selfaware_full_local_4b/sft_merged__selfaware/scored_rows.jsonl`
-- `experiment/phase1/eval/results_amendment_a_selfaware_full_local_4b/sft_dpo__selfaware/scored_rows.jsonl`
-- `experiment/phase1/eval/results_amendment_a_selfaware_full_local_4b/sft_kto__selfaware/scored_rows.jsonl`
-- `experiment/phase1/eval/results_amendment_a_broader_ood_local_4b/sft_dpo__kuq/scored_rows.jsonl`
-- `experiment/phase1/eval/results_amendment_b_stated_confidence_neutral_concise_schema_answer_confidence_selfaware_seq_seed1_4b/sft_dpo_seed1__selfaware/scored_rows.jsonl`
+- `archive/experiment/phase1/eval/results_amendment_a_selfaware_full_local_4b/sft_merged__selfaware/scored_rows.jsonl`
+- `archive/experiment/phase1/eval/results_amendment_a_selfaware_full_local_4b/sft_dpo__selfaware/scored_rows.jsonl`
+- `archive/experiment/phase1/eval/results_amendment_a_selfaware_full_local_4b/sft_kto__selfaware/scored_rows.jsonl`
+- `archive/experiment/phase1/eval/results_amendment_a_broader_ood_local_4b/sft_dpo__kuq/scored_rows.jsonl`
+- `archive/experiment/phase1/eval/results_amendment_b_stated_confidence_neutral_concise_schema_answer_confidence_selfaware_seq_seed1_4b/sft_dpo_seed1__selfaware/scored_rows.jsonl`
 
 #### Questions to Resolve
 - [ ] Should the first pass be limited to Amendment A plain-answer rows, or include Amendment B stated-confidence rows as a separate section?
@@ -37,11 +37,11 @@ The first serious analysis should start with Amendment A SelfAware row transitio
 #### Components Affected
 | Component | Change Type | Impact |
 |-----------|-------------|--------|
-| `experiment/phase1/eval/results*` | Read | Source artifacts for row-level analysis |
-| `experiment/phase1/eval/analysis/` | Create | Store reusable analysis scripts |
+| `archive/experiment/phase1/eval/results*` | Read | Source artifacts for row-level analysis |
+| `archive/experiment/phase1/eval/analysis/` | Create | Store reusable analysis scripts |
 | `papers/paper-2-training-regimen/analysis/row-pattern/` | Create | Store reproducible report and CSV summaries |
-| `experiment/phase1/eval/scorers.py` | Read | Authority for refusal/correct/truthful semantics |
-| `experiment/phase1/eval/README.md` | Read | Output contract and caveats |
+| `archive/experiment/phase1/eval/scorers.py` | Read | Authority for refusal/correct/truthful semantics |
+| `archive/experiment/phase1/eval/README.md` | Read | Output contract and caveats |
 
 #### Design Approach
 Create a read-only analysis pipeline that normalizes selected `scored_rows.jsonl` files into one row master table. Compare rows using `(eval_set, row_index)` only after validating matching `question`, `id`, `label`, and `source` across arms.
@@ -65,7 +65,7 @@ Amendment B stated-confidence rows additionally provide: `answer_text`, `stated_
 #### Files to Create
 | File | Purpose |
 |------|---------|
-| `experiment/phase1/eval/analysis/row_pattern_analysis.py` | Load rows, validate alignment, tag question types, compute metrics and transitions |
+| `archive/experiment/phase1/eval/analysis/row_pattern_analysis.py` | Load rows, validate alignment, tag question types, compute metrics and transitions |
 | `papers/paper-2-training-regimen/analysis/row-pattern/row_pattern_report.md` | Human-readable findings with caveats and representative examples |
 | `papers/paper-2-training-regimen/analysis/row-pattern/row_pattern_outputs/*.csv` | Reproducible tables for schema audit, slice metrics, transitions, and examples |
 

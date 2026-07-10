@@ -47,7 +47,7 @@ filled — the committed YAML is NEVER mutated (link-never-mutate, §5.5). On
 
 - **E1** `probe_results.jsonl` present for the model_tag;
 - **E2** its first-row `probe_config_sha` matches `selection.expected_probe_config_sha`
-  (null â‡’ presence-only + WARN);
+  (null => presence-only + WARN);
 - **E3** `aligned_run_record_id` resolvable — the resolver reverse-looks-up the
   active arm's adapter against `run_records/<id>.json`, FAIL-CLOSED on
   zero-match / ambiguous / unverified (the sft/dpo/kto divergence, §5.4);
@@ -75,7 +75,7 @@ python3 .agents/skills/experiment-runner/scripts/prepare_extraction_cell.py \
 ```
 
 Eyeball the delta tensors nonzero (the issue-#30 confound guard) under
-`experiment/phase1/probe/<model_tag>/hidden_states/extraction__<sha>/`:
+`archive/experiment/phase1/probe/<model_tag>/hidden_states/extraction__<sha>/`:
 
 ```python
 from safetensors import safe_open

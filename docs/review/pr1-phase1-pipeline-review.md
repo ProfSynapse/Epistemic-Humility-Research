@@ -11,7 +11,7 @@ Full per-reviewer detail: task metadata `#56/#58/#60/#62` (`.metadata.handoff`).
 
 | ID | Finding | Where | Reviewers |
 |----|---------|-------|-----------|
-| B1 | `correctness_safe` KTO arm emits ONLY desirable(True) rows → `ZeroDivisionError` at trainer load (kto `data_loader.py:256`, before the both-labels guard); diverges from arch §4.6 ("rebalance via weights" implies both labels) and from `build.yaml`'s `correctness_safe_undesirable_weight: 1.0`. Phase-2 rideshare arm only — verified absent from every Phase-1 matrix cell. | `build_datasets.py:394-418`, `:547-564` | backend (Blocking) + architect (independent, rated Minor pre-crash-trace) |
+| B1 | `correctness_safe` KTO arm emits ONLY desirable(True) rows → `ZeroDivisionError` at trainer load (kto `data_loader.py:256`, before the both-labels guard); diverges from arch §4.6 ("rebalance via weights" implies both labels) and from `build.yaml`'s `correctness_safe_undesirable_weight: 1.0`. Phase-2 rideshare arm only — verified absent from every locked-training-regimen matrix cell. | `build_datasets.py:394-418`, `:547-564` | backend (Blocking) + architect (independent, rated Minor pre-crash-trace) |
 
 **Resolution path**: session-architect §4.6 row-disposition ruling → fix in builder + add a both-labels regression test → verify-only re-review.
 
@@ -27,7 +27,7 @@ Full per-reviewer detail: task metadata `#56/#58/#60/#62` (`.metadata.handoff`).
 | MB1 | `--check-only` promises a prereq gate it never invokes (gate fns unit-tested but unwired); stale `check_matrix` docstring; record-spine fns written-but-unwired. Launch path is deliberately stubbed so no live risk. | `run_matrix.py:41,448-477` | backend |
 | MB3 | DPO/KTO dev FILES diverge from SFT on dropped unknowns (questions invariant holds; manifest-traced). Confirm intended + document. | `build_datasets.py:539-544` | backend |
 | MB4 | eval McNemar silently skips arm pairs with mismatched vector lengths — add warning/skip-row. | `run_eval.py:332` | backend |
-| MS1 | Bridge-derived DO-NOT-REDISTRIBUTE data not gitignored at `experiment/phase1/data/` — `git add -A` footgun against OpenMOSS containment (SACROSANCT). **Elevated to fix-now by team-lead.** | `experiment/phase1/data/.gitignore` | security |
+| MS1 | Bridge-derived DO-NOT-REDISTRIBUTE data not gitignored at `archive/experiment/phase1/data/` — `git add -A` footgun against OpenMOSS containment (SACROSANCT). **Elevated to fix-now by team-lead.** | `archive/experiment/phase1/data/.gitignore` | security |
 | MS2 | `zipfile.extractall` without member sanitization — zip-slip exposed during the documented re-pin window (sha pin blanked). Fix: per-member resolve + is_relative_to check. | `fetch_datasets.py:230-231` | security |
 | MA3 | ADR §9.3 trainer line citations drifted (±1-3 lines); substantive claims all verify. | `phase1-pipeline.md §9.3` | architect |
 

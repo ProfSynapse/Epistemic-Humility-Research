@@ -11,8 +11,8 @@ Method. For each regimen, load the KNOWN rows' residual at one layer (default
 L35), label over-refused (known_refused=1) vs answered (known_*_answered=0). Fit
 all directions in a SHARED whitened frame (one StandardScaler fit on the POOLED
 known activations of all regimens, so the coordinate system is common), then
-report the pairwise |cosine| of the unit normals. High pairwise cosine â‡’ a single
-shared caution mechanism the regimens inherit and reuse; low â‡’ regimen-specific
+report the pairwise |cosine| of the unit normals. High pairwise cosine => a single
+shared caution mechanism the regimens inherit and reuse; low => regimen-specific
 directions that merely happen to be similarly decodable.
 
 Why cosine, not train-A/test-B transfer AUROC: the SelfAware questions are

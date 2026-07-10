@@ -133,17 +133,13 @@ def test_build_manifest_requires_all_arms(tmp_path: Path):
 def test_checked_in_sycophancy_hidden_state_configs_select_full_panel():
     for config_path in (
         REPO_ROOT
-        / "archive"
-        / "experiment"
-        / "phase1"
+        / "archive" / "experiment" / "phase1"
         / "probe"
         / "config"
         / "sycophancy-hs"
         / "hidden_state_sycophancy_answer_sft_seed1.yaml",
         REPO_ROOT
-        / "archive"
-        / "experiment"
-        / "phase1"
+        / "archive" / "experiment" / "phase1"
         / "probe"
         / "config"
         / "sycophancy-hs"

@@ -5,7 +5,7 @@ title: Best Stack Replication And Scale Gate
 status: active
 created_at: '2026-06-25T11:53:30Z'
 updated_at: '2026-06-25T11:55:11Z'
-phase: phase1
+track: research
 question: Should the best Amendment F stack be replicated across clean response-confidence
   seeds and/or scaled before public artifact publication?
 tags:
@@ -28,7 +28,7 @@ checkpoints:
   evidence:
   - experiments/best-stack-replication-scale-gate/AMENDMENT.md
   - notes/experiments/clean-sft-grpo-dpo-seed-replication.md
-  - experiment/phase1/eval/analysis/selfaware_full_run_comparison_grouped.csv
+  - archive/experiment/phase1/eval/analysis/selfaware_full_run_comparison_grouped.csv
   run_ids: []
   commands: []
   decisions:
@@ -65,7 +65,7 @@ _No summary yet._
 - evidence:
   - `experiments/best-stack-replication-scale-gate/AMENDMENT.md`
   - `notes/experiments/clean-sft-grpo-dpo-seed-replication.md`
-  - `experiment/phase1/eval/analysis/selfaware_full_run_comparison_grouped.csv`
+  - `archive/experiment/phase1/eval/analysis/selfaware_full_run_comparison_grouped.csv`
 - decisions:
   - Treat Amendment G as draft/not signed; no GPU launch is authorized by the draft alone.
 - next steps:

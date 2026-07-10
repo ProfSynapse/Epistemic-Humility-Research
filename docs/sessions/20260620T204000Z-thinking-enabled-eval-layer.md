@@ -5,7 +5,7 @@ title: Thinking-Enabled Eval Layer
 status: active
 created_at: '2026-06-20T20:40:00Z'
 updated_at: '2026-06-20T21:00:00Z'
-phase: phase1
+track: research
 question: Does enabling Qwen3 thinking change Amendment B stated-confidence epistemic-humility
   behavior relative to the non-thinking seed/model evals?
 tags:
@@ -17,7 +17,7 @@ tags:
 run_ids: []
 trajectory:
   anchor: docs/research-trajectory.md
-  current_position: Phase 1 training-regimen comparisons need a thinking-on eval layer
+  current_position: locked training-regimen comparisons need a thinking-on eval layer
     before further training decisions.
   changed_by_session: Adds explicit thinking-on eval configs, parser support, Docker
     batch tooling, comparison tooling, and a base-smoke result.
@@ -34,19 +34,19 @@ checkpoints:
 
     '
   evidence:
-  - experiment/phase1/eval/config/eval_amendment_b_stated_confidence_neutral_selfaware_seed1_base_smoke_thinking_local_4b.yaml
-  - experiment/phase1/eval/results_amendment_b_stated_confidence_neutral_concise_schema_answer_confidence_selfaware_seed1_base_smoke_4b_thinking_on/base_seed1_smoke__selfaware/metrics.json
-  - experiment/phase1/eval/logs/thinking_eval_batch/batch_status_current.jsonl
+  - archive/experiment/phase1/eval/config/eval_amendment_b_stated_confidence_neutral_selfaware_seed1_base_smoke_thinking_local_4b.yaml
+  - archive/experiment/phase1/eval/results_amendment_b_stated_confidence_neutral_concise_schema_answer_confidence_selfaware_seed1_base_smoke_4b_thinking_on/base_seed1_smoke__selfaware/metrics.json
+  - archive/experiment/phase1/eval/logs/thinking_eval_batch/batch_status_current.jsonl
   commands:
-  - python -m pytest experiment/phase1/eval/tests/test_scorers.py experiment/phase1/eval/tests/test_run_eval_e2e.py
+  - python -m pytest archive/experiment/phase1/eval/tests/test_scorers.py archive/experiment/phase1/eval/tests/test_run_eval_e2e.py
     -q
   - python bin/sync_skills.py --check
   - docker run --rm --gpus all --ipc=host --entrypoint python3 -e HF_HOME=/workspace/repo/.cache/hf
     -e HUGGINGFACE_HUB_CACHE=/workspace/repo/.cache/hf/hub -v F:\Code\Epistemic-Humility-Research:/workspace/repo
-    -w /workspace/repo unsloth/unsloth:latest experiment/phase1/eval/run_eval.py --config
-    experiment/phase1/eval/config/eval_amendment_b_stated_confidence_neutral_selfaware_seed1_base_smoke_thinking_local_4b.yaml
+    -w /workspace/repo unsloth/unsloth:latest archive/experiment/phase1/eval/run_eval.py --config
+    archive/experiment/phase1/eval/config/eval_amendment_b_stated_confidence_neutral_selfaware_seed1_base_smoke_thinking_local_4b.yaml
     --live-vllm
-  - python experiment/phase1/eval/tools/run_thinking_eval_batch.py --status-path experiment/phase1/eval/logs/thinking_eval_batch/batch_status_current.jsonl
+  - python archive/experiment/phase1/eval/tools/run_thinking_eval_batch.py --status-path archive/experiment/phase1/eval/logs/thinking_eval_batch/batch_status_current.jsonl
   decisions:
   - Treat thinking-on as a comparison condition, not a replacement for non-thinking
     measurement.
@@ -76,15 +76,15 @@ checkpoints:
 
     '
   evidence:
-  - experiment/phase1/eval/results_amendment_b_stated_confidence_neutral_concise_schema_answer_confidence_selfaware_seed1_all_arms_4b_thinking_on/base_seed1__selfaware/metrics.json
-  - experiment/phase1/eval/results_amendment_b_stated_confidence_neutral_concise_schema_answer_confidence_selfaware_seed1_all_arms_4b_thinking_on/sft_seed1__selfaware/metrics.json
-  - experiment/phase1/eval/results_amendment_b_stated_confidence_neutral_concise_schema_answer_confidence_selfaware_seed1_all_arms_4b_thinking_on/dpo_seed1__selfaware/metrics.json
-  - experiment/phase1/eval/results_amendment_b_stated_confidence_neutral_concise_schema_answer_confidence_selfaware_seed1_all_arms_4b_thinking_on/kto_seed1__selfaware/metrics.json
-  - experiment/phase1/eval/analysis/thinking_comparison/seed1_all_arms_thinking_vs_nonthinking_summary.csv
+  - archive/experiment/phase1/eval/results_amendment_b_stated_confidence_neutral_concise_schema_answer_confidence_selfaware_seed1_all_arms_4b_thinking_on/base_seed1__selfaware/metrics.json
+  - archive/experiment/phase1/eval/results_amendment_b_stated_confidence_neutral_concise_schema_answer_confidence_selfaware_seed1_all_arms_4b_thinking_on/sft_seed1__selfaware/metrics.json
+  - archive/experiment/phase1/eval/results_amendment_b_stated_confidence_neutral_concise_schema_answer_confidence_selfaware_seed1_all_arms_4b_thinking_on/dpo_seed1__selfaware/metrics.json
+  - archive/experiment/phase1/eval/results_amendment_b_stated_confidence_neutral_concise_schema_answer_confidence_selfaware_seed1_all_arms_4b_thinking_on/kto_seed1__selfaware/metrics.json
+  - archive/experiment/phase1/eval/analysis/thinking_comparison/seed1_all_arms_thinking_vs_nonthinking_summary.csv
   commands:
-  - python experiment/phase1/eval/tools/compare_thinking_eval_results.py --config
+  - python archive/experiment/phase1/eval/tools/compare_thinking_eval_results.py --config
     eval_amendment_b_stated_confidence_selfaware_seed1_all_arms_local_4b.yaml --output
-    experiment/phase1/eval/analysis/thinking_comparison/seed1_all_arms_thinking_vs_nonthinking_summary.csv
+    archive/experiment/phase1/eval/analysis/thinking_comparison/seed1_all_arms_thinking_vs_nonthinking_summary.csv
   decisions:
   - Treat seed 1 as a completed thinking comparison, but do not generalize until seed
     2/3 and sequential arms complete.
@@ -144,17 +144,17 @@ unchanged.
   `</think>` suffix. It still does not extract JSON from ordinary malformed
   prose, so confidence coverage remains a measurement gate.
 - Added reusable tools:
-  `experiment/phase1/eval/tools/materialize_thinking_eval_configs.py`,
-  `experiment/phase1/eval/tools/run_thinking_eval_batch.py`, and
-  `experiment/phase1/eval/tools/compare_thinking_eval_results.py`.
+  `archive/experiment/phase1/eval/tools/materialize_thinking_eval_configs.py`,
+  `archive/experiment/phase1/eval/tools/run_thinking_eval_batch.py`, and
+  `archive/experiment/phase1/eval/tools/compare_thinking_eval_results.py`.
 
 ## Smoke Result
 
 Config:
-`experiment/phase1/eval/config/eval_amendment_b_stated_confidence_neutral_selfaware_seed1_base_smoke_thinking_local_4b.yaml`
+`archive/experiment/phase1/eval/config/eval_amendment_b_stated_confidence_neutral_selfaware_seed1_base_smoke_thinking_local_4b.yaml`
 
 Result dir:
-`experiment/phase1/eval/results_amendment_b_stated_confidence_neutral_concise_schema_answer_confidence_selfaware_seed1_base_smoke_4b_thinking_on`
+`archive/experiment/phase1/eval/results_amendment_b_stated_confidence_neutral_concise_schema_answer_confidence_selfaware_seed1_base_smoke_4b_thinking_on`
 
 Outcome:
 
@@ -183,11 +183,11 @@ warnings at process teardown. The run still wrote complete metrics and rows.
 Detached batch launched at 2026-06-20 20:48 UTC via:
 
 ```bash
-python experiment/phase1/eval/tools/run_thinking_eval_batch.py --status-path experiment/phase1/eval/logs/thinking_eval_batch/batch_status_current.jsonl
+python archive/experiment/phase1/eval/tools/run_thinking_eval_batch.py --status-path archive/experiment/phase1/eval/logs/thinking_eval_batch/batch_status_current.jsonl
 ```
 
 Status file:
-`experiment/phase1/eval/logs/thinking_eval_batch/batch_status_current.jsonl`
+`archive/experiment/phase1/eval/logs/thinking_eval_batch/batch_status_current.jsonl`
 
 Current first config:
 `eval_amendment_b_stated_confidence_selfaware_seed1_all_arms_thinking_local_4b.yaml`
@@ -203,7 +203,7 @@ skips any config whose summary already exists unless forced.
 - After the batch completes, run:
 
 ```bash
-python experiment/phase1/eval/tools/compare_thinking_eval_results.py
+python archive/experiment/phase1/eval/tools/compare_thinking_eval_results.py
 ```
 
 - Update this note with the full thinking-vs-non-thinking comparison and decide

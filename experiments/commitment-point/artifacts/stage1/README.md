@@ -6,7 +6,7 @@ Committed Stage 1 readout artifacts for the Amendment AK commitment-point experi
 - `ak_stage1_gate_report.json` records the full AK-G1 and AK-G2 machine-readable report.
 - `ak_stage1_gate_verdicts.md` is the committed human-readable Stage 1 verdict record.
 
-The runnable analysis scripts remain in `experiment/phase1/probe/`:
+The runnable analysis scripts remain in `archive/experiment/phase1/probe/`:
 
 ```bash
 python archive/experiment/phase1/probe/amendments/amendment_ak_stage1_pilot_floor.py --grpo-dir <grpo-v2-arm-dir> --raw-dir <raw-base-arm-dir>

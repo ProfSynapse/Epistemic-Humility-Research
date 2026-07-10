@@ -139,7 +139,7 @@ parallel batch on HF Jobs, freeing the local GPU for the steering line
 - All three pool sources are git-tracked and travel with the clone:
   `datasets/popqa/test.jsonl`, `datasets/triviaqa-rc-nocontext/
   cheng_test_gold.jsonl`, `datasets/selfaware/SelfAware.json`. No hub
-  publishing needed (contrast with the Phase-1 train lane).
+  publishing needed (contrast with the locked-training-regimen train lane).
 - Cell shape is self-contained: `amendment_x_cross_model_extract.py` (GPU)
   then `amendment_x_cross_model_score.py` (CPU) producing a small tracked
   result JSON. Job uploads ONLY the result JSON (+ direction fits) to a

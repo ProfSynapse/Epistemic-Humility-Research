@@ -8,7 +8,7 @@ tags:
   - kg/experiment
 status: proposed
 governance: amendment
-phase: phase1
+track: training-regimen
 lane: local
 est_compute: '~2-3 full local seed rebuilds; exact GPU-hours depend on whether clean SFT/GRPO seed artifacts already exist'
 relationships:
@@ -57,7 +57,7 @@ Primary comparators:
 - same-seed clean SFT->GRPO v2 model;
 - Amendment F seed-1 `clean_sft_grpo_dpo`;
 - grouped comparison table in
-  `experiment/phase1/eval/analysis/selfaware_full_run_comparison_grouped.csv`.
+  `archive/experiment/phase1/eval/analysis/selfaware_full_run_comparison_grouped.csv`.
 
 ## Prerequisites & Gating
 
@@ -76,16 +76,16 @@ Primary comparators:
 1. Read `experiments/best-stack-replication-scale-gate/AMENDMENT.md`
    and `experiments/grpo-centered-stacking/AMENDMENT.md`.
 2. Compare current evidence in
-   `experiment/phase1/eval/analysis/selfaware_full_run_comparison_grouped.csv`.
+   `archive/experiment/phase1/eval/analysis/selfaware_full_run_comparison_grouped.csv`.
 3. For the chosen seed, follow the clean response-confidence setup patterns in
-   `experiment/phase1/grpo/amendment_e_clean_mainline_runbook.md`.
+   `archive/experiment/phase1/grpo/amendment_e_clean_mainline_runbook.md`.
 4. Train or verify same-seed clean SFT, then run full SelfAware eval.
 5. Train same-seed GRPO v2 from the clean SFT source, then run full SelfAware
    eval.
 6. Merge same-seed GRPO v2, run a bounded merged-source SelfAware sanity eval,
    then launch final-stage DPO.
 7. Run the full SelfAware eval, rebuild comparison CSVs with
-   `experiment/phase1/eval/analysis/build_selfaware_full_run_comparison.py`,
+   `archive/experiment/phase1/eval/analysis/build_selfaware_full_run_comparison.py`,
    and checkpoint the result in `docs/sessions/`.
 
 ## Validation contract
@@ -101,9 +101,9 @@ Primary comparators:
 
 ## Outputs & provenance
 
-- Run records: `experiment/phase1/run_records/`.
+- Run records: `archive/experiment/phase1/run_records/`.
 - Session checkpoints: `docs/sessions/20260625T115330Z-best-stack-replication-and-scale-gate.md`.
-- Analysis: `experiment/phase1/eval/analysis/selfaware_full_run_comparison.csv`
+- Analysis: `archive/experiment/phase1/eval/analysis/selfaware_full_run_comparison.csv`
   and grouped companion.
 - Publication: no Hugging Face upload until seed replication, artifact policy,
   and model-card gates are explicitly approved.

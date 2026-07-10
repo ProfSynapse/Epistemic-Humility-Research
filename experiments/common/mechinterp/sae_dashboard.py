@@ -26,7 +26,7 @@ Usage
     marimo export html experiments/common/mechinterp/sae_dashboard.py \
         -o archive/experiment/phase1/probe/sae_dashboard.html        # static snapshot
 
-NOTICE: exploratory pilot, not Phase 1 headline evidence and not causal.
+NOTICE: exploratory pilot, not locked training-regimen headline evidence and not causal.
 """
 
 import marimo

@@ -12,7 +12,7 @@ tags:
   - mech-interp
 status: proposed
 governance: exploratory
-phase: phase1
+track: training-regimen
 lane: local
 est_compute: 'reward unit tests GPU-free; a v3 training cell ≈ one GRPO seed (same budget as the v2 cell it parallels)'
 relationships:
@@ -66,7 +66,7 @@ wrong AUROC ↑) without degrading behavior (over-refusal / unknown-answer rates
 
 ## Design
 
-New reward `experiment/phase1/grpo/humility_reward_v3.py` (v2 untouched). Behavior
+New reward `archive/experiment/phase1/grpo/humility_reward_v3.py` (v2 untouched). Behavior
 magnitudes carried over from v2 (dominant). Confidence term = Brier proper score
 scaled to ±`confidence_weight` (raised 0.6 → 1.2, still < behavior magnitudes);
 only exact 0/1 degeneracy is penalized (the v2 anti-high-confidence pressure is
@@ -132,7 +132,7 @@ Arms (proposed v3 training panel, one seed each, mirror the v2 cell otherwise):
 
 ## Outputs & provenance
 
-Reward + tests in `experiment/phase1/grpo/`. Findings to
+Reward + tests in `archive/experiment/phase1/grpo/`. Findings to
 `docs/sessions/20260627T093723Z-caution-vs-doubt-knowledge-gate.md` and here. Does not feed
 the meta-analysis or alter PROTOCOL v0.3 headline cells without a governed amendment.
 

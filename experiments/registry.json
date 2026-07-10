@@ -94,7 +94,7 @@
           "ao_grader.py"
         ],
         "pins": {
-          "ao_grader.py": "979e4130cde58e7220856de219279c603ec413960e5c28f89a16609cf378f01b",
+          "ao_grader.py": "a2abd0753c312ef1d27ea71647db70dc7f3ee2797c500dec56df43971c82e443",
           "cell.yaml": "9eaffd0674fd80aea3bc2fe6a438b81ad0c8c64bcb5e1b8902f8747ac0af3d0a",
           "cell_stage1_caution_perp.yaml": "0b3b58d52b3f34d80a331f8dbeb596b58e9cb5b6b6186b4a2ff29e94c0280770",
           "cell_stage1_fallback_mass_mean.yaml": "f7c0f683c0b14fb9da757d3cac384f5ea4619e4b89e23be020a24d6f13f5c835",
@@ -128,7 +128,7 @@
         ],
         "pins": {
           "ap_build_pool.py": "954cf4e62d34fcd17aab888ad52d769e9cf2236bf373d00633bfa152488486aa",
-          "ap_extract.py": "55ee8bed20cc36fb19846fdead528e34d405135c29c958c8d0c7f5da4ac95e5b",
+          "ap_extract.py": "fc5b97e31048e29a00a08aba6e3750bfa37f10e2c7b4013b4fb13d6c3397eeb8",
           "ap_grade_and_gates.py": "ca74bb4584a273268eefbb2f485f46c3c4084b13d855c9e0fdcbb91fffbcc19d",
           "cloud/modal_ap_veto_length_balanced.py": "8e7350ab838a8f6e8b17255d6c707c4be291fa29903d89ccc20162f2c37f1980"
         }
@@ -180,6 +180,43 @@
       "status": "draft",
       "type": "steer-cell",
       "verdict": ""
+    },
+    {
+      "checkpoint": {
+        "repo": "",
+        "revision": ""
+      },
+      "created_at": "2026-07-08T17:40:52Z",
+      "falsifier": "",
+      "inputs": [],
+      "instrument": {
+        "configs": [],
+        "modules": [],
+        "pins": {}
+      },
+      "kg": [],
+      "legacy": {
+        "label": "R",
+        "migrated_to": "experiments/aux-head-cotraining-native-behavior/AMENDMENT.md",
+        "source": "Amendment R aux-head co-training legacy amendment"
+      },
+      "migration": {
+        "needs_manual_review": [
+          "falsifier",
+          "experiment_type",
+          "instrument_configs",
+          "kg_ids"
+        ],
+        "notes": "Imported from legacy amendment prose. Do not infer missing machine fields without hand-reading AMENDMENT.md."
+      },
+      "prediction": "orchestrator:\n  call: partial/likely-negative; head stays calibrated, emitted scalar barely moves\nuser:\n  call: null\n  note: Predates the dual-prediction practice (adopted 2026-07-03 at AH signing);\n    no separately recorded user prediction.",
+      "question": "Does jointly co-training the aux_head into an unfrozen base change the model's OWN emitted calibration/abstention behavior?",
+      "registered": true,
+      "slug": "aux-head-cotraining-native-behavior",
+      "status": "historical",
+      "title": "Amendment R - Joint Co-Training of the aux_head (Native Behavior Change)",
+      "type": "historical-amendment",
+      "verdict": "FALSIFIED — A1-A2 +0.043 below the +0.05 bar and A1 below A0; co-training shifts the action policy, not the emitted channel."
     },
     {
       "checkpoint": {
@@ -677,7 +714,7 @@
       "falsifier": "Screen, so the bar is graduation: a candidate graduates iff its flip rate exceeds the random-direction control with bootstrap 95% CI excluding 0. No graduations means the dark subspace is ruled out as a near-term actuator. If the positive control does not move behavior the screen is void.",
       "inputs": [
         "experiments/dark-actuator-screen/analysis-committed/dark_displacement_census_summary.md",
-        "experiment/phase1/eval/scorers.py"
+        "archive/experiment/phase1/eval/scorers.py"
       ],
       "instrument": {
         "configs": [
@@ -690,9 +727,9 @@
           "../common/graders/dark_actuator_grader.py"
         ],
         "pins": {
-          "../common/graders/dark_actuator_grader.py": "68046befa27a8b7402837f87b23ba721cd907bc9cb1506f824a1803554826a0f",
+          "../common/graders/dark_actuator_grader.py": "d71c336acaf5ed4a29285ce835d7b451dac916a4f59a68c260f78844f1c5e57e",
           "build_directions.py": "11a72cf4cbdcf2a9884f815b8c1d6037f112d657fa116e187f625f5838960044",
-          "cell.yaml": "cf047c8725f97c9950f25a2b8d0fe4cfd725ad5e0e7e6f1621a8410331530b53",
+          "cell.yaml": "5c81e5a7a2fb85c011b98e150f3c866b099d3c73a02b5f1f22c03398d8bf056e",
           "dark_displacement_census.py": "1a0dff630550868f98a1d9dc5ab8631e22fc90cc28ad22d7ebcb7c15b68ec311",
           "gates.yaml": "a70634ea376e7df7cc6383f367be8a8e87bc371e3439cea22e0dc374f0eb2b87"
         }
@@ -867,7 +904,7 @@
           "cell.yaml": "a6d3ddc4030442757549d05ac8ac4c58d0c535401c5d86f532490744e82e14ee",
           "gates.yaml": "48b65487b9b5b20693645e42ef0c8a4387446638db7c500721d74001fd331c4d",
           "gen_lib.py": "6cffc7282591ca3b0db79d985a024ca2b63cab8afc1c5f5085d13cbdb98b79ce",
-          "grader.py": "ad6cfdf197b775f1bc41850729f58ddd9f81a6e2db583d91cff91e94154a29f8",
+          "grader.py": "dbe39384038feeba162a4c54690973be9544edf81285d002c48f6e0dedeb81d5",
           "model_lib.py": "ce71f6d02d97efdabb3d05e9709eff0dc0d50f2710eed4fe82f06df68389a047"
         }
       },
@@ -1384,7 +1421,7 @@
           "gate_fit.py": "13c6dd304085d22e0b3ab75360cdd34d42f14b97a3dedf2e5f7460a3a7a85fdf",
           "gates.yaml": "18f4f60e4e9667e40cce38e7822e4c69f038c956da99671c4260caba38ec9621",
           "gen_lib.py": "dbcd12b49b4ea655b681bc93853c4bb9742988918c8d228d796ad87289451856",
-          "grader.py": "d76e3a89787e6d8b38aa9707b18aa73d882ed84fab283f720a349676e253f831",
+          "grader.py": "de6b62f79c7b3a20825a9dfec877f0fec474ab6b415835ed8177be845a7d96d1",
           "layers.py": "79ecc7603449768ed662fff8c3ea455222d81d3e91a6e5c711dccc83b771556b",
           "materialize_rows.py": "a0f8f33cf181af6d4f79a2e217fe60519d8a4ad99a1150bb472c923cd31c2604",
           "model_lib.py": "3dde37349942774ea7b044392051af4151eeebb6e5afb05d808aeff835c65a60",
@@ -1556,43 +1593,6 @@
       "title": "Amendment AG — Oracle Dissociation of the Second-Person Doubt Prime",
       "type": "historical-amendment",
       "verdict": "RESOLVED — ASYMMETRIC COMPLIANCE: muzzle obeyed +34.0pt, release resisted (+7.9pt below gate); doubt axis unmoved and anti-semantic; compliance travels through the caution axis."
-    },
-    {
-      "checkpoint": {
-        "repo": "",
-        "revision": ""
-      },
-      "created_at": "2026-07-08T17:40:52Z",
-      "falsifier": "",
-      "inputs": [],
-      "instrument": {
-        "configs": [],
-        "modules": [],
-        "pins": {}
-      },
-      "kg": [],
-      "legacy": {
-        "label": "R",
-        "migrated_to": "experiments/phase-b-joint-aux-head/AMENDMENT.md",
-        "path": "experiment/protocol/AMENDMENT-R-phase-b-joint-aux-head.md"
-      },
-      "migration": {
-        "needs_manual_review": [
-          "falsifier",
-          "experiment_type",
-          "instrument_configs",
-          "kg_ids"
-        ],
-        "notes": "Imported from legacy amendment prose. Do not infer missing machine fields without hand-reading AMENDMENT.md."
-      },
-      "prediction": "orchestrator:\n  call: partial/likely-negative; head stays calibrated, emitted scalar barely moves\nuser:\n  call: null\n  note: Predates the dual-prediction practice (adopted 2026-07-03 at AH signing);\n    no separately recorded user prediction.",
-      "question": "Does jointly co-training the aux_head into an unfrozen base change the model's OWN emitted calibration/abstention behavior?",
-      "registered": true,
-      "slug": "phase-b-joint-aux-head",
-      "status": "historical",
-      "title": "Amendment R — Phase B: Joint Co-Training of the aux_head (Native Behavior Change)",
-      "type": "historical-amendment",
-      "verdict": "FALSIFIED — A1-A2 +0.043 below the +0.05 bar and A1 below A0; co-training shifts the action policy, not the emitted channel."
     },
     {
       "checkpoint": {

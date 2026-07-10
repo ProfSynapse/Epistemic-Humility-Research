@@ -16,7 +16,7 @@ Allowed checkpoint kinds:
 - `decision`: durable choice that changes what happens next.
 - `result`: completed run, analysis, or workflow outcome.
 - `blocker`: issue that prevents progress until resolved.
-- `handoff`: state transfer to another worker, phase, machine, or future session.
+- `handoff`: state transfer to another worker, workstream, machine, or future session.
 - `checkpoint`: generic state marker when a more specific kind does not fit.
 - `recovery`: restart, resume, repair, or rollback after interruption or failure.
 - `validation`: verification check, audit result, or independent confirmation.

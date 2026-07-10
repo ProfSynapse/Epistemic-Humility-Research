@@ -21,7 +21,7 @@ rng = np.random.default_rng(SEED)
 
 BASE = os.path.dirname(os.path.abspath(__file__))
 REPO = Path(__file__).resolve().parents[5]
-LEGACY_ANALYSIS = REPO / "experiment" / "phase1" / "probe" / "analysis"
+LEGACY_ANALYSIS = REPO / "archive" / "experiment" / "phase1" / "probe" / "analysis"
 CACHE = str(LEGACY_ANALYSIS / "mi_category_geometry_20260704" / "cache")
 AH = str(LEGACY_ANALYSIS / "ah_stage0" / "probes")
 OUT = BASE

@@ -179,7 +179,7 @@ def create_session(
     session_id: str,
     title: str,
     question: str,
-    phase: str = "",
+    track: str = "",
     status: str = "active",
     tags: list[str] | None = None,
     overwrite: bool = False,
@@ -211,8 +211,8 @@ def create_session(
         },
         "checkpoints": [],
     }
-    if phase:
-        data["phase"] = phase
+    if track:
+        data["track"] = track
     write_session(path, data, render_initial_body(data))
     return data
 
@@ -369,7 +369,7 @@ def _parser() -> argparse.ArgumentParser:
     )
     init.add_argument("--title", required=True)
     init.add_argument("--question", required=True)
-    init.add_argument("--phase", default="", help=argparse.SUPPRESS)
+    init.add_argument("--track", default="", help="Research track label for this session.")
     init.add_argument("--status", choices=sorted(VALID_STATUS), default="active")
     init.add_argument("--tag", action="append", default=[])
     init.add_argument(
@@ -414,7 +414,7 @@ def main(argv: list[str] | None = None) -> int:
                 session_id=session_id,
                 title=args.title,
                 question=args.question,
-                phase=args.phase,
+                track=args.track,
                 status=args.status,
                 tags=args.tag,
                 overwrite=args.overwrite,

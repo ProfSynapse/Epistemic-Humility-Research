@@ -21,7 +21,7 @@ message. This is the CRM (calibrated reward model) training set from
 reward(chosen_low) and reward(rejected_low) > reward(rejected_high).
 
 Analyses:
-  R1 (KTO recipe + dataset stats -> docs/protocols/phase1/rewardcal-kto-recipe.md):
+  R1 (KTO recipe + dataset stats -> archive/docs/protocols/phase1/rewardcal-kto-recipe.md):
      exact CRM -> KTO binary-label mapping ({chosen_high, rejected_low} ->
      desirable, {chosen_low, rejected_high} -> undesirable), row counts per
      source mixture, confidence-phrase template inventory (extracted from all
@@ -38,7 +38,7 @@ Analyses:
      pre-existing hedging + appended confidence phrase).
 
 Output (deterministic, recomputable; this script is the provenance):
-  docs/protocols/phase1/rewardcal-kto-recipe.md
+  archive/docs/protocols/phase1/rewardcal-kto-recipe.md
   meta-analysis/evidence/rewardcal-contamination-audit.md
   meta-analysis/analysis/figures/rewardcal_contamination.png
 

@@ -48,7 +48,7 @@ Checked out now (live worktrees): none.
 | G |  | DRAFT | — | Best-Stack Replication And Scale Gate | [AMENDMENT-G-best-stack-replication-scale-gate.md](experiments/best-stack-replication-scale-gate/AMENDMENT.md) |
 | H |  | DRAFT | — | Thinking-Enabled Parallel Arm | [AMENDMENT-H-thinking-enabled-parallel-arm.md](experiments/thinking-enabled-parallel-arm/AMENDMENT.md) |
 | I |  | DRAFT | — | 8B Scale And Hyperparameter Gates | [AMENDMENT-I-8b-scale-and-hyperparameter-gates.md](experiments/8b-scale-and-hyperparameter-gates/AMENDMENT.md) |
-| R |  | DRAFT | FALSIFIED | Phase B: Joint Co-Training of the aux_head (Native Behavior Change) | [AMENDMENT-R-phase-b-joint-aux-head.md](experiments/phase-b-joint-aux-head/AMENDMENT.md) |
+| R |  | DRAFT | FALSIFIED | Joint Co-Training of the aux_head (Native Behavior Change) | [AMENDMENT-R-aux-head-cotraining-native-behavior.md](experiments/aux-head-cotraining-native-behavior/AMENDMENT.md) |
 | AL |  | DRAFT | — | Radial anti-propensity steering on the AI-TRUE checkpoint | [AMENDMENT-AL-radial-anti-propensity-steering.md](experiments/radial-anti-propensity-steering/AMENDMENT.md) |
 | AM |  | DRAFT | — | Post-generation veto coverage of the radial-unreachable residual confabs | [AMENDMENT-AM-residual-catch-veto-coverage.md](experiments/residual-catch-veto-coverage/AMENDMENT.md) |
 | S |  | RESOLVED | SUCCESS | Correctness-Confidence Probe (post- vs pre-generation readout) | [AMENDMENT-S-correctness-confidence-probe.md](experiments/correctness-confidence-probe/AMENDMENT.md) |

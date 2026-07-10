@@ -33,7 +33,7 @@ import numpy as np
 
 REPO_DIR = Path(__file__).resolve().parents[3]
 PROBE_DIR = REPO_DIR / "archive/experiment/phase1/probe"
-EVAL_DIR = REPO_DIR / "experiment/phase1/eval"
+EVAL_DIR = REPO_DIR / "archive/experiment/phase1/eval"
 for _p in (str(PROBE_DIR), str(EVAL_DIR)):
     if _p not in sys.path:
         sys.path.insert(0, _p)

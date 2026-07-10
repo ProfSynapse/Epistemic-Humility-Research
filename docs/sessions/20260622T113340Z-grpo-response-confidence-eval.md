@@ -5,7 +5,7 @@ title: GRPO Response-Confidence Eval
 status: active
 created_at: '2026-06-22T11:33:40Z'
 updated_at: '2026-06-22T13:42:31Z'
-phase: phase1
+track: research
 question: Does the completed SFT-bridge GRPO adapter improve response-appropriate
   confidence and truthful SelfAware behavior compared with its SFT JSON-bridge base?
 tags:
@@ -51,13 +51,13 @@ responses.
 - kind: `planning`
 - summary: Added a GRPO-aligned stated-confidence metric for response appropriateness while preserving the existing known-label and answer-correctness confidence metrics.
 - evidence:
-  - `experiment/phase1/eval/scorers.py`
-  - `experiment/phase1/eval/tests/test_scorers.py`
-  - `experiment/phase1/eval/config/eval_amendment_b_response_confidence_selfaware_sft_bridge_grpo_seed1_smoke_local_4b.yaml`
-  - `experiment/phase1/eval/config/eval_amendment_b_response_confidence_selfaware_sft_bridge_grpo_seed1_unknown_smoke_local_4b.yaml`
-  - `experiment/phase1/eval/config/eval_amendment_b_response_confidence_selfaware_sft_bridge_grpo_seed1_full_local_4b.yaml`
+  - `archive/experiment/phase1/eval/scorers.py`
+  - `archive/experiment/phase1/eval/tests/test_scorers.py`
+  - `archive/experiment/phase1/eval/config/eval_amendment_b_response_confidence_selfaware_sft_bridge_grpo_seed1_smoke_local_4b.yaml`
+  - `archive/experiment/phase1/eval/config/eval_amendment_b_response_confidence_selfaware_sft_bridge_grpo_seed1_unknown_smoke_local_4b.yaml`
+  - `archive/experiment/phase1/eval/config/eval_amendment_b_response_confidence_selfaware_sft_bridge_grpo_seed1_full_local_4b.yaml`
 - commands:
-  - `python -m pytest experiment/phase1/eval/tests/test_scorers.py -q`
+  - `python -m pytest archive/experiment/phase1/eval/tests/test_scorers.py -q`
 - decisions:
   - Compare the merged SFT JSON-bridge base as the no-adapter arm against the completed GRPO adapter on that same base.
   - Interpret `confidence` for this GRPO eval as response appropriateness: correct known answers and correct unknown abstentions are high-confidence targets.
@@ -70,11 +70,11 @@ responses.
 - kind: `validation`
 - summary: Known-block and unknown-block smoke evals both completed with 100% stated-confidence coverage, zero retries, and zero retry exhaustion. The first 64 SelfAware rows are all known; the unknown block starts at offset 2337, so a second smoke was required.
 - evidence:
-  - `experiment/phase1/eval/results_amendment_b_response_confidence_selfaware_sft_bridge_grpo_seed1_smoke_4b/`
-  - `experiment/phase1/eval/results_amendment_b_response_confidence_selfaware_sft_bridge_grpo_seed1_unknown_smoke_4b/`
+  - `archive/experiment/phase1/eval/results_amendment_b_response_confidence_selfaware_sft_bridge_grpo_seed1_smoke_4b/`
+  - `archive/experiment/phase1/eval/results_amendment_b_response_confidence_selfaware_sft_bridge_grpo_seed1_unknown_smoke_4b/`
 - commands:
-  - `docker run --rm --gpus all --ipc=host --entrypoint python3 -e HF_HOME=/workspace/repo/.cache/hf -e HUGGINGFACE_HUB_CACHE=/workspace/repo/.cache/hf/hub -v "${PWD}:/workspace/repo" -w /workspace/repo unsloth/unsloth:latest experiment/phase1/eval/run_eval.py --config experiment/phase1/eval/config/eval_amendment_b_response_confidence_selfaware_sft_bridge_grpo_seed1_smoke_local_4b.yaml --live-vllm`
-  - `docker run --rm --gpus all --ipc=host --entrypoint python3 -e HF_HOME=/workspace/repo/.cache/hf -e HUGGINGFACE_HUB_CACHE=/workspace/repo/.cache/hf/hub -v "${PWD}:/workspace/repo" -w /workspace/repo unsloth/unsloth:latest experiment/phase1/eval/run_eval.py --config experiment/phase1/eval/config/eval_amendment_b_response_confidence_selfaware_sft_bridge_grpo_seed1_unknown_smoke_local_4b.yaml --live-vllm`
+  - `docker run --rm --gpus all --ipc=host --entrypoint python3 -e HF_HOME=/workspace/repo/.cache/hf -e HUGGINGFACE_HUB_CACHE=/workspace/repo/.cache/hf/hub -v "${PWD}:/workspace/repo" -w /workspace/repo unsloth/unsloth:latest archive/experiment/phase1/eval/run_eval.py --config archive/experiment/phase1/eval/config/eval_amendment_b_response_confidence_selfaware_sft_bridge_grpo_seed1_smoke_local_4b.yaml --live-vllm`
+  - `docker run --rm --gpus all --ipc=host --entrypoint python3 -e HF_HOME=/workspace/repo/.cache/hf -e HUGGINGFACE_HUB_CACHE=/workspace/repo/.cache/hf/hub -v "${PWD}:/workspace/repo" -w /workspace/repo unsloth/unsloth:latest archive/experiment/phase1/eval/run_eval.py --config archive/experiment/phase1/eval/config/eval_amendment_b_response_confidence_selfaware_sft_bridge_grpo_seed1_unknown_smoke_local_4b.yaml --live-vllm`
 - signals:
     known_smoke:
       sft_json_bridge_seed1:
@@ -107,12 +107,12 @@ responses.
 - kind: `result`
 - summary: Full live-vLLM SelfAware eval completed successfully for both arms in Docker container `eh-grpo-response-confidence-eval-full-20260622074347` with exit code 0. GRPO did not improve truthful rate versus the SFT JSON-bridge base (`40.84%` vs `41.14%`; McNemar `p=0.45009106`) despite reducing known over-refusal.
 - evidence:
-  - `experiment/phase1/eval/results_amendment_b_response_confidence_selfaware_sft_bridge_grpo_seed1_full_4b/sft_json_bridge_seed1__selfaware/metrics.json`
-  - `experiment/phase1/eval/results_amendment_b_response_confidence_selfaware_sft_bridge_grpo_seed1_full_4b/sft_bridge_grpo_seed1__selfaware/metrics.json`
-  - `experiment/phase1/eval/results_amendment_b_response_confidence_selfaware_sft_bridge_grpo_seed1_full_4b/comparisons/summary_table.csv`
-  - `experiment/phase1/eval/results_amendment_b_response_confidence_selfaware_sft_bridge_grpo_seed1_full_4b/comparisons/mcnemar.csv`
+  - `archive/experiment/phase1/eval/results_amendment_b_response_confidence_selfaware_sft_bridge_grpo_seed1_full_4b/sft_json_bridge_seed1__selfaware/metrics.json`
+  - `archive/experiment/phase1/eval/results_amendment_b_response_confidence_selfaware_sft_bridge_grpo_seed1_full_4b/sft_bridge_grpo_seed1__selfaware/metrics.json`
+  - `archive/experiment/phase1/eval/results_amendment_b_response_confidence_selfaware_sft_bridge_grpo_seed1_full_4b/comparisons/summary_table.csv`
+  - `archive/experiment/phase1/eval/results_amendment_b_response_confidence_selfaware_sft_bridge_grpo_seed1_full_4b/comparisons/mcnemar.csv`
 - commands:
-  - `docker run -d --name eh-grpo-response-confidence-eval-full-20260622074347 --gpus all --ipc=host --entrypoint python3 -e HF_HOME=/workspace/repo/.cache/hf -e HUGGINGFACE_HUB_CACHE=/workspace/repo/.cache/hf/hub -v "${PWD}:/workspace/repo" -w /workspace/repo unsloth/unsloth:latest experiment/phase1/eval/run_eval.py --config experiment/phase1/eval/config/eval_amendment_b_response_confidence_selfaware_sft_bridge_grpo_seed1_full_local_4b.yaml --live-vllm`
+  - `docker run -d --name eh-grpo-response-confidence-eval-full-20260622074347 --gpus all --ipc=host --entrypoint python3 -e HF_HOME=/workspace/repo/.cache/hf -e HUGGINGFACE_HUB_CACHE=/workspace/repo/.cache/hf/hub -v "${PWD}:/workspace/repo" -w /workspace/repo unsloth/unsloth:latest archive/experiment/phase1/eval/run_eval.py --config archive/experiment/phase1/eval/config/eval_amendment_b_response_confidence_selfaware_sft_bridge_grpo_seed1_full_local_4b.yaml --live-vllm`
   - `docker inspect eh-grpo-response-confidence-eval-full-20260622074347 --format "{{.State.Status}} {{.State.ExitCode}}"`
   - `docker rm eh-grpo-response-confidence-eval-full-20260622074347`
 - signals:
@@ -159,9 +159,9 @@ responses.
 - summary: Follow-up diagnostics showed the completed SFT JSON-bridge -> GRPO seed-1 adapter failed the confidence-learning objective. It preserved a degenerate confidence channel rather than learning calibrated response confidence.
 - evidence:
   - `scratch/grpo_bootstrap/confidence_diagnostics/20260622_response_confidence/`
-  - `experiment/phase1/eval/results_amendment_b_response_confidence_selfaware_sft_bridge_grpo_seed1_full_4b/`
-  - `experiment/phase1/grpo/build_sft_json_bridge_dataset.py`
-  - `experiment/phase1/grpo/humility_reward.py`
+  - `archive/experiment/phase1/eval/results_amendment_b_response_confidence_selfaware_sft_bridge_grpo_seed1_full_4b/`
+  - `archive/experiment/phase1/grpo/build_sft_json_bridge_dataset.py`
+  - `archive/experiment/phase1/grpo/humility_reward.py`
 - signals:
     failed_grpo_adapter:
       model_tag: sft_bridge_grpo_seed1

@@ -5,7 +5,7 @@ title: GRPO-Centered Stacking Plan
 status: active
 created_at: '2026-06-24T18:30:52Z'
 updated_at: '2026-06-25T11:50:55Z'
-phase: phase1
+track: research
 question: Which completed local SelfAware runs are strongest so far, and should the
   next training extension test GRPO as a third-stage stack with DPO/KTO?
 tags:
@@ -28,9 +28,9 @@ checkpoints:
   summary: Materialized full SelfAware comparison CSVs from checked-in metrics.json
     artifacts so seed-level and grouped evidence are durable outside chat.
   evidence:
-  - experiment/phase1/eval/analysis/build_selfaware_full_run_comparison.py
-  - experiment/phase1/eval/analysis/selfaware_full_run_comparison.csv
-  - experiment/phase1/eval/analysis/selfaware_full_run_comparison_grouped.csv
+  - archive/experiment/phase1/eval/analysis/build_selfaware_full_run_comparison.py
+  - archive/experiment/phase1/eval/analysis/selfaware_full_run_comparison.csv
+  - archive/experiment/phase1/eval/analysis/selfaware_full_run_comparison_grouped.csv
   run_ids: []
   commands:
   - python experiment\\phase1\\eval\\analysis\\build_selfaware_full_run_comparison.py
@@ -98,20 +98,20 @@ checkpoints:
     ran the bounded merged-source sanity eval, and launched the full Amendment F `clean_sft_dpo_grpo`
     GRPO run.
   evidence:
-  - experiment/phase1/eval/config/eval_amendment_f_response_confidence_selfaware_clean_sft_dpo_merged_seed1_sanity_local_4b.yaml
-  - experiment/phase1/eval/results_amendment_f_response_confidence_selfaware_clean_sft_dpo_merged_seed1_sanity_4b/clean_sft_dpo_merged_seed1_sanity__selfaware/metrics.json
-  - experiment/phase1/grpo/configs/grpo_clean_sft_dpo_grpo_seed1_full.yaml
+  - archive/experiment/phase1/eval/config/eval_amendment_f_response_confidence_selfaware_clean_sft_dpo_merged_seed1_sanity_local_4b.yaml
+  - archive/experiment/phase1/eval/results_amendment_f_response_confidence_selfaware_clean_sft_dpo_merged_seed1_sanity_4b/clean_sft_dpo_merged_seed1_sanity__selfaware/metrics.json
+  - archive/experiment/phase1/grpo/configs/grpo_clean_sft_dpo_grpo_seed1_full.yaml
   - scratch/schema_response_confidence/runs/schema_clean_sft_dpo_seed1_full/20260623_132930/Qwen3-4B-clean-sft-dpo/merged-16bit
   - scratch/schema_response_confidence/runs/clean_sft_dpo_grpo_seed1_full/20260624_193929/logs/training_20260624_194041.jsonl
   run_ids:
   - clean_sft_dpo_grpo_seed1
   commands:
   - docker run --rm --gpus all --ipc=host --entrypoint python3 ... shared.model_loading.merge.merge_lora_checkpoint(...)
-  - docker run -d --name eh-amend-f-dpo-merged-sanity-20260624a ... experiment/phase1/eval/run_eval.py
-    --config experiment/phase1/eval/config/eval_amendment_f_response_confidence_selfaware_clean_sft_dpo_merged_seed1_sanity_local_4b.yaml
+  - docker run -d --name eh-amend-f-dpo-merged-sanity-20260624a ... archive/experiment/phase1/eval/run_eval.py
+    --config archive/experiment/phase1/eval/config/eval_amendment_f_response_confidence_selfaware_clean_sft_dpo_merged_seed1_sanity_local_4b.yaml
     --live-vllm
   - docker run -d --name eh-clean-sft-dpo-grpo-seed1-full-20260624a ... synaptic-tuner/Trainers/grpo/train_grpo.py
-    --config experiment/phase1/grpo/configs/grpo_clean_sft_dpo_grpo_seed1_full.yaml
+    --config archive/experiment/phase1/grpo/configs/grpo_clean_sft_dpo_grpo_seed1_full.yaml
   decisions:
   - The source sanity eval passed the launch gate with exit 0, 192/192 response-confidence
     coverage, and in-family DPO-source behavior.
@@ -145,14 +145,14 @@ checkpoints:
   - scratch/schema_response_confidence/runs/clean_sft_dpo_grpo_seed1_full/20260624_193929/final_model
   - scratch/schema_response_confidence/runs/clean_sft_dpo_grpo_seed1_full/20260624_193929/training_lineage.json
   - scratch/schema_response_confidence/runs/clean_sft_dpo_grpo_seed1_full/20260624_193929/capacity_features.json
-  - experiment/phase1/eval/config/eval_amendment_f_response_confidence_selfaware_clean_sft_dpo_grpo_seed1_full_local_4b.yaml
+  - archive/experiment/phase1/eval/config/eval_amendment_f_response_confidence_selfaware_clean_sft_dpo_grpo_seed1_full_local_4b.yaml
   run_ids:
   - clean_sft_dpo_grpo_seed1
   commands:
   - docker ps -a --filter "name=eh-clean-sft-dpo-grpo-seed1-full-20260624a" --format
     "{{.Names}}\t{{.Status}}"
-  - docker run -d --name eh-clean-sft-dpo-grpo-full-eval-20260625a ... experiment/phase1/eval/run_eval.py
-    --config experiment/phase1/eval/config/eval_amendment_f_response_confidence_selfaware_clean_sft_dpo_grpo_seed1_full_local_4b.yaml
+  - docker run -d --name eh-clean-sft-dpo-grpo-full-eval-20260625a ... archive/experiment/phase1/eval/run_eval.py
+    --config archive/experiment/phase1/eval/config/eval_amendment_f_response_confidence_selfaware_clean_sft_dpo_grpo_seed1_full_local_4b.yaml
     --live-vllm
   decisions:
   - Do not interpret the three-stage arm until the full SelfAware eval completes and
@@ -180,10 +180,10 @@ checkpoints:
     and no thinking contamination. Behavior moved toward the SFT->GRPO v2 profile:
     lower unknown answering than DPO, but high known over-refusal.'
   evidence:
-  - experiment/phase1/eval/results_amendment_f_response_confidence_selfaware_clean_sft_dpo_grpo_seed1_full_4b/clean_sft_dpo_grpo_seed1__selfaware/metrics.json
-  - experiment/phase1/eval/results_amendment_f_response_confidence_selfaware_clean_sft_dpo_grpo_seed1_full_4b/clean_sft_dpo_grpo_seed1__selfaware/scored_rows.jsonl
-  - experiment/phase1/eval/analysis/selfaware_full_run_comparison.csv
-  - experiment/phase1/eval/analysis/selfaware_full_run_comparison_grouped.csv
+  - archive/experiment/phase1/eval/results_amendment_f_response_confidence_selfaware_clean_sft_dpo_grpo_seed1_full_4b/clean_sft_dpo_grpo_seed1__selfaware/metrics.json
+  - archive/experiment/phase1/eval/results_amendment_f_response_confidence_selfaware_clean_sft_dpo_grpo_seed1_full_4b/clean_sft_dpo_grpo_seed1__selfaware/scored_rows.jsonl
+  - archive/experiment/phase1/eval/analysis/selfaware_full_run_comparison.csv
+  - archive/experiment/phase1/eval/analysis/selfaware_full_run_comparison_grouped.csv
   run_ids:
   - clean_sft_dpo_grpo_seed1
   commands:
@@ -222,19 +222,19 @@ checkpoints:
     GRPO run.
   evidence:
   - scratch/schema_response_confidence/runs/schema_clean_sft_kto_seed1_full/20260623_200200/Qwen3-4B-clean-sft-kto/merged-16bit
-  - experiment/phase1/eval/config/eval_amendment_f_response_confidence_selfaware_clean_sft_kto_merged_seed1_sanity_local_4b.yaml
-  - experiment/phase1/eval/results_amendment_f_response_confidence_selfaware_clean_sft_kto_merged_seed1_sanity_4b/clean_sft_kto_merged_seed1_sanity__selfaware/metrics.json
-  - experiment/phase1/grpo/configs/grpo_clean_sft_kto_grpo_seed1_full.yaml
+  - archive/experiment/phase1/eval/config/eval_amendment_f_response_confidence_selfaware_clean_sft_kto_merged_seed1_sanity_local_4b.yaml
+  - archive/experiment/phase1/eval/results_amendment_f_response_confidence_selfaware_clean_sft_kto_merged_seed1_sanity_4b/clean_sft_kto_merged_seed1_sanity__selfaware/metrics.json
+  - archive/experiment/phase1/grpo/configs/grpo_clean_sft_kto_grpo_seed1_full.yaml
   - scratch/schema_response_confidence/runs/clean_sft_kto_grpo_seed1_full/20260625_012319/logs/training_20260625_012419.jsonl
   run_ids:
   - clean_sft_kto_grpo_seed1
   commands:
   - docker run --rm --gpus all --ipc=host --entrypoint python3 ... shared.model_loading.merge.merge_lora_checkpoint(...)
-  - docker run -d --name eh-amend-f-kto-merged-sanity-20260625a ... experiment/phase1/eval/run_eval.py
-    --config experiment/phase1/eval/config/eval_amendment_f_response_confidence_selfaware_clean_sft_kto_merged_seed1_sanity_local_4b.yaml
+  - docker run -d --name eh-amend-f-kto-merged-sanity-20260625a ... archive/experiment/phase1/eval/run_eval.py
+    --config archive/experiment/phase1/eval/config/eval_amendment_f_response_confidence_selfaware_clean_sft_kto_merged_seed1_sanity_local_4b.yaml
     --live-vllm
   - docker run -d --name eh-clean-sft-kto-grpo-seed1-full-20260625a ... synaptic-tuner/Trainers/grpo/train_grpo.py
-    --config experiment/phase1/grpo/configs/grpo_clean_sft_kto_grpo_seed1_full.yaml
+    --config archive/experiment/phase1/grpo/configs/grpo_clean_sft_kto_grpo_seed1_full.yaml
   decisions:
   - The merged KTO source sanity eval passed the gate with in-family KTO behavior
     and no schema/thinking contamination.
@@ -266,7 +266,7 @@ checkpoints:
     its advantage is modest and all Amendment F arms still show high, behavior-insensitive
     response confidence.
   evidence:
-  - experiment/phase1/eval/analysis/selfaware_full_run_comparison_grouped.csv
+  - archive/experiment/phase1/eval/analysis/selfaware_full_run_comparison_grouped.csv
   - notes/experiments/clean-sft-grpo-dpo.md
   - notes/experiments/clean-sft-grpo-kto.md
   run_ids: []
@@ -301,9 +301,9 @@ the next training extension test GRPO as a third-stage stack with DPO/KTO?
   `metrics.json` artifacts so seed-level and grouped evidence are durable
   outside chat.
 - evidence:
-  - `experiment/phase1/eval/analysis/build_selfaware_full_run_comparison.py`
-  - `experiment/phase1/eval/analysis/selfaware_full_run_comparison.csv`
-  - `experiment/phase1/eval/analysis/selfaware_full_run_comparison_grouped.csv`
+  - `archive/experiment/phase1/eval/analysis/build_selfaware_full_run_comparison.py`
+  - `archive/experiment/phase1/eval/analysis/selfaware_full_run_comparison.csv`
+  - `archive/experiment/phase1/eval/analysis/selfaware_full_run_comparison_grouped.csv`
 - interpretation: The grouped CSV keeps protocol families separate. It should
   be used as a comparison index, not as a pooled leaderboard. The balanced
   behavior score is exploratory and unregistered.
@@ -353,9 +353,9 @@ the next training extension test GRPO as a third-stage stack with DPO/KTO?
   base, ran the bounded merged-source sanity eval, and launched the full
   Amendment F `clean_sft_dpo_grpo` GRPO run.
 - evidence:
-  - `experiment/phase1/eval/config/eval_amendment_f_response_confidence_selfaware_clean_sft_dpo_merged_seed1_sanity_local_4b.yaml`
-  - `experiment/phase1/eval/results_amendment_f_response_confidence_selfaware_clean_sft_dpo_merged_seed1_sanity_4b/clean_sft_dpo_merged_seed1_sanity__selfaware/metrics.json`
-  - `experiment/phase1/grpo/configs/grpo_clean_sft_dpo_grpo_seed1_full.yaml`
+  - `archive/experiment/phase1/eval/config/eval_amendment_f_response_confidence_selfaware_clean_sft_dpo_merged_seed1_sanity_local_4b.yaml`
+  - `archive/experiment/phase1/eval/results_amendment_f_response_confidence_selfaware_clean_sft_dpo_merged_seed1_sanity_4b/clean_sft_dpo_merged_seed1_sanity__selfaware/metrics.json`
+  - `archive/experiment/phase1/grpo/configs/grpo_clean_sft_dpo_grpo_seed1_full.yaml`
   - `scratch/schema_response_confidence/runs/schema_clean_sft_dpo_seed1_full/20260623_132930/Qwen3-4B-clean-sft-dpo/merged-16bit`
   - `scratch/schema_response_confidence/runs/clean_sft_dpo_grpo_seed1_full/20260624_193929/logs/training_20260624_194041.jsonl`
 - sanity eval: exit 0; `n=192`; response-confidence coverage `100%`;
@@ -380,7 +380,7 @@ the next training extension test GRPO as a third-stage stack with DPO/KTO?
   - `scratch/schema_response_confidence/runs/clean_sft_dpo_grpo_seed1_full/20260624_193929/final_model`
   - `scratch/schema_response_confidence/runs/clean_sft_dpo_grpo_seed1_full/20260624_193929/training_lineage.json`
   - `scratch/schema_response_confidence/runs/clean_sft_dpo_grpo_seed1_full/20260624_193929/capacity_features.json`
-  - `experiment/phase1/eval/config/eval_amendment_f_response_confidence_selfaware_clean_sft_dpo_grpo_seed1_full_local_4b.yaml`
+  - `archive/experiment/phase1/eval/config/eval_amendment_f_response_confidence_selfaware_clean_sft_dpo_grpo_seed1_full_local_4b.yaml`
 - training result: final step `1861`, total epochs `1.0`, final loss
   `0.1629`, peak reserved VRAM `57.99%`, OOM risk `low`.
 - eval launch: container `eh-clean-sft-dpo-grpo-full-eval-20260625a`.
@@ -419,9 +419,9 @@ the next training extension test GRPO as a third-stage stack with DPO/KTO?
   Amendment F `clean_sft_kto_grpo` GRPO run.
 - evidence:
   - `scratch/schema_response_confidence/runs/schema_clean_sft_kto_seed1_full/20260623_200200/Qwen3-4B-clean-sft-kto/merged-16bit`
-  - `experiment/phase1/eval/config/eval_amendment_f_response_confidence_selfaware_clean_sft_kto_merged_seed1_sanity_local_4b.yaml`
-  - `experiment/phase1/eval/results_amendment_f_response_confidence_selfaware_clean_sft_kto_merged_seed1_sanity_4b/clean_sft_kto_merged_seed1_sanity__selfaware/metrics.json`
-  - `experiment/phase1/grpo/configs/grpo_clean_sft_kto_grpo_seed1_full.yaml`
+  - `archive/experiment/phase1/eval/config/eval_amendment_f_response_confidence_selfaware_clean_sft_kto_merged_seed1_sanity_local_4b.yaml`
+  - `archive/experiment/phase1/eval/results_amendment_f_response_confidence_selfaware_clean_sft_kto_merged_seed1_sanity_4b/clean_sft_kto_merged_seed1_sanity__selfaware/metrics.json`
+  - `archive/experiment/phase1/grpo/configs/grpo_clean_sft_kto_grpo_seed1_full.yaml`
   - `scratch/schema_response_confidence/runs/clean_sft_kto_grpo_seed1_full/20260625_012319/logs/training_20260625_012419.jsonl`
 - sanity eval: exit 0; `n=192`; response-confidence coverage `100%`;
   truthful `49.48%`; unknown refusal recall `84.21%`; unknown answer rate
@@ -445,13 +445,13 @@ the next training extension test GRPO as a third-stage stack with DPO/KTO?
   - `scratch/schema_response_confidence/runs/clean_sft_kto_grpo_seed1_full/20260625_012319/final_model`
   - `scratch/schema_response_confidence/runs/clean_sft_kto_grpo_seed1_full/20260625_012319/training_lineage.json`
   - `scratch/schema_response_confidence/runs/clean_sft_kto_grpo_seed1_full/20260625_012319/capacity_features.json`
-  - `experiment/phase1/eval/config/eval_amendment_f_response_confidence_selfaware_clean_sft_kto_grpo_seed1_full_local_4b.yaml`
+  - `archive/experiment/phase1/eval/config/eval_amendment_f_response_confidence_selfaware_clean_sft_kto_grpo_seed1_full_local_4b.yaml`
 - training result: final step `1861`, total epochs `1.0`, final loss
   `0.1162`, peak reserved VRAM `72.62%`, OOM risk `low`.
 - eval launch: container `eh-clean-sft-kto-grpo-full-eval-20260625a`.
 - next setup: prepared the bounded merged-source sanity eval config for the
   next Amendment F source, `clean_sft_grpo_v2_merged_seed1_sanity`, at
-  `experiment/phase1/eval/config/eval_amendment_f_response_confidence_selfaware_clean_sft_grpo_v2_merged_seed1_sanity_local_4b.yaml`.
+  `archive/experiment/phase1/eval/config/eval_amendment_f_response_confidence_selfaware_clean_sft_grpo_v2_merged_seed1_sanity_local_4b.yaml`.
 - decision: Do not launch the GRPO-v2 source merge or the `clean_sft_grpo_dpo`
   arm until the active `clean_sft_kto_grpo` full eval completes and passes
   post-eval sanity checks.
@@ -464,10 +464,10 @@ the next training extension test GRPO as a third-stage stack with DPO/KTO?
   with `100%` response-confidence coverage, no thinking contamination, and zero
   schema retries.
 - evidence:
-  - `experiment/phase1/eval/results_amendment_f_response_confidence_selfaware_clean_sft_kto_grpo_seed1_full_4b/clean_sft_kto_grpo_seed1__selfaware/metrics.json`
-  - `experiment/phase1/eval/results_amendment_f_response_confidence_selfaware_clean_sft_kto_grpo_seed1_full_4b/clean_sft_kto_grpo_seed1__selfaware/scored_rows.jsonl`
-  - `experiment/phase1/eval/analysis/selfaware_full_run_comparison.csv`
-  - `experiment/phase1/eval/analysis/selfaware_full_run_comparison_grouped.csv`
+  - `archive/experiment/phase1/eval/results_amendment_f_response_confidence_selfaware_clean_sft_kto_grpo_seed1_full_4b/clean_sft_kto_grpo_seed1__selfaware/metrics.json`
+  - `archive/experiment/phase1/eval/results_amendment_f_response_confidence_selfaware_clean_sft_kto_grpo_seed1_full_4b/clean_sft_kto_grpo_seed1__selfaware/scored_rows.jsonl`
+  - `archive/experiment/phase1/eval/analysis/selfaware_full_run_comparison.csv`
+  - `archive/experiment/phase1/eval/analysis/selfaware_full_run_comparison_grouped.csv`
 - metrics: `truthful_pct=40.84`, `refusal_recall_pct=92.54`,
   `answer_on_unknown_pct=7.46`, `over_refusal_pct=66.37`,
   `correct_on_known_pct=53.56`, mean response confidence `0.862188`, Brier vs
@@ -490,8 +490,8 @@ the next training extension test GRPO as a third-stage stack with DPO/KTO?
   DPO run.
 - evidence:
   - `scratch/schema_response_confidence/runs/schema_clean_sft_grpo_v2_seed1_full/20260624_095831/Qwen3-4B-clean-sft-grpo-v2/merged-16bit`
-  - `experiment/phase1/eval/config/eval_amendment_f_response_confidence_selfaware_clean_sft_grpo_v2_merged_seed1_sanity_local_4b.yaml`
-  - `experiment/phase1/eval/results_amendment_f_response_confidence_selfaware_clean_sft_grpo_v2_merged_seed1_sanity_4b/clean_sft_grpo_v2_merged_seed1_sanity__selfaware/metrics.json`
+  - `archive/experiment/phase1/eval/config/eval_amendment_f_response_confidence_selfaware_clean_sft_grpo_v2_merged_seed1_sanity_local_4b.yaml`
+  - `archive/experiment/phase1/eval/results_amendment_f_response_confidence_selfaware_clean_sft_grpo_v2_merged_seed1_sanity_4b/clean_sft_grpo_v2_merged_seed1_sanity__selfaware/metrics.json`
   - `scratch/schema_response_confidence/runs/clean_sft_grpo_dpo_seed1_full/20260625_031724/logs/training_20260625_071912.jsonl`
 - merged-source sanity: exit 0; `n=192`; response-confidence coverage `100%`;
   truthful `50.52%`; unknown refusal recall `90.53%`; unknown answer rate
@@ -537,7 +537,7 @@ the next training extension test GRPO as a third-stage stack with DPO/KTO?
   - `scratch/schema_response_confidence/runs/clean_sft_grpo_dpo_seed1_full/20260625_031724/final_model`
   - `scratch/schema_response_confidence/runs/clean_sft_grpo_dpo_seed1_full/20260625_031724/training_lineage.json`
   - `scratch/schema_response_confidence/runs/clean_sft_grpo_dpo_seed1_full/20260625_031724/capacity_features.json`
-  - `experiment/phase1/eval/config/eval_amendment_f_response_confidence_selfaware_clean_sft_grpo_dpo_seed1_full_local_4b.yaml`
+  - `archive/experiment/phase1/eval/config/eval_amendment_f_response_confidence_selfaware_clean_sft_grpo_dpo_seed1_full_local_4b.yaml`
 - training result: final step `1868`, total epochs `1.0`, train runtime
   `5068.499s`, peak reserved VRAM `46.68%`, OOM risk `low`.
 - training observation: DPO reached near-perfect preference separation for much
@@ -553,10 +553,10 @@ the next training extension test GRPO as a third-stage stack with DPO/KTO?
   with `100%` response-confidence coverage, no thinking contamination, zero
   schema retries, and a structurally sane row count.
 - evidence:
-  - `experiment/phase1/eval/results_amendment_f_response_confidence_selfaware_clean_sft_grpo_dpo_seed1_full_4b/clean_sft_grpo_dpo_seed1__selfaware/metrics.json`
-  - `experiment/phase1/eval/results_amendment_f_response_confidence_selfaware_clean_sft_grpo_dpo_seed1_full_4b/clean_sft_grpo_dpo_seed1__selfaware/scored_rows.jsonl`
-  - `experiment/phase1/eval/analysis/selfaware_full_run_comparison.csv`
-  - `experiment/phase1/eval/analysis/selfaware_full_run_comparison_grouped.csv`
+  - `archive/experiment/phase1/eval/results_amendment_f_response_confidence_selfaware_clean_sft_grpo_dpo_seed1_full_4b/clean_sft_grpo_dpo_seed1__selfaware/metrics.json`
+  - `archive/experiment/phase1/eval/results_amendment_f_response_confidence_selfaware_clean_sft_grpo_dpo_seed1_full_4b/clean_sft_grpo_dpo_seed1__selfaware/scored_rows.jsonl`
+  - `archive/experiment/phase1/eval/analysis/selfaware_full_run_comparison.csv`
+  - `archive/experiment/phase1/eval/analysis/selfaware_full_run_comparison_grouped.csv`
 - metrics: `truthful_pct=41.64`, `refusal_recall_pct=93.31`,
   `answer_on_unknown_pct=6.69`, `over_refusal_pct=63.63`,
   `correct_on_known_pct=51.76`, mean response confidence `0.866301`, Brier vs
@@ -640,7 +640,7 @@ the next training extension test GRPO as a third-stage stack with DPO/KTO?
   behavior.
 - evidence:
   - `scratch/schema_response_confidence/runs/clean_sft_grpo_kto_seed1_full/20260625_052610/logs/training_20260625_092807.jsonl`
-  - `experiment/phase1/eval/config/eval_amendment_f_response_confidence_selfaware_clean_sft_grpo_kto_seed1_full_local_4b.yaml`
+  - `archive/experiment/phase1/eval/config/eval_amendment_f_response_confidence_selfaware_clean_sft_grpo_kto_seed1_full_local_4b.yaml`
 - progress: latest inspected step `785/2491`, throughput about `0.417`
   steps/s.
 - capacity: max reserved VRAM still `16.639 GB` (`69.33%`), live `nvidia-smi`
@@ -699,7 +699,7 @@ the next training extension test GRPO as a third-stage stack with DPO/KTO?
   - `scratch/schema_response_confidence/runs/clean_sft_grpo_kto_seed1_full/20260625_052610/final_model`
   - `scratch/schema_response_confidence/runs/clean_sft_grpo_kto_seed1_full/20260625_052610/training_lineage.json`
   - `scratch/schema_response_confidence/runs/clean_sft_grpo_kto_seed1_full/20260625_052610/capacity_features.json`
-  - `experiment/phase1/eval/config/eval_amendment_f_response_confidence_selfaware_clean_sft_grpo_kto_seed1_full_local_4b.yaml`
+  - `archive/experiment/phase1/eval/config/eval_amendment_f_response_confidence_selfaware_clean_sft_grpo_kto_seed1_full_local_4b.yaml`
 - training result: final step `2491`, total epochs `1.0`, train runtime
   `6159.447s`, final loss `0.0931598`.
 - capacity: batch `12` completed without OOM, but peak reserved VRAM reached
@@ -719,10 +719,10 @@ the next training extension test GRPO as a third-stage stack with DPO/KTO?
   with `100%` response-confidence coverage, no thinking contamination, and zero
   schema retries.
 - evidence:
-  - `experiment/phase1/eval/results_amendment_f_response_confidence_selfaware_clean_sft_grpo_kto_seed1_full_4b/clean_sft_grpo_kto_seed1__selfaware/metrics.json`
-  - `experiment/phase1/eval/results_amendment_f_response_confidence_selfaware_clean_sft_grpo_kto_seed1_full_4b/clean_sft_grpo_kto_seed1__selfaware/scored_rows.jsonl`
-  - `experiment/phase1/eval/analysis/selfaware_full_run_comparison.csv`
-  - `experiment/phase1/eval/analysis/selfaware_full_run_comparison_grouped.csv`
+  - `archive/experiment/phase1/eval/results_amendment_f_response_confidence_selfaware_clean_sft_grpo_kto_seed1_full_4b/clean_sft_grpo_kto_seed1__selfaware/metrics.json`
+  - `archive/experiment/phase1/eval/results_amendment_f_response_confidence_selfaware_clean_sft_grpo_kto_seed1_full_4b/clean_sft_grpo_kto_seed1__selfaware/scored_rows.jsonl`
+  - `archive/experiment/phase1/eval/analysis/selfaware_full_run_comparison.csv`
+  - `archive/experiment/phase1/eval/analysis/selfaware_full_run_comparison_grouped.csv`
 - metrics: `truthful_pct=40.90`, `refusal_recall_pct=89.63`,
   `answer_on_unknown_pct=10.37`, `over_refusal_pct=60.59`,
   `correct_on_known_pct=49.19`, mean response confidence `0.864039`, Brier vs
@@ -744,7 +744,7 @@ the next training extension test GRPO as a third-stage stack with DPO/KTO?
 - kind: `decision`
 - summary: All four Amendment F seed-1 local GRPO-centered stack arms completed training and full SelfAware evals. The strongest seed-1 stack is clean_sft_grpo_dpo, but its advantage is modest and all Amendment F arms still show high, behavior-insensitive response confidence.
 - evidence:
-  - `experiment/phase1/eval/analysis/selfaware_full_run_comparison_grouped.csv`
+  - `archive/experiment/phase1/eval/analysis/selfaware_full_run_comparison_grouped.csv`
   - `notes/experiments/clean-sft-grpo-dpo.md`
   - `notes/experiments/clean-sft-grpo-kto.md`
 - decisions:

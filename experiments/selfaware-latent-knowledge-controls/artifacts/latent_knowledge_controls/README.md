@@ -11,5 +11,5 @@ SelfAware latent-knowledge control package.
 - `caution_axis_transfer.json`: cross-regimen caution-axis transfer geometry.
 - `*.log`: original command output logs for the adjacent JSON result.
 
-Producer scripts remain under `experiment/phase1/probe/` while the Phase 1 probe
+Producer scripts remain under `archive/experiment/phase1/probe/` while the locked training-regimen probe
 code tree is migrated.

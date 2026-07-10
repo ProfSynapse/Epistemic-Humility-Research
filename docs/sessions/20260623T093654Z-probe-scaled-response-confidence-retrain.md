@@ -5,7 +5,7 @@ title: Probe-Scaled Response Confidence Retrain
 status: active
 created_at: '2026-06-23T09:36:54Z'
 updated_at: '2026-06-23T12:24:00Z'
-phase: phase1
+track: research
 question: Can probe-derived 32-sample p_correct targets prevent response_confidence
   collapse in schema-SFT and downstream GRPO?
 tags:
@@ -55,8 +55,8 @@ only a GRPO failure.
 - evidence:
   - `experiments/schema-response-confidence/AMENDMENT.md`
   - `experiments/probe-scaled-response-confidence/AMENDMENT.md`
-  - `experiment/phase1/probe/qwen3-4b-instruct/probe_results.jsonl`
-  - `experiment/phase1/grpo/build_schema_response_confidence_datasets.py`
+  - `archive/experiment/phase1/probe/qwen3-4b-instruct/probe_results.jsonl`
+  - `archive/experiment/phase1/grpo/build_schema_response_confidence_datasets.py`
   - `docs/sessions/20260622T135326Z-schema-response-confidence-track.md`
 - signals:
     old_schema_sft_rows: 14943
@@ -84,15 +84,15 @@ only a GRPO failure.
 - kind: `validation`
 - summary: Patched and regenerated the schema response-confidence datasets so ordinary rows use probe-derived 32-sample confidence instead of a constant 0.8 target.
 - evidence:
-  - `experiment/phase1/grpo/build_schema_response_confidence_datasets.py`
-  - `experiment/phase1/grpo/tests/test_build_schema_response_confidence_datasets.py`
+  - `archive/experiment/phase1/grpo/build_schema_response_confidence_datasets.py`
+  - `archive/experiment/phase1/grpo/tests/test_build_schema_response_confidence_datasets.py`
   - `scratch/schema_response_confidence/qwen3-4b-instruct/response_confidence_schema_manifest.json`
   - `scratch/schema_response_confidence/qwen3-4b-instruct/sft_response_confidence_train.jsonl`
   - `scratch/schema_response_confidence/qwen3-4b-instruct/dpo_response_confidence_train.jsonl`
   - `scratch/schema_response_confidence/qwen3-4b-instruct/kto_response_confidence_train.jsonl`
 - commands:
-  - `python -m pytest experiment\phase1\grpo\tests\test_build_schema_response_confidence_datasets.py experiment\phase1\grpo\tests\test_build_grpo_dataset.py experiment\phase1\grpo\tests\test_humility_reward.py -q`
-  - `python experiment\phase1\grpo\build_schema_response_confidence_datasets.py --output-dir scratch\schema_response_confidence\qwen3-4b-instruct --include-ambiguous-middle`
+  - `python -m pytest archive\experiment\phase1\grpo\tests\test_build_schema_response_confidence_datasets.py archive\experiment\phase1\grpo\tests\test_build_grpo_dataset.py archive\experiment\phase1\grpo\tests\test_humility_reward.py -q`
+  - `python archive\experiment\phase1\grpo\build_schema_response_confidence_datasets.py --output-dir scratch\schema_response_confidence\qwen3-4b-instruct --include-ambiguous-middle`
 - signals:
     tests_passed: 29
     sft:
@@ -139,17 +139,17 @@ only a GRPO failure.
 - kind: `execution`
 - summary: Ran the bounded probe-scaled schema-SFT smoke, fixed a generic SFT post-training logging bug, confirmed clean trainer exit, and launched the full probe-scaled schema-SFT retrain.
 - evidence:
-  - `experiment/phase1/grpo/configs/sft_schema_probe_scaled_response_confidence_seed1_smoke_config.py`
-  - `experiment/phase1/grpo/configs/sft_schema_probe_scaled_response_confidence_seed1_full_config.py`
+  - `archive/experiment/phase1/grpo/configs/sft_schema_probe_scaled_response_confidence_seed1_smoke_config.py`
+  - `archive/experiment/phase1/grpo/configs/sft_schema_probe_scaled_response_confidence_seed1_full_config.py`
   - `scratch/schema_response_confidence/runs/sft_schema_probe_scaled_seed1_smoke/20260623_094821/training_lineage.json`
   - `scratch/schema_response_confidence/runs/sft_schema_probe_scaled_seed1_smoke/20260623_094821/capacity_features.json`
   - `scratch/schema_response_confidence/runs/sft_schema_probe_scaled_seed1_smoke/20260623_094821/final_model/adapter_model.safetensors`
   - `synaptic-tuner/Trainers/sft/train_sft.py`
 - commands:
-  - `docker run -d --name eh-probe-scaled-sft-smoke-20260623a ... train_sft.py --config experiment/phase1/grpo/configs/sft_schema_probe_scaled_response_confidence_seed1_smoke_config.py --max-steps 32 --no-dashboard`
+  - `docker run -d --name eh-probe-scaled-sft-smoke-20260623a ... train_sft.py --config archive/experiment/phase1/grpo/configs/sft_schema_probe_scaled_response_confidence_seed1_smoke_config.py --max-steps 32 --no-dashboard`
   - `python -m py_compile synaptic-tuner\Trainers\sft\train_sft.py`
-  - `docker run -d --name eh-probe-scaled-sft-smoke-20260623b ... train_sft.py --config experiment/phase1/grpo/configs/sft_schema_probe_scaled_response_confidence_seed1_smoke_config.py --max-steps 2 --no-dashboard`
-  - `docker run -d --name eh-probe-scaled-sft-full-20260623a ... train_sft.py --config experiment/phase1/grpo/configs/sft_schema_probe_scaled_response_confidence_seed1_full_config.py --no-dashboard`
+  - `docker run -d --name eh-probe-scaled-sft-smoke-20260623b ... train_sft.py --config archive/experiment/phase1/grpo/configs/sft_schema_probe_scaled_response_confidence_seed1_smoke_config.py --max-steps 2 --no-dashboard`
+  - `docker run -d --name eh-probe-scaled-sft-full-20260623a ... train_sft.py --config archive/experiment/phase1/grpo/configs/sft_schema_probe_scaled_response_confidence_seed1_full_config.py --no-dashboard`
 - signals:
     smoke_32_step:
       container: eh-probe-scaled-sft-smoke-20260623a
@@ -192,12 +192,12 @@ only a GRPO failure.
 - evidence:
   - `scratch/schema_response_confidence/runs/sft_schema_probe_scaled_seed1_full/20260623_095638/training_lineage.json`
   - `scratch/schema_response_confidence/runs/sft_schema_probe_scaled_seed1_full/20260623_095638/capacity_features.json`
-  - `experiment/phase1/eval/config/eval_amendment_e_response_confidence_selfaware_probe_scaled_sft_seed1_smoke_local_4b.yaml`
-  - `experiment/phase1/eval/results_amendment_e_response_confidence_selfaware_probe_scaled_sft_seed1_smoke_4b/probe_scaled_schema_sft_seed1__selfaware/metrics.json`
-  - `experiment/phase1/eval/results_amendment_e_response_confidence_selfaware_probe_scaled_sft_seed1_smoke_4b/probe_scaled_schema_sft_seed1__selfaware/scored_rows.jsonl`
+  - `archive/experiment/phase1/eval/config/eval_amendment_e_response_confidence_selfaware_probe_scaled_sft_seed1_smoke_local_4b.yaml`
+  - `archive/experiment/phase1/eval/results_amendment_e_response_confidence_selfaware_probe_scaled_sft_seed1_smoke_4b/probe_scaled_schema_sft_seed1__selfaware/metrics.json`
+  - `archive/experiment/phase1/eval/results_amendment_e_response_confidence_selfaware_probe_scaled_sft_seed1_smoke_4b/probe_scaled_schema_sft_seed1__selfaware/scored_rows.jsonl`
 - commands:
-  - `docker run -d --name eh-probe-scaled-sft-full-20260623a ... train_sft.py --config experiment/phase1/grpo/configs/sft_schema_probe_scaled_response_confidence_seed1_full_config.py --no-dashboard`
-  - `docker run -d --name eh-probe-scaled-sft-eval-smoke-20260623a ... run_eval.py --config experiment/phase1/eval/config/eval_amendment_e_response_confidence_selfaware_probe_scaled_sft_seed1_smoke_local_4b.yaml --live-vllm`
+  - `docker run -d --name eh-probe-scaled-sft-full-20260623a ... train_sft.py --config archive/experiment/phase1/grpo/configs/sft_schema_probe_scaled_response_confidence_seed1_full_config.py --no-dashboard`
+  - `docker run -d --name eh-probe-scaled-sft-eval-smoke-20260623a ... run_eval.py --config archive/experiment/phase1/eval/config/eval_amendment_e_response_confidence_selfaware_probe_scaled_sft_seed1_smoke_local_4b.yaml --live-vllm`
 - signals:
     full_sft:
       container: eh-probe-scaled-sft-full-20260623a
@@ -302,16 +302,16 @@ only a GRPO failure.
 - kind: `validation`
 - summary: Replaced the row-cap balancing idea with a full-size contrastive SFT projection that mathematically spreads confidence targets by response appropriateness role.
 - evidence:
-  - `experiment/phase1/grpo/build_schema_response_confidence_datasets.py`
-  - `experiment/phase1/grpo/tests/test_build_schema_response_confidence_datasets.py`
+  - `archive/experiment/phase1/grpo/build_schema_response_confidence_datasets.py`
+  - `archive/experiment/phase1/grpo/tests/test_build_schema_response_confidence_datasets.py`
   - `scratch/schema_response_confidence/qwen3-4b-instruct/response_confidence_schema_manifest.json`
   - `scratch/schema_response_confidence/qwen3-4b-instruct/sft_response_confidence_train_contrastive.jsonl`
   - `experiments/probe-scaled-response-confidence/AMENDMENT.md`
-  - `experiment/phase1/grpo/configs/sft_schema_contrastive_response_confidence_seed1_smoke_config.py`
-  - `experiment/phase1/grpo/configs/sft_schema_contrastive_response_confidence_seed1_full_config.py`
+  - `archive/experiment/phase1/grpo/configs/sft_schema_contrastive_response_confidence_seed1_smoke_config.py`
+  - `archive/experiment/phase1/grpo/configs/sft_schema_contrastive_response_confidence_seed1_full_config.py`
 - commands:
-  - `python experiment\phase1\grpo\build_schema_response_confidence_datasets.py --output-dir scratch\schema_response_confidence\qwen3-4b-instruct --include-ambiguous-middle`
-  - `python -m pytest experiment\phase1\grpo\tests\test_build_schema_response_confidence_datasets.py experiment\phase1\grpo\tests\test_build_grpo_dataset.py experiment\phase1\grpo\tests\test_humility_reward.py -q`
+  - `python archive\experiment\phase1\grpo\build_schema_response_confidence_datasets.py --output-dir scratch\schema_response_confidence\qwen3-4b-instruct --include-ambiguous-middle`
+  - `python -m pytest archive\experiment\phase1\grpo\tests\test_build_schema_response_confidence_datasets.py archive\experiment\phase1\grpo\tests\test_build_grpo_dataset.py archive\experiment\phase1\grpo\tests\test_humility_reward.py -q`
 - signals:
     tests_passed: 31
     sft_contrastive:
@@ -342,14 +342,14 @@ only a GRPO failure.
 - kind: `launch`
 - summary: Ran a 32-step contrastive schema-SFT smoke successfully, then launched the full seed-1 contrastive schema-SFT rerun.
 - evidence:
-  - `experiment/phase1/grpo/configs/sft_schema_contrastive_response_confidence_seed1_smoke_config.py`
-  - `experiment/phase1/grpo/configs/sft_schema_contrastive_response_confidence_seed1_full_config.py`
+  - `archive/experiment/phase1/grpo/configs/sft_schema_contrastive_response_confidence_seed1_smoke_config.py`
+  - `archive/experiment/phase1/grpo/configs/sft_schema_contrastive_response_confidence_seed1_full_config.py`
   - `scratch/schema_response_confidence/runs/sft_schema_contrastive_seed1_smoke/20260623_110043/training_lineage.json`
   - `scratch/schema_response_confidence/runs/sft_schema_contrastive_seed1_smoke/20260623_110043/capacity_features.json`
   - `scratch/schema_response_confidence/runs/sft_schema_contrastive_seed1_smoke/20260623_110043/final_model/adapter_model.safetensors`
 - commands:
-  - `docker run -d --name eh-contrastive-sft-smoke-20260623a ... train_sft.py --config experiment/phase1/grpo/configs/sft_schema_contrastive_response_confidence_seed1_smoke_config.py --max-steps 32 --no-dashboard --quiet`
-  - `docker run -d --name eh-contrastive-sft-full-20260623a ... train_sft.py --config experiment/phase1/grpo/configs/sft_schema_contrastive_response_confidence_seed1_full_config.py --no-dashboard --quiet`
+  - `docker run -d --name eh-contrastive-sft-smoke-20260623a ... train_sft.py --config archive/experiment/phase1/grpo/configs/sft_schema_contrastive_response_confidence_seed1_smoke_config.py --max-steps 32 --no-dashboard --quiet`
+  - `docker run -d --name eh-contrastive-sft-full-20260623a ... train_sft.py --config archive/experiment/phase1/grpo/configs/sft_schema_contrastive_response_confidence_seed1_full_config.py --no-dashboard --quiet`
 - signals:
     smoke:
       container: eh-contrastive-sft-smoke-20260623a
@@ -384,18 +384,18 @@ only a GRPO failure.
 - kind: `correction`
 - summary: Clarified that the currently running contrastive SFT is exploratory scalar-movement evidence, while the preferred mainline is clean SFT followed by DPO/KTO/GRPO for contrastive accuracy tuning.
 - evidence:
-  - `experiment/phase1/grpo/build_schema_response_confidence_datasets.py`
-  - `experiment/phase1/grpo/tests/test_build_schema_response_confidence_datasets.py`
+  - `archive/experiment/phase1/grpo/build_schema_response_confidence_datasets.py`
+  - `archive/experiment/phase1/grpo/tests/test_build_schema_response_confidence_datasets.py`
   - `scratch/schema_response_confidence/qwen3-4b-instruct/response_confidence_schema_manifest.json`
   - `scratch/schema_response_confidence/qwen3-4b-instruct/sft_response_confidence_train_clean.jsonl`
   - `scratch/schema_response_confidence/qwen3-4b-instruct/sft_response_confidence_train_contrastive.jsonl`
-  - `experiment/phase1/grpo/configs/sft_schema_clean_response_confidence_seed1_smoke_config.py`
-  - `experiment/phase1/grpo/configs/sft_schema_clean_response_confidence_seed1_full_config.py`
-  - `experiment/phase1/grpo/amendment_e_clean_mainline_runbook.md`
+  - `archive/experiment/phase1/grpo/configs/sft_schema_clean_response_confidence_seed1_smoke_config.py`
+  - `archive/experiment/phase1/grpo/configs/sft_schema_clean_response_confidence_seed1_full_config.py`
+  - `archive/experiment/phase1/grpo/amendment_e_clean_mainline_runbook.md`
   - `experiments/probe-scaled-response-confidence/AMENDMENT.md`
 - commands:
-  - `python experiment\phase1\grpo\build_schema_response_confidence_datasets.py --output-dir scratch\schema_response_confidence\qwen3-4b-instruct --include-ambiguous-middle`
-  - `python -m pytest experiment\phase1\grpo\tests\test_build_schema_response_confidence_datasets.py experiment\phase1\grpo\tests\test_build_grpo_dataset.py experiment\phase1\grpo\tests\test_humility_reward.py -q`
+  - `python archive\experiment\phase1\grpo\build_schema_response_confidence_datasets.py --output-dir scratch\schema_response_confidence\qwen3-4b-instruct --include-ambiguous-middle`
+  - `python -m pytest archive\experiment\phase1\grpo\tests\test_build_schema_response_confidence_datasets.py archive\experiment\phase1\grpo\tests\test_build_grpo_dataset.py archive\experiment\phase1\grpo\tests\test_humility_reward.py -q`
 - signals:
     tests_passed: 33
     clean_sft:
@@ -434,11 +434,11 @@ only a GRPO failure.
 - evidence:
   - `scratch/schema_response_confidence/runs/sft_schema_contrastive_seed1_full/20260623_110457/checkpoints/checkpoint-1500/adapter_model.safetensors`
   - `scratch/schema_response_confidence/runs/sft_schema_contrastive_seed1_full/20260623_110457/logs/training_20260623_110527.jsonl`
-  - `experiment/phase1/eval/config/eval_amendment_e_response_confidence_selfaware_contrastive_sft_seed1_checkpoint1500_smoke_local_4b.yaml`
-  - `experiment/phase1/eval/results_amendment_e_response_confidence_selfaware_contrastive_sft_seed1_checkpoint1500_smoke_4b/contrastive_schema_sft_seed1_checkpoint1500__selfaware/metrics.json`
-  - `experiment/phase1/eval/results_amendment_e_response_confidence_selfaware_contrastive_sft_seed1_checkpoint1500_smoke_4b/contrastive_schema_sft_seed1_checkpoint1500__selfaware/scored_rows.jsonl`
+  - `archive/experiment/phase1/eval/config/eval_amendment_e_response_confidence_selfaware_contrastive_sft_seed1_checkpoint1500_smoke_local_4b.yaml`
+  - `archive/experiment/phase1/eval/results_amendment_e_response_confidence_selfaware_contrastive_sft_seed1_checkpoint1500_smoke_4b/contrastive_schema_sft_seed1_checkpoint1500__selfaware/metrics.json`
+  - `archive/experiment/phase1/eval/results_amendment_e_response_confidence_selfaware_contrastive_sft_seed1_checkpoint1500_smoke_4b/contrastive_schema_sft_seed1_checkpoint1500__selfaware/scored_rows.jsonl`
 - commands:
-  - `docker run -d --name eh-contrastive-sft-ckpt1500-eval-smoke-20260623a ... run_eval.py --config experiment/phase1/eval/config/eval_amendment_e_response_confidence_selfaware_contrastive_sft_seed1_checkpoint1500_smoke_local_4b.yaml --live-vllm`
+  - `docker run -d --name eh-contrastive-sft-ckpt1500-eval-smoke-20260623a ... run_eval.py --config archive/experiment/phase1/eval/config/eval_amendment_e_response_confidence_selfaware_contrastive_sft_seed1_checkpoint1500_smoke_local_4b.yaml --live-vllm`
 - signals:
     interrupted_training:
       container: eh-contrastive-sft-full-20260623a
@@ -489,7 +489,7 @@ only a GRPO failure.
 - kind: `gate`
 - summary: The first clean-SFT smoke was stopped because config-level `max_steps` was ignored; the generic SFT trainer was patched and the corrected smoke exited cleanly at 32 steps.
 - evidence:
-  - `experiment/phase1/grpo/configs/sft_schema_clean_response_confidence_seed1_smoke_config.py`
+  - `archive/experiment/phase1/grpo/configs/sft_schema_clean_response_confidence_seed1_smoke_config.py`
   - `synaptic-tuner/Trainers/sft/train_sft.py`
   - `synaptic-tuner/Trainers/sft/configs/config_loader.py`
   - `synaptic-tuner/tests/trainers/sft/test_train_sft_source.py`
@@ -500,7 +500,7 @@ only a GRPO failure.
   - `docker run -d --name eh-clean-sft-smoke-20260623a ... sft_schema_clean_response_confidence_seed1_smoke_config.py --no-dashboard --quiet`
   - `docker stop eh-clean-sft-smoke-20260623a`
   - `python -m pytest synaptic-tuner\tests\trainers\sft\test_train_sft_source.py -q`
-  - `python -m py_compile synaptic-tuner\Trainers\sft\train_sft.py synaptic-tuner\Trainers\sft\configs\config_loader.py experiment\phase1\grpo\configs\sft_schema_clean_response_confidence_seed1_smoke_config.py`
+  - `python -m py_compile synaptic-tuner\Trainers\sft\train_sft.py synaptic-tuner\Trainers\sft\configs\config_loader.py archive\experiment\phase1\grpo\configs\sft_schema_clean_response_confidence_seed1_smoke_config.py`
   - `docker run -d --name eh-clean-sft-smoke-20260623b ... sft_schema_clean_response_confidence_seed1_smoke_config.py --no-dashboard --quiet`
 - signals:
     bad_smoke:
@@ -540,8 +540,8 @@ only a GRPO failure.
   - `scratch/schema_response_confidence/runs/sft_schema_clean_seed1_full/20260623_123624/training_lineage.json`
   - `scratch/schema_response_confidence/runs/sft_schema_clean_seed1_full/20260623_123624/capacity_features.json`
   - `scratch/schema_response_confidence/runs/sft_schema_clean_seed1_full/20260623_123624/Qwen3-4B-bnb-4bit/merged-16bit/`
-  - `experiment/phase1/eval/results_amendment_e_response_confidence_selfaware_clean_sft_seed1_smoke_4b/clean_schema_sft_seed1__selfaware/metrics.json`
-  - `experiment/phase1/eval/results_amendment_e_response_confidence_selfaware_clean_sft_seed1_merged_smoke_4b/clean_schema_sft_seed1_merged__selfaware/metrics.json`
+  - `archive/experiment/phase1/eval/results_amendment_e_response_confidence_selfaware_clean_sft_seed1_smoke_4b/clean_schema_sft_seed1__selfaware/metrics.json`
+  - `archive/experiment/phase1/eval/results_amendment_e_response_confidence_selfaware_clean_sft_seed1_merged_smoke_4b/clean_schema_sft_seed1_merged__selfaware/metrics.json`
 - signals:
     adapter_eval:
       rows: 192
@@ -582,9 +582,9 @@ only a GRPO failure.
   - `scratch/schema_response_confidence/runs/schema_clean_sft_dpo_seed1_full/20260623_132930/final_model/adapter_model.safetensors`
   - `scratch/schema_response_confidence/runs/schema_clean_sft_dpo_seed1_full/20260623_132930/training_lineage.json`
   - `scratch/schema_response_confidence/runs/schema_clean_sft_dpo_seed1_full/20260623_132930/capacity_features.json`
-  - `experiment/phase1/eval/config/eval_amendment_e_response_confidence_selfaware_clean_sft_dpo_seed1_smoke_local_4b.yaml`
-  - `experiment/phase1/eval/results_amendment_e_response_confidence_selfaware_clean_sft_dpo_seed1_smoke_4b/clean_schema_sft_dpo_seed1__selfaware/metrics.json`
-  - `experiment/phase1/eval/results_amendment_e_response_confidence_selfaware_clean_sft_dpo_seed1_smoke_4b/clean_schema_sft_dpo_seed1__selfaware/scored_rows.jsonl`
+  - `archive/experiment/phase1/eval/config/eval_amendment_e_response_confidence_selfaware_clean_sft_dpo_seed1_smoke_local_4b.yaml`
+  - `archive/experiment/phase1/eval/results_amendment_e_response_confidence_selfaware_clean_sft_dpo_seed1_smoke_4b/clean_schema_sft_dpo_seed1__selfaware/metrics.json`
+  - `archive/experiment/phase1/eval/results_amendment_e_response_confidence_selfaware_clean_sft_dpo_seed1_smoke_4b/clean_schema_sft_dpo_seed1__selfaware/scored_rows.jsonl`
 - signals:
     training:
       container: eh-clean-sft-dpo-seed1-full-20260623a
@@ -655,12 +655,12 @@ only a GRPO failure.
 - kind: `eval-result`
 - summary: Full SelfAware eval completed for the merged clean schema-SFT seed-1 checkpoint; this is the valid full SFT baseline for the next corrected DPO/KTO/GRPO comparisons.
 - evidence:
-  - `experiment/phase1/eval/config/eval_amendment_e_response_confidence_selfaware_clean_sft_seed1_merged_full_local_4b.yaml`
-  - `experiment/phase1/eval/results_amendment_e_response_confidence_selfaware_clean_sft_seed1_merged_full_4b/clean_schema_sft_merged_seed1__selfaware/metrics.json`
-  - `experiment/phase1/eval/results_amendment_e_response_confidence_selfaware_clean_sft_seed1_merged_full_4b/clean_schema_sft_merged_seed1__selfaware/scored_rows.jsonl`
-  - `experiment/phase1/eval/results_amendment_e_response_confidence_selfaware_clean_sft_seed1_merged_full_4b/comparisons/summary_table.csv`
+  - `archive/experiment/phase1/eval/config/eval_amendment_e_response_confidence_selfaware_clean_sft_seed1_merged_full_local_4b.yaml`
+  - `archive/experiment/phase1/eval/results_amendment_e_response_confidence_selfaware_clean_sft_seed1_merged_full_4b/clean_schema_sft_merged_seed1__selfaware/metrics.json`
+  - `archive/experiment/phase1/eval/results_amendment_e_response_confidence_selfaware_clean_sft_seed1_merged_full_4b/clean_schema_sft_merged_seed1__selfaware/scored_rows.jsonl`
+  - `archive/experiment/phase1/eval/results_amendment_e_response_confidence_selfaware_clean_sft_seed1_merged_full_4b/comparisons/summary_table.csv`
 - commands:
-  - `docker run -d --name eh-clean-sft-merged-full-eval-20260623a ... run_eval.py --config experiment/phase1/eval/config/eval_amendment_e_response_confidence_selfaware_clean_sft_seed1_merged_full_local_4b.yaml --live-vllm`
+  - `docker run -d --name eh-clean-sft-merged-full-eval-20260623a ... run_eval.py --config archive/experiment/phase1/eval/config/eval_amendment_e_response_confidence_selfaware_clean_sft_seed1_merged_full_local_4b.yaml --live-vllm`
 - signals:
     container: eh-clean-sft-merged-full-eval-20260623a
     exit_status: 0
@@ -706,14 +706,14 @@ only a GRPO failure.
 - kind: `eval-result`
 - summary: Corrected-base DPO eval completed. The DPO adapter is validly evaluated on the merged clean-SFT base, but behavior is essentially flat versus clean SFT with higher stated confidence and no meaningful calibration gain.
 - evidence:
-  - `experiment/phase1/eval/config/eval_amendment_e_response_confidence_selfaware_clean_sft_dpo_seed1_corrected_base_smoke_local_4b.yaml`
-  - `experiment/phase1/eval/config/eval_amendment_e_response_confidence_selfaware_clean_sft_dpo_seed1_corrected_base_full_local_4b.yaml`
-  - `experiment/phase1/eval/results_amendment_e_response_confidence_selfaware_clean_sft_dpo_seed1_corrected_base_smoke_4b/clean_schema_sft_dpo_seed1_corrected_base__selfaware/metrics.json`
-  - `experiment/phase1/eval/results_amendment_e_response_confidence_selfaware_clean_sft_dpo_seed1_corrected_base_full_4b/clean_schema_sft_dpo_seed1_corrected_base__selfaware/metrics.json`
-  - `experiment/phase1/eval/results_amendment_e_response_confidence_selfaware_clean_sft_dpo_seed1_corrected_base_full_4b/clean_schema_sft_dpo_seed1_corrected_base__selfaware/scored_rows.jsonl`
+  - `archive/experiment/phase1/eval/config/eval_amendment_e_response_confidence_selfaware_clean_sft_dpo_seed1_corrected_base_smoke_local_4b.yaml`
+  - `archive/experiment/phase1/eval/config/eval_amendment_e_response_confidence_selfaware_clean_sft_dpo_seed1_corrected_base_full_local_4b.yaml`
+  - `archive/experiment/phase1/eval/results_amendment_e_response_confidence_selfaware_clean_sft_dpo_seed1_corrected_base_smoke_4b/clean_schema_sft_dpo_seed1_corrected_base__selfaware/metrics.json`
+  - `archive/experiment/phase1/eval/results_amendment_e_response_confidence_selfaware_clean_sft_dpo_seed1_corrected_base_full_4b/clean_schema_sft_dpo_seed1_corrected_base__selfaware/metrics.json`
+  - `archive/experiment/phase1/eval/results_amendment_e_response_confidence_selfaware_clean_sft_dpo_seed1_corrected_base_full_4b/clean_schema_sft_dpo_seed1_corrected_base__selfaware/scored_rows.jsonl`
 - commands:
-  - `docker run -d --name eh-clean-sft-dpo-corrected-smoke-20260623a ... run_eval.py --config experiment/phase1/eval/config/eval_amendment_e_response_confidence_selfaware_clean_sft_dpo_seed1_corrected_base_smoke_local_4b.yaml --live-vllm`
-  - `docker run -d --name eh-clean-sft-dpo-corrected-full-20260623a ... run_eval.py --config experiment/phase1/eval/config/eval_amendment_e_response_confidence_selfaware_clean_sft_dpo_seed1_corrected_base_full_local_4b.yaml --live-vllm`
+  - `docker run -d --name eh-clean-sft-dpo-corrected-smoke-20260623a ... run_eval.py --config archive/experiment/phase1/eval/config/eval_amendment_e_response_confidence_selfaware_clean_sft_dpo_seed1_corrected_base_smoke_local_4b.yaml --live-vllm`
+  - `docker run -d --name eh-clean-sft-dpo-corrected-full-20260623a ... run_eval.py --config archive/experiment/phase1/eval/config/eval_amendment_e_response_confidence_selfaware_clean_sft_dpo_seed1_corrected_base_full_local_4b.yaml --live-vllm`
 - signals:
     corrected_smoke:
       rows: 192
@@ -778,7 +778,7 @@ only a GRPO failure.
 - kind: `train-progress`
 - summary: Clean schema SFT -> KTO seed 1 is running from the merged clean-SFT base with the checked-in runbook hyperparameters. An earlier launch was stopped before meaningful compute because it used stale handoff-summary values rather than the runbook values.
 - evidence:
-  - `experiment/phase1/grpo/amendment_e_clean_mainline_runbook.md`
+  - `archive/experiment/phase1/grpo/amendment_e_clean_mainline_runbook.md`
   - `scratch/schema_response_confidence/qwen3-4b-instruct/kto_response_confidence_train.jsonl`
   - `scratch/schema_response_confidence/runs/schema_clean_sft_kto_seed1_full/20260623_200200/logs/training_20260623_200010.jsonl`
   - `scratch/schema_response_confidence/runs/schema_clean_sft_kto_seed1_full/20260623_200200/checkpoints/checkpoint-100/trainer_state.json`
@@ -822,14 +822,14 @@ only a GRPO failure.
   - `scratch/schema_response_confidence/runs/schema_clean_sft_kto_seed1_full/20260623_200200/final_model`
   - `scratch/schema_response_confidence/runs/schema_clean_sft_kto_seed1_full/20260623_200200/training_lineage.json`
   - `scratch/schema_response_confidence/runs/schema_clean_sft_kto_seed1_full/20260623_200200/capacity_features.json`
-  - `experiment/phase1/eval/config/eval_amendment_e_response_confidence_selfaware_clean_sft_kto_seed1_corrected_base_smoke_local_4b.yaml`
-  - `experiment/phase1/eval/config/eval_amendment_e_response_confidence_selfaware_clean_sft_kto_seed1_corrected_base_full_local_4b.yaml`
-  - `experiment/phase1/eval/results_amendment_e_response_confidence_selfaware_clean_sft_kto_seed1_corrected_base_smoke_4b/clean_schema_sft_kto_seed1_corrected_base__selfaware/metrics.json`
-  - `experiment/phase1/eval/results_amendment_e_response_confidence_selfaware_clean_sft_kto_seed1_corrected_base_full_4b/clean_schema_sft_kto_seed1_corrected_base__selfaware/metrics.json`
-  - `experiment/phase1/eval/results_amendment_e_response_confidence_selfaware_clean_sft_kto_seed1_corrected_base_full_4b/clean_schema_sft_kto_seed1_corrected_base__selfaware/scored_rows.jsonl`
+  - `archive/experiment/phase1/eval/config/eval_amendment_e_response_confidence_selfaware_clean_sft_kto_seed1_corrected_base_smoke_local_4b.yaml`
+  - `archive/experiment/phase1/eval/config/eval_amendment_e_response_confidence_selfaware_clean_sft_kto_seed1_corrected_base_full_local_4b.yaml`
+  - `archive/experiment/phase1/eval/results_amendment_e_response_confidence_selfaware_clean_sft_kto_seed1_corrected_base_smoke_4b/clean_schema_sft_kto_seed1_corrected_base__selfaware/metrics.json`
+  - `archive/experiment/phase1/eval/results_amendment_e_response_confidence_selfaware_clean_sft_kto_seed1_corrected_base_full_4b/clean_schema_sft_kto_seed1_corrected_base__selfaware/metrics.json`
+  - `archive/experiment/phase1/eval/results_amendment_e_response_confidence_selfaware_clean_sft_kto_seed1_corrected_base_full_4b/clean_schema_sft_kto_seed1_corrected_base__selfaware/scored_rows.jsonl`
 - commands:
-  - `docker run -d --name eh-clean-sft-kto-corrected-smoke-20260623a ... run_eval.py --config experiment/phase1/eval/config/eval_amendment_e_response_confidence_selfaware_clean_sft_kto_seed1_corrected_base_smoke_local_4b.yaml --live-vllm`
-  - `docker run -d --name eh-clean-sft-kto-corrected-full-20260623a ... run_eval.py --config experiment/phase1/eval/config/eval_amendment_e_response_confidence_selfaware_clean_sft_kto_seed1_corrected_base_full_local_4b.yaml --live-vllm`
+  - `docker run -d --name eh-clean-sft-kto-corrected-smoke-20260623a ... run_eval.py --config archive/experiment/phase1/eval/config/eval_amendment_e_response_confidence_selfaware_clean_sft_kto_seed1_corrected_base_smoke_local_4b.yaml --live-vllm`
+  - `docker run -d --name eh-clean-sft-kto-corrected-full-20260623a ... run_eval.py --config archive/experiment/phase1/eval/config/eval_amendment_e_response_confidence_selfaware_clean_sft_kto_seed1_corrected_base_full_local_4b.yaml --live-vllm`
 - signals:
     training:
       container: eh-clean-sft-kto-seed1-full-20260623c
@@ -913,17 +913,17 @@ only a GRPO failure.
 - kind: `train-progress`
 - summary: Revised GRPO was launched from the merged clean-SFT base after a local smoke confirmed nonzero reward variance, valid reward parsing, low OOM risk, and healthy capacity at the planned batch/generation settings.
 - evidence:
-  - `experiment/phase1/grpo/configs/grpo_schema_clean_sft_merged_seed1_smoke.yaml`
-  - `experiment/phase1/grpo/configs/grpo_schema_clean_sft_merged_seed1_full.yaml`
+  - `archive/experiment/phase1/grpo/configs/grpo_schema_clean_sft_merged_seed1_smoke.yaml`
+  - `archive/experiment/phase1/grpo/configs/grpo_schema_clean_sft_merged_seed1_full.yaml`
   - `scratch/schema_response_confidence/qwen3-4b-instruct-grpo/grpo_train.jsonl`
   - `scratch/schema_response_confidence/runs/schema_clean_sft_grpo_seed1_smoke/20260623_232511/capacity_features.json`
   - `scratch/schema_response_confidence/runs/schema_clean_sft_grpo_seed1_smoke/20260623_232511/logs/training_20260623_232558.jsonl`
   - `scratch/schema_response_confidence/runs/schema_clean_sft_grpo_seed1_smoke/reward_debug_20260623a.jsonl`
   - `scratch/schema_response_confidence/runs/schema_clean_sft_grpo_seed1_full/20260623_233309/logs/training_20260623_233413.jsonl`
 - commands:
-  - `python -m pytest experiment\phase1\grpo\tests\test_humility_reward.py experiment\phase1\grpo\tests\test_build_schema_response_confidence_datasets.py -q`
-  - `docker run -d --name eh-clean-sft-grpo-smoke-20260623a ... train_grpo.py --config experiment/phase1/grpo/configs/grpo_schema_clean_sft_merged_seed1_smoke.yaml`
-  - `docker run -d --name eh-clean-sft-grpo-full-20260623a ... train_grpo.py --config experiment/phase1/grpo/configs/grpo_schema_clean_sft_merged_seed1_full.yaml`
+  - `python -m pytest archive\experiment\phase1\grpo\tests\test_humility_reward.py archive\experiment\phase1\grpo\tests\test_build_schema_response_confidence_datasets.py -q`
+  - `docker run -d --name eh-clean-sft-grpo-smoke-20260623a ... train_grpo.py --config archive/experiment/phase1/grpo/configs/grpo_schema_clean_sft_merged_seed1_smoke.yaml`
+  - `docker run -d --name eh-clean-sft-grpo-full-20260623a ... train_grpo.py --config archive/experiment/phase1/grpo/configs/grpo_schema_clean_sft_merged_seed1_full.yaml`
 - signals:
     tests:
       grpo_reward_and_dataset_tests: "30 passed"
@@ -1065,13 +1065,13 @@ only a GRPO failure.
   - `scratch/schema_response_confidence/runs/schema_clean_sft_grpo_seed1_full/20260623_233309/final_model`
   - `scratch/schema_response_confidence/runs/schema_clean_sft_grpo_seed1_full/20260623_233309/training_lineage.json`
   - `scratch/schema_response_confidence/runs/schema_clean_sft_grpo_seed1_full/20260623_233309/capacity_features.json`
-  - `experiment/phase1/eval/config/eval_amendment_e_response_confidence_selfaware_clean_sft_grpo_seed1_corrected_base_smoke_local_4b.yaml`
-  - `experiment/phase1/eval/config/eval_amendment_e_response_confidence_selfaware_clean_sft_grpo_seed1_corrected_base_full_local_4b.yaml`
-  - `experiment/phase1/eval/results_amendment_e_response_confidence_selfaware_clean_sft_grpo_seed1_corrected_base_smoke_4b/clean_schema_sft_grpo_seed1_corrected_base__selfaware/metrics.json`
+  - `archive/experiment/phase1/eval/config/eval_amendment_e_response_confidence_selfaware_clean_sft_grpo_seed1_corrected_base_smoke_local_4b.yaml`
+  - `archive/experiment/phase1/eval/config/eval_amendment_e_response_confidence_selfaware_clean_sft_grpo_seed1_corrected_base_full_local_4b.yaml`
+  - `archive/experiment/phase1/eval/results_amendment_e_response_confidence_selfaware_clean_sft_grpo_seed1_corrected_base_smoke_4b/clean_schema_sft_grpo_seed1_corrected_base__selfaware/metrics.json`
 - commands:
-  - `docker run -d --name eh-clean-sft-grpo-full-20260623a ... train_grpo.py --config experiment/phase1/grpo/configs/grpo_schema_clean_sft_merged_seed1_full.yaml`
-  - `docker run -d --name eh-clean-sft-grpo-corrected-smoke-20260624a ... run_eval.py --config experiment/phase1/eval/config/eval_amendment_e_response_confidence_selfaware_clean_sft_grpo_seed1_corrected_base_smoke_local_4b.yaml --live-vllm`
-  - `docker run -d --name eh-clean-sft-grpo-corrected-full-20260624a ... run_eval.py --config experiment/phase1/eval/config/eval_amendment_e_response_confidence_selfaware_clean_sft_grpo_seed1_corrected_base_full_local_4b.yaml --live-vllm`
+  - `docker run -d --name eh-clean-sft-grpo-full-20260623a ... train_grpo.py --config archive/experiment/phase1/grpo/configs/grpo_schema_clean_sft_merged_seed1_full.yaml`
+  - `docker run -d --name eh-clean-sft-grpo-corrected-smoke-20260624a ... run_eval.py --config archive/experiment/phase1/eval/config/eval_amendment_e_response_confidence_selfaware_clean_sft_grpo_seed1_corrected_base_smoke_local_4b.yaml --live-vllm`
+  - `docker run -d --name eh-clean-sft-grpo-corrected-full-20260624a ... run_eval.py --config archive/experiment/phase1/eval/config/eval_amendment_e_response_confidence_selfaware_clean_sft_grpo_seed1_corrected_base_full_local_4b.yaml --live-vllm`
 - signals:
     training:
       container: eh-clean-sft-grpo-full-20260623a
@@ -1123,11 +1123,11 @@ only a GRPO failure.
 - kind: `eval-result`
 - summary: Clean schema SFT -> GRPO seed 1 completed full SelfAware eval. GRPO strongly reduced unknown answering and increased answered-known accuracy, but it did so by refusing far more known questions; total truthful rate was slightly lower than clean SFT.
 - evidence:
-  - `experiment/phase1/eval/results_amendment_e_response_confidence_selfaware_clean_sft_grpo_seed1_corrected_base_full_4b/clean_schema_sft_grpo_seed1_corrected_base__selfaware/metrics.json`
-  - `experiment/phase1/eval/results_amendment_e_response_confidence_selfaware_clean_sft_grpo_seed1_corrected_base_full_4b/clean_schema_sft_grpo_seed1_corrected_base__selfaware/scored_rows.jsonl`
-  - `experiment/phase1/eval/results_amendment_e_response_confidence_selfaware_clean_sft_grpo_seed1_corrected_base_full_4b/comparisons/summary_table.csv`
+  - `archive/experiment/phase1/eval/results_amendment_e_response_confidence_selfaware_clean_sft_grpo_seed1_corrected_base_full_4b/clean_schema_sft_grpo_seed1_corrected_base__selfaware/metrics.json`
+  - `archive/experiment/phase1/eval/results_amendment_e_response_confidence_selfaware_clean_sft_grpo_seed1_corrected_base_full_4b/clean_schema_sft_grpo_seed1_corrected_base__selfaware/scored_rows.jsonl`
+  - `archive/experiment/phase1/eval/results_amendment_e_response_confidence_selfaware_clean_sft_grpo_seed1_corrected_base_full_4b/comparisons/summary_table.csv`
 - commands:
-  - `docker run -d --name eh-clean-sft-grpo-corrected-full-20260624a ... run_eval.py --config experiment/phase1/eval/config/eval_amendment_e_response_confidence_selfaware_clean_sft_grpo_seed1_corrected_base_full_local_4b.yaml --live-vllm`
+  - `docker run -d --name eh-clean-sft-grpo-corrected-full-20260624a ... run_eval.py --config archive/experiment/phase1/eval/config/eval_amendment_e_response_confidence_selfaware_clean_sft_grpo_seed1_corrected_base_full_local_4b.yaml --live-vllm`
 - signals:
     full_eval:
       container: eh-clean-sft-grpo-corrected-full-20260624a
@@ -1197,12 +1197,12 @@ only a GRPO failure.
 - kind: `design-and-implementation-start`
 - summary: Began a separate GRPO reward-v2 branch to address the two confirmed seed-1 GRPO failures: over-refusal on known rows and inaccurate/confidence-clustered response-confidence values.
 - evidence:
-  - `experiment/phase1/grpo/humility_reward.py`
-  - `experiment/phase1/grpo/tests/test_humility_reward.py`
-  - `experiment/phase1/grpo/humility_reward_v2.py`
-  - `experiment/phase1/grpo/tests/test_humility_reward_v2.py`
-  - `experiment/phase1/grpo/configs/grpo_schema_clean_sft_merged_seed1_v2_smoke.yaml`
-  - `experiment/phase1/grpo/configs/grpo_schema_clean_sft_merged_seed1_v2_full.yaml`
+  - `archive/experiment/phase1/grpo/humility_reward.py`
+  - `archive/experiment/phase1/grpo/tests/test_humility_reward.py`
+  - `archive/experiment/phase1/grpo/humility_reward_v2.py`
+  - `archive/experiment/phase1/grpo/tests/test_humility_reward_v2.py`
+  - `archive/experiment/phase1/grpo/configs/grpo_schema_clean_sft_merged_seed1_v2_smoke.yaml`
+  - `archive/experiment/phase1/grpo/configs/grpo_schema_clean_sft_merged_seed1_v2_full.yaml`
 - signals:
     prior_v1_reward_grid:
       known_correct_high: 1.5
@@ -1238,15 +1238,15 @@ only a GRPO failure.
 - kind: `train-smoke-result`
 - summary: Reward V2 passed CPU-side score-ordering tests and completed a 12-step GRPO smoke. The smoke shows live reward variance and the intended reward ordering on actual sampled completions.
 - evidence:
-  - `experiment/phase1/grpo/humility_reward_v2.py`
-  - `experiment/phase1/grpo/tests/test_humility_reward_v2.py`
-  - `experiment/phase1/grpo/configs/grpo_schema_clean_sft_merged_seed1_v2_smoke.yaml`
+  - `archive/experiment/phase1/grpo/humility_reward_v2.py`
+  - `archive/experiment/phase1/grpo/tests/test_humility_reward_v2.py`
+  - `archive/experiment/phase1/grpo/configs/grpo_schema_clean_sft_merged_seed1_v2_smoke.yaml`
   - `scratch/schema_response_confidence/runs/schema_clean_sft_grpo_v2_seed1_smoke/20260624_094700/logs/training_20260624_094806.jsonl`
   - `scratch/schema_response_confidence/runs/schema_clean_sft_grpo_v2_seed1_smoke/20260624_094700/capacity_features.json`
   - `scratch/schema_response_confidence/runs/schema_clean_sft_grpo_v2_seed1_smoke/reward_debug_20260624a.jsonl`
 - commands:
-  - `python -m pytest experiment\phase1\grpo\tests\test_humility_reward.py experiment\phase1\grpo\tests\test_humility_reward_v2.py experiment\phase1\grpo\tests\test_build_schema_response_confidence_datasets.py -q`
-  - `docker run -d --name eh-clean-sft-grpo-v2-smoke-20260624a ... train_grpo.py --config experiment/phase1/grpo/configs/grpo_schema_clean_sft_merged_seed1_v2_smoke.yaml`
+  - `python -m pytest archive\experiment\phase1\grpo\tests\test_humility_reward.py archive\experiment\phase1\grpo\tests\test_humility_reward_v2.py archive\experiment\phase1\grpo\tests\test_build_schema_response_confidence_datasets.py -q`
+  - `docker run -d --name eh-clean-sft-grpo-v2-smoke-20260624a ... train_grpo.py --config archive/experiment/phase1/grpo/configs/grpo_schema_clean_sft_merged_seed1_v2_smoke.yaml`
 - signals:
     cpu_tests:
       result: "39 passed"
@@ -1305,11 +1305,11 @@ only a GRPO failure.
 - kind: `train-launch`
 - summary: Launched the full local GRPO v2 run from the merged clean-SFT seed-1 base after the reward-grid preflight and 12-step smoke both passed.
 - evidence:
-  - `experiment/phase1/grpo/configs/grpo_schema_clean_sft_merged_seed1_v2_full.yaml`
-  - `experiment/phase1/grpo/humility_reward_v2.py`
+  - `archive/experiment/phase1/grpo/configs/grpo_schema_clean_sft_merged_seed1_v2_full.yaml`
+  - `archive/experiment/phase1/grpo/humility_reward_v2.py`
   - `scratch/schema_response_confidence/runs/schema_clean_sft_grpo_v2_seed1_smoke/20260624_094700/`
 - commands:
-  - `docker run -d --name eh-clean-sft-grpo-v2-full-20260624a ... train_grpo.py --config experiment/phase1/grpo/configs/grpo_schema_clean_sft_merged_seed1_v2_full.yaml`
+  - `docker run -d --name eh-clean-sft-grpo-v2-full-20260624a ... train_grpo.py --config archive/experiment/phase1/grpo/configs/grpo_schema_clean_sft_merged_seed1_v2_full.yaml`
 - signals:
     container: eh-clean-sft-grpo-v2-full-20260624a
     docker_id: 69cd18ed8123dc07511b553765b79c557588cd83b8a18cc822a3f9de1b91bd7d
@@ -1614,9 +1614,9 @@ only a GRPO failure.
 - kind: `eval-launch`
 - summary: Launched the full SelfAware eval for the completed clean schema-SFT -> GRPO v2 seed-1 adapter on the corrected merged-SFT base.
 - evidence:
-  - `experiment/phase1/eval/config/eval_amendment_e_response_confidence_selfaware_clean_sft_grpo_v2_seed1_corrected_base_full_local_4b.yaml`
+  - `archive/experiment/phase1/eval/config/eval_amendment_e_response_confidence_selfaware_clean_sft_grpo_v2_seed1_corrected_base_full_local_4b.yaml`
 - commands:
-  - `docker run -d --name eh-clean-sft-grpo-v2-eval-full-20260624a ... run_eval.py --config experiment/phase1/eval/config/eval_amendment_e_response_confidence_selfaware_clean_sft_grpo_v2_seed1_corrected_base_full_local_4b.yaml --live-vllm`
+  - `docker run -d --name eh-clean-sft-grpo-v2-eval-full-20260624a ... run_eval.py --config archive/experiment/phase1/eval/config/eval_amendment_e_response_confidence_selfaware_clean_sft_grpo_v2_seed1_corrected_base_full_local_4b.yaml --live-vllm`
 - signals:
     container: eh-clean-sft-grpo-v2-eval-full-20260624a
     docker_id: baedbbe7db4b3b4bdfc9d238f58e83d927a21996ffeb16ac4f32057b18e71f9f
@@ -1649,10 +1649,10 @@ only a GRPO failure.
 - kind: `eval-result`
 - summary: GRPO v2 improved the refusal-boundary tradeoff versus GRPO v1, but did not solve confidence calibration. Confidence moved to many distinct values, but all values remain clustered high and are nearly indistinguishable across correct answers, wrong answers, over-refusals, and correct abstentions.
 - evidence:
-  - `experiment/phase1/eval/config/eval_amendment_e_response_confidence_selfaware_clean_sft_grpo_v2_seed1_corrected_base_full_local_4b.yaml`
-  - `experiment/phase1/eval/results_amendment_e_response_confidence_selfaware_clean_sft_grpo_v2_seed1_corrected_base_full_4b/clean_schema_sft_grpo_v2_seed1_corrected_base__selfaware/metrics.json`
-  - `experiment/phase1/eval/results_amendment_e_response_confidence_selfaware_clean_sft_grpo_v2_seed1_corrected_base_full_4b/clean_schema_sft_grpo_v2_seed1_corrected_base__selfaware/scored_rows.jsonl`
-  - `experiment/phase1/eval/results_amendment_e_response_confidence_selfaware_clean_sft_grpo_v2_seed1_corrected_base_full_4b/comparisons/summary_table.csv`
+  - `archive/experiment/phase1/eval/config/eval_amendment_e_response_confidence_selfaware_clean_sft_grpo_v2_seed1_corrected_base_full_local_4b.yaml`
+  - `archive/experiment/phase1/eval/results_amendment_e_response_confidence_selfaware_clean_sft_grpo_v2_seed1_corrected_base_full_4b/clean_schema_sft_grpo_v2_seed1_corrected_base__selfaware/metrics.json`
+  - `archive/experiment/phase1/eval/results_amendment_e_response_confidence_selfaware_clean_sft_grpo_v2_seed1_corrected_base_full_4b/clean_schema_sft_grpo_v2_seed1_corrected_base__selfaware/scored_rows.jsonl`
+  - `archive/experiment/phase1/eval/results_amendment_e_response_confidence_selfaware_clean_sft_grpo_v2_seed1_corrected_base_full_4b/comparisons/summary_table.csv`
 - signals:
     eval_container: eh-clean-sft-grpo-v2-eval-full-20260624a
     exit_status: 0

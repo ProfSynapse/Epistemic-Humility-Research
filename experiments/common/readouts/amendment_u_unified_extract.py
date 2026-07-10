@@ -18,7 +18,7 @@ per-item stream with no checkpoint/prompt mismatch. The ONLY differences from T:
     answerability gate was validated on), read straight from the gate extraction's
     rows.jsonl. No PopQA/TriviaQA.
   * No alias grading (SelfAware rows carry no gold answers). Outcome is structural:
-    unknown âˆ§ answered = HALLUCINATION; known âˆ§ answered = answerable_attempt
+    unknown and answered = HALLUCINATION; known and answered = answerable_attempt
     (ungraded directional control, §3 caveat).
 
 Persists, under a gitignored model_tag subtree, for every ANSWERED row:

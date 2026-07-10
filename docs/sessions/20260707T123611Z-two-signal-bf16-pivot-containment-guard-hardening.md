@@ -6,7 +6,7 @@ title: Two-signal bf16 substrate pivot; dataset containment + guard/skill harden
 status: active
 created_at: '2026-07-07T12:36:11Z'
 updated_at: '2026-07-07T17:24:49Z'
-phase: CODE
+track: implementation
 question: Does two-signal caution regulation actuate bidirectionally on raw-base Qwen3-4B
   once the whole instrument is moved to full bf16 (unifying substrate with the bf16-only
   J-lens), and can the program's public-repo data containment plus subagent guardrails

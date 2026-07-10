@@ -1,14 +1,13 @@
-slug: phase-b-joint-aux-head
-title: 'Amendment R — Phase B: Joint Co-Training of the aux_head (Native Behavior
-  Change)'
+slug: aux-head-cotraining-native-behavior
+title: 'Amendment R - Joint Co-Training of the aux_head (Native Behavior Change)'
 type: historical-amendment
 status: historical
 registered: true
 created_at: '2026-07-08T17:40:52Z'
 legacy:
   label: R
-  path: experiment/protocol/AMENDMENT-R-phase-b-joint-aux-head.md
-  migrated_to: experiments/phase-b-joint-aux-head/AMENDMENT.md
+  source: Amendment R aux-head co-training legacy amendment
+  migrated_to: experiments/aux-head-cotraining-native-behavior/AMENDMENT.md
 migration:
   needs_manual_review:
   - falsifier

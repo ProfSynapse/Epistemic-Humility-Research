@@ -1,6 +1,6 @@
 # Exploratory thinking-enabled TriviaQA knowledge audit.
 #
-# This is NOT a replacement for the locked Phase 1 probe config. It reuses the
+# This is NOT a replacement for the locked training-regimen probe config. It reuses the
 # same model, sampling seed, label bands, and deterministic subset order as
 # probe.yaml, but enables Qwen3 thinking and raises max_new_tokens so final
 # answers can appear after a reasoning trace. Outputs land in a separate

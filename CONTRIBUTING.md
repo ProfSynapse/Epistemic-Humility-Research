@@ -51,7 +51,7 @@ own contribution flow; changes there must stay experiment-agnostic.
 
 These are not bureaucracy; they are what makes the papers defensible.
 
-- **The pre-registration is locked.** `docs/protocols/phase1/PROTOCOL.md` is
+- **The pre-registration is locked.** `archive/docs/protocols/phase1/PROTOCOL.md` is
   a signed pre-registration. PRs must not edit its hypotheses, falsifiers,
   or headline run matrix. Changes of that kind require a new signed
   revision with a changelog, agreed with the maintainer first.
@@ -61,7 +61,7 @@ These are not bureaucracy; they are what makes the papers defensible.
   running the scripts.
 - **Some data must never be committed.** The OpenMOSS "Say I Don't Know"
   data and everything derived from it (including
-  `experiment/phase1/data/bridge_llama2_7b_chat/`) is do-not-redistribute.
+  `archive/experiment/phase1/data/bridge_llama2_7b_chat/`) is do-not-redistribute.
   It is gitignored on purpose. Don't commit it, don't publish it to any
   hub, and don't build anything that requires redistributing it. The same
   applies to any dataset whose `dataset.md` license line says so.
@@ -74,7 +74,7 @@ These are not bureaucracy; they are what makes the papers defensible.
   infrastructure.
 - Large binaries (paper PDFs, full texts, parquets) are gitignored and
   re-fetchable: see the provenance section of the README.
-- Tests live alongside the code they cover (`experiment/phase1/*/tests/`,
+- Tests live alongside the code they cover (`archive/experiment/phase1/*/tests/`,
   `.claude/skills/experiment-runner/tests/`). Please run the relevant suite
   before opening a PR and say in the PR description what you ran.
 

@@ -2,7 +2,7 @@
 
 Status: exploratory future tier
 Created: 2026-06-14
-Scope: future mechanism work after the locked Phase 1 lane
+Scope: future mechanism work after the locked training-regimen lane
 
 ## Purpose
 
@@ -39,7 +39,7 @@ Run deterministic forward passes with:
 - `use_cache=False`
 - fixed dtype and device
 - identical tokenizer and chat template
-- `enable_thinking=False`, matching the Phase 1 Qwen3 discipline
+- `enable_thinking=False`, matching the locked training-regimen Qwen3 discipline
 - controlled prompts and no sampling during hidden-state extraction
 
 Start with the final prompt token as the first token position. Expand only after
@@ -81,7 +81,7 @@ Borrow:
 Build project-specific glue:
 
 - paired base/adapted inference harness
-- prompt rendering discipline shared with Phase 1 eval/probe
+- prompt rendering discipline shared with locked training-regimen eval/probe
 - layer and token-position selection rules
 - tensor persistence and compression policy
 - probe train/dev/test splits that respect existing leakage constraints
@@ -98,13 +98,13 @@ provenance layer, because those are specific to this experiment.
 
 | Strategic choice | External support | Project anchor | Implementation implication |
 |---|---|---|---|
-| Use Transformers hidden states for the MVP. | Hugging Face Transformers documents `output_hidden_states=True` and returns per-layer `hidden_states` tensors in model outputs: <https://huggingface.co/docs/transformers/main_classes/output>. | The current probe is already config-driven and manifest-stamped in `experiments/common/configs/phase1-probe/probe.yaml` and `experiment/phase1/probe/probe.py`. | Add hidden-state extraction as a separate probe-tier harness rather than mixing it into the stochastic knowledge probe. |
-| Prefer unmerged PEFT adapters for attribution. | Hugging Face PEFT documents `PeftModel.set_adapter()`, `disable_adapter()`, and `merge_and_unload()`: <https://huggingface.co/docs/peft/package_reference/peft_model>. | Current eval uses explicit adapter paths per arm and vLLM LoRA requests in `experiment/phase1/eval/config/eval_smoke_local_4b.yaml` and `experiment/phase1/eval/run_eval.py`. | The primary contrast should be base-vs-active-adapter in one harness; merged checkpoints are sanity checks only. |
-| Treat LoRA deltas as adapter-attribution candidates, not proof by themselves. | Hu et al. define LoRA as frozen pretrained weights plus trainable low-rank matrices injected into Transformer layers: <https://arxiv.org/abs/2106.09685>. | The Phase 1 recipes pin identical LoRA budgets, for example `experiment/phase1/recipes/eh_phase1_qwen3_4b_sft.yaml`; architecture rationale is in `docs/architecture/phase1-pipeline.md`. | Record LoRA rank/alpha/dropout/target modules in every extraction manifest and compare `h_lora - h_base` under identical prompts. |
-| Use PyTorch hooks only when model-output hidden states are too coarse. | PyTorch documents `register_forward_hook` on `torch.nn.Module`: <https://docs.pytorch.org/docs/stable/generated/torch.nn.Module.html#torch.nn.Module.register_forward_hook>. | `experiment/phase1/probe/backends.py` already centralizes prompt rendering and thinking-tag checks; future module hooks should reuse the same prompt bytes. | Start with layer hidden states; add module hooks later for specific submodules such as attention or MLP outputs. |
-| Use nnsight / TransformerLens for interventions after correlational probes stabilize. | nnsight documents tracing, activation access, setting activations, cross-prompt intervention, activation patching, and steering tutorials: <https://nnsight.net/documentation/>. TransformerLens provides an activation-patching API: <https://transformerlensorg.github.io/TransformerLens/generated/code/transformer_lens.patching.html>. | `experiment/phase1/eval/run_eval.py` already defines behavioral outcomes and provenance-stamped metric outputs. | Causal patching should be a later phase that measures movement in refusal, correctness, token confidence, and stated confidence, not an MVP dependency. |
-| Treat patching metrics and corruption choices as first-class design choices. | Zhang and Nanda show activation patching results vary with metrics and corruption methods, and give best-practice recommendations: <https://arxiv.org/abs/2309.16042>. | Existing metric provenance and McNemar/bootstrap outputs live in `experiment/phase1/eval/run_eval.py`, `experiment/phase1/eval/stats.py`, and `experiment/phase1/eval/scorers.py`. | Pre-register patching metrics inside the future tier before interpreting any intervention effect. |
-| Preserve prompt, split, and provenance discipline from Phase 1. | This is project-specific rather than borrowed from a library. | `experiment/phase1/data/build_datasets.py` enforces leakage guard, frozen question budget, and grouped dev split; `experiment/phase1/data/config/build.yaml` records the builder knobs; `experiment/phase1/run_records/sft__4b__headline__seed1.json` shows run-record provenance; `TODO.md` records the Amendment A / v0.4 separation and bounded local evidence caveats. | Hidden-state outputs must carry config hashes, source question keys, prompt-rendering settings, adapter state, and the exact behavioral/eval artifact they align to. |
+| Use Transformers hidden states for the MVP. | Hugging Face Transformers documents `output_hidden_states=True` and returns per-layer `hidden_states` tensors in model outputs: <https://huggingface.co/docs/transformers/main_classes/output>. | The current probe is already config-driven and manifest-stamped in `experiments/common/configs/phase1-probe/probe.yaml` and `archive/experiment/phase1/probe/probe.py`. | Add hidden-state extraction as a separate probe-tier harness rather than mixing it into the stochastic knowledge probe. |
+| Prefer unmerged PEFT adapters for attribution. | Hugging Face PEFT documents `PeftModel.set_adapter()`, `disable_adapter()`, and `merge_and_unload()`: <https://huggingface.co/docs/peft/package_reference/peft_model>. | Current eval uses explicit adapter paths per arm and vLLM LoRA requests in `archive/experiment/phase1/eval/config/eval_smoke_local_4b.yaml` and `archive/experiment/phase1/eval/run_eval.py`. | The primary contrast should be base-vs-active-adapter in one harness; merged checkpoints are sanity checks only. |
+| Treat LoRA deltas as adapter-attribution candidates, not proof by themselves. | Hu et al. define LoRA as frozen pretrained weights plus trainable low-rank matrices injected into Transformer layers: <https://arxiv.org/abs/2106.09685>. | The locked training-regimen recipes pin identical LoRA budgets, for example `archive/experiment/phase1/recipes/eh_phase1_qwen3_4b_sft.yaml`; architecture rationale is in `archive/docs/architecture/phase1-pipeline.md`. | Record LoRA rank/alpha/dropout/target modules in every extraction manifest and compare `h_lora - h_base` under identical prompts. |
+| Use PyTorch hooks only when model-output hidden states are too coarse. | PyTorch documents `register_forward_hook` on `torch.nn.Module`: <https://docs.pytorch.org/docs/stable/generated/torch.nn.Module.html#torch.nn.Module.register_forward_hook>. | `archive/experiment/phase1/probe/backends.py` already centralizes prompt rendering and thinking-tag checks; future module hooks should reuse the same prompt bytes. | Start with layer hidden states; add module hooks later for specific submodules such as attention or MLP outputs. |
+| Use nnsight / TransformerLens for interventions after correlational probes stabilize. | nnsight documents tracing, activation access, setting activations, cross-prompt intervention, activation patching, and steering tutorials: <https://nnsight.net/documentation/>. TransformerLens provides an activation-patching API: <https://transformerlensorg.github.io/TransformerLens/generated/code/transformer_lens.patching.html>. | `archive/experiment/phase1/eval/run_eval.py` already defines behavioral outcomes and provenance-stamped metric outputs. | Causal patching should be a later stage that measures movement in refusal, correctness, token confidence, and stated confidence, not an MVP dependency. |
+| Treat patching metrics and corruption choices as first-class design choices. | Zhang and Nanda show activation patching results vary with metrics and corruption methods, and give best-practice recommendations: <https://arxiv.org/abs/2309.16042>. | Existing metric provenance and McNemar/bootstrap outputs live in `archive/experiment/phase1/eval/run_eval.py`, `archive/experiment/phase1/eval/stats.py`, and `archive/experiment/phase1/eval/scorers.py`. | Pre-register patching metrics inside the future tier before interpreting any intervention effect. |
+| Preserve prompt, split, and provenance discipline from locked training-regimen. | This is project-specific rather than borrowed from a library. | `archive/experiment/phase1/data/build_datasets.py` enforces leakage guard, frozen question budget, and grouped dev split; `archive/experiment/phase1/data/config/build.yaml` records the builder knobs; `archive/experiment/phase1/run_records/sft__4b__headline__seed1.json` shows run-record provenance; `TODO.md` records the Amendment A / v0.4 separation and bounded local evidence caveats. | Hidden-state outputs must carry config hashes, source question keys, prompt-rendering settings, adapter state, and the exact behavioral/eval artifact they align to. |
 
 ## Analysis Sequence
 
@@ -144,83 +144,83 @@ revision says otherwise.
   controlling exploratory design note; update it before code if the target
   token rule, layer set, or intervention metric changes.
 - `docs/research-trajectory.md`: continue to describe this as
-  mechanism work, not a Phase 1 headline or Amendment A result.
-- `experiment/phase1/probe/README.md`: add a future section for hidden-state
+  mechanism work, not a locked training-regimen headline or Amendment A result.
+- `archive/experiment/phase1/probe/README.md`: add a future section for hidden-state
   extraction once code exists, explicitly separating it from the existing
   stochastic knowledge probe.
 
-### Phase 1 - correlational extraction harness
+### locked training-regimen - correlational extraction harness
 
 - `experiments/common/configs/phase1-probe/hidden_state_probe.yaml` (new): define the
   hidden-state extraction config: `model_tag`, `model_name`, adapter arms,
   adapter paths, adapter state (`disabled`, `active`, optional `merged_sanity`),
   `enable_thinking: false`, layer list, token-position rule, dtype/device,
   prompt source, output format, and extraction config hash.
-- `experiment/phase1/probe/hidden_state_probe.py` (new): load the base
+- `archive/experiment/phase1/probe/hidden_state_probe.py` (new): load the base
   Transformers model and PEFT adapters, run deterministic forward passes with
   `output_hidden_states=True`, `use_cache=False`, and `model.eval()`, and write
   `h_base`, `h_lora`, and `delta` for the configured prompts. It should reuse
-  the prompt-rendering discipline from `experiment/phase1/probe/backends.py`
+  the prompt-rendering discipline from `archive/experiment/phase1/probe/backends.py`
   rather than inventing a second Qwen3 chat-template path.
-- `experiment/phase1/probe/hidden_state_schema.py` (new): centralize validation
+- `archive/experiment/phase1/probe/hidden_state_schema.py` (new): centralize validation
   for tensor shape, layer ids, token-position metadata, adapter state, prompt
   hash, and manifest fields so tests can assert the file contract without
   loading a model.
-- `experiment/phase1/probe/backends.py`: if needed, extract the Qwen3
+- `archive/experiment/phase1/probe/backends.py`: if needed, extract the Qwen3
   prompt-rendering and thinking-tag assertions into a shared helper used by both
   the current generation probe and the new hidden-state harness. Do not weaken
   the existing runtime self-checks.
 
 ### Phase 2 - prompt and split alignment
 
-- `experiment/phase1/probe/probe.py`: treat existing `probe_results.jsonl`
+- `archive/experiment/phase1/probe/probe.py`: treat existing `probe_results.jsonl`
   fields (`probe_pool_row_key`, `question`, `label`, `probe_config_sha`) as the
   alignment source for hidden-state rows; do not rerun stochastic probing inside
   the hidden-state harness.
-- `experiment/phase1/data/qwen3-4b-instruct/questions_frozen.json`: read the
+- `archive/experiment/phase1/data/qwen3-4b-instruct/questions_frozen.json`: read the
   frozen train/dev question keys when building matched known/unknown extraction
-  slices, so hidden-state probes use the same budget identity as Phase 1.
-- `experiment/phase1/data/build_datasets.py`: no initial code change should be
+  slices, so hidden-state probes use the same budget identity as locked training-regimen.
+- `archive/experiment/phase1/data/build_datasets.py`: no initial code change should be
   required; use its existing `norm_question` / frozen-budget discipline as the
   contract the hidden-state selection code must respect.
-- `experiment/phase1/eval/config/eval_smoke_local_4b.yaml` and later real eval
+- `archive/experiment/phase1/eval/config/eval_smoke_local_4b.yaml` and later real eval
   configs: read adapter paths and `model_name` conventions from these configs
   when possible so extraction and behavioral eval point at the same artifacts.
 
 ### Mechanism outputs and provenance
 
-- `experiment/phase1/probe/<model_tag>/hidden_states/<extraction_id>/`
+- `archive/experiment/phase1/probe/<model_tag>/hidden_states/<extraction_id>/`
   (new output tree): write tensor shards plus a manifest. Prefer a tensor-native
   format such as `safetensors` for activations and JSON/JSONL for row metadata.
-- `experiment/phase1/probe/<model_tag>/hidden_states/<extraction_id>/manifest.json`
+- `archive/experiment/phase1/probe/<model_tag>/hidden_states/<extraction_id>/manifest.json`
   (new): record base model id/revision, adapter path/hash, active adapter name,
   adapter state, whether a merged sanity check was run, dtype/device, tokenizer
   revision, `enable_thinking`, prompt hash, source split, layer list,
   token-position rule, tensor shapes, code commit, and extraction config hash.
-- `experiment/phase1/run_records/<run_id>.json`: future analysis should link
+- `archive/experiment/phase1/run_records/<run_id>.json`: future analysis should link
   each extraction to the training run record for the adapter it probes, but
   should not mutate existing run records retroactively.
 
 ### Phase 4 - tests and smoke checks
 
-- `experiment/phase1/probe/tests/test_hidden_state_probe.py` (new): fixture-test
+- `archive/experiment/phase1/probe/tests/test_hidden_state_probe.py` (new): fixture-test
   config parsing, prompt identity, adapter-state validation, tensor-shape
   schema, and manifest hash stamping without requiring a GPU.
-- `experiment/phase1/probe/tests/test_probe_smoke.py`: add only narrow shared
+- `archive/experiment/phase1/probe/tests/test_probe_smoke.py`: add only narrow shared
   prompt-rendering regression coverage if `backends.py` is refactored for reuse.
-- `experiment/phase1/eval/tests/test_run_eval_e2e.py`: do not couple eval tests
+- `archive/experiment/phase1/eval/tests/test_run_eval_e2e.py`: do not couple eval tests
   to hidden-state extraction unless a future behavior-vs-activation join is added.
 
 ### Phase 5 - probes, joins, and causal work
 
-- `experiment/phase1/probe/hidden_state_analysis.py` (new): train and evaluate
+- `archive/experiment/phase1/probe/hidden_state_analysis.py` (new): train and evaluate
   linear probes on extracted activations, reporting within-model and
   base-to-adapter transfer.
-- `experiment/phase1/eval/results_*`: join hidden-state probe confidence to
+- `archive/experiment/phase1/eval/results_*`: join hidden-state probe confidence to
   existing behavioral metrics only by explicit row ids and config hashes; never
   by loose question text alone.
-- `experiment/phase1/probe/activation_patching.py` (new, later): prototype
-  nnsight or TransformerLens patching only after Phase 1-4 outputs are stable
+- `archive/experiment/phase1/probe/activation_patching.py` (new, later): prototype
+  nnsight or TransformerLens patching only after locked training-regimen-4 outputs are stable
   and the intervention metric is written down.
 
 ## Controls And Confounds

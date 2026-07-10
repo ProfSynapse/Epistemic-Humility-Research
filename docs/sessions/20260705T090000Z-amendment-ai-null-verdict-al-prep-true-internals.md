@@ -6,7 +6,7 @@ title: Amendment AI NULL verdict (G1 inverted) and AL prep on the TRUE checkpoin
 status: active
 created_at: '2026-07-05T09:00:00Z'
 updated_at: '2026-07-05T19:45:00Z'
-phase: phase1
+track: research
 question: 'Amendment AI adjudication: did probe-as-reward GRPO train the model to
   consult its own readout? Then, for the AL pivot: what did the sensor-reward training
   actually change inside the TRUE checkpoint, measured against the program''s named
@@ -282,7 +282,7 @@ legacy_session:
   id: 0038
   path: docs/sessions/0038 - amendment-ai-null-verdict-al-prep-true-internals.md
 ---
-# Session 0038 — Amendment AI NULL verdict; AL prep opens on the TRUE checkpoint
+# Session 0038 -- Amendment AI NULL verdict; AL prep opens on the TRUE checkpoint
 
 Arc: cloud-lane failure cascade resolved by an all-local symmetric verdict
 instrument; Amendment AI scored and adjudicated NULL with an inverted G1;

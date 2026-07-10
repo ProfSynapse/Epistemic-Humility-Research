@@ -8,7 +8,7 @@ tags:
   - kg/experiment
 status: proposed
 governance: amendment
-phase: phase1
+track: training-regimen
 lane: either
 est_compute: 'Tiered: Tier 1 is at least three 8B train/eval cells; Tier 2 and thinking variants add substantial local or HF Jobs compute'
 relationships:
@@ -90,15 +90,15 @@ Tier 1 first.
 
 1. Read `experiments/8b-scale-and-hyperparameter-gates/AMENDMENT.md`.
 2. Compare current 4B results in
-   `experiment/phase1/eval/analysis/selfaware_full_run_comparison_grouped.csv`.
-3. Check existing 8B recipes under `experiment/phase1/recipes/`.
+   `archive/experiment/phase1/eval/analysis/selfaware_full_run_comparison_grouped.csv`.
+3. Check existing 8B recipes under `archive/experiment/phase1/recipes/`.
 4. For thinking variants, follow
    `experiments/thinking-enabled-parallel-arm/PLAN.md` and adapt the source
    probe to Qwen3-8B before building datasets.
 5. For non-thinking Tier 1, prepare exact configs and run records only after
    source labels, lane, seed, and output paths are approved.
 6. After each cell, run full SelfAware response-confidence eval and rebuild
-   `experiment/phase1/eval/analysis/selfaware_full_run_comparison.csv`.
+   `archive/experiment/phase1/eval/analysis/selfaware_full_run_comparison.csv`.
 7. Checkpoint results in
    `docs/sessions/20260625T141548Z-8b-scale-and-hyperparameter-planning.md` or a later
    launch-specific session note.
@@ -117,8 +117,8 @@ Tier 1 first.
 
 - Protocol: `experiments/8b-scale-and-hyperparameter-gates/AMENDMENT.md`.
 - Session: `docs/sessions/20260625T141548Z-8b-scale-and-hyperparameter-planning.md`.
-- Run records: `experiment/phase1/run_records/`.
-- Eval analysis: `experiment/phase1/eval/analysis/`.
+- Run records: `archive/experiment/phase1/run_records/`.
+- Eval analysis: `archive/experiment/phase1/eval/analysis/`.
 - No model weights, raw generated rows, or large artifacts should be committed.
 
 ## Variations
@@ -153,10 +153,10 @@ say is most likely to move behavior?
 
 This is an offline audit over:
 
-- checked-in configs under `experiment/phase1/recipes/` and
-  `experiment/phase1/grpo/configs/`;
+- checked-in configs under `archive/experiment/phase1/recipes/` and
+  `archive/experiment/phase1/grpo/configs/`;
 - local scratch run exhaust under `scratch/schema_response_confidence/runs/`;
-- durable eval metrics under `experiment/phase1/eval/analysis/`;
+- durable eval metrics under `archive/experiment/phase1/eval/analysis/`;
 - relevant KG notes and papers on DPO beta/KL, GRPO KL/reward variance, LoRA
   capacity, data composition, and post-training diversity collapse.
 
@@ -183,9 +183,9 @@ Questions to answer by arm:
 ### Runbook
 
 1. Read current aggregate metrics from
-   `experiment/phase1/eval/analysis/selfaware_full_run_comparison_grouped.csv`.
-2. Inventory configs under `experiment/phase1/recipes/` and
-   `experiment/phase1/grpo/configs/` for LR, beta, batch, accumulation, epochs,
+   `archive/experiment/phase1/eval/analysis/selfaware_full_run_comparison_grouped.csv`.
+2. Inventory configs under `archive/experiment/phase1/recipes/` and
+   `archive/experiment/phase1/grpo/configs/` for LR, beta, batch, accumulation, epochs,
    LoRA rank, alpha, dropout, and target modules.
 3. Inventory local scratch logs under `scratch/schema_response_confidence/runs/`
    without committing raw run products.
@@ -193,7 +193,7 @@ Questions to answer by arm:
    schema validity, confidence distribution, completion length, batch size,
    throughput, and any checkpoint/sanity gates.
 5. Join training summaries to full eval rows in
-   `experiment/phase1/eval/analysis/selfaware_full_run_comparison.csv`.
+   `archive/experiment/phase1/eval/analysis/selfaware_full_run_comparison.csv`.
 6. Search the KG for hyperparameter mechanisms, then fill gaps with arXiv
    primary sources and ingest any paper used as rationale.
 7. Write a recommendation checkpoint in
@@ -241,7 +241,7 @@ launch rationale.
 
 - Session checkpoint:
   `docs/sessions/20260625T141548Z-8b-scale-and-hyperparameter-planning.md`.
-- Optional derived CSVs under `experiment/phase1/analysis/` if a parser is
+- Optional derived CSVs under `archive/experiment/phase1/analysis/` if a parser is
   created.
 - No raw logs, raw completions, model weights, or scratch artifacts committed.
 
@@ -260,6 +260,6 @@ launch rationale.
   `kg-ingest` before they can support a launch recommendation.
 - 2026-06-25: ingested `2602.06204` and `2407.08639`; added reusable mechanisms
   for LoRA rank/LR coupling and DPO beta/pair-quality coupling; generated
-  `experiment/phase1/analysis/training_exhaust_summary.csv` and
-  `experiment/phase1/analysis/training_exhaust_hyperparameter_report.md` from
+  `archive/experiment/phase1/analysis/training_exhaust_summary.csv` and
+  `archive/experiment/phase1/analysis/training_exhaust_hyperparameter_report.md` from
   32 local scratch capacity/log artifacts.

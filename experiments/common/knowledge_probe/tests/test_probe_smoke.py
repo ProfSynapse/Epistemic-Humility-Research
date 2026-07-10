@@ -1,4 +1,4 @@
-"""Smoke tests for the Phase 1 knowledge probe (WS-1).
+"""Smoke tests for the locked training-regimen knowledge probe (WS-1).
 
 Location: experiments/common/knowledge_probe/tests/test_probe_smoke.py
 Run:      py -3.12 -m pytest experiments/common/knowledge_probe/tests -q
@@ -6,7 +6,7 @@ Run:      py -3.12 -m pytest experiments/common/knowledge_probe/tests -q
 These verify the probe's scoring, labeling, JSONL output contract,
 resumability, sensitivity grid, and the enable_thinking runtime self-check,
 all with the GPU-free StubBackend on a small fixture. Comprehensive coverage
-is TEST phase work; this is the "does it run, does the happy path hold" gate.
+is TEST-stage work; this is the "does it run, does the happy path hold" gate.
 """
 
 from __future__ import annotations
@@ -298,7 +298,7 @@ def test_vllm_render_fails_actionably_when_no_surface_disables_thinking():
 
 # --- Step-1 SIGNED-RENDER REGRESSION (hidden-state tier render-helper extract) ---
 #
-# backends.py is part of the SIGNED Phase-1 pipeline. The hidden-state probing
+# backends.py is part of the SIGNED locked-training-regimen pipeline. The hidden-state probing
 # tier (Step 1) extracted render_probe_prompt() as a shared engine-agnostic helper
 # and rewired VLLMBackend._render_prompt to a thin memoizing wrapper over it. These
 # regressions LOCK the byte-identical behavior: a future edit that drifts the

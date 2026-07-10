@@ -22,7 +22,7 @@ metrics:
 - auroc
 - expected-calibration-error
 fulltext: ../../papers/paper-3-knows-but-doesnt-say/manuscript.md
-provenance: 'Internal program paper (Paper 3 in the five-paper map, 2026-07-01; the "paper3" node slug is again accurate). Source of truth: papers/paper-3-knows-but-doesnt-say/manuscript.md. Evidence: experiments/contrastive-sft-behavior-conditional-confidence/AMENDMENT.md, experiments/answer-subspan-masked-contrastive-sft/AMENDMENT.md, experiments/quantile-balanced-probe-distilled-sft/AMENDMENT.md, experiments/grpo-v3-on-contrastive-sft-base/AMENDMENT.md, and experiment/phase1 probe/eval analyses. Not an external publication.'
+provenance: 'Internal program paper (Paper 3 in the five-paper map, 2026-07-01; the "paper3" node slug is again accurate). Source of truth: papers/paper-3-knows-but-doesnt-say/manuscript.md. Evidence: experiments/contrastive-sft-behavior-conditional-confidence/AMENDMENT.md, experiments/answer-subspan-masked-contrastive-sft/AMENDMENT.md, experiments/quantile-balanced-probe-distilled-sft/AMENDMENT.md, experiments/grpo-v3-on-contrastive-sft-base/AMENDMENT.md, and archive/experiment/phase1 probe/eval analyses. Not an external publication.'
 related:
 - '[[verbalized-confidence-channel-bottleneck]]'
 - '[[caution-residual-ablation-relaxes-overrefusal-asymmetrically]]'

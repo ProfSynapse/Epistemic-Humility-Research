@@ -5,7 +5,7 @@ title: Experiment Provenance Cleanup Architecture
 status: active
 created_at: '2026-07-08T17:15:28Z'
 updated_at: '2026-07-08T18:09:29Z'
-phase: phase1
+track: research
 question: How should old protocol amendments, new experiments-first records, and research
   session notes be aligned for multiplayer research without breaking provenance?
 tags:

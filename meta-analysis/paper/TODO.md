@@ -125,7 +125,7 @@
       deception-reward). synthesize.py re-run; prisma figure + flow doc
       updated; draft counts propagated (abstract, §1, §4.1/4.3/4.4/4.5,
       §5.1/5.2/5.5, §6.1/6.3, §7).
-- [x] **§8 Future work drafted.** DONE 2026-06-11: four-phase program
+- [x] **§8 Future work drafted.** DONE 2026-06-11: four-study program
       (8.1 three-way SFT/DPO/KTO, Gaps 1+2; 8.2 IDK-fraction dose-response +
       composition + KTO balance ablation, Gap 5; 8.3 probe-transfer mechanism,
       Gap 4; 8.4 rolling cross-architecture generalization + sycophancy +

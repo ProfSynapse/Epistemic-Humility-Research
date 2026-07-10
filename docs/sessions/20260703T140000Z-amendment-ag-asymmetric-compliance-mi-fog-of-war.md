@@ -5,7 +5,7 @@ title: Amendment AG resolved (asymmetric compliance) + mech-interp fog-of-war fl
 status: complete
 created_at: '2026-07-03T14:00:00Z'
 updated_at: '2026-07-03T18:30:00Z'
-phase: phase1
+track: research
 question: "What is the AF prime made of \u2014 compliance with a credible instruction\
   \ or resonance with the model's own read-out \u2014 and what does the caution machinery\
   \ it acts on look like from inside?"
@@ -127,10 +127,10 @@ legacy_session:
   id: '0035'
   path: docs/sessions/0035 - amendment-ag-asymmetric-compliance-mi-fog-of-war.md
 ---
-# Session 0035 — Amendment AG + the mech-interp fog-of-war fleet
+# Session 0035 -- Amendment AG + the mech-interp fog-of-war fleet
 
-Arc: AG went signing → launch → resolution → audit → merge in one afternoon
-(PRs 164–166), landing ASYMMETRIC COMPLIANCE with both gates passed and the
+Arc: AG went signing -> launch -> resolution -> audit -> merge in one afternoon
+(PRs 164-166), landing ASYMMETRIC COMPLIANCE with both gates passed and the
 user's pre-registered prediction ("pure behavior not internal alignment")
 confirmed one level deeper: the prime never moves the belief (doubt axis
 anti-semantic, compliance-discrimination at chance), while the caution/policy
@@ -144,8 +144,8 @@ on disk. Three structural results: the prime's write at the pre-gen anchor is
 almost entirely off the readable axes (the dials see a shadow); caution is a
 redundant many-headed hydra that survives 40 orthogonal direction removals
 (doubt is woven through every strand as a correlate but is not a removable
-ingredient); and compliance in both directions collapses onto one scalar —
-baseline distance from the refused/answered decision boundary — with the cell
+ingredient); and compliance in both directions collapses onto one scalar --
+baseline distance from the refused/answered decision boundary -- with the cell
 indicator adding nothing significant. That last result demotes AG's capacity
 confound: unknowns resist release mostly because they start ~0.5z deeper in
 the refusal basin, and the 23 that did release were exactly the shallow ones

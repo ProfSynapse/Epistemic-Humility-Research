@@ -61,7 +61,7 @@ def _repo_root() -> Path:
     here = Path(__file__).resolve()
     for candidate in (here, *here.parents):
         if (
-            (candidate / "archive" / "archive" / "archive" / "archive" / "experiment" / "phase1" / "probe" / "backends.py").exists()
+            (candidate / "archive" / "experiment" / "phase1" / "probe" / "backends.py").exists()
             and (candidate / "experiments").is_dir()
         ):
             return candidate
@@ -69,7 +69,7 @@ def _repo_root() -> Path:
 
 
 CANONICAL = _repo_root()
-PROBE_DIR = CANONICAL / "archive" / "archive" / "archive" / "archive" / "experiment" / "phase1" / "probe"
+PROBE_DIR = CANONICAL / "archive" / "experiment" / "phase1" / "probe"
 if str(PROBE_DIR) not in sys.path:
     sys.path.insert(0, str(PROBE_DIR))
 

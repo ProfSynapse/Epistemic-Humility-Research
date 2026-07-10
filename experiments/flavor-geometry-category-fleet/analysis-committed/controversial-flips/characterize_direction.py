@@ -19,7 +19,7 @@ from sklearn.metrics import roc_auc_score
 SEED = 20260704
 HERE = os.path.dirname(os.path.abspath(__file__))
 REPO = Path(__file__).resolve().parents[4]
-LEGACY_ANALYSIS = REPO / "experiment" / "phase1" / "probe" / "analysis"
+LEGACY_ANALYSIS = REPO / "archive" / "experiment" / "phase1" / "probe" / "analysis"
 GEN = str(LEGACY_ANALYSIS / "ah_main")
 CACHE = str(LEGACY_ANALYSIS / "mi_category_geometry_20260704" / "cache")
 CATS = ["ambiguous", "controversial", "counterfactual",

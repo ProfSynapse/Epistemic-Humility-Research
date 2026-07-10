@@ -8,7 +8,7 @@ tags:
   - kg/experiment
 status: done
 governance: exploratory
-phase: phase1
+track: mechanism
 lane: cloud
 est_compute: 'Completed: 10760.2 seconds on Modal A10/A10G-class GPU for n_prompts=1000'
 relationships:

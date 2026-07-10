@@ -5,7 +5,7 @@ title: Amendment B Stated-Confidence Eval Launch
 status: active
 created_at: '2026-06-17T00:00:00Z'
 updated_at: '2026-06-18T08:52:00Z'
-phase: phase1
+track: research
 question: Track Amendment B stated-confidence eval reruns, output-contract measurement
   effects, and local run state.
 tags:
@@ -50,24 +50,24 @@ results or earlier non-stated-confidence local evidence.
 
 ## Validation
 
-- `python -m pytest experiment/phase1/eval/tests/test_scorers.py experiment/phase1/eval/tests/test_run_eval_e2e.py experiment/phase1/grpo/tests/test_humility_reward.py experiment/phase1/grpo/tests/test_build_grpo_dataset.py experiment/phase1/eval/tests/test_cheng_regression.py -q`
+- `python -m pytest archive/experiment/phase1/eval/tests/test_scorers.py archive/experiment/phase1/eval/tests/test_run_eval_e2e.py archive/experiment/phase1/grpo/tests/test_humility_reward.py archive/experiment/phase1/grpo/tests/test_build_grpo_dataset.py archive/experiment/phase1/eval/tests/test_cheng_regression.py -q`
   passed: 72 passed, 1 warning.
-- `python -m pytest experiment/phase1/probe/tests/test_hidden_state_probe.py -q`
+- `python -m pytest archive/experiment/phase1/probe/tests/test_hidden_state_probe.py -q`
   passed: 73 passed, 5 skipped.
 - `python sync_skills.py --check --skill experiment-runner` passed.
 
 ## Configs Added
 
-- `experiment/phase1/eval/config/eval_amendment_b_stated_confidence_selfaware_seed1_all_arms_local_4b.yaml`
-- `experiment/phase1/eval/config/eval_amendment_b_stated_confidence_selfaware_seed2_all_arms_local_4b.yaml`
-- `experiment/phase1/eval/config/eval_amendment_b_stated_confidence_selfaware_seed3_all_arms_local_4b.yaml`
-- `experiment/phase1/eval/config/eval_amendment_b_stated_confidence_selfaware_seq_seed1_local_4b.yaml`
-- `experiment/phase1/eval/config/eval_amendment_b_stated_confidence_selfaware_seq_seed2_sft_dpo_local_4b.yaml`
-- `experiment/phase1/eval/config/eval_amendment_b_stated_confidence_selfaware_seq_seed2_sft_merged_local_4b.yaml`
-- `experiment/phase1/eval/config/eval_amendment_b_stated_confidence_selfaware_seq_seed2_sft_kto_local_4b.yaml`
-- `experiment/phase1/eval/config/eval_amendment_b_stated_confidence_selfaware_seq_seed3_sft_dpo_local_4b.yaml`
-- `experiment/phase1/eval/config/eval_amendment_b_stated_confidence_selfaware_seq_seed3_sft_merged_local_4b.yaml`
-- `experiment/phase1/eval/config/eval_amendment_b_stated_confidence_selfaware_seq_seed3_sft_kto_local_4b.yaml`
+- `archive/experiment/phase1/eval/config/eval_amendment_b_stated_confidence_selfaware_seed1_all_arms_local_4b.yaml`
+- `archive/experiment/phase1/eval/config/eval_amendment_b_stated_confidence_selfaware_seed2_all_arms_local_4b.yaml`
+- `archive/experiment/phase1/eval/config/eval_amendment_b_stated_confidence_selfaware_seed3_all_arms_local_4b.yaml`
+- `archive/experiment/phase1/eval/config/eval_amendment_b_stated_confidence_selfaware_seq_seed1_local_4b.yaml`
+- `archive/experiment/phase1/eval/config/eval_amendment_b_stated_confidence_selfaware_seq_seed2_sft_dpo_local_4b.yaml`
+- `archive/experiment/phase1/eval/config/eval_amendment_b_stated_confidence_selfaware_seq_seed2_sft_merged_local_4b.yaml`
+- `archive/experiment/phase1/eval/config/eval_amendment_b_stated_confidence_selfaware_seq_seed2_sft_kto_local_4b.yaml`
+- `archive/experiment/phase1/eval/config/eval_amendment_b_stated_confidence_selfaware_seq_seed3_sft_dpo_local_4b.yaml`
+- `archive/experiment/phase1/eval/config/eval_amendment_b_stated_confidence_selfaware_seq_seed3_sft_merged_local_4b.yaml`
+- `archive/experiment/phase1/eval/config/eval_amendment_b_stated_confidence_selfaware_seq_seed3_sft_kto_local_4b.yaml`
 
 Do not add the `SFT -> KTO` seed-3 eval config until that training adapter
 finishes and its final artifact path is known.
@@ -79,9 +79,9 @@ Started first full attempt:
 - Container: `eh-amendment-b-selfaware-seed1-20260617`
 - Container id prefix: `5c0fec9e6413`
 - Config:
-  `experiment/phase1/eval/config/eval_amendment_b_stated_confidence_selfaware_seed1_all_arms_local_4b.yaml`
+  `archive/experiment/phase1/eval/config/eval_amendment_b_stated_confidence_selfaware_seed1_all_arms_local_4b.yaml`
 - Result dir:
-  `experiment/phase1/eval/results_amendment_b_stated_confidence_selfaware_seed1_all_arms_4b`
+  `archive/experiment/phase1/eval/results_amendment_b_stated_confidence_selfaware_seed1_all_arms_4b`
 
 Initial state:
 
@@ -109,7 +109,7 @@ Outcome of first full attempt:
   validation must also include a base-model behavioral sanity check against the
   nearest non-stated-confidence comparator before full reruns.
 - The failed/confounded artifact remains under
-  `experiment/phase1/eval/results_amendment_b_stated_confidence_selfaware_seed1_all_arms_4b`.
+  `archive/experiment/phase1/eval/results_amendment_b_stated_confidence_selfaware_seed1_all_arms_4b`.
   Do not use it as reportable Amendment B evidence.
 
 Correction:
@@ -120,14 +120,14 @@ Correction:
 - Corrected result dirs now include `neutral_concise` in the name to avoid
   mixing with the confounded stopped run and the first neutral smoke.
 - Added a bounded base-only neutral-prompt smoke config:
-  `experiment/phase1/eval/config/eval_amendment_b_stated_confidence_neutral_selfaware_seed1_base_smoke_local_4b.yaml`.
+  `archive/experiment/phase1/eval/config/eval_amendment_b_stated_confidence_neutral_selfaware_seed1_base_smoke_local_4b.yaml`.
 - First neutral smoke result:
-  `experiment/phase1/eval/results_amendment_b_stated_confidence_neutral_selfaware_seed1_base_smoke_4b`.
+  `archive/experiment/phase1/eval/results_amendment_b_stated_confidence_neutral_selfaware_seed1_base_smoke_4b`.
   It fixed the refusal confound (`over_refusal_pct=0.0`, `refusal_rate_pct=0.0`)
   and matched the old base behavioral shape, but coverage was only 94.79%
   because long JSON answers hit `max_new_tokens: 96`.
 - Second neutral-concise smoke result:
-  `experiment/phase1/eval/results_amendment_b_stated_confidence_neutral_concise_selfaware_seed1_base_smoke_4b`.
+  `archive/experiment/phase1/eval/results_amendment_b_stated_confidence_neutral_concise_selfaware_seed1_base_smoke_4b`.
   Prompt now says to answer concisely and uses `max_new_tokens: 128`. It kept
   the base behavioral shape (`over_refusal_pct=0.0`, `refusal_rate_pct=0.0`;
   old 192-row comparator also had 0.0/0.0) and improved stated-confidence
@@ -135,7 +135,7 @@ Correction:
   `reasoning_content` matches were found.
 - Full corrected seed-1 run launched as container
   `eh-amendment-b-neutral-concise-seed1-20260617` (`34f91a18dae9`) using
-  `experiment/phase1/eval/config/eval_amendment_b_stated_confidence_selfaware_seed1_all_arms_local_4b.yaml`.
+  `archive/experiment/phase1/eval/config/eval_amendment_b_stated_confidence_selfaware_seed1_all_arms_local_4b.yaml`.
 
 Scorer audit while the full run was starting:
 
@@ -153,7 +153,7 @@ Scorer audit while the full run was starting:
   JSON-aware stated-confidence refusal handling for natural first-person
   abstentions such as `I do not know...` / `I don't know...`.
 - Focused validation passed after the fix:
-  `python -m pytest experiment/phase1/eval/tests/test_scorers.py experiment/phase1/eval/tests/test_run_eval_e2e.py experiment/phase1/eval/tests/test_cheng_regression.py experiment/phase1/grpo/tests/test_humility_reward.py -q`
+  `python -m pytest archive/experiment/phase1/eval/tests/test_scorers.py archive/experiment/phase1/eval/tests/test_run_eval_e2e.py archive/experiment/phase1/eval/tests/test_cheng_regression.py archive/experiment/phase1/grpo/tests/test_humility_reward.py -q`
   -> 74 passed, 1 warning.
 - The active full eval was stopped before accepting any output under the stale
   scorer, leaving KTO untouched. It was relaunched as
@@ -169,11 +169,11 @@ Decision-enum schema smoke:
   `{"decision": "answer"|"abstain", "answer": <string>, "confidence": <0..1>}`.
   The parser canonicalizes `decision="abstain"` to answer text
   `"I don't know"` for scoring. Focused validation passed:
-  `python -m pytest experiment/phase1/eval/tests/test_scorers.py experiment/phase1/eval/tests/test_run_eval_e2e.py experiment/phase1/eval/tests/test_cheng_regression.py experiment/phase1/grpo/tests/test_humility_reward.py -q`
+  `python -m pytest archive/experiment/phase1/eval/tests/test_scorers.py archive/experiment/phase1/eval/tests/test_run_eval_e2e.py archive/experiment/phase1/eval/tests/test_cheng_regression.py archive/experiment/phase1/grpo/tests/test_humility_reward.py -q`
   -> 82 passed, 1 warning.
 - Base-only smoke container:
   `eh-amendment-b-decision-schema-smoke-seed1-20260617`; result dir:
-  `experiment/phase1/eval/results_amendment_b_stated_confidence_neutral_concise_schema_selfaware_seed1_base_smoke_4b`.
+  `archive/experiment/phase1/eval/results_amendment_b_stated_confidence_neutral_concise_schema_selfaware_seed1_base_smoke_4b`.
 - Structural result was excellent: n=192, `stated_confidence.coverage_pct=100.0`,
   `n_missing_confidence=0`, retry counts were 189 rows with 0 retries and
   3 rows with 1 retry, `stated_confidence_retry_exhausted=0`, and every
@@ -209,7 +209,7 @@ Answer/confidence-only structured-output control:
 - Next control removed the explicit `decision` / `abstain` enum and constrained
   only `{"answer": <string>, "confidence": <0..1>}` through vLLM structured
   outputs. Result dir:
-  `experiment/phase1/eval/results_amendment_b_stated_confidence_neutral_concise_schema_answer_confidence_selfaware_seed1_base_smoke_4b`.
+  `archive/experiment/phase1/eval/results_amendment_b_stated_confidence_neutral_concise_schema_answer_confidence_selfaware_seed1_base_smoke_4b`.
 - Structural result stayed clean: n=192, `stated_confidence.coverage_pct=100.0`,
   `n_missing_confidence=0`, retry counts were 190 rows with 0 retries and
   2 rows with 1 retry, and `stated_confidence_retry_exhausted=0`. No `<think>`,
@@ -231,9 +231,9 @@ Full answer/confidence seed-1 rerun launch:
 - Container: `eh-amendment-b-answer-confidence-seed1-full-20260617`
   (`3db2ae01104d7abff7e17ddc7110e45c4256bed722ee755a8f7158124ec0fcbf`)
 - Config:
-  `experiment/phase1/eval/config/eval_amendment_b_stated_confidence_selfaware_seed1_all_arms_local_4b.yaml`
+  `archive/experiment/phase1/eval/config/eval_amendment_b_stated_confidence_selfaware_seed1_all_arms_local_4b.yaml`
 - Result dir:
-  `experiment/phase1/eval/results_amendment_b_stated_confidence_neutral_concise_schema_answer_confidence_selfaware_seed1_all_arms_4b`
+  `archive/experiment/phase1/eval/results_amendment_b_stated_confidence_neutral_concise_schema_answer_confidence_selfaware_seed1_all_arms_4b`
 - Startup check: container reached vLLM model load; KTO seed 3 remained running
   in parallel; GPU memory was about 7.7 GiB during load.
 - Runtime check at about 40 minutes: base arm flushed successfully while the
@@ -292,9 +292,9 @@ Full answer/confidence seed-2 rerun launch:
 - Launched container: `eh-amendment-b-answer-confidence-seed2-full-20260617`
   (`e1f80fa35d6e372dc61d2cdb822436d6ad711d6ca683b71ae7790dea2cb7bc11`)
 - Config:
-  `experiment/phase1/eval/config/eval_amendment_b_stated_confidence_selfaware_seed2_all_arms_local_4b.yaml`
+  `archive/experiment/phase1/eval/config/eval_amendment_b_stated_confidence_selfaware_seed2_all_arms_local_4b.yaml`
 - Result dir:
-  `experiment/phase1/eval/results_amendment_b_stated_confidence_neutral_concise_schema_answer_confidence_selfaware_seed2_all_arms_4b`
+  `archive/experiment/phase1/eval/results_amendment_b_stated_confidence_neutral_concise_schema_answer_confidence_selfaware_seed2_all_arms_4b`
 - Launch note: the host Docker command timed out after returning the container
   id, but direct `docker ps` confirmed the container was up.
 - Startup check: vLLM reached Qwen3 model load with the same non-blocking
@@ -356,9 +356,9 @@ Full answer/confidence seed-3 rerun launch:
 - Launched container: `eh-amendment-b-answer-confidence-seed3-full-20260617`
   (`ee679d9a21ebef900cf46902ed6f1978d3022e341bcfa03d5eb9c070ba81ac27`)
 - Config:
-  `experiment/phase1/eval/config/eval_amendment_b_stated_confidence_selfaware_seed3_all_arms_local_4b.yaml`
+  `archive/experiment/phase1/eval/config/eval_amendment_b_stated_confidence_selfaware_seed3_all_arms_local_4b.yaml`
 - Result dir:
-  `experiment/phase1/eval/results_amendment_b_stated_confidence_neutral_concise_schema_answer_confidence_selfaware_seed3_all_arms_4b`
+  `archive/experiment/phase1/eval/results_amendment_b_stated_confidence_neutral_concise_schema_answer_confidence_selfaware_seed3_all_arms_4b`
 - Startup check at 2026-06-17T16:31:11-04:00: vLLM reached Qwen3 model load
   with the known non-blocking Triton routing warning and WSL pin-memory warning.
   GPU memory was about 7.7 GiB during load. Background Amendment A
@@ -437,9 +437,9 @@ Full answer/confidence sequential seed-1 rerun launch:
 - Launched container: `eh-amendment-b-answer-confidence-seq-seed1-20260617`
   (`8b026d49cc8e2ebfef869d850b0edea540fa641a8065a216fb99186392b173ae`)
 - Config:
-  `experiment/phase1/eval/config/eval_amendment_b_stated_confidence_selfaware_seq_seed1_local_4b.yaml`
+  `archive/experiment/phase1/eval/config/eval_amendment_b_stated_confidence_selfaware_seq_seed1_local_4b.yaml`
 - Result dir:
-  `experiment/phase1/eval/results_amendment_b_stated_confidence_neutral_concise_schema_answer_confidence_selfaware_seq_seed1_4b`
+  `archive/experiment/phase1/eval/results_amendment_b_stated_confidence_neutral_concise_schema_answer_confidence_selfaware_seq_seed1_4b`
 - Startup check at 2026-06-17T19:28:02-04:00: vLLM reached merged-model load
   with the known non-blocking Triton routing warning and WSL pin-memory warning.
   A tokenizer warning about an "incorrect regex pattern" also appeared while
@@ -507,9 +507,9 @@ Full answer/confidence sequential seed-1 rerun launch:
   `eh-amendment-b-answer-confidence-seq-seed2-sft-dpo-20260617`
   (`dd11076b5044c2bee3b3fb928087511c702cb066d109e29d765b687102ba2ed8`),
   config
-  `experiment/phase1/eval/config/eval_amendment_b_stated_confidence_selfaware_seq_seed2_sft_dpo_local_4b.yaml`,
+  `archive/experiment/phase1/eval/config/eval_amendment_b_stated_confidence_selfaware_seq_seed2_sft_dpo_local_4b.yaml`,
   result dir
-  `experiment/phase1/eval/results_amendment_b_stated_confidence_neutral_concise_schema_answer_confidence_selfaware_seq_seed2_sft_dpo_4b`.
+  `archive/experiment/phase1/eval/results_amendment_b_stated_confidence_neutral_concise_schema_answer_confidence_selfaware_seq_seed2_sft_dpo_4b`.
 - `SFT -> DPO` seed-2 gate at 2026-06-17T22:56:xx-04:00: n=3,369,
   `stated_confidence.coverage_pct=99.88`, `n_missing_confidence=4`, retry
   counts were 3,085 rows with 0 retries, 280 rows with 1 retry, 4 rows with
@@ -527,9 +527,9 @@ Full answer/confidence sequential seed-1 rerun launch:
   `eh-amendment-b-answer-confidence-seq-seed2-sft-kto-20260617`
   (`067eec2a2cc2df603470a834ca0e5c6ffeca615f82fcf13f9691545f0802e471`),
   config
-  `experiment/phase1/eval/config/eval_amendment_b_stated_confidence_selfaware_seq_seed2_sft_kto_local_4b.yaml`,
+  `archive/experiment/phase1/eval/config/eval_amendment_b_stated_confidence_selfaware_seq_seed2_sft_kto_local_4b.yaml`,
   result dir
-  `experiment/phase1/eval/results_amendment_b_stated_confidence_neutral_concise_schema_answer_confidence_selfaware_seq_seed2_sft_kto_4b`.
+  `archive/experiment/phase1/eval/results_amendment_b_stated_confidence_neutral_concise_schema_answer_confidence_selfaware_seq_seed2_sft_kto_4b`.
 - `SFT -> KTO` seed-2 gate at 2026-06-18T00:04:xx-04:00: n=3,369,
   `stated_confidence.coverage_pct=100.0`, `n_missing_confidence=0`, retry
   counts were 3,198 rows with 0 retries and 171 rows with 1 retry; no rows
@@ -546,9 +546,9 @@ Full answer/confidence sequential seed-1 rerun launch:
   `eh-amendment-b-answer-confidence-seq-seed3-sft-dpo-20260618`
   (`907110a654b5849a775cf1dde7116eb32ac2dfa1e82113644de86e163a924921`),
   config
-  `experiment/phase1/eval/config/eval_amendment_b_stated_confidence_selfaware_seq_seed3_sft_dpo_local_4b.yaml`,
+  `archive/experiment/phase1/eval/config/eval_amendment_b_stated_confidence_selfaware_seq_seed3_sft_dpo_local_4b.yaml`,
   result dir
-  `experiment/phase1/eval/results_amendment_b_stated_confidence_neutral_concise_schema_answer_confidence_selfaware_seq_seed3_sft_dpo_4b`.
+  `archive/experiment/phase1/eval/results_amendment_b_stated_confidence_neutral_concise_schema_answer_confidence_selfaware_seq_seed3_sft_dpo_4b`.
 - `SFT -> DPO` seed-3 gate at 2026-06-18T01:22:xx-04:00: n=3,369,
   `stated_confidence.coverage_pct=99.91`, `n_missing_confidence=3`, retry
   counts were 2,832 rows with 0 retries, 534 rows with 1 retry, 3 rows with
@@ -597,9 +597,9 @@ Full answer/confidence sequential seed-1 rerun launch:
   container `eh-amendment-b-answer-confidence-seq-seed2-sft-merged-20260618`
   (`0e51db3b9016ee97a1530af506f1f07bf7752f6655596198ff8feb754da7b6c4`),
   config
-  `experiment/phase1/eval/config/eval_amendment_b_stated_confidence_selfaware_seq_seed2_sft_merged_local_4b.yaml`,
+  `archive/experiment/phase1/eval/config/eval_amendment_b_stated_confidence_selfaware_seq_seed2_sft_merged_local_4b.yaml`,
   result dir
-  `experiment/phase1/eval/results_amendment_b_stated_confidence_neutral_concise_schema_answer_confidence_selfaware_seq_seed2_sft_merged_4b`.
+  `archive/experiment/phase1/eval/results_amendment_b_stated_confidence_neutral_concise_schema_answer_confidence_selfaware_seq_seed2_sft_merged_4b`.
   Startup reached vLLM model load with the already-known merged-checkpoint
   tokenizer regex warning and non-blocking Triton routing warning. Background
   `SFT -> KTO` seed 3 remained active and had advanced to step `2800/3599`
@@ -616,9 +616,9 @@ Full answer/confidence sequential seed-1 rerun launch:
   container `eh-amendment-b-answer-confidence-seq-seed3-sft-merged-20260618`
   (`de44571b7e1aa75ec8522e59d238f210775850e06d6995441678b6717f5a0527`),
   config
-  `experiment/phase1/eval/config/eval_amendment_b_stated_confidence_selfaware_seq_seed3_sft_merged_local_4b.yaml`,
+  `archive/experiment/phase1/eval/config/eval_amendment_b_stated_confidence_selfaware_seq_seed3_sft_merged_local_4b.yaml`,
   result dir
-  `experiment/phase1/eval/results_amendment_b_stated_confidence_neutral_concise_schema_answer_confidence_selfaware_seq_seed3_sft_merged_4b`.
+  `archive/experiment/phase1/eval/results_amendment_b_stated_confidence_neutral_concise_schema_answer_confidence_selfaware_seq_seed3_sft_merged_4b`.
   Background `SFT -> KTO` seed 3 remained active at about step `2930/3599`
   with low OOM risk.
 - Seed-3 merged-SFT baseline completed cleanly by 2026-06-18T06:55:xxZ. Gate:
@@ -675,9 +675,9 @@ Full answer/confidence sequential seed-1 rerun launch:
   `eh-amendment-b-answer-confidence-seq-seed3-sft-kto-20260618`
   (`70ee982b55db8891147f3ff98a494997a41e4637e41564c1b41cdd37d6424d57`),
   config:
-  `experiment/phase1/eval/config/eval_amendment_b_stated_confidence_selfaware_seq_seed3_sft_kto_local_4b.yaml`,
+  `archive/experiment/phase1/eval/config/eval_amendment_b_stated_confidence_selfaware_seq_seed3_sft_kto_local_4b.yaml`,
   result dir:
-  `experiment/phase1/eval/results_amendment_b_stated_confidence_neutral_concise_schema_answer_confidence_selfaware_seq_seed3_sft_kto_4b`.
+  `archive/experiment/phase1/eval/results_amendment_b_stated_confidence_neutral_concise_schema_answer_confidence_selfaware_seq_seed3_sft_kto_4b`.
 - Final Amendment B sequential `SFT -> KTO` seed-3 eval completed cleanly by
   2026-06-18T08:50:xxZ. Gate: n=`3369`, confidence coverage `99.91`,
   `n_missing_confidence=3`, refusal recall `66.18`, over-refusal `34.83`,

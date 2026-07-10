@@ -1,6 +1,6 @@
 ---
 license: mit
-pretty_name: Epistemic Humility Phase 1 Training Data
+pretty_name: Epistemic Humility locked training-regimen Training Data
 tags:
 - epistemic-humility
 - abstention
@@ -9,17 +9,17 @@ tags:
 - fine-tuning
 ---
 
-# Epistemic Humility Phase 1 Training Data
+# Epistemic Humility locked training-regimen Training Data
 
-This dataset contains the redistributable Qwen3 4B Phase 1 training/dev
+This dataset contains the redistributable Qwen3 4B locked training-regimen training/dev
 artifacts for the Epistemic Humility research program.
 
 The files are generated from the local repository:
 
 - GitHub project: https://github.com/ProfSynapse/Epistemic-Humility-Research
-- Local provenance root: `experiment/phase1/data/qwen3-4b-instruct/`
+- Local provenance root: `archive/experiment/phase1/data/qwen3-4b-instruct/`
 - Public artifact manifest: `docs/public-artifacts.md`
-- Protocol: `docs/protocols/phase1/PROTOCOL.md`
+- Protocol: `archive/docs/protocols/phase1/PROTOCOL.md`
 
 ## Contents
 
@@ -37,12 +37,12 @@ qwen3-4b-instruct/questions_frozen.json
 ```
 
 `questions_frozen.json` records the frozen known/unknown budget and train/dev
-question-key split used by the Phase 1 build. `build_manifest.json` records the
+question-key split used by the locked training-regimen build. `build_manifest.json` records the
 local build parameters and count assertions.
 
 ## Scope
 
-This release is limited to redistributable Qwen3 4B Phase 1 artifacts. It does
+This release is limited to redistributable Qwen3 4B locked training-regimen artifacts. It does
 not include restricted bridge data, OpenMOSS/Cheng raw data, local cache dumps,
 or model checkpoints.
 

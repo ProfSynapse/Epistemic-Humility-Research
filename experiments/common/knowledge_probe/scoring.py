@@ -1,4 +1,4 @@
-"""Correctness scoring primitives for the Phase 1 knowledge probe (WS-1).
+"""Correctness scoring primitives for the locked training-regimen knowledge probe (WS-1).
 
 Location: experiments/common/knowledge_probe/scoring.py
 Used by:  experiments/common/knowledge_probe/probe.py to compute P_correct per question.

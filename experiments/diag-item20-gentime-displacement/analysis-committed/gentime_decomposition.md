@@ -1,6 +1,6 @@
 # Item 20 - generation-time doubt/caution-plane decomposition (L35)
 
-Checkpoint: clean-SFT -> GRPO-v2 (seed1). Axes from `experiment/phase1/probe/analysis/current_clean_grpo_v2_caution_residual_direction`.
+Checkpoint: clean-SFT -> GRPO-v2 (seed1). Axes from `archive/experiment/phase1/probe/analysis/current_clean_grpo_v2_caution_residual_direction`.
 Axis geometry: cos(doubt, caution) = -0.8296, cos(doubt, caution_perp) = 0.0000 (orthogonal by construction), cos(caution_perp, caution) = 0.5583.
 
 Rows: 41 answered (with states) of 600 pool; 559 refused (no states). r2 pool is 100% unknown-label; all answered rows are confabulations and refused rows have no captured states -> single-group analysis (unknown-label confabulations); answered-vs-refused split not possible.

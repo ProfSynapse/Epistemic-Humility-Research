@@ -8,8 +8,8 @@ the same construct as calibrated epistemic humility.
 Start with the checked-in answer-sycophancy OOD loader and smoke config:
 
 ```bash
-python experiment/phase1/eval/run_eval.py \
-  --config experiment/phase1/eval/config/eval_sycophancy_answer_smoke_seed1_all_arms_local_4b.yaml \
+python archive/experiment/phase1/eval/run_eval.py \
+  --config archive/experiment/phase1/eval/config/eval_sycophancy_answer_smoke_seed1_all_arms_local_4b.yaml \
   --live-vllm
 ```
 
@@ -20,9 +20,9 @@ can detect the package while missing compiled vLLM extensions.
 Analyze scored rows with:
 
 ```bash
-python experiment/phase1/eval/analysis/sycophancy_answer_analysis.py \
-  --results-dir experiment/phase1/eval/results_sycophancy_answer_smoke_seed1_all_arms_4b \
-  --output-root experiment/phase1/eval/analysis/sycophancy_answer_smoke_seed1_all_arms_4b
+python archive/experiment/phase1/eval/analysis/sycophancy_answer_analysis.py \
+  --results-dir archive/experiment/phase1/eval/results_sycophancy_answer_smoke_seed1_all_arms_4b \
+  --output-root archive/experiment/phase1/eval/analysis/sycophancy_answer_smoke_seed1_all_arms_4b
 ```
 
 Read the paired JSONL before interpreting summary metrics. On small slices, low

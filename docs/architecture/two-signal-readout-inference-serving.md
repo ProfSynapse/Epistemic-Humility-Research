@@ -16,7 +16,7 @@ that on an inference path so it informs the response a user sees?*
 
 Scope: the serving-time mechanics (where the signal is read, how it is turned into
 a number, how it changes the response). Out of scope: the probe-fitting research
-pipeline (that lives under `experiment/phase1/probe/`) and the training studies
+pipeline (that lives under `archive/experiment/phase1/probe/`) and the training studies
 (Papers 1-2).
 
 Core stance: **the base model is never modified at inference.** The mechanism reads
@@ -258,5 +258,5 @@ multi-sample methods are too expensive.
 - Research plan and claims audit: `papers/series/plan.md`
 - Mechanism synthesis: `papers/paper-4-two-signal-readout/notes/framework.md`
 - aux_head engine design: `docs/architecture/aux-head-prompt-completion-render.md`
-- Probe pipeline + offline scorers: `experiment/phase1/probe/`
+- Probe pipeline + offline scorers: `archive/experiment/phase1/probe/`
 - Cross-size evidence: `experiments/cross-model-size-sweep/AMENDMENT.md`

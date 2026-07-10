@@ -152,11 +152,11 @@ Preconditions before either command:
   /home/profsynapse/code/Epistemic-Humility-Research/.env | tr -d '"\r\n')`
 - Build + upload the pool to the private staging repo:
   ```bash
-  cd /home/profsynapse/code/ehr-worktrees/amendment-ak-commitment-point/experiment/phase1/probe
+  cd /home/profsynapse/code/ehr-worktrees/amendment-ak-commitment-point/archive/experiment/phase1/probe
   python3 amendment_ak_build_pool.py
   python3 experiments/common/cloud/upload_result.py --repo professorsynapse/eh-al-prep-staging \
     --path-prefix pools \
-    --file /home/profsynapse/code/Epistemic-Humility-Research/experiment/phase1/probe/analysis/ak_stage1/ak_stage1_pool.jsonl
+    --file /home/profsynapse/code/Epistemic-Humility-Research/archive/experiment/phase1/probe/analysis/ak_stage1/ak_stage1_pool.jsonl
   ```
 - `REPO_COMMIT` in `modal_ak_stage1.py` is pinned to `ac94b70c` (the commit that
   fills the grpo-v2 provenance). Re-pin only if the branch moves before launch.

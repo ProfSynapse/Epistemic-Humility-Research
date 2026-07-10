@@ -9,6 +9,6 @@ unified two-signal mechanism, not active runtime inputs.
 - `two_signal_stage1p5_integration.json`: same-item CPU integration diagnostic
   on the Amendment T answerable stream plus SelfAware unknown gate scores.
 
-The producer scripts remain in `experiment/phase1/probe/` for now because they
-reuse Phase 1 extraction helpers. Their default `--out` paths point here so a
+The producer scripts remain in `archive/experiment/phase1/probe/` for now because they
+reuse locked training-regimen extraction helpers. Their default `--out` paths point here so a
 rerun does not repopulate the legacy probe root.

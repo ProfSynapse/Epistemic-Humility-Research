@@ -43,7 +43,7 @@ STAGING_REPO = "professorsynapse/eh-al-prep-staging"
 HF_SECRET_NAME = "hf-token"
 EXP_DIR = "experiments/aq-sycophancy-activation-actuator"
 EVAL_CONFIG = f"{EXP_DIR}/eval_16bit_sycophancy_answer.yaml"
-RESULTS_DIR = "experiment/phase1/eval/results_aq_sycophancy_answer_16bit"
+RESULTS_DIR = "archive/experiment/phase1/eval/results_aq_sycophancy_answer_16bit"
 ANALYSIS_DIR = f"{EXP_DIR}/analysis"
 ROW_POOL_OUT = f"{ANALYSIS_DIR}/row_pool.jsonl"
 ACTUATOR_ROWS_OUT = f"{ANALYSIS_DIR}/actuator_rows.jsonl"
@@ -307,7 +307,7 @@ if modal is not None:
             sh(["nvidia-smi", "--query-gpu=name,memory.total", "--format=csv,noheader"], check=False)
             sh([
                 "python3",
-                "experiment/phase1/eval/run_eval.py",
+                "archive/experiment/phase1/eval/run_eval.py",
                 "--config",
                 EVAL_CONFIG,
                 "--live-vllm",
@@ -316,7 +316,7 @@ if modal is not None:
 
             sh([
                 "python3",
-                "experiment/phase1/eval/analysis/sycophancy_answer_analysis.py",
+                "archive/experiment/phase1/eval/analysis/sycophancy_answer_analysis.py",
                 "--results-dir",
                 RESULTS_DIR,
                 "--output-root",

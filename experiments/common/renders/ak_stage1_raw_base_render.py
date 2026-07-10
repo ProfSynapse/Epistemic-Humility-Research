@@ -75,9 +75,9 @@ REPO_ROOT = Path(__file__).resolve().parents[3]
 # running from, or with a copy staged into, a different checkout.
 _CANONICAL_CHECKOUT = Path("/home/profsynapse/code/Epistemic-Humility-Research")
 _DEFAULT_QUESTION_POOLS = [
-    _CANONICAL_CHECKOUT / "archive" / "archive" / "archive" / "archive" / "experiment" / "phase1" / "probe" / "analysis"
+    _CANONICAL_CHECKOUT / "archive" / "experiment" / "phase1" / "probe" / "analysis"
     / "ah_stage0" / "candidates.jsonl",
-    _CANONICAL_CHECKOUT / "archive" / "archive" / "archive" / "archive" / "experiment" / "phase1" / "probe" / "analysis"
+    _CANONICAL_CHECKOUT / "archive" / "experiment" / "phase1" / "probe" / "analysis"
     / "ah_stage0" / "expansion" / "expansion_candidates.jsonl",
 ]
 _DEFAULT_MANIFEST_PATH = (

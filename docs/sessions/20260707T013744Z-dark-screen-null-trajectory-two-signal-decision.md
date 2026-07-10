@@ -5,7 +5,7 @@ title: dark-screen-null-trajectory-two-signal-decision
 status: active
 created_at: '2026-07-07T01:37:44Z'
 updated_at: '2026-07-07T01:37:57Z'
-phase: mechinterp / actuation
+track: mechanism
 question: With dark-actuator-screen and AO both resolving NULL and all four actuation-arc
   PRs merged, what does the trajectory look like now, and what is the highest-leverage
   next experiment?

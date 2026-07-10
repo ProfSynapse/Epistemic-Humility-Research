@@ -54,7 +54,7 @@ from amendment_s_correctness_probe_extract import (  # noqa: E402
 )
 from amendment_u_unified_extract import load_selfaware_pool  # noqa: E402
 
-# Natural deployment system prompt VERBATIM from experiment/phase1/eval/run_eval.py
+# Natural deployment system prompt VERBATIM from archive/experiment/phase1/eval/run_eval.py
 # DEFAULT_SYSTEM_PROMPT. PERMITS abstention (the opposite of T/U's forced prompt) —
 # this is the whole point of V. Recorded in the manifest for provenance.
 SYSTEM_PROMPT = (

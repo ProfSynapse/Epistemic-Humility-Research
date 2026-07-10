@@ -6,18 +6,18 @@ date: 2026-07-02
 repository: https://github.com/ProfSynapse/Epistemic-Humility-Research
 target: arXiv (cs.CL / cs.AI)
 evidence_base: >
-  Phase-1/Phase-3 artifacts under experiment/phase1/. Internal-axis numbers:
+  locked-training-regimen/legacy-mech-interp artifacts under archive/experiment/phase1/. Internal-axis numbers:
   experiments/selfaware-latent-knowledge-controls/artifacts/latent_knowledge_controls/ (a3_h_base_probe.json,
   c2_*.json, a1a2_h_lora.json, caution_axis_transfer.json) and
   docs/sessions/20260627T093723Z-caution-vs-doubt-knowledge-gate.md checkpoints 002-004. Geometry:
-  experiment/phase1/probe/paper3_section5_geometry.py over extraction__55254a04aa1f;
+  archive/experiment/phase1/probe/paper3_section5_geometry.py over extraction__55254a04aa1f;
   caution_direction_L35.json / caution_perp_direction_L35.json. Steering:
-  experiment/phase1/probe/analysis/current_clean_grpo_v2_* (caution_residual_intervention,
+  archive/experiment/phase1/probe/analysis/current_clean_grpo_v2_* (caution_residual_intervention,
   caution_perp_residual_intervention, known_overrefusal_native_l26_coeff_sweep,
   l26_double_orthogonalized_panel_{a,b,c}_generation, knowledge_boundary_steer).
-  Stated-confidence calibration: experiment/phase1/eval/analysis/calibration_gap_*.json
+  Stated-confidence calibration: archive/experiment/phase1/eval/analysis/calibration_gap_*.json
   (clean_sft_grpo_v2_seed1, clean_sft_grpo_v3_seed1, contrastive_sft_seed1,
-  contrastive_masked_sft_seed1). Behavior: experiment/phase1/eval/results_amendment_*.
+  contrastive_masked_sft_seed1). Behavior: archive/experiment/phase1/eval/results_amendment_*.
 notes: >
   Numbers discipline: every quantitative claim in this draft traces to a named
   artifact above. All experiments are single-seed (seed 1), Qwen3-4B, evaluated on
@@ -239,8 +239,8 @@ abstention/confidence cells is built from TriviaQA-RC (no-context)
 Cheng recipe (reusing the data-construction recipe, not released labels). The
 out-of-distribution evaluation is SelfAware [arXiv:2305.18153] (n = 3369; 1032
 unknown-labeled, 2337
-known-labeled), scored with the Phase-1 eval harness
-[experiment/phase1/eval/run_eval.py]. Probe and geometry work uses hidden-state
+known-labeled), scored with the locked-training-regimen eval harness
+[archive/experiment/phase1/eval/run_eval.py]. Probe and geometry work uses hidden-state
 extractions from the merged models (extraction `55254a04aa1f`), best layer L35
 unless noted.
 
@@ -253,7 +253,7 @@ unless noted.
 - *Stated confidence.* The model is prompted to return JSON with an `answer` and a
   `response_confidence` ∈ [0,1] (its stated probability that its response is
   appropriate). We read the emitted scalar directly from scored rows
-  [experiment/phase1/eval/analysis/calibration_gap_report.py].
+  [archive/experiment/phase1/eval/analysis/calibration_gap_report.py].
 - *Behavior.* Whether the model answered or abstained, and whether the answer was
   correct, summarized as truthful_rate, correct_on_known, over_refusal (refusal on
   known), and refusal_recall (refusal on unknown).
@@ -353,7 +353,7 @@ Reading "how known is this item" and "did the model refuse" as one axis would be
 the parsimonious story, and the first measurement appears to support it: the raw
 mass-mean cosine between the caution direction (refuse vs answer among knowns) and
 the knowledge/doubt direction is **−0.83**, i.e. nearly collinear, opposite sign
-[experiment/phase1/probe/paper3_section5_geometry.py; caution_direction_L35.json]. Under that reading,
+[archive/experiment/phase1/probe/paper3_section5_geometry.py; caution_direction_L35.json]. Under that reading,
 refusal is simply the low-known tail of a single graded doubt axis.
 
 That reading is an artifact of the instrument. Raw cosine in high-dimensional
@@ -364,7 +364,7 @@ protocol gives −0.56 to −0.61 depending on subsample seed), and the caution
 direction retains a substantial component off the doubt axis: its **residual
 fraction is 0.557** (≈ 55.7% of the caution direction's length, ≈ 31% of its
 variance, is doubt-orthogonal; subsample-invariant)
-[experiment/phase1/probe/paper3_section5_geometry.py; L35 h_lora; full cells
+[archive/experiment/phase1/probe/paper3_section5_geometry.py; L35 h_lora; full cells
 kr = 168, ka = 373, ur = 676 for geometry, ka/ur subsampled to 300/300 for AUROC;
 pooled within-class shrinkage-whitened covariance; 5-fold held-out.]
 
@@ -976,10 +976,10 @@ hidden state the internal axis is fit on, supervised by a regression loss agains
 All training configs, eval configs, reward definitions, probe/geometry/steering
 scripts, governed protocol amendments, and per-cell calibration reports are in the
 repository [https://github.com/ProfSynapse/Epistemic-Humility-Research] under
-`experiment/phase1/`, `docs/protocols/`, and `experiments/<slug>/`. The per-cell stated-confidence
-calibration reports are at `experiment/phase1/eval/analysis/calibration_gap_*.json`;
+`archive/experiment/phase1/`, `docs/protocols/`, and `experiments/<slug>/`. The per-cell stated-confidence
+calibration reports are at `archive/experiment/phase1/eval/analysis/calibration_gap_*.json`;
 the internal-axis and steering artifacts are under
-`experiment/phase1/probe/analysis/`.
+`archive/experiment/phase1/probe/analysis/`.
 
 Published dataset releases on Hugging Face (the repo-side manifest with pinned
 revisions is `docs/public-artifacts.md`):
@@ -1056,16 +1056,16 @@ protocol document and scored artifact:
 
 | Paper section | Internal label | Protocol / notes | Primary artifacts |
 |---|---|---|---|
-| §4 internal-vs-stated gap; like-for-like on the GRPO-v2 checkpoint (Fig. 2) | probe program (Amendments L/M lineage; caution-vs-doubt note); session 20260627T093723Z | `archive/notes/experiments/caution-vs-doubt-knowledge-gate.md`; `docs/sessions/20260627T093723Z-caution-vs-doubt-knowledge-gate.md` checkpoints 002–004 | `experiments/selfaware-latent-knowledge-controls/artifacts/latent_knowledge_controls/` (`a3_h_base_probe.json`, `c2_*.json`, `a1a2_h_lora.json`); `experiment/phase1/eval/analysis/calibration_gap_clean_sft_grpo_v2_seed1.json` (`B_internal_vs_emitted`: internal AUROC 0.972 vs emitted 0.637) |
-| §5–6 geometry and steering | probe program | `experiment/phase1/probe/paper3_section5_geometry.py`; `caution_direction_L35.json`; `caution_perp_direction_L35.json` | `experiment/phase1/probe/analysis/current_clean_grpo_v2_*` (interventions, coefficient sweeps, generation panels) |
-| §5 knowledge-subspace erasure (LEACE) | Amendment AJ | `experiments/knowledge-subspace-erasure/AMENDMENT.md`; `archive/experiment/phase1/probe/amendments/amendment_aj_subspace_erasure.py`; `amendment_aj_addendum_gap_distribution.py` | `experiment/phase1/probe/analysis/amendment_aj_subspace_erasure/` (`result.json`, `addendum_a1_gap_distribution.json`) |
+| §4 internal-vs-stated gap; like-for-like on the GRPO-v2 checkpoint (Fig. 2) | probe program (Amendments L/M lineage; caution-vs-doubt note); session 20260627T093723Z | `archive/notes/experiments/caution-vs-doubt-knowledge-gate.md`; `docs/sessions/20260627T093723Z-caution-vs-doubt-knowledge-gate.md` checkpoints 002–004 | `experiments/selfaware-latent-knowledge-controls/artifacts/latent_knowledge_controls/` (`a3_h_base_probe.json`, `c2_*.json`, `a1a2_h_lora.json`); `archive/experiment/phase1/eval/analysis/calibration_gap_clean_sft_grpo_v2_seed1.json` (`B_internal_vs_emitted`: internal AUROC 0.972 vs emitted 0.637) |
+| §5–6 geometry and steering | probe program | `archive/experiment/phase1/probe/paper3_section5_geometry.py`; `caution_direction_L35.json`; `caution_perp_direction_L35.json` | `archive/experiment/phase1/probe/analysis/current_clean_grpo_v2_*` (interventions, coefficient sweeps, generation panels) |
+| §5 knowledge-subspace erasure (LEACE) | Amendment AJ | `experiments/knowledge-subspace-erasure/AMENDMENT.md`; `archive/experiment/phase1/probe/amendments/amendment_aj_subspace_erasure.py`; `amendment_aj_addendum_gap_distribution.py` | `archive/experiment/phase1/probe/analysis/amendment_aj_subspace_erasure/` (`result.json`, `addendum_a1_gap_distribution.json`) |
 | §7 interventions 1–2 (DPO/KTO stated-confidence contract) | Amendment B | `experiments/stated-confidence-grpo/AMENDMENT.md` | `papers/paper-2-training-regimen/analysis/amendment_b_confidence_alignment_by_outcome.csv` |
-| §7 interventions 3–4 (GRPO v1/v2 collapse + incentive analysis) | Amendment E cells; Amendment J diagnostics / session 0026 | `experiments/grpo-v3-proper-scoring-confidence/RUNBOOK.md` | `experiment/phase1/eval/analysis/calibration_gap_clean_sft_grpo_v2_seed1.json` |
-| §7 intervention 5 (proper-scoring GRPO) | Amendment J (GRPO-v3) | `experiments/grpo-v3-proper-scoring-confidence/RUNBOOK.md`; reward `experiment/phase1/grpo/humility_reward_v3.py`; preflight `archive/notes/experiments/computed-confidence-alignment-regimen.md` | `experiment/phase1/eval/analysis/calibration_gap_clean_sft_grpo_v3_seed1.json`; `results_amendment_j_*` |
+| §7 interventions 3–4 (GRPO v1/v2 collapse + incentive analysis) | Amendment E cells; Amendment J diagnostics / session 0026 | `experiments/grpo-v3-proper-scoring-confidence/RUNBOOK.md` | `archive/experiment/phase1/eval/analysis/calibration_gap_clean_sft_grpo_v2_seed1.json` |
+| §7 intervention 5 (proper-scoring GRPO) | Amendment J (GRPO-v3) | `experiments/grpo-v3-proper-scoring-confidence/RUNBOOK.md`; reward `archive/experiment/phase1/grpo/humility_reward_v3.py`; preflight `archive/notes/experiments/computed-confidence-alignment-regimen.md` | `archive/experiment/phase1/eval/analysis/calibration_gap_clean_sft_grpo_v3_seed1.json`; `results_amendment_j_*` |
 | §7 interventions 6–7 (contrastive SFT, answer-supervised / answer-masked) | Amendments K and L | `experiments/contrastive-sft-behavior-conditional-confidence/AMENDMENT.md`; `experiments/answer-subspan-masked-contrastive-sft/AMENDMENT.md` | `calibration_gap_contrastive_sft_seed1.json`; `calibration_gap_contrastive_masked_sft_seed1.json`; `results_amendment_k_*`; `results_amendment_l_*` |
-| §7 RL-on-calibrated-base follow-on, incl. the β 0.10 → 0.05 falsifier re-run (Table 2, Figs. 4–6; Fig. 7 spans arms) | Amendment N (incl. β 0.05 arm) | `experiments/grpo-v3-on-contrastive-sft-base/AMENDMENT.md` (results tables §7) | result tables embedded in the amendment document; `results_amendment_n_*`; run records under `experiment/phase1/run_records/` |
+| §7 RL-on-calibrated-base follow-on, incl. the β 0.10 → 0.05 falsifier re-run (Table 2, Figs. 4–6; Fig. 7 spans arms) | Amendment N (incl. β 0.05 arm) | `experiments/grpo-v3-on-contrastive-sft-base/AMENDMENT.md` (results tables §7) | result tables embedded in the amendment document; `results_amendment_n_*`; run records under `archive/experiment/phase1/run_records/` |
 | §7 probe-axis distillation mirror (Table 3) | Amendment M, Revision 3 | `experiments/quantile-balanced-probe-distilled-sft/AMENDMENT.md` | `results_amendment_m_*_probe_factual_sft_seed1_merged_full_4b` |
-| §8 "paid for by pretraining" (signal present in pretrain-only base weights, 4/4 bases) | Amendment Y | `experiments/pretrain-only-base-readout/AMENDMENT.md` (SUPPORTED 4/4) | `experiment/phase1/probe/amendment_y_results/` |
+| §8 "paid for by pretraining" (signal present in pretrain-only base weights, 4/4 bases) | Amendment Y | `experiments/pretrain-only-base-readout/AMENDMENT.md` (SUPPORTED 4/4) | `archive/experiment/phase1/probe/amendment_y_results/` |
 
 Governance notes: Amendments B/E/J/K/L/M/N are exploratory single-seed evidence
 cells with pre-stated predictions and falsifiers, reported here as exploratory

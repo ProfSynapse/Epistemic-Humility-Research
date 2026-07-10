@@ -61,9 +61,9 @@ Use artifact type to choose where to look:
   machine-readable `experiment.yaml` manifest, pinned instrument configs, and a
   generated registry. Scaffold and manage them with `bin/exp` (the `experiments`
   skill). This is where new evidence-producing work goes.
-- Locked Phase 1 protocol and its records: `experiment/`, especially protocols,
+- Locked locked training-regimen protocol and its records: `experiment/`, especially protocols,
   architecture docs, phase directories, configs, recipes, and run records. This
-  tree is retained for the locked Phase 1 matrix and its historical amendments;
+  tree is retained for the locked training-regimen matrix and its historical amendments;
   do not add new experiments here, use `experiments/` instead.
 - Literature graph and concepts: `library/`, including paper notes, concept
   notes, schema docs, manifests, and fulltext where available.

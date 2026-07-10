@@ -60,7 +60,7 @@ BASE = os.path.dirname(os.path.abspath(__file__))
 REPO = Path(__file__).resolve().parents[4]
 # Historical gitignored inputs remain in the legacy probe analysis tree. Keep
 # this dependency explicit until the AH/MI data clusters migrate together.
-AN = str(REPO / "experiment" / "phase1" / "probe" / "analysis")
+AN = str(REPO / "archive" / "experiment" / "phase1" / "probe" / "analysis")
 GEOM = os.path.join(AN, "mi_category_geometry_20260704")
 CACHE = os.path.join(GEOM, "cache")
 A0 = os.path.join(AN, "ah_main", "gen_A0", "rows.jsonl")

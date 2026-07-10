@@ -5,7 +5,7 @@ title: KG Search And Session Memory
 status: complete
 created_at: '2026-06-17T01:11:58Z'
 updated_at: '2026-06-17T01:12:11Z'
-phase: phase1
+track: research
 question: How did we add bounded KG search, adaptive memory lanes, commit validation,
   and durable session memory to the research repo?
 tags:
@@ -14,7 +14,7 @@ tags:
 run_ids: []
 trajectory:
   anchor: docs/research-trajectory.md
-  current_position: Phase 1 infrastructure now has bounded search over research/code
+  current_position: locked training-regimen infrastructure now has bounded search over research/code
     artifacts and a durable session-memory path for explaining how run states and
     decisions accumulate.
   changed_by_session: Added KG search, adaptive memory-lane feedback, pre-commit validation,
@@ -61,7 +61,7 @@ How did we add bounded KG search, adaptive memory lanes, commit validation, and 
 
 ## Trajectory Position
 
-Phase 1 infrastructure now has bounded search over research/code artifacts and a durable session-memory path for explaining how run states and decisions accumulate.
+locked training-regimen infrastructure now has bounded search over research/code artifacts and a durable session-memory path for explaining how run states and decisions accumulate.
 
 ## Summary
 

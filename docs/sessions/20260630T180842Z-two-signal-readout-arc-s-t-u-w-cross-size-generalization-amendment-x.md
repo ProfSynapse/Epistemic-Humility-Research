@@ -5,7 +5,7 @@ title: Two-signal readout arc (S-T-U-W) + cross-size generalization (Amendment X
 status: active
 created_at: '2026-06-30T18:08:42Z'
 updated_at: '2026-06-30T18:08:42Z'
-phase: phase1
+track: research
 question: Is the answerability-gate + correctness-dial + hallucination-veto a training-free,
   model-general readout? Arc from the correctness-readout discovery (S) through the
   deployed checkpoint (T), hallucination veto (U), orthogonal two-stage pipeline (Stage
@@ -37,7 +37,7 @@ checkpoints:
     wrong).
   evidence:
   - experiments/correctness-confidence-probe/AMENDMENT.md
-  - experiment/phase1/probe/amendment_s_correctness_probe_score.py
+  - archive/experiment/phase1/probe/amendment_s_correctness_probe_score.py
   run_ids: []
   commands: []
   decisions: []
@@ -72,7 +72,7 @@ checkpoints:
     complete on one trained checkpoint.
   evidence:
   - experiments/unified-two-signal-dial-veto/AMENDMENT.md
-  - experiment/phase1/probe/amendment_u_two_signal_score.py
+  - archive/experiment/phase1/probe/amendment_u_two_signal_score.py
   run_ids: []
   commands: []
   decisions: []
@@ -108,8 +108,8 @@ checkpoints:
     for the readout deliverable - no.
   evidence:
   - experiments/base-model-training-free-mechanism/AMENDMENT.md
-  - experiment/phase1/probe/amendment_w_base_model_extract.py
-  - experiment/phase1/probe/amendment_w_base_model_score.py
+  - archive/experiment/phase1/probe/amendment_w_base_model_extract.py
+  - archive/experiment/phase1/probe/amendment_w_base_model_score.py
   run_ids: []
   commands: []
   decisions:
@@ -173,8 +173,8 @@ checkpoints:
     deferred (named limitation).
   evidence:
   - experiments/cross-model-size-sweep/AMENDMENT.md
-  - experiment/phase1/probe/amendment_x_cross_model_extract.py
-  - experiment/phase1/probe/amendment_x_cross_model_score.py
+  - archive/experiment/phase1/probe/amendment_x_cross_model_extract.py
+  - archive/experiment/phase1/probe/amendment_x_cross_model_score.py
   run_ids: []
   commands: []
   decisions:
@@ -193,15 +193,15 @@ checkpoints:
     orphan container (ls /probe, 0 GPU) left alone; a stuck nvidia-smi probe killed
     (root cause - omitted --entrypoint, fixed in the launch pattern).
   evidence:
-  - experiment/phase1/probe/qwen3-1.7b-bnb-4bit/amendment_x/smoke/manifest.json
+  - archive/experiment/phase1/probe/qwen3-1.7b-bnb-4bit/amendment_x/smoke/manifest.json
   run_ids: []
   commands:
   - docker.exe run -d --name eh-amd-x-smoke-1p7b --gpus all --ipc=host --entrypoint
     python -e HF_HOME=/workspace/repo/.cache/hf -e HUGGINGFACE_HUB_CACHE=/workspace/repo/.cache/hf/hub
     -v 'F:\Code\Epistemic-Humility-Research:/workspace/repo' -w /workspace/repo unsloth/unsloth:latest
-    experiment/phase1/probe/amendment_x_cross_model_extract.py --base-model unsloth/Qwen3-1.7B-bnb-4bit
-    --out-dir experiment/phase1/probe/qwen3-1.7b-bnb-4bit/amendment_x/smoke --gate-rows
-    experiment/phase1/probe/qwen3-4b-clean-sft-grpo-v2-seed1-selfaware/hidden_states_selfaware_clean_sft_grpo_v2_full/extraction__55254a04aa1f/rows.jsonl
+    archive/experiment/phase1/probe/amendment_x_cross_model_extract.py --base-model unsloth/Qwen3-1.7B-bnb-4bit
+    --out-dir archive/experiment/phase1/probe/qwen3-1.7b-bnb-4bit/amendment_x/smoke --gate-rows
+    archive/experiment/phase1/probe/qwen3-4b-clean-sft-grpo-v2-seed1-selfaware/hidden_states_selfaware_clean_sft_grpo_v2_full/extraction__55254a04aa1f/rows.jsonl
     --max-attempts 60 --wrong-floor 3 --hallucination-floor 5
   decisions: []
   next_steps: []
@@ -217,7 +217,7 @@ checkpoints:
     (smoke halluc=11 < 50 - adequacy guard firing as designed) with directionally-correct
     dial means (correct 0.13 > wrong 0.036) even at tiny N.
   evidence:
-  - experiment/phase1/probe/amendment_x_cross_model_score.py
+  - archive/experiment/phase1/probe/amendment_x_cross_model_score.py
   run_ids: []
   commands:
   - python3 amendment_x_cross_model_score.py --x-dir qwen3-1.7b-bnb-4bit/amendment_x/smoke
@@ -324,7 +324,7 @@ record (001-result S through 011-handoff). Headline beats:
   hallucinations read as trustworthy (dial_mean_halluc 0.476 ~ correct 0.707) so its veto
   fails; Ministral's read low-trust (0.278 << 0.605) so its veto passes. Gate+dial family-
   general, VETO model-dependent (mirrors X's non-monotonic veto). Results table + data links
-  in AMENDMENT-Z §7 (result JSONs amendment_z_{llama-3.2-3b,ministral-3-3b}_result.json).
+  in AMENDMENT-Z section 7 (result JSONs amendment_z_{llama-3.2-3b,ministral-3-3b}_result.json).
   In parallel: steering-harness build dispatched to a background subagent in an isolated
   worktree (CPU-only scaffolding for Paper 5, no GPU/launch). Paper-writing still HELD (Llama
   veto miss => discuss-first) pending all 4 + user review.

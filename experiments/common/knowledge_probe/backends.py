@@ -1,4 +1,4 @@
-"""Inference backends for the Phase 1 knowledge probe (WS-1).
+"""Inference backends for the locked training-regimen knowledge probe (WS-1).
 
 Location: experiments/common/knowledge_probe/backends.py
 Used by:  experiments/common/knowledge_probe/probe.py
@@ -7,7 +7,7 @@ Two backends behind one tiny interface (`generate_batch`):
 
   - VLLMBackend: the real GPU backend. vLLM is imported LAZILY inside
     __init__ so this module loads on a machine without vLLM/CUDA (the CODE
-    phase is fixture-only; the real probe run is post-sign-off). It applies
+    stage is fixture-only; the real probe run is post-sign-off). It applies
     the Qwen3 chat template with enable_thinking pinned per config and runs a
     runtime self-check that the rendered prompt carries no populated thinking
     block, so a template that silently ignores the kwarg fails LOUDLY on the
@@ -18,7 +18,7 @@ Two backends behind one tiny interface (`generate_batch`):
     the probe's scoring/labeling/resumability logic can be exercised end to
     end with no GPU and no network.
 
-enable_thinking verification (done offline, CODE phase), what was checked:
+enable_thinking verification (done offline, CODE stage), what was checked:
   Per the Qwen3 docs (qwenlm/qwen3): apply_chat_template(enable_thinking=False)
   is the documented hard switch that skips thinking content. Because this
   backend renders text with the tokenizer and then calls LLM.generate(), the
@@ -27,7 +27,7 @@ enable_thinking verification (done offline, CODE phase), what was checked:
   compatibility, then assert the rendered prompt and generated answers are
   clean. The *-Instruct-2507 variant is ALWAYS non-thinking (the kwarg is a
   no-op there); the hybrid Qwen3-4B/8B base models honor the kwarg.
-  DEFERRED to the first real GPU run (no weights/template cached this phase):
+  DEFERRED to the first real GPU run (no weights/template cached this run):
   confirming the *specific pinned* tokenizer actually accepts the kwarg
   without raising and renders no populated thinking block. The runtime
   self-check below is exactly that confirmation; it is wired to run on the

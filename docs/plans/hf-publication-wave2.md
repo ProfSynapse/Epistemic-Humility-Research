@@ -20,7 +20,7 @@ stays the SSOT; this plan feeds it.
 
 ## Hard excludes (never publish — restated so wave 2 inherits them)
 
-- `experiment/phase1/data/bridge_llama2_7b_chat/` (DO-NOT-REDISTRIBUTE).
+- `archive/experiment/phase1/data/bridge_llama2_7b_chat/` (DO-NOT-REDISTRIBUTE).
 - OpenMOSS / Cheng IDK raw rows (authorized for our use, not redistribution).
 - `library/fulltext/`, `library/pdfs/` (copyright).
 - Any base-model weights themselves (gated/vendor licenses); we publish

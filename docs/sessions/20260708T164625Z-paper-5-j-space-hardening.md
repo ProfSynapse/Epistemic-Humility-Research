@@ -5,7 +5,7 @@ title: Paper 5 J-space hardening
 status: active
 created_at: '2026-07-08T16:46:25Z'
 updated_at: '2026-07-08T20:46:47Z'
-phase: phase1
+track: research
 question: Which registered follow-up experiments harden the Paper 5 actuation thesis,
   starting with a fresh Qwen3-4B J-space layer-site replication?
 tags:
@@ -71,7 +71,7 @@ rows before the layer contrast.
 - time: 2026-07-08T16:59:27Z
 - kind: observation
 - evidence:
-  - `/home/profsynapse/code/Epistemic-Humility-Research/experiment/phase1/probe/analysis/ah_stage0/expansion/expansion_candidates.jsonl`
+  - `/home/profsynapse/code/Epistemic-Humility-Research/archive/experiment/phase1/probe/analysis/ah_stage0/expansion/expansion_candidates.jsonl`
   - `experiments/common/doubt-gated-caution-tighten-heldout-split/split_manifest.json`
 - summary: >
     Prior J-space split used 739 row keys: 309 confab and 430

@@ -55,9 +55,9 @@ operation, then follow any further routing inside that reference.
 |------|---------|
 | Dry-run the matrix (expand + assert counts, launch nothing) | `python3 .agents/skills/experiment-runner/scripts/run_matrix.py --dry-run` |
 | Check prerequisites per cell (gate, launch nothing) | `python3 .agents/skills/experiment-runner/scripts/run_matrix.py --check-only --lane local` |
-| Standalone prereq report | `python3 .agents/skills/experiment-runner/scripts/check_prereqs.py --matrix .agents/skills/experiment-runner/config/matrix.yaml --data-root experiment/phase1/data --lane local` |
+| Standalone prereq report | `python3 .agents/skills/experiment-runner/scripts/check_prereqs.py --matrix .agents/skills/experiment-runner/config/matrix.yaml --data-root archive/experiment/phase1/data --lane local` |
 | Prepare one local 4B cell (stage data + materialized recipe + run record) | `python3 .agents/skills/experiment-runner/scripts/prepare_local_cell.py --run-id sft__4b__headline__seed1 --status launched` |
-| Inspect a run record | `Get-Content experiment/phase1/run_records/<run_id>.json` |
+| Inspect a run record | `Get-Content archive/experiment/phase1/run_records/<run_id>.json` |
 | Prepare/gate one hidden-state extraction (GPU-free; gate + resolve, launch nothing) | `python3 .agents/skills/experiment-runner/scripts/prepare_extraction_cell.py --config experiments/common/configs/knowledge-probe/hidden_state_probe.yaml` |
 | Plan archived legacy mechinterp causal-pilot sweeps (GPU-free by default) | `python experiments/common/mechinterp/causal_pilot_sweep.py --config archive/experiment/phase1/probe/config/causal-pilot-core/mechinterp_causal_pilot_local_sweep.yaml` |
 | Build aux_head co-training datasets (real + shuffled placebo; CPU-only) | `python3 archive/experiment/phase1/probe/amendments/amendment_r_build_phase_b_aux_dataset.py --out-dir scratch/amendment_r/phase_b` |
@@ -65,8 +65,8 @@ operation, then follow any further routing inside that reference.
 ## Core Invariants
 
 - The matrix SSOT is `config/matrix.yaml`; per-arm default recipes live under
-  `experiment/phase1/recipes/`; provenance records live under
-  `experiment/phase1/run_records/`.
+  `archive/experiment/phase1/recipes/`; provenance records live under
+  `archive/experiment/phase1/run_records/`.
 - `run_matrix.py` must assert the pre-registered counts: 19 @ 4B, 9 @ 8B,
   and 2 bridge cells. Never loosen these assertions to absorb a matrix edit.
 - Launch/cancel/delete actions require exact user approval in the current

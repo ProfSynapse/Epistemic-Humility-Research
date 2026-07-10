@@ -8,7 +8,7 @@ tags:
   - kg/experiment
 status: done
 governance: amendment
-phase: phase1
+track: training-regimen
 lane: local
 est_compute: '~7-10 local RTX 3090 GPU-hours for seed-1 merge, GRPO train, and full SelfAware eval'
 relationships:
@@ -69,18 +69,18 @@ Brier/MAE versus response appropriateness.
 ## Runbook
 
 1. Read `experiments/grpo-centered-stacking/AMENDMENT.md` and
-   `experiment/phase1/grpo/amendment_e_clean_mainline_runbook.md`.
+   `archive/experiment/phase1/grpo/amendment_e_clean_mainline_runbook.md`.
 2. Compare source-arm metrics against
-   `experiment/phase1/eval/analysis/selfaware_full_run_comparison_grouped.csv`.
+   `archive/experiment/phase1/eval/analysis/selfaware_full_run_comparison_grouped.csv`.
 3. Materialize a seed-1 GRPO config by copying the pattern in
-   `experiment/phase1/grpo/configs/grpo_schema_clean_sft_merged_seed1_v2_full.yaml`
+   `archive/experiment/phase1/grpo/configs/grpo_schema_clean_sft_merged_seed1_v2_full.yaml`
    and changing only the base model/output labels for `clean_sft_dpo_grpo`.
 4. Launch the merged-source sanity eval using the existing eval-config pattern in
-   `experiment/phase1/eval/config/`.
+   `archive/experiment/phase1/eval/config/`.
 5. If sanity passes, launch GRPO locally with the v2 reward implementation in
-   `experiment/phase1/grpo/humility_reward_v2.py`.
+   `archive/experiment/phase1/grpo/humility_reward_v2.py`.
 6. Run the full SelfAware eval, rebuild the comparison CSV with
-   `experiment/phase1/eval/analysis/build_selfaware_full_run_comparison.py`, and
+   `archive/experiment/phase1/eval/analysis/build_selfaware_full_run_comparison.py`, and
    write a `docs/sessions/` checkpoint.
 
 ## Validation contract
@@ -95,9 +95,9 @@ Brier/MAE versus response appropriateness.
 
 ## Outputs & provenance
 
-- Run record: `experiment/phase1/run_records/`.
+- Run record: `archive/experiment/phase1/run_records/`.
 - Session checkpoint: `docs/sessions/`.
-- Analysis: `experiment/phase1/eval/analysis/selfaware_full_run_comparison.csv`
+- Analysis: `archive/experiment/phase1/eval/analysis/selfaware_full_run_comparison.csv`
   and grouped companion.
 - Hugging Face publication is allowed only after eval passes: publish public
   adapter/config/model-card artifacts and a repository pointer to the data
@@ -175,17 +175,17 @@ Brier/MAE versus response appropriateness.
 ### Runbook
 
 1. Read `experiments/grpo-centered-stacking/AMENDMENT.md` and
-   `experiment/phase1/grpo/amendment_e_clean_mainline_runbook.md`.
+   `archive/experiment/phase1/grpo/amendment_e_clean_mainline_runbook.md`.
 2. Compare source-arm metrics against
-   `experiment/phase1/eval/analysis/selfaware_full_run_comparison_grouped.csv`.
+   `archive/experiment/phase1/eval/analysis/selfaware_full_run_comparison_grouped.csv`.
 3. Materialize a DPO launch config/command using the DPO section in
-   `experiment/phase1/grpo/amendment_e_clean_mainline_runbook.md`, changing only
+   `archive/experiment/phase1/grpo/amendment_e_clean_mainline_runbook.md`, changing only
    the base model/output labels for `clean_sft_grpo_dpo`.
 4. Launch the merged-source sanity eval using the existing eval-config pattern in
-   `experiment/phase1/eval/config/`.
+   `archive/experiment/phase1/eval/config/`.
 5. If sanity passes, launch DPO locally from the merged GRPO v2 source model.
 6. Run the full SelfAware eval, rebuild the comparison CSV with
-   `experiment/phase1/eval/analysis/build_selfaware_full_run_comparison.py`, and
+   `archive/experiment/phase1/eval/analysis/build_selfaware_full_run_comparison.py`, and
    write a `docs/sessions/` checkpoint.
 
 ### Validation contract
@@ -200,9 +200,9 @@ Brier/MAE versus response appropriateness.
 
 ### Outputs & provenance
 
-- Run record: `experiment/phase1/run_records/`.
+- Run record: `archive/experiment/phase1/run_records/`.
 - Session checkpoint: `docs/sessions/`.
-- Analysis: `experiment/phase1/eval/analysis/selfaware_full_run_comparison.csv`
+- Analysis: `archive/experiment/phase1/eval/analysis/selfaware_full_run_comparison.csv`
   and grouped companion.
 - Hugging Face publication is allowed only after eval passes: publish public
   adapter/config/model-card artifacts and a repository pointer to the data
@@ -222,7 +222,7 @@ Brier/MAE versus response appropriateness.
 - 2026-06-24: created (proposed) as one of four Amendment F GRPO-centered
   stacking experiment notes.
 - 2026-06-25: staged the shared GRPO-v2 merged-source sanity eval config at
-  `experiment/phase1/eval/config/eval_amendment_f_response_confidence_selfaware_clean_sft_grpo_v2_merged_seed1_sanity_local_4b.yaml`.
+  `archive/experiment/phase1/eval/config/eval_amendment_f_response_confidence_selfaware_clean_sft_grpo_v2_merged_seed1_sanity_local_4b.yaml`.
   Actual merge, sanity eval, and DPO launch remain gated on the active
   `clean_sft_kto_grpo` full eval completing and passing post-eval sanity.
 - 2026-06-25: merged the clean SFT->GRPO v2 seed-1 adapter, passed the
@@ -234,7 +234,7 @@ Brier/MAE versus response appropriateness.
   final adapter artifacts in
   `scratch/schema_response_confidence/runs/clean_sft_grpo_dpo_seed1_full/20260625_031724/final_model`.
   The full SelfAware eval config is
-  `experiment/phase1/eval/config/eval_amendment_f_response_confidence_selfaware_clean_sft_grpo_dpo_seed1_full_local_4b.yaml`.
+  `archive/experiment/phase1/eval/config/eval_amendment_f_response_confidence_selfaware_clean_sft_grpo_dpo_seed1_full_local_4b.yaml`.
 - 2026-06-25: full SelfAware eval completed cleanly with `n=3369`, no thinking
   tags, `100%` response-confidence coverage, and zero retries. Metrics:
   `truthful_pct=41.64`, `refusal_recall_pct=93.31`,
@@ -290,17 +290,17 @@ Brier/MAE versus response appropriateness.
 ### Runbook
 
 1. Read `experiments/grpo-centered-stacking/AMENDMENT.md` and
-   `experiment/phase1/grpo/amendment_e_clean_mainline_runbook.md`.
+   `archive/experiment/phase1/grpo/amendment_e_clean_mainline_runbook.md`.
 2. Compare source-arm metrics against
-   `experiment/phase1/eval/analysis/selfaware_full_run_comparison_grouped.csv`.
+   `archive/experiment/phase1/eval/analysis/selfaware_full_run_comparison_grouped.csv`.
 3. Materialize a KTO launch config/command using the KTO section in
-   `experiment/phase1/grpo/amendment_e_clean_mainline_runbook.md`, changing only
+   `archive/experiment/phase1/grpo/amendment_e_clean_mainline_runbook.md`, changing only
    the base model/output labels for `clean_sft_grpo_kto`.
 4. Launch the merged-source sanity eval using the existing eval-config pattern in
-   `experiment/phase1/eval/config/`.
+   `archive/experiment/phase1/eval/config/`.
 5. If sanity passes, launch KTO locally from the merged GRPO v2 source model.
 6. Run the full SelfAware eval, rebuild the comparison CSV with
-   `experiment/phase1/eval/analysis/build_selfaware_full_run_comparison.py`, and
+   `archive/experiment/phase1/eval/analysis/build_selfaware_full_run_comparison.py`, and
    write a `docs/sessions/` checkpoint.
 
 ### Validation contract
@@ -315,9 +315,9 @@ Brier/MAE versus response appropriateness.
 
 ### Outputs & provenance
 
-- Run record: `experiment/phase1/run_records/`.
+- Run record: `archive/experiment/phase1/run_records/`.
 - Session checkpoint: `docs/sessions/`.
-- Analysis: `experiment/phase1/eval/analysis/selfaware_full_run_comparison.csv`
+- Analysis: `archive/experiment/phase1/eval/analysis/selfaware_full_run_comparison.csv`
   and grouped companion.
 - Hugging Face publication is allowed only after eval passes: publish public
   adapter/config/model-card artifacts and a repository pointer to the data
@@ -337,7 +337,7 @@ Brier/MAE versus response appropriateness.
 - 2026-06-24: created (proposed) as one of four Amendment F GRPO-centered
   stacking experiment notes.
 - 2026-06-25: staged the shared GRPO-v2 merged-source sanity eval config at
-  `experiment/phase1/eval/config/eval_amendment_f_response_confidence_selfaware_clean_sft_grpo_v2_merged_seed1_sanity_local_4b.yaml`.
+  `archive/experiment/phase1/eval/config/eval_amendment_f_response_confidence_selfaware_clean_sft_grpo_v2_merged_seed1_sanity_local_4b.yaml`.
   Actual merge, sanity eval, and KTO launch remain gated on the active
   `clean_sft_kto_grpo` full eval completing and the preceding
   `clean_sft_grpo_dpo` decision point.
@@ -351,7 +351,7 @@ Brier/MAE versus response appropriateness.
   VRAM `16.639 GB` and OOM risk `low`; mid-run objective separation is strong,
   so the full SelfAware eval will decide whether this is useful behavior or only
   another KTO separation artifact. Full eval config:
-  `experiment/phase1/eval/config/eval_amendment_f_response_confidence_selfaware_clean_sft_grpo_kto_seed1_full_local_4b.yaml`.
+  `archive/experiment/phase1/eval/config/eval_amendment_f_response_confidence_selfaware_clean_sft_grpo_kto_seed1_full_local_4b.yaml`.
 - 2026-06-25: KTO training completed successfully at step 2491 with final
   adapter artifacts in
   `scratch/schema_response_confidence/runs/clean_sft_grpo_kto_seed1_full/20260625_052610/final_model`.
@@ -415,18 +415,18 @@ Brier/MAE versus response appropriateness.
 ### Runbook
 
 1. Read `experiments/grpo-centered-stacking/AMENDMENT.md` and
-   `experiment/phase1/grpo/amendment_e_clean_mainline_runbook.md`.
+   `archive/experiment/phase1/grpo/amendment_e_clean_mainline_runbook.md`.
 2. Compare source-arm metrics against
-   `experiment/phase1/eval/analysis/selfaware_full_run_comparison_grouped.csv`.
+   `archive/experiment/phase1/eval/analysis/selfaware_full_run_comparison_grouped.csv`.
 3. Materialize a seed-1 GRPO config by copying the pattern in
-   `experiment/phase1/grpo/configs/grpo_schema_clean_sft_merged_seed1_v2_full.yaml`
+   `archive/experiment/phase1/grpo/configs/grpo_schema_clean_sft_merged_seed1_v2_full.yaml`
    and changing only the base model/output labels for `clean_sft_kto_grpo`.
 4. Launch the merged-source sanity eval using the existing eval-config pattern in
-   `experiment/phase1/eval/config/`.
+   `archive/experiment/phase1/eval/config/`.
 5. If sanity passes, launch GRPO locally with the v2 reward implementation in
-   `experiment/phase1/grpo/humility_reward_v2.py`.
+   `archive/experiment/phase1/grpo/humility_reward_v2.py`.
 6. Run the full SelfAware eval, rebuild the comparison CSV with
-   `experiment/phase1/eval/analysis/build_selfaware_full_run_comparison.py`, and
+   `archive/experiment/phase1/eval/analysis/build_selfaware_full_run_comparison.py`, and
    write a `docs/sessions/` checkpoint.
 
 ### Validation contract
@@ -441,9 +441,9 @@ Brier/MAE versus response appropriateness.
 
 ### Outputs & provenance
 
-- Run record: `experiment/phase1/run_records/`.
+- Run record: `archive/experiment/phase1/run_records/`.
 - Session checkpoint: `docs/sessions/`.
-- Analysis: `experiment/phase1/eval/analysis/selfaware_full_run_comparison.csv`
+- Analysis: `archive/experiment/phase1/eval/analysis/selfaware_full_run_comparison.csv`
   and grouped companion.
 - Hugging Face publication is allowed only after eval passes: publish public
   adapter/config/model-card artifacts and a repository pointer to the data

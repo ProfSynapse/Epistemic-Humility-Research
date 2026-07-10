@@ -5,7 +5,7 @@ title: Paper-series re-architecture + inference design + two-signal runtime buil
 status: active
 created_at: '2026-06-30T20:45:00Z'
 updated_at: '2026-06-30T20:45:00Z'
-phase: phase1
+track: research
 question: How do the findings break into a series of papers that build toward a flagship,
   what claims need shoring up, how would the two-signal readout be wired into live
   inference, and can we build a runnable reference pipeline (calibrated gate + dial
@@ -72,7 +72,7 @@ checkpoints:
     0.997, ECE 0.0156 to 0.0105, isotonic. ECE raw reproduces the prior S result exactly;
     AUROC unchanged (ranking preserved). The dial is now a thresholdable probability.
   evidence:
-  - experiment/phase1/probe/fit_calibration.py
+  - archive/experiment/phase1/probe/fit_calibration.py
   signals:
     dial_ece_before: 0.151
     dial_ece_after: 0.023
@@ -87,8 +87,8 @@ checkpoints:
     Reference pipeline, not production serving; live GPU smoke pending the X sweep
     freeing the single GPU.
   evidence:
-  - experiment/phase1/probe/two_signal_runtime.py
-  - experiment/phase1/probe/two_signal_cli.py
+  - archive/experiment/phase1/probe/two_signal_runtime.py
+  - archive/experiment/phase1/probe/two_signal_cli.py
   signals:
     self_check: green
     live_smoke: pending-gpu
@@ -102,7 +102,7 @@ checkpoints:
     \ than 4B). Verdict recorded in AMENDMENT-X \xA77. 8B extracting; 14B pending."
   evidence:
   - experiments/cross-model-size-sweep/AMENDMENT.md
-  - experiment/phase1/probe/amendment_x_qwen3-1.7b-bnb-4bit_result.json
+  - archive/experiment/phase1/probe/amendment_x_qwen3-1.7b-bnb-4bit_result.json
   signals:
     x_gate: 0.996
     x_dial: 0.815
@@ -168,7 +168,7 @@ result says it is unreliable). Includes a validated-vs-proposed honesty ledger.
 
 ## 004 - result: dial + gate calibration (the flagship #1 do-item)
 
-`experiment/phase1/probe/fit_calibration.py` (CPU, cached data). Honest nested-CV
+`archive/experiment/phase1/probe/fit_calibration.py` (CPU, cached data). Honest nested-CV
 calibration (calibrator never sees its own eval fold); ships the lower-ECE of
 Platt/isotonic; saves a portable artifact (npz vectors + json manifest with metrics
 and reliability bins). Results on Qwen3-4B Instruct base:
@@ -185,14 +185,14 @@ confirmed it was not - the scorers only measured ECE + a risk-coverage curve.)
 
 ## 005 - result: runnable reference pipeline (library + CLI)
 
-- `experiment/phase1/probe/two_signal_runtime.py` - `TwoSignalReadout`: loads base
+- `archive/experiment/phase1/probe/two_signal_runtime.py` - `TwoSignalReadout`: loads base
   model + gate/dial artifacts; `generate_with_trust(question)` runs gate (prompt-only
   forward at the anchor) -> abstain | generate -> dial (re-forward over [prompt+answer]
   at the content token) -> calibrated trust, with veto. Reuses the EXACT generation
   surface the dial was fit on (`SYSTEM_PROMPT`, `render_probe_prompt`,
   `_content_end_index`), so live reads match the validated offline surface (4.2 path).
   No-GPU self-check passes (artifacts load + apply).
-- `experiment/phase1/probe/two_signal_cli.py` - talk-to-the-model REPL (and `-q`
+- `archive/experiment/phase1/probe/two_signal_cli.py` - talk-to-the-model REPL (and `-q`
   one-shot): shows answerability, the answer, calibrated trust, and a LOW-TRUST flag
   on vetoed answers; `:set gate/veto` knobs. Compiles clean; live run pending GPU.
 
@@ -206,14 +206,14 @@ Qwen3-1.7B (raw base) PASSES all three locked gates - X-G1 gate 0.996 [0.993,0.9
 X-G2 dial 0.815 [0.787,0.842], X-G3 veto 0.757 [0.729,0.786]; dial means ordered
 correct 0.558 > known 0.431 > halluc 0.219 > wrong 0.122. Nearly identical to 4B.
 Caveat: within-SelfAware control 0.667 (weaker than 4B's 0.93). Verdict recorded in
-`AMENDMENT-X` §7. 8B extraction running (`eh-amd-x-full-8b`); 14B pending.
+`AMENDMENT-X` section 7. 8B extraction running (`eh-amd-x-full-8b`); 14B pending.
 
 ## Open / next
 
 - Live GPU smoke of `two_signal_cli.py` once the X sweep frees the GPU.
-- Score 8B, launch 14B, assemble the cross-size roll-up in AMENDMENT-X §7.
+- Score 8B, launch 14B, assemble the cross-size roll-up in AMENDMENT-X section 7.
 - Remaining flagship do-items: fill-B natural-distribution dial evidence; full
   baseline table; pre-register the cross-family confirmatory run (+ Gemma 4 compat smoke).
 - Uncommitted on branch `amendment-j-grpo-v3-proper-scoring`: papers/series/plan.md,
-  the design doc, fit_calibration.py + runtime + CLI + artifacts, AMENDMENT-X §7, and
+  the design doc, fit_calibration.py + runtime + CLI + artifacts, AMENDMENT-X section 7, and
   this note. Commit pending user go.

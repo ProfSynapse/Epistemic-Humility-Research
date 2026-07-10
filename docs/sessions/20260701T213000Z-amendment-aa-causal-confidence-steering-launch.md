@@ -5,7 +5,7 @@ title: "Amendment AA \u2014 causal confidence steering signed + Stage-1 launched
 status: active
 created_at: '2026-07-01T21:30:00Z'
 updated_at: '2026-07-02T14:45:00Z'
-phase: phase1
+track: research
 question: "Can the trust axis be WRITTEN, not just read \u2014 and is the causal effect\
   \ position-locked (gate at the anchor, dial at the end) the way the readout amendments\
   \ decode it?"
@@ -201,7 +201,7 @@ legacy_session:
   id: '0032'
   path: docs/sessions/0032 - amendment-aa-causal-confidence-steering-launch.md
 ---
-# Session 0032 — Amendment AA: causal confidence steering (Paper 5)
+# Session 0032 -- Amendment AA: causal confidence steering (Paper 5)
 
 Arc: steering review -> direction fits -> Tier-2 pre-registration -> user
 signature + Stage-1 launch approval -> harness build (delegated) -> queue launch
