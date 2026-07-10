@@ -31,7 +31,7 @@ from phase3_behavior_axis_scan import (
     load_role_cube,
     validate_manifest,
 )
-from phase3_direction_geometry import resolve_vector_file
+from direction_geometry import resolve_vector_file
 from sae_behavior_feature_analysis import (
     SaeBehaviorFeatureAnalysisError,
     row_matches_filter,

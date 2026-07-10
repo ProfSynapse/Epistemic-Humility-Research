@@ -51,7 +51,7 @@ from behavior_axis_scan import (  # noqa: E402
     load_role_cube,
     rank_auc,
 )
-from phase3_head_localization_scan import validate_head_manifest  # noqa: E402
+from head_localization_scan import validate_head_manifest  # noqa: E402
 from sae_behavior_feature_analysis import row_arm  # noqa: E402
 from sae_smoke import resolve_path  # noqa: E402
 

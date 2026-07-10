@@ -2,7 +2,7 @@
 """During-generation per-head ITI intervention (Step A.4).
 
 Applies the per-head steering directions built by
-``phase3_head_steering_directions.py`` to a sparse set of attention heads, on
+``head_steering_directions.py`` to a sparse set of attention heads, on
 EVERY generated token, via forward PRE-hooks on each target block's
 ``self_attn.o_proj``. For each target head the hook adds ``alpha * sigma * theta``
 to that head's slice of the o_proj input (columns ``head*head_dim:(head+1)*head_dim``)
