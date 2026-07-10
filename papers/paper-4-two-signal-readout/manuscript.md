@@ -425,8 +425,8 @@ What does the veto read when it pushes a confabulation to the bottom? The headli
 contrasts above cannot say: they compare correct answers against confabulations on
 unanswerable questions, so any signal that differs between those groups (the answer's
 content, the answer's length, the question's answerability) is available to the probe.
-Two pre-registered follow-up experiments (`residual-catch-veto-coverage`, then
-`ap-veto-length-balanced-confirmatory`), both adversarially audited before their
+Two pre-registered follow-up experiments, a residual-coverage probe and a
+length-balanced confirmatory, both adversarially audited before their
 verdicts were recorded, decompose the read into those three parts.
 
 Both nuisances are real, and each is large where it applies. Confabulations run long
@@ -461,8 +461,8 @@ interpretation the blend matters: the dial's low trust on confabulations is not
 purely a read of the produced answer. Both experiments are exploratory, single-seed,
 on the raw Qwen3-4B base under an abstention-affording prompt surface (a different
 surface from the answer-encouraging one in §§4.2 to 4.3), and are never pooled with
-the numbers above. Their amendment documents hold the full audit history, including
-the intermediate estimates each audit retired.
+the numbers above. The full audit history, including the intermediate estimates each
+audit retired, is preserved in the released research record (Appendix A).
 
 ### 4.5 The two axes are orthogonal: a pipeline, not a fused scalar
 
@@ -476,9 +476,9 @@ Shrivastava et al. (2023) improve confidence estimates by *mixing* surrogate and
 linguistic scores. We read no tension between the two: their mixture combines two noisy
 views of one quantity (answer correctness), while our axes measure different quantities
 (question answerability, answer correctness), and the fusion cost is the empirical sign
-that they are not redundant. Provenance for the fusion number: it comes from the
-program's Stage 1/1.5 CPU diagnostics (PR #128), cited as prior fact in Amendment U §1.1,
-measured on the deployed clean-SFT → GRPO-v2 checkpoint; folding the gate score into the
+that they are not redundant. Provenance for the fusion number: it comes from an earlier
+registered CPU diagnostic on the deployed checkpoint, cited as prior fact in the veto
+experiment's pre-registration (artifact trail: Appendix A); folding the gate score into the
 dial changed correctness triage by Δ −0.014 with a CI excluding 0, and correctness triage
 is the only quantity that diagnostic measured. The deployment consequence is to keep them
 as **two sequential stages** rather than one score (Figure 6):
@@ -573,7 +573,7 @@ all four families.
 
 ### 4.9 Where the signals live: a workspace reading (descriptive)
 
-Where in the network do the two axes live? The same Amendment Z runs carry the
+Where in the network do the two axes live? The cross-family replication runs (§4.8) carry the
 full per-layer AUROC surface for the gate and the dial, and plotting them against fractional
 depth (layer / n_layers, since the four families have 28, 26, 32, and 42 blocks) shows the
 two axes occupy different parts of the network (Figure 7). The gate is not a
@@ -587,7 +587,7 @@ is different: its within-0.02-of-max band is a narrower, overlapping mid-to-late
 at L25/28, near the unembedding. Read descriptively, answerability appears to be computed
 early from the question and simply carried forward, while correctness requires the formed
 answer and lives in a localized mid-to-late band. This is a descriptive replot of the
-already-reported Amendment Z surfaces: no new claim and no gate rests on it.
+already-reported cross-family surfaces: no new claim and no gate rests on it.
 
 > **Figure 7. Cross-family depth profile of the two axes.** Per-layer AUROC for the
 > answerability gate (left, zoomed y-axis) and the correctness dial (right) against
@@ -596,8 +596,8 @@ already-reported Amendment Z surfaces: no new claim and no gate rests on it.
 > 0.02). The gate saturates by ~20% of depth and stays saturated to the last block in all
 > four families, so per-family best-layer differences are jitter on a plateau; the dial
 > concentrates in an overlapping mid-to-late band, with Llama's argmax at L25/28 near the
-> unembedding. Descriptive only, from the Amendment Z `auroc_surface` blocks.
-> (`fig-p3-07-depth-profile.png`)
+> unembedding. Descriptive only, replotted from the cross-family replication's per-layer
+> AUROC surfaces (Appendix A). (`fig-p3-07-depth-profile.png`)
 
 An independent instrument gives that depth picture a name. As a read-only lab diagnostic
 (exploratory, no registered gates, no claim promoted), we implemented from scratch the
@@ -687,7 +687,7 @@ where Ministral fails, clears at 3/4 on Gemma's 0.762 pass, and seeds 20260702/2
 at 4/4. The falsifier (a seed with majority < 3/4, or ≥2 families flipping veto status) did
 not fire: Ministral is the only status-flipping family. The Table 1 magnitudes are thereby
 promoted from "single greedy decode" to **seed-robust under sampled decoding**
-(pre-registration and per-cell provenance: `AMENDMENT-SR-sampled-decode-seed-robustness.md`).
+(pre-registration and per-cell provenance: Appendix A).
 
 ### 4.11 The signal predates post-training: pretrain-only bases and an era ladder
 
@@ -750,12 +750,11 @@ alone reads the gate pool at **0.964 ± 0.016** and predicts dial correctness at
 per family. The hidden-state readouts sit above these bounds (gate 0.991–0.998, dial
 0.79–0.87), but the *margins*, not the raw AUROCs, are the honest effect sizes: much of
 the gate is surface-predictable on SelfAware, on any model of any era. A counterweight
-from the program's own control package (`selfaware-latent-knowledge-controls`): the
+from the program's own registered control package: the
 latent known-vs-unknown readout on this pool survives lexical, over-refusal, and
 cross-regimen controls, so the TF-IDF bound reads as pool-difficulty context, not as an
 explanation of the hidden-state signal. (Pre-registration
-and per-cell provenance: `AMENDMENT-Y-pretrain-only-base-readout.md`;
-`papers/paper-4-two-signal-readout/analysis/source-artifacts/probe/amendment_y_results/`.)
+and per-cell provenance: Appendix A.)
 
 ---
 
@@ -785,13 +784,14 @@ mechanism with no fine-tuning:
 Two engineering notes fall out of the results. Keep the axes *separate*: fusing them costs
 correctness ranking (§4.5). And *refit the dial per checkpoint*: the correctness direction
 drifts under training (cold transfer 0.679, §4.2) even though the axis persists. The gate,
-by contrast, transports: a gate probe fit on one dataset applies cold to another at 0.983
-(KUQ to SelfAware, on the deployed checkpoint; `xdataset-probe-transfer`), and it is cheap
+by contrast, transports: in a registered cross-dataset transfer experiment, a gate probe
+fit on one dataset applies cold to another at 0.983
+(KUQ to SelfAware, on the deployed checkpoint; Appendix A), and it is cheap
 to install anywhere.
 
 For operators who need operating points rather than AUROCs, a companion warning-policy
-characterization (the PR #205 analysis, whose aim-small selection rule §4.4's residual
-experiment reused) works the veto into declared-floor thresholds per checkpoint: only
+characterization (whose aim-small selection rule §4.4's residual
+experiment reused; Appendix A) works the veto into declared-floor thresholds per checkpoint: only
 operating points with warning precision at or above 0.80 and a bootstrap CI lower bound
 at or above 0.70 qualify, and precision, recall, false-alarm rate, and a calibrated
 P(hallucination given warned) are reported at each.
@@ -881,8 +881,9 @@ We state these plainly; several are the reason specific claims are scoped as the
 3. **The dial ranks, it does not calibrate.** ECE 0.151, a registered gate miss by 0.001
    (§3). We claim a *ranked* trust number, not a stated probability; a probability
    deliverable would need a downstream calibration map. The program has demonstrated such
-   a map on the *gate* axis (a trained head reaches cold-transfer AUROC 0.983 with ECE
-   0.023; `aux-head-trainable-readout`); an equivalent calibrated head for the dial has
+   a map on the *gate* axis in a registered companion experiment (a trained head reaches
+   cold-transfer AUROC 0.983 with ECE
+   0.023; Appendix A); an equivalent calibrated head for the dial has
    not been built.
 4. **Structural hallucination label, decomposed but ungraded.** "unanswerable question ∧
    model answered = hallucination" is structural, not human-graded. Two pre-registered
@@ -899,8 +900,7 @@ We state these plainly; several are the reason specific claims are scoped as the
 6. **Forced-answer surface.** The dial is measured on forced or answer-encouraging prompts. Its
    behavior on the model's *own natural* (un-forced) answers is untested (the relevant surface
    for a live deployment) and is a known gap, not a solved case. The registered instrument
-   for closing it (`natural-answer-generalization`) is signed with locked gates but
-   shelved unlaunched.
+   for closing it is signed with locked gates but shelved unlaunched (Appendix A).
 7. **Correctness-axis causality is untested.** The gate has causal (steering) evidence; the
    dial is correlational. Whether steering along the correctness axis moves actual correctness
    is future work.
@@ -978,7 +978,7 @@ lose.
 - OpenAI (2023). GPT-4 Technical Report. arXiv:2303.08774.
 - Orgad et al. (2024). LLMs Know More Than They Show: On the Intrinsic Representation of LLM Hallucinations. arXiv:2410.02707.
 - Rafailov et al. (2023). Direct Preference Optimization: Your Language Model is Secretly a Reward Model. arXiv:2305.18290.
-- Rosenbaum (2026). Knows but Doesn't Say: A Training-Resistant Gap Between Internal and Stated Confidence in a Small Language Model. Companion draft, this repository: [papers/paper-3-knows-but-doesnt-say/manuscript.md](../paper-3-knows-but-doesnt-say/manuscript.md).
+- Rosenbaum (2026). Knows but Doesn't Say: A Training-Resistant Gap Between Internal and Stated Confidence in a Small Language Model. Companion manuscript, released with this paper's research record (Appendix A).
 - Shao et al. (2024). DeepSeekMath: Pushing the Limits of Mathematical Reasoning in Open Language Models. arXiv:2402.03300.
 - Shrivastava et al. (2023). Llamas Know What GPTs Don't Show: Surrogate Models for Confidence Estimation. arXiv:2311.08877.
 - Slobodkin et al. (2023). The Curious Case of Hallucinatory (Un)answerability: Finding Truths in the Hidden States of Over-Confident Large Language Models. arXiv:2310.11877.
@@ -1006,17 +1006,24 @@ Every figure and number is generated from tracked result artifacts. Figures are 
 
 | Result surface | Artifact (under `papers/paper-4-two-signal-readout/analysis/source-artifacts/probe/`) |
 |---|---|
-| Correctness dial, base (S) | `amendment_s_stage2_result.json` |
-| Correctness dial, deployed (T) | `amendment_t_stage2_result.json` |
-| Hallucination veto, deployed (U) | `amendment_u_two_signal_result.json` |
-| Training-free whole mechanism (W) | `amendment_w_base_model_result.json` |
-| Cross-size 1.7B/8B/14B (X) | `amendment_x_qwen3-{1.7b,8b,14b}-bnb-4bit_result.json` |
-| Cross-family (Z) | `amendment_z_{llama-3.2-3b,ministral-3-3b,qwen3.5-4b,gemma-4-e4b}_result.json` |
-| Pretrain-only bases + era ladder (Y) | `amendment_y_results/` (per-cell result JSONs + extraction manifest) |
-| Sampled-decode seed-robustness (SR) | `experiments/sampled-decode-seed-robustness/artifacts/` (per family × seed JSONs `amendment_sr_{family}_seed{N}_result.json`; repo-root path, not under the probe dir) |
-| Veto construct decomposition (AM, AP; §4.4) | `experiments/residual-catch-veto-coverage/` and `experiments/ap-veto-length-balanced-confirmatory/` (AMENDMENT.md outcome sections; repo-root paths) |
+| Correctness dial, base model (§4.2) | `amendment_s_stage2_result.json` |
+| Correctness dial, deployed checkpoint (§4.2) | `amendment_t_stage2_result.json` |
+| Hallucination veto, deployed checkpoint (§4.3) | `amendment_u_two_signal_result.json` |
+| Training-free whole mechanism, raw base (§4.6) | `amendment_w_base_model_result.json` |
+| Cross-size sweep, 1.7B/8B/14B (§4.7) | `amendment_x_qwen3-{1.7b,8b,14b}-bnb-4bit_result.json` |
+| Cross-family replication (§4.8) | `amendment_z_{llama-3.2-3b,ministral-3-3b,qwen3.5-4b,gemma-4-e4b}_result.json` |
+| Pretrain-only bases + era ladder (§4.11) | `amendment_y_results/` (per-cell result JSONs + extraction manifest) |
+| Sampled-decode seed-robustness (§4.10) | `experiments/sampled-decode-seed-robustness/artifacts/` (per family × seed JSONs `amendment_sr_{family}_seed{N}_result.json`; repo-root path, not under the probe dir) |
+| Veto construct decomposition, residual-coverage + length-balanced confirmatory (§4.4) | `experiments/residual-catch-veto-coverage/` and `experiments/ap-veto-length-balanced-confirmatory/` (AMENDMENT.md outcome sections; repo-root paths) |
 | SFT-rotation timeline diagnostic (§4.2) | `diag_item9_caution_timeline.py`, commit `a354ad73`; staging `professorsynapse/eh-al-prep-staging` tags `diag-item9-*-r3`; extraction commit `d5a90b3b` |
 | J-lens workspace localization (§4.9) | `experiments/j-space-localization-qwen3-4b/analysis-committed/results/jspace-jlens-r1/` (`smoke_full.json`, `h1_full.json`, `profile_full.json`; repo-root path, not under the probe dir) |
+| Gate-dial fusion diagnostic (§4.5) | repository PR #128 (Stage 1/1.5 CPU diagnostics), cited as prior fact in the veto experiment's signed design (`experiments/unified-two-signal-dial-veto/AMENDMENT.md` §1.1) |
+| Warning-policy operating points (§5) | repository PR #205 analysis (declared-floor thresholds per checkpoint) |
+| Cross-dataset gate transfer, KUQ → SelfAware (§5) | `experiments/xdataset-probe-transfer/` (repo-root path) |
+| Latent-knowledge control package (§4.11) | `experiments/selfaware-latent-knowledge-controls/` (repo-root path) |
+| Calibrated gate head (§7, limitation 3) | `experiments/aux-head-trainable-readout/` (repo-root path) |
+| Natural-answer generalization instrument, signed and shelved (§7, limitation 6) | `experiments/natural-answer-generalization/` (repo-root path) |
+| Companion manuscript (references) | `papers/paper-3-knows-but-doesnt-say/manuscript.md` (repo-root path) |
 
 Governance: each result surface is a signed exploratory amendment under
 `docs/protocols/` and `experiments/<slug>/` referencing the locked pre-registration; the cross-size and
