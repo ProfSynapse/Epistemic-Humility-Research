@@ -225,8 +225,8 @@ half of representation engineering (Zou et al., 2023); writing along it (steerin
 other (Turner et al., 2023). This paper is
 strictly the *reading* half. The companion diagnosis shows the answerability/caution axis
 is causally steerable but only *asymmetrically* under ungated steering (excess caution can
-be relaxed; pushing along the axis did not install missing caution). A later registered
-line on the raw base narrows that: a doubt-gated caution write does convert held-out
+be relaxed; pushing along the axis did not install missing caution), while a doubt-gated
+caution write does convert held-out
 confabulations to refusals on one model (exploratory; §6). Reconciling the two is the
 follow-on steering paper's subject; this paper stays on the reading half and deploys the
 readout as a gate.
@@ -430,40 +430,26 @@ What does the veto read when it pushes a confabulation to the bottom? The headli
 contrasts above cannot say: they compare correct answers against confabulations on
 unanswerable questions, so any signal that differs between those groups (the answer's
 content, the answer's length, the question's answerability) is available to the probe.
-Two follow-up experiments, both resolved after the results above and both adversarially
-audited before their verdicts were recorded, decompose the veto. They change how the
-veto numbers in this paper should be read.
+Two pre-registered follow-up experiments (`residual-catch-veto-coverage`, then
+`ap-veto-length-balanced-confirmatory`), both adversarially audited before their
+verdicts were recorded, decompose the read into those three parts.
 
-The first (`residual-catch-veto-coverage`, exploratory, single seed) asked whether a
-veto refit on the raw base's own generation surface catches the confabulations that
-slip the answerability gate. Its two locked gates passed exactly as registered:
-out-of-fold veto AUROC 0.917 (CI [0.854, 0.963]) separating the 43-row gate-miss
-residual from 88 good answers, permutation p = 0.001. The PI and the orchestrator both
-predicted those passes, and both were right. The adversarial audit, triggered before
-the result was recorded because the margin looked too good, found what neither
-predictor had foreseen: an undisclosed answer-length confound. The residual
-confabulations are long rambles (median 94 answer tokens, 47% truncated at the
-96-token cap) and the good answers are short facts (median 24), and the probe reads
-the hidden state at the last answer token, whose position encodes length. Answer
-length alone separates the same groups at AUROC 0.943, higher than the veto itself.
-The gates passed and the coverage claim was still not established. A gate can only
-defend a claim someone thought to register.
+Both nuisances are real, and each is large where it applies. Confabulations run long
+and good answers run short (median 94 answer tokens against 24 on the residual-coverage
+population), and the probe reads the hidden state at the last answer token, whose
+position encodes length: on that population, answer length alone separates the groups
+at AUROC 0.943. Answerability carries into the post-answer state: on confabulations
+whose questions are unanswerable, the veto separates them from good answers at roughly
+0.99, because the post-generation hidden state still holds the gate's own axis.
 
-The second (`ap-veto-length-balanced-confirmatory`) was the pre-registered fix: a
-fresh 192-token generation (truncation zero on the matched set), 1:1 caliper matching
-on answer length, and a locked precondition that the matched set's length-only AUROC
-sit at chance. All three gates passed: length-only 0.492, veto 0.862 (CI [0.802,
-0.915]), margin over length +0.370 (CI [0.262, 0.476]). Then the second audit found a
-second nuisance: answerability. 37% of the matched hallucination rows were
-confabulations on unanswerable questions, and on those rows the veto separates at
-roughly 0.99, because the post-generation state still carries the question's
-answerability (the gate's own axis). The clean slice, wrong answers on answerable
-questions versus correct answers on answerable questions (65 length-matched pairs,
-both classes answerable, same pipeline), isolates the content signal: veto AUROC
-**0.737** (CI [0.650, 0.815]), margin over both nuisances **+0.244** (CI [0.120,
-0.367], excludes zero). That controlled number still clears the experiment's own
-locked gates, so the binary confirmation is robust; only the magnitude was confounded.
-The registered verdict is explicit: the inflated headline must not be cited as the
+A genuine content core survives both controls. On a fresh 192-token generation with
+1:1 caliper matching on answer length (length-only AUROC at chance, 0.492, by locked
+precondition) and both classes restricted to answerable questions (wrong answers on
+answerable questions versus correct answers on answerable questions, 65 matched pairs,
+out-of-fold), the veto reads AUROC **0.737** (CI [0.650, 0.815]), a margin of
+**+0.244** over the length-only baseline (CI [0.120, 0.367], excludes zero). That
+controlled number clears the experiment's pre-registered gates, and the registered
+verdict is explicit: the larger, uncontrolled contrasts must not be cited as the
 content-trust characteristic. The honest content number is about 0.74.
 
 What this means for the numbers above. Every headline veto contrast in this paper
@@ -480,7 +466,8 @@ interpretation the blend matters: the dial's low trust on confabulations is not
 purely a read of the produced answer. Both experiments are exploratory, single-seed,
 on the raw Qwen3-4B base under an abstention-affording prompt surface (a different
 surface from the answer-encouraging one in §§4.2 to 4.3), and are never pooled with
-the numbers above.
+the numbers above. Their amendment documents hold the full audit history, including
+the intermediate estimates each audit retired.
 
 ### 4.5 The two axes are orthogonal: a pipeline, not a fused scalar
 
@@ -522,8 +509,8 @@ the *readable trust signal itself* is a property of the frozen representation (F
 
 We scope "training-free" precisely: the raw base is the *instruction-tuned* release, so
 "training-free" means "no abstention fine-tuning and no reinforcement learning of ours,"
-**not** "no training ever." At the time this section's numbers were produced, the
-answerability axis could in principle have been a product of upstream instruction tuning;
+**not** "no training ever." Read on this release alone, the
+answerability axis could in principle be a product of upstream instruction tuning;
 §4.11's pre-registered pretrain-only contrast closes that question directly: read on
 *pre-instruction* bases, the axis is already there. The claim here is narrower and stands on
 its own: *our* training regimen (the one the companion paper shows cannot close the
@@ -863,8 +850,8 @@ happens to produce?).
 
 **Why not just steer?** The companion diagnosis found the answerability axis is causally
 steerable, but *asymmetrically*: excess caution could be relaxed, and pushing along the
-axis did not install missing caution. We previously read that as "missing caution cannot
-be installed by steering." The program's own resolved record has since narrowed the claim.
+axis did not install missing caution. That asymmetry is a fact about *ungated* pushes,
+not about writing in general.
 On the raw Qwen3-4B base (bf16 sibling), a doubt-*gated* caution write, which fires only
 on rows whose doubt readout clears a frozen threshold and snaps them to a fixed setpoint,
 converted held-out confabulations into coherent refusals at 73.5% (Wilson 95% CI [66.7,
@@ -890,8 +877,8 @@ We state these plainly; several are the reason specific claims are scoped as the
    the +0.065 post-beats-pre gain) remain seed 1: the near-saturated effects (gate 0.997)
    are low seed-risk, and §4.10's spread measurements bound how much the seed-sensitive
    axes move, but a multi-seed pass on the deep-dive checkpoint itself has not been run.
-2. **Base-model reads are render-sensitive, and the text baseline is high.** The original
-   scoping worry (that the axes might reflect upstream instruction tuning) is closed by
+2. **Base-model reads are render-sensitive, and the text baseline is high.** The
+   scoping worry that the axes might reflect upstream instruction tuning is closed by
    §4.11 (gate 0.997+ on four pre-instruction bases). What remains: base-model veto numbers
    depend on the prompt render (k-shot vs chat, 0.666 vs 0.867 on Qwen3.5-Base), and a
    question-surface TF-IDF baseline reads the gate pool at 0.964, so margins over that
@@ -911,7 +898,7 @@ We state these plainly; several are the reason specific claims are scoped as the
    contrasts PopQA/TriviaQA *correct* against SelfAware *hallucinations*. The
    within-SelfAware control (0.93 trained) bounds the dataset-shift concern but shares
    the unanswerable-question structure, so it does not control answerability carry
-   (§4.4). The answerability-controlled contrast now exists at small scale (65 matched
+   (§4.4). The answerability-controlled contrast exists at small scale (65 matched
    pairs, veto 0.737, single seed); a within-source, answerability-controlled
    correct-vs-hallucination contrast at headline scale has not been run.
 6. **Forced-answer surface.** The dial is measured on forced or answer-encouraging prompts. Its
