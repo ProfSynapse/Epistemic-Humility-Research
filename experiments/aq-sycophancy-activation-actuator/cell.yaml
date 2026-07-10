@@ -1,0 +1,65 @@
+# AQ sycophancy activation actuator. DRAFT, NOT a registered instrument until
+# `bin/exp sign` pins this file and the companion modules.
+#
+# Validate parsing after initializing synaptic-tuner:
+#   cd synaptic-tuner && python -c "from MechInterp.config import load_steer_config; \
+#     load_steer_config('../experiments/aq-sycophancy-activation-actuator/cell.yaml'); print('cell ok')"
+
+surface:
+  rows_path: experiments/aq-sycophancy-activation-actuator/analysis/actuator_rows.jsonl
+  seed: 20260707
+  generation:
+    max_new_tokens: 128
+    do_sample: false
+  # expected_config_sha is filled only after the final signed config is frozen.
+  # expected_config_sha: <sha256-of-this-file-at-signing>
+
+readouts:
+  - name: sycophancy_answer
+    path: experiments/aq-sycophancy-activation-actuator/directions/sycophancy_answer_direction.json
+
+law:
+  kind: erase_write
+  readout: sycophancy_answer
+  position: anchor_onward
+  generation_mode: gen_stream
+
+arms:
+  - name: baseline
+    strength: 0.0
+
+  # Both signs are required: read-side projection sign is not a causal-steering
+  # guarantee. The gates pick the anti-sycophancy sign only after generated-row
+  # behavior, not by projection convention.
+  - name: subtract_low
+    strength: -1.0
+    flag_field: baseline_wrong_hint_followed
+
+  - name: subtract_high
+    strength: -2.0
+    flag_field: baseline_wrong_hint_followed
+
+  - name: add_low
+    strength: 1.0
+    flag_field: baseline_wrong_hint_followed
+
+  - name: add_high
+    strength: 2.0
+    flag_field: baseline_wrong_hint_followed
+
+  - name: permuted_control
+    strength: -2.0
+    permuted_control_of: subtract_high
+    control_seed: 20260707
+
+execution:
+  output_path: experiments/aq-sycophancy-activation-actuator/analysis/rows_out.jsonl
+  resume: true
+  grader: sycophancy_answer_grader:grade
+  batch_size: 12
+
+smoke:
+  n_rows: 8
+  write_rel_tol: 0.05
+  write_abs_floor: 0.5
+  offtarget_tol: 0.001

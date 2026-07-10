@@ -1,0 +1,60 @@
+# J-space mid-band dose calibration. DRAFT until `bin/exp sign`.
+
+seed: 20260707
+
+surface:
+  model: unsloth/Qwen3-4B
+  substrate: bf16
+  adapter: none
+  source_experiment: experiments/j-space-midband-write-sweep-qwen3-4b
+  calibration_split: fit
+  held_out_use: forbidden
+  generation:
+    max_new_tokens: 200
+    min_new_tokens: 1
+    do_sample: false
+    eos_includes_im_end: true
+    enable_thinking: false
+  containment:
+    committed_row_text: forbidden
+    committed_generations: forbidden
+
+layers:
+  candidates:
+    - hs23
+    - hs26
+    - hs29
+    - hs34
+  source_directions: experiments/j-space-midband-write-sweep-qwen3-4b/analysis-committed/layers/
+
+calibration:
+  row_source: experiments/j-space-midband-write-sweep-qwen3-4b/analysis/rows_with_text.jsonl
+  row_source_status: local_gitignored_runtime_input
+  n_confab_fit_rows: 8
+  n_known_correct_fit_rows: 8
+  doses:
+    - 25
+    - 50
+    - 75
+    - 100
+    - 125
+    - 150
+    - 175
+    - 200
+  usable_dose_rule: >-
+    readback within tolerance, collapse_on_dosed == 0, and FIT confab
+    clean_tighten >= 50% on the calibration subset.
+  selection_rule: >-
+    Choose the usable dose with highest confab clean_tighten, then lower
+    known-correct cost, then lower dose.
+
+execution:
+  lane: local_3090
+  command: >-
+    PYTHONPATH=/home/profsynapse/code/ehr-worktrees/j-space/synaptic-tuner
+    python calibrate_dose.py --n-confab 8 --n-known 8
+    --doses 25 50 75 100 125 150 175 200
+
+outputs:
+  local_private_dir: experiments/j-space-midband-dose-calibration-qwen3-4b/analysis/
+  committed_public_summary: experiments/j-space-midband-dose-calibration-qwen3-4b/analysis-committed/dose_calibration_summary.json

@@ -21,6 +21,8 @@ public CLI verbs; it never adds project-specific code or config to the submodule
 
 - Designing a new activation-**writing** cell (steering, setpoint regulation,
   ablation) -> `mechinterp steer`.
+- Designing a dose-calibration cell to find a direction/layer's coherent
+  erase-write window -> `mechinterp dose-calibrate`.
 - Designing a new activation-**reading** cell (capture hidden states, fit a
   linear readout, freeze a direction) -> `mechinterp extract` + `probe-fit`.
 - Adjudicating a per-row output against declarative gates -> `mechinterp
@@ -41,6 +43,7 @@ cells.
 | `mechinterp extract` | yes (`--i-know-this-runs-on-gpu`) | generate over rows, capture hidden states to safetensors + a manifest |
 | `mechinterp probe-fit` | no (CPU) | fit a linear readout from extracted activations, freeze a `mechinterp-direction/v1` JSON |
 | `mechinterp steer` | yes (`--i-know-this-runs-on-gpu`) | run the six-block declarative intervention cell (smoke-gated) |
+| `mechinterp dose-calibrate` | yes (`--i-know-this-runs-on-gpu`) | run a resumable dose ladder over one or more frozen readouts, with per-row JSONL checkpoints and aggregate summaries |
 | `mechinterp score-gates` | no (CPU) | evaluate a `gates.yaml` against a per-row output JSONL |
 | `mechinterp list-configs` | no (CPU) | list the bundled example recipes |
 
@@ -72,6 +75,8 @@ Use pipeline stages to sequence:
 - `kind: mechinterp.steer` for intervention cells. Put `execution.render_fn` in
   the steer cell config, or `render_fn` on the pipeline stage, so launchers do
   not need wrapper flags for project prompt rendering.
+- `kind: mechinterp.dose-calibrate` for coherent-window dose ladders over frozen
+  readouts before committing a real intervention ladder.
 - `kind: mechinterp.score-gates` for declarative adjudication.
 
 Minimal operator commands:
@@ -142,7 +147,11 @@ independent). Blocks map 1:1 to the tuner Pydantic schema
    - `permuted_control_of` + `control_seed` (a seeded, count-matched random draw
      that probes the same dose on a different population).
 5. **execution** - `output_path` (the per-row JSONL), `resume` (skip rows already
-   present), and an optional `grader` (`module:callable`).
+   present), optional `grader` (`module:callable`), and optional
+   `redact_fields` (recursive field names to drop before per-row records are
+   persisted, e.g. restricted `answer_text`, `aliases`, `answer_value`, or
+   `raw_output` fields that a grader may need transiently but the checkpoint
+   must not retain).
 6. **smoke** - readback tolerances (`n_rows`, `write_rel_tol`, `write_abs_floor`,
    `offtarget_tol`). Before the full arms run, a small smoke pass applies the
    intervention and reads back the realized projection. `steer` refuses the full
@@ -158,6 +167,53 @@ ladder can jump clean over it (falsely reading a real lever as inert / voiding a
 screen's positive control). Dose ambient-relative and pilot-sweep the window
 first. Full method, measured numbers, and the smoke-is-write-accuracy caveat:
 [reference/dose-calibration.md](reference/dose-calibration.md).
+
+## Config-driven dose calibration
+
+Use `mechinterp dose-calibrate` for new erase-write dose ladders instead of a
+bespoke script. The config schema is `DoseCalibrationConfig`:
+
+- `surface` - the same row pool and generation contract used by `steer`.
+- `readouts` - frozen `mechinterp-direction/v1` files.
+- `law` - intervention law, position, generation mode, and target readout.
+  `law.readout: "*"` sweeps every declared readout; a named readout limits the
+  run to that direction.
+- `calibration` - dose rungs plus optional row selection. `dose_kind:
+  setpoint` is the default; for `erase_write` the runner converts each dose to
+  `strength = dose / sigma`. `dose_kind: strength` passes values directly to the
+  hook.
+- `execution` - `output_path` per-row checkpoint JSONL, `summary_path`
+  aggregate JSON, `resume`, `render_fn`, optional `grader`, `batch_size`, and
+  optional `redact_fields` for restricted per-row fields.
+
+Resume is keyed by `(readout, dose, row_key)` against `execution.output_path`.
+Every completed row is fsynced as it lands, so interrupted runs continue from
+the last missing triple when `resume: true`. If the row pool or grader carries
+restricted text, set `execution.redact_fields` so the grader can use those fields
+in memory while the persisted checkpoint remains safe to keep under `analysis/`.
+
+Minimal direct launch, from the repo root:
+
+```bash
+PYTHONPATH=experiments/common/renders:experiments/common/graders \
+python synaptic-tuner/tuner.py mechinterp dose-calibrate \
+  --mi-config experiments/<slug>/dose_calibration.yaml \
+  --model unsloth/Qwen3-4B \
+  --i-know-this-runs-on-gpu
+```
+
+Pipeline stage form:
+
+```yaml
+stages:
+  - name: calibrate
+    kind: mechinterp.dose-calibrate
+    config: experiments/<slug>/dose_calibration.yaml
+```
+
+Treat the summary as a calibration artifact, not a verdict. The next amendment
+or cell should pin selected setpoints and cite the committed aggregate summary,
+while keeping raw row text and per-row generations untracked when restricted.
 
 ## Plug-in points (project code, not the tuner)
 
@@ -322,7 +378,14 @@ PYTHONPATH=experiments/common/renders python synaptic-tuner/tuner.py mechinterp 
   --render-fn example_render:render \
   --i-know-this-runs-on-gpu
 
-# 4. Adjudicate with declarative gates (CPU).
+# 4. Optionally calibrate the dose ladder before locking a real steer run (GPU).
+PYTHONPATH=experiments/common/renders:experiments/common/graders \
+python synaptic-tuner/tuner.py mechinterp dose-calibrate \
+  --mi-config experiments/<slug>/dose_calibration.yaml \
+  --model <base-model> \
+  --i-know-this-runs-on-gpu
+
+# 5. Adjudicate with declarative gates (CPU).
 python synaptic-tuner/tuner.py mechinterp score-gates \
   --gates-config experiments/<slug>/gates.yaml \
   --rows-path experiments/<slug>/analysis/rows_out.jsonl
@@ -374,6 +437,38 @@ reader can consume.
   local 3090 / RunPod-3090). [reference/cloud-lane.md](../experiment-runner/reference/cloud-lane.md)
   covers the HF Jobs training lane. Do not duplicate those checklists here.
 
+### Modal cell gotchas
+
+- Launch long-running Modal cells as detached remote functions, not as a
+  local-entrypoint that calls `.spawn()` and exits unless that exact pattern has
+  just been verified. A reliable direct shape is:
+  `modal run --detach path/to/modal_app.py::run_one_cell --cell-id ...`.
+  Local-entrypoint `spawn()` can leave an app record with zero tasks after the
+  parent exits; always confirm with `modal app list` and `modal app logs`.
+- Keep exactly one active writer per `(run_tag, cell_id)` Volume namespace. If a
+  launch looked dead and you relaunch, re-check `modal app list` and stop the
+  ambiguous earlier app before the replacement starts writing the same
+  checkpoint files.
+- Put every resumable per-cell output directory on a Modal Volume before GPU
+  work starts (`analysis/<cell_id>` and `analysis-committed/<cell_id>` for
+  experiment cells), and commit the volume periodically during long subprocesses.
+  A retry can otherwise restart from zero even when the tuner verb itself has
+  `--resume`, because completed rows were only on container scratch.
+- Batch-parity smokes should enforce the registered gate semantics. If the gate
+  says "same parsed answer and stop reason," do not compare exact token IDs:
+  greedy batched generation can differ in harmless formatting while preserving
+  the adjudicated answer. Conversely, if byte/token parity is the registered
+  requirement, state that explicitly before launch.
+- Push batch sizes aggressively only after the live-volume resume path is working.
+  Use first-batch peak memory as a stage-specific signal: generation, capture,
+  and steering can have different memory curves. If 8B/9B capture is at roughly
+  half of GPU memory, doubling the next retry is reasonable, but watch the first
+  steer smoke before treating that as the new default.
+- Any change to a signed helper that is listed in `instrument.modules` must be
+  followed by a refreshed sha pin, `bin/exp regen`, validation, commit, push, and
+  relaunch from the pushed commit. Modal clones the commit you pass; local fixes
+  do nothing until the commit exists remotely.
+
 ## Migration map (legacy -> tuner)
 
 | Legacy file (frozen) | Tuner replacement |
@@ -383,7 +478,30 @@ reader can consume.
 | `gpu_equivalence_cell.py` (CPU-vs-GPU hook check) | the built-in `steer` smoke readback / equivalence self-check |
 | `*_extract.py`, `amendment_*_primed_extract.py` | `mechinterp extract` (+ `content_end_fn` plug-in) |
 | `persist_probe_direction.py` (fit + persist direction) | `mechinterp probe-fit` -> frozen `mechinterp-direction/v1` JSON |
+| bespoke erase-write dose sweeps | `mechinterp dose-calibrate` with `calibration.doses`, `dose_kind`, checkpoint JSONL, and summary JSON |
 | `run_arm_a.py` / `run_arm_b.py` orchestration | `arms` block in one `cell.yaml` (fixed / score-thresholded / flagged / permuted-control) |
+
+Current genericization gap: compound multi-write arms (for example `c_hat` plus
+a second token-target direction in one generation pass) and J-lens/token-target
+direction builders are not yet first-class tuner verbs. The reusable shape is:
+
+- tuner-owned: schema for one arm carrying multiple readout writes, each with
+  its own readout, layer override, setpoint/strength, and optional readback;
+- project-owned: prompt rendering, row splits, gates, graders, and token/J-lens
+  bundles;
+- tuner-owned: deterministic checkpoint/resume, recursive `redact_fields`, and
+  smoke/readback validation;
+- project-owned: which fields are restricted and which aggregate metrics define
+  a given amendment's gates.
+
+Do not promote experiment-local no-op record seeding until the runner can assert
+the generation contract is deterministic (`do_sample: false`) and the arm is
+provably off for that row. Under sampling, copied no-op rows are not a valid
+resume optimization.
+
+Keep one-off versions project-side only long enough to settle the interface,
+then promote the interface as a config-driven tuner surface rather than copying
+another bespoke runner.
 
 ## Invariants
 
@@ -399,3 +517,23 @@ reader can consume.
 - A passing smoke readback is write-accuracy, not a behavioral effect; calibrate
   the dose to the direction's coherent window before the real ladder
   ([reference/dose-calibration.md](reference/dose-calibration.md)).
+- **Any local run longer than about 15 minutes writes per-item results
+  through the tuner's resumable run log** (`shared/utilities/run_log.py`
+  `RunLog`: append + fsync per item, atomic tmp+replace summary write, one
+  log per arm) instead of buffering results in memory and writing only at
+  the end. This is the LOCAL analog of the "Modal cell gotchas" volume rule
+  above -- the tuner-side counterpart of durably checkpointing a Modal
+  Volume before GPU work starts, ported to a local 3090 process that has no
+  volume to fall back on if it is killed. A held-out layer-contrast
+  replication cell in this project has exactly the shape this closes a gap
+  for (multiple arms, thousands of rows, hours of wall time per arm, one
+  generate-then-grade pass per row): a kill anywhere in that loop without a
+  run log loses the whole arm, not just the in-flight row. See
+  `experiments/common/README-runlog.md` in the root repo for the import
+  path and per-arm log-path convention, and
+  `experiments/j-space-cross-family-layer-contrast/run_contrast.py` for a
+  worked wiring (resume by default, `--fresh` to discard and restart).
+  **Sign-pinned instruments must adopt this BEFORE sign**: once a cell's
+  scripts are pinned in `instrument.modules` with a frozen sha, they cannot
+  be patched mid-run to add resumability after a crash has already
+  happened.

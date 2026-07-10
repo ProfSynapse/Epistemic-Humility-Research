@@ -70,6 +70,45 @@
     },
     {
       "checkpoint": {
+        "repo": "Qwen/Qwen3-4B",
+        "revision": "1cfa9a7208912126459214e8b04321603b3df60c"
+      },
+      "falsifier": "The decoupling prediction is falsified if AQ-G0 through AQ-G4 all pass on the pre-registered row pool and the anti-sycophancy sign reduces wrong-hint matching without refusal or neutral accuracy damage; the readout component is falsified separately if the held-out direction is near chance.",
+      "inputs": [
+        "datasets/sycophancy-eval/answer.jsonl"
+      ],
+      "instrument": {
+        "configs": [
+          "eval_16bit_sycophancy_answer.yaml",
+          "row_pool.yaml",
+          "extract.yaml",
+          "probe_fit.yaml",
+          "cell.yaml",
+          "gates.yaml"
+        ],
+        "modules": [
+          "build_aq_row_pool.py",
+          "sycophancy_answer_grader.py",
+          "sycophancy_answer_render.py",
+          "cloud/modal_aq_sycophancy_activation_actuator.py"
+        ],
+        "pins": {}
+      },
+      "kg": [
+        "dataset:sycophancy-eval",
+        "term:sycophancy",
+        "method:contrastive-activation-addition"
+      ],
+      "prediction": "The wrong-hint-followed vs wrong-hint-not-followed contrast yields a held-out activation direction that separates capitulation above chance, but the actuator does not cleanly transfer; anti-sycophancy steering fails AQ-G2/AQ-G3 by doing little to wrong-hint matching or by trading off through refusal / degraded neutral factual accuracy.",
+      "question": "Can answer-sycophancy under an incorrect user hint be localized as a reusable activation direction and causally actuated without merely increasing refusal or degrading neutral factual accuracy?",
+      "registered": true,
+      "slug": "aq-sycophancy-activation-actuator",
+      "status": "draft",
+      "type": "steer-cell",
+      "verdict": ""
+    },
+    {
+      "checkpoint": {
         "repo": "unsloth/Qwen3-4B-bnb-4bit",
         "revision": "raw-base (no adapter; checkpoint_tag \"raw-base\" per AK Stage 1 manifest)"
       },
@@ -212,6 +251,265 @@
       "status": "draft",
       "type": "steer-cell",
       "verdict": ""
+    },
+    {
+      "checkpoint": {
+        "repo": "unsloth/Qwen3-4B",
+        "revision": "raw-base (bf16, no adapter, no 4-bit quantization)"
+      },
+      "falsifier": "If the best mid-band layer improves confab clean_tighten by less than 10 percentage points over hs34, or increases known-correct false-refusal cost by more than 2 percentage points, the calibrated J-space layer-site hypothesis is not supported; if hs34 fails the viability floor, the run is a reference replication failure.",
+      "inputs": [
+        "experiments/j-space-localization-qwen3-4b/AMENDMENT.md",
+        "experiments/j-space-midband-write-sweep-qwen3-4b/AMENDMENT.md",
+        "experiments/j-space-midband-write-sweep-qwen3-4b/analysis-committed/build_manifest_layers.json",
+        "experiments/j-space-midband-write-sweep-qwen3-4b/analysis-committed/gate_fit_layers.json",
+        "experiments/j-space-midband-write-sweep-qwen3-4b/analysis-committed/smoke_summary.json",
+        "experiments/j-space-midband-write-sweep-qwen3-4b/analysis-committed/PROVENANCE.md",
+        "experiments/j-space-midband-dose-calibration-qwen3-4b/AMENDMENT.md",
+        "experiments/j-space-midband-dose-calibration-qwen3-4b/analysis-committed/dose_calibration_summary.json"
+      ],
+      "instrument": {
+        "configs": [
+          "cell.yaml",
+          "gates.yaml"
+        ],
+        "modules": [
+          "run_contrast.py"
+        ],
+        "pins": {
+          "cell.yaml": "326aec44129dcf931e58306ad19decf23b09b137f62f2af55d8dbbc058a9dc3d",
+          "gates.yaml": "4d0dc924183f923cdf075b6509f264d8df7b305d966d52499d9da72cb5af3493",
+          "run_contrast.py": "1a7fb3be02a4228c4cd0a991ac5023bd67e35d15f4079f39e3673129b156bf50"
+        }
+      },
+      "kg": [
+        "mechanism:j-space-mediated-actuation-fragility"
+      ],
+      "prediction": "With layer-specific setpoints fixed before held-out evaluation, the best mid-band layer will improve held-out confab clean_tighten over hs34 by at least 10 percentage points without increasing known-correct false-refusal cost by more than 2 percentage points; hs34 will remain a viable predecessor reference.",
+      "question": "On raw-base Qwen3-4B, do calibrated J-space mid-band write sites hs23/hs26/hs29 outperform the calibrated late hs34 reference on held-out confab tightening without a known-correct cost regression?",
+      "registered": true,
+      "slug": "j-space-calibrated-layer-contrast-qwen3-4b",
+      "status": "resolved",
+      "type": "steer-cell",
+      "verdict": "Exploratory pass: hs23 was the best calibrated mid-band site, beating hs34 clean_tighten by 22.7pp with only +0.78pp known-correct cost; hs34 remained viable."
+    },
+    {
+      "checkpoint": {
+        "repo": "unsloth/Qwen3-4B",
+        "revision": "raw-base (bf16, no adapter, no 4-bit quantization)"
+      },
+      "falsifier": "If the best mid-band layer beats hs34 by less than 10 percentage points on fresh confab clean_tighten, or increases known-correct false-refusal cost by more than 2 percentage points, the same-model layer-site result does not replicate.",
+      "inputs": [
+        "experiments/j-space-calibrated-layer-contrast-qwen3-4b/AMENDMENT.md",
+        "experiments/j-space-calibrated-layer-contrast-qwen3-4b/analysis-committed/full_summary.json",
+        "experiments/j-space-midband-write-sweep-qwen3-4b/AMENDMENT.md",
+        "experiments/j-space-midband-write-sweep-qwen3-4b/analysis-committed/build_manifest_layers.json",
+        "experiments/j-space-midband-write-sweep-qwen3-4b/analysis-committed/gate_fit_layers.json",
+        "experiments/j-space-midband-write-sweep-qwen3-4b/analysis-committed/PROVENANCE.md",
+        "experiments/j-space-midband-dose-calibration-qwen3-4b/AMENDMENT.md",
+        "experiments/j-space-midband-dose-calibration-qwen3-4b/analysis-committed/dose_calibration_summary.json",
+        "experiments/common/doubt-gated-caution-tighten-heldout-split/split_manifest.json"
+      ],
+      "instrument": {
+        "configs": [
+          "cell.yaml",
+          "gates.yaml"
+        ],
+        "modules": [
+          "mine_fresh_eval_pool.py",
+          "extract_fresh_anchor.py",
+          "run_contrast.py"
+        ],
+        "pins": {
+          "cell.yaml": "d3f0d2df4ccf26b4bdcb146690380292ab3dd65b1e7ed9bec0b4e651ce82bfe6",
+          "extract_fresh_anchor.py": "d2f70f7f3e6e4bb8bed3c238de62f732734cabd50fc94bd1e60d3c2563ccbecc",
+          "gates.yaml": "8b6581dd3d510fd30715a782fa48c98c907980919b19d4cbcfc6f2e15276c4d3",
+          "mine_fresh_eval_pool.py": "0f764957032e887c78a58be2d2483d265e13363baaf470ee1082c466974d1d94",
+          "run_contrast.py": "2a245968ebe0c97087cc89c915a983feccf778d4cb79a6e8e1729a4176bc05b4"
+        }
+      },
+      "kg": [],
+      "prediction": "With predecessor directions, gates, and calibrated doses frozen, the best mid-band layer will beat hs34 by at least 10 percentage points on fresh confab clean_tighten without increasing known-correct false-refusal cost by more than 2 percentage points; hs34 will remain viable.",
+      "question": "On raw-base Qwen3-4B, does the calibrated J-space mid-band write-site advantage replicate on a fresh private evaluation pool whose row keys are disjoint from the predecessor fit and held-out split?",
+      "registered": true,
+      "slug": "j-space-layer-contrast-replication-qwen3-4b",
+      "status": "null-result",
+      "type": "steer-cell",
+      "verdict": "Registered G1 fail on a ceiling-saturated single-source fresh pool: best mid-band (hs29) beat hs34 by only +5.6pp (bar 10pp) with hs34 itself at 94.1%; direction replicates with CI separation at hs23/hs29 but magnitude is pool-dependent, and the fresh pool is a narrower confab distribution than the predecessor's."
+    },
+    {
+      "checkpoint": {
+        "repo": "unsloth/Qwen3-4B",
+        "revision": ""
+      },
+      "falsifier": "No falsifier is pre-registered (lab-diagnostic characterization, not a gated confirmatory claim) -- but the correctness smoke has its own internal go/no-go: if the final-layer J-lens does NOT track the logit lens (near-zero or negative cosine similarity, near-chance top-k overlap), the implementation is broken and the Modal prep must stop rather than proceed to characterize a broken instrument. That smoke PASSED locally (see Outcome).",
+      "inputs": [
+        "experiments/j-space-localization-qwen3-4b/analysis-committed/corpus/jlens_corpus_manifest.json",
+        "experiments/j-space-localization-qwen3-4b/analysis-committed/source_directions/u_d_L34.json",
+        "experiments/j-space-localization-qwen3-4b/analysis-committed/source_directions/c_hat_L34.json",
+        "experiments/j-space-localization-qwen3-4b/analysis-committed/source_directions/pos_ctrl_L34.json",
+        "experiments/j-space-localization-qwen3-4b/analysis-committed/source_directions/neg_ctrl_L34.json"
+      ],
+      "instrument": {
+        "configs": [],
+        "modules": [
+          "jlens.py",
+          "cloud/modal_jlens.py"
+        ],
+        "pins": {
+          "cloud/modal_jlens.py": "97f57c40dc6cd86b8f5b367d16ee3f1b01669cd68c24bbe336a5064feeff1720",
+          "jlens.py": "a92f4383108a4b46861e745939bb22d99d351ab53a3cc41c513d92980d8ecc2b"
+        }
+      },
+      "kg": [
+        "mechanism:j-space-mediated-actuation-fragility",
+        "term:global-workspace",
+        "method:jacobian-lens"
+      ],
+      "prediction": "Final-layer J-lens will closely track the logit lens (high cosine similarity / top-k overlap between verbalize() and direct unembed()); the workspace band will locate mid-to-late but short of the final layers, putting L34 (this project's existing write layer) near or past the workspace/motor boundary; pos_ctrl and c_hat (caution-flavored directions) will verbalize as first-person-hedge/abstention/error-adjacent tokens more clearly than u_d (doubt) or neg_ctrl (confab-propensity).",
+      "question": "Read-only characterization on Qwen3-4B (bf16 sibling of our raw-base): (1) does a from-scratch J-lens (Jacobian lens) implementation reduce to the logit lens at the final layer and run end to end on this model; (2) where across depth does a workspace-like band (rising kurtosis/sparsity/effective dimensionality of the J-lens readout) locate, relative to our own L34 write layer; (3) do our fitted epistemic directions (u_d doubt, pos_ctrl caution/ answer-vs-refuse, neg_ctrl confab-propensity, c_hat orthogonalized caution write) verbalize as uncertainty/abstention-flavored tokens under the J-lens at L34 and nearby layers (H1 from docs/ideas/j-space-global-workspace-actuation-bridge.md)? No writes/injections anywhere; this is a lab-diagnostic characterization, not a gated claim.",
+      "registered": true,
+      "slug": "j-space-localization-qwen3-4b",
+      "status": "resolved",
+      "type": "lab-diagnostic",
+      "verdict": "Full-corpus J-lens characterization completed on Modal: smoke reproduced logit-lens agreement (mean cosine 0.9811, top-10 overlap 0.82), H1 showed u_d as answer/reply-like, pos_ctrl/c_hat as self-empty-impossible/error-like, neg_ctrl as noisy, and profile localized the effective-dimension peak at hs=26 with L34/hs34 just after the hs=23-29 workspace-like band."
+    },
+    {
+      "checkpoint": {
+        "repo": "unsloth/Qwen3-4B",
+        "revision": "raw-base (bf16, no adapter, no 4-bit quantization)"
+      },
+      "falsifier": "Any layer has no usable dose on the pre-stated ladder, or hs23/hs26 still select 200 or fail to recover from dose-200 collapse.",
+      "inputs": [
+        "experiments/j-space-midband-write-sweep-qwen3-4b/analysis-committed/build_manifest_layers.json",
+        "experiments/j-space-midband-write-sweep-qwen3-4b/analysis-committed/gate_fit_layers.json",
+        "experiments/j-space-midband-write-sweep-qwen3-4b/analysis-committed/smoke_summary.json",
+        "experiments/j-space-midband-write-sweep-qwen3-4b/analysis-committed/PROVENANCE.md",
+        "experiments/j-space-midband-write-sweep-qwen3-4b/AMENDMENT.md"
+      ],
+      "instrument": {
+        "configs": [
+          "cell.yaml",
+          "gates.yaml"
+        ],
+        "modules": [
+          "calibrate_dose.py"
+        ],
+        "pins": {
+          "calibrate_dose.py": "e8942c3f9fe6e0a87bbbcdc993b92cf30956d50d583019fa09fcc0ad7a42e853",
+          "cell.yaml": "cf3622aabddd6aa607d5526658c753be771da6c77d34a37f642b01814543cbcf",
+          "gates.yaml": "2d8e825c430f383f7a51a8d376e0afe1389a3a0051a9e666d61f0747df1926d5"
+        }
+      },
+      "kg": [
+        "mechanism:j-space-mediated-actuation-fragility"
+      ],
+      "prediction": "Layer-specific calibration will recover non-collapsing usable setpoints for all four layers, with hs23 and hs26 selecting doses below 200.",
+      "question": "On raw-base Qwen3-4B, can layer-specific dose calibration recover non-collapsing usable erase-write setpoints for hs23/hs26/hs29/hs34 after dose 200 collapsed hs23 and hs26 in the J-space mid-band sweep smoke?",
+      "registered": true,
+      "slug": "j-space-midband-dose-calibration-qwen3-4b",
+      "status": "resolved",
+      "type": "steer-cell",
+      "verdict": "Exploratory FIT-only calibration pass: all layers recovered usable non-collapsing setpoints (hs23=25, hs26=75, hs29=125, hs34=175); hs23/hs26 recovered below dose 200, so a calibrated held-out layer contrast can be registered next."
+    },
+    {
+      "checkpoint": {
+        "repo": "unsloth/Qwen3-4B",
+        "revision": "raw-base (bf16, no adapter, no 4-bit quantization)"
+      },
+      "falsifier": "Best mid-band layer improves confab clean_tighten by less than 10 points over hs34, or increases known-correct false-refusal by more than 2 points. If hs34 fails predecessor viability, the run is a reference replication failure rather than evidence about J-space mid-band superiority.",
+      "inputs": [
+        "experiments/common/doubt-gated-caution-tighten-heldout-split/split_manifest.json",
+        "experiments/common/doubt-gated-caution-tighten-heldout-split/PROVENANCE.md",
+        "experiments/doubt-gated-caution-tighten/analysis-committed/full_summary.json",
+        "experiments/doubt-gated-caution-tighten/analysis-committed/PROVENANCE.md"
+      ],
+      "instrument": {
+        "configs": [
+          "cell.yaml",
+          "gates.yaml"
+        ],
+        "modules": [
+          "layers.py",
+          "extract_layer_sweep_anchor.py",
+          "build_directions.py",
+          "gate_fit.py",
+          "build_random_direction.py",
+          "materialize_rows.py",
+          "pipeline.py",
+          "gen_lib.py",
+          "grader.py",
+          "model_lib.py"
+        ],
+        "pins": {
+          "build_directions.py": "844236a449ebaf350bc5571992ce115b7125dd2a8cf301ebdf6a8efae0e2cfe4",
+          "build_random_direction.py": "504c4471f1999e28fcd3fe33d54e259a57a01f03d75ef59350a5c79de5bdb316",
+          "cell.yaml": "96f1764a0796ca57bd5feed826f28c4988783fc11c428c0107020393c643df2f",
+          "extract_layer_sweep_anchor.py": "1599cf46fc8b35e4983a12bdcdbd254430e0b0f18da313e93ff478568aa78575",
+          "gate_fit.py": "13c6dd304085d22e0b3ab75360cdd34d42f14b97a3dedf2e5f7460a3a7a85fdf",
+          "gates.yaml": "18f4f60e4e9667e40cce38e7822e4c69f038c956da99671c4260caba38ec9621",
+          "gen_lib.py": "dbcd12b49b4ea655b681bc93853c4bb9742988918c8d228d796ad87289451856",
+          "grader.py": "d76e3a89787e6d8b38aa9707b18aa73d882ed84fab283f720a349676e253f831",
+          "layers.py": "79ecc7603449768ed662fff8c3ea455222d81d3e91a6e5c711dccc83b771556b",
+          "materialize_rows.py": "b63b37abdba280ada63c59f1d892cc5ae27350432ed812f062fdd06a83a10ecc",
+          "model_lib.py": "3dde37349942774ea7b044392051af4151eeebb6e5afb05d808aeff835c65a60",
+          "pipeline.py": "5d20680e375d374114ddd7df86ee78a4dbc42389519d09501fcf29c7fe6911e7"
+        }
+      },
+      "kg": [
+        "mechanism:j-space-mediated-actuation-fragility"
+      ],
+      "prediction": "Best mid-band layer (hs23/26/29, expected hs26) improves held-out confab clean_tighten over hs34 by at least 10 percentage points without increasing known-correct false-refusal by more than 2 percentage points; hs34 remains viable under the predecessor gate.",
+      "question": "On raw-base Qwen3-4B, does moving the resolved doubt-gated caution snap from the existing hs34/L34 write site into the J-space mid-band (hs23/26/29, peak hs26) improve confab-to-refusal tightening without increasing known-correct false-refusal?",
+      "registered": true,
+      "slug": "j-space-midband-write-sweep-qwen3-4b",
+      "status": "null-result",
+      "type": "steer-cell",
+      "verdict": "Pre-outcome G0 stop: dose-200 smoke readback was accurate, but hs23 and hs26 collapsed all dosed smoke rows, so no full held-out run was completed."
+    },
+    {
+      "checkpoint": {
+        "repo": "unsloth/Qwen3-4B",
+        "revision": "raw-base (bf16, no adapter, no 4-bit quantization)"
+      },
+      "falsifier": "The option-2 line is falsified on this surface if the hs23 hybrid improves clean_tighten over hs23 c_hat_only by less than 4 percentage points, or if it increases known-correct cost by more than 2 percentage points, or if a matched random J-space control reproduces the improvement within 3 percentage points.",
+      "inputs": [
+        "experiments/j-space-localization-qwen3-4b/AMENDMENT.md",
+        "experiments/j-space-localization-qwen3-4b/analysis-committed/results/jspace-jlens-r1/h1_full.json",
+        "experiments/j-space-calibrated-layer-contrast-qwen3-4b/AMENDMENT.md",
+        "experiments/j-space-calibrated-layer-contrast-qwen3-4b/analysis-committed/full_summary.json",
+        "experiments/j-space-midband-write-sweep-qwen3-4b/analysis-committed/gate_fit_layers.json",
+        "experiments/j-space-midband-write-sweep-qwen3-4b/analysis-committed/build_manifest_layers.json",
+        "experiments/j-space-midband-dose-calibration-qwen3-4b/analysis-committed/dose_calibration_summary.json"
+      ],
+      "instrument": {
+        "configs": [
+          "cell.yaml",
+          "gates.yaml",
+          "token_bundle.yaml"
+        ],
+        "modules": [
+          "token_bundle_audit.py",
+          "run_token_target.py"
+        ],
+        "pins": {
+          "cell.yaml": "214d13e6cc61c1b145905ef0d2155aa69b43fd981f83ff4b15df91e31e8e9673",
+          "gates.yaml": "87548f7a226f798ecbf393e5070021034d1fd463cb0a8053524053e8b176dc0e",
+          "run_token_target.py": "8c5c29c50a7dc76d7a1365ab0b25e4e3f3d54385c68d3f8ac51779f41b1155df",
+          "token_bundle.yaml": "c9132a5d95a3ed481abdeb30dcd713090b4b25a88feae76f0b8cc2351c1f31e4",
+          "token_bundle_audit.py": "999e0116a2285c148336f77c1a9b881d95bc5e14aca04150fcad607cf583eeb7"
+        }
+      },
+      "kg": [
+        "mechanism:j-space-mediated-actuation-fragility"
+      ],
+      "prediction": "On raw-base Qwen3-4B bf16, an hs23 hybrid of the resolved doubt-gated c_hat snap plus an internal J-lens token-target refusal direction will improve held-out confab clean_tighten over hs23 c_hat_only by at least 4 percentage points without increasing known-correct cost by more than 2 percentage points, and the matched random J-space control will not reproduce the improvement.",
+      "question": "On raw-base Qwen3-4B, can an internal J-lens token-target refusal write at hs23 improve the resolved doubt-gated caution snap without increasing known-correct cost?",
+      "registered": true,
+      "slug": "j-space-token-targeted-refusal-qwen3-4b",
+      "status": "falsified",
+      "type": "steer-cell",
+      "verdict": "Exploratory falsification: the hs23 J-token hybrid wrote accurately and safely but improved clean_tighten by only +0.54pp over c_hat_only, below the pre-stated +4pp threshold."
     }
   ]
 }

@@ -1,0 +1,77 @@
+# J-space fresh-pool layer contrast replication. DRAFT until `bin/exp sign`.
+
+seed: 20260708
+
+surface:
+  model: unsloth/Qwen3-4B
+  substrate: bf16
+  adapter: none
+  predecessor_experiment: experiments/j-space-calibrated-layer-contrast-qwen3-4b
+  source_direction_experiment: experiments/j-space-midband-write-sweep-qwen3-4b
+  dose_source_experiment: experiments/j-space-midband-dose-calibration-qwen3-4b
+  generation:
+    max_new_tokens: 200
+    min_new_tokens: 1
+    do_sample: false
+    eos_includes_im_end: true
+    enable_thinking: false
+  containment:
+    committed_row_text: forbidden
+    committed_aliases: forbidden
+    committed_generations: forbidden
+    committed_outputs: aggregate_and_id_manifest_only
+
+fresh_pool:
+  candidate_source: /home/profsynapse/code/Epistemic-Humility-Research/experiment/phase1/probe/analysis/ah_stage0/expansion/expansion_candidates.jsonl
+  exclude_predecessor_split: experiments/common/doubt-gated-caution-tighten-heldout-split/split_manifest.json
+  private_rows_path: experiments/j-space-layer-contrast-replication-qwen3-4b/analysis/fresh_eval_rows.jsonl
+  private_generations_path: experiments/j-space-layer-contrast-replication-qwen3-4b/analysis/fresh_pool_generations.jsonl
+  public_id_manifest: experiments/j-space-layer-contrast-replication-qwen3-4b/analysis-committed/fresh_eval_pool_manifest.json
+  target_counts:
+    confab: 200
+    known_correct_answered: 300
+  selection:
+    confab: "gold-unanswerable expansion row where raw-base bf16 answers rather than refuses"
+    known_correct_answered: "gold-answerable expansion row where raw-base bf16 answers and grades correct"
+
+layers:
+  midband:
+    hs23:
+      dose_target: 25
+    hs26:
+      dose_target: 75
+    hs29:
+      dose_target: 125
+  late_reference:
+    hs34:
+      dose_target: 175
+
+readouts:
+  direction_source: experiments/j-space-midband-write-sweep-qwen3-4b/analysis-committed/layers/
+  gate_source: experiments/j-space-midband-write-sweep-qwen3-4b/analysis-committed/gate_fit_layers.json
+  build_source: experiments/j-space-midband-write-sweep-qwen3-4b/analysis-committed/build_manifest_layers.json
+  dose_source: experiments/j-space-midband-dose-calibration-qwen3-4b/analysis-committed/dose_calibration_summary.json
+  fire_rule: "score_neg_z_d >= tau_frozen"
+  write_direction: c_hat
+  law: erase_write
+  position: anchor_onward
+
+execution:
+  lane: local_3090
+  pool_command: >-
+    python experiments/j-space-layer-contrast-replication-qwen3-4b/mine_fresh_eval_pool.py
+  extract_command: >-
+    python experiments/j-space-layer-contrast-replication-qwen3-4b/extract_fresh_anchor.py
+  smoke_command: >-
+    PYTHONPATH=synaptic-tuner
+    python experiments/j-space-layer-contrast-replication-qwen3-4b/run_contrast.py
+    --mode smoke --n-rows 8
+  full_command: >-
+    PYTHONPATH=synaptic-tuner
+    python experiments/j-space-layer-contrast-replication-qwen3-4b/run_contrast.py
+    --mode full --i-know-this-is-the-fresh-replication-run
+
+outputs:
+  local_private_dir: experiments/j-space-layer-contrast-replication-qwen3-4b/analysis/
+  committed_public_pool_manifest: experiments/j-space-layer-contrast-replication-qwen3-4b/analysis-committed/fresh_eval_pool_manifest.json
+  committed_public_summary: experiments/j-space-layer-contrast-replication-qwen3-4b/analysis-committed/full_summary.json

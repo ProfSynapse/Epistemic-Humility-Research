@@ -4,6 +4,59 @@ For `erase_write` steer cells. Read this when choosing `law` strengths / the
 `arms` dose ladder for a new cell, or when a dose "does nothing" or produces
 garbage.
 
+As of Synaptic Tuner `f09db5f`, the default implementation is the config-driven
+`mechinterp dose-calibrate` verb. Older bespoke sweep scripts remain valid
+provenance for the experiments that used them, but new cells should express the
+ladder in YAML so checkpointing, resume, readout expansion, and summaries are
+generic.
+
+Minimal schema:
+
+```yaml
+surface:
+  rows_path: experiments/<slug>/analysis/rows.jsonl
+  generation:
+    max_new_tokens: 64
+    do_sample: false
+    temperature: 0.0
+    top_p: 1.0
+    seed: 0
+readouts:
+  - name: hs34
+    path: experiments/<slug>/directions/axis_hs34.json
+law:
+  kind: erase_write
+  readout: "*"       # or a single readout name
+  position: anchor_onward
+  generation_mode: gen_stream
+calibration:
+  doses: [0, 25, 50, 75, 100, 125, 150, 175, 200]
+  dose_kind: setpoint
+  selection:
+    flag_field: confab_selected
+execution:
+  output_path: experiments/<slug>/analysis/dose_calibration_rows.jsonl
+  summary_path: experiments/<slug>/analysis-committed/dose_calibration_summary.json
+  resume: true
+  render_fn: example_render:render
+  grader: example_grader:grade
+  batch_size: 1
+```
+
+Run from the repo root:
+
+```bash
+PYTHONPATH=experiments/common/renders:experiments/common/graders \
+python synaptic-tuner/tuner.py mechinterp dose-calibrate \
+  --mi-config experiments/<slug>/dose_calibration.yaml \
+  --model unsloth/Qwen3-4B \
+  --i-know-this-runs-on-gpu
+```
+
+The checkpoint JSONL is append-only and resumable by `(readout, dose, row_key)`.
+The committed artifact should normally be the aggregate summary plus provenance,
+not restricted row text or per-row generations.
+
 ## Why dose is not a free parameter
 
 `erase_write` writes an ABSOLUTE coordinate along the readout:

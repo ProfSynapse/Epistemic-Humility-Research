@@ -1,0 +1,110 @@
+{
+  "mode": "smoke",
+  "dose_target": 200.0,
+  "layers": {
+    "hs23": {
+      "hs_index": 23,
+      "n_rows": 8,
+      "n_fired": 3,
+      "readback_mean": 200.01800448639005,
+      "frac_readback_within_tol": 1.0,
+      "collapse_rate_on_dosed": 1.0,
+      "confab_tighten": {
+        "n": 4,
+        "successes": 0,
+        "rate": 0.0,
+        "wilson_ci_95": [
+          0.0,
+          0.4898908364545973
+        ]
+      },
+      "known_correct_cost_control": {
+        "n": 4,
+        "successes": 1,
+        "rate": 0.25,
+        "wilson_ci_95": [
+          0.04558726080970055,
+          0.6993581574175981
+        ]
+      }
+    },
+    "hs26": {
+      "hs_index": 26,
+      "n_rows": 8,
+      "n_fired": 4,
+      "readback_mean": 199.98736937793728,
+      "frac_readback_within_tol": 1.0,
+      "collapse_rate_on_dosed": 1.0,
+      "confab_tighten": {
+        "n": 4,
+        "successes": 0,
+        "rate": 0.0,
+        "wilson_ci_95": [
+          0.0,
+          0.4898908364545973
+        ]
+      },
+      "known_correct_cost_control": {
+        "n": 4,
+        "successes": 1,
+        "rate": 0.25,
+        "wilson_ci_95": [
+          0.04558726080970055,
+          0.6993581574175981
+        ]
+      }
+    },
+    "hs29": {
+      "hs_index": 29,
+      "n_rows": 8,
+      "n_fired": 4,
+      "readback_mean": 200.02690423151944,
+      "frac_readback_within_tol": 1.0,
+      "collapse_rate_on_dosed": 0.0,
+      "confab_tighten": {
+        "n": 4,
+        "successes": 4,
+        "rate": 1.0,
+        "wilson_ci_95": [
+          0.5101091635454027,
+          1.0
+        ]
+      },
+      "known_correct_cost_control": {
+        "n": 4,
+        "successes": 1,
+        "rate": 0.25,
+        "wilson_ci_95": [
+          0.04558726080970055,
+          0.6993581574175981
+        ]
+      }
+    },
+    "hs34": {
+      "hs_index": 34,
+      "n_rows": 8,
+      "n_fired": 3,
+      "readback_mean": 200.11175295058638,
+      "frac_readback_within_tol": 1.0,
+      "collapse_rate_on_dosed": 0.0,
+      "confab_tighten": {
+        "n": 4,
+        "successes": 3,
+        "rate": 0.75,
+        "wilson_ci_95": [
+          0.30064184258240184,
+          0.9544127391902995
+        ]
+      },
+      "known_correct_cost_control": {
+        "n": 4,
+        "successes": 1,
+        "rate": 0.25,
+        "wilson_ci_95": [
+          0.04558726080970055,
+          0.6993581574175981
+        ]
+      }
+    }
+  }
+}
