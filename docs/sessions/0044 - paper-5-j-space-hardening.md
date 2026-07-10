@@ -4,7 +4,7 @@ session_id: paper5-jspace-hardening
 title: Paper 5 J-space hardening
 status: active
 created_at: '2026-07-08T16:46:25Z'
-updated_at: '2026-07-10T10:52:21Z'
+updated_at: '2026-07-10T11:02:40Z'
 phase: phase1
 question: Which registered follow-up experiments harden the Paper 5 actuation thesis,
   starting with a fresh Qwen3-4B J-space layer-site replication?
@@ -195,6 +195,27 @@ checkpoints:
   next_steps:
   - Dispatch anchor audit + scaffold qwen35-4b-midband-doubt-snap amendment in a new
     worktree (draft, profile as pre-sign prep, no sign without user).
+  signals: {}
+- id: 008-infrastructure
+  at: '2026-07-10T11:02:40Z'
+  kind: infrastructure
+  title: 'Tuner lines reunified (PR #142); doubt-snap branch merged (PR #265)'
+  summary: 'Merging the doubt-snap branch surfaced a diverged submodule pin: exp branch
+    at 9a97540 (batch verbs, HF-token loaders, batched steer) vs main at cd30d482
+    (RunLog, redaction, dose calibration), neither containing the other. Resolved
+    by merging the tuner lines: Synaptic-Tuner PR #142 (one additive conflict in MechInterp/cli.py,
+    both helper blocks kept; 206/206 tests pass) -> tuner main 86b134c. Repo submodule
+    repointed to 86b134c in the merge commit; PR #265 (Qwen3.5 dose recalibration
+    + characterized no-window nulls + Modal durability/operational fixes) merged to
+    main. All future pins get RunLog + batch/steer verbs together. User approved the
+    tuner merge explicitly after a classifier lift.'
+  evidence: []
+  run_ids: []
+  commands: []
+  decisions: []
+  next_steps:
+  - 'PR #264 (rep-2 full pass) still open awaiting user review. Anchor audit + mid-band
+    scaffold agents in flight.'
   signals: {}
 ---
 # Paper 5 J-space hardening
@@ -450,3 +471,10 @@ rows before the layer contrast.
 - summary: Row-level decomposition of both Qwen3.5 null cells reframed the finding: 9B doubt-write actuates stated-confidence refusal on 886/912 fired confabs at dose 200 (format-agnostic 'refused' flag) but strictly entangled with JSON corruption (well-formed 2/912); 4B peaks at ~39% refusal even format-free before total degeneration. User adjudication: strict JSON was partly a parseability holdover; the honest framing is 'regulation works, format breaks' for 9B, weak-actuation for 4B. Verified the old forced-fill issue is triple-guarded now (min_new_tokens=1 + EOS, baselines natural-stop 99%/98% at 69/102 avg tokens, clean_tighten requires natural stop). Flag quirk noted: 4B dose_50 semantic_refuse (142) > refused (115). DECISIONS: (1) anchor-placement audit (read-only, free) is the last unchecked harness surface; (2) refusal/coherence decomposed readout gets governed provenance inside (3): a new exploratory amendment testing whether a J-space mid-band write site on Qwen3.5-4B decouples refusal from corruption, run LOCALLY on the 3090 per user (stronger finding if the weakest cell rescues; free lane). Requires Qwen3.5-4B J-lens profile (band is model-specific), fresh mid-band captures/fits from doubt-snap FIT rows, small dose ladder with collapse diagnostics.
 - next steps:
   - Dispatch anchor audit + scaffold qwen35-4b-midband-doubt-snap amendment in a new worktree (draft, profile as pre-sign prep, no sign without user).
+### 008-infrastructure - Tuner lines reunified (PR #142); doubt-snap branch merged (PR #265)
+
+- at: `2026-07-10T11:02:40Z`
+- kind: `infrastructure`
+- summary: Merging the doubt-snap branch surfaced a diverged submodule pin: exp branch at 9a97540 (batch verbs, HF-token loaders, batched steer) vs main at cd30d482 (RunLog, redaction, dose calibration), neither containing the other. Resolved by merging the tuner lines: Synaptic-Tuner PR #142 (one additive conflict in MechInterp/cli.py, both helper blocks kept; 206/206 tests pass) -> tuner main 86b134c. Repo submodule repointed to 86b134c in the merge commit; PR #265 (Qwen3.5 dose recalibration + characterized no-window nulls + Modal durability/operational fixes) merged to main. All future pins get RunLog + batch/steer verbs together. User approved the tuner merge explicitly after a classifier lift.
+- next steps:
+  - PR #264 (rep-2 full pass) still open awaiting user review. Anchor audit + mid-band scaffold agents in flight.
