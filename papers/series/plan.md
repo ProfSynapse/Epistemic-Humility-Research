@@ -50,7 +50,9 @@ Rules:
 | Taxonomy, evidence synthesis, agenda | 1 | |
 | SFT/DPO/KTO/GRPO abstention comparison, calibration tradeoffs | 2 | GRPO framing: extension vs registered arm, still open |
 | Internal-vs-stated gap; training resistance; channel bottleneck | 3 | |
-| Internal anatomy: doubt axis, caution axis, confab-propensity direction (reading claims only) | 3 (pending provenance census, in flight 2026-07-10) | Scope sentences must match each direction's actual discovery checkpoint |
+| Internal anatomy: doubt axis, caution axis (reading claims only) | 3 | Census (docs/review/paper3-direction-provenance-2026-07-10.md): doubt is base/pretrain-validated but IS the answerability gate under another name (state the identity, do not double-count); caution reading is real but trained-checkpoint-only (base never refuses), scope sentence must say so |
+| Confab-propensity direction | 5 only | Census verdict: NOT safe as a paper 3 result (reading numbers ungoverned, checkpoint-specific to the most-trained checkpoint, governed causal outcome null). Paper 3 gets at most a one-line forward pointer |
+| Caution-ablation steering result (over-refusal 0.994 to 0.030) | 5 | Currently argued inside paper 3 section 6 (census flag A3); under the ownership rule it moves to 5, paper 3 keeps one summarizing sentence + citation |
 | Answerability gate, correctness dial, veto + decomposition (content core ~0.74) | 4 | Current after the 2026-07-10 revision arc |
 | Cross-size, cross-family, seed-robustness, pretrain-origin of the readout | 4 | |
 | Workspace localization (read-only J-lens diagnostic) | 4 (descriptive subsection) | Steering cells excluded |
