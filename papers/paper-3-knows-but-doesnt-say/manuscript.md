@@ -67,10 +67,14 @@ separable axes: a graded *doubt* axis (how known an item is) and a partially
 independent *caution* gate (the refuse/answer decision); raw cosine overstates
 their collinearity at −0.83, but held-out discriminability after orthogonalization
 shows a genuine caution-specific component (refuse/answer AUROC ≈ 0.80 after
-projecting out doubt). **(3)** We show behavior is *causally* steerable but
-*asymmetrically*: ablating the caution residual cuts over-refusal on known
-questions from 0.994 to 0.030 with clean specificity, yet no intervention we tried
-induces appropriate abstention on genuine unknowns. **(4)** We show the stated
+projecting out doubt). **(3)** We place the two axes in the program's anatomy: the
+doubt axis is the answerability separation itself, present untrained (0.997 on the
+raw base, 0.997+ on four pretrain-only bases), while caution is a construct of the
+trained model alone, unreadable on a base that never refuses; training does not
+create doubt, but it does create caution. A companion actuation study confirms the
+caution gate is causally real and one-way (ablation collapses over-refusal on
+known questions from 0.994 to 0.030, yet no intervention installs appropriate
+abstention on genuine unknowns). **(4)** We show the stated
 confidence gap survives seven training interventions (DPO, KTO, GRPO v1/v2/v3, and
 two contrastive-SFT variants), and we localize the mechanism with a clean
 single-variable dissociation: contrastive SFT installs stated calibration only when
@@ -110,19 +114,22 @@ Our contributions, each a section below:
   unknown questions at AUROC ≈ 0.997 and is calibrated to ECE ≈ 0.004 by a 1-D
   readout; the model's *stated* confidence on the same items ranks appropriateness
   at ≈ 0.52–0.56 and is near-constant. The over-refused-but-known items are
-  internally "known," so the failure is verbalization, not representation.
+  internally "known," so the failure is verbalization, not representation. The
+  axis is not created by our training: the same separation reads at 0.997
+  untrained on the raw base and at 0.997+ on four pretrain-only bases.
 - **The geometry (Section 5).** The internal signal decomposes into a graded
   *doubt* axis and a separable *caution* gate. We show why the naive measurement
   (raw cosine = −0.83, "they're the same axis") is wrong and the held-out
   orthogonalization measurement (caution-specific refuse/answer AUROC ≈ 0.80) is
   right, a methodological caution about cosine in high-dimensional activation
-  space.
-- **Steerability (Section 6).** Behavior is causally controllable along the
-  caution axis (ablation cuts over-refusal on known items 0.994 → 0.030 with
-  clean specificity), but the control is asymmetric: we can relax excess
-  caution, we
-  cannot install missing caution (no intervention induces abstention on true
-  unknowns).
+  space. Caution, unlike doubt, is a construct of the trained model alone: a base
+  that never refuses offers no refuse/answer contrast to read.
+- **Causal status, imported (Section 6).** A companion actuation study
+  establishes that the caution gate is causally real but asymmetric: ablating the
+  caution direction collapses over-refusal on known items (0.994 → 0.030) with
+  clean specificity, while no intervention tried there installs abstention on
+  true unknowns. Section 6 states that conclusion and what it licenses; the
+  actuation program itself is the companion paper's subject.
 - **Training resistance and a localizing dissociation (Section 7).** The stated-
   confidence gap survives DPO, KTO, GRPO v1/v2/v3, and contrastive SFT. A clean
   dissociation between answer-supervised and answer-masked contrastive SFT shows
@@ -150,8 +157,9 @@ A scope note before the results: this is a deep within-model mechanistic study o
 single model (Qwen3-4B) at a single seed. We are explicit throughout about which
 numbers are robust population reads (n ≈ 3369) and which are directional small-cell
 estimates, and Section 9 collects the threats to validity. The claims we stand
-behind are qualitative and large in magnitude (0.997 vs 0.52; 0.994 → 0.030); the
-claims we flag are the precise effect sizes.
+behind are qualitative and large in magnitude (0.997 vs 0.52; the
+answer-supervised → answer-masked direction flip); the claims we flag are the
+precise effect sizes.
 
 ## 2. Related work and positioning
 
@@ -194,9 +202,10 @@ sycophancy live in steerable internal subspaces [arXiv:2604.03147]. Closest to o
 result, refusal itself is mediated by a single causally steerable direction
 [arXiv:2406.11717] (though single-direction framings deserve caution
 [arXiv:2602.02132], and intervention conclusions are sensitive to methodological
-choices [arXiv:2309.16042]). We use steering
-as a causal probe of our two-axis decomposition and report a clean asymmetry that,
-to our knowledge, has not been isolated for the abstention behavior specifically.
+choices [arXiv:2309.16042]). The program uses steering as a causal probe of our
+two-axis decomposition in the companion actuation paper; Section 6 imports its
+conclusion, a clean asymmetry that, to our knowledge, has not been isolated for
+the abstention behavior specifically.
 
 **Abstention and preference training.** The program's training-regimen
 experiment
@@ -347,6 +356,20 @@ SFT→GRPO-DPO 0.9972, SFT→GRPO-v2 0.9971, all vs base 0.997 [c2_sft.json,
 c2_grpo_dpo.json, a1a2_h_lora.json]. Training does not damage or move the internal
 representation; it leaves the gap intact.
 
+**The doubt axis is the answerability readout, and it predates our training.** One
+identity, stated explicitly so the research program does not count a single signal
+twice: the doubt axis is the same known-versus-unknown separation that the
+two-signal readout paper
+([*It's What's on the Inside That Counts*](../paper-4-two-signal-readout/manuscript.md))
+deploys as its answerability gate, read here as graded confidence rather than as a
+binary gate. And the separation is not something our training created. The same
+known/unknown probe reads at 0.997 untrained on the raw Qwen3-4B base (no
+instruction tuning, no adapter) and at 0.997 or higher on four pretrain-only base
+models spanning families and eras, a registered pretraining-origin test whose
+falsifier fired on none of the four bases (Appendix A). We fit the axis on trained
+checkpoints because that is where this paper's questions live; the signal itself is
+a pretraining-origin property.
+
 ## 5. Result 2: The internal signal is two axes, graded doubt and a separable caution gate
 
 Reading "how known is this item" and "did the model refuse" as one axis would be
@@ -405,53 +428,49 @@ recovered independently from SFT, GRPO-DPO, and GRPO-v2 models points the same w
 0.857) and is approximately orthogonal to the knowledge axis within each model
 (|cos| ≈ 0.04–0.09) [caution_axis_transfer.json, c2_*.json]. Caution is a single,
 stable, knowledge-orthogonal internal mechanism, not an artifact of one training
-run.
+run. Each of those readings is fit on its own checkpoint's activations; no single
+common checkpoint carries all of them.
 
-## 6. Result 3: Behavior is causally steerable, but asymmetrically
+**Caution is a trained-checkpoint construct, and cannot be anything else.** The
+caution direction is defined by a refuse-versus-answer contrast among items the
+model knows, and that contrast only exists once a model over-refuses. The raw base
+never does: on the 1,233-question known/unknown surface of the base-model readout,
+it refused zero questions, so there is no base-model caution direction to fit, for
+this model or for any model that never abstains (Appendix A). The asymmetry
+between the two axes is therefore itself a finding about what abstention training
+adds. Training does not create doubt (the answerability separation is already at
+ceiling in the raw base and in pretrain-only bases, Section 4); it does create
+caution. Every caution number in this paper is a property of the trained,
+post-abstention checkpoints, and we make no base-model claim for the caution gate.
+
+The program has also examined a third candidate direction, a
+confabulation-propensity read (which unanswerable items draw a fabricated answer
+rather than a refusal, residualized against caution). It is checkpoint-specific to
+the program's most-trained checkpoint and is examined in the companion actuation
+paper ([*Readable Is Not Writable*](../paper-5-actuation/manuscript.md)), where
+writing along it does not causally convert confabulations into refusals; we
+therefore do not include it among this paper's internal-confidence signals.
+
+## 6. Result 3: The caution gate is causally real, and the leverage is one-way
 
 The two-axis decomposition makes a causal prediction: intervening on the caution
-gate should change the refuse/answer decision without changing what the model knows.
-It does, in one direction.
+gate should change the refuse/answer decision without changing what the model
+knows. Testing that prediction by steering is actuation work, and it belongs to
+the companion actuation paper
+([*Readable Is Not Writable*](../paper-5-actuation/manuscript.md)), which
+establishes the result this paper's argument needs: ablating the caution direction
+collapses over-refusal on known items from 0.994 to 0.030 with clean specificity,
+the doubt-orthogonalized component alone carries a large share of that effect, and
+no intervention tried there (including steering the knowledge axis directly)
+installs appropriate abstention on genuine unknowns. The leverage is one-way:
+excess caution can be relaxed; missing caution cannot be written in.
 
-**Relaxing excess caution works, with clean specificity.** Ablating the caution
-residual at L35 on known items (n = 541: 373 known-answered + 168 known-refused)
-drops refusal on the known-refused group from **0.994 to 0.030** and recovers 0.57
-correctness on those previously-refused items, while leaving known-answered behavior
-essentially untouched (refusal stays 0.0; correctness 1.0 → 0.979)
-[current_clean_grpo_v2_caution_residual_intervention/summary.json]. The doubt-
-orthogonalized component is *independently* load-bearing: ablating `caution_perp`
-alone drops known-refused refusal 0.994 → 0.524 and recovers 0.33 correctness, again
-with clean known-answered specificity
-[current_clean_grpo_v2_caution_perp_residual_intervention/summary.json]. The gate is
-not merely a re-reading of doubt.
-
-**It works during real generation, and it is directional.** A repair direction
-applied at L26 during generation (orthogonalized to both unknown-refusal and
-known-wrong directions; 96 pairs) reduces over-refusal-on-known monotonically with
-coefficient (e.g. 75% → 54.7% at coefficient 20) while leaving unknown-refusal at
-≈ 100% and inducing essentially no new wrong answers on knowns
-[current_clean_grpo_v2_l26_double_orthogonalized_panel_a_generation]. The effect is
-layer-specific (applying the same direction at L24/L25 repairs less) and signed:
-*subtracting* the direction reduces over-refusal (75% → 56.25%, truthful 48.96% →
-60.42% at coefficient 15) while *adding* it makes over-refusal worse (→ 85.94%)
-[current_clean_grpo_v2_known_overrefusal_generation_replay_96_coeff_sweep]. The cost
-at high coefficient is a few hallucinated answers on knowns.
-
-**Installing missing caution does not work.** Every intervention we tried leaves
-unknown-refusal pinned at ≈ 100% and answer-on-unknown ≈ 0%: we can dial caution
-down but not up where it is absent. Steering the *knowledge* axis directly (ITI over
-11 heads, n = 256) barely moves behavior at all: over-refusal-on-known only 33.6% →
-23.4% at the strongest setting, and answer-on-unknown stays ≈ 0% (max 0.78%)
-[current_clean_grpo_v2_knowledge_boundary_steer/summary.json]. The causal leverage
-on abstention lives on the caution axis, not the knowledge axis, and it is
-one-directional.
-
-**Reading.** The model's over-refusal is a mis-set threshold on a gate we can
-relax, which is why steering fixes it cheaply. Appropriate abstention on a true
-unknown would require *raising* the gate in the right place, which the same
-machinery does not deliver. This asymmetry matters for any deployment story that
-hopes to "steer in humility": the easy direction is reducing over-caution; the hard
-direction (the one humility actually needs on novel unknowns) is unsolved.
+Two consequences carry forward here. The causal dissociation confirms that the
+caution gate is a mechanism of its own and not a re-reading of doubt, closing
+Section 5's reading-side case from the intervention side. And the asymmetry frames
+Section 7: if inference-time control can relax over-caution but cannot install the
+abstention humility actually needs on novel unknowns, the remaining lever is
+training, and Section 7 reports what training does and does not deliver.
 
 ## 7. Result 4: Training does not close the stated-confidence gap, and a dissociation shows why
 
@@ -806,7 +825,8 @@ true opinions without the tether; our seven interventions are attempts to instal
 the tether, and they fail.
 
 **Why the stated channel is the stubborn one.** The internal axis survives training
-untouched (Section 4) and behavior is cheaply steerable (Section 6), yet the stated
+untouched (Section 4) and behavior is cheaply steerable (Section 6, established in
+the companion actuation paper), yet the stated
 scalar resists every objective we tried. The dissociation explains why: outcome and
 preference rewards (DPO/KTO/GRPO) move behavior and leave the scalar collapsed
 because the scalar is a tiny part of the supervised signal; the one objective that
@@ -896,12 +916,13 @@ that teaching better behavior will produce better-calibrated confidence. Here th
 are dissociable, and the confidence channel needs its own, internally-anchored
 supervision. It also tempers the "steer in humility at inference" hope: the easy
 steering direction (less over-caution) is the opposite of what novel unknowns
-require (more caution), and we could not install the hard direction.
+require (more caution), and the companion actuation study could not install the
+hard direction.
 
 ## 9. Limitations
 
 - **Single seed, single model.** Every number is seed 1 on Qwen3-4B. The large
-  qualitative contrasts (0.997 vs 0.52; 0.994 → 0.030; the answer-supervised →
+  qualitative contrasts (0.997 vs 0.52; the answer-supervised →
   answer-masked direction flip) are
   unlikely to be seed noise, but the precise effect sizes are single-seed estimates
   and the whole pattern needs replication across seeds and at least one other model
@@ -924,12 +945,14 @@ require (more caution), and we could not install the hard direction.
 - **Probe could read outcome leakage.** The internal axis is fit on activations; we
   control for lexical baselines and fit the readout without correct/wrong leakage,
   but probe-based "knowledge" claims always carry the risk that the probe reads a
-  correlate. The causal steering results (Section 6) partly mitigate this for the
+  correlate. The causal steering results summarized in Section 6 (from the
+  companion actuation paper) partly mitigate this for the
   caution axis but not for the doubt axis.
-- **Steering is single-site / few-layer.** The interventions are at L35 (ablation)
-  and L26 (generation); we did not exhaustively search layers or multi-site
-  combinations, so "cannot install caution" is a statement about the interventions
-  tried, not a proof of impossibility.
+- **The imported steering evidence is single-site / few-layer.** The causal
+  results Section 6 summarizes come from the companion actuation paper and rest
+  on interventions at a small number of sites and layers, so "cannot install
+  caution" is a statement about the interventions tried there, not a proof of
+  impossibility.
 - **The SFT→RL confidence/action result is single-seed and exploratory.** The
   GRPO-v3-on-answer-supervised cell (Section 7, Table 2) is one seed of one exploratory amendment,
   reported separately from the locked matrix; the confidence/action decoupling
@@ -954,7 +977,8 @@ require (more caution), and we could not install the hard direction.
 ## 10. Conclusion
 
 In one small instruction-tuned model, epistemic humility is three things that do not
-agree: a calibrated internal estimate of what the model knows, a behavior that can
+agree: a calibrated internal estimate of what the model knows, a behavior that a
+companion actuation study shows can
 be cheaply steered down (but not up) along a separable caution gate, and a stated
 confidence number that tracks neither and resists every training objective we tried
 to fix it with. The decisive evidence is a single-variable dissociation: contrastive
@@ -1057,7 +1081,8 @@ protocol document and scored artifact:
 | Paper section | Internal label | Protocol / notes | Primary artifacts |
 |---|---|---|---|
 | §4 internal-vs-stated gap; like-for-like on the GRPO-v2 checkpoint (Fig. 2) | probe program (Amendments L/M lineage; caution-vs-doubt note); session 20260627T093723Z | `archive/notes/experiments/caution-vs-doubt-knowledge-gate.md`; `docs/sessions/20260627T093723Z-caution-vs-doubt-knowledge-gate.md` checkpoints 002–004 | `experiments/selfaware-latent-knowledge-controls/artifacts/latent_knowledge_controls/` (`a3_h_base_probe.json`, `c2_*.json`, `a1a2_h_lora.json`); `archive/experiment/phase1/eval/analysis/calibration_gap_clean_sft_grpo_v2_seed1.json` (`B_internal_vs_emitted`: internal AUROC 0.972 vs emitted 0.637) |
-| §5–6 geometry and steering | probe program | `archive/experiment/phase1/probe/paper3_section5_geometry.py`; `caution_direction_L35.json`; `caution_perp_direction_L35.json` | `archive/experiment/phase1/probe/analysis/current_clean_grpo_v2_*` (interventions, coefficient sweeps, generation panels) |
+| §5–6 geometry; §6 imported steering summary (companion actuation paper) | probe program | `archive/experiment/phase1/probe/paper3_section5_geometry.py`; `caution_direction_L35.json`; `caution_perp_direction_L35.json` | `archive/experiment/phase1/probe/analysis/current_clean_grpo_v2_*` (interventions, coefficient sweeps, generation panels; reported as results of the companion actuation paper) |
+| §4 doubt-axis origin (raw base 0.997); §5 caution unreadable on base (0 refusals in 1,233) | Amendment W | `experiments/base-model-training-free-mechanism/AMENDMENT.md` §7 | `papers/paper-4-two-signal-readout/analysis/source-artifacts/probe/amendment_w_base_model_result.json` |
 | §5 knowledge-subspace erasure (LEACE) | Amendment AJ | `experiments/knowledge-subspace-erasure/AMENDMENT.md`; `archive/experiment/phase1/probe/amendments/amendment_aj_subspace_erasure.py`; `amendment_aj_addendum_gap_distribution.py` | `archive/experiment/phase1/probe/analysis/amendment_aj_subspace_erasure/` (`result.json`, `addendum_a1_gap_distribution.json`) |
 | §7 interventions 1–2 (DPO/KTO stated-confidence contract) | Amendment B | `experiments/stated-confidence-grpo/AMENDMENT.md` | `papers/paper-2-training-regimen/analysis/amendment_b_confidence_alignment_by_outcome.csv` |
 | §7 interventions 3–4 (GRPO v1/v2 collapse + incentive analysis) | Amendment E cells; Amendment J diagnostics / session 0026 | `experiments/grpo-v3-proper-scoring-confidence/RUNBOOK.md` | `archive/experiment/phase1/eval/analysis/calibration_gap_clean_sft_grpo_v2_seed1.json` |
@@ -1065,7 +1090,7 @@ protocol document and scored artifact:
 | §7 interventions 6–7 (contrastive SFT, answer-supervised / answer-masked) | Amendments K and L | `experiments/contrastive-sft-behavior-conditional-confidence/AMENDMENT.md`; `experiments/answer-subspan-masked-contrastive-sft/AMENDMENT.md` | `calibration_gap_contrastive_sft_seed1.json`; `calibration_gap_contrastive_masked_sft_seed1.json`; `results_amendment_k_*`; `results_amendment_l_*` |
 | §7 RL-on-calibrated-base follow-on, incl. the β 0.10 → 0.05 falsifier re-run (Table 2, Figs. 4–6; Fig. 7 spans arms) | Amendment N (incl. β 0.05 arm) | `experiments/grpo-v3-on-contrastive-sft-base/AMENDMENT.md` (results tables §7) | result tables embedded in the amendment document; `results_amendment_n_*`; run records under `archive/experiment/phase1/run_records/` |
 | §7 probe-axis distillation mirror (Table 3) | Amendment M, Revision 3 | `experiments/quantile-balanced-probe-distilled-sft/AMENDMENT.md` | `results_amendment_m_*_probe_factual_sft_seed1_merged_full_4b` |
-| §8 "paid for by pretraining" (signal present in pretrain-only base weights, 4/4 bases) | Amendment Y | `experiments/pretrain-only-base-readout/AMENDMENT.md` (SUPPORTED 4/4) | `archive/experiment/phase1/probe/amendment_y_results/` |
+| §4 pretraining-origin test (four pretrain-only bases at 0.997+); §8 "paid for by pretraining" | Amendment Y | `experiments/pretrain-only-base-readout/AMENDMENT.md` (SUPPORTED 4/4) | `archive/experiment/phase1/probe/amendment_y_results/` |
 
 Governance notes: Amendments B/E/J/K/L/M/N are exploratory single-seed evidence
 cells with pre-stated predictions and falsifiers, reported here as exploratory
