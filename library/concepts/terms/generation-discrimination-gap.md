@@ -45,7 +45,7 @@ between a model's internal uncertainty representation and its
 **Lineage:** introduced by Saunders et al. as the G-D gap and given a concrete
 probe-versus-generation measurement by [[inference-time-intervention]].
 
-**Phase 3 in-house evidence (regimen-robust):** the
+**mechanism program in-house evidence (regimen-robust):** the
 [[mech-interp-model-variation-panel]] program reproduces the gap in the
 calibrated-epistemic-humility setting and shows it survives method variation.
 Across five fine-tuning regimens (SFT-DPO-GRPO, SFT-KTO-GRPO, GRPO v2, GRPO-DPO,

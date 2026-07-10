@@ -50,7 +50,7 @@ reliable generators themselves. This asymmetry is a favorable property for abste
 training: at scale, a model capable of identifying its own errors may be teachable to
 express appropriate uncertainty rather than hallucinate confidently.
 
-**Why it matters here:** For Phase 3 mech-interp, this mechanism predicts that the
+**Why it matters here:** For mechinterp, this mechanism predicts that the
 internal representations encoding answer correctness should be more separable at larger
 scale, making probing easier and activation steering more reliable. For Phase 1,
 it motivates comparing SFT/DPO/KTO abstention improvement against the pretrained

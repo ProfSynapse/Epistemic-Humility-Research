@@ -65,6 +65,6 @@ relationships:
 
 A two-stage training framework that calibrates verbalized confidence statements in long-form LM outputs by (1) summary distillation SFT to bootstrap confidence expression, followed by (2) PPO with a log-likelihood proper scoring rule reward computed by a neural-net surrogate forecaster conditioned on the model's generated context. An LM is linguistically calibrated if its generations enable downstream users to make calibrated probabilistic forecasts on related decision tasks.
 
-**Why it matters here:** Provides a principled end-to-end objective for training LMs to express graded, calibrated confidence in natural-language paragraphs rather than short answers. Directly relevant to Phase 1 as a calibration-first alternative to binary-reward factuality RL (Factuality RL), and to Phase 3 as a case where the training signal lives in forecast-space rather than output-correctness-space.
+**Why it matters here:** Provides a principled end-to-end objective for training LMs to express graded, calibrated confidence in natural-language paragraphs rather than short answers. Directly relevant to Phase 1 as a calibration-first alternative to binary-reward factuality RL (Factuality RL), and to mechanism program as a case where the training signal lives in forecast-space rather than output-correctness-space.
 
 **Lineage:** proposed by Band et al. (2024); builds on proximal-policy-optimization, supervised-finetuning, and summary-distillation; evaluated on triviaqa, jeopardy-qa, factscore

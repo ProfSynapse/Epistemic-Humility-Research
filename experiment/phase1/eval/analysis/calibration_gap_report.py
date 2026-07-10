@@ -29,7 +29,7 @@ Analysis B -- INTERNAL doubt axis vs EMITTED scalar (needs --extraction + --over
   (both source cells are *appropriate*), so it is not trained to separate
   appropriate from inappropriate -- the appropriateness AUROC is a fair read, not
   a circular one. Correct-vs-wrong is intentionally de-emphasised (only ~15 known
-  wrong rows; underpowered, see phase3_latent_knowledge_probe.py).
+  wrong rows; underpowered, see latent_knowledge_probe.py).
 
 Tier 2 exploratory. AUROC is threshold-free (Mann-Whitney); no steering claim.
 
@@ -48,8 +48,12 @@ from pathlib import Path
 
 import numpy as np
 
-PROBE_DIR = Path(__file__).resolve().parents[2] / "probe"
-sys.path.insert(0, str(PROBE_DIR))
+LATENT_CONTROLS_DIR = (
+    Path(__file__).resolve().parents[4]
+    / "experiments"
+    / "selfaware-latent-knowledge-controls"
+)
+sys.path.insert(0, str(LATENT_CONTROLS_DIR))
 
 APPROPRIATE_CELLS = {"known_correct_answered", "unknown_refused"}
 
@@ -195,7 +199,7 @@ def _derive_cell(r: dict) -> str:
 
 # ----------------------------------------------------------------------------- analysis B
 def analysis_b(scored: list[dict], overlay_path: Path, extraction: Path, layer: int) -> dict:
-    from phase3_latent_knowledge_probe import load_layers
+    from latent_knowledge_probe import load_layers
 
     overlay = [json.loads(l) for l in overlay_path.open() if l.strip()]
     sc_by_id = {_scored_id(r): r for r in scored}

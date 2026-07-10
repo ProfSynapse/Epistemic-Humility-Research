@@ -20,7 +20,7 @@ models:
 - clean-sft-grpo-v2-seed1
 metrics:
 - auroc
-provenance: 'Internal amendment (Tier-2 exploratory local mechanism evidence under PHASE3-control-system-protocol.md, RQ4 Stage 1). Source of truth: experiments/doubt-regulated-caution/AMENDMENT.md. Checkpoint: clean-SFT -> GRPO-v2 seed1. Rows: frozen behavior overlay analysis/current_selfaware_behavior_rows/clean_sft_grpo_v2/rows.jsonl, cells known_refused (n=168), known_correct_answered (n=373), unknown_refused (n=676), 4868 units across 4 arms. Analysis: analyze_ac_doubt_coupled.py, paired row-level bootstrap, 10k resamples, seed 20260703.'
+provenance: 'Internal amendment (Tier-2 exploratory local mechanism evidence under mechinterp-control-system-protocol.md, RQ4 Stage 1). Source of truth: experiments/doubt-regulated-caution/AMENDMENT.md. Checkpoint: clean-SFT -> GRPO-v2 seed1. Rows: frozen behavior overlay analysis/current_selfaware_behavior_rows/clean_sft_grpo_v2/rows.jsonl, cells known_refused (n=168), known_correct_answered (n=373), unknown_refused (n=676), 4868 units across 4 arms. Analysis: analyze_ac_doubt_coupled.py, paired row-level bootstrap, 10k resamples, seed 20260703.'
 related:
 - '[[doubt-regulated-caution-coupling-actuates-selective-refusal-release]]'
 - '[[caution-residual-ablation-relaxes-overrefusal-asymmetrically]]'

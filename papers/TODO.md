@@ -15,7 +15,7 @@ Created: 2026-06-18
   signed v0.4 protocol explicitly supersedes the matrix.
 - [ ] Keep Amendment B stated-confidence results labeled as prompt-contract
   evidence, not as plain-answer replacement evidence.
-- [ ] Keep Phase 3 hidden-state and causal-pilot evidence labeled exploratory
+- [ ] Keep mechanism program hidden-state and causal-pilot evidence labeled exploratory
   unless a later signed protocol promotes it.
 
 ## Provenance Reconciliation

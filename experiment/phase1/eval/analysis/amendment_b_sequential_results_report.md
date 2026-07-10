@@ -122,7 +122,7 @@ Likely result framing:
    earlier plain-answer evidence in one consolidated table.
 2. Add OOD sequential evals only after deciding whether the next priority is
    broader behavioral confirmation, 8B scale, or mechanism work.
-3. Use existing Phase 3 hidden-state diagnostics to test whether SFT-created
+3. Use existing mechinterp hidden-state diagnostics to test whether SFT-created
    separability is preserved, weakened, or reshaped by sequential DPO/KTO.
 4. Preserve exact provenance for any paper claim by pointing to the result
    directory, config, and session checkpoint that produced it.

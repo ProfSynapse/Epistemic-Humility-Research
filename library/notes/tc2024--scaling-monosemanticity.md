@@ -87,7 +87,7 @@ mechanisms: ["[[sae-scale-increases-feature-coverage]]", "[[feature-activation-c
 
 ## Relevance to experiment
 
-<!-- mech-interp of features/superposition; Phase 3 probing context -->
+<!-- mech-interp of features/superposition; mechanism program probing context -->
 
 ## Claims
 
