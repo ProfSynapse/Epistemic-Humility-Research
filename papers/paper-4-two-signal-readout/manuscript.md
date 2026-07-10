@@ -45,8 +45,12 @@ individual cells still dip below the bar. We report this as a co-headline: **a s
 sense of "can I answer this?" and "is this answer right?" is a universal, readable property
 of the representation; its ability to distrust its own confident fabrications is present
 across families but decode- and seed-sensitive, and it must be reported with seed spread
-and validated per model.** We give the descriptive mechanism (the correct-vs-hallucination
-gap in the dial distribution) that predicts where it is strong. **(4) It predates
+and validated per model.** A pre-registered construct decomposition qualifies what that
+veto reads: controlled for answer length and question answerability, its content-trust
+core is AUROC 0.737 (CI [0.650, 0.815]); the larger headline contrasts also carry the
+question's answerability into the post-answer read. We give the descriptive mechanism
+(the correct-vs-hallucination gap in the dial distribution) that predicts where it is
+strong. **(4) It predates
 post-training entirely:** a pre-registered contrast on four *pre-instruction* bases
 (Qwen3.5, Gemma, Llama-3.2, Olmo-3) finds every readout already present (gate 0.997+, dial
 0.82–0.87, veto passing on all four at 0.67–0.87), and the one clean base→instruct pair
@@ -223,7 +227,7 @@ answerability readout specifically. Tracking the known-vs-unknown direction acro
 four training stages in a shared basis (raw base, clean-SFT, GRPO-v2, GRPO-par-true),
 the readout is already at full strength in the raw base (mid-to-late CV AUROC mean
 0.951) and no stage sharpens it (clean-SFT 0.922, GRPO-v2 0.923, GRPO-par-true 0.926),
-consistent with the training-free reading in §4.5. The direction, however, rotates
+consistent with the training-free reading in §4.6. The direction, however, rotates
 once and near-orthogonally at instruction SFT (raw-to-clean-SFT cosine falling to
 0.06-0.25 across mid and late layers) and is then ridden almost unchanged by both
 GRPO variants (clean-SFT-to-GRPO-v2 cosine 0.91-0.997). The per-checkpoint refit is
@@ -253,7 +257,65 @@ is exactly the one the dial pushes to the bottom.
 Figure 2 shows the mechanism directly: the dial-mean of the hallucination group sits far
 below the correct group, and the size of that separation is what the veto AUROC measures.
 
-### 4.4 The two axes are orthogonal: a pipeline, not a fused scalar
+### 4.4 What the veto is made of: two nuisances and a content core
+
+What does the veto read when it pushes a confabulation to the bottom? The headline
+contrasts above cannot say: they compare correct answers against confabulations on
+unanswerable questions, so any signal that differs between those groups (the answer's
+content, the answer's length, the question's answerability) is available to the probe.
+Two follow-up experiments, both resolved after the results above and both adversarially
+audited before their verdicts were recorded, decompose the veto. They change how the
+veto numbers in this paper should be read.
+
+The first (`residual-catch-veto-coverage`, exploratory, single seed) asked whether a
+veto refit on the raw base's own generation surface catches the confabulations that
+slip the answerability gate. Its two locked gates passed exactly as registered:
+out-of-fold veto AUROC 0.917 (CI [0.854, 0.963]) separating the 43-row gate-miss
+residual from 88 good answers, permutation p = 0.001. The PI and the orchestrator both
+predicted those passes, and both were right. The adversarial audit, triggered before
+the result was recorded because the margin looked too good, found what neither
+predictor had foreseen: an undisclosed answer-length confound. The residual
+confabulations are long rambles (median 94 answer tokens, 47% truncated at the
+96-token cap) and the good answers are short facts (median 24), and the probe reads
+the hidden state at the last answer token, whose position encodes length. Answer
+length alone separates the same groups at AUROC 0.943, higher than the veto itself.
+The gates passed and the coverage claim was still not established. A gate can only
+defend a claim someone thought to register.
+
+The second (`ap-veto-length-balanced-confirmatory`) was the pre-registered fix: a
+fresh 192-token generation (truncation zero on the matched set), 1:1 caliper matching
+on answer length, and a locked precondition that the matched set's length-only AUROC
+sit at chance. All three gates passed: length-only 0.492, veto 0.862 (CI [0.802,
+0.915]), margin over length +0.370 (CI [0.262, 0.476]). Then the second audit found a
+second nuisance: answerability. 37% of the matched hallucination rows were
+confabulations on unanswerable questions, and on those rows the veto separates at
+roughly 0.99, because the post-generation state still carries the question's
+answerability (the gate's own axis). The clean slice, wrong answers on answerable
+questions versus correct answers on answerable questions (65 length-matched pairs,
+both classes answerable, same pipeline), isolates the content signal: veto AUROC
+**0.737** (CI [0.650, 0.815]), margin over both nuisances **+0.244** (CI [0.120,
+0.367], excludes zero). That controlled number still clears the experiment's own
+locked gates, so the binary confirmation is robust; only the magnitude was confounded.
+The registered verdict is explicit: the inflated headline must not be cited as the
+content-trust characteristic. The honest content number is about 0.74.
+
+What this means for the numbers above. Every headline veto contrast in this paper
+(0.980 on the deployed checkpoint, 0.754 on the raw base, the cross-family and
+seed-robustness columns below) compares correct answers against confabulations on
+unanswerable questions, and the within-SelfAware control shares that structure, so
+carried answerability is uncontrolled in all of them. The decomposition does not
+invalidate those numbers; it says what they are made of: a content-trust core of
+about 0.74 plus a carried answerability signal that is nearly separable on
+unanswerable-question confabs. For deployment the blend is acceptable and even
+useful: flagging a confabulation because its question was unanswerable still flags
+it, and the veto's job is to back up a gate that has already missed. For construct
+interpretation the blend matters: the dial's low trust on confabulations is not
+purely a read of the produced answer. Both experiments are exploratory, single-seed,
+on the raw Qwen3-4B base under an abstention-affording prompt surface (a different
+surface from the answer-encouraging one in §§4.2 to 4.3), and are never pooled with
+the numbers above.
+
+### 4.5 The two axes are orthogonal: a pipeline, not a fused scalar
 
 Gate (answerability, at the anchor) and dial (correctness, post-generation) are separable
 axes. When we fuse the two scalars into a single combined trust number, correctness ranking
@@ -265,9 +327,10 @@ than one score (Figure 6):
   threshold, abstain ("I don't know") and stop.
 - **Stage 2: Dial + veto.** For questions that pass the gate, generate the answer, then read
   the correctness dial at the post-answer token and surface it as the trust number.
-  Confident confabulations that slipped the gate are caught here as lowest-trust.
+  Confident confabulations that slipped the gate tend to land at the bottom of the dial,
+  partly on answer content and partly on carried answerability (§4.4).
 
-### 4.5 The whole mechanism is training-free: training *sharpens*, it does not *create*
+### 4.6 The whole mechanism is training-free: training *sharpens*, it does not *create*
 
 Every result above reproduces on the **raw** Qwen3-4B instruction-tuned base, with no
 adapter and no abstention training of ours: gate **0.997**, dial **0.834**, veto **0.754**.
@@ -283,12 +346,12 @@ We scope "training-free" precisely: the raw base is the *instruction-tuned* rele
 "training-free" means "no abstention fine-tuning and no reinforcement learning of ours,"
 **not** "no training ever." At the time this section's numbers were produced, the
 answerability axis could in principle have been a product of upstream instruction tuning;
-§4.9's pre-registered pretrain-only contrast closes that question directly: read on
+§4.10's pre-registered pretrain-only contrast closes that question directly: read on
 *pre-instruction* bases, the axis is already there. The claim here is narrower and stands on
 its own: *our* training regimen (the one the companion paper shows cannot close the
 verbalization gap) is not what puts the readable signal there.
 
-### 4.6 The readout is size-robust (1.7B–14B)
+### 4.7 The readout is size-robust (1.7B–14B)
 
 Across the Qwen3 family at 1.7B, 4B, 8B, and 14B, the training-free readout passes all three
 gates at every size. The gate stays saturated (~0.997) throughout. The veto, however, does
@@ -298,7 +361,7 @@ is not supported, an observation we flagged as descriptive in advance and did no
 to a claim. The veto being the axis that wobbles with scale is the first sign that it, and
 not the gate or dial, is the fragile part of the mechanism (Figure 3, left).
 
-### 4.7 Cross-family: the gate and dial are universal; the veto is model-dependent
+### 4.8 Cross-family: the gate and dial are universal; the veto is model-dependent
 
 We pre-registered a cross-family confirmatory on four independent families read
 training-free (Llama-3.2-3B, Ministral-3-3B, Qwen3.5-4B, Gemma-4-E4B), with SUCCESS defined
@@ -344,7 +407,7 @@ Ordering families by the dial-mean gap (Gemma 0.504 > Mistral 0.327 > Qwen3.5 0.
 because the veto AUROC depends on the full distribution overlap, not the mean gap alone. We
 therefore read the gap as a *directional* predictor, not a strict rank. The stable
 conclusion stands: **gate + dial are family-general (4/4); the veto replicates (3/4 under
-this single greedy decode) and is the fragile axis**, though §4.8 shows the two greedy
+this single greedy decode) and is the fragile axis**, though §4.9 shows the two greedy
 misses are largely decode artifacts: under sampled decoding the veto passes seed-stably on
 all four families.
 
@@ -374,9 +437,9 @@ already-reported Amendment Z surfaces: no new claim and no gate rests on it.
 > unembedding. Descriptive only, from the Amendment Z `auroc_surface` blocks.
 > (`fig-p3-07-depth-profile.png`)
 
-### 4.8 Seed-robustness: the greedy veto misses were decode artifacts
+### 4.9 Seed-robustness: the greedy veto misses were decode artifacts
 
-Every number in §4.7 comes from a single deterministic decode (greedy). A deployment
+Every number in §4.8 comes from a single deterministic decode (greedy). A deployment
 samples. We therefore pre-registered a seed-robustness confirmatory: the identical
 training-free readout on the same four families under **sampled decoding** (temperature 0.7,
 top-p 0.9) across **three seeds**, with the same per-cell gates and adequacy floors. The
@@ -388,7 +451,7 @@ families, the veto seed-stable on ≥3/4, and the per-seed veto majority never d
 
 **Table 2. Sampled-decode seed-robustness (AUROC per seed; mean [min–max] across 3 seeds).**
 
-| Model | Dial (3 seeds) | Veto (3 seeds) | Veto seed-stable? | Greedy veto (§4.7) |
+| Model | Dial (3 seeds) | Veto (3 seeds) | Veto seed-stable? | Greedy veto (§4.8) |
 |---|---|---|---|---|
 | Llama-3.2-3B | 0.848 [0.827–0.865], 3/3 pass | **0.739 [0.684–0.801], 3/3 pass** | **YES** | 0.633 (FAIL) |
 | Ministral-3-3B | 0.806 [0.799–0.812], 3/3 pass | 0.681 [0.606–0.742], 2/3 pass | **YES** | 0.733 (pass) |
@@ -396,9 +459,9 @@ families, the veto seed-stable on ≥3/4, and the per-seed veto majority never d
 | Gemma-4-E4B | 0.817 [0.802–0.839], 3/3 pass | **0.742 [0.718–0.762], 3/3 pass** | **YES** | 0.871 (pass) |
 
 **The two greedy veto misses flip to passes under sampling.** Llama, the one clean veto
-*failure* in §4.7 (0.633), passes on **all three seeds** under sampled decoding (0.684–
+*failure* in §4.8 (0.633), passes on **all three seeds** under sampled decoding (0.684–
 0.801). Qwen3.5, the marginal pass whose CI dipped below the bar, passes all three seeds
-cleanly. The §4.7 "fragile veto" split is therefore partly a *decode* artifact, not purely a
+cleanly. The §4.8 "fragile veto" split is therefore partly a *decode* artifact, not purely a
 model property: a single greedy trajectory produces one specific set of confabulations, and
 Llama's greedy confabulations happened to read as trustworthy; its sampled ones do not.
 Single-decode point estimates *understated* the veto.
@@ -424,12 +487,12 @@ not fire: Ministral is the only status-flipping family. The Table 1 magnitudes a
 promoted from "single greedy decode" to **seed-robust under sampled decoding**
 (pre-registration and per-cell provenance: `AMENDMENT-SR-sampled-decode-seed-robustness.md`).
 
-### 4.9 The signal predates post-training: pretrain-only bases and an era ladder
+### 4.10 The signal predates post-training: pretrain-only bases and an era ladder
 
-Every base so far (including every "raw" base in §§4.5–4.8) is a vendor *post-trained*
+Every base so far (including every "raw" base in §§4.6–4.9) is a vendor *post-trained*
 instruct release, so all of the above is compatible with the signal being installed by
 instruction tuning. We pre-registered the contrast that separates the hypotheses: the
-identical three-signal readout on four **pre-instruction** bases matched to the §4.7
+identical three-signal readout on four **pre-instruction** bases matched to the §4.8
 families (Qwen3.5-4B-Base, Gemma-4-E4B-pt, Llama-3.2-3B, Olmo-3-7B), with the primary
 hypothesis (H1) that the answerability gate is already present before any post-training,
 and the falsifier that a base reads < 0.75 while its instruct sibling reads ≥ 0.95. Base
@@ -456,14 +519,14 @@ it is already in the pretrained representation, and instruction tuning at most r
 base→instruct pair read under a single pipeline (Olmo-3, same seed, scorer, and render
 class) moves the veto **0.803 → 0.731** and the within-SelfAware control 0.791 → 0.674;
 the render-confounded cross-run pairs sit at or below their bases too. This resolves the
-tension with §4.5's "training sharpens" result: what sharpened the Qwen3-4B veto
+tension with §4.6's "training sharpens" result: what sharpened the Qwen3-4B veto
 (0.754 → 0.980) was *targeted abstention training*, not post-training per se. Generic
 vendor post-training adds nothing to any of the three axes and moved the fragile one the
-wrong way, consistent with §4.6's non-monotonic scale result.
+wrong way, consistent with §4.7's non-monotonic scale result.
 
 **Part of the veto's fragility is the prompt surface, not the model.** The dual-render
 control shows Qwen3.5-Base's veto is render-sensitive (k-shot 0.666 vs chat-render 0.867)
-while its gate is render-invariant (0.998 under both). Per-model veto validation (§4.7's
+while its gate is render-invariant (0.998 under both). Per-model veto validation (§4.8's
 practitioner rule) should therefore fix the render before comparing numbers.
 
 **An era ladder, strictly descriptive.** Read the same panel down a ladder of historical
@@ -495,13 +558,21 @@ mechanism with no fine-tuning:
 2. **Dial (post-generation).** For gated-through questions, generate, then read the
    correctness axis at the post-answer token and surface it as a *ranked* trust number.
 3. **Veto (within the dial).** Confident confabulations that pass the gate are pushed to
-   the bottom of the dial. The veto passes seed-stably on all four families under sampled
-   decoding (§4.8), but it is the high-variance axis (individual decodes/seeds can dip
-   below the bar), so validate it per model and per decode configuration before relying on
-   the dial's confabulation-catching; the gate remains the primary defense.
+   the bottom of the dial. Two qualifications, both from pre-registered follow-ups. First,
+   the veto is the high-variance axis: it passes seed-stably on all four families under
+   sampled decoding (§4.9), but individual decodes and seeds can dip below the bar, so
+   validate it per model and per decode configuration and report it with seed spread; the
+   gate remains the primary defense. Second, the veto is a blend, not a pure content read
+   (§4.4): controlled for answer length and question answerability, its content core is
+   about 0.74, and the rest of the headline separation is carried answerability. In a
+   pipeline that is acceptable: the veto's job is to catch what the gate missed, and
+   catching a confabulation by re-reading the question's answerability after generation
+   still catches it. But do not expect ~0.98 discrimination on confabulations whose
+   questions read cleanly answerable, and do not read the dial score on a flagged answer
+   as a calibrated content probability (§4.2).
 
 Two engineering notes fall out of the results. Keep the axes *separate*: fusing them costs
-correctness ranking (§4.4). And *refit the dial per checkpoint*: the correctness direction
+correctness ranking (§4.5). And *refit the dial per checkpoint*: the correctness direction
 drifts under training (cold transfer 0.679, §4.2) even though the axis persists. The gate,
 by contrast, transports well and is cheap to install anywhere.
 
@@ -518,8 +589,9 @@ useful part of epistemic humility for a small model (a thresholdable "should I a
 how much should you trust this?") is available from a frozen model with a linear probe.
 
 **What training is for.** Our training is not wasted, but its role is narrow and specific: it
-*sharpens the veto* (0.754 → 0.980) and installs autonomous behavioral abstention. It does
-not create the gate, the dial, or the veto, and §4.9 sharpens the negative half further:
+*sharpens the veto* (0.754 → 0.980, a contrast that includes carried answerability; the
+controlled content core is smaller, §4.4) and installs autonomous behavioral abstention. It does
+not create the gate, the dial, or the veto, and §4.10 sharpens the negative half further:
 the signal predates not just our training but *any* post-training (gate 0.997+ on four
 pre-instruction bases), and generic vendor post-training does not sharpen the readout either
 (the clean Olmo-3 base→instruct pair moves the veto 0.803 → 0.731). Sharpening is a property
@@ -533,13 +605,15 @@ but weak on some models out of the box.
 split. "Can I answer this?" and "is this answer right?" are readable across four families
 and four sizes; they look like general properties of instruction-tuned small LMs. "Can I
 distrust my own confident fabrication?" is present across the same families (seed-stable
-4/4 under sampled decoding, §4.8) but far noisier: strong on Gemma, decode- and
+4/4 under sampled decoding, §4.9) but far noisier: strong on Gemma, decode- and
 seed-sensitive elsewhere (Llama's greedy failure flipped to three sampled passes), and
-non-monotonic in scale. This is an actionable map for practitioners (the gate is safe to
-rely on anywhere; the veto must be validated per model and reported with seed spread) and a
-pointed question for future mechanistic work (why do some models' confabulations read as
-low-trust to their own correctness axis on any decode, while others' depend on which
-confabulation the decoder happens to produce?).
+non-monotonic in scale. And the construct decomposition (§4.4) says what the fragile
+capability is made of: a content-trust core of about 0.74 plus carried answerability. This
+is an actionable map for practitioners (the gate is safe to rely on anywhere; the veto must
+be validated per model and reported with seed spread) and a pointed question for future
+mechanistic work (why do some models' confabulations read as low-trust to their own
+correctness axis on any decode, while others' depend on which confabulation the decoder
+happens to produce?).
 
 **Why not just steer?** The companion diagnosis found the answerability axis is causally
 steerable, but *asymmetrically*: excess caution can be relaxed, missing caution cannot be
@@ -555,26 +629,31 @@ writing missing caution into the model is not. Turning the readout around into a
 We state these plainly; several are the reason specific claims are scoped as they are.
 
 1. **Seed coverage is partial.** The pre-registered three-seed sampled-decoding
-   replication (§4.8) makes the *cross-family* dial and veto magnitudes seed-robust, and
+   replication (§4.9) makes the *cross-family* dial and veto magnitudes seed-robust, and
    quantifies their spread. The core Qwen3-4B deep-dive numbers (dial 0.834, veto deltas,
    the +0.065 post-beats-pre gain) remain seed 1: the near-saturated effects (gate 0.997)
-   are low seed-risk, and §4.8's spread measurements bound how much the seed-sensitive
+   are low seed-risk, and §4.9's spread measurements bound how much the seed-sensitive
    axes move, but a multi-seed pass on the deep-dive checkpoint itself has not been run.
 2. **Base-model reads are render-sensitive, and the text baseline is high.** The original
    scoping worry (that the axes might reflect upstream instruction tuning) is closed by
-   §4.9 (gate 0.997+ on four pre-instruction bases). What remains: base-model veto numbers
+   §4.10 (gate 0.997+ on four pre-instruction bases). What remains: base-model veto numbers
    depend on the prompt render (k-shot vs chat, 0.666 vs 0.867 on Qwen3.5-Base), and a
    question-surface TF-IDF baseline reads the gate pool at 0.964, so margins over that
    baseline, not raw AUROCs, are the honest effect sizes for the gate.
 3. **The dial ranks, it does not calibrate.** ECE 0.151. We claim a *ranked* trust number,
    not a stated probability; a probability deliverable would need a downstream calibration map.
-4. **Structural hallucination label.** "unanswerable question ∧ model answered =
-   hallucination" is structural, not human-graded. A graded audit of a sample would harden the
-   veto's construct validity.
-5. **Cross-dataset reference in the veto.** The veto contrasts PopQA/TriviaQA *correct* against
-   SelfAware *hallucinations*. The within-SelfAware control (0.93 trained) bounds the
-   dataset-shift concern but does not eliminate it; a within-source correct-vs-hallucination
-   contrast would close it.
+4. **Structural hallucination label, decomposed but ungraded.** "unanswerable question ∧
+   model answered = hallucination" is structural, not human-graded. Two pre-registered
+   follow-ups decomposed what the veto reads on that label (answer length and carried
+   answerability, around a ~0.74 content core; §4.4); a human-graded audit of a sample of
+   the structural labels themselves remains undone.
+5. **Cross-dataset reference in the veto, and carried answerability.** The headline veto
+   contrasts PopQA/TriviaQA *correct* against SelfAware *hallucinations*. The
+   within-SelfAware control (0.93 trained) bounds the dataset-shift concern but shares
+   the unanswerable-question structure, so it does not control answerability carry
+   (§4.4). The answerability-controlled contrast now exists at small scale (65 matched
+   pairs, veto 0.737, single seed); a within-source, answerability-controlled
+   correct-vs-hallucination contrast at headline scale has not been run.
 6. **Forced-answer surface.** The dial is measured on forced or answer-encouraging prompts. Its
    behavior on the model's *own natural* (un-forced) answers is untested (the relevant surface
    for a live deployment) and is a known gap, not a solved case.
@@ -594,8 +673,10 @@ size-robust from 1.7B to 14B, replicates across four model families, and, by the
 pre-registered pretrain-only contrast, is present *before any post-training at all*, readable
 (descriptively) as far back as GPT-2-XL. The dial's **veto** on confident confabulation is
 real and, once sharpened by targeted abstention training, strong (0.980), but it is the
-fragile, model-dependent piece: seed- and render-sensitive, non-monotonic in scale, and the
-one axis a vendor's own post-training moved the wrong way. Training's contribution, when it
+fragile, model-dependent piece: seed- and render-sensitive, non-monotonic in scale, the
+one axis a vendor's own post-training moved the wrong way, and a blend rather than a pure
+content read: controlled for answer length and question answerability, its content core
+is about 0.74 (§4.4). Training's contribution, when it
 is aimed at abstention specifically, is to sharpen that veto and install behavioral
 abstention; post-training in general neither creates nor improves the underlying signal. The
 confidence is already there from pretraining; the task is to read it, keep the two axes
