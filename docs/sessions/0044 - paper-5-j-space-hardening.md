@@ -4,7 +4,7 @@ session_id: paper5-jspace-hardening
 title: Paper 5 J-space hardening
 status: active
 created_at: '2026-07-08T16:46:25Z'
-updated_at: '2026-07-10T01:25:26Z'
+updated_at: '2026-07-10T07:56:02Z'
 phase: phase1
 question: Which registered follow-up experiments harden the Paper 5 actuation thesis,
   starting with a fresh Qwen3-4B J-space layer-site replication?
@@ -146,6 +146,26 @@ checkpoints:
   - 'Merge PR #264 after user review; adjudicate Qwen3.5 dose selections when Modal
     reports; then revise cross-family layer contrast to consume validated ceiling-robust
     gates.'
+  signals: {}
+- id: 006-result
+  at: '2026-07-10T07:56:02Z'
+  kind: result
+  title: 'Qwen3.5 recalibrated sweeps: both cells G0 null, family-level no-window
+    finding'
+  summary: 'Both recalibrated Qwen3.5 FIT dose sweeps committed selected_dose null.
+    4B: coherent tighten peaks ~33% at dose 40 then JSON-corruption collapse (well-formed
+    90%->55%->3% across 40/50/60); 9B: peaks ~6% near 140-150 before the 200 cliff.
+    Well-characterized no-window nulls, not grid artifacts: the doubt-gated caution
+    snap does not transfer to Qwen3.5 at registered thresholds (vs 73.5% held-out
+    on Qwen3-4B). Both cells ineligible-before-held-out for the cross-family denominator.
+    NOTEBOOK entry committed on exp/doubt-snap-cross-family.'
+  evidence: []
+  run_ids: []
+  commands: []
+  decisions: []
+  next_steps:
+  - Present resolve-time adjudication options for the cross-family panel eligibility
+    arithmetic to the user; remaining panel cells proceed.
   signals: {}
 ---
 # Paper 5 J-space hardening
@@ -387,3 +407,10 @@ rows before the layer contrast.
 - summary: Rep-2 resolved FULL PASS on the multi-source pool: hs29 92.76% vs hs34 73.76% (+19.0pp), paired McNemar 42:0 discordants p=4.5e-13, G2' +1.43pp, G3' interpretable at 73.76%. Red-team reproduced every number from per-row RunLog; lead re-derived the paired table; two disclosures registered (hs29 absolute cost doubling; 179 distinct normalized questions among 221 rows, verdict invariant). Both scoreboard predictions correct. Pairs with rep-1 as the pool-sensitivity story: magnitude unidentifiable near ceiling, replicates off-ceiling with the same frozen instrument. PR #264 open. Qwen3.5 Modal dose sweeps still in flight.
 - next steps:
   - Merge PR #264 after user review; adjudicate Qwen3.5 dose selections when Modal reports; then revise cross-family layer contrast to consume validated ceiling-robust gates.
+### 006-result - Qwen3.5 recalibrated sweeps: both cells G0 null, family-level no-window finding
+
+- at: `2026-07-10T07:56:02Z`
+- kind: `result`
+- summary: Both recalibrated Qwen3.5 FIT dose sweeps committed selected_dose null. 4B: coherent tighten peaks ~33% at dose 40 then JSON-corruption collapse (well-formed 90%->55%->3% across 40/50/60); 9B: peaks ~6% near 140-150 before the 200 cliff. Well-characterized no-window nulls, not grid artifacts: the doubt-gated caution snap does not transfer to Qwen3.5 at registered thresholds (vs 73.5% held-out on Qwen3-4B). Both cells ineligible-before-held-out for the cross-family denominator. NOTEBOOK entry committed on exp/doubt-snap-cross-family.
+- next steps:
+  - Present resolve-time adjudication options for the cross-family panel eligibility arithmetic to the user; remaining panel cells proceed.
