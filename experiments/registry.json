@@ -298,6 +298,60 @@
         "repo": "unsloth/Qwen3-4B",
         "revision": "raw-base (bf16, no adapter, no 4-bit quantization)"
       },
+      "falsifier": "If G1' fails on an interpretable pool (G3' status = viable), the mid-band advantage does not replicate at meaningful magnitude on a comparable multi-source confab distribution; report straight, exactly as registered, with no goalpost movement.",
+      "inputs": [
+        "experiments/j-space-calibrated-layer-contrast-qwen3-4b/AMENDMENT.md",
+        "experiments/j-space-calibrated-layer-contrast-qwen3-4b/analysis-committed/full_summary.json",
+        "experiments/j-space-layer-contrast-replication-qwen3-4b/AMENDMENT.md",
+        "experiments/j-space-layer-contrast-replication-qwen3-4b/analysis-committed/fresh_eval_pool_manifest.json",
+        "experiments/j-space-midband-write-sweep-qwen3-4b/AMENDMENT.md",
+        "experiments/j-space-midband-write-sweep-qwen3-4b/analysis-committed/build_manifest_layers.json",
+        "experiments/j-space-midband-write-sweep-qwen3-4b/analysis-committed/gate_fit_layers.json",
+        "experiments/j-space-midband-write-sweep-qwen3-4b/analysis-committed/PROVENANCE.md",
+        "experiments/j-space-midband-dose-calibration-qwen3-4b/AMENDMENT.md",
+        "experiments/j-space-midband-dose-calibration-qwen3-4b/analysis-committed/dose_calibration_summary.json",
+        "experiments/common/doubt-gated-caution-tighten-heldout-split/split_manifest.json",
+        "datasets/kuq/dataset.md",
+        "datasets/selfaware/dataset.md"
+      ],
+      "instrument": {
+        "configs": [
+          "cell.yaml",
+          "gates.yaml"
+        ],
+        "modules": [
+          "mine_multisource_pool.py",
+          "materialize_known_side_reuse.py",
+          "extract_multisource_confab_anchor.py",
+          "pipeline_multisource.py",
+          "run_contrast.py",
+          "analyze_paired_outcomes.py"
+        ],
+        "pins": {
+          "analyze_paired_outcomes.py": "be0c1e65e78d231938b1097250c2c198d23aa48e746d6bedba55d4074b66d9a7",
+          "cell.yaml": "47f51b3d75728e21f541abdaf6e24a80eb1fa304f89f1116df31324835de4b01",
+          "extract_multisource_confab_anchor.py": "54b0986a83734fc304b751f7644ac5fb41e5737645f5b062e58281bcc51d76d7",
+          "gates.yaml": "acb90ece34f472e9ab2a092c275d4bac8714b4ba50a8313006c481a2c5b1f29c",
+          "materialize_known_side_reuse.py": "0a4fb28b4e933a3eaf9e77242de474a4b27127a9cca6d3fb61a1faf7f04bc9f5",
+          "mine_multisource_pool.py": "bcc5c837b833f6179f2518bf06da03003eb3b398a313cc67503cc9cfd34951fb",
+          "pipeline_multisource.py": "d67f872b08f72b502cc6e23f2ee24c55479071881f5b047c19c3b492b76d7e38",
+          "run_contrast.py": "1a28ae4f7779c8ccf6015c46f743be389162fb1503eb1307b1e8689d6090f26e"
+        }
+      },
+      "kg": [],
+      "prediction": "With rep1's frozen directions, gates, and calibrated doses unchanged, the harder- source-dominant multi-source pool will pull hs34 off the ceiling into the interpretable G3' window (roughly 55-80% clean_tighten), the best mid-band arm will beat hs34 on paired outcomes with late-only failures at least 3x mid-only failures and exact McNemar p < 0.05 (G1' pass), and the known-correct cost gap will stay within +2pp (G2' pass): the mid-band advantage replicates at meaningful magnitude.",
+      "question": "On raw-base Qwen3-4B, does the calibrated J-space mid-band write-site advantage replicate on a fresh, MULTI-SOURCE private evaluation pool, using ceiling-robust gates (McNemar paired test plus an interpretability branch) instead of rep1's fixed point-estimate bar that saturated near ceiling?",
+      "registered": true,
+      "slug": "j-space-layer-contrast-rep2-multisource",
+      "status": "resolved",
+      "type": "steer-cell",
+      "verdict": "FULL PASS: mid-band advantage replicates off-ceiling on a multi-source pool (hs29 92.8% vs hs34 73.8%, +19.0pp; paired McNemar 42:0 discordants, p=4.5e-13; cost delta +1.43pp; hs34 interpretable at 73.8%)."
+    },
+    {
+      "checkpoint": {
+        "repo": "unsloth/Qwen3-4B",
+        "revision": "raw-base (bf16, no adapter, no 4-bit quantization)"
+      },
       "falsifier": "If the best mid-band layer beats hs34 by less than 10 percentage points on fresh confab clean_tighten, or increases known-correct false-refusal cost by more than 2 percentage points, the same-model layer-site result does not replicate.",
       "inputs": [
         "experiments/j-space-calibrated-layer-contrast-qwen3-4b/AMENDMENT.md",
