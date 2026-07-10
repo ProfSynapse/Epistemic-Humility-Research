@@ -96,7 +96,7 @@ def _resolve_output_path() -> Path:
 # either way (those definitions themselves are untouched).
 # ---------------------------------------------------------------------------
 
-_MAX_NGRAM = 5
+_MAX_NGRAM = 20
 _MIN_REPEATS = 3
 # Fraction of the extracted answer-field's tokens that the single most
 # frequent n-gram (n in 1.._MAX_NGRAM) must cover, counted over sliding
@@ -104,6 +104,18 @@ _MIN_REPEATS = 3
 # 0.6 clears natural language by a wide margin (a real sentence essentially
 # never has one short n-gram covering 60%+ of overlapping windows) while
 # still catching both observed spam shapes (see self-check below).
+#
+# _MAX_NGRAM widened 5 -> 20 (2026-07-07, gate-and-snap diagnostic Step 2
+# dry run): a real dosed generation (confab row ahx::kuq_ku_unknown_x::001893
+# at a fixed absolute readback ~250) produced a >5-word repeated unit --
+# `"response_confidence": 0.0\n}-emptyI don't know the answer` (glued with a
+# `}-empty` token, no internal whitespace break at the glue point) repeated
+# 4 times, 71% of the extracted answer field -- that a max-5-word-gram check
+# cannot see (no n<=5 gram spans the repeat boundary). Confirmed this widen
+# does not introduce a false positive on any of this experiment's own
+# smoke-verified clean rows (see the self-check below and
+# analysis/rows_out_smoke.jsonl's non-degenerate coupled/permuted rows) or on
+# the longer legitimate paraphrase answers observed in the same dry run.
 _DOMINANT_REPEAT_MIN_FRAC = 0.6
 
 
@@ -176,6 +188,73 @@ def _has_dominant_repeated_unit(
     return False
 
 
+
+# ---------------------------------------------------------------------------
+# CHARACTER-level dominant-repeated-unit check -- gate-and-snap diagnostic fix
+# (2026-07-07). The word-level checks above (`_is_repeated_ngram`,
+# `_has_dominant_repeated_unit`) both tokenize on whitespace, so a
+# no-whitespace repetition loop -- e.g. `I"I"I"I"I"I"...` or
+# `dhatIIIIIIIIII...` (both real smoke generations at coupled-arm marginal
+# writes ~518/606/647/750, confirmed under-scored `degenerate=False` by the
+# word-level checks: with no internal whitespace the whole spam run is ONE
+# token, below the word-checks' `n_tok >= n * min_repeats` floor) -- is
+# invisible to them. This adds the same dominant-repeated-unit test at
+# character granularity so a short character n-gram (quotes/letters) that
+# recurs enough to dominate the string is caught regardless of whitespace.
+# Verified against the 2026-07-07 smoke rows (analysis/rows_out_smoke.jsonl,
+# coupled arm): flags ahx::kuq_ku_unknown_x::001893 (mw=646.7,
+# `I"` repeated, frac=0.97), ahx::kuq_ku_unknown_x::000518 (mw=605.9, same
+# shape, frac=0.97), ahx::kuq_ku_unknown_x::001106 (mw=518.5, `dhatIIII...`,
+# frac=0.61), ahx::kuq_ku_unknown_x::001029 (mw=750.0, bare `IIII...`,
+# frac=0.98) -- all previously `degenerate=False`, all now True -- while
+# leaving ah::kuq_ku_unknown::001938 (mw=6.7, coherent answer),
+# ah::selfaware_unanswerable::002663 (mw=229.2, clean "I don't know"),
+# ahx::popqa::012236 (mw=-159.4, clean refusal) and
+# ah::selfaware_answerable::000874 (mw=-85.2, clean refusal) at False (no
+# short character n-gram dominates any of those short/natural-language
+# strings). min_len=12 exempts short well-formed answers/refusals outright;
+# min_frac=0.5 clears normal prose (English text does not have a <=6-char
+# substring covering half of all overlapping character windows) while
+# catching both observed spam shapes with margin (0.61 and 0.98, both well
+# above 0.5).
+# ---------------------------------------------------------------------------
+
+_CHAR_MAX_NGRAM = 6
+_CHAR_MIN_REPEATS = 8
+_CHAR_DOMINANT_REPEAT_MIN_FRAC = 0.5
+_CHAR_DOMINANT_REPEAT_MIN_LEN = 12
+
+
+def _has_dominant_repeated_char_unit(
+    text: str,
+    min_repeats: int = _CHAR_MIN_REPEATS,
+    max_n: int = _CHAR_MAX_NGRAM,
+    min_frac: float = _CHAR_DOMINANT_REPEAT_MIN_FRAC,
+    min_len: int = _CHAR_DOMINANT_REPEAT_MIN_LEN,
+) -> bool:
+    """Character-granularity analogue of `_has_dominant_repeated_unit`: True
+    if some short character n-gram (n <= max_n) recurs at least `min_repeats`
+    times (counted over sliding, overlapping windows) and covers at least
+    `min_frac` of the string's characters. Catches no-whitespace repetition
+    loops (e.g. `I"I"I"I"`, `IIIIIII`) that word-level tokenization cannot
+    see because the whole run is a single "word".
+    """
+    n_chars = len(text)
+    if n_chars < min_len:
+        return False
+    for n in range(1, max_n + 1):
+        if n_chars < n * min_repeats:
+            continue
+        counts: dict[str, int] = {}
+        for i in range(n_chars - n + 1):
+            gram = text[i:i + n]
+            counts[gram] = counts.get(gram, 0) + 1
+        best_count = max(counts.values())
+        if best_count >= min_repeats and (best_count * n) / n_chars >= min_frac:
+            return True
+    return False
+
+
 def is_degenerate(text: str) -> bool:
     stripped = (text or "").strip()
     if not stripped:
@@ -184,9 +263,14 @@ def is_degenerate(text: str) -> bool:
         return True
     if _is_repeated_ngram(stripped.split()):
         return True
-    answer_field = _extract_answer_field(stripped).strip()
-    if answer_field and _has_dominant_repeated_unit(answer_field.split()):
+    if _has_dominant_repeated_char_unit(stripped):
         return True
+    answer_field = _extract_answer_field(stripped).strip()
+    if answer_field:
+        if _has_dominant_repeated_unit(answer_field.split()):
+            return True
+        if _has_dominant_repeated_char_unit(answer_field):
+            return True
     return False
 
 
