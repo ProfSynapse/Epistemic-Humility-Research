@@ -220,9 +220,9 @@ def command_args(args: argparse.Namespace) -> tuple[str, list[str]]:
         ):
             if getattr(args, flag):
                 out.append("--" + flag.replace("_", "-"))
-        return "experiment/phase1/probe/phase3_causal_pilot_sweep.py", out
+        return "experiments/common/mechinterp/causal_pilot_sweep.py", out
     if command == "aggregate":
-        return "experiment/phase1/probe/phase3_causal_pilot_aggregate.py", [
+        return "experiments/common/mechinterp/causal_pilot_aggregate.py", [
             "--root",
             args.root,
             "--out",
@@ -294,8 +294,8 @@ def run_validate(*, quick: bool, dry_run: bool) -> int:
         [
             "-m",
             "py_compile",
-            "experiment/phase1/probe/phase3_causal_pilot_sweep.py",
-            "experiment/phase1/probe/phase3_causal_pilot_runner.py",
+            "experiments/common/mechinterp/causal_pilot_sweep.py",
+            "experiments/common/mechinterp/causal_pilot_runner.py",
             "experiments/common/mechinterp/sycophancy_answer_row_manifest.py",
             "experiments/common/mechinterp/sycophancy_generation_analysis.py",
             "experiment/phase1/probe/phase3_sae_behavior_feature_analysis.py",

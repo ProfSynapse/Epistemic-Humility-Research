@@ -51,7 +51,7 @@ def test_command_args_builds_causal_sweep_flags():
 
     script, out = mechinterp_cli.command_args(args)
 
-    assert script == "experiment/phase1/probe/phase3_causal_pilot_sweep.py"
+    assert script == "experiments/common/mechinterp/causal_pilot_sweep.py"
     assert out == [
         "--config",
         "cfg.yaml",

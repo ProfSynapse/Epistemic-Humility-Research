@@ -4,7 +4,7 @@ Read for local Phase 3 causal-pilot and logit-diagnostic execution caveats.
 
 - For Phase 3 causal-pilot GPU smokes in `unsloth/unsloth:latest`, override the
   default image entrypoint with `--entrypoint python` before invoking
-  `experiment/phase1/probe/phase3_causal_pilot_runner.py`. Without the override,
+  `experiments/common/mechinterp/causal_pilot_runner.py`. Without the override,
   the image can run studio setup, try to chmod the mounted repository, fail on
   Windows-mounted repo permissions, and never invoke the runner. This applies to
   the logit diagnostic path as well as generation smokes; use

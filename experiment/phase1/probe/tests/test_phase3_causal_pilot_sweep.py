@@ -342,7 +342,7 @@ def test_checked_in_full_sweep_uses_docker_commands():
     image_index = command.index("unsloth/unsloth:latest")
     runner_args = command[image_index + 1:]
     assert runner_args[0] == (
-        "/workspace/repo/experiment/phase1/probe/phase3_causal_pilot_runner.py"
+        "/workspace/repo/experiments/common/mechinterp/causal_pilot_runner.py"
     )
     assert "--config" in runner_args
     config_arg = runner_args[runner_args.index("--config") + 1]

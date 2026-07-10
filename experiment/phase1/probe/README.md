@@ -17,8 +17,8 @@ dataset builders consume.
 | `hidden_state_schema.py` | Model-free validation + manifest builder for the hidden-state tier (GPU-free keystone) |
 | `hidden_state_linear_probe.py` | Diagnostic per-layer linear probes over extracted hidden states (smoke/analysis only) |
 | `hidden_state_directions.py` | Candidate direction data layer for later intervention pilots; no steering/generation |
-| `phase3_causal_pilot_sweep.py` | Non-GPU-by-default planner/executor for reusable local causal-pilot sweeps |
-| `phase3_causal_pilot_aggregate.py` | Offline aggregation of completed causal-pilot run manifests and metrics |
+| `experiments/common/mechinterp/causal_pilot_sweep.py` | Non-GPU-by-default planner/executor for reusable local causal-pilot sweeps |
+| `experiments/common/mechinterp/causal_pilot_aggregate.py` | Offline aggregation of completed causal-pilot run manifests and metrics |
 | `experiments/common/configs/phase1-probe/hidden_state_probe.yaml` | Pinned hidden-state extraction config (hashed SSOT) |
 | `archive/experiment/phase1/probe/config/causal-pilot-core/phase3_causal_pilot_full_candidates.yaml` | Archived full local candidate inventory for comparable Phase 3 causal-pilot sweeps |
 | `archive/experiment/phase1/probe/config/causal-pilot-core/phase3_causal_pilot_local_sweep.yaml` | Archived local mech-interp sweep plan across current candidate directions |
@@ -207,15 +207,15 @@ or NNsight, and it is not headline or pre-registered evidence.
 
 ### Phase 3 causal-pilot sweep
 
-`phase3_causal_pilot_sweep.py` wraps the live runner across candidate directions
+`experiments/common/mechinterp/causal_pilot_sweep.py` wraps the live runner across candidate directions
 and modes without touching model packages by default. It plans commands from a
-checked-in sweep config and only invokes `phase3_causal_pilot_runner.py` when
+checked-in sweep config and only invokes `experiments/common/mechinterp/causal_pilot_runner.py` when
 `--execute` and the mode-specific allow flags are passed.
 
 Plan the current local sweep without GPU/model loading:
 
 ```
-python experiment/phase1/probe/phase3_causal_pilot_sweep.py \
+python experiments/common/mechinterp/causal_pilot_sweep.py \
   --config archive/experiment/phase1/probe/config/causal-pilot-core/phase3_causal_pilot_local_sweep.yaml
 ```
 
@@ -223,7 +223,7 @@ Write a durable plan and per-candidate runner configs, still without running
 generation or diagnostics:
 
 ```
-python experiment/phase1/probe/phase3_causal_pilot_sweep.py \
+python experiments/common/mechinterp/causal_pilot_sweep.py \
   --config archive/experiment/phase1/probe/config/causal-pilot-core/phase3_causal_pilot_local_sweep.yaml \
   --write-plan --materialize-configs
 ```
@@ -232,7 +232,7 @@ To plan or materialize only logit diagnostics from the full config without
 including generation jobs:
 
 ```
-python experiment/phase1/probe/phase3_causal_pilot_sweep.py \
+python experiments/common/mechinterp/causal_pilot_sweep.py \
   --config archive/experiment/phase1/probe/config/causal-pilot-core/phase3_causal_pilot_local_sweep.yaml \
   --mode-filter logit_diagnostic --write-plan --materialize-configs
 ```
@@ -241,7 +241,7 @@ After an explicitly approved local GPU run creates result folders, aggregate
 completed manifests offline:
 
 ```
-python experiment/phase1/probe/phase3_causal_pilot_aggregate.py \
+python experiments/common/mechinterp/causal_pilot_aggregate.py \
   --root experiment/phase1/probe/qwen3-4b-instruct/causal_pilots/phase3_local_mech_interp_sweep \
   --out experiment/phase1/probe/qwen3-4b-instruct/causal_pilots/phase3_local_mech_interp_sweep/summary.csv
 ```

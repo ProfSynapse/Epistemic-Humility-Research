@@ -1,7 +1,7 @@
 # Phase 3 Causal-Pilot Sweeps
 
 Use this reference for local exploratory mechanism sweeps around
-`experiment/phase1/probe/phase3_causal_pilot_runner.py`.
+`experiments/common/mechinterp/causal_pilot_runner.py`.
 
 ## Scope
 
@@ -9,21 +9,21 @@ Use this reference for local exploratory mechanism sweeps around
 - Do not promote results into Phase 1 headline evidence or protocol claims.
 - Do not edit `synaptic-tuner/`.
 - Do not run Docker/GPU unless the user explicitly approves the live run.
-- Prefer `phase3_causal_pilot_sweep.py` over ad hoc terminal loops.
+- Prefer `experiments/common/mechinterp/causal_pilot_sweep.py` over ad hoc terminal loops.
 
 ## Non-GPU Planning
 
 Plan the current sweep:
 
 ```bash
-python experiment/phase1/probe/phase3_causal_pilot_sweep.py \
+python experiments/common/mechinterp/causal_pilot_sweep.py \
   --config archive/experiment/phase1/probe/config/causal-pilot-core/phase3_causal_pilot_local_sweep.yaml
 ```
 
 Write the plan and materialized per-candidate runner configs without execution:
 
 ```bash
-python experiment/phase1/probe/phase3_causal_pilot_sweep.py \
+python experiments/common/mechinterp/causal_pilot_sweep.py \
   --config archive/experiment/phase1/probe/config/causal-pilot-core/phase3_causal_pilot_local_sweep.yaml \
   --write-plan --materialize-configs
 ```
@@ -31,7 +31,7 @@ python experiment/phase1/probe/phase3_causal_pilot_sweep.py \
 For logit diagnostics only, filter before planning/materialization:
 
 ```bash
-python experiment/phase1/probe/phase3_causal_pilot_sweep.py \
+python experiments/common/mechinterp/causal_pilot_sweep.py \
   --config archive/experiment/phase1/probe/config/causal-pilot-core/phase3_causal_pilot_local_sweep.yaml \
   --mode-filter logit_diagnostic --write-plan --materialize-configs
 ```
@@ -50,7 +50,7 @@ adapter.
 Only after explicit user approval, execute with the mode-specific gates:
 
 ```bash
-python experiment/phase1/probe/phase3_causal_pilot_sweep.py \
+python experiments/common/mechinterp/causal_pilot_sweep.py \
   --config archive/experiment/phase1/probe/config/causal-pilot-core/phase3_causal_pilot_local_sweep.yaml \
   --write-plan --materialize-configs --execute \
   --allow-logit-diagnostic --allow-generation
@@ -82,7 +82,7 @@ wrapper/path rewriting fixed.
 Aggregate completed run manifests offline:
 
 ```bash
-python experiment/phase1/probe/phase3_causal_pilot_aggregate.py \
+python experiments/common/mechinterp/causal_pilot_aggregate.py \
   --root experiment/phase1/probe/qwen3-4b-instruct/causal_pilots/phase3_local_mech_interp_sweep \
   --out experiment/phase1/probe/qwen3-4b-instruct/causal_pilots/phase3_local_mech_interp_sweep/summary.csv
 ```

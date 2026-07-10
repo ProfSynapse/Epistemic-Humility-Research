@@ -8,7 +8,7 @@ sweep, and for runtime-identity / adapter-fallback semantics.
 Plan/materialize before live execution:
 
 ```bash
-python experiment/phase1/probe/phase3_causal_pilot_sweep.py \
+python experiments/common/mechinterp/causal_pilot_sweep.py \
   --config archive/experiment/phase1/probe/config/causal-pilot-core/phase3_causal_pilot_local_sweep.yaml \
   --mode-filter logit_diagnostic \
   --write-plan --materialize-configs
@@ -17,7 +17,7 @@ python experiment/phase1/probe/phase3_causal_pilot_sweep.py \
 Only after approval, execute:
 
 ```bash
-python experiment/phase1/probe/phase3_causal_pilot_sweep.py \
+python experiments/common/mechinterp/causal_pilot_sweep.py \
   --config archive/experiment/phase1/probe/config/causal-pilot-core/phase3_causal_pilot_local_sweep.yaml \
   --mode-filter logit_diagnostic \
   --write-plan --materialize-configs --execute \
@@ -27,7 +27,7 @@ python experiment/phase1/probe/phase3_causal_pilot_sweep.py \
 Aggregate completed runs:
 
 ```bash
-python experiment/phase1/probe/phase3_causal_pilot_aggregate.py \
+python experiments/common/mechinterp/causal_pilot_aggregate.py \
   --root experiment/phase1/probe/qwen3-4b-instruct/causal_pilots/phase3_local_mech_interp_sweep \
   --out experiment/phase1/probe/qwen3-4b-instruct/causal_pilots/phase3_local_mech_interp_sweep/summary.csv
 ```
@@ -56,7 +56,7 @@ like `/workspace/repo/F:\Code\...` is unsafe; stop and replan.
 
 ## Runtime semantics
 
-For live `phase3_causal_pilot_runner.py` diagnostics, runtime identity is
+For live `experiments/common/mechinterp/causal_pilot_runner.py` diagnostics, runtime identity is
 controlled by `runtime_model`, not descriptive `model` metadata. If
 `runtime_model.adapter_path` is null, the runner falls back to the candidate
 extraction manifest adapter by default. That is an arm-native panel.
