@@ -4,7 +4,7 @@ session_id: paper5-jspace-hardening
 title: Paper 5 J-space hardening
 status: active
 created_at: '2026-07-08T16:46:25Z'
-updated_at: '2026-07-10T11:02:40Z'
+updated_at: '2026-07-10T12:57:38Z'
 phase: phase1
 question: Which registered follow-up experiments harden the Paper 5 actuation thesis,
   starting with a fresh Qwen3-4B J-space layer-site replication?
@@ -216,6 +216,29 @@ checkpoints:
   next_steps:
   - 'PR #264 (rep-2 full pass) still open awaiting user review. Anchor audit + mid-band
     scaffold agents in flight.'
+  signals: {}
+- id: 009-decision
+  at: '2026-07-10T12:57:38Z'
+  kind: decision
+  title: 'Standing directive: local GPU runs move to pinned Docker images'
+  summary: 'User directive (2026-07-10): moving forward all local 3090 experiment
+    runs use the Docker method, never bare shared conda envs. Trigger: unsloth_env
+    silently aged out of model_type qwen3_5 (transformers too old), forcing a documented
+    mid-experiment env hop to base conda; file instruments are sha256-pinned in experiment.yaml
+    but the runtime was not, an asymmetry in the provenance story; Modal lane already
+    containerized. Implementation queued: (1) generic mechinterp runner image in synaptic-tuner
+    (CUDA + torch + pinned transformers + flash-linear-attention, digest printed at
+    run start) via tuner branch+PR; (2) mechinterp-cells skill invariant in canonical
+    .skills/: local GPU runs execute in the pinned image and experiments record the
+    image digest in instrument.pins; delegation prompts restate it. Exception honored
+    once: qwen35-4b-midband-doubt-snap finishes on its documented deviation; containers
+    bind at the next experiment boundary.'
+  evidence: []
+  run_ids: []
+  commands: []
+  decisions: []
+  next_steps:
+  - Builder dispatched for the tuner Dockerfile PR + skill-invariant PR.
   signals: {}
 ---
 # Paper 5 J-space hardening
@@ -478,3 +501,10 @@ rows before the layer contrast.
 - summary: Merging the doubt-snap branch surfaced a diverged submodule pin: exp branch at 9a97540 (batch verbs, HF-token loaders, batched steer) vs main at cd30d482 (RunLog, redaction, dose calibration), neither containing the other. Resolved by merging the tuner lines: Synaptic-Tuner PR #142 (one additive conflict in MechInterp/cli.py, both helper blocks kept; 206/206 tests pass) -> tuner main 86b134c. Repo submodule repointed to 86b134c in the merge commit; PR #265 (Qwen3.5 dose recalibration + characterized no-window nulls + Modal durability/operational fixes) merged to main. All future pins get RunLog + batch/steer verbs together. User approved the tuner merge explicitly after a classifier lift.
 - next steps:
   - PR #264 (rep-2 full pass) still open awaiting user review. Anchor audit + mid-band scaffold agents in flight.
+### 009-decision - Standing directive: local GPU runs move to pinned Docker images
+
+- at: `2026-07-10T12:57:38Z`
+- kind: `decision`
+- summary: User directive (2026-07-10): moving forward all local 3090 experiment runs use the Docker method, never bare shared conda envs. Trigger: unsloth_env silently aged out of model_type qwen3_5 (transformers too old), forcing a documented mid-experiment env hop to base conda; file instruments are sha256-pinned in experiment.yaml but the runtime was not, an asymmetry in the provenance story; Modal lane already containerized. Implementation queued: (1) generic mechinterp runner image in synaptic-tuner (CUDA + torch + pinned transformers + flash-linear-attention, digest printed at run start) via tuner branch+PR; (2) mechinterp-cells skill invariant in canonical .skills/: local GPU runs execute in the pinned image and experiments record the image digest in instrument.pins; delegation prompts restate it. Exception honored once: qwen35-4b-midband-doubt-snap finishes on its documented deviation; containers bind at the next experiment boundary.
+- next steps:
+  - Builder dispatched for the tuner Dockerfile PR + skill-invariant PR.
