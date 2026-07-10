@@ -229,7 +229,7 @@ def command_args(args: argparse.Namespace) -> tuple[str, list[str]]:
             args.out,
         ]
     if command == "xdataset-build-panel":
-        return "experiment/phase1/probe/phase3_xdataset_build_panel.py", [
+        return "experiments/common/mechinterp/xdataset_build_panel.py", [
             "--source", args.source,
             "--dataset", args.dataset,
             "--out-dir", args.out_dir,
@@ -241,13 +241,13 @@ def command_args(args: argparse.Namespace) -> tuple[str, list[str]]:
             "--answer-field", args.answer_field,
         ]
     if command == "xdataset-behavior":
-        return "experiment/phase1/probe/phase3_xdataset_behavior_from_generation.py", [
+        return "experiments/common/mechinterp/xdataset_behavior_from_generation.py", [
             "--generation", args.generation,
             "--panel-rows", args.panel_rows,
             "--out-dir", args.out_dir,
         ]
     if command == "residual-caution-direction":
-        return "experiment/phase1/probe/phase3_residual_caution_direction.py", [
+        return "experiments/common/mechinterp/residual_caution_direction.py", [
             "--extraction-dir", args.extraction_dir,
             "--behavior-rows", args.behavior_rows,
             "--layer", str(args.layer),
@@ -255,7 +255,7 @@ def command_args(args: argparse.Namespace) -> tuple[str, list[str]]:
             "--out", args.out,
         ]
     if command == "residual-read-trajectory-analysis":
-        return "experiment/phase1/probe/phase3_residual_read_trajectory.py", [
+        return "experiments/common/mechinterp/residual_read_trajectory.py", [
             "--rows", args.rows,
             "--out", args.out,
         ]
@@ -302,10 +302,10 @@ def run_validate(*, quick: bool, dry_run: bool) -> int:
             "experiment/phase1/probe/phase3_behavior_axis_scan.py",
             "experiment/phase1/probe/phase3_multicell_readout.py",
             "experiment/phase1/probe/hidden_state_probe.py",
-            "experiment/phase1/probe/phase3_xdataset_build_panel.py",
-            "experiment/phase1/probe/phase3_xdataset_behavior_from_generation.py",
-            "experiment/phase1/probe/phase3_residual_caution_direction.py",
-            "experiment/phase1/probe/phase3_residual_read_trajectory.py",
+            "experiments/common/mechinterp/xdataset_build_panel.py",
+            "experiments/common/mechinterp/xdataset_behavior_from_generation.py",
+            "experiments/common/mechinterp/residual_caution_direction.py",
+            "experiments/common/mechinterp/residual_read_trajectory.py",
             "experiment/phase1/probe/phase3_residual_read_trajectory_runner.py",
         ],
         ["bin/sync_skills.py", "--check"],

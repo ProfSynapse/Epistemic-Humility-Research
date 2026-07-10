@@ -92,7 +92,7 @@ def test_command_args_builds_xdataset_build_panel():
 
     script, out = mechinterp_cli.command_args(args)
 
-    assert script == "experiment/phase1/probe/phase3_xdataset_build_panel.py"
+    assert script == "experiments/common/mechinterp/xdataset_build_panel.py"
     assert out == [
         "--source", "datasets/kuq/knowns_unknowns.jsonl",
         "--dataset", "kuq",
@@ -117,7 +117,7 @@ def test_command_args_builds_xdataset_behavior():
 
     script, out = mechinterp_cli.command_args(args)
 
-    assert script == "experiment/phase1/probe/phase3_xdataset_behavior_from_generation.py"
+    assert script == "experiments/common/mechinterp/xdataset_behavior_from_generation.py"
     assert out == [
         "--generation", "experiment/phase1/probe/xdataset/kuq_generation/rows.jsonl",
         "--panel-rows", "experiment/phase1/probe/xdataset/kuq_panel/gen_rows.jsonl",
@@ -137,7 +137,7 @@ def test_command_args_builds_residual_caution_direction():
 
     script, out = mechinterp_cli.command_args(args)
 
-    assert script == "experiment/phase1/probe/phase3_residual_caution_direction.py"
+    assert script == "experiments/common/mechinterp/residual_caution_direction.py"
     assert out == [
         "--extraction-dir", "probe/x/extraction__abc",
         "--behavior-rows", "probe/y/rows.jsonl",
@@ -157,7 +157,7 @@ def test_command_args_builds_residual_read_trajectory_analysis():
 
     script, out = mechinterp_cli.command_args(args)
 
-    assert script == "experiment/phase1/probe/phase3_residual_read_trajectory.py"
+    assert script == "experiments/common/mechinterp/residual_read_trajectory.py"
     assert out == ["--rows", "probe/t/rows.jsonl", "--out", "probe/t/analysis.json"]
 
 
