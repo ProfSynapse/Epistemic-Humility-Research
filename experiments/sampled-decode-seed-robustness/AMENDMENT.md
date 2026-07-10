@@ -274,7 +274,7 @@ pre-stated.
   `amendment_sr_{family}_seed{N}_result.json` under
   `experiments/sampled-decode-seed-robustness/artifacts/`.
 - Extraction outputs (local only, gitignored): `sr_{family}_seed{N}/` under
-  `experiment/phase1/probe/`. Gemma's re-run cells live under
+  `archive/experiment/phase1/probe/`. Gemma's re-run cells live under
   `sr_rr_gemma-4-e4b_seed{N}/` (the `sr_gemma-4-e4b_seed{N}/` dirs are the
   crashed first attempt); the scoring step consumed the `sr_rr_*` dirs.
 - Queue log: `experiment/phase1/probe/sr_logs/PROGRESS.log`; Gemma re-run log:

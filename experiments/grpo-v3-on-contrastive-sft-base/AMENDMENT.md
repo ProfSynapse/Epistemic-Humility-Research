@@ -111,7 +111,7 @@ achieve coherent stated-confidence calibration AND behavior.
 
 ## 3. Design Change
 
-**No new code.** The reward (`experiment/phase1/grpo/humility_reward_v3.py`) and
+**No new code.** The reward (`archive/experiment/phase1/grpo/humility_reward_v3.py`) and
 all hyperparameters are reused from Amendment J unchanged. The v3 reward already
 contains both halves this cell needs:
 
@@ -125,8 +125,8 @@ contains both halves this cell needs:
 The two new configs are byte-identical to the Amendment J configs except for
 `model.model_name` (→ K merged base) and `training.output_dir`:
 
-- `experiment/phase1/grpo/configs/grpo_schema_contrastive_sft_merged_seed1_v3_smoke.yaml`
-- `experiment/phase1/grpo/configs/grpo_schema_contrastive_sft_merged_seed1_v3_full.yaml`
+- `archive/experiment/phase1/grpo/configs/grpo_schema_contrastive_sft_merged_seed1_v3_smoke.yaml`
+- `archive/experiment/phase1/grpo/configs/grpo_schema_contrastive_sft_merged_seed1_v3_full.yaml`
 
 K merged base (read-only GRPO start):
 `scratch/schema_response_confidence/runs/sft_schema_contrastive_seed1_full/20260627_203232/Qwen3-4B-bnb-4bit/merged-16bit`.
@@ -300,7 +300,7 @@ session note: **beta 0.1 → 0.05** (single variable; reward UNCHANGED — magni
 left intact precisely because the debug shows they are already correctly shaped, so
 lowering beta is the grounded lever for the sampled-vs-greedy gap, and it least
 risks the calibration we must RETAIN). Config
-`experiment/phase1/grpo/configs/grpo_schema_contrastive_sft_merged_seed1_v3_beta005_full.yaml`.
+`archive/experiment/phase1/grpo/configs/grpo_schema_contrastive_sft_merged_seed1_v3_beta005_full.yaml`.
 Re-run gate = the same §4.2 dual gate (no goalpost change). If beta 0.05 still
 leaves greedy behavior anchored, the next reading is that the gap is intrinsic to
 argmax-vs-expectation decode (a real finding), pointing to a decode/objective

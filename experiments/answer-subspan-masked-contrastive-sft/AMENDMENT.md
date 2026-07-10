@@ -149,8 +149,8 @@ and confidence values are identical (verified by diff of the shared columns).
   are (a) the engine honors `loss_mask_text`, and (b) the dataset carries it. So
   any behavior recovery is attributable to removing wrong-answer supervision.
 - Configs (YAML, like the GRPO trainer):
-  - `experiment/phase1/grpo/configs/sft_schema_contrastive_masked_response_confidence_seed1_smoke.yaml`
-  - `experiment/phase1/grpo/configs/sft_schema_contrastive_masked_response_confidence_seed1_full.yaml`
+  - `archive/experiment/phase1/grpo/configs/sft_schema_contrastive_masked_response_confidence_seed1_smoke.yaml`
+  - `archive/experiment/phase1/grpo/configs/sft_schema_contrastive_masked_response_confidence_seed1_full.yaml`
 
 ## 4. Launch Sequence And Gates
 

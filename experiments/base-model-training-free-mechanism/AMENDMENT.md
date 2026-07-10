@@ -215,4 +215,4 @@ within-SelfAware control (0.699) bounds but does not eliminate the dataset-shift
 contribution to W-G1. Promotion to a headline claim still requires a confirmatory
 replication (fresh seeds / 8B / held-out) registered before running.
 
-Result JSON: `experiment/phase1/probe/qwen3-4b-instruct/amendment_w/stage2/amendment_w_base_model_result.json`.
+Result JSON: `papers/paper-4-two-signal-readout/analysis/source-artifacts/probe/amendment_w_base_model_result.json`.

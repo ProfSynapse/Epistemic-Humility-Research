@@ -144,8 +144,8 @@ clean-SFT recipe exactly (`completion_only_loss: true`, `assistant_only_loss: fa
 → lineage reports `loss_mask_mode: assistant_only`; batch 10; LR 2e-4; LoRA r32/α64;
 seed 1); only the dataset and `output_dir` differ from the clean-SFT cell:
 
-- `experiment/phase1/grpo/configs/sft_schema_contrastive_response_confidence_seed1_smoke.yaml`
-- `experiment/phase1/grpo/configs/sft_schema_contrastive_response_confidence_seed1_full.yaml`
+- `archive/experiment/phase1/grpo/configs/sft_schema_contrastive_response_confidence_seed1_smoke.yaml`
+- `archive/experiment/phase1/grpo/configs/sft_schema_contrastive_response_confidence_seed1_full.yaml`
 
 (These YAMLs were validated to load byte-identically to the prior session-0018
 `*_config.py` modules, which are now superseded and removed.)

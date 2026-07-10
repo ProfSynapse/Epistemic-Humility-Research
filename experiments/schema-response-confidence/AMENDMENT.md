@@ -204,11 +204,11 @@ Interpretation rules:
 
 Project-local files:
 
-- `experiment/phase1/grpo/build_schema_response_confidence_datasets.py`
-- `experiment/phase1/grpo/build_grpo_dataset.py`
-- `experiment/phase1/grpo/humility_reward.py`
-- `experiment/phase1/eval/run_eval.py`
-- `experiment/phase1/eval/scorers.py`
+- `archive/experiment/phase1/grpo/build_schema_response_confidence_datasets.py`
+- `archive/experiment/phase1/grpo/build_grpo_dataset.py`
+- `archive/experiment/phase1/grpo/humility_reward.py`
+- `archive/experiment/phase1/eval/run_eval.py`
+- `archive/experiment/phase1/eval/scorers.py`
 - `experiment/phase1/grpo/configs/sft_schema_response_confidence_seed1_*`
 
 The `synaptic-tuner/` submodule remains generic. This amendment must use public

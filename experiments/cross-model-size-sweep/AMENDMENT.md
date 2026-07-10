@@ -181,7 +181,7 @@ dial 0.834, base veto 0.754). **Caveat:** the within-SelfAware control
 (known vs hallucination, same dataset) is 0.6675 [0.6351, 0.6979] here, weaker than
 4B's 0.93 — the veto's cross-source component is stronger than its within-source
 component at 1.7B. Primary gates unambiguous. Result:
-`experiment/phase1/probe/amendment_x_qwen3-1.7b-bnb-4bit_result.json`.
+`papers/paper-4-two-signal-readout/analysis/source-artifacts/probe/amendment_x_qwen3-1.7b-bnb-4bit_result.json`.
 
 ### Qwen3-8B — PASS (all three gates)
 
@@ -200,7 +200,7 @@ Dial means ordered as predicted: correct 0.701 > known 0.634 > hallucination 0.1
 within-SelfAware control (known vs hallucination, same dataset) recovers to 0.7953
 [0.7705, 0.8199] — markedly above 1.7B's 0.6675, so the veto's within-source
 component strengthens with size. Result:
-`experiment/phase1/probe/amendment_x_qwen3-8b-bnb-4bit_result.json`.
+`papers/paper-4-two-signal-readout/analysis/source-artifacts/probe/amendment_x_qwen3-8b-bnb-4bit_result.json`.
 
 ### Qwen3-14B — PASS (all three gates)
 
@@ -221,7 +221,7 @@ hallucination dial-mean rises to 0.348 (vs 8B's 0.184), i.e. 14B's confident
 confabulations read as somewhat more trustworthy, narrowing the correct-vs-hallucination
 gap. Within-SelfAware control (known vs hallucination, same dataset) is 0.7373
 [0.7085, 0.7651], between 1.7B's 0.6675 and 8B's 0.7953. Primary gates unambiguous.
-Result: `experiment/phase1/probe/amendment_x_qwen3-14b-bnb-4bit_result.json`.
+Result: `papers/paper-4-two-signal-readout/analysis/source-artifacts/probe/amendment_x_qwen3-14b-bnb-4bit_result.json`.
 
 ### Cross-size roll-up — all four sizes PASS
 

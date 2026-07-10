@@ -225,7 +225,7 @@ hallucination is the fragile, model-specific capability.
 
 - Scored result JSONs (tracked, at probe root), one per family:
   `amendment_z_{llama-3.2-3b,ministral-3-3b,qwen3.5-4b,gemma-4-e4b}_result.json`
-  under `experiment/phase1/probe/` (full per-layer AUROC surfaces + CIs +
+  under `archive/experiment/phase1/probe/` (full per-layer AUROC surfaces + CIs +
   descriptives inside).
 - Extraction outputs (local only, gitignored `z_<tag>/`): rows.jsonl +
   per-row `{pre,post}.safetensors` + manifest.json under

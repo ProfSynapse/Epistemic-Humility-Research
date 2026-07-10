@@ -230,7 +230,7 @@ verbatim Cheng alias scorer. `n_answered = 1836` → **500 correct / 1336 wrong*
 lot" surface §1.3 required). Data-adequacy precondition cleared (≥150/≥150;
 actual 500/1336). Probe: 5-fold stratified CV logistic on standardized hidden
 states, out-of-fold, fit independently per (position × layer). Full AUROC surface
-+ verdict: `experiment/phase1/probe/amendment_s_stage2_result.json`. Scripts:
++ verdict: `papers/paper-4-two-signal-readout/analysis/source-artifacts/probe/amendment_s_stage2_result.json`. Scripts:
 `amendment_s_correctness_probe_extract.py` (GPU) +
 `amendment_s_correctness_probe_score.py` (CPU).
 

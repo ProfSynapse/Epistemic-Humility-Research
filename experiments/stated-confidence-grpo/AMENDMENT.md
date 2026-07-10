@@ -161,8 +161,8 @@ Use a verifiable reward over the same model-specific known/unknown split:
 
 The initial implementation lives in:
 
-- `experiment/phase1/grpo/humility_reward.py`
-- `experiment/phase1/grpo/build_grpo_dataset.py`
+- `archive/experiment/phase1/grpo/humility_reward.py`
+- `archive/experiment/phase1/grpo/build_grpo_dataset.py`
 
 This code must remain outside `synaptic-tuner/`. The tuner should receive it
 through its existing custom GRPO reward and dataset interfaces; project-specific

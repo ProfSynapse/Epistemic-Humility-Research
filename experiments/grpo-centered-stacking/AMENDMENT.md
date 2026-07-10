@@ -125,7 +125,7 @@ core metrics:
   where relevant.
 
 The simple balanced behavior score used in
-`experiment/phase1/eval/analysis/selfaware_full_run_comparison_grouped.csv` is
+`archive/experiment/phase1/eval/analysis/selfaware_full_run_comparison_grouped.csv` is
 an exploratory summary only. It is not a registered headline metric unless a
 later signed protocol freezes it.
 
@@ -143,8 +143,8 @@ Interpretation rules:
 
 Project-local artifacts may include:
 
-- seed-specific YAML configs under `experiment/phase1/grpo/configs/`;
-- eval configs under `experiment/phase1/eval/config/`;
+- seed-specific YAML configs under `archive/experiment/phase1/grpo/configs/`;
+- eval configs under `archive/experiment/phase1/eval/config/`;
 - run records, session notes, and analysis CSVs;
 - generic tuner fixes in `synaptic-tuner/` only when they are reusable outside
   this project.

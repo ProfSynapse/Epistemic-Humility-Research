@@ -123,11 +123,11 @@ Interpretation rules:
 
 Project-local artifacts may include:
 
-- seed-specific training/eval configs under `experiment/phase1/`;
-- run records under `experiment/phase1/run_records/`;
+- seed-specific training/eval configs under `archive/experiment/phase1/`;
+- run records under `archive/experiment/phase1/run_records/`;
 - session notes under `docs/sessions/`;
 - experiment-local runbooks/plans under `experiments/<slug>/`;
-- analysis CSVs under `experiment/phase1/eval/analysis/`.
+- analysis CSVs under `archive/experiment/phase1/eval/analysis/`.
 
 Do not commit model weights, scratch run products, restricted data, or large
 generated row files. Generic tuner fixes may occur only in `synaptic-tuner/`

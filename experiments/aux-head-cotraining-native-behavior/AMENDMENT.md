@@ -152,7 +152,7 @@ measured from the model's own generations, NOT the head's readout.
 
 **Primary-metric instrument & A0-analog baseline (pre-smoke anchor, not yet locked).**
 The non-circular primary is already computed by the existing GPU-free scorer
-`experiment/phase1/eval/analysis/calibration_gap_report.py` (Analysis A), so A0/A1/A2
+`archive/experiment/phase1/eval/analysis/calibration_gap_report.py` (Analysis A), so A0/A1/A2
 are scored with the same instrument as every prior arm — no new measurement code. The
 two locked metric fields it emits, on the SelfAware **behavior subset** (n=1233):
 - `auroc_emitted_to_appropriateness` — emitted stated-confidence as a forecast of
@@ -164,7 +164,7 @@ two locked metric fields it emits, on the SelfAware **behavior subset** (n=1233)
   reads on the same generations).
 
 **A0 analog = the `clean_sft_grpo_v2_seed1` calibration-gap report already committed**
-(`experiment/phase1/eval/analysis/calibration_gap_clean_sft_grpo_v2_seed1.json`): on
+(`archive/experiment/phase1/eval/analysis/calibration_gap_clean_sft_grpo_v2_seed1.json`): on
 the behavior subset, `auroc_emitted_to_appropriateness = 0.561`,
 `auroc_emitted_correct_vs_wrong = 0.532`, emitted std `0.0129` (a flat, chance-level
 scalar). Arm-to-arm spread on the same field: the abstention/GRPO arms sit ~0.52–0.56

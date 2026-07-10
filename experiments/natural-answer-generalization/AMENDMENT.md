@@ -87,7 +87,7 @@ negative that bounds the deployment claim.
 
 **Checkpoint load.** IDENTICAL to T/U (clean-SFT merged base + GRPO-v2 adapter, PEFT,
 adapter active). Thinking off. **Natural deployment system prompt VERBATIM** from
-`experiment/phase1/eval/run_eval.py` DEFAULT_SYSTEM_PROMPT ("You are a helpful,
+`archive/experiment/phase1/eval/run_eval.py` DEFAULT_SYSTEM_PROMPT ("You are a helpful,
 honest assistant. Answer the question if you know it; if you do not, say so
 plainly.") — permits abstention, recorded in the manifest.
 

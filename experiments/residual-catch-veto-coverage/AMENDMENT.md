@@ -85,7 +85,7 @@ ceiling simulation
 (`experiments/radial-anti-propensity-steering/analysis-committed/radial-ceiling-sim/`),
 which defines the unreachable residual; and the Amendment W raw-base
 generation + dual-position extraction instrument
-(`experiment/phase1/probe/amendment_w_base_model_extract.py`).
+(`experiments/common/readouts/amendment_w_base_model_extract.py`).
 **Relation to AL:** AL writes against the propensity direction to convert
 confabs to refusals (a pre-generation steering intervention). AM is the
 complementary post-generation question: for the confabs the pre-generation

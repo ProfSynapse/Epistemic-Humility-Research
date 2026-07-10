@@ -161,7 +161,7 @@ Gate/dial/veto AUROCs exactly as X/Z/SR define them. Interpretation rules:
 ## 6. Implementation Boundary
 
 - Extractor change: a **backward-compatible base-mode prompting path** in
-  `experiment/phase1/probe/amendment_x_cross_model_extract.py` — no chat
+  `experiments/common/readouts/amendment_x_cross_model_extract.py` — no chat
   template, fixed k-shot QA block, plain completion parsed at first line
   after the answer cue. Flag **default off** so X/Z/SR cells reproduce
   byte-for-byte. Probe-layer rule for odd geometries (GPT-2): depth fraction
@@ -246,7 +246,7 @@ All 10 evidence cells scored (9 cloud A10G + OLMo-2-7B run locally on the 3090
 after two cloud preemptions benched the cloud cell; identical extractor,
 engine `tuner-batched`, seed 20260630, greedy). Every cell clears the adequacy
 floors by wide margins (min class count 234; floor 50). Per-cell artifacts:
-`experiment/phase1/probe/amendment_y_results/`.
+`papers/paper-4-two-signal-readout/analysis/source-artifacts/probe/amendment_y_results/`.
 
 ### Arm A — paired base-vs-instruct (gated)
 

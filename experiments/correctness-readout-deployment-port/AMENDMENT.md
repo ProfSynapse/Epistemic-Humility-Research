@@ -211,7 +211,7 @@ n_refused ≈ 7044. The deployed checkpoint **refused ~82% of attempts even unde
 the forced-best-guess prompt** — GRPO-v2's abstention training resists prompt-level
 suppression, so *wrong* is the rare class (~6%/attempt). Data-adequacy precondition
 cleared with large margin (≥150/≥150; actual 988/500). Artifacts:
-`experiment/phase1/probe/amendment_t_stage2_result.json` (tensor outputs gitignored
+`papers/paper-4-two-signal-readout/analysis/source-artifacts/probe/amendment_t_stage2_result.json` (tensor outputs gitignored
 under `qwen3-4b-clean-sft-grpo-v2/`).
 
 **Gate table (locked §4):**

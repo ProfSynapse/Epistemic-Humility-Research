@@ -126,7 +126,7 @@ the scalar still collapsed:
 - SFT run:
   `scratch/schema_response_confidence/runs/sft_schema_probe_scaled_seed1_full/20260623_095638`
 - mixed SelfAware smoke config:
-  `experiment/phase1/eval/config/eval_amendment_e_response_confidence_selfaware_probe_scaled_sft_seed1_smoke_local_4b.yaml`
+  `archive/experiment/phase1/eval/config/eval_amendment_e_response_confidence_selfaware_probe_scaled_sft_seed1_smoke_local_4b.yaml`
 - eval result:
   `experiment/phase1/eval/results_amendment_e_response_confidence_selfaware_probe_scaled_sft_seed1_smoke_4b`
 
@@ -252,14 +252,14 @@ Interpretation:
 
 Project-local files:
 
-- `experiment/phase1/grpo/build_schema_response_confidence_datasets.py`
-- `experiment/phase1/grpo/tests/test_build_schema_response_confidence_datasets.py`
-- `experiment/phase1/grpo/configs/sft_schema_probe_scaled_response_confidence_seed1_smoke.yaml`
-- `experiment/phase1/grpo/configs/sft_schema_probe_scaled_response_confidence_seed1_full.yaml`
-- `experiment/phase1/grpo/configs/sft_schema_contrastive_response_confidence_seed1_smoke.yaml`
-- `experiment/phase1/grpo/configs/sft_schema_contrastive_response_confidence_seed1_full.yaml`
-- `experiment/phase1/grpo/configs/sft_schema_clean_response_confidence_seed1_smoke.yaml`
-- `experiment/phase1/grpo/configs/sft_schema_clean_response_confidence_seed1_full.yaml`
+- `archive/experiment/phase1/grpo/build_schema_response_confidence_datasets.py`
+- `archive/experiment/phase1/grpo/tests/test_build_schema_response_confidence_datasets.py`
+- `archive/experiment/phase1/grpo/configs/sft_schema_probe_scaled_response_confidence_seed1_smoke.yaml`
+- `archive/experiment/phase1/grpo/configs/sft_schema_probe_scaled_response_confidence_seed1_full.yaml`
+- `archive/experiment/phase1/grpo/configs/sft_schema_contrastive_response_confidence_seed1_smoke.yaml`
+- `archive/experiment/phase1/grpo/configs/sft_schema_contrastive_response_confidence_seed1_full.yaml`
+- `archive/experiment/phase1/grpo/configs/sft_schema_clean_response_confidence_seed1_smoke.yaml`
+- `archive/experiment/phase1/grpo/configs/sft_schema_clean_response_confidence_seed1_full.yaml`
 - Amendment E eval configs to be added after a successful probe-scaled SFT
   checkpoint exists
 

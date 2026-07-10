@@ -280,8 +280,8 @@ question to place mass at the correct mode, which is what installs discriminatio
   `response_confidence` target column (quantile-balanced probe-distilled vs clean
   role-band). No sub-span masking is needed (no wrong-answer rows).
 - Configs (YAML):
-  - `experiment/phase1/grpo/configs/sft_schema_probe_distilled_response_confidence_seed1_smoke.yaml`
-  - `experiment/phase1/grpo/configs/sft_schema_probe_distilled_response_confidence_seed1_full.yaml`
+  - `archive/experiment/phase1/grpo/configs/sft_schema_probe_distilled_response_confidence_seed1_smoke.yaml`
+  - `archive/experiment/phase1/grpo/configs/sft_schema_probe_distilled_response_confidence_seed1_full.yaml`
 
 ### 3.3 Why this is expected to beat the prior attempts
 

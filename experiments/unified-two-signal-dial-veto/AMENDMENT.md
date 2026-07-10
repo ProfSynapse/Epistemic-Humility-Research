@@ -241,7 +241,7 @@ SelfAware more than the PopQA/TriviaQA pool). Data-adequacy precondition cleared
 with margin (≥50 hallucinations; actual **121**). Dial = the Amendment T correctness
 probe (post-gen L22), T-reference groups scored OUT-OF-FOLD (honest), U groups
 COLD-applied (external to the T fit). Artifacts:
-`experiment/phase1/probe/amendment_u_two_signal_result.json` (tensor outputs
+`papers/paper-4-two-signal-readout/analysis/source-artifacts/probe/amendment_u_two_signal_result.json` (tensor outputs
 gitignored under `qwen3-4b-clean-sft-grpo-v2/amendment_u/`).
 
 **Gate table (locked §4):**

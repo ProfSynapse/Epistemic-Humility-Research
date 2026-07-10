@@ -94,7 +94,7 @@ data work.
 
 ### 3.1 Reward
 
-`experiment/phase1/grpo/humility_reward_v3.py`, default closure
+`archive/experiment/phase1/grpo/humility_reward_v3.py`, default closure
 `epistemic_humility_reward = make_reward()`:
 
 - proper-scoring term: `−confidence_weight * Brier(conf, appropriateness)` with
@@ -111,7 +111,7 @@ data work.
 ### 3.2 CPU preflight (completed, GREEN)
 
 Before any GPU spend the v3 reward was re-scored on 19,904 real v2 rollouts
-(`experiment/phase1/grpo/v3_reward_preflight.py`):
+(`archive/experiment/phase1/grpo/v3_reward_preflight.py`):
 
 - **Q1 spread:** group appropriateness targets std 0.320 over 4,211 prompts,
   65.6% in `[0.2, 0.8]` — no degenerate single-target collapse;
@@ -135,8 +135,8 @@ from `grpo_schema_clean_sft_merged_seed1_v2_full.yaml`.
 
 Config files:
 
-- `experiment/phase1/grpo/configs/grpo_schema_clean_sft_merged_seed1_v3_smoke.yaml`
-- `experiment/phase1/grpo/configs/grpo_schema_clean_sft_merged_seed1_v3_full.yaml`
+- `archive/experiment/phase1/grpo/configs/grpo_schema_clean_sft_merged_seed1_v3_smoke.yaml`
+- `archive/experiment/phase1/grpo/configs/grpo_schema_clean_sft_merged_seed1_v3_full.yaml`
 
 ## 4. Launch Sequence
 
@@ -167,10 +167,10 @@ doubt axis ("model says what it knows"), with behavior preserved.
 
 Project-local files only:
 
-- `experiment/phase1/grpo/humility_reward_v3.py`
-- `experiment/phase1/grpo/v3_reward_preflight.py`
-- `experiment/phase1/grpo/configs/grpo_schema_clean_sft_merged_seed1_v3_smoke.yaml`
-- `experiment/phase1/grpo/configs/grpo_schema_clean_sft_merged_seed1_v3_full.yaml`
+- `archive/experiment/phase1/grpo/humility_reward_v3.py`
+- `archive/experiment/phase1/grpo/v3_reward_preflight.py`
+- `archive/experiment/phase1/grpo/configs/grpo_schema_clean_sft_merged_seed1_v3_smoke.yaml`
+- `archive/experiment/phase1/grpo/configs/grpo_schema_clean_sft_merged_seed1_v3_full.yaml`
 
 Generated scratch datasets and model artifacts remain uncommitted. The
 `synaptic-tuner/` submodule remains generic; no Epistemic-specific reward logic
