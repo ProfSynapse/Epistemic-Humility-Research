@@ -83,7 +83,7 @@ established three facts that jointly motivate this amendment:
 
 1. **The model has the signal internally.** A 1-D doubt-axis readout is calibrated
    to ECE ≈ 0.004 and separates known/unknown at AUROC ≈ 0.997, surviving all
-   training [calibration: docs/sessions/20260627T093723Z-caution-vs-doubt-knowledge-gate.md cp004; probe: experiments/selfaware-latent-knowledge-controls/artifacts/latent_knowledge_controls/].
+   training [calibration: archive/docs/sessions/20260627T093723Z-caution-vs-doubt-knowledge-gate.md cp004; probe: experiments/selfaware-latent-knowledge-controls/artifacts/latent_knowledge_controls/].
 2. **The stated channel does not report it, and outcome/preference training does not
    fix it.** DPO, KTO, GRPO v1/v2/v3 all leave emitted confidence collapsed
    (v3: std 0.027, AUROC→appropriateness 0.522) even though the v3 proper-score

@@ -32,7 +32,7 @@ NOT modify PROTOCOL v0.3, Amendment E (clean-SFT mainline / clean cell), or
 Amendment J (GRPO v3). It is reported separately as an alternative base, not a
 replacement for the clean-SFT base that E/J build on.
 
-**Session note:** `docs/sessions/20260627T093723Z-caution-vs-doubt-knowledge-gate.md`
+**Session note:** `archive/docs/sessions/20260627T093723Z-caution-vs-doubt-knowledge-gate.md`
 
 ---
 

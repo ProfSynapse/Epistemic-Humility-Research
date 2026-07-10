@@ -89,7 +89,7 @@ Four reusable features, plus a gotcha:
    co-training can break gradient flow — the build must assert gradients reach both
    the head and the LoRA params.
 
-A focused builder handoff (parallel to docs/sessions/20260629T000000Z-aux-scalar-head-build-handoff.md, Phase A) will spec these
+A focused builder handoff (parallel to archive/docs/sessions/20260629T000000Z-aux-scalar-head-build-handoff.md, Phase A) will spec these
 with acceptance tests. Phase B does not run until this lands + smokes green.
 
 **Status (2026-06-29):** items 1–4 LANDED in PR #119 (submodule `e95dbde`, 62
@@ -97,7 +97,7 @@ aux_head tests green). Two prerequisites remain before the scored A0/A1/A2 run, 
 generic engine/runner work (NOT epistemic-humility specifics):
 
 6. **`prompt_render="prompt_completion"` mode** (`train_sft.py` preprocessing;
-   builder spec `docs/sessions/20260629T000000Z-phase-b-token-faithfulness-fix-handoff.md`). The default full-conversation render diverges
+   builder spec `archive/docs/sessions/20260629T000000Z-phase-b-token-faithfulness-fix-handoff.md`). The default full-conversation render diverges
    from `add_generation_prompt=True` at the `</think>` newlines, so item 3's
    `end_of_prompt` lands one token short of the validated gen-prompt axis (smoke:
    cos 0.54 / AUROC 0.85 vs the 0.96 axis). The verified fix renders rows
@@ -211,7 +211,7 @@ correctness gap (O's 0.64) and generic-train-distribution transfer remain separa
   end_of_prompt token reproduces the Q axis; head calibration baseline measured).
   **Faithfulness sub-gate RESOLVED (2026-06-29): the fix is verified — prompt/completion
   tokenization restores cos 0.9998 / AUROC 0.938 (see §7). Pending: the engine
-  preprocessing render-mode build (handoff `docs/sessions/20260629T000000Z-phase-b-token-faithfulness-fix-handoff.md`), then the
+  preprocessing render-mode build (handoff `archive/docs/sessions/20260629T000000Z-phase-b-token-faithfulness-fix-handoff.md`), then the
   joint-loss-runs + baseline parts of the smoke.**
 - [x] Primary-metric instrument identified + A0-analog baseline anchored (R1.1).
 - [x] Final effect-size falsifier threshold locked (+0.05, 2026-06-29 after the
@@ -300,6 +300,6 @@ gen-prompt token for **400/400** rows: **CV AUROC 0.9380 (cached 0.9389), cos 0.
 mse 0.04.** No change to the engine's token-position code; the fix is a preprocessing
 **render mode** (the current full-conversation render diverges from
 `add_generation_prompt=True` at the `</think>` newlines, so the faithful token has no
-clean in-row position). Builder spec: `docs/sessions/20260629T000000Z-phase-b-token-faithfulness-fix-handoff.md`. The real run uses the real
+clean in-row position). Builder spec: `archive/docs/sessions/20260629T000000Z-phase-b-token-faithfulness-fix-handoff.md`. The real run uses the real
 abstention completion (known→answer, unknown→IDK); the fixed completion here only
 isolates the read position (which is before the completion).

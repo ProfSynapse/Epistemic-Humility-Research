@@ -38,7 +38,7 @@ on its own, and letting RL do the behavior shaping it is built for. It does NOT
 modify PROTOCOL v0.3, Amendment E (clean-SFT), Amendment J (GRPO v3 on clean-SFT),
 or the K/L artifacts. Reported separately as an alternative base.
 
-**Session note:** `docs/sessions/20260627T093723Z-caution-vs-doubt-knowledge-gate.md`
+**Session note:** `archive/docs/sessions/20260627T093723Z-caution-vs-doubt-knowledge-gate.md`
 
 ---
 

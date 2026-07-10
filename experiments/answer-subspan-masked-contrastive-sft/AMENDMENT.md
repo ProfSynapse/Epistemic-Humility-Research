@@ -36,7 +36,7 @@ works at the SFT stage. It does NOT modify PROTOCOL v0.3, Amendment E
 stays on record as the unmasked result). Reported separately as an alternative
 base.
 
-**Session note:** `docs/sessions/20260627T093723Z-caution-vs-doubt-knowledge-gate.md`
+**Session note:** `archive/docs/sessions/20260627T093723Z-caution-vs-doubt-knowledge-gate.md`
 
 ---
 
