@@ -77,7 +77,7 @@ shift (60%→45% known).
 
 ## 3. Method (CPU-only; reuses cached artifacts)
 
-Script: `experiment/phase1/probe/probe_xdataset_transfer.py`.
+Script: `experiments/xdataset-probe-transfer/probe_xdataset_transfer.py`.
 - **FIT (train distribution):** KUQ grpo-v2 extraction
   `.../qwen3-4b-clean-sft-grpo-v2-seed1-kuq/hidden_states_kuq_clean_sft_grpo_v2_full`,
   h_base, layer 35. StandardScaler + LogisticRegression(C=1.0) on **all** rows.
@@ -196,6 +196,6 @@ correctness-vs-answerability gap. Written into Paper 3 §8/§9 as the cross-data
 robustness check on the O ceiling. Exploratory, single-model/single-seed; reported
 separately from the locked matrix; not a headline claim.
 
-Artifacts: scorer `experiment/phase1/probe/probe_xdataset_transfer.py`; raw result
+Artifacts: scorer `experiments/xdataset-probe-transfer/probe_xdataset_transfer.py`; raw result
 JSON written to scratch (h_base + h_lora), numbers transcribed here are the tracked
 record. The gitignored extraction-dir default output path is not redistributed.

@@ -223,7 +223,7 @@ the ceiling that motivates — with those two earned caveats — the proposed en
 change. Exploratory, single-model, single-seed; reported separately from the locked
 matrix; not a headline claim.
 
-Artifacts: scorer `experiment/phase1/probe/probe_as_oracle_ceiling.py`; raw per-row
+Artifacts: scorer `experiments/probe-as-oracle-readout-ceiling/probe_as_oracle_ceiling.py`; raw per-row
 result JSON written to the (gitignored) extraction dir
 `.../hidden_states_selfaware_clean_sft_full/amendment_o_probe_as_oracle.json` (not
 redistributed; numbers transcribed here are the tracked record).

@@ -27,8 +27,10 @@ checkpoint:
   revision: ''
 instrument:
   configs: []
-  modules: []
-  pins: {}
+  modules:
+  - probe_as_oracle_ceiling.py
+  pins:
+    probe_as_oracle_ceiling.py: 5eb9e06ff3a64811309009f7a93d039dbab45d56ecbda83e1dd48189ea91ee9d
 inputs: []
 verdict: SUCCESS — all 7 gates pass; probe-to-appropriateness AUROC 0.9967, action
   margin +95pt (no trained arm reached it); non-circular correctness AUROC only 0.640.
