@@ -9,10 +9,10 @@ the decision words are emitted (**decision-echo**)?
 Two checked-in harnesses, both Tier-2, both read-only (they sidestep the
 anti-steerability problem that plagues causal handles):
 
-- **Per-head o_proj axis** (e.g. the failure axis F): `phase3_head_read_trajectory.py`
-  + `phase3_head_read_trajectory_runner.py`, fed a `steering_directions.json`.
-- **Residual full-vector axis** (e.g. the caution axis A2): `phase3_residual_read_trajectory.py`
-  + `phase3_residual_read_trajectory_runner.py`, fed a `caution_direction.json`.
+- **Per-head o_proj axis** (e.g. the failure axis F): `experiments/common/mechinterp/head_read_trajectory.py`
+  + `experiments/common/mechinterp/head_read_trajectory_runner.py`, fed a `steering_directions.json`.
+- **Residual full-vector axis** (e.g. the caution axis A2): `experiments/common/mechinterp/residual_read_trajectory.py`
+  + `experiments/common/mechinterp/residual_read_trajectory_runner.py`, fed a `caution_direction.json`.
 
 ## What a read-only timing test can and cannot settle
 

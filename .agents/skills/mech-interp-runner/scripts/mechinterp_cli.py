@@ -306,7 +306,7 @@ def run_validate(*, quick: bool, dry_run: bool) -> int:
             "experiments/common/mechinterp/xdataset_behavior_from_generation.py",
             "experiments/common/mechinterp/residual_caution_direction.py",
             "experiments/common/mechinterp/residual_read_trajectory.py",
-            "experiment/phase1/probe/phase3_residual_read_trajectory_runner.py",
+            "experiments/common/mechinterp/residual_read_trajectory_runner.py",
         ],
         ["bin/sync_skills.py", "--check"],
     ]

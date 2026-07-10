@@ -179,7 +179,7 @@ def make_residual_read_hook(spec: dict[str, Any], *, store: list[float]):
 @contextmanager
 def residual_read(model: Any, spec: dict[str, Any], *, store: list[float]):
     """Register a read post-hook on the target decoder block; remove on exit."""
-    from phase3_causal_pilot_runner import find_decoder_layers  # noqa: PLC0415
+    from causal_pilot_runner import find_decoder_layers  # noqa: PLC0415
 
     layers = find_decoder_layers(model)
     block = spec["block"]
