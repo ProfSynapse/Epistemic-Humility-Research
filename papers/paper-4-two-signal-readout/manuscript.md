@@ -125,10 +125,11 @@ and model-sensitive). Three contributions over the diagnosis:
    split is the paper's central finding; we treat it as a co-headline, not a footnote,
    and give the descriptive quantity that predicts where the veto is strong.
 
-3. A generality claim. The diagnosis was one model, one family. We show the readout
-   is training-free (reads off the raw instruction-tuned base), size-robust (1.7B–14B),
-   replicates across four model families, and predates post-training entirely. The two
-   axes generalize everywhere we looked; the veto is the readout that must be validated
+3. A generality claim. The companion diagnosis established its gap on a single model
+   from a single family; this paper breaks that boundary. The readout is training-free
+   (it reads off the raw instruction-tuned base), size-robust (1.7B–14B), replicates
+   across four model families, and predates post-training entirely. The two axes
+   generalize everywhere we looked; the veto is the readout that must be validated
    per model.
 
 The thesis was falsifiable at several registered points, and we state them because each
