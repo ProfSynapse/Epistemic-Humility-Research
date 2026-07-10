@@ -4,7 +4,7 @@ session_id: 20260708T164625Z-paper-5-j-space-hardening
 title: Paper 5 J-space hardening
 status: active
 created_at: '2026-07-08T16:46:25Z'
-updated_at: '2026-07-10T19:19:39Z'
+updated_at: '2026-07-10T21:49:59Z'
 track: research
 phase: phase1
 question: Which registered follow-up experiments harden the Paper 5 actuation thesis,
@@ -343,6 +343,33 @@ checkpoints:
   decisions: []
   next_steps: []
   signals: {}
+- id: 015-checkpoint
+  at: '2026-07-10T21:49:59Z'
+  kind: checkpoint
+  title: Checkpoint
+  summary: 'Paper 4 revision arc executed and merged: reviewer memo recovered from
+    agent transcript and committed (docs/review/paper4-two-signal-readout-review-2026-07-10.md);
+    PI approved full plan incl. veto requalification + logprob baseline. paper4-revisor
+    (fable) executed all 8 memo items, lead-verified against AM/AP/rep2 amendment
+    docs, merged dcfa6634. Intro citation anchors added f9da0ba8. PRs merged: #269
+    (Amendment Z Z-G3 gate-wording erratum, notebook-tier), #270 (dial logprob baseline
+    NOT computable from cache: extraction never recorded logits; teacher-forced CPU/GPU
+    re-forward deferred until midband ladder frees the 3090). VOICE.md gained binding
+    ''Synthesis, not journey'' section (PI directive): superseded numbers never on
+    the page, predictions/gate-misses as compact registered facts, process narration
+    only in AI-workflow methods. Synthesis pass dispatched to paper4-revisor: remove
+    0.980 veto number entirely (confounded per AM/AP; honest ~0.74 controlled core
+    is the finding), de-narrate confound-hunt arcs. Queued for same pass: related-work
+    readability (PI reading feedback: section 2 blocks open with apparatus not question,
+    and argue our +0.065 inside related work; fix = plain-language question openers,
+    our numbers out of section 2). Midband ladder healthy: hs20 arms done through
+    permuted_gate, into gated dose_12, GPU 55%.'
+  evidence: []
+  run_ids: []
+  commands: []
+  decisions: []
+  next_steps: []
+  signals: {}
 ---
 # Paper 5 J-space hardening
 
@@ -636,3 +663,8 @@ rows before the layer contrast.
 - at: `2026-07-10T19:19:39Z`
 - kind: `checkpoint`
 - summary: PR #258 (experiment provenance reorganization) MERGED after full audit + remediation arc. Fable-tier audit verified: all 40 legacy amendments migrated with verdicts/gates/numbers byte-preserved, 45/45 run records archived, no new data exposure, nothing stranded on the Windows-side worktree (identical to PR head, clean). Blocking findings fixed by remediation: 7+44 dangling evidence pointers in governed docs corrected against the audit census, 23 stale historical pins re-pinned (+3 more surfaced by the main merge) with NOTEBOOK provenance entries, exp validate extended to gate historical-status pin drift, main merged with 5 conflicts resolved (mechinterp SKILL.md restructure kept both invariant sets; session notes renamed to timestamped scheme with checkpoints preserved and renumbered). Post-merge: validate OK (60 experiments) on main. Session-note tooling now uses the timestamped path (this checkpoint is the first at the new path).
+### 015-checkpoint - Checkpoint
+
+- at: `2026-07-10T21:49:59Z`
+- kind: `checkpoint`
+- summary: Paper 4 revision arc executed and merged: reviewer memo recovered from agent transcript and committed (docs/review/paper4-two-signal-readout-review-2026-07-10.md); PI approved full plan incl. veto requalification + logprob baseline. paper4-revisor (fable) executed all 8 memo items, lead-verified against AM/AP/rep2 amendment docs, merged dcfa6634. Intro citation anchors added f9da0ba8. PRs merged: #269 (Amendment Z Z-G3 gate-wording erratum, notebook-tier), #270 (dial logprob baseline NOT computable from cache: extraction never recorded logits; teacher-forced CPU/GPU re-forward deferred until midband ladder frees the 3090). VOICE.md gained binding 'Synthesis, not journey' section (PI directive): superseded numbers never on the page, predictions/gate-misses as compact registered facts, process narration only in AI-workflow methods. Synthesis pass dispatched to paper4-revisor: remove 0.980 veto number entirely (confounded per AM/AP; honest ~0.74 controlled core is the finding), de-narrate confound-hunt arcs. Queued for same pass: related-work readability (PI reading feedback: section 2 blocks open with apparatus not question, and argue our +0.065 inside related work; fix = plain-language question openers, our numbers out of section 2). Midband ladder healthy: hs20 arms done through permuted_gate, into gated dose_12, GPU 55%.
