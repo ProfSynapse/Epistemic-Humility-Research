@@ -4,7 +4,7 @@ session_id: paper5-jspace-hardening
 title: Paper 5 J-space hardening
 status: active
 created_at: '2026-07-08T16:46:25Z'
-updated_at: '2026-07-10T07:56:02Z'
+updated_at: '2026-07-10T10:52:21Z'
 phase: phase1
 question: Which registered follow-up experiments harden the Paper 5 actuation thesis,
   starting with a fresh Qwen3-4B J-space layer-site replication?
@@ -166,6 +166,35 @@ checkpoints:
   next_steps:
   - Present resolve-time adjudication options for the cross-family panel eligibility
     arithmetic to the user; remaining panel cells proceed.
+  signals: {}
+- id: 007-decision
+  at: '2026-07-10T10:52:21Z'
+  kind: decision
+  title: 'Qwen3.5 nulls decomposed: regulation transfers, format breaks; 4B-local
+    mid-band next'
+  summary: 'Row-level decomposition of both Qwen3.5 null cells reframed the finding:
+    9B doubt-write actuates stated-confidence refusal on 886/912 fired confabs at
+    dose 200 (format-agnostic ''refused'' flag) but strictly entangled with JSON corruption
+    (well-formed 2/912); 4B peaks at ~39% refusal even format-free before total degeneration.
+    User adjudication: strict JSON was partly a parseability holdover; the honest
+    framing is ''regulation works, format breaks'' for 9B, weak-actuation for 4B.
+    Verified the old forced-fill issue is triple-guarded now (min_new_tokens=1 + EOS,
+    baselines natural-stop 99%/98% at 69/102 avg tokens, clean_tighten requires natural
+    stop). Flag quirk noted: 4B dose_50 semantic_refuse (142) > refused (115). DECISIONS:
+    (1) anchor-placement audit (read-only, free) is the last unchecked harness surface;
+    (2) refusal/coherence decomposed readout gets governed provenance inside (3):
+    a new exploratory amendment testing whether a J-space mid-band write site on Qwen3.5-4B
+    decouples refusal from corruption, run LOCALLY on the 3090 per user (stronger
+    finding if the weakest cell rescues; free lane). Requires Qwen3.5-4B J-lens profile
+    (band is model-specific), fresh mid-band captures/fits from doubt-snap FIT rows,
+    small dose ladder with collapse diagnostics.'
+  evidence: []
+  run_ids: []
+  commands: []
+  decisions: []
+  next_steps:
+  - Dispatch anchor audit + scaffold qwen35-4b-midband-doubt-snap amendment in a new
+    worktree (draft, profile as pre-sign prep, no sign without user).
   signals: {}
 ---
 # Paper 5 J-space hardening
@@ -414,3 +443,10 @@ rows before the layer contrast.
 - summary: Both recalibrated Qwen3.5 FIT dose sweeps committed selected_dose null. 4B: coherent tighten peaks ~33% at dose 40 then JSON-corruption collapse (well-formed 90%->55%->3% across 40/50/60); 9B: peaks ~6% near 140-150 before the 200 cliff. Well-characterized no-window nulls, not grid artifacts: the doubt-gated caution snap does not transfer to Qwen3.5 at registered thresholds (vs 73.5% held-out on Qwen3-4B). Both cells ineligible-before-held-out for the cross-family denominator. NOTEBOOK entry committed on exp/doubt-snap-cross-family.
 - next steps:
   - Present resolve-time adjudication options for the cross-family panel eligibility arithmetic to the user; remaining panel cells proceed.
+### 007-decision - Qwen3.5 nulls decomposed: regulation transfers, format breaks; 4B-local mid-band next
+
+- at: `2026-07-10T10:52:21Z`
+- kind: `decision`
+- summary: Row-level decomposition of both Qwen3.5 null cells reframed the finding: 9B doubt-write actuates stated-confidence refusal on 886/912 fired confabs at dose 200 (format-agnostic 'refused' flag) but strictly entangled with JSON corruption (well-formed 2/912); 4B peaks at ~39% refusal even format-free before total degeneration. User adjudication: strict JSON was partly a parseability holdover; the honest framing is 'regulation works, format breaks' for 9B, weak-actuation for 4B. Verified the old forced-fill issue is triple-guarded now (min_new_tokens=1 + EOS, baselines natural-stop 99%/98% at 69/102 avg tokens, clean_tighten requires natural stop). Flag quirk noted: 4B dose_50 semantic_refuse (142) > refused (115). DECISIONS: (1) anchor-placement audit (read-only, free) is the last unchecked harness surface; (2) refusal/coherence decomposed readout gets governed provenance inside (3): a new exploratory amendment testing whether a J-space mid-band write site on Qwen3.5-4B decouples refusal from corruption, run LOCALLY on the 3090 per user (stronger finding if the weakest cell rescues; free lane). Requires Qwen3.5-4B J-lens profile (band is model-specific), fresh mid-band captures/fits from doubt-snap FIT rows, small dose ladder with collapse diagnostics.
+- next steps:
+  - Dispatch anchor audit + scaffold qwen35-4b-midband-doubt-snap amendment in a new worktree (draft, profile as pre-sign prep, no sign without user).
