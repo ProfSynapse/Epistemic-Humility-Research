@@ -140,6 +140,29 @@ dead one is not.
 - Limitations sections are specific and quantified ("one pool, one scale,
   one family; the known nondeterminism source bounds per-item claims")
   rather than ritual ("more work is needed").
+- Real headings, not bold run-ins. Structure is expressed with headings and
+  subheadings at the proper level, never with a bolded phrase gluing a
+  paragraph shut ("**The gate.** The gate is...") and never with bolded
+  numbered mini-headings inside prose. If a block deserves a label, it
+  deserves a heading; if it does not deserve a heading, it does not get a
+  fake one. Genuine lists stay lists, unbolded.
+
+## External-facing self-containment
+
+Assume no reader ever opens the repository. The paper carries everything a
+reader needs.
+
+- Internal instrument names never appear in body prose: no amendment
+  letters or codenames, no governed-doc filenames, no experiment slugs, no
+  internal PR numbers. Describe the thing instead: "a pre-registered
+  follow-up experiment", "the registered replication", "a pre-recorded
+  adversarial audit".
+- Pre-registration language is welcome; it is standard science vocabulary
+  and stands on its own. What it cannot do is lean on the repo ("see the
+  amendment document for details") to complete a claim.
+- Repository pointers live in exactly one place: the provenance appendix,
+  which maps each reported number to its artifact for readers who do go
+  look. Body text never depends on that appendix to be understood.
 
 ## Worked example of the register
 
