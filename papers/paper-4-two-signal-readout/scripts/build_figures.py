@@ -253,19 +253,18 @@ def fig5_training_sharpens():
     import numpy as np
     fig, (axA, axB) = plt.subplots(1, 2, figsize=(10.2, 4.5))
 
-    # A: veto AUROC base -> trained
+    # A: veto AUROC on the untrained raw base vs the pass bar and chance
     base_v = W["W_G1_dial_on_hallucination_PRIMARY"]["auroc_scorrect_vs_hallucination"]
-    train_v = U["U_G3_dial_on_hallucination_PRIMARY"]["auroc_tcorrect_vs_hallucination"]
-    axA.bar([0, 1], [base_v, train_v], color=[C_MUTE, C_VETO], width=0.6)
-    axA.annotate("", xy=(1, train_v), xytext=(0, base_v),
-                 arrowprops=dict(arrowstyle="->", color="#333", lw=1.4))
-    axA.text(0.5, (base_v + train_v) / 2 + 0.02, f"+{train_v - base_v:.3f}", ha="center", fontsize=10, fontweight="bold")
+    axA.bar([0], [base_v], color=[C_VETO], width=0.45)
     axA.axhline(THRESH, ls="--", lw=1.0, color="#444")
-    for xi, v in zip([0, 1], [base_v, train_v]):
-        axA.text(xi, v + 0.01, f"{v:.3f}", ha="center", va="bottom", fontsize=10)
-    axA.set_xticks([0, 1]); axA.set_xticklabels(["raw base", "after training"])
+    axA.axhline(CHANCE, ls=":", lw=1.0, color="#888")
+    axA.text(0.42, THRESH + 0.008, "pass bar 0.65", ha="right", va="bottom", fontsize=8, color="#444")
+    axA.text(0.42, CHANCE + 0.008, "chance 0.50", ha="right", va="bottom", fontsize=8, color="#888")
+    axA.text(0, base_v + 0.01, f"{base_v:.3f}", ha="center", va="bottom", fontsize=10)
+    axA.set_xticks([0]); axA.set_xticklabels(["raw base, no abstention training"])
+    axA.set_xlim(-0.55, 0.55)
     axA.set_ylabel("hallucination-veto AUROC"); axA.set_ylim(0, 1.05)
-    axA.set_title("the veto EXISTS untrained,\ntraining sharpens it", fontsize=10.5)
+    axA.set_title("the veto EXISTS untrained", fontsize=10.5)
 
     # B: hallucination dial-mean base -> trained (lower = more distrusted)
     base_h = W["descriptive"]["dial_mean_hallucination"]
@@ -277,7 +276,7 @@ def fig5_training_sharpens():
     axB.set_ylabel("dial score on confident hallucinations"); axB.set_ylim(0, 0.35)
     axB.set_title("training pushes confabulations\ntoward zero trust", fontsize=10.5)
 
-    fig.suptitle("Training does not create the trust signal — it sharpens the veto (Qwen3-4B)",
+    fig.suptitle("Training does not create the trust signal: it sharpens the veto (Qwen3-4B)",
                  fontsize=12, y=1.02)
     fig.tight_layout()
     fig.savefig(OUT / "fig-p3-05-training-sharpens.png", bbox_inches="tight")

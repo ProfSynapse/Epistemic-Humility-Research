@@ -29,14 +29,15 @@ unanswerable questions at AUROC ≈ 0.997. A **correctness dial**, read at the f
 token *after* generation, ranks whether the specific answer just produced is correct
 (AUROC 0.834), and reads best *after* the answer rather than before it (+0.065, CI
 excludes zero). The dial also **vetoes confident confabulation**: hallucinated answers to
-unanswerable questions receive the lowest trust of any group (AUROC 0.980 after our
-training; 0.754 on the raw base). Fusing the two axes into one scalar costs correctness
-ranking (Δ −0.014, CI excludes 0), so we deploy them as two sequential stages.
+unanswerable questions receive the lowest trust of any group. Fusing the two axes into one
+scalar costs correctness ranking (Δ −0.014, CI excludes 0), so we deploy them as two
+sequential stages.
 
 Four findings make this a mechanism rather than a curiosity. **(1) It is training-free:**
 the whole pipeline reads off the raw instruction-tuned base with no adapter and no
-abstention training of ours; our training only *sharpens* the veto (0.754 → 0.980), it
-does not create the signal. **(2) It is size-robust:** the readout passes on every Qwen3
+abstention training of ours (veto 0.754 untrained); our training only *sharpens* the veto
+(the mean trust the dial assigns to confident confabulations falls from 0.271 to 0.018),
+it does not create the signal. **(2) It is size-robust:** the readout passes on every Qwen3
 scale from 1.7B to 14B. **(3) It replicates across model families.** On four independent
 families (Qwen, Llama, Mistral, Gemma) the gate and dial pass on all four: the gate
 saturated at 0.997 to 0.998, the dial between 0.82 and 0.86. The veto is the readout that
@@ -292,7 +293,9 @@ the run. At signing, every instrument file is pinned by content hash (SHA-256). 
 signing, gates and thresholds cannot move, and post-outcome changes to the registered
 surface are prohibited outright. Every evidence cell in this paper ran under that regime,
 and the retained predictions were wrong in instructive ways: the orchestrator predicted
-the veto in a 0.65 to 0.85 band and it landed at 0.980 (§4.3); both the PI and the
+the veto in a 0.65 to 0.85 band and the uncontrolled contrast landed above it, for a
+reason the construct decomposition later made specific (the contrast carries the
+question's answerability as well as the answer's content, §4.3 to §4.4); both the PI and the
 orchestrator called the residual-coverage gates correctly while neither foresaw the
 length confound those gates failed to guard, and neither foresaw the answerability carry
 in the follow-up either (§4.4); the seed-robustness registration pre-named Llama and
@@ -402,19 +405,21 @@ carries the program's one registered gate miss, reported in §3.
 ### 4.3 The dial vetoes confident confabulation
 
 The same correctness dial, applied to the hallucination group (confident answers to
-unanswerable questions), assigns them the **lowest trust of any group**: veto AUROC
-**0.980** on the deployed checkpoint (correct vs hallucination), with a within-SelfAware
-control (known-answered vs unknown-answered, same dataset) of **0.93** that rules out a
+unanswerable questions), assigns them the **lowest trust of any group**, on the deployed
+checkpoint and on the raw base alike, with a within-SelfAware control (known-answered vs
+unknown-answered, same dataset) of **0.93** on the deployed checkpoint that rules out a
 mere dataset-shift artifact. Confident confabulation does *not* read like a correct answer
 to the dial. This is the property that makes the dial a hallucination *veto* and not merely
 a correctness *ranker*: the failure mode we most want to catch (fluent, confident, wrong)
-is exactly the one the dial pushes to the bottom. The registered prediction is worth
-showing: the orchestrator put this veto in a 0.65 to 0.85 band, with the named risk that
-confident confabulation would carry the same internal signature as confident
-correctness and the falsifier would fire. The result overshot the band at 0.980, and
-the named risk did not materialize on this checkpoint. §4.4 explains part of the
-overshoot: the contrast carries the question's answerability as well as the answer's
-content.
+is exactly the one the dial pushes to the bottom. What the veto reads when it does this is
+established by the pre-registered decomposition in §4.4: a content-trust core of AUROC
+**0.737** (CI [0.650, 0.815]) once answer length and question answerability are both
+controlled, plus the question's carried answerability, which the post-answer state
+retains and which by itself separates unanswerable-question confabulations from good
+answers nearly perfectly. The registered fact: the orchestrator put this veto in a 0.65
+to 0.85 band, with the named risk that confident confabulation would carry the same
+internal signature as confident correctness and the falsifier would fire. The risk did
+not materialize, and the controlled content core sits inside the registered band.
 
 Figure 2 shows the mechanism directly: the dial-mean of the hallucination group sits far
 below the correct group, and the size of that separation is what the veto AUROC measures.
@@ -462,7 +467,7 @@ The registered verdict is explicit: the inflated headline must not be cited as t
 content-trust characteristic. The honest content number is about 0.74.
 
 What this means for the numbers above. Every headline veto contrast in this paper
-(0.980 on the deployed checkpoint, 0.754 on the raw base, the cross-family and
+(the deployed checkpoint, the raw base at 0.754, the cross-family and
 seed-robustness columns below) compares correct answers against confabulations on
 unanswerable questions, and the within-SelfAware control shares that structure, so
 carried answerability is uncontrolled in all of them. The decomposition does not
@@ -508,10 +513,10 @@ as **two sequential stages** rather than one score (Figure 6):
 Every result above reproduces on the **raw** Qwen3-4B instruction-tuned base, with no
 adapter and no abstention training of ours: gate **0.997**, dial **0.834**, veto **0.754**.
 Both the gate and the dial pass unchanged; the veto is present and above chance on the raw
-base. What our training buys is *sharpening the veto*, not creating the mechanism: the veto
-climbs from **0.754 → 0.980** (+0.226 AUROC), and the mean trust the dial assigns to
-confident confabulations drops from **0.271** on the base to **0.018** after training:
-the trained model reads its own hallucinations as near-zero trust. Training adds essentially
+base. What our training buys is *sharpening the veto*, not creating the mechanism: the
+mean trust the dial assigns to confident confabulations drops from **0.271** on the base
+to **0.018** after training: the trained model reads its own hallucinations as near-zero
+trust. Training adds essentially
 nothing to the gate (already saturated) and installs autonomous behavioral abstention, but
 the *readable trust signal itself* is a property of the frozen representation (Figure 5).
 
@@ -740,7 +745,7 @@ base→instruct pair read under a single pipeline (Olmo-3, same seed, scorer, an
 class) moves the veto **0.803 → 0.731** and the within-SelfAware control 0.791 → 0.674;
 the render-confounded cross-run pairs sit at or below their bases too. This resolves the
 tension with §4.6's "training sharpens" result: what sharpened the Qwen3-4B veto
-(0.754 → 0.980) was *targeted abstention training*, not post-training per se. Generic
+(§4.6) was *targeted abstention training*, not post-training per se. Generic
 vendor post-training adds nothing to any of the three axes and moved the fragile one the
 wrong way, consistent with §4.7's non-monotonic scale result.
 
@@ -791,9 +796,9 @@ mechanism with no fine-tuning:
    about 0.74, and the rest of the headline separation is carried answerability. In a
    pipeline that is acceptable: the veto's job is to catch what the gate missed, and
    catching a confabulation by re-reading the question's answerability after generation
-   still catches it. But do not expect ~0.98 discrimination on confabulations whose
-   questions read cleanly answerable, and do not read the dial score on a flagged answer
-   as a calibrated content probability (§4.2).
+   still catches it. But expect the ~0.74 content core, not the headline blend, on
+   confabulations whose questions read cleanly answerable, and do not read the dial score
+   on a flagged answer as a calibrated content probability (§4.2).
 
 Two engineering notes fall out of the results. Keep the axes *separate*: fusing them costs
 correctness ranking (§4.5). And *refit the dial per checkpoint*: the correctness direction
@@ -830,8 +835,8 @@ useful part of epistemic humility for a small model (a thresholdable "should I a
 how much should you trust this?") is available from a frozen model with a linear probe.
 
 **What training is for.** Our training is not wasted, but its role is narrow and specific: it
-*sharpens the veto* (0.754 → 0.980, a contrast that includes carried answerability; the
-controlled content core is smaller, §4.4) and installs autonomous behavioral abstention. It does
+*sharpens the veto* (confabulation dial-mean 0.271 → 0.018, §4.6) and installs
+autonomous behavioral abstention. It does
 not create the gate, the dial, or the veto, and §4.11 sharpens the negative half further:
 the signal predates not just our training but *any* post-training (gate 0.997+ on four
 pre-instruction bases), and generic vendor post-training does not sharpen the readout either
@@ -939,7 +944,7 @@ the answer than before) compose into a two-stage pipeline that needs no fine-tun
 size-robust from 1.7B to 14B, replicates across four model families, and, by the
 pre-registered pretrain-only contrast, is present *before any post-training at all*, readable
 (descriptively) as far back as GPT-2-XL. The dial's **veto** on confident confabulation is
-real and, once sharpened by targeted abstention training, strong (0.980), but it is the
+real and sharpened by targeted abstention training, but it is the
 fragile, model-dependent piece: seed- and render-sensitive, non-monotonic in scale, the
 one axis a vendor's own post-training moved the wrong way, and a blend rather than a pure
 content read: controlled for answer length and question answerability, its content core
@@ -1051,8 +1056,9 @@ surfaces, CIs, and dial descriptives.
   8B) and across families (right, 3/4 pass). (`fig-p3-03-fragile-axis.png`)
 - **Figure 4.** Correctness reads best after the answer: pre- vs post-generation dial AUROC by
   layer, base and deployed. (`fig-p3-04-post-beats-pre.png`)
-- **Figure 5.** Training sharpens the veto: veto AUROC 0.754 → 0.980 and hallucination
-  dial-mean 0.271 → 0.018, base vs trained. (`fig-p3-05-training-sharpens.png`)
+- **Figure 5.** The veto exists untrained (raw-base AUROC 0.754, above the 0.65 pass bar)
+  and training sharpens it: hallucination dial-mean 0.271 → 0.018, base vs trained.
+  (`fig-p3-05-training-sharpens.png`)
 - **Figure 6.** The deployable two-stage pipeline: gate (abstain) → generate → dial+veto
   (surface trust). (`fig-p3-06-pipeline.png`)
 - **Figure 7.** Cross-family depth profile: gate vs dial per-layer AUROC against fractional
