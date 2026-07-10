@@ -239,7 +239,7 @@ half, and what is known about writing along these axes is taken up in the discus
 
 ## 3. Setup
 
-#### Models
+### Models
 
 The core mechanism is developed on Qwen3-4B in two conditions: the raw
 instruction-tuned base (`unsloth/Qwen3-4B-bnb-4bit`, no adapter) and our deployed
@@ -248,7 +248,7 @@ checkpoint (clean supervised fine-tune → GRPO). The size study uses the raw Qw
 comparable scale (Llama-3.2-3B, Ministral-3-3B, Qwen3.5-4B, and Gemma-4-E4B), read
 training-free, exactly as the base-model condition.
 
-#### Data and labels
+### Data and labels
 
 Answerable questions come from PopQA (Mallen et al., 2022) and
 TriviaQA (Joshi et al., 2017), graded against gold
@@ -258,7 +258,7 @@ answers them anyway, are labeled *hallucinations* (a structural label: the model
 a confident answer to a question with no answer). This gives three groups for the
 correctness axis: correct answers, wrong answers, and confident confabulations.
 
-#### Readout recipe
+### Readout recipe
 
 For each item we run a single forward pass over the concatenated
 [prompt + answer] sequence and cache residual-stream activations at every layer at two
@@ -271,7 +271,7 @@ confidence interval. When a dial fit on one condition is evaluated on another, i
 (deterministic). Each cell enforces a data-adequacy floor (≥30 wrong answers and ≥50
 hallucinations) before a probe verdict is reported.
 
-#### Pre-registered gates
+### Pre-registered gates
 
 Every evidence cell locked its gates, success rule, and
 falsifier before running, and none moved afterward. The cross-size and cross-family cells
