@@ -12,7 +12,7 @@ into the 1000-row corpus this module operates on.
 Stage-1 commitment-point pool (built by
 `archive/experiment/phase1/probe/amendments/amendment_ak_build_pool.py` from the AH stage-0
 question pool; also fetched from this same staging repo by
-`experiment/phase1/probe/cloud/modal_ak_stage1.py`). Those questions
+`experiments/commitment-point/cloud/modal_ak_stage1.py`). Those questions
 originate from the KUQ (Known-Unknown Questions) and SelfAware datasets as
 staged into this repo's AbstentionBench-adjacent pipeline (see
 `datasets/abstentionbench-repo/dataset.md`, license CC-BY-NC-4.0). Each row
