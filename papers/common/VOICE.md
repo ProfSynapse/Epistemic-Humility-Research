@@ -12,13 +12,13 @@ These are papers about epistemic humility. They must enact it, not just study
 it. The humility lives in the SCOPE of the claims, never in mealy wording. Say
 exactly what the evidence supports, plainly, and stop.
 
-Wrong: "Our results may perhaps suggest that steering could potentially
-improve abstention in some settings."
+Wrong: "Our results may perhaps suggest that the intervention could
+potentially improve the behavior in some settings."
 
-Right: "Steering at the mid-band layer produced coherent refusal on 73.5% of
-held-out confabulations. The same write at the late layer produced 0%. This
-held on one model family at one scale; we have not tested whether it
-transfers."
+Right: "The intervention produced the behavior on 71% of held-out items; the
+control produced it on 2%. This held on one model at one scale; we have not
+tested whether it transfers." (Numbers here are invented; the point is the
+shape.)
 
 The first sentence hedges because the author is nervous. The second is honest
 because the claim is fenced. Nervous hedging is banned. Fenced claims are the
@@ -32,9 +32,9 @@ gates that cannot move afterward. The papers show this machinery instead of
 hiding it.
 
 - Registered predictions appear in the text, including the misses. A wrong
-  prediction is content, not embarrassment. The Qwen3.5 recalibration arc,
-  where the orchestrator was wrong twice before the null resolved, is a
-  worked example of the method doing its job.
+  prediction is content, not embarrassment: an arc where a prediction failed
+  twice before a null resolved cleanly is the method doing its job, and it
+  reads that way on the page.
 - Nulls are reported in the main text with the same care as wins. A
   well-characterized null (the dose curve, the collapse point, the decomposed
   failure) earns its numbers on the page.
@@ -69,8 +69,8 @@ hiding it.
 5. First person, honestly. "We predicted X. We were wrong in a specific way,
    and the way we were wrong is the finding." The narrator of these papers
    is a lab thinking out loud, revising in public. Past positions get
-   revisited by name ("In the cross-family cells we assumed sigma-distance
-   would transfer. It does not.").
+   revisited by name ("We assumed the quantity would transfer across
+   settings. It does not.").
 
 6. Numbers live in sentences, not just tables. A table holds the grid; the
    prose says what the one number that matters is and why.
@@ -86,8 +86,8 @@ hiding it.
 - "We" is the lab (human PI + AI orchestrator + agents). Where authorship of
   a judgment matters, name the holder: "the PI predicted", "the orchestrator
   predicted", "the red-team agent refuted".
-- Mechanism names are chosen once and reused verbatim (the doubt gate, the
-  caution snap, the workspace band). No elegant variation on technical terms.
+- Mechanism names are chosen once and reused verbatim. No elegant variation
+  on technical terms.
 
 ## The paper/blog dial
 
@@ -115,24 +115,26 @@ dead one is not.
 - Every figure caption is a complete claim, readable without the body text.
 - The introduction states what would have falsified the paper's thesis. The
   conclusion states what still could.
-- Limitations sections are specific and quantified ("held-out is one pool,
-  one scale, one family; the batch-composition hazard bounds per-row
-  determinism") rather than ritual ("more work is needed").
+- Limitations sections are specific and quantified ("one pool, one scale,
+  one family; the known nondeterminism source bounds per-item claims")
+  rather than ritual ("more work is needed").
 
 ## Worked example of the register
 
+All numbers below are invented; the example shows shape and rhythm only.
+
 Before (typical draft prose):
 
-> It is worth noting that our steering intervention appears to demonstrate
-> potentially significant improvements in abstention behavior, although
+> It is worth noting that our intervention appears to demonstrate
+> potentially significant improvements in the target behavior, although
 > further investigation may be needed to fully understand the underlying
 > mechanisms at play.
 
 After (house voice):
 
-> The intervention works at one write site and fails at another, and the
-> failure is not noise. At the late layer, refusal only rises as coherence
-> falls: by the dose that produces 97% refusal-shaped outputs, 2 of 912 are
-> well-formed. At the workspace band, the two come apart. That decoupling is
-> the finding. Whether it survives on other families is registered as the
-> next experiment, and its falsifier is already on file.
+> The intervention works under one condition and fails under the other, and
+> the failure is not noise. Under condition A, the target behavior only
+> rises as output quality falls: by the setting that produces the behavior
+> in 9 of 10 items, almost none are usable. Under condition B, the two come
+> apart. That decoupling is the finding. Whether it survives elsewhere is
+> registered as the next experiment, and its falsifier is already on file.
