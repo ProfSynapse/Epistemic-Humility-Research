@@ -83,6 +83,6 @@ relationships:
 
 A supervised fine-tuning method that calibrates LLM verbalized confidence by computing a probability distribution over a discrete set of confidence tokens from output logits and minimizing the tokenized Brier score against the binary correctness indicator, without requiring ground-truth confidence scores, proxy estimates, or repeated sampling.
 
-**Why it matters here:** Provides a principled, data-efficient SFT baseline for verbalized calibration grounded in proper scoring theory, directly comparable to the Phase 1 SFT arm; trains in 4 minutes on 2,000 examples yet outperforms sampling-heavy proxy methods (SaySelf, LACIE) on ECE and AUROC across five diverse datasets.
+**Why it matters here:** Provides a principled, data-efficient SFT baseline for verbalized calibration grounded in proper scoring theory, directly comparable to the locked training-regimen SFT arm; trains in 4 minutes on 2,000 examples yet outperforms sampling-heavy proxy methods (SaySelf, LACIE) on ECE and AUROC across five diverse datasets.
 
 **Lineage:** Proposed in 2508.18847 (Li et al., NUS 2025); extends the classical Brier proper scoring rule into the verbalized-token setting; contrasts with RLCR (2507.16806) which applies the same Brier guarantee inside an RL reward; competes with SaySelf and LACIE as training-based verbalized calibration methods.

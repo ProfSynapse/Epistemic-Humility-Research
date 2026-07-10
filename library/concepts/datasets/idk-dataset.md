@@ -35,7 +35,7 @@ still answering those it can.
 
 **Why it matters here:** The Idk dataset is the training signal for both
 [[idk-sft]] and the DPO/RL variants in the Cheng et al. pipeline, making it
-directly analogous to the abstention training sets used in our Phase 1
+directly analogous to the abstention training sets used in our locked training-regimen
 SFT-vs-DPO-vs-KTO comparison.
 
 **Lineage:** derives from [[triviaqa]]; proposed by

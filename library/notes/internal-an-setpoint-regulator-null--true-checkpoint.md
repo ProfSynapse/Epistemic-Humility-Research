@@ -138,5 +138,5 @@ positive-control screen), then couple that validated actuator to the
 confab-propensity readout exactly as AC coupled the doubt readout to its
 validated caution_perp. Until that validation exists, treat AN as one
 confounded data point, not as evidence about the caution axis. Single checkpoint
-(AI-TRUE), single seed; Tier-2 exploratory, not pooled with the locked Phase 1
+(AI-TRUE), single seed; Tier-2 exploratory, not pooled with the locked locked training-regimen
 matrix.

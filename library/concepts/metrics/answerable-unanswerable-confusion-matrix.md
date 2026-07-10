@@ -58,6 +58,6 @@ relationships:
 
 A two-by-two confusion matrix for abstention evaluation that contrasts question type (answerable vs unanswerable) with model response type (candidate answer vs abstention). The four cells yield TP (correct answer on answerable), FP (wrong answer on answerable, or answer attempt on unanswerable), TN (correct abstention on unanswerable), and FN (abstention on answerable). Derived metrics include Answerable Accuracy (AAC = TP / |answerable|), Unanswerable Accuracy (UAC = TN / |unanswerable|), Abstention Rate (AR = (FN+TN) / |all|), and Precision (P = TP / (TP+FP)).
 
-**Why it matters here:** Provides the evaluation language for separating over-abstention (FN) from under-abstention (FP) in a black-box setting without access to token probabilities, which is exactly the decomposition the Phase 1 SFT-vs-DPO-vs-KTO study needs to avoid trading one failure mode for the other.
+**Why it matters here:** Provides the evaluation language for separating over-abstention (FN) from under-abstention (FP) in a black-box setting without access to token probabilities, which is exactly the decomposition the locked training-regimen SFT-vs-DPO-vs-KTO study needs to avoid trading one failure mode for the other.
 
 **Lineage:** Proposed in 2407.16221 as the evaluation backbone for Abstain-QA; generalizes standard precision/recall to the abstention-specific case; conceptually related to knowledge-quadrant-metric.

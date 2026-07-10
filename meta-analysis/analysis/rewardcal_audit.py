@@ -53,7 +53,7 @@ from pathlib import Path
 HERE = Path(__file__).resolve().parent          # meta-analysis/analysis
 EH = HERE.parent.parent                          # repo root (project root)
 REPO = HERE.parents[1]                           # repo root
-OUT_R1 = EH / "docs" / "protocols" / "phase1" / "rewardcal-kto-recipe.md"
+OUT_R1 = EH / "archive" / "docs" / "protocols" / "phase1" / "rewardcal-kto-recipe.md"
 OUT_R3 = HERE.parent / "evidence" / "rewardcal-contamination-audit.md"
 FIGDIR = HERE / "figures"
 

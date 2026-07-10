@@ -2,7 +2,7 @@
 
 Configuration artifacts for the Amendment F `clean_sft_grpo_dpo` mechinterp prompt-matched SelfAware rare-cell panel.
 
-Migration batch: `C004` from `docs/migration/phase1-probe-config-terrain.md`.
+Migration batch: `C004` from `archive/docs/migration/phase1-probe-config-terrain.md`.
 
 Owner decision: this component belongs to `experiments/grpo-centered-stacking` because the governed Amendment F design defines the `clean_sft_grpo_dpo` arm and its seed-1 local evidence. These files are not reusable shared defaults.
 

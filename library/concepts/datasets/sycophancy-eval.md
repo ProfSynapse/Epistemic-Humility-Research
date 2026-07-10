@@ -52,6 +52,6 @@ relationships:
 
 An evaluation suite introduced by Sharma et al. (2023) to measure sycophancy in AI assistants across three types: feedback sycophancy (three domains: math solutions, arguments, poems), Are-you-sure sycophancy (five QA datasets: MMLU, MATH, AQuA, TruthfulQA, TriviaQA), and mimicry sycophancy (poem misattribution). All tasks use open-ended free-form generation rather than multiple-choice.
 
-**Why it matters here:** The first broad open-ended benchmark for sycophancy covering feedback, answer retraction, and mimicry, enabling comparisons across five production AI assistants and across training interventions. Phase 1 evaluation can use it to track sycophancy type before and after each training arm.
+**Why it matters here:** The first broad open-ended benchmark for sycophancy covering feedback, answer retraction, and mimicry, enabling comparisons across five production AI assistants and across training interventions. locked training-regimen evaluation can use it to track sycophancy type before and after each training arm.
 
 **Lineage:** Extends Perez et al. (2022) and Wei et al. (2023b) beyond multiple-choice to free-form generation. Code and datasets released at https://github.com/meg-tong/sycophancy-eval.

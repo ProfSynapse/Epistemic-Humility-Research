@@ -52,7 +52,7 @@ express appropriate uncertainty rather than hallucinate confidently.
 
 **Why it matters here:** For mechinterp, this mechanism predicts that the
 internal representations encoding answer correctness should be more separable at larger
-scale, making probing easier and activation steering more reliable. For Phase 1,
+scale, making probing easier and activation steering more reliable. For the locked training-regimen study,
 it motivates comparing SFT/DPO/KTO abstention improvement against the pretrained
 P(True) baseline, asking whether training closes the remaining gap or merely recapitulates
 the same size-dependent advantage.

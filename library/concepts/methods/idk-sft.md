@@ -40,7 +40,7 @@ It is the simplest alignment baseline in the Cheng et al. framework and requires
 no preference pairs or reward signal beyond the binary known/unknown label.
 
 **Why it matters here:** Idk-SFT is the SFT arm in the Cheng et al. ablation and
-the closest analogue to the SFT baseline in the Phase 1 SFT-vs-DPO-vs-KTO
+the closest analogue to the SFT baseline in the locked training-regimen SFT-vs-DPO-vs-KTO
 abstention study; comparing it against preference-optimization variants
 (DPO-style and RL-based) isolates the marginal value of learning from
 contrastive or reward-weighted signals.
