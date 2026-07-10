@@ -2,6 +2,14 @@
 
 Read for Windows/Docker/GPU/local-trainer execution problems and monitor behavior.
 
+**Scope note:** this file is the `tuner.py local-run` training-job lane,
+launched from Windows Python (`py.exe`) against Docker Desktop over an
+npipe. It is a different Docker path from the local `mechinterp` GPU-verb
+lane (`extract`/`steer`/`dose-calibrate` run directly from WSL2 against the
+native `default` Docker context / unix socket). The binding container
+invariant for that lane lives in the `mechinterp-cells` skill's "Local GPU
+runs execute in a pinned container" section, not here.
+
 ## Proven local-run launch command (the one-liner)
 
 A local training cell is launched with a single tuner CLI verb. The proven,
