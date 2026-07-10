@@ -6,6 +6,21 @@ in `experiment.yaml`.
 
 ## Entries
 
+- 2026-07-10 (render hygiene fix): Pre-launch hygiene fix per the 2026-07-10
+  anchor-audit entry's pre-commitment: `render.py` now ports the exploratory
+  pipeline's loud `assert_no_think_scaffolding` self-check and makes every
+  chat-template kwarg fallback log explicitly instead of being swallowed by a
+  bare `except Exception: continue`. If a chat template silently ignores the
+  thinking-off pin, the self-check now fails hard before rows are
+  contaminated; if the preferred `enable_thinking=False` surface is rejected
+  and the code falls back to `chat_template_kwargs` or a bare no-kwarg
+  render, the fallback is printed once per (model, mode) instead of being
+  silent. No change to model selection, rows, generation settings, steering,
+  gates, scoring, or dose selection. Qwen cells' committed results are
+  unaffected: the audit verified byte-identical renders, and the fix only
+  changes behavior on a fallback/leak path that the Qwen3.5 tokenizer does
+  not take. `render.py`'s pin in `experiment.yaml` refreshed to match.
+
 - 2026-07-10: Both recalibrated Qwen3.5 FIT dose sweeps completed and committed
   `selected_dose: null`. These are now well-characterized G0 dose-viability
   fails, not grid artifacts. 4B (grid 10-75, n=887 confab / 240 known per arm):
