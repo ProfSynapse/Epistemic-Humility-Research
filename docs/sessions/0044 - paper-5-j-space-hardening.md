@@ -4,7 +4,7 @@ session_id: paper5-jspace-hardening
 title: Paper 5 J-space hardening
 status: active
 created_at: '2026-07-08T16:46:25Z'
-updated_at: '2026-07-09T20:59:59Z'
+updated_at: '2026-07-10T01:25:26Z'
 phase: phase1
 question: Which registered follow-up experiments harden the Paper 5 actuation thesis,
   starting with a fresh Qwen3-4B J-space layer-site replication?
@@ -125,6 +125,27 @@ checkpoints:
   next_steps:
   - Report relaunch app IDs; then rep-2 sign flow (rebase, gate text to user, both
     predictions, sign, launch on 3090).
+  signals: {}
+- id: 005-result
+  at: '2026-07-10T01:25:26Z'
+  kind: result
+  title: 'Rep-2 multi-source layer contrast: FULL PASS, resolved, PR #264'
+  summary: 'Rep-2 resolved FULL PASS on the multi-source pool: hs29 92.76% vs hs34
+    73.76% (+19.0pp), paired McNemar 42:0 discordants p=4.5e-13, G2'' +1.43pp, G3''
+    interpretable at 73.76%. Red-team reproduced every number from per-row RunLog;
+    lead re-derived the paired table; two disclosures registered (hs29 absolute cost
+    doubling; 179 distinct normalized questions among 221 rows, verdict invariant).
+    Both scoreboard predictions correct. Pairs with rep-1 as the pool-sensitivity
+    story: magnitude unidentifiable near ceiling, replicates off-ceiling with the
+    same frozen instrument. PR #264 open. Qwen3.5 Modal dose sweeps still in flight.'
+  evidence: []
+  run_ids: []
+  commands: []
+  decisions: []
+  next_steps:
+  - 'Merge PR #264 after user review; adjudicate Qwen3.5 dose selections when Modal
+    reports; then revise cross-family layer contrast to consume validated ceiling-robust
+    gates.'
   signals: {}
 ---
 # Paper 5 J-space hardening
@@ -359,3 +380,10 @@ rows before the layer contrast.
 - summary: Registered the pre-outcome Qwen3.5 dose-grid recalibration on doubt-snap-cross-family (commit 8aa1dc02 on exp/doubt-snap-cross-family): per-cell FIT grids 4B {10,20,30,40,50,60,75} / 9B {60,80,100,120,140}, selection rule and thresholds unchanged, A10G operational change folded in. User approved the paid FIT-sweep-only Modal relaunch (~$1-3/cell); relaunch executor dispatched to verify volume artifact reuse and launch both cells at batch 1. Rep-2 multisource scaffold completed: 221 fresh confabs (139/6/76 across three sources), G0 mining floors pass, 8-row smoke green with RunLog per-row persistence confirmed; awaiting rebase onto main + gate text + predictions + sign.
 - next steps:
   - Report relaunch app IDs; then rep-2 sign flow (rebase, gate text to user, both predictions, sign, launch on 3090).
+### 005-result - Rep-2 multi-source layer contrast: FULL PASS, resolved, PR #264
+
+- at: `2026-07-10T01:25:26Z`
+- kind: `result`
+- summary: Rep-2 resolved FULL PASS on the multi-source pool: hs29 92.76% vs hs34 73.76% (+19.0pp), paired McNemar 42:0 discordants p=4.5e-13, G2' +1.43pp, G3' interpretable at 73.76%. Red-team reproduced every number from per-row RunLog; lead re-derived the paired table; two disclosures registered (hs29 absolute cost doubling; 179 distinct normalized questions among 221 rows, verdict invariant). Both scoreboard predictions correct. Pairs with rep-1 as the pool-sensitivity story: magnitude unidentifiable near ceiling, replicates off-ceiling with the same frozen instrument. PR #264 open. Qwen3.5 Modal dose sweeps still in flight.
+- next steps:
+  - Merge PR #264 after user review; adjudicate Qwen3.5 dose selections when Modal reports; then revise cross-family layer contrast to consume validated ceiling-robust gates.
