@@ -228,7 +228,7 @@ by the equivalence spot check but not used for the evidence run). Smoke
 (25/cell) passed the §3 gate first: coupled gap +0.04 vs permuted −0.08,
 monotonic dose curve. Full run: 1217 rows (kr 168 / ka 373 / ur 676) × 4 arms
 = 4868 units, greedy, max_new_tokens 96. Analysis:
-`analyze_ac_doubt_coupled.py`, paired row-level bootstrap, 10k resamples,
+`experiments/doubt-regulated-caution/analyze_ac_doubt_coupled.py`, paired row-level bootstrap, 10k resamples,
 seed 20260703.
 
 | arm | kr refusal (n=168) | kr correct | ka refusal (n=373) | ka correct | ur refusal (n=676) | selectivity gap |
