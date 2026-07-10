@@ -3,7 +3,7 @@
 Load this before launching a hidden-state extraction.
 
 Run a model-free config preflight from the repo root. Importing
-`hidden_state_probe.py` directly requires the probe directory on `PYTHONPATH`;
+`experiments/common/phase1_probe/hidden_state_probe.py` directly requires the common phase1 probe directory on `PYTHONPATH`;
 otherwise root-level imports can fail with
 `ModuleNotFoundError: No module named 'hidden_state_schema'`.
 

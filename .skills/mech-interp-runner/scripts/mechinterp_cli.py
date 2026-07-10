@@ -301,7 +301,7 @@ def run_validate(*, quick: bool, dry_run: bool) -> int:
             "experiments/common/mechinterp/sae_behavior_feature_analysis.py",
             "experiments/common/mechinterp/behavior_axis_scan.py",
             "experiments/common/mechinterp/multicell_readout.py",
-            "experiment/phase1/probe/hidden_state_probe.py",
+            "experiments/common/phase1_probe/hidden_state_probe.py",
             "experiments/common/mechinterp/xdataset_build_panel.py",
             "experiments/common/mechinterp/xdataset_behavior_from_generation.py",
             "experiments/common/mechinterp/residual_caution_direction.py",
