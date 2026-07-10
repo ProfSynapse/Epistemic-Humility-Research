@@ -1,11 +1,10 @@
 # Voice guide for the epistemic humility papers
 
-This is the tone bible for papers 1 through 5 and their blog companions. Every
-drafting agent reads this before touching a paper. The voice is derived from
-Joseph's Meditations on Alignment essays (primary references: "The Wisdom of
-Ignorance" and "Artificial Intellectual Humility") fused with the register a
-technical paper needs. When in doubt, read two pages of those essays and then
-write the section.
+This is the tone bible for every paper in this program and its blog
+companions. Every drafting agent reads this before touching a paper. The voice
+fuses the PI's essay register with what a technical paper needs; the worked
+examples below are the calibration reference. When in doubt, reread the
+examples here and then write the section.
 
 ## The one principle everything else serves
 
@@ -95,7 +94,7 @@ hiding it.
 Papers and blog posts share a spine: same claims, same numbers, same
 registered predictions, same honesty about misses. What changes:
 
-| Element | Paper | Blog (Meditations) |
+| Element | Paper | Blog |
 |---|---|---|
 | Philosophical framing (Socrates, aporia) | One paragraph max, usually the opening or closing | Full spine, welcome |
 | Playful register ("GOATs", "spoiler alert") | No | Yes, sparingly |
