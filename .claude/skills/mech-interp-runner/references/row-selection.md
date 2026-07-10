@@ -35,7 +35,7 @@ For behavior-cell replay panels from an existing behavior-labeled rows file,
 use the checked-in builder instead of copying row keys from terminal output:
 
 ```bash
-python experiment/phase1/probe/phase3_behavior_panel_row_keys.py \
+python experiments/common/mechinterp/behavior_panel_row_keys.py \
   --config experiment/phase1/probe/config/example_behavior_panel_row_keys.yaml
 ```
 

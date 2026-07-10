@@ -188,25 +188,25 @@ def command_args(args: argparse.Namespace) -> tuple[str, list[str]]:
         out: list[str] = ["--output-root", args.output_root]
         for path in args.generations:
             out.extend(["--generations", path])
-        return "experiment/phase1/probe/phase3_sycophancy_generation_analysis.py", out
+        return "experiments/common/mechinterp/sycophancy_generation_analysis.py", out
     if command == "sycophancy-row-manifest":
-        return "experiment/phase1/probe/phase3_sycophancy_answer_row_manifest.py", []
+        return "experiments/common/mechinterp/sycophancy_answer_row_manifest.py", []
     if command == "behavior-axis-scan":
-        return "experiment/phase1/probe/phase3_behavior_axis_scan.py", ["--config", args.config]
+        return "experiments/common/mechinterp/behavior_axis_scan.py", ["--config", args.config]
     if command == "behavior-axis-directions":
-        return "experiment/phase1/probe/phase3_behavior_axis_directions.py", ["--config", args.config]
+        return "experiments/common/mechinterp/behavior_axis_directions.py", ["--config", args.config]
     if command == "direction-transforms":
-        return "experiment/phase1/probe/phase3_direction_transforms.py", ["--config", args.config]
+        return "experiments/common/mechinterp/direction_transforms.py", ["--config", args.config]
     if command == "gold-behavior-panel":
-        return "experiment/phase1/probe/phase3_gold_behavior_panel.py", ["--config", args.config]
+        return "experiments/common/mechinterp/gold_behavior_panel.py", ["--config", args.config]
     if command == "calibrated-plane":
-        return "experiment/phase1/probe/phase3_calibrated_expression_plane.py", ["--config", args.config]
+        return "experiments/common/mechinterp/calibrated_expression_plane.py", ["--config", args.config]
     if command == "multicell-readout":
-        return "experiment/phase1/probe/phase3_multicell_readout.py", ["--config", args.config]
+        return "experiments/common/mechinterp/multicell_readout.py", ["--config", args.config]
     if command == "logit-cell-analysis":
-        return "experiment/phase1/probe/phase3_logit_cell_analysis.py", ["--config", args.config]
+        return "experiments/common/mechinterp/logit_cell_analysis.py", ["--config", args.config]
     if command == "logit-cell-sign-score":
-        return "experiment/phase1/probe/phase3_logit_cell_sign_score.py", ["--config", args.config]
+        return "experiments/common/mechinterp/logit_cell_sign_score.py", ["--config", args.config]
     if command == "causal-sweep":
         out = ["--config", args.config]
         for mode_filter in args.mode_filter or []:
@@ -296,11 +296,11 @@ def run_validate(*, quick: bool, dry_run: bool) -> int:
             "py_compile",
             "experiment/phase1/probe/phase3_causal_pilot_sweep.py",
             "experiment/phase1/probe/phase3_causal_pilot_runner.py",
-            "experiment/phase1/probe/phase3_sycophancy_answer_row_manifest.py",
-            "experiment/phase1/probe/phase3_sycophancy_generation_analysis.py",
+            "experiments/common/mechinterp/sycophancy_answer_row_manifest.py",
+            "experiments/common/mechinterp/sycophancy_generation_analysis.py",
             "experiment/phase1/probe/phase3_sae_behavior_feature_analysis.py",
-            "experiment/phase1/probe/phase3_behavior_axis_scan.py",
-            "experiment/phase1/probe/phase3_multicell_readout.py",
+            "experiments/common/mechinterp/behavior_axis_scan.py",
+            "experiments/common/mechinterp/multicell_readout.py",
             "experiment/phase1/probe/hidden_state_probe.py",
             "experiments/common/mechinterp/xdataset_build_panel.py",
             "experiments/common/mechinterp/xdataset_behavior_from_generation.py",

@@ -24,7 +24,7 @@ def test_command_args_builds_sycophancy_generation_analysis():
 
     script, out = mechinterp_cli.command_args(args)
 
-    assert script == "experiment/phase1/probe/phase3_sycophancy_generation_analysis.py"
+    assert script == "experiments/common/mechinterp/sycophancy_generation_analysis.py"
     assert out == [
         "--output-root",
         "out",
@@ -74,7 +74,7 @@ def test_command_args_builds_logit_cell_sign_score():
 
     script, out = mechinterp_cli.command_args(args)
 
-    assert script == "experiment/phase1/probe/phase3_logit_cell_sign_score.py"
+    assert script == "experiments/common/mechinterp/logit_cell_sign_score.py"
     assert out == ["--config", "score.yaml"]
 
 

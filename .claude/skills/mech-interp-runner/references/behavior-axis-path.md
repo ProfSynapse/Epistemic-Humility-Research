@@ -67,7 +67,7 @@ For larger rare-cell panels, build deterministic target row-key files before
 extracting:
 
 ```bash
-python experiment/phase1/probe/phase3_targeted_row_keys.py \
+python experiments/common/mechinterp/targeted_row_keys.py \
   --config experiment/phase1/probe/config/phase3_gold_kto_targeted_rare_cell_row_keys.yaml
 ```
 

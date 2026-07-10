@@ -24,7 +24,7 @@ baseline and intervention counts side by side.
 Use the replay analyzer for completed generation sweeps:
 
 ```bash
-python experiment/phase1/probe/phase3_generation_replay_analysis.py \
+python experiments/common/mechinterp/generation_replay_analysis.py \
   --root experiment/phase1/probe/analysis/example_generation_sweep \
   --out experiment/phase1/probe/analysis/example_generation_sweep/summary_latest
 ```
