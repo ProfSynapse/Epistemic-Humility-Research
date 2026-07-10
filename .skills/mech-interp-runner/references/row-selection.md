@@ -50,7 +50,7 @@ extraction slice does not. For SelfAware full-eval rare-cell panels, first build
 a focused extraction-ready manifest from scored rows:
 
 ```bash
-python experiment/phase1/probe/phase3_selfaware_behavior_manifest.py \
+python experiments/common/mechinterp/selfaware_behavior_manifest.py \
   --config experiment/phase1/probe/config/example_selfaware_behavior_manifest.yaml
 ```
 
