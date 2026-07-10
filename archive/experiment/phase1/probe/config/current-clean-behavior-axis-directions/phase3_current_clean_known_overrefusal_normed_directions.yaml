@@ -1,0 +1,46 @@
+spec:
+  name: phase3_current_clean_known_overrefusal_normed_directions
+  analysis_type: phase3_behavior_axis_direction_export
+  notice: BEHAVIOR_AXIS_DIRECTION_CANDIDATES_ONLY_CURRENT_CLEAN_PANEL
+
+source_scan_config: archive/experiment/phase1/probe/config/current-clean-behavior-axis-directions/phase3_current_clean_behavior_axis_scan.yaml
+
+axes:
+  - label: clean_sft_delta_known_refused_vs_known_correct_l20_normed
+    extraction_label: clean_sft_seed1_current
+    behavior_arm: clean_sft_merged
+    arm: clean_sft_merged
+    role: delta
+    layer: 20
+    contrast: known_refused_vs_known_correct_answered
+    transform_method: unit_rescale_to_norm
+    target_norm: 1.2142820358276367
+    metadata:
+      selection_reason: normalized clean SFT delta known-overrefusal candidate for controlled logit diagnostic
+
+  - label: clean_sft_grpo_v2_delta_known_refused_vs_known_correct_l25_normed
+    extraction_label: clean_sft_grpo_v2_seed1_current
+    behavior_arm: clean_sft_grpo_v2
+    arm: clean_sft_grpo_v2
+    role: delta
+    layer: 25
+    contrast: known_refused_vs_known_correct_answered
+    transform_method: unit_rescale_to_norm
+    target_norm: 1.2142820358276367
+    metadata:
+      selection_reason: normalized GRPO v2 delta known-overrefusal candidate for controlled logit diagnostic
+
+  - label: clean_sft_grpo_dpo_delta_known_refused_vs_known_correct_l12_normed
+    extraction_label: clean_sft_grpo_dpo_seed1_current
+    behavior_arm: clean_sft_grpo_dpo
+    arm: clean_sft_grpo_dpo
+    role: delta
+    layer: 12
+    contrast: known_refused_vs_known_correct_answered
+    transform_method: unit_rescale_to_norm
+    target_norm: 1.2142820358276367
+    metadata:
+      selection_reason: normalized GRPO-DPO delta known-overrefusal candidate for controlled logit diagnostic
+
+output:
+  root: experiment/phase1/probe/analysis/current_clean_known_overrefusal_normed_directions

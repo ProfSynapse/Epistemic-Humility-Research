@@ -20,7 +20,7 @@ models:
 - qwen3-4b
 metrics:
 - auroc
-provenance: 'Internal lab-notebook diagnostics (item 20). Script experiment/phase1/probe/diag_item20_gentime_decomposition.py (commit 7745cdfe); data staging professorsynapse/eh-al-prep-staging tag diag-item20-gentime-r2; grpo-v2 checkpoint (adapter @8914081d) over the 600-row unknown pool at six generation positions. L35 axes: canonical caution_direction_L35 plus caution_perp_direction_L35 (perp_fraction 0.558) plus a doubt axis reconstructed with the identical construction (sanity: reproduces cos(caution,doubt) = -0.8296 exactly). Analysis artifact experiment/phase1/probe/analysis/diag_item20/. Ungated exploratory evidence, never pooled with the locked headline matrix.'
+provenance: 'Internal lab-notebook diagnostics (item 20). Script experiments/diag-item20-gentime-displacement/diag_item20_gentime_decomposition.py (original commit 7745cdfe); data staging professorsynapse/eh-al-prep-staging tag diag-item20-gentime-r2; grpo-v2 checkpoint (adapter @8914081d) over the 600-row unknown pool at six generation positions. L35 axes: canonical caution_direction_L35 plus caution_perp_direction_L35 (perp_fraction 0.558) plus a doubt axis reconstructed with the identical construction (sanity: reproduces cos(caution,doubt) = -0.8296 exactly). Committed analysis artifact experiments/diag-item20-gentime-displacement/analysis-committed/gentime_decomposition.md. Ungated exploratory evidence, never pooled with the locked headline matrix.'
 related:
 - '[[generation-time-computation-loads-off-the-epistemic-plane]]'
 - '[[answerability-and-correctness-are-orthogonal-readout-axes]]'

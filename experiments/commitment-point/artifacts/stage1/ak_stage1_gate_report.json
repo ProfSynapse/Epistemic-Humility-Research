@@ -1,0 +1,123 @@
+{
+  "amendment": "AK",
+  "stage": "stage1_gate_analysis",
+  "seed": 20260705,
+  "trunk_layer": "L24",
+  "g1_layer": "L24",
+  "committed_floor": 5.291963083194524,
+  "committed_floor_sha_note": "floor from experiments/commitment-point/artifacts/stage1/ak_stage1_pilot_floor.json",
+  "n_pilot_excluded": 50,
+  "config_sha": {
+    "grpo_v2": "6394415378c83c96",
+    "raw_base": "0dcb65d0062db64a"
+  },
+  "AK_G1": {
+    "gated_arm": "grpo-v2",
+    "grpo_v2": {
+      "layer": "L24",
+      "positions": {
+        "first_visible": {
+          "capture_pos": "answer_k0",
+          "n": 1338,
+          "n_confab": 309,
+          "n_refuse": 1029,
+          "veto_auroc": 0.9423640006164278,
+          "ci95": [
+            0.929857723813589,
+            0.953424335300337
+          ],
+          "random_dir_guard_auroc": 0.48588348885555144
+        },
+        "answer_end": {
+          "capture_pos": "answer_end",
+          "n": 1338,
+          "n_confab": 309,
+          "n_refuse": 1029,
+          "veto_auroc": 0.924842983887961,
+          "ci95": [
+            0.9083511168838448,
+            0.938983507656364
+          ],
+          "random_dir_guard_auroc": 0.5285050682316385
+        }
+      },
+      "delta_answerend_minus_firstvisible": -0.017521016728466732
+    },
+    "raw_base_descriptive": {
+      "layer": "L24",
+      "positions": {
+        "first_visible": {
+          "capture_pos": "answer_k0",
+          "n": 1338,
+          "n_confab": 309,
+          "n_refuse": 1029,
+          "veto_auroc": 0.9624167743842799,
+          "ci95": [
+            0.9524392593263019,
+            0.971460015883173
+          ],
+          "random_dir_guard_auroc": 0.4715861379225754
+        },
+        "answer_end": {
+          "capture_pos": "answer_end",
+          "n": 1338,
+          "n_confab": 309,
+          "n_refuse": 1029,
+          "veto_auroc": 0.9965561814184758,
+          "ci95": [
+            0.9938267284216372,
+            0.9987013968300497
+          ],
+          "random_dir_guard_auroc": 0.5014671610669234
+        }
+      },
+      "delta_answerend_minus_firstvisible": 0.034139407034195934
+    },
+    "verdict": "MISS",
+    "delta": -0.017521016728466732,
+    "margin": 0.1
+  },
+  "AK_G2": {
+    "gated_arm": "grpo-v2",
+    "grpo_v2": {
+      "n_confab": 295,
+      "n_refuse": 993,
+      "mean_slope_confab": 11.782960327194058,
+      "mean_slope_refuse": 16.406398341060513,
+      "slope_contrast": -4.623438013866455,
+      "slope_contrast_se": 0.3793656880528444,
+      "contrast_ci95": [
+        -5.381530843971327,
+        -3.884378641587293
+      ],
+      "permutation_p": 9.999000099990002e-05,
+      "committed_floor": 5.291963083194524,
+      "clears_floor": false,
+      "p_below_0.01": true,
+      "AK_G2_pass": false,
+      "confab_doubt_trajectory_sign": "rise",
+      "note": "path is descriptive; a G2 PASS means the fork is adjudicable at this n, a MISS means it is not"
+    },
+    "raw_base_descriptive": {
+      "n_confab": 295,
+      "n_refuse": 993,
+      "mean_slope_confab": -3.5040758300224746,
+      "mean_slope_refuse": 5.815865343651869,
+      "slope_contrast": -9.319941173674344,
+      "slope_contrast_se": 0.5044421600973898,
+      "contrast_ci95": [
+        -10.31981889884965,
+        -8.315212295312621
+      ],
+      "permutation_p": 9.999000099990002e-05,
+      "committed_floor": 5.291963083194524,
+      "clears_floor": true,
+      "p_below_0.01": true,
+      "AK_G2_pass": true,
+      "confab_doubt_trajectory_sign": "drop",
+      "note": "path is descriptive; a G2 PASS means the fork is adjudicable at this n, a MISS means it is not"
+    },
+    "verdict": "MISS"
+  },
+  "falsifier_note": "Full AK falsifier needs G3 (Stage 2). Stage 1 reports G1 (grpo-v2) and G2; a G1 MISS is one of the two falsifier conditions."
+}

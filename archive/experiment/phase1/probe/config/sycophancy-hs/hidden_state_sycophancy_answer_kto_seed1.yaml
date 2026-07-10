@@ -1,0 +1,69 @@
+# mechinterp answer-sycophancy hidden-state extraction prep: base vs KTO seed1.
+#
+# Consumes experiments/common/artifacts/row_manifests/sycophancy_answer/mechinterp_sycophancy_answer_seed1_row_manifest.json.
+# This is a no-run prep config until an explicit GPU gate is opened.
+
+model:
+  model_tag: qwen3-4b-instruct-sycophancy-answer-kto-seed1
+  model_name: unsloth/Qwen3-4B-bnb-4bit
+  revision: null
+  enable_thinking: false
+
+metadata:
+  row_manifest_kind: sycophancy_answer
+  preserves_sycophancy: true
+
+extraction:
+  layer_list: null
+  token_position_rule: final_prompt_token
+  compute_dtype: bfloat16
+  persist_dtype: float32
+  persistence_format: safetensors
+  device: cuda
+  persist_delta: true
+
+arms:
+  - name: base_seed1
+    adapter_state: disabled
+    adapter: null
+  - name: kto_seed1
+    adapter_state: active
+    # staged on HF: professorsynapse/eh-qwen3-4b-headline-kto-seed1-lora @ ebfa75363afe9a92c97b7032acd608359b2026f6
+    adapter: /workspace/repo/synaptic-tuner/toolset-training-artifacts/runs/local/4b/kto__4b__headline__seed1/20260613_151337_logging_patch/final_model
+
+eval_arms_source: null
+
+selection:
+  source: selfaware_manifest
+  manifest: experiments/common/artifacts/row_manifests/sycophancy_answer/mechinterp_sycophancy_answer_seed1_row_manifest.json
+  strata:
+    - wrong_hint_followed_by_base_dpo_kto
+    - neutral_counterpart__wrong_hint_followed_by_base_dpo_kto
+    - sft_refuses_wrong_hint_kto_follows
+    - neutral_counterpart__sft_refuses_wrong_hint_kto_follows
+    - neutral_correct_lost_under_wrong_hint__base_seed1
+    - neutral_counterpart__neutral_correct_lost_under_wrong_hint__base_seed1
+    - neutral_correct_lost_under_wrong_hint__dpo_seed1
+    - neutral_counterpart__neutral_correct_lost_under_wrong_hint__dpo_seed1
+    - neutral_correct_lost_under_wrong_hint__kto_seed1
+    - neutral_counterpart__neutral_correct_lost_under_wrong_hint__kto_seed1
+    - neutral_correct_lost_under_wrong_hint__sft_seed1
+    - neutral_counterpart__neutral_correct_lost_under_wrong_hint__sft_seed1
+    - kto_wrong_hint_followed
+    - neutral_counterpart__kto_wrong_hint_followed
+    - kto_wrong_hint_not_followed
+    - neutral_counterpart__kto_wrong_hint_not_followed
+    - sft_wrong_hint_followed
+    - neutral_counterpart__sft_wrong_hint_followed
+    - sft_wrong_hint_refused
+    - neutral_counterpart__sft_wrong_hint_refused
+  max_rows: 64
+
+output:
+  hidden_states_subdir: hidden_states_sycophancy_answer
+  manifest_filename: manifest.json
+  rows_filename: rows.jsonl
+
+manifest_provenance:
+  aligned_run_record_id: kto__4b__headline__seed1
+  source_split: mechinterp-sycophancy-answer-row-manifest/v1

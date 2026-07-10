@@ -1,17 +1,16 @@
 #!/usr/bin/env python3
-"""Validate experiment notes and regenerate their registry index.
+"""Validate legacy archived experiment notes and regenerate their registry index.
 
-Experiment notes are checked-in Markdown files under experiment/notes/ with YAML
-frontmatter. They are the agent-runnable spec + runbook for one experiment family
-(see experiment/notes/_SCHEMA.md). This validator enforces the schema so the
-structure holds at commit time (.githooks/pre-commit) and on every PR
-(.github/workflows/validate.yml). Generic kg/edge correctness is left to
-validate_kg_relationships.py; this checks the experiment-note-specific contract.
+Experiment notes used to be checked-in Markdown files under notes/experiments/
+with YAML frontmatter. They were retired in favor of experiment-local
+`RUNBOOK.md` and `PLAN.md` files under `experiments/<slug>/`, with unresolved or
+superseded notes preserved under `archive/notes/experiments/` for provenance.
+This validator is retained for archival checks and migration review only.
+Generic kg/edge correctness is left to validate_kg_relationships.py.
 
 Usage (run from repo root):
-    python3 .agents/skills/experiment-runner/scripts/validate_experiment_notes.py experiment/notes
-    python3 .agents/skills/experiment-runner/scripts/validate_experiment_notes.py experiment/notes --emit-index
-    python3 .agents/skills/experiment-runner/scripts/validate_experiment_notes.py experiment/notes --json
+    python3 .agents/skills/experiment-runner/scripts/validate_experiment_notes.py archive/notes/experiments
+    python3 .agents/skills/experiment-runner/scripts/validate_experiment_notes.py archive/notes/experiments --json
 
 Exit code 1 if any note fails (mirrors research_session.py validate); else 0.
 """
@@ -49,8 +48,9 @@ HEADING_RE = re.compile(r"^##\s+(.+?)\s*$", re.M)
 BACKTICK_RE = re.compile(r"`([^`]+)`")
 # repo-root-relative path prefixes whose backticked references must exist on disk
 PATH_PREFIXES = (
-    "experiment/", "library/", "meta-analysis/", "bin/", "tools/", "docs/",
-    ".agents/", ".skills/", ".claude/", ".github/",
+    "experiment/", "experiments/", "library/", "meta-analysis/", "bin/",
+    "tools/", "docs/", "notes/", "papers/", "archive/", ".agents/",
+    ".skills/", ".claude/", ".github/",
 )
 
 
@@ -169,7 +169,7 @@ def validate_note(path: Path, root: Path) -> list[str]:
         errors.append(f"{loc}governance must be one of {sorted(VALID_GOVERNANCE)}")
     if fm.get("lane") not in VALID_LANE:
         errors.append(f"{loc}lane must be one of {sorted(VALID_LANE)}")
-    for key in ("phase", "est_compute"):
+    for key in ("track", "est_compute"):
         if not fm.get(key):
             errors.append(f"{loc}{key} is required")
     tags = fm.get("tags")
@@ -235,7 +235,7 @@ def emit_index(path: Path) -> str:
             "title": fm.get("title", note.stem),
             "status": fm.get("status", "?"),
             "governance": fm.get("governance", "?"),
-            "phase": fm.get("phase", "?"),
+            "track": fm.get("track", "?"),
             "lane": fm.get("lane", "?"),
             "tests": tests_target(fm),
         })
@@ -253,13 +253,13 @@ def emit_index(path: Path) -> str:
         "",
         f"{len(rows)} experiment note(s).",
         "",
-        "| Experiment | Status | Governance | Phase | Lane | Tests |",
+        "| Experiment | Status | Governance | Track | Lane | Tests |",
         "|---|---|---|---|---|---|",
     ]
     for r in rows:
         out.append(
             f"| [[{r['stem']}]] | {r['status']} | {r['governance']} | "
-            f"{r['phase']} | {r['lane']} | {r['tests']} |"
+            f"{r['track']} | {r['lane']} | {r['tests']} |"
         )
     out.append("")
     text = "\n".join(out)
@@ -268,9 +268,9 @@ def emit_index(path: Path) -> str:
 
 
 def main(argv: list[str] | None = None) -> int:
-    ap = argparse.ArgumentParser(description="Validate experiment notes; regenerate the registry.")
-    ap.add_argument("path", nargs="?", default="experiment/notes")
-    ap.add_argument("--emit-index", action="store_true", help="regenerate experiment/notes/README.md")
+    ap = argparse.ArgumentParser(description="Validate archived legacy experiment notes.")
+    ap.add_argument("path", nargs="?", default="archive/notes/experiments")
+    ap.add_argument("--emit-index", action="store_true", help="regenerate the archived notes README.md")
     ap.add_argument("--json", action="store_true")
     args = ap.parse_args(argv)
 

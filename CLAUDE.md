@@ -46,16 +46,24 @@ Use artifact type to choose where to look:
 - Orientation and contribution norms: root docs such as `README.md`,
   `CONTRIBUTING.md`, and nearby architecture notes.
 - Research synthesis: `meta-analysis/`, especially evidence tables, analysis
-  scripts, paper drafts, and provenance reports.
+  scripts, and source-of-record synthesis apparatus.
+- Paper production: `papers/`, organized one directory per paper with
+  `manuscript.md`, `analysis/`, `figures/`, `scripts/`, and paper-specific
+  `notes/`. Shared writing conventions live in `papers/common/`; series-level
+  planning lives in `papers/series/`.
+- Notes by type: `docs/sessions/` for chronological session logs,
+  `experiments/<slug>/RUNBOOK.md` and `experiments/<slug>/PLAN.md` for reusable
+  experiment-local operating specs, and `library/notes/` for KG-backed
+  literature/internal synthesis notes.
 - New experiments (any evidence-producing type: steering cell, training run,
   eval, probe-fit, lab diagnostic): the experiments-first tree `experiments/`,
   one self-contained directory per experiment holding a signed `AMENDMENT.md`, a
   machine-readable `experiment.yaml` manifest, pinned instrument configs, and a
   generated registry. Scaffold and manage them with `bin/exp` (the `experiments`
   skill). This is where new evidence-producing work goes.
-- Locked Phase 1 protocol and its records: `experiment/`, especially protocols,
+- Locked locked training-regimen protocol and its records: `experiment/`, especially protocols,
   architecture docs, phase directories, configs, recipes, and run records. This
-  tree is retained for the locked Phase 1 matrix and its historical amendments;
+  tree is retained for the locked training-regimen matrix and its historical amendments;
   do not add new experiments here, use `experiments/` instead.
 - Literature graph and concepts: `library/`, including paper notes, concept
   notes, schema docs, manifests, and fulltext where available.
@@ -63,6 +71,9 @@ Use artifact type to choose where to look:
   before reading raw rows.
 - Skills and agent workflows: `.skills/` as canonical source, with generated
   mirrors under agent-specific directories.
+- Archive: `archive/` holds superseded files retained for provenance. Do not use
+  archived files as current sources of truth unless the citing text explicitly
+  says it is referring to a superseded or retired artifact.
 
 When protocol, preregistration, or paper-claim files are involved, read the
 local instructions in that area before editing. Treat registered study design as
@@ -145,8 +156,7 @@ inspection or fixture debugging.
 - READ BEFORE YOU CITE. Before stating any fact about a prior experiment or
   amendment (its design, mechanism, checkpoint, gates, result, verdict, or what
   it "showed" / "proved" / "worked"), open and read its governed doc first:
-  `experiment/protocol/AMENDMENT-*.md` (pre-migration) or
-  `experiments/<slug>/AMENDMENT.md` (new layout). The amendment/protocol docs are
+  `experiments/<slug>/AMENDMENT.md`. The amendment/protocol docs are
   the SOLE source of truth for experimental facts. Memory, session notes, the
   knowledge graph, prior chat summaries, and this file's Retrieved/Working Memory
   are navigation aids ONLY: they point you to the doc, they are never themselves

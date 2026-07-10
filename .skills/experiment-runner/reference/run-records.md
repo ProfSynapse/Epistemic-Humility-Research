@@ -1,7 +1,7 @@
 # Run records — the provenance spine (HANDOFF.md §5 SACROSANCT)
 
 Every launched cell emits a JSON run record to
-`experiment/phase1/run_records/<run_id>.json` (committed repo content) BEFORE the
+`archive/experiment/phase1/run_records/<run_id>.json` (committed repo content) BEFORE the
 tuner is invoked, so a crashed run still leaves a record; the record is updated
 with the outcome after. The records are the run manifest for the released
 artifacts — they tie each result back to the exact recipe, seed/override, the
@@ -16,13 +16,13 @@ re-runnable.
   "matrix_version": "phase1-v0.3",
   "coordinate": {"arm": "kto", "size": "4b", "cell_type": "lr_panel",
                  "seed": 1, "override": {"learning_rate": 3.0}},
-  "source_recipe": "experiment/phase1/recipes/eh_phase1_qwen3_4b_kto_congruence.yaml",
+  "source_recipe": "archive/experiment/phase1/recipes/eh_phase1_qwen3_4b_kto_congruence.yaml",
   "materialized_recipe_sha": "<sha256 of the generated recipe text>",
   "method": "kto",
   "model": "unsloth/Qwen3-4B-Instruct-bnb-4bit",
   "lane": "local",
   "data": {
-    "source_data_file": "experiment/phase1/data/qwen3-4b-instruct/kto_congruence_train.jsonl",
+    "source_data_file": "archive/experiment/phase1/data/qwen3-4b-instruct/kto_congruence_train.jsonl",
     "staged_data_file": "scratch/eh_staging/<run_id>/kto_congruence_train.jsonl",
     "hf_dataset_name": null,
     "hf_dataset_revision": null

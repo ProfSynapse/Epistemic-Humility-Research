@@ -27,8 +27,9 @@ Protocol amendments are separate from durable session notes:
 3. Scaffold the experiment with `bin/exp new <slug> --type <t>`. This creates
    `experiments/<slug>/` with an `AMENDMENT.md` (cover the same ground as
    `reference/protocol-amendment-template.md`) and a thin `experiment.yaml`
-   manifest. Do NOT hand-author under `experiment/protocol/`; that tree is
-   retained for the locked Phase 1 protocol and its historical amendments only.
+   manifest. Do NOT hand-author under `experiment/protocol/`; legacy amendment
+   records have moved to `experiments/<slug>/`, while cross-cutting protocol docs
+   live under `docs/protocols/`.
 4. Write the prose in `AMENDMENT.md`, then mirror the one-sentence question,
    prediction, and falsifier into the manifest and list the instrument config
    paths under `instrument.configs`. The manifest `status` field is the
@@ -88,4 +89,3 @@ python3 bin/sync_skills.py --check --skill experiment-runner
   approval must name the exact cells/seeds/lane.
 - Do not put project-specific trainer logic into `synaptic-tuner/`; route
   through public tuner interfaces or flag the missing generic capability.
-

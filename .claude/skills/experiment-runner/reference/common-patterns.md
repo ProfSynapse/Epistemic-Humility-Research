@@ -17,7 +17,7 @@ python3 .agents/skills/experiment-runner/scripts/prepare_local_cell.py \
   --run-id sft__4b__headline__seed1 --status launched
 cd synaptic-tuner
 python tuner.py local-run \
-  --job-config ../experiment/phase1/run_records/materialized_recipes/sft__4b__headline__seed1.yaml \
+  --job-config ../archive/experiment/phase1/run_records/materialized_recipes/sft__4b__headline__seed1.yaml \
   --yes
 
 # 4. Local 4B pilot, then — once the cloud seed/beta capability lands and the
@@ -30,7 +30,7 @@ confidence loop before touching any long cell:
 ```bash
 cd synaptic-tuner
 python tuner.py local-run \
-  --job-config ../experiment/phase1/run_records/materialized_recipes/sft__4b__micro_max2.yaml \
+  --job-config ../archive/experiment/phase1/run_records/materialized_recipes/sft__4b__micro_max2.yaml \
   --yes
 ```
 
@@ -58,21 +58,21 @@ Before launching any GRPO/RLVR training cell, run a CPU-side reward and dataset
 preflight. Treat these as plumbing checks, not reportable Amendment B evidence:
 
 ```bash
-python experiment/phase1/grpo/build_grpo_dataset.py \
+python archive/experiment/phase1/grpo/build_grpo_dataset.py \
   --model-tag qwen3-4b-instruct \
   --output-dir scratch/grpo_bootstrap/qwen3-4b-instruct
 
-python experiment/phase1/grpo/make_smoke_subset.py \
+python archive/experiment/phase1/grpo/make_smoke_subset.py \
   --input scratch/grpo_bootstrap/qwen3-4b-instruct/grpo_train.jsonl \
   --output scratch/grpo_bootstrap/qwen3-4b-instruct/grpo_train_smoke_32.jsonl \
   --per-label 16
 
-python experiment/phase1/grpo/reward_sanity_table.py \
+python archive/experiment/phase1/grpo/reward_sanity_table.py \
   --output scratch/grpo_bootstrap/reward_sanity_table.csv
 
 python -m pytest \
-  experiment/phase1/grpo/tests/test_humility_reward.py \
-  experiment/phase1/grpo/tests/test_build_grpo_dataset.py \
+  archive/experiment/phase1/grpo/tests/test_humility_reward.py \
+  archive/experiment/phase1/grpo/tests/test_build_grpo_dataset.py \
   synaptic-tuner/tests/trainers/grpo/test_fitness_reward.py \
   -q
 ```
@@ -167,7 +167,7 @@ Amendment B configs:
 
 ```bash
 python synaptic-tuner/Trainers/grpo/train_grpo.py \
-  --config experiment/phase1/grpo/configs/grpo_base_micro_smoke.yaml
+  --config archive/experiment/phase1/grpo/configs/grpo_base_micro_smoke.yaml
 ```
 
 Run the SFT-seed1 micro smoke only after base GRPO plumbing succeeds. Avoid

@@ -1,0 +1,27 @@
+# Prompt-matched generated replay for the L26 multicell-constrained unknown repair vector.
+
+sweep:
+  name: phase3_current_clean_grpo_v2_unknown_failure_prompt_matched_l26_constrained_generation_replay
+  evidence_tier: tier2_exploratory_local
+  runner_config: archive/experiment/phase1/probe/config/current-clean-grpo-v2-unknown-failure/phase3_current_clean_grpo_v2_unknown_failure_prompt_matched_logit_candidates.yaml
+  candidate_source_config: archive/experiment/phase1/probe/config/current-clean-grpo-v2-unknown-failure/phase3_current_clean_grpo_v2_unknown_failure_prompt_matched_l26_constrained_candidates.yaml
+  output_root: experiment/phase1/probe/analysis/current_clean_grpo_v2_unknown_failure_prompt_matched_l26_constrained_generation_replay
+  candidates:
+    - clean_sft_grpo_v2_pm_l26_unknown_repair_orthogonal_to_refusal_and_known
+  execution:
+    backend: docker
+    docker:
+      image: unsloth/unsloth:latest
+      repo_mount: /workspace/repo
+      workdir: /workspace/repo
+      hf_home: /workspace/repo/.cache/hf
+      huggingface_hub_cache: /workspace/repo/.cache/hf/hub
+  modes:
+    - name: generation
+      max_rows: 256
+      max_new_tokens: 96
+      coefficients: [10.0, 25.0]
+      controls:
+        - no_vector_baseline
+        - activation_subtraction
+        - activation_addition

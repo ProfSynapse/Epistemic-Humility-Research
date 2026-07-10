@@ -47,6 +47,22 @@ Prose lives in `AMENDMENT.md`; machine state lives in `experiment.yaml`. Never
 duplicate the prose into the manifest. The registry files are generated from the
 manifests and are the only files you must not edit by hand.
 
+Always create this skeleton with `bin/exp new --title "<title>" --type <t>` rather than
+hand-authoring the files. The command creates the directory, manifest,
+`AMENDMENT.md`, `NOTEBOOK.md`, placeholder `cell.yaml` and `gates.yaml`, and the
+local `.gitignore` template in one pass. The preferred multiplayer bootstrap is:
+
+```bash
+bin/exp new --title "<Experiment Title>" --type <t>
+```
+
+The CLI derives the slug from the title, creates `experiments/<slug>/`, and
+stores the title in the manifest. You may still pass an explicit slug when the
+slug needs to differ from the title. The slug is the durable experiment ID; do
+not reserve or encode a global amendment letter in the slug for new work. If a
+legacy letter must be displayed for a migrated record, keep it as compatibility
+prose/metadata, not the canonical ID.
+
 A teaching or example artifact sets `registered: false` in its manifest. It still
 validates structurally but is excluded from claim requirements (it does not need
 a prediction, falsifier, or verdict) and should not be read as evidence. It still
@@ -64,9 +80,11 @@ manifest scan, and the registry.
 
 ```yaml
 slug: <dir name>                 # must equal the directory name
-type: steer-cell | training-run | eval | probe-fit | lab-diagnostic
-status: draft | signed | running | resolved | null-result | falsified
+title: <human title>             # filled by `exp new`
+type: steer-cell | training-run | eval | probe-fit | lab-diagnostic | historical-amendment
+status: draft | signed | running | resolved | null-result | falsified | historical
 registered: true                 # false = teaching/example, excluded from claims
+created_at: "YYYY-MM-DDTHH:MM:SSZ"  # filled by `exp new`
 question: <one sentence>
 prediction: <one sentence>       # required to sign
 falsifier: <one sentence>        # required to sign
@@ -82,16 +100,20 @@ kg: []                           # typed KG node ids, filled at/after resolve
 ```
 
 `status`, `pins`, and `verdict` are managed by the CLI; do not hand-edit them.
+`historical-amendment` / `historical` is reserved for imported legacy governed
+records whose original amendment prose is the provenance source; do not use it
+for new experiments.
 
 ## Lifecycle
 
 ```
 draft ──sign──> signed ──run──> running ──resolve──> resolved | null-result | falsified
+historical  # imported legacy record; not a launchable lifecycle state
 ```
 
-1. **draft** (`exp new`): scaffold the directory. Fill `question`, `prediction`,
-   `falsifier`, the instrument `configs`, and write the `AMENDMENT.md` design.
-   Nothing is pinned yet.
+1. **draft** (`exp new`): scaffold the directory and fill `created_at`. Fill
+   `question`, `prediction`, `falsifier`, the instrument `configs`, and write
+   the `AMENDMENT.md` design. Nothing is pinned yet.
 2. **signed** (`exp sign`): the instrument is frozen. `exp sign` computes the
    sha256 of every file in `instrument.configs` (and any listed `modules`),
    records them in `instrument.pins`, and flips the status to `signed`. From here
@@ -137,7 +159,8 @@ executes the mirror under `.agents/skills/experiments/scripts/exp.py`.
 
 | Command | Effect |
 |---------|--------|
-| `bin/exp new <slug> --type <t>` | scaffold `experiments/<slug>/` (manifest, AMENDMENT.md, NOTEBOOK.md, .gitignore); refuses an existing slug |
+| `bin/exp new --title "<title>" --type <t>` | scaffold `experiments/<slug>/` from a title (manifest, AMENDMENT.md, NOTEBOOK.md, cell.yaml, gates.yaml, .gitignore); refuses an existing slug |
+| `bin/exp new <slug> --title "<title>" --type <t>` | same scaffold with an explicit slug |
 | `bin/exp sign <slug>` | pin instrument configs/modules, flip draft->signed; refuses if prediction/falsifier empty |
 | `bin/exp list [--status S] [--type T]` | table of slug/type/status/question |
 | `bin/exp show <slug>` | pretty-print the manifest and resolved instrument paths |
@@ -146,7 +169,8 @@ executes the mirror under `.agents/skills/experiments/scripts/exp.py`.
 | `bin/exp regen [--check]` | regenerate REGISTRY.md + registry.json; `--check` fails if the committed registry is stale |
 
 `type` is one of `steer-cell`, `training-run`, `eval`, `probe-fit`,
-`lab-diagnostic`. `bin/exp sign` reminds you, when a pinned config carries a
+`lab-diagnostic`, or migration-only `historical-amendment`. `bin/exp sign`
+reminds you, when a pinned config carries a
 tuner `surface:` block, to set `surface.expected_config_sha` to that config's pin
 so the tuner aborts on drift.
 

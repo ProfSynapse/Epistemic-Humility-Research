@@ -10,7 +10,7 @@ history.
 | Dataset identity, leakage checks, recipe materialization, or staged tuner scratch paths | [data-and-staging-gotchas.md](data-and-staging-gotchas.md) |
 | Live eval, Qwen thinking tags, output contracts, scorer drift, or post-eval sanity checks | [eval-and-scoring-gotchas.md](eval-and-scoring-gotchas.md) |
 | Interpreting bounded local diagnostic/evidence runs | [bounded-local-evidence.md](bounded-local-evidence.md) |
-| Phase 3 causal-pilot or logit-diagnostic local execution | [phase3-local-gotchas.md](phase3-local-gotchas.md) |
+| Archived legacy mechinterp causal-pilot or logit-diagnostic local execution | [legacy-mechinterp-local-gotchas.md](legacy-mechinterp-local-gotchas.md) |
 
 Bounded local diagnostics, Amendment A/B runs, and smoke tests are not headline
 or protocol evidence unless a governed run record explicitly says so.

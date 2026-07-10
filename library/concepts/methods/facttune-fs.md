@@ -53,6 +53,6 @@ relationships:
 
 A two-stage pipeline that (1) scores sampled completions using FactScore (atomic claim decomposition followed by Wikipedia-grounded verification) to construct ranked preference pairs, then (2) fine-tunes the language model on those pairs with DPO. No human annotation is required; the only external dependency is a retrieval corpus (Wikipedia) and an atomic-claim checker. FactTune-FS is the reference-based variant of the FactTune family.
 
-**Why it matters here:** Establishes the strongest factuality gains in the paper (58% error-rate reduction on biographies vs Llama-2-Chat), serves as the primary empirical comparator for the reference-free FactTune-MC, and is the method closest in spirit to using automated preference construction for epistemic alignment in Phase 1.
+**Why it matters here:** Establishes the strongest factuality gains in the paper (58% error-rate reduction on biographies vs Llama-2-Chat), serves as the primary empirical comparator for the reference-free FactTune-MC, and is the method closest in spirit to using automated preference construction for epistemic alignment in the locked training-regimen study.
 
 **Lineage:** Builds on direct-preference-optimization (Rafailov et al. 2023) and factscore (Min et al. 2023); counterpart to facttune-mc.

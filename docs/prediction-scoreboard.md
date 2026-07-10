@@ -13,14 +13,15 @@ Query the series in one shot:
 
 ```bash
 python3 - <<'EOF'
-import yaml, glob
-for f in sorted(glob.glob('experiment/protocol/AMENDMENT-*.md')):
-    fm = yaml.safe_load(open(f).read().split('\n---\n', 1)[0][4:])
-    p = fm.get('predictions') or {}
-    print(fm['amendment'],
-          '| orch:', (p.get('orchestrator') or {}).get('call'),
-          '| user:', (p.get('user') or {}).get('call'),
-          '| outcome:', str(fm.get('outcome'))[:60])
+from pathlib import Path
+import yaml
+for f in sorted(Path('experiments').glob('*/experiment.yaml')):
+    manifest = yaml.safe_load(f.read_text()) or {}
+    legacy = manifest.get('legacy') or {}
+    label = legacy.get('label') or manifest.get('slug')
+    prediction = str(manifest.get('prediction') or '').splitlines()[0][:80]
+    outcome = str(manifest.get('outcome') or manifest.get('verdict') or '')[:80]
+    print(label, '| prediction:', prediction, '| outcome:', outcome)
 EOF
 ```
 

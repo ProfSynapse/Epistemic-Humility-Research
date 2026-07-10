@@ -1,0 +1,12 @@
+{
+  "ok": true,
+  "dataset": "kuq",
+  "source": "datasets/kuq/knowns_unknowns.jsonl",
+  "source_sha256": "798d1677f962d11d",
+  "seed": 0,
+  "n_known": 600,
+  "n_unknown": 400,
+  "row_count": 1000,
+  "gen_rows": "experiments/xdataset-probe-transfer/artifacts/kuq_panel/gen_rows.jsonl",
+  "manifest": "experiments/xdataset-probe-transfer/artifacts/kuq_panel/manifest.json"
+}

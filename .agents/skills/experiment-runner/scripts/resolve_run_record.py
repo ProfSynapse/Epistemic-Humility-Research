@@ -5,7 +5,7 @@ Location: .skills/experiment-runner/scripts/resolve_run_record.py (canonical
     source; synced to .claude/ and .agents/ via sync_skills.py).
 Purpose (architecture §5): derive the `aligned_run_record_id` a hidden-state
     extraction must link, by reverse-looking-up the active arm's adapter path
-    against `experiment/phase1/run_records/<id>.json`'s `outcome.adapter_path`.
+    against `archive/experiment/phase1/run_records/<id>.json`'s `outcome.adapter_path`.
     Lives in the RUNNER, not the merged PR #28 harness: the run-record schema is
     a runner concept, and the harness already consumes `aligned_run_record_id`
     FROM its config. So the runner resolves the id and writes it into an

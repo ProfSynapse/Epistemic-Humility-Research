@@ -58,7 +58,9 @@ relationships:
   confidence: high
 ---
 
-Session-0037 arm B (analysis/mi_confab_signature_20260704/). The null model first
+Session-0037 arm B
+(experiments/confab-mechanics-cpu-fleet/analysis-committed/confab-signature/).
+The null model first
 confirms threshold dominance: the caution scalar alone separates confab from refusal
 at 0.939. The matched design then shows the scalar is not the whole story. On 328
 caliper-matched rows (post-match scalar AUROC 0.528, so the threshold explanation is

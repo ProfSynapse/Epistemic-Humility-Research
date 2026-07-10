@@ -1,0 +1,36 @@
+slug: answer-subspan-masked-contrastive-sft
+title: 'Protocol Amendment L: Answer-Sub-Span-Masked Contrastive Schema-SFT'
+type: historical-amendment
+status: historical
+registered: true
+created_at: '2026-07-08T17:40:52Z'
+legacy:
+  label: L
+  path: experiment/protocol/AMENDMENT-L-answer-subspan-masked-contrastive-sft.md
+  migrated_to: experiments/answer-subspan-masked-contrastive-sft/AMENDMENT.md
+migration:
+  needs_manual_review:
+  - falsifier
+  - experiment_type
+  - instrument_configs
+  - kg_ids
+  notes: Imported from legacy amendment prose. Do not infer missing machine fields
+    without hand-reading AMENDMENT.md.
+question: Does masking the wrong-answer sub-span in contrastive SFT recover behavior
+  while retaining Amendment K's calibration win?
+prediction: "orchestrator:\n  call: masking retains calibration and recovers behavior\
+  \ gate\nuser:\n  call: null\n  note: Predates the dual-prediction practice (adopted\
+  \ 2026-07-03 at AH signing);\n    no separately recorded user prediction."
+falsifier: ''
+checkpoint:
+  repo: ''
+  revision: ''
+instrument:
+  configs: []
+  modules: []
+  pins: {}
+inputs: []
+verdict: Per Amendment N table, behavior PASSED but calibration went to chance (AUROC
+  0.552) with inverted cell ordering — masking recovered behavior but destroyed the
+  calibration carrier.
+kg: []

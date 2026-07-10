@@ -1,0 +1,84 @@
+spec:
+  name: phase3_selfaware_calibrated_expression_hlora_window_directions
+  analysis_type: phase3_behavior_axis_direction_export
+  notice: BEHAVIOR_AXIS_DIRECTION_CANDIDATES_ONLY
+
+source_scan_config: archive/experiment/phase1/probe/config/selfaware-calibrated-expression-axis/phase3_selfaware_calibrated_expression_axis_scan.yaml
+
+axes:
+  - label: kto_h_lora_unknown_wrong_vs_refused_l24_normed
+    extraction_label: sft_kto_seed1_full
+    behavior_arm: sft_kto_seed1
+    arm: sft_kto
+    role: h_lora
+    layer: 24
+    contrast: unknown_answered_wrong_vs_unknown_refused
+    transform_method: unit_rescale_to_norm
+    target_norm: 1.2142820358276367
+  - label: kto_h_lora_unknown_wrong_vs_refused_l25_normed
+    extraction_label: sft_kto_seed1_full
+    behavior_arm: sft_kto_seed1
+    arm: sft_kto
+    role: h_lora
+    layer: 25
+    contrast: unknown_answered_wrong_vs_unknown_refused
+    transform_method: unit_rescale_to_norm
+    target_norm: 1.2142820358276367
+  - label: kto_h_lora_unknown_wrong_vs_refused_l26_normed
+    extraction_label: sft_kto_seed1_full
+    behavior_arm: sft_kto_seed1
+    arm: sft_kto
+    role: h_lora
+    layer: 26
+    contrast: unknown_answered_wrong_vs_unknown_refused
+    transform_method: unit_rescale_to_norm
+    target_norm: 1.2142820358276367
+  - label: kto_h_lora_unknown_wrong_vs_refused_l27_normed
+    extraction_label: sft_kto_seed1_full
+    behavior_arm: sft_kto_seed1
+    arm: sft_kto
+    role: h_lora
+    layer: 27
+    contrast: unknown_answered_wrong_vs_unknown_refused
+    transform_method: unit_rescale_to_norm
+    target_norm: 1.2142820358276367
+
+  - label: kto_h_lora_known_refused_vs_correct_l24_normed
+    extraction_label: sft_kto_seed1_full
+    behavior_arm: sft_kto_seed1
+    arm: sft_kto
+    role: h_lora
+    layer: 24
+    contrast: known_refused_vs_known_correct_answered
+    transform_method: unit_rescale_to_norm
+    target_norm: 1.2142820358276367
+  - label: kto_h_lora_known_refused_vs_correct_l25_normed
+    extraction_label: sft_kto_seed1_full
+    behavior_arm: sft_kto_seed1
+    arm: sft_kto
+    role: h_lora
+    layer: 25
+    contrast: known_refused_vs_known_correct_answered
+    transform_method: unit_rescale_to_norm
+    target_norm: 1.2142820358276367
+  - label: kto_h_lora_known_refused_vs_correct_l26_normed
+    extraction_label: sft_kto_seed1_full
+    behavior_arm: sft_kto_seed1
+    arm: sft_kto
+    role: h_lora
+    layer: 26
+    contrast: known_refused_vs_known_correct_answered
+    transform_method: unit_rescale_to_norm
+    target_norm: 1.2142820358276367
+  - label: kto_h_lora_known_refused_vs_correct_l27_normed
+    extraction_label: sft_kto_seed1_full
+    behavior_arm: sft_kto_seed1
+    arm: sft_kto
+    role: h_lora
+    layer: 27
+    contrast: known_refused_vs_known_correct_answered
+    transform_method: unit_rescale_to_norm
+    target_norm: 1.2142820358276367
+
+output:
+  root: experiment/phase1/probe/qwen3-4b-sft-merged-seed1-selfaware/behavior_axis_directions/phase3_selfaware_calibrated_expression_hlora_window_directions

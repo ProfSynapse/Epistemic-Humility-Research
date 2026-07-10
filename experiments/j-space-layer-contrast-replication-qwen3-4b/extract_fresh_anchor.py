@@ -19,7 +19,7 @@ HERE = Path(__file__).resolve().parent
 SOURCE = HERE.parent / "j-space-midband-write-sweep-qwen3-4b"
 ANALYSIS = HERE / "analysis"
 RENDER_DIR = HERE.parent / "common" / "renders"
-PROBE_DIR = Path("/home/profsynapse/code/Epistemic-Humility-Research/experiment/phase1/probe")
+PROBE_DIR = Path("/home/profsynapse/code/Epistemic-Humility-Research/archive/experiment/phase1/probe")
 EVAL_DIR = PROBE_DIR.parent / "eval"
 
 for p in (str(SOURCE), str(RENDER_DIR), str(PROBE_DIR), str(EVAL_DIR)):

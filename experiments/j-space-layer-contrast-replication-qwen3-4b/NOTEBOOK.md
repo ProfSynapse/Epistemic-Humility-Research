@@ -16,6 +16,15 @@ in `experiment.yaml`.
   zero dosed-row collapse for every layer. Full outcome run is still held for
   user prediction and `bin/exp sign`.
 - (add dated entries as the experiment progresses)
+- 2026-07-10: pins for `cell.yaml`, `mine_fresh_eval_pool.py`, and
+  `extract_fresh_anchor.py` refreshed while merging main into
+  `docs/experiment-provenance-cleanup`. Both branches touched this
+  experiment independently (main resolved it with byte-pins of the
+  pre-archive-path script content; this branch had already rewritten the
+  same scripts' hardcoded `experiment/phase1/...` paths to their
+  `archive/experiment/phase1/...` post-migration location), so the pins
+  now match the merged, path-corrected content rather than the pre-merge
+  as-run bytes.
 
 ### 2026-07-09 -- Pre-outcome red-team of the frozen instrument (run mid-flight, no results seen)
 

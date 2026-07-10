@@ -32,4 +32,4 @@ GPT-J-6B is a 6B-parameter autoregressive decoder-only language model with 28 tr
 
 **Why it matters here:** GPT-J-6B is used for cross-architecture validation of [[factual-association-recall-mechanism]] findings, confirming that [[subject-enrichment]] and upper-attention-head attribute extraction are not artifacts of a single model family but are consistent structural patterns across decoder-only LMs.
 
-**Lineage:** complementary to [[gpt-2-xl]] in mechanistic interpretability studies; both are predecessor open-weight models predating the Llama / Qwen generation used in Phase 1 training experiments.
+**Lineage:** complementary to [[gpt-2-xl]] in mechanistic interpretability studies; both are predecessor open-weight models predating the Llama / Qwen generation used in the locked training-regimen study training experiments.

@@ -17,11 +17,12 @@ Contract (see synaptic-tuner MechInterp docs, "Plug-in points"):
     render(row: dict) -> str
 
 System prompt is the AH A0 baseline_system_prompt, verified byte-identical to
-`experiment/phase1/probe/analysis/ah_main/manifest.json`'s
+`archive/experiment/phase1/probe/analysis/ah_main/manifest.json`'s
 `arms.A0.baseline_system_prompt` (see this repo's
-`experiment/phase1/probe/amendment_ah_stage0_extract.py:load_baseline_system_prompt`
-for the canonical source), hardcoded here so this module has no import-time
-dependency on the canonical checkout's gitignored analysis tree.
+`archive/experiment/phase1/probe/amendment_ah_stage0_extract.py` compatibility wrapper
+for the archived AH implementation's `load_baseline_system_prompt` canonical
+source), hardcoded here so this module has no import-time dependency on the
+canonical checkout's gitignored analysis tree.
 """
 
 from __future__ import annotations

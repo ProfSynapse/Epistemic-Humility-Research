@@ -4,7 +4,7 @@
 Pre-registered: experiments/ap-veto-length-balanced-confirmatory/AMENDMENT.md.
 CPU-only; runs on the host from the canonical checkout after the Modal extract
 lands. Never touches the GPU. Confirmatory follow-up to Amendment AM
-(experiment/protocol/AMENDMENT-AM-residual-catch-veto-coverage.md); reported
+(experiments/residual-catch-veto-coverage/AMENDMENT.md); reported
 separately and never pooled with AM, PROTOCOL v0.3, or the PR #205 published
 veto operating characteristics.
 
@@ -25,7 +25,7 @@ WHAT IT COMPUTES (AMENDMENT.md Design + Gates):
     class_weight balanced, fit OUT-OF-FOLD (5-fold StratifiedKFold) on the
     MATCHED set's post-L20 hidden states ONLY -- no pool scalar, no
     answer_tok_len, ever enters the feature matrix. Identical recipe to
-    experiment/phase1/probe/amendment_am_grade_and_gates.py's `_fit_probe` /
+    archive/experiment/phase1/probe/amendment_am_grade_and_gates.py's `_fit_probe` /
     `oof_scores` (read-only reference on the unmerged amendment-am branch).
   * Length-only baseline: `roc_auc_score(y_halluc, answer_tok_len)` on the
     IDENTICAL matched-set rows (same y labels, same row set as the veto).

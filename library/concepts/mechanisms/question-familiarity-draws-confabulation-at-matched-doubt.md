@@ -47,7 +47,9 @@ relationships:
   confidence: high
 ---
 
-Session-0037 arm B (analysis/mi_confab_signature_20260704/). At matched caution
+Session-0037 arm B
+(experiments/confab-mechanics-cpu-fleet/analysis-committed/confab-signature/).
+At matched caution
 distance and matched unanswerability flavor, text-level familiarity proxies alone
 predict which of two equally-doubted questions gets a fabricated answer. The
 familiarity features explain part but not all of the commitment signal (activation
@@ -57,7 +59,8 @@ knowledge probe was largely null on the same contrast, separating familiarity fr
 parametric knowledge. Proxies are corpus-internal, not web frequencies; single
 surface; correlational.
 
-Geometry refinement (same session, analysis/mi_familiarity_geometry_20260704/):
+Geometry refinement (same session,
+experiments/confab-mechanics-cpu-fleet/analysis-committed/familiarity-geometry/):
 the INTERNAL familiarity axis (a direction fit to predict corpus frequency from
 the activations) is whitened-orthogonal to the doubt trunk, the caution axis, and
 the commitment direction (all cosines within 0.045 of zero at L20/24/28), and

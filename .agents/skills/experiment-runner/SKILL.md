@@ -1,13 +1,13 @@
 ---
 name: experiment-runner
-description: Operational runbook for the Epistemic-Humility Phase 1 experiment runner - expands the PROTOCOL v0.3 (LOCKED) run matrix (3-seed headline + LR/beta sensitivity panel at 4B, 3-seed confirm at 8B, 2 bridge replication cells) into per-cell tuner invocations across two lanes (local RTX 3090 / HF Jobs cloud), with hard pre-registration count assertions, prerequisite gating, data staging, and committed provenance run records. Use when launching, dry-running, or gating the Phase 1 matrix, materializing per-cell recipes, or inspecting run records. This skill is about USING the runner via checked-in scripts; it never modifies the synaptic-tuner submodule.
+description: Operational runbook for the Epistemic-Humility Locked Matrix Experiment Runner - expands the PROTOCOL v0.3 (LOCKED) run matrix (3-seed headline + LR/beta sensitivity panel at 4B, 3-seed confirm at 8B, 2 bridge replication cells) into per-cell tuner invocations across two lanes (local RTX 3090 / HF Jobs cloud), with hard pre-registration count assertions, prerequisite gating, data staging, and committed provenance run records. Use when launching, dry-running, or gating the locked matrix, materializing per-cell recipes, or inspecting run records. This skill is about USING the runner via checked-in scripts; it never modifies the synaptic-tuner submodule.
 allowed-tools: Read, Bash, Write, Grep, Glob
 ---
 
-# Phase 1 Experiment Runner
+# Locked Matrix Experiment Runner
 
-Use the checked-in runner scripts to expand, gate, stage, and inspect Phase 1
-experiment cells. This skill is orchestration glue: it talks to the
+Use the checked-in runner scripts to expand, gate, stage, and inspect locked
+matrix cells. This skill is orchestration glue: it talks to the
 `synaptic-tuner` submodule only through materialized recipe YAML and public tuner
 CLI verbs. It must not add experiment-specific code or config to the tuner.
 
@@ -34,9 +34,9 @@ Always choose the narrowest reference needed for the task:
 | Prepare/gate hidden-state extraction | [reference/hidden-state-probe-smoke.md](reference/hidden-state-probe-smoke.md) |
 | Author a NEW steering / extraction / probe-fit / gate-scoring cell (tuner-backed) | the `mechinterp-cells` skill (`.skills/mechinterp-cells/SKILL.md`) |
 | Decide batch-1 vs batched generation for a GPU cell (parity rules, vLLM/HF lanes, numerics smoke) | [reference/batched-generation.md](reference/batched-generation.md) |
-| Stage an aux_head co-training arm (Phase B: build dataset + A0/A1/A2 recipes + launch prereqs) | [reference/aux-head-cotraining-arms.md](reference/aux-head-cotraining-arms.md) |
-| Plan Phase 3 causal-pilot sweeps | [reference/phase3-causal-pilot-sweeps.md](reference/phase3-causal-pilot-sweeps.md) |
+| Plan archived legacy mechinterp causal-pilot sweeps | [reference/legacy-mechinterp-causal-pilot-sweeps.md](reference/legacy-mechinterp-causal-pilot-sweeps.md) |
 | Record durable research-session memory | [reference/research-sessions.md](reference/research-sessions.md) |
+| Audit experiment/session provenance before migration | `python3 .agents/skills/experiment-runner/scripts/provenance_audit.py [--json]` |
 | Orchestrate a GPU-runner subagent (watchers, messaging, division of labor) | [reference/subagent-orchestration.md](reference/subagent-orchestration.md) |
 | Create or update experiment notes | [reference/experiment-notes.md](reference/experiment-notes.md) |
 | Publish or document public HF artifacts | [reference/hf-publication.md](reference/hf-publication.md) |
@@ -54,18 +54,17 @@ operation, then follow any further routing inside that reference.
 |------|---------|
 | Dry-run the matrix (expand + assert counts, launch nothing) | `python3 .agents/skills/experiment-runner/scripts/run_matrix.py --dry-run` |
 | Check prerequisites per cell (gate, launch nothing) | `python3 .agents/skills/experiment-runner/scripts/run_matrix.py --check-only --lane local` |
-| Standalone prereq report | `python3 .agents/skills/experiment-runner/scripts/check_prereqs.py --matrix .agents/skills/experiment-runner/config/matrix.yaml --data-root experiment/phase1/data --lane local` |
+| Standalone prereq report | `python3 .agents/skills/experiment-runner/scripts/check_prereqs.py --matrix .agents/skills/experiment-runner/config/matrix.yaml --data-root archive/experiment/phase1/data --lane local` |
 | Prepare one local 4B cell (stage data + materialized recipe + run record) | `python3 .agents/skills/experiment-runner/scripts/prepare_local_cell.py --run-id sft__4b__headline__seed1 --status launched` |
-| Inspect a run record | `Get-Content experiment/phase1/run_records/<run_id>.json` |
-| Prepare/gate one hidden-state extraction (GPU-free; gate + resolve, launch nothing) | `python3 .agents/skills/experiment-runner/scripts/prepare_extraction_cell.py --config experiment/phase1/probe/config/hidden_state_probe.yaml` |
-| Plan Phase 3 causal-pilot sweeps (GPU-free by default) | `python experiment/phase1/probe/phase3_causal_pilot_sweep.py --config experiment/phase1/probe/config/phase3_causal_pilot_local_sweep.yaml` |
-| Build aux_head co-training datasets (real + shuffled placebo; CPU-only) | `python3 experiment/phase1/probe/amendment_r_build_phase_b_aux_dataset.py --out-dir scratch/amendment_r/phase_b` |
+| Inspect a run record | `Get-Content archive/experiment/phase1/run_records/<run_id>.json` |
+| Prepare/gate one hidden-state extraction (GPU-free; gate + resolve, launch nothing) | `python3 .agents/skills/experiment-runner/scripts/prepare_extraction_cell.py --config experiments/common/configs/knowledge-probe/hidden_state_probe.yaml` |
+| Plan archived legacy mechinterp causal-pilot sweeps (GPU-free by default) | `python experiments/common/mechinterp/causal_pilot_sweep.py --config archive/experiment/phase1/probe/config/causal-pilot-core/mechinterp_causal_pilot_local_sweep.yaml` |
 
 ## Core Invariants
 
 - The matrix SSOT is `config/matrix.yaml`; per-arm default recipes live under
-  `experiment/phase1/recipes/`; provenance records live under
-  `experiment/phase1/run_records/`.
+  `archive/experiment/phase1/recipes/`; provenance records live under
+  `archive/experiment/phase1/run_records/`.
 - `run_matrix.py` must assert the pre-registered counts: 19 @ 4B, 9 @ 8B,
   and 2 bridge cells. Never loosen these assertions to absorb a matrix edit.
 - Launch/cancel/delete actions require exact user approval in the current

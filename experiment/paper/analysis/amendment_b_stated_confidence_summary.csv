@@ -1,4 +1,0 @@
-arm,n_seeds,refusal_recall_pct,over_refusal_pct,correct_on_known_pct,truthful_pct,confidence_coverage_pct,mean_stated_confidence,mae_vs_known_label,brier_vs_known_label,mae_vs_answer_correctness,brier_vs_answer_correctness,source_metrics
-merged SFT,6,73.323,48.137,41.06,37.143,99.96,0.42296066666666665,0.4170295,0.3907853333333333,0.286615,0.26037083333333333,local Phase 1 stated-confidence metrics.json files
-SFT -> DPO,6,37.89,11.683,25.553,27.26,99.92,0.7611525,0.2940795,0.24569483333333333,0.6147188333333333,0.566334,local Phase 1 stated-confidence metrics.json files
-SFT -> KTO,6,65.73,34.417,33.433,35.333,99.955,0.5076776666666667,0.36806283333333334,0.33382766666666663,0.36855366666666667,0.3343181666666667,local Phase 1 stated-confidence metrics.json files

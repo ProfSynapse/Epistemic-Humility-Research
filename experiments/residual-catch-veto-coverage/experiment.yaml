@@ -1,0 +1,66 @@
+slug: residual-catch-veto-coverage
+title: 'Amendment AM: Post-generation veto coverage of the radial-unreachable residual
+  confabs'
+type: historical-amendment
+status: historical
+registered: true
+created_at: '2026-07-08T17:40:52Z'
+legacy:
+  label: AM
+  path: experiment/protocol/AMENDMENT-AM-residual-catch-veto-coverage.md
+  migrated_to: experiments/residual-catch-veto-coverage/AMENDMENT.md
+migration:
+  needs_manual_review:
+  - falsifier
+  - experiment_type
+  - kg_ids
+  notes: Imported from legacy amendment prose. Do not infer missing machine fields
+    without hand-reading AMENDMENT.md.
+question: Of the residual confabulations the pre-generation radial controller cannot
+  reach (the gate-miss set the answerability gate misreads as answerable, 43 rows
+  on the A0 raw-base surface, ambiguous-flavor concentrated), does a post-generation
+  correctness veto refit on the A0 generation surface separate those residual confabs
+  from good answers, or is the veto blind exactly where the pre-gen gate is blind?
+prediction: "orchestrator:\n  calls:\n    AM-G1: PASS (~70%)\n    AM-G2: PASS (~60%)\n\
+  \  recorded: 2026-07-05\n  basis: The veto reads post-generation content and the\
+  \ residual confabs are answered\n    fabrications, so the content signal the S/W/U\
+  \ veto keys on should be present regardless\n    of why the pre-gen gate missed\
+  \ the question (the gate reads pre-generation answerability;\n    the veto reads\
+  \ the emitted answer, a different object). The raw-base transfer\n    AUROC is 0.768\
+  \ on the full W population and a same-surface refit should meet or\n    beat that,\
+  \ so an AUROC floor of 0.62 has real headroom (AM-G1 ~70%). The bet that\n    is\
+  \ genuinely open is whether the ambiguous-flavor residual specifically still\n \
+  \   reads low-trust; ambiguous questions may produce plausible-sounding confabs\
+  \ whose\n    content looks answerable, which is the exact failure mode that could\
+  \ pull AM-G2\n    down (only ~60%). The whole point of the residual is that it is\
+  \ the hard tail\n    the pre-gen controller could not carve out.\nuser:\n  calls:\n\
+  \    AM-G1: PASS\n    AM-G2: PASS\n  recorded: 2026-07-05\n  basis: The user confirmed\
+  \ all four drafted design choices as-is (derived gates AUROC\n    0.62 / bootstrap\
+  \ CI-LB 0.55 / permutation p 0.01, the deterministic 43-row gate-miss\n    residual,\
+  \ the correct-answerable-only good class, and Modal-only at the $5 cap\n    with\
+  \ regeneration plus the batch-12 numerics smoke) and called both gates PASS,\n \
+  \   taking the coverage bet at full confidence where the orchestrator sits at 70/60."
+falsifier: ''
+checkpoint:
+  repo: ''
+  revision: ''
+instrument:
+  configs: []
+  modules:
+  - cloud/modal_am_residual_catch.py
+  pins:
+    cloud/modal_am_residual_catch.py: a18ed4dcd1ef3ee4712a9d3b338bd651690ff64196afd0454f98d24b6e516bf9
+inputs:
+- experiments/residual-catch-veto-coverage/analysis-committed/veto-warning-policy/warning_policy.py
+verdict: 'AM-G1 PASS (OOF veto AUROC 0.9168, CI [0.854, 0.963]) and AM-G2 PASS (permutation
+  p=0.001) as literally pre-registered. BUT an adversarial audit before recording
+  found the residual-vs-good separation is dominated by an UNDISCLOSED answer-length
+  confound (answer length alone separates at AUROC 0.943, higher than the veto''s
+  0.917; the veto reads the hidden state at content_end, whose position encodes length).
+  The suspected score_L24-selection circularity was refuted (full-pop AUROC 0.916
+  == residual 0.917). Gates pass; the mechanistic two-signal-coverage claim is NOT
+  established, because the catch is length-driven not content-driven. Honest non-length
+  content signal ~0.77 (broader hallucination population, length-matched). Tier-A
+  exploratory, single seed, never pooled with the locked matrix or PR #205. See section
+  9.'
+kg: []

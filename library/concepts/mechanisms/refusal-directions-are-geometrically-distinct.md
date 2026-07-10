@@ -38,7 +38,7 @@ relationships:
 ---
 
 This mechanism records the caveat that refusal-like behaviors may not share a
-single universal activation direction. For Phase 3, it cautions against
+single universal activation direction. For mechanism work, it cautions against
 equating a safety-refusal vector with epistemic abstention or a project-specific
 known/unknown direction.
 

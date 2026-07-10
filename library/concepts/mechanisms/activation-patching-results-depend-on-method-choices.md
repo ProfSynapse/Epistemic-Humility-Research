@@ -42,5 +42,5 @@ relationships:
 ---
 
 Activation-patching findings can depend on metric choice, corruption choice, and
-other method details, so Phase 3 pilots should predeclare those choices before
+other method details, so mechanism program pilots should predeclare those choices before
 interpreting effects.

@@ -43,7 +43,7 @@ relationships:
   confidence: high
 ---
 
-Amendment AB (experiment/protocol/AMENDMENT-AB-first-person-injection.md,
+Amendment AB (experiments/first-person-injection/AMENDMENT.md,
 verdict locked 2026-07-03) tests whether Amendment AA's shut CoT text channel
 ([[trust-axis-injection-does-not-move-answer-abstain-revise-behavior]]) was a
 prompt-register artifact rather than genuine channel absence, by replacing

@@ -9,10 +9,10 @@ the decision words are emitted (**decision-echo**)?
 Two checked-in harnesses, both Tier-2, both read-only (they sidestep the
 anti-steerability problem that plagues causal handles):
 
-- **Per-head o_proj axis** (e.g. the failure axis F): `phase3_head_read_trajectory.py`
-  + `phase3_head_read_trajectory_runner.py`, fed a `steering_directions.json`.
-- **Residual full-vector axis** (e.g. the caution axis A2): `phase3_residual_read_trajectory.py`
-  + `phase3_residual_read_trajectory_runner.py`, fed a `caution_direction.json`.
+- **Per-head o_proj axis** (e.g. the failure axis F): `experiments/common/mechinterp/head_read_trajectory.py`
+  + `experiments/common/mechinterp/head_read_trajectory_runner.py`, fed a `steering_directions.json`.
+- **Residual full-vector axis** (e.g. the caution axis A2): `experiments/common/mechinterp/residual_read_trajectory.py`
+  + `experiments/common/mechinterp/residual_read_trajectory_runner.py`, fed a `caution_direction.json`.
 
 ## What a read-only timing test can and cannot settle
 
@@ -33,7 +33,7 @@ anti-steerability problem that plagues causal handles):
    construction).
 
    ```bash
-   python .skills/mech-interp-runner/scripts/phase3_cli.py residual-caution-direction \
+   python .skills/mech-interp-runner/scripts/mechinterp_cli.py residual-caution-direction \
      --extraction-dir <SA_extraction> --behavior-rows <SA_behavior_rows> \
      --layer 35 --out <dir>/caution_direction_L35.json
    ```
@@ -43,7 +43,7 @@ anti-steerability problem that plagues causal handles):
    AUROC confirms the raw direction captures the same axis.
 
 2. **Run the trajectory (Docker/GPU; needs approval).** Copy
-   `config/phase3_current_clean_grpo_v2_caution_residual_read_trajectory.yaml`:
+   `archive/experiment/phase1/probe/config/grpo-v2-residual-repair/mechinterp_current_clean_grpo_v2_caution_residual_read_trajectory.yaml`:
    point `caution_direction` at the JSON, `rows` at the behavior rows,
    `rows_filter.label: known` (the contrast is known_refused vs
    known_correct_answered — unknown rows have no group membership and waste GPU),

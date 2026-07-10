@@ -20,7 +20,7 @@ models:
 - qwen3-4b
 metrics:
 - auroc
-provenance: 'Internal exploratory census (Tier-1 lab notebook, not a paper draft). Source of truth: experiment/phase1/probe/analysis/hydra_census_stage1/{hydra_census_report.json,NOTES.md} in the canonical checkout, plus the census script docstring committed as db8a2b04 (script experiment/phase1/probe/hydra_census_stage1.py). Surface: AI-TRUE A0 pre-generation states (1,662 rows; 90 correct / 120 wrong / 114 answerable-refused / 1,222 unanswerable-refused / 116 confab), seed 20260705, label-agnostic randomized PCA-128 then LogisticRegression saga. CPU only, single seed. Ungated exploratory evidence.'
+provenance: 'Internal exploratory census (Tier-1 lab notebook, not a paper draft). Source of truth: archive/experiment/phase1/probe/analysis/hydra_census_stage1/{hydra_census_report.json,NOTES.md} in the canonical checkout, plus the census script docstring committed as db8a2b04 (script archive/experiment/phase1/probe/hydra_census_stage1.py). Surface: AI-TRUE A0 pre-generation states (1,662 rows; 90 correct / 120 wrong / 114 answerable-refused / 1,222 unanswerable-refused / 116 confab), seed 20260705, label-agnostic randomized PCA-128 then LogisticRegression saga. CPU only, single seed. Ungated exploratory evidence.'
 related:
 - '[[caution-readout-is-low-rank-on-collinear-carriers]]'
 - '[[refusal-hydra-effect]]'

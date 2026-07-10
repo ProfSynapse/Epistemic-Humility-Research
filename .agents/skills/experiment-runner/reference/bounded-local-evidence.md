@@ -18,23 +18,23 @@ Read only when interpreting or comparing bounded local diagnostic/evidence runs.
   reached the base arm, then failed on the SFT adapter with
   `ValueError: LoRA rank 32 is greater than max_lora_rank 16`. The config fix
   was `vllm.max_lora_rank: 32` in
-  `experiment/phase1/eval/config/eval_smoke_local_4b.yaml`, followed by
-  `python -m pytest experiment/phase1/eval/tests/test_run_eval_e2e.py -q`
+  `archive/experiment/phase1/eval/config/eval_smoke_local_4b.yaml`, followed by
+  `python -m pytest archive/experiment/phase1/eval/tests/test_run_eval_e2e.py -q`
   passing with `13 passed, 1 warning`. The rerun passed base + SFT + DPO with
   exit code 0 and `eval complete: 3 arm x set rows, config_sha=97dddaaf30d0dfb0`.
-  Outputs are under `experiment/phase1/eval/results_smoke_local_4b`: per-arm
+  Outputs are under `archive/experiment/phase1/eval/results_smoke_local_4b`: per-arm
   metrics/bootstrap plus `comparisons/summary_table.csv` and
   `comparisons/mcnemar.csv`. Smoke-only truthful rates over `n=5` fixture rows
   were base 60.0, SFT 100.0, DPO 40.0; do not cite these as headline results.
   The `<think>` guard did not trigger (`rg "<think>|</think>"
-  experiment\phase1\eval\results_smoke_local_4b` found no matches), and no
+  archive\experiment\phase1\eval\results_smoke_local_4b` found no matches), and no
   containers or GPU processes remained after completion. This validates the
   tiny local eval path for base/SFT/DPO adapter load, generation, scoring,
   bootstrap, and comparisons.
 
 - Corrected OOD diagnostic run `eh-ood-slice-local-4b-4` exited 0 with
   `eval complete: 9 arm x set rows, config_sha=fe48ee93abfbc559`. Outputs are
-  under `experiment/phase1/eval/results_ood_slice_local_4b`, covering
+  under `archive/experiment/phase1/eval/results_ood_slice_local_4b`, covering
   base/SFT/DPO x CoCoNot/TruthfulQA/SelfAware at limit 64 each. No `<think>` or
   `</think>` matches were found. Caveat: the first slices were all known-labeled
   (`n_unknown_labeled=0`), so unknown/refusal-recall metrics are not meaningful
@@ -43,7 +43,7 @@ Read only when interpreting or comparing bounded local diagnostic/evidence runs.
 
 - Mixed SelfAware diagnostic run `eh-selfaware-mixed-local-4b` exited 0 with
   `eval complete: 3 arm x set rows, config_sha=3f5f676bde46dce9`. Outputs are
-  under `experiment/phase1/eval/results_selfaware_mixed_slice_local_4b`, with no
+  under `archive/experiment/phase1/eval/results_selfaware_mixed_slice_local_4b`, with no
   `<think>` or `</think>` matches. Diagnostic-only summary over n=64: base
   unknown=27 / known=37, refusal_recall 0.0, answer_on_unknown 100.0,
   over_refusal 0.0, truthful 15.62; SFT refusal_recall 88.89,
@@ -53,9 +53,9 @@ Read only when interpreting or comparing bounded local diagnostic/evidence runs.
 - Bounded SelfAware evidence run `eh-selfaware-evidence-2240-192-local-4b`
   exited 0 with `eval complete: 3 arm x set rows,
   config_sha=70ac0fe102d8db1f`. Config:
-  `experiment/phase1/eval/config/eval_selfaware_evidence_2240_192_local_4b.yaml`.
+  `archive/experiment/phase1/eval/config/eval_selfaware_evidence_2240_192_local_4b.yaml`.
   Outputs are under
-  `experiment/phase1/eval/results_selfaware_evidence_2240_192_local_4b`.
+  `archive/experiment/phase1/eval/results_selfaware_evidence_2240_192_local_4b`.
   Shape: SelfAware only, offset 2240, limit 192, expected/observed 97 known /
   95 unknown, base/SFT/DPO only; no KTO, cloud, headline, full, or protocol
   run. No `<think>` or `</think>` matches were found. Summary over n=192:
@@ -74,8 +74,8 @@ Read only when interpreting or comparing bounded local diagnostic/evidence runs.
 
 - Full SelfAware evidence run `eh-selfaware-full-local-4b` exited 0 with
   `eval complete: 3 arm x set rows, config_sha=25e6a1faf916c7ef`. Config:
-  `experiment/phase1/eval/config/eval_selfaware_full_local_4b.yaml`. Outputs
-  are under `experiment/phase1/eval/results_selfaware_full_local_4b`. Shape:
+  `archive/experiment/phase1/eval/config/eval_selfaware_full_local_4b.yaml`. Outputs
+  are under `archive/experiment/phase1/eval/results_selfaware_full_local_4b`. Shape:
   full SelfAware, 3,369 rows = 2,337 known / 1,032 unknown, base/SFT/DPO only;
   no KTO, bridge, cloud, headline, protocol, or full matrix. No `<think>` or
   `</think>` matches were found. Summary: base truthful 19.26, refusal_recall
@@ -90,9 +90,9 @@ Read only when interpreting or comparing bounded local diagnostic/evidence runs.
 
 - Broader OOD evidence run `eh-broader-ood-evidence-local-4b` exited 0 with
   `eval complete: 12 arm x set rows, config_sha=7bcf77af7f76caaf`. Config:
-  `experiment/phase1/eval/config/eval_broader_ood_evidence_local_4b.yaml`.
+  `archive/experiment/phase1/eval/config/eval_broader_ood_evidence_local_4b.yaml`.
   Outputs are under
-  `experiment/phase1/eval/results_broader_ood_evidence_local_4b`. Shape:
+  `archive/experiment/phase1/eval/results_broader_ood_evidence_local_4b`. Shape:
   base/SFT/DPO only over KUQ balanced slice (384 rows = 192 unknown / 192
   known), full CoCoNot contrast set (379 known), TruthfulQA 256 known, and
   PopQA 256 known; no KTO, bridge, cloud, headline, protocol, or full matrix.
@@ -168,7 +168,7 @@ Read only when interpreting or comparing bounded local diagnostic/evidence runs.
   abstention while reducing known-question over-refusal.
 
 - Local KTO seed 1 completed after Docker recovery. Run record:
-  `experiment/phase1/run_records/kto__4b__headline__seed1.json`. Artifact root:
+  `archive/experiment/phase1/run_records/kto__4b__headline__seed1.json`. Artifact root:
   `synaptic-tuner/toolset-training-artifacts/runs/local/4b/kto__4b__headline__seed1/20260613_151337_logging_patch`.
   It trained 3,599/3,599 steps in 5h43m4s, saved `final_model`,
   `training_lineage.json`, and `capacity_features.json`, ended
@@ -180,9 +180,9 @@ Read only when interpreting or comparing bounded local diagnostic/evidence runs.
 
 - KTO full SelfAware comparator run `eh-kto-selfaware-full-local-4b` exited 0
   with `eval complete: 1 arm x set rows, config_sha=fb24ee65ee717a18`. Config:
-  `experiment/phase1/eval/config/eval_kto_selfaware_full_local_4b.yaml`.
+  `archive/experiment/phase1/eval/config/eval_kto_selfaware_full_local_4b.yaml`.
   Outputs are under
-  `experiment/phase1/eval/results_kto_selfaware_full_local_4b`. Shape: full
+  `archive/experiment/phase1/eval/results_kto_selfaware_full_local_4b`. Shape: full
   SelfAware, 3,369 rows = 2,337 known / 1,032 unknown, KTO seed 1 only; no
   base/SFT/DPO, bridge, cloud, headline aggregation, protocol, or full matrix.
   No `<think>` or `</think>` matches were found. Summary: truthful 18.73,
@@ -192,9 +192,9 @@ Read only when interpreting or comparing bounded local diagnostic/evidence runs.
 - KTO broader OOD comparator run `eh-kto-broader-ood-evidence-local-4b` exited
   0 with `eval complete: 4 arm x set rows, config_sha=2acc68f74d12e302`.
   Config:
-  `experiment/phase1/eval/config/eval_kto_broader_ood_evidence_local_4b.yaml`.
+  `archive/experiment/phase1/eval/config/eval_kto_broader_ood_evidence_local_4b.yaml`.
   Outputs are under
-  `experiment/phase1/eval/results_kto_broader_ood_evidence_local_4b`. Shape:
+  `archive/experiment/phase1/eval/results_kto_broader_ood_evidence_local_4b`. Shape:
   KTO seed 1 only over KUQ balanced slice (384 rows = 192 unknown / 192 known),
   full CoCoNot contrast set (379 known), TruthfulQA 256 known, and PopQA 256
   known; no base/SFT/DPO, bridge, cloud, headline aggregation, protocol, or
@@ -210,10 +210,10 @@ Read only when interpreting or comparing bounded local diagnostic/evidence runs.
 - 2026-06-16 local three-seed cold-start SelfAware eval completed for
   `sft__4b__headline__seed1..3`, `dpo__4b__headline__seed1..3`, and
   `kto__4b__headline__seed1..3`. Outputs:
-  `experiment/phase1/eval/results_selfaware_full_seed1_all_arms_4b_20260615_2148`,
-  `experiment/phase1/eval/results_selfaware_full_seed2_all_arms_4b_20260615_2148`,
+  `archive/experiment/phase1/eval/results_selfaware_full_seed1_all_arms_4b_20260615_2148`,
+  `archive/experiment/phase1/eval/results_selfaware_full_seed2_all_arms_4b_20260615_2148`,
   and
-  `experiment/phase1/eval/results_selfaware_full_seed3_all_arms_4b_20260616_0615`.
+  `archive/experiment/phase1/eval/results_selfaware_full_seed3_all_arms_4b_20260616_0615`.
   Each arm wrote 3,369 scored SelfAware rows, and contamination scans for
   `<think>`, `</think>`, and `reasoning_content` found no matches. Three-seed
   means/ranges: SFT refusal recall 87.88% (83.91-92.34), over-refusal 64.77%

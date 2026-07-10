@@ -47,6 +47,6 @@ relationships:
 
 A lightweight open-source Python library (PyPI/GitHub) providing model-agnostic utilities for reasoning-aware training and evaluation of HuggingFace transformers models. Exposes four modules: thinkpack.chat (chat template construction), thinkpack.parse (trace parsing into valid/empty/missing/truncated), thinkpack.stats (VR/ER/MR/TR/Rpass@1 computation), and thinkpack.mask (loss masking for masked-think and response-only strategies).
 
-**Why it matters here:** ThinkPack operationalizes the structural evaluation framework for reasoning-trace collapse, enabling reproducible cross-model comparison without model-specific parsing code. Directly applicable to Phase 1 monitoring.
+**Why it matters here:** ThinkPack operationalizes the structural evaluation framework for reasoning-trace collapse, enabling reproducible cross-model comparison without model-specific parsing code. Directly applicable to the locked training-regimen study monitoring.
 
 **Lineage:** Released alongside Twist et al. 2026 (arXiv:2605.21127), Section 4 and Appendix A.

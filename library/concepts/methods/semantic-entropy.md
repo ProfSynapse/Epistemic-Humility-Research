@@ -63,6 +63,6 @@ relationships:
 
 An unsupervised uncertainty measure for free-form NLG that clusters sampled model outputs into semantic equivalence classes via bidirectional entailment, sums sequence likelihoods within each class to obtain meaning-level probabilities, and computes entropy over the resulting distribution of meanings rather than token sequences. Requires no model modification and runs off the shelf with any autoregressive LLM.
 
-**Why it matters here:** Removes lexical paraphrase inflation from entropy-based uncertainty, yielding AUROC gains over token-level entropy that widen with model scale and sample count. Directly relevant to evaluating calibration in Phase 1 arms where training may shift paraphrase diversity independently of semantic uncertainty.
+**Why it matters here:** Removes lexical paraphrase inflation from entropy-based uncertainty, yielding AUROC gains over token-level entropy that widen with model scale and sample count. Directly relevant to evaluating calibration in locked training-regimen arms where training may shift paraphrase diversity independently of semantic uncertainty.
 
 **Lineage:** Proposed by Kuhn, Gal, and Farquhar (arXiv:2302.09664, ICLR 2023) as a fix for the semantic equivalence problem in NLG uncertainty. Extends standard predictive entropy (Malinin and Gales 2020) by converting the event space from token sequences to meaning classes. Compared against p-true (Kadavath et al. 2022) and lexical similarity baselines.

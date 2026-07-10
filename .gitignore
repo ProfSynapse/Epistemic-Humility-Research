@@ -11,31 +11,31 @@ scratch/
 .kg/
 
 # local operational logs
-experiment/phase1/run_records/logs/
+archive/experiment/phase1/run_records/logs/
 
-# Generated Phase 3 probe artifacts. Keep reusable scripts/configs/notes in git,
+# Generated legacy probe artifacts. Keep reusable scripts/configs/notes in git,
 # but do not publish raw logs, rows, vectors, or run-output directories by default.
-experiment/phase1/probe/analysis/**/_execution_logs/
-experiment/phase1/probe/analysis/**/_sweep_configs/
-experiment/phase1/probe/analysis/**/directions/
-experiment/phase1/probe/analysis/**/generation/
-experiment/phase1/probe/analysis/**/logit_diagnostic/
-experiment/phase1/probe/analysis/**/*.safetensors
-experiment/phase1/probe/analysis/**/*.jsonl
-experiment/phase1/probe/analysis/**/*.csv
-experiment/phase1/probe/analysis/**/*.json
-experiment/phase1/probe/analysis/**/metrics.json
-experiment/phase1/probe/analysis/**/run_manifest.json
-experiment/phase1/probe/analysis/**/sweep_manifest.json
-experiment/phase1/probe/analysis/**/planned_commands.jsonl
-experiment/phase1/probe/config/*.summary.json
-experiment/phase1/probe/config/*row_keys*.manifest.json
-experiment/phase1/probe/config/*_rows.jsonl
-experiment/phase1/probe/config/*_scored_rows.jsonl
-experiment/phase1/probe/manifests/
+archive/experiment/phase1/probe/analysis/**/_execution_logs/
+archive/experiment/phase1/probe/analysis/**/_sweep_configs/
+archive/experiment/phase1/probe/analysis/**/directions/
+archive/experiment/phase1/probe/analysis/**/generation/
+archive/experiment/phase1/probe/analysis/**/logit_diagnostic/
+archive/experiment/phase1/probe/analysis/**/*.safetensors
+archive/experiment/phase1/probe/analysis/**/*.jsonl
+archive/experiment/phase1/probe/analysis/**/*.csv
+archive/experiment/phase1/probe/analysis/**/*.json
+archive/experiment/phase1/probe/analysis/**/metrics.json
+archive/experiment/phase1/probe/analysis/**/run_manifest.json
+archive/experiment/phase1/probe/analysis/**/sweep_manifest.json
+archive/experiment/phase1/probe/analysis/**/planned_commands.jsonl
+archive/experiment/phase1/probe/config/*.summary.json
+archive/experiment/phase1/probe/config/*row_keys*.manifest.json
+archive/experiment/phase1/probe/config/*_rows.jsonl
+archive/experiment/phase1/probe/config/*_scored_rows.jsonl
+archive/experiment/phase1/probe/manifests/
 
 # Experiments-first tree (experiments/<slug>/). Per-experiment run outputs and
-# fitted direction data are untracked, mirroring the Phase 3 analysis convention;
+# fitted direction data are untracked, mirroring the legacy analysis convention;
 # the manifest, amendment, configs, notebook, and shared common/ code stay tracked.
 experiments/*/analysis/
 experiments/*/directions/
@@ -62,21 +62,21 @@ unsloth_compiled_cache/
 .obsidian/
 
 # web-app bundle dump (log-viewer artifact; not experiment data)
-experiment/phase1/probe/assets/
+archive/experiment/phase1/probe/assets/
 # Housekeeping 2026-07-05 (dirt audit): fetched mining datasets are re-downloadable;
 # FalseQA additionally carries no upstream license (do not redistribute).
 datasets/falseqa/
 datasets/ambigqa/
 datasets/bigbench-known-unknowns/
 # marimo dashboard runtime cache + exported web bundle boilerplate (regenerable)
-experiment/phase1/probe/__marimo__/
-experiment/phase1/probe/sae_dashboard.html
-experiment/phase1/probe/.nojekyll
-experiment/phase1/probe/favicon*
-experiment/phase1/probe/logo.png
-experiment/phase1/probe/manifest.json
-experiment/phase1/probe/site.webmanifest
-experiment/phase1/probe/android-chrome-*.png
-experiment/phase1/probe/apple-touch-icon.png
+archive/experiment/phase1/probe/__marimo__/
+archive/experiment/phase1/probe/sae_dashboard.html
+archive/experiment/phase1/probe/.nojekyll
+archive/experiment/phase1/probe/favicon*
+archive/experiment/phase1/probe/logo.png
+archive/experiment/phase1/probe/manifest.json
+archive/experiment/phase1/probe/site.webmanifest
+archive/experiment/phase1/probe/android-chrome-*.png
+archive/experiment/phase1/probe/apple-touch-icon.png
 # local-scope agent instructions for the probe dir
-experiment/phase1/probe/CLAUDE.md
+archive/experiment/phase1/probe/CLAUDE.md

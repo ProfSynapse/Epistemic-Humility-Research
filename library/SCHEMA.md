@@ -33,16 +33,17 @@ is `namespace:slug` and survives renames.
 | Term of art | `term` | `term:knowledge-boundary` | `library/concepts/terms/` |
 | Mechanism (cause -> effect) | `mechanism` | `mechanism:ft-unknown-facts-drives-hallucination` | `library/concepts/mechanisms/` |
 | Gap (verified literature absence) | `gap` | `gap:4-probe-transfer` | `library/concepts/gaps/` |
-| Experiment (note) | `experiment` | `experiment:gradient-probe-coherence` | `experiment/notes/` |
+| Experiment | `experiment` | `experiment:j-space-localization-qwen3-4b` | `library/concepts/experiments/` |
 
 Atoms are atomic: one concept per file, reused by many papers. A paper note
 *references* atoms through edges; it does not redefine them.
 
-Gaps and experiments are graph nodes too: a gap is a verified absence drawn from
-the meta-analysis, and an experiment note `tests` a gap (or mechanism) and
-`builds_on` the papers it draws from. Experiment notes live under
-`experiment/notes/` (outside `library/`), so validation must include both trees
-(see Tooling).
+Gaps and experiment concept atoms are graph nodes too: a gap is a verified
+absence drawn from the meta-analysis, and an experiment atom can `tests` a gap
+(or mechanism) and `builds_on` the papers it draws from. Operational experiment
+runbooks and plans live beside governed experiment records under
+`experiments/<slug>/`; they are provenance documents, not the primary library KG
+surface.
 
 ## Edge vocabulary (research overlay)
 
@@ -55,7 +56,7 @@ Paper to entity (the research extension in `edge-ontology.yaml`):
 - `studies` : paper studies a term or mechanism
 - `supports` / `supported_by` : paper provides evidence for a mechanism (a claim)
 
-Experiment to entity (the experiment-note overlay):
+Experiment to entity:
 
 - `tests` / `tested_by` : experiment tests or addresses a gap or mechanism
 - `builds_on` / `built_on_by` : experiment builds on a paper, method, or prior result
@@ -89,11 +90,9 @@ related:
 # library only (atoms + papers + gaps)
 python3 .agents/skills/knowledge-graph/scripts/analyze_kg.py  --root library
 python3 .agents/skills/knowledge-graph/scripts/export_kg.py   --root library --format csv --output /tmp/eh-kg.csv
-# validate library AND experiment notes (experiment/ lives outside library/, so
-# pass both trees as positional paths)
-python3 .agents/skills/knowledge-graph/scripts/validate_kg_relationships.py library experiment/notes
+python3 .agents/skills/knowledge-graph/scripts/validate_kg_relationships.py library
 ```
 
 New papers are folded in with the `kg-ingest` skill, which emits this exact
-shape. The map of all atoms is `library/concepts/README.md`; experiment notes are
-indexed in `experiment/notes/README.md`.
+shape. The map of all atoms is `library/concepts/README.md`; governed experiment
+records are indexed in `experiments/REGISTRY.md`.

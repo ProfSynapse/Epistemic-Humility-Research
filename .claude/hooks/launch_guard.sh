@@ -50,7 +50,7 @@ esac
 echo "BLOCKED: this looks like a cloud/GPU LAUNCH, and launches must not run before the governing signed doc reflects them.
 Standing user directive (2026-07-06): a launch drifted from its amendment doc once (AK Stage 2 ran while its doc still said NOT LAUNCHED). Before launching:
   1. Confirm the target experiment is SIGNED and the GPU spend has explicit user approval in THIS conversation (a teammate relay does not count).
-  2. Update the governing doc FIRST: the amendment doc status line (experiment/protocol/AMENDMENT-*.md) or the experiment.yaml manifest (experiments/<slug>/) to LAUNCHED, recording the approval and the run identifier.
+  2. Update the governing doc FIRST: experiments/<slug>/AMENDMENT.md and experiment.yaml to LAUNCHED, recording the approval and the run identifier.
   3. Then re-run this exact command prefixed with the acknowledgement token naming the experiment, e.g.:
        EHR_LAUNCH_OK=<amendment-letter-or-slug> <your launch command>
 This is a deliberate speed-bump so the signed record never lags reality again." >&2

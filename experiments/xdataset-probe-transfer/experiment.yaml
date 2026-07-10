@@ -1,0 +1,44 @@
+slug: xdataset-probe-transfer
+title: Amendment P — Cross-Dataset Answerability-Probe Transfer Test
+type: historical-amendment
+status: historical
+registered: true
+created_at: '2026-07-08T17:40:52Z'
+legacy:
+  label: P
+  path: experiment/protocol/AMENDMENT-P-xdataset-probe-transfer.md
+  migrated_to: experiments/xdataset-probe-transfer/AMENDMENT.md
+migration:
+  needs_manual_review:
+  - falsifier
+  - experiment_type
+  - kg_ids
+  notes: Imported from legacy amendment prose. Do not infer missing machine fields
+    without hand-reading AMENDMENT.md.
+question: Does an answerability probe fit on KUQ transfer cold to SelfAware, showing
+  Amendment O's ceiling is not an in-distribution-CV artifact?
+prediction: "orchestrator:\n  call: partial transfer, AUROC 0.80-0.92, margin +40-75pt\n\
+  user:\n  call: null\n  note: Predates the dual-prediction practice (adopted 2026-07-03\
+  \ at AH signing);\n    no separately recorded user prediction."
+falsifier: ''
+checkpoint:
+  repo: ''
+  revision: ''
+instrument:
+  configs:
+  - xdataset_kuq_baseline_generation.yaml
+  - hidden_state_kuq_manifest_clean_sft_grpo_v2_seed1_full.yaml
+  modules:
+  - probe_xdataset_transfer.py
+  pins:
+    xdataset_kuq_baseline_generation.yaml: ed50588d2541f90049e6732ab89b444a2d53ccb4b1ab1c4ff65b06c1cbc57336
+    hidden_state_kuq_manifest_clean_sft_grpo_v2_seed1_full.yaml: c71ec8ef4e4eeaabbc03471c9e8764780512ae3bc87c41e081e5ed151fd3b79a
+    probe_xdataset_transfer.py: 283c75ac508ac128bff5b08f0413928d48220f4eb80e560d9c98b864b2dafa0f
+inputs:
+- experiments/xdataset-probe-transfer/artifacts/kuq_panel/gen_rows.jsonl
+- experiments/xdataset-probe-transfer/artifacts/kuq_panel/manifest.json
+- experiments/xdataset-probe-transfer/artifacts/kuq_panel/panel_meta.json
+verdict: SUCCESS — cold transfer AUROC 0.9834 (near in-distribution ceiling), action
+  margin +89.6pt; beat the pre-stated partial-transfer call. Axis not dataset-specific;
+  still not correctness-ranking.
+kg: []

@@ -63,6 +63,6 @@ relationships:
 
 A benchmark and training resource for contextual noncompliance in language models, comprising 1001 human-verified evaluation prompts and 11,477 training prompt-response pairs spanning five noncompliance categories (Incomplete, Unsupported, Indeterminate, Safety, Humanizing), plus a 379-prompt contrast evaluation set and 927 contrastive preference pairs (CoCoNot-Pref) for DPO training. Compliance rate (percentage of prompts directly answered) is the primary metric.
 
-**Why it matters here:** Provides the first multi-category noncompliance benchmark extending beyond safety refusal, with both a training set and a contrastive compliance set to detect over-refusal. Directly measures the behavioral abstention failure modes targeted by Phase 1 training arms.
+**Why it matters here:** Provides the first multi-category noncompliance benchmark extending beyond safety refusal, with both a training set and a contrastive compliance set to detect over-refusal. Directly measures the behavioral abstention failure modes targeted by locked training-regimen arms.
 
 **Lineage:** Introduced by Brahman et al. (2407.12043) at Allen Institute for AI; built on SituatedQA for underspecified queries and WildChat for safety queries, with remaining categories synthetically generated using GPT-4.

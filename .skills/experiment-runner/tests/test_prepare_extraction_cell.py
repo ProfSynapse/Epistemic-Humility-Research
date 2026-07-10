@@ -23,9 +23,9 @@ import prepare_extraction_cell as pec  # noqa: E402  (sys.path set by conftest)
 
 def _make_config(tmp_path: Path, *, with_results: bool, resolvable: bool) -> Path:
     """Build a probe layout + config; toggle E1 (results) and E3 (run record)."""
-    probe = tmp_path / "experiment" / "phase1" / "probe"
+    probe = tmp_path / "archive" / "experiment" / "phase1" / "probe"
     (probe / "config").mkdir(parents=True)
-    records = tmp_path / "experiment" / "phase1" / "run_records"
+    records = tmp_path / "archive" / "experiment" / "phase1" / "run_records"
     records.mkdir(parents=True)
 
     # Adapter dir under the artifact anchor so the resolver (E3) can match it.

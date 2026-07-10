@@ -20,7 +20,7 @@ stays the SSOT; this plan feeds it.
 
 ## Hard excludes (never publish — restated so wave 2 inherits them)
 
-- `experiment/phase1/data/bridge_llama2_7b_chat/` (DO-NOT-REDISTRIBUTE).
+- `archive/experiment/phase1/data/bridge_llama2_7b_chat/` (DO-NOT-REDISTRIBUTE).
 - OpenMOSS / Cheng IDK raw rows (authorized for our use, not redistribution).
 - `library/fulltext/`, `library/pdfs/` (copyright).
 - Any base-model weights themselves (gated/vendor licenses); we publish
@@ -81,7 +81,7 @@ result recorded. Priority order by reuse value:
 Qwen3-4B base is Apache-2.0, so LoRA redistribution is clean. Llama-2
 bridge adapters stay held (gated base license) unless separately cleared.
 Gate work per adapter: run-record freshness + eval-on-exact-artifact
-reconciliation against `experiment/paper/results-provenance-inventory.md`.
+reconciliation against `archive/papers/retired/results-provenance-inventory.md`.
 
 ### 2f. HF Collection + doc pointers (after 2a–2c exist)
 

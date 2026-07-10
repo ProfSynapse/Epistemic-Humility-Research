@@ -1,0 +1,35 @@
+slug: grpo-v3-proper-scoring-confidence
+title: 'Protocol Amendment J: Proper-Scoring (Brier) GRPO Reward for Response Confidence'
+type: historical-amendment
+status: historical
+registered: true
+created_at: '2026-07-08T17:40:52Z'
+legacy:
+  label: J
+  path: experiment/protocol/AMENDMENT-J-grpo-v3-proper-scoring-confidence.md
+  migrated_to: experiments/grpo-v3-proper-scoring-confidence/AMENDMENT.md
+migration:
+  needs_manual_review:
+  - falsifier
+  - experiment_type
+  - instrument_configs
+  - kg_ids
+  notes: Imported from legacy amendment prose. Do not infer missing machine fields
+    without hand-reading AMENDMENT.md.
+question: Does a proper-scoring (Brier) GRPO reward install calibrated, behavior-conditional
+  emitted response confidence on the clean-SFT base?
+prediction: "orchestrator:\n  call: emitted scalar moves toward calibrated internal\
+  \ doubt axis\nuser:\n  call: null\n  note: Predates the dual-prediction practice\
+  \ (adopted 2026-07-03 at AH signing);\n    no separately recorded user prediction."
+falsifier: ''
+checkpoint:
+  repo: ''
+  revision: ''
+instrument:
+  configs: []
+  modules: []
+  pins: {}
+inputs: []
+verdict: NEGATIVE — emitted confidence stayed collapsed (std 0.027, AUROC to appropriateness
+  0.522, ECE worse); only answered-known correct-vs-wrong AUROC moved 0.521 to 0.600.
+kg: []

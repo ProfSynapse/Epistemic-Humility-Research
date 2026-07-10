@@ -8,6 +8,7 @@ main(["--root", str(tmp), ...]).
 from __future__ import annotations
 
 from pathlib import Path
+import re
 
 import pytest
 import yaml
@@ -46,12 +47,28 @@ def test_new_scaffolds_files(repo: Path):
     assert (d / exp.MANIFEST_NAME).is_file()
     assert (d / "AMENDMENT.md").is_file()
     assert (d / "NOTEBOOK.md").is_file()
+    assert (d / "cell.yaml").is_file()
+    assert (d / "gates.yaml").is_file()
     assert (d / ".gitignore").is_file()
     m = _manifest(repo, "my-cell")
     assert m["slug"] == "my-cell"
+    assert m["title"] == "my-cell"
     assert m["type"] == "steer-cell"
     assert m["status"] == "draft"
     assert m["registered"] is True
+    assert re.match(r"^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}Z$", m["created_at"])
+
+
+def test_new_can_derive_slug_from_title(repo: Path):
+    assert _run(repo, "new", "--title", "Uncertainty Readout Transfer", "--type", "probe-fit") == 0
+    d = exp.experiments_dir(repo) / "uncertainty-readout-transfer"
+    assert d.is_dir()
+    m = _manifest(repo, "uncertainty-readout-transfer")
+    assert m["slug"] == "uncertainty-readout-transfer"
+    assert m["title"] == "Uncertainty Readout Transfer"
+    assert (d / "AMENDMENT.md").read_text(encoding="utf-8").startswith(
+        "# Uncertainty Readout Transfer\n"
+    )
 
 
 def test_new_refuses_existing_slug(repo: Path):

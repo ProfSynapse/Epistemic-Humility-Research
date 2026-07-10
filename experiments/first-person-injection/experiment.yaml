@@ -1,0 +1,49 @@
+slug: first-person-injection
+title: 'Amendment AB — First-person confidence injection: is the shut text channel
+  a framing artifact?'
+type: historical-amendment
+status: historical
+registered: true
+created_at: '2026-07-08T17:40:52Z'
+legacy:
+  label: AB
+  path: experiment/protocol/AMENDMENT-AB-first-person-injection.md
+  migrated_to: experiments/first-person-injection/AMENDMENT.md
+migration:
+  needs_manual_review:
+  - falsifier
+  - experiment_type
+  - instrument_configs
+  - kg_ids
+  notes: Imported from legacy amendment prose. Do not infer missing machine fields
+    without hand-reading AMENDMENT.md.
+question: Is AA's shut text channel a framing artifact — does first-person prose with
+  an interpretable percent and explicit action rule open it?
+prediction: "orchestrator:\n  call: if framing artifact, V1 shows real-vs-placebo\
+  \ separation AA lacked\nuser:\n  call: null\n  note: Predates the dual-prediction\
+  \ practice (adopted 2026-07-03 at AH signing);\n    no separately recorded user\
+  \ prediction."
+falsifier: ''
+checkpoint:
+  repo: ''
+  revision: ''
+instrument:
+  configs: []
+  modules: []
+  pins: {}
+inputs:
+- experiments/common/artifacts/two_signal_probe_directions/qwen3.5-4b/direction_gate.json
+- experiments/common/artifacts/two_signal_probe_directions/qwen3.5-4b/direction_gate.safetensors
+- experiments/common/artifacts/two_signal_probe_directions/qwen3.5-4b/direction_dial.json
+- experiments/common/artifacts/two_signal_probe_directions/qwen3.5-4b/direction_dial.safetensors
+- experiments/first-person-injection/artifacts/cloud_launches/amendment_ab_v1_launch.json
+- experiments/first-person-injection/artifacts/analysis/aa_think_trace_idiom_mining.md
+- experiments/first-person-injection/artifacts/trace_reports/ab_v1/INTERIM-NOTES.md
+- experiments/first-person-injection/artifacts/trace_reports/ab_v1/aa-7-trace-report.json
+- experiments/first-person-injection/artifacts/trace_reports/ab_v1/ab-1-trace-report.json
+- experiments/first-person-injection/artifacts/trace_reports/ab_v1/ab-2-trace-report.json
+- experiments/first-person-injection/artifacts/trace_reports/ab_v1/ab-3-trace-report.json
+verdict: AMBIGUOUS-LEANING-NEGATIVE — no V1 cell passes; first-person framing does
+  not open the text channel (dial@late instrument saturated, dial@final MISS, gate@early
+  only a ~2pt trickle); AA's presence-not-use conclusion strengthened.
+kg: []

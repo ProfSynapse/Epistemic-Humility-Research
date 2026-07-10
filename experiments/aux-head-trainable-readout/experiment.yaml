@@ -1,0 +1,36 @@
+slug: aux-head-trainable-readout
+title: Amendment Q — Trainable `aux_head` Readout (Engine Reproduction of the O/P
+  Ceiling)
+type: historical-amendment
+status: historical
+registered: true
+created_at: '2026-07-08T17:40:52Z'
+legacy:
+  label: Q
+  path: experiment/protocol/AMENDMENT-Q-aux-head-trainable-readout.md
+  migrated_to: experiments/aux-head-trainable-readout/AMENDMENT.md
+migration:
+  needs_manual_review:
+  - falsifier
+  - experiment_type
+  - instrument_configs
+  - kg_ids
+  notes: Imported from legacy amendment prose. Do not infer missing machine fields
+    without hand-reading AMENDMENT.md.
+question: Does the production aux_head training engine recover the latent O/P answerability
+  readout that offline sklearn probes proved is present?
+prediction: "orchestrator:\n  call: transfer AUROC 0.95-0.985, near P's sklearn readout\n\
+  user:\n  call: null\n  note: Predates the dual-prediction practice (adopted 2026-07-03\
+  \ at AH signing);\n    no separately recorded user prediction."
+falsifier: ''
+checkpoint:
+  repo: ''
+  revision: ''
+instrument:
+  configs: []
+  modules: []
+  pins: {}
+inputs: []
+verdict: SUCCESS — trained head reproduces O/P ceiling (transfer AUROC 0.983, ECE
+  0.023); falsifier (<0.90) dead by a wide margin.
+kg: []

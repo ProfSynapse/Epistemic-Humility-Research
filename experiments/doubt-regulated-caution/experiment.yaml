@@ -1,0 +1,51 @@
+slug: doubt-regulated-caution
+title: Amendment AC — Doubt-Regulated Caution (closed-loop coupling at inference)
+type: historical-amendment
+status: historical
+registered: true
+created_at: '2026-07-08T17:40:52Z'
+legacy:
+  label: AC
+  path: experiment/protocol/AMENDMENT-AC-doubt-regulated-caution.md
+  migrated_to: experiments/doubt-regulated-caution/AMENDMENT.md
+migration:
+  needs_manual_review:
+  - experiment_type
+  - kg_ids
+  notes: Imported from legacy amendment prose. Do not infer missing machine fields
+    without hand-reading AMENDMENT.md. Instrument configs migrated from the
+    archived legacy probe config tree on 2026-07-09; the batched smoke is a companion
+    equivalence check, not the registered evidence run.
+question: Does making the caution gate a live function of the doubt readout carry
+  information beyond simply deleting the gate, on the trained checkpoint?
+prediction: "orchestrator:\n  call: AC-G1 passes with a small margin (5-15pt); AC-G2\
+  \ ~0 vs constant ablate\nuser:\n  call: null\n  note: Predates the dual-prediction\
+  \ practice (adopted 2026-07-03 at AH signing);\n    no separately recorded user\
+  \ prediction."
+falsifier: Permuted is approximately coupled on AC-G1 (margin below 5pt or CI includes
+  0), meaning the doubt readout contributes nothing at the intervention site; no
+  alpha-tuning or alternative coupling rescue runs under this amendment.
+checkpoint:
+  repo: ''
+  revision: ''
+instrument:
+  configs:
+  - ac_doubt_coupled_intervention.yaml
+  - ac_doubt_coupled_intervention_smoke.yaml
+  - ac_doubt_coupled_intervention_smoke_batched.yaml
+  modules:
+  - analyze_ac_doubt_coupled.py
+  - build_doubt_gain_map.py
+  - ac_doubt_coupled_analysis.py
+  pins:
+    ac_doubt_coupled_intervention.yaml: c25bbf69894e0de7485574c9028f83615a5effe46d6f4c742460653b616a09a8
+    ac_doubt_coupled_intervention_smoke.yaml: f5cea0fb1fe1446b8eb330f4bf3c5fb99d12be9cae46024fa81330a94b186a36
+    ac_doubt_coupled_intervention_smoke_batched.yaml: 192819daeb4cc405d366c96a64eb2df014150925031c5d4d59adb88915b7a5b4
+    analyze_ac_doubt_coupled.py: 4d97d020184678ec263663ea207bc0a4bdfadce8b552b4d8e7028e00713f0e43
+    build_doubt_gain_map.py: b5f518dcc2d98b4184fbdef49d4ba8ad7ecfed1c38e0167817db25b287b89376
+    ac_doubt_coupled_analysis.py: 894c557cf71a88e29474f5a4a6007dd1a42f62c16b0280db99c9c89e52bb877f
+inputs: []
+verdict: AC-G1 PASS — the wire carries information (coupled beats permuted +8.7pt,
+  CI [+5.6,+12.0]); guard PASS, falsifier not fired; RQ4 Stage 1 closes POSITIVE,
+  first use-the-signal win after M/N/R/AA.
+kg: []

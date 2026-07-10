@@ -14,9 +14,9 @@ cell off HF Jobs (preemption gotcha below).
 
 ## Launching a cell
 
-Launcher: `experiment/phase1/probe/cloud/launch_hf_job.py` (uses the
+Launcher: `experiments/common/cloud/launch_hf_job.py` (uses the
 huggingface_hub Jobs Python API; the `hf jobs` CLI is broken in this
-workspace). In-job wrapper: `experiment/phase1/probe/cloud/hf_jobs_cell.sh`.
+workspace). In-job wrapper: `experiments/common/cloud/hf_jobs_cell.sh`.
 
 - Every launch is cost-incurring: exact user approval naming model/rows/lane
   in the current conversation, every time.
