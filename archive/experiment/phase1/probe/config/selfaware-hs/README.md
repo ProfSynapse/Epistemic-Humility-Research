@@ -1,6 +1,6 @@
 # SelfAware Hidden-State Extraction Configs
 
-Historical Phase 3 SelfAware hidden-state extraction manifests migrated from
+Historical mechinterp SelfAware hidden-state extraction manifests migrated from
 `experiment/phase1/probe/config/`.
 
 These configs prepared or launched frozen-manifest SelfAware extraction runs for

@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""CPU-only Phase 3 SAE-shaped plumbing smoke.
+"""CPU-only mechinterp SAE-shaped plumbing smoke.
 
 This validates hidden-state extraction plumbing for later SAE work. It does not
 train an SAE and must not be interpreted as SAE evidence.
@@ -30,9 +30,9 @@ else:
 
 
 REPO_ROOT = Path(__file__).resolve().parents[3]
-PROBE_DIR = REPO_ROOT / "experiment/phase1/probe"
+PROBE_DIR = REPO_ROOT / "archive/experiment/phase1/probe"
 NOTICE = "SAE_PLUMBING_SMOKE_ONLY"
-ANALYSIS_TYPE = "phase3_sae_plumbing_smoke_only"
+ANALYSIS_TYPE = "mechinterp_sae_plumbing_smoke_only"
 VALID_LABELS = {"known", "unknown"}
 
 
@@ -303,7 +303,7 @@ def run_candidate(
         "candidate_layer": int(candidate["layer"]),
     }
     manifest = {
-        "schema_version": "phase3-sae-plumbing-smoke/v1",
+        "schema_version": "mechinterp-sae-plumbing-smoke/v1",
         "analysis_type": ANALYSIS_TYPE,
         "notice": NOTICE,
         "created_at": utc_now(),

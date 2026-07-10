@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Layerwise behavior-axis scans over Phase 3 hidden-state extractions.
+"""Layerwise behavior-axis scans over mechinterp hidden-state extractions.
 
 This is an offline CPU analysis. It reads existing hidden-state shards and
 behavior labels from extraction rows, then measures how separable configured
@@ -27,7 +27,7 @@ else:
     SAFETENSORS_IMPORT_ERROR = None
 
 ROOT = Path(__file__).resolve().parents[3]
-PROBE_DIR = ROOT / "experiment/phase1/probe"
+PROBE_DIR = ROOT / "archive/experiment/phase1/probe"
 if str(PROBE_DIR) not in sys.path:
     sys.path.insert(0, str(PROBE_DIR))
 
@@ -43,7 +43,7 @@ from sae_smoke import (
 )
 
 
-ANALYSIS_TYPE = "phase3_behavior_axis_scan"
+ANALYSIS_TYPE = "mechinterp_behavior_axis_scan"
 NOTICE = "BEHAVIOR_AXIS_SCAN_ONLY"
 DEFAULT_ROLES = ("h_base", "h_lora", "delta")
 

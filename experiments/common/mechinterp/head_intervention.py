@@ -9,12 +9,12 @@ to that head's slice of the o_proj input (columns ``head*head_dim:(head+1)*head_
 at all token positions — the ITI update ``h' = h + alpha * sigma * theta``.
 
 This is deliberately NOT the residual-stream, final-prompt-token intervention in
-``phase3_causal_pilot_runner.py`` (which the regimen sweep showed is exhausted):
+``mechinterp_causal_pilot_runner.py`` (which the regimen sweep showed is exhausted):
 ITI's gains come from a sparse set of *attention heads*, steered *token-by-token
 during generation*, which is what this harness does.
 
 The injection mechanism is torch-injected and unit-tested against a tiny model
-without a real LLM (see tests/test_phase3_head_intervention.py). Actually
+without a real LLM (see tests/test_mechinterp_head_intervention.py). Actually
 generating on the GRPO v2 panel loads a 4B model on GPU and MUST be run behind an
 explicit GPU gate (Docker/unsloth), exactly like the extraction step.
 """
@@ -42,10 +42,10 @@ def load_steering_directions(path: Path) -> dict[str, Any]:
     if not path.is_file():
         raise HeadInterventionError(f"missing steering-directions artifact: {path}")
     artifact = json.loads(path.read_text(encoding="utf-8"))
-    if artifact.get("artifact_type") != "phase3_head_steering_directions":
+    if artifact.get("artifact_type") != "head_steering_directions":
         raise HeadInterventionError(
             f"{path} artifact_type is {artifact.get('artifact_type')!r}, "
-            "expected 'phase3_head_steering_directions'"
+            "expected 'head_steering_directions'"
         )
     directions = artifact.get("directions")
     if not isinstance(directions, list) or not directions:
@@ -127,7 +127,7 @@ def make_oproj_pre_hook(head_specs: list[dict[str, Any]], *, torch: Any):
         state["calls"] += 1
         return (steered, *args[1:])
 
-    _hook._phase3_state = state  # type: ignore[attr-defined]
+    _hook._mechinterp_state = state  # type: ignore[attr-defined]
     return _hook
 
 
@@ -149,7 +149,7 @@ def per_head_intervention(model: Any, by_block: dict[int, list[dict[str, Any]]],
                 raise HeadInterventionError(f"target block {block_id} not found among o_proj modules")
             hook = make_oproj_pre_hook(head_specs, torch=torch)
             handles.append(modules[block_id].register_forward_pre_hook(hook))
-            states.append(hook._phase3_state)  # type: ignore[attr-defined]
+            states.append(hook._mechinterp_state)  # type: ignore[attr-defined]
         yield states
     finally:
         for handle in handles:
@@ -193,7 +193,7 @@ def main(argv: list[str] | None = None) -> int:
     # backend wiring lands with the explicit GPU gate. Unit tests exercise the
     # injection mechanism directly without this entry point.
     raise HeadInterventionError(
-        "phase3_head_intervention GPU runner is gated; invoke the injection API "
+        "mechinterp_head_intervention GPU runner is gated; invoke the injection API "
         "(per_head_intervention / generate_steered) from the gated Docker harness. "
         f"config={args.config}"
     )

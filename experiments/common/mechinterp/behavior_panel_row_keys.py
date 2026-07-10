@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Build exact row-key panels from behavior-labeled Phase 3 rows."""
+"""Build exact row-key panels from behavior-labeled mechinterp rows."""
 
 from __future__ import annotations
 
@@ -14,7 +14,7 @@ import yaml
 
 
 REPO_ROOT = Path(__file__).resolve().parents[3]
-PROBE_DIR = REPO_ROOT / "experiment/phase1/probe"
+PROBE_DIR = REPO_ROOT / "archive/experiment/phase1/probe"
 
 
 class BehaviorPanelRowKeyError(RuntimeError):
@@ -138,7 +138,7 @@ def select_rows(config: dict[str, Any]) -> tuple[list[dict[str, Any]], dict[str,
         deduped.append(row)
 
     manifest = {
-        "schema_version": "phase3-behavior-panel-row-keys/v1",
+        "schema_version": "mechinterp-behavior-panel-row-keys/v1",
         "purpose": config.get("purpose"),
         "inputs": {
             "rows": rel(rows_path),

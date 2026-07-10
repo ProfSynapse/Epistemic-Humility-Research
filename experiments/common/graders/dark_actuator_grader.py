@@ -1,7 +1,7 @@
 """Project grader for the dark-actuator-screen tuner mechinterp steer cells.
 
 NOT the AA/AK unified harness. This is a SELF-CONTAINED equivalent of the
-refusal-detection half of `experiment/phase1/probe/steering/steering_common.py`
+refusal-detection half of `archive/experiment/phase1/probe/steering/steering_common.py`
 `grade_output` (frozen, read-only -- see steering/LEGACY.md), built so this
 screen does not need that module's heavier import-time dependencies
 (amendment_s_correctness_probe_extract, amendment_u_unified_extract dataset

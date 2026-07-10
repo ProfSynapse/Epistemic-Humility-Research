@@ -4,9 +4,9 @@
 Reads the SelfAware (or any) extraction + behavior rows already on disk and fits a
 raw-space unit direction at one layer that separates ``known_refused`` (over-refusals)
 from ``known_correct_answered``. This is the mass-mean cousin of the A2 caution axis
-(``phase3_latent_knowledge_controls.a2_within_known``); unlike A2's whitened logistic
+(``latent_knowledge_controls.a2_within_known``); unlike A2's whitened logistic
 normal it applies frame-consistently to generation-position residuals, which is what
-``phase3_residual_read_trajectory`` projects onto during decoding.
+``mechinterp_residual_read_trajectory`` projects onto during decoding.
 
 Writes a small JSON the GPU runner loads (analogous to ``steering_directions.json``):
 ``{schema_version, layer, block, source, hidden_dim, theta[hidden], sigma, mu_pos,
@@ -31,10 +31,10 @@ for path in (MECHINTERP_DIR, LATENT_CONTROLS_DIR):
     if str(path) not in sys.path:
         sys.path.insert(0, str(path))
 
-import phase3_latent_knowledge_probe as lkp  # noqa: E402
+import latent_knowledge_probe as lkp  # noqa: E402
 import residual_read_trajectory as rrt  # noqa: E402
 
-SCHEMA_VERSION = "phase3-residual-caution-direction/v1"
+SCHEMA_VERSION = "mechinterp-residual-caution-direction/v1"
 
 
 def load_known_split(behavior_rows: Path) -> tuple[list[str], list[str]]:

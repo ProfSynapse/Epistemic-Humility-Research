@@ -42,7 +42,7 @@ from typing import Any
 import numpy as np
 
 ROOT = Path(__file__).resolve().parents[3]
-PROBE_DIR = ROOT / "experiment/phase1/probe"
+PROBE_DIR = ROOT / "archive/experiment/phase1/probe"
 if str(PROBE_DIR) not in sys.path:
     sys.path.insert(0, str(PROBE_DIR))
 
@@ -56,12 +56,12 @@ from sae_behavior_feature_analysis import row_arm  # noqa: E402
 from sae_smoke import resolve_path  # noqa: E402
 
 DEFAULT_FAILURE = (
-    "experiment/phase1/probe/analysis/"
+    "archive/experiment/phase1/probe/analysis/"
     "current_clean_grpo_v2_unknown_failure_prompt_matched_head_steering_directions/"
     "clean_sft_grpo_v2_seed1_unknown_failure_prompt_matched_steering/steering_directions.json"
 )
 DEFAULT_OUT = (
-    "experiment/phase1/probe/analysis/"
+    "archive/experiment/phase1/probe/analysis/"
     "current_clean_grpo_v2_unknown_failure_prompt_matched_head_read_projection"
 )
 
@@ -176,7 +176,7 @@ def run(failure_path: Path, out_root: Path) -> dict[str, Any]:
     headline = results["known_answered_GENERALIZATION"]
     summary = {
         "ok": True,
-        "analysis_type": "phase3_head_read_projection",
+        "analysis_type": "mechinterp_head_read_projection",
         "failure_directions": str(failure_path),
         "behavior_arm": arm,
         "n_rows": len(rows),

@@ -56,7 +56,7 @@ from sae_smoke import (
     validate_output_root,
 )
 
-ARTIFACT_TYPE = "phase3_head_steering_directions"
+ARTIFACT_TYPE = "head_steering_directions"
 NOTICE = "HEAD_STEERING_DIRECTIONS_ONLY"
 DEFAULT_ARM_ROLE = "h_lora"
 

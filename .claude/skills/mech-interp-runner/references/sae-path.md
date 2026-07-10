@@ -5,13 +5,13 @@ causal evidence.
 
 ```bash
 python experiments/common/mechinterp/sae_smoke.py \
-  --config archive/experiment/phase1/probe/config/selfaware-sae-screens/phase3_selfaware_sae_smoke.yaml
+  --config archive/experiment/phase1/probe/config/selfaware-sae-screens/mechinterp_selfaware_sae_smoke.yaml
 python experiments/common/mechinterp/sae_train.py \
-  --config archive/experiment/phase1/probe/config/selfaware-sae-screens/phase3_selfaware_sae_pilot.yaml
+  --config archive/experiment/phase1/probe/config/selfaware-sae-screens/mechinterp_selfaware_sae_pilot.yaml
 python experiments/common/mechinterp/sae_feature_analysis.py \
-  --config archive/experiment/phase1/probe/config/selfaware-sae-screens/phase3_selfaware_sae_feature_analysis.yaml
+  --config archive/experiment/phase1/probe/config/selfaware-sae-screens/mechinterp_selfaware_sae_feature_analysis.yaml
 python experiments/common/mechinterp/sae_behavior_feature_analysis.py \
-  --config archive/experiment/phase1/probe/config/selfaware-sae-screens/phase3_selfaware_sae_behavior_feature_analysis.yaml
+  --config archive/experiment/phase1/probe/config/selfaware-sae-screens/mechinterp_selfaware_sae_behavior_feature_analysis.yaml
 ```
 
 Treat outputs as plumbing/training/feature-screening evidence only. Candidate

@@ -14,7 +14,7 @@ Two halves:
    call, records the projection of the LAST position's per-head o_proj input onto
    that head's theta. During ``model.generate`` the prefill call captures the
    final-prompt-token read (forward 0) and each subsequent decode call captures
-   one generated position. Mirrors ``phase3_head_intervention`` so it reads the
+   one generated position. Mirrors ``mechinterp_head_intervention`` so it reads the
    SAME surface A.4 wrote to. The GPU wiring lives in the runner; this module is
    unit-tested offline against a tiny torch model.
 
@@ -38,7 +38,7 @@ from typing import Any
 import numpy as np
 
 ROOT = Path(__file__).resolve().parents[3]
-PROBE_DIR = ROOT / "experiment/phase1/probe"
+PROBE_DIR = ROOT / "archive/experiment/phase1/probe"
 if str(PROBE_DIR) not in sys.path:
     sys.path.insert(0, str(PROBE_DIR))
 
@@ -169,7 +169,7 @@ def analyze_trajectories(rows: list[dict[str, Any]]) -> dict[str, Any]:
 
     summary = {
         "ok": True,
-        "analysis_type": "phase3_head_read_trajectory",
+        "analysis_type": "mechinterp_head_read_trajectory",
         "n_rows": len(rows),
         "groups": {
             "unknown_answered_wrong": len(pos),

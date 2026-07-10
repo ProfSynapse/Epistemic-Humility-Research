@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Summarize Phase 3 generated-answer replay deltas.
+"""Summarize mechinterp generated-answer replay deltas.
 
 The analysis compares intervention rows against matching no-vector baselines
 within completed `generations.jsonl` files. It is intentionally conservative:

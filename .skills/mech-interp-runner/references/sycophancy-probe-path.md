@@ -40,7 +40,7 @@ For mechanistic follow-up, build an extraction-compatible row manifest before
 running hidden-state extraction:
 
 ```bash
-python experiment/phase1/probe/phase3_sycophancy_answer_row_manifest.py
+python archive/experiment/phase1/probe/mechinterp_sycophancy_answer_row_manifest.py
 ```
 
 Prefer same-condition controls before interpreting a sycophancy axis. A
@@ -52,8 +52,8 @@ Run offline scans only after the hidden-state extraction manifests are
 `status=ok` and `verified=true`:
 
 ```bash
-python experiment/phase1/probe/phase3_behavior_axis_scan.py \
-  --config experiment/phase1/probe/config/phase3_sycophancy_answer_behavior_axis_scan.yaml
+python archive/experiment/phase1/probe/mechinterp_behavior_axis_scan.py \
+  --config archive/experiment/phase1/probe/config/mechinterp_sycophancy_answer_behavior_axis_scan.yaml
 ```
 
 For Docker hidden-state extraction, git provenance can fail under mounted-repo
@@ -64,7 +64,7 @@ For generated-answer sycophancy replays, use the screening analyzer and then
 manually inspect the per-row JSONL:
 
 ```bash
-python experiment/phase1/probe/phase3_sycophancy_generation_analysis.py \
+python archive/experiment/phase1/probe/mechinterp_sycophancy_generation_analysis.py \
   --generations path/to/generations.jsonl \
   --output-root path/to/analysis
 ```

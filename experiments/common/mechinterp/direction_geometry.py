@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Map cosine geometry across Phase 3 direction candidate sets."""
+"""Map cosine geometry across mechinterp direction candidate sets."""
 
 from __future__ import annotations
 
@@ -25,7 +25,7 @@ else:
 
 
 NOTICE = "DIRECTION_GEOMETRY_ANALYSIS_ONLY"
-ANALYSIS_TYPE = "phase3_direction_geometry"
+ANALYSIS_TYPE = "mechinterp_direction_geometry"
 
 
 class DirectionGeometryError(RuntimeError):

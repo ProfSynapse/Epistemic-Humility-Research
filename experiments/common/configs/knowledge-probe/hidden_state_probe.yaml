@@ -1,0 +1,125 @@
+# Hidden-state probing tier config (exploratory mechanism tier, MVP).
+#
+# Location: experiments/common/configs/knowledge-probe/hidden_state_probe.yaml
+# Consumed by: experiments/common/knowledge_probe/hidden_state_probe.py
+# Produces:    <output.root>/<model_tag>/hidden_states/<extraction_id>/
+#                manifest.json + rows.jsonl + per-arm h_base/h_lora/delta.safetensors
+#
+# This is the hashed SSOT for one extraction. hidden_state_probe.py computes
+# extraction_config_sha (same algorithm as probe.py's probe_config_sha) over
+# this file and stamps it into the manifest and every output row, so an
+# extraction is reproducible and tamper-evident. Do NOT hardcode these in code.
+#
+# EXPLORATORY TIER, NOT a protocol change: this stays off the locked PROTOCOL
+# v0.3 headline path and the Amendment A / v0.4 track. It writes to its own
+# output subtree and NEVER mutates run records (it links them by id only).
+#
+# vLLM v0.18.0+ hidden-state extraction was evaluated & REJECTED (disk /
+# spec-decode oriented, no adapter contrast, LoRA merges-at-load), so this tier
+# uses a plain HF Transformers + PEFT forward path. Do not reopen that pivot.
+
+model:
+  # Same Qwen3-4B 4-bit pilot as the stochastic probe; model_tag is the
+  # output-directory key shared with the probe tier.
+  model_tag: qwen3-4b-instruct
+  model_name: unsloth/Qwen3-4B-bnb-4bit
+  # Optional immutable revision pin (commit SHA or tag). Recorded as the
+  # manifest's base_model_revision and passed to from_pretrained for a
+  # reproducible load. null loads the hub default branch; the resolved snapshot
+  # commit SHA is still recovered post-load (config._commit_hash) so provenance
+  # remains an immutable identity whenever the hub returns one. SHOULD be pinned
+  # to a commit SHA before the first real GPU run for full reproducibility.
+  revision: null
+  # Pinned OFF for the locked probe/training/eval matrix. The shared render helper
+  # (backends.render_probe_prompt) asserts no <think> scaffolding leaks.
+  enable_thinking: false
+
+extraction:
+  # All transformer layers (embeddings + every block output). The schema
+  # asserts the captured count == num_hidden_layers + 1 at runtime; null here
+  # means "all layers" (the harness fills the concrete list post-load).
+  layer_list: null
+  # Final prompt-token hidden state. batch=1 for the MVP so the last position
+  # is unambiguous (never a literal -1 under left padding).
+  token_position_rule: final_prompt_token
+  # dtype policy (plan Key Decision): persist fp32 as an EXPLICIT conversion.
+  # compute_dtype is the model's native compute precision; persist_dtype is the
+  # on-disk precision. Both are recorded in the manifest so the upcast is never
+  # silent. No compression for the MVP (mmap-ability > size for the small slice).
+  compute_dtype: bfloat16
+  persist_dtype: float32
+  persistence_format: safetensors
+  device: cuda
+  # Persist delta = h_lora - h_base alongside the two passes (tamper-evident,
+  # cheap downstream); the harness recomputes-and-checks it, never trusts read.
+  persist_delta: true
+
+arms:
+  # Adapter-state pre-flight (schema.validate_arm_states) requires EXACTLY one
+  # base arm (disabled|unloaded) + EXACTLY one active arm. adapter paths are
+  # mirrored BY-VALUE from the eval config so extraction and behavioral eval
+  # provably point at the same artifacts (plan Decision). adapter: null on the
+  # base arm; the active arm reads its path from eval_arms_source below.
+  - name: base
+    adapter_state: disabled
+    adapter: null
+  - name: sft
+    adapter_state: active
+    # Mirror by-value: resolved from the eval config's arms[] by name at parse
+    # time when eval_arms_source is set; an explicit path here overrides.
+    adapter: null
+
+# By-value eval-arms mirroring (plan Decision): point at the eval config whose
+# arms[] carry the canonical adapter paths. The harness resolves each active
+# arm's adapter path from this file by matching arm name, so a path is declared
+# in exactly one place. Null disables mirroring (then arms[].adapter must be set).
+eval_arms_source: experiment/phase1/eval/config/eval_smoke_local_4b.yaml
+
+selection:
+  # Matched known/unknown slice from the FROZEN split (leakage discipline):
+  # read these keys from questions_frozen.json and align to probe_results.jsonl
+  # by probe_pool_row_key ONLY (never loose question text). probe_results.jsonl
+  # is ~123MB; the harness streams it by key and never whole-loads it.
+  questions_frozen: experiment/phase1/data/qwen3-4b-instruct/questions_frozen.json
+  probe_results: experiments/common/artifacts/knowledge_probe/qwen3-4b-instruct/probe_results.jsonl
+  # E2 provenance expectation (runner-side prepare_extraction_cell gate): the
+  # probe_config_sha the streamed probe_results.jsonl rows MUST carry. The gate
+  # reads the first row's probe_config_sha and SKIPs the extraction on a mismatch
+  # (a contaminated/thinking-mode-ON probe run). null => E2 degrades to
+  # presence-only with a loud WARN (a null expectation cannot fail-closed against
+  # an unknown). SHOULD be pinned to the probe tier's sha before a reproducible
+  # run. (Additive field; included in extraction_config_sha like every config key.)
+  expected_probe_config_sha: null
+  # Small balanced slice for the MVP: N known + N unknown (cheap first run).
+  n_known: 16
+  n_unknown: 16
+  # Deterministic selection seed (which keys are drawn from each frozen pool).
+  selection_seed: 20260614
+
+output:
+  # Outputs land under <root>/<model_tag>/hidden_states/.
+  root: experiments/common/artifacts/knowledge_probe
+  # extraction_id = f"{arm}__{extraction_config_sha[:12]}" (resolved in code).
+  hidden_states_subdir: hidden_states
+  manifest_filename: manifest.json
+  rows_filename: rows.jsonl
+
+manifest_provenance:
+  # Decision-D exhaustive manifest: the static (config-known) provenance fields
+  # build_manifest reads via config.get("manifest_provenance"). The block KEY is
+  # `manifest_provenance` (matches hidden_state_schema.build_manifest's contract
+  # name); runtime-discovered fields (model/adapter hashes, library versions) are
+  # patched by the harness/backend AFTER load and are intentionally absent here.
+  #
+  # Link-never-mutate: aligned_run_record_id names the run record this
+  # extraction's adapter was trained by; the harness NEVER writes to it.
+  #
+  # MUST be filled with the real run-record id BEFORE the first real GPU run.
+  # Left null here as a placeholder ONLY. The Decision-D finalize gate
+  # (validate_manifest(require_populated=True)) requires this non-None on a
+  # status=ok extraction and will LOUD-FAIL by design if it is still null —
+  # the gate is intentionally strict (the run-record link is core
+  # link-never-mutate provenance and is not relaxable to allow null).
+  aligned_run_record_id: null
+  # Frozen-split provenance (recorded in the manifest as source_split).
+  source_split: triviaqa-rc-nocontext/frozen-known-unknown

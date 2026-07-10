@@ -26,7 +26,7 @@ Status: SIGNED 2026-07-02 (user in-conversation: plan approved "i like it procee
 get it running locally after olmo"; conservative framing explicitly requested:
 "can we be somewhat conservative on this one... i want to be cautiously
 optimistic here"). Tier-2 exploratory local mechanism evidence under
-`PHASE3-control-system-protocol.md` (this is the first cell to address its RQ4:
+the archived control-system protocol (this is the first cell to address its RQ4:
 does the signal support a viable control loop, or only an offline diagnostic?).
 Not headline evidence; never pooled with the locked Phase 1 matrix.
 
@@ -183,14 +183,14 @@ curve of refusal vs written gain (binned g_i), coupled arm only.
    mu_d/sigma_d, the real gains, the permuted gains, and the permutation seed.
    Explicit `--extraction-dir/--overlay/--direction/--out` args (the frozen
    data lives untracked in the main working tree).
-2. `phase3_residual_intervention.py`: add mode `couple` to the pure-numpy
+2. `residual_intervention.py`: add mode `couple` to the pure-numpy
    reference + hook (erase + write, as §2); `parse_arms` accepts
    `gain_map`/`gain_key` on couple arms; `analyze_arms` gains an optional
    groups argument (default unchanged — B1 behavior and tests untouched).
-3. `phase3_residual_intervention_runner.py`: for couple arms, load the gain
+3. `residual_intervention_runner.py`: for couple arms, load the gain
    map once and resolve the per-row alpha in the (arm, row) loop; rows missing
    from the map are a hard error (no silent 0-gain).
-4. `config/phase3_ac_doubt_coupled_intervention.yaml` + a `_smoke` variant
+4. `ac_doubt_coupled_intervention.yaml` + a `_smoke` variant
    (25 rows/cell via `rows_filter.max_rows_per_cell`, a small runner
    extension; deterministic first-N in file order).
 5. Tests: couple-mode math (g=0 == ablate; coordinate write value), gain-map

@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Project Phase 3 hidden states onto calibrated-expression behavior planes."""
+"""Project mechinterp hidden states onto calibrated-expression behavior planes."""
 
 from __future__ import annotations
 
@@ -46,7 +46,7 @@ from sae_smoke import (
 )
 
 
-ANALYSIS_TYPE = "phase3_calibrated_expression_plane"
+ANALYSIS_TYPE = "mechinterp_calibrated_expression_plane"
 NOTICE = "CALIBRATED_EXPRESSION_PLANE_ANALYSIS_ONLY"
 
 

@@ -49,12 +49,12 @@ SCRIPT_DIR = Path(__file__).resolve().parent
 if str(SCRIPT_DIR) not in sys.path:
     sys.path.insert(0, str(SCRIPT_DIR))
 
-from path_compat import artifact_dir, phase1_probe_dir, repo_root  # noqa: E402
+from path_compat import artifact_dir, knowledge_probe_dir, repo_root  # noqa: E402
 
-PROBE_DIR = phase1_probe_dir()
+PROBE_DIR = knowledge_probe_dir()
 ARTIFACT_DIR = artifact_dir()
 CANONICAL = repo_root()
-PROBE_ROOT = CANONICAL / "experiment/phase1/probe"
+PROBE_ROOT = CANONICAL / "archive/experiment/phase1/probe"
 STAGE0 = PROBE_ROOT / "analysis/ah_stage0"
 PROBES = STAGE0 / "probes"
 OUT_DIR = PROBE_ROOT / "analysis/par_recalibration"

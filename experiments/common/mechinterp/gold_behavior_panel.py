@@ -13,14 +13,14 @@ from typing import Any
 import yaml
 
 ROOT = Path(__file__).resolve().parents[3]
-PROBE_DIR = ROOT / "experiment/phase1/probe"
+PROBE_DIR = ROOT / "archive/experiment/phase1/probe"
 if str(PROBE_DIR) not in sys.path:
     sys.path.insert(0, str(PROBE_DIR))
 
 from sae_smoke import repo_relative, resolve_path
 
 
-ANALYSIS_TYPE = "phase3_gold_behavior_panel"
+ANALYSIS_TYPE = "mechinterp_gold_behavior_panel"
 NOTICE = "GOLD_BACKED_GENERATED_BEHAVIOR_LABELS"
 DEFAULT_CONTROL = "no_vector_baseline"
 

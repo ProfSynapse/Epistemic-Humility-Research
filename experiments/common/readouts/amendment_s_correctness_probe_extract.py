@@ -49,18 +49,18 @@ READOUTS_DIR = Path(__file__).resolve().parent
 if str(READOUTS_DIR) not in sys.path:
     sys.path.insert(0, str(READOUTS_DIR))
 try:
-    from .path_compat import phase1_eval_dir, phase1_probe_dir, repo_root
+    from .path_compat import locked_eval_dir, knowledge_probe_dir, repo_root
 except ImportError:  # direct script execution
-    from path_compat import phase1_eval_dir, phase1_probe_dir, repo_root
+    from path_compat import locked_eval_dir, knowledge_probe_dir, repo_root
 
-PROBE_DIR = phase1_probe_dir()
-EVAL_DIR = phase1_eval_dir()
+PROBE_DIR = knowledge_probe_dir()
+EVAL_DIR = locked_eval_dir()
 for p in (str(PROBE_DIR), str(EVAL_DIR)):
     if p not in sys.path:
         sys.path.insert(0, p)
 
 import scorers  # noqa: E402  (from experiment/phase1/eval)
-from backends import render_probe_prompt  # noqa: E402  (from experiment/phase1/probe)
+from backends import render_probe_prompt  # noqa: E402  (from experiments/common/knowledge_probe)
 
 # Answer-encouraging neutral system prompt. DELIBERATELY does NOT solicit
 # abstention (unlike the eval DEFAULT_SYSTEM_PROMPT): Amendment S needs a surface

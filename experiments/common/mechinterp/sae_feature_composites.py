@@ -28,7 +28,7 @@ else:
 
 
 NOTICE = "SAE_FEATURE_COMPOSITE_DIRECTION_CANDIDATES_ONLY"
-ANALYSIS_TYPE = "phase3_sae_feature_composite_direction_export"
+ANALYSIS_TYPE = "mechinterp_sae_feature_composite_direction_export"
 TENSOR_KEY = "direction"
 
 

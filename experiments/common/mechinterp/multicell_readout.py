@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Multiclass hidden-state readouts for Phase 3 behavior cells.
+"""Multiclass hidden-state readouts for mechinterp behavior cells.
 
 This CPU-only analysis asks whether behavior cells are linearly readable as a
 multi-dimensional subspace rather than as one hand-built axis. It is exploratory
@@ -27,7 +27,7 @@ else:
     SAFETENSORS_IMPORT_ERROR = None
 
 ROOT = Path(__file__).resolve().parents[3]
-PROBE_DIR = ROOT / "experiment/phase1/probe"
+PROBE_DIR = ROOT / "archive/experiment/phase1/probe"
 if str(PROBE_DIR) not in sys.path:
     sys.path.insert(0, str(PROBE_DIR))
 
@@ -42,7 +42,7 @@ from sae_smoke import (
 )
 
 
-ANALYSIS_TYPE = "phase3_multicell_hidden_state_readout"
+ANALYSIS_TYPE = "mechinterp_multicell_hidden_state_readout"
 NOTICE = "MULTICELL_READOUT_ONLY"
 DEFAULT_ROLES = ("h_base", "h_lora", "delta")
 

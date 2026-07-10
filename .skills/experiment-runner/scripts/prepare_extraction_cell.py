@@ -46,8 +46,8 @@ import check_prereqs  # noqa: E402
 import resolve_run_record  # noqa: E402
 
 # Default extraction config + the merged harness, relative to the research repo.
-_DEFAULT_CONFIG_REL = "experiments/common/configs/phase1-probe/hidden_state_probe.yaml"
-_HARNESS_REL = "experiments/common/phase1_probe/hidden_state_probe.py"
+_DEFAULT_CONFIG_REL = "experiments/common/configs/knowledge-probe/hidden_state_probe.yaml"
+_HARNESS_REL = "experiments/common/knowledge_probe/hidden_state_probe.py"
 
 
 def _parser() -> argparse.ArgumentParser:

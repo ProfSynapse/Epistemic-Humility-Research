@@ -29,7 +29,7 @@ STAGE="$1"; SURFACE="$2"; ARM_TAG="$3"; STAGING_REPO="$4"
 BASE_MODEL="$5"; ADAPTER_REPO="$6"; ADAPTER_REV="$7"; POOL_IN_REPO="$8"
 shift 8
 
-PROBE="experiment/phase1/probe"
+PROBE="archive/experiment/phase1/probe"
 CLOUD="experiments/common/cloud"
 RUN_TAG="ai-verdict-${ARM_TAG}-${STAGE}-${SURFACE}"
 OUT="/tmp/${RUN_TAG}"

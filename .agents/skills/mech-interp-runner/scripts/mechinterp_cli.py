@@ -1,4 +1,4 @@
-﻿#!/usr/bin/env python3
+#!/usr/bin/env python3
 """Small CLI router for Epistemic-Humility mech-interp workflows.
 
 The purpose is to make common analyses repeatable without hand-writing long
@@ -277,18 +277,18 @@ def run_validate(*, quick: bool, dry_run: bool) -> int:
         [
             "-m",
             "pytest",
-            "experiments/common/phase1_probe/tests/test_phase3_causal_pilot_sweep.py",
-            "experiments/common/phase1_probe/tests/test_phase3_causal_pilot_runner.py",
-            "experiments/common/phase1_probe/tests/test_phase3_sycophancy_answer_row_manifest.py",
-            "experiments/common/phase1_probe/tests/test_phase3_sycophancy_generation_analysis.py",
-            "experiments/common/phase1_probe/tests/test_phase3_sae_behavior_feature_analysis.py",
-            "experiments/common/phase1_probe/tests/test_phase3_behavior_axis_scan.py",
-            "experiments/common/phase1_probe/tests/test_phase3_multicell_readout.py",
-            "experiments/common/phase1_probe/tests/test_hidden_state_probe.py",
-            "experiments/common/phase1_probe/tests/test_phase3_xdataset_build_panel.py",
-            "experiments/common/phase1_probe/tests/test_phase3_xdataset_behavior_from_generation.py",
-            "experiments/common/phase1_probe/tests/test_phase3_residual_read_trajectory.py",
-            "experiments/common/phase1_probe/tests/test_phase3_residual_caution_direction.py",
+            "experiments/common/knowledge_probe/tests/test_mechinterp_causal_pilot_sweep.py",
+            "experiments/common/knowledge_probe/tests/test_mechinterp_causal_pilot_runner.py",
+            "experiments/common/knowledge_probe/tests/test_mechinterp_sycophancy_answer_row_manifest.py",
+            "experiments/common/knowledge_probe/tests/test_mechinterp_sycophancy_generation_analysis.py",
+            "experiments/common/knowledge_probe/tests/test_mechinterp_sae_behavior_feature_analysis.py",
+            "experiments/common/knowledge_probe/tests/test_mechinterp_behavior_axis_scan.py",
+            "experiments/common/knowledge_probe/tests/test_mechinterp_multicell_readout.py",
+            "experiments/common/knowledge_probe/tests/test_hidden_state_probe.py",
+            "experiments/common/knowledge_probe/tests/test_mechinterp_xdataset_build_panel.py",
+            "experiments/common/knowledge_probe/tests/test_mechinterp_xdataset_behavior_from_generation.py",
+            "experiments/common/knowledge_probe/tests/test_mechinterp_residual_read_trajectory.py",
+            "experiments/common/knowledge_probe/tests/test_mechinterp_residual_caution_direction.py",
             "-q",
         ],
         [
@@ -301,7 +301,7 @@ def run_validate(*, quick: bool, dry_run: bool) -> int:
             "experiments/common/mechinterp/sae_behavior_feature_analysis.py",
             "experiments/common/mechinterp/behavior_axis_scan.py",
             "experiments/common/mechinterp/multicell_readout.py",
-            "experiments/common/phase1_probe/hidden_state_probe.py",
+            "experiments/common/knowledge_probe/hidden_state_probe.py",
             "experiments/common/mechinterp/xdataset_build_panel.py",
             "experiments/common/mechinterp/xdataset_behavior_from_generation.py",
             "experiments/common/mechinterp/residual_caution_direction.py",

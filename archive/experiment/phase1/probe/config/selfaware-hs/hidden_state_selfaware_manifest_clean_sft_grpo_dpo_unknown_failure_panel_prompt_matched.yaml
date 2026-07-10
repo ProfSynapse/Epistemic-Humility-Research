@@ -1,4 +1,4 @@
-# Phase 3 focused SelfAware hidden-state extraction for GRPO-DPO unknown failures.
+# mechinterp focused SelfAware hidden-state extraction for GRPO-DPO unknown failures.
 #
 # Prompt-matched to the Amendment F GRPO-DPO SelfAware eval that supplied the
 # behavior labels. The DPO adapter is applied over the GRPO-v2 merged base, so

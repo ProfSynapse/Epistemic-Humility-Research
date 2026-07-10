@@ -4,7 +4,7 @@ Historical migration notebook.
 
 - The AI verdict HF Jobs wrapper lives under
   `experiments/probe-as-reward/cloud/hf_jobs_ai_verdict.sh`; the old
-  `experiment/phase1/probe/cloud/` path is a compatibility wrapper.
+  `archive/experiment/phase1/probe/cloud/` path is a compatibility wrapper.
 
 ## Entries
 

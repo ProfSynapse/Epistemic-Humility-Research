@@ -1,0 +1,37 @@
+# Inference dependencies for the hidden-state probing tier (exploratory).
+#
+# Location: experiments/common/knowledge_probe/requirements-hidden-state.txt
+# Used by:  experiments/common/knowledge_probe/hidden_state_probe.py (GPU forward path)
+#
+# Deliberately DECOUPLED from the Unsloth trainer island's pins: this tier runs
+# a plain HF Transformers + PEFT forward to extract output_hidden_states, which
+# the trainer env is not required to support. Install into a SEPARATE inference
+# env, not the trainer venv.
+#
+# The GPU-free surface (schema/config/manifest/selection/stub pipeline + its
+# tests) needs only `pyyaml`, `numpy`, and `safetensors` — torch/transformers/
+# peft are LAZY-imported and required ONLY for the real GPU forward, so CI runs
+# without them.
+#
+# numpy + safetensors are HARD test requirements (M4): the safetensors byte
+# round-trip and the 2-D shape-footgun tests assert the persistence contract and
+# MUST run — they are NOT importorskip-gated. A CI host missing them is a
+# misconfigured env (those tests error rather than silently skip). Install this
+# file before running the suite; do not run the GPU-free suite with these absent.
+#
+# TODO(devops/architect): pin exact transformers / peft / torch versions before
+# the first real GPU run. Cross-version adapter-load skew (Unsloth-4.45.2-trained
+# adapter loaded into a newer inference PEFT) is the #1 first-run risk and a
+# documented first-GPU-run gate; the manifest records the resolved peft/
+# transformers versions at runtime to diagnose it. Do NOT hard-pin here blindly.
+
+# --- GPU-free surface (always required; HARD test requirements, M4) ---
+pyyaml
+numpy>=1.26
+safetensors>=0.4.3
+
+# --- GPU forward path (required only for real extraction; lazy-imported) ---
+# Versions intentionally UNPINNED pending the devops/architect pin decision.
+torch
+transformers
+peft

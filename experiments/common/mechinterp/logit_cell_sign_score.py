@@ -13,14 +13,14 @@ from typing import Any
 import yaml
 
 ROOT = Path(__file__).resolve().parents[3]
-PROBE_DIR = ROOT / "experiment/phase1/probe"
+PROBE_DIR = ROOT / "archive/experiment/phase1/probe"
 if str(PROBE_DIR) not in sys.path:
     sys.path.insert(0, str(PROBE_DIR))
 
 from sae_smoke import repo_relative, resolve_path
 
 
-ANALYSIS_TYPE = "phase3_logit_cell_sign_score"
+ANALYSIS_TYPE = "mechinterp_logit_cell_sign_score"
 NOTICE = "LOGIT_CELL_SIGN_SCORE_ONLY"
 DEFAULT_GROUP_BY = ["run_label", "candidate_label", "grid_coefficient", "control", "target_group"]
 VALID_MODES = {"increase", "decrease", "preserve_nonpositive", "preserve_nonnegative"}

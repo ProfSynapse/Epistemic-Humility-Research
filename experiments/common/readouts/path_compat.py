@@ -9,7 +9,7 @@ def repo_root(start: Path | None = None) -> Path:
     here = (start or Path(__file__)).resolve()
     for candidate in (here, *here.parents):
         if (
-            (candidate / "experiment" / "phase1" / "probe").is_dir()
+            (candidate / "experiments" / "common" / "knowledge_probe").is_dir()
             and (candidate / "experiment" / "phase1" / "eval" / "scorers.py").exists()
         ):
             return candidate
@@ -19,11 +19,11 @@ def repo_root(start: Path | None = None) -> Path:
     )
 
 
-def phase1_probe_dir() -> Path:
-    return repo_root() / "experiment" / "phase1" / "probe"
+def knowledge_probe_dir() -> Path:
+    return repo_root() / "experiments" / "common" / "knowledge_probe"
 
 
-def phase1_eval_dir() -> Path:
+def locked_eval_dir() -> Path:
     return repo_root() / "experiment" / "phase1" / "eval"
 
 

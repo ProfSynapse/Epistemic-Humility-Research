@@ -109,7 +109,7 @@ def run(summary_path: Path, *, refusal_metric: str = "unknown_refusal_rate") -> 
     verdict = classify(points)
     return {
         "ok": True,
-        "analysis_type": "phase3_head_intervention_sign_curve",
+        "analysis_type": "mechinterp_head_intervention_sign_curve",
         "summary": str(summary_path),
         "refusal_metric": refusal_metric,
         "curve": points,

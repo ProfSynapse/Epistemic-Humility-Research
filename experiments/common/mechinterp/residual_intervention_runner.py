@@ -10,8 +10,8 @@ can compare refusal rates across arms (does ablating the caution axis reduce
 over-refusal on known_refused, while leaving known_correct_answered alone?).
 
 MUST run behind an explicit GPU gate (Docker/unsloth). Hook math + analysis are
-unit-tested offline in tests/test_phase3_residual_intervention.py; this runner is
-the heavyweight wiring and mirrors phase3_residual_read_trajectory_runner.
+unit-tested offline in tests/test_mechinterp_residual_intervention.py; this runner is
+the heavyweight wiring and mirrors mechinterp_residual_read_trajectory_runner.
 """
 
 from __future__ import annotations
@@ -26,7 +26,7 @@ from typing import Any
 import yaml
 
 REPO_ROOT = Path(__file__).resolve().parents[3]
-PROBE_DIR = REPO_ROOT / "experiment/phase1/probe"
+PROBE_DIR = REPO_ROOT / "archive/experiment/phase1/probe"
 EVAL_DIR = REPO_ROOT / "experiment" / "phase1" / "eval"
 for _dir in (PROBE_DIR, EVAL_DIR):
     if str(_dir) not in sys.path:
@@ -366,7 +366,7 @@ def run_config(config_path: Path, *, fresh: bool = False) -> dict[str, Any]:
     analysis = ri.analyze_arms(scored_rows, groups=groups)
     summary = {
         "ok": True,
-        "analysis_type": "phase3_residual_intervention_sweep",
+        "analysis_type": "mechinterp_residual_intervention_sweep",
         "notice": "RESIDUAL_CAUTION_CAUSAL_INTERVENTION",
         "config": str(config_path),
         "fingerprint": fingerprint,

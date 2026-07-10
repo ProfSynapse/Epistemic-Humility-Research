@@ -11,5 +11,5 @@ Committed provenance and result artifacts for Amendment AI, Probe-as-Reward (PAR
 - `amendment_ai_g2_reference_grpo_v2.json` pins the pre-outcome GRPO-v2 reference panel for AI-G2.
 
 The runnable producers live under `experiments/probe-as-reward/scripts/`.
-Compatibility wrappers remain at the old `experiment/phase1/probe/par_*.py`
+Compatibility wrappers remain at the old `archive/experiment/phase1/probe/par_*.py`
 paths for historical command lines and imports.

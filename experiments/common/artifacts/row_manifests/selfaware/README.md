@@ -1,9 +1,9 @@
 # SelfAware Row Manifest
 
-Shared frozen row manifest for Phase 3 SelfAware hidden-state extractions.
+Shared frozen row manifest for mechinterp SelfAware hidden-state extractions.
 
 Origin before promotion:
-`experiment/phase1/probe/manifests/phase3_selfaware_frozen_row_manifest.json`.
+`experiments/common/artifacts/row_manifests/mechinterp_selfaware_frozen_row_manifest.json`.
 
 Producer:
-`experiment/phase1/probe/phase3_selfaware_stratified_row_manifest.py`.
+`experiments/common/knowledge_probe/selfaware_stratified_row_manifest.py`.

@@ -28,7 +28,7 @@ import sys
 from pathlib import Path
 
 REPO_DIR = Path(__file__).resolve().parents[3]
-PROBE_DIR = REPO_DIR / "experiment/phase1/probe"
+PROBE_DIR = REPO_DIR / "archive/experiment/phase1/probe"
 for _p in (Path(__file__).resolve().parent, PROBE_DIR):
     if str(_p) not in sys.path:
         sys.path.insert(0, str(_p))

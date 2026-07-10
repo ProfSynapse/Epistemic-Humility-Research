@@ -112,7 +112,7 @@ def run_from_rows(rows: list[dict[str, Any]], *, source: str | None = None) -> d
     verdict = classify(sep["per_head"])
     return {
         "ok": True,
-        "analysis_type": "phase3_head_read_sign_consistency",
+        "analysis_type": "mechinterp_head_read_sign_consistency",
         "rows": source,
         "n_rows": len(rows),
         **sep,

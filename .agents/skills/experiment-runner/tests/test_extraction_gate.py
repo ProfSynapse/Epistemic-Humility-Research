@@ -143,7 +143,7 @@ def test_gate_passes_when_all_prereqs_present(probe_layout, monkeypatch):
 
 def test_gate_resolves_common_config_paths_against_probe_dir(probe_layout, monkeypatch):
     config_path, root = probe_layout
-    common_dir = root / "experiments/common/configs/phase1-probe"
+    common_dir = root / "experiments/common/configs/knowledge-probe"
     common_dir.mkdir(parents=True)
     common_config = common_dir / "hidden_state_probe.yaml"
     common_config.write_text(config_path.read_text(encoding="utf-8"), encoding="utf-8")

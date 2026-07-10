@@ -32,7 +32,7 @@ LATENT_CONTROLS_DIR = ROOT / "experiments/selfaware-latent-knowledge-controls"
 for path in (LATENT_CONTROLS_DIR,):
     if str(path) not in sys.path:
         sys.path.insert(0, str(path))
-from phase3_latent_knowledge_probe import load_layers  # noqa: E402
+from latent_knowledge_probe import load_layers  # noqa: E402
 
 REPO = ROOT
 EXTRACT = (PROBE_DIR / "qwen3-4b-clean-sft-grpo-v2-seed1-selfaware"
@@ -82,7 +82,7 @@ def main() -> int:
 
     raw = json.loads(RAW.read_text()) if RAW.exists() else {}
     out = {
-        "schema_version": "phase3-residual-caution-direction/v1",
+        "schema_version": "mechinterp-residual-caution-direction/v1",
         "layer": L,
         "block": L - 1,
         "source": raw.get("source", "h_lora"),

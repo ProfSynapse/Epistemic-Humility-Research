@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Analyze trained Phase 3 SAE features against behavior labels.
+"""Analyze trained mechinterp SAE features against behavior labels.
 
 This is an exploratory feature screen. It ranks learned SAE features by their
 separation between behavior-defined row groups, such as unknown rows where a
@@ -32,7 +32,7 @@ from sae_smoke import (
 
 
 NOTICE = "SAE_BEHAVIOR_FEATURE_ANALYSIS_ONLY"
-ANALYSIS_TYPE = "phase3_sae_behavior_feature_analysis"
+ANALYSIS_TYPE = "mechinterp_sae_behavior_feature_analysis"
 
 
 class SaeBehaviorFeatureAnalysisError(RuntimeError):

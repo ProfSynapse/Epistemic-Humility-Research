@@ -23,7 +23,7 @@ Predictions:
 A self-check rebuilds F from the same extraction and asserts it matches the
 stored theta per head (methodology parity), so the cosines are trustworthy.
 
-Reuses ``phase3_head_steering_directions.build_directions`` end-to-end, so the
+Reuses ``mechinterp_head_steering_directions.build_directions`` end-to-end, so the
 head-slicing, mass-mean, and unit-normalisation are byte-for-byte the same as the
 artifact A.4 actually steered.
 """
@@ -39,7 +39,7 @@ from typing import Any
 import numpy as np
 
 ROOT = Path(__file__).resolve().parents[3]
-PROBE_DIR = ROOT / "experiment/phase1/probe"
+PROBE_DIR = ROOT / "archive/experiment/phase1/probe"
 if str(PROBE_DIR) not in sys.path:
     sys.path.insert(0, str(PROBE_DIR))
 
@@ -47,12 +47,12 @@ from head_steering_directions import build_directions  # noqa: E402
 from sae_smoke import resolve_path  # noqa: E402
 
 DEFAULT_FAILURE = (
-    "experiment/phase1/probe/analysis/"
+    "archive/experiment/phase1/probe/analysis/"
     "current_clean_grpo_v2_unknown_failure_prompt_matched_head_steering_directions/"
     "clean_sft_grpo_v2_seed1_unknown_failure_prompt_matched_steering/steering_directions.json"
 )
 DEFAULT_OUT = (
-    "experiment/phase1/probe/analysis/"
+    "archive/experiment/phase1/probe/analysis/"
     "current_clean_grpo_v2_unknown_failure_prompt_matched_head_axis_geometry"
 )
 
@@ -159,7 +159,7 @@ def run(failure_path: Path, out_root: Path, *, min_rows: int = 16) -> dict[str, 
     n_uncertainty_dominant = int(np.count_nonzero(abs_fk > abs_fr))
     summary = {
         "ok": True,
-        "analysis_type": "phase3_head_axis_geometry",
+        "analysis_type": "mechinterp_head_axis_geometry",
         "failure_directions": str(failure_path),
         "n_heads": len(per_head),
         "contrast_counts": {

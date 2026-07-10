@@ -1,4 +1,4 @@
-# Phase 3 dedicated SelfAware frozen-manifest hidden-state extraction, full run.
+# mechinterp dedicated SelfAware frozen-manifest hidden-state extraction, full run.
 #
 # Full run over the frozen SelfAware manifest for the symmetric SFT->KTO seed1
 # arm. No max_rows and no explicit strata filter, so every manifest row is
@@ -33,7 +33,7 @@ eval_arms_source: null
 
 selection:
   source: selfaware_manifest
-  manifest: experiments/common/artifacts/row_manifests/selfaware/phase3_selfaware_frozen_row_manifest.json
+  manifest: experiments/common/artifacts/row_manifests/selfaware/mechinterp_selfaware_frozen_row_manifest.json
 
 output:
   hidden_states_subdir: hidden_states_selfaware_full_kto
@@ -42,4 +42,4 @@ output:
 
 manifest_provenance:
   aligned_run_record_id: sft_kto__4b__amendment_a__seed1
-  source_split: phase3-selfaware-frozen-row-manifest/v1
+  source_split: mechinterp-selfaware-frozen-row-manifest/v1

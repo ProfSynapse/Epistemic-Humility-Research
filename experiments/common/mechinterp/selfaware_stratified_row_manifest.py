@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
-"""Build a frozen Phase 3 SelfAware stratified row manifest.
+"""Build a frozen mechinterp SelfAware stratified row manifest.
 
-This script consumes SelfAware row-level eval artifacts, not Phase 3 probe-pool
+This script consumes SelfAware row-level eval artifacts, not mechinterp probe-pool
 or causal-pilot rows. The output is a frozen input for a later dedicated
 SelfAware hidden-state extraction; it is not runner-ready for the current
 `probe_pool_row_key` causal-pilot runner.
@@ -18,7 +18,7 @@ from typing import Any
 
 
 REPO_ROOT = Path(__file__).resolve().parents[3]
-PROBE_DIR = REPO_ROOT / "experiment/phase1/probe"
+PROBE_DIR = REPO_ROOT / "archive/experiment/phase1/probe"
 EVAL_DIR = REPO_ROOT / "experiment" / "phase1" / "eval"
 DEFAULT_OUT = (
     REPO_ROOT
@@ -27,7 +27,7 @@ DEFAULT_OUT = (
     / "artifacts"
     / "row_manifests"
     / "selfaware"
-    / "phase3_selfaware_frozen_row_manifest.json"
+    / "mechinterp_selfaware_frozen_row_manifest.json"
 )
 
 DEFAULT_SOURCES = {
@@ -273,7 +273,7 @@ def build_manifest(sources: dict[str, Path]) -> dict[str, Any]:
         for membership in memberships:
             stratum_index[membership].append(key)
     return {
-        "schema_version": "phase3-selfaware-frozen-row-manifest/v1",
+        "schema_version": "mechinterp-selfaware-frozen-row-manifest/v1",
         "created_at": datetime.now(timezone.utc).replace(microsecond=0).isoformat().replace("+00:00", "Z"),
         "scope": {
             "phase": "phase3",

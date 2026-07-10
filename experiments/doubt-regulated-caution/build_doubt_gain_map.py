@@ -33,7 +33,7 @@ ROOT = Path(__file__).resolve().parents[2]
 LATENT_CONTROLS_DIR = ROOT / "experiments/selfaware-latent-knowledge-controls"
 if str(LATENT_CONTROLS_DIR) not in sys.path:
     sys.path.insert(0, str(LATENT_CONTROLS_DIR))
-from phase3_latent_knowledge_probe import load_layers  # noqa: E402
+from latent_knowledge_probe import load_layers  # noqa: E402
 
 L = 35
 EVAL_CELLS = ("known_refused", "known_correct_answered", "unknown_refused")
@@ -92,7 +92,7 @@ def build_gain_map(h_by_cell: dict[str, np.ndarray],
     per_cell_mean_z = {c: float(np.mean([zv for zv, cc in zip(z, cells) if cc == c]))
                        for c in EVAL_CELLS}
     return {
-        "schema_version": "phase3-doubt-gain-map/v1",
+        "schema_version": "doubt-gain-map/v1",
         "layer": L,
         "alpha": alpha,
         "clip": clip,

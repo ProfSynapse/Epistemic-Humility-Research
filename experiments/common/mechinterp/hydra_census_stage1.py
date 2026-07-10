@@ -77,7 +77,7 @@ from sklearn.preprocessing import StandardScaler
 # own branch. Conventions preserved exactly (37-layer stack, one safetensors
 # open per row, rank-based tie-aware AUROC).
 CANONICAL = Path("/home/profsynapse/code/Epistemic-Humility-Research")
-CPROBE = CANONICAL / "experiment/phase1/probe"
+CPROBE = CANONICAL / "archive/experiment/phase1/probe"
 AL_PREP = CPROBE / "analysis/amendment_al_prep"
 N_STACK_LAYERS = 37
 
@@ -140,7 +140,7 @@ ICA_NS = [16, 32]
 CAND_AUROC = 0.65
 CAND_COS = 0.30
 STAB_COS = 0.60
-DEFAULT_OUT = CANONICAL / "experiment/phase1/probe/analysis/hydra_census_stage1"
+DEFAULT_OUT = CANONICAL / "archive/experiment/phase1/probe/analysis/hydra_census_stage1"
 
 
 def unit(v):

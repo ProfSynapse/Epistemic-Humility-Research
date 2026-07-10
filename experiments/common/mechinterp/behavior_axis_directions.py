@@ -44,7 +44,7 @@ from sae_smoke import (
 )
 
 
-ANALYSIS_TYPE = "phase3_behavior_axis_direction_export"
+ANALYSIS_TYPE = "mechinterp_behavior_axis_direction_export"
 NOTICE = "BEHAVIOR_AXIS_DIRECTION_CANDIDATES_ONLY"
 TENSOR_KEY = "direction"
 

@@ -80,6 +80,6 @@ A mechanical filter (e.g. keep only category (a)) cannot rescue TruthfulQA here:
 
 ## Provenance
 - D-over keys: `experiments/probe-as-reward/artifacts/par_mining_yield.json` → `new_dover_row_keys_by_source.truthfulqa` (407)
-- Question text: `experiment/phase1/probe/analysis/par_sensor_refit/mining_pregen/rows.jsonl` (source `truthfulqa_misconception`)
+- Question text: `archive/experiment/phase1/probe/analysis/par_sensor_refit/mining_pregen/rows.jsonl` (source `truthfulqa_misconception`)
 - D-over rule (scorer): `experiments/probe-as-reward/scripts/par_mining_score.py` — consensus L20/L24/L28 all > band 0 AND label ≠ known
 - Join artifact: `scratchpad/tq_dover_join.json`

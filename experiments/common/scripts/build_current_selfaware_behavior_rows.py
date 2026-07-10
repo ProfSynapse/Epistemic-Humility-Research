@@ -13,23 +13,23 @@ ROOT = Path(__file__).resolve().parents[3]
 # The generated overlay remains at the legacy probe path because many Phase 3
 # configs consume it directly. Move the output only with a coordinated config
 # migration.
-OUT_ROOT = ROOT / "experiment" / "phase1" / "probe" / "analysis" / "current_selfaware_behavior_rows"
+OUT_ROOT = ROOT / "archive" / "archive" / "archive" / "archive" / "experiment" / "phase1" / "probe" / "analysis" / "current_selfaware_behavior_rows"
 
 
 PANELS = [
     {
         "behavior_arm": "clean_sft_merged",
-        "source_rows": ROOT / "experiment" / "phase1" / "probe" / "qwen3-4b-clean-sft-seed1-selfaware" / "hidden_states_selfaware_clean_sft_full" / "extraction__8dbd3f623393" / "rows.jsonl",
+        "source_rows": ROOT / "archive" / "archive" / "archive" / "archive" / "experiment" / "phase1" / "probe" / "qwen3-4b-clean-sft-seed1-selfaware" / "hidden_states_selfaware_clean_sft_full" / "extraction__8dbd3f623393" / "rows.jsonl",
         "scored_rows": ROOT / "experiment" / "phase1" / "eval" / "results_amendment_e_response_confidence_selfaware_clean_sft_seed1_merged_full_4b" / "clean_schema_sft_merged_seed1__selfaware" / "scored_rows.jsonl",
     },
     {
         "behavior_arm": "clean_sft_grpo_v2",
-        "source_rows": ROOT / "experiment" / "phase1" / "probe" / "qwen3-4b-clean-sft-grpo-v2-seed1-selfaware" / "hidden_states_selfaware_clean_sft_grpo_v2_full" / "extraction__55254a04aa1f" / "rows.jsonl",
+        "source_rows": ROOT / "archive" / "archive" / "archive" / "archive" / "experiment" / "phase1" / "probe" / "qwen3-4b-clean-sft-grpo-v2-seed1-selfaware" / "hidden_states_selfaware_clean_sft_grpo_v2_full" / "extraction__55254a04aa1f" / "rows.jsonl",
         "scored_rows": ROOT / "experiment" / "phase1" / "eval" / "results_amendment_e_response_confidence_selfaware_clean_sft_grpo_v2_seed1_corrected_base_full_4b" / "clean_schema_sft_grpo_v2_seed1_corrected_base__selfaware" / "scored_rows.jsonl",
     },
     {
         "behavior_arm": "clean_sft_grpo_dpo",
-        "source_rows": ROOT / "experiment" / "phase1" / "probe" / "qwen3-4b-clean-sft-grpo-dpo-seed1-selfaware" / "hidden_states_selfaware_clean_sft_grpo_dpo_full" / "extraction__00af99a2efe7" / "rows.jsonl",
+        "source_rows": ROOT / "archive" / "archive" / "archive" / "archive" / "experiment" / "phase1" / "probe" / "qwen3-4b-clean-sft-grpo-dpo-seed1-selfaware" / "hidden_states_selfaware_clean_sft_grpo_dpo_full" / "extraction__00af99a2efe7" / "rows.jsonl",
         "scored_rows": ROOT / "experiment" / "phase1" / "eval" / "results_amendment_f_response_confidence_selfaware_clean_sft_grpo_dpo_seed1_full_4b" / "clean_sft_grpo_dpo_seed1__selfaware" / "scored_rows.jsonl",
     },
 ]

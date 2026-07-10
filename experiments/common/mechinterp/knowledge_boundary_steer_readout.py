@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Belief-vs-action readout for the knowledge-boundary (K) steering sweep (GPU-free).
 
-The K sweep (phase3_head_intervention_runner with the knowledge_boundary artifact)
+The K sweep (mechinterp_head_intervention_runner with the knowledge_boundary artifact)
 saves per-row ``generated_answer``, ``label``, ``refused`` across symmetric alpha.
 K's positive pole is "unknown", negative pole is "known". This re-reads the sweep
 ``rows.jsonl`` and asks whether K behaves like a knowledge-BELIEF monitor or merely
@@ -185,7 +185,7 @@ def run_from_rows(rows: list[dict[str, Any]], *, source: str | None = None) -> d
     verdict = classify(cells)
     return {
         "ok": True,
-        "analysis_type": "phase3_knowledge_boundary_steer_readout",
+        "analysis_type": "mechinterp_knowledge_boundary_steer_readout",
         "rows": source,
         "n_rows": len(rows),
         "cells": cells,

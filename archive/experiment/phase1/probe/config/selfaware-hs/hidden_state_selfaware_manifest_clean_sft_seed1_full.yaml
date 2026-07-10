@@ -1,4 +1,4 @@
-# Phase 3 dedicated SelfAware frozen-manifest hidden-state extraction, full run.
+# mechinterp dedicated SelfAware frozen-manifest hidden-state extraction, full run.
 #
 # Current JSON-output response-confidence clean SFT row. This extracts clean SFT
 # as an active LoRA over the original Qwen3-4B base so h_lora/delta represent
@@ -32,7 +32,7 @@ eval_arms_source: null
 
 selection:
   source: selfaware_manifest
-  manifest: experiments/common/artifacts/row_manifests/selfaware/phase3_selfaware_frozen_row_manifest.json
+  manifest: experiments/common/artifacts/row_manifests/selfaware/mechinterp_selfaware_frozen_row_manifest.json
 
 output:
   hidden_states_subdir: hidden_states_selfaware_clean_sft_full
@@ -41,4 +41,4 @@ output:
 
 manifest_provenance:
   aligned_run_record_id: sft_schema_clean_seed1_full
-  source_split: phase3-selfaware-frozen-row-manifest/v1
+  source_split: mechinterp-selfaware-frozen-row-manifest/v1

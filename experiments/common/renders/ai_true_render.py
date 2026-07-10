@@ -20,8 +20,8 @@ enable_thinking=False)``) and
 `archive/experiment/phase1/probe/amendments/amendment_an_steer_generate.py` (the sibling AN
 steer script for the SAME checkpoint and SAME caution-direction lineage).
 Both of those import ``render_probe_prompt`` from
-``experiment/phase1/probe/backends.py`` and ``load_baseline_system_prompt``
-through the ``experiment/phase1/probe/amendment_ah_stage0_extract.py``
+``archive/experiment/phase1/probe/backends.py`` and ``load_baseline_system_prompt``
+through the ``archive/experiment/phase1/probe/amendment_ah_stage0_extract.py``
 compatibility wrapper for the archived AH implementation; this module imports
 the exact same two functions rather than re-deriving the prompt string, so a
 future change to either source stays in sync automatically.
@@ -61,7 +61,7 @@ def _repo_root() -> Path:
     here = Path(__file__).resolve()
     for candidate in (here, *here.parents):
         if (
-            (candidate / "experiment" / "phase1" / "probe" / "backends.py").exists()
+            (candidate / "archive" / "archive" / "archive" / "archive" / "experiment" / "phase1" / "probe" / "backends.py").exists()
             and (candidate / "experiments").is_dir()
         ):
             return candidate
@@ -69,7 +69,7 @@ def _repo_root() -> Path:
 
 
 CANONICAL = _repo_root()
-PROBE_DIR = CANONICAL / "experiment" / "phase1" / "probe"
+PROBE_DIR = CANONICAL / "archive" / "archive" / "archive" / "archive" / "experiment" / "phase1" / "probe"
 if str(PROBE_DIR) not in sys.path:
     sys.path.insert(0, str(PROBE_DIR))
 

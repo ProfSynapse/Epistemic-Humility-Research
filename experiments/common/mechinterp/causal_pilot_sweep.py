@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
-"""Plan or execute Phase 3 local causal-pilot sweeps.
+"""Plan or execute mechinterp local causal-pilot sweeps.
 
 This wrapper is intentionally non-GPU by default. It builds deterministic calls
-to `phase3_causal_pilot_runner.py` across configured candidates and modes, and
+to `mechinterp_causal_pilot_runner.py` across configured candidates and modes, and
 only invokes the runner when `--execute` is passed with the relevant allow flag.
 """
 
@@ -21,7 +21,7 @@ from typing import Any
 import yaml
 
 REPO_ROOT = Path(__file__).resolve().parents[3]
-PROBE_DIR = REPO_ROOT / "experiment/phase1/probe"
+PROBE_DIR = REPO_ROOT / "archive/experiment/phase1/probe"
 RUNNER = REPO_ROOT / "experiments/common/mechinterp/causal_pilot_runner.py"
 DOCKER_CONFIG_PATH_KEYS = {
     "adapter_path",
@@ -383,7 +383,7 @@ def build_jobs(config_path: Path, mode_filter: set[str] | None = None) -> dict[s
     sweep_name = sweep.get("name")
     if not isinstance(sweep_name, str) or not sweep_name:
         raise SweepError("sweep.name is required")
-    output_root = resolve_path(sweep.get("output_root", "experiment/phase1/probe/phase3_sweep"))
+    output_root = resolve_path(sweep.get("output_root", "archive/experiment/phase1/probe/mechinterp_sweep"))
     runner_config_path = resolve_path(sweep["runner_config"])
     candidate_source_path = resolve_path(sweep.get("candidate_source_config", runner_config_path))
     execution = execution_config(sweep)

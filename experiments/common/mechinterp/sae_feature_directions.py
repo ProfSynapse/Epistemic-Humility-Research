@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Export selected SAE features as Phase 3 direction candidates.
+"""Export selected SAE features as mechinterp direction candidates.
 
 The SAE was trained on standardized hidden states. This script converts selected
 decoder columns back into raw hidden-state space so the existing causal/logit
@@ -33,7 +33,7 @@ else:
 
 
 NOTICE = "SAE_FEATURE_DIRECTION_CANDIDATES_ONLY"
-ANALYSIS_TYPE = "phase3_sae_feature_direction_export"
+ANALYSIS_TYPE = "mechinterp_sae_feature_direction_export"
 TENSOR_KEY = "direction"
 
 

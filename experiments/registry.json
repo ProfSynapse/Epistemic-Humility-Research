@@ -690,7 +690,7 @@
           "../common/graders/dark_actuator_grader.py"
         ],
         "pins": {
-          "../common/graders/dark_actuator_grader.py": "483078e211003b22e570f6362a5a0840fbb8c96c93f667e36b68a4c81956d51a",
+          "../common/graders/dark_actuator_grader.py": "68046befa27a8b7402837f87b23ba721cd907bc9cb1506f824a1803554826a0f",
           "build_directions.py": "cda74efaf4cf556ae5a239b5f67998d9338ff8df7599ddc9c4c58ed1de791451",
           "cell.yaml": "cf047c8725f97c9950f25a2b8d0fe4cfd725ad5e0e7e6f1621a8410331530b53",
           "dark_displacement_census.py": "90392e8640f3e48a8a6b6a46a59dc7d1b9e4881258b98069742798d7b119e554",
@@ -890,22 +890,22 @@
       "inputs": [],
       "instrument": {
         "configs": [
-          "phase3_ac_doubt_coupled_intervention.yaml",
-          "phase3_ac_doubt_coupled_intervention_smoke.yaml",
-          "phase3_ac_doubt_coupled_intervention_smoke_batched.yaml"
+          "ac_doubt_coupled_intervention.yaml",
+          "ac_doubt_coupled_intervention_smoke.yaml",
+          "ac_doubt_coupled_intervention_smoke_batched.yaml"
         ],
         "modules": [
           "analyze_ac_doubt_coupled.py",
           "build_doubt_gain_map.py",
-          "phase3_ac_doubt_coupled_analysis.py"
+          "ac_doubt_coupled_analysis.py"
         ],
         "pins": {
+          "ac_doubt_coupled_analysis.py": "894c557cf71a88e29474f5a4a6007dd1a42f62c16b0280db99c9c89e52bb877f",
+          "ac_doubt_coupled_intervention.yaml": "c25bbf69894e0de7485574c9028f83615a5effe46d6f4c742460653b616a09a8",
+          "ac_doubt_coupled_intervention_smoke.yaml": "f5cea0fb1fe1446b8eb330f4bf3c5fb99d12be9cae46024fa81330a94b186a36",
+          "ac_doubt_coupled_intervention_smoke_batched.yaml": "192819daeb4cc405d366c96a64eb2df014150925031c5d4d59adb88915b7a5b4",
           "analyze_ac_doubt_coupled.py": "4d97d020184678ec263663ea207bc0a4bdfadce8b552b4d8e7028e00713f0e43",
-          "build_doubt_gain_map.py": "94d994e5bc8349460d7c6f84e0f6f2000f9338fe29a429354e7a16438e3ed6b1",
-          "phase3_ac_doubt_coupled_analysis.py": "3c620fd94d9e90a7a7961deb370f6112cb45a1b8ac544e8c406969fd5578e024",
-          "phase3_ac_doubt_coupled_intervention.yaml": "1191c8bff05c2c11cfdb8bf71a6dc9a42f60c0435b49ec1a018379d1439c62f0",
-          "phase3_ac_doubt_coupled_intervention_smoke.yaml": "c5f0e4ef997d2521b22933b8ba8fe61e5edea365862b38b15582ee2f1424bb60",
-          "phase3_ac_doubt_coupled_intervention_smoke_batched.yaml": "b01a088a73736c3b7b80a229b55699f2e719da8acc7947623011b3bcceb0e782"
+          "build_doubt_gain_map.py": "b5f518dcc2d98b4184fbdef49d4ba8ad7ecfed1c38e0167817db25b287b89376"
         }
       },
       "kg": [],
@@ -919,7 +919,7 @@
           "experiment_type",
           "kg_ids"
         ],
-        "notes": "Imported from legacy amendment prose. Do not infer missing machine fields without hand-reading AMENDMENT.md. Instrument configs migrated from experiment/phase1/probe/config/ on 2026-07-09; the batched smoke is a companion equivalence check, not the registered evidence run."
+        "notes": "Imported from legacy amendment prose. Do not infer missing machine fields without hand-reading AMENDMENT.md. Instrument configs migrated from the archived legacy probe config tree on 2026-07-09; the batched smoke is a companion equivalence check, not the registered evidence run."
       },
       "prediction": "orchestrator:\n  call: AC-G1 passes with a small margin (5-15pt); AC-G2 ~0 vs constant ablate\nuser:\n  call: null\n  note: Predates the dual-prediction practice (adopted 2026-07-03 at AH signing);\n    no separately recorded user prediction.",
       "question": "Does making the caution gate a live function of the doubt readout carry information beyond simply deleting the gate, on the trained checkpoint?",
@@ -2047,7 +2047,7 @@
     },
     {
       "checkpoint": {
-        "repo": "local Phase 3 SelfAware hidden-state extractions",
+        "repo": "local legacy SelfAware hidden-state extractions",
         "revision": "historical"
       },
       "created_at": "2026-07-09T02:35:52Z",
@@ -2065,14 +2065,14 @@
       "instrument": {
         "configs": [],
         "modules": [
-          "phase3_latent_knowledge_probe.py",
-          "phase3_latent_knowledge_controls.py",
-          "phase3_caution_axis_transfer.py"
+          "latent_knowledge_probe.py",
+          "latent_knowledge_controls.py",
+          "caution_axis_transfer.py"
         ],
         "pins": {
-          "phase3_caution_axis_transfer.py": "04b372757765d29477f3e231b7f6c7e416a758a4dd94515cce90a77a604d109f",
-          "phase3_latent_knowledge_controls.py": "b09c26204802f27ee4eb8e78d28709098506de508c4ef55338705e3965bf4b3d",
-          "phase3_latent_knowledge_probe.py": "fc61f4d9f9707d1f63c9e2f851259dcd78ecc11cd7bfe0dc7c548c0740a6675e"
+          "caution_axis_transfer.py": "237c485790b01422e988729c7d1d4a055dcbd5b834311953d2740d1608d3bcfc",
+          "latent_knowledge_controls.py": "1d6c5b127145e1a24c3965f7d210eaf70c0e17ff328cf909bd3440e61dd5b2e9",
+          "latent_knowledge_probe.py": "350f9d9e4acf57b1af858396fb50616fa5b98e7ebb475155af9d40da038eda93"
         }
       },
       "kg": [],
@@ -2218,16 +2218,16 @@
       ],
       "instrument": {
         "configs": [
-          "phase3_xdataset_kuq_baseline_generation.yaml",
+          "xdataset_kuq_baseline_generation.yaml",
           "hidden_state_kuq_manifest_clean_sft_grpo_v2_seed1_full.yaml"
         ],
         "modules": [
           "probe_xdataset_transfer.py"
         ],
         "pins": {
-          "hidden_state_kuq_manifest_clean_sft_grpo_v2_seed1_full.yaml": "8eaf9a5047d7e7ce98d6463ee35f16eaae042908c79fbdded9425c4b7c949dd3",
-          "phase3_xdataset_kuq_baseline_generation.yaml": "06394187296778a3bb765bf33bf26833be50d7967341fbd6d39d79b7820bcedc",
-          "probe_xdataset_transfer.py": "283c75ac508ac128bff5b08f0413928d48220f4eb80e560d9c98b864b2dafa0f"
+          "hidden_state_kuq_manifest_clean_sft_grpo_v2_seed1_full.yaml": "c71ec8ef4e4eeaabbc03471c9e8764780512ae3bc87c41e081e5ed151fd3b79a",
+          "probe_xdataset_transfer.py": "283c75ac508ac128bff5b08f0413928d48220f4eb80e560d9c98b864b2dafa0f",
+          "xdataset_kuq_baseline_generation.yaml": "ed50588d2541f90049e6732ab89b444a2d53ccb4b1ab1c4ff65b06c1cbc57336"
         }
       },
       "kg": [],

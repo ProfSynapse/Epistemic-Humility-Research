@@ -9,7 +9,7 @@ Plan/materialize before live execution:
 
 ```bash
 python experiments/common/mechinterp/causal_pilot_sweep.py \
-  --config archive/experiment/phase1/probe/config/causal-pilot-core/phase3_causal_pilot_local_sweep.yaml \
+  --config archive/experiment/phase1/probe/config/causal-pilot-core/mechinterp_causal_pilot_local_sweep.yaml \
   --mode-filter logit_diagnostic \
   --write-plan --materialize-configs
 ```
@@ -18,7 +18,7 @@ Only after approval, execute:
 
 ```bash
 python experiments/common/mechinterp/causal_pilot_sweep.py \
-  --config archive/experiment/phase1/probe/config/causal-pilot-core/phase3_causal_pilot_local_sweep.yaml \
+  --config archive/experiment/phase1/probe/config/causal-pilot-core/mechinterp_causal_pilot_local_sweep.yaml \
   --mode-filter logit_diagnostic \
   --write-plan --materialize-configs --execute \
   --allow-logit-diagnostic
@@ -28,8 +28,8 @@ Aggregate completed runs:
 
 ```bash
 python experiments/common/mechinterp/causal_pilot_aggregate.py \
-  --root experiment/phase1/probe/qwen3-4b-instruct/causal_pilots/phase3_local_mech_interp_sweep \
-  --out experiment/phase1/probe/qwen3-4b-instruct/causal_pilots/phase3_local_mech_interp_sweep/summary.csv
+  --root archive/experiment/phase1/probe/qwen3-4b-instruct/causal_pilots/mechinterp_local_mech_interp_sweep \
+  --out archive/experiment/phase1/probe/qwen3-4b-instruct/causal_pilots/mechinterp_local_mech_interp_sweep/summary.csv
 ```
 
 Use aggregate output as an index. Inspect `run_manifest.json`, per-row JSONL,

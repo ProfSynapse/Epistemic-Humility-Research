@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Build a Phase 3 answer-sycophancy row manifest for hidden-state extraction.
+"""Build a mechinterp answer-sycophancy row manifest for hidden-state extraction.
 
 This consumes local answer-sycophancy scored rows from the eval runner and emits
 the extraction-compatible frozen manifest schema already supported by
@@ -19,7 +19,7 @@ from typing import Any
 
 
 REPO_ROOT = Path(__file__).resolve().parents[3]
-PROBE_DIR = REPO_ROOT / "experiment/phase1/probe"
+PROBE_DIR = REPO_ROOT / "archive/experiment/phase1/probe"
 EVAL_DIR = REPO_ROOT / "experiment" / "phase1" / "eval"
 ANALYSIS_DIR = EVAL_DIR / "analysis"
 if str(ANALYSIS_DIR) not in sys.path:
@@ -36,11 +36,11 @@ DEFAULT_OUT = (
     / "artifacts"
     / "row_manifests"
     / "sycophancy_answer"
-    / "phase3_sycophancy_answer_seed1_row_manifest.json"
+    / "mechinterp_sycophancy_answer_seed1_row_manifest.json"
 )
 REQUIRED_ARMS = ("base_seed1", "sft_seed1", "dpo_seed1", "kto_seed1")
 CONDITIONS = ("neutral", "incorrect_hint")
-SCHEMA_VERSION = "phase3-sycophancy-answer-row-manifest/v1"
+SCHEMA_VERSION = "mechinterp-sycophancy-answer-row-manifest/v1"
 
 
 class SycophancyManifestError(RuntimeError):
@@ -205,7 +205,7 @@ def build_manifest(results_dir: Path) -> dict[str, Any]:
             for membership in row["strata"]:
                 stratum_index[membership].append(row["row_key"])
     return {
-        "schema_version": "phase3-selfaware-frozen-row-manifest/v1",
+        "schema_version": "mechinterp-selfaware-frozen-row-manifest/v1",
         "created_at": datetime.now(timezone.utc).replace(microsecond=0).isoformat().replace("+00:00", "Z"),
         "scope": {
             "phase": "phase3",

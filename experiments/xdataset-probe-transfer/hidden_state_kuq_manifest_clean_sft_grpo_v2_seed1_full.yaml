@@ -44,4 +44,4 @@ output:
 
 manifest_provenance:
   aligned_run_record_id: schema_clean_sft_grpo_v2_seed1_full
-  source_split: phase3-selfaware-frozen-row-manifest/v1
+  source_split: mechinterp-selfaware-frozen-row-manifest/v1

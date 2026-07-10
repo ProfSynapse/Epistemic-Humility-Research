@@ -19,7 +19,7 @@ set -euo pipefail
 
 MODEL="$1"; GATE_ROWS="$2"; RESULTS_REPO="$3"; RUN_TAG="$4"; shift 4
 
-PROBE="experiment/phase1/probe"
+PROBE="archive/experiment/phase1/probe"
 CLOUD="experiments/common/cloud"
 OUT="/tmp/cell_${RUN_TAG}"
 mkdir -p "${OUT}"

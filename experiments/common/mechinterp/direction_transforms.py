@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Export transformed Phase 3 direction candidates from existing manifests."""
+"""Export transformed mechinterp direction candidates from existing manifests."""
 
 from __future__ import annotations
 
@@ -15,7 +15,7 @@ import numpy as np
 import yaml
 
 ROOT = Path(__file__).resolve().parents[3]
-PROBE_DIR = ROOT / "experiment/phase1/probe"
+PROBE_DIR = ROOT / "archive/experiment/phase1/probe"
 if str(PROBE_DIR) not in sys.path:
     sys.path.insert(0, str(PROBE_DIR))
 
@@ -33,7 +33,7 @@ else:
 
 
 NOTICE = "DIRECTION_TRANSFORM_CANDIDATES_ONLY"
-ANALYSIS_TYPE = "phase3_direction_transform_export"
+ANALYSIS_TYPE = "mechinterp_direction_transform_export"
 TENSOR_KEY = "direction"
 
 

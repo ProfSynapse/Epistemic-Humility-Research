@@ -1,4 +1,4 @@
-# Phase 3 focused SelfAware hidden-state extraction for clean SFT->DPO->GRPO
+# mechinterp focused SelfAware hidden-state extraction for clean SFT->DPO->GRPO
 # unknown failures.
 #
 # Prompt-matched to the Amendment F DPO-GRPO SelfAware eval that supplied the

@@ -34,7 +34,7 @@ from typing import Any, Optional
 import numpy as np
 
 ROOT = Path(__file__).resolve().parents[3]
-PROBE_DIR = ROOT / "experiment/phase1/probe"
+PROBE_DIR = ROOT / "archive/experiment/phase1/probe"
 if str(PROBE_DIR) not in sys.path:
     sys.path.insert(0, str(PROBE_DIR))
 
@@ -284,7 +284,7 @@ def analyze_arms(rows: list[dict[str, Any]], *, drop_tol: float = 0.15,
         "INCONCLUSIVE: no baseline arm present."
     return {
         "ok": True,
-        "analysis_type": "phase3_residual_intervention",
+        "analysis_type": "mechinterp_residual_intervention",
         "n_rows": len(rows),
         "arms": arm_ids,
         "by_arm": table,

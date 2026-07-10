@@ -51,12 +51,12 @@ READOUTS_DIR = Path(__file__).resolve().parent
 if str(READOUTS_DIR) not in sys.path:
     sys.path.insert(0, str(READOUTS_DIR))
 try:
-    from .path_compat import phase1_eval_dir, phase1_probe_dir, repo_root
+    from .path_compat import locked_eval_dir, knowledge_probe_dir, repo_root
 except ImportError:  # direct script execution
-    from path_compat import phase1_eval_dir, phase1_probe_dir, repo_root
+    from path_compat import locked_eval_dir, knowledge_probe_dir, repo_root
 
-PROBE_DIR = phase1_probe_dir()
-EVAL_DIR = phase1_eval_dir()
+PROBE_DIR = knowledge_probe_dir()
+EVAL_DIR = locked_eval_dir()
 for p in (str(PROBE_DIR), str(EVAL_DIR)):
     if p not in sys.path:
         sys.path.insert(0, p)
@@ -256,7 +256,7 @@ def grade_row(item, answer_text, content_end):
 def _tuner_repo_dir() -> Path:
     """Locate the synaptic-tuner checkout that owns the batch CLI verbs.
 
-    The extractor lives at experiment/phase1/probe/ under the research repo; the
+    The extractor lives at experiments/common/knowledge_probe/ under the research repo; the
     submodule is at <repo-root>/synaptic-tuner. Overridable via --tuner-dir for
     the cloud lane (where the submodule may live elsewhere in the job image).
     """

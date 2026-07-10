@@ -1,4 +1,4 @@
-# Phase 3 focused SelfAware hidden-state extraction for clean SFT->KTO unknown failures.
+# mechinterp focused SelfAware hidden-state extraction for clean SFT->KTO unknown failures.
 #
 # Prompt-matched to the Amendment E KTO SelfAware eval that supplied the
 # behavior labels. The KTO adapter is applied over the clean SFT merged base.

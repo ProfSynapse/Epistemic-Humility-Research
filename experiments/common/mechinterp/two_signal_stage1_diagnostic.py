@@ -48,7 +48,7 @@ from sklearn.model_selection import StratifiedKFold
 from sklearn.metrics import roc_auc_score
 
 REPO_DIR = Path(__file__).resolve().parents[3]
-PROBE_DIR = REPO_DIR / "experiment/phase1/probe"
+PROBE_DIR = REPO_DIR / "archive/experiment/phase1/probe"
 RESULT_DIR = REPO_DIR / "experiments" / "unified-two-signal-dial-veto" / "artifacts"
 if str(PROBE_DIR) not in sys.path:
     sys.path.insert(0, str(PROBE_DIR))

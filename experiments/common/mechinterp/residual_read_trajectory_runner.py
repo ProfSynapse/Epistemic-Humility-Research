@@ -12,8 +12,8 @@ resumable per-row trajectory summary.
 
 This MUST run behind an explicit GPU gate (Docker/unsloth), like the extraction
 and the A.4 intervention sweep. The read-hook + analysis live in the offline-tested
-``phase3_residual_read_trajectory``; this runner is the heavyweight wiring and
-mirrors ``phase3_head_read_trajectory_runner.ModelHarness``.
+``mechinterp_residual_read_trajectory``; this runner is the heavyweight wiring and
+mirrors ``mechinterp_head_read_trajectory_runner.ModelHarness``.
 """
 
 from __future__ import annotations
@@ -28,7 +28,7 @@ from typing import Any
 import yaml
 
 REPO_ROOT = Path(__file__).resolve().parents[3]
-PROBE_DIR = REPO_ROOT / "experiment/phase1/probe"
+PROBE_DIR = REPO_ROOT / "archive/experiment/phase1/probe"
 EVAL_DIR = REPO_ROOT / "experiment" / "phase1" / "eval"
 for _dir in (PROBE_DIR, EVAL_DIR):
     if str(_dir) not in sys.path:
@@ -261,7 +261,7 @@ def run_config(config_path: Path, *, fresh: bool = False) -> dict[str, Any]:
     analysis = rrt.analyze_trajectories(scored_rows)
     summary = {
         "ok": True,
-        "analysis_type": "phase3_residual_read_trajectory_sweep",
+        "analysis_type": "mechinterp_residual_read_trajectory_sweep",
         "notice": "RESIDUAL_CAUTION_READ_TRAJECTORY_ONLY",
         "config": str(config_path),
         "fingerprint": fingerprint,

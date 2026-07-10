@@ -443,7 +443,7 @@ def run(config_path: Path, output_root_override: Path | None = None, no_write: b
     output_root = (
         output_root_override.resolve()
         if output_root_override is not None
-        else resolve_path(config.get("output", {}).get("root", "phase3_causal_pilot_dry_run"))
+        else resolve_path(config.get("output", {}).get("root", "mechinterp_causal_pilot_dry_run"))
     )
     dry_run_manifest, planned_arms_payload, metrics_plan = build_outputs(
         config=config,
@@ -472,7 +472,7 @@ def run(config_path: Path, output_root_override: Path | None = None, no_write: b
 
 
 def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
-    parser = argparse.ArgumentParser(description="Phase 3 causal-pilot no-generation dry-run validator")
+    parser = argparse.ArgumentParser(description="mechinterp causal-pilot no-generation dry-run validator")
     parser.add_argument("--config", required=True, type=Path)
     parser.add_argument("--output-root", type=Path)
     parser.add_argument("--no-write", action="store_true")

@@ -48,10 +48,10 @@ SCRIPT_DIR = Path(__file__).resolve().parent
 if str(SCRIPT_DIR) not in sys.path:
     sys.path.insert(0, str(SCRIPT_DIR))
 
-from path_compat import phase1_eval_dir, phase1_probe_dir, repo_root  # noqa: E402
+from path_compat import locked_eval_dir, knowledge_probe_dir, repo_root  # noqa: E402
 
-PROBE_DIR = phase1_probe_dir()
-EVAL_DIR = phase1_eval_dir()
+PROBE_DIR = knowledge_probe_dir()
+EVAL_DIR = locked_eval_dir()
 for p in (str(PROBE_DIR), str(EVAL_DIR)):
     if p not in sys.path:
         sys.path.insert(0, p)
@@ -63,7 +63,7 @@ from amendment_ah_stage0_extract import (  # noqa: E402
 )
 
 CANONICAL = repo_root()
-PROBE_ROOT = CANONICAL / "experiment/phase1/probe"
+PROBE_ROOT = CANONICAL / "archive/experiment/phase1/probe"
 CLEAN_SFT_BASE = (CANONICAL / "scratch/schema_response_confidence/runs/"
                   "sft_schema_clean_seed1_full/20260623_123624/"
                   "Qwen3-4B-bnb-4bit/merged-16bit")

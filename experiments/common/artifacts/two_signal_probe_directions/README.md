@@ -9,4 +9,4 @@ directions serve multiple experiments and diagnostics.
 
 Do not rewrite historical provenance fields inside the JSON manifests solely to
 change old local source paths. Record path migrations in
-`docs/migration/phase1-probe-result-artifact-map.json`.
+`docs/migration/knowledge-probe-result-artifact-map.json`.

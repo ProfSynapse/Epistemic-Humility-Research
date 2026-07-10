@@ -1,6 +1,6 @@
 # Latent Knowledge Controls Artifacts
 
-This directory preserves the original JSON outputs and logs from the Phase 3
+This directory preserves the original JSON outputs and logs from the legacy
 SelfAware latent-knowledge control package.
 
 - `a1a2_h_lora.json`: lexical baseline and within-known over-refusal controls.

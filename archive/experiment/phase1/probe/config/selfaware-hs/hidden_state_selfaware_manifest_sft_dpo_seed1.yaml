@@ -1,7 +1,7 @@
-# Phase 3 dedicated SelfAware frozen-manifest hidden-state extraction prep.
+# mechinterp dedicated SelfAware frozen-manifest hidden-state extraction prep.
 #
 # This config is intentionally no-run prep until an explicit GPU gate is opened.
-# It consumes experiments/common/artifacts/row_manifests/selfaware/phase3_selfaware_frozen_row_manifest.json,
+# It consumes experiments/common/artifacts/row_manifests/selfaware/mechinterp_selfaware_frozen_row_manifest.json,
 # preserving SelfAware row_key/stable_identity/strata in rows.jsonl. It is NOT a
 # probe_pool_row_key causal-pilot runner input and does not use probe_results.
 
@@ -33,7 +33,7 @@ eval_arms_source: null
 
 selection:
   source: selfaware_manifest
-  manifest: experiments/common/artifacts/row_manifests/selfaware/phase3_selfaware_frozen_row_manifest.json
+  manifest: experiments/common/artifacts/row_manifests/selfaware/mechinterp_selfaware_frozen_row_manifest.json
   strata:
     - stable_unknown_refusal
     - stable_known_correct
@@ -52,4 +52,4 @@ output:
 
 manifest_provenance:
   aligned_run_record_id: sft_dpo__4b__amendment_a__seed1
-  source_split: phase3-selfaware-frozen-row-manifest/v1
+  source_split: mechinterp-selfaware-frozen-row-manifest/v1

@@ -16,7 +16,7 @@ refusal tokens. (Whether that pre-committed state *causes* the refusal — monit
 vs. internal decision — is causal and stays B1's territory; a read-only timing
 test cannot settle it.)
 
-Two halves, mirroring ``phase3_head_read_trajectory`` but for the residual stream
+Two halves, mirroring ``mechinterp_head_read_trajectory`` but for the residual stream
 (full-vector direction at one layer rather than a per-head o_proj segment):
 
 1. A torch forward POST-hook on the target decoder block records, per forward
@@ -44,7 +44,7 @@ from typing import Any
 import numpy as np
 
 ROOT = Path(__file__).resolve().parents[3]
-PROBE_DIR = ROOT / "experiment/phase1/probe"
+PROBE_DIR = ROOT / "archive/experiment/phase1/probe"
 if str(PROBE_DIR) not in sys.path:
     sys.path.insert(0, str(PROBE_DIR))
 
@@ -283,7 +283,7 @@ def analyze_trajectories(rows: list[dict[str, Any]], *, sep_tol: float = 0.10) -
 
     return {
         "ok": True,
-        "analysis_type": "phase3_residual_read_trajectory",
+        "analysis_type": "mechinterp_residual_read_trajectory",
         "n_rows": len(rows),
         "groups": {KNOWN_REFUSED: len(pos), KNOWN_ANSWERED: len(neg)},
         "separation": sep,

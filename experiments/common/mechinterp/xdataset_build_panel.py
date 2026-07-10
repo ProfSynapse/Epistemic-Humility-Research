@@ -6,9 +6,9 @@ Given a JSONL of questions carrying an intrinsic known/unknown label (e.g. KUQ,
 SelfAware), emit the two frozen artifacts the rest of the pipeline consumes:
 
 - ``gen_rows.jsonl`` — rows for the baseline generation pass
-  (``phase3_head_intervention_runner`` at alpha=0): one record per question with
+  (``mechinterp_head_intervention_runner`` at alpha=0): one record per question with
   ``probe_pool_row_key``, ``label``, ``question``, ``aliases``.
-- ``manifest.json`` — a ``phase3-selfaware-frozen-row-manifest/v1`` manifest the
+- ``manifest.json`` — a ``mechinterp-selfaware-frozen-row-manifest/v1`` manifest the
   hidden-state extractor consumes via ``selection.source: selfaware_manifest``.
   (The manifest format is dataset-agnostic despite the historical name.)
 
@@ -26,7 +26,7 @@ import random
 from pathlib import Path
 from typing import Any
 
-SCHEMA_VERSION = "phase3-selfaware-frozen-row-manifest/v1"
+SCHEMA_VERSION = "mechinterp-selfaware-frozen-row-manifest/v1"
 
 
 class PanelBuildError(RuntimeError):

@@ -3,19 +3,19 @@
 Load this before launching a hidden-state extraction.
 
 Run a model-free config preflight from the repo root. Importing
-`experiments/common/phase1_probe/hidden_state_probe.py` directly requires the common phase1 probe directory on `PYTHONPATH`;
+`experiments/common/knowledge_probe/hidden_state_probe.py` directly requires the common phase1 probe directory on `PYTHONPATH`;
 otherwise root-level imports can fail with
 `ModuleNotFoundError: No module named 'hidden_state_schema'`.
 
 PowerShell pattern:
 
 ```powershell
-$env:PYTHONPATH='experiment/phase1/probe'
+$env:PYTHONPATH='archive/experiment/phase1/probe'
 @'
 from pathlib import Path
 from hidden_state_probe import parse_config, resolve_output_dir, select_matched_slice
 for path in [
-    Path('experiment/phase1/probe/config/example_hidden_state_config.yaml'),
+    Path('archive/experiment/phase1/probe/config/example_hidden_state_config.yaml'),
 ]:
     cfg, sha = parse_config(path)
     rows = select_matched_slice(cfg)

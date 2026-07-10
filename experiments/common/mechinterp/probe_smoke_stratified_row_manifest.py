@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
-"""Build a no-GPU Phase 3 probe-key smoke stratified row manifest.
+"""Build a no-GPU mechinterp probe-key smoke stratified row manifest.
 
-This derives runner-ready row strata only from existing Phase 3 causal-pilot
+This derives runner-ready row strata only from existing mechinterp causal-pilot
 `scored_rows.jsonl` outputs that already carry `probe_pool_row_key`. Broader
 SelfAware eval rows are intentionally not bridged here because they do not carry
 the runner's probe-pool identity.
@@ -18,18 +18,18 @@ from typing import Any
 
 
 REPO_ROOT = Path(__file__).resolve().parents[3]
-PROBE_DIR = REPO_ROOT / "experiment/phase1/probe"
+PROBE_DIR = REPO_ROOT / "archive/experiment/phase1/probe"
 DEFAULT_SWEEP_ROOT = (
     PROBE_DIR
     / "qwen3-4b-instruct"
     / "causal_pilots"
-    / "phase3_local_mech_interp_sweep"
+    / "mechinterp_local_mech_interp_sweep"
 )
 DEFAULT_OUT = (
     PROBE_DIR
     / "qwen3-4b-instruct"
     / "causal_pilots"
-    / "phase3_probe_smoke_stratified_row_manifest"
+    / "mechinterp_probe_smoke_stratified_row_manifest"
     / "row_manifest.json"
 )
 
@@ -217,14 +217,14 @@ def build_manifest(sweep_root: Path) -> dict[str, Any]:
         strata["known_sft_correct_to_sequential_bad"],
     ))
     return {
-        "schema_version": "phase3-probe-smoke-stratified-row-manifest/v1",
+        "schema_version": "mechinterp-probe-smoke-stratified-row-manifest/v1",
         "created_at": datetime.now(timezone.utc).replace(microsecond=0).isoformat().replace("+00:00", "Z"),
         "scope": {
             "phase": "phase3",
             "evidence_tier": "tier2_exploratory_local_prep",
             "no_gpu": True,
             "no_docker": True,
-            "source": "existing Phase 3 causal-pilot generation baseline scored_rows only",
+            "source": "existing mechinterp causal-pilot generation baseline scored_rows only",
         },
         "source_root": repo_relative(sweep_root),
         "candidate_families": {
@@ -236,7 +236,7 @@ def build_manifest(sweep_root: Path) -> dict[str, Any]:
             "status": "not_runner_ready",
             "reason": (
                 "Broader SelfAware eval rows use eval-local identity such as eval_set and row_index "
-                "and do not carry probe_pool_row_key, while the Phase 3 runner selects hidden-state "
+                "and do not carry probe_pool_row_key, while the mechinterp runner selects hidden-state "
                 "extraction rows by probe_pool_row_key."
             ),
             "safe_next_step": (

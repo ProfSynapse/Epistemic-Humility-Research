@@ -40,7 +40,7 @@ from sklearn.preprocessing import StandardScaler
 from sklearn.metrics import roc_auc_score
 
 REPO_DIR = Path(__file__).resolve().parents[3]
-PROBE_DIR = REPO_DIR / "experiment/phase1/probe"
+PROBE_DIR = REPO_DIR / "archive/experiment/phase1/probe"
 if str(PROBE_DIR) not in sys.path:
     sys.path.insert(0, str(PROBE_DIR))
 

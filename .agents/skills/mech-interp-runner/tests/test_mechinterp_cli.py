@@ -84,7 +84,7 @@ def test_command_args_builds_xdataset_build_panel():
         "xdataset-build-panel",
         "--source", "datasets/kuq/knowns_unknowns.jsonl",
         "--dataset", "kuq",
-        "--out-dir", "experiment/phase1/probe/xdataset/kuq_panel",
+        "--out-dir", "archive/experiment/phase1/probe/xdataset/kuq_panel",
         "--n-known", "600",
         "--n-unknown", "400",
         "--seed", "0",
@@ -96,7 +96,7 @@ def test_command_args_builds_xdataset_build_panel():
     assert out == [
         "--source", "datasets/kuq/knowns_unknowns.jsonl",
         "--dataset", "kuq",
-        "--out-dir", "experiment/phase1/probe/xdataset/kuq_panel",
+        "--out-dir", "archive/experiment/phase1/probe/xdataset/kuq_panel",
         "--n-known", "600",
         "--n-unknown", "400",
         "--seed", "0",
@@ -110,18 +110,18 @@ def test_command_args_builds_xdataset_behavior():
     parser = mechinterp_cli.build_parser()
     args = parser.parse_args([
         "xdataset-behavior",
-        "--generation", "experiment/phase1/probe/xdataset/kuq_generation/rows.jsonl",
-        "--panel-rows", "experiment/phase1/probe/xdataset/kuq_panel/gen_rows.jsonl",
-        "--out-dir", "experiment/phase1/probe/xdataset/kuq_behavior",
+        "--generation", "archive/experiment/phase1/probe/xdataset/kuq_generation/rows.jsonl",
+        "--panel-rows", "archive/experiment/phase1/probe/xdataset/kuq_panel/gen_rows.jsonl",
+        "--out-dir", "archive/experiment/phase1/probe/xdataset/kuq_behavior",
     ])
 
     script, out = mechinterp_cli.command_args(args)
 
     assert script == "experiments/common/mechinterp/xdataset_behavior_from_generation.py"
     assert out == [
-        "--generation", "experiment/phase1/probe/xdataset/kuq_generation/rows.jsonl",
-        "--panel-rows", "experiment/phase1/probe/xdataset/kuq_panel/gen_rows.jsonl",
-        "--out-dir", "experiment/phase1/probe/xdataset/kuq_behavior",
+        "--generation", "archive/experiment/phase1/probe/xdataset/kuq_generation/rows.jsonl",
+        "--panel-rows", "archive/experiment/phase1/probe/xdataset/kuq_panel/gen_rows.jsonl",
+        "--out-dir", "archive/experiment/phase1/probe/xdataset/kuq_behavior",
     ]
 
 

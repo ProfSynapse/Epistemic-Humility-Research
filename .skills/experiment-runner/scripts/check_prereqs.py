@@ -283,7 +283,7 @@ def cloud_capability_ready(research_repo_root: Optional[Path] = None) -> bool:
 # 5, §5.2 SSOT, lead-ratified 2026-06-10). The tuner's local-run handler command
 # builder is already method-generic (reads run.trainer, forwards a training-key
 # whitelist with zero SFT-specific logic). coder-cloud's re-scoped #34:
-#   1. widens the _compile dispatch guard past SFT-only → method ∈ {sft,dpo,kto};
+#   1. widens the _compile dispatch guard past SFT-only → method âˆˆ {sft,dpo,kto};
 #   2. forwards `beta` (method-gated to dpo/kto; `seed` already forwarded via #32);
 #   3. adds LoRA flag parity to train_dpo.py / train_kto.py (the trainers gain
 #      `--lora-*` argparse). This is the HYBRID ruling on coder-cloud's flag-diff:
@@ -505,13 +505,13 @@ def _probe_dir_for_extraction_config(config_path: Path, research_repo_root: Path
 
     Legacy checked-in configs lived at probe/config/<file>.yaml, where
     config_path.parent.parent was the probe dir. The live default now lives under
-    experiments/common/configs/phase1-probe/, but its relative paths still follow
+    experiments/common/configs/knowledge-probe/, but its relative paths still follow
     the harness convention and resolve against experiment/phase1/probe.
     """
     resolved_config = config_path.resolve()
     repo_probe_dir = (research_repo_root / "experiment" / "phase1" / "probe").resolve()
     common_config_dir = (
-        research_repo_root / "experiments" / "common" / "configs" / "phase1-probe"
+        research_repo_root / "experiments" / "common" / "configs" / "knowledge-probe"
     ).resolve()
     try:
         resolved_config.relative_to(common_config_dir)

@@ -18,7 +18,7 @@ per-item stream with no checkpoint/prompt mismatch. The ONLY differences from T:
     answerability gate was validated on), read straight from the gate extraction's
     rows.jsonl. No PopQA/TriviaQA.
   * No alias grading (SelfAware rows carry no gold answers). Outcome is structural:
-    unknown ∧ answered = HALLUCINATION; known ∧ answered = answerable_attempt
+    unknown âˆ§ answered = HALLUCINATION; known âˆ§ answered = answerable_attempt
     (ungraded directional control, §3 caveat).
 
 Persists, under a gitignored model_tag subtree, for every ANSWERED row:
@@ -40,12 +40,12 @@ READOUTS_DIR = Path(__file__).resolve().parent
 if str(READOUTS_DIR) not in sys.path:
     sys.path.insert(0, str(READOUTS_DIR))
 try:
-    from .path_compat import phase1_eval_dir, phase1_probe_dir
+    from .path_compat import locked_eval_dir, knowledge_probe_dir
 except ImportError:  # direct script execution
-    from path_compat import phase1_eval_dir, phase1_probe_dir
+    from path_compat import locked_eval_dir, knowledge_probe_dir
 
-PROBE_DIR = phase1_probe_dir()
-EVAL_DIR = phase1_eval_dir()
+PROBE_DIR = knowledge_probe_dir()
+EVAL_DIR = locked_eval_dir()
 for p in (str(PROBE_DIR), str(EVAL_DIR)):
     if p not in sys.path:
         sys.path.insert(0, p)

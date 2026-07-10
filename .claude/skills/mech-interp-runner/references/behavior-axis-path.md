@@ -8,10 +8,10 @@ Use layerwise behavior-axis scans when SAE features look entangled or when the
 question is where behavior signal lives across `h_base`, `h_lora`, and `delta`:
 
 ```bash
-python experiment/phase1/probe/phase3_behavior_axis_scan.py \
-  --config experiment/phase1/probe/config/phase3_selfaware_behavior_axis_scan.yaml
-python experiment/phase1/probe/phase3_behavior_axis_directions.py \
-  --config experiment/phase1/probe/config/phase3_selfaware_behavior_axis_directions.yaml
+python archive/experiment/phase1/probe/mechinterp_behavior_axis_scan.py \
+  --config archive/experiment/phase1/probe/config/mechinterp_selfaware_behavior_axis_scan.yaml
+python archive/experiment/phase1/probe/mechinterp_behavior_axis_directions.py \
+  --config archive/experiment/phase1/probe/config/mechinterp_selfaware_behavior_axis_directions.yaml
 ```
 
 ## Gold-backed behavior panels
@@ -21,8 +21,8 @@ before scanning. Use a no-vector baseline generation pass with
 `selection.probe_results` so rows carry aliases/answer values, then run:
 
 ```bash
-python experiment/phase1/probe/phase3_gold_behavior_panel.py \
-  --config archive/experiment/phase1/probe/config/gold-kto-calibrated-expression/phase3_gold_kto_behavior_panel.yaml
+python archive/experiment/phase1/probe/mechinterp_gold_behavior_panel.py \
+  --config archive/experiment/phase1/probe/config/gold-kto-calibrated-expression/mechinterp_gold_kto_behavior_panel.yaml
 ```
 
 Pass the resulting `rows.jsonl` as `extractions[].rows_path` in behavior-axis
@@ -42,8 +42,8 @@ Use calibrated-expression plane analysis to project behavior cells onto paired
 damage axes after direction export:
 
 ```bash
-python experiment/phase1/probe/phase3_calibrated_expression_plane.py \
-  --config archive/experiment/phase1/probe/config/selfaware-geometry-and-subspace/phase3_selfaware_calibrated_expression_plane.yaml
+python archive/experiment/phase1/probe/mechinterp_calibrated_expression_plane.py \
+  --config archive/experiment/phase1/probe/config/selfaware-geometry-and-subspace/mechinterp_selfaware_calibrated_expression_plane.yaml
 ```
 
 When one-axis or simple multi-hook interventions collapse into generic refusal
@@ -51,7 +51,7 @@ pressure, run a multicell readout before designing more steering candidates:
 
 ```bash
 python .skills/mech-interp-runner/scripts/mechinterp_cli.py multicell-readout \
-  --config archive/experiment/phase1/probe/config/gold-kto-calibrated-expression/phase3_gold_kto_multicell_readout.yaml
+  --config archive/experiment/phase1/probe/config/gold-kto-calibrated-expression/mechinterp_gold_kto_multicell_readout.yaml
 ```
 
 Compare rank-1 against low-rank and full readouts by behavior-cell macro
@@ -68,7 +68,7 @@ extracting:
 
 ```bash
 python experiments/common/mechinterp/targeted_row_keys.py \
-  --config experiment/phase1/probe/config/phase3_gold_kto_targeted_rare_cell_row_keys.yaml
+  --config archive/experiment/phase1/probe/config/mechinterp_gold_kto_targeted_rare_cell_row_keys.yaml
 ```
 
 Treat heuristic buckets such as known-low-confidence and unknown-answering as
@@ -81,15 +81,15 @@ After logit diagnostics on behavior-conditioned rows, aggregate by behavior
 cell before interpreting:
 
 ```bash
-python experiment/phase1/probe/phase3_logit_cell_analysis.py \
-  --config archive/experiment/phase1/probe/config/selfaware-calibrated-expression-kto-panels/phase3_selfaware_calibrated_expression_kto_logit_cell_analysis.yaml
+python archive/experiment/phase1/probe/mechinterp_logit_cell_analysis.py \
+  --config archive/experiment/phase1/probe/config/selfaware-calibrated-expression-kto-panels/mechinterp_selfaware_calibrated_expression_kto_logit_cell_analysis.yaml
 ```
 
 Then rank candidate arms against explicit behavior-cell sign goals:
 
 ```bash
 python .skills/mech-interp-runner/scripts/mechinterp_cli.py logit-cell-sign-score \
-  --config archive/experiment/phase1/probe/config/selfaware-calibrated-expression-kto-panels/phase3_selfaware_kto_cell_sign_score.yaml
+  --config archive/experiment/phase1/probe/config/selfaware-calibrated-expression-kto-panels/mechinterp_selfaware_kto_cell_sign_score.yaml
 ```
 
 Use sign scores as triage only. A candidate can satisfy the cell-level
@@ -97,7 +97,7 @@ next-token refusal pattern and still fail generated-answer replay.
 
 ## Direction transforms
 
-Use `phase3_direction_transforms.py` for reusable direction transforms instead
+Use `mechinterp_direction_transforms.py` for reusable direction transforms instead
 of ad hoc vector math. For composite plane tests, prefer an explicit
 `linear_combination` transform with named source direction IDs, weights, and a
 target norm:

@@ -1,10 +1,10 @@
 {
- "schema_version": "phase3-selfaware-frozen-row-manifest/v1",
+ "schema_version": "mechinterp-selfaware-frozen-row-manifest/v1",
  "created_at": null,
  "dataset": "kuq",
  "row_count": 1000,
  "scope": {
-  "phase": "phase3",
+  "lineage": "legacy-mechinterp",
   "source": "knowns_unknowns.jsonl",
   "no_gpu": true,
   "no_docker": true,

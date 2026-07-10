@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Analyze trained Phase 3 SAE feature activations.
+"""Analyze trained mechinterp SAE feature activations.
 
 This ranks learned SAE features by label separation over existing hidden-state
 rows. It is exploratory feature-screening only, not causal evidence.
@@ -36,7 +36,7 @@ else:
 
 
 NOTICE = "SAE_FEATURE_ANALYSIS_ONLY"
-ANALYSIS_TYPE = "phase3_sae_feature_analysis"
+ANALYSIS_TYPE = "mechinterp_sae_feature_analysis"
 
 
 class SaeFeatureAnalysisError(RuntimeError):

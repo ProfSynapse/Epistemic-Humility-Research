@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Build exact row-key panels for targeted Phase 3 hidden-state extraction.
+"""Build exact row-key panels for targeted mechinterp hidden-state extraction.
 
 The script reads the frozen probe pool and probe_results.jsonl, assigns rows to
 simple heuristic buckets, and writes one exact row-key file plus a provenance
@@ -19,7 +19,7 @@ import yaml
 
 
 REPO_ROOT = Path(__file__).resolve().parents[3]
-PROBE_DIR = REPO_ROOT / "experiment/phase1/probe"
+PROBE_DIR = REPO_ROOT / "archive/experiment/phase1/probe"
 
 REFUSAL_PATTERNS = [
     r"\bi don't know\b",
@@ -231,7 +231,7 @@ def select_rows(config: dict[str, Any]) -> tuple[list[dict[str, Any]], dict[str,
         deduped.append(row)
 
     manifest = {
-        "schema_version": "phase3-targeted-row-keys/v1",
+        "schema_version": "mechinterp-targeted-row-keys/v1",
         "purpose": config.get("purpose"),
         "seed": seed,
         "inputs": {

@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Aggregate Phase 3 logit diagnostics by behavior cell."""
+"""Aggregate mechinterp logit diagnostics by behavior cell."""
 
 from __future__ import annotations
 
@@ -13,7 +13,7 @@ from typing import Any
 import yaml
 
 ROOT = Path(__file__).resolve().parents[3]
-PROBE_DIR = ROOT / "experiment/phase1/probe"
+PROBE_DIR = ROOT / "archive/experiment/phase1/probe"
 if str(PROBE_DIR) not in sys.path:
     sys.path.insert(0, str(PROBE_DIR))
 
@@ -21,7 +21,7 @@ from sae_behavior_feature_analysis import row_matches_filter
 from sae_smoke import repo_relative, resolve_path
 
 
-ANALYSIS_TYPE = "phase3_logit_cell_analysis"
+ANALYSIS_TYPE = "mechinterp_logit_cell_analysis"
 NOTICE = "LOGIT_CELL_ANALYSIS_ONLY"
 
 

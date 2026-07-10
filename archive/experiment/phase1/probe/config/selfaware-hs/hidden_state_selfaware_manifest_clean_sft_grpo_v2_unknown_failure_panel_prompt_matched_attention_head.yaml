@@ -1,4 +1,4 @@
-# Phase 3 per-head (attention_head granularity) SelfAware hidden-state extraction
+# mechinterp per-head (attention_head granularity) SelfAware hidden-state extraction
 # for GRPO v2 unknown failures.
 #
 # Mirrors the residual_stream prompt-matched config

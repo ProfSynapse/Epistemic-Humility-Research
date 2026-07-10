@@ -2,10 +2,10 @@
 """Build focused SelfAware behavior manifests from scored eval rows.
 
 This is the bridge from a full SelfAware eval result to an extraction-ready
-Phase 3 manifest. It selects exact row quotas by generated behavior cell and
+mechinterp manifest. It selects exact row quotas by generated behavior cell and
 writes:
 
-- a `phase3-selfaware-frozen-row-manifest/v1` manifest for hidden-state extraction
+- a `mechinterp-selfaware-frozen-row-manifest/v1` manifest for hidden-state extraction
 - a row-key text file for replay/sweep selection
 - selected scored rows for audit
 """
@@ -23,7 +23,7 @@ import yaml
 
 
 REPO_ROOT = Path(__file__).resolve().parents[3]
-PROBE_DIR = REPO_ROOT / "experiment/phase1/probe"
+PROBE_DIR = REPO_ROOT / "archive/experiment/phase1/probe"
 
 
 class SelfAwareBehaviorManifestError(RuntimeError):
@@ -227,8 +227,8 @@ def select_rows(config: dict[str, Any]) -> tuple[list[dict[str, Any]], dict[str,
         selected_label_counts[str(row.get("label"))] += 1
 
     manifest = {
-        "schema_version": "phase3-selfaware-frozen-row-manifest/v1",
-        "created_by": "experiment/phase1/probe/phase3_selfaware_behavior_manifest.py",
+        "schema_version": "mechinterp-selfaware-frozen-row-manifest/v1",
+        "created_by": "archive/experiment/phase1/probe/mechinterp_selfaware_behavior_manifest.py",
         "purpose": config.get("purpose"),
         "behavior_arm": behavior_arm,
         "scope": {"not_probe_pool_runner_ready": True},

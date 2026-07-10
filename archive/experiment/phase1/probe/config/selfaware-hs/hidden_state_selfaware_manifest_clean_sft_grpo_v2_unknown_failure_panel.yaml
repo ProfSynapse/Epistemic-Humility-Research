@@ -1,4 +1,4 @@
-# Phase 3 focused SelfAware hidden-state extraction for GRPO v2 unknown failures.
+# mechinterp focused SelfAware hidden-state extraction for GRPO v2 unknown failures.
 #
 # Uses a 256-row panel selected from the full clean SFT->GRPO v2 SelfAware eval:
 # 64 unknown_answered_wrong, 64 unknown_refused, 64 known_correct_answered,

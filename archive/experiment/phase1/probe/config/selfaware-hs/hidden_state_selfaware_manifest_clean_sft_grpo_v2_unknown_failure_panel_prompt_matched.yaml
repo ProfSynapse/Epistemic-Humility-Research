@@ -1,4 +1,4 @@
-# Phase 3 focused SelfAware hidden-state extraction for GRPO v2 unknown failures.
+# mechinterp focused SelfAware hidden-state extraction for GRPO v2 unknown failures.
 #
 # Prompt-matched to the full Amendment E GRPO v2 SelfAware eval that supplied
 # the behavior labels. Use this config, not the generic-prompt predecessor, for

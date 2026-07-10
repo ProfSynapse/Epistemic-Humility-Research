@@ -2,7 +2,7 @@
 """Assemble cross-dataset behavior rows from a baseline generation pass (GPU-free).
 
 Step 3 of the cross-dataset-transfer protocol. The baseline generation runner
-(phase3_head_intervention_runner at alpha=0.0) writes per-row {refused, correct,
+(mechinterp_head_intervention_runner at alpha=0.0) writes per-row {refused, correct,
 label, generated_answer} but no question text and no behavior_cell. This joins
 those clean (no-hook) records back to the panel's questions and derives the
 canonical 5-way behavior_cell the probes consume:
@@ -26,7 +26,7 @@ from collections import Counter
 from pathlib import Path
 from typing import Any
 
-# Canonical cells (mirror phase3_latent_knowledge_probe constants).
+# Canonical cells (mirror latent_knowledge_probe constants).
 KNOWN_REFUSED = "known_refused"
 KNOWN_ANSWERED = "known_correct_answered"
 KNOWN_WRONG = "known_answered_wrong"

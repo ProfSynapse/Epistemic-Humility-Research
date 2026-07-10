@@ -27,7 +27,7 @@ from path_compat import artifact_dir, repo_root  # noqa: E402
 
 ARTIFACT_DIR = artifact_dir()
 CANONICAL = repo_root()
-REFIT_ROOT = CANONICAL / "experiment/phase1/probe/analysis/par_sensor_refit"
+REFIT_ROOT = CANONICAL / "archive/experiment/phase1/probe/analysis/par_sensor_refit"
 LAYERS = ["L20", "L24", "L28"]
 SENSOR_LAYER = "L24"
 MINING_EXPECTED = 9397

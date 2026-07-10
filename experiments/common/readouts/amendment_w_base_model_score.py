@@ -35,11 +35,11 @@ READOUTS_DIR = Path(__file__).resolve().parent
 if str(READOUTS_DIR) not in sys.path:
     sys.path.insert(0, str(READOUTS_DIR))
 try:
-    from .path_compat import phase1_probe_dir
+    from .path_compat import knowledge_probe_dir
 except ImportError:  # direct script execution
-    from path_compat import phase1_probe_dir
+    from path_compat import knowledge_probe_dir
 
-PROBE_DIR = phase1_probe_dir()
+PROBE_DIR = knowledge_probe_dir()
 if str(PROBE_DIR) not in sys.path:
     sys.path.insert(0, str(PROBE_DIR))
 

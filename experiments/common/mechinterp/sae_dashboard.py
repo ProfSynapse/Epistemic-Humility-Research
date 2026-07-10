@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
-"""Interactive dashboard for Phase 3 SAE outputs.
+"""Interactive dashboard for mechinterp SAE outputs.
 
 A *visualization* over already-computed artifacts. It reads no model and runs no
-SAE; it renders the aggregated outputs of the ``phase3_sae_*`` scripts. Four
+SAE; it renders the aggregated outputs of the ``mechinterp_sae_*`` scripts. Four
 surfaces, auto-discovered under the probe tree and shown as tabs:
 
 * **Feature contrasts** -- per-feature *known vs unknown* and *behavior*
@@ -24,7 +24,7 @@ Usage
     marimo edit experiments/common/mechinterp/sae_dashboard.py     # interactive dev
     marimo run  experiments/common/mechinterp/sae_dashboard.py     # app server
     marimo export html experiments/common/mechinterp/sae_dashboard.py \
-        -o experiment/phase1/probe/sae_dashboard.html        # static snapshot
+        -o archive/experiment/phase1/probe/sae_dashboard.html        # static snapshot
 
 NOTICE: exploratory pilot, not Phase 1 headline evidence and not causal.
 """
@@ -55,7 +55,7 @@ def _():
 def _(Path, json, pd, re):
     # --- Roots ---------------------------------------------------------------
     REPO_ROOT = Path(__file__).resolve().parents[3]
-    PROBE_ROOT = REPO_ROOT / "experiment/phase1/probe"
+    PROBE_ROOT = REPO_ROOT / "archive/experiment/phase1/probe"
 
     def layer_of(label: str):
         m = re.search(r"_l(\d+)", label)
@@ -133,7 +133,7 @@ def _(PROBE_ROOT, REPO_ROOT, arm_of, json, np, pd):
                 except Exception:
                     continue
                 pilot = mfile.parent.parent.name
-                tag = pilot.replace("phase3_selfaware_delta_sae_pilot", "").lstrip("_") or "base"
+                tag = pilot.replace("mechinterp_selfaware_delta_sae_pilot", "").lstrip("_") or "base"
                 cand = m.get("candidate_label", mfile.parent.name)
                 arm = arm_of(cand)
                 run_label = f"{tag} · {arm}"
@@ -579,7 +579,7 @@ def _(
     ])
     mo.vstack([
         mo.md("# SAE feature dashboard\n"
-              "_Example-level SAE analysis over Phase 3 delta activations — exploratory, "
+              "_Example-level SAE analysis over mechinterp delta activations — exploratory, "
               "not headline evidence._"),
         mo.ui.tabs({
             "🔬 Feature contrasts": contrast_tab,

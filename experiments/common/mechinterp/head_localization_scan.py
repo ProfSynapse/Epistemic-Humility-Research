@@ -9,7 +9,7 @@ analysis. It reads an ``attention_head``-granularity hidden-state extraction
 behavior contrasts are at each INDIVIDUAL attention head, then ranks heads by
 separability.
 
-Where the residual-stream scan (phase3_behavior_axis_scan.py) reports one
+Where the residual-stream scan (mechinterp_behavior_axis_scan.py) reports one
 mean-diff axis per block, this scan splits each block's vector into its per-head
 slices in the natural concatenation order (head h occupies columns
 ``h*head_dim : (h+1)*head_dim``) and reports one axis per (block, head). The
@@ -18,7 +18,7 @@ top-ranked heads are the sparse localization/steering targets that ITI
 
 The metric primitives (mean-diff direction, projection, rank-AUC, Cohen's d,
 balanced accuracy) and row/manifest loaders are imported from
-phase3_behavior_axis_scan so the per-head numbers are computed identically to
+mechinterp_behavior_axis_scan so the per-head numbers are computed identically to
 the per-block numbers — only the matrix that goes into scan_layer differs.
 """
 
@@ -51,7 +51,7 @@ from sae_smoke import (
     validate_output_root,
 )
 
-ANALYSIS_TYPE = "phase3_head_localization_scan"
+ANALYSIS_TYPE = "mechinterp_head_localization_scan"
 NOTICE = "HEAD_LOCALIZATION_SCAN_ONLY"
 
 

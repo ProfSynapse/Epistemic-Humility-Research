@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
-"""Phase 3 activation-addition causal-pilot runner.
+"""mechinterp activation-addition causal-pilot runner.
 
 This is an explicit Tier 2 exploratory local runner. It does not relax the
-readiness-only dry-run contract in `phase3_causal_pilot_dry_run.py`: generation
+readiness-only dry-run contract in `mechinterp_causal_pilot_dry_run.py`: generation
 requires both a generation-enabled config and `--allow-generation`.
 """
 
@@ -23,7 +23,7 @@ from typing import Any, Iterable
 import yaml
 
 REPO_ROOT = Path(__file__).resolve().parents[3]
-PROBE_DIR = REPO_ROOT / "experiment/phase1/probe"
+PROBE_DIR = REPO_ROOT / "archive/experiment/phase1/probe"
 EVAL_DIR = REPO_ROOT / "experiment" / "phase1" / "eval"
 if str(PROBE_DIR) not in sys.path:
     sys.path.insert(0, str(PROBE_DIR))
@@ -135,7 +135,7 @@ def require_generation_enabled(config: dict[str, Any], *, allow_generation: bool
             "Live runner requires output.intervention_results_allowed_by_this_spec: true"
         )
     if config.get("model", {}).get("enable_thinking") is not False:
-        raise PilotRunnerError("Phase 3 smoke requires model.enable_thinking: false")
+        raise PilotRunnerError("mechinterp smoke requires model.enable_thinking: false")
 
 
 def require_logit_diagnostic_enabled(config: dict[str, Any], *, allow_logit_diagnostic: bool) -> None:
@@ -200,7 +200,7 @@ def make_final_prompt_token_addition_hook(direction: Any, coefficient: float):
         state["delta_abs_sum"] = float(delta.float().abs().sum().detach().cpu())
         return _replace_hook_output(output, steered)
 
-    hook._phase3_state = state  # type: ignore[attr-defined]
+    hook._mechinterp_state = state  # type: ignore[attr-defined]
     return hook
 
 
@@ -215,7 +215,7 @@ def activation_addition_hook(model: Any, *, layer: int, direction: Any, coeffici
     hook = make_final_prompt_token_addition_hook(direction, coefficient)
     handle = layers[block_index].register_forward_hook(hook)
     try:
-        yield hook._phase3_state  # type: ignore[attr-defined]
+        yield hook._mechinterp_state  # type: ignore[attr-defined]
     finally:
         handle.remove()
 
@@ -235,8 +235,8 @@ def activation_addition_hooks(model: Any, components: list[dict[str, Any]]):
                     f"Layer {layer} maps to block {block_index}, but model has only {len(layers)} blocks"
                 )
             hook = make_final_prompt_token_addition_hook(component["direction"], float(component["coefficient"]))
-            hook._phase3_component_index = index  # type: ignore[attr-defined]
-            hook._phase3_layer = layer  # type: ignore[attr-defined]
+            hook._mechinterp_component_index = index  # type: ignore[attr-defined]
+            hook._mechinterp_layer = layer  # type: ignore[attr-defined]
             handles.append(layers[block_index].register_forward_hook(hook))
             hooks.append(hook)
         yield aggregate_state
@@ -249,9 +249,9 @@ def activation_addition_hooks(model: Any, components: list[dict[str, Any]]):
 def summarize_hook_states(hooks: list[Any]) -> dict[str, Any]:
     components: list[dict[str, Any]] = []
     for hook in hooks:
-        state = dict(getattr(hook, "_phase3_state", {}))
-        state["component_index"] = getattr(hook, "_phase3_component_index", None)
-        state["layer"] = getattr(hook, "_phase3_layer", None)
+        state = dict(getattr(hook, "_mechinterp_state", {}))
+        state["component_index"] = getattr(hook, "_mechinterp_component_index", None)
+        state["layer"] = getattr(hook, "_mechinterp_layer", None)
         components.append(state)
     return {
         "applied_count": sum(int(component.get("applied_count", 0)) for component in components),
@@ -1592,7 +1592,7 @@ def build_logit_diagnostic_row(
 
 
 def _run_output_root(config: dict[str, Any]) -> Path:
-    root = resolve_path(config.get("output", {}).get("root", "phase3_activation_smoke"))
+    root = resolve_path(config.get("output", {}).get("root", "mechinterp_activation_smoke"))
     stamp = datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%SZ")
     return root / f"run_{stamp}"
 

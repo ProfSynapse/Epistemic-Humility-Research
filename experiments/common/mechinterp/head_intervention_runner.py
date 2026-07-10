@@ -2,7 +2,7 @@
 """GPU runner for the Step A.4 per-head during-generation ITI sweep.
 
 Loads the GRPO v2 model (merged base + active adapter), generates the unknown
-panel under the per-head intervention (phase3_head_intervention) across an alpha
+panel under the per-head intervention (mechinterp_head_intervention) across an alpha
 sweep (both signs), scores behavior cells with the SAME scorer the causal-pilot
 generated-replay uses (so cell definitions match), and writes per-row results +
 a summary. alpha is in units of the per-head sigma: the hook adds
@@ -11,7 +11,7 @@ token. alpha == 0.0 is the no-hook baseline.
 
 This MUST run behind an explicit GPU gate (Docker/unsloth), like the extraction.
 The injection mechanism it calls is unit-tested offline in
-tests/test_phase3_head_intervention.py; this runner is the heavyweight wiring.
+tests/test_mechinterp_head_intervention.py; this runner is the heavyweight wiring.
 """
 
 from __future__ import annotations
@@ -26,7 +26,7 @@ from typing import Any
 import yaml
 
 REPO_ROOT = Path(__file__).resolve().parents[3]
-PROBE_DIR = REPO_ROOT / "experiment/phase1/probe"
+PROBE_DIR = REPO_ROOT / "archive/experiment/phase1/probe"
 EVAL_DIR = REPO_ROOT / "experiment" / "phase1" / "eval"
 for _dir in (PROBE_DIR, EVAL_DIR):
     if str(_dir) not in sys.path:
@@ -278,7 +278,7 @@ def run_config(config_path: Path, *, fresh: bool = False) -> dict[str, Any]:
     metrics = summarize_metrics(scored_rows)
     summary = {
         "ok": True,
-        "analysis_type": "phase3_head_intervention_sweep",
+        "analysis_type": "mechinterp_head_intervention_sweep",
         "notice": "HEAD_INTERVENTION_SWEEP_ONLY",
         "config": str(config_path),
         "fingerprint": fingerprint,

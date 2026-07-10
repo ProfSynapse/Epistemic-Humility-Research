@@ -9,18 +9,18 @@ question: Do SelfAware hidden states carry a robust internal known-vs-unknown re
 prediction: ''
 falsifier: ''
 checkpoint:
-  repo: local Phase 3 SelfAware hidden-state extractions
+  repo: local legacy SelfAware hidden-state extractions
   revision: historical
 instrument:
   configs: []
   modules:
-  - phase3_latent_knowledge_probe.py
-  - phase3_latent_knowledge_controls.py
-  - phase3_caution_axis_transfer.py
+  - latent_knowledge_probe.py
+  - latent_knowledge_controls.py
+  - caution_axis_transfer.py
   pins:
-    phase3_latent_knowledge_probe.py: fc61f4d9f9707d1f63c9e2f851259dcd78ecc11cd7bfe0dc7c548c0740a6675e
-    phase3_latent_knowledge_controls.py: b09c26204802f27ee4eb8e78d28709098506de508c4ef55338705e3965bf4b3d
-    phase3_caution_axis_transfer.py: 04b372757765d29477f3e231b7f6c7e416a758a4dd94515cce90a77a604d109f
+    latent_knowledge_probe.py: 350f9d9e4acf57b1af858396fb50616fa5b98e7ebb475155af9d40da038eda93
+    latent_knowledge_controls.py: 1d6c5b127145e1a24c3965f7d210eaf70c0e17ff328cf909bd3440e61dd5b2e9
+    caution_axis_transfer.py: 237c485790b01422e988729c7d1d4a055dcbd5b834311953d2740d1608d3bcfc
 inputs:
 - experiments/selfaware-latent-knowledge-controls/artifacts/latent_knowledge_controls/a1a2_h_lora.json
 - experiments/selfaware-latent-knowledge-controls/artifacts/latent_knowledge_controls/a3_h_base_probe.json

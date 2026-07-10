@@ -25,8 +25,8 @@ Use the replay analyzer for completed generation sweeps:
 
 ```bash
 python experiments/common/mechinterp/generation_replay_analysis.py \
-  --root experiment/phase1/probe/analysis/example_generation_sweep \
-  --out experiment/phase1/probe/analysis/example_generation_sweep/summary_latest
+  --root archive/experiment/phase1/probe/analysis/example_generation_sweep \
+  --out archive/experiment/phase1/probe/analysis/example_generation_sweep/summary_latest
 ```
 
 This writes `summary.json`, `summary.csv`, and `changed_rows.csv`. Treat the

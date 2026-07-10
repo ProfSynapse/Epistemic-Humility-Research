@@ -28,7 +28,7 @@ if str(SCRIPT_DIR) not in sys.path:
 from path_compat import repo_root  # noqa: E402
 
 CANONICAL = repo_root()
-REFIT_ROOT = CANONICAL / "experiment/phase1/probe/analysis/par_sensor_refit"
+REFIT_ROOT = CANONICAL / "archive/experiment/phase1/probe/analysis/par_sensor_refit"
 LAYERS = ["L20", "L24", "L28"]
 SENSOR_LAYER = "L24"
 UNION_EXPECTED = 18496

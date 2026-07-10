@@ -26,13 +26,13 @@ checkpoint:
   revision: ''
 instrument:
   configs:
-  - phase3_xdataset_kuq_baseline_generation.yaml
+  - xdataset_kuq_baseline_generation.yaml
   - hidden_state_kuq_manifest_clean_sft_grpo_v2_seed1_full.yaml
   modules:
   - probe_xdataset_transfer.py
   pins:
-    phase3_xdataset_kuq_baseline_generation.yaml: 06394187296778a3bb765bf33bf26833be50d7967341fbd6d39d79b7820bcedc
-    hidden_state_kuq_manifest_clean_sft_grpo_v2_seed1_full.yaml: 8eaf9a5047d7e7ce98d6463ee35f16eaae042908c79fbdded9425c4b7c949dd3
+    xdataset_kuq_baseline_generation.yaml: ed50588d2541f90049e6732ab89b444a2d53ccb4b1ab1c4ff65b06c1cbc57336
+    hidden_state_kuq_manifest_clean_sft_grpo_v2_seed1_full.yaml: c71ec8ef4e4eeaabbc03471c9e8764780512ae3bc87c41e081e5ed151fd3b79a
     probe_xdataset_transfer.py: 283c75ac508ac128bff5b08f0413928d48220f4eb80e560d9c98b864b2dafa0f
 inputs:
 - experiments/xdataset-probe-transfer/artifacts/kuq_panel/gen_rows.jsonl

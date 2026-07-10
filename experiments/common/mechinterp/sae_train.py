@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""CPU/GPU agnostic Phase 3 sparse-autoencoder pilot.
+"""CPU/GPU agnostic mechinterp sparse-autoencoder pilot.
 
 This trains a small SAE over already-extracted hidden states. It is a bounded
 exploratory pilot, not causal evidence and not Phase 1 headline evidence.
@@ -41,7 +41,7 @@ else:
 
 
 NOTICE = "SAE_TRAINING_PILOT_ONLY"
-ANALYSIS_TYPE = "phase3_sae_training_pilot"
+ANALYSIS_TYPE = "mechinterp_sae_training_pilot"
 
 
 class SaeTrainError(RuntimeError):
@@ -326,7 +326,7 @@ def run_candidate(
         "validation": result["metrics"]["validation"],
     }
     manifest = {
-        "schema_version": "phase3-sae-training-pilot/v1",
+        "schema_version": "mechinterp-sae-training-pilot/v1",
         "analysis_type": ANALYSIS_TYPE,
         "notice": NOTICE,
         "created_at": utc_now(),

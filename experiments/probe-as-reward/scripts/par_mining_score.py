@@ -49,11 +49,11 @@ SCRIPT_DIR = Path(__file__).resolve().parent
 if str(SCRIPT_DIR) not in sys.path:
     sys.path.insert(0, str(SCRIPT_DIR))
 
-from path_compat import artifact_dir, phase1_eval_dir, phase1_probe_dir, repo_root  # noqa: E402
+from path_compat import artifact_dir, locked_eval_dir, knowledge_probe_dir, repo_root  # noqa: E402
 
-PROBE_DIR = phase1_probe_dir()
+PROBE_DIR = knowledge_probe_dir()
 ARTIFACT_DIR = artifact_dir()
-EVAL_DIR = phase1_eval_dir()
+EVAL_DIR = locked_eval_dir()
 for p in (str(PROBE_DIR), str(EVAL_DIR)):
     if p not in sys.path:
         sys.path.insert(0, p)
@@ -62,8 +62,8 @@ import scorers  # noqa: E402
 from amendment_ah_redesign_collinearity import load_af_caution  # noqa: E402
 
 CANONICAL = repo_root()
-STAGE0 = CANONICAL / "experiment/phase1/probe/analysis/ah_stage0"
-PAR_MINING = CANONICAL / "experiment/phase1/probe/analysis/par_mining"
+STAGE0 = CANONICAL / "archive/experiment/phase1/probe/analysis/ah_stage0"
+PAR_MINING = CANONICAL / "archive/experiment/phase1/probe/analysis/par_mining"
 PREGEN = PAR_MINING / "pregen"
 PROBES = STAGE0 / "probes"
 GRID = STAGE0 / "score" / "divergence_grid.json"

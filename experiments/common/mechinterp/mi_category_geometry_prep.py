@@ -23,8 +23,8 @@ from pathlib import Path
 import numpy as np
 
 REPO = Path(__file__).resolve().parents[3]
-AH = REPO / "experiment/phase1/probe/analysis/ah_stage0"
-OUT = REPO / "experiment/phase1/probe/analysis/mi_category_geometry_20260704/cache"
+AH = REPO / "archive/experiment/phase1/probe/analysis/ah_stage0"
+OUT = REPO / "archive/experiment/phase1/probe/analysis/mi_category_geometry_20260704/cache"
 SEED = 20260704
 N_KNOWN = 6000
 N_LAYERS = 37
