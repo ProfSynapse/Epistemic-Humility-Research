@@ -145,7 +145,7 @@ def test_bad_batch_size_raises(tmp_path, monkeypatch):
 
 def test_resolve_model_ref():
     # existing repo-relative dir -> absolute; hub id / missing path untouched
-    rel = "experiment/phase1/probe"
+    rel = "experiments/common/phase1_probe"
     resolved = runner.resolve_model_ref(rel)
     assert Path(resolved).is_absolute() and resolved.endswith(rel)
     assert runner.resolve_model_ref("unsloth/Qwen3-4B") == "unsloth/Qwen3-4B"

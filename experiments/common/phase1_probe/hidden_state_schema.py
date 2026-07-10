@@ -1,9 +1,9 @@
-#!/usr/bin/env python3
+﻿#!/usr/bin/env python3
 """Model-free validation + manifest builder for the hidden-state probing tier.
 
 Location: experiment/phase1/probe/hidden_state_schema.py
 Used by:  experiment/phase1/probe/hidden_state_probe.py
-Tested by: experiment/phase1/probe/tests/test_hidden_state_probe.py
+Tested by: experiments/common/phase1_probe/tests/test_hidden_state_probe.py
 
 This module is the TESTABILITY KEYSTONE of the hidden-state extraction tier
 (plan Decision B): it carries NO heavy dependency (no torch / transformers /

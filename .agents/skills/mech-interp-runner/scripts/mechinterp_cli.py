@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+﻿#!/usr/bin/env python3
 """Small CLI router for Epistemic-Humility mech-interp workflows.
 
 The purpose is to make common analyses repeatable without hand-writing long
@@ -277,18 +277,18 @@ def run_validate(*, quick: bool, dry_run: bool) -> int:
         [
             "-m",
             "pytest",
-            "experiment/phase1/probe/tests/test_phase3_causal_pilot_sweep.py",
-            "experiment/phase1/probe/tests/test_phase3_causal_pilot_runner.py",
-            "experiment/phase1/probe/tests/test_phase3_sycophancy_answer_row_manifest.py",
-            "experiment/phase1/probe/tests/test_phase3_sycophancy_generation_analysis.py",
-            "experiment/phase1/probe/tests/test_phase3_sae_behavior_feature_analysis.py",
-            "experiment/phase1/probe/tests/test_phase3_behavior_axis_scan.py",
-            "experiment/phase1/probe/tests/test_phase3_multicell_readout.py",
-            "experiment/phase1/probe/tests/test_hidden_state_probe.py",
-            "experiment/phase1/probe/tests/test_phase3_xdataset_build_panel.py",
-            "experiment/phase1/probe/tests/test_phase3_xdataset_behavior_from_generation.py",
-            "experiment/phase1/probe/tests/test_phase3_residual_read_trajectory.py",
-            "experiment/phase1/probe/tests/test_phase3_residual_caution_direction.py",
+            "experiments/common/phase1_probe/tests/test_phase3_causal_pilot_sweep.py",
+            "experiments/common/phase1_probe/tests/test_phase3_causal_pilot_runner.py",
+            "experiments/common/phase1_probe/tests/test_phase3_sycophancy_answer_row_manifest.py",
+            "experiments/common/phase1_probe/tests/test_phase3_sycophancy_generation_analysis.py",
+            "experiments/common/phase1_probe/tests/test_phase3_sae_behavior_feature_analysis.py",
+            "experiments/common/phase1_probe/tests/test_phase3_behavior_axis_scan.py",
+            "experiments/common/phase1_probe/tests/test_phase3_multicell_readout.py",
+            "experiments/common/phase1_probe/tests/test_hidden_state_probe.py",
+            "experiments/common/phase1_probe/tests/test_phase3_xdataset_build_panel.py",
+            "experiments/common/phase1_probe/tests/test_phase3_xdataset_behavior_from_generation.py",
+            "experiments/common/phase1_probe/tests/test_phase3_residual_read_trajectory.py",
+            "experiments/common/phase1_probe/tests/test_phase3_residual_caution_direction.py",
             "-q",
         ],
         [

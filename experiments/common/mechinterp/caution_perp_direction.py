@@ -27,8 +27,11 @@ from pathlib import Path
 import numpy as np
 
 ROOT = Path(__file__).resolve().parents[3]
-PROBE_DIR = ROOT / "experiment/phase1/probe"
-sys.path.insert(0, str(PROBE_DIR))
+PROBE_DIR = ROOT / "archive/experiment/phase1/probe/legacy-wrapper-tree"
+LATENT_CONTROLS_DIR = ROOT / "experiments/selfaware-latent-knowledge-controls"
+for path in (LATENT_CONTROLS_DIR,):
+    if str(path) not in sys.path:
+        sys.path.insert(0, str(path))
 from phase3_latent_knowledge_probe import load_layers  # noqa: E402
 
 REPO = ROOT

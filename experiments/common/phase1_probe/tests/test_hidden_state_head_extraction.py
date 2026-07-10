@@ -1,6 +1,6 @@
-"""Tests for the per-head (attention_head granularity) extraction surface.
+﻿"""Tests for the per-head (attention_head granularity) extraction surface.
 
-Location: experiment/phase1/probe/tests/test_hidden_state_head_extraction.py
+Location: experiments/common/phase1_probe/tests/test_hidden_state_head_extraction.py
 Run:      cd experiment/phase1/probe && python -m pytest tests/ -q
 
 Covers Step A sub-step 1 (ITI-grounded per-head capture):
@@ -389,7 +389,7 @@ def test_head_granularity_run_extraction_end_to_end(tmp_path, monkeypatch):
 
 def test_residual_run_extraction_leaves_head_fields_null(tmp_path, monkeypatch):
     """The default (residual) path keeps granularity=residual_stream and null
-    head-layout dims — the additive change does not perturb the existing path."""
+    head-layout dims â€” the additive change does not perturb the existing path."""
     import json
 
     monkeypatch.setattr(hsp, "PROBE_DIR", PROBE_DIR)

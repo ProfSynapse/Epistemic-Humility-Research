@@ -63,7 +63,10 @@ def test_run_config_exports_sae_feature_directions(tmp_path):
     with (output_root / "sae_feature_directions.csv").open(encoding="utf-8", newline="") as fh:
         rows = list(csv.DictReader(fh))
     vector_path = Path(rows[0]["vector_file"])
-    tensors = safetensors_numpy.load_file(str(PROBE_DIR.parents[2] / vector_path))
+    repo_root = PROBE_DIR.parents[2]
+    if repo_root.name == "experiments":
+        repo_root = repo_root.parent
+    tensors = safetensors_numpy.load_file(str(repo_root / vector_path))
 
     assert summary["ok"] is True
     assert summary["notice"] == feature_directions.NOTICE

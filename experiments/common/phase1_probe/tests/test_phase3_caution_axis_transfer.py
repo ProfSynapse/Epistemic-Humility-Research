@@ -31,7 +31,7 @@ def _arms(monkeypatch, shared_dim: bool):
         keys = [f"{name}::{i}" for i in range(n)]
         return X, y, keys
 
-    monkeypatch.setattr(cat, "load_known", fake)
+    monkeypatch.setitem(cat.caution_axis_transfer.__globals__, "load_known", fake)
     return [{"name": n, "extraction_dir": f"/ext/{n}", "behavior_rows": n} for n in ("A", "B", "C")]
 
 

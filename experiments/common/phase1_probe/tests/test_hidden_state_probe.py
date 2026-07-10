@@ -1,6 +1,6 @@
-"""Tests for the hidden-state probing tier.
+﻿"""Tests for the hidden-state probing tier.
 
-Location: experiment/phase1/probe/tests/test_hidden_state_probe.py
+Location: experiments/common/phase1_probe/tests/test_hidden_state_probe.py
 Run:      cd experiment/phase1/probe && python -m pytest tests/ -q
 
 OWNERSHIP NOTE (CODE -> TEST handoff): the backend-coder created this file with
@@ -24,6 +24,8 @@ import pytest
 
 PROBE_DIR = Path(__file__).resolve().parents[1]
 REPO_ROOT = PROBE_DIR.parents[2]
+if REPO_ROOT.name == "experiments":
+    REPO_ROOT = REPO_ROOT.parent
 sys.path.insert(0, str(PROBE_DIR))
 
 import hidden_state_probe as hsp  # noqa: E402
@@ -88,7 +90,7 @@ def test_stub_pipeline_runs_gpu_free(tmp_path, monkeypatch):
     verified=True over a None-provenance manifest (the gate was dead code), so the
     test encoded the bug. The extra assertions below pin that the finalized
     manifest actually carries its Decision-D provenance (static + backend) non-None
-    — i.e. verified=True is earned, not stamped over missing fields.
+    â€” i.e. verified=True is earned, not stamped over missing fields.
     """
     monkeypatch.setattr(hsp, "PROBE_DIR", PROBE_DIR)
     config = _stub_config()
@@ -103,7 +105,7 @@ def test_stub_pipeline_runs_gpu_free(tmp_path, monkeypatch):
     import json
     manifest = json.loads(manifest_path.read_text())
     # The persisted manifest survives the strict finalize gate, not just the
-    # lenient default validate — proving the populated path, not the dead one.
+    # lenient default validate â€” proving the populated path, not the dead one.
     schema.validate_manifest(manifest, require_populated=True)
     assert manifest["status"] == schema.STATUS_OK
     assert manifest["verified"] is True
@@ -166,7 +168,7 @@ import json  # noqa: E402
 
 # numpy + safetensors are HARD test requirements (M4): the persistence-contract
 # tests below (the 2-D shape footgun, the safetensors byte round-trip) assert the
-# on-disk contract and MUST run — they are NOT pytest.importorskip-gated. A host
+# on-disk contract and MUST run â€” they are NOT pytest.importorskip-gated. A host
 # missing them is a misconfigured env (requirements-hidden-state.txt declares them
 # mandatory), so these imports error at collection rather than letting the
 # round-trip silently vanish from the suite.
@@ -218,7 +220,7 @@ def _full_manifest_config() -> dict:
 
 
 # ---------------------------------------------------------------------------
-# P0 — adapter-state pre-flight (GPU-free tier of the two-tier confound guard)
+# P0 â€” adapter-state pre-flight (GPU-free tier of the two-tier confound guard)
 # Each negative is a DISTINCT test so a regression localizes to one breach.
 # ---------------------------------------------------------------------------
 
@@ -241,7 +243,7 @@ def test_arm_states_rejects_both_active_two_arm_via_missing_base():
     With exactly two arms both `active`, the base-arm check fires FIRST (found 0
     base arms), so the confound is caught here on the missing-base branch rather
     than the active-count branch. Either way the dangerous config is refused
-    before any forward pass — that is the safety property under test.
+    before any forward pass â€” that is the safety property under test.
     """
     arms = _valid_arms()
     arms[0]["adapter_state"] = schema.ADAPTER_STATE_ACTIVE  # base now also active
@@ -254,8 +256,8 @@ def test_arm_states_rejects_two_active_arms_confound_branch():
 
     This is the only arm shape that reaches the `len(active_arms) != 1` check
     with its 'adapter-active-vs-adapter-active confound' message (a 2-arm
-    both-active config trips the base-count guard first). Three arms — one
-    disabled base plus two distinct active arms — exercises it directly.
+    both-active config trips the base-count guard first). Three arms â€” one
+    disabled base plus two distinct active arms â€” exercises it directly.
     """
     arms = [
         {"name": "base", "adapter_state": schema.ADAPTER_STATE_DISABLED, "adapter": None},
@@ -304,7 +306,7 @@ def test_arm_states_rejects_missing_active_arm_one_base_only():
     """Exactly one base arm and NO active arm hits the active-count guard.
 
     A single disabled arm passes the base-count check (found 1) and then fails
-    the active-count check (found 0) — the branch that guards 'no LoRA pass to
+    the active-count check (found 0) â€” the branch that guards 'no LoRA pass to
     contrast against the base'.
     """
     arms = [{"name": "base", "adapter_state": schema.ADAPTER_STATE_DISABLED,
@@ -336,7 +338,7 @@ def test_arm_states_rejects_invalid_state_value():
 
 
 # ---------------------------------------------------------------------------
-# P0 — tensor-shape + token-position validation (model-free)
+# P0 â€” tensor-shape + token-position validation (model-free)
 # ---------------------------------------------------------------------------
 
 
@@ -421,7 +423,7 @@ def test_token_position_rule_accepts_final_prompt_token():
 
 
 # ---------------------------------------------------------------------------
-# P0 — manifest exact-field-set + crash-safe lifecycle (Decision D + D-bis)
+# P0 â€” manifest exact-field-set + crash-safe lifecycle (Decision D + D-bis)
 # ---------------------------------------------------------------------------
 
 
@@ -525,7 +527,7 @@ def test_validate_manifest_populated_gate_accepts_complete_ok():
 
 
 # ---------------------------------------------------------------------------
-# P0 — config_sha stability (probe.py idiom; key-order-insensitive)
+# P0 â€” config_sha stability (probe.py idiom; key-order-insensitive)
 # ---------------------------------------------------------------------------
 
 
@@ -1065,7 +1067,7 @@ def test_selfaware_manifest_stub_extraction_finalizes_with_manifest_provenance(
 
 
 # ---------------------------------------------------------------------------
-# parse_config — model-free pre-flight at parse time
+# parse_config â€” model-free pre-flight at parse time
 # ---------------------------------------------------------------------------
 
 
@@ -1087,7 +1089,7 @@ def test_parse_config_rejects_both_active_at_parse_time(tmp_path):
     rejects it first ("active arm has no adapter path"); the dangerous config
     never reaches a model load. (A both-active config that DID carry adapter
     paths on both arms would instead trip the validate_arm_states base-count
-    guard a few lines later — both are parse-time rejections.)
+    guard a few lines later â€” both are parse-time rejections.)
     """
     config = _stub_config()
     config["arms"][0]["adapter_state"] = "active"
@@ -1111,7 +1113,7 @@ def test_parse_config_rejects_both_active_with_adapters_via_preflight(tmp_path):
 
 
 # ---------------------------------------------------------------------------
-# M2 — resolve_eval_arm_adapters BY-VALUE mirror resolution
+# M2 â€” resolve_eval_arm_adapters BY-VALUE mirror resolution
 # (the PROD path: prod config sets eval_arms_source; this was green-by-omission)
 # ---------------------------------------------------------------------------
 

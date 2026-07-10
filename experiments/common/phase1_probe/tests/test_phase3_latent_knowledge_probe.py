@@ -70,7 +70,7 @@ def test_analyze_synthetic(monkeypatch):
         m = np.asarray([vecs[k] for k in row_keys], dtype=np.float64)
         return {L: m for L in layers}
 
-    monkeypatch.setattr(lkp, "load_layers", fake_load)
+    monkeypatch.setitem(lkp.analyze.__globals__, "load_layers", fake_load)
     res = lkp.analyze(Path("/unused"), behavior, layers=[5])
     assert res["best_layer"]["auroc"] > 0.9
     # known_refused was drawn from the KNOWN distribution -> should look known-answered.

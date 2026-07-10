@@ -23,11 +23,11 @@ else:
     SAFETENSORS_IMPORT_ERROR = None
 
 ROOT = Path(__file__).resolve().parents[3]
-PROBE_DIR = ROOT / "experiment/phase1/probe"
-if str(PROBE_DIR) not in sys.path:
-    sys.path.insert(0, str(PROBE_DIR))
+MECHINTERP_DIR = Path(__file__).resolve().parent
+if str(MECHINTERP_DIR) not in sys.path:
+    sys.path.insert(0, str(MECHINTERP_DIR))
 
-from phase3_behavior_axis_scan import (
+from behavior_axis_scan import (
     ANALYSIS_TYPE as SCAN_ANALYSIS_TYPE,
     BehaviorAxisScanError,
     contrast_masks,

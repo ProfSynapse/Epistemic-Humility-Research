@@ -1,4 +1,4 @@
----
+﻿---
 title: 'Thinking-enabled TriviaQA source probe'
 kg:
   id: experiment:thinking-triviaqa-source-probe
@@ -65,7 +65,7 @@ rates, and row review, not only aggregate counts.
 - Thinking extraction support exists in `experiment/phase1/probe/probe.py` and
   `experiment/phase1/probe/backends.py`.
 - Probe tests pass:
-  `python -m pytest experiment/phase1/probe/tests/test_probe_smoke.py -q`.
+  `python -m pytest experiments/common/phase1_probe/tests/test_probe_smoke.py -q`.
 - The bounded audit artifacts exist under
   `experiments/thinking-enabled-parallel-arm/artifacts/thinking_audit_128_1024/`.
 - GPU is idle and Docker is available before launch.

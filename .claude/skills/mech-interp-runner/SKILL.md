@@ -1,4 +1,4 @@
----
+﻿---
 name: mech-interp-runner
 description: Run, plan, validate, or aggregate Epistemic-Humility local mechanistic-interpretability sweeps, including hidden-state candidate inventories, causal-pilot sweep planning, explicit non-GPU/GPU gates, base-original skip handling, and offline result aggregation. Use when working on local mech-interp sweeps, causal-pilot diagnostics, activation-addition/logit-diagnostic runs, behavior-axis scans, SAE feature screens, or future reruns of the legacy full candidate inventory.
 allowed-tools: Read, Bash, Write, Grep, Glob
@@ -89,18 +89,18 @@ it. For live Docker/GPU execution the same approval rule applies: do not pass
 Run focused non-GPU checks after runner/config/skill edits:
 
 ```bash
-python -m pytest experiment/phase1/probe/tests/test_phase3_causal_pilot_sweep.py \
-  experiment/phase1/probe/tests/test_phase3_causal_pilot_runner.py \
-  experiment/phase1/probe/tests/test_phase3_causal_pilot_dry_run.py -q
-python -m pytest experiment/phase1/probe/tests/test_phase3_behavior_axis_scan.py \
-  experiment/phase1/probe/tests/test_phase3_behavior_axis_directions.py \
-  experiment/phase1/probe/tests/test_phase3_calibrated_expression_plane.py \
-  experiment/phase1/probe/tests/test_phase3_logit_cell_analysis.py -q
-python -m pytest experiment/phase1/probe/tests/test_phase3_sae_smoke.py \
-  experiment/phase1/probe/tests/test_phase3_sae_train.py \
-  experiment/phase1/probe/tests/test_phase3_sae_feature_analysis.py \
-  experiment/phase1/probe/tests/test_phase3_sae_feature_directions.py \
-  experiment/phase1/probe/tests/test_phase3_sae_behavior_feature_analysis.py -q
+python -m pytest experiments/common/phase1_probe/tests/test_phase3_causal_pilot_sweep.py \
+  experiments/common/phase1_probe/tests/test_phase3_causal_pilot_runner.py \
+  experiments/common/phase1_probe/tests/test_phase3_causal_pilot_dry_run.py -q
+python -m pytest experiments/common/phase1_probe/tests/test_phase3_behavior_axis_scan.py \
+  experiments/common/phase1_probe/tests/test_phase3_behavior_axis_directions.py \
+  experiments/common/phase1_probe/tests/test_phase3_calibrated_expression_plane.py \
+  experiments/common/phase1_probe/tests/test_phase3_logit_cell_analysis.py -q
+python -m pytest experiments/common/phase1_probe/tests/test_phase3_sae_smoke.py \
+  experiments/common/phase1_probe/tests/test_phase3_sae_train.py \
+  experiments/common/phase1_probe/tests/test_phase3_sae_feature_analysis.py \
+  experiments/common/phase1_probe/tests/test_phase3_sae_feature_directions.py \
+  experiments/common/phase1_probe/tests/test_phase3_sae_behavior_feature_analysis.py -q
 python -m pytest .skills/mech-interp-runner/tests/test_mechinterp_cli.py -q
 python bin/sync_skills.py --check
 ```

@@ -1,6 +1,6 @@
-"""Smoke tests for the Phase 1 knowledge probe (WS-1).
+﻿"""Smoke tests for the Phase 1 knowledge probe (WS-1).
 
-Location: experiment/phase1/probe/tests/test_probe_smoke.py
+Location: experiments/common/phase1_probe/tests/test_probe_smoke.py
 Run:      cd experiment/phase1/probe && python -m pytest tests/ -q
 
 These verify the probe's scoring, labeling, JSONL output contract,

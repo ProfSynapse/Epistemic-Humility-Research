@@ -8,6 +8,8 @@ import pytest
 
 PROBE_DIR = Path(__file__).resolve().parents[1]
 REPO_ROOT = PROBE_DIR.parents[2]
+if REPO_ROOT.name == "experiments":
+    REPO_ROOT = REPO_ROOT.parent
 sys.path.insert(0, str(PROBE_DIR))
 
 import hidden_state_probe as hsp  # noqa: E402

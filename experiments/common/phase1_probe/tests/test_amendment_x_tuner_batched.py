@@ -1,6 +1,6 @@
-"""Equivalence + wiring tests for the tuner-batched engine on the extractor.
+﻿"""Equivalence + wiring tests for the tuner-batched engine on the extractor.
 
-Covers the throughput-plan §4 Phase 1 addition to
+Covers the throughput-plan Â§4 Phase 1 addition to
 amendment_x_cross_model_extract.py: the `--engine tuner-batched` path that
 replaces ONLY the GPU inner loop with the synaptic-tuner batch-generate /
 batch-capture public CLI verbs, plus `--scratch-dir` and the manifest
@@ -8,17 +8,17 @@ engine/batch_size fields.
 
 Two tiers:
   * Pure-function tests (always run, CPU-only, no model): the conversion +
-    position-building seam the batched path relies on — parse/grade parity with
+    position-building seam the batched path relies on â€” parse/grade parity with
     the sequential inline logic, and the pre/post safetensors key split.
   * A real mini end-to-end EQUIVALENCE test (sequential vs tuner-batched on
     hf-internal-testing/tiny-random-gpt2) gated on CUDA, because the sequential
-    load path is `device_map="cuda"` (unchanged by this work — we do not weaken
+    load path is `device_map="cuda"` (unchanged by this work â€” we do not weaken
     the default path to make a test run on CPU). It asserts identical rows.jsonl
     core fields, identical safetensors keys/shapes, near-identical tensor values,
     and the manifest engine/batch_size delta.
 
 Run with an explicit file path (the rtk pytest directory-glob false negative):
-  pytest experiment/phase1/probe/tests/test_amendment_x_tuner_batched.py
+  pytest experiments/common/phase1_probe/tests/test_amendment_x_tuner_batched.py
 """
 
 from __future__ import annotations
@@ -39,6 +39,8 @@ import amendment_x_cross_model_extract as m  # noqa: E402
 
 TINY_MODEL = "hf-internal-testing/tiny-random-gpt2"
 REPO_ROOT = PROBE_DIR.parents[2]
+if REPO_ROOT.name == "experiments":
+    REPO_ROOT = REPO_ROOT.parent
 
 
 def _resolve_tuner_dir():
@@ -70,6 +72,11 @@ except Exception:  # pragma: no cover - torch always present in the run env
 
 _cuda = _has_torch and torch.cuda.is_available()
 _tuner_present = (TUNER_DIR / "tuner.py").exists()
+_tuner_text = (
+    (TUNER_DIR / "tuner.py").read_text(encoding="utf-8", errors="ignore")
+    if _tuner_present else ""
+)
+_tuner_batch_verbs_present = "batch-generate" in _tuner_text and "batch-capture" in _tuner_text
 
 
 # ---------------------------------------------------------------------------
@@ -221,8 +228,8 @@ def _load_rows(out_dir):
 
 
 @pytest.mark.skipif(
-    not (_cuda and _tuner_present),
-    reason="needs CUDA (sequential load is device_map=cuda) + a tuner checkout")
+    not (_cuda and _tuner_batch_verbs_present),
+    reason="needs CUDA (sequential load is device_map=cuda) + tuner batch-generate/batch-capture verbs")
 def test_sequential_vs_tuner_batched_equivalence(tmp_path, monkeypatch):
     from safetensors.torch import load_file
 
@@ -256,7 +263,7 @@ def test_sequential_vs_tuner_batched_equivalence(tmp_path, monkeypatch):
                 # right-padded reduction order can flip the LAST bf16 ULP vs the
                 # single-sequence forward (observed max abs delta ~0.016 = one
                 # bf16 ULP at the final-layer magnitude ~2-3, only at the top
-                # layer). This is exactly the last-ulp allowance plan §5 names;
+                # layer). This is exactly the last-ulp allowance plan Â§5 names;
                 # the answer_text / outcome fields (asserted above) match exactly.
                 assert torch.allclose(sf[lk], bf[lk], atol=2e-2, rtol=1e-2), (
                     f"{key} {pos} {lk} values differ beyond bf16 last-ulp "
@@ -265,8 +272,8 @@ def test_sequential_vs_tuner_batched_equivalence(tmp_path, monkeypatch):
 
 
 @pytest.mark.skipif(
-    not (_cuda and _tuner_present),
-    reason="needs CUDA + a tuner checkout")
+    not (_cuda and _tuner_batch_verbs_present),
+    reason="needs CUDA + tuner batch-generate/batch-capture verbs")
 def test_manifest_engine_batch_size_fields(tmp_path, monkeypatch):
     seq_dir = _run_extractor(tmp_path, "sequential", monkeypatch)
     bat_dir = _run_extractor(tmp_path, "tuner-batched", monkeypatch)
@@ -283,8 +290,8 @@ def test_manifest_engine_batch_size_fields(tmp_path, monkeypatch):
 
 
 @pytest.mark.skipif(
-    not (_cuda and _tuner_present),
-    reason="needs CUDA + a tuner checkout")
+    not (_cuda and _tuner_batch_verbs_present),
+    reason="needs CUDA + tuner batch-generate/batch-capture verbs")
 def test_scratch_dir_tensors_land_in_out_dir(tmp_path, monkeypatch):
     scratch = tmp_path / "scratch"
     scratch.mkdir()
