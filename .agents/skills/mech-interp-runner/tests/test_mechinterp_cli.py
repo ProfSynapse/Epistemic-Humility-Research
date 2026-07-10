@@ -7,11 +7,11 @@ from pathlib import Path
 SKILL_DIR = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(SKILL_DIR / "scripts"))
 
-import phase3_cli  # noqa: E402
+import mechinterp_cli  # noqa: E402
 
 
 def test_command_args_builds_sycophancy_generation_analysis():
-    parser = phase3_cli.build_parser()
+    parser = mechinterp_cli.build_parser()
     args = parser.parse_args([
         "sycophancy-generation-analysis",
         "--generations",
@@ -22,7 +22,7 @@ def test_command_args_builds_sycophancy_generation_analysis():
         "out",
     ])
 
-    script, out = phase3_cli.command_args(args)
+    script, out = mechinterp_cli.command_args(args)
 
     assert script == "experiment/phase1/probe/phase3_sycophancy_generation_analysis.py"
     assert out == [
@@ -36,7 +36,7 @@ def test_command_args_builds_sycophancy_generation_analysis():
 
 
 def test_command_args_builds_causal_sweep_flags():
-    parser = phase3_cli.build_parser()
+    parser = mechinterp_cli.build_parser()
     args = parser.parse_args([
         "causal-sweep",
         "--config",
@@ -49,7 +49,7 @@ def test_command_args_builds_causal_sweep_flags():
         "--allow-logit-diagnostic",
     ])
 
-    script, out = phase3_cli.command_args(args)
+    script, out = mechinterp_cli.command_args(args)
 
     assert script == "experiment/phase1/probe/phase3_causal_pilot_sweep.py"
     assert out == [
@@ -65,21 +65,21 @@ def test_command_args_builds_causal_sweep_flags():
 
 
 def test_command_args_builds_logit_cell_sign_score():
-    parser = phase3_cli.build_parser()
+    parser = mechinterp_cli.build_parser()
     args = parser.parse_args([
         "logit-cell-sign-score",
         "--config",
         "score.yaml",
     ])
 
-    script, out = phase3_cli.command_args(args)
+    script, out = mechinterp_cli.command_args(args)
 
     assert script == "experiment/phase1/probe/phase3_logit_cell_sign_score.py"
     assert out == ["--config", "score.yaml"]
 
 
 def test_command_args_builds_xdataset_build_panel():
-    parser = phase3_cli.build_parser()
+    parser = mechinterp_cli.build_parser()
     args = parser.parse_args([
         "xdataset-build-panel",
         "--source", "datasets/kuq/knowns_unknowns.jsonl",
@@ -90,7 +90,7 @@ def test_command_args_builds_xdataset_build_panel():
         "--seed", "0",
     ])
 
-    script, out = phase3_cli.command_args(args)
+    script, out = mechinterp_cli.command_args(args)
 
     assert script == "experiment/phase1/probe/phase3_xdataset_build_panel.py"
     assert out == [
@@ -107,7 +107,7 @@ def test_command_args_builds_xdataset_build_panel():
 
 
 def test_command_args_builds_xdataset_behavior():
-    parser = phase3_cli.build_parser()
+    parser = mechinterp_cli.build_parser()
     args = parser.parse_args([
         "xdataset-behavior",
         "--generation", "experiment/phase1/probe/xdataset/kuq_generation/rows.jsonl",
@@ -115,7 +115,7 @@ def test_command_args_builds_xdataset_behavior():
         "--out-dir", "experiment/phase1/probe/xdataset/kuq_behavior",
     ])
 
-    script, out = phase3_cli.command_args(args)
+    script, out = mechinterp_cli.command_args(args)
 
     assert script == "experiment/phase1/probe/phase3_xdataset_behavior_from_generation.py"
     assert out == [
@@ -126,7 +126,7 @@ def test_command_args_builds_xdataset_behavior():
 
 
 def test_command_args_builds_residual_caution_direction():
-    parser = phase3_cli.build_parser()
+    parser = mechinterp_cli.build_parser()
     args = parser.parse_args([
         "residual-caution-direction",
         "--extraction-dir", "probe/x/extraction__abc",
@@ -135,7 +135,7 @@ def test_command_args_builds_residual_caution_direction():
         "--out", "probe/z/caution_direction_L35.json",
     ])
 
-    script, out = phase3_cli.command_args(args)
+    script, out = mechinterp_cli.command_args(args)
 
     assert script == "experiment/phase1/probe/phase3_residual_caution_direction.py"
     assert out == [
@@ -148,14 +148,14 @@ def test_command_args_builds_residual_caution_direction():
 
 
 def test_command_args_builds_residual_read_trajectory_analysis():
-    parser = phase3_cli.build_parser()
+    parser = mechinterp_cli.build_parser()
     args = parser.parse_args([
         "residual-read-trajectory-analysis",
         "--rows", "probe/t/rows.jsonl",
         "--out", "probe/t/analysis.json",
     ])
 
-    script, out = phase3_cli.command_args(args)
+    script, out = mechinterp_cli.command_args(args)
 
     assert script == "experiment/phase1/probe/phase3_residual_read_trajectory.py"
     assert out == ["--rows", "probe/t/rows.jsonl", "--out", "probe/t/analysis.json"]
@@ -174,9 +174,9 @@ def test_subprocess_env_forces_utf8(monkeypatch):
 
         return Completed()
 
-    monkeypatch.setattr(phase3_cli.subprocess, "run", fake_run)
+    monkeypatch.setattr(mechinterp_cli.subprocess, "run", fake_run)
 
-    rc = phase3_cli.run_repo_python("script.py", ["--x", "1"])
+    rc = mechinterp_cli.run_repo_python("script.py", ["--x", "1"])
 
     assert rc == 0
     assert captured["command"] == [sys.executable, "script.py", "--x", "1"]

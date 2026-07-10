@@ -30,7 +30,7 @@ should be interrogative) before spending GPU.
 ## 1. Build the panel (GPU-free)
 
 ```bash
-python .skills/mech-interp-runner/scripts/phase3_cli.py xdataset-build-panel \
+python .skills/mech-interp-runner/scripts/mechinterp_cli.py xdataset-build-panel \
   --source datasets/<ds>/<file>.jsonl --dataset <ds> \
   --out-dir experiment/phase1/probe/xdataset/<ds>_panel \
   --n-known 600 --n-unknown 400 --seed 0
@@ -58,7 +58,7 @@ false`, the JSON response-confidence prompt.
 ## 3. Assemble behavior rows (GPU-free)
 
 ```bash
-python .skills/mech-interp-runner/scripts/phase3_cli.py xdataset-behavior \
+python .skills/mech-interp-runner/scripts/mechinterp_cli.py xdataset-behavior \
   --generation experiment/phase1/probe/xdataset/<ds>_generation/rows.jsonl \
   --panel-rows experiment/phase1/probe/xdataset/<ds>_panel/gen_rows.jsonl \
   --out-dir experiment/phase1/probe/xdataset/<ds>_behavior

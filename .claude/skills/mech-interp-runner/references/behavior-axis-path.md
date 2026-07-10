@@ -50,7 +50,7 @@ When one-axis or simple multi-hook interventions collapse into generic refusal
 pressure, run a multicell readout before designing more steering candidates:
 
 ```bash
-python .skills/mech-interp-runner/scripts/phase3_cli.py multicell-readout \
+python .skills/mech-interp-runner/scripts/mechinterp_cli.py multicell-readout \
   --config archive/experiment/phase1/probe/config/gold-kto-calibrated-expression/phase3_gold_kto_multicell_readout.yaml
 ```
 
@@ -88,7 +88,7 @@ python experiment/phase1/probe/phase3_logit_cell_analysis.py \
 Then rank candidate arms against explicit behavior-cell sign goals:
 
 ```bash
-python .skills/mech-interp-runner/scripts/phase3_cli.py logit-cell-sign-score \
+python .skills/mech-interp-runner/scripts/mechinterp_cli.py logit-cell-sign-score \
   --config archive/experiment/phase1/probe/config/selfaware-calibrated-expression-kto-panels/phase3_selfaware_kto_cell_sign_score.yaml
 ```
 

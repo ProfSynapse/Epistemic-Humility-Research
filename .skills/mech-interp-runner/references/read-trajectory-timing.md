@@ -33,7 +33,7 @@ anti-steerability problem that plagues causal handles):
    construction).
 
    ```bash
-   python .skills/mech-interp-runner/scripts/phase3_cli.py residual-caution-direction \
+   python .skills/mech-interp-runner/scripts/mechinterp_cli.py residual-caution-direction \
      --extraction-dir <SA_extraction> --behavior-rows <SA_behavior_rows> \
      --layer 35 --out <dir>/caution_direction_L35.json
    ```
