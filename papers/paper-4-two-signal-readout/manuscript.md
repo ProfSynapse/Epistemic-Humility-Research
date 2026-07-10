@@ -1,4 +1,4 @@
-# The Confidence Is Already There: A Training-Free Two-Signal Readout for Epistemic Humility in Small Language Models
+# It's What's on the Inside That Counts: A Training-Free Two-Signal Readout for Epistemic Humility in Small Language Models
 
 *Draft v0. Standalone contribution; it cites the companion diagnosis paper, [*Knows but
 Doesn't Say: A Training-Resistant Gap Between Internal and Stated Confidence in a Small

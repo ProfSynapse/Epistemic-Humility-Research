@@ -651,7 +651,7 @@ Between Internal and Stated Confidence in a Small Language Model*. Companion
 draft, this repository:
 [papers/paper-3-knows-but-doesnt-say/manuscript.md](../paper-3-knows-but-doesnt-say/manuscript.md).
 
-Rosenbaum, J. (2026). *The Confidence Is Already There: A Training-Free
+Rosenbaum, J. (2026). *It's What's on the Inside That Counts: A Training-Free
 Two-Signal Readout for Epistemic Humility in Small Language Models*.
 Companion draft, this repository:
 [papers/paper-4-two-signal-readout/manuscript.md](../paper-4-two-signal-readout/manuscript.md).

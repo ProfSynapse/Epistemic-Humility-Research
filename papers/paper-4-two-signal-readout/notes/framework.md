@@ -153,7 +153,7 @@ Paper 3 = this two-signal readout; Paper 4 = steering.)*
 - **Paper 3: the two-signal readout.** S/T/U/Stage-1.5/W/X/Z are a *distinct*
   contribution — a second axis (correctness), the orthogonality/pipeline result, the
   training-free finding, and the cross-size/cross-family replication. Title:
-  *"The Confidence Is Already There: A Training-Free Two-Signal Readout for Epistemic
+  *"It's What's on the Inside That Counts: A Training-Free Two-Signal Readout for Epistemic
   Humility in Small Language Models."* Drafted at
   `papers/paper-4-two-signal-readout/manuscript.md`; this doc is its seed.
 - **Paper 1 (training regimen; review from meta-analysis/paper/draft-v0.md + the

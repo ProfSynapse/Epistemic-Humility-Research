@@ -31,7 +31,7 @@ notes: >
 # Readable Is Not Writable: Channel, Gate, and Workspace Constraints on Actuating Epistemic State in Small Language Models
 
 *Draft v0. Companion to [*Knows but Doesn't Say*](../paper-3-knows-but-doesnt-say/manuscript.md)
-and [*The Confidence Is Already There*](../paper-4-two-signal-readout/manuscript.md).*
+and [*It's What's on the Inside That Counts*](../paper-4-two-signal-readout/manuscript.md).*
 
 ---
 
@@ -88,7 +88,7 @@ represent what it knows internally while failing to verbalize or act on that
 state. The companion diagnosis, [*Knows but Doesn't Say*](../paper-3-knows-but-doesnt-say/manuscript.md),
 showed that answerability is linearly readable from hidden states at near-ceiling
 accuracy while stated confidence remains flat and training-resistant. The
-follow-up, [*The Confidence Is Already There*](../paper-4-two-signal-readout/manuscript.md),
+follow-up, [*It's What's on the Inside That Counts*](../paper-4-two-signal-readout/manuscript.md),
 showed that two readable signals, answerability before generation and answer
 correctness after generation, compose into a training-free trust pipeline that
 generalizes across sizes, families, and sampled-decode seeds.

@@ -34,7 +34,7 @@ notes: >
   GRPO on Model-Specific Abstention Data*](../paper-2-training-regimen/manuscript.md),
   supplies the DPO/KTO behavior results referenced in Section 7. This paper is
   the third in the series; the training-free two-signal readout it motivates is
-  [*The Confidence Is Already There: A Training-Free Two-Signal Readout for
+  [*It's What's on the Inside That Counts: A Training-Free Two-Signal Readout for
   Epistemic Humility in Small Language Models*](../paper-4-two-signal-readout/manuscript.md).
   draft-v1 (2026-07-02) absorbs the confidence-channel and probe-coda depth
   (old regimen-paper Sections 7-8): the RL-collapse incentive analysis, the
@@ -881,7 +881,7 @@ The unsolved part is the *readout*: coupling stated confidence and action to a
 signal that is linearly available inside. Training the readout failed here in
 seven variants; reading it directly with a probe trivially succeeds. The
 two-signal readout paper
-([*The Confidence Is Already There*](../paper-4-two-signal-readout/manuscript.md))
+([*It's What's on the Inside That Counts*](../paper-4-two-signal-readout/manuscript.md))
 pursues that readout line directly (whether a training-free probe readout can
 supply the calibrated gate and dial that output training could not) and takes
 on the transfer questions (across datasets, model sizes, and families) that
@@ -1030,7 +1030,7 @@ has an ingested note under `library/notes/`. Cited inline as [arXiv:id].)
 - Orgad et al. (2024). LLMs Know More Than They Show: On the Intrinsic Representation of LLM Hallucinations. arXiv:2410.02707.
 - Panickssery et al. (2023). Steering Llama 2 via Contrastive Activation Addition. arXiv:2312.06681.
 - Rafailov et al. (2023). Direct Preference Optimization: Your Language Model is Secretly a Reward Model. arXiv:2305.18290.
-- Rosenbaum (2026). The Confidence Is Already There: A Training-Free Two-Signal Readout for Epistemic Humility in Small Language Models. Companion draft, this repository: [papers/paper-4-two-signal-readout/manuscript.md](../paper-4-two-signal-readout/manuscript.md).
+- Rosenbaum (2026). It's What's on the Inside That Counts: A Training-Free Two-Signal Readout for Epistemic Humility in Small Language Models. Companion draft, this repository: [papers/paper-4-two-signal-readout/manuscript.md](../paper-4-two-signal-readout/manuscript.md).
 - Rosenbaum (2026). The Depths of Ignorance: A Taxonomy, Systematic Evidence Synthesis, and Research Agenda for Epistemic Humility in Language Models. Companion draft, this repository: [papers/paper-1-taxonomy-framework/manuscript.md](../paper-1-taxonomy-framework/manuscript.md).
 - Rosenbaum (2026). Teaching Small Language Models to Say I Don't Know: A Controlled Comparison of SFT, DPO, KTO, and GRPO on Model-Specific Abstention Data. Companion draft, this repository: [papers/paper-2-training-regimen/manuscript.md](../paper-2-training-regimen/manuscript.md).
 - Shao et al. (2024). DeepSeekMath: Pushing the Limits of Mathematical Reasoning in Open Language Models. arXiv:2402.03300.
@@ -1073,6 +1073,6 @@ and never pooled with the pre-registered headline matrix (PROTOCOL v0.3, signed
 2026-06-10), whose confirmatory surface belongs to the training-regimen paper
 ([*Teaching Small Language Models to Say I Don't Know*](../paper-2-training-regimen/manuscript.md)).
 The Section 8 references to
-[*The Confidence Is Already There*](../paper-4-two-signal-readout/manuscript.md)
+[*It's What's on the Inside That Counts*](../paper-4-two-signal-readout/manuscript.md)
 correspond to the training-free two-signal readout program, maintained in the
 same repository.

@@ -394,7 +394,7 @@ The propositions generate a concrete agenda, ordered by the gaps:
 3. **Test the readout constructively** (P3): if the signal is present and the
    channel is the problem, a training-free readout should recover calibrated
    gating and trust from frozen models. The program's readout experiment,
-   [*The Confidence Is Already There: A Training-Free Two-Signal Readout for
+   [*It's What's on the Inside That Counts: A Training-Free Two-Signal Readout for
    Epistemic Humility in Small Language
    Models*](../paper-4-two-signal-readout/manuscript.md), tests its transfer across
    datasets, scales, and families; a planned steering study tests its causal
@@ -547,7 +547,7 @@ Controlled Comparison of SFT, DPO, KTO, and GRPO on Model-Specific Abstention
 Data*. Companion draft, this repository:
 [papers/paper-2-training-regimen/manuscript.md](../paper-2-training-regimen/manuscript.md).
 
-Rosenbaum, J. (2026). *The Confidence Is Already There: A Training-Free
+Rosenbaum, J. (2026). *It's What's on the Inside That Counts: A Training-Free
 Two-Signal Readout for Epistemic Humility in Small Language Models*.
 Companion draft, this repository:
 [papers/paper-4-two-signal-readout/manuscript.md](../paper-4-two-signal-readout/manuscript.md).
