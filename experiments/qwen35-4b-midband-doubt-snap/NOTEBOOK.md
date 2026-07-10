@@ -6,6 +6,21 @@ in `experiment.yaml`.
 
 ## Entries
 
+- 2026-07-10 (SIGNED): Experiment signed after user review. Predictions
+  registered pre-outcome: user predicts G1 passes (decouples; the late-site
+  failure was a write-site problem, not a family problem); orchestrator
+  predicts G1 passes, most likely at hs23 in the 6-12 sigma_c range. Dose
+  grids and G1/falsifier floors locked as registered in cell.yaml/gates.yaml.
+  Pin-set note: `bin/exp sign` pinned the five files listed in the scaffold's
+  instrument block; the three Stage C modules (`run_dose_ladder.py`,
+  `grader.py`, `gen_lib.py`, committed and smoke-tested pre-sign at 8b26cfa3)
+  were added to instrument.modules and instrument.pins by hand immediately
+  after sign, before any Stage C launch, using the established sha256sum
+  mechanism. Nothing had run and no outcome existed at the time of the
+  addition. Launch plan approved by user: bounded batch-size probe (16 then
+  32, memory + output parity vs batch 8) then the full ladder on the local
+  3090 at the best validated batch size.
+
 - 2026-07-10: Lead adjudication on Stage A's RunLog deviation (recorded here,
   not retrofitted into `jlens_qwen35.py`): Stage A used a per-layer JSON
   flush instead of the tuner's `shared/utilities/run_log.py` RunLog. The lead

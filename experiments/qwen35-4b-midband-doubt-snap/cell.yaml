@@ -102,7 +102,7 @@ gate:
 snap:
   law: erase_write
   position: anchor_onward
-  dose_grid_status: draft_until_sign
+  dose_grid_status: locked_at_sign_2026_07_10
   dose_grid_source: >-
     Proposed per-layer from readback-sigma sanity (see LAUNCH-PLAN.md);
     NOT the late site's absolute setpoints, which are known non-portable
@@ -110,7 +110,7 @@ snap:
     -write-sweep-qwen3-4b's dose-200 collapse on Qwen3-4B mid-band layers
     for the precedent that absolute setpoints do not transfer across layer
     sites even within one model).
-  dose_grid_proposal:  # DRAFT -- decision point for sign, see LAUNCH-PLAN.md
+  dose_grid_proposal:  # LOCKED at sign 2026-07-10; no grid changes after sign regardless of outcome
     grid_shape: "{2, 4, 6, 8, 12, 16, 20} x sigma_c"
     per_layer_sigma_c:  # from analysis-committed/build_manifest.json, Stage B fit
       hs20: 1.5760

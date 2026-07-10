@@ -1,7 +1,6 @@
-# qwen35-4b-midband-doubt-snap gates. DRAFT until `bin/exp sign`.
-# Predictions scoreboard is intentionally left blank in AMENDMENT.md until
-# sign, per locked design; gate floors below are draft proposals, not final
-# until sign.
+# qwen35-4b-midband-doubt-snap gates. LOCKED at sign (2026-07-10).
+# Gate floors below are final; predictions scoreboard filled in AMENDMENT.md
+# at sign per locked design. No changes after sign regardless of outcome.
 
 seed: 20260707
 alpha: 0.05
@@ -31,7 +30,7 @@ gates:
 
   - name: g1_midband_decouples_refusal_from_corruption
     primitive: dose_response
-    status: draft
+    status: locked_at_sign
     metric_pair:
       - refused_rate (format-agnostic stated-confidence refusal)
       - well_formed_rate
@@ -59,8 +58,9 @@ gates:
       writing this file.
 
 summary_rule: >-
-  Stage C (the dose ladder that would produce g1's numbers) is NOT executed
-  by this amendment. G0 checks above are the only ones this draft can
-  actually run and report before sign. g1 and the falsifier gate are
-  registered here so sign-time only needs to fix the dose grid and floors,
-  not redesign the test.
+  Pre-sign, only the G0 checks above were run and reported (all pass; see
+  NOTEBOOK.md and the Stage C smoke). At sign the dose grids and G1/falsifier
+  floors above became final. Stage C (run_dose_ladder.py, the dose ladder
+  that produces g1's numbers) is authorized to run post-sign on the local
+  3090 lane; its results adjudicate g1 and the falsifier with no further
+  grid or floor changes.

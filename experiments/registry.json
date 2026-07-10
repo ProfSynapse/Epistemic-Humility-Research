@@ -486,12 +486,20 @@
         "modules": [
           "materialize_reused_rows.py",
           "jlens_qwen35.py",
-          "fit_midband_directions.py"
+          "fit_midband_directions.py",
+          "run_dose_ladder.py",
+          "grader.py",
+          "gen_lib.py"
         ],
         "pins": {
-          "seed": 20260707,
-          "substrate": "bf16",
-          "synaptic_tuner_commit": "cd30d482b42866815e0c9ec808df55d70855d4e8"
+          "cell.yaml": "b0f2cc3e8322db2c32b6712e5a12d33c827e0247eaa85ab238cb0fd07ca686bb",
+          "fit_midband_directions.py": "a25ebbd343ad64c0f6af77eea1085b438fcb975599804f0149254fd1c1f1c912",
+          "gates.yaml": "c27fdd99c111fc3840d9abd7791a6f555c71645e15115ba6c76718c4c7cec762",
+          "gen_lib.py": "4b2796318c94e35aa878c1f82716c9d7776d6cc7b4e40af5f16f5b3c36d44089",
+          "grader.py": "72254c1c391ec8107062d846eb1def721f52122c066534b8678790bea161789e",
+          "jlens_qwen35.py": "028c71871fe38a770db3a3eac877a074dd86786200cc2ed0715d6b2ac4298039",
+          "materialize_reused_rows.py": "57be9a4e975b9a991544ca0fba32670a5c276ed084c58f329c41c8fc471a6b24",
+          "run_dose_ladder.py": "3495ed6a9169b5ba6af742f44ba17cef30059723c20c6a49dc11331fe5458bff"
         }
       },
       "kg": [],
@@ -499,7 +507,7 @@
       "question": "On Qwen/Qwen3.5-4B, does writing the doubt-gated caution snap at a J-space workspace-band (mid-band) layer decouple refusal induction from output corruption, where the registered late-site (0.94-depth, hs30) write produced a well-characterized no-window null in doubt-snap-cross-family-confirmatory (FIT dose sweep 0% clean_tighten at the registered grid, recalibrated peak ~33% coherent tighten with well-formedness collapsing to 3% by dose 60)?",
       "registered": true,
       "slug": "qwen35-4b-midband-doubt-snap",
-      "status": "draft",
+      "status": "signed",
       "type": "steer-cell",
       "verdict": ""
     }

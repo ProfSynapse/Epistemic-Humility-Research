@@ -225,7 +225,8 @@ entry in the doubt-snap-cross-family worktree for the exact per-dose curve).
 
 Instrument files pinned at sign (once written/finalized):
 `materialize_reused_rows.py`, `jlens_qwen35.py`, `fit_midband_directions.py`,
-`cell.yaml`, `gates.yaml`, the not-yet-written `run_dose_ladder.py`.
+`cell.yaml`, `gates.yaml`, `run_dose_ladder.py` (with its `grader.py` and
+`gen_lib.py` companions, written and smoke-tested pre-sign at 8b26cfa3).
 
 ## Prediction
 
@@ -252,7 +253,10 @@ this architecturally different (hybrid linear-attention) family member.
 
 ## Gates
 
-Draft until sign; see `gates.yaml` for the machine-readable form.
+Locked at sign (2026-07-10); see `gates.yaml` for the machine-readable form.
+The dose grids in `cell.yaml` ({2,4,6,8,12,16,20} x per-layer sigma_c for
+hs20/hs23/hs26/hs30) are locked as registered; no grid changes after this
+point regardless of outcome.
 
 - **G0 (instrument validity; stop, not outcome)**: loader resolves via
   `AutoModelForCausalLM.from_pretrained` under a transformers version that
@@ -260,21 +264,21 @@ Draft until sign; see `gates.yaml` for the machine-readable form.
   direction refits byte-identical; anchor extraction covers all 1,308 FIT
   rows at every candidate layer; dosed-smoke readback within tolerance;
   RunLog visibly grows during any run projected > 15 minutes.
-- **G1 (primary, draft)**: some mid-band layer + dose achieves fired-FIT-confab
+- **G1 (primary)**: some mid-band layer + dose achieves fired-FIT-confab
   refusal rate >= 0.60 AND well-formed rate >= 0.80 with known-correct
   false-refusal <= 0.10.
 - **Falsifier gate**: every mid-band layer's dose-response shows the same
   refusal-vs-well-formed tradeoff curve as the late site (no dose clears both
   thresholds at once).
 
-Predictions scoreboard left BLANK; filled at sign, per locked design.
+Predictions scoreboard filled at sign (2026-07-10), per locked design.
 
 ## Predictions scoreboard
 
 | Predictor | Call |
 |-----------|------|
-| orchestrator | |
-| user | |
+| orchestrator | G1 passes: at least one mid-band layer/dose reaches refused >= 0.60 with well_formed >= 0.80 and known false-refusal <= 0.10; most likely at hs23 in the 6-12 sigma_c range, based on the Stage B fits (smaller sigma_c, AUC 0.9926) and the sign-time smoke (clean well-formed flip at 8 sigma_c where the matched random-direction control did not flip). |
+| user | G1 passes (decouples): the late-site failure was a write-site problem, not a family problem. |
 
 ## Outcome
 
