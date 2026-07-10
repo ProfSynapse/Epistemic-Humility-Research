@@ -4,7 +4,7 @@ session_id: paper5-jspace-hardening
 title: Paper 5 J-space hardening
 status: active
 created_at: '2026-07-08T16:46:25Z'
-updated_at: '2026-07-10T14:58:11Z'
+updated_at: '2026-07-10T15:24:06Z'
 phase: phase1
 question: Which registered follow-up experiments harden the Paper 5 actuation thesis,
   starting with a fresh Qwen3-4B J-space layer-site replication?
@@ -299,6 +299,27 @@ checkpoints:
   decisions: []
   next_steps: []
   signals: {}
+- id: 013-checkpoint
+  at: '2026-07-10T15:24:06Z'
+  kind: checkpoint
+  title: Checkpoint
+  summary: 'Stage C batch probe + launch (stagec-builder report, lead-verified process
+    live): Qwen3.5 batch-composition non-determinism CONFIRMED on the local 3090,
+    not just Modal A100s -- at bs=16 and bs=32 vs the bs=8 reference (n=30 rows, hs23,
+    dose 8 sigma), most divergence was wording drift but one row (kuq_unknowns_all:1041,
+    gated arm) categorically flipped refused=True/clean_tighten=True at bs=8 to a
+    substantive answer at BOTH 16 and 32, i.e. batch size flips primary G1 gate metrics.
+    Fallback rule applied: full ladder launched at batch 8, 2026-07-10 11:20 local,
+    harness-tracked, pinned-file hashes verified byte-identical pre-launch, probe
+    scratch cleaned. Revised runtime ~48-55 h (74,753 generations; measured ~1.7-3.5
+    s/row by arm). Run order: shared baseline then per layer (20->23->26->30) gated+permuted_gate
+    then random_direction, all doses per RunLog file; resumable per dose|row key.'
+  evidence: []
+  run_ids: []
+  commands: []
+  decisions: []
+  next_steps: []
+  signals: {}
 ---
 # Paper 5 J-space hardening
 
@@ -582,3 +603,8 @@ rows before the layer contrast.
 - at: `2026-07-10T14:58:11Z`
 - kind: `checkpoint`
 - summary: qwen35-4b-midband-doubt-snap SIGNED after Stage C builder delivered run_dose_ladder.py (smoke PASS: readback within 0.3%, natural stop, RunLog resume verified zero-regen; 3 registered arms x 4 layers x 7 doses = 84 cells + shared baseline, ~74,750 generations). Predictions registered pre-outcome: user G1-passes (decouples), orchestrator G1-passes (hs23, 6-12 sigma). Grids/floors locked (refused>=60% AND well_formed>=80%, known false-refusal<=10%). Sign gap caught and fixed: bin/exp sign pinned only the scaffold's 5 instrument files; the 3 Stage C modules added to modules+pins by hand (sha256) pre-launch, recorded in experiment NOTEBOOK. Launch plan user-approved: batch probe (16/32 with semantic parity vs 8) then full ladder on the free 3090; dispatched to stagec-builder. Also this segment: user approved and lead merged tuner #143, EHR #266, EHR #264.
+### 013-checkpoint - Checkpoint
+
+- at: `2026-07-10T15:24:06Z`
+- kind: `checkpoint`
+- summary: Stage C batch probe + launch (stagec-builder report, lead-verified process live): Qwen3.5 batch-composition non-determinism CONFIRMED on the local 3090, not just Modal A100s -- at bs=16 and bs=32 vs the bs=8 reference (n=30 rows, hs23, dose 8 sigma), most divergence was wording drift but one row (kuq_unknowns_all:1041, gated arm) categorically flipped refused=True/clean_tighten=True at bs=8 to a substantive answer at BOTH 16 and 32, i.e. batch size flips primary G1 gate metrics. Fallback rule applied: full ladder launched at batch 8, 2026-07-10 11:20 local, harness-tracked, pinned-file hashes verified byte-identical pre-launch, probe scratch cleaned. Revised runtime ~48-55 h (74,753 generations; measured ~1.7-3.5 s/row by arm). Run order: shared baseline then per layer (20->23->26->30) gated+permuted_gate then random_direction, all doses per RunLog file; resumable per dose|row key.
