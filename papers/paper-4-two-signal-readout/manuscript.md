@@ -37,15 +37,15 @@ Four findings make this a mechanism rather than a curiosity. **(1) It is trainin
 the whole pipeline reads off the raw instruction-tuned base with no adapter and no
 abstention training of ours; our training only *sharpens* the veto (0.754 → 0.980), it
 does not create the signal. **(2) It is size-robust:** the readout passes on every Qwen3
-scale from 1.7B to 14B. **(3) It replicates across model families:** on four independent
-families (Qwen, Llama, Mistral, Gemma) the gate and dial pass on all four (gate saturated
-0.997–0.998; dial 0.82–0.86), establishing them as *family-general*. Under single greedy
-decoding the veto split the families (strong on Gemma at 0.871, failing on Llama-3.2 at
-0.633); a pre-registered three-seed sampled-decoding replication shows those greedy misses
-were largely *decode artifacts*: under sampling the veto passes seed-stably on **all
-four** families (family means 0.68–0.75), while confirming it as the *high-variance* axis:
-across-seed spread reaches 0.12–0.15 per family (versus 0.01–0.04 for the dial) and
-individual cells still dip below the bar. We report this as a co-headline: **a small LM's
+scale from 1.7B to 14B. **(3) It replicates across model families.** On four independent
+families (Qwen, Llama, Mistral, Gemma) the gate and dial pass on all four: the gate
+saturated at 0.997 to 0.998, the dial between 0.82 and 0.86. The veto is the readout that
+wobbles. Under a single greedy decode it failed outright on Llama-3.2 (0.633); a
+pre-registered three-seed sampled-decoding replication showed the greedy misses were
+decode artifacts, and under sampling the veto passes on all four families (family means
+0.68 to 0.75). The variance is real: across-seed spread on the veto reaches 0.15 where
+the dial's stays under 0.04, and individual cells still dip below the bar. We report
+this as a co-headline: **a small LM's
 sense of "can I answer this?" and "is this answer right?" is a universal, readable property
 of the representation; its ability to distrust its own confident fabrications is present
 across families but decode- and seed-sensitive, and it must be reported with seed spread
@@ -71,6 +71,13 @@ it cannot answer, and it attaches an honest confidence to the answers it does gi
 open models are good at neither. They confabulate plausible answers to unanswerable
 questions, and the confidence they verbalize is nearly flat regardless of whether they are
 right.
+
+Try this as a thought experiment. You ask a small open model who won a chess tournament
+that never took place. It answers fluently, names a winner, and when you ask how
+confident it is, it gives you a number in the mid-fifties. You then ask it the capital of
+France, and it gives you nearly the same number. The confidence on the outside is
+useless. The question this paper answers is whether there is a number on the inside
+worth reading instead.
 
 The natural first hypothesis is that this is an *ignorance* problem (the model does not
 represent its own uncertainty) and the natural fix is *training*: fine-tune it to abstain,
@@ -120,6 +127,17 @@ and model-sensitive). Three contributions over the diagnosis:
    replicates across four model families, and predates post-training entirely. The two
    axes generalize everywhere we looked; the veto is the readout that must be validated
    per model.
+
+The thesis was falsifiable at several registered points, and we state them because each
+could have fired. If correctness had read no better after the answer than the
+answerability baseline read before it, there would be no dial: that was the original
+cell's registered falsifier. If the veto had failed on two or more of the four families,
+the cross-family claim would have died: it was pre-defined that way, and one family did
+fail under greedy decoding. If a pre-instruction base had read the gate near chance
+while its instruct sibling read 0.95 or higher, on three or more pairs, the
+training-free framing would have been rewritten as a post-training story. None of these
+fired. The one registered gate that did miss (calibration, by 0.001) is reported in §3
+and shapes how we scope the dial.
 
 The framing throughout is *readout, not training*. Our training does not create the trust
 signal; it sharpens one part of it (the veto) and installs behavioral abstention. The
@@ -341,7 +359,7 @@ and every family we tested.
 Answerability is a property of the question. Whether a *specific produced answer* is correct
 is a different property, and it is legible at a different place. A linear probe at the last
 answer token ranks correct-vs-wrong answers at **AUROC 0.834** on the Qwen3-4B base
-(layer 20). Critically, reading *after* the answer beats reading *before* it: the
+(layer 20). Reading *after* the answer beats reading *before* it: the
 post-generation position scores **+0.065** over the pre-generation position (CI [0.040,
 0.090], excludes zero). The model's representation of "was that right?" is sharper once it
 has committed to the answer than at the moment it begins: a self-evaluation effect
@@ -358,21 +376,19 @@ checkpoint transfers only partially (0.679): the correctness *direction* drifts 
 training even though the *readout* remains strong when refit. The axis exists on both
 checkpoints, but the probe should be refit per checkpoint rather than transported.
 
-Exploratory lab-notebook diagnostics locate the source of this drift for the
-answerability readout specifically. Tracking the known-vs-unknown direction across
-four training stages in a shared basis (raw base, clean-SFT, GRPO-v2, GRPO-par-true),
-the readout is already at full strength in the raw base (mid-to-late CV AUROC mean
-0.951) and no stage sharpens it (clean-SFT 0.922, GRPO-v2 0.923, GRPO-par-true 0.926),
-consistent with the training-free reading in §4.6. The direction, however, rotates
-once and near-orthogonally at instruction SFT (raw-to-clean-SFT cosine falling to
-0.06-0.25 across mid and late layers) and is then ridden almost unchanged by both
-GRPO variants (clean-SFT-to-GRPO-v2 cosine 0.91-0.997). The per-checkpoint refit is
-therefore required by a single SFT rotation event, not gradual accumulation across
-training, which is why cold transport degrades while a refit probe stays strong. This
-is exploratory internal evidence (script `diag_item9_caution_timeline.py`, commit
-`a354ad73`; staging `professorsynapse/eh-al-prep-staging` tags `diag-item9-*-r3`;
-extraction commit `d5a90b3b`), reported separately from and never pooled with the
-locked headline numbers.
+Why does a probe need a refit across checkpoints when the axis survives? An exploratory
+diagnostic tracked the known-vs-unknown (answerability) direction across four training
+stages in a shared basis. The readout's strength never moves: it is already at full
+strength in the raw base (CV AUROC 0.951) and no stage improves it, consistent with the
+training-free reading in §4.6. The direction, however, rotates once, nearly
+orthogonally, at instruction SFT (raw-to-SFT cosine 0.06 to 0.25 at mid and late
+layers), and both GRPO stages then ride the rotated direction almost unchanged (cosine
+0.91 and above). One rotation event, not gradual drift. That is why cold transport
+degrades while a refit probe stays strong. The diagnostic tracked the answerability
+direction; the correctness direction's own rotation has not been tracked, so its
+application to the dial's 0.679 cold transfer is an inference, not a measurement.
+Exploratory internal evidence, reported separately from the locked numbers and never
+pooled with them; provenance in Appendix A.
 
 One honest caveat carried from the start: the dial *ranks* correctness well (AUROC) but is
 not a calibrated *probability* (ECE 0.151 on the base). The ranking-vs-calibration
@@ -390,7 +406,13 @@ control (known-answered vs unknown-answered, same dataset) of **0.93** that rule
 mere dataset-shift artifact. Confident confabulation does *not* read like a correct answer
 to the dial. This is the property that makes the dial a hallucination *veto* and not merely
 a correctness *ranker*: the failure mode we most want to catch (fluent, confident, wrong)
-is exactly the one the dial pushes to the bottom.
+is exactly the one the dial pushes to the bottom. The registered prediction is worth
+showing: the orchestrator put this veto in a 0.65 to 0.85 band, with the named risk that
+confident confabulation would carry the same internal signature as confident
+correctness and the falsifier would fire. The result overshot the band at 0.980, and
+the named risk did not materialize on this checkpoint. §4.4 explains part of the
+overshoot: the contrast carries the question's answerability as well as the answer's
+content.
 
 Figure 2 shows the mechanism directly: the dial-mean of the hallucination group sits far
 below the correct group, and the size of that separation is what the veto AUROC measures.
@@ -664,6 +686,10 @@ seed-stable veto passes.**
 at 0.996–0.999 with a per-family across-seed range under 0.003: sampling the answer does
 not move an axis read before the answer exists.
 
+The registration pre-named its own live falsifier, and the note is worth quoting in
+substance: the two cells most likely to flip were Llama's veto (a greedy fail) and
+Qwen3.5's (a marginal pass), in either direction. Both flipped upward.
+
 **Pre-registered verdict: SUCCESS.** All three locked clauses pass: (a) the dial is
 seed-stable on **4/4** families (every one of the 12 cells passes the dial bar); (b) the
 veto is seed-stable on **4/4** families (Llama and Qwen3.5 and Gemma 3/3 each, Ministral
@@ -910,6 +936,16 @@ is aimed at abstention specifically, is to sharpen that veto and install behavio
 abstention; post-training in general neither creates nor improves the underlying signal. The
 confidence is already there from pretraining; the task is to read it, keep the two axes
 separate, and know which model's veto you can trust.
+
+What could still kill or shrink these claims is registered or stated. The dial has never
+been read on the model's own un-forced answers; the shelved instrument in limitation 6
+is the test, and a failure there would confine the dial to forced surfaces. The ~0.74
+content core is a single-seed estimate that a multi-seed replication could pull below
+its gates. The recall-not-truth critique (Cheang et al., 2025) predicts a class of
+knowledge-associated wrong answers the dial would miss, and our decomposition has not
+tested that class. And a fifth family could fail the veto outright, exactly as Llama did
+under greedy decoding. The gate's saturation is the one number we would be surprised to
+lose.
 
 ---
 
