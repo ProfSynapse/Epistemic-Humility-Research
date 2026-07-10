@@ -1,17 +1,17 @@
-# Phase 3 Local Gotchas
+# Archived Legacy Mechinterp Local Gotchas
 
-Read for local Phase 3 causal-pilot and logit-diagnostic execution caveats.
+Read for archived legacy mechinterp causal-pilot and logit-diagnostic execution caveats.
 
-- For Phase 3 causal-pilot GPU smokes in `unsloth/unsloth:latest`, override the
+- For archived legacy mechinterp causal-pilot GPU smokes in `unsloth/unsloth:latest`, override the
   default image entrypoint with `--entrypoint python` before invoking
   `experiments/common/mechinterp/causal_pilot_runner.py`. Without the override,
   the image can run studio setup, try to chmod the mounted repository, fail on
   Windows-mounted repo permissions, and never invoke the runner. This applies to
   the logit diagnostic path as well as generation smokes; use
   `--mode logit_diagnostic --allow-logit-diagnostic` for the bounded logit check
-  through the existing Phase 3 activation hook/model/candidate path.
+  through the existing archived legacy activation hook/model/candidate path.
 
-- Phase 3 causal-pilot live runs must not blindly reuse readiness-plan control
+- Archived legacy mechinterp causal-pilot live runs must not blindly reuse readiness-plan control
   labels as executable intervention labels. The dry-run config can list future
   controls such as random direction, shuffled labels, wrong-layer neighbors, and
   sign flips before the live runner implements them. A live runner should fail
@@ -21,7 +21,7 @@ Read for local Phase 3 causal-pilot and logit-diagnostic execution caveats.
   2026-06-18 caught this: `control=sign_flip` with a positive coefficient was
   a valid hook/scoring smoke, but the label was misleading for interpretation.
 
-- Phase 3 causal-pilot logit diagnostics are gated separately from generation:
+- Archived legacy mechinterp causal-pilot logit diagnostics are gated separately from generation:
   use `--mode logit_diagnostic --allow-logit-diagnostic` when the question is
   whether activation addition/subtraction changes next-token logits before
   scaling generated rows. A moved logit distribution with unchanged greedy

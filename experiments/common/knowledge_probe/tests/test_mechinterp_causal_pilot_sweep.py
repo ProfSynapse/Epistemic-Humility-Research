@@ -268,7 +268,7 @@ def test_checked_in_full_sweep_inventory_counts():
         / "probe"
         / "config"
         / "causal-pilot-core"
-        / "phase3_causal_pilot_local_sweep.yaml"
+        / "mechinterp_causal_pilot_local_sweep.yaml"
     )
 
     plan = sweep.build_jobs(config_path)
@@ -315,7 +315,7 @@ def test_checked_in_full_sweep_uses_docker_commands():
         / "probe"
         / "config"
         / "causal-pilot-core"
-        / "phase3_causal_pilot_local_sweep.yaml"
+        / "mechinterp_causal_pilot_local_sweep.yaml"
     )
 
     plan = sweep.build_jobs(config_path)
@@ -418,7 +418,7 @@ def test_checked_in_full_sweep_mode_filter_limits_to_logit_diagnostic():
         / "probe"
         / "config"
         / "causal-pilot-core"
-        / "phase3_causal_pilot_local_sweep.yaml"
+        / "mechinterp_causal_pilot_local_sweep.yaml"
     )
 
     plan = sweep.build_jobs(config_path, mode_filter={"logit_diagnostic"})

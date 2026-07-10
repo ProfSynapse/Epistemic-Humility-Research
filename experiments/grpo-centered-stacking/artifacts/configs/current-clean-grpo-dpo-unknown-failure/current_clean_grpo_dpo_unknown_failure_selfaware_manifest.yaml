@@ -21,7 +21,7 @@ quotas:
   known_refused: 64
 
 output:
-  manifest: manifests/phase3_current_clean_grpo_dpo_unknown_failure_selfaware_manifest.json
-  row_keys_file: experiments/grpo-centered-stacking/artifacts/configs/current-clean-grpo-dpo-unknown-failure/phase3_current_clean_grpo_dpo_unknown_failure_selfaware_row_keys.txt
-  selected_scored_rows: experiments/grpo-centered-stacking/artifacts/configs/current-clean-grpo-dpo-unknown-failure/phase3_current_clean_grpo_dpo_unknown_failure_selfaware_scored_rows.jsonl
-  summary: experiments/grpo-centered-stacking/artifacts/configs/current-clean-grpo-dpo-unknown-failure/phase3_current_clean_grpo_dpo_unknown_failure_selfaware_manifest.summary.json
+  manifest: manifests/current_clean_grpo_dpo_unknown_failure_selfaware_manifest.json
+  row_keys_file: experiments/grpo-centered-stacking/artifacts/configs/current-clean-grpo-dpo-unknown-failure/current_clean_grpo_dpo_unknown_failure_selfaware_row_keys.txt
+  selected_scored_rows: experiments/grpo-centered-stacking/artifacts/configs/current-clean-grpo-dpo-unknown-failure/current_clean_grpo_dpo_unknown_failure_selfaware_scored_rows.jsonl
+  summary: experiments/grpo-centered-stacking/artifacts/configs/current-clean-grpo-dpo-unknown-failure/current_clean_grpo_dpo_unknown_failure_selfaware_manifest.summary.json

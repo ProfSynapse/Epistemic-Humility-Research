@@ -1,7 +1,7 @@
 spec:
-  name: phase3_current_clean_dpo_grpo_unknown_failure_prompt_matched_behavior_axis_scan
-  analysis_type: phase3_behavior_axis_scan
-  notice: BEHAVIOR_AXIS_SCAN_ONLY_DPO_GRPO_UNKNOWN_FAILURE_PROMPT_MATCHED_PANEL
+  name: current_clean_grpo_dpo_unknown_failure_prompt_matched_behavior_axis_scan
+  analysis_type: mechinterp_behavior_axis_scan
+  notice: BEHAVIOR_AXIS_SCAN_ONLY_GRPO_DPO_UNKNOWN_FAILURE_PROMPT_MATCHED_PANEL
 
 analysis:
   roles:
@@ -46,10 +46,10 @@ analysis:
         correct: true
 
 extractions:
-  - label: clean_sft_dpo_grpo_seed1_unknown_failure_prompt_matched_panel
-    behavior_arm: clean_sft_dpo_grpo
-    extraction_dir: experiment/phase1/probe/qwen3-4b-clean-sft-dpo-grpo-seed1-selfaware/hidden_states_selfaware_clean_sft_dpo_grpo_unknown_failure_panel_prompt_matched/extraction__7dfcdd2681a5
-    extraction_manifest: experiment/phase1/probe/qwen3-4b-clean-sft-dpo-grpo-seed1-selfaware/hidden_states_selfaware_clean_sft_dpo_grpo_unknown_failure_panel_prompt_matched/extraction__7dfcdd2681a5/manifest.json
+  - label: clean_sft_grpo_dpo_seed1_unknown_failure_prompt_matched_panel
+    behavior_arm: clean_sft_grpo_dpo
+    extraction_dir: archive/experiment/phase1/probe/qwen3-4b-clean-sft-grpo-dpo-seed1-selfaware/hidden_states_selfaware_clean_sft_grpo_dpo_unknown_failure_panel_prompt_matched/extraction__ef1c54a85ce4
+    extraction_manifest: archive/experiment/phase1/probe/qwen3-4b-clean-sft-grpo-dpo-seed1-selfaware/hidden_states_selfaware_clean_sft_grpo_dpo_unknown_failure_panel_prompt_matched/extraction__ef1c54a85ce4/manifest.json
 
 output:
-  root: experiment/phase1/probe/analysis/current_clean_dpo_grpo_unknown_failure_prompt_matched_behavior_axis_scan
+  root: experiments/grpo-centered-stacking/analysis/current_clean_grpo_dpo_unknown_failure_prompt_matched_behavior_axis_scan

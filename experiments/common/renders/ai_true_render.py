@@ -27,7 +27,7 @@ the exact same two functions rather than re-deriving the prompt string, so a
 future change to either source stays in sync automatically.
 
 ``load_baseline_system_prompt`` reads the system prompt from
-``experiments/doubt-regulated-caution/phase3_ac_doubt_coupled_intervention.yaml``'s
+``experiments/doubt-regulated-caution/ac_doubt_coupled_intervention.yaml``'s
 ``prompt.system`` key -- the "Answer the user's question... Return only a
 JSON object with exactly two keys: 'answer' and 'response_confidence'..."
 text -- the same baseline system prompt every AL/AN/AI script in this

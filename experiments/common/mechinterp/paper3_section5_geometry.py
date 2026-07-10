@@ -39,11 +39,11 @@ import numpy as np
 REPO = Path(__file__).resolve().parents[3]
 ROWS = (
     REPO
-    / "archive/experiment/phase1/probe/analysis/current_selfaware_behavior_rows/clean_sft_grpo_v2/rows.jsonl"
+    / "archive/experiment/phase1/probe/legacy-wrapper-tree/analysis/current_selfaware_behavior_rows/clean_sft_grpo_v2/rows.jsonl"
 )
 EXTRACTION = (
     REPO
-    / "archive/experiment/phase1/probe/qwen3-4b-clean-sft-grpo-v2-seed1-selfaware/hidden_states_selfaware_clean_sft_grpo_v2_full/extraction__55254a04aa1f"
+    / "archive/experiment/phase1/probe/legacy-wrapper-tree/qwen3-4b-clean-sft-grpo-v2-seed1-selfaware/hidden_states_selfaware_clean_sft_grpo_v2_full/extraction__55254a04aa1f"
 )
 LAYER = "L35"
 KA_N = 300
@@ -196,7 +196,7 @@ def main():
     results["full_sample_geometry"] = geometry(full)
     print("full sample:", json.dumps(results["full_sample_geometry"]))
 
-    out_dir = REPO / "archive/experiment/phase1/probe/analysis/paper3_section5_geometry"
+    out_dir = REPO / "archive/experiment/phase1/probe/legacy-wrapper-tree/analysis/paper3_section5_geometry"
     out_dir.mkdir(parents=True, exist_ok=True)
     with open(out_dir / "result.json", "w") as f:
         json.dump(results, f, indent=2)

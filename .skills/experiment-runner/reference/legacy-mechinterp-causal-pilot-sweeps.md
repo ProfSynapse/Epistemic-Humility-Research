@@ -1,4 +1,4 @@
-# Phase 3 Causal-Pilot Sweeps
+# Archived Legacy Mechinterp Causal-Pilot Sweeps
 
 Use this reference for local exploratory mechanism sweeps around
 `experiments/common/mechinterp/causal_pilot_runner.py`.
@@ -6,7 +6,7 @@ Use this reference for local exploratory mechanism sweeps around
 ## Scope
 
 - Treat every output as Tier 2 exploratory local mechanism evidence.
-- Do not promote results into Phase 1 headline evidence or protocol claims.
+- Do not promote results into locked headline evidence or protocol claims.
 - Do not edit `synaptic-tuner/`.
 - Do not run Docker/GPU unless the user explicitly approves the live run.
 - Prefer `experiments/common/mechinterp/causal_pilot_sweep.py` over ad hoc terminal loops.
@@ -17,14 +17,14 @@ Plan the current sweep:
 
 ```bash
 python experiments/common/mechinterp/causal_pilot_sweep.py \
-  --config archive/experiment/phase1/probe/config/causal-pilot-core/phase3_causal_pilot_local_sweep.yaml
+  --config archive/experiment/phase1/probe/config/causal-pilot-core/mechinterp_causal_pilot_local_sweep.yaml
 ```
 
 Write the plan and materialized per-candidate runner configs without execution:
 
 ```bash
 python experiments/common/mechinterp/causal_pilot_sweep.py \
-  --config archive/experiment/phase1/probe/config/causal-pilot-core/phase3_causal_pilot_local_sweep.yaml \
+  --config archive/experiment/phase1/probe/config/causal-pilot-core/mechinterp_causal_pilot_local_sweep.yaml \
   --write-plan --materialize-configs
 ```
 
@@ -32,12 +32,12 @@ For logit diagnostics only, filter before planning/materialization:
 
 ```bash
 python experiments/common/mechinterp/causal_pilot_sweep.py \
-  --config archive/experiment/phase1/probe/config/causal-pilot-core/phase3_causal_pilot_local_sweep.yaml \
+  --config archive/experiment/phase1/probe/config/causal-pilot-core/mechinterp_causal_pilot_local_sweep.yaml \
   --mode-filter logit_diagnostic --write-plan --materialize-configs
 ```
 
 The sweep config reads candidate directions from
-`archive/experiment/phase1/probe/config/causal-pilot-core/phase3_causal_pilot_full_candidates.yaml` and
+`archive/experiment/phase1/probe/config/causal-pilot-core/mechinterp_causal_pilot_full_candidates.yaml` and
 uses the generation-enabled runner config as a template. This keeps the full
 candidate set reusable while preserving the live runner's explicit gates. The
 checked-in local sweep plans Docker commands for live GPU execution, not host
@@ -51,7 +51,7 @@ Only after explicit user approval, execute with the mode-specific gates:
 
 ```bash
 python experiments/common/mechinterp/causal_pilot_sweep.py \
-  --config archive/experiment/phase1/probe/config/causal-pilot-core/phase3_causal_pilot_local_sweep.yaml \
+  --config archive/experiment/phase1/probe/config/causal-pilot-core/mechinterp_causal_pilot_local_sweep.yaml \
   --write-plan --materialize-configs --execute \
   --allow-logit-diagnostic --allow-generation
 ```
@@ -83,8 +83,8 @@ Aggregate completed run manifests offline:
 
 ```bash
 python experiments/common/mechinterp/causal_pilot_aggregate.py \
-  --root experiment/phase1/probe/qwen3-4b-instruct/causal_pilots/phase3_local_mech_interp_sweep \
-  --out experiment/phase1/probe/qwen3-4b-instruct/causal_pilots/phase3_local_mech_interp_sweep/summary.csv
+  --root experiment/phase1/probe/qwen3-4b-instruct/causal_pilots/mechinterp_local_mech_interp_sweep \
+  --out experiment/phase1/probe/qwen3-4b-instruct/causal_pilots/mechinterp_local_mech_interp_sweep/summary.csv
 ```
 
 Use the aggregate as a run index and sanity surface. Interpret from the original
