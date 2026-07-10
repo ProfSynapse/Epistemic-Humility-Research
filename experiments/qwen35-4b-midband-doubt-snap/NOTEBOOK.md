@@ -6,6 +6,31 @@ in `experiment.yaml`.
 
 ## Entries
 
+- 2026-07-10: Lead adjudication on Stage A's RunLog deviation (recorded here,
+  not retrofitted into `jlens_qwen35.py`): Stage A used a per-layer JSON
+  flush instead of the tuner's `shared/utilities/run_log.py` RunLog. The lead
+  adjudicated this ACCEPTABLE, because the flush gives the crash-resume
+  property the RunLog rule exists for, at the natural checkpoint granularity
+  of that loop (one profiled layer, not one row) -- a JVP layer profile has
+  no per-row structure to key a RunLog on, while a per-item generate+grade
+  loop (Stage B extraction, Stage C dose ladder) does and gets RunLog wired
+  in directly (see `run_dose_ladder.py`, below). Stage A's own script is not
+  changed to add RunLog after the fact.
+
+- 2026-07-10: Wrote and smoke-tested `run_dose_ladder.py` (Stage C harness).
+  Instrument files (`grader.py`, `gen_lib.py`, byte-for-byte ports of
+  `doubt-snap-cross-family-confirmatory`'s own modules, diffed against the
+  sibling `j-space-midband-write-sweep-qwen3-4b` copies before choosing which
+  one to mirror -- the two projects' grader.py differ in alias-matching
+  dependency, gen_lib.py do not) plus `run_dose_ladder.py` itself are ready
+  for `cell.yaml`/`gates.yaml` pinning at sign. See the harness-builder
+  task's own report (routed to the team-lead) for the smoke numbers, the
+  full-ladder runtime estimate, the batch size validated, and the resolved
+  ambiguities (hs30 included as an in-run arm per cell.yaml's own dose-grid
+  table; write dose sign is positive along c_hat/random_direction in every
+  arm, since the task brief's "negative projection" language matches this
+  project's neg_z_d GATE score convention, not the write).
+
 - 2026-07-10: Stage A profile completed (14/14 layers, 2554.0s / ~42.6 min
   total, no crash under `CUDA_LAUNCH_BLOCKING=1`); wrote
   `analysis/profile_full.json` (`status: complete`). `effective_dim_frac_mean`
