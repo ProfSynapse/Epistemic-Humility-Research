@@ -116,32 +116,72 @@ fine-tuning run is required.
 ## 2. Related work
 
 **Verbalized confidence and calibration.** A line of work asks models to state their
-confidence in words or tokens and measures its calibration (Lin et al., 2022; Xiong et
-al., 2023); the recurring finding is that
-verbalized confidence is poorly calibrated and often flat, especially for smaller models.
-Recent faithful-uncertainty work makes the target sharper by asking whether expressed
+confidence in words or tokens and measures the result. The miscalibration is well
+documented: vanilla verbalized confidence reaches ECE of roughly 0.38 to 0.52 for
+GPT-3-class and open models (Xiong et al., 2023), and the emitted numbers are coarse as
+well as inflated: GPT-4 states 0.9 on fully half of examples, producing 8 unique
+confidence values across 12 datasets (Shrivastava et al., 2023). For RLHF-tuned models
+the verbalized channel is nonetheless often better calibrated than the token
+probabilities, which RLHF itself degrades (Tian et al., 2023). And the channel is
+trainable in at least one setting: GPT-3 can be fine-tuned to verbalize calibrated
+uncertainty on arithmetic (Lin et al., 2022), the trained-calibration precedent whose
+small-model analog our companion paper tests and finds wanting. Recent
+faithful-uncertainty work makes the target sharper by asking whether expressed
 uncertainty tracks intrinsic uncertainty, and shows that metacognitive RL can improve
 that output metric (Gani et al., 2026; Liu et al., 2026; Yona et al., 2026).
-Our companion diagnosis localizes *why* in this model family: the internal estimate is
-calibrated, the emitted token is not, and the loss on that token does not transmit the
-internal estimate faithfully. This paper is the constructive complement: bypass the token.
+Our companion diagnosis localizes *why* the channel fails in this model family: the
+internal estimate is calibrated, the emitted token is not, and the loss on that token
+does not transmit the internal estimate faithfully. This paper is the constructive
+complement: bypass the token.
 
 **Probing internal states / latent knowledge.** A large body of work reads factual and
-truth-related structure out of hidden activations with linear probes, for example
-truthfulness directions (Burns et al., 2022; Marks et al., 2023) and P(True)-style
-self-evaluation (Kadavath et al., 2022). Two points differentiate what we do. First, we
-separate *answerability* (a property of the question, read before generation) from
-*per-answer correctness* (a property of the produced answer, read after it), and show they
-are distinct axes at distinct token positions. Second, we find that correctness reads
-*better after the answer than before it*, a post-generation self-evaluation effect, and
-we quantify the gain.
+truth-related structure out of hidden activations: unsupervised truth directions (Burns
+et al., 2022), the linear geometry of true/false statements (Marks et al., 2023),
+truthfulness classifiers on hidden states (Azaria and Mitchell, 2023), and a single
+truthfulness hyperplane fit across 49 datasets (Liu et al., 2024). The probe-generation
+gap has external precedent: a probe reads truth from LLaMA-7B activations at 84% while
+the model generates truthfully on about 32% of the same items (Li et al., 2023), an
+external "knows but doesn't say." Closest to our gate, Slobodkin et al. (2023) show
+instruction-tuned models linearly encode a question's *answerability* even while
+hallucinating an answer to it (probe F1 above 75% across nine model-dataset pairs, with
+causal LEACE erasure), and Ferrando et al. (2024) find sparse-autoencoder
+entity-recognition directions ("do I know this entity?") that causally gate refusal:
+knowledge-boundary signals, not answer-truth signals. Prompted self-evaluation is a
+related but distinct channel: P(True) is prompted self-grading and P(IK) a trained value
+head (Kadavath et al., 2022); neither reads activations, but both anticipate the finding
+that models carry usable self-knowledge. We also take the strongest counter-result
+seriously: Cheang et al. (2025) argue internal states mainly encode knowledge *recall*
+rather than truthfulness, and show that hallucinations drawing on parametric
+associations evade probe detectors (AUROC 0.46 to 0.69) that catch unassociated ones.
+Our construct decomposition (§4.4) is this paper's version of that discipline: much of
+the raw veto separation is carried nuisance, and the controlled content core is about
+0.74, not 0.98. Two things differentiate what we do from this line. We separate
+*answerability* (a property of the question, read before generation) from *per-answer
+correctness* (a property of the produced answer, read after it) as distinct axes at
+distinct token positions, and we measure the pipeline's robustness surface (size,
+family, decode, seed, pretraining stage) under pre-registered gates.
 
-**Abstention and selective prediction.** Selective-prediction methods learn or threshold a
-confidence to abstain (Wen et al., 2024). Our gate is a selective-prediction front-end, but the emphasis is
-that it needs no training to install: it is a threshold on an axis the base model already
-carries. This connects to hallucination-detection work (Orgad et al., 2024); our veto is a
-hallucination
-detector expressed inside the same correctness axis rather than as a separate module.
+**Reading after the answer.** Orgad et al. (2024) show truthfulness information
+concentrates at the exact answer tokens (probe AUC 0.85 to 0.95 across datasets), and
+Kossen et al. (2024) train semantic-entropy probes at both a post-response token and a
+pre-generation token, a direct external post-vs-pre contrast; Azaria and Mitchell (2023)
+likewise probe the statement's own tokens. Our +0.065 post-beats-pre gain (CI excludes
+zero, and it replicates on the deployed checkpoint at +0.074) quantifies the same effect
+as a within-run paired contrast on free-form QA.
+
+**Abstention and selective prediction.** Selective prediction predates LLMs: SelectiveNet
+trains a rejection head jointly with the classifier for a target coverage (Geifman and
+El-Yaniv, 2019). In LLMs the dominant posture *trains abstention in*: R-Tuning fine-tunes
+"I don't know" onto the questions the model gets wrong (Zhang et al., 2023), Cheng et al.
+(2024) build model-specific IDK training sets, alignment-for-honesty formalizes refusal
+training (Yang et al., 2023), and multi-LLM collaboration flags knowledge gaps to abstain
+on (Feng et al., 2024); Wen et al. (2024) survey the space. AbstentionBench finds
+abstention unsolved across twenty frontier models and *degraded* by reasoning fine-tuning
+(Kirichenko et al., 2025). Our gate is a selective-prediction front-end with the opposite
+posture: it needs no training to install, because it thresholds an axis the base model
+already carries. This connects to hallucination-detection work (Orgad et al., 2024); our
+veto is a hallucination detector expressed inside the same correctness axis rather than
+as a separate module.
 
 **Steering and representation engineering.** Reading a direction out of activations is one
 half of representation engineering (Zou et al., 2023); writing along it (steering) is the
@@ -202,8 +242,13 @@ answerable from unanswerable questions at **AUROC 0.997** on the raw Qwen3-4B ba
 the readable form of the internal estimate the diagnosis identified: the model represents
 "can this be answered?" at the moment it is about to answer, and the representation is
 almost perfectly separable. Thresholding this axis gives an abstention gate that needs no
-training to install. As the cross-model results below show, this axis is the most robust of
-the three: it is near-saturated (0.997–0.998) on every size and every family we tested.
+training to install. External precedent says an axis like this should exist: Slobodkin et
+al. (2023) probe answerability from hidden states at F1 above 75% even while the model
+hallucinates an answer, and Ferrando et al. (2024) find entity-recognition directions
+that causally gate refusal at the knowledge boundary. What is new here is the strength at
+which it saturates and, below, how far it travels. As the cross-model results show, this
+axis is the most robust of the three: it is near-saturated (0.997–0.998) on every size
+and every family we tested.
 
 ### 4.2 The correctness dial reads off the answer, and reads better *after* it
 
@@ -215,7 +260,10 @@ post-generation position scores **+0.065** over the pre-generation position (CI 
 0.090], excludes zero). The model's representation of "was that right?" is sharper once it
 has committed to the answer than at the moment it begins: a self-evaluation effect
 localized to token position, and one that peaks in the middle of the network rather than at
-the final layer (Figure 4).
+the final layer (Figure 4). The position matters in external work too: truthfulness
+signal concentrates at exact answer tokens (Orgad et al., 2024), and semantic-entropy
+probes read better at the post-response token than at the pre-generation one (Kossen et
+al., 2024).
 
 The dial survives deployment. On our clean-SFT → GRPO checkpoint the same post-generation
 readout scores **AUROC 0.819** (layer 22), with the same post-beats-pre ordering
@@ -241,9 +289,11 @@ extraction commit `d5a90b3b`), reported separately from and never pooled with th
 locked headline numbers.
 
 One honest caveat carried from the start: the dial *ranks* correctness well (AUROC) but is
-not a calibrated *probability* (ECE 0.151 on the base). For a thresholdable trust number,
-ranking is the operative property; a stated probability would need a downstream calibration
-map. We claim the ranking, not the probability.
+not a calibrated *probability* (ECE 0.151 on the base). The ranking-vs-calibration
+distinction is standard (Guo et al., 2017; Ulmer et al., 2024): for a thresholdable trust
+number, ranking is the operative property, and a stated probability would need a
+downstream calibration map. We claim the ranking, not the probability. This ECE also
+carries the program's one registered gate miss, reported in §3.
 
 ### 4.3 The dial vetoes confident confabulation
 
@@ -322,8 +372,15 @@ the numbers above.
 Gate (answerability, at the anchor) and dial (correctness, post-generation) are separable
 axes. When we fuse the two scalars into a single combined trust number, correctness ranking
 *degrades* (Δ **−0.014**). The axes carry complementary information that a single number
-destroys. The deployment consequence is to keep them as **two sequential stages** rather
-than one score (Figure 6):
+destroys. Keeping uncertainty sources separate has external support: Taparia et al. (2026)
+decompose LLM uncertainty into input, knowledge, and decoding components and argue that
+single scores hide the actionable structure. The countervailing result is output-level:
+Shrivastava et al. (2023) improve confidence estimates by *mixing* surrogate and
+linguistic scores. We read no tension between the two: their mixture combines two noisy
+views of one quantity (answer correctness), while our axes measure different quantities
+(question answerability, answer correctness), and the fusion cost is the empirical sign
+that they are not redundant. The deployment consequence is to keep them as **two
+sequential stages** rather than one score (Figure 6):
 
 - **Stage 1: Gate.** At the prompt anchor, threshold the answerability axis. If below
   threshold, abstain ("I don't know") and stop.
@@ -497,6 +554,13 @@ model property: a single greedy trajectory produces one specific set of confabul
 Llama's greedy confabulations happened to read as trustworthy; its sampled ones do not.
 Single-decode point estimates *understated* the veto.
 
+Decode sensitivity should not surprise: the sampling-based uncertainty literature extracts
+its signal precisely from cross-sample variation (semantic entropy, Kuhn et al., 2023;
+SelfCheckGPT, Manakul et al., 2023), Orgad et al. (2024) build an error taxonomy from
+resample distributions, and Taparia et al. (2026) treat decoding randomness as its own
+uncertainty component. What those methods exploit by sampling many times, a single-decode
+readout is exposed to.
+
 **The veto is seed-sensitive per cell, seed-stable per family.** Across-seed spread on the
 veto is real (Llama range 0.12, Qwen3.5 0.15, Ministral 0.14, Gemma 0.04, versus dial
 spreads of 0.01–0.04), and Ministral drops below the bar on one seed (0.606 on seed 1, its
@@ -545,6 +609,11 @@ dual-render control and one same-pipeline instruct sibling complete the design.
 the gate at 0.997+, indistinguishable from the instruct releases. The veto also clears its
 bar on all four bases (0.666–0.874). The boundary signal is not installed by post-training;
 it is already in the pretrained representation, and instruction tuning at most re-renders it.
+This confirms, in hidden states and under a pre-registered falsifier, a pattern reported
+at the output level: pretraining builds calibration and post-training erodes it (OpenAI,
+2023; Zhu et al., 2023; He et al., 2023; Xiao et al., 2025), and knowledge-boundary
+directions found in a base model causally control the chat sibling's refusals (Ferrando
+et al., 2024).
 
 **Post-training does not sharpen the readout, and can dull it.** The one clean
 base→instruct pair read under a single pipeline (Olmo-3, same seed, scorer, and render
@@ -605,7 +674,17 @@ mechanism with no fine-tuning:
 Two engineering notes fall out of the results. Keep the axes *separate*: fusing them costs
 correctness ranking (§4.5). And *refit the dial per checkpoint*: the correctness direction
 drifts under training (cold transfer 0.679, §4.2) even though the axis persists. The gate,
-by contrast, transports well and is cheap to install anywhere.
+by contrast, transports: a gate probe fit on one dataset applies cold to another at 0.983
+(KUQ to SelfAware, on the deployed checkpoint; `xdataset-probe-transfer`), and it is cheap
+to install anywhere.
+
+Two deployment cautions from the literature, and one gap. The probe must stay a held-out
+*readout*, never a training signal: training a model against a lie detector can teach
+evasion instead of honesty (Cundy and Gleave, 2025), so the dial is not a reward. The
+readout is also the cheap option: a linear probe replaces the 5-to-10-fold sampling cost
+of consistency-based detectors (Kossen et al., 2024). And to our knowledge no published
+system yet deploys an internal-state probe as its production abstention gate; the
+pipeline above is a concrete, validated proposal for exactly that gap.
 
 ---
 
@@ -727,25 +806,50 @@ separate, and know which model's veto you can trust.
 
 ## References
 
+- Azaria and Mitchell (2023). The Internal State of an LLM Knows When It's Lying. arXiv:2304.13734.
 - Burns et al. (2022). Discovering Latent Knowledge in Language Models Without Supervision. arXiv:2212.03827.
+- Cheang et al. (2025). Do LLMs Really Know What They Don't Know? Internal States Mainly Reflect Knowledge Recall Rather Than Truthfulness. arXiv:2510.09033.
+- Cheng et al. (2024). Can AI Assistants Know What They Don't Know? arXiv:2401.13275.
+- Cundy and Gleave (2025). Preference Learning with Lie Detectors can Induce Honesty or Evasion. arXiv:2505.13787.
 - Ethayarajh et al. (2024). KTO: Model Alignment as Prospect Theoretic Optimization. arXiv:2402.01306.
+- Feng et al. (2024). Don't Hallucinate, Abstain: Identifying LLM Knowledge Gaps via Multi-LLM Collaboration. arXiv:2402.00367.
+- Ferrando et al. (2024). Do I Know This Entity? Knowledge Awareness and Hallucinations in Language Models. arXiv:2411.14257.
 - Gani et al. (2026). Quantifying Faithful Confidence Expression in Large Reasoning Models. arXiv:2606.03969.
+- Geifman and El-Yaniv (2019). SelectiveNet: A Deep Neural Network with an Integrated Reject Option. arXiv:1901.09192.
+- Guo et al. (2017). On Calibration of Modern Neural Networks. arXiv:1706.04599.
 - Gurnee et al. (2026). Verbalizable Representations Form a Global Workspace in Language Models. Transformer Circuits. https://transformer-circuits.pub/2026/workspace/index.html.
+- He et al. (2023). Investigating Uncertainty Calibration of Aligned Language Models under the Multiple-Choice Setting. arXiv:2310.11732.
 - Joshi et al. (2017). TriviaQA: A Large Scale Distantly Supervised Challenge Dataset for Reading Comprehension. arXiv:1705.03551.
 - Kadavath et al. (2022). Language Models (Mostly) Know What They Know. arXiv:2207.05221.
+- Kirichenko et al. (2025). AbstentionBench: Reasoning LLMs Fail on Unanswerable Questions. arXiv:2506.09038.
+- Kossen et al. (2024). Semantic Entropy Probes: Robust and Cheap Hallucination Detection in LLMs. arXiv:2406.15927.
+- Kuhn et al. (2023). Semantic Uncertainty: Linguistic Invariances for Uncertainty Estimation in Natural Language Generation. arXiv:2302.09664.
+- Li et al. (2023). Inference-Time Intervention: Eliciting Truthful Answers from a Language Model. arXiv:2306.03341.
 - Lin et al. (2022). Teaching Models to Express Their Uncertainty in Words. arXiv:2205.14334.
+- Liu et al. (2024). On the Universal Truthfulness Hyperplane Inside LLMs. arXiv:2407.08582.
 - Liu et al. (2026). Reinforcement Learning with Metacognitive Feedback Elicits Faithful Uncertainty Expression in LLMs. arXiv:2606.32032.
 - Mallen et al. (2022). When Not to Trust Language Models: Investigating Effectiveness of Parametric and Non-Parametric Memories. arXiv:2212.10511.
+- Manakul et al. (2023). SelfCheckGPT: Zero-Resource Black-Box Hallucination Detection for Generative Large Language Models. arXiv:2303.08896.
 - Marks et al. (2023). The Geometry of Truth: Emergent Linear Structure in Large Language Model Representations of True/False Datasets. arXiv:2310.06824.
+- OpenAI (2023). GPT-4 Technical Report. arXiv:2303.08774.
 - Orgad et al. (2024). LLMs Know More Than They Show: On the Intrinsic Representation of LLM Hallucinations. arXiv:2410.02707.
 - Rafailov et al. (2023). Direct Preference Optimization: Your Language Model is Secretly a Reward Model. arXiv:2305.18290.
 - Rosenbaum (2026). Knows but Doesn't Say: A Training-Resistant Gap Between Internal and Stated Confidence in a Small Language Model. Companion draft, this repository: [papers/paper-3-knows-but-doesnt-say/manuscript.md](../paper-3-knows-but-doesnt-say/manuscript.md).
 - Shao et al. (2024). DeepSeekMath: Pushing the Limits of Mathematical Reasoning in Open Language Models. arXiv:2402.03300.
+- Shrivastava et al. (2023). Llamas Know What GPTs Don't Show: Surrogate Models for Confidence Estimation. arXiv:2311.08877.
+- Slobodkin et al. (2023). The Curious Case of Hallucinatory (Un)answerability: Finding Truths in the Hidden States of Over-Confident Large Language Models. arXiv:2310.11877.
+- Taparia et al. (2026). The Anatomy of Uncertainty in LLMs. arXiv:2603.24967.
+- Tian et al. (2023). Just Ask for Calibration: Strategies for Eliciting Calibrated Confidence Scores from Language Models Fine-Tuned with Human Feedback. arXiv:2305.14975.
 - Turner et al. (2023). Steering Language Models With Activation Engineering. arXiv:2308.10248.
+- Ulmer et al. (2024). Calibrating Large Language Models Using Their Generations Only. arXiv:2403.05973.
 - Wen et al. (2024). Know Your Limits: A Survey of Abstention in Large Language Models. arXiv:2407.18418.
+- Xiao et al. (2025). Restoring Calibration for Aligned Large Language Models: A Calibration-Aware Fine-Tuning Approach. arXiv:2505.01997.
 - Xiong et al. (2023). Can LLMs Express Their Uncertainty? An Empirical Evaluation of Confidence Elicitation in LLMs. arXiv:2306.13063.
+- Yang et al. (2023). Alignment for Honesty. arXiv:2312.07000.
 - Yin et al. (2023). Do Large Language Models Know What They Don't Know?. arXiv:2305.18153.
 - Yona et al. (2026). Hallucinations Undermine Trust; Metacognition is a Way Forward. arXiv:2605.01428.
+- Zhang et al. (2023). R-Tuning: Instructing Large Language Models to Say "I Don't Know". arXiv:2311.09677.
+- Zhu et al. (2023). On the Calibration of Large Language Models and Alignment. arXiv:2311.13240.
 - Zou et al. (2023). Representation Engineering: A Top-Down Approach to AI Transparency. arXiv:2310.01405.
 
 ---
