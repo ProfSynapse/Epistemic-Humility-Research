@@ -16,7 +16,7 @@
     "b": -0.4245258606771754
   },
   "npz": "dial__qwen3-4b-instruct__post_L20.npz",
-  "source_extraction": "/mnt/f/Code/Epistemic-Humility-Research/experiment/phase1/probe/qwen3-4b-instruct/amendment_s/stage2",
+  "source_extraction": "/mnt/f/Code/Epistemic-Humility-Research/archive/experiment/phase1/probe/qwen3-4b-instruct/amendment_s/stage2",
   "n": 1836,
   "n_pos": 500,
   "n_neg": 1336,

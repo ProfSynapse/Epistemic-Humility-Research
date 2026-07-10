@@ -54,7 +54,7 @@
   ],
   "direction_norm": 1.0,
   "provenance": {
-    "source_x_dir": "/mnt/f/Code/Epistemic-Humility-Research/experiment/phase1/probe/z_qwen3.5-4b",
+    "source_x_dir": "/mnt/f/Code/Epistemic-Humility-Research/archive/experiment/phase1/probe/z_qwen3.5-4b",
     "model_tag": "qwen3.5-4b",
     "base_model": "Qwen/Qwen3.5-4B",
     "config_sha": "ab147260d3b10cd3",

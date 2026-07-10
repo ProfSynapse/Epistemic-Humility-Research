@@ -1,6 +1,6 @@
 {
   "ok": true,
-  "analysis_type": "phase3_latent_knowledge_controls",
+  "analysis_type": "latent_knowledge_controls",
   "source": "h_lora",
   "a1_lexical_baseline": {
     "control": "a1_lexical_baseline",

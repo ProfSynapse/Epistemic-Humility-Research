@@ -178950,19 +178950,19 @@
     "no_docker": true,
     "no_gpu": true,
     "not_probe_pool_runner_ready": true,
-    "phase": "phase3",
+    "track": "mechanism",
     "source": "SelfAware row-level eval scored_rows only"
   },
   "sources": {
-    "sft_dpo_seed1": "experiment/phase1/eval/results_amendment_b_stated_confidence_neutral_concise_schema_answer_confidence_selfaware_seq_seed1_4b/sft_dpo_seed1__selfaware/scored_rows.jsonl",
-    "sft_dpo_seed2": "experiment/phase1/eval/results_amendment_b_stated_confidence_neutral_concise_schema_answer_confidence_selfaware_seq_seed2_sft_dpo_4b/sft_dpo_seed2__selfaware/scored_rows.jsonl",
-    "sft_dpo_seed3": "experiment/phase1/eval/results_amendment_b_stated_confidence_neutral_concise_schema_answer_confidence_selfaware_seq_seed3_sft_dpo_4b/sft_dpo_seed3__selfaware/scored_rows.jsonl",
-    "sft_kto_seed1": "experiment/phase1/eval/results_amendment_b_stated_confidence_neutral_concise_schema_answer_confidence_selfaware_seq_seed1_4b/sft_kto_seed1__selfaware/scored_rows.jsonl",
-    "sft_kto_seed2": "experiment/phase1/eval/results_amendment_b_stated_confidence_neutral_concise_schema_answer_confidence_selfaware_seq_seed2_sft_kto_4b/sft_kto_seed2__selfaware/scored_rows.jsonl",
-    "sft_kto_seed3": "experiment/phase1/eval/results_amendment_b_stated_confidence_neutral_concise_schema_answer_confidence_selfaware_seq_seed3_sft_kto_4b/sft_kto_seed3__selfaware/scored_rows.jsonl",
-    "sft_merged_seed1": "experiment/phase1/eval/results_amendment_b_stated_confidence_neutral_concise_schema_answer_confidence_selfaware_seq_seed1_4b/sft_merged_seed1__selfaware/scored_rows.jsonl",
-    "sft_merged_seed2": "experiment/phase1/eval/results_amendment_b_stated_confidence_neutral_concise_schema_answer_confidence_selfaware_seq_seed2_sft_merged_4b/sft_merged_seed2__selfaware/scored_rows.jsonl",
-    "sft_merged_seed3": "experiment/phase1/eval/results_amendment_b_stated_confidence_neutral_concise_schema_answer_confidence_selfaware_seq_seed3_sft_merged_4b/sft_merged_seed3__selfaware/scored_rows.jsonl"
+    "sft_dpo_seed1": "archive/experiment/phase1/eval/results_amendment_b_stated_confidence_neutral_concise_schema_answer_confidence_selfaware_seq_seed1_4b/sft_dpo_seed1__selfaware/scored_rows.jsonl",
+    "sft_dpo_seed2": "archive/experiment/phase1/eval/results_amendment_b_stated_confidence_neutral_concise_schema_answer_confidence_selfaware_seq_seed2_sft_dpo_4b/sft_dpo_seed2__selfaware/scored_rows.jsonl",
+    "sft_dpo_seed3": "archive/experiment/phase1/eval/results_amendment_b_stated_confidence_neutral_concise_schema_answer_confidence_selfaware_seq_seed3_sft_dpo_4b/sft_dpo_seed3__selfaware/scored_rows.jsonl",
+    "sft_kto_seed1": "archive/experiment/phase1/eval/results_amendment_b_stated_confidence_neutral_concise_schema_answer_confidence_selfaware_seq_seed1_4b/sft_kto_seed1__selfaware/scored_rows.jsonl",
+    "sft_kto_seed2": "archive/experiment/phase1/eval/results_amendment_b_stated_confidence_neutral_concise_schema_answer_confidence_selfaware_seq_seed2_sft_kto_4b/sft_kto_seed2__selfaware/scored_rows.jsonl",
+    "sft_kto_seed3": "archive/experiment/phase1/eval/results_amendment_b_stated_confidence_neutral_concise_schema_answer_confidence_selfaware_seq_seed3_sft_kto_4b/sft_kto_seed3__selfaware/scored_rows.jsonl",
+    "sft_merged_seed1": "archive/experiment/phase1/eval/results_amendment_b_stated_confidence_neutral_concise_schema_answer_confidence_selfaware_seq_seed1_4b/sft_merged_seed1__selfaware/scored_rows.jsonl",
+    "sft_merged_seed2": "archive/experiment/phase1/eval/results_amendment_b_stated_confidence_neutral_concise_schema_answer_confidence_selfaware_seq_seed2_sft_merged_4b/sft_merged_seed2__selfaware/scored_rows.jsonl",
+    "sft_merged_seed3": "archive/experiment/phase1/eval/results_amendment_b_stated_confidence_neutral_concise_schema_answer_confidence_selfaware_seq_seed3_sft_merged_4b/sft_merged_seed3__selfaware/scored_rows.jsonl"
   },
   "strata": {
     "dpo_unknown_refusal_loss_transition": {

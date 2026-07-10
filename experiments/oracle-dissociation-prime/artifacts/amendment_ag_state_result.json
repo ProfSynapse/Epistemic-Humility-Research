@@ -7,14 +7,14 @@
   "n_folds": 5,
   "target_layer": "L24",
   "artifact_paths": {
-    "af_pregen_dir": "/home/profsynapse/code/Epistemic-Humility-Research/experiment/phase1/probe/analysis/af_base_pregen/rows.jsonl",
-    "af_pregen_manifest": "/home/profsynapse/code/Epistemic-Humility-Research/experiment/phase1/probe/analysis/af_base_pregen/manifest.json",
-    "af_labels": "/home/profsynapse/code/Epistemic-Humility-Research/experiment/phase1/probe/analysis/af_base_pregen/af_labels.json",
+    "af_pregen_dir": "/home/profsynapse/code/Epistemic-Humility-Research/archive/experiment/phase1/probe/analysis/af_base_pregen/rows.jsonl",
+    "af_pregen_manifest": "/home/profsynapse/code/Epistemic-Humility-Research/archive/experiment/phase1/probe/analysis/af_base_pregen/manifest.json",
+    "af_labels": "/home/profsynapse/code/Epistemic-Humility-Research/archive/experiment/phase1/probe/analysis/af_base_pregen/af_labels.json",
     "ag_high_manifest": "/home/profsynapse/code/ehr-worktrees/amendment-ag/experiment/phase1/probe/analysis/ag_primed_pregen/high/manifest.json",
     "ag_low_manifest": "/home/profsynapse/code/ehr-worktrees/amendment-ag/experiment/phase1/probe/analysis/ag_primed_pregen/low/manifest.json",
-    "ae_census_rows": "/home/profsynapse/code/Epistemic-Humility-Research/experiment/phase1/probe/analysis/ae_base_behavior_rows/rows.jsonl",
+    "ae_census_rows": "/home/profsynapse/code/Epistemic-Humility-Research/archive/experiment/phase1/probe/analysis/ae_base_behavior_rows/rows.jsonl",
     "inverted_rows": "/home/profsynapse/code/ehr-worktrees/amendment-ag/experiment/phase1/probe/analysis/ag_generation/inverted/rows.jsonl",
-    "af_baseline_rows": "/home/profsynapse/code/Epistemic-Humility-Research/experiment/phase1/probe/analysis/af_generation/baseline/rows.jsonl"
+    "af_baseline_rows": "/home/profsynapse/code/Epistemic-Humility-Research/archive/experiment/phase1/probe/analysis/af_generation/baseline/rows.jsonl"
   },
   "artifact_shas": {
     "af_pregen_dir": "deba1c525c32b4de7e54f2aa01becb0c6c98f21b7c884df08bd3f674ba0ad43b",

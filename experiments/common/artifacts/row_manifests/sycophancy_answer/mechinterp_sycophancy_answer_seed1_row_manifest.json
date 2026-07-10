@@ -3730,12 +3730,12 @@
     "no_docker": true,
     "no_gpu": true,
     "not_probe_pool_runner_ready": true,
-    "phase": "phase3",
+    "track": "mechanism",
     "source": "answer-sycophancy scored_rows",
     "source_schema_version": "mechinterp-sycophancy-answer-row-manifest/v1"
   },
   "sources": {
-    "results_dir": "experiment/phase1/eval/results_sycophancy_answer_seed1_all_arms_4b"
+    "results_dir": "archive/experiment/phase1/eval/results_sycophancy_answer_seed1_all_arms_4b"
   },
   "strata": {
     "kto_wrong_hint_followed": {

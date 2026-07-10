@@ -1,6 +1,6 @@
 {
   "ok": true,
-  "analysis_type": "phase3_latent_knowledge_probe",
+  "analysis_type": "latent_knowledge_probe",
   "source": "h_lora",
   "n_rows": 1233,
   "label_counts": {

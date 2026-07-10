@@ -203,10 +203,10 @@
   },
   "artifact_paths": {
     "neutral_dir": "/home/profsynapse/code/ehr-worktrees/amendment-ag/experiment/phase1/probe/analysis/ag_neutral_pregen/neutral",
-    "af_pregen_dir": "/home/profsynapse/code/Epistemic-Humility-Research/experiment/phase1/probe/analysis/af_base_pregen",
+    "af_pregen_dir": "/home/profsynapse/code/Epistemic-Humility-Research/archive/experiment/phase1/probe/analysis/af_base_pregen",
     "ag_high_dir": "/home/profsynapse/code/ehr-worktrees/amendment-ag/experiment/phase1/probe/analysis/ag_primed_pregen/high",
     "ag_low_dir": "/home/profsynapse/code/ehr-worktrees/amendment-ag/experiment/phase1/probe/analysis/ag_primed_pregen/low",
-    "ae_census_rows": "/home/profsynapse/code/Epistemic-Humility-Research/experiment/phase1/probe/analysis/ae_base_behavior_rows/rows.jsonl"
+    "ae_census_rows": "/home/profsynapse/code/Epistemic-Humility-Research/archive/experiment/phase1/probe/analysis/ae_base_behavior_rows/rows.jsonl"
   },
   "artifact_shas": {
     "af_pregen_rows": "deba1c525c32b4de7e54f2aa01becb0c6c98f21b7c884df08bd3f674ba0ad43b",

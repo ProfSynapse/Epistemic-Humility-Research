@@ -1,5 +1,5 @@
 {
-  "source": "experiment/phase1/probe/qwen3-4b-clean-sft-grpo-v2-seed1-selfaware/hidden_states_selfaware_clean_sft_grpo_v2_full/extraction__55254a04aa1f/rows.jsonl",
+  "source": "archive/experiment/phase1/probe/qwen3-4b-clean-sft-grpo-v2-seed1-selfaware/hidden_states_selfaware_clean_sft_grpo_v2_full/extraction__55254a04aa1f/rows.jsonl",
   "source_extraction_config_sha": "55254a04aa1ff07c",
   "note": "Distilled frozen SelfAware gate-row manifest (row_key/question/label only) so cloud jobs can load the same frozen pool from the public clone; the full extraction rows.jsonl is gitignored by design. Questions/labels derive from the public SelfAware dataset already tracked at datasets/selfaware/SelfAware.json.",
   "full_file": {

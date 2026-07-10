@@ -2565,7 +2565,7 @@
     0.0037598581984639168
   ],
   "provenance": {
-    "source_direction": "experiment/phase1/probe/analysis/current_clean_grpo_v2_caution_residual_direction/caution_perp_direction_L35.json",
+    "source_direction": "archive/experiment/phase1/probe/analysis/current_clean_grpo_v2_caution_residual_direction/caution_perp_direction_L35.json",
     "source_sha256": "41e13f41100756fd10a974af8a7724940348ab869f2045be62ad4e86a079ee64",
     "source_schema_version": "phase3-residual-caution-direction/v1",
     "source_layer": 35,

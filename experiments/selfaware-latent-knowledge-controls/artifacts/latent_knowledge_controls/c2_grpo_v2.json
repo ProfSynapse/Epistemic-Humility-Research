@@ -1,8 +1,8 @@
 {
   "ok": true,
-  "analysis_type": "phase3_latent_knowledge_controls",
+  "analysis_type": "latent_knowledge_controls",
   "source": "h_lora",
-  "extraction_dir": "experiment/phase1/probe/qwen3-4b-clean-sft-grpo-v2-seed1-selfaware/hidden_states_selfaware_clean_sft_grpo_v2_full/extraction__55254a04aa1f",
+  "extraction_dir": "archive/experiment/phase1/probe/qwen3-4b-clean-sft-grpo-v2-seed1-selfaware/hidden_states_selfaware_clean_sft_grpo_v2_full/extraction__55254a04aa1f",
   "a1_lexical_baseline": {
     "control": "a1_lexical_baseline",
     "source": "h_lora",

@@ -1,6 +1,6 @@
 {
   "amendment": "S",
-  "extraction_dir": "/mnt/f/Code/Epistemic-Humility-Research/experiment/phase1/probe/qwen3-4b-instruct/amendment_s/stage2",
+  "extraction_dir": "/mnt/f/Code/Epistemic-Humility-Research/archive/experiment/phase1/probe/qwen3-4b-instruct/amendment_s/stage2",
   "n_answered_labeled": 1836,
   "n_correct": 500,
   "n_wrong": 1336,

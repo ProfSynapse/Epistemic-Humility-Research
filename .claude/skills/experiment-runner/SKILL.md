@@ -34,7 +34,6 @@ Always choose the narrowest reference needed for the task:
 | Prepare/gate hidden-state extraction | [reference/hidden-state-probe-smoke.md](reference/hidden-state-probe-smoke.md) |
 | Author a NEW steering / extraction / probe-fit / gate-scoring cell (tuner-backed) | the `mechinterp-cells` skill (`.skills/mechinterp-cells/SKILL.md`) |
 | Decide batch-1 vs batched generation for a GPU cell (parity rules, vLLM/HF lanes, numerics smoke) | [reference/batched-generation.md](reference/batched-generation.md) |
-| Stage an aux_head co-training arm (build dataset + A0/A1/A2 recipes + launch prereqs) | [reference/aux-head-cotraining-arms.md](reference/aux-head-cotraining-arms.md) |
 | Plan archived legacy mechinterp causal-pilot sweeps | [reference/legacy-mechinterp-causal-pilot-sweeps.md](reference/legacy-mechinterp-causal-pilot-sweeps.md) |
 | Record durable research-session memory | [reference/research-sessions.md](reference/research-sessions.md) |
 | Audit experiment/session provenance before migration | `python3 .agents/skills/experiment-runner/scripts/provenance_audit.py [--json]` |
@@ -60,7 +59,6 @@ operation, then follow any further routing inside that reference.
 | Inspect a run record | `Get-Content archive/experiment/phase1/run_records/<run_id>.json` |
 | Prepare/gate one hidden-state extraction (GPU-free; gate + resolve, launch nothing) | `python3 .agents/skills/experiment-runner/scripts/prepare_extraction_cell.py --config experiments/common/configs/knowledge-probe/hidden_state_probe.yaml` |
 | Plan archived legacy mechinterp causal-pilot sweeps (GPU-free by default) | `python experiments/common/mechinterp/causal_pilot_sweep.py --config archive/experiment/phase1/probe/config/causal-pilot-core/mechinterp_causal_pilot_local_sweep.yaml` |
-| Build aux_head co-training datasets (real + shuffled placebo; CPU-only) | `python3 archive/experiment/phase1/probe/amendments/amendment_r_build_phase_b_aux_dataset.py --out-dir scratch/amendment_r/phase_b` |
 
 ## Core Invariants
 

@@ -4,9 +4,9 @@
   "bootstrap_seed": 20260703,
   "n_resamp": 10000,
   "inputs": {
-    "labels": "/home/profsynapse/code/Epistemic-Humility-Research/experiment/phase1/probe/analysis/af_base_pregen/af_labels.json",
-    "af_gen_dir": "/home/profsynapse/code/Epistemic-Humility-Research/experiment/phase1/probe/analysis/af_generation",
-    "ae_rows": "/home/profsynapse/code/Epistemic-Humility-Research/experiment/phase1/probe/analysis/ae_base_behavior_rows/rows.jsonl"
+    "labels": "/home/profsynapse/code/Epistemic-Humility-Research/archive/experiment/phase1/probe/analysis/af_base_pregen/af_labels.json",
+    "af_gen_dir": "/home/profsynapse/code/Epistemic-Humility-Research/archive/experiment/phase1/probe/analysis/af_generation",
+    "ae_rows": "/home/profsynapse/code/Epistemic-Humility-Research/archive/experiment/phase1/probe/analysis/ae_base_behavior_rows/rows.jsonl"
   },
   "sanity_checks": {
     "row_counts": "PASS",

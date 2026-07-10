@@ -16,7 +16,7 @@
     "y_key": "cal_y"
   },
   "npz": "gate__qwen3-4b-instruct__pre_L18.npz",
-  "source_extraction": "/mnt/f/Code/Epistemic-Humility-Research/experiment/phase1/probe/qwen3-4b-instruct/amendment_w/stage2",
+  "source_extraction": "/mnt/f/Code/Epistemic-Humility-Research/archive/experiment/phase1/probe/qwen3-4b-instruct/amendment_w/stage2",
   "n": 1233,
   "n_pos": 556,
   "n_neg": 677,

@@ -1,6 +1,6 @@
 {
   "ok": true,
-  "analysis_type": "phase3_caution_axis_transfer",
+  "analysis_type": "caution_axis_transfer",
   "layer": 35,
   "source": "h_lora",
   "arms": [

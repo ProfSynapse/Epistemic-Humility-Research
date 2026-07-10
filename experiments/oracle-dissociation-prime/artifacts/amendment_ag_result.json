@@ -4,9 +4,9 @@
   "consumed_artifacts": {
     "baseline_config_sha": "9394d0e023b2982b",
     "inverted_config_sha": "d1737b4c30a4280f",
-    "baseline_dir": "/home/profsynapse/code/Epistemic-Humility-Research/experiment/phase1/probe/analysis/af_generation/baseline",
+    "baseline_dir": "/home/profsynapse/code/Epistemic-Humility-Research/archive/experiment/phase1/probe/analysis/af_generation/baseline",
     "inverted_dir": "/home/profsynapse/code/ehr-worktrees/amendment-ag/experiment/phase1/probe/analysis/ag_generation/inverted",
-    "census_path": "/home/profsynapse/code/Epistemic-Humility-Research/experiment/phase1/probe/analysis/ae_base_behavior_rows/rows.jsonl"
+    "census_path": "/home/profsynapse/code/Epistemic-Humility-Research/archive/experiment/phase1/probe/analysis/ae_base_behavior_rows/rows.jsonl"
   },
   "cell_n": {
     "known_refused": 124,

@@ -9,7 +9,7 @@
     "w_a": 0.5,
     "format_gate": -1.0,
     "n_prompts": 4,
-    "sensor": "/home/profsynapse/code/Epistemic-Humility-Research/experiment/phase1/probe/analysis/par_sensor_refit/probes/probe_L24_cleansft.joblib"
+    "sensor": "/home/profsynapse/code/Epistemic-Humility-Research/archive/experiment/phase1/probe/analysis/par_sensor_refit/probes/probe_L24_cleansft.joblib"
   },
   "criterion_1_reward_variance": {
     "frac_steps_nonzero_group_std": 0.75,
@@ -41,8 +41,8 @@
   },
   "criterion_4_no_crash_checkpoint": {
     "passed": true,
-    "ckpt_dir": "/home/profsynapse/code/Epistemic-Humility-Research/experiment/phase1/probe/analysis/par_sensor_refit/ai_smoke/ckpt",
-    "adapter_file": "/home/profsynapse/code/Epistemic-Humility-Research/experiment/phase1/probe/analysis/par_sensor_refit/ai_smoke/ckpt/adapter_model.safetensors",
+    "ckpt_dir": "/home/profsynapse/code/Epistemic-Humility-Research/archive/experiment/phase1/probe/analysis/par_sensor_refit/ai_smoke/ckpt",
+    "adapter_file": "/home/profsynapse/code/Epistemic-Humility-Research/archive/experiment/phase1/probe/analysis/par_sensor_refit/ai_smoke/ckpt/adapter_model.safetensors",
     "saved_lora_tensors": 504,
     "micro_run_crashed": false
   },

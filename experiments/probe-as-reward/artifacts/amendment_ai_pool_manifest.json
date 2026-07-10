@@ -35,8 +35,8 @@
     "selfaware_unanswerable_mine",
     "truthfulqa_misconception"
   ],
-  "ah_pool_file": "/home/profsynapse/code/Epistemic-Humility-Research/experiment/phase1/probe/analysis/ah_stage0/expansion/pool_v21.jsonl",
-  "a1_stratum_file": "/home/profsynapse/code/Epistemic-Humility-Research/experiment/phase1/probe/analysis/ah_addendum_a1/stratum.jsonl",
+  "ah_pool_file": "/home/profsynapse/code/Epistemic-Humility-Research/archive/experiment/phase1/probe/analysis/ah_stage0/expansion/pool_v21.jsonl",
+  "a1_stratum_file": "/home/profsynapse/code/Epistemic-Humility-Research/archive/experiment/phase1/probe/analysis/ah_addendum_a1/stratum.jsonl",
   "note": "pool jsonl files are gitignored (FalseQA text is train-only, NO LICENSE); this manifest carries counts only",
   "holdout_row_keys": [
     "ah::kuq_ku_known::000685",

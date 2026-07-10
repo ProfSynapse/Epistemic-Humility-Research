@@ -1,6 +1,6 @@
 {
   "amendment": "T",
-  "extraction_dir": "/mnt/f/Code/Epistemic-Humility-Research/experiment/phase1/probe/qwen3-4b-clean-sft-grpo-v2/amendment_t/stage2",
+  "extraction_dir": "/mnt/f/Code/Epistemic-Humility-Research/archive/experiment/phase1/probe/qwen3-4b-clean-sft-grpo-v2/amendment_t/stage2",
   "n_answered_labeled": 1488,
   "n_correct": 988,
   "n_wrong": 500,

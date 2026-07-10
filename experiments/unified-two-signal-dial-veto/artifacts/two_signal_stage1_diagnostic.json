@@ -3,7 +3,7 @@
   "instrument": "lab-notebook diagnostic (NOT an amendment); go/no-go for Stage 2",
   "checkpoint": "qwen3-4b clean-sft-merged-16bit + grpo-v2-lora (deployed)",
   "gate": {
-    "source": "experiment/phase1/probe/qwen3-4b-clean-sft-grpo-v2-seed1-selfaware/hidden_states_selfaware_clean_sft_grpo_v2_full/extraction__55254a04aa1f",
+    "source": "archive/experiment/phase1/probe/qwen3-4b-clean-sft-grpo-v2-seed1-selfaware/hidden_states_selfaware_clean_sft_grpo_v2_full/extraction__55254a04aa1f",
     "read": "h_lora @ final_prompt_token (adapter active)",
     "label": "known(1) vs unknown(0) = answerable vs unanswerable",
     "n": 1233,
@@ -89,7 +89,7 @@
     ]
   },
   "dial": {
-    "source": "experiment/phase1/probe/qwen3-4b-clean-sft-grpo-v2/amendment_t/stage2",
+    "source": "archive/experiment/phase1/probe/qwen3-4b-clean-sft-grpo-v2/amendment_t/stage2",
     "read": "post-gen content token",
     "label": "correct(1) vs wrong(0)",
     "n": 1488,
