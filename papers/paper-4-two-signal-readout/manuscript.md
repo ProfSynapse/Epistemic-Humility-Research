@@ -192,7 +192,7 @@ rather than truthfulness, and show that hallucinations drawing on parametric
 associations evade probe detectors (AUROC 0.46 to 0.69) that catch unassociated ones.
 Our construct decomposition (§4.4) is this paper's version of that discipline: much of
 the raw veto separation is carried nuisance, and the controlled content core is about
-0.74, not 0.98. Two things differentiate what we do from this line. We separate
+0.74. Two things differentiate what we do from this line. We separate
 *answerability* (a property of the question, read before generation) from *per-answer
 correctness* (a property of the produced answer, read after it) as distinct axes at
 distinct token positions, and we measure the pipeline's robustness surface (size,
@@ -411,12 +411,13 @@ unknown-answered, same dataset) of **0.93** on the deployed checkpoint that rule
 mere dataset-shift artifact. Confident confabulation does *not* read like a correct answer
 to the dial. This is the property that makes the dial a hallucination *veto* and not merely
 a correctness *ranker*: the failure mode we most want to catch (fluent, confident, wrong)
-is exactly the one the dial pushes to the bottom. What the veto reads when it does this is
-established by the pre-registered decomposition in §4.4: a content-trust core of AUROC
-**0.737** (CI [0.650, 0.815]) once answer length and question answerability are both
-controlled, plus the question's carried answerability, which the post-answer state
-retains and which by itself separates unanswerable-question confabulations from good
-answers nearly perfectly. The registered fact: the orchestrator put this veto in a 0.65
+is exactly the one the dial pushes to the bottom. What the veto reads when it does this
+was decomposed on the raw base by the pre-registered analysis in §4.4: a content-trust
+core of AUROC **0.737** (CI [0.650, 0.815]) once answer length and question answerability
+are both controlled, plus the question's carried answerability, which the post-answer
+state retains and which by itself separates unanswerable-question confabulations from
+good answers nearly perfectly. The deployed checkpoint's veto has not been decomposed the
+same way; we read it as sharing this structure because its contrast is built identically. The registered fact: the orchestrator put this veto in a 0.65
 to 0.85 band, with the named risk that confident confabulation would carry the same
 internal signature as confident correctness and the falsifier would fire. The risk did
 not materialize, and the controlled content core sits inside the registered band.
