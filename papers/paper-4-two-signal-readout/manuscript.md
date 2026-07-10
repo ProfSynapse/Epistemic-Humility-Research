@@ -147,10 +147,12 @@ detector expressed inside the same correctness axis rather than as a separate mo
 half of representation engineering (Zou et al., 2023); writing along it (steering) is the
 other (Turner et al., 2023). This paper is
 strictly the *reading* half. The companion diagnosis shows the answerability/caution axis
-is causally steerable but only *asymmetrically* (excess caution can be relaxed; missing
-caution cannot be installed by steering). We cite that result as motivation for a follow-on
-steering study, and as the reason we deploy the readout as a gate rather than as a steering
-intervention here.
+is causally steerable but only *asymmetrically* under ungated steering (excess caution can
+be relaxed; pushing along the axis did not install missing caution). A later registered
+line on the raw base narrows that: a doubt-gated caution write does convert held-out
+confabulations to refusals on one model (exploratory; §6). Reconciling the two is the
+follow-on steering paper's subject; this paper stays on the reading half and deploys the
+readout as a gate.
 
 ---
 
@@ -346,7 +348,7 @@ We scope "training-free" precisely: the raw base is the *instruction-tuned* rele
 "training-free" means "no abstention fine-tuning and no reinforcement learning of ours,"
 **not** "no training ever." At the time this section's numbers were produced, the
 answerability axis could in principle have been a product of upstream instruction tuning;
-§4.10's pre-registered pretrain-only contrast closes that question directly: read on
+§4.11's pre-registered pretrain-only contrast closes that question directly: read on
 *pre-instruction* bases, the axis is already there. The claim here is narrower and stands on
 its own: *our* training regimen (the one the companion paper shows cannot close the
 verbalization gap) is not what puts the readable signal there.
@@ -407,11 +409,13 @@ Ordering families by the dial-mean gap (Gemma 0.504 > Mistral 0.327 > Qwen3.5 0.
 because the veto AUROC depends on the full distribution overlap, not the mean gap alone. We
 therefore read the gap as a *directional* predictor, not a strict rank. The stable
 conclusion stands: **gate + dial are family-general (4/4); the veto replicates (3/4 under
-this single greedy decode) and is the fragile axis**, though §4.9 shows the two greedy
+this single greedy decode) and is the fragile axis**, though §4.10 shows the two greedy
 misses are largely decode artifacts: under sampled decoding the veto passes seed-stably on
 all four families.
 
-**Where the two signals live in depth (descriptive).** The same Amendment Z runs carry the
+### 4.9 Where the signals live: a workspace reading (descriptive)
+
+Where in the network do the two axes live? The same Amendment Z runs carry the
 full per-layer AUROC surface for the gate and the dial, and plotting them against fractional
 depth (layer / n_layers, since the four families have 28, 26, 32, and 42 blocks) shows the
 two signals occupy different parts of the network (Figure 7). The gate is not a
@@ -437,7 +441,34 @@ already-reported Amendment Z surfaces: no new claim and no gate rests on it.
 > unembedding. Descriptive only, from the Amendment Z `auroc_surface` blocks.
 > (`fig-p3-07-depth-profile.png`)
 
-### 4.9 Seed-robustness: the greedy veto misses were decode artifacts
+An independent instrument gives that depth picture a name. As a read-only lab diagnostic
+(exploratory, no registered gates, no claim promoted), we implemented from scratch the
+Jacobian lens (J-lens) of Gurnee et al. (2026): a first-order estimate of how a layer's
+residual-stream state causally shapes the final-token logits, unembedded into vocabulary
+space. The implementation was validated against the model's own logit lens at the final
+layer before anything was read from it (mean cosine 0.9811, mean top-10 overlap 0.82,
+n = 1000 prompts). Gurnee et al. find that the directions the J-lens can express, the
+model's *verbalizable workspace*, concentrate in an intermediate band of layers. On
+Qwen3-4B the same signature appears: the effective dimensionality of the J-lens readout
+stays near floor through the first half of the network, rises sharply at hidden state 23,
+peaks at hidden state 26, and falls back toward the output layers. That is a
+workspace-like band at hidden states 23 through 29 of 36, roughly 60 to 80% of depth.
+
+The overlap with Figure 7 is the point: the correctness dial's within-tolerance band on
+the Qwen-family models is a mid-to-late region that overlaps this workspace band, while
+the gate saturates by 20% of depth, far below it. Read descriptively, the dial appears to
+read from the band where the model's verbalizable workspace concentrates, and the gate is
+computed and carried long before the workspace begins. Three scope fences, stated
+plainly. First, the J-lens run characterized the companion actuation line's caution and
+doubt directions, not this paper's gate and dial probes, so the claim here is band
+overlap, never that the dial itself was verbalized under the lens. Second, the run used
+the bf16 sibling of the bnb-4bit base (same architecture and configuration, different
+quantization). Third, it is an exploratory characterization: it grounds the depth
+picture, and no result in this paper rests on it. It also does not explain why the dial
+reads better after the answer than before it; that mechanism question remains open.
+(Artifacts: Appendix A.)
+
+### 4.10 Seed-robustness: the greedy veto misses were decode artifacts
 
 Every number in §4.8 comes from a single deterministic decode (greedy). A deployment
 samples. We therefore pre-registered a seed-robustness confirmatory: the identical
@@ -487,7 +518,7 @@ not fire: Ministral is the only status-flipping family. The Table 1 magnitudes a
 promoted from "single greedy decode" to **seed-robust under sampled decoding**
 (pre-registration and per-cell provenance: `AMENDMENT-SR-sampled-decode-seed-robustness.md`).
 
-### 4.10 The signal predates post-training: pretrain-only bases and an era ladder
+### 4.11 The signal predates post-training: pretrain-only bases and an era ladder
 
 Every base so far (including every "raw" base in §§4.6–4.9) is a vendor *post-trained*
 instruct release, so all of the above is compatible with the signal being installed by
@@ -560,7 +591,7 @@ mechanism with no fine-tuning:
 3. **Veto (within the dial).** Confident confabulations that pass the gate are pushed to
    the bottom of the dial. Two qualifications, both from pre-registered follow-ups. First,
    the veto is the high-variance axis: it passes seed-stably on all four families under
-   sampled decoding (§4.9), but individual decodes and seeds can dip below the bar, so
+   sampled decoding (§4.10), but individual decodes and seeds can dip below the bar, so
    validate it per model and per decode configuration and report it with seed spread; the
    gate remains the primary defense. Second, the veto is a blend, not a pure content read
    (§4.4): controlled for answer length and question answerability, its content core is
@@ -591,7 +622,7 @@ how much should you trust this?") is available from a frozen model with a linear
 **What training is for.** Our training is not wasted, but its role is narrow and specific: it
 *sharpens the veto* (0.754 → 0.980, a contrast that includes carried answerability; the
 controlled content core is smaller, §4.4) and installs autonomous behavioral abstention. It does
-not create the gate, the dial, or the veto, and §4.10 sharpens the negative half further:
+not create the gate, the dial, or the veto, and §4.11 sharpens the negative half further:
 the signal predates not just our training but *any* post-training (gate 0.997+ on four
 pre-instruction bases), and generic vendor post-training does not sharpen the readout either
 (the clean Olmo-3 base→instruct pair moves the veto 0.803 → 0.731). Sharpening is a property
@@ -605,7 +636,7 @@ but weak on some models out of the box.
 split. "Can I answer this?" and "is this answer right?" are readable across four families
 and four sizes; they look like general properties of instruction-tuned small LMs. "Can I
 distrust my own confident fabrication?" is present across the same families (seed-stable
-4/4 under sampled decoding, §4.9) but far noisier: strong on Gemma, decode- and
+4/4 under sampled decoding, §4.10) but far noisier: strong on Gemma, decode- and
 seed-sensitive elsewhere (Llama's greedy failure flipped to three sampled passes), and
 non-monotonic in scale. And the construct decomposition (§4.4) says what the fragile
 capability is made of: a content-trust core of about 0.74 plus carried answerability. This
@@ -616,11 +647,21 @@ correctness axis on any decode, while others' depend on which confabulation the 
 happens to produce?).
 
 **Why not just steer?** The companion diagnosis found the answerability axis is causally
-steerable, but *asymmetrically*: excess caution can be relaxed, missing caution cannot be
-installed by steering. That asymmetry is why we deploy a *gate* (threshold-and-abstain) rather
-than a steering intervention here: reading the axis and acting on the read is robust, whereas
-writing missing caution into the model is not. Turning the readout around into a causal
-*write* is the subject of the follow-on study.
+steerable, but *asymmetrically*: excess caution could be relaxed, and pushing along the
+axis did not install missing caution. We previously read that as "missing caution cannot
+be installed by steering." The program's own resolved record has since narrowed the claim.
+On the raw Qwen3-4B base (bf16 sibling), a doubt-*gated* caution write, which fires only
+on rows whose doubt readout clears a frozen threshold and snaps them to a fixed setpoint,
+converted held-out confabulations into coherent refusals at 73.5% (Wilson 95% CI [66.7,
+79.3]) at a 3.1% known-correct false-refusal cost (CI [1.6, 6.0]), with placebo controls
+clean under registered gates; a registered multi-source replication at a workspace-band
+write site (§4.9) reached 92.8% (exploratory, one model, one scale). The honest statement
+is conditional: ungated steering could not install missing caution; a doubt-gated write
+can, on one model, and reconciling that with the asymmetric-steering diagnosis is the
+follow-on steering paper's subject. The reason this paper deploys a *gate*
+(threshold-and-abstain) rather than a write is therefore scope, not impossibility: the
+read-and-threshold pipeline is validated across four families and four sizes; the gated
+write is validated on one model at one scale.
 
 ---
 
@@ -629,14 +670,14 @@ writing missing caution into the model is not. Turning the readout around into a
 We state these plainly; several are the reason specific claims are scoped as they are.
 
 1. **Seed coverage is partial.** The pre-registered three-seed sampled-decoding
-   replication (§4.9) makes the *cross-family* dial and veto magnitudes seed-robust, and
+   replication (§4.10) makes the *cross-family* dial and veto magnitudes seed-robust, and
    quantifies their spread. The core Qwen3-4B deep-dive numbers (dial 0.834, veto deltas,
    the +0.065 post-beats-pre gain) remain seed 1: the near-saturated effects (gate 0.997)
-   are low seed-risk, and §4.9's spread measurements bound how much the seed-sensitive
+   are low seed-risk, and §4.10's spread measurements bound how much the seed-sensitive
    axes move, but a multi-seed pass on the deep-dive checkpoint itself has not been run.
 2. **Base-model reads are render-sensitive, and the text baseline is high.** The original
    scoping worry (that the axes might reflect upstream instruction tuning) is closed by
-   §4.10 (gate 0.997+ on four pre-instruction bases). What remains: base-model veto numbers
+   §4.11 (gate 0.997+ on four pre-instruction bases). What remains: base-model veto numbers
    depend on the prompt render (k-shot vs chat, 0.666 vs 0.867 on Qwen3.5-Base), and a
    question-surface TF-IDF baseline reads the gate pool at 0.964, so margins over that
    baseline, not raw AUROCs, are the honest effect sizes for the gate.
@@ -689,6 +730,7 @@ separate, and know which model's veto you can trust.
 - Burns et al. (2022). Discovering Latent Knowledge in Language Models Without Supervision. arXiv:2212.03827.
 - Ethayarajh et al. (2024). KTO: Model Alignment as Prospect Theoretic Optimization. arXiv:2402.01306.
 - Gani et al. (2026). Quantifying Faithful Confidence Expression in Large Reasoning Models. arXiv:2606.03969.
+- Gurnee et al. (2026). Verbalizable Representations Form a Global Workspace in Language Models. Transformer Circuits. https://transformer-circuits.pub/2026/workspace/index.html.
 - Joshi et al. (2017). TriviaQA: A Large Scale Distantly Supervised Challenge Dataset for Reading Comprehension. arXiv:1705.03551.
 - Kadavath et al. (2022). Language Models (Mostly) Know What They Know. arXiv:2207.05221.
 - Lin et al. (2022). Teaching Models to Express Their Uncertainty in Words. arXiv:2205.14334.
@@ -722,6 +764,7 @@ Every figure and number is generated from tracked result artifacts. Figures are 
 | Cross-size 1.7B/8B/14B (X) | `amendment_x_qwen3-{1.7b,8b,14b}-bnb-4bit_result.json` |
 | Cross-family (Z) | `amendment_z_{llama-3.2-3b,ministral-3-3b,qwen3.5-4b,gemma-4-e4b}_result.json` |
 | Pretrain-only bases + era ladder (Y) | `amendment_y_results/` (per-cell result JSONs + extraction manifest) |
+| J-lens workspace localization (§4.9) | `experiments/j-space-localization-qwen3-4b/analysis-committed/results/jspace-jlens-r1/` (`smoke_full.json`, `h1_full.json`, `profile_full.json`; repo-root path, not under the probe dir) |
 
 Governance: each result surface is a signed exploratory amendment under
 `docs/protocols/` and `experiments/<slug>/` referencing the locked pre-registration; the cross-size and
