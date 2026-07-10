@@ -4,7 +4,7 @@ session_id: paper5-jspace-hardening
 title: Paper 5 J-space hardening
 status: active
 created_at: '2026-07-08T16:46:25Z'
-updated_at: '2026-07-10T14:46:48Z'
+updated_at: '2026-07-10T14:58:11Z'
 phase: phase1
 question: Which registered follow-up experiments harden the Paper 5 actuation thesis,
   starting with a fresh Qwen3-4B J-space layer-site replication?
@@ -272,6 +272,27 @@ checkpoints:
     at 86b134c (no pin bump needed; future experiments adopt the runner image from
     tuner main). Docker directive is now fully on the record in skills; the qwen35-4b-midband
     cell remains the one honored env-deviation exception.'
+  evidence: []
+  run_ids: []
+  commands: []
+  decisions: []
+  next_steps: []
+  signals: {}
+- id: 012-checkpoint
+  at: '2026-07-10T14:58:11Z'
+  kind: checkpoint
+  title: Checkpoint
+  summary: 'qwen35-4b-midband-doubt-snap SIGNED after Stage C builder delivered run_dose_ladder.py
+    (smoke PASS: readback within 0.3%, natural stop, RunLog resume verified zero-regen;
+    3 registered arms x 4 layers x 7 doses = 84 cells + shared baseline, ~74,750 generations).
+    Predictions registered pre-outcome: user G1-passes (decouples), orchestrator G1-passes
+    (hs23, 6-12 sigma). Grids/floors locked (refused>=60% AND well_formed>=80%, known
+    false-refusal<=10%). Sign gap caught and fixed: bin/exp sign pinned only the scaffold''s
+    5 instrument files; the 3 Stage C modules added to modules+pins by hand (sha256)
+    pre-launch, recorded in experiment NOTEBOOK. Launch plan user-approved: batch
+    probe (16/32 with semantic parity vs 8) then full ladder on the free 3090; dispatched
+    to stagec-builder. Also this segment: user approved and lead merged tuner #143,
+    EHR #266, EHR #264.'
   evidence: []
   run_ids: []
   commands: []
@@ -556,3 +577,8 @@ rows before the layer contrast.
 - at: `2026-07-10T14:46:48Z`
 - kind: `checkpoint`
 - summary: User approved and lead merged all three open PRs: Synaptic-Tuner #143 (pinned mechinterp runner image, CUDA 12.8.1/torch 2.9.1/transformers 5.12.1), EHR #266 (Docker local-lane skill invariant), EHR #264 (rep-2 j-space layer-contrast FULL PASS evidence). Repo main now at 618b62bc; tuner submodule pin unchanged at 86b134c (no pin bump needed; future experiments adopt the runner image from tuner main). Docker directive is now fully on the record in skills; the qwen35-4b-midband cell remains the one honored env-deviation exception.
+### 012-checkpoint - Checkpoint
+
+- at: `2026-07-10T14:58:11Z`
+- kind: `checkpoint`
+- summary: qwen35-4b-midband-doubt-snap SIGNED after Stage C builder delivered run_dose_ladder.py (smoke PASS: readback within 0.3%, natural stop, RunLog resume verified zero-regen; 3 registered arms x 4 layers x 7 doses = 84 cells + shared baseline, ~74,750 generations). Predictions registered pre-outcome: user G1-passes (decouples), orchestrator G1-passes (hs23, 6-12 sigma). Grids/floors locked (refused>=60% AND well_formed>=80%, known false-refusal<=10%). Sign gap caught and fixed: bin/exp sign pinned only the scaffold's 5 instrument files; the 3 Stage C modules added to modules+pins by hand (sha256) pre-launch, recorded in experiment NOTEBOOK. Launch plan user-approved: batch probe (16/32 with semantic parity vs 8) then full ladder on the free 3090; dispatched to stagec-builder. Also this segment: user approved and lead merged tuner #143, EHR #266, EHR #264.
