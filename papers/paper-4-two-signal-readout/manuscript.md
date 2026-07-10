@@ -231,6 +231,68 @@ the primary endpoint. For the cross-family confirmatory, SUCCESS was pre-defined
 passing on ≥3 of 4 families, with the falsifier being a veto failure on ≥2 of 4. Scaling
 sharpness was declared descriptive-only in advance. No goalpost was moved after any result.
 
+### How this research was conducted with AI
+
+This program is run by a human principal investigator working with a frontier language
+model (Claude, Anthropic) acting as a research orchestrator, which dispatches specialized
+AI agents for bounded tasks. We describe the arrangement because it is part of the
+method: the division of authority keeps the parts of science that require accountability
+human, and delegates the parts that benefit from tireless, parallel, adversarial labor,
+under controls that make the delegation auditable.
+
+The unit of work is a governed experiment: a self-contained directory holding a signed
+amendment document (the design in prose), a machine-readable manifest, and the instrument
+code. Before anything runs, the design registers a hypothesis, gates with numeric floors,
+a falsifier stating what outcome would kill the claim, and predictions recorded before
+the run. At signing, every instrument file is pinned by content hash (SHA-256). After
+signing, gates and thresholds cannot move, and post-outcome changes to the registered
+surface are prohibited outright. Every evidence cell in this paper ran under that regime,
+and the retained predictions were wrong in instructive ways: the orchestrator predicted
+the veto in a 0.65 to 0.85 band and it landed at 0.980 (§4.3); both the PI and the
+orchestrator called the residual-coverage gates correctly while neither foresaw the
+length confound those gates failed to guard, and neither foresaw the answerability carry
+in the follow-up either (§4.4); the seed-robustness registration pre-named Llama and
+Qwen3.5 as the veto cells most likely to flip, and both flipped upward instead (§4.10).
+Cells registered before 2026-07-03 carry only the orchestrator's prediction; the dual
+PI-plus-orchestrator practice was adopted mid-program and binds every cell signed after
+it, including both cells in §4.4.
+
+The trust boundary is explicit. The AI side builds harnesses against the locked design,
+runs and monitors experiments, computes results, drafts documents (including this one),
+red-teams findings, and proposes interpretations. The human side holds everything with
+consequence: approving and signing designs, authorizing every paid compute launch,
+adjudicating gate outcomes when judgment is required, merging evidence into the record,
+and deciding verdicts.
+
+Three controls do most of the work of keeping the AI honest:
+
+1. **Adversarial review before any verdict.** Results, especially good ones, go to a
+   separate red-team agent briefed to refute: oracle leaks, circular evaluation, goalpost
+   drift, provenance holes, statistical errors. Section 4.4 is this control operating in
+   public: a too-good margin triggered the audit that found the length confound behind a
+   pair of passing gates, and the audit of the pre-registered fix found the answerability
+   carry that cut a 0.92-class headline to an honest 0.74.
+
+2. **Read-before-cite.** Signed amendment documents are the sole source of truth for what
+   any prior experiment showed. No agent, including the orchestrator, may state a prior
+   result from memory; the claim must trace to the document. This exists because language
+   models pattern-match plausible histories, and a plausible-but-wrong account of your own
+   prior experiment is the most dangerous artifact in an AI-run lab.
+
+3. **Provenance by construction.** Instruments are content-hashed at signing, model
+   weights are pinned by revision, and every number in this paper traces through Appendix
+   A from the text to its amendment to the result JSON to the instrument bytes that
+   produced it.
+
+We make no claim that this workflow removes the need for human scientific judgment. The
+claim is narrower and testable: it makes AI participation in research auditable, keeps a
+durable line from every published number to the bytes that produced it, and forces the
+participants to say, in advance and in writing, what would prove them wrong. The one
+registered gate this program missed (the dial's calibration gate, by 0.001, above) stays
+on the page for the same reason the wrong predictions do: a workflow that quietly
+discards its misses is optimizing for the appearance of foresight, which is precisely
+the failure mode this research program studies in language models.
+
 ---
 
 ## 4. Results
