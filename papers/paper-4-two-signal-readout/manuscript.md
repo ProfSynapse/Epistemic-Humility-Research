@@ -915,6 +915,16 @@ We state these plainly; several are the reason specific claims are scoped as the
 7. **Correctness-axis causality is untested.** The gate has causal (steering) evidence; the
    dial is correlational. Whether steering along the correctness axis moves actual correctness
    is future work.
+8. <!-- SWAP: pending dial token-logprob baseline analysis -->
+   **No token-logprob baseline for the dial.** The dial is bounded below by a
+   question-surface text baseline (0.75–0.78 per family, §4.11), but we have not run the
+   cheapest internal competitor: the model's own token log-probabilities on the answer
+   span. Sequence probability is a real within-dataset correctness signal (Zenn and
+   Geiping, 2026), so some fraction of the dial's separation may be available without
+   fitting a probe at all. Until that baseline is computed over the cached extractions,
+   the dial's margin over sequence probability is unquantified: what this paper
+   establishes about the dial is its cross-model geometry, its post-answer read
+   advantage, and its veto behavior, not that it beats the model's own logprobs.
 
 ---
 
@@ -994,6 +1004,7 @@ lose.
 - Yin et al. (2023). Do Large Language Models Know What They Don't Know?. arXiv:2305.18153.
 - Yona et al. (2026). Hallucinations Undermine Trust; Metacognition is a Way Forward. arXiv:2605.01428.
 - Zhang et al. (2023). R-Tuning: Instructing Large Language Models to Say "I Don't Know". arXiv:2311.09677.
+- Zenn and Geiping (2026). When are Likely Answers Right? On Sequence Probability and Correctness in LLMs. arXiv:2606.27359.
 - Zhu et al. (2023). On the Calibration of Large Language Models and Alignment. arXiv:2311.13240.
 - Zou et al. (2023). Representation Engineering: A Top-Down Approach to AI Transparency. arXiv:2310.01405.
 
