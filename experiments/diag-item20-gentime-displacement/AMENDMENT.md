@@ -7,7 +7,7 @@ Question: when the model generates answers on the unknown-only surface, how much
 generation-time hidden-state movement lies in the doubt/caution plane versus the
 orthogonal residual?
 
-Instrument: `experiment/phase1/probe/diag_item20_gentime_decomposition.py`,
+Instrument: `experiments/diag-item20-gentime-displacement/diag_item20_gentime_decomposition.py`,
 reading the diagnostics bundle generation-time position captures for the
 clean-SFT -> GRPO-v2 checkpoint. The report decomposes six positions against the
 L35 doubt, caution, and caution-perp axes.

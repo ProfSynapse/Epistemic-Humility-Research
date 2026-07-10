@@ -20,7 +20,7 @@ models:
 - qwen3-4b
 metrics:
 - auroc
-provenance: 'Internal lab-notebook diagnostics (item 9). Script experiment/phase1/probe/diag_item9_caution_timeline.py (commit a354ad73); extraction at repo commit d5a90b3b; data staging professorsynapse/eh-al-prep-staging tags diag-item9-{raw,cleansft,grpov2,partrue}-r3. Forward-only L0..L36 over the 1,662-row A0 pool (324 known / 1,338 unknown); probe = PCA-128 shared basis plus saga logistic, 5-fold OOF, seed 20260705. Committed analysis artifact experiments/diag-item9-caution-assembly-timeline/analysis-committed/diag_item9_caution_timeline.md. Ungated exploratory evidence, never pooled with the locked headline matrix.'
+provenance: 'Internal lab-notebook diagnostics (item 9). Script experiments/diag-item9-caution-assembly-timeline/diag_item9_caution_timeline.py (original commit a354ad73); extraction at repo commit d5a90b3b; data staging professorsynapse/eh-al-prep-staging tags diag-item9-{raw,cleansft,grpov2,partrue}-r3. Forward-only L0..L36 over the 1,662-row A0 pool (324 known / 1,338 unknown); probe = PCA-128 shared basis plus saga logistic, 5-fold OOF, seed 20260705. Committed analysis artifact experiments/diag-item9-caution-assembly-timeline/analysis-committed/diag_item9_caution_timeline.md. Ungated exploratory evidence, never pooled with the locked headline matrix.'
 related:
 - '[[sft-rotates-boundary-readout-rl-rides-it]]'
 - '[[answerability-axis-present-without-task-training]]'
