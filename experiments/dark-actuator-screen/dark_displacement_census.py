@@ -101,7 +101,7 @@ SCREEN_INPUT_R2 = 0.50                    # input-linear bookkeeping R^2 ceiling
 SCREEN_ROGUE_MASS = 0.50                  # rogue-coordinate energy fraction ceiling (row1)
 SCREEN_ROGUE_TOPK = 20                    # top-|loading| coords inspected for rogue overlap
 CANON = Path("/home/profsynapse/code/Epistemic-Humility-Research")
-AH_PROBES = CANON / "experiment/phase1/probe/analysis/ah_stage0/probes"
+AH_PROBES = CANON / "archive/experiment/phase1/probe/analysis/ah_stage0/probes"
 
 
 # ---------------------------------------------------------------- small helpers

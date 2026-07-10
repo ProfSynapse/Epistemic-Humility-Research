@@ -185,7 +185,7 @@ def run_true_a0():
     sh(["git", "clone", REPO_URL, workspace])
     sh(["git", "checkout", REPO_COMMIT], cwd=workspace)
 
-    probe = os.path.join(workspace, "experiment/phase1/probe")
+    probe = os.path.join(workspace, "archive/experiment/phase1/probe")
     script = os.path.join(probe, "amendment_ai_verdict_extract_gen.py")
     upload = os.path.join(probe, "cloud/upload_result.py")
 

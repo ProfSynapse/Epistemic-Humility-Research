@@ -14,7 +14,7 @@ REPO = os.environ.get(
     "EHR_REPO",
     str(Path(__file__).resolve().parents[4]),
 )
-PROBE = os.path.join(REPO, "experiment/phase1/probe")
+PROBE = os.path.join(REPO, "archive/experiment/phase1/probe")
 
 S_DIR = os.path.join(PROBE, "qwen3-4b-instruct/amendment_s/stage2")
 W_DIR = os.path.join(PROBE, "qwen3-4b-instruct/amendment_w/stage2")

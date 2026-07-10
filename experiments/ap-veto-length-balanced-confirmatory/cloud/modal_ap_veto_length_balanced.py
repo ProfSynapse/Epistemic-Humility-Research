@@ -12,7 +12,7 @@ was itself cloned from the crash-proof modal_al_true_a0.py v2 skeleton).
 AP-specific shape (identical to AM's, two deltas):
   * ap_extract.py (this experiment's own script, new-layout under
     experiments/ap-veto-length-balanced-confirmatory/, NOT the old
-    experiment/phase1/probe/ tree) does the numerics smoke THEN the full
+    archive/experiment/phase1/probe/ tree) does the numerics smoke THEN the full
     A0-surface regeneration at max_new_tokens=192 (up from AM's 96) + dual-
     position (pre/post) hidden-state extraction, all in one container pass.
   * The self-contained AP pool (question + aliases + gold_class +

@@ -180,7 +180,7 @@ def run_am():
     sh(["git", "fetch", "--all", "--tags"], cwd=workspace, check=False)
     sh(["git", "checkout", REPO_COMMIT], cwd=workspace)
 
-    probe = os.path.join(workspace, "experiment/phase1/probe")
+    probe = os.path.join(workspace, "archive/experiment/phase1/probe")
     script = os.path.join(probe, "amendment_am_extract.py")
     upload = os.path.join(probe, "cloud/upload_result.py")
 

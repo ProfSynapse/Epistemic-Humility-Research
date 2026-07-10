@@ -25,7 +25,7 @@ WHAT IT COMPUTES (AMENDMENT.md Design + Gates):
     class_weight balanced, fit OUT-OF-FOLD (5-fold StratifiedKFold) on the
     MATCHED set's post-L20 hidden states ONLY -- no pool scalar, no
     answer_tok_len, ever enters the feature matrix. Identical recipe to
-    experiment/phase1/probe/amendment_am_grade_and_gates.py's `_fit_probe` /
+    archive/experiment/phase1/probe/amendment_am_grade_and_gates.py's `_fit_probe` /
     `oof_scores` (read-only reference on the unmerged amendment-am branch).
   * Length-only baseline: `roc_auc_score(y_halluc, answer_tok_len)` on the
     IDENTICAL matched-set rows (same y labels, same row set as the veto).

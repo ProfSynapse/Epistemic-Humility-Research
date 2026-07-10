@@ -12,7 +12,7 @@ from pathlib import Path
 
 EXP_DIR = Path(__file__).resolve().parent
 REPO_ROOT = EXP_DIR.parents[1]
-PROBE_DIR = REPO_ROOT / "experiment/phase1/probe"
+PROBE_DIR = REPO_ROOT / "archive/experiment/phase1/probe"
 DEFAULT_BASE = PROBE_DIR / "qwen3-4b-instruct" / "probe_results.jsonl"
 DEFAULT_THINKING = (
     PROBE_DIR / "qwen3-4b-instruct-thinking-audit-128-1024" / "probe_results.jsonl"

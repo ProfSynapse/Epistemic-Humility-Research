@@ -61,7 +61,7 @@ from safetensors import safe_open
 
 EXP_DIR = Path(__file__).resolve().parent
 REPO_ROOT = EXP_DIR.parents[1]
-PROBE_DIR = REPO_ROOT / "experiment/phase1/probe"
+PROBE_DIR = REPO_ROOT / "archive/experiment/phase1/probe"
 AXIS_DIR = PROBE_DIR / "analysis/current_clean_grpo_v2_caution_residual_direction"
 DEFAULT_DATA = None  # required arg; points at the extracted gentime data/ dir
 OUT_DIR = EXP_DIR / "analysis-committed"

@@ -189,7 +189,7 @@ def run_stage2():
     sh(["git", "fetch", "origin"], cwd=workspace, check=False)
     sh(["git", "checkout", REPO_COMMIT], cwd=workspace)
 
-    probe = os.path.join(workspace, "experiment/phase1/probe")
+    probe = os.path.join(workspace, "archive/experiment/phase1/probe")
     script = os.path.join(probe, "amendment_ak_stage2_steer.py")
     upload = os.path.join(probe, "cloud/upload_result.py")
 

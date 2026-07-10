@@ -37,7 +37,7 @@ ADAPTER_REV="$4"; POOL_IN_REPO="$5"
 RUN_TAG="${6:-diag-item20-gentime-r1}"
 LIMIT="${7:-600}"
 
-PROBE="experiment/phase1/probe"
+PROBE="archive/experiment/phase1/probe"
 CLOUD="experiments/common/cloud"
 OUT="/tmp/${RUN_TAG}"
 mkdir -p "${OUT}"

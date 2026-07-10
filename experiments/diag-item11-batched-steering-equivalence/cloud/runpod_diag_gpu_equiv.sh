@@ -39,7 +39,7 @@ set -euo pipefail
 STAGING_REPO="$1"; BASE_MODEL="$2"; DIRECTION_RELPATH="$3"
 RUN_TAG="${4:-diag-item11-gpuequiv-r1}"
 
-PROBE="experiment/phase1/probe"
+PROBE="archive/experiment/phase1/probe"
 CLOUD="experiments/common/cloud"
 OUT="/tmp/${RUN_TAG}"
 mkdir -p "${OUT}"

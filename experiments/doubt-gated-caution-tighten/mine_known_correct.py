@@ -37,10 +37,10 @@ MODEL_NAME = "unsloth/Qwen3-4B"
 CANONICAL = Path("/home/profsynapse/code/Epistemic-Humility-Research")
 EXPANSION_CANDIDATES = (
     CANONICAL
-    / "experiment/phase1/probe/analysis/ah_stage0/expansion/expansion_candidates.jsonl"
+    / "archive/experiment/phase1/probe/analysis/ah_stage0/expansion/expansion_candidates.jsonl"
 )
 AH_A0_ROWS = (
-    CANONICAL / "experiment/phase1/probe/analysis/ah_main/gen_A0/rows.jsonl"
+    CANONICAL / "archive/experiment/phase1/probe/analysis/ah_main/gen_A0/rows.jsonl"
 )
 DEFAULT_OUT = ANALYSIS / "mined_a0_known_correct_rows.jsonl"
 DEFAULT_ALL_OUT = ANALYSIS / "mined_a0_answerable_generations.jsonl"

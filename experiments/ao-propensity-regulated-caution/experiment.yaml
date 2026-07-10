@@ -33,7 +33,7 @@ instrument:
     cell_stage1_caution_perp.yaml: 22af96bf9898df1f5e99941b4624717eb8bb28fcb8c88166176c83509d747cab
     cell_stage1_fallback_mass_mean.yaml: 5409a82b3f4b4b88cdded517b759f358dd253175a68acb07cb7399bd78afc5a7
     gates_stage1.yaml: b8ebdde41ef0c92809a2c9b2653a716da12a03f85d8be0c46a2db571df3f6526
-    ao_grader.py: c3c65dd636e88d900087cae6229913129039e44b9e0feb3037ec1be966c17547
+    ao_grader.py: 979e4130cde58e7220856de219279c603ec413960e5c28f89a16609cf378f01b
 inputs: []
 verdict: 'NULL (Stage-1 knob validation). No caution direction validates as a behavioral
   lever on the AI-TRUE checkpoint (clean-SFT->GRPO probe-as-reward-TRUE): ablating

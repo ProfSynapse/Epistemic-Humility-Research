@@ -15,12 +15,12 @@ so leaving it out removes that leak vector by construction rather than by
 promise.
 
 Ported (logic, structure) from
-experiment/phase1/probe/amendment_am_build_pool.py (read-only reference on the
+archive/experiment/phase1/probe/amendment_am_build_pool.py (read-only reference on the
 unmerged amendment-am branch; not imported across branches). The join source
 is the same AH stage0 host artifacts AM used:
-  experiment/phase1/probe/analysis/ah_stage0/expansion/pool_v21.jsonl  (1662 rows)
-  experiment/phase1/probe/analysis/ah_stage0/candidates.jsonl          (aliases)
-  experiment/phase1/probe/analysis/ah_stage0/expansion/expansion_candidates.jsonl
+  archive/experiment/phase1/probe/analysis/ah_stage0/expansion/pool_v21.jsonl  (1662 rows)
+  archive/experiment/phase1/probe/analysis/ah_stage0/candidates.jsonl          (aliases)
+  archive/experiment/phase1/probe/analysis/ah_stage0/expansion/expansion_candidates.jsonl
 
 These are UNTRACKED / gitignored analysis artifacts (never contain FalseQA
 text beyond the frozen A0 questions already in the pool; not committed). This
@@ -40,7 +40,7 @@ import sys
 from pathlib import Path
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
-STAGE0 = REPO_ROOT / "experiment/phase1/probe/analysis/ah_stage0"
+STAGE0 = REPO_ROOT / "archive/experiment/phase1/probe/analysis/ah_stage0"
 DEFAULT_POOL = STAGE0 / "expansion" / "pool_v21.jsonl"
 CAND_FILES = [
     STAGE0 / "candidates.jsonl",

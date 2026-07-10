@@ -37,7 +37,7 @@ ADAPTER_REV="$4"; POOL_IN_REPO="$5"; STAGE_TAG="$6"
 RUN_TAG="${7:-diag-item9-${STAGE_TAG}-r1}"
 NUM_LAYERS="${8:-36}"
 
-PROBE="experiment/phase1/probe"
+PROBE="archive/experiment/phase1/probe"
 CLOUD="experiments/common/cloud"
 OUT="/tmp/${RUN_TAG}"
 mkdir -p "${OUT}"

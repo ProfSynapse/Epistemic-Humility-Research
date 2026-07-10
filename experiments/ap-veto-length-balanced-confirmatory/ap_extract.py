@@ -8,7 +8,7 @@ confirmatory cell; results reported separately from PROTOCOL v0.3 and from the
 PR #205 published veto operating characteristics, and never pooled with AM.
 
 WHAT THIS DOES (one GPU pass, run inside the Modal container). Ported
-(logic, structure) from experiment/phase1/probe/amendment_am_extract.py
+(logic, structure) from archive/experiment/phase1/probe/amendment_am_extract.py
 (read-only reference on the unmerged amendment-am branch; not imported across
 branches), with exactly two deliberate surface changes per the AMENDMENT
 Design section:
@@ -70,7 +70,7 @@ import time
 from pathlib import Path
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
-PROBE_DIR = REPO_ROOT / "experiment/phase1/probe"
+PROBE_DIR = REPO_ROOT / "archive/experiment/phase1/probe"
 EVAL_DIR = REPO_ROOT / "experiment/phase1/eval"
 for p in (str(PROBE_DIR), str(EVAL_DIR)):
     if p not in sys.path:
@@ -99,7 +99,7 @@ MAX_NEW_TOKENS = 192
 # surface as AM").
 AC_CONFIG = (
     PROBE_DIR.parents[2]
-    / "experiments/doubt-regulated-caution/phase3_ac_doubt_coupled_intervention.yaml"
+    / "experiments/doubt-regulated-caution/ac_doubt_coupled_intervention.yaml"
 )
 SMOKE_N = 20
 BISECT_BATCHES = [12, 8, 4, 2, 1]  # registered batch first, then bisect down

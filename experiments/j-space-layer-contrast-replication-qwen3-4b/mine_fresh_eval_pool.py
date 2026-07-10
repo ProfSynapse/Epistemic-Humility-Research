@@ -47,7 +47,7 @@ MODEL_NAME = "unsloth/Qwen3-4B"
 CANONICAL = Path("/home/profsynapse/code/Epistemic-Humility-Research")
 EXPANSION_CANDIDATES = (
     CANONICAL
-    / "experiment/phase1/probe/analysis/ah_stage0/expansion/expansion_candidates.jsonl"
+    / "archive/experiment/phase1/probe/analysis/ah_stage0/expansion/expansion_candidates.jsonl"
 )
 PREDECESSOR_SPLIT = (
     HERE.parent

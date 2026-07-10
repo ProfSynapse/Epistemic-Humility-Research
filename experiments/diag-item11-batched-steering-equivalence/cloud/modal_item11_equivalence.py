@@ -114,7 +114,7 @@ def run_equivalence():
     sh(["git", "fetch", "origin"], cwd=workspace, check=False)
     sh(["git", "checkout", REPO_COMMIT], cwd=workspace)
 
-    probe = os.path.join(workspace, "experiment/phase1/probe")
+    probe = os.path.join(workspace, "archive/experiment/phase1/probe")
     cell = os.path.join(probe, "steering/gpu_equivalence_cell.py")
     direction = os.path.join(workspace, DIRECTION_IN_REPO)
     upload = os.path.join(probe, "cloud/upload_result.py")
