@@ -177,7 +177,7 @@ curve of refusal vs written gain (binned g_i), coupled arm only.
 
 ## 6. Implementation surface (all CPU-testable except the run itself)
 
-1. `experiment/phase1/probe/build_doubt_gain_map.py` (NEW, CPU): loads the
+1. `experiments/doubt-regulated-caution/build_doubt_gain_map.py` (NEW, CPU): loads the
    frozen extraction + overlay, fits `u_d`, computes z_i and gains for the
    three eval cells, emits `doubt_gain_map_L35.json` carrying alpha, clip,
    mu_d/sigma_d, the real gains, the permuted gains, and the permutation seed.
@@ -210,7 +210,7 @@ curve of refusal vs written gain (binned g_i), coupled arm only.
   numbers and verdict land in this doc's §8 and the session note.
 - Gain map BUILT 2026-07-02 (local-only per convention, deterministic from the
   frozen inputs above):
-  `python3 build_doubt_gain_map.py --extraction-dir <extraction__55254a04aa1f> --overlay <clean_sft_grpo_v2/rows.jsonl> --out analysis/ac_doubt_gain_map/doubt_gain_map_L35.json`
+  `python3 experiments/doubt-regulated-caution/build_doubt_gain_map.py --extraction-dir <extraction__55254a04aa1f> --overlay <clean_sft_grpo_v2/rows.jsonl> --out analysis/ac_doubt_gain_map/doubt_gain_map_L35.json`
   -> 1217 rows (kr 168, ka 373, ur 676); mu_d -245.28, sigma_d 60.52;
   per-cell mean z: kr +0.35, ka +1.18, ur -0.73 (signs as predicted in §2:
   known-side positive, unknown negative); gains in [-2.00, +1.86], 23 rows at

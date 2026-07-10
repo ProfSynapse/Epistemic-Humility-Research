@@ -894,8 +894,11 @@
           "phase3_ac_doubt_coupled_intervention_smoke.yaml",
           "phase3_ac_doubt_coupled_intervention_smoke_batched.yaml"
         ],
-        "modules": [],
+        "modules": [
+          "build_doubt_gain_map.py"
+        ],
         "pins": {
+          "build_doubt_gain_map.py": "94d994e5bc8349460d7c6f84e0f6f2000f9338fe29a429354e7a16438e3ed6b1",
           "phase3_ac_doubt_coupled_intervention.yaml": "1191c8bff05c2c11cfdb8bf71a6dc9a42f60c0435b49ec1a018379d1439c62f0",
           "phase3_ac_doubt_coupled_intervention_smoke.yaml": "c5f0e4ef997d2521b22933b8ba8fe61e5edea365862b38b15582ee2f1424bb60",
           "phase3_ac_doubt_coupled_intervention_smoke_batched.yaml": "b01a088a73736c3b7b80a229b55699f2e719da8acc7947623011b3bcceb0e782"
