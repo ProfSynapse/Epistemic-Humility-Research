@@ -4,7 +4,7 @@ session_id: 20260708T164625Z-paper-5-j-space-hardening
 title: Paper 5 J-space hardening
 status: active
 created_at: '2026-07-08T16:46:25Z'
-updated_at: '2026-07-10T15:24:06Z'
+updated_at: '2026-07-10T19:19:39Z'
 track: research
 phase: phase1
 question: Which registered follow-up experiments harden the Paper 5 actuation thesis,
@@ -321,6 +321,28 @@ checkpoints:
   decisions: []
   next_steps: []
   signals: {}
+- id: 014-checkpoint
+  at: '2026-07-10T19:19:39Z'
+  kind: checkpoint
+  title: Checkpoint
+  summary: 'PR #258 (experiment provenance reorganization) MERGED after full audit
+    + remediation arc. Fable-tier audit verified: all 40 legacy amendments migrated
+    with verdicts/gates/numbers byte-preserved, 45/45 run records archived, no new
+    data exposure, nothing stranded on the Windows-side worktree (identical to PR
+    head, clean). Blocking findings fixed by remediation: 7+44 dangling evidence pointers
+    in governed docs corrected against the audit census, 23 stale historical pins
+    re-pinned (+3 more surfaced by the main merge) with NOTEBOOK provenance entries,
+    exp validate extended to gate historical-status pin drift, main merged with 5
+    conflicts resolved (mechinterp SKILL.md restructure kept both invariant sets;
+    session notes renamed to timestamped scheme with checkpoints preserved and renumbered).
+    Post-merge: validate OK (60 experiments) on main. Session-note tooling now uses
+    the timestamped path (this checkpoint is the first at the new path).'
+  evidence: []
+  run_ids: []
+  commands: []
+  decisions: []
+  next_steps: []
+  signals: {}
 ---
 # Paper 5 J-space hardening
 
@@ -609,3 +631,8 @@ rows before the layer contrast.
 - at: `2026-07-10T15:24:06Z`
 - kind: `checkpoint`
 - summary: Stage C batch probe + launch (stagec-builder report, lead-verified process live): Qwen3.5 batch-composition non-determinism CONFIRMED on the local 3090, not just Modal A100s -- at bs=16 and bs=32 vs the bs=8 reference (n=30 rows, hs23, dose 8 sigma), most divergence was wording drift but one row (kuq_unknowns_all:1041, gated arm) categorically flipped refused=True/clean_tighten=True at bs=8 to a substantive answer at BOTH 16 and 32, i.e. batch size flips primary G1 gate metrics. Fallback rule applied: full ladder launched at batch 8, 2026-07-10 11:20 local, harness-tracked, pinned-file hashes verified byte-identical pre-launch, probe scratch cleaned. Revised runtime ~48-55 h (74,753 generations; measured ~1.7-3.5 s/row by arm). Run order: shared baseline then per layer (20->23->26->30) gated+permuted_gate then random_direction, all doses per RunLog file; resumable per dose|row key.
+### 014-checkpoint - Checkpoint
+
+- at: `2026-07-10T19:19:39Z`
+- kind: `checkpoint`
+- summary: PR #258 (experiment provenance reorganization) MERGED after full audit + remediation arc. Fable-tier audit verified: all 40 legacy amendments migrated with verdicts/gates/numbers byte-preserved, 45/45 run records archived, no new data exposure, nothing stranded on the Windows-side worktree (identical to PR head, clean). Blocking findings fixed by remediation: 7+44 dangling evidence pointers in governed docs corrected against the audit census, 23 stale historical pins re-pinned (+3 more surfaced by the main merge) with NOTEBOOK provenance entries, exp validate extended to gate historical-status pin drift, main merged with 5 conflicts resolved (mechinterp SKILL.md restructure kept both invariant sets; session notes renamed to timestamped scheme with checkpoints preserved and renumbered). Post-merge: validate OK (60 experiments) on main. Session-note tooling now uses the timestamped path (this checkpoint is the first at the new path).
