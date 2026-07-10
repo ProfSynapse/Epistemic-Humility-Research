@@ -4,13 +4,13 @@ Load this when running SAE feature screens. Use SAE scripts as screens, not
 causal evidence.
 
 ```bash
-python experiment/phase1/probe/phase3_sae_smoke.py \
+python experiments/common/mechinterp/sae_smoke.py \
   --config archive/experiment/phase1/probe/config/selfaware-sae-screens/phase3_selfaware_sae_smoke.yaml
-python experiment/phase1/probe/phase3_sae_train.py \
+python experiments/common/mechinterp/sae_train.py \
   --config archive/experiment/phase1/probe/config/selfaware-sae-screens/phase3_selfaware_sae_pilot.yaml
-python experiment/phase1/probe/phase3_sae_feature_analysis.py \
+python experiments/common/mechinterp/sae_feature_analysis.py \
   --config archive/experiment/phase1/probe/config/selfaware-sae-screens/phase3_selfaware_sae_feature_analysis.yaml
-python experiment/phase1/probe/phase3_sae_behavior_feature_analysis.py \
+python experiments/common/mechinterp/sae_behavior_feature_analysis.py \
   --config archive/experiment/phase1/probe/config/selfaware-sae-screens/phase3_selfaware_sae_behavior_feature_analysis.yaml
 ```
 

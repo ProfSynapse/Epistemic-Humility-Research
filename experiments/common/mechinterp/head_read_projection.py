@@ -52,8 +52,8 @@ from behavior_axis_scan import (  # noqa: E402
     rank_auc,
 )
 from phase3_head_localization_scan import validate_head_manifest  # noqa: E402
-from phase3_sae_behavior_feature_analysis import row_arm  # noqa: E402
-from phase3_sae_smoke import resolve_path  # noqa: E402
+from sae_behavior_feature_analysis import row_arm  # noqa: E402
+from sae_smoke import resolve_path  # noqa: E402
 
 DEFAULT_FAILURE = (
     "experiment/phase1/probe/analysis/"

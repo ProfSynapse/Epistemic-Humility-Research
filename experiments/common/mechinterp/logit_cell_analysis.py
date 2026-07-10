@@ -17,8 +17,8 @@ PROBE_DIR = ROOT / "experiment/phase1/probe"
 if str(PROBE_DIR) not in sys.path:
     sys.path.insert(0, str(PROBE_DIR))
 
-from phase3_sae_behavior_feature_analysis import row_matches_filter
-from phase3_sae_smoke import repo_relative, resolve_path
+from sae_behavior_feature_analysis import row_matches_filter
+from sae_smoke import repo_relative, resolve_path
 
 
 ANALYSIS_TYPE = "phase3_logit_cell_analysis"

@@ -32,11 +32,11 @@ from phase3_behavior_axis_scan import (
     validate_manifest,
 )
 from phase3_direction_geometry import resolve_vector_file
-from phase3_sae_behavior_feature_analysis import (
+from sae_behavior_feature_analysis import (
     SaeBehaviorFeatureAnalysisError,
     row_matches_filter,
 )
-from phase3_sae_smoke import (
+from sae_smoke import (
     SaeSmokeError,
     load_json,
     load_rows,

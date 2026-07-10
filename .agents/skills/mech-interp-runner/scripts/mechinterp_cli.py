@@ -298,7 +298,7 @@ def run_validate(*, quick: bool, dry_run: bool) -> int:
             "experiments/common/mechinterp/causal_pilot_runner.py",
             "experiments/common/mechinterp/sycophancy_answer_row_manifest.py",
             "experiments/common/mechinterp/sycophancy_generation_analysis.py",
-            "experiment/phase1/probe/phase3_sae_behavior_feature_analysis.py",
+            "experiments/common/mechinterp/sae_behavior_feature_analysis.py",
             "experiments/common/mechinterp/behavior_axis_scan.py",
             "experiments/common/mechinterp/multicell_readout.py",
             "experiment/phase1/probe/hidden_state_probe.py",

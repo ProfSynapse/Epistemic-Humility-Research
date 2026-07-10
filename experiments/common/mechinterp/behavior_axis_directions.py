@@ -36,7 +36,7 @@ from phase3_behavior_axis_scan import (
     scan_layer,
     validate_manifest,
 )
-from phase3_sae_smoke import (
+from sae_smoke import (
     SaeSmokeError,
     repo_relative,
     resolve_path,
