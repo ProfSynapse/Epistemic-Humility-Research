@@ -1,0 +1,83 @@
+# Cross-family matrix for doubt-snap-cross-family-confirmatory.
+# Repos and revisions were resolved live with huggingface_hub on 2026-07-07.
+# Gated repos require an access check before Modal launch. If access is absent,
+# the cell is marked ineligible before results are known; it is not replaced
+# after seeing outcomes.
+
+seed: 20260707
+
+scale_tiers:
+  small:
+    description: Prior cross-family "Knows but Doesn't Say" panel scale.
+  mid:
+    description: 8B-ish sibling or nearest available mid-size member.
+    minimum_eligible_cells_for_headline: 3
+
+cells:
+  - cell_id: llama32_3b_instruct
+    family: llama
+    scale_tier: small
+    repo: unsloth/Llama-3.2-3B-Instruct
+    revision: 006f5dcd1393c3add266de40994ba96225e9689d
+    gated_access: false
+    panel_role: direct_Z_panel_match
+
+  - cell_id: llama31_8b_instruct
+    family: llama
+    scale_tier: mid
+    repo: unsloth/Llama-3.1-8B-Instruct
+    revision: 4699cc75b550f9c6f3173fb80f4703b62d946aa5
+    gated_access: false
+    panel_role: mid_size_sibling
+    eligibility_note: Replaces the pre-outcome-ineligible meta-llama gated repo, whose access request was still awaiting review at launch time.
+
+  - cell_id: mistral7b_instruct_v03
+    family: mistral
+    scale_tier: small
+    repo: mistralai/Mistral-7B-Instruct-v0.3
+    revision: c170c708c41dac9275d15a8fff4eca08d52bab71
+    gated_access: false
+    panel_role: loader_compatible_family_replacement
+    eligibility_note: Replaces the pre-outcome-ineligible Ministral-3-3B cell, whose Mistral3ForConditionalGeneration architecture is not a CausalLM substrate.
+
+  - cell_id: ministral8b_instruct_2410
+    family: mistral
+    scale_tier: mid
+    repo: mistralai/Ministral-8B-Instruct-2410
+    revision: 2f494a194c5b980dfb9772cb92d26cbb671fce5a
+    gated_access: false
+    panel_role: loader_compatible_mid_size_sibling
+    eligibility_note: Replaces the pre-outcome-ineligible Ministral-3-8B cell, whose Mistral3ForConditionalGeneration architecture is not a CausalLM substrate.
+
+  - cell_id: qwen35_4b
+    family: qwen3_5
+    scale_tier: small
+    repo: Qwen/Qwen3.5-4B
+    revision: 851bf6e806efd8d0a36b00ddf55e13ccb7b8cd0a
+    gated_access: false
+    panel_role: direct_Z_panel_match
+
+  - cell_id: qwen35_9b
+    family: qwen3_5
+    scale_tier: mid
+    repo: Qwen/Qwen3.5-9B
+    revision: c202236235762e1c871ad0ccb60c8ee5ba337b9a
+    gated_access: false
+    panel_role: mid_size_sibling
+
+  - cell_id: gemma4_e4b_it
+    family: gemma
+    scale_tier: small
+    repo: google/gemma-4-E4B-it
+    revision: fee6332c1abaafb77f6f9624236c63aa2f1d0187
+    gated_access: false
+    panel_role: direct_Z_panel_match
+
+  - cell_id: gemma3_12b_it
+    family: gemma
+    scale_tier: mid
+    repo: google/gemma-3-12b-it
+    revision: 96b6f1eccf38110c56df3a15bffe176da04bfd80
+    gated_access: manual
+    panel_role: nearest_mid_size_control
+    eligibility_note: Cross-generation mid-size Gemma control; requires HF token access.
