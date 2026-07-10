@@ -264,3 +264,68 @@ invalidating error") also held under my independent re-read.
   items 6 and 7).
 - No stale section cross-references after the two renumberings.
 - No template `[bracket]` slots left from the methods-ai-workflow adaptation.
+
+---
+
+## Addendum: synthesis pass, 2026-07-10 (branch `paper/two-signal-synthesis-pass`)
+
+PI directive executed after the main revision merged (dcfa6634): the paper
+carries the synthesis, the repository carries the journey, per the new
+binding VOICE.md section "Synthesis, not journey". Two commits on the
+manuscript, one on this report. READ BEFORE CITE re-run this pass: AP's
+Outcome block (controlled core 0.737 CI [0.650, 0.815], margin +0.244 CI
+[0.120, 0.367], 65 pairs, length-only 0.492/0.493, carry ~0.99, "must NOT
+be cited" verdict wording) and AM's Outcome block (length-only 0.943,
+medians 94 vs 24, honest core ~0.77 length-matched) were both re-read
+from the amendment docs before editing.
+
+### Commit 1: the 0.980 sweep
+
+The confounded deployed-checkpoint veto number (0.980) and every framing
+built on it (0.754 -> 0.980, +0.226) removed from: abstract veto sentence,
+abstract finding 1, section 3 AI-workflow (U band miss now stated without
+the landed value), 4.3 headline, 4.4 blend sentence, 4.6 sharpening, 4.11
+targeted-vs-generic contrast, section 5 "~0.98 discrimination" caution,
+section 6 "what training is for", conclusion, and the Figure 5 caption.
+Replacements per directive: the honest characterization (content core
+0.737 with CIs, carried answerability framed as operationally useful),
+the raw-base 0.754 retained only where the training-free claim needs it
+(abstract finding 1, 4.4 scope sentence, 4.6, Figure 5 panel A), and the
+sharpening claim now carried by the confabulation dial-mean shift 0.271
+-> 0.018. The U registered prediction reduced to a compact fact with a
+new true statement: the controlled content core sits inside the
+registered 0.65-0.85 band. Figure 5 rebuilt from its deterministic
+generator (panel A: raw-base veto vs pass bar; panel B: dial-mean shift;
+suptitle em dash fixed); all other figures byte-identical.
+
+### Commit 2: de-narration
+
+4.4 converted from chronicle to decomposition statement; the retired
+intermediate estimates (0.917 CI [0.854, 0.963]; 0.862/+0.370) now live
+only in the amendment docs, pointed to once. Process narration survives
+solely in the section 3 AI-workflow subsection, which after the 4.4
+rewrite is the unique home of the dual-prediction/confound arc (no
+duplication, so nothing trimmed there per the directive's exception
+clause). Section 6 and section 2 no longer narrate the program's revised
+reading of the steering asymmetry; they state the reconciled fact.
+Smaller conversions: 4.6 "at the time these numbers were produced",
+limitation 2 "original scoping worry", limitation 5 "now exists".
+
+### Judgment calls for lead review
+
+1. Figure 5 panel A kept as a single raw-base bar against the 0.65 pass
+   bar (the existence claim is not superseded); the trained-side AUROC
+   bar is what was removed. Alternative was dropping panel A entirely.
+2. The within-SelfAware 0.93 control stays in 4.3 and limitation 5: it
+   is not superseded (it bounds dataset shift, and 4.4 discloses it does
+   not control answerability carry).
+3. 4.3 now attributes the honest characterization (0.737 core + carry)
+   to the deployed veto's read; 4.4's scope fence (raw base, different
+   prompt surface, single seed, never pooled) is retained and is the
+   binding qualifier.
+4. The section 5 operating-point caution now says "expect the ~0.74
+   content core, not the headline blend" in place of "do not expect
+   ~0.98 discrimination".
+5. Nothing outside papers/paper-4-two-signal-readout/ was touched. The
+   SWAP-marked limitation 8 block is untouched and still awaits the
+   token-logprob splice.
