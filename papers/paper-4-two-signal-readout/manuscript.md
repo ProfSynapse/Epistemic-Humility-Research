@@ -132,16 +132,9 @@ and model-sensitive). Three contributions over the diagnosis:
    generalize everywhere we looked; the veto is the readout that must be validated
    per model.
 
-The thesis was falsifiable at several registered points, and we state them because each
-could have fired. If correctness had read no better after the answer than the
-answerability baseline read before it, there would be no dial: that was the original
-cell's registered falsifier. If the veto had failed on two or more of the four families,
-the cross-family claim would have died: it was pre-defined that way, and one family did
-fail under greedy decoding. If a pre-instruction base had read the gate near chance
-while its instruct sibling read 0.95 or higher, on three or more pairs, the
-training-free framing would have been rewritten as a post-training story. None of these
-fired. The one registered gate that did miss (calibration, by 0.001) is reported in §3
-and shapes how we scope the dial.
+Each contribution carried a pre-registered falsifier (stated with the gates in §3);
+none fired. The one registered gate that missed (calibration, by 0.001) shapes how we
+scope the dial.
 
 The framing throughout is *readout, not training*. Our training does not create the trust
 signal; it sharpens one part of it (the veto) and installs behavioral abstention. The

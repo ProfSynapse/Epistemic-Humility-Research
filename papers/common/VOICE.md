@@ -64,6 +64,11 @@ page:
   because there the workflow IS the subject. Everywhere else, results
   sections state what is true and how we know, not the order in which we
   learned it.
+- Never explain science to scientists. Do not tell the reader why
+  pre-registration matters, why falsifiers are stated, or why a miss is
+  reported ("we state them because each could have fired" is a lecture).
+  State the falsifier, state whether it fired, move on. The machinery shows
+  its virtue by being used, not by being praised.
 
 ## Sentence mechanics (this is most of the voice)
 
