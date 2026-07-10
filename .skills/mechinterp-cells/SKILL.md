@@ -97,3 +97,18 @@ maintenance.
   explicitly says otherwise.
 - Do not move goalposts after results. Exploratory cells report as exploratory;
   claims require the pre-registered confirmatory surface.
+- **Local GPU runs execute in a pinned container** (binding invariant,
+  2026-07-10): every local-3090 `mechinterp` GPU verb runs inside the pinned
+  mechinterp runner image, never a bare shared conda environment. See
+  [reference/modal-launch.md](reference/modal-launch.md) for the image
+  location, the sha256-pinning convention, and the honored in-flight
+  exception.
+- **Any local run longer than about 15 minutes writes per-item results
+  through the tuner's resumable run log** (`shared/utilities/run_log.py`
+  `RunLog`: append + fsync per item, atomic tmp+replace summary write) rather
+  than buffering results in memory and writing only at the end. Sign-pinned
+  instruments must adopt this BEFORE sign: a pinned script cannot be patched
+  mid-run to add resumability after a crash has already happened. See
+  `experiments/common/README-runlog.md` for the import path and per-arm
+  log-path convention.
+

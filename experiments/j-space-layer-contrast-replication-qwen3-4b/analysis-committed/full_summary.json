@@ -1,0 +1,135 @@
+{
+  "mode": "full",
+  "selected_doses": {
+    "hs23": 25.0,
+    "hs26": 75.0,
+    "hs29": 125.0,
+    "hs34": 175.0
+  },
+  "pool_counts": {
+    "confab": 306,
+    "known_correct_answered": 1957,
+    "total": 2263
+  },
+  "n_rows": 2263,
+  "layers": {
+    "hs23": {
+      "hs_index": 23,
+      "n_rows": 2263,
+      "n_fired": 325,
+      "readback_mean": 25.00068472896942,
+      "frac_readback_within_tol": 1.0,
+      "collapse_rate_on_dosed": 0.0,
+      "confab_tighten": {
+        "n": 306,
+        "successes": 304,
+        "rate": 0.9934640522875817,
+        "wilson_ci_95": [
+          0.9764862548049794,
+          0.9982057736584161
+        ]
+      },
+      "known_correct_cost_control": {
+        "n": 1957,
+        "successes": 19,
+        "rate": 0.009708737864077669,
+        "wilson_ci_95": [
+          0.006224241002369766,
+          0.015114281106326757
+        ]
+      },
+      "dose_target": 25.0
+    },
+    "hs26": {
+      "hs_index": 26,
+      "n_rows": 2263,
+      "n_fired": 358,
+      "readback_mean": 74.98920964018934,
+      "frac_readback_within_tol": 1.0,
+      "collapse_rate_on_dosed": 0.0,
+      "confab_tighten": {
+        "n": 306,
+        "successes": 299,
+        "rate": 0.9771241830065359,
+        "wilson_ci_95": [
+          0.9535417465456081,
+          0.988875711438867
+        ]
+      },
+      "known_correct_cost_control": {
+        "n": 1957,
+        "successes": 39,
+        "rate": 0.01992846193152785,
+        "wilson_ci_95": [
+          0.014612120044871838,
+          0.027125807543580887
+        ]
+      },
+      "dose_target": 75.0
+    },
+    "hs29": {
+      "hs_index": 29,
+      "n_rows": 2263,
+      "n_fired": 372,
+      "readback_mean": 125.01295291713677,
+      "frac_readback_within_tol": 1.0,
+      "collapse_rate_on_dosed": 0.0,
+      "confab_tighten": {
+        "n": 306,
+        "successes": 305,
+        "rate": 0.9967320261437909,
+        "wilson_ci_95": [
+          0.9817240533065157,
+          0.9994228892526642
+        ]
+      },
+      "known_correct_cost_control": {
+        "n": 1957,
+        "successes": 55,
+        "rate": 0.02810424118548799,
+        "wilson_ci_95": [
+          0.021655399642628533,
+          0.03640205232962915
+        ]
+      },
+      "dose_target": 125.0
+    },
+    "hs34": {
+      "hs_index": 34,
+      "n_rows": 2263,
+      "n_fired": 339,
+      "readback_mean": 175.01378384541133,
+      "frac_readback_within_tol": 1.0,
+      "collapse_rate_on_dosed": 0.0,
+      "confab_tighten": {
+        "n": 306,
+        "successes": 288,
+        "rate": 0.9411764705882353,
+        "wilson_ci_95": [
+          0.9089425318728142,
+          0.9624708710580361
+        ]
+      },
+      "known_correct_cost_control": {
+        "n": 1957,
+        "successes": 27,
+        "rate": 0.013796627491057742,
+        "wilson_ci_95": [
+          0.009499078320158429,
+          0.01999920598044058
+        ]
+      },
+      "dose_target": 175.0
+    }
+  },
+  "layer_contrast": {
+    "best_mid_layer": "hs29",
+    "late_reference_layer": "hs34",
+    "tighten_delta_best_mid_minus_late": 0.05555555555555558,
+    "cost_delta_best_mid_minus_late": 0.01430761369443025,
+    "g1_midband_superiority_pass": false,
+    "g2_no_cost_regression_pass": true,
+    "g3_predecessor_reference_viable_pass": true
+  },
+  "overall_pass": false
+}
