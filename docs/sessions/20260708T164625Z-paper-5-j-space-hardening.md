@@ -4,7 +4,7 @@ session_id: 20260708T164625Z-paper-5-j-space-hardening
 title: Paper 5 J-space hardening
 status: active
 created_at: '2026-07-08T16:46:25Z'
-updated_at: '2026-07-10T21:49:59Z'
+updated_at: '2026-07-10T22:28:01Z'
 track: research
 phase: phase1
 question: Which registered follow-up experiments harden the Paper 5 actuation thesis,
@@ -370,6 +370,34 @@ checkpoints:
   decisions: []
   next_steps: []
   signals: {}
+- id: 016-checkpoint
+  at: '2026-07-10T22:28:01Z'
+  kind: checkpoint
+  title: Checkpoint
+  summary: 'Paper 4 editorial arc continued through three more PI-directed passes,
+    all lead-verified and merged: (1) synthesis pass (0.980 removed from all sites
+    incl. a rhetorical-foil survivor the lead caught; 4.4 rewritten as decomposition
+    statement; U overshoot story dissolved, controlled core sits inside registered
+    band; Figure 5 rebuilt from generator; lead adjudication 91722d5a scoped 4.3 decomposition
+    attribution to raw base as explicit inference). (2) related-work pass (section
+    2 question-first rewrite, our numbers out of related work, steering block reduced
+    to one scoping sentence with substance consolidated in section 6; merged 95bff4ae).
+    (3) self-containment + headings pass (body prose freed of amendment codenames/doc
+    filenames/slugs/PR numbers/repo paths, provenance consolidated to Appendix A with
+    7 new verified rows; ~25 bold run-ins converted to real subheadings; lead fix
+    959603d5 promoted section 3 setup blocks to ###; merged e0c833d9). VOICE.md gained
+    three new binding sections this arc: Synthesis-not-journey, External-facing self-containment,
+    real-headings structure habit. TODO backlog: CD (correctness-direction rotation
+    tracking, upgrades dial cold-transfer inference to measurement) + LP (logprob
+    re-forward), both gated on midband ladder freeing 3090. Forward note: companion-paper
+    reference should switch to paper 3''s own identifier when it exists. Revisor on
+    standby for further PI reading feedback.'
+  evidence: []
+  run_ids: []
+  commands: []
+  decisions: []
+  next_steps: []
+  signals: {}
 ---
 # Paper 5 J-space hardening
 
@@ -668,3 +696,8 @@ rows before the layer contrast.
 - at: `2026-07-10T21:49:59Z`
 - kind: `checkpoint`
 - summary: Paper 4 revision arc executed and merged: reviewer memo recovered from agent transcript and committed (docs/review/paper4-two-signal-readout-review-2026-07-10.md); PI approved full plan incl. veto requalification + logprob baseline. paper4-revisor (fable) executed all 8 memo items, lead-verified against AM/AP/rep2 amendment docs, merged dcfa6634. Intro citation anchors added f9da0ba8. PRs merged: #269 (Amendment Z Z-G3 gate-wording erratum, notebook-tier), #270 (dial logprob baseline NOT computable from cache: extraction never recorded logits; teacher-forced CPU/GPU re-forward deferred until midband ladder frees the 3090). VOICE.md gained binding 'Synthesis, not journey' section (PI directive): superseded numbers never on the page, predictions/gate-misses as compact registered facts, process narration only in AI-workflow methods. Synthesis pass dispatched to paper4-revisor: remove 0.980 veto number entirely (confounded per AM/AP; honest ~0.74 controlled core is the finding), de-narrate confound-hunt arcs. Queued for same pass: related-work readability (PI reading feedback: section 2 blocks open with apparatus not question, and argue our +0.065 inside related work; fix = plain-language question openers, our numbers out of section 2). Midband ladder healthy: hs20 arms done through permuted_gate, into gated dose_12, GPU 55%.
+### 016-checkpoint - Checkpoint
+
+- at: `2026-07-10T22:28:01Z`
+- kind: `checkpoint`
+- summary: Paper 4 editorial arc continued through three more PI-directed passes, all lead-verified and merged: (1) synthesis pass (0.980 removed from all sites incl. a rhetorical-foil survivor the lead caught; 4.4 rewritten as decomposition statement; U overshoot story dissolved, controlled core sits inside registered band; Figure 5 rebuilt from generator; lead adjudication 91722d5a scoped 4.3 decomposition attribution to raw base as explicit inference). (2) related-work pass (section 2 question-first rewrite, our numbers out of related work, steering block reduced to one scoping sentence with substance consolidated in section 6; merged 95bff4ae). (3) self-containment + headings pass (body prose freed of amendment codenames/doc filenames/slugs/PR numbers/repo paths, provenance consolidated to Appendix A with 7 new verified rows; ~25 bold run-ins converted to real subheadings; lead fix 959603d5 promoted section 3 setup blocks to ###; merged e0c833d9). VOICE.md gained three new binding sections this arc: Synthesis-not-journey, External-facing self-containment, real-headings structure habit. TODO backlog: CD (correctness-direction rotation tracking, upgrades dial cold-transfer inference to measurement) + LP (logprob re-forward), both gated on midband ladder freeing 3090. Forward note: companion-paper reference should switch to paper 3's own identifier when it exists. Revisor on standby for further PI reading feedback.
