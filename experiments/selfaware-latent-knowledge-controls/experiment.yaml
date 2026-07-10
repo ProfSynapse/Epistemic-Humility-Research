@@ -13,12 +13,15 @@ checkpoint:
   revision: historical
 instrument:
   configs: []
-  modules: []
-  pins: {}
+  modules:
+  - phase3_latent_knowledge_probe.py
+  - phase3_latent_knowledge_controls.py
+  - phase3_caution_axis_transfer.py
+  pins:
+    phase3_latent_knowledge_probe.py: fc61f4d9f9707d1f63c9e2f851259dcd78ecc11cd7bfe0dc7c548c0740a6675e
+    phase3_latent_knowledge_controls.py: b09c26204802f27ee4eb8e78d28709098506de508c4ef55338705e3965bf4b3d
+    phase3_caution_axis_transfer.py: 04b372757765d29477f3e231b7f6c7e416a758a4dd94515cce90a77a604d109f
 inputs:
-- experiment/phase1/probe/phase3_latent_knowledge_probe.py
-- experiment/phase1/probe/phase3_latent_knowledge_controls.py
-- experiment/phase1/probe/phase3_caution_axis_transfer.py
 - experiments/selfaware-latent-knowledge-controls/artifacts/latent_knowledge_controls/a1a2_h_lora.json
 - experiments/selfaware-latent-knowledge-controls/artifacts/latent_knowledge_controls/a3_h_base_probe.json
 - experiments/selfaware-latent-knowledge-controls/artifacts/latent_knowledge_controls/c2_gap_sft.json
