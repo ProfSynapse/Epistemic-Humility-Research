@@ -386,3 +386,72 @@ the sole home of that content.
 - Section 2 contains no result numbers of ours (grep-verified).
 - Zero em dashes, zero banned vocabulary, full-file sweep.
 - Diff confined to papers/paper-4-two-signal-readout/.
+
+---
+
+## Addendum: self-containment + headings pass (branch `paper/two-signal-selfcontained-pass`)
+
+Two PI directives, both codified in VOICE.md at 0e7ea783 (re-read before
+editing). No number or claim changed in either commit.
+
+### Commit 1: external-facing self-containment
+
+Body prose no longer contains amendment letters/codenames, governed-doc
+filenames, experiment slugs, internal PR numbers, or repo paths.
+Rewrites: three Amendment Z mentions in 4.9 (including the Figure 7
+blockquote caption) became "the cross-family replication runs (4.8)" /
+"cross-family surfaces"; the 4.5 fusion provenance dropped PR #128 and
+"Amendment U section 1.1" for "an earlier registered CPU diagnostic on
+the deployed checkpoint, cited as prior fact in the veto experiment's
+pre-registration"; 4.4's two slugs became "a residual-coverage probe and
+a length-balanced confirmatory"; 4.10's and 4.11's AMENDMENT-filename
+provenance parentheticals now point to Appendix A; section 5 dropped the
+PR #205 number and the xdataset slug; limitations 3 and 6 dropped their
+slugs; 4.4's "their amendment documents hold the full audit history"
+became "preserved in the released research record (Appendix A)"; the
+companion-paper reference entry dropped its repo-relative link. The
+section 3 AI-workflow subsection was checked and already generic.
+Appendix A: rows relabeled descriptively with section pointers (letters
+survive only inside literal artifact filenames), and seven rows added so
+every displaced pointer keeps provenance (fusion diagnostic PR #128 with
+its signed-design citation, warning-policy PR #205, xdataset-probe-
+transfer, selfaware-latent-knowledge-controls, aux-head-trainable-
+readout, natural-answer-generalization, companion manuscript path); all
+added paths verified to exist on disk.
+
+### Commit 2: real headings
+
+Twenty-five bold run-ins converted to #### headings: section 2's five
+blocks (question openers retained as first prose line), section 3's
+Models / Data and labels / Readout recipe / Pre-registered gates,
+section 4.8's three sub-blocks, 4.10's four (the verdict block became
+"#### Verdict" with "The pre-registered verdict is SUCCESS" moved into
+prose), 4.11's five (the H1 result sentence moved into prose under
+"#### Registered outcome"), section 5's three stages (list dissolved
+into headings; the lead-in colon became a period), and section 6's four
+discussion blocks. "Figure index" in Appendix A became a ### heading.
+Level choice: uniform #### for every converted block (the directive's
+explicit level for section 2, applied consistently); existing ##/###
+structure untouched, no renumbering. Genuine lists kept as lists and
+unbolded: the three contributions, the three AI-workflow controls, the
+4.5 stage summary pair, the 4.8 per-family dial-mean list, all eight
+limitations (including the SWAP-marked item 8, marker untouched), and
+the abstract's (1)-(4) finding markers (now plain). Kept bold: table
+captions, figure captions and the figure-index labels (captions, not
+fake headings), and mid-sentence number/term emphasis.
+
+### Flags for lead review
+
+1. Heading level: section 3's four setup blocks sit at #### while their
+   sibling "How this research was conducted with AI" is ###; this is the
+   cost of the uniform-#### choice. Promoting the four to ### is a
+   mechanical change if preferred.
+2. The companion-paper reference now reads "released with this paper's
+   research record (Appendix A)"; if the companion gets its own arXiv
+   number, that entry should be updated instead.
+3. "H1 SUPPORTED 4/4" and "Pre-registered verdict: SUCCESS" were bold
+   run-in results; the words moved into prose unchanged, but the
+   sentences were lightly rephrased to read as prose ("The hypothesis is
+   supported 4/4...", "The pre-registered verdict is SUCCESS."). Meaning
+   verified against the surrounding registered-outcome text; no gate or
+   number touched.
