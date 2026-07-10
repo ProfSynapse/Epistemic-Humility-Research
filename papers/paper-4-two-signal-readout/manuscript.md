@@ -69,8 +69,9 @@ training did. Descriptively, all three readouts are present as far back as GPT-2
 An epistemically humble model does two things a fluent one does not: it declines questions
 it cannot answer, and it attaches an honest confidence to the answers it does give. Small
 open models are good at neither. They confabulate plausible answers to unanswerable
-questions, and the confidence they verbalize is nearly flat regardless of whether they are
-right.
+questions (Slobodkin et al., 2023; Kirichenko et al., 2025), and the confidence they
+verbalize is nearly flat regardless of whether they are right (Xiong et al., 2023;
+Shrivastava et al., 2023).
 
 Try this as a thought experiment. You ask a small open model who won a chess tournament
 that never took place. It answers fluently, names a winner, and when you ask how
@@ -80,8 +81,9 @@ useless. The question this paper answers is whether there is a number on the ins
 worth reading instead.
 
 The natural first hypothesis is that this is an *ignorance* problem (the model does not
-represent its own uncertainty) and the natural fix is *training*: fine-tune it to abstain,
-or optimize a preference/reward signal toward calibrated confidence. Our companion
+represent its own uncertainty) and the natural fix is *training*: fine-tune it to abstain
+(Zhang et al., 2023; Yang et al., 2023; Cheng et al., 2024), or optimize a
+preference/reward signal toward calibrated confidence (Lin et al., 2022; Liu et al., 2026). Our companion
 diagnosis, [*Knows but Doesn't Say*](../paper-3-knows-but-doesnt-say/manuscript.md), tests and
 rejects the first hypothesis and finds the second insufficient. A linear probe on the base
 model's internal activations separates answerable from unanswerable questions almost
