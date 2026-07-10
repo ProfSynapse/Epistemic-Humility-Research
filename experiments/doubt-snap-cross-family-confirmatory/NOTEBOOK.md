@@ -6,6 +6,27 @@ in `experiment.yaml`.
 
 ## Entries
 
+- 2026-07-10: Both recalibrated Qwen3.5 FIT dose sweeps completed and committed
+  `selected_dose: null`. These are now well-characterized G0 dose-viability
+  fails, not grid artifacts. 4B (grid 10-75, n=887 confab / 240 known per arm):
+  coherent actuation rises 2.8% -> 9.0% -> 17.3% -> 32.6% across doses 10-40,
+  then JSON corruption sets in (confab well-formedness 90% -> 55% -> 3% across
+  40/50/60) and tighten falls to 10.8% / 0% / 0% at 50/60/75; peak coherent
+  tighten ~33% at dose 40, far below the registered 60% bar, known-cost <=3.3%
+  throughout. 9B (grid 60-140, n=921 / 286): tighten rises 0.4% -> 5.8%
+  monotonically across 60-140; with the prior run's points (5.1% at 150, 0%
+  with well-formedness collapse at 200/250) the curve peaks ~6% near 140-150
+  before the cliff. Neither substrate has a coherent operating window
+  anywhere near the registered thresholds. Per the recalibration note's
+  pre-commitment, both cells fail G0 dose viability and are recorded as such
+  with no further grid changes. Family-level reading for resolve time: the
+  doubt-gated caution snap does not transfer to Qwen3.5 at the registered
+  thresholds (max coherent tighten ~33% at 4B, ~6% at 9B, vs 73.5% held-out
+  on Qwen3-4B); both cells are ineligible-before-held-out for the panel
+  denominator (G0 fail, not a held-out G1/G2/G3 fail). Sweep-side operational
+  note: collapsed arms are the slowest because shattered generations never
+  emit EOS and burn the full 200-token cap.
+
 - 2026-07-09: Registered the pre-outcome Qwen3.5 dose-grid recalibration after
   both cells failed FIT dose viability with zero qualifying doses. The audit of
   committed FIT artifacts (gate_fit, dose_fit, rows_out_dose_fit, readback)
