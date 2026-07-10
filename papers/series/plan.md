@@ -26,7 +26,7 @@ Title format is `[catchy idiom]: [subtitle naming the study]`.
 | 2 | paper-2-training-regimen | Teaching Small Language Models to Say I Don't Know: A Controlled Comparison of SFT, DPO, KTO, and GRPO on Model-Specific Abstention Data | The front door: training the behavior in partially works and structurally disappoints. |
 | 3 | paper-3-knows-but-doesnt-say | Knows but Doesn't Say: A Training-Resistant Gap Between Internal and Stated Confidence in a Small Language Model | The diagnosis: the knowledge is inside, the mouth is the bottleneck. Home of the internal anatomy (the readable epistemic directions). |
 | 4 | paper-4-two-signal-readout | It's What's on the Inside That Counts: A Training-Free Two-Signal Readout for Epistemic Humility in Small Language Models | The reading half: bypass the mouth, read the representation. Deployable today. |
-| 5 | paper-5-actuation | RENAME PENDING (current: Readable Is Not Writable). Reframed thesis: doubt-gated actuation works; caveats named as they appear. | The destination: the model acts on its own knowledge when, and only when, the write is gated by its own doubt, at the right depth. |
+| 5 | paper-5-actuation | Look Before You Speak: Gating Caution Writes on a Model's Own Doubt Readout (decided 2026-07-10; manuscript still carries the old title until the rewrite) | The destination: the model acts on its own knowledge when, and only when, the write is gated by its own doubt, at the right depth. |
 
 Build-on logic: 1 frames, 2 shows the obvious fix disappoints, 3 explains why
 (and maps the internal landscape), then the diagnosis branches: 4 is "it's
@@ -111,13 +111,21 @@ doubt-gated caution write converts confabulations at high rate at small
 known-correct cost, replicated on a multi-source pool; localization puts the
 action in the workspace band. Open:
 
-- Full staleness audit + reframe plan + hardening list: in flight
-  (docs/review/paper5-actuation-review-2026-07-10.md when it lands).
-- Rename (candidates under PI review; current lead candidate "When in Doubt,
-  Don't").
-- Mid-band outcome folds in when the ladder resolves, either way.
+- Audit LANDED: docs/review/paper5-actuation-review-2026-07-10.md (22-cell
+  inventory, 10-item reframe plan, hardening list). Lead spot-checked.
+- SEQUENCING (PI decision 2026-07-10): rewrite AFTER hardening. The rewrite
+  waits for the mid-band ladder outcome plus the three cheap local hardening
+  cells (H3 multi-seed/sampled-decode snap replication; H4 registered
+  ungated-vs-gated dose-matched arm; H6 commitment-point hook-firing
+  instrument check), all queued behind the ladder freeing the 3090. Designs
+  to be drafted and signed in the meantime so they launch the day the GPU
+  frees.
+- Title decided: "Look Before You Speak: Gating Caution Writes on a Model's
+  Own Doubt Readout".
 - Cross-family actuation panel: awaits the PI's paid-launch decision; the
-  paper's family scope is honest without it but stronger with it.
+  paper's family scope is honest without it but stronger with it. H5 (AI-TRUE
+  caution-lever screen) and H7 (cross-family J-lens profiles) stay optional,
+  revisit after H1/H2 resolve.
 
 ## Cross-cutting
 
