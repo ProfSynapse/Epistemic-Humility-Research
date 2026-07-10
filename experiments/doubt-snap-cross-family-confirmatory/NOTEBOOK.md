@@ -6,6 +6,26 @@ in `experiment.yaml`.
 
 ## Entries
 
+- 2026-07-10 (anchor audit): Read-only audit of anchor placement on both
+  Qwen3.5 cells, the last unchecked harness surface behind the no-window
+  nulls. Verdict: CONFIRMS, no confound. (1) Structural: under
+  generation_mode gen_stream the write span never consults the prompt
+  anchor at all -- the hook is inactive during prefill and writes every
+  decode step (window_start=0, seq_len=1 per step; tuner
+  MechInterp/intervention/hooks.py gen_stream branch, lead-verified) -- so
+  a chat-template shift cannot move the write span. (2) Empirical: capture
+  anchor invariant positions.anchor == len(token_ids)-1 holds on all
+  3000/3114 rows; a deterministic 45-row-per-cell re-render with the real
+  pinned tokenizers reproduced recorded token_ids byte-identically 90/90;
+  all sampled prompts end in the same empty-think template tail as Qwen3
+  (no leaked thinking, no multimodal wrapper tokens, no off-by-N vs the
+  Qwen3 exploratory convention); prompt_len 127-163, no outliers. Gate AUC
+  0.996/0.999 and smoke readback (write_ok, offtarget 0.0) corroborate.
+  Hygiene gap noted, not a harm finding: the cross-family render.py lacks
+  the exploratory pipeline's assert_no_think_scaffolding self-check and
+  falls back silently across chat-template kwarg variants; add the loud
+  check before the remaining panel cells launch.
+
 - 2026-07-10: Both recalibrated Qwen3.5 FIT dose sweeps completed and committed
   `selected_dose: null`. These are now well-characterized G0 dose-viability
   fails, not grid artifacts. 4B (grid 10-75, n=887 confab / 240 known per arm):
