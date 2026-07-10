@@ -21,7 +21,9 @@ reinforcement learning (GRPO). If training does not close the gap, the signal mu
 read out rather than trained in.
 
 We show it can be. Two orthogonal, linearly-decodable axes are already present in a frozen
-instruction-tuned base and compose into a deployable trust pipeline. An **answerability
+instruction-tuned base and compose into a deployable trust pipeline. The two axes yield
+three readouts: a gate, a dial, and the dial's veto on confident confabulation; the first
+two are one robustness class, the veto is another. An **answerability
 gate**, read at the final prompt token *before* generation, separates answerable from
 unanswerable questions at AUROC ≈ 0.997. A **correctness dial**, read at the final answer
 token *after* generation, ranks whether the specific answer just produced is correct
@@ -90,7 +92,11 @@ language-model head emits under next-token cross-entropy.
 That diagnosis has a direct engineering consequence, and it is the subject of this paper.
 **If the signal cannot be reliably trained into the emitted token, read it out of the
 representation instead.** We show that a deployable trust mechanism can be built entirely
-from linear readouts of a frozen model, with two contributions over the diagnosis:
+from linear readouts of a frozen model. The paper's vocabulary, used consistently
+throughout: **two axes** (answerability, correctness), which yield **three readouts** (a
+gate, a dial, and the dial's veto on confident confabulation), which fall into **two
+robustness classes** (the gate and dial are family-general; the veto is decode-, seed-,
+and model-sensitive). Three contributions over the diagnosis:
 
 1. **A second axis.** Answerability ("*can* this be answered?") is not the same as
    correctness ("is *this answer* right?"). We show correctness is *also* linearly
@@ -99,13 +105,21 @@ from linear readouts of a frozen model, with two contributions over the diagnosi
    correctness ranking. This yields a two-stage pipeline: a **gate** that abstains on
    unanswerable questions, and a **dial** that surfaces a trust number on what is answered.
 
-2. **A generality claim.** The diagnosis was one model, one family. We show the readout
-   is training-free (reads off the raw instruction-tuned base), size-robust (1.7B–14B), and
-   replicates across four model families. Honestly, we also show *which part* generalizes.
-   The gate and dial are family-general. The veto (the dial's ability to assign confident
-   confabulation the lowest trust) is the fragile, model-dependent axis. We treat this as
-   a co-headline finding, not a footnote, and give the descriptive quantity that predicts
-   it.
+2. **The dial's veto on confident confabulation, as its own readout.** The same
+   correctness dial, applied to confident answers on unanswerable questions, pushes them
+   to the bottom of the trust ranking. This is not a third axis: in every cross-model
+   cell the veto is the identical dial probe read against a third contrast. It is a third
+   *readout*, and it earns separate billing because it is its own robustness class:
+   decode- and seed-sensitive, model-dependent, non-monotonic in scale, and a blend of a
+   content core (about 0.74) with carried answerability (§4.4). The gate/dial-versus-veto
+   split is the paper's central finding; we treat it as a co-headline, not a footnote,
+   and give the descriptive quantity that predicts where the veto is strong.
+
+3. **A generality claim.** The diagnosis was one model, one family. We show the readout
+   is training-free (reads off the raw instruction-tuned base), size-robust (1.7B–14B),
+   replicates across four model families, and predates post-training entirely. The two
+   axes generalize everywhere we looked; the veto is the readout that must be validated
+   per model.
 
 The framing throughout is *readout, not training*. Our training does not create the trust
 signal; it sharpens one part of it (the veto) and installs behavioral abstention. The
@@ -551,7 +565,7 @@ all four families.
 Where in the network do the two axes live? The same Amendment Z runs carry the
 full per-layer AUROC surface for the gate and the dial, and plotting them against fractional
 depth (layer / n_layers, since the four families have 28, 26, 32, and 42 blocks) shows the
-two signals occupy different parts of the network (Figure 7). The gate is not a
+two axes occupy different parts of the network (Figure 7). The gate is not a
 single-layer phenomenon anywhere: in all four families it rises from chance at the embedding
 to a saturated ~0.997+ plateau whose within-0.005-of-max span covers most of the network
 (Llama L5–28/28, Ministral L4–26/26, Qwen3.5 L7–32/32, Gemma L7–42/42), with onset by roughly
@@ -564,7 +578,7 @@ early from the question and simply carried forward, while correctness requires t
 answer and lives in a localized mid-to-late band. This is a descriptive replot of the
 already-reported Amendment Z surfaces: no new claim and no gate rests on it.
 
-> **Figure 7. Cross-family depth profile of the two signals.** Per-layer AUROC for the
+> **Figure 7. Cross-family depth profile of the two axes.** Per-layer AUROC for the
 > answerability gate (left, zoomed y-axis) and the correctness dial (right) against
 > fractional depth, one line per family; dots mark each family's argmax layer and the bars
 > under each panel mark its within-tolerance span (gate: within 0.005 of max; dial: within
@@ -665,7 +679,7 @@ promoted from "single greedy decode" to **seed-robust under sampled decoding**
 Every base so far (including every "raw" base in §§4.6–4.9) is a vendor *post-trained*
 instruct release, so all of the above is compatible with the signal being installed by
 instruction tuning. We pre-registered the contrast that separates the hypotheses: the
-identical three-signal readout on four **pre-instruction** bases matched to the §4.8
+identical three-readout panel (gate, dial, veto) on four **pre-instruction** bases matched to the §4.8
 families (Qwen3.5-4B-Base, Gemma-4-E4B-pt, Llama-3.2-3B, Olmo-3-7B), with the primary
 hypothesis (H1) that the answerability gate is already present before any post-training,
 and the falsifier that a base reads < 0.75 while its instruct sibling reads ≥ 0.95. Base
