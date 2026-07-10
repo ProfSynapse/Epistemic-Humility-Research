@@ -32,6 +32,7 @@ RUN_TAG="${6:-al-prep-true-a0}"
 NUM_LAYERS="${7:-36}"
 
 PROBE="experiment/phase1/probe"
+CLOUD="experiments/common/cloud"
 OUT="/tmp/${RUN_TAG}"
 mkdir -p "${OUT}"
 
@@ -41,7 +42,7 @@ exec > >(tee -a "${JOB_LOG}") 2>&1
 
 (
     while sleep "${LOG_PUSH_INTERVAL:-300}"; do
-        python "${PROBE}/cloud/upload_result.py" \
+        python "${CLOUD}/upload_result.py" \
             --repo "${STAGING_REPO}" \
             --path-prefix "${RUN_TAG}/logs" \
             --file "${JOB_LOG}" >/dev/null 2>&1 || true
@@ -53,12 +54,12 @@ trap 'kill "${LOG_PUSHER_PID}" 2>/dev/null || true' EXIT
 # Best-effort failure telemetry: RunPod has no logs API, so on ANY nonzero exit
 # ship a redacted marker + log tail to <run_tag>/_failure/ in the staging repo.
 # Chains onto the log-pusher EXIT trap above; never masks the original exit code.
-# shellcheck source=experiment/phase1/probe/cloud/job_failure_trap.sh
-source "${PROBE}/cloud/job_failure_trap.sh"
+# shellcheck source=experiments/common/cloud/job_failure_trap.sh
+source "${CLOUD}/job_failure_trap.sh"
 FAIL_STAGING_REPO="${STAGING_REPO}"
 FAIL_RUN_TAG="${RUN_TAG}"
 FAIL_JOB_LOG="${JOB_LOG}"
-FAIL_UPLOADER="${PROBE}/cloud/upload_result.py"
+FAIL_UPLOADER="${CLOUD}/upload_result.py"
 install_failure_trap
 
 echo "[al-a0] boot=${BOOT_ID} run_tag=${RUN_TAG}"
@@ -101,15 +102,15 @@ test -f "${OUT}/extract/data/manifest.json" || { echo "[al-a0] FATAL: no extract
 
 # ---- upload: gen dir as files, extract dir as one tarball ----
 for f in "${OUT}/gen/data/rows.jsonl" "${OUT}/gen/data/manifest.json"; do
-    python "${PROBE}/cloud/upload_result.py" \
+    python "${CLOUD}/upload_result.py" \
         --repo "${STAGING_REPO}" --path-prefix "${RUN_TAG}/gen" --file "${f}"
 done
 TARBALL="${OUT}/extract_data.tar.gz"
 tar -C "${OUT}/extract" -czf "${TARBALL}" data
-python "${PROBE}/cloud/upload_result.py" \
+python "${CLOUD}/upload_result.py" \
     --repo "${STAGING_REPO}" --path-prefix "${RUN_TAG}/extract" --file "${TARBALL}"
 
 # final log push
-python "${PROBE}/cloud/upload_result.py" \
+python "${CLOUD}/upload_result.py" \
     --repo "${STAGING_REPO}" --path-prefix "${RUN_TAG}/logs" --file "${JOB_LOG}" || true
 echo "[al-a0] DONE"

@@ -181,7 +181,7 @@ Gate/dial/veto AUROCs exactly as X/Z/SR define them. Interpretation rules:
   already granted, via HF_TOKEN) — do not redistribute weights or gated data.
 - **Lane:** cloud HF Jobs is the registered primary lane — one A10G job per
   cell in parallel, via the tracked wrapper
-  `experiment/phase1/probe/cloud/hf_jobs_cell.sh` (clone public repo at a
+  `experiments/common/cloud/hf_jobs_cell.sh` (clone public repo at a
   pinned commit → extract → score → upload only the small result JSON +
   manifest to `professorsynapse/epistemic-humility-cloud-results`; tracked
   gate-rows pool `experiments/common/artifacts/selfaware_gate_pool/selfaware_gate_rows_frozen.jsonl`).

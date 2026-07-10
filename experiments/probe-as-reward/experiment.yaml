@@ -48,7 +48,7 @@ instrument:
   - scripts/par_sensor_refit_union_inloop.py
   - scripts/path_compat.py
   pins:
-    cloud/hf_jobs_ai_verdict.sh: 48d8cf02595e8c31ae9dac2df68d1ea0d8ca73c4b0d9fcc2a42268c658c9838f
+    cloud/hf_jobs_ai_verdict.sh: 2cb2cdb7d1374d492ecb473fa2de8fc3dd040c6de245e31c824137dc9617f34d
     scripts/par_mining_score.py: 9df23c695d4d793e16767b3a91de0cea5cc244b4f7451d5687fc251242cb8eee
     scripts/par_recalibration_score.py: 3e0a5d14f8989e5d08bb6940c8c6fe508b4c1f40fd2151c065ae38dcd8148078
     scripts/par_recalibration_t_extract.py: f7d4234dc5fad17e4fd07c05d8d7ea653d179180809dfb9833978cd4e8742e53

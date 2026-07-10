@@ -16,7 +16,7 @@ instrument:
   modules:
   - cloud/runpod_diag_gentime_positions.sh
   pins:
-    cloud/runpod_diag_gentime_positions.sh: b52a31af09fdef8fa924450068241cd5c829c3dcf24c7dd07f6f8a03d807736b
+    cloud/runpod_diag_gentime_positions.sh: 921b000ca3b96b941817daec1a961c5a0db0313486285faab3ed95cb70f81fed
 inputs:
 - experiment/phase1/probe/diag_item20_gentime_decomposition.py
 - experiments/diag-item20-gentime-displacement/analysis-committed/gentime_decomposition.md

@@ -44,7 +44,7 @@ instrument:
   - cloud/runpod_al_true_a0.sh
   pins:
     cloud/modal_al_true_a0.py: 8b074a681bbb55bf77fc43967e9efe8286a4f30f8570e4799925487042b973fb
-    cloud/runpod_al_true_a0.sh: 852522f72f52460be5fc509065d9b8fdc5126733ca87af7f5a1a148403840562
+    cloud/runpod_al_true_a0.sh: 8a00db176fe2470117e7255a1d31e40205e1335d20b3b25d21a1fb8374e4f302
 inputs:
 - experiments/radial-anti-propensity-steering/analysis-committed/radial-ceiling-sim/radial_ceiling_sim.py
 verdict: 'USE-THE-SIGNAL NULL (injection channel), resolved 2026-07-05. AL-G1 PASS

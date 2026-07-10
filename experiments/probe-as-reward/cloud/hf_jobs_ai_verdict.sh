@@ -30,6 +30,7 @@ BASE_MODEL="$5"; ADAPTER_REPO="$6"; ADAPTER_REV="$7"; POOL_IN_REPO="$8"
 shift 8
 
 PROBE="experiment/phase1/probe"
+CLOUD="experiments/common/cloud"
 RUN_TAG="ai-verdict-${ARM_TAG}-${STAGE}-${SURFACE}"
 OUT="/tmp/${RUN_TAG}"
 mkdir -p "${OUT}"
@@ -43,7 +44,7 @@ exec > >(tee -a "${JOB_LOG}") 2>&1
 
 (
     while sleep "${LOG_PUSH_INTERVAL:-600}"; do
-        python "${PROBE}/cloud/upload_result.py" \
+        python "${CLOUD}/upload_result.py" \
             --repo "${STAGING_REPO}" \
             --path-prefix "${RUN_TAG}/logs" \
             --file "${JOB_LOG}" >/dev/null 2>&1 || true
@@ -96,12 +97,12 @@ if [ "${N_FILES}" -gt 9500 ]; then
     echo "[ai-verdict] data dir has ${N_FILES} files (>9500); uploading as tarball"
     TARBALL="${OUT}/data.tar.gz"
     tar -C "${OUT}" -czf "${TARBALL}" data
-    python "${PROBE}/cloud/upload_result.py" \
+    python "${CLOUD}/upload_result.py" \
         --repo "${STAGING_REPO}" \
         --path-prefix "${RUN_TAG}" \
         --file "${TARBALL}"
 else
-    python "${PROBE}/cloud/upload_folder.py" \
+    python "${CLOUD}/upload_folder.py" \
         --repo "${STAGING_REPO}" \
         --folder "${OUT}/data" \
         --path-in-repo "${RUN_TAG}/data" \
@@ -111,7 +112,7 @@ fi
 echo "[ai-verdict] DONE ${RUN_TAG}"
 
 # Final log push so the completed incarnation's full log is durable too.
-python "${PROBE}/cloud/upload_result.py" \
+python "${CLOUD}/upload_result.py" \
     --repo "${STAGING_REPO}" \
     --path-prefix "${RUN_TAG}/logs" \
     --file "${JOB_LOG}" || true

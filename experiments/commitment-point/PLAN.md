@@ -154,7 +154,7 @@ Preconditions before either command:
   ```bash
   cd /home/profsynapse/code/ehr-worktrees/amendment-ak-commitment-point/experiment/phase1/probe
   python3 amendment_ak_build_pool.py
-  python3 cloud/upload_result.py --repo professorsynapse/eh-al-prep-staging \
+  python3 experiments/common/cloud/upload_result.py --repo professorsynapse/eh-al-prep-staging \
     --path-prefix pools \
     --file /home/profsynapse/code/Epistemic-Humility-Research/experiment/phase1/probe/analysis/ak_stage1/ak_stage1_pool.jsonl
   ```
@@ -169,7 +169,7 @@ user GPU approval.
 
 raw-base arm:
 ```bash
-cd /home/profsynapse/code/ehr-worktrees/amendment-ak-commitment-point/experiment/phase1/probe/cloud
+cd /home/profsynapse/code/ehr-worktrees/amendment-ak-commitment-point
 modal run --detach experiments/commitment-point/cloud/modal_ak_stage1.py --checkpoint raw-base
 ```
 

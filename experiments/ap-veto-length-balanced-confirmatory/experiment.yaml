@@ -28,7 +28,7 @@ instrument:
     ap_build_pool.py: 0f992ffc343f72539ac38fbc3463ea6da55fc9cd55fc00ac3432475efd5f2217
     ap_extract.py: 700999c944c1a5f7ef32bd95fdb311aa25f46defd9f6a46fddaf7f09f2f70419
     ap_grade_and_gates.py: aba2fee0838ddd1f469ce030490c9ff101013a8c01b10e722aad4c671e2a7dac
-    cloud/modal_ap_veto_length_balanced.py: 41bc174b5cf053f7c3045611d00846fbadc3068da35ffc1f4b99d4c328962a99
+    cloud/modal_ap_veto_length_balanced.py: 050ceafe53b76d0c1db58a15bd3bad12476dfc7da4fa19fa045cc6ff036172bf
 # The generation pool (ap_pool.jsonl) lives under the gitignored analysis/
 # (data containment: it carries pool text) and is staged to the private HF
 # staging repo for the Modal run; it is derived local data, not a committed

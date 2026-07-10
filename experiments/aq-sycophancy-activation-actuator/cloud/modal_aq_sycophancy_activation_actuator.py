@@ -157,7 +157,7 @@ def missing_required_artifacts(workspace: str) -> list[str]:
 def build_upload_cmd(workspace: str, artifact_files: list[str]) -> list[str]:
     upload_cmd = [
         "python3",
-        "experiment/phase1/probe/cloud/upload_result.py",
+        "experiments/common/cloud/upload_result.py",
         "--repo",
         STAGING_REPO,
         "--path-prefix",

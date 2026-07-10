@@ -18,7 +18,7 @@ instrument:
   - cloud/runpod_diag_gpu_equiv.sh
   pins:
     cloud/modal_item11_equivalence.py: 5bfbba91b20c126f6e548b6d119dac681689c1feb2e455b9ad8e4fadd06f06fc
-    cloud/runpod_diag_gpu_equiv.sh: 56e4ac350ace454d2db4775b54f5aa09df7c43aee5c843f02e601fcbf7ee56e2
+    cloud/runpod_diag_gpu_equiv.sh: c1f4dce808073a12fa5d912490a5047db5716166192421d2b0e9097aa919176a
 inputs:
 - experiments/diag-item11-batched-steering-equivalence/artifacts/directions/qwen3-4b-grpo-v2/direction_caution.json
 - experiments/diag-item11-batched-steering-equivalence/artifacts/directions/qwen3-4b-grpo-v2/direction_caution.npy

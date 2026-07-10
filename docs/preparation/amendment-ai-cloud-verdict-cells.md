@@ -50,12 +50,12 @@ New:
   on `hf_jobs_cell.sh` (boot-id log capture + periodic log push preserved).
   Fetches the input pool from the private staging repo, runs the stage, uploads
   the WHOLE data dir (tensors are the deliverable here, unlike the X lane).
-- `experiment/phase1/probe/cloud/upload_folder.py` - folder upload helper
+- `experiments/common/cloud/upload_folder.py` - folder upload helper
   (HfApi.upload_folder to a private dataset repo); the X lane's
   `upload_result.py` only does single files.
 
 Edited (smallest backward-compatible change):
-- `experiment/phase1/probe/cloud/launch_hf_job.py` - added an `--ai-verdict`
+- `experiments/common/cloud/launch_hf_job.py` - added an `--ai-verdict`
   mode (new arg group: --stage/--surface/--arm-tag/--base-model/--adapter-repo/
   --adapter-revision/--staging-repo/--pool-in-repo), a dedicated
   `build_ai_verdict_command`, the pinned stable Unsloth image + a minimal
@@ -94,7 +94,7 @@ Staging repo default = `professorsynapse/eh-ai-verdict-staging` (private).
 
 CELL A (extract) - TRUE, union fit surface:
 
-    python3 experiment/phase1/probe/cloud/launch_hf_job.py --ai-verdict \
+    python3 experiments/common/cloud/launch_hf_job.py --ai-verdict \
         --stage extract --surface union --arm-tag true \
         --base-model professorsynapse/eh-qwen3-4b-clean-sft-seed1-merged-16bit \
         --adapter-repo professorsynapse/eh-qwen3-4b-clean-sft-grpo-par-true-seed1-lora \
@@ -104,7 +104,7 @@ CELL A (extract) - TRUE, union fit surface:
 
 CELL A (extract) - TRUE, 400-row holdout:
 
-    python3 experiment/phase1/probe/cloud/launch_hf_job.py --ai-verdict \
+    python3 experiments/common/cloud/launch_hf_job.py --ai-verdict \
         --stage extract --surface holdout --arm-tag true \
         --base-model professorsynapse/eh-qwen3-4b-clean-sft-seed1-merged-16bit \
         --adapter-repo professorsynapse/eh-qwen3-4b-clean-sft-grpo-par-true-seed1-lora \
@@ -114,7 +114,7 @@ CELL A (extract) - TRUE, 400-row holdout:
 
 CELL B (generate) - TRUE, 400-row holdout (greedy batch-1):
 
-    python3 experiment/phase1/probe/cloud/launch_hf_job.py --ai-verdict \
+    python3 experiments/common/cloud/launch_hf_job.py --ai-verdict \
         --stage generate --arm-tag true \
         --base-model professorsynapse/eh-qwen3-4b-clean-sft-seed1-merged-16bit \
         --adapter-repo professorsynapse/eh-qwen3-4b-clean-sft-grpo-par-true-seed1-lora \

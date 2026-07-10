@@ -40,6 +40,7 @@ STAGING_REPO="$1"; BASE_MODEL="$2"; DIRECTION_RELPATH="$3"
 RUN_TAG="${4:-diag-item11-gpuequiv-r1}"
 
 PROBE="experiment/phase1/probe"
+CLOUD="experiments/common/cloud"
 OUT="/tmp/${RUN_TAG}"
 mkdir -p "${OUT}"
 
@@ -49,7 +50,7 @@ exec > >(tee -a "${JOB_LOG}") 2>&1
 
 (
     while sleep "${LOG_PUSH_INTERVAL:-120}"; do
-        python "${PROBE}/cloud/upload_result.py" \
+        python "${CLOUD}/upload_result.py" \
             --repo "${STAGING_REPO}" \
             --path-prefix "${RUN_TAG}/logs" \
             --file "${JOB_LOG}" >/dev/null 2>&1 || true
@@ -58,12 +59,12 @@ exec > >(tee -a "${JOB_LOG}") 2>&1
 LOG_PUSHER_PID=$!
 trap 'kill "${LOG_PUSHER_PID}" 2>/dev/null || true' EXIT
 
-# shellcheck source=experiment/phase1/probe/cloud/job_failure_trap.sh
-source "${PROBE}/cloud/job_failure_trap.sh"
+# shellcheck source=experiments/common/cloud/job_failure_trap.sh
+source "${CLOUD}/job_failure_trap.sh"
 FAIL_STAGING_REPO="${STAGING_REPO}"
 FAIL_RUN_TAG="${RUN_TAG}"
 FAIL_JOB_LOG="${JOB_LOG}"
-FAIL_UPLOADER="${PROBE}/cloud/upload_result.py"
+FAIL_UPLOADER="${CLOUD}/upload_result.py"
 install_failure_trap
 
 echo "[diag-item11] boot=${BOOT_ID} run_tag=${RUN_TAG}"
@@ -83,8 +84,8 @@ test -s "${RESULT}" || { echo "[diag-item11] FATAL: empty result"; exit 1; }
 grep -q "OVERALL max abs divergence" "${RESULT}" || {
     echo "[diag-item11] FATAL: cell did not report a divergence line"; exit 1; }
 
-python "${PROBE}/cloud/upload_result.py" \
+python "${CLOUD}/upload_result.py" \
     --repo "${STAGING_REPO}" --path-prefix "${RUN_TAG}/result" --file "${RESULT}"
-python "${PROBE}/cloud/upload_result.py" \
+python "${CLOUD}/upload_result.py" \
     --repo "${STAGING_REPO}" --path-prefix "${RUN_TAG}/logs" --file "${JOB_LOG}" || true
 echo "[diag-item11] DONE"

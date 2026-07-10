@@ -15,7 +15,7 @@ everything needed to run and adjudicate it:
   experiment consumes the same direction.
 
 Shared, cross-experiment code lives under `experiments/common/`
-(`graders/`, `renders/`, and promoted `directions/`).
+(`cloud/`, `graders/`, `renders/`, and promoted `directions/`).
 
 ## Rules
 

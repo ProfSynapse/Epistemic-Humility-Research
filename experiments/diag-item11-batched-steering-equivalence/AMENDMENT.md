@@ -8,7 +8,8 @@ same residual edit as the one-prompt-at-a-time reference path on the deployed
 Qwen3-4B clean-SFT to GRPO-v2 lineage?
 
 Instrument: `archive/experiment/phase1/probe/steering/gpu_equivalence_cell.py`, launched
-through the RunPod/Modal wrappers under `experiment/phase1/probe/cloud/`. The
+through `experiments/diag-item11-batched-steering-equivalence/cloud/`. The old
+`experiment/phase1/probe/cloud/` launcher paths are compatibility wrappers. The
 cell compares steering deltas, not absolute hidden states, to avoid bf16
 padded-vs-unpadded forward noise.
 
