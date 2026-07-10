@@ -20,7 +20,7 @@ instrument:
   pins:
     latent_knowledge_probe.py: 350f9d9e4acf57b1af858396fb50616fa5b98e7ebb475155af9d40da038eda93
     latent_knowledge_controls.py: 1d6c5b127145e1a24c3965f7d210eaf70c0e17ff328cf909bd3440e61dd5b2e9
-    caution_axis_transfer.py: 237c485790b01422e988729c7d1d4a055dcbd5b834311953d2740d1608d3bcfc
+    caution_axis_transfer.py: c7c4a8e4be23292b78598feb4800b0e812cfe034e571f2974ab1c62472690802
 inputs:
 - experiments/selfaware-latent-knowledge-controls/artifacts/latent_knowledge_controls/a1a2_h_lora.json
 - experiments/selfaware-latent-knowledge-controls/artifacts/latent_knowledge_controls/a3_h_base_probe.json

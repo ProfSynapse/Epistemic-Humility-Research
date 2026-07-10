@@ -30,7 +30,7 @@ instrument:
   modules:
   - compare_thinking_probe_results.py
   pins:
-    compare_thinking_probe_results.py: c5ca5342ac2648b5f6e856e8e9ab6aac3d257964504b92959c356586f809fa9e
+    compare_thinking_probe_results.py: d22329d6cc0078a413d66607b50426508ff29b33e96bdd348d8970f61733393d
 inputs:
 - experiments/thinking-enabled-parallel-arm/artifacts/configs/probe_thinking_audit_128_1024.yaml
 - experiments/thinking-enabled-parallel-arm/artifacts/configs/probe_thinking_audit_512.yaml

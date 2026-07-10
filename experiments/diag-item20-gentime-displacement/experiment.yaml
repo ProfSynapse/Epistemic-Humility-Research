@@ -17,8 +17,8 @@ instrument:
   - diag_item20_gentime_decomposition.py
   - cloud/runpod_diag_gentime_positions.sh
   pins:
-    diag_item20_gentime_decomposition.py: 02a339e92001cf5766097f64797caaefb30f1415ecf63d69b8a2847efe197e44
-    cloud/runpod_diag_gentime_positions.sh: 921b000ca3b96b941817daec1a961c5a0db0313486285faab3ed95cb70f81fed
+    diag_item20_gentime_decomposition.py: 75da52ef59806f800725f3b6e036a50a76a78b15d1b73f2974c9707370c3acf7
+    cloud/runpod_diag_gentime_positions.sh: 0097bdd9186899dd80e8b4ecde328f9c251180cbfba9d8fe523889e25b2152c5
 inputs:
 - experiments/diag-item20-gentime-displacement/analysis-committed/gentime_decomposition.md
 verdict: Historical lab-notebook diagnostic banked; generation-time displacement is overwhelmingly outside the named doubt/caution-perp plane at every captured position.

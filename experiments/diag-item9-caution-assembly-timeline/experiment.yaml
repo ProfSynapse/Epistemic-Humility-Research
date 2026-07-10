@@ -18,7 +18,7 @@ instrument:
   - cloud/runpod_diag_caution_timeline.sh
   pins:
     diag_item9_caution_timeline.py: d945ef5c1b0aaf39f4e8743a9b8bfcee4e2103af59da31aea2218a476c8c9301
-    cloud/runpod_diag_caution_timeline.sh: ab595db29a44adeb178923fdde4fc2cbccc3899e1ad3cba4bfe6607cf06cffeb
+    cloud/runpod_diag_caution_timeline.sh: 3f63e43835dd93c5f8da300386e2f24ce7b108a0b0f5a684104971f44fe7590d
 inputs:
 - experiments/diag-item9-caution-assembly-timeline/analysis-committed/diag_item9_caution_timeline.md
 verdict: Historical lab-notebook diagnostic banked; caution/answerability readout remains strong across stages, with most direction rotation from raw to clean-SFT and smaller rotation after GRPO-v2/PAR-true.

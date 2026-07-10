@@ -52,6 +52,10 @@ STATUSES = ("draft", "signed", "running", "resolved", "null-result", "falsified"
 SIGNED_PLUS = frozenset({"signed", "running", "resolved", "null-result", "falsified"})
 # Terminal statuses that must carry a verdict.
 RESOLVED_STATES = frozenset({"resolved", "null-result", "falsified", "historical"})
+# Statuses whose pins must exist and still match: signed+ plus migrated
+# historical-amendment records, which carry pins from their original run but
+# are not caught by SIGNED_PLUS.
+PIN_CHECK_STATUSES = SIGNED_PLUS | {"historical"}
 
 GENERATED_HEADER = "GENERATED - do not edit; run bin/exp regen and stage the result"
 
@@ -327,12 +331,16 @@ def _validate_manifest(root: Path, slug: str, mpath: Path, data: dict) -> list[s
     exp_dir = mpath.parent
 
     # Pins: signed+ experiments must have pinned every config, and every pinned
-    # file must still exist and hash to its recorded value.
+    # file must still exist and hash to its recorded value. Historical-amendment
+    # records are not required to have pinned every config/module (some were
+    # migrated with partial pin coverage), but any pin they do carry must still
+    # match, so they get the drift check without the completeness check.
     if status in SIGNED_PLUS:
         pin_targets = [str(c) for c in configs] + [str(m) for m in modules]
         for rel in pin_targets:
             if rel not in pins:
                 err(f"config/module {rel!r} is not pinned (run exp sign)")
+    if status in PIN_CHECK_STATUSES:
         for rel, recorded in pins.items():
             fpath = exp_dir / rel
             if not fpath.is_file():

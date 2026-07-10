@@ -430,8 +430,8 @@
           "cloud/modal_ak_stage2.py"
         ],
         "pins": {
-          "cloud/modal_ak_stage1.py": "7076236c31b684f50d5487d07d844a9ce2eb93a91f67fce776420f21e2c777f3",
-          "cloud/modal_ak_stage2.py": "c98adefc28af8c38c6b827afad91fdd1f3efaf2a047fe7f00c65a627bd9a98b9"
+          "cloud/modal_ak_stage1.py": "810070d09e5b8899d58638494b3f3a241edfbf7e6f87315dc5da2b756bff9c5f",
+          "cloud/modal_ak_stage2.py": "5d374147e6b5b4fcf3f54a037e51873c62976697b08ec9de65bd03c2c4eacff1"
         }
       },
       "kg": [],
@@ -763,8 +763,8 @@
           "cloud/runpod_diag_gpu_equiv.sh"
         ],
         "pins": {
-          "cloud/modal_item11_equivalence.py": "5bfbba91b20c126f6e548b6d119dac681689c1feb2e455b9ad8e4fadd06f06fc",
-          "cloud/runpod_diag_gpu_equiv.sh": "c1f4dce808073a12fa5d912490a5047db5716166192421d2b0e9097aa919176a"
+          "cloud/modal_item11_equivalence.py": "d6978c00785ad4be3bb991513f50371fd422a9cb0018aa0e4f173d7f15c985bb",
+          "cloud/runpod_diag_gpu_equiv.sh": "7be9b1f3dcd6563b7a426d7a5ead6f966fdde354f7a3af20b90e97a3d2d5a72d"
         }
       },
       "kg": [],
@@ -794,8 +794,8 @@
           "cloud/runpod_diag_gentime_positions.sh"
         ],
         "pins": {
-          "cloud/runpod_diag_gentime_positions.sh": "921b000ca3b96b941817daec1a961c5a0db0313486285faab3ed95cb70f81fed",
-          "diag_item20_gentime_decomposition.py": "02a339e92001cf5766097f64797caaefb30f1415ecf63d69b8a2847efe197e44"
+          "cloud/runpod_diag_gentime_positions.sh": "0097bdd9186899dd80e8b4ecde328f9c251180cbfba9d8fe523889e25b2152c5",
+          "diag_item20_gentime_decomposition.py": "75da52ef59806f800725f3b6e036a50a76a78b15d1b73f2974c9707370c3acf7"
         }
       },
       "kg": [],
@@ -825,7 +825,7 @@
           "cloud/runpod_diag_caution_timeline.sh"
         ],
         "pins": {
-          "cloud/runpod_diag_caution_timeline.sh": "ab595db29a44adeb178923fdde4fc2cbccc3899e1ad3cba4bfe6607cf06cffeb",
+          "cloud/runpod_diag_caution_timeline.sh": "3f63e43835dd93c5f8da300386e2f24ce7b108a0b0f5a684104971f44fe7590d",
           "diag_item9_caution_timeline.py": "d945ef5c1b0aaf39f4e8743a9b8bfcee4e2103af59da31aea2218a476c8c9301"
         }
       },
@@ -1701,17 +1701,17 @@
           "scripts/path_compat.py"
         ],
         "pins": {
-          "cloud/hf_jobs_ai_verdict.sh": "2cb2cdb7d1374d492ecb473fa2de8fc3dd040c6de245e31c824137dc9617f34d",
-          "scripts/par_mining_score.py": "9df23c695d4d793e16767b3a91de0cea5cc244b4f7451d5687fc251242cb8eee",
-          "scripts/par_recalibration_score.py": "3e0a5d14f8989e5d08bb6940c8c6fe508b4c1f40fd2151c065ae38dcd8148078",
-          "scripts/par_recalibration_t_extract.py": "f7d4234dc5fad17e4fd07c05d8d7ea653d179180809dfb9833978cd4e8742e53",
-          "scripts/par_sensor_refit_4bit_inloop_check.py": "56c43469d83dc0ca0d757a1668a4a83703439ce8bf71ffa3d9ed2e67873d3731",
-          "scripts/par_sensor_refit_extract.py": "681959963d90d10ad1125ecb3f299083391266d5015b13edbb2b3f05962e7e07",
-          "scripts/par_sensor_refit_extract_4bit.py": "c64948204b9e3a023eb1303a1c0398d8f974b68fc4df2861d0cb8741dcd76fb7",
-          "scripts/par_sensor_refit_fit.py": "91e5008c1cea3409f506eb9d5338c7baf8e3eeab9611522d213c379dde701bd0",
-          "scripts/par_sensor_refit_mining_step.py": "ff603feae8190ae067bb7467e37d7294711a282a5ff99d28b80251c33a18c3a0",
-          "scripts/par_sensor_refit_union_inloop.py": "38366dfd6d6dad46259d22ac419aafe5e3449f3de2b7308af34d0cf0bb7b48f0",
-          "scripts/path_compat.py": "092d9274b7bb99f70c3de8bd9d490b240522e9514c418441c140fb8e667f0a2c"
+          "cloud/hf_jobs_ai_verdict.sh": "2e813931fe38427793ed0edf51fd364356e27b1608385f21a5bd0e093ac26bdf",
+          "scripts/par_mining_score.py": "2101c1af6008d430435efb952e3a84fa3c6fd42df96cf8173a8ba60458835b98",
+          "scripts/par_recalibration_score.py": "6b8163929fef5f3ed17cf5f77bc34099b53aa20178a883a333fe6ca948f6fdc1",
+          "scripts/par_recalibration_t_extract.py": "cafb3fe060ea1ace16fb8139bedd397aec9f334a921797ca4d21b4baa59f1490",
+          "scripts/par_sensor_refit_4bit_inloop_check.py": "0afed14fcdc857a5534ddff00fb57202263fdcd3bec4825abe3ae10522dea4f6",
+          "scripts/par_sensor_refit_extract.py": "e70315a5c856af62836a6d7cf11ceff06598f22efc46a72c946e721ef5d2ffa1",
+          "scripts/par_sensor_refit_extract_4bit.py": "40301a7bf951b567b8415243f74a5235b79720e795fbc028975e1115e5a2575f",
+          "scripts/par_sensor_refit_fit.py": "8a3fce98f626ef318fa2751575c44e0985b4410b92242fa21fcd334ec921f3e4",
+          "scripts/par_sensor_refit_mining_step.py": "4e6b87d5a407597710be92b4ff29577ea435f4afc7098249b182b432c88d3204",
+          "scripts/par_sensor_refit_union_inloop.py": "e751ee7ae911584498d16c1d197542d2e33728521ff197556a333ae52bd90b14",
+          "scripts/path_compat.py": "543b5ec38362ba49b59f660bb8c9f0f5c7554bdd1c1724743a2f08571f74fbdf"
         }
       },
       "kg": [],
@@ -1828,8 +1828,8 @@
           "cloud/runpod_al_true_a0.sh"
         ],
         "pins": {
-          "cloud/modal_al_true_a0.py": "8b074a681bbb55bf77fc43967e9efe8286a4f30f8570e4799925487042b973fb",
-          "cloud/runpod_al_true_a0.sh": "8a00db176fe2470117e7255a1d31e40205e1335d20b3b25d21a1fb8374e4f302"
+          "cloud/modal_al_true_a0.py": "33265f3c7df8b32e7c4b78eb24565e8fe74a414e8b9ccc35cb0da65e3a900396",
+          "cloud/runpod_al_true_a0.sh": "14c6a99b05de495828b1c7177d50fd187159ce84b445d4e11e65fec28db71a50"
         }
       },
       "kg": [],
@@ -1871,7 +1871,7 @@
           "cloud/modal_am_residual_catch.py"
         ],
         "pins": {
-          "cloud/modal_am_residual_catch.py": "dddc271c01a43ea7ec451d6cac0ace12f21d9f3bb2edc659b7715874bf223132"
+          "cloud/modal_am_residual_catch.py": "a18ed4dcd1ef3ee4712a9d3b338bd651690ff64196afd0454f98d24b6e516bf9"
         }
       },
       "kg": [],
@@ -2070,7 +2070,7 @@
           "caution_axis_transfer.py"
         ],
         "pins": {
-          "caution_axis_transfer.py": "237c485790b01422e988729c7d1d4a055dcbd5b834311953d2740d1608d3bcfc",
+          "caution_axis_transfer.py": "c7c4a8e4be23292b78598feb4800b0e812cfe034e571f2974ab1c62472690802",
           "latent_knowledge_controls.py": "1d6c5b127145e1a24c3965f7d210eaf70c0e17ff328cf909bd3440e61dd5b2e9",
           "latent_knowledge_probe.py": "350f9d9e4acf57b1af858396fb50616fa5b98e7ebb475155af9d40da038eda93"
         }
@@ -2140,7 +2140,7 @@
           "compare_thinking_probe_results.py"
         ],
         "pins": {
-          "compare_thinking_probe_results.py": "c5ca5342ac2648b5f6e856e8e9ab6aac3d257964504b92959c356586f809fa9e"
+          "compare_thinking_probe_results.py": "d22329d6cc0078a413d66607b50426508ff29b33e96bdd348d8970f61733393d"
         }
       },
       "kg": [],

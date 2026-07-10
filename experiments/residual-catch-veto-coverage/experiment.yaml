@@ -49,7 +49,7 @@ instrument:
   modules:
   - cloud/modal_am_residual_catch.py
   pins:
-    cloud/modal_am_residual_catch.py: dddc271c01a43ea7ec451d6cac0ace12f21d9f3bb2edc659b7715874bf223132
+    cloud/modal_am_residual_catch.py: a18ed4dcd1ef3ee4712a9d3b338bd651690ff64196afd0454f98d24b6e516bf9
 inputs:
 - experiments/residual-catch-veto-coverage/analysis-committed/veto-warning-policy/warning_policy.py
 verdict: 'AM-G1 PASS (OOF veto AUROC 0.9168, CI [0.854, 0.963]) and AM-G2 PASS (permutation
