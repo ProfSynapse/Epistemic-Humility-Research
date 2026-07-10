@@ -329,3 +329,60 @@ limitation 2 "original scoping worry", limitation 5 "now exists".
 5. Nothing outside papers/paper-4-two-signal-readout/ was touched. The
    SWAP-marked limitation 8 block is untouched and still awaits the
    token-logprob splice.
+
+---
+
+## Addendum: related-work readability pass, 2026-07-10 (branch `paper/two-signal-related-work-pass`)
+
+PI read-through feedback executed after the synthesis pass merged
+(3dcb45ad) and the lead's adjudication landed (91722d5a). One manuscript
+commit, one report commit. VOICE.md re-read before writing.
+
+### What changed in section 2
+
+Every block now follows the pattern: question opener, external anchors as
+answers, one closing positioning sentence with no numbers of ours.
+
+- Verbalized confidence: opens "Can a model simply say how sure it is?";
+  the two-sentence close merged into one positioning sentence. The clause
+  "the loss on that token does not transmit the internal estimate
+  faithfully" was dropped as diagnostic detail belonging to the companion
+  paper's story; the parenthetical (internal calibrated, emitted not)
+  keeps the essence.
+- Probing internal states: opens "If the stated confidence is unreliable,
+  is a reliable one nonetheless sitting in the activations?"; "our gate"
+  first use now glossed inline ("the pre-generation readout this paper
+  thresholds to abstain"); the Cheang engagement keeps the decomposition
+  positioning but the "about 0.74" number is gone (memo's preferred
+  option, not the allowed exception); the close is one differentiation
+  sentence.
+- Reading after the answer: opens "Does a model know more about its
+  answer after producing it than before?"; our +0.065 and +0.074 removed
+  from section 2 (both live in 4.2: +0.065 CI [0.040, 0.090], and the
+  deployed 0.819 post vs 0.745 pre); positioning is the memo's suggested
+  shape, unquantified.
+- Abstention: opens with the memo's example question nearly verbatim;
+  closes with the single opposite-branch positioning move. The second
+  stacked move (veto as hallucination detector inside the correctness
+  axis) was DELETED from section 2 rather than relocated: 4.3 already
+  states the veto-not-ranker property, and the sentence's citation
+  (Orgad) remains anchored in the post-answer block, so the census is
+  intact.
+- Steering: reduced to one scoping sentence keeping Zou and Turner, with
+  a forward pointer to section 6.
+
+### Section 6 consolidation
+
+The synthesis pass had already consolidated the asymmetric-steering
+finding, the doubt-gated caution-write numbers, and the follow-on-paper
+tease into the single "Why not just steer?" passage in section 6.
+Section 2's sentence was a compressed duplicate of it, so the merge
+required only the deletion; section 6 is unchanged this pass and remains
+the sole home of that content.
+
+### Checks
+
+- No citations added or removed (Orgad, Zou, Turner all still cited).
+- Section 2 contains no result numbers of ours (grep-verified).
+- Zero em dashes, zero banned vocabulary, full-file sweep.
+- Diff confined to papers/paper-4-two-signal-readout/.
