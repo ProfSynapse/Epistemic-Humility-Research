@@ -4,7 +4,7 @@ session_id: 20260708T164625Z-paper-5-j-space-hardening
 title: Paper 5 J-space hardening
 status: active
 created_at: '2026-07-08T16:46:25Z'
-updated_at: '2026-07-10T22:28:01Z'
+updated_at: '2026-07-10T23:54:42Z'
 track: research
 phase: phase1
 question: Which registered follow-up experiments harden the Paper 5 actuation thesis,
@@ -398,6 +398,32 @@ checkpoints:
   decisions: []
   next_steps: []
   signals: {}
+- id: 017-checkpoint
+  at: '2026-07-10T23:54:42Z'
+  kind: checkpoint
+  title: Checkpoint
+  summary: 'H9 feasibility adjudicated: NOT computable from cache (AL fit on full
+    1,662-row surface, no held-out split; in-cell OOF 0.6802 recorded as gate-setting
+    prior); memo committed e1ec09bb, H9 backlog row now CPU+GPU, scout dispatched
+    on held-out candidate-list recoverability (union 18,496 minus fit 1,662). Answered
+    PI question on doubt+propensity combination: parallel mirrors (AC doubt, AO propensity,
+    AN selector) plus ONE additive two-sensor controller g_i=-a_d*z_d+a_p*z_p in draft
+    exp two-signal-caution-regulation-instruct, killed at calibration, collapsed to
+    doubt-only gate in tighten; no serial confab-through-doubt routing exists. Worktree/branch
+    audit run: two-signal AMENDMENT.md+experiment.yaml were UNTRACKED disk-only, now
+    committed+pushed on their branch (was never pushed); Amendment Y-thinking draft
+    stranded on amendment-y-thinking-readout branch (absent from main, never migrated);
+    AK worktree holds uncommitted ak_stage2 G3 report + row-level pull data; steering-cell
+    skill branch never merged (mechinterp-cells likely supersedes); old amendment
+    branches (AE/AG/AH/AB/AC/R/Y-base) verified MIGRATED to experiments/ on main,
+    stale; jspace replication/localization branches stale (main ahead, resolved).
+    Next: PI decision on stranded drafts + stale-branch cleanup sweep.'
+  evidence: []
+  run_ids: []
+  commands: []
+  decisions: []
+  next_steps: []
+  signals: {}
 ---
 # Paper 5 J-space hardening
 
@@ -701,3 +727,8 @@ rows before the layer contrast.
 - at: `2026-07-10T22:28:01Z`
 - kind: `checkpoint`
 - summary: Paper 4 editorial arc continued through three more PI-directed passes, all lead-verified and merged: (1) synthesis pass (0.980 removed from all sites incl. a rhetorical-foil survivor the lead caught; 4.4 rewritten as decomposition statement; U overshoot story dissolved, controlled core sits inside registered band; Figure 5 rebuilt from generator; lead adjudication 91722d5a scoped 4.3 decomposition attribution to raw base as explicit inference). (2) related-work pass (section 2 question-first rewrite, our numbers out of related work, steering block reduced to one scoping sentence with substance consolidated in section 6; merged 95bff4ae). (3) self-containment + headings pass (body prose freed of amendment codenames/doc filenames/slugs/PR numbers/repo paths, provenance consolidated to Appendix A with 7 new verified rows; ~25 bold run-ins converted to real subheadings; lead fix 959603d5 promoted section 3 setup blocks to ###; merged e0c833d9). VOICE.md gained three new binding sections this arc: Synthesis-not-journey, External-facing self-containment, real-headings structure habit. TODO backlog: CD (correctness-direction rotation tracking, upgrades dial cold-transfer inference to measurement) + LP (logprob re-forward), both gated on midband ladder freeing 3090. Forward note: companion-paper reference should switch to paper 3's own identifier when it exists. Revisor on standby for further PI reading feedback.
+### 017-checkpoint - Checkpoint
+
+- at: `2026-07-10T23:54:42Z`
+- kind: `checkpoint`
+- summary: H9 feasibility adjudicated: NOT computable from cache (AL fit on full 1,662-row surface, no held-out split; in-cell OOF 0.6802 recorded as gate-setting prior); memo committed e1ec09bb, H9 backlog row now CPU+GPU, scout dispatched on held-out candidate-list recoverability (union 18,496 minus fit 1,662). Answered PI question on doubt+propensity combination: parallel mirrors (AC doubt, AO propensity, AN selector) plus ONE additive two-sensor controller g_i=-a_d*z_d+a_p*z_p in draft exp two-signal-caution-regulation-instruct, killed at calibration, collapsed to doubt-only gate in tighten; no serial confab-through-doubt routing exists. Worktree/branch audit run: two-signal AMENDMENT.md+experiment.yaml were UNTRACKED disk-only, now committed+pushed on their branch (was never pushed); Amendment Y-thinking draft stranded on amendment-y-thinking-readout branch (absent from main, never migrated); AK worktree holds uncommitted ak_stage2 G3 report + row-level pull data; steering-cell skill branch never merged (mechinterp-cells likely supersedes); old amendment branches (AE/AG/AH/AB/AC/R/Y-base) verified MIGRATED to experiments/ on main, stale; jspace replication/localization branches stale (main ahead, resolved). Next: PI decision on stranded drafts + stale-branch cleanup sweep.
