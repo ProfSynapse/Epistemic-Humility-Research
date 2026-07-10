@@ -1,0 +1,150 @@
+# qwen35-4b-midband-doubt-snap cell. DRAFT until `bin/exp sign`.
+# Substrate-local Qwen3.5-4B only. Direct predecessor for the mechanism is
+# doubt-snap-cross-family-confirmatory's qwen35_4b late-site cell (cited
+# null, not re-run); direct predecessor for the layer-selection METHOD is
+# j-space-midband-write-sweep-qwen3-4b / j-space-layer-contrast-rep2-multisource
+# on Qwen3-4B (same-model, not cross-model transferable band assumption).
+
+seed: 20260707
+
+surface:
+  model: Qwen/Qwen3.5-4B
+  revision: 851bf6e806efd8d0a36b00ddf55e13ccb7b8cd0a
+  substrate: bf16
+  adapter: none
+  loader: "AutoModelForCausalLM.from_pretrained (nested text_config; from_config fails)"
+  loader_note: >-
+    Requires transformers >= 5.x (model_type qwen3_5 native support). The
+    project's pinned local `unsloth_env` (transformers 4.57.1) does NOT
+    recognize this architecture; GPU scripts for this experiment run under
+    /home/profsynapse/miniconda3/bin/python3 (base conda: transformers
+    5.5.0, torch 2.9.0+cu128, CUDA available), documented as a deviation
+    with cause in AMENDMENT.md, not silently substituted.
+  hybrid_attention_note: >-
+    Most decoder blocks use a custom chunk_gated_delta_rule linear-attention
+    recurrence, not standard SDPA; flash-linear-attention fast path is not
+    installed (torch fallback only). Double-backward JVP work (Stage A) and
+    any gradient-tracking multi-layer run over this model MUST set
+    CUDA_LAUNCH_BLOCKING=1 -- an async CUDA error inside this op was
+    observed without it (see AMENDMENT.md architecture note) and did not
+    reproduce with it set.
+  hidden_dim: 2560
+  n_layers: 32
+  source_reused_rows: experiments/doubt-snap-cross-family-confirmatory (qwen35_4b cell)
+  reused_rows_manifest: analysis-committed/reused_rows_manifest.json
+  local_fit_rows_path: analysis/fit_rows_for_anchor.jsonl
+  generation:
+    max_new_tokens: 200
+    min_new_tokens: 1
+    do_sample: false
+    eos_includes_im_end: true
+    enable_thinking: false
+  containment:
+    committed_row_text: forbidden
+    committed_aliases: forbidden
+    committed_answer_text: forbidden
+
+late_site_reference:
+  hs_index: 30
+  decoder_block_index: 29
+  rule: "round(0.94 * (num_hidden_layers - 1)) -> block_index; hs_index = block_index + 1"
+  source: experiments/doubt-snap-cross-family-confirmatory (qwen35_4b cell; cited, not re-run)
+  cited_artifacts:
+    - path: analysis/from_modal/qwen35_4b/committed/build_manifest.json (doubt-snap-cross-family worktree)
+      note: "layer=29, hidden_dim=2560, sigma_c=2.8006144743394796, mu_c=-7.37191478870769"
+    - path: analysis/from_modal/qwen35_4b/committed/gate_fit.json (doubt-snap-cross-family worktree)
+      note: "auc_neg_z_d_on_fit=0.995988350244269, tau_frozen=-0.5531870382129122"
+    - path: NOTEBOOK.md 2026-07-09/2026-07-10 entries (doubt-snap-cross-family worktree)
+      note: >-
+        registered grid {100,150,200,250}: 0% clean_tighten at every dose
+        (854/887 fired confabs degenerate at dose 100); recalibrated grid
+        {10,20,30,40,50,60,75}: coherent tighten rises 2.8%->9.0%->17.3%->
+        32.6% across doses 10-40, well-formedness falls 90%->55%->3% across
+        40/50/60, tighten falls to 10.8%/0%/0% at 50/60/75.
+
+layers:
+  profile_hs_grid: [2, 5, 7, 10, 13, 15, 18, 20, 23, 26, 28, 30, 31, 32]
+  profile_rationale: >-
+    Depth-proportional to j-space-localization-qwen3-4b's own 13-point
+    Qwen3-4B profile grid, rescaled to this model's 32 layers, with hs30
+    (the late reference) inserted explicitly as the within-run comparator.
+  midband_candidates_hs: [20, 23, 26]  # Stage A result: peak hs23 (eff_dim_frac=0.558) + adjacent hs20 (0.530), hs26 (0.525); see analysis-committed/profile_summary.json
+  midband_selection_rule: >-
+    Peak of effective_dim_frac_mean on the profiled grid, plus its
+    immediately adjacent profiled layers. Model-specific; NOT assumed to
+    match Qwen3-4B's hs23-29/peak-hs26.
+
+readouts:
+  fit_per_layer: true
+  fit_population: FIT split only (reused verbatim, no re-mining)
+  u_d:
+    role: doubt gate sensor
+    fit: "unit(mean(H[known_correct_answered FIT]) - mean(H[unknown_refused]))"
+  caution_dir:
+    role: source caution direction
+    fit: "mass-mean unknown_refused minus confab FIT"
+  u_p:
+    role: confab-propensity orthogonalizer
+    fit: "LogisticRegression(saga, C=1.0, tol=1e-3, max_iter=5000, random_state=20260707)"
+  c_hat:
+    role: snap write direction
+    fit: "unit(caution_dir orthogonalized against span(u_d, u_p) via QR)"
+  random_direction:
+    role: placebo control
+    fit: "unit(np.random.default_rng(seed + hidden_dim + hs_index).normal(size=hidden_dim))"
+
+gate:
+  score: neg_z_d
+  fire_rule: "score >= tau"
+  tau_fit: Youden-J on FIT confab vs known_correct_answered, separately per layer
+  min_fit_auc: 0.90
+
+snap:
+  law: erase_write
+  position: anchor_onward
+  dose_grid_status: draft_until_sign
+  dose_grid_source: >-
+    Proposed per-layer from readback-sigma sanity (see LAUNCH-PLAN.md);
+    NOT the late site's absolute setpoints, which are known non-portable
+    (that is the entire premise of this experiment -- see j-space-midband
+    -write-sweep-qwen3-4b's dose-200 collapse on Qwen3-4B mid-band layers
+    for the precedent that absolute setpoints do not transfer across layer
+    sites even within one model).
+  dose_grid_proposal:  # DRAFT -- decision point for sign, see LAUNCH-PLAN.md
+    grid_shape: "{2, 4, 6, 8, 12, 16, 20} x sigma_c"
+    per_layer_sigma_c:  # from analysis-committed/build_manifest.json, Stage B fit
+      hs20: 1.5760
+      hs23: 2.1155
+      hs26: 2.2364
+      hs30_late_comparator_refit: 2.8165
+    per_layer_dose_grid:
+      hs20: [3.2, 6.3, 9.5, 12.6, 18.9, 25.2, 31.5]
+      hs23: [4.2, 8.5, 12.7, 16.9, 25.4, 33.8, 42.3]
+      hs26: [4.5, 8.9, 13.4, 17.9, 26.8, 35.8, 44.7]
+      hs30_late_comparator_refit: [5.6, 11.3, 16.9, 22.5, 33.8, 45.1, 56.3]
+
+arms:
+  - name: gated
+    description: real instrument, doubt gate then c_hat snap at the frozen per-layer dose
+  - name: random_direction
+    description: same fired rows, random direction at matched realized projection
+  - name: permuted_gate
+    description: same fire count, uniformly permuted over combined FIT confab + known_correct rows
+
+execution:
+  lane: local_3090
+  gpu_python: /home/profsynapse/miniconda3/bin/python3  # see loader_note above
+  env_required:
+    - CUDA_LAUNCH_BLOCKING=1
+    - HF_TOKEN (from .env, never printed)
+    - HF_HUB_DISABLE_XET=1
+    - HF_HUB_ENABLE_HF_TRANSFER=0
+  materialize_script: materialize_reused_rows.py
+  profile_script: jlens_qwen35.py
+  fit_script: fit_midband_directions.py
+  dose_ladder_script: run_dose_ladder.py  # NOT YET WRITTEN -- open item, see LAUNCH-PLAN.md
+  runlog: shared/utilities/run_log.py (synaptic-tuner @ cd30d482, available at this pin)
+
+outputs:
+  local_private_dir: experiments/qwen35-4b-midband-doubt-snap/analysis/
+  committed_public_dir: experiments/qwen35-4b-midband-doubt-snap/analysis-committed/

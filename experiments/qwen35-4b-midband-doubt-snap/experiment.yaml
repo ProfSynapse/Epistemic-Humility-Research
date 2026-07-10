@@ -1,0 +1,44 @@
+slug: qwen35-4b-midband-doubt-snap
+type: steer-cell
+status: draft
+registered: true
+question: >-
+  On Qwen/Qwen3.5-4B, does writing the doubt-gated caution snap at a J-space
+  workspace-band (mid-band) layer decouple refusal induction from output
+  corruption, where the registered late-site (0.94-depth, hs30) write
+  produced a well-characterized no-window null in
+  doubt-snap-cross-family-confirmatory (FIT dose sweep 0% clean_tighten at
+  the registered grid, recalibrated peak ~33% coherent tighten with
+  well-formedness collapsing to 3% by dose 60)?
+prediction: >-
+  Some mid-band layer, at some dose on the proposed grid, will achieve
+  refusal rate >= 0.60 AND well-formed rate >= 0.80 on fired FIT confabs with
+  known-correct false-refusal <= 0.10 -- the coherent operating window the
+  late site (hs30) provably lacks on this substrate.
+falsifier: >-
+  No mid-band layer/dose achieves that window, and every mid-band layer shows
+  the same refusal-vs-well-formed entanglement as the late site (refusal
+  rises only as well-formed falls, no dose clears both thresholds at once).
+checkpoint:
+  repo: Qwen/Qwen3.5-4B
+  revision: 851bf6e806efd8d0a36b00ddf55e13ccb7b8cd0a
+instrument:
+  configs:
+    - cell.yaml
+    - gates.yaml
+  modules:
+    - materialize_reused_rows.py
+    - jlens_qwen35.py
+    - fit_midband_directions.py
+  pins:
+    synaptic_tuner_commit: cd30d482b42866815e0c9ec808df55d70855d4e8
+    substrate: bf16
+    seed: 20260707
+inputs:
+  - experiments/j-space-localization-qwen3-4b/jlens.py
+  - experiments/j-space-midband-write-sweep-qwen3-4b/AMENDMENT.md
+  - experiments/qwen35-4b-midband-doubt-snap/analysis-committed/reused_rows_manifest.json
+  - experiments/qwen35-4b-midband-doubt-snap/analysis-committed/profile_summary.json
+  - experiments/qwen35-4b-midband-doubt-snap/analysis-committed/build_manifest.json
+verdict: ''
+kg: []

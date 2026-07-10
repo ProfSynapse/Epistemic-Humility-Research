@@ -464,6 +464,44 @@
       "status": "falsified",
       "type": "steer-cell",
       "verdict": "Exploratory falsification: the hs23 J-token hybrid wrote accurately and safely but improved clean_tighten by only +0.54pp over c_hat_only, below the pre-stated +4pp threshold."
+    },
+    {
+      "checkpoint": {
+        "repo": "Qwen/Qwen3.5-4B",
+        "revision": "851bf6e806efd8d0a36b00ddf55e13ccb7b8cd0a"
+      },
+      "falsifier": "No mid-band layer/dose achieves that window, and every mid-band layer shows the same refusal-vs-well-formed entanglement as the late site (refusal rises only as well-formed falls, no dose clears both thresholds at once).",
+      "inputs": [
+        "experiments/j-space-localization-qwen3-4b/jlens.py",
+        "experiments/j-space-midband-write-sweep-qwen3-4b/AMENDMENT.md",
+        "experiments/qwen35-4b-midband-doubt-snap/analysis-committed/reused_rows_manifest.json",
+        "experiments/qwen35-4b-midband-doubt-snap/analysis-committed/profile_summary.json",
+        "experiments/qwen35-4b-midband-doubt-snap/analysis-committed/build_manifest.json"
+      ],
+      "instrument": {
+        "configs": [
+          "cell.yaml",
+          "gates.yaml"
+        ],
+        "modules": [
+          "materialize_reused_rows.py",
+          "jlens_qwen35.py",
+          "fit_midband_directions.py"
+        ],
+        "pins": {
+          "seed": 20260707,
+          "substrate": "bf16",
+          "synaptic_tuner_commit": "cd30d482b42866815e0c9ec808df55d70855d4e8"
+        }
+      },
+      "kg": [],
+      "prediction": "Some mid-band layer, at some dose on the proposed grid, will achieve refusal rate >= 0.60 AND well-formed rate >= 0.80 on fired FIT confabs with known-correct false-refusal <= 0.10 -- the coherent operating window the late site (hs30) provably lacks on this substrate.",
+      "question": "On Qwen/Qwen3.5-4B, does writing the doubt-gated caution snap at a J-space workspace-band (mid-band) layer decouple refusal induction from output corruption, where the registered late-site (0.94-depth, hs30) write produced a well-characterized no-window null in doubt-snap-cross-family-confirmatory (FIT dose sweep 0% clean_tighten at the registered grid, recalibrated peak ~33% coherent tighten with well-formedness collapsing to 3% by dose 60)?",
+      "registered": true,
+      "slug": "qwen35-4b-midband-doubt-snap",
+      "status": "draft",
+      "type": "steer-cell",
+      "verdict": ""
     }
   ]
 }
