@@ -6,6 +6,45 @@ in `experiment.yaml`.
 
 ## Entries
 
+- 2026-07-10: Batch-size probe (post-sign, pre-full-launch). Bounded probe at
+  n=30 rows, hs23, dose_mult=8.0 (all four arms: baseline, gated,
+  permuted_gate, random_direction), batch sizes {8 (reference), 16, 32}, run
+  via unmodified `smoke` mode with `--n-rows`/`--batch-size` CLI args only (no
+  pinned file touched). GPU idle before starting (0% util, 1 MiB used).
+  Memory passed at every size: bs=8 9002 MiB, bs=16 9628 MiB, bs=32 10836 MiB,
+  all well under the 24 GiB card. Semantic parity FAILED at bs=16 and bs=32
+  vs the bs=8 reference: 61/240 (row x field) comparisons diverged across the
+  four RunLogs. Most were pure wording drift (same semantic content,
+  different phrasing -- consistent with bf16 batched-matmul reduction-order
+  changing greedy-decoding tie-breaks when a row is batched alongside a
+  different set of co-batched rows). One row was a categorical flip on the
+  primary gate metrics, reproduced identically at both larger batch sizes:
+  `smoke__hs23__gated.jsonl` row `kuq_unknowns_all:1041` -- at bs=8 the model
+  refuses ("I don't know the answer": `refused=True`, `clean_tighten=True`);
+  at bs=16 AND bs=32 the same row gets a substantive answer
+  (`refused=False`, `clean_tighten=False`). This confirms, on the local
+  3090, the same Qwen3.5 batch-composition non-determinism hazard previously
+  seen on the Modal A100 cells (doubt-snap-cross-family-confirmatory
+  precedent) -- batch composition alone can flip the G1 primary metrics
+  (refused_rate, clean_tighten) for individual rows. Per the pre-stated
+  fallback rule (parity failure at 16 -> fall back to 8), the full ladder
+  runs at **batch_size=8**. Caveat not tested: residual bs=8-vs-1 drift; bs=8
+  is treated as the validated reference state, not verified against a
+  single-row baseline. Probe scratch outputs (`analysis/probe_bs{8,16,32}/`,
+  `analysis/runlog/smoke__*`, `/tmp/probe_*`) were cleared after extracting
+  the comparison, so they never persisted as real RunLog data.
+
+  Full ladder launched 2026-07-10 11:20 (host time) as a harness-tracked
+  background process (`run_dose_ladder.py full
+  --i-know-this-launches-the-full-stage-c-ladder --batch-size 8`), verified
+  as the real Python process (not a stray wrapper) via `ps`, with the first
+  RunLog batch (`analysis/runlog/baseline.jsonl`) confirmed persisted shortly
+  after start. Revised runtime estimate from measured throughput and real
+  per-layer fire counts (hs20=882, hs23=878, hs26=881, hs30=865 fired /
+  1,127 FIT rows): ~48-55 hours total (74,753 generations: 1,127 shared
+  baseline + 3 arms x 7 doses x fired-row-count per layer, summed over the
+  four candidate layers).
+
 - 2026-07-10 (SIGNED): Experiment signed after user review. Predictions
   registered pre-outcome: user predicts G1 passes (decouples; the late-site
   failure was a write-site problem, not a family problem); orchestrator
