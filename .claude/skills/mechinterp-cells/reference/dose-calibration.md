@@ -111,7 +111,29 @@ first coarse pass in this diagnostic did exactly that and produced a retracted
 3. **The window can differ across substrates.** Quantization (bnb-4bit) shifts it
    modestly higher than bf16; recalibrate on the actual run substrate - do not
    port an absolute ladder across precisions.
-4. **A passing smoke does NOT mean the dose moves behavior.** The smoke readback
+4. **Per-cell grids in a matrix: a recalibration fix does NOT propagate to
+   sibling cells.** Measured (doubt-snap-cross-family-confirmatory, 2026-07-08
+   to 2026-07-11): the default absolute grid 100-250 was recalibrated for the
+   two Qwen3.5 cells after overdose collapse at ~38 sigma, but the sibling
+   llama and mistral cells kept the default and burned a full FIT sweep each
+   on a predetermined collapse. Their own sigma_c (2.09 and 0.94) put the
+   default grid at 49-120 sigma and 107-267 sigma respectively; sigma_c varied
+   14x across the matrix (0.94 to 13.6), so no absolute grid can serve two
+   cells. Before launching ANY steering cell, compute the realized z-range
+   `(dose - mu_c) / sigma_c` from that cell's own build/pilot fit and hold it
+   inside the calibrated coherent band (the working cross-family grids sat at
+   roughly 5-30 sigma, consistent with rule 1's ambient-relative window);
+   treat a missing per-cell entry in a matrix-wide grid table as a launch
+   blocker, not a fallback to the default.
+5. **Aggregate dose-invariance is the overdose signature.** If every graded
+   cell count is byte-identical at every dose while completions differ
+   slightly (94-99.9 percent pairwise identity, not 100 percent), the sweep is
+   saturated in collapse: 100 percent of fired rows degenerate at all doses.
+   Do not read such a null as family-level insensitivity or as a plumbing
+   failure; check the z-range first. (Fully identical completions across doses
+   would instead indicate the dose never varied - a genuine plumbing
+   signature.)
+6. **A passing smoke does NOT mean the dose moves behavior.** The smoke readback
    (`write_rel_tol` / `max_write_err`) measures WRITE ACCURACY (commanded vs
    realized coordinate); it is small and passing across the ENTIRE ladder,
    including inert and collapsed doses. It says the hook wrote what you asked, not
