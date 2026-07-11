@@ -6,6 +6,27 @@ in `experiment.yaml`.
 
 ## Entries
 
+- 2026-07-11 (llama32_3b_instruct terminal: G0 FIT dose-viability fail,
+  characterized): the recalibrated dose sweep completed and the registered
+  FIT-only selection rule found no qualifying dose (exit 4,
+  `no_registered_candidate_dose_met_fit_selection_criteria`); committed
+  artifacts pulled from the volume into
+  `analysis-committed/llama32_3b_instruct/`. Unlike the earlier overdose
+  nulls, this is a fully characterized instrument result: a selective
+  interior dose-response on FIT with peak fired-confab clean_tighten 0.184
+  (107/581, Wilson 95% [0.155, 0.218]) at dose 19 (realized strength 9.1)
+  with known-correct false-refusal 0.009 (2/222), falling to 0.105 at dose
+  26 and collapsing to 0.000 at doses 34 and above. Every other instrument
+  check passed: gate AUC on FIT 0.9992, directions byte-identical on refit,
+  batched parity smoke clean, generation termination 0.999, held-out power
+  met (872 confab / 334 known-correct). The cell records a G0
+  dose-viability fail before held-out scoring, per the registered rule,
+  because the peak sits far below the 0.60 clean_tighten floor. No grid
+  changes follow: the response window is characterized and the effect size
+  is the finding. Probe-cell pattern so far: qwen35_4b peak 0.326, llama
+  peak 0.184, both selective and both below floor; mistral7b sweep in
+  progress on the bracketed grid.
+
 - 2026-07-11 (mistral smoke refusal, pre-sweep grid correction, probe-strength
   decouple): the mistral7b relaunch on the sigma-mapped grid crashed by design
   at the in-pipeline gen-stream smoke (`gen_stream_fired: False`, exit 4): the
