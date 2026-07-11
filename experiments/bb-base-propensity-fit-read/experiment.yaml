@@ -29,8 +29,19 @@ instrument:
   - cloud/modal_bb_phase0.py
   pins:
     cell.yaml: ad79980f6bb97ed7a2c8b291f3dadc8c8e2a65f0d46a1461241903ebe7aabb75
-    gates.yaml: 3f23b51f2eecacd5ef39814e63545d893b1de72fc0ea33eea1a40a8bc083ad63
+    gates.yaml: 33fe08ad0aba33964e46ead6a1dcda0a8e73f5b79c9dc68b9645fcc427aa545b
     cloud/modal_bb_phase0.py: ba0341c4f7e5361c4fde201e7e5c9877a6a7fed1a9fa2626f6573c2a5612229f
+  repins:
+  - file: gates.yaml
+    old_sha256: 3f23b51f2eecacd5ef39814e63545d893b1de72fc0ea33eea1a40a8bc083ad63
+    new_sha256: 33fe08ad0aba33964e46ead6a1dcda0a8e73f5b79c9dc68b9645fcc427aa545b
+    date: '2026-07-11T12:06:52Z'
+    reason: 'BB-FID-2 as signed required whole-file sha256 equality with H9''s pinned
+      freeze_scorer.py, which is unachievable by construction: BB''s scorer must differ
+      in I/O (base extraction/grades, not AL artifacts) and fidelity reporting. Repinned
+      pre-launch to the fidelity intent: fit-math functions verbatim-identical to
+      the H9 pinned scorer plus AL 3.2 knob assertion, both sha256 values recorded.
+      Outcome gates G0/G1/G2 untouched.'
 inputs:
 - experiments/radial-anti-propensity-steering/AMENDMENT.md
 - archive/experiment/phase1/probe/amendments/amendment_ai_verdict_extract_gen.py

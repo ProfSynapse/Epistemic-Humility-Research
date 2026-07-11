@@ -127,3 +127,91 @@ after user sign-off + spend approval).
   observation for the record: the untrained release model is already strongly
   abstention-biased under the schema contract prompt; the propensity contrast
   has mass on both sides, which is all phase 1 needs.
+
+### 2026-07-11 -- phase-1 build (agent, on branch exp/bb-base-propensity-loop, BUILD ONLY -- no launch)
+
+Built the phase-1 harness per AMENDMENT.md sections 5 and 7, following phase 0's
+authorization (all three floors passed). No Modal run, no git commit/push
+performed by this build; the lead reviews and launches separately.
+
+**New files:** `build_fit_id_manifest.py`, `build_fit_pool.py`,
+`cloud/modal_bb_phase1.py`, `freeze_scorer_base.py`, `score_bb_holdout.py`,
+`near_dup_sweep_bb.py`, `test_bb_phase1_smoke.py`. None of the pinned files
+(`cell.yaml`, `gates.yaml`, `cloud/modal_bb_phase0.py`) were touched.
+
+**Fit-surface ID-manifest (`analysis-committed/fit_surface/fit_ids.jsonl`,
+committed):** reconstructed AL's exact 1,662-row A0 surface from two
+independent AL artifacts (`al_source_graded` rows_graded.jsonl,
+`al_fit_pool_v21` pool_v21.jsonl), cross-checked row_key sets and gold_class
+identical between them, and asserted 0 row_key overlap against the vendored
+750-row read surface (AMENDMENT.md section 2.3's disjointness claim,
+independently verified rather than assumed).
+
+**Fit pool staged:** `fit_pool.jsonl` (1,662 rows, all qhash-verified against
+the committed manifest) uploaded to a newly created PRIVATE HF dataset repo
+`professorsynapse/eh-bb-fit-pool` (created by this build; did not exist
+before), verified by round-trip download (1,662 rows).
+
+**Modal phase-1 script (`cloud/modal_bb_phase1.py`, NOT run):** generates+grades
+the 1,662-row fit pool on base (own behavior labels, not AL's AI-TRUE grades)
+and extracts pre-generation L0-L36 states for both the fit surface and the
+750-row read surface (read-surface behavior labels reused from phase 0,
+not regenerated). GPU-stage-only; no local fit or scoring happens in this
+script. New volume `eh-bb-phase1-logs`, run_tag `bb-phase1-r1`, 3-hour timeout.
+Cost estimate built at gate-open (not in the original AMENDMENT, which only
+priced phase 0): ~65-100 min wall time, ~$1.40-$2.50, well within a $15 cap,
+but the lead must set an explicit `MODAL_COST_CAP_USD` for phase 1 rather than
+assuming phase 0's number.
+
+**Local CPU fit/score scripts:** `freeze_scorer_base.py` implements AL's
+recipe (PCA-128 seed 20260705, standardize, caution-residualize, mean-diff,
+z-scale) with core fit-math functions copied verbatim from H9's
+`freeze_scorer.py`; BB-FID-1 (determinism, refit twice, compare d_raw) and
+BB-FID-2 (recipe-parity knob assertion) both pass on synthetic data.
+`score_bb_holdout.py` scores the frozen base direction on the read surface and
+adjudicates BB-P1-G0/G1/G2 exactly per gates.yaml. `near_dup_sweep_bb.py` was
+actually RUN (not just smoke-tested; all its inputs are local, no GPU needed)
+and reproduced H9's own sweep result over the same KUQ population: 0 flagged,
+max overlap 0.75, committed to `analysis-committed/phase1/near_dup_flagged.json`.
+
+**STOP-and-report item (not resolved unilaterally, flagged for the lead):**
+gates.yaml's BB-FID-2 literal wording is "freeze_scorer.py sha256 == H9 pinned
+scorer." A whole-FILE hash match against H9's experiment.yaml pin
+(`1b64ddd5d24477aa779db58f181e3f50e24c1258bd7df18c731896fcf2d7da8d`, read on
+the h9-propensity-gate branch) is not achievable: `freeze_scorer_base.py`
+necessarily differs from H9's file in I/O (BB's own base extraction/grades,
+not AL's al_run_dir/al_extract_dir/al_graded) and in fidelity-reporting logic
+(no on-disk prior array to cross-reference, AMENDMENT.md section 5.4). This
+build implements BB-FID-2 as function-level verbatim-copy parity (the actual
+PCA/residualization/mean-diff math, copied unchanged) plus a mechanical knob
+assertion against AL's section-3.2 constants, and records both sha256 values
+in the fidelity report for the lead to adjudicate at a future repin if
+desired.
+
+**Smoke tests:** 10/10 passed (`pytest test_bb_phase1_smoke.py -v`), covering
+ID-manifest schema round-trip, an independent fit/read disjointness check, a
+negative test (wrong-text pool rejected via qhash mismatch), the fake-activation
+fit+score path end to end, the score_bb_holdout selftest gate logic, the
+straddling-CI inconclusive-resolution rule, the near-dup sweep (real inputs,
+not synthetic), and an import-preflight rehearsal of the Modal setup block in
+a fresh `git clone --local` scratch clone (confirmed it lacks the untracked
+experiment/phase1/probe legacy tree, then rehearsed the exact copy+PYTHONPATH+
+import block from modal_bb_phase1.py). No model weights were loaded anywhere
+in this build (host constraint: local 3090 busy, WSL2 VM would OOM).
+
+**Not done in this build (deferred to the lead):** the Modal launch itself,
+any git commit/push, and the actual GPU-produced extraction/generation this
+harness is built to consume -- so freeze_scorer_base.py and score_bb_holdout.py
+remain validated only on synthetic data pending the phase-1 GPU run.
+
+- 2026-07-11 (lead adjudication of the builder's STOP-and-report item):
+  BB-FID-2's signed wording demanded whole-file sha256 equality between
+  freeze_scorer_base.py and H9's pinned freeze_scorer.py. That equality is
+  unachievable by construction (different I/O surfaces, different fidelity
+  reporting), so the line was an instrument-authoring error caught before
+  launch. Repinned gates.yaml via bin/exp repin (3f23b51f -> 33fe08ad) to the
+  fidelity intent: fit-math functions verbatim-identical to the H9 pinned
+  scorer, AL 3.2 knobs asserted from cell.yaml, both file sha256 values
+  recorded in the fidelity report. No outcome gate (BB-P1-G0/G1/G2) was
+  touched; this is a fidelity-check definition repair, not a goalpost move.
+  Next: full red-team pass over the phase-1 harness, then launch.

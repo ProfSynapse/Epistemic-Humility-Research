@@ -28,7 +28,12 @@ honest_prior:
 fidelity:
   BB-FID-1_determinism_cosine_min: 0.999999   # refit twice, same seed: cos(d_raw_a, d_raw_b) >= this
   BB-FID-1_determinism_maxabs_diff_max: 1.0e-5
-  BB-FID-2_recipe_parity: freeze_scorer.py sha256 == H9 pinned scorer; AL 3.2 knobs asserted from cell.yaml
+  # Repinned 2026-07-11 pre-launch (bin/exp repin): the signed wording (whole-file
+  # sha256 equality with H9's pinned freeze_scorer.py) is unachievable by
+  # construction, since BB's scorer must differ in I/O (base extraction and base
+  # grades, not AL artifacts) and in fidelity reporting (no on-disk prior array).
+  # The fidelity INTENT (identical fit math) is preserved as:
+  BB-FID-2_recipe_parity: fit-math functions (PCA / standardize / caution-residualize / mean-diff / z-scale) verbatim-identical to H9 pinned freeze_scorer.py; AL 3.2 knobs asserted from cell.yaml; both file sha256 values recorded in the fidelity report
   # base in-cell OOF AUROC recorded non-gating as the honest prior.
 
 # Fit-surface evaluability precondition (BB-P1-G0). Checked before G1 is read.
