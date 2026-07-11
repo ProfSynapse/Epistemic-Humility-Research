@@ -350,14 +350,18 @@
         "modules": [
           "cloud/modal_bb_phase0.py"
         ],
-        "pins": {}
+        "pins": {
+          "cell.yaml": "ad79980f6bb97ed7a2c8b291f3dadc8c8e2a65f0d46a1461241903ebe7aabb75",
+          "cloud/modal_bb_phase0.py": "ba0341c4f7e5361c4fde201e7e5c9877a6a7fed1a9fa2626f6573c2a5612229f",
+          "gates.yaml": "3f23b51f2eecacd5ef39814e63545d893b1de72fc0ea33eea1a40a8bc083ad63"
+        }
       },
       "kg": [],
       "prediction": "DRAFT, left for PI + orchestrator to fill at sign (scoreboard empty). Phase 0 hinges on whether the untrained base both confabulates AND honestly refuses under a schema prompt it was never SFT'd on; H9's mirror failure (the trained checkpoint starved the positive cell) means neither cell can be assumed.",
       "question": "On untrained base Qwen/Qwen3-4B, does the model confabulate and honestly refuse enough under the AL schema-contract prompt to power a propensity reading gate (phase 0), and if so does a base-fit confab-propensity direction (AL recipe, re-fit on base grades) separate confabulations from honest unanswerable refusals on a disjoint held-out draw the fit never saw (phase 1)?",
       "registered": false,
       "slug": "bb-base-propensity-fit-read",
-      "status": "draft",
+      "status": "signed",
       "title": "Base-model confab-propensity fit and held-out reading gate on untrained Qwen3-4B",
       "type": "probe-fit",
       "verdict": ""

@@ -1,11 +1,10 @@
 # BB: base-model confab-propensity fit and held-out reading gate on untrained Qwen3-4B
 
-Status: DRAFT (not signed; do not launch as evidence). Gates in section 6 are
-DRAFT: values are proposed but flagged for lead adjudication where marked. Two
-things LOCK only at signing (`bin/exp sign`): the phase-0 decision rule
-(section 5) and the phase-1 gates (section 6). The Modal launch in section 7
-needs separate explicit user approval on top of signing; signing does not
-authorize GPU spend.
+Status: SIGNED 2026-07-11. The phase-0 decision rule (section 5) and the
+phase-1 gates (section 6) are LOCKED as adjudicated in section 10; predictions
+recorded in section 11. The user approved sign plus the phase-0 Modal launch
+(cap $15) at sign-off. Phase 1 GPU work requires its own explicit launch
+approval on top of this signing.
 
 Machine state lives in `experiment.yaml`; it is never duplicated here.
 
@@ -58,7 +57,7 @@ to stage a LOCAL AI-TRUE checkpoint to a private repo,
 staging upload for BB. The exact hub revision is pinned in `cell.yaml`
 (`model.revision`) at signing.
 
-OPEN QUESTION for the lead (section 10): load in 4-bit (serving-config parity
+ADJUDICATED at sign (section 10): 4-bit, for serving-config parity
 with the AI-TRUE bookend, and the archived entry script's default) or bf16 (a
 cleaner untrained substrate, the choice the bf16 two-signal line made to drop
 the cross-quant caveat, TODO.md row 36). This draft defaults to 4-bit for
@@ -247,7 +246,7 @@ Phase-0 floors are in section 4.2 (they gate whether phase 1 runs). The phase-1
 gates below adjudicate the reading claim. Because the base direction is fit
 fresh, there is no pre-existing base number to anchor to; the honest base prior
 (base in-cell OOF AUROC) is measured in phase 1 step 1. Two anchoring choices
-are possible and this is an OPEN QUESTION for the lead (section 10):
+were possible; the lead ADJUDICATED Choice A at sign (section 10):
 
 - Choice A (proposed default): absolute lines equal to H9's, so "does the base
   direction read at a useful, certifiable level" has the same bar as the trained
@@ -335,29 +334,32 @@ pulled from the hub (no model staging). The experiment `.gitignore` (safetensors
 `**/rows*.jsonl`, `**/*pool*.jsonl`, generations) is the belt-and-suspenders net,
 carried over from H9.
 
-## 10. Open questions for the lead (adjudicate before sign)
+## 10. Open questions -- ADJUDICATED by the lead at sign (2026-07-11)
 
-1. Load precision: 4-bit (bookend parity with AI-TRUE / entry-script default) vs
-   bf16 (cleaner untrained substrate, bf16 two-signal precedent). Draft defaults
-   4-bit. [section 2.1]
-2. Phase-1 reading-gate anchoring: Choice A (absolute H9 lines, fully
-   pre-registerable) vs Choice B (lines derived from base's measured in-cell
-   excess). Draft defaults A. [section 6]
-3. BB-P0-A schema-follow floor value (0.60 proposed, no base prior exists).
-   [section 4.2]
-4. BB-P1-G2 caution-control floor: absolute 0.80 vs a floor set relative to the
-   measured base in-cell caution OOF. [section 6]
-5. Predictions scoreboard (section 11) is left empty for the PI and orchestrator
-   to fill at sign.
-6. Confirm the vendored-manifest approach (copying H9's ID-manifest into BB
-   rather than depending on H9 merging to main). [section 2.3 / PROVENANCE.md]
+1. Load precision: 4-BIT. Bookend parity with H9/AI-TRUE (same entry script,
+   same serving shape) outweighs substrate purity; a bf16 base run would add a
+   cross-precision confound to every H9 comparison. [section 2.1]
+2. Phase-1 reading-gate anchoring: CHOICE A (absolute H9 lines). Fully
+   pre-registerable at signing and makes the before/after-training bookends
+   directly comparable; Choice B's floating line invites goalpost suspicion.
+   [section 6]
+3. BB-P0-A schema-follow floor: 0.60 ACCEPTED as proposed. No base prior
+   exists; 0.60 is low enough not to fake-fail a usable surface and high
+   enough that grading below it is untrustworthy. [section 4.2]
+4. BB-P1-G2 caution-control floor: ABSOLUTE 0.80, with the base in-cell
+   caution OOF recorded alongside as the honest prior (non-gating). [section 6]
+5. Predictions recorded in section 11 at sign.
+6. Vendored-manifest approach CONFIRMED. The vendored copy was verified
+   byte-identical to H9's committed enlarged manifest at sign time
+   (sha256 prefix 86e2dc00400792ef, 750 rows); BB does not depend on PR #273
+   merge order. [section 2.3 / PROVENANCE.md]
 
-## 11. Predictions scoreboard (left empty for sign)
+## 11. Predictions scoreboard (recorded at sign, 2026-07-11)
 
 | Predictor | Call |
 |-----------|------|
-| orchestrator | |
-| user | |
+| orchestrator | Phase 0: all three floors pass, weakly held (~50%); the single most likely failure is BB-P0-C (honest-refusal floor), given the Qwen3.5 ladder baseline refused 0/1,127 under a similar contract prompt. Schema-follow passes comfortably (release model, simple JSON contract). |
+| user | Phase 0: ALL THREE FLOORS PASS (recorded at sign-off approval). |
 
 ## 12. Outcome
 

@@ -56,7 +56,7 @@ MODAL_GPU = os.environ.get("BB_MODAL_GPU", "A10G")
 # Untrained base pulled straight from the hub (no adapter, no staging model repo).
 # Revision pins the exact weights for reproducibility; the lead sets it at sign.
 BASE_MODEL_HUB = "Qwen/Qwen3-4B"
-BASE_MODEL_REVISION = os.environ.get("BB_BASE_REVISION", "main")  # PIN_AT_SIGN
+BASE_MODEL_REVISION = "1cfa9a7208912126459214e8b04321603b3df60c"  # pinned at signing (no env override)
 
 # Already-staged PRIVATE pool carrying the question text (H9's; reused verbatim).
 # Question text never lives in the public repo; the committed ID-manifest keys it.

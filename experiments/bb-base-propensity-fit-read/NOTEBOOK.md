@@ -95,3 +95,17 @@ committed fit ID-manifest, the phase-1 extraction+fit+score harness, and the new
 private fit-pool staging repo -- all authored at phase-1 gate-open if phase 0
 passes. The phase-0 harness has NOT been run (`modal run` reserved for the lead
 after user sign-off + spend approval).
+
+- 2026-07-11 (lead adjudication + sign + phase-0 launch): the six draft open
+  questions were adjudicated (4-bit for bookend parity; absolute H9 gate lines,
+  Choice A; schema floor 0.60; caution floor absolute 0.80 with the in-cell
+  prior recorded non-gating; predictions recorded; vendored manifest confirmed
+  byte-identical to H9's enlarged manifest, sha256 prefix 86e2dc00400792ef).
+  Hub revision pinned: Qwen/Qwen3-4B @ 1cfa9a7208912126459214e8b04321603b3df60c.
+  Predictions at sign: user = all three phase-0 floors pass; orchestrator = all
+  pass weakly (~50%), most likely failure BB-P0-C honest-refusal floor. Signed
+  (3 pins) and phase 0 launched on Modal A10G with user approval, cap $15,
+  expected ~$1-2. The lead reviewed the phase-0 harness diff against the proven
+  H9 harness before sign: import-environment block, qhash verification, tree
+  checkpoint/resume, and the rows.jsonl join (H9 repair-3 lesson) all verified
+  present and correct.
