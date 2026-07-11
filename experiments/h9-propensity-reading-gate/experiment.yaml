@@ -1,26 +1,23 @@
 slug: h9-propensity-reading-gate
 title: H9 held-out reading gate for the confab-propensity direction on AI-TRUE
 type: probe-fit
-status: draft
+status: signed
 registered: true
 created_at: '2026-07-11T00:09:03Z'
-question: >-
-  Does the AL confabulation-propensity direction, frozen from its 1,662-row fit
-  surface, still separate confabulations from honest unanswerable refusals on a
-  disjoint held-out draw the fit never saw, on the AI-TRUE checkpoint?
-prediction: >-
-  orchestrator: H9-G1 PASS (~55%) with the held-out propensity AUROC landing in
-  the low-to-mid 0.6s near the 0.62 pass line; H9-G2 caution floor PASS (~90%);
-  H9-G0 evaluability met (~85%). User prediction: H9-G1 INCONCLUSIVE band (recorded 2026-07-10).
-falsifier: >-
-  Held-out propensity AUROC <= 0.55, OR the upper bound of its 1,000-resample
-  row-bootstrap 95% CI < 0.60, means the reading does not generalize off the fit
-  surface and paper 5's "the propensity direction reads" claim is not supported
-  on held-out data.
+question: Does the AL confabulation-propensity direction, frozen from its 1,662-row
+  fit surface, still separate confabulations from honest unanswerable refusals on
+  a disjoint held-out draw the fit never saw, on the AI-TRUE checkpoint?
+prediction: 'orchestrator: H9-G1 PASS (~55%) with the held-out propensity AUROC landing
+  in the low-to-mid 0.6s near the 0.62 pass line; H9-G2 caution floor PASS (~90%);
+  H9-G0 evaluability met (~85%). User prediction: H9-G1 INCONCLUSIVE band (recorded
+  2026-07-10).'
+falsifier: Held-out propensity AUROC <= 0.55, OR the upper bound of its 1,000-resample
+  row-bootstrap 95% CI < 0.60, means the reading does not generalize off the fit surface
+  and paper 5's "the propensity direction reads" claim is not supported on held-out
+  data.
 checkpoint:
   repo: local (AI-TRUE; staged to private HF repo for the Modal lane, section 6.2)
-  revision: >-
-    base sft_schema_clean_seed1_full/20260623_123624/Qwen3-4B-bnb-4bit/merged-16bit
+  revision: base sft_schema_clean_seed1_full/20260623_123624/Qwen3-4B-bnb-4bit/merged-16bit
     + adapter amendment_ai_grpo_true_seed1/20260703_234933/final_model
 instrument:
   configs:
@@ -33,12 +30,15 @@ instrument:
   - near_dup_sweep.py
   - score_holdout.py
   - cloud/modal_h9_holdout.py
-  pins: {}
-# Only tracked inputs are listed here (the validator checks existence). The
-# gitignored AL data artifacts this experiment consumes (amendment_al_run/
-# d_raw.npy, prop_z.npy, caution_z.npy, selection_manifest.json; true_a0 extract
-# + graded; ah_stage0 rows/scored_rows/pool_v21) live only in the canonical
-# checkout and are recorded as concrete paths in cell.yaml.
+  pins:
+    cell.yaml: 5c2cd9633aa43a351253d2f0beb70bd79a8781ab4a2ea21794df2a506b6bf772
+    gates.yaml: 7487b8737f317e5d9ae8ccf3111bee618b4c72bf5dce6dc84bb74c59b3d3f64f
+    freeze_scorer.py: 1b64ddd5d24477aa779db58f181e3f50e24c1258bd7df18c731896fcf2d7da8d
+    draw_holdout.py: 719e5402cbd470533527b0e9478ff8bbc745b8d37b7c87d36e56ef4d381f84cc
+    build_holdout_pool.py: 043c3e39ebe24be5764bea9ee2affb98f554c187d8b92b616948a39c74e37283
+    near_dup_sweep.py: 7390c902334ed3f709f385a89f02f754294a10f41be8cd0617bfbbfef0d9faea
+    score_holdout.py: a832a3b1f2813ecdb1d5b485d3416cf503e1dcaf58daf73dda6345d596fe3ce6
+    cloud/modal_h9_holdout.py: 2db96e1d5613b66aa6791d428a0be8df0aba06794aeec74b09a1e490ae74b8f3
 inputs:
 - archive/experiment/phase1/probe/amendments/amendment_al_select_and_direction.py
 - archive/experiment/phase1/probe/amendments/amendment_ai_verdict_extract_gen.py
