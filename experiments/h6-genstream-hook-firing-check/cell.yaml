@@ -1,0 +1,43 @@
+# Instrument config for the Commitment-Point gen_stream hook-firing check (H6).
+# Pinned at `bin/exp sign`. This is a lab-diagnostic instrument check: it steers
+# during generate() decode and reads back what actually landed. No dataset/pool/
+# question/generation text is committed; only aggregate readback + firing tables
+# and ID-level manifests go under analysis-committed/.
+
+checkpoint:
+  repo: unsloth/Qwen3-4B          # raw instruct base; the AK Stage 2 substrate
+  revision: PLACEHOLDER(pin to the exact HF revision used at launch)
+  adapter: none                    # training-free; raw base
+
+write:
+  layer: 24                        # AK Stage 2 write layer L24 (decoder block 24)
+  direction_source: >-
+    PLACEHOLDER(supply the AK commitment write direction, orthogonalized to the
+    caution axis per the B1 convention, from the AK Stage 2 staging artifacts;
+    committed as a hash/pointer, never the raw vector text)
+  commanded_dose_sigma: 2.0        # supra-threshold ON dose (AK 2-sigma setpoint)
+  noop_dose_sigma: 0.0             # NOOP condition adds the zero vector
+
+paths:
+  PATH-BESPOKE:
+    harness: experiments/commitment-point (amendment_ak_stage2_steer.py)
+    controller: SteeringHook + GenerationHookController
+    model_load: Unsloth FastLanguageModel.for_inference
+    role: adjudicates the AK answer-window confound directly
+  PATH-TUNER:
+    harness: synaptic-tuner MechInterp/cli.py run_steer
+    controller: register_forward_hook on the target decoder block
+    model_load: plain HF AutoModelForCausalLM
+    role: go-forward answer-window steering instrument; also CPU-checkable on a tiny plain-HF model
+
+instrumentation:
+  firing_counter: in-hook counter + independent read-only register_forward_hook counter
+  hidden_readback: read-only recording hook registered AFTER the steering hook on the write layer
+  logits: return_dict_in_generate=True, output_scores=True
+  positions: every decode position over >= 16 answer-window steps
+
+prompts:
+  count: PLACEHOLDER(small fixed smoke set, >= 20 prompts drawn from the AK matched pool; IDs only committed)
+  text_containment: question/generation text is gitignored; only IDs + aggregates committed
+
+# gates live in gates.yaml (pinned alongside this file)

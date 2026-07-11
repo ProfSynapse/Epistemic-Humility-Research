@@ -1241,6 +1241,32 @@
     },
     {
       "checkpoint": {
+        "repo": "unsloth/Qwen3-4B",
+        "revision": ""
+      },
+      "created_at": "2026-07-11T00:35:42Z",
+      "falsifier": "For any path claimed as an answer-window steering instrument, the steering hook does not fire on every decode forward pass (H6-G1 fail) OR does not deliver the commanded write magnitude at the instrumented decode positions (H6-G2 fail); if either fails for a path, all gen_stream answer-window steering evidence produced on that path stays quarantined and the AK Stage 2 gen_stream MISS cannot be adopted as a causal null.",
+      "inputs": [],
+      "instrument": {
+        "configs": [
+          "cell.yaml",
+          "gates.yaml"
+        ],
+        "modules": [],
+        "pins": {}
+      },
+      "kg": [],
+      "prediction": "PATH-BESPOKE fails H6-G1 (the Unsloth for_inference optimized decode loop does not route per-step through the hooked module.forward, confirming the AK section 8 confound); PATH-TUNER passes H6-G1+G2+G3 (plain-HF register_forward_hook fires every decode step, readback lands the commanded write within 5%, no-op delta is exactly zero), certifying it as the go-forward answer-window steering instrument.",
+      "question": "Do steering hooks installed via the generation-stream (answer-window) path actually fire on every mid-generate() decode forward pass, and do they modify the target hidden state by exactly the commanded write, on the harness paths used to produce answer-window steering evidence (the AK bespoke Unsloth path and the tuner plain-HF path)?",
+      "registered": true,
+      "slug": "h6-genstream-hook-firing-check",
+      "status": "draft",
+      "title": "Commitment-Point gen_stream Hook-Firing Check",
+      "type": "lab-diagnostic",
+      "verdict": ""
+    },
+    {
+      "checkpoint": {
         "repo": "",
         "revision": ""
       },
