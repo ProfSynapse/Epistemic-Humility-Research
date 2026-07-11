@@ -1,0 +1,37 @@
+slug: bb-base-propensity-fit-read
+title: Base-model confab-propensity fit and held-out reading gate on untrained Qwen3-4B
+type: probe-fit
+status: draft
+registered: false
+created_at: '2026-07-11T10:45:17Z'
+question: On untrained base Qwen/Qwen3-4B, does the model confabulate and honestly
+  refuse enough under the AL schema-contract prompt to power a propensity reading
+  gate (phase 0), and if so does a base-fit confab-propensity direction (AL recipe,
+  re-fit on base grades) separate confabulations from honest unanswerable refusals
+  on a disjoint held-out draw the fit never saw (phase 1)?
+prediction: 'DRAFT, left for PI + orchestrator to fill at sign (scoreboard empty).
+  Phase 0 hinges on whether the untrained base both confabulates AND honestly refuses
+  under a schema prompt it was never SFT''d on; H9''s mirror failure (the trained
+  checkpoint starved the positive cell) means neither cell can be assumed.'
+falsifier: 'Phase 1 held-out propensity AUROC <= 0.55, OR the upper bound of its 1,000-resample
+  row-bootstrap 95% CI < 0.60, means the base model''s own confab-propensity direction
+  does not read out on held-out rows. (Phase 0 can also close the experiment earlier
+  at a registered negative-feasibility record if any BB-P0 floor is unmet: schema
+  starvation, positive-cell starvation, or negative-cell/refusal starvation.)'
+checkpoint:
+  repo: Qwen/Qwen3-4B
+  revision: PIN_AT_SIGN (exact hub commit sha; untrained base, no adapter, no merge)
+instrument:
+  configs:
+  - cell.yaml
+  - gates.yaml
+  modules:
+  - cloud/modal_bb_phase0.py
+  pins: {}
+inputs:
+- experiments/radial-anti-propensity-steering/AMENDMENT.md
+- archive/experiment/phase1/probe/amendments/amendment_ai_verdict_extract_gen.py
+- archive/experiment/phase1/probe/amendments/amendment_al_select_and_direction.py
+- experiments/bb-base-propensity-fit-read/analysis-committed/read_surface_h9_vendored/holdout_ids.jsonl
+verdict: ''
+kg: []

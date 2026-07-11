@@ -1,0 +1,87 @@
+# BB base-model fit + read: instrument config. DRAFT; pins at signing (bin/exp sign).
+# Prose home is AMENDMENT.md; this file is the machine-readable knobs the phase-0
+# harness (and, at phase-1 gate-open, the fit + score scripts) read. Do not
+# restate rationale here.
+
+seed: 20260711            # BB draw/analysis seed (fixed; recorded for reproducibility)
+
+# --- model under test (phase 0 + phase 1) ------------------------------------
+model:
+  hub_repo: Qwen/Qwen3-4B   # untrained base, pulled straight from the hub; no adapter, no merge
+  revision: PIN_AT_SIGN     # exact hub commit sha; lead pins at signing for reproducibility
+  load_in_4bit: true        # OPEN QUESTION (AMENDMENT 2.1/10): 4-bit bookend parity vs bf16
+  max_new_tokens: 96        # match AL A0 / H9 generation config
+  do_sample: false          # greedy
+
+# --- read surface (vendored from H9; reused verbatim) ------------------------
+# The 750-row H9 enlarged held-out draw. BB reuses it verbatim so BB and H9 are
+# the SAME rows on the SAME staged text, differing only in the model under test.
+read_surface:
+  id_manifest: analysis-committed/read_surface_h9_vendored/holdout_ids.jsonl  # row_key+source+gold_label+qhash, NO text
+  id_manifest_sha256: 86e2dc00400792efac2a1d99469997fe3442d6c2cb18bb29f1462e8aff0caa54
+  source_branch: exp/h9-propensity-reading-gate                              # provenance of the vendored copy
+  n_rows: 750               # 605 unanswerable / 145 answerable
+  # Already-staged private pool carrying the question text (H9's; reused).
+  staging_pool_repo: professorsynapse/eh-h9-holdout-pool
+  pool_in_repo: holdout_pool_enlarged.jsonl
+
+# --- PHASE 0: feasibility density probe (generate + grade only) --------------
+# Decision rule LOCKS at signing; see gates.yaml phase0_floors and AMENDMENT 4.2.
+phase0:
+  # Aggregate cell counts only; no text, no per-row generations committed.
+  density_report_out: analysis-committed/phase0/density_report.json
+  cells: [confab, honest_unanswerable_refusal, known_answered, known_refused, degenerate]
+  # confab = unanswerable & answered; honest_unanswerable_refusal = unanswerable & refused;
+  # known_answered = answerable & answered; known_refused = answerable & refused;
+  # degenerate = schema-invalid (not gradeable). schema_valid_frac = (n - degenerate) / n.
+
+# --- Modal GPU lane (phase 0: cloud/modal_bb_phase0.py) ----------------------
+gpu:
+  provider: modal
+  gpu_type: A10G
+  generation:
+    max_new_tokens: 96
+    do_sample: false          # greedy
+  grader: byte-identical to the AL A0 cell (grading config pinned at signing)
+  # No staging_model_repo: base weights are public and pulled from the hub.
+  staging_pool_repo: professorsynapse/eh-h9-holdout-pool  # reused H9 private pool (text)
+  pool_in_repo: holdout_pool_enlarged.jsonl               # 750-row pool keyed by committed row_keys
+  cost_cap_usd: 15
+  results_volume: eh-bb-phase0-logs
+
+# --- PHASE 1 knobs (used only if phase 0 passes; scripts authored at gate-open)
+# The fit uses AL's recipe re-run on BASE grades. Objects are RE-FIT on base;
+# H9's AI-TRUE frozen scorer objects are NOT reused (they answer a transfer
+# question, not BB's own-signal question). See AMENDMENT 5.
+phase1:
+  scorer:
+    fit_layers:
+      propensity: 24
+      caution: 35
+    pca_components: 128
+    pca_seed: 20260705        # AL's random_state (recipe parity, not object reuse)
+    n_splits: 5
+    frozen_out: directions/frozen_scorer_base   # gitignored; base-fit objects + sha256 manifest
+  fit_surface:
+    # AL's exact 1,662-row A0 surface (disjoint from the read surface by
+    # construction, inherited from H9's complement draw). Question text emitted
+    # by build_fit_pool.py (authored at gate-open) from the gitignored AL
+    # sources, staged to a NEW private repo; text never committed.
+    al_source_graded: experiment/phase1/probe/analysis/amendment_al_prep/true_a0/gen/data/rows_graded.jsonl
+    al_fit_pool_v21: experiment/phase1/probe/analysis/ah_stage0/expansion/pool_v21.jsonl
+    n_rows: 1662
+    staging_fit_repo: professorsynapse/eh-bb-fit-pool   # PROPOSED private dataset repo (phase 1)
+  extraction:
+    anchor: prompt_len-1
+    all_layers: true          # capture 0..36; consume L24/L35 downstream
+    batch_size: 1
+  scoring:
+    gate_report_out: analysis-committed/phase1/gate_report.json  # aggregates only, no text
+
+# --- registered sensitivity: near-dup sweep (phase 1; near_dup_sweep.py) ------
+# Re-run of the H9 sweep over the SAME KUQ populations; expected 0 flagged.
+sensitivity:
+  near_dup_metric: token_overlap    # Jaccard on whitespace tokens
+  near_dup_threshold: 0.90
+  kuq_sources: [kuq_ku_unknown, kuq_ku_unknown_x]
+  flagged_out: analysis-committed/phase1/near_dup_flagged.json   # row_keys ONLY, no text
