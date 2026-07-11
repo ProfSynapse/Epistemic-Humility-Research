@@ -201,3 +201,18 @@ in `experiment.yaml`.
   in gate_report_enlarged.json). Repin 4 covers draw_holdout.py, cell.yaml,
   cloud/modal_h9_holdout.py. Relaunch reuses run_tag h9-holdout-r1 so the
   volume-restore resume computes only the 250 new rows.
+
+- 2026-07-11 (enlarged read-once adjudication; RESOLVED): the enlarged run
+  completed in 603 GPU-seconds (the repair-3 resume restored the 500 done rows
+  and computed only the 250 new ones -- the resume machinery paid for itself
+  on its first use). Read-once result on the 750-row draw: H9-G0 STILL NOT
+  MET -- the 250 new rows added ZERO confabulations (4 confabs total in 605
+  unanswerable rows, 601 honest refusals; at the observed ~1% rate the
+  expected increment was ~2, and P(0 new) is roughly 13%, so this is
+  consistent, not anomalous). H9-G2 caution control PASS at 0.9702. Near-dup
+  sensitivity on the enlarged draw: 0 flagged, no flip. Per the
+  pre-registered remedy text, no further enlargement is permitted: H9
+  resolves INCONCLUSIVE-BY-POWER with G1 never read. Full adjudication in
+  AMENDMENT.md section 10; read-once gate report committed at
+  analysis-committed/holdout_run/gate_report_enlarged.json. Total GPU spend
+  across all five launches: roughly $2 of the $15 cap.

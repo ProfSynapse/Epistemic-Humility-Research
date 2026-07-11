@@ -335,7 +335,36 @@ tail where the draw underpowers.
 
 ## 10. Outcome
 
-Filled at resolve. Record the held-out propensity AUROC and its bootstrap CI, the
-caution control AUROC, the confab and refusal counts, the fidelity-gate result,
-the near-duplicate sensitivity result, and the one-sentence verdict that also
-goes into `verdict:` in the manifest.
+Resolved 2026-07-11. Verdict: **INCONCLUSIVE-BY-POWER** (H9-G0 unmet on both
+the original and the enlarged draw; H9-G1 never read, per the read-once rule).
+
+- H9-G0 (evaluability): NOT MET twice. Original 500-row draw: 4 confabulations
+  vs the >=20 floor (399 honest unanswerable refusals; ~35 confabs were
+  expected from fit-surface rates). The one registered +250 enlargement
+  (executed with user approval; RNG-stream continuation verified by a replay
+  assertion against the committed manifest) added ZERO confabulations: 4
+  confabs in 605 unanswerable rows (601 honest refusals). Per section 5, no
+  further enlargement is permitted and the result stands.
+- H9-G1 (held-out propensity AUROC): NOT READ (auroc null, CI null) — the
+  pre-registered inconclusive-by-power outcome, not a pass and not a
+  falsification. The direction's held-out propensity claim remains untested at
+  adequate power on this checkpoint.
+- H9-G2 (caution control): PASS on both reads — 0.9734 (500 rows) and 0.9702
+  (750 rows) vs the 0.90 floor. The extraction + frozen-scorer + grading
+  pipeline is healthy; the confab scarcity is real model behavior.
+- Fidelity gates: FID-1 cosine 1.0 (maxdiff 3.57e-9); FID-2 OOF r=1.0, AUROC
+  0.68016 (within 0.02 of 0.6802); in-run extraction spot-check
+  max_abs_diff_L24 = 0.0.
+- Near-duplicate sensitivity (registered, section 8.1): 0 rows flagged on both
+  draws (max token-overlap 0.75 vs the 0.90 threshold); no verdict flip.
+- Behavioral observation (non-gating, for the record): the AI-TRUE checkpoint
+  is far more refusal-prone on this held-out complement than fit-surface rates
+  predicted (99.3% honest refusal on unanswerable rows vs ~91% expected), and
+  it also refuses 30/97 answerable rows. The 4 confabs are genuine confident
+  fabrications (stated confidence 0.71-0.82). Gate reports:
+  `analysis-committed/holdout_run/gate_report.json` (500) and
+  `analysis-committed/holdout_run/gate_report_enlarged.json` (750, read-once).
+- Predictions scoreboard adjudication (section 9): the user's INCONCLUSIVE
+  call is the closest (outcome is inconclusive, via the G0 power leg rather
+  than the G1 CI band); the orchestrator's G0-met (~85%) and G1-pass (~55%)
+  calls were wrong; both predictors' G2-pass calls were right.

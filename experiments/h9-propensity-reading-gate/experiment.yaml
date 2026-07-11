@@ -1,7 +1,7 @@
 slug: h9-propensity-reading-gate
 title: H9 held-out reading gate for the confab-propensity direction on AI-TRUE
 type: probe-fit
-status: signed
+status: resolved
 registered: true
 created_at: '2026-07-11T00:09:03Z'
 question: Does the AL confabulation-propensity direction, frozen from its 1,662-row
@@ -109,5 +109,11 @@ inputs:
 - archive/experiment/phase1/probe/amendments/amendment_al_select_and_direction.py
 - archive/experiment/phase1/probe/amendments/amendment_ai_verdict_extract_gen.py
 - experiments/radial-anti-propensity-steering/AMENDMENT.md
-verdict: ''
+verdict: 'INCONCLUSIVE-BY-POWER: H9-G0 unmet on both the 500-row draw (4 confabs vs
+  >=20 floor) and the one registered +250 enlargement (still 4 confabs in 605 unanswerable
+  rows); H9-G1 never read per the read-once rule, so the held-out propensity claim
+  remains untested at adequate power on this checkpoint. H9-G2 caution control passed
+  both reads (0.9734, 0.9702), certifying the pipeline; the confab scarcity is real
+  behavior (the AI-TRUE checkpoint refuses 99.3% of held-out unanswerable rows). Near-dup
+  sensitivity 0 flagged, no flip.'
 kg: []
