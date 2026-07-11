@@ -238,8 +238,7 @@ only a reward over sampled completions.
 ### 3.3 Training arms
 
 All arms use resource-feasible LoRA/QLoRA recipes on Qwen3-4B; recipes,
-seeds, and per-run records are committed in the repository
-(`archive/experiment/phase1/recipes/`, `archive/experiment/phase1/run_records/`). The
+seeds, and per-run records are committed in the repository (Appendix A). The
 comparison should be read as a replication-style stress test of the
 known/unknown supervision idea at small scale, not a bit-for-bit reproduction
 of any prior stack.
@@ -452,8 +451,8 @@ onto known questions.
 
 Stacking a preference stage with GRPO, in either order, does not escape the
 trade-off: all four two-stage stacks land within 1.1 truthfulness points and
-6 over-refusal points of plain SFT-GRPO (visible in Figure 6; per-arm numbers
-in Appendix A's artifacts), so we treat ordering as a marginal adjustment to
+6 over-refusal points of plain SFT-GRPO (Figure 6), so we treat ordering as a
+marginal adjustment to
 the GRPO-defined operating point and do not analyze it further.
 
 The stage decomposition is now complete: **SFT induces the behavior,
@@ -524,9 +523,9 @@ The companion diagnosis paper makes that case at the representation level;
 the behavioral fact stands on its own here. A pre-registered follow-up in the
 companion line has since located the signal's origin: read on *pre-instruction*
 bases across four model families, the known/unknown boundary is already
-linearly available at AUROC 0.997+ before any post-training occurs (§4.9 of
-the program's training-free readout paper, [*The Confidence Is Already
-There: A Training-Free Two-Signal Readout for Epistemic Humility in Small
+linearly available at AUROC 0.997+ before any post-training occurs (§4.11 of
+the program's training-free readout paper, [*It's What's on the Inside That
+Counts: A Training-Free Two-Signal Readout for Epistemic Humility in Small
 Language Models*](../paper-4-two-signal-readout/manuscript.md)). The frontier the
 SFT stage "created" is therefore better read as a frontier it *exposed*: the
 discriminative signal is already paid for by pretraining, and no objective
@@ -588,9 +587,9 @@ companion diagnosis paper, [*Knows but Doesn't
 Say*](../paper-3-knows-but-doesnt-say/manuscript.md), which begins from the
 checkpoints this study trained. The companion line has since answered the
 origin half of the question this paper leaves open: the epistemic signal the
-regimens gate on is present *before any post-training* ([*The Confidence Is
-Already There*](../paper-4-two-signal-readout/manuscript.md), §4.9). Post-training
-sets the behavior; pretraining supplies the signal.
+regimens gate on is present *before any post-training* ([*It's What's on the
+Inside That Counts*](../paper-4-two-signal-readout/manuscript.md), §4.11).
+Post-training sets the behavior; pretraining supplies the signal.
 
 ## References
 
@@ -699,6 +698,7 @@ protocol document and scored artifact:
 | 5 confidence collapse (GRPO v2) | Amendment J diagnostics / session 0026 | `experiments/grpo-v3-proper-scoring-confidence/RUNBOOK.md` | `archive/experiment/phase1/eval/analysis/calibration_gap_clean_sft_grpo_v2_seed1.json` |
 | 5 probe vs emitted channel | probe program (caution-vs-doubt note) | `archive/notes/experiments/caution-vs-doubt-knowledge-gate.md` | `calibration_gap_clean_sft_grpo_v2_seed1.json` (`B_internal_vs_emitted`: internal AUROC 0.972 vs emitted 0.637) |
 | grouped behavioral inventory | all of the above | | `archive/experiment/phase1/eval/analysis/selfaware_full_run_comparison_grouped.csv` |
+| 3.3 training recipes, seeds, and per-run records | all arms | | `archive/experiment/phase1/recipes/`; `archive/experiment/phase1/run_records/` |
 
 Governance notes: the three-seed cold-start block is the pre-registered
 headline surface (PROTOCOL v0.3, signed 2026-06-10); Amendments A/B are signed
@@ -709,8 +709,8 @@ training variants (proper-scoring GRPO, contrastive SFT, RL-on-contrastive;
 Amendments J/K/N) and the probe program are reported in full in the
 companion diagnosis paper, [*Knows but Doesn't
 Say*](../paper-3-knows-but-doesnt-say/manuscript.md); the readout work is reported
-in [*The Confidence Is Already
-There*](../paper-4-two-signal-readout/manuscript.md) and the steering work in a
+in [*It's What's on the Inside That
+Counts*](../paper-4-two-signal-readout/manuscript.md) and the steering work in a
 fifth companion paper of this research line, maintained in the same
 repository.
 
