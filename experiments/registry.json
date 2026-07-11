@@ -1267,7 +1267,7 @@
         "pins": {
           "build_holdout_pool.py": "043c3e39ebe24be5764bea9ee2affb98f554c187d8b92b616948a39c74e37283",
           "cell.yaml": "5c2cd9633aa43a351253d2f0beb70bd79a8781ab4a2ea21794df2a506b6bf772",
-          "cloud/modal_h9_holdout.py": "2db96e1d5613b66aa6791d428a0be8df0aba06794aeec74b09a1e490ae74b8f3",
+          "cloud/modal_h9_holdout.py": "a17a68cbc7c51a0de800177cc70e649c6495b8be48ad1c11ff3f88ab1a4f8b99",
           "draw_holdout.py": "719e5402cbd470533527b0e9478ff8bbc745b8d37b7c87d36e56ef4d381f84cc",
           "freeze_scorer.py": "1b64ddd5d24477aa779db58f181e3f50e24c1258bd7df18c731896fcf2d7da8d",
           "gates.yaml": "7487b8737f317e5d9ae8ccf3111bee618b4c72bf5dce6dc84bb74c59b3d3f64f",

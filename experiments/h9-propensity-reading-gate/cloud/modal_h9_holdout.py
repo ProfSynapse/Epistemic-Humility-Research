@@ -80,7 +80,7 @@ image = (
     )
     .entrypoint([])
     .pip_install(
-        "git+https://github.com/huggingface/transformers.git",
+        "transformers==4.57.1",
         "peft", "pyyaml", "safetensors", "scikit-learn", "accelerate",
         "huggingface_hub>=0.34,<1.0",
     )

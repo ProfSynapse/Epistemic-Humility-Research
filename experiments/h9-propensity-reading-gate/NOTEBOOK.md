@@ -98,3 +98,18 @@ in `experiment.yaml`.
   `experiments/selected-setpoint-regulator` (that is Amendment AN, not AL) and
   asked the frozen scorer to reproduce `prop_z.npy` (which is OOF; the hard
   fidelity target is `d_raw.npy`). Both handled per AMENDMENT.md section 8.
+
+- 2026-07-11 (instrument repair, build environment only, pre-run): first Modal
+  launch failed at IMAGE BUILD (no GPU spend, no container ran): the harness
+  installed transformers from git HEAD (5.14.0.dev0), which now requires
+  huggingface_hub>=1.5.0 and conflicts with the pinned huggingface_hub<1.0.
+  Re-pinned to transformers==4.57.1, the pair the j-space-localization Modal
+  harness proved on this same model class and task shape (extraction +
+  generation, Qwen3-4B). No gate, contrast, prompt, grader, or draw change; the
+  registered draw and all committed manifests are untouched. Re-signed to
+  update the pinned SHA of cloud/modal_h9_holdout.py (old 2db96e1d5613...,
+  new a17a68cbc7c5...). Process note: the exp CLI has no repin verb for a
+  signed experiment, so the status field was flipped signed->draft by hand
+  for one CLI re-sign and back; deviation authorized by the lead because no
+  run had consumed the instrument (the failed image build spent no GPU and
+  ran no container). Tooling gap filed in TODO.md (exp repin verb).
