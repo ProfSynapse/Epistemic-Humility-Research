@@ -4,7 +4,7 @@ session_id: 20260708T164625Z-paper-5-j-space-hardening
 title: Paper 5 J-space hardening
 status: active
 created_at: '2026-07-08T16:46:25Z'
-updated_at: '2026-07-11T00:31:59Z'
+updated_at: '2026-07-11T10:20:27Z'
 track: research
 phase: phase1
 question: Which registered follow-up experiments harden the Paper 5 actuation thesis,
@@ -454,6 +454,63 @@ checkpoints:
   decisions: []
   next_steps: []
   signals: {}
+- id: 019-checkpoint
+  at: '2026-07-11T03:42:12Z'
+  kind: checkpoint
+  title: Checkpoint
+  summary: 'H9 cloud run arc complete. Attempt 1 reaped (undetached client exit, operator
+    error). Attempt 2 crashed at extraction start (ModuleNotFoundError: fresh clone
+    lacks the untracked legacy probe tree the local checkout has). Instrument repair
+    2 = bin/exp repin FIRST PRODUCTION USE: install legacy-wrapper-tree at experiment/phase1/probe,
+    shim renamed AC config (prompt.system verified byte-identical across rename d55b7d26),
+    PYTHONPATH, fail-fast import preflight before model download; rehearsed green
+    in a clean pinned-commit checkout; commit b4b68ef0. Attempt 3 completed BOTH GPU
+    stages (500/500 extract, fidelity spot-check 0.0; 500/500 generate) then crashed
+    at harness step 4b reading gen/rows_graded.jsonl where the entry script writes
+    gen/rows.jsonl; stage trees lost because checkpoints were top-level-only; app
+    stopped to cut retry spend. Repair 3 = filename fix + in-run tree mirroring +
+    restore-on-start resume (unit-tested; repin 844f4c7b; commit 58e598c7). Attempt
+    4 ran clean end to end: preflight OK, extract OK, generate OK, DONE marker on
+    volume. Spend ~2 USD of 15 USD cap. Next: pull ckpt/h9-holdout-r1, run signed
+    score_holdout.py, adjudicate locked gates (PI prediction: G1 inconclusive band).
+    Durable lesson: CPU smokes never execute the cloud harness post-stage plumbing;
+    in-run tree checkpointing caps the cost of such bugs at one stage.'
+  evidence: []
+  run_ids: []
+  commands: []
+  decisions: []
+  next_steps: []
+  signals: {}
+- id: 024-checkpoint
+  at: '2026-07-11T10:20:27Z'
+  kind: checkpoint
+  title: Checkpoint
+  summary: 'H9 RESOLVED: INCONCLUSIVE-BY-POWER, PR #273 open. The enlarged read-once
+    adjudication on the 750-row draw: the +250 registered enlargement (RNG continuation,
+    replay hard-asserted line-identical to the committed 500 manifest, largest-remainder
+    allocation 113/69/20/17/12/11/8, 0 near-dups flagged) added ZERO confabulations
+    - 4 total in 605 unanswerable rows, 601 honest refusals - so H9-G0 stays unmet
+    and per the pre-registered remedy text no further enlargement is permitted; G1
+    never read. G2 caution control passed both reads (0.9734/0.9702): pipeline certified,
+    confab scarcity is real behavior (AI-TRUE refuses 99.3 percent of held-out unanswerable
+    rows vs ~91 expected from fit-surface rates, plus 30/97 knowns). Verdict + scoreboard
+    adjudication in AMENDMENT.md section 10 (PI''s INCONCLUSIVE call closest; orchestrator''s
+    G0-met call wrong). The repair-3 resume machinery made the enlarged pass cost
+    603 GPU-seconds. Total spend ~2 USD of 15. TODO H9 row closed with the follow-up
+    note: any future propensity gate needs a surface where the checkpoint actually
+    confabulates (weaker checkpoint or adversarial pool), not more rows from this
+    one. Paper 5 consequence recorded: the read half of ''reads but does not actuate''
+    keeps the in-cell OOF 0.6802 label; no registered held-out number exists. Local
+    3090 ladder meanwhile: hs20 complete, hs23 gated mid-run (interim: hs23 notably
+    weaker than hs20 - 13/27/36 percent vs 21/46/59 at doses 2/4/6), hs26 pending,
+    ~1 day to finish. Remaining follow-ups: KG-ingest of the H9 verdict (librarian,
+    post-merge), PR #273 merge, H3/H4/H6/TS wiring.'
+  evidence: []
+  run_ids: []
+  commands: []
+  decisions: []
+  next_steps: []
+  signals: {}
 ---
 # Paper 5 J-space hardening
 
@@ -767,3 +824,13 @@ rows before the layer contrast.
 - at: `2026-07-11T00:31:59Z`
 - kind: `checkpoint`
 - summary: Editorial + hardening batch progress. Paper 3 anatomy pass verified+merged (c2e977b2: doubt=answerability-gate identity, caution trained-only caveat as finding, propensity one-line pointer, A3 move-out, self-containment). Paper 2 voice pass verified+merged plus 3 lead adjudications (b781f937: abstract KTO seed count corrected to two analyzed seeds per amendment_a_selfaware_summary.csv, grammar, ranking-signal scoping). Steering-cell salvage merged (PR #271: smoke-first+SHA-pin discipline, gate-primitive logic, PEFT/layer-offby-one/ULP gotchas into mechinterp-cells); Y-thinking draft archived (5da6587d); both retired branches await explicit PI deletion OK. H9 SIGN-OFF: PI prediction recorded = G1 INCONCLUSIVE band (f9e7c995); PI approved sign + HF staging + Modal spend cap $15; h9-designer wiring scripts + FID smoke (d_raw hard target adjudication confirmed; note designer correctly identified AL=radial-anti-propensity-steering, not selected-setpoint-regulator which is AN). New backlog row TS: steering-under-thinking cell (does gated caution write change the CoT; reuses archived cot_confidence rubric; after H3/H4). PI directive: draft H3/H4/H6/TS with placeholders NOW; two designer agents dispatched (a: H3 exp/h3-snap-seed-decode-replication + H4 exp/h4-ungated-dose-matched; b: H6 exp/h6-genstream-hook-check + TS exp/ts-steering-under-thinking). Ladder: hs20 gated dose_20 320/882, ~3.8s/row, GPU 26%/9GB/60C, no crashes, ETA ~2 days. Next: verify 4 drafts, red-team H9 instrument post-wiring, sign, stage checkpoint, Modal launch.
+### 019-checkpoint - Checkpoint
+
+- at: `2026-07-11T03:42:12Z`
+- kind: `checkpoint`
+- summary: H9 cloud run arc complete. Attempt 1 reaped (undetached client exit, operator error). Attempt 2 crashed at extraction start (ModuleNotFoundError: fresh clone lacks the untracked legacy probe tree the local checkout has). Instrument repair 2 = bin/exp repin FIRST PRODUCTION USE: install legacy-wrapper-tree at experiment/phase1/probe, shim renamed AC config (prompt.system verified byte-identical across rename d55b7d26), PYTHONPATH, fail-fast import preflight before model download; rehearsed green in a clean pinned-commit checkout; commit b4b68ef0. Attempt 3 completed BOTH GPU stages (500/500 extract, fidelity spot-check 0.0; 500/500 generate) then crashed at harness step 4b reading gen/rows_graded.jsonl where the entry script writes gen/rows.jsonl; stage trees lost because checkpoints were top-level-only; app stopped to cut retry spend. Repair 3 = filename fix + in-run tree mirroring + restore-on-start resume (unit-tested; repin 844f4c7b; commit 58e598c7). Attempt 4 ran clean end to end: preflight OK, extract OK, generate OK, DONE marker on volume. Spend ~2 USD of 15 USD cap. Next: pull ckpt/h9-holdout-r1, run signed score_holdout.py, adjudicate locked gates (PI prediction: G1 inconclusive band). Durable lesson: CPU smokes never execute the cloud harness post-stage plumbing; in-run tree checkpointing caps the cost of such bugs at one stage.
+### 024-checkpoint - Checkpoint
+
+- at: `2026-07-11T10:20:27Z`
+- kind: `checkpoint`
+- summary: H9 RESOLVED: INCONCLUSIVE-BY-POWER, PR #273 open. The enlarged read-once adjudication on the 750-row draw: the +250 registered enlargement (RNG continuation, replay hard-asserted line-identical to the committed 500 manifest, largest-remainder allocation 113/69/20/17/12/11/8, 0 near-dups flagged) added ZERO confabulations - 4 total in 605 unanswerable rows, 601 honest refusals - so H9-G0 stays unmet and per the pre-registered remedy text no further enlargement is permitted; G1 never read. G2 caution control passed both reads (0.9734/0.9702): pipeline certified, confab scarcity is real behavior (AI-TRUE refuses 99.3 percent of held-out unanswerable rows vs ~91 expected from fit-surface rates, plus 30/97 knowns). Verdict + scoreboard adjudication in AMENDMENT.md section 10 (PI's INCONCLUSIVE call closest; orchestrator's G0-met call wrong). The repair-3 resume machinery made the enlarged pass cost 603 GPU-seconds. Total spend ~2 USD of 15. TODO H9 row closed with the follow-up note: any future propensity gate needs a surface where the checkpoint actually confabulates (weaker checkpoint or adversarial pool), not more rows from this one. Paper 5 consequence recorded: the read half of 'reads but does not actuate' keeps the in-cell OOF 0.6802 label; no registered held-out number exists. Local 3090 ladder meanwhile: hs20 complete, hs23 gated mid-run (interim: hs23 notably weaker than hs20 - 13/27/36 percent vs 21/46/59 at doses 2/4/6), hs26 pending, ~1 day to finish. Remaining follow-ups: KG-ingest of the H9 verdict (librarian, post-merge), PR #273 merge, H3/H4/H6/TS wiring.
