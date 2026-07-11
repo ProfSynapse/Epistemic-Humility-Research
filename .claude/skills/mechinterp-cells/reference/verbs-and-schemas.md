@@ -78,16 +78,44 @@ calibration artifact, not a verdict. Read
 
 A `gates.yaml` declares named gates over per-row output, grouped by an `arm`
 field. `overall_pass` is true only if every gate passes. Every stochastic
-primitive is seeded.
+primitive is seeded for reproducible results.
 
-- `count_flips` - rows whose outcome moved from one boolean state to another.
-- `kill_diff_vs_control` - positive-count difference between a primary arm and a
-  count-matched control, with a seeded row-bootstrap CI.
-- `permutation_p` - one-sided permutation p-value for a count-matched positive
-  count against a pool. The null is a count-matched draw, not a label-permutation
-  mean-difference test.
-- `auroc_floor` - tie-safe AUROC point estimate with a Hanley-McNeil analytic SE
-  and a seeded bootstrap lower bound.
+### Gate kinds and primitives
+
+- **`count_flips`** - counts rows whose outcome moved from one boolean state to
+  another (e.g., baseline correct → steered refused). Output: `{universe, before,
+  flips, rate}`. A flip is a row where BOTH the before and after predicates hold;
+  `universe` restricts the denominator (useful for detecting collateral damage in
+  a flagged-only panel).
+
+- **`kill_diff_vs_control`** - measures positive-count difference between a
+  primary arm and a count-matched control, with a seeded row-bootstrap CI.
+  Output: point diff + CI bounds. Paired-row bootstrap cancels shared noise from
+  batched generation. Result includes `ci_excludes_zero` flag for easy assertion.
+
+- **`permutation_p`** - one-sided permutation p-value for a count (e.g., correct
+  answers) against the null of a random count-matched draw. Add-one corrected so
+  p is never exactly 0 or 1. Output: `{p_value, tail}`. The null is a resampled
+  draw of the same size, not a label-permutation mean-difference test.
+
+- **`auroc_floor`** - tie-safe AUROC point estimate + Hanley-McNeil analytic SE +
+  seeded bootstrap lower-bound CI. Useful for readout-quality gates (e.g., "this
+  direction must separate high-confidence from low-confidence rows with AUROC >=
+  0.8"). Output: `{auroc, se_analytic, ci_lower, ci_upper, pass}`, where `pass`
+  is true iff the bootstrap CI lower bound >= floor (conservative test).
+
+All primitives operate on per-row boolean labels (from predicates) or numeric
+values (from expressions), and all are CPU-only and deterministic given a seed.
+
+### Predicate sandbox
+
+Predicates and assertion expressions run in a restricted sandbox exposing only:
+- Builtins: `abs`, `min`, `max`, `len`.
+- Named objects: `base` and `arm` dicts (row data), `result` dict (primitive output).
+- Comparison helpers: `at_most(value, ceiling)`, `at_least(value, floor)`,
+  `within(value, lo, hi)`.
+
+No file/OS access, no arbitrary Python functions.
 
 ## Direction JSON
 
