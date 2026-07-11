@@ -191,7 +191,7 @@ window.
 | Predictor | Call |
 |-----------|------|
 | orchestrator | Greedy reproduces 73.5%/3.1% within band; sampled majority-vote conversion ~68-75% (at or slightly above greedy, per the program's greedy-understates precedent), cost ~3-6%; placebo margins hold in all 5 seeds. Headline survives outside greedy. |
-| user | (empty; filled by the user at signing) |
+| user | H3-G1 and H3-G2 both PASS: the headline survives sampling (recorded 2026-07-11) |
 
 ## Outcome
 
