@@ -157,7 +157,7 @@ back to Modal A10G if the card is not free before the submission window.
 | Predictor | Call |
 |-----------|------|
 | orchestrator | Ungated known-correct damage ~30-40% vs gated ~3%, a >25pp gap, McNemar p far below 1e-3 (gate certified); ungated confab conversion ~80-85% vs gated ~73.5%, gap ~7-12pp, within the 15pp parity bound. |
-| user | (empty; filled by the user at signing) |
+| user | FALSIFIER FIRES: ungated dosing is about as harmless as gated; the write is inherently selective and the gate does not supply the selectivity (recorded 2026-07-11) |
 
 ## Outcome
 
