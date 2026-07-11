@@ -1248,6 +1248,7 @@
       "falsifier": "Held-out propensity AUROC <= 0.55, OR the upper bound of its 1,000-resample row-bootstrap 95% CI < 0.60, means the reading does not generalize off the fit surface and paper 5's \"the propensity direction reads\" claim is not supported on held-out data.",
       "inputs": [
         "archive/experiment/phase1/probe/amendments/amendment_al_select_and_direction.py",
+        "archive/experiment/phase1/probe/amendments/amendment_ai_verdict_extract_gen.py",
         "experiments/radial-anti-propensity-steering/AMENDMENT.md"
       ],
       "instrument": {
@@ -1258,6 +1259,8 @@
         "modules": [
           "freeze_scorer.py",
           "draw_holdout.py",
+          "build_holdout_pool.py",
+          "near_dup_sweep.py",
           "score_holdout.py",
           "cloud/modal_h9_holdout.py"
         ],

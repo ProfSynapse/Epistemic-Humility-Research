@@ -113,9 +113,16 @@ def bootstrap_auroc_ci(y: np.ndarray, s: np.ndarray, n_resamples: int,
 
 
 def classify_reading(auroc: float, ci_lo: float, ci_hi: float, rg: dict) -> str:
-    if auroc >= rg["pass_auroc_min"] and ci_lo > rg["pass_ci_lower_min"]:
+    # N1: PASS and FAIL predicates are not provably disjoint; enforce the
+    # AMENDMENT's "a CI that straddles the boundaries -> inconclusive" literally by
+    # resolving any overlap to INCONCLUSIVE rather than by evaluation order.
+    pass_cond = auroc >= rg["pass_auroc_min"] and ci_lo > rg["pass_ci_lower_min"]
+    fail_cond = auroc <= rg["fail_auroc_max"] or ci_hi < rg["fail_ci_upper_max"]
+    if pass_cond and fail_cond:
+        return "INCONCLUSIVE"
+    if pass_cond:
         return "PASS"
-    if auroc <= rg["fail_auroc_max"] or ci_hi < rg["fail_ci_upper_max"]:
+    if fail_cond:
         return "FAIL"
     return "INCONCLUSIVE"
 
@@ -164,6 +171,16 @@ def score(cell: dict, gates: dict, exp_dir: Path, do_sensitivity: bool) -> dict:
     extract_dir = exp_dir / cell["scoring"]["holdout_extract_dir"]
     graded = {r["row_key"]: r
               for r in load_jsonl(exp_dir / cell["scoring"]["holdout_graded"])}
+    # N5: explicit completeness. The expected size is the draw (500) or, if the
+    # G0 enlargement was invoked, 500 + increment; require the graded set to cover
+    # every manifest row_key rather than relying on a later KeyError.
+    exp_sizes = {cell["holdout"]["draw_size"],
+                 cell["holdout"]["draw_size"] + cell["holdout"]["enlargement"]["increment_rows"]}
+    assert len(row_keys) in exp_sizes, \
+        f"manifest has {len(row_keys)} rows; expected one of {sorted(exp_sizes)}"
+    missing_graded = [rk for rk in row_keys if rk not in graded]
+    assert not missing_graded, \
+        f"{len(missing_graded)} manifest row_keys missing from graded rows"
     stack = load_stack(extract_dir, row_keys)
     Lp = cell["scorer"]["fit_layers"]["propensity"]
     Lc = cell["scorer"]["fit_layers"]["caution"]
@@ -179,12 +196,22 @@ def score(cell: dict, gates: dict, exp_dir: Path, do_sensitivity: bool) -> dict:
     seed = cell["seed"]
     report = {"headline": evaluate(prop_z, caution_z, is_confab, is_un_ref,
                                    is_refused, gates, seed, "headline")}
+    # N4: record held-out z-scale (mean/std) as a light, non-gating sanity check
+    # that the L24 read is not wildly off the frozen fit scale (fit prop_z was
+    # z-scored, so a healthy held-out read sits near mean 0, std order 1).
+    report["heldout_zscale_nongating"] = {
+        "prop_z_mean": float(prop_z.mean()), "prop_z_std": float(prop_z.std()),
+        "caution_z_mean": float(caution_z.mean()), "caution_z_std": float(caution_z.std())}
 
     if do_sensitivity:
-        # near-duplicate KUQ rows are flagged by the sensitivity step and listed
-        # in a sidecar (row_keys only); exclude them and recompute G1.
-        flagged_path = extract_dir.parent / "near_dup_flagged.json"
-        flagged = set(json.loads(flagged_path.read_text())) if flagged_path.exists() else set()
+        # C2: the near-duplicate sweep (near_dup_sweep.py) MUST have produced the
+        # sidecar; fail loudly rather than defaulting to a false "clean" read.
+        flagged_path = exp_dir / cell["sensitivity"]["flagged_out"]
+        if not flagged_path.exists():
+            raise FileNotFoundError(
+                f"--sensitivity requires the near-dup sidecar {flagged_path}; "
+                f"run near_dup_sweep.py first (do not default to clean).")
+        flagged = set(json.loads(flagged_path.read_text()))
         keep = np.array([rk not in flagged for rk in row_keys])
         recompute = evaluate(prop_z[keep], caution_z[keep], is_confab[keep],
                              is_un_ref[keep], is_refused[keep], gates, seed,

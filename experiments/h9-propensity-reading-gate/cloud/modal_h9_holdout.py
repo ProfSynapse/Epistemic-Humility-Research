@@ -180,14 +180,29 @@ def run_h9_holdout(repo_commit: str) -> dict:
     #     (same row_keys, no extra/missing rows), so the scored population is the
     #     pre-registered one and nothing leaked in through the pool.
     ids_path = os.path.join(workspace, HOLDOUT_IDS)
-    committed = {json.loads(l)["row_key"] for l in open(ids_path) if l.strip()}
-    pooled = {json.loads(l)["row_key"] for l in open(pool_path) if l.strip()}
-    if committed != pooled:
+    import hashlib
+    committed = {json.loads(l)["row_key"]: json.loads(l)["qhash"]
+                 for l in open(ids_path) if l.strip()}
+    pool_rows = [json.loads(l) for l in open(pool_path) if l.strip()]
+    pooled = {r["row_key"] for r in pool_rows}
+    if committed.keys() != pooled:
         raise RuntimeError(
             f"staged pool row_keys != committed ID-manifest "
             f"(committed {len(committed)}, pooled {len(pooled)}, "
-            f"symdiff {len(committed ^ pooled)}); refusing to score an "
+            f"symdiff {len(set(committed) ^ pooled)}); refusing to score an "
             f"off-manifest population.")
+    # C3: per-row text<->key binding. Recompute qhash from the staged question
+    # text and require it to equal the committed hash, so a pool that maps the
+    # right row_keys to the WRONG question text (a manual build/shuffle bug) is
+    # caught, not just a wrong population.
+    for r in pool_rows:
+        qh = hashlib.sha256(
+            (r["row_key"] + "\x00" + r["question"]).encode("utf-8")).hexdigest()
+        if qh != committed[r["row_key"]]:
+            raise RuntimeError(
+                f"staged pool qhash mismatch for {r['row_key']}: the staged "
+                f"question text does not match the committed manifest hash; "
+                f"refusing to feed unverified prompts into extraction.")
 
     extract_gen = os.path.join(workspace, EXTRACT_GEN)
     extract_out = f"{out}/extract"
@@ -215,11 +230,18 @@ def run_h9_holdout(repo_commit: str) -> dict:
     #     not) need only gold_class + answered + refused, all present after this.
     l2g = {"known": "answerable", "unknown": "unanswerable"}
     gold = {}
-    for l in open(pool_path):
-        if not l.strip():
-            continue
-        r = json.loads(l)
-        gold[r["row_key"]] = l2g.get(r.get("label"), r.get("gold_class"))
+    for r in pool_rows:
+        # C4: the staged pool label MUST be the source domain {known, unknown},
+        # NOT the committed manifest's mapped gold_label. Crash on any other value
+        # rather than silently defaulting gold_class to None (which would collapse
+        # every confab label to False and force G0 to inconclusive).
+        lab = r.get("label")
+        if lab not in l2g:
+            raise RuntimeError(
+                f"staged pool row {r['row_key']} has label {lab!r}; expected one "
+                f"of {sorted(l2g)} (source domain). Did the pool copy the mapped "
+                f"gold_label instead of the source label?")
+        gold[r["row_key"]] = l2g[lab]
     graded_in = os.path.join(gen_out, "rows_graded.jsonl")
     graded_out = f"{out}/rows_graded.jsonl"
     with open(graded_in) as fin, open(graded_out, "w") as fout:
@@ -275,7 +297,8 @@ def main():
 
     print(f"[modal-h9] cost cap ${cap_usd:.2f}; launching held-out extraction + "
           f"generation + grading on {MODAL_GPU}, run_tag={RUN_TAG}")
-    print(f"[modal-h9] repo@{repo_commit[:12]} staging={STAGING_REPO}")
+    print(f"[modal-h9] repo@{repo_commit[:12]} "
+          f"model_staging={STAGING_MODEL_REPO} pool_staging={STAGING_POOL_REPO}")
     call = run_h9_holdout.spawn(repo_commit)
     print(f"[modal-h9] spawned {call.object_id}; client exiting. Monitor: "
           f"modal app logs, or `modal volume get eh-h9-holdout-logs "

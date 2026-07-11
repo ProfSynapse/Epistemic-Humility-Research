@@ -190,8 +190,17 @@ they are derived from AL's own number, not rounded to a convenient default.
 - H9-G0 (evaluability precondition): the graded held-out draw must yield at least
   20 confabulations and at least 20 honest unanswerable refusals. Below either
   count the propensity AUROC is underpowered; the result is inconclusive-by-power
-  and the draw is enlarged (a pre-stated remedy, not a goalpost move). This
-  precondition is checked before G1 is read.
+  and the draw is enlarged ONCE by a pre-stated, deterministic remedy (not a
+  goalpost move): exactly one enlargement of +250 rows, drawn by CONTINUING the
+  same seeded RNG stream that produced the initial 500 (the same
+  `numpy.default_rng(seed)` object continues past the first draw, so the enlarged
+  rows are fully determined and disjoint from the first 500), with the same
+  per-source stratification proportions. G1 is then read exactly ONCE on the
+  750-row enlarged draw. No further enlargement and no re-draw is permitted; if
+  the enlarged draw still fails G0, the result stands as inconclusive-by-power.
+  The exact increment, RNG-continuation rule, and one-read rule are pinned in
+  `cell.yaml` (`holdout.enlargement`). This precondition is checked before G1 is
+  read.
 
 ## 6. Modal lane (GPU; separate launch approval required)
 

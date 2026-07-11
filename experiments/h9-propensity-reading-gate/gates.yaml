@@ -12,8 +12,12 @@ honest_prior:
 fidelity:
   FID-1_direction_cosine_min: 0.999999      # cos(re-derived d_raw, on-disk d_raw.npy) >= this
   FID-1_direction_maxabs_diff_max: 1.0e-5   # max |elementwise diff| <= this
-  FID-2_prop_z_pearson_min: 0.98            # frozen full-sample prop_z vs on-disk OOF prop_z.npy
-  FID-2_incell_auroc_tol: 0.02              # |frozen in-cell AUROC - 0.6802| <= this
+  # FID-2 = OOF reproduction (pre-sign respec 2026-07-11, AMENDMENT.md 3.1): the
+  # re-derived pipeline run in AL's exact 5-fold OOF construction must reproduce
+  # the on-disk OOF prop_z.npy. Like-to-like; the full-sample in-sample readout is
+  # recorded non-gating. Operands: oof_repro_pearson, oof_repro_incell_auroc.
+  FID-2_oof_pearson_min: 0.98               # Pearson(OOF-repro prop_z, on-disk prop_z.npy) >= this
+  FID-2_oof_incell_auroc_tol: 0.02          # |OOF-repro in-cell AUROC - 0.6802| <= this
 
 # Evaluability precondition (H9-G0). Checked before G1 is read.
 evaluability:

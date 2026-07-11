@@ -6,6 +6,45 @@ in `experiment.yaml`.
 
 ## Entries
 
+- 2026-07-11 (remediation, smoke tier, CPU-only, no GPU): addressed the pre-sign
+  red-team (docs/review/h9-presign-redteam-2026-07-11.md), both blockers and all
+  four concerns, per lead adjudication. No gate threshold changed.
+  - B1 (FID-2 unwired): freeze_scorer.py now gates fid2_pass on the OOF-repro
+    operands (oof_repro_pearson >= 0.98, |oof_repro_incell_auroc - 0.6802| <= 0.02);
+    the full-sample in-sample readout is recorded non-gating. gates.yaml keys
+    renamed FID-2_oof_pearson_min / FID-2_oof_incell_auroc_tol with an updated
+    comment. Re-run: FID-1 cosine 1.0 / maxdiff 3.57e-9 PASS; FID-2 OOF-repro
+    Pearson 1.0, AUROC 0.68016 (delta 4.0e-5) PASS; fidelity_pass=true, EXIT 0.
+  - B2 (NameError): modal_h9_holdout.py launcher now prints STAGING_MODEL_REPO /
+    STAGING_POOL_REPO; module compiles.
+  - C1 (G0 lever): AMENDMENT section 5 + cell.yaml holdout.enlargement pin ONE
+    enlargement of +250 rows by continuing the SAME default_rng(seed) stream, G1
+    read once on the 750-row enlarged draw, max_enlargements 1, no re-draws.
+  - C2 (near-dup unimplemented): added near_dup_sweep.py (committed producer;
+    token-overlap Jaccard between held-out KUQ and fit-surface KUQ text via
+    --data-root; emits row_keys-only near_dup_flagged.json). score_holdout
+    --sensitivity now FAILS LOUDLY (FileNotFoundError) if the sidecar is absent,
+    no default-clean. Smoke on the real 500-row draw: 363 held-out KUQ rows,
+    n_flagged 0 at threshold 0.90 (max overlap observed 0.75).
+  - C3 (unscripted pool / weak binding): added build_holdout_pool.py (deterministic,
+    reads committed manifest + source JSONLs via --data-root, emits gitignored
+    holdout_pool.jsonl). draw_holdout now writes per-row qhash = sha256(row_key
+    \x00 question_text) into the committed manifest (hash committed, text NOT).
+    Modal join verifies each staged row's qhash, not just row_key set equality.
+    Pool-builder smoke: 500 rows, all qhash verified.
+  - C4 (label schema footgun): pool-builder emits + asserts label in the source
+    domain {known, unknown}; the Modal gold-join now crashes on any other value
+    instead of defaulting gold_class to None. Pool-builder smoke label split
+    known 97 / unknown 403.
+  - NITS: N1 classify_reading resolves a PASS/FAIL straddle to INCONCLUSIVE
+    explicitly (enforces the AMENDMENT straddle rule, not evaluation order). N2
+    amendment_ai_verdict_extract_gen.py added to experiment.yaml inputs; two new
+    scripts added to instrument.modules. N3 draw iterates sources in sorted order
+    so the RNG stream is independent of YAML key order. N4 score_holdout records
+    held-out prop_z/caution_z mean+std as a non-gating L24 z-scale sanity line.
+    N5 score_holdout asserts manifest size in {500, 750} and that every row_key
+    has a graded row before scoring.
+  All CPU smokes pass; nothing signed, no GPU, no Modal, no HF upload.
 - 2026-07-11 (smoke/diagnostic, CPU-only, no GPU, no model load): wired the
   three CPU scripts and the Modal harness to full working state and ran the
   pre-sign smokes. Results below are smoke tier, not the registered run.

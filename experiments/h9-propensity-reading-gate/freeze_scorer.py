@@ -195,31 +195,35 @@ def build_frozen_scorer(cell: dict, gates: dict, data_root: Path,
     prop_mean, prop_std = float(prop_full_raw.mean()), float(prop_full_raw.std())
     prop_full = (prop_full_raw - prop_mean) / prop_std
 
-    # ---- FID-2: frozen prop vs on-disk OOF prop_z, + in-cell AUROC vs 0.6802 ----
     prop_z_disk = np.load(al_run / "prop_z.npy").astype(np.float64)
-    pearson = float(np.corrcoef(prop_full, prop_z_disk)[0, 1])
-    incell_auroc = float(roc_auc_score(
-        np.r_[np.ones(len(confab_idx)), np.zeros(len(un_ref_idx))],
-        np.r_[prop_full[confab_idx], prop_full[un_ref_idx]]))
-    caution_incell_auroc = float(roc_auc_score(y_ref, c_frozen))
-    auroc_delta = abs(incell_auroc - gates["honest_prior"]["prop_incell_oof_auroc"])
-    fid2_pass = (pearson >= gates["fidelity"]["FID-2_prop_z_pearson_min"]
-                 and auroc_delta <= gates["fidelity"]["FID-2_incell_auroc_tol"])
 
-    # ---- DIAGNOSTIC (non-gating): reproduce AL's OOF prop readout exactly, to
-    #      isolate the FID-2 gap. If this OOF reproduction matches prop_z.npy at
-    #      r ~= 1.0 and AUROC ~= 0.6802, the frozen scorer is faithful and FID-2's
-    #      failure is purely the in-sample-vs-OOF definitional mismatch (the
-    #      frozen full-sample direction evaluated in-sample on its own fit rows is
-    #      optimistic; AL's 0.6802 is out-of-fold). Held-out rows carry no such
-    #      optimism, so the H9-G1 held-out number stays honestly comparable to
-    #      0.6802. See the report flag.
+    # ---- FID-2 (GATING): OOF reproduction. Execute AL's exact 5-fold OOF
+    #      construction (same folds, seed, OOF-c residualization) and require it to
+    #      reproduce the on-disk OOF prop_z.npy at Pearson r >= 0.98 AND land its
+    #      in-cell OOF AUROC within 0.02 of 0.6802 (AMENDMENT.md section 3.1,
+    #      pre-sign respec). This is the like-to-like fidelity check: a faithful
+    #      re-derivation must reproduce AL's own OOF readout. ----
     prop_oof_repro = oof_meandiff_proj(R_oof, confab_idx, un_ref_idx, SEED + 2, N_SPLITS)
     prop_oof_repro_z = (prop_oof_repro - prop_oof_repro.mean()) / prop_oof_repro.std()
     oof_repro_pearson = float(np.corrcoef(prop_oof_repro_z, prop_z_disk)[0, 1])
     oof_repro_incell_auroc = float(roc_auc_score(
         np.r_[np.ones(len(confab_idx)), np.zeros(len(un_ref_idx))],
         np.r_[prop_oof_repro_z[confab_idx], prop_oof_repro_z[un_ref_idx]]))
+    oof_repro_auroc_delta = abs(oof_repro_incell_auroc
+                                - gates["honest_prior"]["prop_incell_oof_auroc"])
+    fid2_pass = (oof_repro_pearson >= gates["fidelity"]["FID-2_oof_pearson_min"]
+                 and oof_repro_auroc_delta <= gates["fidelity"]["FID-2_oof_incell_auroc_tol"])
+
+    # ---- NON-GATING (recorded for the file): the frozen FULL-SAMPLE scorer read
+    #      on its own fit rows is in-sample-optimistic, so it is expected to sit
+    #      above the OOF 0.6802. Recorded so the file shows both numbers; it does
+    #      NOT gate. Held-out rows carry no such optimism, so H9-G1 stays honestly
+    #      comparable to 0.6802. ----
+    fullsample_pearson = float(np.corrcoef(prop_full, prop_z_disk)[0, 1])
+    fullsample_incell_auroc = float(roc_auc_score(
+        np.r_[np.ones(len(confab_idx)), np.zeros(len(un_ref_idx))],
+        np.r_[prop_full[confab_idx], prop_full[un_ref_idx]]))
+    caution_incell_auroc = float(roc_auc_score(y_ref, c_frozen))
 
     # ---- persist frozen objects + sha256 manifest ----
     import joblib
@@ -252,17 +256,20 @@ def build_frozen_scorer(cell: dict, gates: dict, data_root: Path,
         "FID-1": {"cosine": cos, "max_abs_diff": maxabs, "pass": bool(fid1_pass),
                   "target_cosine_min": gates["fidelity"]["FID-1_direction_cosine_min"],
                   "target_maxabs_max": gates["fidelity"]["FID-1_direction_maxabs_diff_max"]},
-        "FID-2": {"pearson_prop_z": pearson, "incell_auroc": incell_auroc,
-                  "incell_auroc_delta_vs_0.6802": auroc_delta, "pass": bool(fid2_pass),
-                  "target_pearson_min": gates["fidelity"]["FID-2_prop_z_pearson_min"],
-                  "target_auroc_tol": gates["fidelity"]["FID-2_incell_auroc_tol"]},
+        "FID-2": {"note": ("GATING: OOF reproduction of AL's exact 5-fold "
+                            "construction vs on-disk prop_z.npy (like-to-like)"),
+                  "oof_repro_pearson_vs_prop_z": oof_repro_pearson,
+                  "oof_repro_incell_auroc": oof_repro_incell_auroc,
+                  "oof_repro_incell_auroc_delta_vs_0.6802": oof_repro_auroc_delta,
+                  "pass": bool(fid2_pass),
+                  "target_pearson_min": gates["fidelity"]["FID-2_oof_pearson_min"],
+                  "target_auroc_tol": gates["fidelity"]["FID-2_oof_incell_auroc_tol"]},
+        "fullsample_in_sample_readout_NONGATING": {
+            "note": ("frozen full-sample scorer read on its own fit rows; "
+                     "in-sample-optimistic, recorded not gated"),
+            "pearson_vs_prop_z": fullsample_pearson,
+            "incell_auroc": fullsample_incell_auroc},
         "caution_incell_auroc_frozen": caution_incell_auroc,
-        "diagnostic_oof_reproduction": {
-            "note": ("reproduces AL's OOF prop readout; r~=1 and AUROC~=0.6802 "
-                     "prove the pipeline is faithful and isolate FID-2's failure "
-                     "to the in-sample(full-fit)-vs-OOF definitional mismatch"),
-            "oof_repro_pearson_vs_prop_z": oof_repro_pearson,
-            "oof_repro_incell_auroc": oof_repro_incell_auroc},
         "fidelity_pass": bool(fid1_pass and fid2_pass),
         "frozen_out": str(frozen_out),
     }

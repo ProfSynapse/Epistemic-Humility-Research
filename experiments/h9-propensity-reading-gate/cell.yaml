@@ -34,7 +34,16 @@ holdout:
     triviaqa: 24
     popqa: 23
     kuq_ku_known: 15
-  id_manifest_out: analysis-committed/holdout_draw/holdout_ids.jsonl   # row_key + source + gold label ONLY
+  id_manifest_out: analysis-committed/holdout_draw/holdout_ids.jsonl   # row_key + source + gold label + qhash ONLY
+  # Per-row binding (C3): draw_holdout writes qhash = sha256(row_key \x00 question_text)
+  # into the committed manifest (hash committed, text NOT). build_holdout_pool and
+  # the Modal join re-verify each row's qhash, catching a right-key/wrong-text pool.
+  # H9-G0 enlargement remedy (C1): ONE enlargement only, deterministic, read-once.
+  enlargement:
+    increment_rows: 250            # single +250-row enlargement (500 -> 750)
+    rng_rule: continue_same_stream # the same default_rng(seed) continues past the first 500
+    reads_g1: once_on_enlarged     # G1 read exactly once on the enlarged draw; no re-draws
+    max_enlargements: 1
 
 # --- Modal GPU lane (cloud/modal_h9_holdout.py) ------------------------------
 gpu:
@@ -48,9 +57,19 @@ gpu:
     max_new_tokens: 96        # match AL A0 generation config
     do_sample: false          # greedy
   grader: byte-identical to the AL A0 cell (grading config pinned at signing)
-  staging_repo: professorsynapse/eh-h9-aitrue-staging   # private; base+adapter uploaded pre-launch
+  staging_model_repo: professorsynapse/eh-h9-aitrue-staging  # private; base+adapter uploaded pre-launch
+  staging_pool_repo: professorsynapse/eh-h9-holdout-pool     # private dataset; question-text pool
   cost_cap_usd: 15
   results_volume: eh-h9-holdout-logs
+
+# --- held-out pool builder (build_holdout_pool.py; C3/C4) --------------------
+# Deterministic: reads the committed ID-manifest + gitignored source JSONLs via
+# --data-root, emits holdout_pool.jsonl (question text, gitignored, uploaded to
+# staging_pool_repo by hand). Pins the staged schema so the Modal join is safe.
+pool_builder:
+  out: analysis/holdout_pool/holdout_pool.jsonl   # gitignored (carries text)
+  emit_fields: [row_key, question, label, aliases, qhash]
+  label_domain: [known, unknown]                  # C4: staged pool label is source domain, NOT gold_label
 
 # --- held-out scoring + gates (score_holdout.py) -----------------------------
 scoring:
@@ -58,7 +77,14 @@ scoring:
   holdout_graded: analysis/holdout_run/gen/rows_graded.jsonl # gitignored
   gate_report_out: analysis-committed/holdout_run/gate_report.json  # aggregates only, no text
 
-# --- registered sensitivity (score_holdout.py --sensitivity) -----------------
+# --- registered sensitivity: near-dup sweep (near_dup_sweep.py; C2) ----------
+# Committed producer of the near_dup_flagged.json sidecar. Token-overlap (Jaccard
+# on whitespace tokens) between held-out KUQ questions and fit-surface KUQ
+# questions (text read via --data-root, never committed). score_holdout FAILS
+# LOUDLY if --sensitivity is set and this sidecar is absent (no default-clean).
 sensitivity:
-  near_dup_metric: token_overlap    # Jaccard on whitespace tokens; swap to cosine if finalized otherwise
-  near_dup_threshold: 0.90
+  near_dup_metric: token_overlap    # Jaccard on whitespace tokens
+  near_dup_threshold: 0.90          # held-out KUQ rows with max overlap >= this are flagged
+  kuq_sources: [kuq_ku_unknown, kuq_ku_unknown_x]
+  fit_surface_graded: experiment/phase1/probe/analysis/amendment_al_prep/true_a0/gen/data/rows_graded.jsonl
+  flagged_out: analysis-committed/holdout_draw/near_dup_flagged.json   # row_keys ONLY, no text

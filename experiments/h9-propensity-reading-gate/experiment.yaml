@@ -29,6 +29,8 @@ instrument:
   modules:
   - freeze_scorer.py
   - draw_holdout.py
+  - build_holdout_pool.py
+  - near_dup_sweep.py
   - score_holdout.py
   - cloud/modal_h9_holdout.py
   pins: {}
@@ -39,6 +41,7 @@ instrument:
 # checkout and are recorded as concrete paths in cell.yaml.
 inputs:
 - archive/experiment/phase1/probe/amendments/amendment_al_select_and_direction.py
+- archive/experiment/phase1/probe/amendments/amendment_ai_verdict_extract_gen.py
 - experiments/radial-anti-propensity-steering/AMENDMENT.md
 verdict: ''
 kg: []

@@ -57,9 +57,13 @@ def draw(cell: dict, data_root: Path, exp_dir: Path, smoke: bool) -> dict:
     fit_p = data_root / ho["complement_sources"]["fit_surface"]
 
     # ---- reconstruct the union (disjoint ah:: / ahx:: namespaces) ----
-    orig = {r["row_key"]: {"source": r["source"], "label": r["label"]}
+    # question text is read here only to compute the per-row binding hash (C3);
+    # it is never written to the committed manifest.
+    orig = {r["row_key"]: {"source": r["source"], "label": r["label"],
+                           "question": r["question"]}
             for r in load_jsonl(orig_p)}
-    exp = {r["row_key"]: {"source": r["source"], "label": r["label"]}
+    exp = {r["row_key"]: {"source": r["source"], "label": r["label"],
+                          "question": r["question"]}
            for r in load_jsonl(exp_p)}
     assert not (set(orig) & set(exp)), "orig/expansion row_key namespaces overlap"
     union = {**orig, **exp}
@@ -85,15 +89,21 @@ def draw(cell: dict, data_root: Path, exp_dir: Path, smoke: bool) -> dict:
     rng = np.random.default_rng(seed)
     drawn: list[dict] = []
     per_source_drawn: dict[str, int] = {}
-    for source, n_target in targets.items():
+    # N3: draw in a fixed sorted-source order so the RNG stream is independent of
+    # the YAML key order in stratify_targets.
+    for source in sorted(targets):
+        n_target = targets[source]
         supply = by_source.get(source, [])
         assert len(supply) >= n_target, \
             f"source {source}: target {n_target} > supply {len(supply)}"
         pick_idx = rng.choice(len(supply), size=n_target, replace=False)
         for i in sorted(pick_idx):
             rk = supply[i]
+            qhash = hashlib.sha256(
+                (rk + "\x00" + complement[rk]["question"]).encode("utf-8")).hexdigest()
             drawn.append({"row_key": rk, "source": source,
-                          "gold_label": LABEL_TO_GOLD[complement[rk]["label"]]})
+                          "gold_label": LABEL_TO_GOLD[complement[rk]["label"]],
+                          "qhash": qhash})
         per_source_drawn[source] = n_target
 
     # ---- outputs ----
