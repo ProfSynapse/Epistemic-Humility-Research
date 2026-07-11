@@ -109,3 +109,21 @@ after user sign-off + spend approval).
   H9 harness before sign: import-environment block, qhash verification, tree
   checkpoint/resume, and the rows.jsonl join (H9 repair-3 lesson) all verified
   present and correct.
+
+- 2026-07-11 (phase 0 adjudicated: ALL FLOORS PASS, phase 1 unlocked): the
+  density probe ran clean on the first attempt (preflight OK, resume machinery
+  inherited from H9 unused because nothing failed). Read-once against the
+  locked floors: BB-P0-A schema-follow 0.976 vs 0.60 floor PASS (the release
+  base holds the JSON contract almost perfectly); BB-P0-B confabs 32 vs 20
+  floor PASS; BB-P0-C honest unanswerable refusals 558 vs 20 floor PASS.
+  Committed aggregate report at analysis-committed/phase0/density_report.json.
+  Prediction adjudication: the user called all three floors passing and was
+  RIGHT; the orchestrator's weakly-held all-pass was right in outcome but its
+  named most-likely-failure (the refusal floor) was maximally wrong in
+  direction: base is heavily refusal-prone under this prompt (92.2% honest
+  refusal on unanswerable rows) and even refuses 92/142 answerable rows (64.8%
+  known over-refusal, far above AI-TRUE's 30/97). Base confabulates at 5.3%
+  on unanswerable rows (32/605), roughly 8x AI-TRUE's 0.66%. Non-gating
+  observation for the record: the untrained release model is already strongly
+  abstention-biased under the schema contract prompt; the propensity contrast
+  has mass on both sides, which is all phase 1 needs.
