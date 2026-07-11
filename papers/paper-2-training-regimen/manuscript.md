@@ -51,7 +51,7 @@ essentially nothing, falsifying the natural hypothesis that KTO's unpaired
 binary format makes it a native abstention trainer. Applied after an SFT
 warm-up, preference optimization *repositions* the boundary along a
 recall/over-refusal trade-off (DPO aggressively toward answering, KTO
-conservatively; three seeds each), and GRPO under an appropriateness reward
+conservatively; three seeds for DPO, two for KTO), and GRPO under an appropriateness reward
 *amplifies* the routine to near-ceiling recall and the study's best
 truthfulness while re-inflating over-refusal (single seed, exploratory). No
 objective or ordering moves the underlying discrimination frontier; each
@@ -82,7 +82,7 @@ The contention of this research program is that these failures are primarily
 facts about *training*, specifically post-training. The program's companion
 taxonomy and evidence-synthesis paper, [*The Depths of Ignorance: A Taxonomy,
 Systematic Evidence Synthesis, and Research Agenda for Epistemic Humility in
-Language Models*](../paper-1-taxonomy-framework/manuscript.md), argues that
+Language Models*](../paper-1-taxonomy-framework/manuscript.md), argues the same
 contention from the published evidence: a systematic extraction of 78
 quantitative effects from 39 studies across the calibration, abstention,
 hallucination, and sycophancy literatures. This paper
@@ -540,7 +540,7 @@ stage by your cost asymmetry (DPO if over-refusal is expensive, KTO or GRPO
 if hallucination is); (iii) do not trust the model's stated confidence under
 any of these regimens (Section 5), and do not expect an RL reward to fix it;
 (iv) if you control the weights, the companion work indicates a linear probe
-of the hidden states is a dramatically better uncertainty signal than
+of the hidden states is a dramatically better uncertainty ranking signal than
 anything the model will tell you.
 
 ## 7. Limitations
