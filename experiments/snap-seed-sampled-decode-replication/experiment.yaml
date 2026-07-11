@@ -1,0 +1,37 @@
+slug: snap-seed-sampled-decode-replication
+title: 'H3: Multi-Seed and Sampled-Decode Replication of the Doubt-Gated Caution Snap'
+type: steer-cell
+status: draft
+registered: true
+created_at: '2026-07-11T00:34:57Z'
+question: Does the resolved doubt-gated caution snap headline (gated confab clean_tighten
+  73.5%, known-correct false-refusal 3.1%), measured as a single greedy decode, survive
+  re-measurement of the same frozen instrument under fresh harness seeds and the checkpoint's
+  recommended sampled-decode configuration?
+prediction: The greedy arm reproduces 73.5%/3.1% within band, and the sampled-decode
+  arm's majority-vote confab conversion stays at or above 63.5% while majority-vote
+  known-correct cost stays at or below 8%, per seed and pooled, so the resolved headline
+  pair survives outside a single greedy decode.
+falsifier: Sampled-decode majority-vote confab conversion falls below 63.5% (pooled
+  or in a majority of the K=5 seeds), OR sampled-decode majority-vote known-correct
+  cost exceeds an 8% point estimate or a 12% Wilson upper CI (pooled) - the resolved
+  73.5%/3.1% pair is a greedy-decode artifact and must be re-scoped to "one greedy
+  decode" wherever asserted.
+checkpoint:
+  repo: unsloth/Qwen3-4B
+  revision: raw-base (no adapter; bf16, no 4-bit quantization)
+instrument:
+  configs:
+  - cell.yaml
+  - gates.yaml
+  modules: []
+  pins: {}
+inputs:
+- experiments/common/doubt-gated-caution-tighten-heldout-split/split_manifest.json
+- experiments/doubt-gated-caution-tighten/analysis-committed/u_d_L34.json
+- experiments/doubt-gated-caution-tighten/analysis-committed/c_hat_L34.json
+- experiments/doubt-gated-caution-tighten/analysis-committed/random_direction_L34.json
+- experiments/doubt-gated-caution-tighten/analysis-committed/gate_fit.json
+- experiments/doubt-gated-caution-tighten/analysis-committed/build_manifest.json
+verdict: ''
+kg: []
