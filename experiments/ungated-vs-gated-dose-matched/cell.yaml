@@ -1,0 +1,75 @@
+# H4: registered ungated-vs-gated dose-matched arm for the caution snap.
+# DRAFT, NOT a registered instrument until `bin/exp sign` (see AMENDMENT.md;
+# status: draft). Substrate: raw-base untrained instruct, unsloth/Qwen3-4B
+# (full bf16, no 4-bit quant), no adapter. Training-free, greedy decode.
+#
+# This experiment REFITS NOTHING. It reuses the FROZEN instrument pinned by the
+# resolved doubt-gated-caution-tighten cell and adds exactly ONE arm: an ungated
+# arm that doses EVERY held-out row unconditionally at the snap setpoint. The
+# contrast against a matched-conditions re-run of the gated arm turns "the write
+# is non-selective; the gate supplies selectivity" into a registered number.
+#
+# Validate config load (CPU, no GPU):
+#   python -c "import yaml; yaml.safe_load(open('cell.yaml'))"
+
+frozen_instrument:
+  source_experiment: doubt-gated-caution-tighten
+  split_manifest: experiments/common/doubt-gated-caution-tighten-heldout-split/split_manifest.json
+  u_d: experiments/doubt-gated-caution-tighten/analysis-committed/u_d_L34.json
+  c_hat: experiments/doubt-gated-caution-tighten/analysis-committed/c_hat_L34.json
+  gate_fit: experiments/doubt-gated-caution-tighten/analysis-committed/gate_fit.json
+  build_manifest: experiments/doubt-gated-caution-tighten/analysis-committed/build_manifest.json
+  tau_frozen: 0.3026445054171378   # Youden-J on FIT; do NOT re-derive
+  layer: 33                        # decoder block 33 (L34)
+
+heldout_sizes:                     # realized by the frozen split; for assertion only
+  confab: 185
+  known_correct_answered: 258
+
+snap:                              # identical to the resolved cell
+  law: erase_write
+  position: anchor_onward
+  scope: anchor_onward
+  dose_target: 200.0               # realized |projection|, readback units
+
+generation:                        # identical to the resolved cell (greedy)
+  do_sample: false
+  max_new_tokens: 200
+  min_new_tokens: 1
+  eos_includes_im_end: true
+  enable_thinking: false
+
+arms:
+  # Gate-on: the resolved instrument re-run under matched conditions. Gate decides
+  # fire per row; fired rows snapped to c_hat at dose 200; non-fired unperturbed.
+  - name: gated
+    gate: on
+    fire_rule: "neg_z_d >= tau_frozen"
+    dose_scope: fired_rows_only
+  # Gate-off: dose EVERY held-out row (all 185 confab + all 258 known-correct)
+  # unconditionally along c_hat at dose 200. Same direction, dose, decode; the
+  # only difference from gated is that the gate no longer decides who is dosed.
+  - name: ungated
+    gate: off
+    dose_scope: all_heldout_rows
+
+contrast:
+  paired: true                     # gated is a subset-dosing of the same rows ungated doses
+  known_correct_damage:
+    metric: not_well_formed_correct
+    population: known_correct_answered
+    test: mcnemar                  # paired, over the 258 known-correct rows
+  confab_conversion_parity:
+    metric: clean_tighten
+    population: confab
+
+metrics:                           # reused verbatim from the resolved cell
+  clean_tighten: gen_lib:grade_clean_tighten
+  well_formed_correct: grader:grade_one
+
+execution:
+  # Row text (materialized via the resolved cell's materialize_rows.py scheme)
+  # and all generations stay under gitignored analysis/. Only aggregate summaries
+  # are committed under analysis-committed/.
+  rows_path: analysis/rows_with_text.jsonl
+  output_path: analysis/ungated_vs_gated_summary.json
