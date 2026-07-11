@@ -124,7 +124,17 @@ first coarse pass in this diagnostic did exactly that and produced a retracted
    inside the calibrated coherent band (the working cross-family grids sat at
    roughly 5-30 sigma, consistent with rule 1's ambient-relative window);
    treat a missing per-cell entry in a matrix-wide grid table as a launch
-   blocker, not a fallback to the default.
+   blocker, not a fallback to the default. CAVEAT, measured the same day
+   (2026-07-11): the z-band itself does NOT transfer across families either.
+   Mapping the working Qwen3.5-4B z-ladder (6-29 sigma) onto llama and
+   mistral via each cell's own mu_c/sigma_c gave a real dose-response on
+   llama but a fully inert grid on mistral (zero token movement at 29 sigma,
+   where llama responds at 5-13 sigma). Sigma-mapping is a first guess only.
+   Before launch, bracket each cell empirically: one probe generation at the
+   grid's strongest arm strength (must move tokens) plus any prior-dose
+   evidence bounding collapse from above, and set the grid to log-span that
+   bracket. A grid whose maximum has never been shown to move tokens on that
+   substrate is not launchable.
 5. **Aggregate dose-invariance is the overdose signature.** If every graded
    cell count is byte-identical at every dose while completions differ
    slightly (94-99.9 percent pairwise identity, not 100 percent), the sweep is
@@ -139,7 +149,13 @@ first coarse pass in this diagnostic did exactly that and produced a retracted
    including inert and collapsed doses. It says the hook wrote what you asked, not
    that the write changed anything. Whether tokens actually move is a separate
    check - the `gen_stream` decode-hook-firing guard (byte-identical output ->
-   refuse) is what catches an inert dose; keep it enabled.
+   refuse) is what catches an inert dose; keep it enabled. Do NOT tie the
+   gen_stream probe strength to `max(dose_grid)`: that makes the plumbing
+   check inert for any legitimately low-dose grid and the smoke refuses a
+   healthy harness (measured, mistral7b 2026-07-11). Use a fixed strength
+   already shown to move tokens on some substrate (e.g. 250) for the
+   plumbing check, and cover "does the strongest arm move tokens on THIS
+   substrate" with the separate pre-launch bracket probe from rule 4.
 
 ## gen_stream and the `position` field
 
