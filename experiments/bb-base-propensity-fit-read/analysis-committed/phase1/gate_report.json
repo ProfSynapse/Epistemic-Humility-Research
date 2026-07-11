@@ -1,0 +1,51 @@
+{
+  "headline": {
+    "tag": "headline",
+    "BB-P1-G0_read_surface_record": {
+      "n_confab": 32,
+      "n_un_refused": 558,
+      "min_confabs": 20,
+      "min_un_refused": 20
+    },
+    "BB-P1-G2": {
+      "caution_auroc": 0.9845590994371481,
+      "floor": 0.8,
+      "pass": true,
+      "population": "gradeable_only (excludes degenerate or schema-invalid rows)",
+      "n_gradeable": 732,
+      "n_total": 750,
+      "sensitivity_all_750_rows_NONGATING": {
+        "caution_auroc": 0.981276923076923,
+        "n_rows": 750
+      }
+    },
+    "BB-P1-G1": {
+      "verdict": "PASS",
+      "auroc": 0.8178763440860215,
+      "ci": [
+        0.719017396969521,
+        0.9041767473118278
+      ],
+      "ci_level": 0.95
+    }
+  },
+  "BB-P1-G0_fit_surface": {
+    "n_confab": 205,
+    "n_un_refused": 1020,
+    "min_confabs": 20,
+    "min_un_refused": 20,
+    "met": true
+  },
+  "honest_prior": {
+    "prop_incell_oof_auroc": 0.7745289335246293,
+    "caution_incell_oof_auroc": 0.9738338449152116,
+    "caution_incell_auroc_frozen_fullsample": 0.9939859487053132,
+    "fullsample_prop_incell_auroc": 0.8757532281205164
+  },
+  "heldout_zscale_nongating": {
+    "prop_z_mean": -0.09484022895613324,
+    "prop_z_std": 0.747528516763869,
+    "caution_z_mean": 0.29948037341228845,
+    "caution_z_std": 0.6930249190619134
+  }
+}

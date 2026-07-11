@@ -252,3 +252,19 @@ remain validated only on synthetic data pending the phase-1 GPU run.
   fit-math body fails FID-2); 14/14 pass, re-run by the lead. Pinned files
   untouched (verified via git status). Launch authorized by the user under
   the standing BB cap; proceeding.
+
+- 2026-07-11 (phase 1 run, fit, and READ-ONCE gate adjudication): the phase-1
+  Modal run completed clean in 3,447 s on one A10 (first launch aborted inside
+  a minute after the HF token was sourced empty from a nonexistent worktree
+  .env; relaunched with the token verified non-empty from the canonical
+  checkout). Artifacts pulled via the modal Python SDK (the CLI `volume get`
+  fails with Errno 21 on directory trees in client 1.5.1; the SDK loop with
+  skip-existing resume handled a transient upstream-storage error). Fit ran on
+  CPU: BB-FID-1 determinism PASS, BB-FID-2 PASS (knobs plus function-body
+  parity, h9 pin verified), G0 evaluability 205 confabs / 1,020 refusals on
+  the guarded fit surface. Read-once gate on the 750-row vendored surface:
+  BB-P1-G2 caution 0.9820 gradeable-primary (n=732) PASS; BB-P1-G1 PASS at
+  AUROC 0.8179, CI [0.7190, 0.9042]. Near-dup sensitivity 0 flagged. Full
+  verdict written to AMENDMENT section 12. Gate report committed at
+  analysis-committed/phase1/gate_report.json; row-level pulls remain
+  gitignored under analysis/.

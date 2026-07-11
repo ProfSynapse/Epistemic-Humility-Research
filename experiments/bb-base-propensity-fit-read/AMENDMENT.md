@@ -379,8 +379,46 @@ carried over from H9.
 | orchestrator | Phase 0: all three floors pass, weakly held (~50%); the single most likely failure is BB-P0-C (honest-refusal floor), given the Qwen3.5 ladder baseline refused 0/1,127 under a similar contract prompt. Schema-follow passes comfortably (release model, simple JSON contract). |
 | user | Phase 0: ALL THREE FLOORS PASS (recorded at sign-off approval). |
 
-## 12. Outcome
+## 12. Outcome (resolved 2026-07-11)
 
-Filled at resolve. Records the verdict, the phase-0 floors, and (if phase 1 ran)
-the reading-gate result, with the one-sentence summary that also goes into
-`verdict:` in the manifest.
+**Verdict: RESOLVED, BB-P1-G1 PASS.** The confab-propensity direction, fit
+fresh on the untrained base model (Qwen/Qwen3-4B @ 1cfa9a72, 4-bit, no
+adapter), reads held-out confabulation at **AUROC 0.8179, 95% bootstrap CI
+[0.7190, 0.9042]** (1,000 resamples, read-once on the vendored 750-row
+surface). Both pass conditions clear decisively: AUROC 0.8179 >= 0.62 and CI
+lower 0.7190 > 0.55. This is the propensity direction's first certified
+held-out reading anywhere in the program, and it required no training.
+
+Phase 0 (floors, 2026-07-11): BB-P0-A schema-follow 0.976 >= 0.60 PASS;
+BB-P0-B confabs 32 >= 20 PASS; BB-P0-C honest unanswerable refusals 558 >= 20
+PASS. Both registered predictors called all-pass (user confidently,
+orchestrator weakly); the orchestrator's named most-likely failure (BB-P0-C)
+was wrong in direction: base is heavily abstention-biased (92.2% honest
+refusal on unanswerables, 64.8% over-refusal on knowns).
+
+Phase 1 gates: BB-P1-G0 fit evaluability MET, 205 confabs / 1,020
+unanswerable-refused on the guarded 1,662-row fit surface (floors 20/20); the
+power failure that made H9 inconclusive does not exist on base. BB-P1-G2
+caution control PASS, AUROC 0.9820 on the gradeable-only primary population
+(n=732; floor 0.80), 0.9813 on the all-750 non-gating sensitivity line.
+Fidelity: BB-FID-1 determinism PASS; BB-FID-2 recipe parity PASS under the
+2026-07-11 pre-launch repin (knob assertion plus normalized function-body
+sha256 parity with H9's pinned scorer; both whole-file hashes recorded).
+Registered near-dup sensitivity (section 8): 0 rows flagged (max token
+overlap 0.75 vs 0.90 threshold), so the AUROC-excluding-flagged equals the
+headline read. Honest priors (non-gating, per gates.yaml): base in-cell OOF
+propensity AUROC 0.7745, caution OOF 0.9738; the held-out caution 0.9820 sits
+within the ~0.10 band of the measured prior anticipated in section 6. No
+phase-1 predictions were registered at sign; the section 11 scoreboard covers
+phase 0 only.
+
+Instrument history: gates.yaml repinned once pre-launch (BB-FID-2 wording,
+3f23b51f -> 33fe08ad, audit trail in experiment.yaml repins); one invalidating
+red-team finding (missing degenerate/schema_valid guard on the contrast cells)
+was fixed and regression-locked before launch; outcome gates were never
+touched. GPU spend: one clean 3,447-second A10 run (~$2) plus ~1 minute of a
+stopped empty-token launch; phase 0 was ~$1.
+
+One-sentence summary for the manifest: base-model propensity direction
+certified at held-out AUROC 0.8179 (CI [0.7190, 0.9042]), the program's first
+certified propensity reading, achieved with zero training.
