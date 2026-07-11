@@ -144,3 +144,28 @@ in `experiment.yaml`.
   instrument.repins; `exp validate` OK. GPU spend so far: attempt 2 burned
   roughly 10-15 A10G-minutes (clone + HF downloads + crash), well inside the
   $15 cap.
+
+- 2026-07-11 (instrument repair 3, post-generate join + checkpointing,
+  pre-score): attempt 3 was the first COMPLETE GPU pass. Preflight imports OK
+  in-container (repair 2 verified), extraction finished all 500 rows with the
+  in-run fidelity spot-check passing (max_abs_diff_L24 = 0.0 on n=3), and
+  generation+grading finished all 500 rows. The harness then crashed at its
+  own step 4b: it read gen/rows_graded.jsonl but the entry script's generate
+  stage writes gen/rows.jsonl (fields row_key/refused/answered/schema_valid/
+  degenerate/prompt_len/config_sha + answer_text). Because checkpoint_once
+  only mirrored TOP-LEVEL files and the stage trees were only mirrored in the
+  final step, the completed extraction and generation outputs were lost with
+  the container, and Modal's automatic retries would have recomputed
+  everything just to crash at the same line; the app was stopped to cut spend.
+  Repair (repin 3, old aded92aed142..., new 844f4c7bfbb6...): (1) step 4b
+  reads gen/rows.jsonl; (2) checkpoint_once now mirrors the extract/gen trees
+  during the run (only-new safetensors, refreshed metadata, atomic); (3) at
+  container start the harness restores any checkpointed stage trees into /tmp
+  so a retry resumes instead of recomputing -- safe because the entry script's
+  own resume logic skips rows already present in its out-dir rows.jsonl and
+  hard-fails on config_sha mismatch. Join and mirror/restore semantics
+  unit-tested locally (scratchpad test, all pass); no scorer, pool, draw,
+  prompt, contrast, or gate change; registered draw and manifests untouched.
+  Estimated cumulative spend after three attempts: roughly 1.0-1.5 A10G-hours
+  (~$1.5), inside the $15 cap. No evidence consumed: no scored artifact
+  exists yet; the gates remain unadjudicated.

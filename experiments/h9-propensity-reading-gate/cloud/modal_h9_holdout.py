@@ -129,6 +129,23 @@ def run_h9_holdout(repo_commit: str) -> dict:
             raise RuntimeError(f"command failed ({r.returncode})")
         return r.returncode
 
+    def _mirror_tree(src_dir, dst_dir):
+        # Only-new .safetensors (immutable per row); always refresh small
+        # metadata files (rows.jsonl / manifest.json), atomically.
+        os.makedirs(dst_dir, exist_ok=True)
+        for root, _dirs, files in os.walk(src_dir):
+            rel = os.path.relpath(root, src_dir)
+            tgt = os.path.join(dst_dir, rel) if rel != "." else dst_dir
+            os.makedirs(tgt, exist_ok=True)
+            for fn in files:
+                src = os.path.join(root, fn)
+                dst = os.path.join(tgt, fn)
+                if fn.endswith(".safetensors") and os.path.isfile(dst):
+                    continue
+                tmp = dst + ".tmp"
+                shutil.copyfile(src, tmp)
+                os.replace(tmp, dst)
+
     def checkpoint_once(tag=""):
         try:
             for fn in os.listdir(out):
@@ -137,10 +154,27 @@ def run_h9_holdout(repo_commit: str) -> dict:
                     tmp = os.path.join(CKPT, fn) + ".tmp"
                     shutil.copyfile(src, tmp)
                     os.replace(tmp, os.path.join(CKPT, fn))
+                elif os.path.isdir(src):
+                    # mirror the extract/gen trees DURING the run, so a crash
+                    # after an expensive stage never loses it and a Modal retry
+                    # can resume (the entry script skips rows already in its
+                    # out-dir rows.jsonl, config_sha-guarded).
+                    _mirror_tree(src, os.path.join(CKPT, fn))
             vol.commit()
             print(f"[modal-h9] checkpoint committed {tag}".rstrip(), flush=True)
         except Exception as e:  # noqa: BLE001 -- a bad checkpoint must never kill the run
             print(f"[modal-h9] checkpoint FAILED (non-fatal) {tag}: {e}", flush=True)
+
+    # Resume: restore any prior checkpointed stage trees into this container's
+    # /tmp before the stages run. The entry script's own resume logic then skips
+    # completed rows (and hard-fails on config_sha mismatch, so a stale or
+    # foreign checkpoint can never silently mix into a fresh run).
+    for sub in ("extract", "gen"):
+        ck = os.path.join(CKPT, sub)
+        if os.path.isdir(ck):
+            _mirror_tree(ck, os.path.join(out, sub))
+            print(f"[modal-h9] restored {sub}/ from volume checkpoint for resume",
+                  flush=True)
 
     stop_ckpt = threading.Event()
 
@@ -289,7 +323,11 @@ def run_h9_holdout(repo_commit: str) -> dict:
                 f"of {sorted(l2g)} (source domain). Did the pool copy the mapped "
                 f"gold_label instead of the source label?")
         gold[r["row_key"]] = l2g[lab]
-    graded_in = os.path.join(gen_out, "rows_graded.jsonl")
+    # The generate stage writes its graded rows as rows.jsonl (fields:
+    # row_key/refused/answered/schema_valid/degenerate/prompt_len/config_sha
+    # plus answer_text); rows_graded.jsonl was a wrong guess at that name and
+    # crashed the first complete run at this line.
+    graded_in = os.path.join(gen_out, "rows.jsonl")
     graded_out = f"{out}/rows_graded.jsonl"
     with open(graded_in) as fin, open(graded_out, "w") as fout:
         for l in fin:
