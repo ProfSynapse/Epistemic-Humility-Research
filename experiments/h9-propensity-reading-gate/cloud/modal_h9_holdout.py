@@ -49,11 +49,25 @@ EXPERIMENT_SLUG = "h9-propensity-reading-gate"
 RUN_TAG = "h9-holdout-r1"
 MODAL_GPU = os.environ.get("H9_MODAL_GPU", "A10G")
 
-# Private HF staging repo holding the AI-TRUE base + adapter (user uploads once
-# before launch; see AMENDMENT.md section 6.2). Weights only, no question text.
-STAGING_REPO = "professorsynapse/eh-h9-aitrue-staging"
+# Private HF staging repos (user uploads once before launch; see AMENDMENT.md
+# section 6.2 for the checkpoint, section 6.1 for the pool). Weights are staged
+# in a model repo; the held-out question pool is staged in a dataset repo keyed
+# by the committed row_keys (question text never lives in the public repo).
+STAGING_MODEL_REPO = "professorsynapse/eh-h9-aitrue-staging"   # base + adapter
+STAGING_POOL_REPO = "professorsynapse/eh-h9-holdout-pool"      # held-out pool jsonl (text)
 BASE_SUBDIR = "base/merged-16bit"        # merged-16bit clean-SFT base
 ADAPTER_SUBDIR = "adapter/final_model"   # amendment_ai_grpo_true_seed1 LoRA
+POOL_IN_REPO = "holdout_pool.jsonl"      # question text keyed by committed row_keys
+
+# Full 37-layer stack (AL-prep surface), so score_holdout's loader reads L24/L35
+# from the same safetensors layout AL produced.
+LAYERS_FULL = ",".join(f"L{i}" for i in range(37))
+
+# The proven extract/generate harness (version-controlled; present in the clone).
+EXTRACT_GEN = "archive/experiment/phase1/probe/amendments/amendment_ai_verdict_extract_gen.py"
+# The committed held-out ID-manifest (row_key + source + gold label; no text).
+HOLDOUT_IDS = ("experiments/h9-propensity-reading-gate/"
+               "analysis-committed/holdout_draw/holdout_ids.jsonl")
 
 HOURS = 60 * 60
 CKPT_INTERVAL_SEC = 120
@@ -88,6 +102,7 @@ CKPT = f"{VOL_MOUNT}/ckpt/{RUN_TAG}"
     retries=modal.Retries(max_retries=2, backoff_coefficient=1.0, initial_delay=10.0),
 )
 def run_h9_holdout(repo_commit: str) -> dict:
+    import json
     import re
     import shutil
     import subprocess
@@ -146,42 +161,96 @@ def run_h9_holdout(repo_commit: str) -> dict:
     sh(["nvidia-smi", "--query-gpu=name,memory.total", "--format=csv,noheader"],
        check=False)
 
+    from huggingface_hub import hf_hub_download, snapshot_download
+
     t0 = time.time()
 
-    # 2. fetch the AI-TRUE base + adapter from the private staging repo.
-    #    TODO(sign): hf_hub_download / snapshot_download of STAGING_REPO subdirs
-    #    BASE_SUBDIR and ADAPTER_SUBDIR into container-local paths (never a repo
-    #    path). Same call shape as modal_jlens.py's private-pool fetch.
-    #
-    # 3. run the H9 GPU harness (extraction + generation + grading) on the 500
-    #    held-out rows. TODO(sign): call the in-repo harness entrypoint (a
-    #    harness-builder task after signing), e.g.:
-    #      python experiments/h9-propensity-reading-gate/gpu_extract_gen.py \
-    #        --ids analysis-committed/holdout_draw/holdout_ids.jsonl \
-    #        --base <base_local> --adapter <adapter_local> \
-    #        --anchor prompt_len-1 --all-layers \
-    #        --max-new-tokens 96 --greedy --out <out>
-    #    Extraction: pre-generation anchor (prompt_len-1), all 37 layers,
-    #    batch_size 1, forward-only. Generation: greedy, max_new_tokens 96,
-    #    AL A0 system prompt. Grading: byte-identical AL A0 grader.
-    #
-    #    NOTE: holdout question TEXT is joined in at container time from the
-    #    private staging pool keyed by row_key (never committed to the repo),
-    #    mirroring the AL staging join (runpod_al_true_a0.sh). The committed
-    #    holdout_ids.jsonl carries row_key + source + gold label only.
-    raise NotImplementedError(
-        "modal_h9_holdout draft skeleton: wire the staging fetch (step 2) and "
-        "the GPU harness call (step 3) per the TODO(sign) blocks before launch."
-    )
+    # 2. fetch the AI-TRUE base + adapter from the private staging model repo,
+    #    and the held-out question pool from the private staging dataset repo.
+    #    Question text lives ONLY in the container-local pool (never a repo path).
+    base_local = snapshot_download(STAGING_MODEL_REPO, allow_patterns=f"{BASE_SUBDIR}/*")
+    base_local = os.path.join(base_local, BASE_SUBDIR)
+    adapter_local = snapshot_download(STAGING_MODEL_REPO,
+                                      allow_patterns=f"{ADAPTER_SUBDIR}/*")
+    adapter_local = os.path.join(adapter_local, ADAPTER_SUBDIR)
+    pool_path = hf_hub_download(STAGING_POOL_REPO, POOL_IN_REPO,
+                                repo_type="dataset")
 
-    t_total = time.time() - t0  # noqa: F841 (reached once steps 2-3 are wired)
+    # 2b. verify the staged pool matches the committed ID-manifest exactly
+    #     (same row_keys, no extra/missing rows), so the scored population is the
+    #     pre-registered one and nothing leaked in through the pool.
+    ids_path = os.path.join(workspace, HOLDOUT_IDS)
+    committed = {json.loads(l)["row_key"] for l in open(ids_path) if l.strip()}
+    pooled = {json.loads(l)["row_key"] for l in open(pool_path) if l.strip()}
+    if committed != pooled:
+        raise RuntimeError(
+            f"staged pool row_keys != committed ID-manifest "
+            f"(committed {len(committed)}, pooled {len(pooled)}, "
+            f"symdiff {len(committed ^ pooled)}); refusing to score an "
+            f"off-manifest population.")
+
+    extract_gen = os.path.join(workspace, EXTRACT_GEN)
+    extract_out = f"{out}/extract"
+    gen_out = f"{out}/gen"
+
+    # 3. extraction: pre-generation anchor (prompt_len-1), full 37-layer stack,
+    #    batch-1 forward-only, on the AI-TRUE checkpoint (proven AL/AI harness).
+    sh([sys.executable, extract_gen, "--stage", "extract", "--surface", "holdout",
+        "--pool", pool_path, "--base-model", base_local,
+        "--adapter-repo", adapter_local, "--layers", LAYERS_FULL,
+        "--out-dir", extract_out])
+    checkpoint_once(tag="(post-extract)")
+
+    # 4. generation + behavior grading (greedy; refused/answered/schema_valid),
+    #    same harness, same checkpoint.
+    sh([sys.executable, extract_gen, "--stage", "generate",
+        "--pool", pool_path, "--base-model", base_local,
+        "--adapter-repo", adapter_local, "--out-dir", gen_out])
+    checkpoint_once(tag="(post-generate)")
+
+    # 4b. join gold_class (from the pool label: known->answerable,
+    #     unknown->unanswerable) into the graded rows so score_holdout can read
+    #     gold_class alongside answered/refused. The propensity contrast
+    #     (confab vs unanswerable-refused) and the caution control (refused vs
+    #     not) need only gold_class + answered + refused, all present after this.
+    l2g = {"known": "answerable", "unknown": "unanswerable"}
+    gold = {}
+    for l in open(pool_path):
+        if not l.strip():
+            continue
+        r = json.loads(l)
+        gold[r["row_key"]] = l2g.get(r.get("label"), r.get("gold_class"))
+    graded_in = os.path.join(gen_out, "rows_graded.jsonl")
+    graded_out = f"{out}/rows_graded.jsonl"
+    with open(graded_in) as fin, open(graded_out, "w") as fout:
+        for l in fin:
+            if not l.strip():
+                continue
+            r = json.loads(l)
+            r.setdefault("gold_class", gold.get(r["row_key"]))
+            fout.write(json.dumps(r) + "\n")
+
+    t_total = time.time() - t0
+
+    # 5. mirror results to the Volume: the extraction tree (per-row .safetensors +
+    #    rows.jsonl + manifest) and the gold-joined rows_graded.jsonl. These are
+    #    pulled back locally (gitignored) for score_holdout.py; no external upload.
     stop_ckpt.set()
     ckpt_thread.join(timeout=30)
-    checkpoint_once(tag="(final)")
+    for sub in ("extract", "gen"):
+        src = f"{out}/{sub}"
+        if os.path.isdir(src):
+            dst = f"{CKPT}/{sub}"
+            if os.path.isdir(dst):
+                shutil.rmtree(dst)
+            shutil.copytree(src, dst)
+    checkpoint_once(tag="(final; includes rows_graded.jsonl)")
     with open(f"{CKPT}/DONE", "w") as fh:
-        fh.write(f"run_tag={RUN_TAG}\n")
+        fh.write(f"run_tag={RUN_TAG} total_sec={t_total:.1f}\n")
     vol.commit()
-    return {"status": "completed"}
+    print(f"[modal-h9] DONE total={t_total:.0f}s -- pull with "
+          f"`modal volume get eh-h9-holdout-logs ckpt/{RUN_TAG} <dest>`", flush=True)
+    return {"status": "completed", "total_sec": round(t_total, 1)}
 
 
 @app.local_entrypoint()
