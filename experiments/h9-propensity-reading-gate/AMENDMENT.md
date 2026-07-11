@@ -105,13 +105,19 @@ spec-conflict note in section 8 on why the hard target is `d_raw.npy`, not
   (`amendment_al_select_and_direction.py:197-204`), same seed, same 1,662-row
   matrix; a larger deviation means the re-derivation diverged from the governed
   fit and the scorer is not AL's scorer.
-- FID-2 (consistency, frozen vs OOF readout): the frozen full-sample propensity
-  z-score on the 1,662 fit rows correlates with the on-disk OOF `prop_z.npy` at
-  Pearson r >= 0.98, AND the frozen scorer's in-cell AUROC (contrast defined in
-  section 4.1) lands within 0.02 of AL's OOF 0.6802. Justification: AL states
-  full-sample refits of these cells shift AUROC well under 0.01
-  (`experiments/radial-anti-propensity-steering/AMENDMENT.md:129-132`); a 0.02
-  band gives margin while still catching a genuine pipeline mismatch.
+- FID-2 (consistency, OOF reproduction): the re-derived pipeline, executed in
+  AL's exact 5-fold out-of-fold construction (same folds, same seed, same
+  residualization), reproduces the on-disk OOF `prop_z.npy` at Pearson r >= 0.98
+  AND lands its in-cell OOF AUROC (contrast defined in section 4.1) within 0.02
+  of AL's recorded 0.6802. Justification: this compares like to like; a faithful
+  re-derivation must reproduce AL's own OOF readout. The frozen FULL-SAMPLE
+  scorer is expected to read optimistically on its own fit rows (in-sample), so
+  its in-sample AUROC is recorded for the file but does not gate. (Pre-sign
+  respec 2026-07-11: the original FID-2 compared the full-sample in-sample
+  readout to the OOF number, an apples-to-oranges check the smoke exposed; see
+  NOTEBOOK.md. Respec made before signing; measured smoke values: OOF
+  reproduction r = 1.0, OOF AUROC 0.68016; full-sample in-sample AUROC 0.8664,
+  recorded, non-gating.)
 
 If either fidelity check fails, the held-out gate is not run: a scorer that does
 not reproduce AL's construction cannot certify AL's direction.
