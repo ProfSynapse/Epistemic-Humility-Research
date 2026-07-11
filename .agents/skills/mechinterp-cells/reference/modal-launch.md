@@ -72,6 +72,47 @@ For HF Jobs training lane details, use:
 
 - [../experiment-runner/reference/cloud-lane.md](../experiment-runner/reference/cloud-lane.md)
 
+## Steering and dose-calibration gotchas
+
+These issues are specific to activation intervention (steering/dose-calibrate) and
+hidden-state manipulation, on top of the generic cloud checklist in
+runpod-modal-lanes.md.
+
+### PEFT/Unsloth adapter wrapping hides decoder layers
+
+A PEFT-wrapped causal LM has the structure `PeftModelForCausalLM -> LoraModel ->
+base`; the decoder `ModuleList` (the target for intervention hooks) is several
+attributes deep and differs across architectures. The tuner's hook registration
+detects and unwraps adapters by calling `get_base_model()`, then tries known
+paths in order: `model.layers`, `language_model.model.layers`, `model.decoder.layers`,
+`transformer.h`. If a new architecture fails to unwrap, error messages will
+indicate which path was attempted; add the correct path to the tuner's registry
+rather than working around it in the cell config or grader.
+
+### Layer index off-by-one (hidden_states indexing vs block numbers)
+
+In transformer models, `hidden_states[L]` is the OUTPUT of decoder block `L-1`;
+`hidden_states[0]` is the input embedding. A direction fit at "layer 35" (meaning
+the output of block 34) should specify `layer: 35` in the direction JSON, and the
+tuner's hook registration internally maps this to `layers[34]`. Direction JSONs
+that record BOTH `layer` and `block` fields are self-checking; the tuner asserts
+they agree (e.g., `layer: 35, block: 34`). Mismatches will error before any
+intervention. When manually specifying a layer in a cell config override, use the
+hidden_states index (e.g., 35 for block 34's output).
+
+### ULP floors for activation comparisons (bf16 accumulation noise)
+
+Batched-vs-loop and steered-vs-baseline hidden-state comparisons accumulate
+floating-point noise, especially in bf16. An ABSOLUTE hidden-state comparison
+(e.g., ||h_steered - h_baseline||) is noisier than a DELTA comparison that
+cancels shared batched noise (e.g., ||(h_steered - h_baseline) - (h_baseline -
+h_baseline_repeat)||). The smoke readback validation compares the COMMANDED
+coordinate move against the observed move within a tolerance (`smoke.write_rel_tol`),
+not exact equality. Set this tolerance above the bf16 ULP floor for your model
+and layer (typically 1e-3 to 1e-2 for common transformer sizes), not to zero. A
+too-tight tolerance causes false smoke failures; a too-loose tolerance misses
+real write bugs. Calibrate against a known-good baseline run on your GPU.
+
 ## Modal-specific mechinterp gotchas
 
 - Modal currently clones the pushed tuner repo/commit. Local fixes do nothing

@@ -31,6 +31,90 @@ For project-local configs, set `runtime.workdir: ..` when the pipeline is
 executed from the tuner checkout but stages must run against the research repo
 root.
 
+## Smoke-first discipline and config pinning
+
+Before running any full steering arm or dose ladder, validate the intervention at
+small scale with a smoke pass. This catches write bugs before burning full GPU
+time.
+
+### The arc: plan → smoke → full arms → grade → gates → record
+
+1. **Author** the cell config and gates config. Pre-state the prediction,
+   falsifier, and gate thresholds in the amendment doc BEFORE running - the gates
+   config IS the falsifier, in code.
+
+2. **Plan (CPU, no GPU/torch):**
+   ```bash
+   python synaptic-tuner/tuner.py mechinterp steer --mi-config experiments/<slug>/cell.yaml --dry-run
+   ```
+   Echoes the parsed cell (row count, readouts, arms, smoke block). Use it to
+   confirm selection and actuation policy before spending GPU time.
+
+3. **Smoke one arm (enforced before any full arm):**
+   ```bash
+   python synaptic-tuner/tuner.py mechinterp steer \
+     --mi-config experiments/<slug>/cell.yaml \
+     --model <base-model> \
+     --arm primary \
+     --smoke-only \
+     --i-know-this-runs-on-gpu
+   ```
+   The smoke generates `smoke.n_rows` samples over the target arm and, for a
+   steering/dose cell, re-reads the post-write anchor coordinate: it asserts the
+   observed coordinate landed at the commanded value within `smoke.write_rel_tol`
+   and records the result. On pass it records a smoke-pass marker. A readout-only
+   arm records a trivial pass (no write to verify).
+
+4. **Run the full arm(s):**
+   ```bash
+   python synaptic-tuner/tuner.py mechinterp steer \
+     --mi-config experiments/<slug>/cell.yaml \
+     --model <base-model> \
+     --arm primary \
+     --i-know-this-runs-on-gpu
+   ```
+   The runner refuses a full arm whose smoke has not passed, returning an error.
+   Resume is automatic: rows already in the output checkpoint are skipped.
+
+5. **Grade** the arm rows with the amendment's byte-pinned grader (same grader as
+   the baseline), then **score gates:**
+   ```bash
+   python synaptic-tuner/tuner.py mechinterp score-gates \
+     --gates-config experiments/<slug>/gates.yaml \
+     --rows-path experiments/<slug>/analysis/<arm>/rows_out.jsonl
+   ```
+
+6. **Record the verdict** in the amendment doc: gates PASS/FAIL with the numbers
+   and config sha.
+
+### Sign, then pin the config SHA
+
+The amendment's confirmatory surface is the exact cell.yaml and gates.yaml you
+signed. To make a run provably use those exact configs:
+
+1. Compute the sha256 of the signed file:
+   ```bash
+   sha256sum experiments/<slug>/cell.yaml
+   ```
+
+2. Put it in the config as `surface.expected_config_sha: <64-hex>` and record the
+   same sha in the amendment doc at signing.
+
+3. The runner's steer verb is FATAL (before any model load) when the file's sha no
+   longer matches `expected_config_sha`, so an edit-after-signing can never silently
+   run. Use `--dry-run` to inspect an edited cell without triggering the guard.
+
+Because `expected_config_sha` is itself part of the file, set it, then re-hash and
+paste the final value; a later whitespace edit changes the sha and trips the guard
+(intended). Treat the pinned sha as the identity of the confirmatory run.
+
+### What is untracked
+
+Everything under the execution output dir (`experiments/<slug>/analysis/` by
+default): per-arm rows JSONL, readback results, smoke markers, and gates reports.
+Never commit generations, readbacks, or FalseQA question text. Commit only the
+cell.yaml, gates.yaml, and amendment doc.
+
 ## CWD and PYTHONPATH
 
 Run tuner commands from the repo root or experiment worktree root, not from
