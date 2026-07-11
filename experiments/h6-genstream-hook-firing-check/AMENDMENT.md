@@ -263,7 +263,7 @@ H6-G3. H6-G4 is a reported diagnostic, never a pass/fail.
 | Predictor | Call |
 |-----------|------|
 | orchestrator | PATH-BESPOKE fails G1 (confirms AK confound); PATH-TUNER passes G1+G2+G3 (certified go-forward instrument). |
-| user | (empty; filled by the user at signing) |
+| user | CERTIFIES CLEAN: hook fires per decode token, write lands within tolerance, no-op exact (recorded 2026-07-11) |
 
 ## Outcome
 
