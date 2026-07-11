@@ -6,6 +6,33 @@ in `experiment.yaml`.
 
 ## Entries
 
+- 2026-07-11 (mistral smoke refusal, pre-sweep grid correction, probe-strength
+  decouple): the mistral7b relaunch on the sigma-mapped grid crashed by design
+  at the in-pipeline gen-stream smoke (`gen_stream_fired: False`, exit 4): the
+  probe write at strength 27, equal to the strongest arm the grid would have
+  run (28.75 after sigma division), produced byte-identical output on all 8
+  probe rows. The guard did its job: the entire mapped grid [6..27] is below
+  mistral's token-movement threshold, so the sweep would have been a
+  predetermined all-inert null. This falsifies the sigma-ladder transfer
+  assumption for mistral (inert at 29 sigma where llama fires at comparable
+  sigma). The stopped default-grid partial sweep bounds the response region
+  from above: 584/584 fired FIT confabs degenerate at dose 100 (realized
+  strength 106.5), while the morning probe at 250 moved tokens. Actions, all
+  pre-sweep and pre-outcome for this cell, recorded in a dated AMENDMENT
+  extension: (1) mistral7b grid revised to log-span the empirical bracket
+  (27, 100): [30, 38, 46, 56, 67, 80, 92]; (2) `prep_tuner_cell.py` smoke
+  probe decoupled from the dose grid to fixed strength 250.0 matching
+  `smoke_tuner_path.py` (plumbing check, not a registered dose; tying it to
+  max(dose_grid) makes it inert for any legitimately low grid); (3) both pin
+  hashes refreshed. The registered selection rule was never evaluated on the
+  [6..27] grid, so the no-further-grid-changes clause never triggered. llama's
+  grid is untouched: its sweep is mid-run and showing a real interior
+  dose-response (fired-confab clean_tighten 64 -> 107 -> 61 across strengths
+  5.3 -> 9.1 -> 12.4, collapse above), well below the 0.60 selection floor so
+  far, which the sweep will adjudicate on completion. Mistral relaunches
+  detached at batch-1 under the existing $75 probe approval, re-entering at
+  the dose sweep on volume-backed artifacts.
+
 - 2026-07-11 (llama G0 characterization + grid recalibration extension +
   mistral stop, user-approved): llama32_3b_instruct stopped at the registered
   FIT dose-viability rule (exit 4, zero qualifying doses), the same signature

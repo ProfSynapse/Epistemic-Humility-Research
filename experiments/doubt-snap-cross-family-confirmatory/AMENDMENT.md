@@ -111,6 +111,35 @@ above: if no dose in the recalibrated grid qualifies, the cell fails G0 dose
 viability and is recorded as such without further grid changes, and no cell's
 grid ever changes after its held-out outcome is known.
 
+Pre-sweep grid correction for mistral7b only (2026-07-11, same day, before any
+FIT dose selection ran on that cell): the sigma-mapped grid `{6..27}` above was
+wrong for mistral7b. The relaunch was refused by the harness gen-stream smoke
+itself: the probe write at strength 27, which equals the strongest arm the grid
+would have run (27 / sigma_c 0.939 = 28.75), produced byte-identical output on
+all 8 probe rows, so the entire mapped grid is below mistral's token-movement
+threshold and the registered selection rule was never evaluated on it. The
+"without further grid changes" clause above therefore never triggered: it binds
+a FIT dose-viability verdict, and no sweep ran. Direct evidence brackets the
+real response region instead: the stopped default-grid partial sweep produced
+584/584 fired FIT confabs degenerate at dose 100 (realized strength 106.5),
+and the morning probe at strength 250 moved tokens. The mistral7b grid is
+revised once more, pre-sweep and pre-outcome, to log-span that empirical
+bracket: `{30,38,46,56,67,80,92}` (realized strengths 31.9 to 98.0). The
+llama32_3b grid is not touched: its sweep is mid-run on the mapped grid and is
+producing a real interior dose-response, and changing a grid mid-sweep is
+exactly the drift these clauses forbid. This episode also falsifies the
+sigma-ladder transfer assumption used in the 2026-07-11 extension above
+(mistral is inert at 29 sigma while llama fires at comparable sigma): sigma
+mapping is a first guess only, and per-cell empirical bracketing evidence is
+required before any future cell's grid is set. Separately, the harness smoke's
+`gen_stream_probe_strength` was decoupled from the dose grid (fixed 250.0,
+matching `smoke_tuner_path.py`): the probe is a plumbing check, and tying it to
+`max(dose_grid)` makes it inert for any legitimately low-dose grid. Selection
+rule, thresholds, arms, scoring, and every gate remain unchanged; as above, if
+no dose in this bracketed grid qualifies under the registered FIT rule, the
+cell fails G0 dose viability and is recorded as such without further grid
+changes.
+
 The instrument is the same mechanism class as the merged Qwen amendment:
 
 1. GATE: a doubt readout `z_d`, fired as `neg_z_d = -z_d >= tau` because
