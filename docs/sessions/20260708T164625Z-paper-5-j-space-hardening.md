@@ -4,7 +4,7 @@ session_id: 20260708T164625Z-paper-5-j-space-hardening
 title: Paper 5 J-space hardening
 status: active
 created_at: '2026-07-08T16:46:25Z'
-updated_at: '2026-07-11T14:00:59Z'
+updated_at: '2026-07-11T21:58:59Z'
 track: research
 phase: phase1
 question: Which registered follow-up experiments harden the Paper 5 actuation thesis,
@@ -536,6 +536,36 @@ checkpoints:
   - 'PR #273/#274 merges; ladder completion -> aggregates -> red-team; then H3/H4
     lane; BB half c amendment after snap hardened'
   signals: {}
+- id: 026-checkpoint
+  at: '2026-07-11T21:58:59Z'
+  kind: checkpoint
+  title: Checkpoint
+  summary: 'Mistral probe-cell crash diagnosed and repaired pre-sweep: the in-pipeline
+    gen-stream smoke probe was tied to max(dose_grid), so mistral''s sigma-mapped
+    grid [6..27] made the probe inert (byte-identical output at strength 27, equal
+    to the strongest arm) and the guard refused launch. This falsifies sigma-ladder
+    transfer for mistral (inert at 29 sigma where llama responds at 5-13 sigma). Morning
+    artifacts bracket mistral''s window empirically: inert at 27, fully degenerate
+    at realized strength 106.5 (584/584 fired confabs at dose 100), tokens moving
+    at 250. Fixes on exp/doubt-snap-cross-family commit b8e9c873: mistral grid revised
+    pre-sweep/pre-outcome to log-span (27,100) = [30,38,46,56,67,80,92]; smoke probe
+    decoupled to fixed 250.0; dated AMENDMENT extension + NOTEBOOK entry + pin refresh
+    (no-further-grid-changes clause never triggered because the selection rule was
+    never evaluated on [6..27]). Mistral relaunched detached batch-1 (app ap-WQXHAMrCooWjpskPgy36cH),
+    weights loading, background poll armed. Skill PR #275 updated (cffaed77): rule
+    4 now requires empirical per-cell bracketing (sigma-mapping is a first guess only);
+    rule 6 gains the probe-decoupling gotcha. Llama sweep live and healthy: real interior
+    dose-response, fired-confab clean_tighten 64->107->61 across strengths 5.3->9.1->12.4
+    then collapse, peak ~18.5% well below the 0.60 selection floor, trending toward
+    an honest FIT dose-viability null. Local 3090 midband ladder: baseline + hs20
+    all arms + hs23 gated/permuted complete; hs23 random_direction on dose 6 of 7
+    (~93%); hs26 and hs30 late-comparator cells remain (roughly a day-plus).'
+  evidence: []
+  run_ids: []
+  commands: []
+  decisions: []
+  next_steps: []
+  signals: {}
 ---
 # Paper 5 J-space hardening
 
@@ -866,3 +896,8 @@ rows before the layer contrast.
 - summary: BB resolved: base propensity read certified. Phase 1 ran clean on Modal (3,447 s A10, ~$2; one aborted empty-HF-token launch caught inside a minute). Pre-launch: full red-team (1 invalidating finding, missing degenerate/schema_valid guard on the contrast cells in fit+score, fixed and regression-locked, smokes 14/14; FID-2 gates.yaml repin 3f23b51f->33fe08ad adjudicated intent-preserving), two lead adjudications recorded pre-read (gradeable guard scope; G2 gradeable-only primary). Results: G0 205 confabs/1,020 refusals on guarded 1,662-row base fit surface; read-once gate on vendored 750: BB-P1-G1 PASS AUROC 0.8179, CI [0.7190, 0.9042]; G2 caution 0.9820; FID-1/2 pass; near-dup 0 flagged. First certified propensity reading in the program, zero training. Resolved; PR #274 open; TODO BB updated (half c, base actuation, remains). Gotcha: modal CLI 1.5.1 volume get fails Errno 21 on directory trees; use Python SDK iterdir/read_file with skip-existing resume. KG-ingest queued post-merge.
 - next steps:
   - PR #273/#274 merges; ladder completion -> aggregates -> red-team; then H3/H4 lane; BB half c amendment after snap hardened
+### 026-checkpoint - Checkpoint
+
+- at: `2026-07-11T21:58:59Z`
+- kind: `checkpoint`
+- summary: Mistral probe-cell crash diagnosed and repaired pre-sweep: the in-pipeline gen-stream smoke probe was tied to max(dose_grid), so mistral's sigma-mapped grid [6..27] made the probe inert (byte-identical output at strength 27, equal to the strongest arm) and the guard refused launch. This falsifies sigma-ladder transfer for mistral (inert at 29 sigma where llama responds at 5-13 sigma). Morning artifacts bracket mistral's window empirically: inert at 27, fully degenerate at realized strength 106.5 (584/584 fired confabs at dose 100), tokens moving at 250. Fixes on exp/doubt-snap-cross-family commit b8e9c873: mistral grid revised pre-sweep/pre-outcome to log-span (27,100) = [30,38,46,56,67,80,92]; smoke probe decoupled to fixed 250.0; dated AMENDMENT extension + NOTEBOOK entry + pin refresh (no-further-grid-changes clause never triggered because the selection rule was never evaluated on [6..27]). Mistral relaunched detached batch-1 (app ap-WQXHAMrCooWjpskPgy36cH), weights loading, background poll armed. Skill PR #275 updated (cffaed77): rule 4 now requires empirical per-cell bracketing (sigma-mapping is a first guess only); rule 6 gains the probe-decoupling gotcha. Llama sweep live and healthy: real interior dose-response, fired-confab clean_tighten 64->107->61 across strengths 5.3->9.1->12.4 then collapse, peak ~18.5% well below the 0.60 selection floor, trending toward an honest FIT dose-viability null. Local 3090 midband ladder: baseline + hs20 all arms + hs23 gated/permuted complete; hs23 random_direction on dose 6 of 7 (~93%); hs26 and hs30 late-comparator cells remain (roughly a day-plus).
