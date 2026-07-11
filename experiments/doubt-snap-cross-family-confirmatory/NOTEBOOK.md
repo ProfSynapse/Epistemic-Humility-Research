@@ -6,6 +6,63 @@ in `experiment.yaml`.
 
 ## Entries
 
+- 2026-07-11 (Qwen3.5 FIT-dose nulls committed to public artifacts): Pulled the
+  nine `analysis-committed` aggregate files for both `qwen35_4b` and
+  `qwen35_9b` from the Modal volume `eh-doubt-snap-cross-family`
+  (`doubt-snap-cross-family-r1/_live/<cell>/analysis-committed/`) into
+  `analysis-committed/qwen35_4b/` and `analysis-committed/qwen35_9b/` under
+  version control (`modal_status.json`, `dose_fit.json`, `gate_fit.json`,
+  `g0_prep_summary.json`, `split_manifest.json`, `build_manifest.json`,
+  `u_d.json`, `c_hat.json`, `random_direction.json`). Every file was inspected
+  by key, not filename, before staging: `split_manifest.json` rows carry only
+  `category_canon`/`role`/`row_key` (ID-only, e.g. `kuq_unknowns_all:0`)/
+  `source`/`split`; the direction files carry only fitted vectors and
+  provenance metadata. No prompt text, answer aliases, or generation text is
+  present in any pulled file.
+
+  `modal_status.json` is identical in shape on both cells: `status: failed`,
+  `failure_stage: fit_dose_selection`, `dose_select_exit_code: 4`,
+  `reason: no_registered_candidate_dose_met_fit_selection_criteria`. Per the
+  registered taxonomy this is a pre-outcome FIT-dose-selection stop, not a
+  G1/G2/G3 held-out fail and not a G0 harness/access failure: both cells
+  cleared every other `g0_eligibility_and_instrument_validity` check
+  (`held_out_power` true with confab/known-correct held-out counts
+  1332/360 for 4B and 1384/428 for 9B, both above the 150/250 floor;
+  `gate_auc_on_fit` 0.9960 (4B) / 0.9992 (9B), both >= 0.90;
+  `directions_reproducible` true; `generation_terminates` 0.995 (4B) / 0.987
+  (9B), both >= 0.90; `batched_parity_smoke` passed with zero mismatches on 8
+  rows) and failed only `dose_viable_on_fit`. No held-out outcome was scored
+  on either cell. No gate is reinterpreted and no threshold changed; this
+  entry commits to version control, unchanged, the null already characterized
+  in the 2026-07-09 and 2026-07-10 entries below.
+
+  Registered candidate doses tried (per-cell recalibrated grid, `cell.yaml`
+  `dose_selection.per_cell_candidate_realized_projection_targets`): 4B
+  `{10, 20, 30, 40, 50, 60, 75}`, 9B `{60, 80, 100, 120, 140}`. Selection rule
+  (`gates.yaml` `dose_viable_on_fit` / `cell.yaml` `snap.dose_selection.rule`):
+  lowest dose with FIT gated `confab_tighten >= 0.60` AND FIT
+  `known_correct_cost_control <= 0.10`. From the committed `dose_fit.json`
+  reports: 4B `confab_tighten` rate by dose is 2.8% (10), 9.0% (20), 17.2%
+  (30), 32.6% (40, the peak), 10.8% (50), 0.0% (60), 0.0% (75), with
+  `known_correct_cost_control` at or below 3.3% throughout -- the cost-control
+  criterion is met at every dose but `confab_tighten` never reaches the 0.60
+  floor. 9B `confab_tighten` rate rises monotonically 0.43% (60), 0.98% (80),
+  1.95% (100), 3.47% (120), 5.75% (140), with `known_correct_cost_control`
+  2.10-2.45% throughout -- again cost control is fine but tighten never
+  approaches 0.60. `selected_dose: null` on both. Both cells are recorded as
+  G0 dose-viability fails and are ineligible-before-held-out for the panel
+  denominator.
+
+  Note for resolve time: the `qwen35-4b-midband-doubt-snap` ladder currently
+  running locally in the separate worktree
+  `/home/profsynapse/code/ehr-worktrees/qwen35-midband/`
+  (`experiments/qwen35-4b-midband-doubt-snap/run_dose_ladder.py full`,
+  decided in session-0044 checkpoint `e45f19a5` "Qwen3.5 decomposition verdict
+  + 4B-local mid-band decision") is an exploratory follow-up outside this
+  confirmatory surface's registered instrument. Its results are never pooled
+  with this amendment's G0/G1/G2/G3 outcomes or with the cross-family headline
+  gate in `gates.yaml`.
+
 - 2026-07-10 (anchor audit): Read-only audit of anchor placement on both
   Qwen3.5 cells, the last unchecked harness surface behind the no-window
   nulls. Verdict: CONFIRMS, no confound. (1) Structural: under
