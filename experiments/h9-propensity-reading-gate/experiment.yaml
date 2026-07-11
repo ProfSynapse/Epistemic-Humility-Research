@@ -11,7 +11,7 @@ question: >-
 prediction: >-
   orchestrator: H9-G1 PASS (~55%) with the held-out propensity AUROC landing in
   the low-to-mid 0.6s near the 0.62 pass line; H9-G2 caution floor PASS (~90%);
-  H9-G0 evaluability met (~85%). User prediction left empty for signing.
+  H9-G0 evaluability met (~85%). User prediction: H9-G1 INCONCLUSIVE band (recorded 2026-07-10).
 falsifier: >-
   Held-out propensity AUROC <= 0.55, OR the upper bound of its 1,000-resample
   row-bootstrap 95% CI < 0.60, means the reading does not generalize off the fit

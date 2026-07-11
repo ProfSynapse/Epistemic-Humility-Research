@@ -307,7 +307,7 @@ alongside the headline AUROC, not pooled into it.
 | Predictor | Call |
 |-----------|------|
 | orchestrator | H9-G1 PASS (~55%); H9-G2 floor PASS (~90%); H9-G0 met (~85%) |
-| user | (empty; filled by the user at signing) |
+| user | H9-G1 INCONCLUSIVE band (recorded 2026-07-10 at sign-off approval) |
 
 Orchestrator basis: the in-cell OOF 0.6802 is a real but modest separation, and
 held-out numbers on a disjoint draw usually degrade rather than improve, so the
