@@ -93,6 +93,7 @@ instrument:
   configs: [cell.yaml, gates.yaml]       # instrument files pinned at signing
   modules: []                    # optional grader/render modules, pinned too
   pins: {}                       # relpath -> sha256, filled by `exp sign`
+  repins: []                     # append-only audit trail, filled by `exp repin`
 inputs: []                       # repo-relative paths this experiment consumes
 pr: <int>                        # optional, the PR that carries this experiment
 verdict: <one sentence>          # filled at resolve
@@ -124,6 +125,32 @@ historical  # imported legacy record; not a launchable lifecycle state
 4. **resolved / null-result / falsified** (`exp resolve`): stamp the one-sentence
    `verdict` and the terminal status. `exp resolve` prints a kg-ingest checklist;
    ingest the result as typed KG nodes and record their ids in `kg:`.
+
+### Instrument repair (repin)
+
+`exp repin <slug> <relpath> [<relpath>...] --reason "..."` is the one sanctioned
+way to change a pinned instrument file after signing. It is legitimate ONLY for a
+build-environment or harness-crash repair on a `signed` experiment BEFORE any run
+artifact exists: for example, a dependency conflict discovered when the Modal
+image first builds, or a harness bug that stops the cell from launching at all. It
+is never a way to change the design, and never legitimate once results exist: a
+repin after resolution is goalpost movement.
+
+`repin` re-hashes the named file(s), updates `instrument.pins`, and appends an
+audit entry per file (`file`, `old_sha256`, `new_sha256`, `date`, `reason`) to the
+append-only `instrument.repins` list. The reason lands in that audit trail, so the
+repair is on the record. It hard-refuses everything that would be dishonest: a
+draft (nothing is pinned yet; edit freely and sign), a resolved/terminal
+experiment (results exist), a file that is not already pinned, a file whose bytes
+have not actually changed (a no-op repin), and any repin attempted while an
+UNRELATED pinned file has drifted (fix the intended file only and investigate the
+rest). `exp validate` accepts the `repins` field and additionally checks that the
+last repin entry per file agrees with the live pin, while still failing on any
+pin drift exactly as before.
+
+```bash
+bin/exp repin <slug> cell.yaml --reason "Modal image dependency conflict fix (pre-launch)"
+```
 
 ## Generated indices
 
@@ -162,6 +189,7 @@ executes the mirror under `.agents/skills/experiments/scripts/exp.py`.
 | `bin/exp new --title "<title>" --type <t>` | scaffold `experiments/<slug>/` from a title (manifest, AMENDMENT.md, NOTEBOOK.md, cell.yaml, gates.yaml, .gitignore); refuses an existing slug |
 | `bin/exp new <slug> --title "<title>" --type <t>` | same scaffold with an explicit slug |
 | `bin/exp sign <slug>` | pin instrument configs/modules, flip draft->signed; refuses if prediction/falsifier empty |
+| `bin/exp repin <slug> <relpath>... --reason "..."` | re-hash pinned instrument file(s) on a signed, pre-run experiment and append an audit entry; refuses no-op, unrelated drift, unpinned files, draft, and resolved |
 | `bin/exp list [--status S] [--type T]` | table of slug/type/status/question |
 | `bin/exp show <slug>` | pretty-print the manifest and resolved instrument paths |
 | `bin/exp resolve <slug> --verdict "..." [--status null-result\|falsified]` | stamp verdict, flip to a terminal status, print the kg-ingest checklist |
