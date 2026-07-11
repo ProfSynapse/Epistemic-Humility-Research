@@ -169,3 +169,35 @@ in `experiment.yaml`.
   Estimated cumulative spend after three attempts: roughly 1.0-1.5 A10G-hours
   (~$1.5), inside the $15 cap. No evidence consumed: no scored artifact
   exists yet; the gates remain unadjudicated.
+
+- 2026-07-11 (500-row result + registered G0 remedy executed): attempt 4 ran
+  clean end to end and the signed scorer adjudicated the 500-row draw:
+  H9-G0 NOT MET (4 confabulations vs the >=20 floor; 399 honest unanswerable
+  refusals vs ~35 confabs expected from fit-surface rates), so H9-G1 is
+  INCONCLUSIVE-BY-POWER and was correctly left unread (auroc null). H9-G2
+  caution control PASSED at 0.9734 (floor 0.90), so the extraction + frozen
+  scorer + grading pipeline is demonstrably healthy and the low confab count
+  is real model behavior, not plumbing. Registered near-dup sensitivity: 0
+  flagged, no verdict flip. Spot-checks: the 4 confabs are genuine confident
+  fabrications ("London", "7:00 PM", "5", "3" at ~0.71-0.82 stated
+  confidence); refusals are genuine refusals; 67/97 answerable rows answered
+  (30 refused: the checkpoint over-refuses knowns on this pool too). Report
+  committed at analysis-committed/holdout_run/gate_report.json (500-row
+  record, preserved). Prediction scoreboard note: the orchestrator's G0-met
+  call (~85%) was WRONG; the PI's inconclusive call is currently ahead.
+  REMEDY: the user approved executing the ONE pre-registered enlargement
+  (+250, RNG-stream continuation, same proportions) despite the expected
+  futility at the observed ~1% confab rate (expected +2-3 confabs), for
+  protocol fidelity. draw_holdout --enlarge implemented (replay of the 500
+  hard-asserted line-identical to the committed manifest before continuing
+  the stream; +250 allocated largest-remainder with ties by sorted source
+  name: 113/69/20/17/12/11/8). Enlarged manifest committed at
+  analysis-committed/holdout_draw_enlarged/holdout_ids.jsonl (750 rows; first
+  500 are the original manifest verbatim). Near-dup sweep re-run over the
+  enlarged draw: 0 flagged (max overlap 0.75 vs 0.90 threshold). Enlarged
+  pool built (750 rows, 145 known / 605 unknown, all qhash verified) and
+  staged as holdout_pool_enlarged.jsonl. cell.yaml pointers moved to the
+  enlarged surfaces (originals preserved; the read-once G1 adjudication lands
+  in gate_report_enlarged.json). Repin 4 covers draw_holdout.py, cell.yaml,
+  cloud/modal_h9_holdout.py. Relaunch reuses run_tag h9-holdout-r1 so the
+  volume-restore resume computes only the 250 new rows.

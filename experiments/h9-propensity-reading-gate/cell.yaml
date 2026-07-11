@@ -34,7 +34,13 @@ holdout:
     triviaqa: 24
     popqa: 23
     kuq_ku_known: 15
-  id_manifest_out: analysis-committed/holdout_draw/holdout_ids.jsonl   # row_key + source + gold label + qhash ONLY
+  # id_manifest_out is the LIVE draw surface downstream consumers read. The
+  # original 500-row draw failed H9-G0 (4 confabs / 399 honest refusals; see
+  # analysis-committed/holdout_run/gate_report.json), so the ONE registered
+  # enlargement remedy was executed 2026-07-11 with user approval and this
+  # pointer now names the enlarged 750-row manifest. The original manifest is
+  # preserved untouched at enlargement.original_manifest.
+  id_manifest_out: analysis-committed/holdout_draw_enlarged/holdout_ids.jsonl   # row_key + source + gold label + qhash ONLY
   # Per-row binding (C3): draw_holdout writes qhash = sha256(row_key \x00 question_text)
   # into the committed manifest (hash committed, text NOT). build_holdout_pool and
   # the Modal join re-verify each row's qhash, catching a right-key/wrong-text pool.
@@ -44,6 +50,11 @@ holdout:
     rng_rule: continue_same_stream # the same default_rng(seed) continues past the first 500
     reads_g1: once_on_enlarged     # G1 read exactly once on the enlarged draw; no re-draws
     max_enlargements: 1
+    # +250 allocation across sources: largest-remainder on the original
+    # proportions, ties broken by sorted source name (draw_holdout --enlarge;
+    # recorded in the enlarged draw_manifest.json).
+    original_manifest: analysis-committed/holdout_draw/holdout_ids.jsonl
+    enlarged_manifest_out: analysis-committed/holdout_draw_enlarged/holdout_ids.jsonl
 
 # --- Modal GPU lane (cloud/modal_h9_holdout.py) ------------------------------
 gpu:
@@ -75,7 +86,10 @@ pool_builder:
 scoring:
   holdout_extract_dir: analysis/holdout_run/extract/data     # gitignored (pulled from Volume)
   holdout_graded: analysis/holdout_run/gen/rows_graded.jsonl # gitignored
-  gate_report_out: analysis-committed/holdout_run/gate_report.json  # aggregates only, no text
+  # gate_report.json is the 500-row pre-enlargement record (H9-G0 unmet, G1
+  # unread); the read-once G1 adjudication on the enlarged draw lands in its
+  # own file so the pre-enlargement record is never overwritten.
+  gate_report_out: analysis-committed/holdout_run/gate_report_enlarged.json  # aggregates only, no text
 
 # --- registered sensitivity: near-dup sweep (near_dup_sweep.py; C2) ----------
 # Committed producer of the near_dup_flagged.json sidecar. Token-overlap (Jaccard
@@ -87,4 +101,7 @@ sensitivity:
   near_dup_threshold: 0.90          # held-out KUQ rows with max overlap >= this are flagged
   kuq_sources: [kuq_ku_unknown, kuq_ku_unknown_x]
   fit_surface_graded: experiment/phase1/probe/analysis/amendment_al_prep/true_a0/gen/data/rows_graded.jsonl
-  flagged_out: analysis-committed/holdout_draw/near_dup_flagged.json   # row_keys ONLY, no text
+  # Re-swept over the enlarged draw (the sweep covers ALL held-out KUQ rows in
+  # the live manifest); the original 500-draw sidecar is preserved at
+  # analysis-committed/holdout_draw/near_dup_flagged.json.
+  flagged_out: analysis-committed/holdout_draw_enlarged/near_dup_flagged.json   # row_keys ONLY, no text

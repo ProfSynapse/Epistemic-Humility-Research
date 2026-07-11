@@ -16,11 +16,24 @@ AMENDMENT.md section 4 and the experiment .gitignore.
 Usage:
   python draw_holdout.py --cell cell.yaml \
     [--data-root /home/profsynapse/code/Epistemic-Humility-Research] [--smoke]
+    [--enlarge]
 
 --smoke writes to the gitignored analysis/ tree and stamps tier=smoke (dry-run;
 the registered draw into analysis-committed/ happens post-sign). The source
 JSONLs are gitignored and live only in the canonical checkout; --data-root points
 there.
+
+--enlarge executes the ONE pre-registered H9-G0 remedy (cell.yaml
+holdout.enlargement; AMENDMENT.md section 5): it replays the original 500-row
+draw with the same seed and code path, HARD-ASSERTS the replay is line-identical
+to the committed original manifest, then CONTINUES the same RNG stream to draw
++increment_rows more, allocated across sources by the original per-source
+proportions (largest-remainder rounding; ties broken by sorted source name),
+each drawn without replacement from the not-yet-drawn complement. The enlarged
+manifest (original rows first, in their exact committed order, then the new
+rows) is written to holdout.enlargement.enlarged_manifest_out. Read-once and
+max-1 discipline live in the amendment and cell.yaml; this flag only makes the
+deterministic draw mechanical.
 """
 from __future__ import annotations
 
@@ -46,7 +59,22 @@ def _sha256(path: Path) -> str:
     return h.hexdigest()
 
 
-def draw(cell: dict, data_root: Path, exp_dir: Path, smoke: bool) -> dict:
+def _enlargement_quotas(targets: dict, increment: int, draw_size: int) -> dict:
+    """Allocate the +increment across sources by the original proportions,
+    largest-remainder rounding, ties broken by sorted source name."""
+    exact = {s: targets[s] * increment / draw_size for s in targets}
+    quotas = {s: int(exact[s]) for s in targets}
+    short = increment - sum(quotas.values())
+    # largest remainder first; ties by sorted source name (deterministic)
+    order = sorted(targets, key=lambda s: (-(exact[s] - quotas[s]), s))
+    for s in order[:short]:
+        quotas[s] += 1
+    assert sum(quotas.values()) == increment
+    return quotas
+
+
+def draw(cell: dict, data_root: Path, exp_dir: Path, smoke: bool,
+         enlarge: bool = False) -> dict:
     import numpy as np
 
     ho = cell["holdout"]
@@ -106,9 +134,59 @@ def draw(cell: dict, data_root: Path, exp_dir: Path, smoke: bool) -> dict:
                           "qhash": qhash})
         per_source_drawn[source] = n_target
 
+    enlargement_meta = None
+    if enlarge:
+        enl = ho["enlargement"]
+        assert enl.get("max_enlargements", 1) == 1
+        increment = int(enl["increment_rows"])
+        # 1. replay check: the 500 rows drawn above must be LINE-IDENTICAL to
+        #    the committed original manifest (same seed, same code path).
+        orig_manifest = exp_dir / enl["original_manifest"]
+        committed_lines = [l for l in orig_manifest.read_text().splitlines()
+                           if l.strip()]
+        replay_lines = [json.dumps(r, sort_keys=True) for r in drawn]
+        assert len(committed_lines) == len(replay_lines) == ho["draw_size"], \
+            f"replay {len(replay_lines)} vs committed {len(committed_lines)}"
+        for i, (a, b) in enumerate(zip(committed_lines, replay_lines)):
+            assert a == b, f"replay diverges from committed manifest at line {i}"
+        # 2. continue the SAME rng stream: draw +increment from the remaining
+        #    complement, per-source largest-remainder quotas, sorted-source
+        #    order (same N3 discipline as the first pass).
+        already = {r["row_key"] for r in drawn}
+        quotas = _enlargement_quotas(targets, increment, ho["draw_size"])
+        per_source_enlarged: dict[str, int] = {}
+        for source in sorted(quotas):
+            n_more = quotas[source]
+            remaining = [k for k in by_source.get(source, [])
+                         if k not in already]
+            assert len(remaining) >= n_more, \
+                f"source {source}: enlargement {n_more} > remaining {len(remaining)}"
+            pick_idx = rng.choice(len(remaining), size=n_more, replace=False)
+            for i in sorted(pick_idx):
+                rk = remaining[i]
+                qhash = hashlib.sha256(
+                    (rk + "\x00" + complement[rk]["question"]).encode("utf-8")
+                ).hexdigest()
+                drawn.append({"row_key": rk, "source": source,
+                              "gold_label": LABEL_TO_GOLD[complement[rk]["label"]],
+                              "qhash": qhash})
+            per_source_enlarged[source] = n_more
+        assert len(drawn) == len({r["row_key"] for r in drawn}), \
+            "enlarged draw contains duplicate row_keys"
+        enlargement_meta = {
+            "increment_rows": increment,
+            "rng_rule": enl["rng_rule"],
+            "rounding": "largest_remainder_ties_by_sorted_source",
+            "per_source_enlarged": per_source_enlarged,
+            "replayed_original_matches_committed": True,
+            "original_manifest": str(orig_manifest),
+        }
+
     # ---- outputs ----
     if smoke:
         out_dir = exp_dir / "analysis" / "holdout_draw_smoke"
+    elif enlarge:
+        out_dir = exp_dir / Path(ho["enlargement"]["enlarged_manifest_out"]).parent
     else:
         out_dir = exp_dir / Path(ho["id_manifest_out"]).parent
     out_dir.mkdir(parents=True, exist_ok=True)
@@ -119,7 +197,9 @@ def draw(cell: dict, data_root: Path, exp_dir: Path, smoke: bool) -> dict:
 
     complement_by_source = {s: len(ks) for s, ks in sorted(by_source.items())}
     manifest = {
-        "tier": "smoke" if smoke else "registered",
+        "tier": "smoke" if smoke else (
+            "registered-enlarged" if enlarge else "registered"),
+        "enlargement": enlargement_meta,
         "seed": seed,
         "draw_size": len(drawn),
         "targets": targets,
@@ -153,10 +233,14 @@ def main() -> int:
     ap.add_argument("--data-root",
                     default="/home/profsynapse/code/Epistemic-Humility-Research")
     ap.add_argument("--smoke", action="store_true")
+    ap.add_argument("--enlarge", action="store_true",
+                    help="execute the ONE registered H9-G0 enlargement remedy")
     args = ap.parse_args()
+    assert not (args.smoke and args.enlarge), "--smoke and --enlarge conflict"
     exp_dir = Path(args.cell).resolve().parent
     cell = yaml.safe_load(Path(args.cell).read_text())
-    manifest = draw(cell, Path(args.data_root), exp_dir, args.smoke)
+    manifest = draw(cell, Path(args.data_root), exp_dir, args.smoke,
+                    enlarge=args.enlarge)
     print(json.dumps(manifest, indent=2))
     return 0
 

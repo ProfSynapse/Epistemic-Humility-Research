@@ -1266,9 +1266,9 @@
         ],
         "pins": {
           "build_holdout_pool.py": "043c3e39ebe24be5764bea9ee2affb98f554c187d8b92b616948a39c74e37283",
-          "cell.yaml": "5c2cd9633aa43a351253d2f0beb70bd79a8781ab4a2ea21794df2a506b6bf772",
-          "cloud/modal_h9_holdout.py": "844f4c7bfbb6dab7ddfedf72a63232251015d94595f158b20917bd19c5cc50d6",
-          "draw_holdout.py": "719e5402cbd470533527b0e9478ff8bbc745b8d37b7c87d36e56ef4d381f84cc",
+          "cell.yaml": "fa5a1a2cb3919616f9887a0f6064415c8950903e4044b29e219ec698493184f3",
+          "cloud/modal_h9_holdout.py": "f292348dd392396dc69c7c32d4a188af73cbebf1d915e19640e51342716209af",
+          "draw_holdout.py": "a418d10fcc078c215f5a45ef701292e71345c65ffc85e51e8c1aac3975cc2a8d",
           "freeze_scorer.py": "1b64ddd5d24477aa779db58f181e3f50e24c1258bd7df18c731896fcf2d7da8d",
           "gates.yaml": "7487b8737f317e5d9ae8ccf3111bee618b4c72bf5dce6dc84bb74c59b3d3f64f",
           "near_dup_sweep.py": "7390c902334ed3f709f385a89f02f754294a10f41be8cd0617bfbbfef0d9faea",
@@ -1288,6 +1288,27 @@
             "new_sha256": "844f4c7bfbb6dab7ddfedf72a63232251015d94595f158b20917bd19c5cc50d6",
             "old_sha256": "aded92aed1425e932dd3d258082604e2304e156dc6d2fec51910e912f96acd60",
             "reason": "Post-generate join repair: harness step 4b read gen/rows_graded.jsonl but the generate stage writes gen/rows.jsonl, crashing the first complete run AFTER both GPU stages finished; and checkpoints only mirrored top-level files, so the finished extraction+generation trees were lost. Fixed the filename, made checkpoint_once mirror the stage trees during the run, and restore them from the volume at container start so Modal retries resume (entry script's own config_sha-guarded resume skips completed rows). Join and mirror logic unit-tested locally. No scorer, pool, draw, prompt, or gate change."
+          },
+          {
+            "date": "2026-07-11T09:58:53Z",
+            "file": "draw_holdout.py",
+            "new_sha256": "a418d10fcc078c215f5a45ef701292e71345c65ffc85e51e8c1aac3975cc2a8d",
+            "old_sha256": "719e5402cbd470533527b0e9478ff8bbc745b8d37b7c87d36e56ef4d381f84cc",
+            "reason": "Registered H9-G0 enlargement remedy EXECUTED (user-approved 2026-07-11) after the 500-row draw yielded 4 confabs vs the >=20 floor: draw_holdout gains the --enlarge mode implementing the pre-registered rule (replay the 500 draw, hard-assert line-identical to the committed manifest, continue the same RNG stream, +250 largest-remainder per-source, sorted-source order); cell.yaml pointers move to the enlarged 750-row draw surface with originals preserved and the read-once G1 report routed to gate_report_enlarged.json; Modal harness reads the enlarged manifest and enlarged staged pool. Enlarged draw executed: replay verified, 0 near-dups flagged (max overlap 0.75), pool 750 rows all qhash-verified. No scorer, gate-threshold, contrast, or prompt change."
+          },
+          {
+            "date": "2026-07-11T09:58:53Z",
+            "file": "cell.yaml",
+            "new_sha256": "fa5a1a2cb3919616f9887a0f6064415c8950903e4044b29e219ec698493184f3",
+            "old_sha256": "5c2cd9633aa43a351253d2f0beb70bd79a8781ab4a2ea21794df2a506b6bf772",
+            "reason": "Registered H9-G0 enlargement remedy EXECUTED (user-approved 2026-07-11) after the 500-row draw yielded 4 confabs vs the >=20 floor: draw_holdout gains the --enlarge mode implementing the pre-registered rule (replay the 500 draw, hard-assert line-identical to the committed manifest, continue the same RNG stream, +250 largest-remainder per-source, sorted-source order); cell.yaml pointers move to the enlarged 750-row draw surface with originals preserved and the read-once G1 report routed to gate_report_enlarged.json; Modal harness reads the enlarged manifest and enlarged staged pool. Enlarged draw executed: replay verified, 0 near-dups flagged (max overlap 0.75), pool 750 rows all qhash-verified. No scorer, gate-threshold, contrast, or prompt change."
+          },
+          {
+            "date": "2026-07-11T09:58:53Z",
+            "file": "cloud/modal_h9_holdout.py",
+            "new_sha256": "f292348dd392396dc69c7c32d4a188af73cbebf1d915e19640e51342716209af",
+            "old_sha256": "844f4c7bfbb6dab7ddfedf72a63232251015d94595f158b20917bd19c5cc50d6",
+            "reason": "Registered H9-G0 enlargement remedy EXECUTED (user-approved 2026-07-11) after the 500-row draw yielded 4 confabs vs the >=20 floor: draw_holdout gains the --enlarge mode implementing the pre-registered rule (replay the 500 draw, hard-assert line-identical to the committed manifest, continue the same RNG stream, +250 largest-remainder per-source, sorted-source order); cell.yaml pointers move to the enlarged 750-row draw surface with originals preserved and the read-once G1 report routed to gate_report_enlarged.json; Modal harness reads the enlarged manifest and enlarged staged pool. Enlarged draw executed: replay verified, 0 near-dups flagged (max overlap 0.75), pool 750 rows all qhash-verified. No scorer, gate-threshold, contrast, or prompt change."
           }
         ]
       },

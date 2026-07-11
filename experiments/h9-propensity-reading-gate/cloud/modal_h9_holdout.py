@@ -57,7 +57,7 @@ STAGING_MODEL_REPO = "professorsynapse/eh-h9-aitrue-staging"   # base + adapter
 STAGING_POOL_REPO = "professorsynapse/eh-h9-holdout-pool"      # held-out pool jsonl (text)
 BASE_SUBDIR = "base/merged-16bit"        # merged-16bit clean-SFT base
 ADAPTER_SUBDIR = "adapter/final_model"   # amendment_ai_grpo_true_seed1 LoRA
-POOL_IN_REPO = "holdout_pool.jsonl"      # question text keyed by committed row_keys
+POOL_IN_REPO = "holdout_pool_enlarged.jsonl"  # 750-row enlarged pool (G0 remedy)      # question text keyed by committed row_keys
 
 # Full 37-layer stack (AL-prep surface), so score_holdout's loader reads L24/L35
 # from the same safetensors layout AL produced.
@@ -67,7 +67,7 @@ LAYERS_FULL = ",".join(f"L{i}" for i in range(37))
 EXTRACT_GEN = "archive/experiment/phase1/probe/amendments/amendment_ai_verdict_extract_gen.py"
 # The committed held-out ID-manifest (row_key + source + gold label; no text).
 HOLDOUT_IDS = ("experiments/h9-propensity-reading-gate/"
-               "analysis-committed/holdout_draw/holdout_ids.jsonl")
+               "analysis-committed/holdout_draw_enlarged/holdout_ids.jsonl")
 
 HOURS = 60 * 60
 CKPT_INTERVAL_SEC = 120
