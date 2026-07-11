@@ -4,7 +4,7 @@ session_id: 20260708T164625Z-paper-5-j-space-hardening
 title: Paper 5 J-space hardening
 status: active
 created_at: '2026-07-08T16:46:25Z'
-updated_at: '2026-07-10T23:54:42Z'
+updated_at: '2026-07-11T00:31:59Z'
 track: research
 phase: phase1
 question: Which registered follow-up experiments harden the Paper 5 actuation thesis,
@@ -424,6 +424,36 @@ checkpoints:
   decisions: []
   next_steps: []
   signals: {}
+- id: 018-checkpoint
+  at: '2026-07-11T00:31:59Z'
+  kind: checkpoint
+  title: Checkpoint
+  summary: 'Editorial + hardening batch progress. Paper 3 anatomy pass verified+merged
+    (c2e977b2: doubt=answerability-gate identity, caution trained-only caveat as finding,
+    propensity one-line pointer, A3 move-out, self-containment). Paper 2 voice pass
+    verified+merged plus 3 lead adjudications (b781f937: abstract KTO seed count corrected
+    to two analyzed seeds per amendment_a_selfaware_summary.csv, grammar, ranking-signal
+    scoping). Steering-cell salvage merged (PR #271: smoke-first+SHA-pin discipline,
+    gate-primitive logic, PEFT/layer-offby-one/ULP gotchas into mechinterp-cells);
+    Y-thinking draft archived (5da6587d); both retired branches await explicit PI
+    deletion OK. H9 SIGN-OFF: PI prediction recorded = G1 INCONCLUSIVE band (f9e7c995);
+    PI approved sign + HF staging + Modal spend cap $15; h9-designer wiring scripts
+    + FID smoke (d_raw hard target adjudication confirmed; note designer correctly
+    identified AL=radial-anti-propensity-steering, not selected-setpoint-regulator
+    which is AN). New backlog row TS: steering-under-thinking cell (does gated caution
+    write change the CoT; reuses archived cot_confidence rubric; after H3/H4). PI
+    directive: draft H3/H4/H6/TS with placeholders NOW; two designer agents dispatched
+    (a: H3 exp/h3-snap-seed-decode-replication + H4 exp/h4-ungated-dose-matched; b:
+    H6 exp/h6-genstream-hook-check + TS exp/ts-steering-under-thinking). Ladder: hs20
+    gated dose_20 320/882, ~3.8s/row, GPU 26%/9GB/60C, no crashes, ETA ~2 days. Next:
+    verify 4 drafts, red-team H9 instrument post-wiring, sign, stage checkpoint, Modal
+    launch.'
+  evidence: []
+  run_ids: []
+  commands: []
+  decisions: []
+  next_steps: []
+  signals: {}
 ---
 # Paper 5 J-space hardening
 
@@ -732,3 +762,8 @@ rows before the layer contrast.
 - at: `2026-07-10T23:54:42Z`
 - kind: `checkpoint`
 - summary: H9 feasibility adjudicated: NOT computable from cache (AL fit on full 1,662-row surface, no held-out split; in-cell OOF 0.6802 recorded as gate-setting prior); memo committed e1ec09bb, H9 backlog row now CPU+GPU, scout dispatched on held-out candidate-list recoverability (union 18,496 minus fit 1,662). Answered PI question on doubt+propensity combination: parallel mirrors (AC doubt, AO propensity, AN selector) plus ONE additive two-sensor controller g_i=-a_d*z_d+a_p*z_p in draft exp two-signal-caution-regulation-instruct, killed at calibration, collapsed to doubt-only gate in tighten; no serial confab-through-doubt routing exists. Worktree/branch audit run: two-signal AMENDMENT.md+experiment.yaml were UNTRACKED disk-only, now committed+pushed on their branch (was never pushed); Amendment Y-thinking draft stranded on amendment-y-thinking-readout branch (absent from main, never migrated); AK worktree holds uncommitted ak_stage2 G3 report + row-level pull data; steering-cell skill branch never merged (mechinterp-cells likely supersedes); old amendment branches (AE/AG/AH/AB/AC/R/Y-base) verified MIGRATED to experiments/ on main, stale; jspace replication/localization branches stale (main ahead, resolved). Next: PI decision on stranded drafts + stale-branch cleanup sweep.
+### 018-checkpoint - Checkpoint
+
+- at: `2026-07-11T00:31:59Z`
+- kind: `checkpoint`
+- summary: Editorial + hardening batch progress. Paper 3 anatomy pass verified+merged (c2e977b2: doubt=answerability-gate identity, caution trained-only caveat as finding, propensity one-line pointer, A3 move-out, self-containment). Paper 2 voice pass verified+merged plus 3 lead adjudications (b781f937: abstract KTO seed count corrected to two analyzed seeds per amendment_a_selfaware_summary.csv, grammar, ranking-signal scoping). Steering-cell salvage merged (PR #271: smoke-first+SHA-pin discipline, gate-primitive logic, PEFT/layer-offby-one/ULP gotchas into mechinterp-cells); Y-thinking draft archived (5da6587d); both retired branches await explicit PI deletion OK. H9 SIGN-OFF: PI prediction recorded = G1 INCONCLUSIVE band (f9e7c995); PI approved sign + HF staging + Modal spend cap $15; h9-designer wiring scripts + FID smoke (d_raw hard target adjudication confirmed; note designer correctly identified AL=radial-anti-propensity-steering, not selected-setpoint-regulator which is AN). New backlog row TS: steering-under-thinking cell (does gated caution write change the CoT; reuses archived cot_confidence rubric; after H3/H4). PI directive: draft H3/H4/H6/TS with placeholders NOW; two designer agents dispatched (a: H3 exp/h3-snap-seed-decode-replication + H4 exp/h4-ungated-dose-matched; b: H6 exp/h6-genstream-hook-check + TS exp/ts-steering-under-thinking). Ladder: hs20 gated dose_20 320/882, ~3.8s/row, GPU 26%/9GB/60C, no crashes, ETA ~2 days. Next: verify 4 drafts, red-team H9 instrument post-wiring, sign, stage checkpoint, Modal launch.
