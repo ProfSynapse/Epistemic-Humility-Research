@@ -4,7 +4,7 @@ session_id: 20260708T164625Z-paper-5-j-space-hardening
 title: Paper 5 J-space hardening
 status: active
 created_at: '2026-07-08T16:46:25Z'
-updated_at: '2026-07-11T10:20:27Z'
+updated_at: '2026-07-11T14:00:59Z'
 track: research
 phase: phase1
 question: Which registered follow-up experiments harden the Paper 5 actuation thesis,
@@ -511,6 +511,31 @@ checkpoints:
   decisions: []
   next_steps: []
   signals: {}
+- id: 025-checkpoint
+  at: '2026-07-11T14:00:59Z'
+  kind: checkpoint
+  title: Checkpoint
+  summary: 'BB resolved: base propensity read certified. Phase 1 ran clean on Modal
+    (3,447 s A10, ~$2; one aborted empty-HF-token launch caught inside a minute).
+    Pre-launch: full red-team (1 invalidating finding, missing degenerate/schema_valid
+    guard on the contrast cells in fit+score, fixed and regression-locked, smokes
+    14/14; FID-2 gates.yaml repin 3f23b51f->33fe08ad adjudicated intent-preserving),
+    two lead adjudications recorded pre-read (gradeable guard scope; G2 gradeable-only
+    primary). Results: G0 205 confabs/1,020 refusals on guarded 1,662-row base fit
+    surface; read-once gate on vendored 750: BB-P1-G1 PASS AUROC 0.8179, CI [0.7190,
+    0.9042]; G2 caution 0.9820; FID-1/2 pass; near-dup 0 flagged. First certified
+    propensity reading in the program, zero training. Resolved; PR #274 open; TODO
+    BB updated (half c, base actuation, remains). Gotcha: modal CLI 1.5.1 volume get
+    fails Errno 21 on directory trees; use Python SDK iterdir/read_file with skip-existing
+    resume. KG-ingest queued post-merge.'
+  evidence: []
+  run_ids: []
+  commands: []
+  decisions: []
+  next_steps:
+  - 'PR #273/#274 merges; ladder completion -> aggregates -> red-team; then H3/H4
+    lane; BB half c amendment after snap hardened'
+  signals: {}
 ---
 # Paper 5 J-space hardening
 
@@ -834,3 +859,10 @@ rows before the layer contrast.
 - at: `2026-07-11T10:20:27Z`
 - kind: `checkpoint`
 - summary: H9 RESOLVED: INCONCLUSIVE-BY-POWER, PR #273 open. The enlarged read-once adjudication on the 750-row draw: the +250 registered enlargement (RNG continuation, replay hard-asserted line-identical to the committed 500 manifest, largest-remainder allocation 113/69/20/17/12/11/8, 0 near-dups flagged) added ZERO confabulations - 4 total in 605 unanswerable rows, 601 honest refusals - so H9-G0 stays unmet and per the pre-registered remedy text no further enlargement is permitted; G1 never read. G2 caution control passed both reads (0.9734/0.9702): pipeline certified, confab scarcity is real behavior (AI-TRUE refuses 99.3 percent of held-out unanswerable rows vs ~91 expected from fit-surface rates, plus 30/97 knowns). Verdict + scoreboard adjudication in AMENDMENT.md section 10 (PI's INCONCLUSIVE call closest; orchestrator's G0-met call wrong). The repair-3 resume machinery made the enlarged pass cost 603 GPU-seconds. Total spend ~2 USD of 15. TODO H9 row closed with the follow-up note: any future propensity gate needs a surface where the checkpoint actually confabulates (weaker checkpoint or adversarial pool), not more rows from this one. Paper 5 consequence recorded: the read half of 'reads but does not actuate' keeps the in-cell OOF 0.6802 label; no registered held-out number exists. Local 3090 ladder meanwhile: hs20 complete, hs23 gated mid-run (interim: hs23 notably weaker than hs20 - 13/27/36 percent vs 21/46/59 at doses 2/4/6), hs26 pending, ~1 day to finish. Remaining follow-ups: KG-ingest of the H9 verdict (librarian, post-merge), PR #273 merge, H3/H4/H6/TS wiring.
+### 025-checkpoint - Checkpoint
+
+- at: `2026-07-11T14:00:59Z`
+- kind: `checkpoint`
+- summary: BB resolved: base propensity read certified. Phase 1 ran clean on Modal (3,447 s A10, ~$2; one aborted empty-HF-token launch caught inside a minute). Pre-launch: full red-team (1 invalidating finding, missing degenerate/schema_valid guard on the contrast cells in fit+score, fixed and regression-locked, smokes 14/14; FID-2 gates.yaml repin 3f23b51f->33fe08ad adjudicated intent-preserving), two lead adjudications recorded pre-read (gradeable guard scope; G2 gradeable-only primary). Results: G0 205 confabs/1,020 refusals on guarded 1,662-row base fit surface; read-once gate on vendored 750: BB-P1-G1 PASS AUROC 0.8179, CI [0.7190, 0.9042]; G2 caution 0.9820; FID-1/2 pass; near-dup 0 flagged. First certified propensity reading in the program, zero training. Resolved; PR #274 open; TODO BB updated (half c, base actuation, remains). Gotcha: modal CLI 1.5.1 volume get fails Errno 21 on directory trees; use Python SDK iterdir/read_file with skip-existing resume. KG-ingest queued post-merge.
+- next steps:
+  - PR #273/#274 merges; ladder completion -> aggregates -> red-team; then H3/H4 lane; BB half c amendment after snap hardened
