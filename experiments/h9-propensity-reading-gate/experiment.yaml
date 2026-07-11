@@ -38,7 +38,19 @@ instrument:
     build_holdout_pool.py: 043c3e39ebe24be5764bea9ee2affb98f554c187d8b92b616948a39c74e37283
     near_dup_sweep.py: 7390c902334ed3f709f385a89f02f754294a10f41be8cd0617bfbbfef0d9faea
     score_holdout.py: a832a3b1f2813ecdb1d5b485d3416cf503e1dcaf58daf73dda6345d596fe3ce6
-    cloud/modal_h9_holdout.py: a17a68cbc7c51a0de800177cc70e649c6495b8be48ad1c11ff3f88ab1a4f8b99
+    cloud/modal_h9_holdout.py: aded92aed1425e932dd3d258082604e2304e156dc6d2fec51910e912f96acd60
+  repins:
+  - file: cloud/modal_h9_holdout.py
+    old_sha256: a17a68cbc7c51a0de800177cc70e649c6495b8be48ad1c11ff3f88ab1a4f8b99
+    new_sha256: aded92aed1425e932dd3d258082604e2304e156dc6d2fec51910e912f96acd60
+    date: '2026-07-11T02:50:27Z'
+    reason: 'Container-lane import repair: fresh clone lacks the untracked legacy
+      probe tree, so the pinned extract entry crashed on ModuleNotFoundError (amendment_s_correctness_probe_extract)
+      before extraction. Harness now installs legacy-wrapper-tree at experiment/phase1/probe,
+      shims the renamed AC config (prompt.system byte-identical across rename d55b7d26),
+      sets PYTHONPATH, and adds a fail-fast import preflight before model download.
+      Rehearsed green in a clean pinned-commit checkout. No scorer, pool, draw, or
+      gate logic touched.'
 inputs:
 - archive/experiment/phase1/probe/amendments/amendment_al_select_and_direction.py
 - archive/experiment/phase1/probe/amendments/amendment_ai_verdict_extract_gen.py

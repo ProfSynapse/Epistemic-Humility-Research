@@ -161,6 +161,53 @@ def run_h9_holdout(repo_commit: str) -> dict:
     sh(["nvidia-smi", "--query-gpu=name,memory.total", "--format=csv,noheader"],
        check=False)
 
+    # 1b. import environment for the archived extract/generate entry script.
+    #     A fresh clone lacks the untracked legacy tree the local checkout has:
+    #     (a) the flat module names (amendment_s_*, amendment_ah_*) resolve via
+    #         the compat wrappers in archive/.../legacy-wrapper-tree, which are
+    #         DESIGNED to be installed at experiment/phase1/probe/ (their repo
+    #         root is computed as parents[3] of their own path);
+    #     (b) the wrappers redirect into the experiments.common.readouts
+    #         package, which needs the workspace root on sys.path;
+    #     (c) load_baseline_system_prompt() resolves the AC config at its
+    #         pre-rename path under the archive root; the tracked file moved to
+    #         experiments/doubt-regulated-caution/ac_doubt_coupled_intervention.yaml
+    #         at rename d55b7d26 with prompt.system byte-identical, so shimming
+    #         the old path with the tracked file preserves the governed prompt.
+    legacy_probe = os.path.join(workspace, "experiment", "phase1", "probe")
+    if not os.path.isdir(legacy_probe):
+        os.makedirs(os.path.dirname(legacy_probe), exist_ok=True)
+        shutil.copytree(
+            os.path.join(workspace, "archive", "experiment", "phase1", "probe",
+                         "legacy-wrapper-tree"),
+            legacy_probe)
+    ac_shim = os.path.join(
+        workspace, "archive", "experiments", "doubt-regulated-caution",
+        "phase3_ac_doubt_coupled_intervention.yaml")
+    if not os.path.isfile(ac_shim):
+        os.makedirs(os.path.dirname(ac_shim), exist_ok=True)
+        shutil.copyfile(
+            os.path.join(workspace, "experiments", "doubt-regulated-caution",
+                         "ac_doubt_coupled_intervention.yaml"),
+            ac_shim)
+    os.environ["PYTHONPATH"] = f"{workspace}:{legacy_probe}"
+
+    # 1c. fail-fast preflight: prove the entry script's import chain and the
+    #     system-prompt resolver work BEFORE any model download, so an import
+    #     gap costs seconds instead of GPU minutes.
+    #     Import order mirrors the entry script: path_compat from the script's
+    #     own dir FIRST, so the flat name caches the amendments copy before the
+    #     readouts package can shadow it.
+    sh([sys.executable, "-c",
+        "import sys; sys.path.insert(0, "
+        f"{os.path.dirname(os.path.join(workspace, EXTRACT_GEN))!r}); "
+        "import path_compat; "
+        "from amendment_s_correctness_probe_extract import MODEL_TAG; "
+        "from amendment_ah_stage0_extract import load_baseline_system_prompt; "
+        "sp = load_baseline_system_prompt(); "
+        "assert sp.startswith('Answer the user'), 'unexpected system prompt'; "
+        "print('[modal-h9] preflight imports OK, model_tag=' + MODEL_TAG)"])
+
     from huggingface_hub import hf_hub_download, snapshot_download
 
     t0 = time.time()

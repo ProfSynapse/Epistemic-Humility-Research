@@ -113,3 +113,34 @@ in `experiment.yaml`.
   for one CLI re-sign and back; deviation authorized by the lead because no
   run had consumed the instrument (the failed image build spent no GPU and
   ran no container). Tooling gap filed in TODO.md (exp repin verb).
+
+- 2026-07-11 (instrument repair 2, container import environment, pre-data): two
+  launch attempts consumed no evidence. Attempt 1 (an undetached launch) never
+  executed GPU work: the local entrypoint spawned the function and exited,
+  which stopped the app and reaped the container before it started (operator
+  error; the harness is designed for a detached launch). Attempt 2 (detached)
+  cloned the repo, downloaded base+adapter+pool, passed the pool
+  manifest/qhash checks, then crashed at extraction start:
+  `ModuleNotFoundError: No module named 'amendment_s_correctness_probe_extract'`.
+  Root cause: the archived entry script's flat sibling imports only resolve in
+  the LOCAL checkout because an untracked legacy tree sits at
+  experiment/phase1/probe/; a fresh clone has no such tree. Two independent
+  breaks were found by rehearsing the pinned commit in a clean checkout:
+  (1) flat module names need the archive legacy-wrapper-tree installed at its
+  designed experiment/phase1/probe/ location plus PYTHONPATH containing the
+  workspace root and that directory; (2) load_baseline_system_prompt() resolves
+  the AC config at its pre-rename path phase3_ac_doubt_coupled_intervention.yaml,
+  renamed at d55b7d26 to
+  experiments/doubt-regulated-caution/ac_doubt_coupled_intervention.yaml with
+  prompt.system verified byte-identical, so the harness shims the old path with
+  the tracked file. The repaired harness performs both installs after clone and
+  adds a fail-fast import preflight (mirroring the entry script's import order,
+  including its path_compat-first caching) BEFORE any model download. The full
+  setup+preflight sequence was rehearsed green in a clean pinned-commit
+  checkout. No scorer, pool, draw, contrast, prompt, or gate logic changed; the
+  registered draw and committed manifests are untouched. Repinned via the new
+  `bin/exp repin` verb (its first production use): cloud/modal_h9_holdout.py
+  old a17a68cbc7c5..., new aded92aed142..., reason recorded in
+  instrument.repins; `exp validate` OK. GPU spend so far: attempt 2 burned
+  roughly 10-15 A10G-minutes (clone + HF downloads + crash), well inside the
+  $15 cap.

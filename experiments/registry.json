@@ -1267,13 +1267,22 @@
         "pins": {
           "build_holdout_pool.py": "043c3e39ebe24be5764bea9ee2affb98f554c187d8b92b616948a39c74e37283",
           "cell.yaml": "5c2cd9633aa43a351253d2f0beb70bd79a8781ab4a2ea21794df2a506b6bf772",
-          "cloud/modal_h9_holdout.py": "a17a68cbc7c51a0de800177cc70e649c6495b8be48ad1c11ff3f88ab1a4f8b99",
+          "cloud/modal_h9_holdout.py": "aded92aed1425e932dd3d258082604e2304e156dc6d2fec51910e912f96acd60",
           "draw_holdout.py": "719e5402cbd470533527b0e9478ff8bbc745b8d37b7c87d36e56ef4d381f84cc",
           "freeze_scorer.py": "1b64ddd5d24477aa779db58f181e3f50e24c1258bd7df18c731896fcf2d7da8d",
           "gates.yaml": "7487b8737f317e5d9ae8ccf3111bee618b4c72bf5dce6dc84bb74c59b3d3f64f",
           "near_dup_sweep.py": "7390c902334ed3f709f385a89f02f754294a10f41be8cd0617bfbbfef0d9faea",
           "score_holdout.py": "a832a3b1f2813ecdb1d5b485d3416cf503e1dcaf58daf73dda6345d596fe3ce6"
-        }
+        },
+        "repins": [
+          {
+            "date": "2026-07-11T02:50:27Z",
+            "file": "cloud/modal_h9_holdout.py",
+            "new_sha256": "aded92aed1425e932dd3d258082604e2304e156dc6d2fec51910e912f96acd60",
+            "old_sha256": "a17a68cbc7c51a0de800177cc70e649c6495b8be48ad1c11ff3f88ab1a4f8b99",
+            "reason": "Container-lane import repair: fresh clone lacks the untracked legacy probe tree, so the pinned extract entry crashed on ModuleNotFoundError (amendment_s_correctness_probe_extract) before extraction. Harness now installs legacy-wrapper-tree at experiment/phase1/probe, shims the renamed AC config (prompt.system byte-identical across rename d55b7d26), sets PYTHONPATH, and adds a fail-fast import preflight before model download. Rehearsed green in a clean pinned-commit checkout. No scorer, pool, draw, or gate logic touched."
+          }
+        ]
       },
       "kg": [],
       "prediction": "orchestrator: H9-G1 PASS (~55%) with the held-out propensity AUROC landing in the low-to-mid 0.6s near the 0.62 pass line; H9-G2 caution floor PASS (~90%); H9-G0 evaluability met (~85%). User prediction: H9-G1 INCONCLUSIVE band (recorded 2026-07-10).",
