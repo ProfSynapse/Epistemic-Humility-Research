@@ -116,4 +116,5 @@ verdict: 'INCONCLUSIVE-BY-POWER: H9-G0 unmet on both the 500-row draw (4 confabs
   both reads (0.9734, 0.9702), certifying the pipeline; the confab scarcity is real
   behavior (the AI-TRUE checkpoint refuses 99.3% of held-out unanswerable rows). Near-dup
   sensitivity 0 flagged, no flip.'
-kg: []
+kg:
+- paper:internal-h9-reading-gate-inconclusive-by-power

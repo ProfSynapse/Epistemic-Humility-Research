@@ -50,4 +50,6 @@ inputs:
 verdict: Base-model propensity direction certified at held-out AUROC 0.8179 (95% CI
   0.7190-0.9042), the program's first certified propensity reading, achieved with
   zero training; all gates pass (G0 205/1020, G2 0.9820).
-kg: []
+kg:
+- paper:internal-bb-base-propensity-fit-read
+- mechanism:base-confab-propensity-direction-reads-held-out-without-training

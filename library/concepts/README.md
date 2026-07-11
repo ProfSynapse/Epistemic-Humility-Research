@@ -690,7 +690,7 @@ Atomic notes extracted from the library papers via the Agents-K1 ingestion skill
 - [[valence-arousal-subspace]] : A two-dimensional linear subspace in LLM activation space spanned by a recovered valence axis (pleasure-displeasure) and arousal axis (activ
 - [[world-model-hallucination-modes]] : A three-type taxonomy of failure modes in generative world models, each anchored to a different pipeline stage. Perceptual hallucination occ
 
-## Mechanisms (cause -> effect) (399)
+## Mechanisms (cause -> effect) (400)
 
 - [[abstention-generalization-failure]] : 'instruction-tuning for abstention on a narrow, homogeneous set of refusal expressions and task formats' **prevents** Abstention ability does not generalize to 
 - [[abstract-representations-enable-zero-shot-generalization]] : High degree of abstract (parallel) representation in ANN hidden layers, as measured by parallelism-score, indicating that compositional rule dimensions are enco
@@ -716,6 +716,7 @@ Atomic notes extracted from the library papers via the Agents-K1 ingestion skill
 - [[auxiliary-head-regressing-true-class-probability-enables-failure-prediction]] : Training an auxiliary head to regress the classifier's true-class probability (TCP) on top of a frozen-then-finetuned encoder. **enables** The learned scalar ra
 - [[auxiliary-model-predicts-llm-confidence-from-generations-alone]] : Finetuning a separate small auxiliary model on the target LLM's input question and generated answer text alone (no logits, sequence likelihoods, or hidden state
 - [[backtracking-ablation-drops-calibration]] : Ablation that removes backtracking and alternative-exploration moves from the chain-of-thought, linearizing the reasoning trace **decreases** expected-calibrati
+- [[base-confab-propensity-direction-reads-held-out-without-training]] : Fitting the AL confabulation-propensity recipe (L24 PCA-128 randomized seed 20260705, standardize, L35-caution-residualize, mean-diff confab-vs-unanswerable-ref
 - [[base-model-entity-recognition-direction-transfers-to-chat-refusal]] : Steering the chat model with entity-recognition directions extracted from sparse autoencoders trained only on the base model. **enables** The chat model's refus
 - [[behavior-underdetermines-motivation]] : Observing a single concerning agentic action (a workaround, a deception, a sandbag) without further investigation of why it occurred. **mediates** The underlyin
 - [[benign-finetuning-suppresses-emergent-misalignment]] : Fine-tuning an emergent-misalignment|emergently misaligned model on approximately 120 benign samples (35 steps, batch size 4), whether drawn from an in-distribu

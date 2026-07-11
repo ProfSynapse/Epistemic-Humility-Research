@@ -365,7 +365,10 @@
           }
         ]
       },
-      "kg": [],
+      "kg": [
+        "paper:internal-bb-base-propensity-fit-read",
+        "mechanism:base-confab-propensity-direction-reads-held-out-without-training"
+      ],
       "prediction": "DRAFT, left for PI + orchestrator to fill at sign (scoreboard empty). Phase 0 hinges on whether the untrained base both confabulates AND honestly refuses under a schema prompt it was never SFT'd on; H9's mirror failure (the trained checkpoint starved the positive cell) means neither cell can be assumed.",
       "question": "On untrained base Qwen/Qwen3-4B, does the model confabulate and honestly refuse enough under the AL schema-contract prompt to power a propensity reading gate (phase 0), and if so does a base-fit confab-propensity direction (AL recipe, re-fit on base grades) separate confabulations from honest unanswerable refusals on a disjoint held-out draw the fit never saw (phase 1)?",
       "registered": false,
@@ -1358,7 +1361,9 @@
           }
         ]
       },
-      "kg": [],
+      "kg": [
+        "paper:internal-h9-reading-gate-inconclusive-by-power"
+      ],
       "prediction": "orchestrator: H9-G1 PASS (~55%) with the held-out propensity AUROC landing in the low-to-mid 0.6s near the 0.62 pass line; H9-G2 caution floor PASS (~90%); H9-G0 evaluability met (~85%). User prediction: H9-G1 INCONCLUSIVE band (recorded 2026-07-10).",
       "question": "Does the AL confabulation-propensity direction, frozen from its 1,662-row fit surface, still separate confabulations from honest unanswerable refusals on a disjoint held-out draw the fit never saw, on the AI-TRUE checkpoint?",
       "registered": true,
