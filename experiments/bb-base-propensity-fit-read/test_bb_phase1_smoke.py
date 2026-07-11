@@ -18,6 +18,7 @@ import os
 import shutil
 import subprocess
 import sys
+import tempfile
 from pathlib import Path
 
 import numpy as np
@@ -169,6 +170,95 @@ def test_near_dup_sweep_smoke_runs_and_matches_h9_population():
     assert report["n_flagged"] == 0
     assert report["max_overlap_observed"] == pytest.approx(0.75, abs=1e-6)
     assert report["n_held_kuq"] > 0 and report["n_fit_kuq"] > 0
+
+
+# --- F1 lock: gradeable guard excludes contaminated rows from BOTH cells,
+#     in BOTH the fit-surface guard and the read-surface guard -------------
+def test_f1_schema_invalid_answered_row_excluded_from_confab_both_paths():
+    """A row with gold_class=unanswerable, answered=True, schema_valid=False
+    must NOT enter the confab cell in EITHER the fit-surface guard
+    (freeze_scorer_base.build_gradeable_cells) or the read-surface guard
+    (score_bb_holdout.build_gradeable_cells), even though answered=True alone
+    would (absent the F1 guard) have qualified it."""
+    rows = [
+        {"row_key": "r0", "gold_class": "unanswerable", "answered": True,
+         "refused": False, "degenerate": False, "schema_valid": True},   # true confab
+        {"row_key": "r1", "gold_class": "unanswerable", "answered": True,
+         "refused": False, "degenerate": False, "schema_valid": False},  # contaminated
+        {"row_key": "r2", "gold_class": "unanswerable", "answered": False,
+         "refused": True, "degenerate": False, "schema_valid": True},    # true un_ref
+    ]
+    gradeable, confab_idx, un_ref_idx = fsb.build_gradeable_cells(rows)
+    assert list(confab_idx) == [0], "schema_valid=False row leaked into the fit confab cell"
+    assert list(un_ref_idx) == [2]
+    assert gradeable.tolist() == [True, False, True]
+
+    _, is_confab2, is_un_ref2 = sbh.build_gradeable_cells(rows)
+    assert is_confab2.tolist() == [True, False, False], \
+        "schema_valid=False row leaked into the read-surface confab cell"
+    assert is_un_ref2.tolist() == [False, False, True]
+
+
+def test_f1_degenerate_unanswerable_row_excluded_from_both_cells_both_paths():
+    """A degenerate=True unanswerable row must not enter EITHER cell (confab
+    or un_ref) in either the fit or read guard, whether it happens to have
+    answered=True or refused=True set."""
+    rows = [
+        {"row_key": "r0", "gold_class": "unanswerable", "answered": True,
+         "refused": False, "degenerate": False, "schema_valid": True},   # true confab
+        {"row_key": "r1", "gold_class": "unanswerable", "answered": True,
+         "refused": False, "degenerate": True, "schema_valid": True},    # degenerate, confab-shaped
+        {"row_key": "r2", "gold_class": "unanswerable", "answered": False,
+         "refused": True, "degenerate": False, "schema_valid": True},    # true un_ref
+        {"row_key": "r3", "gold_class": "unanswerable", "answered": False,
+         "refused": True, "degenerate": True, "schema_valid": True},     # degenerate, un_ref-shaped
+    ]
+    _, confab_idx, un_ref_idx = fsb.build_gradeable_cells(rows)
+    assert list(confab_idx) == [0], "degenerate row leaked into the fit confab cell"
+    assert list(un_ref_idx) == [2], "degenerate row leaked into the fit un_ref cell"
+
+    _, is_confab2, is_un_ref2 = sbh.build_gradeable_cells(rows)
+    assert is_confab2.tolist() == [True, False, False, False]
+    assert is_un_ref2.tolist() == [False, False, True, False]
+
+
+# --- F3 lock: mechanical body-parity check must catch a mutated fit-math
+#     function, not just pass on knobs alone -------------------------------
+def test_f3_body_parity_detects_mutated_fit_math_function():
+    """Mutating a copied fit-math function (`unit`) in a temp copy of
+    freeze_scorer_base.py must make check_h9_body_parity report pass=False --
+    the programmatic BB-FID-2 check is a mechanical function-body comparison,
+    not a knobs-only proxy that a silent logic mutation could slip past."""
+    src = (EXP_DIR / "freeze_scorer_base.py").read_text()
+    original = "    n = float(np.linalg.norm(v))\n    return v / n if n else v"
+    assert original in src, "unit() body text not found; source has drifted"
+    mutated = src.replace(
+        original, "    n = float(np.linalg.norm(v))\n    return v / n if n else v * 2.0")
+    assert mutated != src
+
+    tmp_dir = Path(tempfile.mkdtemp())
+    try:
+        mutated_path = tmp_dir / "freeze_scorer_base_mutated.py"
+        mutated_path.write_text(mutated)
+        report = fsb.check_h9_body_parity(mutated_path)
+        assert report["pass"] is False
+        assert report["helper_function_parity"]["unit"]["match"] is False
+        # unrelated helpers must still match -- the check isolates the
+        # mutated function rather than failing everything wholesale.
+        assert report["helper_function_parity"]["oof_caution"]["match"] is True
+        assert report["h9_file_pin_verified"] is True
+    finally:
+        shutil.rmtree(tmp_dir)
+
+
+def test_f3_body_parity_passes_on_unmutated_copy():
+    """Sanity converse of the mutation-detection test: the real, unmutated
+    freeze_scorer_base.py must report pass=True against H9's pin (this is
+    also exercised implicitly by test_freeze_scorer_fake_activation_fit_path's
+    fidelity_pass assertion, checked here directly and in isolation)."""
+    report = fsb.check_h9_body_parity((EXP_DIR / "freeze_scorer_base.py").resolve())
+    assert report["h9_file_pin_verified"] is True
+    assert report["pass"] is True, report
 
 
 # --- 4. import-preflight rehearsal against a clean scratch clone ------------

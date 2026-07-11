@@ -74,6 +74,21 @@ def load_stack(extract_data: Path, row_keys: list[str]) -> np.ndarray:
     return out
 
 
+def build_gradeable_cells(g: list[dict]) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
+    """F1 fix (red-team, pre-launch): shared gradeable guard for the read
+    surface. Verbatim mirror of freeze_scorer_base.py's build_gradeable_cells
+    (fit surface) -- see that docstring for the AMENDMENT.md section 4.1
+    rationale. Returns (gradeable, is_confab, is_un_ref)."""
+    gradeable = np.array([not (bool(r.get("degenerate"))
+                               or not bool(r.get("schema_valid", True)))
+                          for r in g])
+    is_confab = np.array([gradeable[i] and g[i]["gold_class"] == "unanswerable"
+                          and g[i]["answered"] for i in range(len(g))])
+    is_un_ref = np.array([gradeable[i] and g[i]["gold_class"] == "unanswerable"
+                          and g[i]["refused"] for i in range(len(g))])
+    return gradeable, is_confab, is_un_ref
+
+
 def load_frozen(frozen_dir: Path) -> dict:
     import joblib
 
@@ -135,7 +150,7 @@ def classify_reading(auroc: float, ci_lo: float, ci_hi: float, rg: dict) -> str:
     return "INCONCLUSIVE"
 
 
-def evaluate(prop_z, caution_z, is_confab, is_un_ref, is_refused,
+def evaluate(prop_z, caution_z, is_confab, is_un_ref, is_refused, gradeable,
              gates: dict, seed: int, tag: str) -> dict:
     rg = gates["reading_gate"]
     fe = gates["fit_evaluability"]
@@ -148,11 +163,25 @@ def evaluate(prop_z, caution_z, is_confab, is_un_ref, is_refused,
                        "min_confabs": fe["min_confabs"],
                        "min_un_refused": fe["min_unanswerable_refusals"]}
 
-    caution_auroc = float(roc_auc_score(is_refused.astype(int), caution_z)) \
-        if len(np.unique(is_refused)) > 1 else float("nan")
-    g2 = {"caution_auroc": caution_auroc,
+    def _caution_auroc(mask):
+        yy = is_refused[mask].astype(int)
+        return float(roc_auc_score(yy, caution_z[mask])) \
+            if len(np.unique(yy)) > 1 else float("nan")
+
+    # F1 rider (lead decision, 2026-07-11, red-team finding F1): BB-P1-G2's
+    # PRIMARY population is GRADEABLE rows only (degenerate/schema-invalid
+    # excluded), consistent with AMENDMENT.md section 4.1's cell semantics.
+    # The 0.80 floor gates on this population. All-750-rows is reported
+    # alongside as a non-gating sensitivity line, never pooled into the gate.
+    caution_auroc_gradeable = _caution_auroc(gradeable)
+    caution_auroc_all_rows = _caution_auroc(np.ones_like(gradeable, dtype=bool))
+    g2 = {"caution_auroc": caution_auroc_gradeable,
           "floor": gates["caution_control"]["floor_auroc_min"],
-          "pass": bool(caution_auroc >= gates["caution_control"]["floor_auroc_min"])}
+          "pass": bool(caution_auroc_gradeable >= gates["caution_control"]["floor_auroc_min"]),
+          "population": "gradeable_only (excludes degenerate or schema-invalid rows)",
+          "n_gradeable": int(gradeable.sum()), "n_total": int(len(gradeable)),
+          "sensitivity_all_750_rows_NONGATING": {
+              "caution_auroc": caution_auroc_all_rows, "n_rows": int(len(gradeable))}}
 
     # BB-P1-G1 reading contrast: confab (pos) vs unanswerable-refused (neg)
     sel = is_confab | is_un_ref
@@ -198,13 +227,12 @@ def score(cell: dict, gates: dict, exp_dir: Path, do_sensitivity: bool,
     prop_z, caution_z = score_rows(fz, X24, X35)
 
     g = [graded[rk] for rk in row_keys]
-    is_confab = np.array([r["gold_class"] == "unanswerable" and r["answered"] for r in g])
-    is_un_ref = np.array([r["gold_class"] == "unanswerable" and r["refused"] for r in g])
+    gradeable, is_confab, is_un_ref = build_gradeable_cells(g)
     is_refused = np.array([bool(r["refused"]) for r in g])
 
     seed = cell["seed"]
     headline = evaluate(prop_z, caution_z, is_confab, is_un_ref, is_refused,
-                        gates, seed, "headline")
+                        gradeable, gates, seed, "headline")
 
     # BB-P1-G0 (fit-surface evaluability, GATING; AMENDMENT.md section 6): must
     # be checked before BB-P1-G1 is adjudicated. Read from freeze_scorer_base's
@@ -233,8 +261,8 @@ def score(cell: dict, gates: dict, exp_dir: Path, do_sensitivity: bool,
         flagged = set(json.loads(flagged_path.read_text()))
         keep = np.array([rk not in flagged for rk in row_keys])
         recompute = evaluate(prop_z[keep], caution_z[keep], is_confab[keep],
-                             is_un_ref[keep], is_refused[keep], gates, seed,
-                             "near_dup_excluded")
+                             is_un_ref[keep], is_refused[keep], gradeable[keep],
+                             gates, seed, "near_dup_excluded")
         report["sensitivity_near_dup"] = {
             "n_flagged": int((~keep).sum()),
             "excluded_recompute": recompute,
@@ -256,8 +284,9 @@ def selftest(gates: dict) -> dict:
     is_refused = is_un_ref.copy()
     prop_z = rng.normal(0, 1, n) + is_confab * 0.7
     caution_z = rng.normal(0, 1, n) + is_refused * 3.0
+    gradeable = np.ones(n, dtype=bool)
     res = evaluate(prop_z, caution_z, is_confab, is_un_ref, is_refused,
-                   gates, seed=1, tag="selftest")
+                   gradeable, gates, seed=1, tag="selftest")
     assert res["BB-P1-G2"]["pass"] in (True, False)
     assert res["BB-P1-G1"]["verdict"] in (
         "PASS", "FAIL", "INCONCLUSIVE",

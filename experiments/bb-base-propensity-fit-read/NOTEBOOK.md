@@ -215,3 +215,40 @@ remain validated only on synthetic data pending the phase-1 GPU run.
   recorded in the fidelity report. No outcome gate (BB-P1-G0/G1/G2) was
   touched; this is a fidelity-check definition repair, not a goalpost move.
   Next: full red-team pass over the phase-1 harness, then launch.
+
+- 2026-07-11 (red-team verdict + lead adjudications, pre-launch): full
+  red-team pass over the phase-1 harness returned 1 invalidating finding,
+  4 non-blocking, and confirmed the BB-FID-2 repin preserves the fidelity
+  intent (outcome gates byte-identical to signed values; fit-math functions
+  verified verbatim-identical to H9's pinned scorer). Invalidating finding
+  F1: the CPU fit and score scripts built the confab / unanswerable-refused
+  cells without the degenerate/schema_valid guard that AMENDMENT section 4.1
+  and the phase-0 counter both apply, so schema-broken generations (up to 15
+  degenerate unanswerables vs only 32 confab positives on the read surface)
+  could contaminate the certified positive class. Remediation dispatched
+  before launch; the GPU stages are unaffected. Lead adjudications recorded
+  BEFORE the run: (1) the gradeable guard (not degenerate and schema_valid)
+  applies to both cells in both fit and score paths, including the BB-P1-G0
+  evaluability counts and the honest-prior OOF; (2) the BB-P1-G2 caution
+  control population is gradeable rows only, with an all-750-rows variant
+  reported in the same gate report as a non-gating sensitivity line; the
+  0.80 floor applies to the gradeable-only primary. These are pre-read
+  interpretations of the signed instrument, not post-hoc choices.
+
+- 2026-07-11 (remediation applied and verified, pre-launch): all four
+  red-team fixes landed. F1: shared gradeable guard (not degenerate AND
+  schema_valid) now gates both cells in both the fit path
+  (freeze_scorer_base.build_gradeable_cells) and the score path
+  (score_bb_holdout.build_gradeable_cells), including the BB-P1-G0 counts
+  and honest-prior OOF; G2 primary population is gradeable-only with the
+  all-rows variant reported non-gating. F2: dated correction note appended
+  to AMENDMENT section 5.4 referencing the gates.yaml repin; no signed prose
+  rewritten. F3: BB-FID-2 now machine-verifies normalized-source parity of
+  the copied fit-math function bodies against H9's pinned scorer, in
+  addition to the knob assertion; pass requires both. F4: post-join assert
+  in modal_bb_phase1.py fails loud if any of the 1,662 fit rows misses
+  gold_class. Smoke suite extended 10 -> 14 (schema-invalid answered row
+  excluded from confab in both paths; degenerate row excluded; mutated
+  fit-math body fails FID-2); 14/14 pass, re-run by the lead. Pinned files
+  untouched (verified via git status). Launch authorized by the user under
+  the standing BB cap; proceeding.

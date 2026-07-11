@@ -240,6 +240,24 @@ What CAN be pinned instead:
 - Recorded SHAs: base hub revision, fit-pool and read-pool qhashes, extraction
   manifest SHAs, frozen-scorer object SHAs.
 
+**Correction note, 2026-07-11 (pre-launch, red-team finding F2):** the
+BB-FID-2 wording above (byte-identical `freeze_scorer.py`, pinned sha256 equal
+to H9's proven scorer) is unachievable by construction: BB's scorer file
+necessarily differs from H9's in I/O (it reads BB's own base extraction and
+base grades, not AL's `al_run_dir`/`al_extract_dir`/`al_graded`) and in
+fidelity-reporting logic (no on-disk prior direction exists on base to
+cross-reference, as this section already states). `gates.yaml` was repinned
+pre-launch (sha256 `3f23b51f...` -> `33fe08ad...`, `bin/exp repin`, full
+reason in `experiment.yaml` repins) to redefine BB-FID-2 as: the fit-math
+functions (PCA / standardize / caution-residualize / mean-diff / z-scale) are
+verbatim-identical to H9's pinned `freeze_scorer.py`, checked both by a knob
+assertion against `cell.yaml` and by a normalized-source (comments/docstrings
+stripped) sha256 comparison of the copied function bodies, plus AL §3.2 knobs
+asserted from `cell.yaml`; both whole-file sha256 values are recorded in the
+fidelity report for the record. This preserves the fidelity INTENT (identical
+fit math) without claiming an impossible whole-file hash match. No outcome
+gate (BB-P1-G0/G1/G2) changed.
+
 ## 6. Gates (DRAFT; LOCK at signing; values flagged for lead adjudication)
 
 Phase-0 floors are in section 4.2 (they gate whether phase 1 runs). The phase-1

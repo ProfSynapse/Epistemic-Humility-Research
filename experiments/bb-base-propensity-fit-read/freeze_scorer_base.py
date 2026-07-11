@@ -21,15 +21,28 @@ H9's FID-1/FID-2 cross-reference checks. See the STOP-flagged note in
 build_and_verify() on gates.yaml's literal "freeze_scorer.py sha256 == H9
 pinned scorer" wording.
 
-FIDELITY GATE (gates.yaml `fidelity`), asserted here:
+FIDELITY GATE (gates.yaml `fidelity`, repinned 2026-07-11 pre-launch per
+red-team finding F2; see AMENDMENT.md section 5.4's correction note), asserted
+here:
   BB-FID-1 (determinism): refitting on the identical extraction with the same
     pca_seed twice reproduces d_raw at cosine >= 0.999999 and max|diff| <= 1e-5.
-  BB-FID-2 (recipe parity): the AL section-3.2 knobs (pca_seed=20260705,
-    pca_components=128, n_splits=5, fit_layers propensity=24/caution=35) match
-    cell.yaml exactly, AND the core fit-math functions in this file are a
-    verbatim copy of H9's freeze_scorer.py (function-level parity; see the
-    STOP note -- a whole-FILE sha256 match against H9's pin is not achievable
-    given this file's necessarily different I/O and fidelity-reporting code).
+  BB-FID-2 (recipe parity): TWO independent checks, both must pass:
+    (a) knob assertion: the AL section-3.2 knobs (pca_seed=20260705,
+        pca_components=128, n_splits=5, fit_layers propensity=24/caution=35)
+        match cell.yaml exactly.
+    (b) function-body parity (red-team finding F3): a normalized-source
+        (docstrings stripped, ast.unparse'd) sha256 comparison of the four
+        shared helper functions (`unit`, `load_stack`<->H9's `load_a0_stack`,
+        `oof_caution`, `oof_meandiff_proj`) AND a per-variable normalized-
+        expression sha256 comparison of the fit sequence in
+        `fit_frozen_scorer` against H9's `build_frozen_scorer`, against H9's
+        PINNED freeze_scorer.py (whole-file sha256 verified against the pin
+        before trusting its content). See `check_h9_body_parity` below. This
+        is a MECHANICAL check, not a knobs-only proxy: mutating any compared
+        fit-math step fails it (exercised in test_bb_phase1_smoke.py).
+  A whole-FILE sha256 match against H9's pin is not achievable (this file's
+  I/O and fidelity-reporting code necessarily differ from H9's); both (a) and
+  (b) together preserve the fidelity INTENT instead, per the gates.yaml repin.
 
 Usage:
   python freeze_scorer_base.py --cell cell.yaml --gates gates.yaml \
@@ -45,6 +58,7 @@ any GPU spend.
 from __future__ import annotations
 
 import argparse
+import ast
 import hashlib
 import json
 import sys
@@ -62,6 +76,162 @@ from sklearn.model_selection import KFold, StratifiedKFold
 from sklearn.preprocessing import StandardScaler
 
 N_LAYERS = 37
+
+# --- F3 (red-team, pre-launch): function-body parity against H9's pinned
+#     freeze_scorer.py. Read from the sibling worktree checked out on the
+#     h9-propensity-gate branch (not on this branch/worktree). ---------------
+H9_FREEZE_SCORER_PATH = Path(
+    "/home/profsynapse/code/ehr-worktrees/h9-propensity-gate/experiments/"
+    "h9-propensity-reading-gate/freeze_scorer.py")
+
+# BB's helper function name -> H9's counterpart name. Bodies are expected to
+# be byte-for-byte identical after stripping docstrings/comments; only
+# `load_stack`/`load_a0_stack` differ in NAME (BB renamed it; same body).
+_H9_FUNC_NAME_MAP = {
+    "unit": "unit",
+    "load_stack": "load_a0_stack",
+    "oof_caution": "oof_caution",
+    "oof_meandiff_proj": "oof_meandiff_proj",
+}
+
+# Shared fit-math variables computed identically by BB's fit_frozen_scorer and
+# H9's build_frozen_scorer (copied verbatim when this file was written). Each
+# variable's right-hand-side expression is compared independently so a single
+# mutated step fails without requiring the two enclosing functions to be
+# identical overall (H9's build_frozen_scorer also contains FID-1/FID-2
+# cross-reference code BB's fit_frozen_scorer does not have, by design).
+_FIT_MATH_VARS = [
+    "pca24", "Z24", "scaler24", "P24", "pca35", "P35", "c_oof", "R_oof",
+    "d_confab_full", "d_raw_unnorm", "d_raw",
+    "sc35", "caution_clf", "c_frozen_raw", "c_frozen_mean", "c_frozen_std",
+    "c_frozen", "caution_residualizer", "R_frozen", "prop_full_raw",
+    "prop_mean", "prop_std", "prop_full",
+]
+
+# The ONLY legitimate identifier renaming between the two files: H9's
+# build_frozen_scorer references module-level constants directly (SEED,
+# N_PCA, N_SPLITS); BB's fit_frozen_scorer takes the equivalent values as
+# function parameters (seed, n_pca, n_splits) so it can be fit-tested twice
+# for BB-FID-1 and unit-tested on synthetic data. This is a refactor for
+# testability, not a fit-math change -- canonicalize ONLY these three names
+# (on H9's side) before comparing, so an actual math mutation still fails.
+_H9_CONST_TO_BB_PARAM = {"SEED": "seed", "N_PCA": "n_pca", "N_SPLITS": "n_splits"}
+
+
+class _RenameNames(ast.NodeTransformer):
+    def __init__(self, rename: dict[str, str]):
+        self.rename = rename
+
+    def visit_Name(self, node: ast.Name) -> ast.Name:
+        if node.id in self.rename:
+            node.id = self.rename[node.id]
+        return node
+
+
+def _strip_docstring(func_node: ast.FunctionDef) -> ast.FunctionDef:
+    body = list(func_node.body)
+    if body and isinstance(body[0], ast.Expr) and isinstance(body[0].value, ast.Constant) \
+            and isinstance(body[0].value.value, str):
+        body = body[1:]
+    func_node.body = body
+    return func_node
+
+
+def _find_function(tree: ast.Module, func_name: str) -> ast.FunctionDef:
+    for node in ast.walk(tree):
+        if isinstance(node, ast.FunctionDef) and node.name == func_name:
+            return node
+    raise ValueError(f"function {func_name!r} not found in module")
+
+
+def _normalized_function_source(tree: ast.Module, func_name: str,
+                                 rename: dict[str, str] | None = None) -> str:
+    """ast.unparse of the function body with its own name and docstring
+    stripped (so name renaming and comment/docstring differences never affect
+    the hash), and optionally with specific identifiers canonicalized."""
+    node = _find_function(tree, func_name)
+    node = ast.parse(ast.unparse(node)).body[0]  # fresh, position-independent copy
+    node = _strip_docstring(node)
+    node.name = "_"
+    if rename:
+        node = _RenameNames(rename).visit(node)
+    return ast.unparse(node)
+
+
+def _assign_exprs(tree: ast.Module, func_name: str, var_names: list[str],
+                  rename: dict[str, str] | None = None) -> dict[str, str]:
+    """Map var_name -> normalized source of its assignment expression(s)
+    inside func_name, handling both `x = expr` and `x, y = expr1, expr2`
+    tuple-unpack assignments (both fit sequences use the latter for the
+    z-scale mean/std pairs)."""
+    node = _find_function(tree, func_name)
+    out: dict[str, str] = {}
+    for stmt in ast.walk(node):
+        if not isinstance(stmt, ast.Assign) or len(stmt.targets) != 1:
+            continue
+        target = stmt.targets[0]
+        if isinstance(target, ast.Name) and target.id in var_names:
+            expr = ast.parse(ast.unparse(stmt.value)).body[0].value
+            if rename:
+                expr = _RenameNames(rename).visit(expr)
+            out[target.id] = ast.unparse(expr)
+        elif isinstance(target, ast.Tuple) and isinstance(stmt.value, ast.Tuple) \
+                and len(target.elts) == len(stmt.value.elts):
+            for t_elt, v_elt in zip(target.elts, stmt.value.elts):
+                if isinstance(t_elt, ast.Name) and t_elt.id in var_names:
+                    expr = ast.parse(ast.unparse(v_elt)).body[0].value
+                    if rename:
+                        expr = _RenameNames(rename).visit(expr)
+                    out[t_elt.id] = ast.unparse(expr)
+    return out
+
+
+def check_h9_body_parity(this_file: Path,
+                         h9_path: Path = H9_FREEZE_SCORER_PATH) -> dict:
+    """BB-FID-2(b): mechanical function-body parity against H9's PINNED
+    freeze_scorer.py (red-team finding F3). Returns a report dict; never
+    raises for a missing/mismatched H9 file -- callers gate on report['pass']."""
+    if not h9_path.exists():
+        return {"pass": False,
+                "error": f"H9 freeze_scorer.py not found at {h9_path}; cannot "
+                        f"verify function-body parity (h9-propensity-gate "
+                        f"worktree missing or moved)."}
+    h9_bytes = h9_path.read_bytes()
+    h9_sha = hashlib.sha256(h9_bytes).hexdigest()
+    pin_ok = (h9_sha == H9_FREEZE_SCORER_PIN_SHA256)
+
+    bb_tree = ast.parse(Path(this_file).read_text())
+    h9_tree = ast.parse(h9_bytes.decode())
+
+    func_diffs = {}
+    for bb_name, h9_name in _H9_FUNC_NAME_MAP.items():
+        bb_src = _normalized_function_source(bb_tree, bb_name)
+        h9_src = _normalized_function_source(h9_tree, h9_name)
+        bb_h, h9_h = (hashlib.sha256(s.encode()).hexdigest() for s in (bb_src, h9_src))
+        func_diffs[bb_name] = {"h9_counterpart": h9_name, "match": bb_h == h9_h,
+                               "bb_sha256": bb_h, "h9_sha256": h9_h}
+
+    bb_vars = _assign_exprs(bb_tree, "fit_frozen_scorer", _FIT_MATH_VARS)
+    h9_vars = _assign_exprs(h9_tree, "build_frozen_scorer", _FIT_MATH_VARS,
+                            rename=_H9_CONST_TO_BB_PARAM)
+    var_diffs = {}
+    for v in _FIT_MATH_VARS:
+        if v not in bb_vars or v not in h9_vars:
+            var_diffs[v] = {"match": False,
+                            "note": f"missing on {'BB' if v not in bb_vars else 'H9'} side"}
+            continue
+        bb_h = hashlib.sha256(bb_vars[v].encode()).hexdigest()
+        h9_h = hashlib.sha256(h9_vars[v].encode()).hexdigest()
+        var_diffs[v] = {"match": bb_h == h9_h, "bb_sha256": bb_h, "h9_sha256": h9_h}
+
+    all_funcs_match = all(d["match"] for d in func_diffs.values())
+    all_vars_match = all(d["match"] for d in var_diffs.values())
+    return {"pass": bool(pin_ok and all_funcs_match and all_vars_match),
+            "h9_file_pin_verified": bool(pin_ok),
+            "h9_file_sha256_observed": h9_sha,
+            "h9_file_sha256_pin": H9_FREEZE_SCORER_PIN_SHA256,
+            "helper_function_parity": func_diffs,
+            "fit_math_variable_parity": var_diffs}
 
 # H9's freeze_scorer.py pin (h9-propensity-gate branch experiment.yaml), the
 # function-level parity target for BB-FID-2. See the module docstring.
@@ -125,6 +295,29 @@ def oof_caution(P35, y_ref, seed, n_splits):
                                                         y_ref[tr])
         out[te] = clf.decision_function(sc.transform(P35[te]))
     return (out - out.mean()) / out.std()
+
+
+def build_gradeable_cells(rows: list[dict]) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
+    """F1 fix (red-team, pre-launch): the grader emits refused/answered/
+    schema_valid/degenerate as FOUR INDEPENDENT booleans, so an answered=True
+    row with degenerate=True or schema_valid=False is reachable and would
+    contaminate the certified confab cell. AMENDMENT.md section 4.1 defines
+    confab as "gold unanswerable AND answered (not refused, not degenerate)";
+    guard BOTH cells of the propensity contrast (not just the positive class),
+    matching the phase-0 counter's is_degen = degenerate OR not schema_valid
+    priority (cloud/modal_bb_phase0.py). Mirrored verbatim by
+    score_bb_holdout.py's build_gradeable_cells for the read surface.
+    Returns (gradeable, confab_idx, un_ref_idx)."""
+    gradeable = np.array([not (bool(r.get("degenerate"))
+                               or not bool(r.get("schema_valid", True)))
+                          for r in rows])
+    confab_idx = np.array([i for i, r in enumerate(rows)
+                           if gradeable[i] and r["gold_class"] == "unanswerable"
+                           and r["answered"]])
+    un_ref_idx = np.array([i for i, r in enumerate(rows)
+                           if gradeable[i] and r["gold_class"] == "unanswerable"
+                           and r["refused"]])
+    return gradeable, confab_idx, un_ref_idx
 
 
 def fit_frozen_scorer(X24: np.ndarray, X35: np.ndarray, y_ref: np.ndarray,
@@ -213,10 +406,7 @@ def build_and_verify(cell: dict, gates: dict, X24: np.ndarray, X35: np.ndarray,
         f"fit_layers=({L_PROP},{L_CAUTION}) (want ({AL_L_PROP},{AL_L_CAUTION}))")
 
     y_ref = np.array([1 if r["refused"] else 0 for r in rows])
-    confab_idx = np.array([i for i, r in enumerate(rows)
-                           if r["gold_class"] == "unanswerable" and r["answered"]])
-    un_ref_idx = np.array([i for i, r in enumerate(rows)
-                           if r["gold_class"] == "unanswerable" and r["refused"]])
+    gradeable, confab_idx, un_ref_idx = build_gradeable_cells(rows)
 
     # BB-P1-G0 (fit-surface evaluability precondition, checked before G1 is
     # read; AMENDMENT.md section 6 / gates.yaml fit_evaluability).
@@ -278,6 +468,12 @@ def build_and_verify(cell: dict, gates: dict, X24: np.ndarray, X35: np.ndarray,
     (frozen_out / "scorer_manifest.json").write_text(json.dumps(scorer_manifest, indent=2))
 
     this_file_sha256 = _sha256(Path(__file__).resolve())
+    # F3 fix (red-team, pre-launch): BB-FID-2's mechanical function-body
+    # parity check against H9's pinned freeze_scorer.py (replaces the
+    # knobs-only proxy the STOP_note previously flagged for lead adjudication
+    # -- the lead has since repinned gates.yaml (F2) to this two-part check).
+    body_parity = check_h9_body_parity(Path(__file__).resolve())
+    fidelity_2_pass = bool(knobs_match and body_parity["pass"])
     report = {
         "tier": "smoke" if smoke else "registered",
         "n_rows": len(rows), "n_confab": g0["n_confab"], "n_un_refused": g0["n_un_refused"],
@@ -291,29 +487,27 @@ def build_and_verify(cell: dict, gates: dict, X24: np.ndarray, X35: np.ndarray,
             "cell_yaml_knobs": {"pca_seed": seed, "pca_components": N_PCA,
                                 "n_splits": N_SPLITS, "fit_layers": {"propensity": L_PROP,
                                 "caution": L_CAUTION}},
-            "STOP_note": (
-                "gates.yaml literal wording is 'freeze_scorer.py sha256 == H9 "
-                "pinned scorer'. A whole-FILE hash match against H9's pin "
-                f"({H9_FREEZE_SCORER_PIN_SHA256}) is not achievable: this file "
-                "necessarily differs from H9's freeze_scorer.py in I/O (BB's "
-                "own base extraction/grades, not AL's al_run_dir/al_extract_dir/"
-                "al_graded) and in the fidelity-reporting code (BB has no "
-                "on-disk prior array to cross-reference, per AMENDMENT.md "
-                "5.4). This build implements BB-FID-2 as FUNCTION-LEVEL "
-                "verbatim-copy parity instead (unit/load_stack/oof_caution/"
-                "oof_meandiff_proj and the fit_frozen_scorer sequence are "
-                "copied from H9's freeze_scorer.py unchanged) plus the knob "
-                "assertion above. Flagged for lead adjudication, not resolved "
-                "unilaterally since gates.yaml is pinned."),
+            "resolution_note": (
+                "gates.yaml BB-FID-2 was repinned pre-launch 2026-07-11 "
+                "(red-team finding F2; AMENDMENT.md section 5.4 correction "
+                "note) from a whole-file sha256 match -- unachievable by "
+                "construction, since this file necessarily differs from H9's "
+                "freeze_scorer.py in I/O (BB's own base extraction/grades, "
+                "not AL's al_run_dir/al_extract_dir/al_graded) and in the "
+                "fidelity-reporting code (BB has no on-disk prior array to "
+                "cross-reference) -- to the two-part check below: the knob "
+                "assertion above AND a mechanical function-body-parity check "
+                "(red-team finding F3, see check_h9_body_parity)."),
+            "body_parity": body_parity,
             "h9_pinned_freeze_scorer_sha256": H9_FREEZE_SCORER_PIN_SHA256,
             "this_file_sha256": this_file_sha256,
-            "pass": bool(knobs_match)},
+            "pass": fidelity_2_pass},
         "honest_prior_NONGATING": {
             "prop_incell_oof_auroc": prop_incell_oof_auroc,
             "caution_incell_oof_auroc": caution_incell_oof_auroc,
             "caution_incell_auroc_frozen_fullsample": fit_a["caution_incell_auroc_frozen"],
             "fullsample_prop_incell_auroc": fit_a["fullsample_prop_incell_auroc_NONGATING"]},
-        "fidelity_pass": bool(bb_fid1_pass and knobs_match),
+        "fidelity_pass": bool(bb_fid1_pass and fidelity_2_pass),
         "frozen_out": str(frozen_out),
     }
     (frozen_out / "fidelity_report.json").write_text(json.dumps(report, indent=2))
@@ -350,8 +544,14 @@ def _synthetic_smoke_inputs(seed: int = 0, n: int = 400, dim: int = 2560):
     rows = []
     for i in range(n):
         gc = "unanswerable" if (is_confab[i] or is_un_ref[i]) else "answerable"
+        # F1 fix (red-team, pre-launch): synthetic rows default to gradeable
+        # (not degenerate, schema-valid) so existing gating-agnostic tests are
+        # unaffected; test_bb_phase1_smoke.py injects contaminating rows
+        # (degenerate=True / schema_valid=False) on top of this default to
+        # exercise the F1 guard directly.
         rows.append({"row_key": f"smoke::{i:04d}", "gold_class": gc,
-                    "answered": bool(is_confab[i]), "refused": bool(is_un_ref[i])})
+                    "answered": bool(is_confab[i]), "refused": bool(is_un_ref[i]),
+                    "degenerate": False, "schema_valid": True})
     return X24, X35, rows
 
 

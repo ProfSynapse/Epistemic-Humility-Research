@@ -341,13 +341,24 @@ def run_bb_phase1(repo_commit: str) -> dict:
         gold[r["row_key"]] = l2g[lab]
     graded_in = os.path.join(fit_gen_out, "rows.jsonl")
     graded_out = f"{out}/fit/rows_graded.jsonl"
+    missing_gold_class = []
     with open(graded_in) as fin, open(graded_out, "w") as fout:
         for l in fin:
             if not l.strip():
                 continue
             r = json.loads(l)
             r.setdefault("gold_class", gold.get(r["row_key"]))
+            if r["gold_class"] is None:
+                missing_gold_class.append(r["row_key"])
             fout.write(json.dumps(r) + "\n")
+    # F4 fix (red-team, pre-launch): fail loud rather than silently shipping
+    # ungraded rows into the fit surface -- all 1,662 fit rows must resolve a
+    # gold_class from the staged pool join.
+    if missing_gold_class:
+        raise RuntimeError(
+            f"{len(missing_gold_class)} fit-surface row(s) have no gold_class "
+            f"after the pool join (expected all {len(fit_pool_rows)} rows to "
+            f"resolve): {missing_gold_class}")
 
     # 6. READ surface: extraction ONLY (phase 0 already generated+graded this
     #    pool on base; that rows_graded.jsonl lives locally already, pulled
