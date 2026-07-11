@@ -1,0 +1,46 @@
+# H9 held-out reading gate: pre-stated pass/fail thresholds.
+# These LOCK at signing (bin/exp sign). They anchor to AL's in-cell 5-fold OOF
+# AUROC 0.6802 (excess over chance 0.1802), not to convenient round numbers.
+# Full rationale in AMENDMENT.md section 5.
+
+honest_prior:
+  prop_incell_oof_auroc: 0.6802   # AL selection_manifest.json readout_quality
+  caution_incell_oof_auroc: 0.9561
+  chance: 0.50
+
+# Fidelity gate (CPU, section 3.1). Must pass before any GPU work.
+fidelity:
+  FID-1_direction_cosine_min: 0.999999      # cos(re-derived d_raw, on-disk d_raw.npy) >= this
+  FID-1_direction_maxabs_diff_max: 1.0e-5   # max |elementwise diff| <= this
+  FID-2_prop_z_pearson_min: 0.98            # frozen full-sample prop_z vs on-disk OOF prop_z.npy
+  FID-2_incell_auroc_tol: 0.02              # |frozen in-cell AUROC - 0.6802| <= this
+
+# Evaluability precondition (H9-G0). Checked before G1 is read.
+evaluability:
+  min_confabs: 20
+  min_unanswerable_refusals: 20
+  # Below either count -> inconclusive-by-power; enlarge the draw (pre-stated remedy).
+
+# Reading gate (H9-G1). Contrast: confab (unanswerable & answered) vs
+# unanswerable-refused, AL's readout_quality contrast.
+reading_gate:
+  bootstrap_resamples: 1000
+  bootstrap_ci: 0.95
+  pass_auroc_min: 0.62          # AND ci_lower > pass_ci_lower_min
+  pass_ci_lower_min: 0.55
+  fail_auroc_max: 0.55          # OR ci_upper < fail_ci_upper_max
+  fail_ci_upper_max: 0.60
+  # Strictly between pass and fail, or a CI straddling the lines -> INCONCLUSIVE.
+
+# Caution positive control (H9-G2, FLOOR). Refused-vs-not over all graded
+# held-out rows, frozen full-sample caution classifier.
+caution_control:
+  floor_auroc_min: 0.90
+  # Below floor -> treat the whole draw as a pipeline failure; do not adjudicate G1.
+
+# Registered sensitivity check (section 8.1): near-duplicate KUQ sweep.
+sensitivity_near_dup:
+  metric: token_overlap_or_cosine   # finalized by the draw script at sign time
+  flag_threshold: 0.90              # held-out KUQ rows above this vs fit-surface KUQ are flagged
+  action: recompute_auroc_excluding_flagged
+  report: alongside headline, never pooled

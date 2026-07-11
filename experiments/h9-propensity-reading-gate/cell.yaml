@@ -1,0 +1,64 @@
+# H9 held-out reading gate: instrument config. Pinned at signing (bin/exp sign).
+# Prose home is AMENDMENT.md; this file is the machine-readable knobs the three
+# CPU scripts and the Modal harness read. Do not restate rationale here.
+
+seed: 20260711            # held-out draw seed (fixed; recorded for reproducibility)
+
+# --- frozen scorer (freeze_scorer.py; replicates AL's fit pipeline) ----------
+scorer:
+  fit_layers:
+    propensity: 24
+    caution: 35
+  pca_components: 128
+  pca_seed: 20260705       # AL's random_state; must match to reproduce d_raw.npy
+  n_splits: 5
+  al_run_dir: experiment/phase1/probe/analysis/amendment_al_prep/amendment_al_run
+  al_extract_dir: experiment/phase1/probe/analysis/amendment_al_prep/true_a0/extract/data
+  al_graded: experiment/phase1/probe/analysis/amendment_al_prep/true_a0/gen/data/rows_graded.jsonl
+  frozen_out: directions/frozen_scorer            # gitignored; objects + sha256 manifest land here
+  # Held-out caution uses a FINAL full-sample logistic (non-OOF); see AMENDMENT.md 3.
+
+# --- held-out draw (draw_holdout.py) -----------------------------------------
+holdout:
+  draw_size: 500
+  complement_sources:
+    orig_rows: experiment/phase1/probe/analysis/ah_stage0/pregen/rows.jsonl
+    expansion_rows: experiment/phase1/probe/analysis/ah_stage0/expansion/score/scored_rows.jsonl
+    fit_surface: experiment/phase1/probe/analysis/ah_stage0/expansion/pool_v21.jsonl
+  # Stratification targets: fit-surface source share of 1,662 x 500, largest-remainder.
+  stratify_targets:
+    kuq_ku_unknown_x: 226
+    kuq_ku_unknown: 137
+    selfaware_unanswerable: 40
+    selfaware_answerable: 35
+    triviaqa: 24
+    popqa: 23
+    kuq_ku_known: 15
+  id_manifest_out: analysis-committed/holdout_draw/holdout_ids.jsonl   # row_key + source + gold label ONLY
+
+# --- Modal GPU lane (cloud/modal_h9_holdout.py) ------------------------------
+gpu:
+  provider: modal
+  gpu_type: A10G
+  extraction:
+    anchor: prompt_len-1
+    all_layers: true          # capture 0..36; consume L24/L35 downstream
+    batch_size: 1
+  generation:
+    max_new_tokens: 96        # match AL A0 generation config
+    do_sample: false          # greedy
+  grader: byte-identical to the AL A0 cell (grading config pinned at signing)
+  staging_repo: professorsynapse/eh-h9-aitrue-staging   # private; base+adapter uploaded pre-launch
+  cost_cap_usd: 15
+  results_volume: eh-h9-holdout-logs
+
+# --- held-out scoring + gates (score_holdout.py) -----------------------------
+scoring:
+  holdout_extract_dir: analysis/holdout_run/extract/data     # gitignored (pulled from Volume)
+  holdout_graded: analysis/holdout_run/gen/rows_graded.jsonl # gitignored
+  gate_report_out: analysis-committed/holdout_run/gate_report.json  # aggregates only, no text
+
+# --- registered sensitivity (score_holdout.py --sensitivity) -----------------
+sensitivity:
+  near_dup_metric: token_overlap    # Jaccard on whitespace tokens; swap to cosine if finalized otherwise
+  near_dup_threshold: 0.90

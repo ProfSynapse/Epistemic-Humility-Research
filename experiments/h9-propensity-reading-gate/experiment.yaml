@@ -1,0 +1,44 @@
+slug: h9-propensity-reading-gate
+title: H9 held-out reading gate for the confab-propensity direction on AI-TRUE
+type: probe-fit
+status: draft
+registered: true
+created_at: '2026-07-11T00:09:03Z'
+question: >-
+  Does the AL confabulation-propensity direction, frozen from its 1,662-row fit
+  surface, still separate confabulations from honest unanswerable refusals on a
+  disjoint held-out draw the fit never saw, on the AI-TRUE checkpoint?
+prediction: >-
+  orchestrator: H9-G1 PASS (~55%) with the held-out propensity AUROC landing in
+  the low-to-mid 0.6s near the 0.62 pass line; H9-G2 caution floor PASS (~90%);
+  H9-G0 evaluability met (~85%). User prediction left empty for signing.
+falsifier: >-
+  Held-out propensity AUROC <= 0.55, OR the upper bound of its 1,000-resample
+  row-bootstrap 95% CI < 0.60, means the reading does not generalize off the fit
+  surface and paper 5's "the propensity direction reads" claim is not supported
+  on held-out data.
+checkpoint:
+  repo: local (AI-TRUE; staged to private HF repo for the Modal lane, section 6.2)
+  revision: >-
+    base sft_schema_clean_seed1_full/20260623_123624/Qwen3-4B-bnb-4bit/merged-16bit
+    + adapter amendment_ai_grpo_true_seed1/20260703_234933/final_model
+instrument:
+  configs:
+  - cell.yaml
+  - gates.yaml
+  modules:
+  - freeze_scorer.py
+  - draw_holdout.py
+  - score_holdout.py
+  - cloud/modal_h9_holdout.py
+  pins: {}
+# Only tracked inputs are listed here (the validator checks existence). The
+# gitignored AL data artifacts this experiment consumes (amendment_al_run/
+# d_raw.npy, prop_z.npy, caution_z.npy, selection_manifest.json; true_a0 extract
+# + graded; ah_stage0 rows/scored_rows/pool_v21) live only in the canonical
+# checkout and are recorded as concrete paths in cell.yaml.
+inputs:
+- archive/experiment/phase1/probe/amendments/amendment_al_select_and_direction.py
+- experiments/radial-anti-propensity-steering/AMENDMENT.md
+verdict: ''
+kg: []
