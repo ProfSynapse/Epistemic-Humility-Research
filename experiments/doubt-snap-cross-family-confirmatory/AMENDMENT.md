@@ -87,6 +87,30 @@ held-out outcome is known. If no dose in the recalibrated grid qualifies, the
 cell fails G0 dose viability and is recorded as such without further grid
 changes.
 
+Pre-outcome dose-recalibration extension (2026-07-11, user-approved): the
+llama32_3b_instruct and mistral7b_instruct_v03 probe cells hit the identical
+overdose-collapse signature on the unrecalibrated default grid, superseding
+the "all other cells keep the original grid" sentence above for these two
+cells only. llama32_3b fits `sigma_c = 2.092`, so the default grid 100-250
+commands 48.7-120.4 sigma writes (versus the 38 sigma that collapsed
+Qwen3.5-4B); a committed-artifact diagnostic confirmed the write realized the
+commanded strength exactly (per-arm strengths 47.79-119.48, outputs 94-99.9
+percent pairwise identical across doses, not 100 percent) while 100 percent
+of fired FIT rows were degenerate at every dose. mistral7b fits
+`sigma_c = 0.939`, realizing 106.7-266.5 sigma on the default grid; its sweep
+was stopped mid-run before producing a predetermined null (baseline, grading,
+capture, and direction fits are volume-backed and reused on resume). Neither
+cell has seen held-out scoring, so recalibration remains FIT-only and
+pre-outcome. New grids map Qwen3.5-4B's working recalibrated z-ladder
+(6.2-29.4 sigma, the grid that produced a real dose-response with peak 0.326)
+onto each cell's own `build_manifest.json` `mu_c`/`sigma_c`:
+llama32_3b_instruct `{11,19,26,34,41,48,60}` and mistral7b_instruct_v03
+`{6,9,12,16,19,22,27}`, recorded in `cell.yaml` per-cell targets. The
+selection rule, thresholds, arms, scoring, and every gate are unchanged. As
+above: if no dose in the recalibrated grid qualifies, the cell fails G0 dose
+viability and is recorded as such without further grid changes, and no cell's
+grid ever changes after its held-out outcome is known.
+
 The instrument is the same mechanism class as the merged Qwen amendment:
 
 1. GATE: a doubt readout `z_d`, fired as `neg_z_d = -z_d >= tau` because

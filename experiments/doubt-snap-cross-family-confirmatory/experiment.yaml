@@ -34,7 +34,7 @@ instrument:
   - render.py
   pins:
     model_matrix.yaml: 2f54278b9e7bec54d29e16159cd57c772938821bf40d602a9f7020d7999cf53a
-    cell.yaml: e8030f5ba101d12e8d7585c7a78752a891d7760021d2ca0715cc97d3665d127a
+    cell.yaml: e59c3b2e931360d38497a3ceb30dc788e999e86a121a3f8dd5e7835bcf661d52
     gates.yaml: fb3e63eac6bba873c9f98616beb542ebf70bb0ade01a30e7cc80601095c2ff89
     cloud/README.md: 36574148b79291f26cba4dc143ba1c23feda9bc5cacc6b5707259d05b3ebcdbe
     cloud/modal_doubt_snap_cross_family.py: 466c0a5e0deaa7b990e15c6ed4ecd86d8ac603ef220bc94d4d7068607fa64fa1

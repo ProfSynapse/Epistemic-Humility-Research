@@ -6,6 +6,29 @@ in `experiment.yaml`.
 
 ## Entries
 
+- 2026-07-11 (llama G0 characterization + grid recalibration extension +
+  mistral stop, user-approved): llama32_3b_instruct stopped at the registered
+  FIT dose-viability rule (exit 4, zero qualifying doses), the same signature
+  as the 2026-07-08 Qwen3.5 cells. A committed-artifact diagnostic showed this
+  is overdose collapse on the unrecalibrated default grid, not plumbing and
+  not family-level insensitivity: dose correctly parameterized the write
+  (per-arm strengths 47.79 to 119.48, completions 94 to 99.9 percent pairwise
+  identical across doses, not 100 percent), but the default 100-250 grid
+  realizes 48.7 to 120.4 sigma on llama's sigma_c of 2.092, beyond the 38
+  sigma that collapsed Qwen3.5-4B, and 100 percent of fired FIT rows were
+  degenerate at every dose. mistral7b_instruct_v03 was stopped mid dose sweep
+  before wasting spend on a predetermined null: its sigma_c of 0.939 realizes
+  106.7 to 266.5 sigma on the default grid. Baseline, grading, capture, and
+  direction-fit artifacts for both cells are volume-backed and resume-safe.
+  Per the user-approved pre-outcome recalibration extension in AMENDMENT.md,
+  cell.yaml gains per-cell grids mapping Qwen3.5-4B's working z-ladder onto
+  each cell's own mu_c/sigma_c (llama 11-60, mistral 6-27); the cell.yaml pin
+  hash is refreshed accordingly. Both cells relaunch detached at batch-1 to
+  re-enter at the dose sweep. Durable lesson queued for the skill: a per-cell
+  dose-grid fix does NOT propagate to sibling cells; before any steering cell
+  launches, assert the realized z-range of its grid against its own
+  build_manifest sigma_c.
+
 - 2026-07-11 (2-cell probe relaunch authorized): user approved in-conversation
   a two-cell fleet probe under a $75 operational cap: two-row harness smoke on
   llama32_3b_instruct first (smoke_only lane of run_one_cell), then detached
