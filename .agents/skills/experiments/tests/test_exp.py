@@ -286,6 +286,141 @@ def test_resolve_null_result_status(repo: Path):
     assert _manifest(repo, "cell-n")["status"] == "null-result"
 
 
+# --- repin: signed-but-unlaunched instrument repair --------------------------
+
+def _repin_file(d: Path, name: str, body: str) -> None:
+    """Overwrite a pinned instrument file so its bytes (and hash) change."""
+    (d / name).write_text(body, encoding="utf-8")
+
+
+def test_repin_happy_path(repo: Path, capsys):
+    d = _sign_ready(repo, "cell-rp")
+    _run(repo, "sign", "cell-rp")
+    old_pin = _manifest(repo, "cell-rp")["instrument"]["pins"]["cell.yaml"]
+    # Simulate a build-environment fix to the pinned instrument.
+    _repin_file(d, "cell.yaml", "surface:\n  seed: 1\narms: []\nfixed: true\n")
+    assert _run(repo, "repin", "cell-rp", "cell.yaml", "--reason", "Modal image dep fix") == 0
+    m = _manifest(repo, "cell-rp")
+    new_pin = m["instrument"]["pins"]["cell.yaml"]
+    assert new_pin != old_pin
+    # Status stays signed; a real repair never flips the lifecycle.
+    assert m["status"] == "signed"
+    repins = m["instrument"]["repins"]
+    assert len(repins) == 1
+    entry = repins[0]
+    assert entry["file"] == "cell.yaml"
+    assert entry["old_sha256"] == old_pin
+    assert entry["new_sha256"] == new_pin
+    assert entry["reason"] == "Modal image dep fix"
+    assert re.match(r"^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}Z$", entry["date"])
+    # The repinned manifest validates.
+    assert _run(repo, "validate") == 0
+    assert "repinned 1 file" in capsys.readouterr().out
+
+
+def test_repin_is_append_only(repo: Path):
+    d = _sign_ready(repo, "cell-rp-append")
+    _run(repo, "sign", "cell-rp-append")
+    _repin_file(d, "cell.yaml", "surface:\n  seed: 2\narms: []\n")
+    _run(repo, "repin", "cell-rp-append", "cell.yaml", "--reason", "first fix")
+    _repin_file(d, "cell.yaml", "surface:\n  seed: 3\narms: []\n")
+    _run(repo, "repin", "cell-rp-append", "cell.yaml", "--reason", "second fix")
+    repins = _manifest(repo, "cell-rp-append")["instrument"]["repins"]
+    assert [e["reason"] for e in repins] == ["first fix", "second fix"]
+    # Prior entry is preserved unedited; the last entry chains from it.
+    assert repins[1]["old_sha256"] == repins[0]["new_sha256"]
+    assert _run(repo, "validate") == 0
+
+
+def test_repin_refuses_noop(repo: Path):
+    _sign_ready(repo, "cell-rp-noop")
+    _run(repo, "sign", "cell-rp-noop")
+    # File unchanged since signing -> nothing to repin.
+    assert _run(repo, "repin", "cell-rp-noop", "cell.yaml", "--reason", "no change") == 2
+    assert "repins" not in _manifest(repo, "cell-rp-noop")["instrument"]
+
+
+def test_repin_refuses_unrelated_drift(repo: Path):
+    d = _sign_ready(repo, "cell-rp-drift")
+    # Add a second pinned config so one can drift while the other is repinned.
+    (d / "gates.yaml").write_text("gates: []\n", encoding="utf-8")
+    m = _manifest(repo, "cell-rp-drift")
+    m["instrument"]["configs"] = ["cell.yaml", "gates.yaml"]
+    _write_manifest(repo, "cell-rp-drift", m)
+    _run(repo, "sign", "cell-rp-drift")
+    # Intentionally change the file we intend to repin AND let gates.yaml drift.
+    _repin_file(d, "cell.yaml", "surface:\n  seed: 9\narms: []\n")
+    (d / "gates.yaml").write_text("gates: [unrelated]\n", encoding="utf-8")
+    assert _run(repo, "repin", "cell-rp-drift", "cell.yaml", "--reason", "fix cell") == 2
+    # Refused: no pins updated, no repins recorded.
+    m2 = _manifest(repo, "cell-rp-drift")
+    assert "repins" not in m2["instrument"]
+
+
+def test_repin_refuses_unpinned_file(repo: Path):
+    d = _sign_ready(repo, "cell-rp-unpinned")
+    _run(repo, "sign", "cell-rp-unpinned")
+    (d / "extra.yaml").write_text("x: 1\n", encoding="utf-8")
+    # extra.yaml exists and differs, but was never pinned.
+    assert _run(repo, "repin", "cell-rp-unpinned", "extra.yaml", "--reason", "nope") == 2
+
+
+def test_repin_refuses_empty_reason(repo: Path):
+    d = _sign_ready(repo, "cell-rp-noreason")
+    _run(repo, "sign", "cell-rp-noreason")
+    _repin_file(d, "cell.yaml", "surface:\n  seed: 5\narms: []\n")
+    assert _run(repo, "repin", "cell-rp-noreason", "cell.yaml", "--reason", "  ") == 2
+
+
+def test_repin_refuses_on_draft(repo: Path):
+    d = _sign_ready(repo, "cell-rp-draft")  # sign-ready but NOT signed
+    _repin_file(d, "cell.yaml", "surface:\n  seed: 7\narms: []\n")
+    assert _run(repo, "repin", "cell-rp-draft", "cell.yaml", "--reason", "too early") == 2
+
+
+def test_repin_refuses_on_resolved(repo: Path):
+    d = _sign_ready(repo, "cell-rp-resolved")
+    _run(repo, "sign", "cell-rp-resolved")
+    _run(repo, "resolve", "cell-rp-resolved", "--verdict", "Done.")
+    _repin_file(d, "cell.yaml", "surface:\n  seed: 8\narms: []\n")
+    assert _run(repo, "repin", "cell-rp-resolved", "cell.yaml", "--reason", "after the fact") == 2
+
+
+def test_validate_accepts_correct_repin(repo: Path):
+    d = _sign_ready(repo, "cell-rp-val")
+    _run(repo, "sign", "cell-rp-val")
+    _repin_file(d, "cell.yaml", "surface:\n  seed: 42\narms: []\n")
+    _run(repo, "repin", "cell-rp-val", "cell.yaml", "--reason", "instrument repair")
+    assert _run(repo, "validate") == 0
+
+
+def test_validate_rejects_stale_repin(repo: Path):
+    d = _sign_ready(repo, "cell-rp-stale")
+    _run(repo, "sign", "cell-rp-stale")
+    _repin_file(d, "cell.yaml", "surface:\n  seed: 43\narms: []\n")
+    _run(repo, "repin", "cell-rp-stale", "cell.yaml", "--reason", "instrument repair")
+    assert _run(repo, "validate") == 0
+    # Tamper with the last repin's new_sha256 so it no longer matches the live pin.
+    # The pin still matches the file on disk, so this isolates the repins/pins
+    # consistency check from ordinary pin drift.
+    m = _manifest(repo, "cell-rp-stale")
+    m["instrument"]["repins"][-1]["new_sha256"] = "0" * 64
+    _write_manifest(repo, "cell-rp-stale", m)
+    assert _run(repo, "validate") == 1
+
+
+def test_show_displays_repins(repo: Path, capsys):
+    d = _sign_ready(repo, "cell-rp-show")
+    _run(repo, "sign", "cell-rp-show")
+    _repin_file(d, "cell.yaml", "surface:\n  seed: 11\narms: []\n")
+    _run(repo, "repin", "cell-rp-show", "cell.yaml", "--reason", "dep conflict fix")
+    capsys.readouterr()  # drop repin output
+    assert _run(repo, "show", "cell-rp-show") == 0
+    out = capsys.readouterr().out
+    assert "repins" in out
+    assert "dep conflict fix" in out
+
+
 # --- regen determinism + staleness ------------------------------------------
 
 def test_regen_writes_registry(repo: Path):
