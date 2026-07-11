@@ -6,6 +6,16 @@ in `experiment.yaml`.
 
 ## Entries
 
+- 2026-07-11 (2-cell probe relaunch authorized): user approved in-conversation
+  a two-cell fleet probe under a $75 operational cap: two-row harness smoke on
+  llama32_3b_instruct first (smoke_only lane of run_one_cell), then detached
+  batch-1 cell launches for llama32_3b_instruct and mistral7b_instruct_v03 at
+  repo commit c560ae98, A10G default lane. Both Qwen3.5 FIT-dose-null live
+  namespaces were archived to _archive/<cell>_fitdose_null_20260708_2100 per
+  the runbook before relaunch. Hub metadata access verified at both pinned
+  revisions. Batch size stays 1 per the registered semantic-parity evidence;
+  no scientific parameter changes.
+
 - 2026-07-11 (Qwen3.5 FIT-dose nulls committed to public artifacts): Pulled the
   nine `analysis-committed` aggregate files for both `qwen35_4b` and
   `qwen35_9b` from the Modal volume `eh-doubt-snap-cross-family`
