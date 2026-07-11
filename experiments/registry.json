@@ -2216,7 +2216,7 @@
       },
       "kg": [],
       "prediction": "The greedy arm reproduces 73.5%/3.1% within band, and the sampled-decode arm's majority-vote confab conversion stays at or above 63.5% while majority-vote known-correct cost stays at or below 8%, per seed and pooled, so the resolved headline pair survives outside a single greedy decode.",
-      "question": "Does the resolved doubt-gated caution snap headline (gated confab clean_tighten 73.5%, known-correct false-refusal 3.1%), measured as a single greedy decode, survive re-measurement of the same frozen instrument under fresh harness seeds and the checkpoint's recommended sampled-decode configuration?",
+      "question": "Does the resolved doubt-gated caution snap headline (gated confab clean_tighten 73.5%, known-correct false-refusal 3.1%), measured as a single greedy decode, survive re-measurement of the same frozen instrument under fresh harness seeds and the program's registered sampled-decode configuration (Amendment SR)?",
       "registered": true,
       "slug": "snap-seed-sampled-decode-replication",
       "status": "draft",

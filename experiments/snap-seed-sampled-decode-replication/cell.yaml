@@ -47,15 +47,18 @@ decode_arms:
       min_new_tokens: 1
       eos_includes_im_end: true
       enable_thinking: false
-  # Arm S -- sampled decode (primary). Qwen3 published non-thinking sampling
-  # recommendation. N samples per row under K independent seeds.
+  # Arm S -- sampled decode (primary). Program's own registered sampled-decode
+  # config from Amendment SR (experiments/sampled-decode-seed-robustness/
+  # AMENDMENT.md lines 94-102): do_sample, temperature 0.7, top_p 0.9,
+  # num_beams 1. FLAGGED for signing: the Qwen3 published non-thinking
+  # recommendation differs (top_p 0.8, top_k 20, min_p 0); PI may substitute at
+  # signing. N samples per row under K independent seeds.
   - name: sampled_decode
     generation:
       do_sample: true
       temperature: 0.7
-      top_p: 0.8
-      top_k: 20
-      min_p: 0.0
+      top_p: 0.9
+      num_beams: 1
       max_new_tokens: 200
       min_new_tokens: 1
       eos_includes_im_end: true

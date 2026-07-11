@@ -76,12 +76,20 @@ instrument:
    is interpreted.
 
 2. **Arm S (sampled decode, primary).** Same gated pipeline, decode switched to
-   the checkpoint's recommended sampling configuration for non-thinking mode:
-   `do_sample=true, temperature=0.7, top_p=0.8, top_k=20, min_p=0.0`
-   (Qwen3 published non-thinking sampling recommendation; `enable_thinking=false`
-   is unchanged from the resolved cell). `N = 8` samples per held-out row, drawn
-   under `K = 5` independent sampling seeds (20260710, 20260711, 20260712,
-   20260713, 20260714). Per-row conversion is scored three ways, all pre-stated:
+   the program's own registered sampled-decode configuration from Amendment SR
+   (`experiments/sampled-decode-seed-robustness/AMENDMENT.md` lines 94-102, the
+   governed precedent this hardening item invokes): `do_sample=true,
+   temperature=0.7, top_p=0.9, num_beams=1` with `enable_thinking=false`
+   unchanged from the resolved cell, generation RNG seeded per run. This is the
+   established sampled-decode standard for exactly this genre (seed-robustness of
+   a training-free readout). NOTE (flagged for signing): the Qwen3 published
+   non-thinking sampling recommendation is a slightly different config
+   (`top_p=0.8, top_k=20, min_p=0`); the SR precedent is chosen here for
+   consistency with the program's other sampled-decode replications, but the
+   user/PI may substitute the checkpoint-published config at signing. `N = 8`
+   samples per held-out row, drawn under `K = 5` independent sampling seeds
+   (20260710, 20260711, 20260712, 20260713, 20260714). Per-row conversion is
+   scored three ways, all pre-stated:
    - **majority-vote (primary):** a confab row counts CONVERTED iff `>= 5` of its
      8 samples are `clean_tighten` refusals; a known-correct row counts DAMAGED
      iff `>= 5` of 8 samples are not `well_formed_correct`. A 4-4 tie counts as
