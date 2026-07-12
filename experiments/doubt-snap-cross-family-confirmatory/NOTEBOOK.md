@@ -6,6 +6,43 @@ in `experiment.yaml`.
 
 ## Entries
 
+- 2026-07-12 (c_hat validity audit complete; lead-verified): the CPU audit
+  over the existing anchor captures answers whether the fleet's write
+  direction ever encoded refusal. Per cell (llama32_3b, mistral7b,
+  qwen35_4b, qwen35_9b; all alignment sanity checks passed, u_d rederived
+  AUC matches the recorded gate AUC to 4 decimals; lead independently
+  re-derived mistral's two headline AUROCs from raw tensors, 0.543/0.896
+  vs audit 0.551/0.901, pooled-vs-heldout populations): (1) a raw
+  mass-mean refused-vs-answered direction reads at 0.997-1.000 held-half
+  AUROC in ALL FOUR families at the steered layer/anchor, so the
+  refusal-vs-answering axis exists and is trivially linearly readable
+  everywhere; (2) the registered c_hat reads refused-vs-known at CHANCE
+  (0.50-0.55) in all four cells while reading refused-vs-confab at
+  0.84-0.99 (mistral 0.90) - exactly matching its registered
+  construction (prep_tuner_cell.py fit_directions: caution =
+  unit(mean(refused) - mean(confab)), then orthogonalized against
+  {u_d, u_p}, and u_d is anti-aligned with the raw refusal axis at cos
+  -0.73 to -0.81, so any refuse-vs-answer leakage is projected out);
+  (3) the orthogonalization removed only 0.6-6 percent of pos_ctrl norm
+  on llama/mistral (15-20 percent on the qwen cells), so the recipe, not
+  the orthogonalization, determines the content. Interpretation for the
+  Outcome: the fleet never pushed the refuse-vs-answer axis by DESIGN
+  (that is the axis that would wreck known-correct answers; known cost
+  was correspondingly ~1 percent everywhere); it pushed the
+  refuse-rather-than-confab encoding, which reads cleanly in every
+  family including mistral, yet moves behavior only on Qwen3-lineage
+  (strongly on Qwen3-4B, weakly on Qwen3.5/llama) and not at all on
+  mistral. The cross-family nulls are therefore a genuine
+  read-actuate dissociation, not a failure to locate the encoding.
+  Caveat recorded straight: on llama/mistral the random-direction
+  reference reads refused-vs-known at 0.77-0.83 (a norm/position
+  confound in cross-population contrasts at this anchor), so
+  cross-population AUROCs there carry some norm artifact; the
+  within-comparison contrast (c_hat chance vs mass-mean ~1.0 on the
+  same populations, and clean ~0.5 random on both qwen cells) is
+  unaffected. Full numbers in the session scratch audit report;
+  aggregates only, no row text.
+
 - 2026-07-12 (fleet abandoned, user decision; resolve arc opens): with three
   of four small-tier families G0-stopped before held-out (qwen35_4b 0.326
   peak, llama32_3b 0.184 peak, mistral7b 0.000 flat) the registered
