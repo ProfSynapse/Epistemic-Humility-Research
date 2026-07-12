@@ -6,6 +6,18 @@ in `experiment.yaml`.
 
 ## Entries
 
+- 2026-07-12 (lead adjudication of the two build ambiguities, pre-sign): (1)
+  eff_dim_frac is the Stage A participation-ratio FORMULA applied to
+  anchor hidden-state variance, not Stage A's JVP-push input; the
+  cross-program comparability claim is dropped from the design and the
+  profile is comparable across atlas cells only. (2) The read panel gains a
+  deterministic 50/50 subdivision of the fit_only refused pool
+  (refused_fit for direction fitting, refused_eval for scoring, seed
+  20260707) so all reported AUROCs are two-sided held-out rather than
+  half-in-sample; no behavioral row changes split. Both changes are in the
+  draft AMENDMENT before signing; profile_and_read_panel.py needs the
+  refused-split implementation before sign.
+
 - 2026-07-12: Instrument built (draft, unsigned, not launched). Delivered
   `cell.yaml`, `gates.yaml` (AG0/AG1/AG2 transcribed verbatim from
   AMENDMENT.md), `render_jspace_atlas.py` (ported from the fleet's

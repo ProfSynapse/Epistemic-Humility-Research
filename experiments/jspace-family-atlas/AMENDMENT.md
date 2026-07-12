@@ -50,11 +50,28 @@ Signal, per cell:
    cell's split manifest (roles confab, known_correct_answered,
    unknown_refused; FIT/held-out labels carried through unchanged).
 2. Workspace profile: per-layer effective-dimension fraction
-   (eff_dim_frac, participation-ratio estimator) over the FIT rows, the same
-   estimator as `experiments/qwen35-4b-midband-doubt-snap` Stage A, so the
-   atlas is comparable across the program.
-3. Per-layer read panel, fit on FIT rows and scored on held-out rows with
-   2000-resample bootstrap CIs:
+   (eff_dim_frac): the participation-ratio formula from
+   `experiments/qwen35-4b-midband-doubt-snap` Stage A applied to the FIT-row
+   anchor hidden-state matrix at each layer (representation-variance PR).
+   Estimator-input note, adjudicated pre-sign: Stage A computed the same
+   formula over gradient-based JVP push vectors, which a capture-only run
+   cannot reproduce within this experiment's registered spend. The atlas
+   profile is therefore NOT numerically comparable to Stage A's profile
+   values; what the atlas guarantees is comparability ACROSS its own cells,
+   which all use the identical computation. Peak-layer locations may differ
+   from what a JVP profile would select, and the prediction below is read
+   against the representation-PR profile only.
+3. Per-layer read panel, with 2000-resample bootstrap CIs. The fleet's
+   FIT/held-out labels for confab and known_correct_answered rows are
+   carried through unchanged. The fleet assigned every unknown_refused row
+   split=fit_only by design, so a two-sided held-out contrast needs one
+   addition, adjudicated pre-sign: the refused pool is subdivided
+   deterministically (seed 20260707) into refused_fit (direction fitting)
+   and refused_eval (scoring) halves. Directions are fit on FIT
+   known/confab rows plus refused_fit; AUROCs are scored on held-out
+   known/confab rows against refused_eval, making every reported panel
+   number two-sided held-out. No behavioral row changes split; the
+   subdivision exists only inside this read-only analysis. Axes:
    - doubt u_d (mean known-correct minus mean refused-unknowns),
    - caution (mean refused minus mean confab, the fleet's pre-orthogonalization
      construction),
