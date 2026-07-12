@@ -6,6 +6,29 @@ in `experiment.yaml`.
 
 ## Entries
 
+- 2026-07-12 (mistral7b_instruct_v03 terminal: G0 FIT dose-viability fail,
+  true behavioral null): the bracketed dose sweep completed on all seven
+  doses (1129 rows per arm) and the registered FIT-only selection rule
+  found no qualifying dose (exit 4); committed artifacts pulled into
+  `analysis-committed/mistral7b_instruct_v03/`. This null is neither
+  overdose artifact nor sub-threshold grid: the ladder correctly spans the
+  response window this time. At dose 30 (realized strength 31.9) the write
+  visibly moves tokens (only 11/876 fired answers identical to baseline)
+  while 638/876 remain well-formed; dose 38 is transitional (474
+  degenerate); dose 46 and above are fully degenerate. Dose parameterizes
+  correctly (cross-dose answer identity ~0 except the shared collapse
+  plateau at 46 vs 56). Yet fired-confab clean_tighten is 0/874 at every
+  dose and induced refusals are zero even inside the coherent window: the
+  c_hat caution write changes what Mistral says without ever moving it
+  toward refusal. Gate AUC on FIT 0.9998, parity clean, held-out power met
+  (1312 confab / 382 known-correct). Recorded straight as a G0
+  dose-viability fail before held-out scoring. Probe complete: both probe
+  cells terminal, no live apps, no further spend. Small-tier picture at
+  the FIT stage: qwen35_4b selective peak 0.326, llama32_3b selective peak
+  0.184, mistral7b flat zero; none reaches the registered 0.60 floor, so
+  none proceeds to held-out. Fleet-scale decision (remaining unlaunched
+  cells vs adjudication of the confirmatory) lifted to the user.
+
 - 2026-07-11 (llama32_3b_instruct terminal: G0 FIT dose-viability fail,
   characterized): the recalibrated dose sweep completed and the registered
   FIT-only selection rule found no qualifying dose (exit 4,
