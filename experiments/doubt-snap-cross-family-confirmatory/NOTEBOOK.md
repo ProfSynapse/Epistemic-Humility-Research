@@ -6,6 +6,26 @@ in `experiment.yaml`.
 
 ## Entries
 
+- 2026-07-12 (fleet abandoned, user decision; resolve arc opens): with three
+  of four small-tier families G0-stopped before held-out (qwen35_4b 0.326
+  peak, llama32_3b 0.184 peak, mistral7b 0.000 flat) the registered
+  prediction (at least 3 of 4 small-tier families pass) is arithmetically
+  unreachable, so the user decided in-conversation to launch no further
+  cells (gemma4_e4b and the mid-tier remain unlaunched; gemma3_12b was
+  already access-blocked). The experiment moves to resolve as
+  not-promoted. Note for the Outcome: the registered falsifier is defined
+  on held-out G1/G2/G3 fails and can never trigger when cells stop at G0,
+  a wording gap to record honestly. Before writing the Outcome, a CPU
+  audit was dispatched over the existing anchor captures to test whether
+  each cell's fitted c_hat actually reads refusal in that model's own
+  activations (refused-vs-answered AUROC for c_hat, u_d, random, and a raw
+  mass-mean refusal direction, plus cosines): the prior cross-family
+  readout claim (Amendment Z) certified gate/dial/veto READING only and
+  never certified a caution/refusal direction in any family, and this
+  experiment's G0 gated only the doubt gate's AUC, never c_hat's semantic
+  validity. The audit result determines whether the per-family actuation
+  nulls are "no lever at this direction" or "we never fit the lever."
+
 - 2026-07-12 (mistral7b_instruct_v03 terminal: G0 FIT dose-viability fail,
   true behavioral null): the bracketed dose sweep completed on all seven
   doses (1129 rows per arm) and the registered FIT-only selection rule
