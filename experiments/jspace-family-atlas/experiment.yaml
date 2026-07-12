@@ -1,0 +1,29 @@
+slug: jspace-family-atlas
+title: jspace-family-atlas
+type: probe-fit
+status: draft
+registered: true
+created_at: '2026-07-12T12:41:44Z'
+question: >-
+  Where does each non-Qwen family's workspace midband sit (eff_dim_frac
+  profile over depth), and do the doubt, caution, and raw-refusal axes read
+  there, supplying the per-family layer map the doubt-snap fleet never had?
+prediction: >-
+  Each mapped family shows an interior workspace band strictly inside 20-85
+  percent depth where eff_dim_frac peaks and all three read axes hold
+  held-out AUROC >= 0.80, with the peak differing from the ported 0.94-depth
+  layer.
+falsifier: >-
+  For either family: no interior eff_dim_frac peak (monotone to the last
+  layer), or no layer inside 20-85 percent depth reaches AUROC >= 0.80 on all
+  three axes simultaneously.
+checkpoint:
+  repo: ''
+  revision: ''
+instrument:
+  configs: []
+  modules: []
+  pins: {}
+inputs: []
+verdict: ''
+kg: []
