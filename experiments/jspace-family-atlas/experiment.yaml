@@ -1,36 +1,39 @@
 slug: jspace-family-atlas
 title: jspace-family-atlas
 type: probe-fit
-status: draft
+status: signed
 registered: true
 created_at: '2026-07-12T12:41:44Z'
-question: >-
-  Where does each non-Qwen family's workspace midband sit (eff_dim_frac
-  profile over depth), and do the doubt, caution, and raw-refusal axes read
-  there, supplying the per-family layer map the doubt-snap fleet never had?
-prediction: >-
-  Each mapped family shows an interior workspace band strictly inside 20-85
-  percent depth where eff_dim_frac peaks and all three read axes hold
-  held-out AUROC >= 0.80, with the peak differing from the ported 0.94-depth
-  layer.
-falsifier: >-
-  For either family: no interior eff_dim_frac peak (monotone to the last
-  layer), or no layer inside 20-85 percent depth reaches AUROC >= 0.80 on all
-  three axes simultaneously.
+question: Where does each non-Qwen family's workspace midband sit (eff_dim_frac profile
+  over depth), and do the doubt, caution, and raw-refusal axes read there, supplying
+  the per-family layer map the doubt-snap fleet never had?
+prediction: Each mapped family shows an interior workspace band strictly inside 20-85
+  percent depth where eff_dim_frac peaks and all three read axes hold held-out AUROC
+  >= 0.80, with the peak differing from the ported 0.94-depth layer.
+falsifier: 'For either family: no interior eff_dim_frac peak (monotone to the last
+  layer), or no layer inside 20-85 percent depth reaches AUROC >= 0.80 on all three
+  axes simultaneously.'
 checkpoint:
   repo: ''
   revision: ''
 instrument:
   configs:
-    - cell.yaml
-    - gates.yaml
+  - cell.yaml
+  - gates.yaml
   modules:
-    - render_jspace_atlas.py
-    - capture_atlas_cell.py
-    - profile_and_read_panel.py
-    - smoke_profile_and_read_panel.py
-    - cloud/modal_jspace_atlas.py
-  pins: {}
+  - render_jspace_atlas.py
+  - capture_atlas_cell.py
+  - profile_and_read_panel.py
+  - smoke_profile_and_read_panel.py
+  - cloud/modal_jspace_atlas.py
+  pins:
+    cell.yaml: 3ad62846fdd273e878ddd8bff96ba08c5a8dca2914f45e0d526f67837a4dae6a
+    gates.yaml: 1d889488bd70ce8a39759a6f088fa79685161a752c08710742b7f842a1f25a7a
+    render_jspace_atlas.py: d9888307dcdbcd52ea3c2dcd1244a750e0a53865c2978b875d2ae8b6bddff2ca
+    capture_atlas_cell.py: 8366f612308d0dd8b84791f233e4bd500fe30ccc5438e512879845c5f070e840
+    profile_and_read_panel.py: 424c44ab2092a9bc40d65e0c5324568ef78883a02bc62ec1f91567a7c423fb35
+    smoke_profile_and_read_panel.py: 0766b40be2eff4c247bc1f7732f53c5366ec4f2c0daa498a403f1b4c53cb5635
+    cloud/modal_jspace_atlas.py: fe7e44381117893aacc010041f2b2d7efdf2d2cd4fa15d40c318c751f99240cb
 inputs: []
 verdict: ''
 kg: []

@@ -1,6 +1,6 @@
 # jspace-family-atlas
 
-Status: draft (not signed; do not launch as confirmatory evidence).
+Status: signed 2026-07-12 (instrument pinned, predictions registered pre-launch; user launch approval granted 2026-07-12, two capture cells, $10 operational cap).
 
 Keep this document the prose home for the experiment. The machine state lives in
 `experiment.yaml` and is never duplicated here.
@@ -122,8 +122,8 @@ layer choice cannot be blamed for its fleet null on this evidence.
 
 | Predictor | Call |
 |-----------|------|
-| orchestrator | |
-| user | |
+| orchestrator | Holds on both families: each shows an interior workspace band with all three axes >= 0.80 held-out in-band; mistral's caution axis is the riskiest of the six family-axis pairs. Registered 2026-07-12, pre-launch. |
+| user | Holds on both families (selected from the registered options 2026-07-12, pre-launch). |
 
 ## Outcome
 
