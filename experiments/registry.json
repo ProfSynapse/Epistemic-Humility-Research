@@ -1753,7 +1753,11 @@
           "smoke_profile_and_read_panel.py": "0766b40be2eff4c247bc1f7732f53c5366ec4f2c0daa498a403f1b4c53cb5635"
         }
       },
-      "kg": [],
+      "kg": [
+        "experiment:jspace-family-atlas",
+        "mechanism:workspace-band-peak-location-is-family-relative",
+        "mechanism:refused-vs-known-contrast-carries-norm-position-confound"
+      ],
       "prediction": "Each mapped family shows an interior workspace band strictly inside 20-85 percent depth where eff_dim_frac peaks and all three read axes hold held-out AUROC >= 0.80, with the peak differing from the ported 0.94-depth layer.",
       "question": "Where does each non-Qwen family's workspace midband sit (eff_dim_frac profile over depth), and do the doubt, caution, and raw-refusal axes read there, supplying the per-family layer map the doubt-snap fleet never had?",
       "registered": true,

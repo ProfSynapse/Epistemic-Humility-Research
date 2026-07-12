@@ -39,4 +39,7 @@ verdict: prediction failed in both families because the eff_dim_frac profile pea
   early (0.09-0.14 depth) rather than interior, while the read panel delivered the
   intended per-family layer map with an interior band (llama 15-23, mistral 7-27)
   where doubt, caution, and raw refusal all read >= 0.80 held-out
-kg: []
+kg:
+- experiment:jspace-family-atlas
+- mechanism:workspace-band-peak-location-is-family-relative
+- mechanism:refused-vs-known-contrast-carries-norm-position-confound

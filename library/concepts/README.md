@@ -690,7 +690,7 @@ Atomic notes extracted from the library papers via the Agents-K1 ingestion skill
 - [[valence-arousal-subspace]] : A two-dimensional linear subspace in LLM activation space spanned by a recovered valence axis (pleasure-displeasure) and arousal axis (activ
 - [[world-model-hallucination-modes]] : A three-type taxonomy of failure modes in generative world models, each anchored to a different pipeline stage. Perceptual hallucination occ
 
-## Mechanisms (cause -> effect) (400)
+## Mechanisms (cause -> effect) (402)
 
 - [[abstention-generalization-failure]] : 'instruction-tuning for abstention on a narrow, homogeneous set of refusal expressions and task formats' **prevents** Abstention ability does not generalize to 
 - [[abstract-representations-enable-zero-shot-generalization]] : High degree of abstract (parallel) representation in ANN hidden layers, as measured by parallelism-score, indicating that compositional rule dimensions are enco
@@ -972,6 +972,7 @@ Atomic notes extracted from the library papers via the Agents-K1 ingestion skill
 - [[refusal-directions-are-geometrically-distinct]] : Different refusal and non-compliance categories are represented in activation space. **complicates** A single refusal-direction account can be incomplete across
 - [[refusal-threshold-varies-by-unanswerability-flavor]] : Regressing refuse/answer behavior on caution boundary distance jointly with unanswerability flavor (942 eligible generations, instruction-tuned checkpoint on th
 - [[refusal-tuning-fails-to-generalize-across-hallucination-types]] : UHs occupy a common activation subspace across different subjects (because they share weak subject-information propagation), while AHs have diverse, subject-spe
+- [[refused-vs-known-contrast-carries-norm-position-confound]] : At the final-prompt-token anchor position, the refused-vs-known (doubt) contrast is not cleanly axis-specific: in jspace-family-atlas's post-hoc random-directio
 - [[relative-framing-unlocks-linear-probing]] : Framing board state relative to the current player (Mine/Yours/Empty) rather than absolute colour (Black/White/Empty) **increases** Linear probes achieve approx
 - [[repind-directions-are-input-accessible]] : GCG adversarial suffix optimisation with an added loss term penalising representation of RepInd-1 in residual-stream activations **enables** Suffixes reduce cos
 - [[representation-engineering-enables-reading-and-control]] : Population-level representation-engineering methods identify and manipulate high-level model representations. **enables** Model-internal states can be read or c
@@ -1092,6 +1093,7 @@ Atomic notes extracted from the library papers via the Agents-K1 ingestion skill
 - [[verification-advantage-over-generation]] : Increasing language model parameter count (800M to 52B) while evaluating P(True) self-evaluation on sampling-based tasks at unit temperature **increases** The g
 - [[veto-saturates-by-first-visible-token]] : Reading the post-generation correctness/veto axis at token granularity across the answer window (first visible token through answer end, veto axis refit per pos
 - [[within-sample-correlation-symmetry-limits-probability-voting]] : Within-sample log-probability/correctness correlations distributed symmetrically around zero across diverse benchmarks **decreases** Reliability of probability-
+- [[workspace-band-peak-location-is-family-relative]] : On two non-Qwen instruction-tuned families captured full-depth (Llama-3.2-3B-Instruct, Mistral-7B-Instruct-v0.3; jspace-family-atlas), the per-layer eff_dim_fra
 
 ## Gaps (verified literature absences) (1)
 
