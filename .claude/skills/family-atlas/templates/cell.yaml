@@ -1,0 +1,101 @@
+# <slug> instrument config template. Copy into experiments/<slug>/cell.yaml
+# after `bin/exp new`, then fill every <PLACEHOLDER>.
+#
+# READ-ONLY mapping instrument: no steering, no interventions, no writes to
+# activations, no re-mining, no re-generation. Reuse an existing experiment's
+# already-mined row pool, baseline gradings, and role/split assignments
+# verbatim whenever one exists for this substrate (source: its own
+# model_matrix.yaml / split_manifest.json). Only mine a fresh pool per the
+# program's standard roles (confab / known_correct_answered / unknown_refused)
+# if no reusable pool exists.
+
+seed: <SEED>  # e.g. 20260707; reuse the source pool's own seed convention if one exists
+bootstrap_resamples: 2000
+
+cells:
+  - cell_id: <family>_<size>_<variant>  # e.g. llama32_3b_instruct
+    family: <family>                    # e.g. llama
+    repo: <hf_org/hf_repo>               # e.g. unsloth/Llama-3.2-3B-Instruct
+    revision: <hf_revision_sha>          # pin the exact HF revision, never a moving tag
+    num_hidden_layers: <N>
+    hidden_size: <D>
+    # n_hidden_states = num_hidden_layers + 1 (index 0 = embeddings, 1..N =
+    # block outputs; see synaptic-tuner/tuner/batch/engines/hf_batched.py
+    # _resolve_layers). Full depth means every one of these indices.
+    n_hidden_states: <N+1>
+    # Optional: if a prior amendment ported a layer from another family (a
+    # "ported fleet layer"), record it here for comparison in the registry
+    # row. Not used by the capture/scoring scripts themselves.
+    ported_fleet_layer_idx_block: <block index or omit>
+    ported_fleet_hs_index: <hs index or omit>
+    source:
+      # Name whichever experiment's row pool you are reusing verbatim, or
+      # "freshly_mined" plus a pointer to the mining script if this cell
+      # mines its own pool.
+      fleet_experiment: <source experiment slug or freshly_mined>
+      fleet_cell_id: <source cell_id, if reused>
+      row_pool_path: "<path to the row-pool JSONL, read-only>"
+      # Row counts, verified directly against the source's own committed
+      # split manifest (aggregate fields only; no row text touched).
+      manifest_row_count: <N>
+      role_counts:
+        confab: <N>
+        known_correct_answered: <N>
+        unknown_refused: <N>
+      role_split_counts:
+        confab_fit: <N>
+        confab_held_out: <N>
+        known_correct_answered_fit: <N>
+        known_correct_answered_held_out: <N>
+        unknown_refused_fit_only: <N>  # or unknown_refused_fit / unknown_refused_held_out if already two-sided
+
+capture:
+  # Manual tokenize + last-token position. Must mirror whichever source
+  # experiment's own anchor extraction you are auditing against EXACTLY
+  # (not the batch-capture engine's "last" string position spec) -- see
+  # templates/render_example.py and SKILL.md gotchas.
+  position_name: anchor
+  position_rule: "len(token_ids) - 1 (manual tokenize, add_special_tokens=True)"
+  layers: all  # synaptic-tuner batch-capture --layers all -> range(n_hidden_states)
+  engine: hf-batched
+  persist_dtype: float32
+  render_module: "<path to your copy of render_example.py, adapted>"
+  render_system_prompt_source: "<ported verbatim from: name the source experiment's render.py>"
+  no_re_mining: true
+  no_re_generation: true
+  no_steering_hooks: true
+
+split:
+  # Carried verbatim from the source pool's committed split manifest, or
+  # freshly assigned by a stratified_split matching the program's standard
+  # convention. Not refit here.
+  source: <fleet_committed_split_manifest or freshly_mined>
+  labels: [fit, held_out, fit_only]
+  fit_only_roles: [unknown_refused]  # drop this line if your source already has held-out refused rows
+
+profile:
+  metric: eff_dim_frac
+  estimator: participation_ratio
+  # Same estimator formula as every prior atlas cell (participation ratio /
+  # n_samples on the FIT-row anchor hidden-state matrix). NOT comparable to
+  # a JVP-based profile from a different instrument; comparable across this
+  # atlas's own cells only. See SKILL.md gotchas.
+  fit_rows_only: true
+
+read_panel:
+  axes:
+    doubt:
+      contrast: "known_correct_answered (positive) vs unknown_refused (negative)"
+      fit_definition: "unit(mean(H[known_correct_answered, FIT]) - mean(H[unknown_refused, refused_fit]))"
+    caution:
+      contrast: "unknown_refused/refused (positive) vs confab (negative)"
+      fit_definition: "unit(mean(H[unknown_refused, refused_fit]) - mean(H[confab, FIT]))"
+    raw_refusal:
+      contrast: "unknown_refused/refused (positive) vs {confab UNION known_correct_answered}/answered (negative)"
+      fit_definition: "unit(mean(H[unknown_refused, refused_fit]) - mean(H[confab, FIT] + H[known_correct_answered, FIT]))"
+  fit_on: "FIT known/confab rows plus refused_fit"
+  score_on: "held-out known/confab rows plus refused_eval (two-sided held-out for every axis)"
+  bootstrap_resamples: 2000
+  bootstrap_seed: <SEED>
+  metric: held_out_auroc
+  random_direction_control: true  # standard part of the panel output; do not disable without a signed amendment revision
