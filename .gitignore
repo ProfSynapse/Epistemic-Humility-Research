@@ -80,3 +80,8 @@ archive/experiment/phase1/probe/android-chrome-*.png
 archive/experiment/phase1/probe/apple-touch-icon.png
 # local-scope agent instructions for the probe dir
 archive/experiment/phase1/probe/CLAUDE.md
+
+# Shared Phase 1 infrastructure migrated out of the untracked experiment/
+# tree (bin/migrate_phase1_outputs.py): per-checkpoint probe extraction,
+# run records, data staging, configs, logs with no single owning amendment.
+archive/experiment/phase1-data/
