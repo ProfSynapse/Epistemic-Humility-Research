@@ -1732,8 +1732,17 @@
       "falsifier": "For either family: no interior eff_dim_frac peak (monotone to the last layer), or no layer inside 20-85 percent depth reaches AUROC >= 0.80 on all three axes simultaneously.",
       "inputs": [],
       "instrument": {
-        "configs": [],
-        "modules": [],
+        "configs": [
+          "cell.yaml",
+          "gates.yaml"
+        ],
+        "modules": [
+          "render_jspace_atlas.py",
+          "capture_atlas_cell.py",
+          "profile_and_read_panel.py",
+          "smoke_profile_and_read_panel.py",
+          "cloud/modal_jspace_atlas.py"
+        ],
         "pins": {}
       },
       "kg": [],

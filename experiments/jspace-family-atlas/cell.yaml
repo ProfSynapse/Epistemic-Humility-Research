@@ -1,8 +1,145 @@
-# TODO: replace this placeholder with the pinned experiment instrument.
-# Keep this file in the experiment directory unless the runner skill for this
-# experiment type requires a different config layout.
-#
-# Before signing:
-# - fill the actual runner/tuner config
-# - list this file under experiment.yaml instrument.configs
-# - run `bin/exp sign <slug>` to pin the final bytes
+# jspace-family-atlas instrument config.
+# READ-ONLY mapping instrument: no steering, no interventions, no writes to
+# activations, no re-mining, no re-generation. Reuses the doubt-snap-cross-
+# family-confirmatory fleet's already-mined row pools, baseline gradings, and
+# role/split assignments verbatim (source: experiments/doubt-snap-cross-family-
+# confirmatory/model_matrix.yaml, split_manifest.json per cell).
+
+seed: 20260707
+bootstrap_resamples: 2000
+
+cells:
+  - cell_id: llama32_3b_instruct
+    family: llama
+    repo: unsloth/Llama-3.2-3B-Instruct
+    revision: 006f5dcd1393c3add266de40994ba96225e9689d
+    num_hidden_layers: 28
+    hidden_size: 3072
+    # n_hidden_states = num_hidden_layers + 1 (index 0 = embeddings, 1..N =
+    # block outputs; see synaptic-tuner/tuner/batch/engines/hf_batched.py
+    # _resolve_layers). Full depth means every one of these indices.
+    n_hidden_states: 29
+    # Fleet's ported comparator layer (registered rule: round(0.94 *
+    # (num_hidden_layers - 1)), 0-indexed decoder block; hs_index = block + 1).
+    # round(0.94 * 27) = round(25.38) = 25 -> hs_index 26.
+    ported_fleet_layer_idx_block: 25
+    ported_fleet_hs_index: 26
+    source:
+      fleet_experiment: doubt-snap-cross-family-confirmatory
+      fleet_cell_id: llama32_3b_instruct
+      modal_volume: eh-doubt-snap-cross-family
+      modal_run_tag: doubt-snap-cross-family-r1
+      row_pool_path: "_live/llama32_3b_instruct/analysis/split_rows_private.jsonl"
+      split_manifest_committed_path: "llama32_3b_instruct/analysis-committed/split_manifest.json"
+      # Row counts verified directly from the committed split_manifest.json
+      # pulled read-only via `modal volume get` on 2026-07-12 (aggregate
+      # counts only; no row text touched).
+      manifest_row_count: 2956
+      role_counts:
+        confab: 1453
+        known_correct_answered: 556
+        unknown_refused: 947
+      role_split_counts:
+        confab_fit: 581
+        confab_held_out: 872
+        known_correct_answered_fit: 222
+        known_correct_answered_held_out: 334
+        unknown_refused_fit_only: 947
+
+  - cell_id: mistral7b_instruct_v03
+    family: mistral
+    repo: mistralai/Mistral-7B-Instruct-v0.3
+    revision: c170c708c41dac9275d15a8fff4eca08d52bab71
+    num_hidden_layers: 32
+    hidden_size: 4096
+    n_hidden_states: 33
+    # round(0.94 * 31) = round(29.14) = 29 -> hs_index 30.
+    ported_fleet_layer_idx_block: 29
+    ported_fleet_hs_index: 30
+    source:
+      fleet_experiment: doubt-snap-cross-family-confirmatory
+      fleet_cell_id: mistral7b_instruct_v03
+      modal_volume: eh-doubt-snap-cross-family
+      modal_run_tag: doubt-snap-cross-family-r1
+      row_pool_path: "_live/mistral7b_instruct_v03/analysis/split_rows_private.jsonl"
+      split_manifest_committed_path: "mistral7b_instruct_v03/analysis-committed/split_manifest.json"
+      manifest_row_count: 3037
+      role_counts:
+        confab: 2186
+        known_correct_answered: 637
+        unknown_refused: 214
+      role_split_counts:
+        confab_fit: 874
+        confab_held_out: 1312
+        known_correct_answered_fit: 255
+        known_correct_answered_held_out: 382
+        unknown_refused_fit_only: 214
+
+capture:
+  # Manual tokenize + last-token position, mirroring
+  # doubt-snap-cross-family-confirmatory/prep_tuner_cell.py capture_anchor()
+  # exactly (token_ids = tok(prompt, add_special_tokens=True)["input_ids"];
+  # positions = {"anchor": len(token_ids) - 1}) rather than the batch-capture
+  # engine's "last" string position spec, for audit-parity with the fleet's
+  # own anchor extraction.
+  position_name: anchor
+  position_rule: "len(token_ids) - 1 (manual tokenize, add_special_tokens=True)"
+  layers: all  # synaptic-tuner batch-capture --layers all -> range(n_hidden_states), i.e. 0..num_hidden_layers inclusive
+  engine: hf-batched
+  persist_dtype: float32
+  render_fn: "render_jspace_atlas.py:render"
+  render_system_prompt_source: "ported verbatim from doubt-snap-cross-family-confirmatory/render.py BASELINE_SYSTEM_PROMPT"
+  no_re_mining: true
+  no_re_generation: true
+  no_steering_hooks: true
+
+split:
+  # Carried verbatim from each fleet cell's committed split_manifest.json.
+  # Not refit here. fit_only_roles rows (unknown_refused) never appear in
+  # held-out; they exist only to define the doubt/caution/refusal contrasts.
+  source: fleet_committed_split_manifest
+  labels: [fit, held_out, fit_only]
+  fit_only_roles: [unknown_refused]
+
+profile:
+  metric: eff_dim_frac
+  estimator: participation_ratio
+  # Byte-identical port of the estimator in
+  # experiments/qwen35-4b-midband-doubt-snap/jlens_qwen35.py:
+  #   _participation_ratio (lines 183-193): center columns, form the n x n
+  #   sample Gram matrix (x @ x.T) / (n - 1), take eigvalsh, s1 = sum(eig),
+  #   s2 = sum(eig^2), return s1*s1/s2 (participation ratio, bounded in
+  #   [1, n]).
+  #   Normalization convention (jlens_qwen35.py:224):
+  #   effective_dim_frac = _participation_ratio(mat) / mat.shape[0]
+  # RESOLVED AMBIGUITY (flagged for lead review): Stage A computes this on
+  # corpus-averaged JVP "push" vectors from 5 random directions via
+  # double-backward (a fundamentally different, much more expensive
+  # computation requiring gradients through the model). This atlas is
+  # capture-only (no gradients, no steering hooks per AMENDMENT.md); "the
+  # same estimator" is interpreted here as the identical _participation_ratio
+  # math and PR/n normalization convention, applied directly to the per-layer
+  # matrix of FIT-row anchor hidden-state vectors (n_fit_rows x hidden_dim)
+  # in place of the JVP-push matrix. This is the only reading consistent with
+  # AMENDMENT.md's "capture plus CPU scoring only" spend statement.
+  fit_rows_only: true
+
+read_panel:
+  axes:
+    doubt:
+      contrast: "known_correct_answered (positive) vs unknown_refused (negative)"
+      fit_definition: "unit(mean(H[known_correct_answered, FIT]) - mean(H[unknown_refused]))"
+      note: "unknown_refused is fit_only (no held-out unknown_refused rows exist); AUROC is scored on held-out known_correct_answered vs the same FIT-only unknown_refused pool, matching the fleet's own u_d construction (prep_tuner_cell.py fit_directions: h_known vs h_unknown)."
+    caution:
+      contrast: "unknown_refused/refused (positive) vs confab (negative)"
+      fit_definition: "unit(mean(H[unknown_refused]) - mean(H[confab, FIT]))"
+      note: "fleet's pre-orthogonalization caution_dir construction (prep_tuner_cell.py fit_directions: caution = unit(h_ak[refused].mean - h_ak[confab].mean)); this atlas reports the pre-orthogonalization caution axis only, not c_hat."
+    raw_refusal:
+      contrast: "unknown_refused/refused (positive) vs {confab UNION known_correct_answered}/answered (negative)"
+      fit_definition: "unit(mean(H[unknown_refused]) - mean(H[confab, FIT] + H[known_correct_answered, FIT]))"
+      note: "role fully determines refused/answered status (assign_roles: unanswerable+refused -> unknown_refused; unanswerable+answered -> confab; answerable+well_formed_correct -> known_correct_answered), so no additional private boolean fields are needed beyond role."
+  fit_on: fit rows only (respecting each axis's own fit/held-out row set above)
+  score_on: held_out rows only (per axis, as defined above)
+  bootstrap_resamples: 2000
+  bootstrap_seed: 20260707
+  metric: held_out_auroc

@@ -21,8 +21,15 @@ checkpoint:
   repo: ''
   revision: ''
 instrument:
-  configs: []
-  modules: []
+  configs:
+    - cell.yaml
+    - gates.yaml
+  modules:
+    - render_jspace_atlas.py
+    - capture_atlas_cell.py
+    - profile_and_read_panel.py
+    - smoke_profile_and_read_panel.py
+    - cloud/modal_jspace_atlas.py
   pins: {}
 inputs: []
 verdict: ''
