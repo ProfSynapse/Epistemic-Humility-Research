@@ -57,9 +57,37 @@ what arm/dose produced it, and how it graded. This is gated by
 `reference/license-gates.md` because the row's `question`/prompt provenance
 traces back to a source dataset whose redistribution terms matter even though
 we generated the completion ourselves: the row identifies which licensed
-question was asked. Only rows whose `source` resolves to a `permitted` verdict
-in the license-gates table may carry text; everything else is excluded from
-the row-level dataset entirely (not redacted in place, dropped).
+question was asked.
+
+Prior art: `docs/datasets/jspace-fresh-pool-public-census-plan.md`'s "Release
+Boundary" section independently reached the same per-source posture for KUQ,
+SelfAware, PopQA, and TriviaQA before the task #21 audit ran, and its
+published release (`professorsynapse/eh-jspace-fresh-pool-census-qwen3-4b`,
+via `experiments/j-space-layer-contrast-replication-qwen3-4b/build_hf_public_census.py`)
+is the field-naming precedent this schema follows for the text-free category:
+`row_key`, gold class/role, `source`, `category_canon`, and text-free
+behavior flags (`answered`, `refused`, `correct`, `degenerate`, natural-stop
+and token counts). This schema's boolean field names additionally follow this
+project's own graders exactly (`experiments/doubt-snap-cross-family-confirmatory/grader.py`'s
+`grade_one` and `gen_lib.py`'s `grade_clean_tighten`), rather than inventing
+new names, so a row-level dataset's fields are traceable straight back to the
+grading code that produced them.
+
+Each source's verdict in `reference/license-gates.md` gives every row one of
+three dispositions, decided per row (a mixed-source `rows.jsonl` file can
+carry rows in more than one disposition at once):
+
+1. **Full text** (`permitted` / `permitted-with-conditions`): the row keeps
+   every field, including the two text-bearing ones. `permitted-with-conditions`
+   additionally requires the built README to disclose that source's license
+   condition verbatim (see the Provenance block below).
+2. **Text-free** (`text-free-only`): the row keeps every field EXCEPT the
+   text-bearing ones (`generation_text`, `answer_value` are dropped; nothing
+   else is touched).
+3. **Excluded** (`forbidden` / `pending-audit`): the row does not appear in
+   the output at all, in any form. `pending-audit` (any source with no table
+   entry) gets this disposition too, since it is "unaudited," not "audited as
+   text-free-safe" -- a genuinely different finding.
 
 Row-level datasets are optional: they only get built when the operator passes
 `--rows-dir` pointing at locally staged JSONL (row text for a resolved
@@ -67,12 +95,15 @@ experiment typically lives on a Modal volume or an HF Jobs results repo, not
 in this git checkout, so staging is a separate, deliberate step before this
 builder runs).
 
-Row schema (one JSON object per line):
+Row schema (one JSON object per line). Text-bearing fields
+(`generation_text`, `answer_value`) are shown here for the full-text case;
+a text-free row omits both and keeps everything else:
 
 ```json
 {
   "row_key": "triviaqa:tc_123456",
   "source": "triviaqa",
+  "category_canon": "triviaqa",
   "role": "known_correct_answered",
   "split": "held_out",
   "cell_id": "llama32_3b_instruct",
@@ -82,12 +113,19 @@ Row schema (one JSON object per line):
   "arm": "gated",
   "dose_or_strength": 42.0,
   "generation_text": "...",
+  "answer_value": "...",
   "well_formed": true,
+  "n_answer_keys": 1,
+  "single_answer_key": true,
+  "trailing_clean": true,
+  "answered": true,
   "correct": true,
+  "well_formed_correct": true,
   "refused": false,
   "semantic_refuse": false,
   "degenerate": false,
   "clean_tighten": false,
+  "terminated_naturally": true,
   "seed": 20260707
 }
 ```
@@ -97,17 +135,21 @@ Field notes:
 - `row_key`: `<source>:<id>` matching the project convention already used in
   `split_manifest.json` (see `experiments/doubt-snap-cross-family-confirmatory/prep_tuner_cell.py`).
 - `source` is the field the license gate matches against (case-insensitive,
-  aliases included).
+  aliases included); `category_canon` is the finer-grained source/category
+  metadata already used in `split_manifest.json` and the J-space census.
 - `cell_id`/`model`/`model_revision` pin exactly which model produced the row;
   never publish a row without its revision.
 - `dose_or_strength` is the applied intervention strength (0.0 for baseline).
-- `generation_text` is present ONLY when the gate allows it; when a row's
-  source is excluded, the row is dropped from the output, not included with
-  `generation_text` blanked. A dropped row still counts in the per-source
-  exclusion tally the builder prints and writes into `PROVENANCE.json`.
-- Graded booleans (`well_formed`, `correct`, `refused`, `semantic_refuse`,
-  `degenerate`, `clean_tighten`) are whatever the experiment's own grader
-  computed; they are never re-derived by the exhaust builder.
+- `generation_text` (the raw completion) and `answer_value` (the parsed
+  answer field extracted by `gen_lib.grade_clean_tighten`) are the ONLY two
+  text-bearing fields; they are the ones stripped in the text-free-only
+  disposition and the ones the verifier checks for absence there.
+- Every other field is a graded boolean or count our own grader already
+  produces, never re-derived by the exhaust builder: `well_formed`,
+  `n_answer_keys`, `single_answer_key`, `trailing_clean`, `semantic_refuse`,
+  `degenerate`, `clean_tighten`, `terminated_naturally` (from
+  `gen_lib.grade_clean_tighten`); `answered`, `correct`, `refused`,
+  `well_formed_correct` (from `grader.grade_one`). None of these are text.
 - `seed` is the generation seed, for reproducibility, not a privacy field.
 
 On-disk shape (row mode):
@@ -117,7 +159,7 @@ On-disk shape (row mode):
   README.md
   PROVENANCE.json
   <cell_id>/
-    rows.jsonl               # only rows whose source verdict == permitted
+    rows.jsonl               # rows kept full-text or text-free; excluded rows are absent
 ```
 
 If a cell's rows are entirely excluded by the gate, its folder still appears
@@ -136,8 +178,12 @@ manifest is never silently short a cell.
   "instrument_config_sha256": {"cell.yaml": "...", "gates.yaml": "...", "model_matrix.yaml": "..."},
   "generation_date": "2026-07-12T00:00:00Z",
   "shape": "aggregate | rows",
-  "cells": {"<cell_id>": {"files": ["dose_fit.json", "..."], "missing_expected": []}},
-  "license_gate_excluded": {"<source>": <int rows dropped>}
+  "cells": {
+    "<cell_id>": {"files": ["dose_fit.json", "..."], "missing_expected": []},
+    "<cell_id_row_shape>": {"n_rows_kept_with_text": 0, "n_rows_kept_text_free": 0}
+  },
+  "license_gate_excluded": {"<source>": "<int rows dropped entirely (forbidden or pending-audit)>"},
+  "sources_present": {"<source>": "<verdict of every source that appears in at least one kept row>"}
 }
 ```
 
@@ -146,4 +192,7 @@ manifest is never silently short a cell.
 recorded), not recomputed, so the exhaust always points at the exact signed
 instrument. `license_gate_excluded` is present (possibly empty) even on
 aggregate builds, since the aggregate builder still runs the hard-exclusion
-structural scan.
+structural scan. `sources_present` is empty on aggregate builds; on row-level
+builds it drives both the README's "License and Attribution" section and
+`verify_exhaust.py`'s disclosure check for any `permitted-with-conditions`
+source.

@@ -2,44 +2,63 @@
 
 Per-source redistribution verdicts for row-level text in HF dataset exhaust.
 This table is the single gate every row-level build consults before including
-any generation text, question text, or alias in a public Hugging Face dataset.
-Aggregate artifacts (dose-response tables, direction fits, manifests, AUROCs)
-carry no source text and are not gated by this table; they still carry the
-hard exclusions below as a structural check, not a license question.
+any generation text, question-derived answer text, or alias in a public
+Hugging Face dataset. Aggregate artifacts (dose-response tables, direction
+fits, manifests, AUROCs) carry no source text and are not gated by this
+table; they still carry the hard exclusions below as a structural check, not
+a license question.
 
 The backlog license audit ("License audit: TriviaQA/PopQA/KUQ/SelfAware
-redistribution", task #21) completed on 2026-07-12 while this skill was being
-built. Its full table was parked at `scratchpad/license_audit_verdicts.md` for
-delivery to this skill, but that file lives in the auditor agent's own
-session-scoped scratchpad and was not reachable from here; only the tracker's
-one-line-per-source summary was available. KUQ and TriviaQA got unambiguous,
-single-line verdicts with no caveat to transcribe, so they are filled in below.
-SelfAware's audited verdict carries a caveat ("Quora-origin caveat") whose exact
-scope was not transcribed anywhere reachable from this skill; it is left
-`pending-audit` rather than guessed, per the same fail-closed rule this table
-already applies to unknown sources. PopQA's audited finding ("no HF license tag")
-is not a permissive verdict either, so it also stays `pending-audit`. The lead
-should reconcile this table against the actual audit file once it lands, and
-in particular confirm or correct the SelfAware caveat before it is marked
-`permitted`. Do not fill in any OTHER permissive verdict ahead of a citable
-audit result, even if a similar claim already appears on an existing HF dataset
-card (for example `docs/public-artifacts.md`'s `eh-readout-rows` row); those
-notes are provenance for a prior release, not a substitute for this table.
+redistribution", task #21) completed on 2026-07-12. The lead ran it directly
+(the auditor agent stalled) and delivered the full table below, citing local
+dataset cards (`datasets/kuq/dataset.md`, `datasets/selfaware/dataset.md`,
+`datasets/popqa/dataset.md`, `datasets/triviaqa-rc-nocontext/dataset.md`) and
+upstream sources verified against the raw HF README / GitHub repo. This
+supersedes an earlier version of this table that only had the task tracker's
+one-line summary and left KUQ/TriviaQA/PopQA/SelfAware unresolved.
+
+This table's posture matches, and is cross-referenced by,
+`docs/datasets/jspace-fresh-pool-public-census-plan.md`'s "Release Boundary"
+and "Source Posture" sections (prior art for a published text-free release:
+`professorsynapse/eh-jspace-fresh-pool-census-qwen3-4b`). That document
+independently reached the same per-source posture for KUQ, SelfAware, PopQA,
+and TriviaQA before this audit ran.
+
+## Verdict vocabulary
+
+Three dispositions, not two:
+
+- `permitted`: row kept with every field, including text-bearing ones
+  (`generation_text`, `answer_value`; see `reference/dataset-schema.md`).
+- `permitted-with-conditions`: row kept with every field, but the built
+  dataset's `README.md` MUST carry that source's `conditions` text verbatim
+  (a license notice or an origin disclosure, not a usage restriction).
+  `scripts/verify_exhaust.py` checks this.
+- `text-free-only`: row kept, but every text-bearing field is stripped before
+  the row is written. Row identity (`row_key`, `source`, `category_canon`),
+  role/split/cell/model/arm/dose metadata, and every graded boolean or count
+  our own graders produced all stay, since none of that is source text.
+- `forbidden`: row dropped entirely, in any form, never even text-free.
+- `pending-audit` (including any source with no table entry at all): row
+  dropped entirely. This is NOT the same finding as `text-free-only` -- it
+  means nobody has audited this source at all, not that an audit found the
+  metadata safe. Fail closed here, not to the middle tier.
 
 ## Machine-readable table
 
-`scripts/build_exhaust_dataset.py` and `scripts/verify_exhaust.py` parse the
-fenced YAML block below. Each entry:
+`scripts/_license_gate.py` (imported by both `build_exhaust_dataset.py` and
+`verify_exhaust.py`) parses the fenced YAML block below. Each entry:
 
 - `key`: canonical source id, matched against a row's `source` field
   (case-insensitive, and also matched against `aliases`).
 - `license`: what is currently known about the license, or `unknown`.
-- `verdict`: one of `permitted`, `forbidden`, `pending-audit`. Only
-  `permitted` allows row text through the row-level builder.
-- `conditions`: caveats, citation, or the reason for the current verdict.
+- `verdict`: one of `permitted`, `permitted-with-conditions`,
+  `text-free-only`, `forbidden`, `pending-audit`.
+- `conditions`: caveats, citation, disclosure text, or the reason for the
+  current verdict. For `permitted-with-conditions`, this exact text is what
+  gets checked for in the built dataset card.
 
-A source with no matching entry is treated as `pending-audit` (fail closed),
-not `permitted`.
+A source with no matching entry is treated as `pending-audit` (fail closed).
 
 ```yaml
 sources:
@@ -68,50 +87,56 @@ sources:
       archive/docs/architecture/phase1-pipeline.md). Same hardcoded backstop
       as openmoss_cheng_idk applies.
 
-  - key: triviaqa
-    aliases: ["triviaqa", "triviaqa-rc-nocontext"]
-    license: "unknown; UW disclaims question copyright"
-    verdict: forbidden
-    conditions: >-
-      Task #21 audit result (2026-07-12, tracker summary): NOT PERMITTED for
-      raw text. UW disclaims question copyright and the license is unknown.
-      Not a hard exclusion in the openmoss/bridge sense, but the audited
-      verdict for this workflow is forbidden until a different license basis
-      is established; do not flip to permitted on the strength of the
-      eh-readout-rows card's informal "research-use" note alone.
-
-  - key: popqa
-    aliases: ["popqa"]
-    license: "no HF license tag identified"
-    verdict: pending-audit
-    conditions: >-
-      Task #21 audit result (2026-07-12, tracker summary): UNCLEAR, no HF
-      license tag found. Not a permissive finding; stays pending-audit rather
-      than being marked permitted or forbidden on an unclear basis.
-
   - key: kuq
     aliases: ["kuq", "kuq_unknowns_all", "kuq_knowns_unknowns"]
-    license: "MIT (upstream-verified)"
+    license: "MIT"
     verdict: permitted
     conditions: >-
-      Task #21 audit result (2026-07-12, tracker summary): PERMITTED, MIT,
-      upstream-verified. No caveat recorded.
+      Task #21 audit (2026-07-12, lead-run). Local card
+      datasets/kuq/dataset.md: MIT. Verified upstream at
+      https://huggingface.co/datasets/amayuelas/KUQ. Preserve the MIT license
+      and attribution in the dataset card.
 
   - key: selfaware
     aliases: ["selfaware", "self_aware", "self-aware"]
-    license: "Apache-2.0, with a Quora-origin caveat (exact scope not yet
-      transcribed here)"
-    verdict: pending-audit
+    license: "Apache-2.0"
+    verdict: permitted-with-conditions
     conditions: >-
-      Task #21 audit result (2026-07-12, tracker summary): PERMITTED-WITH-
-      CONDITIONS, Apache-2.0, Quora-origin caveat. The exact caveat text (for
-      example whether it restricts a Quora-sourced subset of rows) was parked
-      in the auditor's own session-scoped scratchpad
-      (scratchpad/license_audit_verdicts.md) and was not reachable when this
-      table was written. Deliberately left pending-audit rather than
-      permitted: do not flip this to permitted without transcribing the actual
-      condition text into this field first, since "permitted with a condition
-      not yet on record" is not the same as "permitted."
+      Task #21 audit (2026-07-12, lead-run). Local card
+      datasets/selfaware/dataset.md: Apache-2.0. Verified upstream at
+      https://github.com/yinzhangyue/SelfAware. Preserve the Apache-2.0
+      notice, and the dataset card MUST disclose that the unanswerable
+      question text originates from Quora/HowStuffWorks per the SelfAware
+      paper. This is a third-party origin disclosure, not a usage
+      restriction: it does not block including SelfAware row text, it
+      requires the disclosure to be present alongside it.
+
+  - key: popqa
+    aliases: ["popqa"]
+    license: "not tagged on HF; no license statement in the upstream README"
+    verdict: text-free-only
+    conditions: >-
+      Task #21 audit (2026-07-12, lead-run). Local card
+      datasets/popqa/dataset.md notes a companion GitHub MIT license, but
+      that does not establish redistribution terms for the HF dataset card
+      itself: https://huggingface.co/datasets/akariasai/PopQA carries no
+      license tag and no license statement (verified via the raw README).
+      Text-free rows only: row_key, source ids, roles, splits, and graded
+      boolean/count fields. No question/answer text and no model
+      generations (a generation can quote the question back).
+
+  - key: triviaqa
+    aliases: ["triviaqa", "triviaqa-rc-nocontext"]
+    license: "unknown"
+    verdict: text-free-only
+    conditions: >-
+      Task #21 audit (2026-07-12, lead-run). Local card
+      datasets/triviaqa-rc-nocontext/dataset.md: license unknown, official
+      free-for-research-use. The HF mirror mandarjoshi/trivia_qa is tagged
+      license: unknown, and the official site states verbatim "The
+      University of Washington does not own the copyright of the questions
+      and documents included in TriviaQA." Not permitted for raw text.
+      Text-free rows only, same shape as popqa.
 
   - key: falseqa
     aliases: ["falseqa", "false_qa", "false-qa"]
@@ -119,10 +144,11 @@ sources:
       already flags FalseQA as a NO-LICENSE source for git-commit purposes)"
     verdict: pending-audit
     conditions: >-
-      Carry the same caution from the git-commit containment rule
-      (.skills/pr-workflow/SKILL.md) into HF row-level release. Do not default
-      to permitted just because a prior aggregate-only release excluded it
-      cleanly.
+      Not covered by the task #21 audit (that audit was scoped to
+      TriviaQA/PopQA/KUQ/SelfAware). Carry the same caution from the
+      git-commit containment rule (.skills/pr-workflow/SKILL.md) into HF
+      row-level release. Do not default to permitted, and do not default to
+      text-free-only, without a citable audit result for this source.
 ```
 
 ## Human-readable table
@@ -131,10 +157,10 @@ sources:
 |---|---|---|---|
 | `openmoss_cheng_idk` | none identified, vendored for internal use only | **forbidden** | hard exclusion, structural + table |
 | `bridge_llama2_7b_chat` | gated Llama 2 + vendored Cheng IDK | **forbidden** | hard exclusion, structural + table |
-| `kuq` | MIT, upstream-verified | **permitted** | task #21 audit, 2026-07-12, no caveat |
-| `selfaware` | Apache-2.0, Quora-origin caveat | pending-audit | task #21 audit found permitted-with-conditions; caveat text not yet transcribed, left pending rather than guessed |
-| `popqa` | no HF license tag identified | pending-audit | task #21 audit: unclear, not a permissive finding |
-| `triviaqa` | unknown; UW disclaims question copyright | **forbidden** | task #21 audit: not permitted for raw text |
+| `kuq` | MIT (upstream-verified) | **permitted** | task #21 audit, 2026-07-12; preserve MIT license + attribution |
+| `selfaware` | Apache-2.0 (upstream-verified) | **permitted-with-conditions** | task #21 audit; dataset card must disclose Quora/HowStuffWorks third-party origin |
+| `popqa` | not tagged on HF, no license statement | **text-free-only** | task #21 audit; row_key/role/split/graded-flags only, no question/answer/generation text |
+| `triviaqa` | unknown; UW disclaims question copyright | **text-free-only** | task #21 audit; same text-free shape as popqa |
 | `falseqa` | TODO-pending-audit (no license identified) | pending-audit | not covered by task #21; awaiting a separate license audit |
 
 Keep this table and the YAML block above in sync by hand; `verify_exhaust.py`

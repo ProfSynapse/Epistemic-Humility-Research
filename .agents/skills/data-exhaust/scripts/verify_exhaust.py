@@ -1,22 +1,29 @@
 #!/usr/bin/env python3
 """Gate a built exhaust dataset directory before it is allowed near an upload.
 
-Four checks, all must pass:
+Five checks, all must pass:
 
 1. Schema check: PROVENANCE.json and README.md exist; every cell PROVENANCE.json
    lists actually has a directory, and aggregate manifest.json sha256 entries
    match the files on disk.
 2. Row counts vs manifest: for the row-level shape, PROVENANCE.json's
-   n_rows_kept per cell matches the actual line count in rows.jsonl.
+   n_rows_kept_with_text + n_rows_kept_text_free per cell matches the actual
+   line count in rows.jsonl.
 3. Containment lint: scans every file under the dataset dir for the hard
    exclusion patterns (OpenMOSS/Cheng IDK, bridge_llama2_7b_chat) and, for the
-   row-level shape, independently re-checks every row's `source` field against
-   reference/license-gates.md (defense in depth against a build-script bug or
-   a hand-edited output).
+   row-level shape, independently re-checks EVERY ROW's `source` field
+   against reference/license-gates.md -- per row, not per file, so a rows.jsonl
+   mixing a `permitted` source with a `text-free-only` source only passes if
+   each row individually matches its own source's disposition (defense in
+   depth against a build-script bug or a hand-edited output).
 4. License-gate table well-formedness: the fenced YAML block in
    license-gates.md parses, every entry has key/license/verdict/conditions,
-   verdict is one of permitted/forbidden/pending-audit, and both hard
-   exclusions are present with verdict forbidden.
+   verdict is one of the allowed values, and both hard exclusions are present
+   with verdict forbidden.
+5. Disclosure check: for every source present in kept rows with verdict
+   `permitted-with-conditions`, that source's exact `conditions` text from
+   license-gates.md appears verbatim (whitespace-normalized) in the built
+   README.md.
 
 Exits 0 and prints a PASS summary only if every check passes. Exits nonzero
 and prints every failure found (does not stop at the first one) otherwise.
@@ -27,25 +34,25 @@ from __future__ import annotations
 import argparse
 import hashlib
 import json
-import re
 import sys
 from pathlib import Path
 from typing import Any
-
-import yaml
 
 HERE = Path(__file__).resolve().parent
 SKILL_ROOT = HERE.parent
 DEFAULT_LICENSE_GATES = SKILL_ROOT / "reference" / "license-gates.md"
 
-HARD_EXCLUDED_PATTERNS = ("openmoss", "cheng_idk", "cheng-idk", "bridge_llama2_7b_chat")
-ALLOWED_VERDICTS = {"permitted", "forbidden", "pending-audit"}
-REQUIRED_HARD_EXCLUSION_KEYS = {"openmoss_cheng_idk", "bridge_llama2_7b_chat"}
-
-
-def is_hard_excluded(text: str) -> bool:
-    t = text.lower()
-    return any(p in t for p in HARD_EXCLUDED_PATTERNS)
+sys.path.insert(0, str(HERE))
+from _license_gate import (  # noqa: E402
+    TEXT_BEARING_FIELDS,
+    TEXT_PERMITTED_VERDICTS,
+    check_license_gate_wellformed,
+    find_entry,
+    gate_verdict,
+    has_text_bearing_field,
+    is_hard_excluded,
+    load_license_gates,
+)
 
 
 def sha256_bytes(data: bytes) -> str:
@@ -54,65 +61,11 @@ def sha256_bytes(data: bytes) -> str:
     return h.hexdigest()
 
 
-def load_license_gates(path: Path, errors: list[str]) -> list[dict[str, Any]]:
-    if not path.is_file():
-        errors.append(f"license-gates table missing: {path}")
-        return []
-    text = path.read_text(encoding="utf-8")
-    match = re.search(r"```yaml\n(.*?)\n```", text, re.S)
-    if not match:
-        errors.append(f"{path}: no fenced yaml block found")
-        return []
-    try:
-        data = yaml.safe_load(match.group(1))
-    except yaml.YAMLError as exc:
-        errors.append(f"{path}: yaml block failed to parse: {exc}")
-        return []
-    sources = data.get("sources") if isinstance(data, dict) else None
-    if not isinstance(sources, list):
-        errors.append(f"{path}: yaml block missing a 'sources' list")
-        return []
-    return sources
-
-
-def check_license_gate_wellformed(sources: list[dict[str, Any]], errors: list[str]) -> None:
-    seen_keys: set[str] = set()
-    for i, entry in enumerate(sources):
-        for field in ("key", "license", "verdict", "conditions"):
-            if not entry.get(field):
-                errors.append(f"license-gates entry #{i} missing required field '{field}': {entry}")
-        verdict = entry.get("verdict")
-        if verdict is not None and verdict not in ALLOWED_VERDICTS:
-            errors.append(f"license-gates entry #{i} has invalid verdict '{verdict}' (allowed: {sorted(ALLOWED_VERDICTS)})")
-        key = entry.get("key")
-        if key:
-            seen_keys.add(str(key))
-    missing_hard = REQUIRED_HARD_EXCLUSION_KEYS - seen_keys
-    if missing_hard:
-        errors.append(f"license-gates table is missing required hard-exclusion entries: {sorted(missing_hard)}")
-    for entry in sources:
-        if entry.get("key") in REQUIRED_HARD_EXCLUSION_KEYS and entry.get("verdict") != "forbidden":
-            errors.append(f"license-gates entry '{entry.get('key')}' must have verdict forbidden, has '{entry.get('verdict')}'")
-
-
-def gate_verdict(source: str, sources: list[dict[str, Any]]) -> str:
-    s = source.lower().strip()
-    if is_hard_excluded(s):
-        return "forbidden"
-    for entry in sources:
-        keys = [str(entry.get("key", "")).lower()]
-        keys += [str(a).lower() for a in (entry.get("aliases") or [])]
-        if s in keys:
-            return str(entry.get("verdict", "pending-audit"))
-    return "pending-audit"
-
-
 def check_containment_lint(out_dir: Path, sources: list[dict[str, Any]], errors: list[str]) -> None:
-    # README.md is our own generated dataset card: its "Release Boundary"
-    # section legitimately names the hard-exclusion categories as policy
-    # documentation (the same way reference/license-gates.md does), which is
-    # not a leak. Content-scan every other file; still path-check README.md's
-    # own name (which never matches) for consistency.
+    # README.md is our own generated dataset card: its "Release Boundary" and
+    # "License and Attribution" sections legitimately name the hard-exclusion
+    # categories and quote license conditions verbatim as policy
+    # documentation, which is not a leak. Content-scan every other file.
     for path in sorted(out_dir.rglob("*")):
         if not path.is_file():
             continue
@@ -137,11 +90,52 @@ def check_containment_lint(out_dir: Path, sources: list[dict[str, Any]], errors:
             row = json.loads(line)
             source = str(row.get("source", ""))
             verdict = gate_verdict(source, sources)
-            if verdict != "permitted":
+            carries_text = has_text_bearing_field(row)
+            where = f"{rows_path}:{lineno} (cell {cell_id}, source '{source}', verdict '{verdict}')"
+            if verdict in TEXT_PERMITTED_VERDICTS:
+                continue  # text-bearing fields may or may not be present; both are fine
+            if verdict == "text-free-only":
+                if carries_text:
+                    errors.append(
+                        f"CONTAINMENT: {where} is text-free-only but carries a text-bearing "
+                        f"field ({[f for f in TEXT_BEARING_FIELDS if f in row]})"
+                    )
+            else:  # forbidden or pending-audit: must not appear in any form
                 errors.append(
-                    f"CONTAINMENT: {rows_path}:{lineno} (cell {cell_id}) has source "
-                    f"'{source}' with verdict '{verdict}', not permitted, but row text is present"
+                    f"CONTAINMENT: {where} has verdict '{verdict}' (forbidden or pending-audit) "
+                    f"but the row is present in the built dataset at all"
                 )
+
+
+def check_disclosure(out_dir: Path, sources: list[dict[str, Any]], errors: list[str]) -> None:
+    provenance_path = out_dir / "PROVENANCE.json"
+    if not provenance_path.is_file():
+        return  # already reported by check_schema_and_counts
+    provenance = json.loads(provenance_path.read_text(encoding="utf-8"))
+    sources_present = provenance.get("sources_present") or {}
+    conditional_sources = [s for s, v in sources_present.items() if v == "permitted-with-conditions"]
+    if not conditional_sources:
+        return
+    readme_path = out_dir / "README.md"
+    if not readme_path.is_file():
+        return
+    readme_text = readme_path.read_text(encoding="utf-8")
+    normalized_readme = " ".join(readme_text.split())
+    for source in conditional_sources:
+        entry = find_entry(source, sources)
+        if entry is None:
+            errors.append(
+                f"DISCLOSURE: source '{source}' is present as permitted-with-conditions "
+                f"but has no license-gates entry to disclose"
+            )
+            continue
+        conditions = str(entry.get("conditions", "")).strip()
+        normalized_conditions = " ".join(conditions.split())
+        if normalized_conditions and normalized_conditions not in normalized_readme:
+            errors.append(
+                f"DISCLOSURE: source '{source}' is permitted-with-conditions but its exact "
+                f"conditions text from license-gates.md was not found in {readme_path}"
+            )
 
 
 def check_schema_and_counts(out_dir: Path, errors: list[str]) -> None:
@@ -188,7 +182,9 @@ def check_schema_and_counts(out_dir: Path, errors: list[str]) -> None:
                 errors.append(f"missing {rows_path}")
                 continue
             actual_n = sum(1 for line in rows_path.read_text(encoding="utf-8").splitlines() if line.strip())
-            expected_n = info.get("n_rows_kept")
+            expected_n = None
+            if "n_rows_kept_with_text" in info or "n_rows_kept_text_free" in info:
+                expected_n = info.get("n_rows_kept_with_text", 0) + info.get("n_rows_kept_text_free", 0)
             if expected_n is not None and actual_n != expected_n:
                 errors.append(f"{rows_path}: PROVENANCE.json says n_rows_kept={expected_n}, actual line count={actual_n}")
 
@@ -209,6 +205,7 @@ def main(argv: list[str] | None = None) -> int:
     check_license_gate_wellformed(sources, errors)
     check_schema_and_counts(out_dir, errors)
     check_containment_lint(out_dir, sources, errors)
+    check_disclosure(out_dir, sources, errors)
 
     if errors:
         print(f"[verify-exhaust] FAIL: {len(errors)} problem(s) in {out_dir}", file=sys.stderr)

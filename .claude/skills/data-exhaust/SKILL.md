@@ -37,24 +37,34 @@ about what the released data actually represents.
 
 1. **License-gate.** Before building anything with row text, confirm every
    source that will appear has a verdict in
-   [reference/license-gates.md](reference/license-gates.md). A source with no
-   entry is `pending-audit`, which the builder treats as not-permitted (fail
-   closed). Aggregate-only builds do not need this step to have resolved
-   verdicts, since they carry no source text, but they still run the same
-   structural hard-exclusion scan.
+   [reference/license-gates.md](reference/license-gates.md). Each source
+   resolves to one of three row dispositions: full text (`permitted` /
+   `permitted-with-conditions`), text-free (`text-free-only`, row kept but
+   its text-bearing fields stripped), or excluded entirely (`forbidden` /
+   `pending-audit`). A source with no table entry is `pending-audit`, the
+   most conservative disposition, not the text-free one. Aggregate-only
+   builds do not need this step to have resolved verdicts, since they carry
+   no source text, but they still run the same structural hard-exclusion
+   scan.
 2. **Build.** Run `build_exhaust_dataset.py` against the experiment directory.
    Aggregate shape (default) copies `analysis-committed/<cell_id>/*.json`
    verbatim into `<out-dir>/<cell_id>/`. Row-level shape (`--rows-dir <dir>`)
-   reads locally staged `<cell_id>.jsonl` files and drops every row whose
-   `source` is not `permitted`, counting the drops. The build never writes
-   inside the experiment's own directory; only `--out-dir` is touched.
+   reads locally staged `<cell_id>.jsonl` files and gives every row one of
+   the three dispositions above, per row, based on its own `source` field --
+   a single `rows.jsonl` can mix full-text and text-free rows from different
+   sources. Excluded rows are counted, not written in any form. The build
+   never writes inside the experiment's own directory; only `--out-dir` is
+   touched.
 3. **Verify.** Run `verify_exhaust.py --dataset-dir <out-dir>` against the
    build output. It checks schema/sha256 consistency, row counts against
    `PROVENANCE.json`, a containment lint over every file (including an
-   independent re-check of each row's license-gate verdict), and that
-   `license-gates.md`'s machine-readable table is well-formed and still
-   carries both hard exclusions. A single failure fails the whole gate loudly;
-   it does not report a partial pass.
+   independent PER-ROW re-check of each row's license-gate disposition, so a
+   file mixing sources only passes if each row matches its own source's
+   rule), that any `permitted-with-conditions` source's disclosure text
+   actually landed in the README, and that `license-gates.md`'s
+   machine-readable table is well-formed and still carries both hard
+   exclusions. A single failure fails the whole gate loudly; it does not
+   report a partial pass.
 4. **Upload.** Run `upload_exhaust.py --dataset-dir <out-dir>`. Default is a
    dry run: it prints the resolved repo id (`professorsynapse/eh-<slug>` for
    aggregate, `professorsynapse/eh-<slug>-rows` for row-level), the file list,
@@ -75,8 +85,10 @@ Do not run `upload_exhaust.py --live` until:
 2. `verify_exhaust.py` passed with zero errors on the exact dir about to be
    uploaded.
 3. For a row-level dataset, every source appearing has an explicit
-   `permitted` verdict in `reference/license-gates.md` -- not
-   `pending-audit`.
+   `permitted`, `permitted-with-conditions`, or `text-free-only` verdict in
+   `reference/license-gates.md` -- not `pending-audit`. For any
+   `permitted-with-conditions` source, its disclosure text must actually be
+   in the built README (verified, not just built).
 4. The user has explicitly approved this specific upload. A prior approval
    for a different experiment or a different dataset shape does not carry
    over.
@@ -98,9 +110,10 @@ for exhaust data.
   (`scripts/build_exhaust_dataset.py` and `scripts/verify_exhaust.py`), not
   only by the license-gates table, so an accidental table edit cannot reopen
   them.
-- A source with no entry in `reference/license-gates.md` is `pending-audit`,
-  not permitted. Never infer a permissive verdict from a different dataset's
-  card or from memory of a prior release.
+- A source with no entry in `reference/license-gates.md` is `pending-audit`
+  (excluded entirely), never `text-free-only` and never permitted. Never
+  infer a permissive verdict from a different dataset's card or from memory
+  of a prior release.
 - `HF_TOKEN` comes from the environment only. Never print, log, or echo it.
 - Quick commands:
 
