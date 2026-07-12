@@ -6,6 +6,35 @@ in `experiment.yaml`.
 
 ## Entries
 
+- 2026-07-12 (resolve): Signed (commit 2524891, both predictions registered
+  pre-launch, both called holds-on-both), launched with user approval
+  (Modal app ap-q2mU3RZwwrHyaTbr1ehwVm, $10 cap), completed same day. Lead
+  pulled analysis-committed aggregates plus raw captures and re-derived
+  everything locally: full-profile recompute matches cloud values at
+  spot-checked layers to 1e-9 or better; refits byte-identical; 20 percent
+  subsample peak identical (llama 4 -> 4, mistral 3 -> 3). AG0/AG1/AG2 all
+  PASS. Headline: prediction NOT MET in both families (eff_dim_frac peaks
+  early at 0.14/0.09 depth, not interior), falsifier NOT TRIGGERED (profile
+  non-monotone, readable interior band exists: llama layers 15-23, mistral
+  7-27 with all three axes >= 0.80). Wording gap recorded: an early
+  exterior peak was anticipated by neither the prediction nor the
+  falsifier. Layer map delivered: best simultaneous three-axis read llama
+  ~L20-23 (raw refusal 0.90), mistral ~L15-17 (raw refusal 0.925).
+  Red-team notes, both resolved before the verdict was written: (a) the
+  fleet audit's raw-refusal 0.997-1.000 vs this panel's ~0.90 is a
+  population difference (refused-vs-known there, refused-vs-pooled-answered
+  here; the confab side is the harder contrast and populations aligned the
+  instruments agree); (b) lead ran a post-hoc fixed random-direction
+  diagnostic per layer (committed as
+  analysis-committed/random_direction_control.json, lab-notebook tier):
+  the refused-vs-known contrast is norm-confounded at this anchor (random
+  reads up to 0.97 best-orientation at some layers, matching the fleet
+  audit), while refused-vs-confab and refused-vs-pooled-answered stay at
+  ~0.5-0.75 random baseline, so the caution and raw-refusal panel numbers
+  are signal above baseline and doubt should be read against the elevated
+  baseline. Committed artifacts are aggregates and ID-manifests only; raw
+  captures remain local/volume-side.
+
 - 2026-07-12 (lead adjudication of the two build ambiguities, pre-sign): (1)
   eff_dim_frac is the Stage A participation-ratio FORMULA applied to
   anchor hidden-state variance, not Stage A's JVP-push input; the

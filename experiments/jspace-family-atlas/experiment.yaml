@@ -1,7 +1,7 @@
 slug: jspace-family-atlas
 title: jspace-family-atlas
 type: probe-fit
-status: signed
+status: resolved
 registered: true
 created_at: '2026-07-12T12:41:44Z'
 question: Where does each non-Qwen family's workspace midband sit (eff_dim_frac profile
@@ -35,5 +35,8 @@ instrument:
     smoke_profile_and_read_panel.py: 0766b40be2eff4c247bc1f7732f53c5366ec4f2c0daa498a403f1b4c53cb5635
     cloud/modal_jspace_atlas.py: fe7e44381117893aacc010041f2b2d7efdf2d2cd4fa15d40c318c751f99240cb
 inputs: []
-verdict: ''
+verdict: prediction failed in both families because the eff_dim_frac profile peaks
+  early (0.09-0.14 depth) rather than interior, while the read panel delivered the
+  intended per-family layer map with an interior band (llama 15-23, mistral 7-27)
+  where doubt, caution, and raw refusal all read >= 0.80 held-out
 kg: []
