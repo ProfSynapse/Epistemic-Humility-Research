@@ -4,7 +4,7 @@ session_id: 20260708T164625Z-paper-5-j-space-hardening
 title: Paper 5 J-space hardening
 status: active
 created_at: '2026-07-08T16:46:25Z'
-updated_at: '2026-07-12T14:21:18Z'
+updated_at: '2026-07-12T15:00:25Z'
 track: research
 phase: phase1
 question: Which registered follow-up experiments harden the Paper 5 actuation thesis,
@@ -591,6 +591,35 @@ checkpoints:
   - 'Merge PR #277 on user OK; hold fleet resolve for hs30; review builder''s dry-run
     card; draft raw-refusal-axis actuation amendment using the atlas layer map'
   signals: {}
+- id: 028-checkpoint
+  at: '2026-07-12T15:00:25Z'
+  kind: checkpoint
+  title: Checkpoint
+  summary: 'Atlas arc fully closed: PRs #277 (jspace-family-atlas resolved) and #278
+    (family-atlas skill + docs/atlas/family-layer-map.md registry) MERGED with user
+    approval; KG ingest committed and lead-verified (6f09ec14: experiment node + 2
+    mechanisms - workspace-band-peak-location-is-family-relative, refused-vs-known-contrast-carries-norm-position-confound;
+    validator 0 errors, manifest kg: list filled, exp validate OK). PI directive made
+    standing: atlas extraction is the STANDARD for every new model/family/size before
+    actuation design; axes assumed universal, layer band family/size relative, no
+    cross-family layer porting. Doc janitor pass: TODO.md gained the dated 2026-07-12
+    arc section (fleet/ladder/atlas/skill/raw-refusal candidate/HF backfill rows)
+    + index regen; AGENTS.md (canonical) skills list completed to all nine and synced
+    into CLAUDE.md (gotcha: CLAUDE.md orchestrator section is GENERATED from AGENTS.md,
+    first edit got reverted by sync). Two finds lifted to PI: 7 untracked aux-head-era
+    docs (pr118-120 reviews/prep) awaiting commit-or-archive call; untracked experiment/
+    tree holds ~100GB local Phase 1 run products on canonical - no action without
+    deliberate curation. In flight: exhaust-builder fleet HF dataset dry-run card;
+    hs30 ladder arm.'
+  evidence: []
+  run_ids: []
+  commands: []
+  decisions: []
+  next_steps:
+  - hs30 lands -> fleet resolve Outcome + ladder aggregates; review exhaust dry-run
+    card with PI; draft raw-refusal-axis actuation amendment on the atlas layer map;
+    PI call on aux-head doc strays
+  signals: {}
 ---
 # Paper 5 J-space hardening
 
@@ -933,3 +962,10 @@ rows before the layer contrast.
 - summary: jspace-family-atlas full arc closed in one day: signed (2524891) with both predictions registered pre-launch (orchestrator and user both holds-on-both), launched with user approval (Modal ap-q2mU3RZwwrHyaTbr1ehwVm, $10 cap, ~$2 actual), resolved, PR #277 opened. Gates AG0/AG1/AG2 PASS with lead re-derivation from pulled captures. Prediction NOT MET both families (eff_dim_frac peaks early, 0.14/0.09 depth, not interior); falsifier not triggered (non-monotone profile, readable interior band). Layer map delivered: llama ~L20-23 (raw refusal 0.90), mistral ~L15-17 (0.925). Red-team pre-verdict: fleet-audit 0.997-vs-0.90 reconciled as population definitions (refused-vs-known vs pooled-answered); random-direction control committed showing refused-vs-known norm confound (random up to 0.97) while caution/raw-refusal baselines stay 0.5-0.75. Exhaust-skill-builder assigned fleet HF dataset dry-run build (no upload; card for user approval). hs30 ladder comparator still running locally.
 - next steps:
   - Merge PR #277 on user OK; hold fleet resolve for hs30; review builder's dry-run card; draft raw-refusal-axis actuation amendment using the atlas layer map
+### 028-checkpoint - Checkpoint
+
+- at: `2026-07-12T15:00:25Z`
+- kind: `checkpoint`
+- summary: Atlas arc fully closed: PRs #277 (jspace-family-atlas resolved) and #278 (family-atlas skill + docs/atlas/family-layer-map.md registry) MERGED with user approval; KG ingest committed and lead-verified (6f09ec14: experiment node + 2 mechanisms - workspace-band-peak-location-is-family-relative, refused-vs-known-contrast-carries-norm-position-confound; validator 0 errors, manifest kg: list filled, exp validate OK). PI directive made standing: atlas extraction is the STANDARD for every new model/family/size before actuation design; axes assumed universal, layer band family/size relative, no cross-family layer porting. Doc janitor pass: TODO.md gained the dated 2026-07-12 arc section (fleet/ladder/atlas/skill/raw-refusal candidate/HF backfill rows) + index regen; AGENTS.md (canonical) skills list completed to all nine and synced into CLAUDE.md (gotcha: CLAUDE.md orchestrator section is GENERATED from AGENTS.md, first edit got reverted by sync). Two finds lifted to PI: 7 untracked aux-head-era docs (pr118-120 reviews/prep) awaiting commit-or-archive call; untracked experiment/ tree holds ~100GB local Phase 1 run products on canonical - no action without deliberate curation. In flight: exhaust-builder fleet HF dataset dry-run card; hs30 ladder arm.
+- next steps:
+  - hs30 lands -> fleet resolve Outcome + ladder aggregates; review exhaust dry-run card with PI; draft raw-refusal-axis actuation amendment on the atlas layer map; PI call on aux-head doc strays
