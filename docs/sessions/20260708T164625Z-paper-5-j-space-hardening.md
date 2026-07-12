@@ -4,7 +4,7 @@ session_id: 20260708T164625Z-paper-5-j-space-hardening
 title: Paper 5 J-space hardening
 status: active
 created_at: '2026-07-08T16:46:25Z'
-updated_at: '2026-07-12T15:00:25Z'
+updated_at: '2026-07-12T16:04:53Z'
 track: research
 phase: phase1
 question: Which registered follow-up experiments harden the Paper 5 actuation thesis,
@@ -620,6 +620,32 @@ checkpoints:
     card with PI; draft raw-refusal-axis actuation amendment on the atlas layer map;
     PI call on aux-head doc strays
   signals: {}
+- id: 029-checkpoint
+  at: '2026-07-12T16:04:53Z'
+  kind: checkpoint
+  title: Checkpoint
+  summary: 'Phase 1 outputs migration EXECUTED (commit 30fa503e): the untracked ~99GB
+    experiment/ tree scouted (read-only inventory: 97.5GB unique research data, ZERO
+    duplication vs 9.8MB code-only archive, bridge containment confirmed ABSENT locally,
+    no tracked references), user approved the two decisions (shared bulk to gitignored
+    archive/experiment/phase1-data/, 3.7MB junk deleted), migrator built a deterministic
+    classifier (letter-to-slug from registry.json legacy.label, 40 mappings, flagged-not-guessed
+    on amendment_a_*/mi_* dirs) with dry-run manifest which the lead reviewed and
+    executed: 317/319 entries, 43.9GB to experiments/<slug>/analysis/phase1-migrated/
+    (SR 26GB, Z 8.6GB, AH 6.7GB), 56GB shared to phase1-data, exp validate OK post-move.
+    Two Amendment AI PAR eval dirs hold 14 Docker-era foreign-UID files: copied byte-verified
+    to experiments/probe-as-reward, source residue (5.4MB) awaits operator sudo rm.
+    Gotcha: shutil.move copy-fallback rmtree dies on foreign-owned entries; pre-move
+    ownership scan (find ! -user) belongs in bulk-move scripts. Aux-head doc strays
+    (7 files) still await PI commit-or-archive call.'
+  evidence: []
+  run_ids: []
+  commands: []
+  decisions: []
+  next_steps:
+  - PI runs sudo rm -rf experiment residue; hs30 -> fleet resolve + raw-refusal draft;
+    exhaust dry-run card review
+  signals: {}
 ---
 # Paper 5 J-space hardening
 
@@ -969,3 +995,10 @@ rows before the layer contrast.
 - summary: Atlas arc fully closed: PRs #277 (jspace-family-atlas resolved) and #278 (family-atlas skill + docs/atlas/family-layer-map.md registry) MERGED with user approval; KG ingest committed and lead-verified (6f09ec14: experiment node + 2 mechanisms - workspace-band-peak-location-is-family-relative, refused-vs-known-contrast-carries-norm-position-confound; validator 0 errors, manifest kg: list filled, exp validate OK). PI directive made standing: atlas extraction is the STANDARD for every new model/family/size before actuation design; axes assumed universal, layer band family/size relative, no cross-family layer porting. Doc janitor pass: TODO.md gained the dated 2026-07-12 arc section (fleet/ladder/atlas/skill/raw-refusal candidate/HF backfill rows) + index regen; AGENTS.md (canonical) skills list completed to all nine and synced into CLAUDE.md (gotcha: CLAUDE.md orchestrator section is GENERATED from AGENTS.md, first edit got reverted by sync). Two finds lifted to PI: 7 untracked aux-head-era docs (pr118-120 reviews/prep) awaiting commit-or-archive call; untracked experiment/ tree holds ~100GB local Phase 1 run products on canonical - no action without deliberate curation. In flight: exhaust-builder fleet HF dataset dry-run card; hs30 ladder arm.
 - next steps:
   - hs30 lands -> fleet resolve Outcome + ladder aggregates; review exhaust dry-run card with PI; draft raw-refusal-axis actuation amendment on the atlas layer map; PI call on aux-head doc strays
+### 029-checkpoint - Checkpoint
+
+- at: `2026-07-12T16:04:53Z`
+- kind: `checkpoint`
+- summary: Phase 1 outputs migration EXECUTED (commit 30fa503e): the untracked ~99GB experiment/ tree scouted (read-only inventory: 97.5GB unique research data, ZERO duplication vs 9.8MB code-only archive, bridge containment confirmed ABSENT locally, no tracked references), user approved the two decisions (shared bulk to gitignored archive/experiment/phase1-data/, 3.7MB junk deleted), migrator built a deterministic classifier (letter-to-slug from registry.json legacy.label, 40 mappings, flagged-not-guessed on amendment_a_*/mi_* dirs) with dry-run manifest which the lead reviewed and executed: 317/319 entries, 43.9GB to experiments/<slug>/analysis/phase1-migrated/ (SR 26GB, Z 8.6GB, AH 6.7GB), 56GB shared to phase1-data, exp validate OK post-move. Two Amendment AI PAR eval dirs hold 14 Docker-era foreign-UID files: copied byte-verified to experiments/probe-as-reward, source residue (5.4MB) awaits operator sudo rm. Gotcha: shutil.move copy-fallback rmtree dies on foreign-owned entries; pre-move ownership scan (find ! -user) belongs in bulk-move scripts. Aux-head doc strays (7 files) still await PI commit-or-archive call.
+- next steps:
+  - PI runs sudo rm -rf experiment residue; hs30 -> fleet resolve + raw-refusal draft; exhaust dry-run card review
