@@ -21,31 +21,50 @@ and fitted-metadata only (never row text, never token IDs):
    read axes (doubt, caution, raw_refusal), each a unit mean-difference
    direction fit on FIT rows and scored by projection on held-out rows.
 
-   CAVEAT (flag for lead review, restated from cell.yaml `read_panel:`):
-   the fleet's own stratified_split assigns every unknown_refused-role row
-   split="fit_only" -- there is no held-out partition for that role at all,
-   for either cell. Since all three axes contrast something against refused
-   (unknown_refused), a literal two-sided held-out AUROC is not achievable
-   without re-splitting, which AMENDMENT.md forbids ("FIT/held-out labels
-   carried through unchanged"). Each axis's "held-out AUROC" here scores the
-   side that genuinely has held-out rows (known-correct for doubt; confab for
-   caution; confab+known-correct for raw_refusal) against the SAME fit_only
-   refused pool used to fit the direction. This is a real generalization test
-   for the held-out class, but not a fully held-out test for the refused
-   class -- report this caveat alongside every AUROC number, especially when
-   comparing against the falsifier's >=0.80 threshold.
+   ADJUDICATED (AMENDMENT.md, pre-sign): the fleet's own stratified_split
+   assigns every unknown_refused-role row split="fit_only" -- there is no
+   held-out partition for that role at all, for either cell. Since all
+   three axes contrast something against refused (unknown_refused), a
+   literal two-sided held-out AUROC needs the refused pool split into a
+   fitting half and a scoring half without touching the fleet's own FIT/
+   held-out labels for confab/known_correct_answered. `_split_refused_pool`
+   does this: sort refused row_key values (stable ordering), shuffle with
+   `random.Random(20260707)` (matches the fleet's own stratified_split
+   seeding convention in prep_tuner_cell.py), then take the first floor(n/2)
+   as `refused_fit` (direction fitting, alongside FIT known/confab rows) and
+   the rest as `refused_eval` (scoring, alongside held-out known/confab
+   rows). Every reported panel AUROC is therefore two-sided held-out: both
+   classes contain rows never used to fit that layer's direction. The split
+   is deterministic and disjoint by construction (a single shuffled list cut
+   once); `refused_fit`/`refused_eval` counts are recorded per cell in
+   `atlas_summary.json`.
 """
 
 from __future__ import annotations
 
 import argparse
 import json
+import random
 from pathlib import Path
 from typing import Any
 
 import numpy as np
 
 BOOTSTRAP_SEED = 20260707
+
+
+def split_refused_pool(row_keys: list[str], seed: int = BOOTSTRAP_SEED) -> tuple[list[str], list[str]]:
+    """Deterministically subdivide the unknown_refused (fit_only) pool into
+    a fitting half and a scoring half, so every read-panel axis's held-out
+    AUROC is two-sided held-out. Sort first for a stable base ordering, then
+    shuffle with `random.Random(seed)` (the fleet's own stratified_split
+    seeding convention), then cut once: first floor(n/2) rows -> refused_fit,
+    the rest -> refused_eval. Disjoint and deterministic by construction."""
+    ordered = sorted(row_keys)
+    rng = random.Random(seed)
+    rng.shuffle(ordered)
+    n_fit = len(ordered) // 2
+    return ordered[:n_fit], ordered[n_fit:]
 
 
 # ---------------------------------------------------------------------------
@@ -246,8 +265,11 @@ def run_cell(analysis_dir: Path, committed_dir: Path, n_resamples: int, seed: in
     confab_fit = rows_by(rowmeta, role="confab", split="fit")
     confab_held = rows_by(rowmeta, role="confab", split="held_out")
     refused_fit_only = rows_by(rowmeta, role="unknown_refused", split="fit_only")
+    refused_fit, refused_eval = split_refused_pool(refused_fit_only, seed=seed)
     answered_fit = known_fit + confab_fit
     answered_held = known_held + confab_held
+
+    assert not (set(refused_fit) & set(refused_eval)), "refused_fit/refused_eval must be disjoint"
 
     per_layer: dict[int, dict[str, Any]] = {}
     for layer in range(n_hidden_states):
@@ -258,23 +280,24 @@ def run_cell(analysis_dir: Path, committed_dir: Path, n_resamples: int, seed: in
         known_held_mat = build_layer_matrix(captures, known_held, layer)
         confab_fit_mat = build_layer_matrix(captures, confab_fit, layer)
         confab_held_mat = build_layer_matrix(captures, confab_held, layer)
-        refused_mat = build_layer_matrix(captures, refused_fit_only, layer)
+        refused_fit_mat = build_layer_matrix(captures, refused_fit, layer)
+        refused_eval_mat = build_layer_matrix(captures, refused_eval, layer)
         answered_fit_mat = build_layer_matrix(captures, answered_fit, layer)
         answered_held_mat = build_layer_matrix(captures, answered_held, layer)
 
         doubt = score_axis(
-            pos_fit=known_fit_mat, neg_fit=refused_mat,
-            pos_score=known_held_mat, neg_score=refused_mat,
+            pos_fit=known_fit_mat, neg_fit=refused_fit_mat,
+            pos_score=known_held_mat, neg_score=refused_eval_mat,
             n_resamples=n_resamples, seed=seed,
         )
         caution = score_axis(
-            pos_fit=refused_mat, neg_fit=confab_fit_mat,
-            pos_score=refused_mat, neg_score=confab_held_mat,
+            pos_fit=refused_fit_mat, neg_fit=confab_fit_mat,
+            pos_score=refused_eval_mat, neg_score=confab_held_mat,
             n_resamples=n_resamples, seed=seed,
         )
         raw_refusal = score_axis(
-            pos_fit=refused_mat, neg_fit=answered_fit_mat,
-            pos_score=refused_mat, neg_score=answered_held_mat,
+            pos_fit=refused_fit_mat, neg_fit=answered_fit_mat,
+            pos_score=refused_eval_mat, neg_score=answered_held_mat,
             n_resamples=n_resamples, seed=seed,
         )
 
@@ -288,12 +311,21 @@ def run_cell(analysis_dir: Path, committed_dir: Path, n_resamples: int, seed: in
         "n_hidden_states": n_hidden_states,
         "n_resamples": n_resamples,
         "seed": seed,
-        "held_out_partial_caveat": (
-            "unknown_refused is fit_only for both fleet cells (0 held-out "
-            "rows by design); every axis's held-out AUROC scores the "
-            "genuinely-held-out class against the same fit_only refused "
-            "pool used to fit the direction, not a fully held-out contrast. "
-            "See module docstring."
+        "refused_pool_split": {
+            "n_refused_fit_only_total": len(refused_fit_only),
+            "n_refused_fit": len(refused_fit),
+            "n_refused_eval": len(refused_eval),
+            "method": (
+                "sorted row_key, random.Random(seed).shuffle, first "
+                "floor(n/2) -> refused_fit, remainder -> refused_eval"
+            ),
+        },
+        "held_out_note": (
+            "Every read-panel axis's held-out AUROC is two-sided held-out: "
+            "known/confab use the fleet's own FIT/held-out split unchanged, "
+            "and unknown_refused is subdivided into refused_fit (direction "
+            "fitting) and refused_eval (scoring) via split_refused_pool. "
+            "See module docstring and AMENDMENT.md adjudication."
         ),
         "per_layer": per_layer,
     }

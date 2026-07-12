@@ -135,6 +135,18 @@ def main() -> None:
 
     print(f"[smoke] synthetic rows: {len(rows)}, n_hidden_states={N_LAYERS_HS}, hidden_dim={HIDDEN_DIM}")
 
+    refused_keys = [r["row_key"] for r in rows if r["role"] == "unknown_refused"]
+    split_a = pp.split_refused_pool(refused_keys, seed=SEED)
+    split_b = pp.split_refused_pool(refused_keys, seed=SEED)
+    assert split_a == split_b, "split_refused_pool must be deterministic across calls with the same seed"
+    refused_fit_check, refused_eval_check = split_a
+    assert not (set(refused_fit_check) & set(refused_eval_check)), "refused_fit/refused_eval must be disjoint"
+    assert set(refused_fit_check) | set(refused_eval_check) == set(refused_keys), "split must cover the full refused pool"
+    print(
+        f"[smoke] split_refused_pool deterministic across two calls: "
+        f"refused_fit={len(refused_fit_check)}, refused_eval={len(refused_eval_check)}, disjoint=True"
+    )
+
     result = pp.run_cell(analysis_dir, committed_dir, n_resamples=200, seed=SEED)
 
     out_path = committed_dir / "atlas_summary.json"
@@ -144,6 +156,11 @@ def main() -> None:
     assert result["cell_id"] == CELL_ID
     assert result["n_hidden_states"] == N_LAYERS_HS
     assert set(result["per_layer"].keys()) == {0, 1, 2, 3}
+
+    rps = result["refused_pool_split"]
+    assert rps["n_refused_fit"] + rps["n_refused_eval"] == rps["n_refused_fit_only_total"]
+    assert rps["n_refused_fit_only_total"] == len(refused_keys)
+    print(f"[smoke] atlas_summary refused_pool_split: {rps}")
 
     for layer, entry in sorted(result["per_layer"].items()):
         prof = entry["profile"]

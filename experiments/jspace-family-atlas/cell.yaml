@@ -112,34 +112,40 @@ profile:
   #   [1, n]).
   #   Normalization convention (jlens_qwen35.py:224):
   #   effective_dim_frac = _participation_ratio(mat) / mat.shape[0]
-  # RESOLVED AMBIGUITY (flagged for lead review): Stage A computes this on
+  # ADJUDICATED (AMENDMENT.md, pre-sign): Stage A computes this on
   # corpus-averaged JVP "push" vectors from 5 random directions via
-  # double-backward (a fundamentally different, much more expensive
-  # computation requiring gradients through the model). This atlas is
-  # capture-only (no gradients, no steering hooks per AMENDMENT.md); "the
-  # same estimator" is interpreted here as the identical _participation_ratio
-  # math and PR/n normalization convention, applied directly to the per-layer
-  # matrix of FIT-row anchor hidden-state vectors (n_fit_rows x hidden_dim)
-  # in place of the JVP-push matrix. This is the only reading consistent with
-  # AMENDMENT.md's "capture plus CPU scoring only" spend statement.
+  # double-backward, which a capture-only run cannot reproduce within this
+  # experiment's registered spend. This atlas applies the same formula to
+  # the FIT-row anchor hidden-state matrix instead (representation-variance
+  # PR). Not numerically comparable to Stage A's profile values; comparable
+  # across this atlas's own cells only, since both use the identical
+  # computation.
   fit_rows_only: true
 
 read_panel:
+  # ADJUDICATED (AMENDMENT.md, pre-sign): unknown_refused is fit_only in the
+  # fleet's own stratified_split (no held-out rows for that role at all).
+  # profile_and_read_panel.py's split_refused_pool() subdivides it
+  # deterministically (sorted row_key, random.Random(20260707).shuffle, cut
+  # at floor(n/2)) into refused_fit (direction fitting, alongside FIT known/
+  # confab rows) and refused_eval (scoring, alongside held-out known/confab
+  # rows). Every axis below is therefore two-sided held-out; refused_fit/
+  # refused_eval counts land in atlas_summary.json's refused_pool_split.
   axes:
     doubt:
       contrast: "known_correct_answered (positive) vs unknown_refused (negative)"
-      fit_definition: "unit(mean(H[known_correct_answered, FIT]) - mean(H[unknown_refused]))"
-      note: "unknown_refused is fit_only (no held-out unknown_refused rows exist); AUROC is scored on held-out known_correct_answered vs the same FIT-only unknown_refused pool, matching the fleet's own u_d construction (prep_tuner_cell.py fit_directions: h_known vs h_unknown)."
+      fit_definition: "unit(mean(H[known_correct_answered, FIT]) - mean(H[unknown_refused, refused_fit]))"
+      note: "scored on held-out known_correct_answered vs H[unknown_refused, refused_eval]; matches the fleet's own u_d construction (prep_tuner_cell.py fit_directions: h_known vs h_unknown) except for the refused_fit/refused_eval subdivision."
     caution:
       contrast: "unknown_refused/refused (positive) vs confab (negative)"
-      fit_definition: "unit(mean(H[unknown_refused]) - mean(H[confab, FIT]))"
-      note: "fleet's pre-orthogonalization caution_dir construction (prep_tuner_cell.py fit_directions: caution = unit(h_ak[refused].mean - h_ak[confab].mean)); this atlas reports the pre-orthogonalization caution axis only, not c_hat."
+      fit_definition: "unit(mean(H[unknown_refused, refused_fit]) - mean(H[confab, FIT]))"
+      note: "scored on H[unknown_refused, refused_eval] vs held-out confab; fleet's pre-orthogonalization caution_dir construction (prep_tuner_cell.py fit_directions: caution = unit(h_ak[refused].mean - h_ak[confab].mean)). This atlas reports the pre-orthogonalization caution axis only, not c_hat."
     raw_refusal:
       contrast: "unknown_refused/refused (positive) vs {confab UNION known_correct_answered}/answered (negative)"
-      fit_definition: "unit(mean(H[unknown_refused]) - mean(H[confab, FIT] + H[known_correct_answered, FIT]))"
-      note: "role fully determines refused/answered status (assign_roles: unanswerable+refused -> unknown_refused; unanswerable+answered -> confab; answerable+well_formed_correct -> known_correct_answered), so no additional private boolean fields are needed beyond role."
-  fit_on: fit rows only (respecting each axis's own fit/held-out row set above)
-  score_on: held_out rows only (per axis, as defined above)
+      fit_definition: "unit(mean(H[unknown_refused, refused_fit]) - mean(H[confab, FIT] + H[known_correct_answered, FIT]))"
+      note: "scored on H[unknown_refused, refused_eval] vs held-out {confab UNION known_correct_answered}. Role fully determines refused/answered status (assign_roles: unanswerable+refused -> unknown_refused; unanswerable+answered -> confab; answerable+well_formed_correct -> known_correct_answered), so no additional private boolean fields are needed beyond role."
+  fit_on: "FIT known/confab rows plus refused_fit"
+  score_on: "held-out known/confab rows plus refused_eval (two-sided held-out for every axis)"
   bootstrap_resamples: 2000
   bootstrap_seed: 20260707
   metric: held_out_auroc
