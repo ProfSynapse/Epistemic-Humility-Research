@@ -4,7 +4,7 @@ session_id: 20260708T164625Z-paper-5-j-space-hardening
 title: Paper 5 J-space hardening
 status: active
 created_at: '2026-07-08T16:46:25Z'
-updated_at: '2026-07-11T21:58:59Z'
+updated_at: '2026-07-12T14:21:18Z'
 track: research
 phase: phase1
 question: Which registered follow-up experiments harden the Paper 5 actuation thesis,
@@ -566,6 +566,31 @@ checkpoints:
   decisions: []
   next_steps: []
   signals: {}
+- id: 027-checkpoint
+  at: '2026-07-12T14:21:18Z'
+  kind: checkpoint
+  title: Checkpoint
+  summary: 'jspace-family-atlas full arc closed in one day: signed (2524891) with
+    both predictions registered pre-launch (orchestrator and user both holds-on-both),
+    launched with user approval (Modal ap-q2mU3RZwwrHyaTbr1ehwVm, $10 cap, ~$2 actual),
+    resolved, PR #277 opened. Gates AG0/AG1/AG2 PASS with lead re-derivation from
+    pulled captures. Prediction NOT MET both families (eff_dim_frac peaks early, 0.14/0.09
+    depth, not interior); falsifier not triggered (non-monotone profile, readable
+    interior band). Layer map delivered: llama ~L20-23 (raw refusal 0.90), mistral
+    ~L15-17 (0.925). Red-team pre-verdict: fleet-audit 0.997-vs-0.90 reconciled as
+    population definitions (refused-vs-known vs pooled-answered); random-direction
+    control committed showing refused-vs-known norm confound (random up to 0.97) while
+    caution/raw-refusal baselines stay 0.5-0.75. Exhaust-skill-builder assigned fleet
+    HF dataset dry-run build (no upload; card for user approval). hs30 ladder comparator
+    still running locally.'
+  evidence: []
+  run_ids: []
+  commands: []
+  decisions: []
+  next_steps:
+  - 'Merge PR #277 on user OK; hold fleet resolve for hs30; review builder''s dry-run
+    card; draft raw-refusal-axis actuation amendment using the atlas layer map'
+  signals: {}
 ---
 # Paper 5 J-space hardening
 
@@ -901,3 +926,10 @@ rows before the layer contrast.
 - at: `2026-07-11T21:58:59Z`
 - kind: `checkpoint`
 - summary: Mistral probe-cell crash diagnosed and repaired pre-sweep: the in-pipeline gen-stream smoke probe was tied to max(dose_grid), so mistral's sigma-mapped grid [6..27] made the probe inert (byte-identical output at strength 27, equal to the strongest arm) and the guard refused launch. This falsifies sigma-ladder transfer for mistral (inert at 29 sigma where llama responds at 5-13 sigma). Morning artifacts bracket mistral's window empirically: inert at 27, fully degenerate at realized strength 106.5 (584/584 fired confabs at dose 100), tokens moving at 250. Fixes on exp/doubt-snap-cross-family commit b8e9c873: mistral grid revised pre-sweep/pre-outcome to log-span (27,100) = [30,38,46,56,67,80,92]; smoke probe decoupled to fixed 250.0; dated AMENDMENT extension + NOTEBOOK entry + pin refresh (no-further-grid-changes clause never triggered because the selection rule was never evaluated on [6..27]). Mistral relaunched detached batch-1 (app ap-WQXHAMrCooWjpskPgy36cH), weights loading, background poll armed. Skill PR #275 updated (cffaed77): rule 4 now requires empirical per-cell bracketing (sigma-mapping is a first guess only); rule 6 gains the probe-decoupling gotcha. Llama sweep live and healthy: real interior dose-response, fired-confab clean_tighten 64->107->61 across strengths 5.3->9.1->12.4 then collapse, peak ~18.5% well below the 0.60 selection floor, trending toward an honest FIT dose-viability null. Local 3090 midband ladder: baseline + hs20 all arms + hs23 gated/permuted complete; hs23 random_direction on dose 6 of 7 (~93%); hs26 and hs30 late-comparator cells remain (roughly a day-plus).
+### 027-checkpoint - Checkpoint
+
+- at: `2026-07-12T14:21:18Z`
+- kind: `checkpoint`
+- summary: jspace-family-atlas full arc closed in one day: signed (2524891) with both predictions registered pre-launch (orchestrator and user both holds-on-both), launched with user approval (Modal ap-q2mU3RZwwrHyaTbr1ehwVm, $10 cap, ~$2 actual), resolved, PR #277 opened. Gates AG0/AG1/AG2 PASS with lead re-derivation from pulled captures. Prediction NOT MET both families (eff_dim_frac peaks early, 0.14/0.09 depth, not interior); falsifier not triggered (non-monotone profile, readable interior band). Layer map delivered: llama ~L20-23 (raw refusal 0.90), mistral ~L15-17 (0.925). Red-team pre-verdict: fleet-audit 0.997-vs-0.90 reconciled as population definitions (refused-vs-known vs pooled-answered); random-direction control committed showing refused-vs-known norm confound (random up to 0.97) while caution/raw-refusal baselines stay 0.5-0.75. Exhaust-skill-builder assigned fleet HF dataset dry-run build (no upload; card for user approval). hs30 ladder comparator still running locally.
+- next steps:
+  - Merge PR #277 on user OK; hold fleet resolve for hs30; review builder's dry-run card; draft raw-refusal-axis actuation amendment using the atlas layer map
