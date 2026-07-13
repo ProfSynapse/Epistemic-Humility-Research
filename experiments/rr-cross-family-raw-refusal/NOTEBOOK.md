@@ -6,6 +6,29 @@ in `experiment.yaml`.
 
 ## Entries
 
+- 2026-07-13 (POST-SIGN REPAIR + BUILD REVIEW): lead review of the harness
+  build (commit c12e0578, 11 modules + 33-test CPU smoke all green). The
+  builder's seven adjudications are ACCEPTED, including the layer-index
+  convention resolved empirically against the atlas per-layer AUROCs and
+  the H4 metric-hygiene split on the dose_knowns_ungated arm. Repair owned
+  by the lead: cell.yaml went through sign with four literal PLACEHOLDERs
+  (both family revisions, synaptic_tuner_pin, gpu_python), a sign-time gap
+  the builder correctly flagged and refused to edit. Resolved now via
+  bin/exp repin (audit trail in instrument.repins): llama revision
+  006f5dcd... and mistral revision c170c708..., both lead-verified against
+  the fleet model_matrix.yaml SSOT and matching what the harness's
+  resolve_revision() live-read returns; tuner pin 86b134c3 (worktree
+  submodule commit); gpu python = base conda. No threshold, arm, dose, or
+  gate content changed. Also carried forward: the qwen35-4b-midband-heldout
+  AMENDMENT is cited by doc:line but unmerged (sibling branch); its input
+  line is added once that branch merges, same pattern as the closed A2.
+  Launch preconditions remaining: stage the private row pools
+  (analysis/staged_inputs/<family>/split_rows_private.jsonl) and the atlas
+  full-depth anchor captures per family (currently Modal-side only), then
+  a smoke probe run for a wall-time bracket, then the full FIT ladder;
+  local 3090 after the H3 confirmatory run frees the card.
+
+
 - 2026-07-13 (HARNESS BUILD): CPU-only build and smoke, GPU launch deferred
   until the local 3090 frees after H3. Modules written and sha256-pinned in
   `experiment.yaml` (`instrument.modules`/`instrument.pins`): `render.py`,

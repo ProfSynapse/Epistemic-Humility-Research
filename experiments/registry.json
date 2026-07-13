@@ -2330,7 +2330,7 @@
           "test_rr_smoke.py"
         ],
         "pins": {
-          "cell.yaml": "88c87b7ded44245d886a7aa1a822008574fc0da1cdef83ba6386f0677f0ed56a",
+          "cell.yaml": "6356511cccf848aa3185c1b4af3bcfef43a051d7e31da7f9bd9814c173b43d46",
           "direction_fit.py": "d97966d05ad55df647ae2efd949fd2daf0155706ba10657019d77e5f2965ed5a",
           "dose_ladder.py": "8d4d76eecc894e492e203a97988c9b901ef641f9f74607984c241d73520c1de7",
           "gates.yaml": "de5ba0e4ea824459ee4e4ccc7db7f76e8882355021ddfc9c1f0259cac3adcee9",
@@ -2343,7 +2343,16 @@
           "render.py": "fa378bdbcfd185f9f8bcdbeb1209cbe180b9ec50e92f9342ea7d7421ff6b3ab3",
           "steer_lib.py": "0701211660292de9d1ee30080c1c5f2cbddb856baa1a3608a20fa246531f5250",
           "test_rr_smoke.py": "c9a721603ee344b3157d5e1e75777941103e1d0b81375e11246fb372b73362c6"
-        }
+        },
+        "repins": [
+          {
+            "date": "2026-07-13T14:10:23Z",
+            "file": "cell.yaml",
+            "new_sha256": "6356511cccf848aa3185c1b4af3bcfef43a051d7e31da7f9bd9814c173b43d46",
+            "old_sha256": "88c87b7ded44245d886a7aa1a822008574fc0da1cdef83ba6386f0677f0ed56a",
+            "reason": "resolve the four placeholders that survived sign (two family revisions from fleet model_matrix.yaml, lead-verified against the SSOT; synaptic-tuner submodule pin; gpu python). No threshold, arm, dose, or gate content changed."
+          }
+        ]
       },
       "kg": [],
       "prediction": "The doubt-gated caution write actuates clean raw refusal at the atlas-located workspace-band site on at least one of the two non-Qwen families; at least one of {llama, mistral} reaches outcome shape A, i.e. held-out fired-confab refused >= 0.60 (Wilson 95% LCB > 0.50) AND well-formed >= 0.80 with known-correct false-refusal <= 0.05 (Wilson 95% UCB < 0.10) and the random_direction placebo a no-op within 2 points of baseline on both populations.",

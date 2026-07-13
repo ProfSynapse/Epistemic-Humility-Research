@@ -35,7 +35,7 @@ posture:
 families:
   - id: llama32_3b_instruct
     model: unsloth/Llama-3.2-3B-Instruct
-    revision: PLACEHOLDER(from fleet model_matrix.yaml at sign)
+    revision: 006f5dcd1393c3add266de40994ba96225e9689d  # fleet model_matrix.yaml, lead-verified 2026-07-13
     substrate: bf16
     adapter: none
     loader: AutoModelForCausalLM.from_pretrained
@@ -50,7 +50,7 @@ families:
       known_correct_answered: 334
   - id: mistral7b_instruct_v03
     model: mistralai/Mistral-7B-Instruct-v0.3
-    revision: PLACEHOLDER(from fleet model_matrix.yaml at sign)
+    revision: c170c708c41dac9275d15a8fff4eca08d52bab71  # fleet model_matrix.yaml, lead-verified 2026-07-13
     substrate: bf16
     adapter: none
     loader: AutoModelForCausalLM.from_pretrained
@@ -207,8 +207,8 @@ execution:
     - sequential_vs_batch parity
     - real mechinterp steer + readback
   smoke_source: experiments/doubt-snap-cross-family-confirmatory/AMENDMENT.md:61-65, :202
-  synaptic_tuner_pin: PLACEHOLDER(set at harness-build; must carry batch verbs, config-first mechinterp cells, batched steer, run_log.py)
-  gpu_python: PLACEHOLDER(resolved at harness-build per family loader requirement)
+  synaptic_tuner_pin: 86b134c32254668893800a453b3c5d8285ae85df  # submodule commit in this worktree at harness-build; carries batch verbs, mechinterp cells, batched steer, run_log.py
+  gpu_python: /home/profsynapse/miniconda3/bin/python3  # base conda; both substrates are standard-attention plain-HF CausalLM, no special env
 
 outputs:
   local_private_dir: experiments/rr-cross-family-raw-refusal/analysis/          # gitignored

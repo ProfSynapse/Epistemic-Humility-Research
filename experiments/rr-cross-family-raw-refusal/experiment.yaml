@@ -43,7 +43,7 @@ instrument:
   - pipeline.py
   - test_rr_smoke.py
   pins:
-    cell.yaml: 88c87b7ded44245d886a7aa1a822008574fc0da1cdef83ba6386f0677f0ed56a
+    cell.yaml: 6356511cccf848aa3185c1b4af3bcfef43a051d7e31da7f9bd9814c173b43d46
     gates.yaml: de5ba0e4ea824459ee4e4ccc7db7f76e8882355021ddfc9c1f0259cac3adcee9
     render.py: fa378bdbcfd185f9f8bcdbeb1209cbe180b9ec50e92f9342ea7d7421ff6b3ab3
     grader.py: 54b8af60f2f287c85f3bc4a2d0c8f8ed09f685f10090bb3ef953116d1667b52c
@@ -56,6 +56,14 @@ instrument:
     gates_lib.py: 1eed44eee8bcb898daffe1d21f68f6b398d02961c70928e3f07eb9ec40726e71
     pipeline.py: 49964839c1d1ca6aa620d5477fa4cc07ff20e25291272f4dcf481e640796c010
     test_rr_smoke.py: c9a721603ee344b3157d5e1e75777941103e1d0b81375e11246fb372b73362c6
+  repins:
+  - file: cell.yaml
+    old_sha256: 88c87b7ded44245d886a7aa1a822008574fc0da1cdef83ba6386f0677f0ed56a
+    new_sha256: 6356511cccf848aa3185c1b4af3bcfef43a051d7e31da7f9bd9814c173b43d46
+    date: '2026-07-13T14:10:23Z'
+    reason: resolve the four placeholders that survived sign (two family revisions
+      from fleet model_matrix.yaml, lead-verified against the SSOT; synaptic-tuner
+      submodule pin; gpu python). No threshold, arm, dose, or gate content changed.
 inputs:
 - experiments/ungated-vs-gated-dose-matched/AMENDMENT.md
 - experiments/doubt-snap-cross-family-confirmatory/AMENDMENT.md
