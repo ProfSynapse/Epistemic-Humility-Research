@@ -1,7 +1,7 @@
 slug: snap-seed-sampled-decode-replication
 title: 'H3: Multi-Seed and Sampled-Decode Replication of the Doubt-Gated Caution Snap'
 type: steer-cell
-status: signed
+status: falsified
 registered: true
 created_at: '2026-07-11T00:34:57Z'
 question: Does the resolved doubt-gated caution snap headline (gated confab clean_tighten
@@ -47,5 +47,9 @@ inputs:
 - experiments/doubt-gated-caution-tighten/analysis-committed/random_direction_L34.json
 - experiments/doubt-gated-caution-tighten/analysis-committed/gate_fit.json
 - experiments/doubt-gated-caution-tighten/analysis-committed/build_manifest.json
-verdict: ''
+verdict: The greedy arm reproduces the resolved 73.5%/3.1% pair exactly, but sampled-decode
+  majority-vote conversion collapses to 15.1% pooled (all 5 seeds individually below
+  the 63.5% floor) with delivery, sampling, and arithmetic adversarially verified,
+  so the falsifier fires and the resolved headline is re-scoped to "one greedy decode"
+  everywhere it is asserted, while cost (4.65%) and placebo specificity survive sampling.
 kg: []

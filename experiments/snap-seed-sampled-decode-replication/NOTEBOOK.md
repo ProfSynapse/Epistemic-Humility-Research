@@ -138,3 +138,37 @@ in `experiment.yaml`.
   (same recurring pattern as every fresh worktree so far this session);
   `git submodule update --init synaptic-tuner` produced no diff against the
   already-pinned commit.
+
+## 2026-07-13 - RESOLVED: falsifier fires, instrument-verified (lead)
+
+Run completed on the local RTX 3090, all K=5 registered seeds (no K=3
+fallback). Gate results: G0 PASS (greedy reproduces 73.5%/3.1% exactly),
+G1 FAIL pooled and in all 5 seeds (majority-vote sampled conversion 140/925 =
+15.1% vs the 63.5% floor), G2 PASS (pooled cost 4.65%, worst per-seed Wilson
+UCB 8.9%), G3 PASS (fresh random directions inert, fresh permutations worse,
+every seed).
+
+The verdict was deliberately WITHHELD at run completion (the AK/H6 rule:
+never adopt a paper-changing null from an uncertified instrument) and an
+adversarial instrumentation red-team was dispatched over five surfaces:
+batched-path dose delivery, fired-vs-non-fired behavioral contrast,
+sampling-config execution + seed distinctness, batched termination/grading
+parity, and independent arithmetic recompute. All five certified the collapse
+as BEHAVIORAL: readback 200.026 mean on all 860 fired units, fired-vs-non-fired
+per-sample contrast 24.1% vs 1.8% (confab) and 91.9% vs 4.7% (known), the
+within-unit vote histogram spread across intermediate counts (487/840 units,
+impossible under a silent greedy fallback), the termination rule conservative
+(biases toward MORE collapse, cannot manufacture the fail), and every number
+reproducing exactly under independent recompute by both the red-team and the
+lead. The transformers "flags not valid" warning in full_run.log line 5 was
+chased to the greedy arm's warn-once (do_sample=false ignores the checkpoint
+generation_config sampling defaults); it does not apply to the sampled arm.
+
+Adjudication: falsifier fires straight, no goalpost moves. The Outcome
+records the two binding scope points (conversion-rate-only failure with the
+write still acting and G2/G3 surviving; collapse mechanism not decomposable
+from committed booleans-only logs, finer narrative needs a text-persisting
+re-run) plus the benign-warning note. Both scoreboard calls wrong on G1;
+orchestrator right on greedy reproduction and placebo margins. Downstream:
+every assertion of the 73.5% headline re-scopes to "one greedy decode";
+Paper 5 rewrite must carry this.
