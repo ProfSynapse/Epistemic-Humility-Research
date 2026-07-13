@@ -6,6 +6,27 @@ in `experiment.yaml`.
 
 ## Entries
 
+- 2026-07-13 (SIGNED, pre-launch): Signed after lead review of the built
+  harness (CPU smoke 8/8 re-run by the lead; commit 919c3888). Instrument
+  modules added to instrument.modules BEFORE sign so the sha256 pins cover
+  them. Builder adjudications accepted: informational-only readback block
+  (mirrors the resolved cell's own diagnostic, not a new gate); defensive
+  McNemar pairing with reported drop count; hard pre-launch row-count
+  asserts; reuse of the resolved cell's still-on-disk L34 anchor artifacts
+  (anchor is prompt-only, so no fresh extraction needed; escape hatch
+  documented in the builder log if that worktree is ever wiped). Pre-outcome
+  adjudication recorded BEFORE any GPU spend, on H4-G0's known-cost check:
+  the pinned formula abs(rate - 0.031) <= 0.03 is literally asymmetric (a
+  0/258 = 0.0% rate would fail by 0.1pp), while the pinned gates.yaml
+  comment states the intent as an upper bound ("<= 0.061"). The gate will
+  be executed as WRITTEN; if it stops solely because the rate lands BELOW
+  0.001 (better than the resolved cost), that stop will be diagnosed with
+  the pinned comment's stated intent on record, and any continuation past
+  such a stop will be its own documented decision, never a silent pass.
+  G0 is a stop-not-outcome gate, so this clarification moves no outcome
+  goalpost. Launch: local RTX 3090 (free lane per the amendment's
+  PLACEHOLDER resolution; card idle), full mode, 886 generations.
+
 - 2026-07-13 -- HARNESS BUILD (harness-builder agent, CPU-only; GPU launch NOT
   run). Wrote `materialize_rows.py`, `gen_lib.py`/`grader.py`/`model_lib.py`
   (verbatim copies of the resolved doubt-gated-caution-tighten cell's own

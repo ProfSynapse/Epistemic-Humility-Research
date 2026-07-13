@@ -1,6 +1,6 @@
 # H4: Registered Ungated-vs-Gated Dose-Matched Arm for the Caution Snap
 
-Status: draft (not signed; do not launch as confirmatory evidence).
+Status: signed (2026-07-13; predictions were recorded 2026-07-11 pre-sign; launch on the local 3090 approved by the user 2026-07-13).
 
 Keep this document the prose home for the experiment. The machine state lives in
 `experiment.yaml` and is never duplicated here.
