@@ -6,6 +6,40 @@ in `experiment.yaml`.
 
 ## Entries
 
+- 2026-07-13 (RENDER-ENV-VAR FIX): the anchor-extraction-fixed relaunch got
+  past materialize and into `dose_ladder.py`'s first layer sweep, then
+  crashed: `render.py`'s `_tokenizer()` raised `RuntimeError("RR_RENDER_MODEL
+  must name the HF tokenizer repo")` on the first row. `render.py` (ported
+  in the original harness build) reads its model/revision from
+  `os.environ["RR_RENDER_MODEL"]`/`["RR_RENDER_REVISION"]` by design, so its
+  render cache can never collide with the sibling
+  doubt-snap-cross-family-confirmatory experiment's own render module if
+  ever imported in the same process -- but neither `dose_ladder.py` nor
+  `heldout_scorer.py` ever SET those env vars anywhere. This is a genuine
+  gap in the original harness build, not a locked-spec issue: the CPU smoke
+  suite never exercised `render.py` at all (it wasn't in the smoke suite's
+  import list), so this only surfaced at real launch. Fixed at the single
+  point both callers already share: `steer_lib.load_model()` now sets
+  `RR_RENDER_MODEL`/`RR_RENDER_REVISION` to the SAME `model_name`/`revision`
+  it is about to load, right before loading, so the two can never drift
+  apart or be forgotten by a future caller. Added
+  `test_load_model_sets_render_env_vars` (mocks
+  `transformers.AutoTokenizer.from_pretrained`/
+  `AutoModelForCausalLM.from_pretrained` so this stays CPU-only and
+  network-free) to the smoke suite. 38/38 green. Repinned `steer_lib.py` and
+  `test_rr_smoke.py`.
+  Process-management note: the relaunch that hit this crash was itself a
+  relaunch of an EARLIER attempt that appeared dead (no process, empty GPU)
+  when checked, but had in fact not yet exited -- its orphaned
+  `dose_ladder.py` child (reparented after its own `pipeline.py` parent
+  exited) was still working through model download/load and only crashed
+  on this same bug later, writing its traceback into the just-truncated
+  `run_llama.log` moments after the new relaunch's own banner line, which
+  briefly looked like log corruption before the process list resolved it.
+  Both the stale orphan and the second relaunch (started before this fix
+  landed, so doomed to hit the same crash once it reached generation) were
+  killed before the clean, post-fix relaunch below.
+
 - 2026-07-13 (ANCHOR-EXTRACTION FIX): llama launch bounced in 1 second:
   `dose_ladder.py` exited on `missing analysis/llama/
   anchors_at_candidate_layers.json`. The materialize module's docstring and

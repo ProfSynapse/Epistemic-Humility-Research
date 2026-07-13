@@ -50,12 +50,12 @@ instrument:
     gen_lib.py: a15149b3d3e2424aff1efda9131b8f13e647a173aebd3eb6ade94cd5e574f641
     direction_fit.py: d97966d05ad55df647ae2efd949fd2daf0155706ba10657019d77e5f2965ed5a
     materialize_rows.py: 9056303374328f3f1503f240f24fe7a99d469a7a845d4539e5f654703f3b4736
-    steer_lib.py: 0701211660292de9d1ee30080c1c5f2cbddb856baa1a3608a20fa246531f5250
+    steer_lib.py: 45737d9c59cba4b00526f7dc674a2bc32bcb97d098ec4c308a97a07994155cf0
     dose_ladder.py: 8d4d76eecc894e492e203a97988c9b901ef641f9f74607984c241d73520c1de7
     heldout_scorer.py: 7d6df7ed510f61ee385ab17a56454478519bde08addac812a3fb1dc6432b4dee
     gates_lib.py: 1eed44eee8bcb898daffe1d21f68f6b398d02961c70928e3f07eb9ec40726e71
     pipeline.py: 49964839c1d1ca6aa620d5477fa4cc07ff20e25291272f4dcf481e640796c010
-    test_rr_smoke.py: 8a59ed82d6152543c0371ef3a29fd550c069c8ee056da30a495e4c205c60487f
+    test_rr_smoke.py: 806b1b7c5abe8c14db1f2c21883ad1c4e5f9c8e33fdc38d48c618ae22c4196a6
   repins:
   - file: cell.yaml
     old_sha256: 88c87b7ded44245d886a7aa1a822008574fc0da1cdef83ba6386f0677f0ed56a
@@ -82,6 +82,22 @@ instrument:
       analysis/<family>/anchors_at_candidate_layers.json, closing the dose_ladder.py
       launch-blocking gap; extend CPU smoke with 4 new tests covering the slice (synthetic
       safetensors fixtures) and the full materialize success-path wiring
+  - file: steer_lib.py
+    old_sha256: 0701211660292de9d1ee30080c1c5f2cbddb856baa1a3608a20fa246531f5250
+    new_sha256: 45737d9c59cba4b00526f7dc674a2bc32bcb97d098ec4c308a97a07994155cf0
+    date: '2026-07-13T15:50:53Z'
+    reason: load_model() now sets RR_RENDER_MODEL/RR_RENDER_REVISION before loading,
+      closing a launch-blocking gap where render.py's _tokenizer() raised on the first
+      row of every dose_ladder/heldout_scorer generation call; add test_load_model_sets_render_env_vars
+      (mocked transformers classes, CPU-only)
+  - file: test_rr_smoke.py
+    old_sha256: 8a59ed82d6152543c0371ef3a29fd550c069c8ee056da30a495e4c205c60487f
+    new_sha256: 806b1b7c5abe8c14db1f2c21883ad1c4e5f9c8e33fdc38d48c618ae22c4196a6
+    date: '2026-07-13T15:50:53Z'
+    reason: load_model() now sets RR_RENDER_MODEL/RR_RENDER_REVISION before loading,
+      closing a launch-blocking gap where render.py's _tokenizer() raised on the first
+      row of every dose_ladder/heldout_scorer generation call; add test_load_model_sets_render_env_vars
+      (mocked transformers classes, CPU-only)
 inputs:
 - experiments/ungated-vs-gated-dose-matched/AMENDMENT.md
 - experiments/doubt-snap-cross-family-confirmatory/AMENDMENT.md

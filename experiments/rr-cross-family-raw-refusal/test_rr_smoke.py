@@ -17,12 +17,14 @@ test_rr_smoke.py` exits 0 silently -- known repo-wide gotcha, do not use it).
 from __future__ import annotations
 
 import json
+import os
 import sys
 from pathlib import Path
 
 import numpy as np
 import pytest
 import torch
+import transformers
 from transformers import AutoModelForCausalLM, GPT2Config
 
 HERE = Path(__file__).resolve().parent
@@ -445,6 +447,36 @@ def test_materialize_full_success_path_writes_anchors_at_candidate_layers_json(t
 # steer_lib: real write + readback + batched-vs-sequential parity, tiny
 # CPU model, mirroring H4/H6's CPU smoke pattern (G0 parity_smoke check).
 # ---------------------------------------------------------------------------
+
+def test_load_model_sets_render_env_vars(monkeypatch):
+    """load_model must set render.py's RR_RENDER_MODEL/RR_RENDER_REVISION to
+    the SAME model/revision it just loaded -- the launch-blocking gap the
+    llama relaunch surfaced (dose_ladder.py/heldout_scorer.py both called
+    load_model but neither ever set these, so render.py's _tokenizer()
+    raised on the very first row). Mocks transformers' from_pretrained
+    classmethods so this stays a CPU-only, network-free check."""
+
+    class _FakeTok:
+        pad_token_id = 1
+        eos_token = "<eos>"
+        padding_side = None
+
+    class _FakeModel:
+        def eval(self):
+            return self
+
+        def parameters(self):
+            yield torch.zeros(1)
+
+    monkeypatch.setattr(transformers.AutoTokenizer, "from_pretrained", lambda *a, **k: _FakeTok())
+    monkeypatch.setattr(transformers.AutoModelForCausalLM, "from_pretrained", lambda *a, **k: _FakeModel())
+    monkeypatch.delenv("RR_RENDER_MODEL", raising=False)
+    monkeypatch.delenv("RR_RENDER_REVISION", raising=False)
+
+    steer_lib.load_model("some/model", "somerev")
+    assert os.environ["RR_RENDER_MODEL"] == "some/model"
+    assert os.environ["RR_RENDER_REVISION"] == "somerev"
+
 
 def _unit_direction() -> torch.Tensor:
     d = torch.zeros(_HIDDEN_DIM, dtype=torch.float32)

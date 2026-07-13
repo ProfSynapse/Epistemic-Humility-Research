@@ -24,6 +24,7 @@ NOTEBOOK.md as an explicit choice, not an oversight.
 from __future__ import annotations
 
 import json
+import os
 import sys
 import time
 from pathlib import Path
@@ -55,8 +56,16 @@ def load_jsonl(path: Path) -> list[dict[str, Any]]:
 
 
 def load_model(model_name: str, revision: str):
+    """Loads the generation model/tokenizer AND sets the render-side env vars
+    (`render.py`'s `RR_RENDER_MODEL`/`RR_RENDER_REVISION`) to the SAME
+    model/revision, in the same place, so the two can never drift apart or
+    be forgotten by a caller: every `dose_ladder.py`/`heldout_scorer.py` call
+    site already calls this before any row is rendered."""
     import torch
     from transformers import AutoModelForCausalLM, AutoTokenizer
+
+    os.environ["RR_RENDER_MODEL"] = model_name
+    os.environ["RR_RENDER_REVISION"] = revision or ""
 
     tokenizer = AutoTokenizer.from_pretrained(model_name, revision=revision, trust_remote_code=True)
     if tokenizer.pad_token_id is None:

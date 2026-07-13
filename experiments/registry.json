@@ -2341,8 +2341,8 @@
           "materialize_rows.py": "9056303374328f3f1503f240f24fe7a99d469a7a845d4539e5f654703f3b4736",
           "pipeline.py": "49964839c1d1ca6aa620d5477fa4cc07ff20e25291272f4dcf481e640796c010",
           "render.py": "fa378bdbcfd185f9f8bcdbeb1209cbe180b9ec50e92f9342ea7d7421ff6b3ab3",
-          "steer_lib.py": "0701211660292de9d1ee30080c1c5f2cbddb856baa1a3608a20fa246531f5250",
-          "test_rr_smoke.py": "8a59ed82d6152543c0371ef3a29fd550c069c8ee056da30a495e4c205c60487f"
+          "steer_lib.py": "45737d9c59cba4b00526f7dc674a2bc32bcb97d098ec4c308a97a07994155cf0",
+          "test_rr_smoke.py": "806b1b7c5abe8c14db1f2c21883ad1c4e5f9c8e33fdc38d48c618ae22c4196a6"
         },
         "repins": [
           {
@@ -2365,6 +2365,20 @@
             "new_sha256": "8a59ed82d6152543c0371ef3a29fd550c069c8ee056da30a495e4c205c60487f",
             "old_sha256": "c9a721603ee344b3157d5e1e75777941103e1d0b81375e11246fb372b73362c6",
             "reason": "add extract_anchors_at_candidate_layers() (CPU slice over already-staged atlas capture tensors) and wire into cmd_materialize's success path to write analysis/<family>/anchors_at_candidate_layers.json, closing the dose_ladder.py launch-blocking gap; extend CPU smoke with 4 new tests covering the slice (synthetic safetensors fixtures) and the full materialize success-path wiring"
+          },
+          {
+            "date": "2026-07-13T15:50:53Z",
+            "file": "steer_lib.py",
+            "new_sha256": "45737d9c59cba4b00526f7dc674a2bc32bcb97d098ec4c308a97a07994155cf0",
+            "old_sha256": "0701211660292de9d1ee30080c1c5f2cbddb856baa1a3608a20fa246531f5250",
+            "reason": "load_model() now sets RR_RENDER_MODEL/RR_RENDER_REVISION before loading, closing a launch-blocking gap where render.py's _tokenizer() raised on the first row of every dose_ladder/heldout_scorer generation call; add test_load_model_sets_render_env_vars (mocked transformers classes, CPU-only)"
+          },
+          {
+            "date": "2026-07-13T15:50:53Z",
+            "file": "test_rr_smoke.py",
+            "new_sha256": "806b1b7c5abe8c14db1f2c21883ad1c4e5f9c8e33fdc38d48c618ae22c4196a6",
+            "old_sha256": "8a59ed82d6152543c0371ef3a29fd550c069c8ee056da30a495e4c205c60487f",
+            "reason": "load_model() now sets RR_RENDER_MODEL/RR_RENDER_REVISION before loading, closing a launch-blocking gap where render.py's _tokenizer() raised on the first row of every dose_ladder/heldout_scorer generation call; add test_load_model_sets_render_env_vars (mocked transformers classes, CPU-only)"
           }
         ]
       },
