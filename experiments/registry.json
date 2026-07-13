@@ -2387,10 +2387,10 @@
       "question": "Does a doubt-gated caution write actuate raw refusal on the non-Qwen families (Llama-3.2-3B, Mistral-7B-v0.3) when written at their own atlas-located workspace-band sites, rather than at the ported round(0.94*(L-1)) late site the cross-family confirmatory indicted, with directions and dose chosen on FIT only and the operating point confirmed on held-out?",
       "registered": true,
       "slug": "rr-cross-family-raw-refusal",
-      "status": "signed",
+      "status": "falsified",
       "title": "Cross-family raw-refusal actuation at atlas-located workspace-band sites",
       "type": "steer-cell",
-      "verdict": ""
+      "verdict": "Falsified, both families shape F: the doubt-gated caution write does not actuate FIT-viable canonical clean refusal at either atlas-located non-Qwen site; llama fails on format collapse before the refusal floor (robust to detector width), while mistral peaks at 0.579 against the 0.60 floor with intact JSON and its miss is substantially canonical-phrase coverage (abstention pressure present but phrased outside the locked detector's vocabulary)."
     },
     {
       "checkpoint": {

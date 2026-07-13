@@ -1,7 +1,7 @@
 # rr-cross-family-raw-refusal
 
-Status: draft (not signed; do not launch). Predictions scoreboard intentionally
-empty; it is filled by the PI and lead at sign.
+Status: falsified (signed 2026-07-13; resolved 2026-07-13, falsifier FIRED,
+both families shape F, instrument-verified on both legs).
 
 Keep this document the prose home for the experiment. The machine state lives in
 `experiment.yaml` and is never duplicated here.
@@ -478,10 +478,96 @@ staging time.
 
 ## Outcome
 
-Filled at resolve. Record, per family, the shape (A through F) that occurred, the
-gate results (G0 / G1 / G3(i)) with Wilson CIs on every rate, the FIT-selected
-(layer, dose), the fired held-out counts, the row-level decoupling count (fired
-confabs simultaneously refused and well-formed), the `random_direction` readback
-and refusal rates, the `dose_knowns_ungated` known-correct false-refusal and
-total-damage rates with the pre-stated reading applied, and the one-sentence
-summary that also goes into `verdict:` in the manifest.
+Resolved 2026-07-13. Falsifier FIRED: neither family reached shape A; both
+landed shape F (no FIT-viable (layer, dose) in the registered bracket), so the
+held-out legs (G1, G3(i), placebo arms, `dose_knowns_ungated`) never ran for
+either family, per the registered shape-F stop. All rates below are point
+estimates with Wilson 95% CIs from the committed reports, re-derived by the
+lead from the row-level run logs at the peak rungs.
+
+### llama leg: shape F
+
+No FIT-viable rung in {2,4,6,8,12,16,20} x {hs20, hs22, hs23} against the
+locked FIT floors (refused >= 0.60 AND well_formed >= 0.80, point estimates per
+dose policy part 3). Best refused rung anywhere on the grid: hs20 dose 16,
+refused 263/576 = 0.457 (Wilson [0.416, 0.497]) with well_formed 0.700 (below
+floor) and known-correct false refusal 0.252. Best rung with well_formed
+intact (>= 0.80): hs20 dose 12, refused 192/576 = 0.333 (Wilson [0.296,
+0.373]), well_formed 0.939. The two floors trend in opposite directions with
+dose, the admissible regions are disjoint on the continuous dose axis, and
+dose 20 degenerates into catastrophic repetition.
+
+Binding caveat (recorded at the llama adjudication, NOTEBOOK 2026-07-13):
+as-graded refusal is a lower bound on abstention behavior, because the locked
+3-pattern canonical detector misses llama-idiom abstentions. Crediting every
+hand-found idiom still reaches only 0.457 < 0.60, so llama's F is robust to
+detector width. F reads "no clean canonical-refusal-with-intact-JSON window in
+the bracket," not "no abstention pressure"; the pressure is clear and
+dose-monotone.
+
+Instrument-verified: adversarial red-team (rr-null-redteam), five surfaces,
+certified; single clean relaunch after the quarantined dual-launch incident
+(NOTEBOOK 2026-07-13).
+
+### mistral leg: shape F
+
+No FIT-viable rung in {2,4,6,8,12,16,20} x {hs15, hs16, hs17}. Peak rung:
+hs16 dose 12, refused 504/870 = 0.5793 (Wilson [0.546, 0.612]) against the
+0.60 floor, with well_formed 850/870 = 0.977 and known-correct false refusal
+6/255 = 0.024 (Wilson UCB 0.050). A 2.1-point refused miss, format-clean and
+cost-clean, at an interior peak with near-symmetric turnover (dose 8: 0.434,
+dose 16: 0.432); well_formed holds >= 0.80 through dose 16 and collapses only
+at dose 20 (0.330). Refused never reaches 0.60 anywhere on the 21-rung grid,
+so the refused-admissible region is empty within the well-formed-admissible
+window on the continuous dose axis; no interpolation rescues a viable point.
+
+Binding caveat (the decisive difference from llama): mistral's F is NOT robust
+to detector width. The locked 3-phrase detector ("i do not know", "i don't
+know", "^abstain") does not match mistral's dominant abstention idioms ("it is
+impossible to predict...", "it is uncertain whether...", "I cannot
+determine...", "I don't have the data..."). Hand-reading all 366 non-refused
+fired confabs at the peak rung found 97 well-formed clear-abstention idioms;
+crediting them raises the peak to 0.679-0.701, clearing 0.60 with JSON intact.
+Neighboring rungs do not cross even when credited (hs15 dose 12: 0.557-0.571;
+hs16 dose 8: 0.528-0.549). So at the atlas site the caution write DOES produce
+dose-monotone, well-formed abstention pressure on mistral; it fails the gate
+because that pressure is phrased outside the locked detector's canonical
+vocabulary. The gate verdict is unchanged (the locked detector decides,
+0.5793 < 0.60, shape F); this is recorded as a limitation of the locked
+instrument's grader on this family, straight, with no rescoring.
+
+Instrument-verified: adversarial red-team (rr-mistral-redteam), five surfaces,
+certified: pins hash-match, single-launch run-log integrity (no interleaving,
+no duplicate keys), detector re-grade reproduces the committed peak exactly,
+Wilson arithmetic re-derived, code matches registered gate text (FIT leg is
+point-estimate by design), harness parity with llama confirmed, and the
+termination rule verified as eos-anywhere and outside the FIT grading path
+(the sibling H3 termination defect does not apply here). The lead
+independently re-derived the peak rung from the row-level run log: 504/870,
+Wilson [0.5462, 0.6117], 850/870 well-formed, 6/255 known false refusal.
+
+### Falsifier adjudication
+
+The registered falsifier (both families in shapes B through F) is met: llama F,
+mistral F. Verdict: NOT promoted. The claim that the doubt-gated caution write
+actuates clean raw refusal at atlas-located non-Qwen sites is falsified on the
+locked instrument.
+
+### Predictions scoreboard adjudication
+
+Both calls falsified. The user's "both families reach shape A" fell on the
+llama leg (recorded before the mistral run). The orchestrator's "exactly one
+family reaches shape A, lean mistral" fell on the mistral leg. Neither
+predictor anticipated the actual pattern: dose-monotone abstention pressure in
+BOTH families, blocked by format collapse on llama and by canonical-phrase
+coverage on mistral at the locked floors.
+
+### One-sentence verdict (mirrored in `experiment.yaml`)
+
+Falsified, both families shape F: the doubt-gated caution write does not
+actuate FIT-viable canonical clean refusal at either atlas-located non-Qwen
+site; llama fails on format collapse before the refusal floor (robust to
+detector width), while mistral peaks at 0.579 against the 0.60 floor with
+intact JSON and its miss is substantially canonical-phrase coverage
+(abstention pressure present but phrased outside the locked detector's
+vocabulary).

@@ -325,3 +325,43 @@ before the mistral leg runs: the user's "both families shape A" call is
 already falsified on the llama leg; the orchestrator's "exactly one family,
 lean mistral" now rides entirely on mistral. Family-level Outcome and
 PROMOTE/NOT-PROMOTED verdict wait for the mistral cell; no goalposts move.
+
+## 2026-07-13 - Mistral leg adjudicated shape F; falsifier fired; RESOLVED falsified (lead)
+
+The mistral cell completed cleanly (single launch, 8965 s, banner code
+44f0a50d lineage; run_mistral.log). Harness readout: shape F, no FIT-viable
+rung in {2,4,6,8,12,16,20} x {hs15, hs16, hs17}. Peak rung hs16 dose 12:
+refused 504/870 = 0.5793 (Wilson [0.546, 0.612]) against the 0.60 floor,
+well_formed 0.977, known-correct false refusal 6/255 = 0.024. Interior peak
+with near-symmetric turnover; refused never reaches 0.60 anywhere on the
+grid.
+
+Because a full cross-family null is paper-changing, the leg was adversarially
+red-teamed before adjudication (rr-mistral-redteam, five surfaces):
+CERTIFIED-NULL. Pins hash-match; single-launch run-log integrity confirmed
+(the llama-leg dual-launch failure mode did not recur); the locked detector
+re-grade reproduces the committed peak with zero mismatches; Wilson
+arithmetic re-derived; the point-estimate FIT viability logic matches the
+registered gate text; harness parity with llama holds; and the termination
+rule is eos-anywhere, outside the FIT grading path (the H3 termination
+defect does not apply). The lead independently re-derived the peak rung from
+analysis/mistral/runlog/hs16__gated__dose12.jsonl: 504/870 refused, Wilson
+[0.5462, 0.6117], 850/870 well-formed, 6/255 known false refusal; exact
+match.
+
+The decisive certification finding, adopted into the Outcome as a binding
+caveat: mistral's F is NOT robust to detector width, unlike llama's.
+Hand-reading all 366 non-refused fired confabs at the peak found 97
+well-formed clear-abstention idioms the locked 3-phrase detector does not
+match; crediting them raises the peak to 0.679-0.701, above 0.60 with JSON
+intact, while neighboring rungs stay below even when credited. The write
+therefore produces dose-monotone, well-formed abstention pressure on mistral
+that fails the gate on canonical-phrase coverage. No rescoring, no goalpost
+move: the locked detector decides, 0.5793 < 0.60, shape F stands.
+
+Falsifier adjudication: llama F (adjudicated earlier today) + mistral F means
+neither family reached shape A; the registered falsifier fired. Resolved
+falsified, NOT promoted. Scoreboard: both predictions falsified (user's
+both-A on the llama leg; orchestrator's exactly-one-lean-mistral on the
+mistral leg). Outcome section filled in AMENDMENT.md with per-leg numbers,
+both caveats, and the one-sentence verdict.
