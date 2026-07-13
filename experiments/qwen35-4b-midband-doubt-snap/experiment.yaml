@@ -1,6 +1,6 @@
 slug: qwen35-4b-midband-doubt-snap
 type: steer-cell
-status: signed
+status: resolved
 registered: true
 question: On Qwen/Qwen3.5-4B, does writing the doubt-gated caution snap at a J-space
   workspace-band (mid-band) layer decouple refusal induction from output corruption,
@@ -44,5 +44,9 @@ inputs:
 - experiments/qwen35-4b-midband-doubt-snap/analysis-committed/reused_rows_manifest.json
 - experiments/qwen35-4b-midband-doubt-snap/analysis-committed/profile_summary.json
 - experiments/qwen35-4b-midband-doubt-snap/analysis-committed/build_manifest.json
-verdict: ''
+verdict: G1 passed at hs20 dose 8 x sigma_c, the unique grid cell decoupling refusal
+  induction (0.684) from output corruption (well-formed 0.980, known false-refusal
+  10/240 = 0.042, in-sample FIT), while hs23/hs26 never clear the refusal floor and
+  the in-grid late-site comparator hs30 reproduces its entangled failure, so the Qwen3-4B
+  mid-band write-site lesson transfers to Qwen3.5-4B.
 kg: []

@@ -1,6 +1,9 @@
 # qwen35-4b-midband-doubt-snap
 
-Status: draft (not signed; do not launch Stage C as confirmatory evidence).
+Status: resolved (signed 2026-07-10, Stage C completed 2026-07-12, Outcome below).
+Note: this header previously read "draft (not signed)" as a stale leftover from
+before the 2026-07-10 sign commit (see NOTEBOOK.md SIGNED entry); corrected at
+resolve with no change to any registered content.
 
 Keep this document the prose home for the experiment. The machine state lives in
 `experiment.yaml` and is never duplicated here.
@@ -207,10 +210,10 @@ generation, `min_new_tokens=1`, `max_new_tokens=200`, RunLog per row
 (`shared/utilities/run_log.py`, available at this worktree's pinned
 submodule commit `cd30d482`). Proposed per-layer dose grids and their
 readback-sigma rationale are in `LAUNCH-PLAN.md`, marked draft-until-sign.
-**This amendment does not run Stage C.** The harness script that would run
-it (`run_dose_ladder.py`) has NOT been written; authoring and testing it is
-listed as an open item in `LAUNCH-PLAN.md` for whoever signs this experiment,
-not assumed complete by this draft.
+(Stale draft-era sentence corrected at resolve: `run_dose_ladder.py` was in
+fact written and smoke-tested pre-sign at 8b26cfa3, pinned into the
+instrument at sign, and Stage C ran post-sign 2026-07-10 to 2026-07-12 as the
+signed evidence run; see NOTEBOOK.md and the Outcome section.)
 
 ### Registered readouts (Stage C, once signed)
 
@@ -282,5 +285,91 @@ Predictions scoreboard filled at sign (2026-07-10), per locked design.
 
 ## Outcome
 
-Filled at resolve. Record the verdict, the gate results, and the one-sentence
-summary that also goes into `verdict:` in the manifest.
+Resolved 2026-07-12. Stage C ran on the local RTX 3090 at batch_size=8
+(launched 2026-07-10 11:20, completed 2026-07-12 22:35; 74,753 generations:
+1,127 shared baseline plus 3 arms x 7 doses x per-layer fired counts, hs20
+882 / hs23 878 / hs26 881 / hs30 865). Official aggregates:
+`analysis-committed/dose_ladder_full_summary.json` (row-text-free, promoted
+from the runner's output at resolve). The lead independently recomputed the
+headline aggregates from the raw RunLogs before the red-team pass and matched
+the runner's values; an adversarial red-team review then ran over seven attack
+surfaces (cost-gate denominator, grader circularity, baseline integrity,
+placebo magnitude matching, permuted-gate construction, provenance and
+determinism, goalpost check) and returned no invalidating finding, with every
+recomputed number matching the RunLogs.
+
+**Verdict: G1 PASSES.** hs20 at dose 8 x sigma_c (dose_abs 12.61) is the
+unique cell in the locked 4-layer x 7-dose grid that clears both primary
+floors simultaneously on fired FIT confabs: refused 0.684 (594/869) with
+well_formed 0.980, against floors of 0.60 and 0.80. The decoupling is
+row-level real: 593/869 fired confabs are simultaneously refused AND
+well-formed, and exactly one refused row is not well-formed. The cost gate
+passes on its registered population: false-refusal on FIT
+known_correct_answered is 10/240 = 0.042 (bar: <= 0.10), where baseline
+refusal on both roles is exactly 0. The dose-response is a coherent ridge,
+not a fluke cell: dose 6 misses only the refusal floor (0.595) and dose 12
+misses only the well-formed floor (0.786), with the known overdose collapse
+arriving at dose 16+ (about 100% degenerate), exactly the entanglement cliff
+the late site shows everywhere. The falsifier gate does NOT fire: hs20 shows
+a dose window where refusal rises with well-formedness intact, which the
+late site (hs30, re-run in-grid here) never achieves at any dose (peak
+refused about 0.31 at doses 12-16 with well-formedness already degrading).
+The mid-band lesson from Qwen3-4B therefore transfers to Qwen3.5-4B: the
+late-site failure was a write-site problem, not a family problem.
+
+Layer ordering: refusal potency at matched relative dose is monotone toward
+earlier layers (hs20 > hs23 > hs26 > hs30). hs23 (the eff-dim profile peak)
+peaks at refused 0.456 and hs26 at 0.276, neither reaching the 0.60 floor at
+any well-formed dose. This echoes the jspace-family-atlas finding on llama
+and mistral that functional structure sits earlier than the interior-peak
+prior expected.
+
+Binding scope statements (from the red-team review, adopted verbatim as
+adjudicated by the lead):
+
+1. **Cost-gate conditional.** System-level false-refusal on known-correct
+   items is 0.042 (10/240) at hs20 dose 8; this is low because the doubt
+   gate fires on only 13/240 knowns AND the write direction spares most
+   knowns; it is NOT because dosing a known is benign: of the 13 knowns the
+   gate does fire on, 77% (10/13) are falsely refused. The snap is not safe
+   to apply to a known item.
+2. **In-sample scope.** This is in-sample FIT characterization only: c_hat
+   is fit on FIT confab-vs-refused labels and evaluated on those same FIT
+   confabs; the held-out pool was never touched, by design. G1 is existence
+   evidence for a decoupling operating window, not a held-out or
+   generalization claim. Promotion to a claim requires a registered held-out
+   stage.
+3. **Selectivity attribution.** The confab/known selectivity belongs to the
+   c_hat write direction's content dependence, not to the doubt gate: in the
+   permuted-gate control, randomly selected dosed confabs refuse at 0.669 vs
+   the gated arm's 0.684, while directly dosed knowns refuse at only 0.056.
+   The gate's operational role is limiting how many knowns get dosed (13 vs
+   197 at hs20), not creating the refusal selectivity.
+4. **Placebo is magnitude-matched and clean.** The random-direction arm
+   commands the same realized projection as the gated arm (readback at hs20
+   dose 8: gated mean 12.627 vs random 12.625 against target 12.608) and
+   produces about 0 refusal at every dose (0.005 at the G1 cell) until it
+   destroys well-formedness at high dose. Refusal is direction-specific.
+5. **Operating point.** All numbers are at batch_size=8, validated by the
+   pre-launch parity probe; single-row parity was not verified. The
+   documented about-1-in-240 batch-composition flip rate is small against
+   the +0.084 refused and +0.18 well-formed margins.
+6. **No optimum claim.** hs20 is the shallowest registered candidate and the
+   only layer that clears G1; layers earlier than hs20 were profiled but
+   never fit or dosed. This result establishes EXISTENCE of a decoupling
+   window at a registered mid-band candidate; the operating optimum may lie
+   off-grid earlier and is untested.
+
+Predictions scoreboard adjudication: both predictors called G1 pass and both
+were right on the primary call. The user's framing (write-site problem, not
+a family problem) is the verdict sentence. The orchestrator's layer call
+(hs23 in the 6-12 sigma range) was wrong on layer: the window is at hs20,
+dose 8, and hs23 never clears the refusal floor.
+
+One-sentence summary (mirrors `verdict:` in `experiment.yaml`): G1 passed at
+hs20 dose 8 x sigma_c, the unique grid cell decoupling refusal induction
+(0.684) from output corruption (well-formed 0.980, known false-refusal
+10/240 = 0.042, in-sample FIT), while hs23/hs26 never clear the refusal
+floor and the in-grid late-site comparator hs30 reproduces its entangled
+failure, so the Qwen3-4B mid-band write-site lesson transfers to
+Qwen3.5-4B.

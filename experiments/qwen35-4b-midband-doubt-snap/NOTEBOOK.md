@@ -6,6 +6,32 @@ in `experiment.yaml`.
 
 ## Entries
 
+- 2026-07-12 (resolve): Full ladder completed 22:35 (74,753 generations,
+  ~59.2h wall, batch_size=8, RunLog per row throughout, runner exited
+  cleanly after writing `dose_ladder_full_summary.json`). Lead recomputed
+  the headline aggregates independently from the raw RunLogs BEFORE the
+  red-team pass; recompute matched the runner's official summary at every
+  spot-checked cell. Red-team review (seven attack surfaces) returned
+  G1 SURVIVES with no invalidating finding; the three items lifted for lead
+  adjudication were all accepted: (1) the cost gate's registered population
+  is all 240 FIT knowns (10/240 = 0.042 passes; the 10/13 fired-known
+  conditional is reported alongside in the Outcome), (2) the result is
+  framed as in-sample FIT-only existence evidence, never held-out, (3) the
+  official aggregate `dose_ladder_full_summary.json` (verified row-text
+  free) was promoted into `analysis-committed/` at resolve. Verdict written
+  into AMENDMENT.md: G1 PASSES at hs20 dose 8 x sigma_c (refused 0.684,
+  well-formed 0.980, known false-refusal 0.042), the unique clearing cell in
+  the locked 4x7 grid; falsifier does not fire; late-site comparator hs30
+  reproduces its entangled failure in-grid. Layer potency is monotone toward
+  earlier layers (hs20 > hs23 > hs26 > hs30). Two stale draft-era passages
+  in AMENDMENT.md (the header status line and the "run_dose_ladder.py has
+  NOT been written" sentence) were corrected at resolve with explicit
+  correction notes; no registered content changed. Hygiene note from the
+  red-team, recorded so nobody quotes the wrong number: build_manifest.json
+  Youden `tp` counts (hs20 870, hs23 865) differ by ~1 row from the
+  frozen-tau operating fire counts Stage C uses (869, 864); boundary
+  rounding at fit time, Stage C internally consistent.
+
 - 2026-07-10: Batch-size probe (post-sign, pre-full-launch). Bounded probe at
   n=30 rows, hs23, dose_mult=8.0 (all four arms: baseline, gated,
   permuted_gate, random_direction), batch sizes {8 (reference), 16, 32}, run

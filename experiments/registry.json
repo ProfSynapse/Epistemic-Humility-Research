@@ -507,9 +507,9 @@
       "question": "On Qwen/Qwen3.5-4B, does writing the doubt-gated caution snap at a J-space workspace-band (mid-band) layer decouple refusal induction from output corruption, where the registered late-site (0.94-depth, hs30) write produced a well-characterized no-window null in doubt-snap-cross-family-confirmatory (FIT dose sweep 0% clean_tighten at the registered grid, recalibrated peak ~33% coherent tighten with well-formedness collapsing to 3% by dose 60)?",
       "registered": true,
       "slug": "qwen35-4b-midband-doubt-snap",
-      "status": "signed",
+      "status": "resolved",
       "type": "steer-cell",
-      "verdict": ""
+      "verdict": "G1 passed at hs20 dose 8 x sigma_c, the unique grid cell decoupling refusal induction (0.684) from output corruption (well-formed 0.980, known false-refusal 10/240 = 0.042, in-sample FIT), while hs23/hs26 never clear the refusal floor and the in-grid late-site comparator hs30 reproduces its entangled failure, so the Qwen3-4B mid-band write-site lesson transfers to Qwen3.5-4B."
     }
   ]
 }

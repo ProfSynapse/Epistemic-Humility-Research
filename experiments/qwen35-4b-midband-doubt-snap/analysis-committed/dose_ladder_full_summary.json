@@ -1,0 +1,2184 @@
+{
+  "layers": {
+    "hs20": {
+      "sigma_c": 1.576023489724997,
+      "n_fired": 882,
+      "doses": {
+        "2": {
+          "gated": {
+            "dose_mult": 2,
+            "dose_abs": 3.152046979449994,
+            "gain": 2,
+            "n_active": 882,
+            "confab_active": {
+              "n": 869,
+              "clean_tighten": 0.2140391254315305,
+              "refused": 0.2140391254315305,
+              "well_formed": 0.9942462600690449,
+              "degenerate": 0.0,
+              "terminated_naturally": 0.9930955120828538,
+              "mean_new_tokens": 62.55926352128884
+            },
+            "known_all_covered": 240,
+            "known_all": {
+              "n": 240,
+              "clean_tighten": 0.020833333333333332,
+              "refused": 0.020833333333333332,
+              "well_formed": 1.0,
+              "degenerate": 0.0,
+              "terminated_naturally": 1.0,
+              "mean_new_tokens": 30.870833333333334
+            }
+          },
+          "permuted_gate": {
+            "dose_mult": 2,
+            "dose_abs": 3.152046979449994,
+            "gain": 2,
+            "n_active": 882,
+            "confab_active": {
+              "n": 685,
+              "clean_tighten": 0.21021897810218979,
+              "refused": 0.21021897810218979,
+              "well_formed": 0.9927007299270073,
+              "degenerate": 0.0,
+              "terminated_naturally": 0.9912408759124087,
+              "mean_new_tokens": 63.08467153284671
+            },
+            "known_all_covered": 240,
+            "known_all": {
+              "n": 240,
+              "clean_tighten": 0.008333333333333333,
+              "refused": 0.008333333333333333,
+              "well_formed": 1.0,
+              "degenerate": 0.0,
+              "terminated_naturally": 1.0,
+              "mean_new_tokens": 30.479166666666668
+            }
+          },
+          "random_direction": {
+            "dose_mult": 2,
+            "dose_abs": 3.152046979449994,
+            "gain": 3.152046979449994,
+            "n_active": 882,
+            "confab_active": {
+              "n": 869,
+              "clean_tighten": 0.0011507479861910242,
+              "refused": 0.0011507479861910242,
+              "well_formed": 0.9919447640966629,
+              "degenerate": 0.0,
+              "terminated_naturally": 0.9919447640966629,
+              "mean_new_tokens": 71.81472957422325
+            },
+            "known_all_covered": 240,
+            "known_all": {
+              "n": 240,
+              "clean_tighten": 0.0,
+              "refused": 0.0,
+              "well_formed": 1.0,
+              "degenerate": 0.0,
+              "terminated_naturally": 1.0,
+              "mean_new_tokens": 31.5125
+            }
+          }
+        },
+        "4": {
+          "gated": {
+            "dose_mult": 4,
+            "dose_abs": 6.304093958899988,
+            "gain": 4,
+            "n_active": 882,
+            "confab_active": {
+              "n": 869,
+              "clean_tighten": 0.46375143843498273,
+              "refused": 0.46375143843498273,
+              "well_formed": 0.9884925201380897,
+              "degenerate": 0.0,
+              "terminated_naturally": 0.9884925201380897,
+              "mean_new_tokens": 54.20023014959724
+            },
+            "known_all_covered": 240,
+            "known_all": {
+              "n": 240,
+              "clean_tighten": 0.029166666666666667,
+              "refused": 0.029166666666666667,
+              "well_formed": 1.0,
+              "degenerate": 0.0,
+              "terminated_naturally": 1.0,
+              "mean_new_tokens": 30.9
+            }
+          },
+          "permuted_gate": {
+            "dose_mult": 4,
+            "dose_abs": 6.304093958899988,
+            "gain": 4,
+            "n_active": 882,
+            "confab_active": {
+              "n": 685,
+              "clean_tighten": 0.45985401459854014,
+              "refused": 0.45985401459854014,
+              "well_formed": 0.9868613138686131,
+              "degenerate": 0.00145985401459854,
+              "terminated_naturally": 0.9868613138686131,
+              "mean_new_tokens": 55.56788321167883
+            },
+            "known_all_covered": 240,
+            "known_all": {
+              "n": 240,
+              "clean_tighten": 0.029166666666666667,
+              "refused": 0.029166666666666667,
+              "well_formed": 0.9958333333333333,
+              "degenerate": 0.004166666666666667,
+              "terminated_naturally": 0.9958333333333333,
+              "mean_new_tokens": 30.458333333333332
+            }
+          },
+          "random_direction": {
+            "dose_mult": 4,
+            "dose_abs": 6.304093958899988,
+            "gain": 6.304093958899988,
+            "n_active": 882,
+            "confab_active": {
+              "n": 869,
+              "clean_tighten": 0.0,
+              "refused": 0.0,
+              "well_formed": 0.9850402761795167,
+              "degenerate": 0.0,
+              "terminated_naturally": 0.9850402761795167,
+              "mean_new_tokens": 75.86306098964327
+            },
+            "known_all_covered": 240,
+            "known_all": {
+              "n": 240,
+              "clean_tighten": 0.0,
+              "refused": 0.0,
+              "well_formed": 1.0,
+              "degenerate": 0.0,
+              "terminated_naturally": 1.0,
+              "mean_new_tokens": 31.754166666666666
+            }
+          }
+        },
+        "6": {
+          "gated": {
+            "dose_mult": 6,
+            "dose_abs": 9.456140938349982,
+            "gain": 6,
+            "n_active": 882,
+            "confab_active": {
+              "n": 869,
+              "clean_tighten": 0.5949367088607594,
+              "refused": 0.5949367088607594,
+              "well_formed": 0.9907940161104718,
+              "degenerate": 0.0011507479861910242,
+              "terminated_naturally": 0.9907940161104718,
+              "mean_new_tokens": 48.444188722669736
+            },
+            "known_all_covered": 240,
+            "known_all": {
+              "n": 240,
+              "clean_tighten": 0.0375,
+              "refused": 0.0375,
+              "well_formed": 1.0,
+              "degenerate": 0.0,
+              "terminated_naturally": 1.0,
+              "mean_new_tokens": 30.691666666666666
+            }
+          },
+          "permuted_gate": {
+            "dose_mult": 6,
+            "dose_abs": 9.456140938349982,
+            "gain": 6,
+            "n_active": 882,
+            "confab_active": {
+              "n": 685,
+              "clean_tighten": 0.5824817518248175,
+              "refused": 0.5824817518248175,
+              "well_formed": 0.9854014598540146,
+              "degenerate": 0.0,
+              "terminated_naturally": 0.9854014598540146,
+              "mean_new_tokens": 50.26569343065693
+            },
+            "known_all_covered": 240,
+            "known_all": {
+              "n": 240,
+              "clean_tighten": 0.041666666666666664,
+              "refused": 0.041666666666666664,
+              "well_formed": 0.9916666666666667,
+              "degenerate": 0.004166666666666667,
+              "terminated_naturally": 0.9916666666666667,
+              "mean_new_tokens": 30.3375
+            }
+          },
+          "random_direction": {
+            "dose_mult": 6,
+            "dose_abs": 9.456140938349982,
+            "gain": 9.456140938349982,
+            "n_active": 882,
+            "confab_active": {
+              "n": 869,
+              "clean_tighten": 0.0,
+              "refused": 0.0,
+              "well_formed": 0.9781357882623706,
+              "degenerate": 0.0,
+              "terminated_naturally": 0.9815880322209436,
+              "mean_new_tokens": 79.17836593785961
+            },
+            "known_all_covered": 240,
+            "known_all": {
+              "n": 240,
+              "clean_tighten": 0.0,
+              "refused": 0.0,
+              "well_formed": 0.9916666666666667,
+              "degenerate": 0.0,
+              "terminated_naturally": 0.9916666666666667,
+              "mean_new_tokens": 33.729166666666664
+            }
+          }
+        },
+        "8": {
+          "gated": {
+            "dose_mult": 8,
+            "dose_abs": 12.608187917799976,
+            "gain": 8,
+            "n_active": 882,
+            "confab_active": {
+              "n": 869,
+              "clean_tighten": 0.6766398158803222,
+              "refused": 0.6835443037974683,
+              "well_formed": 0.9804372842347526,
+              "degenerate": 0.0023014959723820483,
+              "terminated_naturally": 0.9827387802071347,
+              "mean_new_tokens": 46.084004602991946
+            },
+            "known_all_covered": 240,
+            "known_all": {
+              "n": 240,
+              "clean_tighten": 0.041666666666666664,
+              "refused": 0.041666666666666664,
+              "well_formed": 1.0,
+              "degenerate": 0.0,
+              "terminated_naturally": 1.0,
+              "mean_new_tokens": 30.7375
+            }
+          },
+          "permuted_gate": {
+            "dose_mult": 8,
+            "dose_abs": 12.608187917799976,
+            "gain": 8,
+            "n_active": 882,
+            "confab_active": {
+              "n": 685,
+              "clean_tighten": 0.6598540145985401,
+              "refused": 0.6686131386861314,
+              "well_formed": 0.9751824817518249,
+              "degenerate": 0.00145985401459854,
+              "terminated_naturally": 0.9751824817518249,
+              "mean_new_tokens": 48.127007299270076
+            },
+            "known_all_covered": 240,
+            "known_all": {
+              "n": 240,
+              "clean_tighten": 0.04583333333333333,
+              "refused": 0.04583333333333333,
+              "well_formed": 0.9666666666666667,
+              "degenerate": 0.016666666666666666,
+              "terminated_naturally": 0.9708333333333333,
+              "mean_new_tokens": 35.4625
+            }
+          },
+          "random_direction": {
+            "dose_mult": 8,
+            "dose_abs": 12.608187917799976,
+            "gain": 12.608187917799976,
+            "n_active": 882,
+            "confab_active": {
+              "n": 869,
+              "clean_tighten": 0.0,
+              "refused": 0.004602991944764097,
+              "well_formed": 0.8814729574223246,
+              "degenerate": 0.009205983889528193,
+              "terminated_naturally": 0.9286536248561565,
+              "mean_new_tokens": 84.716915995397
+            },
+            "known_all_covered": 240,
+            "known_all": {
+              "n": 240,
+              "clean_tighten": 0.0,
+              "refused": 0.0,
+              "well_formed": 0.9791666666666666,
+              "degenerate": 0.0125,
+              "terminated_naturally": 0.9833333333333333,
+              "mean_new_tokens": 34.9
+            }
+          }
+        },
+        "12": {
+          "gated": {
+            "dose_mult": 12,
+            "dose_abs": 18.912281876699964,
+            "gain": 12,
+            "n_active": 882,
+            "confab_active": {
+              "n": 869,
+              "clean_tighten": 0.61795166858458,
+              "refused": 0.7376294591484465,
+              "well_formed": 0.7859608745684695,
+              "degenerate": 0.08745684695051784,
+              "terminated_naturally": 0.8998849252013809,
+              "mean_new_tokens": 54.032220943613346
+            },
+            "known_all_covered": 240,
+            "known_all": {
+              "n": 240,
+              "clean_tighten": 0.041666666666666664,
+              "refused": 0.041666666666666664,
+              "well_formed": 0.9875,
+              "degenerate": 0.008333333333333333,
+              "terminated_naturally": 0.9916666666666667,
+              "mean_new_tokens": 32.3625
+            }
+          },
+          "permuted_gate": {
+            "dose_mult": 12,
+            "dose_abs": 18.912281876699964,
+            "gain": 12,
+            "n_active": 882,
+            "confab_active": {
+              "n": 685,
+              "clean_tighten": 0.5883211678832116,
+              "refused": 0.7051094890510949,
+              "well_formed": 0.7708029197080292,
+              "degenerate": 0.10656934306569343,
+              "terminated_naturally": 0.8773722627737226,
+              "mean_new_tokens": 57.832116788321166
+            },
+            "known_all_covered": 240,
+            "known_all": {
+              "n": 240,
+              "clean_tighten": 0.058333333333333334,
+              "refused": 0.075,
+              "well_formed": 0.8833333333333333,
+              "degenerate": 0.0625,
+              "terminated_naturally": 0.9375,
+              "mean_new_tokens": 39.63333333333333
+            }
+          },
+          "random_direction": {
+            "dose_mult": 12,
+            "dose_abs": 18.912281876699964,
+            "gain": 18.912281876699964,
+            "n_active": 882,
+            "confab_active": {
+              "n": 869,
+              "clean_tighten": 0.0,
+              "refused": 0.010356731875719217,
+              "well_formed": 0.026467203682393557,
+              "degenerate": 0.08285385500575373,
+              "terminated_naturally": 0.8204833141542003,
+              "mean_new_tokens": 72.23820483314154
+            },
+            "known_all_covered": 240,
+            "known_all": {
+              "n": 240,
+              "clean_tighten": 0.0,
+              "refused": 0.004166666666666667,
+              "well_formed": 0.9458333333333333,
+              "degenerate": 0.0125,
+              "terminated_naturally": 0.9833333333333333,
+              "mean_new_tokens": 34.575
+            }
+          }
+        },
+        "16": {
+          "gated": {
+            "dose_mult": 16,
+            "dose_abs": 25.21637583559995,
+            "gain": 16,
+            "n_active": 882,
+            "confab_active": {
+              "n": 869,
+              "clean_tighten": 0.0,
+              "refused": 0.0,
+              "well_formed": 0.0,
+              "degenerate": 0.997698504027618,
+              "terminated_naturally": 0.0023014959723820483,
+              "mean_new_tokens": 199.5776754890679
+            },
+            "known_all_covered": 240,
+            "known_all": {
+              "n": 240,
+              "clean_tighten": 0.0,
+              "refused": 0.0,
+              "well_formed": 0.9458333333333333,
+              "degenerate": 0.05416666666666667,
+              "terminated_naturally": 0.9458333333333333,
+              "mean_new_tokens": 39.9875
+            }
+          },
+          "permuted_gate": {
+            "dose_mult": 16,
+            "dose_abs": 25.21637583559995,
+            "gain": 16,
+            "n_active": 882,
+            "confab_active": {
+              "n": 685,
+              "clean_tighten": 0.0,
+              "refused": 0.0,
+              "well_formed": 0.0,
+              "degenerate": 0.9985401459854014,
+              "terminated_naturally": 0.00145985401459854,
+              "mean_new_tokens": 199.73284671532846
+            },
+            "known_all_covered": 240,
+            "known_all": {
+              "n": 240,
+              "clean_tighten": 0.0,
+              "refused": 0.0,
+              "well_formed": 0.17916666666666667,
+              "degenerate": 0.8041666666666667,
+              "terminated_naturally": 0.19166666666666668,
+              "mean_new_tokens": 167.5875
+            }
+          },
+          "random_direction": {
+            "dose_mult": 16,
+            "dose_abs": 25.21637583559995,
+            "gain": 25.21637583559995,
+            "n_active": 882,
+            "confab_active": {
+              "n": 869,
+              "clean_tighten": 0.0,
+              "refused": 0.009205983889528193,
+              "well_formed": 0.0,
+              "degenerate": 0.6593785960874569,
+              "terminated_naturally": 0.3670886075949367,
+              "mean_new_tokens": 139.0264672036824
+            },
+            "known_all_covered": 240,
+            "known_all": {
+              "n": 240,
+              "clean_tighten": 0.0,
+              "refused": 0.0,
+              "well_formed": 0.9458333333333333,
+              "degenerate": 0.029166666666666667,
+              "terminated_naturally": 0.9708333333333333,
+              "mean_new_tokens": 35.795833333333334
+            }
+          }
+        },
+        "20": {
+          "gated": {
+            "dose_mult": 20,
+            "dose_abs": 31.520469794499938,
+            "gain": 20,
+            "n_active": 882,
+            "confab_active": {
+              "n": 869,
+              "clean_tighten": 0.0,
+              "refused": 0.0,
+              "well_formed": 0.0,
+              "degenerate": 1.0,
+              "terminated_naturally": 0.0,
+              "mean_new_tokens": 200.0
+            },
+            "known_all_covered": 240,
+            "known_all": {
+              "n": 240,
+              "clean_tighten": 0.0,
+              "refused": 0.0,
+              "well_formed": 0.9458333333333333,
+              "degenerate": 0.05416666666666667,
+              "terminated_naturally": 0.9458333333333333,
+              "mean_new_tokens": 39.9875
+            }
+          },
+          "permuted_gate": {
+            "dose_mult": 20,
+            "dose_abs": 31.520469794499938,
+            "gain": 20,
+            "n_active": 882,
+            "confab_active": {
+              "n": 685,
+              "clean_tighten": 0.0,
+              "refused": 0.0,
+              "well_formed": 0.0,
+              "degenerate": 1.0,
+              "terminated_naturally": 0.0,
+              "mean_new_tokens": 200.0
+            },
+            "known_all_covered": 240,
+            "known_all": {
+              "n": 240,
+              "clean_tighten": 0.0,
+              "refused": 0.0,
+              "well_formed": 0.17916666666666667,
+              "degenerate": 0.8208333333333333,
+              "terminated_naturally": 0.17916666666666667,
+              "mean_new_tokens": 169.84583333333333
+            }
+          },
+          "random_direction": {
+            "dose_mult": 20,
+            "dose_abs": 31.520469794499938,
+            "gain": 31.520469794499938,
+            "n_active": 882,
+            "confab_active": {
+              "n": 869,
+              "clean_tighten": 0.0,
+              "refused": 0.0,
+              "well_formed": 0.0,
+              "degenerate": 0.8584579976985041,
+              "terminated_naturally": 0.039125431530494824,
+              "mean_new_tokens": 193.85040276179518
+            },
+            "known_all_covered": 240,
+            "known_all": {
+              "n": 240,
+              "clean_tighten": 0.0,
+              "refused": 0.0,
+              "well_formed": 0.9458333333333333,
+              "degenerate": 0.05416666666666667,
+              "terminated_naturally": 0.9458333333333333,
+              "mean_new_tokens": 39.9875
+            }
+          }
+        }
+      }
+    },
+    "hs23": {
+      "sigma_c": 2.115492308660342,
+      "n_fired": 878,
+      "doses": {
+        "2": {
+          "gated": {
+            "dose_mult": 2,
+            "dose_abs": 4.230984617320684,
+            "gain": 2,
+            "n_active": 878,
+            "confab_active": {
+              "n": 864,
+              "clean_tighten": 0.13310185185185186,
+              "refused": 0.13310185185185186,
+              "well_formed": 0.9884259259259259,
+              "degenerate": 0.0,
+              "terminated_naturally": 0.9884259259259259,
+              "mean_new_tokens": 71.15046296296296
+            },
+            "known_all_covered": 240,
+            "known_all": {
+              "n": 240,
+              "clean_tighten": 0.004166666666666667,
+              "refused": 0.004166666666666667,
+              "well_formed": 0.9958333333333333,
+              "degenerate": 0.0,
+              "terminated_naturally": 0.9958333333333333,
+              "mean_new_tokens": 31.933333333333334
+            }
+          },
+          "permuted_gate": {
+            "dose_mult": 2,
+            "dose_abs": 4.230984617320684,
+            "gain": 2,
+            "n_active": 878,
+            "confab_active": {
+              "n": 683,
+              "clean_tighten": 0.13177159590043924,
+              "refused": 0.13177159590043924,
+              "well_formed": 0.9926793557833089,
+              "degenerate": 0.0,
+              "terminated_naturally": 0.9926793557833089,
+              "mean_new_tokens": 70.86969253294289
+            },
+            "known_all_covered": 240,
+            "known_all": {
+              "n": 240,
+              "clean_tighten": 0.004166666666666667,
+              "refused": 0.004166666666666667,
+              "well_formed": 1.0,
+              "degenerate": 0.0,
+              "terminated_naturally": 1.0,
+              "mean_new_tokens": 31.5
+            }
+          },
+          "random_direction": {
+            "dose_mult": 2,
+            "dose_abs": 4.230984617320684,
+            "gain": 4.230984617320684,
+            "n_active": 878,
+            "confab_active": {
+              "n": 864,
+              "clean_tighten": 0.0011574074074074073,
+              "refused": 0.0011574074074074073,
+              "well_formed": 0.9930555555555556,
+              "degenerate": 0.0,
+              "terminated_naturally": 0.9930555555555556,
+              "mean_new_tokens": 70.27662037037037
+            },
+            "known_all_covered": 240,
+            "known_all": {
+              "n": 240,
+              "clean_tighten": 0.0,
+              "refused": 0.0,
+              "well_formed": 1.0,
+              "degenerate": 0.0,
+              "terminated_naturally": 1.0,
+              "mean_new_tokens": 31.35
+            }
+          }
+        },
+        "4": {
+          "gated": {
+            "dose_mult": 4,
+            "dose_abs": 8.461969234641368,
+            "gain": 4,
+            "n_active": 878,
+            "confab_active": {
+              "n": 864,
+              "clean_tighten": 0.26851851851851855,
+              "refused": 0.26851851851851855,
+              "well_formed": 0.9884259259259259,
+              "degenerate": 0.0,
+              "terminated_naturally": 0.9872685185185185,
+              "mean_new_tokens": 67.60416666666667
+            },
+            "known_all_covered": 240,
+            "known_all": {
+              "n": 240,
+              "clean_tighten": 0.0125,
+              "refused": 0.0125,
+              "well_formed": 1.0,
+              "degenerate": 0.0,
+              "terminated_naturally": 1.0,
+              "mean_new_tokens": 31.645833333333332
+            }
+          },
+          "permuted_gate": {
+            "dose_mult": 4,
+            "dose_abs": 8.461969234641368,
+            "gain": 4,
+            "n_active": 878,
+            "confab_active": {
+              "n": 683,
+              "clean_tighten": 0.2679355783308931,
+              "refused": 0.2679355783308931,
+              "well_formed": 0.9912152269399708,
+              "degenerate": 0.0,
+              "terminated_naturally": 0.9897510980966325,
+              "mean_new_tokens": 66.9809663250366
+            },
+            "known_all_covered": 240,
+            "known_all": {
+              "n": 240,
+              "clean_tighten": 0.004166666666666667,
+              "refused": 0.004166666666666667,
+              "well_formed": 1.0,
+              "degenerate": 0.0,
+              "terminated_naturally": 1.0,
+              "mean_new_tokens": 31.8875
+            }
+          },
+          "random_direction": {
+            "dose_mult": 4,
+            "dose_abs": 8.461969234641368,
+            "gain": 8.461969234641368,
+            "n_active": 878,
+            "confab_active": {
+              "n": 864,
+              "clean_tighten": 0.005787037037037037,
+              "refused": 0.005787037037037037,
+              "well_formed": 0.9930555555555556,
+              "degenerate": 0.0,
+              "terminated_naturally": 0.9930555555555556,
+              "mean_new_tokens": 72.36574074074075
+            },
+            "known_all_covered": 240,
+            "known_all": {
+              "n": 240,
+              "clean_tighten": 0.008333333333333333,
+              "refused": 0.008333333333333333,
+              "well_formed": 1.0,
+              "degenerate": 0.0,
+              "terminated_naturally": 1.0,
+              "mean_new_tokens": 31.575
+            }
+          }
+        },
+        "6": {
+          "gated": {
+            "dose_mult": 6,
+            "dose_abs": 12.692953851962052,
+            "gain": 6,
+            "n_active": 878,
+            "confab_active": {
+              "n": 864,
+              "clean_tighten": 0.37962962962962965,
+              "refused": 0.38078703703703703,
+              "well_formed": 0.9675925925925926,
+              "degenerate": 0.0,
+              "terminated_naturally": 0.9849537037037037,
+              "mean_new_tokens": 64.17708333333333
+            },
+            "known_all_covered": 240,
+            "known_all": {
+              "n": 240,
+              "clean_tighten": 0.016666666666666666,
+              "refused": 0.016666666666666666,
+              "well_formed": 0.9958333333333333,
+              "degenerate": 0.004166666666666667,
+              "terminated_naturally": 0.9958333333333333,
+              "mean_new_tokens": 31.833333333333332
+            }
+          },
+          "permuted_gate": {
+            "dose_mult": 6,
+            "dose_abs": 12.692953851962052,
+            "gain": 6,
+            "n_active": 878,
+            "confab_active": {
+              "n": 683,
+              "clean_tighten": 0.37920937042459735,
+              "refused": 0.37920937042459735,
+              "well_formed": 0.972181551976574,
+              "degenerate": 0.0,
+              "terminated_naturally": 0.9897510980966325,
+              "mean_new_tokens": 63.436310395314784
+            },
+            "known_all_covered": 240,
+            "known_all": {
+              "n": 240,
+              "clean_tighten": 0.016666666666666666,
+              "refused": 0.016666666666666666,
+              "well_formed": 0.9916666666666667,
+              "degenerate": 0.004166666666666667,
+              "terminated_naturally": 0.9916666666666667,
+              "mean_new_tokens": 32.6
+            }
+          },
+          "random_direction": {
+            "dose_mult": 6,
+            "dose_abs": 12.692953851962052,
+            "gain": 12.692953851962052,
+            "n_active": 878,
+            "confab_active": {
+              "n": 864,
+              "clean_tighten": 0.004629629629629629,
+              "refused": 0.004629629629629629,
+              "well_formed": 0.9872685185185185,
+              "degenerate": 0.0011574074074074073,
+              "terminated_naturally": 0.9803240740740741,
+              "mean_new_tokens": 75.4675925925926
+            },
+            "known_all_covered": 240,
+            "known_all": {
+              "n": 240,
+              "clean_tighten": 0.0125,
+              "refused": 0.0125,
+              "well_formed": 0.9958333333333333,
+              "degenerate": 0.0,
+              "terminated_naturally": 0.9958333333333333,
+              "mean_new_tokens": 32.36666666666667
+            }
+          }
+        },
+        "8": {
+          "gated": {
+            "dose_mult": 8,
+            "dose_abs": 16.923938469282735,
+            "gain": 8,
+            "n_active": 878,
+            "confab_active": {
+              "n": 864,
+              "clean_tighten": 0.44907407407407407,
+              "refused": 0.45601851851851855,
+              "well_formed": 0.9293981481481481,
+              "degenerate": 0.003472222222222222,
+              "terminated_naturally": 0.9699074074074074,
+              "mean_new_tokens": 64.72337962962963
+            },
+            "known_all_covered": 240,
+            "known_all": {
+              "n": 240,
+              "clean_tighten": 0.016666666666666666,
+              "refused": 0.016666666666666666,
+              "well_formed": 0.9958333333333333,
+              "degenerate": 0.004166666666666667,
+              "terminated_naturally": 0.9958333333333333,
+              "mean_new_tokens": 31.908333333333335
+            }
+          },
+          "permuted_gate": {
+            "dose_mult": 8,
+            "dose_abs": 16.923938469282735,
+            "gain": 8,
+            "n_active": 878,
+            "confab_active": {
+              "n": 683,
+              "clean_tighten": 0.4538799414348463,
+              "refused": 0.45973645680819913,
+              "well_formed": 0.9355783308931186,
+              "degenerate": 0.0029282576866764276,
+              "terminated_naturally": 0.9736456808199122,
+              "mean_new_tokens": 64.50658857979502
+            },
+            "known_all_covered": 240,
+            "known_all": {
+              "n": 240,
+              "clean_tighten": 0.016666666666666666,
+              "refused": 0.016666666666666666,
+              "well_formed": 0.9791666666666666,
+              "degenerate": 0.025,
+              "terminated_naturally": 0.9791666666666666,
+              "mean_new_tokens": 35.46666666666667
+            }
+          },
+          "random_direction": {
+            "dose_mult": 8,
+            "dose_abs": 16.923938469282735,
+            "gain": 16.923938469282735,
+            "n_active": 878,
+            "confab_active": {
+              "n": 864,
+              "clean_tighten": 0.005787037037037037,
+              "refused": 0.006944444444444444,
+              "well_formed": 0.9652777777777778,
+              "degenerate": 0.006944444444444444,
+              "terminated_naturally": 0.9571759259259259,
+              "mean_new_tokens": 79.96412037037037
+            },
+            "known_all_covered": 240,
+            "known_all": {
+              "n": 240,
+              "clean_tighten": 0.016666666666666666,
+              "refused": 0.016666666666666666,
+              "well_formed": 0.9875,
+              "degenerate": 0.004166666666666667,
+              "terminated_naturally": 0.9875,
+              "mean_new_tokens": 33.30833333333333
+            }
+          }
+        },
+        "12": {
+          "gated": {
+            "dose_mult": 12,
+            "dose_abs": 25.385907703924104,
+            "gain": 12,
+            "n_active": 878,
+            "confab_active": {
+              "n": 864,
+              "clean_tighten": 0.2962962962962963,
+              "refused": 0.35185185185185186,
+              "well_formed": 0.6006944444444444,
+              "degenerate": 0.1423611111111111,
+              "terminated_naturally": 0.7523148148148148,
+              "mean_new_tokens": 86.11226851851852
+            },
+            "known_all_covered": 240,
+            "known_all": {
+              "n": 240,
+              "clean_tighten": 0.0125,
+              "refused": 0.020833333333333332,
+              "well_formed": 0.9791666666666666,
+              "degenerate": 0.0125,
+              "terminated_naturally": 0.9875,
+              "mean_new_tokens": 33.5125
+            }
+          },
+          "permuted_gate": {
+            "dose_mult": 12,
+            "dose_abs": 25.385907703924104,
+            "gain": 12,
+            "n_active": 878,
+            "confab_active": {
+              "n": 683,
+              "clean_tighten": 0.28989751098096633,
+              "refused": 0.34553440702781846,
+              "well_formed": 0.582723279648609,
+              "degenerate": 0.15666178623718888,
+              "terminated_naturally": 0.7437774524158126,
+              "mean_new_tokens": 86.18301610541728
+            },
+            "known_all_covered": 240,
+            "known_all": {
+              "n": 240,
+              "clean_tighten": 0.020833333333333332,
+              "refused": 0.0375,
+              "well_formed": 0.4791666666666667,
+              "degenerate": 0.4083333333333333,
+              "terminated_naturally": 0.6125,
+              "mean_new_tokens": 95.77083333333333
+            }
+          },
+          "random_direction": {
+            "dose_mult": 12,
+            "dose_abs": 25.385907703924104,
+            "gain": 25.385907703924104,
+            "n_active": 878,
+            "confab_active": {
+              "n": 864,
+              "clean_tighten": 0.009259259259259259,
+              "refused": 0.011574074074074073,
+              "well_formed": 0.8831018518518519,
+              "degenerate": 0.052083333333333336,
+              "terminated_naturally": 0.8310185185185185,
+              "mean_new_tokens": 101.09837962962963
+            },
+            "known_all_covered": 240,
+            "known_all": {
+              "n": 240,
+              "clean_tighten": 0.020833333333333332,
+              "refused": 0.029166666666666667,
+              "well_formed": 0.9833333333333333,
+              "degenerate": 0.008333333333333333,
+              "terminated_naturally": 0.9791666666666666,
+              "mean_new_tokens": 34.37083333333333
+            }
+          }
+        },
+        "16": {
+          "gated": {
+            "dose_mult": 16,
+            "dose_abs": 33.84787693856547,
+            "gain": 16,
+            "n_active": 878,
+            "confab_active": {
+              "n": 864,
+              "clean_tighten": 0.0,
+              "refused": 0.0,
+              "well_formed": 0.0011574074074074073,
+              "degenerate": 0.9976851851851852,
+              "terminated_naturally": 0.0023148148148148147,
+              "mean_new_tokens": 199.58217592592592
+            },
+            "known_all_covered": 240,
+            "known_all": {
+              "n": 240,
+              "clean_tighten": 0.0,
+              "refused": 0.0,
+              "well_formed": 0.9416666666666667,
+              "degenerate": 0.058333333333333334,
+              "terminated_naturally": 0.9416666666666667,
+              "mean_new_tokens": 40.708333333333336
+            }
+          },
+          "permuted_gate": {
+            "dose_mult": 16,
+            "dose_abs": 33.84787693856547,
+            "gain": 16,
+            "n_active": 878,
+            "confab_active": {
+              "n": 683,
+              "clean_tighten": 0.0,
+              "refused": 0.0,
+              "well_formed": 0.0014641288433382138,
+              "degenerate": 0.9970717423133236,
+              "terminated_naturally": 0.0029282576866764276,
+              "mean_new_tokens": 199.4714494875549
+            },
+            "known_all_covered": 240,
+            "known_all": {
+              "n": 240,
+              "clean_tighten": 0.0,
+              "refused": 0.0,
+              "well_formed": 0.19166666666666668,
+              "degenerate": 0.8041666666666667,
+              "terminated_naturally": 0.19583333333333333,
+              "mean_new_tokens": 166.70833333333334
+            }
+          },
+          "random_direction": {
+            "dose_mult": 16,
+            "dose_abs": 33.84787693856547,
+            "gain": 33.84787693856547,
+            "n_active": 878,
+            "confab_active": {
+              "n": 864,
+              "clean_tighten": 0.0,
+              "refused": 0.008101851851851851,
+              "well_formed": 0.26157407407407407,
+              "degenerate": 0.5474537037037037,
+              "terminated_naturally": 0.1412037037037037,
+              "mean_new_tokens": 184.83449074074073
+            },
+            "known_all_covered": 240,
+            "known_all": {
+              "n": 240,
+              "clean_tighten": 0.008333333333333333,
+              "refused": 0.008333333333333333,
+              "well_formed": 0.975,
+              "degenerate": 0.029166666666666667,
+              "terminated_naturally": 0.9625,
+              "mean_new_tokens": 37.97083333333333
+            }
+          }
+        },
+        "20": {
+          "gated": {
+            "dose_mult": 20,
+            "dose_abs": 42.309846173206836,
+            "gain": 20,
+            "n_active": 878,
+            "confab_active": {
+              "n": 864,
+              "clean_tighten": 0.0,
+              "refused": 0.0,
+              "well_formed": 0.0,
+              "degenerate": 1.0,
+              "terminated_naturally": 0.0,
+              "mean_new_tokens": 200.0
+            },
+            "known_all_covered": 240,
+            "known_all": {
+              "n": 240,
+              "clean_tighten": 0.0,
+              "refused": 0.0,
+              "well_formed": 0.9416666666666667,
+              "degenerate": 0.058333333333333334,
+              "terminated_naturally": 0.9416666666666667,
+              "mean_new_tokens": 40.708333333333336
+            }
+          },
+          "permuted_gate": {
+            "dose_mult": 20,
+            "dose_abs": 42.309846173206836,
+            "gain": 20,
+            "n_active": 878,
+            "confab_active": {
+              "n": 683,
+              "clean_tighten": 0.0,
+              "refused": 0.0,
+              "well_formed": 0.0,
+              "degenerate": 1.0,
+              "terminated_naturally": 0.0,
+              "mean_new_tokens": 200.0
+            },
+            "known_all_covered": 240,
+            "known_all": {
+              "n": 240,
+              "clean_tighten": 0.0,
+              "refused": 0.0,
+              "well_formed": 0.1875,
+              "degenerate": 0.8083333333333333,
+              "terminated_naturally": 0.19166666666666668,
+              "mean_new_tokens": 167.45833333333334
+            }
+          },
+          "random_direction": {
+            "dose_mult": 20,
+            "dose_abs": 42.309846173206836,
+            "gain": 42.309846173206836,
+            "n_active": 878,
+            "confab_active": {
+              "n": 864,
+              "clean_tighten": 0.0,
+              "refused": 0.0,
+              "well_formed": 0.0,
+              "degenerate": 0.9421296296296297,
+              "terminated_naturally": 0.0,
+              "mean_new_tokens": 200.0
+            },
+            "known_all_covered": 240,
+            "known_all": {
+              "n": 240,
+              "clean_tighten": 0.0,
+              "refused": 0.0,
+              "well_formed": 0.9416666666666667,
+              "degenerate": 0.058333333333333334,
+              "terminated_naturally": 0.9416666666666667,
+              "mean_new_tokens": 40.708333333333336
+            }
+          }
+        }
+      }
+    },
+    "hs26": {
+      "sigma_c": 2.2363720081969314,
+      "n_fired": 881,
+      "doses": {
+        "2": {
+          "gated": {
+            "dose_mult": 2,
+            "dose_abs": 4.472744016393863,
+            "gain": 2,
+            "n_active": 881,
+            "confab_active": {
+              "n": 869,
+              "clean_tighten": 0.047180667433831994,
+              "refused": 0.047180667433831994,
+              "well_formed": 0.9953970080552359,
+              "degenerate": 0.0,
+              "terminated_naturally": 0.9953970080552359,
+              "mean_new_tokens": 71.45224395857308
+            },
+            "known_all_covered": 240,
+            "known_all": {
+              "n": 240,
+              "clean_tighten": 0.0,
+              "refused": 0.0,
+              "well_formed": 1.0,
+              "degenerate": 0.0,
+              "terminated_naturally": 1.0,
+              "mean_new_tokens": 31.654166666666665
+            }
+          },
+          "permuted_gate": {
+            "dose_mult": 2,
+            "dose_abs": 4.472744016393863,
+            "gain": 2,
+            "n_active": 881,
+            "confab_active": {
+              "n": 700,
+              "clean_tighten": 0.05285714285714286,
+              "refused": 0.05285714285714286,
+              "well_formed": 0.9942857142857143,
+              "degenerate": 0.0,
+              "terminated_naturally": 0.9914285714285714,
+              "mean_new_tokens": 71.42428571428572
+            },
+            "known_all_covered": 240,
+            "known_all": {
+              "n": 240,
+              "clean_tighten": 0.004166666666666667,
+              "refused": 0.004166666666666667,
+              "well_formed": 1.0,
+              "degenerate": 0.0,
+              "terminated_naturally": 1.0,
+              "mean_new_tokens": 31.75
+            }
+          },
+          "random_direction": {
+            "dose_mult": 2,
+            "dose_abs": 4.472744016393863,
+            "gain": 4.472744016393863,
+            "n_active": 881,
+            "confab_active": {
+              "n": 869,
+              "clean_tighten": 0.0,
+              "refused": 0.0,
+              "well_formed": 0.996547756041427,
+              "degenerate": 0.0,
+              "terminated_naturally": 0.996547756041427,
+              "mean_new_tokens": 69.32911392405063
+            },
+            "known_all_covered": 240,
+            "known_all": {
+              "n": 240,
+              "clean_tighten": 0.0,
+              "refused": 0.0,
+              "well_formed": 0.9958333333333333,
+              "degenerate": 0.0,
+              "terminated_naturally": 0.9958333333333333,
+              "mean_new_tokens": 32.21666666666667
+            }
+          }
+        },
+        "4": {
+          "gated": {
+            "dose_mult": 4,
+            "dose_abs": 8.945488032787726,
+            "gain": 4,
+            "n_active": 881,
+            "confab_active": {
+              "n": 869,
+              "clean_tighten": 0.09436133486766399,
+              "refused": 0.09551208285385501,
+              "well_formed": 0.9930955120828538,
+              "degenerate": 0.0,
+              "terminated_naturally": 0.9942462600690449,
+              "mean_new_tokens": 71.54660529344073
+            },
+            "known_all_covered": 240,
+            "known_all": {
+              "n": 240,
+              "clean_tighten": 0.0,
+              "refused": 0.0,
+              "well_formed": 1.0,
+              "degenerate": 0.0,
+              "terminated_naturally": 1.0,
+              "mean_new_tokens": 31.566666666666666
+            }
+          },
+          "permuted_gate": {
+            "dose_mult": 4,
+            "dose_abs": 8.945488032787726,
+            "gain": 4,
+            "n_active": 881,
+            "confab_active": {
+              "n": 700,
+              "clean_tighten": 0.10142857142857142,
+              "refused": 0.10428571428571429,
+              "well_formed": 0.99,
+              "degenerate": 0.0,
+              "terminated_naturally": 0.9928571428571429,
+              "mean_new_tokens": 70.36571428571429
+            },
+            "known_all_covered": 240,
+            "known_all": {
+              "n": 240,
+              "clean_tighten": 0.004166666666666667,
+              "refused": 0.004166666666666667,
+              "well_formed": 0.9958333333333333,
+              "degenerate": 0.004166666666666667,
+              "terminated_naturally": 0.9916666666666667,
+              "mean_new_tokens": 32.68333333333333
+            }
+          },
+          "random_direction": {
+            "dose_mult": 4,
+            "dose_abs": 8.945488032787726,
+            "gain": 8.945488032787726,
+            "n_active": 881,
+            "confab_active": {
+              "n": 869,
+              "clean_tighten": 0.0,
+              "refused": 0.0,
+              "well_formed": 0.996547756041427,
+              "degenerate": 0.0,
+              "terminated_naturally": 0.996547756041427,
+              "mean_new_tokens": 70.44188722669735
+            },
+            "known_all_covered": 240,
+            "known_all": {
+              "n": 240,
+              "clean_tighten": 0.0,
+              "refused": 0.0,
+              "well_formed": 1.0,
+              "degenerate": 0.0,
+              "terminated_naturally": 1.0,
+              "mean_new_tokens": 31.9375
+            }
+          }
+        },
+        "6": {
+          "gated": {
+            "dose_mult": 6,
+            "dose_abs": 13.418232049181588,
+            "gain": 6,
+            "n_active": 881,
+            "confab_active": {
+              "n": 869,
+              "clean_tighten": 0.14499424626006904,
+              "refused": 0.1806674338319908,
+              "well_formed": 0.950517836593786,
+              "degenerate": 0.0034522439585730723,
+              "terminated_naturally": 0.9861910241657077,
+              "mean_new_tokens": 72.14499424626007
+            },
+            "known_all_covered": 240,
+            "known_all": {
+              "n": 240,
+              "clean_tighten": 0.004166666666666667,
+              "refused": 0.004166666666666667,
+              "well_formed": 1.0,
+              "degenerate": 0.0,
+              "terminated_naturally": 1.0,
+              "mean_new_tokens": 31.4125
+            }
+          },
+          "permuted_gate": {
+            "dose_mult": 6,
+            "dose_abs": 13.418232049181588,
+            "gain": 6,
+            "n_active": 881,
+            "confab_active": {
+              "n": 700,
+              "clean_tighten": 0.15571428571428572,
+              "refused": 0.19285714285714287,
+              "well_formed": 0.9485714285714286,
+              "degenerate": 0.004285714285714286,
+              "terminated_naturally": 0.9857142857142858,
+              "mean_new_tokens": 71.78571428571429
+            },
+            "known_all_covered": 240,
+            "known_all": {
+              "n": 240,
+              "clean_tighten": 0.008333333333333333,
+              "refused": 0.008333333333333333,
+              "well_formed": 0.9833333333333333,
+              "degenerate": 0.020833333333333332,
+              "terminated_naturally": 0.9833333333333333,
+              "mean_new_tokens": 35.233333333333334
+            }
+          },
+          "random_direction": {
+            "dose_mult": 6,
+            "dose_abs": 13.418232049181588,
+            "gain": 13.418232049181588,
+            "n_active": 881,
+            "confab_active": {
+              "n": 869,
+              "clean_tighten": 0.0,
+              "refused": 0.0,
+              "well_formed": 0.9919447640966629,
+              "degenerate": 0.0,
+              "terminated_naturally": 0.9907940161104718,
+              "mean_new_tokens": 74.21288837744534
+            },
+            "known_all_covered": 240,
+            "known_all": {
+              "n": 240,
+              "clean_tighten": 0.0125,
+              "refused": 0.0125,
+              "well_formed": 0.9958333333333333,
+              "degenerate": 0.0,
+              "terminated_naturally": 0.9958333333333333,
+              "mean_new_tokens": 32.075
+            }
+          }
+        },
+        "8": {
+          "gated": {
+            "dose_mult": 8,
+            "dose_abs": 17.89097606557545,
+            "gain": 8,
+            "n_active": 881,
+            "confab_active": {
+              "n": 869,
+              "clean_tighten": 0.2140391254315305,
+              "refused": 0.2646720368239356,
+              "well_formed": 0.9298043728423475,
+              "degenerate": 0.010356731875719217,
+              "terminated_naturally": 0.9792865362485615,
+              "mean_new_tokens": 71.00575373993095
+            },
+            "known_all_covered": 240,
+            "known_all": {
+              "n": 240,
+              "clean_tighten": 0.0125,
+              "refused": 0.0125,
+              "well_formed": 0.9958333333333333,
+              "degenerate": 0.004166666666666667,
+              "terminated_naturally": 0.9958333333333333,
+              "mean_new_tokens": 32.2375
+            }
+          },
+          "permuted_gate": {
+            "dose_mult": 8,
+            "dose_abs": 17.89097606557545,
+            "gain": 8,
+            "n_active": 881,
+            "confab_active": {
+              "n": 700,
+              "clean_tighten": 0.22285714285714286,
+              "refused": 0.2757142857142857,
+              "well_formed": 0.9257142857142857,
+              "degenerate": 0.007142857142857143,
+              "terminated_naturally": 0.9757142857142858,
+              "mean_new_tokens": 70.51142857142857
+            },
+            "known_all_covered": 240,
+            "known_all": {
+              "n": 240,
+              "clean_tighten": 0.016666666666666666,
+              "refused": 0.016666666666666666,
+              "well_formed": 0.9916666666666667,
+              "degenerate": 0.020833333333333332,
+              "terminated_naturally": 0.9916666666666667,
+              "mean_new_tokens": 35.420833333333334
+            }
+          },
+          "random_direction": {
+            "dose_mult": 8,
+            "dose_abs": 17.89097606557545,
+            "gain": 17.89097606557545,
+            "n_active": 881,
+            "confab_active": {
+              "n": 869,
+              "clean_tighten": 0.0,
+              "refused": 0.0,
+              "well_formed": 0.9873417721518988,
+              "degenerate": 0.0011507479861910242,
+              "terminated_naturally": 0.9896432681242808,
+              "mean_new_tokens": 75.83659378596087
+            },
+            "known_all_covered": 240,
+            "known_all": {
+              "n": 240,
+              "clean_tighten": 0.0125,
+              "refused": 0.0125,
+              "well_formed": 0.9958333333333333,
+              "degenerate": 0.004166666666666667,
+              "terminated_naturally": 0.9958333333333333,
+              "mean_new_tokens": 32.516666666666666
+            }
+          }
+        },
+        "12": {
+          "gated": {
+            "dose_mult": 12,
+            "dose_abs": 26.836464098363177,
+            "gain": 12,
+            "n_active": 881,
+            "confab_active": {
+              "n": 869,
+              "clean_tighten": 0.0023014959723820483,
+              "refused": 0.023014959723820484,
+              "well_formed": 0.011507479861910242,
+              "degenerate": 0.9252013808975834,
+              "terminated_naturally": 0.06789413118527042,
+              "mean_new_tokens": 190.67088607594937
+            },
+            "known_all_covered": 240,
+            "known_all": {
+              "n": 240,
+              "clean_tighten": 0.0,
+              "refused": 0.0,
+              "well_formed": 0.95,
+              "degenerate": 0.05,
+              "terminated_naturally": 0.95,
+              "mean_new_tokens": 39.42916666666667
+            }
+          },
+          "permuted_gate": {
+            "dose_mult": 12,
+            "dose_abs": 26.836464098363177,
+            "gain": 12,
+            "n_active": 881,
+            "confab_active": {
+              "n": 700,
+              "clean_tighten": 0.002857142857142857,
+              "refused": 0.02857142857142857,
+              "well_formed": 0.01,
+              "degenerate": 0.9114285714285715,
+              "terminated_naturally": 0.08,
+              "mean_new_tokens": 189.0142857142857
+            },
+            "known_all_covered": 240,
+            "known_all": {
+              "n": 240,
+              "clean_tighten": 0.0,
+              "refused": 0.0,
+              "well_formed": 0.275,
+              "degenerate": 0.7208333333333333,
+              "terminated_naturally": 0.2833333333333333,
+              "mean_new_tokens": 152.39583333333334
+            }
+          },
+          "random_direction": {
+            "dose_mult": 12,
+            "dose_abs": 26.836464098363177,
+            "gain": 26.836464098363177,
+            "n_active": 881,
+            "confab_active": {
+              "n": 869,
+              "clean_tighten": 0.0,
+              "refused": 0.0,
+              "well_formed": 0.7686996547756041,
+              "degenerate": 0.06444188722669736,
+              "terminated_naturally": 0.8872266973532796,
+              "mean_new_tokens": 99.83199079401611
+            },
+            "known_all_covered": 240,
+            "known_all": {
+              "n": 240,
+              "clean_tighten": 0.008333333333333333,
+              "refused": 0.0125,
+              "well_formed": 0.9666666666666667,
+              "degenerate": 0.016666666666666666,
+              "terminated_naturally": 0.9833333333333333,
+              "mean_new_tokens": 34.09583333333333
+            }
+          }
+        },
+        "16": {
+          "gated": {
+            "dose_mult": 16,
+            "dose_abs": 35.7819521311509,
+            "gain": 16,
+            "n_active": 881,
+            "confab_active": {
+              "n": 869,
+              "clean_tighten": 0.0,
+              "refused": 0.0,
+              "well_formed": 0.0,
+              "degenerate": 0.9401611047180668,
+              "terminated_naturally": 0.05523590333716916,
+              "mean_new_tokens": 190.0759493670886
+            },
+            "known_all_covered": 240,
+            "known_all": {
+              "n": 240,
+              "clean_tighten": 0.0,
+              "refused": 0.0,
+              "well_formed": 0.95,
+              "degenerate": 0.05,
+              "terminated_naturally": 0.95,
+              "mean_new_tokens": 39.42916666666667
+            }
+          },
+          "permuted_gate": {
+            "dose_mult": 16,
+            "dose_abs": 35.7819521311509,
+            "gain": 16,
+            "n_active": 881,
+            "confab_active": {
+              "n": 700,
+              "clean_tighten": 0.0,
+              "refused": 0.0,
+              "well_formed": 0.0,
+              "degenerate": 0.9314285714285714,
+              "terminated_naturally": 0.06142857142857143,
+              "mean_new_tokens": 188.9742857142857
+            },
+            "known_all_covered": 240,
+            "known_all": {
+              "n": 240,
+              "clean_tighten": 0.0,
+              "refused": 0.0,
+              "well_formed": 0.25,
+              "degenerate": 0.7416666666666667,
+              "terminated_naturally": 0.25833333333333336,
+              "mean_new_tokens": 156.61666666666667
+            }
+          },
+          "random_direction": {
+            "dose_mult": 16,
+            "dose_abs": 35.7819521311509,
+            "gain": 35.7819521311509,
+            "n_active": 881,
+            "confab_active": {
+              "n": 869,
+              "clean_tighten": 0.0,
+              "refused": 0.0011507479861910242,
+              "well_formed": 0.0,
+              "degenerate": 0.17491369390103567,
+              "terminated_naturally": 0.6156501726121979,
+              "mean_new_tokens": 146.566168009206
+            },
+            "known_all_covered": 240,
+            "known_all": {
+              "n": 240,
+              "clean_tighten": 0.0,
+              "refused": 0.004166666666666667,
+              "well_formed": 0.95,
+              "degenerate": 0.025,
+              "terminated_naturally": 0.9708333333333333,
+              "mean_new_tokens": 36.275
+            }
+          }
+        },
+        "20": {
+          "gated": {
+            "dose_mult": 20,
+            "dose_abs": 44.727440163938624,
+            "gain": 20,
+            "n_active": 881,
+            "confab_active": {
+              "n": 869,
+              "clean_tighten": 0.0,
+              "refused": 0.0,
+              "well_formed": 0.0,
+              "degenerate": 1.0,
+              "terminated_naturally": 0.0,
+              "mean_new_tokens": 200.0
+            },
+            "known_all_covered": 240,
+            "known_all": {
+              "n": 240,
+              "clean_tighten": 0.0,
+              "refused": 0.0,
+              "well_formed": 0.95,
+              "degenerate": 0.05,
+              "terminated_naturally": 0.95,
+              "mean_new_tokens": 39.42916666666667
+            }
+          },
+          "permuted_gate": {
+            "dose_mult": 20,
+            "dose_abs": 44.727440163938624,
+            "gain": 20,
+            "n_active": 881,
+            "confab_active": {
+              "n": 700,
+              "clean_tighten": 0.0,
+              "refused": 0.0,
+              "well_formed": 0.0,
+              "degenerate": 1.0,
+              "terminated_naturally": 0.0,
+              "mean_new_tokens": 200.0
+            },
+            "known_all_covered": 240,
+            "known_all": {
+              "n": 240,
+              "clean_tighten": 0.0,
+              "refused": 0.0,
+              "well_formed": 0.24583333333333332,
+              "degenerate": 0.7541666666666667,
+              "terminated_naturally": 0.24583333333333332,
+              "mean_new_tokens": 158.69583333333333
+            }
+          },
+          "random_direction": {
+            "dose_mult": 20,
+            "dose_abs": 44.727440163938624,
+            "gain": 44.727440163938624,
+            "n_active": 881,
+            "confab_active": {
+              "n": 869,
+              "clean_tighten": 0.0,
+              "refused": 0.0,
+              "well_formed": 0.0,
+              "degenerate": 0.6352128883774454,
+              "terminated_naturally": 0.06098964326812428,
+              "mean_new_tokens": 194.62140391254314
+            },
+            "known_all_covered": 240,
+            "known_all": {
+              "n": 240,
+              "clean_tighten": 0.0,
+              "refused": 0.0,
+              "well_formed": 0.95,
+              "degenerate": 0.0375,
+              "terminated_naturally": 0.9583333333333334,
+              "mean_new_tokens": 37.958333333333336
+            }
+          }
+        }
+      }
+    },
+    "hs30": {
+      "sigma_c": 2.816497405123885,
+      "n_fired": 865,
+      "doses": {
+        "2": {
+          "gated": {
+            "dose_mult": 2,
+            "dose_abs": 5.63299481024777,
+            "gain": 2,
+            "n_active": 865,
+            "confab_active": {
+              "n": 859,
+              "clean_tighten": 0.015133876600698487,
+              "refused": 0.015133876600698487,
+              "well_formed": 0.9930151338766007,
+              "degenerate": 0.0,
+              "terminated_naturally": 0.9930151338766007,
+              "mean_new_tokens": 72.011641443539
+            },
+            "known_all_covered": 240,
+            "known_all": {
+              "n": 240,
+              "clean_tighten": 0.0,
+              "refused": 0.0,
+              "well_formed": 1.0,
+              "degenerate": 0.0,
+              "terminated_naturally": 1.0,
+              "mean_new_tokens": 31.35
+            }
+          },
+          "permuted_gate": {
+            "dose_mult": 2,
+            "dose_abs": 5.63299481024777,
+            "gain": 2,
+            "n_active": 865,
+            "confab_active": {
+              "n": 673,
+              "clean_tighten": 0.01634472511144131,
+              "refused": 0.01634472511144131,
+              "well_formed": 0.9925705794947994,
+              "degenerate": 0.0,
+              "terminated_naturally": 0.9925705794947994,
+              "mean_new_tokens": 71.71173848439821
+            },
+            "known_all_covered": 240,
+            "known_all": {
+              "n": 240,
+              "clean_tighten": 0.004166666666666667,
+              "refused": 0.004166666666666667,
+              "well_formed": 1.0,
+              "degenerate": 0.0,
+              "terminated_naturally": 1.0,
+              "mean_new_tokens": 31.633333333333333
+            }
+          },
+          "random_direction": {
+            "dose_mult": 2,
+            "dose_abs": 5.63299481024777,
+            "gain": 5.63299481024777,
+            "n_active": 865,
+            "confab_active": {
+              "n": 859,
+              "clean_tighten": 0.0,
+              "refused": 0.0,
+              "well_formed": 0.9930151338766007,
+              "degenerate": 0.0,
+              "terminated_naturally": 0.9930151338766007,
+              "mean_new_tokens": 68.64610011641443
+            },
+            "known_all_covered": 240,
+            "known_all": {
+              "n": 240,
+              "clean_tighten": 0.0,
+              "refused": 0.0,
+              "well_formed": 1.0,
+              "degenerate": 0.0,
+              "terminated_naturally": 1.0,
+              "mean_new_tokens": 31.741666666666667
+            }
+          }
+        },
+        "4": {
+          "gated": {
+            "dose_mult": 4,
+            "dose_abs": 11.26598962049554,
+            "gain": 4,
+            "n_active": 865,
+            "confab_active": {
+              "n": 859,
+              "clean_tighten": 0.034924330616996506,
+              "refused": 0.034924330616996506,
+              "well_formed": 0.9918509895227008,
+              "degenerate": 0.0,
+              "terminated_naturally": 0.9906868451688009,
+              "mean_new_tokens": 72.30384167636787
+            },
+            "known_all_covered": 240,
+            "known_all": {
+              "n": 240,
+              "clean_tighten": 0.0,
+              "refused": 0.0,
+              "well_formed": 1.0,
+              "degenerate": 0.0,
+              "terminated_naturally": 1.0,
+              "mean_new_tokens": 31.370833333333334
+            }
+          },
+          "permuted_gate": {
+            "dose_mult": 4,
+            "dose_abs": 11.26598962049554,
+            "gain": 4,
+            "n_active": 865,
+            "confab_active": {
+              "n": 673,
+              "clean_tighten": 0.03566121842496285,
+              "refused": 0.03566121842496285,
+              "well_formed": 0.9895988112927192,
+              "degenerate": 0.0,
+              "terminated_naturally": 0.9881129271916791,
+              "mean_new_tokens": 71.92570579494799
+            },
+            "known_all_covered": 240,
+            "known_all": {
+              "n": 240,
+              "clean_tighten": 0.0125,
+              "refused": 0.0125,
+              "well_formed": 0.9958333333333333,
+              "degenerate": 0.0,
+              "terminated_naturally": 0.9958333333333333,
+              "mean_new_tokens": 32.525
+            }
+          },
+          "random_direction": {
+            "dose_mult": 4,
+            "dose_abs": 11.26598962049554,
+            "gain": 11.26598962049554,
+            "n_active": 865,
+            "confab_active": {
+              "n": 859,
+              "clean_tighten": 0.0034924330616996507,
+              "refused": 0.0034924330616996507,
+              "well_formed": 0.9941792782305006,
+              "degenerate": 0.0,
+              "terminated_naturally": 0.9941792782305006,
+              "mean_new_tokens": 68.08731082654249
+            },
+            "known_all_covered": 240,
+            "known_all": {
+              "n": 240,
+              "clean_tighten": 0.004166666666666667,
+              "refused": 0.004166666666666667,
+              "well_formed": 1.0,
+              "degenerate": 0.0,
+              "terminated_naturally": 1.0,
+              "mean_new_tokens": 31.520833333333332
+            }
+          }
+        },
+        "6": {
+          "gated": {
+            "dose_mult": 6,
+            "dose_abs": 16.89898443074331,
+            "gain": 6,
+            "n_active": 865,
+            "confab_active": {
+              "n": 859,
+              "clean_tighten": 0.06752037252619325,
+              "refused": 0.07450523864959255,
+              "well_formed": 0.9825378346915018,
+              "degenerate": 0.0011641443538998836,
+              "terminated_naturally": 0.9883585564610011,
+              "mean_new_tokens": 73.70663562281723
+            },
+            "known_all_covered": 240,
+            "known_all": {
+              "n": 240,
+              "clean_tighten": 0.004166666666666667,
+              "refused": 0.004166666666666667,
+              "well_formed": 1.0,
+              "degenerate": 0.0,
+              "terminated_naturally": 1.0,
+              "mean_new_tokens": 31.3
+            }
+          },
+          "permuted_gate": {
+            "dose_mult": 6,
+            "dose_abs": 16.89898443074331,
+            "gain": 6,
+            "n_active": 865,
+            "confab_active": {
+              "n": 673,
+              "clean_tighten": 0.0638930163447251,
+              "refused": 0.0713224368499257,
+              "well_formed": 0.9821693907875185,
+              "degenerate": 0.0014858841010401188,
+              "terminated_naturally": 0.9895988112927192,
+              "mean_new_tokens": 72.72956909361069
+            },
+            "known_all_covered": 240,
+            "known_all": {
+              "n": 240,
+              "clean_tighten": 0.020833333333333332,
+              "refused": 0.020833333333333332,
+              "well_formed": 1.0,
+              "degenerate": 0.0,
+              "terminated_naturally": 1.0,
+              "mean_new_tokens": 32.74166666666667
+            }
+          },
+          "random_direction": {
+            "dose_mult": 6,
+            "dose_abs": 16.89898443074331,
+            "gain": 16.89898443074331,
+            "n_active": 865,
+            "confab_active": {
+              "n": 859,
+              "clean_tighten": 0.0034924330616996507,
+              "refused": 0.0034924330616996507,
+              "well_formed": 0.9883585564610011,
+              "degenerate": 0.0,
+              "terminated_naturally": 0.9883585564610011,
+              "mean_new_tokens": 70.27823050058207
+            },
+            "known_all_covered": 240,
+            "known_all": {
+              "n": 240,
+              "clean_tighten": 0.004166666666666667,
+              "refused": 0.004166666666666667,
+              "well_formed": 1.0,
+              "degenerate": 0.0,
+              "terminated_naturally": 1.0,
+              "mean_new_tokens": 31.520833333333332
+            }
+          }
+        },
+        "8": {
+          "gated": {
+            "dose_mult": 8,
+            "dose_abs": 22.53197924099108,
+            "gain": 8,
+            "n_active": 865,
+            "confab_active": {
+              "n": 859,
+              "clean_tighten": 0.1210710128055879,
+              "refused": 0.1350407450523865,
+              "well_formed": 0.9790454016298021,
+              "degenerate": 0.0,
+              "terminated_naturally": 0.9930151338766007,
+              "mean_new_tokens": 73.23515715948777
+            },
+            "known_all_covered": 240,
+            "known_all": {
+              "n": 240,
+              "clean_tighten": 0.008333333333333333,
+              "refused": 0.008333333333333333,
+              "well_formed": 1.0,
+              "degenerate": 0.0,
+              "terminated_naturally": 1.0,
+              "mean_new_tokens": 32.05
+            }
+          },
+          "permuted_gate": {
+            "dose_mult": 8,
+            "dose_abs": 22.53197924099108,
+            "gain": 8,
+            "n_active": 865,
+            "confab_active": {
+              "n": 673,
+              "clean_tighten": 0.1188707280832095,
+              "refused": 0.13224368499257058,
+              "well_formed": 0.9762258543833581,
+              "degenerate": 0.0,
+              "terminated_naturally": 0.9895988112927192,
+              "mean_new_tokens": 72.23625557206537
+            },
+            "known_all_covered": 240,
+            "known_all": {
+              "n": 240,
+              "clean_tighten": 0.04583333333333333,
+              "refused": 0.04583333333333333,
+              "well_formed": 0.9875,
+              "degenerate": 0.0125,
+              "terminated_naturally": 0.9875,
+              "mean_new_tokens": 34.97083333333333
+            }
+          },
+          "random_direction": {
+            "dose_mult": 8,
+            "dose_abs": 22.53197924099108,
+            "gain": 22.53197924099108,
+            "n_active": 865,
+            "confab_active": {
+              "n": 859,
+              "clean_tighten": 0.005820721769499418,
+              "refused": 0.005820721769499418,
+              "well_formed": 0.989522700814901,
+              "degenerate": 0.002328288707799767,
+              "terminated_naturally": 0.989522700814901,
+              "mean_new_tokens": 72.39115250291036
+            },
+            "known_all_covered": 240,
+            "known_all": {
+              "n": 240,
+              "clean_tighten": 0.004166666666666667,
+              "refused": 0.004166666666666667,
+              "well_formed": 0.9958333333333333,
+              "degenerate": 0.0,
+              "terminated_naturally": 1.0,
+              "mean_new_tokens": 31.841666666666665
+            }
+          }
+        },
+        "12": {
+          "gated": {
+            "dose_mult": 12,
+            "dose_abs": 33.79796886148662,
+            "gain": 12,
+            "n_active": 865,
+            "confab_active": {
+              "n": 859,
+              "clean_tighten": 0.25378346915017463,
+              "refused": 0.3108265424912689,
+              "well_formed": 0.9231664726426076,
+              "degenerate": 0.008149010477299184,
+              "terminated_naturally": 0.9778812572759022,
+              "mean_new_tokens": 73.9441210710128
+            },
+            "known_all_covered": 240,
+            "known_all": {
+              "n": 240,
+              "clean_tighten": 0.016666666666666666,
+              "refused": 0.016666666666666666,
+              "well_formed": 0.9958333333333333,
+              "degenerate": 0.004166666666666667,
+              "terminated_naturally": 0.9958333333333333,
+              "mean_new_tokens": 32.5875
+            }
+          },
+          "permuted_gate": {
+            "dose_mult": 12,
+            "dose_abs": 33.79796886148662,
+            "gain": 12,
+            "n_active": 865,
+            "confab_active": {
+              "n": 673,
+              "clean_tighten": 0.23476968796433878,
+              "refused": 0.2897473997028232,
+              "well_formed": 0.9271916790490342,
+              "degenerate": 0.005943536404160475,
+              "terminated_naturally": 0.9806835066864784,
+              "mean_new_tokens": 74.481426448737
+            },
+            "known_all_covered": 240,
+            "known_all": {
+              "n": 240,
+              "clean_tighten": 0.1375,
+              "refused": 0.1375,
+              "well_formed": 0.9333333333333333,
+              "degenerate": 0.0625,
+              "terminated_naturally": 0.9333333333333333,
+              "mean_new_tokens": 46.6875
+            }
+          },
+          "random_direction": {
+            "dose_mult": 12,
+            "dose_abs": 33.79796886148662,
+            "gain": 33.79796886148662,
+            "n_active": 865,
+            "confab_active": {
+              "n": 859,
+              "clean_tighten": 0.010477299185098952,
+              "refused": 0.010477299185098952,
+              "well_formed": 0.9708963911525029,
+              "degenerate": 0.0011641443538998836,
+              "terminated_naturally": 0.9708963911525029,
+              "mean_new_tokens": 80.47380675203725
+            },
+            "known_all_covered": 240,
+            "known_all": {
+              "n": 240,
+              "clean_tighten": 0.004166666666666667,
+              "refused": 0.004166666666666667,
+              "well_formed": 0.9958333333333333,
+              "degenerate": 0.0,
+              "terminated_naturally": 0.9958333333333333,
+              "mean_new_tokens": 32.6875
+            }
+          }
+        },
+        "16": {
+          "gated": {
+            "dose_mult": 16,
+            "dose_abs": 45.06395848198216,
+            "gain": 16,
+            "n_active": 865,
+            "confab_active": {
+              "n": 859,
+              "clean_tighten": 0.2630966239813737,
+              "refused": 0.30267753201396974,
+              "well_formed": 0.8277066356228172,
+              "degenerate": 0.08032596041909197,
+              "terminated_naturally": 0.8742724097788126,
+              "mean_new_tokens": 72.23515715948777
+            },
+            "known_all_covered": 240,
+            "known_all": {
+              "n": 240,
+              "clean_tighten": 0.008333333333333333,
+              "refused": 0.020833333333333332,
+              "well_formed": 0.9833333333333333,
+              "degenerate": 0.0,
+              "terminated_naturally": 1.0,
+              "mean_new_tokens": 31.1625
+            }
+          },
+          "permuted_gate": {
+            "dose_mult": 16,
+            "dose_abs": 45.06395848198216,
+            "gain": 16,
+            "n_active": 865,
+            "confab_active": {
+              "n": 673,
+              "clean_tighten": 0.2659732540861813,
+              "refused": 0.300148588410104,
+              "well_formed": 0.8231797919762258,
+              "degenerate": 0.08469539375928678,
+              "terminated_naturally": 0.8736998514115899,
+              "mean_new_tokens": 73.25854383358099
+            },
+            "known_all_covered": 240,
+            "known_all": {
+              "n": 240,
+              "clean_tighten": 0.19583333333333333,
+              "refused": 0.3458333333333333,
+              "well_formed": 0.6166666666666667,
+              "degenerate": 0.15,
+              "terminated_naturally": 0.8416666666666667,
+              "mean_new_tokens": 56.5625
+            }
+          },
+          "random_direction": {
+            "dose_mult": 16,
+            "dose_abs": 45.06395848198216,
+            "gain": 45.06395848198216,
+            "n_active": 865,
+            "confab_active": {
+              "n": 859,
+              "clean_tighten": 0.018626309662398137,
+              "refused": 0.020954598370197905,
+              "well_formed": 0.8847497089639115,
+              "degenerate": 0.033760186263096625,
+              "terminated_naturally": 0.8952270081490105,
+              "mean_new_tokens": 99.65192083818394
+            },
+            "known_all_covered": 240,
+            "known_all": {
+              "n": 240,
+              "clean_tighten": 0.004166666666666667,
+              "refused": 0.004166666666666667,
+              "well_formed": 0.9916666666666667,
+              "degenerate": 0.008333333333333333,
+              "terminated_naturally": 0.9916666666666667,
+              "mean_new_tokens": 33.34583333333333
+            }
+          }
+        },
+        "20": {
+          "gated": {
+            "dose_mult": 20,
+            "dose_abs": 56.3299481024777,
+            "gain": 20,
+            "n_active": 865,
+            "confab_active": {
+              "n": 859,
+              "clean_tighten": 0.0,
+              "refused": 0.0,
+              "well_formed": 0.002328288707799767,
+              "degenerate": 0.9371362048894063,
+              "terminated_naturally": 0.06169965075669383,
+              "mean_new_tokens": 188.94644935972062
+            },
+            "known_all_covered": 240,
+            "known_all": {
+              "n": 240,
+              "clean_tighten": 0.0,
+              "refused": 0.0,
+              "well_formed": 0.975,
+              "degenerate": 0.020833333333333332,
+              "terminated_naturally": 0.9791666666666666,
+              "mean_new_tokens": 34.775
+            }
+          },
+          "permuted_gate": {
+            "dose_mult": 20,
+            "dose_abs": 56.3299481024777,
+            "gain": 20,
+            "n_active": 865,
+            "confab_active": {
+              "n": 673,
+              "clean_tighten": 0.0,
+              "refused": 0.0,
+              "well_formed": 0.005943536404160475,
+              "degenerate": 0.9331352154531947,
+              "terminated_naturally": 0.06537890044576523,
+              "mean_new_tokens": 188.2852897473997
+            },
+            "known_all_covered": 240,
+            "known_all": {
+              "n": 240,
+              "clean_tighten": 0.0,
+              "refused": 0.004166666666666667,
+              "well_formed": 0.2,
+              "degenerate": 0.7625,
+              "terminated_naturally": 0.2375,
+              "mean_new_tokens": 159.55416666666667
+            }
+          },
+          "random_direction": {
+            "dose_mult": 20,
+            "dose_abs": 56.3299481024777,
+            "gain": 56.3299481024777,
+            "n_active": 865,
+            "confab_active": {
+              "n": 859,
+              "clean_tighten": 0.010477299185098952,
+              "refused": 0.017462165308498253,
+              "well_formed": 0.6786961583236322,
+              "degenerate": 0.12572759022118743,
+              "terminated_naturally": 0.7124563445867288,
+              "mean_new_tokens": 126.87543655413272
+            },
+            "known_all_covered": 240,
+            "known_all": {
+              "n": 240,
+              "clean_tighten": 0.004166666666666667,
+              "refused": 0.004166666666666667,
+              "well_formed": 0.9833333333333333,
+              "degenerate": 0.016666666666666666,
+              "terminated_naturally": 0.9833333333333333,
+              "mean_new_tokens": 34.05
+            }
+          }
+        }
+      }
+    }
+  }
+}
