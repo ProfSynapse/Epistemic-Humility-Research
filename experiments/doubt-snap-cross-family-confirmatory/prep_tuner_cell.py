@@ -619,7 +619,11 @@ def materialize_dose_sweep(cell: dict[str, Any], rows_path: Path, batch_size: in
             "grader": "grader:grade",
             "batch_size": batch_size,
         },
-        "smoke": {"n_rows": 8, "write_rel_tol": 0.05, "write_abs_floor": 0.5, "offtarget_tol": 0.001, "gen_stream_probe_strength": max(dose_grid)},
+        # The gen-stream probe verifies hook plumbing (does a strong write move
+        # tokens at all), not dose viability, so it uses the same fixed high
+        # strength as smoke_tuner_path.py rather than the cell's dose grid: a
+        # recalibrated low-dose grid must not make the plumbing check inert.
+        "smoke": {"n_rows": 8, "write_rel_tol": 0.05, "write_abs_floor": 0.5, "offtarget_tol": 0.001, "gen_stream_probe_strength": 250.0},
     }
     out = pdir / "steer_dose_fit.yaml"
     out.write_text(yaml.safe_dump(recipe, sort_keys=False), encoding="utf-8")

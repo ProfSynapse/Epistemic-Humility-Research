@@ -85,6 +85,24 @@ snap:
     per_cell_candidate_realized_projection_targets:
       qwen35_4b: [10, 20, 30, 40, 50, 60, 75]
       qwen35_9b: [60, 80, 100, 120, 140]
+      # Pre-outcome recalibration (2026-07-11) for the two probe cells that hit
+      # the same overdose collapse on the unrecalibrated default grid: the
+      # default 100-250 realizes 48.7-120.4 sigma on llama32_3b (sigma_c 2.092)
+      # and 106.7-266.5 sigma on mistral7b (sigma_c 0.939), against the 38.3
+      # sigma already shown to collapse qwen35_4b. Grids below map qwen35_4b's
+      # recalibrated z-ladder (6.2-29.4 sigma, the grid that produced a real
+      # dose-response with peak 0.326) onto each cell's own FIT mu_c/sigma_c
+      # from build_manifest.json. Selection rule and thresholds unchanged.
+      llama32_3b_instruct: [11, 19, 26, 34, 41, 48, 60]
+      # Second pre-sweep revision (2026-07-11) for mistral7b only: the sigma-
+      # mapped grid [6..27] proved entirely sub-threshold before any FIT dose
+      # selection ran (harness probe at strength 27 produced byte-identical
+      # output on 8 rows), while the stopped default-grid partial sweep shows
+      # dose 100 (realized strength 106.5) fully degenerate on 584 fired
+      # confabs. The grid below brackets the empirically observed response
+      # window (27, 100). See AMENDMENT.md dated extension. llama32_3b keeps
+      # its grid above (mid-sweep, producing a real dose-response).
+      mistral7b_instruct_v03: [30, 38, 46, 56, 67, 80, 92]
     rule: >-
       Choose the lowest dose whose FIT end-to-end gated clean_tighten is >= 0.60
       and whose FIT known-correct false-refusal is <= 0.10. If multiple doses

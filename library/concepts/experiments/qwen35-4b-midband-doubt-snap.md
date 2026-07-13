@@ -9,7 +9,7 @@ tags:
 kg:
   id: experiment:qwen35-4b-midband-doubt-snap
   type: experiment
-  status: draft
+  status: canonical
 related:
 - '[[j-space-mediated-actuation-fragility]]'
 - '[[qwen35-late-site-entangles-refusal-and-format-collapse]]'
@@ -17,19 +17,33 @@ related:
 - '[[qwen35-batch-composition-flips-greedy-decode-outcomes]]'
 - '[[doubt-snap-cross-family-confirmatory]]'
 - '[[j-space-layer-contrast-rep2-multisource]]'
+- '[[qwen35-4b-midband-write-decouples-refusal-from-format-collapse]]'
+- '[[caution-write-selectivity-is-content-dependent-not-gate-created]]'
 relationships:
 - type: tests
   target: '[[j-space-mediated-actuation-fragility]]'
   target_id: mechanism:j-space-mediated-actuation-fragility
   confidence: medium
   evidence:
-  - experiments/qwen35-4b-midband-doubt-snap/AMENDMENT.md#prediction
+  - experiments/qwen35-4b-midband-doubt-snap/AMENDMENT.md#outcome
 - type: tests
   target: '[[qwen35-late-site-entangles-refusal-and-format-collapse]]'
   target_id: mechanism:qwen35-late-site-entangles-refusal-and-format-collapse
-  confidence: medium
+  confidence: high
   evidence:
-  - experiments/qwen35-4b-midband-doubt-snap/AMENDMENT.md#falsifier
+  - experiments/qwen35-4b-midband-doubt-snap/AMENDMENT.md#outcome
+- type: supports
+  target: '[[qwen35-4b-midband-write-decouples-refusal-from-format-collapse]]'
+  target_id: mechanism:qwen35-4b-midband-write-decouples-refusal-from-format-collapse
+  confidence: high
+  evidence:
+  - experiments/qwen35-4b-midband-doubt-snap/AMENDMENT.md#outcome
+- type: supports
+  target: '[[caution-write-selectivity-is-content-dependent-not-gate-created]]'
+  target_id: mechanism:caution-write-selectivity-is-content-dependent-not-gate-created
+  confidence: high
+  evidence:
+  - experiments/qwen35-4b-midband-doubt-snap/AMENDMENT.md#outcome
 - type: builds_on
   target: '[[steering-dose-windows-are-absolute-not-sigma-transferable]]'
   target_id: mechanism:steering-dose-windows-are-absolute-not-sigma-transferable
@@ -56,28 +70,34 @@ relationships:
   - experiments/qwen35-4b-midband-doubt-snap/AMENDMENT.md (Motivation and posture)
 ---
 
-Registered, signed exploratory test of whether writing the doubt-gated
-caution snap at a J-space workspace-band (mid-band) layer on
-Qwen/Qwen3.5-4B (bf16, hybrid linear-attention architecture) decouples confab
-refusal induction from output-format corruption, where the registered late
-write site (0.94-depth, hs30) produced a well-characterized G0
-dose-viability null in `doubt-snap-cross-family-confirmatory`. A local
-J-lens profile localized a workspace-like effective-dimensionality band at
-hs20/hs23/hs26 (peak at hs23), distinct from the late hs30 site, mirroring
-the Qwen3-4B same-model mid-band-vs-late-band lesson
-(`j-space-layer-contrast-rep2-multisource`, resolved FULL PASS). FIT-only
-direction and gate fits are complete for all four candidate layers (hs20,
-hs23, hs26, hs30), each clearing the registered minimum-AUC-0.90 gate.
+Exploratory Tier-2 test of whether writing the doubt-gated caution snap at a
+J-space workspace-band (mid-band) layer on Qwen/Qwen3.5-4B (bf16, hybrid
+linear-attention architecture) decouples confab refusal induction from
+output-format corruption, where the registered late write site (0.94-depth,
+hs30) produced a well-characterized G0 dose-viability null in
+`doubt-snap-cross-family-confirmatory`. A local J-lens profile localized a
+workspace-like effective-dimensionality band at hs20/hs23/hs26 (peak at
+hs23), distinct from the late hs30 site, mirroring the Qwen3-4B same-model
+mid-band-vs-late-band lesson (`j-space-layer-contrast-rep2-multisource`,
+resolved FULL PASS).
 
-As of this writing the experiment is signed and its Stage C per-layer dose
-ladder is running as a background local RTX 3090 process (launched
-2026-07-10, estimated 48-55 hours); no held-out or dose-ladder outcome exists
-yet, and this note asserts none. It records one resolved pre-launch finding:
-a batch-size probe found batch sizes 16 and 32 diverging from the validated
-batch-8 reference on 61 of 240 row-by-field comparisons, including one
-categorical flip on the primary gate metrics, confirming the same Qwen3.5
-bf16 batch-composition non-determinism hazard seen on the Modal cross-family
-cells; the full ladder runs at the validated batch_size=8. Source of truth:
-`experiments/qwen35-4b-midband-doubt-snap/AMENDMENT.md` and `NOTEBOOK.md`,
-currently only on the unmerged worktree
-`/home/profsynapse/code/ehr-worktrees/qwen35-midband`.
+Resolved 2026-07-12. **G1 PASSES.** hs20 at dose 8 x sigma_c is the unique
+cell in the locked 4-layer x 7-dose grid that clears both primary floors on
+fired FIT confabs simultaneously: refused 0.684 (594/869) with well_formed
+0.980, against floors of 0.60 and 0.80, with known-correct false-refusal
+0.042 (10/240, bar <= 0.10). The in-grid late-site comparator (hs30, re-run
+here) never clears both floors at any dose (peak refused about 0.31 with
+well-formedness already degrading), reproducing its own entangled collapse;
+neither hs23 (the eff-dim profile peak, refused 0.456) nor hs26 (refused
+0.276) reaches the refusal floor. The mid-band lesson from Qwen3-4B therefore
+transfers to Qwen3.5-4B: the late-site failure was a write-site problem, not
+a family problem
+([[qwen35-4b-midband-write-decouples-refusal-from-format-collapse]]). A
+permuted-gate control isolates the confab/known selectivity to the write
+direction's own content dependence rather than the doubt gate
+([[caution-write-selectivity-is-content-dependent-not-gate-created]]). This
+is in-sample FIT characterization only (c_hat fit and evaluated on the same
+FIT confabs, held-out untouched by design); promotion to a claim requires a
+registered held-out stage. An adversarial red-team review over seven attack
+surfaces returned no invalidating finding. Source of truth:
+`experiments/qwen35-4b-midband-doubt-snap/AMENDMENT.md` and `NOTEBOOK.md`.

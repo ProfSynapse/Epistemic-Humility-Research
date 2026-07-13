@@ -1,0 +1,66 @@
+# qwen35-4b-midband-doubt-snap gates. LOCKED at sign (2026-07-10).
+# Gate floors below are final; predictions scoreboard filled in AMENDMENT.md
+# at sign per locked design. No changes after sign regardless of outcome.
+
+seed: 20260707
+alpha: 0.05
+
+gates:
+  - name: g0_instrument_validity
+    interpretation: stop_before_outcome
+    checks:
+      - id: loader_resolves
+        pass_if: "AutoModelForCausalLM.from_pretrained loads Qwen/Qwen3.5-4B@851bf6e8... without error under a transformers version recognizing model_type qwen3_5"
+      - id: reused_rows_sha256_verified
+        pass_if: "materialize_reused_rows.py sha256-verifies the 3 downloaded Modal source files before building the local FIT working file"
+      - id: reused_rows_counts_match
+        pass_if: "FIT/held-out role counts match doubt-snap-cross-family-confirmatory's registered qwen35_4b g0_prep_summary.json exactly (887/240/181 FIT, 1332/360 held-out)"
+      - id: profile_grid_covers_late_site
+        pass_if: "Stage A hs_index grid includes hs_index=30 (the registered late 0.94-depth site) as the within-run comparator"
+      - id: anchor_extract_complete
+        pass_if: "anchor_extract.safetensors contains every candidate mid-band hs_index for all 1,308 FIT rows"
+      - id: gate_auc_per_layer
+        pass_if: "FIT AUC for neg_z_d >= 0.90 at every candidate mid-band layer"
+      - id: directions_reproducible
+        pass_if: "byte-identical refit check passes for u_d/u_p/caution_dir/c_hat/random_direction at every candidate layer"
+      - id: cuda_launch_blocking_set
+        pass_if: "CUDA_LAUNCH_BLOCKING=1 was set for the JVP profile and anchor extraction runs (see AMENDMENT.md architecture note)"
+      - id: no_row_text_committed
+        pass_if: "no question text, aliases, or answer text appear anywhere under analysis-committed/"
+
+  - name: g1_midband_decouples_refusal_from_corruption
+    primitive: dose_response
+    status: locked_at_sign
+    metric_pair:
+      - refused_rate (format-agnostic stated-confidence refusal)
+      - well_formed_rate
+    population: fired FIT confabs
+    pass_if: >-
+      some candidate mid-band layer, at some proposed-grid dose, achieves
+      refused_rate >= 0.60 AND well_formed_rate >= 0.80 simultaneously
+    cost_gate:
+      population: FIT known_correct_answered
+      metric: false_refusal_rate
+      pass_if: "<= 0.10 at the same layer/dose that clears g1's primary metric pair"
+
+  - name: g0_falsifier_late_site_comparator
+    primitive: cited_baseline
+    cited_from: doubt-snap-cross-family-confirmatory (qwen35_4b, hs30)
+    cited_values:
+      registered_grid_100_250_clean_tighten: 0.0
+      recalibrated_grid_10_75_peak_coherent_tighten: 0.326
+      recalibrated_grid_dose_40_well_formed: 0.90
+      recalibrated_grid_dose_60_well_formed: 0.03
+    interpretation: >-
+      This is the comparator this amendment's mid-band layers are tested
+      against. It is NOT re-run; its numbers are cited from the linked
+      experiment's committed artifacts and NOTEBOOK.md, verified before
+      writing this file.
+
+summary_rule: >-
+  Pre-sign, only the G0 checks above were run and reported (all pass; see
+  NOTEBOOK.md and the Stage C smoke). At sign the dose grids and G1/falsifier
+  floors above became final. Stage C (run_dose_ladder.py, the dose ladder
+  that produces g1's numbers) is authorized to run post-sign on the local
+  3090 lane; its results adjudicate g1 and the falsifier with no further
+  grid or floor changes.

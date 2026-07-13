@@ -1,0 +1,71 @@
+# Pre-stated gates template for a family-atlas cell. Copy into
+# experiments/<slug>/gates.yaml, transcribe verbatim from your AMENDMENT.md
+# "## Gates" section once written, and do not add, drop, or retune a
+# threshold here without a signed amendment revision.
+
+AG0:
+  name: integrity (pre-outcome)
+  checks:
+    - id: capture_coverage
+      rule: "capture covers >= 95% of the cell's manifest rows at every layer"
+      threshold: 0.95
+      scope: per_cell_per_layer
+    - id: direction_refit_determinism
+      rule: "direction refits are byte-identical under the fixed seed"
+      method: "fit twice from the same captured H under the fixed seed; compare byte-for-byte"
+    - id: held_out_power_survives_attrition
+      rule: >-
+        held-out power carried over from the source pool (name your own
+        floors here; the jspace-family-atlas template used confab >= 150,
+        known-correct >= 250) still holds after capture attrition
+      thresholds:
+        confab_held_out_minimum: <N>
+        known_correct_answered_held_out_minimum: <N>
+
+AG1:
+  name: profile
+  checks:
+    - id: eff_dim_frac_every_layer
+      rule: "eff_dim_frac profile is computed at every layer with the registered estimator"
+      scope: "hs_index 0..num_hidden_layers inclusive, per cell"
+    - id: profile_reproducibility
+      rule: >-
+        reproducibility re-run on a 20% row subsample keeps the peak layer
+        within +/- 1 layer
+      subsample_frac: 0.20
+      tolerance_layers: 1
+
+AG2:
+  name: read panel
+  checks:
+    - id: per_layer_auroc_with_ci
+      rule: >-
+        per-layer held-out AUROCs reported with CIs for all three axes plus
+        the standard random-direction control; no threshold gate on the
+        values themselves beyond the prediction/falsifier
+      axes: [doubt, caution, raw_refusal]
+      ci_method: bootstrap
+      bootstrap_resamples: 2000
+      note: "AG2 itself has no pass/fail numeric threshold; the numbers are the atlas. Prediction/falsifier (AMENDMENT.md) are adjudicated separately at resolve, not by this gate."
+
+# Prediction / falsifier restated for cross-reference only (source of truth
+# remains AMENDMENT.md; do not edit here without a signed revision there).
+# The falsifier below is the family-atlas program's DEFAULT falsifier
+# wording; extend it (do not narrow it) to cover exterior-peak shapes -- see
+# SKILL.md gotchas: jspace-family-atlas's first run found the profile peaks
+# EARLY (0.09-0.14 depth) in both mapped families, a shape neither its
+# prediction nor its falsifier anticipated. State your own falsifier so an
+# early-exterior peak, a late-exterior peak, AND a genuinely unreadable
+# profile are all explicitly covered outcomes, not silently unaddressed
+# gaps.
+prediction_restated: >-
+  Each mapped family shows an interior workspace band: a contiguous set of
+  layers strictly inside (20%, 85%) depth where eff_dim_frac peaks AND all
+  three read axes (doubt, caution, raw refusal) hold held-out AUROC >= 0.80,
+  with the band's peak layer differing from any previously ported layer.
+falsifier_restated: >-
+  For this family: no interior eff_dim_frac peak exists (the profile is
+  monotone to the last layer, OR the profile peaks in the outer 20% of
+  depth on either end -- early-exterior or late-exterior), OR no layer
+  inside (20%, 85%) depth reaches held-out AUROC >= 0.80 on all three axes
+  simultaneously.

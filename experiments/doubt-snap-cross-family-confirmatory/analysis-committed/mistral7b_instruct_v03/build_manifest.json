@@ -1,0 +1,14 @@
+{
+  "base_model": "mistralai/Mistral-7B-Instruct-v0.3",
+  "cell_id": "mistral7b_instruct_v03",
+  "hidden_dim": 4096,
+  "layer": 29,
+  "mu_c": -0.20473676290269346,
+  "mu_d": -2.481688499178803,
+  "n_confab_fit": 874,
+  "n_known_fit": 255,
+  "n_unknown_refused": 214,
+  "revision": "c170c708c41dac9275d15a8fff4eca08d52bab71",
+  "sigma_c": 0.9390147895867568,
+  "sigma_d": 1.5382371809779534
+}

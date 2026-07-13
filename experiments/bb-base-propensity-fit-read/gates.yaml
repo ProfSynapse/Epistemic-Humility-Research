@@ -1,0 +1,69 @@
+# BB base-model fit + read: pre-stated pass/fail thresholds. DRAFT.
+# LOCK at signing (bin/exp sign). Full rationale in AMENDMENT.md sections 4.2, 6.
+# Values marked UNCERTAIN are flagged for lead adjudication (AMENDMENT section 10).
+
+# --- PHASE 0 decision rule (gates whether phase 1 runs; AMENDMENT 4.2) --------
+# ALL THREE must pass on the 750-row base run, else a registered
+# negative-feasibility record is written and phase 1 does NOT run. No draw
+# enlargement remedy (a rate problem is not fixed by more rows; H9 proved this).
+phase0_floors:
+  schema_valid_frac_min: 0.60      # BB-P0-A  [UNCERTAIN: no base schema-follow prior]
+  min_confabs: 20                  # BB-P0-B  [mirrors H9-G0 min_confabs]
+  min_unanswerable_refusals: 20    # BB-P0-C  [mirrors H9-G0 min_unanswerable_refusals]
+
+# --- PHASE 1 gates (only if phase 0 passes; AMENDMENT 6) ----------------------
+# The base direction is fit FRESH, so there is no prior base number to anchor to.
+# Anchoring choice A (absolute H9 lines) is the proposed default; choice B
+# (lines from base's measured in-cell excess) is an OPEN QUESTION for the lead.
+honest_prior:
+  # No AI-TRUE-style prior exists for base. The base in-cell 5-fold OOF AUROCs
+  # (propensity and caution) are MEASURED in phase 1 step 1 and recorded here at
+  # resolve as the honest base priors; they do not gate.
+  prop_incell_oof_auroc: MEASURED_IN_PHASE1
+  caution_incell_oof_auroc: MEASURED_IN_PHASE1
+  chance: 0.50
+
+# Fidelity (CPU; AMENDMENT 5.4). No cross-reference target exists on base;
+# these pin determinism and recipe parity instead.
+fidelity:
+  BB-FID-1_determinism_cosine_min: 0.999999   # refit twice, same seed: cos(d_raw_a, d_raw_b) >= this
+  BB-FID-1_determinism_maxabs_diff_max: 1.0e-5
+  # Repinned 2026-07-11 pre-launch (bin/exp repin): the signed wording (whole-file
+  # sha256 equality with H9's pinned freeze_scorer.py) is unachievable by
+  # construction, since BB's scorer must differ in I/O (base extraction and base
+  # grades, not AL artifacts) and in fidelity reporting (no on-disk prior array).
+  # The fidelity INTENT (identical fit math) is preserved as:
+  BB-FID-2_recipe_parity: fit-math functions (PCA / standardize / caution-residualize / mean-diff / z-scale) verbatim-identical to H9 pinned freeze_scorer.py; AL 3.2 knobs asserted from cell.yaml; both file sha256 values recorded in the fidelity report
+  # base in-cell OOF AUROC recorded non-gating as the honest prior.
+
+# Fit-surface evaluability precondition (BB-P1-G0). Checked before G1 is read.
+fit_evaluability:
+  min_confabs: 20                  # on the 1,662-row base fit surface
+  min_unanswerable_refusals: 20
+
+# Reading gate (BB-P1-G1). Contrast: confab (unanswerable & answered) vs
+# unanswerable-refused, AL's readout_quality contrast. Choice-A absolute lines.
+reading_gate:
+  bootstrap_resamples: 1000
+  bootstrap_ci: 0.95
+  pass_auroc_min: 0.62           # AND ci_lower > pass_ci_lower_min
+  pass_ci_lower_min: 0.55
+  fail_auroc_max: 0.55           # OR ci_upper < fail_ci_upper_max
+  fail_ci_upper_max: 0.60
+  # Strictly between pass and fail, or a CI straddling the lines -> INCONCLUSIVE.
+  anchoring: choice_A_absolute_h9_lines   # OPEN QUESTION (AMENDMENT 6/10): A vs B
+
+# Caution positive control (BB-P1-G2, FLOOR). Refused-vs-not over all graded
+# read rows, base frozen full-sample caution classifier.
+caution_control:
+  floor_auroc_min: 0.80          # [UNCERTAIN: H9 used 0.90 anchored to AL 0.9561 (AI-TRUE);
+                                 #  base sharpness unknown. Lead may set relative to measured
+                                 #  base in-cell caution OOF instead.]
+  # Below floor -> treat the read draw as a pipeline failure; do not adjudicate G1.
+
+# Registered sensitivity check (AMENDMENT 8): near-duplicate KUQ sweep.
+sensitivity_near_dup:
+  metric: token_overlap
+  flag_threshold: 0.90
+  action: recompute_auroc_excluding_flagged
+  report: alongside headline, never pooled
