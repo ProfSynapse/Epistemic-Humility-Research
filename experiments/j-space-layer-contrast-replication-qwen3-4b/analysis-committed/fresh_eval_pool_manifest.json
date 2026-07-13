@@ -3,7 +3,7 @@
   "model_name": "unsloth/Qwen3-4B",
   "substrate": "bf16",
   "predecessor_split_excluded": "experiments/common/doubt-gated-caution-tighten-heldout-split/split_manifest.json",
-  "candidate_source": "experiment/phase1/probe/analysis/ah_stage0/expansion/expansion_candidates.jsonl",
+  "candidate_source": "archive/experiment/phase1/probe/analysis/ah_stage0/expansion/expansion_candidates.jsonl",
   "target_confab": 200,
   "target_known_correct": 300,
   "max_unknown_candidates": 3496,

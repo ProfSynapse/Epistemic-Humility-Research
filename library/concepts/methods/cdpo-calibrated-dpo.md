@@ -38,7 +38,7 @@ retained to prevent forgetting.
 
 **Why it matters here:** CDPO shows the PPO-M calibration idea ports directly to
 [[direct-preference-optimization]], the offline preference method used in the
-Phase 1 arms, without sacrificing task accuracy or instruction-following. It is
+locked training-regimen arms, without sacrificing task accuracy or instruction-following. It is
 the concrete candidate for a calibration-aware loss augmentation on the DPO arm.
 
 **Lineage:** the DPO-compatible extension of the PPO-M calibration loss, proposed

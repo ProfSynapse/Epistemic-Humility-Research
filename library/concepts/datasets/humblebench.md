@@ -63,7 +63,7 @@ al. 2025 (arXiv:2509.09658, maifoundations/HumbleBench).
 [[epistemic-humility]] as a forced-choice task in the visual domain. Its central
 finding, that models clear random-guess accuracy on standard items but average
 near random (26.61%) on the NOTA-only stress test while humans score 92%, makes
-it the multimodal analog of the text-only abstention/NOTA framing in the Phase 1
+it the multimodal analog of the text-only abstention/NOTA framing in the locked training-regimen
 SFT-vs-DPO-vs-KTO study, and a reference for over-commitment under uncertainty.
 
 **Lineage:** introduced by

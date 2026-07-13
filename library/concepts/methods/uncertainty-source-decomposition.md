@@ -63,6 +63,6 @@ relationships:
 
 A diagnostic framework that decomposes LLM uncertainty into three semantic components measured independently: U_input (input ambiguity, estimated via disagreement across K semantically equivalent paraphrases), U_know (knowledge-gap uncertainty, estimated via ensemble disagreement across M independently trained LoRA adapters), and U_dec (decoding randomness, estimated via disagreement across N repeated samples under stochastic decoding). The components are not strictly orthogonal and their sum can exceed total uncertainty.
 
-**Why it matters here:** Replaces single-score or aleatoric/epistemic uncertainty with a three-way decomposition that identifies which source dominates for a given model, dataset, and scale, enabling targeted interventions rather than undifferentiated uncertainty reduction. Applicable as a before/after measurement protocol around Phase 1 training arms.
+**Why it matters here:** Replaces single-score or aleatoric/epistemic uncertainty with a three-way decomposition that identifies which source dominates for a given model, dataset, and scale, enabling targeted interventions rather than undifferentiated uncertainty reduction. Applicable as a before/after measurement protocol around locked training-regimen arms.
 
 **Lineage:** Proposed in Taparia et al. 2026 (arXiv:2603.24967). Builds on consistency-based-confidence and self-consistency for the sampling component; introduces the LoRA ensemble as the knowledge-gap measurement arm.

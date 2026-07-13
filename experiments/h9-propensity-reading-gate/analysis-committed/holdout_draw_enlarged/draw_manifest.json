@@ -1,0 +1,63 @@
+{
+  "tier": "registered-enlarged",
+  "enlargement": {
+    "increment_rows": 250,
+    "rng_rule": "continue_same_stream",
+    "rounding": "largest_remainder_ties_by_sorted_source",
+    "per_source_enlarged": {
+      "kuq_ku_known": 8,
+      "kuq_ku_unknown": 69,
+      "kuq_ku_unknown_x": 113,
+      "popqa": 11,
+      "selfaware_answerable": 17,
+      "selfaware_unanswerable": 20,
+      "triviaqa": 12
+    },
+    "replayed_original_matches_committed": true,
+    "original_manifest": "/home/profsynapse/code/ehr-worktrees/h9-propensity-gate/experiments/h9-propensity-reading-gate/analysis-committed/holdout_draw/holdout_ids.jsonl"
+  },
+  "seed": 20260711,
+  "draw_size": 750,
+  "targets": {
+    "kuq_ku_unknown_x": 226,
+    "kuq_ku_unknown": 137,
+    "selfaware_unanswerable": 40,
+    "selfaware_answerable": 35,
+    "triviaqa": 24,
+    "popqa": 23,
+    "kuq_ku_known": 15
+  },
+  "per_source_drawn": {
+    "kuq_ku_known": 15,
+    "kuq_ku_unknown": 137,
+    "kuq_ku_unknown_x": 226,
+    "popqa": 23,
+    "selfaware_answerable": 35,
+    "selfaware_unanswerable": 40,
+    "triviaqa": 24
+  },
+  "per_source_drawn_matches_targets": true,
+  "complement_count": 16834,
+  "complement_by_source": {
+    "kuq_ku_known": 415,
+    "kuq_ku_unknown": 1313,
+    "kuq_ku_unknown_x": 2745,
+    "popqa": 3923,
+    "selfaware_answerable": 1917,
+    "selfaware_unanswerable": 600,
+    "triviaqa": 5921
+  },
+  "union_count": 18496,
+  "fit_surface_count": 1662,
+  "source_file_sha256": {
+    "orig_rows": "762894559a57c3938355ce5ac0a2723670c48e4bcdc92d176cf7a4d1dc223ed0",
+    "expansion_rows": "ae594e6c0da2247b8e5f5556127de741807df3d6a82242ec50c1f292c30d2b8d",
+    "fit_surface": "f9c9cbbbbade531097c83c5becb7504e787c281d2ecb3dc859e1823013575172"
+  },
+  "gold_label_breakdown": {
+    "answerable": 145,
+    "unanswerable": 605
+  },
+  "collision_provenance": "exact-text zero-collision vs fit surface governed by docs/review/h9-holdout-candidate-inventory-2026-07-10.md section 4 (not recomputed here; pool_v21.jsonl carries no question text)",
+  "ids_manifest": "/home/profsynapse/code/ehr-worktrees/h9-propensity-gate/experiments/h9-propensity-reading-gate/analysis-committed/holdout_draw_enlarged/holdout_ids.jsonl"
+}

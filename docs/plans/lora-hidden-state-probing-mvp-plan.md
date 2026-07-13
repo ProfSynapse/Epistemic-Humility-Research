@@ -37,7 +37,7 @@ Build the MVP of the LoRA hidden-state probing tier: a correlational extraction 
 #### Components Affected
 | Component | Change Type | Impact |
 |-----------|-------------|--------|
-| `probe/config/hidden_state_probe.yaml` | New | Pinned extraction config (the hashed SSOT) |
+| `experiments/common/configs/phase1-probe/hidden_state_probe.yaml` | New | Pinned extraction config (the hashed SSOT) |
 | `probe/hidden_state_probe.py` | New | Driver: lazy HF/PEFT load, deterministic forward, writer, resume, GPU-smoke `h_base≠h_lora` |
 | `probe/hidden_state_schema.py` | New | Model-free validation + manifest builder (testability keystone) |
 | `probe/tests/test_hidden_state_probe.py` | New | GPU-free fixture tests |
@@ -75,7 +75,7 @@ Build the MVP of the LoRA hidden-state probing tier: a correlational extraction 
 | File | Purpose |
 |------|---------|
 | `probe/hidden_state_schema.py` | Model-free validators (tensor shape, `len==N+1`, layer ids, token-position metadata, adapter-state enum + P0 pre-flight, prompt hash, manifest fields, safetensors round-trip contract) + manifest builder |
-| `probe/config/hidden_state_probe.yaml` | Pinned config; `extraction_config_sha` computed (probe.py `config_sha` pattern) |
+| `experiments/common/configs/phase1-probe/hidden_state_probe.yaml` | Pinned config; `extraction_config_sha` computed (probe.py `config_sha` pattern) |
 | `probe/hidden_state_probe.py` | `ExtractionBackend` Protocol + `TransformersPeftBackend` (lazy) + `StubExtractionBackend` + selection/alignment + manifest/rows writer + row-key resume |
 | `probe/tests/test_hidden_state_probe.py` | GPU-free tests via the stub |
 | `probe/requirements-hidden-state.txt` | Inference deps decoupled from trainer pins |
@@ -90,7 +90,7 @@ Build the MVP of the LoRA hidden-state probing tier: a correlational extraction 
 #### Implementation Sequence (CPU-first; each step GREEN before the GPU-only piece)
 1. Extract `render_probe_prompt` from `backends.py`; add byte-identical regression to `test_probe_smoke.py`; prove existing smoke suite inert/GREEN. *(smallest, highest churn-risk → first)*
 2. `hidden_state_schema.py` — pure validators + manifest builder + **P0 declared-adapter-state pre-flight**.
-3. `config/hidden_state_probe.yaml` + config parse + `extraction_config_sha` + output-tree path resolution.
+3. `experiments/common/configs/phase1-probe/hidden_state_probe.yaml` + config parse + `extraction_config_sha` + output-tree path resolution.
 4. Selection/alignment: read `questions_frozen.json` keys + **stream** `probe_results.jsonl` by `probe_pool_row_key` (123MB — never whole-load) to build matched known/unknown slice.
 5. `ExtractionBackend` Protocol + `StubExtractionBackend` (deterministic fixed-shape, no torch) + manifest/`rows.jsonl` writer + resume → end-to-end pipeline GREEN on CPU.
 6. `TransformersPeftBackend` (lazy torch/transformers/peft; batch=1, `eval()`, `use_cache=False`, `no_grad`, fp32, pinned device; `disable_adapter()`→`h_base`, active→`h_lora`; reuse render helper) + GPU-smoke `h_base≠h_lora` assertion. *(GPU-only; not in CI)*
@@ -171,12 +171,12 @@ ARCHITECT (thin — Decisions A–E already specified here) → CODE (Steps 1–
 
 ### 2026-06-15 Local GPU Smoke Results
 
-- Tiny smoke: `.tmp/hidden_state_probe_sft_smoke_docker.yaml`, 1 known + 1 unknown, all layers, output `experiment/phase1/probe/qwen3-4b-instruct/hidden_states/extraction__520184798388`, manifest `ok`, verified `true`.
-- MVP extraction: `.tmp/hidden_state_probe_sft_mvp_docker.yaml`, 16 known + 16 unknown, all layers, output `experiment/phase1/probe/qwen3-4b-instruct/hidden_states/extraction__c35b3f3bf8ae`, manifest `ok`, verified `true`, 32 rows, 96 safetensor shards.
+- Tiny smoke: `.tmp/hidden_state_probe_sft_smoke_docker.yaml`, 1 known + 1 unknown, all layers, output `archive/experiment/phase1/probe/qwen3-4b-instruct/hidden_states/extraction__520184798388`, manifest `ok`, verified `true`.
+- MVP extraction: `.tmp/hidden_state_probe_sft_mvp_docker.yaml`, 16 known + 16 unknown, all layers, output `archive/experiment/phase1/probe/qwen3-4b-instruct/hidden_states/extraction__c35b3f3bf8ae`, manifest `ok`, verified `true`, 32 rows, 96 safetensor shards.
 - Native Windows Python failed before forward pass on `bitsandbytes` / missing `triton.ops`; Docker/Unsloth succeeded.
 - Docker manifest finalization requires Git safe-directory env vars for `/workspace/repo`; without them, tensor rows can be written but `research_repo_commit` and `submodule_commit` stay `None` and the final provenance gate fails.
 - Local merged model provenance is handled generically: for local model directories, `base_model_revision` and `base_model_hash` are recorded as `local-sha256:<digest>`, while Hub model ids keep Hub commit behavior and strict manifest finalization still requires populated provenance.
-- Sequential Amendment A hidden-state diagnostics completed on the same 128 known / 128 unknown slice. `sft_dpo` wrote `experiment/phase1/probe/qwen3-4b-instruct/hidden_states/extraction__0d58c201ab3e`; `sft_kto` wrote `experiment/phase1/probe/qwen3-4b-instruct/hidden_states/extraction__e1473df788a5`; both produced 256 rows, 768 safetensor shards, manifest `ok`, verified `true`, no thinking tags, and base revision/hash `local-sha256:813a8a882a07871b2167948931791f69ad19add8b7c4e6cf2faef0a25e1fbdcd`.
+- Sequential Amendment A hidden-state diagnostics completed on the same 128 known / 128 unknown slice. `sft_dpo` wrote `archive/experiment/phase1/probe/qwen3-4b-instruct/hidden_states/extraction__0d58c201ab3e`; `sft_kto` wrote `archive/experiment/phase1/probe/qwen3-4b-instruct/hidden_states/extraction__e1473df788a5`; both produced 256 rows, 768 safetensor shards, manifest `ok`, verified `true`, no thinking tags, and base revision/hash `local-sha256:813a8a882a07871b2167948931791f69ad19add8b7c4e6cf2faef0a25e1fbdcd`.
 - Sequential best 5-fold balanced accuracy: `sft_dpo` `h_base` layer 36 = 0.84375, `h_lora` layer 34 = 0.85546875, `delta` layer 35 = 0.859375; `sft_kto` `h_base` layer 36 = 0.84375, `h_lora` layer 35 = 0.859375, `delta` layer 36 = 0.85546875. Caveat: sequential `h_base` is merged SFT, not original Qwen, so `h_base` already represents SFT; `delta` is preference-stage change over SFT. Plain read: SFT creates high separability; cold-start DPO/KTO do not; sequential DPO/KTO preserve or reshape the high SFT separability.
 
 ---

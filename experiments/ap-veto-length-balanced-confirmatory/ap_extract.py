@@ -3,12 +3,12 @@
 
 Pre-registered: experiments/ap-veto-length-balanced-confirmatory/AMENDMENT.md.
 Confirmatory follow-up to Amendment AM
-(experiment/protocol/AMENDMENT-AM-residual-catch-veto-coverage.md). Tier-2
+(experiments/residual-catch-veto-coverage/AMENDMENT.md). Tier-2
 confirmatory cell; results reported separately from PROTOCOL v0.3 and from the
 PR #205 published veto operating characteristics, and never pooled with AM.
 
 WHAT THIS DOES (one GPU pass, run inside the Modal container). Ported
-(logic, structure) from experiment/phase1/probe/amendment_am_extract.py
+(logic, structure) from archive/experiment/phase1/probe/amendment_am_extract.py
 (read-only reference on the unmerged amendment-am branch; not imported across
 branches), with exactly two deliberate surface changes per the AMENDMENT
 Design section:
@@ -70,8 +70,8 @@ import time
 from pathlib import Path
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
-PROBE_DIR = REPO_ROOT / "experiment/phase1/probe"
-EVAL_DIR = REPO_ROOT / "experiment/phase1/eval"
+PROBE_DIR = REPO_ROOT / "archive/experiment/phase1/probe"
+EVAL_DIR = REPO_ROOT / "archive/experiment/phase1/eval"
 for p in (str(PROBE_DIR), str(EVAL_DIR)):
     if p not in sys.path:
         sys.path.insert(0, p)
@@ -97,7 +97,10 @@ MAX_NEW_TOKENS = 192
 # The baseline system prompt is loaded from the same config the AH main run
 # used (AM's exact source; the AP AMENDMENT pins "the SAME ... generation
 # surface as AM").
-AC_CONFIG = PROBE_DIR / "config" / "phase3_ac_doubt_coupled_intervention.yaml"
+AC_CONFIG = (
+    PROBE_DIR.parents[2]
+    / "experiments/doubt-regulated-caution/ac_doubt_coupled_intervention.yaml"
+)
 SMOKE_N = 20
 BISECT_BATCHES = [12, 8, 4, 2, 1]  # registered batch first, then bisect down
 

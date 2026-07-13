@@ -690,7 +690,7 @@ Atomic notes extracted from the library papers via the Agents-K1 ingestion skill
 - [[valence-arousal-subspace]] : A two-dimensional linear subspace in LLM activation space spanned by a recovered valence axis (pleasure-displeasure) and arousal axis (activ
 - [[world-model-hallucination-modes]] : A three-type taxonomy of failure modes in generative world models, each anchored to a different pipeline stage. Perceptual hallucination occ
 
-## Mechanisms (cause -> effect) (395)
+## Mechanisms (cause -> effect) (402)
 
 - [[abstention-generalization-failure]] : 'instruction-tuning for abstention on a narrow, homogeneous set of refusal expressions and task formats' **prevents** Abstention ability does not generalize to 
 - [[abstract-representations-enable-zero-shot-generalization]] : High degree of abstract (parallel) representation in ANN hidden layers, as measured by parallelism-score, indicating that compositional rule dimensions are enco
@@ -716,6 +716,7 @@ Atomic notes extracted from the library papers via the Agents-K1 ingestion skill
 - [[auxiliary-head-regressing-true-class-probability-enables-failure-prediction]] : Training an auxiliary head to regress the classifier's true-class probability (TCP) on top of a frozen-then-finetuned encoder. **enables** The learned scalar ra
 - [[auxiliary-model-predicts-llm-confidence-from-generations-alone]] : Finetuning a separate small auxiliary model on the target LLM's input question and generated answer text alone (no logits, sequence likelihoods, or hidden state
 - [[backtracking-ablation-drops-calibration]] : Ablation that removes backtracking and alternative-exploration moves from the chain-of-thought, linearizing the reasoning trace **decreases** expected-calibrati
+- [[base-confab-propensity-direction-reads-held-out-without-training]] : Fitting the AL confabulation-propensity recipe (L24 PCA-128 randomized seed 20260705, standardize, L35-caution-residualize, mean-diff confab-vs-unanswerable-ref
 - [[base-model-entity-recognition-direction-transfers-to-chat-refusal]] : Steering the chat model with entity-recognition directions extracted from sparse autoencoders trained only on the base model. **enables** The chat model's refus
 - [[behavior-underdetermines-motivation]] : Observing a single concerning agentic action (a workaround, a deception, a sandbag) without further investigation of why it occurred. **mediates** The underlyin
 - [[benign-finetuning-suppresses-emergent-misalignment]] : Fine-tuning an emergent-misalignment|emergently misaligned model on approximately 120 benign samples (35 steps, batch size 4), whether drawn from an in-distribu
@@ -844,6 +845,7 @@ Atomic notes extracted from the library papers via the Agents-K1 ingestion skill
 - [[instruction-tuning-induces-calibration-collapse]] : Instruction tuning (SFT on instruction-following data or chat-style pairs) applied to a base pretrained model on tasks requiring structured reasoning **increase
 - [[internal-doubt-degrades-fabrication-specificity]] : Higher pre-generation doubt-trunk projection on questions where the model nevertheless commits to answering an unanswerable question. **decreases** The resultin
 - [[j-lens-vector-swap-redirects-verbal-report]] : Swapping a concept's J-lens vector for a different concept's J-lens vector at a matched layer of the residual stream **enables** the model's verbalized top-5 ou
+- [[j-space-mediated-actuation-fragility]] : Epistemic residual directions are read from or written at sites outside the model's workspace-like J-space band; in Qwen3-4B, L34/hs34 sits after the hs=23-29 J
 - [[joint-selection-head-training-lowers-selective-risk]] : Training a selection (reject-option) head jointly with the predictor under a selective loss with an explicit target-coverage constraint, rather than thresholdin
 - [[knowledge-circuit-isolation-preserves-performance]] : Using only the sparse knowledge circuit subgraph (less than 10% of full graph) in isolation **enables** Model maintains more than 70% of its original factual-re
 - [[knowledge-conflict-induces-abstention]] : Presenting an LLM with alternative answers and supporting passages that conflict with its parametric knowledge **enables** LLMs that are swayed by conflicting i
@@ -957,6 +959,8 @@ Atomic notes extracted from the library papers via the Agents-K1 ingestion skill
 - [[proper-scoring-sft-calibration-transfers-to-unseen-confidence-formats]] : Fine-tuning on numerical verbalized confidence (0-100%) using a proper scoring rule (tokenized Brier score) **enables** The resulting calibration transfers to l
 - [[question-difficulty-alone-predicts-llm-confidence]] : Training the auxiliary calibrator on the question text only, with the LLM's generated answer omitted. **enables** The calibrator already attains respectable cal
 - [[question-familiarity-draws-confabulation-at-matched-doubt]] : Higher surface familiarity of an unanswerable question (corpus-internal token frequency and neighbor proxies), with internal doubt level held fixed by caution-d
+- [[qwen35-batch-composition-flips-greedy-decode-outcomes]] : On Qwen3.5 (bf16), running greedy-decoding generation with per-row activation-intervention arms in a larger batch (16 or 32 rows) instead of a validated smaller
+- [[qwen35-late-site-entangles-refusal-and-format-collapse]] : On Qwen/Qwen3.5-4B and Qwen/Qwen3.5-9B (bf16, hybrid linear-attention architecture), applying the doubt-gated caution erase-write snap at the registered late wr
 - [[rag-supervision-induces-hallucination-via-unfamiliar-knowledge]] : Fine-tuning a pre-trained LLM on responses generated by a retrieval-augmented model (or on human-authored responses containing facts beyond the model's parametr
 - [[rank1-projection-sufficient-for-linear-concept-erasure]] : Applying a rank-1 orthogonal projection (removing a single direction found by rlace) to GloVe or BERT representations **enables** Any linear classifier's gender
 - [[rdo-reduces-capability-side-effects]] : Optimising a refusal-direction-optimization direction with an explicit retain loss (KL penalty on safe-prompt behaviour) rather than using directional-ablation 
@@ -968,6 +972,7 @@ Atomic notes extracted from the library papers via the Agents-K1 ingestion skill
 - [[refusal-directions-are-geometrically-distinct]] : Different refusal and non-compliance categories are represented in activation space. **complicates** A single refusal-direction account can be incomplete across
 - [[refusal-threshold-varies-by-unanswerability-flavor]] : Regressing refuse/answer behavior on caution boundary distance jointly with unanswerability flavor (942 eligible generations, instruction-tuned checkpoint on th
 - [[refusal-tuning-fails-to-generalize-across-hallucination-types]] : UHs occupy a common activation subspace across different subjects (because they share weak subject-information propagation), while AHs have diverse, subject-spe
+- [[refused-vs-known-contrast-carries-norm-position-confound]] : At the final-prompt-token anchor position, the refused-vs-known (doubt) contrast is not cleanly axis-specific: in jspace-family-atlas's post-hoc random-directio
 - [[relative-framing-unlocks-linear-probing]] : Framing board state relative to the current player (Mine/Yours/Empty) rather than absolute colour (Black/White/Empty) **increases** Linear probes achieve approx
 - [[repind-directions-are-input-accessible]] : GCG adversarial suffix optimisation with an added loss term penalising representation of RepInd-1 in residual-stream activations **enables** Suffixes reduce cos
 - [[representation-engineering-enables-reading-and-control]] : Population-level representation-engineering methods identify and manipulate high-level model representations. **enables** Model-internal states can be read or c
@@ -1046,6 +1051,7 @@ Atomic notes extracted from the library papers via the Agents-K1 ingestion skill
 - [[sparsity-penalty-promotes-feature-composition]] : L0/L1 sparsity penalty in sparse-autoencoder training combined with increased dictionary size **enables** Larger SAE latents encode compositions of multiple sma
 - [[specification-gaming-curriculum-generalizes-to-reward-tampering]] : Training an LLM assistant on a curriculum of increasingly sophisticated gameable environments, starting with sycophancy and progressing through data falsificati
 - [[static-conflict-degrades-rait-calibration]] : Correctness-only data construction assigns opposite labels (vanilla vs IdK) to semantically similar samples that are nearby in the model's representation space 
+- [[steering-dose-windows-are-absolute-not-sigma-transferable]] : A caution-direction write dose is calibrated as an absolute registered grid on one model checkpoint (Qwen3-4B, where the grid sits at a normal working sigma-dis
 - [[steering-vector-steerability-is-high-variance-and-sign-unstable]] : Applying a contrastive-activation-addition steering vector across the inputs of a behavior dataset. **prevents** Per-input steerability varies widely within and
 - [[subject-enrichment-required-for-attribute-extraction]] : Patching (replacing) early subject representations before they are enriched **decreases** Attribute extraction rate decreases by up to 50%, demonstrating that t
 - [[superposition-causes-polysemanticity]] : Neural networks representing more features than dimensions (superposition) by storing features as non-orthogonal directions **enables** Individual neurons activ
@@ -1087,6 +1093,7 @@ Atomic notes extracted from the library papers via the Agents-K1 ingestion skill
 - [[verification-advantage-over-generation]] : Increasing language model parameter count (800M to 52B) while evaluating P(True) self-evaluation on sampling-based tasks at unit temperature **increases** The g
 - [[veto-saturates-by-first-visible-token]] : Reading the post-generation correctness/veto axis at token granularity across the answer window (first visible token through answer end, veto axis refit per pos
 - [[within-sample-correlation-symmetry-limits-probability-voting]] : Within-sample log-probability/correctness correlations distributed symmetrically around zero across diverse benchmarks **decreases** Reliability of probability-
+- [[workspace-band-peak-location-is-family-relative]] : On two non-Qwen instruction-tuned families captured full-depth (Llama-3.2-3B-Instruct, Mistral-7B-Instruct-v0.3; jspace-family-atlas), the per-layer eff_dim_fra
 
 ## Gaps (verified literature absences) (1)
 

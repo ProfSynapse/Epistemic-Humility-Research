@@ -48,6 +48,6 @@ relationships:
 
 An inference-time method for estimating intrinsic confidence at each step of a reasoning trace by sampling k continuations conditioned on each step-prefix rather than on the full trace. Uses k=10 continuations of up to 200 tokens per step, subsampling at most 20 steps per trace while always retaining the first and last step. The resulting distribution over continuations approximates the model's local uncertainty at each reasoning step while controlling for the conditional dependencies that accumulate across a long chain-of-thought.
 
-**Why it matters here:** Addresses the core technical challenge of measuring intrinsic confidence in long chain-of-thought outputs, where strong autoregressive dependencies between steps make end-of-trace token probabilities a poor proxy for genuine uncertainty. Directly applicable to any Phase 1 or Phase 3 evaluation that reads confidence off Qwen3 CoT outputs.
+**Why it matters here:** Addresses the core technical challenge of measuring intrinsic confidence in long chain-of-thought outputs, where strong autoregressive dependencies between steps make end-of-trace token probabilities a poor proxy for genuine uncertainty. Directly applicable to any locked training-regimen or mechanism program evaluation that reads confidence off Qwen3 CoT outputs.
 
 **Lineage:** Introduced in Gani et al. 2026 (arXiv:2606.03969) to support their faithful calibration framework for large reasoning models.

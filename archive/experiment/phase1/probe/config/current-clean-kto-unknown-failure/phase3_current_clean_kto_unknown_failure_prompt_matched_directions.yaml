@@ -1,0 +1,46 @@
+spec:
+  name: phase3_current_clean_kto_unknown_failure_prompt_matched_directions
+  analysis_type: phase3_behavior_axis_direction_export
+  notice: BEHAVIOR_AXIS_DIRECTION_CANDIDATES_ONLY_CLEAN_KTO_UNKNOWN_FAILURE_PROMPT_MATCHED_PANEL
+
+source_scan_config: archive/experiment/phase1/probe/config/current-clean-kto-unknown-failure/phase3_current_clean_kto_unknown_failure_prompt_matched_behavior_axis_scan.yaml
+
+axes:
+  - label: clean_sft_kto_pm_delta_unknown_wrong_vs_refused_l11_normed
+    extraction_label: clean_sft_kto_seed1_unknown_failure_prompt_matched_panel
+    behavior_arm: clean_sft_kto
+    arm: clean_sft_kto
+    role: delta
+    layer: 11
+    contrast: unknown_answered_wrong_vs_unknown_refused
+    transform_method: unit_rescale_to_norm
+    target_norm: 1.2142820358276367
+    metadata:
+      selection_reason: strongest prompt-matched KTO delta unknown-answering failure separation
+
+  - label: clean_sft_kto_pm_delta_unknown_wrong_vs_refused_l10_normed
+    extraction_label: clean_sft_kto_seed1_unknown_failure_prompt_matched_panel
+    behavior_arm: clean_sft_kto
+    arm: clean_sft_kto
+    role: delta
+    layer: 10
+    contrast: unknown_answered_wrong_vs_unknown_refused
+    transform_method: unit_rescale_to_norm
+    target_norm: 1.2142820358276367
+    metadata:
+      selection_reason: nearby prompt-matched KTO delta unknown-answering failure separation
+
+  - label: clean_sft_kto_pm_delta_unknown_wrong_vs_refused_l12_normed
+    extraction_label: clean_sft_kto_seed1_unknown_failure_prompt_matched_panel
+    behavior_arm: clean_sft_kto
+    arm: clean_sft_kto
+    role: delta
+    layer: 12
+    contrast: unknown_answered_wrong_vs_unknown_refused
+    transform_method: unit_rescale_to_norm
+    target_norm: 1.2142820358276367
+    metadata:
+      selection_reason: nearby prompt-matched KTO delta unknown-answering failure separation
+
+output:
+  root: experiment/phase1/probe/analysis/current_clean_kto_unknown_failure_prompt_matched_directions

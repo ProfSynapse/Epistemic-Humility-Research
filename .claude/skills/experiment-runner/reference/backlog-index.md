@@ -5,9 +5,9 @@ open work. It has two parts, and the split is what keeps it cheap to maintain:
 
 1. **Amendment status index** — GENERATED. A fenced block
    (`<!-- BEGIN GENERATED: amendment-index ... -->` … `<!-- END GENERATED: ... -->`)
-   built by `bin/build_backlog_index.py` from the `Status:` line of every
-   `experiment/protocol/AMENDMENT-*.md`, plus any `## 8. Result` / `### Verdict`
-   verdict the doc declares. Never hand-edit inside the fence.
+   built by `bin/build_backlog_index.py` from the `status:` field of each
+   `experiments/<slug>/experiment.yaml`, plus any `## 8. Result` / `### Verdict`
+   verdict the co-located `AMENDMENT.md` declares. Never hand-edit inside the fence.
 2. **Prioritized backlog** — HAND-CURATED prose below the fence. One line per
    item: what/why, tier (A = amendment / L = lab-notebook / P = paper-infra),
    blocker, cost (CPU / GPU / cloud). Survives regeneration.

@@ -43,7 +43,7 @@ instrument:
     smoke_tuner_path.py: 7e412e7b3ffeb71b52b56cb3ec84089f80127192c3e169dcb1ece2dff90fc4c1
     gen_lib.py: 6cffc7282591ca3b0db79d985a024ca2b63cab8afc1c5f5085d13cbdb98b79ce
     grader.py: ab0dea1c3efc841e943fccf8f5830c92715fac413e8ac80b2dbd72b113e6e2b3
-    render.py: 95169ec4698fc28d08eb947e37d0f1021a8f418b8a6fcaa530cec88f639c457b
+    render.py: a5a0b243ea20e70ae62d081fbcdca17f0c298a0a6878ff5698e7752ef3434876
 inputs: []
 verdict: 'not promoted: all four launched cells stopped at the registered pre-outcome
   FIT dose-viability rule at the 0.94-depth write site (peaks 0.326/0.184/0.000 small

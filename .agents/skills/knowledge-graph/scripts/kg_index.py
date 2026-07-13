@@ -442,7 +442,7 @@ def memory_labels_for_path(rel: str, kind: str) -> list[tuple[str, float]]:
         labels.append(("procedural", 0.95))
     if rel.startswith("library/"):
         labels.append(("semantic", 0.9))
-    if rel.startswith("experiment/protocol/") or "protocol" in parts or rel in {"LICENSE", "CONTRIBUTING.md"}:
+    if rel.startswith("experiment/protocol/") or rel.startswith("docs/protocols/") or "protocol" in parts or "protocols" in parts or rel in {"LICENSE", "CONTRIBUTING.md"}:
         labels.append(("normative", 0.9))
     if "run_records" in parts or rel.startswith("docs/review/") or rel.startswith("docs/sessions/"):
         labels.append(("episodic", 0.85))

@@ -241,6 +241,21 @@ in `experiment.yaml`.
   with this amendment's G0/G1/G2/G3 outcomes or with the cross-family headline
   gate in `gates.yaml`.
 
+- 2026-07-10 (render hygiene fix): Pre-launch hygiene fix per the 2026-07-10
+  anchor-audit entry's pre-commitment: `render.py` now ports the exploratory
+  pipeline's loud `assert_no_think_scaffolding` self-check and makes every
+  chat-template kwarg fallback log explicitly instead of being swallowed by a
+  bare `except Exception: continue`. If a chat template silently ignores the
+  thinking-off pin, the self-check now fails hard before rows are
+  contaminated; if the preferred `enable_thinking=False` surface is rejected
+  and the code falls back to `chat_template_kwargs` or a bare no-kwarg
+  render, the fallback is printed once per (model, mode) instead of being
+  silent. No change to model selection, rows, generation settings, steering,
+  gates, scoring, or dose selection. Qwen cells' committed results are
+  unaffected: the audit verified byte-identical renders, and the fix only
+  changes behavior on a fallback/leak path that the Qwen3.5 tokenizer does
+  not take. `render.py`'s pin in `experiment.yaml` refreshed to match.
+
 - 2026-07-10 (anchor audit): Read-only audit of anchor placement on both
   Qwen3.5 cells, the last unchecked harness surface behind the no-window
   nulls. Verdict: CONFIRMS, no confound. (1) Structural: under

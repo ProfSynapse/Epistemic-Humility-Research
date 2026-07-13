@@ -88,7 +88,7 @@ MODEL_BF16 = "unsloth/Qwen3-4B"  # bf16 sibling of the bnb-4bit raw-base
 MODEL_BNB4BIT_RAW_BASE = "unsloth/Qwen3-4B-bnb-4bit"  # for provenance notes only
 
 # Private HF dataset repo the AH/AK Stage-1 question pool is staged to (same
-# repo/pattern experiment/phase1/probe/cloud/modal_ak_stage1.py fetches from
+# repo/pattern experiments/commitment-point/cloud/modal_ak_stage1.py fetches from
 # for its own pool). This is the ONLY source of the source pool now -- no
 # question text is committed to this public repo (see
 # analysis-committed/corpus/PROVENANCE.md); both local and Modal runs fetch
@@ -421,7 +421,7 @@ def fetch_source_pool() -> Path:
     this experiment's corpus -- no question text is committed to this
     public repo (see analysis-committed/corpus/PROVENANCE.md). Requires
     HF_TOKEN in the environment; huggingface_hub reads it automatically
-    (same pattern as experiment/phase1/probe/cloud/modal_ak_stage1.py's own
+    (same pattern as experiments/commitment-point/cloud/modal_ak_stage1.py's own
     pool fetch). Returns the local (huggingface_hub-cached) path."""
     from huggingface_hub import hf_hub_download
 

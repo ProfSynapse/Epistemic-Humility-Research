@@ -39,7 +39,7 @@ estimates, and Multisample averages accuracy across several independent samples.
 
 **Why it matters here:** Honesty-oriented SFT is the primary baseline method in
 the alignment-for-honesty framework and represents one end of the training
-spectrum the Phase 1 study extends with preference-optimization alternatives
+spectrum the locked training-regimen study extends with preference-optimization alternatives
 ([[direct-preference-optimization]] and [[kahneman-tversky-optimization]]). Its
 success establishes that the expected-accuracy signal alone can teach
 [[abstention]], but also reveals the [[over-abstention]] failure mode the study

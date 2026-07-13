@@ -2,13 +2,13 @@
 
 _Updated 2026-07-08. Replaces the stale 2026-06-10/06-30 versions. Every claim traces
 to a protocol doc; nothing is invented. The original Phases 1–4 plan (staged design) is
-preserved in `experiment/protocol/research-trajectory.md`._
+preserved in `archive/docs/protocol/research-trajectory.md`._
 
 ---
 
 ## Through-line
 
-The program trained abstention (Phase 1 SFT/DPO/KTO/GRPO, Paper 2), then found a
+The program trained abstention (locked training-regimen SFT/DPO/KTO/GRPO, Paper 2), then found a
 persistent internal-vs-stated gap: hidden states encode answerability clearly (AUROC
 0.997) while emitted confidence stays decoupled and training-resistant (Paper 3).
 The pivot: stop trying to wire the channel through training and instead READ the axis
@@ -32,7 +32,7 @@ Pipeline on `main` (PR #1). SFT-warmed DPO/KTO/GRPO on Qwen3-4B controlled withi
 Cold-start arms failed (3 seeds). Training moves behavioral refusal; the
 abstention-calibration tension holds across all methods. GRPO variants (Amendments
 B/F/J/K/L/M/N) are SIGNED; most untested relative to the readout arc.
-Draft: `paper2-training-regimen-draft-v2.md`. Figures: `fig-p1-*` (legacy prefix).
+Draft: `papers/paper-2-training-regimen/manuscript.md`. Figures: `fig-p1-*` (legacy prefix).
 
 ---
 
@@ -42,15 +42,15 @@ Internal axis encodes answerability at AUROC 0.997, transfers cross-dataset cold
 (Amendment P: KUQ→SelfAware 0.983), and predates post-training (Amendment Y: present on
 the pre-trained base). Stated confidence stays decoupled. Training-resistance is the
 headline: DPO/KTO/GRPO/contrastive-SFT/proper-scoring all fail to couple the channel
-(Amendments M/R FALSIFIED; Phase B joint co-training FALSIFIED). Behavioral abstention
+(Amendments M/R FALSIFIED; aux-head joint co-training FALSIFIED). Behavioral abstention
 is installable; accurate emitted confidence is not. §7–8 absorption (proper-scoring,
 contrastive, RL-on-contrastive depth) DONE via PR #151; Amendment Y now cited for the
 "paid for by pretraining" claim; data availability lists the published HF releases.
 Citation-gap audit (2026-07-04) wove 34 missed citations into §2/§3/§7/§8 and
 compiled the 43-entry bibliography from the KG (inline↔list verified 1:1).
 Remaining before submission: the provenance reconciliation pass against
-`results-provenance-inventory.md`.
-Draft: `paper3-knows-but-doesnt-say-draft-v0.md`. Figures: `fig-p2-*` (legacy prefix,
+`archive/papers/retired/results-provenance-inventory.md`.
+Draft: `papers/paper-3-knows-but-doesnt-say/manuscript.md`. Figures: `fig-p2-*` (legacy prefix,
 all five built).
 
 ---
@@ -82,7 +82,7 @@ Three orthogonal linear probes compose a two-stage trust pipeline on the raw bas
 
 Amendment trail: O/P/Q (ceiling + engine) → S/T (correctness readout) → U (veto) →
 Stage-1.5 (orthogonality) → W/X/Z/SR (training-free + generalization).
-Draft: `paper4-two-signal-readout-draft-v0.md`. Figures: `fig-p3-*` (legacy prefix).
+Draft: `papers/paper-4-two-signal-readout/manuscript.md`. Figures: `fig-p3-*` (legacy prefix).
 Remaining: traceability appendix + six figures (backlog item 14).
 
 ---
@@ -159,7 +159,7 @@ This project's L34 direction layer maps to hs=34, just after that band. Interpre
 the result does not prove J-space writes will work, but it gives a concrete layer-site
 hypothesis for the readout-portable/write-fragile split. Sources:
 `experiments/j-space-localization-qwen3-4b/AMENDMENT.md`,
-`docs/sessions/0043 - j-space-j-lens-r1-findings.md`, and
+`docs/sessions/20260707T224240Z-j-space-j-lens-r1-findings.md`, and
 `library/concepts/mechanisms/j-space-mediated-actuation-fragility.md`.
 
 **J-space dose calibration (RESOLVED exploratory FIT-only calibration,
@@ -174,7 +174,7 @@ unusable. This is still FIT-only calibration evidence; held-out mid-band
 superiority remains untested. Sources:
 `experiments/j-space-midband-dose-calibration-qwen3-4b/AMENDMENT.md`,
 `experiments/j-space-midband-dose-calibration-qwen3-4b/analysis-committed/dose_calibration_summary.json`,
-and `experiment/notes/j-space-midband-dose-calibration-qwen3-4b.md`.
+and `experiments/j-space-midband-dose-calibration-qwen3-4b/RUNBOOK.md`.
 
 **J-space calibrated layer contrast (RESOLVED exploratory pass, 2026-07-08):**
 the held-out causal test `j-space-calibrated-layer-contrast-qwen3-4b` passed on
@@ -219,11 +219,11 @@ retroactive goalpost shift for this result.
 
 | Paper | Scope | Draft |
 |-------|-------|-------|
-| P1 | Taxonomy / C1–C5 / policy-vs-signal framework | `paper1-taxonomy-framework-draft-v0.md` |
-| P2 | Training regimen (SFT/DPO/KTO/GRPO) | `paper2-training-regimen-draft-v2.md` |
-| P3 | "Knows but Doesn't Say" — internal gap + training-resistance | `paper3-knows-but-doesnt-say-draft-v0.md` |
-| P4 | Two-signal readout (training-free, cross-size/-family/-seed) | `paper4-two-signal-readout-draft-v0.md` |
-| P5 | Steering / actuation | `paper5-actuation-draft-v0.md` |
+| P1 | Taxonomy / C1–C5 / policy-vs-signal framework | `papers/paper-1-taxonomy-framework/manuscript.md` |
+| P2 | Training regimen (SFT/DPO/KTO/GRPO) | `papers/paper-2-training-regimen/manuscript.md` |
+| P3 | "Knows but Doesn't Say" — internal gap + training-resistance | `papers/paper-3-knows-but-doesnt-say/manuscript.md` |
+| P4 | Two-signal readout (training-free, cross-size/-family/-seed) | `papers/paper-4-two-signal-readout/manuscript.md` |
+| P5 | Steering / actuation | `papers/paper-5-actuation/manuscript.md` |
 
 Figure/script prefixes are legacy (`fig-p1-*` = Paper 2, `fig-p2-*` = Paper 3,
 `fig-p3-*` = Paper 4). Amendment labels stay out of paper prose; traceability lives in

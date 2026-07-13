@@ -9,7 +9,7 @@ Read for live eval, prompt/output contracts, scorer drift, and post-eval sanity 
   writing rows or the backend suppression path is fixed. Do not strip tags and
   continue.
 
-- For Phase 1 eval generation, prompt rendering with thinking disabled is not
+- For locked training-regimen eval generation, prompt rendering with thinking disabled is not
   sufficient by itself. When `generation.enable_thinking: false`, vLLM
   `SamplingParams` receives `<think>` and `</think>` stop strings while
   preserving any configured `generation.stop` values. The generated-thinking
@@ -47,8 +47,8 @@ Read for live eval, prompt/output contracts, scorer drift, and post-eval sanity 
   as label-noise/conservative measurement, and only broaden scoring behind a
   governed amendment with before/after sensitivity reporting.
 
-- Phase 1 local eval now has an opt-in live vLLM path:
-  `python experiment/phase1/eval/run_eval.py --config <scoped-config.yaml>
+- locked training-regimen local eval now has an opt-in live vLLM path:
+  `python archive/experiment/phase1/eval/run_eval.py --config <scoped-config.yaml>
   --live-vllm`. Default fixture behavior is unchanged. The live config must use
   explicit `model_name` for the loadable HF/vLLM repo id and `model_tag` only as
   the reporting label. Use scoped same-model configs first; base/SFT/DPO and

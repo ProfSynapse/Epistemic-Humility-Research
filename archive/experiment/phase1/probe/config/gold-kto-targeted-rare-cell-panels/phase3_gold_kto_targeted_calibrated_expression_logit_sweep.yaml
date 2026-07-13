@@ -1,0 +1,66 @@
+# Targeted gold-backed KTO calibrated-expression logit diagnostic.
+#
+# Tests simple behavior-axis controls from the enriched 448-row panel. This is
+# the causal triage gate before any generated-answer replay.
+sweep:
+  name: phase3_gold_kto_targeted_calibrated_expression_logit_sweep
+  evidence_tier: tier2_exploratory_local
+  runner_config: archive/experiment/phase1/probe/config/causal-pilot-core/phase3_causal_pilot_gpu_smoke.yaml
+  candidate_source_config: archive/experiment/phase1/probe/config/gold-kto-targeted-rare-cell-panels/phase3_gold_kto_targeted_calibrated_expression_logit_candidates.yaml
+  output_root: experiment/phase1/probe/qwen3-4b-instruct/causal_pilots/phase3_gold_kto_targeted_calibrated_expression_logit_sweep
+  candidates:
+    - gold_kto_targeted_h_lora_known_refused_vs_correct_l27
+    - gold_kto_targeted_h_lora_unknown_wrong_vs_refused_l27
+    - gold_kto_targeted_delta_known_refused_vs_correct_l34
+    - gold_kto_targeted_delta_unknown_wrong_vs_refused_l34
+  execution:
+    backend: docker
+    docker:
+      image: unsloth/unsloth:latest
+      repo_mount: /workspace/repo
+      workdir: /workspace/repo
+      hf_home: /workspace/repo/.cache/hf
+      huggingface_hub_cache: /workspace/repo/.cache/hf/hub
+  runner_overrides:
+    readiness_checks:
+      require_extraction_manifest:
+        row_count: 448
+        label_counts:
+          known: 224
+          unknown: 224
+    selection:
+      probe_results: experiment/phase1/probe/qwen3-4b-instruct/probe_results.jsonl
+      row_keys_file: experiment/phase1/probe/qwen3-4b-instruct/gold_behavior_panels/phase3_gold_kto_targeted_behavior_panel/row_keys/calibrated_expression_four_cell_available_row_keys.txt
+    control_settings:
+      wrong_layer:
+        layer_offsets: [-2, -1]
+      random_matched_norm:
+        seeds:
+          - 20260620
+    logit_targets:
+      groups:
+        - name: refusal_openers
+          source: static_strings
+          strings:
+            - I
+            - Sorry
+            - I don't
+          include_leading_space_variants: true
+          include_multi_token_first_token: true
+        - name: answer_aliases
+          source: row_aliases
+          include_leading_space_variants: true
+          include_multi_token_first_token: false
+  modes:
+    - name: logit_diagnostic
+      max_rows: 124
+      coefficients:
+        - 25.0
+        - 50.0
+      controls:
+        - no_vector_baseline
+        - activation_addition
+        - activation_subtraction
+        - wrong_layer
+        - wrong_layer_subtraction
+        - random_matched_norm

@@ -54,6 +54,6 @@ relationships:
 
 A single-parameter post-hoc calibration method that divides a classifier's logit vector by a learned scalar T before the softmax, optimizing T on a held-out validation set by minimizing NLL. T > 1 softens the distribution (reduces overconfidence); T = 1 recovers the original probabilities. Class predictions are unchanged because T does not affect the argmax.
 
-**Why it matters here:** Temperature scaling is the dominant post-hoc calibration baseline in the literature and the cheapest recovery step after training-induced miscalibration. Any Phase 1 arm that worsens ECE should be compared against what a simple temperature rescale achieves, to separate training-time versus inference-time fixes.
+**Why it matters here:** Temperature scaling is the dominant post-hoc calibration baseline in the literature and the cheapest recovery step after training-induced miscalibration. Any locked training-regimen arm that worsens ECE should be compared against what a simple temperature rescale achieves, to separate training-time versus inference-time fixes.
 
 **Lineage:** Introduced as 'temperature scaling' by Guo et al. (arXiv:1706.04599) as the simplest extension of Platt scaling to multi-class problems; related to knowledge distillation temperature (Hinton et al. 2015) and statistical-mechanics softmax. Recovered by [[verbalized-prob-generalizes-logit-overfits-distribution-shift]] as the logit-calibration approach that fails under distribution shift.

@@ -1,0 +1,330 @@
+{
+ "llama32_3b_instruct": {
+  "per_layer": {
+   "0": {
+    "ref_vs_known": 0.507,
+    "ref_vs_confab": 0.504,
+    "ref_vs_answered": 0.515
+   },
+   "1": {
+    "ref_vs_known": 0.855,
+    "ref_vs_confab": 0.588,
+    "ref_vs_answered": 0.535
+   },
+   "2": {
+    "ref_vs_known": 0.54,
+    "ref_vs_confab": 0.551,
+    "ref_vs_answered": 0.526
+   },
+   "3": {
+    "ref_vs_known": 0.551,
+    "ref_vs_confab": 0.554,
+    "ref_vs_answered": 0.553
+   },
+   "4": {
+    "ref_vs_known": 0.837,
+    "ref_vs_confab": 0.605,
+    "ref_vs_answered": 0.517
+   },
+   "5": {
+    "ref_vs_known": 0.936,
+    "ref_vs_confab": 0.534,
+    "ref_vs_answered": 0.645
+   },
+   "6": {
+    "ref_vs_known": 0.765,
+    "ref_vs_confab": 0.524,
+    "ref_vs_answered": 0.591
+   },
+   "7": {
+    "ref_vs_known": 0.536,
+    "ref_vs_confab": 0.535,
+    "ref_vs_answered": 0.535
+   },
+   "8": {
+    "ref_vs_known": 0.719,
+    "ref_vs_confab": 0.509,
+    "ref_vs_answered": 0.554
+   },
+   "9": {
+    "ref_vs_known": 0.641,
+    "ref_vs_confab": 0.549,
+    "ref_vs_answered": 0.574
+   },
+   "10": {
+    "ref_vs_known": 0.748,
+    "ref_vs_confab": 0.631,
+    "ref_vs_answered": 0.526
+   },
+   "11": {
+    "ref_vs_known": 0.681,
+    "ref_vs_confab": 0.665,
+    "ref_vs_answered": 0.569
+   },
+   "12": {
+    "ref_vs_known": 0.529,
+    "ref_vs_confab": 0.564,
+    "ref_vs_answered": 0.554
+   },
+   "13": {
+    "ref_vs_known": 0.713,
+    "ref_vs_confab": 0.558,
+    "ref_vs_answered": 0.517
+   },
+   "14": {
+    "ref_vs_known": 0.654,
+    "ref_vs_confab": 0.674,
+    "ref_vs_answered": 0.583
+   },
+   "15": {
+    "ref_vs_known": 0.766,
+    "ref_vs_confab": 0.668,
+    "ref_vs_answered": 0.548
+   },
+   "16": {
+    "ref_vs_known": 0.884,
+    "ref_vs_confab": 0.645,
+    "ref_vs_answered": 0.502
+   },
+   "17": {
+    "ref_vs_known": 0.863,
+    "ref_vs_confab": 0.665,
+    "ref_vs_answered": 0.519
+   },
+   "18": {
+    "ref_vs_known": 0.813,
+    "ref_vs_confab": 0.687,
+    "ref_vs_answered": 0.549
+   },
+   "19": {
+    "ref_vs_known": 0.773,
+    "ref_vs_confab": 0.716,
+    "ref_vs_answered": 0.581
+   },
+   "20": {
+    "ref_vs_known": 0.795,
+    "ref_vs_confab": 0.705,
+    "ref_vs_answered": 0.567
+   },
+   "21": {
+    "ref_vs_known": 0.675,
+    "ref_vs_confab": 0.644,
+    "ref_vs_answered": 0.555
+   },
+   "22": {
+    "ref_vs_known": 0.884,
+    "ref_vs_confab": 0.634,
+    "ref_vs_answered": 0.509
+   },
+   "23": {
+    "ref_vs_known": 0.819,
+    "ref_vs_confab": 0.57,
+    "ref_vs_answered": 0.538
+   },
+   "24": {
+    "ref_vs_known": 0.97,
+    "ref_vs_confab": 0.571,
+    "ref_vs_answered": 0.579
+   },
+   "25": {
+    "ref_vs_known": 0.956,
+    "ref_vs_confab": 0.532,
+    "ref_vs_answered": 0.603
+   },
+   "26": {
+    "ref_vs_known": 0.597,
+    "ref_vs_confab": 0.507,
+    "ref_vs_answered": 0.532
+   },
+   "27": {
+    "ref_vs_known": 0.516,
+    "ref_vs_confab": 0.516,
+    "ref_vs_answered": 0.507
+   },
+   "28": {
+    "ref_vs_known": 0.699,
+    "ref_vs_confab": 0.643,
+    "ref_vs_answered": 0.658
+   }
+  },
+  "max_ref_vs_answered": {
+   "ref_vs_known": 0.699,
+   "ref_vs_confab": 0.643,
+   "ref_vs_answered": 0.658
+  }
+ },
+ "mistral7b_instruct_v03": {
+  "per_layer": {
+   "0": {
+    "ref_vs_known": 0.693,
+    "ref_vs_confab": 0.687,
+    "ref_vs_answered": 0.691
+   },
+   "1": {
+    "ref_vs_known": 0.554,
+    "ref_vs_confab": 0.542,
+    "ref_vs_answered": 0.521
+   },
+   "2": {
+    "ref_vs_known": 0.505,
+    "ref_vs_confab": 0.504,
+    "ref_vs_answered": 0.504
+   },
+   "3": {
+    "ref_vs_known": 0.657,
+    "ref_vs_confab": 0.577,
+    "ref_vs_answered": 0.595
+   },
+   "4": {
+    "ref_vs_known": 0.588,
+    "ref_vs_confab": 0.571,
+    "ref_vs_answered": 0.535
+   },
+   "5": {
+    "ref_vs_known": 0.503,
+    "ref_vs_confab": 0.556,
+    "ref_vs_answered": 0.544
+   },
+   "6": {
+    "ref_vs_known": 0.551,
+    "ref_vs_confab": 0.54,
+    "ref_vs_answered": 0.543
+   },
+   "7": {
+    "ref_vs_known": 0.589,
+    "ref_vs_confab": 0.58,
+    "ref_vs_answered": 0.542
+   },
+   "8": {
+    "ref_vs_known": 0.967,
+    "ref_vs_confab": 0.57,
+    "ref_vs_answered": 0.551
+   },
+   "9": {
+    "ref_vs_known": 0.916,
+    "ref_vs_confab": 0.573,
+    "ref_vs_answered": 0.65
+   },
+   "10": {
+    "ref_vs_known": 0.973,
+    "ref_vs_confab": 0.515,
+    "ref_vs_answered": 0.619
+   },
+   "11": {
+    "ref_vs_known": 0.953,
+    "ref_vs_confab": 0.558,
+    "ref_vs_answered": 0.647
+   },
+   "12": {
+    "ref_vs_known": 0.91,
+    "ref_vs_confab": 0.586,
+    "ref_vs_answered": 0.659
+   },
+   "13": {
+    "ref_vs_known": 0.768,
+    "ref_vs_confab": 0.599,
+    "ref_vs_answered": 0.637
+   },
+   "14": {
+    "ref_vs_known": 0.789,
+    "ref_vs_confab": 0.655,
+    "ref_vs_answered": 0.685
+   },
+   "15": {
+    "ref_vs_known": 0.821,
+    "ref_vs_confab": 0.724,
+    "ref_vs_answered": 0.746
+   },
+   "16": {
+    "ref_vs_known": 0.642,
+    "ref_vs_confab": 0.612,
+    "ref_vs_answered": 0.619
+   },
+   "17": {
+    "ref_vs_known": 0.595,
+    "ref_vs_confab": 0.62,
+    "ref_vs_answered": 0.615
+   },
+   "18": {
+    "ref_vs_known": 0.752,
+    "ref_vs_confab": 0.577,
+    "ref_vs_answered": 0.503
+   },
+   "19": {
+    "ref_vs_known": 0.594,
+    "ref_vs_confab": 0.621,
+    "ref_vs_answered": 0.615
+   },
+   "20": {
+    "ref_vs_known": 0.62,
+    "ref_vs_confab": 0.645,
+    "ref_vs_answered": 0.639
+   },
+   "21": {
+    "ref_vs_known": 0.867,
+    "ref_vs_confab": 0.553,
+    "ref_vs_answered": 0.624
+   },
+   "22": {
+    "ref_vs_known": 0.656,
+    "ref_vs_confab": 0.616,
+    "ref_vs_answered": 0.625
+   },
+   "23": {
+    "ref_vs_known": 0.743,
+    "ref_vs_confab": 0.611,
+    "ref_vs_answered": 0.641
+   },
+   "24": {
+    "ref_vs_known": 0.643,
+    "ref_vs_confab": 0.594,
+    "ref_vs_answered": 0.54
+   },
+   "25": {
+    "ref_vs_known": 0.683,
+    "ref_vs_confab": 0.583,
+    "ref_vs_answered": 0.523
+   },
+   "26": {
+    "ref_vs_known": 0.731,
+    "ref_vs_confab": 0.659,
+    "ref_vs_answered": 0.571
+   },
+   "27": {
+    "ref_vs_known": 0.716,
+    "ref_vs_confab": 0.727,
+    "ref_vs_answered": 0.627
+   },
+   "28": {
+    "ref_vs_known": 0.885,
+    "ref_vs_confab": 0.508,
+    "ref_vs_answered": 0.593
+   },
+   "29": {
+    "ref_vs_known": 0.871,
+    "ref_vs_confab": 0.583,
+    "ref_vs_answered": 0.519
+   },
+   "30": {
+    "ref_vs_known": 0.891,
+    "ref_vs_confab": 0.63,
+    "ref_vs_answered": 0.512
+   },
+   "31": {
+    "ref_vs_known": 0.852,
+    "ref_vs_confab": 0.716,
+    "ref_vs_answered": 0.588
+   },
+   "32": {
+    "ref_vs_known": 0.871,
+    "ref_vs_confab": 0.743,
+    "ref_vs_answered": 0.605
+   }
+  },
+  "max_ref_vs_answered": {
+   "ref_vs_known": 0.821,
+   "ref_vs_confab": 0.724,
+   "ref_vs_answered": 0.746
+  }
+ }
+}

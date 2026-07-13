@@ -12,8 +12,7 @@ raw base. It promotes a diagnostic finding from the sibling experiment
 `experiments/two-signal-caution-regulation-instruct` (worktree
 `/home/profsynapse/code/ehr-worktrees/two-signal`, branch
 `exp/two-signal-caution-regulation-instruct`, HEAD `8f277410`; see that
-experiment's `AMENDMENT.md` and its `docs/sessions/0042 -
-two-signal-bf16-pivot-containment-guard-hardening.md` checkpoints
+experiment's `AMENDMENT.md` and its `docs/sessions/20260707T123611Z-two-signal-bf16-pivot-containment-guard-hardening.md` checkpoints
 005-007 for the full trail read before drafting this).
 
 That sibling experiment's original instrument was a two-sensor proportional
@@ -153,7 +152,7 @@ its eval tail):
   Gram-Schmidt), the snap write direction.
 - **Defect fix**: the sibling build's `LogisticRegression(solver="saga", ...)`
   had no `random_state`, so `neg_ctrl`/`c_hat` were not reproducible run to
-  run (confirmed live defect, sibling `docs/sessions/0042` checkpoint
+  run (confirmed live defect, sibling `docs/sessions/20260707T123611Z-two-signal-bf16-pivot-containment-guard-hardening.md` checkpoint
   005-checkpoint "OTHER DEFECTS found"). This build pins
   `random_state=20260707`. `build_directions.py --verify-reproducible` fits
   twice and asserts `u_d`/`pos_ctrl`/`neg_ctrl`/`c_hat` are byte-identical

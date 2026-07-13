@@ -1,0 +1,86 @@
+spec:
+  name: phase3_gold_kto_calibrated_expression_same_layer_axis_directions
+  analysis_type: phase3_behavior_axis_direction_export
+  notice: BEHAVIOR_AXIS_DIRECTION_CANDIDATES_ONLY
+
+source_scan_config: archive/experiment/phase1/probe/config/gold-kto-calibrated-expression/phase3_gold_kto_calibrated_expression_axis_scan.yaml
+
+axes:
+  - label: gold_kto_h_lora_known_refused_vs_correct_l27_normed
+    extraction_label: sft_kto_gold_baseline_full
+    behavior_arm: sft_kto_gold_baseline
+    arm: sft_kto
+    role: h_lora
+    layer: 27
+    contrast: known_refused_vs_known_correct_answered
+    transform_method: unit_rescale_to_norm
+    target_norm: 1.2142820358276367
+  - label: gold_kto_h_lora_unknown_wrong_vs_refused_l27_normed
+    extraction_label: sft_kto_gold_baseline_full
+    behavior_arm: sft_kto_gold_baseline
+    arm: sft_kto
+    role: h_lora
+    layer: 27
+    contrast: unknown_answered_wrong_vs_unknown_refused
+    transform_method: unit_rescale_to_norm
+    target_norm: 1.2142820358276367
+
+  - label: gold_kto_h_lora_known_refused_vs_correct_l28_normed
+    extraction_label: sft_kto_gold_baseline_full
+    behavior_arm: sft_kto_gold_baseline
+    arm: sft_kto
+    role: h_lora
+    layer: 28
+    contrast: known_refused_vs_known_correct_answered
+    transform_method: unit_rescale_to_norm
+    target_norm: 1.2142820358276367
+  - label: gold_kto_h_lora_unknown_wrong_vs_refused_l28_normed
+    extraction_label: sft_kto_gold_baseline_full
+    behavior_arm: sft_kto_gold_baseline
+    arm: sft_kto
+    role: h_lora
+    layer: 28
+    contrast: unknown_answered_wrong_vs_unknown_refused
+    transform_method: unit_rescale_to_norm
+    target_norm: 1.2142820358276367
+
+  - label: gold_kto_h_lora_known_refused_vs_correct_l30_normed
+    extraction_label: sft_kto_gold_baseline_full
+    behavior_arm: sft_kto_gold_baseline
+    arm: sft_kto
+    role: h_lora
+    layer: 30
+    contrast: known_refused_vs_known_correct_answered
+    transform_method: unit_rescale_to_norm
+    target_norm: 1.2142820358276367
+  - label: gold_kto_h_lora_unknown_wrong_vs_refused_l30_normed
+    extraction_label: sft_kto_gold_baseline_full
+    behavior_arm: sft_kto_gold_baseline
+    arm: sft_kto
+    role: h_lora
+    layer: 30
+    contrast: unknown_answered_wrong_vs_unknown_refused
+    transform_method: unit_rescale_to_norm
+    target_norm: 1.2142820358276367
+
+  - label: gold_kto_h_lora_known_refused_vs_correct_l36_normed
+    extraction_label: sft_kto_gold_baseline_full
+    behavior_arm: sft_kto_gold_baseline
+    arm: sft_kto
+    role: h_lora
+    layer: 36
+    contrast: known_refused_vs_known_correct_answered
+    transform_method: unit_rescale_to_norm
+    target_norm: 1.2142820358276367
+  - label: gold_kto_h_lora_unknown_wrong_vs_refused_l36_normed
+    extraction_label: sft_kto_gold_baseline_full
+    behavior_arm: sft_kto_gold_baseline
+    arm: sft_kto
+    role: h_lora
+    layer: 36
+    contrast: unknown_answered_wrong_vs_unknown_refused
+    transform_method: unit_rescale_to_norm
+    target_norm: 1.2142820358276367
+
+output:
+  root: experiment/phase1/probe/qwen3-4b-instruct/behavior_axis_directions/phase3_gold_kto_calibrated_expression_same_layer_axis_directions

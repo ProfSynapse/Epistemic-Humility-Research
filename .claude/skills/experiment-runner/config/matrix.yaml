@@ -1,4 +1,4 @@
-# Phase 1 run matrix — SSOT for the experiment runner.
+# Locked training-regimen run matrix - SSOT for the experiment runner.
 #
 # Location: .claude/skills/experiment-runner/config/matrix.yaml
 # Encodes PROTOCOL.md v0.3 (LOCKED) §3.1 / §3.1a as DATA. The expansion script

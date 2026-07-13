@@ -112,7 +112,7 @@ attributable to the *true* probe value flowing through the new phrasing.
 1. AA-6..8 complete and AA close-out recorded (`amendment_aa_verdict.py` output
    + amendment §7 with the anchor-vs-end confound named).
 2. A signed Tier-2 amendment (this doc promoted to
-   `experiment/protocol/AMENDMENT-<letter>-...md` with the prediction,
+   `experiments/<slug>/AMENDMENT.md` with the prediction,
    falsifier, and gates above locked) — user sign-off required.
 3. Explicit user launch approval for the GPU run(s), naming variant + cells.
 4. Branch discipline: runs land on their own branch off up-to-date `main`

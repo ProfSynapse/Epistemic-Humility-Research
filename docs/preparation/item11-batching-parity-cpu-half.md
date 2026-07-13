@@ -78,7 +78,9 @@ padded key set, RoPE offsets, float reduction order), and at layer 34 of a 4B
 model the residual magnitude is large, so this legitimate batched-vs-unbatched
 numeric noise is integer-scale in bf16. The `SteeringHook` was applying the
 correct per-row alpha at the correct token the whole time — the max component of
-the unit-norm `direction_caution` is only `0.18`, so no per-row-alpha
+the unit-norm `direction_caution` in
+`experiments/diag-item11-batched-steering-equivalence/artifacts/directions/qwen3-4b-grpo-v2/`
+is only `0.18`, so no per-row-alpha
 misassignment (max swap `4*0.18 = 0.72`) could produce a `6.0` divergence; the
 `6.0` was pure model noise, not a steering bug.
 
@@ -100,11 +102,11 @@ New regression tests (`TestGpuEquivalenceCellMethodology`, tiny real bf16 Qwen3,
 no download / no GPU) would have caught it: they assert the delta comparison is
 floor-tight under both padding sides and that the old absolute comparison is
 strictly noisier under bf16 left padding. Runnable without pytest via
-`python experiment/phase1/probe/steering/tests/test_arm_b_batched_parity.py`.
+`python archive/experiment/phase1/probe/steering/tests/test_arm_b_batched_parity.py`.
 
 ## Files changed
-- `experiment/phase1/probe/steering/confidence_steer.py` (SteeringHook: final
+- `archive/experiment/phase1/probe/steering/confidence_steer.py` (SteeringHook: final
   position + per-element alpha; docstring + validation)
-- `experiment/phase1/probe/steering/tests/test_arm_b_batched_parity.py` (new)
-- `experiment/phase1/probe/steering/gpu_equivalence_cell.py` (new, DO-NOT-RUN)
+- `archive/experiment/phase1/probe/steering/tests/test_arm_b_batched_parity.py` (new)
+- `archive/experiment/phase1/probe/steering/gpu_equivalence_cell.py` (new, DO-NOT-RUN)
 - `docs/preparation/item11-batching-parity-cpu-half.md` (this doc)

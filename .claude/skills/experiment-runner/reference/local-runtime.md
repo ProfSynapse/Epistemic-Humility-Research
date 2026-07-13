@@ -2,6 +2,14 @@
 
 Read for Windows/Docker/GPU/local-trainer execution problems and monitor behavior.
 
+**Scope note:** this file is the `tuner.py local-run` training-job lane,
+launched from Windows Python (`py.exe`) against Docker Desktop over an
+npipe. It is a different Docker path from the local `mechinterp` GPU-verb
+lane (`extract`/`steer`/`dose-calibrate` run directly from WSL2 against the
+native `default` Docker context / unix socket). The binding container
+invariant for that lane lives in the `mechinterp-cells` skill's "Local GPU
+runs execute in a pinned container" section, not here.
+
 ## Proven local-run launch command (the one-liner)
 
 A local training cell is launched with a single tuner CLI verb. The proven,
@@ -10,7 +18,7 @@ reproducible invocation (works from WSL or Windows on this dual-boot host):
 ```bash
 # From the synaptic-tuner directory. Use the WINDOWS Python launcher (py.exe),
 # NOT WSL python3, and pass a Windows F:\ path to the materialized recipe.
-py.exe -3.11 tuner.py local-run --job-config 'F:\Code\Epistemic-Humility-Research\experiment\phase1\run_records\materialized_recipes\<recipe>.yaml' --yes
+py.exe -3.11 tuner.py local-run --job-config 'F:\Code\Epistemic-Humility-Research\archive\experiment\phase1\run_records\materialized_recipes\<recipe>.yaml' --yes
 ```
 
 Why `py.exe -3.11` and not `python3`: the tuner shells out to a bare `docker`
@@ -158,7 +166,7 @@ does not exist: scratch\...`.
 - Current local recovery status supersedes the failed-backend state for short
   SFT confidence checks: the existing SFT max-2 micro recipe completed on
   2026-06-13 from `synaptic-tuner` with
-  `py -3.11 tuner.py local-run --job-config F:\Code\Epistemic-Humility-Research\experiment\phase1\run_records\materialized_recipes\sft__4b__micro_max2.yaml --yes`.
+  `py -3.11 tuner.py local-run --job-config F:\Code\Epistemic-Humility-Research\archive\experiment\phase1\run_records\materialized_recipes\sft__4b__micro_max2.yaml --yes`.
   Artifact root:
   `synaptic-tuner/toolset-training-artifacts/runs/local/4b/sft__4b__micro_max2/20260613_084227`.
   It loaded `unsloth/Qwen3-4B-bnb-4bit`, trained on 14,395 SFT examples for

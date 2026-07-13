@@ -1,0 +1,36 @@
+slug: correctness-confidence-probe
+title: Amendment S — Correctness-Confidence Probe (post- vs pre-generation readout)
+type: historical-amendment
+status: historical
+registered: true
+created_at: '2026-07-08T17:40:52Z'
+legacy:
+  label: S
+  path: experiment/protocol/AMENDMENT-S-correctness-confidence-probe.md
+  migrated_to: experiments/correctness-confidence-probe/AMENDMENT.md
+migration:
+  needs_manual_review:
+  - falsifier
+  - experiment_type
+  - instrument_configs
+  - kg_ids
+  notes: Imported from legacy amendment prose. Do not infer missing machine fields
+    without hand-reading AMENDMENT.md.
+question: Is per-attempt correctness linearly readable, and is it read more strongly
+  after the answer than before (self-eval gain)?
+prediction: "orchestrator:\n  call: post-gen beats pre-gen; correctness readable,\
+  \ self-eval gain positive\nuser:\n  call: null\n  note: Predates the dual-prediction\
+  \ practice (adopted 2026-07-03 at AH signing);\n    no separately recorded user\
+  \ prediction."
+falsifier: ''
+checkpoint:
+  repo: ''
+  revision: ''
+instrument:
+  configs: []
+  modules: []
+  pins: {}
+inputs: []
+verdict: SUCCESS — post-gen AUROC 0.834, self-eval gain +0.065 (CI excludes 0); G1+G2
+  pass, G3 misses by 0.001 (not a green-light gate).
+kg: []

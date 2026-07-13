@@ -68,4 +68,4 @@ fails on negation-style shifts unless probes train on diverse data
 controls and diverse probe-training data.
 
 Tested by [[gradient-probe-coherence]] (the gradient-probe modality) and the
-Phase 3 mechanism program.
+mechanism program.

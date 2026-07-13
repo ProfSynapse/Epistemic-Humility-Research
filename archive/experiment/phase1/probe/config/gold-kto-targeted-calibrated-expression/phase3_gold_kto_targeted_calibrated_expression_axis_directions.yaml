@@ -1,0 +1,58 @@
+spec:
+  name: phase3_gold_kto_targeted_calibrated_expression_axis_directions
+  analysis_type: phase3_behavior_axis_direction_export
+  notice: BEHAVIOR_AXIS_DIRECTION_CANDIDATES_ONLY
+
+source_scan_config: archive/experiment/phase1/probe/config/gold-kto-targeted-calibrated-expression/phase3_gold_kto_targeted_calibrated_expression_axis_scan.yaml
+
+axes:
+  - label: gold_kto_targeted_h_lora_known_refused_vs_correct_l27_normed
+    extraction_label: sft_kto_targeted_gold_baseline_full
+    behavior_arm: sft_kto_targeted_gold_baseline
+    arm: sft_kto
+    role: h_lora
+    layer: 27
+    contrast: known_refused_vs_known_correct_answered
+    transform_method: unit_rescale_to_norm
+    target_norm: 1.2142820358276367
+    metadata:
+      selection_reason: enriched_readout_h_lora_l27_best_multicell_region
+
+  - label: gold_kto_targeted_h_lora_unknown_wrong_vs_refused_l27_normed
+    extraction_label: sft_kto_targeted_gold_baseline_full
+    behavior_arm: sft_kto_targeted_gold_baseline
+    arm: sft_kto
+    role: h_lora
+    layer: 27
+    contrast: unknown_answered_wrong_vs_unknown_refused
+    transform_method: unit_rescale_to_norm
+    target_norm: 1.2142820358276367
+    metadata:
+      selection_reason: enriched_readout_h_lora_l27_best_multicell_region
+
+  - label: gold_kto_targeted_delta_known_refused_vs_correct_l34_normed
+    extraction_label: sft_kto_targeted_gold_baseline_full
+    behavior_arm: sft_kto_targeted_gold_baseline
+    arm: sft_kto
+    role: delta
+    layer: 34
+    contrast: known_refused_vs_known_correct_answered
+    transform_method: unit_rescale_to_norm
+    target_norm: 1.2142820358276367
+    metadata:
+      selection_reason: enriched_readout_delta_l34_secondary_multicell_region
+
+  - label: gold_kto_targeted_delta_unknown_wrong_vs_refused_l34_normed
+    extraction_label: sft_kto_targeted_gold_baseline_full
+    behavior_arm: sft_kto_targeted_gold_baseline
+    arm: sft_kto
+    role: delta
+    layer: 34
+    contrast: unknown_answered_wrong_vs_unknown_refused
+    transform_method: unit_rescale_to_norm
+    target_norm: 1.2142820358276367
+    metadata:
+      selection_reason: enriched_readout_delta_l34_secondary_multicell_region
+
+output:
+  root: experiment/phase1/probe/qwen3-4b-instruct/behavior_axis_directions/phase3_gold_kto_targeted_calibrated_expression_axis_directions

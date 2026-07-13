@@ -1,0 +1,75 @@
+slug: selected-setpoint-regulator
+title: Amendment AN - Selected-setpoint regulator on the AI-TRUE checkpoint
+type: historical-amendment
+status: historical
+registered: true
+created_at: '2026-07-08T17:40:52Z'
+legacy:
+  label: AN
+  path: experiment/protocol/AMENDMENT-AN-selected-setpoint-regulator.md
+  migrated_to: experiments/selected-setpoint-regulator/AMENDMENT.md
+migration:
+  needs_manual_review:
+  - falsifier
+  - experiment_type
+  - instrument_configs
+  - kg_ids
+  notes: Imported from legacy amendment prose. Do not infer missing machine fields
+    without hand-reading AMENDMENT.md.
+question: Does propensity-SELECTED, caution-ACTUATED regulation convert residual confabulations
+  into refusals at low collateral on the AI-TRUE checkpoint, i.e. does writing the
+  caution setpoint UP (AC's proven knob) on rows flagged by the confabulation-propensity
+  readout (AL's proven sensor) reach the confab cloud where pushing along the propensity
+  direction itself (AL) did nothing?
+prediction: "orchestrator:\n  calls:\n    AN-G1: PASS (~70%)\n    AN-G2: PASS (~40%)\n\
+  \    AN-G3: PASS (~40%)\n  recorded: 2026-07-05\n  basis: 'G1 leans PASS because\
+  \ AC''s only direct evidence on answering rows is 0/7\n    flips under positive\
+  \ gain (answers resist) and just 4 corrects are exposed. G2/G3\n    sit under 50%\
+  \ for the same reason inverted: AN''s central bet is that the caution\n    setpoint\
+  \ can flip ENTRENCHED answering rows (the residual confabs), and the 0.16\n    compliance\
+  \ feeding the G2 floor was measured as refusal RESTORATION (coupled vs\n    ablate),\
+  \ not as flipping established answers; if true flip compliance is half\n    the\
+  \ estimate, expected kills fall to ~3.8 versus a floor of 5. G3 mostly rides\n \
+  \   G2: any kills that do happen should be selective.'\nuser:\n  calls:\n    AN-G1:\
+  \ PASS\n    AN-G2: PASS\n    AN-G3: PASS\n  recorded: 2026-07-05\n  quote: '\"I\
+  \ agree on all passing\" - all three gates called PASS, taking the actuation\n \
+  \   bet at full confidence again where the orchestrator sits at 40% on G2/G3 (same\n\
+  \    disagreement shape as AL, opposite mechanism: there the user bet on a new knob;\n\
+  \    here the bet is the proven knob reaching a new population).'"
+falsifier: ''
+checkpoint:
+  repo: ''
+  revision: ''
+instrument:
+  configs: []
+  modules: []
+  pins: {}
+inputs: []
+verdict: 'NULL (falsifier fired), resolved 2026-07-06. AN-G1 PASS (collateral 0 of
+  allowed 2) but VACUOUS: zero effect on the write means zero collateral by construction,
+  not a real honesty guarantee, since the corrects it was guarding were never actually
+  at risk. AN-G2 MISS (0 of 116 baseline confabs killed against a floor of 5; descriptive
+  dose ladder g=+1/+2/+3 kills 0/0/0 of the 47 flagged confabs). AN-G3 MISS (primary-minus-control
+  kill diff 0, 1,000-resample row bootstrap 95% CI [0.0, 0.0] against a floor of 5
+  with CI excluding zero). Primary arm: 244 flagged rows (47 confabs, 4 corrects,
+  11 wrong, 18 answerable-refused, 164 unanswerable-refused); all 47 flagged confabs
+  land in confab_to_different_confab, never a refusal. Descriptive bidirectional arm:
+  the same actuator at g=-2 de-refuses 0 of 114 baseline answerable-refused rows.
+  Smoke readback confirms the write lands precisely on-axis (mean observed setpoint
+  43.98 vs commanded 44.26, max abs error 0.58 against sigma 22.13; unflagged rows
+  show zero shift), ruling out an injection-fidelity failure. caution_perp, reached
+  this precisely on propensity-flagged rows, did not convert any flagged confabulation
+  to a refusal. This null is CONFOUNDED and must be read as such: the actuator direction
+  was the caution_perp REFIT on the AI-TRUE checkpoint, which has cosine -0.064 with
+  AC''s validated GRPO-v2 direction (essentially orthogonal), and it was never independently
+  shown to be a behavioral lever on this checkpoint. AC''s win validates AC''s direction;
+  it does not transfer to AN''s refit direction, and the section 6 positive-control
+  screen that would have validated it was deferred, not run. AN therefore cannot distinguish
+  "the caution axis cannot suppress confabulation" from "this refit direction is a
+  dead actuator." Do NOT read AN as evidence for any input-side-vs-write-side rule:
+  AC is itself a WRITE-side erase-write on caution_perp and it PASSED (+8.7pt), so
+  write-side activation edits are not uniformly null. The honest open question AN
+  leaves is whether a caution actuator validated as a lever on this checkpoint, coupled
+  to the confab-propensity readout the way AC coupled the doubt readout, can regulate
+  confabulation.'
+kg: []

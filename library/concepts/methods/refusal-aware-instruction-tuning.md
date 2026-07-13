@@ -37,6 +37,6 @@ relationships:
 
 Refusal-Aware Instruction Tuning (R-Tuning / RAIT) is a supervised fine-tuning method that calibrates a model's abstention to its parametric knowledge. It works in two steps: first, run inference on the training set and compare predictions to labels to split examples into a certain subset (D1, where the model already answers correctly) and an uncertain subset (D0, where it does not); second, append explicit uncertainty expressions to D0 answers so the fine-tuned model learns to say "I don't know" precisely where its knowledge is insufficient.
 
-**Why it matters here:** RAIT is a strong SFT baseline for knowledge-boundary-aware abstention and anchors the knowledge-gap framing that the Phase 1 SFT arm builds on; its one-pass knowledge-gap detection procedure is directly comparable to how the experiment identifies training examples to label as "unknown."
+**Why it matters here:** RAIT is a strong SFT baseline for knowledge-boundary-aware abstention and anchors the knowledge-gap framing that the locked training-regimen SFT arm builds on; its one-pass knowledge-gap detection procedure is directly comparable to how the experiment identifies training examples to label as "unknown."
 
 **Lineage:** extends [[supervised-finetuning]]; tightly coupled to [[knowledge-boundary]] as the concept it operationalizes.

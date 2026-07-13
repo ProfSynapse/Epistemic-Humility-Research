@@ -43,7 +43,7 @@ questions. An error-sensitivity parameter alpha can reweight the components
 during sensitivity analysis.
 
 **Why it matters here:** rely captures the over-abstention vs. over-answering
-tension at the heart of the Phase 1 study: a model that refuses everything
+tension at the heart of the locked training-regimen study: a model that refuses everything
 maximizes accountability but collapses accuracy, while one that always answers
 may hallucinate; rely penalizes both failure modes in a single number.
 

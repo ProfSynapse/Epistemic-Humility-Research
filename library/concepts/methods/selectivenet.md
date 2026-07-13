@@ -51,7 +51,7 @@ model hits a pre-specified coverage level.
 
 **Why it matters here:** It is the canonical end-to-end example of training a
 selection/abstention head jointly with the base network rather than thresholding
-a post-hoc confidence score — the joint-co-training shape of the Phase B aux_head
+a post-hoc confidence score — the joint-co-training shape of the aux_head
 experiment. The auxiliary head `h` is an explicit guard against the body
 overfitting to the covered subset.
 

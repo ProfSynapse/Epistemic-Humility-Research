@@ -1,0 +1,38 @@
+# Source-specificity control for the leading current clean GRPO v2
+# known-overrefusal generated replay. Applies the same layer-25 direction at
+# nearby layers on the fixed 96-row panel.
+
+sweep:
+  name: phase3_current_clean_grpo_v2_known_overrefusal_shifted_layer_generation_control
+  evidence_tier: tier2_exploratory_local
+  runner_config: archive/experiment/phase1/probe/config/current-clean-grpo-v2-known-overrefusal/phase3_current_clean_known_overrefusal_logit_diagnostic.yaml
+  candidate_source_config: archive/experiment/phase1/probe/config/current-clean-grpo-v2-known-overrefusal/phase3_current_clean_grpo_v2_known_overrefusal_shifted_layer_candidates.yaml
+  output_root: experiment/phase1/probe/analysis/current_clean_grpo_v2_known_overrefusal_shifted_layer_generation_control
+  candidates:
+    - clean_sft_grpo_v2_l23_shift_control_known_overrefusal_l25_vector
+    - clean_sft_grpo_v2_l24_shift_control_known_overrefusal_l25_vector
+    - clean_sft_grpo_v2_l25_source_known_overrefusal_l25_vector
+    - clean_sft_grpo_v2_l26_shift_control_known_overrefusal_l25_vector
+    - clean_sft_grpo_v2_l27_shift_control_known_overrefusal_l25_vector
+  execution:
+    backend: docker
+    docker:
+      image: unsloth/unsloth:latest
+      repo_mount: /workspace/repo
+      workdir: /workspace/repo
+      hf_home: /workspace/repo/.cache/hf
+      huggingface_hub_cache: /workspace/repo/.cache/hf/hub
+  runner_overrides:
+    selection:
+      max_rows_default: 96
+      probe_results: experiment/phase1/probe/analysis/current_selfaware_behavior_rows/clean_sft_grpo_v2/rows.jsonl
+      row_keys_by_candidate: null
+      row_keys_file: archive/experiment/phase1/probe/config/current-clean-grpo-v2-known-overrefusal/phase3_current_clean_grpo_v2_known_overrefusal_replay_96_row_keys.txt
+  modes:
+    - name: generation
+      max_rows: 96
+      max_new_tokens: 96
+      coefficients: [15.0]
+      controls:
+        - no_vector_baseline
+        - activation_subtraction

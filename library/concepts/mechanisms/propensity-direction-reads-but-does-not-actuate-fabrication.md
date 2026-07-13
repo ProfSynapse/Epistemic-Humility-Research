@@ -64,7 +64,7 @@ relationships:
   confidence: high
 ---
 
-Amendment AL (experiment/protocol/AMENDMENT-AL-radial-anti-propensity-steering.md,
+Amendment AL (experiments/radial-anti-propensity-steering/AMENDMENT.md,
 merged PR #214) injected against the confabulation-propensity direction the
 session-0038 AL-prep synthesis had flagged as the one channel with statistically
 real reach into the confab cloud. The injection verified precise (readback ratio

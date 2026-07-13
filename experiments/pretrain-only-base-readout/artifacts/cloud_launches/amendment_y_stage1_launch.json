@@ -1,0 +1,134 @@
+{
+  "amendment": "Y",
+  "launched_utc": "2026-07-02",
+  "pinned_commit": "3bb2fc76ee5f255c8bc1a4533bda46d6bafad0e5",
+  "lane": "hf-jobs a10g-small",
+  "image": "pytorch/pytorch:2.9.0-cuda12.8-cudnn9-runtime + transformers==5.12.1",
+  "gate_rows": "experiments/common/artifacts/selfaware_gate_pool/selfaware_gate_rows_frozen.jsonl",
+  "legacy_gate_rows_at_pinned_commit": "archive/experiment/phase1/probe/pools/selfaware_gate_rows_frozen.jsonl",
+  "extract_args": [
+    "--n-answerable",
+    "2000",
+    "--max-attempts",
+    "3000",
+    "--wrong-floor",
+    "50",
+    "--hallucination-floor",
+    "50"
+  ],
+  "seed": 20260630,
+  "decode": "greedy",
+  "results_repo": "professorsynapse/epistemic-humility-cloud-results",
+  "adequacy_note": "extract floors 50/50 are warn-only; Amendment Y adequacy (>=50 correct AND >=50 wrong/hallucination) is applied at roll-up from each result.json's n_* counts",
+  "cells": [
+    {
+      "cell": "y-a-qwen3.5-4b-base",
+      "model": "Qwen/Qwen3.5-4B-Base",
+      "base_mode": true,
+      "timeout": "4h",
+      "job_id": "6a464b29fb6818a83db300c5",
+      "outcome": "CANCELED 2026-07-02: HF node reclaim restarted all three 4h+ jobs from attempt 0 (~3.3h in, logs wiped, no resume); user canceled to stop unbounded re-compute"
+    },
+    {
+      "cell": "y-a-gemma-4-e4b-pt",
+      "model": "google/gemma-4-E4B",
+      "base_mode": true,
+      "timeout": "4h",
+      "job_id": "6a464b2afb6818a83db300c7",
+      "outcome": "CANCELED 2026-07-02: HF node reclaim restarted all three 4h+ jobs from attempt 0 (~3.3h in, logs wiped, no resume); user canceled to stop unbounded re-compute"
+    },
+    {
+      "cell": "y-a-llama-3.2-3b-base",
+      "model": "unsloth/Llama-3.2-3B",
+      "base_mode": true,
+      "timeout": "4h",
+      "job_id": "6a464b2b33c08a2c0dae105e"
+    },
+    {
+      "cell": "y-a-olmo-3-7b-base",
+      "model": "allenai/Olmo-3-1025-7B",
+      "base_mode": true,
+      "timeout": "5h",
+      "job_id": "6a464b2c33c08a2c0dae1060"
+    },
+    {
+      "cell": "y-a-olmo-3-7b-instruct",
+      "model": "allenai/Olmo-3-7B-Instruct",
+      "base_mode": false,
+      "timeout": "5h",
+      "job_id": "6a464b2dfb6818a83db300c9"
+    },
+    {
+      "cell": "y-b-gpt2-xl",
+      "model": "openai-community/gpt2-xl",
+      "base_mode": true,
+      "timeout": "2h",
+      "job_id": "6a464b2e33c08a2c0dae1062"
+    },
+    {
+      "cell": "y-b-pythia-2.8b",
+      "model": "EleutherAI/pythia-2.8b",
+      "base_mode": true,
+      "timeout": "3h",
+      "job_id": "6a464b2f33c08a2c0dae1064"
+    },
+    {
+      "cell": "y-b-llama-2-7b",
+      "model": "meta-llama/Llama-2-7b-hf",
+      "base_mode": true,
+      "timeout": "5h",
+      "job_id": "6a464b30fb6818a83db300cc"
+    },
+    {
+      "cell": "y-b-olmo-2-7b",
+      "model": "allenai/OLMo-2-1124-7B",
+      "base_mode": true,
+      "timeout": "5h",
+      "job_id": "6a464b30fb6818a83db300ce",
+      "outcome": "CANCELED 2026-07-02: HF node reclaim restarted all three 4h+ jobs from attempt 0 (~3.3h in, logs wiped, no resume); user canceled to stop unbounded re-compute"
+    },
+    {
+      "cell": "y-a-qwen3.5-4b-base-chatrender",
+      "model": "Qwen/Qwen3.5-4B-Base",
+      "base_mode": false,
+      "timeout": "4h",
+      "job_id": "6a464b3133c08a2c0dae1066"
+    },
+    {
+      "cell": "y-a-qwen3.5-4b-base-r2",
+      "model": "Qwen/Qwen3.5-4B-Base",
+      "base_mode": true,
+      "timeout": "6h",
+      "job_id": "6a468700fb6818a83db303d2",
+      "note": "re-run of canceled y-a-qwen3.5-4b-base; pinned a65d8fc9 (wrapper now tees per-incarnation job_log_<boot>.txt and pushes to <run-tag>/logs/ every 10 min + rows.jsonl upload). Doubles as the durable-log-capture test after the preemption post-mortem.",
+      "outcome": "CANCELED 2026-07-02: superseded before completion by the batched-engine re-run y-a-qwen3.5-4b-base-r3 after the throughput plan §5 equivalence gate passed (per-row half user-waived)"
+    },
+    {
+      "cell": "y-a-qwen3.5-4b-base-r3",
+      "model": "Qwen/Qwen3.5-4B-Base",
+      "base_mode": true,
+      "timeout": "90m",
+      "job_id": "6a46c1d9fb6818a83db307d5",
+      "note": "batched-engine re-run (throughput plan §5 gate PASSED 2026-07-02, per-row half user-waived): repo 8dcbf58050a6da91eb77a1444c6654c1fd494786 + tuner db4f9a3cf7e8342bc1ddce337a36b82931dd3f39, --engine tuner-batched --batch-size 32, log push 120s, timeout 90m"
+    },
+    {
+      "cell": "y-a-gemma-4-e4b-pt-r2",
+      "model": "google/gemma-4-E4B",
+      "base_mode": true,
+      "timeout": "90m",
+      "job_id": "6a46c1dafb6818a83db307d7",
+      "note": "batched-engine re-run (throughput plan §5 gate PASSED 2026-07-02, per-row half user-waived): repo 8dcbf58050a6da91eb77a1444c6654c1fd494786 + tuner db4f9a3cf7e8342bc1ddce337a36b82931dd3f39, --engine tuner-batched --batch-size 32, log push 120s, timeout 90m"
+    },
+    {
+      "cell": "y-b-olmo-2-7b-r2",
+      "model": "allenai/OLMo-2-1124-7B",
+      "base_mode": true,
+      "timeout": "90m",
+      "job_id": "6a46c1dafb6818a83db307d9",
+      "note": "batched-engine re-run (throughput plan §5 gate PASSED 2026-07-02, per-row half user-waived): repo 8dcbf58050a6da91eb77a1444c6654c1fd494786 + tuner db4f9a3cf7e8342bc1ddce337a36b82931dd3f39, --engine tuner-batched --batch-size 32, log push 120s, timeout 90m",
+      "outcome": "CANCELED 2026-07-02 (user): second consecutive failed attempt for this cell — preempted at ~20:02Z during weight loading (boot 20260702T195932Z, 85% of 355 shards), restart at 20:43Z stalled in loading again (boot 20260702T204334Z, 82%), 90m timeout fired ~21:24Z; no extraction started, no results uploaded. Cell BENCHED by user decision — no third attempt planned; Y roll-up proceeds without an OLMo-2-7B batched re-run cell."
+    }
+  ],
+  "failed_submissions": [],
+  "notes": "y-a-qwen3.5-4b-base-chatrender is the optional report-only dual-render sub-cell (same base model, chat-template surface). Instruct siblings for Qwen3.5-4B / Llama-3.2-3B / gemma-4-E4B reuse Amendment Z extractions pending per-cell config-equality check."
+}

@@ -1,0 +1,17 @@
+{
+  "stage": "j_space_layer_contrast_rep2_multisource_known_side_reuse",
+  "reused_from_experiment": "experiments/j-space-layer-contrast-replication-qwen3-4b",
+  "reused_from_worktree": "/home/profsynapse/code/ehr-worktrees/jspace-layer-replication",
+  "reused_from_branch": "agent/jspace-full-run",
+  "source_rows_path": "/home/profsynapse/code/ehr-worktrees/jspace-layer-replication/experiments/j-space-layer-contrast-replication-qwen3-4b/analysis/fresh_eval_rows.jsonl",
+  "source_rows_sha256": "a7693297ba8498ebdfc545591f461a995c8861db0b270c332ad4d44610f6fb16",
+  "source_anchors_path": "/home/profsynapse/code/ehr-worktrees/jspace-layer-replication/experiments/j-space-layer-contrast-replication-qwen3-4b/analysis/fresh_anchor_extract.safetensors",
+  "source_anchors_sha256": "b946b7ccd29c0fde0a6f0eded30e6585591b79b15d3066c98a683d79ffdd9ce5",
+  "local_rows_path": "/home/profsynapse/code/ehr-worktrees/jspace-rep2/experiments/j-space-layer-contrast-rep2-multisource/analysis/known_correct_answered_reused.jsonl",
+  "local_rows_sha256": "0751146e3fe77fb90833041188330b15b6adfd549b484fe575be543feb486fef",
+  "local_anchors_path": "/home/profsynapse/code/ehr-worktrees/jspace-rep2/experiments/j-space-layer-contrast-rep2-multisource/analysis/known_correct_answered_anchor_reused.safetensors",
+  "local_anchors_sha256": "d04020dbf86e9ade996aa62f211c5a29cccce3077e6ebb80ca0dad67815e5f65",
+  "n_known_correct_answered": 1957,
+  "n_tensors_kept": 7828,
+  "policy": "ID/count/hash provenance only; no question text or aliases committed."
+}

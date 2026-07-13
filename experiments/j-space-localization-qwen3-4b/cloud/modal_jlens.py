@@ -16,7 +16,7 @@ repo, see analysis-committed/corpus/PROVENANCE.md); the container fetches
 the source pool from the private HF staging repo
 (professorsynapse/eh-al-prep-staging:pools/ak_stage1_pool.jsonl, via
 jlens.py's own `build-corpus` subcommand, which calls hf_hub_download
-exactly like experiment/phase1/probe/cloud/modal_ak_stage1.py's pool fetch)
+exactly like experiments/commitment-point/cloud/modal_ak_stage1.py's pool fetch)
 and deterministically re-samples the SAME 1000-row corpus (seed 20260707)
 this experiment's local runs use -- see analysis-committed/corpus/
 jlens_corpus_manifest.json for the exact row-id manifest that verifies the

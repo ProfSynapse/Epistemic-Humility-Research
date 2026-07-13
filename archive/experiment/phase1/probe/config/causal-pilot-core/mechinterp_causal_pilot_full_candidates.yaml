@@ -1,0 +1,196 @@
+# Full local legacy mechinterp causal-pilot candidate inventory.
+#
+# This is the reusable candidate source for local mech-interp sweeps. It is not
+# a readiness-only smoke source and excludes transient smoke-only candidate
+# lists. The base-original candidate is inventoried but skipped by default
+# because the current live runner loads an adapter from extraction provenance.
+
+candidate_directions:
+  - label: base_original_h_base_l25
+    priority: 1
+    arm: base_original
+    extraction_dir: experiment/phase1/probe/qwen3-4b-instruct/hidden_states/extraction__12fb10b1c8c8
+    extraction_manifest: experiment/phase1/probe/qwen3-4b-instruct/hidden_states/extraction__12fb10b1c8c8/manifest.json
+    direction_manifest: experiment/phase1/probe/qwen3-4b-instruct/hidden_states/extraction__12fb10b1c8c8/hidden_state_candidate_directions.manifest.json
+    direction_csv: experiment/phase1/probe/qwen3-4b-instruct/hidden_states/extraction__12fb10b1c8c8/hidden_state_candidate_directions.csv
+    direction_id: direction__bf2b2b2af40a7895
+    direction_file: experiment/phase1/probe/qwen3-4b-instruct/hidden_states/extraction__12fb10b1c8c8/directions/direction__bf2b2b2af40a7895.safetensors
+    tensor_key: direction
+    role: h_base
+    layer: 25
+    method: known_unknown_diff
+    contrast: unknown_minus_known
+    positive_label: unknown
+    negative_label: known
+    required_status: ok
+    linear_probe_balanced_accuracy: 0.753906
+    source_run_id: base pass from sft__4b__headline__seed1 extraction
+    requires_adapterless_runner: true
+    skip_by_default: true
+    skip_reason: current live runner loads the extraction adapter; adapterless base intervention is not implemented safely
+  - label: sft_h_lora_l36
+    priority: 2
+    arm: sft
+    extraction_dir: experiment/phase1/probe/qwen3-4b-instruct/hidden_states/extraction__12fb10b1c8c8
+    extraction_manifest: experiment/phase1/probe/qwen3-4b-instruct/hidden_states/extraction__12fb10b1c8c8/manifest.json
+    direction_manifest: experiment/phase1/probe/qwen3-4b-instruct/hidden_states/extraction__12fb10b1c8c8/hidden_state_candidate_directions.manifest.json
+    direction_csv: experiment/phase1/probe/qwen3-4b-instruct/hidden_states/extraction__12fb10b1c8c8/hidden_state_candidate_directions.csv
+    direction_id: direction__9c8c74f718038292
+    direction_file: experiment/phase1/probe/qwen3-4b-instruct/hidden_states/extraction__12fb10b1c8c8/directions/direction__9c8c74f718038292.safetensors
+    tensor_key: direction
+    role: h_lora
+    layer: 36
+    method: known_unknown_diff
+    contrast: unknown_minus_known
+    positive_label: unknown
+    negative_label: known
+    required_status: ok
+    linear_probe_balanced_accuracy: 0.863281
+    source_run_id: sft__4b__headline__seed1
+  - label: sft_delta_l35
+    priority: 3
+    arm: sft
+    extraction_dir: experiment/phase1/probe/qwen3-4b-instruct/hidden_states/extraction__12fb10b1c8c8
+    extraction_manifest: experiment/phase1/probe/qwen3-4b-instruct/hidden_states/extraction__12fb10b1c8c8/manifest.json
+    direction_manifest: experiment/phase1/probe/qwen3-4b-instruct/hidden_states/extraction__12fb10b1c8c8/hidden_state_candidate_directions.manifest.json
+    direction_csv: experiment/phase1/probe/qwen3-4b-instruct/hidden_states/extraction__12fb10b1c8c8/hidden_state_candidate_directions.csv
+    direction_id: direction__8bb10838ed21eebe
+    direction_file: experiment/phase1/probe/qwen3-4b-instruct/hidden_states/extraction__12fb10b1c8c8/directions/direction__8bb10838ed21eebe.safetensors
+    tensor_key: direction
+    role: delta
+    layer: 35
+    method: known_unknown_diff
+    contrast: unknown_minus_known
+    positive_label: unknown
+    negative_label: known
+    required_status: ok
+    linear_probe_balanced_accuracy: 0.855469
+    source_run_id: sft__4b__headline__seed1
+  - label: dpo_cold_h_lora_l35
+    priority: 4
+    arm: dpo
+    extraction_dir: experiment/phase1/probe/qwen3-4b-instruct/hidden_states/extraction__f3dbd2c1754a
+    extraction_manifest: experiment/phase1/probe/qwen3-4b-instruct/hidden_states/extraction__f3dbd2c1754a/manifest.json
+    direction_manifest: experiment/phase1/probe/qwen3-4b-instruct/hidden_states/extraction__f3dbd2c1754a/hidden_state_candidate_directions.manifest.json
+    direction_csv: experiment/phase1/probe/qwen3-4b-instruct/hidden_states/extraction__f3dbd2c1754a/hidden_state_candidate_directions.csv
+    direction_id: direction__626e4924ca28b8e6
+    direction_file: experiment/phase1/probe/qwen3-4b-instruct/hidden_states/extraction__f3dbd2c1754a/directions/direction__626e4924ca28b8e6.safetensors
+    tensor_key: direction
+    role: h_lora
+    layer: 35
+    method: known_unknown_diff
+    contrast: unknown_minus_known
+    positive_label: unknown
+    negative_label: known
+    required_status: ok
+    linear_probe_balanced_accuracy: 0.773438
+    source_run_id: dpo__4b__headline__seed1
+  - label: kto_cold_h_lora_l36
+    priority: 5
+    arm: kto
+    extraction_dir: experiment/phase1/probe/qwen3-4b-instruct/hidden_states/extraction__0810aa2972e8
+    extraction_manifest: experiment/phase1/probe/qwen3-4b-instruct/hidden_states/extraction__0810aa2972e8/manifest.json
+    direction_manifest: experiment/phase1/probe/qwen3-4b-instruct/hidden_states/extraction__0810aa2972e8/hidden_state_candidate_directions.manifest.json
+    direction_csv: experiment/phase1/probe/qwen3-4b-instruct/hidden_states/extraction__0810aa2972e8/hidden_state_candidate_directions.csv
+    direction_id: direction__c948b8123235c5d8
+    direction_file: experiment/phase1/probe/qwen3-4b-instruct/hidden_states/extraction__0810aa2972e8/directions/direction__c948b8123235c5d8.safetensors
+    tensor_key: direction
+    role: h_lora
+    layer: 36
+    method: known_unknown_diff
+    contrast: unknown_minus_known
+    positive_label: unknown
+    negative_label: known
+    required_status: ok
+    linear_probe_balanced_accuracy: 0.765625
+    source_run_id: kto__4b__headline__seed1
+  - label: sft_dpo_h_lora_l34
+    priority: 6
+    arm: sft_dpo
+    extraction_dir: experiment/phase1/probe/qwen3-4b-instruct/hidden_states/extraction__0d58c201ab3e
+    extraction_manifest: experiment/phase1/probe/qwen3-4b-instruct/hidden_states/extraction__0d58c201ab3e/manifest.json
+    direction_manifest: experiment/phase1/probe/qwen3-4b-instruct/hidden_states/extraction__0d58c201ab3e/hidden_state_candidate_directions.manifest.json
+    direction_csv: experiment/phase1/probe/qwen3-4b-instruct/hidden_states/extraction__0d58c201ab3e/hidden_state_candidate_directions.csv
+    direction_id: direction__5eb42ebb3c95d5e1
+    direction_file: experiment/phase1/probe/qwen3-4b-instruct/hidden_states/extraction__0d58c201ab3e/directions/direction__5eb42ebb3c95d5e1.safetensors
+    tensor_key: direction
+    role: h_lora
+    layer: 34
+    method: known_unknown_diff
+    contrast: unknown_minus_known
+    positive_label: unknown
+    negative_label: known
+    required_status: ok
+    linear_probe_balanced_accuracy: 0.855469
+    source_run_id: sft_dpo__4b__amendment_a__seed1
+  - label: sft_dpo_delta_l35
+    priority: 7
+    arm: sft_dpo
+    extraction_dir: experiment/phase1/probe/qwen3-4b-instruct/hidden_states/extraction__0d58c201ab3e
+    extraction_manifest: experiment/phase1/probe/qwen3-4b-instruct/hidden_states/extraction__0d58c201ab3e/manifest.json
+    direction_manifest: experiment/phase1/probe/qwen3-4b-instruct/hidden_states/extraction__0d58c201ab3e/hidden_state_candidate_directions.manifest.json
+    direction_csv: experiment/phase1/probe/qwen3-4b-instruct/hidden_states/extraction__0d58c201ab3e/hidden_state_candidate_directions.csv
+    direction_id: direction__966bd7f65768ab65
+    direction_file: experiment/phase1/probe/qwen3-4b-instruct/hidden_states/extraction__0d58c201ab3e/directions/direction__966bd7f65768ab65.safetensors
+    tensor_key: direction
+    role: delta
+    layer: 35
+    method: known_unknown_diff
+    contrast: unknown_minus_known
+    positive_label: unknown
+    negative_label: known
+    required_status: ok
+    linear_probe_balanced_accuracy: 0.859375
+    source_run_id: sft_dpo__4b__amendment_a__seed1
+  - label: sft_kto_h_lora_l35
+    priority: 8
+    arm: sft_kto
+    extraction_dir: experiment/phase1/probe/qwen3-4b-instruct/hidden_states/extraction__e1473df788a5
+    extraction_manifest: experiment/phase1/probe/qwen3-4b-instruct/hidden_states/extraction__e1473df788a5/manifest.json
+    direction_manifest: experiment/phase1/probe/qwen3-4b-instruct/hidden_states/extraction__e1473df788a5/hidden_state_candidate_directions.manifest.json
+    direction_csv: experiment/phase1/probe/qwen3-4b-instruct/hidden_states/extraction__e1473df788a5/hidden_state_candidate_directions.csv
+    direction_id: direction__1e6940a0ce433bc9
+    direction_file: experiment/phase1/probe/qwen3-4b-instruct/hidden_states/extraction__e1473df788a5/directions/direction__1e6940a0ce433bc9.safetensors
+    tensor_key: direction
+    role: h_lora
+    layer: 35
+    method: known_unknown_diff
+    contrast: unknown_minus_known
+    positive_label: unknown
+    negative_label: known
+    required_status: ok
+    linear_probe_balanced_accuracy: 0.859375
+    source_run_id: sft_kto__4b__amendment_a__seed1
+  - label: sft_kto_delta_l36
+    priority: 9
+    arm: sft_kto
+    extraction_dir: experiment/phase1/probe/qwen3-4b-instruct/hidden_states/extraction__e1473df788a5
+    extraction_manifest: experiment/phase1/probe/qwen3-4b-instruct/hidden_states/extraction__e1473df788a5/manifest.json
+    direction_manifest: experiment/phase1/probe/qwen3-4b-instruct/hidden_states/extraction__e1473df788a5/hidden_state_candidate_directions.manifest.json
+    direction_csv: experiment/phase1/probe/qwen3-4b-instruct/hidden_states/extraction__e1473df788a5/hidden_state_candidate_directions.csv
+    direction_id: direction__75d67188df8103c9
+    direction_file: experiment/phase1/probe/qwen3-4b-instruct/hidden_states/extraction__e1473df788a5/directions/direction__75d67188df8103c9.safetensors
+    tensor_key: direction
+    role: delta
+    layer: 36
+    method: known_unknown_diff
+    contrast: unknown_minus_known
+    positive_label: unknown
+    negative_label: known
+    required_status: ok
+    linear_probe_balanced_accuracy: 0.855469
+    source_run_id: sft_kto__4b__amendment_a__seed1
+
+readiness_checks:
+  require_extraction_manifest:
+    status: ok
+    verified: true
+    row_count: 256
+    label_counts:
+      known: 128
+      unknown: 128
+  require_direction_status: ok
+  require_hidden_dim_match: true
+  require_layer_role_match: true
+  require_vector_hash_check: true
+  require_no_mutation_of_source_artifacts: true

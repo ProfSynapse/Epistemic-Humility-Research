@@ -5,13 +5,12 @@ title: Replace With Session Title
 status: active
 created_at: "YYYY-MM-DDTHH:MM:SSZ"
 updated_at: "YYYY-MM-DDTHH:MM:SSZ"
-phase: phase1
 question: What research question or workflow state is this session tracking?
 tags:
   - experiment-runner
 run_ids: []
 trajectory:
-  anchor: experiment/protocol/research-trajectory.md
+  anchor: docs/research-trajectory.md
   current_position: ""
   changed_by_session: ""
 checkpoints:
@@ -21,7 +20,7 @@ checkpoints:
     title: Planning Checkpoint
     summary: State the checkpoint in one or two factual sentences.
     evidence:
-      - experiment/protocol/research-trajectory.md
+      - docs/research-trajectory.md
     run_ids: []
     commands: []
     decisions: []
@@ -36,7 +35,7 @@ What research question or workflow state is this session tracking?
 
 ## Trajectory Position
 
-Describe where this sits relative to `experiment/protocol/research-trajectory.md`.
+Describe where this sits relative to `docs/research-trajectory.md`.
 
 ## Summary
 
@@ -50,4 +49,4 @@ Keep this updated when the session closes or materially changes direction.
 - kind: `planning`
 - summary: State the checkpoint in one or two factual sentences.
 - evidence:
-  - `experiment/protocol/research-trajectory.md`
+  - `docs/research-trajectory.md`

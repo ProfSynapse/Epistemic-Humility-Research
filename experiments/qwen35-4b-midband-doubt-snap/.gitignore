@@ -1,0 +1,5 @@
+# Local analysis scratch; keep untracked, promote real outputs deliberately.
+# (covers any directions/ produced under analysis/ too; do NOT add a
+# top-level "directions/" pattern here -- it would also shadow the
+# deliberately-committed analysis-committed/directions/ fit outputs.)
+analysis/

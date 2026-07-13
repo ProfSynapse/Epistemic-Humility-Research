@@ -36,7 +36,7 @@ which turns preference learning into a single classification-style loss over
 preference pairs.
 
 **Why it matters here:** DPO is one of the three preference-training arms the
-Phase 1 experiment compares (SFT vs DPO vs KTO) for teaching abstention, so its
+locked training-regimen experiment compares (SFT vs DPO vs KTO) for teaching abstention, so its
 behaviour relative to [[kahneman-tversky-optimization]] and plain
 [[supervised-finetuning]] is one of the central contrasts in the study.
 
