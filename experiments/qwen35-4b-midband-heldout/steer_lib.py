@@ -24,7 +24,7 @@ import json
 import sys
 import time
 from pathlib import Path
-from typing import Any
+from typing import Any, Optional
 
 HERE = Path(__file__).resolve().parent
 REPO_ROOT = HERE.parents[1]
@@ -113,7 +113,7 @@ def render_prompt(row: dict[str, Any]) -> str:
 def run_batch_fixed(
     model, tokenizer, device, controller, prompts: list[str],
     mode: str, strength, max_new: int,
-) -> list[dict[str, Any]]:
+) -> tuple[list[dict[str, Any]], Optional[dict[str, Any]]]:
     """Batched analog of gen_lib.run_pass_fixed. `controller=None` is a true
     no-write pass (no hook registered at all -- used for baseline); a
     non-None controller is armed via begin_pass exactly as the single-row
@@ -127,6 +127,14 @@ def run_batch_fixed(
     same trailing column; each row's own EOS position within its own tail
     is located explicitly (HF pads shorter rows with pad_token_id after
     their own EOS while longer rows keep decoding).
+
+    Returns `(results, raw_readback)`: `results` is the per-row list as
+    before; `raw_readback` is the hook's full per-batch readback dict
+    (commanded/measured/offtarget_abs_max, InterventionHook._readback's own
+    schema) or None when `controller is None`, exposed so callers can run it
+    through the project's own G0 smoke-tolerance check
+    (`MechInterp.cell.evaluate_smoke_readback`) rather than re-deriving a
+    tolerance here.
     """
     import torch
 
@@ -141,8 +149,10 @@ def run_batch_fixed(
             num_beams=1, eos_token_id=eos_ids, pad_token_id=tokenizer.pad_token_id,
         )
     readback = None
+    raw_readback = None
     if controller is not None:
         rb = controller.hook.last_readback
+        raw_readback = rb
         if rb is not None and rb.get("measured"):
             readback = list(rb["measured"])
         controller.reset()
@@ -166,26 +176,34 @@ def run_batch_fixed(
             "terminated_naturally": terminated_naturally,
             "readback_measured": (readback[b] if readback is not None and b < len(readback) else None),
         })
-    return results
+    return results, raw_readback
 
 
 def run_rows(
     model, tokenizer, device, controller, mode: str,
     rows: list[dict[str, Any]], strength, max_new: int, batch_size: int,
     run_log,
+    readback_collector: Optional[list[dict[str, Any]]] = None,
 ) -> None:
     """Generic batched runner for ONE arm's rows (every row passed in
     shares `mode`/`strength`): renders, generates, grades (full sub-grade
     dict via gen_lib.grade_row, never booleans-only -- the data-exhaust
     principle), and RunLog-records each row keyed by row_key. Resumable:
-    already-recorded row_keys are skipped."""
+    already-recorded row_keys are skipped.
+
+    `readback_collector`, when given a list, gets each batch's raw readback
+    dict appended (only for active/controller passes) -- pipeline.py's
+    smoke mode uses this to run the G0 `readback_within_tolerance` check
+    over every batch of the gated/random_direction arms, per gates.yaml."""
     done = run_log.done_keys()
     pending = [r for r in rows if r["row_key"] not in done]
     t0 = time.time()
     for i in range(0, len(pending), batch_size):
         batch = pending[i:i + batch_size]
         prompts = [render_prompt(r) for r in batch]
-        gen = run_batch_fixed(model, tokenizer, device, controller, prompts, mode, strength, max_new)
+        gen, raw_rb = run_batch_fixed(model, tokenizer, device, controller, prompts, mode, strength, max_new)
+        if readback_collector is not None and raw_rb is not None:
+            readback_collector.append(raw_rb)
         for row, res in zip(batch, gen):
             grade = gen_lib.grade_row(res["text"], res["terminated_naturally"], row.get("aliases"))
             run_log.record(row["row_key"], {

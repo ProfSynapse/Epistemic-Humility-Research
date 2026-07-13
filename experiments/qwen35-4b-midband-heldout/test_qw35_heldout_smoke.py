@@ -19,6 +19,7 @@ repo-wide rtk/pytest gotcha, do not use it.)
 
 from __future__ import annotations
 
+import hashlib
 import json
 import sys
 import tempfile
@@ -346,12 +347,13 @@ def test_run_batch_fixed_termination_and_readback():
     model.controller_ref = controller
     tokenizer = _MockTokenizer()
 
-    results = steer_lib.run_batch_fixed(model, tokenizer, "cpu", controller, ["p0", "p1"], "gen_stream", 8.0, max_new=5)
+    results, raw_rb = steer_lib.run_batch_fixed(model, tokenizer, "cpu", controller, ["p0", "p1"], "gen_stream", 8.0, max_new=5)
 
     assert results[0]["terminated_naturally"] is True
     assert results[0]["n_new_tokens"] == 3
     assert results[0]["text"] == "10 11 999"
     assert results[0]["readback_measured"] == 12.608
+    assert raw_rb == {"measured": [12.608, 12.608]}  # raw hook dict passed through unmodified
 
     assert results[1]["terminated_naturally"] is False
     assert results[1]["n_new_tokens"] == 5
@@ -364,9 +366,10 @@ def test_run_batch_fixed_baseline_no_controller():
     out = _batch([[10, 11, 999, 0, 0]])
     tokenizer = _MockTokenizer()
     model = _MockModel(out)
-    results = steer_lib.run_batch_fixed(model, tokenizer, "cpu", None, ["p0"], "off", 0.0, max_new=5)
+    results, raw_rb = steer_lib.run_batch_fixed(model, tokenizer, "cpu", None, ["p0"], "off", 0.0, max_new=5)
     assert results[0]["readback_measured"] is None
     assert results[0]["terminated_naturally"] is True
+    assert raw_rb is None  # no controller -> no readback to report at all
 
 
 # ---------------------------------------------------------------------------
@@ -499,3 +502,117 @@ def test_report_no_text_leak_passes_when_clean():
         pipeline.COMMITTED = committed
         rows = [{"question": "What is the capital of France?"}]
         pipeline._report_no_text_leak(rows)  # must not raise
+
+
+# ---------------------------------------------------------------------------
+# G0 hardening (PI adjudication, gates.yaml registered text): hash-verified
+# directions_byte_identical/scalars_frozen_match, readback_within_tolerance,
+# and runlog_growth are raise-on-failure assertions, not eyeballed prose.
+# ---------------------------------------------------------------------------
+
+def test_verify_frozen_operating_point_hashes_placeholder_refuses_to_run(monkeypatch):
+    """The committed frozen_operating_point_hashes.json is pre-sign and
+    ships with the placeholder value on every entry -- this MUST refuse to
+    run, not silently pass, until the lead fills the real hashes at sign."""
+    with pytest.raises(SystemExit, match="placeholder"):
+        pipeline.verify_frozen_operating_point_hashes()
+
+
+def test_verify_frozen_operating_point_hashes_passes_on_correct_hash(monkeypatch, tmp_path):
+    target = tmp_path / "d.json"
+    target.write_text('{"vector": [1, 2, 3]}')
+    real_hash = hashlib.sha256(target.read_bytes()).hexdigest()
+
+    hashes_path = tmp_path / "frozen_operating_point_hashes.json"
+    hashes_path.write_text(json.dumps({"placeholder": "FILLED-AT-SIGN", "files": {"d.json": real_hash}}))
+
+    monkeypatch.setattr(pipeline, "HERE", tmp_path)
+    monkeypatch.setattr(pipeline, "FROZEN_HASHES_PATH", hashes_path)
+    pipeline.verify_frozen_operating_point_hashes()  # must not raise
+
+
+def test_verify_frozen_operating_point_hashes_mismatch_raises(monkeypatch, tmp_path):
+    target = tmp_path / "d.json"
+    target.write_text('{"vector": [1, 2, 3]}')
+
+    hashes_path = tmp_path / "frozen_operating_point_hashes.json"
+    hashes_path.write_text(json.dumps({
+        "placeholder": "FILLED-AT-SIGN",
+        "files": {"d.json": "0" * 64},  # deliberately wrong
+    }))
+
+    monkeypatch.setattr(pipeline, "HERE", tmp_path)
+    monkeypatch.setattr(pipeline, "FROZEN_HASHES_PATH", hashes_path)
+    with pytest.raises(SystemExit, match="directions_byte_identical"):
+        pipeline.verify_frozen_operating_point_hashes()
+
+
+def test_verify_frozen_operating_point_hashes_missing_file_raises(monkeypatch, tmp_path):
+    hashes_path = tmp_path / "frozen_operating_point_hashes.json"
+    hashes_path.write_text(json.dumps({
+        "placeholder": "FILLED-AT-SIGN",
+        "files": {"does_not_exist.json": "0" * 64},
+    }))
+
+    monkeypatch.setattr(pipeline, "HERE", tmp_path)
+    monkeypatch.setattr(pipeline, "FROZEN_HASHES_PATH", hashes_path)
+    with pytest.raises(SystemExit, match="does not exist"):
+        pipeline.verify_frozen_operating_point_hashes()
+
+
+def test_verify_frozen_operating_point_hashes_missing_pin_file_raises(monkeypatch, tmp_path):
+    monkeypatch.setattr(pipeline, "FROZEN_HASHES_PATH", tmp_path / "nope.json")
+    with pytest.raises(SystemExit, match="missing"):
+        pipeline.verify_frozen_operating_point_hashes()
+
+
+def test_verify_smoke_readback_tolerance_passes_within_tolerance():
+    # SmokeConfig defaults: write_rel_tol=0.05, write_abs_floor=0.5 -- 12.62
+    # vs commanded 12.608 is well inside both the relative and absolute floor.
+    readbacks = [{"commanded": [12.608, 12.608], "measured": [12.62, 12.60], "offtarget_abs_max": 0.0}]
+    pipeline.verify_smoke_readback_tolerance(readbacks, "gated")  # must not raise
+
+
+def test_verify_smoke_readback_tolerance_out_of_tolerance_raises():
+    readbacks = [{"commanded": [12.608], "measured": [20.0], "offtarget_abs_max": 0.0}]
+    with pytest.raises(SystemExit, match="readback_within_tolerance"):
+        pipeline.verify_smoke_readback_tolerance(readbacks, "gated")
+
+
+def test_verify_smoke_readback_tolerance_offtarget_movement_raises():
+    # Write itself lands on target, but an inactive row moved more than
+    # SmokeConfig.offtarget_tol (1e-3) -- parity failure, not a write failure.
+    readbacks = [{"commanded": [12.608], "measured": [12.608], "offtarget_abs_max": 5.0}]
+    with pytest.raises(SystemExit, match="readback_within_tolerance"):
+        pipeline.verify_smoke_readback_tolerance(readbacks, "random_direction")
+
+
+def test_verify_smoke_readback_tolerance_empty_collector_raises():
+    with pytest.raises(SystemExit, match="no readback captured"):
+        pipeline.verify_smoke_readback_tolerance([], "gated")
+
+
+def test_assert_runlog_growth_short_count_raises():
+    with pytest.raises(SystemExit, match="runlog_growth"):
+        pipeline._assert_runlog_growth("gated", {"r0": {}, "r1": {}}, expected_n=3)
+
+
+def test_assert_runlog_growth_exact_count_passes():
+    pipeline._assert_runlog_growth("gated", {"r0": {}, "r1": {}, "r2": {}}, expected_n=3)  # must not raise
+
+
+def test_run_batch_fixed_exposes_raw_readback_for_tolerance_check():
+    """run_batch_fixed's raw_readback return is exactly the dict shape
+    verify_smoke_readback_tolerance expects (commanded/measured/
+    offtarget_abs_max) -- proves the two are actually wired together, not
+    just independently plausible."""
+    out = _batch([[10, 11, 999, 0, 0]])
+    hook = _MockHook()
+    controller = _MockController(hook)
+    raw = {"commanded": [12.608], "measured": [12.61], "offtarget_abs_max": 0.0}
+    model = _MockModel(out, readback_on_generate=raw)
+    model.controller_ref = controller
+    tokenizer = _MockTokenizer()
+
+    _, raw_rb = steer_lib.run_batch_fixed(model, tokenizer, "cpu", controller, ["p0"], "gen_stream", 8.0, max_new=5)
+    pipeline.verify_smoke_readback_tolerance([raw_rb], "gated")  # must not raise

@@ -45,6 +45,7 @@ from __future__ import annotations
 
 import argparse
 import gc
+import hashlib
 import json
 import sys
 import time
@@ -76,6 +77,9 @@ BATCH_SIZE = 8
 HELDOUT_PERMUTE_SEED = 20260713
 
 DOSE_ABS = 12.608187917799976  # frozen; cell.yaml frozen_operating_point.snap.dose_abs
+
+FROZEN_HASHES_PATH = HERE / "frozen_operating_point_hashes.json"
+HASH_PLACEHOLDER = "FILLED-AT-SIGN"
 
 
 def load_jsonl(path: Path) -> list[dict[str, Any]]:
@@ -110,6 +114,75 @@ def load_rows_and_fire() -> tuple[list[dict], dict[str, dict]]:
     return rows, fire_by_key
 
 
+def verify_frozen_operating_point_hashes() -> None:
+    """G0 `directions_byte_identical` / `scalars_frozen_match` (gates.yaml):
+    both are stated as an explicit sha256/byte-for-byte match against the
+    ladder's committed artifacts, not an assumption. Recomputes sha256 of
+    every file this experiment's frozen operating point is loaded from and
+    compares against `frozen_operating_point_hashes.json`, raising on any
+    mismatch, missing file, or unfilled placeholder. The pin VALUES are lead
+    work (recorded at sign, same boundary as experiment.yaml pins); this is
+    only the verification mechanism."""
+    if not FROZEN_HASHES_PATH.is_file():
+        raise SystemExit(
+            f"[pipeline] G0 FAILED: missing {FROZEN_HASHES_PATH}; "
+            "directions_byte_identical/scalars_frozen_match cannot be verified"
+        )
+    spec = json.loads(FROZEN_HASHES_PATH.read_text())
+    files = spec.get("files") or {}
+    if not files:
+        raise SystemExit(f"[pipeline] G0 FAILED: {FROZEN_HASHES_PATH} has no 'files' entries to verify")
+
+    unfilled = [rel for rel, expected in files.items() if expected == HASH_PLACEHOLDER]
+    if unfilled:
+        raise SystemExit(
+            f"[pipeline] G0 FAILED: {FROZEN_HASHES_PATH} still has the placeholder hash "
+            f"for {unfilled}; refusing to run with an unfilled provenance pin. "
+            "Fill the real sha256 values at sign."
+        )
+
+    mismatches = []
+    for rel_path, expected in files.items():
+        target = (HERE / rel_path).resolve()
+        if not target.is_file():
+            raise SystemExit(f"[pipeline] G0 FAILED: {target} (from {rel_path!r}) does not exist")
+        actual = hashlib.sha256(target.read_bytes()).hexdigest()
+        if actual != expected:
+            mismatches.append((rel_path, expected, actual))
+    if mismatches:
+        detail = "; ".join(f"{p}: expected {e}, got {a}" for p, e, a in mismatches)
+        raise SystemExit(
+            f"[pipeline] G0 FAILED directions_byte_identical/scalars_frozen_match: {detail}. "
+            "The ladder's committed frozen-operating-point files have drifted from the "
+            "pinned hashes; refusing to score held-out against an unverified operating point."
+        )
+    print(f"[pipeline] G0 hash verification passed for {len(files)} frozen-operating-point files", flush=True)
+
+
+def verify_smoke_readback_tolerance(readback_dicts: list[dict[str, Any]], arm: str) -> None:
+    """G0 `readback_within_tolerance` (gates.yaml: "dosed-smoke realized
+    projection is within tolerance of target ... on the gated and
+    random_direction arms"). Reuses the project-wide smoke-tolerance
+    convention every mechinterp cell in this repo already defers to
+    (`synaptic-tuner/MechInterp/config.py:SmokeConfig` +
+    `MechInterp/cell.py:evaluate_smoke_readback`) rather than inventing a
+    tolerance for this build -- gates.yaml names "within tolerance" without
+    restating a number because this IS that shared number."""
+    from MechInterp.cell import evaluate_smoke_readback
+    from MechInterp.config import SmokeConfig
+
+    if not readback_dicts:
+        raise SystemExit(f"[pipeline] G0 FAILED readback_within_tolerance: no readback captured for arm {arm!r}")
+    smoke_cfg = SmokeConfig()
+    for i, rb in enumerate(readback_dicts):
+        verdict = evaluate_smoke_readback(rb, smoke_cfg)
+        if not verdict["passed"]:
+            raise SystemExit(
+                f"[pipeline] G0 FAILED readback_within_tolerance for arm {arm!r}, batch {i}: {verdict}"
+            )
+    print(f"[pipeline] G0 readback_within_tolerance passed for arm {arm!r} ({len(readback_dicts)} batches)", flush=True)
+
+
 def load_frozen_operating_point() -> dict[str, Any]:
     build = json.loads((LADDER_COMMITTED / "build_manifest.json").read_text())["layers"]["hs20"]
     directions_dir = LADDER_COMMITTED / "directions" / "hs20"
@@ -136,25 +209,48 @@ def combine_active_and_baseline(all_rows: list[dict], active_by_key: dict[str, d
     return [active_by_key.get(r["row_key"]) or baseline_by_key[r["row_key"]] for r in all_rows]
 
 
+def _assert_runlog_growth(tag: str, records: dict[str, dict], expected_n: int) -> None:
+    """G0 `runlog_growth`: rather than a human eyeballing the log file
+    growing during a >15 min run, assert the persisted row count for this
+    phase equals the expected row count for that phase."""
+    if len(records) != expected_n:
+        raise SystemExit(
+            f"[pipeline] G0 FAILED runlog_growth for {tag!r}: expected {expected_n} "
+            f"rows, runlog has {len(records)}"
+        )
+
+
 def run_baseline_pass(model, tokenizer, device, rows: list[dict], batch_size: int) -> dict[str, dict]:
     log = _run_log("baseline", {"stage": "heldout_baseline", "n_rows": len(rows)})
     steer_lib.run_rows(model, tokenizer, device, None, "off", rows, 0.0, MAX_NEW, batch_size, log)
     log.finalize({"n_rows": len(rows)})
     log.close()
-    return {r["row_key"]: r for r in load_jsonl(runlog_path("baseline"))}
+    records = {r["row_key"]: r for r in load_jsonl(runlog_path("baseline"))}
+    _assert_runlog_growth("baseline", records, len(rows))
+    return records
 
 
-def run_active_pass(model, tokenizer, device, controller, layer_module, tag: str, active_rows: list[dict], gain: float, batch_size: int) -> dict[str, dict]:
+def run_active_pass(
+    model, tokenizer, device, controller, layer_module, tag: str, active_rows: list[dict], gain: float,
+    batch_size: int, readback_collector: list[dict[str, Any]] | None = None,
+) -> dict[str, dict]:
     handle = layer_module.register_forward_hook(controller)
     try:
         log = _run_log(tag, {"stage": "heldout", "tag": tag, "gain": gain, "n_active": len(active_rows)})
-        steer_lib.run_rows(model, tokenizer, device, controller, "gen_stream", active_rows, gain, MAX_NEW, batch_size, log)
+        steer_lib.run_rows(
+            model, tokenizer, device, controller, "gen_stream", active_rows, gain, MAX_NEW, batch_size, log,
+            readback_collector=readback_collector,
+        )
         log.finalize({"n_rows": len(active_rows), "gain": gain})
         log.close()
     finally:
         handle.remove()
         controller.reset()
-    return {r["row_key"]: r for r in load_jsonl(runlog_path(tag))} if active_rows else {}
+    if not active_rows:
+        return {}
+    records = {r["row_key"]: r for r in load_jsonl(runlog_path(tag))}
+    _assert_runlog_growth(tag, records, len(active_rows))
+    return records
 
 
 def _report_no_text_leak(all_rows: list[dict]) -> None:
@@ -172,8 +268,12 @@ def _report_no_text_leak(all_rows: list[dict]) -> None:
                 raise SystemExit(f"[report] question text leaked into {path} -- aborting")
 
 
-def run_four_arms(rows: list[dict], fire_by_key: dict[str, dict], batch_size: int) -> dict[str, Any]:
+def run_four_arms(
+    rows: list[dict], fire_by_key: dict[str, dict], batch_size: int, smoke_mode: bool = False,
+) -> dict[str, Any]:
     from MechInterp.intervention import get_decoder_layer
+
+    verify_frozen_operating_point_hashes()  # G0, unconditional, both smoke and run
 
     held_confab = [r for r in rows if r["role"] == "confab"]
     held_known = [r for r in rows if r["role"] == "known_correct_answered"]
@@ -196,19 +296,37 @@ def run_four_arms(rows: list[dict], fire_by_key: dict[str, dict], batch_size: in
 
     import torch
 
+    gated_readbacks: list[dict[str, Any]] | None = [] if smoke_mode else None
+    random_readbacks: list[dict[str, Any]] | None = [] if smoke_mode else None
+
     try:
         baseline_by_key = run_baseline_pass(model, tokenizer, device, rows, batch_size)
 
         hook_c, ctrl_c = steer_lib.build_hook_and_controller(torch.tensor(fop["c_hat"], dtype=torch.float32), fop["sigma_c"])
-        gated_active_by_key = run_active_pass(model, tokenizer, device, ctrl_c, layer_module, "gated", fired, gain_gated, batch_size)
+        gated_active_by_key = run_active_pass(
+            model, tokenizer, device, ctrl_c, layer_module, "gated", fired, gain_gated, batch_size,
+            readback_collector=gated_readbacks,
+        )
         gated_confab = [gated_active_by_key[r["row_key"]] for r in fired_confab] if fired_confab else []
         gated_known_full = combine_active_and_baseline(held_known, gated_active_by_key, baseline_by_key)
         gated_known_fired_only = [gated_active_by_key[r["row_key"]] for r in fired_known] if fired_known else []
 
         hook_r, ctrl_r = steer_lib.build_hook_and_controller(torch.tensor(fop["random_direction"], dtype=torch.float32), 1.0)
-        rand_active_by_key = run_active_pass(model, tokenizer, device, ctrl_r, layer_module, "random_direction", fired, gain_random, batch_size)
+        rand_active_by_key = run_active_pass(
+            model, tokenizer, device, ctrl_r, layer_module, "random_direction", fired, gain_random, batch_size,
+            readback_collector=random_readbacks,
+        )
         rand_confab_full = combine_active_and_baseline(held_confab, rand_active_by_key, baseline_by_key)
         rand_known_full = combine_active_and_baseline(held_known, rand_active_by_key, baseline_by_key)
+
+        if smoke_mode:
+            # G0 readback_within_tolerance: gates.yaml names only the gated
+            # and random_direction arms (permuted_gate reuses the gated
+            # arm's own already-verified c_hat snap, so it is not named
+            # separately). Checked before proceeding to permuted_gate so a
+            # dosing fault stops here, not after the full smoke completes.
+            verify_smoke_readback_tolerance(gated_readbacks, "gated")
+            verify_smoke_readback_tolerance(random_readbacks, "random_direction")
 
         permuted_active_by_key = run_active_pass(model, tokenizer, device, ctrl_c, layer_module, "permuted_gate", permuted_rows, gain_gated, batch_size)
         permuted_known_full = combine_active_and_baseline(held_known, permuted_active_by_key, baseline_by_key)
@@ -277,7 +395,7 @@ def cmd_smoke(args: argparse.Namespace) -> int:
     known_rows = [r for r in rows if r["role"] == "known_correct_answered"][: args.n_rows - len(confab_rows)]
     sample = confab_rows + known_rows
     sample_fire = {r["row_key"]: fire_by_key[r["row_key"]] for r in sample}
-    summary = run_four_arms(sample, sample_fire, min(args.batch_size, len(sample)) or 1)
+    summary = run_four_arms(sample, sample_fire, min(args.batch_size, len(sample)) or 1, smoke_mode=True)
     ANALYSIS.mkdir(parents=True, exist_ok=True)
     write_json(ANALYSIS / "smoke_heldout_summary.json", summary)
     print(json.dumps(summary, indent=2, default=str), flush=True)
