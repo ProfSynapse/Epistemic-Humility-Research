@@ -261,3 +261,34 @@ in `experiment.yaml`.
 - Predictions scoreboard left EMPTY for the PI and lead to fill at sign.
 - No harness code written; harness build is a separate assignment gated on review.
 - `bin/exp validate`: OK.
+
+## 2026-07-13 - Launch incident: dual-launch collision, quarantine, clean relaunch (lead)
+
+Instrumentation-hygiene record, pre-gates; no protocol surface touched.
+
+After the anchor-slice fix (54cf836a), the llama cell was accidentally
+launched TWICE: the builder relaunched detached (setsid nohup, correct
+mechanics) but went idle without reporting, its process was not visible to
+the lead's process checks, and the lead then launched a believed-takeover
+run. Both processes swept the same FIT ladder grid and appended interleaved
+rows to the same RunLog files under analysis/llama/runlog/ (visible
+signature: duplicated progress lines and one rung's log at roughly twice
+sibling size). The lead's process crashed on the resulting tmp-file race in
+run_log.finalize (FileNotFoundError on hs20__gated__dose20 summary rename);
+the builder's process survived but its on-disk ladder artifacts were
+cross-contaminated.
+
+Resolution: surviving process killed by exact PID (307649 pipeline,
+308800 dose_ladder, identities verified via /proc cmdline); every
+ladder-derived artifact quarantined by rename (nothing deleted) to
+analysis/llama/quarantine-dual-launch-20260713/ (runlog/, run_llama.log,
+run_llama.pid, and analysis-committed/llama/hs20_fit_build_manifest.json,
+which was written during the contaminated window); deterministic
+materialize products (anchors slice, joined rows, manifests) kept in place
+for the rerun to verify/rewrite. A single clean run was then relaunched by
+the lead with the HF transfer guards. No gate, threshold, dose grid, or
+registered text changed; no contaminated number was read as a result.
+
+Standing correction adopted: on this lane the lead owns all launches, and a
+detached launch is not complete until its PID/log/liveness report lands
+before the launching agent goes idle.
