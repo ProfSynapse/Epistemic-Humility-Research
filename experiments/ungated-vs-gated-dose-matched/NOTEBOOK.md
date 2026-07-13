@@ -6,6 +6,28 @@ in `experiment.yaml`.
 
 ## Entries
 
+- 2026-07-13 (RESOLVED): red-team review complete (5 surfaces: exact-reproduction
+  plausibility, derived-arm validity, metric decomposition, fire-bit provenance,
+  cross-result consistency with the ladder). All gates SURVIVE; no invalidating
+  finding. Lead adjudications accepted into the Outcome: (1) metric hygiene:
+  60.1% is DAMAGE (not-well-formed-correct), decomposed 55.8pp clean
+  false-refusal + 3.9pp answered-wrong + 0.4pp degenerate, and SUPERSEDES the
+  unregistered n=80 36.2% diagnostic rather than reproducing it; (2) scope: the
+  write-non-selective / gate-supplies-selectivity claim is bound to
+  Qwen3-4B / L34 / dose-200 and explicitly reconciled with the qwen3.5 mid-band
+  ladder's permuted-gate result as operating-point dependence, not
+  contradiction; (3) provenance: sha256 of the held-out anchor tensor and both
+  source artifacts recorded in the Outcome so the CPU join survives a source
+  worktree wipe. The exact G0 reproduction (identical numerators 136/185 and
+  8/258) is expected single-row greedy determinism and doubles as proof the
+  anchor reuse did not drift; run freshness verified via live readback on all
+  443 rows and 371/443 baseline-vs-dosed text differences. The pre-outcome
+  G0-asymmetry adjudication was not exercised (cost landed at 0.031 exactly).
+  Both scoreboard calls adjudicated in the Outcome: orchestrator directionally
+  right but under-predicted damage magnitude; user falsifier-fires call wrong
+  at this operating point.
+
+
 - 2026-07-13 (SIGNED, pre-launch): Signed after lead review of the built
   harness (CPU smoke 8/8 re-run by the lead; commit 919c3888). Instrument
   modules added to instrument.modules BEFORE sign so the sha256 pins cover

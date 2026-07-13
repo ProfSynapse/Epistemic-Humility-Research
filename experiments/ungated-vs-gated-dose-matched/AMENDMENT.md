@@ -161,5 +161,89 @@ back to Modal A10G if the card is not free before the submission window.
 
 ## Outcome
 
-Filled at resolve. Record the verdict, the gate results, and the one-sentence
-summary that also goes into `verdict:` in the manifest.
+**Resolved 2026-07-13. ALL GATES PASS. The falsifier did not fire: on this
+instrument the write is non-selective and the doubt gate supplies the
+selectivity.** Red-teamed pre-verdict (5 surfaces: exact-reproduction
+plausibility, derived-arm validity, metric decomposition, fire-bit provenance,
+cross-result consistency); all surfaces survive, with two binding scope
+statements recorded below.
+
+**Gate results** (all rates over the held-out split, 185 confab + 258
+known-correct rows; lead-recomputed from `analysis/run_log.jsonl` and
+independently recomputed by the red-team, both matching
+`analysis-committed/ungated_vs_gated_summary.json` exactly):
+
+- **H4-G0 PASS (instrument validity).** The gate-on arm reproduces the resolved
+  cell's numbers exactly: gated confab clean_tighten 136/185 = 73.5% (tolerance
+  band [68.5%, 78.5%]) and gated known-correct cost 8/258 = 3.1% (bound 6.1%).
+  Identical numerators, not merely in-band: both harnesses are single-row greedy
+  deterministic on the same model, prompts, hook, dose, and grader, so exact
+  token-level reproduction is the expected behavior and is itself evidence that
+  the reused anchors did not drift. The run is fresh, not a copy: all 443 rows
+  carry live readback (mean 200.018, range 199.85-200.25) and 371/443 rows have
+  baseline text differing from dosed text.
+- **H4-G1 PASS (primary).** Ungated known-correct damage 155/258 = 60.1% versus
+  gated 8/258 = 3.1%: a 57.0pp gap against the registered 15pp margin. Paired
+  McNemar over the 258 known-correct rows: 149 discordant pairs (148
+  ungated-damaged-only vs 1 gated-damaged-only), exact binomial p = 4.2e-43,
+  far below the registered p < 0.001. None of the 149 discordant pairs is a
+  fired row; every fired known (4/258) is concordant by construction.
+- **H4-G2 PASS (parity).** Ungated confab conversion 144/185 = 77.8%, gated
+  136/185 = 73.5%; the gate gives up 4.3pp of conversion, well inside the 15pp
+  parity bound.
+
+**Binding scope statement 1 (metric hygiene).** H4's damage indicator is
+not-well-formed-correct, which is broader than refusal. The 155 damaged ungated
+knowns decompose as 144 clean false-refusals (55.8pp), 10 answered-wrong
+(3.9pp), and 1 degenerate (0.4pp). Dosing every known-correct row
+unconditionally damages 60.1% of them versus 3.1% under the gate. This
+registered contrast SUPERSEDES the unregistered n=80 dose-200 diagnostic
+(36.2% false-refusal); the registered false-refusal component alone (55.8%) is
+higher than the diagnostic estimate, consistent with the larger and different
+held-out pool. 60.1% must not be reported as a refusal rate, and H4 must not
+be described as reproducing the 36.2% diagnostic.
+
+**Binding scope statement 2 (operating-point dependence).** H4 certifies that
+FOR THE RESOLVED Qwen3-4B / L34 / dose-200 instrument the write is
+non-selective on knowns and the doubt gate supplies the selectivity. This is
+scoped to that substrate, site, and dose, and must not be generalized to the
+caution-snap mechanism at large: the Qwen3.5-4B mid-band ladder's permuted-gate
+result (`experiments/qwen35-4b-midband-doubt-snap/AMENDMENT.md`, dosed knowns
+refused only ~5.6% at hs20 / 8 sigma_c) shows the write itself is
+content-selective at that operating point. The two results are not in tension;
+they measure different substrate, site, and dose, and together they establish
+that the write's content-selectivity is operating-point-dependent. The paper
+may cite H4's non-selectivity only as an L34/dose-200-scoped registered number,
+never as a universal property of the caution write.
+
+**Provenance (anchor reuse, recorded at resolve per red-team hygiene note).**
+The fire bit reproduces exactly from the reused L34 anchors plus the committed
+frozen readout (u_d, mu_d, sigma_d, tau_frozen): confab 168/185 fired, known
+4/258 fired; logged fire equals recomputed fire on all 443 rows. Checksums so
+the CPU join stays reproducible if the source worktree is wiped:
+`analysis/l34_anchor_extract_heldout.safetensors` sha256
+`7299ac8212a734f3d99c3d1fc96617b3ba247cfb3f62709a1fa4be1c7e2fa80d`; source
+artifacts in the gate-snap-tighten worktree: `l34_anchor_extract.safetensors`
+sha256 `ee724687c3705f96d8c05f55cba78300cffdf69378982b8b850f52415d0772ff`,
+`rows_with_text.jsonl` sha256
+`02c6ca9d69342db368e19f9f057d25d1ca0f895df1e522164ff0844e8ac8c066`.
+
+**Notes.** The pre-outcome NOTEBOOK adjudication on H4-G0's asymmetric cost
+tolerance was not exercised: the gated cost landed at exactly 0.031, so no
+below-floor stop occurred. The gated known damage 8/258 decomposes as 4 fired
+plus 4 non-fired rows the raw model damages with no intervention, matching the
+resolved cell's own 8/258.
+
+**Predictions adjudication.** Orchestrator: directionally right (gate
+certified, McNemar far below 1e-3, conversion parity held) but under-predicted
+the damage magnitude (called 30-40% ungated damage and a >25pp gap; actual
+60.1% and 57.0pp) and over-predicted ungated conversion (called 80-85%; actual
+77.8%). User: the falsifier-fires call (write inherently selective, gate
+unnecessary) is wrong on this substrate/site/dose; the ladder's permuted-gate
+result shows where that intuition does hold, at the mid-band operating point.
+
+**One-sentence verdict:** On the resolved Qwen3-4B/L34/dose-200 instrument,
+dose-matched ungated dosing damages 60.1% of held-out known-correct rows versus
+3.1% gated (57.0pp, McNemar p = 4.2e-43) while the gate costs only 4.3pp of
+confab conversion, certifying that the doubt gate, not the write, supplies the
+instrument's selectivity at that operating point.

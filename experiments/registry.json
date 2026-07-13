@@ -2547,10 +2547,10 @@
       "question": "When every held-out row is dosed unconditionally at the caution-snap setpoint (gate off) versus dosed only where the doubt gate fires (gate on), does the doubt gate supply the instrument's selectivity - much less known-correct damage - without materially sacrificing confab conversion?",
       "registered": true,
       "slug": "ungated-vs-gated-dose-matched",
-      "status": "signed",
+      "status": "resolved",
       "title": "H4: Registered Ungated-vs-Gated Dose-Matched Arm for the Caution Snap",
       "type": "steer-cell",
-      "verdict": ""
+      "verdict": "On the resolved Qwen3-4B/L34/dose-200 instrument, dose-matched ungated dosing damages 60.1% of held-out known-correct rows versus 3.1% gated (57.0pp, McNemar p=4.2e-43) while the gate costs only 4.3pp of confab conversion: the doubt gate, not the write, supplies the instrument's selectivity at that operating point."
     },
     {
       "checkpoint": {

@@ -1,7 +1,7 @@
 slug: ungated-vs-gated-dose-matched
 title: 'H4: Registered Ungated-vs-Gated Dose-Matched Arm for the Caution Snap'
 type: steer-cell
-status: signed
+status: resolved
 registered: true
 created_at: '2026-07-11T00:41:00Z'
 question: When every held-out row is dosed unconditionally at the caution-snap setpoint
@@ -45,5 +45,8 @@ inputs:
 - experiments/doubt-gated-caution-tighten/analysis-committed/c_hat_L34.json
 - experiments/doubt-gated-caution-tighten/analysis-committed/gate_fit.json
 - experiments/doubt-gated-caution-tighten/analysis-committed/build_manifest.json
-verdict: ''
+verdict: 'On the resolved Qwen3-4B/L34/dose-200 instrument, dose-matched ungated dosing
+  damages 60.1% of held-out known-correct rows versus 3.1% gated (57.0pp, McNemar
+  p=4.2e-43) while the gate costs only 4.3pp of confab conversion: the doubt gate,
+  not the write, supplies the instrument''s selectivity at that operating point.'
 kg: []
