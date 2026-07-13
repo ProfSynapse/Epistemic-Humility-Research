@@ -1,35 +1,40 @@
 slug: h6-genstream-hook-firing-check
 title: Commitment-Point gen_stream Hook-Firing Check
 type: lab-diagnostic
-status: draft
+status: signed
 registered: true
 created_at: '2026-07-11T00:35:42Z'
-question: >-
-  Do steering hooks installed via the generation-stream (answer-window) path
-  actually fire on every mid-generate() decode forward pass, and do they modify
-  the target hidden state by exactly the commanded write, on the harness paths
-  used to produce answer-window steering evidence (the AK bespoke Unsloth path
-  and the tuner plain-HF path)?
-prediction: >-
-  PATH-BESPOKE fails H6-G1 (the Unsloth for_inference optimized decode loop does
-  not route per-step through the hooked module.forward, confirming the AK section
+question: Do steering hooks installed via the generation-stream (answer-window) path
+  actually fire on every mid-generate() decode forward pass, and do they modify the
+  target hidden state by exactly the commanded write, on the harness paths used to
+  produce answer-window steering evidence (the AK bespoke Unsloth path and the tuner
+  plain-HF path)?
+prediction: PATH-BESPOKE fails H6-G1 (the Unsloth for_inference optimized decode loop
+  does not route per-step through the hooked module.forward, confirming the AK section
   8 confound); PATH-TUNER passes H6-G1+G2+G3 (plain-HF register_forward_hook fires
   every decode step, readback lands the commanded write within 5%, no-op delta is
   exactly zero), certifying it as the go-forward answer-window steering instrument.
-falsifier: >-
-  For any path claimed as an answer-window steering instrument, the steering hook
-  does not fire on every decode forward pass (H6-G1 fail) OR does not deliver the
-  commanded write magnitude at the instrumented decode positions (H6-G2 fail); if
-  either fails for a path, all gen_stream answer-window steering evidence produced
-  on that path stays quarantined and the AK Stage 2 gen_stream MISS cannot be
-  adopted as a causal null.
+falsifier: For any path claimed as an answer-window steering instrument, the steering
+  hook does not fire on every decode forward pass (H6-G1 fail) OR does not deliver
+  the commanded write magnitude at the instrumented decode positions (H6-G2 fail);
+  if either fails for a path, all gen_stream answer-window steering evidence produced
+  on that path stays quarantined and the AK Stage 2 gen_stream MISS cannot be adopted
+  as a causal null.
 checkpoint:
   repo: unsloth/Qwen3-4B
   revision: ''
 instrument:
-  configs: [cell.yaml, gates.yaml]
-  modules: []
-  pins: {}
+  configs:
+  - cell.yaml
+  - gates.yaml
+  modules:
+  - h6_hook_check.py
+  - test_h6_smoke.py
+  pins:
+    cell.yaml: 2880140afb33fbb4fe86292831e8109984ab0137be39aed0c1812936c5591791
+    gates.yaml: c48d9a446967108b29804ebf70881afa9848f3b3e33413ea0ce418d2557c5c53
+    h6_hook_check.py: 4cbdac9644207b40fa9aa6f4ad31b20ff4592f6ad51ce1c3ba5a64a13d485eeb
+    test_h6_smoke.py: e37d6f2a1cdf3e500f6639bd028441209d695a13a04614ace1fe8e663f124dda
 inputs: []
 verdict: ''
 kg: []

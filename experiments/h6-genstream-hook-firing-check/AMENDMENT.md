@@ -1,6 +1,6 @@
 # Commitment-Point gen_stream Hook-Firing Check (H6)
 
-Status: draft (not signed; do not launch as confirmatory evidence). Legacy
+Status: signed (2026-07-13; predictions were recorded 2026-07-11 pre-sign; local 3090 launch approved by the user 2026-07-13). Legacy
 working label: **H6** (paper 5 hardening list, memo
 `docs/review/paper5-actuation-review-2026-07-10.md` item H6; TODO.md row H6).
 
