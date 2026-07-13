@@ -33,6 +33,7 @@ Always choose the narrowest reference needed for the task:
 | Use common launch command patterns | [reference/common-patterns.md](reference/common-patterns.md) |
 | Prepare/gate hidden-state extraction | [reference/hidden-state-probe-smoke.md](reference/hidden-state-probe-smoke.md) |
 | Author a NEW steering / extraction / probe-fit / gate-scoring cell (tuner-backed) | the `mechinterp-cells` skill (`.skills/mechinterp-cells/SKILL.md`) |
+| Grade abstention/refusal in a gated harness (detector + blinded adjudication lane) | [reference/abstention-grading.md](reference/abstention-grading.md) |
 | Decide batch-1 vs batched generation for a GPU cell (parity rules, vLLM/HF lanes, numerics smoke) | [reference/batched-generation.md](reference/batched-generation.md) |
 | Plan archived legacy mechinterp causal-pilot sweeps | [reference/legacy-mechinterp-causal-pilot-sweeps.md](reference/legacy-mechinterp-causal-pilot-sweeps.md) |
 | Record durable research-session memory | [reference/research-sessions.md](reference/research-sessions.md) |
@@ -95,6 +96,14 @@ operation, then follow any further routing inside that reference.
   session note + run record. Every amendment pre-states a prediction, a falsifier,
   and its gates — and never moves the goalposts after the result. See
   [reference/amendment-vs-lab-notebook.md](reference/amendment-vs-lab-notebook.md).
+- Abstention grading: an exact-phrase refusal detector alone is not an
+  acceptance instrument. Any harness whose gates score abstention pairs a
+  frozen, pinned detector (screen) with a pre-registered BLINDED adjudication
+  lane covering detector-negative rows from BOTH populations (benefit and
+  cost), with manifest-before-grading and hash-before-unblinding enforced in
+  code, and a falsifier that closes the regress (no rescoring lane behind the
+  lane). Protocol, rubric, cautionary case, and pre-sign checklist:
+  [reference/abstention-grading.md](reference/abstention-grading.md).
 - Data-exhaust at build time: every generation harness persists per-sample
   generation text and the full sub-grade dict in its gitignored row-level run
   log; booleans-only logs are a build defect, and the pre-sign review checks
