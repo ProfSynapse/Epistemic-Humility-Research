@@ -19,7 +19,7 @@ tags: [dataset, epistemic-humility, abstention, bridge-arm, do-not-redistribute,
 The Idk TRAINING data from Cheng et al. (ICML 2024) used to align
 Llama-2-7b-chat with Idk-SFT and Idk-DPO. This is distinct from the method
 OUTPUTS in `datasets/say-i-dont-know-outputs/` (those are test generations; this
-is the training input). Our Phase 1 bridge arm trains on this exact data so its
+is the training input). Our locked training-regimen bridge arm trains on this exact data so its
 over-refusal numbers are directly comparable to Cheng's published 42.71%
 (Idk-SFT) / 23.27% (Idk-DPO).
 

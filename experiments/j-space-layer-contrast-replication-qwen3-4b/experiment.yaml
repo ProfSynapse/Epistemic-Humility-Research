@@ -24,10 +24,10 @@ instrument:
   - extract_fresh_anchor.py
   - run_contrast.py
   pins:
-    cell.yaml: d3f0d2df4ccf26b4bdcb146690380292ab3dd65b1e7ed9bec0b4e651ce82bfe6
+    cell.yaml: 2bb271755396a1c8d70ad18707b594837468a0cabab5467da311812104629416
     gates.yaml: 8b6581dd3d510fd30715a782fa48c98c907980919b19d4cbcfc6f2e15276c4d3
-    mine_fresh_eval_pool.py: 0f764957032e887c78a58be2d2483d265e13363baaf470ee1082c466974d1d94
-    extract_fresh_anchor.py: d2f70f7f3e6e4bb8bed3c238de62f732734cabd50fc94bd1e60d3c2563ccbecc
+    mine_fresh_eval_pool.py: 0cc8a347886b31a2908d200c21bef060a169eae0838bd9d27c6e52ac9656d6b5
+    extract_fresh_anchor.py: 71cffb878a7ddbba75adbb375526e0608ae5a0902025ec5c6a739497a621c9fb
     run_contrast.py: 2a245968ebe0c97087cc89c915a983feccf778d4cb79a6e8e1729a4176bc05b4
 inputs:
 - experiments/j-space-calibrated-layer-contrast-qwen3-4b/AMENDMENT.md

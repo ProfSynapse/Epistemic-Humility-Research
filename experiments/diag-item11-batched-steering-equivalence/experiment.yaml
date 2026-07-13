@@ -1,0 +1,27 @@
+slug: diag-item11-batched-steering-equivalence
+title: Diagnostic Item 11 - Batched Steering Equivalence
+type: lab-diagnostic
+status: historical
+registered: true
+created_at: '2026-07-09T13:45:00Z'
+question: Does the batched final-position, per-row-alpha steering hook match the one-prompt-at-a-time reference edit on the deployed Qwen3-4B clean-SFT to GRPO-v2 lineage?
+prediction: ''
+falsifier: ''
+checkpoint:
+  repo: professorsynapse/eh-qwen3-4b-clean-sft-grpo-v2-seed1-lora
+  revision: 8914081dfcec4f1f025f2dbe4195d4f7aa8d210e
+instrument:
+  configs: []
+  modules:
+  - archive/experiment/phase1/probe/steering/gpu_equivalence_cell.py
+  - cloud/modal_item11_equivalence.py
+  - cloud/runpod_diag_gpu_equiv.sh
+  pins:
+    cloud/modal_item11_equivalence.py: d6978c00785ad4be3bb991513f50371fd422a9cb0018aa0e4f173d7f15c985bb
+    cloud/runpod_diag_gpu_equiv.sh: 7be9b1f3dcd6563b7a426d7a5ead6f966fdde354f7a3af20b90e97a3d2d5a72d
+inputs:
+- experiments/diag-item11-batched-steering-equivalence/artifacts/directions/qwen3-4b-grpo-v2/direction_caution.json
+- experiments/diag-item11-batched-steering-equivalence/artifacts/directions/qwen3-4b-grpo-v2/direction_caution.npy
+- docs/preparation/item11-batching-parity-cpu-half.md
+verdict: Historical lab-notebook diagnostic banked; CPU and GPU parity checks passed, clearing the AK Stage 2 engine gate for the batched steering path.
+kg: []

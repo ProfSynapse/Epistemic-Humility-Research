@@ -1,0 +1,76 @@
+{
+  "stage": "amendment_ai_condition1_smoke",
+  "branch": "amendment-ai-probe-as-reward",
+  "config": {
+    "G": 4,
+    "temperature": 1.35,
+    "max_new_tokens": 128,
+    "w_c": 0.5,
+    "w_a": 0.5,
+    "format_gate": -1.0,
+    "n_prompts": 4,
+    "sensor": "/home/profsynapse/code/Epistemic-Humility-Research/archive/experiment/phase1/probe/analysis/par_sensor_refit/probes/probe_L24_cleansft.joblib"
+  },
+  "criterion_1_reward_variance": {
+    "frac_steps_nonzero_group_std": 0.75,
+    "n_groups": 4,
+    "threshold": 0.3,
+    "mean_group_std": 0.2885,
+    "passed": true
+  },
+  "criterion_2_inloop_p_faithful": {
+    "n_spot_checked": 4,
+    "max_abs_diff": 0.9665441314743827,
+    "threshold": 0.0001,
+    "passed": false,
+    "note": "offline = frozen refit probe on persisted union_pregen L24 state"
+  },
+  "criterion_3_tripwires_fire": {
+    "sensor_integrity": {
+      "auroc_true": 0.8154,
+      "auroc_shuffled": 0.5596,
+      "halt_threshold": 0.8,
+      "halt_fired": true
+    },
+    "degeneracy": {
+      "forced_invalid_frac": 1.0,
+      "halt_threshold": 0.1,
+      "halt_fired": true
+    },
+    "passed": true
+  },
+  "criterion_4_no_crash_checkpoint": {
+    "passed": true,
+    "ckpt_dir": "/home/profsynapse/code/Epistemic-Humility-Research/archive/experiment/phase1/probe/analysis/par_sensor_refit/ai_smoke/ckpt",
+    "adapter_file": "/home/profsynapse/code/Epistemic-Humility-Research/archive/experiment/phase1/probe/analysis/par_sensor_refit/ai_smoke/ckpt/adapter_model.safetensors",
+    "saved_lora_tensors": 504,
+    "micro_run_crashed": false
+  },
+  "all_green": false,
+  "spot_checks": [
+    {
+      "row_key": "ah::selfaware_answerable::000294",
+      "p_inloop": 0.9665629182905193,
+      "p_offline": 1.8786816136662327e-05,
+      "abs_diff": 0.9665441314743827
+    },
+    {
+      "row_key": "ah::selfaware_answerable::004629",
+      "p_inloop": 0.006460458857604095,
+      "p_offline": 0.00020562124195643743,
+      "abs_diff": 0.006254837615647658
+    },
+    {
+      "row_key": "ah::selfaware_answerable::002689",
+      "p_inloop": 0.015322690120427657,
+      "p_offline": 0.0005866174202504935,
+      "abs_diff": 0.014736072700177164
+    },
+    {
+      "row_key": "ah::kuq_ku_known::000659",
+      "p_inloop": 3.819010225252922e-09,
+      "p_offline": 1.9603508821116174e-12,
+      "abs_diff": 3.81704987437081e-09
+    }
+  ]
+}

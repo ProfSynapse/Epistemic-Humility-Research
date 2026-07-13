@@ -1,0 +1,37 @@
+slug: quantile-balanced-probe-distilled-sft
+title: 'Protocol Amendment M: Quantile-Balanced Probe-Distilled Stated Confidence
+  (SFT)'
+type: historical-amendment
+status: historical
+registered: true
+created_at: '2026-07-08T17:40:52Z'
+legacy:
+  label: M
+  path: experiment/protocol/AMENDMENT-M-quantile-balanced-probe-distilled-sft.md
+  migrated_to: experiments/quantile-balanced-probe-distilled-sft/AMENDMENT.md
+migration:
+  needs_manual_review:
+  - falsifier
+  - experiment_type
+  - instrument_configs
+  - kg_ids
+  notes: Imported from legacy amendment prose. Do not infer missing machine fields
+    without hand-reading AMENDMENT.md.
+question: Can distilling the calibrated internal factual/doubt axis into the SFT stated-confidence
+  token install calibration while preserving behavior?
+prediction: "orchestrator:\n  call: direct factual target installs discrimination,\
+  \ keeps behavior\nuser:\n  call: null\n  note: Predates the dual-prediction practice\
+  \ (adopted 2026-07-03 at AH signing);\n    no separately recorded user prediction."
+falsifier: ''
+checkpoint:
+  repo: ''
+  revision: ''
+instrument:
+  configs: []
+  modules: []
+  pins: {}
+inputs: []
+verdict: FALSIFIER FIRED — behavior PASSED 4/4 (action margin +31pt) but calibration
+  failed (correctness AUROC 0.504, 3 distinct values); scalar collapsed onto the action;
+  bottleneck is channel/loss, not target.
+kg: []

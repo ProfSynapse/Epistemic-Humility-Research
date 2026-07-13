@@ -1,0 +1,131 @@
+# KTO calibrated-expression logit diagnostic on fixed SelfAware behavior cells.
+#
+# Purpose: test whether the KTO h_lora damage axes move refusal-opener logits
+# in the expected direction across known-refused, known-correct,
+# unknown-refused, and unknown-wrong rows. This is not correctness evidence.
+
+sweep:
+  name: phase3_selfaware_calibrated_expression_kto_logit_sweep
+  evidence_tier: tier2_exploratory_local
+  runner_config: archive/experiment/phase1/probe/config/causal-pilot-core/phase3_causal_pilot_gpu_smoke.yaml
+  candidate_source_config: archive/experiment/phase1/probe/config/selfaware-calibrated-expression-kto-panels/phase3_selfaware_calibrated_expression_kto_logit_candidates.yaml
+  output_root: experiment/phase1/probe/qwen3-4b-sft-merged-seed1-selfaware/causal_pilots/phase3_selfaware_calibrated_expression_kto_logit_sweep
+  candidates:
+    - kto_h_lora_unknown_wrong_vs_refused_l24
+    - kto_h_lora_known_refused_vs_correct_l24
+    - kto_h_lora_known_refused_vs_correct_l27
+  execution:
+    backend: docker
+    docker:
+      image: unsloth/unsloth:latest
+      repo_mount: /workspace/repo
+      workdir: /workspace/repo
+      hf_home: /workspace/repo/.cache/hf
+      huggingface_hub_cache: /workspace/repo/.cache/hf/hub
+  runner_overrides:
+    selection:
+      probe_results: null
+      row_keys:
+        - selfaware::selfaware::000008::selfaware-9
+        - selfaware::selfaware::000074::selfaware-75
+        - selfaware::selfaware::000196::selfaware-197
+        - selfaware::selfaware::000410::selfaware-411
+        - selfaware::selfaware::000416::selfaware-417
+        - selfaware::selfaware::000511::selfaware-512
+        - selfaware::selfaware::000577::selfaware-578
+        - selfaware::selfaware::000607::selfaware-608
+        - selfaware::selfaware::000608::selfaware-609
+        - selfaware::selfaware::000723::selfaware-724
+        - selfaware::selfaware::000728::selfaware-729
+        - selfaware::selfaware::000812::selfaware-813
+        - selfaware::selfaware::001132::selfaware-1133
+        - selfaware::selfaware::001152::selfaware-1153
+        - selfaware::selfaware::001221::selfaware-1222
+        - selfaware::selfaware::001242::selfaware-1243
+        - selfaware::selfaware::000002::selfaware-3
+        - selfaware::selfaware::000003::selfaware-4
+        - selfaware::selfaware::000010::selfaware-11
+        - selfaware::selfaware::000014::selfaware-15
+        - selfaware::selfaware::000029::selfaware-30
+        - selfaware::selfaware::000035::selfaware-36
+        - selfaware::selfaware::000037::selfaware-38
+        - selfaware::selfaware::000039::selfaware-40
+        - selfaware::selfaware::000044::selfaware-45
+        - selfaware::selfaware::000052::selfaware-53
+        - selfaware::selfaware::000059::selfaware-60
+        - selfaware::selfaware::000066::selfaware-67
+        - selfaware::selfaware::000068::selfaware-69
+        - selfaware::selfaware::000087::selfaware-88
+        - selfaware::selfaware::000089::selfaware-90
+        - selfaware::selfaware::000091::selfaware-92
+        - selfaware::selfaware::002340::selfaware-2341
+        - selfaware::selfaware::002343::selfaware-2344
+        - selfaware::selfaware::002344::selfaware-2345
+        - selfaware::selfaware::002345::selfaware-2346
+        - selfaware::selfaware::002346::selfaware-2347
+        - selfaware::selfaware::002352::selfaware-2353
+        - selfaware::selfaware::002354::selfaware-2355
+        - selfaware::selfaware::002357::selfaware-2358
+        - selfaware::selfaware::002360::selfaware-2361
+        - selfaware::selfaware::002362::selfaware-2363
+        - selfaware::selfaware::002363::selfaware-2364
+        - selfaware::selfaware::002364::selfaware-2365
+        - selfaware::selfaware::002366::selfaware-2367
+        - selfaware::selfaware::002368::selfaware-2369
+        - selfaware::selfaware::002369::selfaware-2370
+        - selfaware::selfaware::002370::selfaware-2371
+        - selfaware::selfaware::002337::selfaware-2338
+        - selfaware::selfaware::002381::selfaware-2382
+        - selfaware::selfaware::002382::selfaware-2383
+        - selfaware::selfaware::002388::selfaware-2389
+        - selfaware::selfaware::002389::selfaware-2390
+        - selfaware::selfaware::002407::selfaware-2408
+        - selfaware::selfaware::002428::selfaware-2429
+        - selfaware::selfaware::002440::selfaware-2441
+        - selfaware::selfaware::002451::selfaware-2452
+        - selfaware::selfaware::002455::selfaware-2456
+        - selfaware::selfaware::002460::selfaware-2461
+        - selfaware::selfaware::002471::selfaware-2472
+        - selfaware::selfaware::002476::selfaware-2477
+        - selfaware::selfaware::002506::selfaware-2507
+        - selfaware::selfaware::002529::selfaware-2530
+        - selfaware::selfaware::002563::selfaware-2564
+    readiness_checks:
+      require_extraction_manifest:
+        status: ok
+        verified: true
+        row_count: 1233
+        label_counts:
+          known: 556
+          unknown: 677
+    control_settings:
+      wrong_layer:
+        layer_offsets: [-2, -1, 1, 2]
+      random_matched_norm:
+        seeds:
+          - 20260620
+          - 20260621
+          - 20260622
+    logit_targets:
+      groups:
+        - name: refusal_openers
+          source: static_strings
+          strings:
+            - I
+            - Sorry
+            - I don't
+          include_leading_space_variants: true
+          include_multi_token_first_token: true
+  modes:
+    - name: logit_diagnostic
+      max_rows: 64
+      coefficients:
+        - 25.0
+        - 50.0
+      controls:
+        - no_vector_baseline
+        - activation_addition
+        - activation_subtraction
+        - wrong_layer
+        - wrong_layer_subtraction
+        - random_matched_norm

@@ -47,7 +47,7 @@ STAGING_REPO = "professorsynapse/eh-al-prep-staging"
 QUESTION_POOL_IN_REPO = "pools/a0_pool_v21_questions.jsonl"
 
 AH_A0_ROWS = Path(
-    "/home/profsynapse/code/Epistemic-Humility-Research/experiment/phase1/probe/"
+    "/home/profsynapse/code/Epistemic-Humility-Research/archive/experiment/phase1/probe/"
     "analysis/ah_main/gen_A0/rows.jsonl"
 )
 MINED_A0_KNOWN_CORRECT = ANALYSIS / "mined_a0_known_correct_rows.jsonl"

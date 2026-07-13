@@ -3,16 +3,16 @@
 
 Pre-registered: experiments/ap-veto-length-balanced-confirmatory/AMENDMENT.md.
 Confirmatory follow-up to Amendment AM
-(experiment/protocol/AMENDMENT-AM-residual-catch-veto-coverage.md). Ported
+(experiments/residual-catch-veto-coverage/AMENDMENT.md). Ported
 (structure, not import) from
-experiment/phase1/probe/cloud/modal_am_residual_catch.py (read-only reference
-on the unmerged amendment-am branch; that script's own docstring records it
+experiments/residual-catch-veto-coverage/cloud/modal_am_residual_catch.py
+(read-only reference on the amendment-am branch; that script's own docstring records it
 was itself cloned from the crash-proof modal_al_true_a0.py v2 skeleton).
 
 AP-specific shape (identical to AM's, two deltas):
   * ap_extract.py (this experiment's own script, new-layout under
     experiments/ap-veto-length-balanced-confirmatory/, NOT the old
-    experiment/phase1/probe/ tree) does the numerics smoke THEN the full
+    archive/experiment/phase1/probe/ tree) does the numerics smoke THEN the full
     A0-surface regeneration at max_new_tokens=192 (up from AM's 96) + dual-
     position (pre/post) hidden-state extraction, all in one container pass.
   * The self-contained AP pool (question + aliases + gold_class +
@@ -225,7 +225,7 @@ def run_ap():
 
     exp_dir = os.path.join(workspace, "experiments/ap-veto-length-balanced-confirmatory")
     script = os.path.join(exp_dir, "ap_extract.py")
-    upload = os.path.join(workspace, "experiment/phase1/probe/cloud/upload_result.py")
+    upload = os.path.join(workspace, "experiments/common/cloud/upload_result.py")
 
     boot_id = time.strftime("%Y%m%dT%H%M%SZ", time.gmtime())
     job_log = f"{out}/job_log_{boot_id}.txt"

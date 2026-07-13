@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Phase 1 experiment-runner — matrix expansion + materialization + lane dispatch.
+locked training-regimen experiment-runner -- matrix expansion + materialization + lane dispatch.
 
 Location: .claude/skills/experiment-runner/scripts/run_matrix.py
 Purpose: Expand the PROTOCOL v0.3 (LOCKED) run matrix (config/matrix.yaml) into
@@ -9,7 +9,7 @@ Purpose: Expand the PROTOCOL v0.3 (LOCKED) run matrix (config/matrix.yaml) into
     ABORTS on mismatch), per-cell recipe materialization, data staging, run-record
     emission BEFORE launch, and prerequisite gating.
 Used with: scripts/check_prereqs.py (the gate), config/matrix.yaml (the SSOT),
-    experiment/phase1/recipes/*.yaml (base recipes), experiment/phase1/run_records/.
+    archive/experiment/phase1/recipes/*.yaml (base recipes), archive/experiment/phase1/run_records/.
 
 This is orchestration GLUE. It NEVER imports tuner internals and adds NO file
 under synaptic-tuner/ except ephemeral staged data under the tuner's already
@@ -43,30 +43,30 @@ import research_session  # noqa: E402  (sibling module, intentional local import
 
 # Research-repo (worktree) root, derived from this file's location so the path
 # defaults below are CWD-independent. We walk UP to the first ancestor that owns
-# experiment/phase1/ rather than hardcoding a parent index: this skill file lives
+# archive/experiment/phase1/ rather than hardcoding a parent index: this skill file lives
 # at a DIFFERENT depth in the canonical tree (.skills/experiment-runner/scripts,
 # 3 deep) than in the generated mirrors (.{claude,agents}/skills/experiment-runner/
 # scripts, 4 deep), so a fixed parents[N] is only correct in one layout. The
-# sentinel walk-up is location-robust — correct from .skills-direct AND both
-# mirrors — and matches prepare_extraction_cell._infer_repo_root's anchor. The
+# sentinel walk-up is location-robust -- correct from .skills-direct AND both
+# mirrors -- and matches prepare_extraction_cell._infer_repo_root's anchor. The
 # argparse defaults anchor on this rather than on relative strings, so
 # `python run_matrix.py` resolves identically wherever it is invoked (MT4). All
 # four remain caller-overridable for fixtures/tests.
 def _find_repo_root() -> Path:
     here = Path(__file__).resolve()
     for parent in here.parents:
-        if (parent / "experiment" / "phase1").is_dir():
+        if (parent / "archive" / "experiment" / "phase1").is_dir():
             return parent
     # Fallback: the canonical .skills/<skill>/scripts layout (3 deep). A mirror is
-    # one deeper, but the experiment/phase1 walk-up above resolves before this in
+    # one deeper, but the archive/experiment/phase1 walk-up above resolves before this in
     # any real checkout; this only guards a detached/synthetic layout.
     return here.parents[3]
 
 
 _REPO_ROOT = _find_repo_root()
 
-# Pre-registered cell counts (PROTOCOL v0.3 §3.1 / §3.1a). The expansion result
-# MUST match these exactly; a mismatch ABORTS — this is the pre-registration
+# Pre-registered cell counts (PROTOCOL v0.3 section 3.1 / section 3.1a). The expansion result
+# MUST match these exactly; a mismatch ABORTS -- this is the pre-registration
 # guard. Do not edit to absorb a matrix change; revise PROTOCOL first.
 EXPECTED_COUNT_4B = 19
 EXPECTED_COUNT_8B = 9
@@ -76,17 +76,17 @@ EXPECTED_COUNT_BRIDGE = 2
 # the tuner's already-gitignored scratch/ dir, so no tuner-tree edit is needed
 # (NOT a committed source addition). dataset.local_file is rewritten to this
 # tuner-repo-relative path so local_run_handler.py:502's /workspace/repo join
-# resolves. See reference/lanes.md and the §9.2(b.1) data-locality contract.
+# resolves. See reference/lanes.md and the section 9.2(b.1) data-locality contract.
 TUNER_STAGING_SUBDIR = "scratch/eh_staging"
 
 
 class MatrixError(Exception):
-    """Matrix expansion / count-assertion failure — abort the whole run."""
+    """Matrix expansion / count-assertion failure -- abort the whole run."""
 
 
 @dataclass(frozen=True)
 class Coordinate:
-    """Deterministic cell coordinate — becomes the run id and the eval tag."""
+    """Deterministic cell coordinate -- becomes the run id and the eval tag."""
 
     arm: str
     size: str
@@ -105,7 +105,7 @@ class Coordinate:
     @property
     def is_bridge(self) -> bool:
         """Bridge replication cell. Bridge data is do-not-redistribute, so these
-        are LOCAL-LANE ONLY (never on the hub) — see select_invocation."""
+        are LOCAL-LANE ONLY (never on the hub) -- see select_invocation."""
         return self.size == "bridge"
 
 
@@ -130,7 +130,7 @@ def load_yaml(path: Path) -> dict:
 def model_tag_from_recipe(recipe: dict) -> str:
     """Derive the WS-2 model_tag from the recipe's dataset.local_file path.
 
-    The builder writes to experiment/phase1/data/<model_tag>/<file>; the recipe's
+    The builder writes to archive/experiment/phase1/data/<model_tag>/<file>; the recipe's
     dataset.local_file carries that path, so the tag is its parent dir name.
     """
     local_file = (recipe.get("dataset") or {}).get("local_file")
@@ -140,7 +140,7 @@ def model_tag_from_recipe(recipe: dict) -> str:
 
 
 # ---------------------------------------------------------------------------
-# Expansion — matrix.yaml -> cells. Counts asserted against PROTOCOL v0.3.
+# Expansion -- matrix.yaml -> cells. Counts asserted against PROTOCOL v0.3.
 # ---------------------------------------------------------------------------
 
 
@@ -176,8 +176,8 @@ def expand_4b(matrix: dict) -> list:
     if len(cells) != EXPECTED_COUNT_4B:
         raise MatrixError(
             f"4B cell count {len(cells)} != pre-registered {EXPECTED_COUNT_4B} "
-            f"(PROTOCOL v0.3 §3.1/§3.1a). matrix.yaml drifted from the locked "
-            f"design — revise PROTOCOL before changing counts."
+            f"(PROTOCOL v0.3 section 3.1/section 3.1a). matrix.yaml drifted from the locked "
+            f"design -- revise PROTOCOL before changing counts."
         )
     return cells
 
@@ -200,7 +200,7 @@ def expand_8b(matrix: dict) -> list:
     if len(cells) != EXPECTED_COUNT_8B:
         raise MatrixError(
             f"8B cell count {len(cells)} != pre-registered {EXPECTED_COUNT_8B} "
-            f"(PROTOCOL v0.3 §3.1). If the 8B seed bump was vetoed, update both "
+            f"(PROTOCOL v0.3 section 3.1). If the 8B seed bump was vetoed, update both "
             f"confirm_8b_seeds and EXPECTED_COUNT_8B in a signed PROTOCOL revision."
         )
     return cells
@@ -231,7 +231,7 @@ def assert_bridge_lane_safety(cells: list, lane: str) -> None:
 
     Bridge cells are LOCAL-LANE ONLY: their OpenMOSS training data is
     do-not-redistribute and is never published to the hub, so a bridge cell on
-    the cloud lane is a CONFIG ERROR (license containment — vendored data must
+    the cloud lane is a CONFIG ERROR (license containment -- vendored data must
     never ride a hub-data lane). This is the expansion-time belt-and-suspenders
     guard; check_prereqs.check_cell and select_invocation enforce the same rule
     at the gate and the dispatcher.
@@ -243,12 +243,12 @@ def assert_bridge_lane_safety(cells: list, lane: str) -> None:
         raise MatrixError(
             f"bridge cells {bridge} cannot run on the cloud lane: bridge training "
             f"data is do-not-redistribute and is never published to the hub. "
-            f"Bridge arms are LOCAL-LANE ONLY — relaunch them with --lane local."
+            f"Bridge arms are LOCAL-LANE ONLY -- relaunch them with --lane local."
         )
 
 
 # ---------------------------------------------------------------------------
-# Materialization — base recipe + single override -> per-cell recipe.
+# Materialization -- base recipe + single override -> per-cell recipe.
 # ---------------------------------------------------------------------------
 
 
@@ -260,8 +260,8 @@ def materialize_recipe(base: dict, cell: Cell, lane: str = "local") -> dict:
     embed the coordinate. Materialized recipes stay PURELY DECLARATIVE: any legacy
     run.command/workdir is stripped and none is ever injected.
 
-    Mechanism note (arch §9.2, re-ruled 2026-06-10): the tuner's local-run handler
-    is method-generic — its command builder reads run.trainer and forwards the
+    Mechanism note (arch section 9.2, re-ruled 2026-06-10): the tuner's local-run handler
+    is method-generic -- its command builder reads run.trainer and forwards the
     training-key list (seed for all methods; beta for dpo/kto) with zero
     SFT-specific logic. The handler-extension (tuner task #34) widens the dispatch
     guard so local-run natively builds sft/dpo/kto commands, so the runner needs
@@ -288,12 +288,12 @@ def materialize_recipe(base: dict, cell: Cell, lane: str = "local") -> dict:
         f"toolset-training-artifacts/runs/{lane}/{coord.size}/{coord.run_id()}"
     )
     # Declarative recipes: drop any legacy run.command/workdir so a materialized
-    # recipe is never self-contradictory. Nothing is injected — the handler builds
+    # recipe is never self-contradictory. Nothing is injected -- the handler builds
     # the per-method trainer command from run.method + run.trainer + the training
     # block. We set run.method and run.trainer per cell so the materialized recipe
     # is a complete, self-describing job-config: the handler's widened dispatch
     # guard routes on run.method and its generic builder reads run.trainer (which
-    # defaults to the SFT trainer, so DPO/KTO MUST carry the right path). §9.2:1016.
+    # defaults to the SFT trainer, so DPO/KTO MUST carry the right path). section 9.2:1016.
     run_block = recipe.setdefault("run", {})
     if isinstance(run_block, dict):
         run_block.pop("command", None)
@@ -316,7 +316,7 @@ def sha256_file(path: Path) -> str:
 
 
 # ---------------------------------------------------------------------------
-# Data staging (local lane) — copy research-repo data into the tuner scratch.
+# Data staging (local lane) -- copy research-repo data into the tuner scratch.
 # ---------------------------------------------------------------------------
 
 
@@ -351,7 +351,7 @@ def dataset_basenames(recipe: dict) -> tuple:
 
 
 # ---------------------------------------------------------------------------
-# Run records — provenance spine (HANDOFF.md §5).
+# Run records -- provenance spine (HANDOFF.md section 5).
 # ---------------------------------------------------------------------------
 
 
@@ -379,7 +379,7 @@ def build_run_record(
             "arm": coord.arm, "size": coord.size, "cell_type": coord.cell_type,
             "seed": coord.seed, "override": override,
         },
-        "source_recipe": f"experiment/phase1/recipes/{cell.recipe}.yaml",
+        "source_recipe": f"archive/experiment/phase1/recipes/{cell.recipe}.yaml",
         "materialized_recipe_sha": sha256_text(materialized_text),
         "method": cell.method,
         "model": (recipe.get("model") or {}).get("name"),
@@ -403,21 +403,21 @@ def write_run_record(record: dict, run_records_dir: Path) -> Path:
 
 
 # ---------------------------------------------------------------------------
-# Lane dispatch — shell out to the tuner's public CLI. No tuner internals.
+# Lane dispatch -- shell out to the tuner's public CLI. No tuner internals.
 # ---------------------------------------------------------------------------
 
 
 def local_invocation(materialized_recipe_path: Path) -> list:
     """Local RTX 3090 lane: config-driven local Docker run via the tuner CLI.
 
-    UNIFORM across all methods (HANDLER EXTENSION resolution, §9.2 lines 994-1013,
+    UNIFORM across all methods (HANDLER EXTENSION resolution, section 9.2 lines 994-1013,
     lead-ratified). The tuner's local-run handler builds the per-method trainer
     command from the recipe's `run.trainer` + `training` block; coder-cloud's
     re-scoped #34 widens the handler's method guard to {sft,dpo,kto} and forwards
     beta (method-gated). So SFT, DPO, and KTO all dispatch through the same native
-    local-run verb with a purely declarative materialized recipe — WS-5 never
+    local-run verb with a purely declarative materialized recipe -- WS-5 never
     synthesizes a trainer command or a trainer --config invocation (that path was
-    explicitly withdrawn, §9.2 :1175-1176). Until #34 lands, the local capability
+    explicitly withdrawn, section 9.2 :1175-1176). Until #34 lands, the local capability
     probe keeps DPO/KTO cells SKIPPED (fail-closed), so this never runs prematurely.
     """
     return ["python", "tuner.py", "local-run",
@@ -459,18 +459,18 @@ def select_invocation(cell: Cell, lane: str, *, materialized_recipe_path: Path,
 
 
 def _build_arg_parser() -> argparse.ArgumentParser:
-    parser = argparse.ArgumentParser(description="Phase 1 run-matrix expander + launcher.")
+    parser = argparse.ArgumentParser(description="locked training-regimen run-matrix expander + launcher.")
     parser.add_argument("--matrix",
                         default=str(Path(__file__).resolve().parent.parent / "config" / "matrix.yaml"))
     # Path defaults anchor on _REPO_ROOT (this file's location) so they resolve
     # identically from the repo root or the skill dir (MT4). Callers can override
     # any of them with an explicit (absolute or CWD-relative) path.
     parser.add_argument("--recipes-dir",
-                        default=str(_REPO_ROOT / "experiment" / "phase1" / "recipes"))
+                        default=str(_REPO_ROOT / "archive" / "experiment" / "phase1" / "recipes"))
     parser.add_argument("--data-root",
-                        default=str(_REPO_ROOT / "experiment" / "phase1" / "data"))
+                        default=str(_REPO_ROOT / "archive" / "experiment" / "phase1" / "data"))
     parser.add_argument("--run-records-dir",
-                        default=str(_REPO_ROOT / "experiment" / "phase1" / "run_records"))
+                        default=str(_REPO_ROOT / "archive" / "experiment" / "phase1" / "run_records"))
     parser.add_argument("--research-repo-root", default=str(_REPO_ROOT))
     parser.add_argument("--tuner-root", default=str(_REPO_ROOT / "synaptic-tuner"))
     parser.add_argument("--lane", choices=["local", "cloud"], default="local")
@@ -534,10 +534,10 @@ def expand_and_report(args) -> int:
         kind="planning",
         title="Matrix Dry-Run",
         summary=(
-            f"Dry-run expanded {len(cells)} Phase 1 cells on lane={args.lane}; "
+            f"Dry-run expanded {len(cells)} locked training-regimen cells on lane={args.lane}; "
             "pre-registration count assertions passed and no launch occurred."
         ),
-        evidence=[args.matrix, args.recipes_dir, "experiment/protocol/research-trajectory.md"],
+        evidence=[args.matrix, args.recipes_dir, "docs/research-trajectory.md"],
         next_steps=["Run --check-only before preparing or launching cells."],
     )
     return 0
@@ -548,14 +548,14 @@ def check_and_report(args) -> int:
     PASS / SKIP / ABORT. Launches nothing and writes nothing.
 
     Fail-closed semantics (mirroring check_prereqs.check_cell):
-      - a hard PrereqError aborts the WHOLE matrix (return 1) — there is no
+      - a hard PrereqError aborts the WHOLE matrix (return 1) -- there is no
         meaningful partial run when a launch precondition is structurally absent;
       - a CellPrereqResult.skip is a per-cell SKIP (not-yet-ready arm degrades
         gracefully: cloud-data-unpublished, bridge-prereqs-absent), the matrix
         gate continues, and the cell is reported SKIPPED.
 
     Per-cell inputs are derived statically from the base recipe + the cell +
-    args — no staging and no tuner execution. The only launch-time-only check
+    args -- no staging and no tuner execution. The only launch-time-only check
     (hub-dataset revision on the cloud lane) is already handled inside check_cell
     as a SKIP, so nothing here fakes a PASS for a value it cannot verify yet.
     """
@@ -593,7 +593,7 @@ def check_and_report(args) -> int:
                 kind="blocker",
                 title="Prereq Gate Blocker",
                 summary=f"Prereq gate aborted on {cell.coordinate.run_id()}: {exc}",
-                evidence=[args.matrix, args.data_root, "experiment/phase1/run_records/"],
+                evidence=[args.matrix, args.data_root, "archive/experiment/phase1/run_records/"],
                 next_steps=["Resolve the hard prerequisite before launching any cell."],
             )
             return 1
@@ -614,7 +614,7 @@ def check_and_report(args) -> int:
             f"Prereq gate completed for lane={args.lane}: {n_pass} PASS, "
             f"{n_skip} SKIP, 0 ABORT across {len(cells)} cells."
         ),
-        evidence=[args.matrix, args.data_root, "experiment/phase1/run_records/"],
+        evidence=[args.matrix, args.data_root, "archive/experiment/phase1/run_records/"],
         next_steps=["Prepare or launch only cells that passed the gate."],
     )
     return 0

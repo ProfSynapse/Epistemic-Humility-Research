@@ -26,7 +26,7 @@ questions. It evaluates whether the model's decision to answer or abstain is
 itself correct, independent of raw QA performance.
 
 **Why it matters here:** A-Acc separates the quality of the abstain/answer
-decision from accuracy on attempted items, which is essential for the Phase 1
+decision from accuracy on attempted items, which is essential for the locked training-regimen
 study comparing how SFT, DPO, and KTO affect the calibration of abstention
 decisions rather than just downstream answer rates.
 

@@ -1,0 +1,49 @@
+slug: doubt-snap-cross-family-confirmatory
+type: steer-cell
+status: running
+registered: true
+question: Does the doubt-gated caution snap replicate as a selective, training-free
+  tighten instrument across the Llama, Ministral, Qwen3.5, and Gemma family panel,
+  including 8B-ish or nearest mid-size cells where eligible, when each model's direction,
+  gate tau, and snap dose are chosen on FIT only and scored on held-out?
+prediction: The doubt-gated caution snap will replicate as a selective, training-free
+  tighten instrument across model families; at least 3 of 4 small-tier families and
+  at least 3 eligible mid-tier cells will pass G1/G2/G3, with at least one passing
+  mid-tier family outside Qwen.
+falsifier: The headline claim is falsified if at least 2 eligible small-tier families
+  fail, or at least 2 eligible mid-tier cells fail, or Qwen is the only passing eligible
+  mid-tier family. A cell fails if G1, G2, G3(i), or G3(ii) fails on held-out. If
+  fewer than 3 mid-tier cells are eligible before held-out scoring, the mid-tier claim
+  is underpowered rather than passed.
+checkpoint:
+  repo: cross-family matrix
+  revision: see model_matrix.yaml
+instrument:
+  configs:
+  - model_matrix.yaml
+  - cell.yaml
+  - gates.yaml
+  modules:
+  - cloud/README.md
+  - cloud/modal_doubt_snap_cross_family.py
+  - prep_tuner_cell.py
+  - materialize_tuner_cells.py
+  - smoke_tuner_path.py
+  - gen_lib.py
+  - grader.py
+  - render.py
+  pins:
+    model_matrix.yaml: 2f54278b9e7bec54d29e16159cd57c772938821bf40d602a9f7020d7999cf53a
+    cell.yaml: e8030f5ba101d12e8d7585c7a78752a891d7760021d2ca0715cc97d3665d127a
+    gates.yaml: fb3e63eac6bba873c9f98616beb542ebf70bb0ade01a30e7cc80601095c2ff89
+    cloud/README.md: 36574148b79291f26cba4dc143ba1c23feda9bc5cacc6b5707259d05b3ebcdbe
+    cloud/modal_doubt_snap_cross_family.py: 466c0a5e0deaa7b990e15c6ed4ecd86d8ac603ef220bc94d4d7068607fa64fa1
+    prep_tuner_cell.py: 8902a8cf6c6242fa9c427594cf4acf8d3bbd4b7c2b812ba1b680cba8f8d18a13
+    materialize_tuner_cells.py: cd497a634377f172a1db88905b4e98ce9fba716f580367608086ce010d3cebde
+    smoke_tuner_path.py: 7e412e7b3ffeb71b52b56cb3ec84089f80127192c3e169dcb1ece2dff90fc4c1
+    gen_lib.py: 6cffc7282591ca3b0db79d985a024ca2b63cab8afc1c5f5085d13cbdb98b79ce
+    grader.py: ab0dea1c3efc841e943fccf8f5830c92715fac413e8ac80b2dbd72b113e6e2b3
+    render.py: a5a0b243ea20e70ae62d081fbcdca17f0c298a0a6878ff5698e7752ef3434876
+inputs: []
+verdict: ''
+kg: []

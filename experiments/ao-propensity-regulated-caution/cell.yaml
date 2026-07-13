@@ -4,7 +4,7 @@
 # continuous-per-row-gain-arm feature (synaptic-tuner PR
 # feat/proportional-gain-arm: ArmConfig.gain_field / gain_clip / force_active,
 # MechInterp/cell.py, MechInterp/intervention/hooks.py; submodule pinned at
-# 294a653). AC used the FROZEN legacy phase3 machinery for the analogous
+# 294a653). AC used the FROZEN legacy mechinterp machinery for the analogous
 # doubt-coupling cell; this is that same erase-write-couple idea re-homed on
 # the generic tuner schema, not a rerun of AC.
 #

@@ -1,0 +1,41 @@
+{
+  "batch_size": 8,
+  "capture_index_sha256": "80edff0ee84d40e71c302a9c80451b9a5f76f33b796ef334429486993092d88e",
+  "cell_id": "mistral7b_instruct_v03",
+  "coverage_frac": 1.0,
+  "coverage_pass_ag0": true,
+  "hidden_size": 4096,
+  "layers_requested": "all",
+  "missing_row_count": 0,
+  "missing_row_keys_sample": [],
+  "model": "mistralai/Mistral-7B-Instruct-v0.3",
+  "n_hidden_states": 33,
+  "n_rows_captured": 3037,
+  "n_rows_in_pool": 3037,
+  "num_hidden_layers": 32,
+  "persist_dtype": "float32",
+  "position_name": "anchor",
+  "position_rule": "len(token_ids) - 1 (manual tokenize, add_special_tokens=True)",
+  "revision": "c170c708c41dac9275d15a8fff4eca08d52bab71",
+  "row_pool_source": {
+    "fleet_cell_id": "mistral7b_instruct_v03",
+    "fleet_experiment": "doubt-snap-cross-family-confirmatory",
+    "manifest_row_count": 3037,
+    "modal_run_tag": "doubt-snap-cross-family-r1",
+    "modal_volume": "eh-doubt-snap-cross-family",
+    "role_counts": {
+      "confab": 2186,
+      "known_correct_answered": 637,
+      "unknown_refused": 214
+    },
+    "role_split_counts": {
+      "confab_fit": 874,
+      "confab_held_out": 1312,
+      "known_correct_answered_fit": 255,
+      "known_correct_answered_held_out": 382,
+      "unknown_refused_fit_only": 214
+    },
+    "row_pool_path": "_live/mistral7b_instruct_v03/analysis/split_rows_private.jsonl",
+    "split_manifest_committed_path": "mistral7b_instruct_v03/analysis-committed/split_manifest.json"
+  }
+}

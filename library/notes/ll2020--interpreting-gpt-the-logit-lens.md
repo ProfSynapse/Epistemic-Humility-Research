@@ -81,7 +81,7 @@ mechanisms: ["[[residual-connections-preserve-basis]]", "[[gpt-input-discarded-i
 
 ## Relevance to experiment
 
-<!-- mech-interp of features/superposition; Phase 3 probing context -->
+<!-- mech-interp of features/superposition; mechanism program probing context -->
 
 ## Claims
 

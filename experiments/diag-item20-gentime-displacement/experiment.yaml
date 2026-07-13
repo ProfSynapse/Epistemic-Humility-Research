@@ -1,0 +1,25 @@
+slug: diag-item20-gentime-displacement
+title: Diagnostic Item 20 - Generation-Time Displacement
+type: lab-diagnostic
+status: historical
+registered: true
+created_at: '2026-07-09T02:29:24Z'
+question: How much generation-time hidden-state movement lies outside the named
+  doubt/caution plane on the unknown-only GRPO-v2 surface?
+prediction: ''
+falsifier: ''
+checkpoint:
+  repo: professorsynapse/eh-al-prep-staging
+  revision: diag-item20-gentime-r2
+instrument:
+  configs: []
+  modules:
+  - diag_item20_gentime_decomposition.py
+  - cloud/runpod_diag_gentime_positions.sh
+  pins:
+    diag_item20_gentime_decomposition.py: 75da52ef59806f800725f3b6e036a50a76a78b15d1b73f2974c9707370c3acf7
+    cloud/runpod_diag_gentime_positions.sh: 0097bdd9186899dd80e8b4ecde328f9c251180cbfba9d8fe523889e25b2152c5
+inputs:
+- experiments/diag-item20-gentime-displacement/analysis-committed/gentime_decomposition.md
+verdict: Historical lab-notebook diagnostic banked; generation-time displacement is overwhelmingly outside the named doubt/caution-perp plane at every captured position.
+kg: []

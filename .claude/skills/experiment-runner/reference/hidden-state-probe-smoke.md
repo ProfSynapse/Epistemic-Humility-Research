@@ -37,7 +37,7 @@ probe run is unnecessary to validate the pipeline.
 # nothing. Exit 0 on PASS *and* on SKIP (a SKIP is an exploratory degrade, not an
 # error — e.g. probe_results.jsonl absent, or the run-record link unresolvable).
 python3 .agents/skills/experiment-runner/scripts/prepare_extraction_cell.py \
-    --config experiment/phase1/probe/config/hidden_state_probe.yaml
+    --config experiments/common/configs/knowledge-probe/hidden_state_probe.yaml
 ```
 
 The report is JSON. On `"status": "PASS"` it carries `resolved_run_record_ids` and
@@ -47,7 +47,7 @@ filled — the committed YAML is NEVER mutated (link-never-mutate, §5.5). On
 
 - **E1** `probe_results.jsonl` present for the model_tag;
 - **E2** its first-row `probe_config_sha` matches `selection.expected_probe_config_sha`
-  (null ⇒ presence-only + WARN);
+  (null => presence-only + WARN);
 - **E3** `aligned_run_record_id` resolvable — the resolver reverse-looks-up the
   active arm's adapter against `run_records/<id>.json`, FAIL-CLOSED on
   zero-match / ambiguous / unverified (the sft/dpo/kto divergence, §5.4);
@@ -60,7 +60,7 @@ The unverified escape hatch (e.g. the dpo arm whose run record is `verified=Fals
 
 ```bash
 python3 .agents/skills/experiment-runner/scripts/prepare_extraction_cell.py \
-    --config experiment/phase1/probe/config/hidden_state_probe.yaml \
+    --config experiments/common/configs/knowledge-probe/hidden_state_probe.yaml \
     --allow-unverified        # opt-in; default is fail-closed
 ```
 
@@ -70,12 +70,12 @@ python3 .agents/skills/experiment-runner/scripts/prepare_extraction_cell.py \
 # GPU-REQUIRED. After the gate PASSes, shells out to the merged harness with the
 # temp effective config. On a SKIP the harness is NOT invoked (exit 0).
 python3 .agents/skills/experiment-runner/scripts/prepare_extraction_cell.py \
-    --config experiment/phase1/probe/config/hidden_state_probe.yaml \
+    --config experiments/common/configs/knowledge-probe/hidden_state_probe.yaml \
     --run-extraction
 ```
 
 Eyeball the delta tensors nonzero (the issue-#30 confound guard) under
-`experiment/phase1/probe/<model_tag>/hidden_states/extraction__<sha>/`:
+`archive/experiment/phase1/probe/<model_tag>/hidden_states/extraction__<sha>/`:
 
 ```python
 from safetensors import safe_open

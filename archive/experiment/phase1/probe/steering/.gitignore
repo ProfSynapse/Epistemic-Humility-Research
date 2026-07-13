@@ -1,0 +1,20 @@
+# Persisted direction artifacts (reproducible from extraction dirs; do not commit)
+direction_*.safetensors
+direction_*.npy
+
+# Test scratch / direction outputs
+*/directions/
+directions/
+
+# pytest cache
+.pytest_cache/
+__pycache__/
+*.pyc
+
+# Any per-family output subtrees (mirroring the parent probe dir convention)
+z_*/
+*_result.json
+
+# Per-cell run outputs (Amendment AA: steering/results/ is gitignored; the
+# scored roll-up JSON is tracked at the probe root instead)
+results/

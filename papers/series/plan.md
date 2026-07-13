@@ -1,0 +1,147 @@
+# Paper Series Plan: The Epistemic Humility Program
+
+Status: planning (2026-07-10). Internal roadmap, not a draft. Supersedes the
+2026-06-30 three-paper plan (its confirmatory backbone, the cross-family
+replication, has since been run and landed; its paper numbering predates the
+current five-paper tree). This document owns the narrative arc, the beat of
+each paper, and which finding lives where. Style and voice are owned by
+`papers/common/VOICE.md` (binding, including self-containment, synthesis-not-
+journey, and never-explain-science-to-scientists); the AI-workflow methods
+component is `papers/common/methods-ai-workflow.md`.
+
+## The story in one sentence
+
+Small models know more about their own ignorance than they say; training
+cannot reliably push that knowledge into the mouth; you can read it out
+directly instead; and you can make the model act on it, if you gate the
+intervention by the model's own doubt.
+
+## The spine: five papers, five beats
+
+Title format is `[catchy idiom]: [subtitle naming the study]`.
+
+| # | Paper (dir) | Title | Beat |
+|---|-------------|-------|------|
+| 1 | paper-1-taxonomy-framework | The Depths of Ignorance: A Taxonomy, Systematic Evidence Synthesis, and Research Agenda for Epistemic Humility in Language Models | Here is the problem space and the vocabulary. |
+| 2 | paper-2-training-regimen | Teaching Small Language Models to Say I Don't Know: A Controlled Comparison of SFT, DPO, KTO, and GRPO on Model-Specific Abstention Data | The front door: training the behavior in partially works and structurally disappoints. |
+| 3 | paper-3-knows-but-doesnt-say | Knows but Doesn't Say: A Training-Resistant Gap Between Internal and Stated Confidence in a Small Language Model | The diagnosis: the knowledge is inside, the mouth is the bottleneck. Home of the internal anatomy (the readable epistemic directions). |
+| 4 | paper-4-two-signal-readout | It's What's on the Inside That Counts: A Training-Free Two-Signal Readout for Epistemic Humility in Small Language Models | The reading half: bypass the mouth, read the representation. Deployable today. |
+| 5 | paper-5-actuation | Look Before You Speak: Gating Caution Writes on a Model's Own Doubt Readout (decided 2026-07-10; manuscript still carries the old title until the rewrite) | The destination: the model acts on its own knowledge when, and only when, the write is gated by its own doubt, at the right depth. |
+
+Build-on logic: 1 frames, 2 shows the obvious fix disappoints, 3 explains why
+(and maps the internal landscape), then the diagnosis branches: 4 is "it's
+readable, so read it" and 5 is "it's readable; when is it writable?". Papers 3,
+4, and 5 form the core trilogy; 1 and 2 are the frame and the motivation.
+
+## Claim ownership (one home per finding)
+
+Rules:
+
+- Reading-side discoveries (a direction exists, separates, transfers) live in
+  paper 3 if they are part of the internal anatomy, in paper 4 if they are part
+  of the deployable readout.
+- Actuation results (what happens when you write) live in paper 5, always,
+  including the nulls.
+- A finding appears in a second paper only as one summarizing sentence with a
+  citation to its home paper, never re-argued.
+
+| Finding | Home | Notes |
+|---------|------|-------|
+| Taxonomy, evidence synthesis, agenda | 1 | |
+| SFT/DPO/KTO/GRPO abstention comparison, calibration tradeoffs | 2 | GRPO framing: extension vs registered arm, still open |
+| Internal-vs-stated gap; training resistance; channel bottleneck | 3 | |
+| Internal anatomy: doubt axis, caution axis (reading claims only) | 3 | Census (docs/review/paper3-direction-provenance-2026-07-10.md): doubt is base/pretrain-validated but IS the answerability gate under another name (state the identity, do not double-count); caution reading is real but trained-checkpoint-only (base never refuses), scope sentence must say so |
+| Confab-propensity direction | 5 only | Census verdict: NOT safe as a paper 3 result (reading numbers ungoverned, checkpoint-specific to the most-trained checkpoint, governed causal outcome null). Paper 3 gets at most a one-line forward pointer |
+| Caution-ablation steering result (over-refusal 0.994 to 0.030) | 5 | Currently argued inside paper 3 section 6 (census flag A3); under the ownership rule it moves to 5, paper 3 keeps one summarizing sentence + citation |
+| Answerability gate, correctness dial, veto + decomposition (content core ~0.74) | 4 | Current after the 2026-07-10 revision arc |
+| Cross-size, cross-family, seed-robustness, pretrain-origin of the readout | 4 | |
+| Workspace localization (read-only J-lens diagnostic) | 4 (descriptive subsection) | Steering cells excluded |
+| Ungated steering asymmetry; propensity-direction actuation nulls; setpoint nulls | 5 | The caveat landscape |
+| Doubt-gated caution snap (incl. multi-source replication); layer-contrast arc | 5 | The headline |
+| Mid-band doubt-snap (Qwen3.5) | 5 | RUNNING; not citable until resolved |
+| Cross-family actuation panel | 5 | Remaining cells await paid-launch decision |
+
+## Per-paper state and open work
+
+### Paper 1 (taxonomy)
+
+Draft exists. Open: refresh the synthesis against the library's current state
+when 3/4/5 stabilize; align vocabulary with the axis/readout terms the trilogy
+settled on.
+
+### Paper 2 (training regimen)
+
+Headline matrix ran under the locked protocol. Open: GRPO framing decision
+(report-as-extension vs register a confirmatory arm); consistency check of
+calibration metrics with paper 4's dial scoping; voice/self-containment pass
+(it predates the VOICE.md rules).
+
+### Paper 3 (diagnosis)
+
+Solid draft. Open:
+
+- Integrate the internal-anatomy inventory (doubt, caution, confab-propensity)
+  with honest per-direction scope sentences; blocked on the provenance census
+  (docs/review/paper3-direction-provenance-2026-07-10.md when it lands).
+- Standing reviewer-attack items from the old plan that remain live:
+  competence-within-category gate control; multi-elicitation robustness for
+  "doesn't say"; single-seed scoping on the training-resistance panel.
+- Voice/self-containment pass under the current VOICE.md.
+- Needs its own identifier eventually; paper 4's reference entry points at the
+  research record until then.
+
+### Paper 4 (readout) — most current
+
+Went through the full 2026-07-10 revision arc (review memo, synthesis pass,
+related-work rewrite, self-containment + headings, falsifier compression,
+rename). Open:
+
+- Splice the token-logprob baseline when computed (backlog LP; SWAP marker in
+  limitation 8).
+- Upgrade the dial cold-transfer rotation inference to a measurement (backlog
+  CD).
+- Both gated on the mid-band ladder freeing the local GPU.
+
+### Paper 5 (actuation) — the rewrite target
+
+Reframe per PI directive: the intervention more or less worked; caveats are
+named as they appear, not led with. Spine: ungated pushes fail or act
+asymmetrically; the propensity direction reads but does not actuate; the
+doubt-gated caution write converts confabulations at high rate at small
+known-correct cost, replicated on a multi-source pool; localization puts the
+action in the workspace band. Open:
+
+- Audit LANDED: docs/review/paper5-actuation-review-2026-07-10.md (22-cell
+  inventory, 10-item reframe plan, hardening list). Lead spot-checked.
+- SEQUENCING (PI decision 2026-07-10): rewrite AFTER hardening. The rewrite
+  waits for the mid-band ladder outcome plus the three cheap local hardening
+  cells (H3 multi-seed/sampled-decode snap replication; H4 registered
+  ungated-vs-gated dose-matched arm; H6 commitment-point hook-firing
+  instrument check), all queued behind the ladder freeing the 3090. Designs
+  to be drafted and signed in the meantime so they launch the day the GPU
+  frees.
+- Title decided: "Look Before You Speak: Gating Caution Writes on a Model's
+  Own Doubt Readout".
+- Cross-family actuation panel: awaits the PI's paid-launch decision; the
+  paper's family scope is honest without it but stronger with it. H5 (AI-TRUE
+  caution-lever screen) and H7 (cross-family J-lens profiles) stay optional,
+  revisit after H1/H2 resolve.
+
+## Cross-cutting
+
+- Every paper gets the AI-workflow methods subsection adapted from
+  `papers/common/methods-ai-workflow.md`.
+- Every paper passes the current VOICE.md gates before it is called a draft:
+  self-contained (no repo internals in body prose), synthesis-not-journey,
+  real headings, no lecturing, registered facts compact.
+- Provenance appendix pattern (paper 4's Appendix A) is the template for all
+  five: body clean, one appendix maps numbers to artifacts.
+- Publication mode (PI): blog companions for all papers; venue decision open
+  (TMLR + arXiv discussed); collaborator outreach once drafts exist.
+
+## Open decisions for the PI
+
+1. Paper 5 title.
+2. Cross-family actuation panel: paid launch yes/no/when.
+3. Paper 2 GRPO framing (extension vs registered confirmatory arm).
+4. Venue + collaborator timing.

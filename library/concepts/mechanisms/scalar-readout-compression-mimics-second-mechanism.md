@@ -42,7 +42,9 @@ relationships:
   confidence: medium
 ---
 
-Item-22a resolution (analysis/mi_controversial_flips_20260704/). Controversial
+Item-22a resolution
+(experiments/flavor-geometry-category-fleet/analysis-committed/controversial-flips/).
+Controversial
 questions flipped to answering under a certainty prime at the highest rate (25
 percent) while the caution scalar barely predicted which ones (signed AUROC 0.338),
 which looked like a controversial-specific mechanism the axis misses. The predictor

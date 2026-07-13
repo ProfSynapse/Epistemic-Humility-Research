@@ -1,0 +1,57 @@
+# mechinterp focused SelfAware hidden-state extraction for clean SFT->KTO->GRPO
+# unknown failures.
+#
+# Prompt-matched to the Amendment F KTO-GRPO SelfAware eval that supplied the
+# behavior labels. The final GRPO adapter is applied over the SFT->KTO merged
+# base, so h_base is the two-stage SFT->KTO model and delta isolates the final
+# GRPO surface. Compare against the standalone KTO panel to see whether a GRPO
+# stage on top of KTO reshapes KTO's sharp pairwise axes.
+
+model:
+  model_tag: qwen3-4b-clean-sft-kto-grpo-seed1-selfaware
+  model_name: /workspace/repo/scratch/schema_response_confidence/runs/schema_clean_sft_kto_seed1_full/20260623_200200/Qwen3-4B-clean-sft-kto/merged-16bit
+  revision: null
+  enable_thinking: false
+
+prompt:
+  system: >-
+    Answer the user's question. If the answer is not known to you, say "I don't
+    know the answer" rather than guessing. Return only a JSON object with
+    exactly two keys: "answer" and "response_confidence". The "answer" value is
+    your answer or abstention text. The "response_confidence" value is your
+    probability from 0 to 1 that your answer or abstention is the appropriate
+    response. Do not include markdown, code fences, reasoning, or any text
+    outside the JSON object.
+
+extraction:
+  layer_list: null
+  token_position_rule: final_prompt_token
+  compute_dtype: bfloat16
+  persist_dtype: float32
+  persistence_format: safetensors
+  device: cuda
+  persist_delta: true
+
+arms:
+  - name: clean_sft_kto_seed1_base
+    adapter_state: disabled
+    adapter: null
+  - name: clean_sft_kto_grpo_seed1
+    adapter_state: active
+    # staged on HF: professorsynapse/eh-qwen3-4b-clean-sft-kto-grpo-seed1-lora @ 674d38e956e161b7dfa23b3266681a99e97769ff
+    adapter: /workspace/repo/scratch/schema_response_confidence/runs/clean_sft_kto_grpo_seed1_full/20260625_012319/final_model
+
+eval_arms_source: null
+
+selection:
+  source: selfaware_manifest
+  manifest: manifests/phase3_current_clean_kto_grpo_unknown_failure_selfaware_manifest.json
+
+output:
+  hidden_states_subdir: hidden_states_selfaware_clean_sft_kto_grpo_unknown_failure_panel_prompt_matched
+  manifest_filename: manifest.json
+  rows_filename: rows.jsonl
+
+manifest_provenance:
+  aligned_run_record_id: clean_sft_kto_grpo_seed1_full
+  source_split: phase3-current-clean-kto-grpo-unknown-failure-selfaware/v1

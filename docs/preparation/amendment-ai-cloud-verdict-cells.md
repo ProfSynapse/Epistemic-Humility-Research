@@ -2,9 +2,9 @@
 
 Prep doc for the HF Jobs cloud half of the Amendment AI verdict eval. Produces
 exactly the inputs the CPU scorer
-`experiment/phase1/probe/amendment_ai_verdict_score.py` consumes for gates
+`archive/experiment/phase1/probe/amendments/amendment_ai_verdict_score.py` consumes for gates
 AI-G0 / AI-G1 / AI-G2, per the locked spec section 4 of
-`experiment/protocol/AMENDMENT-AI-probe-as-reward.md`. CPU-only authoring; no
+`experiments/probe-as-reward/AMENDMENT.md`. CPU-only authoring; no
 model was run, no GPU touched, no HF Job submitted, no git command run.
 
 ## What the scorer needs (input contract, restated)
@@ -23,7 +23,7 @@ Per arm (true, permuted), the scorer takes:
 - `--*-gen`: generation `rows.jsonl` for the 400 holdout rows, fields
   `row_key`, `refused` (bool), `answered` (bool), `schema_valid` (bool).
 - `--g2-true` / `--g2-ref`: behavior-panel trio JSONs (CELL C output; the ref
-  is already pinned in `amendment_ai_g2_reference_grpo_v2.json`).
+  is already pinned in `experiments/probe-as-reward/artifacts/amendment_ai_g2_reference_grpo_v2.json`).
 
 The scorer reads gold_label / origin / p_unanswerable for each holdout row from
 the LOCAL canonical `holdout_eval.jsonl`, NOT from the uploaded dirs, so the
@@ -32,10 +32,11 @@ uploaded rows.jsonl deliberately omits question text (NO-LICENSE safe).
 ## Cell inventory (new / edited files, all uncommitted)
 
 New:
-- `experiment/phase1/probe/amendment_ai_verdict_extract_gen.py` - the GPU entry
+- `archive/experiment/phase1/probe/amendments/amendment_ai_verdict_extract_gen.py` - the GPU entry
   script. `--stage extract --surface {union,holdout}` (CELL A) and
   `--stage generate` (CELL B). Load path is byte-matched to the sensor-v2
-  lineage (`par_sensor_refit_extract_4bit.py`: unsloth FastLanguageModel
+  lineage (`experiments/probe-as-reward/scripts/par_sensor_refit_extract_4bit.py`:
+  unsloth FastLanguageModel
   load_in_4bit=True, baseline unprimed system prompt,
   render_probe_prompt(enable_thinking=False), anchor prompt_len-1, forward-only
   extraction), and the generation path is byte-matched to the AH harness
@@ -45,16 +46,16 @@ New:
   sensor extraction: the arm's TRAINED LoRA adapter is applied
   (PeftModel.from_pretrained with pinned revision), not the identity-at-init
   wrapper, because the verdict measures the trained policy.
-- `experiment/phase1/probe/cloud/hf_jobs_ai_verdict.sh` - in-job wrapper modeled
+- `experiments/probe-as-reward/cloud/hf_jobs_ai_verdict.sh` - in-job wrapper modeled
   on `hf_jobs_cell.sh` (boot-id log capture + periodic log push preserved).
   Fetches the input pool from the private staging repo, runs the stage, uploads
   the WHOLE data dir (tensors are the deliverable here, unlike the X lane).
-- `experiment/phase1/probe/cloud/upload_folder.py` - folder upload helper
+- `experiments/common/cloud/upload_folder.py` - folder upload helper
   (HfApi.upload_folder to a private dataset repo); the X lane's
   `upload_result.py` only does single files.
 
 Edited (smallest backward-compatible change):
-- `experiment/phase1/probe/cloud/launch_hf_job.py` - added an `--ai-verdict`
+- `experiments/common/cloud/launch_hf_job.py` - added an `--ai-verdict`
   mode (new arg group: --stage/--surface/--arm-tag/--base-model/--adapter-repo/
   --adapter-revision/--staging-repo/--pool-in-repo), a dedicated
   `build_ai_verdict_command`, the pinned stable Unsloth image + a minimal
@@ -93,7 +94,7 @@ Staging repo default = `professorsynapse/eh-ai-verdict-staging` (private).
 
 CELL A (extract) - TRUE, union fit surface:
 
-    python3 experiment/phase1/probe/cloud/launch_hf_job.py --ai-verdict \
+    python3 experiments/common/cloud/launch_hf_job.py --ai-verdict \
         --stage extract --surface union --arm-tag true \
         --base-model professorsynapse/eh-qwen3-4b-clean-sft-seed1-merged-16bit \
         --adapter-repo professorsynapse/eh-qwen3-4b-clean-sft-grpo-par-true-seed1-lora \
@@ -103,7 +104,7 @@ CELL A (extract) - TRUE, union fit surface:
 
 CELL A (extract) - TRUE, 400-row holdout:
 
-    python3 experiment/phase1/probe/cloud/launch_hf_job.py --ai-verdict \
+    python3 experiments/common/cloud/launch_hf_job.py --ai-verdict \
         --stage extract --surface holdout --arm-tag true \
         --base-model professorsynapse/eh-qwen3-4b-clean-sft-seed1-merged-16bit \
         --adapter-repo professorsynapse/eh-qwen3-4b-clean-sft-grpo-par-true-seed1-lora \
@@ -113,7 +114,7 @@ CELL A (extract) - TRUE, 400-row holdout:
 
 CELL B (generate) - TRUE, 400-row holdout (greedy batch-1):
 
-    python3 experiment/phase1/probe/cloud/launch_hf_job.py --ai-verdict \
+    python3 experiments/common/cloud/launch_hf_job.py --ai-verdict \
         --stage generate --arm-tag true \
         --base-model professorsynapse/eh-qwen3-4b-clean-sft-seed1-merged-16bit \
         --adapter-repo professorsynapse/eh-qwen3-4b-clean-sft-grpo-par-true-seed1-lora \
@@ -173,9 +174,9 @@ Recommendation: run CELL C on the LOCAL dgpu lane, not cloud. Do not force it
 cloud-side.
 
 Why:
-- The pinned reference `amendment_ai_g2_reference_grpo_v2.json` was produced by
+- The pinned reference `experiments/probe-as-reward/artifacts/amendment_ai_g2_reference_grpo_v2.json` was produced by
   the Amendment E FULL SelfAware eval (n=3,369) via
-  `experiment/phase1/eval/run_eval.py` with config
+  `archive/experiment/phase1/eval/run_eval.py` with config
   `eval_amendment_e_response_confidence_selfaware_clean_sft_grpo_v2_seed1_corrected_base_full_local_4b.yaml`.
 - That pipeline serves through vLLM (run_eval.py imports `vllm.LLM`,
   `LoRARequest`, `StructuredOutputsParams`) with structured-outputs stated-

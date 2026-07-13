@@ -20,8 +20,8 @@ models:
 - qwen3-4b
 metrics:
 - auroc
-fulltext: ../../docs/sessions/0038 - amendment-ai-null-verdict-al-prep-true-internals.md
-provenance: 'Internal exploratory synthesis (Tier-1 lab notebook, not a paper draft). Source of truth: docs/sessions/0038 plus analysis/amendment_al_prep/ (doubt_axis_check_report.json, radial_ceiling_true/, radial_ceiling_true_gate_meandiff/, familiarity_vs_knowing_report.json, commitment_scope_check_report.json). Surface: AL-prep A0 pre-generation full-stack extracts (L0-L36) on the Amendment AI TRUE-mapping GRPO checkpoint (clean-SFT base), 1662 rows, single seed. Scripts committed on branch amendment-al-radial-steering. Ungated exploratory evidence feeding the Amendment AL control-law design.'
+fulltext: ../../docs/sessions/20260705T090000Z-amendment-ai-null-verdict-al-prep-true-internals.md
+provenance: 'Internal exploratory synthesis (Tier-1 lab notebook, not a paper draft). Source of truth: docs/sessions/20260705T090000Z-amendment-ai-null-verdict-al-prep-true-internals.md plus analysis/amendment_al_prep/ (doubt_axis_check_report.json, radial_ceiling_true/, radial_ceiling_true_gate_meandiff/, familiarity_vs_knowing_report.json, commitment_scope_check_report.json). Surface: AL-prep A0 pre-generation full-stack extracts (L0-L36) on the Amendment AI TRUE-mapping GRPO checkpoint (clean-SFT base), 1662 rows, single seed. Scripts committed on branch amendment-al-radial-steering. Ungated exploratory evidence feeding the Amendment AL control-law design.'
 related:
 - '[[confab-cloud]]'
 - '[[confabulation-propensity-direction]]'

@@ -1,0 +1,42 @@
+# Bounded generated-answer replay for the best current KTO composite candidate.
+#
+# This gates the L24 1:1.25 composite logit signal against actual generated
+# behavior on the same fixed 64 SelfAware behavior-cell rows.
+
+sweep:
+  name: phase3_selfaware_calibrated_expression_kto_composite125_l24_generation_replay
+  evidence_tier: tier2_exploratory_local
+  runner_config: archive/experiment/phase1/probe/config/causal-pilot-core/phase3_causal_pilot_gpu_smoke.yaml
+  candidate_source_config: archive/experiment/phase1/probe/config/selfaware-calibrated-expression-kto-panels/phase3_selfaware_calibrated_expression_kto_composite125_layer_window_logit_candidates.yaml
+  output_root: experiment/phase1/probe/qwen3-4b-sft-merged-seed1-selfaware/causal_pilots/phase3_selfaware_calibrated_expression_kto_composite125_l24_generation_replay
+  candidates:
+    - kto_h_lora_l24_composite_known1_unknown125_window_normed
+  execution:
+    backend: docker
+    docker:
+      image: unsloth/unsloth:latest
+      repo_mount: /workspace/repo
+      workdir: /workspace/repo
+      hf_home: /workspace/repo/.cache/hf
+      huggingface_hub_cache: /workspace/repo/.cache/hf/hub
+  runner_overrides:
+    selection:
+      probe_results: null
+      row_keys_file: archive/experiment/phase1/probe/config/selfaware-calibrated-expression-kto-panels/phase3_selfaware_calibrated_expression_kto_64_row_keys.txt
+    readiness_checks:
+      require_extraction_manifest:
+        status: ok
+        verified: true
+        row_count: 1233
+        label_counts:
+          known: 556
+          unknown: 677
+  modes:
+    - name: generation
+      max_rows: 64
+      max_new_tokens: 32
+      coefficients:
+        - 50.0
+      controls:
+        - no_vector_baseline
+        - activation_addition

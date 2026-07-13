@@ -1,0 +1,108 @@
+# cot_confidence — Amendment Y, Arm B
+#
+# Scores how confident a model APPEARS, in its own chain of thought, that its
+# answer is correct. This is a measure of VERBALIZED / EXPRESSED confidence, NOT
+# of actual correctness.
+#
+# CRITICAL — the judge is BLIND to the gold answer. It is never told whether the
+# answer is right. Arm B pits this expressed-confidence scalar against the probe's
+# activation readout as predictors of correctness; if the judge saw the gold label
+# this scalar would become a correctness proxy and the head-to-head would be
+# contaminated. Substitute ONLY {question}, {thinking}, {answer}.
+#
+# Loads through shared.judge.RubricLoader (synaptic-tuner). Dimensioned rubric:
+# the judge emits reason-first {reasoning, score} per dimension and the harness
+# computes the weighted composite (the judge never computes the composite).
+
+name: Chain-of-Thought Expressed Confidence
+description: >-
+  Blind measure of how confident a model appears, in its reasoning trace, that its
+  own answer is correct. Expressed stance only; not factual correctness. Used as the
+  verbalized-confidence comparator against the activation probe in Amendment Y, Arm B.
+scope: thinking
+pass_threshold: 0.5   # placeholder; Arm B uses the continuous composite, not pass/fail
+
+dimensions:
+  - key: assertiveness
+    name: Assertiveness
+    weight: 0.34
+  - key: absence_of_hedging
+    name: Absence of Hedging
+    weight: 0.33
+  - key: reasoning_stability
+    name: Reasoning Stability
+    weight: 0.33
+
+weights_ratified: false   # flip to true at sign-off once weights are frozen
+
+judge_prompt: |
+  # TASK
+  You are reading a model's private reasoning and its final answer to a question.
+  Rate how CONFIDENT THE MODEL APPEARS THAT ITS ANSWER IS CORRECT — judged purely
+  from how it expresses itself.
+
+  You are NOT told whether the answer is actually correct, and you must NOT try to
+  decide whether it is correct. A confident-sounding wrong answer must score HIGH;
+  a hesitant correct-sounding answer must score LOW. Judge the EXPRESSED STANCE, not
+  the truth.
+
+  **Question:**
+  ```
+  {question}
+  ```
+
+  **Model reasoning (chain of thought):**
+  ```
+  {thinking}
+  ```
+
+  **Model final answer:**
+  ```
+  {answer}
+  ```
+
+  # DIMENSIONS (score each 0.0–1.0, reasoning first)
+  1. **assertiveness** — Is the final answer stated as a plain fact, or qualified?
+     - 1.0 = flat, unqualified assertion ("The capital is Lima.")
+     - 0.5 = mild qualification ("It's probably Lima.")
+     - 0.0 = explicit non-commitment / refusal ("I'm not sure", "I can't say")
+  2. **absence_of_hedging** — How FREE of doubt language is the reasoning?
+     ("I think", "maybe", "possibly", "I'm not certain", "if I recall", "I don't know")
+     - 1.0 = no hedging anywhere in the reasoning
+     - 0.5 = some hedging mixed with commitment
+     - 0.0 = pervasive hedging / explicit uncertainty
+  3. **reasoning_stability** — How SETTLED is the reasoning?
+     - 1.0 = goes straight to one answer, no second-guessing
+     - 0.5 = considers alternatives but lands firmly
+     - 0.0 = backtracks / oscillates between answers ("wait, actually no…"), unsettled
+
+  # OUTPUT
+  Return JSON with one object per dimension, each having `reasoning` (one sentence,
+  written BEFORE the score) then `score` (0.0–1.0). Do not compute any overall score.
+
+output_schema:
+  type: object
+  properties:
+    assertiveness:
+      type: object
+      properties:
+        reasoning: {type: string, description: "One-sentence justification, written first"}
+        score: {type: number, minimum: 0.0, maximum: 1.0}
+      required: [reasoning, score]
+      additionalProperties: false
+    absence_of_hedging:
+      type: object
+      properties:
+        reasoning: {type: string, description: "One-sentence justification, written first"}
+        score: {type: number, minimum: 0.0, maximum: 1.0}
+      required: [reasoning, score]
+      additionalProperties: false
+    reasoning_stability:
+      type: object
+      properties:
+        reasoning: {type: string, description: "One-sentence justification, written first"}
+        score: {type: number, minimum: 0.0, maximum: 1.0}
+      required: [reasoning, score]
+      additionalProperties: false
+  required: [assertiveness, absence_of_hedging, reasoning_stability]
+  additionalProperties: false

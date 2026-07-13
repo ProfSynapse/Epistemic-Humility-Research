@@ -16,7 +16,7 @@
 # answerable_refused, neg_cell=known_correct_answered (n=90).
 #
 # SCHEMA BLOCKER (RESOLVED, this session): this candidate's JSON also used the
-# legacy "theta" field (schema_version phase3-residual-mass-mean-direction/v1),
+# legacy "theta" field (schema_version mechinterp-residual-mass-mean-direction/v1),
 # not the tuner's own "vector" field that MechInterp.probe.fit.
 # load_frozen_direction requires -- see cell_stage1_caution_perp.yaml's header
 # for the fix (convert_directions_to_tuner_schema.py) and the cross-file

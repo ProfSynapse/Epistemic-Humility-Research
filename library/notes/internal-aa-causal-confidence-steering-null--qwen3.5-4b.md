@@ -20,7 +20,7 @@ models:
 - qwen3.5-4b
 metrics:
 - auroc
-provenance: 'Internal amendment (Tier-2 exploratory evidence line, Paper 5: reading vs. writing the trust axis). Source of truth: experiment/protocol/AMENDMENT-AA-causal-confidence-steering.md (Stage-1 verdict registered 2026-07-02). Pools: SelfAware known/unknown rows (gate cells, shared rows from extraction__55254a04aa1f/rows.jsonl) and PopQA+TriviaQA answerable pool (dial cells). Directions: unit-normed gate probe (L14, AUROC 0.998) and dial probe (L16, AUROC 0.827) fitted 2026-07-01 by persist_probe_direction.py from the Amendment-Z extraction directions. Roll-up: amendment_aa_qwen3.5-4b_result.json (amendment_aa_verdict.py, missing_cells = []).'
+provenance: 'Internal amendment (Tier-2 exploratory evidence line, Paper 5: reading vs. writing the trust axis). Source of truth: experiments/causal-confidence-steering/AMENDMENT.md (Stage-1 verdict registered 2026-07-02). Pools: SelfAware known/unknown rows (gate cells, shared rows from extraction__55254a04aa1f/rows.jsonl) and PopQA+TriviaQA answerable pool (dial cells). Directions: unit-normed gate probe (L14, AUROC 0.998) and dial probe (L16, AUROC 0.827) fitted 2026-07-01 by persist_probe_direction.py from the Amendment-Z extraction directions. Roll-up: amendment_aa_qwen3.5-4b_result.json (amendment_aa_verdict.py, missing_cells = []).'
 related:
 - '[[trust-axis-injection-does-not-move-answer-abstain-revise-behavior]]'
 - '[[answerability-and-correctness-are-orthogonal-readout-axes]]'
@@ -92,7 +92,7 @@ registered: the channel stays shut.
   five times below the required +10-point gate. Arm B gate@late: FLAT. Arm B
   dial@late and dial@early: appropriate-revision discrimination exactly 0.000
   in BOTH the real and placebo conditions (adequacy met on both cells).
-  (experiment/protocol/AMENDMENT-AA-causal-confidence-steering.md section 7,
+  (experiments/causal-confidence-steering/AMENDMENT.md section 7,
   table of per-cell results.)
 - Evidence label: pre-registered primary gate AA-G5 (position asymmetry).
   Zero eligible passing arm x signal combinations reached AA-G5, because no

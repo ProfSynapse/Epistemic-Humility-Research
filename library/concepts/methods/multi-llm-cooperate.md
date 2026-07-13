@@ -40,7 +40,7 @@ hallucination and over-abstention.
 
 **Why it matters here:** Multi-LLM Cooperate establishes a multi-model ceiling
 for the abstention task, against which the single-model SFT, DPO, and KTO
-fine-tuning approaches in the Phase 1 study can be benchmarked to understand how
+fine-tuning approaches in the locked training-regimen study can be benchmarked to understand how
 much of the gap is attributable to training method versus ensemble-level knowledge
 breadth.
 

@@ -16,7 +16,7 @@ merged into the row; gates then read those fields by name.
 
 A real project grader for this research line would apply the abstention /
 correctness / degenerate rules from the frozen steering harness
-(experiment/phase1/probe/steering/steering_common.py). This example keeps the
+(archive/experiment/phase1/probe/steering/steering_common.py). This example keeps the
 logic trivial and dependency-free so the contract is legible.
 
 The grader is byte-pinned per amendment: a signed cell records the sha256 of its

@@ -44,6 +44,6 @@ relationships:
 
 A supervised fine-tuning bootstrapping technique that samples M long-form responses from a base LM for each query, prompts an API-based LLM to summarize them into a consensus paragraph with claim-level confidence statements calibrated to sample frequency (e.g., 'I estimate a 30% chance...'), and then fine-tunes the base model on (query, summary) pairs. Generalizes Self-Consistency from short-answer confidence elicitation to long-form multi-claim generations.
 
-**Why it matters here:** Produces an LC SFT initial policy capable of expressing graded verbal confidence without any human annotation, using only a base model and an API-based LLM for the summarization step. The recipe is reusable for any base model with white-box access, including the Qwen3 checkpoints in Phase 1, to create a calibration-first SFT variant for comparison against DPO/KTO abstention arms.
+**Why it matters here:** Produces an LC SFT initial policy capable of expressing graded verbal confidence without any human annotation, using only a base model and an API-based LLM for the summarization step. The recipe is reusable for any base model with white-box access, including the Qwen3 checkpoints in the locked training-regimen study, to create a calibration-first SFT variant for comparison against DPO/KTO abstention arms.
 
 **Lineage:** proposed by Band et al. (2024) in the LC framework; inspired by self-consistency; related to supervised-finetuning and verbalized-confidence

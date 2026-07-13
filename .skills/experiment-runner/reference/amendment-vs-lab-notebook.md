@@ -72,8 +72,9 @@ ambiguous, report it as ambiguous; do not retune the gate to manufacture a pass.
 ## Where a tier-2 amendment lives
 
 Amendments use the experiments-first layout. Do not hand-author a file under
-`experiment/protocol/`; that tree is retained for the locked Phase 1 protocol and
-its historical amendments only. For a new amendment:
+`experiment/protocol/`; legacy amendment records live under `experiments/<slug>/`,
+and cross-cutting protocol docs live under `docs/protocols/`. For a new
+amendment:
 
 1. `bin/exp new <slug> --type <t>` scaffolds `experiments/<slug>/` with an
    `AMENDMENT.md` template (Motivation, Design, Prediction, Falsifier, Gates,

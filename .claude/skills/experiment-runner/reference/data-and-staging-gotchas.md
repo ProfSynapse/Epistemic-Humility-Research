@@ -5,7 +5,7 @@ Read for dataset identity, leakage, recipe materialization, and local staging is
 - Windows default text encoding broke the TriviaQA fetch before the script used
   explicit UTF-8 writes. Keep UTF-8 mode/path handling in mind for fetch retries.
 
-- Windows default text encoding also broke Phase 1 eval gold/OOD loaders when
+- Windows default text encoding also broke locked training-regimen eval gold/OOD loaders when
   local files contained non-cp1252 bytes. Eval readers/writers now use explicit
   UTF-8; preserve that when adding datasets or result files.
 
@@ -31,7 +31,7 @@ Read for dataset identity, leakage, recipe materialization, and local staging is
   bounded evidence; rerun SFT seed 1 on the regenerated dataset before using it
   as the mixed-stage comparator.
 
-- The Phase 1 frozen SFT/DPO/KTO builders intentionally use only `known` and
+- The locked training-regimen frozen SFT/DPO/KTO builders intentionally use only `known` and
   `unknown` probe labels; raw probe rows labeled `discard` are excluded from the
   locked v0.3 training set. For schema-trained response-confidence work, do not
   treat all discarded rows as waste. The Qwen3-4B probe had 4,005 discard rows;
@@ -59,7 +59,7 @@ Read for dataset identity, leakage, recipe materialization, and local staging is
   2e-5`, `--batch_size_training 4`, and `--gradient_accumulation_steps 2`.
   Cheng Idk-DPO initializes from the SFT result model and uses `loss.beta=0.1`,
   `loss.sft_coef_when_dpo=0.01`, batch size 64, gradient accumulation 4, and
-  FSDPTrainer. The Phase 1 Qwen3 recipes are therefore NOT a bit-for-bit Cheng
+  FSDPTrainer. The locked training-regimen Qwen3 recipes are therefore NOT a bit-for-bit Cheng
   training reproduction: they are a resource-feasible LoRA/QLoRA
   replication-style design with matched LoRA capacity across arms. Do not cite
   Cheng hyperparameters from the raw evidence report unless re-verified against

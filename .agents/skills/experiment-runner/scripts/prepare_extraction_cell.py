@@ -20,7 +20,7 @@ GPU-FREE / GPU-REQUIRED boundary (§10), made explicit by the --run-extraction f
 Link-never-mutate (§5.5 / §9): the resolver writes the id into a TEMP effective
     config, NEVER into the committed hidden_state_probe.yaml (which keeps
     aligned_run_record_id: null as the placeholder + loud-fail contract). This
-    script never writes into experiment/phase1/run_records/.
+    script never writes into archive/experiment/phase1/run_records/.
 
 Usage:
     python3 prepare_extraction_cell.py --config <extraction.yaml>
@@ -46,8 +46,8 @@ import check_prereqs  # noqa: E402
 import resolve_run_record  # noqa: E402
 
 # Default extraction config + the merged harness, relative to the research repo.
-_DEFAULT_CONFIG_REL = "experiment/phase1/probe/config/hidden_state_probe.yaml"
-_HARNESS_REL = "experiment/phase1/probe/hidden_state_probe.py"
+_DEFAULT_CONFIG_REL = "experiments/common/configs/knowledge-probe/hidden_state_probe.yaml"
+_HARNESS_REL = "experiments/common/knowledge_probe/hidden_state_probe.py"
 
 
 def _parser() -> argparse.ArgumentParser:
@@ -72,7 +72,7 @@ def _parser() -> argparse.ArgumentParser:
 
 
 def _infer_repo_root() -> Path:
-    """Walk up to the repo root (the first ancestor with experiment/phase1/).
+    """Walk up to the repo root (the first ancestor with archive/experiment/phase1/).
 
     The walk-up is location-robust across the canonical tree
     (.skills/<skill>/scripts, 3 deep) and the generated mirrors
@@ -84,7 +84,7 @@ def _infer_repo_root() -> Path:
     """
     here = SCRIPT_DIR.resolve()
     for parent in here.parents:
-        if (parent / "experiment" / "phase1").is_dir():
+        if (parent / "archive" / "experiment" / "phase1").is_dir():
             return parent
     for parent in here.parents:
         if (parent / "bin" / "sync_skills.py").is_file():

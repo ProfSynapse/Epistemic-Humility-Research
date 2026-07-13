@@ -1,0 +1,52 @@
+{
+  "headline": {
+    "tag": "headline",
+    "H9-G0": {
+      "n_confab": 4,
+      "n_un_refused": 399,
+      "min_confabs": 20,
+      "min_un_refused": 20,
+      "met": false
+    },
+    "H9-G2": {
+      "caution_auroc": 0.973374043796579,
+      "floor": 0.9,
+      "pass": true
+    },
+    "H9-G1": {
+      "verdict": "INCONCLUSIVE-BY-POWER",
+      "auroc": null,
+      "ci": null
+    }
+  },
+  "heldout_zscale_nongating": {
+    "prop_z_mean": -0.058413651963267026,
+    "prop_z_std": 0.7793034300825343,
+    "caution_z_mean": 0.25456053372526294,
+    "caution_z_std": 0.9126180138509252
+  },
+  "sensitivity_near_dup": {
+    "n_flagged": 0,
+    "excluded_recompute": {
+      "tag": "near_dup_excluded",
+      "H9-G0": {
+        "n_confab": 4,
+        "n_un_refused": 399,
+        "min_confabs": 20,
+        "min_un_refused": 20,
+        "met": false
+      },
+      "H9-G2": {
+        "caution_auroc": 0.973374043796579,
+        "floor": 0.9,
+        "pass": true
+      },
+      "H9-G1": {
+        "verdict": "INCONCLUSIVE-BY-POWER",
+        "auroc": null,
+        "ci": null
+      }
+    },
+    "verdict_flip": false
+  }
+}

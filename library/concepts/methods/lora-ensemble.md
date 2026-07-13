@@ -43,6 +43,6 @@ relationships:
 
 An ensemble uncertainty estimation method that trains M independent LoRA adapters (low-rank adaptation modules) on the same dataset with different random seeds, then measures disagreement across the M adapter outputs as a proxy for knowledge-gap uncertainty. In the reference implementation: M=5, rank r=8, alpha=32, dropout 0.1, learning rate 2e-5, batch size 4, 1 epoch, max sequence length 1024.
 
-**Why it matters here:** Provides a tractable compute budget for knowledge-gap uncertainty estimation that leverages existing LoRA fine-tuning infrastructure. Compatible with the Phase 1 experimental setup, which already trains LoRA adapters across SFT/DPO/KTO arms.
+**Why it matters here:** Provides a tractable compute budget for knowledge-gap uncertainty estimation that leverages existing LoRA fine-tuning infrastructure. Compatible with the locked training-regimen experimental setup, which already trains LoRA adapters across SFT/DPO/KTO arms.
 
 **Lineage:** Instantiated in Taparia et al. 2026 (arXiv:2603.24967) as the knowledge-gap estimation arm of the uncertainty-source-decomposition framework.

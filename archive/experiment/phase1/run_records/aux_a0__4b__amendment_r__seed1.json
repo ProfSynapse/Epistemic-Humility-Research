@@ -1,0 +1,74 @@
+{
+  "run_id": "aux_a0__4b__amendment_r__seed1",
+  "matrix_version": "amendment-r-phase-b-v1",
+  "coordinate": {
+    "arm": "aux_a0_lm_only",
+    "size": "4b",
+    "cell_type": "amendment_r",
+    "seed": 1,
+    "override": {}
+  },
+  "source_recipe": "experiment/phase1/recipes/eh_phase1_qwen3_4b_amendment_r_a0_lm_only.yaml",
+  "method": "sft",
+  "model": "unsloth/Qwen3-4B-bnb-4bit",
+  "lane": "local",
+  "data": {
+    "source_data_file": "experiment/phase1/data/qwen3-4b-instruct/sft_train.jsonl",
+    "staged_data_file": "scratch/amendment_r/phase_b/phase_b_aux_train.jsonl",
+    "data_sha256": "e8b903cb742fa83aa6e9734c010f46d5c9e014fc12e3c20e2119b84e867d7473",
+    "rows": 14395,
+    "aux_target_field": "aux_target",
+    "aux_target_note": "Column present but IGNORED by A0 (no aux_head attached). Same conversations as A1/A2.",
+    "builder": "archive/experiment/phase1/probe/amendments/amendment_r_build_phase_b_aux_dataset.py"
+  },
+  "research_repo_commit": "2501d6507902d12817a6678dc96a6017427ea2ae",
+  "submodule_commit": "3eb6e23c7ee47342377eec8887f9fe96837a889e",
+  "prereq_check": {
+    "datasets_present": true,
+    "aux_dataset_built": true,
+    "engine_prompt_render_landed": true,
+    "runner_aux_head_forwarding_landed": "n/a (A0 has no aux_head)",
+    "prompt_render_engine_pr": "ProfSynapse/Synaptic-Tuner#120 (merged 2026-06-29, commit 3eb6e23)",
+    "note": "A0 now shares A1/A2's prompt_render=prompt_completion (render-matched), so it depends on the PR #120 engine mode for identical row layout across arms."
+  },
+  "outcome": {
+    "status": "scored",
+    "note": "Reference arm (aux_head OFF). Launchable on the current tuner lane with no engine/runner changes. Doubles as a comparability check vs the existing headline clean-SFT seed1 (identical LM hyperparameters). Not yet launched — awaiting batch launch alongside A1/A2 for matched conditions."
+  },
+  "amendment_r": {
+    "framing": "B1 — does native (emitted-scalar) calibration change under joint aux_head co-training?",
+    "role": "A0 = LM-only reference (head off); isolates whether merely attaching+co-training a head perturbs native behavior when compared to A1/A2.",
+    "primary_metric": "auroc_emitted_to_appropriateness (calibration_gap_report.py Analysis A)",
+    "baseline_a0_analog": 0.561,
+    "falsifier": "A1 emitted-scalar AUROC-to-appropriateness NOT > A2 by +0.05 (margin LOCKED 2026-06-29 after the faithful-token gate went GREEN; see A1 run record).",
+    "exploratory_not_headline": true
+  },
+  "scored_result": {
+    "scored_date": "2026-06-30",
+    "verdict": "FALSIFIED",
+    "pipeline": "merge_sft_adapter_16bit.py -> run_eval.py --live-vllm (SelfAware response_confidence, full n=3369) -> calibration_gap_report.py Analysis A -> amendment_r_falsifier_check.py. All 3 arms scored in one detached unsloth container (eh-amendment-r-score), exit 0.",
+    "train_run_timestamp": "20260629_200753",
+    "train_loss": 0.505,
+    "train_loss_note": "A0 is pure LM (head off); directly interpretable. A1/A2 train_loss is COMBINED LM+aux and not comparable.",
+    "merged_16bit": "synaptic-tuner/toolset-training-artifacts/runs/local_docker/sft/eh-phase1-qwen3-4b-amendment-r-a0-lm-only/20260629_200753/Qwen3-4B-bnb-4bit/merged-16bit",
+    "eval_config": "experiment/phase1/eval/config/eval_amendment_r_response_confidence_selfaware_a0_full_local_4b.yaml",
+    "scored_rows": "experiment/phase1/eval/results_amendment_r_response_confidence_selfaware_a0_full_4b/a0_lm_only__selfaware/scored_rows.jsonl",
+    "calibration_gap_report": "experiment/phase1/eval/analysis/calibration_gap_amendment_r_a0.json",
+    "auroc_emitted_to_appropriateness": 0.5127,
+    "emitted_mean": 0.314,
+    "emitted_std": 0.448,
+    "refused": 2256,
+    "answered_known_wrong": 544,
+    "falsifier_verdict": {
+      "metric": "A_full_eval.auroc_emitted_to_appropriateness",
+      "locked_margin": 0.05,
+      "auroc": {"a0_lm_only": 0.5127, "a1_joint_real": 0.4655, "a2_joint_placebo": 0.4224},
+      "a1_minus_a2_placebo": 0.0431,
+      "a1_minus_a0_reference": -0.0472,
+      "primary_pass_a1_gt_a2_by_margin": false,
+      "secondary_pass_a1_gt_a0": false,
+      "artifact": "experiment/phase1/eval/analysis/amendment_r_falsifier_verdict.json"
+    },
+    "mechanism": "Emitted stated-confidence is a near-deterministic function of the answer/abstain ACTION (conf|answered ~0.88-0.95, conf|refused ~0.00) in all arms, not an appropriateness estimate. Aux co-training shifted the policy toward answering more (refusals A0 2256 > A1 1912 > A2 1394), raising confident-wrong answers and LOWERING appropriateness-AUROC. The head fit its target internally (A1 combined loss 4.557 < A2 5.530) but that did NOT propagate to the emitted channel: internal->emitted dissociation persists. Non-locked footnote: auroc_emitted_correct_vs_wrong|answered_known flips order and is >chance (A0 0.581 < A1 0.607 < A2 0.651), but that is not the gate."
+  }
+}

@@ -53,6 +53,6 @@ relationships:
 
 A two-stage RAIT data-construction method that reduces over-refusal by (1) filtering training samples using both response correctness and certainty jointly to reduce static conflict, and (2) running a rehearsal training pass on high-certainty samples to characterize knowledge flow and correct stale IdK labels before the final fine-tune.
 
-**Why it matters here:** CRaFT is a drop-in replacement for Cor-RAIT that does not require preference pairs or a reward model and addresses the two root causes of over-refusal identified in the paper. Its rehearsal training component is directly applicable inside the Phase 1 SFT arm to reduce the over-abstention cost documented in sft-abstention-causes-over-refusal.
+**Why it matters here:** CRaFT is a drop-in replacement for Cor-RAIT that does not require preference pairs or a reward model and addresses the two root causes of over-refusal identified in the paper. Its rehearsal training component is directly applicable inside the locked training-regimen SFT arm to reduce the over-abstention cost documented in sft-abstention-causes-over-refusal.
 
 **Lineage:** extends refusal-aware-instruction-tuning; builds on supervised-finetuning; addresses sft-abstention-causes-over-refusal
