@@ -31,19 +31,23 @@ directly: that pinned function's return contract is (texts,
 terminated_flags, readback) -- it computes the eos position internally via
 gen_lib._first_eos_position and discards the integer position (and the
 untruncated text) once it has derived the boolean. This diagnostic needs
-that discarded integer (to bound how often the ambiguous "eos only at the
-last column" boundary case -- called not-terminated, conservatively -- is
-occurring, per the notebook's open question). run_arm_s_sampled_diagnostic
-below therefore makes the IDENTICAL model.generate() call (same
+that discarded integer (to bound how often the boundary case -- eos at the
+last generated column -- occurs, per the notebook's open question, which
+this diagnostic's own DIAGNOSTIC RESULT entry later closed: the boundary
+case is terminated, not ambiguous). run_arm_s_sampled_diagnostic below
+therefore makes the IDENTICAL model.generate() call (same
 controller.begin_pass/reset sequence, same eos_token_id set, same
 generation_kwargs) and calls gen_lib's own public
-resolve_batched_eos_ids/_first_eos_position helpers directly rather than
-reimplementing their logic -- gen_lib.py itself is not copied or modified,
-only its call arguments and helper functions are reused, exactly as
-gen_lib.run_batched_sampled_pass itself does internally. The terminated
-boolean derived here uses gen_lib's own criterion (eos_pos is not None and
-eos_pos < n - 1) so grading is byte-identical to what the resolved
-pipeline.py would have graded for the same draw.
+resolve_batched_eos_ids/_first_eos_position/is_terminated_naturally helpers
+directly rather than reimplementing their logic -- gen_lib.py itself is not
+copied or modified, only its call arguments and helper functions are
+reused, exactly as gen_lib.run_batched_sampled_pass itself does internally.
+The terminated boolean derived here uses gen_lib's own
+is_terminated_naturally (2026-07-13 corrected: eos found anywhere in the
+block, or the block is shorter than max_new) so grading is byte-identical
+to what the resolved pipeline.py would have graded for the same draw --
+no rule divergence between the pinned production path and this diagnostic
+mirror.
 
 Reuses (imported unchanged, none copied/modified):
   - pipeline.load_rows_and_gate_decisions, pipeline.derive_seed,
@@ -51,7 +55,8 @@ Reuses (imported unchanged, none copied/modified):
     pipeline.REGISTERED_SEEDS, pipeline.DOSE_TARGET,
     pipeline.BUILD_MANIFEST_PATH, pipeline.C_HAT_PATH
   - gen_lib.resolve_batched_eos_ids, gen_lib._first_eos_position,
-    gen_lib.grade_clean_tighten, gen_lib.MAX_NEW_CAP
+    gen_lib.is_terminated_naturally, gen_lib.grade_clean_tighten,
+    gen_lib.MAX_NEW_CAP
   - grader.grade_one
   - model_lib.load_model, model_lib.setup_hook_from_path
 
@@ -138,8 +143,8 @@ def run_batched_sampled_pass_diagnostic(
         new_tokens = out[i, prompt_len:]
         n_new_tokens_raw = int(new_tokens.shape[0])
         eos_pos = gl._first_eos_position(new_tokens, eos_ids)
-        terminated_naturally = eos_pos is not None and eos_pos < n_new_tokens_raw - 1
-        content = new_tokens[: eos_pos + 1] if terminated_naturally else new_tokens
+        terminated_naturally = gl.is_terminated_naturally(eos_pos, n_new_tokens_raw, max_new)
+        content = new_tokens[: eos_pos + 1] if eos_pos is not None else new_tokens
         text = tokenizer.decode(content, skip_special_tokens=True)
         raw_text_untruncated = tokenizer.decode(new_tokens, skip_special_tokens=True)
         samples.append({

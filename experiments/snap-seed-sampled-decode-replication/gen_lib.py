@@ -183,7 +183,28 @@ def _first_eos_position(row_tokens: torch.Tensor, eos_ids: set[int]) -> Optional
     return None
 
 
-def run_batched_sampled_pass(
+def is_terminated_naturally(eos_pos: Optional[int], n_new_tokens: int, max_new: int) -> bool:
+    """Registered metric text (AMENDMENT.md, grade_clean_tighten docstring
+    above): "terminated naturally (stopped before max_new)". True iff an
+    eos-id token was found ANYWHERE in the row's generated block --
+    including the final generated position, since emitting eos there is
+    still the model stopping on its own -- OR the block itself is shorter
+    than max_new (every row in the batch already finished, so HF's
+    generate() returned a narrower tensor). False only when no eos was
+    emitted anywhere AND the block used the full max_new budget.
+
+    Single source of truth for both `run_batched_sampled_pass` below and
+    `diagnostic_arm_s_text.py`'s mirror of it -- no rule divergence between
+    the two paths. (2026-07-13 repin: corrected from a prior conjunct that
+    additionally required `eos_pos < n_new_tokens - 1`, which misgraded
+    exactly the eos-at-final-position case as not-terminated; see
+    NOTEBOOK.md "DIAGNOSTIC RESULT" entry.)"""
+    if eos_pos is not None:
+        return True
+    return n_new_tokens < max_new
+
+
+def _run_batched_sampled_pass_core(
     model,
     controller,
     enc: dict,
@@ -191,31 +212,24 @@ def run_batched_sampled_pass(
     strength,
     tokenizer,
     generation_kwargs: dict,
-    max_new: int = MAX_NEW_CAP,
-    force_active: bool | list[bool] = False,
-) -> tuple[list[str], list[bool], Optional[dict]]:
-    """Batched counterpart to run_pass_fixed for do_sample=True generation.
-
-    enc's input_ids/attention_mask already carry the batch dimension (the
-    caller repeats one row's encoding N times before calling this). strength
-    and force_active broadcast per InterventionHook's own rules (scalar ->
-    every row) since every row in the batch shares the same fire decision by
-    construction (N samples of the SAME row).
+    max_new: int,
+    force_active: bool | list[bool],
+) -> tuple[list[dict], Optional[dict]]:
+    """Shared core for `run_batched_sampled_pass` and the data-exhaust
+    variant `run_batched_sampled_pass_with_text`: one model.generate() call
+    plus per-row termination/text bookkeeping. Returns (samples, readback)
+    where each sample dict holds text (truncated at the first eos when one
+    is found, else the full block), raw_text_untruncated, n_new_tokens_raw,
+    eos_pos, and terminated_naturally (via `is_terminated_naturally`).
 
     A batched generate() call pads every row's output to the same width
-    (max_new), so "shorter than max_new" (run_pass_fixed's termination test)
-    is not available per row. Termination is instead detected by finding the
-    first eos-id token strictly before the last generated position in that
-    row's own token slice: HF's generate() marks a row "finished" once it
-    emits an eos id and fills the remainder with pad tokens, so an eos
-    appearing before the final column means the row stopped on its own; an
-    eos only at the very last column (or never) means the row used the full
-    budget and is not confidently natural (ambiguous edge case, called
-    not-terminated to stay conservative).
-
-    Returns (texts, terminated_flags, readback_dict_or_None) -- readback is
-    the raw hook.last_readback (one "measured" entry per active row in the
-    batch, i.e. per fired copy) or None if mode == "off".
+    (usually max_new, unless every row in the batch finished before the
+    cap). Termination per row is detected via `is_terminated_naturally`:
+    an eos-id token anywhere in that row's own token slice -- including the
+    final generated column, since HF's generate() only fills a row with pad
+    tokens AFTER it has emitted eos, so eos at the last column still means
+    the row stopped on its own -- or a generated block narrower than
+    max_new.
     """
     controller.hook.last_readback = None
     controller.begin_pass(mode, strength, attention_mask=enc["attention_mask"],
@@ -235,18 +249,79 @@ def run_batched_sampled_pass(
     controller.reset()
 
     prompt_len = enc["input_ids"].shape[1]
-    texts: list[str] = []
-    terminated: list[bool] = []
+    samples: list[dict] = []
     for i in range(out.shape[0]):
         new_tokens = out[i, prompt_len:]
-        eos_pos = _first_eos_position(new_tokens, eos_ids)
         n = int(new_tokens.shape[0])
-        if eos_pos is not None and eos_pos < n - 1:
-            row_terminated = True
-            content = new_tokens[: eos_pos + 1]
-        else:
-            row_terminated = False
-            content = new_tokens
-        texts.append(tokenizer.decode(content, skip_special_tokens=True))
-        terminated.append(row_terminated)
+        eos_pos = _first_eos_position(new_tokens, eos_ids)
+        terminated = is_terminated_naturally(eos_pos, n, max_new)
+        content = new_tokens[: eos_pos + 1] if eos_pos is not None else new_tokens
+        samples.append({
+            "text": tokenizer.decode(content, skip_special_tokens=True),
+            "raw_text_untruncated": tokenizer.decode(new_tokens, skip_special_tokens=True),
+            "n_new_tokens_raw": n,
+            "eos_pos": eos_pos,
+            "terminated_naturally": terminated,
+        })
+    return samples, readback
+
+
+def run_batched_sampled_pass(
+    model,
+    controller,
+    enc: dict,
+    mode: str,
+    strength,
+    tokenizer,
+    generation_kwargs: dict,
+    max_new: int = MAX_NEW_CAP,
+    force_active: bool | list[bool] = False,
+) -> tuple[list[str], list[bool], Optional[dict]]:
+    """Batched counterpart to run_pass_fixed for do_sample=True generation.
+
+    enc's input_ids/attention_mask already carry the batch dimension (the
+    caller repeats one row's encoding N times before calling this). strength
+    and force_active broadcast per InterventionHook's own rules (scalar ->
+    every row) since every row in the batch shares the same fire decision by
+    construction (N samples of the SAME row).
+
+    Returns (texts, terminated_flags, readback_dict_or_None) -- readback is
+    the raw hook.last_readback (one "measured" entry per active row in the
+    batch, i.e. per fired copy) or None if mode == "off". See
+    `_run_batched_sampled_pass_core` for the termination/text logic.
+    """
+    samples, readback = _run_batched_sampled_pass_core(
+        model, controller, enc, mode, strength, tokenizer, generation_kwargs,
+        max_new, force_active,
+    )
+    texts = [s["text"] for s in samples]
+    terminated = [s["terminated_naturally"] for s in samples]
     return texts, terminated, readback
+
+
+def run_batched_sampled_pass_with_text(
+    model,
+    controller,
+    enc: dict,
+    mode: str,
+    strength,
+    tokenizer,
+    generation_kwargs: dict,
+    max_new: int = MAX_NEW_CAP,
+    force_active: bool | list[bool] = False,
+) -> tuple[list[dict], Optional[dict]]:
+    """Data-exhaust variant of `run_batched_sampled_pass` (2026-07-13,
+    ported from the lab-notebook diagnostic's text-persisting wrapper in
+    `diagnostic_arm_s_text.py`): identical generate() call and grading
+    inputs, but returns the FULL per-sample dict (text,
+    raw_text_untruncated, n_new_tokens_raw, eos_pos, terminated_naturally)
+    instead of collapsing to (texts, terminated_flags). Used by
+    `pipeline.run_batch_sampled_for_row` so the K=5 registered Arm S re-run
+    persists generation text and termination diagnostics per the program's
+    data-exhaust principle, rather than only the final graded booleans the
+    resolved H3 run kept (the gap that made the termination-rule bug
+    unauditable until the diagnostic re-run)."""
+    return _run_batched_sampled_pass_core(
+        model, controller, enc, mode, strength, tokenizer, generation_kwargs,
+        max_new, force_active,
+    )

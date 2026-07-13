@@ -87,12 +87,14 @@ def _build_batch(rows: list[list[int]]) -> torch.Tensor:
 def test_batched_diagnostic_termination_cases():
     """Three canonical cases (early eos, boundary eos, never) reproduce
     gen_lib._first_eos_position's own reported position AND the same
-    terminated_naturally boolean gen_lib.run_batched_sampled_pass derives
-    from it (eos_pos is not None and eos_pos < n - 1)."""
+    terminated_naturally boolean gen_lib.is_terminated_naturally derives
+    from it (eos found anywhere in the block -- including the final
+    position -- or the block is shorter than max_new; 2026-07-13 corrected
+    semantics, see NOTEBOOK.md "DIAGNOSTIC RESULT")."""
     out = _build_batch([
         [10, 11, 999, 0, 0],   # eos at index 2 of 5 -> terminated True
-        [10, 11, 12, 13, 999],  # eos only at last index -> terminated False (conservative)
-        [10, 11, 12, 13, 14],   # no eos -> terminated False
+        [10, 11, 12, 13, 999],  # eos at last index -> terminated True (model emitted eos)
+        [10, 11, 12, 13, 14],   # no eos, full max_new budget used -> terminated False
     ])
     hook = MockHook()
     controller = MockController(hook)
@@ -112,7 +114,7 @@ def test_batched_diagnostic_termination_cases():
     assert samples[0]["text"] == "10 11 999"  # truncated at eos, matches gen_lib's own content slice
     assert samples[0]["raw_text_untruncated"] == "10 11 999 0 0"
 
-    assert samples[1]["eos_pos"] == 4 and samples[1]["terminated_naturally"] is False
+    assert samples[1]["eos_pos"] == 4 and samples[1]["terminated_naturally"] is True
     assert samples[1]["text"] == samples[1]["raw_text_untruncated"] == "10 11 12 13 999"
 
     assert samples[2]["eos_pos"] is None and samples[2]["terminated_naturally"] is False

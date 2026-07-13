@@ -218,6 +218,17 @@ def run_batch_sampled_for_row(
     model, controller, tokenizer, dev, row: dict, seed: int, strength_c_hat: float,
     n_samples: int = N_SAMPLES,
 ) -> dict:
+    """Data-exhaust (2026-07-13): persists per-sample generation text, the
+    raw termination inputs (eos_pos, n_new_tokens_raw), and the FULL
+    gen_lib.grade_clean_tighten sub-grade dict -- not just the two derived
+    booleans the resolved H3 run kept -- so a future collapse can be
+    decomposed directly from the committed run log, without needing a
+    separate text-persisting diagnostic re-run (the gap that made the
+    batched termination-rule bug unauditable until NOTEBOOK.md's
+    "DIAGNOSTIC RESULT" entry closed it). Ported from
+    diagnostic_arm_s_text.py's persistence schema; gen_lib.py's own
+    run_batched_sampled_pass_with_text (data-exhaust variant of
+    run_batched_sampled_pass) supplies the per-sample fields."""
     fire = bool(row["fire"])
     prompt = ml.render(row)
     enc1 = tokenizer(prompt, return_tensors="pt")
@@ -230,20 +241,24 @@ def run_batch_sampled_for_row(
     derived_seed = derive_seed(seed, row["row_key"])
     torch.manual_seed(derived_seed)
 
-    texts, terminated_flags, readback = gl.run_batched_sampled_pass(
+    raw_samples, readback = gl.run_batched_sampled_pass_with_text(
         model, controller, enc_batch, mode, strength, tokenizer,
         generation_kwargs=SAMPLED_GENERATION_KWARGS, max_new=MAX_NEW,
     )
     aliases = row.get("aliases")
     samples = []
-    for text, terminated in zip(texts, terminated_flags):
-        ct = gl.grade_clean_tighten(text, terminated)
-        wfc = grader.grade_one(text, aliases)
+    for s in raw_samples:
+        ct = gl.grade_clean_tighten(s["text"], s["terminated_naturally"])
+        wfc = grader.grade_one(s["text"], aliases)
         wfc_bool = bool(wfc["well_formed_correct"])
         samples.append({
             "clean_tighten": bool(ct["clean_tighten"]),
             "well_formed_correct": wfc_bool,
             "not_well_formed_correct": not wfc_bool,
+            "text": s["text"],
+            "n_new_tokens_raw": s["n_new_tokens_raw"],
+            "eos_pos": s["eos_pos"],
+            "grade_clean_tighten": ct,
         })
     readback_mean = None
     if readback and readback.get("measured"):
