@@ -1,0 +1,60 @@
+# H4 gates. DRAFT, NOT signed (see AMENDMENT.md "Gates" for the prose; this file
+# is the machine-readable pin). Reference values from the resolved snap cell and
+# its motivating diagnostic
+# (experiments/doubt-gated-caution-tighten/AMENDMENT.md):
+#   gated confab clean_tighten       136/185 = 73.5%  (lines 305-307)
+#   gated known-correct false-refuse   8/258 = 3.1%   (lines 309-311)
+#   UNREGISTERED dose-200 diagnostic (n=80, ungated): confab tighten 82.5%,
+#     known-correct false-refuse 36.2%  (lines 45-55) -- provenance only, the
+#     number H4 replaces with a registered contrast.
+# All rates over the HELD-OUT split only (confab 185, known-correct 258); paired
+# on the same rows. Gates cannot move after the run.
+
+resolved_reference:
+  gated_confab_clean_tighten: 0.735          # 136/185
+  gated_known_correct_false_refuse: 0.031    # 8/258
+  diagnostic_ungated_confab_tighten: 0.825   # n=80, unregistered, provenance only
+  diagnostic_ungated_known_correct_false_refuse: 0.362  # n=80, unregistered
+
+n_boot: 10000
+
+gates:
+  # H4-G0 -- gate-on reproduction / instrument validity, pre-analysis. Failure is
+  # a STOP, not an outcome: if the gate-on arm does not reproduce the resolved
+  # numbers, the H4 harness diverges from the resolved instrument.
+  - name: h4_g0_gate_on_reproduction
+    arm: gated
+    checks:
+      - id: confab_conversion_reproduces
+        metric: gated confab clean_tighten
+        pass_if: "abs(rate - 0.735) <= 0.05"    # in [0.685, 0.785]
+      - id: known_correct_cost_reproduces
+        metric: gated known-correct false-refusal
+        pass_if: "abs(rate - 0.031) <= 0.03"    # <= 0.061
+
+  # H4-G1 -- gate certifies selectivity, PRIMARY. Ungated known-correct damage
+  # exceeds gated known-correct damage by >= 15pp absolute, McNemar p < 0.001,
+  # paired over the 258 held-out known-correct rows. This is the registered
+  # number the paper prints in place of the unregistered dose-200 diagnostic.
+  - name: h4_g1_gate_certifies_selectivity
+    contrast: ungated_minus_gated
+    population: known_correct_answered
+    indicator: not_well_formed_correct
+    pass_if_absolute_gap: ">= 0.15"       # ungated_damage - gated_damage
+    pass_if_mcnemar_p: "< 0.001"          # paired, 258 known-correct rows
+
+  # H4-G2 -- conversion preserved / parity. Gated confab conversion within 15pp
+  # below ungated confab conversion; report both rates and the difference.
+  - name: h4_g2_conversion_preserved
+    contrast: gated_vs_ungated
+    population: confab
+    indicator: clean_tighten
+    pass_if: "gated_rate >= ungated_rate - 0.15"
+    report: [ungated_rate, gated_rate, difference]
+
+falsifier: >-
+  Ungated known-correct damage does NOT exceed gated known-correct damage by 15pp
+  absolute (dosing every known-correct row is about as harmless as gating it) --
+  the write is inherently selective, the gate is not what supplies selectivity,
+  and the paper's "the write is non-selective; the gate supplies selectivity"
+  sentence must be removed, not merely softened.

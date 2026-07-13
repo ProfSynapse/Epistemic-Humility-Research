@@ -1,0 +1,105 @@
+{
+  "amendment": "ungated-vs-gated-dose-matched",
+  "resolved_reference": {
+    "gated_confab_clean_tighten": 0.735,
+    "gated_known_correct_false_refuse": 0.031
+  },
+  "n_confab_held_out": 185,
+  "n_known_correct_answered_held_out": 258,
+  "dose_target": 200.0,
+  "readback_check": {
+    "n_dosed_passes": 443,
+    "readback_mean": 200.0177159850492,
+    "readback_min": 199.8459321409464,
+    "readback_max": 200.24928731750697,
+    "frac_within_5pct_tol": 1.0,
+    "note": "informational only, mirrors the resolved cell's own G0(b) write-fires check; H4-G0's pass/fail per gates.yaml is the two rate-reproduction checks only, not this readback tolerance."
+  },
+  "gates": {
+    "h4_g0_gate_on_reproduction": {
+      "name": "h4_g0_gate_on_reproduction",
+      "gated_confab_clean_tighten": {
+        "n": 185,
+        "successes": 136,
+        "rate": 0.7351351351351352,
+        "wilson_ci_95": [
+          0.6672350299153391,
+          0.7934688882989707
+        ]
+      },
+      "gated_known_correct_false_refuse": {
+        "n": 258,
+        "successes": 8,
+        "rate": 0.031007751937984496,
+        "wilson_ci_95": [
+          0.015794214423464188,
+          0.059982398302640884
+        ]
+      },
+      "checks": {
+        "confab_conversion_reproduces": true,
+        "known_correct_cost_reproduces": true
+      },
+      "passed": true
+    },
+    "h4_g1_gate_certifies_selectivity": {
+      "name": "h4_g1_gate_certifies_selectivity",
+      "n_paired": 258,
+      "n_unpaired_rows_dropped": 0,
+      "ungated_known_correct_damage": {
+        "n": 258,
+        "successes": 155,
+        "rate": 0.6007751937984496,
+        "wilson_ci_95": [
+          0.5399593304321115,
+          0.658634124684593
+        ]
+      },
+      "gated_known_correct_damage": {
+        "n": 258,
+        "successes": 8,
+        "rate": 0.031007751937984496,
+        "wilson_ci_95": [
+          0.015794214423464188,
+          0.059982398302640884
+        ]
+      },
+      "absolute_gap": 0.569767441860465,
+      "mcnemar": {
+        "b": 148,
+        "c": 1,
+        "n_discordant": 149,
+        "statistic": 143.06040268456377,
+        "p_value": 4.203895392974451e-43
+      },
+      "checks": {
+        "gap_ge_0_15": true,
+        "mcnemar_p_lt_0_001": true
+      },
+      "passed": true
+    },
+    "h4_g2_conversion_preserved": {
+      "name": "h4_g2_conversion_preserved",
+      "ungated_confab_clean_tighten": {
+        "n": 185,
+        "successes": 144,
+        "rate": 0.7783783783783784,
+        "wilson_ci_95": [
+          0.7132074198274231,
+          0.8322236557596333
+        ]
+      },
+      "gated_confab_clean_tighten": {
+        "n": 185,
+        "successes": 136,
+        "rate": 0.7351351351351352,
+        "wilson_ci_95": [
+          0.6672350299153391,
+          0.7934688882989707
+        ]
+      },
+      "difference_gated_minus_ungated": -0.043243243243243246,
+      "passed": true
+    }
+  }
+}
