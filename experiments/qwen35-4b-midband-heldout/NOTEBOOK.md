@@ -17,3 +17,26 @@ in `experiment.yaml`.
   and falsifier enumerate outcome shapes A through E so nothing lands between
   them (fleet wording-gap lesson). NOT signed; harness not written (separate
   assignment). See AMENDMENT.md.
+
+## 2026-07-13 - Sign preparation: provenance pins filled, tolerance adjudication recorded (lead)
+
+Frozen operating-point hashes filled from the resolved
+qwen35-4b-midband-doubt-snap ladder's committed artifacts (build_manifest
+f0a8ea7a..., hs20 u_d 18e78f25..., c_hat 937d1bff..., random_direction
+db8b930d...; full values in frozen_operating_point_hashes.json).
+verify_frozen_operating_point_hashes() now has real targets and pipeline.py
+refuses to run on any mismatch. All 12 instrument files (9 modules + cell.yaml
++ gates.yaml + the frozen-hash file) hand-pinned in experiment.yaml.
+
+Tolerance adjudication (binding, recorded at sign as required by the G0
+hardening acceptance): gates.yaml's "readback within tolerance" is read as the
+shared synaptic-tuner MechInterp SmokeConfig contract via
+evaluate_smoke_readback (write_rel_tol 0.05, write_abs_floor 0.5,
+offtarget_tol 1e-3), applied in smoke mode to the gated and random arms. This
+defers to the one shared readback-tolerance definition in the codebase rather
+than minting a local variant; any future change to SmokeConfig would surface
+as a pin-visible diff in the shared module, not silently here.
+
+Full suite green post-rebase. Scoreboard: orchestrator call recorded in
+AMENDMENT.md; awaiting the PI call, then bin/exp sign and the GPU sequence
+(materialize -> capture_anchors ~18-19 min -> pipeline smoke -> full run).

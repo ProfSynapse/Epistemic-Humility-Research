@@ -510,12 +510,25 @@ def test_report_no_text_leak_passes_when_clean():
 # and runlog_growth are raise-on-failure assertions, not eyeballed prose.
 # ---------------------------------------------------------------------------
 
-def test_verify_frozen_operating_point_hashes_placeholder_refuses_to_run(monkeypatch):
-    """The committed frozen_operating_point_hashes.json is pre-sign and
-    ships with the placeholder value on every entry -- this MUST refuse to
-    run, not silently pass, until the lead fills the real hashes at sign."""
+def test_verify_frozen_operating_point_hashes_placeholder_refuses_to_run(monkeypatch, tmp_path):
+    """Placeholder entries MUST refuse to run, not silently pass. (Until sign
+    the committed file itself carried placeholders and this asserted on it
+    directly; the hashes were filled at sign 2026-07-13, so the placeholder
+    behavior is asserted via a fixture and the committed file is asserted to
+    verify clean below.)"""
+    hashes_path = tmp_path / "frozen_operating_point_hashes.json"
+    hashes_path.write_text(json.dumps({"placeholder": "FILLED-AT-SIGN",
+                                       "files": {"d.json": "FILLED-AT-SIGN"}}))
+    monkeypatch.setattr(pipeline, "HERE", tmp_path)
+    monkeypatch.setattr(pipeline, "FROZEN_HASHES_PATH", hashes_path)
     with pytest.raises(SystemExit, match="placeholder"):
         pipeline.verify_frozen_operating_point_hashes()
+
+
+def test_verify_frozen_operating_point_hashes_committed_file_verifies_clean():
+    """Post-sign invariant: the committed hash file carries no placeholders
+    and matches the resolved ladder's artifacts byte-for-byte."""
+    pipeline.verify_frozen_operating_point_hashes()  # must not raise
 
 
 def test_verify_frozen_operating_point_hashes_passes_on_correct_hash(monkeypatch, tmp_path):

@@ -1,10 +1,10 @@
 {
   "_note": "G0 directions_byte_identical / scalars_frozen_match (gates.yaml): sha256 of every file this experiment's frozen operating point is loaded from, verbatim from the resolved qwen35-4b-midband-doubt-snap ladder. This is a provenance pin, filled at sign -- module/provenance pinning is lead work, not harness-build work. Every value below is the placeholder until then; pipeline.py refuses to run while any value equals \"placeholder\".",
-  "placeholder": "FILLED-AT-SIGN",
+  "placeholder": "FILLED (signed 2026-07-13)",
   "files": {
-    "../qwen35-4b-midband-doubt-snap/analysis-committed/build_manifest.json": "FILLED-AT-SIGN",
-    "../qwen35-4b-midband-doubt-snap/analysis-committed/directions/hs20/u_d.json": "FILLED-AT-SIGN",
-    "../qwen35-4b-midband-doubt-snap/analysis-committed/directions/hs20/c_hat.json": "FILLED-AT-SIGN",
-    "../qwen35-4b-midband-doubt-snap/analysis-committed/directions/hs20/random_direction.json": "FILLED-AT-SIGN"
+    "../qwen35-4b-midband-doubt-snap/analysis-committed/build_manifest.json": "f0a8ea7a19526a97801ca49861bc33ee1dd2cd4668a0ba6f2f842c298a544425",
+    "../qwen35-4b-midband-doubt-snap/analysis-committed/directions/hs20/u_d.json": "18e78f257484692c1cef7013d47cb64739542d32b3e9949d0258b4ddc3b0c84c",
+    "../qwen35-4b-midband-doubt-snap/analysis-committed/directions/hs20/c_hat.json": "937d1bffe1924e73bca40a88c8096d7e01bb67c5b64286362196aa968e2c2e1f",
+    "../qwen35-4b-midband-doubt-snap/analysis-committed/directions/hs20/random_direction.json": "db8b930d79d98f52417566d9a87c876470f6b820684ee9456a58f7213d33cafa"
   }
 }
