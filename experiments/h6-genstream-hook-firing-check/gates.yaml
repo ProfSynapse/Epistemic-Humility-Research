@@ -1,0 +1,72 @@
+# H6 gates (Commitment-Point gen_stream Hook-Firing Check). DRAFT, NOT
+# signed. AMENDMENT.md "Gates" is the sole prose source of truth for these
+# numbers; this file transcribes them verbatim as the machine-readable pin,
+# it does not introduce any new threshold. A path is a CERTIFIED
+# answer-window steering instrument iff it passes h6_g1 AND h6_g2 AND h6_g3.
+# h6_g4 is a reported diagnostic, never a pass/fail gate.
+#
+# Ground truth for "decode forward pass": HF's cached generate() produces the
+# FIRST new token directly from the prefill call's own logits, so N new
+# tokens means exactly N total forward calls on the hooked decoder layer, of
+# which N-1 are decode-only (seq_len == 1) calls (the prefill call is call
+# #1). Both tested controllers' gen_stream mode skips call #1 and steers
+# every call from #2 onward, i.e. exactly those N-1 decode calls. See
+# h6_hook_check.py:evaluate_g1 for the implementation.
+
+decode_len_min: 16   # K >= 16 answer-window decode steps (AMENDMENT.md Design)
+
+gates:
+  - name: h6_g1_hook_fires_per_decode_step
+    unit: per smoke sequence; ALL sequences must pass (100%)
+    checks:
+      - id: in_hook_count_matches_independent_count
+        definition: controller's own forward-call counter vs a separate
+          read-only register_forward_hook on the same module
+        pass_if: exact match, every sequence
+      - id: decode_call_count_matches_ground_truth
+        definition: independent counter's decode-only (seq_len == 1) call
+          count vs (n_generated_tokens - 1)
+        pass_if: "== n_generated_tokens - 1, every sequence"
+      - id: multi_step
+        pass_if: "decode-only call count > 1, every sequence"
+    fail_if_any:
+      - "count == 0 (hook never dispatched during decode)"
+      - "total calls == 1 (only the prefill call fired -- the AK signature)"
+      - "decode-only call count below n_generated_tokens - 1 on any sequence"
+
+  - name: h6_g2_write_lands_at_commanded_magnitude
+    unit: per instrumented decode position, ALL prompts (100%)
+    definition: projection of (hidden_ON - hidden_ABSENT) onto the unit write
+      direction, at the write layer, vs the commanded realized magnitude
+      (alpha_sigma = dose_sigma * sigma)
+    pass_if: "abs(readback / commanded - 1) <= 0.05"
+    tolerance_note: 5% is ~60x the observed miss of prior correctly-writing
+      hooks on this program (Amendment AL readback ratio 1.0008; doubt-gated
+      snap smoke 200.11 vs commanded 200) -- see AMENDMENT.md H6-G2.
+
+  - name: h6_g3_noop_is_true_baseline
+    unit: per decode position, ALL prompts (100%)
+    checks:
+      - id: hidden_state_delta
+        definition: hidden_NOOP - hidden_ABSENT
+        pass_if: "max abs delta <= 1e-6"
+      - id: logits_argmax
+        pass_if: "argmax(logits_NOOP) == argmax(logits_ABSENT), every position"
+      - id: logits_delta
+        definition: logits_NOOP - logits_ABSENT
+        pass_if: "max abs delta <= 1e-3"
+
+  - name: h6_g4_downstream_behavioral_sensitivity
+    reported_not_gated: true   # AMENDMENT.md: descriptive; a gate only in the
+                                # negative sense already covered by h6_g1
+    metrics:
+      - frac_prompts_with_any_divergence: fraction of prompts whose ON argmax
+          token diverges from ABSENT at >= 1 decode position
+      - first_divergence_position: per-prompt position of first divergence
+
+certification_rule: >-
+  A path is CERTIFIED as an answer-window steering instrument iff it passes
+  h6_g1 AND h6_g2 AND h6_g3. Falsifier (AMENDMENT.md): failing h6_g1 OR h6_g2
+  for a path leaves all gen_stream answer-window evidence produced on that
+  path quarantined, and specifically the AK Stage 2 gen_stream MISS cannot be
+  adopted as a causal null on a path that fails either gate.
