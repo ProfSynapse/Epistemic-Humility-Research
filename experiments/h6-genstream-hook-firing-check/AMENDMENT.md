@@ -267,6 +267,85 @@ H6-G3. H6-G4 is a reported diagnostic, never a pass/fail.
 
 ## Outcome
 
-Filled at resolve. Record per-path G1/G2/G3 results, the G4 diagnostic, the AK
-Stage 2 disposition, and the one-sentence summary that also goes into `verdict:`
-in the manifest.
+**Resolved 2026-07-13. NEITHER PATH IS CERTIFIED as an answer-window steering
+instrument; the falsifier's quarantine binds on both.** Resolve basis: the
+full-pool run over all 25 pinned prompts (`analysis-committed/
+h6_bespoke_gate_report.json`, `analysis-committed/h6_tuner_gate_report.json`;
+ID manifest `analysis-committed/pool_smoke_ids.json`), lead-recomputed from the
+per-prompt records. A preliminary 20-prompt run (harness default `--n-prompts`)
+produced the identical qualitative pattern and is superseded by the full-pool
+run, not pooled with it. Two pre-run harness-plumbing fix rounds are audit
+trailed in `instrument.repins` and NOTEBOOK; no gate, threshold, prediction, or
+falsifier text changed at any point.
+
+**PATH-BESPOKE (Unsloth `for_inference`): H6-G1 FAIL on all 25 prompts, not
+certified.** Uniformly: independent decode-step (seq_len == 1) hook calls = 0,
+in-hook total calls = 1 (the prefill only), n_generated = 16 (tokens genuinely
+produced), G4 divergence fraction 0.0 (ON is behaviorally identical to ABSENT,
+consistent with the write never reaching the model). A standalone diagnostic
+probe confirmed the mechanism before any fix: Unsloth's optimized decode path
+bypasses the hooked module's `forward()` entirely during cached decode, so no
+hook registered on that module can either steer or observe a decode step.
+H6-G2 and H6-G3 also report FAIL on this path, but only as fail-closed results
+on empty decode-position captures, downstream of the G1 non-firing; they are
+not independent findings. Consequence (the registered one): the AK section 8
+confound is certified as INSTRUMENTATION. All `gen_stream` answer-window
+steering evidence produced on the bespoke path is instrument-void, and the AK
+Stage 2 answer-window MISS cannot be adopted as a causal null.
+
+**PATH-TUNER (plain-HF `register_forward_hook`): H6-G1 PASS and H6-G3 PASS on
+all 25 prompts; H6-G2 FAIL as registered; NOT certified.** G1: decode-step
+call count equals n_generated - 1 exactly, in-hook and independent counters
+agree, every prompt. G3: hidden max abs delta 0.0, argmax identical, logit
+deltas within tolerance, every position (after the shared-negative-infinity
+NaN arithmetic fix recorded in the repin trail). G2: 86 of 375 instrumented
+positions violate the 5% readback band; the gate demands 100% and therefore
+fails. The failure structure is fully characterized and is recorded here as
+CHARACTERIZATION, not certification: the 10 prompts with any G2 failure are
+exactly the 10 prompts whose ON argmax diverges from ABSENT (G4 fraction 0.4),
+every failing position lies at or after that prompt's own first divergence
+position (zero failures before it, 277 pre-divergence positions all reading
+back 0.996 to 0.998 of commanded), and the worst post-divergence ratio is
+1.95. The mechanism: G2's readback is defined as hidden_ON minus hidden_ABSENT
+at the same position index across two independently generated trajectories;
+once the write flips a token (the intervention acting as designed), the two
+trajectories condition on different prefixes and the subtraction carries
+diverged KV history on top of the per-step write, so the metric stops
+isolating what it was registered to measure. The gates are final and do not
+move after the run: G2 as written FAILS, the certification is withheld, and
+per the falsifier all `gen_stream` answer-window steering evidence on the
+tuner path stays quarantined. Certifying the tuner path remains open to a
+successor amendment with a divergence-robust readback design (for example,
+teacher-forced ON and ABSENT passes over the SAME token prefix, so the
+subtraction isolates the per-step write at every position), registered fresh
+before any run.
+
+**Predictions adjudication.** Orchestrator: bespoke leg MET exactly (called
+the G1 fail and the AK-confound confirmation); tuner leg NOT MET (called
+G1+G2+G3 clean certification; G2 failed as registered). User: the CERTIFIES
+CLEAN call is NOT MET for the same reason. Neither predictor anticipated that
+the registered G2 readback definition could not survive the intervention's own
+behavioral success; the gate executes as written regardless.
+
+**Scope notes carried from sign and launch.** (1) The bespoke NOOP condition
+is structurally identical to ABSENT (its controller short-circuits at
+alpha == 0), so bespoke G3 could never have tested add-zero perturbation even
+absent the G1 failure. (2) The checkpoint is the pinned unquantized
+unsloth/Qwen3-4B at revision 64033659 with load_in_4bit=False enforced after
+the first launch exposed Unsloth's silent bnb-4bit substitution; the AK Stage
+2 cloud run itself used the 4-bit variant, so bespoke findings speak to the
+hook-dispatch semantics of the Unsloth inference path, which are
+quantization-independent, not to bit-level identity with the AK run. (3) The
+commanded dose was 2 sigma = 8.899 in readback units at L24 with the AK
+commitment-perp direction (sha256 9e0bf40c...); dose magnitude plays no role
+in G1 counting and only sets the scale G2 reads back against.
+
+**One-sentence verdict:** Neither gen_stream path is certified: the Unsloth
+bespoke path never routes decode steps through the hooked module (H6-G1 fail
+on 25/25, certifying the AK answer-window confound as instrumentation and
+voiding its MISS as a causal null), while the tuner plain-HF path fires every
+decode step and lands the write at 0.996 to 0.998 of commanded on all 277
+pre-divergence positions but fails H6-G2 as registered because the
+cross-trajectory readback stops isolating the write after the steered
+trajectory diverges, leaving tuner certification to a divergence-robust
+successor readback.

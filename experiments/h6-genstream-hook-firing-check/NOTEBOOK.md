@@ -6,6 +6,36 @@ in `experiment.yaml`.
 
 ## Entries
 
+- 2026-07-13 (RESOLVED): resolve basis is the lead-launched full-pool rerun
+  over all 25 pinned prompts (analysis/launch_log_full25.txt, out-dirs
+  analysis/{bespoke,tuner}_full25), run because the builder's relaunch used
+  the harness default --n-prompts 20 against the pinned 25-prompt pool; the
+  20-prompt run is recorded as preliminary and superseded, identical
+  qualitative pattern. Lead recompute from per-prompt records: bespoke
+  uniform (0 decode-step hook calls, 1 prefill call, 16 generated tokens,
+  G4 divergence 0.0) on 25/25; tuner G1 exact (decode calls == n_generated
+  minus 1, counters agree) and G3 clean on 25/25; tuner G2 fails 86/375
+  positions, the failing-prompt set is exactly the diverged-prompt set
+  (10/25), zero failures before a prompt's own first divergence, all 277
+  pre-divergence positions at 0.996-0.998 of commanded, worst
+  post-divergence ratio 1.95. Lead adjudications: (1) the builder's fourth
+  fix (shared-negative-infinity NaN in evaluate_g3) is ACCEPTED as harness
+  arithmetic; it was correct to fix without waiting since NaN propagation
+  made G3 unpassable on any real vocabulary regardless of write quality,
+  the fix direction is conservative (one-sided negative infinity still
+  fails), and both cases are unit-tested. (2) Tuner G2 executes AS WRITTEN
+  and fails; the post-divergence readback confound is recorded in the
+  Outcome as characterization only, and any rescoping of G2 to
+  pre-divergence positions is refused as a post-result goalpost move.
+  Certification of the tuner path is left to a fresh successor amendment
+  with a divergence-robust readback (teacher-forced same-prefix ON/ABSENT).
+  (3) Both scoreboard calls adjudicated in the Outcome: orchestrator right
+  on bespoke, wrong on tuner; user's certifies-clean call wrong on the same
+  G2 leg. Promotions to analysis-committed/: both full-pool gate reports
+  (verified text-free: only row_key strings and harness-authored
+  construction-check notes) and the pool ID manifest.
+
+
 - 2026-07-13 (HARNESS-PLUMBING FIXES, pre-relaunch): the first launch attempt
   failed on both paths, harness plumbing on both, not model results. Fixed,
   re-pinned (`bin/exp repin`, audit trail in `instrument.repins`), CPU smoke

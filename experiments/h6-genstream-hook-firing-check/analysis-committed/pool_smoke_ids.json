@@ -1,0 +1,31 @@
+{
+  "source": "professorsynapse/eh-al-prep-staging pools/ak_stage1_pool.jsonl, joined on row_key",
+  "selection": "first 25 unique row_keys in appearance order of ak_stage2_pull/rows.jsonl",
+  "row_keys": [
+    "ahx::kuq_ku_unknown_x::001893",
+    "ah::kuq_ku_unknown::001938",
+    "ahx::kuq_ku_unknown_x::001106",
+    "ahx::kuq_ku_unknown_x::000745",
+    "ahx::kuq_ku_unknown_x::003480",
+    "ahx::kuq_ku_unknown_x::002650",
+    "ahx::kuq_ku_unknown_x::002751",
+    "ahx::kuq_ku_unknown_x::001029",
+    "ahx::kuq_ku_unknown_x::001110",
+    "ahx::kuq_ku_unknown_x::001673",
+    "ahx::kuq_ku_unknown_x::001956",
+    "ah::selfaware_unanswerable::000431",
+    "ahx::kuq_ku_unknown_x::001741",
+    "ah::selfaware_unanswerable::002663",
+    "ahx::kuq_ku_unknown_x::000532",
+    "ahx::kuq_ku_unknown_x::000518",
+    "ah::kuq_ku_unknown::002896",
+    "ah::selfaware_unanswerable::001486",
+    "ahx::kuq_ku_unknown_x::003422",
+    "ah::kuq_ku_unknown::003566",
+    "ahx::kuq_ku_unknown_x::000118",
+    "ah::kuq_ku_unknown::003436",
+    "ahx::kuq_ku_unknown_x::002130",
+    "ahx::kuq_ku_unknown_x::001957",
+    "ahx::kuq_ku_unknown_x::003062"
+  ]
+}

@@ -1,7 +1,7 @@
 slug: h6-genstream-hook-firing-check
 title: Commitment-Point gen_stream Hook-Firing Check
 type: lab-diagnostic
-status: signed
+status: resolved
 registered: true
 created_at: '2026-07-11T00:35:42Z'
 question: Do steering hooks installed via the generation-stream (answer-window) path
@@ -75,5 +75,10 @@ instrument:
       delta while still failing a genuine one-sided -inf divergence. No gate/threshold/prediction/falsifier
       text changed.'
 inputs: []
-verdict: ''
+verdict: 'Neither gen_stream path is certified: the Unsloth bespoke path never routes
+  decode steps through the hooked module (H6-G1 fail 25/25, certifying the AK answer-window
+  confound as instrumentation and voiding its MISS as a causal null), while the tuner
+  plain-HF path fires every decode step and lands the write at 0.996-0.998 of commanded
+  on all pre-divergence positions but fails H6-G2 as registered once the steered trajectory
+  diverges, leaving tuner certification to a divergence-robust successor readback.'
 kg: []
