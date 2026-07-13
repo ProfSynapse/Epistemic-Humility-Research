@@ -40,3 +40,17 @@ as a pin-visible diff in the shared module, not silently here.
 Full suite green post-rebase. Scoreboard: orchestrator call recorded in
 AMENDMENT.md; awaiting the PI call, then bin/exp sign and the GPU sequence
 (materialize -> capture_anchors ~18-19 min -> pipeline smoke -> full run).
+
+## 2026-07-13 - Lab notebook: smoke/full runlog-path collision at first full launch (lead)
+
+The first full-run launch exited at the baseline pass: pipeline smoke and
+pipeline run share analysis/runlog/ paths, so the full run tried to open the
+smoke's baseline.jsonl and RunLog correctly refused on a run_config
+fingerprint mismatch (n_rows 8 vs 1692). This is the RunLog resume guard
+working as designed, not a grading or delivery defect; no pinned module was
+changed. Operational fix: smoke run logs archived to
+analysis/runlog-smoke-20260713/, the refusing attempt's log preserved as
+run_full_attempt1_fingerprint_refusal.log, full run relaunched clean.
+Materialize and capture_anchors artifacts were untouched and reused. Note
+for future harnesses: smoke should namespace its run logs away from the
+confirmatory paths so the guard never has to fire.
