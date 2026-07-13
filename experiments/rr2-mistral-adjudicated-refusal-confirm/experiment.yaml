@@ -1,0 +1,19 @@
+slug: rr2-mistral-adjudicated-refusal-confirm
+title: 'RR2: mistral confirmatory with detector v2 + blinded adjudication lane'
+type: steer-cell
+status: draft
+registered: true
+created_at: '2026-07-13T22:55:38Z'
+question: 'Does the doubt-gated caution write actuate clean, idiom-inclusive refusal on mistral at its atlas site (hs16, dose 12 sigma_c) when abstention is scored by a pre-registered diverse detector plus a blinded human adjudication lane, symmetric across benefit and cost populations?'
+prediction: 'Mistral reaches shape A at the pre-fixed operating point under the adjudicated instrument: held-out fired-confab adjudicated refusal >= 0.60 (Wilson LCB > 0.50) with well-formed >= 0.80, known-correct adjudicated false refusal <= 0.05 (Wilson UCB < 0.10), placebo no-op within 2 points.'
+falsifier: 'Any prediction leg fails (RG1/RG2/RG3). No rescoring lane exists behind the blinded adjudication: a miss falsifies the detector-width-artifact interpretation of the RR mistral caveat and the miss stands as behavioral.'
+checkpoint:
+  repo: ''
+  revision: ''
+instrument:
+  configs: []
+  modules: []
+  pins: {}
+inputs: []
+verdict: ''
+kg: []
