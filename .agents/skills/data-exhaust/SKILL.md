@@ -23,6 +23,27 @@ not run this on a `draft`, `signed`, or `running` experiment: there is nothing
 terminal to package yet, and publishing mid-run invites goalpost confusion
 about what the released data actually represents.
 
+## Build-time requirement (binding on every harness, not just packaging)
+
+Exhaust can only be packaged if the run persisted it. Every generation
+harness MUST write, per row or per sample, into its gitignored row-level run
+log: the raw generation text, the FULL sub-grade dict its grader computes
+(not just the final booleans), and the termination/readback inputs the gate
+math consumes. Booleans-only run logs are a build defect: they make failure
+anatomy unrecoverable without a paid re-run, and they leave response-quality
+problems (degenerate output, format-checker artifacts, batched-decode
+misgrading) undetectable after the fact. The cautionary case is
+`experiments/snap-seed-sampled-decode-replication` (H3, 2026-07-13): its
+grader computed the complete sub-grade dict and the pipeline discarded it,
+so the registered falsifier fired with the failure mechanism undiagnosable
+from committed artifacts and the resolve PR had to be held for a
+text-persisting re-run. Containment is unchanged by this rule: text stays
+under gitignored `analysis/`; only ID-manifests and aggregates go to
+`analysis-committed/`; publication still runs through the license gate
+below. Harness builders and pre-sign reviewers both check this: a CPU smoke
+that asserts the persistence schema (text present, sub-grade dict intact)
+is part of the standard suite.
+
 ## Start here
 
 | Task | Do |

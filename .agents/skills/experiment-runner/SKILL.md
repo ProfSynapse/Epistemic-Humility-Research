@@ -95,6 +95,12 @@ operation, then follow any further routing inside that reference.
   session note + run record. Every amendment pre-states a prediction, a falsifier,
   and its gates — and never moves the goalposts after the result. See
   [reference/amendment-vs-lab-notebook.md](reference/amendment-vs-lab-notebook.md).
+- Data-exhaust at build time: every generation harness persists per-sample
+  generation text and the full sub-grade dict in its gitignored row-level run
+  log; booleans-only logs are a build defect, and the pre-sign review checks
+  the persistence schema. Rationale and the H3 cautionary case live in the
+  data-exhaust skill's "Build-time requirement" section. Containment is
+  unchanged: text never leaves gitignored `analysis/`.
 
 ## Matrix At A Glance
 
