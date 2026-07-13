@@ -4,7 +4,7 @@ session_id: 20260708T171528Z-experiment-provenance-cleanup-architecture
 title: Experiment Provenance Cleanup Architecture
 status: active
 created_at: '2026-07-08T17:15:28Z'
-updated_at: '2026-07-13T23:05:07Z'
+updated_at: '2026-07-08T18:09:29Z'
 track: research
 question: How should old protocol amendments, new experiments-first records, and research
   session notes be aligned for multiplayer research without breaking provenance?
@@ -119,9 +119,9 @@ checkpoints:
     without reverting body references. Updated backlog, README, project instructions,
     prediction-scoreboard query, library provenance notes, and AP instrument comments
     to point at experiments-first records. AP pins were refreshed after comment-only
-    path updates. Verification now reports 50 session files, 0 legacy numbered filenames,
-    0 duplicate session IDs, 0 active shorthand session refs, 51 experiment manifests,
-    0 legacy amendment files, and 0 active legacy amendment link targets.
+    path updates. Verification now reports 50 session files, 0 legacy numbered
+    filenames, 0 duplicate session IDs, 0 active shorthand session refs, 51 experiment
+    manifests, 0 legacy amendment files, and 0 active legacy amendment link targets.
   evidence:
   - docs/migration/session-path-map.json
   - .skills/experiment-runner/scripts/migrate_sessions.py
@@ -145,13 +145,14 @@ checkpoints:
   at: '2026-07-08T18:09:29Z'
   kind: result
   title: Papers, experiment notes, and archive separated
-  summary: Moved active paper production out of experiment/paper into top-level papers/<paper>/
-    directories with local manuscript, analysis, figures, scripts, and notes surfaces.
-    Moved superseded paper drafts and the retired provenance inventory into visible
-    archive/papers/ rather than a hidden dot-directory. Moved reusable experiment-family
-    runbook notes from experiment/notes/ to notes/experiments/. Added paper and notes
-    migration maps, updated CI/pre-commit, KG schema docs, skill docs, README, AGENTS/CLAUDE,
-    and figure builders to the new homes.
+  summary: Moved active paper production out of experiment/paper into top-level
+    papers/<paper>/ directories with local manuscript, analysis, figures, scripts,
+    and notes surfaces. Moved superseded paper drafts and the retired provenance
+    inventory into visible archive/papers/ rather than a hidden dot-directory. Moved
+    reusable experiment-family runbook notes from experiment/notes/ to
+    notes/experiments/. Added paper and notes migration maps, updated CI/pre-commit,
+    KG schema docs, skill docs, README, AGENTS/CLAUDE, and figure builders to the
+    new homes.
   evidence:
   - papers/README.md
   - notes/README.md
@@ -164,37 +165,6 @@ checkpoints:
   - Use visible archive/ instead of .archive because archived provenance must stay
     discoverable to agents and reviewers; dot-directories remain tool-state/mirror
     territory by default.
-  next_steps: []
-  signals: {}
-- id: 007-checkpoint
-  at: '2026-07-13T23:05:07Z'
-  kind: checkpoint
-  title: Checkpoint
-  summary: 'RR + H3 both resolved in one arc. RR cross-family raw refusal: mistral
-    leg completed shape F (peak hs16/dose12 refused 0.5793 vs 0.60 floor, Wilson straddles),
-    red-teamed and CERTIFIED-NULL with a binding detector-width caveat (97 hand-verified
-    mistral-idiom abstentions at the peak would clear the floor; llama''s F is robust
-    to detector width, mistral''s is not); falsifier fired (neither family shape A),
-    resolved falsified, PR #285 open awaiting PI merge approval; both scoreboard calls
-    falsified. PI directive recorded: future abstention acceptance criteria include
-    a registered blinded hand-check adjudication lane; RR2 successor drafted (exp/rr2-mistral-adjudicated-refusal,
-    2f9da6d3): detector v2 screen + blinded symmetric adjudication lane as primary
-    instrument, fixed operating point hs16/dose12, held-out leg only, sign blocked
-    on #285 merge. H3: termination-rule artifact confirmed (764/769 term-only failures,
-    eos-at-final-position, texts are clean refusals), harness fixed to is_terminated_naturally
-    single source of truth (16/16 tests, parity exact 1056/1480 and 130/185), repinned
-    d722811e, pre-fix logs archived; full K=5 re-run on fixed harness passes ALL gates
-    (G1 pooled 69.5 pct vs 63.5 floor, every seed above; G2/G3/G0 identical to pre-fix
-    run; seed-20260710 exactly 130/185 = triple agreement), verdict REVISED to resolved
-    (headline survives sampling), both scoreboard calls correct on corrected instrument,
-    PR #283 back to ready with revised resolve (bba2cee5). Next: PI merges #285 and
-    #283; RR2 sign (needs PI scoreboard prediction); held-out ladder sign + GPU sequence;
-    skill rule for blinded adjudication lane after RR2 design approval; KG-ingest
-    both verdicts post-merge.'
-  evidence: []
-  run_ids: []
-  commands: []
-  decisions: []
   next_steps: []
   signals: {}
 ---
@@ -296,8 +266,3 @@ _No summary yet._
   - `docs/migration/notes-path-map.json`
 - decisions:
   - Use visible `archive/` instead of `.archive` because archived provenance must stay discoverable to agents and reviewers; dot-directories remain tool-state/mirror territory by default.
-### 007-checkpoint - Checkpoint
-
-- at: `2026-07-13T23:05:07Z`
-- kind: `checkpoint`
-- summary: RR + H3 both resolved in one arc. RR cross-family raw refusal: mistral leg completed shape F (peak hs16/dose12 refused 0.5793 vs 0.60 floor, Wilson straddles), red-teamed and CERTIFIED-NULL with a binding detector-width caveat (97 hand-verified mistral-idiom abstentions at the peak would clear the floor; llama's F is robust to detector width, mistral's is not); falsifier fired (neither family shape A), resolved falsified, PR #285 open awaiting PI merge approval; both scoreboard calls falsified. PI directive recorded: future abstention acceptance criteria include a registered blinded hand-check adjudication lane; RR2 successor drafted (exp/rr2-mistral-adjudicated-refusal, 2f9da6d3): detector v2 screen + blinded symmetric adjudication lane as primary instrument, fixed operating point hs16/dose12, held-out leg only, sign blocked on #285 merge. H3: termination-rule artifact confirmed (764/769 term-only failures, eos-at-final-position, texts are clean refusals), harness fixed to is_terminated_naturally single source of truth (16/16 tests, parity exact 1056/1480 and 130/185), repinned d722811e, pre-fix logs archived; full K=5 re-run on fixed harness passes ALL gates (G1 pooled 69.5 pct vs 63.5 floor, every seed above; G2/G3/G0 identical to pre-fix run; seed-20260710 exactly 130/185 = triple agreement), verdict REVISED to resolved (headline survives sampling), both scoreboard calls correct on corrected instrument, PR #283 back to ready with revised resolve (bba2cee5). Next: PI merges #285 and #283; RR2 sign (needs PI scoreboard prediction); held-out ladder sign + GPU sequence; skill rule for blinded adjudication lane after RR2 design approval; KG-ingest both verdicts post-merge.

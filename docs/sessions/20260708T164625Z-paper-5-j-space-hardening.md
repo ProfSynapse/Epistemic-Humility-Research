@@ -4,7 +4,7 @@ session_id: 20260708T164625Z-paper-5-j-space-hardening
 title: Paper 5 J-space hardening
 status: active
 created_at: '2026-07-08T16:46:25Z'
-updated_at: '2026-07-13T15:20:47Z'
+updated_at: '2026-07-13T23:06:42Z'
 track: research
 phase: phase1
 question: Which registered follow-up experiments harden the Paper 5 actuation thesis,
@@ -753,6 +753,37 @@ checkpoints:
     artifact diagnosis if not) -> resolve -> PR; h4-builder anchor-slice fix -> llama
     then mistral RR cells; session tasks: HF backfill card still owed (task 24)'
   signals: {}
+- id: 031-checkpoint
+  at: '2026-07-13T23:06:42Z'
+  kind: checkpoint
+  title: Checkpoint
+  summary: 'RR + H3 both resolved in one arc. RR cross-family raw refusal: mistral
+    leg completed shape F (peak hs16/dose12 refused 0.5793 vs 0.60 floor, Wilson straddles),
+    red-teamed and CERTIFIED-NULL with a binding detector-width caveat (97 hand-verified
+    mistral-idiom abstentions at the peak would clear the floor; llama''s F is robust
+    to detector width, mistral''s is not); falsifier fired (neither family shape A),
+    resolved falsified, PR #285 open awaiting PI merge approval; both scoreboard calls
+    falsified. PI directive recorded: future abstention acceptance criteria include
+    a registered blinded hand-check adjudication lane; RR2 successor drafted (exp/rr2-mistral-adjudicated-refusal,
+    2f9da6d3): detector v2 screen + blinded symmetric adjudication lane as primary
+    instrument, fixed operating point hs16/dose12, held-out leg only, sign blocked
+    on #285 merge. H3: termination-rule artifact confirmed (764/769 term-only failures,
+    eos-at-final-position, texts are clean refusals), harness fixed to is_terminated_naturally
+    single source of truth (16/16 tests, parity exact 1056/1480 and 130/185), repinned
+    d722811e, pre-fix logs archived; full K=5 re-run on fixed harness passes ALL gates
+    (G1 pooled 69.5 pct vs 63.5 floor, every seed above; G2/G3/G0 identical to pre-fix
+    run; seed-20260710 exactly 130/185 = triple agreement), verdict REVISED to resolved
+    (headline survives sampling), both scoreboard calls correct on corrected instrument,
+    PR #283 back to ready with revised resolve (bba2cee5). Next: PI merges #285 and
+    #283; RR2 sign (needs PI scoreboard prediction); held-out ladder sign + GPU sequence;
+    skill rule for blinded adjudication lane after RR2 design approval; KG-ingest
+    both verdicts post-merge.'
+  evidence: []
+  run_ids: []
+  commands: []
+  decisions: []
+  next_steps: []
+  signals: {}
 ---
 # Paper 5 J-space hardening
 
@@ -1134,3 +1165,8 @@ rows before the layer contrast.
   - H3 falsifier verdict deliberately withheld until instrumentation is adversarially verified (adopt-no-null-from-uncertified-instrument, the AK/H6 rule); RR precondition-report naming quirk left as-is (cosmetic, pinned module)
 - next steps:
   - ladder-red-team H3 verdict -> adjudicate -> Outcome (falsifier straight if sound; artifact diagnosis if not) -> resolve -> PR; h4-builder anchor-slice fix -> llama then mistral RR cells; session tasks: HF backfill card still owed (task 24)
+### 031-checkpoint - Checkpoint
+
+- at: `2026-07-13T23:06:42Z`
+- kind: `checkpoint`
+- summary: RR + H3 both resolved in one arc. RR cross-family raw refusal: mistral leg completed shape F (peak hs16/dose12 refused 0.5793 vs 0.60 floor, Wilson straddles), red-teamed and CERTIFIED-NULL with a binding detector-width caveat (97 hand-verified mistral-idiom abstentions at the peak would clear the floor; llama's F is robust to detector width, mistral's is not); falsifier fired (neither family shape A), resolved falsified, PR #285 open awaiting PI merge approval; both scoreboard calls falsified. PI directive recorded: future abstention acceptance criteria include a registered blinded hand-check adjudication lane; RR2 successor drafted (exp/rr2-mistral-adjudicated-refusal, 2f9da6d3): detector v2 screen + blinded symmetric adjudication lane as primary instrument, fixed operating point hs16/dose12, held-out leg only, sign blocked on #285 merge. H3: termination-rule artifact confirmed (764/769 term-only failures, eos-at-final-position, texts are clean refusals), harness fixed to is_terminated_naturally single source of truth (16/16 tests, parity exact 1056/1480 and 130/185), repinned d722811e, pre-fix logs archived; full K=5 re-run on fixed harness passes ALL gates (G1 pooled 69.5 pct vs 63.5 floor, every seed above; G2/G3/G0 identical to pre-fix run; seed-20260710 exactly 130/185 = triple agreement), verdict REVISED to resolved (headline survives sampling), both scoreboard calls correct on corrected instrument, PR #283 back to ready with revised resolve (bba2cee5). Next: PI merges #285 and #283; RR2 sign (needs PI scoreboard prediction); held-out ladder sign + GPU sequence; skill rule for blinded adjudication lane after RR2 design approval; KG-ingest both verdicts post-merge.
