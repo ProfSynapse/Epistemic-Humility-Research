@@ -30,10 +30,32 @@ instrument:
   configs:
   - cell.yaml
   - gates.yaml
-  modules: []
+  modules:
+  - render.py
+  - grader.py
+  - gen_lib.py
+  - direction_fit.py
+  - materialize_rows.py
+  - steer_lib.py
+  - dose_ladder.py
+  - heldout_scorer.py
+  - gates_lib.py
+  - pipeline.py
+  - test_rr_smoke.py
   pins:
     cell.yaml: 88c87b7ded44245d886a7aa1a822008574fc0da1cdef83ba6386f0677f0ed56a
     gates.yaml: de5ba0e4ea824459ee4e4ccc7db7f76e8882355021ddfc9c1f0259cac3adcee9
+    render.py: fa378bdbcfd185f9f8bcdbeb1209cbe180b9ec50e92f9342ea7d7421ff6b3ab3
+    grader.py: 54b8af60f2f287c85f3bc4a2d0c8f8ed09f685f10090bb3ef953116d1667b52c
+    gen_lib.py: a15149b3d3e2424aff1efda9131b8f13e647a173aebd3eb6ade94cd5e574f641
+    direction_fit.py: d97966d05ad55df647ae2efd949fd2daf0155706ba10657019d77e5f2965ed5a
+    materialize_rows.py: 3d37ebcfcb33ec4fa7d1f30cbdb54bd9294531715b03a1d78cf19297c66c0d1b
+    steer_lib.py: 0701211660292de9d1ee30080c1c5f2cbddb856baa1a3608a20fa246531f5250
+    dose_ladder.py: 8d4d76eecc894e492e203a97988c9b901ef641f9f74607984c241d73520c1de7
+    heldout_scorer.py: 7d6df7ed510f61ee385ab17a56454478519bde08addac812a3fb1dc6432b4dee
+    gates_lib.py: 1eed44eee8bcb898daffe1d21f68f6b398d02961c70928e3f07eb9ec40726e71
+    pipeline.py: 49964839c1d1ca6aa620d5477fa4cc07ff20e25291272f4dcf481e640796c010
+    test_rr_smoke.py: c9a721603ee344b3157d5e1e75777941103e1d0b81375e11246fb372b73362c6
 inputs:
 - experiments/ungated-vs-gated-dose-matched/AMENDMENT.md
 - experiments/doubt-snap-cross-family-confirmatory/AMENDMENT.md
