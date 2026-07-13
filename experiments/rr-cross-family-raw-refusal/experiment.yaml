@@ -1,0 +1,112 @@
+slug: rr-cross-family-raw-refusal
+title: Cross-family raw-refusal actuation at atlas-located workspace-band sites
+type: steer-cell
+status: falsified
+registered: true
+created_at: '2026-07-13T11:23:35Z'
+question: Does a doubt-gated caution write actuate raw refusal on the non-Qwen families
+  (Llama-3.2-3B, Mistral-7B-v0.3) when written at their own atlas-located workspace-band
+  sites, rather than at the ported round(0.94*(L-1)) late site the cross-family confirmatory
+  indicted, with directions and dose chosen on FIT only and the operating point confirmed
+  on held-out?
+prediction: The doubt-gated caution write actuates clean raw refusal at the atlas-located
+  workspace-band site on at least one of the two non-Qwen families; at least one of
+  {llama, mistral} reaches outcome shape A, i.e. held-out fired-confab refused >=
+  0.60 (Wilson 95% LCB > 0.50) AND well-formed >= 0.80 with known-correct false-refusal
+  <= 0.05 (Wilson 95% UCB < 0.10) and the random_direction placebo a no-op within
+  2 points of baseline on both populations.
+falsifier: Falsified if neither family reaches shape A, i.e. both families land in
+  shape B (refusal does not transfer with confidence), C (refusal transfers but well-formed
+  < 0.80), D (confab legs clear but not cost-safe), E (thresholds clear but random_direction
+  not a no-op), or F (no FIT-viable dose exists, so the write does not actuate clean
+  refusal at the atlas site even where the axis is maximally readable). Shapes A-F
+  are exhaustive over a family that clears G0; a G0 instrument-validity failure is
+  a pre-outcome stop, not a shape.
+checkpoint:
+  repo: cross-family (two atlas-mapped substrates)
+  revision: see cell.yaml families (revisions pinned from fleet model_matrix.yaml
+    at sign)
+instrument:
+  configs:
+  - cell.yaml
+  - gates.yaml
+  modules:
+  - render.py
+  - grader.py
+  - gen_lib.py
+  - direction_fit.py
+  - materialize_rows.py
+  - steer_lib.py
+  - dose_ladder.py
+  - heldout_scorer.py
+  - gates_lib.py
+  - pipeline.py
+  - test_rr_smoke.py
+  pins:
+    cell.yaml: 6356511cccf848aa3185c1b4af3bcfef43a051d7e31da7f9bd9814c173b43d46
+    gates.yaml: de5ba0e4ea824459ee4e4ccc7db7f76e8882355021ddfc9c1f0259cac3adcee9
+    render.py: fa378bdbcfd185f9f8bcdbeb1209cbe180b9ec50e92f9342ea7d7421ff6b3ab3
+    grader.py: 54b8af60f2f287c85f3bc4a2d0c8f8ed09f685f10090bb3ef953116d1667b52c
+    gen_lib.py: a15149b3d3e2424aff1efda9131b8f13e647a173aebd3eb6ade94cd5e574f641
+    direction_fit.py: d97966d05ad55df647ae2efd949fd2daf0155706ba10657019d77e5f2965ed5a
+    materialize_rows.py: 9056303374328f3f1503f240f24fe7a99d469a7a845d4539e5f654703f3b4736
+    steer_lib.py: 45737d9c59cba4b00526f7dc674a2bc32bcb97d098ec4c308a97a07994155cf0
+    dose_ladder.py: 8d4d76eecc894e492e203a97988c9b901ef641f9f74607984c241d73520c1de7
+    heldout_scorer.py: 7d6df7ed510f61ee385ab17a56454478519bde08addac812a3fb1dc6432b4dee
+    gates_lib.py: 1eed44eee8bcb898daffe1d21f68f6b398d02961c70928e3f07eb9ec40726e71
+    pipeline.py: 49964839c1d1ca6aa620d5477fa4cc07ff20e25291272f4dcf481e640796c010
+    test_rr_smoke.py: 806b1b7c5abe8c14db1f2c21883ad1c4e5f9c8e33fdc38d48c618ae22c4196a6
+  repins:
+  - file: cell.yaml
+    old_sha256: 88c87b7ded44245d886a7aa1a822008574fc0da1cdef83ba6386f0677f0ed56a
+    new_sha256: 6356511cccf848aa3185c1b4af3bcfef43a051d7e31da7f9bd9814c173b43d46
+    date: '2026-07-13T14:10:23Z'
+    reason: resolve the four placeholders that survived sign (two family revisions
+      from fleet model_matrix.yaml, lead-verified against the SSOT; synaptic-tuner
+      submodule pin; gpu python). No threshold, arm, dose, or gate content changed.
+  - file: materialize_rows.py
+    old_sha256: 3d37ebcfcb33ec4fa7d1f30cbdb54bd9294531715b03a1d78cf19297c66c0d1b
+    new_sha256: 9056303374328f3f1503f240f24fe7a99d469a7a845d4539e5f654703f3b4736
+    date: '2026-07-13T15:34:05Z'
+    reason: add extract_anchors_at_candidate_layers() (CPU slice over already-staged
+      atlas capture tensors) and wire into cmd_materialize's success path to write
+      analysis/<family>/anchors_at_candidate_layers.json, closing the dose_ladder.py
+      launch-blocking gap; extend CPU smoke with 4 new tests covering the slice (synthetic
+      safetensors fixtures) and the full materialize success-path wiring
+  - file: test_rr_smoke.py
+    old_sha256: c9a721603ee344b3157d5e1e75777941103e1d0b81375e11246fb372b73362c6
+    new_sha256: 8a59ed82d6152543c0371ef3a29fd550c069c8ee056da30a495e4c205c60487f
+    date: '2026-07-13T15:34:05Z'
+    reason: add extract_anchors_at_candidate_layers() (CPU slice over already-staged
+      atlas capture tensors) and wire into cmd_materialize's success path to write
+      analysis/<family>/anchors_at_candidate_layers.json, closing the dose_ladder.py
+      launch-blocking gap; extend CPU smoke with 4 new tests covering the slice (synthetic
+      safetensors fixtures) and the full materialize success-path wiring
+  - file: steer_lib.py
+    old_sha256: 0701211660292de9d1ee30080c1c5f2cbddb856baa1a3608a20fa246531f5250
+    new_sha256: 45737d9c59cba4b00526f7dc674a2bc32bcb97d098ec4c308a97a07994155cf0
+    date: '2026-07-13T15:50:53Z'
+    reason: load_model() now sets RR_RENDER_MODEL/RR_RENDER_REVISION before loading,
+      closing a launch-blocking gap where render.py's _tokenizer() raised on the first
+      row of every dose_ladder/heldout_scorer generation call; add test_load_model_sets_render_env_vars
+      (mocked transformers classes, CPU-only)
+  - file: test_rr_smoke.py
+    old_sha256: 8a59ed82d6152543c0371ef3a29fd550c069c8ee056da30a495e4c205c60487f
+    new_sha256: 806b1b7c5abe8c14db1f2c21883ad1c4e5f9c8e33fdc38d48c618ae22c4196a6
+    date: '2026-07-13T15:50:53Z'
+    reason: load_model() now sets RR_RENDER_MODEL/RR_RENDER_REVISION before loading,
+      closing a launch-blocking gap where render.py's _tokenizer() raised on the first
+      row of every dose_ladder/heldout_scorer generation call; add test_load_model_sets_render_env_vars
+      (mocked transformers classes, CPU-only)
+inputs:
+- experiments/ungated-vs-gated-dose-matched/AMENDMENT.md
+- experiments/doubt-snap-cross-family-confirmatory/AMENDMENT.md
+- experiments/jspace-family-atlas/AMENDMENT.md
+- experiments/qwen35-4b-midband-doubt-snap/AMENDMENT.md
+verdict: 'Falsified, both families shape F: the doubt-gated caution write does not
+  actuate FIT-viable canonical clean refusal at either atlas-located non-Qwen site;
+  llama fails on format collapse before the refusal floor (robust to detector width),
+  while mistral peaks at 0.579 against the 0.60 floor with intact JSON and its miss
+  is substantially canonical-phrase coverage (abstention pressure present but phrased
+  outside the locked detector''s vocabulary).'
+kg: []

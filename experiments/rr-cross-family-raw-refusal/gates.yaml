@@ -1,0 +1,118 @@
+# rr-cross-family-raw-refusal gates. DRAFT until `bin/exp sign`.
+# Wilson-bound template (point-estimate legs plus Wilson 95% bound legs), the
+# PI's standing preference. Thresholds anchored to governed precedent with
+# doc:line cites. Each family is scored independently; the amendment-level
+# verdict is PROMOTE if at least one family reaches shape A, else NOT promoted.
+# Outcome-shape coverage (A through F) is enumerated in AMENDMENT.md; the
+# prediction covers shape A and the falsifier covers B, C, D, E, F, so the two
+# are exhaustive and no result can land off the table (the confirmatory's fix,
+# doubt-snap-cross-family-confirmatory/AMENDMENT.md:331-339).
+
+seed: 20260713
+alpha: 0.05
+scored_per_family: true      # llama32_3b_instruct and mistral7b_instruct_v03 independently
+
+gates:
+  - name: g0_instrument_validity_and_fit_dose_viability
+    interpretation: stop_before_outcome
+    checks:
+      - id: loaders_resolve
+        pass_if: "both substrates load via AutoModelForCausalLM.from_pretrained at the fleet-pinned revisions (causal-LM path)"
+      - id: revisions_byte_checked
+        pass_if: "cell.yaml revision hashes match the fleet model_matrix.yaml exactly"
+      - id: fit_gate_auc_floor
+        pass_if: "FIT gate AUC (neg_z_d, confab vs known_correct_answered) >= 0.90 at each candidate layer"
+        reference: experiments/doubt-snap-cross-family-confirmatory/AMENDMENT.md:228-231
+      - id: directions_byte_identical
+        pass_if: "every fresh fit (u_d, c_hat, random_direction, tau, standardization) is run twice and asserted byte-identical before any artifact is written"
+        reference: experiments/qwen35-4b-midband-doubt-snap/AMENDMENT.md:176-178
+      - id: anchor_coverage
+        pass_if: "reused atlas captures cover every FIT and held-out row at each candidate layer (missing layers re-captured under the atlas convention)"
+        reference: experiments/jspace-family-atlas/AMENDMENT.md:136-140
+      - id: heldout_power_floors
+        pass_if: "held-out confab >= 150 AND known_correct_answered >= 250 per family (atlas: llama 872/334, mistral 1312/382)"
+        reference: experiments/doubt-snap-cross-family-confirmatory/AMENDMENT.md:176
+      - id: token_movement_bracket
+        pass_if: "the pre-sweep fixed-strength gen-stream probe moves tokens on the grid's strongest arm, OR the one permitted pre-sweep/pre-outcome re-bracket is applied"
+        reference: experiments/doubt-snap-cross-family-confirmatory/AMENDMENT.md:114-141
+      - id: fit_dose_viable
+        pass_if: "some (layer, dose) in the bracketed grid has FIT fired-confab refused >= 0.60 AND well_formed >= 0.80 AND FIT known false-refusal <= 0.10; else the family is recorded as outcome shape F (no grid change afterward)"
+        reference: >-
+          experiments/qwen35-4b-midband-doubt-snap/AMENDMENT.md:270-272 (FIT floors);
+          experiments/doubt-snap-cross-family-confirmatory/AMENDMENT.md:164-167 (FIT selection rule)
+      - id: parity_smoke
+        pass_if: "batched-vs-sequential parity smoke passes before full held-out scoring"
+      - id: no_row_text_committed
+        pass_if: "no question text, aliases, or answer text appear anywhere under analysis-committed/"
+
+  - name: g1_heldout_actuates_clean_raw_refusal
+    primitive: heldout_scoring
+    status: draft_until_sign
+    population: fired held-out confabs
+    metric_pair:
+      - refused_rate (format-agnostic stated-confidence refusal; PRIMARY)
+      - well_formed_rate
+    pass_if: >-
+      on fired held-out confabs, refused_rate >= 0.60 with Wilson 95% lower CI
+      > 0.50, AND well_formed_rate >= 0.80, simultaneously
+    thresholds_source: >-
+      experiments/doubt-snap-cross-family-confirmatory/AMENDMENT.md:233-235 (fleet G1);
+      experiments/qwen35-4b-midband-doubt-snap/AMENDMENT.md:270-272 (ladder G1 conjunction);
+      experiments/qwen35-4b-midband-heldout/AMENDMENT.md:262-269 (held-out Wilson template)
+    cost_gate:
+      population: full held-out known_correct_answered
+      metric: false_refusal_rate
+      pass_if: "<= 0.05 point estimate AND Wilson 95% upper CI < 0.10"
+      thresholds_source: experiments/doubt-snap-cross-family-confirmatory/AMENDMENT.md:235 (fleet G2)
+      report_alongside:
+        - "fired-known conditional false-refusal (false-refusal among only the knowns the gate fires on)"
+        - "baseline refusal on both roles (expected near 0)"
+      mirrors: >-
+        ladder Outcome cost-gate handling (system-level 10/240 = 0.042 with
+        fired-known conditional 10/13 = 0.77;
+        experiments/qwen35-4b-midband-doubt-snap/AMENDMENT.md:330-334)
+    confidence_intervals: "Wilson 95% on refused_rate, well_formed_rate, false_refusal_rate"
+    effect_size_reference: >-
+      resolved Qwen3-4B exploratory G1 clean_tighten 136/185 = 73.5% (Wilson LCB
+      66.7%), G2 known false-refusal 8/258 = 3.1% (Wilson UCB 6.0%),
+      experiments/doubt-snap-cross-family-confirmatory/AMENDMENT.md:14-16
+      (calibration only, never pooled)
+
+  - name: g3i_placebo_direction_specificity
+    primitive: placebo
+    population: [held-out confab, held-out known_correct_answered]
+    pass_if: >-
+      random_direction arm refusal RATE is within 2 points of baseline on BOTH
+      held-out populations (behavioral rate comparison, unaffected by the atlas
+      anchor norm/position read confound at jspace-family-atlas/AMENDMENT.md:170-173)
+    source: experiments/doubt-snap-cross-family-confirmatory/AMENDMENT.md:237-239
+
+# Reported, NOT a promotion gate unless the PI elevates at sign (open
+# adjudication A4). Characterizes the write's content-selectivity on knowns at
+# this family's atlas operating point, which H4 established is
+# operating-point-dependent.
+selectivity_on_knowns_characterization:
+  arm: dose_knowns_ungated
+  report:
+    - known-correct clean false-refusal rate (comparable to the gated cost)
+    - total known-correct damage rate (not-well-formed-correct, BROADER than refusal)
+  metric_hygiene: >-
+    report the two SEPARATELY; never report damage as a refusal rate
+    (experiments/ungated-vs-gated-dose-matched/AMENDMENT.md:196-203)
+  pre_stated_reading: >-
+    LOW clean false-refusal => write is content-selective at this operating point
+    (Qwen3.5-4B mid-band regime); HIGH => write non-selective and the gate
+    supplies selectivity (Qwen3-4B/L34/dose-200 regime). Scoped to this family,
+    site, and dose only (experiments/ungated-vs-gated-dose-matched/AMENDMENT.md:206-215).
+
+# Outcome-shape coverage lives in AMENDMENT.md (shapes A through F). Shape A is
+# the prediction; B, C, D, E, F are the falsifier; F is the FIT-dose-viability
+# non-actuation shape (the confirmatory's stop territory, now on the table). A
+# G0 failure is an instrument-validity stop, recorded as such, not a shape.
+summary_rule: >-
+  G0 is a pre-outcome instrument-validity and FIT-dose-viability stop (a G0
+  fit_dose_viable failure is recorded as shape F). At sign the G1/cost/G3(i)
+  floors above become final; the held-out scoring run (harness written under a
+  separate assignment) adjudicates G1 and the falsifier per family with no floor
+  changes. The amendment-level verdict is PROMOTE if at least one family reaches
+  shape A, else NOT promoted.

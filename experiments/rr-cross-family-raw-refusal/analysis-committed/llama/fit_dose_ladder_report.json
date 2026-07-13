@@ -1,0 +1,763 @@
+{
+  "candidates": [
+    {
+      "confab_refused": {
+        "n": 576,
+        "rate": 0.024305555555555556,
+        "successes": 14,
+        "wilson_ci_95": [
+          0.014532537176590274,
+          0.04038154034634956
+        ]
+      },
+      "confab_well_formed": {
+        "n": 576,
+        "rate": 0.9965277777777778,
+        "successes": 574,
+        "wilson_ci_95": [
+          0.9874292724041229,
+          0.9990472744149983
+        ]
+      },
+      "dose_abs": 2.252391,
+      "dose_mult": 2,
+      "gain": 2.0,
+      "known_false_refusal": {
+        "n": 222,
+        "rate": 0.0,
+        "successes": 0,
+        "wilson_ci_95": [
+          1.734723475976807e-18,
+          0.017009537756059373
+        ]
+      },
+      "layer": 20,
+      "n_fired_confab": 576,
+      "n_known": 222,
+      "viable": false
+    },
+    {
+      "confab_refused": {
+        "n": 576,
+        "rate": 0.08854166666666667,
+        "successes": 51,
+        "wilson_ci_95": [
+          0.06798491042934136,
+          0.1145502588149533
+        ]
+      },
+      "confab_well_formed": {
+        "n": 576,
+        "rate": 0.9965277777777778,
+        "successes": 574,
+        "wilson_ci_95": [
+          0.9874292724041229,
+          0.9990472744149983
+        ]
+      },
+      "dose_abs": 4.504783,
+      "dose_mult": 4,
+      "gain": 4.0,
+      "known_false_refusal": {
+        "n": 222,
+        "rate": 0.018018018018018018,
+        "successes": 4,
+        "wilson_ci_95": [
+          0.007028604354170409,
+          0.045404013122391326
+        ]
+      },
+      "layer": 20,
+      "n_fired_confab": 576,
+      "n_known": 222,
+      "viable": false
+    },
+    {
+      "confab_refused": {
+        "n": 576,
+        "rate": 0.1579861111111111,
+        "successes": 91,
+        "wilson_ci_95": [
+          0.13047887124382174,
+          0.19002504580734303
+        ]
+      },
+      "confab_well_formed": {
+        "n": 576,
+        "rate": 0.9965277777777778,
+        "successes": 574,
+        "wilson_ci_95": [
+          0.9874292724041229,
+          0.9990472744149983
+        ]
+      },
+      "dose_abs": 6.757174,
+      "dose_mult": 6,
+      "gain": 6.0,
+      "known_false_refusal": {
+        "n": 222,
+        "rate": 0.06756756756756757,
+        "successes": 15,
+        "wilson_ci_95": [
+          0.041370976695617234,
+          0.10847511001232601
+        ]
+      },
+      "layer": 20,
+      "n_fired_confab": 576,
+      "n_known": 222,
+      "viable": false
+    },
+    {
+      "confab_refused": {
+        "n": 576,
+        "rate": 0.21875,
+        "successes": 126,
+        "wilson_ci_95": [
+          0.1869134833091463,
+          0.25431308807302977
+        ]
+      },
+      "confab_well_formed": {
+        "n": 576,
+        "rate": 0.9947916666666666,
+        "successes": 573,
+        "wilson_ci_95": [
+          0.9848001793783703,
+          0.9982271487455789
+        ]
+      },
+      "dose_abs": 9.009566,
+      "dose_mult": 8,
+      "gain": 8.0,
+      "known_false_refusal": {
+        "n": 222,
+        "rate": 0.09009009009009009,
+        "successes": 20,
+        "wilson_ci_95": [
+          0.05907626514668997,
+          0.1350486712118812
+        ]
+      },
+      "layer": 20,
+      "n_fired_confab": 576,
+      "n_known": 222,
+      "viable": false
+    },
+    {
+      "confab_refused": {
+        "n": 576,
+        "rate": 0.3333333333333333,
+        "successes": 192,
+        "wilson_ci_95": [
+          0.29605202463460634,
+          0.3728229806289053
+        ]
+      },
+      "confab_well_formed": {
+        "n": 576,
+        "rate": 0.9392361111111112,
+        "successes": 541,
+        "wilson_ci_95": [
+          0.9166648248456342,
+          0.9559875050328193
+        ]
+      },
+      "dose_abs": 13.514348,
+      "dose_mult": 12,
+      "gain": 12.0,
+      "known_false_refusal": {
+        "n": 222,
+        "rate": 0.13513513513513514,
+        "successes": 30,
+        "wilson_ci_95": [
+          0.09632484159732933,
+          0.18635779406249775
+        ]
+      },
+      "layer": 20,
+      "n_fired_confab": 576,
+      "n_known": 222,
+      "viable": false
+    },
+    {
+      "confab_refused": {
+        "n": 576,
+        "rate": 0.4565972222222222,
+        "successes": 263,
+        "wilson_ci_95": [
+          0.4163402670893985,
+          0.4974292655313077
+        ]
+      },
+      "confab_well_formed": {
+        "n": 576,
+        "rate": 0.6996527777777778,
+        "successes": 403,
+        "wilson_ci_95": [
+          0.6609948074485951,
+          0.7356653424961564
+        ]
+      },
+      "dose_abs": 18.019131,
+      "dose_mult": 16,
+      "gain": 16.0,
+      "known_false_refusal": {
+        "n": 222,
+        "rate": 0.25225225225225223,
+        "successes": 56,
+        "wilson_ci_95": [
+          0.19966742414891503,
+          0.31326522969417736
+        ]
+      },
+      "layer": 20,
+      "n_fired_confab": 576,
+      "n_known": 222,
+      "viable": false
+    },
+    {
+      "confab_refused": {
+        "n": 576,
+        "rate": 0.3229166666666667,
+        "successes": 186,
+        "wilson_ci_95": [
+          0.28601256073187215,
+          0.3621671323606091
+        ]
+      },
+      "confab_well_formed": {
+        "n": 576,
+        "rate": 0.1076388888888889,
+        "successes": 62,
+        "wilson_ci_95": [
+          0.08487871500121166,
+          0.1355978598899723
+        ]
+      },
+      "dose_abs": 22.523914,
+      "dose_mult": 20,
+      "gain": 20.0,
+      "known_false_refusal": {
+        "n": 222,
+        "rate": 0.2072072072072072,
+        "successes": 46,
+        "wilson_ci_95": [
+          0.159093218182896,
+          0.26528173635894053
+        ]
+      },
+      "layer": 20,
+      "n_fired_confab": 576,
+      "n_known": 222,
+      "viable": false
+    },
+    {
+      "confab_refused": {
+        "n": 577,
+        "rate": 0.025996533795493933,
+        "successes": 15,
+        "wilson_ci_95": [
+          0.01581642527324227,
+          0.042446390348431506
+        ]
+      },
+      "confab_well_formed": {
+        "n": 577,
+        "rate": 1.0,
+        "successes": 577,
+        "wilson_ci_95": [
+          0.9933863901029145,
+          1.0
+        ]
+      },
+      "dose_abs": 2.836858,
+      "dose_mult": 2,
+      "gain": 2.0,
+      "known_false_refusal": {
+        "n": 222,
+        "rate": 0.0,
+        "successes": 0,
+        "wilson_ci_95": [
+          1.734723475976807e-18,
+          0.017009537756059373
+        ]
+      },
+      "layer": 22,
+      "n_fired_confab": 577,
+      "n_known": 222,
+      "viable": false
+    },
+    {
+      "confab_refused": {
+        "n": 577,
+        "rate": 0.04852686308492201,
+        "successes": 28,
+        "wilson_ci_95": [
+          0.03378481323717557,
+          0.06924064734580805
+        ]
+      },
+      "confab_well_formed": {
+        "n": 577,
+        "rate": 0.9982668977469671,
+        "successes": 576,
+        "wilson_ci_95": [
+          0.9902491103637742,
+          0.999693999357501
+        ]
+      },
+      "dose_abs": 5.673717,
+      "dose_mult": 4,
+      "gain": 4.0,
+      "known_false_refusal": {
+        "n": 222,
+        "rate": 0.02702702702702703,
+        "successes": 6,
+        "wilson_ci_95": [
+          0.012444323534876785,
+          0.057699833801936135
+        ]
+      },
+      "layer": 22,
+      "n_fired_confab": 577,
+      "n_known": 222,
+      "viable": false
+    },
+    {
+      "confab_refused": {
+        "n": 577,
+        "rate": 0.08492201039861352,
+        "successes": 49,
+        "wilson_ci_95": [
+          0.06483120954277441,
+          0.1105031390546328
+        ]
+      },
+      "confab_well_formed": {
+        "n": 577,
+        "rate": 0.9982668977469671,
+        "successes": 576,
+        "wilson_ci_95": [
+          0.9902491103637742,
+          0.999693999357501
+        ]
+      },
+      "dose_abs": 8.510575,
+      "dose_mult": 6,
+      "gain": 6.0,
+      "known_false_refusal": {
+        "n": 222,
+        "rate": 0.05855855855855856,
+        "successes": 13,
+        "wilson_ci_95": [
+          0.03453780586669003,
+          0.09759674098100202
+        ]
+      },
+      "layer": 22,
+      "n_fired_confab": 577,
+      "n_known": 222,
+      "viable": false
+    },
+    {
+      "confab_refused": {
+        "n": 577,
+        "rate": 0.09878682842287695,
+        "successes": 57,
+        "wilson_ci_95": [
+          0.07703051722446026,
+          0.12585007442606067
+        ]
+      },
+      "confab_well_formed": {
+        "n": 577,
+        "rate": 0.9948006932409013,
+        "successes": 574,
+        "wilson_ci_95": [
+          0.9848263249969004,
+          0.9982302239610966
+        ]
+      },
+      "dose_abs": 11.347433,
+      "dose_mult": 8,
+      "gain": 8.0,
+      "known_false_refusal": {
+        "n": 222,
+        "rate": 0.08108108108108109,
+        "successes": 18,
+        "wilson_ci_95": [
+          0.05190100973676361,
+          0.1245123867615564
+        ]
+      },
+      "layer": 22,
+      "n_fired_confab": 577,
+      "n_known": 222,
+      "viable": false
+    },
+    {
+      "confab_refused": {
+        "n": 577,
+        "rate": 0.11438474870017332,
+        "successes": 66,
+        "wilson_ci_95": [
+          0.09092604825192128,
+          0.14294406683335265
+        ]
+      },
+      "confab_well_formed": {
+        "n": 577,
+        "rate": 0.9670710571923743,
+        "successes": 558,
+        "wilson_ci_95": [
+          0.9491445780052805,
+          0.9788194848464886
+        ]
+      },
+      "dose_abs": 17.02115,
+      "dose_mult": 12,
+      "gain": 12.0,
+      "known_false_refusal": {
+        "n": 222,
+        "rate": 0.11711711711711711,
+        "successes": 26,
+        "wilson_ci_95": [
+          0.08118908019106666,
+          0.16607047574825806
+        ]
+      },
+      "layer": 22,
+      "n_fired_confab": 577,
+      "n_known": 222,
+      "viable": false
+    },
+    {
+      "confab_refused": {
+        "n": 577,
+        "rate": 0.08665511265164645,
+        "successes": 50,
+        "wilson_ci_95": [
+          0.06634724505971595,
+          0.1124303839193305
+        ]
+      },
+      "confab_well_formed": {
+        "n": 577,
+        "rate": 0.28422876949740034,
+        "successes": 164,
+        "wilson_ci_95": [
+          0.24894711112955972,
+          0.32236448135635765
+        ]
+      },
+      "dose_abs": 22.694867,
+      "dose_mult": 16,
+      "gain": 16.0,
+      "known_false_refusal": {
+        "n": 222,
+        "rate": 0.08108108108108109,
+        "successes": 18,
+        "wilson_ci_95": [
+          0.05190100973676361,
+          0.1245123867615564
+        ]
+      },
+      "layer": 22,
+      "n_fired_confab": 577,
+      "n_known": 222,
+      "viable": false
+    },
+    {
+      "confab_refused": {
+        "n": 577,
+        "rate": 0.0,
+        "successes": 0,
+        "wilson_ci_95": [
+          0.0,
+          0.006613609897085505
+        ]
+      },
+      "confab_well_formed": {
+        "n": 577,
+        "rate": 0.0,
+        "successes": 0,
+        "wilson_ci_95": [
+          0.0,
+          0.006613609897085505
+        ]
+      },
+      "dose_abs": 28.368583,
+      "dose_mult": 20,
+      "gain": 20.0,
+      "known_false_refusal": {
+        "n": 222,
+        "rate": 0.0,
+        "successes": 0,
+        "wilson_ci_95": [
+          1.734723475976807e-18,
+          0.017009537756059373
+        ]
+      },
+      "layer": 22,
+      "n_fired_confab": 577,
+      "n_known": 222,
+      "viable": false
+    },
+    {
+      "confab_refused": {
+        "n": 577,
+        "rate": 0.019064124783362217,
+        "successes": 11,
+        "wilson_ci_95": [
+          0.010677823988833803,
+          0.0338118701062831
+        ]
+      },
+      "confab_well_formed": {
+        "n": 577,
+        "rate": 1.0,
+        "successes": 577,
+        "wilson_ci_95": [
+          0.9933863901029145,
+          1.0
+        ]
+      },
+      "dose_abs": 3.132912,
+      "dose_mult": 2,
+      "gain": 2.0,
+      "known_false_refusal": {
+        "n": 222,
+        "rate": 0.0,
+        "successes": 0,
+        "wilson_ci_95": [
+          1.734723475976807e-18,
+          0.017009537756059373
+        ]
+      },
+      "layer": 23,
+      "n_fired_confab": 577,
+      "n_known": 222,
+      "viable": false
+    },
+    {
+      "confab_refused": {
+        "n": 577,
+        "rate": 0.05199306759098787,
+        "successes": 30,
+        "wilson_ci_95": [
+          0.036659495571999455,
+          0.07325252577426261
+        ]
+      },
+      "confab_well_formed": {
+        "n": 577,
+        "rate": 1.0,
+        "successes": 577,
+        "wilson_ci_95": [
+          0.9933863901029145,
+          1.0
+        ]
+      },
+      "dose_abs": 6.265823,
+      "dose_mult": 4,
+      "gain": 4.0,
+      "known_false_refusal": {
+        "n": 222,
+        "rate": 0.02252252252252252,
+        "successes": 5,
+        "wilson_ci_95": [
+          0.009657747756870994,
+          0.05163063964981633
+        ]
+      },
+      "layer": 23,
+      "n_fired_confab": 577,
+      "n_known": 222,
+      "viable": false
+    },
+    {
+      "confab_refused": {
+        "n": 577,
+        "rate": 0.10051993067590988,
+        "successes": 58,
+        "wilson_ci_95": [
+          0.0785661195010088,
+          0.1277577525311514
+        ]
+      },
+      "confab_well_formed": {
+        "n": 577,
+        "rate": 0.9982668977469671,
+        "successes": 576,
+        "wilson_ci_95": [
+          0.9902491103637742,
+          0.999693999357501
+        ]
+      },
+      "dose_abs": 9.398735,
+      "dose_mult": 6,
+      "gain": 6.0,
+      "known_false_refusal": {
+        "n": 222,
+        "rate": 0.05855855855855856,
+        "successes": 13,
+        "wilson_ci_95": [
+          0.03453780586669003,
+          0.09759674098100202
+        ]
+      },
+      "layer": 23,
+      "n_fired_confab": 577,
+      "n_known": 222,
+      "viable": false
+    },
+    {
+      "confab_refused": {
+        "n": 577,
+        "rate": 0.1369150779896014,
+        "successes": 79,
+        "wilson_ci_95": [
+          0.11125765296552145,
+          0.16737510708106232
+        ]
+      },
+      "confab_well_formed": {
+        "n": 577,
+        "rate": 0.9982668977469671,
+        "successes": 576,
+        "wilson_ci_95": [
+          0.9902491103637742,
+          0.999693999357501
+        ]
+      },
+      "dose_abs": 12.531646,
+      "dose_mult": 8,
+      "gain": 8.0,
+      "known_false_refusal": {
+        "n": 222,
+        "rate": 0.08108108108108109,
+        "successes": 18,
+        "wilson_ci_95": [
+          0.05190100973676361,
+          0.1245123867615564
+        ]
+      },
+      "layer": 23,
+      "n_fired_confab": 577,
+      "n_known": 222,
+      "viable": false
+    },
+    {
+      "confab_refused": {
+        "n": 577,
+        "rate": 0.1854419410745234,
+        "successes": 107,
+        "wilson_ci_95": [
+          0.1558468411013389,
+          0.21919776963114296
+        ]
+      },
+      "confab_well_formed": {
+        "n": 577,
+        "rate": 0.975736568457539,
+        "successes": 563,
+        "wilson_ci_95": [
+          0.9596877219175365,
+          0.9854927428424288
+        ]
+      },
+      "dose_abs": 18.797469,
+      "dose_mult": 12,
+      "gain": 12.0,
+      "known_false_refusal": {
+        "n": 222,
+        "rate": 0.13063063063063063,
+        "successes": 29,
+        "wilson_ci_95": [
+          0.09251542228101027,
+          0.1813114434486912
+        ]
+      },
+      "layer": 23,
+      "n_fired_confab": 577,
+      "n_known": 222,
+      "viable": false
+    },
+    {
+      "confab_refused": {
+        "n": 577,
+        "rate": 0.21663778162911612,
+        "successes": 125,
+        "wilson_ci_95": [
+          0.18495768802643628,
+          0.2520659695755515
+        ]
+      },
+      "confab_well_formed": {
+        "n": 577,
+        "rate": 0.7435008665511266,
+        "successes": 429,
+        "wilson_ci_95": [
+          0.7063396757415004,
+          0.7774412178788099
+        ]
+      },
+      "dose_abs": 25.063293,
+      "dose_mult": 16,
+      "gain": 16.0,
+      "known_false_refusal": {
+        "n": 222,
+        "rate": 0.06756756756756757,
+        "successes": 15,
+        "wilson_ci_95": [
+          0.041370976695617234,
+          0.10847511001232601
+        ]
+      },
+      "layer": 23,
+      "n_fired_confab": 577,
+      "n_known": 222,
+      "viable": false
+    },
+    {
+      "confab_refused": {
+        "n": 577,
+        "rate": 0.0,
+        "successes": 0,
+        "wilson_ci_95": [
+          0.0,
+          0.006613609897085505
+        ]
+      },
+      "confab_well_formed": {
+        "n": 577,
+        "rate": 0.0,
+        "successes": 0,
+        "wilson_ci_95": [
+          0.0,
+          0.006613609897085505
+        ]
+      },
+      "dose_abs": 31.329116,
+      "dose_mult": 20,
+      "gain": 20.0,
+      "known_false_refusal": {
+        "n": 222,
+        "rate": 0.0,
+        "successes": 0,
+        "wilson_ci_95": [
+          1.734723475976807e-18,
+          0.017009537756059373
+        ]
+      },
+      "layer": 23,
+      "n_fired_confab": 577,
+      "n_known": 222,
+      "viable": false
+    }
+  ],
+  "family": "llama",
+  "outcome_shape_if_no_heldout_run": "F",
+  "selected_operating_point": null
+}

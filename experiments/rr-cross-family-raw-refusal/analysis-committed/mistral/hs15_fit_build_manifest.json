@@ -1,0 +1,22 @@
+{
+  "auc_neg_z_d_on_fit": 0.9997666801274285,
+  "hidden_dim": 4096,
+  "layer": 15,
+  "mu_c": 0.11328125650044196,
+  "mu_d": -0.7424473468203752,
+  "n_confab_fit": 874,
+  "n_known_fit": 255,
+  "n_unknown_refused": 214,
+  "sigma_c": 0.28366694197455494,
+  "sigma_d": 0.4214568928846686,
+  "tau_frozen": -0.6305419733289056,
+  "youden_tau_stats": {
+    "fn": 6,
+    "fp": 2,
+    "fpr_known_correct_flagged": 0.00784313725490196,
+    "tn": 253,
+    "tp": 868,
+    "tpr_confab_caught": 0.9931350114416476,
+    "youden_j": 0.9852918741867457
+  }
+}
