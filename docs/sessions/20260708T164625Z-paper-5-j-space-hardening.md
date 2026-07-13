@@ -4,7 +4,7 @@ session_id: 20260708T164625Z-paper-5-j-space-hardening
 title: Paper 5 J-space hardening
 status: active
 created_at: '2026-07-08T16:46:25Z'
-updated_at: '2026-07-13T11:16:48Z'
+updated_at: '2026-07-13T15:20:47Z'
 track: research
 phase: phase1
 question: Which registered follow-up experiments harden the Paper 5 actuation thesis,
@@ -716,6 +716,43 @@ checkpoints:
     card (GPU smoke first to calibrate throughput); rr-drafter delivers RR draft;
     H4 KG-ingest after PR #281 merges'
   signals: {}
+- id: 028-result
+  at: '2026-07-13T15:20:47Z'
+  kind: result
+  title: H3 G1 falsifier-fires pending red-team; H4/H6 merged+ingested; RR signed,
+    staged, launch blocked on anchor-slice
+  summary: 'H3 confirmatory run completed all four phases (443 greedy + 2215x3): G0
+    PASS (greedy reproduces 73.5%/3.1% exactly), G2 PASS (sampled cost ~6% per-sample),
+    G3 PASS (placebo re-draws robust all 5 seeds), G1 FAIL by collapse: pooled sampled
+    majority-vote conversion 140/925=15.1% Wilson [13.0,17.6] vs 63.5% floor, all
+    seeds fail individually, any-vote 53.2%, mean per-sample fraction 22.0%. If certified,
+    the falsifier fires and the 73.5% headline re-scopes to one greedy decode (write
+    dominates argmax, not the sampled distribution); BOTH scoreboard calls wrong.
+    Verdict withheld pending ladder-red-team instrumentation pass on the batched sampled
+    path (H6 lesson: silent hook non-delivery produces exactly this signature; surfaces:
+    per-row readback in run_log_sampled, fired-vs-non-fired contrast, sampling config
+    echo, batched termination/grading parity, independent majority-vote recompute).
+    H4+H6 PRs #281/#282 MERGED on user approval; KG-ingest done (ac24f7db, 5 new nodes,
+    operating-point reconciliation woven not contradicted). RR: signed with predictions
+    (user: both families shape A; orchestrator: exactly one, lean mistral); harness
+    built (c12e0578, 33 CPU tests) and lead-reviewed, all 7 builder adjudications
+    accepted; lead repaired four sign-surviving cell.yaml placeholders via repin (revisions
+    lead-verified vs fleet SSOT); stager landed row pools + full-depth atlas captures
+    (coverage 1.0 both families, sha-verified); llama launch bounced on missing anchors_at_candidate_layers.json
+    whose GPU-capture-deferred premise is false (staged tensors carry anchor__L0..L28
+    full depth; pure CPU slice) - fix + relaunch with h4-builder.'
+  evidence: []
+  run_ids: []
+  commands: []
+  decisions:
+  - H3 falsifier verdict deliberately withheld until instrumentation is adversarially
+    verified (adopt-no-null-from-uncertified-instrument, the AK/H6 rule); RR precondition-report
+    naming quirk left as-is (cosmetic, pinned module)
+  next_steps:
+  - 'ladder-red-team H3 verdict -> adjudicate -> Outcome (falsifier straight if sound;
+    artifact diagnosis if not) -> resolve -> PR; h4-builder anchor-slice fix -> llama
+    then mistral RR cells; session tasks: HF backfill card still owed (task 24)'
+  signals: {}
 ---
 # Paper 5 J-space hardening
 
@@ -1088,3 +1125,12 @@ rows before the layer contrast.
   - H4 verdict adjudicated by lead; H3 placebo-decode ambiguity adjudicated greedy pre-launch; H6 pre-flight-vs-G1 conflation flagged as an adjudication the fixer must record, not silently fix
 - next steps:
   - h4-builder fixes+relaunches H6 (free 3090); lead launches H3 after H6 frees the card (GPU smoke first to calibrate throughput); rr-drafter delivers RR draft; H4 KG-ingest after PR #281 merges
+### 028-result - H3 G1 falsifier-fires pending red-team; H4/H6 merged+ingested; RR signed, staged, launch blocked on anchor-slice
+
+- at: `2026-07-13T15:20:47Z`
+- kind: `result`
+- summary: H3 confirmatory run completed all four phases (443 greedy + 2215x3): G0 PASS (greedy reproduces 73.5%/3.1% exactly), G2 PASS (sampled cost ~6% per-sample), G3 PASS (placebo re-draws robust all 5 seeds), G1 FAIL by collapse: pooled sampled majority-vote conversion 140/925=15.1% Wilson [13.0,17.6] vs 63.5% floor, all seeds fail individually, any-vote 53.2%, mean per-sample fraction 22.0%. If certified, the falsifier fires and the 73.5% headline re-scopes to one greedy decode (write dominates argmax, not the sampled distribution); BOTH scoreboard calls wrong. Verdict withheld pending ladder-red-team instrumentation pass on the batched sampled path (H6 lesson: silent hook non-delivery produces exactly this signature; surfaces: per-row readback in run_log_sampled, fired-vs-non-fired contrast, sampling config echo, batched termination/grading parity, independent majority-vote recompute). H4+H6 PRs #281/#282 MERGED on user approval; KG-ingest done (ac24f7db, 5 new nodes, operating-point reconciliation woven not contradicted). RR: signed with predictions (user: both families shape A; orchestrator: exactly one, lean mistral); harness built (c12e0578, 33 CPU tests) and lead-reviewed, all 7 builder adjudications accepted; lead repaired four sign-surviving cell.yaml placeholders via repin (revisions lead-verified vs fleet SSOT); stager landed row pools + full-depth atlas captures (coverage 1.0 both families, sha-verified); llama launch bounced on missing anchors_at_candidate_layers.json whose GPU-capture-deferred premise is false (staged tensors carry anchor__L0..L28 full depth; pure CPU slice) - fix + relaunch with h4-builder.
+- decisions:
+  - H3 falsifier verdict deliberately withheld until instrumentation is adversarially verified (adopt-no-null-from-uncertified-instrument, the AK/H6 rule); RR precondition-report naming quirk left as-is (cosmetic, pinned module)
+- next steps:
+  - ladder-red-team H3 verdict -> adjudicate -> Outcome (falsifier straight if sound; artifact diagnosis if not) -> resolve -> PR; h4-builder anchor-slice fix -> llama then mistral RR cells; session tasks: HF backfill card still owed (task 24)
