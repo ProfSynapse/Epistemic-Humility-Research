@@ -31,11 +31,9 @@ instrument:
   - gates.yaml
   modules: []
   pins: {}
-# experiments/ungated-vs-gated-dose-matched/AMENDMENT.md is cited by doc:line in
-# AMENDMENT.md but is NOT yet merged to main (branch exp/h4-ungated-dose-matched),
-# so it is intentionally omitted from this machine input list; add it at sign once
-# H4 has merged (see open adjudication A2).
+# H4 input added 2026-07-13 after PR #281 merged (closes open adjudication A2).
 inputs:
+- experiments/ungated-vs-gated-dose-matched/AMENDMENT.md
 - experiments/doubt-snap-cross-family-confirmatory/AMENDMENT.md
 - experiments/jspace-family-atlas/AMENDMENT.md
 - experiments/qwen35-4b-midband-doubt-snap/AMENDMENT.md

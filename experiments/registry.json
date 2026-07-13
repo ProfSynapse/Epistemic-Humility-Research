@@ -2306,6 +2306,7 @@
       "created_at": "2026-07-13T11:23:35Z",
       "falsifier": "Falsified if neither family reaches shape A, i.e. both families land in shape B (refusal does not transfer with confidence), C (refusal transfers but well-formed < 0.80), D (confab legs clear but not cost-safe), E (thresholds clear but random_direction not a no-op), or F (no FIT-viable dose exists, so the write does not actuate clean refusal at the atlas site even where the axis is maximally readable). Shapes A-F are exhaustive over a family that clears G0; a G0 instrument-validity failure is a pre-outcome stop, not a shape.",
       "inputs": [
+        "experiments/ungated-vs-gated-dose-matched/AMENDMENT.md",
         "experiments/doubt-snap-cross-family-confirmatory/AMENDMENT.md",
         "experiments/jspace-family-atlas/AMENDMENT.md",
         "experiments/qwen35-4b-midband-doubt-snap/AMENDMENT.md"
