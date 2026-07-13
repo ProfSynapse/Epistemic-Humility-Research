@@ -18,6 +18,7 @@ related:
 - '[[qwen35-4b-midband-doubt-snap]]'
 - '[[j-space-mediated-actuation-fragility]]'
 - '[[steering-dose-windows-are-absolute-not-sigma-transferable]]'
+- '[[qwen35-4b-midband-write-decouples-refusal-from-format-collapse]]'
 relationships:
 - type: supported_by
   target: '[[doubt-snap-cross-family-confirmatory]]'
@@ -29,9 +30,9 @@ relationships:
 - type: tested_by
   target: '[[qwen35-4b-midband-doubt-snap]]'
   target_id: experiment:qwen35-4b-midband-doubt-snap
-  confidence: medium
+  confidence: high
   evidence:
-  - experiments/qwen35-4b-midband-doubt-snap/AMENDMENT.md#falsifier
+  - experiments/qwen35-4b-midband-doubt-snap/AMENDMENT.md#outcome
 - type: related_to
   target: '[[j-space-mediated-actuation-fragility]]'
   target_id: mechanism:j-space-mediated-actuation-fragility
@@ -40,6 +41,12 @@ relationships:
   target: '[[steering-dose-windows-are-absolute-not-sigma-transferable]]'
   target_id: mechanism:steering-dose-windows-are-absolute-not-sigma-transferable
   confidence: medium
+- type: related_to
+  target: '[[qwen35-4b-midband-write-decouples-refusal-from-format-collapse]]'
+  target_id: mechanism:qwen35-4b-midband-write-decouples-refusal-from-format-collapse
+  confidence: high
+  evidence:
+  - experiments/qwen35-4b-midband-doubt-snap/AMENDMENT.md#outcome
 ---
 
 At the registered late write site on Qwen3.5, refusal induction and output
@@ -50,9 +57,13 @@ register a viable operating window. Both Qwen3.5 cells in
 `doubt-snap-cross-family-confirmatory` failed dose viability (G0) on this
 basis, not on an absence of gate discrimination (FIT AUC was high on both).
 
-The open question this entanglement raises is whether it is a property of the
-late write site specifically or of the caution direction and mechanism on
-this substrate more broadly. `qwen35-4b-midband-doubt-snap` tests exactly
-that, by moving the write to a J-space workspace-band layer on the same model
-and checking whether refusal and well-formedness decouple there; as of this
-writing that test has not resolved.
+The open question this entanglement raised was whether it is a property of
+the late write site specifically or of the caution direction and mechanism on
+this substrate more broadly. `qwen35-4b-midband-doubt-snap` tested exactly
+that, by moving the write to a J-space workspace-band layer on the same model,
+and resolved it: at hs20 dose 8 x sigma_c, refusal and well-formedness decouple
+(refused 0.684, well-formed 0.980), a window the late site never reaches at
+any dose in the same locked grid
+([[qwen35-4b-midband-write-decouples-refusal-from-format-collapse]]). The
+entanglement described here is therefore a property of the late write site on
+this substrate, not of the doubt-gated caution mechanism itself.

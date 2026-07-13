@@ -4,7 +4,7 @@ session_id: 20260708T164625Z-paper-5-j-space-hardening
 title: Paper 5 J-space hardening
 status: active
 created_at: '2026-07-08T16:46:25Z'
-updated_at: '2026-07-11T00:31:59Z'
+updated_at: '2026-07-13T02:53:31Z'
 track: research
 phase: phase1
 question: Which registered follow-up experiments harden the Paper 5 actuation thesis,
@@ -454,6 +454,232 @@ checkpoints:
   decisions: []
   next_steps: []
   signals: {}
+- id: 019-checkpoint
+  at: '2026-07-11T03:42:12Z'
+  kind: checkpoint
+  title: Checkpoint
+  summary: 'H9 cloud run arc complete. Attempt 1 reaped (undetached client exit, operator
+    error). Attempt 2 crashed at extraction start (ModuleNotFoundError: fresh clone
+    lacks the untracked legacy probe tree the local checkout has). Instrument repair
+    2 = bin/exp repin FIRST PRODUCTION USE: install legacy-wrapper-tree at experiment/phase1/probe,
+    shim renamed AC config (prompt.system verified byte-identical across rename d55b7d26),
+    PYTHONPATH, fail-fast import preflight before model download; rehearsed green
+    in a clean pinned-commit checkout; commit b4b68ef0. Attempt 3 completed BOTH GPU
+    stages (500/500 extract, fidelity spot-check 0.0; 500/500 generate) then crashed
+    at harness step 4b reading gen/rows_graded.jsonl where the entry script writes
+    gen/rows.jsonl; stage trees lost because checkpoints were top-level-only; app
+    stopped to cut retry spend. Repair 3 = filename fix + in-run tree mirroring +
+    restore-on-start resume (unit-tested; repin 844f4c7b; commit 58e598c7). Attempt
+    4 ran clean end to end: preflight OK, extract OK, generate OK, DONE marker on
+    volume. Spend ~2 USD of 15 USD cap. Next: pull ckpt/h9-holdout-r1, run signed
+    score_holdout.py, adjudicate locked gates (PI prediction: G1 inconclusive band).
+    Durable lesson: CPU smokes never execute the cloud harness post-stage plumbing;
+    in-run tree checkpointing caps the cost of such bugs at one stage.'
+  evidence: []
+  run_ids: []
+  commands: []
+  decisions: []
+  next_steps: []
+  signals: {}
+- id: 024-checkpoint
+  at: '2026-07-11T10:20:27Z'
+  kind: checkpoint
+  title: Checkpoint
+  summary: 'H9 RESOLVED: INCONCLUSIVE-BY-POWER, PR #273 open. The enlarged read-once
+    adjudication on the 750-row draw: the +250 registered enlargement (RNG continuation,
+    replay hard-asserted line-identical to the committed 500 manifest, largest-remainder
+    allocation 113/69/20/17/12/11/8, 0 near-dups flagged) added ZERO confabulations
+    - 4 total in 605 unanswerable rows, 601 honest refusals - so H9-G0 stays unmet
+    and per the pre-registered remedy text no further enlargement is permitted; G1
+    never read. G2 caution control passed both reads (0.9734/0.9702): pipeline certified,
+    confab scarcity is real behavior (AI-TRUE refuses 99.3 percent of held-out unanswerable
+    rows vs ~91 expected from fit-surface rates, plus 30/97 knowns). Verdict + scoreboard
+    adjudication in AMENDMENT.md section 10 (PI''s INCONCLUSIVE call closest; orchestrator''s
+    G0-met call wrong). The repair-3 resume machinery made the enlarged pass cost
+    603 GPU-seconds. Total spend ~2 USD of 15. TODO H9 row closed with the follow-up
+    note: any future propensity gate needs a surface where the checkpoint actually
+    confabulates (weaker checkpoint or adversarial pool), not more rows from this
+    one. Paper 5 consequence recorded: the read half of ''reads but does not actuate''
+    keeps the in-cell OOF 0.6802 label; no registered held-out number exists. Local
+    3090 ladder meanwhile: hs20 complete, hs23 gated mid-run (interim: hs23 notably
+    weaker than hs20 - 13/27/36 percent vs 21/46/59 at doses 2/4/6), hs26 pending,
+    ~1 day to finish. Remaining follow-ups: KG-ingest of the H9 verdict (librarian,
+    post-merge), PR #273 merge, H3/H4/H6/TS wiring.'
+  evidence: []
+  run_ids: []
+  commands: []
+  decisions: []
+  next_steps: []
+  signals: {}
+- id: 025-checkpoint
+  at: '2026-07-11T14:00:59Z'
+  kind: checkpoint
+  title: Checkpoint
+  summary: 'BB resolved: base propensity read certified. Phase 1 ran clean on Modal
+    (3,447 s A10, ~$2; one aborted empty-HF-token launch caught inside a minute).
+    Pre-launch: full red-team (1 invalidating finding, missing degenerate/schema_valid
+    guard on the contrast cells in fit+score, fixed and regression-locked, smokes
+    14/14; FID-2 gates.yaml repin 3f23b51f->33fe08ad adjudicated intent-preserving),
+    two lead adjudications recorded pre-read (gradeable guard scope; G2 gradeable-only
+    primary). Results: G0 205 confabs/1,020 refusals on guarded 1,662-row base fit
+    surface; read-once gate on vendored 750: BB-P1-G1 PASS AUROC 0.8179, CI [0.7190,
+    0.9042]; G2 caution 0.9820; FID-1/2 pass; near-dup 0 flagged. First certified
+    propensity reading in the program, zero training. Resolved; PR #274 open; TODO
+    BB updated (half c, base actuation, remains). Gotcha: modal CLI 1.5.1 volume get
+    fails Errno 21 on directory trees; use Python SDK iterdir/read_file with skip-existing
+    resume. KG-ingest queued post-merge.'
+  evidence: []
+  run_ids: []
+  commands: []
+  decisions: []
+  next_steps:
+  - 'PR #273/#274 merges; ladder completion -> aggregates -> red-team; then H3/H4
+    lane; BB half c amendment after snap hardened'
+  signals: {}
+- id: 026-checkpoint
+  at: '2026-07-11T21:58:59Z'
+  kind: checkpoint
+  title: Checkpoint
+  summary: 'Mistral probe-cell crash diagnosed and repaired pre-sweep: the in-pipeline
+    gen-stream smoke probe was tied to max(dose_grid), so mistral''s sigma-mapped
+    grid [6..27] made the probe inert (byte-identical output at strength 27, equal
+    to the strongest arm) and the guard refused launch. This falsifies sigma-ladder
+    transfer for mistral (inert at 29 sigma where llama responds at 5-13 sigma). Morning
+    artifacts bracket mistral''s window empirically: inert at 27, fully degenerate
+    at realized strength 106.5 (584/584 fired confabs at dose 100), tokens moving
+    at 250. Fixes on exp/doubt-snap-cross-family commit b8e9c873: mistral grid revised
+    pre-sweep/pre-outcome to log-span (27,100) = [30,38,46,56,67,80,92]; smoke probe
+    decoupled to fixed 250.0; dated AMENDMENT extension + NOTEBOOK entry + pin refresh
+    (no-further-grid-changes clause never triggered because the selection rule was
+    never evaluated on [6..27]). Mistral relaunched detached batch-1 (app ap-WQXHAMrCooWjpskPgy36cH),
+    weights loading, background poll armed. Skill PR #275 updated (cffaed77): rule
+    4 now requires empirical per-cell bracketing (sigma-mapping is a first guess only);
+    rule 6 gains the probe-decoupling gotcha. Llama sweep live and healthy: real interior
+    dose-response, fired-confab clean_tighten 64->107->61 across strengths 5.3->9.1->12.4
+    then collapse, peak ~18.5% well below the 0.60 selection floor, trending toward
+    an honest FIT dose-viability null. Local 3090 midband ladder: baseline + hs20
+    all arms + hs23 gated/permuted complete; hs23 random_direction on dose 6 of 7
+    (~93%); hs26 and hs30 late-comparator cells remain (roughly a day-plus).'
+  evidence: []
+  run_ids: []
+  commands: []
+  decisions: []
+  next_steps: []
+  signals: {}
+- id: 027-checkpoint
+  at: '2026-07-12T14:21:18Z'
+  kind: checkpoint
+  title: Checkpoint
+  summary: 'jspace-family-atlas full arc closed in one day: signed (2524891) with
+    both predictions registered pre-launch (orchestrator and user both holds-on-both),
+    launched with user approval (Modal ap-q2mU3RZwwrHyaTbr1ehwVm, $10 cap, ~$2 actual),
+    resolved, PR #277 opened. Gates AG0/AG1/AG2 PASS with lead re-derivation from
+    pulled captures. Prediction NOT MET both families (eff_dim_frac peaks early, 0.14/0.09
+    depth, not interior); falsifier not triggered (non-monotone profile, readable
+    interior band). Layer map delivered: llama ~L20-23 (raw refusal 0.90), mistral
+    ~L15-17 (0.925). Red-team pre-verdict: fleet-audit 0.997-vs-0.90 reconciled as
+    population definitions (refused-vs-known vs pooled-answered); random-direction
+    control committed showing refused-vs-known norm confound (random up to 0.97) while
+    caution/raw-refusal baselines stay 0.5-0.75. Exhaust-skill-builder assigned fleet
+    HF dataset dry-run build (no upload; card for user approval). hs30 ladder comparator
+    still running locally.'
+  evidence: []
+  run_ids: []
+  commands: []
+  decisions: []
+  next_steps:
+  - 'Merge PR #277 on user OK; hold fleet resolve for hs30; review builder''s dry-run
+    card; draft raw-refusal-axis actuation amendment using the atlas layer map'
+  signals: {}
+- id: 028-checkpoint
+  at: '2026-07-12T15:00:25Z'
+  kind: checkpoint
+  title: Checkpoint
+  summary: 'Atlas arc fully closed: PRs #277 (jspace-family-atlas resolved) and #278
+    (family-atlas skill + docs/atlas/family-layer-map.md registry) MERGED with user
+    approval; KG ingest committed and lead-verified (6f09ec14: experiment node + 2
+    mechanisms - workspace-band-peak-location-is-family-relative, refused-vs-known-contrast-carries-norm-position-confound;
+    validator 0 errors, manifest kg: list filled, exp validate OK). PI directive made
+    standing: atlas extraction is the STANDARD for every new model/family/size before
+    actuation design; axes assumed universal, layer band family/size relative, no
+    cross-family layer porting. Doc janitor pass: TODO.md gained the dated 2026-07-12
+    arc section (fleet/ladder/atlas/skill/raw-refusal candidate/HF backfill rows)
+    + index regen; AGENTS.md (canonical) skills list completed to all nine and synced
+    into CLAUDE.md (gotcha: CLAUDE.md orchestrator section is GENERATED from AGENTS.md,
+    first edit got reverted by sync). Two finds lifted to PI: 7 untracked aux-head-era
+    docs (pr118-120 reviews/prep) awaiting commit-or-archive call; untracked experiment/
+    tree holds ~100GB local Phase 1 run products on canonical - no action without
+    deliberate curation. In flight: exhaust-builder fleet HF dataset dry-run card;
+    hs30 ladder arm.'
+  evidence: []
+  run_ids: []
+  commands: []
+  decisions: []
+  next_steps:
+  - hs30 lands -> fleet resolve Outcome + ladder aggregates; review exhaust dry-run
+    card with PI; draft raw-refusal-axis actuation amendment on the atlas layer map;
+    PI call on aux-head doc strays
+  signals: {}
+- id: 029-checkpoint
+  at: '2026-07-12T16:04:53Z'
+  kind: checkpoint
+  title: Checkpoint
+  summary: 'Phase 1 outputs migration EXECUTED (commit 30fa503e): the untracked ~99GB
+    experiment/ tree scouted (read-only inventory: 97.5GB unique research data, ZERO
+    duplication vs 9.8MB code-only archive, bridge containment confirmed ABSENT locally,
+    no tracked references), user approved the two decisions (shared bulk to gitignored
+    archive/experiment/phase1-data/, 3.7MB junk deleted), migrator built a deterministic
+    classifier (letter-to-slug from registry.json legacy.label, 40 mappings, flagged-not-guessed
+    on amendment_a_*/mi_* dirs) with dry-run manifest which the lead reviewed and
+    executed: 317/319 entries, 43.9GB to experiments/<slug>/analysis/phase1-migrated/
+    (SR 26GB, Z 8.6GB, AH 6.7GB), 56GB shared to phase1-data, exp validate OK post-move.
+    Two Amendment AI PAR eval dirs hold 14 Docker-era foreign-UID files: copied byte-verified
+    to experiments/probe-as-reward, source residue (5.4MB) awaits operator sudo rm.
+    Gotcha: shutil.move copy-fallback rmtree dies on foreign-owned entries; pre-move
+    ownership scan (find ! -user) belongs in bulk-move scripts. Aux-head doc strays
+    (7 files) still await PI commit-or-archive call.'
+  evidence: []
+  run_ids: []
+  commands: []
+  decisions: []
+  next_steps:
+  - PI runs sudo rm -rf experiment residue; hs30 -> fleet resolve + raw-refusal draft;
+    exhaust dry-run card review
+  signals: {}
+- id: 030-checkpoint
+  at: '2026-07-13T02:53:31Z'
+  kind: checkpoint
+  title: Checkpoint
+  summary: 'Ladder + fleet both RESOLVED same night. hs30 ladder completed 22:35 (74,753
+    generations, ~59h wall, bs=8, clean exit). Lead recomputed headline aggregates
+    from raw RunLogs pre-red-team (matched runner exactly); red-team over seven attack
+    surfaces returned G1 SURVIVES, no invalidating finding; three lifted adjudications
+    accepted (240-known cost denominator with 10/13 fired-known conditional reported
+    alongside; in-sample FIT-only scope; official summary promoted to analysis-committed).
+    qwen35-4b-midband-doubt-snap RESOLVED: G1 PASSES at hs20 dose 8x sigma_c, the
+    unique cell in the locked 4x7 grid (refused 0.684, well-formed 0.980, known false-refusal
+    0.042); falsifier does not fire; late comparator hs30 reproduces entangled failure
+    in-grid; layer potency monotone toward earlier layers (hs20>hs23>hs26>hs30), echoing
+    the atlas early-structure finding; PR #279. Red-team scope notes adopted verbatim:
+    selectivity belongs to the c_hat write direction not the gate (permuted confabs
+    refuse 0.669 vs gated 0.684; dosed knowns only 0.056); placebo magnitude-matched
+    via readback; no optimum claim (hs20 is grid-edge, earlier layers untested). Fleet
+    doubt-snap-cross-family-confirmatory then RESOLVED: NOT PROMOTED, prediction not
+    met (uniform pre-outcome G0 dose-viability stops, peaks 0.326/0.184/0.000/0.058),
+    falsifier wording gap recorded straight (binds held-out fails only); Outcome indicts
+    the universal 0.94-depth write-site rule via c_hat audit + same-substrate ladder
+    contrast (0.326 late vs 0.684 mid-band); both scoreboard predictors wrong on the
+    fleet, both right on the ladder (orchestrator wrong on layer: hs20 not hs23);
+    PR #280. Both PRs await user merge approval. KG ingest queued post-merge for both.'
+  evidence: []
+  run_ids: []
+  commands: []
+  decisions: []
+  next_steps:
+  - 'User merge call on PRs #279/#280; KG-ingest both resolves post-merge; draft raw-refusal-axis
+    actuation amendment (atlas layer map sites, exterior-shaped prediction/falsifier);
+    review exhaust dry-run card; sudo rm residue + aux-head strays still pending PI'
+  signals: {}
 ---
 # Paper 5 J-space hardening
 
@@ -767,3 +993,53 @@ rows before the layer contrast.
 - at: `2026-07-11T00:31:59Z`
 - kind: `checkpoint`
 - summary: Editorial + hardening batch progress. Paper 3 anatomy pass verified+merged (c2e977b2: doubt=answerability-gate identity, caution trained-only caveat as finding, propensity one-line pointer, A3 move-out, self-containment). Paper 2 voice pass verified+merged plus 3 lead adjudications (b781f937: abstract KTO seed count corrected to two analyzed seeds per amendment_a_selfaware_summary.csv, grammar, ranking-signal scoping). Steering-cell salvage merged (PR #271: smoke-first+SHA-pin discipline, gate-primitive logic, PEFT/layer-offby-one/ULP gotchas into mechinterp-cells); Y-thinking draft archived (5da6587d); both retired branches await explicit PI deletion OK. H9 SIGN-OFF: PI prediction recorded = G1 INCONCLUSIVE band (f9e7c995); PI approved sign + HF staging + Modal spend cap $15; h9-designer wiring scripts + FID smoke (d_raw hard target adjudication confirmed; note designer correctly identified AL=radial-anti-propensity-steering, not selected-setpoint-regulator which is AN). New backlog row TS: steering-under-thinking cell (does gated caution write change the CoT; reuses archived cot_confidence rubric; after H3/H4). PI directive: draft H3/H4/H6/TS with placeholders NOW; two designer agents dispatched (a: H3 exp/h3-snap-seed-decode-replication + H4 exp/h4-ungated-dose-matched; b: H6 exp/h6-genstream-hook-check + TS exp/ts-steering-under-thinking). Ladder: hs20 gated dose_20 320/882, ~3.8s/row, GPU 26%/9GB/60C, no crashes, ETA ~2 days. Next: verify 4 drafts, red-team H9 instrument post-wiring, sign, stage checkpoint, Modal launch.
+### 019-checkpoint - Checkpoint
+
+- at: `2026-07-11T03:42:12Z`
+- kind: `checkpoint`
+- summary: H9 cloud run arc complete. Attempt 1 reaped (undetached client exit, operator error). Attempt 2 crashed at extraction start (ModuleNotFoundError: fresh clone lacks the untracked legacy probe tree the local checkout has). Instrument repair 2 = bin/exp repin FIRST PRODUCTION USE: install legacy-wrapper-tree at experiment/phase1/probe, shim renamed AC config (prompt.system verified byte-identical across rename d55b7d26), PYTHONPATH, fail-fast import preflight before model download; rehearsed green in a clean pinned-commit checkout; commit b4b68ef0. Attempt 3 completed BOTH GPU stages (500/500 extract, fidelity spot-check 0.0; 500/500 generate) then crashed at harness step 4b reading gen/rows_graded.jsonl where the entry script writes gen/rows.jsonl; stage trees lost because checkpoints were top-level-only; app stopped to cut retry spend. Repair 3 = filename fix + in-run tree mirroring + restore-on-start resume (unit-tested; repin 844f4c7b; commit 58e598c7). Attempt 4 ran clean end to end: preflight OK, extract OK, generate OK, DONE marker on volume. Spend ~2 USD of 15 USD cap. Next: pull ckpt/h9-holdout-r1, run signed score_holdout.py, adjudicate locked gates (PI prediction: G1 inconclusive band). Durable lesson: CPU smokes never execute the cloud harness post-stage plumbing; in-run tree checkpointing caps the cost of such bugs at one stage.
+### 024-checkpoint - Checkpoint
+
+- at: `2026-07-11T10:20:27Z`
+- kind: `checkpoint`
+- summary: H9 RESOLVED: INCONCLUSIVE-BY-POWER, PR #273 open. The enlarged read-once adjudication on the 750-row draw: the +250 registered enlargement (RNG continuation, replay hard-asserted line-identical to the committed 500 manifest, largest-remainder allocation 113/69/20/17/12/11/8, 0 near-dups flagged) added ZERO confabulations - 4 total in 605 unanswerable rows, 601 honest refusals - so H9-G0 stays unmet and per the pre-registered remedy text no further enlargement is permitted; G1 never read. G2 caution control passed both reads (0.9734/0.9702): pipeline certified, confab scarcity is real behavior (AI-TRUE refuses 99.3 percent of held-out unanswerable rows vs ~91 expected from fit-surface rates, plus 30/97 knowns). Verdict + scoreboard adjudication in AMENDMENT.md section 10 (PI's INCONCLUSIVE call closest; orchestrator's G0-met call wrong). The repair-3 resume machinery made the enlarged pass cost 603 GPU-seconds. Total spend ~2 USD of 15. TODO H9 row closed with the follow-up note: any future propensity gate needs a surface where the checkpoint actually confabulates (weaker checkpoint or adversarial pool), not more rows from this one. Paper 5 consequence recorded: the read half of 'reads but does not actuate' keeps the in-cell OOF 0.6802 label; no registered held-out number exists. Local 3090 ladder meanwhile: hs20 complete, hs23 gated mid-run (interim: hs23 notably weaker than hs20 - 13/27/36 percent vs 21/46/59 at doses 2/4/6), hs26 pending, ~1 day to finish. Remaining follow-ups: KG-ingest of the H9 verdict (librarian, post-merge), PR #273 merge, H3/H4/H6/TS wiring.
+### 025-checkpoint - Checkpoint
+
+- at: `2026-07-11T14:00:59Z`
+- kind: `checkpoint`
+- summary: BB resolved: base propensity read certified. Phase 1 ran clean on Modal (3,447 s A10, ~$2; one aborted empty-HF-token launch caught inside a minute). Pre-launch: full red-team (1 invalidating finding, missing degenerate/schema_valid guard on the contrast cells in fit+score, fixed and regression-locked, smokes 14/14; FID-2 gates.yaml repin 3f23b51f->33fe08ad adjudicated intent-preserving), two lead adjudications recorded pre-read (gradeable guard scope; G2 gradeable-only primary). Results: G0 205 confabs/1,020 refusals on guarded 1,662-row base fit surface; read-once gate on vendored 750: BB-P1-G1 PASS AUROC 0.8179, CI [0.7190, 0.9042]; G2 caution 0.9820; FID-1/2 pass; near-dup 0 flagged. First certified propensity reading in the program, zero training. Resolved; PR #274 open; TODO BB updated (half c, base actuation, remains). Gotcha: modal CLI 1.5.1 volume get fails Errno 21 on directory trees; use Python SDK iterdir/read_file with skip-existing resume. KG-ingest queued post-merge.
+- next steps:
+  - PR #273/#274 merges; ladder completion -> aggregates -> red-team; then H3/H4 lane; BB half c amendment after snap hardened
+### 026-checkpoint - Checkpoint
+
+- at: `2026-07-11T21:58:59Z`
+- kind: `checkpoint`
+- summary: Mistral probe-cell crash diagnosed and repaired pre-sweep: the in-pipeline gen-stream smoke probe was tied to max(dose_grid), so mistral's sigma-mapped grid [6..27] made the probe inert (byte-identical output at strength 27, equal to the strongest arm) and the guard refused launch. This falsifies sigma-ladder transfer for mistral (inert at 29 sigma where llama responds at 5-13 sigma). Morning artifacts bracket mistral's window empirically: inert at 27, fully degenerate at realized strength 106.5 (584/584 fired confabs at dose 100), tokens moving at 250. Fixes on exp/doubt-snap-cross-family commit b8e9c873: mistral grid revised pre-sweep/pre-outcome to log-span (27,100) = [30,38,46,56,67,80,92]; smoke probe decoupled to fixed 250.0; dated AMENDMENT extension + NOTEBOOK entry + pin refresh (no-further-grid-changes clause never triggered because the selection rule was never evaluated on [6..27]). Mistral relaunched detached batch-1 (app ap-WQXHAMrCooWjpskPgy36cH), weights loading, background poll armed. Skill PR #275 updated (cffaed77): rule 4 now requires empirical per-cell bracketing (sigma-mapping is a first guess only); rule 6 gains the probe-decoupling gotcha. Llama sweep live and healthy: real interior dose-response, fired-confab clean_tighten 64->107->61 across strengths 5.3->9.1->12.4 then collapse, peak ~18.5% well below the 0.60 selection floor, trending toward an honest FIT dose-viability null. Local 3090 midband ladder: baseline + hs20 all arms + hs23 gated/permuted complete; hs23 random_direction on dose 6 of 7 (~93%); hs26 and hs30 late-comparator cells remain (roughly a day-plus).
+### 027-checkpoint - Checkpoint
+
+- at: `2026-07-12T14:21:18Z`
+- kind: `checkpoint`
+- summary: jspace-family-atlas full arc closed in one day: signed (2524891) with both predictions registered pre-launch (orchestrator and user both holds-on-both), launched with user approval (Modal ap-q2mU3RZwwrHyaTbr1ehwVm, $10 cap, ~$2 actual), resolved, PR #277 opened. Gates AG0/AG1/AG2 PASS with lead re-derivation from pulled captures. Prediction NOT MET both families (eff_dim_frac peaks early, 0.14/0.09 depth, not interior); falsifier not triggered (non-monotone profile, readable interior band). Layer map delivered: llama ~L20-23 (raw refusal 0.90), mistral ~L15-17 (0.925). Red-team pre-verdict: fleet-audit 0.997-vs-0.90 reconciled as population definitions (refused-vs-known vs pooled-answered); random-direction control committed showing refused-vs-known norm confound (random up to 0.97) while caution/raw-refusal baselines stay 0.5-0.75. Exhaust-skill-builder assigned fleet HF dataset dry-run build (no upload; card for user approval). hs30 ladder comparator still running locally.
+- next steps:
+  - Merge PR #277 on user OK; hold fleet resolve for hs30; review builder's dry-run card; draft raw-refusal-axis actuation amendment using the atlas layer map
+### 028-checkpoint - Checkpoint
+
+- at: `2026-07-12T15:00:25Z`
+- kind: `checkpoint`
+- summary: Atlas arc fully closed: PRs #277 (jspace-family-atlas resolved) and #278 (family-atlas skill + docs/atlas/family-layer-map.md registry) MERGED with user approval; KG ingest committed and lead-verified (6f09ec14: experiment node + 2 mechanisms - workspace-band-peak-location-is-family-relative, refused-vs-known-contrast-carries-norm-position-confound; validator 0 errors, manifest kg: list filled, exp validate OK). PI directive made standing: atlas extraction is the STANDARD for every new model/family/size before actuation design; axes assumed universal, layer band family/size relative, no cross-family layer porting. Doc janitor pass: TODO.md gained the dated 2026-07-12 arc section (fleet/ladder/atlas/skill/raw-refusal candidate/HF backfill rows) + index regen; AGENTS.md (canonical) skills list completed to all nine and synced into CLAUDE.md (gotcha: CLAUDE.md orchestrator section is GENERATED from AGENTS.md, first edit got reverted by sync). Two finds lifted to PI: 7 untracked aux-head-era docs (pr118-120 reviews/prep) awaiting commit-or-archive call; untracked experiment/ tree holds ~100GB local Phase 1 run products on canonical - no action without deliberate curation. In flight: exhaust-builder fleet HF dataset dry-run card; hs30 ladder arm.
+- next steps:
+  - hs30 lands -> fleet resolve Outcome + ladder aggregates; review exhaust dry-run card with PI; draft raw-refusal-axis actuation amendment on the atlas layer map; PI call on aux-head doc strays
+### 029-checkpoint - Checkpoint
+
+- at: `2026-07-12T16:04:53Z`
+- kind: `checkpoint`
+- summary: Phase 1 outputs migration EXECUTED (commit 30fa503e): the untracked ~99GB experiment/ tree scouted (read-only inventory: 97.5GB unique research data, ZERO duplication vs 9.8MB code-only archive, bridge containment confirmed ABSENT locally, no tracked references), user approved the two decisions (shared bulk to gitignored archive/experiment/phase1-data/, 3.7MB junk deleted), migrator built a deterministic classifier (letter-to-slug from registry.json legacy.label, 40 mappings, flagged-not-guessed on amendment_a_*/mi_* dirs) with dry-run manifest which the lead reviewed and executed: 317/319 entries, 43.9GB to experiments/<slug>/analysis/phase1-migrated/ (SR 26GB, Z 8.6GB, AH 6.7GB), 56GB shared to phase1-data, exp validate OK post-move. Two Amendment AI PAR eval dirs hold 14 Docker-era foreign-UID files: copied byte-verified to experiments/probe-as-reward, source residue (5.4MB) awaits operator sudo rm. Gotcha: shutil.move copy-fallback rmtree dies on foreign-owned entries; pre-move ownership scan (find ! -user) belongs in bulk-move scripts. Aux-head doc strays (7 files) still await PI commit-or-archive call.
+- next steps:
+  - PI runs sudo rm -rf experiment residue; hs30 -> fleet resolve + raw-refusal draft; exhaust dry-run card review
+### 030-checkpoint - Checkpoint
+
+- at: `2026-07-13T02:53:31Z`
+- kind: `checkpoint`
+- summary: Ladder + fleet both RESOLVED same night. hs30 ladder completed 22:35 (74,753 generations, ~59h wall, bs=8, clean exit). Lead recomputed headline aggregates from raw RunLogs pre-red-team (matched runner exactly); red-team over seven attack surfaces returned G1 SURVIVES, no invalidating finding; three lifted adjudications accepted (240-known cost denominator with 10/13 fired-known conditional reported alongside; in-sample FIT-only scope; official summary promoted to analysis-committed). qwen35-4b-midband-doubt-snap RESOLVED: G1 PASSES at hs20 dose 8x sigma_c, the unique cell in the locked 4x7 grid (refused 0.684, well-formed 0.980, known false-refusal 0.042); falsifier does not fire; late comparator hs30 reproduces entangled failure in-grid; layer potency monotone toward earlier layers (hs20>hs23>hs26>hs30), echoing the atlas early-structure finding; PR #279. Red-team scope notes adopted verbatim: selectivity belongs to the c_hat write direction not the gate (permuted confabs refuse 0.669 vs gated 0.684; dosed knowns only 0.056); placebo magnitude-matched via readback; no optimum claim (hs20 is grid-edge, earlier layers untested). Fleet doubt-snap-cross-family-confirmatory then RESOLVED: NOT PROMOTED, prediction not met (uniform pre-outcome G0 dose-viability stops, peaks 0.326/0.184/0.000/0.058), falsifier wording gap recorded straight (binds held-out fails only); Outcome indicts the universal 0.94-depth write-site rule via c_hat audit + same-substrate ladder contrast (0.326 late vs 0.684 mid-band); both scoreboard predictors wrong on the fleet, both right on the ladder (orchestrator wrong on layer: hs20 not hs23); PR #280. Both PRs await user merge approval. KG ingest queued post-merge for both.
+- next steps:
+  - User merge call on PRs #279/#280; KG-ingest both resolves post-merge; draft raw-refusal-axis actuation amendment (atlas layer map sites, exterior-shaped prediction/falsifier); review exhaust dry-run card; sudo rm residue + aux-head strays still pending PI

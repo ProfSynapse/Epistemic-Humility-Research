@@ -1,0 +1,17 @@
+# Fitted directions, the frozen scorer objects, and other large local data.
+directions/
+# Local analysis scratch and the pulled-back GPU run products; keep untracked,
+# promote real aggregates deliberately into analysis-committed/.
+analysis/
+
+# Containment belt-and-suspenders (question text, generations, and raw
+# activations must NEVER be committed, including under analysis-committed/):
+*.safetensors
+**/rows_graded.jsonl
+**/rows.jsonl
+**/scored_rows.jsonl
+**/*pool*.jsonl
+**/generations*.jsonl
+# analysis-committed/ carries ONLY ID-manifests (row_key + source + gold label +
+# qhash), fitted-JSON, and aggregate reports (e.g. phase0/density_report.json).
+# The scripts enforce this; these patterns are the safety net.

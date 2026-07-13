@@ -1,6 +1,6 @@
 slug: doubt-snap-cross-family-confirmatory
 type: steer-cell
-status: running
+status: resolved
 registered: true
 question: Does the doubt-gated caution snap replicate as a selective, training-free
   tighten instrument across the Llama, Ministral, Qwen3.5, and Gemma family panel,
@@ -34,16 +34,23 @@ instrument:
   - render.py
   pins:
     model_matrix.yaml: 2f54278b9e7bec54d29e16159cd57c772938821bf40d602a9f7020d7999cf53a
-    cell.yaml: e8030f5ba101d12e8d7585c7a78752a891d7760021d2ca0715cc97d3665d127a
+    cell.yaml: e2ebb35318e9588a827cf65a540bf2f1d0da697b72b935b1a6af57a1dfdca828
     gates.yaml: fb3e63eac6bba873c9f98616beb542ebf70bb0ade01a30e7cc80601095c2ff89
     cloud/README.md: 36574148b79291f26cba4dc143ba1c23feda9bc5cacc6b5707259d05b3ebcdbe
     cloud/modal_doubt_snap_cross_family.py: 466c0a5e0deaa7b990e15c6ed4ecd86d8ac603ef220bc94d4d7068607fa64fa1
-    prep_tuner_cell.py: 8902a8cf6c6242fa9c427594cf4acf8d3bbd4b7c2b812ba1b680cba8f8d18a13
+    prep_tuner_cell.py: 212a85cfcf378022ca541c23d75f2b1d1da07bbcff86fb43c282794deb587e61
     materialize_tuner_cells.py: cd497a634377f172a1db88905b4e98ce9fba716f580367608086ce010d3cebde
     smoke_tuner_path.py: 7e412e7b3ffeb71b52b56cb3ec84089f80127192c3e169dcb1ece2dff90fc4c1
     gen_lib.py: 6cffc7282591ca3b0db79d985a024ca2b63cab8afc1c5f5085d13cbdb98b79ce
     grader.py: ab0dea1c3efc841e943fccf8f5830c92715fac413e8ac80b2dbd72b113e6e2b3
     render.py: a5a0b243ea20e70ae62d081fbcdca17f0c298a0a6878ff5698e7752ef3434876
 inputs: []
-verdict: ''
-kg: []
+verdict: 'not promoted: all four launched cells stopped at the registered pre-outcome
+  FIT dose-viability rule at the 0.94-depth write site (peaks 0.326/0.184/0.000 small
+  tier, 0.058 mid tier); the c_hat audit and the qwen35_4b mid-band ladder show the
+  caution encoding is readable in every family while late-site writes fail to actuate
+  outside Qwen lineage, indicting the universal-depth write-site rule rather than
+  establishing a family-level mechanism null'
+kg:
+- experiment:doubt-snap-cross-family-confirmatory
+- mechanism:caution-encoding-read-actuate-dissociation-across-families

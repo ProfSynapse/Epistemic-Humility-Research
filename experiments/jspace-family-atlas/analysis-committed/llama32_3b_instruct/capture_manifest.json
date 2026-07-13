@@ -1,0 +1,41 @@
+{
+  "batch_size": 8,
+  "capture_index_sha256": "d0dbc274e53ddc8f1501ce3fcc065fc22280cfb03174c4907b30fb470a897660",
+  "cell_id": "llama32_3b_instruct",
+  "coverage_frac": 1.0,
+  "coverage_pass_ag0": true,
+  "hidden_size": 3072,
+  "layers_requested": "all",
+  "missing_row_count": 0,
+  "missing_row_keys_sample": [],
+  "model": "unsloth/Llama-3.2-3B-Instruct",
+  "n_hidden_states": 29,
+  "n_rows_captured": 2956,
+  "n_rows_in_pool": 2956,
+  "num_hidden_layers": 28,
+  "persist_dtype": "float32",
+  "position_name": "anchor",
+  "position_rule": "len(token_ids) - 1 (manual tokenize, add_special_tokens=True)",
+  "revision": "006f5dcd1393c3add266de40994ba96225e9689d",
+  "row_pool_source": {
+    "fleet_cell_id": "llama32_3b_instruct",
+    "fleet_experiment": "doubt-snap-cross-family-confirmatory",
+    "manifest_row_count": 2956,
+    "modal_run_tag": "doubt-snap-cross-family-r1",
+    "modal_volume": "eh-doubt-snap-cross-family",
+    "role_counts": {
+      "confab": 1453,
+      "known_correct_answered": 556,
+      "unknown_refused": 947
+    },
+    "role_split_counts": {
+      "confab_fit": 581,
+      "confab_held_out": 872,
+      "known_correct_answered_fit": 222,
+      "known_correct_answered_held_out": 334,
+      "unknown_refused_fit_only": 947
+    },
+    "row_pool_path": "_live/llama32_3b_instruct/analysis/split_rows_private.jsonl",
+    "split_manifest_committed_path": "llama32_3b_instruct/analysis-committed/split_manifest.json"
+  }
+}

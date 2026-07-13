@@ -19,6 +19,8 @@ related:
 - '[[j-space-midband-dose-calibration-qwen3-4b]]'
 - '[[j-space-calibrated-layer-contrast-qwen3-4b]]'
 - '[[j-space-token-targeted-refusal-qwen3-4b]]'
+- '[[jspace-family-atlas]]'
+- '[[workspace-band-peak-location-is-family-relative]]'
 - '[[tc-2026-workspace--verbalizable-representations-global-workspace]]'
 - '[[global-workspace]]'
 - '[[jacobian-lens]]'
@@ -33,6 +35,18 @@ relationships:
   evidence:
   - experiments/j-space-localization-qwen3-4b/AMENDMENT.md#outcome
   - experiments/j-space-localization-qwen3-4b/analysis-committed/results/jspace-jlens-r1/profile_full.json
+- type: tested_by
+  target: '[[jspace-family-atlas]]'
+  target_id: experiment:jspace-family-atlas
+  confidence: low
+  evidence:
+  - experiments/jspace-family-atlas/AMENDMENT.md#outcome
+- type: related_to
+  target: '[[workspace-band-peak-location-is-family-relative]]'
+  target_id: mechanism:workspace-band-peak-location-is-family-relative
+  confidence: medium
+  evidence:
+  - experiments/jspace-family-atlas/AMENDMENT.md#outcome
 - type: supported_by
   target: '[[j-space-midband-dose-calibration-qwen3-4b]]'
   target_id: experiment:j-space-midband-dose-calibration-qwen3-4b
@@ -112,5 +126,16 @@ overturning it: a J-lens backward direction aimed at observed refusal/absence
 tokens wrote accurately and was non-inert by itself, but it added only +0.54
 percentage points over the already strong hs23 `c_hat` snap. Natural token-target
 composition is therefore not enough, on this surface, to improve the actuator
-once the workspace-band caution write is active. The mechanism still needs
+once the workspace-band caution write is active.
+
+The first cross-family test of the depth-fraction picture, `jspace-family-atlas`,
+complicated rather than confirmed it: on Llama-3.2-3B-Instruct and
+Mistral-7B-Instruct-v0.3, a representation-variance effective-dimension
+profile peaks early-exterior (0.09-0.14 depth) rather than at an interior
+band, so the workspace-like peak itself does not sit at a shared portable
+depth fraction across families ([[workspace-band-peak-location-is-family-relative]]).
+The read panel still found an interior band where doubt, caution, and raw
+refusal all clear 0.80 held-out AUROC together (llama layers 15-23, mistral
+7-27), so a family-relative layer map exists even though the profile's own
+shape does not match the Qwen3-4B picture. The mechanism still needs
 replication beyond raw-base Qwen3-4B before it should be treated as general.

@@ -14,7 +14,7 @@ generated output), and is exercised both through ``bin/exp`` and directly in
 tests. Every core function takes an explicit repo ``root`` so tests can drive it
 against a temporary tree.
 
-Subcommands: new, sign, list, show, resolve, validate, regen.
+Subcommands: new, sign, repin, list, show, resolve, validate, regen.
 """
 
 from __future__ import annotations
@@ -307,6 +307,11 @@ def _validate_manifest(root: Path, slug: str, mpath: Path, data: dict) -> list[s
         err("instrument.pins must be a mapping")
         pins = {}
 
+    repins = instrument.get("repins", []) or []
+    if not isinstance(repins, list):
+        err("instrument.repins must be a list")
+        repins = []
+
     inputs = data.get("inputs", []) or []
     if not isinstance(inputs, list):
         err("inputs must be a list")
@@ -349,6 +354,32 @@ def _validate_manifest(root: Path, slug: str, mpath: Path, data: dict) -> list[s
             actual = _sha256(fpath)
             if actual != recorded:
                 err(f"pin drift: {rel} hashes {actual[:12]}..., pinned {str(recorded)[:12]}...")
+
+    # Repins audit trail: each entry must carry its required fields, and the LAST
+    # repin entry per file must agree with the file's current pin (a repin that no
+    # longer matches the live pin is a stale/tampered audit record). Earlier
+    # entries for the same file are historical and are not expected to match.
+    last_new: dict[str, str] = {}
+    for i, entry in enumerate(repins):
+        if not isinstance(entry, dict):
+            err(f"instrument.repins[{i}] must be a mapping")
+            continue
+        for key in ("file", "old_sha256", "new_sha256", "date", "reason"):
+            val = entry.get(key)
+            if not (isinstance(val, str) and val.strip()):
+                err(f"instrument.repins[{i}] missing/empty required field {key!r}")
+        rel = entry.get("file")
+        new = entry.get("new_sha256")
+        if isinstance(rel, str) and isinstance(new, str):
+            last_new[rel] = new  # append-only order => ends as the LAST entry per file
+    for rel, new in last_new.items():
+        if rel not in pins:
+            err(f"repinned file {rel!r} has no current pin")
+        elif pins[rel] != new:
+            err(
+                f"repins/pins mismatch for {rel}: last repin new_sha256 "
+                f"{new[:12]}... does not match pin {str(pins[rel])[:12]}..."
+            )
 
     # Inputs: repo-relative paths that must exist.
     for rel in inputs:
@@ -604,6 +635,135 @@ def cmd_sign(root: Path, slug: str) -> int:
     return 0
 
 
+def cmd_repin(root: Path, slug: str, relpaths: list[str], reason: str) -> int:
+    """Repair pinned instrument files on a signed-but-unlaunched experiment.
+
+    A signed experiment whose instrument has a build-environment or harness
+    defect (discovered before any run artifact exists) has no honest way to move
+    its pins otherwise: ``sign`` refuses non-drafts. ``repin`` re-hashes the named
+    file(s), updates ``instrument.pins``, and appends an append-only audit entry
+    per file to ``instrument.repins``. It hard-refuses anything that would be
+    goalpost movement: only a ``signed`` experiment with no verdict, only files
+    that are already pinned and whose bytes actually changed, and only when every
+    OTHER pinned file still matches (so an intended repair never silently absorbs
+    unrelated drift).
+    """
+    mpath = manifest_path_for(root, slug)
+    if not mpath.is_file():
+        raise ExpError(f"no manifest at {mpath}")
+    data = load_manifest(mpath)
+
+    status = data.get("status")
+    if status != "signed":
+        if status == "draft":
+            raise ExpError(
+                f"{slug}: status is 'draft'; nothing is pinned yet, edit the "
+                "instrument freely and run `bin/exp sign`"
+            )
+        if status in RESOLVED_STATES:
+            raise ExpError(
+                f"{slug}: status is {status!r}; results exist, a repin after "
+                "resolution is goalpost movement"
+            )
+        raise ExpError(
+            f"{slug}: status is {status!r}; only a signed experiment can be "
+            "repinned (repin repairs the instrument before any run artifact exists)"
+        )
+
+    verdict = data.get("verdict")
+    if isinstance(verdict, str) and verdict.strip():
+        raise ExpError(
+            f"{slug}: a verdict is already recorded; never repin a resolved experiment"
+        )
+
+    if not (isinstance(reason, str) and reason.strip()):
+        raise ExpError("--reason must be a non-empty explanation for the repin")
+    reason = reason.strip()
+
+    if not relpaths:
+        raise ExpError("name at least one pinned file to repin")
+
+    instrument = data.get("instrument")
+    if not isinstance(instrument, dict):
+        raise ExpError(f"{slug}: manifest has no instrument block to repin")
+    pins = instrument.get("pins")
+    if not isinstance(pins, dict) or not pins:
+        raise ExpError(f"{slug}: no pins recorded; sign the experiment first")
+
+    exp_dir = mpath.parent
+    # De-duplicate the named files while preserving the order given.
+    named = list(dict.fromkeys(str(r) for r in relpaths))
+
+    # Every named file must already be pinned: repin repairs an existing pin, it
+    # never introduces a new one (that is what signing is for).
+    not_pinned = [r for r in named if r not in pins]
+    if not_pinned:
+        raise ExpError(
+            f"{slug}: not in instrument.pins, so cannot be repinned "
+            f"(repin repairs an existing pin only): {', '.join(not_pinned)}"
+        )
+
+    # Named files must exist on disk so we can re-hash them.
+    missing = [r for r in named if not (exp_dir / r).is_file()]
+    if missing:
+        raise ExpError(f"{slug}: named file(s) missing on disk: {', '.join(missing)}")
+
+    # No-op refusal: the current bytes must actually differ from the recorded pin.
+    new_hashes = {r: _sha256(exp_dir / r) for r in named}
+    noop = [r for r in named if new_hashes[r] == pins[r]]
+    if noop:
+        raise ExpError(
+            f"{slug}: current bytes already match the pin, nothing to repin: "
+            f"{', '.join(noop)}"
+        )
+
+    # Unrelated-drift refusal: every pinned file NOT named must still match, so a
+    # targeted repair can never quietly launder drift in a sibling instrument file.
+    drifted: list[str] = []
+    for rel, recorded in pins.items():
+        if rel in named:
+            continue
+        fpath = exp_dir / rel
+        if not fpath.is_file():
+            drifted.append(f"{rel} (missing)")
+        elif _sha256(fpath) != recorded:
+            drifted.append(rel)
+    if drifted:
+        raise ExpError(
+            f"{slug}: other pinned file(s) have drifted; repin the intended files "
+            f"only and investigate the rest: {', '.join(sorted(drifted))}"
+        )
+
+    # Effect: update the pins and append one audit entry per file. The repins list
+    # is append-only; prior entries are never removed or edited.
+    repins = instrument.get("repins")
+    if not isinstance(repins, list):
+        repins = []
+    date = now_utc()
+    old_hashes = {r: pins[r] for r in named}
+    for rel in named:
+        pins[rel] = new_hashes[rel]
+        repins.append(
+            {
+                "file": rel,
+                "old_sha256": old_hashes[rel],
+                "new_sha256": new_hashes[rel],
+                "date": date,
+                "reason": reason,
+            }
+        )
+    instrument["pins"] = pins
+    instrument["repins"] = repins
+    _dump_manifest(mpath, data)
+
+    print(f"exp repin: {slug} repinned {len(named)} file(s)")
+    for rel in named:
+        print(f"  {rel}: {old_hashes[rel][:12]}... -> {new_hashes[rel]}")
+    print(f"  reason: {reason}")
+    print("  recorded in instrument.repins (audit trail); run `bin/exp validate` to confirm")
+    return 0
+
+
 def cmd_list(root: Path, status: str | None, exp_type: str | None) -> int:
     rows = []
     for slug, _mpath, data in iter_manifests(root):
@@ -643,6 +803,15 @@ def cmd_show(root: Path, slug: str) -> int:
         target = exp_dir / str(rel)
         mark = "ok" if target.is_file() else "MISSING"
         print(f"  config: {target} [{mark}]")
+    repins = (data.get("instrument", {}) or {}).get("repins", []) or []
+    if repins:
+        print("\n# instrument repins (append-only audit trail)")
+        for entry in repins:
+            print(
+                f"  {entry.get('file')}: {str(entry.get('old_sha256'))[:12]}... -> "
+                f"{str(entry.get('new_sha256'))[:12]}...  ({entry.get('date')})"
+            )
+            print(f"    reason: {entry.get('reason')}")
     return 0
 
 
@@ -689,6 +858,20 @@ def _build_parser() -> argparse.ArgumentParser:
     p_sign = sub.add_parser("sign", help="pin instrument configs and flip draft->signed")
     p_sign.add_argument("slug")
 
+    p_repin = sub.add_parser(
+        "repin",
+        help="repair pinned instrument file(s) on a signed experiment (audited, pre-run only)",
+    )
+    p_repin.add_argument("slug")
+    p_repin.add_argument(
+        "relpaths", nargs="+", metavar="relpath",
+        help="experiment-relative pinned file(s) to re-hash",
+    )
+    p_repin.add_argument(
+        "--reason", required=True,
+        help="why the repin is needed; recorded in the instrument.repins audit trail",
+    )
+
     p_list = sub.add_parser("list", help="table of all experiments")
     p_list.add_argument("--status", choices=STATUSES, default=None)
     p_list.add_argument("--type", choices=TYPES, default=None, dest="exp_type")
@@ -722,6 +905,8 @@ def main(argv: list[str] | None = None) -> int:
             return cmd_new(root, args.slug, args.exp_type, title=args.title)
         if args.command == "sign":
             return cmd_sign(root, args.slug)
+        if args.command == "repin":
+            return cmd_repin(root, args.slug, args.relpaths, args.reason)
         if args.command == "list":
             return cmd_list(root, args.status, args.exp_type)
         if args.command == "show":
