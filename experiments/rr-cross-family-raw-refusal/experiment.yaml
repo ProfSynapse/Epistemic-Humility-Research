@@ -109,4 +109,8 @@ verdict: 'Falsified, both families shape F: the doubt-gated caution write does n
   while mistral peaks at 0.579 against the 0.60 floor with intact JSON and its miss
   is substantially canonical-phrase coverage (abstention pressure present but phrased
   outside the locked detector''s vocabulary).'
-kg: []
+kg:
+- experiment:rr-cross-family-raw-refusal
+- mechanism:llama-atlas-site-write-collapses-format-before-refusal-floor
+- mechanism:mistral-atlas-site-write-abstains-below-canonical-detector-floor
+- mechanism:canonical-phrase-detector-undercounts-cross-family-abstention-idioms

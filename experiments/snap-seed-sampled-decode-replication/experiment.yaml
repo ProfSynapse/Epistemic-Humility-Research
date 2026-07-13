@@ -91,4 +91,8 @@ verdict: The resolved 73.5%/3.1% headline survives sampled decoding on the corre
   floor), cost 4.65%, and placebo margins intact, after a batched termination-rule
   defect that misgraded eos-at-final-position refusals was diagnosed from persisted
   text, fixed, repinned, and verified by diagnostic-parity-rerun triple agreement.
-kg: []
+kg:
+- experiment:snap-seed-sampled-decode-replication
+- experiment:doubt-gated-caution-tighten
+- mechanism:sampled-decode-preserves-doubt-gated-caution-headline
+- mechanism:batched-termination-rule-misgrades-eos-at-final-position

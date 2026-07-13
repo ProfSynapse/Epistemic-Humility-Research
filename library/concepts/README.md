@@ -690,7 +690,7 @@ Atomic notes extracted from the library papers via the Agents-K1 ingestion skill
 - [[valence-arousal-subspace]] : A two-dimensional linear subspace in LLM activation space spanned by a recovered valence axis (pleasure-displeasure) and arousal axis (activ
 - [[world-model-hallucination-modes]] : A three-type taxonomy of failure modes in generative world models, each anchored to a different pipeline stage. Perceptual hallucination occ
 
-## Mechanisms (cause -> effect) (408)
+## Mechanisms (cause -> effect) (413)
 
 - [[abstention-generalization-failure]] : 'instruction-tuning for abstention on a narrow, homogeneous set of refusal expressions and task formats' **prevents** Abstention ability does not generalize to 
 - [[abstract-representations-enable-zero-shot-generalization]] : High degree of abstract (parallel) representation in ANN hidden layers, as measured by parallelism-score, indicating that compositional rule dimensions are enco
@@ -718,6 +718,7 @@ Atomic notes extracted from the library papers via the Agents-K1 ingestion skill
 - [[backtracking-ablation-drops-calibration]] : Ablation that removes backtracking and alternative-exploration moves from the chain-of-thought, linearizing the reasoning trace **decreases** expected-calibrati
 - [[base-confab-propensity-direction-reads-held-out-without-training]] : Fitting the AL confabulation-propensity recipe (L24 PCA-128 randomized seed 20260705, standardize, L35-caution-residualize, mean-diff confab-vs-unanswerable-ref
 - [[base-model-entity-recognition-direction-transfers-to-chat-refusal]] : Steering the chat model with entity-recognition directions extracted from sparse autoencoders trained only on the base model. **enables** The chat model's refus
+- [[batched-termination-rule-misgrades-eos-at-final-position]] : A batched sampled-decode grading harness requires terminated_naturally to satisfy eos_pos < n_new_tokens - 1, stricter than the registered metric text (\"termin
 - [[behavior-underdetermines-motivation]] : Observing a single concerning agentic action (a workaround, a deception, a sandbag) without further investigation of why it occurred. **mediates** The underlyin
 - [[benign-finetuning-suppresses-emergent-misalignment]] : Fine-tuning an emergent-misalignment|emergently misaligned model on approximately 120 benign samples (35 steps, batch size 4), whether drawn from an in-distribu
 - [[biasing-features-drive-cot-rationalization]] : Adding hint-injection|biasing features to model inputs (e.g., reordering answer choices so the correct answer is always position A, or a user suggesting a speci
@@ -728,6 +729,7 @@ Atomic notes extracted from the library papers via the Agents-K1 ingestion skill
 - [[calibration-aware-training-prevents-confidence-drift]] : Augmenting the DPO objective with a per-token L1 calibration loss that penalizes deviations between predicted confidence and a probability-margin correctness su
 - [[calibration-hallucination-tradeoff]] : Post-training alignment (RLHF or similar) applied to a calibrated pretrained language model to reduce hallucination on arbitrary facts **mediates** Calibration 
 - [[calibration-tuning-generalizes-across-models]] : Fine-tuning a model on graded correctness data via calibration tuning (LoRA + Prompt) **enables** The resulting calibration tuner can estimate the uncertainty o
+- [[canonical-phrase-detector-undercounts-cross-family-abstention-idioms]] : A canonical refusal/abstention detector whose phrase vocabulary was calibrated on one model family (here, a locked 3-phrase set: \"i do not know\", \"i don't kn
 - [[causal-separability-enables-faithful-editing]] : Two concepts satisfying causal-separability (intervening on one does not affect the marginal distribution of the other in the score representation) **enables** 
 - [[caution-encoding-read-actuate-dissociation-across-families]] : In doubt-snap-cross-family-confirmatory's lead-verified c_hat validity audit (CPU, over existing captures across the four launched cells: qwen35_4b, qwen35_9b, 
 - [[caution-readout-is-low-rank-on-collinear-carriers]] : Recomputing direction-removal robustness in a label-agnostic randomized PCA-128 basis instead of the raw 2,560-dimensional activation space. **mediates** The ca
@@ -874,6 +876,7 @@ Atomic notes extracted from the library papers via the Agents-K1 ingestion skill
 - [[linear-erasure-ineffective-against-nonlinear-classifiers]] : rlace erasing only the linear subspace encoding a concept, leaving non-linear structure intact in the remaining representation **prevents** Non-linear classifie
 - [[listener-aware-dpo-improves-ood-truthfulness]] : LACIE DPO finetuning on TriviaQA with listener-acceptance signal **enables** TruthfulQA truthfulness rises from 0.27 to 0.55 (+28 points absolute) at a 9-point 
 - [[listener-aware-preference-induces-emergent-abstention]] : DPO preference function with conservative utility ordering (false rejection preferred over false acceptance) applied to answer-only training data with no absten
+- [[llama-atlas-site-write-collapses-format-before-refusal-floor]] : The doubt-gated caution write applied at Llama-3.2-3B-Instruct's own atlas-located workspace-band sites (hidden states hs20/hs22/hs23, sigma-relative dose grid 
 - [[llm-rationale-misleads-human-judgment]] : Exposure to LLM-generated rationales about whether a question is known or unknown **decreases** Human accuracy on known-vs-unknown perception drops when the rat
 - [[logarithmic-scoring-rl-calibrates-direct-confidence]] : Fine-tuning a model with an RL reward derived from a logarithmic scoring rule over the model's stated confidence and answer correctness **enables** The model is
 - [[lora-limits-catastrophic-forgetting-under-noncompliance-sft]] : Continued LoRA finetuning of an instruction-tuned model on noncompliance data (CoCoNot) **enables** General capabilities (MMLU, AlpacaEval) are preserved at nea
@@ -897,6 +900,7 @@ Atomic notes extracted from the library papers via the Agents-K1 ingestion skill
 - [[mid-layer-mlp-mediates-factual-recall]] : Processing of the final subject token in middle-layer feed-forward modules of GPT-style transformers **enables** Decisive contribution to the model's factual pr
 - [[middle-layers-steepen-eigenvalue-power-law]] : Processing in the middle transformer layers of an LLM (e.g., layer 12 of Gemma-2-2b) producing more concentrated residual-stream representations **increases** S
 - [[misclassified-examples-proxy-for-ood-calibration]] : Treating the model's own hard / misclassified in-distribution examples as the supervision signal that drives down the learned confidence scalar. **enables** The
+- [[mistral-atlas-site-write-abstains-below-canonical-detector-floor]] : The doubt-gated caution write applied at Mistral-7B-Instruct-v0.3's own atlas-located workspace-band sites (hidden states hs15/hs16/hs17, sigma-relative dose gr
 - [[model-accuracy-strengthens-probability-correctness-signal]] : Higher model accuracy on a task dataset **increases** Stronger within-dataset correlation between log-probability and answer correctness
 - [[model-scale-amplifies-sycophancy]] : Increasing language model parameter count (810M to 52B), whether pretrained or RLHF-trained **increases** Higher rate of matching the dialog user's stated view 
 - [[model-scale-confounded-with-design]] : Comparing MLLMs that differ simultaneously in parameter count, architecture, training data, visual encoder, and post-training strategy **neutral** Parameter cou
@@ -1019,6 +1023,7 @@ Atomic notes extracted from the library papers via the Agents-K1 ingestion skill
 - [[sae-sparsity-increases-feature-interpretability]] : Training an overcomplete autoencoder with an L1 sparsity penalty on internal LM activations **increases** Recovered dictionary features are more monosemantic an
 - [[sae-width-increase-causes-feature-splitting]] : Increasing the sparse-autoencoder dictionary size from a 1x expansion factor to 256x (512 to 131,072 features) **enables** Coarse features split into finer sub-
 - [[safety-finetuning-low-rank-activation-changes]] : Supervised safety fine-tuning (SSFT) on harmful vs. harmless prompt pairs updating model weights to distinguish safe from unsafe requests **decreases** Low effe
+- [[sampled-decode-preserves-doubt-gated-caution-headline]] : Re-measuring the resolved doubt-gated caution snap's frozen instrument (same directions, gate threshold, standardization, and held-out split; no refit) under te
 - [[scalar-readout-compression-mimics-second-mechanism]] : Compressing a multi-dimensional internal doubt geometry into a single scalar readout (caution boundary distance) whose fidelity varies across question flavors. 
 - [[scale-improves-accuracy-not-honesty]] : Increasing training compute (FLOPs) across LLM families **mediates** Factual accuracy rises strongly (Spearman +87.3%) while honesty under pressure declines (Sp
 - [[scale-increases-representational-sparsity]] : Increasing LLM parameter count (model scale) from 70M to 6.9B **increases** 'Average representational sparsity increases (features can be decoded by fewer neuro
