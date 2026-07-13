@@ -1,6 +1,6 @@
 # H3: Multi-Seed and Sampled-Decode Replication of the Doubt-Gated Caution Snap
 
-Status: falsified (signed 2026-07-13; run complete on the local RTX 3090; falsifier FIRED, instrument-verified).
+Status: resolved (signed 2026-07-13; resolved 2026-07-13 falsified on the original instrument, REVISED to resolved same day after a verified termination-rule instrument correction and full K=5 re-run; falsifier does NOT fire).
 
 Keep this document the prose home for the experiment. The machine state lives in
 `experiment.yaml` and is never duplicated here.
@@ -196,117 +196,115 @@ applies only if the sampled budget overruns the evening.
 
 ## Outcome
 
-Resolved 2026-07-13. Run: local RTX 3090, all K=5 registered seeds completed
-(no K=3 fallback needed). Gate artifacts: `analysis/h3_full_summary.json`
-(row-level logs gitignored under `analysis/`), aggregates promoted to
-`analysis-committed/h3_summary.json` (verified text-free; booleans, counts,
-rates, and readback scalars only).
+Resolved 2026-07-13, REVISED same day after an instrument correction (full
+history below; the superseded falsified verdict and its voiding are part of
+this record). Run: local RTX 3090, all K=5 registered seeds completed, twice:
+once on the original harness and once on the corrected harness after the
+batched termination rule was fixed and repinned. Gate artifacts:
+`analysis/h3_full_summary.json` (row-level logs gitignored under `analysis/`,
+now persisting per-sample text and full sub-grade dicts per the data-exhaust
+build-time rule), aggregates promoted to `analysis-committed/h3_summary.json`
+(verified text-free). Pre-fix run logs and the superseded gate summary are
+archived under `analysis/prefix-termination-artifact-20260713/`.
 
-**Verdict: the falsifier FIRES. H3-G0 PASS, H3-G1 FAIL, H3-G2 PASS, H3-G3
-PASS. The resolved 73.5%/3.1% headline pair is greedy-decode-specific and is
-re-scoped to "one greedy decode" wherever it is asserted.**
+**Verdict: the falsifier does NOT fire. H3-G0 PASS, H3-G1 PASS, H3-G2 PASS,
+H3-G3 PASS on the corrected instrument. The resolved 73.5%/3.1% headline
+survives temperature-0.7 sampled decoding: pooled majority-vote conversion
+69.5% against the 63.5% floor, above the floor in every seed individually.**
 
-### Gate results
+### Gate results (corrected instrument, full K=5 re-run)
 
 - **H3-G0 (greedy reproduction) PASS.** Arm R reproduces the resolved numbers
-  exactly: gated confab clean_tighten 136/185 = 73.5% (Wilson [66.7%, 79.3%])
-  and gated known-correct false-refusal 8/258 = 3.1% (Wilson [1.6%, 6.0%]).
-  The replication harness measures the same instrument; the sampled comparison
-  is interpretable.
-- **H3-G1 (sampled conversion band) FAIL, pooled and in all 5 seeds.** Arm S
-  majority-vote (>= 5/8) confab clean_tighten conversion: pooled 140/925 =
-  15.1% (Wilson [13.0%, 17.6%]) vs the 63.5% floor; per seed 23/27/28/31/31
-  per 185 = 12.4% / 14.6% / 15.1% / 16.8% / 16.8%. Reported alongside per
-  registration: any-vote 492/925 = 53.2%, mean per-row sample fraction 22.0%.
-- **H3-G2 (sampled cost ceiling) PASS, pooled and in all 5 seeds.** Majority-vote
-  known-correct false-refusal pooled 60/1290 = 4.65% (Wilson UCB 5.9% < 12%);
-  per seed 4.26-5.43%, worst per-seed UCB 8.9%.
+  exactly and identically to the pre-fix run: gated confab clean_tighten
+  136/185 = 73.5% (Wilson [66.7%, 79.3%]), gated known-correct false-refusal
+  8/258 = 3.1% (Wilson [1.6%, 6.0%]). Greedy grading was never affected by the
+  termination defect.
+- **H3-G1 (sampled conversion band) PASS, pooled and in all 5 seeds.** Arm S
+  majority-vote (>= 5/8) confab clean_tighten conversion: pooled 643/925 =
+  69.5% (Wilson [66.5%, 72.4%]) vs the 63.5% floor; per seed
+  130/126/127/129/131 per 185 = 70.3% / 68.1% / 68.6% / 69.7% / 70.8%.
+  Reported alongside per registration: any-vote 82.5%, mean per-row sample
+  fraction 71.4%. The sampled conversion sits ~4 points under greedy's 73.5%,
+  inside the registered tolerance.
+- **H3-G2 (sampled cost ceiling) PASS, pooled and in all 5 seeds.**
+  Majority-vote known-correct false-refusal pooled 60/1290 = 4.65% (Wilson UCB
+  5.9% < 12%). The counts are IDENTICAL to the pre-fix run: the cost grader
+  (`grade_one`) has no termination conjunct, and the regeneration is a
+  bit-faithful replay, so only the termination boolean changed between runs.
 - **H3-G3 (placebo seed-robustness) PASS in all 5 seeds.** Freshly drawn
-  random-direction confab clean_tighten 10.3-18.4% (< 25% every seed, i.e.
-  inert relative to the gated write's greedy 73.5%); freshly permuted-gate
-  known-correct false-refusal 22.5-24.8% (> 15% every seed, i.e. materially
-  worse than the gated 3.1%). The resolved specificity result is not an
-  artifact of the one committed random vector or the one committed
-  permutation.
+  random-direction confab clean_tighten 10.3-18.4% (< 25% every seed);
+  freshly permuted-gate known-correct false-refusal 22.5-24.8% (> 15% every
+  seed). Identical to the pre-fix run.
 
-### Instrument verification (why this null is adopted)
+### Instrument correction history (binding provenance for this verdict)
 
-Per the program rule extended at H6 (never adopt a paper-changing null from an
-uncertified instrument), the verdict was WITHHELD at run completion and an
-adversarial instrumentation red-team ran over five surfaces before this
-Outcome was written. All five certify the collapse as behavioral:
-
-1. **Dose delivery on the batched sampled path.** Live realized-projection
-   readback (hook.last_readback, the direct delivery measure, not the
-   cross-trajectory subtraction H6 showed to be divergence-fragile) on all 860
-   fired row-seed units: mean 200.026, min 199.842, max 200.197 against
-   dose_target 200. Non-fired units correctly read back none. H3 uses the
-   plain-HF register_forward_hook path that H6-G1 certified as firing every
-   decode step, NOT the Unsloth bespoke path H6 voided; the H6 non-firing
-   signature does not apply here and was checked directly.
-2. **The write acts under sampling.** Fired confab per-sample clean_tighten
-   1618/6720 = 24.1% vs non-fired (undosed) confab 12/680 = 1.8%, a 13x
-   contrast; fired known per-sample damage 91.9% vs non-fired 4.7%.
-3. **Sampling genuinely ran.** The within-unit clean_tighten count histogram
-   over 840 fired confab units is spread across intermediate values
-   (0/8: 353, 1: 127, 2: 89, 3: 72, 4: 59, 5: 35, 6: 49, 7: 56, 8/8: 0);
-   487/840 units have intermediate counts, which is impossible under a silent
-   greedy fallback (identical samples could only populate 0/8 and 8/8). All 5
-   seeds are distinct and derive distinct per-row torch seeds.
-4. **Termination/grading parity.** The batched path's termination rule
-   (`gen_lib._first_eos_position`) is conservative relative to greedy's
-   shorter-than-max rule: any bias pushes clean_tighten DOWN, so it cannot
-   manufacture a false PASS; it also cannot rescue the gate, since the miss is
-   48 points, not marginal. See the provenance-gap note below.
-5. **Arithmetic.** The 140/925, per-seed counts, any-vote, mean fraction, G2,
-   and G0 numbers were independently recomputed from the raw run logs by both
-   the red-team and the lead; all reproduce exactly.
+1. The original K=5 run resolved FALSIFIED: G1 read 140/925 = 15.1% pooled
+   against the 63.5% floor, adversarially red-teamed and adopted. That
+   verdict is superseded, not erased: it was correct arithmetic on a defective
+   conjunct.
+2. The run logs stored only booleans, so the failure anatomy was
+   unrecoverable. Under the PI's data-exhaust directive a text-persisting
+   single-seed diagnostic (seed 20260710) was registered and run. It replayed
+   the pinned run bit-exactly (same 290/1344 per-sample cleans, same 23
+   majority conversions), then decomposed the failures: 764/769
+   refused-but-messy fired samples failed ONLY the `terminated_naturally`
+   conjunct, with eos emitted at the final position of the generated block and
+   complete, clean refusal texts.
+3. Root cause: the batched rule (`gen_lib`, previously requiring
+   `eos_pos < n - 1`) contradicted the registered metric text "terminated
+   naturally (stopped before max_new)". Arm S batches 8 identical copies; the
+   write compresses refusals to near-identical ~26-token lengths; members
+   tying for longest-in-batch carry eos at the block's last position and were
+   misgraded as not-terminated. Greedy's batch-1 rule was correct, which is
+   why G0 reproduced while G1 collapsed. The original red-team's surface-4
+   inference (termination bias "cannot rescue the gate") is refuted: the bias
+   was 57 points of fired samples, not marginal.
+4. The fix (`is_terminated_naturally`: terminated iff eos anywhere in the
+   block, or block shorter than max_new; not-terminated only when no eos and
+   the full budget was used) matches the registered text, changed no gate,
+   seed, threshold, or other grader semantics, carries 16 regression tests
+   including the exact batch-tie geometry, and was repinned with an audit
+   trail in `experiment.yaml`. A parity recompute applying the fixed rule to
+   the diagnostic's persisted inputs reproduced 1056/1480 per-sample and
+   130/185 majority-vote exactly.
+5. The full K=5 re-run on the corrected harness produced seed-20260710
+   majority-vote conversion of exactly 130/185, matching the independent
+   diagnostic prediction; G0 and the placebo arms reproduced identically; G2
+   counts are byte-identical. The reopened instrument-verification is closed
+   by this triple agreement (diagnostic replay, parity recompute, independent
+   re-run).
 
 ### Scope and reading (binding for Paper 5 and downstream)
 
-1. **What fails and what survives.** The falsifier fires on the CONVERSION
-   RATE only. The write still acts under sampling (readback on target; fired
-   24.1% vs non-fired 1.8% per-sample), and both safety and specificity
-   survive: known-correct cost stays low under sampling (G2 PASS, 4.65%
-   pooled) and the placebo margins hold in every seed (G3 PASS). What
-   collapses is the strict clean_tighten conjunction under temperature-0.7
-   sampling aggregated by >= 5/8 majority vote: per-sample clean conversion
-   drops from greedy's 73.5% to ~24.1%, so the majority vote lands at 15.1%.
-   Do NOT overstate this as "the snap stops working under sampling"; do not
-   understate it either, since 63.5% was pre-registered as the largest
-   degradation still consistent with "the headline survives sampling."
-2. **Mechanism is NOT decomposable from committed artifacts.** The run logs
-   store per-sample booleans (clean_tighten, well_formed_correct) plus
-   readback, not generation text or sub-grades. Whether the ~76% of failing
-   fired samples stopped refusing or still refuse while breaking the strict
-   clean_tighten format (well-formedness, single answer key, trailing-clean,
-   termination) is unrecoverable here. Any paper narrative finer than the
-   registered clean_tighten metric about WHY sampling collapses conversion
-   requires a re-run that persists text or sub-grades. The any-vote rate
-   (53.2%) shows a clean refusal is reachable under sampling for about half
-   the rows but dominant for few.
+1. **The headline is decode-robust.** The resolved 73.5%/3.1% pair reproduces
+   under greedy and degrades only ~4 points under temperature-0.7 sampling
+   with majority-vote aggregation (69.5% pooled, every seed above the floor).
+   Cost stays low (4.65%) and placebo specificity holds in every seed. The
+   prior re-scoping of the headline to "one greedy decode" is withdrawn.
+2. **Mechanism is now decomposable.** The corrected run persists per-sample
+   text, full sub-grade dicts, eos position, and raw token counts in the
+   gitignored row-level logs, so any downstream narrative about sampling
+   behavior can be audited directly rather than inferred from booleans.
 3. **Benign warning, recorded so it is not later misread.** `full_run.log`
-   line 5 carries the transformers warning that temperature/top_p/top_k "are
-   not valid and may be ignored." It fires once, before the Arm R greedy
-   banner: it is the warn-once for the checkpoint generation_config sampling
-   defaults being ignored on a GREEDY call (do_sample=false). It does not
-   apply to Arm S (do_sample=true), where those flags are valid and where the
-   vote-spread evidence above proves sampling took effect.
+   carries the transformers warn-once that sampling flags "may be ignored" on
+   the GREEDY Arm R call (do_sample=false); it does not apply to Arm S, where
+   the within-unit vote spread proves sampling took effect.
 
 ### Predictions adjudication
 
-Both scoreboard calls were WRONG on the primary gate. The orchestrator
-predicted sampled majority-vote conversion ~68-75% (at or slightly above
-greedy, per the greedy-understates precedent); observed 15.1%. The user
-predicted H3-G1 and H3-G2 both PASS; G2 passed but G1 failed, so the
-conjunction fails. The orchestrator's greedy-reproduction and placebo-margin
-calls were correct; the greedy-understates precedent did not transfer to this
-instrument's strict conversion metric.
+Both scoreboard calls are CORRECT on the corrected instrument, after both
+were provisionally scored wrong against the defective one. The orchestrator
+predicted sampled majority-vote conversion ~68-75%; observed 69.5% pooled,
+per-seed 68.1-70.8%, entirely inside the band. The user predicted H3-G1 and
+H3-G2 both PASS; both pass. The greedy-understates precedent transferred
+approximately (sampling sits slightly below greedy here, but within
+tolerance); the earlier adjudication against both calls is void with the
+instrument that produced it.
 
-One-sentence verdict (mirrored in `experiment.yaml:verdict`): the greedy arm
-reproduces the resolved 73.5%/3.1% pair exactly, but sampled-decode
-majority-vote conversion collapses to 15.1% pooled (all 5 seeds individually
-below the 63.5% floor) with delivery, sampling, and arithmetic adversarially
-verified, so the falsifier fires and the resolved headline is re-scoped to
-"one greedy decode" everywhere it is asserted, while cost (4.65%) and placebo
-specificity survive sampling.
+One-sentence verdict (mirrored in `experiment.yaml:verdict`): the resolved
+73.5%/3.1% headline survives sampled decoding on the corrected instrument,
+with pooled majority-vote conversion 69.5% (all 5 seeds above the 63.5%
+floor), cost 4.65%, and placebo margins intact, after a batched
+termination-rule defect that misgraded eos-at-final-position refusals was
+diagnosed from persisted text, fixed, repinned, and verified by
+diagnostic-parity-rerun triple agreement.

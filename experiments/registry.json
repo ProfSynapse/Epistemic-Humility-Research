@@ -2482,10 +2482,10 @@
       "question": "Does the resolved doubt-gated caution snap headline (gated confab clean_tighten 73.5%, known-correct false-refusal 3.1%), measured as a single greedy decode, survive re-measurement of the same frozen instrument under fresh harness seeds and the program's registered sampled-decode configuration (Amendment SR)?",
       "registered": true,
       "slug": "snap-seed-sampled-decode-replication",
-      "status": "falsified",
+      "status": "resolved",
       "title": "H3: Multi-Seed and Sampled-Decode Replication of the Doubt-Gated Caution Snap",
       "type": "steer-cell",
-      "verdict": "The greedy arm reproduces the resolved 73.5%/3.1% pair exactly, but sampled-decode majority-vote conversion collapses to 15.1% pooled (all 5 seeds individually below the 63.5% floor) with delivery, sampling, and arithmetic adversarially verified, so the falsifier fires and the resolved headline is re-scoped to \"one greedy decode\" everywhere it is asserted, while cost (4.65%) and placebo specificity survive sampling."
+      "verdict": "The resolved 73.5%/3.1% headline survives sampled decoding on the corrected instrument, with pooled majority-vote conversion 69.5% (all 5 seeds above the 63.5% floor), cost 4.65%, and placebo margins intact, after a batched termination-rule defect that misgraded eos-at-final-position refusals was diagnosed from persisted text, fixed, repinned, and verified by diagnostic-parity-rerun triple agreement."
     },
     {
       "checkpoint": {

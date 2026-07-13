@@ -248,3 +248,30 @@ re-resolve. No gate, threshold, seed, or metric-definition changes - this
 is an implementation corrected to match already-registered text. G0/G3
 stand (batch-1 arms, unaffected rule). Re-run queues on the 3090 behind the
 RR mistral cell.
+
+## 2026-07-13 - Corrected K=5 re-run: ALL GATES PASS; verdict revised to resolved (lead)
+
+The full K=5 Arm S re-run on the fixed, repinned harness completed cleanly
+(smoke passed first; chain launched by the lead on the freed local card).
+Gate results: G0 PASS (136/185 = 73.5% and 8/258 = 3.1%, identical to both
+prior runs), G1 PASS pooled 643/925 = 69.5% (Wilson [66.5%, 72.4%]) with
+every seed individually above the 63.5% floor (68.1-70.8%), G2 PASS pooled
+60/1290 = 4.65% with counts byte-identical to the pre-fix run (grade_one has
+no termination conjunct; the regeneration is a bit-faithful replay), G3 PASS
+with placebo numbers identical to the pre-fix run.
+
+Triple-agreement closure of the reopened instrument verification: the
+independent diagnostic predicted seed-20260710 majority-vote conversion
+130/185; the parity recompute on the fixed rule reproduced 130/185; the
+corrected re-run produced exactly 130/185. Pre-fix artifacts remain archived
+under analysis/prefix-termination-artifact-20260713/.
+
+Verdict revised: falsifier does NOT fire; the resolved 73.5%/3.1% headline
+survives sampled decoding (~4-point degradation, inside the registered
+tolerance). The superseded falsified verdict and its voiding are preserved in
+the Outcome's instrument-correction history. Predictions adjudication
+flipped with the instrument: both scoreboard calls (orchestrator ~68-75%;
+user G1+G2 both PASS) are correct on the corrected instrument. Committed
+aggregate analysis-committed/h3_summary.json regenerated from the corrected
+run and re-verified text-free. PR #283 returns to ready with the revised
+resolve.
