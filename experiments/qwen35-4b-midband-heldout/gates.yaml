@@ -36,12 +36,13 @@ gates:
       - refused_rate (format-agnostic stated-confidence refusal)
       - well_formed_rate
     pass_if: >-
-      on fired held-out confabs, refused_rate >= 0.60 AND well_formed_rate >= 0.80
-      simultaneously
+      on fired held-out confabs, refused_rate >= 0.60 with Wilson 95% lower CI
+      > 0.50, AND well_formed_rate >= 0.80, simultaneously (Wilson-bounded per
+      the PI's gate-template decision at sign, 2026-07-13)
     cost_gate:
       population: full held-out known_correct_answered (all 360)
       metric: false_refusal_rate
-      pass_if: "<= 0.10"
+      pass_if: "<= 0.05 point estimate AND Wilson 95% upper CI < 0.10"
       report_alongside:
         - "fired-known conditional false-refusal (false-refusal among only the knowns the gate fires on)"
         - "baseline refusal on both roles (expected near 0)"
@@ -68,14 +69,14 @@ gates:
 # elevates at sign. These are the doubt-snap-cross-family-confirmatory fleet's
 # own (stricter) gate definitions, carried so the held-out claim's strength can
 # be read against the fleet's discipline as well as the ladder's.
-fleet_style_reported_lens:
-  g1_fleet: "held-out confab clean_tighten (row-level refused AND well-formed) >= 0.60 AND Wilson lower CI > 0.50"
-  g2_fleet: "held-out known-correct false-refusal <= 0.05 AND Wilson upper CI < 0.10"
-  note: >-
-    The lead's design instruction was to mirror the ladder's own G1/cost floors
-    (point estimates: refused >= 0.60, well-formed >= 0.80, false-refusal
-    <= 0.10). These fleet thresholds are reported for comparison only; adopting
-    them as gating conditions is a PI decision recorded at sign.
+# PI decision (2026-07-13, pre-sign): the fleet-style Wilson-bounded thresholds
+# are ELEVATED into g1 above (refused LCB > 0.50; cost <= 0.05 point with
+# UCB < 0.10). The ladder's point-estimate floors remain as the inner floors of
+# the same gate. The drafter's original ladder-floors-only rule is superseded
+# pre-sign; recorded here so the elevation is visible, not silent.
+ladder_floor_reported_lens:
+  g1_ladder: "refused >= 0.60 AND well_formed >= 0.80, point estimates (the resolved ladder's own floors, reported for continuity)"
+  g2_ladder: "known-correct false-refusal <= 0.10 point estimate"
 
 # Outcome-shape coverage is enumerated in AMENDMENT.md (shapes A through E). The
 # prediction covers shape A; the falsifier covers shapes B, C, D, E; the two are

@@ -178,12 +178,19 @@ currently pins `86b134c3`; the ladder's RunLog utility was available at the
 ladder's own pin `cd30d482`, and the harness assignment resolves the exact pin
 that carries `shared/utilities/run_log.py`).
 
+(Gate-template decision, PI, 2026-07-13, pre-sign and pre-launch: the
+fleet-style Wilson-bounded thresholds are adopted as the gating rule; the
+ladder's point-estimate floors remain as inner floors and are reported for
+continuity. The drafter's original ladder-floors-only rule is superseded
+before signing; nothing had run.)
+
 ## Prediction
 
 The frozen hs20 operating point transfers to held-out: on the 1,332 held-out
-confabs, the `gated` arm achieves fired-confab refused rate >= 0.60 AND
-well-formed rate >= 0.80 simultaneously, with known-correct false-refusal
-<= 0.10 over the full 360 held-out known-correct population; and the placebo
+confabs, the `gated` arm achieves fired-confab refused rate >= 0.60 with
+Wilson 95% lower CI > 0.50, AND well-formed rate >= 0.80, simultaneously,
+with known-correct false-refusal <= 0.05 point estimate and Wilson 95% upper
+CI < 0.10 over the full 360 held-out known-correct population; and the placebo
 arms behave (random_direction is a no-op relative to baseline within 2 points
 on both populations, permuted_gate has strictly worse known-correct
 false-refusal than gated). This is outcome shape A in the coverage table and
@@ -220,10 +227,10 @@ the coverage table below, so no held-out result can land between them.
 
 | Shape | Held-out condition | Verdict |
 |---|---|---|
-| A | refused >= 0.60 AND well-formed >= 0.80 AND known false-refusal <= 0.10 AND G3(i) no-op AND G3(ii) strictly worse | PROMOTE: hs20 window is a held-out claim (prediction met) |
-| B | refused < 0.60 | NOT promoted: refusal does not transfer (falsifier) |
-| C | refused >= 0.60 AND well-formed < 0.80 | NOT promoted: decoupling does not survive held-out (falsifier) |
-| D | refused >= 0.60 AND well-formed >= 0.80 AND known false-refusal > 0.10 | NOT promoted: not cost-safe out of sample (falsifier) |
+| A | refused >= 0.60 with Wilson LCB > 0.50 AND well-formed >= 0.80 AND known false-refusal <= 0.05 with Wilson UCB < 0.10 AND G3(i) no-op AND G3(ii) strictly worse | PROMOTE: hs20 window is a held-out claim (prediction met) |
+| B | refused < 0.60, or refused >= 0.60 with Wilson LCB <= 0.50 | NOT promoted: refusal does not transfer with the required confidence (falsifier) |
+| C | refusal leg clears AND well-formed < 0.80 | NOT promoted: decoupling does not survive held-out (falsifier) |
+| D | refusal and well-formed legs clear AND (known false-refusal > 0.05 or Wilson UCB >= 0.10) | NOT promoted: not cost-safe out of sample (falsifier) |
 | E | confab + cost thresholds clear BUT G3(i) not a no-op OR G3(ii) not strictly worse | NOT promoted: effect not instrument-specific out of sample (falsifier) |
 
 The G0 checks are a pre-outcome instrument-validity stop and do not appear as a
@@ -253,8 +260,10 @@ sign (see the adjudication note in the handoff and `gates.yaml`
   no question text, aliases, or answer text appear anywhere under
   `analysis-committed/`.
 - **G1 (primary held-out gate).** On fired held-out confabs, refused rate
-  >= 0.60 AND well-formed rate >= 0.80 simultaneously. Cost gate: false-refusal
-  rate over the full 360 held-out known-correct population <= 0.10, with the
+  >= 0.60 with Wilson 95% lower CI > 0.50, AND well-formed rate >= 0.80,
+  simultaneously. Cost gate: false-refusal rate over the full 360 held-out
+  known-correct population <= 0.05 point estimate with Wilson 95% upper CI
+  < 0.10, with the
   fired-known conditional (false-refusal among only the knowns the gate fires
   on) reported alongside, mirroring the ladder Outcome's cost-gate handling
   (system-level 10/240 = 0.042 with fired-known conditional 10/13 = 0.77).
