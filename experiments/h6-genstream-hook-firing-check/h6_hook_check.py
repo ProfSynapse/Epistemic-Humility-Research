@@ -452,9 +452,20 @@ def evaluate_g3(noop: PassRecord, absent: PassRecord,
     nl = min(len(noop.decode_logits), len(absent.decode_logits))
     logit_checks = []
     for t in range(nl):
-        d = (noop.decode_logits[t] - absent.decode_logits[t]).abs()
-        argmax_noop = int(torch.argmax(noop.decode_logits[t]))
-        argmax_absent = int(torch.argmax(absent.decode_logits[t]))
+        a, b = noop.decode_logits[t], absent.decode_logits[t]
+        # Real vocab logits routinely carry -inf entries (suppressed/masked
+        # tokens, e.g. special tokens the model is not allowed to emit).
+        # Plain (a - b) at a position where BOTH are -inf is -inf - (-inf) =
+        # NaN, an indeterminate form, not the "these agree" zero it should
+        # be; a NaN then fails every downstream tolerance check via NaN
+        # propagation regardless of how well-behaved the actual write is.
+        # Only positions where BOTH are -inf are zeroed here; a position
+        # where just one side is -inf is a genuine divergence and its delta
+        # stays a real (correctly failing) inf, not masked away.
+        both_neg_inf = torch.isneginf(a) & torch.isneginf(b)
+        d = torch.where(both_neg_inf, torch.zeros_like(a), (a - b).abs())
+        argmax_noop = int(torch.argmax(a))
+        argmax_absent = int(torch.argmax(b))
         logit_checks.append({
             "t": t, "max_abs_delta": float(d.max()),
             "argmax_match": argmax_noop == argmax_absent,

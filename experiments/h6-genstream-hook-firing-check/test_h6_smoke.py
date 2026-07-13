@@ -172,6 +172,37 @@ def test_g1_fails_closed_on_the_ak_failure_signature():
     assert g1_mismatch["passed"] is False  # in-hook counter disagrees with the independent one
 
 
+def test_evaluate_g3_treats_shared_neg_inf_as_zero_delta_not_nan():
+    """Real vocab logits (Qwen3, confirmed on the actual GPU run) carry -inf
+    entries for suppressed tokens. Naive (a - b) at a position where BOTH
+    are -inf is the indeterminate -inf - (-inf) = NaN, which then fails
+    every downstream tolerance check via NaN propagation even though the
+    two conditions genuinely agree there. A position where only ONE side is
+    -inf is a real divergence and must still fail (delta stays inf)."""
+    on = h6.PassRecord(
+        condition="NOOP", n_generated=2, decode_hidden=[torch.zeros(4)],
+        decode_logits=[torch.tensor([1.0, -float("inf"), 2.0, -float("inf")])],
+        in_hook_total_calls=1, independent_total_calls=1, independent_decode_calls=1,
+    )
+    absent = h6.PassRecord(
+        condition="ABSENT", n_generated=2, decode_hidden=[torch.zeros(4)],
+        decode_logits=[torch.tensor([1.0, -float("inf"), 2.0, -float("inf")])],
+        in_hook_total_calls=None, independent_total_calls=1, independent_decode_calls=1,
+    )
+    g3 = h6.evaluate_g3(on, absent)
+    assert g3["logit_checks"][0]["max_abs_delta"] == 0.0
+    assert g3["passed"] is True
+
+    absent_diverged = h6.PassRecord(
+        condition="ABSENT", n_generated=2, decode_hidden=[torch.zeros(4)],
+        decode_logits=[torch.tensor([1.0, 3.0, 2.0, -float("inf")])],  # index 1 no longer -inf
+        in_hook_total_calls=None, independent_total_calls=1, independent_decode_calls=1,
+    )
+    g3_diverged = h6.evaluate_g3(on, absent_diverged)
+    assert g3_diverged["logit_checks"][0]["max_abs_delta"] == float("inf")
+    assert g3_diverged["passed"] is False
+
+
 def test_aggregate_certifies_iff_all_prompts_pass(path):
     model = _build_tiny_model()
     layer_module = _layer_module(path, model)

@@ -78,6 +78,62 @@ in `experiment.yaml`.
   Fixed: `load_bespoke_model(model_name, revision=None)` now passes
   `revision=revision, load_in_4bit=False`; `main()` forwards `args.revision`.
 
+  RELAUNCHED both paths (local 3090, 20-prompt smoke pool, decode_len=16)
+  after the above three fixes. Both paths now run to completion with no
+  crash. PATH-BESPOKE: `certified=false`, H6-G1/G2/G3 all fail,
+  `construction_check.decode_call_observed=false` on every one of the 20
+  prompts (`independent_decode_calls=0`, `in_hook_total_calls=1` uniformly,
+  `n_generated=16` confirming tokens were genuinely produced), G4 divergence
+  frac 0.0. Matches the orchestrator's registered prediction exactly.
+  PATH-TUNER (first pass, before the fourth fix below):
+  `h6_g1_passed=true`, `h6_g2_passed=false`, `h6_g3_passed=false`,
+  `certified=false` -- G3's failure traced (below) to a NEW bug, not a real
+  finding; G1's clean pass and G2's failure pattern (below) stand.
+
+  A FOURTH bug surfaced only once the run reached G3 on real Qwen3 logits
+  (the tiny CPU-smoke model's logits never carry -inf, so this was
+  unreachable before today): `evaluate_g3`'s logit comparison did
+  `(noop_logits - absent_logits).abs()` directly. Real vocab logits
+  routinely carry `-inf` for suppressed/masked tokens; at a position where
+  BOTH sides are `-inf`, `-inf - (-inf)` is the indeterminate form `NaN`,
+  not the zero it should be, and `NaN <= logit_tol` is always False in
+  Python, so a single shared-`-inf` position silently failed the whole
+  gate via NaN propagation regardless of how well-behaved the actual write
+  was. Fixed by zeroing the delta only where both sides are `-inf`
+  (`torch.isneginf(a) & torch.isneginf(b)`); a position where only ONE side
+  is `-inf` is a genuine divergence and its delta correctly stays `inf`
+  (still fails). Added a CPU unit test covering both the shared-`-inf`
+  (must pass) and one-sided-`-inf` (must still fail) cases. Re-pinned again
+  (`bin/exp repin`, second audit entry). No change to gates.yaml,
+  AMENDMENT.md thresholds, prediction, or falsifier -- this is a harness
+  arithmetic bug, not a threshold or design change.
+
+  RE-RAN PATH-TUNER after the G3 fix: `h6_g1_passed=true`,
+  `h6_g3_passed=true` (both now clean), `h6_g2_passed=false` still,
+  `certified=false`. G2's per-position pattern is not noise and not a
+  further plumbing bug: readback ratio is essentially perfect at the first
+  two decode positions (t=0: 0.996-0.998 across all 20 prompts; t=1:
+  0.996-0.998), then widens sharply at later positions (worst observed
+  ratio 0.416 and 1.773). Checked directly against G4: every one of the 8
+  prompts whose G2 fails at any position is exactly one of the 8 prompts
+  (40% of 20, matching `h6_g4_frac_prompts_with_divergence=0.4`) where the
+  ON argmax diverges from ABSENT at some decode step, and the failing G2
+  position is always at or after that prompt's own
+  `first_divergence_position` (never before). Read plainly: once the write
+  causes a genuine token-level divergence (the intervention doing exactly
+  what it is meant to do), the ON and ABSENT trajectories condition on
+  different prior tokens from that point on, so `hidden_ON - hidden_ABSENT`
+  at later positions is no longer isolating the per-step commanded write --
+  it is also carrying the accumulated effect of the KV-cache history having
+  diverged. This is a substantive interpretive question for the Outcome
+  (does G2 as literally written -- "100% of instrumented positions" -- mean
+  PATH-TUNER is not certified, or does the AMENDMENT's own G4-vs-G2
+  distinction license reading G2 as applying only up to first divergence
+  per prompt), not a harness defect; NOT resolved here, no gate or
+  threshold touched, reported to the lead for adjudication with the full
+  per-prompt g2/g4 correlation in `analysis/tuner/h6_tuner_gate_report.json`
+  (gitignored, not committed).
+
 - 2026-07-13 (LAUNCH-TIME RESOLUTION, pre-launch): the three cell.yaml
   PLACEHOLDERs left open at sign are resolved from the ak-artifact-scout's
   locate report, lead-verified against the artifacts. No gate, threshold,
