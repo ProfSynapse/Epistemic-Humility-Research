@@ -204,3 +204,47 @@ batched path misgraded terminated_naturally at a magnitude material to the
 reopened before any merge of the resolve PR.
 
 PR #283 merge recommendation: HOLD until this diagnostic lands.
+
+## 2026-07-13 - DIAGNOSTIC RESULT: G1 collapse is an instrumentation artifact; falsified verdict REOPENED (lead)
+
+The registered text-persisting diagnostic (single seed 20260710, 443 rows x 8
+samples) replayed the pinned Arm S bit-exactly (290/1344 fired-confab
+per-sample clean and 23 majority conversions, identical to the pinned run),
+certifying it as a faithful instrument. The anatomy then decomposed the
+collapse: of 1344 fired confab samples, 21.6% clean, 20.5% genuinely
+answered (write sub-dominant on those samples), 0.7% degenerate, and 57.2%
+refused-but-messy - of which 764/769 fail on the terminated_naturally
+conjunct ALONE (semantic refusal, well-formed JSON, single key, trailing
+clean). Their persisted termination inputs show eos emitted at the FINAL
+position of the generated block (eos_pos 25, n_new 26 for the dominant
+cluster), and the texts are complete clean refusals. Mechanism: Arm S
+batches 8 identical copies; the write compresses refusals to near-identical
+short lengths; samples tying for longest-in-batch have eos at the block's
+last position, and the batched rule (gen_lib._first_eos_position: "not
+terminated if eos only at the last position or never") misgrades exactly
+those. The registered metric text ("terminated naturally (stopped before
+max_new)") is unambiguous: a 26-token refusal ending in an emitted eos
+stopped before max_new=200. The batched implementation contradicts the
+registered definition; greedy's batch-1 rule (shorter than max_new) graded
+these correctly, which is why G0 reproduced while G1 collapsed.
+
+Corrected preview for seed 20260710 (terminated iff eos emitted, or block
+shorter than max_new): per-sample clean 1056/1480 = 71.4%; majority-vote
+conversion 130/185 = 70.3%, ABOVE the 63.5% floor and near greedy's 73.5%.
+The earlier red-team's surface-4 inference that the termination bias "cannot
+rescue the gate" is falsified - the bias was 57pp of fired samples, not
+marginal. Its own caveat (the conjunct was unauditable from booleans) is
+what this diagnostic closed. Credit where due: the PI's data-exhaust
+directive ("always save text") is what made this discoverable at all.
+
+Adjudication: the falsifier-fired verdict is VOIDED AS INSTRUMENTATION (the
+AK/H6 pattern). PR #283 is converted to draft; the resolve will be revised
+after the registered correction: fix gen_lib._first_eos_position semantics
+to match the registered metric text (terminated iff eos emitted anywhere;
+not-terminated only when no eos and the block hit max_new), repin with
+audit trail, re-run the full Arm S (K=5 registered seeds, unchanged
+everything else) on the fixed harness, recompute G1/G2 as registered, and
+re-resolve. No gate, threshold, seed, or metric-definition changes - this
+is an implementation corrected to match already-registered text. G0/G3
+stand (batch-1 arms, unaffected rule). Re-run queues on the 3090 behind the
+RR mistral cell.
