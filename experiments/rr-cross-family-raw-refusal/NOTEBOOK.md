@@ -6,6 +6,18 @@ in `experiment.yaml`.
 
 ## Entries
 
+- 2026-07-13 (SIGNED): both scoreboard predictions recorded (user: both
+  families shape A; orchestrator: exactly one family shape A, lean mistral,
+  other B or F) and the amendment signed. PR #281 merged earlier today, so
+  the H4 input line is in experiment.yaml (adjudication A2 closed). The five
+  lead-review rulings from the pre-sign entry stand unchanged; the PI did
+  not elevate the selectivity-on-knowns characterization to a hard gate
+  (A4 stays reported-not-gated). Harness build commissioned at sign; launch
+  on the local 3090 (free lane) after the H3 confirmatory run frees the
+  card. Any paid lane still requires fresh user approval per the Lane
+  section.
+
+
 - 2026-07-13 (LEAD REVIEW, pre-sign): draft reviewed against the drafter's
   report; structure, gate table, and coverage table verified against the
   committed files. Rulings on the five open adjudications:

@@ -473,8 +473,8 @@ staging time.
 
 | Predictor | Call |
 |-----------|------|
-| orchestrator | |
-| user | |
+| orchestrator | Exactly ONE family reaches shape A (lean mistral), the other lands in B or F: mid-band siting rescues actuation somewhere outside the Qwen lineage, but not uniformly; the confirmatory's family-deep silence at late sites is partly site-explained and partly not. (recorded 2026-07-13) |
+| user | BOTH families reach shape A: the late-site failures were a wrong-site artifact and the ladder's mid-band actuation generalizes across families; promote both. (recorded 2026-07-13) |
 
 ## Outcome
 

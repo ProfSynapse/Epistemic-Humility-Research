@@ -1,7 +1,7 @@
 slug: rr-cross-family-raw-refusal
 title: Cross-family raw-refusal actuation at atlas-located workspace-band sites
 type: steer-cell
-status: draft
+status: signed
 registered: true
 created_at: '2026-07-13T11:23:35Z'
 question: Does a doubt-gated caution write actuate raw refusal on the non-Qwen families
@@ -11,8 +11,8 @@ question: Does a doubt-gated caution write actuate raw refusal on the non-Qwen f
   on held-out?
 prediction: The doubt-gated caution write actuates clean raw refusal at the atlas-located
   workspace-band site on at least one of the two non-Qwen families; at least one of
-  {llama, mistral} reaches outcome shape A, i.e. held-out fired-confab refused >= 0.60
-  (Wilson 95% LCB > 0.50) AND well-formed >= 0.80 with known-correct false-refusal
+  {llama, mistral} reaches outcome shape A, i.e. held-out fired-confab refused >=
+  0.60 (Wilson 95% LCB > 0.50) AND well-formed >= 0.80 with known-correct false-refusal
   <= 0.05 (Wilson 95% UCB < 0.10) and the random_direction placebo a no-op within
   2 points of baseline on both populations.
 falsifier: Falsified if neither family reaches shape A, i.e. both families land in
@@ -24,14 +24,16 @@ falsifier: Falsified if neither family reaches shape A, i.e. both families land 
   a pre-outcome stop, not a shape.
 checkpoint:
   repo: cross-family (two atlas-mapped substrates)
-  revision: see cell.yaml families (revisions pinned from fleet model_matrix.yaml at sign)
+  revision: see cell.yaml families (revisions pinned from fleet model_matrix.yaml
+    at sign)
 instrument:
   configs:
   - cell.yaml
   - gates.yaml
   modules: []
-  pins: {}
-# H4 input added 2026-07-13 after PR #281 merged (closes open adjudication A2).
+  pins:
+    cell.yaml: 88c87b7ded44245d886a7aa1a822008574fc0da1cdef83ba6386f0677f0ed56a
+    gates.yaml: de5ba0e4ea824459ee4e4ccc7db7f76e8882355021ddfc9c1f0259cac3adcee9
 inputs:
 - experiments/ungated-vs-gated-dose-matched/AMENDMENT.md
 - experiments/doubt-snap-cross-family-confirmatory/AMENDMENT.md
