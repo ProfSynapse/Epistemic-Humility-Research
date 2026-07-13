@@ -1345,7 +1345,11 @@
           }
         ]
       },
-      "kg": [],
+      "kg": [
+        "experiment:h6-genstream-hook-firing-check",
+        "mechanism:unsloth-for-inference-decode-bypasses-steering-hook",
+        "mechanism:cross-trajectory-readback-fails-after-intervention-diverges"
+      ],
       "prediction": "PATH-BESPOKE fails H6-G1 (the Unsloth for_inference optimized decode loop does not route per-step through the hooked module.forward, confirming the AK section 8 confound); PATH-TUNER passes H6-G1+G2+G3 (plain-HF register_forward_hook fires every decode step, readback lands the commanded write within 5%, no-op delta is exactly zero), certifying it as the go-forward answer-window steering instrument.",
       "question": "Do steering hooks installed via the generation-stream (answer-window) path actually fire on every mid-generate() decode forward pass, and do they modify the target hidden state by exactly the commanded write, on the harness paths used to produce answer-window steering evidence (the AK bespoke Unsloth path and the tuner plain-HF path)?",
       "registered": true,
@@ -2606,7 +2610,10 @@
           "smoke_cpu.py": "094cf641352e57952838a58754c47488e3b242be9d8707a50a6d379ec8a08287"
         }
       },
-      "kg": [],
+      "kg": [
+        "experiment:ungated-vs-gated-dose-matched",
+        "mechanism:qwen3-4b-l34-dose200-write-non-selective-gate-supplies-selectivity"
+      ],
       "prediction": "Ungated known-correct damage exceeds gated by at least 15pp absolute (McNemar p < 0.001), while ungated confab conversion is at or above gated confab conversion and the gated arm stays within 15pp of it, so the doubt gate supplies the instrument's selectivity without materially sacrificing conversion.",
       "question": "When every held-out row is dosed unconditionally at the caution-snap setpoint (gate off) versus dosed only where the doubt gate fires (gate on), does the doubt gate supply the instrument's selectivity - much less known-correct damage - without materially sacrificing confab conversion?",
       "registered": true,

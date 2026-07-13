@@ -81,4 +81,7 @@ verdict: 'Neither gen_stream path is certified: the Unsloth bespoke path never r
   plain-HF path fires every decode step and lands the write at 0.996-0.998 of commanded
   on all pre-divergence positions but fails H6-G2 as registered once the steered trajectory
   diverges, leaving tuner certification to a divergence-robust successor readback.'
-kg: []
+kg:
+- experiment:h6-genstream-hook-firing-check
+- mechanism:unsloth-for-inference-decode-bypasses-steering-hook
+- mechanism:cross-trajectory-readback-fails-after-intervention-diverges

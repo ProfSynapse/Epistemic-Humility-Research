@@ -17,6 +17,7 @@ related:
 - '[[qwen35-4b-midband-doubt-snap]]'
 - '[[qwen35-4b-midband-write-decouples-refusal-from-format-collapse]]'
 - '[[known-unknown-direction]]'
+- '[[qwen3-4b-l34-dose200-write-non-selective-gate-supplies-selectivity]]'
 relationships:
 - type: supported_by
   target: '[[qwen35-4b-midband-doubt-snap]]'
@@ -34,6 +35,12 @@ relationships:
   target: '[[known-unknown-direction]]'
   target_id: term:known-unknown-direction
   confidence: medium
+- type: related_to
+  target: '[[qwen3-4b-l34-dose200-write-non-selective-gate-supplies-selectivity]]'
+  target_id: mechanism:qwen3-4b-l34-dose200-write-non-selective-gate-supplies-selectivity
+  confidence: high
+  evidence:
+  - experiments/ungated-vs-gated-dose-matched/AMENDMENT.md#outcome (binding scope statement 2)
 ---
 
 The headline hs20 dose-8 decoupling result
@@ -54,3 +61,16 @@ reading of the doubt gate as the mechanism's discriminating component: on
 this substrate the gate's job is damage limitation (dosing far fewer knowns
 than an unconditional write would) rather than manufacturing the confab/known
 gap.
+
+This is an operating-point-scoped finding, not a universal property of the
+caution write. The registered dose-every-row contrast
+`ungated-vs-gated-dose-matched` (H4) ran the same style of gated-vs-ungated
+comparison at a different substrate, site, and dose (Qwen3-4B raw-base, the
+late write site L34, dose 200) and found the opposite pattern: there,
+ungated dosing damages 60.1% of known-correct rows versus 3.1% gated, so the
+write is non-selective at that operating point and the gate is what supplies
+the selectivity
+([[qwen3-4b-l34-dose200-write-non-selective-gate-supplies-selectivity]]). The
+two results are not in tension; together they show the write's
+content-selectivity depends on where and how hard it is applied, so neither
+finding generalizes past its own substrate, site, and dose.

@@ -690,7 +690,7 @@ Atomic notes extracted from the library papers via the Agents-K1 ingestion skill
 - [[valence-arousal-subspace]] : A two-dimensional linear subspace in LLM activation space spanned by a recovered valence axis (pleasure-displeasure) and arousal axis (activ
 - [[world-model-hallucination-modes]] : A three-type taxonomy of failure modes in generative world models, each anchored to a different pipeline stage. Perceptual hallucination occ
 
-## Mechanisms (cause -> effect) (405)
+## Mechanisms (cause -> effect) (408)
 
 - [[abstention-generalization-failure]] : 'instruction-tuning for abstention on a narrow, homogeneous set of refusal expressions and task formats' **prevents** Abstention ability does not generalize to 
 - [[abstract-representations-enable-zero-shot-generalization]] : High degree of abstract (parallel) representation in ANN hidden layers, as measured by parallelism-score, indicating that compositional rule dimensions are enco
@@ -752,6 +752,7 @@ Atomic notes extracted from the library papers via the Agents-K1 ingestion skill
 - [[coverage-specific-capacity-reallocation]] : Optimizing the network for a specific target coverage rather than a single coverage-agnostic confidence ranking. **increases** Capacity is reallocated toward th
 - [[cross-entropy-calibration-couples-to-hallucination]] : Cross-entropy pretraining minimization drives calibration deviation delta toward zero **enables** Base models are structurally calibrated and therefore forced t
 - [[cross-entropy-loss-promotes-polysemanticity]] : Training neural networks on cross-entropy loss with sparse activations **increases** Individual neurons become polysemantic even without superposition, because 
+- [[cross-trajectory-readback-fails-after-intervention-diverges]] : In h6-genstream-hook-firing-check (H6), measuring the realized per-step write on the tuner plain-HF register_forward_hook path as the projection of hidden_ON mi
 - [[declarative-procedural-accuracy-gap-in-autoregressive-lms]] : Evaluating a large autoregressive language model (GPT-3 175B) on MMLU subjects that differ in whether correct answers require recall of factual propositions (de
 - [[decomposability-penalty-reduces-cooccurrence]] : Joint training of a primary sparse-autoencoder with a decomposability-penalty (MetaSAE) that penalises correlated latent activations **decreases** Reduction in 
 - [[deeper-reasoning-increases-overconfidence]] : Increasing the reasoning token budget (from RE-Low to RE-High) allocated to chain-of-thought generation before the final answer **increases** Higher ECE on wron
@@ -961,6 +962,7 @@ Atomic notes extracted from the library papers via the Agents-K1 ingestion skill
 - [[proper-scoring-sft-calibration-transfers-to-unseen-confidence-formats]] : Fine-tuning on numerical verbalized confidence (0-100%) using a proper scoring rule (tokenized Brier score) **enables** The resulting calibration transfers to l
 - [[question-difficulty-alone-predicts-llm-confidence]] : Training the auxiliary calibrator on the question text only, with the LLM's generated answer omitted. **enables** The calibrator already attains respectable cal
 - [[question-familiarity-draws-confabulation-at-matched-doubt]] : Higher surface familiarity of an unanswerable question (corpus-internal token frequency and neighbor proxies), with internal doubt level held fixed by caution-d
+- [[qwen3-4b-l34-dose200-write-non-selective-gate-supplies-selectivity]] : In ungated-vs-gated-dose-matched (H4), dosing every held-out row of the resolved doubt-gated caution snap unconditionally along its erase-write direction c_hat 
 - [[qwen35-4b-midband-write-decouples-refusal-from-format-collapse]] : On Qwen/Qwen3.5-4B (bf16, hybrid linear-attention architecture), moving the doubt-gated caution erase-write snap from the registered late write site (hs30, mode
 - [[qwen35-batch-composition-flips-greedy-decode-outcomes]] : On Qwen3.5 (bf16), running greedy-decoding generation with per-row activation-intervention arms in a larger batch (16 or 32 rows) instead of a validated smaller
 - [[qwen35-late-site-entangles-refusal-and-format-collapse]] : On Qwen/Qwen3.5-4B and Qwen/Qwen3.5-9B (bf16, hybrid linear-attention architecture), applying the doubt-gated caution erase-write snap at the registered late wr
@@ -1086,6 +1088,7 @@ Atomic notes extracted from the library papers via the Agents-K1 ingestion skill
 - [[unfamiliar-ft-examples-drive-hallucination-character]] : Supervising unfamiliar-finetuning-examples with ground-truth labels in supervised-finetuning **increases** Model's default hedged-prediction mirrors ground-trut
 - [[unknown-examples-learned-slower]] : Fine-tuning examples that introduce new factual knowledge (Unknown in slick) rather than reinforcing existing parametric knowledge **decreases** Slower gradient
 - [[unpaired-binary-signal-matches-paired-preference]] : Training with kahneman-tversky-optimization on unpaired binary desirability labels (good/bad) instead of preference-pair-data **enables** Alignment quality equa
+- [[unsloth-for-inference-decode-bypasses-steering-hook]] : In h6-genstream-hook-firing-check (H6), registering a steering hook plus an independent read-only firing counter on a target module of an Unsloth `FastLanguageM
 - [[upper-layer-values-predict-next-token]] : Position of a feed-forward layer in the upper portion of the transformer-feed-forward-layer stack **increases** Value vectors induce output vocabulary distribut
 - [[upper-mhsa-extracts-factual-attributes]] : Upper multi-head self-attention sublayers attending to both the enriched subject representation and the prediction position, guided by the relation **enables** 
 - [[value-function-verifier-resists-overfitting]] : Training the verifier as a per-token value function (correctness prediction after every solution token) rather than a single solution-level scalar. **increases*
