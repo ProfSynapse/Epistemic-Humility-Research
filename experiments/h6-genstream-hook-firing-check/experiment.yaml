@@ -33,8 +33,27 @@ instrument:
   pins:
     cell.yaml: 2d6bf0e3273d3f223a55b8405401c97ebe1ecb1000fd607df3ade81fc07d76a3
     gates.yaml: c48d9a446967108b29804ebf70881afa9848f3b3e33413ea0ce418d2557c5c53
-    h6_hook_check.py: 4cbdac9644207b40fa9aa6f4ad31b20ff4592f6ad51ce1c3ba5a64a13d485eeb
-    test_h6_smoke.py: e37d6f2a1cdf3e500f6639bd028441209d695a13a04614ace1fe8e663f124dda
+    h6_hook_check.py: fb431e6b676b0dbce7c7aa6f122cdc038166318bbb2ceb0a66e0bee4d34c0674
+    test_h6_smoke.py: 52d97fdfb62ec3c0c33a23f60793aac422897f8d8a8060d946aeabc3871d6bb8
+  repins:
+  - file: h6_hook_check.py
+    old_sha256: 4cbdac9644207b40fa9aa6f4ad31b20ff4592f6ad51ce1c3ba5a64a13d485eeb
+    new_sha256: fb431e6b676b0dbce7c7aa6f122cdc038166318bbb2ceb0a66e0bee4d34c0674
+    date: '2026-07-13T11:20:42Z'
+    reason: 'Harness-plumbing fixes: evaluate_g2 device mismatch (direction stayed
+      on CPU vs GPU hidden states), load_bespoke_model silently substituting the bnb-4bit
+      mirror and not forwarding --revision, and the pre-flight construction check
+      conflating genuine Unsloth decode-path non-firing with a harness bug. No gate/threshold/prediction/falsifier
+      text changed.'
+  - file: test_h6_smoke.py
+    old_sha256: e37d6f2a1cdf3e500f6639bd028441209d695a13a04614ace1fe8e663f124dda
+    new_sha256: 52d97fdfb62ec3c0c33a23f60793aac422897f8d8a8060d946aeabc3871d6bb8
+    date: '2026-07-13T11:20:42Z'
+    reason: 'Harness-plumbing fixes: evaluate_g2 device mismatch (direction stayed
+      on CPU vs GPU hidden states), load_bespoke_model silently substituting the bnb-4bit
+      mirror and not forwarding --revision, and the pre-flight construction check
+      conflating genuine Unsloth decode-path non-firing with a harness bug. No gate/threshold/prediction/falsifier
+      text changed.'
 inputs: []
 verdict: ''
 kg: []

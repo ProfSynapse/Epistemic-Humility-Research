@@ -93,6 +93,41 @@ def test_construction_check_recording_hook_sees_poststeer_output(path):
     )
     assert result["checked"] is True
     assert result["identical"] is False
+    assert result["decode_call_observed"] is True
+
+
+def test_diagnose_construction_check_genuine_nonfiring_does_not_raise():
+    """The Unsloth-for_inference confound this experiment exists to catch: the
+    decoder layer's forward() never gets called during decode at all (only
+    the prefill fires), so pre/post recording hooks never even see a
+    seq_len==1 call. This must be reported, not raised -- H6-G1's own
+    call-count gate is what adjudicates it. Real GPU repro: PATH-BESPOKE on
+    the actual Unsloth load, see NOTEBOOK.md."""
+    pre = {19: torch.zeros(1, 19, _HIDDEN_DIM)}  # only the prefill call fired
+    post = {19: torch.zeros(1, 19, _HIDDEN_DIM)}
+    result = h6._diagnose_construction_check(pre, post)
+    assert result["checked"] is True
+    assert result["identical"] is None
+    assert result["decode_call_observed"] is False
+
+
+def test_diagnose_construction_check_raises_when_decode_fires_but_hooks_tie():
+    """A real harness bug: the decode call DOES fire (seq_len==1 observed),
+    but the post-hook captured the same tensor as the pre-hook -- the
+    steering write is not reaching the recording hook. Must raise."""
+    pre = {19: torch.zeros(1, 19, _HIDDEN_DIM), 1: torch.ones(1, 1, _HIDDEN_DIM)}
+    post = {19: torch.zeros(1, 19, _HIDDEN_DIM), 1: torch.ones(1, 1, _HIDDEN_DIM)}
+    with pytest.raises(AssertionError, match="harness construction failure"):
+        h6._diagnose_construction_check(pre, post)
+
+
+def test_diagnose_construction_check_passes_when_decode_fires_and_differs():
+    pre = {19: torch.zeros(1, 19, _HIDDEN_DIM), 1: torch.ones(1, 1, _HIDDEN_DIM)}
+    post = {19: torch.zeros(1, 19, _HIDDEN_DIM), 1: torch.full((1, 1, _HIDDEN_DIM), 2.0)}
+    result = h6._diagnose_construction_check(pre, post)
+    assert result["checked"] is True
+    assert result["identical"] is False
+    assert result["decode_call_observed"] is True
 
 
 def test_gate_pipeline_passes_on_tiny_plain_hf_model(path):

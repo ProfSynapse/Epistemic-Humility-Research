@@ -6,6 +6,78 @@ in `experiment.yaml`.
 
 ## Entries
 
+- 2026-07-13 (HARNESS-PLUMBING FIXES, pre-relaunch): the first launch attempt
+  failed on both paths, harness plumbing on both, not model results. Fixed,
+  re-pinned (`bin/exp repin`, audit trail in `instrument.repins`), CPU smoke
+  re-run (10/10 pytest, up from 7). No change to gates.yaml, AMENDMENT.md
+  thresholds, prediction, or falsifier.
+
+  FAILURE 1 (PATH-TUNER, `evaluate_g2`): `RuntimeError` device mismatch on
+  `delta @ d64`. Root cause: `direction_unit` comes from
+  `load_direction_json`, which never moves the tensor off CPU; `decode_hidden`
+  entries are captured inside the forward hook and live on the model's
+  device (cuda for the real run). Fixed by moving `d64` once (outside the
+  per-position loop) to `on.decode_hidden[0].device`, rather than moving
+  every per-position delta to CPU -- one small direction-vector transfer
+  instead of many large hidden-state transfers. `evaluate_g3` was checked
+  and does not have the same bug: it never touches `direction_unit`, only
+  compares hidden/logit tensors that both come from the same forward-hook
+  capture path and therefore already share a device.
+
+  FAILURE 2 (PATH-BESPOKE, `assert_recording_hook_observes_poststeer_output`):
+  pre-flight `AssertionError` "recording hook observed the PRE-steer output".
+  DIAGNOSED before fixing, per the lead's instruction, with a standalone GPU
+  probe (not committed) that registered a plain counting hook alongside the
+  real ON-condition controller and ran the exact 2-new-token generate() the
+  pre-flight uses: `controller._nth_call` reported 1, the independent
+  counting hook fired exactly once with `seq_len=19` (the prompt length,
+  i.e. the prefill call), and no seq_len==1 (decode-step) call was ever
+  observed, despite `n_generated=2` confirming two tokens were genuinely
+  produced. This is NOT a harness bug: it is the AK section-8 confound this
+  experiment exists to certify -- Unsloth's `for_inference` optimized decode
+  path bypasses the hooked module's `forward()` entirely during cached
+  decode, so neither the steering hook nor any recording hook registered on
+  that module can ever observe a decode step. The old pre-flight code
+  compared "whatever was captured last" and treated the resulting pre==post
+  equality (both readings coming from the same never-steered prefill call)
+  as a construction failure, when the correct read is "there was no decode
+  call to observe in the first place."
+
+  Fixed by keying both hooks' captures by `seq_len` (so the prefill capture
+  and a genuine decode capture can never be confused with each other) and
+  splitting the decision into two outcomes: if no `seq_len==1` capture ever
+  occurs, return a recorded, non-raising result
+  (`decode_call_observed: False`) and let the run proceed -- H6-G1's own
+  exact-equality-of-call-counts gate is what adjudicates this path's
+  certification, not this pre-flight check. If a `seq_len==1` capture DOES
+  occur but pre and post are identical there, still raise (that remains a
+  genuine harness construction failure). Split the decision logic into a
+  pure `_diagnose_construction_check(pre_hidden_by_seqlen,
+  post_hidden_by_seqlen)` function so both outcomes are unit-testable on CPU
+  with synthetic dicts (added 3 new tests: genuine non-firing does not
+  raise, decode-fires-but-hooks-tie does raise, decode-fires-and-differs
+  passes clean). `evaluate_g1`/`evaluate_g2`/`evaluate_g3` were checked and
+  already fail closed correctly when `decode_hidden`/`decode_logits` are
+  empty (the `bool(positions)` / `bool(hidden_deltas)` / `bool(logit_checks)`
+  guards make an empty-list result FAIL, not a vacuous pass) -- no change
+  needed there; this confound will show up as an H6-G1 FAIL for
+  PATH-BESPOKE in the real run, exactly as the orchestrator's registered
+  prediction expects, not as a harness crash.
+
+  ALSO (unsolicited but confirmed present): `load_bespoke_model` passed
+  `load_in_4bit=True` unconditionally and never forwarded `--revision`. The
+  launch log showed Unsloth loading `unsloth/qwen3-4b-unsloth-bnb-4bit`
+  instead of the pinned `unsloth/Qwen3-4B`. Confirmed via
+  `inspect.signature(FastLanguageModel.from_pretrained)` that `revision` is
+  a real, passed-through kwarg. `load_in_4bit=True` is what triggers
+  Unsloth's silent substitution of its own pre-quantized mirror for a plain
+  base-model name; `load_in_4bit=False` avoids the substitution entirely
+  (the unquantized 4B model fits the 24GB 3090 easily, so there is no
+  memory reason to accept it) and is truer to cell.yaml's bf16 pin than
+  trying to force `use_exact_model_name=True` while keeping quantization.
+  Fixed: `load_bespoke_model(model_name, revision=None)` now passes
+  `revision=revision, load_in_4bit=False`; `main()` forwards `args.revision`.
+
 - 2026-07-13 (LAUNCH-TIME RESOLUTION, pre-launch): the three cell.yaml
   PLACEHOLDERs left open at sign are resolved from the ak-artifact-scout's
   locate report, lead-verified against the artifacts. No gate, threshold,

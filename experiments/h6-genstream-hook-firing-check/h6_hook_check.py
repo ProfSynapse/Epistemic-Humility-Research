@@ -281,27 +281,43 @@ def assert_recording_hook_observes_poststeer_output(
     steering hook returns a new tuple, not the module's raw pre-steer
     output. Verified directly: capture the hidden state seen by a hook
     registered BEFORE the controller (pre) and a hook registered AFTER it
-    (post), under the ON condition, keeping only the LAST forward call's
-    capture. Two new tokens are requested (not one) so that last call is a
-    genuine decode step: gen_stream mode skips the prefill call entirely
-    (both controllers' documented contract), so a single-token generate()
-    would only ever exercise the never-steered prefill call and pass this
-    check vacuously. If pre and post are identical at the decode step, the
-    post-hook is not seeing the edit -- fail loudly, per the AMENDMENT's
-    explicit instruction, rather than let G2 silently measure the wrong
-    tensor.
+    (post), under the ON condition, keyed by seq_len so the decode-step
+    (seq_len == 1) capture is never confused with the prefill capture. Two
+    new tokens are requested (not one) so a genuine decode step is possible:
+    gen_stream mode skips the prefill call entirely (both controllers'
+    documented contract), so a single-token generate() would only ever
+    exercise the never-steered prefill call and pass this check vacuously.
+
+    Two decode-call outcomes are both legitimate and must be told apart,
+    rather than both raising:
+
+    (a) the decoder layer's forward() IS invoked during decode (a seq_len==1
+        call is observed), but the post-hook's capture there is identical to
+        the pre-hook's: the steering write genuinely is not reaching the
+        recording hook meant to observe it -- this is a harness construction
+        failure. Fail loudly, per the AMENDMENT's explicit instruction,
+        rather than let G2 silently measure the wrong tensor.
+    (b) the decoder layer's forward() is NEVER invoked during decode at all
+        (no seq_len==1 call observed across the whole pass, only the
+        prefill fires): this is not a harness bug to patch over, it is the
+        AK-diagnosed confound this experiment exists to certify -- an
+        optimized decode path that bypasses the hooked module entirely, so
+        nothing downstream of it (steering hook OR recording hook) can ever
+        see a decode-time edit. Record the finding and let the run proceed;
+        H6-G1's own exact-equality-of-call-counts gate is what adjudicates
+        this path's certification, not this pre-flight check.
     """
-    pre_captured: dict = {}
-    post_captured: dict = {}
+    pre_hidden_by_seqlen: dict[int, torch.Tensor] = {}
+    post_hidden_by_seqlen: dict[int, torch.Tensor] = {}
 
     def pre_hook(module, inputs, output):
         hidden = output[0] if isinstance(output, tuple) else output
-        pre_captured["hidden"] = hidden.detach().to(torch.float64).clone()
+        pre_hidden_by_seqlen[int(hidden.shape[1])] = hidden.detach().to(torch.float64).clone()
         return None
 
     def post_hook(module, inputs, output):
         hidden = output[0] if isinstance(output, tuple) else output
-        post_captured["hidden"] = hidden.detach().to(torch.float64).clone()
+        post_hidden_by_seqlen[int(hidden.shape[1])] = hidden.detach().to(torch.float64).clone()
         return None
 
     conditions = conditions_builder(direction, commanded_dose)
@@ -323,21 +339,48 @@ def assert_recording_hook_observes_poststeer_output(
         ctrl_handle.remove()
         post_handle.remove()
 
-    pre_h = pre_captured.get("hidden")
-    post_h = post_captured.get("hidden")
-    identical = bool(pre_h is not None and post_h is not None
-                    and torch.equal(pre_h, post_h))
+    return _diagnose_construction_check(pre_hidden_by_seqlen, post_hidden_by_seqlen)
+
+
+def _diagnose_construction_check(
+    pre_hidden_by_seqlen: dict, post_hidden_by_seqlen: dict,
+) -> dict:
+    """Pure decision logic for assert_recording_hook_observes_poststeer_output,
+    split out so both outcomes (genuine non-firing vs. a real harness bug)
+    are unit-testable on CPU with synthetic dicts, without needing a real
+    generate() call that skips the hooked module's forward() during decode
+    (which only happens inside Unsloth's real fused kernels)."""
+    decode_call_observed = 1 in pre_hidden_by_seqlen
+    if not decode_call_observed:
+        return {
+            "checked": True, "identical": None, "decode_call_observed": False,
+            "note": "the decoder layer's forward() was never invoked with a "
+                    "seq_len==1 (decode-step) call across this generate() "
+                    "pass -- only the prefill call fired. Not a harness "
+                    "construction failure: the optimized decode path "
+                    "bypasses the hooked module entirely on this path, so "
+                    "neither the steering hook nor this recording hook can "
+                    "observe anything at decode time. H6-G1's own call-count "
+                    "gate is what adjudicates this path's certification.",
+        }
+
+    pre_h = pre_hidden_by_seqlen[1]
+    post_h = post_hidden_by_seqlen.get(1)
+    identical = bool(post_h is not None and torch.equal(pre_h, post_h))
     if identical:
         raise AssertionError(
-            "recording hook observed the PRE-steer output (identical to the "
-            "hook registered before the controller); the post-steer readback "
-            "in G2/G3 is not measuring the delivered write. This is a "
-            "harness construction failure, not a model result."
+            "the decode-step forward call fired (seq_len==1 observed), but "
+            "the recording hook registered AFTER the steering controller "
+            "captured the SAME hidden state as the hook registered BEFORE "
+            "it; the post-steer readback in G2/G3 is not measuring the "
+            "delivered write. This is a harness construction failure, not "
+            "a model result."
         )
     return {
-        "checked": True, "identical": identical,
+        "checked": True, "identical": False, "decode_call_observed": True,
         "note": "post-steer recording hook confirmed to observe the replaced "
-                "(post-steer) output, distinct from the pre-steer output.",
+                "(post-steer) output at a genuine decode-step call, distinct "
+                "from the pre-steer output.",
     }
 
 
@@ -379,8 +422,15 @@ def evaluate_g1(on: PassRecord, decode_len: int) -> dict:
 
 def evaluate_g2(on: PassRecord, absent: PassRecord, direction_unit: torch.Tensor,
                 commanded_dose: float, tol: float = 0.05) -> dict:
-    d64 = direction_unit.to(torch.float64)
     n = min(len(on.decode_hidden), len(absent.decode_hidden))
+    # direction_unit comes from load_direction_json, which never moves it off
+    # CPU; on.decode_hidden entries are captured inside the forward hook, so
+    # they live on the model's device (cuda for the real run, cpu for the
+    # tiny-model smoke). Move the direction once, to wherever the hidden
+    # states actually are, rather than moving every per-position delta.
+    d64 = direction_unit.to(torch.float64)
+    if n and d64.device != on.decode_hidden[0].device:
+        d64 = d64.to(on.decode_hidden[0].device)
     positions = []
     for t in range(n):
         delta = on.decode_hidden[t] - absent.decode_hidden[t]
@@ -499,11 +549,20 @@ def load_tuner_model(model_name: str, revision: Optional[str] = None):
     return model, tokenizer
 
 
-def load_bespoke_model(model_name: str):
+def load_bespoke_model(model_name: str, revision: Optional[str] = None):
+    """load_in_4bit=False for fidelity to cell.yaml's bf16 pin: with
+    load_in_4bit=True, Unsloth silently substitutes its own pre-quantized
+    mirror (observed: unsloth/qwen3-4b-unsloth-bnb-4bit) for a plain base
+    model name, which is a different artifact from the one cell.yaml pins.
+    The unquantized 4B model fits a 24GB 3090 easily, so there is no
+    memory reason to accept that substitution here. revision is forwarded
+    (FastLanguageModel.from_pretrained accepts it) so the pinned commit is
+    the one actually loaded, not silently whatever "main" resolves to."""
     from unsloth import FastLanguageModel
 
     model, tokenizer = FastLanguageModel.from_pretrained(
-        model_name=model_name, max_seq_length=2048, dtype=None, load_in_4bit=True,
+        model_name=model_name, max_seq_length=2048, dtype=None,
+        load_in_4bit=False, revision=revision,
     )
     if tokenizer.pad_token_id is None:
         tokenizer.pad_token = tokenizer.eos_token
@@ -561,7 +620,7 @@ def main(argv: Optional[list[str]] = None) -> int:
     _require_gpu_ack(args.i_know_this_runs_on_gpu)
 
     if args.path == "bespoke":
-        model, tokenizer = load_bespoke_model(args.model)
+        model, tokenizer = load_bespoke_model(args.model, revision=args.revision)
         layer_module = bespoke_get_decoder_layer(model, args.layer)
     else:
         model, tokenizer = load_tuner_model(args.model, args.revision)
