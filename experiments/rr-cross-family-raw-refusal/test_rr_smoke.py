@@ -331,6 +331,117 @@ def test_materialize_precondition_report_when_staged_inputs_absent(tmp_path):
 
 
 # ---------------------------------------------------------------------------
+# extract_anchors_at_candidate_layers: the CPU slice over already-staged
+# atlas capture tensors that dose_ladder.py's `anchors_at_candidate_layers.json`
+# precondition needs (the missing step this launch attempt surfaced).
+# ---------------------------------------------------------------------------
+
+def _write_synthetic_capture(capture_dir: Path, rows: dict[str, dict[int, list[float]]]) -> None:
+    """rows: {row_key: {layer: vector}}. Writes one safetensors file per row
+    (mirroring the atlas's own per-row file layout closely enough for this
+    slice's purposes) plus the capture.jsonl index the real atlas captures
+    ship."""
+    from safetensors.numpy import save_file
+
+    capture_dir.mkdir(parents=True, exist_ok=True)
+    index = []
+    for rk, per_layer in rows.items():
+        fname = f"{rk}.safetensors"
+        tensors = {mrows.anchor_tensor_key(layer): np.asarray(vec, dtype=np.float32) for layer, vec in per_layer.items()}
+        save_file(tensors, str(capture_dir / fname))
+        index.append({"id": rk, "file": fname})
+    with (capture_dir / "capture.jsonl").open("w", encoding="utf-8") as fh:
+        for rec in index:
+            fh.write(json.dumps(rec) + "\n")
+
+
+def test_extract_anchors_at_candidate_layers_writes_expected_schema(tmp_path):
+    capture_dir = tmp_path / "atlas_capture"
+    _write_synthetic_capture(capture_dir, {
+        "row_a": {20: [1.0, 2.0, 3.0], 22: [4.0, 5.0, 6.0]},
+        "row_b": {20: [7.0, 8.0, 9.0], 22: [10.0, 11.0, 12.0]},
+    })
+    anchors = mrows.extract_anchors_at_candidate_layers(["row_a", "row_b"], [20, 22], capture_dir)
+    assert set(anchors) == {"row_a", "row_b"}
+    assert anchors["row_a"]["20"] == [1.0, 2.0, 3.0]
+    assert anchors["row_a"]["22"] == [4.0, 5.0, 6.0]
+    assert anchors["row_b"]["20"] == [7.0, 8.0, 9.0]
+    # JSON-round-trippable: this is exactly what dose_ladder.py reads back.
+    round_tripped = json.loads(json.dumps(anchors))
+    assert round_tripped == anchors
+
+
+def test_extract_anchors_at_candidate_layers_raises_loudly_on_missing_row(tmp_path):
+    capture_dir = tmp_path / "atlas_capture"
+    _write_synthetic_capture(capture_dir, {"row_a": {20: [1.0, 2.0]}})
+    with pytest.raises(SystemExit):
+        mrows.extract_anchors_at_candidate_layers(["row_a", "row_missing"], [20], capture_dir)
+
+
+def test_extract_anchors_at_candidate_layers_raises_loudly_on_missing_layer(tmp_path):
+    capture_dir = tmp_path / "atlas_capture"
+    _write_synthetic_capture(capture_dir, {"row_a": {20: [1.0, 2.0]}})
+    with pytest.raises(SystemExit):
+        mrows.extract_anchors_at_candidate_layers(["row_a"], [20, 22], capture_dir)
+
+
+def test_materialize_full_success_path_writes_anchors_at_candidate_layers_json(tmp_path, monkeypatch):
+    """End-to-end wiring check on the success path (staged inputs present):
+    cmd_materialize must write analysis/<family>/anchors_at_candidate_layers.json
+    with one entry per joined row, matching dose_ladder.py's/heldout_scorer.py's
+    read schema exactly. Bypasses the real cell.yaml heldout_power floors
+    (150 confab / 250 known, unrelated to this slice step) with a tiny
+    synthetic split so the fixture stays small; heldout-power arithmetic
+    itself is already covered for real against cell.yaml by
+    test_load_split_manifest_and_heldout_power_matches_cell_yaml_for_both_families."""
+    import argparse
+
+    family = "llama"
+    split_rows = [
+        {"row_key": "k_confab_fit", "role": "confab", "split": "fit"},
+        {"row_key": "k_confab_held", "role": "confab", "split": "held_out"},
+        {"row_key": "k_known_held", "role": "known_correct_answered", "split": "held_out"},
+    ]
+    monkeypatch.setattr(mrows, "load_split_manifest", lambda fam: split_rows)
+    monkeypatch.setattr(mrows, "check_heldout_power", lambda fam, rows: {
+        "confab_held_out": 1, "known_correct_answered_held_out": 1,
+        "matches_cell_yaml": True, "floors_pass": True,
+        "cell_yaml_expected": {"confab": 1, "known_correct_answered": 1},
+    })
+
+    row_pool_path = tmp_path / "split_rows_private.jsonl"
+    with row_pool_path.open("w", encoding="utf-8") as fh:
+        for r in split_rows:
+            fh.write(json.dumps({"row_key": r["row_key"], "question": "q", "aliases": ["a"]}) + "\n")
+
+    fcell = mrows.family_cell(family)
+    capture_dir = tmp_path / "atlas_capture"
+    _write_synthetic_capture(capture_dir, {
+        r["row_key"]: {layer: [float(layer), 0.0] for layer in fcell["candidate_layers"]}
+        for r in split_rows
+    })
+
+    args = argparse.Namespace(
+        family=family, row_pool=str(row_pool_path), atlas_capture_dir=str(capture_dir), out_dir=str(tmp_path),
+    )
+    mrows.cmd_materialize(args)
+
+    anchors_path = tmp_path / "analysis" / family / "anchors_at_candidate_layers.json"
+    assert anchors_path.is_file()
+    anchors = json.loads(anchors_path.read_text())
+    assert set(anchors) == {r["row_key"] for r in split_rows}
+    for r in split_rows:
+        for layer in fcell["candidate_layers"]:
+            assert anchors[r["row_key"]][str(layer)] == [float(layer), 0.0]
+
+    report = json.loads((tmp_path / "analysis" / family / "materialize_report.json").read_text())
+    assert report["anchors_extracted"]["matches_joined_pool"] is True
+    assert report["anchors_extracted"]["n_rows_extracted"] == len(split_rows)
+    manifest = json.loads((tmp_path / "analysis-committed" / family / "materialize_manifest.json").read_text())
+    assert manifest["anchors_extracted"]["n_rows_extracted"] == len(split_rows)
+
+
+# ---------------------------------------------------------------------------
 # steer_lib: real write + readback + batched-vs-sequential parity, tiny
 # CPU model, mirroring H4/H6's CPU smoke pattern (G0 parity_smoke check).
 # ---------------------------------------------------------------------------

@@ -2338,11 +2338,11 @@
           "gen_lib.py": "a15149b3d3e2424aff1efda9131b8f13e647a173aebd3eb6ade94cd5e574f641",
           "grader.py": "54b8af60f2f287c85f3bc4a2d0c8f8ed09f685f10090bb3ef953116d1667b52c",
           "heldout_scorer.py": "7d6df7ed510f61ee385ab17a56454478519bde08addac812a3fb1dc6432b4dee",
-          "materialize_rows.py": "3d37ebcfcb33ec4fa7d1f30cbdb54bd9294531715b03a1d78cf19297c66c0d1b",
+          "materialize_rows.py": "9056303374328f3f1503f240f24fe7a99d469a7a845d4539e5f654703f3b4736",
           "pipeline.py": "49964839c1d1ca6aa620d5477fa4cc07ff20e25291272f4dcf481e640796c010",
           "render.py": "fa378bdbcfd185f9f8bcdbeb1209cbe180b9ec50e92f9342ea7d7421ff6b3ab3",
           "steer_lib.py": "0701211660292de9d1ee30080c1c5f2cbddb856baa1a3608a20fa246531f5250",
-          "test_rr_smoke.py": "c9a721603ee344b3157d5e1e75777941103e1d0b81375e11246fb372b73362c6"
+          "test_rr_smoke.py": "8a59ed82d6152543c0371ef3a29fd550c069c8ee056da30a495e4c205c60487f"
         },
         "repins": [
           {
@@ -2351,6 +2351,20 @@
             "new_sha256": "6356511cccf848aa3185c1b4af3bcfef43a051d7e31da7f9bd9814c173b43d46",
             "old_sha256": "88c87b7ded44245d886a7aa1a822008574fc0da1cdef83ba6386f0677f0ed56a",
             "reason": "resolve the four placeholders that survived sign (two family revisions from fleet model_matrix.yaml, lead-verified against the SSOT; synaptic-tuner submodule pin; gpu python). No threshold, arm, dose, or gate content changed."
+          },
+          {
+            "date": "2026-07-13T15:34:05Z",
+            "file": "materialize_rows.py",
+            "new_sha256": "9056303374328f3f1503f240f24fe7a99d469a7a845d4539e5f654703f3b4736",
+            "old_sha256": "3d37ebcfcb33ec4fa7d1f30cbdb54bd9294531715b03a1d78cf19297c66c0d1b",
+            "reason": "add extract_anchors_at_candidate_layers() (CPU slice over already-staged atlas capture tensors) and wire into cmd_materialize's success path to write analysis/<family>/anchors_at_candidate_layers.json, closing the dose_ladder.py launch-blocking gap; extend CPU smoke with 4 new tests covering the slice (synthetic safetensors fixtures) and the full materialize success-path wiring"
+          },
+          {
+            "date": "2026-07-13T15:34:05Z",
+            "file": "test_rr_smoke.py",
+            "new_sha256": "8a59ed82d6152543c0371ef3a29fd550c069c8ee056da30a495e4c205c60487f",
+            "old_sha256": "c9a721603ee344b3157d5e1e75777941103e1d0b81375e11246fb372b73362c6",
+            "reason": "add extract_anchors_at_candidate_layers() (CPU slice over already-staged atlas capture tensors) and wire into cmd_materialize's success path to write analysis/<family>/anchors_at_candidate_layers.json, closing the dose_ladder.py launch-blocking gap; extend CPU smoke with 4 new tests covering the slice (synthetic safetensors fixtures) and the full materialize success-path wiring"
           }
         ]
       },

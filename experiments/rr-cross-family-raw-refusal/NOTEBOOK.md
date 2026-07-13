@@ -6,6 +6,49 @@ in `experiment.yaml`.
 
 ## Entries
 
+- 2026-07-13 (ANCHOR-EXTRACTION FIX): llama launch bounced in 1 second:
+  `dose_ladder.py` exited on `missing analysis/llama/
+  anchors_at_candidate_layers.json`. The materialize module's docstring and
+  the anchor_coverage note both said this file was a "GPU capture step,
+  deferred" -- that premise was true only until staging landed. Once the
+  stager pulled the full atlas captures locally (both families staged with
+  `--layers all`, coverage 1.00, confirmed via the atlas's own
+  `atlas_capture/capture.jsonl`), extracting the candidate-layer anchors out
+  of those already-captured tensors is a pure CPU slice, not a GPU step: the
+  layers this cell needs are already sitting in the staged safetensors
+  files. Added `extract_anchors_at_candidate_layers()` to
+  `materialize_rows.py` (wraps the existing `load_anchor_tensors`, which
+  already raises loudly on any row or candidate-layer key missing from the
+  staged capture) and wired it into `cmd_materialize`'s success path, right
+  after `check_anchor_coverage` passes: writes `analysis/<family>/
+  anchors_at_candidate_layers.json` (private, gitignored, one entry per
+  joined row, `{row_key: {str(layer): [float, ...]}}`, the exact schema
+  `dose_ladder.py` and `heldout_scorer.py` already read) and records
+  `anchors_extracted` (row-count parity with the joined pool) in both the
+  private `materialize_report.json` and the committed `materialize_manifest.json`
+  aggregate. `matches_joined_pool` is asserted, not just reported: a
+  mismatch raises `SystemExit` before any file is written, since given
+  `load_anchor_tensors`' own semantics that should be unreachable and would
+  flag a real wiring bug, not a data gap.
+  Ran for real against the now-staged inputs: llama 2956/2956 rows
+  extracted at layers [20, 22, 23] (516 MB `anchors_at_candidate_layers.json`,
+  ~62 s of file I/O across 2956 per-row safetensors files); mistral
+  extraction launched the same way (see the launch report for its own
+  count). This step is a one-time-per-family cost paid once during
+  materialize, not on every dose-ladder or held-out invocation.
+  CPU smoke extended: `test_extract_anchors_at_candidate_layers_writes_expected_schema`,
+  `..._raises_loudly_on_missing_row`, `..._raises_loudly_on_missing_layer`
+  (synthetic safetensors fixtures via `safetensors.numpy.save_file`), and
+  `test_materialize_full_success_path_writes_anchors_at_candidate_layers_json`
+  (end-to-end wiring on a tiny synthetic split, `check_heldout_power`
+  monkeypatched to bypass the real 150/250 floors so the fixture stays
+  small -- those floors are already covered for real elsewhere). 37/37
+  green (`python3 -m pytest test_rr_smoke.py -v`). Repinned
+  `materialize_rows.py` and `test_rr_smoke.py` in `experiment.yaml` via
+  `bin/exp repin` (both were already in `instrument.pins`; their content
+  changed, their hashes did not exist before this fix). No changes to
+  cell.yaml or gates.yaml.
+
 - 2026-07-13 (POST-SIGN REPAIR + BUILD REVIEW): lead review of the harness
   build (commit c12e0578, 11 modules + 33-test CPU smoke all green). The
   builder's seven adjudications are ACCEPTED, including the layer-index

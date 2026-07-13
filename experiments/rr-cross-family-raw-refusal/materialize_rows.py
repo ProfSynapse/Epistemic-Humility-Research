@@ -18,7 +18,14 @@ Joins, per family:
      `synaptic-tuner/tuner/batch/engines/hf_batched.py:_capture_chunk`'s
      naming convention, confirmed by reading that module). This is ALSO
      PRIVATE and not committed; it must be staged (e.g. `modal volume get`
-     from the atlas's capture run) before anchors can be extracted.
+     from the atlas's capture run) before anchors can be extracted. Once
+     staged, extraction itself (`extract_anchors_at_candidate_layers`) is a
+     pure CPU slice over the already-captured tensors, not a GPU step: the
+     atlas requested `--layers all`, so every candidate layer this cell
+     needs is already sitting in the staged safetensors files. This module's
+     success path writes the slice to `analysis/<family>/
+     anchors_at_candidate_layers.json` (private, gitignored), the file
+     `dose_ladder.py` and `heldout_scorer.py` both read anchors from.
 
 Layer-index-convention resolution (cell.yaml's own open item, "pinned at sign
 from the atlas's committed atlas_summary.json"): read in full before writing
@@ -261,6 +268,27 @@ def load_anchor_tensors(
     return out
 
 
+def extract_anchors_at_candidate_layers(
+    row_keys: list[str], candidate_layers: list[int], capture_dir: Path,
+) -> dict[str, dict[str, list[float]]]:
+    """Slices the candidate-layer anchors out of the atlas's ALREADY-STAGED
+    full-depth capture tensors, once staging has landed. This is a pure CPU
+    operation over data the atlas already captured (`--layers all`, coverage
+    1.00 per family per jspace-family-atlas/AMENDMENT.md:47-52); it is not
+    the GPU recapture that `check_anchor_coverage`'s `recapture_rule` covers
+    for a genuinely missing layer. Wraps `load_anchor_tensors` (which raises
+    loudly, via SystemExit, on any row_key absent from the capture index or
+    any candidate layer absent from a captured row's own tensors) and
+    reshapes its output into the JSON-safe schema `dose_ladder.py` and
+    `heldout_scorer.py` both read from `anchors_at_candidate_layers.json`:
+    `{row_key: {str(layer): [float, ...]}}`."""
+    per_row = load_anchor_tensors(row_keys, candidate_layers, capture_dir)
+    return {
+        rk: {str(layer): per_row[rk][layer].tolist() for layer in candidate_layers}
+        for rk in row_keys
+    }
+
+
 def cmd_materialize(args: argparse.Namespace) -> None:
     out_dir = Path(args.out_dir) if getattr(args, "out_dir", None) else HERE
     fcell = family_cell(args.family)
@@ -320,8 +348,28 @@ def cmd_materialize(args: argparse.Namespace) -> None:
         write_json(pdir / "materialize_report.json", result)
         raise SystemExit(f"G0 anchor_coverage FAIL: {coverage['missing_row_count']} rows missing")
 
+    row_keys = [r["row_key"] for r in joined]
+    anchors = extract_anchors_at_candidate_layers(row_keys, fcell["candidate_layers"], capture_dir)
+    anchors_extracted = {
+        "n_rows_extracted": len(anchors),
+        "n_rows_joined": len(joined),
+        "matches_joined_pool": len(anchors) == len(joined) and set(anchors) == set(row_keys),
+        "candidate_layers": fcell["candidate_layers"],
+    }
+    result["anchors_extracted"] = anchors_extracted
+    if not anchors_extracted["matches_joined_pool"]:
+        pdir = out_dir / "analysis" / args.family
+        write_json(pdir / "materialize_report.json", result)
+        raise SystemExit(
+            f"anchor extraction row count {len(anchors)} does not match the "
+            f"joined pool ({len(joined)}); this should be unreachable given "
+            f"load_anchor_tensors' own loud-raise semantics, so it flags a "
+            f"real bug in this wiring, not a data gap."
+        )
+
     pdir = out_dir / "analysis" / args.family
     write_jsonl(pdir / "joined_rows_private.jsonl", joined)
+    write_json(pdir / "anchors_at_candidate_layers.json", anchors)
     write_json(pdir / "materialize_report.json", result)
     cdir = out_dir / "analysis-committed" / args.family
     write_json(cdir / "materialize_manifest.json", {
@@ -329,6 +377,7 @@ def cmd_materialize(args: argparse.Namespace) -> None:
         "model": fcell["model"], "revision": revision,
         "candidate_layers": fcell["candidate_layers"], "heldout_power": power,
         "anchor_coverage": {k: v for k, v in coverage.items() if k != "missing_row_keys_sample"},
+        "anchors_extracted": anchors_extracted,
         "rows": [
             {"row_key": r["row_key"], "role": r["role"], "split": r.get("split"),
              "source": r.get("source"), "category_canon": r.get("category_canon")}
