@@ -292,3 +292,36 @@ registered text changed; no contaminated number was read as a result.
 Standing correction adopted: on this lane the lead owns all launches, and a
 detached launch is not complete until its PID/log/liveness report lands
 before the launching agent goes idle.
+
+## 2026-07-13 - Llama leg adjudicated: instrument-verified shape F (lead)
+
+The clean relaunch completed the full llama cell (21 rungs, 6487s wall). The
+harness readout is shape F: no FIT-viable (layer, dose) exists in the
+bracket; selected_operating_point null; held-out correctly skipped. Per the
+adopt-no-null-from-an-uncertified-instrument rule, an adversarial red-team
+audited five surfaces before this adjudication and returned SOUND on all
+five: (1) grader fidelity on llama format, including a quantified attack on
+the locked canonical-phrase refusal detector - crediting every hand-found
+llama-idiom abstention at the best well-formed rung still reaches only
+0.457 < 0.60; the well_formed collapse at high dose is genuine repetition
+degeneration, not a parser artifact; (2) delivery faithful at all 21 rungs
+on all three layers (measured readback tracks commanded dose; hs22/hs23
+weakness is genuine layer potency); (3) grid executed exactly as registered
+(7 doses x 3 layers, dose_abs = mult x sigma_c verified, populations match
+cell.yaml); (4) independent viability recompute confirms zero rungs clear
+both FIT floors; (5) the interpolation gap is closed - the well_formed and
+refused admissible regions are disjoint on the continuous dose axis, so F
+holds between rungs too. The audit used only the clean runlog, never the
+quarantine.
+
+Adjudication: the llama leg is F, straight. Binding interpretation caveat
+for the Outcome (red-team wording, adopted): as-graded refusal is a LOWER
+BOUND on abstention-like behavior because the locked detector counts only
+canonical phrases; F reads as "no clean canonical-refusal-with-intact-JSON
+operating window at the atlas sites in the bracketed grid," not "the write
+induces no abstention pressure" - the pressure is clear and dose-monotone
+but never resolves into clean well-formed refusal. Scoreboard note, recorded
+before the mistral leg runs: the user's "both families shape A" call is
+already falsified on the llama leg; the orchestrator's "exactly one family,
+lean mistral" now rides entirely on mistral. Family-level Outcome and
+PROMOTE/NOT-PROMOTED verdict wait for the mistral cell; no goalposts move.
