@@ -6,6 +6,35 @@ in `experiment.yaml`.
 
 ## Entries
 
+- 2026-07-13 (LEAD REVIEW, pre-sign): draft reviewed against the drafter's
+  report; structure, gate table, and coverage table verified against the
+  committed files. Rulings on the five open adjudications:
+  (A1) SUBSTRATES: Llama-3.2-3B + Mistral-7B-v0.3 ACCEPTED. The lead's task
+  message sized an 8B llama, but no atlas-located site exists for any 8B
+  llama; written-at-their-own-atlas-site is the binding design requirement,
+  so the atlas-mapped 3B stands and no atlas extension is authorized now.
+  (A2) H4 INPUT: omission from experiment.yaml inputs ACCEPTED while
+  ungated-vs-gated-dose-matched sits on its unmerged branch; the input line
+  is added at sign once PR #281 merges (validator enforces path existence).
+  (A3) ARMS: the four registered arms stand; permuted_gate is NOT added.
+  The core RR question is actuation transfer, and dose_knowns_ungated is
+  the directly motivated selectivity control given H4's operating-point
+  dependence result. A permuted-gate ownership test at these sites is
+  named as a possible follow-up if a family lands shape A, never bolted on
+  here. (A4) SELECTIVITY-ON-KNOWNS stays reported-not-gated: the sign of
+  the effect at a third operating point is unknown a priori, and gating it
+  would conflate the existence question with the ownership question. The
+  PI may elevate it at sign. (A5) LAYER BAND: 3 candidate layers per
+  family inside the atlas best-read band, leaning earlier, ACCEPTED as the
+  middle course between a single-layer bet and a full-band sweep.
+  Also acknowledged from the drafter's flags: RR rests only on the atlas
+  read-panel layer map and readability demonstration, never on the atlas's
+  failed eff_dim prediction or any atlas actuation claim. Next steps in
+  order: PR #281 (H4) merges, H4 input line added, PI fills the scoreboard,
+  lead countersigns, harness-build assignment, lane decision at staging
+  (local 3090 preferred; any paid lane needs fresh user approval).
+
+
 ### 2026-07-13 DRAFT (design specialist)
 - Scaffolded via `bin/exp new --type steer-cell rr-cross-family-raw-refusal` on a
   fresh worktree branch `exp/rr-cross-family-raw-refusal` off origin/main.
