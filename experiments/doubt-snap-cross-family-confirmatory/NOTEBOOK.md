@@ -6,6 +6,23 @@ in `experiment.yaml`.
 
 ## Entries
 
+- 2026-07-12 (resolve): Outcome written and the manifest set to resolved,
+  now that the held-for comparator landed: `qwen35-4b-midband-doubt-snap`
+  resolved G1 PASS at hs20 dose 8 x sigma_c (refused 0.684, well-formed
+  0.980, known false-refusal 10/240 = 0.042, in-sample FIT, red-teamed with
+  no invalidating finding). Verdict: NOT PROMOTED; prediction not met
+  (arithmetically unreachable after three small-tier G0 stops); falsifier
+  not triggered because its registered wording binds held-out fails only, a
+  gap recorded straight in the Outcome. The Outcome adjudicates the stops
+  as indicting the universal 0.94-depth write-site rule rather than the
+  mechanism class, on two legs: the c_hat validity audit (encoding readable
+  0.84-0.99 in all four families, actuation Qwen-lineage-only at the late
+  site) and the same-substrate mid-band ladder (same instrument, same FIT
+  rows, late site 0.326 vs hs20 0.684 with intact well-formedness). Both
+  legs are cited as context, never pooled. Successor design requirements
+  recorded: per-family write sites from the jspace-family-atlas layer map,
+  and prediction/falsifier wording that covers uniform pre-outcome stops.
+
 - 2026-07-12 (c_hat validity audit complete; lead-verified): the CPU audit
   over the existing anchor captures answers whether the fleet's write
   direction ever encoded refusal. Per cell (llama32_3b, mistral7b,

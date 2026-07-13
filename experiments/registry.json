@@ -224,9 +224,9 @@
       "question": "Does the doubt-gated caution snap replicate as a selective, training-free tighten instrument across the Llama, Ministral, Qwen3.5, and Gemma family panel, including 8B-ish or nearest mid-size cells where eligible, when each model's direction, gate tau, and snap dose are chosen on FIT only and scored on held-out?",
       "registered": true,
       "slug": "doubt-snap-cross-family-confirmatory",
-      "status": "running",
+      "status": "resolved",
       "type": "steer-cell",
-      "verdict": ""
+      "verdict": "not promoted: all four launched cells stopped at the registered pre-outcome FIT dose-viability rule at the 0.94-depth write site (peaks 0.326/0.184/0.000 small tier, 0.058 mid tier); the c_hat audit and the qwen35_4b mid-band ladder show the caution encoding is readable in every family while late-site writes fail to actuate outside Qwen lineage, indicting the universal-depth write-site rule rather than establishing a family-level mechanism null"
     },
     {
       "checkpoint": {
