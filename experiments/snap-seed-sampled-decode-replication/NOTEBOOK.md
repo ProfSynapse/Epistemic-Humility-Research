@@ -6,6 +6,52 @@ in `experiment.yaml`.
 
 ## Entries
 
+- 2026-07-13 (SIGNED, pre-launch): signed after lead review of the build
+  report and harness against the locked AMENDMENT prose. All six builder
+  adjudications ACCEPTED, recorded here so the Outcome inherits them:
+  (1) Arm R runs one greedy pass per row (dosed-if-fire-else-baseline),
+  matching the AMENDMENT's own cost line; equivalence of the derived gated
+  arm to an always-both-passes harness was independently certified by the
+  resolved H4 red-team (separate generate calls, controller reset between,
+  no KV carryover). (2) Arm S reuses Arm R's fire decisions; fire is a
+  prompt-anchor property of the frozen instrument and is decode-independent
+  by construction. (3) BIGGEST CALL: the H3-G3 placebo re-draw arms decode
+  GREEDY, not sampled. The Design section frames the placebo re-draws as
+  testing redraw randomness (fresh random direction, fresh permutation per
+  seed) against thresholds anchored to the resolved cell's greedy
+  single-seed placebo values (7.0% / 22.9%); a greedy re-draw is the
+  apples-to-apples comparison, and sampling the placebos would conflate
+  decode policy with redraw randomness in one arm. The Lane-and-cost phrase
+  "the K=5 sampled placebo arms" is adjudicated a drafting slip describing
+  the seed-indexed re-draws, not a decode-policy specification. Adjudicated
+  pre-launch, before any GPU data exists; no threshold moves. (4) "Pooled"
+  for H3-G1/G2 = concatenate per-row-per-seed majority-vote decisions
+  across included seeds into one flat list (n = 185K or 258K rows), then
+  rate + Wilson CI; per-seed legs use the same row-level unit. (5) The
+  permuted-gate re-draw reassigns the same total fire count (172) uniformly
+  over the combined 443-row held-out pool, matching the AMENDMENT's
+  combined-pool wording. (6) Arm S batches N=8 identical copies of one
+  row's prompt per generate call (same intervention arm and parameters, no
+  cross-row composition, no padding variation between batch rows); the
+  batched surface only ever carries sampled decode, where kernel-level
+  numeric jitter is absorbed by the sampling distribution, and Arm R plus
+  both placebo arms stay batch-1 parity-locked to the resolved cell.
+  Decode config for Arm S: the Amendment SR registered sampling
+  configuration (temperature 0.7, top_p 0.9, num_beams 1) stands as the
+  sign-time default per the AMENDMENT's own flag; the user may still
+  substitute the Qwen3 published config before launch, which would be
+  re-signed, not silently swapped. Lane placeholder resolved to the local
+  RTX 3090 this evening (free), K=5 first, pre-stated K=3 fallback only on
+  overrun. Real fire-count cross-check at build time (168/185 confab,
+  4/258 known, 172/443 total) matches H4's independently derived counts,
+  confirming the same frozen gate over the same pool. CPU smoke 10/10 via
+  python3 -m pytest; bare python3 exits 0 silently (known gotcha). Launch
+  protocol: GPU smoke (--mode smoke --n-rows 8) first to calibrate real
+  throughput, then --mode full; the builder's wall-time bracket (roughly
+  3-6 h likely at K=5 on the 3090) is unmeasured and treated as a bracket,
+  not a commitment.
+
+
 - 2026-07-13 -- HARNESS BUILD (harness-builder agent, CPU-only; GPU launch NOT
   run). Wrote `materialize_rows.py`, `gen_lib.py`/`grader.py`/`model_lib.py`
   (verbatim copies of the resolved doubt-gated-caution-tighten cell's own

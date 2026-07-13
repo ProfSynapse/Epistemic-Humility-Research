@@ -1,7 +1,7 @@
 slug: snap-seed-sampled-decode-replication
 title: 'H3: Multi-Seed and Sampled-Decode Replication of the Doubt-Gated Caution Snap'
 type: steer-cell
-status: draft
+status: signed
 registered: true
 created_at: '2026-07-11T00:34:57Z'
 question: Does the resolved doubt-gated caution snap headline (gated confab clean_tighten
@@ -24,8 +24,22 @@ instrument:
   configs:
   - cell.yaml
   - gates.yaml
-  modules: []
-  pins: {}
+  modules:
+  - pipeline.py
+  - materialize_rows.py
+  - gen_lib.py
+  - grader.py
+  - model_lib.py
+  - smoke_cpu.py
+  pins:
+    cell.yaml: 9fee64a65e94e6c147421ee7c8ab7b598f56c791d9142f0254b74c76b612edd9
+    gates.yaml: 1e2d0b384dcf30cce56327b06f44ebb96ecd3af0d510269d347f637339d27a5a
+    pipeline.py: 22b2516c78cc4f9c4c4b06424fba7743313966b8ff4e8a5e0a039ff4cf9e1420
+    materialize_rows.py: 4859c9657ac89634d29fc6fca9f55b034bf82550d54fde43dac745e3a9b238dd
+    gen_lib.py: b59a81bf5d300f71484dea4c65815245a56d40a7baffde8d0d077483aba12f81
+    grader.py: b24982a4380dca26056a6b3b217b4ffcea8cf448509af896eba04c256720dd2b
+    model_lib.py: c659dd69b854d7e50a43434f0ec2ec4f7bae37b0ff65dcd78a853370540398b9
+    smoke_cpu.py: e6ef7ec0f691972f9d5e8a86b9209d189ffd6bb9f5333aa6251bc2e69a69125b
 inputs:
 - experiments/common/doubt-gated-caution-tighten-heldout-split/split_manifest.json
 - experiments/doubt-gated-caution-tighten/analysis-committed/u_d_L34.json

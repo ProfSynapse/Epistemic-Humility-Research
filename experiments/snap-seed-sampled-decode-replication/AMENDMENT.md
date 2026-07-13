@@ -182,9 +182,10 @@ plus the K=5 sampled placebo arms. Two options, decide at sign time:
 - Modal A10G, roughly 3-5 GPU-hours end to end at an approximate USD 1.10/hour
   on-demand A10G rate, order-of-magnitude a few dollars.
 
-PLACEHOLDER(GPU availability at sign time): default to the local RTX 3090 one
-evening; fall back to Modal A10G if the card is not free before the submission
-window.
+Lane decision at sign (2026-07-13): local RTX 3090, this evening, after the H6
+hook-check frees the card. K=5 registered seeds attempted first; the pre-stated
+K=3 fallback (slice to the first three registered seeds, no new seed values)
+applies only if the sampled budget overruns the evening.
 
 ## Predictions scoreboard
 
