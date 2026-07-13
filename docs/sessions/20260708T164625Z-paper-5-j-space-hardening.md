@@ -4,7 +4,7 @@ session_id: 20260708T164625Z-paper-5-j-space-hardening
 title: Paper 5 J-space hardening
 status: active
 created_at: '2026-07-08T16:46:25Z'
-updated_at: '2026-07-13T02:53:31Z'
+updated_at: '2026-07-13T11:16:48Z'
 track: research
 phase: phase1
 question: Which registered follow-up experiments harden the Paper 5 actuation thesis,
@@ -680,6 +680,42 @@ checkpoints:
     actuation amendment (atlas layer map sites, exterior-shaped prediction/falsifier);
     review exhaust dry-run card; sudo rm residue + aux-head strays still pending PI'
   signals: {}
+- id: 027-result
+  at: '2026-07-13T11:16:48Z'
+  kind: result
+  title: 'H4 resolved all-gates-pass (PR #281); H3 signed; H6 launched then bounced
+    on two harness bugs'
+  summary: 'H4 red-team survived all five surfaces; Outcome written with two binding
+    scope statements (60.1% is damage not refusal, decomposed 55.8pp false-refusal
+    + 3.9pp wrong + 0.4pp degenerate, superseding the n=80 36.2% diagnostic; gate-supplies-selectivity
+    bound to Qwen3-4B/L34/dose-200 and reconciled with the ladder permuted-gate result
+    as operating-point dependence). Resolved, anchor checksums recorded, PR #281 open
+    awaiting user merge approval. H3 signed after accepting all six builder adjudications
+    (decisive: G3 placebo re-draws decode greedy, thresholds anchor to greedy precedent;
+    Lane phrase sampled placebo arms adjudicated a drafting slip); six modules sha256-pinned
+    by hand since exp sign pins configs only; evening 3090 slot. H6 launch-time resolution
+    committed (revision 64033659, direction sha 9e0bf40c, 25-ID pool; scout report
+    corrected twice: staging rows.jsonl has no question text, text lives in pools/ak_stage1_pool.jsonl;
+    328 unique keys not 25) then both paths failed on harness plumbing: tuner device
+    mismatch at evaluate_g2 (direction on cpu), bespoke pre-flight assert that may
+    conflate readback misconstruction with the registered hook-does-not-fire prediction;
+    unsloth also silently redirected the load to qwen3-4b-unsloth-bnb-4bit. Fix reassigned
+    to h4-builder (h6-builder lane stalled behind the idle guard twice). RR raw-refusal
+    design dispatched to fresh agent rr-drafter (heldout-drafter also guard-blocked):
+    keeps doubt-gate arm per H4, atlas sites, Wilson gates, outcome-shape coverage,
+    draft-only.'
+  evidence: []
+  run_ids: []
+  commands: []
+  decisions:
+  - H4 verdict adjudicated by lead; H3 placebo-decode ambiguity adjudicated greedy
+    pre-launch; H6 pre-flight-vs-G1 conflation flagged as an adjudication the fixer
+    must record, not silently fix
+  next_steps:
+  - 'h4-builder fixes+relaunches H6 (free 3090); lead launches H3 after H6 frees the
+    card (GPU smoke first to calibrate throughput); rr-drafter delivers RR draft;
+    H4 KG-ingest after PR #281 merges'
+  signals: {}
 ---
 # Paper 5 J-space hardening
 
@@ -1043,3 +1079,12 @@ rows before the layer contrast.
 - summary: Ladder + fleet both RESOLVED same night. hs30 ladder completed 22:35 (74,753 generations, ~59h wall, bs=8, clean exit). Lead recomputed headline aggregates from raw RunLogs pre-red-team (matched runner exactly); red-team over seven attack surfaces returned G1 SURVIVES, no invalidating finding; three lifted adjudications accepted (240-known cost denominator with 10/13 fired-known conditional reported alongside; in-sample FIT-only scope; official summary promoted to analysis-committed). qwen35-4b-midband-doubt-snap RESOLVED: G1 PASSES at hs20 dose 8x sigma_c, the unique cell in the locked 4x7 grid (refused 0.684, well-formed 0.980, known false-refusal 0.042); falsifier does not fire; late comparator hs30 reproduces entangled failure in-grid; layer potency monotone toward earlier layers (hs20>hs23>hs26>hs30), echoing the atlas early-structure finding; PR #279. Red-team scope notes adopted verbatim: selectivity belongs to the c_hat write direction not the gate (permuted confabs refuse 0.669 vs gated 0.684; dosed knowns only 0.056); placebo magnitude-matched via readback; no optimum claim (hs20 is grid-edge, earlier layers untested). Fleet doubt-snap-cross-family-confirmatory then RESOLVED: NOT PROMOTED, prediction not met (uniform pre-outcome G0 dose-viability stops, peaks 0.326/0.184/0.000/0.058), falsifier wording gap recorded straight (binds held-out fails only); Outcome indicts the universal 0.94-depth write-site rule via c_hat audit + same-substrate ladder contrast (0.326 late vs 0.684 mid-band); both scoreboard predictors wrong on the fleet, both right on the ladder (orchestrator wrong on layer: hs20 not hs23); PR #280. Both PRs await user merge approval. KG ingest queued post-merge for both.
 - next steps:
   - User merge call on PRs #279/#280; KG-ingest both resolves post-merge; draft raw-refusal-axis actuation amendment (atlas layer map sites, exterior-shaped prediction/falsifier); review exhaust dry-run card; sudo rm residue + aux-head strays still pending PI
+### 027-result - H4 resolved all-gates-pass (PR #281); H3 signed; H6 launched then bounced on two harness bugs
+
+- at: `2026-07-13T11:16:48Z`
+- kind: `result`
+- summary: H4 red-team survived all five surfaces; Outcome written with two binding scope statements (60.1% is damage not refusal, decomposed 55.8pp false-refusal + 3.9pp wrong + 0.4pp degenerate, superseding the n=80 36.2% diagnostic; gate-supplies-selectivity bound to Qwen3-4B/L34/dose-200 and reconciled with the ladder permuted-gate result as operating-point dependence). Resolved, anchor checksums recorded, PR #281 open awaiting user merge approval. H3 signed after accepting all six builder adjudications (decisive: G3 placebo re-draws decode greedy, thresholds anchor to greedy precedent; Lane phrase sampled placebo arms adjudicated a drafting slip); six modules sha256-pinned by hand since exp sign pins configs only; evening 3090 slot. H6 launch-time resolution committed (revision 64033659, direction sha 9e0bf40c, 25-ID pool; scout report corrected twice: staging rows.jsonl has no question text, text lives in pools/ak_stage1_pool.jsonl; 328 unique keys not 25) then both paths failed on harness plumbing: tuner device mismatch at evaluate_g2 (direction on cpu), bespoke pre-flight assert that may conflate readback misconstruction with the registered hook-does-not-fire prediction; unsloth also silently redirected the load to qwen3-4b-unsloth-bnb-4bit. Fix reassigned to h4-builder (h6-builder lane stalled behind the idle guard twice). RR raw-refusal design dispatched to fresh agent rr-drafter (heldout-drafter also guard-blocked): keeps doubt-gate arm per H4, atlas sites, Wilson gates, outcome-shape coverage, draft-only.
+- decisions:
+  - H4 verdict adjudicated by lead; H3 placebo-decode ambiguity adjudicated greedy pre-launch; H6 pre-flight-vs-G1 conflation flagged as an adjudication the fixer must record, not silently fix
+- next steps:
+  - h4-builder fixes+relaunches H6 (free 3090); lead launches H3 after H6 frees the card (GPU smoke first to calibrate throughput); rr-drafter delivers RR draft; H4 KG-ingest after PR #281 merges
