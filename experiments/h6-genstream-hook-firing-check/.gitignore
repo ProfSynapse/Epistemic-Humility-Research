@@ -1,0 +1,20 @@
+# Containment mirror of experiments/qwen35-4b-midband-doubt-snap and
+# experiments/doubt-gated-caution-tighten: this repo is PUBLIC, so no dataset,
+# pool, question, or generation text is ever committed. Only aggregate
+# readback/firing tables and ID-level manifests live under analysis-committed/.
+
+# Local analysis scratch (row-level readback dumps, per-prompt generations,
+# question text, activation tensors); keep untracked, promote real outputs
+# deliberately into analysis-committed/.
+analysis/
+
+# Fitted / staged direction vectors and other large local data.
+directions/
+
+# unsloth JIT compile cache (build byproduct of the bespoke-path load), not
+# source or output.
+unsloth_compiled_cache/
+
+# Python bytecode cache.
+__pycache__/
+*.pyc

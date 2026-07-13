@@ -1293,6 +1293,70 @@
     },
     {
       "checkpoint": {
+        "repo": "unsloth/Qwen3-4B",
+        "revision": "64033659d5caf1b8ed7f929b29de705e93a4d468"
+      },
+      "created_at": "2026-07-11T00:35:42Z",
+      "falsifier": "For any path claimed as an answer-window steering instrument, the steering hook does not fire on every decode forward pass (H6-G1 fail) OR does not deliver the commanded write magnitude at the instrumented decode positions (H6-G2 fail); if either fails for a path, all gen_stream answer-window steering evidence produced on that path stays quarantined and the AK Stage 2 gen_stream MISS cannot be adopted as a causal null.",
+      "inputs": [],
+      "instrument": {
+        "configs": [
+          "cell.yaml",
+          "gates.yaml"
+        ],
+        "modules": [
+          "h6_hook_check.py",
+          "test_h6_smoke.py"
+        ],
+        "pins": {
+          "cell.yaml": "2d6bf0e3273d3f223a55b8405401c97ebe1ecb1000fd607df3ade81fc07d76a3",
+          "gates.yaml": "c48d9a446967108b29804ebf70881afa9848f3b3e33413ea0ce418d2557c5c53",
+          "h6_hook_check.py": "b3d8bad9c3b63a9c25becdb50e7f22e4340c44ce3582e9285a0530c66bee29e4",
+          "test_h6_smoke.py": "db191a310795e4e5a1476e86bf5b3328efa43903cd12d3bca2ba50b763502eb6"
+        },
+        "repins": [
+          {
+            "date": "2026-07-13T11:20:42Z",
+            "file": "h6_hook_check.py",
+            "new_sha256": "fb431e6b676b0dbce7c7aa6f122cdc038166318bbb2ceb0a66e0bee4d34c0674",
+            "old_sha256": "4cbdac9644207b40fa9aa6f4ad31b20ff4592f6ad51ce1c3ba5a64a13d485eeb",
+            "reason": "Harness-plumbing fixes: evaluate_g2 device mismatch (direction stayed on CPU vs GPU hidden states), load_bespoke_model silently substituting the bnb-4bit mirror and not forwarding --revision, and the pre-flight construction check conflating genuine Unsloth decode-path non-firing with a harness bug. No gate/threshold/prediction/falsifier text changed."
+          },
+          {
+            "date": "2026-07-13T11:20:42Z",
+            "file": "test_h6_smoke.py",
+            "new_sha256": "52d97fdfb62ec3c0c33a23f60793aac422897f8d8a8060d946aeabc3871d6bb8",
+            "old_sha256": "e37d6f2a1cdf3e500f6639bd028441209d695a13a04614ace1fe8e663f124dda",
+            "reason": "Harness-plumbing fixes: evaluate_g2 device mismatch (direction stayed on CPU vs GPU hidden states), load_bespoke_model silently substituting the bnb-4bit mirror and not forwarding --revision, and the pre-flight construction check conflating genuine Unsloth decode-path non-firing with a harness bug. No gate/threshold/prediction/falsifier text changed."
+          },
+          {
+            "date": "2026-07-13T11:30:46Z",
+            "file": "h6_hook_check.py",
+            "new_sha256": "b3d8bad9c3b63a9c25becdb50e7f22e4340c44ce3582e9285a0530c66bee29e4",
+            "old_sha256": "fb431e6b676b0dbce7c7aa6f122cdc038166318bbb2ceb0a66e0bee4d34c0674",
+            "reason": "Third bug found only after the first two fixes let the run reach G3 on real Qwen3 logits: evaluate_g3's naive logit subtraction produced NaN at positions where both NOOP and ABSENT logits are -inf (suppressed tokens), which then failed every tolerance check via NaN propagation. Fixed to treat shared -inf as zero delta while still failing a genuine one-sided -inf divergence. No gate/threshold/prediction/falsifier text changed."
+          },
+          {
+            "date": "2026-07-13T11:30:46Z",
+            "file": "test_h6_smoke.py",
+            "new_sha256": "db191a310795e4e5a1476e86bf5b3328efa43903cd12d3bca2ba50b763502eb6",
+            "old_sha256": "52d97fdfb62ec3c0c33a23f60793aac422897f8d8a8060d946aeabc3871d6bb8",
+            "reason": "Third bug found only after the first two fixes let the run reach G3 on real Qwen3 logits: evaluate_g3's naive logit subtraction produced NaN at positions where both NOOP and ABSENT logits are -inf (suppressed tokens), which then failed every tolerance check via NaN propagation. Fixed to treat shared -inf as zero delta while still failing a genuine one-sided -inf divergence. No gate/threshold/prediction/falsifier text changed."
+          }
+        ]
+      },
+      "kg": [],
+      "prediction": "PATH-BESPOKE fails H6-G1 (the Unsloth for_inference optimized decode loop does not route per-step through the hooked module.forward, confirming the AK section 8 confound); PATH-TUNER passes H6-G1+G2+G3 (plain-HF register_forward_hook fires every decode step, readback lands the commanded write within 5%, no-op delta is exactly zero), certifying it as the go-forward answer-window steering instrument.",
+      "question": "Do steering hooks installed via the generation-stream (answer-window) path actually fire on every mid-generate() decode forward pass, and do they modify the target hidden state by exactly the commanded write, on the harness paths used to produce answer-window steering evidence (the AK bespoke Unsloth path and the tuner plain-HF path)?",
+      "registered": true,
+      "slug": "h6-genstream-hook-firing-check",
+      "status": "resolved",
+      "title": "Commitment-Point gen_stream Hook-Firing Check",
+      "type": "lab-diagnostic",
+      "verdict": "Neither gen_stream path is certified: the Unsloth bespoke path never routes decode steps through the hooked module (H6-G1 fail 25/25, certifying the AK answer-window confound as instrumentation and voiding its MISS as a causal null), while the tuner plain-HF path fires every decode step and lands the write at 0.996-0.998 of commanded on all pre-divergence positions but fails H6-G2 as registered once the steered trajectory diverges, leaving tuner certification to a divergence-robust successor readback."
+    },
+    {
+      "checkpoint": {
         "repo": "local (AI-TRUE; staged to private HF repo for the Modal lane, section 6.2)",
         "revision": "base sft_schema_clean_seed1_full/20260623_123624/Qwen3-4B-bnb-4bit/merged-16bit + adapter amendment_ai_grpo_true_seed1/20260703_234933/final_model"
       },
