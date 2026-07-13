@@ -1,8 +1,6 @@
 # RR2: mistral confirmatory with detector v2 + blinded adjudication lane
 
-Status: draft (not signed; do not launch as confirmatory evidence). Cannot sign
-until PR #285 (rr-cross-family-raw-refusal resolve) merges: this experiment's
-instruments mirror and pin modules from that experiment directory.
+Status: signed (2026-07-13; PR #285 merged, instruments built and pinned; launch queued behind the qwen35-4b-midband-heldout run on the local card).
 
 Keep this document the prose home for the experiment. The machine state lives in
 `experiment.yaml` and is never duplicated here.
@@ -121,8 +119,8 @@ behavioral. Goalposts do not move after the result.
 
 | Predictor | Call |
 |-----------|------|
-| orchestrator | |
-| user | |
+| orchestrator | Shape A, adjudicated held-out refusal in the 0.63-0.72 band: the credited recount was real signal, discounted a few points for blinding/decoys and FIT-to-held-out transfer. (recorded 2026-07-13, pre-launch) |
+| user | Shape A at the credited-recount level, adjudicated refusal ~0.68-0.70: the hand-read measured real behavior and the registered abstention vocabulary simply captures it. (recorded 2026-07-13, pre-launch) |
 
 ## Outcome
 

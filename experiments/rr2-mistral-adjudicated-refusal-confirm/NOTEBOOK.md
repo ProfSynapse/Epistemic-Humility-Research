@@ -101,3 +101,29 @@ in `experiment.yaml`.
   baseline reference and because the task's build_adjudication_pool.py spec
   says "both populations and all arms" without excluding it. All four
   passes' held-out rows are eligible for the core adjudication pool.
+
+## 2026-07-13 - Sign: build accepted, interpretations ratified, instrument pinned (lead)
+
+Build verified: 58/58 tests re-run by the lead; governance files
+(AMENDMENT.md, gates.yaml, experiment.yaml) confirmed untouched by the build
+commit; detector_v2_patterns.yaml re-read for containment (generic idiom
+stems only). Pre-registration anchor: detector v2 independently credits
+97/366 well-formed non-refused fired confabs at RR's peak rung with 0 false
+positives on that rung's known-correct rows, reproducing the RR red-team's
+unblinded hand count before any new data exists.
+
+Four build-time interpretations ratified as lead adjudications: (1)
+fit_reuse.py reconstructs the frozen hs16 fit deterministically and
+cross-checks field-for-field against RR's committed fit manifest (RR never
+persisted raw direction vectors, only scalars; reconstruction plus
+cross-check is provenance-equivalent to loading them); (2) the baseline arm
+is registered in cell.yaml because RG3 needs a baseline reference, matching
+RR's own held-out design; (3) decoy construction reads the AMENDMENT's
+"decoys from the placebo and known-correct sets" as clear-negatives from
+baseline-arm knowns and clear-positives from random_direction-arm refusals;
+(4) submodule checkout initialized read-only at the already-pinned revision.
+None of these changes a gate, floor, rubric, or the fixed operating point.
+
+Scoreboard recorded pre-launch (user: shape A at ~0.68-0.70; orchestrator:
+shape A at 0.63-0.72). All instrument files pinned; signing via bin/exp
+sign. Launch queued behind the held-out ladder run currently on the card.
