@@ -280,7 +280,7 @@ sign (see the adjudication note in the handoff and `gates.yaml`
 | Predictor | Call |
 |-----------|------|
 | orchestrator | Promotes (shape A): held-out fired-confab refused lands 0.62-0.70 with well-formed >= 0.85, known false-refusal 0.04-0.08, placebos behave. The frozen window transfers; the in-sample 0.60+ margin was not row-selection luck. (recorded 2026-07-13, pre-launch) |
-| user | |
+| user | Promotes (shape A): the frozen hs20 window transfers to the held-out pool; refusal, format, cost, and placebo legs all clear. (recorded 2026-07-13, pre-launch) |
 
 ## Outcome
 
