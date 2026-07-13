@@ -4,7 +4,7 @@ session_id: 20260708T164625Z-paper-5-j-space-hardening
 title: Paper 5 J-space hardening
 status: active
 created_at: '2026-07-08T16:46:25Z'
-updated_at: '2026-07-12T16:04:53Z'
+updated_at: '2026-07-13T02:53:31Z'
 track: research
 phase: phase1
 question: Which registered follow-up experiments harden the Paper 5 actuation thesis,
@@ -646,6 +646,40 @@ checkpoints:
   - PI runs sudo rm -rf experiment residue; hs30 -> fleet resolve + raw-refusal draft;
     exhaust dry-run card review
   signals: {}
+- id: 030-checkpoint
+  at: '2026-07-13T02:53:31Z'
+  kind: checkpoint
+  title: Checkpoint
+  summary: 'Ladder + fleet both RESOLVED same night. hs30 ladder completed 22:35 (74,753
+    generations, ~59h wall, bs=8, clean exit). Lead recomputed headline aggregates
+    from raw RunLogs pre-red-team (matched runner exactly); red-team over seven attack
+    surfaces returned G1 SURVIVES, no invalidating finding; three lifted adjudications
+    accepted (240-known cost denominator with 10/13 fired-known conditional reported
+    alongside; in-sample FIT-only scope; official summary promoted to analysis-committed).
+    qwen35-4b-midband-doubt-snap RESOLVED: G1 PASSES at hs20 dose 8x sigma_c, the
+    unique cell in the locked 4x7 grid (refused 0.684, well-formed 0.980, known false-refusal
+    0.042); falsifier does not fire; late comparator hs30 reproduces entangled failure
+    in-grid; layer potency monotone toward earlier layers (hs20>hs23>hs26>hs30), echoing
+    the atlas early-structure finding; PR #279. Red-team scope notes adopted verbatim:
+    selectivity belongs to the c_hat write direction not the gate (permuted confabs
+    refuse 0.669 vs gated 0.684; dosed knowns only 0.056); placebo magnitude-matched
+    via readback; no optimum claim (hs20 is grid-edge, earlier layers untested). Fleet
+    doubt-snap-cross-family-confirmatory then RESOLVED: NOT PROMOTED, prediction not
+    met (uniform pre-outcome G0 dose-viability stops, peaks 0.326/0.184/0.000/0.058),
+    falsifier wording gap recorded straight (binds held-out fails only); Outcome indicts
+    the universal 0.94-depth write-site rule via c_hat audit + same-substrate ladder
+    contrast (0.326 late vs 0.684 mid-band); both scoreboard predictors wrong on the
+    fleet, both right on the ladder (orchestrator wrong on layer: hs20 not hs23);
+    PR #280. Both PRs await user merge approval. KG ingest queued post-merge for both.'
+  evidence: []
+  run_ids: []
+  commands: []
+  decisions: []
+  next_steps:
+  - 'User merge call on PRs #279/#280; KG-ingest both resolves post-merge; draft raw-refusal-axis
+    actuation amendment (atlas layer map sites, exterior-shaped prediction/falsifier);
+    review exhaust dry-run card; sudo rm residue + aux-head strays still pending PI'
+  signals: {}
 ---
 # Paper 5 J-space hardening
 
@@ -1002,3 +1036,10 @@ rows before the layer contrast.
 - summary: Phase 1 outputs migration EXECUTED (commit 30fa503e): the untracked ~99GB experiment/ tree scouted (read-only inventory: 97.5GB unique research data, ZERO duplication vs 9.8MB code-only archive, bridge containment confirmed ABSENT locally, no tracked references), user approved the two decisions (shared bulk to gitignored archive/experiment/phase1-data/, 3.7MB junk deleted), migrator built a deterministic classifier (letter-to-slug from registry.json legacy.label, 40 mappings, flagged-not-guessed on amendment_a_*/mi_* dirs) with dry-run manifest which the lead reviewed and executed: 317/319 entries, 43.9GB to experiments/<slug>/analysis/phase1-migrated/ (SR 26GB, Z 8.6GB, AH 6.7GB), 56GB shared to phase1-data, exp validate OK post-move. Two Amendment AI PAR eval dirs hold 14 Docker-era foreign-UID files: copied byte-verified to experiments/probe-as-reward, source residue (5.4MB) awaits operator sudo rm. Gotcha: shutil.move copy-fallback rmtree dies on foreign-owned entries; pre-move ownership scan (find ! -user) belongs in bulk-move scripts. Aux-head doc strays (7 files) still await PI commit-or-archive call.
 - next steps:
   - PI runs sudo rm -rf experiment residue; hs30 -> fleet resolve + raw-refusal draft; exhaust dry-run card review
+### 030-checkpoint - Checkpoint
+
+- at: `2026-07-13T02:53:31Z`
+- kind: `checkpoint`
+- summary: Ladder + fleet both RESOLVED same night. hs30 ladder completed 22:35 (74,753 generations, ~59h wall, bs=8, clean exit). Lead recomputed headline aggregates from raw RunLogs pre-red-team (matched runner exactly); red-team over seven attack surfaces returned G1 SURVIVES, no invalidating finding; three lifted adjudications accepted (240-known cost denominator with 10/13 fired-known conditional reported alongside; in-sample FIT-only scope; official summary promoted to analysis-committed). qwen35-4b-midband-doubt-snap RESOLVED: G1 PASSES at hs20 dose 8x sigma_c, the unique cell in the locked 4x7 grid (refused 0.684, well-formed 0.980, known false-refusal 0.042); falsifier does not fire; late comparator hs30 reproduces entangled failure in-grid; layer potency monotone toward earlier layers (hs20>hs23>hs26>hs30), echoing the atlas early-structure finding; PR #279. Red-team scope notes adopted verbatim: selectivity belongs to the c_hat write direction not the gate (permuted confabs refuse 0.669 vs gated 0.684; dosed knowns only 0.056); placebo magnitude-matched via readback; no optimum claim (hs20 is grid-edge, earlier layers untested). Fleet doubt-snap-cross-family-confirmatory then RESOLVED: NOT PROMOTED, prediction not met (uniform pre-outcome G0 dose-viability stops, peaks 0.326/0.184/0.000/0.058), falsifier wording gap recorded straight (binds held-out fails only); Outcome indicts the universal 0.94-depth write-site rule via c_hat audit + same-substrate ladder contrast (0.326 late vs 0.684 mid-band); both scoreboard predictors wrong on the fleet, both right on the ladder (orchestrator wrong on layer: hs20 not hs23); PR #280. Both PRs await user merge approval. KG ingest queued post-merge for both.
+- next steps:
+  - User merge call on PRs #279/#280; KG-ingest both resolves post-merge; draft raw-refusal-axis actuation amendment (atlas layer map sites, exterior-shaped prediction/falsifier); review exhaust dry-run card; sudo rm residue + aux-head strays still pending PI
