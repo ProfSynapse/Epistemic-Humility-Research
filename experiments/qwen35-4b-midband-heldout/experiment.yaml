@@ -1,0 +1,38 @@
+slug: qwen35-4b-midband-heldout
+title: Qwen3.5-4B mid-band doubt-snap held-out confirmation (hs20 frozen operating
+  point)
+type: steer-cell
+status: draft
+registered: true
+created_at: '2026-07-13T10:32:51Z'
+question: Does the resolved qwen35-4b-midband-doubt-snap hs20 operating point (frozen
+  direction set, gate threshold, standardization scalars, and dose 8 x sigma_c), applied
+  unchanged, decouple refusal induction from output corruption on the untouched qwen35_4b
+  held-out pool?
+prediction: On the 1,332 held-out confabs the frozen gated arm reaches refused rate
+  >= 0.60 and well-formed rate >= 0.80 simultaneously with known-correct false-refusal
+  <= 0.10 over the full 360 held-out knowns, and the placebo arms behave (random_direction
+  within 2 points of baseline on both populations, permuted_gate strictly worse on
+  known false-refusal), promoting the hs20 window to a held-out claim about Qwen3.5-4B.
+falsifier: Promotion is refused if held-out fired-confab refused < 0.60 (shape B),
+  or refused >= 0.60 with well-formed < 0.80 (shape C), or the confab thresholds clear
+  but known-correct false-refusal > 0.10 (shape D), or the confab and cost thresholds
+  clear but random_direction is not a no-op or permuted_gate is not strictly worse
+  (shape E).
+checkpoint:
+  repo: Qwen/Qwen3.5-4B
+  revision: 851bf6e806efd8d0a36b00ddf55e13ccb7b8cd0a
+instrument:
+  configs: [cell.yaml, gates.yaml]
+  modules: []
+  pins: {}
+inputs:
+- experiments/qwen35-4b-midband-doubt-snap/AMENDMENT.md
+- experiments/qwen35-4b-midband-doubt-snap/cell.yaml
+- experiments/qwen35-4b-midband-doubt-snap/analysis-committed/build_manifest.json
+- experiments/qwen35-4b-midband-doubt-snap/analysis-committed/directions/hs20/u_d.json
+- experiments/qwen35-4b-midband-doubt-snap/analysis-committed/directions/hs20/c_hat.json
+- experiments/qwen35-4b-midband-doubt-snap/analysis-committed/directions/hs20/random_direction.json
+- experiments/qwen35-4b-midband-doubt-snap/analysis-committed/reused_rows_manifest.json
+verdict: ''
+kg: []

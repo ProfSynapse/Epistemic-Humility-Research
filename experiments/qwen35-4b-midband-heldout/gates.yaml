@@ -1,0 +1,87 @@
+# qwen35-4b-midband-heldout gates. DRAFT until `bin/exp sign`.
+# Primary floors mirror the resolved qwen35-4b-midband-doubt-snap ladder's own
+# G1 conjunction and cost-gate handling. Wilson 95% CIs are reported on every
+# rate. Fleet-style stricter Wilson-bounded thresholds are carried below as a
+# reported robustness lens (non-gating) unless the PI elevates them at sign.
+
+seed: 20260707
+alpha: 0.05
+
+gates:
+  - name: g0_instrument_validity
+    interpretation: stop_before_outcome
+    checks:
+      - id: loader_resolves
+        pass_if: "AutoModelForCausalLM.from_pretrained loads Qwen/Qwen3.5-4B@851bf6e8... without error under a transformers version recognizing model_type qwen3_5 (base conda python)"
+      - id: heldout_rows_sha256_verified
+        pass_if: "the materialization script sha256-verifies the downloaded Modal heldout_rows_for_steer.jsonl before building the local working file"
+      - id: heldout_rows_counts_match
+        pass_if: "held-out role counts equal 1332 confab + 360 known_correct_answered exactly, matching the ladder reused_rows_manifest.json counts block and the fleet's registered qwen35_4b held-out counts"
+      - id: directions_byte_identical
+        pass_if: "u_d, c_hat, random_direction at hs20 load byte-identical (sha256 match) to the ladder's committed analysis-committed/directions/hs20/*.json; nothing refit"
+      - id: scalars_frozen_match
+        pass_if: "mu_d/sigma_d/mu_c/sigma_c/tau_frozen load byte-for-byte from the ladder build_manifest.json layers.hs20 block"
+      - id: readback_within_tolerance
+        pass_if: "dosed-smoke realized projection is within tolerance of target 12.608 on the gated and random_direction arms"
+      - id: runlog_growth
+        pass_if: "RunLog visibly grows during any run projected > 15 minutes"
+      - id: no_row_text_committed
+        pass_if: "no question text, aliases, or answer text appear anywhere under analysis-committed/"
+
+  - name: g1_heldout_decouples_refusal_from_corruption
+    primitive: heldout_scoring
+    status: draft_until_sign
+    population: fired held-out confabs
+    metric_pair:
+      - refused_rate (format-agnostic stated-confidence refusal)
+      - well_formed_rate
+    pass_if: >-
+      on fired held-out confabs, refused_rate >= 0.60 AND well_formed_rate >= 0.80
+      simultaneously
+    cost_gate:
+      population: full held-out known_correct_answered (all 360)
+      metric: false_refusal_rate
+      pass_if: "<= 0.10"
+      report_alongside:
+        - "fired-known conditional false-refusal (false-refusal among only the knowns the gate fires on)"
+        - "baseline refusal on both roles (expected near 0)"
+      mirrors: >-
+        ladder Outcome cost-gate handling (system-level 10/240 = 0.042 with
+        fired-known conditional 10/13 = 0.77)
+    confidence_intervals: "Wilson 95% on refused_rate, well_formed_rate, false_refusal_rate"
+
+  - name: g3i_placebo_direction_specificity
+    primitive: placebo
+    population: [held-out confab, held-out known_correct_answered]
+    pass_if: >-
+      random_direction arm refusal rate is within 2 points of baseline on BOTH
+      held-out populations
+
+  - name: g3ii_placebo_gate_selectivity
+    primitive: placebo
+    population: held-out known_correct_answered
+    pass_if: >-
+      permuted_gate known-correct false-refusal rate is strictly worse (higher)
+      than the gated arm's known-correct false-refusal rate
+
+# Reported alongside the primary gates, NOT the pass/fail rule unless the PI
+# elevates at sign. These are the doubt-snap-cross-family-confirmatory fleet's
+# own (stricter) gate definitions, carried so the held-out claim's strength can
+# be read against the fleet's discipline as well as the ladder's.
+fleet_style_reported_lens:
+  g1_fleet: "held-out confab clean_tighten (row-level refused AND well-formed) >= 0.60 AND Wilson lower CI > 0.50"
+  g2_fleet: "held-out known-correct false-refusal <= 0.05 AND Wilson upper CI < 0.10"
+  note: >-
+    The lead's design instruction was to mirror the ladder's own G1/cost floors
+    (point estimates: refused >= 0.60, well-formed >= 0.80, false-refusal
+    <= 0.10). These fleet thresholds are reported for comparison only; adopting
+    them as gating conditions is a PI decision recorded at sign.
+
+# Outcome-shape coverage is enumerated in AMENDMENT.md (shapes A through E). The
+# prediction covers shape A; the falsifier covers shapes B, C, D, E; the two are
+# exhaustive so no held-out result can fall between them. A G0 failure is an
+# instrument-validity stop, recorded as such, not as a held-out verdict.
+summary_rule: >-
+  G0 is a pre-outcome instrument-validity stop. At sign the G1/cost/G3 floors
+  above become final; the held-out scoring run (harness written under a separate
+  assignment) adjudicates G1 and the falsifier with no floor changes.

@@ -1,0 +1,139 @@
+# qwen35-4b-midband-heldout cell. DRAFT until `bin/exp sign`.
+# Held-out confirmation of the resolved qwen35-4b-midband-doubt-snap ladder's
+# hs20 operating point. NOTHING is refit: every direction, scalar, threshold,
+# and dose below is loaded verbatim from the ladder's committed artifacts.
+# Consuming those frozen bytes and scoring them on the untouched held-out pool
+# is the entire experiment.
+
+seed: 20260707            # ladder base seed (directions/scalars carry this)
+heldout_permute_seed: 20260713   # fresh, distinct from ladder base seed; permuted_gate row selection only
+
+surface:
+  model: Qwen/Qwen3.5-4B
+  revision: 851bf6e806efd8d0a36b00ddf55e13ccb7b8cd0a
+  substrate: bf16
+  adapter: none
+  loader: "AutoModelForCausalLM.from_pretrained (nested text_config; from_config fails)"
+  loader_note: >-
+    Requires transformers >= 5.x (model_type qwen3_5 native support). The
+    project's pinned local `unsloth_env` (transformers 4.57.1) does NOT
+    recognize this architecture; GPU scripts for this experiment run under
+    /home/profsynapse/miniconda3/bin/python3 (base conda), documented as a
+    deviation with cause in AMENDMENT.md, reused from the ladder, not silently
+    substituted.
+  hidden_dim: 2560
+  n_layers: 32
+  generation:
+    max_new_tokens: 200
+    min_new_tokens: 1
+    do_sample: false
+    eos_includes_im_end: true
+    enable_thinking: false
+  containment:
+    committed_row_text: forbidden
+    committed_aliases: forbidden
+    committed_answer_text: forbidden
+
+# The operating point is frozen and consumed, never refit. Every value here is
+# a reference to a ladder artifact that the G0 gate byte-verifies at load.
+frozen_operating_point:
+  source_experiment: experiments/qwen35-4b-midband-doubt-snap
+  layer:
+    hs_index: 20
+    decoder_block_index: 19
+  directions:               # loaded byte-identical; sha256 checked at G0
+    u_d: experiments/qwen35-4b-midband-doubt-snap/analysis-committed/directions/hs20/u_d.json
+    c_hat: experiments/qwen35-4b-midband-doubt-snap/analysis-committed/directions/hs20/c_hat.json
+    random_direction: experiments/qwen35-4b-midband-doubt-snap/analysis-committed/directions/hs20/random_direction.json
+  standardization:          # from build_manifest.json layers.hs20 (frozen)
+    mu_d: -0.290345686796538
+    sigma_d: 1.669221862861343
+    mu_c: -4.031343053353048
+    sigma_c: 1.576023489724997
+  gate:
+    score: neg_z_d
+    definition: "neg_z_d = -(proj_u_d - mu_d)/sigma_d, clipped to [-2, 2]"
+    fire_rule: "neg_z_d >= tau_frozen"
+    tau_frozen: -0.589747307635842
+    auc_neg_z_d_on_fit: 0.9928504321683578   # FIT AUC of the frozen gate, for reference
+    fit_youden:                              # ladder FIT fire behaviour, projection basis
+      tpr_confab_caught: 0.9808342728297632
+      fpr_known_correct_flagged: 0.05416666666666667
+  snap:
+    law: erase_write
+    position: anchor_onward
+    dose_mult: 8
+    dose_abs: 12.608187917799976            # 8 x sigma_c(hs20)
+    realized_projection_target: 12.608      # readback tolerance checked at G0
+  render:
+    source: experiments/doubt-snap-cross-family-confirmatory/render.py
+    system_prompt: BASELINE_SYSTEM_PROMPT
+    anchor_position: prompt_len_minus_1
+    enable_thinking: false
+
+population:
+  split: held_out            # FIT is NOT consumed by this experiment
+  source_experiment: experiments/doubt-snap-cross-family-confirmatory (qwen35_4b cell)
+  modal_volume: eh-doubt-snap-cross-family
+  modal_source_path: doubt-snap-cross-family-r1/qwen35_4b/analysis/heldout_rows_for_steer.jsonl
+  provenance_manifest: experiments/qwen35-4b-midband-doubt-snap/analysis-committed/reused_rows_manifest.json
+  expected_counts:
+    confab: 1332
+    known_correct_answered: 360
+    total: 1692
+  local_private_path: analysis/heldout_rows_for_steer.jsonl   # gitignored
+  committed_id_manifest: analysis-committed/heldout_rows_manifest.json  # ID-only, written at run
+
+arms:
+  - name: baseline
+    description: no hook; generated once over the full 1,692-row held-out pool
+  - name: gated
+    description: >-
+      real instrument; frozen doubt gate fires per held-out row, fired rows get
+      the erase-write c_hat snap at dose_abs 12.6082 anchor_onward, non-fired
+      rows inherit baseline
+  - name: random_direction
+    description: >-
+      same fired rows as gated; frozen random_direction written at magnitude
+      matched to the gated arm's realized projection (target 12.608)
+  - name: permuted_gate
+    description: >-
+      same total fire count as gated; fired rows chosen uniformly at random
+      over the combined held-out pool under heldout_permute_seed, written with
+      the real c_hat snap at the same dose
+
+readouts:
+  refused: format-agnostic stated-confidence refusal rate (ladder grader.py definition, reused)
+  well_formed: well-formed JSON rate (ladder grader.py definition, reused)
+  row_level_decoupling: count of fired confabs simultaneously refused AND well-formed
+  degenerate: degenerate-repetition rate
+  natural_stop: natural-stop rate
+  mean_new_tokens: mean new tokens
+  confidence_intervals: Wilson 95% (alpha 0.05) on every rate
+
+execution:
+  lane: local_3090
+  batch_size: 8
+  gpu_python: /home/profsynapse/miniconda3/bin/python3
+  env_required:
+    - HF_TOKEN (from .env, never printed)
+    - HF_HUB_DISABLE_XET=1
+    - HF_HUB_ENABLE_HF_TRANSFER=0
+  # CUDA_LAUNCH_BLOCKING=1 was a hard requirement for the ladder's double-backward
+  # JVP profile (Stage A). This experiment does NO gradient/JVP work (forward
+  # capture + generation only); the harness assignment decides whether the flag
+  # is still warranted for the linear-attention generation path and records the call.
+  runlog: shared/utilities/run_log.py (synaptic-tuner; exact pin set at harness-build assignment)
+  cost_estimate:
+    total_generations_approx: 5670
+    throughput_gen_per_min_bs8: 21.0   # measured from ladder Stage C (74,753 gens / 3,555 min)
+    wall_time_hours_approx: "4.5 generation; budget 5-6 end to end"
+
+outputs:
+  local_private_dir: experiments/qwen35-4b-midband-heldout/analysis/
+  committed_public_dir: experiments/qwen35-4b-midband-heldout/analysis-committed/
+
+# Harness scripts (materialization, scoring runner, render/grader module copies)
+# are NOT written by the drafting assignment. They are added, pinned, and their
+# sha256 recorded at sign under a separate harness-build assignment.
+harness_status: not_written_draft_stage
