@@ -51,4 +51,6 @@ verdict: 'not promoted: all four launched cells stopped at the registered pre-ou
   caution encoding is readable in every family while late-site writes fail to actuate
   outside Qwen lineage, indicting the universal-depth write-site rule rather than
   establishing a family-level mechanism null'
-kg: []
+kg:
+- experiment:doubt-snap-cross-family-confirmatory
+- mechanism:caution-encoding-read-actuate-dissociation-across-families

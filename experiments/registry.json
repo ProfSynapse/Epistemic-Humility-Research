@@ -1053,7 +1053,10 @@
           "smoke_tuner_path.py": "7e412e7b3ffeb71b52b56cb3ec84089f80127192c3e169dcb1ece2dff90fc4c1"
         }
       },
-      "kg": [],
+      "kg": [
+        "experiment:doubt-snap-cross-family-confirmatory",
+        "mechanism:caution-encoding-read-actuate-dissociation-across-families"
+      ],
       "prediction": "The doubt-gated caution snap will replicate as a selective, training-free tighten instrument across model families; at least 3 of 4 small-tier families and at least 3 eligible mid-tier cells will pass G1/G2/G3, with at least one passing mid-tier family outside Qwen.",
       "question": "Does the doubt-gated caution snap replicate as a selective, training-free tighten instrument across the Llama, Ministral, Qwen3.5, and Gemma family panel, including 8B-ish or nearest mid-size cells where eligible, when each model's direction, gate tau, and snap dose are chosen on FIT only and scored on held-out?",
       "registered": true,
@@ -2132,7 +2135,11 @@
           "run_dose_ladder.py": "3495ed6a9169b5ba6af742f44ba17cef30059723c20c6a49dc11331fe5458bff"
         }
       },
-      "kg": [],
+      "kg": [
+        "experiment:qwen35-4b-midband-doubt-snap",
+        "mechanism:qwen35-4b-midband-write-decouples-refusal-from-format-collapse",
+        "mechanism:caution-write-selectivity-is-content-dependent-not-gate-created"
+      ],
       "prediction": "Some mid-band layer, at some dose on the proposed grid, will achieve refusal rate >= 0.60 AND well-formed rate >= 0.80 on fired FIT confabs with known-correct false-refusal <= 0.10 -- the coherent operating window the late site (hs30) provably lacks on this substrate.",
       "question": "On Qwen/Qwen3.5-4B, does writing the doubt-gated caution snap at a J-space workspace-band (mid-band) layer decouple refusal induction from output corruption, where the registered late-site (0.94-depth, hs30) write produced a well-characterized no-window null in doubt-snap-cross-family-confirmatory (FIT dose sweep 0% clean_tighten at the registered grid, recalibrated peak ~33% coherent tighten with well-formedness collapsing to 3% by dose 60)?",
       "registered": true,

@@ -49,4 +49,7 @@ verdict: G1 passed at hs20 dose 8 x sigma_c, the unique grid cell decoupling ref
   10/240 = 0.042, in-sample FIT), while hs23/hs26 never clear the refusal floor and
   the in-grid late-site comparator hs30 reproduces its entangled failure, so the Qwen3-4B
   mid-band write-site lesson transfers to Qwen3.5-4B.
-kg: []
+kg:
+- experiment:qwen35-4b-midband-doubt-snap
+- mechanism:qwen35-4b-midband-write-decouples-refusal-from-format-collapse
+- mechanism:caution-write-selectivity-is-content-dependent-not-gate-created
