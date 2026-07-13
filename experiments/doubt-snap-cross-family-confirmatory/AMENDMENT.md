@@ -1,6 +1,6 @@
 # doubt-snap-cross-family-confirmatory
 
-Status: signed (launchable as confirmatory evidence once the pinned runner state is committed).
+Status: resolved (2026-07-12; confirmatory claim NOT promoted; Outcome below).
 
 Keep this document the prose home for the experiment. The machine state lives in
 `experiment.yaml` and is never duplicated here.
@@ -84,6 +84,59 @@ thresholds (lowest dose with FIT gated clean_tighten >= 0.60 and FIT
 known-correct false-refusal <= 0.10) and every other gate are unchanged. All
 other cells keep the original grid, and no cell's grid changes after its
 held-out outcome is known. If no dose in the recalibrated grid qualifies, the
+cell fails G0 dose viability and is recorded as such without further grid
+changes.
+
+Pre-outcome dose-recalibration extension (2026-07-11, user-approved): the
+llama32_3b_instruct and mistral7b_instruct_v03 probe cells hit the identical
+overdose-collapse signature on the unrecalibrated default grid, superseding
+the "all other cells keep the original grid" sentence above for these two
+cells only. llama32_3b fits `sigma_c = 2.092`, so the default grid 100-250
+commands 48.7-120.4 sigma writes (versus the 38 sigma that collapsed
+Qwen3.5-4B); a committed-artifact diagnostic confirmed the write realized the
+commanded strength exactly (per-arm strengths 47.79-119.48, outputs 94-99.9
+percent pairwise identical across doses, not 100 percent) while 100 percent
+of fired FIT rows were degenerate at every dose. mistral7b fits
+`sigma_c = 0.939`, realizing 106.7-266.5 sigma on the default grid; its sweep
+was stopped mid-run before producing a predetermined null (baseline, grading,
+capture, and direction fits are volume-backed and reused on resume). Neither
+cell has seen held-out scoring, so recalibration remains FIT-only and
+pre-outcome. New grids map Qwen3.5-4B's working recalibrated z-ladder
+(6.2-29.4 sigma, the grid that produced a real dose-response with peak 0.326)
+onto each cell's own `build_manifest.json` `mu_c`/`sigma_c`:
+llama32_3b_instruct `{11,19,26,34,41,48,60}` and mistral7b_instruct_v03
+`{6,9,12,16,19,22,27}`, recorded in `cell.yaml` per-cell targets. The
+selection rule, thresholds, arms, scoring, and every gate are unchanged. As
+above: if no dose in the recalibrated grid qualifies, the cell fails G0 dose
+viability and is recorded as such without further grid changes, and no cell's
+grid ever changes after its held-out outcome is known.
+
+Pre-sweep grid correction for mistral7b only (2026-07-11, same day, before any
+FIT dose selection ran on that cell): the sigma-mapped grid `{6..27}` above was
+wrong for mistral7b. The relaunch was refused by the harness gen-stream smoke
+itself: the probe write at strength 27, which equals the strongest arm the grid
+would have run (27 / sigma_c 0.939 = 28.75), produced byte-identical output on
+all 8 probe rows, so the entire mapped grid is below mistral's token-movement
+threshold and the registered selection rule was never evaluated on it. The
+"without further grid changes" clause above therefore never triggered: it binds
+a FIT dose-viability verdict, and no sweep ran. Direct evidence brackets the
+real response region instead: the stopped default-grid partial sweep produced
+584/584 fired FIT confabs degenerate at dose 100 (realized strength 106.5),
+and the morning probe at strength 250 moved tokens. The mistral7b grid is
+revised once more, pre-sweep and pre-outcome, to log-span that empirical
+bracket: `{30,38,46,56,67,80,92}` (realized strengths 31.9 to 98.0). The
+llama32_3b grid is not touched: its sweep is mid-run on the mapped grid and is
+producing a real interior dose-response, and changing a grid mid-sweep is
+exactly the drift these clauses forbid. This episode also falsifies the
+sigma-ladder transfer assumption used in the 2026-07-11 extension above
+(mistral is inert at 29 sigma while llama fires at comparable sigma): sigma
+mapping is a first guess only, and per-cell empirical bracketing evidence is
+required before any future cell's grid is set. Separately, the harness smoke's
+`gen_stream_probe_strength` was decoupled from the dose grid (fixed 250.0,
+matching `smoke_tuner_path.py`): the probe is a plumbing check, and tying it to
+`max(dose_grid)` makes it inert for any legitimately low-dose grid. Selection
+rule, thresholds, arms, scoring, and every gate remain unchanged; as above, if
+no dose in this bracketed grid qualifies under the registered FIT rule, the
 cell fails G0 dose viability and is recorded as such without further grid
 changes.
 
@@ -196,5 +249,104 @@ than the real doubt gate.
 
 ## Outcome
 
-Filled at resolve. Record the verdict, the gate results, and the one-sentence
-summary that also goes into `verdict:` in the manifest.
+Resolved 2026-07-12. **The confirmatory cross-family claim is NOT promoted.**
+No cell reached held-out scoring: every launched cell stopped at the
+registered pre-outcome G0 FIT dose-viability rule, and the user then decided
+in-conversation (2026-07-12, recorded in NOTEBOOK.md) to launch no further
+cells because the registered prediction was already arithmetically
+unreachable.
+
+Terminal cell states (all pre-outcome FIT-dose-selection stops per the
+registered taxonomy, not G1/G2/G3 held-out fails; committed aggregates under
+`analysis-committed/<cell>/`):
+
+- `qwen35_4b` (small tier): every other G0 check passed (gate AUC 0.9960,
+  held-out power 1332/360, parity clean); on the recalibrated grid the FIT
+  gated confab_tighten peaks at 32.6% at dose 40 with cost control at or
+  below 3.3% at every dose, never reaching the registered 0.60 floor.
+  `selected_dose: null`.
+- `llama32_3b_instruct` (small tier): fully characterized selective interior
+  dose-response on FIT, peak clean_tighten 0.184 (107/581, Wilson 95%
+  [0.155, 0.218]) at dose 19 with known-correct false-refusal 0.009; gate
+  AUC 0.9992; collapses to 0.000 at doses 34 and above. Below floor at
+  every dose.
+- `mistral7b_instruct_v03` (small tier): true behavioral null on a
+  correctly bracketed grid. The write visibly moves tokens inside a
+  coherent window (dose 30: 11/876 fired answers identical to baseline,
+  638/876 well-formed) yet fired-confab clean_tighten is 0/874 at every
+  dose and induced refusals are zero. Gate AUC 0.9998, held-out power
+  1312/382.
+- `qwen35_9b` (mid tier): confab_tighten rises monotonically from 0.43% to
+  5.75% across the recalibrated grid with cost control 2.10-2.45%
+  throughout; never approaches the floor. Gate AUC 0.9992, held-out power
+  1384/428. `selected_dose: null`.
+- `gemma4_e4b` (small tier) and the remaining mid-tier cells were never
+  launched (fleet abandoned pre-launch); `gemma3_12b` was access-blocked
+  before launch. Under the registered eligibility language these are
+  unlaunched/ineligible, not fails.
+
+**Prediction: NOT MET.** The registered prediction required at least 3 of 4
+small-tier families to pass G1/G2/G3 on held-out; with three small-tier
+cells stopped at G0 before held-out, at most one small-tier family could
+ever have passed.
+
+**Falsifier: NOT TRIGGERED, by a wording gap recorded straight.** The
+registered falsifier is defined over held-out G1/G2/G3 fails ("A cell fails
+if G1, G2, G3(i), or G3(ii) fails on held-out"), and no cell reached
+held-out, so the falsifier as written can never fire on a fleet that stops
+at G0. The honest reading: the experiment landed between its prediction and
+its falsifier, in territory neither anticipated (uniform pre-outcome
+dose-viability stops). The confirmatory claim is simply not promoted; the
+mid-tier claim is underpowered by its own registered language (fewer than 3
+eligible mid-tier cells).
+
+What the stops mean (two pieces of registered-adjacent evidence adjudicate
+between "mechanism does not transfer to these families" and "the registered
+write site is wrong", both recorded in NOTEBOOK.md 2026-07-12 entries):
+
+1. **The c_hat validity audit (lead-verified, CPU, over existing captures)**
+   shows a read-actuate dissociation at the registered late site, not a
+   failure to locate the encoding: the registered c_hat reads
+   refused-vs-confab at 0.84-0.99 AUROC in ALL FOUR families (and a raw
+   mass-mean refused-vs-answered direction reads 0.997-1.000 everywhere),
+   yet the same write moves behavior strongly only on Qwen3-lineage,
+   weakly on llama, and not at all on mistral. The encoding is present and
+   linearly readable in every family; pushing it at the late site does not
+   actuate refusal outside Qwen. Caveat carried from the audit: on
+   llama/mistral, cross-population contrasts at this anchor carry a
+   norm/position confound (random direction reads 0.77-0.83
+   refused-vs-known), which does not affect the within-cell comparisons
+   the interpretation rests on.
+2. **The mid-band ladder on the same substrate**
+   (`experiments/qwen35-4b-midband-doubt-snap`, exploratory Tier-2,
+   resolved 2026-07-12, same instrument class and the same reused FIT
+   rows): at hs20 dose 8 x sigma_c the SAME doubt-gated caution snap that
+   fails here at the registered late site (hs30, peak 0.326) achieves
+   refused 0.684 with well-formed 0.980 and known false-refusal 0.042,
+   in-sample FIT. For Qwen3.5-4B specifically, the late-site G0 stop is
+   therefore demonstrated to be a write-site problem, not a family
+   problem. That result is exploratory and in-sample; it is cited as
+   context, never pooled with this experiment.
+
+The registered cross-family layer rule (`round(0.94 *
+(num_hidden_layers - 1))`, ported from Qwen3-4B's L34) is the design
+element these results indict: the jspace-family-atlas (resolved
+2026-07-12) independently found that readable interior structure sits at
+family-relative depths (llama band layers 15-23, mistral 7-27), not at a
+universal 0.94 depth fraction. Any successor cross-family actuation
+amendment should site its writes per family from the atlas layer map and
+must register exterior-shaped outcomes in both prediction and falsifier so
+a uniform G0 stop cannot fall between them again.
+
+Predictions scoreboard adjudication: both predictors called "estimate
+holds" and both were wrong; the fleet never reached the held-out surface
+the estimate was about.
+
+One-sentence summary (mirrors `verdict:` in `experiment.yaml`): the
+cross-family confirmatory is not promoted because all four launched cells
+stopped at the registered pre-outcome FIT dose-viability rule at the 0.94
+depth write site (peaks 0.326/0.184/0.000 small tier, 0.058 mid tier),
+and the companion c_hat audit plus the qwen35_4b mid-band ladder show the
+caution encoding is readable in every family while late-site writes fail
+to actuate outside Qwen lineage, indicting the universal-depth write-site
+rule rather than establishing a family-level mechanism null.

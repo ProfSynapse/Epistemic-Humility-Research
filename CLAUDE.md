@@ -97,6 +97,26 @@ governed: changes need explicit rationale, changelog, and user approval.
   typed research graph.
 - `kg-ingest`: use when adding or backfilling papers into the library as typed
   concepts, claims, mechanisms, evidence, and lineage edges.
+- `mechinterp-cells`: use when authoring, organizing, or launching a
+  tuner-backed mech-interp cell (steering / extraction / probe-fit /
+  gate-scoring via declarative recipe YAML); includes the dose-calibration and
+  data-containment rules. Never modifies the tuner submodule or the frozen
+  legacy machinery.
+- `mech-interp-runner`: use for the legacy local mech-interp sweep machinery
+  (candidate inventories, causal-pilot planning, offline aggregation) of
+  already-signed amendments; new cell work goes through `mechinterp-cells`.
+- `family-atlas`: use when a new model/family/size enters the program, before
+  designing any per-family actuation cell; runs the standard full-depth
+  read-atlas (workspace profile + three-axis read panel) whose resolved rows
+  land in `docs/atlas/family-layer-map.md`. Layer choices are never ported
+  across families.
+- `data-exhaust`: use when packaging a terminal experiment's row-level exhaust
+  as a public HF dataset (license gate, build, verify, dry-run card, upload);
+  fail-closed on unaudited sources, and upload only after the user approves
+  the dry-run card.
+- `pr-workflow`: standing discipline for branches, worktrees, commits, and PR
+  merges; read before spawning a file-writing subagent, committing
+  housekeeping docs, or merging PRs.
 
 Canonical skill source is `.skills/`. Mirrors under `.agents/skills/` and
 `.claude/skills/` are generated. Do not hand-edit a mirror when the same file

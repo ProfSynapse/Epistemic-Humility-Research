@@ -1,0 +1,14 @@
+{
+  "base_model": "Qwen/Qwen3.5-9B",
+  "cell_id": "qwen35_9b",
+  "hidden_dim": 4096,
+  "layer": 29,
+  "mu_c": -14.612798506470444,
+  "mu_d": -10.446619181521312,
+  "n_confab_fit": 921,
+  "n_known_fit": 286,
+  "n_unknown_refused": 95,
+  "revision": "c202236235762e1c871ad0ccb60c8ee5ba337b9a",
+  "sigma_c": 13.609926072097108,
+  "sigma_d": 15.627670260480933
+}

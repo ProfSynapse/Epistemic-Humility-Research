@@ -1,0 +1,14 @@
+{
+  "base_model": "unsloth/Llama-3.2-3B-Instruct",
+  "cell_id": "llama32_3b_instruct",
+  "hidden_dim": 3072,
+  "layer": 25,
+  "mu_c": -1.8743009609914807,
+  "mu_d": -0.13531677845215398,
+  "n_confab_fit": 581,
+  "n_known_fit": 222,
+  "n_unknown_refused": 947,
+  "revision": "006f5dcd1393c3add266de40994ba96225e9689d",
+  "sigma_c": 2.0923817293880265,
+  "sigma_d": 3.583327330519094
+}

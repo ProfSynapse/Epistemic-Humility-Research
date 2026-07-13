@@ -331,6 +331,55 @@
     },
     {
       "checkpoint": {
+        "repo": "Qwen/Qwen3-4B",
+        "revision": "PIN_AT_SIGN (exact hub commit sha; untrained base, no adapter, no merge)"
+      },
+      "created_at": "2026-07-11T10:45:17Z",
+      "falsifier": "Phase 1 held-out propensity AUROC <= 0.55, OR the upper bound of its 1,000-resample row-bootstrap 95% CI < 0.60, means the base model's own confab-propensity direction does not read out on held-out rows. (Phase 0 can also close the experiment earlier at a registered negative-feasibility record if any BB-P0 floor is unmet: schema starvation, positive-cell starvation, or negative-cell/refusal starvation.)",
+      "inputs": [
+        "experiments/radial-anti-propensity-steering/AMENDMENT.md",
+        "archive/experiment/phase1/probe/amendments/amendment_ai_verdict_extract_gen.py",
+        "archive/experiment/phase1/probe/amendments/amendment_al_select_and_direction.py",
+        "experiments/bb-base-propensity-fit-read/analysis-committed/read_surface_h9_vendored/holdout_ids.jsonl"
+      ],
+      "instrument": {
+        "configs": [
+          "cell.yaml",
+          "gates.yaml"
+        ],
+        "modules": [
+          "cloud/modal_bb_phase0.py"
+        ],
+        "pins": {
+          "cell.yaml": "ad79980f6bb97ed7a2c8b291f3dadc8c8e2a65f0d46a1461241903ebe7aabb75",
+          "cloud/modal_bb_phase0.py": "ba0341c4f7e5361c4fde201e7e5c9877a6a7fed1a9fa2626f6573c2a5612229f",
+          "gates.yaml": "33fe08ad0aba33964e46ead6a1dcda0a8e73f5b79c9dc68b9645fcc427aa545b"
+        },
+        "repins": [
+          {
+            "date": "2026-07-11T12:06:52Z",
+            "file": "gates.yaml",
+            "new_sha256": "33fe08ad0aba33964e46ead6a1dcda0a8e73f5b79c9dc68b9645fcc427aa545b",
+            "old_sha256": "3f23b51f2eecacd5ef39814e63545d893b1de72fc0ea33eea1a40a8bc083ad63",
+            "reason": "BB-FID-2 as signed required whole-file sha256 equality with H9's pinned freeze_scorer.py, which is unachievable by construction: BB's scorer must differ in I/O (base extraction/grades, not AL artifacts) and fidelity reporting. Repinned pre-launch to the fidelity intent: fit-math functions verbatim-identical to the H9 pinned scorer plus AL 3.2 knob assertion, both sha256 values recorded. Outcome gates G0/G1/G2 untouched."
+          }
+        ]
+      },
+      "kg": [
+        "paper:internal-bb-base-propensity-fit-read",
+        "mechanism:base-confab-propensity-direction-reads-held-out-without-training"
+      ],
+      "prediction": "DRAFT, left for PI + orchestrator to fill at sign (scoreboard empty). Phase 0 hinges on whether the untrained base both confabulates AND honestly refuses under a schema prompt it was never SFT'd on; H9's mirror failure (the trained checkpoint starved the positive cell) means neither cell can be assumed.",
+      "question": "On untrained base Qwen/Qwen3-4B, does the model confabulate and honestly refuse enough under the AL schema-contract prompt to power a propensity reading gate (phase 0), and if so does a base-fit confab-propensity direction (AL recipe, re-fit on base grades) separate confabulations from honest unanswerable refusals on a disjoint held-out draw the fit never saw (phase 1)?",
+      "registered": false,
+      "slug": "bb-base-propensity-fit-read",
+      "status": "resolved",
+      "title": "Base-model confab-propensity fit and held-out reading gate on untrained Qwen3-4B",
+      "type": "probe-fit",
+      "verdict": "Base-model propensity direction certified at held-out AUROC 0.8179 (95% CI 0.7190-0.9042), the program's first certified propensity reading, achieved with zero training; all gates pass (G0 205/1020, G2 0.9820)."
+    },
+    {
+      "checkpoint": {
         "repo": "",
         "revision": ""
       },
@@ -991,7 +1040,7 @@
           "render.py"
         ],
         "pins": {
-          "cell.yaml": "e8030f5ba101d12e8d7585c7a78752a891d7760021d2ca0715cc97d3665d127a",
+          "cell.yaml": "e2ebb35318e9588a827cf65a540bf2f1d0da697b72b935b1a6af57a1dfdca828",
           "cloud/README.md": "36574148b79291f26cba4dc143ba1c23feda9bc5cacc6b5707259d05b3ebcdbe",
           "cloud/modal_doubt_snap_cross_family.py": "466c0a5e0deaa7b990e15c6ed4ecd86d8ac603ef220bc94d4d7068607fa64fa1",
           "gates.yaml": "fb3e63eac6bba873c9f98616beb542ebf70bb0ade01a30e7cc80601095c2ff89",
@@ -999,19 +1048,22 @@
           "grader.py": "ab0dea1c3efc841e943fccf8f5830c92715fac413e8ac80b2dbd72b113e6e2b3",
           "materialize_tuner_cells.py": "cd497a634377f172a1db88905b4e98ce9fba716f580367608086ce010d3cebde",
           "model_matrix.yaml": "2f54278b9e7bec54d29e16159cd57c772938821bf40d602a9f7020d7999cf53a",
-          "prep_tuner_cell.py": "8902a8cf6c6242fa9c427594cf4acf8d3bbd4b7c2b812ba1b680cba8f8d18a13",
+          "prep_tuner_cell.py": "212a85cfcf378022ca541c23d75f2b1d1da07bbcff86fb43c282794deb587e61",
           "render.py": "a5a0b243ea20e70ae62d081fbcdca17f0c298a0a6878ff5698e7752ef3434876",
           "smoke_tuner_path.py": "7e412e7b3ffeb71b52b56cb3ec84089f80127192c3e169dcb1ece2dff90fc4c1"
         }
       },
-      "kg": [],
+      "kg": [
+        "experiment:doubt-snap-cross-family-confirmatory",
+        "mechanism:caution-encoding-read-actuate-dissociation-across-families"
+      ],
       "prediction": "The doubt-gated caution snap will replicate as a selective, training-free tighten instrument across model families; at least 3 of 4 small-tier families and at least 3 eligible mid-tier cells will pass G1/G2/G3, with at least one passing mid-tier family outside Qwen.",
       "question": "Does the doubt-gated caution snap replicate as a selective, training-free tighten instrument across the Llama, Ministral, Qwen3.5, and Gemma family panel, including 8B-ish or nearest mid-size cells where eligible, when each model's direction, gate tau, and snap dose are chosen on FIT only and scored on held-out?",
       "registered": true,
       "slug": "doubt-snap-cross-family-confirmatory",
-      "status": "running",
+      "status": "resolved",
       "type": "steer-cell",
-      "verdict": ""
+      "verdict": "not promoted: all four launched cells stopped at the registered pre-outcome FIT dose-viability rule at the 0.94-depth write site (peaks 0.326/0.184/0.000 small tier, 0.058 mid tier); the c_hat audit and the qwen35_4b mid-band ladder show the caution encoding is readable in every family while late-site writes fail to actuate outside Qwen lineage, indicting the universal-depth write-site rule rather than establishing a family-level mechanism null"
     },
     {
       "checkpoint": {
@@ -1264,6 +1316,91 @@
       "title": "Commitment-Point gen_stream Hook-Firing Check",
       "type": "lab-diagnostic",
       "verdict": ""
+    },
+    {
+      "checkpoint": {
+        "repo": "local (AI-TRUE; staged to private HF repo for the Modal lane, section 6.2)",
+        "revision": "base sft_schema_clean_seed1_full/20260623_123624/Qwen3-4B-bnb-4bit/merged-16bit + adapter amendment_ai_grpo_true_seed1/20260703_234933/final_model"
+      },
+      "created_at": "2026-07-11T00:09:03Z",
+      "falsifier": "Held-out propensity AUROC <= 0.55, OR the upper bound of its 1,000-resample row-bootstrap 95% CI < 0.60, means the reading does not generalize off the fit surface and paper 5's \"the propensity direction reads\" claim is not supported on held-out data.",
+      "inputs": [
+        "archive/experiment/phase1/probe/amendments/amendment_al_select_and_direction.py",
+        "archive/experiment/phase1/probe/amendments/amendment_ai_verdict_extract_gen.py",
+        "experiments/radial-anti-propensity-steering/AMENDMENT.md"
+      ],
+      "instrument": {
+        "configs": [
+          "cell.yaml",
+          "gates.yaml"
+        ],
+        "modules": [
+          "freeze_scorer.py",
+          "draw_holdout.py",
+          "build_holdout_pool.py",
+          "near_dup_sweep.py",
+          "score_holdout.py",
+          "cloud/modal_h9_holdout.py"
+        ],
+        "pins": {
+          "build_holdout_pool.py": "043c3e39ebe24be5764bea9ee2affb98f554c187d8b92b616948a39c74e37283",
+          "cell.yaml": "fa5a1a2cb3919616f9887a0f6064415c8950903e4044b29e219ec698493184f3",
+          "cloud/modal_h9_holdout.py": "f292348dd392396dc69c7c32d4a188af73cbebf1d915e19640e51342716209af",
+          "draw_holdout.py": "a418d10fcc078c215f5a45ef701292e71345c65ffc85e51e8c1aac3975cc2a8d",
+          "freeze_scorer.py": "1b64ddd5d24477aa779db58f181e3f50e24c1258bd7df18c731896fcf2d7da8d",
+          "gates.yaml": "7487b8737f317e5d9ae8ccf3111bee618b4c72bf5dce6dc84bb74c59b3d3f64f",
+          "near_dup_sweep.py": "7390c902334ed3f709f385a89f02f754294a10f41be8cd0617bfbbfef0d9faea",
+          "score_holdout.py": "a832a3b1f2813ecdb1d5b485d3416cf503e1dcaf58daf73dda6345d596fe3ce6"
+        },
+        "repins": [
+          {
+            "date": "2026-07-11T02:50:27Z",
+            "file": "cloud/modal_h9_holdout.py",
+            "new_sha256": "aded92aed1425e932dd3d258082604e2304e156dc6d2fec51910e912f96acd60",
+            "old_sha256": "a17a68cbc7c51a0de800177cc70e649c6495b8be48ad1c11ff3f88ab1a4f8b99",
+            "reason": "Container-lane import repair: fresh clone lacks the untracked legacy probe tree, so the pinned extract entry crashed on ModuleNotFoundError (amendment_s_correctness_probe_extract) before extraction. Harness now installs legacy-wrapper-tree at experiment/phase1/probe, shims the renamed AC config (prompt.system byte-identical across rename d55b7d26), sets PYTHONPATH, and adds a fail-fast import preflight before model download. Rehearsed green in a clean pinned-commit checkout. No scorer, pool, draw, or gate logic touched."
+          },
+          {
+            "date": "2026-07-11T03:20:29Z",
+            "file": "cloud/modal_h9_holdout.py",
+            "new_sha256": "844f4c7bfbb6dab7ddfedf72a63232251015d94595f158b20917bd19c5cc50d6",
+            "old_sha256": "aded92aed1425e932dd3d258082604e2304e156dc6d2fec51910e912f96acd60",
+            "reason": "Post-generate join repair: harness step 4b read gen/rows_graded.jsonl but the generate stage writes gen/rows.jsonl, crashing the first complete run AFTER both GPU stages finished; and checkpoints only mirrored top-level files, so the finished extraction+generation trees were lost. Fixed the filename, made checkpoint_once mirror the stage trees during the run, and restore them from the volume at container start so Modal retries resume (entry script's own config_sha-guarded resume skips completed rows). Join and mirror logic unit-tested locally. No scorer, pool, draw, prompt, or gate change."
+          },
+          {
+            "date": "2026-07-11T09:58:53Z",
+            "file": "draw_holdout.py",
+            "new_sha256": "a418d10fcc078c215f5a45ef701292e71345c65ffc85e51e8c1aac3975cc2a8d",
+            "old_sha256": "719e5402cbd470533527b0e9478ff8bbc745b8d37b7c87d36e56ef4d381f84cc",
+            "reason": "Registered H9-G0 enlargement remedy EXECUTED (user-approved 2026-07-11) after the 500-row draw yielded 4 confabs vs the >=20 floor: draw_holdout gains the --enlarge mode implementing the pre-registered rule (replay the 500 draw, hard-assert line-identical to the committed manifest, continue the same RNG stream, +250 largest-remainder per-source, sorted-source order); cell.yaml pointers move to the enlarged 750-row draw surface with originals preserved and the read-once G1 report routed to gate_report_enlarged.json; Modal harness reads the enlarged manifest and enlarged staged pool. Enlarged draw executed: replay verified, 0 near-dups flagged (max overlap 0.75), pool 750 rows all qhash-verified. No scorer, gate-threshold, contrast, or prompt change."
+          },
+          {
+            "date": "2026-07-11T09:58:53Z",
+            "file": "cell.yaml",
+            "new_sha256": "fa5a1a2cb3919616f9887a0f6064415c8950903e4044b29e219ec698493184f3",
+            "old_sha256": "5c2cd9633aa43a351253d2f0beb70bd79a8781ab4a2ea21794df2a506b6bf772",
+            "reason": "Registered H9-G0 enlargement remedy EXECUTED (user-approved 2026-07-11) after the 500-row draw yielded 4 confabs vs the >=20 floor: draw_holdout gains the --enlarge mode implementing the pre-registered rule (replay the 500 draw, hard-assert line-identical to the committed manifest, continue the same RNG stream, +250 largest-remainder per-source, sorted-source order); cell.yaml pointers move to the enlarged 750-row draw surface with originals preserved and the read-once G1 report routed to gate_report_enlarged.json; Modal harness reads the enlarged manifest and enlarged staged pool. Enlarged draw executed: replay verified, 0 near-dups flagged (max overlap 0.75), pool 750 rows all qhash-verified. No scorer, gate-threshold, contrast, or prompt change."
+          },
+          {
+            "date": "2026-07-11T09:58:53Z",
+            "file": "cloud/modal_h9_holdout.py",
+            "new_sha256": "f292348dd392396dc69c7c32d4a188af73cbebf1d915e19640e51342716209af",
+            "old_sha256": "844f4c7bfbb6dab7ddfedf72a63232251015d94595f158b20917bd19c5cc50d6",
+            "reason": "Registered H9-G0 enlargement remedy EXECUTED (user-approved 2026-07-11) after the 500-row draw yielded 4 confabs vs the >=20 floor: draw_holdout gains the --enlarge mode implementing the pre-registered rule (replay the 500 draw, hard-assert line-identical to the committed manifest, continue the same RNG stream, +250 largest-remainder per-source, sorted-source order); cell.yaml pointers move to the enlarged 750-row draw surface with originals preserved and the read-once G1 report routed to gate_report_enlarged.json; Modal harness reads the enlarged manifest and enlarged staged pool. Enlarged draw executed: replay verified, 0 near-dups flagged (max overlap 0.75), pool 750 rows all qhash-verified. No scorer, gate-threshold, contrast, or prompt change."
+          }
+        ]
+      },
+      "kg": [
+        "paper:internal-h9-reading-gate-inconclusive-by-power"
+      ],
+      "prediction": "orchestrator: H9-G1 PASS (~55%) with the held-out propensity AUROC landing in the low-to-mid 0.6s near the 0.62 pass line; H9-G2 caution floor PASS (~90%); H9-G0 evaluability met (~85%). User prediction: H9-G1 INCONCLUSIVE band (recorded 2026-07-10).",
+      "question": "Does the AL confabulation-propensity direction, frozen from its 1,662-row fit surface, still separate confabulations from honest unanswerable refusals on a disjoint held-out draw the fit never saw, on the AI-TRUE checkpoint?",
+      "registered": true,
+      "slug": "h9-propensity-reading-gate",
+      "status": "resolved",
+      "title": "H9 held-out reading gate for the confab-propensity direction on AI-TRUE",
+      "type": "probe-fit",
+      "verdict": "INCONCLUSIVE-BY-POWER: H9-G0 unmet on both the 500-row draw (4 confabs vs >=20 floor) and the one registered +250 enlargement (still 4 confabs in 605 unanswerable rows); H9-G1 never read per the read-once rule, so the held-out propensity claim remains untested at adequate power on this checkpoint. H9-G2 caution control passed both reads (0.9734, 0.9702), certifying the pipeline; the confab scarcity is real behavior (the AI-TRUE checkpoint refuses 99.3% of held-out unanswerable rows). Near-dup sensitivity 0 flagged, no flip."
     },
     {
       "checkpoint": {
@@ -1620,6 +1757,50 @@
         "repo": "",
         "revision": ""
       },
+      "created_at": "2026-07-12T12:41:44Z",
+      "falsifier": "For either family: no interior eff_dim_frac peak (monotone to the last layer), or no layer inside 20-85 percent depth reaches AUROC >= 0.80 on all three axes simultaneously.",
+      "inputs": [],
+      "instrument": {
+        "configs": [
+          "cell.yaml",
+          "gates.yaml"
+        ],
+        "modules": [
+          "render_jspace_atlas.py",
+          "capture_atlas_cell.py",
+          "profile_and_read_panel.py",
+          "smoke_profile_and_read_panel.py",
+          "cloud/modal_jspace_atlas.py"
+        ],
+        "pins": {
+          "capture_atlas_cell.py": "8366f612308d0dd8b84791f233e4bd500fe30ccc5438e512879845c5f070e840",
+          "cell.yaml": "3ad62846fdd273e878ddd8bff96ba08c5a8dca2914f45e0d526f67837a4dae6a",
+          "cloud/modal_jspace_atlas.py": "fe7e44381117893aacc010041f2b2d7efdf2d2cd4fa15d40c318c751f99240cb",
+          "gates.yaml": "1d889488bd70ce8a39759a6f088fa79685161a752c08710742b7f842a1f25a7a",
+          "profile_and_read_panel.py": "424c44ab2092a9bc40d65e0c5324568ef78883a02bc62ec1f91567a7c423fb35",
+          "render_jspace_atlas.py": "d9888307dcdbcd52ea3c2dcd1244a750e0a53865c2978b875d2ae8b6bddff2ca",
+          "smoke_profile_and_read_panel.py": "0766b40be2eff4c247bc1f7732f53c5366ec4f2c0daa498a403f1b4c53cb5635"
+        }
+      },
+      "kg": [
+        "experiment:jspace-family-atlas",
+        "mechanism:workspace-band-peak-location-is-family-relative",
+        "mechanism:refused-vs-known-contrast-carries-norm-position-confound"
+      ],
+      "prediction": "Each mapped family shows an interior workspace band strictly inside 20-85 percent depth where eff_dim_frac peaks and all three read axes hold held-out AUROC >= 0.80, with the peak differing from the ported 0.94-depth layer.",
+      "question": "Where does each non-Qwen family's workspace midband sit (eff_dim_frac profile over depth), and do the doubt, caution, and raw-refusal axes read there, supplying the per-family layer map the doubt-snap fleet never had?",
+      "registered": true,
+      "slug": "jspace-family-atlas",
+      "status": "resolved",
+      "title": "jspace-family-atlas",
+      "type": "probe-fit",
+      "verdict": "prediction failed in both families because the eff_dim_frac profile peaks early (0.09-0.14 depth) rather than interior, while the read panel delivered the intended per-family layer map with an interior band (llama 15-23, mistral 7-27) where doubt, caution, and raw refusal all read >= 0.80 held-out"
+    },
+    {
+      "checkpoint": {
+        "repo": "",
+        "revision": ""
+      },
       "created_at": "2026-07-08T17:40:52Z",
       "falsifier": "",
       "inputs": [],
@@ -1942,6 +2123,56 @@
       "title": "Protocol Amendment M: Quantile-Balanced Probe-Distilled Stated Confidence (SFT)",
       "type": "historical-amendment",
       "verdict": "FALSIFIER FIRED — behavior PASSED 4/4 (action margin +31pt) but calibration failed (correctness AUROC 0.504, 3 distinct values); scalar collapsed onto the action; bottleneck is channel/loss, not target."
+    },
+    {
+      "checkpoint": {
+        "repo": "Qwen/Qwen3.5-4B",
+        "revision": "851bf6e806efd8d0a36b00ddf55e13ccb7b8cd0a"
+      },
+      "falsifier": "No mid-band layer/dose achieves that window, and every mid-band layer shows the same refusal-vs-well-formed entanglement as the late site (refusal rises only as well-formed falls, no dose clears both thresholds at once).",
+      "inputs": [
+        "experiments/j-space-localization-qwen3-4b/jlens.py",
+        "experiments/j-space-midband-write-sweep-qwen3-4b/AMENDMENT.md",
+        "experiments/qwen35-4b-midband-doubt-snap/analysis-committed/reused_rows_manifest.json",
+        "experiments/qwen35-4b-midband-doubt-snap/analysis-committed/profile_summary.json",
+        "experiments/qwen35-4b-midband-doubt-snap/analysis-committed/build_manifest.json"
+      ],
+      "instrument": {
+        "configs": [
+          "cell.yaml",
+          "gates.yaml"
+        ],
+        "modules": [
+          "materialize_reused_rows.py",
+          "jlens_qwen35.py",
+          "fit_midband_directions.py",
+          "run_dose_ladder.py",
+          "grader.py",
+          "gen_lib.py"
+        ],
+        "pins": {
+          "cell.yaml": "b0f2cc3e8322db2c32b6712e5a12d33c827e0247eaa85ab238cb0fd07ca686bb",
+          "fit_midband_directions.py": "a25ebbd343ad64c0f6af77eea1085b438fcb975599804f0149254fd1c1f1c912",
+          "gates.yaml": "c27fdd99c111fc3840d9abd7791a6f555c71645e15115ba6c76718c4c7cec762",
+          "gen_lib.py": "4b2796318c94e35aa878c1f82716c9d7776d6cc7b4e40af5f16f5b3c36d44089",
+          "grader.py": "72254c1c391ec8107062d846eb1def721f52122c066534b8678790bea161789e",
+          "jlens_qwen35.py": "028c71871fe38a770db3a3eac877a074dd86786200cc2ed0715d6b2ac4298039",
+          "materialize_reused_rows.py": "57be9a4e975b9a991544ca0fba32670a5c276ed084c58f329c41c8fc471a6b24",
+          "run_dose_ladder.py": "3495ed6a9169b5ba6af742f44ba17cef30059723c20c6a49dc11331fe5458bff"
+        }
+      },
+      "kg": [
+        "experiment:qwen35-4b-midband-doubt-snap",
+        "mechanism:qwen35-4b-midband-write-decouples-refusal-from-format-collapse",
+        "mechanism:caution-write-selectivity-is-content-dependent-not-gate-created"
+      ],
+      "prediction": "Some mid-band layer, at some dose on the proposed grid, will achieve refusal rate >= 0.60 AND well-formed rate >= 0.80 on fired FIT confabs with known-correct false-refusal <= 0.10 -- the coherent operating window the late site (hs30) provably lacks on this substrate.",
+      "question": "On Qwen/Qwen3.5-4B, does writing the doubt-gated caution snap at a J-space workspace-band (mid-band) layer decouple refusal induction from output corruption, where the registered late-site (0.94-depth, hs30) write produced a well-characterized no-window null in doubt-snap-cross-family-confirmatory (FIT dose sweep 0% clean_tighten at the registered grid, recalibrated peak ~33% coherent tighten with well-formedness collapsing to 3% by dose 60)?",
+      "registered": true,
+      "slug": "qwen35-4b-midband-doubt-snap",
+      "status": "resolved",
+      "type": "steer-cell",
+      "verdict": "G1 passed at hs20 dose 8 x sigma_c, the unique grid cell decoupling refusal induction (0.684) from output corruption (well-formed 0.980, known false-refusal 10/240 = 0.042, in-sample FIT), while hs23/hs26 never clear the refusal floor and the in-grid late-site comparator hs30 reproduces its entangled failure, so the Qwen3-4B mid-band write-site lesson transfers to Qwen3.5-4B."
     },
     {
       "checkpoint": {

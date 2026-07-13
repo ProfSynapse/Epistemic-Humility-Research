@@ -1,0 +1,41 @@
+{
+  "by_gold_class": {
+    "answerable": {
+      "answered": 50,
+      "degenerate": 3,
+      "other": 0,
+      "refused": 92
+    },
+    "unanswerable": {
+      "answered": 32,
+      "degenerate": 15,
+      "other": 0,
+      "refused": 558
+    },
+    "unknown_gold": 0
+  },
+  "cells": {
+    "confab": 32,
+    "degenerate": 18,
+    "honest_unanswerable_refusal": 558,
+    "known_answered": 50,
+    "known_refused": 92,
+    "other_nondegenerate": 0
+  },
+  "confab_stated_confidence_hist": null,
+  "model": {
+    "adapter": null,
+    "hub_repo": "Qwen/Qwen3-4B",
+    "load_in_4bit": true,
+    "revision": "1cfa9a7208912126459214e8b04321603b3df60c"
+  },
+  "n_graded": 750,
+  "phase0_floors_reference": {
+    "BB-P0-A_schema_valid_frac_min": 0.6,
+    "BB-P0-B_min_confabs": 20,
+    "BB-P0-C_min_unanswerable_refusals": 20
+  },
+  "repo_commit": "ace9654aa370d0f2488069da99a9f6dc3bc10c54",
+  "run_tag": "bb-phase0-r1",
+  "schema_valid_frac": 0.976
+}
