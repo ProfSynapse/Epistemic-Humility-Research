@@ -1,0 +1,7 @@
+{
+  "cell_id": "qwen35_9b",
+  "dose_select_exit_code": 4,
+  "failure_stage": "fit_dose_selection",
+  "reason": "no_registered_candidate_dose_met_fit_selection_criteria",
+  "status": "failed"
+}
