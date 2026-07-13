@@ -172,3 +172,35 @@ re-run) plus the benign-warning note. Both scoreboard calls wrong on G1;
 orchestrator right on greedy reproduction and placebo margins. Downstream:
 every assertion of the 73.5% headline re-scopes to "one greedy decode";
 Paper 5 rewrite must carry this.
+
+## 2026-07-13 - Lab-notebook: boolean-level failure decomposition + text-persistence gap (lead)
+
+CPU-only re-slice of the existing run logs; no new claims, no gate changes.
+
+The run logs violate the program's data-exhaust principle: the harness
+computed full sub-grades (well_formed, single_answer_key, trailing_clean,
+semantic_refuse, degenerate, terminated_naturally) inside
+grade_clean_tighten and discarded them, persisting only final booleans and
+no generation text. Decomposition of the G1 collapse from what survives:
+fired confab samples (n=6720) split 24.1% clean_tighten / 0.0%
+answered-with-gold-alias (expected for confab-selected rows) / 75.9%
+NEITHER, vs a non-fired sampled baseline of 1.8% / 0.0% / 98.2% and a
+greedy fired split of 81.0% / 0.0% / 19.0%. The NEITHER bucket cannot be
+split into answered-wrong vs refused-but-messy vs degenerate without text.
+
+Open instrumentation question this leaves live (red-team surface 4 caveat):
+the batched sampled path's termination rule (_first_eos_position) was not
+auditable against greedy's rule, clean_tighten requires
+terminated_naturally, and the size of that conjunct's contribution to the
+collapse is unbounded from stored booleans. Successor registered as a
+lab-notebook diagnostic: single-seed (20260710) Arm S re-run with the same
+pinned generation/grading stack, persisting per-sample generation text and
+the full sub-grade dict under gitignored analysis/, to decompose the
+failure anatomy and bound the termination-rule conjunct. Verdict
+implication is one-directional as registered: the G1 falsifier fired on the
+locked clean_tighten metric and stands unless the diagnostic reveals the
+batched path misgraded terminated_naturally at a magnitude material to the
+48-point miss, in which case the instrument-verification section is
+reopened before any merge of the resolve PR.
+
+PR #283 merge recommendation: HOLD until this diagnostic lands.
