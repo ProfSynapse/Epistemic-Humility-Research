@@ -2047,6 +2047,35 @@
     },
     {
       "checkpoint": {
+        "repo": "(none; CPU-only re-read of persisted artifacts, no model loaded)",
+        "revision": ""
+      },
+      "created_at": "2026-07-14T17:19:16Z",
+      "falsifier": "The mechanism reading is falsified if the answerable-vs-unanswerable difference in pre-generation doubt/caution projection (M1) is statistically indistinguishable within every family (bootstrap 95% CI on the standardized mean difference spans 0 in every family and both directions). At the behavioral subtype resolution, if a single kuq subcategory carries the entire qwen suppression while others are flat, the \"question type is inert\" reading is falsified for qwen. The answerable-vs-unanswerable BEHAVIORAL contrast cannot be confirmed or falsified from existing data (qwen n=17, mistral/QL/llama n=0 dosed) and is deferred to rr3-corrected-placebo-replication.",
+      "inputs": [],
+      "instrument": {
+        "configs": [
+          "cell.yaml",
+          "gates.yaml"
+        ],
+        "modules": [
+          "detector_v2 (calibration pin; narrow screen)",
+          "blinded adjudication grades (calibration + RR2 committed; read, not re-run)"
+        ],
+        "pins": {}
+      },
+      "kg": [],
+      "prediction": "Question type does NOT explain the cross-family placebo sign difference: the sign is measured entirely on the unanswerable stratum in both families, so it cannot be attributed to question-type mixing. At the mechanism level, unanswerable prompts sit higher than answerable prompts on the pre-generation doubt/caution axis in every family (M1), and within the unanswerable stratum the higher-baseline family (mistral) recruits while the headroom family (qwen) suppresses (M2 consistency); realized random displacement onto the caution axis does not differ by question type within a family (M3).",
+      "question": "Does question type (answerable triviaqa/popqa vs unanswerable kuq) modulate or explain the family-specific SIGN of the random-direction placebo response certified by the wide-instrument calibration (qwen suppresses -5.13 pts, mistral recruits +7.39 pts), analyzed CPU-only over existing generation text, committed wide grades, and pre-generation anchor hidden states?",
+      "registered": true,
+      "slug": "placebo-signflip-question-type-analysis",
+      "status": "draft",
+      "title": "Placebo sign-flip: question-type stratification of the family-specific random-direction response",
+      "type": "lab-diagnostic",
+      "verdict": ""
+    },
+    {
+      "checkpoint": {
         "repo": "",
         "revision": ""
       },

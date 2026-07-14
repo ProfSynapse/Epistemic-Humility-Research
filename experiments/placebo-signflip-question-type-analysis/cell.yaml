@@ -1,0 +1,86 @@
+# CPU-only analysis config for placebo-signflip-question-type-analysis.
+# This is a DRAFT design surface: no model, no GPU, no new generation, no new
+# grading. All inputs are persisted artifacts; the harness re-slices committed
+# grades and pre-generation anchors by question type. Pin the final bytes with
+# `bin/exp sign` only after the lead approves the design.
+
+analysis_kind: cpu_reread
+substrate: none                     # no model loaded
+
+# Question type is read from the row_key source prefix, NOT the role label.
+question_type:
+  answerable_sources: [triviaqa, popqa]
+  unanswerable_sources: [kuq]
+  axis_note: >-
+    source is exogenous to the write and to model behavior; role
+    (confab/known/unknown_refused) conflates question type with undosed baseline
+    behavior and is not used as the stratifier.
+
+# Frozen wide instrument reused byte-identical from the calibration; grades are
+# READ, never recomputed here.
+wide_grade:
+  source: abstention-wide-instrument-calibration/analysis/row_level_scored.jsonl
+  field: sub_grade.refused_final       # detector-v2-refused OR blinded-adjudicated, per row
+  mc_source: rr2-mistral-adjudicated-refusal-confirm/analysis-committed/final_report.json  # transcribed, not re-graded
+
+behavioral_cells:
+  A_qh:
+    family: qwen35-4b
+    baseline: qwen35-4b-midband-heldout/analysis/runlog/baseline.jsonl
+    placebo: qwen35-4b-midband-heldout/analysis/runlog/random_direction.jsonl
+    metric: paired_wide_abstention_delta_random_minus_baseline
+    strata: [unanswerable, answerable]
+    known_counts: {unanswerable_paired: 1286, answerable_dosed: 17}
+    certified_check: {baseline: 139/1286, random: 73/1286, delta_pts: -5.13}
+  B_mc:
+    family: mistral7b-v03
+    baseline: rr2-mistral-adjudicated-refusal-confirm/analysis/runlog/heldout__baseline.jsonl
+    placebo: rr2-mistral-adjudicated-refusal-confirm/analysis/runlog/heldout__random_direction.jsonl
+    metric: paired_wide_abstention_delta_random_minus_baseline
+    strata: [unanswerable]              # answerable n=0 dosed: registered coverage gap
+    baseline_fill_caveat: >-
+      9 non-fired confabs absent from random arm inherit baseline text; fill from
+      heldout__baseline.jsonl by row_key to reach full paired n=1312.
+    certified_check: {baseline: 368/1312, random: 465/1312, delta_pts: 7.39}
+  C_ql:
+    family: qwen35-4b
+    source: abstention-wide-instrument-calibration/analysis/row_level_scored.jsonl  # cell QL
+    metric: narrow_refusal_rate_by_layer_and_dose      # WIDE VOIDED per calibration Outcome
+    layers: [20, 23, 26, 30]
+    doses: [2, 4, 6, 8, 12, 16, 20]
+    strata: [unanswerable]              # answerable n=0 dosed in QL
+    void_note: QL wide lane terminally voided (calibration CG1 clear-positive fail x2 on QL_shard_07)
+
+within_kuq_subtype:                     # descriptive only, no gate
+  field: category_canon
+  subtypes: [controversial/debatable, counterfactual, question-with-false-assumption,
+             unsolved-problem/mystery, future-unknown, underspecified]
+
+mechanism_probe:
+  anchor_position: last real prompt token (pre-generation, pre-write)
+  frame_port_note: >-
+    port the two-stage standardized-score chain exactly from the doubt-snap
+    fit/gate code (per-feature mu/sigma from direction JSON, then scalar
+    mu_d/sigma_d/tau_frozen from build_manifest); validated by BG1.
+  families:
+    qwen35-4b:
+      anchors: qwen35-4b-midband-heldout/analysis/anchor_extract_heldout.safetensors
+      layer: hs20
+      directions_dir: qwen35-4b-midband-doubt-snap/analysis-committed/directions/hs20/
+      dose_abs: 12.608187917799976
+      coverage: {unanswerable: 1332, answerable: 360}
+      contrasts: [M1, M2, M3]
+    mistral7b-v03:
+      anchors: rr2-mistral-adjudicated-refusal-confirm/analysis/anchors_at_candidate_layers.json
+      layer: 16
+      directions_dir: rr2-mistral-adjudicated-refusal-confirm/directions/  # hs16_{u_d,c_hat,random_direction}.json
+      dose_abs: 3.6653166050691756     # 12 x sigma_c(hs16)=0.30544305
+      coverage: {unanswerable: 2400, answerable: 637}
+      contrasts: [M1, M2, M3]
+    llama32-3b:
+      anchors: rr-cross-family-raw-refusal/analysis/llama/anchors_at_candidate_layers.json
+      layers: [20, 22, 23]
+      coverage: {unanswerable: 2400, answerable: 556}
+      contrasts: [M1, M2]              # M3 dropped: no placebo arm ran (shape F)
+
+deliverable: analysis-committed/signflip_report.json    # aggregates only, no text

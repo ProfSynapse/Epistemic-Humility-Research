@@ -1,0 +1,36 @@
+# Pre-stated gates for placebo-signflip-question-type-analysis.
+# Integrity and coverage gates only. No promotion gate: outputs are measurements
+# and a mechanistic reading, and every prediction outcome is a reportable result.
+
+BG0_provenance_and_reslice_fidelity:
+  stage_inputs: >-
+    every source runlog, anchor artifact, direction JSON, and build_manifest
+    staged into gitignored analysis/staged_inputs/ with sha256 and row/vector
+    counts in a committed ID-manifest (no text).
+  reslice_check:
+    qh_unanswerable_must_equal: {baseline: 139/1286, random: 73/1286, delta_pts: -5.13}
+    mc_unanswerable_must_equal: {baseline: 368/1312, random: 465/1312, delta_pts: 7.39}
+    rule: reproduce certified confab numbers bit-for-bit before any stratified number is trusted
+
+BG1_mechanism_frame_port:
+  qwen_gate_reproduction:
+    target: reproduce frozen doubt gate per-row fire/no-fire on qwen anchors vs gated.jsonl fired set
+    tolerance: mismatch <= 1% of rows
+    note: >-
+      scoping smoke confirmed a NAIVE single-stage projection does not reproduce
+      firing; the two-stage standardized chain must be ported exactly from the
+      doubt-snap fit/gate code and validated here.
+  mistral_llama_frame:
+    target: reproduce committed gate statistics from fit_reuse / atlas manifests
+  on_fail: fix the frame, or drop that family's mechanism leg and report straight; no contrast runs on an unvalidated frame
+
+BG2_coverage_and_honesty:
+  paired_rule: paired-population rule respected in every delta; unpaired rows reported separately, never inside a delta
+  wilson_ci: every rate carries a Wilson 95% CI; every projection contrast a bootstrap 95% CI
+  answerable_coverage_gaps_named: {qwen_dosed: 17, mistral_dosed: 0, ql_dosed: 0, llama_placebo: 0}
+  no_answerable_behavioral_verdict: >-
+    the answerable-vs-unanswerable BEHAVIORAL contrast is NOT asserted from
+    existing data; deferred to rr3-corrected-placebo-replication.
+  m2_underpowered: cross-family sign regression labeled underpowered (n=2 families with a placebo sign)
+  m3_llama_dropped: realized-displacement dropped for llama (no placebo arm ran, shape F), reason stated
+  ql_wide_voided: QL reported narrow-only with the calibration void reason cited
