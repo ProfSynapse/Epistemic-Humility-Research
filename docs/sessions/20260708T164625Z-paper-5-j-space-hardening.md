@@ -4,7 +4,7 @@ session_id: 20260708T164625Z-paper-5-j-space-hardening
 title: Paper 5 J-space hardening
 status: active
 created_at: '2026-07-08T16:46:25Z'
-updated_at: '2026-07-14T22:09:57Z'
+updated_at: '2026-07-14T22:40:03Z'
 track: research
 phase: phase1
 question: Which registered follow-up experiments harden the Paper 5 actuation thesis,
@@ -1126,6 +1126,32 @@ checkpoints:
     3) Scaffold placebo seed-distribution census amendment (PI approved as next experiment)
     after signflip resolves. 4) Then scale test #41.'
   signals: {}
+- id: 041-checkpoint
+  at: '2026-07-14T22:40:03Z'
+  kind: checkpoint
+  title: Checkpoint
+  summary: 'Signflip experiment RESOLVED (PR #293 open, awaiting user merge). Red-team
+    certified all mechanism numbers to full float precision (fire-set 1303/1303; circularity
+    discharged via held-out restriction, -6.05 vs -5.80). M1 axis question resolved
+    from locked instruments: frozen gate defines doubt = -z_d, so doubt axis CONFIRMED
+    all three families under operational convention (near-tautology caveat stated);
+    caution axis not interpretable as question-type ordering; raw-axis prediction_consistent
+    booleans NOT transcribed. Registered falsifier UNTRIGGERED (sign-agnostic, no
+    CI spans 0); behavioral subtype arm FIRES for qwen (future-unknown -24.7 vs <=-2.8;
+    also mistral''s +11.8 max and both families'' projection outlier). Scoreboard:
+    M1 both correct; subtype PI correct / orchestrator WRONG; M3 both wrong for qwen
+    (null), mistral non-null but 0.3% negligible. M2 carried RR3 single-seed caveat.
+    Stale scaffold header corrected (same bug as RR3). Commit 7904da93, registry regenned,
+    validate OK 72.'
+  evidence: []
+  run_ids: []
+  commands: []
+  decisions: []
+  next_steps:
+  - 'User decisions pending: merge PR #293 (signflip), merge PR #292 (data-exhaust),
+    doubt-snap publish go (v2 build). Then scaffold placebo seed-distribution census
+    (K=10-20 seeds/family at matched magnitude, approved), then scale test.'
+  signals: {}
 ---
 # Paper 5 J-space hardening
 
@@ -1601,3 +1627,10 @@ rows before the layer contrast.
 - summary: Signflip BG1 adjudicated and closed: both real-data fire-set failures were CHECK-SCOPE defects (lead re-derived mistral 0/1694 restricted personally; llama restricted 1/581 hs20, 0/581 hs22/hs23, known-presence invariant true, read from the diagnostic's raw output log after the diagnostic agent stalled on an unwoken background job). frame_port.py corrected to the actually-gate-evaluated populations (no frame-math change), llama fire-set now gates at 1% tolerance (strictness increase), repinned with full reason, smoke 31 pass, corrected BG1 rerun ALL GREEN (41ae0e37 on exp/placebo-signflip-analysis, after one stale-registry-hook recommit). Mechanism leg (M1/M2/M3 + pre-stated subtype readout) dispatched to harness-builder signflip-mech2. Also this segment: paper 5 updated on main 4bb46ba6 (new 4.9 + seed-variance rule + Section 5 table correction + RR3 AMENDMENT stale-header fix); abstention-grading skill PR #291 MERGED (8bbaa8a1); data-exhaust copy-everything builder + completeness verifier PR #292 OPEN (validated: 4 experiments had zero-file verify-PASSing builds under old allowlist; all 22 slugs rebuild complete, v2 staging in scratch/exhaust-backfill-v2); doubt-snap dry-run card ready, publish awaiting PI go (use v2 build).
 - next steps:
   - 1) Review signflip-mech2 M1/M2/M3 + subtype readout, then red-team, then falsifier/scoreboard adjudication + Outcome + resolve + PR (carry RR3 seed-variance caveat). 2) PI: merge PR #292; publish approvals per dataset card (doubt-snap first, from v2). 3) Scaffold placebo seed-distribution census amendment (PI approved as next experiment) after signflip resolves. 4) Then scale test #41.
+### 041-checkpoint - Checkpoint
+
+- at: `2026-07-14T22:40:03Z`
+- kind: `checkpoint`
+- summary: Signflip experiment RESOLVED (PR #293 open, awaiting user merge). Red-team certified all mechanism numbers to full float precision (fire-set 1303/1303; circularity discharged via held-out restriction, -6.05 vs -5.80). M1 axis question resolved from locked instruments: frozen gate defines doubt = -z_d, so doubt axis CONFIRMED all three families under operational convention (near-tautology caveat stated); caution axis not interpretable as question-type ordering; raw-axis prediction_consistent booleans NOT transcribed. Registered falsifier UNTRIGGERED (sign-agnostic, no CI spans 0); behavioral subtype arm FIRES for qwen (future-unknown -24.7 vs <=-2.8; also mistral's +11.8 max and both families' projection outlier). Scoreboard: M1 both correct; subtype PI correct / orchestrator WRONG; M3 both wrong for qwen (null), mistral non-null but 0.3% negligible. M2 carried RR3 single-seed caveat. Stale scaffold header corrected (same bug as RR3). Commit 7904da93, registry regenned, validate OK 72.
+- next steps:
+  - User decisions pending: merge PR #293 (signflip), merge PR #292 (data-exhaust), doubt-snap publish go (v2 build). Then scaffold placebo seed-distribution census (K=10-20 seeds/family at matched magnitude, approved), then scale test.
