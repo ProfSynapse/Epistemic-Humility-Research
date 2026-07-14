@@ -62,4 +62,8 @@ verdict: 'Falsified on the placebo leg: the blinded adjudicated instrument confi
   detector-width caveat, but a magnitude-matched random direction lifts baseline abstention
   +7.4 points (0.280 to 0.354) against the registered 2-point no-op tolerance, so
   direction-specificity fails as registered.'
-kg: []
+kg:
+- experiment:rr2-mistral-adjudicated-refusal-confirm
+- mechanism:canonical-phrase-detector-undercounts-cross-family-abstention-idioms
+- mechanism:wide-abstention-instrument-reveals-substantial-undosed-baseline-refusal
+- mechanism:random-direction-placebo-recruits-additional-wide-instrument-abstention
