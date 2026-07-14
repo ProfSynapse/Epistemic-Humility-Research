@@ -6,6 +6,18 @@ in `experiment.yaml`.
 
 ## Entries
 
+- 2026-07-14 (lead). STOP item fixed and amendment SIGNED. cell.yaml rider
+  block repaired: shared config hoisted to a new top-level `rider_shared` key
+  and `rider_cells` restored to a pure list of id-carrying cells, matching the
+  runtime loaders' access pattern (`next(r for r in cell["rider_cells"] if
+  r.get("id") == ...)`); semantics unchanged, PyYAML parses clean. Llama rider
+  revision pinned to 006f5dcd1393c3add266de40994ba96225e9689d after lead
+  verification that RR's cell.yaml and the fleet model_matrix.yaml agree on it.
+  Core K-seeds [30260714, 30260715, 30260716] confirmed. The strict-xfail
+  STOP-item test flipped to a structural assertion (parse + rider ids +
+  rider_shared keys). Suite: 78 passed, 0 failed. `bin/exp sign` run with the
+  full config/module pin set; `bin/exp validate` OK. Next: launch (local_3090
+  lane, free, standing approval, noted to the PI at go).
 - 2026-07-14 (harness-builder). Harness built end to end: generation harness
   (materialize_rows.py, fit_reuse.py, heldout_scorer.py, steer_lib.py,
   render.py, gen_lib.py -- family-generalized to `--family {mistral,llama}`

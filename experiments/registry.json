@@ -2659,7 +2659,7 @@
           "apply_adjudication.py": "6174b56808bda1ba53e97d50ad0661a7c571eb2c5f68c76d7c39f077d61b1c5b",
           "build_adjudication_pool.py": "16a1815b2b6692bd4b9cb0369f96539f60f200f333a2a53fb5c11f107c224b13",
           "build_regrade.py": "73e81caa345285c8e102c5ae31d0a3fab5eaedcc69ead5ddbda563a7c2973287",
-          "cell.yaml": "809f17b0210ec15de32eec438cf476b76dda3610e3aaf75b0354525b4e32b138",
+          "cell.yaml": "53cafc21f6ec21b149a2f9429bd412f7bf3c19eabd5dd5d01bc1cf0311cd23fa",
           "detector_v2.py": "161fd8548ec0dad1daabd590870654f1c32bd0daf21e6026a2c18c83e83991ae",
           "detector_v2_patterns.yaml": "36422e01ae03008c2f71f180158c63950e14f8dfc1279c4e654c89fb831841d9",
           "direction_fit.py": "04f2996301be1c5bbdea0a865fb8685b1f4001b6e5a06a87c0ed196048d65d9a",
@@ -2674,7 +2674,7 @@
           "render.py": "43dc3d56d21eced272db64621152d311fe4eabce6863a6fe8f9fb4c9196b4866",
           "rr3_scorer.py": "b1b25e0ea837589de26a9c3c09993b5a569c5ffb1514828346ec5e1cd31b1187",
           "steer_lib.py": "c78fd513b796dffd4f9808da7e5f2cc43d52625ad98850744c6bad1e91f29d23",
-          "test_rr3_smoke.py": "fa8c4d261c9402d42dbfba3f2ba0492bc4b39a4fb54b35a75845e13d393d8f4f"
+          "test_rr3_smoke.py": "a48bbb717c0704453acbc066b4dd0f36454fcc36bf7dbd354bc9efe13e5be381"
         }
       },
       "kg": [],
@@ -2682,7 +2682,7 @@
       "question": "Does the doubt-gated caution write actuate direction-specific, idiom-inclusive refusal on mistral at its atlas site (hs16, dose 12 sigma_c) under the wide instrument when direction specificity is judged by a corrected effect-ratio placebo criterion registered against the calibration wide-instrument baselines, and what is the placebo sign and dose-response across the mistral and (never-measured) llama families?",
       "registered": true,
       "slug": "rr3-corrected-placebo-replication",
-      "status": "draft",
+      "status": "signed",
       "title": "RR3: mistral gated-actuation confirm under corrected placebo + placebo-sign-map rider",
       "type": "steer-cell",
       "verdict": ""

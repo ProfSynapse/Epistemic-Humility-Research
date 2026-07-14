@@ -1,4 +1,4 @@
-# rr3-corrected-placebo-replication cell. DRAFT; pinned at sign.
+# rr3-corrected-placebo-replication cell. Pinned at sign (lead, 2026-07-14).
 #
 # Core: a NEW pre-registered test of direction-specific, idiom-inclusive
 # refusal actuation on mistral at its atlas site (hs16, dose 12 sigma_c),
@@ -99,7 +99,7 @@ core_cell:
         one full held-out pass per seed; direction specificity (RG1). RG1
         denominator is the MAX over the K seeds of the absolute lift over
         baseline (Q2, resolved); full ensemble reported descriptively regardless.
-      random_seeds: [30260714, 30260715, 30260716]    # DRAFT >= 3; lead confirms exact values at sign; denominator rule (max-over-K) fixed (Q2)
+      random_seeds: [30260714, 30260715, 30260716]    # CONFIRMED at sign (lead, 2026-07-14); K=3, distinct from RR2's seed; denominator rule (max-over-K) fixed (Q2)
     - name: dose_knowns_ungated
       description: >-
         every held-out known-correct row dosed unconditionally with c_hat at
@@ -110,7 +110,7 @@ core_cell:
 # ===========================================================================
 # RIDER CELLS: family x placebo-sign map (descriptive; NO promotion gate)
 # ===========================================================================
-rider_cells:
+rider_shared:                                # shared rider config; mirrored as pinned constants in heldout_scorer.py
   dose_ladder: [2, 4, 6, 8, 12, 16, 20]     # x sigma_c; full RR/ladder grid, swept in full (Q4, resolved)
   subsample:
     confab:
@@ -131,6 +131,7 @@ rider_cells:
                                              # undosed baseline answered); descriptive only, no gate, pre-stated
                                              # before any run
 
+rider_cells:
   - id: rider_mistral_placebo_ladder
     family: mistral7b_instruct_v03           # same substrate/site as core
     layer_hs_index: 16
@@ -144,7 +145,7 @@ rider_cells:
   - id: rider_llama_placebo_ladder
     family: llama32_3b_instruct
     model: unsloth/Llama-3.2-3B-Instruct
-    revision: TODO_pin_at_sign_from_RR_cell_and_fleet_model_matrix   # RR/atlas revision
+    revision: 006f5dcd1393c3add266de40994ba96225e9689d   # pinned at sign; lead-verified identical in RR cell.yaml and fleet model_matrix.yaml
     substrate: bf16
     loader: AutoModelForCausalLM.from_pretrained
     n_decoder_layers: 28

@@ -110,18 +110,18 @@ def _tiny_tokenizer():
 
 
 # ---------------------------------------------------------------------------
-# Known STOP item: cell.yaml does not parse. Documented, not silently fixed.
+# cell.yaml must parse and expose the structure the runtime loaders assume:
+# rider_cells a pure list of id-carrying cells, shared config under
+# rider_shared (STOP item fixed by the lead pre-sign).
 # ---------------------------------------------------------------------------
 
-@pytest.mark.xfail(strict=True, reason=(
-    "cell.yaml rider_cells mixes an unmarked block mapping with `- id: ...` "
-    "block-sequence items under one key (ParserError at line 134); present "
-    "at HEAD before this harness build, not introduced by it. STOP item for "
-    "the lead, not fixed here."
-))
 def test_cell_yaml_parses_as_valid_yaml():
     with (HERE / "cell.yaml").open(encoding="utf-8") as fh:
-        yaml.safe_load(fh)
+        cell = yaml.safe_load(fh)
+    assert isinstance(cell["rider_cells"], list)
+    assert [r.get("id") for r in cell["rider_cells"]] == [
+        "rider_mistral_placebo_ladder", "rider_llama_placebo_ladder"]
+    assert set(cell["rider_shared"]) == {"dose_ladder", "subsample", "reporting"}
 
 
 # ---------------------------------------------------------------------------
