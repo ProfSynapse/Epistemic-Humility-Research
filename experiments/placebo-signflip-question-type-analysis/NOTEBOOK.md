@@ -6,6 +6,34 @@ in `experiment.yaml`.
 
 ## Entries
 
+- 2026-07-14 (lead, BG1 adjudication + repin). The constrained-executor run of
+  the real-data BG1 checks FAILED as built (mistral fire-set mismatch 0.358,
+  llama ~0.274 per layer) and stopped at the registered hard stop, correctly.
+  Lead-adjudicated diagnosis, independently re-derived (the mistral restricted
+  recomputation was re-run by the lead directly; the llama restricted numbers
+  were read from the diagnostic run's raw output log): both failures were
+  CHECK-SCOPE defects, not frame defects. The mistral check scored all 3037
+  anchor rows while RR2's pipeline gate-evaluated only the 1694-row held-out
+  roster; restricted to that roster the ported frame reproduces every fire and
+  no-fire decision (0/1694 both directions). The llama check treated
+  unconditionally-dosed known_correct rows (222, present in the gated runlog
+  regardless of any gate decision) as missed fires; restricted to the 581
+  gate-evaluated confab FIT rows the frame reproduces hs22 and hs23 exactly
+  and hs20 with one extra fire (0.0017, inside the registered 1% tolerance).
+  frame_port.py corrected to the populations the pipelines actually
+  gate-evaluated (no change to frame math or analysis paths); the llama
+  fire-set check now also gates each layer at the same 1% tolerance, a
+  strictness increase. Repinned with a repins entry. Smoke suite 31 passed.
+  Corrected BG1 rerun over both real-data files: PASS honestly (qwen 0/1692,
+  mistral 0/1694, llama 1/581 + 0/581 + 0/581, known-presence invariant true
+  at all layers). BG0/BG1/BG2 all green; mechanism leg now authorized.
+  Cross-experiment caveat registered for the eventual verdict:
+  rr3-corrected-placebo-replication (resolved FALSIFIED, PR #290) shows
+  mistral random-direction lifts spanning -7.4 to +21.8 points across three
+  fresh seeds at matched magnitude, so the single-seed family-sign premise
+  behind this experiment's mistral recruitment pole must be read with
+  per-seed variance in mind; the falsifier and M1/M3 predictions are
+  unaffected (they concern anchors and question type, not placebo seeds).
 - 2026-07-14 (lead, PRE-STATED before the mechanism leg runs). Behavioral leg
   executed post-sign; BG0/BG1/BG2 all PASS; report written (uncommitted until
   the mechanism leg completes). Headline behavioral observation: the qwen

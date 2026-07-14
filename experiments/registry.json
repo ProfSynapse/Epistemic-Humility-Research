@@ -2071,7 +2071,7 @@
           "behavioral_leg.py": "be6539853c2e646b87d877b172474be5ee2b9c95ef913f81c5691cca3d29e41b",
           "cell.yaml": "c29c3373cfb629c37572759fa369e812116fc52ba8875d0bd88565f100f8744c",
           "common.py": "853a212e0773017b01f8ced4f2de50d638199e0ba42016e02dc37933187fd60f",
-          "frame_port.py": "306a76c9ffbe2fe5321939c33497acdf5986311a66ce591153f44b9160e777bd",
+          "frame_port.py": "4536fde43b0e79968717cffd57ec90e56e5030dc4ee602693d91c7715391f721",
           "gates.yaml": "af871c5e1b7d4733cd0eeb23717a4f9f93f7648e2b64da1a95cc42ba32c7c18d",
           "mechanism_leg.py": "8e3c6fcc43fd2d0bf9841d065a99d4b2925d26772f83f997b8e528377402c2b5",
           "report.py": "564b381d6228e7f4a162eaa5933ade30855ba9e26be5856414cbb9d6956090d5",
@@ -2083,6 +2083,15 @@
       "prediction": "Question type does NOT explain the cross-family placebo sign difference: the sign is measured entirely on the unanswerable stratum in both families, so it cannot be attributed to question-type mixing. At the mechanism level, unanswerable prompts sit higher than answerable prompts on the pre-generation doubt/caution axis in every family (M1), and within the unanswerable stratum the higher-baseline family (mistral) recruits while the headroom family (qwen) suppresses (M2 consistency); realized random displacement onto the caution axis does not differ by question type within a family (M3).",
       "question": "Does question type (answerable triviaqa/popqa vs unanswerable kuq) modulate or explain the family-specific SIGN of the random-direction placebo response certified by the wide-instrument calibration (qwen suppresses -5.13 pts, mistral recruits +7.39 pts), analyzed CPU-only over existing generation text, committed wide grades, and pre-generation anchor hidden states?",
       "registered": true,
+      "repins": [
+        {
+          "date": "2026-07-14",
+          "file": "frame_port.py",
+          "new_sha256": "4536fde43b0e79968717cffd57ec90e56e5030dc4ee602693d91c7715391f721",
+          "old_sha256": "306a76c9ffbe2fe5321939c33497acdf5986311a66ce591153f44b9160e777bd",
+          "reason": "Post-sign check-scope correction, lead-adjudicated after both families' BG1 real-data fire-set checks failed. Diagnosis (independently re-derived by the lead): the mistral check scored all 3037 anchor rows but the pipeline gate-evaluated only the 1694-row held-out roster (restricted mismatches 0/1694); the llama check counted unconditionally-dosed known rows as missed fires (restricted confab-only mismatches 1/581 hs20, 0/581 hs22, 0/581 hs23). Checks corrected to the populations the pipelines actually gate-evaluated; llama fire-set now also gates at the same 1% tolerance. No change to the frame math, gates, or any analysis code path."
+        }
+      ],
       "slug": "placebo-signflip-question-type-analysis",
       "status": "signed",
       "title": "Placebo sign-flip: question-type stratification of the family-specific random-direction response",

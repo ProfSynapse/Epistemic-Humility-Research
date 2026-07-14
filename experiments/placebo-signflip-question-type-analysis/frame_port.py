@@ -200,12 +200,25 @@ def check_mistral_frame_realdata(tolerance: float = 0.01) -> dict[str, Any]:
     """OPT-IN real-data row-level fire-set check (loads the 251MB
     anchors_at_candidate_layers.json; not called by report.py or by default
     pytest collection -- see test_signflip_smoke.py's realdata marker).
-    Mirrors check_qwen_frame exactly, against heldout__gated.jsonl."""
+    Mirrors check_qwen_frame, against heldout__{baseline,gated}.jsonl.
+
+    Population scope (post-sign check correction, repinned): the comparison
+    runs ONLY over the roster the real pipeline actually gate-evaluated,
+    which is the held-out set in heldout__baseline.jsonl (RR2's
+    heldout_scorer scored the gate on held_confab + held_known and wrote
+    only FIRED rows to heldout__gated.jsonl). The anchor JSON additionally
+    carries fit and fit_only rows the pipeline never gate-evaluated; scoring
+    those as mismatches (the original build's behavior) counted rows with no
+    ground-truth gate decision as failures. Ground truth on the evaluated
+    roster: fire = present in heldout__gated.jsonl, no-fire = present in
+    heldout__baseline.jsonl but absent from heldout__gated.jsonl. Both
+    directions (missed fires AND extra fires) count as mismatches."""
     anchors_path = STAGED / "mc" / "anchors_at_candidate_layers.json"
+    baseline_path = STAGED / "mc" / "heldout__baseline.jsonl"
     gated_path = STAGED / "mc" / "heldout__gated.jsonl"
     u_d_path = STAGED / "mc" / "directions" / "hs16_u_d.json"
     build_manifest_path = STAGED / "mc" / "directions" / "hs16_build_manifest.json"
-    for p in (anchors_path, gated_path, u_d_path, build_manifest_path):
+    for p in (anchors_path, baseline_path, gated_path, u_d_path, build_manifest_path):
         if not p.is_file():
             raise SystemExit(f"check_mistral_frame_realdata: missing {p}; run staging.py first")
 
@@ -213,28 +226,43 @@ def check_mistral_frame_realdata(tolerance: float = 0.01) -> dict[str, Any]:
     stats = json.loads(build_manifest_path.read_text())
     mu_d, sigma_d, tau = stats["mu_d"], stats["sigma_d"], stats["tau_frozen"]
 
+    evaluated_roster = {r["row_key"] for r in load_jsonl(baseline_path)}
+    ground_truth_fired = {r["row_key"] for r in load_jsonl(gated_path)}
+    if not ground_truth_fired <= evaluated_roster:
+        raise SystemExit("check_mistral_frame_realdata: gated runlog carries keys outside the baseline roster")
+
     raw_anchors = json.loads(anchors_path.read_text())
+    n_anchor_rows_total = sum(1 for per in raw_anchors.values() if per.get("16") is not None)
     recomputed_fired: set[str] = set()
     n_rows = 0
-    for row_key, per_layer in raw_anchors.items():
-        h = per_layer.get("16")
+    missing_anchor: list[str] = []
+    for row_key in sorted(evaluated_roster):
+        per_layer = raw_anchors.get(row_key)
+        h = per_layer.get("16") if per_layer else None
         if h is None:
+            missing_anchor.append(row_key)
             continue
         proj_d = raw_projection(np.asarray(h, dtype=np.float64), u_d)
         n_rows += 1
         if gate_decision(proj_d, mu_d, sigma_d, tau)["fire"]:
             recomputed_fired.add(row_key)
     del raw_anchors
+    if missing_anchor:
+        raise SystemExit(
+            f"check_mistral_frame_realdata: {len(missing_anchor)} evaluated-roster rows have no hs16 anchor"
+        )
 
-    ground_truth_fired = {r["row_key"] for r in load_jsonl(gated_path)}
     mismatches = recomputed_fired.symmetric_difference(ground_truth_fired)
     mismatch_rate = len(mismatches) / n_rows if n_rows else 1.0
     return {
         "family": "mistral7b-v03", "layer": "hs16", "n_rows": n_rows,
+        "n_anchor_rows_total": n_anchor_rows_total,
+        "n_evaluated_roster": len(evaluated_roster),
         "n_recomputed_fired": len(recomputed_fired), "n_ground_truth_fired": len(ground_truth_fired),
         "n_mismatches": len(mismatches), "mismatch_rate": mismatch_rate,
         "tolerance": tolerance, "pass": mismatch_rate <= tolerance,
-        "ground_truth_source": "analysis/runlog/heldout__gated.jsonl",
+        "population_scope": "heldout evaluated roster (heldout__baseline.jsonl keys) only",
+        "ground_truth_source": "analysis/runlog/heldout__{baseline,gated}.jsonl",
     }
 
 
@@ -299,37 +327,59 @@ def reconstruct_llama_layer(layer: int, seed: int = 20260713) -> dict[str, Any]:
     }
 
 
-def check_llama_frame_realdata(layers: tuple[int, ...] = _LLAMA_LAYERS) -> dict[str, Any]:
+def check_llama_frame_realdata(layers: tuple[int, ...] = _LLAMA_LAYERS,
+                               tolerance: float = 0.01) -> dict[str, Any]:
     """OPT-IN: field-for-field cross-check across all three llama candidate
     layers, plus a row-level fire-set reproduction against the staged
-    hs{layer}__gated__dose2.jsonl FIT-population ground truth (fire set is
-    dose-invariant by construction -- the gate only depends on layer, not
-    dose; this check verifies that assumption holds across the staged doses
-    rather than asserting it)."""
+    hs{layer}__gated__dose2.jsonl ground truth (fire set is dose-invariant
+    by construction -- the gate only depends on layer, not dose).
+
+    Population scope (post-sign check correction, repinned): the dose-ladder
+    pipeline gate-evaluated ONLY the confab FIT rows; the known_correct FIT
+    rows were dosed UNCONDITIONALLY and appear in the gated runlog
+    regardless of any gate decision. The original build compared recomputed
+    fires over confab_fit + known_fit against ALL runlog row_keys, so every
+    unconditionally-dosed known row counted as a missed fire. The corrected
+    check compares fires on the confab_fit population against role==confab
+    runlog rows, and separately asserts the known-presence invariant (every
+    known_fit key present in the runlog irrespective of fire). The fire-set
+    mismatch rate now also gates each layer's pass at the same registered
+    <= 1% tolerance the mistral check uses."""
     per_layer = {}
     for layer in layers:
         result = reconstruct_llama_layer(layer)
         fit = result.pop("fit")
         gated_path = STAGED / "llama" / "runlog" / f"hs{layer}__gated__dose2.jsonl"
         if gated_path.is_file() and result["pass"]:
-            ground_truth_fired = {r["row_key"] for r in load_jsonl(gated_path)}
-            # Fire-set check over the FIT population (confab_fit + known_fit,
-            # the same rows `fit_directions` scored to freeze tau): reuse the
-            # already-computed proj_d_fit rather than re-projecting.
+            gated_rows = load_jsonl(gated_path)
+            gt_fired_confab = {r["row_key"] for r in gated_rows if r["role"] == "confab"}
+            gt_known_present = {r["row_key"] for r in gated_rows if r["role"] == "known_correct_answered"}
+            # Fire-set check restricted to the gate-evaluated confab FIT
+            # population; reuse the already-computed proj_d_fit.
             proj_d_fit = fit["proj_d_fit"]
             fit_keys = fit["confab_fit"] + fit["known_fit"]
+            confab_set = set(fit["confab_fit"])
+            known_set = set(fit["known_fit"])
             mu_d, sigma_d, tau = fit["stats"]["mu_d"], fit["stats"]["sigma_d"], result["expected"]["tau_frozen"]
-            recomputed_fired = set()
+            recomputed_fired_confab = set()
             for rk, proj_d in zip(fit_keys, proj_d_fit):
-                if gate_decision(float(proj_d), mu_d, sigma_d, tau)["fire"]:
-                    recomputed_fired.add(rk)
-            mismatches = recomputed_fired.symmetric_difference(ground_truth_fired)
-            n_rows = len(fit_keys)
+                if rk in confab_set and gate_decision(float(proj_d), mu_d, sigma_d, tau)["fire"]:
+                    recomputed_fired_confab.add(rk)
+            mismatches = recomputed_fired_confab.symmetric_difference(gt_fired_confab)
+            n_rows = len(confab_set)
+            mismatch_rate = (len(mismatches) / n_rows) if n_rows else 1.0
+            known_presence_ok = gt_known_present == known_set
+            fire_pass = (mismatch_rate <= tolerance) and known_presence_ok
             result["fire_set_check"] = {
-                "n_rows": n_rows, "n_recomputed_fired": len(recomputed_fired),
-                "n_ground_truth_fired": len(ground_truth_fired), "n_mismatches": len(mismatches),
-                "mismatch_rate": (len(mismatches) / n_rows) if n_rows else 1.0,
+                "population_scope": "confab_fit only (gate-evaluated); knowns dosed unconditionally",
+                "n_rows": n_rows, "n_recomputed_fired": len(recomputed_fired_confab),
+                "n_ground_truth_fired": len(gt_fired_confab), "n_mismatches": len(mismatches),
+                "mismatch_rate": mismatch_rate, "tolerance": tolerance,
+                "known_presence_invariant_ok": known_presence_ok,
+                "n_known_fit": len(known_set), "n_known_present_in_runlog": len(gt_known_present),
+                "pass": fire_pass,
                 "ground_truth_source": f"analysis/llama/runlog/hs{layer}__gated__dose2.jsonl",
             }
+            result["pass"] = bool(result["pass"] and fire_pass)
         per_layer[f"hs{layer}"] = result
     return {"family": "llama32-3b", "layers": per_layer, "pass": all(v["pass"] for v in per_layer.values())}
