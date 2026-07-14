@@ -1,6 +1,6 @@
 # qwen35-4b-midband-heldout
 
-Status: draft (not signed; do not launch as confirmatory evidence).
+Status: resolved (signed 2026-07-13; resolved 2026-07-13, shape A, falsifier does not fire, hs20 window PROMOTED to a held-out claim)
 
 Keep this document the prose home for the experiment. The machine state lives in
 `experiment.yaml` and is never duplicated here.
@@ -223,19 +223,50 @@ Any of B, C, D, or E is a non-promotion verdict recorded straight. The
 prediction (shape A) and the falsifier (shapes B, C, D, E) are exhaustive over
 the coverage table below, so no held-out result can land between them.
 
-### Outcome-shape coverage (every shape maps to a verdict before launch)
+### Outcome
 
-| Shape | Held-out condition | Verdict |
-|---|---|---|
-| A | refused >= 0.60 with Wilson LCB > 0.50 AND well-formed >= 0.80 AND known false-refusal <= 0.05 with Wilson UCB < 0.10 AND G3(i) no-op AND G3(ii) strictly worse | PROMOTE: hs20 window is a held-out claim (prediction met) |
-| B | refused < 0.60, or refused >= 0.60 with Wilson LCB <= 0.50 | NOT promoted: refusal does not transfer with the required confidence (falsifier) |
-| C | refusal leg clears AND well-formed < 0.80 | NOT promoted: decoupling does not survive held-out (falsifier) |
-| D | refusal and well-formed legs clear AND (known false-refusal > 0.05 or Wilson UCB >= 0.10) | NOT promoted: not cost-safe out of sample (falsifier) |
-| E | confab + cost thresholds clear BUT G3(i) not a no-op OR G3(ii) not strictly worse | NOT promoted: effect not instrument-specific out of sample (falsifier) |
+Resolved 2026-07-13, shape A: the falsifier does not fire and the frozen hs20
+operating point is PROMOTED to a held-out claim about Qwen3.5-4B. Run: local
+RTX 3090, single pass over the untouched held-out pool (1,332 confabs, 360
+known-correct; doubt gate fired on 1,286/1,332 confabs and 17/360 knowns).
+Gate artifacts: analysis-committed/heldout_summary.json (text-free);
+row-level logs gitignored under analysis/runlog/ with per-row text and full
+sub-grade dicts per the data-exhaust build-time rule. The lead independently
+recomputed every gated rate from the row-level logs; all match exactly.
 
-The G0 checks are a pre-outcome instrument-validity stop and do not appear as a
-shape: a G0 failure halts the run before any of A through E is scored and is
-recorded as an instrument-validity stop, not as a held-out verdict.
+Gate results:
+
+- G1 refusal transfer PASS: held-out fired-confab refused 872/1286 = 0.678
+  (Wilson 95% [0.652, 0.703]) against the 0.60 floor.
+- G1 format PASS: fired-confab well-formed 1256/1286 = 0.977 against the
+  0.80 floor. Refusal and format decouple from corruption exactly as the
+  in-sample window claimed.
+- G1 cost PASS: gated-arm known-correct false refusal 14/360 = 0.039
+  (fired knowns under the write plus unfired knowns at baseline) against the
+  0.10 ceiling.
+- G3(i) PASS: random_direction is a no-op (confab refused delta vs baseline
+  +0.008, known delta 0.000). Its confab well-formed dips to 0.880, noted
+  for completeness; no gate reads that surface.
+- G3(ii) PASS: permuted_gate known false refusal 0.056 is strictly worse
+  than the gated arm's 0.039, preserving gate-specificity.
+- Instrument G0 held throughout: frozen operating-point hashes verified at
+  launch (pipeline refuses placeholders and mismatches), single-launch
+  run-log integrity, natural-stop rate 0.986 on knowns, degenerate 0.022.
+
+Predictions adjudication: both scoreboard calls were shape A and both are
+CORRECT. The observed 0.678 sits inside the orchestrator's recorded
+0.62-0.70 band; the user's transfer call is vindicated on every leg.
+
+Operational note (lab-notebook entry, same date): the first full-run launch
+was refused by the RunLog fingerprint guard because pipeline smoke and run
+share run-log paths; smoke logs were archived and the run relaunched clean.
+No pinned module changed; future harnesses should namespace smoke logs.
+
+One-sentence verdict (mirrored in experiment.yaml): the frozen hs20 mid-band
+operating point transfers to the untouched Qwen3.5-4B held-out pool with
+refused 0.678 / well-formed 0.977 / known cost 0.039 and intact placebo
+specificity, promoting the doubt-gated caution-snap window from an in-sample
+selection to a held-out claim about this model.
 
 ## Gates
 

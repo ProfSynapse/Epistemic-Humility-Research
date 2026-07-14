@@ -54,3 +54,18 @@ run_full_attempt1_fingerprint_refusal.log, full run relaunched clean.
 Materialize and capture_anchors artifacts were untouched and reused. Note
 for future harnesses: smoke should namespace its run logs away from the
 confirmatory paths so the guard never has to fire.
+
+## 2026-07-13 - RESOLVED shape A: hs20 window promoted to held-out claim (lead)
+
+Full run completed cleanly after the runlog relaunch. All gates pass:
+fired-confab refused 872/1286 = 0.678 (Wilson [0.652, 0.703]) vs 0.60,
+well-formed 0.977 vs 0.80, gated-arm known false refusal 14/360 = 0.039 vs
+0.10, random_direction no-op (+0.008 confab, 0.000 known), permuted_gate
+strictly worse on cost (0.056 vs 0.039). Lead independently recomputed every
+gated rate from analysis/runlog/ row logs; exact match on all legs.
+Per-row text and full sub-grade dicts persisted per the data-exhaust rule.
+Both scoreboard calls (shape A) correct; observed refused sits mid-band in
+the orchestrator's recorded 0.62-0.70. Result is in-prediction and the
+instrument was hardened and adversarially reviewed pre-sign, so lead
+verification (not a fresh red-team) is the certification tier applied.
+Resolved via bin/exp resolve; PR to follow; KG ingest after merge.

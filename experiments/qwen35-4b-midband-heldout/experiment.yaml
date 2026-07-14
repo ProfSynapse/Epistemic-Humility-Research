@@ -2,7 +2,7 @@ slug: qwen35-4b-midband-heldout
 title: Qwen3.5-4B mid-band doubt-snap held-out confirmation (hs20 frozen operating
   point)
 type: steer-cell
-status: signed
+status: resolved
 registered: true
 created_at: '2026-07-13T10:32:51Z'
 question: Does the resolved qwen35-4b-midband-doubt-snap hs20 operating point (frozen
@@ -58,5 +58,8 @@ inputs:
 - experiments/qwen35-4b-midband-doubt-snap/analysis-committed/directions/hs20/c_hat.json
 - experiments/qwen35-4b-midband-doubt-snap/analysis-committed/directions/hs20/random_direction.json
 - experiments/qwen35-4b-midband-doubt-snap/analysis-committed/reused_rows_manifest.json
-verdict: ''
+verdict: The frozen hs20 mid-band operating point transfers to the untouched Qwen3.5-4B
+  held-out pool with refused 0.678, well-formed 0.977, known-correct false refusal
+  0.039, and intact placebo specificity, promoting the doubt-gated caution-snap window
+  from an in-sample selection to a held-out claim about this model.
 kg: []
