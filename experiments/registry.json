@@ -2451,10 +2451,10 @@
       "question": "Does the doubt-gated caution write actuate clean, idiom-inclusive refusal on mistral at its atlas site (hs16, dose 12 sigma_c) when abstention is scored by a pre-registered diverse detector plus a blinded human adjudication lane, symmetric across benefit and cost populations?",
       "registered": true,
       "slug": "rr2-mistral-adjudicated-refusal-confirm",
-      "status": "signed",
+      "status": "falsified",
       "title": "RR2: mistral confirmatory with detector v2 + blinded adjudication lane",
       "type": "steer-cell",
-      "verdict": ""
+      "verdict": "Falsified on the placebo leg: the blinded adjudicated instrument confirms idiom-inclusive mistral refusal at 0.699 with pristine cost, vindicating the RR detector-width caveat, but a magnitude-matched random direction lifts baseline abstention +7.4 points (0.280 to 0.354) against the registered 2-point no-op tolerance, so direction-specificity fails as registered."
     },
     {
       "checkpoint": {

@@ -1,0 +1,96 @@
+{
+  "baseline_confab_full": {
+    "n": 1312,
+    "refused_final": {
+      "n": 1312,
+      "rate": 0.2804878048780488,
+      "successes": 368,
+      "wilson_ci_95": [
+        0.25684724934683917,
+        0.30541004530001553
+      ]
+    }
+  },
+  "baseline_known_full": {
+    "n": 382,
+    "refused_final": {
+      "n": 382,
+      "rate": 0.005235602094240838,
+      "successes": 2,
+      "wilson_ci_95": [
+        0.0014369671023544868,
+        0.018886040292084585
+      ]
+    }
+  },
+  "gated_fired_confab": {
+    "n": 1303,
+    "refused_final": {
+      "n": 1303,
+      "rate": 0.6991557943207981,
+      "successes": 911,
+      "wilson_ci_95": [
+        0.6736981431746195,
+        0.7234426090543083
+      ]
+    },
+    "well_formed": {
+      "n": 1303,
+      "rate": 0.9869531849577897,
+      "successes": 1286,
+      "wilson_ci_95": [
+        0.9792051706818825,
+        0.9918384026871148
+      ]
+    }
+  },
+  "gated_known_full_population": {
+    "n": 382,
+    "refused_final": {
+      "n": 382,
+      "rate": 0.005235602094240838,
+      "successes": 2,
+      "wilson_ci_95": [
+        0.0014369671023544868,
+        0.018886040292084585
+      ]
+    }
+  },
+  "gates": {
+    "rg1_refused_pass": true,
+    "rg1_well_formed_pass": true,
+    "rg2_cost_pass": true,
+    "rg3_placebo": {
+      "confab_delta_random_minus_baseline": 0.07393292682926828,
+      "known_delta_random_minus_baseline": 0.0,
+      "passed": false
+    }
+  },
+  "n_core_pool": 3147,
+  "n_decoy": 435,
+  "random_direction_confab_full": {
+    "n": 1312,
+    "refused_final": {
+      "n": 1312,
+      "rate": 0.3544207317073171,
+      "successes": 465,
+      "wilson_ci_95": [
+        0.32899699560877815,
+        0.3806944741049345
+      ]
+    }
+  },
+  "random_direction_known_full": {
+    "n": 382,
+    "refused_final": {
+      "n": 382,
+      "rate": 0.005235602094240838,
+      "successes": 2,
+      "wilson_ci_95": [
+        0.0014369671023544868,
+        0.018886040292084585
+      ]
+    }
+  },
+  "verdict": "FALSIFIED"
+}

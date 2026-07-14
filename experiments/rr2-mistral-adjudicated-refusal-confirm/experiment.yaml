@@ -1,7 +1,7 @@
 slug: rr2-mistral-adjudicated-refusal-confirm
 title: 'RR2: mistral confirmatory with detector v2 + blinded adjudication lane'
 type: steer-cell
-status: signed
+status: falsified
 registered: true
 created_at: '2026-07-13T22:55:38Z'
 question: Does the doubt-gated caution write actuate clean, idiom-inclusive refusal
@@ -57,5 +57,9 @@ instrument:
     steer_lib.py: 3c09e0b74ebf9ae79da08026cb9de2d839069e8efb8caca25948a002a7ea60f4
     test_rr2_smoke.py: ca3a02d2e68c9e79ab4f81e765f93081a1e9a29df035ca46237016c798a3d28e
 inputs: []
-verdict: ''
+verdict: 'Falsified on the placebo leg: the blinded adjudicated instrument confirms
+  idiom-inclusive mistral refusal at 0.699 with pristine cost, vindicating the RR
+  detector-width caveat, but a magnitude-matched random direction lifts baseline abstention
+  +7.4 points (0.280 to 0.354) against the registered 2-point no-op tolerance, so
+  direction-specificity fails as registered.'
 kg: []

@@ -127,3 +127,88 @@ None of these changes a gate, floor, rubric, or the fixed operating point.
 Scoreboard recorded pre-launch (user: shape A at ~0.68-0.70; orchestrator:
 shape A at 0.63-0.72). All instrument files pinned; signing via bin/exp
 sign. Launch queued behind the held-out ladder run currently on the card.
+
+## 2026-07-13 - Run: generation, blinded adjudication, gates (lead)
+
+Full pipeline run on the local 3090 (standing local-lane approval). Staging:
+`split_rows_private.jsonl` copied from the rr-raw-refusal worktree's staged
+inputs and the mistral atlas capture symlinked from the same sibling worktree
+(read-only reuse of RR's pinned artifacts, no re-extraction). RG0 clean at
+launch: all 17 pins hash-verified; fit_reuse reconstruction cross-checked
+field-for-field against RR's committed hs16 fit manifest with zero
+mismatches; single-launch run logs with no duplicate row keys; placebo
+readback no-op within RR's G3 tolerance.
+
+Held-out passes (fresh rows, seed 20260713): baseline, gated, random
+direction, dose_knowns_ungated. Gate fired on 1303/1312 held-out confabs and
+0/382 knowns. Detector-v2 provisional rates committed in
+`heldout_summary.json` (status provisional, no RG verdicts by construction).
+
+Blinded adjudication executed per the registered order, enforced in code:
+pool built deterministically (3582 texts = 3147 core detector-v2-negative
+rows from all four arms and both populations + 435 decoys: 255
+clear-negative carve-outs, 180 clear-positive), labels stripped, salted
+opaque ids, seeded shuffle; pool manifest committed BEFORE grading
+(b00be9c8). Grading performed by a context-free agent per the PI's
+standing directive: it received only the registered rubric, the bare texts,
+and the output format, with no experiment context and an explicit
+instruction not to build a pattern matcher. It graded all 3582 texts in one
+pass: 626 abstention TRUE / 2956 FALSE. Graded-file sha256 (9a68b499...)
+committed BEFORE unblinding (1a5e9ab0). Unblind + join + gates via
+`apply_adjudication.py apply`.
+
+Gate results (`final_report.json`): RG1 PASS (fired-confab adjudicated
+refusal 911/1303 = 0.6992, Wilson [0.674, 0.723], well-formed 0.987). RG2
+PASS (known cost 2/382 = 0.0052, UCB 0.019, byte-identical across baseline,
+gated, and random arms). RG3 FAIL (baseline confab adjudicated abstention
+368/1312 = 0.2805 vs random-direction 465/1312 = 0.3544, delta +7.39 points
+against the registered 2-point tolerance; known-population delta 0.0).
+Harness verdict FALSIFIED. Held uncertified pending red-team review per the
+red-team-before-verdict rule.
+
+## 2026-07-13 - Red-team certification and lead adjudication: falsifier fire stands
+
+Adversarial certification (red-team-reviewer, five surfaces) returned
+CERTIFIED-FALSIFIER-FIRE with no invalidating defect:
+
+1. Unblinding order and join integrity SOUND: committed graded-file and pool
+   hashes match the artifacts byte-for-byte; all 3582 opaque ids unique;
+   pool/id-map/graded cover the identical id set; decoys excluded from every
+   scored population; per-population n's reconcile against the runlogs.
+2. Decoy audit of the blind grader SOUND (the decisive surface): 255/255
+   clear-negative decoys correctly graded not-abstention (zero over-credits,
+   so the failure mode that could inflate baseline or random rates is
+   absent); 143/180 clear-positives credited, i.e. the only measurable bias
+   is conservative and runs AGAINST the fire.
+3. Baseline 28% is real: an independent re-read of all 160 baseline-arm
+   TRUE-graded confab texts against the registered rubric found 2/160
+   disagreements (1.25%), both inflating-direction bare committed answers;
+   correcting them would widen the RG3 delta to +7.5 points. The remaining
+   158 are rubric-consistent abstention idioms.
+4. Random-arm mechanism is genuine abstention, not degeneracy: zero
+   degenerate rows credited in either arm; all 465 random-arm credits are
+   well-formed (wf 1306/1312 vs baseline 1302/1312); detector-v2 credits
+   DROP in the random arm (208 to 180) while adjudicated credits rise (160
+   to 285), a real content shift toward hedge idioms, not mis-scoring.
+5. Gate text vs code SOUND: gates_lib constants match gates.yaml and
+   AMENDMENT.md exactly; populations match the registered wording; detector
+   v2 has no population-conditional branch; no oracle leak (grader saw only
+   bare text + salted opaque ids).
+
+Residual noted for the record: the artifacts prove hash-commit ordering, not
+that grading temporally preceded the hash commit; that step is process
+trust, mitigated by the context-free grader and the git history (pool
+manifest commit b00be9c8 precedes graded-hash commit 1a5e9ab0 precedes any
+unblinded artifact).
+
+Lead adjudication: the fire is certified. Per the registered falsifier
+("or a non-no-op placebo") and the no-rescoring-lane clause, the experiment
+resolves FALSIFIED. Scoreboard: both predictor calls (user shape A at
+~0.68-0.70; orchestrator shape A at 0.63-0.72) are scored INCORRECT; both
+predicted the benefit level almost exactly (0.699 lands in both bands) but
+neither predicted the placebo leg would fail. Forward note, not a gate
+change: the 2-point RG3 tolerance was calibrated in a world where the
+narrow detector read baseline abstention as ~0; the wide instrument reveals
+a 28% idiom-inclusive baseline on this confab pool. Any successor must
+register its placebo tolerance against the wide-instrument baseline before
+new data, as a new signed amendment.
