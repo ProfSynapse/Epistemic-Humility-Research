@@ -1,0 +1,438 @@
+{
+  "baseline": {
+    "confab": {
+      "clean_tighten": {
+        "n": 1332,
+        "rate": 0.0,
+        "successes": 0,
+        "wilson_ci_95": [
+          0.0,
+          0.002875684681987215
+        ]
+      },
+      "degenerate": {
+        "n": 1332,
+        "rate": 0.0,
+        "successes": 0,
+        "wilson_ci_95": [
+          0.0,
+          0.002875684681987215
+        ]
+      },
+      "mean_new_tokens": 72.45195195195195,
+      "n": 1332,
+      "natural_stop": {
+        "n": 1332,
+        "rate": 0.9932432432432432,
+        "successes": 1323,
+        "wilson_ci_95": [
+          0.9872084572164601,
+          0.9964412051918496
+        ]
+      },
+      "refused": {
+        "n": 1332,
+        "rate": 0.0,
+        "successes": 0,
+        "wilson_ci_95": [
+          0.0,
+          0.002875684681987215
+        ]
+      },
+      "row_level_decoupling": 0,
+      "well_formed": {
+        "n": 1332,
+        "rate": 0.993993993993994,
+        "successes": 1324,
+        "wilson_ci_95": [
+          0.9881932781354076,
+          0.9969535679295359
+        ]
+      }
+    },
+    "known": {
+      "clean_tighten": {
+        "n": 360,
+        "rate": 0.0,
+        "successes": 0,
+        "wilson_ci_95": [
+          0.0,
+          0.010558056888693507
+        ]
+      },
+      "degenerate": {
+        "n": 360,
+        "rate": 0.0,
+        "successes": 0,
+        "wilson_ci_95": [
+          0.0,
+          0.010558056888693507
+        ]
+      },
+      "mean_new_tokens": 30.583333333333332,
+      "n": 360,
+      "natural_stop": {
+        "n": 360,
+        "rate": 1.0,
+        "successes": 360,
+        "wilson_ci_95": [
+          0.9894419431113063,
+          0.9999999999999999
+        ]
+      },
+      "refused": {
+        "n": 360,
+        "rate": 0.0,
+        "successes": 0,
+        "wilson_ci_95": [
+          0.0,
+          0.010558056888693507
+        ]
+      },
+      "row_level_decoupling": 0,
+      "well_formed": {
+        "n": 360,
+        "rate": 1.0,
+        "successes": 360,
+        "wilson_ci_95": [
+          0.9894419431113063,
+          0.9999999999999999
+        ]
+      }
+    }
+  },
+  "dose_abs": 12.608187917799976,
+  "gain_gated": 8.0,
+  "gain_random": 12.608187917799976,
+  "gated": {
+    "fired_confab": {
+      "clean_tighten": {
+        "n": 1286,
+        "rate": 0.6741835147744946,
+        "successes": 867,
+        "wilson_ci_95": [
+          0.6480821458152004,
+          0.6992473627351046
+        ]
+      },
+      "degenerate": {
+        "n": 1286,
+        "rate": 0.004665629860031105,
+        "successes": 6,
+        "wilson_ci_95": [
+          0.002140001475517069,
+          0.010141708584553431
+        ]
+      },
+      "mean_new_tokens": 48.46656298600311,
+      "n": 1286,
+      "natural_stop": {
+        "n": 1286,
+        "rate": 0.9782270606531882,
+        "successes": 1258,
+        "wilson_ci_95": [
+          0.9687119412485004,
+          0.9848936291016672
+        ]
+      },
+      "refused": {
+        "n": 1286,
+        "rate": 0.6780715396578538,
+        "successes": 872,
+        "wilson_ci_95": [
+          0.6520381983910777,
+          0.7030442009750824
+        ]
+      },
+      "row_level_decoupling": 869,
+      "well_formed": {
+        "n": 1286,
+        "rate": 0.9766718506998445,
+        "successes": 1256,
+        "wilson_ci_95": [
+          0.9668932911491341,
+          0.9836111228746913
+        ]
+      }
+    },
+    "known_fired_conditional": {
+      "clean_tighten": {
+        "n": 17,
+        "rate": 0.8235294117647058,
+        "successes": 14,
+        "wilson_ci_95": [
+          0.5897054143116588,
+          0.9380887336237901
+        ]
+      },
+      "degenerate": {
+        "n": 17,
+        "rate": 0.0,
+        "successes": 0,
+        "wilson_ci_95": [
+          0.0,
+          0.1843181350088518
+        ]
+      },
+      "mean_new_tokens": 26.88235294117647,
+      "n": 17,
+      "natural_stop": {
+        "n": 17,
+        "rate": 1.0,
+        "successes": 17,
+        "wilson_ci_95": [
+          0.8156818649911483,
+          1.0
+        ]
+      },
+      "refused": {
+        "n": 17,
+        "rate": 0.8235294117647058,
+        "successes": 14,
+        "wilson_ci_95": [
+          0.5897054143116588,
+          0.9380887336237901
+        ]
+      },
+      "row_level_decoupling": 14,
+      "well_formed": {
+        "n": 17,
+        "rate": 1.0,
+        "successes": 17,
+        "wilson_ci_95": [
+          0.8156818649911483,
+          1.0
+        ]
+      }
+    },
+    "known_full_population": {
+      "clean_tighten": {
+        "n": 360,
+        "rate": 0.03888888888888889,
+        "successes": 14,
+        "wilson_ci_95": [
+          0.023304322744098376,
+          0.06421032971991897
+        ]
+      },
+      "degenerate": {
+        "n": 360,
+        "rate": 0.0,
+        "successes": 0,
+        "wilson_ci_95": [
+          0.0,
+          0.010558056888693507
+        ]
+      },
+      "mean_new_tokens": 29.583333333333332,
+      "n": 360,
+      "natural_stop": {
+        "n": 360,
+        "rate": 1.0,
+        "successes": 360,
+        "wilson_ci_95": [
+          0.9894419431113063,
+          0.9999999999999999
+        ]
+      },
+      "refused": {
+        "n": 360,
+        "rate": 0.03888888888888889,
+        "successes": 14,
+        "wilson_ci_95": [
+          0.023304322744098376,
+          0.06421032971991897
+        ]
+      },
+      "row_level_decoupling": 14,
+      "well_formed": {
+        "n": 360,
+        "rate": 1.0,
+        "successes": 360,
+        "wilson_ci_95": [
+          0.9894419431113063,
+          0.9999999999999999
+        ]
+      }
+    }
+  },
+  "gates": {
+    "g1_cost_pass": true,
+    "g1_refused_transfer_pass": true,
+    "g1_well_formed_pass": true,
+    "g3i": {
+      "confab_delta_random_minus_baseline": 0.008258258258258258,
+      "known_delta_random_minus_baseline": 0.0,
+      "passed": true
+    },
+    "g3ii": {
+      "gated_rate": 0.03888888888888889,
+      "passed": true,
+      "permuted_rate": 0.05555555555555555
+    }
+  },
+  "heldout_permute_seed": 20260713,
+  "hs_index": 20,
+  "n_fired_confab": 1286,
+  "n_fired_known": 17,
+  "n_fired_total": 1303,
+  "n_held_out_confab": 1332,
+  "n_held_out_known": 360,
+  "n_permuted_confab": 1025,
+  "n_permuted_known": 278,
+  "outcome_shape": "A",
+  "permuted_gate": {
+    "known_full_population": {
+      "clean_tighten": {
+        "n": 360,
+        "rate": 0.05555555555555555,
+        "successes": 20,
+        "wilson_ci_95": [
+          0.03624820460007233,
+          0.08424784596765522
+        ]
+      },
+      "degenerate": {
+        "n": 360,
+        "rate": 0.022222222222222223,
+        "successes": 8,
+        "wilson_ci_95": [
+          0.011302428091525981,
+          0.04323082626878115
+        ]
+      },
+      "mean_new_tokens": 32.31111111111111,
+      "n": 360,
+      "natural_stop": {
+        "n": 360,
+        "rate": 0.9861111111111112,
+        "successes": 355,
+        "wilson_ci_95": [
+          0.9679041504124477,
+          0.9940532942791003
+        ]
+      },
+      "refused": {
+        "n": 360,
+        "rate": 0.05555555555555555,
+        "successes": 20,
+        "wilson_ci_95": [
+          0.03624820460007233,
+          0.08424784596765522
+        ]
+      },
+      "row_level_decoupling": 20,
+      "well_formed": {
+        "n": 360,
+        "rate": 0.9833333333333333,
+        "successes": 354,
+        "wilson_ci_95": [
+          0.9641208412232218,
+          0.9923397037843742
+        ]
+      }
+    }
+  },
+  "random_direction": {
+    "confab": {
+      "clean_tighten": {
+        "n": 1332,
+        "rate": 0.0022522522522522522,
+        "successes": 3,
+        "wilson_ci_95": [
+          0.0007662581646098125,
+          0.00660097748727836
+        ]
+      },
+      "degenerate": {
+        "n": 1332,
+        "rate": 0.005255255255255256,
+        "successes": 7,
+        "wilson_ci_95": [
+          0.002547949117467004,
+          0.01080802116095578
+        ]
+      },
+      "mean_new_tokens": 83.9512012012012,
+      "n": 1332,
+      "natural_stop": {
+        "n": 1332,
+        "rate": 0.9354354354354354,
+        "successes": 1246,
+        "wilson_ci_95": [
+          0.9209451434388513,
+          0.9474213774086672
+        ]
+      },
+      "refused": {
+        "n": 1332,
+        "rate": 0.008258258258258258,
+        "successes": 11,
+        "wilson_ci_95": [
+          0.004617484419177749,
+          0.014727220485779645
+        ]
+      },
+      "row_level_decoupling": 3,
+      "well_formed": {
+        "n": 1332,
+        "rate": 0.8798798798798799,
+        "successes": 1172,
+        "wilson_ci_95": [
+          0.8613195472248418,
+          0.8962553830317865
+        ]
+      }
+    },
+    "known": {
+      "clean_tighten": {
+        "n": 360,
+        "rate": 0.0,
+        "successes": 0,
+        "wilson_ci_95": [
+          0.0,
+          0.010558056888693507
+        ]
+      },
+      "degenerate": {
+        "n": 360,
+        "rate": 0.0,
+        "successes": 0,
+        "wilson_ci_95": [
+          0.0,
+          0.010558056888693507
+        ]
+      },
+      "mean_new_tokens": 31.769444444444446,
+      "n": 360,
+      "natural_stop": {
+        "n": 360,
+        "rate": 0.9972222222222222,
+        "successes": 359,
+        "wilson_ci_95": [
+          0.9844355578194421,
+          0.9995094856079123
+        ]
+      },
+      "refused": {
+        "n": 360,
+        "rate": 0.0,
+        "successes": 0,
+        "wilson_ci_95": [
+          0.0,
+          0.010558056888693507
+        ]
+      },
+      "row_level_decoupling": 0,
+      "well_formed": {
+        "n": 360,
+        "rate": 0.9916666666666667,
+        "successes": 357,
+        "wilson_ci_95": [
+          0.9757892964950321,
+          0.9971619475644193
+        ]
+      }
+    }
+  }
+}
