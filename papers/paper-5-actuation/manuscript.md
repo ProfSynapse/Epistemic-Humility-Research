@@ -20,16 +20,21 @@ evidence_base: >
   experiments/j-space-calibrated-layer-contrast-qwen3-4b/AMENDMENT.md,
   experiments/j-space-token-targeted-refusal-qwen3-4b/AMENDMENT.md,
   experiments/rr2-mistral-adjudicated-refusal-confirm/AMENDMENT.md,
-  and experiments/abstention-wide-instrument-calibration/AMENDMENT.md.
+  experiments/abstention-wide-instrument-calibration/AMENDMENT.md,
+  experiments/rr-cross-family-raw-refusal/AMENDMENT.md, and
+  experiments/rr3-corrected-placebo-replication/AMENDMENT.md.
 notes: >
   Draft v0 is a synthesis scaffold, not submission-ready. It deliberately
   separates reader-facing claims from amendment traceability. The core results
   are single-model or surface-local exploratory unless explicitly marked
   otherwise. A first cross-family attempt on mistral and a follow-up
-  wide-instrument calibration study are now folded in as Section 4.8; both
-  remain exploratory and pre-headline. The next planned step is a larger
-  cross-model / cross-family actuation study registered against the
-  per-family placebo design rule that calibration study produced.
+  wide-instrument calibration study are now folded in as Section 4.8. A
+  corrected-criterion re-adjudication under a registered multi-seed
+  effect-ratio placebo gate, plus a completed three-family placebo-sign-map
+  rider, is folded in as Section 4.9; all three remain exploratory and
+  pre-headline. The next planned step is a larger cross-model / cross-family
+  actuation study registered against the multi-seed per-family placebo design
+  rule Section 4.9 established.
 ---
 
 # Readable Is Not Writable: Channel, Gate, and Workspace Constraints on Actuating Epistemic State in Small Language Models
@@ -485,7 +490,14 @@ successors is explicit: register the placebo criterion against the measured
 per-family baseline (qwen 0.104, llama 0.164, mistral 0.280), and tolerate
 several points of non-directional movement in either sign, for example via
 an effect-ratio gate comparing gated lift to the absolute random lift rather
-than a flat symmetric band.
+than a flat symmetric band. Section 4.9 shows this rule is still incomplete
+as stated: a single random seed is not enough to size either side of that
+comparison, because mistral's random-direction response at matched magnitude
+spans -7.4 to +21.8 points across three fresh seeds at the same site and
+dose. The design rule for any future direction-specificity placebo criterion
+must therefore also require a multi-seed (K >= 3) random-direction ensemble
+with a max-over-K (or pre-stated equivalent) denominator, not a single seed
+(Section 4.9).
 
 This also qualifies how the narrow-detector-graded random-direction and
 permuted-gate controls elsewhere in this paper should be read. The Qwen3-4B
@@ -503,6 +515,99 @@ narrow-detector placebo delta as automatically clean: it should be read as
 provisional until re-checked under the wide instrument, particularly before
 any of these results are promoted from exploratory to headline.
 
+### 4.9 A corrected effect-ratio criterion still falsifies mistral direction-specificity, and reveals why single-seed placebo readings mislead
+
+A third experiment (`rr3-corrected-placebo-replication`) applied exactly the
+design rule the calibration study called for. Before any new data, it
+registered an effect-ratio primary gate in place of a flat tolerance: the
+gated arm's confab lift over baseline must be at least 3x the MAXIMUM
+absolute random-direction lift over baseline across K >= 3 fresh,
+pre-registered random seeds distinct from RR2's (a max-over-K denominator,
+the most conservative of three constructions considered, chosen so a single
+lucky random direction cannot set the gate). The gated and baseline mistral
+arms were regenerated at the same fixed operating point as RR2 (hs16, dose
+12 sigma_c) and reproduced RR2's generation text byte-for-byte, an integrity
+check rather than fresh evidence; what is fresh is a re-adjudication under a
+new blinded lane and three newly drawn random seeds.
+
+The primary gate failed. Gated confab lift over baseline was +40.9 points
+(baseline 375/1312 = 0.286, gated 911/1312 = 0.694). The three fresh random
+seeds produced lifts of +13.3, -7.4, and +21.8 points; the max-over-K
+denominator is therefore 21.8 points, and the effect ratio is 40.9/21.8 =
+1.87, short of the 3.0 floor
+(`experiments/rr3-corrected-placebo-replication/AMENDMENT.md` Outcome). The
+benefit and cost legs reproduced RR2 almost exactly: fired-confab
+adjudicated refusal 911/1303 = 0.699 (Wilson 95% CI [0.674, 0.723]) against
+the 0.60 floor, well-formedness 0.987, and known-correct adjudicated false
+refusal 2/382 = 0.0052 (Wilson 95% UCB 0.019) against the 0.05 ceiling. An
+adversarial red-team review certified the failure across six registered
+attack surfaces before the verdict was recorded: the three random directions
+were genuinely random (cosine similarity to the true caution direction <=
+0.015), magnitude-matched at the mechanism level (erase-write setpoint
+identical to the gated write within 0.004), scored on identical populations
+with exact arithmetic, and the failure is robust to an alternative rate rule
+(detector-only ratio 1.91) and to a mean-of-K denominator (ratio 2.89) in
+place of max-over-K. Per RR3's registered posture, this is reported as a
+corrected-criterion re-adjudication of the same claim RR2 tested, not as an
+independent fresh replication: RR2's falsified verdict stands, and now
+stands for a stronger reason than the flat tolerance that fired there
+(`experiments/rr3-corrected-placebo-replication/AMENDMENT.md`, Motivation
+and posture; Outcome).
+
+**Methods finding: single-seed placebo readings are unreliable.** The three
+fresh random seeds, at the same layer, dose, and population, produced lifts
+spanning -7.4 to +21.8 points, a 29-point spread from seed choice alone.
+RR2's single random seed (+7.39 points, cited in Section 4.8) and the
+calibration study's family-signed placebo map (mistral +7.39, qwen -5.13;
+Section 4.8) are each a single draw from that distribution. RR3's Outcome
+states this directly: "the calibration's family-signed placebo map should be
+read with per-seed variance in mind"
+(`experiments/rr3-corrected-placebo-replication/AMENDMENT.md`, "What the
+falsification means"). This is now a standing constraint on how any placebo
+delta reported from a single seed, anywhere in this paper, should be read.
+
+**Rider: the llama placebo leg completes the three-family sign map at
+null.** RR3 also ran the placebo measurement missing from the family x
+placebo-sign map since the calibration study scoped it out for lack of
+on-disk generation text (Section 4.8): a llama random-direction dose ladder
+at llama's own atlas site (hs20), one fresh seed per rung across the
+registered dose grid, on both the confab and known-correct populations. At
+the matched-magnitude reference dose (12 sigma_c), the llama confab lift was
++0.1 points: null. The ladder stayed flat through 16 sigma_c (-3.1 to +0.9
+points, all inside the +/-8 point descriptive envelope), with a single
++8.5-point excursion at the top rung (20 sigma_c) that lands marginally
+outside the envelope; known-correct false refusal grew with dose, from 0.3%
+at 2 sigma_c to 6.0% at 20 sigma_c. A parallel mistral dose ladder (hs16, one
+fresh seed per rung) produced lifts of -3.8 to +4.2 points across the same
+grid, all inside the envelope with no monotone dose-response, reinforcing
+the single-seed-instability finding above. Per RR3's pre-stated
+interpretation rule, a null llama result implies placebo response is not a
+smooth function of a family's baseline hedging rate, while a positive result
+would have supported reading the sign map as monotone in baseline (llama's
+0.164 baseline sits between qwen's 0.104 and mistral's 0.280). The null
+result falsifies the monotone-in-baseline reading: the pre-registered
+scoreboard records the null call as correct and the monotone-in-baseline
+call as unsupported
+(`experiments/rr3-corrected-placebo-replication/AMENDMENT.md`, Rider;
+Predictions scoreboard adjudication). The family x placebo-sign map is now
+complete in sign across all three families: qwen suppresses (-5.13), llama
+is null (+0.1 at matched magnitude), and mistral recruits on average but
+with wide single-seed variance (-7.4 to +21.8).
+
+**Interpretation.** The corrected effect-ratio criterion is a stricter test
+than the flat tolerance it replaced, not a looser one, and it survives
+adversarial review specifically because it is conservative (max-over-K, not
+mean- or single-seed). Mistral's direction-specificity claim, as tested at
+this single operating point, does not clear it. This confirms rather than
+overturns Section 4.8's standing lesson that a large gated effect does not
+by itself establish direction-specificity; what changes is the reason. RR2's
+flat tolerance failed because it was miscalibrated to a near-zero-baseline
+world. RR3's effect-ratio gate failed because mistral's random-direction
+response at this site and dose is itself high-variance across seeds, and one
+of three seeds recruited more than half of the gated effect's magnitude.
+Both are placebo-instrument findings, not evidence that the gated write
+itself is inert: benefit and cost reproduced RR2 exactly.
+
 ---
 
 ## 5. Synthesis: The Actuation Map
@@ -518,7 +623,7 @@ The results form a channel map rather than a single pass/fail story.
 | Doubt-gated caution snap | 73.5% clean tighten, 3.1% known cost | Release direction remains null | Gate supplies selectivity; snap supplies refusal |
 | Mid-band J-space write | hs23 beats hs34 by +22.7pp | Needs layer-specific dose; not yet cross-family | Write site matters |
 | Natural J-token write | Non-inert token-only effect | Redundant with `c_hat` hybrid | Verbalizable token target is not enough |
-| Cross-family gated snap (mistral) | Wide-instrument adjudicated refusal 69.9%, cost pristine, 5.7x random lift | Flat 2-point placebo tolerance falsified under family-specific baseline hedging | Placebo criteria must be calibrated to each family's own wide-instrument baseline, not a universal small-tolerance band |
+| Cross-family gated snap (mistral) | Wide-instrument adjudicated refusal 69.9%, cost pristine (0.52% known-correct) | Direction-specificity falsified twice: under a flat 2-point placebo tolerance, and again under a corrected 3x effect-ratio gate (ratio 1.87) driven by high seed-to-seed variance in mistral's random-direction response (-7.4 to +21.8pp); llama placebo response is null at matched magnitude | Placebo criteria must be calibrated to each family's own wide-instrument baseline AND evaluated against a multi-seed random-direction ensemble with a pre-stated denominator rule (RR3 used the conservative max-over-K); a single seed can materially misstate either the baseline delta or an effect-ratio denominator |
 
 The practical controller that emerges is not "make the model introspect." It is:
 
@@ -588,7 +693,14 @@ not population effect-size estimates. Key limits:
   graded under the program's narrow detector and have not been re-scored under
   the wide two-instrument stack introduced for cross-family work in Section
   4.8; a flat, family-agnostic placebo tolerance is now known to be
-  miscalibrated to at least one family's baseline hedging rate.
+  miscalibrated to at least one family's baseline hedging rate;
+- random-direction placebo response is itself high-variance across random
+  seeds at matched magnitude: mistral's confab lift at RR3's single fixed
+  operating point ranged from -7.4 to +21.8 points across three fresh seeds
+  (Section 4.9). Any placebo delta reported from a single seed anywhere in
+  this paper, including the qwen and mistral family-signed readings in
+  Section 4.8, should be read as one draw from a wide distribution rather
+  than a family constant.
 
 ### 6.5 Next study: the amped-up replication and model sweep
 
@@ -599,18 +711,32 @@ Recommended escalation:
    contrast on a fresh held-out split or newly staged rows for Qwen3-4B bf16.
 2. **Cross-model workspace localization.** Run the J-lens profile and direction
    verbalization on at least one Qwen size neighbor and two non-Qwen families.
-3. **Cross-family gated snap.** A first attempt on mistral
+3. **Cross-family gated snap.** Two attempts on mistral
    (`rr-cross-family-raw-refusal`, `rr2-mistral-adjudicated-refusal-confirm`,
-   Section 4.8) confirmed the benefit and cost gates under a wide, blinded
-   adjudication instrument (69.9% adjudicated refusal, 0.52% known-correct
-   cost) but falsified direction-specificity under a flat 2-point placebo
-   tolerance that a follow-up calibration study
-   (`abstention-wide-instrument-calibration`) showed was miscalibrated to
-   mistral's own 28.0% undosed hedging baseline. The next attempt, on mistral
-   and on the still-untested Llama-3.2-3B family, must register its placebo
-   criterion against each family's own measured wide-instrument baseline
-   (Section 4.8), for example as an effect-ratio gate, rather than reusing a
-   flat small-tolerance band.
+   `rr3-corrected-placebo-replication`, Sections 4.8-4.9), both at the same
+   fixed operating point (hs16, dose 12 sigma_c), confirmed the benefit and
+   cost gates under a wide, blinded adjudication instrument (69.9%
+   adjudicated refusal, 0.52% known-correct cost) but falsified
+   direction-specificity twice: first under a flat 2-point placebo tolerance
+   later shown to be miscalibrated to mistral's own 28.0% undosed hedging
+   baseline (`abstention-wide-instrument-calibration`), and then under the
+   corrected effect-ratio gate that calibration study's design rule called
+   for (gated lift >= 3x the max-over-K lift of K >= 3 fresh random seeds),
+   which also failed (ratio 1.87, Section 4.9) because mistral's
+   random-direction response at this site and dose is itself high-variance
+   across seeds (-7.4 to +21.8 points). Repeating the same operating point
+   with the same K is not expected to change the outcome; a future attempt
+   at establishing mistral direction-specificity needs either a different
+   write site or dose where the random-direction response is less variable,
+   or a larger K to tighten the max-over-K denominator. Llama's placebo
+   response, measured for the first time by RR3's rider, is null at matched
+   magnitude (Section 4.9), but llama's gated caution snap itself remains
+   completely untested. Any future attempt, on llama or elsewhere, must
+   register its placebo criterion against that family's own measured
+   wide-instrument baseline (Section 4.8) with a multi-seed (K >= 3)
+   random-direction ensemble and a max-over-K (or pre-stated equivalent)
+   denominator (Section 4.9), not a single seed and not a flat
+   small-tolerance band.
 4. **Dense-token screen.** Separately screen abstract or multilingual token
    bundles before any causal hybrid run. Do not alter the natural-token result
    post hoc.
@@ -664,6 +790,7 @@ provenance appendix or supplement.
 | AQ sycophancy actuator found readable direction but no clean actuator vs control | `experiments/aq-sycophancy-activation-actuator/AMENDMENT.md` Outcome | Supporting exploratory null |
 | Mistral cross-family gated write cleared benefit (69.9% adjudicated refusal) and cost (0.52% known-correct) gates under a wide blinded instrument but failed the flat 2-point placebo tolerance (+7.39pp random-direction lift) | `experiments/rr2-mistral-adjudicated-refusal-confirm/AMENDMENT.md` Outcome | Exploratory falsification (placebo-criterion design flaw, not benefit/cost) |
 | Wide-instrument baseline hedging and placebo response are family-graded and family-signed (qwen -5.13pp suppression, mistral +7.39pp recruitment); flat placebo tolerances must be registered per-family | `experiments/abstention-wide-instrument-calibration/AMENDMENT.md` Outcome | Exploratory instrument calibration, resolved |
+| Corrected effect-ratio placebo criterion (>= 3x max-over-K fresh-seed random lift) still falsified mistral direction-specificity (ratio 1.87) while reproducing RR2's benefit (69.9% adjudicated refusal) and cost (0.52% known-correct) exactly; red-team certified robust to detector-only and mean-of-K denominators; mistral's random-direction lift spans -7.4 to +21.8pp across three fresh seeds; llama rider placebo response is null at matched magnitude, completing the three-family sign map | `experiments/rr3-corrected-placebo-replication/AMENDMENT.md` Outcome | Exploratory falsification (corrected-criterion re-adjudication of the RR2 claim, benefit/cost intact) |
 
 ## Appendix B. Figure Plan
 
@@ -694,4 +821,11 @@ provenance appendix or supplement.
   the workspace-band result from exploratory to headline.
 - Register any future direction-specificity placebo criterion against the
   per-family wide-instrument baseline measured in Section 4.8 (qwen 0.104,
-  llama 0.164, mistral 0.280), not a flat symmetric tolerance.
+  llama 0.164, mistral 0.280), not a flat symmetric tolerance, and with a
+  multi-seed (K >= 3) random-direction ensemble and a max-over-K (or
+  pre-stated equivalent) denominator rather than a single seed, per RR3's
+  finding that a single seed materially misstates mistral's random-direction
+  response (Section 4.9).
+- Run llama's gated caution snap (not yet attempted; only its placebo
+  response has been measured, at null, in Section 4.9) before claiming or
+  ruling out cross-family direction-specificity for that family.

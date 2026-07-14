@@ -1,12 +1,15 @@
 # RR3: mistral gated-actuation confirm under corrected placebo + placebo-sign-map rider
 
-Status: draft (not signed; do not launch as confirmatory evidence). The K-seed
-denominator, the secondary tolerance width, the per-shard decoy floor, and the
-scoreboard SLOTS are fixed by lead decision (Q1, Q2, Q4, Q5 resolved below).
-The predictor CALLS in the scoreboard are filled (registered 2026-07-14,
-pre-launch; also checkpointed in the session note before entry here). Q3
-(verdict framing) is RESOLVED by the PI: corrected-criterion re-adjudication
-of the claim. Remaining before launch: harness build, pins, sign.
+Status: RESOLVED FALSIFIED (signed, run, adjudicated, and resolved 2026-07-14;
+see Outcome; machine state in `experiment.yaml`). Header correction note: this
+line read "draft (not signed)" from scaffold time until after the merge of PR
+#290; the stale status prose was corrected post-resolve without any other
+change to the document body. The K-seed denominator, the secondary tolerance
+width, the per-shard decoy floor, and the scoreboard SLOTS were fixed by lead
+decision (Q1, Q2, Q4, Q5 resolved below). The predictor CALLS in the
+scoreboard were filled pre-launch (registered 2026-07-14; also checkpointed in
+the session note before entry here). Q3 (verdict framing) was RESOLVED by the
+PI: corrected-criterion re-adjudication of the claim.
 
 Keep this document the prose home for the experiment. The machine state lives in
 `experiment.yaml` and is never duplicated here.
