@@ -4,7 +4,7 @@ session_id: 20260708T164625Z-paper-5-j-space-hardening
 title: Paper 5 J-space hardening
 status: active
 created_at: '2026-07-08T16:46:25Z'
-updated_at: '2026-07-14T12:38:29Z'
+updated_at: '2026-07-14T13:22:02Z'
 track: research
 phase: phase1
 question: Which registered follow-up experiments harden the Paper 5 actuation thesis,
@@ -863,6 +863,33 @@ checkpoints:
     successor design can now register its placebo criterion against the measured baselines
     (needs user sign-off); HF exhaust backlog #24 grows by this experiment.'
   signals: {}
+- id: 032-decision
+  at: '2026-07-14T13:22:02Z'
+  kind: decision
+  title: RR3 pre-run scoreboard calls + Q3 framing (PI + orchestrator)
+  summary: 'RR3 (rr3-corrected-placebo-replication, draft on exp/rr3-corrected-placebo)
+    pre-run registrations, stated BEFORE harness build and any run. Q3 framing decided
+    by PI: mistral core verdict is reported as a corrected-criterion re-adjudication
+    of RR2''s claim (same test done more intelligently, with the rider as additional
+    data exhaust), not as a fresh confirmatory replication. Scoreboard calls. PI:
+    llama placebo sign NULL (model is old and an outlier in his read); mistral RG1
+    PASS; mistral fresh random seeds INSIDE the +/-8 descriptive envelope. Orchestrator:
+    llama placebo sign WEAK RECRUITMENT (positive, monotone-in-baseline reading of
+    the calibration sign map: llama wide baseline 0.164 sits between qwen 0.104 suppression
+    and mistral 0.280 recruitment); mistral RG1 PASS; at least one of the K fresh
+    mistral random seeds lands OUTSIDE the +/-8 envelope on the recruitment side while
+    staying below the ~14-pt gate-fail threshold. These get copied verbatim into the
+    AMENDMENT scoreboard at sign-off; no edits after results per the no-goalpost rule.'
+  evidence: []
+  run_ids: []
+  commands: []
+  decisions:
+  - 'Q3: corrected-criterion re-adjudication framing (PI). Scoreboard calls registered
+    as above.'
+  next_steps:
+  - rr3-reviser lands revision -> lead final review -> copy scoreboard calls into
+    AMENDMENT -> harness build -> sign with pins -> lift GPU launch approval to PI.
+  signals: {}
 ---
 # Paper 5 J-space hardening
 
@@ -1267,3 +1294,12 @@ rows before the layer contrast.
   - Falsifier reading adjudicated signed/consequent-coherent under red-team certification, not chosen for the scoreboard; QL void reported straight, no third grading attempt; successor design rule recorded: no flat small symmetric placebo tolerance, register against per-family wide baselines with two-sided tolerance or effect-ratio gate; CG1 lesson: pooled or larger clear-positive decoy draws per shard.
 - next steps:
   - User merge decision on PR #289; KG-ingest calibration verdict post-merge; abstention-grading skill update (CG1 granularity + decoy-carve coverage lesson) as separate PR; RR2 successor design can now register its placebo criterion against the measured baselines (needs user sign-off); HF exhaust backlog #24 grows by this experiment.
+### 032-decision - RR3 pre-run scoreboard calls + Q3 framing (PI + orchestrator)
+
+- at: `2026-07-14T13:22:02Z`
+- kind: `decision`
+- summary: RR3 (rr3-corrected-placebo-replication, draft on exp/rr3-corrected-placebo) pre-run registrations, stated BEFORE harness build and any run. Q3 framing decided by PI: mistral core verdict is reported as a corrected-criterion re-adjudication of RR2's claim (same test done more intelligently, with the rider as additional data exhaust), not as a fresh confirmatory replication. Scoreboard calls. PI: llama placebo sign NULL (model is old and an outlier in his read); mistral RG1 PASS; mistral fresh random seeds INSIDE the +/-8 descriptive envelope. Orchestrator: llama placebo sign WEAK RECRUITMENT (positive, monotone-in-baseline reading of the calibration sign map: llama wide baseline 0.164 sits between qwen 0.104 suppression and mistral 0.280 recruitment); mistral RG1 PASS; at least one of the K fresh mistral random seeds lands OUTSIDE the +/-8 envelope on the recruitment side while staying below the ~14-pt gate-fail threshold. These get copied verbatim into the AMENDMENT scoreboard at sign-off; no edits after results per the no-goalpost rule.
+- decisions:
+  - Q3: corrected-criterion re-adjudication framing (PI). Scoreboard calls registered as above.
+- next steps:
+  - rr3-reviser lands revision -> lead final review -> copy scoreboard calls into AMENDMENT -> harness build -> sign with pins -> lift GPU launch approval to PI.
