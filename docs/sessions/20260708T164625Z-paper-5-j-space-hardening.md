@@ -4,7 +4,7 @@ session_id: 20260708T164625Z-paper-5-j-space-hardening
 title: Paper 5 J-space hardening
 status: active
 created_at: '2026-07-08T16:46:25Z'
-updated_at: '2026-07-14T02:49:12Z'
+updated_at: '2026-07-14T12:38:29Z'
 track: research
 phase: phase1
 question: Which registered follow-up experiments harden the Paper 5 actuation thesis,
@@ -823,6 +823,46 @@ checkpoints:
     design note needs user sign-off; HF exhaust backfill (#24) now includes H3/RR/heldout/RR2
     candidates.'
   signals: {}
+- id: 031-result
+  at: '2026-07-14T12:38:29Z'
+  kind: result
+  title: 'Calibration study resolved: family-graded wide baselines; qwen placebo suppresses'
+  summary: 'abstention-wide-instrument-calibration ran end-to-end in one day, CPU-only:
+    signed with detector v2 byte-identical to RR2 pins, 31,620 rows staged, 11,788-core
+    blinded pool across 17 cell-scoped shards, seven context-free graders, manifest-before-grading
+    and hash-before-unblinding held throughout. Mid-run instrument correction (H3-pattern,
+    repinned, red-team-verified): attempt-1 opaque ids collided across (hs_index,
+    dose) in the QL ladder cell; blinding and per-line grades unaffected; join corrected
+    to positional. QL cell voided terminally per registered CG1 second-failure rule
+    (two independent graders failed the same 14-decoy clear-positive draw at 0.286/0.429;
+    ten other QL shards passed 0.692-0.929); reported straight as narrow-only. Red-team
+    CERTIFIED-MEASUREMENTS with bit-for-bit recompute. Certified table: qwen wide
+    baseline 0.104 [0.089,0.122], llama 0.164 [0.146,0.184] (lower bound due to unknown_refused
+    carve), mistral 0.280 cited; undercounts 6.1/12.9/12.2 points. Headline surprise:
+    qwen paired placebo delta is NEGATIVE, -5.13 points wide (0.108 to 0.057, non-overlapping
+    CIs) where mistral recruits +7.39: placebo response is family-specific in SIGN.
+    Falsifier adjudicated not fired on the signed consequent-coherent reading (an
+    absolute reading would assert program-wide perturbation-recruited hedging that
+    the suppression contradicts); red-team independently recommended the same. Prediction
+    not cleanly confirmed: placebo near-no-op leg missed in magnitude, llama band
+    missed at 0.164; scoreboard: user correct on per-family differences and qwen baseline,
+    incorrect on placebo magnitude; orchestrator additionally incorrect on llama.
+    Resolved; PR #289 open, merge held for user.'
+  evidence: []
+  run_ids: []
+  commands: []
+  decisions:
+  - 'Falsifier reading adjudicated signed/consequent-coherent under red-team certification,
+    not chosen for the scoreboard; QL void reported straight, no third grading attempt;
+    successor design rule recorded: no flat small symmetric placebo tolerance, register
+    against per-family wide baselines with two-sided tolerance or effect-ratio gate;
+    CG1 lesson: pooled or larger clear-positive decoy draws per shard.'
+  next_steps:
+  - 'User merge decision on PR #289; KG-ingest calibration verdict post-merge; abstention-grading
+    skill update (CG1 granularity + decoy-carve coverage lesson) as separate PR; RR2
+    successor design can now register its placebo criterion against the measured baselines
+    (needs user sign-off); HF exhaust backlog #24 grows by this experiment.'
+  signals: {}
 ---
 # Paper 5 J-space hardening
 
@@ -1218,3 +1258,12 @@ rows before the layer contrast.
   - Falsifier fire CERTIFIED, verdict falsified as registered; gated lift +41.9 points (5.7x random) noted as interpretation only, RG3 is a tolerance test not a ratio test, goalposts stand. Forward rule recorded in the Outcome: any successor registers its placebo tolerance (or a pre-stated effect-ratio gate) against the wide-instrument baseline before new data, as a new signed amendment.
 - next steps:
   - User merge decision on PR #288; KG-ingest RR2 verdict post-merge; possible successor design note needs user sign-off; HF exhaust backfill (#24) now includes H3/RR/heldout/RR2 candidates.
+### 031-result - Calibration study resolved: family-graded wide baselines; qwen placebo suppresses
+
+- at: `2026-07-14T12:38:29Z`
+- kind: `result`
+- summary: abstention-wide-instrument-calibration ran end-to-end in one day, CPU-only: signed with detector v2 byte-identical to RR2 pins, 31,620 rows staged, 11,788-core blinded pool across 17 cell-scoped shards, seven context-free graders, manifest-before-grading and hash-before-unblinding held throughout. Mid-run instrument correction (H3-pattern, repinned, red-team-verified): attempt-1 opaque ids collided across (hs_index, dose) in the QL ladder cell; blinding and per-line grades unaffected; join corrected to positional. QL cell voided terminally per registered CG1 second-failure rule (two independent graders failed the same 14-decoy clear-positive draw at 0.286/0.429; ten other QL shards passed 0.692-0.929); reported straight as narrow-only. Red-team CERTIFIED-MEASUREMENTS with bit-for-bit recompute. Certified table: qwen wide baseline 0.104 [0.089,0.122], llama 0.164 [0.146,0.184] (lower bound due to unknown_refused carve), mistral 0.280 cited; undercounts 6.1/12.9/12.2 points. Headline surprise: qwen paired placebo delta is NEGATIVE, -5.13 points wide (0.108 to 0.057, non-overlapping CIs) where mistral recruits +7.39: placebo response is family-specific in SIGN. Falsifier adjudicated not fired on the signed consequent-coherent reading (an absolute reading would assert program-wide perturbation-recruited hedging that the suppression contradicts); red-team independently recommended the same. Prediction not cleanly confirmed: placebo near-no-op leg missed in magnitude, llama band missed at 0.164; scoreboard: user correct on per-family differences and qwen baseline, incorrect on placebo magnitude; orchestrator additionally incorrect on llama. Resolved; PR #289 open, merge held for user.
+- decisions:
+  - Falsifier reading adjudicated signed/consequent-coherent under red-team certification, not chosen for the scoreboard; QL void reported straight, no third grading attempt; successor design rule recorded: no flat small symmetric placebo tolerance, register against per-family wide baselines with two-sided tolerance or effect-ratio gate; CG1 lesson: pooled or larger clear-positive decoy draws per shard.
+- next steps:
+  - User merge decision on PR #289; KG-ingest calibration verdict post-merge; abstention-grading skill update (CG1 granularity + decoy-carve coverage lesson) as separate PR; RR2 successor design can now register its placebo criterion against the measured baselines (needs user sign-off); HF exhaust backlog #24 grows by this experiment.
