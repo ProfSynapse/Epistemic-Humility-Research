@@ -1,0 +1,128 @@
+[
+  {
+    "committed_at": "2026-07-14T20:26:45.577816+00:00",
+    "file_name": "rider_llama_shard_01_graded.jsonl",
+    "sha256": "bcad543a30c021a4e6177846024f01469e063bb3d9d60ac6e5c48bd0668b399a",
+    "shard_id": "rider_llama_shard_01"
+  },
+  {
+    "committed_at": "2026-07-14T20:27:22.179180+00:00",
+    "file_name": "rider_mistral_shard_04_graded.jsonl",
+    "sha256": "a752934994edb10e574f525c0a25e2e5e66c87bc298d4ece53ba9ff53b82dbb2",
+    "shard_id": "rider_mistral_shard_04"
+  },
+  {
+    "committed_at": "2026-07-14T20:28:31.555614+00:00",
+    "file_name": "rider_llama_shard_04_graded.jsonl",
+    "sha256": "db415bcfa170f4f7443be31dac0ecfd4e386fb6efb9a8897e706683e969f3691",
+    "shard_id": "rider_llama_shard_04"
+  },
+  {
+    "committed_at": "2026-07-14T20:29:05.685748+00:00",
+    "file_name": "rider_llama_shard_03_graded.jsonl",
+    "sha256": "242f3f26083da25472b31faa8934b653cdbf331379b77f08c0280ab906593d16",
+    "shard_id": "rider_llama_shard_03"
+  },
+  {
+    "committed_at": "2026-07-14T20:29:05.830157+00:00",
+    "file_name": "rider_llama_shard_02_graded.jsonl",
+    "sha256": "075b3a26d8a083fa67589959b6d03abd6b181544b5fc22dac7e4f35bf3b38647",
+    "shard_id": "rider_llama_shard_02"
+  },
+  {
+    "committed_at": "2026-07-14T20:29:05.943414+00:00",
+    "file_name": "rider_mistral_shard_00_graded.jsonl",
+    "sha256": "58f7a40118405fb679c048b360cf3df1102615dfb3b1f9565849d2b70a300348",
+    "shard_id": "rider_mistral_shard_00"
+  },
+  {
+    "committed_at": "2026-07-14T20:29:40.498465+00:00",
+    "file_name": "rider_llama_shard_00_graded.jsonl",
+    "sha256": "14389c23807b7434acb1915d90cde722d28df61994a2301bbf2338ebec981032",
+    "shard_id": "rider_llama_shard_00"
+  },
+  {
+    "committed_at": "2026-07-14T20:29:40.697897+00:00",
+    "file_name": "rider_mistral_shard_03_graded.jsonl",
+    "sha256": "0a3fe2e709f0909ea6a62defb76fe49a56ef950ee9e77ece6d940a7d64ac76cd",
+    "shard_id": "rider_mistral_shard_03"
+  },
+  {
+    "committed_at": "2026-07-14T20:29:40.890941+00:00",
+    "file_name": "rider_mistral_shard_02_graded.jsonl",
+    "sha256": "7d774c1c60f9c7c450bd39283ef3e10f9b06313b5cbc3803b51a9966c17773c3",
+    "shard_id": "rider_mistral_shard_02"
+  },
+  {
+    "committed_at": "2026-07-14T20:30:05.409959+00:00",
+    "file_name": "core_mistral_shard_06_graded.jsonl",
+    "sha256": "2a3ced810b0dc592b3c0ca21b3ab52735b91515d672d5255fd7c75f120e34465",
+    "shard_id": "core_mistral_shard_06"
+  },
+  {
+    "committed_at": "2026-07-14T20:30:36.764954+00:00",
+    "file_name": "rider_mistral_shard_05_graded.jsonl",
+    "sha256": "12a32eefccfe1d8d9ef49b122b1fb57e7cc13471536b430515dede08c6840528",
+    "shard_id": "rider_mistral_shard_05"
+  },
+  {
+    "committed_at": "2026-07-14T20:30:36.844644+00:00",
+    "file_name": "core_mistral_shard_05_graded.jsonl",
+    "sha256": "a8835c06b6177f85713f5bd6aea4127a784c79027835f72c50af3f48a5a1c970",
+    "shard_id": "core_mistral_shard_05"
+  },
+  {
+    "committed_at": "2026-07-14T20:31:01.349730+00:00",
+    "file_name": "rider_llama_shard_06_graded.jsonl",
+    "sha256": "1de70c4202f7f16ea1bf86f6b98d7f7cff3ca6d08251a88e0daa0de306e09f98",
+    "shard_id": "rider_llama_shard_06"
+  },
+  {
+    "committed_at": "2026-07-14T20:31:01.473433+00:00",
+    "file_name": "core_mistral_shard_03_graded.jsonl",
+    "sha256": "b815b538074c594042e2113e8c692e3f1db93402864d091a50e7d17a305152e9",
+    "shard_id": "core_mistral_shard_03"
+  },
+  {
+    "committed_at": "2026-07-14T20:31:01.594851+00:00",
+    "file_name": "core_mistral_shard_07_graded.jsonl",
+    "sha256": "c09dce1c020cadf0119bbc82064ff21e706a9c7743ee28b73a5948647a10e21b",
+    "shard_id": "core_mistral_shard_07"
+  },
+  {
+    "committed_at": "2026-07-14T20:32:06.844818+00:00",
+    "file_name": "rider_llama_shard_05_graded.jsonl",
+    "sha256": "642f9bb575c3663d33e200a501b7c07dbf1d05ba6a577e5b85cc8080069fc8b4",
+    "shard_id": "rider_llama_shard_05"
+  },
+  {
+    "committed_at": "2026-07-14T20:32:06.947013+00:00",
+    "file_name": "core_mistral_shard_00_graded.jsonl",
+    "sha256": "16043aeef88f1a744e94727abc70fd5c21735da2a4fbc2f21c2211df3a909f35",
+    "shard_id": "core_mistral_shard_00"
+  },
+  {
+    "committed_at": "2026-07-14T20:32:31.595608+00:00",
+    "file_name": "core_mistral_shard_01_graded.jsonl",
+    "sha256": "48e7a2e3e3e268c8edc3aec6d7ae9ae3cccea943cd1c9cdac7e8944a16a502f6",
+    "shard_id": "core_mistral_shard_01"
+  },
+  {
+    "committed_at": "2026-07-14T20:32:31.696037+00:00",
+    "file_name": "core_mistral_shard_02_graded.jsonl",
+    "sha256": "51bdd60cb3475ac4256add60d6bf4b2a305bf58abdaec639585eb80f622be00b",
+    "shard_id": "core_mistral_shard_02"
+  },
+  {
+    "committed_at": "2026-07-14T20:32:55.405639+00:00",
+    "file_name": "core_mistral_shard_04_graded.jsonl",
+    "sha256": "3648f4463b1fdee2275127262a7df3870196e0498325faaf7a234d353a718bf5",
+    "shard_id": "core_mistral_shard_04"
+  },
+  {
+    "committed_at": "2026-07-14T20:40:25.484932+00:00",
+    "file_name": "rider_mistral_shard_01_graded.jsonl",
+    "sha256": "d09c7f92967ba66f64bbf03eb38114c8b686dcc0c9e4cb36e9452663cc696e44",
+    "shard_id": "rider_mistral_shard_01"
+  }
+]
