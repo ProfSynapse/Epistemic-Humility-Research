@@ -26,9 +26,47 @@ checkpoint:
   repo: ''
   revision: ''
 instrument:
-  configs: []
-  modules: []
-  pins: {}
+  configs:
+  - cell.yaml
+  - gates.yaml
+  - detector_v2_patterns.yaml
+  modules:
+  - apply_adjudication.py
+  - build_adjudication_pool.py
+  - build_regrade.py
+  - detector_v2.py
+  - direction_fit.py
+  - fit_reuse.py
+  - gates_lib.py
+  - gen_lib.py
+  - grader.py
+  - heldout_scorer.py
+  - materialize_rows.py
+  - pipeline.py
+  - render.py
+  - rr3_scorer.py
+  - steer_lib.py
+  - test_rr3_smoke.py
+  pins:
+    cell.yaml: 809f17b0210ec15de32eec438cf476b76dda3610e3aaf75b0354525b4e32b138
+    gates.yaml: dddb379c81307d574ff5abeb3191c6abc13b4adda778667434069ed531d26151
+    detector_v2_patterns.yaml: 36422e01ae03008c2f71f180158c63950e14f8dfc1279c4e654c89fb831841d9
+    apply_adjudication.py: 6174b56808bda1ba53e97d50ad0661a7c571eb2c5f68c76d7c39f077d61b1c5b
+    build_adjudication_pool.py: 16a1815b2b6692bd4b9cb0369f96539f60f200f333a2a53fb5c11f107c224b13
+    build_regrade.py: 73e81caa345285c8e102c5ae31d0a3fab5eaedcc69ead5ddbda563a7c2973287
+    detector_v2.py: 161fd8548ec0dad1daabd590870654f1c32bd0daf21e6026a2c18c83e83991ae
+    direction_fit.py: 04f2996301be1c5bbdea0a865fb8685b1f4001b6e5a06a87c0ed196048d65d9a
+    fit_reuse.py: 9667a1b1df4f357c4a94dba94507676c7af4a1b7da56289d539c5d3b01312bfd
+    gates_lib.py: 980bbc3942d8985d5e5306e42832cc3ff3f859e7c48803cd4f22a42492012e39
+    gen_lib.py: 32377162d2e8dd9850504d923ecf55be7b16d58aaa18115190f42b2a9b40ed1e
+    grader.py: 296784f0c7a23ba66cd00407677d2f2e073286a78dcb441330445783a8606676
+    heldout_scorer.py: e744637fa35732608af59bd97a4a2efe8a9951e555ab011ea8d75e079901350a
+    materialize_rows.py: 7ecbced5acafa7d23feb6185e86443eb43937b0bb5dd57e383e69a63b916c35b
+    pipeline.py: f41b3612aae2e11f300fbd007f886890075cf7ea7880866fb7a75e7fbee10be8
+    render.py: 43dc3d56d21eced272db64621152d311fe4eabce6863a6fe8f9fb4c9196b4866
+    rr3_scorer.py: b1b25e0ea837589de26a9c3c09993b5a569c5ffb1514828346ec5e1cd31b1187
+    steer_lib.py: c78fd513b796dffd4f9808da7e5f2cc43d52625ad98850744c6bad1e91f29d23
+    test_rr3_smoke.py: fa8c4d261c9402d42dbfba3f2ba0492bc4b39a4fb54b35a75845e13d393d8f4f
 inputs: []
 verdict: ''
 kg: []

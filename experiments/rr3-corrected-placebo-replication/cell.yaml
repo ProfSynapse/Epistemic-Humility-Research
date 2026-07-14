@@ -241,7 +241,7 @@ execution:
     - local_3090       # free; lead-owned launch only
     - modal            # PAID; needs fresh user approval
   model_driving: direct InterventionHook/GenerationInterventionController/RunLog (RR2 precedent, not the mechinterp-steer recipe path)
-  synaptic_tuner_pin: TODO_set_at_harness_build
+  synaptic_tuner_pin: 86b134c32254668893800a453b3c5d8285ae85df  # same pin RR/RR2 used; carries batch verbs, MechInterp.intervention, shared.utilities.run_log; matches this branch's currently tracked submodule commit (harness-build resolution of the explicit TODO placeholder above, re-verify at launch time)
   smokes: [sequential_vs_batch_parity, real_steer_plus_readback, runlog_persistence_schema]
 
 outputs:
