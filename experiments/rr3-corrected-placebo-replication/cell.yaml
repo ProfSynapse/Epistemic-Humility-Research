@@ -96,9 +96,10 @@ core_cell:
       description: >-
         same fired rows as gated; c_hat swapped for a frozen random placebo at
         matched magnitude; K >= 3 FRESH pre-registered seeds distinct from RR2's,
-        one full held-out pass per seed; direction specificity (RG1). See Q2 for
-        how the K seeds enter the RG1 denominator.
-      random_seeds: [30260714, 30260715, 30260716]    # DRAFT >= 3; lead confirms count/values at sign (Q2)
+        one full held-out pass per seed; direction specificity (RG1). RG1
+        denominator is the MAX over the K seeds of the absolute lift over
+        baseline (Q2, resolved); full ensemble reported descriptively regardless.
+      random_seeds: [30260714, 30260715, 30260716]    # DRAFT >= 3; lead confirms exact values at sign; denominator rule (max-over-K) fixed (Q2)
     - name: dose_knowns_ungated
       description: >-
         every held-out known-correct row dosed unconditionally with c_hat at
@@ -110,20 +111,35 @@ core_cell:
 # RIDER CELLS: family x placebo-sign map (descriptive; NO promotion gate)
 # ===========================================================================
 rider_cells:
-  dose_ladder: [2, 4, 6, 8, 12, 16, 20]     # x sigma_c; RR/ladder grid (lead may register a subset)
+  dose_ladder: [2, 4, 6, 8, 12, 16, 20]     # x sigma_c; full RR/ladder grid, swept in full (Q4, resolved)
   subsample:
-    rows_per_layer_dose_cell: 250            # calibration QL rule; bounds adjudication cost
-    population: confab
-    seed: 20260714
-    drawn_before_grading: true
+    confab:
+      rows_per_layer_dose_cell: 250          # calibration QL rule; bounds adjudication cost
+      seed: 20260714
+      drawn_before_grading: true
+    known_correct_answered:
+      rows_per_layer_dose_cell: full_population   # NEW (binding design requirement): dose the full
+                                                    # known_correct_answered (answerable) population at
+                                                    # every rung, same as confab, no subsampling needed
+                                                    # (382 mistral / 334 llama, both already <= the confab cap)
+      seed: 20260714
+      drawn_before_grading: true
+  reporting:
+    stratify_by: source_field              # NEW: triviaqa/popqa = answerable question type, kuq = unanswerable question type
+    not_by: role                            # role conflates question type with the model's own undosed baseline
+                                             # behavior (kuq rows split confab vs unknown_refused by whether the
+                                             # undosed baseline answered); descriptive only, no gate, pre-stated
+                                             # before any run
 
   - id: rider_mistral_placebo_ladder
     family: mistral7b_instruct_v03           # same substrate/site as core
     layer_hs_index: 16
     arms:
       baseline: reuse_core_baseline          # reference
-      random_direction: dose_ladder          # fresh frozen random dir per dose, matched magnitude
-    yields: [mistral_placebo_dose_response, mistral_placebo_sign]
+      random_direction:
+        dose_ladder: dose_ladder             # fresh frozen random dir per dose, matched magnitude
+        populations: [confab, known_correct_answered]   # NEW: dose both question-type populations at each rung
+    yields: [mistral_placebo_dose_response, mistral_placebo_sign, mistral_placebo_dose_response_by_question_type]
 
   - id: rider_llama_placebo_ladder
     family: llama32_3b_instruct
@@ -140,15 +156,17 @@ rider_cells:
       (RG0 hard stop). No fresh FIT.
     arms:
       baseline: full_heldout                  # llama reference (never measured under wide instrument as a dosed arm)
-      random_direction: dose_ladder           # fresh frozen random dir per dose, matched magnitude
+      random_direction:
+        dose_ladder: dose_ladder              # fresh frozen random dir per dose, matched magnitude
+        populations: [confab, known_correct_answered]   # NEW: dose both question-type populations at each rung
     heldout_power:                            # RR cell / jspace-family-atlas
       confab: 872
       known_correct_answered: 334
-    yields: [llama_placebo_dose_response, llama_placebo_sign]
+    yields: [llama_placebo_dose_response, llama_placebo_sign, llama_placebo_dose_response_by_question_type]
     note: >-
       llama has NO viable gated operating point (RR shape F); the random arm is
       a placebo measurement only and needs no viable gated point. Dose-ladder
-      reference magnitude is a choice (see Q4).
+      reference magnitude sweeps the full grid (Q4, resolved).
 
 # ===========================================================================
 # WIDE INSTRUMENT (detector v2 screen + blinded adjudication), with the two
@@ -177,7 +195,7 @@ adjudication:
         is not cannibalized (calibration AMENDMENT lines 247-254)
     clear_positive:
       drawn_from: detector-v2-refused rows (unambiguous abstentions already credited)
-      per_shard_count_floor: 25         # DRAFT; successor fix (b), lead confirms (>= 25 recommended)
+      per_shard_count_floor: 25         # fixed by lead decision: successor fix (b), >= 25 per shard
       purpose: under-credit calibration; larger draw + pooled floor removes the
         9/14 coarse-granularity failure mode (calibration AMENDMENT lines 223-231, 276-279)
     note: decoys never part of any scored rate; excluded at RG0
@@ -213,7 +231,7 @@ readouts:
   refused_final: detector_v2_refused OR adjudicated_abstention (PRIMARY)
   well_formed: well-formed JSON rate (unchanged rule; not adjudicated)
   wide_lift_over_baseline: per arm, refused_final minus baseline refused_final (the RG1 numerator/denominator)
-  effect_ratio: gated wide lift / |random wide lift|   # RG1 primary; K-seed denominator per Q2
+  effect_ratio: gated wide lift / max_over_k_seeds(|random wide lift|)   # RG1 primary; max-over-K denominator fixed (Q2, resolved)
   degenerate: degenerate-repetition rate
   mean_new_tokens: mean new tokens
   confidence_intervals: Wilson 95% (alpha 0.05) on every rate

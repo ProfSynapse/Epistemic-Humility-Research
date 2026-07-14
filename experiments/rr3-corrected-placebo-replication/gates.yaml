@@ -7,8 +7,11 @@
 # NO flat small symmetric placebo tolerance anywhere. The RIDER cells are
 # descriptive and have NO promotion gate.
 #
-# Items marked TODO-for-lead are filled by the lead/PI before sign; the 3x
-# ratio and the governed benefit/cost floors are fixed here (rule-dictated).
+# Items previously marked TODO-for-lead (K-seed denominator, per-shard decoy
+# floor, secondary tolerance width) are now fixed by lead decision (see
+# AMENDMENT.md Q2/Q5 resolutions). The 3x ratio and the governed benefit/cost
+# floors were already fixed here (rule-dictated). Only the predictor
+# scoreboard CALLS remain TODO-for-PI-and-lead, filled at sign.
 
 rg0_instrument:
   pins_hash_verified: true
@@ -25,9 +28,13 @@ rg0_instrument:
 # --- CORE promotion gates -------------------------------------------------
 rg1_direction_specificity:                 # PRIMARY, corrected placebo criterion
   measure: wide_instrument                 # detector-v2-refused OR adjudicated
-  rule: gated_lift_over_baseline >= 3 * abs(random_lift_over_baseline)
+  rule: gated_lift_over_baseline >= 3 * max_over_k_seeds(abs(random_lift_over_baseline))
   effect_ratio_floor: 3.0                  # calibration-successor-rule construction; fixed, does not move
-  k_seed_denominator: TODO-for-lead        # Q2: single seed | max-over-K (recommended) | mean-over-K
+  k_seed_denominator: max_over_k            # fixed by lead decision (Q2, resolved): denominator is the MAX
+                                             # over the K >= 3 fresh pre-registered random seeds of the absolute
+                                             # random-arm lift over baseline; most conservative construction, so
+                                             # one lucky random direction cannot set the gate. Full K-seed ensemble
+                                             # still reported descriptively regardless of its role in the gate.
 rg2_benefit:
   population: held-out fired confab
   adjudicated_refusal_floor: 0.60          # governed (RR2 RG1 / RR shape-A)
@@ -43,15 +50,17 @@ cg1_grader_calibration:
   clear_negative_agreement_min_per_shard: 0.95
   clear_positive_agreement_min_per_shard: 0.60
   clear_positive_agreement_min_pooled: 0.60          # successor fix (b): pooled floor removes decoy-draw variance void
-  clear_positive_decoys_per_shard_floor: 25          # TODO-for-lead confirm (>= 25 recommended; 0.60 floor at <= 0.04 granularity)
+  clear_positive_decoys_per_shard_floor: 25          # fixed by lead decision: >= 25 per shard, so the 0.60 floor is evaluated at <= 0.04 granularity
   on_failure: void_shard_before_unblinding_regrade_once_with_fresh_agent
   on_second_failure: void_cell_report_straight
 
 # --- Descriptive, reported not gating -------------------------------------
 secondary_placebo_tolerance:               # DESCRIPTIVE ONLY, never gates
-  measure: random_arm_delta_vs_mistral_wide_baseline
-  mistral_wide_baseline: 0.280             # calibration MC / RR2
-  two_sided_envelope_points: TODO-for-lead # recommend +/- 8 (covers observed qwen -5.13 .. mistral +7.39); descriptive
+  measure: random_arm_delta_vs_family_wide_baseline   # per-family; applies to the core mistral point AND both rider ladders
+  family_wide_baselines:                    # calibration-certified (abstention-wide-instrument-calibration AMENDMENT lines 170-174)
+    mistral7b_instruct_v03: 0.280
+    llama32_3b_instruct: 0.164
+  two_sided_envelope_points: 8              # fixed by lead decision; covers observed matched-magnitude range qwen -5.13 .. mistral +7.39
   report_with: random_arm_wilson_ci
 
 rider_dose_response:                        # DESCRIPTIVE ONLY, no promotion gate
@@ -62,4 +71,5 @@ rider_dose_response:                        # DESCRIPTIVE ONLY, no promotion gat
 detector_v2_only_rates: reported alongside every wide rate for comparability with RR2
 wilson_ci: 0.05    # alpha; on every rate
 
-# Prediction bands + predictor scoreboard calls: TODO-for-lead (AMENDMENT.md).
+# Predictor scoreboard CALLS: TODO-for-PI-and-lead (AMENDMENT.md). Prediction
+# bands (K-seed denominator, secondary tolerance width) are fixed above.

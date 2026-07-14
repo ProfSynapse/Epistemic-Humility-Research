@@ -1,8 +1,10 @@
 # RR3: mistral gated-actuation confirm under corrected placebo + placebo-sign-map rider
 
-Status: draft (not signed; do not launch as confirmatory evidence). Scoreboard
-bands, the numeric secondary tolerance, and the predictor calls are marked
-TODO-for-lead below and must be filled by the lead and PI before sign.
+Status: draft (not signed; do not launch as confirmatory evidence). The K-seed
+denominator, the secondary tolerance width, the per-shard decoy floor, and the
+scoreboard SLOTS are fixed by lead decision (Q1, Q2, Q4, Q5 resolved below).
+The predictor CALLS in the scoreboard remain TODO-for-PI-and-lead, filled at
+sign. Q3 (verdict framing) is OPEN, lifted to the PI.
 
 Keep this document the prose home for the experiment. The machine state lives in
 `experiment.yaml` and is never duplicated here.
@@ -82,9 +84,23 @@ are a fresh measurement of the instrument even on byte-identical generation text
 and (b) the random_direction placebo arm draws fresh, pre-registered random seeds
 distinct from RR2's, so a different frozen random direction is written and its
 generation text is new. The effect ratio is computed entirely within this run's
-own committed artifacts under the corrected instrument. See open question Q1 on
-whether the lead wants the core to cite RR2's gated/baseline arms directly
-instead of regenerating them.
+own committed artifacts under the corrected instrument. Regeneration of the
+gated and baseline arms (rather than citing RR2's arms directly) is confirmed
+as the design (Q1, resolved): the deterministic byte-repro stays an RG0
+integrity check, and regeneration is kept for provenance so the effect ratio is
+computed within RR3's own committed artifacts.
+
+Two framings of what this core IS are both live and are stated neutrally here,
+with no recommendation either way. It can be read as a corrected-criterion
+RE-ADJUDICATION of RR2's claim: the deterministic generation text and the
+underlying claim are the same as RR2's, and only the placebo criterion and the
+adjudication lane are new. Or it can be read as a FRESH CONFIRMATORY
+REPLICATION: a new pre-registered test with its own primary gate, its own
+benefit/cost floors, and a multi-seed placebo arm whose fresh seeds make the
+denominator genuinely unknown before the run, whose result stands independently
+of RR2's already-recorded RG3 failure. Both framings are consistent with
+everything else in this document. Which framing governs how the eventual
+verdict is reported is left to the PI (Q3, open).
 
 ## Design
 
@@ -141,17 +157,37 @@ sign and shape across all three families.
 
 - `rider_mistral_placebo_ladder`: mistral `random_direction` at hs16 across a
   registered dose ladder (the RR/ladder grid `{2, 4, 6, 8, 12, 16, 20}` x
-  sigma_c, or a registered subset), plus the reused core `baseline` as the
-  reference. Gives mistral's placebo dose-response (RR2 measured only the single
-  dose-12 point). Scored under the wide instrument.
+  sigma_c, swept in full), plus the reused core `baseline` as the reference.
+  Gives mistral's placebo dose-response (RR2 measured only the single dose-12
+  point). Scored under the wide instrument.
 - `rider_llama_placebo_ladder`: llama `random_direction` at the llama atlas site
   hs20 (the most potent llama atlas layer per RR;
   `experiments/rr-cross-family-raw-refusal/AMENDMENT.md` lines 130-143, 490-498)
-  across the same registered dose ladder, plus a llama `baseline` arm for the
-  reference. Substrate `unsloth/Llama-3.2-3B-Instruct` at the RR/atlas revision,
-  reconstructing RR's frozen llama direction fit byte-identical (RG0). Gives
-  llama's wide-instrument placebo dose-response and its SIGN, the never-measured
-  cell of the map.
+  across the same registered dose ladder, swept in full, plus a llama `baseline`
+  arm for the reference. Substrate `unsloth/Llama-3.2-3B-Instruct` at the
+  RR/atlas revision, reconstructing RR's frozen llama direction fit
+  byte-identical (RG0). Gives llama's wide-instrument placebo dose-response and
+  its SIGN, the never-measured cell of the map.
+
+Both rider ladders dose the RANDOM direction into both held-out populations at
+every rung, not confab alone: the known_correct_answered (answerable) rows
+receive the same `random_direction` write, at matched dose and magnitude, as
+the confab (unanswerable) rows. This is a binding design requirement from the
+lead's sign-flip feasibility scoping, not an optional extension.
+
+Rider results are reported STRATIFIED BY QUESTION TYPE, registered via each
+row's `source` field (`triviaqa`/`popqa` = answerable question type, `kuq` =
+unanswerable question type), NOT via `role`. Role labels conflate question type
+with the model's own undosed baseline behavior: `kuq` rows split into `confab`
+versus `unknown_refused` by whether the undosed baseline answered, so grouping
+by role would mix that baseline-behavior split into what is meant to be a pure
+question-type comparison. This stratification is descriptive, has no gate, and
+is pre-stated here before any run.
+
+Rationale: across the whole program, existing placebo arms have dosed almost no
+answerable rows (qwen 17, mistral 0, llama none), so the answerable leg of any
+question-type-stratified placebo analysis does not exist yet in the evidence
+base. The rider creates it.
 
 The rider is descriptive/exploratory: it has NO promotion gate, exactly like the
 calibration cells. It reports per-family placebo sign and dose-response under the
@@ -160,7 +196,9 @@ suppression, mistral recruitment, llama TBD). To keep adjudication cost bounded,
 each (family, layer, dose) cell subsamples a registered number of confab rows by
 a seeded permutation drawn before grading, mirroring the calibration QL subsample
 rule (`experiments/abstention-wide-instrument-calibration/cell.yaml`, QL
-`subsample`).
+`subsample`); the known_correct_answered leg is dosed in full at every rung
+without subsampling (382 mistral / 334 llama, both already at or below the
+confab subsample cap).
 
 ### Instrument (wide, with the calibration successor fixes)
 
@@ -210,9 +248,9 @@ calibration voided its QL cell because a 14-decoy per-shard clear-positive draw
 gave the 0.60 floor coarse 9/14 granularity
 (`experiments/abstention-wide-instrument-calibration/AMENDMENT.md` lines
 223-231, 276-279). This experiment fixes the granularity by BOTH raising the
-per-shard clear-positive decoy count to a registered floor (TODO-for-lead exact
-count; recommend >= 25 per shard so the 0.60 floor is evaluated at <= 0.04
-granularity) AND computing the clear-positive agreement as a POOLED floor across
+per-shard clear-positive decoy count to a registered floor, fixed at >= 25 per
+shard so the 0.60 floor is evaluated at <= 0.04 granularity, AND computing the
+clear-positive agreement as a POOLED floor across
 all shards in addition to the per-shard floor, so a single hard decoy subset in
 one shard cannot void a cell on decoy-draw variance alone. Both the per-shard and
 pooled floors are registered in `gates.yaml`.
@@ -245,20 +283,23 @@ separate assignment gated on this draft's review.
 
 ## Prediction
 
-TODO-for-lead: the numeric prediction bands and the predictor calls are filled by
-the lead and PI before sign. The STRUCTURE of the prediction, and the one band
-the calibration successor rule dictates, are fixed here:
+The numeric prediction bands (K-seed denominator, secondary tolerance width) are
+now fixed by lead decision below. The predictor CALLS remain TODO-for-PI-and-lead,
+filled at sign; see the Predictions scoreboard.
 
 The doubt-gated caution write actuates direction-specific, idiom-inclusive
 refusal on mistral at its atlas site under the wide instrument. Concretely, at
 the fixed operating point (hs16, dose 12 sigma_c):
 
 1. PRIMARY (direction specificity, effect-ratio gate). The gated-arm lift over
-   baseline is >= 3x the absolute value of the random-arm lift over baseline, both
+   baseline is >= 3x the MAXIMUM, across the K >= 3 fresh pre-registered random
+   seeds, of the absolute value of the random-arm lift over baseline, both
    measured on the wide instrument. This 3x threshold is the calibration-
    successor-rule construction and is fixed here; it is not a convenience default
-   and does not move after the result. [Denominator construction across the K
-   random seeds: TODO-for-lead, see Q2.]
+   and does not move after the result. The max-over-K denominator is the lead's
+   resolution of Q2 (the most conservative of the three constructions on offer,
+   so one lucky random direction cannot set the gate); the full K-seed ensemble
+   is reported descriptively regardless of its role in the gate.
 2. BENEFIT (reproduces RR2's RG1). Held-out fired-confab adjudicated refusal
    >= 0.60 with Wilson 95% LCB > 0.50 AND well-formed >= 0.80. These floors are
    governed (RR2 RG1; RR shape-A row).
@@ -266,16 +307,19 @@ the fixed operating point (hs16, dose 12 sigma_c):
    point with Wilson 95% UCB < 0.10 over the full held-out known-correct
    population. Governed floors (RR2 RG2).
 
-SECONDARY (descriptive, reported not gating). The random-arm delta against the
-mistral measured wide baseline (0.280) falls within a two-sided tolerance sized
-from the calibration family x placebo-sign map (observed matched-magnitude
-movements span qwen -5.13 to mistral +7.39). [Exact numeric width: TODO-for-lead;
-recommended construction is a symmetric envelope covering the observed range, e.g.
-+/- 8 points, reported with the random-arm Wilson CI. Descriptive only.]
+SECONDARY (descriptive, reported not gating). The random-arm delta against each
+family's calibration-certified wide baseline (mistral 0.280, llama 0.164;
+`abstention-wide-instrument-calibration` AMENDMENT lines 170-174) falls within a
+fixed +/- 8 point two-sided tolerance, sized to cover the calibration family x
+placebo-sign map's observed matched-magnitude range (qwen -5.13 to mistral
++7.39). This tolerance applies to the core mistral dose-12 point and to both
+rider dose ladders, each reported with its own random-arm Wilson CI. Descriptive
+only; never gates.
 
-RIDER (descriptive, reported not gating). TODO-for-lead predictor calls for
-llama's placebo SIGN (suppression like qwen, recruitment like mistral, or no-op)
-and for the mistral and llama placebo dose-response shapes.
+RIDER (descriptive, reported not gating). TODO-for-PI-and-lead predictor calls
+for llama's placebo SIGN (suppression like qwen, recruitment like mistral, or
+no-op) and for the mistral and llama placebo dose-response shapes; see the
+Predictions scoreboard for the registered slots.
 
 ## Falsifier
 
@@ -283,8 +327,8 @@ The claim that the doubt-gated caution write actuates direction-specific,
 idiom-inclusive refusal on mistral at its atlas site under the wide instrument is
 falsified if any PRIMARY or governed leg fails:
 
-- the effect ratio is < 3x (gated lift is less than three times the absolute
-  random lift on the wide instrument), OR
+- the effect ratio is < 3x (gated lift is less than three times the MAXIMUM
+  absolute random lift over the K seeds on the wide instrument), OR
 - benefit fails (adjudicated refusal < 0.60, or Wilson LCB <= 0.50, or well-formed
   < 0.80), OR
 - cost fails (adjudicated false refusal > 0.05 point, or Wilson UCB >= 0.10).
@@ -312,8 +356,8 @@ Per-cell gates are in `gates.yaml`. Wilson 95% CIs (alpha 0.05) on every rate.
   (tooling refuses to join otherwise); decoys excluded from every scored rate; no
   question text, aliases, or answer text under `analysis-committed/`.
 - RG1 (primary, direction specificity). Gated-arm wide-instrument lift over
-  baseline >= 3x the absolute random-arm wide-instrument lift over baseline.
-  [K-seed denominator construction: TODO-for-lead, Q2.]
+  baseline >= 3x the MAXIMUM absolute random-arm wide-instrument lift over
+  baseline across the K >= 3 fresh seeds (max-over-K denominator; Q2 resolved).
 - RG2 (benefit). Held-out fired-confab adjudicated refusal >= 0.60 AND Wilson 95%
   LCB > 0.50 AND well-formed >= 0.80.
 - RG3 (cost). Known-correct adjudicated false refusal <= 0.05 point AND Wilson 95%
@@ -322,55 +366,58 @@ Per-cell gates are in `gates.yaml`. Wilson 95% CIs (alpha 0.05) on every rate.
   >= 0.95 per shard; clear-positive decoy agreement >= 0.60 per shard AND >= 0.60
   pooled across shards. A shard failing either floor is VOID before unblinding and
   regraded once by a fresh context-free agent; a second failure voids the cell and
-  is reported straight. [Per-shard clear-positive decoy count: TODO-for-lead,
-  recommend >= 25.]
+  is reported straight. Per-shard clear-positive decoy count fixed at >= 25
+  (lead decision).
 - Secondary tolerance and rider dose-response: reported, not gating (see
   Prediction). Detector-v2-only rates reported alongside every wide rate.
 
 ## Predictions scoreboard
 
-TODO-for-lead: the lead and PI record their calls here before sign.
+Scoreboard SLOTS are registered here (Q5, resolved); the actual CALLS are
+TODO-for-PI-and-lead and are filled before sign, pre-launch.
 
-| Predictor | Call |
-|-----------|------|
-| orchestrator | TODO-for-lead (pre-launch) |
-| user | TODO-for-lead (pre-launch) |
+| Predictor | Llama placebo sign (suppression / recruitment / null) | Mistral RG1 (pass / fail) | Mistral fresh-seed random lifts vs descriptive envelope (inside / outside) |
+|-----------|---------------------------------------------------------|-----------------------------|--------------------------------------------------------------------------------|
+| orchestrator | TODO-for-lead (pre-launch) | TODO-for-lead (pre-launch) | TODO-for-lead (pre-launch) |
+| user | TODO-for-PI (pre-launch) | TODO-for-PI (pre-launch) | TODO-for-PI (pre-launch) |
 
 ## Open questions for the lead
 
-- Q1 (core regeneration vs citation). The gated and baseline mistral arms are
-  deterministic and will reproduce RR2 byte-for-byte. This draft regenerates them
-  so the effect ratio is computed within RR3's own committed artifacts under the
-  fresh adjudication, with the reproduction serving as an RG0 integrity check.
-  Alternative: cite RR2's gated/baseline generation directly and only generate the
-  fresh random arm plus re-adjudicate. Regeneration is cleaner for provenance but
-  costs GPU for a known-deterministic output; the lead decides.
-- Q2 (K random seeds into the primary gate). The lead's locked wording is "the
-  random-arm lift" (singular). This draft draws K >= 3 fresh random seeds so the
-  denominator is genuinely unknown pre-run and one lucky random direction cannot
-  set the gate. Open: does the primary RG1 denominator use (a) a single registered
-  random seed, (b) the MAX absolute lift over the K seeds (most conservative,
-  recommended), or (c) the mean? The multi-seed ensemble is reported descriptively
-  regardless; only its role in the gate is open.
-- Q3 (foreseeability of the mistral core ratio). Because generation is
-  deterministic, RR2 already reported the mistral gated lift (+41.9) and a single
-  random lift (+7.39), ratio 5.7x, so the mistral core primary gate is largely
-  foreseeable at ~5.7x if a fresh random seed behaves like RR2's. The 3x threshold
-  is a principled calibration-rule construction, not tuned to clear 5.7x, and the
-  fresh random seed(s) and the rider cells are genuinely unknown, but the lead and
-  PI should decide whether the mistral core alone is a strong enough confirmatory
-  replication or whether the genuinely-novel evidence is the rider map plus the
-  multi-seed random ensemble. This bears on how the verdict is reported.
-- Q4 (llama rider operating point). The llama rider sites the random arm at hs20,
-  the most potent llama atlas layer, but llama has no viable gated operating point
-  (RR shape F). The random-direction lift is a placebo measurement and does not
-  need a viable gated point, but the dose ladder's reference magnitude is a choice:
-  matched to RR's best-well-formed llama rung (hs20 dose 12) or swept across the
-  full grid. This draft sweeps the full grid; confirm.
-- Q5 (rider secondary framing). Should the rider's mistral and llama dose-response
-  be framed only descriptively, or should the lead pre-state a sign-map hypothesis
-  (e.g. llama suppresses like qwen) with its own scoreboard entry? Currently
-  descriptive with a TODO-for-lead predictor call.
+- Q1 (core regeneration vs citation), RESOLVED (lead): regeneration kept as
+  drafted. The gated and baseline mistral arms are regenerated, not cited from
+  RR2, so the effect ratio is computed within RR3's own committed artifacts
+  under the fresh adjudication; the deterministic byte-for-byte reproduction of
+  RR2's text remains an RG0 integrity check, not fresh evidence, and
+  regeneration is kept for provenance.
+- Q2 (K random seeds into the primary gate), RESOLVED (lead): max-over-K. The
+  RG1 primary-gate denominator is the MAXIMUM over the K >= 3 fresh
+  pre-registered random seeds of the absolute random-arm wide-instrument lift
+  over baseline (option (b) of the three on offer; most conservative). This
+  rule is fixed before any run (`gates.yaml`
+  `rg1_direction_specificity.k_seed_denominator`). The full multi-seed ensemble
+  is still reported descriptively regardless of its role in the gate.
+- Q3 (foreseeability of the mistral core ratio), OPEN, lifted to the PI.
+  Because generation is deterministic, RR2 already reported the mistral gated
+  lift (+41.9) and a single random lift (+7.39), ratio 5.7x, so the mistral
+  core primary gate is largely foreseeable at ~5.7x if a fresh random seed
+  behaves like RR2's. The 3x threshold is a principled calibration-rule
+  construction, not tuned to clear 5.7x, and the fresh random seed(s) and the
+  rider cells are genuinely unknown, but the lead and PI should decide whether
+  the mistral core alone is a strong enough confirmatory replication or
+  whether the genuinely-novel evidence is the rider map plus the multi-seed
+  random ensemble. This bears on how the verdict is reported (see the two
+  framings stated neutrally in "Determinism scope" above) and is left to the
+  PI to decide.
+- Q4 (llama rider operating point), RESOLVED (lead): full-grid sweep, as
+  drafted. The llama rider's dose ladder stays the full registered grid
+  `{2, 4, 6, 8, 12, 16, 20}` x sigma_c rather than matching only RR's
+  best-well-formed rung (hs20 dose 12).
+- Q5 (rider secondary framing), RESOLVED (lead): pre-stated sign-map
+  scoreboard structure. The Predictions scoreboard above carries dedicated
+  slots for the llama placebo sign, the mistral RG1 pass/fail call, and
+  whether the mistral fresh-seed random lifts land inside or outside the
+  descriptive envelope; the SLOTS are registered here, and the actual CALLS
+  are TODO-for-PI-and-lead, filled at sign.
 
 ## Outcome
 
