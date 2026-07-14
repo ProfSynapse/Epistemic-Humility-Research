@@ -2266,7 +2266,10 @@
           "test_qw35_heldout_smoke.py": "c70786aec90c90486fbb22f45ddea070b54f5d0a88c5d745c09a1328232ce088"
         }
       },
-      "kg": [],
+      "kg": [
+        "experiment:qwen35-4b-midband-heldout",
+        "mechanism:qwen35-4b-midband-window-transfers-to-heldout-pool"
+      ],
       "prediction": "On the 1,332 held-out confabs the frozen gated arm reaches refused rate >= 0.60 and well-formed rate >= 0.80 simultaneously with known-correct false-refusal <= 0.10 over the full 360 held-out knowns, and the placebo arms behave (random_direction within 2 points of baseline on both populations, permuted_gate strictly worse on known false-refusal), promoting the hs20 window to a held-out claim about Qwen3.5-4B.",
       "question": "Does the resolved qwen35-4b-midband-doubt-snap hs20 operating point (frozen direction set, gate threshold, standardization scalars, and dose 8 x sigma_c), applied unchanged, decouple refusal induction from output corruption on the untouched qwen35_4b held-out pool?",
       "registered": true,

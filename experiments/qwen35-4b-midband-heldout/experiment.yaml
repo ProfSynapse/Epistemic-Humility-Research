@@ -62,4 +62,6 @@ verdict: The frozen hs20 mid-band operating point transfers to the untouched Qwe
   held-out pool with refused 0.678, well-formed 0.977, known-correct false refusal
   0.039, and intact placebo specificity, promoting the doubt-gated caution-snap window
   from an in-sample selection to a held-out claim about this model.
-kg: []
+kg:
+- experiment:qwen35-4b-midband-heldout
+- mechanism:qwen35-4b-midband-window-transfers-to-heldout-pool
