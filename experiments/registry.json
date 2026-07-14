@@ -2095,10 +2095,10 @@
         }
       ],
       "slug": "placebo-signflip-question-type-analysis",
-      "status": "signed",
+      "status": "resolved",
       "title": "Placebo sign-flip: question-type stratification of the family-specific random-direction response",
       "type": "lab-diagnostic",
-      "verdict": ""
+      "verdict": "Question type does not explain the cross-family placebo sign difference (registered mechanism falsifier untriggered; M1 doubt-axis separation confirmed in all three families under the frozen gate's operational convention), but the subtype-inert reading is falsified for qwen: future-unknown carries the entire suppression (-24.7 pts vs -2.8 or smaller elsewhere), is mistral's largest recruitment (+11.8), and is the pre-generation projection outlier in both families."
     },
     {
       "checkpoint": {

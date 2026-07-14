@@ -1,9 +1,12 @@
 # Placebo sign-flip: question-type stratification of the family-specific random-direction response
 
-Status: draft (not signed; do not launch as confirmatory evidence). CPU-only
-retrospective re-read of generation text, grades, and pre-generation anchor
-hidden states that already exist on disk under gitignored `analysis/` trees. No
-model is loaded, no GPU is used, no new generation or grading is produced.
+Status: RESOLVED (signed, run, red-teamed, and resolved 2026-07-14; see the
+Outcome section and `experiment.yaml` for the terminal state). Header correction
+note: this line originally read "draft (not signed)" from scaffold time and was
+not updated at sign/resolve; corrected at resolve. CPU-only retrospective
+re-read of generation text, grades, and pre-generation anchor hidden states
+that already exist on disk under gitignored `analysis/` trees. No model is
+loaded, no GPU is used, no new generation or grading is produced.
 
 Keep this document the prose home for the experiment. The machine state lives in
 `experiment.yaml` and is never duplicated here.
@@ -366,10 +369,149 @@ subtype resolution (user). M1 and M3 calls agree across predictors.
 
 ## Outcome
 
-Filled at resolve. Record, per family: the question-type-stratified placebo
-delta (behavioral leg) with the coverage caveats; the within-`kuq`-subcategory
-breakdown; the QL narrow dose-response; the M1 projection contrast with
-bootstrap CIs; the M2 cross-family consistency read; the M3 realized-displacement
-split; the BG0/BG1/BG2 gate results; and the one-sentence summary that also goes
-into `verdict:` in the manifest. State explicitly that the answerable-vs-unanswerable
-behavioral verdict is deferred to RR3 and was not claimed here.
+Resolved 2026-07-14. All gates passed; every committed number was independently
+recomputed to full float precision by an adversarial red-team review before this
+verdict was written (qwen safetensors and the mistral 251MB anchor JSON reloaded
+from scratch; gate fire-set reproduced 1303/1303 with zero symmetric difference;
+circularity checked by restricting mistral M1 to the 1,694 held-out rows, where
+the separation is larger, not smaller: z_d SMD -6.05 vs -5.80 full-population).
+
+**One-sentence summary (= manifest verdict).** Question type does not explain
+the cross-family placebo sign difference (the sign is a family property measured
+entirely on the unanswerable stratum, and the registered mechanism falsifier is
+untriggered: no M1 SMD CI spans 0 in any family on either axis), but the
+subtype-inert reading is falsified for qwen: the future-unknown kuq subtype
+carries the entire qwen suppression (-24.7 pts vs -2.8 or smaller elsewhere), is
+also mistral's largest recruitment delta (+11.8), and is the pre-generation
+projection outlier in both families.
+
+**Gates.** BG0 PASS (QH re-slice reproduced 139/1,286 -> 73/1,286, delta -5.13
+bit-for-bit; MC reproduced 368/1,312 -> 465/1,312, delta +7.39). BG1 PASS after
+one honest failure cycle: the first real-data run failed at the registered hard
+stop because both checks scored populations the pipelines never gate-evaluated
+(mistral: all 3,037 anchors instead of the 1,694-row held-out roster; llama: 222
+unconditionally-dosed known rows counted as missed fires). Both were adjudicated
+check-scope defects, frame math untouched; frame_port.py was corrected to the
+gate-evaluated populations and repinned (repins entry in the manifest), and the
+rerun passed honestly: qwen 0/1,692 mismatches, mistral 0/1,694, llama 1/581 =
+0.0017 at hs20 (inside the registered 1% tolerance) and 0/581 at hs22/hs23 with
+the known-presence invariant true at all layers. Provenance note: the mistral
+and llama row-level fire-set reproductions are recorded here and in the
+notebook and are reproducible via the opt-in checks in the pinned
+frame_port.py, but the committed report JSON carries only the qwen fire-set and
+the mistral fit-reuse crosscheck; BG1 as registered required exactly that, so
+the gate is met at its registered bar. BG2 PASS (paired-n and Wilson CIs
+throughout; answerable legs at true power with gaps named; M2 labeled
+underpowered; M3 dropped for llama with reason; QL wide voided, narrow-only).
+
+**Behavioral leg.** Unanswerable stratum: qwen QH 10.8% -> 5.7% (delta -5.13
+pts, n = 1,286 paired); mistral MC 28.0% -> 35.4% (delta +7.39 pts, n = 1,312
+paired). Answerable stratum: qwen 0/17 -> 0/17 (unpowered; and only 1 of the 17
+carries a wide grade in both arms, so the informative paired denominator is
+effectively 1); mistral/QL/llama n = 0. As registered, NO
+answerable-vs-unanswerable behavioral verdict is asserted from existing data;
+that contrast was deferred to RR3 and is not claimed here. Within-kuq subtype
+breakdown (delta pts, random minus baseline): qwen future-unknown -24.7
+(n = 190, baseline 0.332) with every other subtype between -2.8 and +0.5;
+mistral future-unknown +11.8 (n = 153, baseline 0.536, the highest-hedging
+subtype) with the other five between +3.8 and +9.2. The same subtype is the
+extreme mover in both families, in opposite directions, and baseline hedging
+orders the six subtypes identically in both families. QL narrow dose-response:
+baseline 40/887 (4.5%); no layer/dose cell rises above baseline (hs20 span
+0.0-2.0%, hs23 3.2-5.6% falling with dose to 0 at 20 sigma-c, hs26 2.4-5.6%,
+hs30 1.6-4.8%), consistent with narrow-band suppression and no recruitment
+anywhere in the qwen ladder.
+
+**M1 (pre-generation projection contrast), adjudicated axis-by-axis.** The
+committed report's `prediction_consistent` booleans are computed on the raw fit
+axis and are NOT transcribed here, for a reason the red-team review located in
+the locked instruments: no prose doc pins the axis orientation, and the frozen
+gate code this amendment ports (rr2 direction_fit.py, validated by BG1) defines
+u_d as unit(mean known minus mean unknown), so +u_d points to the KNOWN pole and
+the gate's doubt score is -z_d (score = -z_d, fire = score >= tau; the manifest
+field auc_neg_z_d_on_fit names the axis). Under that pre-registered operational
+convention:
+
+- Doubt axis: CONFIRMED in all three families. Unanswerable sits higher on
+  -z_d everywhere; raw-axis SMDs (answerable minus unanswerable on raw z_d,
+  equivalently the negated doubt contrast): qwen -3.762 [-3.956, -3.590],
+  mistral -5.796 [-5.997, -5.605], llama -6.43/-6.33/-6.3 at hs20/22/23, all
+  Mann-Whitney p <= 1e-176. Caveat stated plainly: u_d IS the known-vs-unknown
+  contrast direction, so this largely re-expresses the near-saturated
+  answerability gate rather than establishing an independent finding.
+- Caution axis: NOT INTERPRETABLE as a question-type ordering. Answerable rows
+  project higher on +c_hat in all families (raw SMDs qwen -3.004, mistral
+  -1.577, llama -0.65 [-0.73, -0.57]), but c_hat is fit only on the
+  confab-vs-unknown-refused contrast (both unanswerable) and then
+  orthogonalized against u_d and u_p, so where answerable rows land on it is
+  emergent geometry with no designed caution semantics. Means are reported; no
+  directional reading is claimed.
+
+**Registered falsifier: UNTRIGGERED.** The falsifier asks whether the M1 SMD CI
+spans 0 in every family and both directions; it is sign-agnostic, so the axis
+labeling question cannot touch it. No CI spans 0 (smallest magnitude: llama z_c
+-0.65 [-0.73, -0.57]). The behavioral falsifier arm, however, FIRES for qwen:
+one subtype (future-unknown) carries the entire suppression while others are
+flat, so question type at subtype resolution DOES modulate the placebo response
+and the inert reading is falsified for qwen, exactly as the registered text
+provided.
+
+**M2 (cross-family consistency, descriptive, n = 2, non-gating).** Directionally
+consistent with the prediction: mistral's unanswerable stratum sits higher at
+baseline (mean z_c -0.22 vs qwen -0.43; wide baseline hedge rate 0.280 vs 0.104)
+and mistral recruits (+7.39) while qwen suppresses (-5.13). Mandatory caveat
+carried from rr3-corrected-placebo-replication (resolved FALSIFIED, PR #290):
+the +7.39 mistral figure is a SINGLE-SEED draw, and RR3 measured fresh
+random-seed lifts at matched magnitude spanning -7.4 to +21.8 points across
+three seeds, so the family-sign premise itself has wide per-seed variance and
+this consistency read must not be treated as established sign structure. M1 and
+M3 are unaffected (they concern anchors, not placebo seeds).
+
+**M3 (realized displacement split).** Qwen: null as the registered prediction
+stated (SMD +0.012 [-0.098, +0.124], mean displacement 0.21220 vs 0.21221 at
+dose 12.61). Mistral: statistically non-null (SMD -0.851 [-0.944, -0.761]) but
+mechanistically negligible: the mean displacement difference is 1.2e-4 against
+a displacement magnitude of 0.0426 (0.3%), arising from mild non-orthogonality
+of this seed's r_hat to the answerability axis with tiny per-group variances
+(~2e-8, finite and non-degenerate per the red-team recomputation). This is the
+pre-flagged "a non-null here would itself be a finding" case and is reported as
+negligible-in-magnitude, not as question type modulating the write. M3 is flat
+across kuq subtypes in both families (qwen subtype-median span 0.0014, mistral
+0.00014).
+
+**Subtype-resolved mechanism readout (pre-stated in the notebook before the
+mechanism leg ran; descriptive, hypothesis-generating).** Future-unknown is
+qwen's doubt-axis outlier (median z_d -0.985 vs -0.21..-0.51 for the other
+five), matching the behavioral -24.7 concentration; it is mistral's BOTH-axes
+outlier (median z_c +0.844 vs next-highest +0.158; median z_d -1.008 vs
+-0.34..-0.57); and it is llama's second-highest caution subtype (z_c +0.326,
+behind false-assumption +0.589). Displacement is flat across subtypes, so the
+behavioral concentration is not explained by differential dose realization; the
+concentration correlates with where the subtype sits pre-generation.
+
+**Predictions scoreboard, adjudicated.**
+
+- M1 slot (both predictors YES, all three): BOTH CORRECT on the doubt axis
+  under the operational convention; the caution axis is not interpretable as
+  worded, so the slot is scored on doubt.
+- Subtype slot (the differentiating slot): USER CORRECT (concentrated or at
+  least uneven), ORCHESTRATOR WRONG (even spread). The concentration is
+  extreme, one subtype carrying effectively the entire qwen effect, and it is
+  echoed mechanistically in both families.
+- M3 slot (both predictors YES, differs): BOTH WRONG for qwen (null); for
+  mistral the difference is statistically real but negligible in magnitude, so
+  at most a technicality. Note the scoreboard calls here contradicted the
+  registered Prediction prose ("does not differ"), which the qwen result
+  vindicates.
+
+**Design note (required by Analysis outputs).** Question type does not modulate
+the placebo response at the answerable-vs-unanswerable level on existing data
+(the sign difference lives entirely on the unanswerable stratum, and the
+answerable behavioral contrast remains unmeasured, deferred to RR3); it DOES
+modulate it within the unanswerable stratum at kuq-subtype resolution (qwen
+future-unknown carries the suppression, and the same subtype is mistral's
+largest recruitment); M1 confirms answerable/unanswerable separation on the
+operational doubt axis in all three families (with the near-tautology caveat);
+and the M2 family-sign consistency read is directionally supportive but stands
+on a single-seed premise that RR3 showed has -7.4..+21.8 per-seed variance, so
+it is reported as unestablished.

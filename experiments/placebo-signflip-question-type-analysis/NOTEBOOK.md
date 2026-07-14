@@ -6,6 +6,39 @@ in `experiment.yaml`.
 
 ## Entries
 
+- 2026-07-14 (lead, red-team certification + verdict). Adversarial red-team
+  review (opus) completed before any verdict was written. Certification: every
+  committed M1/M3/gate number reproduces to full float precision under
+  independent recomputation (qwen safetensors + mistral 251MB anchor JSON
+  reloaded from scratch; fire-set 1303/1303, symdiff 0); circularity discharged
+  (mistral M1 restricted to the 1,694 held-out rows gives z_d SMD -6.05,
+  LARGER than the -5.80 full-population value, so fit-row inclusion does not
+  manufacture the contrast); subtype n's sum to stratum totals everywhere;
+  behavioral BG0 re-slices reproduce. The M1 axis-orientation question that
+  was lifted to the red-team resolved from the locked instruments themselves:
+  no prose doc pins the orientation, but the frozen gate code (rr2
+  direction_fit.py) defines +u_d as the KNOWN pole and the doubt score as
+  -z_d, and the manifest field auc_neg_z_d_on_fit names the axis. Adjudication
+  therefore split M1 by axis: doubt CONFIRMED in all three families under the
+  operational convention (with the stated caveat that it largely re-expresses
+  the answerability gate); caution NOT INTERPRETABLE as a question-type
+  ordering (c_hat is fit on an unanswerable-only contrast; answerable
+  placement on it is emergent geometry). The committed raw-axis
+  prediction_consistent booleans were NOT transcribed into the Outcome; the
+  mismatch is sign-labeling in the report, not arithmetic. Registered
+  mechanism falsifier UNTRIGGERED (sign-agnostic; no CI spans 0). Behavioral
+  subtype falsifier arm FIRES for qwen (future-unknown -24.7 vs -2.8 or
+  smaller elsewhere): inert reading falsified for qwen at subtype resolution.
+  Scoreboard: M1 both correct (doubt axis); subtype slot user CORRECT /
+  orchestrator WRONG; M3 both wrong for qwen (null), mistral statistically
+  non-null but negligible (1.2e-4 on 0.0426, 0.3%; per-group variances ~2e-8,
+  non-degenerate). M2 reported with the RR3 single-seed variance caveat as
+  registered in the previous entry. Red-team hygiene notes folded into the
+  Outcome: BG1 mistral/llama row-level reproductions live in notebook prose +
+  opt-in checks, not committed JSON (BG1 met at its registered bar
+  regardless); QH answerable n=17 denominator carries only 1 wide-graded pair.
+  Resolved via bin/exp with status resolved; verdict one-liner mirrors the
+  Outcome summary.
 - 2026-07-14 (lead, BG1 adjudication + repin). The constrained-executor run of
   the real-data BG1 checks FAILED as built (mistral fire-set mismatch 0.358,
   llama ~0.274 per layer) and stopped at the registered hard stop, correctly.

@@ -2,7 +2,7 @@ slug: placebo-signflip-question-type-analysis
 title: 'Placebo sign-flip: question-type stratification of the family-specific random-direction
   response'
 type: lab-diagnostic
-status: signed
+status: resolved
 registered: true
 created_at: '2026-07-14T17:19:16Z'
 question: Does question type (answerable triviaqa/popqa vs unanswerable kuq) modulate
@@ -54,21 +54,23 @@ instrument:
     run_mechanism.py: 8687062fc647d872f48b6940b22c9bf4be9bc20a09f0c188a1415efd0861fa74
     test_signflip_smoke.py: 79fe72f6f752d2c8db8416cd26fa5ac69056fecd903f926c8f68ce3db0b4bc6d
 repins:
-  - file: frame_port.py
-    old_sha256: 306a76c9ffbe2fe5321939c33497acdf5986311a66ce591153f44b9160e777bd
-    new_sha256: 4536fde43b0e79968717cffd57ec90e56e5030dc4ee602693d91c7715391f721
-    date: '2026-07-14'
-    reason: >-
-      Post-sign check-scope correction, lead-adjudicated after both families'
-      BG1 real-data fire-set checks failed. Diagnosis (independently
-      re-derived by the lead): the mistral check scored all 3037 anchor rows
-      but the pipeline gate-evaluated only the 1694-row held-out roster
-      (restricted mismatches 0/1694); the llama check counted
-      unconditionally-dosed known rows as missed fires (restricted
-      confab-only mismatches 1/581 hs20, 0/581 hs22, 0/581 hs23). Checks
-      corrected to the populations the pipelines actually gate-evaluated;
-      llama fire-set now also gates at the same 1% tolerance. No change to
-      the frame math, gates, or any analysis code path.
+- file: frame_port.py
+  old_sha256: 306a76c9ffbe2fe5321939c33497acdf5986311a66ce591153f44b9160e777bd
+  new_sha256: 4536fde43b0e79968717cffd57ec90e56e5030dc4ee602693d91c7715391f721
+  date: '2026-07-14'
+  reason: 'Post-sign check-scope correction, lead-adjudicated after both families''
+    BG1 real-data fire-set checks failed. Diagnosis (independently re-derived by the
+    lead): the mistral check scored all 3037 anchor rows but the pipeline gate-evaluated
+    only the 1694-row held-out roster (restricted mismatches 0/1694); the llama check
+    counted unconditionally-dosed known rows as missed fires (restricted confab-only
+    mismatches 1/581 hs20, 0/581 hs22, 0/581 hs23). Checks corrected to the populations
+    the pipelines actually gate-evaluated; llama fire-set now also gates at the same
+    1% tolerance. No change to the frame math, gates, or any analysis code path.'
 inputs: []
-verdict: ''
+verdict: 'Question type does not explain the cross-family placebo sign difference
+  (registered mechanism falsifier untriggered; M1 doubt-axis separation confirmed
+  in all three families under the frozen gate''s operational convention), but the
+  subtype-inert reading is falsified for qwen: future-unknown carries the entire suppression
+  (-24.7 pts vs -2.8 or smaller elsewhere), is mistral''s largest recruitment (+11.8),
+  and is the pre-generation projection outlier in both families.'
 kg: []
