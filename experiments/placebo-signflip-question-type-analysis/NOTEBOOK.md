@@ -6,6 +6,24 @@ in `experiment.yaml`.
 
 ## Entries
 
+- 2026-07-14 (lead, PRE-STATED before the mechanism leg runs). Behavioral leg
+  executed post-sign; BG0/BG1/BG2 all PASS; report written (uncommitted until
+  the mechanism leg completes). Headline behavioral observation: the qwen
+  suppression concentrates in the future-unknown kuq subtype (-24.7 pts,
+  n=190, baseline 0.332) with every other subtype at -2.8 or smaller, and
+  future-unknown is ALSO mistral's largest positive delta (+11.8); baseline
+  hedging orders the six subtypes identically in both families. The PI's
+  scoreboard call (concentrated-or-uneven) is currently ahead of the
+  orchestrator's (even-spread); no verdict until red-team certification.
+  PRE-STATEMENT for the not-yet-run mechanism leg: in addition to the
+  registered M1 (answerable vs unanswerable), report a SUBTYPE-RESOLVED
+  descriptive breakdown of the pre-generation doubt/caution projection
+  (per kuq subtype, per family), specifically whether future-unknown anchors
+  sit highest on the caution axis and whether M3 realized displacement is
+  largest there. Descriptive, hypothesis-generating only, no gate, no bearing
+  on the registered falsifier; stated here BEFORE any anchor tensor for the
+  mechanism leg is loaded so it is not a post-hoc read. Mechanism leg remains
+  deferred until the RR3 GPU job frees host RAM (PI machine restart pending).
 - 2026-07-14 (harness-builder). Analysis harness built, CPU-only, no model/GPU
   touched (RR3's local 3090 job left alone throughout). BG0 stage-in
   (staging.py) symlinks 26 gitignored cross-worktree artifacts + records 9
