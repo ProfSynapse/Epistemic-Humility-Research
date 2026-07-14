@@ -1,0 +1,21 @@
+# Pre-stated gates for rr2-mistral-adjudicated-refusal-confirm.
+# Scored rates use detector-v2-refused OR blinded-adjudicated-abstention per row.
+# Detector-v2-only rates are reported alongside and do not gate.
+rg0_instrument:
+  pins_hash_verified: true
+  single_launch_runlog_integrity: true
+  adjudication_manifest_hashed_before_unblinding: true
+  placebo_readback_no_op: per RR G3 tolerance
+rg1_benefit:
+  population: held-out fired confab
+  adjudicated_refusal_floor: 0.60
+  wilson_lcb_floor: 0.50
+  well_formed_floor: 0.80
+rg2_cost:
+  population: full held-out known-correct
+  adjudicated_false_refusal_ceiling: 0.05
+  wilson_ucb_ceiling: 0.10
+rg3_placebo:
+  arm: random_direction
+  max_delta_vs_baseline_points: 2
+  populations: both

@@ -2469,6 +2469,66 @@
         "repo": "",
         "revision": ""
       },
+      "created_at": "2026-07-13T22:55:38Z",
+      "falsifier": "Any prediction leg fails (RG1/RG2/RG3). No rescoring lane exists behind the blinded adjudication: a miss falsifies the detector-width-artifact interpretation of the RR mistral caveat and the miss stands as behavioral.",
+      "inputs": [],
+      "instrument": {
+        "configs": [
+          "cell.yaml",
+          "gates.yaml",
+          "detector_v2_patterns.yaml"
+        ],
+        "modules": [
+          "apply_adjudication.py",
+          "build_adjudication_pool.py",
+          "detector_v2.py",
+          "direction_fit.py",
+          "fit_reuse.py",
+          "gates_lib.py",
+          "gen_lib.py",
+          "grader.py",
+          "heldout_scorer.py",
+          "materialize_rows.py",
+          "pipeline.py",
+          "render.py",
+          "steer_lib.py",
+          "test_rr2_smoke.py"
+        ],
+        "pins": {
+          "apply_adjudication.py": "707409d3f24e0ed005aec225660eb578ac73cc67179cf30d5ed789b26d7cb8af",
+          "build_adjudication_pool.py": "e0f709f77215f2d9249e78500b0f50232b10bcaee4793b36aca6be6d508aaa7f",
+          "cell.yaml": "d578b55d613dafc389a19d1771a16001f2bc47516e7fc1f3957234b96d0db6a0",
+          "detector_v2.py": "161fd8548ec0dad1daabd590870654f1c32bd0daf21e6026a2c18c83e83991ae",
+          "detector_v2_patterns.yaml": "36422e01ae03008c2f71f180158c63950e14f8dfc1279c4e654c89fb831841d9",
+          "direction_fit.py": "44e5d98ce736e97ff38fae377be625eca4134fc5f51ece44c220eced9c6d7771",
+          "fit_reuse.py": "c9b90a1977f9bfd63bedd992a95c61369380cafc52bd61526634177081ecbe01",
+          "gates.yaml": "cea6ec866450a22a03fbde45811f13c1f9d9c3b93f28f39ce04c70f30163679e",
+          "gates_lib.py": "85f7e120d633b86bbc339885d042838c1edfb05b018aa71de2fcd595d920d2c7",
+          "gen_lib.py": "2aedb0b2091457f832c4ff7614a90f2716f26b6dcd091e7348a47bdac0de13b4",
+          "grader.py": "bd5a974d7aa56cc28d8e6380e6176b81ea646fa276760feb31dc3d6bdc681218",
+          "heldout_scorer.py": "1f043b51f9a856b44f5227f4bbe6792b6706353689a5c6a2969c0fe6c0273fd1",
+          "materialize_rows.py": "41df28de05f55d2d50b71f49d66487a74c6929b4786ff92f48ad2eb37fa96490",
+          "pipeline.py": "33de030c482114954c406a52a7a8cea0f0fb0ce8686a5fe58c6b4ce4514f0b90",
+          "render.py": "c273891f1e62d4b42f9a328259ba9d6a5318d62ed562eec2418fc9794fe32a7d",
+          "steer_lib.py": "3c09e0b74ebf9ae79da08026cb9de2d839069e8efb8caca25948a002a7ea60f4",
+          "test_rr2_smoke.py": "ca3a02d2e68c9e79ab4f81e765f93081a1e9a29df035ca46237016c798a3d28e"
+        }
+      },
+      "kg": [],
+      "prediction": "Mistral reaches shape A at the pre-fixed operating point under the adjudicated instrument: held-out fired-confab adjudicated refusal >= 0.60 (Wilson LCB > 0.50) with well-formed >= 0.80, known-correct adjudicated false refusal <= 0.05 (Wilson UCB < 0.10), placebo no-op within 2 points.",
+      "question": "Does the doubt-gated caution write actuate clean, idiom-inclusive refusal on mistral at its atlas site (hs16, dose 12 sigma_c) when abstention is scored by a pre-registered diverse detector plus a blinded human adjudication lane, symmetric across benefit and cost populations?",
+      "registered": true,
+      "slug": "rr2-mistral-adjudicated-refusal-confirm",
+      "status": "falsified",
+      "title": "RR2: mistral confirmatory with detector v2 + blinded adjudication lane",
+      "type": "steer-cell",
+      "verdict": "Falsified on the placebo leg: the blinded adjudicated instrument confirms idiom-inclusive mistral refusal at 0.699 with pristine cost, vindicating the RR detector-width caveat, but a magnitude-matched random direction lifts baseline abstention +7.4 points (0.280 to 0.354) against the registered 2-point no-op tolerance, so direction-specificity fails as registered."
+    },
+    {
+      "checkpoint": {
+        "repo": "",
+        "revision": ""
+      },
       "created_at": "2026-07-08T17:40:52Z",
       "falsifier": "",
       "inputs": [],

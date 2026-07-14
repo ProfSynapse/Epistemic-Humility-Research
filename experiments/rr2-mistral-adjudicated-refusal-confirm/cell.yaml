@@ -1,0 +1,231 @@
+# rr2-mistral-adjudicated-refusal-confirm cell. Pinned at sign.
+#
+# Confirmatory single-family, single-fixed-operating-point re-run of
+# rr-cross-family-raw-refusal's mistral leg (resolved falsified, shape F,
+# 2026-07-13; experiments/rr-cross-family-raw-refusal/AMENDMENT.md). No FIT
+# stage, no dose ladder, no selection logic: the operating point (hs16, dose
+# 12 sigma_c) is the exact peak rung RR's FIT dose sweep swept and reported
+# (fit_dose_ladder_report.json), fixed here in advance per the AMENDMENT and
+# the PI directive for a blinded adjudication lane. This is a REGISTERED
+# fixed point, not a re-selection: fit_reuse.py reconstructs RR's frozen
+# direction fit deterministically (byte-identical double-fit) and asserts
+# its stats match RR's own committed
+# analysis-committed/mistral/hs16_fit_build_manifest.json exactly, so no new
+# fit DECISION is made here, only a verified reproduction of one RR already
+# made and locked.
+#
+# Data, atlas split, and role assignment are reused verbatim from RR's
+# mistral leg (mistral7b_instruct_v03), which itself reused them verbatim
+# from jspace-family-atlas / doubt-snap-cross-family-confirmatory. RR's
+# held-out leg for this family was NEVER GENERATED (shape F stopped it at
+# FIT), so held-out generation here is fresh GPU work on rows no grader or
+# reviewer has seen, per AMENDMENT.md "Design".
+
+seed: 20260713
+fit_reuse_note: >-
+  No fresh FIT. fit_reuse.py reconstructs u_d/c_hat/random_direction/stats at
+  hs16 from the SAME FIT rows and anchors RR used (direction_fit.py, ported
+  verbatim), run twice and asserted byte-identical, then cross-checked
+  field-for-field against RR's committed hs16_fit_build_manifest.json
+  (mu_d, sigma_d, mu_c, sigma_c, tau_frozen, auc_neg_z_d_on_fit) as a G0 hard
+  stop if any field differs. This is reproduction, not re-fitting: no new
+  operating point can emerge from it.
+
+posture:
+  tier: exploratory_tier2_confirmatory
+  pooling: >-
+    single family, single fixed operating point; never pooled with the
+    locked Phase 1 headline matrix, never pooled with rr-cross-family-raw-refusal
+    (which resolved falsified on the locked 3-phrase detector and stands
+    unchanged), and not itself a re-adjudication of that falsifier. This
+    experiment tests a DIFFERENT claim (does the write actuate clean,
+    idiom-inclusive, adjudicated refusal) under a pre-registered wider
+    instrument.
+
+# ---------------------------------------------------------------------------
+# Substrate: the RR mistral leg, exact model/revision, reused verbatim.
+# ---------------------------------------------------------------------------
+family:
+  id: mistral7b_instruct_v03
+  model: mistralai/Mistral-7B-Instruct-v0.3
+  revision: c170c708c41dac9275d15a8fff4eca08d52bab71  # RR cell.yaml, lead-verified against fleet model_matrix.yaml
+  substrate: bf16
+  adapter: none
+  loader: AutoModelForCausalLM.from_pretrained
+  n_decoder_layers: 32
+  atlas_hidden_states: 33
+  heldout_power:                       # RR cell.yaml / jspace-family-atlas, re-checked at G0
+    confab: 1312
+    known_correct_answered: 382
+
+# ---------------------------------------------------------------------------
+# Fixed operating point: no candidate set, no sweep. hs16 dose 12 sigma_c,
+# the peak rung of RR's mistral FIT dose ladder (fit_dose_ladder_report.json),
+# the rung the RR Outcome and this experiment's Motivation cite by number
+# (504/870 = 0.5793 locked-detector refused, 850/870 = 0.977 well-formed,
+# 6/255 = 0.024 known false-refusal, 97/366 idiom-credited non-refused
+# fired confabs).
+# ---------------------------------------------------------------------------
+fixed_operating_point:
+  layer_hs_index: 16                  # atlas/RR hidden-state index convention: decoder block = hs_index - 1
+  decoder_block_index: 15
+  dose_multiplier: 12                 # x sigma_c
+  rr_reference_manifest: experiments/rr-cross-family-raw-refusal/analysis-committed/mistral/hs16_fit_build_manifest.json
+  rr_reference_values:                # transcribed from the file above; cross-checked live at G0, not trusted blind
+    mu_d: -0.6997460008464047
+    sigma_d: 0.501277980342804
+    mu_c: -0.2035861113333241
+    sigma_c: 0.3054430504224313
+    tau_frozen: -0.7844209705182725
+    auc_neg_z_d_on_fit: 0.9998250100955713
+    n_confab_fit: 874
+    n_known_fit: 255
+    n_unknown_refused: 214
+    hidden_dim: 4096
+
+# ---------------------------------------------------------------------------
+# Instrument: same doubt-gated caution snap construction as RR, unchanged.
+# ---------------------------------------------------------------------------
+instrument:
+  gate:
+    score: neg_z_d
+    definition: "neg_z_d = -(proj_u_d - mu_d)/sigma_d, clipped to [-2, 2]"
+    fire_rule: "neg_z_d >= tau_frozen"
+    tau_source: reconstructed by fit_reuse.py, cross-checked against rr_reference_values.tau_frozen
+    source: experiments/rr-cross-family-raw-refusal/direction_fit.py (ported verbatim)
+  snap:
+    law: erase_write
+    position: anchor_onward
+    direction: c_hat
+    c_hat_construction: >-
+      mass-mean caution (mean refused minus mean confab) orthogonalized against a
+      LogisticRegression(saga, C=1.0, tol=1e-3, max_iter=5000, random_state=SEED)
+      confab-propensity direction, QR erase; FIT-standardized projections.
+      Identical construction to RR; reconstructed not refit (see fit_reuse_note).
+    source: experiments/rr-cross-family-raw-refusal/direction_fit.py (ported verbatim)
+  generation:
+    do_sample: false
+    min_new_tokens: 1
+    max_new_tokens: 200
+    eos_enabled: true
+    enable_thinking: false
+  render:
+    source: experiments/rr-cross-family-raw-refusal/render.py (ported, env vars namespaced RR2_RENDER_*)
+    anchor_position: prompt_len_minus_1
+  reproducibility:
+    double_fit_byte_identical: true
+    fit_reconstruction_matches_rr_committed_stats: true   # G0 hard stop if any field in rr_reference_values differs
+
+# ---------------------------------------------------------------------------
+# Detector v2 (automatic screen, reported not gated) + blinded adjudication
+# lane (primary instrument). See AMENDMENT.md "Design".
+# ---------------------------------------------------------------------------
+detector_v2:
+  config_file: detector_v2_patterns.yaml
+  module: detector_v2.py
+  gates: false   # reported alongside every gated rate; never a promotion gate
+
+adjudication:
+  rubric_source: AMENDMENT.md "Registered adjudication rubric"
+  pool_source_arms: [baseline, gated, random_direction, dose_knowns_ungated]
+  pool_selection_rule: >-
+    every held-out row, both populations (fired confab, known_correct_answered),
+    across all four arms above, that detector_v2.is_refused_v2 marks NON-refused
+  decoys:
+    clear_negative:
+      drawn_from: known_correct_answered rows (any arm) that are well_formed_correct
+        AND detector_v2-non-refused (an unambiguous committed answer)
+      purpose: calibration check against over-crediting (adjudicator should not
+        mark these as abstentions)
+    clear_positive:
+      drawn_from: random_direction (placebo) arm rows that detector_v2 DOES mark
+        refused (an unambiguous abstention, already credited without adjudication)
+      purpose: calibration check against under-crediting (adjudicator should mark
+        these as abstentions)
+    note: >-
+      Decoys are never part of the scored population; final rates only credit
+      rows that are members of the true core pool (arm/population/row_key
+      known only via the gitignored mapping file). Interpretation of AMENDMENT.md's
+      "decoy rows drawn from the placebo and known-correct sets" made at
+      harness-build time; see NOTEBOOK.md.
+  unblinding_order_guarantee: >-
+    the adjudicator's graded-file sha256 must be recorded in a committed
+    manifest BEFORE apply_adjudication.py will read the opaque-id -> row_key
+    mapping; apply_adjudication.py refuses to run otherwise.
+  final_rate_rule: detector_v2_refused OR adjudicated_abstention, per row, on both populations
+
+# ---------------------------------------------------------------------------
+# Population: reused verbatim from RR's mistral leg (itself reused verbatim
+# from jspace-family-atlas / doubt-snap-cross-family-confirmatory).
+# ---------------------------------------------------------------------------
+population:
+  reuse_from: experiments/rr-cross-family-raw-refusal (mistral7b_instruct_v03 cell)
+  reuse_scope: row pools, baseline generations note, gradings, role assignments (verbatim)
+  roles:
+    known_correct_answered: TriviaQA + PopQA, kept only if undosed baseline well-formed and correct
+    confab: KUQ, undosed baseline confabulates
+    unknown_refused: KUQ, undosed baseline refuses (fit_only; needed only for fit_reuse.py's reconstruction)
+  role_source: experiments/rr-cross-family-raw-refusal/AMENDMENT.md (Data reuse)
+  anchors:
+    reuse_from: experiments/jspace-family-atlas full-depth captures (final-prompt-token anchor, hs16 only)
+    candidate_layers: [16]     # single layer; no sweep
+  splits:
+    fit: used ONLY by fit_reuse.py's reconstruction (not a fresh selection)
+    held_out: the four-arm scoring population; NEVER generated by RR (shape F stop);
+      fresh GPU work here on rows no grader or reviewer has seen
+  containment:
+    committed_row_text: forbidden
+    committed_aliases: forbidden
+    committed_answer_text: forbidden
+    committed: ID-only manifests (row_key, role, split, source, category_canon) + aggregates only;
+      adjudication pool/mapping are gitignored, never committed
+    source: experiments/rr-cross-family-raw-refusal/cell.yaml (population.containment)
+
+# ---------------------------------------------------------------------------
+# Arms: four generation passes at the ONE fixed operating point.
+# ---------------------------------------------------------------------------
+arms:
+  - name: baseline
+    description: no hook; every held-out row (both populations), once; reference for RG3
+  - name: gated
+    description: >-
+      real instrument; doubt gate fires per held-out row (reconstructed
+      tau_frozen/u_d/mu_d/sigma_d), fired rows get the c_hat erase-write snap
+      at dose_abs = 12 * sigma_c, anchor_onward; non-fired rows inherit
+      baseline; primary population for RG1/RG2
+  - name: random_direction
+    description: >-
+      same fired rows as gated; c_hat swapped for the frozen reconstructed
+      random_direction placebo, magnitude matched (random_direction stored at
+      sigma=1.0, so gain_random = dose_abs / 1.0); direction specificity (RG3)
+  - name: dose_knowns_ungated
+    description: >-
+      every held-out known_correct_answered row dosed unconditionally with
+      c_hat at dose_abs, gate off; selectivity-on-knowns characterization
+      only (reported, not a promotion gate, per gates.yaml)
+
+readouts:
+  refused_v1: RR locked 3-phrase canonical detector rate (grader.py, reported for continuity with RR)
+  refused_v2: detector-v2 rate (canonical + diverse idioms; reported, does not gate)
+  refused_final: detector_v2_refused OR adjudicated_abstention (PRIMARY; only computable after adjudication)
+  well_formed: well-formed JSON rate (unchanged rule; not adjudicated)
+  clean_tighten: strict conjunction, reported for continuity with RR
+  degenerate: degenerate-repetition rate
+  terminated_naturally: natural-stop rate
+  mean_new_tokens: mean new tokens
+  confidence_intervals: Wilson 95% (alpha 0.05) on every rate
+
+execution:
+  lanes:
+    - local_3090       # free; lead-owned launch only
+    - modal            # PAID; needs fresh user approval
+  model: direct InterventionHook/GenerationInterventionController/RunLog driving (RR precedent, not the mechinterp-steer YAML recipe path)
+  synaptic_tuner_pin: 86b134c32254668893800a453b3c5d8285ae85df  # same pin RR used; carries batch verbs, MechInterp.intervention, shared.utilities.run_log
+  gpu_python: /home/profsynapse/miniconda3/bin/python3
+
+outputs:
+  local_private_dir: experiments/rr2-mistral-adjudicated-refusal-confirm/analysis/          # gitignored
+  committed_public_dir: experiments/rr2-mistral-adjudicated-refusal-confirm/analysis-committed/
+  directions_dir: experiments/rr2-mistral-adjudicated-refusal-confirm/directions/            # gitignored (large local data)
+
+harness_status: not_written_draft_stage
