@@ -18,14 +18,18 @@ evidence_base: >
   experiments/j-space-localization-qwen3-4b/AMENDMENT.md,
   experiments/j-space-midband-dose-calibration-qwen3-4b/AMENDMENT.md,
   experiments/j-space-calibrated-layer-contrast-qwen3-4b/AMENDMENT.md,
-  and experiments/j-space-token-targeted-refusal-qwen3-4b/AMENDMENT.md.
+  experiments/j-space-token-targeted-refusal-qwen3-4b/AMENDMENT.md,
+  experiments/rr2-mistral-adjudicated-refusal-confirm/AMENDMENT.md,
+  and experiments/abstention-wide-instrument-calibration/AMENDMENT.md.
 notes: >
   Draft v0 is a synthesis scaffold, not submission-ready. It deliberately
   separates reader-facing claims from amendment traceability. The core results
   are single-model or surface-local exploratory unless explicitly marked
-  otherwise. The next planned step is a larger cross-model / cross-family
-  actuation study; this draft records the current Qwen3-family evidence before
-  that escalation.
+  otherwise. A first cross-family attempt on mistral and a follow-up
+  wide-instrument calibration study are now folded in as Section 4.8; both
+  remain exploratory and pre-headline. The next planned step is a larger
+  cross-model / cross-family actuation study registered against the
+  per-family placebo design rule that calibration study produced.
 ---
 
 # Readable Is Not Writable: Channel, Gate, and Workspace Constraints on Actuating Epistemic State in Small Language Models
@@ -411,6 +415,94 @@ diff 0. This is outside the core paper claim, but it reinforces the broader
 lesson: readable behavioral directions do not automatically become clean
 actuators.
 
+### 4.8 Cross-family replication surfaces an instrument problem, not (yet) a mechanism problem
+
+The gated caution controller in Section 4.4 was fit and evaluated on raw-base
+Qwen3-4B alone. A cross-family test asked whether the same doubt-gated caution
+write, refit at each family's own atlas-located workspace-band site, actuates
+refusal on Llama-3.2-3B and Mistral-7B-v0.3. The initial run
+(`rr-cross-family-raw-refusal`) landed a null shape on both families under a
+locked three-phrase canonical refusal detector. On the mistral leg, an
+unblinded post hoc hand-read of the non-refused rows found well-formed
+abstention idioms the detector's fixed vocabulary did not count, suggesting
+the null was partly a detector-width artifact rather than an absence of the
+behavior.
+
+A confirmatory replication (`rr2-mistral-adjudicated-refusal-confirm`) tested
+that suggestion directly, on fresh held-out mistral rows never seen by the
+detector-width caveat, using two registered instruments: a widened automatic
+pattern detector (detector v2) and a primary blinded adjudication lane in
+which context-free graders scored bare, unlabeled generation text against a
+fixed abstention rubric, mixed with clear-positive and clear-negative decoy
+rows to certify grader calibration before unblinding. The caveat was
+confirmed on its own terms: gated fired-confab adjudicated refusal reached
+911/1303 = 0.699 (Wilson 95% CI [0.674, 0.723]) against a 0.60 floor,
+well-formedness held at 0.987, and known-correct false refusal stayed at
+2/382 = 0.0052 (CI [0.0014, 0.019]) against a 0.05 ceiling. Both the benefit
+and cost gates passed.
+
+The placebo gate did not. A random-direction control matched in magnitude to
+the true caution write lifted adjudicated confab abstention from a
+368/1312 = 0.280 baseline to 465/1312 = 0.354, a +7.39 point rise against the
+registered 2-point no-op tolerance. Per the pre-registered falsifier, this
+failure alone falsifies the claim that the write is direction-specific on
+mistral, even though the gated arm's own lift over baseline (+41.9 points,
+5.7 times the random direction's) remains far larger. The result is reported
+straight: the mistral cross-family test is falsified, not because the caution
+write failed to move behavior, but because a magnitude-matched random
+direction also moved it, and the registered tolerance for "moved it" was too
+strict for this family's baseline.
+
+That last clause turned out to matter more than it first appeared. A
+follow-up CPU-only re-read (`abstention-wide-instrument-calibration`) applied
+the same wide two-instrument stack to existing generation logs across three
+families and found that undosed hedging is itself family-graded:
+wide-instrument confab abstention baselines are 0.104 for Qwen3.5-4B, 0.164
+for Llama-3.2-3B, and 0.280 for Mistral-7B-v0.3, each well above what the
+narrow canonical detector reports (0.044, 0.036, and 0.159 respectively,
+undercounts of +6.1, +12.9, and +12.2 points). The placebo response is
+family-specific in sign, not just magnitude: on Qwen3.5-4B, a
+matched-magnitude random direction at the promoted held-out operating point
+suppressed wide-instrument hedging by 5.13 points (paired baseline 0.108
+[0.092, 0.126] versus random-direction 0.057 [0.045, 0.071], non-overlapping
+CIs), the opposite direction from mistral's +7.39 point recruitment. Llama
+has no placebo generation text on disk and so cannot be scored on this axis.
+Known-correct (cost) rates were zero everywhere they were covered, on every
+family and arm.
+
+**Interpretation.** The RR2 falsification and the calibration re-read
+together license a narrow but firm claim: the flat, small, symmetric placebo
+tolerance this program inherited from a Qwen-scale, apparently near-zero
+baseline world is the wrong instrument for cross-family direction-specificity
+testing. It is not evidence that random-direction writes are generically
+confounded with the true caution write; on Qwen3.5-4B the matched-magnitude
+random direction moved hedging in the opposite direction from the true
+write's effect. It is evidence that "no-op within N points" cannot be
+registered without first measuring the family's own wide-instrument baseline
+and without deciding, in advance, whether the criterion should be a flat
+tolerance or an effect-ratio gate. The calibration study's design rule for
+successors is explicit: register the placebo criterion against the measured
+per-family baseline (qwen 0.104, llama 0.164, mistral 0.280), and tolerate
+several points of non-directional movement in either sign, for example via
+an effect-ratio gate comparing gated lift to the absolute random lift rather
+than a flat symmetric band.
+
+This also qualifies how the narrow-detector-graded random-direction and
+permuted-gate controls elsewhere in this paper should be read. The Qwen3-4B
+raw-base gate-and-snap result in Section 4.4 (random-direction control:
+13/185 clean tighten; permuted-gate control: 59/258 known-correct cost) and
+the mid-band layer-site contrast in Section 4.5 were graded under the
+program's original narrow detector, not the wide two-instrument stack
+introduced here, and neither experiment has been re-scored under it. Given
+the undercount margins measured above, and given that Qwen's own
+wide-instrument placebo response, on a different held-out operating point
+than either of those two experiments, is suppressive rather than confounding,
+there is no positive evidence that these specific controls are compromised.
+But there is now a standing, program-level reason not to treat a small
+narrow-detector placebo delta as automatically clean: it should be read as
+provisional until re-checked under the wide instrument, particularly before
+any of these results are promoted from exploratory to headline.
+
 ---
 
 ## 5. Synthesis: The Actuation Map
@@ -426,6 +518,7 @@ The results form a channel map rather than a single pass/fail story.
 | Doubt-gated caution snap | 73.5% clean tighten, 3.1% known cost | Release direction remains null | Gate supplies selectivity; snap supplies refusal |
 | Mid-band J-space write | hs23 beats hs34 by +22.7pp | Needs layer-specific dose; not yet cross-family | Write site matters |
 | Natural J-token write | Non-inert token-only effect | Redundant with `c_hat` hybrid | Verbalizable token target is not enough |
+| Cross-family gated snap (mistral) | Wide-instrument adjudicated refusal 69.9%, cost pristine, 5.7x random lift | Flat 2-point placebo tolerance falsified under family-specific baseline hedging | Placebo criteria must be calibrated to each family's own wide-instrument baseline, not a universal small-tolerance band |
 
 The practical controller that emerges is not "make the model introspect." It is:
 
@@ -490,7 +583,12 @@ not population effect-size estimates. Key limits:
   raw-base Qwen3-4B bf16;
 - reward-channel evidence is single-seed;
 - token-target J-space writing has only tested the natural observed token bundle,
-  not dense or multilingual alternatives.
+  not dense or multilingual alternatives;
+- the random-direction and permuted-gate controls in Sections 4.4 and 4.5 were
+  graded under the program's narrow detector and have not been re-scored under
+  the wide two-instrument stack introduced for cross-family work in Section
+  4.8; a flat, family-agnostic placebo tolerance is now known to be
+  miscalibrated to at least one family's baseline hedging rate.
 
 ### 6.5 Next study: the amped-up replication and model sweep
 
@@ -501,9 +599,18 @@ Recommended escalation:
    contrast on a fresh held-out split or newly staged rows for Qwen3-4B bf16.
 2. **Cross-model workspace localization.** Run the J-lens profile and direction
    verbalization on at least one Qwen size neighbor and two non-Qwen families.
-3. **Cross-family gated snap.** For each model, fit its own doubt gate, calibrate
-   its own caution setpoints, and test the same `gate -> snap` law with random
-   and permuted controls.
+3. **Cross-family gated snap.** A first attempt on mistral
+   (`rr-cross-family-raw-refusal`, `rr2-mistral-adjudicated-refusal-confirm`,
+   Section 4.8) confirmed the benefit and cost gates under a wide, blinded
+   adjudication instrument (69.9% adjudicated refusal, 0.52% known-correct
+   cost) but falsified direction-specificity under a flat 2-point placebo
+   tolerance that a follow-up calibration study
+   (`abstention-wide-instrument-calibration`) showed was miscalibrated to
+   mistral's own 28.0% undosed hedging baseline. The next attempt, on mistral
+   and on the still-untested Llama-3.2-3B family, must register its placebo
+   criterion against each family's own measured wide-instrument baseline
+   (Section 4.8), for example as an effect-ratio gate, rather than reusing a
+   flat small-tolerance band.
 4. **Dense-token screen.** Separately screen abstract or multilingual token
    bundles before any causal hybrid run. Do not alter the natural-token result
    post hoc.
@@ -555,6 +662,8 @@ provenance appendix or supplement.
 | Natural token-target J-space write was non-inert but redundant with `c_hat` | `experiments/j-space-token-targeted-refusal-qwen3-4b/AMENDMENT.md` Outcome | Exploratory falsification |
 | Dark-candidate screen validates positive caution lever but promotes no dark candidates | `experiments/dark-actuator-screen/AMENDMENT.md` Outcome | Supporting null |
 | AQ sycophancy actuator found readable direction but no clean actuator vs control | `experiments/aq-sycophancy-activation-actuator/AMENDMENT.md` Outcome | Supporting exploratory null |
+| Mistral cross-family gated write cleared benefit (69.9% adjudicated refusal) and cost (0.52% known-correct) gates under a wide blinded instrument but failed the flat 2-point placebo tolerance (+7.39pp random-direction lift) | `experiments/rr2-mistral-adjudicated-refusal-confirm/AMENDMENT.md` Outcome | Exploratory falsification (placebo-criterion design flaw, not benefit/cost) |
+| Wide-instrument baseline hedging and placebo response are family-graded and family-signed (qwen -5.13pp suppression, mistral +7.39pp recruitment); flat placebo tolerances must be registered per-family | `experiments/abstention-wide-instrument-calibration/AMENDMENT.md` Outcome | Exploratory instrument calibration, resolved |
 
 ## Appendix B. Figure Plan
 
@@ -583,3 +692,6 @@ provenance appendix or supplement.
 - Build figures from committed aggregate artifacts only.
 - Run the planned cross-model J-space/gated-snap replication before promoting
   the workspace-band result from exploratory to headline.
+- Register any future direction-specificity placebo criterion against the
+  per-family wide-instrument baseline measured in Section 4.8 (qwen 0.104,
+  llama 0.164, mistral 0.280), not a flat symmetric tolerance.
