@@ -4,7 +4,7 @@ session_id: 20260708T164625Z-paper-5-j-space-hardening
 title: Paper 5 J-space hardening
 status: active
 created_at: '2026-07-08T16:46:25Z'
-updated_at: '2026-07-14T17:50:03Z'
+updated_at: '2026-07-14T18:27:53Z'
 track: research
 phase: phase1
 question: Which registered follow-up experiments harden the Paper 5 actuation thesis,
@@ -959,6 +959,39 @@ checkpoints:
     the known risk) -> lead review -> sign -> CPU run -> red-team -> resolve. RR3:
     await pipeline completion notification.'
   signals: {}
+- id: 035-checkpoint
+  at: '2026-07-14T18:27:53Z'
+  kind: checkpoint
+  title: 'Pre-restart state: RR3 generating, sign-flip behavioral leg done'
+  summary: 'PI will restart the machine once the RR3 GPU run completes; session pauses
+    there. STATE AT PAUSE. RR3 (exp/rr3-corrected-placebo, signed): pipeline through
+    mistral core (all 4 arms + 3 seeds) and heldback passes; mistral rider in progress,
+    llama rider remains; log analysis/pipeline_run_20260714b.log; on completion DO
+    NOT dispatch adjudication until resume. Sign-flip (exp/placebo-signflip-analysis,
+    SIGNED, run partially executed): BG0/BG1/BG2 all PASS (BG1 frame port 1303/1303
+    exact firings, 0/1692 mismatches; BG0 reproduced both certified deltas bit-for-bit).
+    Behavioral leg executed: qwen suppression CONCENTRATED in future-unknown subtype
+    (-24.7 pts, n=190, baseline 0.332) vs -2.8 or less elsewhere; mistral recruitment
+    broad-based positive (+3.8 to +11.8 across all six subtypes); baseline hedging
+    orders subtypes identically across families. PI scoreboard call (concentrated-or-uneven)
+    currently winning vs orchestrator (even-spread); near the registered inert-reading
+    falsifier for qwen; NO verdict yet, red-team required first, mechanism leg (M1/M2/M3)
+    NOT run (deferred for host RAM until GPU job ends). Report at analysis-committed/signflip_report.json,
+    uncommitted. RESUME SEQUENCE: 1) verify RR3 pipeline completed cleanly (RG0 byte-repro
+    in log), 2) run sign-flip mechanism leg (opt-in real-data loaders incl. mistral
+    251MB / llama 493MB anchor JSONs), 3) rerun report.py, commit report, 4) red-team
+    certification of sign-flip, resolve, PR; 5) RR3 adjudication cycle: build_adjudication_pool,
+    commit pool manifest BEFORE grading, context-free blind graders, hash-commit before
+    unblinding, CG1, rr3_scorer, red-team, resolve, PR. Scoreboards registered in
+    both AMENDMENTs; no goalpost moves.'
+  evidence: []
+  run_ids: []
+  commands: []
+  decisions: []
+  next_steps:
+  - Await RR3 pipeline completion notification; then checkpoint again and tell the
+    PI it is safe to restart.
+  signals: {}
 ---
 # Paper 5 J-space hardening
 
@@ -1392,3 +1425,10 @@ rows before the layer contrast.
   - Scoreboard registered as above; subtype breakdown extended to mistral; directions provenance-by-regeneration.
 - next steps:
   - Harness build for signflip analysis (BG1 exact frame-port acceptance test is the known risk) -> lead review -> sign -> CPU run -> red-team -> resolve. RR3: await pipeline completion notification.
+### 035-checkpoint - Pre-restart state: RR3 generating, sign-flip behavioral leg done
+
+- at: `2026-07-14T18:27:53Z`
+- kind: `checkpoint`
+- summary: PI will restart the machine once the RR3 GPU run completes; session pauses there. STATE AT PAUSE. RR3 (exp/rr3-corrected-placebo, signed): pipeline through mistral core (all 4 arms + 3 seeds) and heldback passes; mistral rider in progress, llama rider remains; log analysis/pipeline_run_20260714b.log; on completion DO NOT dispatch adjudication until resume. Sign-flip (exp/placebo-signflip-analysis, SIGNED, run partially executed): BG0/BG1/BG2 all PASS (BG1 frame port 1303/1303 exact firings, 0/1692 mismatches; BG0 reproduced both certified deltas bit-for-bit). Behavioral leg executed: qwen suppression CONCENTRATED in future-unknown subtype (-24.7 pts, n=190, baseline 0.332) vs -2.8 or less elsewhere; mistral recruitment broad-based positive (+3.8 to +11.8 across all six subtypes); baseline hedging orders subtypes identically across families. PI scoreboard call (concentrated-or-uneven) currently winning vs orchestrator (even-spread); near the registered inert-reading falsifier for qwen; NO verdict yet, red-team required first, mechanism leg (M1/M2/M3) NOT run (deferred for host RAM until GPU job ends). Report at analysis-committed/signflip_report.json, uncommitted. RESUME SEQUENCE: 1) verify RR3 pipeline completed cleanly (RG0 byte-repro in log), 2) run sign-flip mechanism leg (opt-in real-data loaders incl. mistral 251MB / llama 493MB anchor JSONs), 3) rerun report.py, commit report, 4) red-team certification of sign-flip, resolve, PR; 5) RR3 adjudication cycle: build_adjudication_pool, commit pool manifest BEFORE grading, context-free blind graders, hash-commit before unblinding, CG1, rr3_scorer, red-team, resolve, PR. Scoreboards registered in both AMENDMENTs; no goalpost moves.
+- next steps:
+  - Await RR3 pipeline completion notification; then checkpoint again and tell the PI it is safe to restart.
