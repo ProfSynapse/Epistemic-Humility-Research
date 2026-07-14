@@ -98,3 +98,21 @@ points") was a near-no-op claim that a 5.13-point-magnitude effect
 violates. Both readings, the scoreboard consequences, and the QL void are
 going to adversarial review before the Outcome is written. No verdict is
 recorded in this entry.
+
+## 2026-07-14 - Red-team certification and resolve (lead)
+
+Adversarial review returned CERTIFIED-MEASUREMENTS with zero invalidating
+findings: every headline rate re-derived bit-for-bit from row-level
+artifacts (qwen 0.104, paired delta -5.13; llama 0.164; exclusion
+arithmetic exact); positional join re-run from scratch reproducing the
+4,109-row applied set exactly; all 18 graded and 18 pool hashes matched;
+QL void path verified against the registered rule with composition,
+fresh-id disjointness, and hash-before-unblinding confirmed; the
+instrument correction confirmed to have changed no gate, floor, rubric, or
+population and to have used the same committed grades; blinding claim
+sound. Its recommended falsifier adjudication (signed, consequent-coherent
+reading; not fired) was adopted in the Outcome. Non-invalidating notes
+carried into the Outcome: LB unknown_refused carve makes llama's baseline a
+lower bound; CG1 clear-positive floor granularity; QL four-layer scope per
+cell.yaml glob. Resolved via bin/exp resolve; verdict sentence in the
+manifest.
