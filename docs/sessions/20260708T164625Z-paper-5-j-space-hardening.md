@@ -4,7 +4,7 @@ session_id: 20260708T164625Z-paper-5-j-space-hardening
 title: Paper 5 J-space hardening
 status: active
 created_at: '2026-07-08T16:46:25Z'
-updated_at: '2026-07-14T20:56:06Z'
+updated_at: '2026-07-14T22:09:57Z'
 track: research
 phase: phase1
 question: Which registered follow-up experiments harden the Paper 5 actuation thesis,
@@ -1095,6 +1095,37 @@ checkpoints:
     into any verdict. 3) Paper 5 update for RR3 result after merge. 4) Abstention-grading
     skill update #42 (+ private-workdir rule).'
   signals: {}
+- id: 040-checkpoint
+  at: '2026-07-14T22:09:57Z'
+  kind: checkpoint
+  title: Checkpoint
+  summary: 'Signflip BG1 adjudicated and closed: both real-data fire-set failures
+    were CHECK-SCOPE defects (lead re-derived mistral 0/1694 restricted personally;
+    llama restricted 1/581 hs20, 0/581 hs22/hs23, known-presence invariant true, read
+    from the diagnostic''s raw output log after the diagnostic agent stalled on an
+    unwoken background job). frame_port.py corrected to the actually-gate-evaluated
+    populations (no frame-math change), llama fire-set now gates at 1% tolerance (strictness
+    increase), repinned with full reason, smoke 31 pass, corrected BG1 rerun ALL GREEN
+    (41ae0e37 on exp/placebo-signflip-analysis, after one stale-registry-hook recommit).
+    Mechanism leg (M1/M2/M3 + pre-stated subtype readout) dispatched to harness-builder
+    signflip-mech2. Also this segment: paper 5 updated on main 4bb46ba6 (new 4.9 +
+    seed-variance rule + Section 5 table correction + RR3 AMENDMENT stale-header fix);
+    abstention-grading skill PR #291 MERGED (8bbaa8a1); data-exhaust copy-everything
+    builder + completeness verifier PR #292 OPEN (validated: 4 experiments had zero-file
+    verify-PASSing builds under old allowlist; all 22 slugs rebuild complete, v2 staging
+    in scratch/exhaust-backfill-v2); doubt-snap dry-run card ready, publish awaiting
+    PI go (use v2 build).'
+  evidence: []
+  run_ids: []
+  commands: []
+  decisions: []
+  next_steps:
+  - '1) Review signflip-mech2 M1/M2/M3 + subtype readout, then red-team, then falsifier/scoreboard
+    adjudication + Outcome + resolve + PR (carry RR3 seed-variance caveat). 2) PI:
+    merge PR #292; publish approvals per dataset card (doubt-snap first, from v2).
+    3) Scaffold placebo seed-distribution census amendment (PI approved as next experiment)
+    after signflip resolves. 4) Then scale test #41.'
+  signals: {}
 ---
 # Paper 5 J-space hardening
 
@@ -1563,3 +1594,10 @@ rows before the layer contrast.
 - summary: RR3 RESOLVED FALSIFIED, PR #290 open awaiting PI merge approval. Full adjudication cycle completed: 21/21 shards graded blind and hash-committed pre-unblind (7cec7511), CG1 all-pass per-shard + pooled 0.782, apply clean (14485 rows), scorer: RG1 FAIL effect ratio 1.87 < 3.0 (gated lift +40.9 pts vs fresh random-seed lifts +13.3/-7.4/+21.8 at matched magnitude), RG2/RG3 PASS reproducing RR2. Opus red-team certified artifact-free across all six attack surfaces (directions genuinely random |cos|<=0.015, magnitude-matched, robust detector-only 1.91 and mean-denominator 2.89). Outcome written, resolved falsified, registry regenerated (abaaaf99). Scoreboard adjudicated: PI right llama-null (rider null through 16x, +0.1 at 12x); both wrong on mistral RG1 PASS calls; envelope split (PI inside wrong, orchestrator outside right but 21.8 exceeded his 14-pt bound). KEY METHODOLOGICAL FACT for sign-flip and paper 5: single-seed placebo readings on mistral span -7.4 to +21.8 pts at 12 sigma_c; calibration family-signed placebo map points are single draws; signflip adjudication must read RR3 Outcome first (cross-experiment note in Outcome).
 - next steps:
   - 1) PI decision: merge PR #290. 2) signflip: await llama half of bg1-diagnosis (mistral half confirmed check-scope defect, 0/1694 restricted mismatches), then adjudicate repin-vs-drop, then mechanism leg, with RR3 seed-variance caveat folded into any verdict. 3) Paper 5 update for RR3 result after merge. 4) Abstention-grading skill update #42 (+ private-workdir rule).
+### 040-checkpoint - Checkpoint
+
+- at: `2026-07-14T22:09:57Z`
+- kind: `checkpoint`
+- summary: Signflip BG1 adjudicated and closed: both real-data fire-set failures were CHECK-SCOPE defects (lead re-derived mistral 0/1694 restricted personally; llama restricted 1/581 hs20, 0/581 hs22/hs23, known-presence invariant true, read from the diagnostic's raw output log after the diagnostic agent stalled on an unwoken background job). frame_port.py corrected to the actually-gate-evaluated populations (no frame-math change), llama fire-set now gates at 1% tolerance (strictness increase), repinned with full reason, smoke 31 pass, corrected BG1 rerun ALL GREEN (41ae0e37 on exp/placebo-signflip-analysis, after one stale-registry-hook recommit). Mechanism leg (M1/M2/M3 + pre-stated subtype readout) dispatched to harness-builder signflip-mech2. Also this segment: paper 5 updated on main 4bb46ba6 (new 4.9 + seed-variance rule + Section 5 table correction + RR3 AMENDMENT stale-header fix); abstention-grading skill PR #291 MERGED (8bbaa8a1); data-exhaust copy-everything builder + completeness verifier PR #292 OPEN (validated: 4 experiments had zero-file verify-PASSing builds under old allowlist; all 22 slugs rebuild complete, v2 staging in scratch/exhaust-backfill-v2); doubt-snap dry-run card ready, publish awaiting PI go (use v2 build).
+- next steps:
+  - 1) Review signflip-mech2 M1/M2/M3 + subtype readout, then red-team, then falsifier/scoreboard adjudication + Outcome + resolve + PR (carry RR3 seed-variance caveat). 2) PI: merge PR #292; publish approvals per dataset card (doubt-snap first, from v2). 3) Scaffold placebo seed-distribution census amendment (PI approved as next experiment) after signflip resolves. 4) Then scale test #41.
