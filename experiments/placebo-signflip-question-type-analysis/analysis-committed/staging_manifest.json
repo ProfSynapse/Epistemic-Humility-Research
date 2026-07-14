@@ -1,0 +1,337 @@
+{
+  "files": [
+    {
+      "count": 1692,
+      "dest_path": "analysis/staged_inputs/qh/baseline.jsonl",
+      "kind": "jsonl",
+      "name": "qh_baseline_runlog",
+      "sha256": "05280e75107cf287378a35666204b382b9e3a49c2a5ed0ac3aab7d6cfa262c45",
+      "source_path": "/home/profsynapse/code/ehr-worktrees/qwen35-midband-heldout/experiments/qwen35-4b-midband-heldout/analysis/runlog/baseline.jsonl",
+      "staged": true
+    },
+    {
+      "count": 1303,
+      "dest_path": "analysis/staged_inputs/qh/random_direction.jsonl",
+      "kind": "jsonl",
+      "name": "qh_random_direction_runlog",
+      "sha256": "993ef3b4a6ece1110399bbb7985cfed1abee30b5ea44d76776d67fa8688b3b16",
+      "source_path": "/home/profsynapse/code/ehr-worktrees/qwen35-midband-heldout/experiments/qwen35-4b-midband-heldout/analysis/runlog/random_direction.jsonl",
+      "staged": true
+    },
+    {
+      "count": 1303,
+      "dest_path": "analysis/staged_inputs/qh/gated.jsonl",
+      "kind": "jsonl",
+      "name": "qh_gated_runlog",
+      "note": "BG1 ground-truth fired-set for the qwen frame port, not used by the behavioral leg",
+      "sha256": "56803702a89b22f378c04ccb011fbb27953e92da052b30c25d686a2ed2a98ec3",
+      "source_path": "/home/profsynapse/code/ehr-worktrees/qwen35-midband-heldout/experiments/qwen35-4b-midband-heldout/analysis/runlog/gated.jsonl",
+      "staged": true
+    },
+    {
+      "count": 1692,
+      "dest_path": "analysis/staged_inputs/qh/anchor_extract_heldout.safetensors",
+      "kind": "safetensors",
+      "name": "qh_anchor_tensors",
+      "sha256": "2230425d073005621aeb1f9db1b8c2162a3408b80e9fa62fc1835f1cae262a26",
+      "source_path": "/home/profsynapse/code/ehr-worktrees/qwen35-midband-heldout/experiments/qwen35-4b-midband-heldout/analysis/anchor_extract_heldout.safetensors",
+      "staged": true
+    },
+    {
+      "count": 11,
+      "dest_path": "analysis/staged_inputs/qh/anchor_extract_heldout_manifest.json",
+      "kind": "json",
+      "name": "qh_anchor_manifest",
+      "sha256": "c9667eff38941134d8578ca93da2cf94b1669de03b615df65fa7d30ee2c6f179",
+      "source_path": "/home/profsynapse/code/ehr-worktrees/qwen35-midband-heldout/experiments/qwen35-4b-midband-heldout/analysis/anchor_extract_heldout_manifest.json",
+      "staged": true
+    },
+    {
+      "count": 1692,
+      "dest_path": "analysis/staged_inputs/qh/fire_decisions_heldout.jsonl",
+      "kind": "jsonl",
+      "name": "qh_fire_decisions",
+      "note": "already-computed fire decisions; BG1 recomputes independently and checks against gated.jsonl, this is provenance only",
+      "sha256": "461146ca758b4c5fd7bac9f8d6a77f868fc38dc1397fb9240626b6fc8a3c4ed7",
+      "source_path": "/home/profsynapse/code/ehr-worktrees/qwen35-midband-heldout/experiments/qwen35-4b-midband-heldout/analysis/fire_decisions_heldout.jsonl",
+      "staged": true
+    },
+    {
+      "count": 1692,
+      "dest_path": "analysis/staged_inputs/qh/heldout_rows_for_steer.jsonl",
+      "kind": "jsonl",
+      "name": "qh_rows_for_steer",
+      "note": "category_canon per row_key; contains question text, gitignored destination only",
+      "sha256": "76097bf7046cefa673280110a5d3b83aeaf0affbc98dc73078ecdec9785d178b",
+      "source_path": "/home/profsynapse/code/ehr-worktrees/qwen35-midband-heldout/experiments/qwen35-4b-midband-heldout/analysis/heldout_rows_for_steer.jsonl",
+      "staged": true
+    },
+    {
+      "count": 14078,
+      "dest_path": "analysis/staged_inputs/calibration/row_level_scored.jsonl",
+      "kind": "jsonl",
+      "name": "calibration_row_level_scored",
+      "note": "contains generation text, gitignored destination only; wide_grade.field=sub_grade.refused_final",
+      "sha256": "345e98caa5b1ecef8adbf7a697a10397bc7cdcdd82fea0f54d0b9e394443728d",
+      "source_path": "/home/profsynapse/code/ehr-worktrees/abstention-calibration/experiments/abstention-wide-instrument-calibration/analysis/row_level_scored.jsonl",
+      "staged": true
+    },
+    {
+      "count": 1694,
+      "dest_path": "analysis/staged_inputs/mc/heldout__baseline.jsonl",
+      "kind": "jsonl",
+      "name": "mc_baseline_runlog",
+      "sha256": "aa28a8b956997ed200d02bcbd855b8697f51f7f5c094fc08216e424d48e7986b",
+      "source_path": "/home/profsynapse/code/ehr-worktrees/rr2-mistral-confirm/experiments/rr2-mistral-adjudicated-refusal-confirm/analysis/runlog/heldout__baseline.jsonl",
+      "staged": true
+    },
+    {
+      "count": 1303,
+      "dest_path": "analysis/staged_inputs/mc/heldout__random_direction.jsonl",
+      "kind": "jsonl",
+      "name": "mc_random_direction_runlog",
+      "sha256": "25e3a6af8606243669477ac2f70c3b257cdbacf93b333ee29c76e10021d541a7",
+      "source_path": "/home/profsynapse/code/ehr-worktrees/rr2-mistral-confirm/experiments/rr2-mistral-adjudicated-refusal-confirm/analysis/runlog/heldout__random_direction.jsonl",
+      "staged": true
+    },
+    {
+      "count": 1303,
+      "dest_path": "analysis/staged_inputs/mc/heldout__gated.jsonl",
+      "kind": "jsonl",
+      "name": "mc_gated_runlog",
+      "note": "BG1 ground-truth fired-set for the mistral frame port",
+      "sha256": "1be19a3314176c2e9b0afa3d07530f9f3fec4ca02196fafd4e50122eb14bb0c6",
+      "source_path": "/home/profsynapse/code/ehr-worktrees/rr2-mistral-confirm/experiments/rr2-mistral-adjudicated-refusal-confirm/analysis/runlog/heldout__gated.jsonl",
+      "staged": true
+    },
+    {
+      "count": 3582,
+      "dest_path": "analysis/staged_inputs/mc/adjudication_id_map.jsonl",
+      "kind": "jsonl",
+      "name": "mc_id_map",
+      "note": "opaque_id -> (row_key, arm, is_decoy) for refused_final reconstruction",
+      "sha256": "b1fc0a34089001645aeaeed501f28416aed1e8b77147dc0bd30f8b42e720e294",
+      "source_path": "/home/profsynapse/code/ehr-worktrees/rr2-mistral-confirm/experiments/rr2-mistral-adjudicated-refusal-confirm/analysis/adjudication_id_map.jsonl",
+      "staged": true
+    },
+    {
+      "count": 3582,
+      "dest_path": "analysis/staged_inputs/mc/graded.jsonl",
+      "kind": "jsonl",
+      "name": "mc_graded",
+      "note": "blinded adjudication result, already committed via adjudication_graded_manifest.json sha256",
+      "sha256": "9a68b4990f506ff0ab639a1edf4bb7bfdfe8f2521af9bbc843d82399bfba9ac6",
+      "source_path": "/home/profsynapse/code/ehr-worktrees/rr2-mistral-confirm/experiments/rr2-mistral-adjudicated-refusal-confirm/analysis/graded.jsonl",
+      "staged": true
+    },
+    {
+      "count": 3582,
+      "dest_path": "analysis/staged_inputs/mc/adjudication_pool.jsonl",
+      "kind": "jsonl",
+      "name": "mc_adjudication_pool",
+      "sha256": "2ba74c5c28b43b9f7aac286f61bffd6f5bbb7d065ec7cbcf725a417a49425bde",
+      "source_path": "/home/profsynapse/code/ehr-worktrees/rr2-mistral-confirm/experiments/rr2-mistral-adjudicated-refusal-confirm/analysis/adjudication_pool.jsonl",
+      "staged": true
+    },
+    {
+      "count": 3037,
+      "dest_path": "analysis/staged_inputs/mc/joined_rows_private.jsonl",
+      "kind": "jsonl",
+      "name": "mc_joined_rows_private",
+      "note": "role/split/category_canon/source per row_key; contains question text",
+      "sha256": "21ac7bc2e6aab2f6446e57cace3c44ee33f63f018f04af776b84f45886a76fb6",
+      "source_path": "/home/profsynapse/code/ehr-worktrees/rr2-mistral-confirm/experiments/rr2-mistral-adjudicated-refusal-confirm/analysis/joined_rows_private.jsonl",
+      "staged": true
+    },
+    {
+      "count": null,
+      "dest_path": "analysis/staged_inputs/mc/anchors_at_candidate_layers.json",
+      "kind": "json_large",
+      "name": "mc_anchors",
+      "note": "251MB; count NOT verified at staging time, see frame_port.py opt-in real-data check",
+      "sha256": "d493645f54f08adcdb5bde63f5b7d7337d8b247ad9c8b57da9a2f36cf19562ce",
+      "source_path": "/home/profsynapse/code/ehr-worktrees/rr2-mistral-confirm/experiments/rr2-mistral-adjudicated-refusal-confirm/analysis/anchors_at_candidate_layers.json",
+      "staged": true
+    },
+    {
+      "count": 2,
+      "dest_path": "analysis/staged_inputs/mc/directions/hs16_u_d.json",
+      "kind": "json",
+      "name": "mc_hs16_u_d",
+      "note": "fit_reuse.py reconstruction, provenance-by-regeneration against RR's committed hs16_fit_build_manifest.json",
+      "sha256": "0771ab2c63de3292676cb70d19fd0758729651dccc6bb58dbf37e8cade0466be",
+      "source_path": "/home/profsynapse/code/ehr-worktrees/rr2-mistral-confirm/experiments/rr2-mistral-adjudicated-refusal-confirm/directions/hs16_u_d.json",
+      "staged": true
+    },
+    {
+      "count": 2,
+      "dest_path": "analysis/staged_inputs/mc/directions/hs16_c_hat.json",
+      "kind": "json",
+      "name": "mc_hs16_c_hat",
+      "sha256": "f6555f329208f74d15638cf0c2da2f936cfdf74844c889da0b9f89f202e1fc2d",
+      "source_path": "/home/profsynapse/code/ehr-worktrees/rr2-mistral-confirm/experiments/rr2-mistral-adjudicated-refusal-confirm/directions/hs16_c_hat.json",
+      "staged": true
+    },
+    {
+      "count": 3,
+      "dest_path": "analysis/staged_inputs/mc/directions/hs16_random_direction.json",
+      "kind": "json",
+      "name": "mc_hs16_random_direction",
+      "sha256": "5364f29810db67d389be4c0ccedef17d381cbeb94d6dddede71f732c306288e8",
+      "source_path": "/home/profsynapse/code/ehr-worktrees/rr2-mistral-confirm/experiments/rr2-mistral-adjudicated-refusal-confirm/directions/hs16_random_direction.json",
+      "staged": true
+    },
+    {
+      "count": 12,
+      "dest_path": "analysis/staged_inputs/mc/directions/hs16_build_manifest.json",
+      "kind": "json",
+      "name": "mc_hs16_build_manifest",
+      "sha256": "87667fae8b2fd459bffd6c5bd6df64e1c65ad3faf27eb235ba0d7d30f0675899",
+      "source_path": "/home/profsynapse/code/ehr-worktrees/rr2-mistral-confirm/experiments/rr2-mistral-adjudicated-refusal-confirm/directions/hs16_build_manifest.json",
+      "staged": true
+    },
+    {
+      "count": 6,
+      "dest_path": "analysis/staged_inputs/mc/fit_reuse_report.json",
+      "kind": "json",
+      "name": "mc_fit_reuse_report",
+      "note": "RR2's own field-for-field cross-check against RR's committed stats; BG1 mistral evidence",
+      "sha256": "e9a0d310e04bef76504cc5b34a654fbb3f79ad19e27d9e3487804efaf487a001",
+      "source_path": "/home/profsynapse/code/ehr-worktrees/rr2-mistral-confirm/experiments/rr2-mistral-adjudicated-refusal-confirm/analysis/fit_reuse_report.json",
+      "staged": true
+    },
+    {
+      "count": 2956,
+      "dest_path": "analysis/staged_inputs/llama/joined_rows_private.jsonl",
+      "kind": "jsonl",
+      "name": "llama_joined_rows_private",
+      "sha256": "1d80f4a5029fbc59b1db63901a908cc38a60d8aed5816ea5287856f2c54a8246",
+      "source_path": "/home/profsynapse/code/ehr-worktrees/rr-raw-refusal/experiments/rr-cross-family-raw-refusal/analysis/llama/joined_rows_private.jsonl",
+      "staged": true
+    },
+    {
+      "count": null,
+      "dest_path": "analysis/staged_inputs/llama/anchors_at_candidate_layers.json",
+      "kind": "json_large",
+      "name": "llama_anchors",
+      "note": "493MB; count NOT verified at staging time, see frame_port.py opt-in real-data check",
+      "sha256": "065e1b25bf0369f1739c0187f73d444fae3c52abcc1da392e9324273789e27cd",
+      "source_path": "/home/profsynapse/code/ehr-worktrees/rr-raw-refusal/experiments/rr-cross-family-raw-refusal/analysis/llama/anchors_at_candidate_layers.json",
+      "staged": true
+    },
+    {
+      "count": 798,
+      "dest_path": "analysis/staged_inputs/llama/runlog/hs20__gated__dose2.jsonl",
+      "kind": "jsonl",
+      "name": "llama_hs20_gated_dose2",
+      "note": "FIT-population fired set at hs20, BG1 llama ground truth (any dose; fire set is dose-invariant, verified across doses by frame_port.py's opt-in check)",
+      "sha256": "b891839e0100461544d33da47a996f5a5ea870a87b92bc07b73b180da8fc361e",
+      "source_path": "/home/profsynapse/code/ehr-worktrees/rr-raw-refusal/experiments/rr-cross-family-raw-refusal/analysis/llama/runlog/hs20__gated__dose2.jsonl",
+      "staged": true
+    },
+    {
+      "count": 799,
+      "dest_path": "analysis/staged_inputs/llama/runlog/hs22__gated__dose2.jsonl",
+      "kind": "jsonl",
+      "name": "llama_hs22_gated_dose2",
+      "sha256": "afd18c8a37975e9c7b6a210bd20e741e934233ec76c2ab38ce0b5f8db0a554af",
+      "source_path": "/home/profsynapse/code/ehr-worktrees/rr-raw-refusal/experiments/rr-cross-family-raw-refusal/analysis/llama/runlog/hs22__gated__dose2.jsonl",
+      "staged": true
+    },
+    {
+      "count": 799,
+      "dest_path": "analysis/staged_inputs/llama/runlog/hs23__gated__dose2.jsonl",
+      "kind": "jsonl",
+      "name": "llama_hs23_gated_dose2",
+      "sha256": "c050bc425ea6a8bf2014aa33288b8775a43bd034c1e0317e1b25b130c8d92e44",
+      "source_path": "/home/profsynapse/code/ehr-worktrees/rr-raw-refusal/experiments/rr-cross-family-raw-refusal/analysis/llama/runlog/hs23__gated__dose2.jsonl",
+      "staged": true
+    },
+    {
+      "count": 12,
+      "dest_path": null,
+      "kind": "json",
+      "name": "qwen_hs20_u_d",
+      "sha256": "18e78f257484692c1cef7013d47cb64739542d32b3e9949d0258b4ddc3b0c84c",
+      "source_path": "/home/profsynapse/code/ehr-worktrees/signflip-analysis/experiments/qwen35-4b-midband-doubt-snap/analysis-committed/directions/hs20/u_d.json",
+      "staged": false
+    },
+    {
+      "count": 12,
+      "dest_path": null,
+      "kind": "json",
+      "name": "qwen_hs20_c_hat",
+      "sha256": "937d1bffe1924e73bca40a88c8096d7e01bb67c5b64286362196aa968e2c2e1f",
+      "source_path": "/home/profsynapse/code/ehr-worktrees/signflip-analysis/experiments/qwen35-4b-midband-doubt-snap/analysis-committed/directions/hs20/c_hat.json",
+      "staged": false
+    },
+    {
+      "count": 12,
+      "dest_path": null,
+      "kind": "json",
+      "name": "qwen_hs20_random_direction",
+      "sha256": "db8b930d79d98f52417566d9a87c876470f6b820684ee9456a58f7213d33cafa",
+      "source_path": "/home/profsynapse/code/ehr-worktrees/signflip-analysis/experiments/qwen35-4b-midband-doubt-snap/analysis-committed/directions/hs20/random_direction.json",
+      "staged": false
+    },
+    {
+      "count": 8,
+      "dest_path": null,
+      "kind": "json",
+      "name": "qwen_build_manifest",
+      "sha256": "f0a8ea7a19526a97801ca49861bc33ee1dd2cd4668a0ba6f2f842c298a544425",
+      "source_path": "/home/profsynapse/code/ehr-worktrees/signflip-analysis/experiments/qwen35-4b-midband-doubt-snap/analysis-committed/build_manifest.json",
+      "staged": false
+    },
+    {
+      "count": 10,
+      "dest_path": null,
+      "kind": "json",
+      "name": "rr2_final_report",
+      "note": "MC certified check target (baseline 368/1312, random 465/1312); transcribed, never re-graded",
+      "sha256": "d9b384a37ee3c22c46f6e62a3b26d2a22dca4c801ed4ffdb9cf121fa02e5e05a",
+      "source_path": "/home/profsynapse/code/ehr-worktrees/signflip-analysis/experiments/rr2-mistral-adjudicated-refusal-confirm/analysis-committed/final_report.json",
+      "staged": false
+    },
+    {
+      "count": null,
+      "dest_path": null,
+      "kind": "py",
+      "name": "rr2_direction_fit_module",
+      "note": "imported read-only by frame_port.py for the llama frame reconstruction; byte-for-byte port of rr-cross-family-raw-refusal/direction_fit.py",
+      "sha256": "44e5d98ce736e97ff38fae377be625eca4134fc5f51ece44c220eced9c6d7771",
+      "source_path": "/home/profsynapse/code/ehr-worktrees/signflip-analysis/experiments/rr2-mistral-adjudicated-refusal-confirm/direction_fit.py",
+      "staged": false
+    },
+    {
+      "count": 12,
+      "dest_path": null,
+      "kind": "json",
+      "name": "rr_llama_hs20_build_manifest",
+      "sha256": "f160666885d7222b1bd1e52dbc44328da1c8ac0405657c605d5c2fdb15e9e546",
+      "source_path": "/home/profsynapse/code/ehr-worktrees/signflip-analysis/experiments/rr-cross-family-raw-refusal/analysis-committed/llama/hs20_fit_build_manifest.json",
+      "staged": false
+    },
+    {
+      "count": 12,
+      "dest_path": null,
+      "kind": "json",
+      "name": "rr_llama_hs22_build_manifest",
+      "sha256": "e25c925e69a08f8d656ac9e0ac794fd083340c837629532a2eba9d5306f9967d",
+      "source_path": "/home/profsynapse/code/ehr-worktrees/signflip-analysis/experiments/rr-cross-family-raw-refusal/analysis-committed/llama/hs22_fit_build_manifest.json",
+      "staged": false
+    },
+    {
+      "count": 12,
+      "dest_path": null,
+      "kind": "json",
+      "name": "rr_llama_hs23_build_manifest",
+      "sha256": "0f4f1793fc83370f5c61df6040c37125cc8b1557da83f0befbae4f4df53aaeef",
+      "source_path": "/home/profsynapse/code/ehr-worktrees/signflip-analysis/experiments/rr-cross-family-raw-refusal/analysis-committed/llama/hs23_fit_build_manifest.json",
+      "staged": false
+    }
+  ],
+  "n_committed_local": 9,
+  "n_files": 35,
+  "n_symlinked": 26
+}
