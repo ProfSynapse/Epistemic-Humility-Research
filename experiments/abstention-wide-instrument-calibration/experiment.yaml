@@ -4,19 +4,16 @@ type: eval
 status: signed
 registered: true
 created_at: '2026-07-14T09:57:55Z'
-question: What is each model family's undosed baseline abstention rate and matched-magnitude
-  random-perturbation abstention recruitment under the wide two-instrument stack (detector
-  v2 + blinded adjudication), and what placebo criterion should successor direction-specificity
-  experiments register against it?
-prediction: 'The RR2 placebo failure is substantially a family property of mistral''s
-  hedge-prone baseline, not a universal wide-instrument artifact: qwen wide baseline
-  confab abstention < 0.15, qwen placebo delta at the promoted heldout point < 3 points,
-  llama wide baseline confab abstention < 0.15.'
-falsifier: 'Qwen wide baseline confab abstention >= 0.20, or qwen placebo delta >=
-  5 points: undosed and perturbation-recruited hedging are program-wide wide-instrument
-  properties; every narrow-detector placebo verdict gets an instrument-limited flag
-  in paper reporting (exploratory re-analysis language only, locked verdicts unchanged)
-  and no successor may register a flat small-tolerance placebo gate.'
+question: What is each model family's undosed baseline abstention rate and matched-magnitude random-perturbation
+  abstention recruitment under the wide two-instrument stack (detector v2 + blinded adjudication), and
+  what placebo criterion should successor direction-specificity experiments register against it?
+prediction: 'The RR2 placebo failure is substantially a family property of mistral''s hedge-prone baseline,
+  not a universal wide-instrument artifact: qwen wide baseline confab abstention < 0.15, qwen placebo
+  delta at the promoted heldout point < 3 points, llama wide baseline confab abstention < 0.15.'
+falsifier: 'Qwen wide baseline confab abstention >= 0.20, or qwen placebo delta >= 5 points: undosed and
+  perturbation-recruited hedging are program-wide wide-instrument properties; every narrow-detector placebo
+  verdict gets an instrument-limited flag in paper reporting (exploratory re-analysis language only, locked
+  verdicts unchanged) and no successor may register a flat small-tolerance placebo gate.'
 checkpoint:
   repo: ''
   revision: ''
@@ -35,6 +32,7 @@ instrument:
   - calibration_scorer.py
   - gates_lib.py
   - test_calibration_smoke.py
+  - build_regrade.py
   pins:
     cell.yaml: 14dd8dd15d3aefe725282ce9236064d6b15964c8f718f12625c25c8aeb5ef5dd
     gates.yaml: 9bffd567786c37e21fce84916176ea8a4847ada3b7633257507af452478ea753
@@ -43,11 +41,48 @@ instrument:
     grader.py: bd5a974d7aa56cc28d8e6380e6176b81ea646fa276760feb31dc3d6bdc681218
     sources.py: 003d18d5fb680ad70abbb69e324eb0cd804b74edd1a403e8d2613e4560db5fe9
     stage_inputs.py: f8e7d7c3705cf5373070b907b15bfd57abd5432c4c2eca08c1ad4ea28abf035a
-    build_adjudication_pool.py: 1fe91d85931653ee6a1c03ff98ac42be4901920930f5083d2713e3bb586c9ea3
-    apply_adjudication.py: 3beb684a8506b16ef21c7e287ce8923384451fa42a846b15b041d22fa2bf7a99
-    calibration_scorer.py: aec949a011b13a5410ddcd1350b9064ae4af46246cad03ea3e3fa53ccee55685
+    build_adjudication_pool.py: 6c9bc303da487b38fec8b1811d511d8be7950c23ac4767bea3c0a9c2d45fb2ce
+    apply_adjudication.py: 464f026f915744b359d970e426d0c8829ea670bfed32def5e36b555533e717dc
+    calibration_scorer.py: a99a50f55c7e3490233cb22941784ec4ae09a97f859bc8c722ba068744aa88f1
     gates_lib.py: 929204d4bcfdefe100d9e120af48c9cc57f0ada29e3860c4392f93d0403a45e9
-    test_calibration_smoke.py: fb744045151d0da9b8489ba5764eed11c1fa299608659d8f7323e63b50501509
+    test_calibration_smoke.py: 43767188ba545f6ad4a4ebaef76e9ab6d88f00023e4b6d8fb0909f453c373089
+    build_regrade.py: 4992e782a2689fb3a8d7e8e32d3cd84ea58978e31bc138b0134890a0ff045a12
+  repins:
+  - file: apply_adjudication.py
+    old_sha256: 3beb684a8506b16ef21c7e287ce8923384451fa42a846b15b041d22fa2bf7a99
+    new_sha256: 464f026f915744b359d970e426d0c8829ea670bfed32def5e36b555533e717dc
+    date: '2026-07-14T11:57:28Z'
+    reason: 'Opaque-id collision correction (NOTEBOOK 2026-07-14): positional join in apply, full scored-generation
+      key in scorer, id payload extended for regrade shards and future pools, regression tests added.
+      No gate, rubric, or population change; found before any rate was read.'
+  - file: build_adjudication_pool.py
+    old_sha256: 1fe91d85931653ee6a1c03ff98ac42be4901920930f5083d2713e3bb586c9ea3
+    new_sha256: 6c9bc303da487b38fec8b1811d511d8be7950c23ac4767bea3c0a9c2d45fb2ce
+    date: '2026-07-14T11:57:28Z'
+    reason: 'Opaque-id collision correction (NOTEBOOK 2026-07-14): positional join in apply, full scored-generation
+      key in scorer, id payload extended for regrade shards and future pools, regression tests added.
+      No gate, rubric, or population change; found before any rate was read.'
+  - file: calibration_scorer.py
+    old_sha256: aec949a011b13a5410ddcd1350b9064ae4af46246cad03ea3e3fa53ccee55685
+    new_sha256: a99a50f55c7e3490233cb22941784ec4ae09a97f859bc8c722ba068744aa88f1
+    date: '2026-07-14T11:57:28Z'
+    reason: 'Opaque-id collision correction (NOTEBOOK 2026-07-14): positional join in apply, full scored-generation
+      key in scorer, id payload extended for regrade shards and future pools, regression tests added.
+      No gate, rubric, or population change; found before any rate was read.'
+  - file: test_calibration_smoke.py
+    old_sha256: fb744045151d0da9b8489ba5764eed11c1fa299608659d8f7323e63b50501509
+    new_sha256: 43767188ba545f6ad4a4ebaef76e9ab6d88f00023e4b6d8fb0909f453c373089
+    date: '2026-07-14T11:57:28Z'
+    reason: 'Opaque-id collision correction (NOTEBOOK 2026-07-14): positional join in apply, full scored-generation
+      key in scorer, id payload extended for regrade shards and future pools, regression tests added.
+      No gate, rubric, or population change; found before any rate was read.'
+  - file: build_regrade.py
+    old_sha256: none-new-module
+    new_sha256: 4992e782a2689fb3a8d7e8e32d3cd84ea58978e31bc138b0134890a0ff045a12
+    date: '2026-07-14T12:00:00Z'
+    reason: 'New module added by the 2026-07-14 opaque-id collision correction (NOTEBOOK entry): builds
+      a CG1-voided shard regrade under fresh salt and non-colliding ids. Added post-sign with pin recorded
+      here because exp repin repairs existing pins only.'
 inputs: []
 verdict: ''
 kg: []

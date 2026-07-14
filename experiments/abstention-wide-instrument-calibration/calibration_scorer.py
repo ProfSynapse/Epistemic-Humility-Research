@@ -50,9 +50,17 @@ MC_VALUES = {
 }
 
 
-def load_applied_map(analysis_dir: Path) -> dict[tuple[str, str, str], bool]:
+def applied_key(r: dict[str, Any]) -> tuple:
+    # (cell, row_key, arm) alone COLLIDES in the QL ladder cell, where the
+    # same row legitimately appears at multiple (hs_index, dose) points; the
+    # unit of a scored generation is the full tuple. hs_index/dose_multiplier
+    # are None for QH/LB, which keeps their keys unchanged in effect.
+    return (r["cell"], r["row_key"], r["arm"], r.get("hs_index"), r.get("dose_multiplier"))
+
+
+def load_applied_map(analysis_dir: Path) -> dict[tuple, bool]:
     path = analysis_dir / "adjudication_applied.jsonl"
-    out: dict[tuple[str, str, str], bool] = {}
+    out: dict[tuple, bool] = {}
     if not path.is_file():
         return out
     with path.open(encoding="utf-8") as fh:
@@ -61,7 +69,10 @@ def load_applied_map(analysis_dir: Path) -> dict[tuple[str, str, str], bool]:
             if not line:
                 continue
             r = json.loads(line)
-            out[(r["cell"], r["row_key"], r["arm"])] = bool(r["refused_final"])
+            key = applied_key(r)
+            if key in out:
+                raise SystemExit(f"duplicate applied key {key}: the applied file must be one row per scored generation")
+            out[key] = bool(r["refused_final"])
     return out
 
 
@@ -77,7 +88,7 @@ def attach_narrow_and_wide(rows: list[dict[str, Any]], cfg: dict, applied_map: d
     out = []
     for r in rows:
         refused_v2 = detector_v2.is_refused_v2(r["text"], cfg)
-        key = (r["cell"], r["row_key"], r["arm"])
+        key = applied_key(r)
         if r["cell"] in voided_cells:
             wide: Optional[bool] = None
         elif refused_v2:
@@ -249,7 +260,7 @@ def write_row_level_log(cfg: dict, applied_map: dict, voided_cells: set[str], an
         for r in all_rows:
             refused_v2 = detector_v2.is_refused_v2(r["text"], cfg)
             matched = detector_v2.matched_pattern_ids(r["text"], cfg)
-            key = (r["cell"], r["row_key"], r["arm"])
+            key = applied_key(r)
             if r["cell"] in voided_cells:
                 refused_final = None
             elif refused_v2:

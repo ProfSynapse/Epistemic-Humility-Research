@@ -145,17 +145,21 @@ def _require_committed_hash(shard_id: str, graded_path: Path, committed_dir: Pat
     return sha
 
 
-def load_shard_id_map(shard_id: str, analysis_dir: Path) -> dict[str, dict[str, Any]]:
-    rows = load_jsonl(analysis_dir / "shards" / f"{shard_id}_id_map.jsonl")
-    return {r["opaque_id"]: r for r in rows}
+def load_shard_id_map(shard_id: str, analysis_dir: Path) -> list[dict[str, Any]]:
+    # LIST in file line order, NOT a dict keyed by opaque_id. The opaque id is
+    # a pure function of (salt, cell, row_key, arm); in the QL ladder cell the
+    # same (row_key, arm) legitimately appears at multiple (hs_index, dose)
+    # points, so opaque ids COLLIDE across lines and a dict silently collapses
+    # distinct texts. The id map, shard pool file, and graded file are all
+    # written and verified line-aligned, so the join is positional; per-line
+    # opaque_id equality is asserted in evaluate_shard.
+    return load_jsonl(analysis_dir / "shards" / f"{shard_id}_id_map.jsonl")
 
 
-def load_graded_file(path: Path) -> dict[str, bool]:
-    rows = load_jsonl(path)
-    out: dict[str, bool] = {}
-    for r in rows:
-        out[r["opaque_id"]] = bool(r["is_abstention"])
-    return out
+def load_graded_file(path: Path) -> list[dict[str, Any]]:
+    # LIST in file line order; see load_shard_id_map for why this must not be
+    # keyed by opaque_id.
+    return load_jsonl(path)
 
 
 def load_pool_manifest(committed_dir: Path) -> dict[str, Any]:
@@ -185,23 +189,36 @@ def evaluate_shard(shard_id: str, grading_entry: dict[str, Any], pool_manifest: 
     id_map = load_shard_id_map(shard_id, analysis_dir)
     graded = load_graded_file(graded_path)
 
-    core_ids = {oid for oid, m in id_map.items() if not m["is_decoy"]}
-    missing = core_ids - set(graded)
-    if missing:
-        raise SystemExit(f"shard {shard_id}: graded file missing {len(missing)} core ids; sample: {sorted(missing)[:5]}")
+    if len(graded) != len(id_map):
+        raise SystemExit(
+            f"shard {shard_id}: graded file has {len(graded)} lines but id map has "
+            f"{len(id_map)}; the join is positional and requires exact line alignment."
+        )
+    for i, (g, m) in enumerate(zip(graded, id_map)):
+        if g["opaque_id"] != m["opaque_id"]:
+            raise SystemExit(
+                f"shard {shard_id}: line {i} opaque_id mismatch between graded file "
+                f"and id map; the positional join requires line-for-line id equality."
+            )
 
-    neg_ids = [oid for oid, m in id_map.items() if m.get("decoy_type") == "clear_negative"]
-    pos_ids = [oid for oid, m in id_map.items() if m.get("decoy_type") == "clear_positive"]
-    neg_correct = sum(1 for oid in neg_ids if oid in graded and graded[oid] is False)
-    pos_correct = sum(1 for oid in pos_ids if oid in graded and graded[oid] is True)
+    pairs = [(m, bool(g["is_abstention"])) for m, g in zip(id_map, graded)]
 
-    cg1 = gates_lib.cg1_evaluate_shard(shard_id, neg_correct, len(neg_ids), pos_correct, len(pos_ids), attempt)
+    neg = [(m, v) for m, v in pairs if m.get("decoy_type") == "clear_negative"]
+    pos = [(m, v) for m, v in pairs if m.get("decoy_type") == "clear_positive"]
+    neg_correct = sum(1 for _, v in neg if v is False)
+    pos_correct = sum(1 for _, v in pos if v is True)
+
+    cg1 = gates_lib.cg1_evaluate_shard(shard_id, neg_correct, len(neg), pos_correct, len(pos), attempt)
 
     core_rows = None
     if cg1["passed"]:
         core_rows = [
-            {"cell": m["cell"], "row_key": m["row_key"], "arm": m["arm"], "refused_final": graded[oid]}
-            for oid, m in id_map.items() if not m["is_decoy"]
+            {
+                "cell": m["cell"], "row_key": m["row_key"], "arm": m["arm"],
+                "role": m.get("role"), "hs_index": m.get("hs_index"),
+                "dose_multiplier": m.get("dose_multiplier"), "refused_final": v,
+            }
+            for m, v in pairs if not m["is_decoy"]
         ]
 
     return {"cell": shard_manifest["cell"], "cg1": cg1, "core_rows": core_rows}

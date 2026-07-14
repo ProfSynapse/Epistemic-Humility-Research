@@ -180,8 +180,15 @@ def carve_decoys(core: list[dict[str, Any]], clear_negative_candidates: list[dic
     return remaining_core, decoys_neg, decoys_pos
 
 
-def salted_opaque_id(salt: str, cell: str, row_key: str, arm: str, regrade_index: int = 0) -> str:
-    payload = f"{salt}:{cell}:{row_key}:{arm}:{regrade_index}"
+def salted_opaque_id(salt: str, cell: str, row_key: str, arm: str, regrade_index: int = 0,
+                     hs_index: Any = None, dose_multiplier: Any = None) -> str:
+    # The id must be unique per SCORED GENERATION, not per source row: in the
+    # QL ladder cell the same (row_key, arm) appears at multiple (hs_index,
+    # dose) points with different texts. The 2026-07-14 attempt-1 pool was
+    # built without the last two fields and produced colliding ids (blinding
+    # unaffected; join integrity restored by the positional join in
+    # apply_adjudication.py). Fixed here for regrade shards and future pools.
+    payload = f"{salt}:{cell}:{row_key}:{arm}:{hs_index}:{dose_multiplier}:{regrade_index}"
     return hashlib.sha256(payload.encode("utf-8")).hexdigest()[:16]
 
 
@@ -244,7 +251,8 @@ def build_shards(core: list[dict[str, Any]], decoys_neg: list[dict[str, Any]], d
         blinded_pool = []
         id_map = []
         for item in combined:
-            opaque_id = salted_opaque_id(salt, item["cell"], item["row_key"], item["arm"])
+            opaque_id = salted_opaque_id(salt, item["cell"], item["row_key"], item["arm"],
+                                         hs_index=item.get("hs_index"), dose_multiplier=item.get("dose_multiplier"))
             blinded_pool.append({"opaque_id": opaque_id, "text": item.get("text", "")})
             id_map.append({
                 "opaque_id": opaque_id, "cell": item["cell"], "row_key": item["row_key"], "arm": item["arm"],
@@ -274,7 +282,8 @@ def build_regrade_shard(original_id_map: list[dict[str, Any]], salt: str, regrad
     random.Random(seed + 5000 + regrade_index).shuffle(items)
     id_map = []
     for item in items:
-        opaque_id = salted_opaque_id(salt, item["cell"], item["row_key"], item["arm"], regrade_index=regrade_index)
+        opaque_id = salted_opaque_id(salt, item["cell"], item["row_key"], item["arm"], regrade_index=regrade_index,
+                                     hs_index=item.get("hs_index"), dose_multiplier=item.get("dose_multiplier"))
         id_map.append({**item, "opaque_id": opaque_id})
     return {"shard_id": f"{original_id_map[0]['cell']}_regrade_{regrade_index:02d}" if items else f"regrade_{regrade_index:02d}", "id_map": id_map}
 

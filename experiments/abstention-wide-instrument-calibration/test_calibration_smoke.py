@@ -406,3 +406,99 @@ def test_row_level_log_persists_text_and_full_subgrade(patched_sources, tmp_path
         assert "text" in rec and rec["text"]
         assert set(rec["sub_grade"].keys()) == {"refused_v2", "matched_pattern_ids", "refused_final"}
         assert isinstance(rec["sub_grade"]["matched_pattern_ids"], list)
+
+
+# --- regression tests for the 2026-07-14 opaque-id collision defect ---
+
+def test_opaque_id_unique_per_scored_generation_across_doses():
+    """Same (cell, row_key, arm) at different (hs_index, dose) points must get
+    DIFFERENT opaque ids. The attempt-1 pool collided here (12,980 pool lines,
+    6,856 unique ids); blinding held, but a dict-keyed join collapsed rows."""
+    import build_adjudication_pool as bap
+    salt = "fixed-test-salt"
+    a = bap.salted_opaque_id(salt, "QL", "rk1", "random_direction", hs_index=20, dose_multiplier=4)
+    b = bap.salted_opaque_id(salt, "QL", "rk1", "random_direction", hs_index=20, dose_multiplier=8)
+    c = bap.salted_opaque_id(salt, "QL", "rk1", "random_direction", hs_index=23, dose_multiplier=4)
+    assert len({a, b, c}) == 3
+
+
+def test_build_shards_globally_unique_ids_with_cross_dose_reuse():
+    import build_adjudication_pool as bap
+    core = [
+        {"cell": "QL", "row_key": f"rk{i % 3}", "arm": "random_direction",
+         "hs_index": hs, "dose_multiplier": d, "role": "confab", "text": f"t{i}-{hs}-{d}"}
+        for i, (hs, d) in enumerate((hs, d) for hs in (20, 23) for d in (4, 8, 12) for _ in range(3))
+    ]
+    negs = [{"cell": "QL", "row_key": f"nk{i}", "arm": "baseline", "role": "known_correct_answered",
+             "text": f"n{i}", "decoy_type": "clear_negative"} for i in range(4)]
+    poss = [{"cell": "QL", "row_key": f"pk{i}", "arm": "random_direction", "role": "confab",
+             "hs_index": 20, "dose_multiplier": 4, "text": f"p{i}", "decoy_type": "clear_positive"} for i in range(4)]
+    shards = bap.build_shards(core, negs, poss, {"QL": 2}, seed=1, salt="s")
+    all_ids = [m["opaque_id"] for s in shards for m in s["id_map"]]
+    assert len(all_ids) == len(set(all_ids)), "opaque ids must be globally unique per scored generation"
+
+
+def test_apply_join_is_positional_and_rejects_misalignment(tmp_path):
+    """The graded-file join must be by line position with per-line id equality,
+    so colliding ids (attempt-1 pool) cannot collapse rows; a reordered graded
+    file must be refused."""
+    import json as _json
+    import apply_adjudication as aa
+    shards_dir = tmp_path / "analysis" / "shards"
+    shards_dir.mkdir(parents=True)
+    # two core lines with the SAME opaque id (the collision case) + one decoy pair
+    id_map = [
+        {"opaque_id": "dupid", "cell": "QL", "row_key": "rk1", "arm": "random_direction",
+         "hs_index": 20, "dose_multiplier": 4, "role": "confab", "is_decoy": False, "decoy_type": None},
+        {"opaque_id": "dupid", "cell": "QL", "row_key": "rk1", "arm": "random_direction",
+         "hs_index": 20, "dose_multiplier": 8, "role": "confab", "is_decoy": False, "decoy_type": None},
+        {"opaque_id": "neg1", "cell": "QL", "row_key": "nk1", "arm": "baseline",
+         "hs_index": None, "dose_multiplier": None, "role": "known_correct_answered",
+         "is_decoy": True, "decoy_type": "clear_negative"},
+        {"opaque_id": "pos1", "cell": "QL", "row_key": "pk1", "arm": "random_direction",
+         "hs_index": 20, "dose_multiplier": 4, "role": "confab",
+         "is_decoy": True, "decoy_type": "clear_positive"},
+    ]
+    with (shards_dir / "QL_shard_99_id_map.jsonl").open("w") as fh:
+        for m in id_map:
+            fh.write(_json.dumps(m) + "\n")
+    graded = [
+        {"opaque_id": "dupid", "is_abstention": True},
+        {"opaque_id": "dupid", "is_abstention": False},
+        {"opaque_id": "neg1", "is_abstention": False},
+        {"opaque_id": "pos1", "is_abstention": True},
+    ]
+    graded_path = tmp_path / "QL_shard_99_graded.jsonl"
+    with graded_path.open("w") as fh:
+        for g in graded:
+            fh.write(_json.dumps(g) + "\n")
+    committed = tmp_path / "analysis-committed"
+    committed.mkdir()
+    sha = aa.sha256_of_file(graded_path)
+    aa.write_json(aa.graded_manifest_path(committed), [
+        {"shard_id": "QL_shard_99", "sha256": sha, "file_name": graded_path.name, "committed_at": "t"}
+    ])
+    pool_manifest = {"shards": [{"shard_id": "QL_shard_99", "cell": "QL", "pool_sha256": "x",
+                                  "row_count": 4, "n_core": 2,
+                                  "n_decoy_clear_negative": 1, "n_decoy_clear_positive": 1}]}
+    res = aa.evaluate_shard("QL_shard_99", {"graded_file": str(graded_path), "attempt": 1},
+                             pool_manifest, tmp_path / "analysis", committed)
+    assert res["cg1"]["passed"] is True
+    core = res["core_rows"]
+    assert len(core) == 2, "both colliding-id core rows must survive the join"
+    by_dose = {r["dose_multiplier"]: r["refused_final"] for r in core}
+    assert by_dose == {4: True, 8: False}, "labels must attach to the correct dose row by line position"
+    # misaligned graded file (line swap) must be refused
+    swapped = [graded[2], graded[1], graded[0], graded[3]]
+    graded_path2 = tmp_path / "QL_shard_99_graded_swapped.jsonl"
+    with graded_path2.open("w") as fh:
+        for g in swapped:
+            fh.write(_json.dumps(g) + "\n")
+    sha2 = aa.sha256_of_file(graded_path2)
+    manifest = _json.loads(aa.graded_manifest_path(committed).read_text())
+    manifest.append({"shard_id": "QL_shard_99", "sha256": sha2, "file_name": graded_path2.name, "committed_at": "t"})
+    aa.write_json(aa.graded_manifest_path(committed), manifest)
+    import pytest as _pytest
+    with _pytest.raises(SystemExit, match="opaque_id mismatch"):
+        aa.evaluate_shard("QL_shard_99", {"graded_file": str(graded_path2), "attempt": 1},
+                           pool_manifest, tmp_path / "analysis", committed)
