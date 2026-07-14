@@ -4,7 +4,7 @@ session_id: 20260708T164625Z-paper-5-j-space-hardening
 title: Paper 5 J-space hardening
 status: active
 created_at: '2026-07-08T16:46:25Z'
-updated_at: '2026-07-14T17:05:58Z'
+updated_at: '2026-07-14T17:50:03Z'
 track: research
 phase: phase1
 question: Which registered follow-up experiments harden the Paper 5 actuation thesis,
@@ -930,6 +930,35 @@ checkpoints:
     draft (#39), abstention-grading skill PR (#42), scale test 1.7B+~9B held for RR3
     (#41).'
   signals: {}
+- id: 034-decision
+  at: '2026-07-14T17:50:03Z'
+  kind: decision
+  title: 'Sign-flip analysis: pre-run scoreboard calls + structural finding'
+  summary: 'placebo-signflip-question-type-analysis (draft on exp/placebo-signflip-analysis)
+    pre-run registrations. Drafter''s structural finding, lead-verified bit-for-bit
+    from row_level_scored.jsonl: every dosed placebo row in every family/cell is unanswerable
+    (kuq), so the certified cross-family sign difference (qwen -5.13 suppression vs
+    mistral +7.39 recruitment) was measured entirely on the unanswerable stratum and
+    question type CANNOT explain it behaviorally on existing data (it never varied).
+    Powered question-type tests move to the mechanism leg (anchors exist for both
+    types in all three families) and prospectively to RR3''s rider. Scoreboard calls
+    (PI then orchestrator): M1 answerable-vs-unanswerable separation on doubt/caution
+    axis in all three families: YES / YES. kuq-subtype concentration of the placebo
+    effect: CONCENTRATED-OR-UNEVEN / EVEN-SPREAD (differentiating slot). M3 realized
+    displacement differs by type: YES / YES. Lead decisions: subtype breakdown extended
+    to mistral; mistral hs16 directions provenance-by-regeneration via RR fit manifest.
+    RR3 pipeline meanwhile mid-generation on the 3090 (92 percent util).'
+  evidence: []
+  run_ids: []
+  commands: []
+  decisions:
+  - Scoreboard registered as above; subtype breakdown extended to mistral; directions
+    provenance-by-regeneration.
+  next_steps:
+  - 'Harness build for signflip analysis (BG1 exact frame-port acceptance test is
+    the known risk) -> lead review -> sign -> CPU run -> red-team -> resolve. RR3:
+    await pipeline completion notification.'
+  signals: {}
 ---
 # Paper 5 J-space hardening
 
@@ -1354,3 +1383,12 @@ rows before the layer contrast.
   - `pipeline.py all --batch-size 8 --i-know-this-runs-on-gpu (local 3090, detached, log analysis/pipeline_run_20260714b.log)`
 - next steps:
   - On pipeline completion: RG0 byte-repro verify, build adjudication pool, commit pool manifest, dispatch context-free blind graders, hash-commit, CG1, scorer, red-team certification BEFORE verdict. Pending elsewhere: sign-flip analysis amendment draft (#39), abstention-grading skill PR (#42), scale test 1.7B+~9B held for RR3 (#41).
+### 034-decision - Sign-flip analysis: pre-run scoreboard calls + structural finding
+
+- at: `2026-07-14T17:50:03Z`
+- kind: `decision`
+- summary: placebo-signflip-question-type-analysis (draft on exp/placebo-signflip-analysis) pre-run registrations. Drafter's structural finding, lead-verified bit-for-bit from row_level_scored.jsonl: every dosed placebo row in every family/cell is unanswerable (kuq), so the certified cross-family sign difference (qwen -5.13 suppression vs mistral +7.39 recruitment) was measured entirely on the unanswerable stratum and question type CANNOT explain it behaviorally on existing data (it never varied). Powered question-type tests move to the mechanism leg (anchors exist for both types in all three families) and prospectively to RR3's rider. Scoreboard calls (PI then orchestrator): M1 answerable-vs-unanswerable separation on doubt/caution axis in all three families: YES / YES. kuq-subtype concentration of the placebo effect: CONCENTRATED-OR-UNEVEN / EVEN-SPREAD (differentiating slot). M3 realized displacement differs by type: YES / YES. Lead decisions: subtype breakdown extended to mistral; mistral hs16 directions provenance-by-regeneration via RR fit manifest. RR3 pipeline meanwhile mid-generation on the 3090 (92 percent util).
+- decisions:
+  - Scoreboard registered as above; subtype breakdown extended to mistral; directions provenance-by-regeneration.
+- next steps:
+  - Harness build for signflip analysis (BG1 exact frame-port acceptance test is the known risk) -> lead review -> sign -> CPU run -> red-team -> resolve. RR3: await pipeline completion notification.
