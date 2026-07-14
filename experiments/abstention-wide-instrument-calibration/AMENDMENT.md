@@ -153,8 +153,8 @@ measurements, and both prediction outcomes are reportable results.
 
 | Predictor | Call |
 |-----------|------|
-| orchestrator | (recorded at sign) |
-| user | (recorded at sign) |
+| orchestrator | Family-specific: qwen wide baseline in the 0.05-0.12 band and placebo delta under 3 points; llama baseline under 0.15; mistral remains the outlier hedger. (recorded 2026-07-14, pre-run) |
+| user | Per-family differences, and qwen holds: qwen stays inside the prediction bands (baseline < 0.15, placebo delta < 3 points). (recorded 2026-07-14, pre-run) |
 
 ## Outcome
 

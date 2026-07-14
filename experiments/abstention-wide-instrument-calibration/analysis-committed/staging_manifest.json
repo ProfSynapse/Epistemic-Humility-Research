@@ -1,0 +1,85 @@
+{
+  "files": [
+    {
+      "arm": "baseline",
+      "cell": "QH",
+      "dest_path": "analysis/staged_inputs/QH/baseline.jsonl",
+      "hs_index": null,
+      "row_count": 1692,
+      "schema": "runlog",
+      "sha256": "05280e75107cf287378a35666204b382b9e3a49c2a5ed0ac3aab7d6cfa262c45",
+      "source_path": "/home/profsynapse/code/ehr-worktrees/qwen35-midband-heldout/experiments/qwen35-4b-midband-heldout/analysis/runlog/baseline.jsonl"
+    },
+    {
+      "arm": "random_direction",
+      "cell": "QH",
+      "dest_path": "analysis/staged_inputs/QH/random_direction.jsonl",
+      "hs_index": null,
+      "row_count": 1303,
+      "schema": "runlog",
+      "sha256": "993ef3b4a6ece1110399bbb7985cfed1abee30b5ea44d76776d67fa8688b3b16",
+      "source_path": "/home/profsynapse/code/ehr-worktrees/qwen35-midband-heldout/experiments/qwen35-4b-midband-heldout/analysis/runlog/random_direction.jsonl"
+    },
+    {
+      "arm": "baseline",
+      "cell": "QL",
+      "dest_path": "analysis/staged_inputs/QL/baseline.jsonl",
+      "hs_index": null,
+      "row_count": 1127,
+      "schema": "runlog",
+      "sha256": "009fecc8909af0d7a77249c01a1b49bbbd1e73915a479299a2852da5c6007150",
+      "source_path": "/home/profsynapse/code/ehr-worktrees/qwen35-midband/experiments/qwen35-4b-midband-doubt-snap/analysis/runlog/baseline.jsonl"
+    },
+    {
+      "arm": "baseline",
+      "cell": "LB",
+      "dest_path": "analysis/staged_inputs/LB/split_rows_private.jsonl",
+      "hs_index": null,
+      "row_count": 2956,
+      "schema": "rr_staged_split",
+      "sha256": "c638e1552bf7d613dd815a5d279e58b316fddd20b791b4b0f57102c2b7ffd150",
+      "source_path": "/home/profsynapse/code/ehr-worktrees/rr-raw-refusal/experiments/rr-cross-family-raw-refusal/analysis/staged_inputs/llama/split_rows_private.jsonl"
+    },
+    {
+      "arm": "random_direction",
+      "cell": "QL",
+      "dest_path": "analysis/staged_inputs/QL/hs20__random_direction.jsonl",
+      "hs_index": 20,
+      "row_count": 6174,
+      "schema": "runlog",
+      "sha256": "6da4172356405de861cb22c561d618756121c9e29f9dd9e3e426fa1c53d75823",
+      "source_path": "/home/profsynapse/code/ehr-worktrees/qwen35-midband/experiments/qwen35-4b-midband-doubt-snap/analysis/runlog/hs20__random_direction.jsonl"
+    },
+    {
+      "arm": "random_direction",
+      "cell": "QL",
+      "dest_path": "analysis/staged_inputs/QL/hs23__random_direction.jsonl",
+      "hs_index": 23,
+      "row_count": 6146,
+      "schema": "runlog",
+      "sha256": "19169d8cd487ce55a2e35e82ef1ca20b8d20c1fb90225b9f09abce8fcd9b10a8",
+      "source_path": "/home/profsynapse/code/ehr-worktrees/qwen35-midband/experiments/qwen35-4b-midband-doubt-snap/analysis/runlog/hs23__random_direction.jsonl"
+    },
+    {
+      "arm": "random_direction",
+      "cell": "QL",
+      "dest_path": "analysis/staged_inputs/QL/hs26__random_direction.jsonl",
+      "hs_index": 26,
+      "row_count": 6167,
+      "schema": "runlog",
+      "sha256": "bfaabedc0e3feaa0cfc9756717351c9f438d0c20f160660634f1ca57755a26a4",
+      "source_path": "/home/profsynapse/code/ehr-worktrees/qwen35-midband/experiments/qwen35-4b-midband-doubt-snap/analysis/runlog/hs26__random_direction.jsonl"
+    },
+    {
+      "arm": "random_direction",
+      "cell": "QL",
+      "dest_path": "analysis/staged_inputs/QL/hs30__random_direction.jsonl",
+      "hs_index": 30,
+      "row_count": 6055,
+      "schema": "runlog",
+      "sha256": "2158da91bb8ca551d8e85e93a20a24a0ced272489a05425473c8b9ddda55b3d4",
+      "source_path": "/home/profsynapse/code/ehr-worktrees/qwen35-midband/experiments/qwen35-4b-midband-doubt-snap/analysis/runlog/hs30__random_direction.jsonl"
+    }
+  ],
+  "staged_at": "2026-07-14T10:37:08.021783+00:00"
+}
