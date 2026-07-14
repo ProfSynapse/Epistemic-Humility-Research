@@ -6,6 +6,16 @@ in `experiment.yaml`.
 
 ## Entries
 
+- 2026-07-14 (lead). Q3 resolved by the PI: the core verdict is reported as a
+  corrected-criterion re-adjudication of RR2's claim (same test done more
+  intelligently, rider as additional data exhaust), not as a fully fresh
+  replication. Motivation and Determinism-scope prose aligned to that decision;
+  the RR2-verdict-stands point preserved unchanged. Scoreboard calls filled for
+  both predictors (PI: llama null / RG1 pass / seeds inside; orchestrator:
+  llama weak recruitment / RG1 pass / at least one seed outside on the
+  recruitment side), registered pre-launch and checkpointed in the session note
+  before entry here. All open questions now resolved. Remaining before launch:
+  harness build, instrument.configs pins, sign, PI GPU approval.
 - 2026-07-14 (drafter, revision). Applied bounded lead decisions to the draft,
   still not signed, no run, no GPU, no push. Resolved: Q1 (regeneration kept,
   as drafted), Q2 (RG1 primary-gate denominator is max-over-K of the absolute

@@ -3,8 +3,10 @@
 Status: draft (not signed; do not launch as confirmatory evidence). The K-seed
 denominator, the secondary tolerance width, the per-shard decoy floor, and the
 scoreboard SLOTS are fixed by lead decision (Q1, Q2, Q4, Q5 resolved below).
-The predictor CALLS in the scoreboard remain TODO-for-PI-and-lead, filled at
-sign. Q3 (verdict framing) is OPEN, lifted to the PI.
+The predictor CALLS in the scoreboard are filled (registered 2026-07-14,
+pre-launch; also checkpointed in the session note before entry here). Q3
+(verdict framing) is RESOLVED by the PI: corrected-criterion re-adjudication
+of the claim. Remaining before launch: harness build, pins, sign.
 
 Keep this document the prose home for the experiment. The machine state lives in
 `experiment.yaml` and is never duplicated here.
@@ -64,11 +66,14 @@ the calibration opened.
 Posture: exploratory Tier-2 confirmatory replication for the mistral atlas-site
 actuation claim, reported separately from the locked Phase 1 headline matrix and
 never pooled with it, and never pooled with RR, RR2, or the calibration re-read.
-This is a NEW pre-registered test, not a re-adjudication of RR2's failed RG3
-gate: the corrected placebo criterion and its threshold are registered here
-before this run, constructed from the calibration measurements (not from RR2's
-observed placebo result), and RR2's falsified verdict stands exactly as recorded
-regardless of what this run finds.
+This test does not reopen RR2's failed RG3 gate: the corrected placebo
+criterion and its threshold are registered here before this run, constructed
+from the calibration measurements (not from RR2's observed placebo result), and
+RR2's falsified verdict stands exactly as recorded regardless of what this run
+finds. Per the PI's Q3 decision
+(below), the core is REPORTED as a corrected-criterion re-adjudication of the
+actuation claim, the same test done with the right placebo instrument, with the
+rider map and the multi-seed placebo ensemble as the genuinely new evidence.
 
 ### Determinism scope (stated up front, honest)
 
@@ -99,8 +104,13 @@ REPLICATION: a new pre-registered test with its own primary gate, its own
 benefit/cost floors, and a multi-seed placebo arm whose fresh seeds make the
 denominator genuinely unknown before the run, whose result stands independently
 of RR2's already-recorded RG3 failure. Both framings are consistent with
-everything else in this document. Which framing governs how the eventual
-verdict is reported is left to the PI (Q3, open).
+everything else in this document. RESOLVED by the PI (Q3, 2026-07-14,
+pre-launch): the verdict is reported under the FIRST framing, a
+corrected-criterion re-adjudication of RR2's claim. In the PI's words,
+realistically we are doing the same thing more intelligently and getting
+additional good data exhaust out of it; the genuinely new evidence is the
+multi-seed placebo ensemble and the family placebo-sign map, and the Outcome
+section must present it that way rather than as a fully fresh replication.
 
 ## Design
 
@@ -373,13 +383,20 @@ Per-cell gates are in `gates.yaml`. Wilson 95% CIs (alpha 0.05) on every rate.
 
 ## Predictions scoreboard
 
-Scoreboard SLOTS are registered here (Q5, resolved); the actual CALLS are
-TODO-for-PI-and-lead and are filled before sign, pre-launch.
+Scoreboard SLOTS were registered at draft (Q5, resolved); the CALLS below were
+registered 2026-07-14, pre-launch, before harness build, and were checkpointed
+in the session note (docs/sessions/20260708T164625Z-paper-5-j-space-hardening.md)
+before entry here. No edits after results.
 
 | Predictor | Llama placebo sign (suppression / recruitment / null) | Mistral RG1 (pass / fail) | Mistral fresh-seed random lifts vs descriptive envelope (inside / outside) |
 |-----------|---------------------------------------------------------|-----------------------------|--------------------------------------------------------------------------------|
-| orchestrator | TODO-for-lead (pre-launch) | TODO-for-lead (pre-launch) | TODO-for-lead (pre-launch) |
-| user | TODO-for-PI (pre-launch) | TODO-for-PI (pre-launch) | TODO-for-PI (pre-launch) |
+| orchestrator | WEAK RECRUITMENT (positive sign; monotone-in-baseline reading of the calibration sign map: llama wide baseline 0.164 sits between qwen 0.104 suppression and mistral 0.280 recruitment) | PASS | AT LEAST ONE of the K seeds lands OUTSIDE the +/-8 envelope on the recruitment side while staying below the ~14-point gate-fail threshold |
+| user | NULL (the model is old and an outlier in the PI's read; family idiosyncrasy over any monotone-in-baseline law) | PASS | INSIDE for all seeds |
+
+The llama-sign calls are mutually exclusive and each falsifies the other's
+theory: a null result implies placebo response is not a smooth function of
+baseline hedging rate; a recruitment result supports the monotone-in-baseline
+reading. Either way the sign map gains its third family point.
 
 ## Open questions for the lead
 
@@ -396,7 +413,9 @@ TODO-for-PI-and-lead and are filled before sign, pre-launch.
   rule is fixed before any run (`gates.yaml`
   `rg1_direction_specificity.k_seed_denominator`). The full multi-seed ensemble
   is still reported descriptively regardless of its role in the gate.
-- Q3 (foreseeability of the mistral core ratio), OPEN, lifted to the PI.
+- Q3 (foreseeability of the mistral core ratio), RESOLVED (PI, 2026-07-14,
+  pre-launch): the verdict is reported as a corrected-criterion re-adjudication
+  of RR2's claim, per the framing paragraph in Determinism scope.
   Because generation is deterministic, RR2 already reported the mistral gated
   lift (+41.9) and a single random lift (+7.39), ratio 5.7x, so the mistral
   core primary gate is largely foreseeable at ~5.7x if a fresh random seed
