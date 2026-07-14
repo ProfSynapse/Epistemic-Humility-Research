@@ -4,7 +4,7 @@ session_id: 20260708T164625Z-paper-5-j-space-hardening
 title: Paper 5 J-space hardening
 status: active
 created_at: '2026-07-08T16:46:25Z'
-updated_at: '2026-07-14T20:38:58Z'
+updated_at: '2026-07-14T20:56:06Z'
 track: research
 phase: phase1
 question: Which registered follow-up experiments harden the Paper 5 actuation thesis,
@@ -1066,6 +1066,35 @@ checkpoints:
     manifest, apply (CG1), rr3_scorer, red-team. Await llama half of BG1 diagnosis,
     then adjudicate instrument-defect repin vs genuine fail.
   signals: {}
+- id: 039-checkpoint
+  at: '2026-07-14T20:56:06Z'
+  kind: checkpoint
+  title: Checkpoint
+  summary: 'RR3 RESOLVED FALSIFIED, PR #290 open awaiting PI merge approval. Full
+    adjudication cycle completed: 21/21 shards graded blind and hash-committed pre-unblind
+    (7cec7511), CG1 all-pass per-shard + pooled 0.782, apply clean (14485 rows), scorer:
+    RG1 FAIL effect ratio 1.87 < 3.0 (gated lift +40.9 pts vs fresh random-seed lifts
+    +13.3/-7.4/+21.8 at matched magnitude), RG2/RG3 PASS reproducing RR2. Opus red-team
+    certified artifact-free across all six attack surfaces (directions genuinely random
+    |cos|<=0.015, magnitude-matched, robust detector-only 1.91 and mean-denominator
+    2.89). Outcome written, resolved falsified, registry regenerated (abaaaf99). Scoreboard
+    adjudicated: PI right llama-null (rider null through 16x, +0.1 at 12x); both wrong
+    on mistral RG1 PASS calls; envelope split (PI inside wrong, orchestrator outside
+    right but 21.8 exceeded his 14-pt bound). KEY METHODOLOGICAL FACT for sign-flip
+    and paper 5: single-seed placebo readings on mistral span -7.4 to +21.8 pts at
+    12 sigma_c; calibration family-signed placebo map points are single draws; signflip
+    adjudication must read RR3 Outcome first (cross-experiment note in Outcome).'
+  evidence: []
+  run_ids: []
+  commands: []
+  decisions: []
+  next_steps:
+  - '1) PI decision: merge PR #290. 2) signflip: await llama half of bg1-diagnosis
+    (mistral half confirmed check-scope defect, 0/1694 restricted mismatches), then
+    adjudicate repin-vs-drop, then mechanism leg, with RR3 seed-variance caveat folded
+    into any verdict. 3) Paper 5 update for RR3 result after merge. 4) Abstention-grading
+    skill update #42 (+ private-workdir rule).'
+  signals: {}
 ---
 # Paper 5 J-space hardening
 
@@ -1527,3 +1556,10 @@ rows before the layer contrast.
 - summary: INCIDENT + containment during RR3 blind grading: parallel grader agents shared the session scratchpad for helper scripts and two write collisions occurred on generic filenames (write_shard00.py, verify.py two writers each). Effect: one grader's judgment chunk routed to the wrong target mid-run; the in-flight rider_mistral_shard_01 grader's partial file is missing a ~50-line middle block (720/770, own ids only, no foreign ids). Damage CONTAINED: all 20 completed shards pass full independent integrity (exact counts, positional opaque_id match, no dups within/across files) and every hash commitment was recorded only after that verification; the damaged shard was never hash-committed. PI directive adopted as standing rule: any parallelized agents get pre-assigned PRIVATE working dirs for all intermediates plus unique output paths, forbidden to write elsewhere; zero shared mutable paths. Fold into abstention-grading skill update. Separately: BG1 diagnosis confirmed mistral check-scope defect (0/1694 mismatches on the true evaluated roster; check iterates full 3037-row anchor population, frame_port.py:199-238); llama recompute still running.
 - next steps:
   - Await rm01 grader; if final file not cleanly repaired, void attempt (never committed, no unblinding) and dispatch fresh grader with private dir. Then git-commit grading manifest, apply (CG1), rr3_scorer, red-team. Await llama half of BG1 diagnosis, then adjudicate instrument-defect repin vs genuine fail.
+### 039-checkpoint - Checkpoint
+
+- at: `2026-07-14T20:56:06Z`
+- kind: `checkpoint`
+- summary: RR3 RESOLVED FALSIFIED, PR #290 open awaiting PI merge approval. Full adjudication cycle completed: 21/21 shards graded blind and hash-committed pre-unblind (7cec7511), CG1 all-pass per-shard + pooled 0.782, apply clean (14485 rows), scorer: RG1 FAIL effect ratio 1.87 < 3.0 (gated lift +40.9 pts vs fresh random-seed lifts +13.3/-7.4/+21.8 at matched magnitude), RG2/RG3 PASS reproducing RR2. Opus red-team certified artifact-free across all six attack surfaces (directions genuinely random |cos|<=0.015, magnitude-matched, robust detector-only 1.91 and mean-denominator 2.89). Outcome written, resolved falsified, registry regenerated (abaaaf99). Scoreboard adjudicated: PI right llama-null (rider null through 16x, +0.1 at 12x); both wrong on mistral RG1 PASS calls; envelope split (PI inside wrong, orchestrator outside right but 21.8 exceeded his 14-pt bound). KEY METHODOLOGICAL FACT for sign-flip and paper 5: single-seed placebo readings on mistral span -7.4 to +21.8 pts at 12 sigma_c; calibration family-signed placebo map points are single draws; signflip adjudication must read RR3 Outcome first (cross-experiment note in Outcome).
+- next steps:
+  - 1) PI decision: merge PR #290. 2) signflip: await llama half of bg1-diagnosis (mistral half confirmed check-scope defect, 0/1694 restricted mismatches), then adjudicate repin-vs-drop, then mechanism leg, with RR3 seed-variance caveat folded into any verdict. 3) Paper 5 update for RR3 result after merge. 4) Abstention-grading skill update #42 (+ private-workdir rule).
