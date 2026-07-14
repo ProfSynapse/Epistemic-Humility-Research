@@ -6,6 +6,25 @@ in `experiment.yaml`.
 
 ## Entries
 
+- 2026-07-14 (lead, adjudication cycle). Pool manifest (21 shards, 16045 rows)
+  committed BEFORE grading (6204a7f2). 21 context-free blind graders dispatched
+  in parallel (rubric verbatim, bare opaque_id+text, no experiment context, no
+  pattern matcher). Grading-integrity incident and containment: graders shared
+  the session scratchpad for mechanical helper scripts and two filename
+  collisions occurred (two writers each on write_shard00.py and verify.py), so
+  one grader's judgment chunk was routed to the wrong target mid-run. Effect
+  confined to the rider_mistral_shard_01 attempt (partial file missing a
+  middle block; own-shard ids only). Containment verified by the lead with an
+  independent full sweep: all 20 completed graded files pass exact
+  count/positional-id/no-duplicate checks with zero foreign ids, and every
+  sha256 hash commitment was recorded only AFTER that per-file verification;
+  the damaged file was never hash-committed and no unblinding has occurred.
+  Standing rule adopted (PI directive): parallel agents get pre-assigned
+  private working directories for all intermediates plus unique output paths;
+  no shared mutable paths. If the in-flight shard_01 grader does not finish
+  with a cleanly repaired, fully re-read file, the attempt is voided
+  (mechanical failure before commitment, not a CG1 void) and a fresh
+  context-free grader regrades the whole shard.
 - 2026-07-14 (lead, post-generation). GPU run completed (exit 0, all phases:
   materialize, fit_reuse RG0 reconstruction, heldback both families, mistral
   core all four arms with three seeds, mistral + llama riders). RG0
