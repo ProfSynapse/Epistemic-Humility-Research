@@ -40,6 +40,7 @@ instrument:
   - behavioral_leg.py
   - mechanism_leg.py
   - report.py
+  - run_mechanism.py
   - test_signflip_smoke.py
   pins:
     cell.yaml: c29c3373cfb629c37572759fa369e812116fc52ba8875d0bd88565f100f8744c
@@ -50,6 +51,7 @@ instrument:
     behavioral_leg.py: be6539853c2e646b87d877b172474be5ee2b9c95ef913f81c5691cca3d29e41b
     mechanism_leg.py: 8e3c6fcc43fd2d0bf9841d065a99d4b2925d26772f83f997b8e528377402c2b5
     report.py: 564b381d6228e7f4a162eaa5933ade30855ba9e26be5856414cbb9d6956090d5
+    run_mechanism.py: 8687062fc647d872f48b6940b22c9bf4be9bc20a09f0c188a1415efd0861fa74
     test_signflip_smoke.py: 79fe72f6f752d2c8db8416cd26fa5ac69056fecd903f926c8f68ce3db0b4bc6d
 repins:
   - file: frame_port.py
