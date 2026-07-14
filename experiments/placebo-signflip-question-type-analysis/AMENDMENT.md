@@ -170,12 +170,15 @@ question-type label attached.
 `kuq` pool carries a `category_canon` subtype per row (controversial/debatable,
 counterfactual, question-with-false-assumption, unsolved-problem/mystery,
 future-unknown, underspecified). As the only powered question-type-like
-resolution available on the dosed rows, report the QH paired wide placebo delta
-and the QL narrow dose-response broken down by these six subcategories
-(roughly 150-300 QH rows each). This is descriptive and exploratory: it asks
-whether the qwen suppression concentrates in particular unanswerable subtypes
-rather than being uniform across them. No gate rides on it; it is reported with
-per-cell counts and Wilson CIs and flagged as hypothesis-generating only.
+resolution available on the dosed rows, report the QH paired wide placebo delta,
+the mistral RR2 paired wide placebo delta (lead decision at sign: extended to
+mistral so the recruitment pole gets the same within-type resolution as the
+suppression pole), and the QL narrow dose-response, each broken down by these
+six subcategories (roughly 150-300 QH rows each). This is descriptive and
+exploratory: it asks whether the qwen suppression and the mistral recruitment
+concentrate in particular unanswerable subtypes rather than being uniform
+across them. No gate rides on it; it is reported with per-cell counts and
+Wilson CIs and flagged as hypothesis-generating only.
 
 ### Mechanism probe (pre-generation projection, CPU re-read of anchors)
 
@@ -346,10 +349,20 @@ is a reportable result.
 
 ## Predictions scoreboard
 
-| Predictor | Call |
-|-----------|------|
-| orchestrator | TODO (fill at sign, pre-run) |
-| user | TODO (fill at sign, pre-run) |
+Calls registered 2026-07-14, pre-run, before the analysis harness was built;
+also checkpointed in the session note
+(docs/sessions/20260708T164625Z-paper-5-j-space-hardening.md) before entry
+here. No edits after results.
+
+| Predictor | M1: answerable vs unanswerable separate on the pre-generation doubt/caution axis in ALL THREE families? | kuq-subtype breakdown: does the placebo effect concentrate in particular unanswerable subtypes? | M3: does realized caution-axis displacement differ by question type within family? |
+|-----------|------|------|------|
+| orchestrator | YES, all three | NO, spreads evenly (question type inert at subtype resolution) | YES, differs (fixed-magnitude snap means rows starting higher on the axis receive smaller displacement; coupled to M1) |
+| user | YES, all three | YES, concentrated or at least uneven | YES, differs |
+
+The differentiating slot is the subtype breakdown: an even spread supports the
+question-type-inert reading (orchestrator); concentration in specific
+unanswerable subtypes means question type modulates the placebo response at
+subtype resolution (user). M1 and M3 calls agree across predictors.
 
 ## Outcome
 

@@ -74,6 +74,10 @@ mechanism_probe:
       anchors: rr2-mistral-adjudicated-refusal-confirm/analysis/anchors_at_candidate_layers.json
       layer: 16
       directions_dir: rr2-mistral-adjudicated-refusal-confirm/directions/  # hs16_{u_d,c_hat,random_direction}.json
+                                       # provenance (lead decision at sign): untracked row-derived artifacts; if
+                                       # absent, regenerate byte-identical via RR2's fit_reuse.py against RR's
+                                       # committed hs16_fit_build_manifest.json (the manifest is the provenance,
+                                       # never commit the JSONs); BG0 verifies the field-for-field match
       dose_abs: 3.6653166050691756     # 12 x sigma_c(hs16)=0.30544305
       coverage: {unanswerable: 2400, answerable: 637}
       contrasts: [M1, M2, M3]
