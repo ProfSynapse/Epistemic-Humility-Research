@@ -1,0 +1,60 @@
+# abstention-wide-instrument-calibration: registered cells and sources.
+# CPU-only retrospective re-read; no model loading, no GPU, no new generation.
+# Source runlogs are gitignored row-level artifacts in sibling worktrees; they
+# are staged into this experiment's analysis/staged_inputs/ with sha256 + row
+# counts recorded in analysis-committed/staging_manifest.json before scoring.
+
+instrument:
+  detector_v2:
+    source_experiment: rr2-mistral-adjudicated-refusal-confirm
+    modules: [detector_v2.py, detector_v2_patterns.yaml]
+    byte_identical_to_rr2_pins: true
+  adjudication:
+    rubric: rr2-verbatim
+    grader: context-free-agent
+    sharding_allowed: true
+    decoys_per_shard: both_types
+    pool_shuffle_seed: 20260714
+    text_field_by_source:
+      runlog: answer_text
+      rr_staged_split: baseline_text
+
+cells:
+  - id: QH
+    family: qwen35-4b
+    source_experiment: qwen35-4b-midband-heldout
+    arms:
+      baseline: analysis/runlog/baseline.jsonl        # n=1692, both populations
+      random_direction: analysis/runlog/random_direction.jsonl  # n=1303
+    pairing: row_key
+    delta_population: rows_present_in_both_arms
+    yields: [qwen_wide_baseline, qwen_placebo_delta_at_promoted_point]
+
+  - id: QL
+    family: qwen35-4b
+    source_experiment: qwen35-4b-midband-doubt-snap
+    arms:
+      baseline: analysis/runlog/baseline.jsonl        # n=1127, reference
+      random_direction: analysis/runlog/hs*__random_direction.jsonl  # dose-stratified
+    subsample:
+      rows_per_layer_dose_cell: 250
+      population: confab
+      seed: 20260714
+      drawn_before_grading: true
+    yields: [qwen_placebo_dose_response]
+
+  - id: LB
+    family: llama32-3b
+    source_experiment: rr-cross-family-raw-refusal
+    arms:
+      baseline: analysis/staged_inputs/llama/split_rows_private.jsonl  # n=2956, baseline_text
+    placebo: none_on_disk_out_of_scope
+    yields: [llama_wide_baseline]
+
+  - id: MC
+    family: mistral7b-v03
+    source_experiment: rr2-mistral-adjudicated-refusal-confirm
+    mode: cite_committed_only    # transcribed from final_report.json, not re-graded
+    values:
+      wide_baseline_confab: 0.2805   # 368/1312
+      placebo_delta_points: 7.39

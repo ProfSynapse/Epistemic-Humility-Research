@@ -43,6 +43,29 @@
         "repo": "",
         "revision": ""
       },
+      "created_at": "2026-07-14T09:57:55Z",
+      "falsifier": "Qwen wide baseline confab abstention >= 0.20, or qwen placebo delta >= 5 points: undosed and perturbation-recruited hedging are program-wide wide-instrument properties; every narrow-detector placebo verdict gets an instrument-limited flag in paper reporting (exploratory re-analysis language only, locked verdicts unchanged) and no successor may register a flat small-tolerance placebo gate.",
+      "inputs": [],
+      "instrument": {
+        "configs": [],
+        "modules": [],
+        "pins": {}
+      },
+      "kg": [],
+      "prediction": "The RR2 placebo failure is substantially a family property of mistral's hedge-prone baseline, not a universal wide-instrument artifact: qwen wide baseline confab abstention < 0.15, qwen placebo delta at the promoted heldout point < 3 points, llama wide baseline confab abstention < 0.15.",
+      "question": "What is each model family's undosed baseline abstention rate and matched-magnitude random-perturbation abstention recruitment under the wide two-instrument stack (detector v2 + blinded adjudication), and what placebo criterion should successor direction-specificity experiments register against it?",
+      "registered": true,
+      "slug": "abstention-wide-instrument-calibration",
+      "status": "draft",
+      "title": "Wide-instrument abstention baseline and placebo calibration (CPU re-read)",
+      "type": "eval",
+      "verdict": ""
+    },
+    {
+      "checkpoint": {
+        "repo": "",
+        "revision": ""
+      },
       "created_at": "2026-07-08T17:40:52Z",
       "falsifier": "",
       "inputs": [],
