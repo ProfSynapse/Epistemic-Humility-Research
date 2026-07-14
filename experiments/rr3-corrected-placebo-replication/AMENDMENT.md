@@ -440,5 +440,98 @@ reading. Either way the sign map gains its third family point.
 
 ## Outcome
 
-Filled at resolve. Record the verdict, the gate results, and the one-sentence
-summary that also goes into `verdict:` in the manifest.
+**Verdict: FALSIFIED (2026-07-14).** Under the corrected effect-ratio placebo
+criterion, the doubt-gated caution write on mistral at its atlas site (hs16,
+dose 12 sigma_c) is NOT direction-specific. This is the corrected-criterion
+re-adjudication of RR2's claim (Q3 framing, PI-resolved): RR2's FALSIFIED
+verdict stands, and it now stands for a stronger reason than the flat
+tolerance that fired there.
+
+### Gate results (straight from `analysis-committed/core_final_report.json`)
+
+- RG1 direction specificity: **FAIL**. Gated confab lift over baseline +40.9
+  points (baseline 375/1312 = 0.286, gated 911/1312 = 0.694, adjudicated-final
+  rates). Fresh pre-registered random-direction lifts at the same layer, dose,
+  and population: seed 30260714 +13.3, seed 30260715 -7.4, seed 30260716
+  +21.8 points. Max-over-K denominator 0.218; effect ratio 0.409/0.218 =
+  **1.87 < 3.0 floor**.
+- RG2 benefit: PASS. Fired-confab adjudicated refusal 911/1303 = 0.699
+  (Wilson LCB 0.674 > 0.50), well-formed 0.987. Reproduces RR2 exactly.
+- RG3 cost: PASS. Known-correct adjudicated false refusal 2/382 = 0.0052
+  (Wilson UCB 0.019 < 0.10).
+- RG0 byte-repro: PASS (baseline 1694/1694, gated 1303/1303 byte-identical to
+  RR2; `analysis-committed/rg0_rr2_repro_report.json`), so the only new core
+  inputs are the fresh random seeds and the fresh blinded adjudication.
+- CG1: PASS on all 21 shards at attempt 1, per-shard and pooled
+  (pooled clear-positive 849/1086 = 0.782, floor 0.60; clear-negative minimum
+  0.955). No voided cells. 14485/14485 scored rows applied.
+
+### What the falsification means
+
+The gated write's +40.9-point effect is real, reproducible, and cheap on the
+cost side, but it is not direction-specific at the registered 3x standard:
+one of three matched-magnitude random directions recruited more than half the
+gated effect (+21.8 points). Random-direction response on mistral at 12
+sigma_c is enormously seed-variable (-7.4 to +21.8 points across three
+seeds). RR2's single-seed placebo (+7.39) was one draw from that wide
+distribution, and the calibration's family-signed placebo map should be read
+with per-seed variance in mind. Red-team certification (adversarial review,
+all six registered attack surfaces): the directions are genuinely random
+(|cos| to c_hat <= 0.015), magnitude-matched at the mechanism level
+(erase_write setpoint identical to gated within 0.004), populations
+identical, arithmetic exact, and the FAIL is robust to the rate rule
+(detector-only ratio 1.91) and even to a mean denominator (2.89). Not an
+artifact.
+
+### Rider (descriptive, no gate): family x placebo-sign map third point
+
+- Llama (hs20, one fresh seed per rung, both populations dosed): confab lift
+  is null through 16 sigma_c (-3.1 to +0.9 points, all inside the +/-8
+  envelope) with a single +8.5-point excursion at the top rung (20 sigma_c,
+  marginally outside). At the matched-magnitude reference dose (12 sigma_c)
+  the lift is +0.1 points: **null**. Known-correct false refusal grows with
+  dose (0.3% at 2x to 6.0% at 20x).
+- Mistral (hs16, one fresh seed per rung): lifts -3.8 to +4.2 across the
+  ladder, all inside the envelope, no monotone dose-response. Together with
+  the core cell's three-seed spread at dose 12, this confirms that
+  single-seed placebo readings on mistral are unstable draws, not stable
+  family constants.
+
+### Predictions scoreboard adjudication (calls registered pre-launch)
+
+- Llama placebo sign: **PI right** (NULL at matched magnitude);
+  orchestrator's weak-recruitment monotone-in-baseline reading is not
+  supported. Per the pre-stated interpretation rule, the null implies placebo
+  response is not a smooth function of baseline hedging rate; family
+  idiosyncrasy wins.
+- Mistral RG1: **both predictors wrong** (both called PASS; it failed).
+- Fresh-seed envelope: **PI wrong** (called inside for all; two of three
+  seeds landed outside on the recruitment side). Orchestrator directionally
+  right (at least one outside on the recruitment side) but wrong on the
+  bounded magnitude clause (called below ~14 points; the max was +21.8, which
+  drove the gate failure).
+
+### Cross-experiment implication (navigation note, not a claim)
+
+The certified family-signed placebo readings that motivated
+`placebo-signflip-question-type-analysis` (qwen -5.13, mistral +7.39) are
+single-seed draws. RR3 shows mistral's draw distribution at matched magnitude
+spans at least -7.4 to +21.8. Any interpretation of cross-family placebo SIGN
+must now account for within-family seed variance; that experiment's
+adjudication should read this Outcome first.
+
+### Reproducibility scope
+
+Row-level runlogs, graded files, and the applied-adjudication file are
+gitignored by containment design. In-repo anchors are the RG0 byte-repro
+report, the committed pool and graded-file sha256 manifests (hash-committed
+before unblinding, enforced in code), and the aggregate reports. Full
+re-derivation requires local artifacts plus GPU regeneration and a fresh
+blinded adjudication pass.
+
+One-sentence verdict (mirrors `experiment.yaml`): FALSIFIED under the
+corrected effect-ratio placebo criterion: the mistral gated caution write is
+not direction-specific (effect ratio 1.87 < 3.0, max fresh-seed random lift
++21.8 points) while benefit and cost reproduce RR2 (0.699 fired refusal,
+0.005 false refusal), and the llama rider lands the family sign map's third
+point at null.

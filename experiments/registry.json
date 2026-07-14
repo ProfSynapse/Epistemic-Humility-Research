@@ -2693,10 +2693,10 @@
       "question": "Does the doubt-gated caution write actuate direction-specific, idiom-inclusive refusal on mistral at its atlas site (hs16, dose 12 sigma_c) under the wide instrument when direction specificity is judged by a corrected effect-ratio placebo criterion registered against the calibration wide-instrument baselines, and what is the placebo sign and dose-response across the mistral and (never-measured) llama families?",
       "registered": true,
       "slug": "rr3-corrected-placebo-replication",
-      "status": "signed",
+      "status": "falsified",
       "title": "RR3: mistral gated-actuation confirm under corrected placebo + placebo-sign-map rider",
       "type": "steer-cell",
-      "verdict": ""
+      "verdict": "FALSIFIED under the corrected effect-ratio placebo criterion: the mistral gated caution write is not direction-specific (effect ratio 1.87 < 3.0, max fresh-seed random lift +21.8 points) while benefit and cost reproduce RR2 (0.699 fired refusal, 0.005 false refusal), and the llama rider lands the family sign map's third point at null."
     },
     {
       "checkpoint": {

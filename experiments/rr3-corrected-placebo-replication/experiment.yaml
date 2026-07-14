@@ -2,7 +2,7 @@ slug: rr3-corrected-placebo-replication
 title: 'RR3: mistral gated-actuation confirm under corrected placebo + placebo-sign-map
   rider'
 type: steer-cell
-status: signed
+status: falsified
 registered: true
 created_at: '2026-07-14T13:07:09Z'
 question: Does the doubt-gated caution write actuate direction-specific, idiom-inclusive
@@ -74,13 +74,15 @@ instrument:
     old_sha256: none-new-module
     new_sha256: 79287ca067d6388e19edc57d44c5d02e52ccc5af7ed1e5148873bc429b94fa14
     date: '2026-07-14'
-    reason: >-
-      Build gap closed post-sign, pre-adjudication: gates.yaml RG0 registers
-      deterministic_repro_of_rr2_baseline_and_gated_text but the harness had
-      no implementation. This read-only module compares RR3 core baseline and
-      gated text to RR2's runlogs by row_key, byte-for-byte, hard stop on
-      mismatch. Executed before any adjudication dispatch: PASS, 1694/1694
-      baseline and 1303/1303 gated identical, zero mismatches.
+    reason: 'Build gap closed post-sign, pre-adjudication: gates.yaml RG0 registers
+      deterministic_repro_of_rr2_baseline_and_gated_text but the harness had no implementation.
+      This read-only module compares RR3 core baseline and gated text to RR2''s runlogs
+      by row_key, byte-for-byte, hard stop on mismatch. Executed before any adjudication
+      dispatch: PASS, 1694/1694 baseline and 1303/1303 gated identical, zero mismatches.'
 inputs: []
-verdict: ''
+verdict: 'FALSIFIED under the corrected effect-ratio placebo criterion: the mistral
+  gated caution write is not direction-specific (effect ratio 1.87 < 3.0, max fresh-seed
+  random lift +21.8 points) while benefit and cost reproduce RR2 (0.699 fired refusal,
+  0.005 false refusal), and the llama rider lands the family sign map''s third point
+  at null.'
 kg: []
