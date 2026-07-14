@@ -1,0 +1,171 @@
+# Cell config for placebo-seed-distribution-census.
+#
+# Purpose: measure, per family, the DISTRIBUTION of matched-magnitude
+# random-direction wide-instrument abstention deltas across K fresh seeds, so
+# future placebo comparisons register against a measured family null
+# distribution instead of a single-seed point. Motivated by RR3
+# (rr3-corrected-placebo-replication), which showed mistral's matched-magnitude
+# lift spans -7.4 .. +21.8 across three seeds (RR3 Outcome lines 457-460), and
+# the paper-5 section 4.9 / 6.5 max-over-K rule. NO promotion gate: this is a
+# measurement census like abstention-wide-instrument-calibration.
+#
+# All sign-time decision knobs were resolved 2026-07-14 (PI + lead); the two
+# remaining TO-DERIVE / TO-PIN items (llama setpoint_dose_abs, llama
+# directions_dir, synaptic_tuner_pin) are BUILD-time provenance reconstructions
+# gated by SC0/SC1, not open design knobs.
+
+analysis_kind: steer_generation_plus_cpu_grade   # GPU generation of K dosed passes per family + CPU blinded grade
+posture:
+  tier: exploratory_instrument_calibration
+  pooling: >-
+    reported separately; never pooled with the locked Phase 1 headline matrix,
+    nor with rr-cross-family-raw-refusal, rr2-mistral-adjudicated-refusal-confirm,
+    rr3-corrected-placebo-replication, abstention-wide-instrument-calibration, or
+    placebo-signflip-question-type-analysis.
+  cannot_alter_locked_verdicts: true
+
+# ===========================================================================
+# Families and fixed matched-magnitude operating points (read from governed docs)
+# ===========================================================================
+families:
+  qwen35_4b:
+    id: qwen35-4b
+    operating_point: promoted_heldout
+    layer_hs_index: 20
+    setpoint_dose_abs: 12.608187917799976   # signflip cell.yaml line 70; readback precedent 12.625 vs 12.608 (signflip AMENDMENT 236-240)
+    dose_multiplier_sigma_c: null             # confirmed at sign 2026-07-14: no sigma_c multiplier asserted; census matches the ABSOLUTE setpoint 12.608
+    paired_confab_pool: 1286                  # calibration QH paired n (AMENDMENT line 173)
+    baseline_runlog: qwen35-4b-midband-heldout/analysis/runlog/baseline.jsonl   # reuse byte-identical; RG0-style repro on S rows
+    directions_dir: qwen35-4b-midband-doubt-snap/analysis-committed/directions/hs20/   # random_direction basis + c_hat setpoint (frozen)
+    historical_single_seed_delta_pts: -5.13   # suppression (calibration AMENDMENT 173, 176)
+    committed_sign: negative
+  mistral7b_v03:
+    id: mistral7b-v03
+    operating_point: rr2_atlas
+    layer_hs_index: 16                        # decoder block 15
+    setpoint_dose_abs: 3.6653166050691756     # RR3 cell.yaml line 60/81; 12 x sigma_c(hs16)=0.30544305
+    dose_multiplier_sigma_c: 12
+    paired_confab_pool: 1312                  # RR2/MC paired n (calibration AMENDMENT 172)
+    baseline_runlog: rr2-mistral-adjudicated-refusal-confirm/analysis/runlog/heldout__baseline.jsonl
+    directions_dir: rr2-mistral-adjudicated-refusal-confirm/directions/   # hs16 random_direction + c_hat; gitignored, reconstruct via RR2 fit_reuse.py from RR hs16_fit_build_manifest.json if absent (RG0 field-for-field)
+    historical_single_seed_delta_pts: 7.39    # recruitment (calibration AMENDMENT 172; RR2)
+    committed_sign: positive
+    rr3_existing_matched_magnitude_seeds:     # decision knob: count toward K or report as external points (see AMENDMENT "whether RR3's three mistral seeds count")
+      seeds: [30260714, 30260715, 30260716]
+      lifts_full_pool_pts: [13.3, -7.4, 21.8] # RR3 Outcome lines 457-460 (full n=1312 pool, mixed adjudication pool)
+      count_toward_k: false                    # DECIDED at sign 2026-07-14 (PI + lead): new experiment, new seeds; run 15 fresh mistral seeds and report these three beside the distribution as external full-pool points
+  llama32_3b:
+    id: llama32-3b
+    operating_point: matched_magnitude_reference
+    layer_hs_index: 20                        # most potent llama atlas layer per RR (hs20 > hs22 > hs23); RR3 cell.yaml line 153
+    setpoint_dose_abs: TO-DERIVE              # 12 x sigma_c(hs20 llama); NOT numerically in any doc read this session; re-derive byte-identical from RR committed llama hs20 fit manifest at build (RR3 cell.yaml 154-157)
+    dose_multiplier_sigma_c: 12               # RR3 rider matched-magnitude reference rung
+    heldout_confab_pool: 872                  # RR3 cell.yaml line 164
+    baseline_runlog: rr-cross-family-raw-refusal (llama32_3b_instruct cell) baseline   # reuse; RG0-style repro on S rows
+    directions_dir: TO-PIN                    # RR llama hs20 random_direction + c_hat (frozen); reconstruct byte-identical (RG0)
+    historical_single_seed_delta_pts: 0.1     # null at dose 12 (RR3 Outcome lines 491-496)
+    committed_sign: none                      # NULL / negative-control family; no sign to defend
+
+# ===========================================================================
+# Census sampling knobs
+# ===========================================================================
+census:
+  k_seeds_per_family: 15                      # confirmed at sign 2026-07-14; 12/15 = 0.80 sign-fraction with Wilson LCB > 0.50 (see AMENDMENT K justification)
+  seed_blocks:                                # confirmed at sign 2026-07-14; distinct from RR2 and RR3 (30260714-16)
+    qwen35_4b:    [41000001, 41000002, 41000003, 41000004, 41000005, 41000006, 41000007, 41000008, 41000009, 41000010, 41000011, 41000012, 41000013, 41000014, 41000015]
+    mistral7b_v03: [42000001, 42000002, 42000003, 42000004, 42000005, 42000006, 42000007, 42000008, 42000009, 42000010, 42000011, 42000012, 42000013, 42000014, 42000015]  # all 15 run fresh (RR3 seeds not counted)
+    llama32_3b:   [43000001, 43000002, 43000003, 43000004, 43000005, 43000006, 43000007, 43000008, 43000009, 43000010, 43000011, 43000012, 43000013, 43000014, 43000015]
+  subsample:
+    rows_per_family: 300                      # confirmed at sign 2026-07-14; fixed S, SAME rows across the shared baseline and all K dosed seeds
+    permutation_seed: 40260714                # drawn BEFORE any generation or grading; opaque-id list committed at SC0
+    population: confab                        # unanswerable stratum, matching where every certified placebo sign was measured
+    llama_cap_note: min(300, 872) = 300
+  generation_scope: subsample_only            # confirmed at sign 2026-07-14: generate the K dosed passes over the fixed S rows only; baseline reused from disk
+
+# ===========================================================================
+# Matched-magnitude write (per family) and wide instrument
+# ===========================================================================
+write:
+  law: erase_write                            # RR3 erase-write setpoint-identity law (RR3 Outcome 482-487)
+  position: anchor_onward
+  direction: random_direction                 # frozen per seed; matched to the family setpoint_dose_abs
+  setpoint: per_family setpoint_dose_abs
+  readback_tolerance_abs: 0.01                # SC1: |readback_measured - target| <= 0.01
+  randomness_bar_cos: 0.015                   # SC1: |cos(r_hat, c_hat)| <= 0.015 AND |cos(r_hat, u_d)| <= 0.015 (RR3 red-team bar)
+  generation:
+    do_sample: false                          # greedy; deterministic
+    min_new_tokens: 1
+    max_new_tokens: 200
+    eos_enabled: true
+    enable_thinking: false
+
+wide_instrument:
+  detector_v2:
+    module: detector_v2.py
+    config_file: detector_v2_patterns.yaml
+    byte_identical_to_calibration_pins: true  # calibration pins == RR2 pins; SC0 hash check
+    gates: false
+  adjudication:
+    lane: blinded_context_free                # .skills/experiment-runner/reference/abstention-grading.md
+    rubric_source: AMENDMENT.md "Behavioral readout" (verbatim from RR2 / calibration / RR3)
+    grader: context-free-agent                # rubric + bare texts + output format only; no experiment context; no pattern matcher (PI directive)
+    sharding_allowed: true
+    pool_contents: shared_baseline_S_rows + K x S dosed rows (all families in one lane or per-family; labels stripped: arm, dose, seed, role, source)
+    pool_shuffle_seed: 40260714
+    decoys:
+      clear_negative:
+        drawn_from: HELD-BACK committed-answer detector-v2-non-refused known-correct rows that never enter any scored rate   # successor fix (a); RR3 cell.yaml 191-196
+      clear_positive:
+        drawn_from: detector-v2-refused rows
+        per_shard_count_floor: 25             # successor fix (b); RR3 cell.yaml 197-201
+        pooled_floor: 0.60
+      excluded_from_scored_rates: true        # SC2
+    unblinding_order_guarantee: >-
+      pool sha256 + opaque-id list committed BEFORE grading; graded-file sha256
+      committed BEFORE the opaque-id -> row_key mapping is read; apply tool
+      refuses to join otherwise (enforced in code)
+    final_rate_rule: detector_v2_refused OR adjudicated_abstention, per row
+  baseline_grade_source: fresh_in_census_pool  # confirmed at sign 2026-07-14: baseline TEXT reused byte-identical from disk (RG0 repro), GRADE produced fresh inside the census pool so baseline and dosed share one lane
+
+# ===========================================================================
+# Readouts (per family)
+# ===========================================================================
+readouts:
+  per_seed_delta_pts: dosed refused_final minus baseline refused_final over the fixed S rows (paired)
+  per_seed_paired_n: true
+  per_seed_wilson_ci: 0.05
+  distribution_summary:
+    - median_signed_delta
+    - interquartile_range
+    - full_span_min_max
+    - fraction_sharing_committed_sign_f_s      # with bootstrap 95% CI
+    - fraction_positive
+    - fraction_negative
+  historical_value_percentile: where the single-seed historical delta falls in the census distribution (qwen -5.13, mistral +7.39, llama +0.1)
+  criterion_verdict: SURVIVES / RETIRED / INDETERMINATE per family (see gates.yaml sc_criterion)
+
+# ===========================================================================
+# Execution, containment, outputs
+# ===========================================================================
+execution:
+  lanes:
+    - local_3090        # FREE; lead-owned launch only
+    - modal             # PAID; needs fresh user approval (not the default)
+  model_driving: direct InterventionHook/GenerationInterventionController/RunLog (RR2/RR3 precedent, not the mechinterp-steer recipe path)
+  synaptic_tuner_pin: TO-PIN-at-harness-build   # same pin family RR/RR2/RR3 used; re-verify at launch
+  smokes: [sequential_vs_batch_parity, real_steer_plus_readback, runlog_persistence_schema]
+
+containment:
+  committed_row_text: forbidden
+  committed_aliases: forbidden
+  committed_answer_text: forbidden
+  committed_token_ids: forbidden
+  committed: ID-only manifests (row_key, role, split, source, category_canon, opaque-id list) + aggregates + sha256 hashes only
+  gitignored: adjudication pools, opaque-id -> row_key mappings, directions/, per-row grades, analysis/
+
+outputs:
+  local_private_dir: experiments/placebo-seed-distribution-census/analysis/            # gitignored
+  committed_public_dir: experiments/placebo-seed-distribution-census/analysis-committed/
+  deliverable: analysis-committed/census_report.json    # aggregates only, no text
+
+harness_status: not_written_draft_stage

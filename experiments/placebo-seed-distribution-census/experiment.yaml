@@ -1,0 +1,37 @@
+slug: placebo-seed-distribution-census
+title: 'Placebo seed-distribution census: multi-seed random-direction null at matched
+  magnitude'
+type: steer-cell
+status: signed
+registered: true
+created_at: '2026-07-14T23:00:14Z'
+question: What is the per-family DISTRIBUTION of matched-magnitude random-direction
+  wide-instrument abstention deltas across K=15 fresh seeds (qwen hs20 at dose_abs
+  12.608, mistral hs16 at 3.665, llama hs20 at 12 sigma_c), and does each family's
+  single-seed placebo-sign reading (qwen -5.13 suppression, mistral +7.39 recruitment,
+  llama +0.1 null) survive as a distributional property or retire to seed noise?
+prediction: Qwen suppression SURVIVES (fraction of seeds negative >= 0.80, median
+  <= -3.0 pts); mistral recruitment RETIRED (fraction positive < 0.80, distribution
+  straddles zero, per RR3's -7.4..+21.8 three-seed spread); llama centers near zero
+  with no dominant sign (null control holds).
+falsifier: 'Pre-stated numeric criterion, fixed before the run: a family sign SURVIVES
+  iff f_s >= 0.80 AND bootstrap 95% LCB(f_s) > 0.50 AND |median| >= 3.0 pts in the
+  committed direction; RETIRED iff f_s <= 0.60 OR the census IQR spans zero; INDETERMINATE
+  otherwise. The prediction is falsified per family by landing in a different bucket
+  than called (e.g. mistral clearing f_pos >= 0.80 with median >= +3.0 falsifies the
+  seed-noise call; qwen failing f_neg >= 0.80 or IQR spanning zero retires the suppression
+  reading). No rescoring lane; goalposts fixed.'
+checkpoint:
+  repo: ''
+  revision: ''
+instrument:
+  configs:
+  - cell.yaml
+  - gates.yaml
+  modules: []
+  pins:
+    cell.yaml: 593e08d3d6bb5990876f902505839d6d8452019b8c41c012c85b70918ca5c12c
+    gates.yaml: 2d0c069ef28b4c727bcb76b7ddefec3fb92a51cf96c9235edbb5ffb67e98b96a
+inputs: []
+verdict: ''
+kg: []
