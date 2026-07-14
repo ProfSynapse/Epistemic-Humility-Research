@@ -1,0 +1,800 @@
+{
+  "LB": {
+    "cell": "LB",
+    "confab": {
+      "n": 1453,
+      "narrow": {
+        "n": 1453,
+        "rate": 0.035788024776324846,
+        "successes": 52,
+        "wilson_ci_95": [
+          0.02739498856083044,
+          0.04662916703122091
+        ]
+      },
+      "undercount": 0.12869924294562973,
+      "wide": {
+        "n": 1453,
+        "n_uncovered": 0,
+        "rate": 0.16448726772195457,
+        "successes": 239,
+        "wilson_ci_95": [
+          0.14631502353667528,
+          0.18442889914846186
+        ]
+      }
+    },
+    "family": "llama32-3b",
+    "known_correct_answered": {
+      "n": 556,
+      "narrow": {
+        "n": 556,
+        "rate": 0.0,
+        "successes": 0,
+        "wilson_ci_95": [
+          0.0,
+          0.006861690502139942
+        ]
+      },
+      "undercount": 0.0,
+      "wide": {
+        "n": 85,
+        "n_uncovered": 471,
+        "rate": 0.0,
+        "successes": 0,
+        "wilson_ci_95": [
+          0.0,
+          0.04323948381405149
+        ]
+      }
+    },
+    "placebo": "none_on_disk_out_of_scope",
+    "unknown_refused_excluded_fyi": {
+      "n": 947,
+      "narrow": {
+        "n": 947,
+        "rate": 1.0,
+        "successes": 947,
+        "wilson_ci_95": [
+          0.9959599376057301,
+          0.9999999999999999
+        ]
+      },
+      "note": "already refused at undosed baseline by RR's own role-assignment criterion; not one of the two tracked populations, excluded from llama_wide_baseline, reported for transparency only",
+      "undercount": 0.0,
+      "wide": {
+        "n": 947,
+        "n_uncovered": 0,
+        "rate": 1.0,
+        "successes": 947,
+        "wilson_ci_95": [
+          0.9959599376057301,
+          0.9999999999999999
+        ]
+      }
+    },
+    "voided": false
+  },
+  "MC": {
+    "family": "mistral7b-v03",
+    "placebo_delta_points": 7.39,
+    "provenance": "experiments/rr2-mistral-adjudicated-refusal-confirm/analysis-committed/final_report.json (cite_committed_only, not re-graded)",
+    "source_experiment": "rr2-mistral-adjudicated-refusal-confirm",
+    "wide_baseline_confab": 0.2805
+  },
+  "QH": {
+    "cell": "QH",
+    "family": "qwen35-4b",
+    "populations": {
+      "confab": {
+        "baseline_unpaired_gate_not_fired": {
+          "n": 46,
+          "narrow": {
+            "n": 46,
+            "rate": 0.0,
+            "successes": 0,
+            "wilson_ci_95": [
+              0.0,
+              0.07707356308558039
+            ]
+          },
+          "note": "gate did not fire on these baseline rows (no row_key in random_direction); reported separately, never inside the placebo delta",
+          "wide": {
+            "n": 46,
+            "n_uncovered": 0,
+            "rate": 0.0,
+            "successes": 0,
+            "wilson_ci_95": [
+              0.0,
+              0.07707356308558039
+            ]
+          }
+        },
+        "placebo": {
+          "baseline_paired_narrow": {
+            "n": 1286,
+            "rate": 0.04510108864696734,
+            "successes": 58,
+            "wilson_ci_95": [
+              0.03504977795650928,
+              0.057861996588453424
+            ]
+          },
+          "baseline_paired_wide": {
+            "n": 1286,
+            "n_uncovered": 0,
+            "rate": 0.10808709175738725,
+            "successes": 139,
+            "wilson_ci_95": [
+              0.09226967612268153,
+              0.1262389296391325
+            ]
+          },
+          "delta_narrow_points": -2.8771384136858473,
+          "delta_wide_points": -5.132192846034214,
+          "paired_n": 1286,
+          "random_direction_narrow": {
+            "n": 1286,
+            "rate": 0.016329704510108865,
+            "successes": 21,
+            "wilson_ci_95": [
+              0.010705163062723398,
+              0.024835219444912154
+            ]
+          },
+          "random_direction_wide": {
+            "n": 1286,
+            "n_uncovered": 0,
+            "rate": 0.056765163297045104,
+            "successes": 73,
+            "wilson_ci_95": [
+              0.04538852462010422,
+              0.07078192237242356
+            ]
+          }
+        },
+        "wide_baseline": {
+          "n": {
+            "n": 1332,
+            "n_uncovered": 0,
+            "rate": 0.10435435435435435,
+            "successes": 139,
+            "wilson_ci_95": [
+              0.08905833097571288,
+              0.12192588197835204
+            ]
+          },
+          "narrow": {
+            "n": 1332,
+            "rate": 0.04354354354354354,
+            "successes": 58,
+            "wilson_ci_95": [
+              0.0338340056453569,
+              0.055878331121382165
+            ]
+          },
+          "undercount": 0.06081081081081081
+        }
+      },
+      "known_correct_answered": {
+        "baseline_unpaired_gate_not_fired": {
+          "n": 343,
+          "narrow": {
+            "n": 343,
+            "rate": 0.0,
+            "successes": 0,
+            "wilson_ci_95": [
+              0.0,
+              0.011075546832710203
+            ]
+          },
+          "note": "gate did not fire on these baseline rows (no row_key in random_direction); reported separately, never inside the placebo delta",
+          "wide": {
+            "n": 73,
+            "n_uncovered": 270,
+            "rate": 0.0,
+            "successes": 0,
+            "wilson_ci_95": [
+              0.0,
+              0.0499920079557311
+            ]
+          }
+        },
+        "placebo": {
+          "baseline_paired_narrow": {
+            "n": 17,
+            "rate": 0.0,
+            "successes": 0,
+            "wilson_ci_95": [
+              0.0,
+              0.1843181350088518
+            ]
+          },
+          "baseline_paired_wide": {
+            "n": 4,
+            "n_uncovered": 13,
+            "rate": 0.0,
+            "successes": 0,
+            "wilson_ci_95": [
+              0.0,
+              0.4898908364545973
+            ]
+          },
+          "delta_narrow_points": 0.0,
+          "delta_wide_points": 0.0,
+          "paired_n": 17,
+          "random_direction_narrow": {
+            "n": 17,
+            "rate": 0.0,
+            "successes": 0,
+            "wilson_ci_95": [
+              0.0,
+              0.1843181350088518
+            ]
+          },
+          "random_direction_wide": {
+            "n": 7,
+            "n_uncovered": 10,
+            "rate": 0.0,
+            "successes": 0,
+            "wilson_ci_95": [
+              5.551115123125783e-17,
+              0.35433043506668743
+            ]
+          }
+        },
+        "wide_baseline": {
+          "n": {
+            "n": 77,
+            "n_uncovered": 283,
+            "rate": 0.0,
+            "successes": 0,
+            "wilson_ci_95": [
+              0.0,
+              0.04751842528243408
+            ]
+          },
+          "narrow": {
+            "n": 360,
+            "rate": 0.0,
+            "successes": 0,
+            "wilson_ci_95": [
+              0.0,
+              0.010558056888693507
+            ]
+          },
+          "undercount": 0.0
+        }
+      }
+    },
+    "voided": false
+  },
+  "QL": {
+    "cell": "QL",
+    "dose_response": [
+      {
+        "delta_narrow_points_vs_reference": -2.509582863585118,
+        "delta_wide_points_vs_reference": "pending_adjudication",
+        "dose_multiplier": 2,
+        "hs_index": 20,
+        "n": 250,
+        "narrow": {
+          "n": 250,
+          "rate": 0.02,
+          "successes": 5,
+          "wilson_ci_95": [
+            0.008572324384058198,
+            0.045955643131568594
+          ]
+        },
+        "undercount": "pending_adjudication",
+        "wide": "pending_adjudication"
+      },
+      {
+        "delta_narrow_points_vs_reference": -2.509582863585118,
+        "delta_wide_points_vs_reference": "pending_adjudication",
+        "dose_multiplier": 4,
+        "hs_index": 20,
+        "n": 250,
+        "narrow": {
+          "n": 250,
+          "rate": 0.02,
+          "successes": 5,
+          "wilson_ci_95": [
+            0.008572324384058198,
+            0.045955643131568594
+          ]
+        },
+        "undercount": "pending_adjudication",
+        "wide": "pending_adjudication"
+      },
+      {
+        "delta_narrow_points_vs_reference": -3.3095828635851183,
+        "delta_wide_points_vs_reference": "pending_adjudication",
+        "dose_multiplier": 6,
+        "hs_index": 20,
+        "n": 250,
+        "narrow": {
+          "n": 250,
+          "rate": 0.012,
+          "successes": 3,
+          "wilson_ci_95": [
+            0.0040893198805342975,
+            0.0346807804270196
+          ]
+        },
+        "undercount": "pending_adjudication",
+        "wide": "pending_adjudication"
+      },
+      {
+        "delta_narrow_points_vs_reference": -2.909582863585118,
+        "delta_wide_points_vs_reference": "pending_adjudication",
+        "dose_multiplier": 8,
+        "hs_index": 20,
+        "n": 250,
+        "narrow": {
+          "n": 250,
+          "rate": 0.016,
+          "successes": 4,
+          "wilson_ci_95": [
+            0.006239224570471175,
+            0.04040980934111918
+          ]
+        },
+        "undercount": "pending_adjudication",
+        "wide": "pending_adjudication"
+      },
+      {
+        "delta_narrow_points_vs_reference": -2.909582863585118,
+        "delta_wide_points_vs_reference": "pending_adjudication",
+        "dose_multiplier": 12,
+        "hs_index": 20,
+        "n": 250,
+        "narrow": {
+          "n": 250,
+          "rate": 0.016,
+          "successes": 4,
+          "wilson_ci_95": [
+            0.006239224570471175,
+            0.04040980934111918
+          ]
+        },
+        "undercount": "pending_adjudication",
+        "wide": "pending_adjudication"
+      },
+      {
+        "delta_narrow_points_vs_reference": -2.909582863585118,
+        "delta_wide_points_vs_reference": "pending_adjudication",
+        "dose_multiplier": 16,
+        "hs_index": 20,
+        "n": 250,
+        "narrow": {
+          "n": 250,
+          "rate": 0.016,
+          "successes": 4,
+          "wilson_ci_95": [
+            0.006239224570471175,
+            0.04040980934111918
+          ]
+        },
+        "undercount": "pending_adjudication",
+        "wide": "pending_adjudication"
+      },
+      {
+        "delta_narrow_points_vs_reference": -4.509582863585118,
+        "delta_wide_points_vs_reference": "pending_adjudication",
+        "dose_multiplier": 20,
+        "hs_index": 20,
+        "n": 250,
+        "narrow": {
+          "n": 250,
+          "rate": 0.0,
+          "successes": 0,
+          "wilson_ci_95": [
+            8.673617379884035e-19,
+            0.015133299495444574
+          ]
+        },
+        "undercount": "pending_adjudication",
+        "wide": "pending_adjudication"
+      },
+      {
+        "delta_narrow_points_vs_reference": 0.6904171364148816,
+        "delta_wide_points_vs_reference": "pending_adjudication",
+        "dose_multiplier": 2,
+        "hs_index": 23,
+        "n": 250,
+        "narrow": {
+          "n": 250,
+          "rate": 0.052,
+          "successes": 13,
+          "wilson_ci_95": [
+            0.030637655164191247,
+            0.08692178118372709
+          ]
+        },
+        "undercount": "pending_adjudication",
+        "wide": "pending_adjudication"
+      },
+      {
+        "delta_narrow_points_vs_reference": 1.090417136414882,
+        "delta_wide_points_vs_reference": "pending_adjudication",
+        "dose_multiplier": 4,
+        "hs_index": 23,
+        "n": 250,
+        "narrow": {
+          "n": 250,
+          "rate": 0.056,
+          "successes": 14,
+          "wilson_ci_95": [
+            0.03364764921901088,
+            0.0917907207329439
+          ]
+        },
+        "undercount": "pending_adjudication",
+        "wide": "pending_adjudication"
+      },
+      {
+        "delta_narrow_points_vs_reference": -0.5095828635851181,
+        "delta_wide_points_vs_reference": "pending_adjudication",
+        "dose_multiplier": 6,
+        "hs_index": 23,
+        "n": 250,
+        "narrow": {
+          "n": 250,
+          "rate": 0.04,
+          "successes": 10,
+          "wilson_ci_95": [
+            0.021869911954542545,
+            0.07205272358126646
+          ]
+        },
+        "undercount": "pending_adjudication",
+        "wide": "pending_adjudication"
+      },
+      {
+        "delta_narrow_points_vs_reference": -0.5095828635851181,
+        "delta_wide_points_vs_reference": "pending_adjudication",
+        "dose_multiplier": 8,
+        "hs_index": 23,
+        "n": 250,
+        "narrow": {
+          "n": 250,
+          "rate": 0.04,
+          "successes": 10,
+          "wilson_ci_95": [
+            0.021869911954542545,
+            0.07205272358126646
+          ]
+        },
+        "undercount": "pending_adjudication",
+        "wide": "pending_adjudication"
+      },
+      {
+        "delta_narrow_points_vs_reference": -1.309582863585118,
+        "delta_wide_points_vs_reference": "pending_adjudication",
+        "dose_multiplier": 12,
+        "hs_index": 23,
+        "n": 250,
+        "narrow": {
+          "n": 250,
+          "rate": 0.032,
+          "successes": 8,
+          "wilson_ci_95": [
+            0.01630236549364963,
+            0.06186240283408649
+          ]
+        },
+        "undercount": "pending_adjudication",
+        "wide": "pending_adjudication"
+      },
+      {
+        "delta_narrow_points_vs_reference": -1.309582863585118,
+        "delta_wide_points_vs_reference": "pending_adjudication",
+        "dose_multiplier": 16,
+        "hs_index": 23,
+        "n": 250,
+        "narrow": {
+          "n": 250,
+          "rate": 0.032,
+          "successes": 8,
+          "wilson_ci_95": [
+            0.01630236549364963,
+            0.06186240283408649
+          ]
+        },
+        "undercount": "pending_adjudication",
+        "wide": "pending_adjudication"
+      },
+      {
+        "delta_narrow_points_vs_reference": -4.509582863585118,
+        "delta_wide_points_vs_reference": "pending_adjudication",
+        "dose_multiplier": 20,
+        "hs_index": 23,
+        "n": 250,
+        "narrow": {
+          "n": 250,
+          "rate": 0.0,
+          "successes": 0,
+          "wilson_ci_95": [
+            8.673617379884035e-19,
+            0.015133299495444574
+          ]
+        },
+        "undercount": "pending_adjudication",
+        "wide": "pending_adjudication"
+      },
+      {
+        "delta_narrow_points_vs_reference": 0.2904171364148819,
+        "delta_wide_points_vs_reference": "pending_adjudication",
+        "dose_multiplier": 2,
+        "hs_index": 26,
+        "n": 250,
+        "narrow": {
+          "n": 250,
+          "rate": 0.048,
+          "successes": 12,
+          "wilson_ci_95": [
+            0.02766820153069461,
+            0.08201230121318728
+          ]
+        },
+        "undercount": "pending_adjudication",
+        "wide": "pending_adjudication"
+      },
+      {
+        "delta_narrow_points_vs_reference": 0.2904171364148819,
+        "delta_wide_points_vs_reference": "pending_adjudication",
+        "dose_multiplier": 4,
+        "hs_index": 26,
+        "n": 250,
+        "narrow": {
+          "n": 250,
+          "rate": 0.048,
+          "successes": 12,
+          "wilson_ci_95": [
+            0.02766820153069461,
+            0.08201230121318728
+          ]
+        },
+        "undercount": "pending_adjudication",
+        "wide": "pending_adjudication"
+      },
+      {
+        "delta_narrow_points_vs_reference": 1.090417136414882,
+        "delta_wide_points_vs_reference": "pending_adjudication",
+        "dose_multiplier": 6,
+        "hs_index": 26,
+        "n": 250,
+        "narrow": {
+          "n": 250,
+          "rate": 0.056,
+          "successes": 14,
+          "wilson_ci_95": [
+            0.03364764921901088,
+            0.0917907207329439
+          ]
+        },
+        "undercount": "pending_adjudication",
+        "wide": "pending_adjudication"
+      },
+      {
+        "delta_narrow_points_vs_reference": 1.090417136414882,
+        "delta_wide_points_vs_reference": "pending_adjudication",
+        "dose_multiplier": 8,
+        "hs_index": 26,
+        "n": 250,
+        "narrow": {
+          "n": 250,
+          "rate": 0.056,
+          "successes": 14,
+          "wilson_ci_95": [
+            0.03364764921901088,
+            0.0917907207329439
+          ]
+        },
+        "undercount": "pending_adjudication",
+        "wide": "pending_adjudication"
+      },
+      {
+        "delta_narrow_points_vs_reference": -2.109582863585118,
+        "delta_wide_points_vs_reference": "pending_adjudication",
+        "dose_multiplier": 12,
+        "hs_index": 26,
+        "n": 250,
+        "narrow": {
+          "n": 250,
+          "rate": 0.024,
+          "successes": 6,
+          "wilson_ci_95": [
+            0.01104477730613677,
+            0.051362123813526464
+          ]
+        },
+        "undercount": "pending_adjudication",
+        "wide": "pending_adjudication"
+      },
+      {
+        "delta_narrow_points_vs_reference": -0.10958286358511843,
+        "delta_wide_points_vs_reference": "pending_adjudication",
+        "dose_multiplier": 16,
+        "hs_index": 26,
+        "n": 250,
+        "narrow": {
+          "n": 250,
+          "rate": 0.044,
+          "successes": 11,
+          "wilson_ci_95": [
+            0.02474379816749356,
+            0.07705777097235189
+          ]
+        },
+        "undercount": "pending_adjudication",
+        "wide": "pending_adjudication"
+      },
+      {
+        "delta_narrow_points_vs_reference": -0.9095828635851184,
+        "delta_wide_points_vs_reference": "pending_adjudication",
+        "dose_multiplier": 20,
+        "hs_index": 26,
+        "n": 250,
+        "narrow": {
+          "n": 250,
+          "rate": 0.036,
+          "successes": 9,
+          "wilson_ci_95": [
+            0.019053279530003277,
+            0.06699042240176928
+          ]
+        },
+        "undercount": "pending_adjudication",
+        "wide": "pending_adjudication"
+      },
+      {
+        "delta_narrow_points_vs_reference": 0.2904171364148819,
+        "delta_wide_points_vs_reference": "pending_adjudication",
+        "dose_multiplier": 2,
+        "hs_index": 30,
+        "n": 250,
+        "narrow": {
+          "n": 250,
+          "rate": 0.048,
+          "successes": 12,
+          "wilson_ci_95": [
+            0.02766820153069461,
+            0.08201230121318728
+          ]
+        },
+        "undercount": "pending_adjudication",
+        "wide": "pending_adjudication"
+      },
+      {
+        "delta_narrow_points_vs_reference": -1.309582863585118,
+        "delta_wide_points_vs_reference": "pending_adjudication",
+        "dose_multiplier": 4,
+        "hs_index": 30,
+        "n": 250,
+        "narrow": {
+          "n": 250,
+          "rate": 0.032,
+          "successes": 8,
+          "wilson_ci_95": [
+            0.01630236549364963,
+            0.06186240283408649
+          ]
+        },
+        "undercount": "pending_adjudication",
+        "wide": "pending_adjudication"
+      },
+      {
+        "delta_narrow_points_vs_reference": -1.709582863585118,
+        "delta_wide_points_vs_reference": "pending_adjudication",
+        "dose_multiplier": 6,
+        "hs_index": 30,
+        "n": 250,
+        "narrow": {
+          "n": 250,
+          "rate": 0.028,
+          "successes": 7,
+          "wilson_ci_95": [
+            0.013628058600839217,
+            0.05665777612286046
+          ]
+        },
+        "undercount": "pending_adjudication",
+        "wide": "pending_adjudication"
+      },
+      {
+        "delta_narrow_points_vs_reference": -2.509582863585118,
+        "delta_wide_points_vs_reference": "pending_adjudication",
+        "dose_multiplier": 8,
+        "hs_index": 30,
+        "n": 250,
+        "narrow": {
+          "n": 250,
+          "rate": 0.02,
+          "successes": 5,
+          "wilson_ci_95": [
+            0.008572324384058198,
+            0.045955643131568594
+          ]
+        },
+        "undercount": "pending_adjudication",
+        "wide": "pending_adjudication"
+      },
+      {
+        "delta_narrow_points_vs_reference": -2.109582863585118,
+        "delta_wide_points_vs_reference": "pending_adjudication",
+        "dose_multiplier": 12,
+        "hs_index": 30,
+        "n": 250,
+        "narrow": {
+          "n": 250,
+          "rate": 0.024,
+          "successes": 6,
+          "wilson_ci_95": [
+            0.01104477730613677,
+            0.051362123813526464
+          ]
+        },
+        "undercount": "pending_adjudication",
+        "wide": "pending_adjudication"
+      },
+      {
+        "delta_narrow_points_vs_reference": -1.709582863585118,
+        "delta_wide_points_vs_reference": "pending_adjudication",
+        "dose_multiplier": 16,
+        "hs_index": 30,
+        "n": 250,
+        "narrow": {
+          "n": 250,
+          "rate": 0.028,
+          "successes": 7,
+          "wilson_ci_95": [
+            0.013628058600839217,
+            0.05665777612286046
+          ]
+        },
+        "undercount": "pending_adjudication",
+        "wide": "pending_adjudication"
+      },
+      {
+        "delta_narrow_points_vs_reference": -2.909582863585118,
+        "delta_wide_points_vs_reference": "pending_adjudication",
+        "dose_multiplier": 20,
+        "hs_index": 30,
+        "n": 250,
+        "narrow": {
+          "n": 250,
+          "rate": 0.016,
+          "successes": 4,
+          "wilson_ci_95": [
+            0.006239224570471175,
+            0.04040980934111918
+          ]
+        },
+        "undercount": "pending_adjudication",
+        "wide": "pending_adjudication"
+      }
+    ],
+    "family": "qwen35-4b",
+    "reference_baseline_confab": {
+      "n": 887,
+      "narrow": {
+        "n": 887,
+        "rate": 0.04509582863585118,
+        "successes": 40,
+        "wilson_ci_95": [
+          0.03329012047870154,
+          0.060824784020337364
+        ]
+      },
+      "wide": "pending_adjudication"
+    },
+    "voided": true
+  },
+  "instrument": "detector_v2 (narrow) OR blinded adjudication (wide), per row",
+  "voided_cells": [
+    "QL"
+  ]
+}
