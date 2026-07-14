@@ -4,7 +4,7 @@ session_id: 20260708T164625Z-paper-5-j-space-hardening
 title: Paper 5 J-space hardening
 status: active
 created_at: '2026-07-08T16:46:25Z'
-updated_at: '2026-07-13T23:06:42Z'
+updated_at: '2026-07-14T02:49:12Z'
 track: research
 phase: phase1
 question: Which registered follow-up experiments harden the Paper 5 actuation thesis,
@@ -784,6 +784,45 @@ checkpoints:
   decisions: []
   next_steps: []
   signals: {}
+- id: 030-result
+  at: '2026-07-14T02:49:12Z'
+  kind: result
+  title: Held-out ladder promotes shape A; RR2 resolves falsified on certified placebo
+    fire
+  summary: 'qwen35-4b-midband-heldout resolved shape A and merged (PR #287): frozen
+    hs20 point transfers to fresh held-out rows, fired-confab refused 872/1286 = 0.678
+    (Wilson [0.652, 0.703]) vs 0.60 floor, wf 0.977, gated-arm known cost 14/360 =
+    0.039, random no-op, permuted strictly worse; both scoreboard calls correct. Abstention-grading
+    standard institutionalized (PR #286): frozen detector screen + registered blinded
+    adjudication lane, manifest-before-grading and hash-before-unblinding in code,
+    falsifier closes the regress. RR2 (rr2-mistral-adjudicated-refusal-confirm) then
+    ran the full blinded protocol as its reference implementation: context-free agent
+    graded 3582 texts blind (626 TRUE), hash committed pre-unblinding. RG1 PASS 911/1303
+    = 0.699 [0.674, 0.723] wf 0.987 (both pre-registered bands hit; RR detector-width
+    caveat vindicated, the idiom-inclusive refusal is real with pristine cost 2/382).
+    RG2 PASS. RG3 FAIL: baseline confab adjudicated abstention 0.280 vs random_direction
+    0.354, +7.39 points vs the 2-point tolerance; the wide instrument reveals 28%
+    undosed baseline abstention the narrow detector read as ~0. Red-team certified
+    the fire across five surfaces (decisive: 435-decoy audit, 255/255 clear-negative
+    agreement, conservative on positives; 160-row baseline re-read 2/160 disagreements
+    both widening the delta; random-arm excess is genuine well-formed hedge content).
+    Resolved falsified as registered, no rescoring lane; both shape-A scoreboard calls
+    incorrect on the verdict while nearly exact on the benefit level. PR #288 open,
+    merge held for user approval.'
+  evidence: []
+  run_ids: []
+  commands: []
+  decisions:
+  - 'Falsifier fire CERTIFIED, verdict falsified as registered; gated lift +41.9 points
+    (5.7x random) noted as interpretation only, RG3 is a tolerance test not a ratio
+    test, goalposts stand. Forward rule recorded in the Outcome: any successor registers
+    its placebo tolerance (or a pre-stated effect-ratio gate) against the wide-instrument
+    baseline before new data, as a new signed amendment.'
+  next_steps:
+  - 'User merge decision on PR #288; KG-ingest RR2 verdict post-merge; possible successor
+    design note needs user sign-off; HF exhaust backfill (#24) now includes H3/RR/heldout/RR2
+    candidates.'
+  signals: {}
 ---
 # Paper 5 J-space hardening
 
@@ -1170,3 +1209,12 @@ rows before the layer contrast.
 - at: `2026-07-13T23:06:42Z`
 - kind: `checkpoint`
 - summary: RR + H3 both resolved in one arc. RR cross-family raw refusal: mistral leg completed shape F (peak hs16/dose12 refused 0.5793 vs 0.60 floor, Wilson straddles), red-teamed and CERTIFIED-NULL with a binding detector-width caveat (97 hand-verified mistral-idiom abstentions at the peak would clear the floor; llama's F is robust to detector width, mistral's is not); falsifier fired (neither family shape A), resolved falsified, PR #285 open awaiting PI merge approval; both scoreboard calls falsified. PI directive recorded: future abstention acceptance criteria include a registered blinded hand-check adjudication lane; RR2 successor drafted (exp/rr2-mistral-adjudicated-refusal, 2f9da6d3): detector v2 screen + blinded symmetric adjudication lane as primary instrument, fixed operating point hs16/dose12, held-out leg only, sign blocked on #285 merge. H3: termination-rule artifact confirmed (764/769 term-only failures, eos-at-final-position, texts are clean refusals), harness fixed to is_terminated_naturally single source of truth (16/16 tests, parity exact 1056/1480 and 130/185), repinned d722811e, pre-fix logs archived; full K=5 re-run on fixed harness passes ALL gates (G1 pooled 69.5 pct vs 63.5 floor, every seed above; G2/G3/G0 identical to pre-fix run; seed-20260710 exactly 130/185 = triple agreement), verdict REVISED to resolved (headline survives sampling), both scoreboard calls correct on corrected instrument, PR #283 back to ready with revised resolve (bba2cee5). Next: PI merges #285 and #283; RR2 sign (needs PI scoreboard prediction); held-out ladder sign + GPU sequence; skill rule for blinded adjudication lane after RR2 design approval; KG-ingest both verdicts post-merge.
+### 030-result - Held-out ladder promotes shape A; RR2 resolves falsified on certified placebo fire
+
+- at: `2026-07-14T02:49:12Z`
+- kind: `result`
+- summary: qwen35-4b-midband-heldout resolved shape A and merged (PR #287): frozen hs20 point transfers to fresh held-out rows, fired-confab refused 872/1286 = 0.678 (Wilson [0.652, 0.703]) vs 0.60 floor, wf 0.977, gated-arm known cost 14/360 = 0.039, random no-op, permuted strictly worse; both scoreboard calls correct. Abstention-grading standard institutionalized (PR #286): frozen detector screen + registered blinded adjudication lane, manifest-before-grading and hash-before-unblinding in code, falsifier closes the regress. RR2 (rr2-mistral-adjudicated-refusal-confirm) then ran the full blinded protocol as its reference implementation: context-free agent graded 3582 texts blind (626 TRUE), hash committed pre-unblinding. RG1 PASS 911/1303 = 0.699 [0.674, 0.723] wf 0.987 (both pre-registered bands hit; RR detector-width caveat vindicated, the idiom-inclusive refusal is real with pristine cost 2/382). RG2 PASS. RG3 FAIL: baseline confab adjudicated abstention 0.280 vs random_direction 0.354, +7.39 points vs the 2-point tolerance; the wide instrument reveals 28% undosed baseline abstention the narrow detector read as ~0. Red-team certified the fire across five surfaces (decisive: 435-decoy audit, 255/255 clear-negative agreement, conservative on positives; 160-row baseline re-read 2/160 disagreements both widening the delta; random-arm excess is genuine well-formed hedge content). Resolved falsified as registered, no rescoring lane; both shape-A scoreboard calls incorrect on the verdict while nearly exact on the benefit level. PR #288 open, merge held for user approval.
+- decisions:
+  - Falsifier fire CERTIFIED, verdict falsified as registered; gated lift +41.9 points (5.7x random) noted as interpretation only, RG3 is a tolerance test not a ratio test, goalposts stand. Forward rule recorded in the Outcome: any successor registers its placebo tolerance (or a pre-stated effect-ratio gate) against the wide-instrument baseline before new data, as a new signed amendment.
+- next steps:
+  - User merge decision on PR #288; KG-ingest RR2 verdict post-merge; possible successor design note needs user sign-off; HF exhaust backfill (#24) now includes H3/RR/heldout/RR2 candidates.
