@@ -1,0 +1,234 @@
+# rr3-corrected-placebo-replication cell. DRAFT; pinned at sign.
+#
+# Core: a NEW pre-registered test of direction-specific, idiom-inclusive
+# refusal actuation on mistral at its atlas site (hs16, dose 12 sigma_c),
+# under a CORRECTED placebo criterion required by RR2's forward note
+# (experiments/rr2-mistral-adjudicated-refusal-confirm/AMENDMENT.md lines
+# 209-213) and the calibration successor design rule
+# (experiments/abstention-wide-instrument-calibration/AMENDMENT.md lines
+# 267-279). NOT a re-adjudication of RR2's falsified RG3 gate: RR2's verdict
+# stands unchanged; the corrected criterion and its 3x threshold are
+# registered here before this run and constructed from the calibration
+# baselines, not from RR2's observed placebo result.
+#
+# Rider (same amendment, same GPU session, descriptive, NO promotion gate):
+# completes the family x placebo-sign map the calibration opened (qwen
+# suppression -5.13, mistral recruitment +7.39, llama never measured) by
+# running mistral and llama random-direction dose ladders under the wide
+# instrument.
+#
+# Determinism note: gated/baseline mistral generation is greedy
+# (do_sample=false) at a fixed operating point on a fixed pool, so it
+# reproduces RR2 byte-for-byte; that reproduction is an RG0 check, not fresh
+# evidence. Fresh and pre-registered: the wide-instrument READOUT
+# (re-adjudicated blind under corrected decoy sourcing + CG1 floor) and the
+# random_direction arm's fresh seeds. See AMENDMENT.md "Determinism scope"
+# and open questions Q1-Q3.
+
+seed: 20260714
+
+posture:
+  tier: exploratory_tier2_confirmatory
+  pooling: >-
+    reported separately from the locked Phase 1 headline matrix; never pooled
+    with it, nor with rr-cross-family-raw-refusal, rr2-mistral-adjudicated-
+    refusal-confirm, or abstention-wide-instrument-calibration. The rider is
+    descriptive and never pooled with the core primary verdict.
+
+# ===========================================================================
+# CORE CELL: mistral direction-specificity under corrected placebo
+# ===========================================================================
+core_cell:
+  id: mistral_dirspec
+  family:
+    id: mistral7b_instruct_v03
+    model: mistralai/Mistral-7B-Instruct-v0.3
+    revision: c170c708c41dac9275d15a8fff4eca08d52bab71   # RR2 cell.yaml; re-verify at sign against fleet model_matrix.yaml
+    substrate: bf16
+    adapter: none
+    loader: AutoModelForCausalLM.from_pretrained
+    n_decoder_layers: 32
+    atlas_hidden_states: 33
+    heldout_power:                     # re-checked at RG0
+      confab: 1312
+      known_correct_answered: 382
+
+  fixed_operating_point:
+    layer_hs_index: 16                 # atlas/RR hidden-state convention: decoder block = hs_index - 1
+    decoder_block_index: 15
+    dose_multiplier: 12                # x sigma_c
+    dose_abs: 3.665                    # RR2 Outcome value; re-derived from reconstructed sigma_c at RG0
+    rr_reference_manifest: experiments/rr-cross-family-raw-refusal/analysis-committed/mistral/hs16_fit_build_manifest.json
+    fit_reuse_note: >-
+      No fresh FIT. The direction fit (u_d, c_hat, random_direction basis,
+      stats) is reconstructed byte-identical from RR's committed hs16 manifest
+      via ported direction_fit.py, run twice and asserted byte-identical, then
+      cross-checked field-for-field (mu_d, sigma_d, mu_c, sigma_c, tau_frozen,
+      auc_neg_z_d_on_fit) as an RG0 hard stop. Reproduction, not re-fitting; no
+      new operating point can emerge. Identical mechanics to RR2's fit_reuse.
+
+  instrument_write:                    # same doubt-gated caution snap as RR2, unchanged
+    gate:
+      score: neg_z_d
+      fire_rule: "neg_z_d >= tau_frozen"
+      source: experiments/rr-cross-family-raw-refusal/direction_fit.py (ported verbatim)
+    snap:
+      law: erase_write
+      position: anchor_onward
+      direction: c_hat
+      source: experiments/rr-cross-family-raw-refusal/direction_fit.py (ported verbatim)
+    generation:
+      do_sample: false
+      min_new_tokens: 1
+      max_new_tokens: 200
+      eos_enabled: true
+      enable_thinking: false
+
+  arms:
+    - name: baseline
+      description: no hook; every held-out row, both populations, once; RG1 reference; RG0 byte-repro of RR2 baseline
+    - name: gated
+      description: >-
+        real instrument; doubt gate fires per held-out row, fired rows get the
+        c_hat erase-write snap at dose_abs, anchor_onward; non-fired inherit
+        baseline; primary benefit + cost population; RG0 byte-repro of RR2 gated
+    - name: random_direction
+      description: >-
+        same fired rows as gated; c_hat swapped for a frozen random placebo at
+        matched magnitude; K >= 3 FRESH pre-registered seeds distinct from RR2's,
+        one full held-out pass per seed; direction specificity (RG1). See Q2 for
+        how the K seeds enter the RG1 denominator.
+      random_seeds: [30260714, 30260715, 30260716]    # DRAFT >= 3; lead confirms count/values at sign (Q2)
+    - name: dose_knowns_ungated
+      description: >-
+        every held-out known-correct row dosed unconditionally with c_hat at
+        dose_abs, gate off; selectivity-on-knowns characterization only
+        (reported, not gated); H4 metric split: clean false-refusal rate and
+        total damage rate reported SEPARATELY, never conflated
+
+# ===========================================================================
+# RIDER CELLS: family x placebo-sign map (descriptive; NO promotion gate)
+# ===========================================================================
+rider_cells:
+  dose_ladder: [2, 4, 6, 8, 12, 16, 20]     # x sigma_c; RR/ladder grid (lead may register a subset)
+  subsample:
+    rows_per_layer_dose_cell: 250            # calibration QL rule; bounds adjudication cost
+    population: confab
+    seed: 20260714
+    drawn_before_grading: true
+
+  - id: rider_mistral_placebo_ladder
+    family: mistral7b_instruct_v03           # same substrate/site as core
+    layer_hs_index: 16
+    arms:
+      baseline: reuse_core_baseline          # reference
+      random_direction: dose_ladder          # fresh frozen random dir per dose, matched magnitude
+    yields: [mistral_placebo_dose_response, mistral_placebo_sign]
+
+  - id: rider_llama_placebo_ladder
+    family: llama32_3b_instruct
+    model: unsloth/Llama-3.2-3B-Instruct
+    revision: TODO_pin_at_sign_from_RR_cell_and_fleet_model_matrix   # RR/atlas revision
+    substrate: bf16
+    loader: AutoModelForCausalLM.from_pretrained
+    n_decoder_layers: 28
+    atlas_hidden_states: 29
+    layer_hs_index: 20                        # most potent llama atlas layer per RR (hs20 > hs22 > hs23)
+    fit_reuse_note: >-
+      reconstruct RR's frozen llama hs20 direction fit byte-identical and
+      cross-check field-for-field against RR's committed llama fit manifest
+      (RG0 hard stop). No fresh FIT.
+    arms:
+      baseline: full_heldout                  # llama reference (never measured under wide instrument as a dosed arm)
+      random_direction: dose_ladder           # fresh frozen random dir per dose, matched magnitude
+    heldout_power:                            # RR cell / jspace-family-atlas
+      confab: 872
+      known_correct_answered: 334
+    yields: [llama_placebo_dose_response, llama_placebo_sign]
+    note: >-
+      llama has NO viable gated operating point (RR shape F); the random arm is
+      a placebo measurement only and needs no viable gated point. Dose-ladder
+      reference magnitude is a choice (see Q4).
+
+# ===========================================================================
+# WIDE INSTRUMENT (detector v2 screen + blinded adjudication), with the two
+# calibration successor fixes.
+# ===========================================================================
+detector_v2:
+  config_file: detector_v2_patterns.yaml
+  module: detector_v2.py
+  byte_identical_to_calibration_pins: true    # which are byte-identical to RR2 pins; RG0 hash check
+  gates: false
+
+adjudication:
+  rubric_source: AMENDMENT.md "Registered adjudication rubric" (verbatim from RR2 and calibration)
+  grader: context-free-agent          # rubric + bare texts + output format only; no experiment context; no pattern matcher (PI directive)
+  sharding_allowed: true
+  pool_source_arms: [baseline, gated, random_direction, dose_knowns_ungated, rider_mistral_placebo_ladder, rider_llama_placebo_ladder]
+  pool_selection_rule: >-
+    every scored-cell row, both populations, all arms, that detector_v2 marks
+    NON-refused
+  pool_shuffle_seed: 20260714
+  decoys:
+    clear_negative:
+      drawn_from: HELD-BACK pool of committed-answer, detector-v2-non-refused
+        known-correct rows that NEVER enter any scored rate
+      purpose: over-credit calibration; successor fix (a) so scored cost coverage
+        is not cannibalized (calibration AMENDMENT lines 247-254)
+    clear_positive:
+      drawn_from: detector-v2-refused rows (unambiguous abstentions already credited)
+      per_shard_count_floor: 25         # DRAFT; successor fix (b), lead confirms (>= 25 recommended)
+      purpose: under-credit calibration; larger draw + pooled floor removes the
+        9/14 coarse-granularity failure mode (calibration AMENDMENT lines 223-231, 276-279)
+    note: decoys never part of any scored rate; excluded at RG0
+  unblinding_order_guarantee: >-
+    graded-file sha256 recorded in a committed manifest BEFORE the opaque-id ->
+    row_key mapping is read; apply tool refuses to join otherwise
+  final_rate_rule: detector_v2_refused OR adjudicated_abstention, per row, both populations
+
+# ===========================================================================
+# Population, containment, execution
+# ===========================================================================
+population:
+  reuse_from:
+    mistral: experiments/rr-cross-family-raw-refusal (mistral7b_instruct_v03 cell), verbatim
+    llama: experiments/rr-cross-family-raw-refusal (llama32_3b_instruct cell), verbatim
+  roles:
+    known_correct_answered: TriviaQA + PopQA, kept only if undosed baseline well-formed and correct
+    confab: KUQ, undosed baseline confabulates
+    unknown_refused: KUQ, undosed baseline refuses (fit_only; used only by fit reconstruction)
+  anchors:
+    reuse_from: experiments/jspace-family-atlas full-depth captures (final-prompt-token anchor)
+    candidate_layers: {mistral: [16], llama: [20]}
+  containment:
+    committed_row_text: forbidden
+    committed_aliases: forbidden
+    committed_answer_text: forbidden
+    committed: ID-only manifests (row_key, role, split, source, category_canon) + aggregates + hashes + opaque ids only
+    gitignored: adjudication pools, opaque-id->row_key mappings, directions/, analysis/
+
+readouts:
+  refused_v1: RR locked 3-phrase canonical detector rate (reported for continuity)
+  refused_v2: detector-v2 rate (reported, does not gate)
+  refused_final: detector_v2_refused OR adjudicated_abstention (PRIMARY)
+  well_formed: well-formed JSON rate (unchanged rule; not adjudicated)
+  wide_lift_over_baseline: per arm, refused_final minus baseline refused_final (the RG1 numerator/denominator)
+  effect_ratio: gated wide lift / |random wide lift|   # RG1 primary; K-seed denominator per Q2
+  degenerate: degenerate-repetition rate
+  mean_new_tokens: mean new tokens
+  confidence_intervals: Wilson 95% (alpha 0.05) on every rate
+
+execution:
+  lanes:
+    - local_3090       # free; lead-owned launch only
+    - modal            # PAID; needs fresh user approval
+  model_driving: direct InterventionHook/GenerationInterventionController/RunLog (RR2 precedent, not the mechinterp-steer recipe path)
+  synaptic_tuner_pin: TODO_set_at_harness_build
+  smokes: [sequential_vs_batch_parity, real_steer_plus_readback, runlog_persistence_schema]
+
+outputs:
+  local_private_dir: experiments/rr3-corrected-placebo-replication/analysis/            # gitignored
+  committed_public_dir: experiments/rr3-corrected-placebo-replication/analysis-committed/
+  directions_dir: experiments/rr3-corrected-placebo-replication/directions/             # gitignored
+
+harness_status: not_written_draft_stage
