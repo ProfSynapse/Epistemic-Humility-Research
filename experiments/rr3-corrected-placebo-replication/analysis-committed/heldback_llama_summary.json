@@ -1,0 +1,35 @@
+{
+  "family": "llama",
+  "n_fit_known": 222,
+  "n_well_formed_correct_and_non_refused_v2_candidates": 219,
+  "v2": {
+    "n": 222,
+    "not_well_formed_correct": {
+      "n": 222,
+      "rate": 0.013513513513513514,
+      "successes": 3,
+      "wilson_ci_95": [
+        0.004606265568081087,
+        0.03897058197835507
+      ]
+    },
+    "refused": {
+      "n": 222,
+      "rate": 0.0,
+      "successes": 0,
+      "wilson_ci_95": [
+        1.734723475976807e-18,
+        0.017009537756059373
+      ]
+    },
+    "well_formed": {
+      "n": 222,
+      "rate": 0.9819819819819819,
+      "successes": 218,
+      "wilson_ci_95": [
+        0.9545959868776086,
+        0.9929713956458295
+      ]
+    }
+  }
+}

@@ -1,0 +1,709 @@
+{
+  "dose_ladder": [
+    2,
+    4,
+    6,
+    8,
+    12,
+    16,
+    20
+  ],
+  "dose_response": [
+    {
+      "confab": {
+        "by_source": {},
+        "n": 250,
+        "v2": {
+          "n": 250,
+          "not_well_formed_correct": {
+            "n": 250,
+            "rate": 1.0,
+            "successes": 250,
+            "wilson_ci_95": [
+              0.9848667005045553,
+              0.9999999999999998
+            ]
+          },
+          "refused": {
+            "n": 250,
+            "rate": 0.156,
+            "successes": 39,
+            "wilson_ci_95": [
+              0.11626576522540502,
+              0.20614594482746082
+            ]
+          },
+          "well_formed": {
+            "n": 250,
+            "rate": 0.984,
+            "successes": 246,
+            "wilson_ci_95": [
+              0.9595901906588808,
+              0.9937607754295288
+            ]
+          }
+        }
+      },
+      "direction_seed": 20260716,
+      "dose_abs": 0.6108861008448626,
+      "dose_multiplier": 2,
+      "known_correct_answered": {
+        "by_source": {
+          "popqa": {
+            "n": 86,
+            "rate": {
+              "n": 86,
+              "rate": 0.011627906976744186,
+              "successes": 1,
+              "wilson_ci_95": [
+                0.0020555686652495644,
+                0.06296406589291725
+              ]
+            }
+          },
+          "triviaqa": {
+            "n": 296,
+            "rate": {
+              "n": 296,
+              "rate": 0.0,
+              "successes": 0,
+              "wilson_ci_95": [
+                0.0,
+                0.012811633307158257
+              ]
+            }
+          }
+        },
+        "n": 382,
+        "v2": {
+          "n": 382,
+          "not_well_formed_correct": {
+            "n": 382,
+            "rate": 0.020942408376963352,
+            "successes": 8,
+            "wilson_ci_95": [
+              0.010649211365961295,
+              0.04077465293659082
+            ]
+          },
+          "refused": {
+            "n": 382,
+            "rate": 0.002617801047120419,
+            "successes": 1,
+            "wilson_ci_95": [
+              0.00046225572589544094,
+              0.014677275517191456
+            ]
+          },
+          "well_formed": {
+            "n": 382,
+            "rate": 0.9947643979057592,
+            "successes": 380,
+            "wilson_ci_95": [
+              0.9811139597079155,
+              0.9985630328976456
+            ]
+          }
+        }
+      }
+    },
+    {
+      "confab": {
+        "by_source": {},
+        "n": 250,
+        "v2": {
+          "n": 250,
+          "not_well_formed_correct": {
+            "n": 250,
+            "rate": 1.0,
+            "successes": 250,
+            "wilson_ci_95": [
+              0.9848667005045553,
+              0.9999999999999998
+            ]
+          },
+          "refused": {
+            "n": 250,
+            "rate": 0.164,
+            "successes": 41,
+            "wilson_ci_95": [
+              0.12325149320629131,
+              0.21491808405464746
+            ]
+          },
+          "well_formed": {
+            "n": 250,
+            "rate": 0.992,
+            "successes": 248,
+            "wilson_ci_95": [
+              0.9713054704167919,
+              0.9978033628796906
+            ]
+          }
+        }
+      },
+      "direction_seed": 20260718,
+      "dose_abs": 1.2217722016897252,
+      "dose_multiplier": 4,
+      "known_correct_answered": {
+        "by_source": {
+          "popqa": {
+            "n": 86,
+            "rate": {
+              "n": 86,
+              "rate": 0.011627906976744186,
+              "successes": 1,
+              "wilson_ci_95": [
+                0.0020555686652495644,
+                0.06296406589291725
+              ]
+            }
+          },
+          "triviaqa": {
+            "n": 296,
+            "rate": {
+              "n": 296,
+              "rate": 0.0,
+              "successes": 0,
+              "wilson_ci_95": [
+                0.0,
+                0.012811633307158257
+              ]
+            }
+          }
+        },
+        "n": 382,
+        "v2": {
+          "n": 382,
+          "not_well_formed_correct": {
+            "n": 382,
+            "rate": 0.041884816753926704,
+            "successes": 16,
+            "wilson_ci_95": [
+              0.02594354025003146,
+              0.06694813326333807
+            ]
+          },
+          "refused": {
+            "n": 382,
+            "rate": 0.002617801047120419,
+            "successes": 1,
+            "wilson_ci_95": [
+              0.00046225572589544094,
+              0.014677275517191456
+            ]
+          },
+          "well_formed": {
+            "n": 382,
+            "rate": 0.9947643979057592,
+            "successes": 380,
+            "wilson_ci_95": [
+              0.9811139597079155,
+              0.9985630328976456
+            ]
+          }
+        }
+      }
+    },
+    {
+      "confab": {
+        "by_source": {},
+        "n": 250,
+        "v2": {
+          "n": 250,
+          "not_well_formed_correct": {
+            "n": 250,
+            "rate": 1.0,
+            "successes": 250,
+            "wilson_ci_95": [
+              0.9848667005045553,
+              0.9999999999999998
+            ]
+          },
+          "refused": {
+            "n": 250,
+            "rate": 0.136,
+            "successes": 34,
+            "wilson_ci_95": [
+              0.09898127060322204,
+              0.18403577142946165
+            ]
+          },
+          "well_formed": {
+            "n": 250,
+            "rate": 0.964,
+            "successes": 241,
+            "wilson_ci_95": [
+              0.9330095775982306,
+              0.9809467204699966
+            ]
+          }
+        }
+      },
+      "direction_seed": 20260720,
+      "dose_abs": 1.832658302534588,
+      "dose_multiplier": 6,
+      "known_correct_answered": {
+        "by_source": {
+          "popqa": {
+            "n": 86,
+            "rate": {
+              "n": 86,
+              "rate": 0.0,
+              "successes": 0,
+              "wilson_ci_95": [
+                0.0,
+                0.042758197285742226
+              ]
+            }
+          },
+          "triviaqa": {
+            "n": 296,
+            "rate": {
+              "n": 296,
+              "rate": 0.0,
+              "successes": 0,
+              "wilson_ci_95": [
+                0.0,
+                0.012811633307158257
+              ]
+            }
+          }
+        },
+        "n": 382,
+        "v2": {
+          "n": 382,
+          "not_well_formed_correct": {
+            "n": 382,
+            "rate": 0.07068062827225131,
+            "successes": 27,
+            "wilson_ci_95": [
+              0.04902751590241395,
+              0.10088239527582951
+            ]
+          },
+          "refused": {
+            "n": 382,
+            "rate": 0.0,
+            "successes": 0,
+            "wilson_ci_95": [
+              0.0,
+              0.009956055091734722
+            ]
+          },
+          "well_formed": {
+            "n": 382,
+            "rate": 0.9973821989528796,
+            "successes": 381,
+            "wilson_ci_95": [
+              0.9853227244828087,
+              0.9995377442741047
+            ]
+          }
+        }
+      }
+    },
+    {
+      "confab": {
+        "by_source": {},
+        "n": 250,
+        "v2": {
+          "n": 250,
+          "not_well_formed_correct": {
+            "n": 250,
+            "rate": 1.0,
+            "successes": 250,
+            "wilson_ci_95": [
+              0.9848667005045553,
+              0.9999999999999998
+            ]
+          },
+          "refused": {
+            "n": 250,
+            "rate": 0.112,
+            "successes": 28,
+            "wilson_ci_95": [
+              0.07863430779240635,
+              0.1571091326160586
+            ]
+          },
+          "well_formed": {
+            "n": 250,
+            "rate": 0.984,
+            "successes": 246,
+            "wilson_ci_95": [
+              0.9595901906588808,
+              0.9937607754295288
+            ]
+          }
+        }
+      },
+      "direction_seed": 20260722,
+      "dose_abs": 2.4435444033794504,
+      "dose_multiplier": 8,
+      "known_correct_answered": {
+        "by_source": {
+          "popqa": {
+            "n": 86,
+            "rate": {
+              "n": 86,
+              "rate": 0.046511627906976744,
+              "successes": 4,
+              "wilson_ci_95": [
+                0.01823396823832083,
+                0.1135699781371198
+              ]
+            }
+          },
+          "triviaqa": {
+            "n": 296,
+            "rate": {
+              "n": 296,
+              "rate": 0.0033783783783783786,
+              "successes": 1,
+              "wilson_ci_95": [
+                0.0005966158805932702,
+                0.018885209093408514
+              ]
+            }
+          }
+        },
+        "n": 382,
+        "v2": {
+          "n": 382,
+          "not_well_formed_correct": {
+            "n": 382,
+            "rate": 0.10209424083769633,
+            "successes": 39,
+            "wilson_ci_95": [
+              0.07558655513374074,
+              0.1365250698607288
+            ]
+          },
+          "refused": {
+            "n": 382,
+            "rate": 0.013089005235602094,
+            "successes": 5,
+            "wilson_ci_95": [
+              0.005603450567830674,
+              0.03026998528066492
+            ]
+          },
+          "well_formed": {
+            "n": 382,
+            "rate": 0.9947643979057592,
+            "successes": 380,
+            "wilson_ci_95": [
+              0.9811139597079155,
+              0.9985630328976456
+            ]
+          }
+        }
+      }
+    },
+    {
+      "confab": {
+        "by_source": {},
+        "n": 250,
+        "v2": {
+          "n": 250,
+          "not_well_formed_correct": {
+            "n": 250,
+            "rate": 1.0,
+            "successes": 250,
+            "wilson_ci_95": [
+              0.9848667005045553,
+              0.9999999999999998
+            ]
+          },
+          "refused": {
+            "n": 250,
+            "rate": 0.096,
+            "successes": 24,
+            "wilson_ci_95": [
+              0.06536188077872192,
+              0.1388658252135973
+            ]
+          },
+          "well_formed": {
+            "n": 250,
+            "rate": 0.984,
+            "successes": 246,
+            "wilson_ci_95": [
+              0.9595901906588808,
+              0.9937607754295288
+            ]
+          }
+        }
+      },
+      "direction_seed": 20260726,
+      "dose_abs": 3.665316605069176,
+      "dose_multiplier": 12,
+      "known_correct_answered": {
+        "by_source": {
+          "popqa": {
+            "n": 86,
+            "rate": {
+              "n": 86,
+              "rate": 0.0,
+              "successes": 0,
+              "wilson_ci_95": [
+                0.0,
+                0.042758197285742226
+              ]
+            }
+          },
+          "triviaqa": {
+            "n": 296,
+            "rate": {
+              "n": 296,
+              "rate": 0.0,
+              "successes": 0,
+              "wilson_ci_95": [
+                0.0,
+                0.012811633307158257
+              ]
+            }
+          }
+        },
+        "n": 382,
+        "v2": {
+          "n": 382,
+          "not_well_formed_correct": {
+            "n": 382,
+            "rate": 0.1256544502617801,
+            "successes": 48,
+            "wilson_ci_95": [
+              0.09609907794617781,
+              0.16266383241046126
+            ]
+          },
+          "refused": {
+            "n": 382,
+            "rate": 0.0,
+            "successes": 0,
+            "wilson_ci_95": [
+              0.0,
+              0.009956055091734722
+            ]
+          },
+          "well_formed": {
+            "n": 382,
+            "rate": 1.0,
+            "successes": 382,
+            "wilson_ci_95": [
+              0.9900439449082652,
+              1.0
+            ]
+          }
+        }
+      }
+    },
+    {
+      "confab": {
+        "by_source": {},
+        "n": 250,
+        "v2": {
+          "n": 250,
+          "not_well_formed_correct": {
+            "n": 250,
+            "rate": 1.0,
+            "successes": 250,
+            "wilson_ci_95": [
+              0.9848667005045553,
+              0.9999999999999998
+            ]
+          },
+          "refused": {
+            "n": 250,
+            "rate": 0.188,
+            "successes": 47,
+            "wilson_ci_95": [
+              0.1444258093511374,
+              0.24101736953401998
+            ]
+          },
+          "well_formed": {
+            "n": 250,
+            "rate": 0.672,
+            "successes": 168,
+            "wilson_ci_95": [
+              0.6115836088885267,
+              0.7272105360850405
+            ]
+          }
+        }
+      },
+      "direction_seed": 20260730,
+      "dose_abs": 4.887088806758901,
+      "dose_multiplier": 16,
+      "known_correct_answered": {
+        "by_source": {
+          "popqa": {
+            "n": 86,
+            "rate": {
+              "n": 86,
+              "rate": 0.0,
+              "successes": 0,
+              "wilson_ci_95": [
+                0.0,
+                0.042758197285742226
+              ]
+            }
+          },
+          "triviaqa": {
+            "n": 296,
+            "rate": {
+              "n": 296,
+              "rate": 0.0,
+              "successes": 0,
+              "wilson_ci_95": [
+                0.0,
+                0.012811633307158257
+              ]
+            }
+          }
+        },
+        "n": 382,
+        "v2": {
+          "n": 382,
+          "not_well_formed_correct": {
+            "n": 382,
+            "rate": 0.20418848167539266,
+            "successes": 78,
+            "wilson_ci_95": [
+              0.16680385270187162,
+              0.2474633421953327
+            ]
+          },
+          "refused": {
+            "n": 382,
+            "rate": 0.0,
+            "successes": 0,
+            "wilson_ci_95": [
+              0.0,
+              0.009956055091734722
+            ]
+          },
+          "well_formed": {
+            "n": 382,
+            "rate": 0.9109947643979057,
+            "successes": 348,
+            "wilson_ci_95": [
+              0.8781972447527692,
+              0.9356085110095221
+            ]
+          }
+        }
+      }
+    },
+    {
+      "confab": {
+        "by_source": {},
+        "n": 250,
+        "v2": {
+          "n": 250,
+          "not_well_formed_correct": {
+            "n": 250,
+            "rate": 1.0,
+            "successes": 250,
+            "wilson_ci_95": [
+              0.9848667005045553,
+              0.9999999999999998
+            ]
+          },
+          "refused": {
+            "n": 250,
+            "rate": 0.092,
+            "successes": 23,
+            "wilson_ci_95": [
+              0.06208701511330671,
+              0.13426175727497602
+            ]
+          },
+          "well_formed": {
+            "n": 250,
+            "rate": 0.16,
+            "successes": 40,
+            "wilson_ci_95": [
+              0.11975380512206552,
+              0.2105368385348368
+            ]
+          }
+        }
+      },
+      "direction_seed": 20260734,
+      "dose_abs": 6.108861008448626,
+      "dose_multiplier": 20,
+      "known_correct_answered": {
+        "by_source": {
+          "popqa": {
+            "n": 86,
+            "rate": {
+              "n": 86,
+              "rate": 0.023255813953488372,
+              "successes": 2,
+              "wilson_ci_95": [
+                0.0064009262042708515,
+                0.08088014562632057
+              ]
+            }
+          },
+          "triviaqa": {
+            "n": 296,
+            "rate": {
+              "n": 296,
+              "rate": 0.0033783783783783786,
+              "successes": 1,
+              "wilson_ci_95": [
+                0.0005966158805932702,
+                0.018885209093408514
+              ]
+            }
+          }
+        },
+        "n": 382,
+        "v2": {
+          "n": 382,
+          "not_well_formed_correct": {
+            "n": 382,
+            "rate": 0.418848167539267,
+            "successes": 160,
+            "wilson_ci_95": [
+              0.37042097199610297,
+              0.46889126731197966
+            ]
+          },
+          "refused": {
+            "n": 382,
+            "rate": 0.007853403141361256,
+            "successes": 3,
+            "wilson_ci_95": [
+              0.0026743884709257305,
+              0.022832095074865513
+            ]
+          },
+          "well_formed": {
+            "n": 382,
+            "rate": 0.756544502617801,
+            "successes": 289,
+            "wilson_ci_95": [
+              0.7110918584485676,
+              0.7968888043839454
+            ]
+          }
+        }
+      }
+    }
+  ],
+  "family": "mistral",
+  "layer": 16,
+  "note": "descriptive rider dose-response; no promotion gate; final wide rates require the blinded adjudication lane.",
+  "status": "provisional_detector_v2_only",
+  "subsample": {
+    "n_confab_available": 1312,
+    "n_known_correct_answered": 382,
+    "rows_per_dose_cell": 250,
+    "seed": 20260714
+  }
+}

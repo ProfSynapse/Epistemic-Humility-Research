@@ -44,10 +44,12 @@ instrument:
   - materialize_rows.py
   - pipeline.py
   - render.py
+  - rg0_rr2_repro_check.py
   - rr3_scorer.py
   - steer_lib.py
   - test_rr3_smoke.py
   pins:
+    rg0_rr2_repro_check.py: 79287ca067d6388e19edc57d44c5d02e52ccc5af7ed1e5148873bc429b94fa14
     cell.yaml: 53cafc21f6ec21b149a2f9429bd412f7bf3c19eabd5dd5d01bc1cf0311cd23fa
     gates.yaml: dddb379c81307d574ff5abeb3191c6abc13b4adda778667434069ed531d26151
     detector_v2_patterns.yaml: 36422e01ae03008c2f71f180158c63950e14f8dfc1279c4e654c89fb831841d9
@@ -67,6 +69,18 @@ instrument:
     rr3_scorer.py: b1b25e0ea837589de26a9c3c09993b5a569c5ffb1514828346ec5e1cd31b1187
     steer_lib.py: c78fd513b796dffd4f9808da7e5f2cc43d52625ad98850744c6bad1e91f29d23
     test_rr3_smoke.py: a48bbb717c0704453acbc066b4dd0f36454fcc36bf7dbd354bc9efe13e5be381
+  repins:
+  - file: rg0_rr2_repro_check.py
+    old_sha256: none-new-module
+    new_sha256: 79287ca067d6388e19edc57d44c5d02e52ccc5af7ed1e5148873bc429b94fa14
+    date: '2026-07-14'
+    reason: >-
+      Build gap closed post-sign, pre-adjudication: gates.yaml RG0 registers
+      deterministic_repro_of_rr2_baseline_and_gated_text but the harness had
+      no implementation. This read-only module compares RR3 core baseline and
+      gated text to RR2's runlogs by row_key, byte-for-byte, hard stop on
+      mismatch. Executed before any adjudication dispatch: PASS, 1694/1694
+      baseline and 1303/1303 gated identical, zero mismatches.
 inputs: []
 verdict: ''
 kg: []

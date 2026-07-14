@@ -1,0 +1,24 @@
+{
+  "arms": [
+    {
+      "arm": "baseline",
+      "n_only_rr2": 0,
+      "n_only_rr3": 0,
+      "n_rr2": 1694,
+      "n_rr3": 1694,
+      "n_text_mismatches": 0,
+      "pass": true
+    },
+    {
+      "arm": "gated",
+      "n_only_rr2": 0,
+      "n_only_rr3": 0,
+      "n_rr2": 1303,
+      "n_rr3": 1303,
+      "n_text_mismatches": 0,
+      "pass": true
+    }
+  ],
+  "gate": "rg0.deterministic_repro_of_rr2_baseline_and_gated_text",
+  "pass": true
+}

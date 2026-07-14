@@ -6,6 +6,17 @@ in `experiment.yaml`.
 
 ## Entries
 
+- 2026-07-14 (lead, post-generation). GPU run completed (exit 0, all phases:
+  materialize, fit_reuse RG0 reconstruction, heldback both families, mistral
+  core all four arms with three seeds, mistral + llama riders). RG0
+  deterministic_repro_of_rr2_baseline_and_gated_text was registered in
+  gates.yaml but had NO harness implementation (build gap found at lead
+  review); closed with rg0_rr2_repro_check.py (read-only row_key-keyed
+  byte-for-byte comparison, hard stop on mismatch), pinned post-sign with a
+  repins entry. Executed BEFORE any adjudication dispatch: PASS. Baseline
+  1694/1694 identical, gated 1303/1303 identical, fired sets identical, zero
+  text mismatches. Report: analysis-committed/rg0_rr2_repro_report.json.
+  Next: build adjudication pool, commit pool manifest before grading.
 - 2026-07-14 (lead). STOP item fixed and amendment SIGNED. cell.yaml rider
   block repaired: shared config hoisted to a new top-level `rider_shared` key
   and `rider_cells` restored to a pure list of id-carrying cells, matching the
