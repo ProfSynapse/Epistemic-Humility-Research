@@ -117,7 +117,12 @@
           }
         ]
       },
-      "kg": [],
+      "kg": [
+        "experiment:abstention-wide-instrument-calibration",
+        "mechanism:undosed-wide-instrument-baseline-abstention-is-family-graded",
+        "mechanism:random-direction-placebo-response-is-family-specific-in-sign",
+        "mechanism:detector-v2-undercounts-baseline-abstention-by-family-varying-margins"
+      ],
       "prediction": "The RR2 placebo failure is substantially a family property of mistral's hedge-prone baseline, not a universal wide-instrument artifact: qwen wide baseline confab abstention < 0.15, qwen placebo delta at the promoted heldout point < 3 points, llama wide baseline confab abstention < 0.15.",
       "question": "What is each model family's undosed baseline abstention rate and matched-magnitude random-perturbation abstention recruitment under the wide two-instrument stack (detector v2 + blinded adjudication), and what placebo criterion should successor direction-specificity experiments register against it?",
       "registered": true,

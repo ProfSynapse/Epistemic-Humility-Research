@@ -98,4 +98,8 @@ verdict: 'Resolved: wide-instrument baseline abstention is family-graded (qwen 0
   fire and RR2''s placebo failure is confirmed family-specific, while the prediction''s
   near-no-op placebo leg and llama band were missed and the QL dose-response cell
   voided terminally under the registered grader calibration rule.'
-kg: []
+kg:
+- experiment:abstention-wide-instrument-calibration
+- mechanism:undosed-wide-instrument-baseline-abstention-is-family-graded
+- mechanism:random-direction-placebo-response-is-family-specific-in-sign
+- mechanism:detector-v2-undercounts-baseline-abstention-by-family-varying-margins
