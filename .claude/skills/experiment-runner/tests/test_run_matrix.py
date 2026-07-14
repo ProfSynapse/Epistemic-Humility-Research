@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
-"""CODE-phase smoke tests for the WS-5 experiment runner.
+"""CODE-slice smoke tests for the locked experiment runner.
 
-Scope (smoke, not exhaustive TEST-phase coverage): does the matrix expand to the
+Scope (smoke, not exhaustive validation coverage): does the matrix expand to the
 pre-registered counts, does a count typo ABORT, does the prereq gate fail/skip in
 the right modes, does recipe materialization apply the right single override and
 rewrite the staged dataset path, and does the run record carry the data block +
@@ -42,7 +42,7 @@ def _stub_recipe(method="dpo", model_tag="qwen3-4b-instruct", lr=5.0e-6):
         "method": method,
         "target": "local",
         "model": {"name": "unsloth/Qwen3-4B-Instruct-bnb-4bit"},
-        "dataset": {"local_file": f"experiment/phase1/data/{model_tag}/{train}"},
+        "dataset": {"local_file": f"archive/experiment/phase1/data/{model_tag}/{train}"},
         "training": {"learning_rate": lr, "num_epochs": 1},
         "run": {"command": ["legacy run.command that must be stripped"],
                 "workdir": "{tuner_root}"},
@@ -56,13 +56,13 @@ def _stub_recipe(method="dpo", model_tag="qwen3-4b-instruct", lr=5.0e-6):
 
 
 def test_research_session_markdown_frontmatter_roundtrip(tmp_path):
-    session = tmp_path / "docs" / "sessions" / "0001 - phase-1-smoke.md"
+    session = tmp_path / "docs" / "sessions" / "0001 - training-regimen-smoke.md"
     rs.create_session(
         session,
-        session_id="phase1-smoke",
-        title="Phase 1 smoke",
-        question="Can the local lane prepare the first Phase 1 cell?",
-        phase="phase1",
+        session_id="training-regimen-smoke",
+        title="Training regimen smoke",
+        question="Can the local lane prepare the first locked matrix cell?",
+        track="training-regimen",
         tags=["experiment-runner"],
     )
     rs.append_checkpoint(
@@ -76,17 +76,63 @@ def test_research_session_markdown_frontmatter_roundtrip(tmp_path):
 
     frontmatter, body = rs.load_session(session)
     assert frontmatter["schema_version"] == rs.SCHEMA_VERSION
-    assert frontmatter["session_id"] == "phase1-smoke"
+    assert frontmatter["session_id"] == "training-regimen-smoke"
+    assert frontmatter["track"] == "training-regimen"
     assert frontmatter["checkpoints"][0]["kind"] == "planning"
     assert frontmatter["checkpoints"][0]["title"] == "Initial Planning"
     assert "### 001-planning - Initial Planning" in body
     assert rs.validate_path(session) == []
 
 
-def test_research_session_default_path_uses_numbered_title_filename(tmp_path, monkeypatch):
+def test_research_session_default_path_uses_timestamped_session_id_filename(tmp_path, monkeypatch):
     monkeypatch.chdir(tmp_path)
-    path = rs.default_session_path("phase1-smoke", "Phase 1 Smoke")
-    assert path.as_posix() == "docs/sessions/0001 - phase-1-smoke.md"
+    session_id = rs.default_session_id("Training Regimen Smoke", timestamp="2026-07-08T17:15:28Z")
+    assert session_id == "20260708T171528Z-training-regimen-smoke"
+    path = rs.default_session_path(
+        session_id,
+        "Training Regimen Smoke",
+        timestamp="2026-07-08T17:15:28Z",
+    )
+    assert path.as_posix() == "docs/sessions/20260708T171528Z-training-regimen-smoke.md"
+
+
+def test_research_session_init_can_generate_session_id_from_title(tmp_path, monkeypatch):
+    monkeypatch.chdir(tmp_path)
+    monkeypatch.setattr(rs, "now_utc", lambda: "2026-07-08T17:15:28Z")
+    rc = rs.main([
+        "init",
+        "--title", "Training Regimen Smoke",
+        "--question", "Can the local lane prepare the first locked matrix cell?",
+    ])
+    assert rc == 0
+    session = tmp_path / "docs" / "sessions" / "20260708T171528Z-training-regimen-smoke.md"
+    frontmatter, _ = rs.load_session(session)
+    assert frontmatter["session_id"] == "20260708T171528Z-training-regimen-smoke"
+
+
+def test_research_session_default_path_can_use_legacy_numbered_filename(tmp_path, monkeypatch):
+    monkeypatch.chdir(tmp_path)
+    path = rs.default_session_path("training-regimen-smoke", "Training Regimen Smoke", filename_mode="numbered")
+    assert path.as_posix() == "docs/sessions/0001 - training-regimen-smoke.md"
+
+
+def test_research_session_validate_path_rejects_duplicate_session_id(tmp_path):
+    first = tmp_path / "docs" / "sessions" / "20260708T171528Z-first.md"
+    second = tmp_path / "docs" / "sessions" / "20260708T171529Z-second.md"
+    rs.create_session(
+        first,
+        session_id="duplicate",
+        title="First",
+        question="First question?",
+    )
+    rs.create_session(
+        second,
+        session_id="duplicate",
+        title="Second",
+        question="Second question?",
+    )
+    errors = rs.validate_path(tmp_path / "docs" / "sessions")
+    assert any("duplicates" in error for error in errors)
 
 
 def test_research_session_accepts_extended_checkpoint_taxonomy(tmp_path):
@@ -120,13 +166,13 @@ def test_research_session_accepts_extended_checkpoint_taxonomy(tmp_path):
 
 
 def test_run_matrix_dry_run_appends_session_checkpoint(tmp_path):
-    session = tmp_path / "phase1-dry-run.md"
+    session = tmp_path / "training-regimen-dry-run.md"
     rs.create_session(
         session,
-        session_id="phase1-dry-run",
-        title="Phase 1 dry run",
+        session_id="training-regimen-dry-run",
+        title="Training regimen dry run",
         question="Can the matrix expand without launch?",
-        phase="phase1",
+        track="training-regimen",
     )
 
     rc = rm.main(["--dry-run", "--session", str(session)])
@@ -623,7 +669,7 @@ def test_bridge_recipes_declare_target_local():
     # Anchor on run_matrix's own walk-up sentinel (FUTURE-1) so the recipes dir
     # resolves identically whether the module loads from the 2-deep canonical
     # .skills tree or a 4-deep mirror — no fixed-depth ancestor walk.
-    recipes_dir = rm._REPO_ROOT / "experiment" / "phase1" / "recipes"
+    recipes_dir = rm._REPO_ROOT / "archive" / "experiment" / "phase1" / "recipes"
     for name in ("eh_bridge_llama2_7b_chat_sft", "eh_bridge_llama2_7b_chat_dpo"):
         recipe = yaml.safe_load((recipes_dir / f"{name}.yaml").read_text())
         assert recipe["target"] == "local", f"{name} must be target: local"
@@ -825,7 +871,7 @@ def test_run_record_carries_data_block_and_dual_shas(monkeypatch):
     cell = rm.Cell(rm.Coordinate("dpo", "4b", "headline", 1), "eh-stub-dpo", "dpo")
     materialized = rm.materialize_recipe(base, cell)
     text = yaml.safe_dump(materialized)
-    data_block = {"source_data_file": "experiment/phase1/data/qwen3-4b-instruct/dpo_train.jsonl",
+    data_block = {"source_data_file": "archive/experiment/phase1/data/qwen3-4b-instruct/dpo_train.jsonl",
                   "staged_data_file": "scratch/eh_staging/x/dpo_train.jsonl",
                   "hf_dataset_name": None, "hf_dataset_revision": None}
     record = rm.build_run_record(

@@ -1,0 +1,96 @@
+# H3: multi-seed / sampled-decode replication of the doubt-gated caution snap.
+# DRAFT, NOT a registered instrument until `bin/exp sign` (see AMENDMENT.md;
+# status: draft). Substrate: raw-base untrained instruct, unsloth/Qwen3-4B
+# (full bf16, no 4-bit quant), no adapter. Training-free.
+#
+# This experiment REFITS NOTHING. It reuses the FROZEN instrument pinned by the
+# resolved doubt-gated-caution-tighten cell (directions, tau, standardization,
+# held-out split) and varies ONLY the decode policy and the harness seeds. The
+# paths below point at that experiment's committed instrument artifacts and at
+# the promoted ID-only held-out split; do not re-derive any of them here.
+#
+# Validate config load (CPU, no GPU):
+#   python -c "import yaml; yaml.safe_load(open('cell.yaml'))"
+
+frozen_instrument:
+  source_experiment: doubt-gated-caution-tighten
+  # ID-only held-out split (promoted for cross-experiment reuse).
+  split_manifest: experiments/common/doubt-gated-caution-tighten-heldout-split/split_manifest.json
+  # Directions and gate, committed by the resolved snap cell. Reused verbatim.
+  u_d: experiments/doubt-gated-caution-tighten/analysis-committed/u_d_L34.json
+  c_hat: experiments/doubt-gated-caution-tighten/analysis-committed/c_hat_L34.json
+  random_direction: experiments/doubt-gated-caution-tighten/analysis-committed/random_direction_L34.json
+  gate_fit: experiments/doubt-gated-caution-tighten/analysis-committed/gate_fit.json
+  build_manifest: experiments/doubt-gated-caution-tighten/analysis-committed/build_manifest.json
+  tau_frozen: 0.3026445054171378   # Youden-J on FIT; do NOT re-derive
+  layer: 33                        # decoder block 33 (L34), as in the resolved cell
+
+heldout_sizes:                     # realized by the frozen split; for assertion only
+  confab: 185
+  known_correct_answered: 258
+
+snap:                              # identical to the resolved cell
+  law: erase_write
+  position: anchor_onward
+  scope: anchor_onward
+  dose_target: 200.0               # realized |projection|, readback units
+  gate_score: neg_z_d              # = -z_d; confab rows have LOW doubt
+  fire_rule: "neg_z_d >= tau_frozen"
+
+decode_arms:
+  # Arm R -- greedy reproduction (instrument-validity anchor). Deterministic
+  # given the frozen directions; must reproduce the resolved 73.5%/3.1%.
+  - name: greedy_reproduction
+    generation:
+      do_sample: false
+      max_new_tokens: 200
+      min_new_tokens: 1
+      eos_includes_im_end: true
+      enable_thinking: false
+  # Arm S -- sampled decode (primary). Program's own registered sampled-decode
+  # config from Amendment SR (experiments/sampled-decode-seed-robustness/
+  # AMENDMENT.md lines 94-102): do_sample, temperature 0.7, top_p 0.9,
+  # num_beams 1. FLAGGED for signing: the Qwen3 published non-thinking
+  # recommendation differs (top_p 0.8, top_k 20, min_p 0); PI may substitute at
+  # signing. N samples per row under K independent seeds.
+  - name: sampled_decode
+    generation:
+      do_sample: true
+      temperature: 0.7
+      top_p: 0.9
+      num_beams: 1
+      max_new_tokens: 200
+      min_new_tokens: 1
+      eos_includes_im_end: true
+      enable_thinking: false
+    samples_per_row: 8             # N
+    seeds: [20260710, 20260711, 20260712, 20260713, 20260714]   # K=5
+    conversion_scoring:
+      majority_vote_threshold: 5   # of 8; primary. 4-4 tie => instrument did not act
+      any_vote_threshold: 1        # reported envelope
+      also_report: mean_per_row_fraction
+
+# Multi-seed placebo re-draw (G3 seed-robustness): fresh random write direction
+# and fresh permuted-gate assignment per seed, in place of the single committed
+# random_direction / single committed permutation.
+placebo_arms:
+  - name: random_direction_reroll
+    redraw_per_seed: true          # fresh random unit vector each seed
+    matched_realized_magnitude: true
+    seeds: [20260710, 20260711, 20260712, 20260713, 20260714]
+  - name: permuted_gate_reroll
+    redraw_per_seed: true          # fresh uniform assignment, same total fire count
+    population: confab_held + known_held (combined)
+    seeds: [20260710, 20260711, 20260712, 20260713, 20260714]
+
+metrics:                           # reused verbatim from the resolved cell
+  clean_tighten: gen_lib:grade_clean_tighten
+  well_formed_correct: grader:grade_one
+
+execution:
+  # All row text (materialized via the resolved cell's materialize_rows.py
+  # scheme) and all generations stay under gitignored analysis/. Only aggregate
+  # summaries are committed under analysis-committed/.
+  rows_path: analysis/rows_with_text.jsonl
+  greedy_output_path: analysis/greedy_reproduction_summary.json
+  sampled_output_path: analysis/sampled_decode_summary.json

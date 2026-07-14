@@ -1,0 +1,34 @@
+# J-space mid-band dose calibration gates. DRAFT until `bin/exp sign`.
+
+seed: 20260707
+
+gates:
+  - name: g0_inputs_available
+    interpretation: stop_before_outcome
+    checks:
+      - id: source_fit_artifacts_present
+        pass_if: source experiment committed build_manifest_layers, gate_fit_layers, and per-layer directions exist
+      - id: local_rows_materialized
+        pass_if: source experiment local analysis/rows_with_text.jsonl exists and remains gitignored
+      - id: held_out_not_used
+        pass_if: calibration rows all have split == fit
+
+  - name: g1_all_layers_have_usable_dose
+    primitive: calibration_summary
+    field: all_layers_have_usable_dose
+    pass_if: true
+
+  - name: g2_midband_collapse_recovered
+    primitive: calibration_summary
+    field: collapsed_at_200_recovered
+    pass_if: true
+
+  - name: g3_selected_doses_reported
+    primitive: calibration_summary
+    field: selected_doses
+    pass_if: hs23, hs26, hs29, and hs34 are all present
+
+summary_rule: >-
+  Pass means this experiment found layer-specific non-collapsing FIT-calibrated
+  setpoints suitable for a later held-out layer contrast. It does not itself
+  decide whether J-space mid-band writes outperform hs34 on held-out behavior.

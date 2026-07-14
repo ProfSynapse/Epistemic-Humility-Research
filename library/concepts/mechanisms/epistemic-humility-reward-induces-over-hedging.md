@@ -29,4 +29,4 @@ relationships:
   target_id: term:over-hedging
 ---
 
-When labelers reward expressions of uncertainty as a proxy for honesty, the model learns to hedge indiscriminately because hedging is nearly always preferred over confident wrong answers. The InstructGPT paper (arXiv:2203.02155) documents this as a failure mode: the trained policy adds unnecessary caveats even to questions it answers correctly, degrading helpfulness. This mechanism is a central motivation for the Phase 1 study of calibrated abstention.
+When labelers reward expressions of uncertainty as a proxy for honesty, the model learns to hedge indiscriminately because hedging is nearly always preferred over confident wrong answers. The InstructGPT paper (arXiv:2203.02155) documents this as a failure mode: the trained policy adds unnecessary caveats even to questions it answers correctly, degrading helpfulness. This mechanism is a central motivation for the locked training-regimen study of calibrated abstention.

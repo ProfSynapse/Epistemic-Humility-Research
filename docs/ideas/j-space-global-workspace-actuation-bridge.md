@@ -1,8 +1,8 @@
 # J-space (global workspace) as an actuation bridge
 
-Status: QUEUED research direction (raised by user 2026-07-06). Not scheduled before
-the two-signal caution-regulation experiment resolves. This note is an idea home,
-not a signed protocol.
+Status: H1 localization resolved 2026-07-07; FIT-only dose calibration resolved
+2026-07-08; calibrated held-out bridge actuation contrast is next. This note is
+an idea home, not a signed protocol.
 
 ## Source
 
@@ -100,15 +100,50 @@ choice for every actuation cell, including the two-signal experiment.
 
 ## First experiments, cheap to expensive
 
-1. Reimplement a minimal J-lens on open-weight Qwen3-4B via Jacobian-vector
-   products (we have full weight access, so we are better positioned than external
-   readers). Validate it reproduces logit-lens-like behavior at late layers and
-   diverges at mid layers.
-2. H1 read: J-lens the validated caution / doubt / propensity directions. Free.
-3. Layer sweep of the existing caution write across mid vs late layers on the
-   two-signal both-tail surface, testing the motor-regime prediction.
-4. H2 injection head-to-head: workspace injection of an abstention concept vs
+1. **DONE 2026-07-07**: Reimplemented a minimal J-lens on open-weight
+   Qwen3-4B via Jacobian-vector products and validated it against the
+   final-layer logit/unembed baseline. Full-corpus Modal smoke:
+   mean cosine 0.9811, mean top-10 overlap 0.82, top-1 match 3/5.
+2. **DONE 2026-07-07**: H1 read on same-substrate bf16 directions. `pos_ctrl`
+   and `c_hat` verbalize as self/absence/error/impossibility-like; `u_d` is
+   answer/reply-like; `neg_ctrl` is a noisy local null. Layer profile localizes
+   the Qwen3-4B workspace-like effective-dimensionality band to hs=23-29,
+   peaking at hs=26; L34 maps to hs=34 and is just after that band.
+3. **G0 stop 2026-07-07**: Initial mid-band layer sweep at absolute dose 200
+   prepared successfully and read back accurately, but collapsed hs23/hs26
+   before held-out outcome. This identified dose portability as the immediate
+   failure mode.
+4. **DONE 2026-07-08**: FIT-only dose calibration recovered usable
+   non-collapsing setpoints for all layers: hs23=25, hs26=75, hs29=125,
+   hs34=175. This keeps the layer-site hypothesis alive but does not test
+   held-out mid-band superiority.
+5. Calibrated held-out layer contrast: compare hs23=25, hs26=75, hs29=125
+   against hs34=175 on the two-signal both-tail surface.
+6. H2 injection head-to-head: workspace injection of an abstention concept vs
    erase-write caution, same surface, same selectivity gates.
+
+## H1 result update (2026-07-07)
+
+The J-space localization experiment resolved as an exploratory lab diagnostic:
+`experiments/j-space-localization-qwen3-4b/AMENDMENT.md`. The result strengthens
+the bridge hypothesis enough to justify a causal successor, but it does not by
+itself prove that J-space writes will work.
+
+The actionable refinement is layer choice. The original idea predicted that L34
+may be late/motor-adjacent; the actual Qwen3-4B profile put the
+effective-dimensionality peak at hs=26, with a broader hs=23-29 band and decline
+by hs=35/36. Therefore the next write test should not simply repeat L34 with a
+new vector. It should compare mid-band writes, especially hs=23/26/29, against
+the existing L34/hs34 site on identical gates.
+
+## Dose-calibration update (2026-07-08)
+
+The first causal successor exposed an instrumental assumption: absolute dose 200
+is not portable across layer sites. hs23 and hs26 collapsed at dose 200, so the
+held-out contrast stopped at G0. A FIT-only calibration then recovered usable
+setpoints for every site: hs23=25, hs26=75, hs29=125, hs34=175. The correct next
+test is therefore not "does dose 200 work mid-band?" but "with calibrated
+setpoints, do mid-band writes beat or differ from hs34 on held-out rows?"
 
 ## Feasibility and caveats
 

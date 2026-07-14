@@ -32,7 +32,7 @@ relationships:
 ---
 
 A causal intervention modifies activations, weights, prompts, or another model
-state and measures whether behavior changes under controls. Phase 3 uses this
+state and measures whether behavior changes under controls. mechanism program uses this
 node for local activation-addition, subtraction, patching, and future
 adapterless-base intervention tests.
 

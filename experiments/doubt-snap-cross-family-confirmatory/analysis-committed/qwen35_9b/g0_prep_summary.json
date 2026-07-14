@@ -1,0 +1,34 @@
+{
+  "batched_parity_smoke": {
+    "mismatches": [],
+    "n_rows": 8,
+    "passed": true
+  },
+  "counts": {
+    "confab": {
+      "fit": 921,
+      "fit_only": 0,
+      "held_out": 1384
+    },
+    "known_correct_answered": {
+      "fit": 286,
+      "fit_only": 0,
+      "held_out": 428
+    },
+    "unknown_refused": {
+      "fit": 0,
+      "fit_only": 95,
+      "held_out": 0
+    }
+  },
+  "directions_byte_identical": true,
+  "dose_sweep_config": "/workspace/ehr/experiments/doubt-snap-cross-family-confirmatory/analysis/qwen35_9b/steer_dose_fit.yaml",
+  "gate_auc_on_fit": 0.999221733749421,
+  "gate_auc_pass": true,
+  "generation_terminates_pass": true,
+  "generation_terminates_rate": 0.98747591522158,
+  "held_out_power": true,
+  "hidden_dim": 4096,
+  "layer_idx": 29,
+  "n_layers": 32
+}

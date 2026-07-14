@@ -1,0 +1,13 @@
+# Containment: this PUBLIC repo never commits question, alias, or generation
+# text. Row text materialized at run time, all raw generations, and any local
+# direction scratch stay untracked; only ID-manifests and aggregate summaries
+# are committed under analysis-committed/. Mirrors the sibling snap experiments'
+# posture (qwen35-4b-midband-doubt-snap / doubt-gated-caution-tighten).
+directions/
+# Local analysis scratch; keep untracked, promote real outputs deliberately.
+analysis/
+# unsloth JIT compile cache (build byproduct of any unsloth import), not source.
+unsloth_compiled_cache/
+# Python bytecode cache.
+__pycache__/
+*.pyc

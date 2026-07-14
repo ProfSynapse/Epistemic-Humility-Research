@@ -1,0 +1,128 @@
+# J-space layer-contrast rep2: multi-source confab pool, ceiling-robust gates.
+# DRAFT until `bin/exp sign`.
+
+seed: 20260709
+
+surface:
+  model: unsloth/Qwen3-4B
+  substrate: bf16
+  adapter: none
+  predecessor_experiments:
+    - experiments/j-space-calibrated-layer-contrast-qwen3-4b
+    - experiments/j-space-layer-contrast-replication-qwen3-4b
+  source_direction_experiment: experiments/j-space-midband-write-sweep-qwen3-4b
+  dose_source_experiment: experiments/j-space-midband-dose-calibration-qwen3-4b
+  generation:
+    max_new_tokens: 200
+    min_new_tokens: 1
+    do_sample: false
+    eos_includes_im_end: true
+    enable_thinking: false
+  containment:
+    committed_row_text: forbidden
+    committed_aliases: forbidden
+    committed_generations: forbidden
+    committed_outputs: aggregate_and_id_manifest_only
+
+multisource_confab_pool:
+  loaders:
+    kuq_ku_unknown: "datasets/kuq/knowns_unknowns.jsonl (unknown=true rows)"
+    kuq_ku_unknown_x: "datasets/kuq/unknowns_all.jsonl (deduped against kuq_ku_unknown
+      by normalized question)"
+    selfaware_unanswerable: "datasets/selfaware/SelfAware.json (answerable=false rows)"
+  exclude_predecessor_split: experiments/common/doubt-gated-caution-tighten-heldout-split/split_manifest.json
+  exclude_rep1_fresh_pool: experiments/j-space-layer-contrast-replication-qwen3-4b/analysis-committed/fresh_eval_pool_manifest.json
+  exclusion_method: "dual exclusion resolved by normalized question text (both prior
+    manifests are ID-only; row_key -> question is recovered via the private
+    ah_stage0/candidates.jsonl and ah_stage0/expansion/expansion_candidates.jsonl
+    caches for exclusion-resolution purposes only, never as a candidate source)"
+  private_generations_path: experiments/j-space-layer-contrast-rep2-multisource/analysis/multisource_pool_generations.jsonl
+  private_rows_path: experiments/j-space-layer-contrast-rep2-multisource/analysis/multisource_confab_rows.jsonl
+  public_id_manifest: experiments/j-space-layer-contrast-rep2-multisource/analysis-committed/multisource_pool_manifest.json
+  target_counts:
+    total_floor: 200
+    harder_source_floor:
+      kuq_ku_unknown: 40
+      selfaware_unanswerable: 40
+  selection:
+    confab: "gold-unanswerable candidate where raw-base bf16 answers rather than
+      refuses (same rule as the predecessor and rep1)"
+
+known_correct_answered_reuse:
+  source_experiment: experiments/j-space-layer-contrast-replication-qwen3-4b
+  source_rows: experiments/j-space-layer-contrast-replication-qwen3-4b/analysis/fresh_eval_rows.jsonl
+    (role=known_correct_answered subset, n=1957)
+  source_anchors: experiments/j-space-layer-contrast-replication-qwen3-4b/analysis/fresh_anchor_extract.safetensors
+    (row_key-filtered subset)
+  materialized_by: materialize_known_side_reuse.py
+  local_rows_path: experiments/j-space-layer-contrast-rep2-multisource/analysis/known_correct_answered_reused.jsonl
+  local_anchors_path: experiments/j-space-layer-contrast-rep2-multisource/analysis/known_correct_answered_anchor_reused.safetensors
+  public_provenance_manifest: experiments/j-space-layer-contrast-rep2-multisource/analysis-committed/known_side_reuse_manifest.json
+  pinned_by: sha256 of source and local copies, recorded in the provenance manifest above
+
+layers:
+  midband:
+    hs23:
+      dose_target: 25
+    hs26:
+      dose_target: 75
+    hs29:
+      dose_target: 125
+  late_reference:
+    hs34:
+      dose_target: 175
+
+readouts:
+  direction_source: experiments/j-space-midband-write-sweep-qwen3-4b/analysis-committed/layers/
+  gate_source: experiments/j-space-midband-write-sweep-qwen3-4b/analysis-committed/gate_fit_layers.json
+  build_source: experiments/j-space-midband-write-sweep-qwen3-4b/analysis-committed/build_manifest_layers.json
+  dose_source: experiments/j-space-midband-dose-calibration-qwen3-4b/analysis-committed/dose_calibration_summary.json
+  fire_rule: "score_neg_z_d >= tau_frozen"
+  write_direction: c_hat
+  law: erase_write
+  position: anchor_onward
+
+persistence:
+  mechanism: tuner RunLog (shared/utilities/run_log.py)
+  availability: "lives on synaptic-tuner branch feature/runlog (PR #141), not yet
+    merged to main; submodule pin MUST be bumped to include it before bin/exp sign"
+  log_path_convention: "experiments/j-space-layer-contrast-rep2-multisource/analysis/runlog/<mode>/<layer_name>.jsonl"
+  resume_default: true
+  fresh_flag: "--fresh discards an existing log for the given mode's layers"
+
+execution:
+  lane: local_3090
+  mine_command: >-
+    python experiments/j-space-layer-contrast-rep2-multisource/mine_multisource_pool.py
+    --target-kuq-ku-unknown 999 --target-kuq-ku-unknown-x 80
+    --target-selfaware-unanswerable 999
+  mine_command_note: "the bare default invocation (stop-targets 70/80/70) under-provisions
+    the total_floor: achieved 146/200 on first run because kuq_ku_unknown_x is genuinely
+    exhausted at 6 confabs while the other two sources stop early at their own operational
+    targets with supply left unscanned. --target-kuq-ku-unknown and
+    --target-selfaware-unanswerable are set high enough (999) to force full-pool
+    exhaustion of those two sources; this changes only a mining-script stopping
+    heuristic, not target_counts (the locked floors above), the loaders, or the
+    exclusion rule. Achieved on 2026-07-09: total=221 by_source={kuq_ku_unknown: 139,
+    kuq_ku_unknown_x: 6, selfaware_unanswerable: 76}, see NOTEBOOK.md."
+  materialize_known_side_command: >-
+    python experiments/j-space-layer-contrast-rep2-multisource/materialize_known_side_reuse.py
+  extract_command: >-
+    python experiments/j-space-layer-contrast-rep2-multisource/extract_multisource_confab_anchor.py
+  smoke_command: >-
+    PYTHONPATH=synaptic-tuner
+    python experiments/j-space-layer-contrast-rep2-multisource/run_contrast.py
+    --mode smoke --n-rows 8
+  full_command: >-
+    PYTHONPATH=synaptic-tuner
+    python experiments/j-space-layer-contrast-rep2-multisource/run_contrast.py
+    --mode full --i-know-this-is-the-multisource-replication-run
+  paired_analysis_command: >-
+    python experiments/j-space-layer-contrast-rep2-multisource/analyze_paired_outcomes.py
+    --mode full
+
+outputs:
+  local_private_dir: experiments/j-space-layer-contrast-rep2-multisource/analysis/
+  committed_public_pool_manifest: experiments/j-space-layer-contrast-rep2-multisource/analysis-committed/multisource_pool_manifest.json
+  committed_known_side_reuse_manifest: experiments/j-space-layer-contrast-rep2-multisource/analysis-committed/known_side_reuse_manifest.json
+  committed_public_summary: experiments/j-space-layer-contrast-rep2-multisource/analysis-committed/full_summary.json

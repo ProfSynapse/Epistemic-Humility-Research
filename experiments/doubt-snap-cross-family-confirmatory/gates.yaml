@@ -1,0 +1,69 @@
+# Cross-family gates. All outcome rates are computed on held-out rows only,
+# after model-specific direction, tau, and dose choices are frozen from FIT.
+
+seed: 20260707
+n_boot: 10000
+alpha: 0.05
+
+per_cell_gates:
+  - name: g0_eligibility_and_instrument_validity
+    failure_interpretation: stop_before_outcome
+    checks:
+      - id: model_accessible
+        pass_if: model repo is accessible with the launch HF token
+      - id: held_out_power
+        pass_if: "confab held_out >= 150 AND known_correct_answered held_out >= 250"
+      - id: generation_terminates
+        pass_if: "undosed baseline well_formed_natural_stop_rate >= 0.90"
+      - id: gate_auc_on_fit
+        pass_if: "FIT AUC for neg_z_d >= 0.90"
+      - id: directions_reproducible
+        pass_if: byte-identical across two independent fits
+      - id: dose_viable_on_fit
+        pass_if: "lowest qualifying FIT dose exists under cell.yaml dose_selection.rule"
+      - id: batched_parity_smoke
+        pass_if: sequential and batched smoke slice have identical parsed answers and stop reasons
+
+  - name: g1_tighten
+    primitive: rate_over_population
+    arm: gated
+    population: confab_tighten
+    indicator: clean_tighten
+    pass_if_rate: ">= 0.60"
+    pass_if_wilson_lower_ci: "> 0.50"
+
+  - name: g2_selectivity_cost
+    primitive: rate_over_population
+    arm: gated
+    population: known_correct_cost_control
+    indicator: not_well_formed_correct
+    pass_if_rate: "<= 0.05"
+    pass_if_wilson_upper_ci: "< 0.10"
+
+  - name: g3i_specificity_random_direction
+    primitive: rate_over_population
+    arm: random_direction
+    compare_against: baseline_over_same_held_out_population
+    tolerance_pt: 2
+    pass_if: "random_direction rate - baseline rate <= 0.02, both populations"
+
+  - name: g3ii_specificity_permuted_gate
+    primitive: rate_over_population
+    arm: permuted_gate
+    compare_against: gated
+    pass_if: >-
+      permuted_gate known_correct_cost_control.not_well_formed_correct rate
+      > gated known_correct_cost_control.not_well_formed_correct rate
+
+cross_family_success:
+  eligible_cell_definition: A cell that passes G0 before held-out outcome scoring.
+  cell_pass_definition: G1, G2, G3(i), and G3(ii) all pass on held-out.
+  headline_pass_if: >-
+    At least 3 of 4 small-tier families pass, and at least 3 eligible mid-tier
+    cells pass, with at least one passing eligible mid-tier cell outside Qwen.
+  headline_underpowered_if: >-
+    Fewer than 3 mid-tier cells are eligible before held-out outcome scoring.
+  falsifier: >-
+    Headline claim fails if at least 2 eligible small-tier families fail, or if
+    at least 2 eligible mid-tier cells fail, or if Qwen is the only passing
+    eligible mid-tier family.

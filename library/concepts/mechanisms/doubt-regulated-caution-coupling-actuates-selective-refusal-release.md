@@ -53,7 +53,7 @@ relationships:
   confidence: high
 ---
 
-Amendment AC (experiment/protocol/AMENDMENT-AC-doubt-regulated-caution.md,
+Amendment AC (experiments/doubt-regulated-caution/AMENDMENT.md,
 RQ4 Stage 1) is the first use-the-signal win in the research program: a
 closed-loop erase-and-write on the caution_perp direction, driven by the
 model's own frozen doubt readout, causally shifts the fabricate-vs-refuse

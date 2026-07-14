@@ -1,0 +1,27 @@
+#!/bin/sh
+# Post-commit worktree nudge: after every successful commit, report open
+# worktrees that carry uncommitted or unpushed work, so parallel branches do
+# not strand silently. Never blocks or fails the commit (post-commit exit
+# codes are ignored by git, and we swallow errors anyway).
+# Silence with EHR_SKIP_WORKTREE_NUDGE=1.
+
+ROOT="$(git rev-parse --show-toplevel 2>/dev/null)" || exit 0
+
+if command -v python3 >/dev/null 2>&1; then
+  PYTHON="python3"
+elif command -v py >/dev/null 2>&1; then
+  PYTHON="py -3"
+else
+  exit 0
+fi
+
+# The script lives in the MAIN checkout's bin/; worktrees share the repo, so
+# resolve it via the common git dir when committing from a linked worktree.
+COMMON="$(git rev-parse --git-common-dir 2>/dev/null)"
+MAIN_ROOT="$(dirname "$COMMON")"
+SCRIPT="$MAIN_ROOT/bin/worktree_status.py"
+[ -f "$SCRIPT" ] || SCRIPT="$ROOT/bin/worktree_status.py"
+[ -f "$SCRIPT" ] || exit 0
+
+$PYTHON "$SCRIPT" 2>/dev/null || true
+exit 0

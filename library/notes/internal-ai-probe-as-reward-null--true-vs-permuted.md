@@ -20,7 +20,7 @@ models:
 - qwen3-4b
 metrics:
 - auroc
-provenance: 'Internal amendment (Tier-A causal intervention; gates pre-stated before launch). Source of truth: experiment/protocol/AMENDMENT-AI-probe-as-reward.md, section 5 (Verdict, scored and adjudicated NULL by the user 2026-07-05). Sensor: L24 linear probe refit on the training-start checkpoint in the 4-bit training serving configuration (held-out OOF AUROC 0.9945). Training pool: 2,102 train divergent (mining-only, in-loop-sensor classified) + 16,665 concordant; 400-row locked holdout, category-stratified. Scorer: amendment_ai_verdict_score.py over the all-local evidence set (both arms full 2934/2934 steps, no halts).'
+provenance: 'Internal amendment (Tier-A causal intervention; gates pre-stated before launch). Source of truth: experiments/probe-as-reward/AMENDMENT.md, section 5 (Verdict, scored and adjudicated NULL by the user 2026-07-05). Sensor: L24 linear probe refit on the training-start checkpoint in the 4-bit training serving configuration (held-out OOF AUROC 0.9945). Training pool: 2,102 train divergent (mining-only, in-loop-sensor classified) + 16,665 concordant; 400-row locked holdout, category-stratified. Scorer: amendment_ai_verdict_score.py over the all-local evidence set (both arms full 2934/2934 steps, no halts).'
 related:
 - '[[probe-agreement-reward-does-not-couple-policy-to-its-own-readout]]'
 - '[[propensity-direction-reads-but-does-not-actuate-fabrication]]'
@@ -94,7 +94,7 @@ nulls across trained channels.
   2934/2934 steps, no halt, fresh-checkpoint probe OOF AUROC 0.9948; PERMUTED
   2934/2934 steps, no halt, OOF AUROC 0.9946 (both against the >= 0.8
   falsifier floor). Training destroyed nothing: the G1 result below is
-  signal, not instrument failure. (experiment/protocol/AMENDMENT-AI-probe-as-reward.md
+  signal, not instrument failure. (experiments/probe-as-reward/AMENDMENT.md
   section 5.)
 - Evidence label: pre-registered primary gate AI-G1 (use-the-signal). FAIL,
   significantly inverted. TRUE congruence 59.75% vs PERMUTED 76.75% on the

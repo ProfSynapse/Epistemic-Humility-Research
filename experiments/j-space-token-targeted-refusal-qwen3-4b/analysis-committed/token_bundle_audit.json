@@ -1,0 +1,612 @@
+{
+  "schema": "jspace-token-bundle-audit/v1",
+  "bundle": "/home/profsynapse/code/ehr-worktrees/j-space/experiments/j-space-token-targeted-refusal-qwen3-4b/token_bundle.yaml",
+  "h1": "/home/profsynapse/code/ehr-worktrees/j-space/experiments/j-space-localization-qwen3-4b/analysis-committed/results/jspace-jlens-r1/h1_full.json",
+  "model": "unsloth/Qwen3-4B",
+  "n_tokens": 21,
+  "all_single_token": true,
+  "all_ids_match_tokenizer": true,
+  "tokens": [
+    {
+      "bundle": "concrete_refusal_surface",
+      "polarity": "positive",
+      "text": "\"I",
+      "token_id": 7044,
+      "weight": 1.0,
+      "role": "json_refusal_prefix",
+      "tokenizer_ids": [
+        7044
+      ],
+      "single_token": true,
+      "id_matches_tokenizer": true,
+      "observed_in_h1_top15": [
+        {
+          "direction": "pos_ctrl_L34 (caution / answer-vs-refuse)",
+          "layer": "30",
+          "rank": 4,
+          "token": "\"I",
+          "score": 0.004630726296454668
+        },
+        {
+          "direction": "pos_ctrl_L34 (caution / answer-vs-refuse)",
+          "layer": "32",
+          "rank": 5,
+          "token": "\"I",
+          "score": 0.003664904972538352
+        },
+        {
+          "direction": "pos_ctrl_L34 (caution / answer-vs-refuse)",
+          "layer": "34",
+          "rank": 8,
+          "token": "\"I",
+          "score": 0.0029973716009408236
+        },
+        {
+          "direction": "c_hat_L34 (caution write, orthogonalized)",
+          "layer": "30",
+          "rank": 2,
+          "token": "\"I",
+          "score": 0.004383372142910957
+        },
+        {
+          "direction": "c_hat_L34 (caution write, orthogonalized)",
+          "layer": "32",
+          "rank": 3,
+          "token": "\"I",
+          "score": 0.003460388630628586
+        },
+        {
+          "direction": "c_hat_L34 (caution write, orthogonalized)",
+          "layer": "34",
+          "rank": 6,
+          "token": "\"I",
+          "score": 0.002859145635738969
+        }
+      ]
+    },
+    {
+      "bundle": "concrete_refusal_surface",
+      "polarity": "positive",
+      "text": " I",
+      "token_id": 358,
+      "weight": 1.0,
+      "role": "first_person_refusal",
+      "tokenizer_ids": [
+        358
+      ],
+      "single_token": true,
+      "id_matches_tokenizer": true,
+      "observed_in_h1_top15": [
+        {
+          "direction": "pos_ctrl_L34 (caution / answer-vs-refuse)",
+          "layer": "30",
+          "rank": 2,
+          "token": " I",
+          "score": 0.005003339610993862
+        },
+        {
+          "direction": "pos_ctrl_L34 (caution / answer-vs-refuse)",
+          "layer": "32",
+          "rank": 2,
+          "token": " I",
+          "score": 0.00405407277867198
+        },
+        {
+          "direction": "pos_ctrl_L34 (caution / answer-vs-refuse)",
+          "layer": "34",
+          "rank": 2,
+          "token": " I",
+          "score": 0.0036103115417063236
+        },
+        {
+          "direction": "pos_ctrl_L34 (caution / answer-vs-refuse)",
+          "layer": "36",
+          "rank": 2,
+          "token": " I",
+          "score": 0.005384325049817562
+        },
+        {
+          "direction": "c_hat_L34 (caution write, orthogonalized)",
+          "layer": "30",
+          "rank": 13,
+          "token": " I",
+          "score": 0.0038216342218220234
+        },
+        {
+          "direction": "c_hat_L34 (caution write, orthogonalized)",
+          "layer": "32",
+          "rank": 7,
+          "token": " I",
+          "score": 0.003306490369141102
+        },
+        {
+          "direction": "c_hat_L34 (caution write, orthogonalized)",
+          "layer": "34",
+          "rank": 5,
+          "token": " I",
+          "score": 0.0028629454318434
+        },
+        {
+          "direction": "c_hat_L34 (caution write, orthogonalized)",
+          "layer": "36",
+          "rank": 4,
+          "token": " I",
+          "score": 0.004205272998660803
+        }
+      ]
+    },
+    {
+      "bundle": "concrete_refusal_surface",
+      "polarity": "positive",
+      "text": " know",
+      "token_id": 1414,
+      "weight": 1.0,
+      "role": "idk_phrase_piece",
+      "tokenizer_ids": [
+        1414
+      ],
+      "single_token": true,
+      "id_matches_tokenizer": true,
+      "observed_in_h1_top15": []
+    },
+    {
+      "bundle": "concrete_refusal_surface",
+      "polarity": "positive",
+      "text": " cannot",
+      "token_id": 4157,
+      "weight": 1.0,
+      "role": "inability_refusal",
+      "tokenizer_ids": [
+        4157
+      ],
+      "single_token": true,
+      "id_matches_tokenizer": true,
+      "observed_in_h1_top15": []
+    },
+    {
+      "bundle": "concrete_refusal_surface",
+      "polarity": "positive",
+      "text": " unable",
+      "token_id": 11889,
+      "weight": 1.0,
+      "role": "inability_refusal",
+      "tokenizer_ids": [
+        11889
+      ],
+      "single_token": true,
+      "id_matches_tokenizer": true,
+      "observed_in_h1_top15": [
+        {
+          "direction": "pos_ctrl_L34 (caution / answer-vs-refuse)",
+          "layer": "32",
+          "rank": 13,
+          "token": " unable",
+          "score": 0.0032976865768432617
+        },
+        {
+          "direction": "pos_ctrl_L34 (caution / answer-vs-refuse)",
+          "layer": "34",
+          "rank": 10,
+          "token": " unable",
+          "score": 0.002939757192507386
+        }
+      ]
+    },
+    {
+      "bundle": "concrete_refusal_surface",
+      "polarity": "positive",
+      "text": " impossible",
+      "token_id": 11997,
+      "weight": 1.0,
+      "role": "impossibility_refusal",
+      "tokenizer_ids": [
+        11997
+      ],
+      "single_token": true,
+      "id_matches_tokenizer": true,
+      "observed_in_h1_top15": [
+        {
+          "direction": "pos_ctrl_L34 (caution / answer-vs-refuse)",
+          "layer": "30",
+          "rank": 8,
+          "token": " impossible",
+          "score": 0.004323427099734545
+        },
+        {
+          "direction": "pos_ctrl_L34 (caution / answer-vs-refuse)",
+          "layer": "32",
+          "rank": 11,
+          "token": " impossible",
+          "score": 0.003327522659674287
+        },
+        {
+          "direction": "pos_ctrl_L34 (caution / answer-vs-refuse)",
+          "layer": "34",
+          "rank": 11,
+          "token": " impossible",
+          "score": 0.0029390165582299232
+        },
+        {
+          "direction": "pos_ctrl_L34 (caution / answer-vs-refuse)",
+          "layer": "36",
+          "rank": 5,
+          "token": " impossible",
+          "score": 0.004794799257069826
+        },
+        {
+          "direction": "c_hat_L34 (caution write, orthogonalized)",
+          "layer": "30",
+          "rank": 5,
+          "token": " impossible",
+          "score": 0.004108845721930265
+        },
+        {
+          "direction": "c_hat_L34 (caution write, orthogonalized)",
+          "layer": "32",
+          "rank": 9,
+          "token": " impossible",
+          "score": 0.003264939645305276
+        },
+        {
+          "direction": "c_hat_L34 (caution write, orthogonalized)",
+          "layer": "34",
+          "rank": 9,
+          "token": " impossible",
+          "score": 0.002630353206768632
+        },
+        {
+          "direction": "c_hat_L34 (caution write, orthogonalized)",
+          "layer": "36",
+          "rank": 5,
+          "token": " impossible",
+          "score": 0.004185611382126808
+        }
+      ]
+    },
+    {
+      "bundle": "concrete_refusal_surface",
+      "polarity": "positive",
+      "text": " unknown",
+      "token_id": 9788,
+      "weight": 1.0,
+      "role": "unknown_refusal",
+      "tokenizer_ids": [
+        9788
+      ],
+      "single_token": true,
+      "id_matches_tokenizer": true,
+      "observed_in_h1_top15": []
+    },
+    {
+      "bundle": "concrete_refusal_surface",
+      "polarity": "positive",
+      "text": " insufficient",
+      "token_id": 38313,
+      "weight": 1.0,
+      "role": "evidence_lack",
+      "tokenizer_ids": [
+        38313
+      ],
+      "single_token": true,
+      "id_matches_tokenizer": true,
+      "observed_in_h1_top15": []
+    },
+    {
+      "bundle": "concrete_refusal_surface",
+      "polarity": "positive",
+      "text": " null",
+      "token_id": 845,
+      "weight": 0.5,
+      "role": "json_absence_support",
+      "tokenizer_ids": [
+        845
+      ],
+      "single_token": true,
+      "id_matches_tokenizer": true,
+      "observed_in_h1_top15": []
+    },
+    {
+      "bundle": "concrete_refusal_surface",
+      "polarity": "negative",
+      "text": " answer",
+      "token_id": 4226,
+      "weight": 1.0,
+      "role": "answer_continuation",
+      "tokenizer_ids": [
+        4226
+      ],
+      "single_token": true,
+      "id_matches_tokenizer": true,
+      "observed_in_h1_top15": [
+        {
+          "direction": "u_d_L34 (doubt)",
+          "layer": "34",
+          "rank": 2,
+          "token": " answer",
+          "score": 0.0022288684267550707
+        },
+        {
+          "direction": "u_d_L34 (doubt)",
+          "layer": "36",
+          "rank": 14,
+          "token": " answer",
+          "score": 0.0034978389739990234
+        }
+      ]
+    },
+    {
+      "bundle": "concrete_refusal_surface",
+      "polarity": "negative",
+      "text": "answer",
+      "token_id": 9217,
+      "weight": 1.0,
+      "role": "answer_continuation",
+      "tokenizer_ids": [
+        9217
+      ],
+      "single_token": true,
+      "id_matches_tokenizer": true,
+      "observed_in_h1_top15": [
+        {
+          "direction": "u_d_L34 (doubt)",
+          "layer": "34",
+          "rank": 15,
+          "token": "answer",
+          "score": 0.0018616500310599804
+        }
+      ]
+    },
+    {
+      "bundle": "concrete_refusal_surface",
+      "polarity": "negative",
+      "text": " answers",
+      "token_id": 11253,
+      "weight": 1.0,
+      "role": "answer_continuation",
+      "tokenizer_ids": [
+        11253
+      ],
+      "single_token": true,
+      "id_matches_tokenizer": true,
+      "observed_in_h1_top15": [
+        {
+          "direction": "u_d_L34 (doubt)",
+          "layer": "36",
+          "rank": 10,
+          "token": " answers",
+          "score": 0.0036157502327114344
+        }
+      ]
+    },
+    {
+      "bundle": "concrete_refusal_surface",
+      "polarity": "negative",
+      "text": "_answer",
+      "token_id": 28534,
+      "weight": 1.0,
+      "role": "answer_field_continuation",
+      "tokenizer_ids": [
+        28534
+      ],
+      "single_token": true,
+      "id_matches_tokenizer": true,
+      "observed_in_h1_top15": [
+        {
+          "direction": "u_d_L34 (doubt)",
+          "layer": "34",
+          "rank": 9,
+          "token": "_answer",
+          "score": 0.0019532826263457537
+        }
+      ]
+    },
+    {
+      "bundle": "concrete_refusal_surface",
+      "polarity": "negative",
+      "text": " reply",
+      "token_id": 9851,
+      "weight": 1.0,
+      "role": "reply_continuation",
+      "tokenizer_ids": [
+        9851
+      ],
+      "single_token": true,
+      "id_matches_tokenizer": true,
+      "observed_in_h1_top15": []
+    },
+    {
+      "bundle": "concrete_refusal_surface",
+      "polarity": "negative",
+      "text": "reply",
+      "token_id": 21034,
+      "weight": 1.0,
+      "role": "reply_continuation",
+      "tokenizer_ids": [
+        21034
+      ],
+      "single_token": true,
+      "id_matches_tokenizer": true,
+      "observed_in_h1_top15": []
+    },
+    {
+      "bundle": "concrete_refusal_surface",
+      "polarity": "negative",
+      "text": " response",
+      "token_id": 2033,
+      "weight": 0.5,
+      "role": "response_continuation",
+      "tokenizer_ids": [
+        2033
+      ],
+      "single_token": true,
+      "id_matches_tokenizer": true,
+      "observed_in_h1_top15": []
+    },
+    {
+      "bundle": "concrete_refusal_surface",
+      "polarity": "negative",
+      "text": "答案",
+      "token_id": 102349,
+      "weight": 1.0,
+      "role": "observed_answer_axis_token",
+      "tokenizer_ids": [
+        102349
+      ],
+      "single_token": true,
+      "id_matches_tokenizer": true,
+      "observed_in_h1_top15": [
+        {
+          "direction": "u_d_L34 (doubt)",
+          "layer": "30",
+          "rank": 9,
+          "token": "答案",
+          "score": 0.0024004566948860884
+        },
+        {
+          "direction": "u_d_L34 (doubt)",
+          "layer": "32",
+          "rank": 1,
+          "token": "答案",
+          "score": 0.002451515756547451
+        },
+        {
+          "direction": "u_d_L34 (doubt)",
+          "layer": "34",
+          "rank": 1,
+          "token": "答案",
+          "score": 0.00258997012861073
+        },
+        {
+          "direction": "u_d_L34 (doubt)",
+          "layer": "36",
+          "rank": 1,
+          "token": "答案",
+          "score": 0.0042445785365998745
+        }
+      ]
+    },
+    {
+      "bundle": "concrete_refusal_surface",
+      "polarity": "negative",
+      "text": "回答",
+      "token_id": 102104,
+      "weight": 1.0,
+      "role": "observed_answer_axis_token",
+      "tokenizer_ids": [
+        102104
+      ],
+      "single_token": true,
+      "id_matches_tokenizer": true,
+      "observed_in_h1_top15": [
+        {
+          "direction": "u_d_L34 (doubt)",
+          "layer": "32",
+          "rank": 7,
+          "token": "回答",
+          "score": 0.00218011811375618
+        },
+        {
+          "direction": "u_d_L34 (doubt)",
+          "layer": "34",
+          "rank": 3,
+          "token": "回答",
+          "score": 0.002174166962504387
+        },
+        {
+          "direction": "u_d_L34 (doubt)",
+          "layer": "36",
+          "rank": 2,
+          "token": "回答",
+          "score": 0.004205272998660803
+        }
+      ]
+    },
+    {
+      "bundle": "concrete_refusal_surface",
+      "polarity": "negative",
+      "text": "的答案",
+      "token_id": 111230,
+      "weight": 1.0,
+      "role": "observed_answer_axis_token",
+      "tokenizer_ids": [
+        111230
+      ],
+      "single_token": true,
+      "id_matches_tokenizer": true,
+      "observed_in_h1_top15": [
+        {
+          "direction": "u_d_L34 (doubt)",
+          "layer": "32",
+          "rank": 13,
+          "token": "的答案",
+          "score": 0.002117321826517582
+        },
+        {
+          "direction": "u_d_L34 (doubt)",
+          "layer": "34",
+          "rank": 5,
+          "token": "的答案",
+          "score": 0.002073354320600629
+        },
+        {
+          "direction": "u_d_L34 (doubt)",
+          "layer": "36",
+          "rank": 3,
+          "token": "的答案",
+          "score": 0.004087358247488737
+        }
+      ]
+    },
+    {
+      "bundle": "concrete_refusal_surface",
+      "polarity": "negative",
+      "text": "的回答",
+      "token_id": 111423,
+      "weight": 1.0,
+      "role": "observed_answer_axis_token",
+      "tokenizer_ids": [
+        111423
+      ],
+      "single_token": true,
+      "id_matches_tokenizer": true,
+      "observed_in_h1_top15": [
+        {
+          "direction": "u_d_L34 (doubt)",
+          "layer": "36",
+          "rank": 5,
+          "token": "的回答",
+          "score": 0.003969461657106876
+        }
+      ]
+    },
+    {
+      "bundle": "concrete_refusal_surface",
+      "polarity": "negative",
+      "text": "ANS",
+      "token_id": 11692,
+      "weight": 0.5,
+      "role": "answer_fragment",
+      "tokenizer_ids": [
+        11692
+      ],
+      "single_token": true,
+      "id_matches_tokenizer": true,
+      "observed_in_h1_top15": [
+        {
+          "direction": "u_d_L34 (doubt)",
+          "layer": "34",
+          "rank": 7,
+          "token": "ANS",
+          "score": 0.0020068602170795202
+        },
+        {
+          "direction": "u_d_L34 (doubt)",
+          "layer": "36",
+          "rank": 12,
+          "token": "ANS",
+          "score": 0.0035175017546862364
+        }
+      ]
+    }
+  ]
+}

@@ -48,6 +48,6 @@ relationships:
 
 A set of zero-shot GPT-4 classifiers used as an additional reward signal during RLHF fine-tuning. Each RBRM takes a prompt, model output, and human-written rubric, and classifies the output into categories (e.g., desired refusal, undesired refusal, disallowed content, safe non-refusal). The reward signal simultaneously penalizes under-refusal on harmful prompts and over-refusal on safe prompts.
 
-**Why it matters here:** RBRMs operationalize the dual-failure-mode correction: they try to push the model away from both harmful compliance and excessive over-caution on innocuous inputs. This is the closest existing industrial technique to a precision abstention-calibration signal, making it a design reference for Phase 1's abstention training arms.
+**Why it matters here:** RBRMs operationalize the dual-failure-mode correction: they try to push the model away from both harmful compliance and excessive over-caution on innocuous inputs. This is the closest existing industrial technique to a precision abstention-calibration signal, making it a design reference for the locked training-regimen study's abstention training arms.
 
 **Lineage:** Introduced in GPT-4 Technical Report (arXiv:2303.08774, §6). Related to reward-model approaches in [[reinforcement-learning-from-human-feedback]]; concurrent with constitutional AI methods.

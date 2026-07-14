@@ -198,8 +198,8 @@ arms:
 execution:
   output_path: experiments/dark-actuator-screen/analysis/rows_out.jsonl
   resume: true
-  # PYTHONPATH=experiments/common/graders:experiment/phase1/eval so the flat
-  # module name resolves (dark_actuator_grader imports experiment/phase1/eval
+  # PYTHONPATH=experiments/common/graders:archive/experiment/phase1/eval so the flat
+  # module name resolves (dark_actuator_grader imports archive/experiment/phase1/eval
   # scorers.py directly).
   grader: dark_actuator_grader:grade
   # Authorized-knob (execution only, not a gate/population/seed/law change):

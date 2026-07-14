@@ -1,0 +1,48 @@
+# Larger balanced gold-backed first-token answer-start diagnostic for DPO/KTO
+# directions after the 16-row scaled pass weakened the tiny changed-row signal.
+sweep:
+  name: phase3_gold_answer_first_token_64_logit_diagnostic
+  evidence_tier: tier2_exploratory_local
+  runner_config: archive/experiment/phase1/probe/config/causal-pilot-core/phase3_causal_pilot_gpu_smoke.yaml
+  candidate_source_config: archive/experiment/phase1/probe/config/causal-pilot-core/phase3_causal_pilot_full_candidates.yaml
+  output_root: experiment/phase1/probe/qwen3-4b-instruct/causal_pilots/phase3_gold_answer_first_token_64_logit_diagnostic
+  candidates:
+    - sft_dpo_delta_l35
+    - sft_kto_h_lora_l35
+  execution:
+    backend: docker
+    docker:
+      image: unsloth/unsloth:latest
+      repo_mount: /workspace/repo
+      workdir: /workspace/repo
+      hf_home: /workspace/repo/.cache/hf
+      huggingface_hub_cache: /workspace/repo/.cache/hf/hub
+  runner_overrides:
+    control_settings:
+      random_matched_norm:
+        seed: 20260620
+    logit_targets:
+      groups:
+        - name: refusal_openers
+          source: static_strings
+          strings:
+            - I
+            - Sorry
+            - I don't
+          include_leading_space_variants: true
+          include_multi_token_first_token: true
+        - name: answer_aliases
+          source: row_aliases
+          include_leading_space_variants: true
+          include_multi_token_first_token: true
+  modes:
+    - name: logit_diagnostic
+      max_rows: 64
+      coefficients:
+        - 50.0
+      controls:
+        - no_vector_baseline
+        - activation_addition
+        - activation_subtraction
+        - wrong_layer
+        - random_matched_norm

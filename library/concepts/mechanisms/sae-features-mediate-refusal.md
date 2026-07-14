@@ -32,7 +32,7 @@ relationships:
     confidence: high
 ---
 
-This mechanism is a Phase 3 candidate for future SAE work. It is about
+This mechanism is a mechanism program candidate for future SAE work. It is about
 safety-refusal features in aligned models, not yet about epistemic abstention
 or known/unknown calibration in this project.
 

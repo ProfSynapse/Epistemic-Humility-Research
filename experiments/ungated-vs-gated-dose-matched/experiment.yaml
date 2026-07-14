@@ -1,0 +1,54 @@
+slug: ungated-vs-gated-dose-matched
+title: 'H4: Registered Ungated-vs-Gated Dose-Matched Arm for the Caution Snap'
+type: steer-cell
+status: resolved
+registered: true
+created_at: '2026-07-11T00:41:00Z'
+question: When every held-out row is dosed unconditionally at the caution-snap setpoint
+  (gate off) versus dosed only where the doubt gate fires (gate on), does the doubt
+  gate supply the instrument's selectivity - much less known-correct damage - without
+  materially sacrificing confab conversion?
+prediction: Ungated known-correct damage exceeds gated by at least 15pp absolute (McNemar
+  p < 0.001), while ungated confab conversion is at or above gated confab conversion
+  and the gated arm stays within 15pp of it, so the doubt gate supplies the instrument's
+  selectivity without materially sacrificing conversion.
+falsifier: Ungated known-correct damage does not exceed gated known-correct damage
+  by 15pp absolute (dosing every known-correct row is about as harmless as gating
+  it) - the write is inherently selective, the gate is not what supplies selectivity,
+  and the paper's non-selectivity sentence must be removed.
+checkpoint:
+  repo: unsloth/Qwen3-4B
+  revision: raw-base (no adapter; bf16, no 4-bit quantization)
+instrument:
+  configs:
+  - cell.yaml
+  - gates.yaml
+  modules:
+  - pipeline.py
+  - materialize_rows.py
+  - gen_lib.py
+  - grader.py
+  - model_lib.py
+  - smoke_cpu.py
+  pins:
+    cell.yaml: 87880ae23f8c28db18eeaec8be6ade1c112f670b72ec9c5cc432048959f8322e
+    gates.yaml: c97a8502a213ead723cbc77d3979eda1a86298b2a61b9e9e06efd8eab4aaad26
+    pipeline.py: e787d26d2876ce5f9040b8f0a0105b382e037896d6ddee7dad437680d4d44720
+    materialize_rows.py: 5169f28e8b973e8ec3d045febcbbcc46673efb2c46b9352cf7fb541e0150477c
+    gen_lib.py: 10bb9bc557a19f8fcb9406f1b9b885f76b7cfa65ed8f1c7a4b69dccbbdae9d6c
+    grader.py: af89b535d08f5424d1981d6811b6cbef79e52b8142bf691b4ec52c1e9595a435
+    model_lib.py: 23499373f76b6208a8ee07ee7a3321a81b93360df6c0fe18c8561de3d93e6d3c
+    smoke_cpu.py: 094cf641352e57952838a58754c47488e3b242be9d8707a50a6d379ec8a08287
+inputs:
+- experiments/common/doubt-gated-caution-tighten-heldout-split/split_manifest.json
+- experiments/doubt-gated-caution-tighten/analysis-committed/u_d_L34.json
+- experiments/doubt-gated-caution-tighten/analysis-committed/c_hat_L34.json
+- experiments/doubt-gated-caution-tighten/analysis-committed/gate_fit.json
+- experiments/doubt-gated-caution-tighten/analysis-committed/build_manifest.json
+verdict: 'On the resolved Qwen3-4B/L34/dose-200 instrument, dose-matched ungated dosing
+  damages 60.1% of held-out known-correct rows versus 3.1% gated (57.0pp, McNemar
+  p=4.2e-43) while the gate costs only 4.3pp of confab conversion: the doubt gate,
+  not the write, supplies the instrument''s selectivity at that operating point.'
+kg:
+- experiment:ungated-vs-gated-dose-matched
+- mechanism:qwen3-4b-l34-dose200-write-non-selective-gate-supplies-selectivity

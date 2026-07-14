@@ -86,7 +86,7 @@ mechanisms: ["[[sae-sparsity-increases-feature-interpretability]]", "[[sae-width
 
 ## Relevance to experiment
 
-<!-- mech-interp of features/superposition; Phase 3 probing context -->
+<!-- mech-interp of features/superposition; mechanism program probing context -->
 
 ## Claims
 

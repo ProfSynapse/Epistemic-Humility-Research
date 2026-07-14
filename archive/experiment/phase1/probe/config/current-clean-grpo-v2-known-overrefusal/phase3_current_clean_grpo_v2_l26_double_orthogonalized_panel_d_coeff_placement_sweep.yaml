@@ -1,0 +1,36 @@
+# Panel-D coefficient/placement frontier for the double-constrained GRPO v2 L26
+# vector. Panel D exposed an unknown leak at coeff 10 across L26/L27/L28, so
+# this tests lower coefficients at the late-layer placements.
+
+sweep:
+  name: phase3_current_clean_grpo_v2_l26_double_orthogonalized_panel_d_coeff_placement_sweep
+  evidence_tier: tier2_exploratory_local
+  runner_config: archive/experiment/phase1/probe/config/current-clean-grpo-v2-known-overrefusal/phase3_current_clean_known_overrefusal_logit_diagnostic.yaml
+  candidate_source_config: archive/experiment/phase1/probe/config/current-clean-grpo-v2-known-overrefusal/phase3_current_clean_grpo_v2_l26_double_orthogonalized_shifted_layer_candidates.yaml
+  output_root: experiment/phase1/probe/analysis/current_clean_grpo_v2_l26_double_orthogonalized_panel_d_coeff_placement_sweep
+  candidates:
+    - clean_sft_grpo_v2_l26_source_l26_double_orthogonalized
+    - clean_sft_grpo_v2_l27_shift_control_l26_double_orthogonalized
+    - clean_sft_grpo_v2_l28_shift_control_l26_double_orthogonalized
+  execution:
+    backend: docker
+    docker:
+      image: unsloth/unsloth:latest
+      repo_mount: /workspace/repo
+      workdir: /workspace/repo
+      hf_home: /workspace/repo/.cache/hf
+      huggingface_hub_cache: /workspace/repo/.cache/hf/hub
+  runner_overrides:
+    selection:
+      max_rows_default: 192
+      probe_results: experiment/phase1/probe/analysis/current_selfaware_behavior_rows/clean_sft_grpo_v2/rows.jsonl
+      row_keys_by_candidate: null
+      row_keys_file: archive/experiment/phase1/probe/config/current-clean-grpo-v2-known-overrefusal/phase3_current_clean_grpo_v2_known_overrefusal_replay_192_panel_d_row_keys.txt
+  modes:
+    - name: generation
+      max_rows: 192
+      max_new_tokens: 96
+      coefficients: [5.0, 7.5]
+      controls:
+        - no_vector_baseline
+        - activation_subtraction

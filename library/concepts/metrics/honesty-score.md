@@ -35,7 +35,7 @@ does not know while penalizing it for refusing questions it could answer
 correctly, capturing the desired calibration between epistemic humility and
 helpfulness.
 
-**Why it matters here:** The Phase 1 SFT-vs-DPO-vs-KTO study can use
+**Why it matters here:** The locked training-regimen SFT-vs-DPO-vs-KTO study can use
 S_honesty as a single summary metric to compare training regimes: a method that
 raises [[prudence-score]] without inflating [[over-conservativeness-score]] will
 score highest, making the tradeoff between under- and over-abstention explicit.

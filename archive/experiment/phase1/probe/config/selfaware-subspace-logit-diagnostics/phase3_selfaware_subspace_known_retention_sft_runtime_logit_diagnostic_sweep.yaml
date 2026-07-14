@@ -1,0 +1,52 @@
+# Phase 3 SelfAware same-norm subspace known-retention sweep on the pure SFT runtime.
+#
+# Uses the same stable known-correct row slice as the arm-native
+# known-retention panel, but runs all candidate directions inside the shared SFT
+# merged model without DPO/KTO extraction adapters.
+
+sweep:
+  name: phase3_selfaware_subspace_known_retention_sft_runtime_logit_diagnostic
+  evidence_tier: tier2_exploratory_local
+  runner_config: archive/experiment/phase1/probe/config/selfaware-subspace-logit-diagnostics/phase3_selfaware_subspace_normed_logit_diagnostic.yaml
+  candidate_source_config: archive/experiment/phase1/probe/config/selfaware-subspace-logit-diagnostics/phase3_selfaware_subspace_normed_logit_diagnostic.yaml
+  output_root: experiment/phase1/probe/qwen3-4b-sft-merged-seed1-selfaware/causal_pilots/phase3_selfaware_subspace_known_retention_sft_runtime_logit_diagnostic
+  candidates: all
+  runner_overrides:
+    runtime_model:
+      model_name: /workspace/repo/synaptic-tuner/toolset-training-artifacts/runs/local/4b/sft__4b__headline__seed1/20260614_053221/Qwen3-4B-bnb-4bit/merged-16bit
+      revision: null
+      adapter_path: null
+      use_extraction_adapter: false
+      allow_adapterless: true
+      torch_dtype: bfloat16
+      device_map: cuda
+    selection:
+      max_rows_default: 8
+      row_keys:
+        - selfaware::selfaware::000002::selfaware-3
+        - selfaware::selfaware::000003::selfaware-4
+        - selfaware::selfaware::000010::selfaware-11
+        - selfaware::selfaware::000014::selfaware-15
+        - selfaware::selfaware::000029::selfaware-30
+        - selfaware::selfaware::000035::selfaware-36
+        - selfaware::selfaware::000037::selfaware-38
+        - selfaware::selfaware::000044::selfaware-45
+  execution:
+    backend: docker
+    docker:
+      image: unsloth/unsloth:latest
+      repo_mount: /workspace/repo
+      workdir: /workspace/repo
+      hf_home: /workspace/repo/.cache/hf
+      huggingface_hub_cache: /workspace/repo/.cache/hf/hub
+  modes:
+    - name: logit_diagnostic
+      max_rows: 8
+      coefficients: [25.0, 50.0]
+      controls:
+        - no_vector_baseline
+        - activation_addition
+        - activation_subtraction
+        - wrong_layer
+        - wrong_layer_subtraction
+        - random_matched_norm

@@ -1,0 +1,167 @@
+{
+  "model": "unsloth/Qwen3-4B",
+  "n_layers": 36,
+  "status": "complete",
+  "hs_indices": [
+    2,
+    5,
+    8,
+    11,
+    14,
+    17,
+    20,
+    23,
+    26,
+    29,
+    32,
+    35,
+    36
+  ],
+  "n_random_dirs": 5,
+  "seed": 20260707,
+  "per_layer": {
+    "2": {
+      "excess_kurtosis_mean": 0.5424294785416004,
+      "excess_kurtosis_std": 0.047078218296763064,
+      "sparsity_mean": 0.184507889567537,
+      "sparsity_std": 0.005278781382312963,
+      "effective_dim_frac_mean": 0.0032241768899244965,
+      "effective_dim_frac_std": 0.00018324907975530468,
+      "n_random_dirs": 5,
+      "n_prompts": 1000,
+      "elapsed_sec": 1039.1606192588806
+    },
+    "5": {
+      "excess_kurtosis_mean": 0.5132102693642737,
+      "excess_kurtosis_std": 0.12425887622513658,
+      "sparsity_mean": 0.17791588628281557,
+      "sparsity_std": 0.015620259818078585,
+      "effective_dim_frac_mean": 0.0026760703547840056,
+      "effective_dim_frac_std": 0.0006672719446494932,
+      "n_random_dirs": 5,
+      "n_prompts": 1000,
+      "elapsed_sec": 983.7576878070831
+    },
+    "8": {
+      "excess_kurtosis_mean": 0.4989626119917666,
+      "excess_kurtosis_std": 0.0943273688390723,
+      "sparsity_mean": 0.18103493331102802,
+      "sparsity_std": 0.013511237567633495,
+      "effective_dim_frac_mean": 0.002507797891132737,
+      "effective_dim_frac_std": 0.0007204983865200327,
+      "n_random_dirs": 5,
+      "n_prompts": 1000,
+      "elapsed_sec": 901.9155399799347
+    },
+    "11": {
+      "excess_kurtosis_mean": 0.5401898440949952,
+      "excess_kurtosis_std": 0.06038278358537861,
+      "sparsity_mean": 0.18087876770597014,
+      "sparsity_std": 0.013679655248995051,
+      "effective_dim_frac_mean": 0.003405833716555156,
+      "effective_dim_frac_std": 0.0009109564643259777,
+      "n_random_dirs": 5,
+      "n_prompts": 1000,
+      "elapsed_sec": 859.3135643005371
+    },
+    "14": {
+      "excess_kurtosis_mean": 0.5471113585632065,
+      "excess_kurtosis_std": 0.04308163099326205,
+      "sparsity_mean": 0.18779058624222314,
+      "sparsity_std": 0.0055962881345608395,
+      "effective_dim_frac_mean": 0.0031925874876284803,
+      "effective_dim_frac_std": 0.0006896230831338662,
+      "n_random_dirs": 5,
+      "n_prompts": 1000,
+      "elapsed_sec": 807.4983549118042
+    },
+    "17": {
+      "excess_kurtosis_mean": 0.5344456391910781,
+      "excess_kurtosis_std": 0.14050802196289944,
+      "sparsity_mean": 0.17323552112090462,
+      "sparsity_std": 0.019157175119696498,
+      "effective_dim_frac_mean": 0.003409333517914767,
+      "effective_dim_frac_std": 0.0011022555306276713,
+      "n_random_dirs": 5,
+      "n_prompts": 1000,
+      "elapsed_sec": 747.6427800655365
+    },
+    "20": {
+      "excess_kurtosis_mean": 0.47806923014753977,
+      "excess_kurtosis_std": 0.05053319749041399,
+      "sparsity_mean": 0.18675993188224288,
+      "sparsity_std": 0.01207308361401734,
+      "effective_dim_frac_mean": 0.003487904499813819,
+      "effective_dim_frac_std": 0.0008479037350838938,
+      "n_random_dirs": 5,
+      "n_prompts": 1000,
+      "elapsed_sec": 683.5130531787872
+    },
+    "23": {
+      "excess_kurtosis_mean": 0.3848645008968511,
+      "excess_kurtosis_std": 0.025016456675199895,
+      "sparsity_mean": 0.20019157764268622,
+      "sparsity_std": 0.0036740545807772396,
+      "effective_dim_frac_mean": 0.0059297138216407325,
+      "effective_dim_frac_std": 0.0007686788085309291,
+      "n_random_dirs": 5,
+      "n_prompts": 1000,
+      "elapsed_sec": 619.8804748058319
+    },
+    "26": {
+      "excess_kurtosis_mean": 0.2758957780943728,
+      "excess_kurtosis_std": 0.027043614221735512,
+      "sparsity_mean": 0.2072937950843258,
+      "sparsity_std": 0.0023656740338640425,
+      "effective_dim_frac_mean": 0.010573471754988992,
+      "effective_dim_frac_std": 0.0029155788463533154,
+      "n_random_dirs": 5,
+      "n_prompts": 1000,
+      "elapsed_sec": 560.431337594986
+    },
+    "29": {
+      "excess_kurtosis_mean": 0.22453076397240604,
+      "excess_kurtosis_std": 0.032102281680115335,
+      "sparsity_mean": 0.20555550715117826,
+      "sparsity_std": 0.005869677176028339,
+      "effective_dim_frac_mean": 0.008021760755558237,
+      "effective_dim_frac_std": 0.0036075962847056907,
+      "n_random_dirs": 5,
+      "n_prompts": 1000,
+      "elapsed_sec": 485.5266270637512
+    },
+    "32": {
+      "excess_kurtosis_mean": 0.2253005867839065,
+      "excess_kurtosis_std": 0.02522393975180399,
+      "sparsity_mean": 0.20873318770320554,
+      "sparsity_std": 0.0042592983585690285,
+      "effective_dim_frac_mean": 0.005855932466948025,
+      "effective_dim_frac_std": 0.0019298066054734197,
+      "n_random_dirs": 5,
+      "n_prompts": 1000,
+      "elapsed_sec": 440.32601833343506
+    },
+    "35": {
+      "excess_kurtosis_mean": 0.21091460793387543,
+      "excess_kurtosis_std": 0.016997718934828963,
+      "sparsity_mean": 0.20156868483860943,
+      "sparsity_std": 0.015227692141047524,
+      "effective_dim_frac_mean": 0.002290942191410528,
+      "effective_dim_frac_std": 0.0005608273678057398,
+      "n_random_dirs": 5,
+      "n_prompts": 1000,
+      "elapsed_sec": 366.23821115493774
+    },
+    "36": {
+      "excess_kurtosis_mean": 0.2245511444770746,
+      "excess_kurtosis_std": 0.03373305519269522,
+      "sparsity_mean": 0.21138349788786312,
+      "sparsity_std": 0.007269938249225632,
+      "effective_dim_frac_mean": 0.0010000000000000436,
+      "effective_dim_frac_std": 8.257037746534327e-19,
+      "n_random_dirs": 5,
+      "n_prompts": 1000,
+      "elapsed_sec": 342.4490933418274
+    }
+  }
+}

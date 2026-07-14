@@ -1,0 +1,60 @@
+# Pre-stated gates for jspace-family-atlas, transcribed verbatim from
+# AMENDMENT.md "## Gates". Do not add, drop, or retune a threshold here
+# without a signed amendment revision.
+
+AG0:
+  name: integrity (pre-outcome)
+  checks:
+    - id: capture_coverage
+      rule: "capture covers >= 95% of the cell's manifest rows at every layer"
+      threshold: 0.95
+      scope: per_cell_per_layer
+    - id: direction_refit_determinism
+      rule: "direction refits are byte-identical under the fixed seed"
+      method: "fit twice from the same captured H under seed 20260707; compare byte-for-byte"
+    - id: held_out_power_survives_attrition
+      rule: >-
+        held-out power carried over from the fleet cell (confab >= 150,
+        known-correct >= 250) still holds after capture attrition
+      thresholds:
+        confab_held_out_minimum: 150
+        known_correct_answered_held_out_minimum: 250
+
+AG1:
+  name: profile
+  checks:
+    - id: eff_dim_frac_every_layer
+      rule: "eff_dim_frac profile is computed at every layer with the registered estimator"
+      scope: "hs_index 0..num_hidden_layers inclusive, per cell"
+    - id: profile_reproducibility
+      rule: >-
+        reproducibility re-run on a 20% row subsample keeps the peak layer
+        within +/- 1 layer
+      subsample_frac: 0.20
+      tolerance_layers: 1
+
+AG2:
+  name: read panel
+  checks:
+    - id: per_layer_auroc_with_ci
+      rule: >-
+        per-layer held-out AUROCs reported with CIs for all three axes; no
+        threshold gate on the values themselves beyond the
+        prediction/falsifier
+      axes: [doubt, caution, raw_refusal]
+      ci_method: bootstrap
+      bootstrap_resamples: 2000
+      note: "AG2 itself has no pass/fail numeric threshold; the numbers are the atlas. Prediction/falsifier (AMENDMENT.md) are adjudicated separately at resolve, not by this gate."
+
+# Prediction / falsifier restated for cross-reference only (source of truth
+# remains AMENDMENT.md; do not edit here without a signed revision there).
+prediction_restated: >-
+  Each mapped family shows an interior workspace band: a contiguous set of
+  layers strictly inside (20%, 85%) depth where eff_dim_frac peaks AND all
+  three read axes (doubt, caution, raw refusal) hold held-out AUROC >= 0.80,
+  with the band's peak layer differing from the fleet's ported 0.94-depth
+  layer.
+falsifier_restated: >-
+  For either mapped family: no interior eff_dim_frac peak exists (the
+  profile is monotone to the last layer), or no layer inside (20%, 85%)
+  depth reaches held-out AUROC >= 0.80 on all three axes simultaneously.

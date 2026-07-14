@@ -1,0 +1,43 @@
+slug: knowledge-subspace-erasure
+title: Amendment AJ — Knowledge-Subspace Erasure (rank-1 → certified linear erasure)
+type: historical-amendment
+status: historical
+registered: true
+created_at: '2026-07-08T17:40:52Z'
+legacy:
+  label: AJ
+  path: experiment/protocol/AMENDMENT-AJ-knowledge-subspace-erasure.md
+  migrated_to: experiments/knowledge-subspace-erasure/AMENDMENT.md
+migration:
+  needs_manual_review:
+  - falsifier
+  - experiment_type
+  - instrument_configs
+  - kg_ids
+  notes: Imported from legacy amendment prose. Do not infer missing machine fields
+    without hand-reading AMENDMENT.md.
+question: Does the caution readout (refuse vs answer among known questions) survive
+  certified erasure of the full linearly readable knowledge/answerability content,
+  or was its separability carried by that content all along?
+prediction: "orchestrator:\n  call: SURVIVES (AJ-G2 PASS)\n  confidence: ~85%\n  recorded:\
+  \ 2026-07-04\n  basis: 'Three converging priors: B1 held rank-1 doubt projection\
+  \ at 0.825 held-out;\n    the session 0035 hydra result kept refuse/answer AUROC\
+  \ ~0.90 through 40 iterative\n    direction removals; and the paper3 Section 5 knowledge-orthogonality\
+  \ check found\n    |cos| ~ 0.04-0.09 between caution_perp and the knowledge probe\
+  \ axis. Residual\n    risk: LEACE''s whitened rank-1 erasure is strictly stronger\
+  \ than the raw mass-mean\n    projection those priors used.'\nuser:\n  call: SURVIVES\
+  \ (AJ-G2 PASS)\n  recorded: 2026-07-04\n  quote: AJ survived I agree worth being\
+  \ optimistic here."
+falsifier: ''
+checkpoint:
+  repo: ''
+  revision: ''
+instrument:
+  configs: []
+  modules: []
+  pins: {}
+inputs: []
+verdict: SURVIVES (user-adjudicated 2026-07-04) — caution 0.858 post-erasure, knowledge
+  carries a small quantified share (gap 0.054 +/- 0.006, sitting on the pre-stated
+  0.05 line per Addendum A1); strict AJ-G2 ambiguous, so the scoreboard scores TIE/TIE
+kg: []

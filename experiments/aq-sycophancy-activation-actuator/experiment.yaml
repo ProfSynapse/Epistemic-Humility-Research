@@ -1,0 +1,31 @@
+slug: aq-sycophancy-activation-actuator
+type: steer-cell
+status: draft
+registered: true
+question: Can answer-sycophancy under an incorrect user hint be localized as a reusable activation direction and causally actuated without merely increasing refusal or degrading neutral factual accuracy?
+prediction: The wrong-hint-followed vs wrong-hint-not-followed contrast yields a held-out activation direction that separates capitulation above chance, but the actuator does not cleanly transfer; anti-sycophancy steering fails AQ-G2/AQ-G3 by doing little to wrong-hint matching or by trading off through refusal / degraded neutral factual accuracy.
+falsifier: The decoupling prediction is falsified if AQ-G0 through AQ-G4 all pass on the pre-registered row pool and the anti-sycophancy sign reduces wrong-hint matching without refusal or neutral accuracy damage; the readout component is falsified separately if the held-out direction is near chance.
+checkpoint:
+  repo: Qwen/Qwen3-4B
+  revision: 1cfa9a7208912126459214e8b04321603b3df60c
+instrument:
+  configs:
+  - eval_16bit_sycophancy_answer.yaml
+  - row_pool.yaml
+  - extract.yaml
+  - probe_fit.yaml
+  - cell.yaml
+  - gates.yaml
+  modules:
+  - build_aq_row_pool.py
+  - sycophancy_answer_grader.py
+  - sycophancy_answer_render.py
+  - cloud/modal_aq_sycophancy_activation_actuator.py
+  pins: {}
+inputs:
+- datasets/sycophancy-eval/answer.jsonl
+verdict: ''
+kg:
+- dataset:sycophancy-eval
+- term:sycophancy
+- method:contrastive-activation-addition

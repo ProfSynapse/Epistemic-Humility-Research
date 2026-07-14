@@ -1,0 +1,70 @@
+slug: probe-as-reward
+title: 'Amendment AI — Probe-as-Reward (PAR): training the model to consult its own
+  readout'
+type: historical-amendment
+status: historical
+registered: true
+created_at: '2026-07-08T17:40:52Z'
+legacy:
+  label: AI
+  path: experiment/protocol/AMENDMENT-AI-probe-as-reward.md
+  migrated_to: experiments/probe-as-reward/AMENDMENT.md
+migration:
+  needs_manual_review:
+  - falsifier
+  - experiment_type
+  - kg_ids
+  notes: Imported from legacy amendment prose. Do not infer missing machine fields
+    without hand-reading AMENDMENT.md.
+question: Does GRPO with a probe-agreement reward (read from the policy's own pre-generation
+  states by a sensor refit on the training-start checkpoint) beat the same reward
+  computed from a permuted sensor on the AH congruence eval — i.e., can the model
+  be trained to consult its own readout?
+prediction: "orchestrator:\n  call: TRUE wins\n  confidence: ~65%\n  recorded: 2026-07-03\n\
+  \  basis: AC showed the first use-the-signal win when the coupling was wired externally\n\
+  \    (+8.7pt over permuted); GRPO-v2's stuck quadrant is over-refusal at 77% occupancy,\n\
+  \    which the agreement reward directly prices; but the N/M history (scalar collapses\n\
+  \    onto the action) keeps confidence moderate — the reward channel may reproduce\n\
+  \    the collapse.\nuser:\n  call: TRUE wins\n  recorded: 2026-07-03\n  quote: 'Pre-authorize:\
+  \ I predict TRUE wins (recorded pre-launch via the overnight\n    authorization;\
+  \ launch conditional on smoke green + refit sensor AUROC >= 0.9 +\n    constants\
+  \ derived per the pre-stated rules).'"
+falsifier: ''
+checkpoint:
+  repo: ''
+  revision: ''
+instrument:
+  configs: []
+  modules:
+  - cloud/hf_jobs_ai_verdict.sh
+  - scripts/par_mining_score.py
+  - scripts/par_recalibration_score.py
+  - scripts/par_recalibration_t_extract.py
+  - scripts/par_sensor_refit_4bit_inloop_check.py
+  - scripts/par_sensor_refit_extract.py
+  - scripts/par_sensor_refit_extract_4bit.py
+  - scripts/par_sensor_refit_fit.py
+  - scripts/par_sensor_refit_mining_step.py
+  - scripts/par_sensor_refit_union_inloop.py
+  - scripts/path_compat.py
+  pins:
+    cloud/hf_jobs_ai_verdict.sh: 2e813931fe38427793ed0edf51fd364356e27b1608385f21a5bd0e093ac26bdf
+    scripts/par_mining_score.py: 2101c1af6008d430435efb952e3a84fa3c6fd42df96cf8173a8ba60458835b98
+    scripts/par_recalibration_score.py: 6b8163929fef5f3ed17cf5f77bc34099b53aa20178a883a333fe6ca948f6fdc1
+    scripts/par_recalibration_t_extract.py: cafb3fe060ea1ace16fb8139bedd397aec9f334a921797ca4d21b4baa59f1490
+    scripts/par_sensor_refit_4bit_inloop_check.py: 0afed14fcdc857a5534ddff00fb57202263fdcd3bec4825abe3ae10522dea4f6
+    scripts/par_sensor_refit_extract.py: e70315a5c856af62836a6d7cf11ceff06598f22efc46a72c946e721ef5d2ffa1
+    scripts/par_sensor_refit_extract_4bit.py: 40301a7bf951b567b8415243f74a5235b79720e795fbc028975e1115e5a2575f
+    scripts/par_sensor_refit_fit.py: 8a3fce98f626ef318fa2751575c44e0985b4410b92242fa21fcd334ec921f3e4
+    scripts/par_sensor_refit_mining_step.py: 4e6b87d5a407597710be92b4ff29577ea435f4afc7098249b182b432c88d3204
+    scripts/par_sensor_refit_union_inloop.py: e751ee7ae911584498d16c1d197542d2e33728521ff197556a333ae52bd90b14
+    scripts/path_compat.py: 543b5ec38362ba49b59f660bb8c9f0f5c7554bdd1c1724743a2f08571f74fbdf
+inputs: []
+verdict: 'NULL (G1 fail, G0 pass) — adjudicated by the user 2026-07-05. The reward
+  channel also does not couple the readout: TRUE-arm congruence 59.75% vs PERMUTED
+  76.75%, differential −17.0pt (10k paired bootstrap CI [−21.5, −12.5], excludes 0
+  on the wrong side; gate needed ≥ +10pt). Instrument valid (fresh per-arm probes
+  OOF AUROC 0.9948/0.9946, both arms full 2934 steps, no halts). G2 fails for both
+  arms (over-refusal released; abstain-when-unanswerable preserved at +0.49pt). Strengthens
+  H-compliance generality across channels (M, N, R, AA/AB text, AI reward).'
+kg: []

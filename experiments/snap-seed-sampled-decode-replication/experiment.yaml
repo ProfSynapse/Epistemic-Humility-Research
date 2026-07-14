@@ -1,0 +1,98 @@
+slug: snap-seed-sampled-decode-replication
+title: 'H3: Multi-Seed and Sampled-Decode Replication of the Doubt-Gated Caution Snap'
+type: steer-cell
+status: resolved
+registered: true
+created_at: '2026-07-11T00:34:57Z'
+question: Does the resolved doubt-gated caution snap headline (gated confab clean_tighten
+  73.5%, known-correct false-refusal 3.1%), measured as a single greedy decode, survive
+  re-measurement of the same frozen instrument under fresh harness seeds and the program's
+  registered sampled-decode configuration (Amendment SR)?
+prediction: The greedy arm reproduces 73.5%/3.1% within band, and the sampled-decode
+  arm's majority-vote confab conversion stays at or above 63.5% while majority-vote
+  known-correct cost stays at or below 8%, per seed and pooled, so the resolved headline
+  pair survives outside a single greedy decode.
+falsifier: Sampled-decode majority-vote confab conversion falls below 63.5% (pooled
+  or in a majority of the K=5 seeds), OR sampled-decode majority-vote known-correct
+  cost exceeds an 8% point estimate or a 12% Wilson upper CI (pooled) - the resolved
+  73.5%/3.1% pair is a greedy-decode artifact and must be re-scoped to "one greedy
+  decode" wherever asserted.
+checkpoint:
+  repo: unsloth/Qwen3-4B
+  revision: raw-base (no adapter; bf16, no 4-bit quantization)
+instrument:
+  configs:
+  - cell.yaml
+  - gates.yaml
+  modules:
+  - pipeline.py
+  - materialize_rows.py
+  - gen_lib.py
+  - grader.py
+  - model_lib.py
+  - smoke_cpu.py
+  pins:
+    cell.yaml: 9fee64a65e94e6c147421ee7c8ab7b598f56c791d9142f0254b74c76b612edd9
+    gates.yaml: 1e2d0b384dcf30cce56327b06f44ebb96ecd3af0d510269d347f637339d27a5a
+    pipeline.py: d4e233be8a1d19c1d07a2869dc9190716a7bc3b95e50294c4a7a6d3e131c6961
+    materialize_rows.py: 4859c9657ac89634d29fc6fca9f55b034bf82550d54fde43dac745e3a9b238dd
+    gen_lib.py: d9d09eb3cb0e33385dabf5e884b904e1749053310dadd4545f5477a119a0fc50
+    grader.py: b24982a4380dca26056a6b3b217b4ffcea8cf448509af896eba04c256720dd2b
+    model_lib.py: c659dd69b854d7e50a43434f0ec2ec4f7bae37b0ff65dcd78a853370540398b9
+    smoke_cpu.py: e6ef7ec0f691972f9d5e8a86b9209d189ffd6bb9f5333aa6251bc2e69a69125b
+  repins:
+  - file: gen_lib.py
+    old_sha256: b59a81bf5d300f71484dea4c65815245a56d40a7baffde8d0d077483aba12f81
+    new_sha256: d9d09eb3cb0e33385dabf5e884b904e1749053310dadd4545f5477a119a0fc50
+    date: '2026-07-13T00:00:00Z'
+    reason: 'Corrected the batched termination rule to match the registered metric
+      text ("terminated naturally (stopped before max_new)"): the resolved run''s
+      _first_eos_position-derived conjunct additionally required eos_pos < n_new_tokens
+      - 1, which misgraded samples whose eos landed at the FINAL generated position
+      as not-terminated. NOTEBOOK.md''s 2026-07-13 "DIAGNOSTIC RESULT" entry found
+      764/769 refused-but-messy fired-confab samples in the text-persisting single-seed
+      diagnostic failed on this conjunct ALONE (dominant cluster eos_pos=25, n_new_tokens_raw=26,
+      complete clean-refusal text), voiding the falsifier-fired G1 verdict as instrumentation.
+      Added is_terminated_naturally(eos_pos, n_new_tokens, max_new) as the single
+      source of truth (True iff eos found anywhere in the block, including the final
+      position, or the block is shorter than max_new; False only when no eos was emitted
+      and the block ran to max_new), refactored run_batched_sampled_pass to use it,
+      and added run_batched_sampled_pass_with_text (data-exhaust variant returning
+      full per-sample text/eos_pos/n_new_tokens_raw dicts) for the K=5 re-run''s persistence.
+      Parity-checked against the diagnostic artifact: recompute reproduces 1056/1480
+      per-sample clean and 130/185 majority-vote conversions exactly. No gate, threshold,
+      seed, or grader-semantics change; grade_clean_tighten''s conjunction and grader.grade_one
+      are untouched. diagnostic_arm_s_text.py (unpinned, lab-notebook tier) updated
+      in lockstep via the same is_terminated_naturally call, so both paths share one
+      rule.'
+  - file: pipeline.py
+    old_sha256: 22b2516c78cc4f9c4c4b06424fba7743313966b8ff4e8a5e0a039ff4cf9e1420
+    new_sha256: d4e233be8a1d19c1d07a2869dc9190716a7bc3b95e50294c4a7a6d3e131c6961
+    date: '2026-07-13T00:00:00Z'
+    reason: 'Data-exhaust: run_batch_sampled_for_row now calls gen_lib.run_batched_sampled_pass_with_text
+      (paired with the same-date gen_lib.py repin) and persists per-sample generation
+      text, eos_pos, n_new_tokens_raw, and the full grade_clean_tighten sub-grade
+      dict into the gitignored run_log_sampled.jsonl, alongside the pre-existing clean_tighten/well_formed_correct/not_well_formed_correct
+      booleans score_row_samples and the H3-G1/G2 gates already depend on (unchanged).
+      Ports the persistence schema NOTEBOOK.md''s "Lab-notebook" entry identified
+      as missing from the resolved run and that diagnostic_arm_s_text.py first added
+      ad hoc, into the MAIN Arm S path so the upcoming K=5 re-run does not need a
+      separate diagnostic to audit a future collapse. No gate, threshold, seed, prompt,
+      or scoring logic changed.'
+inputs:
+- experiments/common/doubt-gated-caution-tighten-heldout-split/split_manifest.json
+- experiments/doubt-gated-caution-tighten/analysis-committed/u_d_L34.json
+- experiments/doubt-gated-caution-tighten/analysis-committed/c_hat_L34.json
+- experiments/doubt-gated-caution-tighten/analysis-committed/random_direction_L34.json
+- experiments/doubt-gated-caution-tighten/analysis-committed/gate_fit.json
+- experiments/doubt-gated-caution-tighten/analysis-committed/build_manifest.json
+verdict: The resolved 73.5%/3.1% headline survives sampled decoding on the corrected
+  instrument, with pooled majority-vote conversion 69.5% (all 5 seeds above the 63.5%
+  floor), cost 4.65%, and placebo margins intact, after a batched termination-rule
+  defect that misgraded eos-at-final-position refusals was diagnosed from persisted
+  text, fixed, repinned, and verified by diagnostic-parity-rerun triple agreement.
+kg:
+- experiment:snap-seed-sampled-decode-replication
+- experiment:doubt-gated-caution-tighten
+- mechanism:sampled-decode-preserves-doubt-gated-caution-headline
+- mechanism:batched-termination-rule-misgrades-eos-at-final-position

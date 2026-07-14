@@ -1,0 +1,13 @@
+{
+  "auc_neg_z_d_on_fit": 0.995988350244269,
+  "tau_frozen": -0.5531870382129124,
+  "youden_tau": {
+    "fn": 33,
+    "fp": 5,
+    "fpr_known_correct_flagged": 0.020833333333333332,
+    "tn": 235,
+    "tp": 854,
+    "tpr_confab_caught": 0.9627959413754228,
+    "youden_j": 0.9419626080420894
+  }
+}

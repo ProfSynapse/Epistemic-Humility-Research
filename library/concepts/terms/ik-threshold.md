@@ -37,7 +37,7 @@ responses in the [[idk-dataset]]. Higher thresholds yield more conservative
 
 **Why it matters here:** The threshold controls the precision-recall trade-off
 between over-refusal and hallucination in abstention-training pipelines, a
-tension central to the Phase 1 study comparing SFT, DPO, and KTO on the same
+tension central to the locked training-regimen study comparing SFT, DPO, and KTO on the same
 abstention objective.
 
 **Lineage:** proposed alongside the [[idk-dataset]] in

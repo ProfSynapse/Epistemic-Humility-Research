@@ -41,7 +41,7 @@ LLMs, using an LLM judge for scalable automated scoring.
 
 **Why it matters here:** AbstentionBench establishes the empirical landscape for
 abstention generalisation failure across scenario types, which directly motivates
-the Phase 1 study's hypothesis that SFT, DPO, and KTO may trade off abstention
+the locked training-regimen study's hypothesis that SFT, DPO, and KTO may trade off abstention
 recall and over-abstention differently depending on the query type.
 
 **Lineage:** proposes [[abstention-recall]] as primary metric; uses [[llm-as-judge]]

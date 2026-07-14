@@ -30,14 +30,14 @@ should be interrogative) before spending GPU.
 ## 1. Build the panel (GPU-free)
 
 ```bash
-python .skills/mech-interp-runner/scripts/phase3_cli.py xdataset-build-panel \
+python .skills/mech-interp-runner/scripts/mechinterp_cli.py xdataset-build-panel \
   --source datasets/<ds>/<file>.jsonl --dataset <ds> \
-  --out-dir experiment/phase1/probe/xdataset/<ds>_panel \
+  --out-dir archive/experiment/phase1/probe/xdataset/<ds>_panel \
   --n-known 600 --n-unknown 400 --seed 0
 ```
 
 Emits `gen_rows.jsonl` (generation input) and `manifest.json` (frozen extraction
-manifest, schema `phase3-selfaware-frozen-row-manifest/v1`) sharing one
+manifest, schema `mechinterp-selfaware-frozen-row-manifest/v1`) sharing one
 `row_key` per question so generation behavior and activations join downstream.
 Field overrides: `--question-field`, `--unknown-field` (truthy = unknown),
 `--answer-field` (-> aliases). Over-sample known (the over-refused subset powers
@@ -45,8 +45,10 @@ the A2 caution-axis split, and its size is unknown before generation).
 
 ## 2. Baseline generation (Docker/GPU; needs approval)
 
-Copy `config/phase3_xdataset_kuq_baseline_generation.yaml` to a new
-`<ds>` config: point `rows:` at the panel `gen_rows.jsonl`, set `output.root`
+Use
+`experiments/xdataset-probe-transfer/mechinterp_xdataset_kuq_baseline_generation.yaml`
+as the KUQ template for a new `<ds>` config: point `rows:` at the panel
+`gen_rows.jsonl`, set `output.root`
 under `xdataset/<ds>_generation`, keep `sweep.alphas: [0.0]` (the no-hook
 baseline — `by_block={}`, so the reused `steering_directions` are loaded but
 never applied). Then run the head-intervention runner in Docker (see
@@ -56,10 +58,10 @@ false`, the JSON response-confidence prompt.
 ## 3. Assemble behavior rows (GPU-free)
 
 ```bash
-python .skills/mech-interp-runner/scripts/phase3_cli.py xdataset-behavior \
-  --generation experiment/phase1/probe/xdataset/<ds>_generation/rows.jsonl \
-  --panel-rows experiment/phase1/probe/xdataset/<ds>_panel/gen_rows.jsonl \
-  --out-dir experiment/phase1/probe/xdataset/<ds>_behavior
+python .skills/mech-interp-runner/scripts/mechinterp_cli.py xdataset-behavior \
+  --generation archive/experiment/phase1/probe/xdataset/<ds>_generation/rows.jsonl \
+  --panel-rows archive/experiment/phase1/probe/xdataset/<ds>_panel/gen_rows.jsonl \
+  --out-dir archive/experiment/phase1/probe/xdataset/<ds>_behavior
 ```
 
 Joins the baseline (`no_vector_baseline`) generation `refused`/`correct` + label
@@ -70,7 +72,8 @@ the A2 split size — sanity-check it is large enough.
 
 ## 4. Extract hidden states (Docker/GPU; needs approval)
 
-Copy `config/hidden_state_kuq_manifest_clean_sft_grpo_v2_seed1_full.yaml`:
+Use `experiments/xdataset-probe-transfer/hidden_state_kuq_manifest_clean_sft_grpo_v2_seed1_full.yaml`
+as the KUQ template:
 set `model.model_tag` to a `<ds>`-specific, gitignored (`qwen3-4b-*`) tag,
 `selection.manifest` to the panel `manifest.json` (path is relative to the probe
 dir), and `output.hidden_states_subdir`. Keep both arms + `persist_delta: true`
@@ -86,11 +89,11 @@ Run the same Track-A controls used on SelfAware (see
 `interpretation-invariants.md`), pointing `--extraction-dir` at the new
 extraction and `--behavior-rows` at the `<ds>_behavior/rows.jsonl`:
 
-- `phase3_latent_knowledge_controls.py` -> A1 lexical baseline, A2 within-known
+- `latent_knowledge_controls.py` -> A1 lexical baseline, A2 within-known
   caution axis, axis_geometry (does the property replicate?).
-- `phase3_latent_knowledge_probe.py` -> Readout2 over-refusal gap (does the
+- `latent_knowledge_probe.py` -> Readout2 over-refusal gap (does the
   belief-action gap replicate or reverse?).
-- `phase3_caution_axis_transfer.py` with two arms
+- `caution_axis_transfer.py` with two arms
   (`selfaware_grpo_v2:<SA_ext>:<SA_beh>` and `<ds>_grpo_v2:<ds_ext>:<ds_beh>`)
   -> cross-DATASET cosine of the fitted caution directions. **Match the layer**
   across both arms. Distinguish the verdicts: a replicated *property* (A1/A2/geom)

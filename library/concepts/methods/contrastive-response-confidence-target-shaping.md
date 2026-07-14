@@ -97,7 +97,7 @@ when wrong-answer/over-refusal low-confidence rows are included, or whether the
 scalar still requires a downstream preference/RL stage after the output
 contract is learned.
 
-**Local evidence:** `docs/sessions/0018 - probe-scaled-response-confidence-retrain.md`
+**Local evidence:** `docs/sessions/20260623T093654Z-probe-scaled-response-confidence-retrain.md`
 records the Amendment E v1 collapse and the subsequent v2 dataset revision.
 The v2 local contrastive SFT projection generated 29,338 rows: 14,395
 appropriate/high targets, 14,395 inappropriate/low targets, and 548

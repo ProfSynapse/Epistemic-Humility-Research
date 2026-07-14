@@ -1,0 +1,143 @@
+# Cross-family doubt-gated caution snap confirmatory config.
+# This is a registered algorithm, not a hand-tuned per-model notebook:
+# layer, direction fit, tau, dose choice, batching, and placebos are all
+# specified before launching any confirmatory Modal cell.
+
+seed: 20260707
+
+surface:
+  source_pools:
+    - KUQ
+    - TriviaQA
+    - PopQA
+  private_text_staging_repo: null
+  public_committed_artifacts:
+    - ID-only split manifests
+    - direction JSON
+    - gate-fit JSON
+    - aggregate summaries
+  forbidden_public_artifacts:
+    - question text
+    - answer aliases
+    - row-level generation text
+  target_held_out:
+    confab_minimum: 150
+    known_correct_minimum: 250
+  split:
+    fit_frac: 0.40
+    stratify_by: category_canon
+    fit_only_roles:
+      - unknown_refused
+
+modeling:
+  dtype: bf16
+  quantization: none
+  adapter: none
+  generation:
+    max_new_tokens: 200
+    min_new_tokens: 1
+    do_sample: false
+    eos_includes_im_end: true
+    enable_thinking: false
+  anchor:
+    scope: anchor_onward
+    layer_rule: "round(0.94 * (num_hidden_layers - 1))"
+    token_position: final_prompt_token
+
+readouts:
+  u_d:
+    role: gate_sensor_doubt
+    fit: "unit(mean(H[known_correct_answered FIT]) - mean(H[unknown_refused]))"
+  pos_ctrl:
+    role: source_caution_direction
+    fit: "mass-mean refuse/control direction on FIT rows only"
+  neg_ctrl:
+    role: confab_propensity_orthogonalizer
+    fit: "standardized logistic direction on FIT rows only"
+  c_hat:
+    role: snap_write_direction
+    fit: "unit(pos_ctrl orthogonalized against {u_d, neg_ctrl})"
+  random_direction:
+    role: g3i_placebo_write_direction
+    fit: "fixed-seed random unit vector in the same layer width"
+
+gate:
+  score: neg_z_d
+  fire_rule: "score >= tau"
+  tau_fit: Youden-J on FIT confab vs known_correct_answered
+  frozen_before_held_out: true
+  min_fit_auc: 0.90
+
+snap:
+  law: erase_write
+  position: anchor_onward
+  dose_selection:
+    scope: FIT only
+    candidate_realized_projection_targets:
+      - 100
+      - 150
+      - 200
+      - 250
+    # Pre-outcome recalibration (2026-07-09) for the two cells that failed G0
+    # dose viability with zero qualifying doses (overdose collapse; see
+    # AMENDMENT.md "Pre-outcome dose-recalibration note"). Selection rule and
+    # thresholds unchanged; all other cells use the default grid above.
+    per_cell_candidate_realized_projection_targets:
+      qwen35_4b: [10, 20, 30, 40, 50, 60, 75]
+      qwen35_9b: [60, 80, 100, 120, 140]
+      # Pre-outcome recalibration (2026-07-11) for the two probe cells that hit
+      # the same overdose collapse on the unrecalibrated default grid: the
+      # default 100-250 realizes 48.7-120.4 sigma on llama32_3b (sigma_c 2.092)
+      # and 106.7-266.5 sigma on mistral7b (sigma_c 0.939), against the 38.3
+      # sigma already shown to collapse qwen35_4b. Grids below map qwen35_4b's
+      # recalibrated z-ladder (6.2-29.4 sigma, the grid that produced a real
+      # dose-response with peak 0.326) onto each cell's own FIT mu_c/sigma_c
+      # from build_manifest.json. Selection rule and thresholds unchanged.
+      llama32_3b_instruct: [11, 19, 26, 34, 41, 48, 60]
+      # Second pre-sweep revision (2026-07-11) for mistral7b only: the sigma-
+      # mapped grid [6..27] proved entirely sub-threshold before any FIT dose
+      # selection ran (harness probe at strength 27 produced byte-identical
+      # output on 8 rows), while the stopped default-grid partial sweep shows
+      # dose 100 (realized strength 106.5) fully degenerate on 584 fired
+      # confabs. The grid below brackets the empirically observed response
+      # window (27, 100). See AMENDMENT.md dated extension. llama32_3b keeps
+      # its grid above (mid-sweep, producing a real dose-response).
+      mistral7b_instruct_v03: [30, 38, 46, 56, 67, 80, 92]
+    rule: >-
+      Choose the lowest dose whose FIT end-to-end gated clean_tighten is >= 0.60
+      and whose FIT known-correct false-refusal is <= 0.10. If multiple doses
+      qualify, the lowest dose wins. If none qualifies, the cell fails G0
+      viability before held-out evaluation.
+    no_held_out_tuning: true
+
+arms:
+  - name: gated
+    description: real instrument, doubt gate then c_hat snap at the frozen dose
+  - name: random_direction
+    description: same fired rows, random direction at matched realized projection
+  - name: permuted_gate
+    description: same fire count, uniformly permuted over combined held-out rows
+
+execution:
+  lane: Modal A100
+  launch_shape:
+    parallelism: one_detached_modal_function_per_cell
+    exact_launch_requires_user_approval: false
+    approved_cost_cap_usd: 500
+  batching:
+    baseline_generation: "Synaptic-Tuner batch-generate; vLLM allowed only for generation-only stages with parity smoke"
+    hidden_state_extraction: "Synaptic-Tuner batch-capture"
+    intervention_generation: "Synaptic-Tuner mechinterp steer with execution.batch_size"
+    grouping_rule: "batch rows by steer config/arm; row-local masks carry fire_state and strength"
+    parity_smoke: >-
+      Before full launch, compare sequential vs batched output on a fixed tiny
+      smoke slice for each loader family. Full runs require identical parsed
+      answers and stop reasons on the smoke slice.
+    batch_size_policy: >-
+      Start from a conservative per-model default, then reduce on CUDA OOM and
+      record the realized batch size in the run manifest.
+
+outputs:
+  local_private_dir: analysis/
+  committed_public_dir: analysis-committed/
+  modal_run_dir_template: "runs/{cell_id}/"

@@ -1,0 +1,80 @@
+# H3 gates. DRAFT, NOT signed (see AMENDMENT.md "Gates" for the prose; this
+# file is the machine-readable pin). Band anchored on the RESOLVED snap headline
+# (experiments/doubt-gated-caution-tighten/AMENDMENT.md lines 305-319):
+#   gated confab clean_tighten      136/185 = 73.5%, Wilson 95% CI [66.7, 79.3]
+#   gated known-correct false-refuse  8/258 = 3.1%,  Wilson 95% CI [1.6, 6.0]
+#   placebo single-seed values: random_direction confab 7.0%; permuted_gate cost 22.9%
+# All rates over the HELD-OUT split only (confab 185, known-correct 258), gated
+# pipeline deciding dosing row by row end to end. Gates cannot move after the run.
+
+resolved_reference:
+  gated_confab_clean_tighten: 0.735          # 136/185
+  gated_confab_wilson_ci: [0.667, 0.793]
+  gated_known_correct_false_refuse: 0.031    # 8/258
+  gated_known_correct_wilson_ci: [0.016, 0.060]
+  placebo_random_direction_confab_single_seed: 0.070   # 13/185
+  placebo_permuted_gate_cost_single_seed: 0.229        # 59/258
+
+n_boot: 10000
+
+gates:
+  # H3-G0 -- greedy reproduction / instrument validity, pre-analysis. Failure is
+  # a STOP, not an outcome: if greedy does not reproduce, the harness/checkpoint
+  # diverges from the resolved run and the sampled comparison is uninterpretable.
+  - name: h3_g0_greedy_reproduction
+    arm: greedy_reproduction
+    checks:
+      - id: confab_conversion_reproduces
+        metric: gated confab clean_tighten
+        pass_if: "abs(rate - 0.735) <= 0.05 AND wilson_ci overlaps [0.667, 0.793]"
+      - id: known_correct_cost_reproduces
+        metric: gated known-correct false-refusal
+        pass_if: "abs(rate - 0.031) <= 0.03"   # i.e. <= 0.061
+
+  # H3-G1 -- sampled-decode conversion band, PRIMARY. Majority-vote (>=5/8)
+  # confab conversion within 10pp below 73.5%, per seed AND pooled.
+  - name: h3_g1_sampled_conversion_band
+    arm: sampled_decode
+    scoring: majority_vote
+    population: confab
+    indicator: clean_tighten
+    pass_if_rate: ">= 0.635"          # 73.5% - 10pp
+    scope: "pooled AND each of the K=5 seeds"
+    also_report: [any_vote_rate, mean_per_row_fraction]
+
+  # H3-G2 -- sampled-decode cost ceiling. Majority-vote (>=5/8) known-correct
+  # false-refusal at or below 8% point and Wilson upper CI below 12%, per seed
+  # AND pooled.
+  - name: h3_g2_sampled_cost_ceiling
+    arm: sampled_decode
+    scoring: majority_vote
+    population: known_correct_answered
+    indicator: not_well_formed_correct
+    pass_if_rate: "<= 0.08"
+    pass_if_wilson_upper_ci: "< 0.12"
+    scope: "pooled AND each of the K=5 seeds"
+    also_report: [any_vote_rate, mean_per_row_fraction]
+
+  # H3-G3 -- placebo seed-robustness. In EVERY seed the freshly re-drawn placebos
+  # keep the resolved specificity margins. A G3 failure falsifies ONLY the
+  # specificity claim, not the headline conversion.
+  - name: h3_g3_placebo_seed_robustness
+    checks:
+      - id: random_direction_stays_inert
+        arm: random_direction_reroll
+        population: confab
+        indicator: clean_tighten
+        pass_if_rate: "< 0.25"        # every seed (resolved single-seed 7.0%)
+      - id: permuted_gate_stays_worse
+        arm: permuted_gate_reroll
+        population: known_correct_answered
+        indicator: not_well_formed_correct
+        pass_if_rate: "> 0.15"        # every seed (resolved single-seed 22.9%; gated 3.1%)
+
+falsifier: >-
+  Sampled-decode majority-vote confab conversion falls below 0.635 (pooled or in
+  a majority of the K=5 seeds), OR sampled-decode majority-vote known-correct
+  cost exceeds an 8% point estimate or a 12% Wilson upper CI (pooled) -- the
+  resolved 73.5%/3.1% pair is a greedy-decode artifact and must be re-scoped to
+  "one greedy decode" wherever asserted. A placebo-robustness (H3-G3) failure
+  falsifies only the specificity claim.

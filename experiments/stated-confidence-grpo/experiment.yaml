@@ -1,0 +1,36 @@
+slug: stated-confidence-grpo
+title: 'Protocol Amendment B: Stated Confidence and GRPO Calibration Reward'
+type: historical-amendment
+status: historical
+registered: true
+created_at: '2026-07-08T17:40:52Z'
+legacy:
+  label: B
+  path: experiment/protocol/AMENDMENT-B-stated-confidence-grpo.md
+  migrated_to: experiments/stated-confidence-grpo/AMENDMENT.md
+migration:
+  needs_manual_review:
+  - falsifier
+  - experiment_type
+  - instrument_configs
+  - kg_ids
+  notes: Imported from legacy amendment prose. Do not infer missing machine fields
+    without hand-reading AMENDMENT.md.
+question: Does a model's stated confidence track its known/unknown boundary and the
+  correctness of its answer, and can GRPO reward calibration?
+prediction: "orchestrator:\n  call: stated-confidence measurement layer plus prospective\
+  \ calibration reward\nuser:\n  call: null\n  note: Predates the dual-prediction\
+  \ practice (adopted 2026-07-03 at AH signing);\n    no separately recorded user\
+  \ prediction."
+falsifier: ''
+checkpoint:
+  repo: ''
+  revision: ''
+instrument:
+  configs: []
+  modules: []
+  pins: {}
+inputs: []
+verdict: SIGNED OFF for stated-confidence measurement and reporting; GRPO/RLVR authorization
+  prospective only, requires separate launch decision.
+kg: []

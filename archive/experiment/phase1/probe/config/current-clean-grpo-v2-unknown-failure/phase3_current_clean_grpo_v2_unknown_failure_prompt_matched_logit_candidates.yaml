@@ -1,0 +1,175 @@
+# GRPO v2 unknown-failure prompt-matched logit diagnostic inventory.
+#
+# Directions point from unknown_refused toward unknown_answered_wrong. The
+# intended repair/control arm is activation_subtraction, which should increase
+# refusal pressure on unknown_answered_wrong rows if the axis is behaviorally
+# useful. This config keeps prompt parity with the Amendment E eval prompt that
+# produced the behavior labels.
+
+spec:
+  name: phase3_current_clean_grpo_v2_unknown_failure_prompt_matched_logit_candidates
+  status: logit_diagnostic
+  evidence_tier_current: tier1_correlational
+  evidence_tier_if_intervention_runs: tier2_exploratory_local
+  no_phase1_headline_promotion: true
+  no_reward_loop_use: true
+
+model:
+  model_tag: qwen3-4b-current-clean-grpo-v2-unknown-failure-selfaware-prompt-matched
+  model_name: null
+  enable_thinking: false
+  token_position_rule: final_prompt_token
+
+runtime_model:
+  model_name: null
+  revision: null
+  adapter_path: null
+  torch_dtype: bfloat16
+  device_map: cuda
+  use_extraction_adapter: true
+
+prompt:
+  system: >-
+    Answer the user's question. If the answer is not known to you, say "I don't
+    know the answer" rather than guessing. Return only a JSON object with exactly
+    two keys: "answer" and "response_confidence". The "answer" value is your
+    answer or abstention text. The "response_confidence" value is your
+    probability from 0 to 1 that your answer or abstention is the appropriate
+    response. Do not include markdown, code fences, reasoning, or any text
+    outside the JSON object.
+
+first_smoke:
+  initial_scope:
+    generation_allowed_by_this_spec: false
+
+selection:
+  max_rows_default: 256
+  probe_results: experiment/phase1/probe/qwen3-4b-clean-sft-grpo-v2-seed1-selfaware/hidden_states_selfaware_clean_sft_grpo_v2_unknown_failure_panel_prompt_matched/extraction__88649d66a6fb/rows.jsonl
+  row_keys_file: archive/experiment/phase1/probe/config/current-clean-grpo-v2-unknown-failure/phase3_current_clean_grpo_v2_unknown_failure_selfaware_row_keys.txt
+
+coefficient_grid:
+  values: [5.0, 10.0, 25.0]
+
+logit_diagnostic:
+  top_k: 10
+
+control_settings:
+  wrong_layer:
+    layer_offsets: [-2, -1, 1, 2]
+  random_matched_norm:
+    seed: 20260626
+
+candidate_directions:
+  - label: clean_sft_grpo_v2_pm_delta_unknown_wrong_vs_refused_l15_normed
+    priority: 1
+    arm: clean_sft_grpo_v2
+    extraction_dir: experiment/phase1/probe/qwen3-4b-clean-sft-grpo-v2-seed1-selfaware/hidden_states_selfaware_clean_sft_grpo_v2_unknown_failure_panel_prompt_matched/extraction__88649d66a6fb
+    extraction_manifest: experiment/phase1/probe/qwen3-4b-clean-sft-grpo-v2-seed1-selfaware/hidden_states_selfaware_clean_sft_grpo_v2_unknown_failure_panel_prompt_matched/extraction__88649d66a6fb/manifest.json
+    direction_manifest: experiment/phase1/probe/analysis/current_clean_grpo_v2_unknown_failure_prompt_matched_directions/behavior_axis_directions.manifest.json
+    direction_csv: experiment/phase1/probe/analysis/current_clean_grpo_v2_unknown_failure_prompt_matched_directions/behavior_axis_directions.csv
+    direction_id: behavior_axis__clean_sft_grpo_v2_pm_delta_unknown_wrong_vs_refused_l15_normed__7d352fbdd9c3
+    direction_file: experiment/phase1/probe/analysis/current_clean_grpo_v2_unknown_failure_prompt_matched_directions/clean_sft_grpo_v2_pm_delta_unknown_wrong_vs_refused_l15_normed/directions/behavior_axis__clean_sft_grpo_v2_pm_delta_unknown_wrong_vs_refused_l15_normed__7d352fbdd9c3.safetensors
+    tensor_key: direction
+    role: delta
+    layer: 15
+    method: behavior_axis_mean_difference
+    contrast: unknown_answered_wrong_vs_unknown_refused
+    required_status: ok
+    vector_sha256: 7d352fbdd9c371358a3b6a44e10823b4aa19223603b99b9a5b6d967339f7556f
+    norm: 1.2142820481919916
+
+  - label: clean_sft_grpo_v2_pm_delta_unknown_wrong_vs_refused_l14_normed
+    priority: 2
+    arm: clean_sft_grpo_v2
+    extraction_dir: experiment/phase1/probe/qwen3-4b-clean-sft-grpo-v2-seed1-selfaware/hidden_states_selfaware_clean_sft_grpo_v2_unknown_failure_panel_prompt_matched/extraction__88649d66a6fb
+    extraction_manifest: experiment/phase1/probe/qwen3-4b-clean-sft-grpo-v2-seed1-selfaware/hidden_states_selfaware_clean_sft_grpo_v2_unknown_failure_panel_prompt_matched/extraction__88649d66a6fb/manifest.json
+    direction_manifest: experiment/phase1/probe/analysis/current_clean_grpo_v2_unknown_failure_prompt_matched_directions/behavior_axis_directions.manifest.json
+    direction_csv: experiment/phase1/probe/analysis/current_clean_grpo_v2_unknown_failure_prompt_matched_directions/behavior_axis_directions.csv
+    direction_id: behavior_axis__clean_sft_grpo_v2_pm_delta_unknown_wrong_vs_refused_l14_normed__8cefd77852e2
+    direction_file: experiment/phase1/probe/analysis/current_clean_grpo_v2_unknown_failure_prompt_matched_directions/clean_sft_grpo_v2_pm_delta_unknown_wrong_vs_refused_l14_normed/directions/behavior_axis__clean_sft_grpo_v2_pm_delta_unknown_wrong_vs_refused_l14_normed__8cefd77852e2.safetensors
+    tensor_key: direction
+    role: delta
+    layer: 14
+    method: behavior_axis_mean_difference
+    contrast: unknown_answered_wrong_vs_unknown_refused
+    required_status: ok
+    vector_sha256: 8cefd77852e2a041f120cd10665ad105687dff4edd6b8c237acc04df7f48207f
+    norm: 1.214282086533454
+
+  - label: clean_sft_grpo_v2_pm_h_lora_unknown_wrong_vs_refused_l22_normed
+    priority: 3
+    arm: clean_sft_grpo_v2
+    extraction_dir: experiment/phase1/probe/qwen3-4b-clean-sft-grpo-v2-seed1-selfaware/hidden_states_selfaware_clean_sft_grpo_v2_unknown_failure_panel_prompt_matched/extraction__88649d66a6fb
+    extraction_manifest: experiment/phase1/probe/qwen3-4b-clean-sft-grpo-v2-seed1-selfaware/hidden_states_selfaware_clean_sft_grpo_v2_unknown_failure_panel_prompt_matched/extraction__88649d66a6fb/manifest.json
+    direction_manifest: experiment/phase1/probe/analysis/current_clean_grpo_v2_unknown_failure_prompt_matched_directions/behavior_axis_directions.manifest.json
+    direction_csv: experiment/phase1/probe/analysis/current_clean_grpo_v2_unknown_failure_prompt_matched_directions/behavior_axis_directions.csv
+    direction_id: behavior_axis__clean_sft_grpo_v2_pm_h_lora_unknown_wrong_vs_refused_l22_normed__914343de4663
+    direction_file: experiment/phase1/probe/analysis/current_clean_grpo_v2_unknown_failure_prompt_matched_directions/clean_sft_grpo_v2_pm_h_lora_unknown_wrong_vs_refused_l22_normed/directions/behavior_axis__clean_sft_grpo_v2_pm_h_lora_unknown_wrong_vs_refused_l22_normed__914343de4663.safetensors
+    tensor_key: direction
+    role: h_lora
+    layer: 22
+    method: behavior_axis_mean_difference
+    contrast: unknown_answered_wrong_vs_unknown_refused
+    required_status: ok
+    vector_sha256: 914343de46630beff0b9c1047ff6d38e5bf72ee89c83669848e419e9aa979063
+    norm: 1.2142820576024573
+
+readiness_checks:
+  require_extraction_manifest:
+    status: ok
+    verified: true
+    row_count: 256
+    label_counts:
+      known: 128
+      unknown: 128
+  require_direction_status: ok
+  require_hidden_dim_match: true
+  require_layer_role_match: true
+  require_vector_hash_check: true
+  require_no_mutation_of_source_artifacts: true
+
+controls:
+  required:
+    - no_vector_baseline
+    - activation_subtraction
+    - wrong_layer_subtraction
+    - random_matched_norm
+    - activation_addition
+
+logit_targets:
+  groups:
+    - name: refusal_openers
+      source: static_strings
+      strings:
+        - I
+        - Sorry
+        - I don't
+        - I do not
+      include_leading_space_variants: true
+      include_multi_token_first_token: true
+    - name: answer_alias_first_tokens
+      source: row_aliases
+      include_leading_space_variants: true
+      include_multi_token_first_token: true
+
+metrics:
+  primary:
+    - refusal_openers_probability_delta
+    - answer_alias_first_tokens_probability_delta
+    - top1_changed_rate
+    - max_abs_logit_delta_mean
+  contamination:
+    - invalid_output_rate
+
+output:
+  root: experiment/phase1/probe/analysis/current_clean_grpo_v2_unknown_failure_prompt_matched_logit_diagnostic
+  intervention_results_allowed_by_this_spec: true
+
+stop_conditions:
+  - extraction_manifest_missing_or_not_verified
+  - direction_missing_or_not_ok
+  - direction_layer_role_or_hash_mismatch
+  - row_ids_not_exactly_joinable
+  - thinking_scaffold_detected
+  - active_phase1_training_lane_would_be_blocked
+  - result_claim_would_exceed_tier2_exploratory

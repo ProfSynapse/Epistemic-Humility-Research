@@ -3,6 +3,174 @@
   "experiments": [
     {
       "checkpoint": {
+        "repo": "",
+        "revision": ""
+      },
+      "created_at": "2026-07-08T17:40:52Z",
+      "falsifier": "",
+      "inputs": [],
+      "instrument": {
+        "configs": [],
+        "modules": [],
+        "pins": {}
+      },
+      "kg": [],
+      "legacy": {
+        "label": "I",
+        "migrated_to": "experiments/8b-scale-and-hyperparameter-gates/AMENDMENT.md",
+        "path": "experiment/protocol/AMENDMENT-I-8b-scale-and-hyperparameter-gates.md"
+      },
+      "migration": {
+        "needs_manual_review": [
+          "falsifier",
+          "experiment_type",
+          "instrument_configs",
+          "kg_ids"
+        ],
+        "notes": "Imported from legacy amendment prose. Do not infer missing machine fields without hand-reading AMENDMENT.md."
+      },
+      "prediction": "orchestrator:\n  call: tiered 8B gates plus mandatory pre-sweep hyperparameter audit\nuser:\n  call: null\n  note: Predates the dual-prediction practice (adopted 2026-07-03 at AH signing);\n    no separately recorded user prediction.",
+      "question": "Which 8B response-confidence/thinking variants are worth preparing, and should hyperparameter sweeps run before a pre-run audit?",
+      "registered": true,
+      "slug": "8b-scale-and-hyperparameter-gates",
+      "status": "historical",
+      "title": "Protocol Amendment I: 8B Scale And Hyperparameter Gates",
+      "type": "historical-amendment",
+      "verdict": "DRAFT / NOT SIGNED; defines 8B variant tiers and a hyperparameter gate, authorizes no training."
+    },
+    {
+      "checkpoint": {
+        "repo": "",
+        "revision": ""
+      },
+      "created_at": "2026-07-14T09:57:55Z",
+      "falsifier": "Qwen wide baseline confab abstention >= 0.20, or qwen placebo delta >= 5 points: undosed and perturbation-recruited hedging are program-wide wide-instrument properties; every narrow-detector placebo verdict gets an instrument-limited flag in paper reporting (exploratory re-analysis language only, locked verdicts unchanged) and no successor may register a flat small-tolerance placebo gate.",
+      "inputs": [],
+      "instrument": {
+        "configs": [
+          "cell.yaml",
+          "gates.yaml",
+          "detector_v2_patterns.yaml"
+        ],
+        "modules": [
+          "detector_v2.py",
+          "grader.py",
+          "sources.py",
+          "stage_inputs.py",
+          "build_adjudication_pool.py",
+          "apply_adjudication.py",
+          "calibration_scorer.py",
+          "gates_lib.py",
+          "test_calibration_smoke.py",
+          "build_regrade.py"
+        ],
+        "pins": {
+          "apply_adjudication.py": "464f026f915744b359d970e426d0c8829ea670bfed32def5e36b555533e717dc",
+          "build_adjudication_pool.py": "6c9bc303da487b38fec8b1811d511d8be7950c23ac4767bea3c0a9c2d45fb2ce",
+          "build_regrade.py": "4992e782a2689fb3a8d7e8e32d3cd84ea58978e31bc138b0134890a0ff045a12",
+          "calibration_scorer.py": "a99a50f55c7e3490233cb22941784ec4ae09a97f859bc8c722ba068744aa88f1",
+          "cell.yaml": "14dd8dd15d3aefe725282ce9236064d6b15964c8f718f12625c25c8aeb5ef5dd",
+          "detector_v2.py": "161fd8548ec0dad1daabd590870654f1c32bd0daf21e6026a2c18c83e83991ae",
+          "detector_v2_patterns.yaml": "36422e01ae03008c2f71f180158c63950e14f8dfc1279c4e654c89fb831841d9",
+          "gates.yaml": "9bffd567786c37e21fce84916176ea8a4847ada3b7633257507af452478ea753",
+          "gates_lib.py": "929204d4bcfdefe100d9e120af48c9cc57f0ada29e3860c4392f93d0403a45e9",
+          "grader.py": "bd5a974d7aa56cc28d8e6380e6176b81ea646fa276760feb31dc3d6bdc681218",
+          "sources.py": "003d18d5fb680ad70abbb69e324eb0cd804b74edd1a403e8d2613e4560db5fe9",
+          "stage_inputs.py": "f8e7d7c3705cf5373070b907b15bfd57abd5432c4c2eca08c1ad4ea28abf035a",
+          "test_calibration_smoke.py": "43767188ba545f6ad4a4ebaef76e9ab6d88f00023e4b6d8fb0909f453c373089"
+        },
+        "repins": [
+          {
+            "date": "2026-07-14T11:57:28Z",
+            "file": "apply_adjudication.py",
+            "new_sha256": "464f026f915744b359d970e426d0c8829ea670bfed32def5e36b555533e717dc",
+            "old_sha256": "3beb684a8506b16ef21c7e287ce8923384451fa42a846b15b041d22fa2bf7a99",
+            "reason": "Opaque-id collision correction (NOTEBOOK 2026-07-14): positional join in apply, full scored-generation key in scorer, id payload extended for regrade shards and future pools, regression tests added. No gate, rubric, or population change; found before any rate was read."
+          },
+          {
+            "date": "2026-07-14T11:57:28Z",
+            "file": "build_adjudication_pool.py",
+            "new_sha256": "6c9bc303da487b38fec8b1811d511d8be7950c23ac4767bea3c0a9c2d45fb2ce",
+            "old_sha256": "1fe91d85931653ee6a1c03ff98ac42be4901920930f5083d2713e3bb586c9ea3",
+            "reason": "Opaque-id collision correction (NOTEBOOK 2026-07-14): positional join in apply, full scored-generation key in scorer, id payload extended for regrade shards and future pools, regression tests added. No gate, rubric, or population change; found before any rate was read."
+          },
+          {
+            "date": "2026-07-14T11:57:28Z",
+            "file": "calibration_scorer.py",
+            "new_sha256": "a99a50f55c7e3490233cb22941784ec4ae09a97f859bc8c722ba068744aa88f1",
+            "old_sha256": "aec949a011b13a5410ddcd1350b9064ae4af46246cad03ea3e3fa53ccee55685",
+            "reason": "Opaque-id collision correction (NOTEBOOK 2026-07-14): positional join in apply, full scored-generation key in scorer, id payload extended for regrade shards and future pools, regression tests added. No gate, rubric, or population change; found before any rate was read."
+          },
+          {
+            "date": "2026-07-14T11:57:28Z",
+            "file": "test_calibration_smoke.py",
+            "new_sha256": "43767188ba545f6ad4a4ebaef76e9ab6d88f00023e4b6d8fb0909f453c373089",
+            "old_sha256": "fb744045151d0da9b8489ba5764eed11c1fa299608659d8f7323e63b50501509",
+            "reason": "Opaque-id collision correction (NOTEBOOK 2026-07-14): positional join in apply, full scored-generation key in scorer, id payload extended for regrade shards and future pools, regression tests added. No gate, rubric, or population change; found before any rate was read."
+          },
+          {
+            "date": "2026-07-14T12:00:00Z",
+            "file": "build_regrade.py",
+            "new_sha256": "4992e782a2689fb3a8d7e8e32d3cd84ea58978e31bc138b0134890a0ff045a12",
+            "old_sha256": "none-new-module",
+            "reason": "New module added by the 2026-07-14 opaque-id collision correction (NOTEBOOK entry): builds a CG1-voided shard regrade under fresh salt and non-colliding ids. Added post-sign with pin recorded here because exp repin repairs existing pins only."
+          }
+        ]
+      },
+      "kg": [
+        "experiment:abstention-wide-instrument-calibration",
+        "mechanism:undosed-wide-instrument-baseline-abstention-is-family-graded",
+        "mechanism:random-direction-placebo-response-is-family-specific-in-sign",
+        "mechanism:detector-v2-undercounts-baseline-abstention-by-family-varying-margins"
+      ],
+      "prediction": "The RR2 placebo failure is substantially a family property of mistral's hedge-prone baseline, not a universal wide-instrument artifact: qwen wide baseline confab abstention < 0.15, qwen placebo delta at the promoted heldout point < 3 points, llama wide baseline confab abstention < 0.15.",
+      "question": "What is each model family's undosed baseline abstention rate and matched-magnitude random-perturbation abstention recruitment under the wide two-instrument stack (detector v2 + blinded adjudication), and what placebo criterion should successor direction-specificity experiments register against it?",
+      "registered": true,
+      "slug": "abstention-wide-instrument-calibration",
+      "status": "resolved",
+      "title": "Wide-instrument abstention baseline and placebo calibration (CPU re-read)",
+      "type": "eval",
+      "verdict": "Resolved: wide-instrument baseline abstention is family-graded (qwen 0.104, llama 0.164, mistral 0.280) and placebo response is family-specific in sign (qwen suppresses -5.13 points where mistral recruits +7.39), so the falsifier did not fire and RR2's placebo failure is confirmed family-specific, while the prediction's near-no-op placebo leg and llama band were missed and the QL dose-response cell voided terminally under the registered grader calibration rule."
+    },
+    {
+      "checkpoint": {
+        "repo": "",
+        "revision": ""
+      },
+      "created_at": "2026-07-08T17:40:52Z",
+      "falsifier": "",
+      "inputs": [],
+      "instrument": {
+        "configs": [],
+        "modules": [],
+        "pins": {}
+      },
+      "kg": [],
+      "legacy": {
+        "label": "L",
+        "migrated_to": "experiments/answer-subspan-masked-contrastive-sft/AMENDMENT.md",
+        "path": "experiment/protocol/AMENDMENT-L-answer-subspan-masked-contrastive-sft.md"
+      },
+      "migration": {
+        "needs_manual_review": [
+          "falsifier",
+          "experiment_type",
+          "instrument_configs",
+          "kg_ids"
+        ],
+        "notes": "Imported from legacy amendment prose. Do not infer missing machine fields without hand-reading AMENDMENT.md."
+      },
+      "prediction": "orchestrator:\n  call: masking retains calibration and recovers behavior gate\nuser:\n  call: null\n  note: Predates the dual-prediction practice (adopted 2026-07-03 at AH signing);\n    no separately recorded user prediction.",
+      "question": "Does masking the wrong-answer sub-span in contrastive SFT recover behavior while retaining Amendment K's calibration win?",
+      "registered": true,
+      "slug": "answer-subspan-masked-contrastive-sft",
+      "status": "historical",
+      "title": "Protocol Amendment L: Answer-Sub-Span-Masked Contrastive Schema-SFT",
+      "type": "historical-amendment",
+      "verdict": "Per Amendment N table, behavior PASSED but calibration went to chance (AUROC 0.552) with inverted cell ordering — masking recovered behavior but destroyed the calibration carrier."
+    },
+    {
+      "checkpoint": {
         "repo": "professorsynapse/eh-qwen3-4b-clean-sft-grpo-par-true-seed1-lora",
         "revision": "7e31d3cf62395275d4ba3d1d9ec8f95287188805"
       },
@@ -20,10 +188,10 @@
           "ao_grader.py"
         ],
         "pins": {
-          "ao_grader.py": "c3c65dd636e88d900087cae6229913129039e44b9e0feb3037ec1be966c17547",
-          "cell.yaml": "ce82a86b6a7aa2d235cb59764064996c5a3ec9bf18566e52a226729dd344d5b6",
-          "cell_stage1_caution_perp.yaml": "22af96bf9898df1f5e99941b4624717eb8bb28fcb8c88166176c83509d747cab",
-          "cell_stage1_fallback_mass_mean.yaml": "5409a82b3f4b4b88cdded517b759f358dd253175a68acb07cb7399bd78afc5a7",
+          "ao_grader.py": "a2abd0753c312ef1d27ea71647db70dc7f3ee2797c500dec56df43971c82e443",
+          "cell.yaml": "9eaffd0674fd80aea3bc2fe6a438b81ad0c8c64bcb5e1b8902f8747ac0af3d0a",
+          "cell_stage1_caution_perp.yaml": "0b3b58d52b3f34d80a331f8dbeb596b58e9cb5b6b6186b4a2ff29e94c0280770",
+          "cell_stage1_fallback_mass_mean.yaml": "f7c0f683c0b14fb9da757d3cac384f5ea4619e4b89e23be020a24d6f13f5c835",
           "gates.yaml": "a4e11a6daee8bb6160654ac034c4bb6db3c0c7b29333752c0e3e19240c299a13",
           "gates_stage1.yaml": "b8ebdde41ef0c92809a2c9b2653a716da12a03f85d8be0c46a2db571df3f6526"
         }
@@ -53,10 +221,10 @@
           "cloud/modal_ap_veto_length_balanced.py"
         ],
         "pins": {
-          "ap_build_pool.py": "f77112529bf3d8241468813fc35b5ea6aae14cb62591408c5fb22a7e39de5e5b",
-          "ap_extract.py": "fdac4a6c8280b5c2cb7c2ec5ce944bf2b00e0d3ad2bcf01611d32b221ab1bbfe",
-          "ap_grade_and_gates.py": "60477c817327f83c9c5b7fa90aacd91e0e04d3a6b0d47f3cc6ee12d550af2269",
-          "cloud/modal_ap_veto_length_balanced.py": "6bfb6d01e73bfb5fec8ae127d1272629e9620412aba820ff71f09eaae99ba5d5"
+          "ap_build_pool.py": "954cf4e62d34fcd17aab888ad52d769e9cf2236bf373d00633bfa152488486aa",
+          "ap_extract.py": "fc5b97e31048e29a00a08aba6e3750bfa37f10e2c7b4013b4fb13d6c3397eeb8",
+          "ap_grade_and_gates.py": "ca74bb4584a273268eefbb2f485f46c3c4084b13d855c9e0fdcbb91fffbcc19d",
+          "cloud/modal_ap_veto_length_balanced.py": "8e7350ab838a8f6e8b17255d6c707c4be291fa29903d89ccc20162f2c37f1980"
         }
       },
       "kg": [],
@@ -70,14 +238,203 @@
     },
     {
       "checkpoint": {
-        "repo": "unsloth/Qwen3-4B-bnb-4bit",
-        "revision": "raw-base (no adapter; checkpoint_tag \"raw-base\" per AK Stage 1 manifest)"
+        "repo": "Qwen/Qwen3-4B",
+        "revision": "1cfa9a7208912126459214e8b04321603b3df60c"
       },
-      "falsifier": "Screen, so the bar is graduation: a candidate graduates iff its flip rate exceeds the random-direction control with bootstrap 95% CI excluding 0. No graduations means the dark subspace is ruled out as a near-term actuator. If the positive control does not move behavior the screen is void.",
+      "falsifier": "The decoupling prediction is falsified if AQ-G0 through AQ-G4 all pass on the pre-registered row pool and the anti-sycophancy sign reduces wrong-hint matching without refusal or neutral accuracy damage; the readout component is falsified separately if the held-out direction is near chance.",
       "inputs": [
-        "experiment/phase1/probe/dark_displacement_census.py",
-        "experiment/phase1/probe/analysis-committed/dark_displacement_census_summary.md",
-        "experiment/phase1/eval/scorers.py"
+        "datasets/sycophancy-eval/answer.jsonl"
+      ],
+      "instrument": {
+        "configs": [
+          "eval_16bit_sycophancy_answer.yaml",
+          "row_pool.yaml",
+          "extract.yaml",
+          "probe_fit.yaml",
+          "cell.yaml",
+          "gates.yaml"
+        ],
+        "modules": [
+          "build_aq_row_pool.py",
+          "sycophancy_answer_grader.py",
+          "sycophancy_answer_render.py",
+          "cloud/modal_aq_sycophancy_activation_actuator.py"
+        ],
+        "pins": {}
+      },
+      "kg": [
+        "dataset:sycophancy-eval",
+        "term:sycophancy",
+        "method:contrastive-activation-addition"
+      ],
+      "prediction": "The wrong-hint-followed vs wrong-hint-not-followed contrast yields a held-out activation direction that separates capitulation above chance, but the actuator does not cleanly transfer; anti-sycophancy steering fails AQ-G2/AQ-G3 by doing little to wrong-hint matching or by trading off through refusal / degraded neutral factual accuracy.",
+      "question": "Can answer-sycophancy under an incorrect user hint be localized as a reusable activation direction and causally actuated without merely increasing refusal or degrading neutral factual accuracy?",
+      "registered": true,
+      "slug": "aq-sycophancy-activation-actuator",
+      "status": "draft",
+      "type": "steer-cell",
+      "verdict": ""
+    },
+    {
+      "checkpoint": {
+        "repo": "",
+        "revision": ""
+      },
+      "created_at": "2026-07-08T17:40:52Z",
+      "falsifier": "",
+      "inputs": [],
+      "instrument": {
+        "configs": [],
+        "modules": [],
+        "pins": {}
+      },
+      "kg": [],
+      "legacy": {
+        "label": "R",
+        "migrated_to": "experiments/aux-head-cotraining-native-behavior/AMENDMENT.md",
+        "source": "Amendment R aux-head co-training legacy amendment"
+      },
+      "migration": {
+        "needs_manual_review": [
+          "falsifier",
+          "experiment_type",
+          "instrument_configs",
+          "kg_ids"
+        ],
+        "notes": "Imported from legacy amendment prose. Do not infer missing machine fields without hand-reading AMENDMENT.md."
+      },
+      "prediction": "orchestrator:\n  call: partial/likely-negative; head stays calibrated, emitted scalar barely moves\nuser:\n  call: null\n  note: Predates the dual-prediction practice (adopted 2026-07-03 at AH signing);\n    no separately recorded user prediction.",
+      "question": "Does jointly co-training the aux_head into an unfrozen base change the model's OWN emitted calibration/abstention behavior?",
+      "registered": true,
+      "slug": "aux-head-cotraining-native-behavior",
+      "status": "historical",
+      "title": "Amendment R - Joint Co-Training of the aux_head (Native Behavior Change)",
+      "type": "historical-amendment",
+      "verdict": "FALSIFIED — A1-A2 +0.043 below the +0.05 bar and A1 below A0; co-training shifts the action policy, not the emitted channel."
+    },
+    {
+      "checkpoint": {
+        "repo": "",
+        "revision": ""
+      },
+      "created_at": "2026-07-08T17:40:52Z",
+      "falsifier": "",
+      "inputs": [],
+      "instrument": {
+        "configs": [],
+        "modules": [],
+        "pins": {}
+      },
+      "kg": [],
+      "legacy": {
+        "label": "Q",
+        "migrated_to": "experiments/aux-head-trainable-readout/AMENDMENT.md",
+        "path": "experiment/protocol/AMENDMENT-Q-aux-head-trainable-readout.md"
+      },
+      "migration": {
+        "needs_manual_review": [
+          "falsifier",
+          "experiment_type",
+          "instrument_configs",
+          "kg_ids"
+        ],
+        "notes": "Imported from legacy amendment prose. Do not infer missing machine fields without hand-reading AMENDMENT.md."
+      },
+      "prediction": "orchestrator:\n  call: transfer AUROC 0.95-0.985, near P's sklearn readout\nuser:\n  call: null\n  note: Predates the dual-prediction practice (adopted 2026-07-03 at AH signing);\n    no separately recorded user prediction.",
+      "question": "Does the production aux_head training engine recover the latent O/P answerability readout that offline sklearn probes proved is present?",
+      "registered": true,
+      "slug": "aux-head-trainable-readout",
+      "status": "historical",
+      "title": "Amendment Q — Trainable `aux_head` Readout (Engine Reproduction of the O/P Ceiling)",
+      "type": "historical-amendment",
+      "verdict": "SUCCESS — trained head reproduces O/P ceiling (transfer AUROC 0.983, ECE 0.023); falsifier (<0.90) dead by a wide margin."
+    },
+    {
+      "checkpoint": {
+        "repo": "",
+        "revision": ""
+      },
+      "created_at": "2026-07-08T17:40:52Z",
+      "falsifier": "",
+      "inputs": [],
+      "instrument": {
+        "configs": [],
+        "modules": [],
+        "pins": {}
+      },
+      "kg": [],
+      "legacy": {
+        "label": "AE",
+        "migrated_to": "experiments/base-model-doubt-coupled-caution/AMENDMENT.md",
+        "path": "experiment/protocol/AMENDMENT-AE-base-model-doubt-coupled-caution.md"
+      },
+      "migration": {
+        "needs_manual_review": [
+          "falsifier",
+          "experiment_type",
+          "instrument_configs",
+          "kg_ids"
+        ],
+        "notes": "Imported from legacy amendment prose. Do not infer missing machine fields without hand-reading AMENDMENT.md."
+      },
+      "prediction": "orchestrator:\n  call: D-native passes AE-G1 small margin (5-15pt); D-transferred weaker or null\nuser:\n  call: null\n  note: Predates the dual-prediction practice (adopted 2026-07-03 at AH signing);\n    no separately recorded user prediction.",
+      "question": "Can an inference-time doubt-coupled caution write CREATE calibrated abstention on a raw base model that never trained on abstention?",
+      "registered": true,
+      "slug": "base-model-doubt-coupled-caution",
+      "status": "historical",
+      "title": "Amendment AE — Training-Free Doubt-Coupled Caution on the Raw Base",
+      "type": "historical-amendment",
+      "verdict": "COMPLETE — pre-stated adequacy-floor STOP fired at census: the raw base already abstains ~93% on unknowns under the affording prompt (confabulates 21/300), so the primary cells sit under the >=150 floor and the actuator question stays OPEN. Resolution recorded in the backlog (commit aca6f4dc, PR #157 arc); this doc's own result section was never backfilled."
+    },
+    {
+      "checkpoint": {
+        "repo": "",
+        "revision": ""
+      },
+      "created_at": "2026-07-08T17:40:52Z",
+      "falsifier": "",
+      "inputs": [],
+      "instrument": {
+        "configs": [],
+        "modules": [],
+        "pins": {}
+      },
+      "kg": [],
+      "legacy": {
+        "label": "W",
+        "migrated_to": "experiments/base-model-training-free-mechanism/AMENDMENT.md",
+        "path": "experiment/protocol/AMENDMENT-W-base-model-training-free-mechanism.md"
+      },
+      "migration": {
+        "needs_manual_review": [
+          "falsifier",
+          "experiment_type",
+          "instrument_configs",
+          "kg_ids"
+        ],
+        "notes": "Imported from legacy amendment prose. Do not infer missing machine fields without hand-reading AMENDMENT.md."
+      },
+      "prediction": "orchestrator:\n  call: PASS; gate and dial are representation properties present pre-training\nuser:\n  call: null\n  note: Predates the dual-prediction practice (adopted 2026-07-03 at AH signing);\n    no separately recorded user prediction.",
+      "question": "Does the full two-signal mechanism (gate + dial + hallucination veto) hold on the raw untrained Instruct base with no adapter?",
+      "registered": true,
+      "slug": "base-model-training-free-mechanism",
+      "status": "historical",
+      "title": "Amendment W — Training-Free Base-Model Two-Signal Mechanism",
+      "type": "historical-amendment",
+      "verdict": "SUCCESS — full mechanism reads training-free (gate 0.997, veto 0.754); training does not create the veto, it sharpens it (0.754 to 0.980)."
+    },
+    {
+      "checkpoint": {
+        "repo": "Qwen/Qwen3-4B",
+        "revision": "PIN_AT_SIGN (exact hub commit sha; untrained base, no adapter, no merge)"
+      },
+      "created_at": "2026-07-11T10:45:17Z",
+      "falsifier": "Phase 1 held-out propensity AUROC <= 0.55, OR the upper bound of its 1,000-resample row-bootstrap 95% CI < 0.60, means the base model's own confab-propensity direction does not read out on held-out rows. (Phase 0 can also close the experiment earlier at a registered negative-feasibility record if any BB-P0 floor is unmet: schema starvation, positive-cell starvation, or negative-cell/refusal starvation.)",
+      "inputs": [
+        "experiments/radial-anti-propensity-steering/AMENDMENT.md",
+        "archive/experiment/phase1/probe/amendments/amendment_ai_verdict_extract_gen.py",
+        "archive/experiment/phase1/probe/amendments/amendment_al_select_and_direction.py",
+        "experiments/bb-base-propensity-fit-read/analysis-committed/read_surface_h9_vendored/holdout_ids.jsonl"
       ],
       "instrument": {
         "configs": [
@@ -85,11 +442,438 @@
           "gates.yaml"
         ],
         "modules": [
+          "cloud/modal_bb_phase0.py"
+        ],
+        "pins": {
+          "cell.yaml": "ad79980f6bb97ed7a2c8b291f3dadc8c8e2a65f0d46a1461241903ebe7aabb75",
+          "cloud/modal_bb_phase0.py": "ba0341c4f7e5361c4fde201e7e5c9877a6a7fed1a9fa2626f6573c2a5612229f",
+          "gates.yaml": "33fe08ad0aba33964e46ead6a1dcda0a8e73f5b79c9dc68b9645fcc427aa545b"
+        },
+        "repins": [
+          {
+            "date": "2026-07-11T12:06:52Z",
+            "file": "gates.yaml",
+            "new_sha256": "33fe08ad0aba33964e46ead6a1dcda0a8e73f5b79c9dc68b9645fcc427aa545b",
+            "old_sha256": "3f23b51f2eecacd5ef39814e63545d893b1de72fc0ea33eea1a40a8bc083ad63",
+            "reason": "BB-FID-2 as signed required whole-file sha256 equality with H9's pinned freeze_scorer.py, which is unachievable by construction: BB's scorer must differ in I/O (base extraction/grades, not AL artifacts) and fidelity reporting. Repinned pre-launch to the fidelity intent: fit-math functions verbatim-identical to the H9 pinned scorer plus AL 3.2 knob assertion, both sha256 values recorded. Outcome gates G0/G1/G2 untouched."
+          }
+        ]
+      },
+      "kg": [
+        "paper:internal-bb-base-propensity-fit-read",
+        "mechanism:base-confab-propensity-direction-reads-held-out-without-training"
+      ],
+      "prediction": "DRAFT, left for PI + orchestrator to fill at sign (scoreboard empty). Phase 0 hinges on whether the untrained base both confabulates AND honestly refuses under a schema prompt it was never SFT'd on; H9's mirror failure (the trained checkpoint starved the positive cell) means neither cell can be assumed.",
+      "question": "On untrained base Qwen/Qwen3-4B, does the model confabulate and honestly refuse enough under the AL schema-contract prompt to power a propensity reading gate (phase 0), and if so does a base-fit confab-propensity direction (AL recipe, re-fit on base grades) separate confabulations from honest unanswerable refusals on a disjoint held-out draw the fit never saw (phase 1)?",
+      "registered": false,
+      "slug": "bb-base-propensity-fit-read",
+      "status": "resolved",
+      "title": "Base-model confab-propensity fit and held-out reading gate on untrained Qwen3-4B",
+      "type": "probe-fit",
+      "verdict": "Base-model propensity direction certified at held-out AUROC 0.8179 (95% CI 0.7190-0.9042), the program's first certified propensity reading, achieved with zero training; all gates pass (G0 205/1020, G2 0.9820)."
+    },
+    {
+      "checkpoint": {
+        "repo": "",
+        "revision": ""
+      },
+      "created_at": "2026-07-08T17:40:52Z",
+      "falsifier": "",
+      "inputs": [],
+      "instrument": {
+        "configs": [],
+        "modules": [],
+        "pins": {}
+      },
+      "kg": [],
+      "legacy": {
+        "label": "G",
+        "migrated_to": "experiments/best-stack-replication-scale-gate/AMENDMENT.md",
+        "path": "experiment/protocol/AMENDMENT-G-best-stack-replication-scale-gate.md"
+      },
+      "migration": {
+        "needs_manual_review": [
+          "falsifier",
+          "experiment_type",
+          "instrument_configs",
+          "kg_ids"
+        ],
+        "notes": "Imported from legacy amendment prose. Do not infer missing machine fields without hand-reading AMENDMENT.md."
+      },
+      "prediction": "orchestrator:\n  call: best seed-1 stack worth testing for cross-seed reproducibility before scaling\nuser:\n  call: null\n  note: Predates the dual-prediction practice (adopted 2026-07-03 at AH signing);\n    no separately recorded user prediction.",
+      "question": "Does the best seed-1 stack (clean SFT->GRPO v2->DPO) reproduce across seeds and merit publication or 8B scaling?",
+      "registered": true,
+      "slug": "best-stack-replication-scale-gate",
+      "status": "historical",
+      "title": "Protocol Amendment G: Best-Stack Replication And Scale Gate",
+      "type": "historical-amendment",
+      "verdict": "DRAFT / NOT SIGNED; governs seed-2/3 replication and a narrow 8B/publication scale gate, pending explicit launch approval."
+    },
+    {
+      "checkpoint": {
+        "repo": "",
+        "revision": ""
+      },
+      "created_at": "2026-07-08T17:40:52Z",
+      "falsifier": "",
+      "inputs": [
+        "experiments/common/artifacts/two_signal_probe_directions/qwen3.5-4b/direction_gate.json",
+        "experiments/common/artifacts/two_signal_probe_directions/qwen3.5-4b/direction_gate.safetensors",
+        "experiments/common/artifacts/two_signal_probe_directions/qwen3.5-4b/direction_dial.json",
+        "experiments/common/artifacts/two_signal_probe_directions/qwen3.5-4b/direction_dial.safetensors"
+      ],
+      "instrument": {
+        "configs": [],
+        "modules": [],
+        "pins": {}
+      },
+      "kg": [],
+      "legacy": {
+        "label": "AA",
+        "migrated_to": "experiments/causal-confidence-steering/AMENDMENT.md",
+        "path": "experiment/protocol/AMENDMENT-AA-causal-confidence-steering.md"
+      },
+      "migration": {
+        "needs_manual_review": [
+          "falsifier",
+          "experiment_type",
+          "instrument_configs",
+          "kg_ids"
+        ],
+        "notes": "Imported from legacy amendment prose. Do not infer missing machine fields without hand-reading AMENDMENT.md."
+      },
+      "prediction": "orchestrator:\n  call: gate@anchor and dial@end move behavior; muted at wrong position; both arms\nuser:\n  call: null\n  note: Predates the dual-prediction practice (adopted 2026-07-03 at AH signing);\n    no separately recorded user prediction.",
+      "question": "Can writing the trust axis back in (activation steering / CoT injection) move behavior position-specifically, showing causal use not just presence?",
+      "registered": true,
+      "slug": "causal-confidence-steering",
+      "status": "historical",
+      "title": "Amendment AA — Causal confidence steering: writing the trust axis (Paper 5)",
+      "type": "historical-amendment",
+      "verdict": "FALSIFIER-1 — the channel stays shut; no effect gate passed in any of the 8 cells; latent gate/dial info does not translate into answer/abstain/revise behavior under either injection arm."
+    },
+    {
+      "checkpoint": {
+        "repo": "",
+        "revision": ""
+      },
+      "created_at": "2026-07-08T17:40:52Z",
+      "falsifier": "",
+      "inputs": [
+        "experiments/commitment-point/analysis-committed/veto-transport/analyze_core.py",
+        "experiments/commitment-point/analysis-committed/veto-transport/analyze_grpo_family.py",
+        "experiments/commitment-point/analysis-committed/veto-transport/analyze_heatmap.py",
+        "experiments/commitment-point/analysis-committed/veto-transport/analyze_transfer_clean.py",
+        "experiments/commitment-point/analysis-committed/veto-transport/merge_findings.py",
+        "experiments/commitment-point/analysis-committed/veto-transport/vt_lib.py"
+      ],
+      "instrument": {
+        "configs": [],
+        "modules": [
+          "cloud/modal_ak_stage1.py",
+          "cloud/modal_ak_stage2.py"
+        ],
+        "pins": {
+          "cloud/modal_ak_stage1.py": "810070d09e5b8899d58638494b3f3a241edfbf7e6f87315dc5da2b756bff9c5f",
+          "cloud/modal_ak_stage2.py": "5d374147e6b5b4fcf3f54a037e51873c62976697b08ec9de65bd03c2c4eacff1"
+        }
+      },
+      "kg": [],
+      "legacy": {
+        "label": "AK",
+        "migrated_to": "experiments/commitment-point/AMENDMENT.md",
+        "path": "experiment/protocol/AMENDMENT-AK-commitment-point.md"
+      },
+      "migration": {
+        "needs_manual_review": [
+          "falsifier",
+          "experiment_type",
+          "kg_ids"
+        ],
+        "notes": "Imported from legacy amendment prose. Do not infer missing machine fields without hand-reading AMENDMENT.md."
+      },
+      "prediction": "user:\n  calls:\n    AK-G1: PASS (crystallization rise)\n    AK-G2-path: H-rise — doubt increases across the confab answer window\n    AK-G3: PASS (window asymmetry)\n  recorded: 2026-07-04\n  quote: '\"I don''t think the lie overwrites doubt and I bet doubt increases. I will\n    be optimistic about the window asymmetry as well.\"'\norchestrator:\n  calls:\n    AK-G1: PASS (~80%)\n    AK-G2-path: H-flat-then-rise — mostly carried, climbing near answer end (~55%;\n      second pick H-rise throughout)\n    AK-G3: PASS (~75%)\n  recorded: 2026-07-04\n  basis: G1/G3 follow the item-31 re-derivation logic directly (transported floor\n    0.58-0.64 vs in-position 0.81-0.86; carried fraction r ~ 0.34-0.37). On G2 the\n    answerability-transport result (0.96-0.99) argues against overwrite and for a\n    carried, largely flat trunk reading, with the Amendment U high-distrust endpoint\n    pulling the tail upward.",
+      "question": "Where along the generation trajectory does the fabricate-anyway commitment happen: does the post-generation veto crystallize across the answer tokens (as the re-derivation result predicts), and what does the doubt-trunk reading do while the fabrication is being written (rise, stay flat, or drop)?",
+      "registered": true,
+      "slug": "commitment-point",
+      "status": "historical",
+      "title": "Amendment AK — Commitment-Point Extraction",
+      "type": "historical-amendment",
+      "verdict": "AK-G1 MISS (delta -0.0175 on grpo-v2, need >= +0.10); AK-G2 MISS, floor not cleared (|contrast| 4.6234 < floor 5.291963, though perm p < 0.01); AK-G3 MISS on the pre-registered ratio test (every dose ratio 0/nan, no CI clears 2.0) but the gen_stream arm shows a diagnosed instrumentation confound (100% of 328 matched rows are byte-identical across all seven alphas, versus 24% varying under anchor-only), so the G3 MISS is not adopted as a confirmed causal null pending a real-generate() hook-firing check. Both the user's and the orchestrator's AK-G1 call (PASS) missed; AK-G2's fork is unadjudicated (gate MISS); AK-G3 is unresolved pending the confound."
+    },
+    {
+      "checkpoint": {
+        "repo": "local AH stage-0/category geometry cached activations",
+        "revision": "historical"
+      },
+      "created_at": "2026-07-09T11:48:02Z",
+      "falsifier": "",
+      "inputs": [
+        "experiments/confab-mechanics-cpu-fleet/analysis-committed/confab-phenotypes/phenotype_analysis.py",
+        "experiments/confab-mechanics-cpu-fleet/analysis-committed/confab-signature/confab_signature_analysis.py",
+        "experiments/confab-mechanics-cpu-fleet/analysis-committed/familiarity-geometry/familiarity_geometry_analysis.py"
+      ],
+      "instrument": {
+        "configs": [],
+        "modules": [],
+        "pins": {}
+      },
+      "kg": [],
+      "prediction": "",
+      "question": "What internal-state signatures and text/familiarity proxies distinguish confabulations from refusals on the AH raw-base surface?",
+      "registered": true,
+      "slug": "confab-mechanics-cpu-fleet",
+      "status": "historical",
+      "title": "Confab Mechanics CPU Fleet",
+      "type": "lab-diagnostic",
+      "verdict": "Historical confab-mechanics CPU fleet banked; scripts preserve phenotype, confab-vs-refuse signature, and familiarity-geometry analyses over AH cached inputs."
+    },
+    {
+      "checkpoint": {
+        "repo": "",
+        "revision": ""
+      },
+      "created_at": "2026-07-08T17:40:52Z",
+      "falsifier": "",
+      "inputs": [],
+      "instrument": {
+        "configs": [],
+        "modules": [],
+        "pins": {}
+      },
+      "kg": [],
+      "legacy": {
+        "label": "K",
+        "migrated_to": "experiments/contrastive-sft-behavior-conditional-confidence/AMENDMENT.md",
+        "path": "experiment/protocol/AMENDMENT-K-contrastive-sft-behavior-conditional-confidence.md"
+      },
+      "migration": {
+        "needs_manual_review": [
+          "falsifier",
+          "experiment_type",
+          "instrument_configs",
+          "kg_ids"
+        ],
+        "notes": "Imported from legacy amendment prose. Do not infer missing machine fields without hand-reading AMENDMENT.md."
+      },
+      "prediction": "orchestrator:\n  call: contrast installs behavior-conditional confidence at SFT stage\nuser:\n  call: null\n  note: Predates the dual-prediction practice (adopted 2026-07-03 at AH signing);\n    no separately recorded user prediction.",
+      "question": "Can full contrastive schema-SFT install behavior-conditional response confidence at the SFT stage while preserving behavior?",
+      "registered": true,
+      "slug": "contrastive-sft-behavior-conditional-confidence",
+      "status": "historical",
+      "title": "Protocol Amendment K: Full Contrastive Schema-SFT for Behavior-Conditional Response Confidence",
+      "type": "historical-amendment",
+      "verdict": "REJECTED — calibration gate PASSED 4/4 but behavior gate FAILED 3/4 (wrong-answer sub-span supervision degraded correctness / inflated over-refusal); calibration mechanism validated."
+    },
+    {
+      "checkpoint": {
+        "repo": "",
+        "revision": ""
+      },
+      "created_at": "2026-07-08T17:40:52Z",
+      "falsifier": "",
+      "inputs": [],
+      "instrument": {
+        "configs": [],
+        "modules": [],
+        "pins": {}
+      },
+      "kg": [],
+      "legacy": {
+        "label": "S",
+        "migrated_to": "experiments/correctness-confidence-probe/AMENDMENT.md",
+        "path": "experiment/protocol/AMENDMENT-S-correctness-confidence-probe.md"
+      },
+      "migration": {
+        "needs_manual_review": [
+          "falsifier",
+          "experiment_type",
+          "instrument_configs",
+          "kg_ids"
+        ],
+        "notes": "Imported from legacy amendment prose. Do not infer missing machine fields without hand-reading AMENDMENT.md."
+      },
+      "prediction": "orchestrator:\n  call: post-gen beats pre-gen; correctness readable, self-eval gain positive\nuser:\n  call: null\n  note: Predates the dual-prediction practice (adopted 2026-07-03 at AH signing);\n    no separately recorded user prediction.",
+      "question": "Is per-attempt correctness linearly readable, and is it read more strongly after the answer than before (self-eval gain)?",
+      "registered": true,
+      "slug": "correctness-confidence-probe",
+      "status": "historical",
+      "title": "Amendment S — Correctness-Confidence Probe (post- vs pre-generation readout)",
+      "type": "historical-amendment",
+      "verdict": "SUCCESS — post-gen AUROC 0.834, self-eval gain +0.065 (CI excludes 0); G1+G2 pass, G3 misses by 0.001 (not a green-light gate)."
+    },
+    {
+      "checkpoint": {
+        "repo": "",
+        "revision": ""
+      },
+      "created_at": "2026-07-08T17:40:52Z",
+      "falsifier": "",
+      "inputs": [],
+      "instrument": {
+        "configs": [],
+        "modules": [],
+        "pins": {}
+      },
+      "kg": [],
+      "legacy": {
+        "label": "T",
+        "migrated_to": "experiments/correctness-readout-deployment-port/AMENDMENT.md",
+        "path": "experiment/protocol/AMENDMENT-T-correctness-readout-deployment-port.md"
+      },
+      "migration": {
+        "needs_manual_review": [
+          "falsifier",
+          "experiment_type",
+          "instrument_configs",
+          "kg_ids"
+        ],
+        "notes": "Imported from legacy amendment prose. Do not infer missing machine fields without hand-reading AMENDMENT.md."
+      },
+      "prediction": "orchestrator:\n  call: PASS on both; GRPO-v2 moves policy, not factual representation\nuser:\n  call: null\n  note: Predates the dual-prediction practice (adopted 2026-07-03 at AH signing);\n    no separately recorded user prediction.",
+      "question": "Does the Amendment S correctness readout survive calibration training on the deployed clean-SFT to GRPO-v2 checkpoint?",
+      "registered": true,
+      "slug": "correctness-readout-deployment-port",
+      "status": "historical",
+      "title": "Amendment T — Correctness-Readout Deployment-Checkpoint Port",
+      "type": "historical-amendment",
+      "verdict": "SUCCESS — post-gen AUROC 0.819, self-eval gain +0.074 (CI excludes 0); readout survives, direction drifts across checkpoints (cold transfer 0.68)."
+    },
+    {
+      "checkpoint": {
+        "repo": "",
+        "revision": ""
+      },
+      "created_at": "2026-07-08T17:40:52Z",
+      "falsifier": "",
+      "inputs": [],
+      "instrument": {
+        "configs": [],
+        "modules": [],
+        "pins": {}
+      },
+      "kg": [],
+      "legacy": {
+        "label": "Z",
+        "migrated_to": "experiments/cross-family-confirmatory/AMENDMENT.md",
+        "path": "experiment/protocol/AMENDMENT-Z-cross-family-confirmatory.md"
+      },
+      "migration": {
+        "needs_manual_review": [
+          "falsifier",
+          "experiment_type",
+          "instrument_configs",
+          "kg_ids"
+        ],
+        "notes": "Imported from legacy amendment prose. Do not infer missing machine fields without hand-reading AMENDMENT.md."
+      },
+      "prediction": "orchestrator:\n  call: readout holds across families; veto PASS on at least 3 of 4\nuser:\n  call: null\n  note: Predates the dual-prediction practice (adopted 2026-07-03 at AH signing);\n    no separately recorded user prediction.",
+      "question": "Does the training-free two-signal readout replicate across model families, or is it a Qwen3-lineage idiosyncrasy?",
+      "registered": true,
+      "slug": "cross-family-confirmatory",
+      "status": "historical",
+      "title": "Amendment Z — Cross-FAMILY confirmatory of the training-free two-signal readout",
+      "type": "historical-amendment",
+      "verdict": "COMPLETE — SUCCESS; veto PASS 3/4 (Ministral, Qwen3.5, Gemma; Llama fails), gate and dial 4/4; readout promoted to a cross-family claim, veto the fragile model-dependent axis."
+    },
+    {
+      "checkpoint": {
+        "repo": "",
+        "revision": ""
+      },
+      "created_at": "2026-07-08T17:40:52Z",
+      "falsifier": "",
+      "inputs": [],
+      "instrument": {
+        "configs": [],
+        "modules": [],
+        "pins": {}
+      },
+      "kg": [],
+      "legacy": {
+        "label": "X",
+        "migrated_to": "experiments/cross-model-size-sweep/AMENDMENT.md",
+        "path": "experiment/protocol/AMENDMENT-X-cross-model-size-sweep.md"
+      },
+      "migration": {
+        "needs_manual_review": [
+          "falsifier",
+          "experiment_type",
+          "instrument_configs",
+          "kg_ids"
+        ],
+        "notes": "Imported from legacy amendment prose. Do not infer missing machine fields without hand-reading AMENDMENT.md."
+      },
+      "prediction": "orchestrator:\n  call: PASS at every size; veto plausibly sharpens with scale\nuser:\n  call: null\n  note: Predates the dual-prediction practice (adopted 2026-07-03 at AH signing);\n    no separately recorded user prediction.",
+      "question": "Does the training-free two-signal readout generalize across model scale (Qwen3 1.7B-14B), or is it a 4B artifact?",
+      "registered": true,
+      "slug": "cross-model-size-sweep",
+      "status": "historical",
+      "title": "Amendment X — Cross-Size Generalization of the Training-Free Two-Signal Readout",
+      "type": "historical-amendment",
+      "verdict": "COMPLETE — all four sizes PASS all three gates (size-robust); scaling of sharpness is non-monotonic (peaks at 8B), monotonic-sharpening expectation not supported."
+    },
+    {
+      "checkpoint": {
+        "repo": "",
+        "revision": ""
+      },
+      "created_at": "2026-07-08T17:40:52Z",
+      "falsifier": "",
+      "inputs": [],
+      "instrument": {
+        "configs": [],
+        "modules": [],
+        "pins": {}
+      },
+      "kg": [],
+      "legacy": {
+        "label": "C",
+        "migrated_to": "experiments/crossover-preference-stacking/AMENDMENT.md",
+        "path": "experiment/protocol/AMENDMENT-C-crossover-preference-stacking.md"
+      },
+      "migration": {
+        "needs_manual_review": [
+          "falsifier",
+          "experiment_type",
+          "instrument_configs",
+          "kg_ids"
+        ],
+        "notes": "Imported from legacy amendment prose. Do not infer missing machine fields without hand-reading AMENDMENT.md."
+      },
+      "prediction": "orchestrator:\n  call: DPO and KTO may apply complementary corrections, better balance\nuser:\n  call: null\n  note: Predates the dual-prediction practice (adopted 2026-07-03 at AH signing);\n    no separately recorded user prediction.",
+      "question": "Can a cross-over second preference stage (SFT->DPO->KTO or SFT->KTO->DPO) combine complementary corrections better than either first-stage arm?",
+      "registered": true,
+      "slug": "crossover-preference-stacking",
+      "status": "historical",
+      "title": "Protocol Amendment C: Cross-Over Preference Stacking",
+      "type": "historical-amendment",
+      "verdict": "DRAFT / NOT SIGNED / DEPRIORITIZED; reciprocal preference stacking not in active near-term matrix as of 2026-06-25."
+    },
+    {
+      "checkpoint": {
+        "repo": "unsloth/Qwen3-4B-bnb-4bit",
+        "revision": "raw-base (no adapter; checkpoint_tag \"raw-base\" per AK Stage 1 manifest)"
+      },
+      "falsifier": "Screen, so the bar is graduation: a candidate graduates iff its flip rate exceeds the random-direction control with bootstrap 95% CI excluding 0. No graduations means the dark subspace is ruled out as a near-term actuator. If the positive control does not move behavior the screen is void.",
+      "inputs": [
+        "experiments/dark-actuator-screen/analysis-committed/dark_displacement_census_summary.md",
+        "archive/experiment/phase1/eval/scorers.py"
+      ],
+      "instrument": {
+        "configs": [
+          "cell.yaml",
+          "gates.yaml"
+        ],
+        "modules": [
+          "build_directions.py",
+          "dark_displacement_census.py",
           "../common/graders/dark_actuator_grader.py"
         ],
         "pins": {
-          "../common/graders/dark_actuator_grader.py": "f5521a691d1c5610e4b4b27592583e699d2c45745761beba233074a37a55c515",
-          "cell.yaml": "cf047c8725f97c9950f25a2b8d0fe4cfd725ad5e0e7e6f1621a8410331530b53",
+          "../common/graders/dark_actuator_grader.py": "d71c336acaf5ed4a29285ce835d7b451dac916a4f59a68c260f78844f1c5e57e",
+          "build_directions.py": "11a72cf4cbdcf2a9884f815b8c1d6037f112d657fa116e187f625f5838960044",
+          "cell.yaml": "5c81e5a7a2fb85c011b98e150f3c866b099d3c73a02b5f1f22c03398d8bf056e",
+          "dark_displacement_census.py": "1a0dff630550868f98a1d9dc5ab8631e22fc90cc28ad22d7ebcb7c15b68ec311",
           "gates.yaml": "a70634ea376e7df7cc6383f367be8a8e87bc371e3439cea22e0dc374f0eb2b87"
         }
       },
@@ -101,6 +885,281 @@
       "status": "null-result",
       "type": "lab-diagnostic",
       "verdict": "NULL. G-instrument valid (pos_ctrl kills 79/80 confabs into coherent 'I dont know' refusals, confidence->0.0; controls at floor), screen not void. The 9 candidates clearing the raw graduation bar are an artifact: grader coherence gap (refuse->answer flips are malformed spam scored as answers, well-formed 0-17% vs 76% baseline), under-dosed random control (cand dose3 setpoints 34-219 vs paired random 4-42), off-manifold over-drive on exactly-off-axis weak directions (census AUROC 0.60-0.72). Promote none; dark subspace shelved. Orchestrator 0-graduate correct; user several-graduate missed."
+    },
+    {
+      "checkpoint": {
+        "repo": "professorsynapse/eh-qwen3-4b-clean-sft-grpo-v2-seed1-lora",
+        "revision": "8914081dfcec4f1f025f2dbe4195d4f7aa8d210e"
+      },
+      "created_at": "2026-07-09T13:45:00Z",
+      "falsifier": "",
+      "inputs": [
+        "experiments/diag-item11-batched-steering-equivalence/artifacts/directions/qwen3-4b-grpo-v2/direction_caution.json",
+        "experiments/diag-item11-batched-steering-equivalence/artifacts/directions/qwen3-4b-grpo-v2/direction_caution.npy",
+        "docs/preparation/item11-batching-parity-cpu-half.md"
+      ],
+      "instrument": {
+        "configs": [],
+        "modules": [
+          "archive/experiment/phase1/probe/steering/gpu_equivalence_cell.py",
+          "cloud/modal_item11_equivalence.py",
+          "cloud/runpod_diag_gpu_equiv.sh"
+        ],
+        "pins": {
+          "cloud/modal_item11_equivalence.py": "d6978c00785ad4be3bb991513f50371fd422a9cb0018aa0e4f173d7f15c985bb",
+          "cloud/runpod_diag_gpu_equiv.sh": "7be9b1f3dcd6563b7a426d7a5ead6f966fdde354f7a3af20b90e97a3d2d5a72d"
+        }
+      },
+      "kg": [],
+      "prediction": "",
+      "question": "Does the batched final-position, per-row-alpha steering hook match the one-prompt-at-a-time reference edit on the deployed Qwen3-4B clean-SFT to GRPO-v2 lineage?",
+      "registered": true,
+      "slug": "diag-item11-batched-steering-equivalence",
+      "status": "historical",
+      "title": "Diagnostic Item 11 - Batched Steering Equivalence",
+      "type": "lab-diagnostic",
+      "verdict": "Historical lab-notebook diagnostic banked; CPU and GPU parity checks passed, clearing the AK Stage 2 engine gate for the batched steering path."
+    },
+    {
+      "checkpoint": {
+        "repo": "professorsynapse/eh-al-prep-staging",
+        "revision": "diag-item20-gentime-r2"
+      },
+      "created_at": "2026-07-09T02:29:24Z",
+      "falsifier": "",
+      "inputs": [
+        "experiments/diag-item20-gentime-displacement/analysis-committed/gentime_decomposition.md"
+      ],
+      "instrument": {
+        "configs": [],
+        "modules": [
+          "diag_item20_gentime_decomposition.py",
+          "cloud/runpod_diag_gentime_positions.sh"
+        ],
+        "pins": {
+          "cloud/runpod_diag_gentime_positions.sh": "0097bdd9186899dd80e8b4ecde328f9c251180cbfba9d8fe523889e25b2152c5",
+          "diag_item20_gentime_decomposition.py": "75da52ef59806f800725f3b6e036a50a76a78b15d1b73f2974c9707370c3acf7"
+        }
+      },
+      "kg": [],
+      "prediction": "",
+      "question": "How much generation-time hidden-state movement lies outside the named doubt/caution plane on the unknown-only GRPO-v2 surface?",
+      "registered": true,
+      "slug": "diag-item20-gentime-displacement",
+      "status": "historical",
+      "title": "Diagnostic Item 20 - Generation-Time Displacement",
+      "type": "lab-diagnostic",
+      "verdict": "Historical lab-notebook diagnostic banked; generation-time displacement is overwhelmingly outside the named doubt/caution-perp plane at every captured position."
+    },
+    {
+      "checkpoint": {
+        "repo": "professorsynapse/eh-al-prep-staging",
+        "revision": "diag-item9-{raw,cleansft,grpov2,partrue}-r3"
+      },
+      "created_at": "2026-07-09T02:29:25Z",
+      "falsifier": "",
+      "inputs": [
+        "experiments/diag-item9-caution-assembly-timeline/analysis-committed/diag_item9_caution_timeline.md"
+      ],
+      "instrument": {
+        "configs": [],
+        "modules": [
+          "diag_item9_caution_timeline.py",
+          "cloud/runpod_diag_caution_timeline.sh"
+        ],
+        "pins": {
+          "cloud/runpod_diag_caution_timeline.sh": "3f63e43835dd93c5f8da300386e2f24ce7b108a0b0f5a684104971f44fe7590d",
+          "diag_item9_caution_timeline.py": "d945ef5c1b0aaf39f4e8743a9b8bfcee4e2103af59da31aea2218a476c8c9301"
+        }
+      },
+      "kg": [],
+      "prediction": "",
+      "question": "How does the caution/answerability readout develop across raw, clean-SFT, GRPO-v2, and PAR-true training stages?",
+      "registered": true,
+      "slug": "diag-item9-caution-assembly-timeline",
+      "status": "historical",
+      "title": "Diagnostic Item 9 - Caution Assembly Timeline",
+      "type": "lab-diagnostic",
+      "verdict": "Historical lab-notebook diagnostic banked; caution/answerability readout remains strong across stages, with most direction rotation from raw to clean-SFT and smaller rotation after GRPO-v2/PAR-true."
+    },
+    {
+      "checkpoint": {
+        "repo": "",
+        "revision": ""
+      },
+      "created_at": "2026-07-08T17:40:52Z",
+      "falsifier": "",
+      "inputs": [],
+      "instrument": {
+        "configs": [],
+        "modules": [],
+        "pins": {}
+      },
+      "kg": [],
+      "legacy": {
+        "label": "AH",
+        "migrated_to": "experiments/divergent-pool-own-readout/AMENDMENT.md",
+        "path": "experiment/protocol/AMENDMENT-AH-divergent-pool-own-readout.md"
+      },
+      "migration": {
+        "needs_manual_review": [
+          "falsifier",
+          "experiment_type",
+          "instrument_configs",
+          "kg_ids"
+        ],
+        "notes": "Imported from legacy amendment prose. Do not infer missing machine fields without hand-reading AMENDMENT.md."
+      },
+      "prediction": "orchestrator:\n  call: H-compliance\n  confidence: 75-80%\n  recorded: 2026-07-03\n  basis: AG's doubt axis is anti-semantic and unmoved by primes; the pliability law\n    absorbs the hidden state into one boundary-distance scalar; the only observed\n    readout-behavior coupling (AC) was wired externally.\nuser:\n  call: H-compliance\n  recorded: 2026-07-03\n  quote: I think prompt is like a shotgun here and overrides most other policies.\n    So I think we're still decoupled from internals, if there is something it would\n    be too weak I think to do anything about beyond like you say maybe coming back\n    to training.",
+      "question": "Does prime uptake consult the model's own readout (H-resonance) or is it pure instruction compliance plus boundary distance (H-compliance)?",
+      "registered": true,
+      "slug": "divergent-pool-own-readout",
+      "status": "historical",
+      "title": "Amendment AH — Divergent-Pool Own-Readout Attribution (probe ≠ gold)",
+      "type": "historical-amendment",
+      "verdict": "H-COMPLIANCE (certified via Addendum A1). G2 release congruence is a precise zero (-0.21pt, CI [-4.45, +4.10]); the initial G1 miss (+15.65pt on a low-caution stratum) was recalibrated on a caution-representative stratum in pre-registered Addendum A1 and passed decisively (+50.98pt vs +20pt floor), certifying the instrument and upgrading the verdict per the locked §10.2 semantics. Prime uptake does not consult the model's own readout."
+    },
+    {
+      "checkpoint": {
+        "repo": "unsloth/Qwen3-4B",
+        "revision": "raw-base (no adapter; bf16, no 4-bit quantization)"
+      },
+      "falsifier": "G1 fails (net confab clean_tighten < 60% or its Wilson lower CI does not exceed 50%) OR G2 fails (net known-correct false-refusal > 5% or its Wilson upper CI is not below 10%) - doubt-gated snap is not a selective tighten instrument on this substrate (null). No goalpost-moving after the result.",
+      "inputs": [
+        "experiments/doubt-gated-caution-tighten/analysis-committed/split_manifest.json",
+        "experiments/doubt-gated-caution-tighten/analysis-committed/u_d_L34.json",
+        "experiments/doubt-gated-caution-tighten/analysis-committed/c_hat_L34.json",
+        "experiments/doubt-gated-caution-tighten/analysis-committed/random_direction_L34.json",
+        "experiments/doubt-gated-caution-tighten/analysis-committed/gate_fit.json",
+        "experiments/doubt-gated-caution-tighten/analysis-committed/build_manifest.json"
+      ],
+      "instrument": {
+        "configs": [
+          "cell.yaml",
+          "gates.yaml"
+        ],
+        "modules": [
+          "gen_lib.py",
+          "grader.py",
+          "model_lib.py"
+        ],
+        "pins": {
+          "cell.yaml": "a6d3ddc4030442757549d05ac8ac4c58d0c535401c5d86f532490744e82e14ee",
+          "gates.yaml": "48b65487b9b5b20693645e42ef0c8a4387446638db7c500721d74001fd331c4d",
+          "gen_lib.py": "6cffc7282591ca3b0db79d985a024ca2b63cab8afc1c5f5085d13cbdb98b79ce",
+          "grader.py": "dbe39384038feeba162a4c54690973be9544edf81285d002c48f6e0dedeb81d5",
+          "model_lib.py": "ce71f6d02d97efdabb3d05e9709eff0dc0d50f2710eed4fe82f06df68389a047"
+        }
+      },
+      "kg": [
+        "experiment:doubt-gated-caution-tighten"
+      ],
+      "prediction": "On held-out, net confab clean_tighten >= 60% (diagnostic estimate ~78%) and net known-correct false-refusal <= 5% (diagnostic estimate ~1.6%), with placebo controls (random-direction, permuted-gate) showing no selective tightening.",
+      "question": "On the raw-base untrained instruct (Qwen3-4B, no adapter), does a doubt-threshold GATE that snaps only fired rows to a fixed caution-direction setpoint, measured end-to-end on a held-out split the direction fit and tau choice never touched, selectively tighten confabulations into coherent refusals while leaving known-correct answers largely unrefused?",
+      "registered": true,
+      "slug": "doubt-gated-caution-tighten",
+      "status": "resolved",
+      "type": "steer-cell",
+      "verdict": "Doubt-gated caution snap passed as a training-free selective tighten instrument on bf16 raw-base Qwen3-4B: G1 73.5% clean_tighten, G2 3.1% false-refusal with Wilson UCB 6.0%, and G3 placebos clean."
+    },
+    {
+      "checkpoint": {
+        "repo": "",
+        "revision": ""
+      },
+      "created_at": "2026-07-08T17:40:52Z",
+      "falsifier": "Permuted is approximately coupled on AC-G1 (margin below 5pt or CI includes 0), meaning the doubt readout contributes nothing at the intervention site; no alpha-tuning or alternative coupling rescue runs under this amendment.",
+      "inputs": [],
+      "instrument": {
+        "configs": [
+          "ac_doubt_coupled_intervention.yaml",
+          "ac_doubt_coupled_intervention_smoke.yaml",
+          "ac_doubt_coupled_intervention_smoke_batched.yaml"
+        ],
+        "modules": [
+          "analyze_ac_doubt_coupled.py",
+          "build_doubt_gain_map.py",
+          "ac_doubt_coupled_analysis.py"
+        ],
+        "pins": {
+          "ac_doubt_coupled_analysis.py": "894c557cf71a88e29474f5a4a6007dd1a42f62c16b0280db99c9c89e52bb877f",
+          "ac_doubt_coupled_intervention.yaml": "c25bbf69894e0de7485574c9028f83615a5effe46d6f4c742460653b616a09a8",
+          "ac_doubt_coupled_intervention_smoke.yaml": "f5cea0fb1fe1446b8eb330f4bf3c5fb99d12be9cae46024fa81330a94b186a36",
+          "ac_doubt_coupled_intervention_smoke_batched.yaml": "192819daeb4cc405d366c96a64eb2df014150925031c5d4d59adb88915b7a5b4",
+          "analyze_ac_doubt_coupled.py": "4d97d020184678ec263663ea207bc0a4bdfadce8b552b4d8e7028e00713f0e43",
+          "build_doubt_gain_map.py": "b5f518dcc2d98b4184fbdef49d4ba8ad7ecfed1c38e0167817db25b287b89376"
+        }
+      },
+      "kg": [],
+      "legacy": {
+        "label": "AC",
+        "migrated_to": "experiments/doubt-regulated-caution/AMENDMENT.md",
+        "path": "experiment/protocol/AMENDMENT-AC-doubt-regulated-caution.md"
+      },
+      "migration": {
+        "needs_manual_review": [
+          "experiment_type",
+          "kg_ids"
+        ],
+        "notes": "Imported from legacy amendment prose. Do not infer missing machine fields without hand-reading AMENDMENT.md. Instrument configs migrated from the archived legacy probe config tree on 2026-07-09; the batched smoke is a companion equivalence check, not the registered evidence run."
+      },
+      "prediction": "orchestrator:\n  call: AC-G1 passes with a small margin (5-15pt); AC-G2 ~0 vs constant ablate\nuser:\n  call: null\n  note: Predates the dual-prediction practice (adopted 2026-07-03 at AH signing);\n    no separately recorded user prediction.",
+      "question": "Does making the caution gate a live function of the doubt readout carry information beyond simply deleting the gate, on the trained checkpoint?",
+      "registered": true,
+      "slug": "doubt-regulated-caution",
+      "status": "historical",
+      "title": "Amendment AC — Doubt-Regulated Caution (closed-loop coupling at inference)",
+      "type": "historical-amendment",
+      "verdict": "AC-G1 PASS — the wire carries information (coupled beats permuted +8.7pt, CI [+5.6,+12.0]); guard PASS, falsifier not fired; RQ4 Stage 1 closes POSITIVE, first use-the-signal win after M/N/R/AA."
+    },
+    {
+      "checkpoint": {
+        "repo": "cross-family matrix",
+        "revision": "see model_matrix.yaml"
+      },
+      "falsifier": "The headline claim is falsified if at least 2 eligible small-tier families fail, or at least 2 eligible mid-tier cells fail, or Qwen is the only passing eligible mid-tier family. A cell fails if G1, G2, G3(i), or G3(ii) fails on held-out. If fewer than 3 mid-tier cells are eligible before held-out scoring, the mid-tier claim is underpowered rather than passed.",
+      "inputs": [],
+      "instrument": {
+        "configs": [
+          "model_matrix.yaml",
+          "cell.yaml",
+          "gates.yaml"
+        ],
+        "modules": [
+          "cloud/README.md",
+          "cloud/modal_doubt_snap_cross_family.py",
+          "prep_tuner_cell.py",
+          "materialize_tuner_cells.py",
+          "smoke_tuner_path.py",
+          "gen_lib.py",
+          "grader.py",
+          "render.py"
+        ],
+        "pins": {
+          "cell.yaml": "e2ebb35318e9588a827cf65a540bf2f1d0da697b72b935b1a6af57a1dfdca828",
+          "cloud/README.md": "36574148b79291f26cba4dc143ba1c23feda9bc5cacc6b5707259d05b3ebcdbe",
+          "cloud/modal_doubt_snap_cross_family.py": "466c0a5e0deaa7b990e15c6ed4ecd86d8ac603ef220bc94d4d7068607fa64fa1",
+          "gates.yaml": "fb3e63eac6bba873c9f98616beb542ebf70bb0ade01a30e7cc80601095c2ff89",
+          "gen_lib.py": "6cffc7282591ca3b0db79d985a024ca2b63cab8afc1c5f5085d13cbdb98b79ce",
+          "grader.py": "ab0dea1c3efc841e943fccf8f5830c92715fac413e8ac80b2dbd72b113e6e2b3",
+          "materialize_tuner_cells.py": "cd497a634377f172a1db88905b4e98ce9fba716f580367608086ce010d3cebde",
+          "model_matrix.yaml": "2f54278b9e7bec54d29e16159cd57c772938821bf40d602a9f7020d7999cf53a",
+          "prep_tuner_cell.py": "212a85cfcf378022ca541c23d75f2b1d1da07bbcff86fb43c282794deb587e61",
+          "render.py": "a5a0b243ea20e70ae62d081fbcdca17f0c298a0a6878ff5698e7752ef3434876",
+          "smoke_tuner_path.py": "7e412e7b3ffeb71b52b56cb3ec84089f80127192c3e169dcb1ece2dff90fc4c1"
+        }
+      },
+      "kg": [
+        "experiment:doubt-snap-cross-family-confirmatory",
+        "mechanism:caution-encoding-read-actuate-dissociation-across-families"
+      ],
+      "prediction": "The doubt-gated caution snap will replicate as a selective, training-free tighten instrument across model families; at least 3 of 4 small-tier families and at least 3 eligible mid-tier cells will pass G1/G2/G3, with at least one passing mid-tier family outside Qwen.",
+      "question": "Does the doubt-gated caution snap replicate as a selective, training-free tighten instrument across the Llama, Ministral, Qwen3.5, and Gemma family panel, including 8B-ish or nearest mid-size cells where eligible, when each model's direction, gate tau, and snap dose are chosen on FIT only and scored on held-out?",
+      "registered": true,
+      "slug": "doubt-snap-cross-family-confirmatory",
+      "status": "resolved",
+      "type": "steer-cell",
+      "verdict": "not promoted: all four launched cells stopped at the registered pre-outcome FIT dose-viability rule at the 0.94-depth write site (peaks 0.326/0.184/0.000 small tier, 0.058 mid tier); the c_hat audit and the qwen35_4b mid-band ladder show the caution encoding is readable in every family while late-site writes fail to actuate outside Qwen lineage, indicting the universal-depth write-site rule rather than establishing a family-level mechanism null"
     },
     {
       "checkpoint": {
@@ -125,6 +1184,1921 @@
       "status": "draft",
       "type": "steer-cell",
       "verdict": ""
+    },
+    {
+      "checkpoint": {
+        "repo": "",
+        "revision": ""
+      },
+      "created_at": "2026-07-08T17:40:52Z",
+      "falsifier": "",
+      "inputs": [
+        "experiments/common/artifacts/two_signal_probe_directions/qwen3.5-4b/direction_gate.json",
+        "experiments/common/artifacts/two_signal_probe_directions/qwen3.5-4b/direction_gate.safetensors",
+        "experiments/common/artifacts/two_signal_probe_directions/qwen3.5-4b/direction_dial.json",
+        "experiments/common/artifacts/two_signal_probe_directions/qwen3.5-4b/direction_dial.safetensors",
+        "experiments/first-person-injection/artifacts/cloud_launches/amendment_ab_v1_launch.json",
+        "experiments/first-person-injection/artifacts/analysis/aa_think_trace_idiom_mining.md",
+        "experiments/first-person-injection/artifacts/trace_reports/ab_v1/INTERIM-NOTES.md",
+        "experiments/first-person-injection/artifacts/trace_reports/ab_v1/aa-7-trace-report.json",
+        "experiments/first-person-injection/artifacts/trace_reports/ab_v1/ab-1-trace-report.json",
+        "experiments/first-person-injection/artifacts/trace_reports/ab_v1/ab-2-trace-report.json",
+        "experiments/first-person-injection/artifacts/trace_reports/ab_v1/ab-3-trace-report.json"
+      ],
+      "instrument": {
+        "configs": [],
+        "modules": [],
+        "pins": {}
+      },
+      "kg": [],
+      "legacy": {
+        "label": "AB",
+        "migrated_to": "experiments/first-person-injection/AMENDMENT.md",
+        "path": "experiment/protocol/AMENDMENT-AB-first-person-injection.md"
+      },
+      "migration": {
+        "needs_manual_review": [
+          "falsifier",
+          "experiment_type",
+          "instrument_configs",
+          "kg_ids"
+        ],
+        "notes": "Imported from legacy amendment prose. Do not infer missing machine fields without hand-reading AMENDMENT.md."
+      },
+      "prediction": "orchestrator:\n  call: if framing artifact, V1 shows real-vs-placebo separation AA lacked\nuser:\n  call: null\n  note: Predates the dual-prediction practice (adopted 2026-07-03 at AH signing);\n    no separately recorded user prediction.",
+      "question": "Is AA's shut text channel a framing artifact — does first-person prose with an interpretable percent and explicit action rule open it?",
+      "registered": true,
+      "slug": "first-person-injection",
+      "status": "historical",
+      "title": "Amendment AB — First-person confidence injection: is the shut text channel a framing artifact?",
+      "type": "historical-amendment",
+      "verdict": "AMBIGUOUS-LEANING-NEGATIVE — no V1 cell passes; first-person framing does not open the text channel (dial@late instrument saturated, dial@final MISS, gate@early only a ~2pt trickle); AA's presence-not-use conclusion strengthened."
+    },
+    {
+      "checkpoint": {
+        "repo": "local AH stage-0/category geometry cached activations",
+        "revision": "historical"
+      },
+      "created_at": "2026-07-09T11:48:01Z",
+      "falsifier": "",
+      "inputs": [
+        "experiments/flavor-geometry-category-fleet/analysis-committed/category-geometry/category_geometry/category_geometry_analysis.py",
+        "experiments/flavor-geometry-category-fleet/analysis-committed/category-geometry/flavor_readout/flavor_readout_analysis.py",
+        "experiments/flavor-geometry-category-fleet/analysis-committed/category-geometry/pliability/pliability_analysis.py",
+        "experiments/flavor-geometry-category-fleet/analysis-committed/controversial-flips/characterize_direction.py",
+        "experiments/flavor-geometry-category-fleet/analysis-committed/controversial-flips/controversial_flip_hunt.py"
+      ],
+      "instrument": {
+        "configs": [],
+        "modules": [],
+        "pins": {}
+      },
+      "kg": [],
+      "prediction": "",
+      "question": "Do unanswerability categories share one known/unknown geometry, or do flavor-specific residual directions and controversial-prime flips expose category-conditioned structure?",
+      "registered": true,
+      "slug": "flavor-geometry-category-fleet",
+      "status": "historical",
+      "title": "Flavor Geometry Category Fleet",
+      "type": "lab-diagnostic",
+      "verdict": "Historical category-geometry diagnostic fleet banked; scripts preserve the flavor-readout, per-category geometry, pliability, and controversial-flip analyses over AH cached inputs."
+    },
+    {
+      "checkpoint": {
+        "repo": "",
+        "revision": ""
+      },
+      "created_at": "2026-07-08T17:40:52Z",
+      "falsifier": "",
+      "inputs": [
+        "experiments/grpo-centered-stacking/artifacts/configs/current-clean-dpo-grpo-unknown-failure/current_clean_dpo_grpo_unknown_failure_selfaware_manifest.yaml",
+        "experiments/grpo-centered-stacking/artifacts/configs/current-clean-dpo-grpo-unknown-failure/current_clean_dpo_grpo_unknown_failure_selfaware_row_keys.txt",
+        "experiments/grpo-centered-stacking/artifacts/configs/mi-readouts/current_clean_dpo_grpo_unknown_failure_prompt_matched_behavior_axis_scan.yaml",
+        "experiments/grpo-centered-stacking/artifacts/configs/mi-readouts/current_clean_dpo_grpo_unknown_failure_prompt_matched_multicell_readout.yaml",
+        "experiments/grpo-centered-stacking/artifacts/configs/current-clean-grpo-dpo-unknown-failure/current_clean_grpo_dpo_unknown_failure_selfaware_manifest.yaml",
+        "experiments/grpo-centered-stacking/artifacts/configs/current-clean-grpo-dpo-unknown-failure/current_clean_grpo_dpo_unknown_failure_selfaware_row_keys.txt",
+        "experiments/grpo-centered-stacking/artifacts/configs/mi-readouts/current_clean_grpo_dpo_unknown_failure_prompt_matched_behavior_axis_scan.yaml",
+        "experiments/grpo-centered-stacking/artifacts/configs/mi-readouts/current_clean_grpo_dpo_unknown_failure_prompt_matched_multicell_readout.yaml",
+        "experiments/grpo-centered-stacking/artifacts/configs/current-clean-kto-grpo-unknown-failure/current_clean_kto_grpo_unknown_failure_selfaware_manifest.yaml",
+        "experiments/grpo-centered-stacking/artifacts/configs/current-clean-kto-grpo-unknown-failure/current_clean_kto_grpo_unknown_failure_selfaware_row_keys.txt",
+        "experiments/grpo-centered-stacking/artifacts/configs/mi-readouts/current_clean_kto_grpo_unknown_failure_prompt_matched_behavior_axis_scan.yaml",
+        "experiments/grpo-centered-stacking/artifacts/configs/mi-readouts/current_clean_kto_grpo_unknown_failure_prompt_matched_multicell_readout.yaml"
+      ],
+      "instrument": {
+        "configs": [],
+        "modules": [],
+        "pins": {}
+      },
+      "kg": [],
+      "legacy": {
+        "label": "F",
+        "migrated_to": "experiments/grpo-centered-stacking/AMENDMENT.md",
+        "path": "experiment/protocol/AMENDMENT-F-grpo-centered-stacking.md"
+      },
+      "migration": {
+        "needs_manual_review": [
+          "falsifier",
+          "experiment_type",
+          "instrument_configs",
+          "kg_ids"
+        ],
+        "notes": "Imported from legacy amendment prose. Do not infer missing machine fields without hand-reading AMENDMENT.md."
+      },
+      "prediction": "orchestrator:\n  call: a third GRPO-centered stage may combine effects better than two-stage\nuser:\n  call: null\n  note: Predates the dual-prediction practice (adopted 2026-07-03 at AH signing);\n    no separately recorded user prediction.",
+      "question": "Can a GRPO-centered third stage (before or after a preference pass) beat the two-stage arms on the refusal/known-answer tradeoff?",
+      "registered": true,
+      "slug": "grpo-centered-stacking",
+      "status": "historical",
+      "title": "Protocol Amendment F: GRPO-Centered Three-Stage Stacking",
+      "type": "historical-amendment",
+      "verdict": "SIGNED OFF (2026-06-24) for exploratory local seed-1 three-stage stacking over the clean Amendment E lineage."
+    },
+    {
+      "checkpoint": {
+        "repo": "",
+        "revision": ""
+      },
+      "created_at": "2026-07-08T17:40:52Z",
+      "falsifier": "",
+      "inputs": [],
+      "instrument": {
+        "configs": [],
+        "modules": [],
+        "pins": {}
+      },
+      "kg": [],
+      "legacy": {
+        "label": "N",
+        "migrated_to": "experiments/grpo-v3-on-contrastive-sft-base/AMENDMENT.md",
+        "path": "experiment/protocol/AMENDMENT-N-grpo-v3-on-contrastive-sft-base.md"
+      },
+      "migration": {
+        "needs_manual_review": [
+          "falsifier",
+          "experiment_type",
+          "instrument_configs",
+          "kg_ids"
+        ],
+        "notes": "Imported from legacy amendment prose. Do not infer missing machine fields without hand-reading AMENDMENT.md."
+      },
+      "prediction": "orchestrator:\n  call: retains K calibration and repairs behavior gate\nuser:\n  call: null\n  note: Predates the dual-prediction practice (adopted 2026-07-03 at AH signing);\n    no separately recorded user prediction.",
+      "question": "Does GRPO v3 on the calibrated Amendment K base retain its stated calibration while repairing behavior into one coherent model?",
+      "registered": true,
+      "slug": "grpo-v3-on-contrastive-sft-base",
+      "status": "historical",
+      "title": "Protocol Amendment N: GRPO v3 Reward on the Amendment K (Contrastive-SFT) Base",
+      "type": "historical-amendment",
+      "verdict": "PARTIAL then STOP — calibration RETAINED 4/4, behavior REPAIR FAILED 2/4; beta 0.05 re-run fired the margin falsifier (+3pt, not +14.5), so the action/knowledge decoupling is structural, not a KL artifact."
+    },
+    {
+      "checkpoint": {
+        "repo": "",
+        "revision": ""
+      },
+      "created_at": "2026-07-08T17:40:52Z",
+      "falsifier": "",
+      "inputs": [],
+      "instrument": {
+        "configs": [],
+        "modules": [],
+        "pins": {}
+      },
+      "kg": [],
+      "legacy": {
+        "label": "J",
+        "migrated_to": "experiments/grpo-v3-proper-scoring-confidence/AMENDMENT.md",
+        "path": "experiment/protocol/AMENDMENT-J-grpo-v3-proper-scoring-confidence.md"
+      },
+      "migration": {
+        "needs_manual_review": [
+          "falsifier",
+          "experiment_type",
+          "instrument_configs",
+          "kg_ids"
+        ],
+        "notes": "Imported from legacy amendment prose. Do not infer missing machine fields without hand-reading AMENDMENT.md."
+      },
+      "prediction": "orchestrator:\n  call: emitted scalar moves toward calibrated internal doubt axis\nuser:\n  call: null\n  note: Predates the dual-prediction practice (adopted 2026-07-03 at AH signing);\n    no separately recorded user prediction.",
+      "question": "Does a proper-scoring (Brier) GRPO reward install calibrated, behavior-conditional emitted response confidence on the clean-SFT base?",
+      "registered": true,
+      "slug": "grpo-v3-proper-scoring-confidence",
+      "status": "historical",
+      "title": "Protocol Amendment J: Proper-Scoring (Brier) GRPO Reward for Response Confidence",
+      "type": "historical-amendment",
+      "verdict": "NEGATIVE — emitted confidence stayed collapsed (std 0.027, AUROC to appropriateness 0.522, ECE worse); only answered-known correct-vs-wrong AUROC moved 0.521 to 0.600."
+    },
+    {
+      "checkpoint": {
+        "repo": "unsloth/Qwen3-4B",
+        "revision": "64033659d5caf1b8ed7f929b29de705e93a4d468"
+      },
+      "created_at": "2026-07-11T00:35:42Z",
+      "falsifier": "For any path claimed as an answer-window steering instrument, the steering hook does not fire on every decode forward pass (H6-G1 fail) OR does not deliver the commanded write magnitude at the instrumented decode positions (H6-G2 fail); if either fails for a path, all gen_stream answer-window steering evidence produced on that path stays quarantined and the AK Stage 2 gen_stream MISS cannot be adopted as a causal null.",
+      "inputs": [],
+      "instrument": {
+        "configs": [
+          "cell.yaml",
+          "gates.yaml"
+        ],
+        "modules": [
+          "h6_hook_check.py",
+          "test_h6_smoke.py"
+        ],
+        "pins": {
+          "cell.yaml": "2d6bf0e3273d3f223a55b8405401c97ebe1ecb1000fd607df3ade81fc07d76a3",
+          "gates.yaml": "c48d9a446967108b29804ebf70881afa9848f3b3e33413ea0ce418d2557c5c53",
+          "h6_hook_check.py": "b3d8bad9c3b63a9c25becdb50e7f22e4340c44ce3582e9285a0530c66bee29e4",
+          "test_h6_smoke.py": "db191a310795e4e5a1476e86bf5b3328efa43903cd12d3bca2ba50b763502eb6"
+        },
+        "repins": [
+          {
+            "date": "2026-07-13T11:20:42Z",
+            "file": "h6_hook_check.py",
+            "new_sha256": "fb431e6b676b0dbce7c7aa6f122cdc038166318bbb2ceb0a66e0bee4d34c0674",
+            "old_sha256": "4cbdac9644207b40fa9aa6f4ad31b20ff4592f6ad51ce1c3ba5a64a13d485eeb",
+            "reason": "Harness-plumbing fixes: evaluate_g2 device mismatch (direction stayed on CPU vs GPU hidden states), load_bespoke_model silently substituting the bnb-4bit mirror and not forwarding --revision, and the pre-flight construction check conflating genuine Unsloth decode-path non-firing with a harness bug. No gate/threshold/prediction/falsifier text changed."
+          },
+          {
+            "date": "2026-07-13T11:20:42Z",
+            "file": "test_h6_smoke.py",
+            "new_sha256": "52d97fdfb62ec3c0c33a23f60793aac422897f8d8a8060d946aeabc3871d6bb8",
+            "old_sha256": "e37d6f2a1cdf3e500f6639bd028441209d695a13a04614ace1fe8e663f124dda",
+            "reason": "Harness-plumbing fixes: evaluate_g2 device mismatch (direction stayed on CPU vs GPU hidden states), load_bespoke_model silently substituting the bnb-4bit mirror and not forwarding --revision, and the pre-flight construction check conflating genuine Unsloth decode-path non-firing with a harness bug. No gate/threshold/prediction/falsifier text changed."
+          },
+          {
+            "date": "2026-07-13T11:30:46Z",
+            "file": "h6_hook_check.py",
+            "new_sha256": "b3d8bad9c3b63a9c25becdb50e7f22e4340c44ce3582e9285a0530c66bee29e4",
+            "old_sha256": "fb431e6b676b0dbce7c7aa6f122cdc038166318bbb2ceb0a66e0bee4d34c0674",
+            "reason": "Third bug found only after the first two fixes let the run reach G3 on real Qwen3 logits: evaluate_g3's naive logit subtraction produced NaN at positions where both NOOP and ABSENT logits are -inf (suppressed tokens), which then failed every tolerance check via NaN propagation. Fixed to treat shared -inf as zero delta while still failing a genuine one-sided -inf divergence. No gate/threshold/prediction/falsifier text changed."
+          },
+          {
+            "date": "2026-07-13T11:30:46Z",
+            "file": "test_h6_smoke.py",
+            "new_sha256": "db191a310795e4e5a1476e86bf5b3328efa43903cd12d3bca2ba50b763502eb6",
+            "old_sha256": "52d97fdfb62ec3c0c33a23f60793aac422897f8d8a8060d946aeabc3871d6bb8",
+            "reason": "Third bug found only after the first two fixes let the run reach G3 on real Qwen3 logits: evaluate_g3's naive logit subtraction produced NaN at positions where both NOOP and ABSENT logits are -inf (suppressed tokens), which then failed every tolerance check via NaN propagation. Fixed to treat shared -inf as zero delta while still failing a genuine one-sided -inf divergence. No gate/threshold/prediction/falsifier text changed."
+          }
+        ]
+      },
+      "kg": [
+        "experiment:h6-genstream-hook-firing-check",
+        "mechanism:unsloth-for-inference-decode-bypasses-steering-hook",
+        "mechanism:cross-trajectory-readback-fails-after-intervention-diverges"
+      ],
+      "prediction": "PATH-BESPOKE fails H6-G1 (the Unsloth for_inference optimized decode loop does not route per-step through the hooked module.forward, confirming the AK section 8 confound); PATH-TUNER passes H6-G1+G2+G3 (plain-HF register_forward_hook fires every decode step, readback lands the commanded write within 5%, no-op delta is exactly zero), certifying it as the go-forward answer-window steering instrument.",
+      "question": "Do steering hooks installed via the generation-stream (answer-window) path actually fire on every mid-generate() decode forward pass, and do they modify the target hidden state by exactly the commanded write, on the harness paths used to produce answer-window steering evidence (the AK bespoke Unsloth path and the tuner plain-HF path)?",
+      "registered": true,
+      "slug": "h6-genstream-hook-firing-check",
+      "status": "resolved",
+      "title": "Commitment-Point gen_stream Hook-Firing Check",
+      "type": "lab-diagnostic",
+      "verdict": "Neither gen_stream path is certified: the Unsloth bespoke path never routes decode steps through the hooked module (H6-G1 fail 25/25, certifying the AK answer-window confound as instrumentation and voiding its MISS as a causal null), while the tuner plain-HF path fires every decode step and lands the write at 0.996-0.998 of commanded on all pre-divergence positions but fails H6-G2 as registered once the steered trajectory diverges, leaving tuner certification to a divergence-robust successor readback."
+    },
+    {
+      "checkpoint": {
+        "repo": "local (AI-TRUE; staged to private HF repo for the Modal lane, section 6.2)",
+        "revision": "base sft_schema_clean_seed1_full/20260623_123624/Qwen3-4B-bnb-4bit/merged-16bit + adapter amendment_ai_grpo_true_seed1/20260703_234933/final_model"
+      },
+      "created_at": "2026-07-11T00:09:03Z",
+      "falsifier": "Held-out propensity AUROC <= 0.55, OR the upper bound of its 1,000-resample row-bootstrap 95% CI < 0.60, means the reading does not generalize off the fit surface and paper 5's \"the propensity direction reads\" claim is not supported on held-out data.",
+      "inputs": [
+        "archive/experiment/phase1/probe/amendments/amendment_al_select_and_direction.py",
+        "archive/experiment/phase1/probe/amendments/amendment_ai_verdict_extract_gen.py",
+        "experiments/radial-anti-propensity-steering/AMENDMENT.md"
+      ],
+      "instrument": {
+        "configs": [
+          "cell.yaml",
+          "gates.yaml"
+        ],
+        "modules": [
+          "freeze_scorer.py",
+          "draw_holdout.py",
+          "build_holdout_pool.py",
+          "near_dup_sweep.py",
+          "score_holdout.py",
+          "cloud/modal_h9_holdout.py"
+        ],
+        "pins": {
+          "build_holdout_pool.py": "043c3e39ebe24be5764bea9ee2affb98f554c187d8b92b616948a39c74e37283",
+          "cell.yaml": "fa5a1a2cb3919616f9887a0f6064415c8950903e4044b29e219ec698493184f3",
+          "cloud/modal_h9_holdout.py": "f292348dd392396dc69c7c32d4a188af73cbebf1d915e19640e51342716209af",
+          "draw_holdout.py": "a418d10fcc078c215f5a45ef701292e71345c65ffc85e51e8c1aac3975cc2a8d",
+          "freeze_scorer.py": "1b64ddd5d24477aa779db58f181e3f50e24c1258bd7df18c731896fcf2d7da8d",
+          "gates.yaml": "7487b8737f317e5d9ae8ccf3111bee618b4c72bf5dce6dc84bb74c59b3d3f64f",
+          "near_dup_sweep.py": "7390c902334ed3f709f385a89f02f754294a10f41be8cd0617bfbbfef0d9faea",
+          "score_holdout.py": "a832a3b1f2813ecdb1d5b485d3416cf503e1dcaf58daf73dda6345d596fe3ce6"
+        },
+        "repins": [
+          {
+            "date": "2026-07-11T02:50:27Z",
+            "file": "cloud/modal_h9_holdout.py",
+            "new_sha256": "aded92aed1425e932dd3d258082604e2304e156dc6d2fec51910e912f96acd60",
+            "old_sha256": "a17a68cbc7c51a0de800177cc70e649c6495b8be48ad1c11ff3f88ab1a4f8b99",
+            "reason": "Container-lane import repair: fresh clone lacks the untracked legacy probe tree, so the pinned extract entry crashed on ModuleNotFoundError (amendment_s_correctness_probe_extract) before extraction. Harness now installs legacy-wrapper-tree at experiment/phase1/probe, shims the renamed AC config (prompt.system byte-identical across rename d55b7d26), sets PYTHONPATH, and adds a fail-fast import preflight before model download. Rehearsed green in a clean pinned-commit checkout. No scorer, pool, draw, or gate logic touched."
+          },
+          {
+            "date": "2026-07-11T03:20:29Z",
+            "file": "cloud/modal_h9_holdout.py",
+            "new_sha256": "844f4c7bfbb6dab7ddfedf72a63232251015d94595f158b20917bd19c5cc50d6",
+            "old_sha256": "aded92aed1425e932dd3d258082604e2304e156dc6d2fec51910e912f96acd60",
+            "reason": "Post-generate join repair: harness step 4b read gen/rows_graded.jsonl but the generate stage writes gen/rows.jsonl, crashing the first complete run AFTER both GPU stages finished; and checkpoints only mirrored top-level files, so the finished extraction+generation trees were lost. Fixed the filename, made checkpoint_once mirror the stage trees during the run, and restore them from the volume at container start so Modal retries resume (entry script's own config_sha-guarded resume skips completed rows). Join and mirror logic unit-tested locally. No scorer, pool, draw, prompt, or gate change."
+          },
+          {
+            "date": "2026-07-11T09:58:53Z",
+            "file": "draw_holdout.py",
+            "new_sha256": "a418d10fcc078c215f5a45ef701292e71345c65ffc85e51e8c1aac3975cc2a8d",
+            "old_sha256": "719e5402cbd470533527b0e9478ff8bbc745b8d37b7c87d36e56ef4d381f84cc",
+            "reason": "Registered H9-G0 enlargement remedy EXECUTED (user-approved 2026-07-11) after the 500-row draw yielded 4 confabs vs the >=20 floor: draw_holdout gains the --enlarge mode implementing the pre-registered rule (replay the 500 draw, hard-assert line-identical to the committed manifest, continue the same RNG stream, +250 largest-remainder per-source, sorted-source order); cell.yaml pointers move to the enlarged 750-row draw surface with originals preserved and the read-once G1 report routed to gate_report_enlarged.json; Modal harness reads the enlarged manifest and enlarged staged pool. Enlarged draw executed: replay verified, 0 near-dups flagged (max overlap 0.75), pool 750 rows all qhash-verified. No scorer, gate-threshold, contrast, or prompt change."
+          },
+          {
+            "date": "2026-07-11T09:58:53Z",
+            "file": "cell.yaml",
+            "new_sha256": "fa5a1a2cb3919616f9887a0f6064415c8950903e4044b29e219ec698493184f3",
+            "old_sha256": "5c2cd9633aa43a351253d2f0beb70bd79a8781ab4a2ea21794df2a506b6bf772",
+            "reason": "Registered H9-G0 enlargement remedy EXECUTED (user-approved 2026-07-11) after the 500-row draw yielded 4 confabs vs the >=20 floor: draw_holdout gains the --enlarge mode implementing the pre-registered rule (replay the 500 draw, hard-assert line-identical to the committed manifest, continue the same RNG stream, +250 largest-remainder per-source, sorted-source order); cell.yaml pointers move to the enlarged 750-row draw surface with originals preserved and the read-once G1 report routed to gate_report_enlarged.json; Modal harness reads the enlarged manifest and enlarged staged pool. Enlarged draw executed: replay verified, 0 near-dups flagged (max overlap 0.75), pool 750 rows all qhash-verified. No scorer, gate-threshold, contrast, or prompt change."
+          },
+          {
+            "date": "2026-07-11T09:58:53Z",
+            "file": "cloud/modal_h9_holdout.py",
+            "new_sha256": "f292348dd392396dc69c7c32d4a188af73cbebf1d915e19640e51342716209af",
+            "old_sha256": "844f4c7bfbb6dab7ddfedf72a63232251015d94595f158b20917bd19c5cc50d6",
+            "reason": "Registered H9-G0 enlargement remedy EXECUTED (user-approved 2026-07-11) after the 500-row draw yielded 4 confabs vs the >=20 floor: draw_holdout gains the --enlarge mode implementing the pre-registered rule (replay the 500 draw, hard-assert line-identical to the committed manifest, continue the same RNG stream, +250 largest-remainder per-source, sorted-source order); cell.yaml pointers move to the enlarged 750-row draw surface with originals preserved and the read-once G1 report routed to gate_report_enlarged.json; Modal harness reads the enlarged manifest and enlarged staged pool. Enlarged draw executed: replay verified, 0 near-dups flagged (max overlap 0.75), pool 750 rows all qhash-verified. No scorer, gate-threshold, contrast, or prompt change."
+          }
+        ]
+      },
+      "kg": [
+        "paper:internal-h9-reading-gate-inconclusive-by-power"
+      ],
+      "prediction": "orchestrator: H9-G1 PASS (~55%) with the held-out propensity AUROC landing in the low-to-mid 0.6s near the 0.62 pass line; H9-G2 caution floor PASS (~90%); H9-G0 evaluability met (~85%). User prediction: H9-G1 INCONCLUSIVE band (recorded 2026-07-10).",
+      "question": "Does the AL confabulation-propensity direction, frozen from its 1,662-row fit surface, still separate confabulations from honest unanswerable refusals on a disjoint held-out draw the fit never saw, on the AI-TRUE checkpoint?",
+      "registered": true,
+      "slug": "h9-propensity-reading-gate",
+      "status": "resolved",
+      "title": "H9 held-out reading gate for the confab-propensity direction on AI-TRUE",
+      "type": "probe-fit",
+      "verdict": "INCONCLUSIVE-BY-POWER: H9-G0 unmet on both the 500-row draw (4 confabs vs >=20 floor) and the one registered +250 enlargement (still 4 confabs in 605 unanswerable rows); H9-G1 never read per the read-once rule, so the held-out propensity claim remains untested at adequate power on this checkpoint. H9-G2 caution control passed both reads (0.9734, 0.9702), certifying the pipeline; the confab scarcity is real behavior (the AI-TRUE checkpoint refuses 99.3% of held-out unanswerable rows). Near-dup sensitivity 0 flagged, no flip."
+    },
+    {
+      "checkpoint": {
+        "repo": "",
+        "revision": ""
+      },
+      "created_at": "2026-07-08T17:40:52Z",
+      "falsifier": "",
+      "inputs": [],
+      "instrument": {
+        "configs": [],
+        "modules": [],
+        "pins": {}
+      },
+      "kg": [],
+      "legacy": {
+        "label": "AD",
+        "migrated_to": "experiments/inverted-injection-trained-checkpoints/AMENDMENT.md",
+        "path": "experiment/protocol/AMENDMENT-AD-inverted-injection-trained-checkpoints.md"
+      },
+      "migration": {
+        "needs_manual_review": [
+          "falsifier",
+          "experiment_type",
+          "instrument_configs",
+          "kg_ids"
+        ],
+        "notes": "Imported from legacy amendment prose. Do not infer missing machine fields without hand-reading AMENDMENT.md."
+      },
+      "prediction": "orchestrator:\n  call: no change (null result)\n  recorded: 2026-07-03\n  note: Joint prediction stated at drafting; doc predates the dual-prediction practice.\nuser:\n  call: no change (null result)\n  recorded: 2026-07-03\n  quote: We predict it will have NO change.",
+      "question": "Is the shut text channel bidirectional — does a pro-answer injection move an over-refusing trained checkpoint?",
+      "registered": true,
+      "slug": "inverted-injection-trained-checkpoints",
+      "status": "historical",
+      "title": "Amendment AD — Inverted (pro-answer) injection on abstention-trained checkpoints: is the shut text channel bidirectional?",
+      "type": "historical-amendment",
+      "verdict": "not launched (signed; preconditions open; shelved behind AC/AH)"
+    },
+    {
+      "checkpoint": {
+        "repo": "unsloth/Qwen3-4B",
+        "revision": "raw-base (bf16, no adapter, no 4-bit quantization)"
+      },
+      "falsifier": "If the best mid-band layer improves confab clean_tighten by less than 10 percentage points over hs34, or increases known-correct false-refusal cost by more than 2 percentage points, the calibrated J-space layer-site hypothesis is not supported; if hs34 fails the viability floor, the run is a reference replication failure.",
+      "inputs": [
+        "experiments/j-space-localization-qwen3-4b/AMENDMENT.md",
+        "experiments/j-space-midband-write-sweep-qwen3-4b/AMENDMENT.md",
+        "experiments/j-space-midband-write-sweep-qwen3-4b/analysis-committed/build_manifest_layers.json",
+        "experiments/j-space-midband-write-sweep-qwen3-4b/analysis-committed/gate_fit_layers.json",
+        "experiments/j-space-midband-write-sweep-qwen3-4b/analysis-committed/smoke_summary.json",
+        "experiments/j-space-midband-write-sweep-qwen3-4b/analysis-committed/PROVENANCE.md",
+        "experiments/j-space-midband-dose-calibration-qwen3-4b/AMENDMENT.md",
+        "experiments/j-space-midband-dose-calibration-qwen3-4b/analysis-committed/dose_calibration_summary.json"
+      ],
+      "instrument": {
+        "configs": [
+          "cell.yaml",
+          "gates.yaml"
+        ],
+        "modules": [
+          "run_contrast.py"
+        ],
+        "pins": {
+          "cell.yaml": "326aec44129dcf931e58306ad19decf23b09b137f62f2af55d8dbbc058a9dc3d",
+          "gates.yaml": "4d0dc924183f923cdf075b6509f264d8df7b305d966d52499d9da72cb5af3493",
+          "run_contrast.py": "1a7fb3be02a4228c4cd0a991ac5023bd67e35d15f4079f39e3673129b156bf50"
+        }
+      },
+      "kg": [
+        "mechanism:j-space-mediated-actuation-fragility"
+      ],
+      "prediction": "With layer-specific setpoints fixed before held-out evaluation, the best mid-band layer will improve held-out confab clean_tighten over hs34 by at least 10 percentage points without increasing known-correct false-refusal cost by more than 2 percentage points; hs34 will remain a viable predecessor reference.",
+      "question": "On raw-base Qwen3-4B, do calibrated J-space mid-band write sites hs23/hs26/hs29 outperform the calibrated late hs34 reference on held-out confab tightening without a known-correct cost regression?",
+      "registered": true,
+      "slug": "j-space-calibrated-layer-contrast-qwen3-4b",
+      "status": "resolved",
+      "type": "steer-cell",
+      "verdict": "Exploratory pass: hs23 was the best calibrated mid-band site, beating hs34 clean_tighten by 22.7pp with only +0.78pp known-correct cost; hs34 remained viable."
+    },
+    {
+      "checkpoint": {
+        "repo": "unsloth/Qwen3-4B",
+        "revision": "raw-base (bf16, no adapter, no 4-bit quantization)"
+      },
+      "falsifier": "If G1' fails on an interpretable pool (G3' status = viable), the mid-band advantage does not replicate at meaningful magnitude on a comparable multi-source confab distribution; report straight, exactly as registered, with no goalpost movement.",
+      "inputs": [
+        "experiments/j-space-calibrated-layer-contrast-qwen3-4b/AMENDMENT.md",
+        "experiments/j-space-calibrated-layer-contrast-qwen3-4b/analysis-committed/full_summary.json",
+        "experiments/j-space-layer-contrast-replication-qwen3-4b/AMENDMENT.md",
+        "experiments/j-space-layer-contrast-replication-qwen3-4b/analysis-committed/fresh_eval_pool_manifest.json",
+        "experiments/j-space-midband-write-sweep-qwen3-4b/AMENDMENT.md",
+        "experiments/j-space-midband-write-sweep-qwen3-4b/analysis-committed/build_manifest_layers.json",
+        "experiments/j-space-midband-write-sweep-qwen3-4b/analysis-committed/gate_fit_layers.json",
+        "experiments/j-space-midband-write-sweep-qwen3-4b/analysis-committed/PROVENANCE.md",
+        "experiments/j-space-midband-dose-calibration-qwen3-4b/AMENDMENT.md",
+        "experiments/j-space-midband-dose-calibration-qwen3-4b/analysis-committed/dose_calibration_summary.json",
+        "experiments/common/doubt-gated-caution-tighten-heldout-split/split_manifest.json",
+        "datasets/kuq/dataset.md",
+        "datasets/selfaware/dataset.md"
+      ],
+      "instrument": {
+        "configs": [
+          "cell.yaml",
+          "gates.yaml"
+        ],
+        "modules": [
+          "mine_multisource_pool.py",
+          "materialize_known_side_reuse.py",
+          "extract_multisource_confab_anchor.py",
+          "pipeline_multisource.py",
+          "run_contrast.py",
+          "analyze_paired_outcomes.py"
+        ],
+        "pins": {
+          "analyze_paired_outcomes.py": "be0c1e65e78d231938b1097250c2c198d23aa48e746d6bedba55d4074b66d9a7",
+          "cell.yaml": "47f51b3d75728e21f541abdaf6e24a80eb1fa304f89f1116df31324835de4b01",
+          "extract_multisource_confab_anchor.py": "54b0986a83734fc304b751f7644ac5fb41e5737645f5b062e58281bcc51d76d7",
+          "gates.yaml": "acb90ece34f472e9ab2a092c275d4bac8714b4ba50a8313006c481a2c5b1f29c",
+          "materialize_known_side_reuse.py": "0a4fb28b4e933a3eaf9e77242de474a4b27127a9cca6d3fb61a1faf7f04bc9f5",
+          "mine_multisource_pool.py": "bcc5c837b833f6179f2518bf06da03003eb3b398a313cc67503cc9cfd34951fb",
+          "pipeline_multisource.py": "d67f872b08f72b502cc6e23f2ee24c55479071881f5b047c19c3b492b76d7e38",
+          "run_contrast.py": "1a28ae4f7779c8ccf6015c46f743be389162fb1503eb1307b1e8689d6090f26e"
+        }
+      },
+      "kg": [],
+      "prediction": "With rep1's frozen directions, gates, and calibrated doses unchanged, the harder- source-dominant multi-source pool will pull hs34 off the ceiling into the interpretable G3' window (roughly 55-80% clean_tighten), the best mid-band arm will beat hs34 on paired outcomes with late-only failures at least 3x mid-only failures and exact McNemar p < 0.05 (G1' pass), and the known-correct cost gap will stay within +2pp (G2' pass): the mid-band advantage replicates at meaningful magnitude.",
+      "question": "On raw-base Qwen3-4B, does the calibrated J-space mid-band write-site advantage replicate on a fresh, MULTI-SOURCE private evaluation pool, using ceiling-robust gates (McNemar paired test plus an interpretability branch) instead of rep1's fixed point-estimate bar that saturated near ceiling?",
+      "registered": true,
+      "slug": "j-space-layer-contrast-rep2-multisource",
+      "status": "resolved",
+      "type": "steer-cell",
+      "verdict": "FULL PASS: mid-band advantage replicates off-ceiling on a multi-source pool (hs29 92.8% vs hs34 73.8%, +19.0pp; paired McNemar 42:0 discordants, p=4.5e-13; cost delta +1.43pp; hs34 interpretable at 73.8%)."
+    },
+    {
+      "checkpoint": {
+        "repo": "unsloth/Qwen3-4B",
+        "revision": "raw-base (bf16, no adapter, no 4-bit quantization)"
+      },
+      "falsifier": "If the best mid-band layer beats hs34 by less than 10 percentage points on fresh confab clean_tighten, or increases known-correct false-refusal cost by more than 2 percentage points, the same-model layer-site result does not replicate.",
+      "inputs": [
+        "experiments/j-space-calibrated-layer-contrast-qwen3-4b/AMENDMENT.md",
+        "experiments/j-space-calibrated-layer-contrast-qwen3-4b/analysis-committed/full_summary.json",
+        "experiments/j-space-midband-write-sweep-qwen3-4b/AMENDMENT.md",
+        "experiments/j-space-midband-write-sweep-qwen3-4b/analysis-committed/build_manifest_layers.json",
+        "experiments/j-space-midband-write-sweep-qwen3-4b/analysis-committed/gate_fit_layers.json",
+        "experiments/j-space-midband-write-sweep-qwen3-4b/analysis-committed/PROVENANCE.md",
+        "experiments/j-space-midband-dose-calibration-qwen3-4b/AMENDMENT.md",
+        "experiments/j-space-midband-dose-calibration-qwen3-4b/analysis-committed/dose_calibration_summary.json",
+        "experiments/common/doubt-gated-caution-tighten-heldout-split/split_manifest.json"
+      ],
+      "instrument": {
+        "configs": [
+          "cell.yaml",
+          "gates.yaml"
+        ],
+        "modules": [
+          "mine_fresh_eval_pool.py",
+          "extract_fresh_anchor.py",
+          "run_contrast.py"
+        ],
+        "pins": {
+          "cell.yaml": "2bb271755396a1c8d70ad18707b594837468a0cabab5467da311812104629416",
+          "extract_fresh_anchor.py": "71cffb878a7ddbba75adbb375526e0608ae5a0902025ec5c6a739497a621c9fb",
+          "gates.yaml": "8b6581dd3d510fd30715a782fa48c98c907980919b19d4cbcfc6f2e15276c4d3",
+          "mine_fresh_eval_pool.py": "0cc8a347886b31a2908d200c21bef060a169eae0838bd9d27c6e52ac9656d6b5",
+          "run_contrast.py": "2a245968ebe0c97087cc89c915a983feccf778d4cb79a6e8e1729a4176bc05b4"
+        }
+      },
+      "kg": [],
+      "prediction": "With predecessor directions, gates, and calibrated doses frozen, the best mid-band layer will beat hs34 by at least 10 percentage points on fresh confab clean_tighten without increasing known-correct false-refusal cost by more than 2 percentage points; hs34 will remain viable.",
+      "question": "On raw-base Qwen3-4B, does the calibrated J-space mid-band write-site advantage replicate on a fresh private evaluation pool whose row keys are disjoint from the predecessor fit and held-out split?",
+      "registered": true,
+      "slug": "j-space-layer-contrast-replication-qwen3-4b",
+      "status": "null-result",
+      "type": "steer-cell",
+      "verdict": "Registered G1 fail on a ceiling-saturated single-source fresh pool: best mid-band (hs29) beat hs34 by only +5.6pp (bar 10pp) with hs34 itself at 94.1%; direction replicates with CI separation at hs23/hs29 but magnitude is pool-dependent, and the fresh pool is a narrower confab distribution than the predecessor's."
+    },
+    {
+      "checkpoint": {
+        "repo": "unsloth/Qwen3-4B",
+        "revision": ""
+      },
+      "falsifier": "No falsifier is pre-registered (lab-diagnostic characterization, not a gated confirmatory claim) -- but the correctness smoke has its own internal go/no-go: if the final-layer J-lens does NOT track the logit lens (near-zero or negative cosine similarity, near-chance top-k overlap), the implementation is broken and the Modal prep must stop rather than proceed to characterize a broken instrument. That smoke PASSED locally (see Outcome).",
+      "inputs": [
+        "experiments/j-space-localization-qwen3-4b/analysis-committed/corpus/jlens_corpus_manifest.json",
+        "experiments/j-space-localization-qwen3-4b/analysis-committed/source_directions/u_d_L34.json",
+        "experiments/j-space-localization-qwen3-4b/analysis-committed/source_directions/c_hat_L34.json",
+        "experiments/j-space-localization-qwen3-4b/analysis-committed/source_directions/pos_ctrl_L34.json",
+        "experiments/j-space-localization-qwen3-4b/analysis-committed/source_directions/neg_ctrl_L34.json"
+      ],
+      "instrument": {
+        "configs": [],
+        "modules": [
+          "jlens.py",
+          "cloud/modal_jlens.py"
+        ],
+        "pins": {
+          "cloud/modal_jlens.py": "f19e8494e079560aca9047876c5d8feb2f1dad0d59fffe077053bcf36f36875c",
+          "jlens.py": "dbf13b4f9537ef6d79c4c45867e9c17cdbea2e7d8e3e59079dac678d6f358f0a"
+        }
+      },
+      "kg": [
+        "mechanism:j-space-mediated-actuation-fragility",
+        "term:global-workspace",
+        "method:jacobian-lens"
+      ],
+      "prediction": "Final-layer J-lens will closely track the logit lens (high cosine similarity / top-k overlap between verbalize() and direct unembed()); the workspace band will locate mid-to-late but short of the final layers, putting L34 (this project's existing write layer) near or past the workspace/motor boundary; pos_ctrl and c_hat (caution-flavored directions) will verbalize as first-person-hedge/abstention/error-adjacent tokens more clearly than u_d (doubt) or neg_ctrl (confab-propensity).",
+      "question": "Read-only characterization on Qwen3-4B (bf16 sibling of our raw-base): (1) does a from-scratch J-lens (Jacobian lens) implementation reduce to the logit lens at the final layer and run end to end on this model; (2) where across depth does a workspace-like band (rising kurtosis/sparsity/effective dimensionality of the J-lens readout) locate, relative to our own L34 write layer; (3) do our fitted epistemic directions (u_d doubt, pos_ctrl caution/ answer-vs-refuse, neg_ctrl confab-propensity, c_hat orthogonalized caution write) verbalize as uncertainty/abstention-flavored tokens under the J-lens at L34 and nearby layers (H1 from docs/ideas/j-space-global-workspace-actuation-bridge.md)? No writes/injections anywhere; this is a lab-diagnostic characterization, not a gated claim.",
+      "registered": true,
+      "slug": "j-space-localization-qwen3-4b",
+      "status": "resolved",
+      "type": "lab-diagnostic",
+      "verdict": "Full-corpus J-lens characterization completed on Modal: smoke reproduced logit-lens agreement (mean cosine 0.9811, top-10 overlap 0.82), H1 showed u_d as answer/reply-like, pos_ctrl/c_hat as self-empty-impossible/error-like, neg_ctrl as noisy, and profile localized the effective-dimension peak at hs=26 with L34/hs34 just after the hs=23-29 workspace-like band."
+    },
+    {
+      "checkpoint": {
+        "repo": "unsloth/Qwen3-4B",
+        "revision": "raw-base (bf16, no adapter, no 4-bit quantization)"
+      },
+      "falsifier": "Any layer has no usable dose on the pre-stated ladder, or hs23/hs26 still select 200 or fail to recover from dose-200 collapse.",
+      "inputs": [
+        "experiments/j-space-midband-write-sweep-qwen3-4b/analysis-committed/build_manifest_layers.json",
+        "experiments/j-space-midband-write-sweep-qwen3-4b/analysis-committed/gate_fit_layers.json",
+        "experiments/j-space-midband-write-sweep-qwen3-4b/analysis-committed/smoke_summary.json",
+        "experiments/j-space-midband-write-sweep-qwen3-4b/analysis-committed/PROVENANCE.md",
+        "experiments/j-space-midband-write-sweep-qwen3-4b/AMENDMENT.md"
+      ],
+      "instrument": {
+        "configs": [
+          "cell.yaml",
+          "gates.yaml"
+        ],
+        "modules": [
+          "calibrate_dose.py"
+        ],
+        "pins": {
+          "calibrate_dose.py": "e8942c3f9fe6e0a87bbbcdc993b92cf30956d50d583019fa09fcc0ad7a42e853",
+          "cell.yaml": "cf3622aabddd6aa607d5526658c753be771da6c77d34a37f642b01814543cbcf",
+          "gates.yaml": "2d8e825c430f383f7a51a8d376e0afe1389a3a0051a9e666d61f0747df1926d5"
+        }
+      },
+      "kg": [
+        "mechanism:j-space-mediated-actuation-fragility"
+      ],
+      "prediction": "Layer-specific calibration will recover non-collapsing usable setpoints for all four layers, with hs23 and hs26 selecting doses below 200.",
+      "question": "On raw-base Qwen3-4B, can layer-specific dose calibration recover non-collapsing usable erase-write setpoints for hs23/hs26/hs29/hs34 after dose 200 collapsed hs23 and hs26 in the J-space mid-band sweep smoke?",
+      "registered": true,
+      "slug": "j-space-midband-dose-calibration-qwen3-4b",
+      "status": "resolved",
+      "type": "steer-cell",
+      "verdict": "Exploratory FIT-only calibration pass: all layers recovered usable non-collapsing setpoints (hs23=25, hs26=75, hs29=125, hs34=175); hs23/hs26 recovered below dose 200, so a calibrated held-out layer contrast can be registered next."
+    },
+    {
+      "checkpoint": {
+        "repo": "unsloth/Qwen3-4B",
+        "revision": "raw-base (bf16, no adapter, no 4-bit quantization)"
+      },
+      "falsifier": "Best mid-band layer improves confab clean_tighten by less than 10 points over hs34, or increases known-correct false-refusal by more than 2 points. If hs34 fails predecessor viability, the run is a reference replication failure rather than evidence about J-space mid-band superiority.",
+      "inputs": [
+        "experiments/common/doubt-gated-caution-tighten-heldout-split/split_manifest.json",
+        "experiments/common/doubt-gated-caution-tighten-heldout-split/PROVENANCE.md",
+        "experiments/doubt-gated-caution-tighten/analysis-committed/full_summary.json",
+        "experiments/doubt-gated-caution-tighten/analysis-committed/PROVENANCE.md"
+      ],
+      "instrument": {
+        "configs": [
+          "cell.yaml",
+          "gates.yaml"
+        ],
+        "modules": [
+          "layers.py",
+          "extract_layer_sweep_anchor.py",
+          "build_directions.py",
+          "gate_fit.py",
+          "build_random_direction.py",
+          "materialize_rows.py",
+          "pipeline.py",
+          "gen_lib.py",
+          "grader.py",
+          "model_lib.py"
+        ],
+        "pins": {
+          "build_directions.py": "844236a449ebaf350bc5571992ce115b7125dd2a8cf301ebdf6a8efae0e2cfe4",
+          "build_random_direction.py": "504c4471f1999e28fcd3fe33d54e259a57a01f03d75ef59350a5c79de5bdb316",
+          "cell.yaml": "96f1764a0796ca57bd5feed826f28c4988783fc11c428c0107020393c643df2f",
+          "extract_layer_sweep_anchor.py": "f6c9c773825f0f084908db88fc9945c14fe2e653879fef0d4afd0d486f1323b4",
+          "gate_fit.py": "13c6dd304085d22e0b3ab75360cdd34d42f14b97a3dedf2e5f7460a3a7a85fdf",
+          "gates.yaml": "18f4f60e4e9667e40cce38e7822e4c69f038c956da99671c4260caba38ec9621",
+          "gen_lib.py": "dbcd12b49b4ea655b681bc93853c4bb9742988918c8d228d796ad87289451856",
+          "grader.py": "de6b62f79c7b3a20825a9dfec877f0fec474ab6b415835ed8177be845a7d96d1",
+          "layers.py": "79ecc7603449768ed662fff8c3ea455222d81d3e91a6e5c711dccc83b771556b",
+          "materialize_rows.py": "a0f8f33cf181af6d4f79a2e217fe60519d8a4ad99a1150bb472c923cd31c2604",
+          "model_lib.py": "3dde37349942774ea7b044392051af4151eeebb6e5afb05d808aeff835c65a60",
+          "pipeline.py": "5d20680e375d374114ddd7df86ee78a4dbc42389519d09501fcf29c7fe6911e7"
+        }
+      },
+      "kg": [
+        "mechanism:j-space-mediated-actuation-fragility"
+      ],
+      "prediction": "Best mid-band layer (hs23/26/29, expected hs26) improves held-out confab clean_tighten over hs34 by at least 10 percentage points without increasing known-correct false-refusal by more than 2 percentage points; hs34 remains viable under the predecessor gate.",
+      "question": "On raw-base Qwen3-4B, does moving the resolved doubt-gated caution snap from the existing hs34/L34 write site into the J-space mid-band (hs23/26/29, peak hs26) improve confab-to-refusal tightening without increasing known-correct false-refusal?",
+      "registered": true,
+      "slug": "j-space-midband-write-sweep-qwen3-4b",
+      "status": "null-result",
+      "type": "steer-cell",
+      "verdict": "Pre-outcome G0 stop: dose-200 smoke readback was accurate, but hs23 and hs26 collapsed all dosed smoke rows, so no full held-out run was completed."
+    },
+    {
+      "checkpoint": {
+        "repo": "unsloth/Qwen3-4B",
+        "revision": "raw-base (bf16, no adapter, no 4-bit quantization)"
+      },
+      "falsifier": "The option-2 line is falsified on this surface if the hs23 hybrid improves clean_tighten over hs23 c_hat_only by less than 4 percentage points, or if it increases known-correct cost by more than 2 percentage points, or if a matched random J-space control reproduces the improvement within 3 percentage points.",
+      "inputs": [
+        "experiments/j-space-localization-qwen3-4b/AMENDMENT.md",
+        "experiments/j-space-localization-qwen3-4b/analysis-committed/results/jspace-jlens-r1/h1_full.json",
+        "experiments/j-space-calibrated-layer-contrast-qwen3-4b/AMENDMENT.md",
+        "experiments/j-space-calibrated-layer-contrast-qwen3-4b/analysis-committed/full_summary.json",
+        "experiments/j-space-midband-write-sweep-qwen3-4b/analysis-committed/gate_fit_layers.json",
+        "experiments/j-space-midband-write-sweep-qwen3-4b/analysis-committed/build_manifest_layers.json",
+        "experiments/j-space-midband-dose-calibration-qwen3-4b/analysis-committed/dose_calibration_summary.json"
+      ],
+      "instrument": {
+        "configs": [
+          "cell.yaml",
+          "gates.yaml",
+          "token_bundle.yaml"
+        ],
+        "modules": [
+          "token_bundle_audit.py",
+          "run_token_target.py"
+        ],
+        "pins": {
+          "cell.yaml": "214d13e6cc61c1b145905ef0d2155aa69b43fd981f83ff4b15df91e31e8e9673",
+          "gates.yaml": "87548f7a226f798ecbf393e5070021034d1fd463cb0a8053524053e8b176dc0e",
+          "run_token_target.py": "8c5c29c50a7dc76d7a1365ab0b25e4e3f3d54385c68d3f8ac51779f41b1155df",
+          "token_bundle.yaml": "c9132a5d95a3ed481abdeb30dcd713090b4b25a88feae76f0b8cc2351c1f31e4",
+          "token_bundle_audit.py": "999e0116a2285c148336f77c1a9b881d95bc5e14aca04150fcad607cf583eeb7"
+        }
+      },
+      "kg": [
+        "mechanism:j-space-mediated-actuation-fragility"
+      ],
+      "prediction": "On raw-base Qwen3-4B bf16, an hs23 hybrid of the resolved doubt-gated c_hat snap plus an internal J-lens token-target refusal direction will improve held-out confab clean_tighten over hs23 c_hat_only by at least 4 percentage points without increasing known-correct cost by more than 2 percentage points, and the matched random J-space control will not reproduce the improvement.",
+      "question": "On raw-base Qwen3-4B, can an internal J-lens token-target refusal write at hs23 improve the resolved doubt-gated caution snap without increasing known-correct cost?",
+      "registered": true,
+      "slug": "j-space-token-targeted-refusal-qwen3-4b",
+      "status": "falsified",
+      "type": "steer-cell",
+      "verdict": "Exploratory falsification: the hs23 J-token hybrid wrote accurately and safely but improved clean_tighten by only +0.54pp over c_hat_only, below the pre-stated +4pp threshold."
+    },
+    {
+      "checkpoint": {
+        "repo": "",
+        "revision": ""
+      },
+      "created_at": "2026-07-12T12:41:44Z",
+      "falsifier": "For either family: no interior eff_dim_frac peak (monotone to the last layer), or no layer inside 20-85 percent depth reaches AUROC >= 0.80 on all three axes simultaneously.",
+      "inputs": [],
+      "instrument": {
+        "configs": [
+          "cell.yaml",
+          "gates.yaml"
+        ],
+        "modules": [
+          "render_jspace_atlas.py",
+          "capture_atlas_cell.py",
+          "profile_and_read_panel.py",
+          "smoke_profile_and_read_panel.py",
+          "cloud/modal_jspace_atlas.py"
+        ],
+        "pins": {
+          "capture_atlas_cell.py": "8366f612308d0dd8b84791f233e4bd500fe30ccc5438e512879845c5f070e840",
+          "cell.yaml": "3ad62846fdd273e878ddd8bff96ba08c5a8dca2914f45e0d526f67837a4dae6a",
+          "cloud/modal_jspace_atlas.py": "fe7e44381117893aacc010041f2b2d7efdf2d2cd4fa15d40c318c751f99240cb",
+          "gates.yaml": "1d889488bd70ce8a39759a6f088fa79685161a752c08710742b7f842a1f25a7a",
+          "profile_and_read_panel.py": "424c44ab2092a9bc40d65e0c5324568ef78883a02bc62ec1f91567a7c423fb35",
+          "render_jspace_atlas.py": "d9888307dcdbcd52ea3c2dcd1244a750e0a53865c2978b875d2ae8b6bddff2ca",
+          "smoke_profile_and_read_panel.py": "0766b40be2eff4c247bc1f7732f53c5366ec4f2c0daa498a403f1b4c53cb5635"
+        }
+      },
+      "kg": [
+        "experiment:jspace-family-atlas",
+        "mechanism:workspace-band-peak-location-is-family-relative",
+        "mechanism:refused-vs-known-contrast-carries-norm-position-confound"
+      ],
+      "prediction": "Each mapped family shows an interior workspace band strictly inside 20-85 percent depth where eff_dim_frac peaks and all three read axes hold held-out AUROC >= 0.80, with the peak differing from the ported 0.94-depth layer.",
+      "question": "Where does each non-Qwen family's workspace midband sit (eff_dim_frac profile over depth), and do the doubt, caution, and raw-refusal axes read there, supplying the per-family layer map the doubt-snap fleet never had?",
+      "registered": true,
+      "slug": "jspace-family-atlas",
+      "status": "resolved",
+      "title": "jspace-family-atlas",
+      "type": "probe-fit",
+      "verdict": "prediction failed in both families because the eff_dim_frac profile peaks early (0.09-0.14 depth) rather than interior, while the read panel delivered the intended per-family layer map with an interior band (llama 15-23, mistral 7-27) where doubt, caution, and raw refusal all read >= 0.80 held-out"
+    },
+    {
+      "checkpoint": {
+        "repo": "",
+        "revision": ""
+      },
+      "created_at": "2026-07-08T17:40:52Z",
+      "falsifier": "",
+      "inputs": [],
+      "instrument": {
+        "configs": [],
+        "modules": [],
+        "pins": {}
+      },
+      "kg": [],
+      "legacy": {
+        "label": "AJ",
+        "migrated_to": "experiments/knowledge-subspace-erasure/AMENDMENT.md",
+        "path": "experiment/protocol/AMENDMENT-AJ-knowledge-subspace-erasure.md"
+      },
+      "migration": {
+        "needs_manual_review": [
+          "falsifier",
+          "experiment_type",
+          "instrument_configs",
+          "kg_ids"
+        ],
+        "notes": "Imported from legacy amendment prose. Do not infer missing machine fields without hand-reading AMENDMENT.md."
+      },
+      "prediction": "orchestrator:\n  call: SURVIVES (AJ-G2 PASS)\n  confidence: ~85%\n  recorded: 2026-07-04\n  basis: 'Three converging priors: B1 held rank-1 doubt projection at 0.825 held-out;\n    the session 0035 hydra result kept refuse/answer AUROC ~0.90 through 40 iterative\n    direction removals; and the paper3 Section 5 knowledge-orthogonality check found\n    |cos| ~ 0.04-0.09 between caution_perp and the knowledge probe axis. Residual\n    risk: LEACE''s whitened rank-1 erasure is strictly stronger than the raw mass-mean\n    projection those priors used.'\nuser:\n  call: SURVIVES (AJ-G2 PASS)\n  recorded: 2026-07-04\n  quote: AJ survived I agree worth being optimistic here.",
+      "question": "Does the caution readout (refuse vs answer among known questions) survive certified erasure of the full linearly readable knowledge/answerability content, or was its separability carried by that content all along?",
+      "registered": true,
+      "slug": "knowledge-subspace-erasure",
+      "status": "historical",
+      "title": "Amendment AJ — Knowledge-Subspace Erasure (rank-1 → certified linear erasure)",
+      "type": "historical-amendment",
+      "verdict": "SURVIVES (user-adjudicated 2026-07-04) — caution 0.858 post-erasure, knowledge carries a small quantified share (gap 0.054 +/- 0.006, sitting on the pre-stated 0.05 line per Addendum A1); strict AJ-G2 ambiguous, so the scoreboard scores TIE/TIE"
+    },
+    {
+      "checkpoint": {
+        "repo": "",
+        "revision": ""
+      },
+      "created_at": "2026-07-08T17:40:52Z",
+      "falsifier": "",
+      "inputs": [],
+      "instrument": {
+        "configs": [],
+        "modules": [],
+        "pins": {}
+      },
+      "kg": [],
+      "legacy": {
+        "label": "V",
+        "migrated_to": "experiments/natural-answer-generalization/AMENDMENT.md",
+        "path": "experiment/protocol/AMENDMENT-V-natural-answer-generalization.md"
+      },
+      "migration": {
+        "needs_manual_review": [
+          "falsifier",
+          "experiment_type",
+          "instrument_configs",
+          "kg_ids"
+        ],
+        "notes": "Imported from legacy amendment prose. Do not infer missing machine fields without hand-reading AMENDMENT.md."
+      },
+      "prediction": "orchestrator:\n  call: PASS; dial is a post-gen representation property independent of eliciting\n    prompt\nuser:\n  call: null\n  note: Predates the dual-prediction practice (adopted 2026-07-03 at AH signing);\n    no separately recorded user prediction.",
+      "question": "Does the forced-fit correctness dial transfer to the model's natural (un-forced) answers on the deployed checkpoint?",
+      "registered": true,
+      "slug": "natural-answer-generalization",
+      "status": "historical",
+      "title": "Amendment V — Natural-Answer Generalization of the Two-Signal Mechanism",
+      "type": "historical-amendment",
+      "verdict": "SHELVED — signed and gates locked but deferred unlaunched (data-starved under natural prompt; superseded by Amendment W's training-free reframe)."
+    },
+    {
+      "checkpoint": {
+        "repo": "",
+        "revision": ""
+      },
+      "created_at": "2026-07-08T17:40:52Z",
+      "falsifier": "",
+      "inputs": [],
+      "instrument": {
+        "configs": [],
+        "modules": [],
+        "pins": {}
+      },
+      "kg": [],
+      "legacy": {
+        "label": "AG",
+        "migrated_to": "experiments/oracle-dissociation-prime/AMENDMENT.md",
+        "path": "experiment/protocol/AMENDMENT-AG-oracle-dissociation-prime.md"
+      },
+      "migration": {
+        "needs_manual_review": [
+          "falsifier",
+          "experiment_type",
+          "instrument_configs",
+          "kg_ids"
+        ],
+        "notes": "Imported from legacy amendment prose. Do not infer missing machine fields without hand-reading AMENDMENT.md."
+      },
+      "prediction": "orchestrator:\n  call: null\n  note: Predates the dual-prediction practice (adopted 2026-07-03 at AH signing);\n    no separately recorded orchestrator prediction.\nuser:\n  call: compliance, not resonance\n  recorded: 2026-07-03\n  quote: my gut says that its probably pure behavior not internal alignment",
+      "question": "Does the second-person doubt prime move behavior by aligning the internal state (resonance) or by pure instruction compliance?",
+      "registered": true,
+      "slug": "oracle-dissociation-prime",
+      "status": "historical",
+      "title": "Amendment AG — Oracle Dissociation of the Second-Person Doubt Prime",
+      "type": "historical-amendment",
+      "verdict": "RESOLVED — ASYMMETRIC COMPLIANCE: muzzle obeyed +34.0pt, release resisted (+7.9pt below gate); doubt axis unmoved and anti-semantic; compliance travels through the caution axis."
+    },
+    {
+      "checkpoint": {
+        "repo": "",
+        "revision": ""
+      },
+      "created_at": "2026-07-08T17:40:52Z",
+      "falsifier": "",
+      "inputs": [
+        "experiments/pretrain-only-base-readout/artifacts/amendment_y_text_baseline_result.json",
+        "experiments/pretrain-only-base-readout/artifacts/cloud_launches/amendment_y_stage1_launch.json",
+        "experiments/pretrain-only-base-readout/artifacts/rubrics/cot_confidence.yaml",
+        "experiments/common/artifacts/selfaware_gate_pool/selfaware_gate_rows_frozen.jsonl"
+      ],
+      "instrument": {
+        "configs": [],
+        "modules": [],
+        "pins": {}
+      },
+      "kg": [],
+      "legacy": {
+        "label": "Y",
+        "migrated_to": "experiments/pretrain-only-base-readout/AMENDMENT.md",
+        "path": "experiment/protocol/AMENDMENT-Y-pretrain-only-base-readout.md"
+      },
+      "migration": {
+        "needs_manual_review": [
+          "falsifier",
+          "experiment_type",
+          "instrument_configs",
+          "kg_ids"
+        ],
+        "notes": "Imported from legacy amendment prose. Do not infer missing machine fields without hand-reading AMENDMENT.md."
+      },
+      "prediction": "orchestrator:\n  call: pretraining-origin supported; base gate near-ceiling, veto present pre-post-training\nuser:\n  call: null\n  note: Predates the dual-prediction practice (adopted 2026-07-03 at AH signing);\n    no separately recorded user prediction.",
+      "question": "Does the knowledge-boundary signal predate post-training, i.e. is it present on pretrain-only base models, not just instruct checkpoints?",
+      "registered": true,
+      "slug": "pretrain-only-base-readout",
+      "status": "historical",
+      "title": "Protocol Amendment Y: Pretrain-Only Base-Model Readout (Era / Origin Test)",
+      "type": "historical-amendment",
+      "verdict": "COMPLETE — H_B1 SUPPORTED 4/4 (boundary signal predates post-training); H_B2 veto SUPPORTED 4/4; H_B3 sharpening NOT SUPPORTED (post-training does not sharpen, can dull the readout)."
+    },
+    {
+      "checkpoint": {
+        "repo": "",
+        "revision": ""
+      },
+      "created_at": "2026-07-08T17:40:52Z",
+      "falsifier": "",
+      "inputs": [],
+      "instrument": {
+        "configs": [],
+        "modules": [
+          "probe_as_oracle_ceiling.py"
+        ],
+        "pins": {
+          "probe_as_oracle_ceiling.py": "5eb9e06ff3a64811309009f7a93d039dbab45d56ecbda83e1dd48189ea91ee9d"
+        }
+      },
+      "kg": [],
+      "legacy": {
+        "label": "O",
+        "migrated_to": "experiments/probe-as-oracle-readout-ceiling/AMENDMENT.md",
+        "path": "experiment/protocol/AMENDMENT-O-probe-as-oracle-readout-ceiling.md"
+      },
+      "migration": {
+        "needs_manual_review": [
+          "falsifier",
+          "experiment_type",
+          "instrument_configs",
+          "kg_ids"
+        ],
+        "notes": "Imported from legacy amendment prose. Do not infer missing machine fields without hand-reading AMENDMENT.md."
+      },
+      "prediction": "orchestrator:\n  call: probe-readout oracle clears both gates (readout ceiling exists)\nuser:\n  call: null\n  note: Predates the dual-prediction practice (adopted 2026-07-03 at AH signing);\n    no separately recorded user prediction.",
+      "question": "Does driving both decision channels from the linear probe readout clear both gates on SelfAware, proving a latent passing policy?",
+      "registered": true,
+      "slug": "probe-as-oracle-readout-ceiling",
+      "status": "historical",
+      "title": "Amendment O — Probe-as-Oracle Readout-Ceiling Test",
+      "type": "historical-amendment",
+      "verdict": "SUCCESS — all 7 gates pass; probe-to-appropriateness AUROC 0.9967, action margin +95pt (no trained arm reached it); non-circular correctness AUROC only 0.640. In-distribution CV, single seed."
+    },
+    {
+      "checkpoint": {
+        "repo": "",
+        "revision": ""
+      },
+      "created_at": "2026-07-08T17:40:52Z",
+      "falsifier": "",
+      "inputs": [],
+      "instrument": {
+        "configs": [],
+        "modules": [
+          "cloud/hf_jobs_ai_verdict.sh",
+          "scripts/par_mining_score.py",
+          "scripts/par_recalibration_score.py",
+          "scripts/par_recalibration_t_extract.py",
+          "scripts/par_sensor_refit_4bit_inloop_check.py",
+          "scripts/par_sensor_refit_extract.py",
+          "scripts/par_sensor_refit_extract_4bit.py",
+          "scripts/par_sensor_refit_fit.py",
+          "scripts/par_sensor_refit_mining_step.py",
+          "scripts/par_sensor_refit_union_inloop.py",
+          "scripts/path_compat.py"
+        ],
+        "pins": {
+          "cloud/hf_jobs_ai_verdict.sh": "2e813931fe38427793ed0edf51fd364356e27b1608385f21a5bd0e093ac26bdf",
+          "scripts/par_mining_score.py": "2101c1af6008d430435efb952e3a84fa3c6fd42df96cf8173a8ba60458835b98",
+          "scripts/par_recalibration_score.py": "6b8163929fef5f3ed17cf5f77bc34099b53aa20178a883a333fe6ca948f6fdc1",
+          "scripts/par_recalibration_t_extract.py": "cafb3fe060ea1ace16fb8139bedd397aec9f334a921797ca4d21b4baa59f1490",
+          "scripts/par_sensor_refit_4bit_inloop_check.py": "0afed14fcdc857a5534ddff00fb57202263fdcd3bec4825abe3ae10522dea4f6",
+          "scripts/par_sensor_refit_extract.py": "e70315a5c856af62836a6d7cf11ceff06598f22efc46a72c946e721ef5d2ffa1",
+          "scripts/par_sensor_refit_extract_4bit.py": "40301a7bf951b567b8415243f74a5235b79720e795fbc028975e1115e5a2575f",
+          "scripts/par_sensor_refit_fit.py": "8a3fce98f626ef318fa2751575c44e0985b4410b92242fa21fcd334ec921f3e4",
+          "scripts/par_sensor_refit_mining_step.py": "4e6b87d5a407597710be92b4ff29577ea435f4afc7098249b182b432c88d3204",
+          "scripts/par_sensor_refit_union_inloop.py": "e751ee7ae911584498d16c1d197542d2e33728521ff197556a333ae52bd90b14",
+          "scripts/path_compat.py": "543b5ec38362ba49b59f660bb8c9f0f5c7554bdd1c1724743a2f08571f74fbdf"
+        }
+      },
+      "kg": [],
+      "legacy": {
+        "label": "AI",
+        "migrated_to": "experiments/probe-as-reward/AMENDMENT.md",
+        "path": "experiment/protocol/AMENDMENT-AI-probe-as-reward.md"
+      },
+      "migration": {
+        "needs_manual_review": [
+          "falsifier",
+          "experiment_type",
+          "kg_ids"
+        ],
+        "notes": "Imported from legacy amendment prose. Do not infer missing machine fields without hand-reading AMENDMENT.md."
+      },
+      "prediction": "orchestrator:\n  call: TRUE wins\n  confidence: ~65%\n  recorded: 2026-07-03\n  basis: AC showed the first use-the-signal win when the coupling was wired externally\n    (+8.7pt over permuted); GRPO-v2's stuck quadrant is over-refusal at 77% occupancy,\n    which the agreement reward directly prices; but the N/M history (scalar collapses\n    onto the action) keeps confidence moderate — the reward channel may reproduce\n    the collapse.\nuser:\n  call: TRUE wins\n  recorded: 2026-07-03\n  quote: 'Pre-authorize: I predict TRUE wins (recorded pre-launch via the overnight\n    authorization; launch conditional on smoke green + refit sensor AUROC >= 0.9 +\n    constants derived per the pre-stated rules).'",
+      "question": "Does GRPO with a probe-agreement reward (read from the policy's own pre-generation states by a sensor refit on the training-start checkpoint) beat the same reward computed from a permuted sensor on the AH congruence eval — i.e., can the model be trained to consult its own readout?",
+      "registered": true,
+      "slug": "probe-as-reward",
+      "status": "historical",
+      "title": "Amendment AI — Probe-as-Reward (PAR): training the model to consult its own readout",
+      "type": "historical-amendment",
+      "verdict": "NULL (G1 fail, G0 pass) — adjudicated by the user 2026-07-05. The reward channel also does not couple the readout: TRUE-arm congruence 59.75% vs PERMUTED 76.75%, differential −17.0pt (10k paired bootstrap CI [−21.5, −12.5], excludes 0 on the wrong side; gate needed ≥ +10pt). Instrument valid (fresh per-arm probes OOF AUROC 0.9948/0.9946, both arms full 2934 steps, no halts). G2 fails for both arms (over-refusal released; abstain-when-unanswerable preserved at +0.49pt). Strengthens H-compliance generality across channels (M, N, R, AA/AB text, AI reward)."
+    },
+    {
+      "checkpoint": {
+        "repo": "",
+        "revision": ""
+      },
+      "created_at": "2026-07-08T17:40:52Z",
+      "falsifier": "",
+      "inputs": [],
+      "instrument": {
+        "configs": [],
+        "modules": [],
+        "pins": {}
+      },
+      "kg": [],
+      "legacy": {
+        "label": "E",
+        "migrated_to": "experiments/probe-scaled-response-confidence/AMENDMENT.md",
+        "path": "experiment/protocol/AMENDMENT-E-probe-scaled-response-confidence.md"
+      },
+      "migration": {
+        "needs_manual_review": [
+          "falsifier",
+          "experiment_type",
+          "instrument_configs",
+          "kg_ids"
+        ],
+        "notes": "Imported from legacy amendment prose. Do not infer missing machine fields without hand-reading AMENDMENT.md."
+      },
+      "prediction": "orchestrator:\n  call: probe-scaled targets should produce usable non-collapsed scalar movement\nuser:\n  call: null\n  note: Predates the dual-prediction practice (adopted 2026-07-03 at AH signing);\n    no separately recorded user prediction.",
+      "question": "Do probe-derived (32-sample p_correct) response-confidence targets fix the Amendment D scalar collapse and produce calibrated scalar movement?",
+      "registered": true,
+      "slug": "probe-scaled-response-confidence",
+      "status": "historical",
+      "title": "Protocol Amendment E: Probe-Scaled Response Confidence Targets",
+      "type": "historical-amendment",
+      "verdict": "DRAFT / NOT SIGNED; probe scaling alone insufficient (scalar still collapsed, target-imbalance failure), v3 clean-SFT mainline reserved for later contrast."
+    },
+    {
+      "checkpoint": {
+        "repo": "",
+        "revision": ""
+      },
+      "created_at": "2026-07-08T17:40:52Z",
+      "falsifier": "",
+      "inputs": [],
+      "instrument": {
+        "configs": [],
+        "modules": [],
+        "pins": {}
+      },
+      "kg": [],
+      "legacy": {
+        "label": "M",
+        "migrated_to": "experiments/quantile-balanced-probe-distilled-sft/AMENDMENT.md",
+        "path": "experiment/protocol/AMENDMENT-M-quantile-balanced-probe-distilled-sft.md"
+      },
+      "migration": {
+        "needs_manual_review": [
+          "falsifier",
+          "experiment_type",
+          "instrument_configs",
+          "kg_ids"
+        ],
+        "notes": "Imported from legacy amendment prose. Do not infer missing machine fields without hand-reading AMENDMENT.md."
+      },
+      "prediction": "orchestrator:\n  call: direct factual target installs discrimination, keeps behavior\nuser:\n  call: null\n  note: Predates the dual-prediction practice (adopted 2026-07-03 at AH signing);\n    no separately recorded user prediction.",
+      "question": "Can distilling the calibrated internal factual/doubt axis into the SFT stated-confidence token install calibration while preserving behavior?",
+      "registered": true,
+      "slug": "quantile-balanced-probe-distilled-sft",
+      "status": "historical",
+      "title": "Protocol Amendment M: Quantile-Balanced Probe-Distilled Stated Confidence (SFT)",
+      "type": "historical-amendment",
+      "verdict": "FALSIFIER FIRED — behavior PASSED 4/4 (action margin +31pt) but calibration failed (correctness AUROC 0.504, 3 distinct values); scalar collapsed onto the action; bottleneck is channel/loss, not target."
+    },
+    {
+      "checkpoint": {
+        "repo": "Qwen/Qwen3.5-4B",
+        "revision": "851bf6e806efd8d0a36b00ddf55e13ccb7b8cd0a"
+      },
+      "falsifier": "No mid-band layer/dose achieves that window, and every mid-band layer shows the same refusal-vs-well-formed entanglement as the late site (refusal rises only as well-formed falls, no dose clears both thresholds at once).",
+      "inputs": [
+        "experiments/j-space-localization-qwen3-4b/jlens.py",
+        "experiments/j-space-midband-write-sweep-qwen3-4b/AMENDMENT.md",
+        "experiments/qwen35-4b-midband-doubt-snap/analysis-committed/reused_rows_manifest.json",
+        "experiments/qwen35-4b-midband-doubt-snap/analysis-committed/profile_summary.json",
+        "experiments/qwen35-4b-midband-doubt-snap/analysis-committed/build_manifest.json"
+      ],
+      "instrument": {
+        "configs": [
+          "cell.yaml",
+          "gates.yaml"
+        ],
+        "modules": [
+          "materialize_reused_rows.py",
+          "jlens_qwen35.py",
+          "fit_midband_directions.py",
+          "run_dose_ladder.py",
+          "grader.py",
+          "gen_lib.py"
+        ],
+        "pins": {
+          "cell.yaml": "b0f2cc3e8322db2c32b6712e5a12d33c827e0247eaa85ab238cb0fd07ca686bb",
+          "fit_midband_directions.py": "a25ebbd343ad64c0f6af77eea1085b438fcb975599804f0149254fd1c1f1c912",
+          "gates.yaml": "c27fdd99c111fc3840d9abd7791a6f555c71645e15115ba6c76718c4c7cec762",
+          "gen_lib.py": "4b2796318c94e35aa878c1f82716c9d7776d6cc7b4e40af5f16f5b3c36d44089",
+          "grader.py": "72254c1c391ec8107062d846eb1def721f52122c066534b8678790bea161789e",
+          "jlens_qwen35.py": "028c71871fe38a770db3a3eac877a074dd86786200cc2ed0715d6b2ac4298039",
+          "materialize_reused_rows.py": "57be9a4e975b9a991544ca0fba32670a5c276ed084c58f329c41c8fc471a6b24",
+          "run_dose_ladder.py": "3495ed6a9169b5ba6af742f44ba17cef30059723c20c6a49dc11331fe5458bff"
+        }
+      },
+      "kg": [
+        "experiment:qwen35-4b-midband-doubt-snap",
+        "mechanism:qwen35-4b-midband-write-decouples-refusal-from-format-collapse",
+        "mechanism:caution-write-selectivity-is-content-dependent-not-gate-created"
+      ],
+      "prediction": "Some mid-band layer, at some dose on the proposed grid, will achieve refusal rate >= 0.60 AND well-formed rate >= 0.80 on fired FIT confabs with known-correct false-refusal <= 0.10 -- the coherent operating window the late site (hs30) provably lacks on this substrate.",
+      "question": "On Qwen/Qwen3.5-4B, does writing the doubt-gated caution snap at a J-space workspace-band (mid-band) layer decouple refusal induction from output corruption, where the registered late-site (0.94-depth, hs30) write produced a well-characterized no-window null in doubt-snap-cross-family-confirmatory (FIT dose sweep 0% clean_tighten at the registered grid, recalibrated peak ~33% coherent tighten with well-formedness collapsing to 3% by dose 60)?",
+      "registered": true,
+      "slug": "qwen35-4b-midband-doubt-snap",
+      "status": "resolved",
+      "type": "steer-cell",
+      "verdict": "G1 passed at hs20 dose 8 x sigma_c, the unique grid cell decoupling refusal induction (0.684) from output corruption (well-formed 0.980, known false-refusal 10/240 = 0.042, in-sample FIT), while hs23/hs26 never clear the refusal floor and the in-grid late-site comparator hs30 reproduces its entangled failure, so the Qwen3-4B mid-band write-site lesson transfers to Qwen3.5-4B."
+    },
+    {
+      "checkpoint": {
+        "repo": "Qwen/Qwen3.5-4B",
+        "revision": "851bf6e806efd8d0a36b00ddf55e13ccb7b8cd0a"
+      },
+      "created_at": "2026-07-13T10:32:51Z",
+      "falsifier": "Promotion is refused if held-out fired-confab refused < 0.60 (shape B), or refused >= 0.60 with well-formed < 0.80 (shape C), or the confab thresholds clear but known-correct false-refusal > 0.10 (shape D), or the confab and cost thresholds clear but random_direction is not a no-op or permuted_gate is not strictly worse (shape E).",
+      "inputs": [
+        "experiments/qwen35-4b-midband-doubt-snap/AMENDMENT.md",
+        "experiments/qwen35-4b-midband-doubt-snap/cell.yaml",
+        "experiments/qwen35-4b-midband-doubt-snap/analysis-committed/build_manifest.json",
+        "experiments/qwen35-4b-midband-doubt-snap/analysis-committed/directions/hs20/u_d.json",
+        "experiments/qwen35-4b-midband-doubt-snap/analysis-committed/directions/hs20/c_hat.json",
+        "experiments/qwen35-4b-midband-doubt-snap/analysis-committed/directions/hs20/random_direction.json",
+        "experiments/qwen35-4b-midband-doubt-snap/analysis-committed/reused_rows_manifest.json"
+      ],
+      "instrument": {
+        "configs": [
+          "cell.yaml",
+          "gates.yaml",
+          "frozen_operating_point_hashes.json"
+        ],
+        "modules": [
+          "capture_anchors.py",
+          "gate_lib.py",
+          "gen_lib.py",
+          "grader.py",
+          "materialize_rows.py",
+          "pipeline.py",
+          "render.py",
+          "steer_lib.py",
+          "test_qw35_heldout_smoke.py"
+        ],
+        "pins": {
+          "capture_anchors.py": "db42375b999b8f4ce477616d8afbfbaf9a85f038cb46d8085795fef33bfbab2d",
+          "cell.yaml": "41f79258b8df8506e610bf4b71a744b31d81d0f549bb5e4efbc3cfa9a5a1a771",
+          "frozen_operating_point_hashes.json": "9447aac4f47cf620ab88c5c15e67b53a02c6d04616b80b80e1908fcc88557af2",
+          "gate_lib.py": "785bbce8a2730fdc62533ad70ec4821608b84a96d40d727aa1010ce6ba482e92",
+          "gates.yaml": "48884e642e9be37eea350a08f596e131c0f12b4c17c263f12ce4055c69be190c",
+          "gen_lib.py": "66ed19e435914a936280d44cd14ff61818be644bb7349620194c9bb055cf9961",
+          "grader.py": "8d6c7fc0f92f7a84f1ff36469449ea15e1e98289d6558d14eedfdf628f7de864",
+          "materialize_rows.py": "af70cde9dc68bd56806966b17f45f9212fd48f7ce590adf711ad3015a4bc5887",
+          "pipeline.py": "57a3adb5fe2915a93c585bbcae870e4526d7ae3c2271fbb00020a1d71551534b",
+          "render.py": "f8faeb9f583a32a095259463cf5212908cc6499d19bf57e895a9896ef1c10745",
+          "steer_lib.py": "c08d8231b4129754a4ac25f90dcefcb7e224a77c4b6c2bcd32eeb8684318ac0c",
+          "test_qw35_heldout_smoke.py": "c70786aec90c90486fbb22f45ddea070b54f5d0a88c5d745c09a1328232ce088"
+        }
+      },
+      "kg": [
+        "experiment:qwen35-4b-midband-heldout",
+        "mechanism:qwen35-4b-midband-window-transfers-to-heldout-pool"
+      ],
+      "prediction": "On the 1,332 held-out confabs the frozen gated arm reaches refused rate >= 0.60 and well-formed rate >= 0.80 simultaneously with known-correct false-refusal <= 0.10 over the full 360 held-out knowns, and the placebo arms behave (random_direction within 2 points of baseline on both populations, permuted_gate strictly worse on known false-refusal), promoting the hs20 window to a held-out claim about Qwen3.5-4B.",
+      "question": "Does the resolved qwen35-4b-midband-doubt-snap hs20 operating point (frozen direction set, gate threshold, standardization scalars, and dose 8 x sigma_c), applied unchanged, decouple refusal induction from output corruption on the untouched qwen35_4b held-out pool?",
+      "registered": true,
+      "slug": "qwen35-4b-midband-heldout",
+      "status": "resolved",
+      "title": "Qwen3.5-4B mid-band doubt-snap held-out confirmation (hs20 frozen operating point)",
+      "type": "steer-cell",
+      "verdict": "The frozen hs20 mid-band operating point transfers to the untouched Qwen3.5-4B held-out pool with refused 0.678, well-formed 0.977, known-correct false refusal 0.039, and intact placebo specificity, promoting the doubt-gated caution-snap window from an in-sample selection to a held-out claim about this model."
+    },
+    {
+      "checkpoint": {
+        "repo": "",
+        "revision": ""
+      },
+      "created_at": "2026-07-08T17:40:52Z",
+      "falsifier": "",
+      "inputs": [
+        "experiments/radial-anti-propensity-steering/analysis-committed/radial-ceiling-sim/radial_ceiling_sim.py"
+      ],
+      "instrument": {
+        "configs": [],
+        "modules": [
+          "cloud/modal_al_true_a0.py",
+          "cloud/runpod_al_true_a0.sh"
+        ],
+        "pins": {
+          "cloud/modal_al_true_a0.py": "33265f3c7df8b32e7c4b78eb24565e8fe74a414e8b9ccc35cb0da65e3a900396",
+          "cloud/runpod_al_true_a0.sh": "14c6a99b05de495828b1c7177d50fd187159ce84b445d4e11e65fec28db71a50"
+        }
+      },
+      "kg": [],
+      "legacy": {
+        "label": "AL",
+        "migrated_to": "experiments/radial-anti-propensity-steering/AMENDMENT.md",
+        "path": "experiment/protocol/AMENDMENT-AL-radial-anti-propensity-steering.md"
+      },
+      "migration": {
+        "needs_manual_review": [
+          "falsifier",
+          "experiment_type",
+          "kg_ids"
+        ],
+        "notes": "Imported from legacy amendment prose. Do not infer missing machine fields without hand-reading AMENDMENT.md."
+      },
+      "prediction": "orchestrator:\n  calls:\n    AL-G1: PASS (~75%)\n    AL-G2: PASS (~45%)\n    AL-G3: PASS (~50%)\n  recorded: 2026-07-05\n  basis: 'The scope check says the direction is anti-aligned with the answer-vs-refuse\n    axis, so collateral should stay low even if the push does nothing useful (G1 easy).\n    Actuation is the real bet: five use-the-signal channels failed, but those asked\n    the model to CONSULT its readout; direct activation injection has better precedent\n    (AG muzzle +34pt moved behavior through the caution axis, AC external coupling\n    +8.7pt). Against that, the propensity direction is caution-residualized by construction,\n    so its behavioral lever is unproven and the sim kill models assume what G2 tests.'\nuser:\n  calls:\n    AL-G1: PASS\n    AL-G2: PASS\n    AL-G3: PASS\n  recorded: 2026-07-05\n  quote: All three gates called PASS at signing (\"Sign and launch\"), followed by \"LETS\n    BE BOLD!\" - the user takes the actuation bet at full confidence where the orchestrator\n    sits at 45-50% on G2/G3.",
+      "question": "Does pushing against the confabulation-propensity direction at generation time causally convert residual confabulations into refusals on the AI-TRUE checkpoint, at the low collateral the ceiling simulations predict, or is the propensity readout one more correlate that does not actuate?",
+      "registered": true,
+      "slug": "radial-anti-propensity-steering",
+      "status": "historical",
+      "title": "Amendment AL — Radial anti-propensity steering on the AI-TRUE checkpoint",
+      "type": "historical-amendment",
+      "verdict": "USE-THE-SIGNAL NULL (injection channel), resolved 2026-07-05. AL-G1 PASS (collateral 0 of allowed 3). AL-G2 MISS (0 of 116 baseline confabs killed; dose ladder 0.5x/1.0x/2.0x kills 0/0/1 of 30 pushed confabs). AL-G3 MISS (primary minus control kill diff 0, bootstrap 95% CI [0.00, 0.00]). The null is causal, not instrumental: smoke readback shows the pushed-anchor propensity projection moved -2.7133 vs commanded -2.7110 (ratio 1.0008), unpushed shift exactly 0.0000, and all 1,564 unpushed rows reproduce the baseline grade (1564/1564 parity). The direction moves the internal readout by the commanded amount but does not actuate the fabricate-vs-refuse choice. Sixth use-the-signal null; first in the activation-injection channel. Grading commits fa82c629 / 7b4be949 / e9141fff."
+    },
+    {
+      "checkpoint": {
+        "repo": "",
+        "revision": ""
+      },
+      "created_at": "2026-07-08T17:40:52Z",
+      "falsifier": "",
+      "inputs": [
+        "experiments/residual-catch-veto-coverage/analysis-committed/veto-warning-policy/warning_policy.py"
+      ],
+      "instrument": {
+        "configs": [],
+        "modules": [
+          "cloud/modal_am_residual_catch.py"
+        ],
+        "pins": {
+          "cloud/modal_am_residual_catch.py": "a18ed4dcd1ef3ee4712a9d3b338bd651690ff64196afd0454f98d24b6e516bf9"
+        }
+      },
+      "kg": [],
+      "legacy": {
+        "label": "AM",
+        "migrated_to": "experiments/residual-catch-veto-coverage/AMENDMENT.md",
+        "path": "experiment/protocol/AMENDMENT-AM-residual-catch-veto-coverage.md"
+      },
+      "migration": {
+        "needs_manual_review": [
+          "falsifier",
+          "experiment_type",
+          "kg_ids"
+        ],
+        "notes": "Imported from legacy amendment prose. Do not infer missing machine fields without hand-reading AMENDMENT.md."
+      },
+      "prediction": "orchestrator:\n  calls:\n    AM-G1: PASS (~70%)\n    AM-G2: PASS (~60%)\n  recorded: 2026-07-05\n  basis: The veto reads post-generation content and the residual confabs are answered\n    fabrications, so the content signal the S/W/U veto keys on should be present regardless\n    of why the pre-gen gate missed the question (the gate reads pre-generation answerability;\n    the veto reads the emitted answer, a different object). The raw-base transfer\n    AUROC is 0.768 on the full W population and a same-surface refit should meet or\n    beat that, so an AUROC floor of 0.62 has real headroom (AM-G1 ~70%). The bet that\n    is genuinely open is whether the ambiguous-flavor residual specifically still\n    reads low-trust; ambiguous questions may produce plausible-sounding confabs whose\n    content looks answerable, which is the exact failure mode that could pull AM-G2\n    down (only ~60%). The whole point of the residual is that it is the hard tail\n    the pre-gen controller could not carve out.\nuser:\n  calls:\n    AM-G1: PASS\n    AM-G2: PASS\n  recorded: 2026-07-05\n  basis: The user confirmed all four drafted design choices as-is (derived gates AUROC\n    0.62 / bootstrap CI-LB 0.55 / permutation p 0.01, the deterministic 43-row gate-miss\n    residual, the correct-answerable-only good class, and Modal-only at the $5 cap\n    with regeneration plus the batch-12 numerics smoke) and called both gates PASS,\n    taking the coverage bet at full confidence where the orchestrator sits at 70/60.",
+      "question": "Of the residual confabulations the pre-generation radial controller cannot reach (the gate-miss set the answerability gate misreads as answerable, 43 rows on the A0 raw-base surface, ambiguous-flavor concentrated), does a post-generation correctness veto refit on the A0 generation surface separate those residual confabs from good answers, or is the veto blind exactly where the pre-gen gate is blind?",
+      "registered": true,
+      "slug": "residual-catch-veto-coverage",
+      "status": "historical",
+      "title": "Amendment AM: Post-generation veto coverage of the radial-unreachable residual confabs",
+      "type": "historical-amendment",
+      "verdict": "AM-G1 PASS (OOF veto AUROC 0.9168, CI [0.854, 0.963]) and AM-G2 PASS (permutation p=0.001) as literally pre-registered. BUT an adversarial audit before recording found the residual-vs-good separation is dominated by an UNDISCLOSED answer-length confound (answer length alone separates at AUROC 0.943, higher than the veto's 0.917; the veto reads the hidden state at content_end, whose position encodes length). The suspected score_L24-selection circularity was refuted (full-pop AUROC 0.916 == residual 0.917). Gates pass; the mechanistic two-signal-coverage claim is NOT established, because the catch is length-driven not content-driven. Honest non-length content signal ~0.77 (broader hallucination population, length-matched). Tier-A exploratory, single seed, never pooled with the locked matrix or PR #205. See section 9."
+    },
+    {
+      "checkpoint": {
+        "repo": "cross-family (two atlas-mapped substrates)",
+        "revision": "see cell.yaml families (revisions pinned from fleet model_matrix.yaml at sign)"
+      },
+      "created_at": "2026-07-13T11:23:35Z",
+      "falsifier": "Falsified if neither family reaches shape A, i.e. both families land in shape B (refusal does not transfer with confidence), C (refusal transfers but well-formed < 0.80), D (confab legs clear but not cost-safe), E (thresholds clear but random_direction not a no-op), or F (no FIT-viable dose exists, so the write does not actuate clean refusal at the atlas site even where the axis is maximally readable). Shapes A-F are exhaustive over a family that clears G0; a G0 instrument-validity failure is a pre-outcome stop, not a shape.",
+      "inputs": [
+        "experiments/ungated-vs-gated-dose-matched/AMENDMENT.md",
+        "experiments/doubt-snap-cross-family-confirmatory/AMENDMENT.md",
+        "experiments/jspace-family-atlas/AMENDMENT.md",
+        "experiments/qwen35-4b-midband-doubt-snap/AMENDMENT.md"
+      ],
+      "instrument": {
+        "configs": [
+          "cell.yaml",
+          "gates.yaml"
+        ],
+        "modules": [
+          "render.py",
+          "grader.py",
+          "gen_lib.py",
+          "direction_fit.py",
+          "materialize_rows.py",
+          "steer_lib.py",
+          "dose_ladder.py",
+          "heldout_scorer.py",
+          "gates_lib.py",
+          "pipeline.py",
+          "test_rr_smoke.py"
+        ],
+        "pins": {
+          "cell.yaml": "6356511cccf848aa3185c1b4af3bcfef43a051d7e31da7f9bd9814c173b43d46",
+          "direction_fit.py": "d97966d05ad55df647ae2efd949fd2daf0155706ba10657019d77e5f2965ed5a",
+          "dose_ladder.py": "8d4d76eecc894e492e203a97988c9b901ef641f9f74607984c241d73520c1de7",
+          "gates.yaml": "de5ba0e4ea824459ee4e4ccc7db7f76e8882355021ddfc9c1f0259cac3adcee9",
+          "gates_lib.py": "1eed44eee8bcb898daffe1d21f68f6b398d02961c70928e3f07eb9ec40726e71",
+          "gen_lib.py": "a15149b3d3e2424aff1efda9131b8f13e647a173aebd3eb6ade94cd5e574f641",
+          "grader.py": "54b8af60f2f287c85f3bc4a2d0c8f8ed09f685f10090bb3ef953116d1667b52c",
+          "heldout_scorer.py": "7d6df7ed510f61ee385ab17a56454478519bde08addac812a3fb1dc6432b4dee",
+          "materialize_rows.py": "9056303374328f3f1503f240f24fe7a99d469a7a845d4539e5f654703f3b4736",
+          "pipeline.py": "49964839c1d1ca6aa620d5477fa4cc07ff20e25291272f4dcf481e640796c010",
+          "render.py": "fa378bdbcfd185f9f8bcdbeb1209cbe180b9ec50e92f9342ea7d7421ff6b3ab3",
+          "steer_lib.py": "45737d9c59cba4b00526f7dc674a2bc32bcb97d098ec4c308a97a07994155cf0",
+          "test_rr_smoke.py": "806b1b7c5abe8c14db1f2c21883ad1c4e5f9c8e33fdc38d48c618ae22c4196a6"
+        },
+        "repins": [
+          {
+            "date": "2026-07-13T14:10:23Z",
+            "file": "cell.yaml",
+            "new_sha256": "6356511cccf848aa3185c1b4af3bcfef43a051d7e31da7f9bd9814c173b43d46",
+            "old_sha256": "88c87b7ded44245d886a7aa1a822008574fc0da1cdef83ba6386f0677f0ed56a",
+            "reason": "resolve the four placeholders that survived sign (two family revisions from fleet model_matrix.yaml, lead-verified against the SSOT; synaptic-tuner submodule pin; gpu python). No threshold, arm, dose, or gate content changed."
+          },
+          {
+            "date": "2026-07-13T15:34:05Z",
+            "file": "materialize_rows.py",
+            "new_sha256": "9056303374328f3f1503f240f24fe7a99d469a7a845d4539e5f654703f3b4736",
+            "old_sha256": "3d37ebcfcb33ec4fa7d1f30cbdb54bd9294531715b03a1d78cf19297c66c0d1b",
+            "reason": "add extract_anchors_at_candidate_layers() (CPU slice over already-staged atlas capture tensors) and wire into cmd_materialize's success path to write analysis/<family>/anchors_at_candidate_layers.json, closing the dose_ladder.py launch-blocking gap; extend CPU smoke with 4 new tests covering the slice (synthetic safetensors fixtures) and the full materialize success-path wiring"
+          },
+          {
+            "date": "2026-07-13T15:34:05Z",
+            "file": "test_rr_smoke.py",
+            "new_sha256": "8a59ed82d6152543c0371ef3a29fd550c069c8ee056da30a495e4c205c60487f",
+            "old_sha256": "c9a721603ee344b3157d5e1e75777941103e1d0b81375e11246fb372b73362c6",
+            "reason": "add extract_anchors_at_candidate_layers() (CPU slice over already-staged atlas capture tensors) and wire into cmd_materialize's success path to write analysis/<family>/anchors_at_candidate_layers.json, closing the dose_ladder.py launch-blocking gap; extend CPU smoke with 4 new tests covering the slice (synthetic safetensors fixtures) and the full materialize success-path wiring"
+          },
+          {
+            "date": "2026-07-13T15:50:53Z",
+            "file": "steer_lib.py",
+            "new_sha256": "45737d9c59cba4b00526f7dc674a2bc32bcb97d098ec4c308a97a07994155cf0",
+            "old_sha256": "0701211660292de9d1ee30080c1c5f2cbddb856baa1a3608a20fa246531f5250",
+            "reason": "load_model() now sets RR_RENDER_MODEL/RR_RENDER_REVISION before loading, closing a launch-blocking gap where render.py's _tokenizer() raised on the first row of every dose_ladder/heldout_scorer generation call; add test_load_model_sets_render_env_vars (mocked transformers classes, CPU-only)"
+          },
+          {
+            "date": "2026-07-13T15:50:53Z",
+            "file": "test_rr_smoke.py",
+            "new_sha256": "806b1b7c5abe8c14db1f2c21883ad1c4e5f9c8e33fdc38d48c618ae22c4196a6",
+            "old_sha256": "8a59ed82d6152543c0371ef3a29fd550c069c8ee056da30a495e4c205c60487f",
+            "reason": "load_model() now sets RR_RENDER_MODEL/RR_RENDER_REVISION before loading, closing a launch-blocking gap where render.py's _tokenizer() raised on the first row of every dose_ladder/heldout_scorer generation call; add test_load_model_sets_render_env_vars (mocked transformers classes, CPU-only)"
+          }
+        ]
+      },
+      "kg": [
+        "experiment:rr-cross-family-raw-refusal",
+        "mechanism:llama-atlas-site-write-collapses-format-before-refusal-floor",
+        "mechanism:mistral-atlas-site-write-abstains-below-canonical-detector-floor",
+        "mechanism:canonical-phrase-detector-undercounts-cross-family-abstention-idioms"
+      ],
+      "prediction": "The doubt-gated caution write actuates clean raw refusal at the atlas-located workspace-band site on at least one of the two non-Qwen families; at least one of {llama, mistral} reaches outcome shape A, i.e. held-out fired-confab refused >= 0.60 (Wilson 95% LCB > 0.50) AND well-formed >= 0.80 with known-correct false-refusal <= 0.05 (Wilson 95% UCB < 0.10) and the random_direction placebo a no-op within 2 points of baseline on both populations.",
+      "question": "Does a doubt-gated caution write actuate raw refusal on the non-Qwen families (Llama-3.2-3B, Mistral-7B-v0.3) when written at their own atlas-located workspace-band sites, rather than at the ported round(0.94*(L-1)) late site the cross-family confirmatory indicted, with directions and dose chosen on FIT only and the operating point confirmed on held-out?",
+      "registered": true,
+      "slug": "rr-cross-family-raw-refusal",
+      "status": "falsified",
+      "title": "Cross-family raw-refusal actuation at atlas-located workspace-band sites",
+      "type": "steer-cell",
+      "verdict": "Falsified, both families shape F: the doubt-gated caution write does not actuate FIT-viable canonical clean refusal at either atlas-located non-Qwen site; llama fails on format collapse before the refusal floor (robust to detector width), while mistral peaks at 0.579 against the 0.60 floor with intact JSON and its miss is substantially canonical-phrase coverage (abstention pressure present but phrased outside the locked detector's vocabulary)."
+    },
+    {
+      "checkpoint": {
+        "repo": "",
+        "revision": ""
+      },
+      "created_at": "2026-07-13T22:55:38Z",
+      "falsifier": "Any prediction leg fails (RG1/RG2/RG3). No rescoring lane exists behind the blinded adjudication: a miss falsifies the detector-width-artifact interpretation of the RR mistral caveat and the miss stands as behavioral.",
+      "inputs": [],
+      "instrument": {
+        "configs": [
+          "cell.yaml",
+          "gates.yaml",
+          "detector_v2_patterns.yaml"
+        ],
+        "modules": [
+          "apply_adjudication.py",
+          "build_adjudication_pool.py",
+          "detector_v2.py",
+          "direction_fit.py",
+          "fit_reuse.py",
+          "gates_lib.py",
+          "gen_lib.py",
+          "grader.py",
+          "heldout_scorer.py",
+          "materialize_rows.py",
+          "pipeline.py",
+          "render.py",
+          "steer_lib.py",
+          "test_rr2_smoke.py"
+        ],
+        "pins": {
+          "apply_adjudication.py": "707409d3f24e0ed005aec225660eb578ac73cc67179cf30d5ed789b26d7cb8af",
+          "build_adjudication_pool.py": "e0f709f77215f2d9249e78500b0f50232b10bcaee4793b36aca6be6d508aaa7f",
+          "cell.yaml": "d578b55d613dafc389a19d1771a16001f2bc47516e7fc1f3957234b96d0db6a0",
+          "detector_v2.py": "161fd8548ec0dad1daabd590870654f1c32bd0daf21e6026a2c18c83e83991ae",
+          "detector_v2_patterns.yaml": "36422e01ae03008c2f71f180158c63950e14f8dfc1279c4e654c89fb831841d9",
+          "direction_fit.py": "44e5d98ce736e97ff38fae377be625eca4134fc5f51ece44c220eced9c6d7771",
+          "fit_reuse.py": "c9b90a1977f9bfd63bedd992a95c61369380cafc52bd61526634177081ecbe01",
+          "gates.yaml": "cea6ec866450a22a03fbde45811f13c1f9d9c3b93f28f39ce04c70f30163679e",
+          "gates_lib.py": "85f7e120d633b86bbc339885d042838c1edfb05b018aa71de2fcd595d920d2c7",
+          "gen_lib.py": "2aedb0b2091457f832c4ff7614a90f2716f26b6dcd091e7348a47bdac0de13b4",
+          "grader.py": "bd5a974d7aa56cc28d8e6380e6176b81ea646fa276760feb31dc3d6bdc681218",
+          "heldout_scorer.py": "1f043b51f9a856b44f5227f4bbe6792b6706353689a5c6a2969c0fe6c0273fd1",
+          "materialize_rows.py": "41df28de05f55d2d50b71f49d66487a74c6929b4786ff92f48ad2eb37fa96490",
+          "pipeline.py": "33de030c482114954c406a52a7a8cea0f0fb0ce8686a5fe58c6b4ce4514f0b90",
+          "render.py": "c273891f1e62d4b42f9a328259ba9d6a5318d62ed562eec2418fc9794fe32a7d",
+          "steer_lib.py": "3c09e0b74ebf9ae79da08026cb9de2d839069e8efb8caca25948a002a7ea60f4",
+          "test_rr2_smoke.py": "ca3a02d2e68c9e79ab4f81e765f93081a1e9a29df035ca46237016c798a3d28e"
+        }
+      },
+      "kg": [
+        "experiment:rr2-mistral-adjudicated-refusal-confirm",
+        "mechanism:canonical-phrase-detector-undercounts-cross-family-abstention-idioms",
+        "mechanism:wide-abstention-instrument-reveals-substantial-undosed-baseline-refusal",
+        "mechanism:random-direction-placebo-recruits-additional-wide-instrument-abstention"
+      ],
+      "prediction": "Mistral reaches shape A at the pre-fixed operating point under the adjudicated instrument: held-out fired-confab adjudicated refusal >= 0.60 (Wilson LCB > 0.50) with well-formed >= 0.80, known-correct adjudicated false refusal <= 0.05 (Wilson UCB < 0.10), placebo no-op within 2 points.",
+      "question": "Does the doubt-gated caution write actuate clean, idiom-inclusive refusal on mistral at its atlas site (hs16, dose 12 sigma_c) when abstention is scored by a pre-registered diverse detector plus a blinded human adjudication lane, symmetric across benefit and cost populations?",
+      "registered": true,
+      "slug": "rr2-mistral-adjudicated-refusal-confirm",
+      "status": "falsified",
+      "title": "RR2: mistral confirmatory with detector v2 + blinded adjudication lane",
+      "type": "steer-cell",
+      "verdict": "Falsified on the placebo leg: the blinded adjudicated instrument confirms idiom-inclusive mistral refusal at 0.699 with pristine cost, vindicating the RR detector-width caveat, but a magnitude-matched random direction lifts baseline abstention +7.4 points (0.280 to 0.354) against the registered 2-point no-op tolerance, so direction-specificity fails as registered."
+    },
+    {
+      "checkpoint": {
+        "repo": "",
+        "revision": ""
+      },
+      "created_at": "2026-07-08T17:40:52Z",
+      "falsifier": "",
+      "inputs": [],
+      "instrument": {
+        "configs": [],
+        "modules": [],
+        "pins": {}
+      },
+      "kg": [],
+      "legacy": {
+        "label": "SR",
+        "migrated_to": "experiments/sampled-decode-seed-robustness/AMENDMENT.md",
+        "path": "experiment/protocol/AMENDMENT-SR-sampled-decode-seed-robustness.md"
+      },
+      "migration": {
+        "needs_manual_review": [
+          "falsifier",
+          "experiment_type",
+          "instrument_configs",
+          "kg_ids"
+        ],
+        "notes": "Imported from legacy amendment prose. Do not infer missing machine fields without hand-reading AMENDMENT.md."
+      },
+      "prediction": "orchestrator:\n  call: dial and veto seed-stable; Z SUCCESS verdict (veto >=3/4) holds every seed\nuser:\n  call: null\n  note: Predates the dual-prediction practice (adopted 2026-07-03 at AH signing);\n    no separately recorded user prediction.",
+      "question": "Are the Z dial and veto magnitudes seed-robust under sampled decoding, or was the single greedy decode a lucky draw?",
+      "registered": true,
+      "slug": "sampled-decode-seed-robustness",
+      "status": "historical",
+      "title": "Amendment SR — Sampled-decode seed-robustness of the training-free two-signal readout",
+      "type": "historical-amendment",
+      "verdict": "COMPLETE — SUCCESS; dial seed-stable 4/4, veto seed-stable 4/4, per-seed majority >=3/4 every seed; greedy misses were decode artifacts (understated the veto), Z magnitudes promoted to seed-robust."
+    },
+    {
+      "checkpoint": {
+        "repo": "",
+        "revision": ""
+      },
+      "created_at": "2026-07-08T17:40:52Z",
+      "falsifier": "",
+      "inputs": [],
+      "instrument": {
+        "configs": [],
+        "modules": [],
+        "pins": {}
+      },
+      "kg": [],
+      "legacy": {
+        "label": "D",
+        "migrated_to": "experiments/schema-response-confidence/AMENDMENT.md",
+        "path": "experiment/protocol/AMENDMENT-D-schema-response-confidence.md"
+      },
+      "migration": {
+        "needs_manual_review": [
+          "falsifier",
+          "experiment_type",
+          "instrument_configs",
+          "kg_ids"
+        ],
+        "notes": "Imported from legacy amendment prose. Do not infer missing machine fields without hand-reading AMENDMENT.md."
+      },
+      "prediction": "orchestrator:\n  call: schema-trained non-endpoint response_confidence with ambiguous-middle signal\nuser:\n  call: null\n  note: Predates the dual-prediction practice (adopted 2026-07-03 at AH signing);\n    no separately recorded user prediction.",
+      "question": "Can SFT, preference training, and GRPO all learn a schema-trained answer + response_confidence contract with an ambiguous-middle signal?",
+      "registered": true,
+      "slug": "schema-response-confidence",
+      "status": "historical",
+      "title": "Protocol Amendment D: Schema-Trained Response Confidence",
+      "type": "historical-amendment",
+      "verdict": "DRAFT / NOT SIGNED; defines the corrective schema track, superseded by Amendment E after constant-target scalar collapse."
+    },
+    {
+      "checkpoint": {
+        "repo": "",
+        "revision": ""
+      },
+      "created_at": "2026-07-08T17:40:52Z",
+      "falsifier": "",
+      "inputs": [],
+      "instrument": {
+        "configs": [],
+        "modules": [],
+        "pins": {}
+      },
+      "kg": [],
+      "legacy": {
+        "label": "AF",
+        "migrated_to": "experiments/second-person-doubt-prime/AMENDMENT.md",
+        "path": "experiment/protocol/AMENDMENT-AF-second-person-doubt-prime.md"
+      },
+      "migration": {
+        "needs_manual_review": [
+          "falsifier",
+          "experiment_type",
+          "instrument_configs",
+          "kg_ids"
+        ],
+        "notes": "Imported from legacy amendment prose. Do not infer missing machine fields without hand-reading AMENDMENT.md."
+      },
+      "prediction": "orchestrator:\n  call: small positive or null; base not RLHF-tuned to over-index system authority\nuser:\n  call: null\n  note: Predates the dual-prediction practice (adopted 2026-07-03 at AH signing);\n    no separately recorded user prediction.",
+      "question": "Does a high-authority second-person system-prompt doubt directive actuate the read-out where within-generation text channels (AA/AB) could not?",
+      "registered": true,
+      "slug": "second-person-doubt-prime",
+      "status": "historical",
+      "title": "Amendment AF — Second-Person Doubt Prime (the system-prompt instruction channel)",
+      "type": "historical-amendment",
+      "verdict": "RESOLVED — AF-G1 PASS (channel-authority): system-prompt prime +18.0pt over placebo, CI [+11.8,+24.7]; localizes AA/AB nulls to channel authority; own-read-out attribution NOT established (probe coincides with gold 600/600)."
+    },
+    {
+      "checkpoint": {
+        "repo": "",
+        "revision": ""
+      },
+      "created_at": "2026-07-08T17:40:52Z",
+      "falsifier": "",
+      "inputs": [],
+      "instrument": {
+        "configs": [],
+        "modules": [],
+        "pins": {}
+      },
+      "kg": [],
+      "legacy": {
+        "label": "AN",
+        "migrated_to": "experiments/selected-setpoint-regulator/AMENDMENT.md",
+        "path": "experiment/protocol/AMENDMENT-AN-selected-setpoint-regulator.md"
+      },
+      "migration": {
+        "needs_manual_review": [
+          "falsifier",
+          "experiment_type",
+          "instrument_configs",
+          "kg_ids"
+        ],
+        "notes": "Imported from legacy amendment prose. Do not infer missing machine fields without hand-reading AMENDMENT.md."
+      },
+      "prediction": "orchestrator:\n  calls:\n    AN-G1: PASS (~70%)\n    AN-G2: PASS (~40%)\n    AN-G3: PASS (~40%)\n  recorded: 2026-07-05\n  basis: 'G1 leans PASS because AC''s only direct evidence on answering rows is 0/7\n    flips under positive gain (answers resist) and just 4 corrects are exposed. G2/G3\n    sit under 50% for the same reason inverted: AN''s central bet is that the caution\n    setpoint can flip ENTRENCHED answering rows (the residual confabs), and the 0.16\n    compliance feeding the G2 floor was measured as refusal RESTORATION (coupled vs\n    ablate), not as flipping established answers; if true flip compliance is half\n    the estimate, expected kills fall to ~3.8 versus a floor of 5. G3 mostly rides\n    G2: any kills that do happen should be selective.'\nuser:\n  calls:\n    AN-G1: PASS\n    AN-G2: PASS\n    AN-G3: PASS\n  recorded: 2026-07-05\n  quote: '\"I agree on all passing\" - all three gates called PASS, taking the actuation\n    bet at full confidence again where the orchestrator sits at 40% on G2/G3 (same\n    disagreement shape as AL, opposite mechanism: there the user bet on a new knob;\n    here the bet is the proven knob reaching a new population).'",
+      "question": "Does propensity-SELECTED, caution-ACTUATED regulation convert residual confabulations into refusals at low collateral on the AI-TRUE checkpoint, i.e. does writing the caution setpoint UP (AC's proven knob) on rows flagged by the confabulation-propensity readout (AL's proven sensor) reach the confab cloud where pushing along the propensity direction itself (AL) did nothing?",
+      "registered": true,
+      "slug": "selected-setpoint-regulator",
+      "status": "historical",
+      "title": "Amendment AN - Selected-setpoint regulator on the AI-TRUE checkpoint",
+      "type": "historical-amendment",
+      "verdict": "NULL (falsifier fired), resolved 2026-07-06. AN-G1 PASS (collateral 0 of allowed 2) but VACUOUS: zero effect on the write means zero collateral by construction, not a real honesty guarantee, since the corrects it was guarding were never actually at risk. AN-G2 MISS (0 of 116 baseline confabs killed against a floor of 5; descriptive dose ladder g=+1/+2/+3 kills 0/0/0 of the 47 flagged confabs). AN-G3 MISS (primary-minus-control kill diff 0, 1,000-resample row bootstrap 95% CI [0.0, 0.0] against a floor of 5 with CI excluding zero). Primary arm: 244 flagged rows (47 confabs, 4 corrects, 11 wrong, 18 answerable-refused, 164 unanswerable-refused); all 47 flagged confabs land in confab_to_different_confab, never a refusal. Descriptive bidirectional arm: the same actuator at g=-2 de-refuses 0 of 114 baseline answerable-refused rows. Smoke readback confirms the write lands precisely on-axis (mean observed setpoint 43.98 vs commanded 44.26, max abs error 0.58 against sigma 22.13; unflagged rows show zero shift), ruling out an injection-fidelity failure. caution_perp, reached this precisely on propensity-flagged rows, did not convert any flagged confabulation to a refusal. This null is CONFOUNDED and must be read as such: the actuator direction was the caution_perp REFIT on the AI-TRUE checkpoint, which has cosine -0.064 with AC's validated GRPO-v2 direction (essentially orthogonal), and it was never independently shown to be a behavioral lever on this checkpoint. AC's win validates AC's direction; it does not transfer to AN's refit direction, and the section 6 positive-control screen that would have validated it was deferred, not run. AN therefore cannot distinguish \"the caution axis cannot suppress confabulation\" from \"this refit direction is a dead actuator.\" Do NOT read AN as evidence for any input-side-vs-write-side rule: AC is itself a WRITE-side erase-write on caution_perp and it PASSED (+8.7pt), so write-side activation edits are not uniformly null. The honest open question AN leaves is whether a caution actuator validated as a lever on this checkpoint, coupled to the confab-propensity readout the way AC coupled the doubt readout, can regulate confabulation."
+    },
+    {
+      "checkpoint": {
+        "repo": "local legacy SelfAware hidden-state extractions",
+        "revision": "historical"
+      },
+      "created_at": "2026-07-09T02:35:52Z",
+      "falsifier": "",
+      "inputs": [
+        "experiments/selfaware-latent-knowledge-controls/artifacts/latent_knowledge_controls/a1a2_h_lora.json",
+        "experiments/selfaware-latent-knowledge-controls/artifacts/latent_knowledge_controls/a3_h_base_probe.json",
+        "experiments/selfaware-latent-knowledge-controls/artifacts/latent_knowledge_controls/c2_gap_sft.json",
+        "experiments/selfaware-latent-knowledge-controls/artifacts/latent_knowledge_controls/c2_gap_grpo_dpo.json",
+        "experiments/selfaware-latent-knowledge-controls/artifacts/latent_knowledge_controls/c2_sft.json",
+        "experiments/selfaware-latent-knowledge-controls/artifacts/latent_knowledge_controls/c2_grpo_dpo.json",
+        "experiments/selfaware-latent-knowledge-controls/artifacts/latent_knowledge_controls/c2_grpo_v2.json",
+        "experiments/selfaware-latent-knowledge-controls/artifacts/latent_knowledge_controls/caution_axis_transfer.json"
+      ],
+      "instrument": {
+        "configs": [],
+        "modules": [
+          "latent_knowledge_probe.py",
+          "latent_knowledge_controls.py",
+          "caution_axis_transfer.py"
+        ],
+        "pins": {
+          "caution_axis_transfer.py": "c7c4a8e4be23292b78598feb4800b0e812cfe034e571f2974ab1c62472690802",
+          "latent_knowledge_controls.py": "1d6c5b127145e1a24c3965f7d210eaf70c0e17ff328cf909bd3440e61dd5b2e9",
+          "latent_knowledge_probe.py": "350f9d9e4acf57b1af858396fb50616fa5b98e7ebb475155af9d40da038eda93"
+        }
+      },
+      "kg": [],
+      "prediction": "",
+      "question": "Do SelfAware hidden states carry a robust internal known-vs-unknown readout after lexical, over-refusal, cross-regimen, and caution-axis controls?",
+      "registered": true,
+      "slug": "selfaware-latent-knowledge-controls",
+      "status": "historical",
+      "title": "SelfAware Latent Knowledge Controls",
+      "type": "lab-diagnostic",
+      "verdict": "Historical control package banked; latent knowledge-boundary readout remains strong across controls and regimens, with over-refused known items near the known pole and caution-axis transfer recorded separately."
+    },
+    {
+      "checkpoint": {
+        "repo": "unsloth/Qwen3-4B",
+        "revision": "raw-base (no adapter; bf16, no 4-bit quantization)"
+      },
+      "created_at": "2026-07-11T00:34:57Z",
+      "falsifier": "Sampled-decode majority-vote confab conversion falls below 63.5% (pooled or in a majority of the K=5 seeds), OR sampled-decode majority-vote known-correct cost exceeds an 8% point estimate or a 12% Wilson upper CI (pooled) - the resolved 73.5%/3.1% pair is a greedy-decode artifact and must be re-scoped to \"one greedy decode\" wherever asserted.",
+      "inputs": [
+        "experiments/common/doubt-gated-caution-tighten-heldout-split/split_manifest.json",
+        "experiments/doubt-gated-caution-tighten/analysis-committed/u_d_L34.json",
+        "experiments/doubt-gated-caution-tighten/analysis-committed/c_hat_L34.json",
+        "experiments/doubt-gated-caution-tighten/analysis-committed/random_direction_L34.json",
+        "experiments/doubt-gated-caution-tighten/analysis-committed/gate_fit.json",
+        "experiments/doubt-gated-caution-tighten/analysis-committed/build_manifest.json"
+      ],
+      "instrument": {
+        "configs": [
+          "cell.yaml",
+          "gates.yaml"
+        ],
+        "modules": [
+          "pipeline.py",
+          "materialize_rows.py",
+          "gen_lib.py",
+          "grader.py",
+          "model_lib.py",
+          "smoke_cpu.py"
+        ],
+        "pins": {
+          "cell.yaml": "9fee64a65e94e6c147421ee7c8ab7b598f56c791d9142f0254b74c76b612edd9",
+          "gates.yaml": "1e2d0b384dcf30cce56327b06f44ebb96ecd3af0d510269d347f637339d27a5a",
+          "gen_lib.py": "d9d09eb3cb0e33385dabf5e884b904e1749053310dadd4545f5477a119a0fc50",
+          "grader.py": "b24982a4380dca26056a6b3b217b4ffcea8cf448509af896eba04c256720dd2b",
+          "materialize_rows.py": "4859c9657ac89634d29fc6fca9f55b034bf82550d54fde43dac745e3a9b238dd",
+          "model_lib.py": "c659dd69b854d7e50a43434f0ec2ec4f7bae37b0ff65dcd78a853370540398b9",
+          "pipeline.py": "d4e233be8a1d19c1d07a2869dc9190716a7bc3b95e50294c4a7a6d3e131c6961",
+          "smoke_cpu.py": "e6ef7ec0f691972f9d5e8a86b9209d189ffd6bb9f5333aa6251bc2e69a69125b"
+        },
+        "repins": [
+          {
+            "date": "2026-07-13T00:00:00Z",
+            "file": "gen_lib.py",
+            "new_sha256": "d9d09eb3cb0e33385dabf5e884b904e1749053310dadd4545f5477a119a0fc50",
+            "old_sha256": "b59a81bf5d300f71484dea4c65815245a56d40a7baffde8d0d077483aba12f81",
+            "reason": "Corrected the batched termination rule to match the registered metric text (\"terminated naturally (stopped before max_new)\"): the resolved run's _first_eos_position-derived conjunct additionally required eos_pos < n_new_tokens - 1, which misgraded samples whose eos landed at the FINAL generated position as not-terminated. NOTEBOOK.md's 2026-07-13 \"DIAGNOSTIC RESULT\" entry found 764/769 refused-but-messy fired-confab samples in the text-persisting single-seed diagnostic failed on this conjunct ALONE (dominant cluster eos_pos=25, n_new_tokens_raw=26, complete clean-refusal text), voiding the falsifier-fired G1 verdict as instrumentation. Added is_terminated_naturally(eos_pos, n_new_tokens, max_new) as the single source of truth (True iff eos found anywhere in the block, including the final position, or the block is shorter than max_new; False only when no eos was emitted and the block ran to max_new), refactored run_batched_sampled_pass to use it, and added run_batched_sampled_pass_with_text (data-exhaust variant returning full per-sample text/eos_pos/n_new_tokens_raw dicts) for the K=5 re-run's persistence. Parity-checked against the diagnostic artifact: recompute reproduces 1056/1480 per-sample clean and 130/185 majority-vote conversions exactly. No gate, threshold, seed, or grader-semantics change; grade_clean_tighten's conjunction and grader.grade_one are untouched. diagnostic_arm_s_text.py (unpinned, lab-notebook tier) updated in lockstep via the same is_terminated_naturally call, so both paths share one rule."
+          },
+          {
+            "date": "2026-07-13T00:00:00Z",
+            "file": "pipeline.py",
+            "new_sha256": "d4e233be8a1d19c1d07a2869dc9190716a7bc3b95e50294c4a7a6d3e131c6961",
+            "old_sha256": "22b2516c78cc4f9c4c4b06424fba7743313966b8ff4e8a5e0a039ff4cf9e1420",
+            "reason": "Data-exhaust: run_batch_sampled_for_row now calls gen_lib.run_batched_sampled_pass_with_text (paired with the same-date gen_lib.py repin) and persists per-sample generation text, eos_pos, n_new_tokens_raw, and the full grade_clean_tighten sub-grade dict into the gitignored run_log_sampled.jsonl, alongside the pre-existing clean_tighten/well_formed_correct/not_well_formed_correct booleans score_row_samples and the H3-G1/G2 gates already depend on (unchanged). Ports the persistence schema NOTEBOOK.md's \"Lab-notebook\" entry identified as missing from the resolved run and that diagnostic_arm_s_text.py first added ad hoc, into the MAIN Arm S path so the upcoming K=5 re-run does not need a separate diagnostic to audit a future collapse. No gate, threshold, seed, prompt, or scoring logic changed."
+          }
+        ]
+      },
+      "kg": [
+        "experiment:snap-seed-sampled-decode-replication",
+        "experiment:doubt-gated-caution-tighten",
+        "mechanism:sampled-decode-preserves-doubt-gated-caution-headline",
+        "mechanism:batched-termination-rule-misgrades-eos-at-final-position"
+      ],
+      "prediction": "The greedy arm reproduces 73.5%/3.1% within band, and the sampled-decode arm's majority-vote confab conversion stays at or above 63.5% while majority-vote known-correct cost stays at or below 8%, per seed and pooled, so the resolved headline pair survives outside a single greedy decode.",
+      "question": "Does the resolved doubt-gated caution snap headline (gated confab clean_tighten 73.5%, known-correct false-refusal 3.1%), measured as a single greedy decode, survive re-measurement of the same frozen instrument under fresh harness seeds and the program's registered sampled-decode configuration (Amendment SR)?",
+      "registered": true,
+      "slug": "snap-seed-sampled-decode-replication",
+      "status": "resolved",
+      "title": "H3: Multi-Seed and Sampled-Decode Replication of the Doubt-Gated Caution Snap",
+      "type": "steer-cell",
+      "verdict": "The resolved 73.5%/3.1% headline survives sampled decoding on the corrected instrument, with pooled majority-vote conversion 69.5% (all 5 seeds above the 63.5% floor), cost 4.65%, and placebo margins intact, after a batched termination-rule defect that misgraded eos-at-final-position refusals was diagnosed from persisted text, fixed, repinned, and verified by diagnostic-parity-rerun triple agreement."
+    },
+    {
+      "checkpoint": {
+        "repo": "",
+        "revision": ""
+      },
+      "created_at": "2026-07-08T17:40:52Z",
+      "falsifier": "",
+      "inputs": [],
+      "instrument": {
+        "configs": [],
+        "modules": [],
+        "pins": {}
+      },
+      "kg": [],
+      "legacy": {
+        "label": "B",
+        "migrated_to": "experiments/stated-confidence-grpo/AMENDMENT.md",
+        "path": "experiment/protocol/AMENDMENT-B-stated-confidence-grpo.md"
+      },
+      "migration": {
+        "needs_manual_review": [
+          "falsifier",
+          "experiment_type",
+          "instrument_configs",
+          "kg_ids"
+        ],
+        "notes": "Imported from legacy amendment prose. Do not infer missing machine fields without hand-reading AMENDMENT.md."
+      },
+      "prediction": "orchestrator:\n  call: stated-confidence measurement layer plus prospective calibration reward\nuser:\n  call: null\n  note: Predates the dual-prediction practice (adopted 2026-07-03 at AH signing);\n    no separately recorded user prediction.",
+      "question": "Does a model's stated confidence track its known/unknown boundary and the correctness of its answer, and can GRPO reward calibration?",
+      "registered": true,
+      "slug": "stated-confidence-grpo",
+      "status": "historical",
+      "title": "Protocol Amendment B: Stated Confidence and GRPO Calibration Reward",
+      "type": "historical-amendment",
+      "verdict": "SIGNED OFF for stated-confidence measurement and reporting; GRPO/RLVR authorization prospective only, requires separate launch decision."
+    },
+    {
+      "checkpoint": {
+        "repo": "",
+        "revision": ""
+      },
+      "created_at": "2026-07-08T17:40:52Z",
+      "falsifier": "",
+      "inputs": [
+        "experiments/thinking-enabled-parallel-arm/artifacts/configs/probe_thinking_audit_128_1024.yaml",
+        "experiments/thinking-enabled-parallel-arm/artifacts/configs/probe_thinking_audit_512.yaml",
+        "experiments/thinking-enabled-parallel-arm/artifacts/thinking_audit_128_1024/README.md"
+      ],
+      "instrument": {
+        "configs": [],
+        "modules": [
+          "compare_thinking_probe_results.py"
+        ],
+        "pins": {
+          "compare_thinking_probe_results.py": "d22329d6cc0078a413d66607b50426508ff29b33e96bdd348d8970f61733393d"
+        }
+      },
+      "kg": [],
+      "legacy": {
+        "label": "H",
+        "migrated_to": "experiments/thinking-enabled-parallel-arm/AMENDMENT.md",
+        "path": "experiment/protocol/AMENDMENT-H-thinking-enabled-parallel-arm.md"
+      },
+      "migration": {
+        "needs_manual_review": [
+          "falsifier",
+          "experiment_type",
+          "instrument_configs",
+          "kg_ids"
+        ],
+        "notes": "Imported from legacy amendment prose. Do not infer missing machine fields without hand-reading AMENDMENT.md."
+      },
+      "prediction": "orchestrator:\n  call: thinking perturbs the boundary enough to justify a parallel arm\nuser:\n  call: null\n  note: Predates the dual-prediction practice (adopted 2026-07-03 at AH signing);\n    no separately recorded user prediction.",
+      "question": "Does Qwen3 thinking mode change the observable knowledge boundary enough to warrant a parallel thinking-derived training/eval branch?",
+      "registered": true,
+      "slug": "thinking-enabled-parallel-arm",
+      "status": "historical",
+      "title": "Protocol Amendment H: Thinking-Enabled Parallel Arm",
+      "type": "historical-amendment",
+      "verdict": "DRAFT / NOT SIGNED; bounded audit showed real perturbation, enough to define a parallel arm but not to overwrite non-thinking evidence."
+    },
+    {
+      "checkpoint": {
+        "repo": "unsloth/Qwen3-4B",
+        "revision": "raw-base (no adapter; bf16, no 4-bit quantization)"
+      },
+      "created_at": "2026-07-11T00:41:00Z",
+      "falsifier": "Ungated known-correct damage does not exceed gated known-correct damage by 15pp absolute (dosing every known-correct row is about as harmless as gating it) - the write is inherently selective, the gate is not what supplies selectivity, and the paper's non-selectivity sentence must be removed.",
+      "inputs": [
+        "experiments/common/doubt-gated-caution-tighten-heldout-split/split_manifest.json",
+        "experiments/doubt-gated-caution-tighten/analysis-committed/u_d_L34.json",
+        "experiments/doubt-gated-caution-tighten/analysis-committed/c_hat_L34.json",
+        "experiments/doubt-gated-caution-tighten/analysis-committed/gate_fit.json",
+        "experiments/doubt-gated-caution-tighten/analysis-committed/build_manifest.json"
+      ],
+      "instrument": {
+        "configs": [
+          "cell.yaml",
+          "gates.yaml"
+        ],
+        "modules": [
+          "pipeline.py",
+          "materialize_rows.py",
+          "gen_lib.py",
+          "grader.py",
+          "model_lib.py",
+          "smoke_cpu.py"
+        ],
+        "pins": {
+          "cell.yaml": "87880ae23f8c28db18eeaec8be6ade1c112f670b72ec9c5cc432048959f8322e",
+          "gates.yaml": "c97a8502a213ead723cbc77d3979eda1a86298b2a61b9e9e06efd8eab4aaad26",
+          "gen_lib.py": "10bb9bc557a19f8fcb9406f1b9b885f76b7cfa65ed8f1c7a4b69dccbbdae9d6c",
+          "grader.py": "af89b535d08f5424d1981d6811b6cbef79e52b8142bf691b4ec52c1e9595a435",
+          "materialize_rows.py": "5169f28e8b973e8ec3d045febcbbcc46673efb2c46b9352cf7fb541e0150477c",
+          "model_lib.py": "23499373f76b6208a8ee07ee7a3321a81b93360df6c0fe18c8561de3d93e6d3c",
+          "pipeline.py": "e787d26d2876ce5f9040b8f0a0105b382e037896d6ddee7dad437680d4d44720",
+          "smoke_cpu.py": "094cf641352e57952838a58754c47488e3b242be9d8707a50a6d379ec8a08287"
+        }
+      },
+      "kg": [
+        "experiment:ungated-vs-gated-dose-matched",
+        "mechanism:qwen3-4b-l34-dose200-write-non-selective-gate-supplies-selectivity"
+      ],
+      "prediction": "Ungated known-correct damage exceeds gated by at least 15pp absolute (McNemar p < 0.001), while ungated confab conversion is at or above gated confab conversion and the gated arm stays within 15pp of it, so the doubt gate supplies the instrument's selectivity without materially sacrificing conversion.",
+      "question": "When every held-out row is dosed unconditionally at the caution-snap setpoint (gate off) versus dosed only where the doubt gate fires (gate on), does the doubt gate supply the instrument's selectivity - much less known-correct damage - without materially sacrificing confab conversion?",
+      "registered": true,
+      "slug": "ungated-vs-gated-dose-matched",
+      "status": "resolved",
+      "title": "H4: Registered Ungated-vs-Gated Dose-Matched Arm for the Caution Snap",
+      "type": "steer-cell",
+      "verdict": "On the resolved Qwen3-4B/L34/dose-200 instrument, dose-matched ungated dosing damages 60.1% of held-out known-correct rows versus 3.1% gated (57.0pp, McNemar p=4.2e-43) while the gate costs only 4.3pp of confab conversion: the doubt gate, not the write, supplies the instrument's selectivity at that operating point."
+    },
+    {
+      "checkpoint": {
+        "repo": "",
+        "revision": ""
+      },
+      "created_at": "2026-07-08T17:40:52Z",
+      "falsifier": "",
+      "inputs": [],
+      "instrument": {
+        "configs": [],
+        "modules": [],
+        "pins": {}
+      },
+      "kg": [],
+      "legacy": {
+        "label": "U",
+        "migrated_to": "experiments/unified-two-signal-dial-veto/AMENDMENT.md",
+        "path": "experiment/protocol/AMENDMENT-U-unified-two-signal-dial-veto.md"
+      },
+      "migration": {
+        "needs_manual_review": [
+          "falsifier",
+          "experiment_type",
+          "instrument_configs",
+          "kg_ids"
+        ],
+        "notes": "Imported from legacy amendment prose. Do not infer missing machine fields without hand-reading AMENDMENT.md."
+      },
+      "prediction": "orchestrator:\n  call: PASS in 0.65-0.85 band; risk falsifier fires on confident confabulation\nuser:\n  call: null\n  note: Predates the dual-prediction practice (adopted 2026-07-03 at AH signing);\n    no separately recorded user prediction.",
+      "question": "Does the correctness dial flag hallucinated answers to unanswerable questions as low-trust (independent hallucination defense)?",
+      "registered": true,
+      "slug": "unified-two-signal-dial-veto",
+      "status": "historical",
+      "title": "Amendment U — Unified Single-Stream Two-Signal Mechanism (Dial-Veto on Unknowns)",
+      "type": "historical-amendment",
+      "verdict": "SUCCESS — dial flags hallucinations as lowest-trust of all (U-G3 AUROC 0.980, within-SelfAware control 0.93); confident confabulation reads opposite to correctness."
+    },
+    {
+      "checkpoint": {
+        "repo": "",
+        "revision": ""
+      },
+      "created_at": "2026-07-08T17:40:52Z",
+      "falsifier": "",
+      "inputs": [
+        "experiments/xdataset-probe-transfer/artifacts/kuq_panel/gen_rows.jsonl",
+        "experiments/xdataset-probe-transfer/artifacts/kuq_panel/manifest.json",
+        "experiments/xdataset-probe-transfer/artifacts/kuq_panel/panel_meta.json"
+      ],
+      "instrument": {
+        "configs": [
+          "xdataset_kuq_baseline_generation.yaml",
+          "hidden_state_kuq_manifest_clean_sft_grpo_v2_seed1_full.yaml"
+        ],
+        "modules": [
+          "probe_xdataset_transfer.py"
+        ],
+        "pins": {
+          "hidden_state_kuq_manifest_clean_sft_grpo_v2_seed1_full.yaml": "c71ec8ef4e4eeaabbc03471c9e8764780512ae3bc87c41e081e5ed151fd3b79a",
+          "probe_xdataset_transfer.py": "283c75ac508ac128bff5b08f0413928d48220f4eb80e560d9c98b864b2dafa0f",
+          "xdataset_kuq_baseline_generation.yaml": "ed50588d2541f90049e6732ab89b444a2d53ccb4b1ab1c4ff65b06c1cbc57336"
+        }
+      },
+      "kg": [],
+      "legacy": {
+        "label": "P",
+        "migrated_to": "experiments/xdataset-probe-transfer/AMENDMENT.md",
+        "path": "experiment/protocol/AMENDMENT-P-xdataset-probe-transfer.md"
+      },
+      "migration": {
+        "needs_manual_review": [
+          "falsifier",
+          "experiment_type",
+          "kg_ids"
+        ],
+        "notes": "Imported from legacy amendment prose. Do not infer missing machine fields without hand-reading AMENDMENT.md."
+      },
+      "prediction": "orchestrator:\n  call: partial transfer, AUROC 0.80-0.92, margin +40-75pt\nuser:\n  call: null\n  note: Predates the dual-prediction practice (adopted 2026-07-03 at AH signing);\n    no separately recorded user prediction.",
+      "question": "Does an answerability probe fit on KUQ transfer cold to SelfAware, showing Amendment O's ceiling is not an in-distribution-CV artifact?",
+      "registered": true,
+      "slug": "xdataset-probe-transfer",
+      "status": "historical",
+      "title": "Amendment P — Cross-Dataset Answerability-Probe Transfer Test",
+      "type": "historical-amendment",
+      "verdict": "SUCCESS — cold transfer AUROC 0.9834 (near in-distribution ceiling), action margin +89.6pt; beat the pre-stated partial-transfer call. Axis not dataset-specific; still not correctness-ranking."
     }
   ]
 }

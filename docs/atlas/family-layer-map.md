@@ -1,0 +1,73 @@
+# Family layer map
+
+Standing registry for the `family-atlas` skill (`.skills/family-atlas/`).
+
+## Working hypothesis
+
+This program's actuation work assumes, without yet having proven, that three
+read axes -- doubt (known-vs-refused), caution (refused-vs-confab), and raw
+refusal (refused-vs-answered) -- are linearly readable in every
+instruction-tuned model, but that WHERE they read (the layer band) is
+relative to the model's family and size, not a portable constant. Rows in
+this table are the evidence for or against that hypothesis, substrate by
+substrate.
+
+**Rule**: a row is added, or a row's numbers are updated, only after the
+governed experiment doc it cites is signed AND resolved. This table never
+carries a number that is not traceable to a specific `AMENDMENT.md` /
+`experiment.yaml` at a specific resolve date. Do not add or edit a row from
+memory, from a session note, or from this file's own prior contents; open
+the cited doc first.
+
+## Registry
+
+| Family | Model id + revision | n_layers | Atlas experiment (status) | Profile peak (layer / depth) | Band, all 3 axes >= 0.80 held-out (interior) | Best 3-axis layers | Best AUROC per axis (doubt / caution / raw_refusal) | Provenance |
+|---|---|---|---|---|---|---|---|---|
+| llama | `unsloth/Llama-3.2-3B-Instruct` @ `006f5dcd1393c3add266de40994ba96225e9689d` | 28 | `experiments/jspace-family-atlas` (resolved) | layer 4 of 28 (0.14 depth) | layers 15-23 | ~L20-23 | 1.00 (confounded, see note) / 0.84 (L28) / 0.90 (L25) | `experiments/jspace-family-atlas/AMENDMENT.md`, resolved 2026-07-12 |
+| mistral | `mistralai/Mistral-7B-Instruct-v0.3` @ `c170c708c41dac9275d15a8fff4eca08d52bab71` | 32 | `experiments/jspace-family-atlas` (resolved) | layer 3 of 32 (0.09 depth) | layers 7-27 | ~L15-17 | 1.00 (confounded, see note) / 0.91 (L17) / 0.925 (L17) | `experiments/jspace-family-atlas/AMENDMENT.md`, resolved 2026-07-12 |
+| qwen3 | `unsloth/Qwen3-4B` (bf16 sibling of the raw-base; no revision pin recorded) | 36 | `experiments/j-space-localization-qwen3-4b` (resolved, lab-diagnostic) | hs=26 (peak), band hs23-29 (0.64-0.81 depth) | not measured -- see comparability note | not measured -- see comparability note | not measured -- see comparability note | `experiments/j-space-localization-qwen3-4b/AMENDMENT.md`, resolved 2026-07-07 |
+| qwen3.5 | `Qwen/Qwen3.5-4B` @ `851bf6e806efd8d0a36b00ddf55e13ccb7b8cd0a` | 32 (hybrid linear-attention) | `experiments/qwen35-4b-midband-doubt-snap` (**pending** -- draft, not signed; Stage C dose ladder not executed) | -- | -- | -- | -- | `experiments/qwen35-4b-midband-doubt-snap/AMENDMENT.md`, status draft as of this table's writing; do not cite numbers from it until it resolves |
+
+## Comparability notes
+
+- **llama / mistral doubt axis**: both cells' doubt (known-vs-refused) AUROC
+  reads ~1.00 from the earliest layers onward, but the resolved amendment's
+  own random-direction control shows this contrast is norm/position
+  confounded at the final-prompt-token anchor (a fixed random direction
+  reads up to ~0.97 best-orientation at some layers). Read the doubt column
+  above against that elevated baseline, not against 0.5. Caution and
+  raw_refusal did not show this confound in the resolved run (random
+  baseline stayed ~0.5-0.75).
+- **qwen3 row**: `j-space-localization-qwen3-4b` is a different instrument,
+  not a family-atlas cell. It computes a workspace-location signal (rising
+  kurtosis / Hoyer sparsity / effective linear dimensionality) from a
+  gradient-based J-lens (corpus-averaged JVP push vectors), not the
+  family-atlas's capture-only representation-variance participation ratio,
+  and it measured direction verbalization (do the project's four fitted
+  epistemic directions read as uncertainty/abstention tokens under the
+  J-lens), not the family-atlas's three-axis held-out AUROC read panel. Its
+  profile peak (hs=26, band hs23-29) is reported here for completeness but
+  is NOT numerically comparable to the llama/mistral eff_dim_frac peaks, and
+  its "best 3-axis layers" / "best AUROC per axis" columns are marked "not
+  measured" because that read panel was never run on this substrate. A
+  proper family-atlas cell for Qwen3-4B (capture-only eff_dim_frac profile
+  plus the three-axis read panel, run through this skill's own scripts) has
+  not been registered as of this table's writing.
+- **qwen3.5 row**: `qwen35-4b-midband-doubt-snap` is still draft (Status:
+  draft, not signed, per its own `AMENDMENT.md`). Its Stage A J-lens profile
+  (same JVP-based instrument as the qwen3 row, not the family-atlas's
+  participation-ratio profile) found a peak at hs23 (0.558) among 14
+  profiled `hs_index` points, distinct from the registered late 0.94-depth
+  comparator hs30; Stage B fit directions at the three midband candidates
+  {20, 23, 26} plus the late comparator hs30. Stage C (the dose ladder that
+  would test whether refusal induction and JSON well-formedness decouple at
+  a midband layer) has not been written or run. No numbers from this
+  amendment belong in this table's numeric columns until it is signed and
+  resolved; the row exists only to mark it as in-flight so the next reader
+  does not re-scaffold a duplicate atlas for this substrate.
+
+## See also
+
+- `.skills/family-atlas/SKILL.md` -- the procedure that produces new rows.
+- `experiments/doubt-snap-cross-family-confirmatory/AMENDMENT.md` -- the
+  fleet whose ported-layer null motivated this atlas in the first place.

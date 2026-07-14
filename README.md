@@ -12,7 +12,7 @@ abstention, hidden-state readouts, faithful uncertainty, and the limits of
 post-training.
 
 For the current state, read [docs/research-trajectory.md](docs/research-trajectory.md)
-first. The older locked Phase 1 protocol remains in `experiment/protocol/`; it is
+first. The older locked training-regimen protocol now lives in `archive/docs/protocols/phase1/`; it is
 historical and governed, not the entry point for new work.
 
 ## Current Through-Line
@@ -42,10 +42,10 @@ The canonical paper map is maintained in
 
 | Paper | Scope | Draft |
 |---|---|---|
-| P1 | Taxonomy, evidence synthesis, and the policy-vs-signal framework | [experiment/paper/paper1-taxonomy-framework-draft-v0.md](experiment/paper/paper1-taxonomy-framework-draft-v0.md) |
-| P2 | Training regimen: SFT/DPO/KTO/GRPO for abstention | [experiment/paper/paper2-training-regimen-draft-v2.md](experiment/paper/paper2-training-regimen-draft-v2.md) |
-| P3 | "Knows but Doesn't Say": internal-vs-stated confidence gap and training resistance | [experiment/paper/paper3-knows-but-doesnt-say-draft-v0.md](experiment/paper/paper3-knows-but-doesnt-say-draft-v0.md) |
-| P4 | Training-free two-signal readout: gate, dial, and veto | [experiment/paper/paper4-two-signal-readout-draft-v0.md](experiment/paper/paper4-two-signal-readout-draft-v0.md) |
+| P1 | Taxonomy, evidence synthesis, and the policy-vs-signal framework | [papers/paper-1-taxonomy-framework/manuscript.md](papers/paper-1-taxonomy-framework/manuscript.md) |
+| P2 | Training regimen: SFT/DPO/KTO/GRPO for abstention | [papers/paper-2-training-regimen/manuscript.md](papers/paper-2-training-regimen/manuscript.md) |
+| P3 | "Knows but Doesn't Say": internal-vs-stated confidence gap and training resistance | [papers/paper-3-knows-but-doesnt-say/manuscript.md](papers/paper-3-knows-but-doesnt-say/manuscript.md) |
+| P4 | Training-free two-signal readout: gate, dial, and veto | [papers/paper-4-two-signal-readout/manuscript.md](papers/paper-4-two-signal-readout/manuscript.md) |
 | P5 | Steering, actuation, and whether the internal signal can be routed into behavior | scaffold in progress |
 
 Legacy figure prefixes are not paper numbers: `fig-p1-*` currently belongs to
@@ -140,16 +140,16 @@ without concept atoms and typed relationships.
 
 ## Experiments And Governance
 
-The old Phase 1 confirmatory protocol is locked:
+The old locked training-regimen confirmatory protocol is locked:
 
-- [experiment/protocol/PROTOCOL.md](experiment/protocol/PROTOCOL.md)
+- [archive/docs/protocols/phase1/PROTOCOL.md](archive/docs/protocols/phase1/PROTOCOL.md)
 
 New evidence-producing work should normally go through the experiments-first or
 amendment workflow, depending on the tier:
 
 - use `experiments/` for new standalone evidence cells;
-- use signed `experiment/protocol/AMENDMENT-*.md` docs for governed protocol
-  extensions;
+- use signed `experiments/<slug>/AMENDMENT.md` docs for governed protocol
+  extensions and migrated historical amendments;
 - use lab/session notes for diagnostics, smokes, reruns, and non-claim work.
 
 Current amendment status and backlog live in [TODO.md](TODO.md). Do not infer
@@ -182,9 +182,9 @@ Before trusting an experimental number:
 The repo-side manifest is [docs/public-artifacts.md](docs/public-artifacts.md).
 Published artifacts include:
 
-- Phase 1 Qwen3 4B training/dev data.
-- Phase 1 evaluation analysis artifacts.
-- Phase 1 compact knowledge labels and probe manifests.
+- locked training-regimen Qwen3 4B training/dev data.
+- locked training-regimen evaluation analysis artifacts.
+- locked training-regimen compact knowledge labels and probe manifests.
 - Cloud-lane per-cell readout results.
 - Two-signal probe directions.
 - Readout row surfaces.

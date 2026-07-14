@@ -1,0 +1,58 @@
+# J-space fresh-pool layer contrast replication gates. DRAFT until `bin/exp sign`.
+
+seed: 20260708
+alpha: 0.05
+
+gates:
+  - name: g0_instrument_validity
+    interpretation: stop_before_outcome
+    checks:
+      - id: fresh_pool_disjoint
+        pass_if: "fresh_eval_pool_manifest row keys have zero overlap with the predecessor split manifest"
+      - id: fresh_pool_powered
+        pass_if: "fresh pool contains at least 200 confab rows and at least 300 known_correct_answered rows"
+      - id: containment
+        pass_if: "no question text, aliases, raw generations, or row-level outputs are committed"
+      - id: calibration_setpoints_fixed
+        pass_if: "selected_doses exactly equal hs23=25, hs26=75, hs29=125, hs34=175"
+      - id: anchor_extract_complete
+        pass_if: "fresh anchor extract contains hs23/hs26/hs29/hs34 tensors for every fresh eval row"
+      - id: smoke_write_readback
+        pass_if: "all dosed smoke rows read back within 5% + 0.5 absolute of each layer's calibrated dose"
+      - id: smoke_no_collapse
+        pass_if: "collapse rate on dosed smoke rows is 0 for every layer"
+
+  - name: g1_midband_replication
+    primitive: layer_contrast
+    midband_layers:
+      - hs23
+      - hs26
+      - hs29
+    late_reference: hs34
+    metric: confab_tighten.clean_tighten_rate
+    pass_if: "best mid-band rate - hs34 rate >= 0.10"
+
+  - name: g2_no_selectivity_regression
+    primitive: layer_contrast
+    midband_layers:
+      - hs23
+      - hs26
+      - hs29
+    late_reference: hs34
+    metric: known_correct_cost_control.not_well_formed_correct_rate
+    pass_if: "best mid-band cost - hs34 cost <= 0.02"
+
+  - name: g3_predecessor_reference_still_viable
+    primitive: rate_over_population
+    layer: hs34
+    population: confab_tighten
+    indicator: clean_tighten
+    pass_if_rate: ">= 0.60"
+    pass_if_wilson_lower_ci: "> 0.50"
+
+summary_rule: >-
+  This same-model replication supports the J-space layer-site hypothesis only if
+  G0, G1, G2, and G3 all pass. If the fresh pool cannot be mined at the target
+  counts, the experiment stops before outcome. If G3 fails, the result is a
+  predecessor-reference replication failure rather than interpretable evidence
+  about mid-band superiority.

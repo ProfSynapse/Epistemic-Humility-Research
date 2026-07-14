@@ -24,6 +24,6 @@ recover:
    that defines a unit (model, adapter, prompt, steering path, rows, alphas,
    `max_new_tokens`, `max_rows`); refuse to resume on mismatch unless `--fresh`,
    so two configs never mix in one `rows.jsonl`. Reference implementation:
-   `phase3_head_intervention_runner.py` (`run_config(..., fresh=...)`,
+   `experiments/common/mechinterp/head_intervention_runner.py` (`run_config(..., fresh=...)`,
    `_load_completed`, `_config_fingerprint`); greedy/deterministic decoding makes
    resumed rows identical to a clean run.

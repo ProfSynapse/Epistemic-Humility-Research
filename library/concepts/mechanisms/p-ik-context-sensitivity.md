@@ -53,7 +53,7 @@ confidence, and the trained P(IK) head successfully reads that internal signal. 
 finding implies that P(IK) is measuring something closer to "can I answer this given what
 I know and see" rather than static factual memorization alone.
 
-**Why it matters here:** The Phase 1 abstention training arms should show, if successful,
+**Why it matters here:** The locked training-regimen abstention training arms should show, if successful,
 that the trained model's uncertainty estimates track context-augmented evidence at least
 as well as the pretrained P(IK) baseline does here. A failure to do so would indicate the
 training has decoupled the expressed uncertainty signal from underlying evidence integration.

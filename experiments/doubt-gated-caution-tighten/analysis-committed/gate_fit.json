@@ -1,0 +1,37 @@
+{
+  "population": {
+    "positive_class": "confab FIT (n=124)",
+    "negative_class": "known_correct_answered FIT (n=172)"
+  },
+  "score_definition": "neg_z_d = -z_d (z_d clipped to [-2,+2], standardized with build_directions.py's FIT-pool mu_d/sigma_d)",
+  "sign_convention": "confab rows have LOW doubt (low z_d) vs known_correct_answered; fire iff neg_z_d >= tau, i.e. z_d <= -tau",
+  "auc_neg_z_d_on_fit": 0.99554576144036,
+  "auc_raw_z_d_on_fit": 0.004454238559639911,
+  "youden_tau": {
+    "tau": 0.3026445054171378,
+    "stats": {
+      "tpr_confab_caught": 0.967741935483871,
+      "fpr_known_correct_flagged": 0.011627906976744186,
+      "tp": 120,
+      "fn": 4,
+      "fp": 2,
+      "tn": 170,
+      "youden_j": 0.9561140285071268
+    }
+  },
+  "precision_tau_target_0.9": {
+    "tau": -0.0501749875839162,
+    "stats": {
+      "precision": 0.9029850746268657,
+      "tpr_confab_caught": 0.9758064516129032,
+      "fpr_known_correct_flagged": 0.0755813953488372,
+      "tp": 121,
+      "fn": 3,
+      "fp": 13,
+      "tn": 159,
+      "n_flagged": 134
+    }
+  },
+  "tau_frozen": 0.3026445054171378,
+  "tau_frozen_method": "youden_j"
+}

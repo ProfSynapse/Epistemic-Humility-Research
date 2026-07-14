@@ -26,8 +26,8 @@ re-validation. Modal A10G is fine for a NEW cell surface, but do not use it to
 regenerate a parity-locked result until Modal has its own parity evidence.
 
 The Modal crash-proof skeleton for probe cells lives at
-`experiment/phase1/probe/cloud/modal_al_true_a0.py` (on the `amendment-al`
-branch). Clone it for a new cell rather than writing a Modal app from scratch, as
+`experiments/radial-anti-propensity-steering/cloud/modal_al_true_a0.py`.
+Clone it for a new cell rather than writing a Modal app from scratch, as
 `modal_ak_stage1.py` did.
 
 ## Wrapper-authoring checklist (each item has killed a paid run)
@@ -46,13 +46,25 @@ one is cheap to verify by eye and expensive to learn live:
    "expected one argument". Always use the equals form
    (`[f"--alphas={ALPHAS}"]`) for any value that can start with `-`. (Killed
    the AK Stage 2 r1 full sweep after its smoke had already passed.)
-3. **`.spawn()` in the local_entrypoint, plus `modal run --detach`.** A client
-   that dies (gracefully or not) with `.remote()` in flight cancels the input;
-   spawn-then-exit leaves nothing to cancel. (Killed both AK Stage 1 arms.)
+3. **Modal detach shape.** A client that dies (gracefully or not) with
+   `.remote()` in flight cancels the input; spawn-then-exit leaves nothing to
+   cancel. The older safe pattern is `.spawn()` in a local entrypoint plus
+   `modal run --detach`, but verify it immediately with `modal app list` and
+   `modal app logs`: if the app is detached with zero tasks and no function logs,
+   nothing is running. The more direct shape is
+   `modal run --detach path/to/app.py::run_one_cell --arg ...`, which runs the
+   remote function itself and avoids local-entrypoint lifecycle ambiguity.
+   (Killed both AK Stage 1 arms; the zero-task local-entrypoint variant later
+   bit the doubt-snap cross-family Qwen relaunch.)
 4. **xet off in the image env AND re-exported in the function**:
    `HF_HUB_DISABLE_XET=1`, `HF_HUB_ENABLE_HF_TRANSFER=0`.
 5. **Verify staging inputs exist before launch** (see the check-before-prep
    step below) — a missing input caught at launch time wastes a paid boot.
+6. **Volume-backed resume before big batches.** Mount row-output and committed
+   summary directories on a Modal Volume before the first GPU subprocess, and
+   `commit()` periodically while long tuner subprocesses run. A replacement
+   worker cannot resume from scratch-local JSONL even when the underlying tuner
+   command has `--resume`.
 
 ## Launch discipline
 
@@ -67,6 +79,15 @@ one is cheap to verify by eye and expensive to learn live:
   it DOES orphan a RunPod pod into a re-run/billing loop. Sweep an orphaned pod
   by hand per the RunPod reference gotcha (`DELETE /v1/pods/<id>`, confirm 204,
   re-query until null).
+- **After launch, prove the app is doing work.** `modal run --detach` returning
+  "App completed" can mean only that the local entrypoint finished. Check for a
+  live task or function logs under the app id. If there are zero tasks and no
+  remote-function logs, relaunch the function entrypoint directly.
+- **One writer per cell namespace.** If an earlier launch looked inert and you
+  relaunch, stop the ambiguous earlier app before the replacement writes the same
+  Modal Volume path. Duplicate workers for one `(RUN_TAG, cell_id)` can corrupt
+  or race checkpoint/resume files even when each worker is individually
+  resumable.
 - **Staging namespace.** Cloud-cell prep artifacts are namespaced by `RUN_TAG`
   under `professorsynapse/eh-al-prep-staging`.
 

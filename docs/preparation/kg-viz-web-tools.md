@@ -1,7 +1,7 @@
 # Research: Web / Shareable Interactive Visualization for the Epistemic-Humility Knowledge Graph
 
-> PACT Prepare-phase deliverable. Research only — no application code is added to the repo
-> beyond this document. Converter snippets below are sketches for the Architect/Code phases,
+> PACT Prepare-stage deliverable. Research only — no application code is added to the repo
+> beyond this document. Converter snippets below are sketches for the Architect/Code stages,
 > not committed scripts. Tool versions and capabilities verified against 2026 sources (cited
 > inline); the external tool landscape is decay-prone, so uncertainty is bumped +1 and
 > currency caveats are called out where they bite.
@@ -269,7 +269,7 @@ python3 .agents/skills/knowledge-graph/scripts/export_kg.py \
 #   → run a small converter (see sketch) → write a single static index.html (Cytoscape.js)
 ```
 
-**Glue/converter needed (sketch only — do not commit; for Architect/Code phase).** It must:
+**Glue/converter needed (sketch only — do not commit; for Architect/Code stage).** It must:
 
 1. read the triples JSON;
 2. **dedupe inverse edge pairs** (drop one of `proposes`/`proposed_by`, `supports`/`supported_by`,

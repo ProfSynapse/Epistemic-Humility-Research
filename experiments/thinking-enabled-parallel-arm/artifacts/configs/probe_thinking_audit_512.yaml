@@ -1,0 +1,61 @@
+# Exploratory thinking-enabled TriviaQA knowledge audit pilot.
+#
+# Status: PILOT TRUNCATED / DO NOT USE FOR LABEL-MIGRATION INTERPRETATION.
+# Early rows showed many generated traces opened <think> without reaching
+# </think> within 384 tokens, so this config mainly measures token-budget
+# truncation. It is retained only as provenance for docs/sessions/20260625T122352Z-triviaqa-thinking-knowledge-audit.md.
+#
+# This is NOT a replacement for the locked training-regimen probe config. It reuses the
+# same model, sampling seed, label bands, and deterministic subset order as
+# probe.yaml, but enables Qwen3 thinking and raises max_new_tokens so final
+# answers can appear after a reasoning trace. Outputs land in a separate
+# model_tag tree for comparison against qwen3-4b-instruct/probe_results.jsonl.
+
+model:
+  model_tag: qwen3-4b-instruct-thinking-audit-512
+  model_name: unsloth/Qwen3-4B-bnb-4bit
+  enable_thinking: true
+
+sampling:
+  n_samples: 32
+  temperature: 1.0
+  top_p: 0.9
+  max_new_tokens: 384
+  seed: 20260610
+
+prompt:
+  system: "You are a helpful assistant. Answer the question concisely. If you do not know the answer, say so."
+
+probe_pool:
+  train_jsonl: datasets/triviaqa-rc-nocontext/train.jsonl
+  fallback_validation_remainder: null
+  question_id_prefix: tqa_train_
+  # Same subset seed as the locked 20k probe. Because selection is ordered by
+  # sha256(subset_seed|probe_pool_row_key), this 512-row cap is a deterministic
+  # prefix of the locked selected set's hash order, then processed in source
+  # order by probe.py.
+  max_questions: 512
+  subset_seed: 20260610
+
+labels:
+  known_p_correct_min: 0.5
+  unknown_p_correct_max: 0.0
+
+sensitivity:
+  enabled: true
+  unknown_cutoffs: [0.0, 0.03125, 0.0625, 0.1]
+  known_cutoffs: [0.5, 0.7, 0.9]
+  max_questions: null
+  subsample_seed: 20260610
+
+output:
+  results_filename: probe_results.jsonl
+  manifest_filename: probe_manifest.json
+  sensitivity_filename: sensitivity_grid.json
+
+runtime:
+  backend: vllm
+  vllm:
+    dtype: auto
+    gpu_memory_utilization: 0.90
+    max_model_len: 2048

@@ -354,8 +354,8 @@ def unrelated():
             (skill / "SKILL.md").write_text("# Demo\n\nReusable workflow.\n", encoding="utf-8")
             (root / "library" / "concepts").mkdir(parents=True)
             (root / "library" / "concepts" / "term.md").write_text("# Term\n\nConcept note.\n", encoding="utf-8")
-            (root / "experiment" / "protocol").mkdir(parents=True)
-            (root / "experiment" / "protocol" / "PROTOCOL.md").write_text("# Protocol\n\nConstraint.\n", encoding="utf-8")
+            (root / "docs" / "protocols" / "phase1").mkdir(parents=True)
+            (root / "docs" / "protocols" / "phase1" / "PROTOCOL.md").write_text("# Protocol\n\nConstraint.\n", encoding="utf-8")
             (root / "docs" / "sessions").mkdir(parents=True)
             (root / "docs" / "sessions" / "phase1.md").write_text("# Session\n\nCheckpoint.\n", encoding="utf-8")
 
@@ -372,7 +372,7 @@ def unrelated():
             self.assertIn((".skills/demo/SKILL.md", "procedural"), labels)
             self.assertIn(("skills/demo/SKILL.md", "procedural"), labels)
             self.assertIn(("library/concepts/term.md", "semantic"), labels)
-            self.assertIn(("experiment/protocol/PROTOCOL.md", "normative"), labels)
+            self.assertIn(("archive/docs/protocols/phase1/PROTOCOL.md", "normative"), labels)
             self.assertIn(("docs/sessions/phase1.md", "episodic"), labels)
 
     def test_kg_search_learns_lane_weights_from_feedback(self) -> None:

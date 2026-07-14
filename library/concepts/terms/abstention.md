@@ -31,7 +31,7 @@ sure"). It is treated in the epistemic-humility literature as the correct
 response when a question falls outside the model's [[knowledge-boundary]], in
 contrast to hallucinating a plausible but incorrect answer.
 
-**Why it matters here:** Abstention is the target behavior the Phase 1
+**Why it matters here:** Abstention is the target behavior the locked training-regimen
 SFT-vs-DPO-vs-KTO study seeks to induce and measure. The central tension is
 that training for abstention risks [[over-abstention]] (declining answerable
 questions), so the study evaluates each training method against both

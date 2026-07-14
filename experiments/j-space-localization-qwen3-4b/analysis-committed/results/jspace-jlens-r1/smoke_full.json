@@ -1,0 +1,112 @@
+{
+  "model": "unsloth/Qwen3-4B",
+  "n_layers": 36,
+  "final_hs_index": 36,
+  "n_prompts": 1000,
+  "n_test_dirs": 5,
+  "mean_cosine_sim": 0.9811106324195862,
+  "mean_top10_overlap": 0.82,
+  "n_top1_match": 3,
+  "per_direction": [
+    {
+      "direction_idx": 0,
+      "cosine_sim": 0.9752429723739624,
+      "top10_overlap": 0.9,
+      "top1_match": true,
+      "unembed_top5": [
+        "\u5b54",
+        "\u4fbf",
+        " hole",
+        "anth",
+        "ornment"
+      ],
+      "verbalize_top5": [
+        "\u5b54",
+        "\u4fbf",
+        " hole",
+        "anth",
+        "\u58eb"
+      ]
+    },
+    {
+      "direction_idx": 1,
+      "cosine_sim": 0.9674199223518372,
+      "top10_overlap": 0.8,
+      "top1_match": true,
+      "unembed_top5": [
+        "\u62db\u8058\u4fe1\u606f",
+        "PRI",
+        "idth",
+        "achs",
+        ":///"
+      ],
+      "verbalize_top5": [
+        "\u62db\u8058\u4fe1\u606f",
+        "idth",
+        "achs",
+        "\u59d3",
+        "PRI"
+      ]
+    },
+    {
+      "direction_idx": 2,
+      "cosine_sim": 0.9872661828994751,
+      "top10_overlap": 0.9,
+      "top1_match": false,
+      "unembed_top5": [
+        " honor",
+        "icie",
+        "esis",
+        "avigation",
+        "\u770b\u597d"
+      ],
+      "verbalize_top5": [
+        "icie",
+        " honor",
+        "esis",
+        "avigation",
+        "\u770b\u597d"
+      ]
+    },
+    {
+      "direction_idx": 3,
+      "cosine_sim": 0.9897452592849731,
+      "top10_overlap": 0.7,
+      "top1_match": false,
+      "unembed_top5": [
+        "\u9ec4\u660f",
+        "\u4e2a\u591a",
+        " Armed",
+        "\u624b\u4e0a",
+        " Buff"
+      ],
+      "verbalize_top5": [
+        "\u4e2a\u591a",
+        "\u624b\u4e0a",
+        " Armed",
+        "\u9ec4\u660f",
+        " invested"
+      ]
+    },
+    {
+      "direction_idx": 4,
+      "cosine_sim": 0.9858788251876831,
+      "top10_overlap": 0.8,
+      "top1_match": true,
+      "unembed_top5": [
+        "\u642d",
+        "tal",
+        "ANS",
+        "\u4e07\u80a1",
+        " tal"
+      ],
+      "verbalize_top5": [
+        "\u642d",
+        "tal",
+        "\u590d\u5174",
+        "Investigators",
+        "\u574a"
+      ]
+    }
+  ]
+}

@@ -38,7 +38,7 @@ significantly while preserving the clipped-surrogate stability of PPO.
 **Why it matters here:** GRPO is the training algorithm used in DeepSeekMath and
 later adopted by reasoning-focused LLMs, making it a relevant data point for
 understanding online RL post-training as a complement to the offline
-preference-optimization methods (DPO, KTO) studied in the Phase 1 abstention
+preference-optimization methods (DPO, KTO) studied in the locked training-regimen abstention
 experiment.
 
 **Lineage:** derives from [[proximal-policy-optimization]] (clips the policy

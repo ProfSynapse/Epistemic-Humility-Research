@@ -1,0 +1,55 @@
+slug: j-space-midband-write-sweep-qwen3-4b
+type: steer-cell
+status: null-result
+registered: true
+question: On raw-base Qwen3-4B, does moving the resolved doubt-gated caution snap
+  from the existing hs34/L34 write site into the J-space mid-band (hs23/26/29, peak
+  hs26) improve confab-to-refusal tightening without increasing known-correct false-refusal?
+prediction: Best mid-band layer (hs23/26/29, expected hs26) improves held-out confab
+  clean_tighten over hs34 by at least 10 percentage points without increasing known-correct
+  false-refusal by more than 2 percentage points; hs34 remains viable under the predecessor
+  gate.
+falsifier: Best mid-band layer improves confab clean_tighten by less than 10 points
+  over hs34, or increases known-correct false-refusal by more than 2 points. If hs34
+  fails predecessor viability, the run is a reference replication failure rather than
+  evidence about J-space mid-band superiority.
+checkpoint:
+  repo: unsloth/Qwen3-4B
+  revision: raw-base (bf16, no adapter, no 4-bit quantization)
+instrument:
+  configs:
+  - cell.yaml
+  - gates.yaml
+  modules:
+  - layers.py
+  - extract_layer_sweep_anchor.py
+  - build_directions.py
+  - gate_fit.py
+  - build_random_direction.py
+  - materialize_rows.py
+  - pipeline.py
+  - gen_lib.py
+  - grader.py
+  - model_lib.py
+  pins:
+    cell.yaml: 96f1764a0796ca57bd5feed826f28c4988783fc11c428c0107020393c643df2f
+    gates.yaml: 18f4f60e4e9667e40cce38e7822e4c69f038c956da99671c4260caba38ec9621
+    layers.py: 79ecc7603449768ed662fff8c3ea455222d81d3e91a6e5c711dccc83b771556b
+    extract_layer_sweep_anchor.py: f6c9c773825f0f084908db88fc9945c14fe2e653879fef0d4afd0d486f1323b4
+    build_directions.py: 844236a449ebaf350bc5571992ce115b7125dd2a8cf301ebdf6a8efae0e2cfe4
+    gate_fit.py: 13c6dd304085d22e0b3ab75360cdd34d42f14b97a3dedf2e5f7460a3a7a85fdf
+    build_random_direction.py: 504c4471f1999e28fcd3fe33d54e259a57a01f03d75ef59350a5c79de5bdb316
+    materialize_rows.py: a0f8f33cf181af6d4f79a2e217fe60519d8a4ad99a1150bb472c923cd31c2604
+    pipeline.py: 5d20680e375d374114ddd7df86ee78a4dbc42389519d09501fcf29c7fe6911e7
+    gen_lib.py: dbcd12b49b4ea655b681bc93853c4bb9742988918c8d228d796ad87289451856
+    grader.py: de6b62f79c7b3a20825a9dfec877f0fec474ab6b415835ed8177be845a7d96d1
+    model_lib.py: 3dde37349942774ea7b044392051af4151eeebb6e5afb05d808aeff835c65a60
+inputs:
+- experiments/common/doubt-gated-caution-tighten-heldout-split/split_manifest.json
+- experiments/common/doubt-gated-caution-tighten-heldout-split/PROVENANCE.md
+- experiments/doubt-gated-caution-tighten/analysis-committed/full_summary.json
+- experiments/doubt-gated-caution-tighten/analysis-committed/PROVENANCE.md
+verdict: 'Pre-outcome G0 stop: dose-200 smoke readback was accurate, but hs23 and
+  hs26 collapsed all dosed smoke rows, so no full held-out run was completed.'
+kg:
+- mechanism:j-space-mediated-actuation-fragility

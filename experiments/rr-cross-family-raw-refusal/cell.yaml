@@ -1,0 +1,217 @@
+# rr-cross-family-raw-refusal cell. DRAFT until `bin/exp sign`.
+# Cross-family actuation test of the doubt-gated caution snap at the
+# atlas-located workspace-band sites on the two non-Qwen families the
+# jspace-family-atlas mapped. Same instrument class as
+# doubt-snap-cross-family-confirmatory and qwen35-4b-midband-doubt-snap,
+# differing only in the per-family write layer (read from the atlas map, not
+# ported from Qwen3-4B's L34). Primary metric is the format-agnostic
+# stated-confidence refusal rate `refused`; well-formed is reported and gated
+# alongside it. See AMENDMENT.md for full prose and doc:line citations.
+#
+# This drafting assignment writes NO harness code. Directions, gate, and
+# standardization are fit fresh per family at the atlas candidate layers under a
+# separate harness-build assignment; the values marked PLACEHOLDER below are
+# resolved and pinned at sign, and their sha256 recorded in experiment.yaml.
+
+seed: 20260713            # base seed for this experiment's fresh fits and placebo directions
+fit_seed_note: >-
+  gate tau (Youden-J), c_hat orthogonalizer (LogisticRegression saga,
+  random_state=SEED), standardization scalars, and the random_direction placebo
+  are all fit fresh per family per candidate layer; every fit is run twice and
+  asserted byte-identical before any artifact is written (mirrors the ladder's
+  fit_byte_identical, qwen35-4b-midband-doubt-snap/AMENDMENT.md:176-178).
+
+posture:
+  tier: exploratory_tier2
+  pooling: >-
+    scored per family, independently; never pooled with the locked Phase 1
+    headline matrix and never pooled with the resolved
+    doubt-snap-cross-family-confirmatory fleet (different, ported write site).
+
+# ---------------------------------------------------------------------------
+# Substrates: the atlas-mapped models only. Revisions transcribed from the
+# fleet model_matrix.yaml at sign and byte-checked at G0.
+# ---------------------------------------------------------------------------
+families:
+  - id: llama32_3b_instruct
+    model: unsloth/Llama-3.2-3B-Instruct
+    revision: 006f5dcd1393c3add266de40994ba96225e9689d  # fleet model_matrix.yaml, lead-verified 2026-07-13
+    substrate: bf16
+    adapter: none
+    loader: AutoModelForCausalLM.from_pretrained
+    n_decoder_layers: 28
+    atlas_hidden_states: 29
+    candidate_layers: [20, 22, 23]      # atlas best simultaneous read L20-23; raw-refusal axis peak L20-25
+    atlas_map_source: >-
+      experiments/jspace-family-atlas/AMENDMENT.md:184-185 (best read llama ~L20-23),
+      :178-182 (raw-refusal axis best 0.90 at L20-25)
+    heldout_power:                       # inherited from atlas/fleet; re-checked at G0
+      confab: 872
+      known_correct_answered: 334
+  - id: mistral7b_instruct_v03
+    model: mistralai/Mistral-7B-Instruct-v0.3
+    revision: c170c708c41dac9275d15a8fff4eca08d52bab71  # fleet model_matrix.yaml, lead-verified 2026-07-13
+    substrate: bf16
+    adapter: none
+    loader: AutoModelForCausalLM.from_pretrained
+    n_decoder_layers: 32
+    atlas_hidden_states: 33
+    candidate_layers: [15, 16, 17]      # atlas best simultaneous read and raw-refusal axis peak L15-17
+    atlas_map_source: >-
+      experiments/jspace-family-atlas/AMENDMENT.md:184-185 (best read mistral ~L15-17),
+      :178-182 (raw-refusal axis best 0.925 at L15-17)
+    heldout_power:
+      confab: 1312
+      known_correct_answered: 382
+
+# The atlas hidden-state-index vs decoder-block-index mapping is pinned at sign
+# from the atlas committed atlas_summary.json so the write hooks the intended
+# decoder block; recorded by the harness-build assignment.
+layer_index_convention:
+  source: experiments/jspace-family-atlas (atlas_summary.json)
+  resolved_at: sign
+  note: candidate_layers above are stated in the atlas's own index convention
+
+# ---------------------------------------------------------------------------
+# Instrument: doubt-gated caution snap, same construction as the governed
+# precedent, new per-family layer. Fresh fit on FIT rows only.
+# ---------------------------------------------------------------------------
+instrument:
+  gate:
+    score: neg_z_d
+    definition: "neg_z_d = -(proj_u_d - mu_d)/sigma_d, clipped to [-2, 2]"
+    fire_rule: "neg_z_d >= tau_frozen"
+    tau_fit: "Youden-J on FIT confab vs FIT known_correct_answered"
+    source: experiments/doubt-snap-cross-family-confirmatory/AMENDMENT.md:145-147
+  snap:
+    law: erase_write
+    position: anchor_onward
+    direction: c_hat
+    c_hat_construction: >-
+      mass-mean caution (mean refused minus mean confab) orthogonalized against a
+      LogisticRegression(saga, C=1.0, tol=1e-3, max_iter=5000, random_state=SEED)
+      confab-propensity direction, QR erase; FIT-standardized projections
+    source: experiments/qwen35-4b-midband-doubt-snap/AMENDMENT.md:163-167
+  generation:
+    do_sample: false
+    min_new_tokens: 1
+    max_new_tokens: 200
+    eos_enabled: true
+    enable_thinking: false               # where the family exposes the option
+  render:
+    source: experiments/doubt-snap-cross-family-confirmatory/render.py
+    anchor_position: prompt_len_minus_1
+  reproducibility:
+    double_fit_byte_identical: true
+    fit_auc_floor: 0.90                  # per candidate layer, FIT gate AUC (G0)
+
+# ---------------------------------------------------------------------------
+# Populations: reused verbatim from the fleet cells; no re-mining, no re-gen.
+# ---------------------------------------------------------------------------
+population:
+  reuse_from: doubt-snap-cross-family-confirmatory (llama32_3b_instruct, mistral7b_instruct_v03 cells)
+  reuse_scope: row pools, baseline generations, gradings, role assignments (verbatim)
+  reuse_precedent: experiments/jspace-family-atlas/AMENDMENT.md:40-41
+  roles:
+    known_correct_answered: TriviaQA + PopQA, kept only if undosed baseline well-formed and correct
+    confab: KUQ, undosed baseline confabulates
+    unknown_refused: KUQ, undosed baseline refuses (fit_only)
+  role_source: experiments/doubt-snap-cross-family-confirmatory/AMENDMENT.md:170-178
+  anchors:
+    reuse_from: experiments/jspace-family-atlas full-depth captures (final-prompt-token anchor, every layer)
+    reuse_precedent: experiments/jspace-family-atlas/AMENDMENT.md:47-52, :136-140 (coverage 1.00)
+    recapture_rule: >-
+      harness-build verifies the atlas capture covers each candidate layer; if a
+      candidate layer is missing, re-capture ONLY that layer's anchors under the
+      atlas convention.
+  splits:
+    fit: used for gate/direction/standardization fit and FIT dose selection
+    held_out: used only for the four-arm scoring at the FIT-selected operating point
+  containment:
+    committed_row_text: forbidden
+    committed_aliases: forbidden
+    committed_answer_text: forbidden
+    committed: ID-only manifests (row_key, role, split, source, category_canon) + aggregates only
+    source: experiments/qwen35-4b-midband-doubt-snap/AMENDMENT.md:104-113
+
+# ---------------------------------------------------------------------------
+# Dose policy: sigma-relative grid + empirical bracketing + FIT dose-viability.
+# ---------------------------------------------------------------------------
+dose_policy:
+  grid_sigma_relative: [2, 4, 6, 8, 12, 16, 20]   # x sigma_c, per (family, candidate layer)
+  grid_source: experiments/qwen35-4b-midband-doubt-snap/AMENDMENT.md:260
+  sigma_c_from: fresh FIT build_manifest.json per (family, layer)
+  finalized_absolute_at: sign
+  pre_sweep_bracketing:
+    check: fixed-strength gen-stream probe on probe rows; strongest arm must move tokens
+    on_byte_identical: >-
+      re-bracket pre-sweep and pre-outcome to log-span the empirical response
+      region (the ONLY permitted grid change; never after a held-out outcome)
+    source: experiments/doubt-snap-cross-family-confirmatory/AMENDMENT.md:114-141
+  fit_dose_selection:
+    rule: lowest dose whose FIT fired-confab refused >= 0.60 AND well_formed >= 0.80 AND FIT known false-refusal <= 0.10
+    source: >-
+      experiments/qwen35-4b-midband-doubt-snap/AMENDMENT.md:270-272 (FIT floors),
+      experiments/doubt-snap-cross-family-confirmatory/AMENDMENT.md:164-167 (FIT selection rule)
+    on_no_viable_dose: record family as outcome shape F (no grid change afterward)
+
+# ---------------------------------------------------------------------------
+# Arms: four per family at the FIT-selected operating point.
+# ---------------------------------------------------------------------------
+arms:
+  - name: baseline
+    description: no hook; generated once over the full held-out pool; reference for G3(i)
+  - name: gated
+    description: >-
+      real instrument; doubt gate fires per held-out row, fired rows get the
+      c_hat erase-write snap at the frozen FIT-selected dose anchor_onward,
+      non-fired rows inherit baseline; yields primary refused + well_formed on
+      fired confabs and the known-correct cost
+  - name: random_direction
+    description: >-
+      same fired rows as gated; frozen random placebo direction written at
+      magnitude matched to the gated arm's realized projection; direction
+      specificity (G3(i)); compares behavioral refusal RATE, not read AUROC, so
+      unaffected by the atlas anchor norm/position read confound
+    confound_note: experiments/jspace-family-atlas/AMENDMENT.md:170-173
+  - name: dose_knowns_ungated
+    description: >-
+      selectivity control on knowns; every held-out known-correct row dosed
+      unconditionally along c_hat at the same frozen dose, gate off; measures
+      whether the WRITE is content-selective on knowns at this family's atlas
+      operating point (operating-point-dependent per H4)
+    scope_note: experiments/ungated-vs-gated-dose-matched/AMENDMENT.md:206-215
+    report_rule: >-
+      report known-correct clean false-refusal AND total damage rate SEPARATELY;
+      never report damage as a refusal rate (H4 metric hygiene, :196-203)
+
+# permuted_gate is NOT a registered arm in this draft; see open adjudication A3.
+
+readouts:
+  refused: format-agnostic stated-confidence refusal rate (PRIMARY; qwen35-4b-midband-doubt-snap/AMENDMENT.md:218-227 readout b)
+  well_formed: well-formed JSON rate (readout c; reported and gated alongside refused)
+  clean_tighten: strict conjunction (readout a; reported for continuity with the fleet)
+  degenerate: degenerate-repetition rate
+  natural_stop: natural-stop rate
+  mean_new_tokens: mean new tokens
+  row_level_decoupling: count of fired confabs simultaneously refused AND well_formed
+  confidence_intervals: Wilson 95% (alpha 0.05) on every rate
+
+execution:
+  lanes:
+    - local_3090       # both models fit bf16 in 24GB; free
+    - modal            # A10G/A100, detached per-family function; PAID, needs fresh user approval
+  model: confirmatory execution model (batch verbs for baseline/capture; mechinterp steer for writes)
+  execution_source: experiments/doubt-snap-cross-family-confirmatory/AMENDMENT.md:188-202
+  smokes_before_full_scoring:
+    - sequential_vs_batch parity
+    - real mechinterp steer + readback
+  smoke_source: experiments/doubt-snap-cross-family-confirmatory/AMENDMENT.md:61-65, :202
+  synaptic_tuner_pin: 86b134c32254668893800a453b3c5d8285ae85df  # submodule commit in this worktree at harness-build; carries batch verbs, mechinterp cells, batched steer, run_log.py
+  gpu_python: /home/profsynapse/miniconda3/bin/python3  # base conda; both substrates are standard-attention plain-HF CausalLM, no special env
+
+outputs:
+  local_private_dir: experiments/rr-cross-family-raw-refusal/analysis/          # gitignored
+  committed_public_dir: experiments/rr-cross-family-raw-refusal/analysis-committed/
+
+harness_status: not_written_draft_stage

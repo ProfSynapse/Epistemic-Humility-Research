@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Prepare one local Phase 1 matrix cell for tuner `local-run`.
+"""Prepare one local locked training-regimen matrix cell for tuner `local-run`.
 
 This is the narrow launch-prep companion to run_matrix.py. It uses the same
 expansion, gating, staging, materialization, and run-record helpers, but scopes
@@ -29,7 +29,7 @@ import run_matrix as rm  # noqa: E402
 
 
 def _parser() -> argparse.ArgumentParser:
-    parser = argparse.ArgumentParser(description="Prepare one local Phase 1 cell.")
+    parser = argparse.ArgumentParser(description="Prepare one local locked training-regimen cell.")
     parser.add_argument("--run-id", required=True)
     parser.add_argument(
         "--status",
@@ -43,15 +43,15 @@ def _parser() -> argparse.ArgumentParser:
     )
     parser.add_argument(
         "--recipes-dir",
-        default=str(rm._REPO_ROOT / "experiment" / "phase1" / "recipes"),
+        default=str(rm._REPO_ROOT / "archive" / "experiment" / "phase1" / "recipes"),
     )
     parser.add_argument(
         "--data-root",
-        default=str(rm._REPO_ROOT / "experiment" / "phase1" / "data"),
+        default=str(rm._REPO_ROOT / "archive" / "experiment" / "phase1" / "data"),
     )
     parser.add_argument(
         "--run-records-dir",
-        default=str(rm._REPO_ROOT / "experiment" / "phase1" / "run_records"),
+        default=str(rm._REPO_ROOT / "archive" / "experiment" / "phase1" / "run_records"),
     )
     parser.add_argument("--research-repo-root", default=str(rm._REPO_ROOT))
     parser.add_argument("--tuner-root", default=str(rm._REPO_ROOT / "synaptic-tuner"))

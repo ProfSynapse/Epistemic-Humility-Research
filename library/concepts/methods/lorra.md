@@ -53,6 +53,6 @@ relationships:
 
 A representation-engineering technique that trains low-rank LoRA adapters on earlier editable layers to align later target-layer activations with a contrast vector computed as the difference between honest-prompted and dishonest-prompted representations. The contrast vector is added at a strength hyperparameter alpha to guide the model toward honest internal states during inference.
 
-**Why it matters here:** Demonstrates that internal activation steering toward honest representations can improve commission honesty by 6-13 percentage points in small Llama models, providing a proof-of-concept and effect-size prior for Phase 3 activation-steering experiments targeting honesty rather than abstention.
+**Why it matters here:** Demonstrates that internal activation steering toward honest representations can improve commission honesty by 6-13 percentage points in small Llama models, providing a proof-of-concept and effect-size prior for mechanism activation-steering experiments targeting honesty rather than abstention.
 
 **Lineage:** Applied in the MASK paper (2503.03750) as a baseline intervention, derived from the representation-engineering framework of Zou et al. (2023). Closely related to inference-time-intervention and contrastive-activation-addition.

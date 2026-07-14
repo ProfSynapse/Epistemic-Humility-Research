@@ -1,0 +1,40 @@
+slug: thinking-enabled-parallel-arm
+title: 'Protocol Amendment H: Thinking-Enabled Parallel Arm'
+type: historical-amendment
+status: historical
+registered: true
+created_at: '2026-07-08T17:40:52Z'
+legacy:
+  label: H
+  path: experiment/protocol/AMENDMENT-H-thinking-enabled-parallel-arm.md
+  migrated_to: experiments/thinking-enabled-parallel-arm/AMENDMENT.md
+migration:
+  needs_manual_review:
+  - falsifier
+  - experiment_type
+  - instrument_configs
+  - kg_ids
+  notes: Imported from legacy amendment prose. Do not infer missing machine fields
+    without hand-reading AMENDMENT.md.
+question: Does Qwen3 thinking mode change the observable knowledge boundary enough
+  to warrant a parallel thinking-derived training/eval branch?
+prediction: "orchestrator:\n  call: thinking perturbs the boundary enough to justify\
+  \ a parallel arm\nuser:\n  call: null\n  note: Predates the dual-prediction practice\
+  \ (adopted 2026-07-03 at AH signing);\n    no separately recorded user prediction."
+falsifier: ''
+checkpoint:
+  repo: ''
+  revision: ''
+instrument:
+  configs: []
+  modules:
+  - compare_thinking_probe_results.py
+  pins:
+    compare_thinking_probe_results.py: d22329d6cc0078a413d66607b50426508ff29b33e96bdd348d8970f61733393d
+inputs:
+- experiments/thinking-enabled-parallel-arm/artifacts/configs/probe_thinking_audit_128_1024.yaml
+- experiments/thinking-enabled-parallel-arm/artifacts/configs/probe_thinking_audit_512.yaml
+- experiments/thinking-enabled-parallel-arm/artifacts/thinking_audit_128_1024/README.md
+verdict: DRAFT / NOT SIGNED; bounded audit showed real perturbation, enough to define
+  a parallel arm but not to overwrite non-thinking evidence.
+kg: []

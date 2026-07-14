@@ -1,0 +1,28 @@
+slug: flavor-geometry-category-fleet
+title: Flavor Geometry Category Fleet
+type: lab-diagnostic
+status: historical
+registered: true
+created_at: '2026-07-09T11:48:01Z'
+question: Do unanswerability categories share one known/unknown geometry, or do
+  flavor-specific residual directions and controversial-prime flips expose category-conditioned
+  structure?
+prediction: ''
+falsifier: ''
+checkpoint:
+  repo: local AH stage-0/category geometry cached activations
+  revision: historical
+instrument:
+  configs: []
+  modules: []
+  pins: {}
+inputs:
+- experiments/flavor-geometry-category-fleet/analysis-committed/category-geometry/category_geometry/category_geometry_analysis.py
+- experiments/flavor-geometry-category-fleet/analysis-committed/category-geometry/flavor_readout/flavor_readout_analysis.py
+- experiments/flavor-geometry-category-fleet/analysis-committed/category-geometry/pliability/pliability_analysis.py
+- experiments/flavor-geometry-category-fleet/analysis-committed/controversial-flips/characterize_direction.py
+- experiments/flavor-geometry-category-fleet/analysis-committed/controversial-flips/controversial_flip_hunt.py
+verdict: Historical category-geometry diagnostic fleet banked; scripts preserve the
+  flavor-readout, per-category geometry, pliability, and controversial-flip analyses
+  over AH cached inputs.
+kg: []

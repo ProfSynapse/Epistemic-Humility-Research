@@ -168,6 +168,13 @@ Windows even when absolute-root validation passes cleanly.
 
 Windows KG-search gotchas:
 
+- Fresh git worktrees have their own `.kg/` local state. The project
+  `.githooks/post-checkout` hook warms the repo-wide KG index automatically when
+  `git worktree add` checks out into `.worktrees/` or `ehr-worktrees/`, but only
+  if `core.hooksPath` points at `.githooks`. If a first search in a worktree
+  still times out, let the warmup complete once with
+  `python .agents/skills/knowledge-graph/scripts/kg_index.py --root . --json`
+  or use a scoped search while it warms.
 - Repo-wide KG search can fall back from `git ls-files` to a recursive walk and
   hit inaccessible local cache files, especially Hugging Face cache snapshots
   under `.cache/`. When that happens, rerun with a scoped root such as

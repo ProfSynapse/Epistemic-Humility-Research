@@ -13,20 +13,21 @@ scope.
 
 This is NOT a new prompt convention: it faithfully reproduces the byte-pinned
 render this exact AI-TRUE / A0 surface already uses at
-`experiment/phase1/probe/amendment_ai_verdict_extract_gen.py` (see its
+`archive/experiment/phase1/probe/amendments/amendment_ai_verdict_extract_gen.py` (see its
 `run_extract`/`run_generate`, both of which call
 ``render_probe_prompt(tokenizer, baseline_system, item["question"],
 enable_thinking=False)``) and
-`experiment/phase1/probe/amendment_an_steer_generate.py` (the sibling AN
+`archive/experiment/phase1/probe/amendments/amendment_an_steer_generate.py` (the sibling AN
 steer script for the SAME checkpoint and SAME caution-direction lineage).
 Both of those import ``render_probe_prompt`` from
-``experiment/phase1/probe/backends.py`` and ``load_baseline_system_prompt``
-from ``experiment/phase1/probe/amendment_ah_stage0_extract.py``; this module
-imports the exact same two functions rather than re-deriving the prompt
-string, so a future change to either source stays in sync automatically.
+``archive/experiment/phase1/probe/backends.py`` and ``load_baseline_system_prompt``
+through the ``archive/experiment/phase1/probe/amendment_ah_stage0_extract.py``
+compatibility wrapper for the archived AH implementation; this module imports
+the exact same two functions rather than re-deriving the prompt string, so a
+future change to either source stays in sync automatically.
 
 ``load_baseline_system_prompt`` reads the system prompt from
-``experiment/phase1/probe/config/phase3_ac_doubt_coupled_intervention.yaml``'s
+``experiments/doubt-regulated-caution/ac_doubt_coupled_intervention.yaml``'s
 ``prompt.system`` key -- the "Answer the user's question... Return only a
 JSON object with exactly two keys: 'answer' and 'response_confidence'..."
 text -- the same baseline system prompt every AL/AN/AI script in this
@@ -55,8 +56,20 @@ import os
 import sys
 from pathlib import Path
 
-CANONICAL = Path("/home/profsynapse/code/Epistemic-Humility-Research")
-PROBE_DIR = CANONICAL / "experiment" / "phase1" / "probe"
+
+def _repo_root() -> Path:
+    here = Path(__file__).resolve()
+    for candidate in (here, *here.parents):
+        if (
+            (candidate / "archive" / "experiment" / "phase1" / "probe" / "backends.py").exists()
+            and (candidate / "experiments").is_dir()
+        ):
+            return candidate
+    raise RuntimeError(f"Could not locate repository root from {here}")
+
+
+CANONICAL = _repo_root()
+PROBE_DIR = CANONICAL / "archive" / "experiment" / "phase1" / "probe"
 if str(PROBE_DIR) not in sys.path:
     sys.path.insert(0, str(PROBE_DIR))
 
