@@ -3,10 +3,13 @@
 
 Two shapes, one script:
 
-- Aggregate (default): copies analysis-committed/<cell_id>/*.json artifacts
-  (dose-response tables, direction fits, gate AUROCs, manifests) into
-  <out-dir>/<cell_id>/. Always publishable: no source question text, no
-  aliases, no per-row generation text.
+- Aggregate (default): recursively copies EVERY file under
+  analysis-committed/ (any depth, flat or celled layout) into <out-dir>/,
+  preserving relative paths, byte-for-byte. Always publishable: the
+  experiment's own analysis-committed/ tree is already the repo's containment
+  boundary for question text, aliases, and per-row generation text, so this
+  builder trusts that boundary rather than re-filtering by filename.
+  The only filter applied here is the hard-exclusion deny-list below.
 - Row-level (pass --rows-dir): reads locally staged per-cell JSONL (row text
   usually lives on a Modal volume or a results repo, not in this git
   checkout) and gives each row one of three dispositions per
@@ -50,33 +53,14 @@ from _license_gate import (  # noqa: E402
     strip_text_bearing,
 )
 
-# Aggregate artifact filenames this builder knows about, in the order the
-# doubt-snap-cross-family-confirmatory prep_tuner_cell.py / materialize_tuner_cells.py
-# pipeline writes them. summary.json is optional (only terminal/scored cells
-# have it); everything else is expected but tolerated as missing.
-AGGREGATE_ARTIFACT_FILES = [
-    "g0_prep_summary.json",
-    "build_manifest.json",
-    "split_manifest.json",
-    "u_d.json",
-    "c_hat.json",
-    "random_direction.json",
-    "gate_fit.json",
-    "dose_fit.json",
-    "summary.json",
-]
-OPTIONAL_AGGREGATE_FILES = {"summary.json"}
-
-
-def hard_exclusion_scan(payload: Any, src_path: Path) -> None:
-    blob = json.dumps(payload, ensure_ascii=False).lower()
+def _content_hard_exclusion_hit(text: str) -> str | None:
     from _license_gate import HARD_EXCLUDED_PATTERNS
 
+    t = text.lower()
     for pattern in HARD_EXCLUDED_PATTERNS:
-        if pattern in blob:
-            raise SystemExit(
-                f"CONTAINMENT: hard-excluded pattern '{pattern}' found in {src_path}; refusing to build"
-            )
+        if pattern in t:
+            return pattern
+    return None
 
 
 def sha256_bytes(data: bytes) -> str:
@@ -108,33 +92,63 @@ def write_json(path: Path, payload: Any) -> None:
     )
 
 
-def build_aggregate(exp_dir: Path, out_dir: Path) -> dict[str, Any]:
+def build_aggregate(exp_dir: Path, out_dir: Path) -> tuple[dict[str, str], list[dict[str, str]]]:
+    """Recursively copy every file under analysis-committed/ into out_dir,
+    preserving relative paths, byte-for-byte.
+
+    analysis-committed/ is the repo's own containment lane: everything under
+    it already cleared the boundary that keeps question text, aliases, and
+    per-row generation text out of the public git repo (see SKILL.md). A
+    second filename allowlist layered on top of that boundary is a redundant
+    gatekeeper -- it does not add safety, it just silently drops whatever
+    artifact shape the allowlist's author had not seen yet (this is exactly
+    how every non-doubt-snap-cross-family-confirmatory experiment's
+    analysis-committed/ vocabulary -- final_report.json, atlas_summary.json,
+    flat top-level files, three-level nesting, non-JSON files -- went
+    missing from every prior exhaust build). The hard-exclusion deny-list is
+    the only filter this builder applies, exactly the same two structural
+    exclusions (OpenMOSS/Cheng IDK, bridge_llama2_7b_chat) enforced
+    elsewhere in this file and in verify_exhaust.py.
+
+    Returns (files, excluded):
+      files    -- {relative_path: sha256} for every file actually copied.
+      excluded -- [{"path": relative_path, "reason": ...}] for every file
+                  skipped because its own relative path matched a
+                  hard-exclusion pattern. A pattern match found inside a
+                  file's CONTENT (as opposed to its path) is not a skip; it
+                  aborts the whole build via SystemExit, since content-level
+                  containment inside a directory meant to already be
+                  public-safe is an anomaly that needs a human, not a
+                  silent drop.
+    """
     committed_root = exp_dir / "analysis-committed"
-    cells_report: dict[str, Any] = {}
+    files: dict[str, str] = {}
+    excluded: list[dict[str, str]] = []
     if not committed_root.is_dir():
-        print(f"[build-exhaust] no analysis-committed/ under {exp_dir}; 0 cells", file=sys.stderr)
-        return cells_report
-    for cell_dir in sorted(p for p in committed_root.iterdir() if p.is_dir()):
-        cell_id = cell_dir.name
-        out_cell = out_dir / cell_id
-        found: list[str] = []
-        missing: list[str] = []
-        file_hashes: dict[str, str] = {}
-        for fname in AGGREGATE_ARTIFACT_FILES:
-            src = cell_dir / fname
-            if not src.is_file():
-                if fname not in OPTIONAL_AGGREGATE_FILES:
-                    missing.append(fname)
-                continue
-            payload = json.loads(src.read_text(encoding="utf-8"))
-            hard_exclusion_scan(payload, src)
-            dst = out_cell / fname
-            write_json(dst, payload)
-            found.append(fname)
-            file_hashes[fname] = sha256_bytes(dst.read_bytes())
-        write_json(out_cell / "manifest.json", {"cell_id": cell_id, "files": found, "sha256": file_hashes})
-        cells_report[cell_id] = {"files": found, "missing_expected": missing}
-    return cells_report
+        print(f"[build-exhaust] no analysis-committed/ under {exp_dir}; 0 files", file=sys.stderr)
+        return files, excluded
+
+    for src in sorted(p for p in committed_root.rglob("*") if p.is_file()):
+        rel = src.relative_to(committed_root).as_posix()
+        if is_hard_excluded(rel):
+            excluded.append({"path": rel, "reason": "hard-exclusion: relative path matches a structural pattern"})
+            continue
+        data = src.read_bytes()
+        try:
+            text = data.decode("utf-8")
+        except UnicodeDecodeError:
+            text = None
+        if text is not None:
+            hit = _content_hard_exclusion_hit(text)
+            if hit:
+                raise SystemExit(
+                    f"CONTAINMENT: hard-excluded pattern '{hit}' found in {src}; refusing to build"
+                )
+        dst = out_dir / rel
+        dst.parent.mkdir(parents=True, exist_ok=True)
+        dst.write_bytes(data)
+        files[rel] = sha256_bytes(data)
+    return files, excluded
 
 
 def build_rows(
@@ -197,19 +211,38 @@ def readme_text(
     *, shape: str, manifest: dict[str, Any], provenance: dict[str, Any], repo_id: str, sources: list[dict[str, Any]]
 ) -> str:
     slug = manifest["slug"]
-    cells = provenance["cells"]
-    excluded = provenance.get("license_gate_excluded") or {}
+    license_gate_excluded = provenance.get("license_gate_excluded") or {}
     sources_present = provenance.get("sources_present") or {}
 
-    def cell_line(cid: str, info: dict[str, Any]) -> str:
-        if "files" in info:
-            extra = f" -- missing_expected: {', '.join(info['missing_expected'])}" if info.get("missing_expected") else ""
-            return f"- `{cid}`: {', '.join(info.get('files', [])) or '(none)'}{extra}"
-        return f"- `{cid}`: kept_with_text={info.get('n_rows_kept_with_text', 0)}, kept_text_free={info.get('n_rows_kept_text_free', 0)}"
+    if shape == "aggregate":
+        files = provenance.get("files") or {}
+        hard_excluded = provenance.get("excluded") or []
+        by_top: dict[str, int] = {}
+        for rel in files:
+            top = rel.split("/", 1)[0]
+            by_top[top] = by_top.get(top, 0) + 1
+        lines_cells = (
+            "\n".join(f"- `{top}`: {n} file(s)" for top, n in sorted(by_top.items()))
+            or "(no files found)"
+        )
+        lines_cells = f"{len(files)} file(s) total, by top-level path:\n\n{lines_cells}"
+        hard_excluded_lines = "\n".join(
+            f"- `{e['path']}`: {e['reason']}" for e in hard_excluded
+        ) or "(none)"
+        cells_heading = "File inventory"
+    else:
+        cells = provenance.get("cells") or {}
 
-    lines_cells = "\n".join(cell_line(cid, info) for cid, info in sorted(cells.items())) or "(no cells found)"
+        def cell_line(cid: str, info: dict[str, Any]) -> str:
+            return f"- `{cid}`: kept_with_text={info.get('n_rows_kept_with_text', 0)}, kept_text_free={info.get('n_rows_kept_text_free', 0)}"
+
+        lines_cells = "\n".join(cell_line(cid, info) for cid, info in sorted(cells.items())) or "(no cells found)"
+        hard_excluded_lines = ""
+        cells_heading = "Cells"
+
     excluded_lines = "\n".join(
-        f"- `{src}`: {n} rows dropped entirely (gate verdict forbidden or pending-audit)" for src, n in sorted(excluded.items())
+        f"- `{src}`: {n} rows dropped entirely (gate verdict forbidden or pending-audit)"
+        for src, n in sorted(license_gate_excluded.items())
     ) or "(none)"
 
     attribution_lines = []
@@ -226,14 +259,30 @@ def readme_text(
     attribution_block = "\n".join(attribution_lines) or "(no row-level sources present in this build)"
 
     shape_desc = (
-        "Aggregate-only: dose-response tables, direction fits, gate AUROCs, and "
-        "manifests. No source question text, aliases, or per-row generation text."
+        "Aggregate-only: every file committed under this experiment's "
+        "analysis-committed/ tree (dose-response tables, direction fits, gate "
+        "AUROCs, manifests, and any other analysis artifact), copied byte-for-byte. "
+        "No source question text, aliases, or per-row generation text -- "
+        "analysis-committed/ never carries those."
         if shape == "aggregate"
         else "Row-level generation output, gated per reference/license-gates.md per source: "
         "some rows carry text (permitted sources), some are text-free (text-free-only "
         "sources), and forbidden or unaudited sources are dropped entirely, not redacted."
     )
     attribution_section = f"\n## License and Attribution\n\n{attribution_block}\n" if shape == "rows" else ""
+    hard_exclusion_section = (
+        f"\n## Hard-exclusion skips\n\nFiles whose relative path under `analysis-committed/` "
+        f"matched a structural hard-exclusion pattern and were skipped (not copied):\n\n{hard_excluded_lines}\n"
+        if shape == "aggregate"
+        else ""
+    )
+    files_note = (
+        "See `PROVENANCE.json` for the full machine-readable file list (relative path "
+        "-> sha256) and the hard-exclusion skip list with reasons."
+        if shape == "aggregate"
+        else "See `PROVENANCE.json` for the full machine-readable provenance block. Each "
+        "`<cell_id>/rows.jsonl` (row shape) holds the kept rows for that cell."
+    )
 
     return f"""---
 license: other
@@ -263,19 +312,17 @@ HF repo: `{repo_id}`
 - Pinned instrument config sha256:
 {chr(10).join(f"  - `{k}`: `{v}`" for k, v in sorted(provenance.get('instrument_config_sha256', {}).items())) or "  (none recorded)"}
 
-## Cells
+## {cells_heading}
 
 {lines_cells}
 
 ## License-gate exclusions
 
 {excluded_lines}
-{attribution_section}
+{attribution_section}{hard_exclusion_section}
 ## Files
 
-See `PROVENANCE.json` for the full machine-readable provenance block. Each
-`<cell_id>/manifest.json` (aggregate shape) lists the artifact files present
-for that cell and their sha256.
+{files_note}
 
 ## Release Boundary
 
@@ -318,8 +365,11 @@ def main(argv: list[str] | None = None) -> int:
     out_dir.mkdir(parents=True, exist_ok=True)
 
     sources_present: dict[str, str] = {}
+    files_report: dict[str, str] = {}
+    hard_excluded: list[dict[str, str]] = []
+    cells_report: dict[str, Any] = {}
     if shape == "aggregate":
-        cells_report = build_aggregate(exp_dir, out_dir)
+        files_report, hard_excluded = build_aggregate(exp_dir, out_dir)
         excluded_counts: dict[str, int] = {}
     else:
         rows_dir = Path(args.rows_dir).resolve()
@@ -332,17 +382,21 @@ def main(argv: list[str] | None = None) -> int:
         subprocess.run(["git", "-C", str(exp_dir), "rev-parse", "--show-toplevel"], capture_output=True, text=True).stdout.strip()
         or exp_dir.parents[1]
     )
-    provenance = {
+    provenance: dict[str, Any] = {
         "experiment_slug": slug,
         "amendment_path": str(amendment_path.relative_to(repo_root)) if repo_root in amendment_path.parents else str(amendment_path),
         "repo_commit_sha": git_commit_sha(exp_dir),
         "instrument_config_sha256": (manifest.get("instrument") or {}).get("pins") or {},
         "generation_date": generation_date,
         "shape": shape,
-        "cells": cells_report,
         "license_gate_excluded": excluded_counts,
         "sources_present": sources_present,
     }
+    if shape == "aggregate":
+        provenance["files"] = files_report
+        provenance["excluded"] = hard_excluded
+    else:
+        provenance["cells"] = cells_report
     write_json(out_dir / "PROVENANCE.json", provenance)
 
     repo_id = args.repo_id or f"professorsynapse/eh-{slug}" + ("-rows" if shape == "rows" else "")
@@ -351,7 +405,10 @@ def main(argv: list[str] | None = None) -> int:
         encoding="utf-8",
     )
 
-    print(f"[build-exhaust] shape={shape} slug={slug} cells={len(cells_report)} out_dir={out_dir}")
+    if shape == "aggregate":
+        print(f"[build-exhaust] shape={shape} slug={slug} files={len(files_report)} excluded={len(hard_excluded)} out_dir={out_dir}")
+    else:
+        print(f"[build-exhaust] shape={shape} slug={slug} cells={len(cells_report)} out_dir={out_dir}")
     if excluded_counts:
         print(f"[build-exhaust] license-gate excluded (dropped entirely): {excluded_counts}")
     if sources_present:
