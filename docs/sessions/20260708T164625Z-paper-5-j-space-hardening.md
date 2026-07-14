@@ -4,7 +4,7 @@ session_id: 20260708T164625Z-paper-5-j-space-hardening
 title: Paper 5 J-space hardening
 status: active
 created_at: '2026-07-08T16:46:25Z'
-updated_at: '2026-07-14T20:18:57Z'
+updated_at: '2026-07-14T20:38:58Z'
 track: research
 phase: phase1
 question: Which registered follow-up experiments harden the Paper 5 actuation thesis,
@@ -1038,6 +1038,34 @@ checkpoints:
     void-regrade-once), then rr3_scorer.py, then red-team BEFORE verdict. signflip-mech
     agent still running (BG1 mistral/llama real-data checks + M1/M2/M3 mechanism leg).'
   signals: {}
+- id: 038-checkpoint
+  at: '2026-07-14T20:38:58Z'
+  kind: checkpoint
+  title: Checkpoint
+  summary: 'INCIDENT + containment during RR3 blind grading: parallel grader agents
+    shared the session scratchpad for helper scripts and two write collisions occurred
+    on generic filenames (write_shard00.py, verify.py two writers each). Effect: one
+    grader''s judgment chunk routed to the wrong target mid-run; the in-flight rider_mistral_shard_01
+    grader''s partial file is missing a ~50-line middle block (720/770, own ids only,
+    no foreign ids). Damage CONTAINED: all 20 completed shards pass full independent
+    integrity (exact counts, positional opaque_id match, no dups within/across files)
+    and every hash commitment was recorded only after that verification; the damaged
+    shard was never hash-committed. PI directive adopted as standing rule: any parallelized
+    agents get pre-assigned PRIVATE working dirs for all intermediates plus unique
+    output paths, forbidden to write elsewhere; zero shared mutable paths. Fold into
+    abstention-grading skill update. Separately: BG1 diagnosis confirmed mistral check-scope
+    defect (0/1694 mismatches on the true evaluated roster; check iterates full 3037-row
+    anchor population, frame_port.py:199-238); llama recompute still running.'
+  evidence: []
+  run_ids: []
+  commands: []
+  decisions: []
+  next_steps:
+  - Await rm01 grader; if final file not cleanly repaired, void attempt (never committed,
+    no unblinding) and dispatch fresh grader with private dir. Then git-commit grading
+    manifest, apply (CG1), rr3_scorer, red-team. Await llama half of BG1 diagnosis,
+    then adjudicate instrument-defect repin vs genuine fail.
+  signals: {}
 ---
 # Paper 5 J-space hardening
 
@@ -1492,3 +1520,10 @@ rows before the layer contrast.
 - summary: RR3 adjudication cycle DISPATCHED. Pool manifest (21 shards, 16045 rows = 14485 core + 474 clear-neg + 1086 clear-pos decoys, seed 20260715) committed to exp/rr3-corrected-placebo as 6204a7f2 BEFORE any grading, per the manifest-before-grading rule. 21 context-free blind graders (sonnet, rubric verbatim from AMENDMENT.md, bare opaque_id+text shards, no experiment context, no pattern-matcher per standing PI directive) spawned in parallel; graded files land in gitignored analysis/graded/.
 - next steps:
   - On grader completion: verify line counts/order, apply_adjudication.py commit-hash per shard BEFORE apply, then apply --grading-manifest (CG1 per-shard + pooled, void-regrade-once), then rr3_scorer.py, then red-team BEFORE verdict. signflip-mech agent still running (BG1 mistral/llama real-data checks + M1/M2/M3 mechanism leg).
+### 038-checkpoint - Checkpoint
+
+- at: `2026-07-14T20:38:58Z`
+- kind: `checkpoint`
+- summary: INCIDENT + containment during RR3 blind grading: parallel grader agents shared the session scratchpad for helper scripts and two write collisions occurred on generic filenames (write_shard00.py, verify.py two writers each). Effect: one grader's judgment chunk routed to the wrong target mid-run; the in-flight rider_mistral_shard_01 grader's partial file is missing a ~50-line middle block (720/770, own ids only, no foreign ids). Damage CONTAINED: all 20 completed shards pass full independent integrity (exact counts, positional opaque_id match, no dups within/across files) and every hash commitment was recorded only after that verification; the damaged shard was never hash-committed. PI directive adopted as standing rule: any parallelized agents get pre-assigned PRIVATE working dirs for all intermediates plus unique output paths, forbidden to write elsewhere; zero shared mutable paths. Fold into abstention-grading skill update. Separately: BG1 diagnosis confirmed mistral check-scope defect (0/1694 mismatches on the true evaluated roster; check iterates full 3037-row anchor population, frame_port.py:199-238); llama recompute still running.
+- next steps:
+  - Await rm01 grader; if final file not cleanly repaired, void attempt (never committed, no unblinding) and dispatch fresh grader with private dir. Then git-commit grading manifest, apply (CG1), rr3_scorer, red-team. Await llama half of BG1 diagnosis, then adjudicate instrument-defect repin vs genuine fail.
