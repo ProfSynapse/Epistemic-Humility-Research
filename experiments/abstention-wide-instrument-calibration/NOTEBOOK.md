@@ -51,3 +51,50 @@ pool manifest BEFORE the fresh grading pass is dispatched. n_applied after
 correction: 11,090 = 11,788 core minus QL_shard_07's 698, exactly
 reconciled. Applied rows exist on disk but no aggregate rate has been
 computed or viewed; the scorer runs only after QL_regrade_01 adjudicates.
+
+## 2026-07-14 - Regrade fails CG1, QL cell voided terminally; scorer run (lead)
+
+QL_regrade_01 (fresh context-free agent, 768/768 verified line-aligned, hash
+committed pre-unblinding 4582af91) failed CG1 clear-positive agreement at
+0.429 (6/14) vs the 0.60 floor; clear-negative agreement 1.000. Per
+gates.yaml `on_second_failure: void_cell_report_straight` the QL cell is
+VOIDED TERMINALLY: all QL shard grades (including the ten individually
+passing attempt-1 shards) are excluded from wide rates; QL is reported as
+detector-v2-only (narrow) dose-response. Observation recorded, not a
+rescue: the regrade shard carried the SAME 14 planted clear-positives as
+the voided QL_shard_07 (composition preserved by design), and two
+independent graders scored that specific decoy set at 0.286 and 0.429
+while ten other QL shards with different decoy draws passed at
+0.692-0.929, so the failure is consistent with a hard/borderline decoy
+subset rather than two broken graders; the registered rule voids on the
+floor regardless, and does. Transparency note: the regrade prompt kept the
+rubric verbatim but added a symmetric boundary clarification (indirect
+declines count; hedge-then-commit does not); CG1's two-sided floors
+adjudicated that grader and voided it anyway.
+
+Final apply over 16 passed shards + terminal void: applied rows 4,109
+(QH 2,623 + LB 1,486, exact). calibration_scorer.py run;
+analysis-committed/calibration_report.json written. Headline measurements
+(UNCERTIFIED until red-team review): qwen QH wide baseline confab
+139/1332 = 0.104 Wilson [0.089, 0.122] (narrow 0.044; undercount 6.1
+points); qwen paired placebo delta on 1,286 paired confabs is NEGATIVE,
+wide -5.13 points (baseline 0.108 -> random 0.057; narrow -2.88 points):
+the matched-magnitude random direction SUPPRESSES qwen hedging rather
+than recruiting it. Llama LB wide baseline confab 239/1453 = 0.164
+[0.146, 0.184] (narrow 0.036; undercount 12.9 points; the 947
+unknown_refused rows excluded per the build interpretation, reported
+separately). Known-population wide rates are 0 everywhere but sparsely
+covered on QH/LB because most detector-negative known rows were carved
+into clear-negative decoys and decoys are excluded from scored rates (a
+design consequence to flag for successors). Mistral cited from RR2:
+baseline 0.280, placebo +7.39.
+
+Adjudication boundary flagged for red-team BEFORE any verdict: the
+registered falsifier leg reads "placebo delta >= 5 points" and the
+measured delta is -5.13. The falsifier's own consequent interprets the
+fire as "perturbation-RECRUITED hedging" (program-wide), which a
+suppression contradicts; the prediction's plain meaning ("below 3
+points") was a near-no-op claim that a 5.13-point-magnitude effect
+violates. Both readings, the scoreboard consequences, and the QL void are
+going to adversarial review before the Outcome is written. No verdict is
+recorded in this entry.
