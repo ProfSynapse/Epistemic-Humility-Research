@@ -4,7 +4,7 @@ session_id: 20260708T164625Z-paper-5-j-space-hardening
 title: Paper 5 J-space hardening
 status: active
 created_at: '2026-07-08T16:46:25Z'
-updated_at: '2026-07-14T19:13:13Z'
+updated_at: '2026-07-14T20:18:57Z'
 track: research
 phase: phase1
 question: Which registered follow-up experiments harden the Paper 5 actuation thesis,
@@ -1018,6 +1018,26 @@ checkpoints:
   - 'After PI restart: RG0 byte-repro verification, then sign-flip mechanism leg (RAM
     now free), then RR3 adjudication cycle per the printed instructions.'
   signals: {}
+- id: 037-checkpoint
+  at: '2026-07-14T20:18:57Z'
+  kind: checkpoint
+  title: Checkpoint
+  summary: RR3 adjudication cycle DISPATCHED. Pool manifest (21 shards, 16045 rows
+    = 14485 core + 474 clear-neg + 1086 clear-pos decoys, seed 20260715) committed
+    to exp/rr3-corrected-placebo as 6204a7f2 BEFORE any grading, per the manifest-before-grading
+    rule. 21 context-free blind graders (sonnet, rubric verbatim from AMENDMENT.md,
+    bare opaque_id+text shards, no experiment context, no pattern-matcher per standing
+    PI directive) spawned in parallel; graded files land in gitignored analysis/graded/.
+  evidence: []
+  run_ids: []
+  commands: []
+  decisions: []
+  next_steps:
+  - 'On grader completion: verify line counts/order, apply_adjudication.py commit-hash
+    per shard BEFORE apply, then apply --grading-manifest (CG1 per-shard + pooled,
+    void-regrade-once), then rr3_scorer.py, then red-team BEFORE verdict. signflip-mech
+    agent still running (BG1 mistral/llama real-data checks + M1/M2/M3 mechanism leg).'
+  signals: {}
 ---
 # Paper 5 J-space hardening
 
@@ -1465,3 +1485,10 @@ rows before the layer contrast.
 - summary: RR3 pipeline exited 0 after the full sequence (materialize both families, fit_reuse RG0 reconstruction, heldback passes, mistral core all arms, mistral rider, llama rider). GPU freed (0 MiB). Runlog artifacts on disk in the rr3-corrected-placebo worktree analysis/runlog/: core baseline 1694 rows, gated 1303 fired (matches RR2's fired count exactly), three random seeds (30260714/15/16), dose_knowns 382, heldback passes, 87 rider files (mistral + llama dose ladders incl. answerable-row legs). Pipeline printed the 5-step adjudication instructions and stopped, as designed; nothing dispatched. Sign-flip behavioral leg done earlier (gates pass, PI subtype call ahead), mechanism leg deferred. NOTHING RUNNING: no background tasks, no agents in flight, both amendment branches committed locally, main pushed. Safe to restart the machine. RESUME: follow the pre-restart checkpoint's resume sequence (verify RG0 byte-repro explicitly as step 1: the log does not print an explicit byte-repro line; confirm whether the check ran in-pipeline or runs in the scorer before adjudication dispatch).
 - next steps:
   - After PI restart: RG0 byte-repro verification, then sign-flip mechanism leg (RAM now free), then RR3 adjudication cycle per the printed instructions.
+### 037-checkpoint - Checkpoint
+
+- at: `2026-07-14T20:18:57Z`
+- kind: `checkpoint`
+- summary: RR3 adjudication cycle DISPATCHED. Pool manifest (21 shards, 16045 rows = 14485 core + 474 clear-neg + 1086 clear-pos decoys, seed 20260715) committed to exp/rr3-corrected-placebo as 6204a7f2 BEFORE any grading, per the manifest-before-grading rule. 21 context-free blind graders (sonnet, rubric verbatim from AMENDMENT.md, bare opaque_id+text shards, no experiment context, no pattern-matcher per standing PI directive) spawned in parallel; graded files land in gitignored analysis/graded/.
+- next steps:
+  - On grader completion: verify line counts/order, apply_adjudication.py commit-hash per shard BEFORE apply, then apply --grading-manifest (CG1 per-shard + pooled, void-regrade-once), then rr3_scorer.py, then red-team BEFORE verdict. signflip-mech agent still running (BG1 mistral/llama real-data checks + M1/M2/M3 mechanism leg).
