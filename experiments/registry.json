@@ -2059,8 +2059,6 @@
           "gates.yaml"
         ],
         "modules": [
-          "detector_v2 (calibration pin; narrow screen)",
-          "blinded adjudication grades (calibration + RR2 committed; read, not re-run)",
           "common.py",
           "staging.py",
           "frame_port.py",
@@ -2086,7 +2084,7 @@
       "question": "Does question type (answerable triviaqa/popqa vs unanswerable kuq) modulate or explain the family-specific SIGN of the random-direction placebo response certified by the wide-instrument calibration (qwen suppresses -5.13 pts, mistral recruits +7.39 pts), analyzed CPU-only over existing generation text, committed wide grades, and pre-generation anchor hidden states?",
       "registered": true,
       "slug": "placebo-signflip-question-type-analysis",
-      "status": "draft",
+      "status": "signed",
       "title": "Placebo sign-flip: question-type stratification of the family-specific random-direction response",
       "type": "lab-diagnostic",
       "verdict": ""
