@@ -4,7 +4,7 @@ session_id: 20260708T164625Z-paper-5-j-space-hardening
 title: Paper 5 J-space hardening
 status: active
 created_at: '2026-07-08T16:46:25Z'
-updated_at: '2026-07-14T13:22:02Z'
+updated_at: '2026-07-14T17:05:58Z'
 track: research
 phase: phase1
 question: Which registered follow-up experiments harden the Paper 5 actuation thesis,
@@ -13,7 +13,8 @@ tags:
 - paper5
 - j-space
 - actuation
-run_ids: []
+run_ids:
+- rr3-pipeline-20260714b
 trajectory:
   anchor: docs/research-trajectory.md
   current_position: Paper 5 draft merged to main; same-model J-space layer-site replication
@@ -890,6 +891,45 @@ checkpoints:
   - rr3-reviser lands revision -> lead final review -> copy scoreboard calls into
     AMENDMENT -> harness build -> sign with pins -> lift GPU launch approval to PI.
   signals: {}
+- id: 033-launch
+  at: '2026-07-14T17:05:58Z'
+  kind: launch
+  title: RR3 signed and launched on local 3090
+  summary: 'RR3 (rr3-corrected-placebo-replication) arc completed draft-to-launch
+    in one day. Draft (opus agent) -> lead revision round (Q1 regeneration kept, Q2
+    max-over-K, Q4 full grid, Q5 scoreboard slots, +/-8 descriptive envelope, >=25
+    clear-positive draws, rider dosing of answerable rows with source-field question-type
+    stratification) -> PI resolved Q3 (corrected-criterion re-adjudication framing)
+    and gave scoreboard calls (llama null / RG1 pass / seeds inside; orchestrator
+    counter: llama weak recruitment / RG1 pass / one seed outside) -> harness build
+    (15 modules, 78-test suite, detector v2 byte-identical to RR2/calibration pins,
+    held-back decoy pool, pooled CG1 floor, max-over-K arithmetic proven by test)
+    -> lead fixed the build''s STOP item (cell.yaml rider_cells YAML parse error introduced
+    in the revision commit; shared config hoisted to rider_shared), pinned llama revision
+    006f5dcd (verified RR cell.yaml + fleet model_matrix agree), confirmed K-seeds
+    [30260714, 30260715, 30260716], SIGNED. Paper 5 manuscript updated on main with
+    RR2 falsification + calibration Section 4.8 (cfdc90d7). Calibration KG-ingest
+    committed (06f525b2). LAUNCH: local 3090 (free lane, standing approval, PI also
+    explicitly approved after the auto-mode classifier flagged the --i-know-this-runs-on-gpu
+    acknowledgment flag; PI said proceed). First launch attempt stopped cleanly pre-GPU:
+    staged inputs absent in fresh worktree; fixed by symlinking RR worktree row pools
+    + atlas captures (gitignored row-level artifacts, correct lane). Relaunch passed
+    materialize for both families (mistral 1312/382, llama 2956 joined) and entered
+    fit_reuse RG0.'
+  evidence: []
+  run_ids:
+  - rr3-pipeline-20260714b
+  commands:
+  - pipeline.py all --batch-size 8 --i-know-this-runs-on-gpu (local 3090, detached,
+    log analysis/pipeline_run_20260714b.log)
+  decisions: []
+  next_steps:
+  - 'On pipeline completion: RG0 byte-repro verify, build adjudication pool, commit
+    pool manifest, dispatch context-free blind graders, hash-commit, CG1, scorer,
+    red-team certification BEFORE verdict. Pending elsewhere: sign-flip analysis amendment
+    draft (#39), abstention-grading skill PR (#42), scale test 1.7B+~9B held for RR3
+    (#41).'
+  signals: {}
 ---
 # Paper 5 J-space hardening
 
@@ -1303,3 +1343,14 @@ rows before the layer contrast.
   - Q3: corrected-criterion re-adjudication framing (PI). Scoreboard calls registered as above.
 - next steps:
   - rr3-reviser lands revision -> lead final review -> copy scoreboard calls into AMENDMENT -> harness build -> sign with pins -> lift GPU launch approval to PI.
+### 033-launch - RR3 signed and launched on local 3090
+
+- at: `2026-07-14T17:05:58Z`
+- kind: `launch`
+- summary: RR3 (rr3-corrected-placebo-replication) arc completed draft-to-launch in one day. Draft (opus agent) -> lead revision round (Q1 regeneration kept, Q2 max-over-K, Q4 full grid, Q5 scoreboard slots, +/-8 descriptive envelope, >=25 clear-positive draws, rider dosing of answerable rows with source-field question-type stratification) -> PI resolved Q3 (corrected-criterion re-adjudication framing) and gave scoreboard calls (llama null / RG1 pass / seeds inside; orchestrator counter: llama weak recruitment / RG1 pass / one seed outside) -> harness build (15 modules, 78-test suite, detector v2 byte-identical to RR2/calibration pins, held-back decoy pool, pooled CG1 floor, max-over-K arithmetic proven by test) -> lead fixed the build's STOP item (cell.yaml rider_cells YAML parse error introduced in the revision commit; shared config hoisted to rider_shared), pinned llama revision 006f5dcd (verified RR cell.yaml + fleet model_matrix agree), confirmed K-seeds [30260714, 30260715, 30260716], SIGNED. Paper 5 manuscript updated on main with RR2 falsification + calibration Section 4.8 (cfdc90d7). Calibration KG-ingest committed (06f525b2). LAUNCH: local 3090 (free lane, standing approval, PI also explicitly approved after the auto-mode classifier flagged the --i-know-this-runs-on-gpu acknowledgment flag; PI said proceed). First launch attempt stopped cleanly pre-GPU: staged inputs absent in fresh worktree; fixed by symlinking RR worktree row pools + atlas captures (gitignored row-level artifacts, correct lane). Relaunch passed materialize for both families (mistral 1312/382, llama 2956 joined) and entered fit_reuse RG0.
+- run ids:
+  - `rr3-pipeline-20260714b`
+- commands:
+  - `pipeline.py all --batch-size 8 --i-know-this-runs-on-gpu (local 3090, detached, log analysis/pipeline_run_20260714b.log)`
+- next steps:
+  - On pipeline completion: RG0 byte-repro verify, build adjudication pool, commit pool manifest, dispatch context-free blind graders, hash-commit, CG1, scorer, red-team certification BEFORE verdict. Pending elsewhere: sign-flip analysis amendment draft (#39), abstention-grading skill PR (#42), scale test 1.7B+~9B held for RR3 (#41).
