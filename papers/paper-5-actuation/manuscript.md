@@ -30,11 +30,13 @@ notes: >
   otherwise. A first cross-family attempt on mistral and a follow-up
   wide-instrument calibration study are now folded in as Section 4.8. A
   corrected-criterion re-adjudication under a registered multi-seed
-  effect-ratio placebo gate, plus a completed three-family placebo-sign-map
-  rider, is folded in as Section 4.9; all three remain exploratory and
+  effect-ratio placebo gate, plus a three-family placebo-sign-map rider, is
+  folded in as Section 4.9, and a multi-seed placebo seed-distribution census
+  that measures each family's matched-magnitude random-direction null across 15
+  fresh seeds is folded in as Section 4.10; all remain exploratory and
   pre-headline. The next planned step is a larger cross-model / cross-family
-  actuation study registered against the multi-seed per-family placebo design
-  rule Section 4.9 established.
+  actuation study registered against the per-family placebo null distribution
+  the census measured (Section 4.10).
 ---
 
 # Readable Is Not Writable: Channel, Gate, and Workspace Constraints on Actuating Epistemic State in Small Language Models
@@ -495,9 +497,12 @@ as stated: a single random seed is not enough to size either side of that
 comparison, because mistral's random-direction response at matched magnitude
 spans -7.4 to +21.8 points across three fresh seeds at the same site and
 dose. The design rule for any future direction-specificity placebo criterion
-must therefore also require a multi-seed (K >= 3) random-direction ensemble
-with a max-over-K (or pre-stated equivalent) denominator, not a single seed
-(Section 4.9).
+must therefore size the placebo against more than one random seed; the
+multi-seed census that Section 4.10 later built supersedes the K >= 3
+max-over-K denominator first proposed here, replacing it with registration
+against each family's measured K = 15 null distribution, from which
+percentile-based or sign-opposition criteria are available (Section 4.10;
+`experiments/placebo-seed-distribution-census/AMENDMENT.md`).
 
 This also qualifies how the narrow-detector-graded random-direction and
 permuted-gate controls elsewhere in this paper should be read. The Qwen3-4B
@@ -594,6 +599,26 @@ complete in sign across all three families: qwen suppresses (-5.13), llama
 is null (+0.1 at matched magnitude), and mistral recruits on average but
 with wide single-seed variance (-7.4 to +21.8).
 
+**Census update (2026-07-15).** A dedicated multi-seed census
+(Section 4.10, `experiments/placebo-seed-distribution-census/AMENDMENT.md`)
+later measured llama's matched-magnitude placebo across 15 fresh seeds and
+found the single +0.1 reading above to be an unrepresentative draw: it sits
+near the 80th percentile of llama's census distribution, whose median is
+-7.67 points, and llama's placebo is in fact suppressive (12 of 15 seeds
+negative). Two consequences follow for this rider. First, llama is not null
+at matched magnitude, so the sign map is not "complete at null" for llama; the
+census llama leg supersedes the +0.1 point reading (Section 4.10). Second, the
+monotone-in-baseline reading the rider recorded as falsified was falsified
+against that single unrepresentative draw. On the census medians the
+three-family sign map reads qwen -6.0 at baseline 0.104, llama -7.67 at 0.164,
+and mistral +7.0 at 0.280: the two lower-baseline families suppress and the
+highest-baseline family recruits, which partially revives monotone-in-baseline
+as a hypothesis rather than settling it against. With n = 3 families this is a
+hypothesis for a future registered test, not a claim. RR3's registered
+scoreboard call and its adjudication stand exactly as recorded above; this
+update revises only the downstream interpretation, on the census's larger
+sample.
+
 **Interpretation.** The corrected effect-ratio criterion is a stricter test
 than the flat tolerance it replaced, not a looser one, and it survives
 adversarial review specifically because it is conservative (max-over-K, not
@@ -607,6 +632,117 @@ response at this site and dose is itself high-variance across seeds, and one
 of three seeds recruited more than half of the gated effect's magnitude.
 Both are placebo-instrument findings, not evidence that the gated write
 itself is inert: benefit and cost reproduced RR2 exactly.
+
+### 4.10 A multi-seed placebo census retires the seed-noise reading and revises the family sign map
+
+The design rules Sections 4.8 and 4.9 arrived at both assume an object nobody
+had yet measured: the per-family distribution of matched-magnitude
+random-direction behavioral deltas across many fresh seeds. A dedicated census
+(`experiments/placebo-seed-distribution-census/AMENDMENT.md`) built it. For each
+family the census wrote the frozen random direction as an erase-write to that
+family's certified placebo setpoint (qwen dose_abs 12.608, mistral 3.665, llama
+13.514 re-derived byte-identical from RR's committed hs20 fit manifest), so
+every seed in a family is a draw at one fixed magnitude. It drew K = 15 fresh
+pre-registered random seeds per family, distinct from RR2's and RR3's, scored
+each on a fixed S = 300 paired confab subsample (n_missing = 0 for every family
+and seed) through one blinded context-free adjudication pool of 18 shards, and
+adjudicated each family against a criterion fixed before the run: the family
+sign SURVIVES iff the fraction of seeds carrying the committed sign f_s >= 0.80
+with a bootstrap 95% lower bound above 0.50 and a median at least 3.0 points in
+the committed direction; it is RETIRED to seed noise iff f_s <= 0.60 or the
+interquartile range spans zero; otherwise INDETERMINATE. The result was
+adversarially red-teamed, including an independent raw-artifact re-derivation of
+all 15 mistral deltas, before the Outcome was written.
+
+The census overturned the seed-noise reading both prior predictors held. Its
+per-family verdicts:
+
+- **qwen SURVIVES robustly.** f_neg = 14/15 = 0.933 (bootstrap 95% CI
+  [0.80, 1.00]), median signed delta -6.0 points, IQR [-6.83, -3.67], span
+  [-8.33, +0.67]. Suppression is a distributional property of the family, not a
+  single-draw artifact.
+- **mistral SURVIVES at the exact boundary.** f_pos = 12/15 = 0.800, the
+  registered floor exactly (bootstrap 95% CI [0.60, 1.00], lower bound 0.60),
+  median +7.0 points, IQR [+1.17, +13.67] (does not span zero), span
+  [-8.00, +20.33]. Under the pre-stated criterion this is SURVIVES, which
+  falsifies the "mistral recruitment is seed noise" call both predictors
+  registered. The census records it at boundary strength: the margin over
+  INDETERMINATE is a single seed, the three weakest positive seeds (+1.0, +1.33,
+  +1.67) are within paired noise individually, and there is no rescoring lane,
+  so the verdict stands as computed with that caution attached.
+- **llama's null control did not hold.** llama carried no committed sign and was
+  run as a negative control expected to center near zero. Instead
+  f_neg = 12/15 = 0.800 with median -7.67 points, IQR [-9.33, -2.00], span
+  [-12.00, +19.33]: a newly discovered negative placebo sign, reported straight
+  per the pre-registered llama rule, not a falsification of anything.
+
+Both families' historical single-seed values sit mid-distribution: qwen's -5.13
+at the 53rd percentile and mistral's +7.39 at the 53rd percentile of their
+census distributions, so neither point was anomalous, only under-sampled.
+
+**Integrity disclosure.** The first report build joined over the blinded
+adjudication output alone and dropped every detector-refused row from the paired
+join, violating the registered final-rate rule (detector-v2-refused OR
+adjudicated-abstention, per row). It was caught post-unblind, before any
+verdict, from an n_missing anomaly and a mistral baseline rate at half this
+paper's own cited 0.28, and corrected by merging the runlog detector flags with
+the blinded adjudication values symmetrically across all arms and families; the
+corrected join reproduces the known baseline hedge rates (mistral 0.263 against
+the cited 0.28). Both report versions are committed (`census_report.json`
+corrected, `census_report_defective_join.json` regenerated from the pre-fix
+pinned code). The red team adjudicated the correction legitimate: the OR rule
+admits no alternative reading, the merge is symmetric, and no discretionary
+choice in it can flip a verdict. The correction moved two verdicts (qwen from
+INDETERMINATE to SURVIVES, mistral from RETIRED to SURVIVES), both against the
+registered predictions, which is the opposite of what a motivated fix would
+produce (`experiments/placebo-seed-distribution-census/AMENDMENT.md`, Outcome
+SC3 disclosure).
+
+**Consequences for the actuation program.** The census sharpens three of this
+paper's claims.
+
+- *Mistral direction-specificity, falsified in Section 4.9, is reinforced on a
+  better-measured denominator.* The census maximum random lift over 15 fresh
+  seeds is +20.3 points, close to RR3's max-over-3 of 21.8 points, so sampling
+  the placebo 15 deep did not surface a larger excursion than the 3-seed draw
+  already found. The gated arm's +40.9 point confab lift still falls short of a
+  3x ratio over that denominator, so the direction-specificity verdict does not
+  change and now rests on a null sampled 15 deep rather than 3
+  (`experiments/placebo-seed-distribution-census/AMENDMENT.md`, Outcome;
+  Section 4.9).
+- *Qwen specificity is strengthened, not weakened.* Because qwen's placebo null
+  is itself suppressive, the true caution write's recruitment of refusals is
+  sign-opposed to the family's nonspecific-perturbation response: a random
+  perturbation at matched magnitude pushes qwen hedging down, while the gated
+  caution write pushes it up. A confound a placebo is meant to catch would push
+  the same way as the true write, and here it pushes the opposite way, so the
+  qwen gate-and-snap result (Section 4.4) sits on firmer specificity footing
+  than a near-zero placebo would have left it.
+- *Two routes to abstention, and why rate deltas alone cannot certify
+  doubt-coupling.* Abstention is causally reachable at matched magnitude through
+  at least two routes: through represented doubt (the gated true-direction
+  write) and through nonspecific computational disruption (a random direction of
+  the same magnitude). The red team sampled the random arm's dose-induced
+  refusals and confirmed them to be coherent, well-formed abstentions on rows
+  that carried committed answers at baseline, not dose-degraded text. Because a
+  random write can manufacture genuine coherent refusals, a raw increase in
+  abstention rate cannot by itself certify that an intervention is coupled to
+  the model's own doubt. Certifying doubt-coupling requires the selectivity
+  evidence this paper already leans on (moving target failures without imposing
+  refusal on known-correct rows) together with a specificity margin referenced
+  to the family's own measured placebo null, not to zero.
+
+**Design-rule update.** The census also matures the placebo design rule
+Sections 4.8 and 4.9 were still refining. Those sections prescribed a multi-seed
+(K >= 3) random-direction ensemble with a max-over-K denominator in place of a
+single seed. The standing rule is now stronger: register the placebo criterion
+against each family's measured per-family null distribution. The census supplies
+that distribution at K = 15 for all three families, so a future
+direction-specificity test can register a percentile-based tolerance or a
+sign-opposition criterion (does the true write move behavior opposite to the
+family's own nonspecific-perturbation response) against a measured null rather
+than a point estimate or a small-K maximum
+(`experiments/placebo-seed-distribution-census/AMENDMENT.md`).
 
 ---
 
@@ -623,7 +759,7 @@ The results form a channel map rather than a single pass/fail story.
 | Doubt-gated caution snap | 73.5% clean tighten, 3.1% known cost | Release direction remains null | Gate supplies selectivity; snap supplies refusal |
 | Mid-band J-space write | hs23 beats hs34 by +22.7pp | Needs layer-specific dose; not yet cross-family | Write site matters |
 | Natural J-token write | Non-inert token-only effect | Redundant with `c_hat` hybrid | Verbalizable token target is not enough |
-| Cross-family gated snap (mistral) | Wide-instrument adjudicated refusal 69.9%, cost pristine (0.52% known-correct) | Direction-specificity falsified twice: under a flat 2-point placebo tolerance, and again under a corrected 3x effect-ratio gate (ratio 1.87) driven by high seed-to-seed variance in mistral's random-direction response (-7.4 to +21.8pp); llama placebo response is null at matched magnitude | Placebo criteria must be calibrated to each family's own wide-instrument baseline AND evaluated against a multi-seed random-direction ensemble with a pre-stated denominator rule (RR3 used the conservative max-over-K); a single seed can materially misstate either the baseline delta or an effect-ratio denominator |
+| Cross-family gated snap (mistral) | Wide-instrument adjudicated refusal 69.9%, cost pristine (0.52% known-correct) | Direction-specificity falsified twice: under a flat 2-point placebo tolerance, and again under a corrected 3x effect-ratio gate (ratio 1.87) driven by high seed-to-seed variance in mistral's random-direction response (-7.4 to +21.8pp); a 15-seed placebo census (Section 4.10) then resolved all three families' matched-magnitude placebo as sign-consistent rather than seed noise (qwen suppresses 14/15, mistral recruits at the 12/15 boundary, llama newly suppresses 12/15), so llama is not a null control | Placebo criteria must be registered against each family's measured per-family null distribution, not a flat tolerance or a single seed; the census (Section 4.10) supplies that distribution at K=15 for percentile-based or sign-opposition criteria |
 
 The practical controller that emerges is not "make the model introspect." It is:
 
@@ -700,7 +836,11 @@ not population effect-size estimates. Key limits:
   (Section 4.9). Any placebo delta reported from a single seed anywhere in
   this paper, including the qwen and mistral family-signed readings in
   Section 4.8, should be read as one draw from a wide distribution rather
-  than a family constant.
+  than a family constant. The census in Section 4.10 measured these
+  distributions directly at K = 15 per family and found the matched-magnitude
+  placebo sign-consistent rather than seed noise in all three families, so the
+  single-seed caution stands but the underlying nulls are now measured, not
+  assumed.
 
 ### 6.5 Next study: the amped-up replication and model sweep
 
@@ -726,17 +866,19 @@ Recommended escalation:
    random-direction response at this site and dose is itself high-variance
    across seeds (-7.4 to +21.8 points). Repeating the same operating point
    with the same K is not expected to change the outcome; a future attempt
-   at establishing mistral direction-specificity needs either a different
-   write site or dose where the random-direction response is less variable,
-   or a larger K to tighten the max-over-K denominator. Llama's placebo
-   response, measured for the first time by RR3's rider, is null at matched
-   magnitude (Section 4.9), but llama's gated caution snap itself remains
-   completely untested. Any future attempt, on llama or elsewhere, must
-   register its placebo criterion against that family's own measured
-   wide-instrument baseline (Section 4.8) with a multi-seed (K >= 3)
-   random-direction ensemble and a max-over-K (or pre-stated equivalent)
-   denominator (Section 4.9), not a single seed and not a flat
-   small-tolerance band.
+   at establishing mistral direction-specificity needs a different
+   write site or dose where the random-direction response is less variable
+   (a larger K does not help: the Section 4.10 census max over 15 seeds is
+   +20.3 points, close to RR3's max-over-3 of 21.8). Llama's placebo
+   response, measured first by RR3's rider as null and then by the Section 4.10
+   census across 15 seeds as a newly discovered suppressive sign (12/15
+   negative, median -7.67), is not a null control after all; llama's gated
+   caution snap itself remains completely untested. Any future attempt, on
+   llama or elsewhere, must register its placebo criterion against that
+   family's measured per-family null distribution (Section 4.10; the census
+   supplies it at K = 15), for example via a percentile-based tolerance or a
+   sign-opposition criterion, not a single seed and not a flat small-tolerance
+   band.
 4. **Dense-token screen.** Separately screen abstract or multilingual token
    bundles before any causal hybrid run. Do not alter the natural-token result
    post hoc.
@@ -791,6 +933,7 @@ provenance appendix or supplement.
 | Mistral cross-family gated write cleared benefit (69.9% adjudicated refusal) and cost (0.52% known-correct) gates under a wide blinded instrument but failed the flat 2-point placebo tolerance (+7.39pp random-direction lift) | `experiments/rr2-mistral-adjudicated-refusal-confirm/AMENDMENT.md` Outcome | Exploratory falsification (placebo-criterion design flaw, not benefit/cost) |
 | Wide-instrument baseline hedging and placebo response are family-graded and family-signed (qwen -5.13pp suppression, mistral +7.39pp recruitment); flat placebo tolerances must be registered per-family | `experiments/abstention-wide-instrument-calibration/AMENDMENT.md` Outcome | Exploratory instrument calibration, resolved |
 | Corrected effect-ratio placebo criterion (>= 3x max-over-K fresh-seed random lift) still falsified mistral direction-specificity (ratio 1.87) while reproducing RR2's benefit (69.9% adjudicated refusal) and cost (0.52% known-correct) exactly; red-team certified robust to detector-only and mean-of-K denominators; mistral's random-direction lift spans -7.4 to +21.8pp across three fresh seeds; llama rider placebo response is null at matched magnitude, completing the three-family sign map | `experiments/rr3-corrected-placebo-replication/AMENDMENT.md` Outcome | Exploratory falsification (corrected-criterion re-adjudication of the RR2 claim, benefit/cost intact) |
+| Multi-seed placebo census (K=15 fresh seeds per family at matched magnitude, S=300 paired rows, blinded adjudication in 18 shards) resolved all three families' random-direction placebo as sign-consistent rather than seed noise: qwen suppression SURVIVES (14/15 negative, median -6.0), mistral recruitment SURVIVES at the 12/15 boundary (median +7.0, falsifying both predictors' registered seed-noise call), null-control llama shows a newly discovered negative sign (12/15, median -7.67); historical single-seed values sit at the 53rd percentile; a post-unblind final-rate-rule join correction moved two verdicts against the predictions, both report versions committed, red-team certified legitimate | `experiments/placebo-seed-distribution-census/AMENDMENT.md` Outcome | Exploratory placebo-distribution census, resolved (revises the RR3 llama-null leg) |
 
 ## Appendix B. Figure Plan
 
@@ -820,12 +963,14 @@ provenance appendix or supplement.
 - Run the planned cross-model J-space/gated-snap replication before promoting
   the workspace-band result from exploratory to headline.
 - Register any future direction-specificity placebo criterion against the
-  per-family wide-instrument baseline measured in Section 4.8 (qwen 0.104,
-  llama 0.164, mistral 0.280), not a flat symmetric tolerance, and with a
-  multi-seed (K >= 3) random-direction ensemble and a max-over-K (or
-  pre-stated equivalent) denominator rather than a single seed, per RR3's
-  finding that a single seed materially misstates mistral's random-direction
-  response (Section 4.9).
-- Run llama's gated caution snap (not yet attempted; only its placebo
-  response has been measured, at null, in Section 4.9) before claiming or
-  ruling out cross-family direction-specificity for that family.
+  per-family measured null distribution the census supplies at K = 15
+  (Section 4.10), for example via a percentile-based tolerance or a
+  sign-opposition criterion, not a flat symmetric tolerance, a single seed, or
+  the small-K max-over-K denominator RR3 first proposed (Section 4.9). The
+  per-family wide-instrument baselines from Section 4.8 (qwen 0.104, llama
+  0.164, mistral 0.280) still anchor the recruitment-versus-suppression axis.
+- Run llama's gated caution snap (not yet attempted; its placebo response has
+  been measured, first at null by RR3's rider and then by the Section 4.10
+  census as a newly discovered suppressive sign, so llama is not a null
+  control) before claiming or ruling out cross-family direction-specificity
+  for that family.
