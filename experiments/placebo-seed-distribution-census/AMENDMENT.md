@@ -406,9 +406,148 @@ sign-consistent.
 
 ## Outcome
 
-Filled at resolve. Record the per-family survive/retire/indeterminate verdict
-against the pre-stated criterion, the gate results (SC0-SC3), the distribution
-summaries per family, where each historical single-seed value fell within its
-census distribution, the scoreboard adjudication, and the one-sentence summary
-that also goes into `verdict:` in the manifest. Reaffirm that no locked verdict
-moved.
+Resolved 2026-07-15. Full run: K = 15 accepted seeds per family, S = 300 paired
+rows per seed, n_missing = 0 for every family and seed. Adversarially
+red-teamed (opus, full-arc audit including an independent raw-artifact
+re-derivation of all 15 mistral deltas) before this section was written; no
+invalidating finding. Committed aggregates: `analysis-committed/census_report.json`.
+
+### Per-family verdicts against the pre-stated criterion
+
+- **qwen35_4b: SURVIVES (robust).** f_neg = 14/15 = 0.933 (bootstrap 95% CI
+  [0.80, 1.00], LCB > 0.50), median signed delta -6.00 points, IQR
+  [-6.83, -3.67], full span [-8.33, +0.67]. All three SURVIVES conditions met
+  with margin. The suppression reading is a distributional property of the
+  family, not a point artifact.
+- **mistral7b_v03: SURVIVES (boundary; falsifies the registered prediction).**
+  f_pos = 12/15 = 0.800, exactly the registered floor (bootstrap 95% CI
+  [0.60, 1.00], LCB 0.60 > 0.50), median +7.00 points, IQR [+1.17, +13.67]
+  (does not span zero), full span [-8.00, +20.33]. Under the pre-stated
+  criterion this is SURVIVES, and per the Falsifier section it FALSIFIES the
+  "mistral is seed noise" call registered by BOTH predictors. Reported with the
+  red-team-required caution: the margin over INDETERMINATE is a single seed;
+  the three weakest positive seeds (+1.0, +1.33, +1.67) are within paired
+  noise individually; and the result is sensitive to the registered
+  detector-v2 mined-idiom vocabulary (a canonical-"I don't know"-only rescore,
+  itself an over-correction, would give 11/15 = INDETERMINATE). There is no
+  rescoring lane; the verdict stands as computed, and this paragraph is the
+  registered honesty about its robustness. Recruitment at matched magnitude is
+  real but marginal as a distributional claim.
+- **llama32_3b: NEWLY_DISCOVERED_NEGATIVE_SIGN (null control did not hold).**
+  f_neg = 12/15 = 0.800, median -7.67 points, IQR [-9.33, -2.00], full span
+  [-12.00, +19.33]. llama had no committed sign, so per the pre-registered
+  llama rule this is a newly discovered llama placebo sign, reported straight,
+  not a falsification. Same 12/15 boundary as mistral. The two positive
+  outliers (+19.33, +6.33) are exactly the two seeds with the highest dosed
+  detector-refusal counts (97/300 and 50/300).
+
+Cross-family observation (reported, not adjudicated): matched-magnitude random
+directions are NOT behaviorally inert anywhere. All three families show
+sign-consistent placebo structure at 12 sigma_c-scale doses, with suppression
+dominant in qwen and llama and recruitment dominant in mistral. The mechanism
+correlate is the detector-refusal channel: per-seed delta tracks the dosed
+detector-refusal count strongly in mistral and llama. Red-team sampling
+confirmed these dose-induced refusals are coherent, well-formed abstentions on
+rows that carried committed answers at baseline (genuine recruitment, not
+dose-degraded text), and degenerate-and-refused overlap is ZERO across all 51
+runlogs.
+
+### Historical single-seed percentiles
+
+- qwen -5.13: 53rd percentile of its census distribution. Both predictors
+  called 40th-60th: CORRECT.
+- mistral +7.39: 53rd percentile. Both predictors called 50th-70th: CORRECT.
+- RR3's three external mistral seeds (+13.3, -7.4, +21.8, full-pool
+  denominator, different lane, per the sign-time decision NOT counted toward
+  K) sit at roughly the 67th-100th, 3rd, and 100th percentiles of the census
+  distribution: consistent with a wide recruitment-dominant spread.
+
+### Gate results
+
+- **SC0 PASS.** 21 staged inputs hash-recorded in the committed staging
+  manifest; S = 300 subsample per family drawn by permutation seed 40260714
+  and committed before generation; RG0 baseline byte-repro passed per family
+  (committed SC1 ledger).
+- **SC1 PASS.** 45/45 accepted seeds; ZERO readback voids under the corrected
+  relative bar (pooled max relative deviation 0.19% vs the 0.5% ceiling; the
+  pre-run user-approved tolerance correction is documented in the Gates
+  section and instrument.repins); 88 randomness-bar voids (qwen 31, mistral
+  16, llama 41) recorded in the committed ledger; the void rate matches the
+  documented cosine-geometry expectation for the locked 0.015 bar, the bar is
+  sign-symmetric, so the accepted set is unbiased in behavioral sign; llama
+  setpoint 13.51434840261836 re-derived byte-identical from RR's committed
+  hs20 fit manifest.
+- **SC2 PASS.** Hash-commit-before-unblind held end to end and was re-verified
+  from git history by the red team (pool manifest c45d0779 committed before
+  grading; graded-file hashes 1e5039c6 and a91d65a1 committed before unblind;
+  apply at ec24ce12). 18/18 shards passed: clear-negative agreement 1.000 on
+  every shard, clear-positive 0.648-0.889 per shard, pooled 0.760 vs the 0.60
+  floor, 53-54 clear positives per shard vs the 25 floor.
+  mistral7b_v03_shard_04 attempt 1 (0.593) fired the registered
+  VOID_REGRADE_ONCE; a fresh blinded grader's attempt 2 passed (0.648);
+  attempt-1 grades discarded, not cherry-picked.
+- **SC3 PASS after a post-unblind instrument correction, disclosed in full.**
+  The first report build joined over the adjudication output alone, dropping
+  every detector-refused row from the paired join as missing, in violation of
+  the registered final rate rule verbatim (cell.yaml
+  `write_law.final_rate_rule`: detector_v2_refused OR adjudicated_abstention,
+  per row; this section's Behavioral readout). Found post-unblind, before any
+  verdict, from the n_missing anomaly (up to 122/300, family-correlated) and a
+  mistral baseline rate (~0.14) at half this document's own cited 0.28.
+  Corrected by merging runlog detector flags with blinded adjudication values
+  per arm; repinned with a full audit entry; both report versions committed
+  (`census_report.json` corrected, `census_report_defective_join.json`
+  regenerated deterministically from the pre-fix pinned code, verdicts
+  unusable). The red team adjudicated the correction legitimate: the OR rule
+  admits no alternative reading, the merge is symmetric across arms and
+  families, and no discretionary choice in the fix can flip a verdict. The
+  corrected join reproduces the known baseline hedge rates (mistral 0.263 vs
+  the cited 0.28). Criterion, gates, thresholds, seeds, and setpoints were
+  never touched. Under the defective join the verdicts would have read qwen
+  INDETERMINATE / mistral RETIRED / llama NEWLY_DISCOVERED_NEGATIVE_SIGN; the
+  correction moved two verdicts, both AGAINST the registered predictions,
+  which is the opposite of what motivated-fix contamination would produce.
+
+### Disclosures and residuals
+
+- llama baseline provenance deviation (pre-run, user-approved, in
+  instrument.repins): the drafted RR llama baseline never existed on disk;
+  RR3's `rider_llama__baseline.jsonl` was substituted and verified against the
+  staged 1206-row file. It bears on the llama family specifically.
+- GPU-side attestations (readback measurements, RG0 byte-repro, frozen
+  direction reconstruction) were relied on via the committed SC1 ledger; the
+  CPU-side red team re-verified everything else from raw artifacts.
+- Hygiene, no statistical impact, left uncorrected post-unblind by design:
+  `redraw_seed` in sc1_checks.py skips seed floor+16's slot (code emits
+  floor+K+attempt with attempt starting at 1) so seed X0000016 was never drawn
+  in any family, contradicting its own docstring; cell.yaml does not parse as
+  YAML (unquoted colon) and its constants are hand-transcribed into config.py,
+  where the red team cross-checked every one against the governed docs.
+- Blinding incidents, both resolved without unblinding: the first
+  mistral_shard_02 grader died on an API content-filter block with no output
+  written (clean respawn completed attempt 1); mistral_shard_04 used its
+  registered one-shot regrade.
+
+### Scoreboard adjudication
+
+Both predictors registered identical calls, so both score identically:
+qwen slot CORRECT (SURVIVES), mistral slot WRONG (called RETIRED, actual
+SURVIVES at the boundary), llama slot WRONG (called near-zero null, actual
+newly discovered negative sign), percentile slots CORRECT (both families'
+historical points landed inside the called ranges, each at the 53rd
+percentile). 2 of 4 slots each. The shared miss is informative: both
+predictors treated RR3's three-seed spread as implying seed noise, and the
+15-seed census instead resolved a marginal but sign-consistent recruitment.
+
+### One-sentence summary (manifest verdict)
+
+At matched magnitude, random-direction placebos are sign-consistent rather
+than seed noise in all three families: qwen suppression SURVIVES robustly
+(14/15 negative, median -6.0), mistral recruitment SURVIVES at the exact
+12/15 boundary (median +7.0, falsifying both predictors' registered RETIRED
+call), and null-control llama shows a newly discovered negative sign (12/15,
+median -7.7).
+
+No locked verdict moved: the Phase 1 headline matrix, the wide-instrument
+calibration, RR3, and the signflip resolution are untouched by this census;
+this experiment adjudicated only its own pre-registered criterion.

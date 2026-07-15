@@ -6,6 +6,27 @@ in `experiment.yaml`.
 
 ## Entries
 
+### 2026-07-15 (lead): red team returned no invalidating findings; Outcome written; resolved
+
+Opus red team audited the full arc (rule adjudication, post-unblind correction
+discipline, refusal-channel authenticity, criterion application, an
+independent raw-artifact re-derivation of all 15 mistral deltas, SC2 order
+from git history, decoy double-use circularity, seed/void provenance). Every
+re-derived number matched the pinned report to the digit. Key findings folded
+into the Outcome: correction adjudicated legitimate (the registered OR rule
+admits no alternative reading; the defective join was a strict violation);
+dose-induced refusals verified genuine (coherent abstentions on rows that
+carried committed answers at baseline; degenerate-and-refused overlap ZERO
+across all 51 runlogs); mistral SURVIVES is a knife-edge (exactly 12/15,
+one-seed margin, sensitive to the registered mined-idiom vocabulary) and is
+written with that caution; llama baseline substitution and GPU-side ledger
+attestations disclosed; two hygiene items recorded (redraw_seed skips seed
+X0000016's slot vs its own docstring; cell.yaml does not parse and constants
+are hand-transcribed into config.py, all cross-checked faithful). Scoreboard:
+both predictors 2/4 (qwen and both percentile calls correct, mistral and
+llama calls wrong). Resolved via bin/exp; PR opened; merge awaits explicit
+user approval.
+
 ### 2026-07-15 (lead): grading complete, final-rate-rule defect found post-unblind and corrected to the registered rule; red-team dispatched pre-verdict
 
 Grading arc: 18 blinded context-free graders (one per shard, private workdirs),

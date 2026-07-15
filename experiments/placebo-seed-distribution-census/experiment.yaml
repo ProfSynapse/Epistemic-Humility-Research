@@ -2,7 +2,7 @@ slug: placebo-seed-distribution-census
 title: 'Placebo seed-distribution census: multi-seed random-direction null at matched
   magnitude'
 type: steer-cell
-status: signed
+status: resolved
 registered: true
 created_at: '2026-07-14T23:00:14Z'
 question: What is the per-family DISTRIBUTION of matched-magnitude random-direction
@@ -196,5 +196,9 @@ instrument:
       vs the AMENDMENT''s own cited baseline hedge rates; correction implements the
       pre-registered rule, no criterion/gate/threshold change. 60/60 CPU tests pass.'
 inputs: []
-verdict: ''
+verdict: 'At matched magnitude, random-direction placebos are sign-consistent rather
+  than seed noise in all three families: qwen suppression SURVIVES robustly (14/15
+  negative, median -6.0), mistral recruitment SURVIVES at the exact 12/15 boundary
+  (median +7.0, falsifying both predictors'' registered RETIRED call), and null-control
+  llama shows a newly discovered negative sign (12/15, median -7.7).'
 kg: []

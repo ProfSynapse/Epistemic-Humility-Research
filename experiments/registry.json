@@ -2185,10 +2185,10 @@
       "question": "What is the per-family DISTRIBUTION of matched-magnitude random-direction wide-instrument abstention deltas across K=15 fresh seeds (qwen hs20 at dose_abs 12.608, mistral hs16 at 3.665, llama hs20 at 12 sigma_c), and does each family's single-seed placebo-sign reading (qwen -5.13 suppression, mistral +7.39 recruitment, llama +0.1 null) survive as a distributional property or retire to seed noise?",
       "registered": true,
       "slug": "placebo-seed-distribution-census",
-      "status": "signed",
+      "status": "resolved",
       "title": "Placebo seed-distribution census: multi-seed random-direction null at matched magnitude",
       "type": "steer-cell",
-      "verdict": ""
+      "verdict": "At matched magnitude, random-direction placebos are sign-consistent rather than seed noise in all three families: qwen suppression SURVIVES robustly (14/15 negative, median -6.0), mistral recruitment SURVIVES at the exact 12/15 boundary (median +7.0, falsifying both predictors' registered RETIRED call), and null-control llama shows a newly discovered negative sign (12/15, median -7.7)."
     },
     {
       "checkpoint": {
