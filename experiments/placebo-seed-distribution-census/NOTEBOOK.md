@@ -6,6 +6,36 @@ in `experiment.yaml`.
 
 ## Entries
 
+### 2026-07-15 (lead): post-resolve exploratory re-slice, qwen suppression by subtype across the 15 seeds
+
+Lab-notebook tier, descriptive only, no criterion, reported separately from
+the resolved verdicts. Question: signflip found the single-seed qwen placebo
+suppression concentrated entirely in the future-unknown subtype (-24.7 pts
+there, -2.8..+0.5 elsewhere, one seed). Is that concentration seed-general?
+Method: registered merge rule (runlog refused_v2 OR adjudicated grade) applied
+per category_canon subtype per seed over the fixed S=300 qwen rows; join
+validated by reproducing the family median -6.00 exactly; lead independently
+recomputed the two headline subtypes and matched the analyst digit for digit.
+
+Cross-seed per-subtype deltas (median pts / seeds-negative / n rows /
+baseline rate): future unknown -15.22 / 13 of 15 / 46 / 26.1%;
+controversial-debatable -8.57 / 15 of 15 / 70 / 15.7%; counterfactual -4.35 /
+12 of 15 / 46 / 6.5%; underspecified -4.00 / 8 of 15 / 25 / 12.0%;
+unsolved-problem -1.72 / 12 of 15 / 58 / 1.7%; false-assumption 0.00 flat /
+55 / 0.0% (floor).
+
+Answer: NOT a single-subtype concentration. Future-unknown carries the
+largest median suppression and is majority-negative, consistent with signflip
+naming it the extreme mover, but it accounts for roughly 40-50% (per-seed
+range ~29-70%) of total suppression, and controversial-debatable is MORE
+sign-consistent (15/15) at smaller magnitude. No subtype flips sign against
+the family median. Signflip's flat-elsewhere pattern does not replicate
+across seeds, which extends the census's single-draw lesson to subtype
+reads: single-seed subtype structure is itself noisy. Per-subtype n (25-70)
+is well below signflip's per-subtype resolution; hypothesis-generating only.
+Consequence adopted for the gate-contribution factorial design: subtype
+stratification stays a descriptive secondary readout, not a primary axis.
+
 ### 2026-07-15 (lead): red team returned no invalidating findings; Outcome written; resolved
 
 Opus red team audited the full arc (rule adjudication, post-unblind correction
