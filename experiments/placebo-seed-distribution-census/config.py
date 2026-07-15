@@ -198,6 +198,28 @@ GEN_MAX_NEW_TOKENS = 200
 GEN_EOS_ENABLED = True
 GEN_ENABLE_THINKING = False
 
+# LEAD DECISION (2026-07-14, recorded here per instruction): batch_size = 4 for
+# every full-scale K-seed dosed pass, PINNED as a single constant used by
+# EVERY (family, seed) generation call in run_census.py's `run-family`
+# command -- never varied mid-family, never varied mid-seed. Rationale:
+# determinism at WHOLE-PASS granularity, not per-row. bf16 batched generation
+# on this stack is only byte-identical to itself when the batch SHAPE
+# (composition + padding) is identical across runs; the registered
+# `sequential_vs_batch_parity` GPU smoke already found that changing which
+# rows share a batch (e.g. resuming mid-pass with a different pending set)
+# can flip 1-3 of 8 rows' generated text between batch_size=1 and batch_size=N
+# runs at the same seed/setpoint (recorded straight in NOTEBOOK.md as a bf16
+# batch-shape divergence instrument note, not a correctness bug -- greedy
+# decode is deterministic GIVEN a fixed batch shape, just not invariant ACROSS
+# batch shapes). Pinning ONE batch_size and pairing it with whole-pass
+# checkpoint/resume (a completed (family, seed) pass is durable and never
+# regenerated; an interrupted pass restarts from its beginning rather than
+# resuming mid-pass) guarantees every row in a given completed pass was
+# generated inside the SAME batch composition every time that pass is
+# (re)produced, so the K-seed dosed distribution this census measures is not
+# contaminated by an accidental batch-shape artifact partway through a family.
+BATCH_SIZE = 4
+
 # ---------------------------------------------------------------------------
 # Model identities (fleet model_matrix.yaml is the live source of truth per
 # this repo's resolve_revision discipline; these are the cell_ids used to

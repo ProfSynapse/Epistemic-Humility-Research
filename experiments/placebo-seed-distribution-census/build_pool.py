@@ -74,6 +74,28 @@ def runlog_path(tag: str) -> Path:
     return ANALYSIS / "runlog" / f"{tag}.jsonl"
 
 
+def resolve_seeds_for_family(family: str) -> list[int]:
+    """The SC1 void-and-redraw ledger (gates.yaml `sc1_magnitude_matching.
+    on_fail`; run_census.py `resolve_and_run_family_seeds`) can substitute a
+    registered primary seed with a REDRAWN one (sc1_checks.redraw_seed) when
+    a primary seed fails the randomness bar or the readback tolerance. The
+    pool must be built from the seeds that actually PASSED SC1 and were
+    dosed, not the static registered primary block, or a redrawn seed's rows
+    would silently never enter the pool. Prefers the per-family SC1 ledger
+    `run-family` persists at `analysis/sc1_ledger_<family>.json`; falls back
+    to the registered primary block (config.SEED_BLOCKS[family]) only if no
+    ledger is present (e.g. a synthetic-fixture unit test, or a family run
+    with zero voids so the accepted set happens to equal the primary
+    block)."""
+    ledger_path = ANALYSIS / f"sc1_ledger_{family}.json"
+    if ledger_path.is_file():
+        ledger = common.load_json(ledger_path)
+        seeds = ledger.get("accepted_seeds")
+        if seeds:
+            return list(seeds)
+    return list(config.SEED_BLOCKS[family])
+
+
 def load_family_rows(family: str, seeds: list[int]) -> list[dict[str, Any]]:
     out: list[dict[str, Any]] = []
     out += _normalize(common.load_jsonl(runlog_path(f"{family}__baseline_reused")), cell=family, arm="baseline")
@@ -83,7 +105,7 @@ def load_family_rows(family: str, seeds: list[int]) -> list[dict[str, Any]]:
 
 
 def load_all_pool_source_rows() -> dict[str, list[dict[str, Any]]]:
-    return {family: load_family_rows(family, config.SEED_BLOCKS[family]) for family in CELLS}
+    return {family: load_family_rows(family, resolve_seeds_for_family(family)) for family in CELLS}
 
 
 def load_heldback_candidates() -> list[dict[str, Any]]:

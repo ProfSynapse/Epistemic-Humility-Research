@@ -133,6 +133,241 @@ def run_baseline_reuse(family: str, rows: list[dict[str, Any]]) -> dict[str, dic
     return {r["row_key"]: r for r in common.load_jsonl(ANALYSIS / "runlog" / f"{tag}.jsonl")}
 
 
+def baseline_rg0_check(family: str, rows: list[dict[str, Any]]) -> dict[str, Any]:
+    """SC0 hard-stop (cell.yaml `sc0_provenance_and_staging.baseline_repro`),
+    run BEFORE any dosed pass for this family invocation. Re-verifies, on the
+    EXACT row set this invocation is about to dose: (a) the staged baseline
+    file this census reuses text from has not drifted since SC0 staging (live
+    sha256 of `analysis/staged_inputs/<family>/baseline.jsonl` must still
+    match the sha256 SC0 recorded in the committed `staging_manifest.json`),
+    and (b) every requested row_key's baseline text is actually present in
+    that staged file (a missing row cannot be reused byte-identical). This is
+    a read-only, CPU-only, pre-generation gate; it does not itself write the
+    census's own baseline-reuse runlog (`run_baseline_reuse` does that
+    separately, immediately after this passes)."""
+    staged_path = ANALYSIS / "staged_inputs" / family / "baseline.jsonl"
+    if not staged_path.is_file():
+        raise SystemExit(f"RG0 baseline check FAIL ({family}): staged baseline missing at {staged_path}; run staging.py first.")
+    live_sha256 = common.sha256_of_file(staged_path)
+
+    staging_manifest_path = COMMITTED / "staging_manifest.json"
+    committed_entry = None
+    if staging_manifest_path.is_file():
+        manifest = common.load_json(staging_manifest_path)
+        for rec in manifest.get("files", []):
+            if rec.get("dest_path") == f"analysis/staged_inputs/{family}/baseline.jsonl":
+                committed_entry = rec
+                break
+    if committed_entry is None:
+        raise SystemExit(
+            f"RG0 baseline check FAIL ({family}): no staging_manifest.json entry for "
+            f"staged_inputs/{family}/baseline.jsonl; SC0 staging was not run or the "
+            f"committed manifest is stale relative to this worktree."
+        )
+    if live_sha256 != committed_entry["sha256"]:
+        raise SystemExit(
+            f"RG0 baseline check FAIL ({family}): staged baseline sha256 {live_sha256} does not "
+            f"match the SC0-committed value {committed_entry['sha256']} recorded in "
+            f"staging_manifest.json (source drift since staging; do NOT reuse this text)."
+        )
+
+    baseline_pool = row_pool.baseline_text_pool(family)
+    missing = [r["row_key"] for r in rows if r["row_key"] not in baseline_pool]
+    if missing:
+        raise SystemExit(
+            f"RG0 baseline check FAIL ({family}): {len(missing)} of {len(rows)} requested S rows "
+            f"are missing from the staged baseline runlog; sample {missing[:5]}."
+        )
+    return {
+        "family": family, "staged_baseline_sha256": live_sha256,
+        "n_rows_checked": len(rows), "n_missing": 0, "passed": True,
+    }
+
+
+def _meta_complete(tag: str) -> bool:
+    meta_path = ANALYSIS / "runlog" / f"{tag}.jsonl.meta.json"
+    if not meta_path.is_file():
+        return False
+    try:
+        meta = common.load_json(meta_path)
+    except Exception:
+        return False
+    return bool(meta.get("complete"))
+
+
+def pass_is_durable(tag: str, expected_row_keys: list[str]) -> bool:
+    """Whole-pass checkpoint/resume (LEAD DECISION, config.BATCH_SIZE
+    docstring): a completed (family, seed) dosed pass is durable and is
+    SKIPPED (never regenerated) only if its RunLog is marked complete AND its
+    done-key set is EXACTLY the row_key set this invocation expects. A prior
+    pass over a DIFFERENT row set under the same tag (e.g. an 8-row
+    mini-smoke, or a truncated earlier run) does not count as durable for a
+    full S-row pass -- it gets wiped and regenerated from scratch by the
+    caller (RunLog `fresh=True`), so batch composition is identical on every
+    complete pass. This is what makes an interrupted pass restart from its
+    beginning rather than mid-pass-resume: any incomplete or mismatched log
+    is discarded wholesale before generation begins, never patched in place."""
+    from shared.utilities.run_log import RunLog
+
+    if not _meta_complete(tag):
+        return False
+    path = ANALYSIS / "runlog" / f"{tag}.jsonl"
+    done = RunLog.peek_done_keys(path)
+    return done == set(expected_row_keys)
+
+
+def run_dosed_pass(
+    family: str, seed: int, rows: list[dict[str, Any]], model, tokenizer, device,
+    layer_module, direction, setpoint: float, batch_size: int, max_new: int,
+) -> tuple[dict[str, dict[str, Any]], bool]:
+    """One whole-pass erase-write dosed generation for (family, seed) over
+    `rows`. Returns (dosed_by_key, restarted) where `restarted` is True iff
+    generation actually ran this call (False means the pass was already
+    durable on disk and was reused as-is)."""
+    import torch
+    from shared.utilities.run_log import RunLog
+
+    tag = f"{family}__random_direction__seed{seed}"
+    path = ANALYSIS / "runlog" / f"{tag}.jsonl"
+    expected_keys = [r["row_key"] for r in rows]
+
+    if pass_is_durable(tag, expected_keys):
+        print(f"[run_census run-family] {tag}: durable pass found ({len(expected_keys)} rows); not regenerated", flush=True)
+        return {r["row_key"]: r for r in common.load_jsonl(path)}, False
+
+    log = RunLog(path, run_config={
+        "stage": "census_dosed", "family": family, "seed": seed,
+        "setpoint_dose_abs": setpoint, "batch_size": batch_size, "n_rows": len(rows),
+    }, fresh=True)
+    hook, ctrl = steer_lib.build_hook_and_controller(torch.tensor(direction, dtype=torch.float32), setpoint)
+    handle = layer_module.register_forward_hook(ctrl)
+    try:
+        gains = {r["row_key"]: 1.0 for r in rows}
+        steer_lib.run_rows(model, tokenizer, device, ctrl, "gen_stream", rows, gains, max_new, batch_size, log, lambda r: r["row_key"])
+        log.finalize({"n_rows": len(rows), "seed": seed, "setpoint_dose_abs": setpoint})
+    finally:
+        handle.remove()
+        ctrl.reset()
+        log.close()
+        if torch.cuda.is_available():
+            torch.cuda.empty_cache()
+    return {r["row_key"]: r for r in common.load_jsonl(path)}, True
+
+
+def resolve_and_run_family_seeds(
+    family: str, primary_seeds: list[int], hidden_dim: int, c_hat, u_d,
+    rows: list[dict[str, Any]], model, tokenizer, device, layer_module,
+    setpoint: float, batch_size: int, max_new: int, k_target: int | None = None,
+    max_redraws: int = 300,
+) -> dict[str, Any]:
+    """Combined SC1 seed resolution + K dosed passes for one family (gates.yaml
+    `sc1_magnitude_matching`, `on_fail`). Per candidate seed, IN ORDER: (1)
+    randomness bar, CPU-only (sc1_checks.check_randomness_bar) -- a failure
+    voids the seed WITHOUT spending any GPU time; (2) only if randomness
+    passes, one whole-pass dosed generation (`run_dosed_pass`) plus a
+    per-row readback tolerance check (sc1_checks.check_readback), aggregated
+    per seed as `all(row passes)` -- a failure voids the seed on reason
+    "readback". Either failure reason redraws the next seed via
+    `sc1_checks.redraw_seed`, sharing ONE attempt counter (gates.yaml
+    describes a single void-and-redraw mechanism, not two independent ones).
+
+    `k_target` is the number of accepted seeds required; it defaults to
+    `len(primary_seeds)`, matching `sc1_checks.resolve_seed_ledger`'s own
+    convention (the CALLER truncates `primary_seeds` to the desired K before
+    calling -- this function tries every seed in `primary_seeds` before ever
+    drawing a redraw, it does not itself re-slice `primary_seeds`). Passing a
+    `k_target` smaller than `len(primary_seeds)` would silently strand the
+    untried tail of `primary_seeds`, so it is accepted only for testing
+    convenience and is NOT how `cmd_run_family` calls this (which always
+    passes `k_target == len(primary_seeds)`).
+
+    LOCAL SAFETY VALVE (not a registered gate; an execution-time abort rule
+    for this driver, does not alter any locked criterion/threshold): if 3
+    CONSECUTIVE seeds void on READBACK specifically (randomness-only voids do
+    not count towards this streak, since they never reach the GPU), this is
+    treated as a systematic failure (wrong layer/sigma/hook wiring) rather
+    than seed noise, and the family's sweep is aborted with `aborted=True`
+    and a reported reason -- the accepted seeds gathered so far are still
+    returned and persisted, nothing is discarded."""
+    if k_target is None:
+        k_target = len(primary_seeds)
+    accepted: list[int] = []
+    voids: list[dict[str, Any]] = []
+    consecutive_readback_voids = 0
+    max_consecutive_readback_voids = 0
+    n_restarted = 0
+    n_reused_durable = 0
+    attempt = 0
+    candidates = list(primary_seeds)
+    i = 0
+    aborted = False
+    abort_reason = None
+
+    while len(accepted) < k_target and not aborted:
+        if i >= len(candidates):
+            attempt += 1
+            if attempt > max_redraws:
+                raise SystemExit(
+                    f"run-family SC1 FAIL ({family}): exceeded {max_redraws} redraws without "
+                    f"reaching K={k_target} accepted seeds; check the direction/setpoint wiring."
+                )
+            candidates.append(sc1_checks.redraw_seed(family, attempt))
+        seed = candidates[i]
+        i += 1
+
+        rand_check = sc1_checks.check_randomness_bar(seed, hidden_dim, c_hat, u_d)
+        if not rand_check["passed"]:
+            voids.append({"seed": seed, "reason": "randomness_bar", "randomness_bar": rand_check, "readback_summary": None})
+            continue
+
+        direction = fresh_random_direction(seed, hidden_dim)
+        dosed_by_key, restarted = run_dosed_pass(
+            family, seed, rows, model, tokenizer, device, layer_module, direction, setpoint, batch_size, max_new,
+        )
+        if restarted:
+            n_restarted += 1
+        else:
+            n_reused_durable += 1
+
+        rb_checks = [sc1_checks.check_readback(seed, family, r.get("readback_measured"), setpoint) for r in dosed_by_key.values()]
+        seed_readback_passed = bool(rb_checks) and all(c["passed"] for c in rb_checks)
+
+        if seed_readback_passed:
+            accepted.append(seed)
+            consecutive_readback_voids = 0
+        else:
+            rel_deltas = [c["rel_delta"] for c in rb_checks if c.get("rel_delta") is not None]
+            voids.append({
+                "seed": seed, "reason": "readback", "randomness_bar": rand_check,
+                "readback_summary": {
+                    "n_rows_checked": len(rb_checks),
+                    "n_passed": sum(1 for c in rb_checks if c["passed"]),
+                    "mean_rel_delta": (sum(rel_deltas) / len(rel_deltas)) if rel_deltas else None,
+                    "max_rel_delta": max(rel_deltas) if rel_deltas else None,
+                },
+            })
+            consecutive_readback_voids += 1
+            max_consecutive_readback_voids = max(max_consecutive_readback_voids, consecutive_readback_voids)
+            if consecutive_readback_voids > 2:
+                aborted = True
+                abort_reason = (
+                    f"3 consecutive seeds voided on READBACK ({[v['seed'] for v in voids if v['reason'] == 'readback'][-3:]}); "
+                    "treated as a systematic failure (wrong layer/sigma/hook wiring), not seed noise; "
+                    "aborting this family's sweep per the pre-stated abort rule."
+                )
+
+    return {
+        "family": family, "k_target": k_target,
+        "accepted_seeds": accepted, "n_accepted": len(accepted),
+        "voids": voids, "n_voids": len(voids),
+        "n_randomness_voids": sum(1 for v in voids if v["reason"] == "randomness_bar"),
+        "n_readback_voids": sum(1 for v in voids if v["reason"] == "readback"),
+        "max_consecutive_readback_voids": max_consecutive_readback_voids,
+        "n_passes_restarted": n_restarted, "n_passes_reused_durable": n_reused_durable,
+        "aborted": aborted, "abort_reason": abort_reason,
+    }
+
+
 def _sequential_vs_batch_parity(model, tokenizer, device, layer_module, direction, setpoint, rows, max_new: int) -> dict[str, Any]:
     """Registered smoke `sequential_vs_batch_parity`: the SAME rows, SAME
     seed/setpoint erase-write, run once as N separate batch_size=1 calls
@@ -308,6 +543,71 @@ def cmd_smoke_family(args: argparse.Namespace) -> int:
     return 0
 
 
+def cmd_run_family(args: argparse.Namespace) -> int:
+    """Full-scale generation driver (BUILD ITEM 1): runs the registered K=15
+    seed block for one family over the committed S=300 subsample rows at the
+    registered setpoint. `--rows`/`--seeds` override to a smaller scale for
+    the mini end-to-end smoke; omitted, they run the full registered scale.
+    Loads the family's model exactly once. SC0 RG0 baseline check runs first
+    (hard stop on failure), then baseline reuse, then the combined SC1
+    seed-resolution + K dosed-pass loop (`resolve_and_run_family_seeds`).
+    Persists the per-family SC1 ledger to gitignored
+    `analysis/sc1_ledger_<family>.json` (accepted seeds, voids by reason,
+    readback stats, restart counts) -- the aggregate committed-public summary
+    across all three families is written separately after the full sweep."""
+    family = args.family
+    k_target = args.seeds if args.seeds is not None else config.K_SEEDS_PER_FAMILY
+    rows = rows_for_family(family, args.rows)
+
+    rg0 = baseline_rg0_check(family, rows)
+    print(f"[run_census run-family] {family}: RG0 baseline check PASSED ({rg0['n_rows_checked']} rows, "
+          f"sha256={rg0['staged_baseline_sha256'][:12]})", flush=True)
+
+    vecs = load_direction_vectors(family)
+    hidden_dim = vecs["hidden_dim"]
+
+    model_name, revision = resolve_model_revision(family)
+    t_load0 = time.time()
+    model, tokenizer, device = steer_lib.load_model(model_name, revision)
+    print(f"[run_census run-family] {family}: model loaded in {time.time() - t_load0:.1f}s ({model_name}@{revision})", flush=True)
+
+    from MechInterp.intervention import get_decoder_layer
+
+    layer = config.LAYER_HS_INDEX[family]
+    decoder_block_index = layer - 1
+    layer_module = get_decoder_layer(model, decoder_block_index)
+    setpoint = config.SETPOINT_DOSE_ABS[family]
+
+    baseline_by_key = run_baseline_reuse(family, rows)
+    print(f"[run_census run-family] {family}: baseline reuse done ({len(baseline_by_key)} rows)", flush=True)
+
+    t_gen0 = time.time()
+    ledger = resolve_and_run_family_seeds(
+        family, config.SEED_BLOCKS[family][:k_target], hidden_dim, vecs["c_hat"], vecs["u_d"], rows,
+        model, tokenizer, device, layer_module, setpoint, args.batch_size, config.GEN_MAX_NEW_TOKENS, k_target,
+    )
+    wall_clock_s = time.time() - t_gen0
+
+    ledger["wall_clock_generation_s"] = wall_clock_s
+    ledger["n_rows_per_seed"] = len(rows)
+    ledger["setpoint_dose_abs"] = setpoint
+    ledger["batch_size"] = args.batch_size
+    ledger["rg0_baseline_check"] = rg0
+
+    ANALYSIS.mkdir(parents=True, exist_ok=True)
+    common.write_json(ANALYSIS / f"sc1_ledger_{family}.json", ledger)
+
+    print(f"[run_census run-family] {family}: DONE accepted={ledger['n_accepted']} voids={ledger['n_voids']} "
+          f"(randomness={ledger['n_randomness_voids']}, readback={ledger['n_readback_voids']}) "
+          f"restarted_passes={ledger['n_passes_restarted']} reused_durable={ledger['n_passes_reused_durable']} "
+          f"wall_clock={wall_clock_s:.0f}s aborted={ledger['aborted']}", flush=True)
+
+    if ledger["aborted"]:
+        print(f"[run_census run-family] {family}: ABORTED -- {ledger['abort_reason']}", flush=True)
+        return 3
+    return 0
+
+
 def main() -> int:
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     sub = ap.add_subparsers(dest="cmd", required=True)
@@ -318,6 +618,13 @@ def main() -> int:
     p_smoke.add_argument("--seeds", type=int, default=2)
     p_smoke.add_argument("--batch-size", type=int, default=4)
     p_smoke.set_defaults(func=cmd_smoke_family)
+
+    p_run = sub.add_parser("run-family", help="full-scale generation driver: SC1 seed resolution + K dosed passes over the fixed S subsample for one family")
+    p_run.add_argument("--family", required=True, choices=("qwen35_4b", "mistral7b_v03", "llama32_3b"))
+    p_run.add_argument("--rows", type=int, default=None, help="override: truncate to first N S-subsample rows (deterministic); default full S=300")
+    p_run.add_argument("--seeds", type=int, default=None, help="override: K target (# accepted seeds to resolve); default full K=15 (config.K_SEEDS_PER_FAMILY)")
+    p_run.add_argument("--batch-size", type=int, default=config.BATCH_SIZE)
+    p_run.set_defaults(func=cmd_run_family)
 
     args = ap.parse_args()
     return args.func(args)

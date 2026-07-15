@@ -2075,9 +2075,11 @@
           "sc1_checks.py",
           "criterion.py",
           "build_pool.py",
+          "heldback_decoys.py",
           "apply_adjudication.py",
           "gates_lib.py",
           "run_census.py",
+          "sc1_ledger_summary.py",
           "paired_delta.py",
           "report.py",
           "test_census_smoke.py",
@@ -2085,10 +2087,10 @@
         ],
         "pins": {
           "apply_adjudication.py": "76348e047a65bd6e320b3708dae9c17d1433146efa1211532d0f061138a0dce7",
-          "build_pool.py": "42fa902f6ce835426d01eff53e64d555e9e7322febf48e1ee9aa1c88f272d0f8",
+          "build_pool.py": "2627cee359a1d01db4890e8cea1c13e364be5b6b8cfff18a6a9465d82c6cff68",
           "cell.yaml": "b97191388cdc2077a9652fa6aa4d4e7c90fdbe1d7c4ec8d5e542f8fe9ef5e420",
           "common.py": "1259e51b4b26e38156d5d5c0ee8cd8c3510dfcc0e24ec99c87ea04445bde2026",
-          "config.py": "37db4177a6e844b404db625e960b9dccbe9ba666a4a682ab7cc6f99c2b8adba4",
+          "config.py": "dc9f43d2f6efb05a5a93fe7146aa69dd71107dd490959b40b8826c21850b4419",
           "criterion.py": "4aa178a4556084671a9b65b5be1157ac80d4a25150b1d5ce85a60c407d2a9aa7",
           "detector_v2.py": "161fd8548ec0dad1daabd590870654f1c32bd0daf21e6026a2c18c83e83991ae",
           "detector_v2_patterns.yaml": "36422e01ae03008c2f71f180158c63950e14f8dfc1279c4e654c89fb831841d9",
@@ -2097,17 +2099,19 @@
           "gates_lib.py": "905b61a56c2e12937cfd2214af3da18fd9fabe241e52edbba2e6f7f1479e9b1d",
           "gen_lib.py": "846b6a257723f4e72e87376c5c6293aed3b4a580a3e261b88f4d17b45da9b3fa",
           "grader.py": "eb395542d4163c05417f303df04782e2ebcdcd104b5181aa0af2e966b93b1df9",
+          "heldback_decoys.py": "15420fd1d9b0772e4bf29f4c71f9785b5d2b240ebc36f825dca8dcb1fdd30c94",
           "llama_setpoint_provenance.py": "50ae84ef97f41c05f1138daec5167ba678f6eb79eedbc98f811f4d5ef5ed2886",
           "paired_delta.py": "169322a857795737f5417fa1f3f95462e5ac8f640be7def6ea600487aba9077b",
           "render.py": "f256f0bf7073df9981a0e3d68b2b0ae24edff7000193fe7e8325299cc4d277e3",
           "report.py": "736165cd4da8c0211ac3428bb14499bd688cafa14cc5607f4e86fc29e75abf45",
           "row_pool.py": "c78511c19072111f0042ddc266748eb6ef2ed326b6bef8bb81effd19746f24c2",
-          "run_census.py": "4bab440f6719a6a8e84275067a0c7583a435e2eae0f08bb31766ef7278ee2a24",
+          "run_census.py": "b24071e13cd699a2df2d5c1db74a124b6c7f9c06a9f765e8445caf785b85488a",
           "sc1_checks.py": "ea3944837cc5a63f66cde5a78de65421c144fe810552914fe865d0b7c115b972",
+          "sc1_ledger_summary.py": "08d98ba689943f08d5a64f8ed003b050155cb59387e48ad2dddd7f5e0baa6507",
           "staging.py": "1c8340e361d143f57ed36076d289bc3bfcf090321a8c6ce39842f6672963adba",
           "steer_lib.py": "abf01536a69f01e72ae89abccb8f079a8d1b080fe30c0e46f5946c42a5817493",
           "subsample.py": "f8b2ab0b2f7a16133e9d622fcba8a247bf7134f14c61df0e88124e8b80595fa1",
-          "test_census_smoke.py": "f10db86902295521eb00dbd0e514f3d72a7abd2d790987ec7565a9c36d071b62",
+          "test_census_smoke.py": "e0fd705ba701d19153f9bcf57eb404c44d80da6c7d5ff7d2806cd04770f8b6ba",
           "test_report_smoke.py": "f7a35de2bea6902fa505ad0055f28376dcda7adb6eb05598390660b8c437e53e"
         },
         "repins": [
@@ -2145,6 +2149,20 @@
             "new_sha256": "f10db86902295521eb00dbd0e514f3d72a7abd2d790987ec7565a9c36d071b62",
             "old_sha256": "b2d0b0c4d3ec54369e25df946cb76de69e2b4632c93e4965284284671c9b7160",
             "reason": "Pre-run user-approved correction 2026-07-14: SC1 readback tolerance absolute 0.01 to relative 0.005 (drafted bar conflated RR3 arm-to-arm setpoint identity 0.004 with readback-vs-target accuracy and contradicted the qwen precedent 12.625 vs 12.608 = 0.14% rel cited beside it; certified precedents show uniform ~0.11-0.16% relative offset in all families); llama baseline pointer corrected to RR3 rider_llama__baseline.jsonl (drafted RR llama baseline never existed on disk); cell.yaml unquoted-colon YAML syntax fix. No dosed generation had run; falsifier, criterion, seeds, setpoints untouched."
+          },
+          {
+            "date": "2026-07-15T14:11:38Z",
+            "file": "config.py",
+            "new_sha256": "dc9f43d2f6efb05a5a93fe7146aa69dd71107dd490959b40b8826c21850b4419",
+            "old_sha256": "37db4177a6e844b404db625e960b9dccbe9ba666a4a682ab7cc6f99c2b8adba4",
+            "reason": "Builder-2 full-scale capabilities, lead-reviewed post-hoc: run-family driver additions in the already-repinned modules (BATCH_SIZE=4 lead decision recorded in config.py; test updates for pass-checkpoint durability, decoy filters, and batch-size pin presence). Builder updated the pins map without appending the audit entry; this entry restores repin-trail continuity. Registered values untouched."
+          },
+          {
+            "date": "2026-07-15T14:11:38Z",
+            "file": "test_census_smoke.py",
+            "new_sha256": "e0fd705ba701d19153f9bcf57eb404c44d80da6c7d5ff7d2806cd04770f8b6ba",
+            "old_sha256": "f10db86902295521eb00dbd0e514f3d72a7abd2d790987ec7565a9c36d071b62",
+            "reason": "Builder-2 full-scale capabilities, lead-reviewed post-hoc: run-family driver additions in the already-repinned modules (BATCH_SIZE=4 lead decision recorded in config.py; test updates for pass-checkpoint durability, decoy filters, and batch-size pin presence). Builder updated the pins map without appending the audit entry; this entry restores repin-trail continuity. Registered values untouched."
           }
         ]
       },
