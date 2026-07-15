@@ -78,6 +78,14 @@
       "rows": 861,
       "sha256": "1430ec0d5a32442f5839aa90cd0270ee169c3f6f9138881bc4c4f7c2b4224978"
     },
+    "mistral7b_v03_shard_04__attempt2": {
+      "attempt": 2,
+      "graded_file": "analysis/graded/mistral7b_v03_shard_04__attempt2.jsonl",
+      "judged_true": 153,
+      "note": "VOID_REGRADE_ONCE regrade: attempt 1 clear-positive agreement 0.593 < 0.60 floor; fresh context-free grader, lead-verified positionally before this hash was committed.",
+      "rows": 861,
+      "sha256": "112baf35cad287e375ba7ca8815dcafa5c27a4061760dc52a02349587029e601"
+    },
     "qwen35_4b_shard_00": {
       "attempt": 1,
       "graded_file": "analysis/graded/qwen35_4b_shard_00__attempt1.jsonl",

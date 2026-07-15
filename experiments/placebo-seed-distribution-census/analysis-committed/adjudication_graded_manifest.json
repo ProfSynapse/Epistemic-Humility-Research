@@ -106,5 +106,11 @@
     "file_name": "qwen35_4b_shard_06__attempt1.jsonl",
     "sha256": "8636f6cd4fb714ee3e0888d30382fad84e55903bd5b24b8ad609db841d9f1d6e",
     "shard_id": "qwen35_4b_shard_06"
+  },
+  {
+    "committed_at": "2026-07-15T15:13:50.012315+00:00",
+    "file_name": "mistral7b_v03_shard_04__attempt2.jsonl",
+    "sha256": "112baf35cad287e375ba7ca8815dcafa5c27a4061760dc52a02349587029e601",
+    "shard_id": "mistral7b_v03_shard_04"
   }
 ]
