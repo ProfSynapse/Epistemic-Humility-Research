@@ -38,6 +38,8 @@ import subsample  # noqa: E402
 import build_pool  # noqa: E402
 import apply_adjudication  # noqa: E402
 import criterion  # noqa: E402
+import heldback_decoys  # noqa: E402
+import row_pool  # noqa: E402
 
 
 # ---------------------------------------------------------------------------
@@ -270,12 +272,18 @@ def test_carve_decoys_respects_available_pools():
     assert all(d["decoy_type"] == "clear_positive" for d in pos)
 
 
-def test_load_heldback_candidates_raises_loudly_when_missing():
+def test_load_heldback_candidates_raises_loudly_when_missing(tmp_path, monkeypatch):
     """See build_pool.py / heldback_decoys.py module docstrings: this
-    experiment's full-known-pool design structurally leaves zero held-back
-    candidates, so the loader must raise loudly rather than silently
-    degrade -- verified here against whatever (missing or empty) runlog
-    state currently exists in this worktree."""
+    experiment's own held-out known population is a structurally invalid
+    decoy source (full-known-pool design); the REAL clear-negative source
+    is `heldback_decoys.py`'s FIT-split decoy-baseline pass, and this
+    loader must still raise loudly when THAT pool hasn't been built yet at
+    the path it reads from. Isolated from real on-disk build state via a
+    monkeypatched empty `ANALYSIS` dir, so this test holds regardless of
+    whether this worktree's own heldback__<family>.jsonl runlogs have
+    already been built (as they now are, once `heldback_decoys.py build`
+    has run against a completed decoy-baseline generation)."""
+    monkeypatch.setattr(build_pool, "ANALYSIS", tmp_path)
     with pytest.raises(SystemExit):
         build_pool.load_heldback_candidates()
 
@@ -448,6 +456,105 @@ def test_falsifier_verdict_rollup():
     falsified = criterion.falsifier_verdict(p1_pass, p2_fail, p3_pass)
     assert falsified["gate_axis_falsified"] is True
     assert falsified["gate_contributes_nothing"] is True
+
+
+# ---------------------------------------------------------------------------
+# heldback_decoys: FIT-split decoy source (lead decision, NOTEBOOK.md
+# 2026-07-15) -- disjointness, filter logic, and loud-failure-when-absent.
+# ---------------------------------------------------------------------------
+
+def test_heldback_decoys_source_rows_disjoint_from_every_scored_row_key():
+    """decoy_source_rows(family) must never overlap this experiment's own
+    held-out scored population (confab OR known_correct_answered) -- the
+    function itself asserts this against the known population, this test
+    re-derives it independently against BOTH roles as an outside check."""
+    if not (HERE / "analysis" / "staged_inputs").is_dir():
+        pytest.skip("staged_inputs not present; run staging.py first")
+    for family in config.FAMILIES:
+        path = heldback_decoys.DECOY_SOURCE_PATH[family]
+        if not path.is_file():
+            pytest.skip(f"decoy source file not found at {path} (cross-worktree; build-machine-dependent)")
+        rows = heldback_decoys.decoy_source_rows(family)
+        assert len(rows) > 0, f"{family}: 0 decoy source rows"
+        source_keys = {r["row_key"] for r in rows}
+        by_role = row_pool.heldout_row_keys_by_role(family)
+        scored_keys = set(by_role["confab"]) | set(by_role["known_correct_answered"])
+        overlap = source_keys & scored_keys
+        assert not overlap, f"{family}: {len(overlap)} decoy source row_keys overlap a scored row_key: {sorted(overlap)[:5]}"
+        assert all(r.get("role") == "known_correct_answered" for r in rows)
+
+
+def test_heldback_decoys_source_rows_counts_match_provenance():
+    """Cross-experiment integrity check (not a synthetic fixture): the
+    known_correct_answered FIT-split row counts materialized by the source
+    experiments' own docs (qwen35-4b-midband-doubt-snap
+    materialize_reused_rows.py: 240; rr3-corrected-placebo-replication
+    materialize_rows.py check_heldout_power: 255 known_fit)."""
+    expected = {"qwen35_4b": 240, "mistral7b_v03": 255}
+    if not (HERE / "analysis" / "staged_inputs").is_dir():
+        pytest.skip("staged_inputs not present; run staging.py first")
+    for family, n_expected in expected.items():
+        path = heldback_decoys.DECOY_SOURCE_PATH[family]
+        if not path.is_file():
+            pytest.skip(f"decoy source file not found at {path} (cross-worktree; build-machine-dependent)")
+        rows = heldback_decoys.decoy_source_rows(family)
+        assert len(rows) == n_expected, f"{family}: expected {n_expected} FIT known-correct rows, got {len(rows)}"
+
+
+def test_heldback_decoys_build_candidates_filter_logic(tmp_path, monkeypatch):
+    """Synthetic-fixture test of the committed-answer / non-refused filter,
+    isolated from GPU/model/cross-worktree dependencies via monkeypatched
+    `ANALYSIS` and `decoy_source_rows`. Reuses the exact grade_row behaviors
+    already verified by `test_gen_lib_well_formed_field_present` and
+    `test_gen_lib_refusal_detected` above, so this test only has to check
+    the NEW filtering/exclusion wiring, not gen_lib's grading semantics."""
+    monkeypatch.setattr(heldback_decoys, "ANALYSIS", tmp_path)
+    monkeypatch.setattr(heldback_decoys, "decoy_source_rows", lambda family: [
+        {"row_key": "d1", "aliases": ["Paris"], "category_canon": "geo", "source": "test", "role": "known_correct_answered"},
+        {"row_key": "d2", "aliases": [], "category_canon": "geo", "source": "test", "role": "known_correct_answered"},
+        {"row_key": "d3", "aliases": ["Paris"], "category_canon": "geo", "source": "test", "role": "known_correct_answered"},
+    ])
+    monkeypatch.setattr(row_pool, "heldout_row_keys_by_role", lambda family: {"confab": [], "known_correct_answered": []})
+
+    runlog_dir = tmp_path / "runlog"
+    runlog_dir.mkdir(parents=True)
+    rows = [
+        {"row_key": "d1", "answer_text": '{"answer": "Paris"}', "terminated_naturally": True},  # committed + correct -> QUALIFIES
+        {"row_key": "d2", "answer_text": "I don't know the answer to that.", "terminated_naturally": True},  # refused -> EXCLUDED
+        {"row_key": "d3", "answer_text": '{"answer": "London"}', "terminated_naturally": True},  # committed but not alias-matched -> EXCLUDED
+    ]
+    (runlog_dir / "qwen35_4b__decoy_baseline.jsonl").write_text(
+        "\n".join(json.dumps(r) for r in rows) + "\n", encoding="utf-8",
+    )
+
+    candidates, counters = heldback_decoys.build_heldback_candidates("qwen35_4b")
+    assert [c["row_key"] for c in candidates] == ["d1"]
+    assert counters["n_qualifying_heldback_candidates"] == 1
+    assert counters["n_excluded_regrade_refused_v2"] == 1
+    assert counters["n_excluded_regrade_not_well_formed_correct_v2"] == 1
+    assert candidates[0]["provenance"]["origin"] == "decoy_baseline_generation_over_fit_split_known_correct_rows"
+
+
+def test_heldback_decoys_build_candidates_raises_when_decoy_baseline_runlog_absent(tmp_path, monkeypatch):
+    """Loud-failure requirement (module docstring, build_pool.py docstring):
+    build_heldback_candidates must SystemExit, never silently return an
+    empty pool, when the decoy-baseline GPU pass has not produced a
+    runlog yet."""
+    if not (HERE / "analysis" / "staged_inputs").is_dir():
+        pytest.skip("staged_inputs not present; run staging.py first")
+    family = "qwen35_4b"
+    path = heldback_decoys.DECOY_SOURCE_PATH[family]
+    if not path.is_file():
+        pytest.skip(f"decoy source file not found at {path} (cross-worktree; build-machine-dependent)")
+    monkeypatch.setattr(heldback_decoys, "ANALYSIS", tmp_path)  # empty tmp dir: no runlog/<family>__decoy_baseline.jsonl
+    with pytest.raises(SystemExit):
+        heldback_decoys.build_heldback_candidates(family)
+
+
+def test_heldback_decoys_source_rows_raises_when_source_file_missing(tmp_path, monkeypatch):
+    monkeypatch.setitem(heldback_decoys.DECOY_SOURCE_PATH, "qwen35_4b", tmp_path / "does_not_exist.jsonl")
+    with pytest.raises(SystemExit):
+        heldback_decoys.decoy_source_rows("qwen35_4b")
 
 
 # ---------------------------------------------------------------------------

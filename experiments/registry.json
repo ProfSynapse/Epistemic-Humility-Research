@@ -1323,19 +1323,42 @@
           "gates_lib.py": "905b61a56c2e12937cfd2214af3da18fd9fabe241e52edbba2e6f7f1479e9b1d",
           "gen_lib.py": "a4ee57ec67f187aefe1db67db3f051f9e1d402b87bab89bc4188af45f4940e2a",
           "grader.py": "eb395542d4163c05417f303df04782e2ebcdcd104b5181aa0af2e966b93b1df9",
-          "heldback_decoys.py": "248f10aeedb9acc74b68e76f91b55e8f6552d6310efb6a18e337b0b41e48e734",
+          "heldback_decoys.py": "979163e5e00db1011a43fb12a73b650fa2d1dcc3dd696501931de26ddd8e0a17",
           "mistral_direction_provenance.py": "0f21f1654205ea9a112fbdcdeb578233533adfcce6fd36aff52d47f01f302971",
           "render.py": "9df8c181475ded6b9029379bd49d8486c54314b35a529284fdc7a5d5f12ee87f",
           "report.py": "819b15d711e0878a484a9b712e91c6c496c7651aa17bb9451ad663d5de6b1a5c",
           "row_pool.py": "80de9817e63cdf102935a5d27f2449ede9038080571897a6d35f06b867c3c07e",
-          "run_factorial.py": "718e0094f2dfadb9ecbe5c31a8e708b06b412372f0cdff86a5ae7e1a6a15ed4c",
+          "run_factorial.py": "7184685c6926cc789b4488713484950dd36099e2df349fb0c601cc4bed5e4f69",
           "sc1_checks.py": "dd73f29acbac62abc791924abfd7d5e993abe046ac22756a0551ff3835066ecf",
           "staging.py": "a902ffbdc893ffee98df62b74da0462c245f5b3459cf521cbb705dafa0f66bc6",
           "steer_lib.py": "b0bd43e33235e08a69022d021f7035f0b96cd734f76c9460beba9566b888b820",
           "subsample.py": "993f3561dfb72071bf88a736490e8ce7f1e0e97f0f22e6e91576e8fa3767719c",
-          "test_factorial_smoke.py": "d5ebf820fb04e65cf5bb61a8deff82c5855112e73052af339f925e28e467b31e",
+          "test_factorial_smoke.py": "ee9820e747c2a59ed48b6a96bc06f9369f0dba4d5821721172ca3cdfb44d7b1f",
           "test_report_smoke.py": "0b6f16c4e33629e832e6345f36cd68a3b9774052ceff8ebfabfaef86a4262158"
-        }
+        },
+        "repins": [
+          {
+            "date": "2026-07-15T18:08:52Z",
+            "file": "heldback_decoys.py",
+            "new_sha256": "979163e5e00db1011a43fb12a73b650fa2d1dcc3dd696501931de26ddd8e0a17",
+            "old_sha256": "248f10aeedb9acc74b68e76f91b55e8f6552d6310efb6a18e337b0b41e48e734",
+            "reason": "Lead-decided clear-negative decoy source implemented pre-grading: held-back pool from a fresh unsteered decoy-baseline pass over FIT/atlas-split known-correct rows (qwen 240 from midband-doubt-snap fit split, mistral 255 from RR hs16 fit split; 238/254 qualify under the unchanged rubric filter), disjointness from every scored row asserted loudly in code. run_factorial.py gains an additive decoy-baseline subcommand; no scored-arm generation path changed. One state-dependent smoke isolated via monkeypatched empty dir. 50/50 CPU smokes pass, lead re-verified. Repin before any grading-pool build; scored-arm generation instrument unchanged since sign-time pins."
+          },
+          {
+            "date": "2026-07-15T18:08:52Z",
+            "file": "run_factorial.py",
+            "new_sha256": "7184685c6926cc789b4488713484950dd36099e2df349fb0c601cc4bed5e4f69",
+            "old_sha256": "718e0094f2dfadb9ecbe5c31a8e708b06b412372f0cdff86a5ae7e1a6a15ed4c",
+            "reason": "Lead-decided clear-negative decoy source implemented pre-grading: held-back pool from a fresh unsteered decoy-baseline pass over FIT/atlas-split known-correct rows (qwen 240 from midband-doubt-snap fit split, mistral 255 from RR hs16 fit split; 238/254 qualify under the unchanged rubric filter), disjointness from every scored row asserted loudly in code. run_factorial.py gains an additive decoy-baseline subcommand; no scored-arm generation path changed. One state-dependent smoke isolated via monkeypatched empty dir. 50/50 CPU smokes pass, lead re-verified. Repin before any grading-pool build; scored-arm generation instrument unchanged since sign-time pins."
+          },
+          {
+            "date": "2026-07-15T18:08:52Z",
+            "file": "test_factorial_smoke.py",
+            "new_sha256": "ee9820e747c2a59ed48b6a96bc06f9369f0dba4d5821721172ca3cdfb44d7b1f",
+            "old_sha256": "d5ebf820fb04e65cf5bb61a8deff82c5855112e73052af339f925e28e467b31e",
+            "reason": "Lead-decided clear-negative decoy source implemented pre-grading: held-back pool from a fresh unsteered decoy-baseline pass over FIT/atlas-split known-correct rows (qwen 240 from midband-doubt-snap fit split, mistral 255 from RR hs16 fit split; 238/254 qualify under the unchanged rubric filter), disjointness from every scored row asserted loudly in code. run_factorial.py gains an additive decoy-baseline subcommand; no scored-arm generation path changed. One state-dependent smoke isolated via monkeypatched empty dir. 50/50 CPU smokes pass, lead re-verified. Repin before any grading-pool build; scored-arm generation instrument unchanged since sign-time pins."
+          }
+        ]
       },
       "kg": [],
       "prediction": "Gate supplies selectivity on BOTH families: Gap_Sel(c_hat) >= 0.20 with bootstrap 95% CI excluding 0, cost-protection gap >= 0.10 with CI excluding 0, Gap_Sel(random) >= 0 directional (P1/P2/P3 pass); qwen S1 PASSES by sign-opposition to the census suppressive null (median -6.0, 14/15 negative); mistral S1 FAILS (same-signed as census recruiting null, expected effect ratio ~2.0 < 3.0), so the two axes dissociate on mistral. Predictions scoreboard (registered 2026-07-15 pre-run): orchestrator calls qwen full pass, mistral gate axis PASS + direction axis FAIL (the dissociation case), Gap_Sel(c_hat) bands qwen 0.20-0.50 / mistral 0.20-0.45; PI calls qwen full pass, mistral FULL FAIL (both axes). The differentiating slot is the mistral gate axis. No edits after results.",

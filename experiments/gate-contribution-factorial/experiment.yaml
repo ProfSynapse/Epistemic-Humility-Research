@@ -1,38 +1,41 @@
 slug: gate-contribution-factorial
-title: 'Gate-contribution factorial: does the doubt gate, not the write direction, produce
-  selective abstention'
+title: 'Gate-contribution factorial: does the doubt gate, not the write direction,
+  produce selective abstention'
 type: steer-cell
 status: signed
 registered: true
 created_at: '2026-07-15T16:58:45Z'
-question: Does the doubt GATE (row selection read from the model's internal doubt representation),
-  rather than the write direction, produce SELECTIVE abstention (concentrated on unanswerable
-  confab rows, withheld from known-correct rows)? Measured as the sign-robust selectivity
-  gap Gap_Sel(d) = Sel_abs(true_gate, d) - Sel_abs(permuted_gate, d), Sel_abs = |confab_lift|
-  - |known_lift|, in a 2x2 factorial {true doubt gate, fire-count-matched permuted gate} x
-  {c_hat, random direction (K=5 fresh seeds)} plus baseline, both populations, wide two-instrument
-  stack, on Qwen3.5-4B hs20 (dose_abs 12.608, census operating point) and Mistral-7B-Instruct-v0.3
-  hs16 (dose_abs 3.665, RR2/RR3 lineage). Direction specificity is evaluated separately (S1)
-  against the census K=15 null.
-prediction: 'Gate supplies selectivity on BOTH families: Gap_Sel(c_hat) >= 0.20 with bootstrap
-  95% CI excluding 0, cost-protection gap >= 0.10 with CI excluding 0, Gap_Sel(random) >=
-  0 directional (P1/P2/P3 pass); qwen S1 PASSES by sign-opposition to the census suppressive
-  null (median -6.0, 14/15 negative); mistral S1 FAILS (same-signed as census recruiting null,
-  expected effect ratio ~2.0 < 3.0), so the two axes dissociate on mistral. Predictions scoreboard
-  (registered 2026-07-15 pre-run): orchestrator calls qwen full pass, mistral gate axis PASS
-  + direction axis FAIL (the dissociation case), Gap_Sel(c_hat) bands qwen 0.20-0.50 / mistral
-  0.20-0.45; PI calls qwen full pass, mistral FULL FAIL (both axes). The differentiating slot
-  is the mistral gate axis. No edits after results.'
-falsifier: Pre-stated and fixed before the run. Gate contributes nothing (primary) iff Gap_Sel(c_hat)
-  < 0.20 OR its bootstrap 95% CI includes 0 OR Gap_Sel(random) < 0 with CI excluding 0 OR
-  cost_protection_c_hat is not strictly positive with CI excluding 0. Gate benefit/cost fails
-  (P1) iff true_gate__c_hat confab abstention < 0.60 OR Wilson 95% LCB <= 0.50 OR well-formed
-  < 0.80 OR known-correct false refusal > 0.05 OR Wilson 95% UCB >= 0.10. Direction axis (S1,
-  secondary, cannot rescue or falsify the gate axis) fails per family iff the gated confab
-  lift is same-signed as the census K=15 null median AND the effect ratio against the census
-  max-over-K denominator (qwen 0.0833, mistral 0.2033) is < 3.0; a qwen sign-opposition failure
-  would falsify the qwen direction expectation, reported straight. No rescoring lane behind
-  the blinded adjudication lane; goalposts do not move after results.
+question: Does the doubt GATE (row selection read from the model's internal doubt
+  representation), rather than the write direction, produce SELECTIVE abstention (concentrated
+  on unanswerable confab rows, withheld from known-correct rows)? Measured as the
+  sign-robust selectivity gap Gap_Sel(d) = Sel_abs(true_gate, d) - Sel_abs(permuted_gate,
+  d), Sel_abs = |confab_lift| - |known_lift|, in a 2x2 factorial {true doubt gate,
+  fire-count-matched permuted gate} x {c_hat, random direction (K=5 fresh seeds)}
+  plus baseline, both populations, wide two-instrument stack, on Qwen3.5-4B hs20 (dose_abs
+  12.608, census operating point) and Mistral-7B-Instruct-v0.3 hs16 (dose_abs 3.665,
+  RR2/RR3 lineage). Direction specificity is evaluated separately (S1) against the
+  census K=15 null.
+prediction: 'Gate supplies selectivity on BOTH families: Gap_Sel(c_hat) >= 0.20 with
+  bootstrap 95% CI excluding 0, cost-protection gap >= 0.10 with CI excluding 0, Gap_Sel(random)
+  >= 0 directional (P1/P2/P3 pass); qwen S1 PASSES by sign-opposition to the census
+  suppressive null (median -6.0, 14/15 negative); mistral S1 FAILS (same-signed as
+  census recruiting null, expected effect ratio ~2.0 < 3.0), so the two axes dissociate
+  on mistral. Predictions scoreboard (registered 2026-07-15 pre-run): orchestrator
+  calls qwen full pass, mistral gate axis PASS + direction axis FAIL (the dissociation
+  case), Gap_Sel(c_hat) bands qwen 0.20-0.50 / mistral 0.20-0.45; PI calls qwen full
+  pass, mistral FULL FAIL (both axes). The differentiating slot is the mistral gate
+  axis. No edits after results.'
+falsifier: Pre-stated and fixed before the run. Gate contributes nothing (primary)
+  iff Gap_Sel(c_hat) < 0.20 OR its bootstrap 95% CI includes 0 OR Gap_Sel(random)
+  < 0 with CI excluding 0 OR cost_protection_c_hat is not strictly positive with CI
+  excluding 0. Gate benefit/cost fails (P1) iff true_gate__c_hat confab abstention
+  < 0.60 OR Wilson 95% LCB <= 0.50 OR well-formed < 0.80 OR known-correct false refusal
+  > 0.05 OR Wilson 95% UCB >= 0.10. Direction axis (S1, secondary, cannot rescue or
+  falsify the gate axis) fails per family iff the gated confab lift is same-signed
+  as the census K=15 null median AND the effect ratio against the census max-over-K
+  denominator (qwen 0.0833, mistral 0.2033) is < 3.0; a qwen sign-opposition failure
+  would falsify the qwen direction expectation, reported straight. No rescoring lane
+  behind the blinded adjudication lane; goalposts do not move after results.
 checkpoint:
   repo: ''
   revision: ''
@@ -79,19 +82,59 @@ instrument:
     gate_construction.py: 203c9e3dc187241d4f04f8613f84c3cf578ddac95c1cc2e312f11c18a28c45a8
     sc1_checks.py: dd73f29acbac62abc791924abfd7d5e993abe046ac22756a0551ff3835066ecf
     mistral_direction_provenance.py: 0f21f1654205ea9a112fbdcdeb578233533adfcce6fd36aff52d47f01f302971
-    run_factorial.py: 718e0094f2dfadb9ecbe5c31a8e708b06b412372f0cdff86a5ae7e1a6a15ed4c
+    run_factorial.py: 7184685c6926cc789b4488713484950dd36099e2df349fb0c601cc4bed5e4f69
     build_pool.py: 2db9c72a390a21ac2392fa1a14231e078fd4f1eb330917a9453151e3f7e1ab77
-    heldback_decoys.py: 248f10aeedb9acc74b68e76f91b55e8f6552d6310efb6a18e337b0b41e48e734
+    heldback_decoys.py: 979163e5e00db1011a43fb12a73b650fa2d1dcc3dd696501931de26ddd8e0a17
     apply_adjudication.py: 3c488d233ac1c17bcf27b43f20154f00ec3168f5b304f64c105b3951dfff0798
     criterion.py: 7253e20e394f774e299c2b99f37f1e4cbad52cacb4b29fec0184a7194ebffadd
     report.py: 819b15d711e0878a484a9b712e91c6c496c7651aa17bb9451ad663d5de6b1a5c
     detector_v2.py: 161fd8548ec0dad1daabd590870654f1c32bd0daf21e6026a2c18c83e83991ae
     detector_v2_patterns.yaml: 36422e01ae03008c2f71f180158c63950e14f8dfc1279c4e654c89fb831841d9
     grader.py: eb395542d4163c05417f303df04782e2ebcdcd104b5181aa0af2e966b93b1df9
-    test_factorial_smoke.py: d5ebf820fb04e65cf5bb61a8deff82c5855112e73052af339f925e28e467b31e
+    test_factorial_smoke.py: ee9820e747c2a59ed48b6a96bc06f9369f0dba4d5821721172ca3cdfb44d7b1f
     test_report_smoke.py: 0b6f16c4e33629e832e6345f36cd68a3b9774052ceff8ebfabfaef86a4262158
     direction_draw.py: ade97b9f7152a3a527194f119f680faf7f72c6268dbc259ab754a1d8f9e72a26
     gates_lib.py: 905b61a56c2e12937cfd2214af3da18fd9fabe241e52edbba2e6f7f1479e9b1d
+  repins:
+  - file: heldback_decoys.py
+    old_sha256: 248f10aeedb9acc74b68e76f91b55e8f6552d6310efb6a18e337b0b41e48e734
+    new_sha256: 979163e5e00db1011a43fb12a73b650fa2d1dcc3dd696501931de26ddd8e0a17
+    date: '2026-07-15T18:08:52Z'
+    reason: 'Lead-decided clear-negative decoy source implemented pre-grading: held-back
+      pool from a fresh unsteered decoy-baseline pass over FIT/atlas-split known-correct
+      rows (qwen 240 from midband-doubt-snap fit split, mistral 255 from RR hs16 fit
+      split; 238/254 qualify under the unchanged rubric filter), disjointness from
+      every scored row asserted loudly in code. run_factorial.py gains an additive
+      decoy-baseline subcommand; no scored-arm generation path changed. One state-dependent
+      smoke isolated via monkeypatched empty dir. 50/50 CPU smokes pass, lead re-verified.
+      Repin before any grading-pool build; scored-arm generation instrument unchanged
+      since sign-time pins.'
+  - file: run_factorial.py
+    old_sha256: 718e0094f2dfadb9ecbe5c31a8e708b06b412372f0cdff86a5ae7e1a6a15ed4c
+    new_sha256: 7184685c6926cc789b4488713484950dd36099e2df349fb0c601cc4bed5e4f69
+    date: '2026-07-15T18:08:52Z'
+    reason: 'Lead-decided clear-negative decoy source implemented pre-grading: held-back
+      pool from a fresh unsteered decoy-baseline pass over FIT/atlas-split known-correct
+      rows (qwen 240 from midband-doubt-snap fit split, mistral 255 from RR hs16 fit
+      split; 238/254 qualify under the unchanged rubric filter), disjointness from
+      every scored row asserted loudly in code. run_factorial.py gains an additive
+      decoy-baseline subcommand; no scored-arm generation path changed. One state-dependent
+      smoke isolated via monkeypatched empty dir. 50/50 CPU smokes pass, lead re-verified.
+      Repin before any grading-pool build; scored-arm generation instrument unchanged
+      since sign-time pins.'
+  - file: test_factorial_smoke.py
+    old_sha256: d5ebf820fb04e65cf5bb61a8deff82c5855112e73052af339f925e28e467b31e
+    new_sha256: ee9820e747c2a59ed48b6a96bc06f9369f0dba4d5821721172ca3cdfb44d7b1f
+    date: '2026-07-15T18:08:52Z'
+    reason: 'Lead-decided clear-negative decoy source implemented pre-grading: held-back
+      pool from a fresh unsteered decoy-baseline pass over FIT/atlas-split known-correct
+      rows (qwen 240 from midband-doubt-snap fit split, mistral 255 from RR hs16 fit
+      split; 238/254 qualify under the unchanged rubric filter), disjointness from
+      every scored row asserted loudly in code. run_factorial.py gains an additive
+      decoy-baseline subcommand; no scored-arm generation path changed. One state-dependent
+      smoke isolated via monkeypatched empty dir. 50/50 CPU smokes pass, lead re-verified.
+      Repin before any grading-pool build; scored-arm generation instrument unchanged
+      since sign-time pins.'
 inputs:
 - experiments/qwen35-4b-midband-heldout
 - experiments/qwen35-4b-midband-doubt-snap

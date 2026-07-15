@@ -6,6 +6,26 @@ in `experiment.yaml`.
 
 ## Entries
 
+### 2026-07-15 (lead) - decoy source implemented, generation launched on the 3090
+
+Run launcher implemented the decoy decision and launched generation. Decoy
+sources: qwen 240 FIT-split known-correct rows (midband-doubt-snap
+fit_rows_for_anchor.jsonl; the full available FIT population, under the ~300
+target, reported straight), mistral 255 (RR hs16 fit split, matching
+n_known_fit in the committed fit manifest). Fresh unsteered decoy-baseline
+pass generated both pools on the 3090 (~5 min total); rubric filter survivors
+238 qwen / 254 mistral; disjointness from every scored row asserted in code
+and covered by smokes. Smoke suite now 50/50 (lead re-ran independently).
+Three pinned files changed for exactly this scope and repinned with audit
+(heldback_decoys.py, run_factorial.py, test_factorial_smoke.py); no scored-arm
+generation path changed; test_report_smoke.py untouched.
+
+Full factorial generation running detached (PID 297775, batch 4, greedy,
+RunLog checkpointing, 8.7/24.6 GB VRAM): decoy passes done, qwen arms in
+progress at ~24-26 rows/min, ETA ~5.5h qwen then ~5.5-5.75h mistral
+(~11h total, finishing roughly 2026-07-16 05:00Z). Log:
+analysis/logs/generation_master.log.
+
 ### 2026-07-15 (lead) - harness accepted, modules pinned, decoy-source decision, generation authorized
 
 Harness builder delivered the full CPU arc: 22 instrument files, 45/45 smoke

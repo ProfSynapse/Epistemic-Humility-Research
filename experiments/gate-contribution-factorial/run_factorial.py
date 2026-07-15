@@ -23,11 +23,19 @@ Per family, five arms x two populations:
                          rows, same per-seed random direction. S_confab=300
                          subsample + full known.
 
-Two CPU-only subcommands need no GPU/model at all (`reuse-family`); the GPU
-subcommand (`generate-family`) refuses without `--i-know-this-runs-on-gpu`,
-mirroring `qwen35-4b-midband-heldout/pipeline.py`'s own refusal convention.
-This harness-build task invokes ONLY `reuse-family`, never `generate-family`
--- the lead launches generation separately, after reviewing this build.
+One CPU-only subcommand needs no GPU/model at all (`reuse-family`); the two
+GPU subcommands (`decoy-baseline`, `generate-family`) refuse without
+`--i-know-this-runs-on-gpu`, mirroring `qwen35-4b-midband-heldout/
+pipeline.py`'s own refusal convention. This harness-build task invokes ONLY
+`reuse-family`, never `decoy-baseline`/`generate-family` -- the lead
+launches generation separately, after reviewing this build.
+
+`decoy-baseline` (GPU, small, unsteered): a fresh baseline generation pass
+over `heldback_decoys.decoy_source_rows(family)`, the FIT/atlas-split
+known-correct rows that supply the held-back clear-negative decoy pool
+(lead decision, NOTEBOOK.md 2026-07-15). This is NOT one of the five
+factorial arms above and is never part of any scored rate; it must run
+before `heldback_decoys.py build` / `build_pool.py`.
 
 RunLog persistence with per-pass checkpoints (`shared.utilities.run_log.
 RunLog`); every pass is keyed so a killed process resumes exactly where it
@@ -55,6 +63,7 @@ import row_pool  # noqa: E402
 import gate_construction  # noqa: E402
 import sc1_checks  # noqa: E402
 import gen_lib  # noqa: E402
+import heldback_decoys  # noqa: E402
 from direction_draw import fresh_random_direction  # noqa: E402
 
 ANALYSIS = HERE / "analysis"
@@ -294,6 +303,59 @@ def pass_is_durable(tag: str, expected_row_keys: list[str]) -> bool:
     return done == set(expected_row_keys)
 
 
+def cmd_decoy_baseline(args: argparse.Namespace) -> int:
+    """GPU subcommand, small and unsteered: a fresh baseline (no hook)
+    generation pass over `heldback_decoys.decoy_source_rows(family)` (the
+    FIT/atlas-split known-correct rows, lead decision NOTEBOOK.md
+    2026-07-15 harness-accepted entry item 2), writing
+    `analysis/runlog/{family}__decoy_baseline.jsonl`. This is the sole GPU
+    input `heldback_decoys.build_heldback_candidates` needs; it must run
+    BEFORE `build_pool.py` (which calls `heldback_decoys.py` to build the
+    heldback__<family> runlog). Refuses without --i-know-this-runs-on-gpu,
+    same convention as `generate-family`. RunLog-checkpointed, resumable."""
+    if not args.i_know_this_runs_on_gpu:
+        print(
+            "[decoy-baseline] this loads the model and generates on GPU (a small "
+            "unsteered baseline pass over the FIT-split known-correct decoy source "
+            "rows); refusing without --i-know-this-runs-on-gpu.",
+            file=sys.stderr,
+        )
+        return 2
+
+    import torch
+    import steer_lib
+    from shared.utilities.run_log import RunLog
+
+    family = args.family
+    rows = heldback_decoys.decoy_source_rows(family)
+    expected_keys = sorted(r["row_key"] for r in rows)
+    tag = f"{family}__decoy_baseline"
+
+    if pass_is_durable(tag, expected_keys):
+        print(f"[decoy-baseline] {family}: already durable ({len(expected_keys)} rows); nothing to do.", flush=True)
+        return 0
+
+    model_name, revision = resolve_model_revision(family)
+    model, tokenizer, device = steer_lib.load_model(model_name, revision)
+    try:
+        log = RunLog(runlog_path(tag), run_config={"stage": "decoy_baseline", "family": family, "unsteered": True, "n_rows": len(rows)}, fresh=True)
+        try:
+            steer_lib.run_rows(model, tokenizer, device, None, "off", rows, None, config.GEN_MAX_NEW_TOKENS, args.batch_size, log)
+            log.finalize({"n_rows": len(rows)})
+        finally:
+            log.close()
+    finally:
+        del model
+        import gc
+
+        gc.collect()
+        if torch.cuda.is_available():
+            torch.cuda.empty_cache()
+
+    print(f"[decoy-baseline] {family}: done ({len(expected_keys)} rows) -> {runlog_path(tag)}", flush=True)
+    return 0
+
+
 def cmd_generate_family(args: argparse.Namespace) -> int:
     """GPU subcommand. Refuses without --i-know-this-runs-on-gpu. NOT
     invoked by this harness-build task -- the lead launches this after
@@ -401,6 +463,12 @@ def main() -> int:
     p_reuse.add_argument("--family", required=True, choices=FAMILIES)
     p_reuse.add_argument("--rows", type=int, default=None, help="override: truncate to first N population rows (deterministic); default full population")
     p_reuse.set_defaults(func=cmd_reuse_family)
+
+    p_decoy = sub.add_parser("decoy-baseline", help="GPU: small unsteered baseline pass over the FIT-split known-correct decoy source rows")
+    p_decoy.add_argument("--family", required=True, choices=FAMILIES)
+    p_decoy.add_argument("--batch-size", type=int, default=config.BATCH_SIZE)
+    p_decoy.add_argument("--i-know-this-runs-on-gpu", action="store_true")
+    p_decoy.set_defaults(func=cmd_decoy_baseline)
 
     p_gen = sub.add_parser("generate-family", help="GPU: permuted_gate__c_hat + K=5 true_gate__random + K=5 permuted_gate__random")
     p_gen.add_argument("--family", required=True, choices=FAMILIES)
