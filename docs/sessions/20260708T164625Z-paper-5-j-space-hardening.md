@@ -4,7 +4,7 @@ session_id: 20260708T164625Z-paper-5-j-space-hardening
 title: Paper 5 J-space hardening
 status: active
 created_at: '2026-07-08T16:46:25Z'
-updated_at: '2026-07-14T22:40:03Z'
+updated_at: '2026-07-15T10:48:34Z'
 track: research
 phase: phase1
 question: Which registered follow-up experiments harden the Paper 5 actuation thesis,
@@ -1152,6 +1152,34 @@ checkpoints:
     doubt-snap publish go (v2 build). Then scaffold placebo seed-distribution census
     (K=10-20 seeds/family at matched magnitude, approved), then scale test.'
   signals: {}
+- id: 042-checkpoint
+  at: '2026-07-15T10:48:34Z'
+  kind: checkpoint
+  title: Checkpoint
+  summary: 'Census arc through host restart. Signed (f1c1983a): K=15/family, S=300,
+    fresh mistral seeds, scoreboard registered (both predictors: qwen SURVIVES, mistral
+    RETIRED, llama null). Harness built (23 modules); GPU smokes exposed mis-drafted
+    SC1 absolute 0.01 readback bar (certified regime is uniform 0.11-0.16% RELATIVE;
+    qwen precedent 12.625 vs 12.608 = 0.14%); user-approved pre-run correction to
+    relative 0.005 + llama baseline pointer fix (RR3 rider baseline) + cell.yaml YAML
+    fix, repinned 5 files (c21fad80). First sweep dispatch stopped honestly: harness
+    was smoke-only (8-row cap) and heldback decoy pass missing. Lead decisions: BATCH_SIZE=4
+    pinned with whole-pass checkpoint granularity; clear-negative decoys extracted
+    from staged baselines (no GPU pass). Builder 2 completed driver + decoys, mini-smoked,
+    launched sweep; host RESTART killed it mid-qwen (seeds 01/02/04 complete at 300
+    rows, 05 interrupted at 236, 03 SC1-voided; mistral/llama not started). Fresh
+    resume runner dispatched: whole-pass resume, then SC1 ledger + pool assembly,
+    stop before grading. Doubt-snap exhaust published (91e572f4); PRs 292/293 merged.'
+  evidence: []
+  run_ids: []
+  commands: []
+  decisions: []
+  next_steps:
+  - 'On resume-runner report: verify SC1 ledger, hash-commit pool manifest BEFORE
+    grading, dispatch isolated context-free graders (private workdirs per standing
+    rule), commit graded hashes before unblind, CG floors, deltas, criterion buckets,
+    red-team, Outcome, PR (user merge).'
+  signals: {}
 ---
 # Paper 5 J-space hardening
 
@@ -1634,3 +1662,10 @@ rows before the layer contrast.
 - summary: Signflip experiment RESOLVED (PR #293 open, awaiting user merge). Red-team certified all mechanism numbers to full float precision (fire-set 1303/1303; circularity discharged via held-out restriction, -6.05 vs -5.80). M1 axis question resolved from locked instruments: frozen gate defines doubt = -z_d, so doubt axis CONFIRMED all three families under operational convention (near-tautology caveat stated); caution axis not interpretable as question-type ordering; raw-axis prediction_consistent booleans NOT transcribed. Registered falsifier UNTRIGGERED (sign-agnostic, no CI spans 0); behavioral subtype arm FIRES for qwen (future-unknown -24.7 vs <=-2.8; also mistral's +11.8 max and both families' projection outlier). Scoreboard: M1 both correct; subtype PI correct / orchestrator WRONG; M3 both wrong for qwen (null), mistral non-null but 0.3% negligible. M2 carried RR3 single-seed caveat. Stale scaffold header corrected (same bug as RR3). Commit 7904da93, registry regenned, validate OK 72.
 - next steps:
   - User decisions pending: merge PR #293 (signflip), merge PR #292 (data-exhaust), doubt-snap publish go (v2 build). Then scaffold placebo seed-distribution census (K=10-20 seeds/family at matched magnitude, approved), then scale test.
+### 042-checkpoint - Checkpoint
+
+- at: `2026-07-15T10:48:34Z`
+- kind: `checkpoint`
+- summary: Census arc through host restart. Signed (f1c1983a): K=15/family, S=300, fresh mistral seeds, scoreboard registered (both predictors: qwen SURVIVES, mistral RETIRED, llama null). Harness built (23 modules); GPU smokes exposed mis-drafted SC1 absolute 0.01 readback bar (certified regime is uniform 0.11-0.16% RELATIVE; qwen precedent 12.625 vs 12.608 = 0.14%); user-approved pre-run correction to relative 0.005 + llama baseline pointer fix (RR3 rider baseline) + cell.yaml YAML fix, repinned 5 files (c21fad80). First sweep dispatch stopped honestly: harness was smoke-only (8-row cap) and heldback decoy pass missing. Lead decisions: BATCH_SIZE=4 pinned with whole-pass checkpoint granularity; clear-negative decoys extracted from staged baselines (no GPU pass). Builder 2 completed driver + decoys, mini-smoked, launched sweep; host RESTART killed it mid-qwen (seeds 01/02/04 complete at 300 rows, 05 interrupted at 236, 03 SC1-voided; mistral/llama not started). Fresh resume runner dispatched: whole-pass resume, then SC1 ledger + pool assembly, stop before grading. Doubt-snap exhaust published (91e572f4); PRs 292/293 merged.
+- next steps:
+  - On resume-runner report: verify SC1 ledger, hash-commit pool manifest BEFORE grading, dispatch isolated context-free graders (private workdirs per standing rule), commit graded hashes before unblind, CG floors, deltas, criterion buckets, red-team, Outcome, PR (user merge).
