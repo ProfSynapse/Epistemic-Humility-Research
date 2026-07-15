@@ -1,24 +1,26 @@
 slug: placebo-seed-distribution-census
-title: 'Placebo seed-distribution census: multi-seed random-direction null at matched magnitude'
+title: 'Placebo seed-distribution census: multi-seed random-direction null at matched
+  magnitude'
 type: steer-cell
 status: signed
 registered: true
 created_at: '2026-07-14T23:00:14Z'
-question: What is the per-family DISTRIBUTION of matched-magnitude random-direction wide-instrument
-  abstention deltas across K=15 fresh seeds (qwen hs20 at dose_abs 12.608, mistral hs16 at
-  3.665, llama hs20 at 12 sigma_c), and does each family's single-seed placebo-sign reading
-  (qwen -5.13 suppression, mistral +7.39 recruitment, llama +0.1 null) survive as a distributional
-  property or retire to seed noise?
-prediction: Qwen suppression SURVIVES (fraction of seeds negative >= 0.80, median <= -3.0
-  pts); mistral recruitment RETIRED (fraction positive < 0.80, distribution straddles zero,
-  per RR3's -7.4..+21.8 three-seed spread); llama centers near zero with no dominant sign
-  (null control holds).
-falsifier: 'Pre-stated numeric criterion, fixed before the run: a family sign SURVIVES iff
-  f_s >= 0.80 AND bootstrap 95% LCB(f_s) > 0.50 AND |median| >= 3.0 pts in the committed direction;
-  RETIRED iff f_s <= 0.60 OR the census IQR spans zero; INDETERMINATE otherwise. The prediction
-  is falsified per family by landing in a different bucket than called (e.g. mistral clearing
-  f_pos >= 0.80 with median >= +3.0 falsifies the seed-noise call; qwen failing f_neg >= 0.80
-  or IQR spanning zero retires the suppression reading). No rescoring lane; goalposts fixed.'
+question: What is the per-family DISTRIBUTION of matched-magnitude random-direction
+  wide-instrument abstention deltas across K=15 fresh seeds (qwen hs20 at dose_abs
+  12.608, mistral hs16 at 3.665, llama hs20 at 12 sigma_c), and does each family's
+  single-seed placebo-sign reading (qwen -5.13 suppression, mistral +7.39 recruitment,
+  llama +0.1 null) survive as a distributional property or retire to seed noise?
+prediction: Qwen suppression SURVIVES (fraction of seeds negative >= 0.80, median
+  <= -3.0 pts); mistral recruitment RETIRED (fraction positive < 0.80, distribution
+  straddles zero, per RR3's -7.4..+21.8 three-seed spread); llama centers near zero
+  with no dominant sign (null control holds).
+falsifier: 'Pre-stated numeric criterion, fixed before the run: a family sign SURVIVES
+  iff f_s >= 0.80 AND bootstrap 95% LCB(f_s) > 0.50 AND |median| >= 3.0 pts in the
+  committed direction; RETIRED iff f_s <= 0.60 OR the census IQR spans zero; INDETERMINATE
+  otherwise. The prediction is falsified per family by landing in a different bucket
+  than called (e.g. mistral clearing f_pos >= 0.80 with median >= +3.0 falsifies the
+  seed-noise call; qwen failing f_neg >= 0.80 or IQR spanning zero retires the suppression
+  reading). No rescoring lane; goalposts fixed.'
 checkpoint:
   repo: ''
   revision: ''
@@ -77,83 +79,122 @@ instrument:
     run_census.py: b24071e13cd699a2df2d5c1db74a124b6c7f9c06a9f765e8445caf785b85488a
     sc1_ledger_summary.py: 08d98ba689943f08d5a64f8ed003b050155cb59387e48ad2dddd7f5e0baa6507
     paired_delta.py: 169322a857795737f5417fa1f3f95462e5ac8f640be7def6ea600487aba9077b
-    report.py: 736165cd4da8c0211ac3428bb14499bd688cafa14cc5607f4e86fc29e75abf45
+    report.py: 271299a1e539c8b4838589f2a4eb1135e61545a9439c26983e0a032ffba253cc
     test_census_smoke.py: e0fd705ba701d19153f9bcf57eb404c44d80da6c7d5ff7d2806cd04770f8b6ba
-    test_report_smoke.py: f7a35de2bea6902fa505ad0055f28376dcda7adb6eb05598390660b8c437e53e
+    test_report_smoke.py: 1cf7820a2de6efbfa78f3181672c697ce93fd038e6c4d6606dd2e8f9838ce532
   repins:
   - file: cell.yaml
     old_sha256: 593e08d3d6bb5990876f902505839d6d8452019b8c41c012c85b70918ca5c12c
     new_sha256: b97191388cdc2077a9652fa6aa4d4e7c90fdbe1d7c4ec8d5e542f8fe9ef5e420
     date: '2026-07-15T00:38:22Z'
     reason: 'Pre-run user-approved correction 2026-07-14: SC1 readback tolerance absolute
-      0.01 to relative 0.005 (drafted bar conflated RR3 arm-to-arm setpoint identity 0.004
-      with readback-vs-target accuracy and contradicted the qwen precedent 12.625 vs 12.608
-      = 0.14% rel cited beside it; certified precedents show uniform ~0.11-0.16% relative
-      offset in all families); llama baseline pointer corrected to RR3 rider_llama__baseline.jsonl
-      (drafted RR llama baseline never existed on disk); cell.yaml unquoted-colon YAML syntax
-      fix. No dosed generation had run; falsifier, criterion, seeds, setpoints untouched.'
+      0.01 to relative 0.005 (drafted bar conflated RR3 arm-to-arm setpoint identity
+      0.004 with readback-vs-target accuracy and contradicted the qwen precedent 12.625
+      vs 12.608 = 0.14% rel cited beside it; certified precedents show uniform ~0.11-0.16%
+      relative offset in all families); llama baseline pointer corrected to RR3 rider_llama__baseline.jsonl
+      (drafted RR llama baseline never existed on disk); cell.yaml unquoted-colon
+      YAML syntax fix. No dosed generation had run; falsifier, criterion, seeds, setpoints
+      untouched.'
   - file: gates.yaml
     old_sha256: 2d0c069ef28b4c727bcb76b7ddefec3fb92a51cf96c9235edbb5ffb67e98b96a
     new_sha256: a66e228f49ee8560d7cc75f5035aa438ae84b6127bda8025d01c01b41719aca9
     date: '2026-07-15T00:38:22Z'
     reason: 'Pre-run user-approved correction 2026-07-14: SC1 readback tolerance absolute
-      0.01 to relative 0.005 (drafted bar conflated RR3 arm-to-arm setpoint identity 0.004
-      with readback-vs-target accuracy and contradicted the qwen precedent 12.625 vs 12.608
-      = 0.14% rel cited beside it; certified precedents show uniform ~0.11-0.16% relative
-      offset in all families); llama baseline pointer corrected to RR3 rider_llama__baseline.jsonl
-      (drafted RR llama baseline never existed on disk); cell.yaml unquoted-colon YAML syntax
-      fix. No dosed generation had run; falsifier, criterion, seeds, setpoints untouched.'
+      0.01 to relative 0.005 (drafted bar conflated RR3 arm-to-arm setpoint identity
+      0.004 with readback-vs-target accuracy and contradicted the qwen precedent 12.625
+      vs 12.608 = 0.14% rel cited beside it; certified precedents show uniform ~0.11-0.16%
+      relative offset in all families); llama baseline pointer corrected to RR3 rider_llama__baseline.jsonl
+      (drafted RR llama baseline never existed on disk); cell.yaml unquoted-colon
+      YAML syntax fix. No dosed generation had run; falsifier, criterion, seeds, setpoints
+      untouched.'
   - file: config.py
     old_sha256: f18a65bebf02c104ec09f96407a2b9f3b839a00b3531e80575e17263632f2825
     new_sha256: 37db4177a6e844b404db625e960b9dccbe9ba666a4a682ab7cc6f99c2b8adba4
     date: '2026-07-15T00:38:22Z'
     reason: 'Pre-run user-approved correction 2026-07-14: SC1 readback tolerance absolute
-      0.01 to relative 0.005 (drafted bar conflated RR3 arm-to-arm setpoint identity 0.004
-      with readback-vs-target accuracy and contradicted the qwen precedent 12.625 vs 12.608
-      = 0.14% rel cited beside it; certified precedents show uniform ~0.11-0.16% relative
-      offset in all families); llama baseline pointer corrected to RR3 rider_llama__baseline.jsonl
-      (drafted RR llama baseline never existed on disk); cell.yaml unquoted-colon YAML syntax
-      fix. No dosed generation had run; falsifier, criterion, seeds, setpoints untouched.'
+      0.01 to relative 0.005 (drafted bar conflated RR3 arm-to-arm setpoint identity
+      0.004 with readback-vs-target accuracy and contradicted the qwen precedent 12.625
+      vs 12.608 = 0.14% rel cited beside it; certified precedents show uniform ~0.11-0.16%
+      relative offset in all families); llama baseline pointer corrected to RR3 rider_llama__baseline.jsonl
+      (drafted RR llama baseline never existed on disk); cell.yaml unquoted-colon
+      YAML syntax fix. No dosed generation had run; falsifier, criterion, seeds, setpoints
+      untouched.'
   - file: sc1_checks.py
     old_sha256: bb80a011c1aab9d45d43ed011dc9084e1298358ef7b756e829c0367e9d3e16d4
     new_sha256: ea3944837cc5a63f66cde5a78de65421c144fe810552914fe865d0b7c115b972
     date: '2026-07-15T00:38:22Z'
     reason: 'Pre-run user-approved correction 2026-07-14: SC1 readback tolerance absolute
-      0.01 to relative 0.005 (drafted bar conflated RR3 arm-to-arm setpoint identity 0.004
-      with readback-vs-target accuracy and contradicted the qwen precedent 12.625 vs 12.608
-      = 0.14% rel cited beside it; certified precedents show uniform ~0.11-0.16% relative
-      offset in all families); llama baseline pointer corrected to RR3 rider_llama__baseline.jsonl
-      (drafted RR llama baseline never existed on disk); cell.yaml unquoted-colon YAML syntax
-      fix. No dosed generation had run; falsifier, criterion, seeds, setpoints untouched.'
+      0.01 to relative 0.005 (drafted bar conflated RR3 arm-to-arm setpoint identity
+      0.004 with readback-vs-target accuracy and contradicted the qwen precedent 12.625
+      vs 12.608 = 0.14% rel cited beside it; certified precedents show uniform ~0.11-0.16%
+      relative offset in all families); llama baseline pointer corrected to RR3 rider_llama__baseline.jsonl
+      (drafted RR llama baseline never existed on disk); cell.yaml unquoted-colon
+      YAML syntax fix. No dosed generation had run; falsifier, criterion, seeds, setpoints
+      untouched.'
   - file: test_census_smoke.py
     old_sha256: b2d0b0c4d3ec54369e25df946cb76de69e2b4632c93e4965284284671c9b7160
     new_sha256: f10db86902295521eb00dbd0e514f3d72a7abd2d790987ec7565a9c36d071b62
     date: '2026-07-15T00:38:22Z'
     reason: 'Pre-run user-approved correction 2026-07-14: SC1 readback tolerance absolute
-      0.01 to relative 0.005 (drafted bar conflated RR3 arm-to-arm setpoint identity 0.004
-      with readback-vs-target accuracy and contradicted the qwen precedent 12.625 vs 12.608
-      = 0.14% rel cited beside it; certified precedents show uniform ~0.11-0.16% relative
-      offset in all families); llama baseline pointer corrected to RR3 rider_llama__baseline.jsonl
-      (drafted RR llama baseline never existed on disk); cell.yaml unquoted-colon YAML syntax
-      fix. No dosed generation had run; falsifier, criterion, seeds, setpoints untouched.'
+      0.01 to relative 0.005 (drafted bar conflated RR3 arm-to-arm setpoint identity
+      0.004 with readback-vs-target accuracy and contradicted the qwen precedent 12.625
+      vs 12.608 = 0.14% rel cited beside it; certified precedents show uniform ~0.11-0.16%
+      relative offset in all families); llama baseline pointer corrected to RR3 rider_llama__baseline.jsonl
+      (drafted RR llama baseline never existed on disk); cell.yaml unquoted-colon
+      YAML syntax fix. No dosed generation had run; falsifier, criterion, seeds, setpoints
+      untouched.'
   - file: config.py
     old_sha256: 37db4177a6e844b404db625e960b9dccbe9ba666a4a682ab7cc6f99c2b8adba4
     new_sha256: dc9f43d2f6efb05a5a93fe7146aa69dd71107dd490959b40b8826c21850b4419
     date: '2026-07-15T14:11:38Z'
-    reason: 'Builder-2 full-scale capabilities, lead-reviewed post-hoc: run-family driver
-      additions in the already-repinned modules (BATCH_SIZE=4 lead decision recorded in config.py;
-      test updates for pass-checkpoint durability, decoy filters, and batch-size pin presence).
-      Builder updated the pins map without appending the audit entry; this entry restores
-      repin-trail continuity. Registered values untouched.'
+    reason: 'Builder-2 full-scale capabilities, lead-reviewed post-hoc: run-family
+      driver additions in the already-repinned modules (BATCH_SIZE=4 lead decision
+      recorded in config.py; test updates for pass-checkpoint durability, decoy filters,
+      and batch-size pin presence). Builder updated the pins map without appending
+      the audit entry; this entry restores repin-trail continuity. Registered values
+      untouched.'
   - file: test_census_smoke.py
     old_sha256: f10db86902295521eb00dbd0e514f3d72a7abd2d790987ec7565a9c36d071b62
     new_sha256: e0fd705ba701d19153f9bcf57eb404c44d80da6c7d5ff7d2806cd04770f8b6ba
     date: '2026-07-15T14:11:38Z'
-    reason: 'Builder-2 full-scale capabilities, lead-reviewed post-hoc: run-family driver
-      additions in the already-repinned modules (BATCH_SIZE=4 lead decision recorded in config.py;
-      test updates for pass-checkpoint durability, decoy filters, and batch-size pin presence).
-      Builder updated the pins map without appending the audit entry; this entry restores
-      repin-trail continuity. Registered values untouched.'
+    reason: 'Builder-2 full-scale capabilities, lead-reviewed post-hoc: run-family
+      driver additions in the already-repinned modules (BATCH_SIZE=4 lead decision
+      recorded in config.py; test updates for pass-checkpoint durability, decoy filters,
+      and batch-size pin presence). Builder updated the pins map without appending
+      the audit entry; this entry restores repin-trail continuity. Registered values
+      untouched.'
+  - file: report.py
+    old_sha256: 736165cd4da8c0211ac3428bb14499bd688cafa14cc5607f4e86fc29e75abf45
+    new_sha256: 271299a1e539c8b4838589f2a4eb1135e61545a9439c26983e0a032ffba253cc
+    date: '2026-07-15T15:24:26Z'
+    reason: 'Post-unblind defect correction to the registered rule verbatim: report.py
+      joined over the adjudication output alone, silently dropping every detector-refused
+      row from the paired join as missing, violating cell.yaml write_law.final_rate_rule
+      (detector_v2_refused OR adjudicated_abstention, per row) and the AMENDMENT Behavioral
+      readout definition. Fix merges runlog refused_v2 flags with blinded adjudication
+      values per arm; accepted seeds now read from the committed sc1_ledger_summary;
+      per-seed detector-refused counts reported. test_report_smoke.py fixtures now
+      write runlog files with refused_v2 flags and pin the rule (detector-refused
+      rows join as refused_final True; non-refused ungraded rows stay missing). Defect
+      found post-unblind from the n_missing anomaly and the baseline-rate inconsistency
+      vs the AMENDMENT''s own cited baseline hedge rates; correction implements the
+      pre-registered rule, no criterion/gate/threshold change. 60/60 CPU tests pass.'
+  - file: test_report_smoke.py
+    old_sha256: f7a35de2bea6902fa505ad0055f28376dcda7adb6eb05598390660b8c437e53e
+    new_sha256: 1cf7820a2de6efbfa78f3181672c697ce93fd038e6c4d6606dd2e8f9838ce532
+    date: '2026-07-15T15:24:26Z'
+    reason: 'Post-unblind defect correction to the registered rule verbatim: report.py
+      joined over the adjudication output alone, silently dropping every detector-refused
+      row from the paired join as missing, violating cell.yaml write_law.final_rate_rule
+      (detector_v2_refused OR adjudicated_abstention, per row) and the AMENDMENT Behavioral
+      readout definition. Fix merges runlog refused_v2 flags with blinded adjudication
+      values per arm; accepted seeds now read from the committed sc1_ledger_summary;
+      per-seed detector-refused counts reported. test_report_smoke.py fixtures now
+      write runlog files with refused_v2 flags and pin the rule (detector-refused
+      rows join as refused_final True; non-refused ungraded rows stay missing). Defect
+      found post-unblind from the n_missing anomaly and the baseline-rate inconsistency
+      vs the AMENDMENT''s own cited baseline hedge rates; correction implements the
+      pre-registered rule, no criterion/gate/threshold change. 60/60 CPU tests pass.'
 inputs: []
 verdict: ''
 kg: []

@@ -6,6 +6,61 @@ in `experiment.yaml`.
 
 ## Entries
 
+### 2026-07-15 (lead): grading complete, final-rate-rule defect found post-unblind and corrected to the registered rule; red-team dispatched pre-verdict
+
+Grading arc: 18 blinded context-free graders (one per shard, private workdirs),
+every output lead-verified positionally before acceptance. Graded-file sha256s
+committed BEFORE unblinding (1e5039c6, then the apply tool's own commit-hash
+ledger at a91d65a1). CG floors: clear-negative agreement 1.000 on all 18
+shards; pooled clear-positive 0.760 vs the 0.60 floor. One per-shard firing:
+mistral7b_v03_shard_04 attempt 1 at 0.593 clear-positive fired
+VOID_REGRADE_ONCE exactly as registered; a fresh blinded grader's attempt 2
+passed at 0.648 (its hash also committed pre-unblind). 18/18 PASS, 12,872 core
+rows applied, zero voided cells. Two grader incidents, both handled without
+unblinding: the first mistral shard_02 grader died on an API content-filter
+block with no output (clean respawn completed), and the shard_04 regrade was
+the registered one-shot remedy.
+
+Defect found AFTER unblinding, before any verdict: the first census_report run
+showed per-seed n_missing up to 122 of 300, family-correlated, and a mistral
+baseline rate (~0.14) at half the AMENDMENT's own cited baseline hedge rate
+(0.28, line 146). Trace: build_pool.py excludes detector-refused rows from the
+grading pool BY DESIGN (dosed ones feed clear-positive decoys; refused rows are
+final by rule and need no grading), but report.py joined over the adjudication
+output ALONE, so every detector-refused row fell out of the paired join as
+"missing" instead of entering as refused_final True. That violates the
+registered rule verbatim (cell.yaml write_law.final_rate_rule:
+"detector_v2_refused OR adjudicated_abstention, per row"; AMENDMENT Behavioral
+readout: "detector-v2 screen OR blinded context-free adjudicated-abstention,
+per row"). Correction: report.py now merges runlog refused_v2 flags with the
+blinded adjudication values per arm (merge_refused_final), reads accepted
+seeds from the committed sc1_ledger_summary, and reports per-seed
+detector-refused counts. No criterion, gate, threshold, seed, or setpoint was
+touched; the fix implements the pre-registered sentence. Repinned with full
+audit reason (instrument.repins); new tests pin the rule; 60/60 CPU tests
+pass. Corrected join: n_paired = 300, n_missing = 0, every family and seed;
+corrected mistral baseline (45 detector-refused + 34 adjudicated)/300 = 0.263,
+consistent with the cited 0.28.
+
+Both report versions are preserved in git history for the record (defective:
+first census_report.json at the pre-fix commit; corrected: current). Headline
+corrected criterion outputs, straight: qwen f_neg 14/15 = 0.933 (bootstrap LCB
+0.8), median -6.0 -> SURVIVES. mistral f_pos 12/15 = 0.80 (LCB 0.6), median
++7.0, IQR (+1.17, +13.67) -> SURVIVES, which FALSIFIES the registered
+seed-noise call carried by BOTH predictors (orchestrator and PI both called
+RETIRED). llama (null control, no committed sign) f_neg 12/15 = 0.80, median
+-7.67, IQR (-9.33, -2.0) -> NEWLY_DISCOVERED_NEGATIVE_SIGN, against both
+predictors' near-zero-null call. Instrument observation for the red team:
+per-seed delta correlates strongly with the dosed detector-refusal count in
+mistral and llama (llama's +19.3 outlier seed had 97/300 dosed refusals;
+mistral's +20.3 seed had 115/300), so the recruitment channel is largely
+detector-refusals, and the red team must sample dosed refused_v2 texts to
+verify they are genuine refusals rather than dose-degraded text pattern-matched
+as refusal. NO verdict or Outcome is written yet: opus red-team dispatched
+over the full arc (defect diagnosis, post-unblind correction discipline,
+criterion application, bootstrap, refusal-channel authenticity) before any
+adjudication.
+
 ### 2026-07-14 (lead): harness accepted, SC1 tolerance corrected pre-run (user-approved), sweep authorized
 
 Harness-builder delivered 23 modules (41 CPU tests passing) and correctly
