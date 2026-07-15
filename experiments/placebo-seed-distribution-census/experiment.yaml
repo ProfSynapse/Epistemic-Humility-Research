@@ -201,4 +201,8 @@ verdict: 'At matched magnitude, random-direction placebos are sign-consistent ra
   negative, median -6.0), mistral recruitment SURVIVES at the exact 12/15 boundary
   (median +7.0, falsifying both predictors'' registered RETIRED call), and null-control
   llama shows a newly discovered negative sign (12/15, median -7.7).'
-kg: []
+kg:
+- experiment:placebo-seed-distribution-census
+- mechanism:matched-magnitude-placebo-sign-survives-as-distributional-property
+- mechanism:single-seed-placebo-delta-is-a-noisy-draw-from-a-wide-family-distribution
+- mechanism:dosed-detector-refusal-channel-drives-genuine-placebo-recruitment

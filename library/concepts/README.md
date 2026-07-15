@@ -690,7 +690,7 @@ Atomic notes extracted from the library papers via the Agents-K1 ingestion skill
 - [[valence-arousal-subspace]] : A two-dimensional linear subspace in LLM activation space spanned by a recovered valence axis (pleasure-displeasure) and arousal axis (activ
 - [[world-model-hallucination-modes]] : A three-type taxonomy of failure modes in generative world models, each anchored to a different pipeline stage. Perceptual hallucination occ
 
-## Mechanisms (cause -> effect) (419)
+## Mechanisms (cause -> effect) (422)
 
 - [[abstention-generalization-failure]] : 'instruction-tuning for abstention on a narrow, homogeneous set of refusal expressions and task formats' **prevents** Abstention ability does not generalize to 
 - [[abstract-representations-enable-zero-shot-generalization]] : High degree of abstract (parallel) representation in ANN hidden layers, as measured by parallelism-score, indicating that compositional rule dimensions are enco
@@ -765,6 +765,7 @@ Atomic notes extracted from the library papers via the Agents-K1 ingestion skill
 - [[diverse-training-enables-universal-probe-generalization]] : Training a linear truthfulness probe on a large collection of diverse datasets spanning many task types and domains **enables** Cross-task and cross-domain prob
 - [[dominant-uncertainty-source-shifts-with-model-scale]] : Increasing model scale (number of parameters) and task type (factual QA vs mathematical reasoning) **mediates** The dominant uncertainty source shifts: smaller 
 - [[dormant-features-compensate-for-ablated-features]] : Ablation of the primary active causal sparse-autoencoder|SAE refusal feature set, removing their contribution to the refusal-direction **prevents** Previously z
+- [[dosed-detector-refusal-channel-drives-genuine-placebo-recruitment]] : Within the 15-seed matched-magnitude random-direction census, each accepted seed's automatic detector-v2 refusal screen fires on a variable count of the fixed S
 - [[doubt-regulated-caution-coupling-actuates-selective-refusal-release]] : On clean-SFT -> GRPO-v2 seed1, erasing the caution_perp projection from the L35 residual stream at every position and writing a doubt-proportional setpoint in i
 - [[dpo-beta-should-follow-pair-quality]] : Preference-pair datasets mix closely matched informative pairs, easy high-gap pairs, and outliers under one static DPO beta. **causes** The same beta can under-
 - [[dpo-choice-induces-severe-answer-uncertainty-shift]] : Direct preference optimization using pairs that share the same format but differ in which choice is labeled preferred (DPO-Choice scheme) **increases** The mode
@@ -892,6 +893,7 @@ Atomic notes extracted from the library papers via the Agents-K1 ingestion skill
 - [[majority-voting-gain-scales-with-correct-answer-diversity]] : Post-training collapses the distribution of correct outputs so that repeated samples are near-identical, providing no independent signal for majority voting **d
 - [[mass-covering-divergence-preserves-policy-diversity]] : Using a mass-covering f-divergence (forward-KL or Jensen-Shannon) as the regularization term in RLVR training, applied to a static pre-sampled near-perfect data
 - [[massive-activations-act-as-fixed-attention-bias]] : a few fixed residual-stream coordinates hold enormous, input-agnostic values at special token positions. **enables** attention concentrates on those tokens, inj
+- [[matched-magnitude-placebo-sign-survives-as-distributional-property]] : A matched-magnitude random_direction placebo write, held to each family's certified single-seed erase-write setpoint (qwen dose_abs 12.608 at hs20, mistral dose
 - [[max-class-probability-overconfidence-degrades-failure-ranking]] : Using the maximum softmax class probability as the confidence score for deciding which predictions to trust. **decreases** Confident errors receive high scores 
 - [[metacognitive-advantage-scaling-improves-faithful-calibration]] : Scaling above-average faithful-calibration completions by the accuracy of the model's self-judgment during GRPO-style training. **increases** Higher and more ge
 - [[metacognitive-data-selection-improves-faithful-calibration]] : Selecting training examples from both high and low ends of a model's self-assessed metacognitive alignment scores. **increases** Better faithful-calibration tra
@@ -1058,6 +1060,7 @@ Atomic notes extracted from the library papers via the Agents-K1 ingestion skill
 - [[sft-unknown-examples-drive-hallucination]] : 'supervised-finetuning on examples outside the model''s knowledge-boundary (Unknown examples in slick)' **increases** Increased hallucination on closed-book QA 
 - [[shift-ablation-removes-spurious-gender-signal]] : Human-guided ablation of spurious SAE features identified via sparse feature circuit on an ambiguous (gender-predictive) training set **enables** Classifier wor
 - [[single-llm-self-reflection-fails-abstention]] : Relying on a single LLM to evaluate or reflect on its own generated answers (calibration, prompting, or self-consistency approaches) **prevents** Unreliable abs
+- [[single-seed-placebo-delta-is-a-noisy-draw-from-a-wide-family-distribution]] : Each family's historical single-seed matched-magnitude placebo delta (qwen -5.13, mistral +7.39, both measured before the census on different single seeds) is l
 - [[skill-specific-truthfulness-encoding]] : Probing classifiers trained on exact-answer-token representations of one task or skill cluster **prevents** Failure to generalize to tasks requiring different u
 - [[slow-thinking-enables-dynamic-confidence-calibration]] : slow-thinking behaviors during chain-of-thought (backtracking, exploring alternatives, uncertainty markers such as 'I think' or 'maybe') **increases** Progressi
 - [[sparse-circuits-are-more-compact-than-neuron-circuits]] : Using SAE features (monosemantic) instead of neurons as the unit of circuit analysis **decreases** Majority of model performance on subject-verb agreement expla

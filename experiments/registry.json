@@ -2180,7 +2180,12 @@
           }
         ]
       },
-      "kg": [],
+      "kg": [
+        "experiment:placebo-seed-distribution-census",
+        "mechanism:matched-magnitude-placebo-sign-survives-as-distributional-property",
+        "mechanism:single-seed-placebo-delta-is-a-noisy-draw-from-a-wide-family-distribution",
+        "mechanism:dosed-detector-refusal-channel-drives-genuine-placebo-recruitment"
+      ],
       "prediction": "Qwen suppression SURVIVES (fraction of seeds negative >= 0.80, median <= -3.0 pts); mistral recruitment RETIRED (fraction positive < 0.80, distribution straddles zero, per RR3's -7.4..+21.8 three-seed spread); llama centers near zero with no dominant sign (null control holds).",
       "question": "What is the per-family DISTRIBUTION of matched-magnitude random-direction wide-instrument abstention deltas across K=15 fresh seeds (qwen hs20 at dose_abs 12.608, mistral hs16 at 3.665, llama hs20 at 12 sigma_c), and does each family's single-seed placebo-sign reading (qwen -5.13 suppression, mistral +7.39 recruitment, llama +0.1 null) survive as a distributional property or retire to seed noise?",
       "registered": true,
