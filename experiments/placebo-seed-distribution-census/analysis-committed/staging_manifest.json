@@ -1,0 +1,202 @@
+{
+  "files": [
+    {
+      "count": 1692,
+      "dest_path": "analysis/staged_inputs/qwen35_4b/baseline.jsonl",
+      "kind": "jsonl",
+      "name": "qwen_baseline_runlog",
+      "sha256": "05280e75107cf287378a35666204b382b9e3a49c2a5ed0ac3aab7d6cfa262c45",
+      "source_path": "/home/profsynapse/code/ehr-worktrees/qwen35-midband-heldout/experiments/qwen35-4b-midband-heldout/analysis/runlog/baseline.jsonl",
+      "staged": true
+    },
+    {
+      "count": 1692,
+      "dest_path": "analysis/staged_inputs/qwen35_4b/heldout_rows_for_steer.jsonl",
+      "kind": "jsonl",
+      "name": "qwen_heldout_rows_for_steer",
+      "note": "question text + aliases + role/split per row_key, gitignored destination only",
+      "sha256": "76097bf7046cefa673280110a5d3b83aeaf0affbc98dc73078ecdec9785d178b",
+      "source_path": "/home/profsynapse/code/ehr-worktrees/qwen35-midband-heldout/experiments/qwen35-4b-midband-heldout/analysis/heldout_rows_for_steer.jsonl",
+      "staged": true
+    },
+    {
+      "count": 1303,
+      "dest_path": "analysis/staged_inputs/qwen35_4b/random_direction.jsonl",
+      "kind": "jsonl",
+      "name": "qwen_random_direction_runlog",
+      "note": "QH's own gated random-direction pass; row_key set used ONLY to compute the paired-pool intersection with baseline.jsonl (1286 rows, calibration AMENDMENT line 173) -- the census itself does not reuse this pass's text or apply any gate",
+      "sha256": "993ef3b4a6ece1110399bbb7985cfed1abee30b5ea44d76776d67fa8688b3b16",
+      "source_path": "/home/profsynapse/code/ehr-worktrees/qwen35-midband-heldout/experiments/qwen35-4b-midband-heldout/analysis/runlog/random_direction.jsonl",
+      "staged": true
+    },
+    {
+      "count": 1694,
+      "dest_path": "analysis/staged_inputs/mistral7b_v03/baseline.jsonl",
+      "kind": "jsonl",
+      "name": "mistral_baseline_runlog",
+      "sha256": "aa28a8b956997ed200d02bcbd855b8697f51f7f5c094fc08216e424d48e7986b",
+      "source_path": "/home/profsynapse/code/ehr-worktrees/rr2-mistral-confirm/experiments/rr2-mistral-adjudicated-refusal-confirm/analysis/runlog/heldout__baseline.jsonl",
+      "staged": true
+    },
+    {
+      "count": 3037,
+      "dest_path": "analysis/staged_inputs/mistral7b_v03/joined_rows_private.jsonl",
+      "kind": "jsonl",
+      "name": "mistral_joined_rows_private",
+      "note": "question text + aliases + role/split per row_key, gitignored destination only",
+      "sha256": "21ac7bc2e6aab2f6446e57cace3c44ee33f63f018f04af776b84f45886a76fb6",
+      "source_path": "/home/profsynapse/code/ehr-worktrees/rr2-mistral-confirm/experiments/rr2-mistral-adjudicated-refusal-confirm/analysis/joined_rows_private.jsonl",
+      "staged": true
+    },
+    {
+      "count": 2,
+      "dest_path": "analysis/staged_inputs/mistral7b_v03/directions/hs16_u_d.json",
+      "kind": "json",
+      "name": "mistral_hs16_u_d",
+      "sha256": "0771ab2c63de3292676cb70d19fd0758729651dccc6bb58dbf37e8cade0466be",
+      "source_path": "/home/profsynapse/code/ehr-worktrees/rr2-mistral-confirm/experiments/rr2-mistral-adjudicated-refusal-confirm/directions/hs16_u_d.json",
+      "staged": true
+    },
+    {
+      "count": 2,
+      "dest_path": "analysis/staged_inputs/mistral7b_v03/directions/hs16_c_hat.json",
+      "kind": "json",
+      "name": "mistral_hs16_c_hat",
+      "sha256": "f6555f329208f74d15638cf0c2da2f936cfdf74844c889da0b9f89f202e1fc2d",
+      "source_path": "/home/profsynapse/code/ehr-worktrees/rr2-mistral-confirm/experiments/rr2-mistral-adjudicated-refusal-confirm/directions/hs16_c_hat.json",
+      "staged": true
+    },
+    {
+      "count": 3,
+      "dest_path": "analysis/staged_inputs/mistral7b_v03/directions/hs16_random_direction.json",
+      "kind": "json",
+      "name": "mistral_hs16_random_direction",
+      "sha256": "5364f29810db67d389be4c0ccedef17d381cbeb94d6dddede71f732c306288e8",
+      "source_path": "/home/profsynapse/code/ehr-worktrees/rr2-mistral-confirm/experiments/rr2-mistral-adjudicated-refusal-confirm/directions/hs16_random_direction.json",
+      "staged": true
+    },
+    {
+      "count": 12,
+      "dest_path": "analysis/staged_inputs/mistral7b_v03/directions/hs16_build_manifest.json",
+      "kind": "json",
+      "name": "mistral_hs16_build_manifest_rr2",
+      "sha256": "87667fae8b2fd459bffd6c5bd6df64e1c65ad3faf27eb235ba0d7d30f0675899",
+      "source_path": "/home/profsynapse/code/ehr-worktrees/rr2-mistral-confirm/experiments/rr2-mistral-adjudicated-refusal-confirm/directions/hs16_build_manifest.json",
+      "staged": true
+    },
+    {
+      "count": 1206,
+      "dest_path": "analysis/staged_inputs/llama32_3b/baseline.jsonl",
+      "kind": "jsonl",
+      "name": "llama_baseline_runlog",
+      "note": "SUBSTITUTION: cell.yaml names an RR llama baseline that does not exist on disk; this is RR3's own rider_llama__baseline.jsonl, same generation contract; see config.py BASELINE_RUNLOG comment",
+      "sha256": "29b4e5e07930e4c0b77ef736024d4af455d0f0908655012a6e20c3d10c9f116d",
+      "source_path": "/home/profsynapse/code/ehr-worktrees/rr3-corrected-placebo/experiments/rr3-corrected-placebo-replication/analysis/runlog/rider_llama__baseline.jsonl",
+      "staged": true
+    },
+    {
+      "count": 2956,
+      "dest_path": "analysis/staged_inputs/llama32_3b/joined_rows_private.jsonl",
+      "kind": "jsonl",
+      "name": "llama_joined_rows_private",
+      "note": "question text + aliases + role/split per row_key, gitignored destination only",
+      "sha256": "1d80f4a5029fbc59b1db63901a908cc38a60d8aed5816ea5287856f2c54a8246",
+      "source_path": "/home/profsynapse/code/ehr-worktrees/rr-raw-refusal/experiments/rr-cross-family-raw-refusal/analysis/llama/joined_rows_private.jsonl",
+      "staged": true
+    },
+    {
+      "count": 3,
+      "dest_path": "analysis/staged_inputs/llama32_3b/directions/llama_hs20_u_d.json",
+      "kind": "json",
+      "name": "llama_hs20_u_d_rr3_reconstruction",
+      "sha256": "aadbe3628bf6b98ad4e5293450cdffd812100e337be2d4c30254821a1d52a424",
+      "source_path": "/home/profsynapse/code/ehr-worktrees/rr3-corrected-placebo/experiments/rr3-corrected-placebo-replication/directions/llama_hs20_u_d.json",
+      "staged": true
+    },
+    {
+      "count": 3,
+      "dest_path": "analysis/staged_inputs/llama32_3b/directions/llama_hs20_c_hat.json",
+      "kind": "json",
+      "name": "llama_hs20_c_hat_rr3_reconstruction",
+      "sha256": "a74568001725e9900759e24f07007f2cb6399bf940546d8e30208a1bb2ade171",
+      "source_path": "/home/profsynapse/code/ehr-worktrees/rr3-corrected-placebo/experiments/rr3-corrected-placebo-replication/directions/llama_hs20_c_hat.json",
+      "staged": true
+    },
+    {
+      "count": 4,
+      "dest_path": "analysis/staged_inputs/llama32_3b/directions/llama_hs20_random_direction.json",
+      "kind": "json",
+      "name": "llama_hs20_random_direction_rr3_reconstruction",
+      "sha256": "c1285b4fd3126883df3883fb9b2d007fea5888e298a489990fa9ff04ff53b5c7",
+      "source_path": "/home/profsynapse/code/ehr-worktrees/rr3-corrected-placebo/experiments/rr3-corrected-placebo-replication/directions/llama_hs20_random_direction.json",
+      "staged": true
+    },
+    {
+      "count": 12,
+      "dest_path": "analysis/staged_inputs/llama32_3b/directions/llama_hs20_build_manifest.json",
+      "kind": "json",
+      "name": "llama_hs20_build_manifest_rr3_reconstruction",
+      "sha256": "f160666885d7222b1bd1e52dbc44328da1c8ac0405657c605d5c2fdb15e9e546",
+      "source_path": "/home/profsynapse/code/ehr-worktrees/rr3-corrected-placebo/experiments/rr3-corrected-placebo-replication/directions/llama_hs20_build_manifest.json",
+      "staged": true
+    },
+    {
+      "count": 7,
+      "dest_path": "analysis/staged_inputs/llama32_3b/fit_reuse_report_rr3.json",
+      "kind": "json",
+      "name": "llama_fit_reuse_report_rr3",
+      "note": "RR3's own RG0 field-for-field crosscheck of the llama hs20 reconstruction against RR's committed manifest; pass=true, mismatches={} (independently re-verified by llama_setpoint_provenance.py)",
+      "sha256": "b2d43b0ac3d2cfe17a9f37246d66186fc793d72a41d9662cb08eb295c716c28b",
+      "source_path": "/home/profsynapse/code/ehr-worktrees/rr3-corrected-placebo/experiments/rr3-corrected-placebo-replication/analysis/llama/fit_reuse_report.json",
+      "staged": true
+    },
+    {
+      "count": 12,
+      "dest_path": null,
+      "kind": "json",
+      "name": "qwen_hs20_u_d",
+      "sha256": "18e78f257484692c1cef7013d47cb64739542d32b3e9949d0258b4ddc3b0c84c",
+      "source_path": "/home/profsynapse/code/ehr-worktrees/placebo-seed-census/experiments/qwen35-4b-midband-doubt-snap/analysis-committed/directions/hs20/u_d.json",
+      "staged": false
+    },
+    {
+      "count": 12,
+      "dest_path": null,
+      "kind": "json",
+      "name": "qwen_hs20_c_hat",
+      "sha256": "937d1bffe1924e73bca40a88c8096d7e01bb67c5b64286362196aa968e2c2e1f",
+      "source_path": "/home/profsynapse/code/ehr-worktrees/placebo-seed-census/experiments/qwen35-4b-midband-doubt-snap/analysis-committed/directions/hs20/c_hat.json",
+      "staged": false
+    },
+    {
+      "count": 12,
+      "dest_path": null,
+      "kind": "json",
+      "name": "qwen_hs20_random_direction",
+      "sha256": "db8b930d79d98f52417566d9a87c876470f6b820684ee9456a58f7213d33cafa",
+      "source_path": "/home/profsynapse/code/ehr-worktrees/placebo-seed-census/experiments/qwen35-4b-midband-doubt-snap/analysis-committed/directions/hs20/random_direction.json",
+      "staged": false
+    },
+    {
+      "count": 12,
+      "dest_path": null,
+      "kind": "json",
+      "name": "rr_llama_hs20_build_manifest",
+      "sha256": "f160666885d7222b1bd1e52dbc44328da1c8ac0405657c605d5c2fdb15e9e546",
+      "source_path": "/home/profsynapse/code/ehr-worktrees/placebo-seed-census/experiments/rr-cross-family-raw-refusal/analysis-committed/llama/hs20_fit_build_manifest.json",
+      "staged": false
+    },
+    {
+      "count": 12,
+      "dest_path": null,
+      "kind": "json",
+      "name": "rr_mistral_hs16_build_manifest",
+      "sha256": "87667fae8b2fd459bffd6c5bd6df64e1c65ad3faf27eb235ba0d7d30f0675899",
+      "source_path": "/home/profsynapse/code/ehr-worktrees/placebo-seed-census/experiments/rr-cross-family-raw-refusal/analysis-committed/mistral/hs16_fit_build_manifest.json",
+      "staged": false
+    }
+  ],
+  "n_committed_local": 5,
+  "n_files": 21,
+  "n_symlinked": 16
+}

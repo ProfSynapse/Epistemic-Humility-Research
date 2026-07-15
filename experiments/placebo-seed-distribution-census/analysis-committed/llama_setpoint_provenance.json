@@ -1,0 +1,28 @@
+{
+  "crosscheck": {
+    "fields_compared": [
+      "mu_d",
+      "sigma_d",
+      "mu_c",
+      "sigma_c",
+      "tau_frozen",
+      "auc_neg_z_d_on_fit"
+    ],
+    "method": "field-for-field comparison of RR's own originally-committed hs20_fit_build_manifest.json against rr3-corrected-placebo-replication's independent from-scratch RG0 reconstruction of the same fit (same FIT rows, same anchors, RR's own fit seed 20260713, run via direction_fit.py/fit_reuse.py, asserted byte-identical across two internal runs before this comparison ever sees it)",
+    "mismatches": {},
+    "pass": true,
+    "rr3_own_fit_reuse_report_pass": true,
+    "rr3_reconstructed_manifest_path": "/home/profsynapse/code/ehr-worktrees/placebo-seed-census/experiments/placebo-seed-distribution-census/analysis/staged_inputs/llama32_3b/directions/llama_hs20_build_manifest.json",
+    "rr3_reconstructed_sha256": "f160666885d7222b1bd1e52dbc44328da1c8ac0405657c605d5c2fdb15e9e546",
+    "rr_committed_manifest_path": "/home/profsynapse/code/ehr-worktrees/placebo-seed-census/experiments/rr-cross-family-raw-refusal/analysis-committed/llama/hs20_fit_build_manifest.json",
+    "rr_committed_sha256": "f160666885d7222b1bd1e52dbc44328da1c8ac0405657c605d5c2fdb15e9e546",
+    "whole_file_byte_identical": true
+  },
+  "directions_dir_note": "cell.yaml line 65 leaves llama directions_dir as TO-PIN. This harness pins it to rr3-corrected-placebo-replication's OWN gitignored directions/ dir (reused, not re-run -- see this module's docstring), staged into analysis/staged_inputs/llama32_3b/directions/ at SC0.",
+  "directions_dir_pinned": "/home/profsynapse/code/ehr-worktrees/rr3-corrected-placebo/experiments/rr3-corrected-placebo-replication/directions",
+  "dose_multiplier_sigma_c": 12,
+  "layer_hs_index": 20,
+  "setpoint_dose_abs": 13.51434840261836,
+  "setpoint_dose_abs_matches_config_py_constant": true,
+  "sigma_c_hs20_llama": 1.1261957002181966
+}

@@ -1,0 +1,116 @@
+[
+  {
+    "committed_at": "2026-07-15T14:54:17.323985+00:00",
+    "file_name": "llama32_3b_shard_00__attempt1.jsonl",
+    "sha256": "28db43d7282f96fc174d5aa0dd758e43b854576c8618fa84badcc0bdc3cd7320",
+    "shard_id": "llama32_3b_shard_00"
+  },
+  {
+    "committed_at": "2026-07-15T14:54:17.454550+00:00",
+    "file_name": "llama32_3b_shard_01__attempt1.jsonl",
+    "sha256": "bc219bfa4875a841f61227e031171d773fddc07f95828059440d85f702dcf8dd",
+    "shard_id": "llama32_3b_shard_01"
+  },
+  {
+    "committed_at": "2026-07-15T14:54:17.581139+00:00",
+    "file_name": "llama32_3b_shard_02__attempt1.jsonl",
+    "sha256": "30b7c38f3af71901fb6400a20a25a0652153d3ddf33779b71ea264deb8a36f0a",
+    "shard_id": "llama32_3b_shard_02"
+  },
+  {
+    "committed_at": "2026-07-15T14:54:17.707051+00:00",
+    "file_name": "llama32_3b_shard_03__attempt1.jsonl",
+    "sha256": "0526b89a39b557fe61ee94888c2336b00bdb39535d8434f37289caf2cb341362",
+    "shard_id": "llama32_3b_shard_03"
+  },
+  {
+    "committed_at": "2026-07-15T14:54:17.827000+00:00",
+    "file_name": "llama32_3b_shard_04__attempt1.jsonl",
+    "sha256": "82c4f021fe4e3f88b32e50d3d83b9c419bd7e252f8c19bfbf83a5398e28fc7e8",
+    "shard_id": "llama32_3b_shard_04"
+  },
+  {
+    "committed_at": "2026-07-15T14:54:17.940705+00:00",
+    "file_name": "llama32_3b_shard_05__attempt1.jsonl",
+    "sha256": "06f037da44757eab6a704da5dcf872fdcc4e2740bf0398071aa9b58fdb068ceb",
+    "shard_id": "llama32_3b_shard_05"
+  },
+  {
+    "committed_at": "2026-07-15T14:54:18.067390+00:00",
+    "file_name": "mistral7b_v03_shard_00__attempt1.jsonl",
+    "sha256": "4dfe4b13b4c7fbd53e4e5773483b94ccd0705914e98e2709bd8ac9d791133fc7",
+    "shard_id": "mistral7b_v03_shard_00"
+  },
+  {
+    "committed_at": "2026-07-15T14:54:18.190143+00:00",
+    "file_name": "mistral7b_v03_shard_01__attempt1.jsonl",
+    "sha256": "f69c92df0763c492fc58983cb8690173a472a8363bcb5f458d79c95f0bbf0f9f",
+    "shard_id": "mistral7b_v03_shard_01"
+  },
+  {
+    "committed_at": "2026-07-15T14:54:18.308969+00:00",
+    "file_name": "mistral7b_v03_shard_02__attempt1.jsonl",
+    "sha256": "bc40faf2991829f5890fc5baf4bcd173827aadba820bb441e80b2bcf0d84d259",
+    "shard_id": "mistral7b_v03_shard_02"
+  },
+  {
+    "committed_at": "2026-07-15T14:54:18.436847+00:00",
+    "file_name": "mistral7b_v03_shard_03__attempt1.jsonl",
+    "sha256": "08253154a717f5bb180923978b20f689e1ed208dd33a7e90e9dccb98b6f286b2",
+    "shard_id": "mistral7b_v03_shard_03"
+  },
+  {
+    "committed_at": "2026-07-15T14:54:18.552471+00:00",
+    "file_name": "mistral7b_v03_shard_04__attempt1.jsonl",
+    "sha256": "1430ec0d5a32442f5839aa90cd0270ee169c3f6f9138881bc4c4f7c2b4224978",
+    "shard_id": "mistral7b_v03_shard_04"
+  },
+  {
+    "committed_at": "2026-07-15T14:54:18.680237+00:00",
+    "file_name": "qwen35_4b_shard_00__attempt1.jsonl",
+    "sha256": "26d62ad380e2544a7422b28b95066ba4f834e3dd6964ae095a36bd936901cf04",
+    "shard_id": "qwen35_4b_shard_00"
+  },
+  {
+    "committed_at": "2026-07-15T14:54:18.803174+00:00",
+    "file_name": "qwen35_4b_shard_01__attempt1.jsonl",
+    "sha256": "b86b2e43566b04c2834dc7ad5e0ab6c0845dcea8f41e15a9cb3d710702029578",
+    "shard_id": "qwen35_4b_shard_01"
+  },
+  {
+    "committed_at": "2026-07-15T14:54:18.922056+00:00",
+    "file_name": "qwen35_4b_shard_02__attempt1.jsonl",
+    "sha256": "e37856e8ca47e584848834812398f7111e01d2ddd23bd1edfd46f68a2f8ff8e2",
+    "shard_id": "qwen35_4b_shard_02"
+  },
+  {
+    "committed_at": "2026-07-15T14:54:19.042113+00:00",
+    "file_name": "qwen35_4b_shard_03__attempt1.jsonl",
+    "sha256": "fcde1673a21da671421961677c0fade63aaee21badbba452b93a572a87cff6b9",
+    "shard_id": "qwen35_4b_shard_03"
+  },
+  {
+    "committed_at": "2026-07-15T14:54:19.172565+00:00",
+    "file_name": "qwen35_4b_shard_04__attempt1.jsonl",
+    "sha256": "84e923f53e81f80f1255ada6f0523ae86913ace7dbfd07a483109b15d53d342e",
+    "shard_id": "qwen35_4b_shard_04"
+  },
+  {
+    "committed_at": "2026-07-15T14:54:19.298905+00:00",
+    "file_name": "qwen35_4b_shard_05__attempt1.jsonl",
+    "sha256": "480b11d95c9a715e51e6e764ffa4d3eff8de1d9393ed9c74a71b4f2a8bad9702",
+    "shard_id": "qwen35_4b_shard_05"
+  },
+  {
+    "committed_at": "2026-07-15T14:54:19.418338+00:00",
+    "file_name": "qwen35_4b_shard_06__attempt1.jsonl",
+    "sha256": "8636f6cd4fb714ee3e0888d30382fad84e55903bd5b24b8ad609db841d9f1d6e",
+    "shard_id": "qwen35_4b_shard_06"
+  },
+  {
+    "committed_at": "2026-07-15T15:13:50.012315+00:00",
+    "file_name": "mistral7b_v03_shard_04__attempt2.jsonl",
+    "sha256": "112baf35cad287e375ba7ca8815dcafa5c27a4061760dc52a02349587029e601",
+    "shard_id": "mistral7b_v03_shard_04"
+  }
+]

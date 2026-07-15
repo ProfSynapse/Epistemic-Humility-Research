@@ -1,0 +1,34 @@
+{
+  "families": {
+    "llama32_3b": {
+      "baseline_source_path": "/home/profsynapse/code/ehr-worktrees/rr3-corrected-placebo/experiments/rr3-corrected-placebo-replication/analysis/runlog/rider_llama__baseline.jsonl",
+      "baseline_source_sha256": "29b4e5e07930e4c0b77ef736024d4af455d0f0908655012a6e20c3d10c9f116d",
+      "family": "llama32_3b",
+      "n_excluded_already_in_scored_subsample": 0,
+      "n_excluded_regrade_not_well_formed_correct_v2": 0,
+      "n_excluded_regrade_refused_v2": 0,
+      "n_known_correct_role_in_staged_baseline": 334,
+      "n_qualifying_heldback_candidates": 334
+    },
+    "mistral7b_v03": {
+      "baseline_source_path": "/home/profsynapse/code/ehr-worktrees/rr2-mistral-confirm/experiments/rr2-mistral-adjudicated-refusal-confirm/analysis/runlog/heldout__baseline.jsonl",
+      "baseline_source_sha256": "aa28a8b956997ed200d02bcbd855b8697f51f7f5c094fc08216e424d48e7986b",
+      "family": "mistral7b_v03",
+      "n_excluded_already_in_scored_subsample": 0,
+      "n_excluded_regrade_not_well_formed_correct_v2": 4,
+      "n_excluded_regrade_refused_v2": 1,
+      "n_known_correct_role_in_staged_baseline": 382,
+      "n_qualifying_heldback_candidates": 377
+    },
+    "qwen35_4b": {
+      "baseline_source_path": "/home/profsynapse/code/ehr-worktrees/qwen35-midband-heldout/experiments/qwen35-4b-midband-heldout/analysis/runlog/baseline.jsonl",
+      "baseline_source_sha256": "05280e75107cf287378a35666204b382b9e3a49c2a5ed0ac3aab7d6cfa262c45",
+      "family": "qwen35_4b",
+      "n_excluded_already_in_scored_subsample": 0,
+      "n_excluded_regrade_not_well_formed_correct_v2": 6,
+      "n_excluded_regrade_refused_v2": 0,
+      "n_known_correct_role_in_staged_baseline": 360,
+      "n_qualifying_heldback_candidates": 354
+    }
+  }
+}

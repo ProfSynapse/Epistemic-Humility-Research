@@ -1,0 +1,249 @@
+{
+  "n_applied_rows": 12872,
+  "pooled_clear_positive": {
+    "clear_positive_agreement_pooled": 0.7595854922279792,
+    "clear_positive_correct_pooled": 733,
+    "clear_positive_total_pooled": 965,
+    "floor": 0.6,
+    "n_shards": 18,
+    "passed": true
+  },
+  "pooled_failure_cells": [],
+  "shards": {
+    "llama32_3b_shard_00": {
+      "cell": "llama32_3b",
+      "cg1": {
+        "attempt": 1,
+        "clear_negative_agreement": 1.0,
+        "clear_positive_agreement": 0.6481481481481481,
+        "clear_positive_floor_met": true,
+        "clear_positive_total": 54,
+        "passed": true,
+        "shard_id": "llama32_3b_shard_00",
+        "status": "PASS"
+      }
+    },
+    "llama32_3b_shard_01": {
+      "cell": "llama32_3b",
+      "cg1": {
+        "attempt": 1,
+        "clear_negative_agreement": 1.0,
+        "clear_positive_agreement": 0.7222222222222222,
+        "clear_positive_floor_met": true,
+        "clear_positive_total": 54,
+        "passed": true,
+        "shard_id": "llama32_3b_shard_01",
+        "status": "PASS"
+      }
+    },
+    "llama32_3b_shard_02": {
+      "cell": "llama32_3b",
+      "cg1": {
+        "attempt": 1,
+        "clear_negative_agreement": 1.0,
+        "clear_positive_agreement": 0.7777777777777778,
+        "clear_positive_floor_met": true,
+        "clear_positive_total": 54,
+        "passed": true,
+        "shard_id": "llama32_3b_shard_02",
+        "status": "PASS"
+      }
+    },
+    "llama32_3b_shard_03": {
+      "cell": "llama32_3b",
+      "cg1": {
+        "attempt": 1,
+        "clear_negative_agreement": 1.0,
+        "clear_positive_agreement": 0.7777777777777778,
+        "clear_positive_floor_met": true,
+        "clear_positive_total": 54,
+        "passed": true,
+        "shard_id": "llama32_3b_shard_03",
+        "status": "PASS"
+      }
+    },
+    "llama32_3b_shard_04": {
+      "cell": "llama32_3b",
+      "cg1": {
+        "attempt": 1,
+        "clear_negative_agreement": 1.0,
+        "clear_positive_agreement": 0.6851851851851852,
+        "clear_positive_floor_met": true,
+        "clear_positive_total": 54,
+        "passed": true,
+        "shard_id": "llama32_3b_shard_04",
+        "status": "PASS"
+      }
+    },
+    "llama32_3b_shard_05": {
+      "cell": "llama32_3b",
+      "cg1": {
+        "attempt": 1,
+        "clear_negative_agreement": 1.0,
+        "clear_positive_agreement": 0.8703703703703703,
+        "clear_positive_floor_met": true,
+        "clear_positive_total": 54,
+        "passed": true,
+        "shard_id": "llama32_3b_shard_05",
+        "status": "PASS"
+      }
+    },
+    "mistral7b_v03_shard_00": {
+      "cell": "mistral7b_v03",
+      "cg1": {
+        "attempt": 1,
+        "clear_negative_agreement": 1.0,
+        "clear_positive_agreement": 0.7037037037037037,
+        "clear_positive_floor_met": true,
+        "clear_positive_total": 54,
+        "passed": true,
+        "shard_id": "mistral7b_v03_shard_00",
+        "status": "PASS"
+      }
+    },
+    "mistral7b_v03_shard_01": {
+      "cell": "mistral7b_v03",
+      "cg1": {
+        "attempt": 1,
+        "clear_negative_agreement": 1.0,
+        "clear_positive_agreement": 0.7777777777777778,
+        "clear_positive_floor_met": true,
+        "clear_positive_total": 54,
+        "passed": true,
+        "shard_id": "mistral7b_v03_shard_01",
+        "status": "PASS"
+      }
+    },
+    "mistral7b_v03_shard_02": {
+      "cell": "mistral7b_v03",
+      "cg1": {
+        "attempt": 1,
+        "clear_negative_agreement": 1.0,
+        "clear_positive_agreement": 0.6851851851851852,
+        "clear_positive_floor_met": true,
+        "clear_positive_total": 54,
+        "passed": true,
+        "shard_id": "mistral7b_v03_shard_02",
+        "status": "PASS"
+      }
+    },
+    "mistral7b_v03_shard_03": {
+      "cell": "mistral7b_v03",
+      "cg1": {
+        "attempt": 1,
+        "clear_negative_agreement": 1.0,
+        "clear_positive_agreement": 0.8888888888888888,
+        "clear_positive_floor_met": true,
+        "clear_positive_total": 54,
+        "passed": true,
+        "shard_id": "mistral7b_v03_shard_03",
+        "status": "PASS"
+      }
+    },
+    "mistral7b_v03_shard_04": {
+      "cell": "mistral7b_v03",
+      "cg1": {
+        "attempt": 2,
+        "clear_negative_agreement": 1.0,
+        "clear_positive_agreement": 0.6481481481481481,
+        "clear_positive_floor_met": true,
+        "clear_positive_total": 54,
+        "passed": true,
+        "shard_id": "mistral7b_v03_shard_04",
+        "status": "PASS"
+      }
+    },
+    "qwen35_4b_shard_00": {
+      "cell": "qwen35_4b",
+      "cg1": {
+        "attempt": 1,
+        "clear_negative_agreement": 1.0,
+        "clear_positive_agreement": 0.7169811320754716,
+        "clear_positive_floor_met": true,
+        "clear_positive_total": 53,
+        "passed": true,
+        "shard_id": "qwen35_4b_shard_00",
+        "status": "PASS"
+      }
+    },
+    "qwen35_4b_shard_01": {
+      "cell": "qwen35_4b",
+      "cg1": {
+        "attempt": 1,
+        "clear_negative_agreement": 1.0,
+        "clear_positive_agreement": 0.8113207547169812,
+        "clear_positive_floor_met": true,
+        "clear_positive_total": 53,
+        "passed": true,
+        "shard_id": "qwen35_4b_shard_01",
+        "status": "PASS"
+      }
+    },
+    "qwen35_4b_shard_02": {
+      "cell": "qwen35_4b",
+      "cg1": {
+        "attempt": 1,
+        "clear_negative_agreement": 1.0,
+        "clear_positive_agreement": 0.7358490566037735,
+        "clear_positive_floor_met": true,
+        "clear_positive_total": 53,
+        "passed": true,
+        "shard_id": "qwen35_4b_shard_02",
+        "status": "PASS"
+      }
+    },
+    "qwen35_4b_shard_03": {
+      "cell": "qwen35_4b",
+      "cg1": {
+        "attempt": 1,
+        "clear_negative_agreement": 1.0,
+        "clear_positive_agreement": 0.7169811320754716,
+        "clear_positive_floor_met": true,
+        "clear_positive_total": 53,
+        "passed": true,
+        "shard_id": "qwen35_4b_shard_03",
+        "status": "PASS"
+      }
+    },
+    "qwen35_4b_shard_04": {
+      "cell": "qwen35_4b",
+      "cg1": {
+        "attempt": 1,
+        "clear_negative_agreement": 1.0,
+        "clear_positive_agreement": 0.8867924528301887,
+        "clear_positive_floor_met": true,
+        "clear_positive_total": 53,
+        "passed": true,
+        "shard_id": "qwen35_4b_shard_04",
+        "status": "PASS"
+      }
+    },
+    "qwen35_4b_shard_05": {
+      "cell": "qwen35_4b",
+      "cg1": {
+        "attempt": 1,
+        "clear_negative_agreement": 1.0,
+        "clear_positive_agreement": 0.8301886792452831,
+        "clear_positive_floor_met": true,
+        "clear_positive_total": 53,
+        "passed": true,
+        "shard_id": "qwen35_4b_shard_05",
+        "status": "PASS"
+      }
+    },
+    "qwen35_4b_shard_06": {
+      "cell": "qwen35_4b",
+      "cg1": {
+        "attempt": 1,
+        "clear_negative_agreement": 1.0,
+        "clear_positive_agreement": 0.7924528301886793,
+        "clear_positive_floor_met": true,
+        "clear_positive_total": 53,
+        "passed": true,
+        "shard_id": "qwen35_4b_shard_06",
+        "status": "PASS"
+      }
+    }
+  },
+  "voided_cells": []
+}
