@@ -342,10 +342,21 @@ sign-fraction.
 - **SC1 (magnitude-matching).** Each seed's random-direction write is an
   erase-write to the SAME per-family setpoint (qwen dose_abs 12.608, mistral
   3.665, llama 12 x sigma_c(hs20) re-derived byte-identical from RR's committed
-  llama hs20 fit manifest), with `readback_measured` within a committed tolerance
-  of target of 0.01 (the RR3 erase-write setpoint-identity law, RR3 Outcome lines
-  482-487; qwen readback precedent 12.625 vs target 12.608, signflip AMENDMENT
-  lines 236-240). Each drawn random direction is genuinely random: |cos| to
+  llama hs20 fit manifest), with `readback_measured` within a RELATIVE tolerance
+  of target of 0.5% (|readback - target| / target <= 0.005). CORRECTION NOTE
+  (pre-run, user-approved 2026-07-14, recorded in instrument.repins): the
+  originally signed bar was an absolute 0.01, which conflated RR3's arm-to-arm
+  setpoint-identity margin (0.004, RR3 Outcome lines 482-487) with
+  readback-vs-target accuracy and contradicted the qwen precedent cited beside
+  it (readback 12.625 vs target 12.608 = 0.017 = 0.14% relative, signflip
+  AMENDMENT lines 236-240). GPU smokes at the registered setpoints measured a
+  systematic, tightly clustered RELATIVE readback offset of 0.11-0.16% in all
+  three families (mistral cleared the absolute bar only because its setpoint is
+  small), matching the certified precedent regime; the corrected relative bar
+  keeps ~3x headroom over that regime while still failing any genuine magnitude
+  error (a wrong layer, sigma, or multiplier misses by whole percents). The
+  correction was made BEFORE any dosed generation ran; the falsifier, criterion,
+  seeds, and setpoints are untouched. Each drawn random direction is genuinely random: |cos| to
   `c_hat` <= 0.015 and |cos| to `u_d` <= 0.015 (RR3 red-team bar). A seed whose
   write fails setpoint or randomness is voided before grading and redrawn from
   the next pre-registered seed; the void is recorded. This gate is what makes the

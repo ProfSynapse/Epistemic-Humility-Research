@@ -61,7 +61,7 @@ families:
     setpoint_dose_abs: TO-DERIVE              # 12 x sigma_c(hs20 llama); NOT numerically in any doc read this session; re-derive byte-identical from RR committed llama hs20 fit manifest at build (RR3 cell.yaml 154-157)
     dose_multiplier_sigma_c: 12               # RR3 rider matched-magnitude reference rung
     heldout_confab_pool: 872                  # RR3 cell.yaml line 164
-    baseline_runlog: rr-cross-family-raw-refusal (llama32_3b_instruct cell) baseline   # reuse; RG0-style repro on S rows
+    baseline_runlog: rr3-corrected-placebo-replication/analysis/runlog/rider_llama__baseline.jsonl   # CORRECTED 2026-07-14 (user-approved): the drafted RR llama baseline never existed on disk; RR3's rider baseline has the same generation contract (1206 rows = 872 confab + 334 known). Reuse; RG0-style repro on S rows
     directions_dir: TO-PIN                    # RR llama hs20 random_direction + c_hat (frozen); reconstruct byte-identical (RG0)
     historical_single_seed_delta_pts: 0.1     # null at dose 12 (RR3 Outcome lines 491-496)
     committed_sign: none                      # NULL / negative-control family; no sign to defend
@@ -90,7 +90,7 @@ write:
   position: anchor_onward
   direction: random_direction                 # frozen per seed; matched to the family setpoint_dose_abs
   setpoint: per_family setpoint_dose_abs
-  readback_tolerance_abs: 0.01                # SC1: |readback_measured - target| <= 0.01
+  readback_tolerance_rel: 0.005               # SC1: |readback_measured - target| / target <= 0.005 (corrected pre-run 2026-07-14, user-approved; see gates.yaml sc1 note)
   randomness_bar_cos: 0.015                   # SC1: |cos(r_hat, c_hat)| <= 0.015 AND |cos(r_hat, u_d)| <= 0.015 (RR3 red-team bar)
   generation:
     do_sample: false                          # greedy; deterministic
@@ -110,7 +110,7 @@ wide_instrument:
     rubric_source: AMENDMENT.md "Behavioral readout" (verbatim from RR2 / calibration / RR3)
     grader: context-free-agent                # rubric + bare texts + output format only; no experiment context; no pattern matcher (PI directive)
     sharding_allowed: true
-    pool_contents: shared_baseline_S_rows + K x S dosed rows (all families in one lane or per-family; labels stripped: arm, dose, seed, role, source)
+    pool_contents: "shared_baseline_S_rows + K x S dosed rows (all families in one lane or per-family; labels stripped: arm, dose, seed, role, source)"
     pool_shuffle_seed: 40260714
     decoys:
       clear_negative:

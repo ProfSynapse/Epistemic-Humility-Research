@@ -31,7 +31,7 @@ sc1_magnitude_matching:
     re-derived byte-identical from RR's committed llama hs20 fit manifest at
     build). This is the census validity condition: it makes the K deltas a
     single-magnitude comparable sample.
-  readback_tolerance_abs: 0.01               # |readback_measured - target| <= 0.01 (RR3 erase-write setpoint-identity law, Outcome 482-487; qwen precedent 12.625 vs 12.608)
+  readback_tolerance_rel: 0.005              # |readback_measured - target| / target <= 0.005. CORRECTED pre-run 2026-07-14 (user-approved): the drafted absolute 0.01 conflated RR3's arm-to-arm setpoint-identity margin (0.004, Outcome 482-487) with readback-vs-target accuracy and contradicted the qwen precedent cited beside it (12.625 vs 12.608 = 0.017 = 0.14% rel); certified precedents show a systematic ~0.11-0.16% relative readback offset in every family, so the bar is relative with ~3x headroom. Corrected before any dosed generation ran; falsifier and criterion untouched.
   randomness_bar:
     abs_cos_to_c_hat_max: 0.015              # RR3 red-team bar
     abs_cos_to_u_d_max: 0.015

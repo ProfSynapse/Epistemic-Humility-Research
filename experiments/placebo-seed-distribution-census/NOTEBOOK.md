@@ -6,6 +6,35 @@ in `experiment.yaml`.
 
 ## Entries
 
+### 2026-07-14 (lead): harness accepted, SC1 tolerance corrected pre-run (user-approved), sweep authorized
+
+Harness-builder delivered 23 modules (41 CPU tests passing) and correctly
+HARD-STOPPED at the SC1 readback gate: qwen and llama missed the signed
+absolute 0.01 tolerance on all 16 smoke rows each (mean +0.0177 / -0.0151),
+mistral passed (+0.0059). Lead re-derived the deviations independently from
+the committed smoke JSONs: the offset is uniform in RELATIVE terms across all
+three families (0.111-0.160% of setpoint), mistral cleared the absolute bar
+only because its setpoint is small, and the certified qwen precedent (signflip
+AMENDMENT: readback 12.625 vs target 12.608 = 0.14% relative) shows the same
+regime, meaning the harness reproduces the certified operating points
+faithfully and the signed bar was mis-derived (it conflated RR3's arm-to-arm
+setpoint-identity margin 0.004 with readback-vs-target accuracy and
+contradicted the qwen precedent cited in its own sentence). PI approved the
+governed correction before any dosed generation: SC1 readback tolerance
+absolute 0.01 -> relative 0.005; llama baseline pointer corrected to RR3
+rider_llama__baseline.jsonl (the drafted RR llama baseline never existed on
+disk; substitution verified against the staged 1206-row file = 872 confab +
+334 known); cell.yaml unquoted-colon YAML fix. All recorded in
+instrument.repins (5 files). Falsifier, criterion, seeds, and setpoints
+untouched. Post-correction: 42/42 CPU tests pass; all 48 recorded GPU smoke
+readbacks pass the corrected bar through the corrected sc1_checks code path
+(max 0.185% vs 0.5% ceiling). Two straight-reported instrument notes: the
+joint randomness bar rejects ~50-70% of draws by cosine geometry (redraw
+budget 300 covers it), and bf16 batching diverges textually on 1-3 of 8 rows
+between batch sizes, handled by pinning one fixed batch size for every dosed
+pass. Full K=15 x S=300 x 3-family sweep authorized on the free local 3090
+(standing approval noted at go); estimated ~2.4 h generation.
+
 ### 2026-07-14 (lead): draft reviewed, knobs resolved with PI, signed
 
 Lead spot-checked the drafter's operating-point pins against the governed docs
