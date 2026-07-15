@@ -1,0 +1,28 @@
+{
+  "crosscheck": {
+    "fields_compared": [
+      "mu_d",
+      "sigma_d",
+      "mu_c",
+      "sigma_c",
+      "tau_frozen",
+      "auc_neg_z_d_on_fit"
+    ],
+    "method": "field-for-field comparison of RR's own originally-committed hs16_fit_build_manifest.json against RR2's own from-scratch RG0 reconstruction of the same fit (same FIT rows, same anchors, RR's own fit seed 20260713, run via direction_fit.py/fit_reuse.py, asserted byte-identical across two internal runs before this comparison ever sees it -- RR2's own fit_reuse.py rule)",
+    "mismatches": {},
+    "pass": true,
+    "rr2_own_fit_reuse_report_pass": true,
+    "rr2_reconstructed_manifest_path": "/home/profsynapse/code/ehr-worktrees/gate-factorial/experiments/gate-contribution-factorial/analysis/staged_inputs/mistral7b_v03/directions/hs16_build_manifest.json",
+    "rr2_reconstructed_sha256": "87667fae8b2fd459bffd6c5bd6df64e1c65ad3faf27eb235ba0d7d30f0675899",
+    "rr_committed_manifest_path": "/home/profsynapse/code/ehr-worktrees/gate-factorial/experiments/rr-cross-family-raw-refusal/analysis-committed/mistral/hs16_fit_build_manifest.json",
+    "rr_committed_sha256": "87667fae8b2fd459bffd6c5bd6df64e1c65ad3faf27eb235ba0d7d30f0675899",
+    "whole_file_byte_identical": true
+  },
+  "directions_dir_staged": "/home/profsynapse/code/ehr-worktrees/gate-factorial/experiments/gate-contribution-factorial/analysis/staged_inputs/mistral7b_v03/directions",
+  "dose_multiplier_sigma_c": 12,
+  "layer_hs_index": 16,
+  "reused_not_rerun_note": "This experiment does NOT re-run RR2's fit_reuse.py against RR2's own 250MB anchors_at_candidate_layers.json (no GPU/model load needed for that either, but it is a large private artifact this build did not stage). Instead it reuses RR2's own reconstructed hs16 direction JSONs and independently cross-checks them against RR's committed manifest, exactly mirroring the census's llama_setpoint_provenance.py precedent.",
+  "setpoint_dose_abs": 3.665316605069176,
+  "setpoint_dose_abs_matches_config_py_constant": true,
+  "sigma_c_hs16_mistral": 0.3054430504224313
+}
