@@ -1,0 +1,131 @@
+{
+  "note": "sha256 of each blinded grader output, committed BEFORE unblinding (SC2 order). Grading by context-free agents against the signed rubric; one shard = one grader; attempt 1 for all 18 shards (mistral7b_v03_shard_02 grader was respawned after an API content-filter failure that produced no output; its attempt-1 grading completed on the respawn).",
+  "shards": {
+    "llama32_3b_shard_00": {
+      "attempt": 1,
+      "graded_file": "analysis/graded/llama32_3b_shard_00__attempt1.jsonl",
+      "judged_true": 101,
+      "rows": 848,
+      "sha256": "28db43d7282f96fc174d5aa0dd758e43b854576c8618fa84badcc0bdc3cd7320"
+    },
+    "llama32_3b_shard_01": {
+      "attempt": 1,
+      "graded_file": "analysis/graded/llama32_3b_shard_01__attempt1.jsonl",
+      "judged_true": 76,
+      "rows": 848,
+      "sha256": "bc219bfa4875a841f61227e031171d773fddc07f95828059440d85f702dcf8dd"
+    },
+    "llama32_3b_shard_02": {
+      "attempt": 1,
+      "graded_file": "analysis/graded/llama32_3b_shard_02__attempt1.jsonl",
+      "judged_true": 62,
+      "rows": 848,
+      "sha256": "30b7c38f3af71901fb6400a20a25a0652153d3ddf33779b71ea264deb8a36f0a"
+    },
+    "llama32_3b_shard_03": {
+      "attempt": 1,
+      "graded_file": "analysis/graded/llama32_3b_shard_03__attempt1.jsonl",
+      "judged_true": 88,
+      "rows": 848,
+      "sha256": "0526b89a39b557fe61ee94888c2336b00bdb39535d8434f37289caf2cb341362"
+    },
+    "llama32_3b_shard_04": {
+      "attempt": 1,
+      "graded_file": "analysis/graded/llama32_3b_shard_04__attempt1.jsonl",
+      "judged_true": 73,
+      "rows": 848,
+      "sha256": "82c4f021fe4e3f88b32e50d3d83b9c419bd7e252f8c19bfbf83a5398e28fc7e8"
+    },
+    "llama32_3b_shard_05": {
+      "attempt": 1,
+      "graded_file": "analysis/graded/llama32_3b_shard_05__attempt1.jsonl",
+      "judged_true": 91,
+      "rows": 847,
+      "sha256": "06f037da44757eab6a704da5dcf872fdcc4e2740bf0398071aa9b58fdb068ceb"
+    },
+    "mistral7b_v03_shard_00": {
+      "attempt": 1,
+      "graded_file": "analysis/graded/mistral7b_v03_shard_00__attempt1.jsonl",
+      "judged_true": 155,
+      "rows": 862,
+      "sha256": "4dfe4b13b4c7fbd53e4e5773483b94ccd0705914e98e2709bd8ac9d791133fc7"
+    },
+    "mistral7b_v03_shard_01": {
+      "attempt": 1,
+      "graded_file": "analysis/graded/mistral7b_v03_shard_01__attempt1.jsonl",
+      "judged_true": 177,
+      "rows": 862,
+      "sha256": "f69c92df0763c492fc58983cb8690173a472a8363bcb5f458d79c95f0bbf0f9f"
+    },
+    "mistral7b_v03_shard_02": {
+      "attempt": 1,
+      "graded_file": "analysis/graded/mistral7b_v03_shard_02__attempt1.jsonl",
+      "judged_true": 141,
+      "rows": 862,
+      "sha256": "bc40faf2991829f5890fc5baf4bcd173827aadba820bb441e80b2bcf0d84d259"
+    },
+    "mistral7b_v03_shard_03": {
+      "attempt": 1,
+      "graded_file": "analysis/graded/mistral7b_v03_shard_03__attempt1.jsonl",
+      "judged_true": 222,
+      "rows": 862,
+      "sha256": "08253154a717f5bb180923978b20f689e1ed208dd33a7e90e9dccb98b6f286b2"
+    },
+    "mistral7b_v03_shard_04": {
+      "attempt": 1,
+      "graded_file": "analysis/graded/mistral7b_v03_shard_04__attempt1.jsonl",
+      "judged_true": 114,
+      "rows": 861,
+      "sha256": "1430ec0d5a32442f5839aa90cd0270ee169c3f6f9138881bc4c4f7c2b4224978"
+    },
+    "qwen35_4b_shard_00": {
+      "attempt": 1,
+      "graded_file": "analysis/graded/qwen35_4b_shard_00__attempt1.jsonl",
+      "judged_true": 47,
+      "rows": 773,
+      "sha256": "26d62ad380e2544a7422b28b95066ba4f834e3dd6964ae095a36bd936901cf04"
+    },
+    "qwen35_4b_shard_01": {
+      "attempt": 1,
+      "graded_file": "analysis/graded/qwen35_4b_shard_01__attempt1.jsonl",
+      "judged_true": 57,
+      "rows": 773,
+      "sha256": "b86b2e43566b04c2834dc7ad5e0ab6c0845dcea8f41e15a9cb3d710702029578"
+    },
+    "qwen35_4b_shard_02": {
+      "attempt": 1,
+      "graded_file": "analysis/graded/qwen35_4b_shard_02__attempt1.jsonl",
+      "judged_true": 60,
+      "rows": 772,
+      "sha256": "e37856e8ca47e584848834812398f7111e01d2ddd23bd1edfd46f68a2f8ff8e2"
+    },
+    "qwen35_4b_shard_03": {
+      "attempt": 1,
+      "graded_file": "analysis/graded/qwen35_4b_shard_03__attempt1.jsonl",
+      "judged_true": 43,
+      "rows": 772,
+      "sha256": "fcde1673a21da671421961677c0fade63aaee21badbba452b93a572a87cff6b9"
+    },
+    "qwen35_4b_shard_04": {
+      "attempt": 1,
+      "graded_file": "analysis/graded/qwen35_4b_shard_04__attempt1.jsonl",
+      "judged_true": 87,
+      "rows": 772,
+      "sha256": "84e923f53e81f80f1255ada6f0523ae86913ace7dbfd07a483109b15d53d342e"
+    },
+    "qwen35_4b_shard_05": {
+      "attempt": 1,
+      "graded_file": "analysis/graded/qwen35_4b_shard_05__attempt1.jsonl",
+      "judged_true": 56,
+      "rows": 772,
+      "sha256": "480b11d95c9a715e51e6e764ffa4d3eff8de1d9393ed9c74a71b4f2a8bad9702"
+    },
+    "qwen35_4b_shard_06": {
+      "attempt": 1,
+      "graded_file": "analysis/graded/qwen35_4b_shard_06__attempt1.jsonl",
+      "judged_true": 53,
+      "rows": 772,
+      "sha256": "8636f6cd4fb714ee3e0888d30382fad84e55903bd5b24b8ad609db841d9f1d6e"
+    }
+  }
+}
