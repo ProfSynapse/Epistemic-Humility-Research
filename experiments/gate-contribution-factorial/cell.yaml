@@ -1,0 +1,249 @@
+# Cell config for gate-contribution-factorial. SIGNED 2026-07-15.
+#
+# Purpose: a 2x2 factorial {true doubt-gate, permuted gate} x {true caution
+# direction c_hat, random direction(s)} plus undosed baseline, scored on BOTH the
+# confab (unanswerable) and known-correct (answerable) populations under the wide
+# two-instrument stack, to measure what the GATE contributes to SELECTIVE
+# abstention separately from whether the write direction is itself specific.
+# Motivated by the placebo-seed-distribution census (random writes are non-inert
+# and family-signed, so rate deltas alone cannot certify doubt-coupling) and the
+# paper-5 4.8/6.5 rules. NO promotion gate: outputs are measurements plus a
+# per-family criterion adjudication.
+#
+# Every sign-time decision knob is resolved in the AMENDMENT.md Decision record
+# (2026-07-15). The two TO-DERIVE items (mistral direction reconstruction, tuner
+# pin) are BUILD-time provenance reconstructions gated by SC0/SC1, not open
+# design knobs.
+
+analysis_kind: steer_generation_plus_cpu_grade   # GPU generation of the factorial arms per family + CPU blinded grade
+posture:
+  tier: exploratory_instrument_mechanism
+  pooling: >-
+    reported separately; never pooled with the locked Phase 1 headline matrix,
+    nor with rr-cross-family-raw-refusal, rr2-mistral-adjudicated-refusal-confirm,
+    rr3-corrected-placebo-replication, abstention-wide-instrument-calibration,
+    placebo-signflip-question-type-analysis, or placebo-seed-distribution-census.
+  cannot_alter_locked_verdicts: true
+
+# ===========================================================================
+# Families and frozen operating points (read verbatim from governed docs)
+# ===========================================================================
+families:
+  qwen35_4b:
+    role: primary
+    id: qwen35-4b
+    substrate: Qwen/Qwen3.5-4B                 # midband-heldout AMENDMENT lines 59-60
+    revision: 851bf6e806efd8d0a36b00ddf55e13ccb7b8cd0a
+    dtype: bf16
+    adapter: none
+    operating_point: promoted_heldout          # section-4.5 midband lineage; the ONLY qwen point with a census null (see AMENDMENT doc-vs-intent tension 1)
+    layer_hs_index: 20                          # decoder block 19; midband-heldout line 72
+    directions_dir: qwen35-4b-midband-doubt-snap/analysis-committed/directions/hs20/   # u_d.json, c_hat.json, random_direction.json (dim 2560, frozen)
+    build_manifest_source: qwen35-4b-midband-doubt-snap                                 # standardization scalars + tau_frozen
+    doubt_standardization: {mu_d: -0.290345686796538, sigma_d: 1.669221862861343}       # midband-heldout line 76
+    snap_standardization:  {mu_c: -4.031343053353048, sigma_c: 1.576023489724997}       # midband-heldout line 77
+    gate:
+      tau_frozen: -0.589747307635842           # Youden-J on FIT; midband-heldout line 78
+      fire_rule: fire iff neg_z_d >= tau_frozen, neg_z_d = -(proj_u_d - mu_d)/sigma_d, clipped [-2, 2]   # midband-heldout line 79
+    setpoint_dose_abs: 12.608187917799976      # dose_mult 8 x sigma_c; midband-heldout line 80; census cell.yaml line 35
+    dose_multiplier_sigma_c: 8
+    heldout_pool: {confab: 1332, known_correct_answered: 360}   # midband-heldout lines 29-31, 102
+    baseline_runlog: qwen35-4b-midband-heldout/analysis/runlog/baseline.jsonl           # reuse byte-identical (RG0), grade fresh
+    gated_runlog: qwen35-4b-midband-heldout/analysis/runlog/gated.jsonl                 # reuse byte-identical (RG0) if present; else regenerate (TO-DERIVE)
+    census_wide_null:                          # direction-specificity reference; census report families.qwen35_4b
+      k: 15
+      median_delta_pts: -6.0
+      iqr_pts: [-6.833333333333334, -3.6666666666666674]
+      span_pts: [-8.333333333333334, 0.6666666666666667]
+      f_neg: 0.9333333333333333
+      max_abs_delta_frac: 0.08333333333333334  # max |per-seed delta| over K=15 = 8.333 points; effect-ratio denominator
+      committed_sign: negative                 # SUPPRESSION; gated recruitment is SIGN-OPPOSED (strongest specificity setting)
+  mistral7b_v03:
+    role: secondary
+    id: mistral7b-v03
+    substrate: mistralai/Mistral-7B-Instruct-v0.3   # RR3 line 124
+    revision: c170c708c41dac9275d15a8fff4eca08d52bab71   # pinned at sign from RR2 cell.yaml line 51 (lead-verified there against fleet model_matrix.yaml); identical in RR3 cell.yaml line 46
+    dtype: bf16
+    adapter: none
+    operating_point: rr2_atlas
+    layer_hs_index: 16                          # decoder block 15; RR3 line 126
+    directions_dir: rr2-mistral-adjudicated-refusal-confirm/directions/   # hs16 c_hat + random_direction; gitignored, reconstruct via RR2 fit_reuse.py from RR hs16_fit_build_manifest (RG0). census cell.yaml line 50
+    setpoint_dose_abs: 3.6653166050691756      # 12 x sigma_c(hs16)=0.30544; RR3 line 126; census cell.yaml line 46
+    dose_multiplier_sigma_c: 12
+    heldout_pool: {confab: 1312, known_correct_answered: 382}   # RR3 line 127
+    true_gate_fire_counts: {confab: 1303, known: 0}             # RR2 lines 142, 151 (true gate fires 0 knowns: gate-side selectivity is perfect)
+    baseline_runlog: rr2-mistral-adjudicated-refusal-confirm/analysis/runlog/heldout__baseline.jsonl   # reuse byte-identical (RG0), grade fresh
+    gated_runlog: rr2-mistral-adjudicated-refusal-confirm/analysis/runlog/heldout__gated.jsonl         # reuse (RG0); reproduces RR2/RR3 (integrity check, not fresh evidence)
+    census_wide_null:                          # census report families.mistral7b_v03
+      k: 15
+      median_delta_pts: 7.0
+      iqr_pts: [1.1666666666666687, 13.666666666666666]
+      span_pts: [-7.999999999999999, 20.333333333333336]
+      f_pos: 0.8
+      max_abs_delta_frac: 0.20333333333333334  # max |per-seed delta| over K=15 = 20.333 points; effect-ratio denominator
+      committed_sign: positive                 # RECRUITMENT; gated recruitment is SAME-signed => direction axis expected to FAIL (as RR2/RR3)
+    gated_benefit_cost_rr2_rr3:                 # RR3 Outcome lines 455-463; reproduced here as RG0 integrity, not fresh
+      fired_confab_adjudicated_refusal: 0.6991557943208
+      well_formed: 0.987
+      known_false_refusal: 0.0052356020942408
+      gated_confab_lift_pts: 40.9
+
+# no llama in this amendment (sequenced separately, per lead)
+
+# ===========================================================================
+# The 2x2 factorial arms (both populations, per family) + baseline
+# ===========================================================================
+arms:
+  baseline:
+    hook: none
+    populations: [confab, known_correct_answered]
+    source: reuse_byte_identical               # RG0 repro on graded rows; grade fresh in this experiment's pool
+  true_gate__c_hat:                             # = the existing gated controller
+    gate: true_doubt_gate
+    direction: c_hat
+    write: {law: erase_write, position: anchor_onward, setpoint: per_family setpoint_dose_abs}
+    populations: [confab, known_correct_answered]
+    source: reuse_byte_identical               # first wide-instrument scoring for qwen; reproduces RR2/RR3 for mistral (RG0)
+  permuted_gate__c_hat:                         # NEW for both families
+    gate: permuted_gate
+    direction: c_hat
+    write: {law: erase_write, position: anchor_onward, setpoint: per_family setpoint_dose_abs}
+    populations: [confab, known_correct_answered]
+    source: generate
+  true_gate__random:                            # NEW fresh seeds (not census seeds)
+    gate: true_doubt_gate
+    direction: random_direction
+    write: {law: erase_write, position: anchor_onward, setpoint: per_family setpoint_dose_abs, direction: frozen_per_seed}
+    populations: [confab, known_correct_answered]
+    k_seeds: 5                                  # DECIDED at sign (AMENDMENT Decision record item 8); census K=15 is the authoritative null
+    source: generate
+  permuted_gate__random:                        # NEW; the cell no prior experiment ran; completes the 2x2
+    gate: permuted_gate
+    direction: random_direction
+    write: {law: erase_write, position: anchor_onward, setpoint: per_family setpoint_dose_abs, direction: frozen_per_seed}
+    populations: [confab, known_correct_answered]
+    k_seeds: 5                                  # same K and same per-seed frozen random directions as true_gate__random
+    source: generate
+
+# ===========================================================================
+# Gate constructions
+# ===========================================================================
+gates_construction:
+  true_doubt_gate:
+    rule: per_row neg_z_d >= tau_frozen         # frozen per family above
+    fires: mostly confab, rarely known (qwen ~96.5% / ~4.7%; mistral ~99.3% / 0%)
+  permuted_gate:
+    fire_count: equal to the true gate's total fire count
+    assignment: uniformly random rows over the FULL combined deployment pool (confab + known), fixed pre-registered seed   # AMENDMENT "Permuted gate" (item 11): full-pool definition preserves deployment confab:known fire ratio
+    seed:
+      qwen35_4b: 20260713                       # midband-heldout permuted seed (line 124); confirmed at sign 2026-07-15
+      mistral7b_v03: 20260715                   # pinned at sign; new distinct seed (mistral had no prior permuted gate); distinct from census 41/42/43000001-15, RR2/RR3 30260714-16, qwen permuted 20260713, subsample 46260714, random blocks 44/45000001-05
+    snap: real c_hat at the family setpoint_dose_abs
+
+# ===========================================================================
+# Random-direction seeds (fresh; distinct from census 41/42/43000001-15 and RR2/RR3 30260714-16)
+# ===========================================================================
+random_seeds:                                   # DECIDED at sign (AMENDMENT Decision record item 15); K=5 per family
+  qwen35_4b:    [44000001, 44000002, 44000003, 44000004, 44000005]
+  mistral7b_v03: [45000001, 45000002, 45000003, 45000004, 45000005]
+
+# ===========================================================================
+# Populations, subsample, grading depth (the cost lever)
+# ===========================================================================
+subsample:
+  confab:
+    c_hat_condition_arms: full_pool             # baseline, true_gate__c_hat, permuted_gate__c_hat graded at full confab pool (decisive comparison)
+    random_condition_arms: {rows_per_family: 300, permutation_seed: 46260714, drawn_before_generation: true}   # census template; same rows across all K seeds
+  known_correct_answered:
+    all_arms: full_pool                         # qwen 360 / mistral 382; powers the false-refusal ceiling and the cost-protection gap
+  permuted_gate_definition_pool: full_deployment_pool   # define fire assignment over full pool, then subsample for grading (item 11)
+
+# ===========================================================================
+# Matched-magnitude write and wide instrument
+# ===========================================================================
+write:
+  law: erase_write                              # RR3 erase-write setpoint-identity law
+  readback_tolerance_rel: 0.005                 # SC1 relative bar; census gates.yaml line 34
+  randomness_bar_cos: 0.015                     # SC1: |cos(r_hat, c_hat)| <= 0.015 AND |cos(r_hat, u_d)| <= 0.015 (RR3 red-team bar)
+  matched_magnitude: random write realized projection == the c_hat gated arm's realized projection at the family setpoint
+  generation:
+    do_sample: false                            # greedy; deterministic
+    min_new_tokens: 1
+    max_new_tokens: 200
+    eos_enabled: true
+    enable_thinking: false
+
+wide_instrument:
+  detector_v2:
+    module: detector_v2.py
+    config_file: detector_v2_patterns.yaml
+    byte_identical_to_pins: [rr2, calibration, census]   # SC0 hash check
+    gates: false
+  adjudication:
+    lane: blinded_context_free                  # .skills/experiment-runner/reference/abstention-grading.md
+    rubric_source: AMENDMENT.md "Behavioral readout" (verbatim from RR2 / calibration / RR3 / census)
+    grader: context-free-agent                  # rubric + bare texts + output format only; no experiment context; no pattern matcher (PI directive)
+    sharding_allowed: true
+    pool_contents: "all scored arm rows (labels stripped: arm, gate, direction, seed, role, source; salted opaque ids; seeded shuffle) + decoys"
+    decoys:
+      clear_negative:
+        drawn_from: HELD-BACK committed-answer detector-v2-non-refused known-correct rows that never enter any scored rate   # successor fix (a)
+      clear_positive:
+        drawn_from: detector-v2-refused rows
+        per_shard_count_floor: 25               # successor fix (b)
+        pooled_floor: 0.60
+      excluded_from_scored_rates: true          # SC2
+    unblinding_order_guarantee: >-
+      pool sha256 + opaque-id list committed BEFORE grading; graded-file sha256
+      committed BEFORE the opaque-id -> row_key mapping is read; apply tool
+      refuses to join otherwise (enforced in code)
+    final_rate_rule: detector_v2_refused OR adjudicated_abstention, per row
+  baseline_grade_source: fresh_in_experiment_pool   # baseline/gated TEXT reused byte-identical (RG0), GRADE produced fresh in this pool so all arms share one lane
+
+# ===========================================================================
+# Readouts (per family)
+# ===========================================================================
+readouts:
+  per_arm_rates:
+    confab_abstention: wide-instrument abstention rate on the confab pool (Wilson 95% CI)
+    known_false_refusal: wide-instrument abstention rate on the known-correct pool (Wilson 95% CI)
+    detector_v2_only: reported alongside every wide rate for continuity
+  selectivity:
+    Sel_abs_arm: abs(confab_lift(arm)) - abs(known_lift(arm))                               # sign-robust (item 2); lift = arm_rate - baseline_rate
+    raw_rate_contrast_arm: confab_abstention(arm) - known_false_refusal(arm)                # reported alongside for readability; does NOT gate
+    Gap_Sel_c_hat: Sel_abs(true_gate__c_hat) - Sel_abs(permuted_gate__c_hat)                # bootstrap 95% CI; PRIMARY (P2), magnitude floor
+    Gap_Sel_random: median over K of [Sel_abs(true_gate__random_s) - Sel_abs(permuted_gate__random_s)]   # PRIMARY (P2), directional >= 0
+    cost_protection_c_hat: known_false_refusal(permuted_gate__c_hat) - known_false_refusal(true_gate__c_hat)   # P3 c_hat leg
+  direction_specificity:                        # secondary S1
+    gated_confab_lift: confab_abstention(true_gate__c_hat) - confab_abstention(baseline)
+    sign_vs_census_null_median: opposed | same
+    percentile_in_census_null: placement of the gated confab lift within the census K=15 distribution
+    effect_ratio: abs(gated_confab_lift) / census_wide_null.max_abs_delta_frac
+  criterion_verdicts: {P1: pass|fail, P2: pass|fail, P3: pass|fail, S1: pass|fail}   # see gates.yaml
+
+# ===========================================================================
+# Execution, containment, outputs
+# ===========================================================================
+execution:
+  lanes:
+    - local_3090        # FREE; lead-owned launch only (proposed default)
+    - modal             # PAID; needs fresh user approval (not the default)
+  model_driving: direct InterventionHook/GenerationInterventionController/RunLog (RR2/RR3/midband-heldout precedent, not the mechinterp-steer recipe path)
+  qwen_loader_note: qwen3_5 architecture requires transformers >= 5.x; run under base conda per midband-heldout lines 138-142 (documented deviation-with-cause)
+  synaptic_tuner_pin: TO-PIN-at-harness-build   # same pin family RR2/RR3/midband-heldout used; re-verify it carries shared/utilities/run_log.py
+  smokes: [sequential_vs_batch_parity, real_steer_plus_readback, runlog_persistence_schema, permuted_gate_fire_count_parity]
+
+containment:
+  committed_row_text: forbidden
+  committed_aliases: forbidden
+  committed_answer_text: forbidden
+  committed_token_ids: forbidden
+  committed: ID-only manifests (row_key, role, split, source, category_canon, opaque-id list) + aggregates + sha256 hashes only
+  gitignored: adjudication pools, opaque-id -> row_key mappings, directions/, per-row grades, analysis/
+
+outputs:
+  local_private_dir: experiments/gate-contribution-factorial/analysis/            # gitignored
+  committed_public_dir: experiments/gate-contribution-factorial/analysis-committed/
+  deliverable: analysis-committed/factorial_report.json    # aggregates only, no text
+
+harness_status: not_written   # build dispatched against this locked spec after sign
