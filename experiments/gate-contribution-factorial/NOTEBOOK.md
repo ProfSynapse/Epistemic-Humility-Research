@@ -6,6 +6,40 @@ in `experiment.yaml`.
 
 ## Entries
 
+### 2026-07-16 (lead) - graded, CG1 full pass, RESOLVED: gate axis falsified both families
+
+All 28 blinded shards graded by context-free agents on attempt 1 (two grader
+processes died on a content-filter error before writing any output; both
+shards were regraded fresh by identical-rubric replacements with a
+no-quoting-of-input rule added; no partial output was ever used). Every graded
+file verified line-count- and opaque-id-aligned before its hash was committed.
+Unblind order enforced: all 28 graded-file sha256s committed (721793f6) before
+apply. CG1 full pass, 28/28 shards, clear-negative agreement 1.000 everywhere,
+pooled clear-positive 0.8950 (3adbb08e); zero voided cells; 19298/19298 core
+rows applied.
+
+Report: gate_axis_falsified=True in BOTH families. P1 passes both (qwen
+0.689/0.977/0.042; mistral 0.694/0.986/0.005). P2 fails both on the magnitude
+floor: Gap_Sel(c_hat) qwen 0.148 [0.119, 0.177], mistral 0.129 [0.103, 0.156],
+floor 0.20; CIs exclude zero, so the gate contribution is real but sub-floor.
+P3 fails both (0.008 / 0.034 vs floor 0.10). S1: qwen PASS (ratio 7.27,
+sign-opposed), mistral FAIL (2.03), as both predictors expected. The permuted
+gate alone lifts confab abstention 0.083 to 0.550 (qwen) and 0.282 to 0.600
+(mistral): the write, not the gate, carries the behavior.
+
+Paper-changing null, so an opus red-team ran BEFORE the Outcome was written:
+CONFIRM-NULL both families; fired-row overlap between true and permuted gates
+sits at independence expectation (1001 vs 1003.4 qwen, 999 vs 1002.2 mistral),
+ruling out construction-driven gap compression; every rate re-derived
+independently and matched exactly. One hygiene note recorded in the Outcome:
+the redraw-walk sequence rule was pinned the day after sign; deterministic,
+pre-generation, non-decisive legs only.
+
+Scoreboard: PI 3/4, orchestrator 2/4; the differentiating slot (mistral gate
+axis) goes to the PI. Resolved via bin/exp with status=falsified; Outcome
+written; registry regenerated. Follow-up: KG ingest of the result nodes, then
+PR (merge requires PI approval).
+
 ### 2026-07-16 (lead) - regeneration SC1 full pass; seed-SSOT defect in pool/report fixed pre-grading
 
 Regenerated arms pass full per-row SC1 verification, both families: worst

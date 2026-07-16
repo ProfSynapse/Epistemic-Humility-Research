@@ -2,7 +2,7 @@ slug: gate-contribution-factorial
 title: 'Gate-contribution factorial: does the doubt gate, not the write direction,
   produce selective abstention'
 type: steer-cell
-status: signed
+status: falsified
 registered: true
 created_at: '2026-07-15T16:58:45Z'
 question: Does the doubt GATE (row selection read from the model's internal doubt
@@ -296,5 +296,11 @@ inputs:
 - experiments/rr2-mistral-adjudicated-refusal-confirm
 - experiments/rr3-corrected-placebo-replication
 - experiments/placebo-seed-distribution-census
-verdict: ''
+verdict: 'Gate axis falsified on both families: the dosed c_hat write alone drives
+  most of the abstention lift (permuted-gate confab abstention 0.550 qwen / 0.600
+  mistral vs baselines 0.083 / 0.282); the true doubt gate adds a real but sub-floor
+  selectivity increment (Gap_Sel(c_hat) 0.148 qwen / 0.129 mistral vs floor 0.20,
+  CIs exclude zero) with cost protection below the 0.10 floor; S1 direction-specificity
+  passes on qwen (ratio 7.27, sign-opposed) and fails on mistral (ratio 2.03), as
+  predicted; CG1 28/28, red-team CONFIRM-NULL.'
 kg: []

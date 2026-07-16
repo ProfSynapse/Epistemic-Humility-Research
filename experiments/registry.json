@@ -1425,10 +1425,10 @@
       "question": "Does the doubt GATE (row selection read from the model's internal doubt representation), rather than the write direction, produce SELECTIVE abstention (concentrated on unanswerable confab rows, withheld from known-correct rows)? Measured as the sign-robust selectivity gap Gap_Sel(d) = Sel_abs(true_gate, d) - Sel_abs(permuted_gate, d), Sel_abs = |confab_lift| - |known_lift|, in a 2x2 factorial {true doubt gate, fire-count-matched permuted gate} x {c_hat, random direction (K=5 fresh seeds)} plus baseline, both populations, wide two-instrument stack, on Qwen3.5-4B hs20 (dose_abs 12.608, census operating point) and Mistral-7B-Instruct-v0.3 hs16 (dose_abs 3.665, RR2/RR3 lineage). Direction specificity is evaluated separately (S1) against the census K=15 null.",
       "registered": true,
       "slug": "gate-contribution-factorial",
-      "status": "signed",
+      "status": "falsified",
       "title": "Gate-contribution factorial: does the doubt gate, not the write direction, produce selective abstention",
       "type": "steer-cell",
-      "verdict": ""
+      "verdict": "Gate axis falsified on both families: the dosed c_hat write alone drives most of the abstention lift (permuted-gate confab abstention 0.550 qwen / 0.600 mistral vs baselines 0.083 / 0.282); the true doubt gate adds a real but sub-floor selectivity increment (Gap_Sel(c_hat) 0.148 qwen / 0.129 mistral vs floor 0.20, CIs exclude zero) with cost protection below the 0.10 floor; S1 direction-specificity passes on qwen (ratio 7.27, sign-opposed) and fails on mistral (ratio 2.03), as predicted; CG1 28/28, red-team CONFIRM-NULL."
     },
     {
       "checkpoint": {
