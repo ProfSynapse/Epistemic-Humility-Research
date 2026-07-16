@@ -40,6 +40,8 @@ import apply_adjudication  # noqa: E402
 import criterion  # noqa: E402
 import heldback_decoys  # noqa: E402
 import row_pool  # noqa: E402
+import run_factorial  # noqa: E402  (module-level imports are all CPU-only; torch/steer_lib are imported lazily inside its GPU command functions)
+import compute_seed_ledger  # noqa: E402
 
 
 # ---------------------------------------------------------------------------
@@ -59,6 +61,137 @@ def test_config_live_yaml_crosscheck_passes():
 def test_config_sigma_c_dict_present_and_matches_family_scalars():
     assert config.SIGMA_C["qwen35_4b"] == config.QWEN_SIGMA_C
     assert config.SIGMA_C["mistral7b_v03"] == config.MISTRAL_SIGMA_C
+
+
+# ---------------------------------------------------------------------------
+# run_factorial erase-write sigma/gain wiring (regression guard: a defect
+# fixed 2026-07-16 had BOTH `generate-family` call sites pass the GAIN as the
+# sigma argument to steer_lib.build_hook_and_controller AND as the
+# generation strength, realizing gain**2 (setpoint = gain*sigma =
+# gain*gain) instead of the setpoint at every fresh dosed write --
+# confirmed against the pre-fix on-disk readbacks in
+# analysis-committed/sc1_verification_summary.json: qwen c_hat realized
+# 64.03 (=8.0**2) against a setpoint of 12.608 (=8.0*1.576); mistral c_hat
+# realized 144.01 (=12.0**2) against 3.665 (=12.0*0.305); qwen random
+# realized 159.0 (=12.608**2) against 12.608; mistral random realized 13.44
+# (=3.665**2) against 3.665. These tests pin `sigma != gain` (except by
+# construction-coincidence, which none of these values hit) so the same
+# conflation is caught here on CPU, without a GPU, the next time this wiring
+# is touched.
+# ---------------------------------------------------------------------------
+
+def test_c_hat_write_params_gain_times_sigma_equals_setpoint():
+    for family in config.FAMILIES:
+        setpoint = config.SETPOINT_DOSE_ABS[family]
+        sigma, gain = run_factorial.c_hat_write_params(family, setpoint)
+        assert sigma == config.SIGMA_C[family]
+        assert sigma != gain, "sigma and gain must not be conflated (the gain-squared defect)"
+        assert abs(sigma * gain - setpoint) < 1e-9
+        # setpoint was constructed as dose_mult * sigma_c (cell.yaml), so the
+        # correct gain is EXACTLY the registered dose multiplier.
+        assert gain == pytest.approx(config.DOSE_MULTIPLIER_SIGMA_C[family])
+
+
+def test_random_write_params_sigma_is_one_gain_equals_setpoint():
+    for family in config.FAMILIES:
+        setpoint = config.SETPOINT_DOSE_ABS[family]
+        sigma, gain = run_factorial.random_write_params(setpoint)
+        assert sigma == 1.0
+        assert gain == setpoint
+        assert sigma != gain, "sigma and gain must not be conflated (the gain-squared defect)"
+
+
+def test_c_hat_and_random_write_params_do_not_reproduce_pre_fix_squared_readbacks():
+    """Direct regression against the exact pre-fix squared values recorded
+    in analysis-committed/sc1_verification_summary.json (worst_case
+    readback_measured under the gain-squared defect); the corrected
+    setpoint = gain * sigma must land on the true setpoint, not on gain**2."""
+    pre_fix_squared_readback = {
+        "qwen35_4b": {"c_hat": 64.0282989848638, "random": 158.99454557616264},  # (approx) worst-case observed
+        "mistral7b_v03": {"c_hat": 144.01364213170746, "random": 13.44018772407253},
+    }
+    for family in config.FAMILIES:
+        setpoint = config.SETPOINT_DOSE_ABS[family]
+        sigma_c, gain_c = run_factorial.c_hat_write_params(family, setpoint)
+        sigma_r, gain_r = run_factorial.random_write_params(setpoint)
+        assert abs(sigma_c * gain_c - setpoint) < 1e-9
+        assert abs(sigma_r * gain_r - setpoint) < 1e-9
+        # the OLD (defective) call passed gain as sigma: realized = gain*gain.
+        old_c_hat_realized = gain_c * gain_c
+        old_random_realized = gain_r * gain_r
+        assert old_c_hat_realized == pytest.approx(pre_fix_squared_readback[family]["c_hat"], rel=1e-3)
+        assert old_random_realized == pytest.approx(pre_fix_squared_readback[family]["random"], rel=1e-3)
+        # and the corrected construction must NOT reproduce those squared values.
+        assert sigma_c * gain_c != pytest.approx(old_c_hat_realized, rel=1e-3)
+        assert sigma_r * gain_r != pytest.approx(old_random_realized, rel=1e-3)
+
+
+def test_live_sc1_after_first_batch_passes_on_target_and_aborts_off_target():
+    family = "qwen35_4b"
+    target = config.SETPOINT_DOSE_ABS[family]
+    cb = run_factorial._live_sc1_after_first_batch(family, "unit_test_arm", target)
+    good_batch = [{"row_key": "r1", "readback_measured": target}, {"row_key": "r2", "readback_measured": target * 1.001}]
+    cb(good_batch)  # must not raise
+
+    cb2 = run_factorial._live_sc1_after_first_batch(family, "unit_test_arm", target)
+    bad_batch = [{"row_key": "r1", "readback_measured": target * target}]  # the gain-squared shape of failure
+    with pytest.raises(SystemExit, match="LIVE SC1 FAIL"):
+        cb2(bad_batch)
+
+
+def test_live_sc1_after_first_batch_only_checks_first_call():
+    family = "qwen35_4b"
+    target = config.SETPOINT_DOSE_ABS[family]
+    cb = run_factorial._live_sc1_after_first_batch(family, "unit_test_arm", target)
+    cb([{"row_key": "r1", "readback_measured": target}])  # first call: checked, passes
+    cb([{"row_key": "r2", "readback_measured": target * target}])  # second call: NOT re-checked, must not raise
+
+
+def test_live_sc1_arm_completion_passes_and_aborts(tmp_path, monkeypatch):
+    family = "qwen35_4b"
+    target = config.SETPOINT_DOSE_ABS[family]
+    monkeypatch.setattr(run_factorial, "ANALYSIS", tmp_path)
+    runlog_dir = tmp_path / "runlog"
+    runlog_dir.mkdir()
+    good_path = runlog_dir / "unit_test_arm_good.jsonl"
+    good_path.write_text(json.dumps({"row_key": "r1", "readback_measured": target}) + "\n", encoding="utf-8")
+    run_factorial._live_sc1_arm_completion(family, "unit_test_arm_good", "unit_test_arm_good", target)  # must not raise
+
+    bad_path = runlog_dir / "unit_test_arm_bad.jsonl"
+    bad_path.write_text(json.dumps({"row_key": "r1", "readback_measured": target * target}) + "\n", encoding="utf-8")
+    with pytest.raises(SystemExit, match="LIVE SC1 FAIL"):
+        run_factorial._live_sc1_arm_completion(family, "unit_test_arm_bad", "unit_test_arm_bad", target)
+
+
+# ---------------------------------------------------------------------------
+# compute_seed_ledger / random-seed void-and-redraw walk (registered
+# mechanism: gates.yaml sc1_magnitude_matching.on_fail)
+# ---------------------------------------------------------------------------
+
+def test_compute_seed_ledger_matches_committed_accepted_seeds():
+    """Cross-checks the committed random_seed_ledger.json (produced by a
+    real run of compute_seed_ledger.py against this experiment's actual
+    frozen c_hat/u_d directions) against a fresh recomputation, so drift
+    between the committed ledger and a live re-derivation is caught."""
+    committed_path = HERE / "analysis-committed" / "random_seed_ledger.json"
+    if not committed_path.is_file():
+        pytest.skip("random_seed_ledger.json not yet committed")
+    committed = json.loads(committed_path.read_text(encoding="utf-8"))
+    fresh = compute_seed_ledger.compute_ledger()
+    for family in config.FAMILIES:
+        assert fresh[family]["accepted_seeds"] == committed[family]["accepted_seeds"]
+        assert fresh[family]["n_voids"] == committed[family]["n_voids"]
+        assert len(fresh[family]["accepted_seeds"]) == config.K_SEEDS_PER_FAMILY
+
+
+def test_preflight_seed_disjoint_from_all_registered_seeds():
+    registered = set()
+    for family in config.FAMILIES:
+        registered.update(config.RANDOM_SEED_BLOCKS[family])
+    registered.update(config.PERMUTED_GATE_SEED.values())
+    registered.add(config.SUBSAMPLE_PERMUTATION_SEED)
+    for family, seed in run_factorial.PREFLIGHT_SEED.items():
+        assert seed not in registered
 
 
 # ---------------------------------------------------------------------------

@@ -6,6 +6,50 @@ in `experiment.yaml`.
 
 ## Entries
 
+### 2026-07-16 (lead) - dose-squaring defect caught by SC1 pre-grading; PI-approved fix; regeneration relaunched
+
+SC1 verification of the first generation run found every fresh dosed write
+realized setpoint = gain^2 instead of the registered dose_abs: run_factorial.py
+passed the computed gain as the sigma argument to build_hook_and_controller
+AND as generation strength (hook contract: setpoint = strength x sigma).
+Observed readbacks matched the squared prediction exactly (qwen c_hat 64.01 =
+8^2 vs registered 12.608; qwen random 158.99 = 12.608^2; mistral c_hat 144.0 =
+12^2 vs 3.665; mistral random 13.44 = 3.665^2). 100% of fresh-write rows
+failed the 0.005 relative readback bar; over-dosed c_hat text was 100%
+degenerate. Reused arms (baselines, true_gate__c_hat) and decoy pools are
+clean and untouched: their readbacks sit at the certified ~0.13-0.16% offset.
+NOTHING was graded, no pool was built, no unblinding occurred; the committed
+record is analysis-committed/sc1_verification_summary.json.
+
+Root cause verified by the lead at source level against the pinned hook
+contract and the midband-heldout precedent (which wires sigma/strength
+correctly). PI approved the correction and directed a standing hardening rule:
+smoke on GPU before any full run. Remediation (audited repin of
+run_factorial.py, steer_lib.py, test_factorial_smoke.py; new pinned
+compute_seed_ledger.py and sc1_verify_dosed_writes.py): wiring fixed to the
+precedent convention via unit-tested pure functions; mandatory GPU preflight
+subcommand (generate-family refuses without a preflight pass marker); live
+SC1 first-batch and arm-completion assertions with hard abort; CPU regression
+tests pinning sigma != gain against the exact pre-fix squared readbacks
+(58/58 pass, lead re-ran independently).
+
+Separately, the registered randomness bar (|cos| <= 0.015) voids most raw
+draws at these dimensions (ambient ~1/sqrt(d)): the pre-registered
+void-and-redraw walk accepts qwen {44000003, 44000007, 44000010, 44000012,
+44000013} after 7 voids and mistral {45000002, 45000010, 45000011, 45000014,
+45000021} after 15 voids; committed as
+analysis-committed/random_seed_ledger.json. Random arms regenerate on accepted
+seeds only. Mis-dosed runlogs quarantined under
+analysis/quarantine_gain_squared/ (gitignored, retained).
+
+GPU preflight PASSED both families (readback rel_delta 0.0013-0.0019, tol
+0.005) before relaunch. Regeneration running detached (PID 948818, log
+analysis/logs/generation_master_v2.log, ~0.94 rows/s, first live SC1
+assertion PASSED at max_rel_delta 0.001581); ETA ~3.5h for both families.
+No criterion, threshold, seed policy, or registered setpoint moved; the
+predictions scoreboard is untouched and no outcome-bearing number has been
+observed.
+
 ### 2026-07-15 (lead) - decoy source implemented, generation launched on the 3090
 
 Run launcher implemented the decoy decision and launched generation. Decoy

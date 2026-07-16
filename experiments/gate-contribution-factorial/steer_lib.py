@@ -24,7 +24,7 @@ import os
 import sys
 import time
 from pathlib import Path
-from typing import Any, Optional
+from typing import Any, Callable, Optional
 
 HERE = Path(__file__).resolve().parent
 REPO_ROOT = HERE.parents[1]
@@ -152,11 +152,20 @@ def run_rows(
     model, tokenizer, device, controller, mode: str,
     rows: list[dict[str, Any]], strength, max_new: int, batch_size: int,
     run_log, readback_collector: Optional[list[dict[str, Any]]] = None,
+    after_batch: Optional[Callable[[list[dict[str, Any]]], None]] = None,
 ) -> None:
     """Generic batched runner for ONE arm's rows (every row passed in shares
     `mode`/`strength`): renders, generates, grades (full sub-grade dict via
     gen_lib.grade_row, data-exhaust rule), RunLog-records each row keyed by
-    row_key. Resumable: already-recorded row_keys are skipped."""
+    row_key. Resumable: already-recorded row_keys are skipped.
+
+    `after_batch`, if given, is called once per batch with the list of
+    per-row record dicts just written (including `readback_measured`),
+    immediately after they are durably recorded. Callers use this for a
+    live SC1 assertion on the first batch of a dosed write, so a mis-dosed
+    arm (e.g. a sigma/strength wiring defect) hard-aborts before the rest of
+    the arm's rows are spent -- the callback is expected to raise
+    SystemExit on failure; `run_rows` itself does not interpret the result."""
     done = run_log.done_keys()
     pending = [r for r in rows if r["row_key"] not in done]
     t0 = time.time()
@@ -166,12 +175,17 @@ def run_rows(
         gen, raw_rb = run_batch_fixed(model, tokenizer, device, controller, prompts, mode, strength, max_new)
         if readback_collector is not None and raw_rb is not None:
             readback_collector.append(raw_rb)
+        batch_records = []
         for row, res in zip(batch, gen):
             grade = gen_lib.grade_row(res["text"], res["terminated_naturally"], row.get("aliases"))
-            run_log.record(row["row_key"], {
+            rec = {
                 "row_key": row["row_key"], "role": row.get("role"), "split": row.get("split"),
                 "category_canon": row.get("category_canon"), "source": row.get("source"),
                 "n_new_tokens": res["n_new_tokens"], "terminated_naturally": res["terminated_naturally"],
                 "readback_measured": res["readback_measured"], "answer_text": res["text"], **grade,
-            })
+            }
+            run_log.record(row["row_key"], rec)
+            batch_records.append(rec)
+        if after_batch is not None:
+            after_batch(batch_records)
         print(f"[steer_lib] {min(i + batch_size, len(pending))}/{len(pending)} ({time.time() - t0:.0f}s)", flush=True)
