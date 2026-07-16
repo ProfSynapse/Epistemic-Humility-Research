@@ -28,6 +28,30 @@ import numpy as np
 _Z95 = 1.959963984540054
 
 
+def accepted_random_seeds(family: str, committed_dir: Path | None = None,
+                          k_expected: int | None = None) -> list[int]:
+    """Accepted random seeds for a family, read from the committed
+    void-and-redraw ledger (random_seed_ledger.json, written by
+    compute_seed_ledger.py). This ledger is the seed SSOT for every
+    random-condition arm consumer (generation, pool build, report). The raw
+    pre-void config.RANDOM_SEED_BLOCKS must never be iterated for on-disk arm
+    data: the registered SC1 redraw walk replaces voided seeds, and
+    load_jsonl returns [] silently for a missing runlog, so iterating the raw
+    block silently drops accepted-seed arms from pools and statistics.
+    Hard-fails on a missing ledger, missing family, or wrong seed count."""
+    committed = Path(committed_dir) if committed_dir else Path(__file__).resolve().parent / "analysis-committed"
+    path = committed / "random_seed_ledger.json"
+    if not path.is_file():
+        raise SystemExit(f"[seeds] no committed random-seed ledger at {path}; run compute_seed_ledger.py first")
+    fam = load_json(path).get(family)
+    if not fam or not fam.get("accepted_seeds"):
+        raise SystemExit(f"[seeds] random_seed_ledger.json has no accepted_seeds for {family!r}")
+    seeds = [int(s) for s in fam["accepted_seeds"]]
+    if k_expected is not None and len(seeds) != k_expected:
+        raise SystemExit(f"[seeds] {family}: ledger has {len(seeds)} accepted seeds, expected {k_expected}")
+    return seeds
+
+
 def load_jsonl(path: Path) -> list[dict[str, Any]]:
     if not Path(path).is_file():
         return []

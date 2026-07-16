@@ -6,6 +6,31 @@ in `experiment.yaml`.
 
 ## Entries
 
+### 2026-07-16 (lead) - regeneration SC1 full pass; seed-SSOT defect in pool/report fixed pre-grading
+
+Regenerated arms pass full per-row SC1 verification, both families: worst
+readback rel_delta 0.002576 (mistral permuted_gate_random seed 45000002)
+against the 0.005 bar, no near-misses; accepted-seed sets on disk match the
+committed ledger exactly; all 10 accepted seeds independently re-pass the
+randomness bar (worst margin abs_cos_to_u_d 0.008185). Committed record:
+analysis-committed/sc1_verification_summary_v2.json (the v1 defective-run
+summary is retained unmodified).
+
+The SC1/pool agent then found, before any pool build: build_pool.py and
+report.py still iterated the raw pre-void config.RANDOM_SEED_BLOCKS to locate
+random-arm runlogs. After the approved redraw walk, that block overlaps the
+accepted set at only ONE seed per family, and load_jsonl returns [] silently
+for missing paths, so the grading pool and the P2 random-condition statistics
+would have silently dropped 4 of 5 accepted-seed arms per family. Lead fixed
+directly as follow-through of the approved remediation (the ledger is the
+seed SSOT): new common.accepted_random_seeds() reads the committed
+random_seed_ledger.json and hard-fails on missing ledger/family/count or
+empty accepted-seed runlogs; build_pool and report now consume it;
+report.build_family_report gains a committed_dir parameter; fixtures write a
+synthetic ledger; three regression tests added. 61/61 CPU smokes, audited
+repin of the five touched files. No criterion, threshold, seed-policy, or
+registered-value change; nothing has been graded or unblinded.
+
 ### 2026-07-16 (lead) - dose-squaring defect caught by SC1 pre-grading; PI-approved fix; regeneration relaunched
 
 SC1 verification of the first generation run found every fresh dosed write

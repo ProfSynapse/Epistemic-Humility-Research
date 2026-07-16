@@ -92,9 +92,14 @@ def load_family_rows(family: str) -> list[dict[str, Any]]:
     out += _normalize(common.load_jsonl(runlog_path(f"{family}__baseline_reused")), cell=family, arm="baseline")
     out += _normalize(common.load_jsonl(runlog_path(f"{family}__true_gate_c_hat_reused")), cell=family, arm="true_gate_c_hat")
     out += _normalize(common.load_jsonl(runlog_path(f"{family}__permuted_gate_c_hat_final")), cell=family, arm="permuted_gate_c_hat")
-    for seed in config.RANDOM_SEED_BLOCKS[family]:
-        out += _normalize(common.load_jsonl(runlog_path(f"{family}__true_gate_random__seed{seed}_final")), cell=family, arm="true_gate_random", seed=seed)
-        out += _normalize(common.load_jsonl(runlog_path(f"{family}__permuted_gate_random__seed{seed}_final")), cell=family, arm="permuted_gate_random", seed=seed)
+    for seed in common.accepted_random_seeds(family, committed_dir=COMMITTED, k_expected=config.K_SEEDS_PER_FAMILY):
+        tg = common.load_jsonl(runlog_path(f"{family}__true_gate_random__seed{seed}_final"))
+        pg = common.load_jsonl(runlog_path(f"{family}__permuted_gate_random__seed{seed}_final"))
+        if not tg or not pg:
+            raise SystemExit(f"[pool] {family} seed {seed}: accepted-seed runlog missing or empty "
+                             f"(true_gate_random n={len(tg)}, permuted_gate_random n={len(pg)})")
+        out += _normalize(tg, cell=family, arm="true_gate_random", seed=seed)
+        out += _normalize(pg, cell=family, arm="permuted_gate_random", seed=seed)
     return out
 
 

@@ -716,5 +716,51 @@ def test_no_forbidden_text_keys_in_committed_json():
         _walk(payload, path.name)
 
 
+# ---------------------------------------------------------------------------
+# accepted-seed ledger as the seed SSOT for pool build and report
+# ---------------------------------------------------------------------------
+
+def test_accepted_random_seeds_reads_ledger_not_raw_block(tmp_path):
+    """The committed void-and-redraw ledger is the seed SSOT for every
+    random-condition consumer. The raw pre-void config.RANDOM_SEED_BLOCKS
+    overlaps the accepted set at only one seed per family in the real run,
+    and load_jsonl returns [] silently for missing files, so a consumer
+    iterating the raw block silently drops accepted-seed arms."""
+    committed = tmp_path / "analysis-committed"
+    committed.mkdir()
+    accepted = [44000003, 44000007, 44000010, 44000012, 44000013]
+    common.write_json(committed / "random_seed_ledger.json",
+                      {"qwen35_4b": {"accepted_seeds": accepted, "n_accepted": 5, "n_voids": 7}})
+    got = common.accepted_random_seeds("qwen35_4b", committed_dir=committed, k_expected=5)
+    assert got == accepted
+    assert got != list(config.RANDOM_SEED_BLOCKS["qwen35_4b"])
+
+
+def test_accepted_random_seeds_hard_fails_on_missing_ledger_or_wrong_count(tmp_path):
+    committed = tmp_path / "analysis-committed"
+    committed.mkdir()
+    with pytest.raises(SystemExit):
+        common.accepted_random_seeds("qwen35_4b", committed_dir=committed)
+    common.write_json(committed / "random_seed_ledger.json",
+                      {"qwen35_4b": {"accepted_seeds": [1, 2, 3], "n_accepted": 3, "n_voids": 0}})
+    with pytest.raises(SystemExit):
+        common.accepted_random_seeds("qwen35_4b", committed_dir=committed, k_expected=5)
+    with pytest.raises(SystemExit):
+        common.accepted_random_seeds("mistral7b_v03", committed_dir=committed)
+
+
+def test_real_committed_ledger_has_k_accepted_seeds_per_family():
+    """Integrity cross-check on the experiment's own committed ledger: every
+    family has exactly K accepted, distinct seeds, none colliding with any
+    other registered seed constant."""
+    if not (HERE / "analysis-committed" / "random_seed_ledger.json").is_file():
+        pytest.skip("committed random_seed_ledger.json not present yet")
+    for family in config.FAMILIES:
+        seeds = common.accepted_random_seeds(family, k_expected=config.K_SEEDS_PER_FAMILY)
+        assert len(set(seeds)) == config.K_SEEDS_PER_FAMILY
+        assert config.PERMUTED_GATE_SEED[family] not in seeds
+        assert config.SUBSAMPLE_PERMUTATION_SEED not in seeds
+
+
 if __name__ == "__main__":
     raise SystemExit(pytest.main([__file__, "-v"]))

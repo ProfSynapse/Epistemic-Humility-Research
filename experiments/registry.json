@@ -1312,9 +1312,9 @@
         ],
         "pins": {
           "apply_adjudication.py": "3c488d233ac1c17bcf27b43f20154f00ec3168f5b304f64c105b3951dfff0798",
-          "build_pool.py": "2db9c72a390a21ac2392fa1a14231e078fd4f1eb330917a9453151e3f7e1ab77",
+          "build_pool.py": "827ab73b1377e42eebd7bcf2fae704fdb29a4634c78df059f67284a9e865c26d",
           "cell.yaml": "c4939dbdcfe9588750eb5cdc38f4f9d9f0613c8f532dffd9edbc333db6f44047",
-          "common.py": "8d4c925f6ba9875687184993498cfc552aeedfed2d85ace21590a637c8655e76",
+          "common.py": "a8f6d2e051817a3b97ab4b7448b4a6c1047b74e9ab4028a9f6d4edd1f675b07d",
           "compute_seed_ledger.py": "ad0027f518244a5b24cdecbee82da9b4218a45951c19d2672f496c43bc699cf3",
           "config.py": "eec61e23c8e8a2db2a5bfbe91e4b38892a6e6a55405b4f592dbdb24b147fa995",
           "criterion.py": "7253e20e394f774e299c2b99f37f1e4cbad52cacb4b29fec0184a7194ebffadd",
@@ -1329,7 +1329,7 @@
           "heldback_decoys.py": "979163e5e00db1011a43fb12a73b650fa2d1dcc3dd696501931de26ddd8e0a17",
           "mistral_direction_provenance.py": "0f21f1654205ea9a112fbdcdeb578233533adfcce6fd36aff52d47f01f302971",
           "render.py": "9df8c181475ded6b9029379bd49d8486c54314b35a529284fdc7a5d5f12ee87f",
-          "report.py": "819b15d711e0878a484a9b712e91c6c496c7651aa17bb9451ad663d5de6b1a5c",
+          "report.py": "814925e358d01a0f59980cfba4259f96a83805cb9441777ac43602ca3aeea2b6",
           "row_pool.py": "80de9817e63cdf102935a5d27f2449ede9038080571897a6d35f06b867c3c07e",
           "run_factorial.py": "3608c176633b187326e8ee37bea926801b1b80eb612aaf92cb1c60466877a439",
           "sc1_checks.py": "dd73f29acbac62abc791924abfd7d5e993abe046ac22756a0551ff3835066ecf",
@@ -1337,8 +1337,8 @@
           "staging.py": "a902ffbdc893ffee98df62b74da0462c245f5b3459cf521cbb705dafa0f66bc6",
           "steer_lib.py": "46951e37e919b29532db0319b6e9691f769aef74a914e73c7bd309676e9fe190",
           "subsample.py": "993f3561dfb72071bf88a736490e8ce7f1e0e97f0f22e6e91576e8fa3767719c",
-          "test_factorial_smoke.py": "feb64dd7a92e7fc9135ae4f75413d992417d959c3bea746a646e5ae942b24969",
-          "test_report_smoke.py": "0b6f16c4e33629e832e6345f36cd68a3b9774052ceff8ebfabfaef86a4262158"
+          "test_factorial_smoke.py": "0e32b2476b5459bdeaa731ddc2b36575b3ff04f6c712688c87d6c611d83ee572",
+          "test_report_smoke.py": "9d70b6f91c420410c229a17122ff047dcc4033152bee0ad505b574fcb13ae991"
         },
         "repins": [
           {
@@ -1382,6 +1382,41 @@
             "new_sha256": "feb64dd7a92e7fc9135ae4f75413d992417d959c3bea746a646e5ae942b24969",
             "old_sha256": "ee9820e747c2a59ed48b6a96bc06f9369f0dba4d5821721172ca3cdfb44d7b1f",
             "reason": "PI-approved pre-grading instrument defect correction 2026-07-16: run_factorial.py passed the computed gain as the sigma argument to build_hook_and_controller AND as generation strength, realizing setpoint = gain^2 on every fresh dosed write (qwen c_hat 64.01 vs registered 12.608; qwen random 158.99; mistral c_hat 144.0 vs 3.665; mistral random 13.44) - 100% SC1 readback failure, verified against the pinned hook contract and the midband-heldout precedent wiring. Fix implements the registered setpoints verbatim (sigma at construction, gain=setpoint/sigma as strength, both call sites, extracted into unit-tested pure functions). Hardening per PI directive: mandatory GPU preflight subcommand (readback verified against setpoint before full run; generate-family refuses without a preflight pass marker), live SC1 first-batch and arm-completion assertions with hard abort (steer_lib gains an after_batch callback), and CPU regression tests pinning sigma != gain against the exact pre-fix squared readbacks. Random arms regenerate on the accepted-seed ledger from the registered void-and-redraw walk (qwen 7 voids to 44000013, mistral 15 voids to 45000021, randomness bar only). Mis-dosed runlogs quarantined, reused/decoy arms untouched. No criterion, threshold, seed-policy, or registered-setpoint change; nothing was graded or unblinded. GPU preflight passed both families (rel_delta 0.0013-0.0019, tol 0.005) before relaunch."
+          },
+          {
+            "date": "2026-07-16T17:32:06Z",
+            "file": "common.py",
+            "new_sha256": "a8f6d2e051817a3b97ab4b7448b4a6c1047b74e9ab4028a9f6d4edd1f675b07d",
+            "old_sha256": "8d4c925f6ba9875687184993498cfc552aeedfed2d85ace21590a637c8655e76",
+            "reason": "Pre-grading seed-SSOT correction, follow-through of the PI-approved 2026-07-16 remediation: build_pool.py and report.py iterated the raw pre-void config.RANDOM_SEED_BLOCKS to locate random-arm runlogs, while the approved void-and-redraw walk replaced 4 of 5 seeds per family; with load_jsonl returning [] for missing files, the pool and the Gap_Sel(random)/P2 statistics would have silently dropped 4 of 5 accepted-seed arms per family. Fix: new common.accepted_random_seeds() reads the committed random_seed_ledger.json (the same SSOT generate-family already enforces), hard-failing on missing ledger, missing family, wrong count, or empty accepted-seed runlogs - silent substitution is now impossible on this path. report.build_family_report gains a committed_dir parameter; fixtures write a synthetic ledger; 3 new regression tests. 61/61 CPU smokes. Found by the SC1/pool agent BEFORE any pool build or grading; no criterion, threshold, seed-policy, or registered-value change."
+          },
+          {
+            "date": "2026-07-16T17:32:06Z",
+            "file": "build_pool.py",
+            "new_sha256": "827ab73b1377e42eebd7bcf2fae704fdb29a4634c78df059f67284a9e865c26d",
+            "old_sha256": "2db9c72a390a21ac2392fa1a14231e078fd4f1eb330917a9453151e3f7e1ab77",
+            "reason": "Pre-grading seed-SSOT correction, follow-through of the PI-approved 2026-07-16 remediation: build_pool.py and report.py iterated the raw pre-void config.RANDOM_SEED_BLOCKS to locate random-arm runlogs, while the approved void-and-redraw walk replaced 4 of 5 seeds per family; with load_jsonl returning [] for missing files, the pool and the Gap_Sel(random)/P2 statistics would have silently dropped 4 of 5 accepted-seed arms per family. Fix: new common.accepted_random_seeds() reads the committed random_seed_ledger.json (the same SSOT generate-family already enforces), hard-failing on missing ledger, missing family, wrong count, or empty accepted-seed runlogs - silent substitution is now impossible on this path. report.build_family_report gains a committed_dir parameter; fixtures write a synthetic ledger; 3 new regression tests. 61/61 CPU smokes. Found by the SC1/pool agent BEFORE any pool build or grading; no criterion, threshold, seed-policy, or registered-value change."
+          },
+          {
+            "date": "2026-07-16T17:32:06Z",
+            "file": "report.py",
+            "new_sha256": "814925e358d01a0f59980cfba4259f96a83805cb9441777ac43602ca3aeea2b6",
+            "old_sha256": "819b15d711e0878a484a9b712e91c6c496c7651aa17bb9451ad663d5de6b1a5c",
+            "reason": "Pre-grading seed-SSOT correction, follow-through of the PI-approved 2026-07-16 remediation: build_pool.py and report.py iterated the raw pre-void config.RANDOM_SEED_BLOCKS to locate random-arm runlogs, while the approved void-and-redraw walk replaced 4 of 5 seeds per family; with load_jsonl returning [] for missing files, the pool and the Gap_Sel(random)/P2 statistics would have silently dropped 4 of 5 accepted-seed arms per family. Fix: new common.accepted_random_seeds() reads the committed random_seed_ledger.json (the same SSOT generate-family already enforces), hard-failing on missing ledger, missing family, wrong count, or empty accepted-seed runlogs - silent substitution is now impossible on this path. report.build_family_report gains a committed_dir parameter; fixtures write a synthetic ledger; 3 new regression tests. 61/61 CPU smokes. Found by the SC1/pool agent BEFORE any pool build or grading; no criterion, threshold, seed-policy, or registered-value change."
+          },
+          {
+            "date": "2026-07-16T17:32:06Z",
+            "file": "test_report_smoke.py",
+            "new_sha256": "9d70b6f91c420410c229a17122ff047dcc4033152bee0ad505b574fcb13ae991",
+            "old_sha256": "0b6f16c4e33629e832e6345f36cd68a3b9774052ceff8ebfabfaef86a4262158",
+            "reason": "Pre-grading seed-SSOT correction, follow-through of the PI-approved 2026-07-16 remediation: build_pool.py and report.py iterated the raw pre-void config.RANDOM_SEED_BLOCKS to locate random-arm runlogs, while the approved void-and-redraw walk replaced 4 of 5 seeds per family; with load_jsonl returning [] for missing files, the pool and the Gap_Sel(random)/P2 statistics would have silently dropped 4 of 5 accepted-seed arms per family. Fix: new common.accepted_random_seeds() reads the committed random_seed_ledger.json (the same SSOT generate-family already enforces), hard-failing on missing ledger, missing family, wrong count, or empty accepted-seed runlogs - silent substitution is now impossible on this path. report.build_family_report gains a committed_dir parameter; fixtures write a synthetic ledger; 3 new regression tests. 61/61 CPU smokes. Found by the SC1/pool agent BEFORE any pool build or grading; no criterion, threshold, seed-policy, or registered-value change."
+          },
+          {
+            "date": "2026-07-16T17:32:06Z",
+            "file": "test_factorial_smoke.py",
+            "new_sha256": "0e32b2476b5459bdeaa731ddc2b36575b3ff04f6c712688c87d6c611d83ee572",
+            "old_sha256": "feb64dd7a92e7fc9135ae4f75413d992417d959c3bea746a646e5ae942b24969",
+            "reason": "Pre-grading seed-SSOT correction, follow-through of the PI-approved 2026-07-16 remediation: build_pool.py and report.py iterated the raw pre-void config.RANDOM_SEED_BLOCKS to locate random-arm runlogs, while the approved void-and-redraw walk replaced 4 of 5 seeds per family; with load_jsonl returning [] for missing files, the pool and the Gap_Sel(random)/P2 statistics would have silently dropped 4 of 5 accepted-seed arms per family. Fix: new common.accepted_random_seeds() reads the committed random_seed_ledger.json (the same SSOT generate-family already enforces), hard-failing on missing ledger, missing family, wrong count, or empty accepted-seed runlogs - silent substitution is now impossible on this path. report.build_family_report gains a committed_dir parameter; fixtures write a synthetic ledger; 3 new regression tests. 61/61 CPU smokes. Found by the SC1/pool agent BEFORE any pool build or grading; no criterion, threshold, seed-policy, or registered-value change."
           }
         ]
       },

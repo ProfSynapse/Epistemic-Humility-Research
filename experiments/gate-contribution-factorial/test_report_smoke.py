@@ -199,8 +199,15 @@ def test_build_family_report_end_to_end_synthetic_qwen(tmp_path):
     _write_runlog(analysis_dir, report.runlog_tag(family, "permuted_gate_c_hat"), pg_rows)
     all_applied += _applied_rows_for(family, "permuted_gate_c_hat", None, pg_rows)
 
-    # K=5 random-condition arms, over the subsample + full known
-    for seed in config.RANDOM_SEED_BLOCKS[family]:
+    # K=5 random-condition arms, over the subsample + full known. Seeds come
+    # from a synthetic accepted-seed ledger written into the tmp committed dir:
+    # report.py reads seeds ONLY from the ledger (never the raw pre-void
+    # config.RANDOM_SEED_BLOCKS), so the fixture must provide one.
+    synthetic_accepted = list(config.RANDOM_SEED_BLOCKS[family])
+    common.write_json(committed_dir / "random_seed_ledger.json",
+                      {family: {"accepted_seeds": synthetic_accepted,
+                                "n_accepted": len(synthetic_accepted), "n_voids": 0}})
+    for seed in synthetic_accepted:
         tgr_confab = _synthetic_arm_rows(subsample_row_keys, "confab", refused_rate=0.55, well_formed_rate=0.95, seed=seed)
         tgr_known = _synthetic_arm_rows(known_full, "known_correct_answered", refused_rate=0.04, well_formed_rate=0.98, seed=seed + 1)
         tgr_rows = tgr_confab + tgr_known
@@ -217,7 +224,7 @@ def test_build_family_report_end_to_end_synthetic_qwen(tmp_path):
     common.write_json(committed_dir / "subsample_manifest.json",
                       {"families": {family: {"row_keys": subsample_row_keys}}})
 
-    fr = report.build_family_report(family, analysis_dir, all_applied, subsample_row_keys)
+    fr = report.build_family_report(family, analysis_dir, committed_dir, all_applied, subsample_row_keys)
 
     assert fr["family"] == family
     assert fr["reported_rates"]["true_gate_c_hat"]["confab_abstention"]["rate"] > fr["reported_rates"]["baseline"]["confab_abstention"]["rate"]

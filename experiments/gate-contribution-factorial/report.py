@@ -201,7 +201,8 @@ def point_sel_abs(arm_arr: np.ndarray, baseline_arr: np.ndarray, known_arm_arr: 
 # Per-family report
 # ---------------------------------------------------------------------------
 
-def build_family_report(family: str, analysis_dir: Path, applied_rows: list[dict[str, Any]],
+def build_family_report(family: str, analysis_dir: Path, committed_dir: Path,
+                        applied_rows: list[dict[str, Any]],
                         subsample_row_keys: list[str]) -> dict[str, Any]:
     confab_full = row_pool.heldout_row_keys_by_role(family)["confab"]
     known_full = row_pool.heldout_row_keys_by_role(family)["known_correct_answered"]
@@ -212,7 +213,8 @@ def build_family_report(family: str, analysis_dir: Path, applied_rows: list[dict
         merged[arm], runlogs[arm] = load_arm_merged(analysis_dir, applied_rows, family, arm)
 
     per_seed_random: dict[int, dict[str, dict[str, dict[str, Any]]]] = {}
-    for seed in config.RANDOM_SEED_BLOCKS[family]:
+    for seed in common.accepted_random_seeds(family, committed_dir=committed_dir,
+                                             k_expected=config.K_SEEDS_PER_FAMILY):
         tg_merged, tg_runlog = load_arm_merged(analysis_dir, applied_rows, family, "true_gate_random", seed)
         pg_merged, pg_runlog = load_arm_merged(analysis_dir, applied_rows, family, "permuted_gate_random", seed)
         per_seed_random[seed] = {
@@ -344,7 +346,7 @@ def build_report(analysis_dir: Path, committed_dir: Path) -> dict[str, Any]:
     families_report = {}
     for family in config.FAMILIES:
         subsample_row_keys = subsample_manifest["families"][family]["row_keys"]
-        families_report[family] = build_family_report(family, analysis_dir, applied_rows, subsample_row_keys)
+        families_report[family] = build_family_report(family, analysis_dir, committed_dir, applied_rows, subsample_row_keys)
     return {"config_sha_note": "see analysis-committed/staging_manifest.json for full provenance", "families": families_report}
 
 
