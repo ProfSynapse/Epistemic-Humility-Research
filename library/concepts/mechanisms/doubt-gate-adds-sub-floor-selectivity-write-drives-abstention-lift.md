@@ -2,6 +2,7 @@
 aliases:
 - gate axis falsified: write drives most abstention, gate adds sub-floor selectivity
 - permuted gate already reproduces most of the gated abstention lift
+- KU readout gate (2026-07-16 vocabulary revision, see margin-theory-framework.md)
 tags:
 - kg/mechanism
 - concept
@@ -89,3 +90,16 @@ axis lands. No locked verdict moves; this is exploratory instrument/mechanism
 evidence, reported separately from the Phase 1 headline matrix, the census,
 and RR2/RR3. Source of truth:
 `experiments/gate-contribution-factorial/AMENDMENT.md`.
+
+**Naming caveat (2026-07-16 vocabulary revision):** this mechanism is what
+prior working prose called "the doubt gate"; the new vocabulary renames that
+object the "KU readout gate," a classifier threshold used for deployment
+targeting, with no mental-state attribution. This mechanism's own finding,
+that the gate axis is falsified as the dominant source of selectivity at
+mid-band, is part of why the rename happened: the old name made "the doubt
+gate supplies selectivity" feel plausible before the permuted-gate control
+tested it directly. See `docs/research/margin-theory-framework.md` section 3
+for the full old-to-new mapping and the earnability criterion for
+mentalistic names, and
+[[write-selectivity-is-operating-point-dependent]] for how this result
+reconciles with the opposite-looking overdrive-regime finding.

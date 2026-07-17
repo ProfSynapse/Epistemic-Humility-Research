@@ -2,6 +2,7 @@
 aliases:
 - permuted-gate control isolates selectivity to the write direction
 - doubt gate limits dosing, does not create confab/known selectivity
+- boundary push (2026-07-16 vocabulary revision, see margin-theory-framework.md)
 tags:
 - kg/mechanism
 - concept
@@ -74,3 +75,15 @@ the selectivity
 two results are not in tension; together they show the write's
 content-selectivity depends on where and how hard it is applied, so neither
 finding generalizes past its own substrate, site, and dose.
+
+**Naming caveat (2026-07-16 vocabulary revision):** this mechanism describes
+what prior working prose called the "caution write"; the new vocabulary
+renames that object the "boundary push" (dosed write), a displacement toward
+an existing abstention boundary rather than an installed disposition. The
+"doubt gate" reference in this node's own alias list is likewise retired in
+favor of "KU readout gate." See `docs/research/margin-theory-framework.md`
+section 3 for the full old-to-new mapping and the earnability criterion for
+mentalistic names, and
+[[write-selectivity-is-operating-point-dependent]] for how this
+mid-band-regime finding reconciles with the opposite-looking overdrive-regime
+finding at Qwen3-4B/L34/dose-200.

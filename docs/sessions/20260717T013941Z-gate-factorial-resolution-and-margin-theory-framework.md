@@ -1,0 +1,101 @@
+---
+schema_version: research-session/v1
+session_id: 20260717T013941Z-gate-factorial-resolution-and-margin-theory-framework
+title: Gate factorial resolution and margin theory framework
+status: active
+created_at: '2026-07-17T01:39:41Z'
+updated_at: '2026-07-17T01:40:00Z'
+question: What did the gate-contribution factorial settle, and what framework drives
+  the next experiment series?
+tags:
+- experiment-runner
+run_ids: []
+trajectory:
+  anchor: docs/research-trajectory.md
+  current_position: ''
+  changed_by_session: ''
+checkpoints:
+- id: 001-result
+  at: '2026-07-17T01:40:00Z'
+  kind: result
+  title: Result
+  summary: 'Gate-contribution factorial RESOLVED (falsified): gate axis falsified
+    both families. Gap_Sel(c_hat) 0.148 qwen / 0.129 mistral vs floor 0.20 (CIs exclude
+    zero, sub-floor); cost protection 0.008 / 0.034 vs 0.10; P1 passed both; S1 qwen
+    pass 7.27 sign-opposed, mistral fail 2.03. CG1 28/28 blinded shards, hash-commit-before-unblind
+    enforced, opus red-team CONFIRM-NULL pre-verdict. PR #296 merged with PI approval
+    (62ea7ff1). Scoreboard: PI 3/4, orchestrator 2/4; differentiating slot (mistral
+    gate axis) to PI.'
+  evidence: []
+  run_ids: []
+  commands: []
+  decisions: []
+  next_steps: []
+  signals: {}
+- id: 002-interpretation
+  at: '2026-07-17T01:40:00Z'
+  kind: interpretation
+  title: Interpretation
+  summary: 'Margin theory framework adopted (docs/research/margin-theory-framework.md):
+    epistemic state encoded as commitment margin (distance to abstention boundary);
+    dose regime determines who supplies selectivity (mid-band: write self-sorts, factorial+doubt-snap;
+    overdrive: gate essential, H4 ungated-vs-gated 60.1% vs 3.1%); two channels (readout
+    vs susceptibility) may dissociate; boundary anisotropy is substrate-dependent
+    (qwen direction-specific, mistral generic). Reconciles all three anchor experiments;
+    H4 Binding scope statement 2 anticipated the operating-point dependence.'
+  evidence: []
+  run_ids: []
+  commands: []
+  decisions: []
+  next_steps: []
+  signals: {}
+- id: 003-decision
+  at: '2026-07-17T01:40:00Z'
+  kind: decision
+  title: Decision
+  summary: 'Vocabulary revision registered in framework note section 3: doubt direction
+    -> known-unknown direction; doubt gate -> KU readout gate; caution write -> boundary
+    push; confab propensity split into baseline confab rate vs commitment margin;
+    new term boundary anisotropy. Governed docs keep historical names; KG ids additive-only
+    with aliases. Mentalistic names earnable via 4-part criterion (evidence-responsiveness
+    test M4 is the open leg). Experiment cascade M1-M6 defined; M1 margin mapping
+    is next amendment; confirmatory gate-floor replication deprioritized. KG updates
+    dispatched: commitment-margin + boundary-anisotropy terms, operating-point-dependence
+    synthesis mechanism, framework term node term:margin-theory-of-epistemic-state.'
+  evidence: []
+  run_ids: []
+  commands: []
+  decisions: []
+  next_steps: []
+  signals: {}
+---
+# Gate factorial resolution and margin theory framework
+
+## Question
+
+What did the gate-contribution factorial settle, and what framework drives the next experiment series?
+
+## Trajectory Position
+
+_Not yet recorded._
+
+## Summary
+
+_No summary yet._
+
+## Checkpoints
+### 001-result - Result
+
+- at: `2026-07-17T01:40:00Z`
+- kind: `result`
+- summary: Gate-contribution factorial RESOLVED (falsified): gate axis falsified both families. Gap_Sel(c_hat) 0.148 qwen / 0.129 mistral vs floor 0.20 (CIs exclude zero, sub-floor); cost protection 0.008 / 0.034 vs 0.10; P1 passed both; S1 qwen pass 7.27 sign-opposed, mistral fail 2.03. CG1 28/28 blinded shards, hash-commit-before-unblind enforced, opus red-team CONFIRM-NULL pre-verdict. PR #296 merged with PI approval (62ea7ff1). Scoreboard: PI 3/4, orchestrator 2/4; differentiating slot (mistral gate axis) to PI.
+### 002-interpretation - Interpretation
+
+- at: `2026-07-17T01:40:00Z`
+- kind: `interpretation`
+- summary: Margin theory framework adopted (docs/research/margin-theory-framework.md): epistemic state encoded as commitment margin (distance to abstention boundary); dose regime determines who supplies selectivity (mid-band: write self-sorts, factorial+doubt-snap; overdrive: gate essential, H4 ungated-vs-gated 60.1% vs 3.1%); two channels (readout vs susceptibility) may dissociate; boundary anisotropy is substrate-dependent (qwen direction-specific, mistral generic). Reconciles all three anchor experiments; H4 Binding scope statement 2 anticipated the operating-point dependence.
+### 003-decision - Decision
+
+- at: `2026-07-17T01:40:00Z`
+- kind: `decision`
+- summary: Vocabulary revision registered in framework note section 3: doubt direction -> known-unknown direction; doubt gate -> KU readout gate; caution write -> boundary push; confab propensity split into baseline confab rate vs commitment margin; new term boundary anisotropy. Governed docs keep historical names; KG ids additive-only with aliases. Mentalistic names earnable via 4-part criterion (evidence-responsiveness test M4 is the open leg). Experiment cascade M1-M6 defined; M1 margin mapping is next amendment; confirmatory gate-floor replication deprioritized. KG updates dispatched: commitment-margin + boundary-anisotropy terms, operating-point-dependence synthesis mechanism, framework term node term:margin-theory-of-epistemic-state.

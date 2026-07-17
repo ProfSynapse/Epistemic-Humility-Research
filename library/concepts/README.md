@@ -504,7 +504,7 @@ Atomic notes extracted from the library papers via the Agents-K1 ingestion skill
 - [[stable-diffusion]] : Stable Diffusion is a large-scale text-to-image latent diffusion model that generates images by running an iterative denoising process in a 
 - [[unifiedqa]] : A T5-based question-answering model finetuned by Khashabi et al. on a diverse collection of NLP QA datasets (including SQuAD, NaturalQuestio
 
-## Terms (183)
+## Terms (186)
 
 - [[abstain-qa]] : AbstainQA is a task formulation in which a model is given a question and must
 - [[abstention]] : Abstention is the behavior of an LLM deliberately declining to provide a
@@ -518,6 +518,7 @@ Atomic notes extracted from the library papers via the Agents-K1 ingestion skill
 - [[arbitrary-vs-systematic-facts]] : A distinction between two classes of facts in the Kalai-Vempala (2023) hallucination framework. Arbitrary facts (e.g., 5W factoids: who ate 
 - [[associated-hallucination]] : A factual error produced when an LLM relies on spurious parametric associations triggered by the input subject. The model draws on encoded s
 - [[attention-sink]] : An attention sink is a token that receives a disproportionate share of attention
+- [[boundary-anisotropy]] : Boundary anisotropy is a family-level property: whether a substrate's short
 - [[bradley-terry-model]] : The Bradley-Terry model assigns a scalar score to each item and models the probability that one item is preferred over another as a softmax 
 - [[calibratable-non-calibratable-regime]] : A theoretical partition of the accuracy-ECE space derived from upper and lower bounds on ECE as a function of model accuracy relative to a t
 - [[calibration-humility-gap]] : The distinction between statistical calibration (aggregate confidence matches aggregate accuracy across a distribution) and communicative ep
@@ -526,6 +527,7 @@ Atomic notes extracted from the library papers via the Agents-K1 ingestion skill
 - [[causal-separability]] : Two concept variables Z and W are causally separable if varying Z does not affect the distribution over W in the data-generating process, an
 - [[chain-of-thought-faithfulness]] : Chain-of-thought faithfulness is the degree to which a model's stated reasoning
 - [[clipped-surrogate-objective]] : The clipped surrogate objective is the core PPO training loss: min(r_t * A_t, clip(r_t, 1-epsilon, 1+epsilon) * A_t), where r_t is the proba
+- [[commitment-margin]] : For each (model, question) pair, the commitment margin is the minimum
 - [[compositional-generalization]] : Compositional generalization is the ability of a steering or training method to satisfy novel combinations of behaviors at inference time wi
 - [[computational-buffer-effect]] : A content-independent mechanism by which a reasoning model uses the act of generating extra reasoning tokens to perform additional latent co
 - [[concept-orthogonality]] : Concept orthogonality is the empirical and theoretical finding that semantically unrelated (statistically independent) concepts tend to be r
@@ -597,6 +599,7 @@ Atomic notes extracted from the library papers via the Agents-K1 ingestion skill
 - [[linear-bias-subspace-hypothesis]] : The linear bias subspace hypothesis (Bolukbasi et al. 2016; Vargas and Cotterell
 - [[linear-guardedness]] : Linear guardedness is a formal property of a set of representation vectors X with respect to a discrete attribute Z: X is linearly guarded f
 - [[linear-representation-hypothesis]] : The linear representation hypothesis, tracing to Mikolov et al. (2013), holds that neural network features are encoded as linear directions 
+- [[margin-theory-of-epistemic-state]] : The margin theory of epistemic state is the program's working framework
 - [[massive-activations]] : Massive activations are extremely rare scalar values in a transformer's
 - [[misaligned-persona-feature]] : Misaligned persona features are SAE latents whose activation increases after fine-tuning on bad-behavior data and which causally mediate bro
 - [[model-forensics]] : The investigative practice of determining whether a model's concerning action was driven by malign intent, as opposed to a benign cause such
@@ -690,7 +693,7 @@ Atomic notes extracted from the library papers via the Agents-K1 ingestion skill
 - [[valence-arousal-subspace]] : A two-dimensional linear subspace in LLM activation space spanned by a recovered valence axis (pleasure-displeasure) and arousal axis (activ
 - [[world-model-hallucination-modes]] : A three-type taxonomy of failure modes in generative world models, each anchored to a different pipeline stage. Perceptual hallucination occ
 
-## Mechanisms (cause -> effect) (423)
+## Mechanisms (cause -> effect) (424)
 
 - [[abstention-generalization-failure]] : 'instruction-tuning for abstention on a narrow, homogeneous set of refusal expressions and task formats' **prevents** Abstention ability does not generalize to 
 - [[abstract-representations-enable-zero-shot-generalization]] : High degree of abstract (parallel) representation in ANN hidden layers, as measured by parallelism-score, indicating that compositional rule dimensions are enco
@@ -1115,6 +1118,7 @@ Atomic notes extracted from the library papers via the Agents-K1 ingestion skill
 - [[wide-abstention-instrument-reveals-substantial-undosed-baseline-refusal]] : A wide, idiom-inclusive abstention instrument (a diverse detector-v2 pattern screen plus a blinded, symmetric human-adjudication lane) is applied to the UNDOSED
 - [[within-sample-correlation-symmetry-limits-probability-voting]] : Within-sample log-probability/correctness correlations distributed symmetrically around zero across diverse benchmarks **decreases** Reliability of probability-
 - [[workspace-band-peak-location-is-family-relative]] : On two non-Qwen instruction-tuned families captured full-depth (Llama-3.2-3B-Instruct, Mistral-7B-Instruct-v0.3; jspace-family-atlas), the per-layer eff_dim_fra
+- [[write-selectivity-is-operating-point-dependent]] : The dosed write's setpoint sits either between the confab and known commitment-margin distributions (mid-band regime: dose above typical confab margins, below t
 
 ## Gaps (verified literature absences) (1)
 
