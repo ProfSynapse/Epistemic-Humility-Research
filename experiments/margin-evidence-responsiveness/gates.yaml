@@ -26,18 +26,22 @@ integrity:
     - zero silent drops; every row appears in every applicable arm or is reported missing with reason
     - channel 2 survival never imputed for a missing generation; a missing row is reported, not defaulted
     - the 400/308/360 population partition asserted at analysis time against the pre-committed id lists
+  S1_baseline_reproduction:                        # pre-sign red-team M2 + m3
+    - channel 1: fresh in-regime no_answer_baseline confab-projection median reproduces M2's committed 3.000505444683542 within 0.10 z before leg 1 is read; exceedance halts and lifts to PI (the 0.5 x gap floor loses meaning if the fresh baseline drifts)
+    - channel 2: no_answer_baseline survival at each row's own M1 tipping dose is measured; if it exceeds 0.05 (the M1b ~4% batch-composition noise, rounded up) the M1 doses do not reproduce in M4's regime and channel 2 is voided / lifted to PI, not scored
+    - on_failure: halt, report straight, lift to PI; never a silent retry
 
 criteria:
   D1_projection_collapse:                        # channel 1, confab rows
     leg_1_position_into_gap:
       rule: median over confab rows of (no_answer_baseline_z - true_answer_z) >= collapse_floor_z
-      collapse_floor_z: 0.9741885346591197       # 0.5 x baseline gap_median 1.9483770693182394; DERIVED, TO-CONFIRM at sign (candidates 0.25/0.5/0.75/1.0 x gap in the derivation)
+      collapse_floor_z: 0.9741885346591197       # LOCKED at 0.5 x baseline gap_median 1.9483770693182394; the 0.25/0.75/1.0 candidates are NOT retained as fallbacks (pre-sign red-team m6: exactly one fraction is the registered bar)
     leg_2_specificity:
       rule: paired bootstrap 95% CI of (true_answer shift - false_answer shift) over confab rows excludes zero, true_answer shift the larger
     both_legs_required: true
   D2_margin_lengthening:                          # channel 2, 308 eligible confab rows
     rule: paired rate difference (true_answer survival - false_answer survival) bootstrap 95% CI excludes zero AND point estimate >= absolute_floor
-    absolute_floor: 0.056                          # DERIVED: Wilson 95% half-width at worst-case p=0.5, n=308 (unpaired anchor; the paired design has strictly smaller variance); TO-CONFIRM at sign
+    absolute_floor: 0.056                          # LOCKED: normal-approx (Wald) 95% half-width 1.96*sqrt(0.25/308)=0.0558 at worst-case p=0.5, n=308, rounded to 0.056 (unpaired anchor; the paired design has strictly smaller variance). Not a Wilson interval (true Wilson at n=308 is 0.0555; both round to 0.056). red-team m4.
   criterion_d_earned: D1 AND D2 both pass
   criterion_d_not_earned: either D1 or D2 fails its floor; a single-channel pass is reported as a channel dissociation, never rounded to a binary
   C1_construct_integrity:

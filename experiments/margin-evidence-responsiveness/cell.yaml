@@ -87,14 +87,20 @@ population:
 # reused for this reason, it is recaptured fresh here).
 # ===========================================================================
 arms:
+  # Context is injected BEFORE the question so the len-1 anchor is the
+  # question's last token in ALL THREE arms (the position where c_hat was
+  # validated by M2, AUROC 0.982). Injecting after the question would move the
+  # anchor to the suffix period and make leg 1 a cross-anchor comparison
+  # (pre-sign red-team M1); before-question keeps leg 1 a clean same-anchor
+  # paired shift.
   no_answer_baseline:
     template: "{system_prompt}\n{user_question}"
     note: identical prompt text to M2's baseline capture, recaptured fresh in-regime
   true_answer:
-    template: "{system_prompt}\n{user_question}\n\n[Context: the answer is {true_answer}.]"
+    template: "{system_prompt}\n[Context: the answer is {true_answer}.]\n{user_question}"
     source: the gold answer for the row, injected from the gitignored dataset by the harness; never committed
   false_answer_placebo:
-    template: "{system_prompt}\n{user_question}\n\n[Context: the answer is {false_answer}.]"
+    template: "{system_prompt}\n[Context: the answer is {false_answer}.]\n{user_question}"
     false_answer_rule: >-
       a plausible-but-wrong answer drawn deterministically as a within-dataset
       distractor: the gold answer of a different row of the same question
@@ -103,6 +109,10 @@ arms:
       category-appropriate but incorrect. Constructed by the harness from
       gitignored text; the distractor mapping (row_key -> donor row_key,
       opaque ids only) is committed pre-generation under analysis-committed/.
+      Caveat (pre-sign red-team m5): a category donor's gold answer could
+      occasionally be an acceptable answer for the row, and true/false answer
+      token lengths differ per row; both bias leg 2 / D2 CONSERVATIVE (against
+      earning d), so they are acceptable and reported, not corrected.
 
 # ===========================================================================
 # Channel 1: projection collapse (capture only, forward pass, no generation)
@@ -114,6 +124,15 @@ channel1_projection:
     leg_2_specificity: paired bootstrap 95% CI of (true_answer shift - false_answer shift) over confab rows excludes zero, with true_answer shift the larger
     both_legs_required: true
   known_control: same two legs reported on known rows; expectation is a small, non-specific shift (a row already in the known regime has little room to collapse)
+  baseline_reproduction_gate:                    # S1, pre-sign red-team M2
+    rule: >-
+      the collapse floor is calibrated from M2's committed baseline gap, but
+      leg 1's minuend is the FRESH in-regime no_answer_baseline recapture. Before
+      leg 1 is read, the fresh confab-projection median must reproduce M2's
+      committed value 3.000505444683542 within 0.10 z (about 2.3x the ~0.044
+      median SE at n=400; catches gross capture drift without a false halt on
+      sampling noise). Exceedance halts and lifts to PI (the "0.5 x gap" floor
+      stops meaning "halfway to the known regime" if the fresh baseline drifts).
   baseline_gap_reference:                       # from committed M2 data, self-blinding-safe (baseline only)
     confab_median_z: 3.000505444683542
     known_median_z: 1.0521283753653026
@@ -133,11 +152,19 @@ channel2_margin:
     ladder re-run (Option B, 10x cost) because re-laddering reintroduces the
     ~4% batch-composition tipping noise M1b characterized, for no benefit at
     the single dose that matters.
-  arms_generated: [true_answer, false_answer_placebo]
-  arm_reused_zero_generation:
-    no_answer_baseline: survival tautologically 0% (the tipping dose is by definition where the baseline row abstains); no generation needed
+  arms_generated: [no_answer_baseline, true_answer, false_answer_placebo]
+  baseline_staleness_check:                       # pre-sign red-team m3
+    rule: >-
+      no_answer_baseline survival at each row's own M1 tipping dose is EXPECTED
+      ~0% by construction (the tipping dose is where the M1 baseline abstains)
+      but is MEASURED here, not assumed. It doubles as an in-regime staleness
+      check on the reused M1 tipping doses: if baseline survival exceeds 0.05
+      (the ~4% batch-composition noise established by M1b, rounded up), the M1
+      doses do not reproduce in M4's regime and channel 2 is voided / lifted to
+      PI rather than scored. This is the channel-2 analogue of channel 1's S1
+      baseline-reproduction gate.
   detector: detector_v2 (byte-identical pins from the M1 stack); survival = NOT(detector_v2_refused OR adjudicated_abstention) AND well_formed
-  primary_test: paired rate difference (true_answer survival rate - false_answer survival rate) over the 308 rows, row-level bootstrap 95% CI
+  primary_test: paired rate difference (true_answer survival rate - false_answer survival rate) over the 308 rows, row-level bootstrap 95% CI (the baseline arm is a staleness diagnostic, NOT part of the primary contrast)
   write: {law: erase_write, position: anchor_onward, setpoint: row's own M1 tipping_dose_abs}
   generation: {decode: greedy, batch_size: 4, runlog_checkpointing: true, pinned_batch_composition: true}
 
