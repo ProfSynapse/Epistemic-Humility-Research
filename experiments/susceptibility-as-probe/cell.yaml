@@ -1,8 +1,75 @@
-# TODO: replace this placeholder with the pinned experiment instrument.
-# Keep this file in the experiment directory unless the runner skill for this
-# experiment type requires a different config layout.
-#
-# Before signing:
-# - fill the actual runner/tuner config
-# - list this file under experiment.yaml instrument.configs
-# - run `bin/exp sign <slug>` to pin the final bytes
+# M2 susceptibility-as-probe cell. Values fixed at sign; see AMENDMENT.md
+# Decision record for provenance of every knob.
+
+family: qwen35_4b
+model:
+  repo: Qwen/Qwen3.5-4B
+  revision: 851bf6e806efd8d0a36b00ddf55e13ccb7b8cd0a
+
+population:
+  source: experiments/margin-mapping (M1) registered subsample, reused whole
+  n_confab: 400
+  n_known: 360
+  subsample_ids:
+    path: experiments/margin-mapping/analysis-committed/subsample_ids_qwen35_4b.json
+    sha256: 60d5a3e13de5f85d35776dcee3c15dddea2e301951ded42849516865fe32723d
+  margin_dataset:
+    path: experiments/margin-mapping/analysis/margin_dataset/qwen35_4b_margin_rows.jsonl
+    sha256: 84f4d3b8674a18eb944a4b921383e1cfb1147db892dee2c19348f671b7f41565
+  ground_truth: role field (confab vs known_correct_answered), behavior-assigned upstream
+  leakage_check:
+    rule: zero row_key intersection with the doubt-snap FIT split that fit c_hat
+    split_manifest:
+      path: experiments/doubt-snap-cross-family-confirmatory/analysis-committed/qwen35_4b/split_manifest.json
+      sha256: 2f622f5abe110349216207424bdbd919775e93f6d92f334b99f6424505f21e5c
+    verified: 2026-07-17 (lead, pre-draft; re-asserted programmatically at staging)
+
+channels:
+  susceptibility:
+    score: negative tipping_dose_abs from the margin dataset
+    censored_rows: carry censored recorded value (top ladder rung), rank tie group
+    sensitivity_readout: AUROC excluding tipping-censored rows (descriptive only)
+  readout:
+    direction:
+      path: experiments/qwen35-4b-midband-doubt-snap/analysis-committed/directions/hs20/c_hat.json
+      sha256: 937d1bffe1924e73bca40a88c8096d7e01bb67c5b64286362196aa968e2c2e1f
+      layer_index: 19
+      hs_index: 20
+    score: z-projection of prompt-anchor hs20 hidden state onto frozen c_hat (no refit, no threshold)
+    capture:
+      engine: hf-batched
+      render: baseline render stack (atlas conventions)
+      add_special_tokens: true
+      anchor_position: len(token_ids) - 1
+      compute_dtype: default (bf16 on CUDA)
+      persist_dtype: float32
+      batch_size: 8
+  verbalized_confidence:
+    elicitation: one greedy pass per row, baseline system prompt unchanged
+    template_user_suffix: >-
+      Before answering, output your confidence that you can answer this
+      question correctly as the first line, in exactly this format
+      "CONFIDENCE <integer 0-100>". Then answer the question.
+    parse_rule: first regex match of CONFIDENCE followed by an integer within the first two output lines; values above 100 invalid
+    unparseable: reported per SC2, excluded pairwise, never imputed
+
+analysis:
+  auroc_bootstrap:
+    resamples: 10000
+    ci: 0.95
+    seed: 48260717
+    stratification: resample row indices within role groups
+  paired_differences: same resamples, margin-vs-readout, margin-vs-confidence, readout-vs-confidence
+  complementarity:
+    combiner: logistic regression on (readout z, susceptibility score), 5-fold cross-fitted
+    fold_seed: 48260718
+    comparison: incremental AUROC of combination over readout alone
+
+self_blinding:
+  rule: no AUROC, pairwise difference, or incremental quantity computed before sign
+  presign_allowed: row counts, row-key intersections, file hashes, schema reads
+
+preflight:
+  capture_smoke_rows: 8
+  elicitation_smoke_rows: 8
+  gate: code-enforced pass marker required before either full pass

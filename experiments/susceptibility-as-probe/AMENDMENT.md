@@ -1,6 +1,8 @@
 # Susceptibility as probe: margin vs readout vs verbalized confidence
 
-Status: draft (not signed; do not launch as confirmatory evidence).
+Status: SIGNED 2026-07-17 (PI predictions registered in conversation; knobs
+adopted per the Decision record; launch authorized on the local 3090 free
+lane after the mandatory preflight passes).
 
 Keep this document the prose home for the experiment. The machine state lives in
 `experiment.yaml` and is never duplicated here.
@@ -182,13 +184,21 @@ Statistics: Wilson 95% CI on every rate; class-stratified bootstrap 95% CI,
 
 ## Predictions scoreboard
 
-Registered at sign, before any capture or elicitation and before any AUROC
-is computed (self-blinding rule above). No edits after results.
+Registered at sign (2026-07-17), before any capture or elicitation and
+before any AUROC is computed (self-blinding rule above). PI calls given via
+the slot-options exchange in conversation; orchestrator calls registered in
+the same exchange. No edits after results.
 
-| Predictor | Complementarity (incremental >= floor) | Margin vs readout (paired) | Internal channels vs verbalized confidence | Bands (optional) |
+| Predictor | Complementarity (incremental >= 0.02) | Margin vs readout (paired) | Internal channels vs verbalized confidence | Bands |
 |-----------|------|------|------|------|
-| orchestrator | | | | |
-| PI | | | | |
+| orchestrator | FAIL (redundant) | readout wins | both beat confidence | readout AUROC 0.90-0.97; margin AUROC 0.78-0.90; confidence AUROC 0.55-0.75; incremental 0.000-0.015 |
+| PI | PASS (complementary) | readout wins | both beat confidence | none registered |
+
+The differentiating slot is COMPLEMENTARITY: the PI calls Claim 3's
+dissociation real (the margin carries usable information the projection
+misses); the orchestrator calls the two channels redundant at this
+operating point (the margin was measured along c_hat and adds less than
+the floor). Slots 2 and 3 are shared calls and cannot differentiate.
 
 ## Outcome
 
