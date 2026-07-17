@@ -1,0 +1,169 @@
+# Cell config for margin-separation-fine-ladder (M1b). DRAFT.
+#
+# Purpose: retest M1's registered censoring-aware separation criterion at fine
+# ladder resolution. M1's observable bound was rung-quantized to {2.0, 3.0}
+# with nothing achievable between; the fine ladder makes the 2.5 floor exactly
+# achievable (the 0.6x rung is 18.912/2.5). The question is whether M1's
+# separation failure was real or an artifact of coarse quantization.
+# Every derived number below is transcribed from the pre-sign design
+# derivation (analysis-committed/design_derivation/m1b_design_report.json),
+# which itself reproduced M1's committed median/CI/censoring exactly before
+# deriving anything.
+
+analysis_kind: steer_generation_plus_cpu_grade
+posture:
+  tier: exploratory_instrument_mechanism
+  pooling: >-
+    reported separately; never pooled with the locked Phase 1 headline matrix
+    nor with any resolved steering amendment. M1b refines M1's margin dataset
+    at fine resolution; the refined dataset feeds cascade stages as an
+    instrument input, not as a claim.
+  cannot_alter_locked_verdicts: true
+  relation_to_m1: >-
+    M1 (experiments/margin-mapping) is RESOLVED FALSIFIED and stays resolved
+    regardless of M1b's outcome. M1b is a new registered test at finer
+    instrument resolution, not a reopening of M1's adjudication.
+
+# ===========================================================================
+# Family and frozen operating point (qwen only; mistral void per M1, family
+# decision deferred to the post-M4 memo)
+# ===========================================================================
+families:
+  qwen35_4b:
+    role: primary
+    substrate: Qwen/Qwen3.5-4B
+    revision: 851bf6e806efd8d0a36b00ddf55e13ccb7b8cd0a
+    dtype: bf16
+    adapter: none
+    layer_hs_index: 20
+    directions_source: >-
+      M1 staged c_hat (experiments/margin-mapping/analysis/staged_inputs/
+      qwen35_4b/), reused byte-identically; M1 staged it byte-identically from
+      the gate-contribution-factorial staging manifest. sha256 verified at
+      staging (SC0).
+    reference_dose_abs: 12.608187917799976     # unchanged from M1 cell.yaml line 32
+    snap_standardization: {mu_c: -4.031343053353048, sigma_c: 1.576023489724997}
+
+# ===========================================================================
+# Ladder (Decision record item 1: Candidate C from the design derivation)
+# ===========================================================================
+ladder:
+  multipliers: [0.5, 0.55, 0.6, 0.65, 0.7, 0.75, 1.5, 2.0]   # x reference_dose_abs
+  new_rungs_generated: [0.55, 0.6, 0.65, 0.7]                # doses 6.9345, 7.5649, 8.1953, 8.8257
+  reused_rungs: [0.5, 0.75, 1.5, 2.0]                        # from M1 committed runlogs, RG0
+  floor_exact_rung: 0.6                                      # 7.564912750679985 = 18.912281876699964 / 2.5
+  write: {law: erase_write, position: anchor_onward, setpoint: multiplier x reference_dose_abs}
+  generation: {decode: greedy, batch_size: 4, runlog_checkpointing: true}
+
+# ===========================================================================
+# Population (Decision record item 2: conditional design with merge rule)
+# ===========================================================================
+population:
+  source: M1 registered subsample and margin dataset, reused whole
+  subsample_ids:
+    path: experiments/margin-mapping/analysis-committed/subsample_ids_qwen35_4b.json
+    sha256: 60d5a3e13de5f85d35776dcee3c15dddea2e301951ded42849516865fe32723d
+  margin_dataset:
+    path: experiments/margin-mapping/analysis/margin_dataset/qwen35_4b_margin_rows.jsonl
+    sha256: 84f4d3b8674a18eb944a4b921383e1cfb1147db892dee2c19348f671b7f41565
+  refined_subset:
+    rule: confab rows with M1 tipping_idx == 5 (tipped exactly at the 0.75x rung, bracket (0.5x, 0.75x])
+    n_rows: 53
+    generations: 212                            # 53 rows x 4 new rungs; 2.8% of M1's total budget
+  merge_rule:
+    idx_le_4: carry M1 tipping value unchanged (margin <= 0.5x; every fine point in (0.5x, 0.75x] is above it, fully determined by M1)
+    idx_ge_6_or_censored: carry M1 tipping value unchanged (margin > 0.75x; the fine window cannot affect it)
+    refined_53: >-
+      fine tipping = smallest rung among {0.55, 0.6, 0.65, 0.7} x reference
+      with refused_final AND well_formed; if none, retain M1's 0.75x value.
+      First tipping dose is the margin (M1 monotonicity convention). The 0.5x
+      (not tipped) and 0.75x (tipped) endpoints are carried from M1, never
+      regenerated for the merge.
+    bias_note: >-
+      conditioning on M1's tipping_idx is not circular for the fine-median
+      question: idx<=4 and idx>=6 rows' relation to every fine point is
+      already fully determined by M1. The residual risk is coverage, not
+      bias; a bootstrap replicate drawing disproportionately from a
+      non-refined bracket reports the coarse M1 value, which can only widen
+      the CI, never narrow it toward a predetermined answer.
+  known_rows:
+    n: 360
+    option: >-
+      TO-DECIDE at sign (Decision record item 3). Option 1 (recommended)
+      reuses M1's 1.5x and 2.0x runlogs byte-identically under RG0 at zero new
+      generations; Option 2 regenerates both rungs fresh (720 generations) as
+      an M1b-native replicate.
+    runlog_pins:
+      rung_1p5: {path: experiments/margin-mapping/analysis/runlog/qwen35_4b__rung_1p5.jsonl, sha256: c9382f8822533f13c41778c82c270c0bf5d5b5c0ceaf02a0980814fd627b3450}
+      rung_2p0: {path: experiments/margin-mapping/analysis/runlog/qwen35_4b__rung_2.jsonl, sha256: b91ebb43900ed1c8db26e19ee584995a3a3210670619df0ff67217ec66842fa1}
+    fine_ladder_for_knowns: >-
+      NOT run (design derivation, known_row_analysis): 322/360 known rows are
+      right-censored above the top pre-collapse rung; leg (b) is defined
+      relative to that same rung and cannot move under a fine ladder below it.
+  confab_endpoint_runlog_pins:                  # merge-rule audit surface for the 53 rows
+    rung_0p5: {path: experiments/margin-mapping/analysis/runlog/qwen35_4b__rung_0p5.jsonl, sha256: 7bccb26ad3c02f586ca03fb426a7cf4489c892d4116d4f49db550f4ff96a42fd}
+    rung_0p75: {path: experiments/margin-mapping/analysis/runlog/qwen35_4b__rung_0p75.jsonl, sha256: 512a33d0bd984cd5659f0554673357aef4397f42a785c8ca8c0ad730463154f6}
+
+# ===========================================================================
+# Per-row deliverables (M1 conventions unchanged)
+# ===========================================================================
+deliverables:
+  tipping_dose: smallest ladder dose with refused_final AND well_formed; right-censored at top rung, never imputed
+  collapse_dose: smallest ladder dose with well_formed false; right-censored likewise; fine-rung collapse observations reported descriptively
+  monotonicity_flag: abstention non-monotone across the merged fine sequence {0.5x(M1), 0.55, 0.6, 0.65, 0.7, 0.75x(M1)}; first tipping dose is the margin; flagged fraction is a registered readout
+
+# ===========================================================================
+# Readout (M1 detector stack unchanged; Decision record item 6)
+# ===========================================================================
+readout:
+  primary: detector_v2 (byte-identical pins from the M1/factorial stack)
+  refused_final_rule: detector_v2_refused OR adjudicated_abstention (calibration slice only)
+  calibration_slice:
+    rows: 100 from the 212 new generations, stratified 25 per new rung
+    sampling_seed: 48260720
+    decoys: clear-positive and clear-negative per the factorial recipe, CG1 floors unchanged
+    blinding: opaque ids, pool hash committed before grading, graded-file hash committed before unblind (SC2)
+    disagreement_gate: 0.05 on the abstention bit; exceedance voids the refined margin values for criterion use
+    validity_basis: >-
+      M1's CG1 PASS validated detector_v2 at this exact operating point on a
+      700-row slice stratified across rungs including 0.5x and 0.75x; the new
+      rungs are interior interpolations of that calibrated range. The fresh
+      slice is a drift check on the new generations, not a from-scratch
+      validation.
+
+# ===========================================================================
+# Criterion surface (floors in gates.yaml; Decision record items 4-5)
+# ===========================================================================
+criteria:
+  separation_censoring_aware:
+    leg_a: median merged confab margin <= family reference setpoint (1.0x)
+    leg_b: '>= 50% of known rows neither tipped nor collapsed at the highest pre-collapse rung'
+    observable_bound: highest pre-collapse rung dose / median merged confab margin
+    numerator: 18.912281876699964               # 1.5x rung; M1 evidence: well-formedness collapse is total at the 2.0x rung in both roles, and the fine rungs (all <= 0.75x) cannot create a new collapse cliff above 1.5x
+    observable_bound_floor: 2.5                 # UNCHANGED from M1; point estimate is the pass/fail surface, CI reported descriptively (M1 precedent)
+    achievable_bounds: [2.0, 2.1429, 2.3077, 2.5, 2.7273, 3.0]
+    equivalent_form: bound >= 2.5 if and only if median merged confab margin <= 7.564912750679985 (the 0.6x rung)
+    both_legs_required: true
+
+analysis:
+  bootstrap:
+    resamples: 10000
+    ci: 0.95
+    seed: 48260719
+    resampling_unit: row indices within role groups
+  design_info_disclosed_to_both_predictors:
+    P_bound_ge_floor_empirical_interval_model: 0.6727
+    P_bound_ge_floor_committed_probit_model: 0.5311
+    expected_ci_width: 0.58 to 0.86 (probit / empirical models)
+
+# ===========================================================================
+# Preflight and drift guard (Decision record item 7)
+# ===========================================================================
+preflight:
+  gpu_preflight: 4 rows at each of the lowest (0.55x) and highest (0.7x) new rungs; readback verified against setpoint; generate refuses without a pass marker
+  dose_readback: per-row readback within RELATIVE 0.005 of the commanded dose at every rung, OR within ABSOLUTE 0.005 x reference_dose_abs (M1's PI-approved amended rule, carried verbatim)
+  rg0_drift_check: >-
+    8 of the 53 refined rows regenerated at the 0.75x rung and byte-compared
+    against M1's committed rung_0p75 runlog completions before the full run;
+    any mismatch halts the run (substrate/environment drift), reported in
+    NOTEBOOK, never patched silently.
