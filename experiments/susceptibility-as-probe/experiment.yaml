@@ -41,4 +41,7 @@ verdict: The readout and susceptibility channels are redundant at the qwen mid-b
   operating point as registered (incremental AUROC 0.0154 vs floor 0.02, readout alone
   0.982), with the margin's increment statistically real but sub-floor, and the verbalized
   confidence channel void by parse-rate gate and descriptively anti-predictive.
-kg: []
+kg:
+- experiment:susceptibility-as-probe
+- mechanism:qwen-midband-readout-and-susceptibility-channels-are-redundant
+- mechanism:qwen-midband-verbalized-confidence-anti-tracks-answerability

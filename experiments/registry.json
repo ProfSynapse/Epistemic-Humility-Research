@@ -3441,7 +3441,11 @@
           }
         ]
       },
-      "kg": [],
+      "kg": [
+        "experiment:susceptibility-as-probe",
+        "mechanism:qwen-midband-readout-and-susceptibility-channels-are-redundant",
+        "mechanism:qwen-midband-verbalized-confidence-anti-tracks-answerability"
+      ],
       "prediction": "The cross-fitted readout-plus-margin combination beats the readout alone by at least the registered incremental-AUROC floor, and both internal channels beat verbalized confidence.",
       "question": "At the qwen mid-band operating point, does the susceptibility channel (the per-row commitment margin measured by M1) carry epistemic information that the frozen readout channel (the hs20 c_hat projection) misses, or are the two channels redundant views of one latent variable (framework Claim 3)?",
       "registered": true,

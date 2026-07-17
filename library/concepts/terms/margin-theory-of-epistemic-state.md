@@ -23,6 +23,9 @@ related:
 - '[[qwen35-4b-midband-doubt-snap]]'
 - '[[margin-mapping]]'
 - '[[qwen-midband-commitment-margins-miss-separation-floor]]'
+- '[[susceptibility-as-probe]]'
+- '[[qwen-midband-readout-and-susceptibility-channels-are-redundant]]'
+- '[[qwen-midband-verbalized-confidence-anti-tracks-answerability]]'
 relationships:
 - type: related_to
   target: '[[commitment-margin]]'
@@ -78,6 +81,25 @@ relationships:
   confidence: high
   evidence:
   - experiments/margin-mapping/AMENDMENT.md (Outcome, resolved 2026-07-17)
+- type: related_to
+  target: '[[susceptibility-as-probe]]'
+  target_id: experiment:susceptibility-as-probe
+  confidence: high
+  evidence:
+  - experiments/susceptibility-as-probe/AMENDMENT.md (Outcome, resolved 2026-07-17)
+- type: related_to
+  target: '[[qwen-midband-readout-and-susceptibility-channels-are-redundant]]'
+  target_id: mechanism:qwen-midband-readout-and-susceptibility-channels-are-redundant
+  confidence: high
+  evidence:
+  - experiments/susceptibility-as-probe/AMENDMENT.md (Outcome, resolved 2026-07-17)
+- type: related_to
+  target: '[[qwen-midband-verbalized-confidence-anti-tracks-answerability]]'
+  target_id: mechanism:qwen-midband-verbalized-confidence-anti-tracks-answerability
+  confidence: medium
+  evidence:
+  - experiments/susceptibility-as-probe/AMENDMENT.md (Outcome, Descriptives;
+    registered descriptive finding only, SC2 void)
 ---
 
 The margin theory of epistemic state is the program's working framework
@@ -115,6 +137,22 @@ passed (see [[qwen-midband-commitment-margins-miss-separation-floor]]).
 Margins are real and correctly placed; the registered quantitative
 separation was not met at ladder resolution. Mistral was void by
 instrument loss and Claims 1-2 remain untested there.
+
+**Claim 3 status (first empirical test, 2026-07-17):** the
+[[susceptibility-as-probe]] experiment (M2) measured the readout channel
+(frozen hs20 c_hat projection) and the susceptibility channel (the M1
+margin) head-to-head on the same 760 qwen35_4b rows and resolved FALSIFIED
+as registered at the qwen mid-band operating point: a cross-fitted
+readout-plus-margin combination beat the readout alone by only 0.0154
+incremental AUROC against a registered 0.02 floor, so the dissociation
+reading is rejected here (see
+[[qwen-midband-readout-and-susceptibility-channels-are-redundant]]). The
+readout alone also beat the margin outright in the direct head-to-head. The
+verbalized-confidence comparator was void by a parse-rate gate and, though
+unscored, was descriptively anti-predictive of answerability (see
+[[qwen-midband-verbalized-confidence-anti-tracks-answerability]]). The
+margin remains mechanistically meaningful per M1 but is not shown to be an
+independent detector over the readout at this operating point.
 
 **Lineage:** working framework, not a governed claims surface; the prose
 home is `docs/research/margin-theory-framework.md` and every experimental
