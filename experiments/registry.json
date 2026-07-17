@@ -3411,6 +3411,48 @@
     },
     {
       "checkpoint": {
+        "repo": "Qwen/Qwen3.5-4B",
+        "revision": "851bf6e806efd8d0a36b00ddf55e13ccb7b8cd0a"
+      },
+      "created_at": "2026-07-17T16:12:45Z",
+      "falsifier": "Incremental AUROC of readout-plus-margin over readout alone below the registered floor (redundancy); or verbalized confidence matching or beating both internal channels; or the readout sanity floor failing (instrument void, no claim evaluated).",
+      "inputs": [
+        "experiments/margin-mapping/analysis-committed/subsample_ids_qwen35_4b.json",
+        "experiments/qwen35-4b-midband-doubt-snap/analysis-committed/directions/hs20/c_hat.json",
+        "experiments/doubt-snap-cross-family-confirmatory/analysis-committed/qwen35_4b/split_manifest.json"
+      ],
+      "instrument": {
+        "configs": [
+          "cell.yaml",
+          "gates.yaml"
+        ],
+        "modules": [],
+        "pins": {
+          "cell.yaml": "4dc5722c0c3f722200bc6df7c99abbb4ff914a6587fc2bbd389692264478c3bb",
+          "gates.yaml": "a19da59d4a9d232389724f5e99332ce874d45cd71ad6a4f1455f3486badaab54"
+        },
+        "repins": [
+          {
+            "date": "2026-07-17T17:13:12Z",
+            "file": "cell.yaml",
+            "new_sha256": "4dc5722c0c3f722200bc6df7c99abbb4ff914a6587fc2bbd389692264478c3bb",
+            "old_sha256": "d361224f2f800e28e7b10a10ee6bbc57c28c8a1241a90f9fd1ffd42be8c5a7cd",
+            "reason": "PI-approved pre-analysis sign clarification 2026-07-17: readout score = negative z-projection (lineage neg_z convention); S1 halt diagnosis in NOTEBOOK; no criterion quantity read before repin"
+          }
+        ]
+      },
+      "kg": [],
+      "prediction": "The cross-fitted readout-plus-margin combination beats the readout alone by at least the registered incremental-AUROC floor, and both internal channels beat verbalized confidence.",
+      "question": "At the qwen mid-band operating point, does the susceptibility channel (the per-row commitment margin measured by M1) carry epistemic information that the frozen readout channel (the hs20 c_hat projection) misses, or are the two channels redundant views of one latent variable (framework Claim 3)?",
+      "registered": true,
+      "slug": "susceptibility-as-probe",
+      "status": "falsified",
+      "title": "Susceptibility as probe: margin vs readout vs verbalized confidence",
+      "type": "probe-fit",
+      "verdict": "The readout and susceptibility channels are redundant at the qwen mid-band operating point as registered (incremental AUROC 0.0154 vs floor 0.02, readout alone 0.982), with the margin's increment statistically real but sub-floor, and the verbalized confidence channel void by parse-rate gate and descriptively anti-predictive."
+    },
+    {
+      "checkpoint": {
         "repo": "",
         "revision": ""
       },

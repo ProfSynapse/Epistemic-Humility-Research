@@ -1,0 +1,38 @@
+# Gates for susceptibility-as-probe (M2). Fixed at sign; thresholds derived
+# or convention-grounded per AMENDMENT.md Decision record; they do not move
+# after results.
+
+statistics:
+  rates: Wilson 95% CI (alpha 0.05) on every rate
+  aurocs_and_differences: class-stratified bootstrap 95% CI, 10000 resamples, seed 48260717
+  resampling_unit: row indices within role groups
+  cross_fit: 5 folds, fold seed 48260718
+
+integrity:
+  SC0_provenance_staging:
+    - margin dataset, subsample id list, c_hat direction, and split manifest staged as LOCAL COPIES with sha256 verified against the cell.yaml pins
+    - leakage re-check in code at staging, zero row_key intersection between the 760 population rows and the doubt-snap FIT split
+    - self-blinding rule (cell.yaml) in force from draft through sign, no AUROC or difference computed pre-sign
+  SC1_capture_integrity:
+    - MANDATORY GPU preflight, 8-row capture smoke and 8-row elicitation smoke, manifest-checked (anchor positions, dtype, parse), code-enforced pass marker gates the full passes
+    - fresh hs20 capture over all 760 prompts, per-row token-count and anchor-position assertions, zero silent drops
+    - capture manifest records model revision, engine, dtypes, batch size, template hash
+  SC2_elicitation_integrity:
+    - confidence template frozen at sign and byte-hashed into the capture manifest
+    - parse rate >= 0.95 of rows, below the floor the confidence channel is VOID (reported straight, other channels unaffected)
+  SC3_coverage:
+    - every row scored on every channel or reported missing with reason
+    - pairwise-complete analysis sets enumerated in the results manifest
+
+criteria:
+  P1_complementarity:
+    rule: cross-fitted incremental AUROC of readout-plus-margin over readout alone
+    floor: 0.02
+    provenance: DERIVED analytic, Hanley-McNeil half-width at n 400/360 (Decision record item 3)
+  P2_channel_head_to_heads:
+    rule: a channel beats another only if the paired bootstrap 95% CI of the AUROC difference excludes zero
+    comparisons: margin-vs-readout, margin-vs-confidence, readout-vs-confidence
+  S1_readout_sanity:
+    rule: readout AUROC >= 0.80 on the 760 rows
+    provenance: DERIVED-anchored to committed hs20 FIT auc 0.9929 (Decision record item 5)
+    on_failure: instrument void, run halts for diagnosis before any criterion is read
