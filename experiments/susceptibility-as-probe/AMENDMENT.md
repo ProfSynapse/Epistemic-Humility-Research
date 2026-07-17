@@ -214,5 +214,62 @@ the floor). Slots 2 and 3 are shared calls and cannot differentiate.
 
 ## Outcome
 
-Filled at resolve. Record the verdict, the gate results, and the one-sentence
-summary that also goes into `verdict:` in the manifest.
+Resolved 2026-07-17 (full adjudication trail in NOTEBOOK, results JSON
+sha256 e423207e, every headline quantity independently reproduced by the
+lead with a second implementation before adjudication).
+
+Instrument events, in registered order: the S1 sanity gate HALTED the
+first analysis pass at raw-polarity AUROC 0.0179 and the diagnosis found a
+sign-convention omission in the drafted readout spec (c_hat orients raw z
+confab-negative; the lineage's own committed convention is negative z); a
+PI-approved pre-analysis clarification amended cell.yaml (readout score =
+negative z), repinned (4dc5722c), and the analysis reran on unchanged
+artifacts. Every registered criterion is sign-invariant, so the
+clarification could not move any predictor's call. SC2 voided the
+verbalized-confidence channel (parse rate 0.7684 vs floor 0.95); the void
+stands as registered.
+
+Criterion verdicts (qwen35_4b, 760 rows):
+
+- **P1 complementarity: FAIL.** Cross-fitted readout-plus-margin 0.9974 vs
+  readout alone 0.9821; incremental AUROC 0.0154 [0.0081, 0.0237] vs floor
+  0.02. The increment is statistically nonzero (CI excludes zero) but
+  below the registered practical floor; the redundancy falsifier fires.
+  Robustness: the increment is 0.0161 against a cross-fitted readout-only
+  baseline, below the floor under either construction.
+- **P2 head-to-heads:** readout beats margin (0.9821 vs 0.8504, paired
+  difference -0.1316 [-0.1588, -0.1045], CI excludes zero). Comparisons
+  against confidence resolve for the internal channels but are descriptive
+  given the SC2 void.
+- **S1 sanity (post-clarification): PASS**, 0.9821 [0.9730, 0.9900] vs
+  floor 0.80.
+
+Descriptives: susceptibility AUROC 0.8504 [0.8252, 0.8749];
+censored-excluded sensitivity 0.7242 [0.6446, 0.7988] (much of the
+margin's discrimination rides on the censoring structure); verbalized
+confidence on the 584 parseable rows 0.1479 [0.1214, 0.1754], strongly
+anti-predictive: the model verbalizes HIGHER confidence on rows it
+confabulates, a notable finding for the paper's self-report discussion,
+recorded descriptively only.
+
+Predictions scoreboard adjudication: the differentiating complementarity
+slot resolves FAIL, so the orchestrator's call (redundant) is right and
+the PI's (complementary) is wrong; both were right that the readout wins
+the head-to-head; the confidence slot is void and unscored. Orchestrator
+bands: margin HIT (0.8504 in 0.78-0.90), readout MISS high (0.9821 vs
+0.90-0.97), incremental MISS high by 0.0004 (0.0154 vs 0.000-0.015).
+
+Framework consequence: Claim 3's dissociation reading is rejected at the
+qwen mid-band operating point at the registered floor. The readout
+projection already carries nearly everything the margin knows about
+confab-vs-known here; the margin remains mechanistically meaningful (M1's
+retrodiction) but is not an independent detector over the readout at this
+operating point. M4 proceeds unchanged; M5 treats the margin as mechanism,
+not as a second detector.
+
+One-sentence summary (manifest `verdict:`): the readout and susceptibility
+channels are redundant at the qwen mid-band operating point as registered
+(incremental AUROC 0.0154 vs floor 0.02, readout alone 0.982), with the
+margin's increment statistically real but sub-floor, and the verbalized
+confidence channel void by parse-rate gate and descriptively
+anti-predictive.
