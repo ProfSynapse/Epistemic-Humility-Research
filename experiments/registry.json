@@ -2184,6 +2184,45 @@
     },
     {
       "checkpoint": {
+        "repo": "Qwen/Qwen3.5-4B",
+        "revision": "851bf6e806efd8d0a36b00ddf55e13ccb7b8cd0a"
+      },
+      "created_at": "2026-07-17T17:41:27Z",
+      "falsifier": "With all gates valid, the merged confab median lands above the 0.6x rung, giving a point-estimate bound below 2.5 (the median can fall between rungs, so failing bounds are not restricted to on-rung values): the separation failure is real at fine resolution, and Claim 1 remains falsified at this operating point with the quantization excuse removed.",
+      "inputs": [
+        "experiments/margin-mapping/analysis-committed/subsample_ids_qwen35_4b.json",
+        "experiments/margin-mapping/analysis/margin_dataset/qwen35_4b_margin_rows.jsonl",
+        "experiments/margin-mapping/analysis/runlog/qwen35_4b__rung_0p5.jsonl",
+        "experiments/margin-mapping/analysis/runlog/qwen35_4b__rung_0p75.jsonl",
+        "experiments/margin-mapping/analysis/runlog/qwen35_4b__rung_1p5.jsonl",
+        "experiments/margin-mapping/analysis/runlog/qwen35_4b__rung_2.jsonl"
+      ],
+      "instrument": {
+        "configs": [
+          "cell.yaml",
+          "gates.yaml"
+        ],
+        "modules": [],
+        "pins": {
+          "cell.yaml": "cc40b4327489d118ab3e105ba721538ac1e72e9632d4ae4e61f1350350dee849",
+          "gates.yaml": "45ea8f4f525257b81dfc44179aa440ce6c5f33b5cbcc6eb5eae35236fd7f6ab4"
+        }
+      },
+      "kg": [
+        "experiment:margin-separation-fine-ladder",
+        "mechanism:qwen-midband-margin-separation-is-instrument-resolution-limited"
+      ],
+      "prediction": "The merged confab median margin falls at or below the 0.6x rung (7.564912750679985 dose_abs), the observable bound reaches the registered 2.5 floor with both legs passing, and Claim 1's separation holds as registered at the qwen mid-band operating point.",
+      "question": "Was M1's censoring-aware separation failure (observable bound 2.0 vs floor 2.5) real, or an artifact of coarse ladder quantization that made the floor unreachable? At fine resolution inside the critical bracket (0.5x, 0.75x], does the merged confab median fall at or below the 0.6x rung where the bound reaches exactly 2.5?",
+      "registered": true,
+      "slug": "margin-separation-fine-ladder",
+      "status": "null-result",
+      "title": "Margin separation at fine ladder resolution (M1b)",
+      "type": "steer-cell",
+      "verdict": "qwen mid-band commitment-margin separation is instrument-resolution-limited at the boundary: M1's Claim 1 falsification (observable bound 2.0 vs floor 2.5) stands, and the fine-ladder retest halted at its pre-registered RG0 drift check establishes that the miss is neither a clean quantization artifact nor a clean real separation but sits within the bf16 instrument's own ~4% batch-composition classification noise. No separation criterion was computed; halted at RG0, PI-decided no rework."
+    },
+    {
+      "checkpoint": {
         "repo": "",
         "revision": ""
       },
