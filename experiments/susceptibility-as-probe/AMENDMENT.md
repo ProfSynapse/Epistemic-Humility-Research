@@ -152,21 +152,30 @@ Statistics: Wilson 95% CI on every rate; class-stratified bootstrap 95% CI,
    line before answering; parse = first match of that pattern in the first
    two output lines; no match = unparseable. JUDGMENT (wording frozen at
    sign).
-3. Incremental-AUROC floor (complementarity criterion). DRAFTER PROPOSAL:
-   0.02 absolute. JUDGMENT: not derivable without peeking (the self-blinding
-   rule prohibits computing the quantities it would be derived from); 0.02
-   is one bootstrap-CI half-width at n=760 in prior read-panel work at
-   comparable n. PI may adjust at sign.
-4. Paired-difference bound for channel comparisons. DRAFTER PROPOSAL: a
-   channel counts as beating another only if the paired bootstrap 95% CI of
-   the AUROC difference excludes zero. JUDGMENT.
-5. Readout sanity floor. DRAFTER PROPOSAL: readout AUROC >= 0.80 on the 760
-   rows. The direction's FIT-split discrimination in its own lineage was
-   near-ceiling; held-out mid-band discrimination below 0.80 indicates a
-   capture/projection wiring defect rather than an honest weak signal, and
-   the run halts for diagnosis before any criterion is read. JUDGMENT.
-6. Confidence parse-rate floor. DRAFTER PROPOSAL: >= 0.95 of rows parseable.
-   JUDGMENT.
+3. Incremental-AUROC floor (complementarity criterion). DERIVED (analytic,
+   no M2 quantity touched): Hanley-McNeil SE of a single AUROC at the
+   registered class sizes (n_confab 400, n_known 360) is 0.0114 at AUC 0.90
+   and 0.0080 at AUC 0.95, giving unpaired 95% half-widths of 0.022 and
+   0.016. The floor is set at 0.02, approximately one conservative unpaired
+   half-width; the paired incremental comparison has strictly smaller
+   variance, so an increment at the floor is comfortably resolvable at this
+   n. Value: 0.02 absolute.
+4. Paired-difference bound for channel comparisons. CONVENTION: a channel
+   counts as beating another only if the paired bootstrap 95% CI of the
+   AUROC difference excludes zero (same resamples, seed 48260717).
+5. Readout sanity floor. DERIVED-anchored: the frozen hs20 direction's
+   committed FIT-split discrimination is auc_neg_z_d_on_fit = 0.9929
+   (`experiments/qwen35-4b-midband-doubt-snap/analysis-committed/build_manifest.json`,
+   layers/hs20). Honest held-out degradation on a shifted population does
+   not plausibly cross 0.80; a capture/projection wiring defect (wrong
+   layer, wrong sign, missing normalization) produces near-0.5 or inverted.
+   Floor: readout AUROC >= 0.80 on the 760 rows; below it the run halts for
+   diagnosis before any criterion is read.
+6. Confidence parse-rate floor. JUDGMENT (no prior elicitation instrument
+   in the repo to derive from): >= 0.95 of rows parseable, consistent with
+   the program's 0.95 instrument-integrity floors elsewhere (CG1
+   clear-negative). Below the floor the confidence channel is void and the
+   two-internal-channel comparison proceeds without it.
 7. GPU preflight (standing directive): 8-row smoke of the capture pass and
    8-row smoke of the elicitation pass, manifest-checked (positions, parse),
    before either full pass; code-enforced pass marker gates the full runs.
