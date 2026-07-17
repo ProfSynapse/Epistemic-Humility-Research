@@ -4,7 +4,7 @@ session_id: 20260717T013941Z-gate-factorial-resolution-and-margin-theory-framewo
 title: Gate factorial resolution and margin theory framework
 status: active
 created_at: '2026-07-17T01:39:41Z'
-updated_at: '2026-07-17T02:49:49Z'
+updated_at: '2026-07-17T13:53:39Z'
 question: What did the gate-contribution factorial settle, and what framework drives
   the next experiment series?
 tags:
@@ -136,6 +136,34 @@ checkpoints:
   decisions: []
   next_steps: []
   signals: {}
+- id: 007-checkpoint
+  at: '2026-07-17T13:53:39Z'
+  kind: checkpoint
+  title: Checkpoint
+  summary: "INCIDENT + FIX: worktree cleanup sweep (33 merged worktrees removed with\
+    \ --force --force) destroyed gitignored row-level data living only in those worktrees:\
+    \ M1's symlinked staging pools (qwen35-midband-heldout, rr2-mistral-confirm targets),\
+    \ the factorial's row-level runlogs/generation text, and other resolved experiments'\
+    \ data-exhaust. Committed evidence unaffected. Cleanup verification had checked\
+    \ git state only (clean+merged) \u2014 gitignored artifacts were invisible to\
+    \ it. M1 impact: qwen family SAFE (completed 10/10 rungs before the sweep, all\
+    \ rung readbacks OK, full text in M1's own runlog); mistral launch crashed on\
+    \ dangling pool symlink (KeyError kuq_unknowns_all:1000). Recovery: agent rebuilding\
+    \ pools from committed builder scripts + datasets, acceptance = exact sha256 match\
+    \ vs M1 staging_manifest pins, restage as LOCAL COPIES, then resume mistral. Blast-radius\
+    \ inventory agent enumerating per-experiment losses (regenerable-deterministic\
+    \ / regenerable-GPU / lost). PI-directed programmatic fix SHIPPED: PR #298 merged\
+    \ (aea361d5) \u2014 post-merge git hook auto-harvests all gitignored experiments/\
+    \ data from every worktree into main's checkout on every pull/merge (symlinks\
+    \ materialized, newer-supersedes with prior preserved, --check mode gates worktree\
+    \ removal); first harvest copied 3,279 files including live M1 runlogs. Policy\
+    \ change: staged inputs are LOCAL COPIES, never cross-worktree symlinks."
+  evidence: []
+  run_ids: []
+  commands: []
+  decisions: []
+  next_steps: []
+  signals: {}
 ---
 # Gate factorial resolution and margin theory framework
 
@@ -182,3 +210,8 @@ _No summary yet._
 - at: `2026-07-17T02:49:49Z`
 - kind: `checkpoint`
 - summary: M1 OVERNIGHT LAUNCH HALTED BY REGISTERED GATE. Build agent delivered: SC0 staging sha256-verified byte-identical vs factorial, seed-48260714 subsample manifests committed, 29/29 CPU smokes. Mandatory GPU preflight FAILED SC1 readback (rel 0.005) in BOTH families: 1 of 4 rows per family at the 0.0625x rung only (qwen rel 0.0068, mistral rel 0.0066); all rows at 1x/3x/4x passed at rel 0.0004-0.0019. Diagnosis: fixed absolute readback noise floor (0.0004-0.0053 dose_abs) dominating the relative bar at tiny setpoints; worst mis-dose 0.04% of reference. Lead adjudication (NOTEBOOK, commit b1e1e1fa): gate stands as registered (readback tolerance was not a pre-authorized knob; classifier also blocked the gates.yaml edit, honored per protocol); no retry-until-pass (SC1 has no registered retry remedy); read-only repeatability+noise-floor diagnostic dispatched to analysis/preflight_diag/. Proposal for PI morning: amend SC1 to rel 0.005 OR abs 0.005 x reference_dose_abs, repin, fresh preflight, launch. Collapse observed at 3x/4x both families (by design, boundary bracketed by 1.5x/2x rungs); mistral top-rung authorized knob NOT exercised. Preflight caught a real instrument-physics fact pre-run: the GPU-smoke-mandatory directive paid for itself on its first outing.
+### 007-checkpoint - Checkpoint
+
+- at: `2026-07-17T13:53:39Z`
+- kind: `checkpoint`
+- summary: INCIDENT + FIX: worktree cleanup sweep (33 merged worktrees removed with --force --force) destroyed gitignored row-level data living only in those worktrees: M1's symlinked staging pools (qwen35-midband-heldout, rr2-mistral-confirm targets), the factorial's row-level runlogs/generation text, and other resolved experiments' data-exhaust. Committed evidence unaffected. Cleanup verification had checked git state only (clean+merged) — gitignored artifacts were invisible to it. M1 impact: qwen family SAFE (completed 10/10 rungs before the sweep, all rung readbacks OK, full text in M1's own runlog); mistral launch crashed on dangling pool symlink (KeyError kuq_unknowns_all:1000). Recovery: agent rebuilding pools from committed builder scripts + datasets, acceptance = exact sha256 match vs M1 staging_manifest pins, restage as LOCAL COPIES, then resume mistral. Blast-radius inventory agent enumerating per-experiment losses (regenerable-deterministic / regenerable-GPU / lost). PI-directed programmatic fix SHIPPED: PR #298 merged (aea361d5) — post-merge git hook auto-harvests all gitignored experiments/ data from every worktree into main's checkout on every pull/merge (symlinks materialized, newer-supersedes with prior preserved, --check mode gates worktree removal); first harvest copied 3,279 files including live M1 runlogs. Policy change: staged inputs are LOCAL COPIES, never cross-worktree symlinks.

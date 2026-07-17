@@ -126,8 +126,21 @@ def harvest(check_only: bool, quiet: bool) -> int:
         for rel in ignored_data_files(wt):
             if excluded(rel):
                 continue
+            # An experiments/<slug>/ dir may only be created in main once the
+            # experiment is merged (exp validate requires experiment.yaml);
+            # pre-merge harvests park under analysis/harvest/pending/ and are
+            # re-homed by a later harvest after the merge lands.
+            parts = rel.split("/")
+            unmerged_experiment = (
+                len(parts) > 2
+                and parts[0] == "experiments"
+                and not (main / "experiments" / parts[1] / "experiment.yaml").is_file()
+            )
             src = wt / rel
-            dest = main / rel
+            if unmerged_experiment:
+                dest = main / "analysis" / "harvest" / "pending" / rel
+            else:
+                dest = main / rel
             wt_name = wt.name
             if src.is_symlink():
                 target = src.resolve()
