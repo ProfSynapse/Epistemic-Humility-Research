@@ -21,6 +21,8 @@ related:
 - '[[gate-contribution-factorial]]'
 - '[[ungated-vs-gated-dose-matched]]'
 - '[[qwen35-4b-midband-doubt-snap]]'
+- '[[margin-mapping]]'
+- '[[qwen-midband-commitment-margins-miss-separation-floor]]'
 relationships:
 - type: related_to
   target: '[[commitment-margin]]'
@@ -64,6 +66,18 @@ relationships:
   confidence: high
   evidence:
   - docs/research/margin-theory-framework.md (section 1, anchor result 2)
+- type: related_to
+  target: '[[margin-mapping]]'
+  target_id: experiment:margin-mapping
+  confidence: high
+  evidence:
+  - experiments/margin-mapping/AMENDMENT.md (Outcome, resolved 2026-07-17)
+- type: related_to
+  target: '[[qwen-midband-commitment-margins-miss-separation-floor]]'
+  target_id: mechanism:qwen-midband-commitment-margins-miss-separation-floor
+  confidence: high
+  evidence:
+  - experiments/margin-mapping/AMENDMENT.md (Outcome, resolved 2026-07-17)
 ---
 
 The margin theory of epistemic state is the program's working framework
@@ -90,6 +104,17 @@ registers the vocabulary revision: doubt direction to known-unknown
 direction, doubt gate to KU readout gate, caution write to boundary push,
 confab propensity split into baseline confab rate vs commitment margin,
 with a four-part earnability criterion for mentalistic names.
+
+**Claim 1 status (first empirical test, 2026-07-17):** the
+[[margin-mapping]] experiment (M1) measured per-row margins directly and
+resolved FALSIFIED as registered at the qwen mid-band operating point: the
+censoring-aware observable separation bound came out 2.0 against the
+registered 2.5 floor, while setpoint placement (Claim 2's mid-band
+geometry), retrodiction of the anchor rates, and construct integrity all
+passed (see [[qwen-midband-commitment-margins-miss-separation-floor]]).
+Margins are real and correctly placed; the registered quantitative
+separation was not met at ladder resolution. Mistral was void by
+instrument loss and Claims 1-2 remain untested there.
 
 **Lineage:** working framework, not a governed claims surface; the prose
 home is `docs/research/margin-theory-framework.md` and every experimental
