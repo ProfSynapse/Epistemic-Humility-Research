@@ -16,10 +16,11 @@ prediction: >-
   2.5 floor with both legs passing, and Claim 1's separation holds as
   registered at the qwen mid-band operating point.
 falsifier: >-
-  With all gates valid, the merged confab median lands above the 0.6x rung
-  (point-estimate bound in {2.0, 2.1429, 2.3077}): the separation failure is
-  real at fine resolution, and Claim 1 remains falsified at this operating
-  point with the quantization excuse removed.
+  With all gates valid, the merged confab median lands above the 0.6x rung,
+  giving a point-estimate bound below 2.5 (the median can fall between rungs,
+  so failing bounds are not restricted to on-rung values): the separation
+  failure is real at fine resolution, and Claim 1 remains falsified at this
+  operating point with the quantization excuse removed.
 checkpoint:
   repo: Qwen/Qwen3.5-4B
   revision: 851bf6e806efd8d0a36b00ddf55e13ccb7b8cd0a

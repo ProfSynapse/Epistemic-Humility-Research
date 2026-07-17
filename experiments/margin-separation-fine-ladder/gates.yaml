@@ -21,7 +21,7 @@ integrity:
   SC2_grading_integrity:
     - calibration slice only: pool sha256 + opaque-id list committed before grading; graded-file sha256 committed before unblind (enforced in code)
     - CG1: clear-negative agreement >= 0.95; clear-positive >= 0.60; >= 25 clear-positive decoys; VOID_REGRADE_ONCE remedy
-    - detector-vs-adjudication disagreement on the calibration slice <= 0.05 on the abstention bit; exceedance voids the refined margin values for criterion use
+    - detector-vs-adjudication disagreement on the calibration slice <= 0.05 on the abstention bit; exceedance voids the WHOLE instrument (no criterion verdict, reported straight), never a fallback to carried M1 values
   SC3_coverage_and_merge_audit:
     - zero silent drops; every refined row appears at every new rung or is reported missing with reason
     - merge audit: every one of the 400 confab rows' final margin value traceable to exactly one provenance class (M1-carried idx<=4, M1-carried idx>=6/censored, or M1b-refined) with counts asserted equal to the pre-committed bracket distribution (181 / 166 / 53)
@@ -31,11 +31,11 @@ integrity:
 criteria:
   P1_separation_censoring_aware:
     leg_a: median merged confab margin <= family reference setpoint (1.0x)
-    leg_b: '>= 50% of known rows neither tipped nor collapsed at the highest pre-collapse rung (per the Decision record known-row option)'
+    leg_b: '>= 50% of known rows neither tipped nor collapsed at the highest pre-collapse rung (evaluated on M1 runlogs reused byte-identically under RG0; Decision record item 3, DECIDED Option 1)'
     observable_bound_floor: 2.5                 # UNCHANGED from M1
     numerator: 18.912281876699964               # the 1.5x rung (highest pre-collapse rung; M1 collapse evidence)
     both_legs_required: true
   C1_construct_integrity:
-    non_monotone_ceiling_refined_subset: 0.05   # over the 53-row merged fine sequence; M1's confab ceiling applied to the refined class
+    non_monotone_ceiling_refined_subset: 0.05   # fraction gate over the 53-row merged fine sequence: flagged/53 <= 0.05, so at most 2 flagged rows pass and 3 fail; M1's confab ceiling applied to the refined class
     calibration_agreement_max_disagreement: 0.05
     on_failure: instrument void, no framework claim evaluated, reported straight

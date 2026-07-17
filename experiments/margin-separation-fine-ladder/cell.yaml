@@ -72,13 +72,22 @@ population:
     generations: 212                            # 53 rows x 4 new rungs; 2.8% of M1's total budget
   merge_rule:
     idx_le_4: carry M1 tipping value unchanged (margin <= 0.5x; every fine point in (0.5x, 0.75x] is above it, fully determined by M1)
-    idx_ge_6_or_censored: carry M1 tipping value unchanged (margin > 0.75x; the fine window cannot affect it)
+    idx_ge_6_or_censored: >-
+      carry M1 tipping value unchanged (margin > 0.75x; the fine window
+      cannot affect it). Implementation note: censored rows carry
+      tipping_idx null with tipping_censored true; partition on
+      tipping_censored FIRST, then on the integer index, never on a bare
+      tipping_idx >= 6 comparison.
     refined_53: >-
       fine tipping = smallest rung among {0.55, 0.6, 0.65, 0.7} x reference
       with refused_final AND well_formed; if none, retain M1's 0.75x value.
       First tipping dose is the margin (M1 monotonicity convention). The 0.5x
       (not tipped) and 0.75x (tipped) endpoints are carried from M1, never
-      regenerated for the merge.
+      regenerated for the merge. A refined row whose four fine generations
+      are all non-well-formed also retains the M1 0.75x value under the
+      "if none" clause; such rows are additionally flagged and reported
+      descriptively as fine-collapse (conservative direction: retaining the
+      larger 0.75x value pushes toward FAIL, not toward the prediction).
     bias_note: >-
       conditioning on M1's tipping_idx is not circular for the fine-median
       question: idx<=4 and idx>=6 rows' relation to every fine point is
@@ -89,10 +98,10 @@ population:
   known_rows:
     n: 360
     option: >-
-      TO-DECIDE at sign (Decision record item 3). Option 1 (recommended)
-      reuses M1's 1.5x and 2.0x runlogs byte-identically under RG0 at zero new
-      generations; Option 2 regenerates both rungs fresh (720 generations) as
-      an M1b-native replicate.
+      DECIDED (PI, 2026-07-17): Option 1. M1's 1.5x and 2.0x runlogs reused
+      byte-identically under RG0 at zero new generations (Decision record
+      item 3; the rejected regenerate-fresh option carried a numerator hazard
+      flagged in pre-sign red-team review).
     runlog_pins:
       rung_1p5: {path: experiments/margin-mapping/analysis/runlog/qwen35_4b__rung_1p5.jsonl, sha256: c9382f8822533f13c41778c82c270c0bf5d5b5c0ceaf02a0980814fd627b3450}
       rung_2p0: {path: experiments/margin-mapping/analysis/runlog/qwen35_4b__rung_2.jsonl, sha256: b91ebb43900ed1c8db26e19ee584995a3a3210670619df0ff67217ec66842fa1}
@@ -123,7 +132,11 @@ readout:
     sampling_seed: 48260720
     decoys: clear-positive and clear-negative per the factorial recipe, CG1 floors unchanged
     blinding: opaque ids, pool hash committed before grading, graded-file hash committed before unblind (SC2)
-    disagreement_gate: 0.05 on the abstention bit; exceedance voids the refined margin values for criterion use
+    disagreement_gate: >-
+      0.05 on the abstention bit; exceedance voids the WHOLE instrument (no
+      criterion verdict, reported straight), never a fallback to the carried
+      M1 values, which would mechanically reproduce M1's median and score a
+      detector-drift fault as a substantive FAIL
     validity_basis: >-
       M1's CG1 PASS validated detector_v2 at this exact operating point on a
       700-row slice stratified across rungs including 0.5x and 0.75x; the new
@@ -141,8 +154,8 @@ criteria:
     observable_bound: highest pre-collapse rung dose / median merged confab margin
     numerator: 18.912281876699964               # 1.5x rung; M1 evidence: well-formedness collapse is total at the 2.0x rung in both roles, and the fine rungs (all <= 0.75x) cannot create a new collapse cliff above 1.5x
     observable_bound_floor: 2.5                 # UNCHANGED from M1; point estimate is the pass/fail surface, CI reported descriptively (M1 precedent)
-    achievable_bounds: [2.0, 2.1429, 2.3077, 2.5, 2.7273, 3.0]
-    equivalent_form: bound >= 2.5 if and only if median merged confab margin <= 7.564912750679985 (the 0.6x rung)
+    on_rung_bounds: [2.0, 2.1429, 2.3077, 2.5, 2.7273, 3.0]   # the point estimate falls BETWEEN these when the median (mean of the 200th/201st order statistics) straddles two rungs; this list is not an exhaustive outcome enumeration
+    equivalent_form: bound >= 2.5 if and only if median merged confab margin <= 7.564912750679985 (the 0.6x rung); this exact comparison is the pass/fail surface and handles between-rung medians without ambiguity
     both_legs_required: true
 
 analysis:
@@ -160,10 +173,14 @@ analysis:
 # Preflight and drift guard (Decision record item 7)
 # ===========================================================================
 preflight:
-  gpu_preflight: 4 rows at each of the lowest (0.55x) and highest (0.7x) new rungs; readback verified against setpoint; generate refuses without a pass marker
+  gpu_preflight: >-
+    4 rows at each of the lowest (0.55x) and highest (0.7x) new rungs (the
+    first 4 refined rows by lexicographic row_key); readback verified against
+    setpoint; generate refuses without a pass marker
   dose_readback: per-row readback within RELATIVE 0.005 of the commanded dose at every rung, OR within ABSOLUTE 0.005 x reference_dose_abs (M1's PI-approved amended rule, carried verbatim)
   rg0_drift_check: >-
-    8 of the 53 refined rows regenerated at the 0.75x rung and byte-compared
-    against M1's committed rung_0p75 runlog completions before the full run;
-    any mismatch halts the run (substrate/environment drift), reported in
-    NOTEBOOK, never patched silently.
+    the 8 refined rows with lexicographically smallest row_key regenerated at
+    the 0.75x rung and byte-compared against M1's committed rung_0p75 runlog
+    completions before the full run; any mismatch halts the run
+    (substrate/environment drift), reported in NOTEBOOK and lifted to the PI,
+    never a silent retry or patch.

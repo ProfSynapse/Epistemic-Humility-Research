@@ -40,9 +40,12 @@ first reproduced M1's committed median, CI, and censoring counts exactly):
 
 1. **Fine ladder (Candidate C)**: multipliers {0.5, 0.55, 0.6, 0.65, 0.7,
    0.75, 1.5, 2.0} x reference_dose_abs. Only four rungs are newly generated
-   (0.55x to 0.7x); the rest reuse M1 runlogs under RG0. Achievable bounds
+   (0.55x to 0.7x); the rest reuse M1 runlogs under RG0. On-rung bounds
    become {2.0, 2.1429, 2.3077, 2.5, 2.7273, 3.0}: the floor is exactly
-   achievable and the bound is no longer forced to jump over it.
+   achievable and the bound is no longer forced to jump over it. The median
+   can also fall between rungs (mean of two order statistics), so this set is
+   the on-rung enumeration, not an exhaustive outcome list; the pass/fail
+   surface is the exact median-vs-0.6x-rung comparison.
 
 2. **Conditional population with a registered merge rule**: only the 53 confab
    rows whose M1 tipping fell in (0.5x, 0.75x] receive new generations (212
@@ -76,15 +79,17 @@ rationale), or TO-DECIDE (open for the PI at sign).
    from the pinned margin dataset: 181 rows at idx <= 4, 53 at idx 5, 166 at
    idx >= 6 or censored. Merge rule as in `cell.yaml`; SC3 asserts the
    181/166/53 partition at analysis time.
-3. **Known-row evidence** (TO-DECIDE): Option 1 (recommended) reuses M1's
-   1.5x and 2.0x runlogs byte-identically under RG0 (zero new generations;
-   leg (b) and the collapse-cliff evidence carry over; pins already in
-   cell.yaml). Option 2 regenerates both rungs fresh (720 generations) as an
-   M1b-native replicate that hedges against artifact staleness. The
-   orchestrator recommends Option 1: the RG0 rule is the same one M1 itself
-   used for the dose-0 baseline, the artifacts are pinned by sha256, and the
-   rg0_drift_check (item 7) independently verifies that the substrate still
-   reproduces M1 outputs byte-identically before the full run.
+3. **Known-row evidence** (DECIDED, PI 2026-07-17): Option 1. M1's 1.5x and
+   2.0x runlogs are reused byte-identically under RG0 (zero new generations;
+   leg (b) and the collapse-cliff evidence carry over; pins in cell.yaml).
+   The RG0 rule is the same one M1 itself used for the dose-0 baseline, the
+   artifacts are pinned by sha256, and the rg0_drift_check (item 7)
+   independently verifies that the substrate still reproduces M1 outputs
+   byte-identically before the full run. The rejected Option 2 (regenerate
+   both rungs fresh, 720 generations) carried an unstated numerator hazard
+   flagged in pre-sign red-team review: a fresh run whose collapse pattern
+   differed from M1 would move the highest pre-collapse rung while the gate
+   constants stayed frozen. Under Option 1 reuse this cannot arise.
 4. **Floor and pass/fail convention** (CONVENTION): observable bound floor
    2.5, point estimate as the pass/fail surface, CI descriptive. Carried
    verbatim from M1's registered criterion and its resolved adjudication
@@ -102,15 +107,20 @@ rationale), or TO-DECIDE (open for the PI at sign).
    fine window; the new rungs are interior interpolations. JUDGMENT: a fresh
    100-row blinded calibration slice (25 per new rung, seed 48260720, same
    CG1 floors and 0.05 disagreement gate, hash-commit-before-unblind) is run
-   on the new generations as a drift check; exceedance voids the refined
-   margin values for criterion use.
+   on the new generations as a drift check; exceedance voids the WHOLE
+   instrument (no criterion verdict, reported straight). It is never a
+   fallback to the carried M1 values: reverting the refined rows to M1's
+   0.75x values would reproduce M1's median mechanically and score a
+   detector-drift instrument fault as a substantive FAIL.
 7. **Drift guards** (JUDGMENT): mandatory GPU preflight at the 0.55x and 0.7x
-   rungs (standing directive), M1's amended dose-readback rule carried
-   verbatim, and a NEW rg0_drift_check: 8 of the 53 refined rows regenerated
-   at 0.75x and byte-compared to M1's pinned runlog before the full run; any
-   mismatch halts. Rationale: the merge rule leans on M1 endpoint values
-   being reproducible on today's environment; this check converts that
-   assumption into evidence for 8 generations of cost.
+   rungs (standing directive; the 4 preflight rows per rung are the first 4
+   refined rows by lexicographic row_key), M1's amended dose-readback rule
+   carried verbatim, and a NEW rg0_drift_check: the 8 refined rows with
+   lexicographically smallest row_key regenerated at 0.75x and byte-compared
+   to M1's pinned runlog before the full run; any mismatch halts and lifts to
+   the PI, never a silent retry. Rationale: the merge rule leans on M1
+   endpoint values being reproducible on today's environment; this check
+   converts that assumption into evidence for 8 generations of cost.
 8. **Seeds** (CONVENTION): bootstrap 48260719, calibration slice 48260720,
    continuing the registered lineage increment (M1: 48260714-16, M2:
    48260717-18).
@@ -132,11 +142,14 @@ failure is attributed to ladder quantization.
 
 ## Falsifier
 
-With all gates valid, the merged confab median lands above the 0.6x rung
-(point-estimate bound in {2.0, 2.1429, 2.3077}), failing the 2.5 floor at
-fine resolution: the separation failure is real, not a quantization artifact,
-and Claim 1 remains falsified at this operating point with the resolution
-excuse removed.
+With all gates valid, the merged confab median lands above the 0.6x rung,
+giving a point-estimate bound below 2.5: the separation failure is real, not
+a quantization artifact, and Claim 1 remains falsified at this operating
+point with the resolution excuse removed. Note the median of 400 rows is the
+mean of the 200th and 201st order statistics and can fall between rungs, so
+failing bounds are not restricted to on-rung values; the pass/fail surface is
+the exact comparison median <= 7.564912750679985, which handles between-rung
+medians without ambiguity.
 
 ## Gates
 
@@ -146,15 +159,16 @@ amended OR-rule) plus mandatory GPU preflight at the new-rung extremes; SC2
 blinded calibration with CG1 floors and the 0.05 disagreement gate; SC3
 coverage plus the 181/166/53 merge-provenance audit. Criterion: P1 both legs
 plus bound >= 2.5 (point estimate). Construct: C1 non-monotone ceiling 0.05
-on the refined subset's merged fine sequence; on_failure instrument void,
-reported straight.
+on the refined subset's merged fine sequence, evaluated as a fraction
+(flagged/53 <= 0.05, so at most 2 flagged rows pass and 3 fail); on_failure
+instrument void, reported straight.
 
 ## Predictions scoreboard
 
 Registered at sign, after design-info disclosure (Decision record item 9).
 
-| Predictor | Slot 1: P1 separation at fine resolution | Slot 2: merged-median landing rung |
-|-----------|------------------------------------------|-------------------------------------|
+| Predictor | Slot 1: P1 separation at fine resolution | Slot 2: merged-median dose band |
+|-----------|------------------------------------------|----------------------------------|
 | orchestrator | | |
 | user | | |
 
