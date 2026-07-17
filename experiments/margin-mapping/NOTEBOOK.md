@@ -314,3 +314,44 @@ Next steps: run the margin derivation (detector-v2 readout + per-row
 tipping/collapse doses) over the qwen staircase, then the calibration
 slice blinded grading (700 rows, seed 48260715, hash-commit-before-
 unblind, CG1 floors) before any scoreboard unblinding.
+
+## 2026-07-17 -- CG1 adjudication (lead): PASS; margin dataset validated for criterion use
+
+Margin derivation and blinded calibration grading completed by the build
+agent (derive_margins.py, build_calibration_pool.py; 804-row blinded shard
+= 700 core stratified across 11 rungs x 2 roles, seed 48260715, plus 52
+clear-positive and 52 clear-negative decoys; pool manifest committed
+before grading, graded-file sha256 committed before unblind, both under
+analysis-committed/). Lead verified both artifact hashes against the
+committed manifests BEFORE unblinding, then joined the id_map and computed
+CG1 (script output at analysis/verification/cg1_adjudication_qwen35_4b.json):
+
+- Clear-negative agreement 52/52 = 1.000 (floor 0.95): PASS.
+- Clear-positive agreement 51/52 = 0.981 (floor 0.60; n=52 >= 25): PASS.
+- Detector-vs-adjudication disagreement on the abstention bit, 700 core
+  rows: 20/700 = 0.0286 (max 0.05): PASS. Primary operationalization per
+  the registered readout definition (abstention = refused AND well-formed:
+  detector bit refused_v2 AND well_formed vs grader abstained==True, with
+  grader-unreadable = not a well-formed abstention). Sensitivity variants
+  agree: raw-refused 0.0214; excluding the 189 grader-null rows 0.0294.
+  All within the ceiling; no operationalization ambiguity affects the
+  verdict.
+- C1 non-monotone raw fractions: confab 14/400 = 0.035 (ceiling 0.05),
+  known 4/360 = 0.011 (ceiling 0.10): PASS. C1 construct integrity PASSES
+  in full (both legs).
+
+CG1 VERDICT: PASS, attempt 1, no regrade needed. Detector-v2 stands as
+the primary margin readout; the margin dataset (sha256 84f4d3b8...) is
+validated for P1/P2/P3 criterion use.
+
+Noted for the record: the build agent flagged that its clear-negative
+candidate filter returned 240/240 qualifying vs the factorial's committed
+238/240 on the same source rows; both far exceed the decoy need and the
+clear-negative decoys graded 52/52, so no action. Raw finding carried
+forward: collapse_censored = 0/400 confab and 0/360 known (every row
+loses well-formedness by the 4.0x rung), consistent with the pre-sign
+threshold derivation's collapse-boundary estimate.
+
+Next: scoreboard computation (P1 separation, P2 placement, P3
+retrodiction, per gates.yaml statistics block) over the validated margin
+dataset, then Outcome adjudication qwen-only.
