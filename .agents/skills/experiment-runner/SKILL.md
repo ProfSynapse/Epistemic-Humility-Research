@@ -110,6 +110,29 @@ operation, then follow any further routing inside that reference.
   the persistence schema. Rationale and the H3 cautionary case live in the
   data-exhaust skill's "Build-time requirement" section. Containment is
   unchanged: text never leaves gitignored `analysis/`.
+- GPU smoke/preflight before every full generation run (PI standing directive
+  2026-07-16): before any full steering/generation run, execute a small-N
+  preflight on the SAME code path as the full run — a few rows per family at
+  the dose extremes (bottom rung, reference setpoint, top rungs), verifying
+  per-row readback against the commanded setpoint under the amendment's
+  registered tolerance and recording observed well-formedness at the extremes
+  as a collapse-location estimate. The full-run entrypoint REFUSES to start
+  unless the preflight wrote its pass marker (enforced in code, not by
+  convention), and live first-batch plus per-rung-completion assertions hard
+  abort mid-run on any readback violation. A preflight FAIL is a gate event
+  for the lead, never an operational retry: there is no retry-until-pass
+  (unlike CG1's explicit VOID_REGRADE_ONCE, readback has no registered retry
+  remedy), and any tolerance or rung change it motivates is a signed-config
+  amendment (repin, recorded reason, PI approval) made BEFORE generation.
+  Write tolerances with the instrument's physics in mind: bf16 readback
+  carries a roughly fixed ABSOLUTE error floor (~0.001-0.005 dose_abs
+  observed on Qwen3.5-4B hs20 / Mistral-7B hs16), so a purely RELATIVE
+  tolerance is unattainable at small absolute setpoints — prefer
+  "rel <= X OR abs <= X * reference_dose" so the gate keeps wiring-defect
+  detection power (defects like gain-squared exceed both bounds by >10x)
+  without tripping on quantization dust. Cautionary case: margin-mapping M1
+  (2026-07-17), whose preflight caught exactly this pre-run; NOTEBOOK entries
+  there record the full adjudication pattern.
 
 ## Matrix At A Glance
 
