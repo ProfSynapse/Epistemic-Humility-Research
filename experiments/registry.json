@@ -2208,7 +2208,10 @@
           "gates.yaml": "45ea8f4f525257b81dfc44179aa440ce6c5f33b5cbcc6eb5eae35236fd7f6ab4"
         }
       },
-      "kg": [],
+      "kg": [
+        "experiment:margin-separation-fine-ladder",
+        "mechanism:qwen-midband-margin-separation-is-instrument-resolution-limited"
+      ],
       "prediction": "The merged confab median margin falls at or below the 0.6x rung (7.564912750679985 dose_abs), the observable bound reaches the registered 2.5 floor with both legs passing, and Claim 1's separation holds as registered at the qwen mid-band operating point.",
       "question": "Was M1's censoring-aware separation failure (observable bound 2.0 vs floor 2.5) real, or an artifact of coarse ladder quantization that made the floor unreachable? At fine resolution inside the critical bracket (0.5x, 0.75x], does the merged confab median fall at or below the 0.6x rung where the bound reaches exactly 2.5?",
       "registered": true,

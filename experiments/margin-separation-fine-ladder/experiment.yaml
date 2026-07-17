@@ -41,4 +41,6 @@ verdict: 'qwen mid-band commitment-margin separation is instrument-resolution-li
   establishes that the miss is neither a clean quantization artifact nor a clean real
   separation but sits within the bf16 instrument''s own ~4% batch-composition classification
   noise. No separation criterion was computed; halted at RG0, PI-decided no rework.'
-kg: []
+kg:
+- experiment:margin-separation-fine-ladder
+- mechanism:qwen-midband-margin-separation-is-instrument-resolution-limited

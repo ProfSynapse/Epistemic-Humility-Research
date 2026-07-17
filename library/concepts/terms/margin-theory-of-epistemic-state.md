@@ -26,6 +26,8 @@ related:
 - '[[susceptibility-as-probe]]'
 - '[[qwen-midband-readout-and-susceptibility-channels-are-redundant]]'
 - '[[qwen-midband-verbalized-confidence-anti-tracks-answerability]]'
+- '[[margin-separation-fine-ladder]]'
+- '[[qwen-midband-margin-separation-is-instrument-resolution-limited]]'
 relationships:
 - type: related_to
   target: '[[commitment-margin]]'
@@ -100,6 +102,20 @@ relationships:
   evidence:
   - experiments/susceptibility-as-probe/AMENDMENT.md (Outcome, Descriptives;
     registered descriptive finding only, SC2 void)
+- type: related_to
+  target: '[[margin-separation-fine-ladder]]'
+  target_id: experiment:margin-separation-fine-ladder
+  confidence: high
+  evidence:
+  - experiments/margin-separation-fine-ladder/AMENDMENT.md (Outcome, resolved
+    2026-07-17 as null-result)
+- type: related_to
+  target: '[[qwen-midband-margin-separation-is-instrument-resolution-limited]]'
+  target_id: mechanism:qwen-midband-margin-separation-is-instrument-resolution-limited
+  confidence: high
+  evidence:
+  - experiments/margin-separation-fine-ladder/AMENDMENT.md (Outcome, resolved
+    2026-07-17; halted at RG0 drift check)
 ---
 
 The margin theory of epistemic state is the program's working framework
@@ -136,7 +152,16 @@ geometry), retrodiction of the anchor rates, and construct integrity all
 passed (see [[qwen-midband-commitment-margins-miss-separation-floor]]).
 Margins are real and correctly placed; the registered quantitative
 separation was not met at ladder resolution. Mistral was void by
-instrument loss and Claims 1-2 remain untested there.
+instrument loss and Claims 1-2 remain untested there. A signed fine-ladder
+retest, [[margin-separation-fine-ladder]] (M1b), set out to resolve whether
+that miss was quantization or real; it HALTED at its pre-registered RG0
+drift check (boundary-row completions diverged from M1's committed runlog
+under bf16 batched decoding) and was resolved null-result by PI decision
+without computing the separation criterion, establishing that qwen
+mid-band commitment-margin separation is instrument-resolution-limited at
+the boundary rather than cleanly quantization-limited or cleanly real (see
+[[qwen-midband-margin-separation-is-instrument-resolution-limited]]). M1's
+Claim 1 falsification stands.
 
 **Claim 3 status (first empirical test, 2026-07-17):** the
 [[susceptibility-as-probe]] experiment (M2) measured the readout channel

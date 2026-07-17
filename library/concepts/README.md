@@ -693,7 +693,7 @@ Atomic notes extracted from the library papers via the Agents-K1 ingestion skill
 - [[valence-arousal-subspace]] : A two-dimensional linear subspace in LLM activation space spanned by a recovered valence axis (pleasure-displeasure) and arousal axis (activ
 - [[world-model-hallucination-modes]] : A three-type taxonomy of failure modes in generative world models, each anchored to a different pipeline stage. Perceptual hallucination occ
 
-## Mechanisms (cause -> effect) (424)
+## Mechanisms (cause -> effect) (428)
 
 - [[abstention-generalization-failure]] : 'instruction-tuning for abstention on a narrow, homogeneous set of refusal expressions and task formats' **prevents** Abstention ability does not generalize to 
 - [[abstract-representations-enable-zero-shot-generalization]] : High degree of abstract (parallel) representation in ANN hidden layers, as measured by parallelism-score, indicating that compositional rule dimensions are enco
@@ -973,6 +973,10 @@ Atomic notes extracted from the library papers via the Agents-K1 ingestion skill
 - [[proper-scoring-sft-calibration-transfers-to-unseen-confidence-formats]] : Fine-tuning on numerical verbalized confidence (0-100%) using a proper scoring rule (tokenized Brier score) **enables** The resulting calibration transfers to l
 - [[question-difficulty-alone-predicts-llm-confidence]] : Training the auxiliary calibrator on the question text only, with the LLM's generated answer omitted. **enables** The calibrator already attains respectable cal
 - [[question-familiarity-draws-confabulation-at-matched-doubt]] : Higher surface familiarity of an unanswerable question (corpus-internal token frequency and neighbor proxies), with internal doubt level held fixed by caution-d
+- [[qwen-midband-commitment-margins-miss-separation-floor]] : In the margin-mapping experiment (M1), per-row commitment margins (the minimum ladder dose along the frozen Qwen3.5-4B hs20 c_hat direction, reference dose_abs 
+- [[qwen-midband-margin-separation-is-instrument-resolution-limited]] : M1 (margin-mapping)'s censoring-aware separation criterion failed at coarse ladder resolution (observable bound 2.0 against a 2.5 floor), but the coarse 10-rung
+- [[qwen-midband-readout-and-susceptibility-channels-are-redundant]] : In the susceptibility-as-probe experiment (M2), a 5-fold cross-fitted logistic combination of the frozen hs20 c_hat readout projection (fold seed 48260718) plus
+- [[qwen-midband-verbalized-confidence-anti-tracks-answerability]] : In the susceptibility-as-probe experiment (M2), one greedy verbalized-confidence elicitation (a frozen template asking for a 0-100 self-rated confidence integer
 - [[qwen3-4b-l34-dose200-write-non-selective-gate-supplies-selectivity]] : In ungated-vs-gated-dose-matched (H4), dosing every held-out row of the resolved doubt-gated caution snap unconditionally along its erase-write direction c_hat 
 - [[qwen35-4b-midband-window-transfers-to-heldout-pool]] : The hs20 mid-band doubt-gated caution operating point (frozen direction set, gate threshold, standardization scalars, and dose 8 x sigma_c), selected and fit in
 - [[qwen35-4b-midband-write-decouples-refusal-from-format-collapse]] : On Qwen/Qwen3.5-4B (bf16, hybrid linear-attention architecture), moving the doubt-gated caution erase-write snap from the registered late write site (hs30, mode
