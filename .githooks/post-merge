@@ -1,0 +1,7 @@
+#!/bin/sh
+# Fires after every merge (including fast-forward `git pull`) in any
+# worktree using core.hooksPath=.githooks. Harvests gitignored experiment
+# data from ALL worktrees into the main checkout so merged worktrees can be
+# removed without losing sole-copy row-level data. Never blocks the merge.
+python3 "$(git rev-parse --show-toplevel)/bin/harvest_worktree_data.py" --quiet || true
+exit 0
