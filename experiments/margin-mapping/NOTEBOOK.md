@@ -242,3 +242,75 @@ acceptance rule recorded pre-capture (commit 26589319). Delta pattern
 systematically different render/tokenize input in the ORIGINAL capture
 than with forward-pass noise; hypothesis only, not tested. Adjudication
 lifted to the PI.
+
+## 2026-07-17 -- hs16 forensics: no discrepancy found; PI-directed fallback to qwen-only scope
+
+Bounded forensics pass (PI-authorized, single diagnostic sweep, read-only)
+over the committed atlas -> RR -> RR2 lineage, comparing every capture
+parameter of the original mistral hs16 anchor capture against the failed
+reconstruction attempt. Result: NO discrepancy backed by committed
+file+line evidence. Model revision, render logic (byte-identical diff of
+render.py against render_jspace_atlas.py), tokenization
+(add_special_tokens=True), anchor position (len(token_ids)-1), layer/key
+convention (anchor__L16; provably insensitive to the --layers filter),
+engine (hf-batched), persist dtype (float32), compute dtype (default bf16
+both sides), FIT row filter and counts (874/255/214), fit seed (20260713),
+and row text (sha256-verified) all match. One evidentiary hole, not a
+mismatch: the reconstruction's actual GPU batch-capture invocation was
+never logged, so its batch size is unrecorded (original: 8, committed in
+capture_manifest.json); architecturally unlikely to be causal given
+hf_batched's per-row absolute positioning and masked attention.
+
+The STOP entry's earlier hypothesis (systematically different
+render/tokenize input in the original capture) is REFUTED by this pass:
+render and tokenize are confirmed identical on both sides. The surviving
+explanation is bf16 forward-pass non-determinism across separate runs,
+amplified by downstream threshold statistics (mu_d off ~1.1% via the
+unknown_refused group mean; sigma_c, which never touches that group,
+essentially exact). That is not a fixable parameter, which means the
+registered exact-sha256 acceptance leg is likely unreachable in
+principle. Per the pre-registered rule, no second reconstruction attempt
+was made and no generation was launched.
+
+ADJUDICATION (lead, executing the PI's pre-stated decision of 2026-07-17:
+"if nothing found or it still misses: fall back to qwen-only"): M1 is
+reduced to qwen35_4b-only scope. This is an instrument-loss scope
+reduction caused by the worktree-sweep incident, not a results-driven
+choice: no mistral staircase data beyond the 4-rung preflight exists, so
+nothing about mistral outcomes could have informed it. Scoreboard
+treatment at resolution: all mistral slots (separation, setpoint
+placement, retrodiction, and the mistral halves of the registered bands)
+are VOID_INSTRUMENT_LOSS and will not be scored for either predictor;
+qwen slots proceed unchanged. No gate, threshold, or prediction is
+altered. The mistral generation stage will not run; the dangling
+hs16_c_hat.json symlink stays in place as the incident record.
+
+## 2026-07-17 -- Qwen SC1/SC3 formal verification over the completed staircase
+
+Independent post-run verification (results-analyst agent; script and
+machine-readable summary under analysis/verification/; lead spot-checked
+the summary against the report). Registered gates read from gates.yaml
+(sha256 934cacae..., matches the experiment.yaml pin).
+
+- SC1 (readback, amended rule rel<=0.005 OR abs<=0.005*reference): PASS.
+  7,600 dosed rows checked (10 rungs x 760; dose-0 baseline correctly out
+  of scope), 0 rows failed both legs. Max rel_delta 0.007768 (0.0625x
+  rung, passes on abs leg at 0.000485*reference -- the registered bf16
+  floor pattern); max abs fraction 0.006714 (4.0x rung, passes on rel leg
+  at 0.001679). Recomputed per-rung maxima match the harness's own
+  live-sc1 log lines to 6 decimals at every rung.
+- SC3(a) (zero silent drops): PASS. 11/11 files (baseline + 10 rungs) at
+  exactly 760 rows (400 confab + 360 known); zero duplicate, missing, or
+  unexpected row_keys against the committed subsample manifest (seed
+  48260714) at every rung.
+- SC3(b) (censored-per-role reporting) and SC3(c) (non-monotone class):
+  NOT YET COMPUTABLE -- both are properties of the derived per-row margin
+  dataset, which has not been produced yet. Blocked on the margin
+  derivation step, not failures.
+- Integrity: dose targets equal multiplier x reference_dose_abs at all 10
+  rungs; gen log clean, no aborts or errors.
+
+Next steps: run the margin derivation (detector-v2 readout + per-row
+tipping/collapse doses) over the qwen staircase, then the calibration
+slice blinded grading (700 rows, seed 48260715, hash-commit-before-
+unblind, CG1 floors) before any scoreboard unblinding.
