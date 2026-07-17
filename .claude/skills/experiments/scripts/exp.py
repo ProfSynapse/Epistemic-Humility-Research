@@ -261,6 +261,25 @@ _GATES_TEMPLATE = """# TODO: replace this placeholder with pre-stated gates.
 
 # --- validation --------------------------------------------------------------
 
+def _is_untracked_data_input(rel: str) -> bool:
+    """True when an input path lives under an experiment's gitignored data dir.
+
+    Each experiment carries an untracked ``analysis/`` scratch dir and a
+    gitignored ``directions/`` data dir (see the module docstring). Inputs that
+    point into either are run-materialized data: present in the canonical
+    checkout and sha256-verified by SC0 staging at run time, but legitimately
+    absent in a fresh linked worktree or a clean clone. Their absence must not
+    block a commit that does not even touch that experiment. Tracked locations
+    such as ``analysis-committed/`` are NOT matched and stay strictly enforced.
+    """
+    parts = Path(rel).parts
+    return (
+        len(parts) >= 4
+        and parts[0] == EXPERIMENTS_DIRNAME
+        and parts[2] in ("analysis", "directions")
+    )
+
+
 def _validate_manifest(root: Path, slug: str, mpath: Path, data: dict) -> list[str]:
     """Return a list of human-readable problems for one manifest (empty = ok)."""
     problems: list[str] = []
@@ -381,11 +400,26 @@ def _validate_manifest(root: Path, slug: str, mpath: Path, data: dict) -> list[s
                 f"{new[:12]}... does not match pin {str(pins[rel])[:12]}..."
             )
 
-    # Inputs: repo-relative paths that must exist.
+    # Inputs: repo-relative paths that must exist. Inputs under an experiment's
+    # gitignored data dirs (``analysis/`` scratch, ``directions/`` data) are
+    # run-materialized: present in the canonical checkout and sha256-verified by
+    # SC0 staging at run time, but legitimately absent in a fresh linked worktree
+    # or clean clone. A missing one is a non-fatal warning (to stderr) rather
+    # than a commit-blocking error, so a commit that does not touch that
+    # experiment is never blocked by data it never needed. Tracked inputs
+    # (configs, analysis-committed manifests, dataset cards) must still exist.
     for rel in inputs:
         ipath = root / str(rel)
-        if not ipath.exists():
-            err(f"input path does not exist: {rel}")
+        if ipath.exists():
+            continue
+        if _is_untracked_data_input(str(rel)):
+            print(
+                f"exp validate: warning: {slug}: gitignored data input absent "
+                f"(ok in a worktree/clean clone; sha-staged at run time): {rel}",
+                file=sys.stderr,
+            )
+            continue
+        err(f"input path does not exist: {rel}")
 
     # KG ids must resolve to real library nodes.
     if kg:
