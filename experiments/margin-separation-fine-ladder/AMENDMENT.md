@@ -1,6 +1,6 @@
 # Margin separation at fine ladder resolution (M1b)
 
-Status: draft (not signed; do not launch as confirmatory evidence).
+Status: SIGNED 2026-07-17 (PI approval in conversation; instrument pinned at sign). Pre-sign red-team review applied; see NOTEBOOK 2026-07-17.
 
 ## Motivation and posture
 
@@ -165,12 +165,21 @@ instrument void, reported straight.
 
 ## Predictions scoreboard
 
-Registered at sign, after design-info disclosure (Decision record item 9).
+Registered 2026-07-17 at sign, after design-info disclosure (Decision record
+item 9: P(pass) 0.6727 empirical / 0.5311 probit, shown to both predictors
+before calls). Slot 2 bands: deep pass (<= 7.0), marginal pass ((7.0, 7.565]),
+marginal fail ((7.565, 8.3]), deep fail (> 8.3), in dose_abs.
 
 | Predictor | Slot 1: P1 separation at fine resolution | Slot 2: merged-median dose band |
 |-----------|------------------------------------------|----------------------------------|
-| orchestrator | | |
-| user | | |
+| orchestrator | PASS (bound reaches 2.5) | marginal pass (7.0, 7.565] |
+| user | PASS (bound reaches 2.5) | marginal pass (7.0, 7.565] |
+
+The calls coincide on both slots this time; both predictors worked from the
+same disclosed design info and the coincidence is recorded straight. The
+scoreboard's differentiating value is nil for this experiment; its
+honesty-forcing value (calls registered before any generation exists) is
+unchanged.
 
 ## Outcome
 
