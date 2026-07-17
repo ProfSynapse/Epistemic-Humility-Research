@@ -1,6 +1,10 @@
 # Evidence-responsiveness: the naming test (M4)
 
-Status: SIGNED 2026-07-17 (PI conditional authorization in conversation: sign unless the pre-sign red-team found something prediction-changing; it did not. Instrument pinned at sign). Pre-sign red-team applied; see NOTEBOOK 2026-07-17.
+Status: RESOLVED historical (VOID-BY-DESIGN, superseded) 2026-07-17. Signed
+earlier the same day, then found void at build before any generation: the
+true_answer/false_answer arms need a per-row gold answer, but the 400 confab rows
+are all KUQ world-unknown questions with no answer field. Never run. Superseded by
+`margin-evidence-responsiveness-worldknown`. See Outcome.
 
 ## Motivation and posture
 
@@ -192,5 +196,32 @@ the projection test without changing what "split vs earned" means).
 
 ## Outcome
 
-Filled at resolve. Record the verdict, the gate results, and the one-sentence
-summary that also goes into `verdict:` in the manifest.
+VOID-BY-DESIGN, never run. Resolved historical (superseded) 2026-07-17.
+
+At build time, before any generation, the harness found no data to inject: the
+true_answer arm requires the row's gold answer and the false_answer arm requires
+a category-matched gold answer of another row, but the 400 confab rows are all
+`kuq_unknowns_all:*` (KUQ world-unknown questions), whose source dataset carries
+no answer field at all. This was verified three ways: every confab row_key has the
+`kuq_unknowns_all` prefix; the staged auxiliary rows have empty aliases for all
+confab rows; the raw `datasets/kuq/unknowns_all.jsonl` key set contains no
+`answer`/`gold`/`aliases` field. KUQ "unknown" questions are unknown-to-anyone by
+construction, so there is no true answer to supply.
+
+Root cause: earnability criterion (d) ("supplying the true answer in-context
+should collapse the projection and lengthen the margin") presupposes a
+world-known answer, but the qwen c_hat direction is fit on world-unknown
+questions, so (d) is ill-posed on its own fitting population. Criteria (a)-(c)
+stand for qwen; (d) is unadjudicated here.
+
+The gap survived sign and a full pre-sign red-team because the self-blinded design
+derivation reproduced the reused instrument's median and AUROC exactly but never
+touched the new arms' row text. Durable lesson (a pre-sign feasibility probe:
+verify every injected/consumed field exists and is non-empty on the
+test-population id list, allowed and required even under self-blinding) is
+captured in the experiment-runner skill.
+
+Superseded by `margin-evidence-responsiveness-worldknown`, which rebases the (d)
+test onto a world-known PopQA confab population where a true answer exists (the
+transfer direction reuses this same KUQ-fit c_hat to test whether the named
+"doubt" direction is evidence-responsive on that population).

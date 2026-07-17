@@ -2169,10 +2169,10 @@
       "question": "Does the qwen c_hat known-unknown direction satisfy earnability criterion (d)? That is, does supplying the true answer in-context both collapse the c_hat projection on a confab row (toward the known regime) and lengthen its commitment margin, specifically for the true answer over a false-answer placebo?",
       "registered": true,
       "slug": "margin-evidence-responsiveness",
-      "status": "signed",
+      "status": "historical",
       "title": "Evidence-responsiveness: the naming test (M4)",
       "type": "steer-cell",
-      "verdict": ""
+      "verdict": "Void-by-design (never run): the true_answer/false_answer arms require a per-row gold answer, but the 400 confab rows are all KUQ world-unknown questions whose source has no answer field (verified 3 ways). Criterion (d) 'supply the true answer' is ill-posed on a c_hat direction fit on world-unknown questions; (a)-(c) stand, (d) unadjudicated here. Superseded by margin-evidence-responsiveness-worldknown, which rebases the (d) test onto a world-known PopQA confab population where a true answer exists. Durable lesson (pre-sign feasibility probe) captured in the experiment-runner skill."
     },
     {
       "checkpoint": {
