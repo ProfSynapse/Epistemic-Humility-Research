@@ -58,8 +58,8 @@ first reproduced M1's committed median, CI, and censoring counts exactly):
 
 3. **Known rows**: leg (b) depends only on the 1.5x/2.0x rungs, and 322/360
    known rows are right-censored above the top pre-collapse rung, so a fine
-   ladder for knowns buys nothing (derivation, known_row_analysis). The
-   Decision record leaves reuse-vs-regenerate as the one open PI choice.
+   ladder for knowns buys nothing (derivation, known_row_analysis). PI
+   decided reuse over regenerate (Decision record item 3, Option 1).
 
 Instrument configs pinned at sign: `cell.yaml`, `gates.yaml`.
 
