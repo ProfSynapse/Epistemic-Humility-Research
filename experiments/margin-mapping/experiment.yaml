@@ -1,7 +1,7 @@
 slug: margin-mapping
 title: 'Margin mapping: per-row tipping dose along the known-unknown direction'
 type: steer-cell
-status: signed
+status: falsified
 registered: true
 created_at: '2026-07-17T01:40:56Z'
 question: Do per-row commitment margins (minimum dose along the frozen c_hat that
@@ -39,5 +39,8 @@ instrument:
       absolute bound 0.005 x reference_dose_abs; deterministic bf16 readback floor
       at 0.0625x rung, diagnostic in analysis/preflight_diag/ and NOTEBOOK'
 inputs: []
-verdict: ''
+verdict: Qwen mid-band margins are mechanistically real and correctly placed (P2,
+  P3, C1 pass; retrodiction within 0.083) but the registered censoring-aware separation
+  criterion fails (observable bound 2.0 vs floor 2.5), falsifying framework Claim
+  1 as registered at this operating point; mistral is void by instrument loss.
 kg: []

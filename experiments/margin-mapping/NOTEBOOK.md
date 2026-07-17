@@ -355,3 +355,99 @@ threshold derivation's collapse-boundary estimate.
 Next: scoreboard computation (P1 separation, P2 placement, P3
 retrodiction, per gates.yaml statistics block) over the validated margin
 dataset, then Outcome adjudication qwen-only.
+
+## 2026-07-17 -- Scoreboard red-team review and lead adjudication (qwen-only)
+
+Scoreboard computed by a results-analyst agent (compute_scoreboard.py,
+results JSON sha256 419ed0a0...) over the CG1-validated margin dataset;
+lead independently re-derived the confab median (9.456, the 0.75x rung),
+the known survival count at 1.5x (252/360 = 0.700), and the collapse
+cliff (well-formed 0.76/0.81 at 1.5x, exactly 0.000 both roles at 2.0x)
+from the row-level file before review. A red-team reviewer then audited
+the computation and the criterion text adversarially (scratch under
+analysis/_redteam_scratch/), per the standing rule that paper-changing
+nulls get red-teamed before any verdict is recorded.
+
+Red-team findings, accepted by the lead:
+
+- All computed numbers reproduce exactly; no computation bug affects any
+  criterion.
+- The P1 observable-bound numerator question is NOT a live ambiguity. The
+  criterion term "highest pre-collapse rung" is used identically in the
+  50-percent clause and the numerator, and it is only satisfiable at the
+  last coherent rung (1.5x, dose 18.912; the 2.0x rung is 0.000
+  well-formed, 0/360 survival). The floor-derivation prose ("expected
+  bound 3.4, range 3.06-3.67") reproduces only with the collapse-boundary
+  dose 25.216 as numerator, which is a one-rung labeling ERROR in the
+  derivation, present at derivation time too (the doubt-snap ladder's
+  collapse rung, not its last coherent rung). Correcting the error makes
+  the FAIL more robust: the true derivation-time expectation was bound
+  2.52 with CI floor 2.30 against a floor of 2.5, near-zero headroom.
+  Adopting the erroneous numerator post-result would be a goalpost move
+  and would also break the criterion's own 50-percent clause. The
+  registered pass/fail surface is the point estimate (no CI-based wording
+  exists), and the bound is rung-quantized: 2.0 or 3.0 are the only
+  achievable values near the floor.
+- Hygiene, non-invalidating: derive_margins.py records censored rows at
+  the top LADDER rung (50.433), matching Decision record item 7
+  ("censored at top rung") but not gates.yaml SC3's "top pre-collapse
+  rung" wording; criterion legs use rung indices, so no criterion is
+  affected; the descriptive known median (50.433) is a top-rung artifact
+  and is reported lower-bound-only. The P3 rung-inclusion floor
+  (well_formed >= 0.80) is a carried-over convention from the pre-sign
+  derivation script, not a signed value; sensitivity check (including the
+  1.5x confab rung) moves permuted_confab error 0.075 -> 0.071, no flip.
+  P3 is a lenient test: permuted anchors are only weakly out-of-sample
+  relative to M1's own ladder, and baseline anchors are predicted exactly
+  zero by construction. The doubt-snap dose-8 in-sample anchor was
+  correctly excluded. cell.yaml line 89 has an unquoted-colon YAML quirk
+  (signed in; config.py loads it permissively); reproducers take note.
+
+LEAD ADJUDICATION of the registered criteria, qwen35_4b (mistral all
+slots VOID_INSTRUMENT_LOSS per the 2026-07-17 scope-reduction entry):
+
+- P1 separation (censoring-aware): FAIL. Leg (a) passes (median confab
+  margin 9.456 <= setpoint 12.608; bootstrap CI [6.304, 9.456]). The
+  50-percent clause of leg (b) passes (0.700 of knowns neither tipped nor
+  collapsed at the 1.5x rung, Wilson CI [0.651, 0.745]). The observable
+  bound fails: 18.912 / 9.456 = 2.0 < floor 2.5 (bootstrap CI [2.0,
+  3.0]). Framework Claim 1 is FALSIFIED at the qwen mid-band operating
+  point as registered. No rescoring lane exists; the result stands.
+- P2 setpoint placement: PASS. Setpoint 12.608 lies between the confab
+  median (9.456) and the known censored region (> 18.912).
+- P3 retrodiction: PASS under both parametric forms (probit primary, max
+  abs error 0.083 vs tolerance 0.10; permuted_confab 0.618 pred vs 0.693
+  obs, permuted_known 0.063 vs 0.065, baseline_confab 0.000 vs 0.083,
+  baseline_known 0.000 vs 0.000). Recorded with the red-team leniency
+  caveat above.
+- C1 construct integrity: PASS (CG1 attempt-1 pass recorded earlier;
+  non-monotone 0.035 confab / 0.011 known vs ceilings 0.05 / 0.10).
+
+Descriptives (never pass/fail): fitted median ratio probit 42.18 [9.02,
+187.05], logistic 16.82 [4.46, 58.41]; confab median 9.456 (IQR
+1.576-18.912), tipping-censored 92/400; known tipping-censored 322/360
+(0.894), median censored above the coherent regime; collapse-censored
+0/760 (total collapse at 2.0x both roles).
+
+Predictions scoreboard adjudication (registered calls vs outcome):
+
+- Separation qwen: orchestrator PASS, PI PASS; actual FAIL. BOTH WRONG.
+- Placement qwen: both PASS; actual PASS. Both right.
+- Retrodiction (qwen half): both PASS; actual PASS. Both right.
+- Slot 4 (H4 qualitative): both PASS; actual PASS (setpoint 12.608 below
+  the known censored tail at 18.912; total collapse regime at finite
+  ladder dose 2.0x). Both right.
+- Orchestrator bands: observable bound 3.0-3.7 vs realized 2.0 MISS;
+  fitted ratio 15-60 vs probit 42.18 HIT; known censored fraction at top
+  coherent rung 0.80-0.95 vs 0.700 MISS. PI axis-implied qwen bound
+  >= 2.5 MISS. Both predictors' band expectations were one rung
+  optimistic, traceable to the same derivation numerator error.
+- Differentiating slots (mistral separation and placement): VOID, never
+  adjudicable; no winner is declared between the predictors' rival
+  mistral readings.
+
+The Outcome section is filled and the experiment resolves with status
+falsified (primary falsifier fired). The margin dataset, CDF fits, and
+retrodiction machinery remain valid instruments for M2-M4 design, which
+must now account for a confab margin distribution sitting one rung closer
+to the setpoint than the pre-sign fit expected.

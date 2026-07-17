@@ -269,7 +269,72 @@ results.
 
 ## Outcome
 
-Filled at resolve. Record the verdict, the gate results, per-family margin
-distributions (medians, IQRs, censored fractions, non-monotone fractions),
-the retrodiction table (predicted vs observed per anchor), and the
-one-sentence summary that also goes into `verdict:` in the manifest.
+Resolved 2026-07-17, qwen35_4b only. Mistral7b_v03 is VOID_INSTRUMENT_LOSS:
+its hs16 direction vector was destroyed in the 2026-07-17 worktree-sweep
+incident, reconstruction failed the pre-registered byte-identity acceptance
+rule (bf16 forward-pass non-determinism; forensics found no capture-
+convention discrepancy), and the PI directed the qwen-only fallback before
+any mistral staircase data existed. All mistral criterion and scoreboard
+slots are unscored; the loss is incident-driven, not results-driven.
+
+Criterion verdicts (qwen35_4b; full adjudication trail and red-team review
+in NOTEBOOK 2026-07-17):
+
+- **P1 separation (censoring-aware): FAIL.** Median confab margin 9.456
+  dose_abs (bootstrap 95% CI [6.304, 9.456]) satisfies leg (a) against the
+  setpoint 12.608, and 70.0% of known rows (Wilson CI [0.651, 0.745])
+  neither tipped nor collapsed at the highest pre-collapse rung (1.5x,
+  18.912 dose_abs; the 2.0x rung is 0.000 well-formed both roles),
+  satisfying the 50% clause. The observable ratio lower bound fails:
+  18.912 / 9.456 = 2.0 < floor 2.5 (bootstrap CI [2.0, 3.0]; the bound is
+  rung-quantized, so 2.0 and 3.0 are the only achievable values near the
+  floor). Framework Claim 1 is falsified at the qwen mid-band operating
+  point as registered. Red-team note: the floor-derivation prose's
+  "expected bound 3.4" contained a one-rung numerator error (it used the
+  collapse-boundary dose 25.216 while naming the highest pre-collapse
+  rung); under the correct numerator the derivation-time expectation was
+  2.52 against the 2.5 floor, and the realized confab median landed one
+  rung above the fitted expectation (9.456 vs 7.506). The criterion as
+  written is unambiguous and the floor does not move.
+- **P2 setpoint placement: PASS.** The setpoint 12.608 lies between the
+  confab median (9.456) and the known censored region (above 18.912).
+- **P3 retrodiction: PASS** under both parametric forms (tolerance 0.10
+  absolute). Probit primary: permuted_confab predicted 0.618 vs observed
+  0.693 (err 0.075); permuted_known 0.063 vs 0.065 (0.002);
+  baseline_confab 0.000 vs 0.083 (0.083); baseline_known 0.000 vs 0.000
+  (0.000). Logistic sensitivity agrees (max err 0.083). Doubt-snap dose-8
+  known anchor excluded as in-sample per registration. Caveat recorded:
+  permuted anchors are only weakly out-of-sample relative to M1's own
+  ladder, and baseline anchors are predicted zero by construction, so P3
+  is supportive rather than strongly independent.
+- **C1 construct integrity: PASS.** CG1 attempt 1: clear-negative 52/52,
+  clear-positive 51/52, detector-vs-adjudication disagreement 20/700 =
+  0.029 vs ceiling 0.05. Non-monotone: confab 14/400 = 0.035 (ceiling
+  0.05), known 4/360 = 0.011 (ceiling 0.10).
+
+Margin distributions (qwen35_4b, dose_abs): confab median 9.456, IQR
+1.576-18.912, tipping-censored 92/400 (0.230); known tipping-censored
+322/360 (0.894), median above the coherent regime (recorded at the top
+ladder rung 50.433 per Decision record item 7, lower-bound-only),
+IQR 18.912-50.433; collapse-censored 0/760, with total well-formedness
+collapse at the 2.0x rung (25.216) in both roles. Fitted median ratio,
+descriptive only: probit 42.18 [9.02, 187.05], logistic 16.82 [4.46,
+58.41]. Non-monotone fractions as under C1.
+
+Predictions scoreboard adjudication (qwen slots; mistral slots void):
+both predictors called qwen separation PASS and were WRONG. Both were
+right on qwen placement, retrodiction, and the H4 qualitative slot
+(setpoint below the known censored tail; total collapse regime at finite
+ladder dose). Orchestrator bands: observable bound 3.0-3.7 MISS (realized
+2.0), fitted ratio 15-60 HIT (probit 42.18), known censored fraction at
+top coherent rung 0.80-0.95 MISS (0.700). PI axis-implied qwen bound
+>= 2.5 MISS. Both predictors' band expectations inherited the derivation
+numerator error. The differentiating mistral slots are void; no winner
+is declared.
+
+One-sentence summary (manifest `verdict:`): qwen mid-band margins are
+mechanistically real and correctly placed (P2, P3, C1 pass; retrodiction
+within 0.083) but the registered censoring-aware separation criterion
+fails (observable bound 2.0 vs floor 2.5), falsifying framework Claim 1
+as registered at this operating point; mistral is void by instrument
+loss.

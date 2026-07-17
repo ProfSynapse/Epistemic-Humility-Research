@@ -2174,10 +2174,10 @@
       "question": "Do per-row commitment margins (minimum dose along the frozen c_hat that flips a row to well-formed abstention) separate confab from known-correct rows at the mid-band operating points, with a gap containing the current setpoints, and do the measured margin distributions retrodict the three anchor results (factorial, doubt-snap, H4 overdrive) from their doses alone?",
       "registered": true,
       "slug": "margin-mapping",
-      "status": "signed",
+      "status": "falsified",
       "title": "Margin mapping: per-row tipping dose along the known-unknown direction",
       "type": "steer-cell",
-      "verdict": ""
+      "verdict": "Qwen mid-band margins are mechanistically real and correctly placed (P2, P3, C1 pass; retrodiction within 0.083) but the registered censoring-aware separation criterion fails (observable bound 2.0 vs floor 2.5), falsifying framework Claim 1 as registered at this operating point; mistral is void by instrument loss."
     },
     {
       "checkpoint": {
