@@ -6,4 +6,139 @@ in `experiment.yaml`.
 
 ## Entries
 
-- (add dated entries as the experiment progresses)
+### 2026-07-16 -- Harness build + mandatory GPU preflight: PREFLIGHT FAILED (both families), no full run launched
+
+Built the M1 harness under `harness/` (config.py, common.py, grader.py,
+detector_v2.py/detector_v2_patterns.yaml, gen_lib.py, render.py, steer_lib.py,
+row_pool.py, sc1_checks.py, dose_ladder.py, staging.py, subsample.py,
+run_margin.py, test_margin_smoke.py), reusing the gate-contribution-factorial
+harness lineage (steer_lib/render/gen_lib/detector stack read in full and
+either copied byte-identically or logic-ported with only the namespaced
+render env vars changed: `MARGIN_RENDER_MODEL`/`MARGIN_RENDER_REVISION`
+instead of `GATEFACT_RENDER_MODEL`/`GATEFACT_RENDER_REVISION`). Initialized
+the `synaptic-tuner` submodule in this worktree (was uninitialized) via
+`git submodule update --init --reference <main repo>/synaptic-tuner`.
+
+**Known cell.yaml anomaly (documented, not touched):** line 89 (the
+`disagreement_gate` prose value under `readout.calibration_slice`) contains
+an unquoted `remedy: ...` colon that breaks `yaml.safe_load` with a
+`ParserError`. Confirmed present in the byte-identical, hash-pinned copy
+(sha256 matches `experiment.yaml`'s pin exactly), so this is a genuine
+authoring bug that was signed in, not staleness. `config.py`
+`_load_cell_yaml_permissive()` works around it by quoting that one line's
+value IN MEMORY ONLY before parsing; the on-disk file was never edited.
+`gates.yaml` parses cleanly.
+
+**SC0 staging:** all 6 reused artifacts (qwen baseline runlog, qwen question
+pool, mistral baseline runlog, mistral question pool, mistral hs16 c_hat,
+qwen hs20 c_hat) staged and sha256-verified byte-identical against the
+factorial's own committed `staging_manifest.json` (hard-fail assertion in
+code, `staging.py`). Detector stack (`detector_v2.py`,
+`detector_v2_patterns.yaml`, `grader.py`) copied byte-identically from the
+factorial and live-reverified. RG0 byte-repro passed for both families'
+baseline runlogs.
+
+**SC0 subsample:** confab subsample n=400/family drawn with the registered
+seed 48260714 (distinct from the factorial's own 46260714), plus the full
+known pool (360 qwen / 382 mistral) committed as opaque row_key lists to
+`analysis-committed/subsample_ids_<family>.json`. Deterministic under the
+fixed seed (smoke-tested).
+
+**CPU smoke suite:** 29/29 passed
+(`/home/profsynapse/miniconda3/bin/python3 -m pytest test_margin_smoke.py -v`),
+covering config/YAML pin verification (including the line-89 workaround),
+dose-ladder computation against the cell.yaml reference doses, sigma/gain
+non-conflation at every rung (same defect class the factorial fixed
+2026-07-16), subsample determinism, SC0 staging hash-assertion logic, and
+RunLog resume-from-checkpoint behavior.
+
+**GPU preflight (SC1, mandatory, PI standing directive 2026-07-16): FAILED
+for BOTH families.** 4 rows (same rows across all 4 rung-points -- a
+build-time interpretation, not a spec value) dosed at each of 0.0625x, 1.0x,
+3.0x, 4.0x. Identical failure shape in both families: at the BOTTOM rung
+(0.0625x) exactly 1 of 4 dosed rows misses the relative-0.005 readback
+tolerance (qwen: row `kuq_unknowns_all:1039`, rel_delta 0.006773; mistral:
+row `kuq_unknowns_all:1018`, rel_delta 0.006601 -- both roughly 33-36% over
+the 0.005 bar). All three higher rung-points (1.0x, 3.0x, 4.0x) passed
+cleanly in both families, worst rel_delta 0.0004-0.0019, well inside
+tolerance. This reads as a genuine dose-precision effect at small absolute
+setpoints (qwen 0.0625x = 0.788 dose_abs, mistral 0.0625x = 0.229 dose_abs)
+rather than a wiring defect (contrast with the factorial's gain-squared bug,
+which produced enormous, unmistakable misses, not a single-row near-miss) --
+the readback measurement appears to carry a roughly fixed absolute noise
+floor that becomes a larger RELATIVE error at the ladder's smallest
+setpoint. Per the pre-registered rule (mandatory GPU preflight, hard stop on
+any readback miss), NO PASS marker was written for either family; per
+`run_margin.py`'s refusal check, `generate-family` will refuse to start for
+either family until this is resolved. Did not retry, adjust tolerance, or
+change rows/rungs -- reporting the sensor-gate failure straight per standing
+instruction and returning to the lead for adjudication.
+
+**Collapse-location evidence (descriptive, from the preflight rows
+themselves):** well-formedness was 4/4 (100%) at 0.0625x and 1.0x and 0/4
+(0%) at 3.0x and 4.0x, in BOTH families -- consistent with the factorial's
+prior qwen collapse evidence (well_formed 0.000 at dose_abs 25.2 = 2.0x) and
+now the first direct collapse evidence for mistral (no prior ladder existed
+for it). This is preflight-scale (n=4) evidence only, not a criterion
+readout.
+
+No full run was launched (`generate-family` was never invoked with
+`--i-know-this-runs-on-gpu`). GPU memory was confirmed released (`nvidia-smi`
+0 MiB used) after each preflight and before the next.
+
+## 2026-07-17 ~02:55 UTC -- Lead adjudication of the SC1 preflight failure (pre-generation)
+
+The mandatory preflight FAILED the registered SC1 readback gate (relative
+0.005 at every rung) in both families: 1 of 4 rows per family at the
+0.0625x rung only (qwen kuq_unknowns_all:1039 rel 0.006773 / abs 0.00534
+dose_abs; mistral kuq_unknowns_all:1018 rel 0.006601 / abs 0.00151). All 24
+row-checks at 1.0x/3.0x/4.0x passed at rel 0.0004-0.0019. Reading of the
+full per-row table: the readback error carries a small, roughly fixed
+ABSOLUTE component (0.0004-0.0053 dose_abs across rows) that is invisible
+at 1x and above but dominates the RELATIVE criterion at the bottom rung
+(targets 0.788 qwen / 0.229 mistral). Worst actual mis-dose is 0.04% of the
+family reference dose on a 2x-spaced ladder; a wiring defect of the class
+SC1 exists to catch (rung mapping, sign, gain -- compare the factorial's
+gain-squared bug) would exceed the observed deltas by more than an order of
+magnitude at every rung.
+
+Adjudication decisions, recorded before any staircase generation:
+
+1. The registered gate stands as written tonight. The readback tolerance
+   was NOT a pre-authorized launch-time knob (the amendment authorizes only
+   the mistral top-rung adjustment), so amending gates.yaml is a PI
+   decision, not a lead decision. The full run does NOT launch overnight.
+   (An edit to gates.yaml was additionally blocked by the session
+   permission classifier; per standing protocol the block is honored and
+   the decision lifted to the PI rather than worked around.)
+2. No retry-until-pass. SC1 has no registered retry remedy (contrast CG1's
+   explicit VOID_REGRADE_ONCE), so the first preflight result stands as the
+   gate outcome. A rerun of the preflight command will not be used to
+   obtain a PASS marker even if it would pass.
+3. A read-only diagnostic (separate output tree analysis/preflight_diag/,
+   new script harness/diag_readback.py, no gate-state writes) is measuring
+   (a) repeatability of the two failing rows' deltas across 3 fresh passes
+   and (b) the abs-delta distribution over 12 additional rows per family at
+   0.0625x/0.125x/0.25x, to discriminate deterministic quantization from
+   stochastic measurement noise for the morning decision.
+
+PROPOSAL FOR PI (morning): amend gates.yaml SC1 readback rule to
+"rel_delta <= 0.005 OR abs_delta <= 0.005 x family reference_dose_abs",
+then bin/exp repin margin-mapping, mirror the OR-bound in
+harness/sc1_checks.py + harness/config.py, re-run the preflight fresh under
+the amended rule, and launch the two family staircases. The OR-bound keeps
+>10x detection margin against every wiring-defect signature while removing
+only the bottom-rung sensitivity to the absolute noise floor. Alternative
+options if preferred: (a) drop the 0.0625x rung (loses CDF resolution below
+the expected confab median, requires ladder change + repin), or (b) accept
+per-row readback flagging at the bottom rung and censor flagged rows in
+analysis (keeps gate text but adds an analysis rule; weakest option, moves
+complexity downstream). Whichever way, no criterion surface (P1/P2/P3/C1)
+is touched.
+
+Collapse observation from the preflight (descriptive, n=4/rung-point):
+well-formed 4/4 at 0.0625x and 1.0x, 0/4 at 3.0x and 4.0x, both families.
+Consistent with the doubt-snap qwen collapse at 2.0x; first direct mistral
+collapse evidence. The mistral top-rung authorized knob is NOT exercised:
+the collapse boundary lies in (1.0x, 3.0x], which the ladder already
+brackets with the 1.5x and 2.0x rungs.
