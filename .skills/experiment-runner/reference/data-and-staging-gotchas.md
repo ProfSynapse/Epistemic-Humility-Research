@@ -79,3 +79,15 @@ Read for dataset identity, leakage, recipe materialization, and local staging is
   A prepared local cell must copy `Trainers/<method>`, `Trainers/shared`,
   top-level `shared`, `tuner`, and the staged dataset; copying only the method
   trainer dir fails at `ModuleNotFoundError: No module named 'Trainers.shared'`.
+
+- Before signing or staging an amendment that injects a NEW field (gold answer,
+  alias, distractor donor, per-row label), confirm the field exists and is
+  non-empty ON THE TEST-POPULATION id list, not just somewhere under `datasets/`.
+  KUQ `unknowns_all` (the source of the 400-row confab population in the margin
+  cascade) has NO answer or alias field at all; its rows are world-unknown by
+  construction. M4 (`margin-evidence-responsiveness`) was signed with a
+  "supply the true answer" arm against exactly that population, and the gap was
+  caught only at build time. Existence/coverage checks on an injected field are
+  feasibility probes, not headline quantities, so run them even under a
+  self-blinding rule. See `amendment-vs-lab-notebook.md`, "Pre-sign feasibility
+  probe."
