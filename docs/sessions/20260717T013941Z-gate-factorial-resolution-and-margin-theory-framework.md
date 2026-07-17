@@ -4,7 +4,7 @@ session_id: 20260717T013941Z-gate-factorial-resolution-and-margin-theory-framewo
 title: Gate factorial resolution and margin theory framework
 status: active
 created_at: '2026-07-17T01:39:41Z'
-updated_at: '2026-07-17T01:40:00Z'
+updated_at: '2026-07-17T02:24:29Z'
 question: What did the gate-contribution factorial settle, and what framework drives
   the next experiment series?
 tags:
@@ -68,6 +68,48 @@ checkpoints:
   decisions: []
   next_steps: []
   signals: {}
+- id: 004-checkpoint
+  at: '2026-07-17T02:11:48Z'
+  kind: checkpoint
+  title: Checkpoint
+  summary: 'M1 draft hardened pre-sign: threshold derivation (results-analyst, CPU-only)
+    committed under margin-mapping analysis-committed/threshold_derivation/. Ladder
+    cut 64x to 4x (doubt-snap hs20 collapse at dose_abs 25.2 = 2x reference); criterion
+    reformulated censoring-aware (fitted known median 229.7 dose_abs exceeds collapse,
+    so raw median ratio unobservable; observable-bound floor 2.5 derived); retrodiction
+    restricted to permuted+baseline anchors, tolerance 0.10 derived; non-monotone
+    ceilings 0.05/0.10 derived; n_confab 400 confirmed. Every Decision-record knob
+    labeled DERIVED or JUDGMENT. Commits 8eb24dac + 506050c7 on exp/margin-mapping.
+    Awaiting PI: 7 knob decisions + both predictors'' scoreboard calls.'
+  evidence: []
+  run_ids: []
+  commands: []
+  decisions: []
+  next_steps: []
+  signals: {}
+- id: 005-checkpoint
+  at: '2026-07-17T02:24:29Z'
+  kind: checkpoint
+  title: Checkpoint
+  summary: 'M1 margin-mapping SIGNED (worktree exp/margin-mapping, commit 34a1332f,
+    pushed). cell.yaml + gates.yaml pinned via bin/exp sign (476463c6 / 7eb74eed).
+    Predictions registered pre-generation: PI calls qwen PASS / mistral FAIL on separation
+    and setpoint placement, retrodiction PASS both; orchestrator calls PASS on all
+    four with bands (observable bound qwen 3.0-3.7, mistral 2.5-4.5; fitted ratio
+    qwen 15-60, mistral 8-80; known censored fraction qwen 0.80-0.95, mistral 0.60-0.90).
+    Differentiating slots: mistral separation + placement. Decision record resolved
+    at sign; single authorized launch knob = mistral top-rung adjustment if preflight
+    shows collapse below 3x, NOTEBOOK-recorded pre-run. PI authorized overnight launch
+    on free local 3090 (''get this running'', going to bed). Arc: harness-builder
+    agent building staging + smokes + mandatory GPU preflight now (no generation,
+    no commits); lead commits SC0 manifests at the boundary, then launches full two-family
+    staircase detached with RunLog checkpointing (~4.5h/family).'
+  evidence: []
+  run_ids: []
+  commands: []
+  decisions: []
+  next_steps: []
+  signals: {}
 ---
 # Gate factorial resolution and margin theory framework
 
@@ -99,3 +141,13 @@ _No summary yet._
 - at: `2026-07-17T01:40:00Z`
 - kind: `decision`
 - summary: Vocabulary revision registered in framework note section 3: doubt direction -> known-unknown direction; doubt gate -> KU readout gate; caution write -> boundary push; confab propensity split into baseline confab rate vs commitment margin; new term boundary anisotropy. Governed docs keep historical names; KG ids additive-only with aliases. Mentalistic names earnable via 4-part criterion (evidence-responsiveness test M4 is the open leg). Experiment cascade M1-M6 defined; M1 margin mapping is next amendment; confirmatory gate-floor replication deprioritized. KG updates dispatched: commitment-margin + boundary-anisotropy terms, operating-point-dependence synthesis mechanism, framework term node term:margin-theory-of-epistemic-state.
+### 004-checkpoint - Checkpoint
+
+- at: `2026-07-17T02:11:48Z`
+- kind: `checkpoint`
+- summary: M1 draft hardened pre-sign: threshold derivation (results-analyst, CPU-only) committed under margin-mapping analysis-committed/threshold_derivation/. Ladder cut 64x to 4x (doubt-snap hs20 collapse at dose_abs 25.2 = 2x reference); criterion reformulated censoring-aware (fitted known median 229.7 dose_abs exceeds collapse, so raw median ratio unobservable; observable-bound floor 2.5 derived); retrodiction restricted to permuted+baseline anchors, tolerance 0.10 derived; non-monotone ceilings 0.05/0.10 derived; n_confab 400 confirmed. Every Decision-record knob labeled DERIVED or JUDGMENT. Commits 8eb24dac + 506050c7 on exp/margin-mapping. Awaiting PI: 7 knob decisions + both predictors' scoreboard calls.
+### 005-checkpoint - Checkpoint
+
+- at: `2026-07-17T02:24:29Z`
+- kind: `checkpoint`
+- summary: M1 margin-mapping SIGNED (worktree exp/margin-mapping, commit 34a1332f, pushed). cell.yaml + gates.yaml pinned via bin/exp sign (476463c6 / 7eb74eed). Predictions registered pre-generation: PI calls qwen PASS / mistral FAIL on separation and setpoint placement, retrodiction PASS both; orchestrator calls PASS on all four with bands (observable bound qwen 3.0-3.7, mistral 2.5-4.5; fitted ratio qwen 15-60, mistral 8-80; known censored fraction qwen 0.80-0.95, mistral 0.60-0.90). Differentiating slots: mistral separation + placement. Decision record resolved at sign; single authorized launch knob = mistral top-rung adjustment if preflight shows collapse below 3x, NOTEBOOK-recorded pre-run. PI authorized overnight launch on free local 3090 ('get this running', going to bed). Arc: harness-builder agent building staging + smokes + mandatory GPU preflight now (no generation, no commits); lead commits SC0 manifests at the boundary, then launches full two-family staircase detached with RunLog checkpointing (~4.5h/family).
