@@ -2150,16 +2150,22 @@
       "falsifier": "Median margin ratio below the separation floor or its bootstrap 95% CI includes 1.0 (Claim 1 falsified); or the setpoint does not sit between the medians in either family (Claim 2 falsified); or retrodicted anchor rates miss by more than the registered tolerance; or the non-monotone fraction exceeds its ceiling or the detector-vs-adjudication calibration gate fails (instrument void, reported straight). Thresholds resolve at sign in the Decision record and never move after results.",
       "inputs": [],
       "instrument": {
-        "configs": [],
+        "configs": [
+          "cell.yaml",
+          "gates.yaml"
+        ],
         "modules": [],
-        "pins": {}
+        "pins": {
+          "cell.yaml": "476463c6c7153af4fb996f4434df3b6dfd1f8b4a6e36b29b69fe31d580090da4",
+          "gates.yaml": "7eb74eedc693f0dcde3023cd0fc41bbaa80d051e3698905626fc343925460580"
+        }
       },
       "kg": [],
       "prediction": "Median known margin exceeds median confab margin by at least the separation floor in both families, the family setpoint lies between the two medians, the margin CDFs retrodict the factorial and doubt-snap arm rates within tolerance, and the ladder top exhibits the collapse regime that explains H4's overdrive non-selectivity.",
       "question": "Do per-row commitment margins (minimum dose along the frozen c_hat that flips a row to well-formed abstention) separate confab from known-correct rows at the mid-band operating points, with a gap containing the current setpoints, and do the measured margin distributions retrodict the three anchor results (factorial, doubt-snap, H4 overdrive) from their doses alone?",
       "registered": true,
       "slug": "margin-mapping",
-      "status": "draft",
+      "status": "signed",
       "title": "Margin mapping: per-row tipping dose along the known-unknown direction",
       "type": "steer-cell",
       "verdict": ""

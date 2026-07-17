@@ -1,9 +1,11 @@
 # Margin mapping: per-row tipping dose along the known-unknown direction
 
-Status: draft (not signed; do not launch as confirmatory evidence). All
-sign-time knobs are marked TO-DECIDE and resolve at sign with PI decisions
-recorded in the Decision record; no threshold moves after any result is
-known.
+Status: SIGNED 2026-07-17 (bin/exp sign; cell.yaml + gates.yaml pinned in
+experiment.yaml). All sign-time knobs resolved in the Decision record;
+predictions registered in the scoreboard below before any generation. No
+threshold moves after any result is known. Launch authorized by the PI on
+the free local 3090 ("get this running", 2026-07-16), GPU preflight
+mandatory before the full run.
 
 Keep this document the prose home for the experiment. The machine state lives in
 `experiment.yaml` and is never duplicated here.
@@ -195,7 +197,13 @@ Criterion gates: separation floor, setpoint placement, retrodiction
 tolerance, non-monotone ceiling, calibration-slice agreement floor (all
 TO-DECIDE values resolve at sign).
 
-## Decision record (TO-DECIDE; resolves at sign)
+## Decision record (drafted as TO-DECIDE; RESOLVED at sign, 2026-07-17)
+
+Resolution: the PI registered scoreboard predictions and directed launch
+("get this running"); all seven knobs adopt the derived values where
+DERIVED and the drafter proposals where JUDGMENT, lead-confirmed, recorded
+below. The mistral top-rung preflight adjustment (item 1) is the single
+authorized launch-time knob.
 
 Knob values were re-derived pre-sign from existing artifacts where the data
 allows (`analysis-committed/threshold_derivation/`; script and report
@@ -239,12 +247,25 @@ existing artifacts). All resolve at sign with PI decisions.
 
 ## Predictions scoreboard
 
-Registered at sign, before any generation. No edits after results.
+Registered at sign (2026-07-17), before any generation. No edits after
+results. PI calls stated verbatim in conversation: slot 1 "Qwen pass mistral
+fail same with 2", slot 3 "pass both", slot 4 "pass" (recorded as
+axis-implied bands, no independent numeric band registered).
 
-| Predictor | Margins separate (ratio at or above floor) | Setpoint placement | Retrodiction within tolerance | Band for median margin ratio (qwen / mistral) |
+| Predictor | Separation (censoring-aware, per family) | Setpoint placement (per family) | Retrodiction within 0.10 | Bands |
 |-----------|------|------|------|------|
-| orchestrator | | | | |
-| user | | | | |
+| orchestrator | qwen PASS, mistral PASS (uncertain) | qwen PASS, mistral PASS | PASS both | observable bound qwen 3.0-3.7, mistral 2.5-4.5; fitted ratio qwen 15-60, mistral 8-80; known censored fraction at top coherent rung qwen 0.80-0.95, mistral 0.60-0.90 |
+| PI | qwen PASS, mistral FAIL | qwen PASS, mistral FAIL | PASS both | axis-implied only: qwen observable bound >= 2.5, mistral < 2.5 |
+
+The differentiating slots are the MISTRAL separation and placement legs: the
+orchestrator predicts the censoring story holds on mistral (knowns survive
+to the top coherent rung), the PI predicts mistral fails both (consistent
+with reading mistral's S1 failure as generic boundary proximity: knowns tip
+by 2-4x and the censoring signature does not hold there). A mistral FAIL
+with qwen PASS would make boundary anisotropy (framework Claim 4) govern
+the family scope of Claim 1. Whichever way mistral lands, exactly one
+predictor's call survives; adjudicated in the Outcome, no edits after
+results.
 
 ## Outcome
 
