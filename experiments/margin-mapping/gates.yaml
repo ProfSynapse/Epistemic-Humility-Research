@@ -1,0 +1,46 @@
+# Gates for margin-mapping (M1). SIGNED 2026-07-17. Fixed before launch;
+# thresholds derived pre-sign (analysis-committed/threshold_derivation/) and
+# do not move after results.
+
+statistics:
+  rates: Wilson 95% CI (alpha 0.05) on every rate
+  medians_and_ratios: bootstrap 95% CI, 10000 resamples, seed 48260716
+  resampling_unit: row indices within role groups, families independent
+
+integrity:
+  SC0_provenance_staging:
+    - every reused artifact (c_hat directions, baseline runlogs, detector stack) staged with sha256 and verified against the factorial staging manifest (byte-identical)
+    - confab subsample opaque-id list committed BEFORE any generation (seed 48260714)
+    - RG0 byte-repro on the reused baseline rows in this pool
+  SC1_dose_and_preflight:
+    - per-row readback within RELATIVE 0.005 of the commanded ladder dose at every rung, OR within ABSOLUTE 0.005 x family reference_dose_abs (PI-approved amendment 2026-07-17, pre-generation: the mandatory preflight found a deterministic bf16-scale absolute readback floor of ~0.0004-0.0053 dose_abs that dominates the relative bar only at the 0.0625x rung; diagnostic in analysis/preflight_diag/ and NOTEBOOK 2026-07-17 entries; worst observed mis-dose 0.04% of reference; the OR-bound retains >10x detection margin against rung-mapping/sign/gain wiring defects)
+    - MANDATORY GPU preflight before the full run (PI standing directive 2026-07-16): per family, 4 rows at each of the bottom rung, the 1.0x rung, and the top two rungs; readback verified against setpoint; well-formedness observed at the top rungs recorded as the collapse-location estimate; generate refuses without a preflight pass marker
+    - live first-batch and per-rung-completion assertions with hard abort
+    - mistral top-rung adjustment (if preflight shows collapse below 3x) is an authorized knob recorded in NOTEBOOK before the full run, never after results
+  SC2_grading_integrity:
+    - calibration slice only: pool sha256 + opaque-id list committed before grading; graded-file sha256 committed before unblind (enforced in code)
+    - CG1 per shard: clear-negative agreement >= 0.95; clear-positive >= 0.60 per shard AND pooled; >= 25 clear-positive decoys per shard; VOID_REGRADE_ONCE remedy
+    - detector-vs-adjudication disagreement on the calibration slice <= 0.05 on the abstention bit; exceedance voids the margin dataset for criterion use
+  SC3_coverage:
+    - zero silent drops; every row appears at every rung or is reported missing with reason
+    - censored rows reported as censored per role (right-censor at top pre-collapse rung, never imputed)
+    - non-monotone rows flagged and reported as a class
+
+criteria:
+  P1_separation_censoring_aware:
+    leg_a: median confab margin <= family reference setpoint
+    leg_b: '>= 50% of known rows neither tipped nor collapsed at the highest pre-collapse rung'
+    observable_bound_floor: 2.5
+    both_legs_required: true
+    per_family: true
+  P2_setpoint_placement:
+    rule: family reference setpoint lies between the median confab margin and the known censored region
+    per_family: true
+  P3_retrodiction:
+    tolerance_abs: 0.10
+    anchors: permuted + baseline fired-conditional rates per cell.yaml; true-gate arms excluded
+    per_family: true
+  C1_construct_integrity:
+    non_monotone_ceiling: {confab: 0.05, known: 0.10}
+    calibration_agreement_max_disagreement: 0.05
+    on_failure: instrument void, no framework claim evaluated, reported straight

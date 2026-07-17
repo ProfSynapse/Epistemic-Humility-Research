@@ -1,0 +1,70 @@
+{
+  "files": [
+    {
+      "count": 1692,
+      "dest_path": "analysis/staged_inputs/qwen35_4b/baseline.jsonl",
+      "kind": "jsonl",
+      "matches_factorial_manifest_entry": "qwen_baseline_runlog",
+      "name": "qwen_baseline_runlog",
+      "sha256": "05280e75107cf287378a35666204b382b9e3a49c2a5ed0ac3aab7d6cfa262c45",
+      "source_path": "/home/profsynapse/code/ehr-worktrees/qwen35-midband-heldout/experiments/qwen35-4b-midband-heldout/analysis/runlog/baseline.jsonl",
+      "staged": true
+    },
+    {
+      "count": 1692,
+      "dest_path": "analysis/staged_inputs/qwen35_4b/heldout_rows_for_steer.jsonl",
+      "kind": "jsonl",
+      "matches_factorial_manifest_entry": "qwen_heldout_rows_for_steer",
+      "name": "qwen_heldout_rows_for_steer",
+      "note": "question text + aliases + role/split/category_canon per row_key; gitignored destination only",
+      "sha256": "76097bf7046cefa673280110a5d3b83aeaf0affbc98dc73078ecdec9785d178b",
+      "source_path": "/home/profsynapse/code/ehr-worktrees/qwen35-midband-heldout/experiments/qwen35-4b-midband-heldout/analysis/heldout_rows_for_steer.jsonl",
+      "staged": true
+    },
+    {
+      "count": 1694,
+      "dest_path": "analysis/staged_inputs/mistral7b_v03/baseline.jsonl",
+      "kind": "jsonl",
+      "matches_factorial_manifest_entry": "mistral_baseline_runlog",
+      "name": "mistral_baseline_runlog",
+      "sha256": "aa28a8b956997ed200d02bcbd855b8697f51f7f5c094fc08216e424d48e7986b",
+      "source_path": "/home/profsynapse/code/ehr-worktrees/rr2-mistral-confirm/experiments/rr2-mistral-adjudicated-refusal-confirm/analysis/runlog/heldout__baseline.jsonl",
+      "staged": true
+    },
+    {
+      "count": 3037,
+      "dest_path": "analysis/staged_inputs/mistral7b_v03/joined_rows_private.jsonl",
+      "kind": "jsonl",
+      "matches_factorial_manifest_entry": "mistral_joined_rows_private",
+      "name": "mistral_joined_rows_private",
+      "note": "question text + aliases + role/split per row_key, gitignored destination only",
+      "sha256": "21ac7bc2e6aab2f6446e57cace3c44ee33f63f018f04af776b84f45886a76fb6",
+      "source_path": "/home/profsynapse/code/ehr-worktrees/rr2-mistral-confirm/experiments/rr2-mistral-adjudicated-refusal-confirm/analysis/joined_rows_private.jsonl",
+      "staged": true
+    },
+    {
+      "count": null,
+      "dest_path": "analysis/staged_inputs/mistral7b_v03/directions/hs16_c_hat.json",
+      "kind": "json",
+      "matches_factorial_manifest_entry": "mistral_hs16_c_hat",
+      "name": "mistral_hs16_c_hat",
+      "sha256": "f6555f329208f74d15638cf0c2da2f936cfdf74844c889da0b9f89f202e1fc2d",
+      "source_path": "/home/profsynapse/code/ehr-worktrees/rr2-mistral-confirm/experiments/rr2-mistral-adjudicated-refusal-confirm/directions/hs16_c_hat.json",
+      "staged": true
+    },
+    {
+      "count": null,
+      "dest_path": null,
+      "kind": "json",
+      "matches_factorial_manifest_entry": "qwen_hs20_c_hat",
+      "name": "qwen_hs20_c_hat",
+      "sha256": "937d1bffe1924e73bca40a88c8096d7e01bb67c5b64286362196aa968e2c2e1f",
+      "source_path": "/home/profsynapse/code/ehr-worktrees/margin-mapping/experiments/qwen35-4b-midband-doubt-snap/analysis-committed/directions/hs20/c_hat.json",
+      "staged": false
+    }
+  ],
+  "n_committed_local": 1,
+  "n_files": 6,
+  "n_symlinked": 5,
+  "verified_against_factorial_staging_manifest": "/home/profsynapse/code/ehr-worktrees/gate-factorial/experiments/gate-contribution-factorial/analysis-committed/staging_manifest.json"
+}

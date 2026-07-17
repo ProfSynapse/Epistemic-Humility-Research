@@ -1,0 +1,17 @@
+{
+  "attempt": 1,
+  "committed_at_utc": "2026-07-17T15:07:11.114465Z",
+  "committed_before_unblind": true,
+  "family": "qwen35_4b",
+  "graded_file_path": "analysis/calibration/qwen35_4b_calibration_graded_attempt1.jsonl",
+  "graded_file_sha256": "3e8884af92018ac7ab0c5792867d19e02b9b8f2977527eacbc64192c22b96272",
+  "n_rows_graded": 804,
+  "note": "Committed per SC2_grading_integrity ('graded-file sha256 committed before unblind'). CG1 computation and id_map unblinding NOT performed by this step -- reserved for lead adjudication per standing instruction.",
+  "shard_id": "qwen35_4b_calibration",
+  "shard_pool_sha256_reference": "49cb5e2a42108309d929867e09fca5b65b4001745fe7e4958d46a851ea5ac70c",
+  "verdict_counts": {
+    "abstained_false": 454,
+    "abstained_null": 189,
+    "abstained_true": 161
+  }
+}

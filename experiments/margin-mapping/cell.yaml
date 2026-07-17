@@ -1,0 +1,107 @@
+# Cell config for margin-mapping (M1). SIGNED 2026-07-17.
+#
+# Purpose: per-row dose staircase along the frozen known-unknown direction
+# (c_hat) at both mid-band operating points, NO gate, measuring each row's
+# commitment margin (tipping dose) and collapse dose. Keystone of the
+# margin-theory cascade (docs/research/margin-theory-framework.md section 4).
+# Thresholds derived pre-sign from committed artifacts
+# (analysis-committed/threshold_derivation/threshold_derivation_report.json).
+
+analysis_kind: steer_generation_plus_cpu_grade
+posture:
+  tier: exploratory_instrument_mechanism
+  pooling: >-
+    reported separately; never pooled with the locked Phase 1 headline matrix
+    nor with any resolved steering amendment. Margin datasets feed cascade
+    stages M2-M5 as instrument inputs, not as claims.
+  cannot_alter_locked_verdicts: true
+
+# ===========================================================================
+# Families and frozen operating points (reused byte-identically from the
+# gate-contribution-factorial signed cell.yaml; RG0 on every reused artifact)
+# ===========================================================================
+families:
+  qwen35_4b:
+    role: primary
+    substrate: Qwen/Qwen3.5-4B
+    revision: 851bf6e806efd8d0a36b00ddf55e13ccb7b8cd0a
+    dtype: bf16
+    adapter: none
+    layer_hs_index: 20
+    directions_source: gate-contribution-factorial staged c_hat (analysis/staged_inputs/qwen35_4b/), byte-identical (sha256 verified vs the factorial staging manifest)
+    reference_dose_abs: 12.608187917799976     # the "1x" ladder unit; factorial cell.yaml line 47
+    snap_standardization: {mu_c: -4.031343053353048, sigma_c: 1.576023489724997}
+    pools:
+      confab_full: 1332                         # factorial held-out confab pool
+      known_full: 360
+    baseline_runlog: gate-contribution-factorial baseline arm (reuse byte-identical, RG0; this is the dose-0 rung)
+    prior_collapse_evidence: doubt-snap hs20 permuted-gate ladder, well_formed 0.000 at dose_abs 25.2 (2.0x reference)
+  mistral7b_v03:
+    role: secondary
+    substrate: mistralai/Mistral-7B-Instruct-v0.3
+    revision: c170c708c41dac9275d15a8fff4eca08d52bab71
+    dtype: bf16
+    adapter: none
+    layer_hs_index: 16
+    directions_source: gate-contribution-factorial staged c_hat (analysis/staged_inputs/mistral7b_v03/), byte-identical (sha256 verified vs the factorial staging manifest)
+    reference_dose_abs: 3.6653166050691756     # factorial cell.yaml line 72
+    pools:
+      confab_full: 1312
+      known_full: 382
+    baseline_runlog: gate-contribution-factorial baseline arm (reuse byte-identical, RG0; dose-0 rung)
+    prior_collapse_evidence: none (no prior mistral ladder; GPU preflight is the only collapse evidence; top rungs may move at launch under the authorized-knob rule, recorded in NOTEBOOK)
+
+# ===========================================================================
+# Ladder and populations (Decision record items 1-2, resolved at sign)
+# ===========================================================================
+ladder:
+  multipliers: [0.0625, 0.125, 0.25, 0.5, 0.75, 1.0, 1.5, 2.0, 3.0, 4.0]  # x reference_dose_abs per family
+  dose_zero_rung: reuse factorial baseline (RG0), graded fresh in this pool
+  write: {law: erase_write, position: anchor_onward, setpoint: multiplier x reference_dose_abs}
+  generation: {decode: greedy, batch_size: 4, runlog_checkpointing: true}
+
+population:
+  confab_subsample:
+    n_per_family: 400
+    seed: 48260714                              # registered permutation seed (lineage 46260714/47260714)
+    committed_before_generation: opaque-id list in analysis-committed/ (SC0)
+  known: full pool (360 qwen / 382 mistral)
+
+# ===========================================================================
+# Per-row deliverables
+# ===========================================================================
+deliverables:
+  tipping_dose: smallest ladder dose with refused_final AND well_formed; right-censored at top rung, never imputed
+  collapse_dose: smallest ladder dose with well_formed false; right-censored likewise
+  monotonicity_flag: abstention non-monotone across pre-collapse rungs; first tipping dose is the margin; flagged fraction is a registered readout
+
+# ===========================================================================
+# Readout (Decision record item 3, resolved at sign)
+# ===========================================================================
+readout:
+  primary: detector_v2 (byte-identical pins from the factorial stack)
+  refused_final_rule: detector_v2_refused OR adjudicated_abstention (calibration slice only)
+  calibration_slice:
+    per_family_rows: 700
+    sampling: registered seed 48260715, stratified across rungs and roles
+    decoys: clear-positive and clear-negative per the factorial recipe, CG1 floors unchanged
+    blinding: opaque ids, pool hash committed before grading, graded-file hash committed before unblind (SC2)
+    disagreement_gate: 0.05 on the abstention bit; exceedance voids the margin dataset for criterion use (remedy: separate signed full-pool adjudication follow-up, never a silent upgrade)
+
+# ===========================================================================
+# Criterion surfaces (floors in gates.yaml; derivation provenance committed)
+# ===========================================================================
+criteria:
+  separation_censoring_aware:
+    leg_a: median confab margin <= family reference setpoint (1.0x)
+    leg_b: median known row right-censored above the highest pre-collapse rung (>= 50% neither tipped nor collapsed)
+    observable_bound_floor: 2.5                 # highest pre-collapse rung / median confab margin; derived
+    fitted_ratio: reported descriptively only (probit primary, logistic sensitivity), never pass/fail
+  setpoint_placement: family reference setpoint between median confab margin and the known censored region
+  retrodiction:
+    tolerance_abs: 0.10                         # derived (max per-anchor 0.063, rounded up)
+    anchors:                                    # permuted + baseline only; fired-conditional; true-gate arms excluded structurally
+      qwen35_4b: {permuted_confab: 0.693, permuted_known: 0.065, baseline_confab: 0.0833, baseline_known: 0.0}
+      mistral7b_v03: {permuted_confab: 0.692, permuted_known: 0.051, baseline_confab: 0.2820, baseline_known: 0.0052}
+    in_sample_flag: doubt-snap dose-8 known anchor is in-sample for the qwen fit lineage; reported, not a criterion anchor
+  non_monotone_ceiling: {confab: 0.05, known: 0.10}   # derived; pre-collapse regime only
