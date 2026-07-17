@@ -40,7 +40,7 @@ GATES_YAML_PATH = EXPERIMENT_DIR / "gates.yaml"
 EXPERIMENT_YAML_PATH = EXPERIMENT_DIR / "experiment.yaml"
 
 CELL_YAML_SHA256_PINNED = "476463c6c7153af4fb996f4434df3b6dfd1f8b4a6e36b29b69fe31d580090da4"
-GATES_YAML_SHA256_PINNED = "7eb74eedc693f0dcde3023cd0fc41bbaa80d051e3698905626fc343925460580"
+GATES_YAML_SHA256_PINNED = "934cacae33965682976db6d64ce88c4ef29158ff26a6677994a3c6fd90cd60d2"  # repinned 2026-07-17 (PI-approved SC1 OR-abs amendment)
 
 # ---------------------------------------------------------------------------
 # Cross-worktree source roots (THIS machine's local worktree layout; see
@@ -111,6 +111,12 @@ WRITE_POSITION = "anchor_onward"   # cell.yaml line 60
 # a numeric readback tolerance itself -- gates.yaml line 16 states it as
 # prose "within RELATIVE 0.005 of the commanded ladder dose").
 READBACK_TOLERANCE_REL = 0.005
+# PI-approved amendment 2026-07-17 (pre-generation, repinned gates.yaml
+# 934cacae): a check also passes if abs_delta <= 0.005 x the family
+# reference_dose_abs (deterministic bf16 readback floor dominates the
+# relative bar only at the 0.0625x rung; see NOTEBOOK 2026-07-17 entries
+# and analysis/preflight_diag/).
+READBACK_TOLERANCE_ABS_FRAC_OF_REF = 0.005
 
 # ladder.generation (cell.yaml line 61): decode=greedy, batch_size=4,
 # runlog_checkpointing=true. max_new_tokens is NOT restated in M1's cell.yaml

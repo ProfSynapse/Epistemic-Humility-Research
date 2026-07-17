@@ -165,3 +165,24 @@ diagnostic is 0.00694 (qwen, 0.25x rung) and the failing rows sit at
 0.00534 / 0.00151 -- all pass with 2.6x-12x headroom while every
 wiring-defect signature still exceeds the bound by >10x. Packet complete;
 awaiting PI decision.
+
+## 2026-07-17 -- PI approved SC1 OR-abs amendment; fresh preflight PASS; launch
+
+PI decision (conversation, morning after the halt): option 1, amend SC1
+readback to "rel <= 0.005 OR abs <= 0.005 x family reference_dose_abs".
+Executed pre-generation: gates.yaml amended and repinned via bin/exp repin
+(7eb74eed -> 934cacae, reason recorded in instrument.repins), OR-bound
+mirrored in harness/config.py + harness/sc1_checks.py, config hash pin
+updated. Smoke suite 29/29. Behavioral regression check: both
+originally-failing tail rows pass under the new rule; gain-squared and
+doubled-dose defect signatures still fail.
+
+Fresh preflight re-run under the amended rule (full command, not a
+re-evaluation of stored measurements): qwen35_4b PASS (all 16 checks),
+mistral7b_v03 PASS (all 16 checks), PASS marker written, GPU released
+between and after families. The 2026-07-16 FAIL preflight and the
+diagnostic remain in the record (this entry supersedes neither).
+
+Launching the full two-family staircase: qwen35_4b first, then
+mistral7b_v03, greedy, batch 4, RunLog checkpointing, ~4.5h per family on
+the local 3090 (free lane, PI-approved).

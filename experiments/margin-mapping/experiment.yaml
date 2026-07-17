@@ -29,7 +29,15 @@ instrument:
   modules: []
   pins:
     cell.yaml: 476463c6c7153af4fb996f4434df3b6dfd1f8b4a6e36b29b69fe31d580090da4
-    gates.yaml: 7eb74eedc693f0dcde3023cd0fc41bbaa80d051e3698905626fc343925460580
+    gates.yaml: 934cacae33965682976db6d64ce88c4ef29158ff26a6677994a3c6fd90cd60d2
+  repins:
+  - file: gates.yaml
+    old_sha256: 7eb74eedc693f0dcde3023cd0fc41bbaa80d051e3698905626fc343925460580
+    new_sha256: 934cacae33965682976db6d64ce88c4ef29158ff26a6677994a3c6fd90cd60d2
+    date: '2026-07-17T09:10:25Z'
+    reason: 'PI-approved SC1 readback amendment 2026-07-17 (pre-generation): add OR
+      absolute bound 0.005 x reference_dose_abs; deterministic bf16 readback floor
+      at 0.0625x rung, diagnostic in analysis/preflight_diag/ and NOTEBOOK'
 inputs: []
 verdict: ''
 kg: []

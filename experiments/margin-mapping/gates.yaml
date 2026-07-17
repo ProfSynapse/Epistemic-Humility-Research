@@ -13,7 +13,7 @@ integrity:
     - confab subsample opaque-id list committed BEFORE any generation (seed 48260714)
     - RG0 byte-repro on the reused baseline rows in this pool
   SC1_dose_and_preflight:
-    - per-row readback within RELATIVE 0.005 of the commanded ladder dose at every rung
+    - per-row readback within RELATIVE 0.005 of the commanded ladder dose at every rung, OR within ABSOLUTE 0.005 x family reference_dose_abs (PI-approved amendment 2026-07-17, pre-generation: the mandatory preflight found a deterministic bf16-scale absolute readback floor of ~0.0004-0.0053 dose_abs that dominates the relative bar only at the 0.0625x rung; diagnostic in analysis/preflight_diag/ and NOTEBOOK 2026-07-17 entries; worst observed mis-dose 0.04% of reference; the OR-bound retains >10x detection margin against rung-mapping/sign/gain wiring defects)
     - MANDATORY GPU preflight before the full run (PI standing directive 2026-07-16): per family, 4 rows at each of the bottom rung, the 1.0x rung, and the top two rungs; readback verified against setpoint; well-formedness observed at the top rungs recorded as the collapse-location estimate; generate refuses without a preflight pass marker
     - live first-batch and per-rung-completion assertions with hard abort
     - mistral top-rung adjustment (if preflight shows collapse below 3x) is an authorized knob recorded in NOTEBOOK before the full run, never after results
