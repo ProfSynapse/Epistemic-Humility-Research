@@ -2169,7 +2169,10 @@
           }
         ]
       },
-      "kg": [],
+      "kg": [
+        "experiment:margin-mapping",
+        "mechanism:qwen-midband-commitment-margins-miss-separation-floor"
+      ],
       "prediction": "Median known margin exceeds median confab margin by at least the separation floor in both families, the family setpoint lies between the two medians, the margin CDFs retrodict the factorial and doubt-snap arm rates within tolerance, and the ladder top exhibits the collapse regime that explains H4's overdrive non-selectivity.",
       "question": "Do per-row commitment margins (minimum dose along the frozen c_hat that flips a row to well-formed abstention) separate confab from known-correct rows at the mid-band operating points, with a gap containing the current setpoints, and do the measured margin distributions retrodict the three anchor results (factorial, doubt-snap, H4 overdrive) from their doses alone?",
       "registered": true,
