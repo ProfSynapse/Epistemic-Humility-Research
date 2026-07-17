@@ -52,7 +52,10 @@ def load_channels() -> dict[str, dict[str, Any]]:
         }
     for r in readout_rows:
         d = by_key.setdefault(r["row_key"], {"role": r["role"]})
-        d["readout_z"] = float(r["readout_z"])
+        # Amended cell.yaml (repin 4dc5722c, PI-approved 2026-07-17): readout
+        # score is the NEGATIVE z-projection (confab-positive orientation).
+        # capture.py persists raw z; the registered score is applied here.
+        d["readout_z"] = -float(r["readout_z"])
     for r in confidence_rows:
         d = by_key.setdefault(r["row_key"], {"role": r["role"]})
         d["confidence"] = r["confidence"]
@@ -119,42 +122,25 @@ def main() -> int:
     }, indent=2), flush=True)
 
     # ---- S1 readout sanity (FIRST; halt for diagnosis if it fails) --------
-    # SIGN-CONVENTION ANOMALY (discovered here, not silently resolved):
-    # cell.yaml specifies the readout score as "z-projection ... onto frozen
-    # c_hat (no refit, no threshold)" with NO sign-flip instruction, unlike
-    # the susceptibility channel which explicitly says "NEGATIVE
-    # tipping_dose_abs" to orient it confab-positive. c_hat's own fit
-    # (doubt-snap-cross-family-confirmatory/prep_tuner_cell.py
-    # fit_directions(): caution = unit(mean(unknown_refused) -
-    # mean(confab)), c_hat orthogonalized from that) is built so HIGHER
-    # projection = MORE unknown_refused-like = LESS confab-like -- the
-    # opposite polarity from every other channel's confab-positive
-    # convention. No prior amendment ever computed c_hat's own AUC (the
-    # Decision record item 5 anchor citation, auc_neg_z_d_on_fit=0.9929, is
-    # the DOUBT-GATE direction u_d's AUC, not c_hat's). Both orientations are
-    # reported below; the literal-as-pinned (no flip) orientation is used
-    # for the registered S1 gate, since neither cell.yaml nor gates.yaml
-    # states a flip -- flipping to pass the gate would be exactly the
-    # "search for a configuration that passes" this harness must not do.
+    # Sign convention resolved by the PI-approved pre-analysis clarification
+    # (cell.yaml repin 4dc5722c, 2026-07-17): the registered readout score is
+    # the NEGATIVE z-projection (confab-positive, the lineage's own neg_z
+    # convention), applied at load in load_channels(). The raw-polarity AUROC
+    # is reported alongside as a diagnostic record of the original halt.
     rk_ro, labels_ro, readout_z = _arrays(by_key, ["readout_z"])
     readout_auroc_ci = stats.bootstrap_auroc_ci(readout_z, labels_ro, n_boot=config.BOOTSTRAP_N_RESAMPLES, seed=config.BOOTSTRAP_SEED)
-    readout_auroc_ci_flipped = stats.bootstrap_auroc_ci(-readout_z, labels_ro, n_boot=config.BOOTSTRAP_N_RESAMPLES, seed=config.BOOTSTRAP_SEED)
+    readout_auroc_ci_raw_polarity = stats.bootstrap_auroc_ci(-readout_z, labels_ro, n_boot=config.BOOTSTRAP_N_RESAMPLES, seed=config.BOOTSTRAP_SEED)
     s1_pass = readout_auroc_ci["point"] >= config.S1_READOUT_SANITY_FLOOR
     print(json.dumps({
         "S1_readout_sanity": {
-            "auroc_point_as_pinned_no_flip": readout_auroc_ci["point"],
-            "bootstrap_ci_95_as_pinned": readout_auroc_ci["bootstrap_ci_95"],
-            "auroc_point_sign_flipped_diagnostic_only": readout_auroc_ci_flipped["point"],
-            "bootstrap_ci_95_sign_flipped_diagnostic_only": readout_auroc_ci_flipped["bootstrap_ci_95"],
-            "floor": config.S1_READOUT_SANITY_FLOOR, "pass_as_pinned": s1_pass, "n": len(rk_ro),
+            "auroc_point_as_registered": readout_auroc_ci["point"],
+            "bootstrap_ci_95_as_registered": readout_auroc_ci["bootstrap_ci_95"],
+            "auroc_point_raw_polarity_diagnostic": readout_auroc_ci_raw_polarity["point"],
+            "floor": config.S1_READOUT_SANITY_FLOOR, "pass": s1_pass, "n": len(rk_ro),
             "sign_convention_note": (
-                "cell.yaml registers NO sign flip for the readout score, unlike "
-                "susceptibility's explicit 'negative tipping_dose_abs'. c_hat's "
-                "own fit orients HIGHER projection = LESS confab-like (see code "
-                "comment above); the as-pinned (unflipped) orientation is used "
-                "for the S1 gate decision below. This is a provenance gap in "
-                "the signed spec, not a capture defect -- flagged for lead "
-                "adjudication, not resolved here."
+                "Registered score = negative z per the PI-approved cell.yaml "
+                "repin 4dc5722c (2026-07-17), after the original as-drafted "
+                "polarity halted S1 at AUROC 0.0179; see NOTEBOOK entries."
             ),
         }
     }, indent=2), flush=True)
@@ -165,10 +151,10 @@ def main() -> int:
         "SC3_coverage": coverage,
         "SC2_confidence": {"parse_rate": sc2_parse_rate, "floor": config.SC2_CONFIDENCE_PARSE_RATE_FLOOR, "pass": sc2_pass},
         "S1_readout_sanity": {
-            "auroc_as_pinned_no_flip": readout_auroc_ci,
-            "auroc_sign_flipped_diagnostic_only": readout_auroc_ci_flipped,
-            "floor": config.S1_READOUT_SANITY_FLOOR, "pass_as_pinned": s1_pass,
-            "sign_convention_note": "see harness run notes / analysis.py comment: cell.yaml registers no sign flip for the readout channel; c_hat's own fit orients opposite the confab-positive convention every other channel uses.",
+            "auroc_as_registered": readout_auroc_ci,
+            "auroc_raw_polarity_diagnostic": readout_auroc_ci_raw_polarity,
+            "floor": config.S1_READOUT_SANITY_FLOOR, "pass": s1_pass,
+            "sign_convention_note": "registered score = negative z per PI-approved cell.yaml repin 4dc5722c (2026-07-17); original as-drafted polarity halted S1 at 0.0179, see NOTEBOOK.",
         },
     }
 

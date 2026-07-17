@@ -25,7 +25,9 @@ EXPERIMENT_YAML_PATH = EXPERIMENT_DIR / "experiment.yaml"
 
 # experiment.yaml instrument.pins (verified against a fresh sha256 of both
 # files before any staging/capture/analysis step runs).
-CELL_YAML_SHA256_PINNED = "d361224f2f800e28e7b10a10ee6bbc57c28c8a1241a90f9fd1ffd42be8c5a7cd"
+# Repinned 2026-07-17: PI-approved pre-analysis sign clarification (readout
+# score = negative z, lineage neg_z convention); see instrument.repins.
+CELL_YAML_SHA256_PINNED = "4dc5722c0c3f722200bc6df7c99abbb4ff914a6587fc2bbd389692264478c3bb"
 GATES_YAML_SHA256_PINNED = "a19da59d4a9d232389724f5e99332ce874d45cd71ad6a4f1455f3486badaab54"
 
 # ---------------------------------------------------------------------------
