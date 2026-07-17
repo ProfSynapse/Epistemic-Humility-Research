@@ -690,7 +690,7 @@ Atomic notes extracted from the library papers via the Agents-K1 ingestion skill
 - [[valence-arousal-subspace]] : A two-dimensional linear subspace in LLM activation space spanned by a recovered valence axis (pleasure-displeasure) and arousal axis (activ
 - [[world-model-hallucination-modes]] : A three-type taxonomy of failure modes in generative world models, each anchored to a different pipeline stage. Perceptual hallucination occ
 
-## Mechanisms (cause -> effect) (422)
+## Mechanisms (cause -> effect) (423)
 
 - [[abstention-generalization-failure]] : 'instruction-tuning for abstention on a narrow, homogeneous set of refusal expressions and task formats' **prevents** Abstention ability does not generalize to 
 - [[abstract-representations-enable-zero-shot-generalization]] : High degree of abstract (parallel) representation in ANN hidden layers, as measured by parallelism-score, indicating that compositional rule dimensions are enco
@@ -766,6 +766,7 @@ Atomic notes extracted from the library papers via the Agents-K1 ingestion skill
 - [[dominant-uncertainty-source-shifts-with-model-scale]] : Increasing model scale (number of parameters) and task type (factual QA vs mathematical reasoning) **mediates** The dominant uncertainty source shifts: smaller 
 - [[dormant-features-compensate-for-ablated-features]] : Ablation of the primary active causal sparse-autoencoder|SAE refusal feature set, removing their contribution to the refusal-direction **prevents** Previously z
 - [[dosed-detector-refusal-channel-drives-genuine-placebo-recruitment]] : Within the 15-seed matched-magnitude random-direction census, each accepted seed's automatic detector-v2 refusal screen fires on a variable count of the fixed S
+- [[doubt-gate-adds-sub-floor-selectivity-write-drives-abstention-lift]] : In a 2x2 factorial crossing {true doubt gate, fire-count-matched permuted gate} x {true c_hat caution direction, K=5 fresh random directions} plus baseline, sco
 - [[doubt-regulated-caution-coupling-actuates-selective-refusal-release]] : On clean-SFT -> GRPO-v2 seed1, erasing the caution_perp projection from the L35 residual stream at every position and writing a doubt-proportional setpoint in i
 - [[dpo-beta-should-follow-pair-quality]] : Preference-pair datasets mix closely matched informative pairs, easy high-gap pairs, and outliers under one static DPO beta. **causes** The same beta can under-
 - [[dpo-choice-induces-severe-answer-uncertainty-shift]] : Direct preference optimization using pairs that share the same format but differ in which choice is labeled preferred (DPO-Choice scheme) **increases** The mode

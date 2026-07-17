@@ -1420,7 +1420,10 @@
           }
         ]
       },
-      "kg": [],
+      "kg": [
+        "experiment:gate-contribution-factorial",
+        "mechanism:doubt-gate-adds-sub-floor-selectivity-write-drives-abstention-lift"
+      ],
       "prediction": "Gate supplies selectivity on BOTH families: Gap_Sel(c_hat) >= 0.20 with bootstrap 95% CI excluding 0, cost-protection gap >= 0.10 with CI excluding 0, Gap_Sel(random) >= 0 directional (P1/P2/P3 pass); qwen S1 PASSES by sign-opposition to the census suppressive null (median -6.0, 14/15 negative); mistral S1 FAILS (same-signed as census recruiting null, expected effect ratio ~2.0 < 3.0), so the two axes dissociate on mistral. Predictions scoreboard (registered 2026-07-15 pre-run): orchestrator calls qwen full pass, mistral gate axis PASS + direction axis FAIL (the dissociation case), Gap_Sel(c_hat) bands qwen 0.20-0.50 / mistral 0.20-0.45; PI calls qwen full pass, mistral FULL FAIL (both axes). The differentiating slot is the mistral gate axis. No edits after results.",
       "question": "Does the doubt GATE (row selection read from the model's internal doubt representation), rather than the write direction, produce SELECTIVE abstention (concentrated on unanswerable confab rows, withheld from known-correct rows)? Measured as the sign-robust selectivity gap Gap_Sel(d) = Sel_abs(true_gate, d) - Sel_abs(permuted_gate, d), Sel_abs = |confab_lift| - |known_lift|, in a 2x2 factorial {true doubt gate, fire-count-matched permuted gate} x {c_hat, random direction (K=5 fresh seeds)} plus baseline, both populations, wide two-instrument stack, on Qwen3.5-4B hs20 (dose_abs 12.608, census operating point) and Mistral-7B-Instruct-v0.3 hs16 (dose_abs 3.665, RR2/RR3 lineage). Direction specificity is evaluated separately (S1) against the census K=15 null.",
       "registered": true,

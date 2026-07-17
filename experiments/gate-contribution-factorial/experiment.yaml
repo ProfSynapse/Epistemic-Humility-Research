@@ -303,4 +303,6 @@ verdict: 'Gate axis falsified on both families: the dosed c_hat write alone driv
   CIs exclude zero) with cost protection below the 0.10 floor; S1 direction-specificity
   passes on qwen (ratio 7.27, sign-opposed) and fails on mistral (ratio 2.03), as
   predicted; CG1 28/28, red-team CONFIRM-NULL.'
-kg: []
+kg:
+- experiment:gate-contribution-factorial
+- mechanism:doubt-gate-adds-sub-floor-selectivity-write-drives-abstention-lift
