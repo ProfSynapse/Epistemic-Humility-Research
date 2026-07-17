@@ -1,0 +1,9 @@
+# Local analysis scratch; keep untracked, promote real outputs deliberately.
+# This also covers the gitignored generation-text sidecar under
+# analysis/census/ (row text is never committed; see gates.yaml SC0, MAJOR M3).
+analysis/
+# Do NOT add a top-level `directions/` pattern here. It would shadow the
+# deliberately-committed native fit output
+# analysis-committed/directions/hs20/c_hat_worldknown.json (mirroring the
+# doubt-snap convention). The `analysis/` rule above is the only large-data
+# exclusion this experiment needs.

@@ -2143,6 +2143,38 @@
     },
     {
       "checkpoint": {
+        "repo": "Qwen/Qwen3.5-4B",
+        "revision": "851bf6e806efd8d0a36b00ddf55e13ccb7b8cd0a"
+      },
+      "created_at": "2026-07-17T21:04:21Z",
+      "falsifier": "With all gates valid AND the transfer direction firing at baseline (baseline confab-vs-correct AUROC >= 0.70 on the test subset, BLOCKER B1), at least one channel on the TRANSFER direction fails its floor: the projection does not collapse toward the correct/refused regime specifically for the true answer (D1 fails), or the margin does not lengthen for the true answer over the placebo (D2 fails). Only then is criterion (d) not earned on the named KUQ direction; a single-channel pass is reported as a channel dissociation. If instead the transfer direction does not fire at baseline (AUROC < 0.70), the criterion (d) test is voided and lifted to PI, not scored as a (d)-not-earned failure. The native two-channel result is reported separately and never changes this verdict.",
+      "inputs": [
+        "experiments/qwen35-4b-midband-doubt-snap/analysis-committed/directions/hs20/c_hat.json",
+        "datasets/popqa/test.jsonl"
+      ],
+      "instrument": {
+        "configs": [
+          "cell.yaml",
+          "gates.yaml"
+        ],
+        "modules": [],
+        "pins": {
+          "cell.yaml": "da2338fb4b7f83ce8d4f4ef7f76385846c2f08c0f6cbb5157abe26daf7ac7584",
+          "gates.yaml": "9670fd0eed99a880c07a7e9adeeca67069c618931791cfc9188fe8f3c55f2fdd"
+        }
+      },
+      "kg": [],
+      "prediction": "On the TRANSFER direction, supplying the true answer in-context both collapses the c_hat projection on confab rows (paired median shift toward the correct/refused regime at or above the re-derived floor, and larger than the false-answer placebo) and lengthens their margins (true-answer survival at each row's own world-known tipping dose exceeds the placebo, CI excluding zero): qwen earns criterion (d) for the named KUQ direction. [Predictor calls registered in the scoreboard at sign.]",
+      "question": "On Qwen/Qwen3.5-4B, does the KUQ-fit c_hat known-unknown direction (TRANSFER) satisfy earnability criterion (d) on a WORLD-KNOWN error class? That is, on confident-wrong-on-answerable PopQA rows, does supplying the true answer in-context both collapse the c_hat projection (toward the correct/refused regime) and lengthen the commitment margin, specifically for the true answer over a category-matched false-answer placebo? A world-known c_hat refit natively is run as a secondary two-channel dissociation reading.",
+      "registered": true,
+      "slug": "margin-evidence-responsiveness-worldknown",
+      "status": "signed",
+      "title": "Evidence-responsiveness on world-known QA: the M4 rebase (M4-WK)",
+      "type": "steer-cell",
+      "verdict": ""
+    },
+    {
+      "checkpoint": {
         "repo": "",
         "revision": ""
       },

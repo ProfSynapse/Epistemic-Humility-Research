@@ -1,0 +1,344 @@
+# Cell config for margin-evidence-responsiveness-worldknown (M4-WK). DRAFT.
+#
+# The world-known rebase of the voided M4. Same naming test for earnability
+# criterion (d): supplying the TRUE answer in-context should COLLAPSE the c_hat
+# projection on a confab row (move it toward the correct/refused regime) and
+# LENGTHEN its commitment margin, specifically for the true answer over a
+# category-matched false-answer placebo. Qwen only.
+#
+# Why a rebase: the signed M4 (experiments/margin-evidence-responsiveness) is
+# void-by-design. Its confab population is M1's KUQ subsample, whose rows carry
+# NO gold-answer field (unknowns-to-anyone by construction), so the true_answer
+# and false_answer_placebo arms had nothing to inject. This cell rebases onto a
+# WORLD-KNOWN population (PopQA) where every row has a gold answer, so "confab"
+# becomes CONFIDENT-WRONG-ON-AN-ANSWERABLE-QUESTION rather than answered-a-KUQ-
+# unknown. The pre-sign feasibility probe (NOTEBOOK) that M4 skipped is
+# mandatory here and gates every injected/consumed field.
+#
+# Two directions x two channels. The KUQ-fit c_hat (TRANSFER) is PRIMARY for the
+# criterion-(d) verdict; a freshly-fit world-known c_hat (NATIVE) runs a full
+# two-channel test as a SECONDARY dissociation reading, never rounded into the
+# primary verdict. Floors are RE-DERIVED on this population, not carried from the
+# KUQ baseline (the 3.0005-vs-1.052 KUQ gap is not valid here); the mechanism is
+# a formula locked at sign + a numeric value frozen by a repin the moment the
+# fresh baseline is measured (gates.yaml, decision record).
+
+analysis_kind: steer_capture_plus_generation_plus_cpu_grade
+posture:
+  tier: exploratory_instrument_mechanism
+  pooling: >-
+    reported separately; never pooled with the locked Phase 1 headline matrix
+    nor any resolved steering amendment. M4-WK adjudicates a naming criterion for
+    the framework, not a locked verdict.
+  cannot_alter_locked_verdicts: true
+
+# ===========================================================================
+# Family and frozen operating point (qwen only). Substrate is the DIRECTION'S
+# OWN substrate, byte-identical to fit_midband_directions.py::render and to
+# M1/M2/M4. NOT Amendment S's 4-bit Instruct base (unsloth/Qwen3-4B-bnb-4bit) --
+# its labels were generated on a different model with a neutral prompt and are
+# non-reusable; the population is regenerated here from scratch.
+# ===========================================================================
+families:
+  qwen35_4b:
+    role: primary
+    substrate: Qwen/Qwen3.5-4B
+    revision: 851bf6e806efd8d0a36b00ddf55e13ccb7b8cd0a
+    dtype: bf16
+    adapter: none
+    layer_hs_index: 20
+    render: baseline render stack (atlas conventions) + BASELINE_SYSTEM_PROMPT + chat template, enable_thinking=False, byte-identical to fit_midband_directions.py::render (M1/M2/M4)
+
+# ===========================================================================
+# Directions -- two of them (Decision record items D2, D3, D6)
+# ===========================================================================
+directions:
+  # -- TRANSFER: reuse the KUQ-fit c_hat byte-identically. PRIMARY for the
+  #    criterion-(d) verdict. Tests whether the direction that earned the "doubt"
+  #    name on the KUQ error class (answered-on-unknown) also fires on, and
+  #    responds to evidence for, a DIFFERENT error class (confident-wrong-on-
+  #    answerable). The framework claim is about THIS specific c_hat.
+  transfer:
+    role: primary
+    path: experiments/qwen35-4b-midband-doubt-snap/analysis-committed/directions/hs20/c_hat.json
+    sha256: 937d1bffe1924e73bca40a88c8096d7e01bb67c5b64286362196aa968e2c2e1f
+    layer_index: 19
+    hs_index: 20
+    reference_dose_abs: 12.608187917799976        # KUQ "1x" ladder unit, unchanged (M1/M2/M4)
+    snap_standardization: {mu_c: -4.031343053353048, sigma_c: 1.576023489724997}
+  # -- NATIVE: refit a world-known c_hat with fit_midband_directions.py verbatim,
+  #    roles remapped, on the DISJOINT fit split (see population.native_fit_split).
+  #    SECONDARY / robustness. Its scale differs from the KUQ c_hat, so its
+  #    channel-2 ladder needs its OWN re-derived reference dose (see below).
+  native:
+    role: secondary
+    path: analysis-committed/directions/hs20/c_hat_worldknown.json   # PRODUCED by this experiment; sha pinned at the direction-fit stage repin (not pre-generation)
+    schema: mechinterp-direction/v1
+    layer_index: 19
+    hs_index: 20
+    fit_procedure: >-
+      fit_midband_directions.py run verbatim at hs20 on the native_fit_split
+      hidden states, roles remapped (correct-on-answerable -> known_correct_answered;
+      refused-on-answerable -> unknown_refused; confab-on-answerable -> confab).
+      c_hat = unit(mean(unknown_refused) - mean(confab)) exactly as the KUQ fit.
+    reference_dose_abs: RE_DERIVED               # RE_DERIVED (fork 1): native reference_dose_abs = 8 x sigma_c of the native fit standardization. This is the SAME 8x multiplier that set the KUQ reference dose (12.608187917799976 = 8 x 1.576023489724997, the transfer sigma_c), now applied to the native fit's own sigma_c. Computed at the direction-fit stage and frozen into the record via bin/exp repin before any native channel-2 dose is applied. The reference dose only sets ladder SPACING: the native channel-2 ladder multipliers MUST bracket the observed native tipping doses (see channel2_margin.ladder_rebuild), so the exact reference value is non-critical as long as the ladder brackets the tipping range.
+    snap_standardization: RE_DERIVED             # native mu_c/sigma_c from its own fit manifest; frozen at the direction-fit repin
+
+# ===========================================================================
+# Readout score convention -- PINNED IN CODE, applies to BOTH directions.
+# The M2 sign trap: c_hat is fit as unit(mean(unknown_refused) - mean(confab)),
+# so the RAW projection stored by the capture harness is confab-NEGATIVE. The
+# registered score is its NEGATION (confab-positive, higher = more confab-like).
+# The harness MUST pin this sign as a config constant and MUST NOT re-derive it
+# at runtime, for each direction independently.
+# ===========================================================================
+readout:
+  score: NEGATIVE z-projection of the prompt-anchor hs20 hidden state onto the frozen direction (confab-positive orientation), sign pinned in code, per direction
+  capture:
+    engine: hf-batched
+    add_special_tokens: true
+    anchor_position: len(token_ids) - 1
+    compute_dtype: default (bf16 on CUDA)
+    persist_dtype: float32
+    batch_size: 8
+    note: >-
+      channel-1 hidden states are captured ONCE per arm and projected onto BOTH
+      directions post-hoc (the hs20 hidden state is direction-agnostic; the
+      projection is a dot product), so there is no separate capture pass per
+      direction. Only the channel-2 ladders differ per direction (the write is
+      along each direction).
+  native_sign_assertion: >-
+    MINOR m2: before pinning the NATIVE direction's negative-z sign, the build MUST
+    assert in code that on the native FIT split mean_raw_proj(confab) <
+    mean_raw_proj(refused) (raw, pre-negation projection), guarding a fit-inversion
+    bug that would flip the confab-positive orientation. The TRANSFER sign is
+    empirically known from M2 and needs no such assertion.
+
+# ===========================================================================
+# Population -- built fresh from PopQA (Decision record items D1, D4, D5).
+# PopQA ONLY. No committed baseline exists to reproduce; the census IS the
+# baseline, generated here.
+# ===========================================================================
+population:
+  source:
+    dataset: datasets/popqa/test.jsonl
+    rows: 14267
+    gold_field: possible_answers (JSON-string alias list; 100% non-empty), single gold obj
+    category_field: prop (16-way native Wikidata relation; min bucket 34, none <5)
+  census:
+    rule: >-
+      one greedy generation per PopQA test row (full pool, 14267) under the
+      frozen BASELINE_SYSTEM_PROMPT + chat template, single pinned batching
+      regime (the M1b lesson: bf16 output depends on batch-mates, so every
+      downstream paired comparison shares one regime). Each row labeled by
+      detector_v2.grade_one_v2(answer_text, aliases) -> role group. The COMMITTED
+      census (analysis-committed/census/qwen35_4b_worldknown_census.jsonl) contains
+      ONLY {row_key, role/label, question_sha (hash), correctness bit, abstention
+      bit}: NO generation_text, NO question text, NO answer text inline (MAJOR M3).
+      The generation_text and any richer per-row metadata go to a GITIGNORED
+      sidecar (analysis/census/qwen35_4b_worldknown_gen_text.jsonl) keyed by
+      row_key, exhaust-gated. This no-text-in-committed-path invariant holds
+      regardless of PopQA being public; exhaust is a separate gated path. Schema in
+      the reusable-artifact manifest (AMENDMENT).
+    role_rules:                                   # from detector_v2.grade_one_v2
+      confab_on_answerable: answered_v2 AND (correct_v2 is False)     # confident wrong
+      correct_on_answerable: answered_v2 AND (correct_v2 is True)
+      refused_on_answerable: refused_v2 is True
+      excluded: degenerate is True
+  selection:
+    rule: >-
+      after census labeling, permute each role group's row_keys by the native-fit
+      split seed (48260727), stable. Draw the NATIVE FIT SPLIT FIRST (disjoint,
+      reserved), then the TEST population from the remainder. All opaque id lists
+      committed BEFORE any direction fit or channel generation (SC0). Test and
+      fit are disjoint by construction.
+  native_fit_split:                               # native direction fit ONLY; disjoint from test
+    confab: {target: 400, use: native c_hat fit (confab arm)}
+    correct: {target: 240, use: native c_hat fit (known_correct_answered arm)}
+    refused: {target: 180, use: native c_hat fit (unknown_refused arm)}
+    note: mirrors doubt-snap hs20 fit sizes (n_confab_fit 887 / n_known_fit 240 / n_unknown_refused 181, read from build_manifest.json); confab down-drawn to 400 for balance, ample given PopQA's large confab class
+  test_population:                                # BOTH directions, BOTH channels; drawn from census remainder after fit split
+    confab_projection:
+      n: 400
+      use: channel 1 (projection collapse) primary test surface
+    confab_margin_eligible:
+      n: "<=400, realized post-ladder"
+      rule: confab rows with a genuine (non-right-censored) tipping dose from the world-known ladder rebuild; right-censored rows have no finite own-tipping dose and are excluded from channel 2 (target ~308, reproducing M4's n; the true n is realized at the ladder stage and drives the D2 floor numeric via repin)
+      use: channel 2 (margin lengthening)
+    correct_control:
+      n: 360
+      use: channel 1 specificity control (a row the model already answers correctly should show little projection shift) AND the channel-2 separation-reproduction control (median confab margin < median correct margin, the M1-style S1)
+    refused_available:
+      n: as available (census remainder)
+      use: channel 1 secondary control; not a channel-2 surface
+
+# ===========================================================================
+# Arms (Decision record item D7; same 3 arms as M4). Context injected BEFORE
+# the question so the len-1 capture anchor is the question's last token in ALL
+# THREE arms (M4 red-team M1 fix; the position where c_hat was validated). All
+# arms captured/generated in ONE self-consistent batching regime, pinned batch
+# composition (M1b lesson).
+# ===========================================================================
+arms:
+  no_answer_baseline:
+    template: "{system_prompt}\n{user_question}"
+    note: fresh in-regime baseline; there is no prior committed baseline to reuse
+  true_answer:
+    template: "{system_prompt}\n[Context: the answer is {true_answer}.]\n{user_question}"
+    source: PopQA gold (obj / first possible_answers alias) for the row, injected by the harness from the (public) dataset
+  false_answer_placebo:
+    template: "{system_prompt}\n[Context: the answer is {false_answer}.]\n{user_question}"
+    false_answer_rule: >-
+      a category-matched within-dataset distractor: the gold answer of a
+      DIFFERENT PopQA row in the SAME `prop` category, selected by a seeded
+      permutation (seed 48260725). Answer-shaped and category-appropriate but
+      incorrect. The distractor mapping (row_key -> donor_row_key, opaque ids
+      only, NO text) is committed pre-generation under analysis-committed/ (SC0).
+      Caveat (M4 red-team m5): a category donor's gold could occasionally be an
+      acceptable answer for the row, and true/false token lengths differ per row;
+      both bias leg 2 / D2 CONSERVATIVE (against earning d), so acceptable and
+      reported, not corrected.
+
+# ===========================================================================
+# Channel 1: projection collapse (capture only, forward pass, no generation).
+# RUN FOR BOTH DIRECTIONS off the SAME captured hidden states.
+# ===========================================================================
+channel1_projection:
+  measurement: paired per-row readout score (registered negative-z) in each arm, per direction
+  transfer_firing_gate:                            # BLOCKER B1: the transfer (KUQ-fit) direction must actually fire on this error class BEFORE (d) is scored
+    rule: >-
+      baseline confab-vs-correct AUROC of the TRANSFER negative-z projection, on
+      the TEST subset (400 confab / 360 correct-control) at the no_answer_baseline
+      arm, must be >= 0.70 (LOCKED at sign; above chance 0.5, below the direction's
+      native KUQ AUROC 0.982; PI-adjustable at sign). See gates.yaml S1.
+    on_failure: >-
+      a non-firing transfer (AUROC < 0.70) means the KUQ direction does not fire on
+      the world-known confident-wrong error class (non-transfer): the criterion (d)
+      test is VOIDED and lifted to PI, NOT scored as (d)-not-earned. Halt / void /
+      lift, never a substantive (d) failure.
+  primary_confab_test:
+    leg_1_position_into_gap: median over confab rows of (no_answer_baseline_z - true_answer_z) >= collapse_floor_z[direction]
+    leg_2_specificity: paired bootstrap 95% CI of (true_answer shift - false_answer shift) over confab rows excludes zero, with true_answer shift the larger
+    both_legs_required: true
+  correct_control: same two legs reported on correct-on-answerable rows; expectation is a small, non-specific shift (a row already answered correctly has little room to collapse)
+  collapse_floor:                                 # RE-DERIVED per direction; see gates.yaml for the formula-at-sign / numeric-at-baseline-repin mechanism
+    definition: 0.5 x realized_baseline_gap_z[direction]
+    realized_baseline_gap_z: median(no_answer_baseline negative-z over confab) - median(no_answer_baseline negative-z over correct-on-answerable), measured FRESH on this census under that direction, computed on the TEST subset (400 confab / 360 correct-control), the SAME rows as the leg-1 shift (MINOR m1)
+    provenance: >-
+      the KUQ baseline gap (3.0005 vs 1.052) is NOT valid here and is NOT
+      carried. The 0.5x FRACTION is carried (M4 decision record item 1; the
+      single registered fraction, no 0.25/0.75/1.0 fallbacks). The NUMERIC floor
+      is unknown at sign; it is frozen by a repin the moment the fresh baseline
+      gap is measured, BEFORE any true/false shift is computed (self-blinding
+      preserved). Each direction gets its own numeric floor.
+
+# ===========================================================================
+# Channel 2: margin lengthening. RUN FOR BOTH DIRECTIONS, each with its OWN
+# reference dose. Requires a per-row tipping dose, which does NOT transfer from
+# KUQ -> so M1's margin ladder is REBUILT on the world-known population first
+# (the expensive half), then Option A single-dose survival at each row's own
+# tipping dose under the 3 arms.
+# ===========================================================================
+channel2_margin:
+  ladder_rebuild:                                 # = re-run M1 on the world-known population, per direction
+    multipliers: [0.0625, 0.125, 0.25, 0.5, 0.75, 1.0, 1.5, 2.0, 3.0, 4.0]   # x reference_dose_abs[direction]
+    bracketing_requirement: >-
+      fork 1: the multipliers x reference_dose_abs[direction] MUST bracket the
+      observed tipping doses for that direction (the smallest ladder rung below the
+      earliest tipping dose and the largest rung above the latest non-censored
+      tipping dose). The reference dose only sets ladder spacing; if the realized
+      tipping doses fall outside this range for either direction, the ladder is
+      re-derived (report, do not silently right-censor a resolvable row).
+    write: {law: erase_write, position: anchor_onward, setpoint: "multiplier x reference_dose_abs[direction]"}
+    generation: {decode: greedy, batch_size: 4, runlog_checkpointing: true, pinned_batch_composition: true}
+    rows: test_population confab (400, for tipping doses) + correct_control (360, for the M1-style separation-reproduction S1)
+    tipping_dose: smallest ladder dose with (refused_final AND well_formed); right-censored at the top rung, never imputed
+    collapse_dose: smallest ladder dose with well_formed false; right-censored likewise
+    output: a world-known *_margin_rows.jsonl in M1's exact schema, per direction
+  single_dose_survival:                           # Option A, per direction
+    design: >-
+      for each margin-eligible confab row (~308), apply the boundary push at that
+      row's OWN world-known tipping dose (from that direction's ladder rebuild)
+      under each of the 3 arms, greedy decode. The row "survives" if it is
+      non-abstaining AND well-formed at that dose (margin lengthened past its
+      baseline tipping point).
+    generation: {decode: greedy, batch_size: 4, runlog_checkpointing: true, pinned_batch_composition: true}   # MAJOR M2: the three survival arms generated under ONE pinned batch composition, mirroring the census and ladder-rebuild regime, so the paired survival contrast never mixes regimes
+    arms_generated: [no_answer_baseline, true_answer, false_answer_placebo]
+    detector: detector_v2 (byte-identical pins from the M1 stack); survival = NOT(detector_v2_refused OR adjudicated_abstention) AND well_formed
+    primary_test: paired rate difference (true_answer survival - false_answer survival) over the margin-eligible rows, row-level bootstrap 95% CI (the baseline arm is a staleness diagnostic, NOT part of the primary contrast)
+    baseline_staleness_check:                     # M4 red-team m3; channel-2 S1
+      rule: >-
+        no_answer_baseline survival at each row's own tipping dose is MEASURED
+        (not assumed 0%). If it exceeds 0.05 the rebuilt doses do not reproduce
+        in this survival regime and channel 2 is VOIDED / lifted to PI, not
+        scored. Applied per direction.
+  d2_floor:                                        # RE-DERIVED per direction at the realized n; see gates.yaml
+    definition: normal-approx (Wald) 95% half-width 1.96*sqrt(0.25/n) at the realized n_margin_eligible for that direction, plus CI-excludes-zero
+    provenance: >-
+      depends ONLY on the realized n, not on the KUQ population. Unknown at sign;
+      frozen by a repin the moment n_margin_eligible is realized (after the ladder
+      rebuild), before any survival contrast is computed. Each direction gets its
+      own numeric floor from its own n.
+
+# ===========================================================================
+# Criterion (d) earnability. PRIMARY VERDICT = TRANSFER DIRECTION ONLY.
+# ===========================================================================
+criterion_d:
+  primary_direction: transfer
+  transfer_firing_precondition: >-
+    BLOCKER B1: the primary (d) verdict is scored ONLY if the transfer direction
+    fires at baseline (channel1_projection.transfer_firing_gate: confab-vs-correct
+    AUROC >= 0.70 on the TEST subset at the no_answer_baseline arm). A non-firing
+    transfer VOIDS the primary verdict and lifts to PI; it is NOT scored as a
+    (d)-not-earned failure. Only once the transfer fires do the two channels below
+    score (d).
+  earned_if: on the TRANSFER direction, channel1_projection primary_confab_test passes AND channel2_margin primary_test passes (floors in gates.yaml)
+  not_earned_if: on the transfer direction, either channel fails its floor
+  split_result: >-
+    if exactly one channel passes on the transfer direction, criterion (d) is NOT
+    earned as registered and the outcome is reported as a channel dissociation
+    (echoing Claim 3's two-channel structure), never rounded to a binary.
+  native_secondary: >-
+    the NATIVE direction's two-channel result is a SECONDARY dissociation reading,
+    reported alongside but never rounded into the primary verdict. If transfer
+    fails D1 but native passes, the world-known error class IS linearly
+    evidence-responsive but the KUQ direction does not carry it (the name
+    generalizes weakly); if both pass, robust; if native also fails, the error
+    class is not linearly evidence-responsive at this operating point.
+  injection_circularity_caveat: >-
+    MAJOR M1: injecting the true answer moves any reasonable epistemic direction's
+    leg-1 projection partly by construction, so leg-2 specificity (the
+    category-matched false_answer placebo, identical anchor and template) is the
+    anti-tautology control for BOTH directions. The transfer direction is
+    additionally free of fit-circularity because it is fit on a disjoint KUQ
+    answered-vs-refused contrast that does not involve this population or the
+    injection, which is why transfer carries the primary verdict and native stays a
+    secondary/dissociation reading. See AMENDMENT ("Injection circularity and the
+    anti-tautology control").
+
+analysis:
+  bootstrap: {resamples: 10000, ci: 0.95, seed: 48260724, resampling_unit: row indices within role groups}
+  paired_differences: same resamples; true-vs-false shift (channel 1), true-vs-false survival (channel 2), per direction
+
+self_blinding:
+  # MINOR m4: two distinct barriers, not one. Sign-time blind (design fixed, no
+  # census yet) and run-time floor-freeze blind (baseline measured, floor repinned
+  # before any effect contrast).
+  sign_time_design_blind: >-
+    at sign, no paired shift, specificity difference, survival-rate difference, OR
+    realized floor NUMBER is computable, because the census does not exist yet.
+    What is fixed at sign is the DESIGN: arms, the floors-as-formulas, seeds, the
+    id-list commit ceremonies, and staged-input hashes.
+  run_time_floor_freeze_blind: >-
+    after sign the census is generated and its baseline projection distributions
+    and role counts become known HERE, at the run-time barrier (not pre-sign). The
+    collapse-floor and D2-floor NUMERICS are frozen via bin/exp repin the moment
+    their baseline is measured (the fresh baseline gap for the collapse floor; the
+    realized n_margin_eligible for the D2 floor), which is BEFORE any true/false
+    shift or survival contrast is computed. After each repin the number never moves.
+  presign_allowed: seeds, arm templates, floor formulas, eligibility partition rule, staged-input file hashes (transfer c_hat, detector stack, PopQA source), the id-list commit ceremony. Everything derived from the census (role-group counts, baseline projection distributions, and the confab-set-dependent distractor mapping) becomes known only after sign at the run-time barrier, never pre-sign.
+
+preflight:
+  gpu_preflight: 8-row capture smoke + 8-row generation smoke (first rows by lexicographic row_key); readback verified against setpoint; code-enforced pass marker required before any full pass
+  dose_readback: per-row readback within RELATIVE 0.005 of the commanded dose, OR within ABSOLUTE 0.005 x reference_dose_abs[direction] (M1's amended rule, carried verbatim; applies to both ladder rebuilds and both channel-2 survival passes)
+  throughput_probe: mandatory 8-row rate measurement before the full census and before each ladder rebuild; wall-clock estimates in the AMENDMENT are TO-CONFIRM against it

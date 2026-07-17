@@ -1,0 +1,108 @@
+# Gates for margin-evidence-responsiveness-worldknown (M4-WK). DRAFT; fixed at
+# sign. Floors here are RE-DERIVED on the world-known PopQA population, NOT
+# carried from the KUQ baseline. Two floors (collapse_floor_z, D2 absolute_floor)
+# are locked as a FORMULA at sign and given their NUMERIC value only at a
+# baseline-measurement repin, before any true/false contrast is computed. Nothing
+# moves after the contrast is read. Both floors are computed PER DIRECTION.
+
+statistics:
+  rates: Wilson 95% CI (alpha 0.05) on every rate
+  medians_shifts_differences: bootstrap 95% CI, 10000 resamples, seed 48260724
+  resampling_unit: row indices within role groups
+  pass_fail_surface: point estimate against floor plus a CI condition where stated
+
+integrity:
+  SC0_provenance_staging:
+    - the TRANSFER c_hat direction (sha256 937d1bff..., layer_index 19, hs20) and the detector_v2 + patterns + grader stack staged with sha256 and verified byte-identical against the cell.yaml pins
+    - PopQA test.jsonl staged with sha256; every consumed field (question, possible_answers, obj, prop) asserted present and non-empty on the source rows (feasibility probe, NOTEBOOK) before generation
+    - census generated in ONE pinned batching regime with a recorded batch composition; single-regime attestation emitted. The single-regime attestation additionally covers the two paired-contrast sites, not only the census (MAJOR M2): (a) the three channel-1 capture arms (no_answer_baseline / true_answer / false_answer_placebo) captured under identical per-row batch grouping, and (b) the three channel-2 single-dose survival arms generated under ONE pinned batch composition
+    - the committed census (analysis-committed/census/*.jsonl) contains ONLY row_key, role/label, question_sha (hash), correctness bit, and abstention bit; NO generation_text, NO question text, NO answer text inline (MAJOR M3). The generation_text and any richer per-row metadata are written to a GITIGNORED sidecar (analysis/census/qwen35_4b_worldknown_gen_text.jsonl) keyed by row_key. This no-text-in-committed-path invariant holds regardless of PopQA being public; exhaust is a separate gated path (data-exhaust skill)
+    - role-group opaque-id lists (native_fit_split confab/correct/refused; test confab/correct/refused) committed BEFORE any direction fit or channel generation; test and fit asserted disjoint
+    - the category-matched false-answer distractor mapping (row_key -> donor_row_key, opaque ids, NO text) committed BEFORE any generation, deterministic under seed 48260725, donor drawn from the SAME prop category
+  SC1_dose_and_preflight:
+    - per-row readback within RELATIVE 0.005 of the commanded dose, OR within ABSOLUTE 0.005 x reference_dose_abs[direction] (M1's amended rule, verbatim); applies to both ladder rebuilds and both channel-2 survival passes
+    - MANDATORY GPU preflight before any full pass: 8-row capture smoke + 8-row generation smoke; generate/capture refuses without a pass marker
+    - MANDATORY throughput probe (8-row rate) before the full census and before each ladder rebuild
+    - live first-batch and per-arm/per-rung-completion assertions with hard abort
+  SC2_grading_integrity:
+    - blinded correctness calibration slice (MINOR m3): a target slice of n >= 150, stratified across roles (and across prop categories within the confab class; seed 48260726), pool sha256 + opaque-id list committed before grading; graded-file sha256 committed before unblind (enforced in code). Bounds the ALIAS-GRADER FALSE-WRONG rate (a correctly-phrased answer scored wrong and mislabeled confab), the one new construct risk this rebase introduces (see AMENDMENT), and reports that bound with a Wilson 95% CI. A POSITIVE (d) verdict is robust regardless of this bound because the bias is conservative (false-wrong rows contaminate the confab class with actually-correct rows and shrink the true-answer collapse effect, biasing D1 against earning d); a NULL (d) result is only interpretable if the alias-grader false-wrong rate <= 0.10. Report the bound as a construct caveat either way.
+    - channel-2 abstention calibration slice: rows stratified across the true_answer and false_answer survival arms (seed 48260726); same commit-before-grade / commit-before-unblind ceremony
+    - CG1: clear-negative agreement >= 0.95; clear-positive >= 0.60; >= 25 clear-positive decoys; VOID_REGRADE_ONCE remedy
+    - detector-vs-adjudication disagreement on the abstention bit <= 0.05; exceedance voids channel 2 for criterion use (channel 1 needs no abstention grading and is unaffected)
+    - rationale: M1's CG1 validated detector_v2 at these doses on baseline outputs; the answer-supplied arms shift the output distribution, so a fresh slice drift-checks the detector; the correctness slice additionally validates the alias grader (unlike KUQ, correctness is now on the critical path defining the confab class)
+  SC3_coverage:
+    - zero silent drops; every row appears in every applicable arm or is reported missing with reason
+    - channel-2 survival never imputed for a missing generation; a missing row is reported, not defaulted
+    - the native_fit_split and test population partitions asserted at analysis time against the pre-committed opaque-id lists; disjointness re-asserted
+  S1_baseline_reproduction:                        # adapted: there is NO committed baseline to reproduce here
+    - channel 1 (TRANSFER direction, firing-strength floor, BLOCKER B1): the baseline confab-vs-correct AUROC of the transfer (KUQ-fit) negative-z projection, measured on the TEST subset (400 confab / 360 correct-control) at the no_answer_baseline arm, must be at least 0.70 (LOCKED at sign; clearly above chance 0.5, well below the direction's native KUQ AUROC 0.982; PI-adjustable at sign). If it is below 0.70, the KUQ direction does not fire on the world-known confident-wrong error class (non-transfer), so the criterion (d) test is VOIDED and lifted to PI, and is NOT scored as (d)-not-earned. Failure of this bullet means halt / void / lift, never a substantive (d) failure. This is separate from and precedes the two collapse-floor and specificity legs, which only score once the transfer direction is confirmed to fire.
+    - channel 1 (both directions): the FRESH no_answer_baseline projection gap = median(confab negative-z) - median(correct-on-answerable negative-z) must be STRICTLY POSITIVE under that direction before its collapse floor is frozen; a non-positive gap means the direction does not separate the classes at baseline and the "0.5 x gap" floor is undefined -> HALT and lift to PI
+    - channel 1 (native direction only): the native c_hat's role-separation AUROC on the DISJOINT test census reproduces its FIT-SPLIT (in-sample) AUROC within 0.05 AUROC; a larger drop indicates an overfit native direction -> HALT and lift to PI (transfer is unaffected)
+    - channel 2 (both directions): no_answer_baseline survival at each row's own tipping dose is measured; if it exceeds 0.05 the rebuilt doses do not reproduce in the survival regime and channel 2 is VOIDED / lifted to PI, not scored
+    - on_failure: halt, report straight, lift to PI; never a silent retry
+
+# ===========================================================================
+# The two RE-DERIVED floors. FORMULA locked at sign; NUMERIC frozen by repin at
+# baseline measurement, per the no-goalpost rule. This two-step is the whole
+# point of the rebase's floor handling.
+# ===========================================================================
+rederived_floors:
+  collapse_floor_z:
+    formula_at_sign: collapse_floor_z[direction] = 0.5 * realized_baseline_gap_z[direction]
+    realized_baseline_gap_z: median(no_answer_baseline negative-z over confab) - median(no_answer_baseline negative-z over correct-on-answerable), on the FRESH census, under that direction, computed on the TEST subset (400 confab / 360 correct-control), the SAME rows as the leg-1 shift (MINOR m1)
+    numeric_at_repin: >-
+      frozen into the experiment record via `bin/exp repin` (a code-emitted,
+      hashed, append-only repin record written to instrument.repins; fork 6) the
+      MOMENT the fresh no_answer_baseline gap is measured for that direction, which
+      is BEFORE any true_answer or false_answer shift is computed (self-blinding
+      preserved). After the repin the number never moves. One numeric value per
+      direction.
+    carried: only the 0.5x fraction is carried (M4 decision record item 1); NOT the KUQ numeric gap (3.0005 vs 1.052), which is invalid on this population
+  d2_absolute_floor:
+    formula_at_sign: absolute_floor[direction] = 1.96 * sqrt(0.25 / n_margin_eligible[direction])   # normal-approx (Wald) 95% half-width at worst-case p=0.5
+    numeric_at_repin: >-
+      frozen via `bin/exp repin` (code-emitted, hashed, append-only record in
+      instrument.repins; fork 6) the MOMENT n_margin_eligible is realized for that
+      direction (after the ladder rebuild identifies the non-right-censored confab
+      rows), which is BEFORE any survival contrast is computed. One numeric value
+      per direction.
+      Anchor: at n=308 this is 1.96*sqrt(0.25/308)=0.0558 (M4's value); the paired
+      design has strictly smaller variance, so a real effect is comfortably
+      resolvable.
+    carried: only the Wald-half-width FORMULA is carried; the numeric depends solely on the realized n, not on any population
+
+criteria:
+  D1_projection_collapse:                          # channel 1, confab rows, PER DIRECTION
+    leg_1_position_into_gap:
+      rule: median over confab rows of (no_answer_baseline_z - true_answer_z) >= collapse_floor_z[direction]
+      collapse_floor_z: SEE rederived_floors.collapse_floor_z   # formula at sign; numeric frozen at the per-direction baseline-measurement repin
+    leg_2_specificity:
+      rule: paired bootstrap 95% CI of (true_answer shift - false_answer shift) over confab rows excludes zero, true_answer shift the larger
+    both_legs_required: true
+  D2_margin_lengthening:                            # channel 2, margin-eligible confab rows, PER DIRECTION
+    rule: paired rate difference (true_answer survival - false_answer survival) bootstrap 95% CI excludes zero AND point estimate >= absolute_floor[direction]
+    absolute_floor: SEE rederived_floors.d2_absolute_floor      # formula at sign; numeric frozen at the per-direction n-realization repin
+    note: >-
+      MINOR m5: the Wald absolute_floor is a deliberately conservative UNPAIRED
+      anchor (worst-case p=0.5 variance, unpaired), while the paired bootstrap CI
+      that the same rule requires is tighter (the paired design has strictly
+      smaller variance). The double-bar (point estimate >= Wald floor AND paired CI
+      excludes zero) is kept as-is; the two conditions are complementary, not
+      redundant.
+  criterion_d_earned:                               # PRIMARY VERDICT = TRANSFER ONLY
+    primary_direction: transfer
+    rule: on the transfer direction, D1 AND D2 both pass
+  criterion_d_not_earned: on the transfer direction, either D1 or D2 fails its floor; a single-channel pass is reported as a channel dissociation, never rounded to a binary
+  native_secondary_reading:
+    rule: the native direction's D1 and D2 are computed and reported identically, as a SECONDARY dissociation reading; never rounded into the primary (transfer) verdict
+  C1_construct_integrity:
+    correct_control_specificity: the correct-on-answerable projection shift is reported per direction; a correct-row leg-1 shift as large as the confab leg-1 shift would indicate the collapse is not specific to rows that needed the evidence (reported as a construct caveat, not a silent pass)
+    separation_reproduction: median confab world-known margin < median correct-control world-known margin, per direction (the M1-style separation reproduced on this population; anchors channel-2 S1)
+    alias_grader_false_wrong_bound: the SC2 correctness calibration slice bound on the alias-grader false-wrong rate is reported; a large bound is a construct caveat on the confab-class definition, not a silent pass
+    single_regime_required: >-
+      SC0 batching attestation must hold across BOTH paired-contrast sites, not
+      only the census (MAJOR M2): (a) the three channel-1 capture arms captured
+      under identical per-row batch grouping, and (b) the three channel-2 survival
+      arms generated under one pinned batch composition. A mixed-regime capture or
+      generation at either paired site voids the paired comparison.
+    on_failure: instrument void, no criterion (d) verdict, reported straight
