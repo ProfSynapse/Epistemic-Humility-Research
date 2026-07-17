@@ -4,7 +4,7 @@ session_id: 20260717T013941Z-gate-factorial-resolution-and-margin-theory-framewo
 title: Gate factorial resolution and margin theory framework
 status: active
 created_at: '2026-07-17T01:39:41Z'
-updated_at: '2026-07-17T02:24:29Z'
+updated_at: '2026-07-17T02:49:49Z'
 question: What did the gate-contribution factorial settle, and what framework drives
   the next experiment series?
 tags:
@@ -110,6 +110,32 @@ checkpoints:
   decisions: []
   next_steps: []
   signals: {}
+- id: 006-checkpoint
+  at: '2026-07-17T02:49:49Z'
+  kind: checkpoint
+  title: Checkpoint
+  summary: 'M1 OVERNIGHT LAUNCH HALTED BY REGISTERED GATE. Build agent delivered:
+    SC0 staging sha256-verified byte-identical vs factorial, seed-48260714 subsample
+    manifests committed, 29/29 CPU smokes. Mandatory GPU preflight FAILED SC1 readback
+    (rel 0.005) in BOTH families: 1 of 4 rows per family at the 0.0625x rung only
+    (qwen rel 0.0068, mistral rel 0.0066); all rows at 1x/3x/4x passed at rel 0.0004-0.0019.
+    Diagnosis: fixed absolute readback noise floor (0.0004-0.0053 dose_abs) dominating
+    the relative bar at tiny setpoints; worst mis-dose 0.04% of reference. Lead adjudication
+    (NOTEBOOK, commit b1e1e1fa): gate stands as registered (readback tolerance was
+    not a pre-authorized knob; classifier also blocked the gates.yaml edit, honored
+    per protocol); no retry-until-pass (SC1 has no registered retry remedy); read-only
+    repeatability+noise-floor diagnostic dispatched to analysis/preflight_diag/. Proposal
+    for PI morning: amend SC1 to rel 0.005 OR abs 0.005 x reference_dose_abs, repin,
+    fresh preflight, launch. Collapse observed at 3x/4x both families (by design,
+    boundary bracketed by 1.5x/2x rungs); mistral top-rung authorized knob NOT exercised.
+    Preflight caught a real instrument-physics fact pre-run: the GPU-smoke-mandatory
+    directive paid for itself on its first outing.'
+  evidence: []
+  run_ids: []
+  commands: []
+  decisions: []
+  next_steps: []
+  signals: {}
 ---
 # Gate factorial resolution and margin theory framework
 
@@ -151,3 +177,8 @@ _No summary yet._
 - at: `2026-07-17T02:24:29Z`
 - kind: `checkpoint`
 - summary: M1 margin-mapping SIGNED (worktree exp/margin-mapping, commit 34a1332f, pushed). cell.yaml + gates.yaml pinned via bin/exp sign (476463c6 / 7eb74eed). Predictions registered pre-generation: PI calls qwen PASS / mistral FAIL on separation and setpoint placement, retrodiction PASS both; orchestrator calls PASS on all four with bands (observable bound qwen 3.0-3.7, mistral 2.5-4.5; fitted ratio qwen 15-60, mistral 8-80; known censored fraction qwen 0.80-0.95, mistral 0.60-0.90). Differentiating slots: mistral separation + placement. Decision record resolved at sign; single authorized launch knob = mistral top-rung adjustment if preflight shows collapse below 3x, NOTEBOOK-recorded pre-run. PI authorized overnight launch on free local 3090 ('get this running', going to bed). Arc: harness-builder agent building staging + smokes + mandatory GPU preflight now (no generation, no commits); lead commits SC0 manifests at the boundary, then launches full two-family staircase detached with RunLog checkpointing (~4.5h/family).
+### 006-checkpoint - Checkpoint
+
+- at: `2026-07-17T02:49:49Z`
+- kind: `checkpoint`
+- summary: M1 OVERNIGHT LAUNCH HALTED BY REGISTERED GATE. Build agent delivered: SC0 staging sha256-verified byte-identical vs factorial, seed-48260714 subsample manifests committed, 29/29 CPU smokes. Mandatory GPU preflight FAILED SC1 readback (rel 0.005) in BOTH families: 1 of 4 rows per family at the 0.0625x rung only (qwen rel 0.0068, mistral rel 0.0066); all rows at 1x/3x/4x passed at rel 0.0004-0.0019. Diagnosis: fixed absolute readback noise floor (0.0004-0.0053 dose_abs) dominating the relative bar at tiny setpoints; worst mis-dose 0.04% of reference. Lead adjudication (NOTEBOOK, commit b1e1e1fa): gate stands as registered (readback tolerance was not a pre-authorized knob; classifier also blocked the gates.yaml edit, honored per protocol); no retry-until-pass (SC1 has no registered retry remedy); read-only repeatability+noise-floor diagnostic dispatched to analysis/preflight_diag/. Proposal for PI morning: amend SC1 to rel 0.005 OR abs 0.005 x reference_dose_abs, repin, fresh preflight, launch. Collapse observed at 3x/4x both families (by design, boundary bracketed by 1.5x/2x rungs); mistral top-rung authorized knob NOT exercised. Preflight caught a real instrument-physics fact pre-run: the GPU-smoke-mandatory directive paid for itself on its first outing.
