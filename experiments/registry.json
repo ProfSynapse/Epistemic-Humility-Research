@@ -3411,6 +3411,36 @@
     },
     {
       "checkpoint": {
+        "repo": "Qwen/Qwen3.5-4B",
+        "revision": "851bf6e806efd8d0a36b00ddf55e13ccb7b8cd0a"
+      },
+      "created_at": "2026-07-17T16:12:45Z",
+      "falsifier": "Incremental AUROC of readout-plus-margin over readout alone below the registered floor (redundancy); or verbalized confidence matching or beating both internal channels; or the readout sanity floor failing (instrument void, no claim evaluated).",
+      "inputs": [
+        "experiments/margin-mapping/analysis-committed/subsample_ids_qwen35_4b.json",
+        "experiments/qwen35-4b-midband-doubt-snap/analysis-committed/directions/hs20/c_hat.json",
+        "experiments/doubt-snap-cross-family-confirmatory/analysis-committed/qwen35_4b/split_manifest.json"
+      ],
+      "instrument": {
+        "configs": [
+          "experiments/susceptibility-as-probe/cell.yaml",
+          "experiments/susceptibility-as-probe/gates.yaml"
+        ],
+        "modules": [],
+        "pins": {}
+      },
+      "kg": [],
+      "prediction": "The cross-fitted readout-plus-margin combination beats the readout alone by at least the registered incremental-AUROC floor, and both internal channels beat verbalized confidence.",
+      "question": "At the qwen mid-band operating point, does the susceptibility channel (the per-row commitment margin measured by M1) carry epistemic information that the frozen readout channel (the hs20 c_hat projection) misses, or are the two channels redundant views of one latent variable (framework Claim 3)?",
+      "registered": true,
+      "slug": "susceptibility-as-probe",
+      "status": "draft",
+      "title": "Susceptibility as probe: margin vs readout vs verbalized confidence",
+      "type": "probe-fit",
+      "verdict": ""
+    },
+    {
+      "checkpoint": {
         "repo": "",
         "revision": ""
       },
