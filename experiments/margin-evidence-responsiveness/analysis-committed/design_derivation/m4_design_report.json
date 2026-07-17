@@ -1,0 +1,283 @@
+{
+  "pin_verification": {
+    "/home/profsynapse/code/Epistemic-Humility-Research/experiments/susceptibility-as-probe/analysis/capture/readout_scores.jsonl": {
+      "expected": "6861ea24ba03368b49d4b76503df5f78a08f8bd230155dd5cb6dec39551da5d9",
+      "actual": "6861ea24ba03368b49d4b76503df5f78a08f8bd230155dd5cb6dec39551da5d9",
+      "match": true
+    },
+    "/home/profsynapse/code/Epistemic-Humility-Research/experiments/margin-mapping/analysis/margin_dataset/qwen35_4b_margin_rows.jsonl": {
+      "expected": "84f4d3b8674a18eb944a4b921383e1cfb1147db892dee2c19348f671b7f41565",
+      "actual": "84f4d3b8674a18eb944a4b921383e1cfb1147db892dee2c19348f671b7f41565",
+      "match": true
+    },
+    "/home/profsynapse/code/Epistemic-Humility-Research/experiments/margin-mapping/analysis-committed/subsample_ids_qwen35_4b.json": {
+      "expected": "60d5a3e13de5f85d35776dcee3c15dddea2e301951ded42849516865fe32723d",
+      "actual": "60d5a3e13de5f85d35776dcee3c15dddea2e301951ded42849516865fe32723d",
+      "match": true
+    }
+  },
+  "row_counts": {
+    "readout_scores_rows": 760,
+    "margin_rows": 760
+  },
+  "sanity_reproduction_M2_readout_auroc": {
+    "n_confab": 400,
+    "n_known": 360,
+    "other_roles_present": [],
+    "raw_field_polarity_check": {
+      "reproduced_raw_polarity_auroc": 0.0179375,
+      "committed_raw_polarity_auroc": 0.0179375,
+      "match": true,
+      "interpretation": "confirms the on-disk readout_z field is RAW (pre-negation); registered score = -readout_z"
+    },
+    "reproduced_auroc_negated_registered_orientation": 0.9820625,
+    "committed_auroc_m2_results_json": 0.9820625,
+    "match_within_1e-6": true,
+    "amendment_text_cited_value": 0.9821,
+    "rounds_to_amendment_value": true
+  },
+  "sanity_reproduction_M1_confab_median_tipping": {
+    "n_confab": 400,
+    "n_known": 360,
+    "reproduced_confab_median_tipping_dose_abs": 9.456140938349982,
+    "amendment_text_cited_value": 9.456,
+    "match_within_0.001": true,
+    "confab_tipping_censored_n": 92,
+    "confab_tipping_censored_frac": 0.23,
+    "known_tipping_censored_n": 322,
+    "known_tipping_censored_frac": 0.8944444444444445
+  },
+  "baseline_projection_distribution": {
+    "orientation": "readout_z field as stored in readout_scores.jsonl; cell.yaml registers this as the negative-z, confab-positive score (higher = more confab-like)",
+    "confab": {
+      "n": 400,
+      "mean": 2.9256302656722863,
+      "median": 3.000505444683542,
+      "sd": 0.7092207141626171,
+      "q25": 2.525083104965482,
+      "q75": 3.4527550449251416,
+      "min": 0.8305832911685026,
+      "max": 4.6359956467852985
+    },
+    "known_correct_answered": {
+      "n": 360,
+      "mean": 1.0643532896389267,
+      "median": 1.0521283753653026,
+      "sd": 0.31194687578090785,
+      "q25": 0.8492532889648527,
+      "q75": 1.2932707581403564,
+      "min": 0.19185342405355088,
+      "max": 2.159584222321976
+    },
+    "gap_median_confab_minus_known": 1.9483770693182394,
+    "gap_mean_confab_minus_known": 1.8612769760333596,
+    "pooled_sd": 0.5575450463664356,
+    "cohens_d": 3.3383436695625694,
+    "auroc_separation": 0.9820625
+  },
+  "baseline_margin_distribution": {
+    "confab_tipping_dose_abs": {
+      "n": 400,
+      "mean": 17.37762900358025,
+      "median": 9.456140938349982,
+      "sd": 18.79263031155195,
+      "q25": 3.152046979449994,
+      "q75": 18.912281876699964,
+      "min": 0.0,
+      "max": 50.4327516711999
+    },
+    "known_tipping_dose_abs_censoring_dominated": {
+      "n": 360,
+      "mean": 46.40294716483363,
+      "median": 50.4327516711999,
+      "sd": 11.871891635062156,
+      "q25": 50.4327516711999,
+      "q75": 50.4327516711999,
+      "min": 0.7880117448624985,
+      "max": 50.4327516711999
+    },
+    "note": "known median is a right-censoring artifact (top ladder rung recorded value per M1 Decision record item 7), not a real tipping measurement; see M1 Outcome"
+  },
+  "collapse_floor_candidates": {
+    "gap_median": 1.9483770693182394,
+    "gap_median_bootstrap_ci95_row_level_10k_seed_48260721": {
+      "point": 1.9483770693182394,
+      "ci95": [
+        1.8500319368666398,
+        2.036212364053746
+      ],
+      "n_boot": 10000,
+      "seed": 48260721
+    },
+    "candidates": [
+      {
+        "fraction_of_median_gap": 0.25,
+        "implied_absolute_shift_floor_z": 0.48709426732955985,
+        "resulting_target_z_if_hit": 2.5134111773539822,
+        "known_median_z_for_reference": 1.0521283753653026
+      },
+      {
+        "fraction_of_median_gap": 0.5,
+        "implied_absolute_shift_floor_z": 0.9741885346591197,
+        "resulting_target_z_if_hit": 2.0263169100244225,
+        "known_median_z_for_reference": 1.0521283753653026
+      },
+      {
+        "fraction_of_median_gap": 0.75,
+        "implied_absolute_shift_floor_z": 1.4612828019886797,
+        "resulting_target_z_if_hit": 1.5392226426948623,
+        "known_median_z_for_reference": 1.0521283753653026
+      },
+      {
+        "fraction_of_median_gap": 1.0,
+        "implied_absolute_shift_floor_z": 1.9483770693182394,
+        "resulting_target_z_if_hit": 1.0521283753653026,
+        "known_median_z_for_reference": 1.0521283753653026
+      }
+    ],
+    "method": "each candidate states: paired median (baseline_z - true_answer_z) on confab rows must be >= fraction * gap_median. No actual shift is computed -- M4 has no true-answer data yet.",
+    "recommendation": "0.5 (halfway into the gap) as a moderate floor consistent with criterion (d)'s qualitative language ('move toward the known regime'); the gap itself is estimated with very tight precision (AUROC 0.982, Cohen's d 3.34, bootstrap CI on the median gap given above), so noise in the BASELINE gap is not the binding constraint -- the real risk is a shift driven by mere prompt-length/format change (appending ANY in-context text) rather than by the true answer specifically. Recommend the floor be a CONJUNCTION, not a single number: (1) paired median shift on confab rows >= 0.5 * gap_median (position-into-gap), AND (2) specificity: the true-answer shift exceeds the false-answer/placebo shift by a paired bootstrap 95% CI that excludes zero (same convention as M2 Decision record item 4). Exact fraction for (1) is a PI judgment call; (2)'s existence as a required leg is the derivation-time recommendation."
+  },
+  "margin_lengthening_options": {
+    "option_a_single_dose_survival": {
+      "description": "single-dose survival at each row's OWN M1 tipping dose",
+      "population": "confab rows with a genuine (non-right-censored) tipping dose",
+      "n_eligible_confab_rows": 308,
+      "arms_requiring_new_generation": [
+        "true_answer",
+        "false_answer_placebo"
+      ],
+      "arms_reused_from_M1_zero_new_generations": [
+        "no_answer_baseline (tautological: M1's own generation at the tipping rung already establishes abstention there)"
+      ],
+      "generations_per_row_per_new_arm": 1,
+      "total_new_generations": 616
+    },
+    "option_b_full_ladder_rerun": {
+      "description": "full ladder re-run under the true-answer condition (and placebo)",
+      "population": "same confab rows (or full 400 including censored, since a full ladder could resolve some censored rows)",
+      "ladder_rungs": 10,
+      "arms_requiring_new_generation": [
+        "true_answer",
+        "false_answer_placebo"
+      ],
+      "generations_per_row_per_new_arm": 10,
+      "total_new_generations_uncensored_only": 6160,
+      "total_new_generations_full_400": 8000
+    },
+    "cost_ratio_b_over_a": 10.0,
+    "recommendation": "Option A: ~10x cheaper, and the M1b batch-composition lesson (see mechanism qwen-midband-margin-separation-is-instrument-resolution-limited) argues for fewer generations per row batched consistently rather than a full re-ladder that reintroduces the same resolution-limited noise at every rung.",
+    "criterion_design": "lengthened = survives (non-abstaining, well-formed) at the row's own tipping dose under the true-answer arm. no_answer_baseline survival is tautologically 0% by definition of tipping dose (0 new generations needed). Primary test: paired rate difference (true_answer survival rate minus false_answer/placebo survival rate) on the n_eligible_confab_rows population, row-level bootstrap 95% CI (10000 resamples, repo statistical convention), floor = CI excludes zero AND point estimate clears a pre-registered absolute margin.",
+    "floor_derivation_analogous_to_M2_item3": {
+      "n_margin_population": 308,
+      "wilson_se_at_worst_case_p0.5": 0.028490144114909487,
+      "wilson_95_halfwidth": 0.05584068246522259,
+      "candidate_floor_absolute_rate_difference": 0.056,
+      "note": "one conservative unpaired half-width at n=308, same style as M2's 0.02 AUROC floor; the PAIRED design (same rows, two arms) has strictly smaller variance than this unpaired anchor, so a floor set at this half-width is comfortably resolvable if a real effect exists -- exact floor value is still a PI call, this is the derivation anchor only."
+    }
+  },
+  "full_arm_population_matrix": {
+    "channel_1_projection_capture_forward_pass_only": {
+      "confab_population_n": 400,
+      "known_population_n": 360,
+      "arms": [
+        "no_answer_baseline",
+        "true_answer",
+        "false_answer_placebo"
+      ],
+      "captures_per_row_per_arm": 1,
+      "total_captures_confab": 1200,
+      "total_captures_known": 1080,
+      "total_captures_all": 2280,
+      "note": "no_answer_baseline arm is IDENTICAL prompt text to the already-committed M2 readout_scores.jsonl capture, but M1b's single-batching-regime lesson argues for recapturing it fresh within the same M4 batch composition rather than reusing the separately-batched M2 artifact for a paired comparison -- capture is cheap (forward pass only), so the cost of doing so is negligible."
+    },
+    "channel_2_margin_generation_option_a": {
+      "confab_population_n": 308,
+      "known_population_n": "not applicable in the primary design (known rows are ~89% right-censored, no finite own-tipping-dose to test lengthening at); proposed as a TO-DECIDE control using a fixed reference dose instead, see ambiguity notes",
+      "arms_with_new_generation": [
+        "true_answer",
+        "false_answer_placebo"
+      ],
+      "generations_per_row_per_arm": 1,
+      "total_generations_confab": 616
+    },
+    "grand_total_new_model_passes_option_a": 2896
+  },
+  "injection_template_structural": {
+    "no_answer_baseline": "{system_prompt}\n{user_question}",
+    "true_answer": "{system_prompt}\n{user_question}\n\n[Context: the answer is {true_answer}.]",
+    "false_answer_placebo": "{system_prompt}\n{user_question}\n\n[Context: the answer is {false_answer}.]",
+    "false_answer_source": "TO-DECIDE: a plausible-but-wrong answer, structurally distinct from 'true_answer' only in content, never read/inspected by the design derivation step; the placebo's construction (e.g. a distractor from the same dataset family, or an irrelevant fact) is a harness-build-time decision, not a design-derivation-time one."
+  },
+  "knob_table": [
+    {
+      "knob": "collapse floor (fraction of baseline gap)",
+      "label": "TO-DECIDE (candidates DERIVED from baseline gap)",
+      "candidates": [
+        0.25,
+        0.5,
+        0.75,
+        1.0
+      ],
+      "derivation": "gap_median computed from committed M2 readout_scores.jsonl; fraction itself not derivable without real shift data, PI must pick"
+    },
+    {
+      "knob": "margin-lengthening criterion",
+      "label": "DERIVED (population) + JUDGMENT (option choice)",
+      "value": "Option A recommended; population = uncensored confab subset (n given above)"
+    },
+    {
+      "knob": "population counts",
+      "label": "DERIVED from M1 registered subsample",
+      "value": {
+        "confab_projection": 400,
+        "confab_margin_eligible": 308,
+        "known_projection_control": 360
+      }
+    },
+    {
+      "knob": "arm set",
+      "label": "JUDGMENT",
+      "value": [
+        "no_answer_baseline",
+        "true_answer",
+        "false_answer_placebo"
+      ]
+    },
+    {
+      "knob": "capture convention",
+      "label": "CONVENTION (byte-identical reuse of M2 pins)",
+      "value": {
+        "direction_sha256": "937d1bffe1924e73bca40a88c8096d7e01bb67c5b64286362196aa968e2c2e1f",
+        "layer_index": 19,
+        "hs_index": 20,
+        "orientation": "negative z, confab-positive"
+      }
+    },
+    {
+      "knob": "bootstrap seeds",
+      "label": "CONVENTION (lineage continuation)",
+      "value": "M4 starts 48260721 (M1 48260714-16, M2 48260717-18, M1b 48260719-20)"
+    },
+    {
+      "knob": "self-blinding rule",
+      "label": "CONVENTION (carried from M2)",
+      "value": "no paired-shift AUROC/median computed pre-sign; only distributions/hashes/counts of already-committed baseline data, as executed in this script"
+    },
+    {
+      "knob": "preflight",
+      "label": "CONVENTION (standing directive)",
+      "value": "GPU smoke (8-row capture + 8-row generation) before any full capture/generation pass, code-enforced pass marker"
+    },
+    {
+      "knob": "known-row margin control",
+      "label": "AMBIGUOUS / TO-DECIDE",
+      "value": "no finite own-tipping-dose exists for ~89% of known rows (right-censored); PI call needed on whether to (a) skip margin-lengthening for knowns entirely, using only the projection-specificity check, or (b) test at a fixed reference dose (e.g. setpoint dose_abs 12.608) despite the ceiling effect"
+    },
+    {
+      "knob": "false-answer placebo construction",
+      "label": "TO-DECIDE",
+      "value": "structural template fixed; actual distractor-selection rule is a harness-build-time decision"
+    }
+  ]
+}

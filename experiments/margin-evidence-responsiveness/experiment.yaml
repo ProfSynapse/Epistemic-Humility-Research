@@ -1,0 +1,39 @@
+slug: margin-evidence-responsiveness
+title: 'Evidence-responsiveness: the naming test (M4)'
+type: steer-cell
+status: draft
+registered: true
+created_at: '2026-07-17T20:05:16Z'
+question: >-
+  Does the qwen c_hat known-unknown direction satisfy earnability criterion
+  (d)? That is, does supplying the true answer in-context both collapse the
+  c_hat projection on a confab row (toward the known regime) and lengthen its
+  commitment margin, specifically for the true answer over a false-answer
+  placebo?
+prediction: >-
+  Supplying the true answer in-context both collapses the c_hat projection on
+  confab rows (paired median shift toward the known regime at or above the
+  floor, and larger than the false-answer placebo) and lengthens their margins
+  (true-answer survival at each row's own tipping dose exceeds the placebo,
+  CI excluding zero): qwen earns criterion (d).
+falsifier: >-
+  With all gates valid, at least one channel fails its floor: the projection
+  does not collapse toward the known regime specifically for the true answer
+  (D1 fails), or the margin does not lengthen for the true answer over the
+  placebo (D2 fails). Criterion (d) is not earned; a single-channel pass is
+  reported as a channel dissociation, not rounded to earned or not-earned.
+checkpoint:
+  repo: Qwen/Qwen3.5-4B
+  revision: 851bf6e806efd8d0a36b00ddf55e13ccb7b8cd0a
+instrument:
+  configs:
+  - cell.yaml
+  - gates.yaml
+  modules: []
+  pins: {}
+inputs:
+- experiments/qwen35-4b-midband-doubt-snap/analysis-committed/directions/hs20/c_hat.json
+- experiments/margin-mapping/analysis-committed/subsample_ids_qwen35_4b.json
+- experiments/margin-mapping/analysis/margin_dataset/qwen35_4b_margin_rows.jsonl
+verdict: ''
+kg: []
