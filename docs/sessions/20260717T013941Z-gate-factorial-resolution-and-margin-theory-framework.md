@@ -4,7 +4,7 @@ session_id: 20260717T013941Z-gate-factorial-resolution-and-margin-theory-framewo
 title: Gate factorial resolution and margin theory framework
 status: active
 created_at: '2026-07-17T01:39:41Z'
-updated_at: '2026-07-17T13:53:39Z'
+updated_at: '2026-07-17T14:03:28Z'
 question: What did the gate-contribution factorial settle, and what framework drives
   the next experiment series?
 tags:
@@ -164,6 +164,33 @@ checkpoints:
   decisions: []
   next_steps: []
   signals: {}
+- id: 008-checkpoint
+  at: '2026-07-17T14:03:28Z'
+  kind: checkpoint
+  title: Checkpoint
+  summary: "Blast-radius report VERIFIED WITH CORRECTIONS: agent's 'Tier 1 irreplaceable'\
+    \ list was a slug-matching error \u2014 all five experiments exist on main under\
+    \ full slugs (placebo-seed-distribution-census, qwen35-4b-midband-heldout, rr3-corrected-placebo-replication,\
+    \ ungated-vs-gated-dose-matched); no committed evidence lost anywhere; true loss\
+    \ = gitignored data-exhaust of resolved experiments, regenerable on demand (factorial\
+    \ 12-15 GPU-h, jspace ~$10 Modal). Inventory saved to docs/research/deleted-worktrees-inventory-20260717.md\
+    \ (pending slug-correction annotation). Lead recommendation: no preemptive regeneration.\
+    \ PI flagged HF check \u2014 account professorsynapse already holds: eh-jspace-fresh-pool-census-qwen3-4b,\
+    \ eh-probe-directions, eh-readout-rows, eh-doubt-snap-cross-family-confirmatory,\
+    \ eh-doubt-on-command, eh-h9-holdout-pool, eh-bb-fit-pool, eh-al-prep-staging,\
+    \ phase1{,-evals,-labels}, cloud-results, and 30+ private Phase 1 LoRA checkpoints\
+    \ \u2014 likely covering several 'lost' items and much of the parked F: archive\
+    \ tier. hf-reconcile agent dispatched (read-only) to produce the corrected loss\
+    \ table + F: archive reconciliation + public-repo containment check. M1: qwen\
+    \ complete (10/10 rungs, readbacks OK); mistral pool REBUILT with exact sha256\
+    \ match per restage agent (relaunch pending its staging+RG0 verification). Harvest\
+    \ hook live on main (PR #298 + fix 867ff8db)."
+  evidence: []
+  run_ids: []
+  commands: []
+  decisions: []
+  next_steps: []
+  signals: {}
 ---
 # Gate factorial resolution and margin theory framework
 
@@ -215,3 +242,8 @@ _No summary yet._
 - at: `2026-07-17T13:53:39Z`
 - kind: `checkpoint`
 - summary: INCIDENT + FIX: worktree cleanup sweep (33 merged worktrees removed with --force --force) destroyed gitignored row-level data living only in those worktrees: M1's symlinked staging pools (qwen35-midband-heldout, rr2-mistral-confirm targets), the factorial's row-level runlogs/generation text, and other resolved experiments' data-exhaust. Committed evidence unaffected. Cleanup verification had checked git state only (clean+merged) — gitignored artifacts were invisible to it. M1 impact: qwen family SAFE (completed 10/10 rungs before the sweep, all rung readbacks OK, full text in M1's own runlog); mistral launch crashed on dangling pool symlink (KeyError kuq_unknowns_all:1000). Recovery: agent rebuilding pools from committed builder scripts + datasets, acceptance = exact sha256 match vs M1 staging_manifest pins, restage as LOCAL COPIES, then resume mistral. Blast-radius inventory agent enumerating per-experiment losses (regenerable-deterministic / regenerable-GPU / lost). PI-directed programmatic fix SHIPPED: PR #298 merged (aea361d5) — post-merge git hook auto-harvests all gitignored experiments/ data from every worktree into main's checkout on every pull/merge (symlinks materialized, newer-supersedes with prior preserved, --check mode gates worktree removal); first harvest copied 3,279 files including live M1 runlogs. Policy change: staged inputs are LOCAL COPIES, never cross-worktree symlinks.
+### 008-checkpoint - Checkpoint
+
+- at: `2026-07-17T14:03:28Z`
+- kind: `checkpoint`
+- summary: Blast-radius report VERIFIED WITH CORRECTIONS: agent's 'Tier 1 irreplaceable' list was a slug-matching error — all five experiments exist on main under full slugs (placebo-seed-distribution-census, qwen35-4b-midband-heldout, rr3-corrected-placebo-replication, ungated-vs-gated-dose-matched); no committed evidence lost anywhere; true loss = gitignored data-exhaust of resolved experiments, regenerable on demand (factorial 12-15 GPU-h, jspace ~$10 Modal). Inventory saved to docs/research/deleted-worktrees-inventory-20260717.md (pending slug-correction annotation). Lead recommendation: no preemptive regeneration. PI flagged HF check — account professorsynapse already holds: eh-jspace-fresh-pool-census-qwen3-4b, eh-probe-directions, eh-readout-rows, eh-doubt-snap-cross-family-confirmatory, eh-doubt-on-command, eh-h9-holdout-pool, eh-bb-fit-pool, eh-al-prep-staging, phase1{,-evals,-labels}, cloud-results, and 30+ private Phase 1 LoRA checkpoints — likely covering several 'lost' items and much of the parked F: archive tier. hf-reconcile agent dispatched (read-only) to produce the corrected loss table + F: archive reconciliation + public-repo containment check. M1: qwen complete (10/10 rungs, readbacks OK); mistral pool REBUILT with exact sha256 match per restage agent (relaunch pending its staging+RG0 verification). Harvest hook live on main (PR #298 + fix 867ff8db).
