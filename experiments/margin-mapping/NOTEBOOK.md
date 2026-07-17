@@ -186,3 +186,43 @@ diagnostic remain in the record (this entry supersedes neither).
 Launching the full two-family staircase: qwen35_4b first, then
 mistral7b_v03, greedy, batch 4, RunLog checkpointing, ~4.5h per family on
 the local 3090 (free lane, PI-approved).
+
+## 2026-07-17 -- Recovery adjudication after the worktree-sweep data loss
+
+Staged-input recovery status (restage agent + lead verification):
+- qwen heldout_rows_for_steer.jsonl and mistral joined_rows_private.jsonl
+  REBUILT from committed builder scripts + datasets; both sha256 EXACT
+  matches to the M1 staging pins; symlinks replaced with local copies
+  (policy: staged inputs are local copies from now on, never
+  cross-worktree symlinks).
+- Both staged baseline.jsonl originals are unrecoverable byte-identically
+  (GPU RunLogs; n_new_tokens and original grade schema not reconstructable
+  from text). NON-BLOCKING: cmd_reuse_baseline already ran pre-incident;
+  the operative dose-0 artifacts (<family>__baseline_reused.jsonl) are
+  complete on disk, and neither preflight nor generate-family reads the
+  staged originals. The staging manifest's baseline pins stand as the
+  record that byte-identity WAS verified at staging time. Provenance gap
+  recorded here; no further action.
+- NEW BLOCKER: mistral7b_v03/directions/hs16_c_hat.json was ALSO a
+  dangling symlink (contrary to the earlier assumption that all
+  directions were local copies; only qwen hs20 was). The raw vector was
+  never committed anywhere (RR's manifest persists scalars only).
+
+Pre-stated acceptance rule for the hs16_c_hat reconstruction, recorded
+BEFORE the capture runs: rebuild FIT-split rows from the hash-verified
+joined pool, render via RR2's own render.py, GPU anchor-capture at layer
+16 on the pinned Mistral revision, direction_fit.fit_directions
+(seed=20260713), fit_reuse.py's built-in cross-check against the
+committed rr_reference_values scalars must pass, AND the resulting file's
+sha256 must EXACTLY match the M1 staging-manifest pin for
+hs16_c_hat.json. On exact match: restage as local copy and resume mistral
+generation (the existing preflight PASS was produced under the
+byte-identical original and remains valid). On ANY mismatch, including
+numerically-close: STOP, no generation, lift to the PI -- a non-identical
+direction is a different instrument than the signed one.
+
+Harness fix (post-sign code repair, no gate/config semantics change):
+config.py FACTORIAL_STAGING_MANIFEST pointed at the deleted
+gate-factorial worktree path; repointed to the committed manifest at
+experiments/gate-contribution-factorial/analysis-committed/staging_manifest.json
+inside this worktree.

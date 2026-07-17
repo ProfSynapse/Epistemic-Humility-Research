@@ -52,10 +52,13 @@ QH_WT = _WT / "qwen35-midband-heldout" / "experiments" / "qwen35-4b-midband-held
 RR2_WT = _WT / "rr2-mistral-confirm" / "experiments" / "rr2-mistral-adjudicated-refusal-confirm"
 DOUBT_SNAP_DIR = REPO_ROOT / "experiments" / "qwen35-4b-midband-doubt-snap"  # committed in THIS worktree's git history
 
-# The factorial's own worktree and its committed staging manifest -- M1's SC0
-# staging asserts every reused artifact's sha256 against THIS file (cell.yaml
-# "byte-identical (sha256 verified vs the factorial staging manifest)").
-FACTORIAL_EXPERIMENT_DIR = _WT / "gate-factorial" / "experiments" / "gate-contribution-factorial"
+# The factorial's committed staging manifest -- M1's SC0 staging asserts
+# every reused artifact's sha256 against THIS file (cell.yaml "byte-identical
+# (sha256 verified vs the factorial staging manifest)"). The manifest is
+# git-tracked, so it is read from THIS worktree's own checkout; the
+# factorial's separate worktree no longer exists (removed 2026-07-17 after
+# merge; see NOTEBOOK recovery entry of that date).
+FACTORIAL_EXPERIMENT_DIR = REPO_ROOT / "experiments" / "gate-contribution-factorial"
 FACTORIAL_STAGING_MANIFEST = FACTORIAL_EXPERIMENT_DIR / "analysis-committed" / "staging_manifest.json"
 
 # ---------------------------------------------------------------------------
