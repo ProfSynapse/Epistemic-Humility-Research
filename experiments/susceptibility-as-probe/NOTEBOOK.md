@@ -59,3 +59,15 @@ PI: resolve as instrument-void, or issue a signed pre-analysis
 clarification amendment (readout score = negative z-projection, matching
 the lineage convention) with repin and rerun analysis on the unchanged
 capture/elicitation artifacts.
+
+## 2026-07-17 -- PI-approved sign clarification, repin, analysis rerun authorized
+
+The PI selected the signed-clarification path (option presented with the
+S1 halt): cell.yaml readout score amended to NEGATIVE z-projection
+(confab-positive orientation, the lineage's own committed neg_z
+convention), Decision record item 5 citation corrected (0.9929 belongs to
+u_d, not c_hat; floor unchanged), cell.yaml repinned via bin/exp repin
+with reason recorded in instrument.repins. No criterion quantity was
+computed before the repin; analysis.py now reruns against the unchanged
+capture and elicitation artifacts. The SC2 confidence-channel void stands
+as registered (parse 0.7684 vs floor 0.95).

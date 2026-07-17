@@ -173,6 +173,18 @@ Statistics: Wilson 95% CI on every rate; class-stratified bootstrap 95% CI,
    layer, wrong sign, missing normalization) produces near-0.5 or inverted.
    Floor: readout AUROC >= 0.80 on the 760 rows; below it the run halts for
    diagnosis before any criterion is read.
+   CORRECTION (recorded 2026-07-17 with the PI-approved sign
+   clarification; floor unchanged): the committed 0.9929 belongs to the
+   u_d doubt-direction score of that lineage, not to c_hat, whose own
+   discriminative AUC was never computed in a prior amendment. The anchor
+   was therefore indicative rather than exact; the 0.80 floor itself was
+   set with an order-of-magnitude wiring-defect margin and is unaffected.
+   The S1 halt this gate produced (raw-polarity AUROC 0.0179, diagnosis in
+   NOTEBOOK 2026-07-17) was resolved by the PI-approved pre-analysis sign
+   clarification in cell.yaml (readout score = negative z, the lineage's
+   own convention), repinned before any criterion quantity was read. Every
+   registered criterion is sign-invariant, so the clarification cannot
+   move any predictor's call.
 6. Confidence parse-rate floor. JUDGMENT (no prior elicitation instrument
    in the repo to derive from): >= 0.95 of rows parseable, consistent with
    the program's 0.95 instrument-integrity floors elsewhere (CG1

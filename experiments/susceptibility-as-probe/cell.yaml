@@ -35,7 +35,7 @@ channels:
       sha256: 937d1bffe1924e73bca40a88c8096d7e01bb67c5b64286362196aa968e2c2e1f
       layer_index: 19
       hs_index: 20
-    score: z-projection of prompt-anchor hs20 hidden state onto frozen c_hat (no refit, no threshold)
+    score: NEGATIVE z-projection of prompt-anchor hs20 hidden state onto frozen c_hat (confab-positive orientation; PI-approved pre-analysis clarification 2026-07-17 after the S1 halt: c_hat is fit as unit(mean(unknown_refused) - mean(confab)) so raw z is confab-NEGATIVE, and the lineage's own committed convention is negative z, build_manifest field auc_neg_z_d_on_fit; the susceptibility channel was already registered negated for the same orientation; no refit, no threshold)
     capture:
       engine: hf-batched
       render: baseline render stack (atlas conventions)

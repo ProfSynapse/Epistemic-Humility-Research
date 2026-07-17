@@ -3428,9 +3428,18 @@
         ],
         "modules": [],
         "pins": {
-          "cell.yaml": "d361224f2f800e28e7b10a10ee6bbc57c28c8a1241a90f9fd1ffd42be8c5a7cd",
+          "cell.yaml": "4dc5722c0c3f722200bc6df7c99abbb4ff914a6587fc2bbd389692264478c3bb",
           "gates.yaml": "a19da59d4a9d232389724f5e99332ce874d45cd71ad6a4f1455f3486badaab54"
-        }
+        },
+        "repins": [
+          {
+            "date": "2026-07-17T17:13:12Z",
+            "file": "cell.yaml",
+            "new_sha256": "4dc5722c0c3f722200bc6df7c99abbb4ff914a6587fc2bbd389692264478c3bb",
+            "old_sha256": "d361224f2f800e28e7b10a10ee6bbc57c28c8a1241a90f9fd1ffd42be8c5a7cd",
+            "reason": "PI-approved pre-analysis sign clarification 2026-07-17: readout score = negative z-projection (lineage neg_z convention); S1 halt diagnosis in NOTEBOOK; no criterion quantity read before repin"
+          }
+        ]
       },
       "kg": [],
       "prediction": "The cross-fitted readout-plus-margin combination beats the readout alone by at least the registered incremental-AUROC floor, and both internal channels beat verbalized confidence.",
