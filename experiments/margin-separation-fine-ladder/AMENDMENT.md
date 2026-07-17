@@ -1,6 +1,6 @@
 # Margin separation at fine ladder resolution (M1b)
 
-Status: SIGNED 2026-07-17 (PI approval in conversation; instrument pinned at sign). Pre-sign red-team review applied; see NOTEBOOK 2026-07-17.
+Status: RESOLVED 2026-07-17 as null-result (halted at RG0, PI-decided no rework; see Outcome). Signed 2026-07-17 after a pre-sign red-team review; instrument was pinned at sign.
 
 ## Motivation and posture
 
@@ -183,5 +183,53 @@ unchanged.
 
 ## Outcome
 
-Filled at resolve. Record the verdict, the gate results, and the one-sentence
-summary that also goes into `verdict:` in the manifest.
+Resolved 2026-07-17 as a null-result: HALTED at the pre-registered RG0 drift
+check, then resolved by PI decision without a separation verdict. No criterion
+was computed; both predictors' scoreboard calls are UNSCORED.
+
+**What happened.** Phase-1 build passed all six sha256 pins and the 181/53/166
+partition audit. The RG0 drift check then found fresh 0.75x-rung generations
+diverging in completion text from M1's committed runlog on 3 of 8 probe rows,
+with dose readback clean, and halted the run per the signed cell.yaml rule
+(any mismatch halts, lift to PI, never a silent retry). See NOTEBOOK
+2026-07-17 for the full record.
+
+**Diagnostics (gitignored; booleans/lengths/offsets only, no text; no fine
+rung generated, no criterion computed).**
+- Detector-bit stability: all 53 refined rows regenerated fresh at 0.5x and
+  0.75x; detector bits 52/53 (98.1%) identical at each rung; bracket
+  classification preserved on 51/53 (2 opposite-direction breaks). Byte match
+  74% (0.5x) / 87% (0.75x).
+- Batch-composition mechanism: row 131 flips its tipping bit across batch
+  sizes (bs1 refused=False, bs4 refused=True matching M1, bs8 refused=False)
+  with no other variable changing. The drift is stochastic bf16
+  batch-composition non-determinism (a throughput artifact), not a
+  deterministic environment shift. Env: torch 2.9.0+cu128, CUDA 12.8,
+  RTX 3090; M1 carried no env stamp to diff.
+
+**Why resolved rather than reworked.** The boundary rows have no
+batch-invariant tipping classification: the per-row bracket noise (~4%,
+comparable to M1's accepted 3.5% non-monotone rate, C1 ceiling 0.05) is the
+same order as the sub-rung separation M1b set out to resolve. M1b's
+point-estimate criterion at the 0.6x boundary (median vs 7.564912750679985)
+is not well-posed when the median sits within the instrument's own
+reproducibility noise. A pinned-batch or batch_size-1 rerun could produce one
+internally consistent draw but could not make the boundary classification
+batch-invariant, so it would not cleanly answer the quantization-vs-real
+question either.
+
+**One-sentence verdict.** qwen mid-band commitment-margin separation is
+instrument-resolution-limited at the boundary: M1's Claim 1 falsification
+(observable bound 2.0 vs floor 2.5) stands, and the fine-ladder retest halted
+at RG0 establishes that the miss is neither a clean quantization artifact nor
+a clean real separation but sits within the bf16 instrument's own ~4%
+batch-composition classification noise.
+
+**Instrument lesson (durable).** A byte-identical reuse guard is the wrong bar
+under bf16 batched greedy decoding: completion text depends on batch
+composition, so byte-identity is unreachable across batching regimes even in a
+stable environment. Reuse/merge designs that mix batching regimes carry a seam
+of irreducible per-row noise; a self-consistent single-regime run (pinned
+batch composition, or batch_size 1) is the only reproducible instrument. The
+RG0 guard should have been detector-bit / bracket-preservation, not byte
+identity; this was a drafting gap the pre-sign red-team also missed.

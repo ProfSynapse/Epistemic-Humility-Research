@@ -1,7 +1,7 @@
 slug: margin-separation-fine-ladder
 title: Margin separation at fine ladder resolution (M1b)
 type: steer-cell
-status: signed
+status: null-result
 registered: true
 created_at: '2026-07-17T17:41:27Z'
 question: Was M1's censoring-aware separation failure (observable bound 2.0 vs floor
@@ -35,5 +35,10 @@ inputs:
 - experiments/margin-mapping/analysis/runlog/qwen35_4b__rung_0p75.jsonl
 - experiments/margin-mapping/analysis/runlog/qwen35_4b__rung_1p5.jsonl
 - experiments/margin-mapping/analysis/runlog/qwen35_4b__rung_2.jsonl
-verdict: ''
+verdict: 'qwen mid-band commitment-margin separation is instrument-resolution-limited
+  at the boundary: M1''s Claim 1 falsification (observable bound 2.0 vs floor 2.5)
+  stands, and the fine-ladder retest halted at its pre-registered RG0 drift check
+  establishes that the miss is neither a clean quantization artifact nor a clean real
+  separation but sits within the bf16 instrument''s own ~4% batch-composition classification
+  noise. No separation criterion was computed; halted at RG0, PI-decided no rework.'
 kg: []
