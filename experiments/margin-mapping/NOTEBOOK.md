@@ -142,3 +142,26 @@ Consistent with the doubt-snap qwen collapse at 2.0x; first direct mistral
 collapse evidence. The mistral top-rung authorized knob is NOT exercised:
 the collapse boundary lies in (1.0x, 3.0x], which the ladder already
 brackets with the 1.5x and 2.0x rungs.
+
+## 2026-07-17 ~03:00 UTC -- Readback diagnostic results (analysis/preflight_diag/)
+
+Verdict: the readback error is fully DETERMINISTIC per row (bit-identical
+deltas across 3 fresh forward passes for all 8 repeatability rows, spread
+exactly 0 in both families). Retrying could never change the preflight
+outcome; the no-retry rule was correct and is now also moot.
+
+Breadth (12 additional subsample rows per family, one pass each): 0/12
+failures at 0.0625x, 0.125x, and 0.25x in both families; bulk relative
+error is ~0.16-0.19% at every rung tested. The two originally-failing rows
+are the tail of a per-row deterministic distribution (roughly 1 in 16
+sampled rows exceeds the pure-relative bar at the bottom rung). Under the
+registered gate the full run would hard-abort at the bottom rung's live
+first-batch assertion with near-certainty (~6% of 760+ rows per family
+failing).
+
+OR-bound check against the proposal (abs <= 0.005 x reference_dose_abs =
+0.0630 qwen / 0.0183 mistral): worst observed abs_delta anywhere in the
+diagnostic is 0.00694 (qwen, 0.25x rung) and the failing rows sit at
+0.00534 / 0.00151 -- all pass with 2.6x-12x headroom while every
+wiring-defect signature still exceeds the bound by >10x. Packet complete;
+awaiting PI decision.
