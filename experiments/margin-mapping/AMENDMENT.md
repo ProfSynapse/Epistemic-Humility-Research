@@ -47,12 +47,26 @@ Arms: one generation pass per ladder dose per family, greedy, wide
 two-instrument render stack reused from the factorial. Baseline (dose 0) is
 reused from the factorial baseline arm (RG0 byte-repro check on reuse).
 
-Dose ladder (TO-DECIDE 1): a geometric ladder in setpoint units spanning
-well below the confab regime to above the known-collapse regime. Drafter
-proposal: 10 rungs per family at {0.125, 0.25, 0.5, 1, 2, 4, 8, 16, 32, 64}
-x the family reference dose_abs. The top rungs deliberately enter the
-overdrive regime so the known-margin tail and the collapse boundary are
-observed, retrodicting the H4 anchor qualitatively.
+Dose ladder (TO-DECIDE 1): a geometric ladder in setpoint units. The
+original drafter span (0.125x to 64x) was REVISED after the pre-sign
+threshold derivation
+(`analysis-committed/threshold_derivation/threshold_derivation_report.json`,
+computed 2026-07-17 from the doubt-snap hs20 permuted-gate row-level dose
+ladder, which is the identical substrate/site/direction M1 uses): on that
+prior measurement, well-formedness collapses to 0.000 at dose_abs 25.2
+(2.0x the M1 reference), so rungs at 4x and above would spend roughly half
+the generation and adjudication budget on rows that can only score
+not-well-formed. Revised drafter proposal: 10 rungs at {0.0625, 0.125,
+0.25, 0.5, 0.75, 1, 1.5, 2, 3, 4} x the family reference dose_abs:
+half-octave density through the expected confab-median region (fitted
+confab median 7.51 dose_abs = 0.60x on qwen) and the setpoint, with the
+top two or three rungs bracketing the expected collapse boundary so the
+per-row collapse dose is still measured (the overdrive/H4 anchor is
+retrodicted from the collapse boundary's existence, not from deep-overdrive
+rungs). The GPU preflight (Gates) locates each family's actual collapse
+region at the rung extremes before the full run; mistral has no prior
+ladder, so its preflight is the only collapse evidence and may move its top
+rungs at sign-recorded launch time under the authorized-knob rule.
 
 Population (TO-DECIDE 2): margins require many generations per row, so the
 population is a registered subsample of the factorial pools. Drafter
@@ -120,23 +134,46 @@ that explains H4's overdrive non-selectivity.
 Pre-stated numerically; every threshold resolves in the Decision record at
 sign and does not move after results.
 
-- **Margins do not separate (primary).** Median known margin / median
-  confab margin below the separation floor (TO-DECIDE 4; drafter proposal
-  2.0), OR the bootstrap 95% CI on the median ratio includes 1.0. Then
-  epistemic state is not usefully encoded as distance-to-boundary along
-  c_hat and framework Claim 1 is falsified at these operating points.
+- **Margins do not separate (primary, censoring-aware).** The threshold
+  derivation implies known margins are mostly right-censored within the
+  coherent-output regime (fitted known median 229.7 dose_abs on qwen,
+  far above the ~25 dose_abs collapse boundary), so a raw median ratio is
+  not observable and must not be the criterion. Primary criterion, both
+  legs required per family: (a) the median confab margin is at or below
+  the family reference setpoint; (b) the median known row is right-censored
+  above the highest pre-collapse rung (at least 50% of known rows neither
+  tipped nor collapsed there), so the OBSERVABLE ratio lower bound (highest
+  pre-collapse rung / median confab margin) meets the separation floor
+  (TO-DECIDE 4; derived drafter proposal 2.5, from expected bound 3.4 with
+  confab-median CI [6.86, 8.24] giving bound range 3.06-3.67 on qwen and
+  headroom for collapse-location uncertainty). The FITTED median ratio
+  (probit-in-log-dose primary, logistic sensitivity; derived expectation
+  30.6 [5.39, 236] qwen, 39.2 [5.93, 322] mistral, lower-5% quantiles
+  5.86 / 6.37) is reported descriptively with both parametric forms, never
+  as the pass/fail surface. Failure of either leg falsifies framework
+  Claim 1 at these operating points.
 - **Setpoint placement fails.** The family reference setpoint does not lie
   between the two margin medians in either family. Then the mid-band regime
   account (framework Claim 2) is wrong even if margins separate.
 - **Retrodiction fails.** Predicted arm rates from the margin CDFs miss the
-  observed factorial or doubt-snap anchor rates by more than the tolerance
-  (TO-DECIDE 5; drafter proposal 0.10 absolute per retrodicted rate). Then
-  margins exist but do not carry the dose-regime mechanism.
-- **Construct integrity.** Non-monotone fraction above the ceiling
-  (TO-DECIDE 6; drafter proposal 0.15) in either family's confab
-  population, OR the detector-vs-adjudication calibration gate fails. Then
-  the margin construct or its readout is unsound and no framework claim is
-  evaluated (instrument void, reported straight).
+  observed anchor rates by more than the tolerance (TO-DECIDE 5; derived
+  drafter proposal 0.10 absolute: max per-anchor tolerance 0.063 assembled
+  from observed-rate Wilson half-widths plus fit-propagated prediction
+  half-widths, rounded up). Retrodiction targets are restricted to the
+  PERMUTED-gate and baseline anchors (fired-conditional rates: qwen
+  permuted confab 0.693 [0.664, 0.720] and known 0.065 [0.041, 0.100];
+  mistral 0.692 [0.663, 0.720] and 0.051 [0.031, 0.082]); true-gate arms
+  are excluded because their gate-selected fired sets are structurally
+  unpredictable from a no-gate margin CDF, and the doubt-snap dose-8 known
+  anchor is flagged in-sample (the fit trains on that ladder). Then margins
+  exist but do not carry the dose-regime mechanism.
+- **Construct integrity.** Pre-collapse non-monotone fraction above the
+  ceiling (TO-DECIDE 6; derived drafter proposal 0.05 confab / 0.10 known,
+  from observed 0.0102 (n=685) and 0.0203 (n=197) plus 3 SE rounded up;
+  post-collapse reversals are collapse artifacts and are excluded by
+  construction), OR the detector-vs-adjudication calibration gate fails.
+  Then the margin construct or its readout is unsound and no framework
+  claim is evaluated (instrument void, reported straight).
 
 There is no rescoring lane; a failed criterion falsifies the corresponding
 framework claim and the result stands.
@@ -160,17 +197,45 @@ TO-DECIDE values resolve at sign).
 
 ## Decision record (TO-DECIDE; resolves at sign)
 
-1. Dose ladder rungs and span (drafter: 10 geometric rungs, 0.125x to 64x
-   family reference dose_abs).
-2. Population subsample (drafter: 400 confab by registered seed + full
-   known pool, per family).
-3. Primary readout (drafter: detector-v2 staircase + one blinded
-   calibration shard per family with a 0.05 disagreement gate).
-4. Separation floor on the median margin ratio (drafter: 2.0).
-5. Retrodiction tolerance (drafter: 0.10 absolute per anchor rate).
-6. Non-monotone ceiling (drafter: 0.15).
-7. Right-censoring policy confirmation (drafter: censored at top rung,
-   never imputed, censored fraction reported per role).
+Knob values were re-derived pre-sign from existing artifacts where the data
+allows (`analysis-committed/threshold_derivation/`; script and report
+committed; inputs: factorial fired-conditional rates re-derived row-level,
+doubt-snap hs20 permuted-gate row-level dose ladder 685 confab / 197 known
+rows, pre-collapse rungs only). Each item below is labeled DERIVED (value
+computed from data, assumption stated) or JUDGMENT (not resolvable from
+existing artifacts). All resolve at sign with PI decisions.
+
+1. Dose ladder rungs and span. PARTLY DERIVED: span revised to {0.0625,
+   0.125, 0.25, 0.5, 0.75, 1, 1.5, 2, 3, 4} x reference after the collapse
+   finding (prior 4x-64x rungs sit past the observed dose_abs 25.2
+   collapse on the identical qwen substrate/site); rung count and spacing
+   within the span remain JUDGMENT. The per-family collapse location for
+   M1's own run is preflight territory (GPU, rung extremes, before full
+   run); mistral has no prior ladder so its preflight is decisive there.
+2. Population subsample. DERIVED: n_confab = 400 (Wilson half-width 0.049
+   at worst-case p=0.5, clearing the 0.05 bar that n=200 fails at 0.069) +
+   full known pool per family (not a knob; whole population).
+3. Primary readout (detector-v2 staircase + one blinded calibration shard
+   per family with a 0.05 disagreement gate). JUDGMENT: instrument-design
+   choice, not data-derivable.
+4. Separation floor. DERIVED, reformulated censoring-aware: observable
+   ratio bound floor 2.5 (expected bound 3.4, range 3.06-3.67 over the
+   confab-median CI on qwen; the raw fitted ratio 30.6/39.2 with lower-5%
+   quantiles 5.86/6.37 is reported descriptively only, since the known
+   median is extrapolated far past the observed dose range and moves 2-3x
+   between probit and logistic forms).
+5. Retrodiction tolerance. DERIVED: 0.10 absolute (max per-anchor 0.063,
+   rounded up), permuted + baseline anchors only; true-gate anchors
+   excluded structurally; doubt-snap known anchor flagged in-sample.
+6. Non-monotone ceiling. DERIVED: 0.05 confab / 0.10 known (observed
+   0.0102 / 0.0203 plus 3 SE, pre-collapse regime only).
+7. Right-censoring policy. JUDGMENT, with derived context: censored at top
+   rung, never imputed, censored fraction reported per role. The
+   derivation implies MOST known rows will right-censor within the
+   coherent regime (fitted known median 229.7 dose_abs vs collapse ~25);
+   that is the expected signature of Claim 1, not a defect, and the
+   criterion (item 4) is built on the censoring-aware bound for exactly
+   this reason.
 
 ## Predictions scoreboard
 
