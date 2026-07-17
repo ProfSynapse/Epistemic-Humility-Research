@@ -356,3 +356,63 @@ If any are cited as evidence, escalate to user.
 ---
 
 **Prepared**: 2026-07-17 | **No deletions, writes, or git operations performed** | **Read-only audit complete**
+
+---
+
+## CORRECTIONS (lead-verified, 2026-07-17, post-HF-reconciliation)
+
+The tables above contain two classes of error, corrected here. This section
+supersedes the corresponding rows; do not act on the original Tier 1/5
+verdicts without reading it.
+
+### 1. Slug-matching errors (verified directly against main)
+
+The "Tier 1 — never committed to main / no recovery path" list matched
+worktree names, not experiment slugs. All of the following exist ON MAIN
+with code, manifests, and signed amendments intact; their loss class is the
+same as Tier 2 (gitignored row-level data only, regenerable from committed
+builders):
+
+| Report name | Actual slug on main |
+|---|---|
+| placebo-seed-census | placebo-seed-distribution-census |
+| qwen35-midband-heldout | qwen35-4b-midband-heldout |
+| rr3-corrected-placebo | rr3-corrected-placebo-replication |
+| h4-ungated-dose-matched | ungated-vs-gated-dose-matched |
+| placebo-signflip-analysis | placebo-signflip-question-type-analysis |
+
+doubt-snap-render-assert has no standalone experiment dir (render
+diagnostic recorded within the doubt-snap lineage's notebooks).
+
+### 2. HF holdings change two verdicts (hf-reconcile agent, lead
+spot-checked ap-veto file listing directly)
+
+- amendment-ap-veto-length-balanced-confirmatory: NOT unrecoverable. Full
+  1,662-row generated+graded evidence + activation slice + job log survive
+  in the PRIVATE dataset repo professorsynapse/eh-al-prep-staging under
+  ap-veto-lb-confirm-r1/. Missing piece is the never-committed harness/
+  writeup, i.e. analysis, not data.
+- bb-base-propensity-loop: PARTIALLY recoverable. The frozen 1,662-row fit
+  pool survives at professorsynapse/eh-bb-fit-pool; generation/grading
+  output is not on HF and would need a GPU rerun from that exact pool.
+- eh-jspace-fresh-pool-census-qwen3-4b does NOT cover jspace-family-atlas,
+  j-space-layer-contrast-rep2-multisource, or
+  jspace-token-targeted-refusal-qwen3-4b (different experiment, fresh pool
+  explicitly excludes the predecessor split). Superficially similar name.
+- M1 recovery addendum: both M1 staging pools were rebuilt to EXACT sha256
+  matches from committed builders (see margin-mapping NOTEBOOK
+  2026-07-17); the mistral hs16 c_hat direction reconstruction is in
+  progress under a pre-registered byte-identity acceptance rule.
+
+### 3. F: archive tier (per hf-reconcile)
+
+The parked F: archive candidates are genuinely F:-only: HF model repos
+hold final LoRA adapters (plus two full merges) but no optimizer state,
+no intermediate checkpoints, and under 2% of the 61G probe hidden-state
+tier. The F: copies are strictly richer than what HF holds.
+
+### 4. Containment
+
+No OpenMOSS/Cheng/bridge content found in any public or private HF repo;
+several public cards carry explicit exclusion audits (e.g.
+eh-doubt-on-command LICENSE-AUDIT.md). Nothing to escalate.
