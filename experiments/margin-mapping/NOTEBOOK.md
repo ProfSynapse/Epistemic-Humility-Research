@@ -226,3 +226,19 @@ config.py FACTORIAL_STAGING_MANIFEST pointed at the deleted
 gate-factorial worktree path; repointed to the committed manifest at
 experiments/gate-contribution-factorial/analysis-committed/staging_manifest.json
 inside this worktree.
+
+## 2026-07-17 -- hs16_c_hat reconstruction attempt: STOP per pre-registered rule
+
+Single attempt, all knobs per the committed spec (fit seed 20260713, tuner
+86b134c3 = rr2 pin, model revision c170c708, hf-batched bf16 compute /
+fp32 persist, atlas render + position conventions, FIT rows 874 confab +
+255 known + 214 unknown_refused = 1343, exact match to rr_reference row
+counts). Cross-check FAILED all six scalar fields (mu_d -0.6997 expected
+vs -0.7075 reconstructed, rel ~1.1%; tau_frozen rel ~0.7%; sigma_c nearly
+exact at +0.00004). sha256 88054fa7... vs pinned f6555f32..., no match. No
+generation launched, no restaging, dangling symlink untouched, per the
+acceptance rule recorded pre-capture (commit 26589319). Delta pattern
+(mu_d/tau_frozen off, sigma_c exact) is more consistent with a
+systematically different render/tokenize input in the ORIGINAL capture
+than with forward-pass noise; hypothesis only, not tested. Adjudication
+lifted to the PI.
