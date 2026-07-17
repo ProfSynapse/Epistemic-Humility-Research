@@ -3423,18 +3423,21 @@
       ],
       "instrument": {
         "configs": [
-          "experiments/susceptibility-as-probe/cell.yaml",
-          "experiments/susceptibility-as-probe/gates.yaml"
+          "cell.yaml",
+          "gates.yaml"
         ],
         "modules": [],
-        "pins": {}
+        "pins": {
+          "cell.yaml": "d361224f2f800e28e7b10a10ee6bbc57c28c8a1241a90f9fd1ffd42be8c5a7cd",
+          "gates.yaml": "a19da59d4a9d232389724f5e99332ce874d45cd71ad6a4f1455f3486badaab54"
+        }
       },
       "kg": [],
       "prediction": "The cross-fitted readout-plus-margin combination beats the readout alone by at least the registered incremental-AUROC floor, and both internal channels beat verbalized confidence.",
       "question": "At the qwen mid-band operating point, does the susceptibility channel (the per-row commitment margin measured by M1) carry epistemic information that the frozen readout channel (the hs20 c_hat projection) misses, or are the two channels redundant views of one latent variable (framework Claim 3)?",
       "registered": true,
       "slug": "susceptibility-as-probe",
-      "status": "draft",
+      "status": "signed",
       "title": "Susceptibility as probe: margin vs readout vs verbalized confidence",
       "type": "probe-fit",
       "verdict": ""

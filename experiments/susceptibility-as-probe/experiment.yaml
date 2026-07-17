@@ -1,32 +1,30 @@
 slug: susceptibility-as-probe
 title: 'Susceptibility as probe: margin vs readout vs verbalized confidence'
 type: probe-fit
-status: draft
+status: signed
 registered: true
 created_at: '2026-07-17T16:12:45Z'
-question: >-
-  At the qwen mid-band operating point, does the susceptibility channel (the
-  per-row commitment margin measured by M1) carry epistemic information that
-  the frozen readout channel (the hs20 c_hat projection) misses, or are the
-  two channels redundant views of one latent variable (framework Claim 3)?
-prediction: >-
-  The cross-fitted readout-plus-margin combination beats the readout alone by
-  at least the registered incremental-AUROC floor, and both internal channels
-  beat verbalized confidence.
-falsifier: >-
-  Incremental AUROC of readout-plus-margin over readout alone below the
-  registered floor (redundancy); or verbalized confidence matching or beating
-  both internal channels; or the readout sanity floor failing (instrument
-  void, no claim evaluated).
+question: At the qwen mid-band operating point, does the susceptibility channel (the
+  per-row commitment margin measured by M1) carry epistemic information that the frozen
+  readout channel (the hs20 c_hat projection) misses, or are the two channels redundant
+  views of one latent variable (framework Claim 3)?
+prediction: The cross-fitted readout-plus-margin combination beats the readout alone
+  by at least the registered incremental-AUROC floor, and both internal channels beat
+  verbalized confidence.
+falsifier: Incremental AUROC of readout-plus-margin over readout alone below the registered
+  floor (redundancy); or verbalized confidence matching or beating both internal channels;
+  or the readout sanity floor failing (instrument void, no claim evaluated).
 checkpoint:
   repo: Qwen/Qwen3.5-4B
   revision: 851bf6e806efd8d0a36b00ddf55e13ccb7b8cd0a
 instrument:
   configs:
-  - experiments/susceptibility-as-probe/cell.yaml
-  - experiments/susceptibility-as-probe/gates.yaml
+  - cell.yaml
+  - gates.yaml
   modules: []
-  pins: {}
+  pins:
+    cell.yaml: d361224f2f800e28e7b10a10ee6bbc57c28c8a1241a90f9fd1ffd42be8c5a7cd
+    gates.yaml: a19da59d4a9d232389724f5e99332ce874d45cd71ad6a4f1455f3486badaab54
 inputs:
 - experiments/margin-mapping/analysis-committed/subsample_ids_qwen35_4b.json
 - experiments/qwen35-4b-midband-doubt-snap/analysis-committed/directions/hs20/c_hat.json
