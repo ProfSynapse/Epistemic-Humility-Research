@@ -311,3 +311,75 @@ one pinned batch composition, live-SC1 readback, S1 baseline-staleness gate
 <= 0.05 read first), then D1+D2, then both SC2 blinded-grading shards
 (ensuring 2.0x-tipped rows are represented in the abstention slice) handed to
 the lead at the grading boundary without self-grading.
+
+## 2026-07-18 - Survival generate bug (gold field), S1 gate FAILS for native channel 2, D1+D2 committed
+
+**Bug, not a supervision kill:** the first native survival `generate` invocation
+completed `no_answer_baseline` (51/51 rows, readback OK) then crashed with
+`KeyError: 'gold'` at the start of `true_answer`, with a real traceback (not a
+silent kill like the two prior ladder incidents). Root cause:
+`survival_channel2.load_margin_eligible_rows()` copied question/aliases/category
+from `popqa_pool.load_pool()` into each eligible row dict but dropped `gold`,
+which `capture_channel1.context_for_arm` requires for the `true_answer` arm
+(`row["gold"]`) and, via the distractor donor row, for `false_answer_placebo`.
+`no_answer_baseline` never surfaced the gap (its `context_for_arm` branch
+returns `None` before touching `row["gold"]`). Fixed by carrying `pr["gold"]`
+through (one line); `batch_composition`'s `row_order_sha256` is unaffected
+(hashes row_key order only), so the completed `no_answer_baseline` arm and its
+composition file remained valid. Re-invoked `generate`; `RunLog` correctly
+resumed with zero work for the already-complete baseline arm (same
+fingerprint) and generated `true_answer` + `false_answer_placebo` fresh under
+the SAME pinned composition (`row_order_sha256=011599327e...`). All 3 arms:
+51/51 rows, live-SC1 first-batch and pass-completion readback OK,
+`ALL_ARMS_DONE` marker seen.
+
+**S1 gate (channel-2 baseline-staleness check) FAILS for native:**
+`no_answer_baseline` survival at each row's own tipping dose = 0.2549
+(13/51), ceiling 0.05 (gates.yaml `S1_baseline_reproduction` channel-2
+bullet). Per that gate's `on_failure`, channel 2 for native is VOIDED / lifted
+to PI here, NOT scored as a D2 (d)-not-earned failure. Raw D2 numbers are
+still reported (survival_rates: baseline 0.2549, true_answer 0.9412,
+false_answer_placebo 0.9412; paired true-minus-false diff point=0.0, CI
+[-0.098, 0.098], excludes_zero=False; d2_absolute_floor_frozen=0.1372) but
+their validity is undermined by the S1 failure: at doses meant to be each
+row's own tipping point (defined as the smallest ladder rung where that row
+first showed non-survival), 3 in 4 rows now "survive" in this separate
+generation pass. This is a reproducibility-in-the-survival-regime finding
+(same class of concern the S1 gate exists to catch), not resolved or explained
+by this notebook entry -- reserved for lead/PI.
+
+**D1 (channel 1, unaffected by the S1 channel-2 gate) reconfirmed via
+`analysis.py`:** native leg-1 median shift = 0.5921 (CI [0.5364, 0.6694]) vs
+frozen floor 0.8209 -- FAILS. Leg-2 paired specificity: true-minus-false
+diff = 0.1022 (CI [0.0527, 0.1524]), excludes zero, true larger -- PASSES.
+transfer leg-1 = -0.2172 (CI [-0.2368, -0.1976]; floor null, transfer void, no
+substantive read); transfer leg-2 diff = -0.0399 (CI [-0.0545, -0.0253]),
+excludes zero but FALSE shift larger, not true -- fails leg-2 specificity in
+the direction required (reported for completeness only; transfer is void per
+BLOCKER B1, this is not a scored result).
+
+**Construct caveat on `C1_separation_reproduction` (native):** with 349/400
+confab AND 354/360 correct-control rows right-censored at the ladder's top
+rung (16.0x, itself already ruled instrument-invalid >=3.0x -- see the ruling
+above), BOTH group medians collapse to the same censoring ceiling
+(135.5093...), so `reproduces_m1_style_separation` reads False as a direct
+consequence of the median statistic being degenerate under this much
+censoring, not a substantive non-separation finding. Reported as-is (raw
+number), flagged here as a caveat on interpretation.
+
+Fixed `analysis.py::compute_D2` to return `None` (not raise) when a
+direction's survival score file is absent, mirroring the existing
+`load_separation_reproduction`/`frozen_floor` None-safe pattern -- transfer's
+channel 2 was correctly never run after its channel-1 void, so the two-
+direction loop in `main()` would otherwise hard-crash on `compute_D2("transfer")`.
+
+Committed: `analysis-committed/channel2_survival/{native_survival_score.json,
+native_batch_composition.json}` and `analysis-committed/results/m4wk_results.json`
+(full raw D1+D2+gate-attestation dump, no verdict language, no row text).
+
+HALTING here per the S1 gate failure and per instruction: reporting to lead,
+not proceeding to build the SC2 blinded-grading shards until the void is
+adjudicated (their purpose -- validating detector_v2 against a blinded
+abstention judgment for D2 -- is moot while D2 itself is void, and building
+them is the lead's call, not mine, given the significance of this gate
+failure).

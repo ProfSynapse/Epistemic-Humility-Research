@@ -1,0 +1,6 @@
+{
+  "batch_size": 4,
+  "n_batches": 13,
+  "n_rows": 51,
+  "row_order_sha256": "011599327ea5ec9fc8574438e8ae92a7910cc103c33143757bc4f1e104a563a3"
+}

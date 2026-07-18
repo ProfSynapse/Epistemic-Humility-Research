@@ -116,10 +116,16 @@ def compute_D1(direction: str) -> dict[str, Any]:
     }
 
 
-def compute_D2(direction: str) -> dict[str, Any]:
+def compute_D2(direction: str) -> Optional[dict[str, Any]]:
     score_path = SURVIVAL_DIR / f"{direction}_survival_score.json"
     if not score_path.is_file():
-        raise SystemExit(f"analysis FAIL: no {score_path}; run survival_channel2.py score --direction {direction} first.")
+        # A direction can be permanently void before channel 2 ever runs
+        # (transfer: BLOCKER B1, dropped from channel 2 at the channel-1 gate
+        # -- see NOTEBOOK.md). That is the expected end state, not a missed
+        # step, so this returns None (mirroring load_separation_reproduction's
+        # None-safe pattern) rather than crashing main()'s loop over both
+        # directions.
+        return None
     score = common.load_json(score_path)
 
     d2_absolute_floor = frozen_floor(direction, "d2_absolute_floor")
