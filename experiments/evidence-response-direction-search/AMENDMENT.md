@@ -1,9 +1,10 @@
 # M4c: evidence-derived doubt direction constructive search
 
-Status: SIGNED 2026-07-18 (PI approval; pre-sign red-team SIGN WITH FIXES
-applied at 62adbc37; instrument pins in experiment.yaml). Rung (b) remains
-conditional: funded only on a rung-(a) pass plus fresh explicit launch
-approval.
+Status: RESOLVED (null-result) 2026-07-18; post-run red-team RESOLVE WITH
+DISCLOSURES (0 blockers, 0 majors; disclosures in Outcome). Rung (b) NOT RUN
+(condition met, declined by PI). Was: SIGNED 2026-07-18 (PI approval;
+pre-sign red-team SIGN WITH FIXES applied at 62adbc37; instrument pins in
+experiment.yaml).
 
 Keep this document the prose home for the experiment. The machine state lives in
 `experiment.yaml` and is never duplicated here.
@@ -506,6 +507,146 @@ that underperforms the ignorance-fit direction).
 
 ## Outcome
 
-Filled at resolve. Record the verdict, per-rung gate results (rung a + c
-primary; rung b conditional guarded secondary; KUQ transfer ungated), and the
-one-sentence summary that also goes into `verdict:` in the manifest.
+Resolved 2026-07-18 as a NULL-RESULT on the pre-registered pass-a-fail-c row
+of the outcome table: `d_ev` separates at baseline but no better than random
+directions from the same covariance. The separation is generic activation
+geometry, not a specific evidence axis. Not a win; the constructive search
+did not recover a single evidence/doubt axis, and M4-WK's fragmentation
+reading stands. Post-run red-team applied (0 blockers, 0 majors, 2 minors;
+verdict RESOLVE WITH DISCLOSURES; all disclosures below).
+
+### Integrity gates
+
+SC0/SC3 all PASS. Every input verified byte-identical against its pin
+(cell.yaml c060fd9b..., gates.yaml 9038b6a8..., test_population.json,
+c_hat_worldknown.json 432c9f1f..., KUQ c_hat.json 937d1bff...). The
+fit/held-out split (seed 48260728, 200/200) was committed before the fit
+(f248874e), `d_ev` was committed before any held-out readout (a8088be0), and
+the M-B enforcement checks passed exactly (re-derived split identical;
+`d_ev` recomputed, max_abs_diff 0.0). Commit order provable and monotone
+from git; the committed d_ev.json hash matches the results provenance (no
+post-hoc edit window). All 560 held-out rows accounted for; zero silent
+drops; containment scan clean.
+
+### Rung (a), D_a (PRIMARY): PASSES
+
+Held-out baseline confab-vs-correct AUROC 0.725208 (bootstrap 95% CI
+[0.6832, 0.7652]; n=200 confab / 360 correct-control) against the 0.70
+point-estimate floor. Independently re-derived twice: by the lead from the
+committed per-row projections and by the post-run red-team from raw
+`anchor__L20` tensors with from-scratch code (byte-exact both times; the
+red-team also confirmed the registered orientation is the passing one:
+opposite sign gives 0.2748). The (a1)/(a2) falsifier branches are not
+applicable. DISCLOSED: the CI lower bound (0.6832) sits below the 0.70
+floor; the gate is point-estimate by design (pre-sign m-2, CI
+reported-only) and the CI does not reinterpret the gate in either
+direction. The top-PC secondary reads 0.7517 (CI [0.7118, 0.7901]),
+modestly above the primary (paired diff +0.0265, CI [0.0043, 0.0490]),
+report-only per rulings record item 6.
+
+### Rung (c), D_c (PRIMARY companion): FAILS, all flavors
+
+- Covariance-shaped null (GATED): K=1000 (seed 48260729), 95th percentile
+  0.8194; `d_ev`'s 0.7252 does not exceed it (empirical p = 0.191). FAIL.
+- Isotropic companion (ungated): 95th percentile 0.7477, p = 0.079; not
+  significant.
+- Red-team robustness null (unregistered, report-only): a within-class-
+  centered covariance null that strips the between-class structure making
+  the registered null conservative gives 95th percentile 0.780, p = 0.113.
+  `d_ev` clears none of the three null flavors; the specificity failure is
+  not an artifact of the conservative null choice.
+- Native comparator, recomputed on the identical held-out rows: 0.8633 (CI
+  [0.8310, 0.8933]). Paired AUROC difference (d_ev minus native) -0.1381,
+  CI [-0.1895, -0.0872]; paired bootstrap verified genuinely paired. The
+  STRONG bar (lower CI >= -0.05) FAILS decisively.
+- KUQ comparator (lower, ungated): 0.2845 on the same rows.
+
+Reading, pre-registered verbatim in the outcome table: "d_ev separates at
+baseline but no better than random directions from the same covariance: the
+separation is generic activation geometry, not a specific evidence axis.
+Weak / uninterpretable; not a win."
+
+### Rung (b): NOT RUN (condition met, declined by PI)
+
+The pre-registered funding condition (a rung-(a) pass) was met. The PI
+declined funding (ruling 2026-07-18, NOTEBOOK): under the signed outcome
+table the pass-a-fail-c cap cannot be changed by rung (b), and any
+J-space-style expansion of `d_ev` would require its own future amendment.
+Recorded as condition-met-declined; not a gate failure, not a void.
+
+### Ungated readouts
+
+- KUQ transfer: `d_ev` separates confab-vs-correct on the doubt-snap KUQ
+  population at AUROC 0.7762 (CI [0.7360, 0.8156]; n=887/240). A real
+  cross-population transfer, noted as consistent with `d_ev` riding the
+  generic/retrieval-family geometry that also separates KUQ roles, rather
+  than evidence of a specific axis (it failed specificity on its own fit
+  population).
+- Refused-row auxiliary (construct context): AUROC(refused vs correct)
+  0.9751; AUROC(confab vs refused) 0.0467; realized ordering on `d_ev` is
+  refused > confab > correct. Both numbers reproduced exactly by the
+  red-team.
+
+FINDING (construct tell): a doubt axis should place refusals and confident
+wrongness on the same side, opposite confident correctness. `d_ev` instead
+orders refused above confab above correct, the signature of an
+answer-availability / retrieval-success signal, the same family M4-WK's
+native direction resolved into. The evidence contrast, when maximized, does
+not reconstruct doubt; it reconstructs retrieval-family geometry.
+
+### Red-team disclosures (post-run review, RESOLVE WITH DISCLOSURES)
+
+- The SC0 d_ev re-derivation shares the estimator code path with the fit
+  (sc0_enforce.py calls fit_dev.fit_d_ev): it catches artifact tampering
+  and self-blinding violations, the M-B claim, but not a logic bug inside
+  the estimator. The red-team's from-scratch recompute (independent code,
+  raw tensors) closes that gap and matches exactly.
+- The KUQ transfer readout sources roles from anchor_extract_manifest.json
+  rather than cell.yaml's named fit_rows_for_anchor.jsonl; the red-team
+  verified the two files carry byte-identical row_key-to-role maps (0
+  disagreements). Ungated readout; no gate touched.
+- Reproducibility caveat: the CPU rungs consume tensors that live
+  gitignored in the retained M4-WK worktree and the doubt-snap analysis
+  dir, not in this cell's committed record. staging_manifest.json pins
+  per-file sha256 so integrity is verifiable, but re-running requires those
+  external uncommitted inputs to persist.
+- d_ev carries SOME baseline content (rung (a) passed, so pure
+  answer-copying, the a1 branch, is not confirmed); the null result is
+  specifically that this content is indistinguishable from random
+  directions in the same geometry and substantially weaker than the native
+  ignorance direction.
+
+### Scoreboard scoring
+
+Slot 1 (fires at baseline >= 0.70): PI called FIRES, orchestrator called
+BELOW FLOOR. Realized 0.7252: PI slot AWARDED; the orchestrator was wrong.
+Slot 2 (matches native, lower CI >= -0.05): PI called MATCHES NATIVE, the
+orchestrator's conditional lean was fires-but-weaker. Realized lower CI
+-0.1895: the orchestrator's lean was correct; the PI slot is not awarded.
+Recorded straight: the predictors split 1-1, and the realized result is one
+neither slot fully described: a real but non-specific, weaker-than-native
+separation.
+
+### Interpretation
+
+M4c completes the constructive arm of the doubt search. M4-WK showed the
+evidence trace exists in the anchor state but is small along the ignorance
+axis and behaviorally inert; M4c shows that maximizing that trace does not
+recover a hidden doubt axis: the resulting direction's baseline separation
+is indistinguishable from covariance-shaped chance, clearly inferior to the
+ignorance-fit direction, and carries a refused-over-confab ordering that
+identifies it as retrieval-family, not doubt. The fragmentation reading is
+upgraded from "the pieces do not co-locate on the native axis" to "the
+pieces do not co-locate on any linearly recoverable axis reachable from the
+evidence contrast." The mentalistic name "doubt" remains unearned on the
+world-known error class for every direction tested to date.
+
+### Verdict (one sentence, mirrored in experiment.yaml)
+
+The constructive search fails on specificity: d_ev fires at baseline
+(0.7252 >= 0.70, rung (a) pass) but is indistinguishable from
+covariance-shaped random directions (p = 0.191, robust across three null
+flavors), decisively weaker than the ignorance-fit native direction (paired
+diff -0.1381, lower CI -0.1895), and orders refused above confab above
+correct, so the evidence contrast recovers retrieval-family geometry rather
+than a doubt axis and M4-WK's fragmentation reading stands, strengthened.
