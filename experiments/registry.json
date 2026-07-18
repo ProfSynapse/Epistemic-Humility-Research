@@ -2226,7 +2226,12 @@
           }
         ]
       },
-      "kg": [],
+      "kg": [
+        "experiment:margin-evidence-responsiveness-worldknown",
+        "mechanism:kuq-fit-direction-reverses-on-world-known-confident-wrongness",
+        "mechanism:confident-wrongness-steering-hits-coherence-ceiling-before-refusal",
+        "mechanism:evidence-registration-exists-without-driving-behavior-worldknown"
+      ],
       "prediction": "On the TRANSFER direction, supplying the true answer in-context both collapses the c_hat projection on confab rows (paired median shift toward the correct/refused regime at or above the re-derived floor, and larger than the false-answer placebo) and lengthens their margins (true-answer survival at each row's own world-known tipping dose exceeds the placebo, CI excluding zero): qwen earns criterion (d) for the named KUQ direction. [Predictor calls registered in the scoreboard at sign.]",
       "question": "On Qwen/Qwen3.5-4B, does the KUQ-fit c_hat known-unknown direction (TRANSFER) satisfy earnability criterion (d) on a WORLD-KNOWN error class? That is, on confident-wrong-on-answerable PopQA rows, does supplying the true answer in-context both collapse the c_hat projection (toward the correct/refused regime) and lengthen the commitment margin, specifically for the true answer over a category-matched false-answer placebo? A world-known c_hat refit natively is run as a secondary two-channel dissociation reading.",
       "registered": true,

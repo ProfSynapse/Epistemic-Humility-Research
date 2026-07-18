@@ -693,7 +693,7 @@ Atomic notes extracted from the library papers via the Agents-K1 ingestion skill
 - [[valence-arousal-subspace]] : A two-dimensional linear subspace in LLM activation space spanned by a recovered valence axis (pleasure-displeasure) and arousal axis (activ
 - [[world-model-hallucination-modes]] : A three-type taxonomy of failure modes in generative world models, each anchored to a different pipeline stage. Perceptual hallucination occ
 
-## Mechanisms (cause -> effect) (428)
+## Mechanisms (cause -> effect) (431)
 
 - [[abstention-generalization-failure]] : 'instruction-tuning for abstention on a narrow, homogeneous set of refusal expressions and task formats' **prevents** Abstention ability does not generalize to 
 - [[abstract-representations-enable-zero-shot-generalization]] : High degree of abstract (parallel) representation in ANN hidden layers, as measured by parallelism-score, indicating that compositional rule dimensions are enco
@@ -749,6 +749,7 @@ Atomic notes extracted from the library papers via the Agents-K1 ingestion skill
 - [[confab-boundary-elevation-lacks-knowledge-signal]] : Reading blind-spot confabulations on two separate axes: the knowledge-boundary (doubt) axis and an actually-knowing axis fit on correct-vs-wrong answers within 
 - [[confab-propensity-is-not-generic-answer-commitment]] : Fitting the fabricate-vs-refuse direction within unanswerables and the answer-vs-refuse direction within answerables on the same caution-residualized feature sp
 - [[confab-propensity-push-reaches-confab-cloud]] : Adding a push against the confabulation-propensity direction (region R3 of the radial control law) on top of caution-based steering, in the radial ceiling simul
+- [[confident-wrongness-steering-hits-coherence-ceiling-before-refusal]] : In margin-evidence-responsiveness-worldknown (M4-WK), a world-known c_hat direction refit natively (baseline confab-vs-correct AUROC 0.8628) is applied at each 
 - [[conservative-rm-improves-rl-factuality]] : Training a conservative-reward-model to underestimate rewards on unfamiliar inputs **increases** RL finetuning steers policy toward abstention|abstaining on unf
 - [[consistency-over-verbalization-arithmetic]] : Using self-consistency response consistency rather than direct verbalized-confidence for arithmetic reasoning tasks like gsm8k **increases** 'auroc improves fro
 - [[contrastive-activation-addition-steers-alignment-behaviors]] : A contrastive-activation-addition vector is computed from contrasting behavior examples. **enables** Alignment-relevant behaviors shift during evaluation or gen
@@ -789,6 +790,7 @@ Atomic notes extracted from the library papers via the Agents-K1 ingestion skill
 - [[epistemic-humility-reward-induces-over-hedging]] : Instructing labelers to reward epistemic humility in reinforcement-learning-from-human-feedback training **increases** Model over-hedging on simple questions wi
 - [[estimator-divergence-invalidates-single-probe-faithfulness]] : Using a single internal confidence estimator (e.g. token-probability RCC or hidden-state DeepConf or sampling consistency) to assess whether a large reasoning m
 - [[evidence-access-bottlenecks-expert-calibration]] : Providing a reasoning model with retrieved evidence passages from web search for each statement in a knowledge-intensive calibration task (retrieval-augmented g
+- [[evidence-registration-exists-without-driving-behavior-worldknown]] : In margin-evidence-responsiveness-worldknown (M4-WK), a world-known c_hat direction refit natively (baseline AUROC 0.8628) is projected at the question's last-t
 - [[excess-sft-idk-causes-capability-collapse]] : An SFT warm-up in which the proportion of IDK-labeled training examples is too high (approximately 60% in RL-RTuning vs approximately 30% in RL-SFT-Random) **pr
 - [[expected-accuracy-signal-improves-honesty]] : Using model-estimated expected accuracy over multiple samples to label known/unknown questions as the training signal for idk-sft behavior **increases** Higher 
 - [[explicit-composition-token-prevents-order-collapse]] : Training a dedicated composition token that learns behavior-independent composition rather than relying on simple concatenation of compositional-steering-tokens
@@ -865,6 +867,7 @@ Atomic notes extracted from the library papers via the Agents-K1 ingestion skill
 - [[knowledge-neurons-activated-by-knowledge-expressing-prompts]] : Presenting a prompt that expresses a specific relational fact (head and tail entities in correct relational context) **increases** Identified knowledge neurons 
 - [[knowledge-neurons-concentrated-upper-layers]] : Factual relational knowledge representation in pretrained Transformers **enables** Knowledge neurons identified by the attribution method are predominantly dist
 - [[knowledge-surgery-enables-targeted-fact-update]] : Directly modifying FFN value-slot weight vectors for approximately 4 identified knowledge neurons per fact **enables** Fact update success rate of 34.4% with mi
+- [[kuq-fit-direction-reverses-on-world-known-confident-wrongness]] : In margin-evidence-responsiveness-worldknown (M4-WK), the KUQ-fit c_hat direction (fit on answered-vs-refused known-unknown rows, the direction the framework's 
 - [[kv-memorization-gates-truth-encoding]] : Phase 1 of training: rapid key-value-associative-memory|key-value memorisation of subject-attribute associations within approximately 1000 batches, reaching abo
 - [[l1-l2-ratio-enables-k-robustness]] : Penalizing the L1/L2-norm ratio of activations before Top-k selection, concentrating the code onto fewer effective units **enables** Reconstruction quality beco
 - [[lacie-listener-aware-calibration-transfers-to-humans]] : DPO finetuning with a simulated LLM listener scoring speaker answer acceptance (LACIE training) **enables** Human annotators accept 47% fewer incorrect answers 
