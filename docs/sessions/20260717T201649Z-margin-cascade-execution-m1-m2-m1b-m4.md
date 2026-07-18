@@ -4,7 +4,7 @@ session_id: 20260717T201649Z-margin-cascade-execution-m1-m2-m1b-m4
 title: 'Margin cascade execution: M1 M2 M1b M4'
 status: active
 created_at: '2026-07-17T20:16:49Z'
-updated_at: '2026-07-18T20:10:55Z'
+updated_at: '2026-07-18T22:23:17Z'
 question: Do the framework's margin-theory claims (1, 3) and the mentalistic-naming
   criteria hold at the qwen mid-band operating point, tested cheap-first through the
   M1-M6 cascade?
@@ -196,6 +196,43 @@ checkpoints:
   decisions: []
   next_steps: []
   signals: {}
+- id: 007-result
+  at: '2026-07-18T22:23:17Z'
+  kind: result
+  title: 'M4 arc closed: M4-WK + M4c resolved and merged'
+  summary: 'M4 ARC CLOSED END TO END. M4-WK: blinded grading ceremony (isolated adjudicator,
+    hash-commit-before-unblind; false-wrong 5/117=0.0427 Wilson [0.0184,0.0962] <=0.10,
+    null INTERPRETABLE; decoys 29/29), post-run red-team RESOLVE WITH DISCLOSURES
+    (M-1 vacuous attestation fixed 6c897f22), resolved null-result 78fd853e, PR#306
+    MERGED 52a61efd. M4c (evidence-response-direction-search) full same-day arc: constructive
+    inversion (fit d_ev on true-vs-false evidence contrast, 200/200 split seed 48260728,
+    machine-enforced self-blinding via byte-pinned permutation + recompute-and-assert
+    after pre-sign red-team M-B; a1/a2 reversal falsifier branches per M-A), signed
+    7b38e72c (scoreboard: PI FIRES+MATCHES-NATIVE, orchestrator BELOW-FLOOR+fires-but-weaker),
+    CPU rungs on reused M4-WK captures: rung(a) PASS 0.7252 [0.6832,0.7652] vs 0.70
+    floor; rung(c) FAIL all three null flavors (registered covariance p=0.191, isotropic
+    p=0.079, red-team within-class p=0.113) and native comparator (paired diff -0.1381,
+    lower CI -0.1895 vs -0.05 bar); construct tell refused(0.9751)>confab(0.7252)>correct
+    = answer-availability geometry; KUQ transfer asymmetric (d_ev->KUQ 0.7762, KUQ->rows-reverse
+    0.2845); rung(b) condition-met-DECLINED by PI. Post-run red-team RESOLVE WITH
+    DISCLOSURES (0 blockers/0 majors; both halves recomputed from raw tensors byte-exact).
+    Resolved null-result 77f75726, PR#307 MERGED 9ada4239. Scoreboard split 1-1. KG
+    ingests committed (86cf6171 M4-WK: 3 mechanisms; 45c178c9 M4c: 2 mechanisms).
+    Capture data preserved+sha-verified to canonical (3138 files, 3003 pinned tensors
+    PASS) then both worktrees retired. ZOOM-OUT CORRECTED after PI pushback (over-indexed
+    on cascade): re-read series plan + margin framework + registry - correctness dial
+    already reads wrongness POST-GEN 0.834; fragmentation-in-time synthesis (unanswerability
+    pre-gen, correctness post-gen, no pre-answer doubt axis) is paper 4''s mechanistic
+    justification; M2 channels redundant; paper 5 rewrite UNBLOCKED (H3/H4/H6+ladder
+    all resolved).'
+  evidence: []
+  run_ids: []
+  commands: []
+  decisions: []
+  next_steps:
+  - 'PI choosing: writing campaign (paper5 rewrite + terminology PR + paper3 census
+    integration) vs family memo->M3->M5 evidence lane.'
+  signals: {}
 track: margin-theory-cascade
 ---
 # Margin cascade execution: M1 M2 M1b M4
@@ -243,3 +280,10 @@ _No summary yet._
 - at: `2026-07-18T20:10:55Z`
 - kind: `checkpoint`
 - summary: M4-WK COMPLETE THROUGH ANALYSIS (commit 6075a037; blinded correctness grading pending). Ladder extension +[6,8,12,16]x (PI-approved repin 8ecaf2a6) added ZERO tips: all 51 genuine tips at <=2.0x; 3.0x+ is 96-100 percent degenerate text both roles - a COHERENCE CEILING precedes refusal, so 349/400 world-known confab rows are unresolvable in principle (vs ~77 percent tippable on KUQ in M1). Lead ruling: rungs >=3x instrument-invalid; n_margin_eligible=51 accepted (PI approved); d2 floor repinned 0.1372. SURVIVAL: S1 gate FAILS (baseline survival at own tipping dose 0.2549 vs 0.05 ceiling) -> channel-2 native VOID per pre-registered gate; ladder-vs-survival regime non-reproducibility reported straight; D2 raw report-only: baseline 0.2549 / true 0.9412 / false 0.9412 / paired diff 0.0 (any answer in context defeats the dose, true=false). No channel-2 re-run permitted (contrast seen). D1 NATIVE: leg-2 specificity PASSES (true-vs-false paired diff 0.1022, CI 0.0527-0.1524, excludes zero, true larger - real evidence-specific signal, anti-tautology control) but leg-1 collapse FAILS floor (0.5921 vs frozen 0.8209, ~72 percent of bar) -> criterion (d) NOT EARNED on native (both legs required); transfer reported-only (leg-2 reversed, consistent with anti-separation). FINAL M4-WK SHAPE: transfer primary VOID (0.3018, sign-verified, population reversal); native secondary (d) not earned (evidence-specific but sub-floor, behaviorally inert); channel-2 instrument void. THEORY SYNTHESIS (taught to PI): the doubt name fails its earnability ladder at rung (d); doubt in this model factors into at least two non-transferable pieces - an unanswerability signature (KUQ direction, anti-separates world-known) and a weak behaviorally-inert evidence-registration (native leg-2) - neither deserving the mentalistic name; confident wrongness is mechanistically distinct from acknowledged ignorance (saturation: doubt-to-abstention pathway unreachable on ~87 percent of world-known confabs, model degenerates before refusing). Cascade score: M1 falsified, M2 falsified, M1b null, M4 void, M4-WK transfer-void + native not-earned - measurable machinery real, every mentalistic promotion failed its pre-registered bar. Build-agent conduct: gold-field KeyError found+fixed (was misattributed as silent kill), compute_D2 None-safety, censoring artifact flagged not reinterpreted, no verdict language committed. NEXT: correctness shard (n>=150, commit-before-grade) -> lead-run blinded adjudication (isolated grader, hash-commit-before-unblind) -> false-wrong bound <=0.10 needed for null interpretability -> resolution writing (lead), KG ingest, PR (merge needs PI approval). Then family memo, M3 anisotropy (does doubt fragmentation generalize?), M5 training bridge (which piece does abstention training strengthen?).
+### 007-result - M4 arc closed: M4-WK + M4c resolved and merged
+
+- at: `2026-07-18T22:23:17Z`
+- kind: `result`
+- summary: M4 ARC CLOSED END TO END. M4-WK: blinded grading ceremony (isolated adjudicator, hash-commit-before-unblind; false-wrong 5/117=0.0427 Wilson [0.0184,0.0962] <=0.10, null INTERPRETABLE; decoys 29/29), post-run red-team RESOLVE WITH DISCLOSURES (M-1 vacuous attestation fixed 6c897f22), resolved null-result 78fd853e, PR#306 MERGED 52a61efd. M4c (evidence-response-direction-search) full same-day arc: constructive inversion (fit d_ev on true-vs-false evidence contrast, 200/200 split seed 48260728, machine-enforced self-blinding via byte-pinned permutation + recompute-and-assert after pre-sign red-team M-B; a1/a2 reversal falsifier branches per M-A), signed 7b38e72c (scoreboard: PI FIRES+MATCHES-NATIVE, orchestrator BELOW-FLOOR+fires-but-weaker), CPU rungs on reused M4-WK captures: rung(a) PASS 0.7252 [0.6832,0.7652] vs 0.70 floor; rung(c) FAIL all three null flavors (registered covariance p=0.191, isotropic p=0.079, red-team within-class p=0.113) and native comparator (paired diff -0.1381, lower CI -0.1895 vs -0.05 bar); construct tell refused(0.9751)>confab(0.7252)>correct = answer-availability geometry; KUQ transfer asymmetric (d_ev->KUQ 0.7762, KUQ->rows-reverse 0.2845); rung(b) condition-met-DECLINED by PI. Post-run red-team RESOLVE WITH DISCLOSURES (0 blockers/0 majors; both halves recomputed from raw tensors byte-exact). Resolved null-result 77f75726, PR#307 MERGED 9ada4239. Scoreboard split 1-1. KG ingests committed (86cf6171 M4-WK: 3 mechanisms; 45c178c9 M4c: 2 mechanisms). Capture data preserved+sha-verified to canonical (3138 files, 3003 pinned tensors PASS) then both worktrees retired. ZOOM-OUT CORRECTED after PI pushback (over-indexed on cascade): re-read series plan + margin framework + registry - correctness dial already reads wrongness POST-GEN 0.834; fragmentation-in-time synthesis (unanswerability pre-gen, correctness post-gen, no pre-answer doubt axis) is paper 4's mechanistic justification; M2 channels redundant; paper 5 rewrite UNBLOCKED (H3/H4/H6+ladder all resolved).
+- next steps:
+  - PI choosing: writing campaign (paper5 rewrite + terminology PR + paper3 census integration) vs family memo->M3->M5 evidence lane.
