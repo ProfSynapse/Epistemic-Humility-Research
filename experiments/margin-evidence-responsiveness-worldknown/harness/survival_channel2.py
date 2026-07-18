@@ -176,6 +176,7 @@ def cmd_generate(args: argparse.Namespace) -> int:
 
     try:
         for arm in config.ARMS:
+            print(f"[survival_channel2 generate] === ARM_STARTING {direction} {arm} ===", flush=True)
             rows_this_arm = []
             for rk in ordered_keys:
                 base = eligible[rk]
@@ -218,12 +219,14 @@ def cmd_generate(args: argparse.Namespace) -> int:
             if failed:
                 raise SystemExit(f"LIVE SC1 FAIL (survival/{direction}/{arm}): pass-completion readback outside tolerance for {len(failed)}/{len(readback_checks)} rows; worst={max(failed, key=lambda c: c['rel_delta'])}")
             print(f"[survival_channel2 generate] {direction}/{arm}: done -> {log_path} ({len(logged)} rows, readback OK)", flush=True)
+            print(f"[survival_channel2 generate] === ARM_DONE {direction} {arm} ===", flush=True)
     finally:
         del model
         gc.collect()
         if torch.cuda.is_available():
             torch.cuda.empty_cache()
 
+    print(f"[survival_channel2 generate] === ALL_ARMS_DONE {direction} ({len(config.ARMS)} arms) ===", flush=True)
     return 0
 
 
