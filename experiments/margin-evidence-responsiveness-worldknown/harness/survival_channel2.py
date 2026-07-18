@@ -69,10 +69,15 @@ def rung_runlog_path(direction: str, arm: str) -> Path:
 
 
 def load_margin_eligible_rows(direction: str) -> dict[str, dict[str, Any]]:
-    """row_key -> {row_key, question, aliases, category_canon, own_tipping_dose_abs}
-    for confab rows with a NON-CENSORED tipping dose in this direction's
-    ladder-derive output. Requires ladder_channel2.py derive to have run
-    first."""
+    """row_key -> {row_key, question, gold, aliases, category_canon,
+    own_tipping_dose_abs} for confab rows with a NON-CENSORED tipping dose in
+    this direction's ladder-derive output. Requires ladder_channel2.py derive
+    to have run first. `gold` is required by `capture_channel1.context_for_arm`
+    for the true_answer arm (row["gold"]) -- omitting it is caught late
+    (only on the true_answer arm, since no_answer_baseline never reads
+    context) rather than at row-build time; a KeyError here surfaced exactly
+    that gap on the first survival run (rungs: gold was dropped from this
+    dict even though popqa_pool.load_pool() already carries it)."""
     margin_rows_path = LADDER_DIR / f"{direction}_margin_rows.jsonl"
     if not margin_rows_path.is_file():
         raise SystemExit(f"survival_channel2 FAIL: no {margin_rows_path}; run `ladder_channel2.py derive --direction {direction}` first.")
@@ -85,7 +90,7 @@ def load_margin_eligible_rows(direction: str) -> dict[str, dict[str, Any]]:
         rk = r["row_key"]
         pr = pool[rk]
         eligible[rk] = {
-            "row_key": rk, "question": pr["question"], "aliases": pr["aliases"],
+            "row_key": rk, "question": pr["question"], "gold": pr["gold"], "aliases": pr["aliases"],
             "category_canon": pr["category"], "role": "confab", "source": "popqa",
             "own_tipping_dose_abs": r["tipping_dose_abs"],
         }
