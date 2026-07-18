@@ -1,0 +1,22 @@
+{
+  "batch_composition": {
+    "batch_size": 8,
+    "generation_only_elapsed_sec": 6324.1,
+    "n_batches": 1784,
+    "n_generated_this_call": 14267,
+    "n_rows": 14267,
+    "row_order_sha256": "47785b0f45bf09cc6a06f8babecbf457f22c6d62ae0c58f756f86df7d1972f13"
+  },
+  "committed_census_sha256": "6d11afebe3e5eeb6b2222b65d706351fb5b9aa053a2bed3b39d65f390ebcecc8",
+  "family": "qwen35_4b",
+  "model": "Qwen/Qwen3.5-4B",
+  "n_rows": 14267,
+  "revision": "851bf6e806efd8d0a36b00ddf55e13ccb7b8cd0a",
+  "role_counts": {
+    "confab_on_answerable": 11048,
+    "correct_on_answerable": 2744,
+    "excluded": 54,
+    "refused_on_answerable": 421
+  },
+  "runlog_sha256": "c556b6cff357cb82d084d8fdbe22352dc1385960485a9bcbe828ad59af3c81c4"
+}

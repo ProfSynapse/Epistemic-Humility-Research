@@ -1,0 +1,67 @@
+{
+  "config_hashes_verified": {
+    "cell_yaml": true,
+    "gates_yaml": true
+  },
+  "detector_stack_byte_identical": {
+    "files": {
+      "detector_v2.py": {
+        "byte_identical": true,
+        "sha256_margin_mapping": "161fd8548ec0dad1daabd590870654f1c32bd0daf21e6026a2c18c83e83991ae",
+        "sha256_mine": "161fd8548ec0dad1daabd590870654f1c32bd0daf21e6026a2c18c83e83991ae"
+      },
+      "detector_v2_patterns.yaml": {
+        "byte_identical": true,
+        "sha256_margin_mapping": "36422e01ae03008c2f71f180158c63950e14f8dfc1279c4e654c89fb831841d9",
+        "sha256_mine": "36422e01ae03008c2f71f180158c63950e14f8dfc1279c4e654c89fb831841d9"
+      },
+      "grader.py": {
+        "byte_identical": true,
+        "sha256_margin_mapping": "eb395542d4163c05417f303df04782e2ebcdcd104b5181aa0af2e966b93b1df9",
+        "sha256_mine": "eb395542d4163c05417f303df04782e2ebcdcd104b5181aa0af2e966b93b1df9"
+      }
+    },
+    "pass": true
+  },
+  "popqa": {
+    "dest_path": "analysis/staged_inputs/popqa_test.jsonl",
+    "feasibility": {
+      "all_fields_present": true,
+      "n_missing_aliases": 0,
+      "n_missing_gold": 0,
+      "n_missing_prop": 0,
+      "n_missing_question": 0
+    },
+    "min_prop_bucket": 34,
+    "n_prop_categories": 16,
+    "n_rows": 14267,
+    "name": "popqa_test",
+    "sha256": "2c88bb6277e01f60a17c70816ab2bc85ffbcf14e1b144121faffbfb9a8418465",
+    "source_path": "/home/profsynapse/code/ehr-worktrees/m4-worldknown/datasets/popqa/test.jsonl"
+  },
+  "popqa_prop_counts": {
+    "author": 1514,
+    "capital": 645,
+    "capital of": 363,
+    "color": 34,
+    "composer": 978,
+    "country": 838,
+    "director": 1999,
+    "father": 570,
+    "genre": 1619,
+    "mother": 187,
+    "occupation": 532,
+    "place of birth": 584,
+    "producer": 1520,
+    "religion": 338,
+    "screenwriter": 1999,
+    "sport": 547
+  },
+  "transfer_c_hat": {
+    "dest_path": "analysis/staged_inputs/directions/hs20/c_hat_transfer.json",
+    "matches_cell_yaml_pin": true,
+    "name": "transfer_c_hat",
+    "sha256": "937d1bffe1924e73bca40a88c8096d7e01bb67c5b64286362196aa968e2c2e1f",
+    "source_path": "/home/profsynapse/code/ehr-worktrees/m4-worldknown/experiments/qwen35-4b-midband-doubt-snap/analysis-committed/directions/hs20/c_hat.json"
+  }
+}

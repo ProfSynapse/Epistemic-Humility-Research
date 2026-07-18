@@ -1,0 +1,21 @@
+{
+  "anchor_manifest_sha256": "03998e8feb8f8137e292971739b1eb73ae335e840bf0117991846ca2dbdf612e",
+  "auc_confab_vs_known_fit_split_negz": 0.8191614583333333,
+  "c_hat_worldknown_sha256": "432c9f1f2753ed9d68f9da99705ae2955396e6eb0ec38e9ca2fbc5a40963176c",
+  "reference_dose_abs": 8.46933320208922,
+  "reproducibility_verified": true,
+  "seed": 20260707,
+  "sign_assertion_passed": true,
+  "stats": {
+    "cos_caution_c_hat": 0.44627762129349124,
+    "cos_u_d_u_p": 0.14364642577438447,
+    "hidden_dim": 2560,
+    "mean_raw_proj_confab": -1.8859427697755586,
+    "mean_raw_proj_unknown_refused": -0.6614704368559141,
+    "mu_c": -1.426765644930693,
+    "n_confab_fit": 400,
+    "n_known_fit": 240,
+    "n_unknown_refused": 180,
+    "sigma_c": 1.0586666502611526
+  }
+}

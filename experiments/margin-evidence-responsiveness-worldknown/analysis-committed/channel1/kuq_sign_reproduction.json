@@ -1,0 +1,40 @@
+{
+  "description": "Aggregate result of kuq_sign_reproduction.py: reproduces the transfer c_hat's confab-vs-correct AUROC on the qwen35-4b-midband-doubt-snap KUQ fit population, under M4-WK's exact projection+score convention (raw_proj=dot(h-mu,vector), z=READOUT_SIGN*(raw_proj-TRANSFER_MU_C)/TRANSFER_SIGMA_C, READOUT_SIGN=-1.0). No row text -- aggregates and input hashes only. Closes red-team item m-4.",
+  "provenance": {
+    "written_by": "independently lead-dispatched sign-check analyst",
+    "date": "2026-07-18",
+    "original_path": "lead scratchpad (not version-controlled there): /tmp/claude-1000/-mnt-f-Code-Epistemic-Humility-Research/292064d8-cb30-460a-ad90-29559ab5cf7f/scratchpad/kuq_repro.py",
+    "verified_by": "M4-WK build agent, re-ran the script verbatim against the same on-disk inputs on 2026-07-18 and confirmed the result below matches exactly"
+  },
+  "harness_convention": {
+    "READOUT_SIGN": -1.0,
+    "TRANSFER_MU_C": -4.031343053353048,
+    "TRANSFER_SIGMA_C": 1.576023489724997
+  },
+  "result": {
+    "n_confab": 887,
+    "n_correct": 240,
+    "n_missing_keys": 0,
+    "confab_median_raw_proj": -4.747665,
+    "correct_median_raw_proj": -1.687637,
+    "confab_median_z": 0.454512,
+    "correct_median_z": -1.487101,
+    "auroc_harness_convention": 0.986650,
+    "auroc_flipped_sign": 0.013350
+  },
+  "note": "Distinct from experiments/qwen35-4b-midband-doubt-snap/analysis-committed/build_manifest.json's hs20.auc_neg_z_d_on_fit=0.9928504321683578, which is a fit-time Youden-threshold AUC on doubt-snap's own fit split (a different quantity, not this KUQ-population reproduction) -- flagged during m-4 triage so it is never conflated with the number here.",
+  "inputs": {
+    "c_hat_json": {
+      "path": "experiments/qwen35-4b-midband-doubt-snap/analysis-committed/directions/hs20/c_hat.json",
+      "sha256": "937d1bffe1924e73bca40a88c8096d7e01bb67c5b64286362196aa968e2c2e1f"
+    },
+    "anchor_extract_safetensors": {
+      "path": "experiments/qwen35-4b-midband-doubt-snap/analysis/anchor_extract.safetensors",
+      "sha256": "e80ef97033ce57c7c40550ff6cca2040afd8ca8ad3317c9fa625a1f1ceb1dfe8"
+    },
+    "fit_rows_for_anchor_jsonl": {
+      "path": "experiments/qwen35-4b-midband-doubt-snap/analysis/fit_rows_for_anchor.jsonl",
+      "sha256": "4b2cba4c094ac479015ae746054a0caad39ce59bf7b4e798a5fcb6fbdb7dcb17"
+    }
+  }
+}

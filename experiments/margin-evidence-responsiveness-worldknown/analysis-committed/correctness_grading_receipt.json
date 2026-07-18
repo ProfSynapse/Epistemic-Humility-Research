@@ -1,0 +1,8 @@
+{
+ "graded_file_sha256": "65fe24198813c2e562232ce2f1b3106123c0b583cce2aed3f7f682408d892755",
+ "n_rows": 150,
+ "grader": "isolated blinded adjudicator (fresh opus agent, shard-file-only access; saw opaque_id/question/gold_aliases/model_answer_text only; no row_key/role/arm/detector fields)",
+ "ceremony": "hash committed BEFORE unblind per SC2; unblind join authorized only after this commit",
+ "ordered_by": "lead orchestrator",
+ "date": "2026-07-18"
+}
