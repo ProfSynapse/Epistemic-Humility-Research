@@ -2159,9 +2159,18 @@
         ],
         "modules": [],
         "pins": {
-          "cell.yaml": "da2338fb4b7f83ce8d4f4ef7f76385846c2f08c0f6cbb5157abe26daf7ac7584",
+          "cell.yaml": "ca7126f101e5a5b391fa1e5017ced26e065c71b532f97deac4ce07cf0b27cd2f",
           "gates.yaml": "9670fd0eed99a880c07a7e9adeeca67069c618931791cfc9188fe8f3c55f2fdd"
-        }
+        },
+        "repins": [
+          {
+            "date": "2026-07-18T10:49:46Z",
+            "file": "cell.yaml",
+            "new_sha256": "ca7126f101e5a5b391fa1e5017ced26e065c71b532f97deac4ce07cf0b27cd2f",
+            "old_sha256": "da2338fb4b7f83ce8d4f4ef7f76385846c2f08c0f6cbb5157abe26daf7ac7584",
+            "reason": "Native direction fit realized: froze sha256/snap_standardization{mu_c,sigma_c}/reference_dose_abs for directions.native from native_fit.py's fit output (fit-split n=640: confab 400 + known_correct_answered 240, disjoint unknown_refused 180). Numeric frozen BEFORE any true/false channel-1 or channel-2 contrast is computed, per the no-goalpost self-blinding rule; only the numeric was undetermined at sign, the formula (RE_DERIVED per direction, 8x sigma_c reference dose) was locked at sign."
+          }
+        ]
       },
       "kg": [],
       "prediction": "On the TRANSFER direction, supplying the true answer in-context both collapses the c_hat projection on confab rows (paired median shift toward the correct/refused regime at or above the re-derived floor, and larger than the false-answer placebo) and lengthens their margins (true-answer survival at each row's own world-known tipping dose exceeds the placebo, CI excluding zero): qwen earns criterion (d) for the named KUQ direction. [Predictor calls registered in the scoreboard at sign.]",

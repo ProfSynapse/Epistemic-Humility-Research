@@ -73,6 +73,7 @@ directions:
   native:
     role: secondary
     path: analysis-committed/directions/hs20/c_hat_worldknown.json   # PRODUCED by this experiment; sha pinned at the direction-fit stage repin (not pre-generation)
+    sha256: 432c9f1f2753ed9d68f9da99705ae2955396e6eb0ec38e9ca2fbc5a40963176c   # FROZEN at direction-fit repin
     schema: mechinterp-direction/v1
     layer_index: 19
     hs_index: 20
@@ -81,8 +82,8 @@ directions:
       hidden states, roles remapped (correct-on-answerable -> known_correct_answered;
       refused-on-answerable -> unknown_refused; confab-on-answerable -> confab).
       c_hat = unit(mean(unknown_refused) - mean(confab)) exactly as the KUQ fit.
-    reference_dose_abs: RE_DERIVED               # RE_DERIVED (fork 1): native reference_dose_abs = 8 x sigma_c of the native fit standardization. This is the SAME 8x multiplier that set the KUQ reference dose (12.608187917799976 = 8 x 1.576023489724997, the transfer sigma_c), now applied to the native fit's own sigma_c. Computed at the direction-fit stage and frozen into the record via bin/exp repin before any native channel-2 dose is applied. The reference dose only sets ladder SPACING: the native channel-2 ladder multipliers MUST bracket the observed native tipping doses (see channel2_margin.ladder_rebuild), so the exact reference value is non-critical as long as the ladder brackets the tipping range.
-    snap_standardization: RE_DERIVED             # native mu_c/sigma_c from its own fit manifest; frozen at the direction-fit repin
+    reference_dose_abs: 8.46933320208922          # FROZEN (fork 1): 8 x sigma_c of the native fit standardization (8 x 1.0586666502611526). This is the SAME 8x multiplier that set the KUQ reference dose (12.608187917799976 = 8 x 1.576023489724997, the transfer sigma_c), now applied to the native fit's own sigma_c. Frozen into the record via bin/exp repin before any native channel-2 dose is applied. The reference dose only sets ladder SPACING: the native channel-2 ladder multipliers MUST bracket the observed native tipping doses (see channel2_margin.ladder_rebuild), so the exact reference value is non-critical as long as the ladder brackets the tipping range.
+    snap_standardization: {mu_c: -1.426765644930693, sigma_c: 1.0586666502611526}   # FROZEN at direction-fit repin, from native_direction_build_manifest.json stats (fit-split n=640: confab 400 + known_correct_answered 240)
 
 # ===========================================================================
 # Readout score convention -- PINNED IN CODE, applies to BOTH directions.
