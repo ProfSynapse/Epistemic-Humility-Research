@@ -1183,7 +1183,11 @@
           "gates.yaml": "9038b6a85533d1c2c749f6f30e3a661f4201afe4aee2c54d9a3a1c4b7ac3bd7b"
         }
       },
-      "kg": [],
+      "kg": [
+        "experiment:evidence-response-direction-search",
+        "mechanism:evidence-fit-direction-recovers-no-specific-doubt-axis",
+        "mechanism:evidence-contrast-direction-encodes-answer-availability-not-doubt"
+      ],
       "prediction": "d_ev separates the 200 held-out confab rows from the 360 correct-control rows at the no_answer_baseline arm with AUROC >= 0.70, exceeds the covariance-shaped random-direction null at p < 0.05, and matches the native ignorance-fit direction (paired AUROC-difference lower 95% CI >= -0.05): one evidence/doubt axis, upgrading the fragmentation reading.",
       "question": "Does a direction fit purely on the in-context true-vs-false evidence contrast (d_ev, mean paired difference of true_answer minus false_answer_placebo hs20 anchors over 200 fit confab rows) also separate held-out confab from correct-control at the no_answer_baseline arm, i.e. do the evidence-registration and prospective-ignorance signals live on one recoverable axis, or does M4-WK's fragmentation reading stand?",
       "registered": true,

@@ -693,7 +693,7 @@ Atomic notes extracted from the library papers via the Agents-K1 ingestion skill
 - [[valence-arousal-subspace]] : A two-dimensional linear subspace in LLM activation space spanned by a recovered valence axis (pleasure-displeasure) and arousal axis (activ
 - [[world-model-hallucination-modes]] : A three-type taxonomy of failure modes in generative world models, each anchored to a different pipeline stage. Perceptual hallucination occ
 
-## Mechanisms (cause -> effect) (431)
+## Mechanisms (cause -> effect) (433)
 
 - [[abstention-generalization-failure]] : 'instruction-tuning for abstention on a narrow, homogeneous set of refusal expressions and task formats' **prevents** Abstention ability does not generalize to 
 - [[abstract-representations-enable-zero-shot-generalization]] : High degree of abstract (parallel) representation in ANN hidden layers, as measured by parallelism-score, indicating that compositional rule dimensions are enco
@@ -790,6 +790,8 @@ Atomic notes extracted from the library papers via the Agents-K1 ingestion skill
 - [[epistemic-humility-reward-induces-over-hedging]] : Instructing labelers to reward epistemic humility in reinforcement-learning-from-human-feedback training **increases** Model over-hedging on simple questions wi
 - [[estimator-divergence-invalidates-single-probe-faithfulness]] : Using a single internal confidence estimator (e.g. token-probability RCC or hidden-state DeepConf or sampling consistency) to assess whether a large reasoning m
 - [[evidence-access-bottlenecks-expert-calibration]] : Providing a reasoning model with retrieved evidence passages from web search for each statement in a knowledge-intensive calibration task (retrieval-augmented g
+- [[evidence-contrast-direction-encodes-answer-availability-not-doubt]] : In evidence-response-direction-search (M4c), the same d_ev direction (already shown to fail the covariance-shaped specificity null) is read on the auxiliary ref
+- [[evidence-fit-direction-recovers-no-specific-doubt-axis]] : In evidence-response-direction-search (M4c), a direction d_ev is fit as the mean paired difference between true_answer and false_answer_placebo hs20 anchor stat
 - [[evidence-registration-exists-without-driving-behavior-worldknown]] : In margin-evidence-responsiveness-worldknown (M4-WK), a world-known c_hat direction refit natively (baseline AUROC 0.8628) is projected at the question's last-t
 - [[excess-sft-idk-causes-capability-collapse]] : An SFT warm-up in which the proportion of IDK-labeled training examples is too high (approximately 60% in RL-RTuning vs approximately 30% in RL-SFT-Random) **pr
 - [[expected-accuracy-signal-improves-honesty]] : Using model-estimated expected accuracy over multiple samples to label known/unknown questions as the training signal for idk-sft behavior **increases** Higher 
