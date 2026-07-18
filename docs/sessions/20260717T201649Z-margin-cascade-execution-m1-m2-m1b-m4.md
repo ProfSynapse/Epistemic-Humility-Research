@@ -4,7 +4,7 @@ session_id: 20260717T201649Z-margin-cascade-execution-m1-m2-m1b-m4
 title: 'Margin cascade execution: M1 M2 M1b M4'
 status: active
 created_at: '2026-07-17T20:16:49Z'
-updated_at: '2026-07-18T22:47:19Z'
+updated_at: '2026-07-18T23:07:45Z'
 question: Do the framework's margin-theory claims (1, 3) and the mentalistic-naming
   criteria hold at the qwen mid-band operating point, tested cheap-first through the
   M1-M6 cascade?
@@ -262,6 +262,24 @@ checkpoints:
     flight); detector-audit scoping in flight; then lead writes the paper 5 rewrite
     spec.
   signals: {}
+- id: 009-infrastructure
+  at: '2026-07-18T23:07:45Z'
+  kind: infrastructure
+  title: 'Silent-idle protocol: read the agent transcript before nudging or killing'
+  summary: 'A scoping agent pinged idle repeatedly without its report arriving; the
+    lead nudged three times, killed it, re-dispatched, and nudged the replacement,
+    when the full report existed all along as final assistant text in the agent transcript
+    (~/.claude/projects/<slug>/<session>/subagents/agent-<name>-*.jsonl). Only the
+    routing of the final message to the lead failed. The PI surfaced the fix. New
+    protocol: on silent idle, read the transcript tail FIRST; bank the report if present
+    and stand the agent down; one nudge only if the transcript shows incomplete work;
+    kill only if truly wedged.'
+  evidence: []
+  run_ids: []
+  commands: []
+  decisions: []
+  next_steps: []
+  signals: {}
 track: margin-theory-cascade
 ---
 # Margin cascade execution: M1 M2 M1b M4
@@ -325,3 +343,8 @@ _No summary yet._
   - PI rulings 2026-07-18: (1) paper 5 title retires doubt, moves to known-unknown/answerability readout naming; (2) mistral stays as a bounded negative with more-model expansion queued; (3) cross-family framed now as readable-everywhere-actuable-only-in-Qwen-lineage-at-tested-sites, retests queued; (4) margin/geometry cells go to a successor paper 6; (5) GRPO framing: lead recommended exploratory extension, PI confirmation pending; (6) detector flip-rate audit FUNDED; (7) paper 3 experimental debt queued, disclosed meanwhile; (8) LP/CD queued (unanswered, each needs its own signed cell anyway). Tasks 30-35 created; task 15 respecced with rulings baked in.
 - next steps:
   - Terminology block drafting on branch papers/terminology-block (writer agent in flight); detector-audit scoping in flight; then lead writes the paper 5 rewrite spec.
+### 009-infrastructure - Silent-idle protocol: read the agent transcript before nudging or killing
+
+- at: `2026-07-18T23:07:45Z`
+- kind: `infrastructure`
+- summary: A scoping agent pinged idle repeatedly without its report arriving; the lead nudged three times, killed it, re-dispatched, and nudged the replacement, when the full report existed all along as final assistant text in the agent transcript (~/.claude/projects/<slug>/<session>/subagents/agent-<name>-*.jsonl). Only the routing of the final message to the lead failed. The PI surfaced the fix. New protocol: on silent idle, read the transcript tail FIRST; bank the report if present and stand the agent down; one nudge only if the transcript shows incomplete work; kill only if truly wedged.
