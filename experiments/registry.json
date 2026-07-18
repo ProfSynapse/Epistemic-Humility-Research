@@ -1163,6 +1163,38 @@
     },
     {
       "checkpoint": {
+        "repo": "Qwen/Qwen3.5-4B",
+        "revision": "851bf6e806efd8d0a36b00ddf55e13ccb7b8cd0a"
+      },
+      "created_at": "2026-07-18T21:08:42Z",
+      "falsifier": "With the fit/held-out split valid and all provenance gates green, d_ev's held-out baseline confab-vs-correct AUROC is < 0.70. Two pre-registered branches: (a1) CI covers 0.5, the direction carries no prospective ignorance content (an in-context answer-integration direction only) and M4-WK's fragmentation reading stands, strengthened; (a2) CI excludes 0.5 from below, the direction carries reversed-orientation baseline content, reported straight and lifted to PI, never equated with copying. A below-floor rung (a) is a substantive null, not a void/lift; void is reserved for broken SC0/SC3 provenance gates.",
+      "inputs": [
+        "experiments/margin-evidence-responsiveness-worldknown",
+        "experiments/qwen35-4b-midband-doubt-snap"
+      ],
+      "instrument": {
+        "configs": [
+          "cell.yaml",
+          "gates.yaml"
+        ],
+        "modules": [],
+        "pins": {
+          "cell.yaml": "c060fd9b2a29e826246bc1fce5de8dbd3c6c20ca7a934468e9c286d171a35049",
+          "gates.yaml": "9038b6a85533d1c2c749f6f30e3a661f4201afe4aee2c54d9a3a1c4b7ac3bd7b"
+        }
+      },
+      "kg": [],
+      "prediction": "d_ev separates the 200 held-out confab rows from the 360 correct-control rows at the no_answer_baseline arm with AUROC >= 0.70, exceeds the covariance-shaped random-direction null at p < 0.05, and matches the native ignorance-fit direction (paired AUROC-difference lower 95% CI >= -0.05): one evidence/doubt axis, upgrading the fragmentation reading.",
+      "question": "Does a direction fit purely on the in-context true-vs-false evidence contrast (d_ev, mean paired difference of true_answer minus false_answer_placebo hs20 anchors over 200 fit confab rows) also separate held-out confab from correct-control at the no_answer_baseline arm, i.e. do the evidence-registration and prospective-ignorance signals live on one recoverable axis, or does M4-WK's fragmentation reading stand?",
+      "registered": true,
+      "slug": "evidence-response-direction-search",
+      "status": "null-result",
+      "title": "M4c: evidence-derived doubt direction constructive search",
+      "type": "probe-fit",
+      "verdict": "The constructive search fails on specificity: d_ev fires at baseline (0.7252 >= 0.70, rung (a) pass) but is indistinguishable from covariance-shaped random directions (p = 0.191, robust across three null flavors), decisively weaker than the ignorance-fit native direction (paired diff -0.1381, lower CI -0.1895), and orders refused above confab above correct, so the evidence contrast recovers retrieval-family geometry rather than a doubt axis and M4-WK's fragmentation reading stands, strengthened."
+    },
+    {
+      "checkpoint": {
         "repo": "",
         "revision": ""
       },
