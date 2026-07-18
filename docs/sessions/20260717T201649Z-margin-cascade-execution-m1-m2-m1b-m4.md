@@ -4,7 +4,7 @@ session_id: 20260717T201649Z-margin-cascade-execution-m1-m2-m1b-m4
 title: 'Margin cascade execution: M1 M2 M1b M4'
 status: active
 created_at: '2026-07-17T20:16:49Z'
-updated_at: '2026-07-18T22:23:17Z'
+updated_at: '2026-07-18T22:47:19Z'
 question: Do the framework's margin-theory claims (1, 3) and the mentalistic-naming
   criteria hold at the qwen mid-band operating point, tested cheap-first through the
   M1-M6 cascade?
@@ -233,6 +233,35 @@ checkpoints:
   - 'PI choosing: writing campaign (paper5 rewrite + terminology PR + paper3 census
     integration) vs family memo->M3->M5 evidence lane.'
   signals: {}
+- id: 008-decision
+  at: '2026-07-18T22:47:19Z'
+  kind: decision
+  title: 'Papers reconciliation: five reader reports in; PI rules on the decision
+    packet'
+  summary: 'All five paper reconciliation reports landed and were banked (P1 light
+    touch; P2 minimal; P3 naming+hedging pass ~35 sites; P4 maintenance plus a newly
+    traced legacy-narrow-detector confound upstream of the headline labels; P5 rewrite-from-spine:
+    the gate-supplies-selectivity thesis is falsified as a general claim by gate-contribution-factorial
+    and survives only at the overdrive operating point, and the 2026-07-10 audit reframe
+    was never executed). Lead delivered the master plan plus an eight-item decision
+    packet.'
+  evidence: []
+  run_ids: []
+  commands: []
+  decisions:
+  - 'PI rulings 2026-07-18: (1) paper 5 title retires doubt, moves to known-unknown/answerability
+    readout naming; (2) mistral stays as a bounded negative with more-model expansion
+    queued; (3) cross-family framed now as readable-everywhere-actuable-only-in-Qwen-lineage-at-tested-sites,
+    retests queued; (4) margin/geometry cells go to a successor paper 6; (5) GRPO
+    framing: lead recommended exploratory extension, PI confirmation pending; (6)
+    detector flip-rate audit FUNDED; (7) paper 3 experimental debt queued, disclosed
+    meanwhile; (8) LP/CD queued (unanswered, each needs its own signed cell anyway).
+    Tasks 30-35 created; task 15 respecced with rulings baked in.'
+  next_steps:
+  - Terminology block drafting on branch papers/terminology-block (writer agent in
+    flight); detector-audit scoping in flight; then lead writes the paper 5 rewrite
+    spec.
+  signals: {}
 track: margin-theory-cascade
 ---
 # Margin cascade execution: M1 M2 M1b M4
@@ -287,3 +316,12 @@ _No summary yet._
 - summary: M4 ARC CLOSED END TO END. M4-WK: blinded grading ceremony (isolated adjudicator, hash-commit-before-unblind; false-wrong 5/117=0.0427 Wilson [0.0184,0.0962] <=0.10, null INTERPRETABLE; decoys 29/29), post-run red-team RESOLVE WITH DISCLOSURES (M-1 vacuous attestation fixed 6c897f22), resolved null-result 78fd853e, PR#306 MERGED 52a61efd. M4c (evidence-response-direction-search) full same-day arc: constructive inversion (fit d_ev on true-vs-false evidence contrast, 200/200 split seed 48260728, machine-enforced self-blinding via byte-pinned permutation + recompute-and-assert after pre-sign red-team M-B; a1/a2 reversal falsifier branches per M-A), signed 7b38e72c (scoreboard: PI FIRES+MATCHES-NATIVE, orchestrator BELOW-FLOOR+fires-but-weaker), CPU rungs on reused M4-WK captures: rung(a) PASS 0.7252 [0.6832,0.7652] vs 0.70 floor; rung(c) FAIL all three null flavors (registered covariance p=0.191, isotropic p=0.079, red-team within-class p=0.113) and native comparator (paired diff -0.1381, lower CI -0.1895 vs -0.05 bar); construct tell refused(0.9751)>confab(0.7252)>correct = answer-availability geometry; KUQ transfer asymmetric (d_ev->KUQ 0.7762, KUQ->rows-reverse 0.2845); rung(b) condition-met-DECLINED by PI. Post-run red-team RESOLVE WITH DISCLOSURES (0 blockers/0 majors; both halves recomputed from raw tensors byte-exact). Resolved null-result 77f75726, PR#307 MERGED 9ada4239. Scoreboard split 1-1. KG ingests committed (86cf6171 M4-WK: 3 mechanisms; 45c178c9 M4c: 2 mechanisms). Capture data preserved+sha-verified to canonical (3138 files, 3003 pinned tensors PASS) then both worktrees retired. ZOOM-OUT CORRECTED after PI pushback (over-indexed on cascade): re-read series plan + margin framework + registry - correctness dial already reads wrongness POST-GEN 0.834; fragmentation-in-time synthesis (unanswerability pre-gen, correctness post-gen, no pre-answer doubt axis) is paper 4's mechanistic justification; M2 channels redundant; paper 5 rewrite UNBLOCKED (H3/H4/H6+ladder all resolved).
 - next steps:
   - PI choosing: writing campaign (paper5 rewrite + terminology PR + paper3 census integration) vs family memo->M3->M5 evidence lane.
+### 008-decision - Papers reconciliation: five reader reports in; PI rules on the decision packet
+
+- at: `2026-07-18T22:47:19Z`
+- kind: `decision`
+- summary: All five paper reconciliation reports landed and were banked (P1 light touch; P2 minimal; P3 naming+hedging pass ~35 sites; P4 maintenance plus a newly traced legacy-narrow-detector confound upstream of the headline labels; P5 rewrite-from-spine: the gate-supplies-selectivity thesis is falsified as a general claim by gate-contribution-factorial and survives only at the overdrive operating point, and the 2026-07-10 audit reframe was never executed). Lead delivered the master plan plus an eight-item decision packet.
+- decisions:
+  - PI rulings 2026-07-18: (1) paper 5 title retires doubt, moves to known-unknown/answerability readout naming; (2) mistral stays as a bounded negative with more-model expansion queued; (3) cross-family framed now as readable-everywhere-actuable-only-in-Qwen-lineage-at-tested-sites, retests queued; (4) margin/geometry cells go to a successor paper 6; (5) GRPO framing: lead recommended exploratory extension, PI confirmation pending; (6) detector flip-rate audit FUNDED; (7) paper 3 experimental debt queued, disclosed meanwhile; (8) LP/CD queued (unanswered, each needs its own signed cell anyway). Tasks 30-35 created; task 15 respecced with rulings baked in.
+- next steps:
+  - Terminology block drafting on branch papers/terminology-block (writer agent in flight); detector-audit scoping in flight; then lead writes the paper 5 rewrite spec.
