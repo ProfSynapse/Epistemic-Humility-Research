@@ -1,4 +1,10 @@
-# Fitted directions and other large local data for this experiment.
-directions/
 # Local analysis scratch; keep untracked, promote real outputs deliberately.
+# This also covers any local staged-input sidecars this experiment writes
+# under analysis/.
 analysis/
+# Do NOT add a top-level `directions/` pattern here. It would shadow the
+# deliberately-committed d_ev output at
+# analysis-committed/directions/hs20/d_ev.json (mirroring the M4-WK /
+# doubt-snap convention; M4-WK's .gitignore carries the same comment). The
+# `analysis/` rule above is the only large-data exclusion this experiment
+# needs.
