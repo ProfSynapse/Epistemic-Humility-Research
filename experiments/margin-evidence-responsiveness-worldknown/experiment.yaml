@@ -36,7 +36,7 @@ instrument:
   modules: []
   pins:
     cell.yaml: ca7126f101e5a5b391fa1e5017ced26e065c71b532f97deac4ce07cf0b27cd2f
-    gates.yaml: 9670fd0eed99a880c07a7e9adeeca67069c618931791cfc9188fe8f3c55f2fdd
+    gates.yaml: 671873c5c96d602594794e75b6753ebdf18e686b2683fdf438280866c07eabc9
   repins:
   - file: cell.yaml
     old_sha256: da2338fb4b7f83ce8d4f4ef7f76385846c2f08c0f6cbb5157abe26daf7ac7584
@@ -48,6 +48,17 @@ instrument:
       BEFORE any true/false channel-1 or channel-2 contrast is computed, per the no-goalpost
       self-blinding rule; only the numeric was undetermined at sign, the formula (RE_DERIVED
       per direction, 8x sigma_c reference dose) was locked at sign.'
+  - file: gates.yaml
+    old_sha256: 9670fd0eed99a880c07a7e9adeeca67069c618931791cfc9188fe8f3c55f2fdd
+    new_sha256: 671873c5c96d602594794e75b6753ebdf18e686b2683fdf438280866c07eabc9
+    date: '2026-07-18T11:31:41Z'
+    reason: 'Freeze native collapse_floor_z = 0.5 x realized native no_answer_baseline
+      gap_z (0.8209213240458088 = 0.5 x 1.6418426480916175), the MOMENT the fresh
+      baseline gap was measured for native (channel-1 capture, commit 3de5a30d), BEFORE
+      any true_answer/false_answer shift is computed for native (self-blinding preserved).
+      Transfer''s collapse floor is NOT frozen: transfer''s primary criterion (d)
+      test is VOID per BLOCKER B1 (baseline AUROC 0.3018 < 0.70 floor), PI decision,
+      void-and-lift.'
 inputs:
 - experiments/qwen35-4b-midband-doubt-snap/analysis-committed/directions/hs20/c_hat.json
 - datasets/popqa/test.jsonl

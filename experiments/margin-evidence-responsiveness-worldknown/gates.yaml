@@ -57,6 +57,9 @@ rederived_floors:
       is BEFORE any true_answer or false_answer shift is computed (self-blinding
       preserved). After the repin the number never moves. One numeric value per
       direction.
+    numeric:                       # FROZEN per-direction values, added only as each direction's baseline gap is realized (never both at once, never before)
+      native: 0.8209213240458088   # = 0.5 x realized_baseline_gap_z(native) = 0.5 x 1.6418426480916175, frozen 2026-07-18 from analysis-committed/channel1/floor_inputs.json (channel-1 capture, commit 3de5a30d)
+      # transfer: NOT frozen -- transfer's primary criterion (d) test is VOID per BLOCKER B1 (baseline AUROC 0.3018 < 0.70 floor, gap_z -0.181 not strictly positive); no collapse floor is ever frozen for a voided direction
     carried: only the 0.5x fraction is carried (M4 decision record item 1); NOT the KUQ numeric gap (3.0005 vs 1.052), which is invalid on this population
   d2_absolute_floor:
     formula_at_sign: absolute_floor[direction] = 1.96 * sqrt(0.25 / n_margin_eligible[direction])   # normal-approx (Wald) 95% half-width at worst-case p=0.5
