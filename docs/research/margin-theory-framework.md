@@ -119,15 +119,37 @@ earned for an activation when it (a) tracks actual ignorance, (b) drives
 abstention when amplified, (c) does so direction-specifically, and (d)
 responds to evidence the way doubt should: supplying the true answer
 in-context should collapse the projection on that row and lengthen its
-margin. Qwen currently satisfies (a) through (c); (d) is untested
-(experiment M4). Mistral fails (c), so mentalistic naming is retired for
-mistral regardless of (d).
+margin. Qwen satisfies (a) through (c). Criterion (d) was tested by the M4
+arc (2026-07-18) and is NOT earned on the world-known error class: the named
+KUQ direction does not fire there at all (primary transfer void, out of
+domain, with a genuine population reversal; it reads as unanswerability
+recognition), the native refit shows only a weak evidence-specific,
+sub-floor, behaviorally inert projection response, and the constructive
+search for a specific evidence axis recovered covariance-generic
+retrieval-family geometry instead. Sources:
+`experiments/margin-evidence-responsiveness-worldknown/AMENDMENT.md` and
+`experiments/evidence-response-direction-search/AMENDMENT.md` (Outcome
+sections). The mentalistic name stays retired program-wide; the section 3
+table's replacements are now backed by a completed (d) adjudication, not
+only by prudence. Mistral fails (c), so mentalistic naming was retired for
+mistral independent of (d).
 
 ## 4. The experiment cascade
 
 Ordered cheap-first; each amendment gets its own branch, pre-stated
 prediction, falsifier, and floors per the standing instrument rules. The
 margin-mapping dataset (M1) feeds every later stage.
+
+Scorecard as of 2026-07-18 (verdict sentences mirrored from each cell's
+AMENDMENT.md, the sole source of truth): M1 resolved, Claim 1 falsified as
+registered at the qwen mid-band operating point (observable separation bound
+2.0 vs floor 2.5) though margins are mechanistically real and retrodiction
+holds within 0.083; the M1b fine-ladder retest resolved the miss as
+instrument-resolution-limited, so the falsification stands without a clean
+mechanistic reading. M2 resolved, channels redundant as registered
+(incremental AUROC 0.0154 vs floor 0.02, readout alone 0.982). M4 resolved
+across two cells, criterion (d) not earned (section 3 above). M3, M5, M6
+pending; the family memo precedes M3.
 
 - **M1. Margin mapping (keystone).** Per-row dose staircase along c_hat at
   the mid-band operating points; deliverable is each row's tipping dose
