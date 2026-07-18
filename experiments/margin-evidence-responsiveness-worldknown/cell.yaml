@@ -242,7 +242,7 @@ channel1_projection:
 # ===========================================================================
 channel2_margin:
   ladder_rebuild:                                 # = re-run M1 on the world-known population, per direction
-    multipliers: [0.0625, 0.125, 0.25, 0.5, 0.75, 1.0, 1.5, 2.0, 3.0, 4.0]   # x reference_dose_abs[direction]
+    multipliers: [0.0625, 0.125, 0.25, 0.5, 0.75, 1.0, 1.5, 2.0, 3.0, 4.0, 6.0, 8.0, 12.0, 16.0]   # x reference_dose_abs[direction]. EXTENDED (repin, PI approval 2026-07-18): the original 10 rungs left 349/400 native confab rows right-censored at the 4.0x top rung (bracketing_requirement violation, reported not silently right-censored); [6.0, 8.0, 12.0, 16.0] added BEFORE any survival contrast was computed, per cell.yaml's own re-derivation path. Original 10 rungs unchanged/untouched.
     bracketing_requirement: >-
       fork 1: the multipliers x reference_dose_abs[direction] MUST bracket the
       observed tipping doses for that direction (the smallest ladder rung below the

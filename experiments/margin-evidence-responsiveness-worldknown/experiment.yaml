@@ -35,7 +35,7 @@ instrument:
   - gates.yaml
   modules: []
   pins:
-    cell.yaml: ca7126f101e5a5b391fa1e5017ced26e065c71b532f97deac4ce07cf0b27cd2f
+    cell.yaml: d43fdc2a5ff369173e9bf7825ec3b70d3d39caebe79ec5b91815ce67a7931486
     gates.yaml: 671873c5c96d602594794e75b6753ebdf18e686b2683fdf438280866c07eabc9
   repins:
   - file: cell.yaml
@@ -59,6 +59,20 @@ instrument:
       Transfer''s collapse floor is NOT frozen: transfer''s primary criterion (d)
       test is VOID per BLOCKER B1 (baseline AUROC 0.3018 < 0.70 floor), PI decision,
       void-and-lift.'
+  - file: cell.yaml
+    old_sha256: ca7126f101e5a5b391fa1e5017ced26e065c71b532f97deac4ce07cf0b27cd2f
+    new_sha256: d43fdc2a5ff369173e9bf7825ec3b70d3d39caebe79ec5b91815ce67a7931486
+    date: '2026-07-18T15:15:15Z'
+    reason: 'Ladder bracketing failure realized: native channel-2 ladder rebuild (10
+      rungs, [0.0625..4.0]x reference_dose_abs) left 349/400 (87.25%) confab rows
+      right-censored at the 4.0x top rung; only 51/400 had a genuine non-right-censored
+      tipping dose, far short of the ~308 anchor. Per cell.yaml channel2_margin.ladder_rebuild.bracketing_requirement
+      (report, do not silently right-censor a resolvable row; re-derivation reserved
+      for lead adjudication), this was reported and NOT resolved unilaterally. PI
+      approved re-derivation option (b) 2026-07-18: extend the multiplier list with
+      [6.0, 8.0, 12.0, 16.0] (original 10 rungs unchanged). Extension chosen BEFORE
+      any survival contrast was computed (self-blinding preserved); no d2_absolute_floor
+      has been frozen yet and none is frozen by this repin.'
 inputs:
 - experiments/qwen35-4b-midband-doubt-snap/analysis-committed/directions/hs20/c_hat.json
 - datasets/popqa/test.jsonl

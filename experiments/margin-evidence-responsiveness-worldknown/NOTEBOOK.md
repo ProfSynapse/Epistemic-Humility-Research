@@ -169,3 +169,87 @@ Signed via `bin/exp sign margin-evidence-responsiveness-worldknown`. Next: build
 per-direction baseline/n repins freeze the two floors, then blinded correctness +
 channel-2 calibration, analysis, adjudication, resolve. The void
 margin-evidence-responsiveness (M4) is resolved separately as superseded.
+
+## 2026-07-17 - Build-time interpretations (harness-builder), pre-grading
+
+Two build-time decisions, recorded here (not only in the harness docstrings) so
+they are auditable as decisions made BEFORE any grading result was seen, per
+lead confirmation the same day:
+
+- **Correctness calibration slice: stratification vs. scoring population.**
+  gates.yaml SC2 says the n>=150 correctness slice is "stratified across roles
+  (and across prop categories within the confab class)". `calibration.py`
+  interprets this as: DRAW the slice stratified across all 3 census roles
+  (confab / correct / refused), as a broader alias-grader sanity check, but
+  SCORE the false-wrong RATE only over the confab-labeled subset of the drawn
+  slice at score time -- a false-wrong event (a truly-correct answer the alias
+  grader scored wrong, mislabeling the row confab) is only coherent for a row
+  the census actually labeled confab. Lead-confirmed 2026-07-17, consistent
+  with `build_calibration_pool.py`'s own documented-interpretation precedent.
+- **Native mu_c/sigma_c/reference_dose_abs: runtime read, not sign-time
+  constant.** cell.yaml marks these RE_DERIVED and "frozen at the
+  direction-fit stage repin." `config.py` cannot hardcode them (unknown at
+  sign), so the harness reads them at RUNTIME from the produced
+  `c_hat_worldknown.json` (its `sigma` field for the write-side sigma_c;
+  `fit_native.py` now also writes `calibration: {mu_c, sigma_c}` into that same
+  record so the registered readout's z-standardization can read them there
+  too), mirroring `dose_ladder.py`'s pre-existing native-sigma runtime-read
+  convention. The governance record (cell.yaml's own text, repinned via
+  `bin/exp repin` at the native-fit stage) is the audit trail; the produced
+  JSON is the harness's actual read path. Lead-confirmed 2026-07-17 (fork A).
+- Also fixed before any GPU capture/generation used them: `steer_lib.py`'s
+  copy still set M1's `MARGIN_RENDER_MODEL`/`MARGIN_RENDER_REVISION` env vars
+  instead of this experiment's own `M4WK_RENDER_MODEL`/`M4WK_RENDER_REVISION`;
+  `capture_channel1.py`'s `registered_score()` omitted the `mu_c` term from
+  cell.yaml's `snap_standardization` (numerically inert for every gate --
+  AUROC is rank-invariant, every shift/gap/rate-difference is a paired
+  difference invariant to a global additive constant -- but the registered
+  formula, fixed rather than left as a silent deviation).
+
+## 2026-07-18 - Transfer void, native ladder bracketing re-derivation (harness-builder + lead + PI)
+
+- **Channel-1 firing gate**: transfer (primary) baseline confab-vs-correct
+  AUROC = 0.3018 (95% CI [0.2647, 0.3396]) on the TEST subset, far below the
+  0.70 floor and below chance; fresh baseline gap_z = -0.181, not strictly
+  positive. Independently sign-verified (lead-dispatched analyst): the
+  transfer direction reproduces AUROC 0.987 on its own KUQ population under
+  this harness's exact sign convention, confirming 0.3018 is a REAL
+  below-chance population reversal, not a sign bug. Per gates.yaml BLOCKER
+  B1, the primary criterion (d) test is VOID and lifted to PI (PI decision,
+  not scored as (d)-not-earned). Native (secondary) fires cleanly: baseline
+  AUROC 0.8628, gap_z +1.642, fit-split-to-test reproduction within tolerance
+  (abs diff 0.0436 <= 0.05). PI chose the full native two-channel secondary
+  dissociation reading; transfer is dropped from channel-2.
+- **Native collapse_floor_z frozen**: 0.8209213240458088 (= 0.5 x realized
+  native baseline gap_z 1.6418426480916175), via `bin/exp repin` on
+  gates.yaml, the moment the baseline gap was measured, before any
+  true_answer/false_answer shift was computed. Native D1 leg-1 (median true
+  vs baseline shift over confab = 0.592, CI [0.536, 0.669]) is BELOW this
+  floor -- leg-1 fails. Leg-2 specificity PASSES (paired true-minus-false
+  shift = 0.102, CI [0.053, 0.152], excludes zero, true larger).
+- **Ladder bracketing failure and re-derivation**: the original 10-rung
+  native ladder (multipliers 0.0625x-4.0x) left 349/400 (87.25%) confab rows
+  right-censored at the top rung; only 51/400 had a genuine non-right-censored
+  tipping dose (target ~308). Per cell.yaml's own
+  `channel2_margin.ladder_rebuild.bracketing_requirement` text (report, do
+  not silently right-censor a resolvable row; re-derivation reserved for
+  lead/PI adjudication), this was reported and NOT resolved unilaterally --
+  no floor freeze, no commit, no survival run happened before the report.
+  PI approved re-derivation: cell.yaml `channel2_margin.ladder_rebuild.multipliers`
+  extended with [6.0, 8.0, 12.0, 16.0] (original 10 rungs unchanged), frozen
+  via `bin/exp repin` (cell.yaml ca7126f1... -> d43fdc2a...) BEFORE any
+  survival contrast was computed. Per-rung generation-health indicators
+  (non-empty rate, detector_v2 pattern-match rate, refused/answered/
+  unparseable split) are being recorded at each new rung for the PI's own
+  adjudication of which rungs are instrument-valid (degeneration guard,
+  report-only -- no pass/fail rule is baked into the scripts). d2_absolute_floor
+  remains UNFROZEN pending the PI's review of the re-derived bracketing_report
+  and the degeneration indicators.
+- **Process note**: a `run_in_background` wait watching a manually-disowned
+  ladder-generate PID (rather than the harness supervising the actual
+  generate command directly) completed without ever delivering its
+  completion notification, even though the monitored process finished
+  successfully ~2h earlier. Going forward: pass long-running GPU commands
+  directly to a single `run_in_background` call (no nohup/disown/poll-wrapper
+  indirection), and on any resume, verify on-disk state first rather than
+  assuming a wait fired.
