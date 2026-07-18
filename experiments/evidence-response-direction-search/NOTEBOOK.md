@@ -44,3 +44,25 @@ number. Remediation applied in this commit, all pre-sign (nothing frozen yet):
   c_hat_worldknown.json), verified by the lead against the committed json.
 - m-4: native comparator recomputed on identical held-out rows; 0.86275 is
   the full-population anchor only.
+
+## 2026-07-18 rung (b) ruling and CPU-rung adjudication
+
+Lead verification of the build report: rung-(a) AUROC independently
+re-derived from the committed heldout_projections.jsonl (0.725208,
+byte-exact); commit order sign -> staging -> split freeze -> fit ->
+enforcement -> readouts confirmed from git. Build-agent flagged resolutions
+ACCEPTED by the lead: (1) the .gitignore blanket directions/ pattern fix
+(M4-WK precedent; the four pinned files untouched and hash-matching); (2)
+mu_c/sigma_c for the rung-(b) reference dose computed from the 200 FIT
+confab baseline projections only, the sole self-blinding-compatible
+population (deviation from M4-WK's fit-confab+correct convention, affects
+only the not-run rung-(b) numeric); (3) detector_stack.applicable false in
+staging (no grading consumer among the CPU rungs); (4) KUQ comparator
+recomputed on held-out rows beyond the letter of m-4 (ungated, symmetric
+treatment, no gate touched).
+
+PI ruling (2026-07-18): rung (b) NOT RUN. The pre-registered condition (a
+rung-(a) pass) is met, but the PI declines funding: under the signed outcome
+table the pass-a-fail-c cap is unchangeable by rung (b), and a J-space-style
+expansion of d_ev would require its own future amendment. Recorded as
+condition-met-declined, not a gate failure and not a void.
