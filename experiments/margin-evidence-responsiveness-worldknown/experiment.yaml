@@ -36,7 +36,7 @@ instrument:
   modules: []
   pins:
     cell.yaml: d43fdc2a5ff369173e9bf7825ec3b70d3d39caebe79ec5b91815ce67a7931486
-    gates.yaml: 671873c5c96d602594794e75b6753ebdf18e686b2683fdf438280866c07eabc9
+    gates.yaml: cd78e84a95eb777f0bcee73c2cfee57c071628dc7a49112be88e3385c8985909
   repins:
   - file: cell.yaml
     old_sha256: da2338fb4b7f83ce8d4f4ef7f76385846c2f08c0f6cbb5157abe26daf7ac7584
@@ -73,6 +73,15 @@ instrument:
       [6.0, 8.0, 12.0, 16.0] (original 10 rungs unchanged). Extension chosen BEFORE
       any survival contrast was computed (self-blinding preserved); no d2_absolute_floor
       has been frozen yet and none is frozen by this repin.'
+  - file: gates.yaml
+    old_sha256: 671873c5c96d602594794e75b6753ebdf18e686b2683fdf438280866c07eabc9
+    new_sha256: cd78e84a95eb777f0bcee73c2cfee57c071628dc7a49112be88e3385c8985909
+    date: '2026-07-18T17:35:55Z'
+    reason: 'Freeze native d2_absolute_floor at realized n_margin_eligible=51: formula
+      1.96*sqrt(0.25/51)=0.13722492664818098. Rungs >=3.0x ruled instrument-invalid
+      (lead+PI 2026-07-18, total generation collapse; all 51 tips at <=2.0x). Frozen
+      BEFORE any survival contrast is computed. transfer not frozen (void, BLOCKER
+      B1).'
 inputs:
 - experiments/qwen35-4b-midband-doubt-snap/analysis-committed/directions/hs20/c_hat.json
 - datasets/popqa/test.jsonl

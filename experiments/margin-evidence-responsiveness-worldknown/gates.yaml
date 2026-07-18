@@ -72,6 +72,9 @@ rederived_floors:
       Anchor: at n=308 this is 1.96*sqrt(0.25/308)=0.0558 (M4's value); the paired
       design has strictly smaller variance, so a real effect is comfortably
       resolvable.
+    numeric:                       # FROZEN per-direction values, added only as each direction's n_margin_eligible is realized
+      native: 0.13722492664818098   # = 1.96*sqrt(0.25/51); n_margin_eligible(native)=51 realized from the 14-rung ladder re-derivation (rungs >=3.0x ruled instrument-invalid by lead+PI 2026-07-18: total generation collapse; all 51 tips occur at <=2.0x); frozen 2026-07-18 from analysis-committed/channel2_ladder/native_margin_summary.json (commit 48396bb4), BEFORE any survival contrast
+      # transfer: NOT frozen -- transfer's primary criterion (d) test is VOID per BLOCKER B1; no d2_absolute_floor is ever frozen for a voided direction
     carried: only the Wald-half-width FORMULA is carried; the numeric depends solely on the realized n, not on any population
 
 criteria:

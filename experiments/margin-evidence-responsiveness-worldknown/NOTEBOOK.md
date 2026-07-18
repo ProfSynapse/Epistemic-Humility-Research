@@ -274,3 +274,40 @@ lead confirmation the same day:
   Added RUNG_STARTING / RUNG_DONE / ALL_RUNGS_DONE terminal markers to
   `ladder_channel2.py`'s generate log so a future silent kill is visible at a
   glance against the last emitted marker.
+
+## 2026-07-18 - Rung-validity ruling (lead + PI) and n=51 D2 floor freeze
+
+**Rung-validity ruling (lead ruling, PI approval, recorded verbatim below
+before the floor freeze):** "RUNG VALIDITY RULING: rungs >= 3.0x are
+instrument-INVALID for tip detection (3.0x confab well_formed 0.007 /
+degenerate 0.955; 4x-16x 100% degenerate both roles). The instrument-valid
+dose band tops out at 2.0x. The 349 censored rows are unresolvable in
+principle on this direction (coherence ceiling precedes refusal), so
+cell.yaml's no-silent-censor clause is satisfied: the re-derivation was
+performed and proved them unresolvable. The 2.0x rung stays valid
+(majority-coherent, 0.733 well_formed confab); 19/51 tips sit there, and the
+SC2 abstention slice + CG1 decoys are the check on whether those refusals are
+real -- some 2.0x-tipped rows must be represented in the abstention
+calibration slice."
+
+**PI decision:** run D2 at the realized n_margin_eligible=51 (all 51 tips
+occur at <=2.0x, the ruled-valid band). The 349 right-censored rows are
+disposed of as instrument-unresolvable-in-principle on this direction, not
+silently dropped: cell.yaml `channel2_margin.ladder_rebuild.bracketing_requirement`
+is satisfied by the completed re-derivation (10 rungs, then a 4-rung
+extension to 16.0x, both showing the identical censoring and a hard
+generation-coherence ceiling above 2.0x -- see the two entries above this
+one). No further ladder extension is authorized or warranted by this data.
+
+**d2_absolute_floor frozen for native at n=51**, via `bin/exp repin` on
+gates.yaml, AFTER this ruling was recorded and BEFORE any survival contrast
+is computed (self-blinding order): formula `1.96 * sqrt(0.25 / n_margin_eligible)`,
+n_margin_eligible(native) = 51, floor = 0.13722492664818098. transfer's
+d2_absolute_floor remains unfrozen (void, BLOCKER B1, no floor is ever frozen
+for a voided direction, mirroring collapse_floor_z's disposition).
+
+Next: native channel-2 single-dose survival (3 arms, 51 margin-eligible rows,
+one pinned batch composition, live-SC1 readback, S1 baseline-staleness gate
+<= 0.05 read first), then D1+D2, then both SC2 blinded-grading shards
+(ensuring 2.0x-tipped rows are represented in the abstention slice) handed to
+the lead at the grading boundary without self-grading.
