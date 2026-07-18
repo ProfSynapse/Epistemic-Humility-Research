@@ -4,7 +4,7 @@ session_id: 20260717T201649Z-margin-cascade-execution-m1-m2-m1b-m4
 title: 'Margin cascade execution: M1 M2 M1b M4'
 status: active
 created_at: '2026-07-17T20:16:49Z'
-updated_at: '2026-07-18T23:30:10Z'
+updated_at: '2026-07-18T23:40:21Z'
 question: Do the framework's margin-theory claims (1, 3) and the mentalistic-naming
   criteria hold at the qwen mid-band operating point, tested cheap-first through the
   M1-M6 cascade?
@@ -332,6 +332,33 @@ checkpoints:
     S/W/X re-grade report due; PI decisions outstanding: amendment U re-adjudication
     path.'
   signals: {}
+- id: 012-result
+  at: '2026-07-18T23:40:21Z'
+  kind: result
+  title: 'Detector flip-rate extension: confound is amendment-U-specific'
+  summary: 'The S/W/X CPU re-grade extension completed and was lead-spot-checked.
+    Cross-lineage forward flip rates: S 0.05% (1/1836; no unknown population exists,
+    S is gold-answerable QA only), W 2.36% (16/677), X 1.75%/3.82%/2.54% (1.7B/8B/14B,
+    629 rows each). Narrow-instrument reproduction asserted PASS on every row of every
+    lineage; manifests match each AMENDMENT.md section 7 exactly. Diagnosis: amendment
+    U''s 90.1% flip is specific to the trained checkpoint, whose SFT+GRPO training
+    installed the exact contraction-form refusal phrase (i''m not sure ... rather
+    not guess) that the narrow detector''s marker list misses; the raw Instruct base
+    populations of S/W/X never emit it and hedge instead with generic idioms the wide
+    detector catches only 2-4% of the time. Consequence for paper 4: sections 4.2
+    (dial, S), 4.6 (training-free base, W), and 4.7 (cross-size, X) headline populations
+    are essentially unaffected; only section 4.3 (veto, trained checkpoint, amendment
+    U) is instrument-artifact-dominated. Aggregates gitignored under each cell''s
+    analysis/ directory.'
+  evidence: []
+  run_ids: []
+  commands: []
+  decisions: []
+  next_steps:
+  - 'PI decisions outstanding: amendment U re-adjudication instrument; PR 309 merge
+    word. Paper 4 limitation wording in task 33 now scopes the confound to the trained-checkpoint
+    veto cell only.'
+  signals: {}
 track: margin-theory-cascade
 ---
 # Margin cascade execution: M1 M2 M1b M4
@@ -414,3 +441,10 @@ _No summary yet._
 - summary: Paper 5 rewrite landed as PR 309 (branch paper/paper5-rewrite, commit eaccec86) after an opus red-team returned RESOLVE WITH DISCLOSURES (0 blockers; ~90 numbers all traced; three findings lead-remediated with each inserted number re-verified). PI ruled 2026-07-18: title candidate 1 stands, the working title Readable Is Not Writable: Channel, Gate, and Workspace Constraints on Actuating Known-Unknown State in Small Language Models; no papers 3/4 cross-reference fix needed. Terminology block merged earlier as PR 308. The amendment U flip-rate diagnostic is confirmed (see prior checkpoint) and its S/W/X CPU re-grade extension is in flight; the amendment U re-adjudication instrument choice is awaiting the PI.
 - next steps:
   - PR 309 merge awaits explicit PI approval; then paper 3 naming pass (#32) launches; S/W/X re-grade report due; PI decisions outstanding: amendment U re-adjudication path.
+### 012-result - Detector flip-rate extension: confound is amendment-U-specific
+
+- at: `2026-07-18T23:40:21Z`
+- kind: `result`
+- summary: The S/W/X CPU re-grade extension completed and was lead-spot-checked. Cross-lineage forward flip rates: S 0.05% (1/1836; no unknown population exists, S is gold-answerable QA only), W 2.36% (16/677), X 1.75%/3.82%/2.54% (1.7B/8B/14B, 629 rows each). Narrow-instrument reproduction asserted PASS on every row of every lineage; manifests match each AMENDMENT.md section 7 exactly. Diagnosis: amendment U's 90.1% flip is specific to the trained checkpoint, whose SFT+GRPO training installed the exact contraction-form refusal phrase (i'm not sure ... rather not guess) that the narrow detector's marker list misses; the raw Instruct base populations of S/W/X never emit it and hedge instead with generic idioms the wide detector catches only 2-4% of the time. Consequence for paper 4: sections 4.2 (dial, S), 4.6 (training-free base, W), and 4.7 (cross-size, X) headline populations are essentially unaffected; only section 4.3 (veto, trained checkpoint, amendment U) is instrument-artifact-dominated. Aggregates gitignored under each cell's analysis/ directory.
+- next steps:
+  - PI decisions outstanding: amendment U re-adjudication instrument; PR 309 merge word. Paper 4 limitation wording in task 33 now scopes the confound to the trained-checkpoint veto cell only.
