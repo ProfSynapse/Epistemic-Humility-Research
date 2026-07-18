@@ -162,10 +162,10 @@
     }
   },
   "single_regime_attestation": {
-    "channel1_false_answer_placebo": null,
-    "channel1_no_answer_baseline": null,
+    "channel1_false_answer_placebo": "e756a17a0c72f3948b65930920750484e0c69922f672d0a959a5e4dd760c318b",
+    "channel1_no_answer_baseline": "e756a17a0c72f3948b65930920750484e0c69922f672d0a959a5e4dd760c318b",
     "channel1_single_regime": true,
-    "channel1_true_answer": null,
+    "channel1_true_answer": "e756a17a0c72f3948b65930920750484e0c69922f672d0a959a5e4dd760c318b",
     "channel2_survival_native": "011599327ea5ec9fc8574438e8ae92a7910cc103c33143757bc4f1e104a563a3",
     "channel2_survival_transfer": null
   },

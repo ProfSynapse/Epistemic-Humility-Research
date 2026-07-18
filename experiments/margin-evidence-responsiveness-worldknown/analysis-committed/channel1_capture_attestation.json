@@ -1,0 +1,27 @@
+{
+  "arms": {
+    "false_answer_placebo": {
+      "batch_size": 8,
+      "n_batches": 126,
+      "n_rows": 1001,
+      "row_order_sha256": "e756a17a0c72f3948b65930920750484e0c69922f672d0a959a5e4dd760c318b",
+      "template_sha256": "81a04a99827ade21b9d5bd1832c2012429d196f96e604238a4b927701ca58e3c"
+    },
+    "no_answer_baseline": {
+      "batch_size": 8,
+      "n_batches": 126,
+      "n_rows": 1001,
+      "row_order_sha256": "e756a17a0c72f3948b65930920750484e0c69922f672d0a959a5e4dd760c318b",
+      "template_sha256": "81a04a99827ade21b9d5bd1832c2012429d196f96e604238a4b927701ca58e3c"
+    },
+    "true_answer": {
+      "batch_size": 8,
+      "n_batches": 126,
+      "n_rows": 1001,
+      "row_order_sha256": "e756a17a0c72f3948b65930920750484e0c69922f672d0a959a5e4dd760c318b",
+      "template_sha256": "81a04a99827ade21b9d5bd1832c2012429d196f96e604238a4b927701ca58e3c"
+    }
+  },
+  "channel1_single_regime": true,
+  "description": "Per-arm channel-1 capture manifest attestation, promoted from analysis/channel1_capture/<arm>/capture_manifest.json (gitignored working dir) so C1_construct_integrity.single_regime_required is re-verifiable from committed files alone. Hash/count metadata only -- no row text."
+}

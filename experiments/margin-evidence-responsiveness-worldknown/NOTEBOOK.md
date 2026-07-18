@@ -495,3 +495,95 @@ name fix) also committed.
 Reported both numbers to lead. HALTING -- build scope complete per lead
 instruction; resolution writing, KG ingest, and the PR are the lead's from
 here.
+
+## 2026-07-18 - Red-team remediation: M-1 vacuous-attestation fix, m-6 join-key note
+
+**M-1 (MAJOR, fixed).** Red-team review flagged that
+`harness/analysis.py::load_single_regime_attestation` read channel-1 capture
+manifests from `CHANNEL1_DIR.parent / "channel1_capture" / <arm> /
+capture_manifest.json`, i.e. `analysis-committed/channel1_capture/<arm>/
+capture_manifest.json` -- a path that has never existed. The real manifests
+live at `analysis/channel1_capture/<arm>/capture_manifest.json`. Because the
+function treated a missing file as `None` for every arm, `channel1_shas` was
+always the empty set, and `len(empty_set) <= 1` evaluated `True` -- a
+*vacuous* single-regime pass, not a verified one. The underlying fact was
+never in question (all three arms' real manifests share identical
+`row_order_sha256 = e756a17a0c72f3948b65930920750484e0c69922f672d0a959a5e4dd760c318b`,
+`batch_size=8`, `n_rows=1001`, `n_batches=126`,
+`template_sha256=81a04a99827ade21b9d5bd1832c2012429d196f96e604238a4b927701ca58e3c`),
+but the committed record did not actually demonstrate it.
+
+Fix, in `harness/analysis.py`:
+1. New `build_channel1_capture_attestation()` reads the real path
+   (`ANALYSIS / "channel1_capture" / <arm> / "capture_manifest.json"`) and
+   **fails loudly** (`raise SystemExit`) if any arm's manifest is missing --
+   channel-1 capture is unconditional for every arm regardless of direction
+   void status, so a missing manifest here is a provenance bug, never a
+   legitimate absence. This is a deliberately different rule from
+   channel-2's None-safety (kept as-is): a direction's channel-2 survival
+   file can be legitimately absent (transfer, voided at channel-1 per
+   BLOCKER B1), so that arm of the function still returns `None` rather than
+   raising.
+2. `load_single_regime_attestation()` now delegates to (1) for the
+   channel-1 side, so `m4wk_results.json`'s `single_regime_attestation`
+   block carries the real shas.
+3. `main()` promotes the same attestation to a new committed artifact,
+   `analysis-committed/channel1_capture_attestation.json` (per-arm
+   `row_order_sha256` / `batch_size` / `n_rows` / `n_batches` /
+   `template_sha256` -- hash/count metadata only, no row text), so
+   `channel1_single_regime` is re-verifiable from committed files alone,
+   without depending on the gitignored `analysis/` capture directory.
+
+Verified the fail-loud path directly (temporarily renamed one arm's manifest
+off disk, confirmed `build_channel1_capture_attestation()` raises
+`SystemExit` with a clear message, restored the file). Re-ran
+`harness/analysis.py` and diffed the regenerated `m4wk_results.json` against
+the previously-committed version: the **only** substantive change is
+`single_regime_attestation.channel1_{no_answer_baseline,true_answer,
+false_answer_placebo}` going from `null`/vacuous-`True` to the real shas /
+genuinely-verified `True`. Every D1, D2, `transfer_firing_gate`, and
+`alias_grader_false_wrong_bound` number is byte-identical to what was already
+committed -- this is a provenance fix, not a re-derivation, and it changed no
+number that had already been seen.
+
+**m-6 (minor, documented, artifact NOT rewritten).** `per_row_projections.jsonl`
+(and the ladder/survival row dicts feeding it -- `harness/capture_channel1.py`
+line 77, `harness/ladder_channel2.py`, `harness/survival_channel2.py`,
+`harness/analysis.py`, `harness/stats.py`) all write/read the confab role as
+the bare string `"confab"`. The committed census
+(`analysis-committed/census/qwen35_4b_worldknown_census.jsonl`, via
+`harness/census.py` line 170 and `harness/selection.py`'s `ROLE_ORDER`) uses
+`"confab_on_answerable"` (with `ROLE_SHORT` mapping it back to `"confab"` for
+internal use). The two vocabularies are consistent within each artifact and
+the mapping is deterministic (`ROLE_SHORT["confab_on_answerable"] ==
+"confab"`), so this is not a scoring bug -- but a future reuse of
+`per_row_projections.jsonl` joined directly against the census by role string
+would silently miss all confab rows if it did not know to translate. Flagging
+for future harnesses; not rewriting any existing committed artifact.
+
+**m-4 (minor, NOT resolved -- flagging to lead rather than fabricating).**
+Red-team asked to commit the KUQ sign-verification reproduction (the "0.987
+KUQ AUROC under this harness's convention" cited in the 2026-07-18 "Transfer
+void, native ladder bracketing re-derivation" entry above) as a small
+aggregate JSON. I could not locate that computation anywhere on disk: the
+only committed sign-check script, `analysis-committed/channel1/
+verify_transfer_sign.py`, reproduces AUROC from M4-WK's own
+`per_row_projections.jsonl` (0.3018 transfer / 0.8628 native) -- a different
+check (M4-WK's own captured rows, not a KUQ population). The nearest
+KUQ-adjacent number I found is
+`experiments/qwen35-4b-midband-doubt-snap/analysis-committed/build_manifest.json`'s
+`hs20.auc_neg_z_d_on_fit = 0.9928504321683578` (whose `mu_c`/`sigma_c` do
+match this experiment's `TRANSFER_MU_C`/`TRANSFER_SIGMA_C` constants, so that
+file is confirmed provenance for the transfer-direction constants) -- but
+0.9928 is a fit-time Youden AUC on doubt-snap's own fit split, not an
+independent KUQ-population reproduction under M4-WK's sign convention, and it
+is not 0.987. I searched scratchpad dirs and the other active worktrees
+(`margin-mapping`, `mechinterp-salvage`, `doubt-snap-cross-family`,
+`paper5-actuation`, and others) for a leftover script/output from the
+originally-dispatched sign-flip analyst computing exactly 0.987 -- found
+nothing. Rather than relabel the 0.9928 figure as if it were the cited 0.987,
+or spend a fresh GPU capture cycle on a KUQ subset I cannot confirm matches
+the original check, I am flagging this gap to the lead directly and holding
+on m-4 pending guidance (original artifact / analyst transcript, vs.
+authorization to re-derive fresh, vs. accepting the 0.9928 figure as a
+documented-but-distinct provenance number).

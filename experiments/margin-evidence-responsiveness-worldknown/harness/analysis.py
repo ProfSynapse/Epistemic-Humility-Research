@@ -177,17 +177,68 @@ def load_alias_grader_bound() -> Optional[dict[str, Any]]:
     return common.load_json(path)
 
 
+def build_channel1_capture_attestation() -> dict[str, Any]:
+    """Small, git-committable attestation of the channel-1 capture manifests
+    for all three arms (row_order_sha256, batch composition, template_sha256
+    -- hash/count metadata only, no row text). Promoting this into
+    analysis-committed/ lets C1_construct_integrity.single_regime_required be
+    re-verified from committed files alone, without depending on the
+    gitignored analysis/ capture directory.
+
+    Channel-1 capture manifests are expected to exist UNCONDITIONALLY for all
+    three arms (both directions go through channel-1 capture before any
+    direction-specific void) -- a missing manifest here is a provenance bug,
+    not a legitimate absence, so this fails loudly rather than silently
+    reporting a vacuous "single regime" pass (len(empty_set) <= 1 == True).
+    """
+    arms: dict[str, Any] = {}
+    for arm in config.ARMS:
+        p = ANALYSIS / "channel1_capture" / arm / "capture_manifest.json"
+        if not p.is_file():
+            raise SystemExit(
+                f"[analysis] FATAL: channel-1 capture manifest missing at {p} "
+                "-- channel-1 capture is unconditional for every arm; a "
+                "missing manifest is a provenance bug, not a legitimate "
+                "absence. Refusing to report a vacuous single-regime "
+                "attestation."
+            )
+        m = common.load_json(p)
+        arms[arm] = {
+            "row_order_sha256": m["composition"]["row_order_sha256"],
+            "batch_size": m["composition"]["batch_size"],
+            "n_rows": m["composition"]["n_rows"],
+            "n_batches": m["composition"]["n_batches"],
+            "template_sha256": m.get("template_sha256"),
+        }
+    shas = {v["row_order_sha256"] for v in arms.values()}
+    return {
+        "description": (
+            "Per-arm channel-1 capture manifest attestation, promoted from "
+            "analysis/channel1_capture/<arm>/capture_manifest.json (gitignored "
+            "working dir) so C1_construct_integrity.single_regime_required is "
+            "re-verifiable from committed files alone. Hash/count metadata "
+            "only -- no row text."
+        ),
+        "arms": arms,
+        "channel1_single_regime": len(shas) == 1,
+    }
+
+
 def load_single_regime_attestation() -> dict[str, Any]:
     """C1_construct_integrity.single_regime_required: compares the recorded
     batch-composition row_order_sha256 across the channel-1 capture arms and
     the channel-2 survival arms; a mismatch means a mixed regime, voiding the
-    paired comparison at that site (reported, never silently ignored)."""
-    out: dict[str, Any] = {}
-    for arm in config.ARMS:
-        p = CHANNEL1_DIR.parent / "channel1_capture" / arm / "capture_manifest.json"
-        out[f"channel1_{arm}"] = common.load_json(p)["composition"]["row_order_sha256"] if p.is_file() else None
-    channel1_shas = {v for v in out.values() if v is not None}
-    out["channel1_single_regime"] = (len(channel1_shas) <= 1)
+    paired comparison at that site (reported, never silently ignored).
+
+    Channel-2 survival manifests stay None-safe: a direction can be
+    legitimately voided before its survival stage ever runs (e.g. transfer,
+    voided at channel-1 per BLOCKER B1), so a missing channel-2 file there is
+    an expected absence, not a bug. See build_channel1_capture_attestation
+    for why the channel-1 side is fail-loud instead.
+    """
+    ch1 = build_channel1_capture_attestation()
+    out: dict[str, Any] = {f"channel1_{arm}": ch1["arms"][arm]["row_order_sha256"] for arm in config.ARMS}
+    out["channel1_single_regime"] = ch1["channel1_single_regime"]
 
     for direction in config.DIRECTIONS:
         p = SURVIVAL_DIR / f"{direction}_batch_composition.json"
@@ -200,6 +251,12 @@ def main() -> int:
     ap.parse_args()
 
     config.assert_pinned_hashes()
+
+    channel1_attestation = build_channel1_capture_attestation()
+    COMMITTED.mkdir(parents=True, exist_ok=True)
+    attestation_out_path = COMMITTED / "channel1_capture_attestation.json"
+    common.write_json(attestation_out_path, channel1_attestation)
+    print(f"[analysis] wrote {attestation_out_path}", flush=True)
 
     result: dict[str, Any] = {
         "experiment": "margin-evidence-responsiveness-worldknown",
