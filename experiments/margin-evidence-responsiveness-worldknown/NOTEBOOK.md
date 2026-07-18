@@ -383,3 +383,62 @@ adjudicated (their purpose -- validating detector_v2 against a blinded
 abstention judgment for D2 -- is moot while D2 itself is void, and building
 them is the lead's call, not mine, given the significance of this gate
 failure).
+
+## 2026-07-18 - Adjudication: channel-2 void confirmed, no re-derivation; correctness calibration shard built; abstention slice skipped
+
+Lead adjudication on the S1 failure: void confirmed, and because the D2
+contrast has now been SEEN (true 0.9412 / false 0.9412 / diff 0.0), no
+instrument change, re-derivation, or re-run of channel 2 is permissible for
+this cell under the no-goalpost rule. The 0.2549-vs-0.05 ladder-vs-survival
+reproducibility gap is reported straight as an instrument finding, not
+diagnosed further within this cell (a separate diagnostic or a fresh
+pre-registered cell, decided later, if wanted).
+
+**Native D1 is a null-type result** (leg-1 sub-floor: 0.5921 < 0.8209), so per
+gates.yaml SC2 its interpretation requires the alias-grader false-wrong
+bound (null interpretable only if <= 0.10). Built the correctness
+calibration shard accordingly:
+
+- n=150 drawn, seed 48260726, largest-remainder role allocation:
+  confab_on_answerable=117, correct_on_answerable=29, refused_on_answerable=4
+  (the false-wrong rate is scored ONLY over the confab subset per gates.yaml;
+  the other two strata are a broader sanity check on the alias grader).
+- Lead-directed addition beyond the pre-existing calibration.py: (a) shard
+  rows now also carry `gold_aliases` (needed for the adjudicator to judge
+  correctness at all -- previously missing); (b) every drawn
+  correct_on_answerable row is tagged `decoy_type: "clear_positive"` in the
+  PRIVATE id_map (29 of them, clearing the >=25 CG1 floor) as a sanity check
+  on the adjudicator's own accuracy before trusting their false-wrong calls
+  on confab; (c) `score_correctness` now also computes a clear-positive
+  agreement rate against these decoys once grading returns. NOTE: gates.yaml's
+  own CG1 bullet ties the clear_negative/clear_positive AGREEMENT FLOORS
+  (0.95 / 0.60) to the abstention slice's refusal-classification task
+  specifically; there is no natural clear_negative analog for a correctness
+  judgment here (the confab role IS the ambiguous class under test, so it
+  cannot supply a ground-truth-WRONG decoy without circularity). Implemented
+  exactly what was asked (>=25 clear_positive decoys + their agreement rate),
+  not a literal application of the abstention CG1 spec -- flagging this
+  distinction for the record rather than silently treating it as identical.
+- (d) `id_map_sha256` added to the committed manifest, satisfying "commit the
+  blind-index->row_key mapping as a sha256 hash only"; the mapping file
+  itself (`analysis/calibration/correctness_calibration_id_map.jsonl`) stays
+  gitignored until unblind (confirmed via `git check-ignore`).
+
+Shard schema verified blind: `{opaque_id, question, gold_aliases,
+model_answer_text}` only -- no row_key, role, arm, or detector verdict.
+id_map (private) verified: 150 rows, decoy_type clear_positive exactly on the
+29 correct_on_answerable rows, nowhere else.
+
+Committed (commit-before-grade): `analysis-committed/correctness_calibration_pool_manifest.json`
+(shard_sha256, id_map_sha256, n_clear_positive_decoys=29, opaque_id_list,
+role_allocation -- no text) and `harness/calibration.py`.
+
+**Channel-2 abstention calibration slice: SKIPPED.** Its sole consumer, D2,
+is void per the S1 gate above; building it now would validate detector_v2
+against a contrast that cannot be scored. Per lead instruction, not built.
+
+HALTING here per instruction. Handing the lead: shard path
+(`analysis/calibration/correctness_calibration_shard.jsonl`, gitignored, for
+the blinded adjudicator to read directly) and the committed manifest/hashes
+above. Not grading, not touching the shard or id_map further until the lead
+delivers a graded-file hash commit.

@@ -170,18 +170,43 @@ def build_correctness_pool(args: argparse.Namespace) -> int:
         # sees the full generation_text directly and does not need it
         # pre-parsed; "correct_v2" (a boolean, not text) IS in the committed
         # census, so it is read from there rather than the sidecar.
-        id_map.append({"opaque_id": oid, "row_key": item["row_key"], "role": item["role"], "category": item["category"], "detector_correct_v2": census_rec.get("correct_v2")})
-        shard.append({"opaque_id": oid, "question": pool[item["row_key"]]["question"], "model_answer_text": gt.get("generation_text")})
+        # decoy_type "clear_positive": every drawn correct_on_answerable row is
+        # a row the alias grader already matched unambiguously (detector_
+        # correct_v2=True by construction of that role) -- used as a lead-
+        # directed CG1-style sanity check on the adjudicator's own accuracy
+        # before trusting their false-wrong calls on the ambiguous confab
+        # rows. NEVER exposed in `shard` (adjudicator-visible); lives only in
+        # id_map (private, gitignored until unblind).
+        decoy_type = "clear_positive" if item["role"] == "correct_on_answerable" else None
+        id_map.append({
+            "opaque_id": oid, "row_key": item["row_key"], "role": item["role"], "category": item["category"],
+            "detector_correct_v2": census_rec.get("correct_v2"), "decoy_type": decoy_type,
+        })
+        shard.append({
+            "opaque_id": oid, "question": pool[item["row_key"]]["question"],
+            "gold_aliases": pool[item["row_key"]]["aliases"], "model_answer_text": gt.get("generation_text"),
+        })
+
+    n_clear_positive_decoys = sum(1 for r in id_map if r["decoy_type"] == "clear_positive")
+    if n_clear_positive_decoys < config.CG1_CLEAR_POSITIVE_DECOYS_MIN:
+        raise SystemExit(
+            f"calibration FAIL: only {n_clear_positive_decoys} clear_positive decoys drawn "
+            f"(correct_on_answerable stratum), below CG1 floor {config.CG1_CLEAR_POSITIVE_DECOYS_MIN}; "
+            "increase --n or the correct_on_answerable allocation."
+        )
 
     shard_path = CAL_DIR / "correctness_calibration_shard.jsonl"
     id_map_path = CAL_DIR / "correctness_calibration_id_map.jsonl"
     common.write_jsonl(shard_path, shard)
     common.write_jsonl(id_map_path, id_map)
     shard_sha256 = common.sha256_of_file(shard_path)
+    id_map_sha256 = common.sha256_of_file(id_map_path)
 
     manifest = {
         "seed": SEED, "target_n": target, "n_drawn": len(drawn),
         "role_allocation": alloc, "shard_sha256": shard_sha256,
+        "id_map_sha256": id_map_sha256,  # blind-index->row_key mapping committed as a HASH ONLY; id_map.jsonl itself stays gitignored (analysis/) until unblind
+        "n_clear_positive_decoys": n_clear_positive_decoys,
         "opaque_id_list": sorted(opaque_ids), "committed_before_grading": True,
     }
     common.write_json(COMMITTED / "correctness_calibration_pool_manifest.json", manifest)
@@ -213,11 +238,32 @@ def score_correctness(args: argparse.Namespace) -> int:
     n_false_wrong = sum(1 for oid in confab_ids if bool(graded[oid]["adjudicated_correct"]))
     wilson = stats.wilson(n_false_wrong, n_confab_graded)
 
+    # lead-directed CG1-style sanity check on the adjudicator's own accuracy,
+    # scored on the clear_positive decoys (correct_on_answerable rows, ground
+    # truth "correct" by construction of that role) BEFORE trusting their
+    # false-wrong calls on the ambiguous confab rows above. gates.yaml's own
+    # CG1 bullet ties the clear_negative/clear_positive agreement floors to
+    # the abstention slice's refusal classification specifically; there is no
+    # natural clear_negative analog for a correctness judgment (the confab
+    # role IS the ambiguous class under test, so it cannot supply a ground-
+    # truth-wrong decoy without circularity), so only the clear_positive count
+    # + agreement rate is computed here, per the lead's explicit ask.
+    decoy_ids = [oid for oid, m in id_map.items() if m.get("decoy_type") == "clear_positive"]
+    n_clear_positive_decoys_graded = len(decoy_ids)
+    n_clear_positive_agree = sum(1 for oid in decoy_ids if bool(graded[oid]["adjudicated_correct"]) == True)
+    clear_positive_agreement = (n_clear_positive_agree / n_clear_positive_decoys_graded) if decoy_ids else None
+
     result = {
         "n_confab_graded": n_confab_graded, "n_false_wrong": n_false_wrong,
         "false_wrong_rate_wilson_ci_95": wilson,
         "null_interpretable_max": config.CORRECTNESS_CALIBRATION_FALSE_WRONG_NULL_INTERPRETABLE_MAX,
         "null_would_be_interpretable": wilson["rate"] <= config.CORRECTNESS_CALIBRATION_FALSE_WRONG_NULL_INTERPRETABLE_MAX,
+        "clear_positive_decoys": {
+            "n": n_clear_positive_decoys_graded, "n_agree": n_clear_positive_agree,
+            "agreement_rate": clear_positive_agreement,
+            "agreement_floor": config.CG1_CLEAR_POSITIVE_AGREEMENT_MIN,
+            "floor_min_decoys": config.CG1_CLEAR_POSITIVE_DECOYS_MIN,
+        },
         "graded_shard_sha256": graded_sha256,
         "note": "a POSITIVE (d) verdict is robust regardless of this bound (the bias is conservative); this bound only gates interpretability of a NULL result (gates.yaml SC2 bullet 1).",
     }
