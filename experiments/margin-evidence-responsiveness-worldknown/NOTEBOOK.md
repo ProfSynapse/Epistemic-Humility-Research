@@ -253,3 +253,24 @@ lead confirmation the same day:
   directly to a single `run_in_background` call (no nohup/disown/poll-wrapper
   indirection), and on any resume, verify on-disk state first rather than
   assuming a wait fired.
+- **Second silent kill (extension run, rung_12)**: relaunching the extension
+  directly under `run_in_background` (per the process note above) still died
+  mid-rung-12, at 68/760 rows, no traceback, no summary.json. Diagnosis: NOT
+  host OOM (free -g: 19G total / 17G available at the time; no OOM in
+  dmesg) and NOT a code crash (no error in the log). The background task's
+  OWN completion notification for that run arrived with status "killed" /
+  "was stopped" -- i.e. the harness's background-task supervision itself
+  terminated the task, not a host memory or code issue. Resumability
+  semantics verified by reading `shared/utilities/run_log.py` and
+  `steer_lib.run_rows` directly: `RunLog` is durable append-only and
+  `run_rows` filters to `pending = [r for r in rows if row_key not in done]`
+  before batching, so a resume APPENDS remaining rows in canonical order (no
+  truncation/overwrite). rung_12's 68-row partial was an exact multiple of
+  the batch_size (4), so a plain resume would have reproduced the identical
+  batch grouping as an uninterrupted pass -- no real integrity risk was
+  present. Regenerated rung_12 from scratch anyway (delete + relaunch) per
+  the lead's suggested fallback, since it is cheap and removes all doubt;
+  no contrast data was involved (pre-floor-freeze instrument calibration).
+  Added RUNG_STARTING / RUNG_DONE / ALL_RUNGS_DONE terminal markers to
+  `ladder_channel2.py`'s generate log so a future silent kill is visible at a
+  glance against the last emitted marker.
