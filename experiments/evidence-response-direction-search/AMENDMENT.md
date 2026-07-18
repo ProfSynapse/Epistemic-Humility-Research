@@ -1,6 +1,9 @@
 # M4c: evidence-derived doubt direction constructive search
 
-Status: draft (not signed; do not launch as confirmatory evidence).
+Status: SIGNED 2026-07-18 (PI approval; pre-sign red-team SIGN WITH FIXES
+applied at 62adbc37; instrument pins in experiment.yaml). Rung (b) remains
+conditional: funded only on a rung-(a) pass plus fresh explicit launch
+approval.
 
 Keep this document the prose home for the experiment. The machine state lives in
 `experiment.yaml` and is never duplicated here.
@@ -490,8 +493,12 @@ computed.
 
 | Predictor | Slot 1: does `d_ev` fire at baseline on held-out (rung a AUROC >= 0.70)? | Slot 2: does `d_ev` match the native direction (AUROC-diff lower CI >= -0.05)? |
 |-----------|--------------------------------------------------------------------------|--------------------------------------------------------------------------------|
-| orchestrator | [fill at sign] | [fill at sign] |
-| user (PI) | [fill at sign] | [fill at sign] |
+| orchestrator | BELOW FLOOR (< 0.70; fragmentation stands) | Fires but weaker (moot on own Slot-1 call; recorded as the conditional lean) |
+| user (PI) | FIRES (>= 0.70) | MATCHES NATIVE (lower CI >= -0.05) |
+
+Calls recorded independently at sign (2026-07-18): the orchestrator's calls
+were written down before the PI answered and revealed after; the predictors
+disagree on both slots.
 
 Slot 1 is the falsifier axis (fires vs fragmentation-stands). Slot 2 is the
 differentiating value (a genuine single axis vs a weak-but-real evidence axis
