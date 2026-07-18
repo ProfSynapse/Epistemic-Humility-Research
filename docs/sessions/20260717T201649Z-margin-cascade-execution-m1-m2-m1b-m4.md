@@ -4,7 +4,7 @@ session_id: 20260717T201649Z-margin-cascade-execution-m1-m2-m1b-m4
 title: 'Margin cascade execution: M1 M2 M1b M4'
 status: active
 created_at: '2026-07-17T20:16:49Z'
-updated_at: '2026-07-17T20:44:00Z'
+updated_at: '2026-07-18T11:33:27Z'
 question: Do the framework's margin-theory claims (1, 3) and the mentalistic-naming
   criteria hold at the qwen mid-band operating point, tested cheap-first through the
   M1-M6 cascade?
@@ -96,22 +96,55 @@ checkpoints:
     on its own population; (a)-(c) stand, (d) unadjudicated. Evaded sign + full red-team
     because the self-blinded design derivation reproduced the reused instrument median/AUROC
     exactly but never touched the new arms row text. DURABLE LESSON captured in the
-    experiment-runner skill (PR#302, awaiting merge): pre-sign feasibility probe - verify
-    every injected/consumed field exists and is non-empty on the test-population id
-    list, allowed and REQUIRED even under self-blinding; distinguish world-unknown (no
-    answer for anyone) from model-unknown (answer exists, model lacks it). PI DECISION:
-    full REBASE onto a world-KNOWN confab population (popqa 14.3K / triviaqa have gold
-    answers), guiding principle = MAXIMIZE DATA REUSE (artifacts recyclable for M3/M5/family
-    + public data-exhaust). Data scout confirmed datasets ready but no existing qwen
-    confab-vs-correct labels, no world-known direction, no margin data outside M1s set,
-    so the rebase needs fresh generation + labeling + margin ladder (~several h 3090)
-    + a fresh sign. Design derivation in flight (m4wk-design-derivation): dataset choice,
-    confab/correctness/abstention rules, three role-group counts, direction fork (KUQ-transfer
-    + native world-known c_hat fit), channels 1/2 with re-derived floors, reusable-artifact
-    manifest, and the pre-sign feasibility probe M4 skipped. NEXT: red-team the derivation
-    draft, lift design forks to PI (dataset, native-vs-transfer primary, subset sizes,
-    publish-as-exhaust intent), resolve void M4 as superseded, sign the rebase, then
-    build. After: family memo (retire llama/mistral for gemma?) before M3; M5; M6.'
+    experiment-runner skill (PR#302, awaiting merge): pre-sign feasibility probe -
+    verify every injected/consumed field exists and is non-empty on the test-population
+    id list, allowed and REQUIRED even under self-blinding; distinguish world-unknown
+    (no answer for anyone) from model-unknown (answer exists, model lacks it). PI
+    DECISION: full REBASE onto a world-KNOWN confab population (popqa 14.3K / triviaqa
+    have gold answers), guiding principle = MAXIMIZE DATA REUSE (artifacts recyclable
+    for M3/M5/family + public data-exhaust). Data scout confirmed datasets ready but
+    no existing qwen confab-vs-correct labels, no world-known direction, no margin
+    data outside M1s set, so the rebase needs fresh generation + labeling + margin
+    ladder (~several h 3090) + a fresh sign. Design derivation in flight (m4wk-design-derivation):
+    dataset choice, confab/correctness/abstention rules, three role-group counts,
+    direction fork (KUQ-transfer + native world-known c_hat fit), channels 1/2 with
+    re-derived floors, reusable-artifact manifest, and the pre-sign feasibility probe
+    M4 skipped. NEXT: red-team the derivation draft, lift design forks to PI (dataset,
+    native-vs-transfer primary, subset sizes, publish-as-exhaust intent), resolve
+    void M4 as superseded, sign the rebase, then build. After: family memo (retire
+    llama/mistral for gemma?) before M3; M5; M6.'
+  evidence: []
+  run_ids: []
+  commands: []
+  decisions: []
+  next_steps: []
+  signals: {}
+- id: 005-checkpoint
+  at: '2026-07-18T11:33:27Z'
+  kind: checkpoint
+  title: Checkpoint
+  summary: 'M4-WK signed (b98a1ef1) and executed through the firing gate. Census:
+    14267 PopQA rows (confab 11048 / correct 2744 / refused 421, ~77% confab rate
+    on Qwen3.5-4B). SC0 selection + distractor mapping committed pre-generation; native
+    fit + cell.yaml repin (432ca7fa). FIRING GATE: transfer (KUQ-fit) baseline confab-vs-correct
+    AUROC 0.3018 [0.2647,0.3396], below chance; gap_z -0.181. Independent sign-flip
+    verification (results-analyst): VERDICT SIGN CORRECT - KUQ reproduction under
+    identical harness code gives AUROC 0.987 (a flip would give 0.013), and raw projections
+    genuinely reverse between populations (KUQ confab more-negative, world-known confab
+    more-POSITIVE). Transfer primary criterion (d) VOID per BLOCKER B1 (void-and-lift,
+    never scored not-earned). Native direction fires: AUROC 0.8628, gap +1.642, fit/test
+    reproduction within 0.05. Key finding: the doubt direction fires where (d) cannot
+    be run (world-unknown) and does not fire where it can (world-known); only the
+    purpose-refit native direction fires there, carrying fit-circularity. PI DECISION:
+    full native two-channel secondary dissociation (D1 from existing captures; native-only
+    channel-2 ladder + survival on 3090; transfer dropped from channel-2). Process
+    fixes this arc: three harness bugs caught pre-GPU by build agent (env-var mismatch,
+    dropped mu_c term - verified inert, sidecar field misread); lead adjudications
+    A/C confirmed, B = lead-run blinded grading with isolated adjudicator (build agent
+    is a leaking context); recurring detached-nohup stall fixed (harness-tracked launches
+    + persistent lead-side stall monitor; skill PR in flight); blinded-grading protocol
+    pre-written. NEXT: native D1+D2, S1 channel-2 gate, grading-shard handoff, lead
+    adjudication, resolve + PR (merge needs PI approval).'
   evidence: []
   run_ids: []
   commands: []
@@ -155,3 +188,8 @@ _No summary yet._
 - at: `2026-07-17T20:44:00Z`
 - kind: `checkpoint`
 - summary: M4 (margin-evidence-responsiveness) SIGNED 2026-07-17 (2303dfe7, red-team fixes applied: before-question anchor + fresh-baseline S1 gate) then found VOID-BY-DESIGN at build: the true_answer/false_answer arms require gold answers but all 400 confab rows are KUQ world-UNKNOWN questions whose source (datasets/kuq/unknowns_all.jsonl) has NO answer field. Verified 3 ways: subsample confab prefixes all kuq_unknowns_all, staged aliases empty for every confab row, source keys carry no answer/gold field. Root cause: criterion (d) "supply the true answer" presupposes a world-KNOWN answer, but the qwen c_hat direction is fit on world-UNKNOWN questions, so (d) is ill-posed on its own population; (a)-(c) stand, (d) unadjudicated. Evaded sign + full red-team because the self-blinded design derivation reproduced the reused instrument median/AUROC exactly but never touched the new arms row text. DURABLE LESSON captured in the experiment-runner skill (PR#302, awaiting merge): pre-sign feasibility probe - verify every injected/consumed field exists and is non-empty on the test-population id list, allowed and REQUIRED even under self-blinding; distinguish world-unknown (no answer for anyone) from model-unknown (answer exists, model lacks it). PI DECISION: full REBASE onto a world-KNOWN confab population (popqa 14.3K / triviaqa have gold answers), guiding principle = MAXIMIZE DATA REUSE (artifacts recyclable for M3/M5/family + public data-exhaust). Data scout confirmed datasets ready but no existing qwen confab-vs-correct labels, no world-known direction, no margin data outside M1s set, so the rebase needs fresh generation + labeling + margin ladder (~several h 3090) + a fresh sign. Design derivation in flight (m4wk-design-derivation): dataset choice, confab/correctness/abstention rules, three role-group counts, direction fork (KUQ-transfer + native world-known c_hat fit), channels 1/2 with re-derived floors, reusable-artifact manifest, and the pre-sign feasibility probe M4 skipped. NEXT: red-team the derivation draft, lift design forks to PI (dataset, native-vs-transfer primary, subset sizes, publish-as-exhaust intent), resolve void M4 as superseded, sign the rebase, then build. After: family memo (retire llama/mistral for gemma?) before M3; M5; M6.
+### 005-checkpoint - Checkpoint
+
+- at: `2026-07-18T11:33:27Z`
+- kind: `checkpoint`
+- summary: M4-WK signed (b98a1ef1) and executed through the firing gate. Census: 14267 PopQA rows (confab 11048 / correct 2744 / refused 421, ~77% confab rate on Qwen3.5-4B). SC0 selection + distractor mapping committed pre-generation; native fit + cell.yaml repin (432ca7fa). FIRING GATE: transfer (KUQ-fit) baseline confab-vs-correct AUROC 0.3018 [0.2647,0.3396], below chance; gap_z -0.181. Independent sign-flip verification (results-analyst): VERDICT SIGN CORRECT - KUQ reproduction under identical harness code gives AUROC 0.987 (a flip would give 0.013), and raw projections genuinely reverse between populations (KUQ confab more-negative, world-known confab more-POSITIVE). Transfer primary criterion (d) VOID per BLOCKER B1 (void-and-lift, never scored not-earned). Native direction fires: AUROC 0.8628, gap +1.642, fit/test reproduction within 0.05. Key finding: the doubt direction fires where (d) cannot be run (world-unknown) and does not fire where it can (world-known); only the purpose-refit native direction fires there, carrying fit-circularity. PI DECISION: full native two-channel secondary dissociation (D1 from existing captures; native-only channel-2 ladder + survival on 3090; transfer dropped from channel-2). Process fixes this arc: three harness bugs caught pre-GPU by build agent (env-var mismatch, dropped mu_c term - verified inert, sidecar field misread); lead adjudications A/C confirmed, B = lead-run blinded grading with isolated adjudicator (build agent is a leaking context); recurring detached-nohup stall fixed (harness-tracked launches + persistent lead-side stall monitor; skill PR in flight); blinded-grading protocol pre-written. NEXT: native D1+D2, S1 channel-2 gate, grading-shard handoff, lead adjudication, resolve + PR (merge needs PI approval).
