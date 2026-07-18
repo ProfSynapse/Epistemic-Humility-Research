@@ -2146,6 +2146,39 @@
         "repo": "Qwen/Qwen3.5-4B",
         "revision": "851bf6e806efd8d0a36b00ddf55e13ccb7b8cd0a"
       },
+      "created_at": "2026-07-17T20:05:16Z",
+      "falsifier": "With all gates valid, at least one channel fails its floor: the projection does not collapse toward the known regime specifically for the true answer (D1 fails), or the margin does not lengthen for the true answer over the placebo (D2 fails). Criterion (d) is not earned; a single-channel pass is reported as a channel dissociation, not rounded to earned or not-earned.",
+      "inputs": [
+        "experiments/qwen35-4b-midband-doubt-snap/analysis-committed/directions/hs20/c_hat.json",
+        "experiments/margin-mapping/analysis-committed/subsample_ids_qwen35_4b.json",
+        "experiments/margin-mapping/analysis/margin_dataset/qwen35_4b_margin_rows.jsonl"
+      ],
+      "instrument": {
+        "configs": [
+          "cell.yaml",
+          "gates.yaml"
+        ],
+        "modules": [],
+        "pins": {
+          "cell.yaml": "8d2c2aa0060205f005cb07f56f379d7abde640a16f30b5f65b8777f65d16f2be",
+          "gates.yaml": "92437d3d96a91db13c806be550e57fc7ea40ae19a4177f9764dde08a83e6074e"
+        }
+      },
+      "kg": [],
+      "prediction": "Supplying the true answer in-context both collapses the c_hat projection on confab rows (paired median shift toward the known regime at or above the floor, and larger than the false-answer placebo) and lengthens their margins (true-answer survival at each row's own tipping dose exceeds the placebo, CI excluding zero): qwen earns criterion (d).",
+      "question": "Does the qwen c_hat known-unknown direction satisfy earnability criterion (d)? That is, does supplying the true answer in-context both collapse the c_hat projection on a confab row (toward the known regime) and lengthen its commitment margin, specifically for the true answer over a false-answer placebo?",
+      "registered": true,
+      "slug": "margin-evidence-responsiveness",
+      "status": "historical",
+      "title": "Evidence-responsiveness: the naming test (M4)",
+      "type": "steer-cell",
+      "verdict": "Void-by-design (never run): the true_answer/false_answer arms require a per-row gold answer, but the 400 confab rows are all KUQ world-unknown questions whose source has no answer field (verified 3 ways). Criterion (d) 'supply the true answer' is ill-posed on a c_hat direction fit on world-unknown questions; (a)-(c) stand, (d) unadjudicated here. Superseded by margin-evidence-responsiveness-worldknown, which rebases the (d) test onto a world-known PopQA confab population where a true answer exists. Durable lesson (pre-sign feasibility probe) captured in the experiment-runner skill."
+    },
+    {
+      "checkpoint": {
+        "repo": "Qwen/Qwen3.5-4B",
+        "revision": "851bf6e806efd8d0a36b00ddf55e13ccb7b8cd0a"
+      },
       "created_at": "2026-07-17T21:04:21Z",
       "falsifier": "With all gates valid AND the transfer direction firing at baseline (baseline confab-vs-correct AUROC >= 0.70 on the test subset, BLOCKER B1), at least one channel on the TRANSFER direction fails its floor: the projection does not collapse toward the correct/refused regime specifically for the true answer (D1 fails), or the margin does not lengthen for the true answer over the placebo (D2 fails). Only then is criterion (d) not earned on the named KUQ direction; a single-channel pass is reported as a channel dissociation. If instead the transfer direction does not fire at baseline (AUROC < 0.70), the criterion (d) test is voided and lifted to PI, not scored as a (d)-not-earned failure. The native two-channel result is reported separately and never changes this verdict.",
       "inputs": [

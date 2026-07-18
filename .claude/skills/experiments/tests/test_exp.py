@@ -179,6 +179,29 @@ def test_validate_flags_missing_input_path(repo: Path):
     assert _run(repo, "validate") == 1
 
 
+def test_validate_tolerates_missing_gitignored_data_input(repo: Path):
+    # An input under an experiment's gitignored data dir (analysis/) is
+    # run-materialized: absent in a fresh worktree/clean clone is a warning, not
+    # a commit-blocking error. See _is_untracked_data_input.
+    _run(repo, "new", "cell-din", "--type", "eval")
+    m = _manifest(repo, "cell-din")
+    m["question"] = "q"
+    m["inputs"] = ["experiments/cell-din/analysis/runlog/x.jsonl"]
+    _write_manifest(repo, "cell-din", m)
+    assert _run(repo, "validate") == 0
+
+
+def test_validate_still_flags_missing_tracked_data_input(repo: Path):
+    # analysis-committed/ is tracked, so a missing input there is still a hard
+    # error (the relaxation is scoped to analysis/ and directions/ only).
+    _run(repo, "new", "cell-dtracked", "--type", "eval")
+    m = _manifest(repo, "cell-dtracked")
+    m["question"] = "q"
+    m["inputs"] = ["experiments/cell-dtracked/analysis-committed/ids.json"]
+    _write_manifest(repo, "cell-dtracked", m)
+    assert _run(repo, "validate") == 1
+
+
 def test_validate_flags_unresolvable_kg_id(repo: Path):
     _run(repo, "new", "cell-kg", "--type", "eval")
     m = _manifest(repo, "cell-kg")

@@ -72,6 +72,39 @@ For HF Jobs training lane details, use:
 
 - [../experiment-runner/reference/cloud-lane.md](../experiment-runner/reference/cloud-lane.md)
 
+## Long GPU stage launch discipline (no detached nohup)
+
+A multi-stage cell pipeline must never launch a long GPU stage as a bare
+detached `nohup` process that outlives the launching agent's turn. When that
+process exits, nothing re-invokes the agent, the next stage never starts, and
+the pipeline silently stalls until a human notices it. This happened twice in
+one night on the M4 world-known rebase: once at the census handoff, and again
+after the native fit.
+
+Use one of two sanctioned launch patterns:
+
+- **Harness-tracked background execution** - the Bash tool's
+  `run_in_background`, which re-invokes the launching agent when the process
+  exits so it can chain the next stage.
+- **One sequential driver script** - a single script that runs the remaining
+  stages in order itself and only returns at a governance halt or at full
+  completion.
+
+Whichever pattern is used, the chain MUST hard-halt (never auto-continue) at
+governance gates: any firing / S1 gate with a void-and-lift arm, any preflight
+failure, and the blinded-grading boundary.
+
+Detached processes also do not survive host/WSL restarts cleanly: the M4-WK
+census silently restarted from scratch after a host reset. Write stage
+scripts to be resumable and idempotent (skip rows already written) so a
+restart costs minutes, not hours.
+
+The lead/orchestrator arms a persistent stall monitor for any overnight or
+multi-stage run: a watcher that emits an event on new commits or new stage-log
+lines, and fires a stall alert when the GPU sits idle with no progress for
+about 20 minutes while the run is still incomplete. Progress checks must not
+depend on the user asking.
+
 ## Steering and dose-calibration gotchas
 
 These issues are specific to activation intervention (steering/dose-calibrate) and

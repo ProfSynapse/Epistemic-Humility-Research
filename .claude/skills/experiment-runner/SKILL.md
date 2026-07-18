@@ -132,7 +132,10 @@ operation, then follow any further routing inside that reference.
   detection power (defects like gain-squared exceed both bounds by >10x)
   without tripping on quantization dust. Cautionary case: margin-mapping M1
   (2026-07-17), whose preflight caught exactly this pre-run; NOTEBOOK entries
-  there record the full adjudication pattern.
+  there record the full adjudication pattern. For how a multi-stage GPU
+  pipeline should be launched and chained around gates like this one, see the
+  mechinterp-cells launch discipline:
+  [../mechinterp-cells/reference/modal-launch.md](../mechinterp-cells/reference/modal-launch.md#long-gpu-stage-launch-discipline-no-detached-nohup).
 
 ## Matrix At A Glance
 
