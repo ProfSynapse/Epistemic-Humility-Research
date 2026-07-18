@@ -4,7 +4,7 @@ session_id: 20260717T201649Z-margin-cascade-execution-m1-m2-m1b-m4
 title: 'Margin cascade execution: M1 M2 M1b M4'
 status: active
 created_at: '2026-07-17T20:16:49Z'
-updated_at: '2026-07-18T23:07:45Z'
+updated_at: '2026-07-18T23:28:39Z'
 question: Do the framework's margin-theory claims (1, 3) and the mentalistic-naming
   criteria hold at the qwen mid-band operating point, tested cheap-first through the
   M1-M6 cascade?
@@ -280,6 +280,35 @@ checkpoints:
   decisions: []
   next_steps: []
   signals: {}
+- id: 010-result
+  at: '2026-07-18T23:28:39Z'
+  kind: result
+  title: 'Amendment U detector flip-rate diagnostic: 90.1% confirmed, contraction
+    blind spot'
+  summary: 'Lab-notebook diagnostic (PI-funded, bounded): re-graded amendment U''s
+    original 1233 stage2 rows (found intact under archive/experiment/phase1-data,
+    so a literal re-grade, no regeneration) with both instruments. Result, adversarially
+    confirmed by an independent opus re-derivation (0 row diffs, seed-insensitive
+    CI, detector shas pinned): 109/121 (90.1%, CI [84.3, 95.0]) of the SelfAware hallucination
+    rows flip narrow-answered to wide-refused. Semantic census of all 109: every one
+    is an explicit refusal (108 are the single verbatim string pattern beginning i''m
+    not sure what the answer is), zero hedge-plus-guess rows. Mechanism: the narrow
+    instrument lists the spelled-out form i am not sure but misses the contraction
+    i''m, so 90% of amendment U''s confident-confabulation population is explicit
+    refusals missed on a contraction. Also confirmed: neither instrument is a superset
+    of the other (all 125 reverse flips are one canned template the wide detector
+    lacks). The corrected genuine confident-confab count is ~8-12 versus amendment
+    U''s pre-stated >=50 adequacy floor; its U-G3 hallucination-veto AUROC 0.980 was
+    computed over the 90%-mislabeled population. Re-adjudication of the signed U verdict
+    lifted to the PI. Artifacts gitignored under experiments/unified-two-signal-dial-veto/analysis/.'
+  evidence: []
+  run_ids: []
+  commands: []
+  decisions: []
+  next_steps:
+  - PI decision on amendment U re-adjudication instrument; S/W/X lineage extension
+    of the same CPU re-grade dispatched per the pre-agreed materiality escalation.
+  signals: {}
 track: margin-theory-cascade
 ---
 # Margin cascade execution: M1 M2 M1b M4
@@ -348,3 +377,10 @@ _No summary yet._
 - at: `2026-07-18T23:07:45Z`
 - kind: `infrastructure`
 - summary: A scoping agent pinged idle repeatedly without its report arriving; the lead nudged three times, killed it, re-dispatched, and nudged the replacement, when the full report existed all along as final assistant text in the agent transcript (~/.claude/projects/<slug>/<session>/subagents/agent-<name>-*.jsonl). Only the routing of the final message to the lead failed. The PI surfaced the fix. New protocol: on silent idle, read the transcript tail FIRST; bank the report if present and stand the agent down; one nudge only if the transcript shows incomplete work; kill only if truly wedged.
+### 010-result - Amendment U detector flip-rate diagnostic: 90.1% confirmed, contraction blind spot
+
+- at: `2026-07-18T23:28:39Z`
+- kind: `result`
+- summary: Lab-notebook diagnostic (PI-funded, bounded): re-graded amendment U's original 1233 stage2 rows (found intact under archive/experiment/phase1-data, so a literal re-grade, no regeneration) with both instruments. Result, adversarially confirmed by an independent opus re-derivation (0 row diffs, seed-insensitive CI, detector shas pinned): 109/121 (90.1%, CI [84.3, 95.0]) of the SelfAware hallucination rows flip narrow-answered to wide-refused. Semantic census of all 109: every one is an explicit refusal (108 are the single verbatim string pattern beginning i'm not sure what the answer is), zero hedge-plus-guess rows. Mechanism: the narrow instrument lists the spelled-out form i am not sure but misses the contraction i'm, so 90% of amendment U's confident-confabulation population is explicit refusals missed on a contraction. Also confirmed: neither instrument is a superset of the other (all 125 reverse flips are one canned template the wide detector lacks). The corrected genuine confident-confab count is ~8-12 versus amendment U's pre-stated >=50 adequacy floor; its U-G3 hallucination-veto AUROC 0.980 was computed over the 90%-mislabeled population. Re-adjudication of the signed U verdict lifted to the PI. Artifacts gitignored under experiments/unified-two-signal-dial-veto/analysis/.
+- next steps:
+  - PI decision on amendment U re-adjudication instrument; S/W/X lineage extension of the same CPU re-grade dispatched per the pre-agreed materiality escalation.
