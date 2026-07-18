@@ -1,0 +1,191 @@
+{
+  "kuq_transfer_ungated": {
+    "auroc": {
+      "bootstrap_ci_95": [
+        0.7359770762871102,
+        0.8155721533258173
+      ],
+      "n_boot": 10000,
+      "n_neg": 240,
+      "n_pos": 887,
+      "point": 0.776216647876738,
+      "seed": 48260724
+    },
+    "n_confab": 887,
+    "n_correct": 240,
+    "note": "ungated exploratory readout; a positive result is a bonus cross-population transfer, a null is expected given the population shift"
+  },
+  "provenance": {
+    "d_ev_sha256": "dd5f8202df19fd5620060be111d3b2c497cbf0b0abb2454c31d1dfdebcb5d641",
+    "d_ev_topPC_sha256": "90f27adaaf6b2a3054cc93a4498b4f99869a910d1c379bfe9f292edf1c87c1a7",
+    "fit_heldout_split_sha256": "320343d5f2abd8a31c2aae7edf31b84ec9b0a1e83e3183d6cae1333d5b3f807e",
+    "sc0_enforcement_sha256": "f7c90528d7d2e10d6b3a0c2b823e4b5fb29e62aa906aaeb2bd1fd176522285bf"
+  },
+  "refused_auxiliary": {
+    "auroc_confab_vs_refused": 0.046680497925311204,
+    "auroc_refused_vs_correct": 0.9750691562932227,
+    "n_refused": 241,
+    "note": "construct context only, not gated (AMENDMENT: refused rows reported as auxiliary readout)",
+    "score_distribution": {
+      "mean": 0.7620764648040377,
+      "median": 0.7775543455550531,
+      "std": 0.32404954489784155
+    }
+  },
+  "rung_a": {
+    "kuq_comparator_lower_ungated": {
+      "amendment_cited_population_reference": 0.3018,
+      "note": "ungated; reported for context per AMENDMENT rung-c lower comparator",
+      "paired_auroc_diff_d_ev_minus_kuq": {
+        "bootstrap_ci_95": [
+          0.3655125,
+          0.5130697916666666
+        ],
+        "excludes_zero_from_above": true,
+        "excludes_zero_from_below": false,
+        "n_boot": 10000,
+        "point": 0.44070833333333337,
+        "seed": 48260724
+      },
+      "recomputed_on_identical_heldout_rows": {
+        "bootstrap_ci_95": [
+          0.24165138888888887,
+          0.3279034722222222
+        ],
+        "n_boot": 10000,
+        "n_neg": 360,
+        "n_pos": 200,
+        "point": 0.2845,
+        "seed": 48260724
+      }
+    },
+    "n_correct_control": 360,
+    "n_held_out_confab": 200,
+    "native_comparator": {
+      "full_population_reference_anchor_only": 0.86275,
+      "paired_auroc_diff_d_ev_minus_native": {
+        "bootstrap_ci_95": [
+          -0.18954236111111106,
+          -0.08719409722222225
+        ],
+        "excludes_zero_from_above": false,
+        "excludes_zero_from_below": true,
+        "n_boot": 10000,
+        "point": -0.13812499999999994,
+        "seed": 48260724
+      },
+      "recomputed_on_identical_heldout_rows": {
+        "bootstrap_ci_95": [
+          0.8310267361111111,
+          0.8932784722222221
+        ],
+        "n_boot": 10000,
+        "n_neg": 360,
+        "n_pos": 200,
+        "point": 0.8633333333333333,
+        "seed": 48260724
+      },
+      "strong_bar_lower_ci_floor": -0.05,
+      "strong_bar_pass": false
+    },
+    "rung_a_primary": {
+      "auroc": {
+        "bootstrap_ci_95": [
+          0.6831520833333334,
+          0.7651944444444444
+        ],
+        "ci_covers_0p5": false,
+        "ci_excludes_0p5_from_below": false,
+        "n_boot": 10000,
+        "n_neg": 360,
+        "n_pos": 200,
+        "point": 0.7252083333333333,
+        "seed": 48260724
+      },
+      "falsifier_branch": {
+        "a1_ci_covers_0p5_no_baseline_content": null,
+        "a2_ci_excludes_0p5_from_below_reversed_orientation": null,
+        "applicable": false
+      },
+      "floor": 0.7,
+      "point_estimate_ge_floor": true
+    },
+    "rung_a_secondary_top_pc_report_only": {
+      "auroc": {
+        "bootstrap_ci_95": [
+          0.7118045138888889,
+          0.7900701388888889
+        ],
+        "ci_covers_0p5": false,
+        "ci_excludes_0p5_from_below": false,
+        "n_boot": 10000,
+        "n_neg": 360,
+        "n_pos": 200,
+        "point": 0.7517083333333333,
+        "seed": 48260724
+      },
+      "floor_reference_only": 0.7,
+      "point_estimate_ge_floor": true
+    },
+    "top_pc_vs_primary_paired_auroc_diff": {
+      "bootstrap_ci_95": [
+        0.0043052083333333414,
+        0.049000000000000044
+      ],
+      "excludes_zero_from_above": true,
+      "excludes_zero_from_below": false,
+      "n_boot": 10000,
+      "point": 0.026499999999999968,
+      "seed": 48260724
+    }
+  },
+  "rung_b_conditional_secondary": {
+    "reason": "GPU rung, out of scope for this harness pass; conditional on a rung-(a) pass plus fresh explicit launch approval (PI ruling 2026-07-18)",
+    "status": "NOT RUN"
+  },
+  "rung_c": {
+    "covariance_shaped_null_D_c_gated": {
+      "empirical_p_value_ge": 0.191,
+      "k": 1000,
+      "method": "z ~ N(0, I_n), v = centered_baseline_anchors.T @ z, unit-normalized (equivalent to N(0, empirical covariance) up to a scalar); n=560 (200 held-out confab + 360 correct-control), K=1000",
+      "null_95th_percentile": 0.81935625,
+      "null_auroc_mean": 0.5097459722222223,
+      "null_auroc_std": 0.2032763346851676,
+      "p_lt_0p05_pass": false,
+      "point_auroc": 0.7252083333333333,
+      "point_exceeds_95th_percentile": false,
+      "seed": 48260729
+    },
+    "isotropic_null_ungated_companion": {
+      "empirical_p_value_ge": 0.079,
+      "k": 1000,
+      "method": "v ~ N(0, I_2560), unit-normalized, K=1000, independent generator instance from the covariance-shaped draw",
+      "null_95th_percentile": 0.7477006944444443,
+      "null_auroc_mean": 0.5022526944444445,
+      "null_auroc_std": 0.1514491172996966,
+      "p_lt_0p05_pass": false,
+      "point_auroc": 0.7252083333333333,
+      "point_exceeds_95th_percentile": false,
+      "seed": 48260729
+    },
+    "top_pc_secondary_vs_covariance_null_report_only": {
+      "empirical_p_value_ge": 0.144,
+      "k": 1000,
+      "null_95th_percentile": 0.81935625,
+      "null_auroc_mean": 0.5097459722222223,
+      "null_auroc_std": 0.2032763346851676,
+      "p_lt_0p05_pass": false,
+      "point_auroc": 0.7517083333333333,
+      "point_exceeds_95th_percentile": false
+    }
+  },
+  "sc3_coverage": {
+    "correct_never_in_fit": true,
+    "fit_heldout_disjoint": true,
+    "n_correct_control": 360,
+    "n_fit_confab": 200,
+    "n_held_out_confab": 200,
+    "n_refused": 241,
+    "zero_silent_drops": true
+  }
+}
