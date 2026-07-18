@@ -215,9 +215,12 @@ def build_correctness_pool(args: argparse.Namespace) -> int:
 
 
 def score_correctness(args: argparse.Namespace) -> int:
-    """`--graded-shard` is a JSONL of {opaque_id, adjudicated_correct: bool}
+    """`--graded-shard` is a JSONL of {opaque_id, correct: bool, note: str}
     produced by whatever blinded-grading process the lead designates; this
-    function only consumes it, never produces it."""
+    function only consumes it, never produces it. (Schema confirmed against
+    the M4-WK grading ceremony's actual graded file, commit 1c28acde:
+    `correct`, not the earlier placeholder `adjudicated_correct` this
+    docstring originally guessed at build time.)"""
     config.assert_pinned_hashes()
     manifest = common.load_json(COMMITTED / "correctness_calibration_pool_manifest.json")
     shard_path = CAL_DIR / "correctness_calibration_shard.jsonl"
@@ -235,7 +238,7 @@ def score_correctness(args: argparse.Namespace) -> int:
 
     confab_ids = [oid for oid, m in id_map.items() if m["role"] == "confab_on_answerable"]
     n_confab_graded = len(confab_ids)
-    n_false_wrong = sum(1 for oid in confab_ids if bool(graded[oid]["adjudicated_correct"]))
+    n_false_wrong = sum(1 for oid in confab_ids if bool(graded[oid]["correct"]))
     wilson = stats.wilson(n_false_wrong, n_confab_graded)
 
     # lead-directed CG1-style sanity check on the adjudicator's own accuracy,
@@ -250,7 +253,7 @@ def score_correctness(args: argparse.Namespace) -> int:
     # + agreement rate is computed here, per the lead's explicit ask.
     decoy_ids = [oid for oid, m in id_map.items() if m.get("decoy_type") == "clear_positive"]
     n_clear_positive_decoys_graded = len(decoy_ids)
-    n_clear_positive_agree = sum(1 for oid in decoy_ids if bool(graded[oid]["adjudicated_correct"]) == True)
+    n_clear_positive_agree = sum(1 for oid in decoy_ids if bool(graded[oid]["correct"]) == True)
     clear_positive_agreement = (n_clear_positive_agree / n_clear_positive_decoys_graded) if decoy_ids else None
 
     result = {

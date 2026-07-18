@@ -1,5 +1,28 @@
 {
-  "alias_grader_false_wrong_bound": null,
+  "alias_grader_false_wrong_bound": {
+    "clear_positive_decoys": {
+      "agreement_floor": 0.6,
+      "agreement_rate": 1.0,
+      "floor_min_decoys": 25,
+      "n": 29,
+      "n_agree": 29
+    },
+    "false_wrong_rate_wilson_ci_95": {
+      "n": 117,
+      "rate": 0.042735042735042736,
+      "successes": 5,
+      "wilson_ci_95": [
+        0.018389831081890212,
+        0.09615247050710528
+      ]
+    },
+    "graded_shard_sha256": "65fe24198813c2e562232ce2f1b3106123c0b583cce2aed3f7f682408d892755",
+    "n_confab_graded": 117,
+    "n_false_wrong": 5,
+    "note": "a POSITIVE (d) verdict is robust regardless of this bound (the bias is conservative); this bound only gates interpretability of a NULL result (gates.yaml SC2 bullet 1).",
+    "null_interpretable_max": 0.1,
+    "null_would_be_interpretable": true
+  },
   "experiment": "margin-evidence-responsiveness-worldknown",
   "generated_note": "RAW NUMBERS ONLY. No criterion (d) earned/not-earned adjudication is made by this script; that is reserved for the lead per gates.yaml criteria.criterion_d_earned / criterion_d_not_earned / split_result.",
   "per_direction": {

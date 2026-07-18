@@ -442,3 +442,56 @@ HALTING here per instruction. Handing the lead: shard path
 the blinded adjudicator to read directly) and the committed manifest/hashes
 above. Not grading, not touching the shard or id_map further until the lead
 delivers a graded-file hash commit.
+
+## 2026-07-18 - Correctness calibration ceremony complete: unblind, score, fold into results
+
+**Ceremony order** (git-provable): shard + manifest committed BEFORE grading
+(0e4e229a) -> graded-file sha256 committed BEFORE unblind (1c28acde,
+`analysis-committed/correctness_grading_receipt.json`, grader "isolated
+blinded adjudicator (fresh opus agent, shard-file-only access; saw
+opaque_id/question/gold_aliases/model_answer_text only; no
+row_key/role/arm/detector fields)") -> unblind authorized by lead -> verified
+the graded file's live sha256 (65fe24198813c2e...) against the committed
+receipt BEFORE consuming it (matched) -> joined to the private id_map (no
+verdict alteration) -> scored -> folded into `m4wk_results.json`.
+
+**Schema fix on the way in**: `calibration.py`'s own `--graded-shard` docstring
+had guessed a placeholder field name (`adjudicated_correct`) at build time,
+before any real grading existed. The actual graded file uses `{opaque_id,
+correct, note}`. Fixed `score_correctness` to read `correct` (the real
+grader's field), not the placeholder -- a schema-alignment fix against ground
+truth, not a verdict change (the join reads the SAME boolean values either
+way; only the key name being read changed).
+
+**Alias-grader false-wrong rate** (confab subset only, n=117): 5/117 =
+0.0427, Wilson 95% CI [0.0184, 0.0962]. Null-interpretability bar (gates.yaml
+SC2 bullet 1) is <= 0.10 -- **CLEARS the bar** (0.0427 << 0.10), so the native
+D1 leg-1 null result (0.5921 < floor 0.8209) IS interpretable per this bound:
+the alias grader is not systematically mislabeling confab rows as
+false-wrong at a rate that could explain the sub-floor shift.
+
+**Clear-positive decoy agreement** (29 correct_on_answerable rows, CG1
+adaptation): 29/29 = 1.0 agreement, floor 0.60, floor_min_decoys 25 (both
+cleared). CG1 adaptation ruling (lead-accepted, recorded here per lead
+instruction): clear-positive-only decoys were used because gates.yaml's CG1
+clear_negative/clear_positive agreement floors are written for the abstention
+slice's refusal-classification task; no non-circular clear-negative decoy
+exists for a correctness judgment (the confab role IS the class under test).
+The adjudicator's perfect agreement on the unambiguous decoys is a strong
+sanity check supporting trust in their 5/117 false-wrong calls above.
+
+**Adjudicator-reported caveats** (from the grader's own summary, no row text,
+as relayed by lead): 3 broader/equivalent-term acceptances; a
+core-referent-right-despite-wrong-detail cluster; 1 gold-mismatch graded
+against gold; 1 garbled non-answer marked false; refusals graded false per
+rubric (matches this experiment's construct: a refusal is not a correct
+assertion).
+
+Promoted + committed (aggregates only, no text): `analysis-committed/correctness_calibration_score.json`
+and the updated `analysis-committed/results/m4wk_results.json` (now carries
+`alias_grader_false_wrong_bound` populated). `harness/calibration.py` (field-
+name fix) also committed.
+
+Reported both numbers to lead. HALTING -- build scope complete per lead
+instruction; resolution writing, KG ingest, and the PR are the lead's from
+here.
