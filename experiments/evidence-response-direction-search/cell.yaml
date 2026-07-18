@@ -37,6 +37,8 @@ fit:
   estimator_primary: mean paired difference mean(h_true - h_false) over FIT confab rows, unit-normalized
   estimator_secondary: top principal component of the centered paired-difference matrix (report-only robustness reading; never rounds into the primary verdict)
   split: {fit: 200, held_out: 200, seed: 48260728, method: id-only permutation of the 400 confab row-keys}
+  split_routine_pinned: sort the 400 confab row-keys lexicographically (byte order); perm = numpy.random.default_rng(48260728).permutation(400); fit = sorted_keys[perm[:200]], held_out = sorted_keys[perm[200:]]; the analysis re-derives this and hard-asserts equality with the committed fit_heldout_split.json (SC0 enforcement, red-team M-B)
+  d_ev_reproducibility: the analysis recomputes d_ev from staged raw tensors + the committed fit id-list and hard-asserts equality (tolerance 1e-6) with the committed d_ev.json (SC0 enforcement, red-team M-B)
   negatives: all 360 correct-control rows are held-out by construction (never in fit)
   sign_convention: d_ev points false -> true (grounding positive); registered confab-positive score is -(h . d_ev); orientation fixed at sign, never chosen on held-out data
   artifact: analysis-committed/directions/hs20/d_ev.json (mechinterp-direction/v1, sha-pinned, fit-split id-list hash in provenance block)

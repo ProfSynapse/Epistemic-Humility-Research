@@ -201,11 +201,17 @@ Compare `d_ev`'s held-out baseline AUROC against:
   covariance of the baseline confab+correct anchors (covariance-shaped, not
   isotropic, so the null respects the activation geometry), seed 48260729.
   `d_ev` must exceed the 95th percentile of this null (p < 0.05). This kills
-  the "any direction separates" tautology.
-- the native `c_hat_worldknown` (sha256 `432c9f1f...`) as the upper comparator
-  (its baseline AUROC 0.86275). Paired bootstrap of the AUROC difference
-  (`d_ev` minus native) on the identical held-out rows; the "matches native"
-  STRONG bar is a lower 95% CI bound >= -0.05.
+  the "any direction separates" tautology. Disclosed (pre-sign red-team m-1):
+  the pooled covariance carries between-class structure, which makes this
+  null CONSERVATIVE (random draws partially align with the class axis, so the
+  bar is harder, not easier); an isotropic-null percentile is reported
+  alongside as an ungated companion reading.
+- the native `c_hat_worldknown` (sha256 `432c9f1f...`) as the upper comparator.
+  Its 0.86275 baseline AUROC is the full-test-population reference anchor
+  only; for the gated comparison the native AUROC is RECOMPUTED on the
+  identical held-out rows, and the paired bootstrap of the AUROC difference
+  (`d_ev` minus native) runs on those rows (pre-sign red-team m-4); the
+  "matches native" STRONG bar is a lower 95% CI bound >= -0.05.
 - the KUQ `c_hat` (sha256 `937d1bff...`) as the negative comparator (its
   baseline AUROC 0.3018 on this population; it does not fire).
 
@@ -258,7 +264,12 @@ expected given the population shift.
   computed without opening that file, and `d_ev` is the mean of RAW
   `anchor__L20` differences, never a function of any published z. The analyst
   does not inspect held-out baseline projections before freezing the split
-  (self-blinding, SC0). Third, using a within-400 split is not a free choice
+  (self-blinding, SC0). This is machine-enforced, not promised (pre-sign
+  red-team M-B): the permutation routine is pinned byte-exactly in cell.yaml,
+  and the analysis re-derives both the split (from routine + seed) and `d_ev`
+  itself (from staged raw tensors + the committed fit id-list) and
+  hard-asserts equality with the committed artifacts; an assertion failure is
+  an SC0 provenance void. Third, using a within-400 split is not a free choice
   but the only feasible one: the true/false arms exist only for these 400
   rows, so there is no alternative disjoint pool with the required captures.
 - (iv) Category-matched distractor confound. M4-WK's `false_answer` donors are
@@ -306,7 +317,11 @@ resolved cell), or JUDGMENT (a choice with rationale).
    per-rung health (DERIVED from M4-WK's rung-validity ruling: >= 3.0x
    instrument-invalid). Conditional on rung-(a) pass (rulings record item 1).
 9. Reference dose for `d_ev`: `mu_c`/`sigma_c` standardization, 8x `sigma_c`
-   (CONVENTION by lead ruling, rulings record item 3).
+   (CONVENTION by lead ruling, rulings record item 3). The convention is
+   empirically traceable, not merely asserted: M4-WK's realized native
+   multiplier-1.0 reference dose (8.469 absolute) equals 8x its realized
+   `sigma_c`, so this cell carries the same realized recipe (pre-sign
+   red-team m-3).
 10. Seeds (CONVENTION, extending the 4826072x series): fit/held-out split
     48260728; all bootstraps reuse 48260724; random-null draw 48260729.
 11. Self-blinding (CONVENTION from M2/M4-WK): the fit/held-out split, `d_ev`,
@@ -355,12 +370,23 @@ evidence/doubt axis, upgrading the fragmentation reading.
 
 With the fit/held-out split valid and all provenance gates green, `d_ev`'s
 held-out baseline confab-vs-correct AUROC is < 0.70. Then the constructive
-search fails: the direction that maximally captures the true-vs-false evidence
-contrast carries no prospective (baseline) ignorance content; it is an
-in-context answer-integration/copying direction only. M4-WK's fragmentation
-reading STANDS and is strengthened: the evidence leg (d) and the ignorance leg
-(a) live on genuinely different axes, and leg-2's evidence signal does not
-double as an ignorance detector.
+search fails. Two below-floor branches are distinguished IN ADVANCE (pre-sign
+red-team M-A; M4-WK's population reversal proves the second branch is live):
+
+- (a1) The bootstrap 95% CI covers 0.5 (no baseline content). The direction
+  that maximally captures the true-vs-false evidence contrast carries no
+  prospective (baseline) ignorance content; it is an in-context
+  answer-integration/copying direction only. M4-WK's fragmentation reading
+  STANDS and is strengthened: the evidence leg (d) and the ignorance leg (a)
+  live on genuinely different axes, and leg-2's evidence signal does not
+  double as an ignorance detector.
+- (a2) The AUROC is materially BELOW 0.5 (CI excludes 0.5 from below). `d_ev`
+  DOES carry baseline content but with reversed orientation relative to the
+  registered sign convention: a distinct finding, never to be equated with
+  the copying/no-content reading. Reported straight and lifted to PI for
+  interpretation; rung (a) still fails (the floor is on the registered
+  orientation) and the fragmentation reading still stands, but the reversal
+  itself is recorded as a substantive observation.
 
 Distinct from M4-WK, a below-floor rung (a) is a substantive NULL, not a
 void/lift: this cell is designed so that failing to find the axis is an
@@ -402,8 +428,10 @@ Pinned in `gates.yaml` at sign; summary below.
 
 - D_a (rung a, PRIMARY). Held-out confab-vs-correct AUROC on the
   `no_answer_baseline` arm >= 0.70 (fixed floor, carried numeric; AUROC has a
-  natural chance anchor) with bootstrap 95% CI. STRONG pass additionally
-  requires the D_c native-comparator bar.
+  natural chance anchor). The POINT ESTIMATE gates; the bootstrap 95% CI is
+  reported-only and never reinterprets the gate (pre-sign red-team m-2).
+  Below floor, the (a1)/(a2) branch split in the Falsifier section applies.
+  STRONG pass additionally requires the D_c native-comparator bar.
 - D_b (rung b, CONDITIONAL guarded SECONDARY). Within the coherence-valid band
   only, the abstention-rate increase vs a matched control at a valid rung has
   a paired bootstrap CI excluding zero; the reference dose (numeric-at-repin,
@@ -453,7 +481,8 @@ computed.
 | Pass a + b + c | `d_ev` is a genuine evidence-derived doubt axis: it tracks prospective ignorance (a), drives abstention in the valid band (b), specifically (c). Strongest result; constructive search succeeds, fragmentation overturned, M4-WK leg-2 upgraded to a named direction. |
 | Pass a + c, fail b | `d_ev` tracks ignorance at baseline, specifically, but does not causally drive abstention within the coherence-valid band. Read/write dissociation, most likely instrument-bound (consistent with M4-WK's channel-2 ceiling), not a substantive failure. Report as dissociation. |
 | Pass a only, fail c | `d_ev` separates at baseline but no better than random directions from the same covariance: the separation is generic activation geometry, not a specific evidence axis. Weak / uninterpretable; not a win. |
-| Fail a | Falsifier confirmed. `d_ev` is an in-context answer-integration/copying direction with no baseline content. Fragmentation STANDS and is strengthened. Clean, informative negative. Rung (b) not run (condition unmet). |
+| Fail a, CI covers 0.5 (a1) | Falsifier confirmed. `d_ev` is an in-context answer-integration/copying direction with no baseline content. Fragmentation STANDS and is strengthened. Clean, informative negative. Rung (b) not run (condition unmet). |
+| Fail a, AUROC materially < 0.5 (a2) | `d_ev` carries baseline content with REVERSED orientation. Not copying/no-content; a distinct substantive observation. Report straight, lift to PI. Rung (a) still fails on the registered orientation; rung (b) not run. |
 | Fail a but KUQ-transfer positive | Anomaly (no PopQA-baseline content, but separates on KUQ). Report straight, lift to PI; do not round. |
 | Any provenance/leakage gate fails | Instrument void / lift to PI (not a substantive result). Reserved only for broken SC0/SC3, mixed regime, or hash-pin failure. |
 

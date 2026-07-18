@@ -19,11 +19,14 @@ prediction: >-
   one evidence/doubt axis, upgrading the fragmentation reading.
 falsifier: >-
   With the fit/held-out split valid and all provenance gates green, d_ev's
-  held-out baseline confab-vs-correct AUROC is < 0.70: the evidence-contrast
-  direction carries no prospective ignorance content (an in-context
-  answer-integration direction only), and M4-WK's fragmentation reading
-  stands, strengthened. A below-floor rung (a) is a substantive null, not a
-  void/lift; void is reserved for broken SC0/SC3 provenance gates.
+  held-out baseline confab-vs-correct AUROC is < 0.70. Two pre-registered
+  branches: (a1) CI covers 0.5, the direction carries no prospective
+  ignorance content (an in-context answer-integration direction only) and
+  M4-WK's fragmentation reading stands, strengthened; (a2) CI excludes 0.5
+  from below, the direction carries reversed-orientation baseline content,
+  reported straight and lifted to PI, never equated with copying. A
+  below-floor rung (a) is a substantive null, not a void/lift; void is
+  reserved for broken SC0/SC3 provenance gates.
 checkpoint:
   repo: Qwen/Qwen3.5-4B
   revision: 851bf6e806efd8d0a36b00ddf55e13ccb7b8cd0a
