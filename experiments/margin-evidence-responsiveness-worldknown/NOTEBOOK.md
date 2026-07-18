@@ -587,3 +587,26 @@ the original check, I am flagging this gap to the lead directly and holding
 on m-4 pending guidance (original artifact / analyst transcript, vs.
 authorization to re-derive fresh, vs. accepting the 0.9928 figure as a
 documented-but-distinct provenance number).
+
+**m-4 CLOSED.** Lead identified the original artifact: the sign-check
+analyst ran in the lead's own session sandbox and left the script at the
+lead's scratchpad path (never version-controlled there), which is why the
+worktree/scratchpad search above missed it. Re-ran the script verbatim
+(CPU-only, read-only, no GPU) against its stated on-disk inputs --
+doubt-snap's own committed `c_hat.json` plus its gitignored fit-population
+working files (`anchor_extract.safetensors`, `fit_rows_for_anchor.jsonl`) --
+and independently confirmed it reproduces exactly: `n_confab=887`,
+`n_correct=240`, `n_missing_keys=0`,
+`AUROC(confab>correct, READOUT_SIGN=-1) = 0.986650`,
+`AUROC with flipped (+1) sign = 0.013350` -- matching the lead-reported
+figures (the earlier NOTEBOOK entry's "0.987" was a rounded citation of this
+same 0.986650). Copied the script verbatim (provenance header added, no
+logic changed) to
+`analysis-committed/channel1/kuq_sign_reproduction.py`, and committed the
+full result plus the three input files' sha256 (no row text) to
+`analysis-committed/channel1/kuq_sign_reproduction.json`. That JSON also
+carries forward the m-4-triage note that
+`qwen35-4b-midband-doubt-snap/analysis-committed/build_manifest.json`'s
+`hs20.auc_neg_z_d_on_fit=0.9928504321683578` is a *different* quantity
+(fit-time Youden-threshold AUC on doubt-snap's own fit split) and must never
+be conflated with this KUQ-population reproduction number.
