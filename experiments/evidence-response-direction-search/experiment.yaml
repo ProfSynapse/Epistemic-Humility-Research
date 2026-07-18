@@ -1,0 +1,40 @@
+slug: evidence-response-direction-search
+title: 'M4c: evidence-derived doubt direction constructive search'
+type: probe-fit
+status: draft
+registered: true
+created_at: '2026-07-18T21:08:42Z'
+question: >-
+  Does a direction fit purely on the in-context true-vs-false evidence
+  contrast (d_ev, mean paired difference of true_answer minus
+  false_answer_placebo hs20 anchors over 200 fit confab rows) also separate
+  held-out confab from correct-control at the no_answer_baseline arm, i.e. do
+  the evidence-registration and prospective-ignorance signals live on one
+  recoverable axis, or does M4-WK's fragmentation reading stand?
+prediction: >-
+  d_ev separates the 200 held-out confab rows from the 360 correct-control
+  rows at the no_answer_baseline arm with AUROC >= 0.70, exceeds the
+  covariance-shaped random-direction null at p < 0.05, and matches the native
+  ignorance-fit direction (paired AUROC-difference lower 95% CI >= -0.05):
+  one evidence/doubt axis, upgrading the fragmentation reading.
+falsifier: >-
+  With the fit/held-out split valid and all provenance gates green, d_ev's
+  held-out baseline confab-vs-correct AUROC is < 0.70: the evidence-contrast
+  direction carries no prospective ignorance content (an in-context
+  answer-integration direction only), and M4-WK's fragmentation reading
+  stands, strengthened. A below-floor rung (a) is a substantive null, not a
+  void/lift; void is reserved for broken SC0/SC3 provenance gates.
+checkpoint:
+  repo: Qwen/Qwen3.5-4B
+  revision: 851bf6e806efd8d0a36b00ddf55e13ccb7b8cd0a
+instrument:
+  configs:
+  - cell.yaml
+  - gates.yaml
+  modules: []
+  pins: {}
+inputs:
+- experiments/margin-evidence-responsiveness-worldknown
+- experiments/qwen35-4b-midband-doubt-snap
+verdict: ''
+kg: []

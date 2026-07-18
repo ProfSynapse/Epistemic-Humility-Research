@@ -1,0 +1,61 @@
+# Gates for evidence-response-direction-search (M4c). DRAFT; fixed at sign.
+# Rung (a)'s 0.70 floor is a fixed carried numeric (AUROC has a natural chance
+# anchor at 0.5; the 0.70 firing floor is carried from M4-WK's transfer firing
+# gate). Rung (c)'s null percentile and rung (b)'s reference dose follow the
+# formula-at-sign / numeric-at-repin discipline: formula locked here, numeric
+# frozen by repin the moment the realized quantity (K=1000 null draws; d_ev
+# baseline sigma_c) is measured, before any gated contrast is computed.
+# Rung (b) is CONDITIONAL: pre-registered here, funded only on a rung-(a) pass
+# (PI ruling 2026-07-18), and a fresh explicit launch approval is still
+# required at that point.
+
+statistics:
+  rates: Wilson 95% CI (alpha 0.05) on every rate
+  aurocs_shifts_differences: bootstrap 95% CI, 10000 resamples, seed 48260724
+  resampling_unit: row indices within role groups (paired resampling for the comparator AUROC-difference)
+  pass_fail_surface: point estimate against floor plus a CI condition where stated
+
+integrity:
+  SC0_provenance_staging:
+    - the three reused M4-WK channel-1 capture arms (no_answer_baseline / true_answer / false_answer_placebo; 1001 rows per arm, anchor__L20 [2560]) staged with a directory sha256 manifest and verified against the M4-WK worktree source; M4-WK's single-regime attestation (identical row_order_sha256 across arms, batch_size 8) carries for all CPU rungs
+    - c_hat_worldknown.json (sha256 432c9f1f...) and KUQ c_hat.json (sha256 937d1bff...) staged and verified byte-identical against their M4-WK / doubt-snap pins
+    - KUQ anchor_extract.safetensors + fit_rows_for_anchor.jsonl (doubt-snap, hs20) staged with sha256 for the ungated KUQ transfer readout
+    - test_population.json (M4-WK, seed 48260727) staged with sha256; the 400 confab / 360 correct / 241 refused role composition asserted against it
+    - fit/held-out split (seed 48260728, id-only 50/50 permutation of the 400 confab row-keys) committed as analysis-committed/selection/fit_heldout_split.json BEFORE d_ev is computed
+    - d_ev.json (mechinterp-direction/v1, with mu/sigma/mu_c/sigma_c, reference dose, sign convention, fit-split id-list hash) committed + sha256-pinned BEFORE any held-out AUROC, comparator difference, or survival contrast is computed
+    - self-blinding: no held-out baseline projection is inspected before the split and d_ev are frozen; M4-WK's published per_row_projections.jsonl is never opened by the fit or split code (id-only split; d_ev from RAW anchors only)
+    - committed record carries ONLY aggregates, the direction vector, opaque id-lists, and hashes; NO generation, question, or answer text in any committed path
+  SC1_dose_and_preflight_rung_b_only:
+    - applies only if rung (b) is funded (conditional on a rung-(a) pass + fresh launch approval)
+    - per-row readback within RELATIVE 0.005 of the commanded dose, OR within ABSOLUTE 0.005 x reference_dose (M1's amended rule, verbatim)
+    - MANDATORY GPU preflight before any full pass: 8-row capture smoke + 8-row generation smoke + throughput probe; generate refuses without a pass marker
+    - one pinned batch composition across all arms (M4-WK channel-2 convention, native_batch_composition.json as template); live per-rung completion assertions with hard abort
+  SC2_grading_integrity_rung_b_only:
+    - applies only if rung (b) is funded; rungs (a), (c), and the KUQ transfer readout require no grading
+    - abstention calibration slice stratified across arms with valid-band-tipped rows represented; pool sha256 + opaque-id list committed before grading; graded-file sha256 committed before unblind
+    - CG1: clear-negative agreement >= 0.95; clear-positive >= 0.60; >= 25 clear-positive decoys; VOID_REGRADE_ONCE remedy
+    - detector-vs-adjudication abstention disagreement <= 0.05 else rung (b) void for criterion use
+  SC3_coverage:
+    - zero silent drops; every held-out row appears in every applicable readout or is reported missing with reason
+    - fit/held-out disjointness re-asserted against the committed id-lists at analysis time (hard abort on overlap)
+    - survival never imputed for a missing generation
+
+criterion:
+  D_a_rung_a_primary:
+    readout: held-out confab-vs-correct AUROC on the no_answer_baseline arm, confab-positive score -(h . d_ev), orientation fixed at sign
+    population: 200 held-out confab vs 360 correct-control (never in fit)
+    floor: 0.70 (fixed carried numeric), bootstrap 95% CI reported
+    below_floor_meaning: substantive NULL (falsifier confirmed), NOT a void/lift
+    strong_pass: additionally requires D_c native-comparator bar
+  D_b_rung_b_conditional_secondary:
+    condition: rung (a) passes D_a AND fresh explicit launch approval
+    readout: abstention-rate increase vs matched control direction at each coherence-valid rung, paired bootstrap CI excluding zero
+    dose_ladder: fractions [0.5, 1.0, 1.5, 2.0] x reference dose; reference dose = 8 x sigma_c of the d_ev baseline projection (formula-at-sign, numeric-at-repin)
+    coherence_guard: rungs >= 3.0x are instrument-invalid (M4-WK rung-validity ruling); per-rung generation-health reported; a degenerate rung is reported, never scored
+  D_c_rung_c_primary_companion:
+    null: K=1000 unit directions from the empirical covariance of baseline confab+correct anchors, seed 48260729; d_ev must exceed the 95th percentile (p < 0.05); numeric percentile frozen at repin from the realized draws
+    upper_comparator: c_hat_worldknown baseline AUROC (0.86275); paired bootstrap AUROC-difference (d_ev minus native) on identical held-out rows; STRONG bar = lower 95% CI bound >= -0.05
+    lower_comparator: KUQ c_hat (baseline AUROC 0.3018 on this population); reported, ungated
+  KUQ_transfer_readout:
+    gated: false
+    readout: d_ev confab-vs-correct AUROC on the doubt-snap KUQ anchor states; report straight; an anomalous positive with a failed rung (a) lifts to PI
