@@ -1,6 +1,8 @@
 # Evidence-responsiveness on world-known QA: the M4 rebase (M4-WK)
 
-Status: SIGNED 2026-07-17. Pre-sign red-team applied (1 BLOCKER + 4 MAJOR + 5
+Status: RESOLVED (null-result) 2026-07-18; post-run red-team RESOLVE WITH
+DISCLOSURES (0 blockers; M-1 fixed, minors disclosed in Outcome). Was: SIGNED
+2026-07-17. Pre-sign red-team applied (1 BLOCKER + 4 MAJOR + 5
 minor, all resolved; see NOTEBOOK 2026-07-17); open forks adjudicated by the PI;
 transfer firing floor set at AUROC 0.70; instrument pinned at sign. Scoreboard
 registered (both predictors EARNED on the transfer direction; Slot 2 differs,
@@ -316,6 +318,122 @@ verdict.
 
 ## Outcome
 
-Filled at resolve. Record the verdict, the per-direction gate results (transfer
-primary; native secondary), and the one-sentence summary that also goes into
-`verdict:` in the manifest.
+Resolved 2026-07-18 as a NULL-RESULT with two instrument voids, one substantive
+dissociation, and two population-level findings. Post-run red-team applied
+(0 blockers, 2 majors, 7 minors; all remediated or disclosed below; verdict:
+RESOLVE WITH DISCLOSURES).
+
+### Transfer direction (primary): criterion (d) test VOID (non-firing, out of domain)
+
+The pre-registered firing gate failed: baseline confab-vs-correct AUROC on the
+test subset was 0.3018 (bootstrap 95% CI [0.2647, 0.3396]; n=400 confab / 360
+correct-control), far below the 0.70 floor locked at sign. Per the signed
+falsifier and BLOCKER B1, this VOIDS the primary criterion (d) test and lifts to
+PI; it is NOT scored as (d)-not-earned. A non-firing transfer is not a
+falsification of evidence-responsiveness; this population is out of the named
+direction's domain.
+
+The result was adversarially verified before adjudication (sign-flip hypothesis):
+an independent analyst reproduced the direction's own-population KUQ AUROC at
+0.9867 under this harness's exact projection convention (a sign flip would have
+produced 0.0133), and showed the RAW projections genuinely reverse between
+populations (KUQ confab more-negative than correct; world-known confab
+more-POSITIVE than correct). The reversal is real, not a harness artifact.
+Reproduction script and aggregates committed (analysis-committed/channel1/).
+
+FINDING (population reversal): the KUQ-fit direction previously called "doubt"
+does not track confident-wrongness on answerable questions; it reads slightly
+reversed there. Its precise reading is closer to UNANSWERABILITY RECOGNITION (a
+question-property signal) than to self-directed uncertainty.
+
+### Native direction (secondary dissociation reading): (d) not earned
+
+The world-known refit direction fires (baseline AUROC 0.8628; fit-to-test
+reproduction within 0.05; baseline gap +1.6418 z).
+
+- D1 leg-2 (specificity, the anti-tautology control): PASSES. Paired
+  true-minus-false shift 0.1022, bootstrap 95% CI [0.0527, 0.1524], excludes
+  zero, true answer the larger. An evidence-specific component exists in the
+  anchor state.
+- D1 leg-1 (collapse): FAILS. Median true-answer shift 0.5921 (CI [0.5364,
+  0.6694]) against the frozen collapse floor 0.8209 (0.5 x realized baseline
+  gap, numeric frozen by repin before any shift was computed).
+- D1 verdict (both legs required): FAILS. With channel 2 void (below), criterion
+  (d) is NOT EARNED on the native direction, reported as a dissociation: a real,
+  evidence-specific, sub-floor projection response with no behavioral
+  counterpart.
+- Channel 2: VOID on the S1 reproduction gate. no_answer_baseline survival at
+  each row's own tipping dose was 0.2549 (13/51) against the 0.05 ceiling; the
+  ladder and survival regimes do not reproduce each other. Cause UNDIAGNOSED by
+  design (candidates listed in NOTEBOOK; no diagnosis inside this cell because
+  the D2 contrast had been seen). D2 raw numbers report-only: true 0.9412 /
+  false 0.9412 / paired diff 0.0 (95% CI [-0.0980, 0.0980]). Report-only
+  observation: ANY in-context answer, true or false, defeats the tipping dose.
+
+FINDING (saturation / coherence ceiling): steering the native direction can only
+elicit refusal on 51/400 world-known confab rows (12.75%); every genuine tip
+occurs at <= 2.0x the reference dose, and doses >= 3.0x drive generation to
+96-100% degenerate text before any refusal registers (per-rung generation-health
+committed). The PI-approved mid-run ladder extension to 16x (pre-registered
+re-derivation clause; repinned before any survival contrast) added ZERO tips,
+establishing the ceiling as unresolvable-in-principle rather than
+under-bracketed. Contrast: the same steering family tips ~77% of KUQ rows
+coherently. Confident wrongness on answerable questions is mechanistically
+harder to interrupt along this axis than acknowledged ignorance.
+
+### Grading integrity
+
+Blinded correctness slice (n=150; 117 confab / 29 correct / 4 refused; shard and
+id-map hashes committed before grading; graded-file hash committed before
+unblind; isolated adjudicator saw only opaque_id/question/gold_aliases/answer
+text): alias-grader false-wrong rate on the confab subset 0.0427 (5/117), Wilson
+95% CI [0.0184, 0.0962], under the 0.10 bar, so the native null is
+INTERPRETABLE. Clear-positive decoy agreement 29/29 (floor 0.60, minimum 25).
+CG1 adaptation disclosed: clear-positive-only decoys; no non-circular
+clear-negative exists for a correctness judgment (lead-accepted, NOTEBOOK).
+The channel-2 abstention slice was not built: its only consumer (D2) is void.
+Caveat: the census-level detector_v2 abstention bit is validated by M1's CG1
+precedent only, not freshly in this cell.
+
+### Scoreboard scoring
+
+Both Slot-1 predictions (orchestrator EARNED/projection; PI EARNED/margin) were
+explicitly conditional on the transfer firing floor. The condition failed, so
+both slots are VOID, not scored. Recorded straight: both predictors tacitly
+expected the transfer direction to fire on this population, and it did not;
+neither anticipated the population reversal. Slot 2 is moot on transfer; on the
+native secondary reading the projection channel showed the only real response
+(leg-2), which the orchestrator's Slot-2 lean matches, but no slot is awarded
+from a secondary reading.
+
+### Red-team disclosures (post-run review, RESOLVE WITH DISCLOSURES)
+
+- M-1 (fixed, 6c897f22 + follow-up): the committed channel-1 single-regime
+  attestation was VACUOUS (loader read a nonexistent committed path; empty set
+  passed the <=1-regime check). Fixed to fail loudly; the three arms' real
+  row_order_sha256 (identical, e756a17a..., batch_size 8) now committed in
+  channel1_capture_attestation.json; results JSON regenerated (attestation
+  fields only changed; every gate number byte-identical).
+- m-1: the true/false projection columns were committed ~2 minutes before the
+  collapse-floor repin. The floor is a deterministic function of the baseline
+  arm alone with the 0.5 fraction locked at sign, so no goalpost freedom
+  existed; disclosed for self-blinding literalism.
+- m-5: the S1 survival non-reproducibility is UNDIAGNOSED; an off-by-one dose
+  lookup is not excluded. Caveat on reuse of the world-known margin dataset.
+- m-6: harness artifacts use role "confab" where the census uses
+  "confab_on_answerable" (deterministic mapping; join-fragility note in
+  NOTEBOOK).
+- m-7: the 51-row margin-eligible set has a bimodal tipping distribution (9 at
+  the lowest rung, 19 at the 2.0x validity edge); caveat on any future D2-style
+  read of this direction.
+
+### Verdict (one sentence, mirrored in experiment.yaml)
+
+Criterion (d) is not licensed for any direction on the world-known error class:
+the named KUQ direction does not fire there (primary test void, out of domain;
+population reversal), and the native refit shows only a weak evidence-specific,
+sub-floor, behaviorally-inert projection response ((d) not earned; margin
+channel instrument-void), so the mentalistic "doubt" name remains unearned and
+the direction reads as unanswerability recognition plus a separate weak
+evidence-registration.
+

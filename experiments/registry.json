@@ -2198,10 +2198,10 @@
       "question": "On Qwen/Qwen3.5-4B, does the KUQ-fit c_hat known-unknown direction (TRANSFER) satisfy earnability criterion (d) on a WORLD-KNOWN error class? That is, on confident-wrong-on-answerable PopQA rows, does supplying the true answer in-context both collapse the c_hat projection (toward the correct/refused regime) and lengthen the commitment margin, specifically for the true answer over a category-matched false-answer placebo? A world-known c_hat refit natively is run as a secondary two-channel dissociation reading.",
       "registered": true,
       "slug": "margin-evidence-responsiveness-worldknown",
-      "status": "signed",
+      "status": "null-result",
       "title": "Evidence-responsiveness on world-known QA: the M4 rebase (M4-WK)",
       "type": "steer-cell",
-      "verdict": ""
+      "verdict": "Criterion (d) not licensed for any direction on the world-known error class: the named KUQ direction does not fire there (primary test void, out of domain; population reversal), the native refit shows only a weak evidence-specific, sub-floor, behaviorally-inert projection response ((d) not earned; margin channel instrument-void), so the mentalistic doubt name remains unearned; direction reads as unanswerability recognition plus a separate weak evidence-registration."
     },
     {
       "checkpoint": {

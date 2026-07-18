@@ -1,7 +1,7 @@
 slug: margin-evidence-responsiveness-worldknown
 title: 'Evidence-responsiveness on world-known QA: the M4 rebase (M4-WK)'
 type: steer-cell
-status: signed
+status: null-result
 registered: true
 created_at: '2026-07-17T21:04:21Z'
 question: On Qwen/Qwen3.5-4B, does the KUQ-fit c_hat known-unknown direction (TRANSFER)
@@ -85,5 +85,10 @@ instrument:
 inputs:
 - experiments/qwen35-4b-midband-doubt-snap/analysis-committed/directions/hs20/c_hat.json
 - datasets/popqa/test.jsonl
-verdict: ''
+verdict: 'Criterion (d) not licensed for any direction on the world-known error class:
+  the named KUQ direction does not fire there (primary test void, out of domain; population
+  reversal), the native refit shows only a weak evidence-specific, sub-floor, behaviorally-inert
+  projection response ((d) not earned; margin channel instrument-void), so the mentalistic
+  doubt name remains unearned; direction reads as unanswerability recognition plus
+  a separate weak evidence-registration.'
 kg: []
