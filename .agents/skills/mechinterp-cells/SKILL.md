@@ -111,4 +111,12 @@ maintenance.
   mid-run to add resumability after a crash has already happened. See
   `experiments/common/README-runlog.md` for the import path and per-arm
   log-path convention.
+- **Stage dosed RunLogs to a durable location BEFORE any worktree teardown**
+  (lesson from rr-cross-family-raw-refusal, 2026-07-18: its llama dosed
+  generation text lived only in gitignored `analysis/` inside the amendment
+  worktree and was permanently lost when the worktree was removed, forcing a
+  full GPU re-run). Copy the RunLogs to
+  `/home/profsynapse/code/ehr-exhaust/<experiment-slug>/` (or the cell's
+  registered durable dir) and record the staging path in the experiment's
+  NOTEBOOK.md before `git worktree remove`.
 
