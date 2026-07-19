@@ -1003,16 +1003,28 @@ We state these plainly; several are the reason specific claims are scoped as the
 7. Correctness-axis causality is untested. The gate has causal (steering) evidence; the
    dial is correlational. Whether steering along the correctness axis moves actual correctness
    is future work.
-8. <!-- SWAP: pending dial token-logprob baseline analysis -->
-   No token-logprob baseline for the dial. The dial is bounded below by a
-   question-surface text baseline (0.75–0.78 per family, §4.11), but we have not run the
-   cheapest internal competitor: the model's own token log-probabilities on the answer
-   span. Sequence probability is a real within-dataset correctness signal (Zenn and
-   Geiping, 2026), so some fraction of the dial's separation may be available without
-   fitting a probe at all. Until that baseline is computed over the cached extractions,
-   the dial's margin over sequence probability is unquantified: what this paper
-   establishes about the dial is its cross-model geometry, its post-answer read
-   advantage, and its veto behavior, not that it beats the model's own logprobs.
+8. Token-logprob baseline: computed, descriptive only. The dial is bounded below by a
+   question-surface text baseline (0.75–0.78 per family, §4.11), and the cheapest internal
+   competitor, the model's own token log-probabilities on the answer span, has now been
+   computed in a pre-registered follow-up cell (dial-logprob-baseline, resolved
+   2026-07-18). That cell hit its own pre-registered integrity stop: 30 of 3,324 rows
+   (0.9%) failed the exact answer-span token round-trip by one BPE token each, because
+   generation-time token IDs were never cached and re-tokenizing decoded text is not
+   bit-stable at span boundaries. Its numbers are therefore descriptive with that caveat,
+   not gated results. On the round-trip-clean rows: on the raw Instruct base, the
+   length-normalized answer-span logprob reaches AUROC 0.8198 against the dial's 0.8338
+   (margin +0.014, paired 95% CI [-0.011, +0.040], inside the cell's pre-stated ambiguous
+   band), so sequence probability captures nearly all of the dial's separation there
+   (Zenn and Geiping, 2026, predicted a real within-dataset signal, though not one this
+   strong). On the deployed abstention-trained checkpoint, the logprob signal degrades to
+   0.6608 while the dial holds 0.8183 (margin +0.158, CI [+0.122, +0.192]). The
+   descriptive picture: the dial's clear margin over the model's own sequence probability
+   appears on the deployed checkpoint, after abstention training reshapes output
+   probabilities, not on the raw base. A gated version of this comparison needs a
+   successor cell that caches generation-time token IDs; until then, what this paper
+   establishes about the dial on the raw base remains its cross-model geometry, its
+   post-answer read advantage, and its veto behavior, not that it beats the model's own
+   logprobs there.
 
 ---
 
