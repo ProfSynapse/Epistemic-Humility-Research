@@ -329,6 +329,22 @@ idiom credit, llama does not) stands on instrument-fair footing, and the
 dosed exhaust is persisted durably this time
 (`/home/profsynapse/code/ehr-exhaust/llama-atlas-gated-wide-instrument-retest/`).
 
+Red-team review (2026-07-19): SIGN-OFF, no invalidating findings; every
+Outcome figure independently re-derived, gate files untouched post-sign,
+blinding order verified in code and git history. Four hygiene notes recorded
+straight, none affecting G1/R1: (H1) net lift subtracts the undosed
+FULL-confab baseline (n=1453) from dosed FIRED-confab rates (n=576-577), so
+it is a cross-population reference (consistent with rr/calibration), not a
+within-fired-subset dose effect; G1 rests on absolute rates. (H2) the 1,699
+carved clear-negative decoys are forced non-abstention (fail-closed,
+definitionally correct) rather than graded, so that part of the known-FR
+denominator is assumed conservative. (H3) the batched-vs-sequential bf16
+parity NOTE recurs at hs20 (4/8 probe rows), the peak layer; informational,
+never a gate, but a reproducibility caveat on exact peak-rung rates. (H4)
+committed artifacts permit verification but not regeneration; full
+re-derivation requires the durable exhaust store (intended containment
+posture, path recorded above).
+
 Gate ledger: G0 PASS (all criteria); CG1 PASS (8/8 attempt 1); G1 negative on
 all 30 rungs (falsifier not fired, R1 adopted); G-spec PASS at hs20 dose 12,
 FAIL at hs20 dose 16 (reported, non-promotion). Artifacts:
