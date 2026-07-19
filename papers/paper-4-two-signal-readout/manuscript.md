@@ -1015,8 +1015,9 @@ We state these plainly; several are the reason specific claims are scoped as the
    length-normalized answer-span logprob reaches AUROC 0.8198 against the dial's 0.8338
    (margin +0.014, paired 95% CI [-0.011, +0.040], inside the cell's pre-stated ambiguous
    band), so sequence probability captures nearly all of the dial's separation there
-   (Zenn and Geiping, 2026, predicted a real within-dataset signal, though not one this
-   strong). On the deployed abstention-trained checkpoint, the logprob signal degrades to
+   (Zenn and Geiping, 2026, predicted a real within-dataset signal; the cell's own
+   pre-registered call of 0.60-0.72 for the base-arm logprob AUROC was wrong, and is
+   recorded as such). On the deployed abstention-trained checkpoint, the logprob signal degrades to
    0.6608 while the dial holds 0.8183 (margin +0.158, CI [+0.122, +0.192]). The
    descriptive picture: the dial's clear margin over the model's own sequence probability
    appears on the deployed checkpoint, after abstention training reshapes output
