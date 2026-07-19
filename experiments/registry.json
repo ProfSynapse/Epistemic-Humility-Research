@@ -2368,10 +2368,10 @@
       "question": "Is llama's shape-F non-actuation at its atlas sites (rr-cross-family-raw-refusal, resolved falsified) robust to the certified wide abstention instrument (detector v2 + blinded adjudication), or was it substantially a canonical-phrase-coverage artifact the way mistral's F was?",
       "registered": true,
       "slug": "llama-atlas-gated-wide-instrument-retest",
-      "status": "signed",
+      "status": "resolved",
       "title": "Llama atlas-sited gated caution ladder, wide-instrument retest",
       "type": "steer-cell",
-      "verdict": ""
+      "verdict": "R1 confirmed (2026-07-19): llama shape F robust to the certified wide instrument; falsifier fired on zero rungs (well-formed peak hs20 dose 12 wide 0.457 [0.416,0.497] vs 0.60 floor); CG1 8/8 PASS attempt 1; cross-cohort baseline agreement 0.1624 vs 0.164; rr's locked verdict unchanged."
     },
     {
       "checkpoint": {

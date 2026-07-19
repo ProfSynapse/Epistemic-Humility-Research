@@ -257,6 +257,85 @@ fresh user approval. The blinded adjudication lane is CPU/agent work, no GPU.
 
 ## Outcome
 
-Filled at resolve. Record the verdict, the gate results, and the one-sentence
-summary that also goes into `verdict:` in the manifest. No goalpost moves: gates
-and falsifier above are final as signed.
+Resolved 2026-07-19. **R1 confirmed: llama's shape F is robust to the certified
+wide instrument. The falsifier did not fire on any rung.**
+
+Execution: full ladder generated on the local 3090 in ~2h9m (30 rungs: 28 gated
+= 4 layers x 7 doses, plus random_direction at hs20 dose 12 and 16), G0 all
+criteria PASS (FIT gate AUC 0.999 at all four layers; anchor coverage
+2956/2956, no recapture needed; hook placement asserted against the atlas
+convention; wide-instrument pins hash-identical; double-fit byte-identical).
+Blinded adjudication lane: 8 context-free graders over 22,822 pool rows
+(20,948 core after removing the 1,699 in-core clear-negative decoys; 175
+clear-positive decoys), every graded file lead-verified (line count,
+positional opaque_id match, boolean-only) and sha256-committed before
+unblinding, grader transcripts audited for pattern-matcher use (none; one
+grader's regex use was mechanical id-extraction only, recorded in the session
+log). CG1: 8/8 shards PASS at attempt 1 (clear-negative agreement
+0.981-1.000 vs floor 0.95; clear-positive 0.727-1.000 vs floor 0.60; pooled
+clear-positive 0.8914, reported only). No shard voided; experiment not voided.
+
+Instrument cross-validation, reported because it is the cell's strongest
+integrity signal: the reused undosed baseline confabs re-graded by this cell's
+fresh grader cohort land at wide 0.1624 (236/1453), against the calibration
+cell's independently graded 0.164 [0.146, 0.184] on the same rows
+(`experiments/abstention-wide-instrument-calibration/AMENDMENT.md`,
+calibration table). Two disjoint grader cohorts agree to 0.002.
+
+G1 (primary): NO (layer, dose) rung reaches wide refused >= 0.60 (Wilson LCB
+> 0.50) AND well_formed >= 0.80 AND known-correct wide false-refusal within
+floor. Key rungs (fired FIT confabs, n=576-577 per rung):
+
+| Rung | wide adjudicated [Wilson 95%] | narrow | well_formed | known wide FR | net lift |
+|------|-------------------------------|--------|-------------|---------------|----------|
+| hs20 dose 12 | 0.457 [0.416, 0.497] | 0.328 | 0.946 | 0.279 | +0.294 |
+| hs20 dose 16 | 0.549 [0.508, 0.589] | 0.436 | 0.696 | 0.486 | +0.386 |
+| hs20 dose 20 | 0.599 [0.558, 0.638] | 0.323 | 0.130 | 0.662 | +0.437 |
+| hs22 best (d8/d12) | 0.260 [0.226, 0.297] | 0.095-0.123 | 0.971-0.997 | 0.108-0.275 | +0.098 |
+| hs23 best (d16) | 0.270 [0.236, 0.308] | 0.213 | 0.723 | 0.126 | +0.108 |
+| hs26 best (d12) | 0.281 [0.246, 0.319] | 0.123 | 0.842 | 0.068 | +0.119 |
+
+The refused-admissible and well-formed-admissible regions remain disjoint on
+the dose axis, exactly rr's shape F: the only rungs above wide 0.5 are format-
+broken (well_formed 0.696/0.130) with runaway known-correct false-refusal
+(0.486/0.662). The wide instrument DOES credit a large idiom vocabulary the
+narrow detector missed (hs20 dose 12: +12.9 points, 0.328 -> 0.457, matching
+the undosed undercount magnitude), but the lift never carries any well-formed
+rung near the floor. rr's hand-credit caveat ("F robust to detector width") is
+confirmed by the certified instrument; llama is NOT a mistral-style coverage
+artifact. The hs26 late-site anchor replicates the confirmatory's weak ported
+result under the wide scorer (best 0.281, sub-floor at every dose).
+
+G-spec (secondary, reported): at the well-formed peak hs20 dose 12 the effect
+is direction-specific: gated net wide lift +0.294 vs random_direction +0.079,
+ratio 3.73 >= 3.0 PASS. At hs20 dose 16 the ratio FAILS (1.79: gated +0.386 vs
+random +0.216) - but the random arm's texts at dose 16 are 99.7% malformed
+(well_formed 0.003), so its credited "abstentions" are format-destruction
+artifacts, consistent with the format-collapse mechanism rather than with a
+content-specific caution write. Reported straight; G-spec is not a promotion
+gate at this tier.
+
+Prediction assessment: the orchestrator's R1 call was CORRECT, including the
+quantitative band (predicted the well-formed-intact peak rises to ~0.45-0.55
+wide; measured 0.457). Recorded alongside the LP cell's wrong base-arm call
+(`experiments/dial-logprob-baseline/AMENDMENT.md` Outcome) for scoreboard
+honesty.
+
+Verdict bound restated: this cell does not and cannot alter
+rr-cross-family-raw-refusal's locked falsified verdict. What it adds: llama's
+non-actuation at its atlas sites is now confirmed under the certified wide
+instrument, the cross-family contrast (qwen actuates, mistral actuates under
+idiom credit, llama does not) stands on instrument-fair footing, and the
+dosed exhaust is persisted durably this time
+(`/home/profsynapse/code/ehr-exhaust/llama-atlas-gated-wide-instrument-retest/`).
+
+Gate ledger: G0 PASS (all criteria); CG1 PASS (8/8 attempt 1); G1 negative on
+all 30 rungs (falsifier not fired, R1 adopted); G-spec PASS at hs20 dose 12,
+FAIL at hs20 dose 16 (reported, non-promotion). Artifacts:
+`analysis-committed/llama/pre_adjudication_wide_vs_narrow_table.json`,
+`analysis-committed/llama/post_adjudication_wide_table.json`,
+`analysis-committed/adjudication_pool_manifest.json`,
+`analysis-committed/adjudication_graded_manifest.json`,
+`analysis-committed/adjudication_applied_manifest.json` (aggregates, counts,
+and hashes only; per-row artifacts and generation text gitignored and staged
+to the durable exhaust store).

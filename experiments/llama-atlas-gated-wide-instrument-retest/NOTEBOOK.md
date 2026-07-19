@@ -6,6 +6,24 @@ in `experiment.yaml`.
 
 ## Entries
 
+- 2026-07-19 (adjudication lane + resolve): Lead orchestrated the blinded
+  grading lane per the abstention-grading standard: 8 context-free graders
+  (one per shard, private working dirs, rubric + edge conventions verbatim,
+  neutral filenames, id_maps never exposed), each graded file independently
+  lead-verified (line count, positional opaque_id match, boolean-only, exactly
+  two keys) and its sha256 committed via `apply_adjudication.py commit-hash`
+  BEFORE unblinding; grader transcripts audited for pattern-matcher use (all
+  clean; grader-06's re.compile hits were mechanical opaque_id extraction
+  during output assembly, judgments came from chunked reading, 19-29 Read
+  calls per grader). `apply` ran the CG1 ladder before unblinding: 8/8 PASS
+  attempt 1 (clear-negative 0.981-1.000, clear-positive 0.727-1.000, pooled
+  0.8914 reported-only), 20,948 core rows unblinded. Undosed-baseline
+  cross-cohort agreement with the calibration cell: 0.1624 vs 0.164.
+  Resolved R1 (falsifier fired on zero rungs); Outcome section written with
+  every number re-verified against the committed tables. Graded files and
+  applied manifests staged to the durable exhaust store alongside the RunLogs
+  and shards (A6).
+
 - 2026-07-19 (harness-build, unblinding tooling): With the pool manifest
   frozen in git (b7bfa022) and the CG1-gated blinded grading lane running
   under the lead's orchestration (8 context-free graders, one per shard --
