@@ -1,0 +1,2465 @@
+{
+  "family": "llama",
+  "fit_dose_ladder": {
+    "family": "llama",
+    "fit_dose_selection": "NONE -- every (layer, dose, arm) rung on the locked grid is scored; no early stop, no selected operating point",
+    "hook_placement": {
+      "candidate_layers": [
+        20,
+        22,
+        23,
+        26
+      ],
+      "convention": "hs_index_h_is_output_of_decoder_block_h; hook_block = h - 1",
+      "decoder_blocks": [
+        19,
+        21,
+        22,
+        25
+      ],
+      "n_decoder_layers": 28,
+      "passed": true
+    },
+    "pre_sweep_and_parity_smoke_by_layer": {
+      "20": {
+        "batched_vs_sequential_parity": {
+          "mismatch_indices": [
+            0,
+            2,
+            3,
+            5
+          ],
+          "n_mismatches": 4,
+          "passed": false
+        },
+        "layer": 20,
+        "n_probe_rows": 8,
+        "pre_sweep_bracket_check": {
+          "action_if_failed": "re-bracket pre-sweep and pre-outcome to log-span the empirically bracketed response region (cell.yaml dose_policy.pre_sweep_bracketing); this is the ONLY permitted grid change and this module does not apply it automatically -- it stops and reports for the lead to re-run with a new --dose-multipliers override.",
+          "n_probe_rows": 8,
+          "n_rows_with_token_movement": 8,
+          "passed": true,
+          "strongest_dose_abs": 22.523929
+        },
+        "readback_measured_sample": [
+          22.502522649299863,
+          22.501299298688537,
+          22.503930647755624
+        ],
+        "strongest_mult": 20
+      },
+      "22": {
+        "batched_vs_sequential_parity": {
+          "mismatch_indices": [],
+          "n_mismatches": 0,
+          "passed": true
+        },
+        "layer": 22,
+        "n_probe_rows": 8,
+        "pre_sweep_bracket_check": {
+          "action_if_failed": "re-bracket pre-sweep and pre-outcome to log-span the empirically bracketed response region (cell.yaml dose_policy.pre_sweep_bracketing); this is the ONLY permitted grid change and this module does not apply it automatically -- it stops and reports for the lead to re-run with a new --dose-multipliers override.",
+          "n_probe_rows": 8,
+          "n_rows_with_token_movement": 8,
+          "passed": true,
+          "strongest_dose_abs": 28.368535
+        },
+        "readback_measured_sample": [
+          28.36350567809859,
+          28.367509892697854,
+          28.37118366773575
+        ],
+        "strongest_mult": 20
+      },
+      "23": {
+        "batched_vs_sequential_parity": {
+          "mismatch_indices": [],
+          "n_mismatches": 0,
+          "passed": true
+        },
+        "layer": 23,
+        "n_probe_rows": 8,
+        "pre_sweep_bracket_check": {
+          "action_if_failed": "re-bracket pre-sweep and pre-outcome to log-span the empirically bracketed response region (cell.yaml dose_policy.pre_sweep_bracketing); this is the ONLY permitted grid change and this module does not apply it automatically -- it stops and reports for the lead to re-run with a new --dose-multipliers override.",
+          "n_probe_rows": 8,
+          "n_rows_with_token_movement": 8,
+          "passed": true,
+          "strongest_dose_abs": 31.329069
+        },
+        "readback_measured_sample": [
+          31.366025653973338,
+          31.367706458484463,
+          31.363066245350637
+        ],
+        "strongest_mult": 20
+      },
+      "26": {
+        "batched_vs_sequential_parity": {
+          "mismatch_indices": [
+            2
+          ],
+          "n_mismatches": 1,
+          "passed": false
+        },
+        "layer": 26,
+        "n_probe_rows": 8,
+        "pre_sweep_bracket_check": {
+          "action_if_failed": "re-bracket pre-sweep and pre-outcome to log-span the empirically bracketed response region (cell.yaml dose_policy.pre_sweep_bracketing); this is the ONLY permitted grid change and this module does not apply it automatically -- it stops and reports for the lead to re-run with a new --dose-multipliers override.",
+          "n_probe_rows": 8,
+          "n_rows_with_token_movement": 8,
+          "passed": true,
+          "strongest_dose_abs": 42.017859
+        },
+        "readback_measured_sample": [
+          42.00811993100797,
+          42.00149830281589,
+          42.00202652173175
+        ],
+        "strongest_mult": 20
+      }
+    },
+    "rungs": [
+      {
+        "arm": "gated",
+        "confab_degenerate": {
+          "n": 576,
+          "rate": 0.0,
+          "successes": 0,
+          "wilson_ci_95": [
+            0.0,
+            0.0066250157905353045
+          ]
+        },
+        "confab_mean_new_tokens": 40.572916666666664,
+        "confab_natural_stop": {
+          "n": 576,
+          "rate": 1.0,
+          "successes": 576,
+          "wilson_ci_95": [
+            0.9933749842094647,
+            0.9999999999999999
+          ]
+        },
+        "confab_refused_narrow": {
+          "n": 576,
+          "rate": 0.022569444444444444,
+          "successes": 13,
+          "wilson_ci_95": [
+            0.013236320004259481,
+            0.0382285388235086
+          ]
+        },
+        "confab_refused_wide_screen": {
+          "n": 576,
+          "rate": 0.0642361111111111,
+          "successes": 37,
+          "wilson_ci_95": [
+            0.04695964552329833,
+            0.08728646198859179
+          ]
+        },
+        "confab_undercount_delta": 0.04166666666666666,
+        "confab_well_formed": {
+          "n": 576,
+          "rate": 1.0,
+          "successes": 576,
+          "wilson_ci_95": [
+            0.9933749842094647,
+            0.9999999999999999
+          ]
+        },
+        "dose_abs": 2.252393,
+        "dose_mult": 2,
+        "g1_wide_screen_pass_INFORMATIONAL_ONLY": false,
+        "known_false_refusal_narrow": {
+          "n": 222,
+          "rate": 0.0,
+          "successes": 0,
+          "wilson_ci_95": [
+            1.734723475976807e-18,
+            0.017009537756059373
+          ]
+        },
+        "known_false_refusal_wide_screen": {
+          "n": 222,
+          "rate": 0.0,
+          "successes": 0,
+          "wilson_ci_95": [
+            1.734723475976807e-18,
+            0.017009537756059373
+          ]
+        },
+        "known_undercount_delta": 0.0,
+        "layer": 20,
+        "n_fired_confab": 576,
+        "n_known": 222,
+        "net_lift_over_llama_calibration_wide_baseline_0164": -0.0997638888888889,
+        "net_lift_over_paired_baseline_wide": 0.02083333333333333,
+        "viable_fit_narrow_INFORMATIONAL_ONLY": false
+      },
+      {
+        "arm": "gated",
+        "confab_degenerate": {
+          "n": 576,
+          "rate": 0.0,
+          "successes": 0,
+          "wilson_ci_95": [
+            0.0,
+            0.0066250157905353045
+          ]
+        },
+        "confab_mean_new_tokens": 39.578125,
+        "confab_natural_stop": {
+          "n": 576,
+          "rate": 0.9965277777777778,
+          "successes": 574,
+          "wilson_ci_95": [
+            0.9874292724041229,
+            0.9990472744149983
+          ]
+        },
+        "confab_refused_narrow": {
+          "n": 576,
+          "rate": 0.08854166666666667,
+          "successes": 51,
+          "wilson_ci_95": [
+            0.06798491042934136,
+            0.1145502588149533
+          ]
+        },
+        "confab_refused_wide_screen": {
+          "n": 576,
+          "rate": 0.13541666666666666,
+          "successes": 78,
+          "wilson_ci_95": [
+            0.10987699825518052,
+            0.16578707575875143
+          ]
+        },
+        "confab_undercount_delta": 0.046874999999999986,
+        "confab_well_formed": {
+          "n": 576,
+          "rate": 0.9965277777777778,
+          "successes": 574,
+          "wilson_ci_95": [
+            0.9874292724041229,
+            0.9990472744149983
+          ]
+        },
+        "dose_abs": 4.504786,
+        "dose_mult": 4,
+        "g1_wide_screen_pass_INFORMATIONAL_ONLY": false,
+        "known_false_refusal_narrow": {
+          "n": 222,
+          "rate": 0.018018018018018018,
+          "successes": 4,
+          "wilson_ci_95": [
+            0.007028604354170409,
+            0.045404013122391326
+          ]
+        },
+        "known_false_refusal_wide_screen": {
+          "n": 222,
+          "rate": 0.018018018018018018,
+          "successes": 4,
+          "wilson_ci_95": [
+            0.007028604354170409,
+            0.045404013122391326
+          ]
+        },
+        "known_undercount_delta": 0.0,
+        "layer": 20,
+        "n_fired_confab": 576,
+        "n_known": 222,
+        "net_lift_over_llama_calibration_wide_baseline_0164": -0.02858333333333335,
+        "net_lift_over_paired_baseline_wide": 0.09201388888888888,
+        "viable_fit_narrow_INFORMATIONAL_ONLY": false
+      },
+      {
+        "arm": "gated",
+        "confab_degenerate": {
+          "n": 576,
+          "rate": 0.0,
+          "successes": 0,
+          "wilson_ci_95": [
+            0.0,
+            0.0066250157905353045
+          ]
+        },
+        "confab_mean_new_tokens": 39.439236111111114,
+        "confab_natural_stop": {
+          "n": 576,
+          "rate": 0.9965277777777778,
+          "successes": 574,
+          "wilson_ci_95": [
+            0.9874292724041229,
+            0.9990472744149983
+          ]
+        },
+        "confab_refused_narrow": {
+          "n": 576,
+          "rate": 0.1527777777777778,
+          "successes": 88,
+          "wilson_ci_95": [
+            0.12570446894633716,
+            0.18445179201931236
+          ]
+        },
+        "confab_refused_wide_screen": {
+          "n": 576,
+          "rate": 0.2013888888888889,
+          "successes": 116,
+          "wilson_ci_95": [
+            0.17066513911008738,
+            0.23606924532037118
+          ]
+        },
+        "confab_undercount_delta": 0.048611111111111105,
+        "confab_well_formed": {
+          "n": 576,
+          "rate": 0.9965277777777778,
+          "successes": 574,
+          "wilson_ci_95": [
+            0.9874292724041229,
+            0.9990472744149983
+          ]
+        },
+        "dose_abs": 6.757179,
+        "dose_mult": 6,
+        "g1_wide_screen_pass_INFORMATIONAL_ONLY": false,
+        "known_false_refusal_narrow": {
+          "n": 222,
+          "rate": 0.06756756756756757,
+          "successes": 15,
+          "wilson_ci_95": [
+            0.041370976695617234,
+            0.10847511001232601
+          ]
+        },
+        "known_false_refusal_wide_screen": {
+          "n": 222,
+          "rate": 0.06756756756756757,
+          "successes": 15,
+          "wilson_ci_95": [
+            0.041370976695617234,
+            0.10847511001232601
+          ]
+        },
+        "known_undercount_delta": 0.0,
+        "layer": 20,
+        "n_fired_confab": 576,
+        "n_known": 222,
+        "net_lift_over_llama_calibration_wide_baseline_0164": 0.03738888888888889,
+        "net_lift_over_paired_baseline_wide": 0.1579861111111111,
+        "viable_fit_narrow_INFORMATIONAL_ONLY": false
+      },
+      {
+        "arm": "gated",
+        "confab_degenerate": {
+          "n": 576,
+          "rate": 0.0,
+          "successes": 0,
+          "wilson_ci_95": [
+            0.0,
+            0.0066250157905353045
+          ]
+        },
+        "confab_mean_new_tokens": 36.744791666666664,
+        "confab_natural_stop": {
+          "n": 576,
+          "rate": 1.0,
+          "successes": 576,
+          "wilson_ci_95": [
+            0.9933749842094647,
+            0.9999999999999999
+          ]
+        },
+        "confab_refused_narrow": {
+          "n": 576,
+          "rate": 0.21006944444444445,
+          "successes": 121,
+          "wilson_ci_95": [
+            0.17877809689398164,
+            0.24520238101233569
+          ]
+        },
+        "confab_refused_wide_screen": {
+          "n": 576,
+          "rate": 0.2586805555555556,
+          "successes": 149,
+          "wilson_ci_95": [
+            0.22460015205442518,
+            0.29595844931670134
+          ]
+        },
+        "confab_undercount_delta": 0.04861111111111113,
+        "confab_well_formed": {
+          "n": 576,
+          "rate": 0.9947916666666666,
+          "successes": 573,
+          "wilson_ci_95": [
+            0.9848001793783703,
+            0.9982271487455789
+          ]
+        },
+        "dose_abs": 9.009572,
+        "dose_mult": 8,
+        "g1_wide_screen_pass_INFORMATIONAL_ONLY": false,
+        "known_false_refusal_narrow": {
+          "n": 222,
+          "rate": 0.0945945945945946,
+          "successes": 21,
+          "wilson_ci_95": [
+            0.06270429721505061,
+            0.1402764090736462
+          ]
+        },
+        "known_false_refusal_wide_screen": {
+          "n": 222,
+          "rate": 0.0945945945945946,
+          "successes": 21,
+          "wilson_ci_95": [
+            0.06270429721505061,
+            0.1402764090736462
+          ]
+        },
+        "known_undercount_delta": 0.0,
+        "layer": 20,
+        "n_fired_confab": 576,
+        "n_known": 222,
+        "net_lift_over_llama_calibration_wide_baseline_0164": 0.09468055555555557,
+        "net_lift_over_paired_baseline_wide": 0.2152777777777778,
+        "viable_fit_narrow_INFORMATIONAL_ONLY": false
+      },
+      {
+        "arm": "gated",
+        "confab_degenerate": {
+          "n": 576,
+          "rate": 0.006944444444444444,
+          "successes": 4,
+          "wilson_ci_95": [
+            0.0027037761510421265,
+            0.01771811442018019
+          ]
+        },
+        "confab_mean_new_tokens": 37.208333333333336,
+        "confab_natural_stop": {
+          "n": 576,
+          "rate": 0.9791666666666666,
+          "successes": 564,
+          "wilson_ci_95": [
+            0.963941325713387,
+            0.9880430341540166
+          ]
+        },
+        "confab_refused_narrow": {
+          "n": 576,
+          "rate": 0.328125,
+          "successes": 189,
+          "wilson_ci_95": [
+            0.2910296474342584,
+            0.3674977017437381
+          ]
+        },
+        "confab_refused_wide_screen": {
+          "n": 576,
+          "rate": 0.3524305555555556,
+          "successes": 203,
+          "wilson_ci_95": [
+            0.31451169540084833,
+            0.3923047155095528
+          ]
+        },
+        "confab_undercount_delta": 0.02430555555555558,
+        "confab_well_formed": {
+          "n": 576,
+          "rate": 0.9461805555555556,
+          "successes": 545,
+          "wilson_ci_95": [
+            0.9246207652376783,
+            0.961828439421462
+          ]
+        },
+        "dose_abs": 13.514357,
+        "dose_mult": 12,
+        "g1_wide_screen_pass_INFORMATIONAL_ONLY": false,
+        "known_false_refusal_narrow": {
+          "n": 222,
+          "rate": 0.14864864864864866,
+          "successes": 33,
+          "wilson_ci_95": [
+            0.1078455825184505,
+            0.2014043629317534
+          ]
+        },
+        "known_false_refusal_wide_screen": {
+          "n": 222,
+          "rate": 0.14864864864864866,
+          "successes": 33,
+          "wilson_ci_95": [
+            0.1078455825184505,
+            0.2014043629317534
+          ]
+        },
+        "known_undercount_delta": 0.0,
+        "layer": 20,
+        "n_fired_confab": 576,
+        "n_known": 222,
+        "net_lift_over_llama_calibration_wide_baseline_0164": 0.18843055555555557,
+        "net_lift_over_paired_baseline_wide": 0.3090277777777778,
+        "viable_fit_narrow_INFORMATIONAL_ONLY": false
+      },
+      {
+        "arm": "random_direction",
+        "confab_degenerate": {
+          "n": 576,
+          "rate": 0.006944444444444444,
+          "successes": 4,
+          "wilson_ci_95": [
+            0.0027037761510421265,
+            0.01771811442018019
+          ]
+        },
+        "confab_mean_new_tokens": 54.989583333333336,
+        "confab_natural_stop": {
+          "n": 576,
+          "rate": 0.9670138888888888,
+          "successes": 557,
+          "wilson_ci_95": [
+            0.9490572897676633,
+            0.978782539233538
+          ]
+        },
+        "confab_refused_narrow": {
+          "n": 576,
+          "rate": 0.1545138888888889,
+          "successes": 89,
+          "wilson_ci_95": [
+            0.127294663384004,
+            0.18631081627681725
+          ]
+        },
+        "confab_refused_wide_screen": {
+          "n": 576,
+          "rate": 0.1701388888888889,
+          "successes": 98,
+          "wilson_ci_95": [
+            0.14166199014037592,
+            0.20298645777699112
+          ]
+        },
+        "confab_undercount_delta": 0.015625,
+        "confab_well_formed": {
+          "n": 576,
+          "rate": 0.7291666666666666,
+          "successes": 420,
+          "wilson_ci_95": [
+            0.6914458009413694,
+            0.7638510668213018
+          ]
+        },
+        "dose_abs": 13.514357,
+        "dose_mult": 12,
+        "g1_wide_screen_pass_INFORMATIONAL_ONLY": false,
+        "known_false_refusal_narrow": {
+          "n": 0,
+          "rate": 0.0,
+          "successes": 0,
+          "wilson_ci_95": [
+            0.0,
+            0.0
+          ]
+        },
+        "known_false_refusal_wide_screen": {
+          "n": 0,
+          "rate": 0.0,
+          "successes": 0,
+          "wilson_ci_95": [
+            0.0,
+            0.0
+          ]
+        },
+        "known_undercount_delta": 0.0,
+        "layer": 20,
+        "n_fired_confab": 576,
+        "n_known": 0,
+        "net_lift_over_llama_calibration_wide_baseline_0164": 0.006138888888888888,
+        "net_lift_over_paired_baseline_wide": 0.1267361111111111,
+        "viable_fit_narrow_INFORMATIONAL_ONLY": false
+      },
+      {
+        "arm": "gated",
+        "confab_degenerate": {
+          "n": 576,
+          "rate": 0.1111111111111111,
+          "successes": 64,
+          "wilson_ci_95": [
+            0.08797835682457314,
+            0.1393966554569543
+          ]
+        },
+        "confab_mean_new_tokens": 65.01736111111111,
+        "confab_natural_stop": {
+          "n": 576,
+          "rate": 0.7951388888888888,
+          "successes": 458,
+          "wilson_ci_95": [
+            0.7602747432463939,
+            0.8260924349328038
+          ]
+        },
+        "confab_refused_narrow": {
+          "n": 576,
+          "rate": 0.4357638888888889,
+          "successes": 251,
+          "wilson_ci_95": [
+            0.395827363054936,
+            0.47655154522370907
+          ]
+        },
+        "confab_refused_wide_screen": {
+          "n": 576,
+          "rate": 0.4444444444444444,
+          "successes": 256,
+          "wilson_ci_95": [
+            0.40436572308753005,
+            0.4852592786669738
+          ]
+        },
+        "confab_undercount_delta": 0.008680555555555525,
+        "confab_well_formed": {
+          "n": 576,
+          "rate": 0.6961805555555556,
+          "successes": 401,
+          "wilson_ci_95": [
+            0.657424649323405,
+            0.7323370632310029
+          ]
+        },
+        "dose_abs": 18.019143,
+        "dose_mult": 16,
+        "g1_wide_screen_pass_INFORMATIONAL_ONLY": false,
+        "known_false_refusal_narrow": {
+          "n": 222,
+          "rate": 0.2747747747747748,
+          "successes": 61,
+          "wilson_ci_95": [
+            0.2202599877857559,
+            0.3369515157079645
+          ]
+        },
+        "known_false_refusal_wide_screen": {
+          "n": 222,
+          "rate": 0.2747747747747748,
+          "successes": 61,
+          "wilson_ci_95": [
+            0.2202599877857559,
+            0.3369515157079645
+          ]
+        },
+        "known_undercount_delta": 0.0,
+        "layer": 20,
+        "n_fired_confab": 576,
+        "n_known": 222,
+        "net_lift_over_llama_calibration_wide_baseline_0164": 0.2804444444444444,
+        "net_lift_over_paired_baseline_wide": 0.40104166666666663,
+        "viable_fit_narrow_INFORMATIONAL_ONLY": false
+      },
+      {
+        "arm": "random_direction",
+        "confab_degenerate": {
+          "n": 576,
+          "rate": 0.06076388888888889,
+          "successes": 35,
+          "wilson_ci_95": [
+            0.04401249496718081,
+            0.08333517515436585
+          ]
+        },
+        "confab_mean_new_tokens": 82.79513888888889,
+        "confab_natural_stop": {
+          "n": 576,
+          "rate": 0.8333333333333334,
+          "successes": 480,
+          "wilson_ci_95": [
+            0.8007108887759786,
+            0.8615391006969979
+          ]
+        },
+        "confab_refused_narrow": {
+          "n": 576,
+          "rate": 0.1267361111111111,
+          "successes": 73,
+          "wilson_ci_95": [
+            0.10201831930041255,
+            0.15639966123766064
+          ]
+        },
+        "confab_refused_wide_screen": {
+          "n": 576,
+          "rate": 0.13368055555555555,
+          "successes": 77,
+          "wilson_ci_95": [
+            0.1083021545078462,
+            0.16391270081091402
+          ]
+        },
+        "confab_undercount_delta": 0.0069444444444444475,
+        "confab_well_formed": {
+          "n": 576,
+          "rate": 0.003472222222222222,
+          "successes": 2,
+          "wilson_ci_95": [
+            0.000952725585001756,
+            0.012570727595877053
+          ]
+        },
+        "dose_abs": 18.019143,
+        "dose_mult": 16,
+        "g1_wide_screen_pass_INFORMATIONAL_ONLY": false,
+        "known_false_refusal_narrow": {
+          "n": 0,
+          "rate": 0.0,
+          "successes": 0,
+          "wilson_ci_95": [
+            0.0,
+            0.0
+          ]
+        },
+        "known_false_refusal_wide_screen": {
+          "n": 0,
+          "rate": 0.0,
+          "successes": 0,
+          "wilson_ci_95": [
+            0.0,
+            0.0
+          ]
+        },
+        "known_undercount_delta": 0.0,
+        "layer": 20,
+        "n_fired_confab": 576,
+        "n_known": 0,
+        "net_lift_over_llama_calibration_wide_baseline_0164": -0.030319444444444454,
+        "net_lift_over_paired_baseline_wide": 0.09027777777777778,
+        "viable_fit_narrow_INFORMATIONAL_ONLY": false
+      },
+      {
+        "arm": "gated",
+        "confab_degenerate": {
+          "n": 576,
+          "rate": 0.5625,
+          "successes": 324,
+          "wilson_ci_95": [
+            0.5217059113982747,
+            0.6024659616279084
+          ]
+        },
+        "confab_mean_new_tokens": 156.19618055555554,
+        "confab_natural_stop": {
+          "n": 576,
+          "rate": 0.2465277777777778,
+          "successes": 142,
+          "wilson_ci_95": [
+            0.2130868312452442,
+            0.28332723925967995
+          ]
+        },
+        "confab_refused_narrow": {
+          "n": 576,
+          "rate": 0.3229166666666667,
+          "successes": 186,
+          "wilson_ci_95": [
+            0.28601256073187215,
+            0.3621671323606091
+          ]
+        },
+        "confab_refused_wide_screen": {
+          "n": 576,
+          "rate": 0.328125,
+          "successes": 189,
+          "wilson_ci_95": [
+            0.2910296474342584,
+            0.3674977017437381
+          ]
+        },
+        "confab_undercount_delta": 0.005208333333333315,
+        "confab_well_formed": {
+          "n": 576,
+          "rate": 0.13020833333333334,
+          "successes": 75,
+          "wilson_ci_95": [
+            0.10515707724979977,
+            0.16015934067861698
+          ]
+        },
+        "dose_abs": 22.523929,
+        "dose_mult": 20,
+        "g1_wide_screen_pass_INFORMATIONAL_ONLY": false,
+        "known_false_refusal_narrow": {
+          "n": 222,
+          "rate": 0.21621621621621623,
+          "successes": 48,
+          "wilson_ci_95": [
+            0.16713729623246,
+            0.27494919816962776
+          ]
+        },
+        "known_false_refusal_wide_screen": {
+          "n": 222,
+          "rate": 0.22072072072072071,
+          "successes": 49,
+          "wilson_ci_95": [
+            0.17117325593537486,
+            0.27976900839683844
+          ]
+        },
+        "known_undercount_delta": 0.004504504504504486,
+        "layer": 20,
+        "n_fired_confab": 576,
+        "n_known": 222,
+        "net_lift_over_llama_calibration_wide_baseline_0164": 0.164125,
+        "net_lift_over_paired_baseline_wide": 0.2847222222222222,
+        "viable_fit_narrow_INFORMATIONAL_ONLY": false
+      },
+      {
+        "arm": "gated",
+        "confab_degenerate": {
+          "n": 577,
+          "rate": 0.0,
+          "successes": 0,
+          "wilson_ci_95": [
+            0.0,
+            0.006613609897085505
+          ]
+        },
+        "confab_mean_new_tokens": 40.43847487001733,
+        "confab_natural_stop": {
+          "n": 577,
+          "rate": 1.0,
+          "successes": 577,
+          "wilson_ci_95": [
+            0.9933863901029145,
+            1.0
+          ]
+        },
+        "confab_refused_narrow": {
+          "n": 577,
+          "rate": 0.024263431542461005,
+          "successes": 14,
+          "wilson_ci_95": [
+            0.01450725715757112,
+            0.04031227808246344
+          ]
+        },
+        "confab_refused_wide_screen": {
+          "n": 577,
+          "rate": 0.0658578856152513,
+          "successes": 38,
+          "wilson_ci_95": [
+            0.04835470047429441,
+            0.0891035639250814
+          ]
+        },
+        "confab_undercount_delta": 0.04159445407279029,
+        "confab_well_formed": {
+          "n": 577,
+          "rate": 1.0,
+          "successes": 577,
+          "wilson_ci_95": [
+            0.9933863901029145,
+            1.0
+          ]
+        },
+        "dose_abs": 2.836853,
+        "dose_mult": 2,
+        "g1_wide_screen_pass_INFORMATIONAL_ONLY": false,
+        "known_false_refusal_narrow": {
+          "n": 222,
+          "rate": 0.0,
+          "successes": 0,
+          "wilson_ci_95": [
+            1.734723475976807e-18,
+            0.017009537756059373
+          ]
+        },
+        "known_false_refusal_wide_screen": {
+          "n": 222,
+          "rate": 0.0,
+          "successes": 0,
+          "wilson_ci_95": [
+            1.734723475976807e-18,
+            0.017009537756059373
+          ]
+        },
+        "known_undercount_delta": 0.0,
+        "layer": 22,
+        "n_fired_confab": 577,
+        "n_known": 222,
+        "net_lift_over_llama_calibration_wide_baseline_0164": -0.09814211438474871,
+        "net_lift_over_paired_baseline_wide": 0.022530329289428074,
+        "viable_fit_narrow_INFORMATIONAL_ONLY": false
+      },
+      {
+        "arm": "gated",
+        "confab_degenerate": {
+          "n": 577,
+          "rate": 0.0,
+          "successes": 0,
+          "wilson_ci_95": [
+            0.0,
+            0.006613609897085505
+          ]
+        },
+        "confab_mean_new_tokens": 40.68804159445407,
+        "confab_natural_stop": {
+          "n": 577,
+          "rate": 1.0,
+          "successes": 577,
+          "wilson_ci_95": [
+            0.9933863901029145,
+            1.0
+          ]
+        },
+        "confab_refused_narrow": {
+          "n": 577,
+          "rate": 0.05025996533795494,
+          "successes": 29,
+          "wilson_ci_95": [
+            0.03521936319637611,
+            0.07124937776824673
+          ]
+        },
+        "confab_refused_wide_screen": {
+          "n": 577,
+          "rate": 0.09705372616984402,
+          "successes": 56,
+          "wilson_ci_95": [
+            0.07549715845645533,
+            0.1239401528124264
+          ]
+        },
+        "confab_undercount_delta": 0.04679376083188908,
+        "confab_well_formed": {
+          "n": 577,
+          "rate": 1.0,
+          "successes": 577,
+          "wilson_ci_95": [
+            0.9933863901029145,
+            1.0
+          ]
+        },
+        "dose_abs": 5.673707,
+        "dose_mult": 4,
+        "g1_wide_screen_pass_INFORMATIONAL_ONLY": false,
+        "known_false_refusal_narrow": {
+          "n": 222,
+          "rate": 0.018018018018018018,
+          "successes": 4,
+          "wilson_ci_95": [
+            0.007028604354170409,
+            0.045404013122391326
+          ]
+        },
+        "known_false_refusal_wide_screen": {
+          "n": 222,
+          "rate": 0.018018018018018018,
+          "successes": 4,
+          "wilson_ci_95": [
+            0.007028604354170409,
+            0.045404013122391326
+          ]
+        },
+        "known_undercount_delta": 0.0,
+        "layer": 22,
+        "n_fired_confab": 577,
+        "n_known": 222,
+        "net_lift_over_llama_calibration_wide_baseline_0164": -0.06694627383015599,
+        "net_lift_over_paired_baseline_wide": 0.053726169844020795,
+        "viable_fit_narrow_INFORMATIONAL_ONLY": false
+      },
+      {
+        "arm": "gated",
+        "confab_degenerate": {
+          "n": 577,
+          "rate": 0.0,
+          "successes": 0,
+          "wilson_ci_95": [
+            0.0,
+            0.006613609897085505
+          ]
+        },
+        "confab_mean_new_tokens": 40.98093587521664,
+        "confab_natural_stop": {
+          "n": 577,
+          "rate": 1.0,
+          "successes": 577,
+          "wilson_ci_95": [
+            0.9933863901029145,
+            1.0
+          ]
+        },
+        "confab_refused_narrow": {
+          "n": 577,
+          "rate": 0.0779896013864818,
+          "successes": 45,
+          "wilson_ci_95": [
+            0.058795253097711955,
+            0.10276597397313837
+          ]
+        },
+        "confab_refused_wide_screen": {
+          "n": 577,
+          "rate": 0.12478336221837089,
+          "successes": 72,
+          "wilson_ci_95": [
+            0.10027514642823125,
+            0.15425465094687799
+          ]
+        },
+        "confab_undercount_delta": 0.04679376083188909,
+        "confab_well_formed": {
+          "n": 577,
+          "rate": 1.0,
+          "successes": 577,
+          "wilson_ci_95": [
+            0.9933863901029145,
+            1.0
+          ]
+        },
+        "dose_abs": 8.51056,
+        "dose_mult": 6,
+        "g1_wide_screen_pass_INFORMATIONAL_ONLY": false,
+        "known_false_refusal_narrow": {
+          "n": 222,
+          "rate": 0.05405405405405406,
+          "successes": 12,
+          "wilson_ci_95": [
+            0.03118823723895037,
+            0.0920905396786161
+          ]
+        },
+        "known_false_refusal_wide_screen": {
+          "n": 222,
+          "rate": 0.05405405405405406,
+          "successes": 12,
+          "wilson_ci_95": [
+            0.03118823723895037,
+            0.0920905396786161
+          ]
+        },
+        "known_undercount_delta": 0.0,
+        "layer": 22,
+        "n_fired_confab": 577,
+        "n_known": 222,
+        "net_lift_over_llama_calibration_wide_baseline_0164": -0.03921663778162912,
+        "net_lift_over_paired_baseline_wide": 0.08145580589254767,
+        "viable_fit_narrow_INFORMATIONAL_ONLY": false
+      },
+      {
+        "arm": "gated",
+        "confab_degenerate": {
+          "n": 577,
+          "rate": 0.0,
+          "successes": 0,
+          "wilson_ci_95": [
+            0.0,
+            0.006613609897085505
+          ]
+        },
+        "confab_mean_new_tokens": 43.227036395147316,
+        "confab_natural_stop": {
+          "n": 577,
+          "rate": 1.0,
+          "successes": 577,
+          "wilson_ci_95": [
+            0.9933863901029145,
+            1.0
+          ]
+        },
+        "confab_refused_narrow": {
+          "n": 577,
+          "rate": 0.09532062391681109,
+          "successes": 55,
+          "wilson_ci_95": [
+            0.07396609593037153,
+            0.12202793495687099
+          ]
+        },
+        "confab_refused_wide_screen": {
+          "n": 577,
+          "rate": 0.13518197573656845,
+          "successes": 78,
+          "wilson_ci_95": [
+            0.10968409536889019,
+            0.16550538429605438
+          ]
+        },
+        "confab_undercount_delta": 0.03986135181975736,
+        "confab_well_formed": {
+          "n": 577,
+          "rate": 0.9965337954939342,
+          "successes": 575,
+          "wilson_ci_95": [
+            0.9874509028582892,
+            0.9990489264813469
+          ]
+        },
+        "dose_abs": 11.347414,
+        "dose_mult": 8,
+        "g1_wide_screen_pass_INFORMATIONAL_ONLY": false,
+        "known_false_refusal_narrow": {
+          "n": 222,
+          "rate": 0.08108108108108109,
+          "successes": 18,
+          "wilson_ci_95": [
+            0.05190100973676361,
+            0.1245123867615564
+          ]
+        },
+        "known_false_refusal_wide_screen": {
+          "n": 222,
+          "rate": 0.08108108108108109,
+          "successes": 18,
+          "wilson_ci_95": [
+            0.05190100973676361,
+            0.1245123867615564
+          ]
+        },
+        "known_undercount_delta": 0.0,
+        "layer": 22,
+        "n_fired_confab": 577,
+        "n_known": 222,
+        "net_lift_over_llama_calibration_wide_baseline_0164": -0.028818024263431552,
+        "net_lift_over_paired_baseline_wide": 0.09185441941074524,
+        "viable_fit_narrow_INFORMATIONAL_ONLY": false
+      },
+      {
+        "arm": "gated",
+        "confab_degenerate": {
+          "n": 577,
+          "rate": 0.01559792027729636,
+          "successes": 9,
+          "wilson_ci_95": [
+            0.008227407072378795,
+            0.029375726259459674
+          ]
+        },
+        "confab_mean_new_tokens": 49.759098786828424,
+        "confab_natural_stop": {
+          "n": 577,
+          "rate": 0.9792027729636048,
+          "successes": 565,
+          "wilson_ci_95": [
+            0.9640032007346692,
+            0.9880638247885746
+          ]
+        },
+        "confab_refused_narrow": {
+          "n": 577,
+          "rate": 0.12305025996533796,
+          "successes": 71,
+          "wilson_ci_95": [
+            0.09871263480603389,
+            0.15237388218743614
+          ]
+        },
+        "confab_refused_wide_screen": {
+          "n": 577,
+          "rate": 0.14904679376083188,
+          "successes": 86,
+          "wilson_ci_95": [
+            0.12231267742256771,
+            0.18042304529549055
+          ]
+        },
+        "confab_undercount_delta": 0.025996533795493923,
+        "confab_well_formed": {
+          "n": 577,
+          "rate": 0.9705372616984402,
+          "successes": 560,
+          "wilson_ci_95": [
+            0.953325725778834,
+            0.9815248978362138
+          ]
+        },
+        "dose_abs": 17.021121,
+        "dose_mult": 12,
+        "g1_wide_screen_pass_INFORMATIONAL_ONLY": false,
+        "known_false_refusal_narrow": {
+          "n": 222,
+          "rate": 0.0990990990990991,
+          "successes": 22,
+          "wilson_ci_95": [
+            0.06635706872257166,
+            0.1454794074962507
+          ]
+        },
+        "known_false_refusal_wide_screen": {
+          "n": 222,
+          "rate": 0.1036036036036036,
+          "successes": 23,
+          "wilson_ci_95": [
+            0.07003315261899459,
+            0.15065909352995335
+          ]
+        },
+        "known_undercount_delta": 0.0045045045045045,
+        "layer": 22,
+        "n_fired_confab": 577,
+        "n_known": 222,
+        "net_lift_over_llama_calibration_wide_baseline_0164": -0.014953206239168126,
+        "net_lift_over_paired_baseline_wide": 0.10571923743500866,
+        "viable_fit_narrow_INFORMATIONAL_ONLY": false
+      },
+      {
+        "arm": "gated",
+        "confab_degenerate": {
+          "n": 577,
+          "rate": 0.29116117850953205,
+          "successes": 168,
+          "wilson_ci_95": [
+            0.25557120015672424,
+            0.32951351385574995
+          ]
+        },
+        "confab_mean_new_tokens": 75.18024263431542,
+        "confab_natural_stop": {
+          "n": 577,
+          "rate": 0.6949740034662045,
+          "successes": 401,
+          "wilson_ci_95": [
+            0.6562192072371775,
+            0.7311498356972346
+          ]
+        },
+        "confab_refused_narrow": {
+          "n": 577,
+          "rate": 0.08838821490467938,
+          "successes": 51,
+          "wilson_ci_95": [
+            0.06786594801426654,
+            0.11435496134641912
+          ]
+        },
+        "confab_refused_wide_screen": {
+          "n": 577,
+          "rate": 0.09705372616984402,
+          "successes": 56,
+          "wilson_ci_95": [
+            0.07549715845645533,
+            0.1239401528124264
+          ]
+        },
+        "confab_undercount_delta": 0.008665511265164641,
+        "confab_well_formed": {
+          "n": 577,
+          "rate": 0.30329289428076256,
+          "successes": 175,
+          "wilson_ci_95": [
+            0.26718809027114737,
+            0.3419995864128013
+          ]
+        },
+        "dose_abs": 22.694828,
+        "dose_mult": 16,
+        "g1_wide_screen_pass_INFORMATIONAL_ONLY": false,
+        "known_false_refusal_narrow": {
+          "n": 222,
+          "rate": 0.06306306306306306,
+          "successes": 14,
+          "wilson_ci_95": [
+            0.03793347057563773,
+            0.10305684620217992
+          ]
+        },
+        "known_false_refusal_wide_screen": {
+          "n": 222,
+          "rate": 0.06306306306306306,
+          "successes": 14,
+          "wilson_ci_95": [
+            0.03793347057563773,
+            0.10305684620217992
+          ]
+        },
+        "known_undercount_delta": 0.0,
+        "layer": 22,
+        "n_fired_confab": 577,
+        "n_known": 222,
+        "net_lift_over_llama_calibration_wide_baseline_0164": -0.06694627383015599,
+        "net_lift_over_paired_baseline_wide": 0.053726169844020795,
+        "viable_fit_narrow_INFORMATIONAL_ONLY": false
+      },
+      {
+        "arm": "gated",
+        "confab_degenerate": {
+          "n": 577,
+          "rate": 0.8769497400346621,
+          "successes": 506,
+          "wilson_ci_95": [
+            0.8476261178125639,
+            0.9012873651939661
+          ]
+        },
+        "confab_mean_new_tokens": 176.17504332755632,
+        "confab_natural_stop": {
+          "n": 577,
+          "rate": 0.12305025996533796,
+          "successes": 71,
+          "wilson_ci_95": [
+            0.09871263480603389,
+            0.15237388218743614
+          ]
+        },
+        "confab_refused_narrow": {
+          "n": 577,
+          "rate": 0.0,
+          "successes": 0,
+          "wilson_ci_95": [
+            0.0,
+            0.006613609897085505
+          ]
+        },
+        "confab_refused_wide_screen": {
+          "n": 577,
+          "rate": 0.0,
+          "successes": 0,
+          "wilson_ci_95": [
+            0.0,
+            0.006613609897085505
+          ]
+        },
+        "confab_undercount_delta": 0.0,
+        "confab_well_formed": {
+          "n": 577,
+          "rate": 0.0,
+          "successes": 0,
+          "wilson_ci_95": [
+            0.0,
+            0.006613609897085505
+          ]
+        },
+        "dose_abs": 28.368535,
+        "dose_mult": 20,
+        "g1_wide_screen_pass_INFORMATIONAL_ONLY": false,
+        "known_false_refusal_narrow": {
+          "n": 222,
+          "rate": 0.0,
+          "successes": 0,
+          "wilson_ci_95": [
+            1.734723475976807e-18,
+            0.017009537756059373
+          ]
+        },
+        "known_false_refusal_wide_screen": {
+          "n": 222,
+          "rate": 0.0,
+          "successes": 0,
+          "wilson_ci_95": [
+            1.734723475976807e-18,
+            0.017009537756059373
+          ]
+        },
+        "known_undercount_delta": 0.0,
+        "layer": 22,
+        "n_fired_confab": 577,
+        "n_known": 222,
+        "net_lift_over_llama_calibration_wide_baseline_0164": -0.164,
+        "net_lift_over_paired_baseline_wide": -0.043327556325823226,
+        "viable_fit_narrow_INFORMATIONAL_ONLY": false
+      },
+      {
+        "arm": "gated",
+        "confab_degenerate": {
+          "n": 577,
+          "rate": 0.0,
+          "successes": 0,
+          "wilson_ci_95": [
+            0.0,
+            0.006613609897085505
+          ]
+        },
+        "confab_mean_new_tokens": 40.516464471403815,
+        "confab_natural_stop": {
+          "n": 577,
+          "rate": 1.0,
+          "successes": 577,
+          "wilson_ci_95": [
+            0.9933863901029145,
+            1.0
+          ]
+        },
+        "confab_refused_narrow": {
+          "n": 577,
+          "rate": 0.02079722703639515,
+          "successes": 12,
+          "wilson_ci_95": [
+            0.01193617521142541,
+            0.03599679926533071
+          ]
+        },
+        "confab_refused_wide_screen": {
+          "n": 577,
+          "rate": 0.06239168110918544,
+          "successes": 36,
+          "wilson_ci_95": [
+            0.045404566148486515,
+            0.08516713748761087
+          ]
+        },
+        "confab_undercount_delta": 0.04159445407279029,
+        "confab_well_formed": {
+          "n": 577,
+          "rate": 1.0,
+          "successes": 577,
+          "wilson_ci_95": [
+            0.9933863901029145,
+            1.0
+          ]
+        },
+        "dose_abs": 3.132907,
+        "dose_mult": 2,
+        "g1_wide_screen_pass_INFORMATIONAL_ONLY": false,
+        "known_false_refusal_narrow": {
+          "n": 222,
+          "rate": 0.0,
+          "successes": 0,
+          "wilson_ci_95": [
+            1.734723475976807e-18,
+            0.017009537756059373
+          ]
+        },
+        "known_false_refusal_wide_screen": {
+          "n": 222,
+          "rate": 0.0,
+          "successes": 0,
+          "wilson_ci_95": [
+            1.734723475976807e-18,
+            0.017009537756059373
+          ]
+        },
+        "known_undercount_delta": 0.0,
+        "layer": 23,
+        "n_fired_confab": 577,
+        "n_known": 222,
+        "net_lift_over_llama_calibration_wide_baseline_0164": -0.10160831889081456,
+        "net_lift_over_paired_baseline_wide": 0.019064124783362217,
+        "viable_fit_narrow_INFORMATIONAL_ONLY": false
+      },
+      {
+        "arm": "gated",
+        "confab_degenerate": {
+          "n": 577,
+          "rate": 0.0,
+          "successes": 0,
+          "wilson_ci_95": [
+            0.0,
+            0.006613609897085505
+          ]
+        },
+        "confab_mean_new_tokens": 39.31542461005199,
+        "confab_natural_stop": {
+          "n": 577,
+          "rate": 0.9982668977469671,
+          "successes": 576,
+          "wilson_ci_95": [
+            0.9902491103637742,
+            0.999693999357501
+          ]
+        },
+        "confab_refused_narrow": {
+          "n": 577,
+          "rate": 0.053726169844020795,
+          "successes": 31,
+          "wilson_ci_95": [
+            0.03810495652291286,
+            0.07525034520498841
+          ]
+        },
+        "confab_refused_wide_screen": {
+          "n": 577,
+          "rate": 0.08838821490467938,
+          "successes": 51,
+          "wilson_ci_95": [
+            0.06786594801426654,
+            0.11435496134641912
+          ]
+        },
+        "confab_undercount_delta": 0.034662045060658585,
+        "confab_well_formed": {
+          "n": 577,
+          "rate": 0.9982668977469671,
+          "successes": 576,
+          "wilson_ci_95": [
+            0.9902491103637742,
+            0.999693999357501
+          ]
+        },
+        "dose_abs": 6.265814,
+        "dose_mult": 4,
+        "g1_wide_screen_pass_INFORMATIONAL_ONLY": false,
+        "known_false_refusal_narrow": {
+          "n": 222,
+          "rate": 0.018018018018018018,
+          "successes": 4,
+          "wilson_ci_95": [
+            0.007028604354170409,
+            0.045404013122391326
+          ]
+        },
+        "known_false_refusal_wide_screen": {
+          "n": 222,
+          "rate": 0.018018018018018018,
+          "successes": 4,
+          "wilson_ci_95": [
+            0.007028604354170409,
+            0.045404013122391326
+          ]
+        },
+        "known_undercount_delta": 0.0,
+        "layer": 23,
+        "n_fired_confab": 577,
+        "n_known": 222,
+        "net_lift_over_llama_calibration_wide_baseline_0164": -0.07561178509532063,
+        "net_lift_over_paired_baseline_wide": 0.045060658578856154,
+        "viable_fit_narrow_INFORMATIONAL_ONLY": false
+      },
+      {
+        "arm": "gated",
+        "confab_degenerate": {
+          "n": 577,
+          "rate": 0.0,
+          "successes": 0,
+          "wilson_ci_95": [
+            0.0,
+            0.006613609897085505
+          ]
+        },
+        "confab_mean_new_tokens": 38.03986135181976,
+        "confab_natural_stop": {
+          "n": 577,
+          "rate": 0.9982668977469671,
+          "successes": 576,
+          "wilson_ci_95": [
+            0.9902491103637742,
+            0.999693999357501
+          ]
+        },
+        "confab_refused_narrow": {
+          "n": 577,
+          "rate": 0.08838821490467938,
+          "successes": 51,
+          "wilson_ci_95": [
+            0.06786594801426654,
+            0.11435496134641912
+          ]
+        },
+        "confab_refused_wide_screen": {
+          "n": 577,
+          "rate": 0.1195840554592721,
+          "successes": 69,
+          "wilson_ci_95": [
+            0.09559271028955636,
+            0.14860724594063524
+          ]
+        },
+        "confab_undercount_delta": 0.03119584055459272,
+        "confab_well_formed": {
+          "n": 577,
+          "rate": 0.9965337954939342,
+          "successes": 575,
+          "wilson_ci_95": [
+            0.9874509028582892,
+            0.9990489264813469
+          ]
+        },
+        "dose_abs": 9.398721,
+        "dose_mult": 6,
+        "g1_wide_screen_pass_INFORMATIONAL_ONLY": false,
+        "known_false_refusal_narrow": {
+          "n": 222,
+          "rate": 0.04504504504504504,
+          "successes": 10,
+          "wilson_ci_95": [
+            0.024648807210229773,
+            0.08091842984708551
+          ]
+        },
+        "known_false_refusal_wide_screen": {
+          "n": 222,
+          "rate": 0.04504504504504504,
+          "successes": 10,
+          "wilson_ci_95": [
+            0.024648807210229773,
+            0.08091842984708551
+          ]
+        },
+        "known_undercount_delta": 0.0,
+        "layer": 23,
+        "n_fired_confab": 577,
+        "n_known": 222,
+        "net_lift_over_llama_calibration_wide_baseline_0164": -0.044415944540727906,
+        "net_lift_over_paired_baseline_wide": 0.07625649913344887,
+        "viable_fit_narrow_INFORMATIONAL_ONLY": false
+      },
+      {
+        "arm": "gated",
+        "confab_degenerate": {
+          "n": 577,
+          "rate": 0.0,
+          "successes": 0,
+          "wilson_ci_95": [
+            0.0,
+            0.006613609897085505
+          ]
+        },
+        "confab_mean_new_tokens": 37.44887348353553,
+        "confab_natural_stop": {
+          "n": 577,
+          "rate": 0.9965337954939342,
+          "successes": 575,
+          "wilson_ci_95": [
+            0.9874509028582892,
+            0.9990489264813469
+          ]
+        },
+        "confab_refused_narrow": {
+          "n": 577,
+          "rate": 0.12131715771230503,
+          "successes": 70,
+          "wilson_ci_95": [
+            0.09715181251077656,
+            0.15049142410105423
+          ]
+        },
+        "confab_refused_wide_screen": {
+          "n": 577,
+          "rate": 0.14211438474870017,
+          "successes": 82,
+          "wilson_ci_95": [
+            0.11598709713735124,
+            0.1729755040541502
+          ]
+        },
+        "confab_undercount_delta": 0.02079722703639514,
+        "confab_well_formed": {
+          "n": 577,
+          "rate": 0.9965337954939342,
+          "successes": 575,
+          "wilson_ci_95": [
+            0.9874509028582892,
+            0.9990489264813469
+          ]
+        },
+        "dose_abs": 12.531628,
+        "dose_mult": 8,
+        "g1_wide_screen_pass_INFORMATIONAL_ONLY": false,
+        "known_false_refusal_narrow": {
+          "n": 222,
+          "rate": 0.08108108108108109,
+          "successes": 18,
+          "wilson_ci_95": [
+            0.05190100973676361,
+            0.1245123867615564
+          ]
+        },
+        "known_false_refusal_wide_screen": {
+          "n": 222,
+          "rate": 0.08108108108108109,
+          "successes": 18,
+          "wilson_ci_95": [
+            0.05190100973676361,
+            0.1245123867615564
+          ]
+        },
+        "known_undercount_delta": 0.0,
+        "layer": 23,
+        "n_fired_confab": 577,
+        "n_known": 222,
+        "net_lift_over_llama_calibration_wide_baseline_0164": -0.02188561525129984,
+        "net_lift_over_paired_baseline_wide": 0.09878682842287695,
+        "viable_fit_narrow_INFORMATIONAL_ONLY": false
+      },
+      {
+        "arm": "gated",
+        "confab_degenerate": {
+          "n": 577,
+          "rate": 0.02079722703639515,
+          "successes": 12,
+          "wilson_ci_95": [
+            0.01193617521142541,
+            0.03599679926533071
+          ]
+        },
+        "confab_mean_new_tokens": 38.21663778162912,
+        "confab_natural_stop": {
+          "n": 577,
+          "rate": 0.975736568457539,
+          "successes": 563,
+          "wilson_ci_95": [
+            0.9596877219175365,
+            0.9854927428424288
+          ]
+        },
+        "confab_refused_narrow": {
+          "n": 577,
+          "rate": 0.18197573656845753,
+          "successes": 105,
+          "wilson_ci_95": [
+            0.15263177475338888,
+            0.21552627521581455
+          ]
+        },
+        "confab_refused_wide_screen": {
+          "n": 577,
+          "rate": 0.1923743500866551,
+          "successes": 111,
+          "wilson_ci_95": [
+            0.16228920844369082,
+            0.22652852381534788
+          ]
+        },
+        "confab_undercount_delta": 0.01039861351819757,
+        "confab_well_formed": {
+          "n": 577,
+          "rate": 0.975736568457539,
+          "successes": 563,
+          "wilson_ci_95": [
+            0.9596877219175365,
+            0.9854927428424288
+          ]
+        },
+        "dose_abs": 18.797442,
+        "dose_mult": 12,
+        "g1_wide_screen_pass_INFORMATIONAL_ONLY": false,
+        "known_false_refusal_narrow": {
+          "n": 222,
+          "rate": 0.11711711711711711,
+          "successes": 26,
+          "wilson_ci_95": [
+            0.08118908019106666,
+            0.16607047574825806
+          ]
+        },
+        "known_false_refusal_wide_screen": {
+          "n": 222,
+          "rate": 0.11711711711711711,
+          "successes": 26,
+          "wilson_ci_95": [
+            0.08118908019106666,
+            0.16607047574825806
+          ]
+        },
+        "known_undercount_delta": 0.0,
+        "layer": 23,
+        "n_fired_confab": 577,
+        "n_known": 222,
+        "net_lift_over_llama_calibration_wide_baseline_0164": 0.028374350086655092,
+        "net_lift_over_paired_baseline_wide": 0.14904679376083188,
+        "viable_fit_narrow_INFORMATIONAL_ONLY": false
+      },
+      {
+        "arm": "gated",
+        "confab_degenerate": {
+          "n": 577,
+          "rate": 0.2738301559792028,
+          "successes": 158,
+          "wilson_ci_95": [
+            0.23903084198509972,
+            0.31162106821098234
+          ]
+        },
+        "confab_mean_new_tokens": 75.5632582322357,
+        "confab_natural_stop": {
+          "n": 577,
+          "rate": 0.7227036395147314,
+          "successes": 417,
+          "wilson_ci_95": [
+            0.6847951059807127,
+            0.7576664230599268
+          ]
+        },
+        "confab_refused_narrow": {
+          "n": 577,
+          "rate": 0.21317157712305027,
+          "successes": 123,
+          "wilson_ci_95": [
+            0.18170845715436354,
+            0.24842863968434584
+          ]
+        },
+        "confab_refused_wide_screen": {
+          "n": 577,
+          "rate": 0.2218370883882149,
+          "successes": 128,
+          "wilson_ci_95": [
+            0.1898379939179159,
+            0.25751550482898955
+          ]
+        },
+        "confab_undercount_delta": 0.008665511265164627,
+        "confab_well_formed": {
+          "n": 577,
+          "rate": 0.7227036395147314,
+          "successes": 417,
+          "wilson_ci_95": [
+            0.6847951059807127,
+            0.7576664230599268
+          ]
+        },
+        "dose_abs": 25.063255,
+        "dose_mult": 16,
+        "g1_wide_screen_pass_INFORMATIONAL_ONLY": false,
+        "known_false_refusal_narrow": {
+          "n": 222,
+          "rate": 0.06756756756756757,
+          "successes": 15,
+          "wilson_ci_95": [
+            0.041370976695617234,
+            0.10847511001232601
+          ]
+        },
+        "known_false_refusal_wide_screen": {
+          "n": 222,
+          "rate": 0.06756756756756757,
+          "successes": 15,
+          "wilson_ci_95": [
+            0.041370976695617234,
+            0.10847511001232601
+          ]
+        },
+        "known_undercount_delta": 0.0,
+        "layer": 23,
+        "n_fired_confab": 577,
+        "n_known": 222,
+        "net_lift_over_llama_calibration_wide_baseline_0164": 0.057837088388214886,
+        "net_lift_over_paired_baseline_wide": 0.17850953206239167,
+        "viable_fit_narrow_INFORMATIONAL_ONLY": false
+      },
+      {
+        "arm": "gated",
+        "confab_degenerate": {
+          "n": 577,
+          "rate": 0.9480069324090121,
+          "successes": 547,
+          "wilson_ci_95": [
+            0.9267474742257373,
+            0.9633405044280006
+          ]
+        },
+        "confab_mean_new_tokens": 190.17331022530328,
+        "confab_natural_stop": {
+          "n": 577,
+          "rate": 0.05199306759098787,
+          "successes": 30,
+          "wilson_ci_95": [
+            0.036659495571999455,
+            0.07325252577426261
+          ]
+        },
+        "confab_refused_narrow": {
+          "n": 577,
+          "rate": 0.0,
+          "successes": 0,
+          "wilson_ci_95": [
+            0.0,
+            0.006613609897085505
+          ]
+        },
+        "confab_refused_wide_screen": {
+          "n": 577,
+          "rate": 0.0,
+          "successes": 0,
+          "wilson_ci_95": [
+            0.0,
+            0.006613609897085505
+          ]
+        },
+        "confab_undercount_delta": 0.0,
+        "confab_well_formed": {
+          "n": 577,
+          "rate": 0.0,
+          "successes": 0,
+          "wilson_ci_95": [
+            0.0,
+            0.006613609897085505
+          ]
+        },
+        "dose_abs": 31.329069,
+        "dose_mult": 20,
+        "g1_wide_screen_pass_INFORMATIONAL_ONLY": false,
+        "known_false_refusal_narrow": {
+          "n": 222,
+          "rate": 0.0,
+          "successes": 0,
+          "wilson_ci_95": [
+            1.734723475976807e-18,
+            0.017009537756059373
+          ]
+        },
+        "known_false_refusal_wide_screen": {
+          "n": 222,
+          "rate": 0.0,
+          "successes": 0,
+          "wilson_ci_95": [
+            1.734723475976807e-18,
+            0.017009537756059373
+          ]
+        },
+        "known_undercount_delta": 0.0,
+        "layer": 23,
+        "n_fired_confab": 577,
+        "n_known": 222,
+        "net_lift_over_llama_calibration_wide_baseline_0164": -0.164,
+        "net_lift_over_paired_baseline_wide": -0.043327556325823226,
+        "viable_fit_narrow_INFORMATIONAL_ONLY": false
+      },
+      {
+        "arm": "gated",
+        "confab_degenerate": {
+          "n": 576,
+          "rate": 0.0,
+          "successes": 0,
+          "wilson_ci_95": [
+            0.0,
+            0.0066250157905353045
+          ]
+        },
+        "confab_mean_new_tokens": 38.109375,
+        "confab_natural_stop": {
+          "n": 576,
+          "rate": 1.0,
+          "successes": 576,
+          "wilson_ci_95": [
+            0.9933749842094647,
+            0.9999999999999999
+          ]
+        },
+        "confab_refused_narrow": {
+          "n": 576,
+          "rate": 0.041666666666666664,
+          "successes": 24,
+          "wilson_ci_95": [
+            0.028157417256034618,
+            0.06124884721862274
+          ]
+        },
+        "confab_refused_wide_screen": {
+          "n": 576,
+          "rate": 0.07465277777777778,
+          "successes": 43,
+          "wilson_ci_95": [
+            0.055893056747320334,
+            0.09904836293560029
+          ]
+        },
+        "confab_undercount_delta": 0.03298611111111111,
+        "confab_well_formed": {
+          "n": 576,
+          "rate": 1.0,
+          "successes": 576,
+          "wilson_ci_95": [
+            0.9933749842094647,
+            0.9999999999999999
+          ]
+        },
+        "dose_abs": 4.201786,
+        "dose_mult": 2,
+        "g1_wide_screen_pass_INFORMATIONAL_ONLY": false,
+        "known_false_refusal_narrow": {
+          "n": 222,
+          "rate": 0.0,
+          "successes": 0,
+          "wilson_ci_95": [
+            1.734723475976807e-18,
+            0.017009537756059373
+          ]
+        },
+        "known_false_refusal_wide_screen": {
+          "n": 222,
+          "rate": 0.0,
+          "successes": 0,
+          "wilson_ci_95": [
+            1.734723475976807e-18,
+            0.017009537756059373
+          ]
+        },
+        "known_undercount_delta": 0.0,
+        "layer": 26,
+        "n_fired_confab": 576,
+        "n_known": 222,
+        "net_lift_over_llama_calibration_wide_baseline_0164": -0.08934722222222223,
+        "net_lift_over_paired_baseline_wide": 0.03125,
+        "viable_fit_narrow_INFORMATIONAL_ONLY": false
+      },
+      {
+        "arm": "gated",
+        "confab_degenerate": {
+          "n": 576,
+          "rate": 0.0,
+          "successes": 0,
+          "wilson_ci_95": [
+            0.0,
+            0.0066250157905353045
+          ]
+        },
+        "confab_mean_new_tokens": 36.73784722222222,
+        "confab_natural_stop": {
+          "n": 576,
+          "rate": 1.0,
+          "successes": 576,
+          "wilson_ci_95": [
+            0.9933749842094647,
+            0.9999999999999999
+          ]
+        },
+        "confab_refused_narrow": {
+          "n": 576,
+          "rate": 0.0954861111111111,
+          "successes": 55,
+          "wilson_ci_95": [
+            0.07409581865896021,
+            0.12223622536602145
+          ]
+        },
+        "confab_refused_wide_screen": {
+          "n": 576,
+          "rate": 0.125,
+          "successes": 72,
+          "wilson_ci_95": [
+            0.10045137793153733,
+            0.15451738391136413
+          ]
+        },
+        "confab_undercount_delta": 0.029513888888888895,
+        "confab_well_formed": {
+          "n": 576,
+          "rate": 1.0,
+          "successes": 576,
+          "wilson_ci_95": [
+            0.9933749842094647,
+            0.9999999999999999
+          ]
+        },
+        "dose_abs": 8.403572,
+        "dose_mult": 4,
+        "g1_wide_screen_pass_INFORMATIONAL_ONLY": false,
+        "known_false_refusal_narrow": {
+          "n": 222,
+          "rate": 0.018018018018018018,
+          "successes": 4,
+          "wilson_ci_95": [
+            0.007028604354170409,
+            0.045404013122391326
+          ]
+        },
+        "known_false_refusal_wide_screen": {
+          "n": 222,
+          "rate": 0.018018018018018018,
+          "successes": 4,
+          "wilson_ci_95": [
+            0.007028604354170409,
+            0.045404013122391326
+          ]
+        },
+        "known_undercount_delta": 0.0,
+        "layer": 26,
+        "n_fired_confab": 576,
+        "n_known": 222,
+        "net_lift_over_llama_calibration_wide_baseline_0164": -0.03900000000000001,
+        "net_lift_over_paired_baseline_wide": 0.08159722222222222,
+        "viable_fit_narrow_INFORMATIONAL_ONLY": false
+      },
+      {
+        "arm": "gated",
+        "confab_degenerate": {
+          "n": 576,
+          "rate": 0.0,
+          "successes": 0,
+          "wilson_ci_95": [
+            0.0,
+            0.0066250157905353045
+          ]
+        },
+        "confab_mean_new_tokens": 36.458333333333336,
+        "confab_natural_stop": {
+          "n": 576,
+          "rate": 1.0,
+          "successes": 576,
+          "wilson_ci_95": [
+            0.9933749842094647,
+            0.9999999999999999
+          ]
+        },
+        "confab_refused_narrow": {
+          "n": 576,
+          "rate": 0.1423611111111111,
+          "successes": 82,
+          "wilson_ci_95": [
+            0.11619117908425573,
+            0.17326976971036323
+          ]
+        },
+        "confab_refused_wide_screen": {
+          "n": 576,
+          "rate": 0.16319444444444445,
+          "successes": 94,
+          "wilson_ci_95": [
+            0.13526448003771147,
+            0.19558709309896855
+          ]
+        },
+        "confab_undercount_delta": 0.020833333333333343,
+        "confab_well_formed": {
+          "n": 576,
+          "rate": 1.0,
+          "successes": 576,
+          "wilson_ci_95": [
+            0.9933749842094647,
+            0.9999999999999999
+          ]
+        },
+        "dose_abs": 12.605358,
+        "dose_mult": 6,
+        "g1_wide_screen_pass_INFORMATIONAL_ONLY": false,
+        "known_false_refusal_narrow": {
+          "n": 222,
+          "rate": 0.036036036036036036,
+          "successes": 8,
+          "wilson_ci_95": [
+            0.018371078356966827,
+            0.06948461884009727
+          ]
+        },
+        "known_false_refusal_wide_screen": {
+          "n": 222,
+          "rate": 0.036036036036036036,
+          "successes": 8,
+          "wilson_ci_95": [
+            0.018371078356966827,
+            0.06948461884009727
+          ]
+        },
+        "known_undercount_delta": 0.0,
+        "layer": 26,
+        "n_fired_confab": 576,
+        "n_known": 222,
+        "net_lift_over_llama_calibration_wide_baseline_0164": -0.0008055555555555594,
+        "net_lift_over_paired_baseline_wide": 0.11979166666666667,
+        "viable_fit_narrow_INFORMATIONAL_ONLY": false
+      },
+      {
+        "arm": "gated",
+        "confab_degenerate": {
+          "n": 576,
+          "rate": 0.0,
+          "successes": 0,
+          "wilson_ci_95": [
+            0.0,
+            0.0066250157905353045
+          ]
+        },
+        "confab_mean_new_tokens": 35.74652777777778,
+        "confab_natural_stop": {
+          "n": 576,
+          "rate": 0.9965277777777778,
+          "successes": 574,
+          "wilson_ci_95": [
+            0.9874292724041229,
+            0.9990472744149983
+          ]
+        },
+        "confab_refused_narrow": {
+          "n": 576,
+          "rate": 0.18055555555555555,
+          "successes": 104,
+          "wilson_ci_95": [
+            0.1512921943154307,
+            0.21405156577296683
+          ]
+        },
+        "confab_refused_wide_screen": {
+          "n": 576,
+          "rate": 0.19444444444444445,
+          "successes": 112,
+          "wilson_ci_95": [
+            0.1641916344880658,
+            0.22874587516170572
+          ]
+        },
+        "confab_undercount_delta": 0.013888888888888895,
+        "confab_well_formed": {
+          "n": 576,
+          "rate": 0.9965277777777778,
+          "successes": 574,
+          "wilson_ci_95": [
+            0.9874292724041229,
+            0.9990472744149983
+          ]
+        },
+        "dose_abs": 16.807144,
+        "dose_mult": 8,
+        "g1_wide_screen_pass_INFORMATIONAL_ONLY": false,
+        "known_false_refusal_narrow": {
+          "n": 222,
+          "rate": 0.04504504504504504,
+          "successes": 10,
+          "wilson_ci_95": [
+            0.024648807210229773,
+            0.08091842984708551
+          ]
+        },
+        "known_false_refusal_wide_screen": {
+          "n": 222,
+          "rate": 0.04504504504504504,
+          "successes": 10,
+          "wilson_ci_95": [
+            0.024648807210229773,
+            0.08091842984708551
+          ]
+        },
+        "known_undercount_delta": 0.0,
+        "layer": 26,
+        "n_fired_confab": 576,
+        "n_known": 222,
+        "net_lift_over_llama_calibration_wide_baseline_0164": 0.03044444444444444,
+        "net_lift_over_paired_baseline_wide": 0.15104166666666669,
+        "viable_fit_narrow_INFORMATIONAL_ONLY": false
+      },
+      {
+        "arm": "gated",
+        "confab_degenerate": {
+          "n": 576,
+          "rate": 0.1545138888888889,
+          "successes": 89,
+          "wilson_ci_95": [
+            0.127294663384004,
+            0.18631081627681725
+          ]
+        },
+        "confab_mean_new_tokens": 58.33506944444444,
+        "confab_natural_stop": {
+          "n": 576,
+          "rate": 0.8454861111111112,
+          "successes": 487,
+          "wilson_ci_95": [
+            0.8136891837231828,
+            0.872705336615996
+          ]
+        },
+        "confab_refused_narrow": {
+          "n": 576,
+          "rate": 0.1232638888888889,
+          "successes": 71,
+          "wilson_ci_95": [
+            0.09888609967210231,
+            0.1526334434756274
+          ]
+        },
+        "confab_refused_wide_screen": {
+          "n": 576,
+          "rate": 0.13020833333333334,
+          "successes": 75,
+          "wilson_ci_95": [
+            0.10515707724979977,
+            0.16015934067861698
+          ]
+        },
+        "confab_undercount_delta": 0.0069444444444444475,
+        "confab_well_formed": {
+          "n": 576,
+          "rate": 0.8420138888888888,
+          "successes": 485,
+          "wilson_ci_95": [
+            0.8099749541926569,
+            0.8695211287561782
+          ]
+        },
+        "dose_abs": 25.210716,
+        "dose_mult": 12,
+        "g1_wide_screen_pass_INFORMATIONAL_ONLY": false,
+        "known_false_refusal_narrow": {
+          "n": 222,
+          "rate": 0.036036036036036036,
+          "successes": 8,
+          "wilson_ci_95": [
+            0.018371078356966827,
+            0.06948461884009727
+          ]
+        },
+        "known_false_refusal_wide_screen": {
+          "n": 222,
+          "rate": 0.04054054054054054,
+          "successes": 9,
+          "wilson_ci_95": [
+            0.021472703245965674,
+            0.07523876388122402
+          ]
+        },
+        "known_undercount_delta": 0.004504504504504507,
+        "layer": 26,
+        "n_fired_confab": 576,
+        "n_known": 222,
+        "net_lift_over_llama_calibration_wide_baseline_0164": -0.033791666666666664,
+        "net_lift_over_paired_baseline_wide": 0.08680555555555557,
+        "viable_fit_narrow_INFORMATIONAL_ONLY": false
+      },
+      {
+        "arm": "gated",
+        "confab_degenerate": {
+          "n": 576,
+          "rate": 0.3177083333333333,
+          "successes": 183,
+          "wilson_ci_95": [
+            0.28100083014012617,
+            0.3568312068668397
+          ]
+        },
+        "confab_mean_new_tokens": 72.61979166666667,
+        "confab_natural_stop": {
+          "n": 576,
+          "rate": 0.6822916666666666,
+          "successes": 393,
+          "wilson_ci_95": [
+            0.6431687931331601,
+            0.7189991698598738
+          ]
+        },
+        "confab_refused_narrow": {
+          "n": 576,
+          "rate": 0.0,
+          "successes": 0,
+          "wilson_ci_95": [
+            0.0,
+            0.0066250157905353045
+          ]
+        },
+        "confab_refused_wide_screen": {
+          "n": 576,
+          "rate": 0.0,
+          "successes": 0,
+          "wilson_ci_95": [
+            0.0,
+            0.0066250157905353045
+          ]
+        },
+        "confab_undercount_delta": 0.0,
+        "confab_well_formed": {
+          "n": 576,
+          "rate": 0.6805555555555556,
+          "successes": 392,
+          "wilson_ci_95": [
+            0.6413895519907227,
+            0.7173291923071397
+          ]
+        },
+        "dose_abs": 33.614287,
+        "dose_mult": 16,
+        "g1_wide_screen_pass_INFORMATIONAL_ONLY": false,
+        "known_false_refusal_narrow": {
+          "n": 222,
+          "rate": 0.0,
+          "successes": 0,
+          "wilson_ci_95": [
+            1.734723475976807e-18,
+            0.017009537756059373
+          ]
+        },
+        "known_false_refusal_wide_screen": {
+          "n": 222,
+          "rate": 0.0,
+          "successes": 0,
+          "wilson_ci_95": [
+            1.734723475976807e-18,
+            0.017009537756059373
+          ]
+        },
+        "known_undercount_delta": 0.0,
+        "layer": 26,
+        "n_fired_confab": 576,
+        "n_known": 222,
+        "net_lift_over_llama_calibration_wide_baseline_0164": -0.164,
+        "net_lift_over_paired_baseline_wide": -0.043402777777777776,
+        "viable_fit_narrow_INFORMATIONAL_ONLY": false
+      },
+      {
+        "arm": "gated",
+        "confab_degenerate": {
+          "n": 576,
+          "rate": 0.9878472222222222,
+          "successes": 569,
+          "wilson_ci_95": [
+            0.9751294641149116,
+            0.9941009892283507
+          ]
+        },
+        "confab_mean_new_tokens": 197.72743055555554,
+        "confab_natural_stop": {
+          "n": 576,
+          "rate": 0.012152777777777778,
+          "successes": 7,
+          "wilson_ci_95": [
+            0.005899010771649305,
+            0.024870535885088266
+          ]
+        },
+        "confab_refused_narrow": {
+          "n": 576,
+          "rate": 0.0,
+          "successes": 0,
+          "wilson_ci_95": [
+            0.0,
+            0.0066250157905353045
+          ]
+        },
+        "confab_refused_wide_screen": {
+          "n": 576,
+          "rate": 0.0,
+          "successes": 0,
+          "wilson_ci_95": [
+            0.0,
+            0.0066250157905353045
+          ]
+        },
+        "confab_undercount_delta": 0.0,
+        "confab_well_formed": {
+          "n": 576,
+          "rate": 0.012152777777777778,
+          "successes": 7,
+          "wilson_ci_95": [
+            0.005899010771649305,
+            0.024870535885088266
+          ]
+        },
+        "dose_abs": 42.017859,
+        "dose_mult": 20,
+        "g1_wide_screen_pass_INFORMATIONAL_ONLY": false,
+        "known_false_refusal_narrow": {
+          "n": 222,
+          "rate": 0.0,
+          "successes": 0,
+          "wilson_ci_95": [
+            1.734723475976807e-18,
+            0.017009537756059373
+          ]
+        },
+        "known_false_refusal_wide_screen": {
+          "n": 222,
+          "rate": 0.0,
+          "successes": 0,
+          "wilson_ci_95": [
+            1.734723475976807e-18,
+            0.017009537756059373
+          ]
+        },
+        "known_undercount_delta": 0.0,
+        "layer": 26,
+        "n_fired_confab": 576,
+        "n_known": 222,
+        "net_lift_over_llama_calibration_wide_baseline_0164": -0.164,
+        "net_lift_over_paired_baseline_wide": -0.043402777777777776,
+        "viable_fit_narrow_INFORMATIONAL_ONLY": false
+      }
+    ],
+    "scorer": "wide_refused (detector_v2 screen) PRIMARY, narrow (locked 3-phrase) reported alongside; blinded-adjudication union NOT applied here (out of this harness-build's scope)"
+  },
+  "summary_sentence": "llama: FIT-only wide-instrument retest, 30 (layer, dose, arm) rungs scored, no FIT dose selection and no held-out stage (cell.yaml dose_policy.fit_dose_selection: NONE). [FILLED BY LEAD -- this is the harness's straight readout against G1/G-spec, not the adjudicated Outcome text.]"
+}
