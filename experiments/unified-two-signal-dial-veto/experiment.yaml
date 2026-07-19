@@ -31,6 +31,10 @@ instrument:
   modules: []
   pins: {}
 inputs: []
-verdict: SUCCESS — dial flags hallucinations as lowest-trust of all (U-G3 AUROC 0.980,
-  within-SelfAware control 0.93); confident confabulation reads opposite to correctness.
+verdict: 'CORRECTED BY CORRIGENDUM (2026-07-18): U-G3 hallucination labels were ~90%
+  detector-artifact refusals (confirmed flip rate 90.1%); under corrected labels (n=12
+  instrument-corrected / n=8 census-corrected vs the pre-stated >=50 floor) U-G3 is
+  UNPOWERED per the cell''s own data-stage stop, descriptive AUROC 0.9067 / 0.8639;
+  U-G1 stands (0.999). Original signed reading retained in AMENDMENT.md section 7:
+  SUCCESS, U-G3 AUROC 0.980.'
 kg: []

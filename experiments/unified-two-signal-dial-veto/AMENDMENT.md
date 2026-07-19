@@ -14,15 +14,21 @@ predictions:
       Predates the dual-prediction practice (adopted 2026-07-03 at AH
       signing); no separately recorded user prediction.
 outcome: >-
-  SUCCESS — dial flags hallucinations as lowest-trust of all (U-G3 AUROC
-  0.980, within-SelfAware control 0.93); confident confabulation reads
-  opposite to correctness.
+  CORRECTED BY CORRIGENDUM (2026-07-18): the hallucination labels behind
+  U-G3 were ~90% detector-artifact refusals; under corrected labels (12
+  instrument-corrected / 8 census-corrected vs the pre-stated >=50 floor)
+  U-G3 is UNPOWERED per the cell's own data-stage stop, with descriptive
+  AUROC 0.9067 / 0.8639. U-G1 stands (0.999). Original signed reading,
+  retained in section 7: SUCCESS, U-G3 AUROC 0.980.
 scoreboard: null
 ---
 
 # Amendment U — Unified Single-Stream Two-Signal Mechanism (Dial-Veto on Unknowns)
 
-**Status:** RESOLVED — SUCCESS (2026-06-30). The correctness dial flags
+**Status:** RESOLVED — SUCCESS (2026-06-30); **CORRECTED BY CORRIGENDUM
+(2026-07-18)**: U-G3 reclassified UNPOWERED after a confirmed hallucination-label
+instrument artifact; U-G1 unaffected. See the Corrigendum section at the end of
+this document. Original status text: the correctness dial flags
 hallucinations on unanswerable questions as lowest-trust (U-G3 AUROC 0.980, the
 falsifier did NOT fire). Gates were LOCKED at sign-off; no goalpost moved. Tier-2
 exploratory cell (new evidence, falsifier pre-stated; reported separately from the
@@ -226,6 +232,12 @@ Paper 3 §8 alongside Amendments S/T and the Stage 1/1.5 diagnostics.
 
 ## 7. Result
 
+> **CORRIGENDUM NOTICE (2026-07-18).** The section below is retained verbatim
+> for the record. A post-resolution instrument audit found the hallucination
+> labels it rests on ~90% contaminated by a detector artifact; U-G3 and the
+> hallucination-side descriptives are reclassified UNPOWERED. See the
+> Corrigendum section at the end of this document. U-G1 is unaffected.
+
 **VERDICT: SUCCESS — and strongly.** The correctness dial DOES provide independent
 hallucination defense: a fabricated answer to an unanswerable question reads as the
 LOWEST-trust group of all. H_U3 (primary) and H_U1 (confirmatory) both PASS; the
@@ -310,3 +322,143 @@ before running. With the full two-signal mechanism now demonstrated on one shipp
 checkpoint (S/T/U + Stage 1/1.5), the natural next steps are (a) the natural-answer
 (un-forced) generalization follow-up both S and T flagged, and (b) a confirmatory
 replication to promote any of this to a headline claim.
+
+## Corrigendum (2026-07-18): hallucination-label instrument artifact; U-G3 reclassified UNPOWERED
+
+PI-approved governed correction (ruling 2026-07-18, session record
+`docs/sessions/20260717T201649Z-margin-cascade-execution-m1-m2-m1b-m4.md`).
+The section 7 text above is retained verbatim; this corrigendum supersedes
+its gated verdict where stated below and changes nothing else.
+
+### What was found
+
+A PI-funded lab-notebook diagnostic re-graded this cell's original 1233
+stage2 generations (a literal re-grade of the archived answer_text, no
+regeneration) with both refusal instruments and found that 109 of the 121
+rows labeled "hallucination" (unknown and answered) are explicit refusals
+misclassified as answers by the narrow detector
+(`archive/experiment/phase1/eval/scorers.py::is_stated_confidence_refusal`).
+The result was adversarially confirmed by an independent re-derivation
+(0 row-level differences; flip rate 90.1%, 109/121, bootstrap 95% CI
+[84.3%, 95.0%]; seed-insensitive). A census of all 109 flipped rows found
+zero hedge-plus-guess rows: 108 of 109 are one verbatim trained refusal
+template beginning "i'm not sure what the answer is". The mechanism is a
+contraction blind spot: the narrow marker list contains the spelled-out
+"i am not sure what the answer is" but not the contraction form the
+GRPO-v2 checkpoint emits. The confirmation also established that neither
+instrument is a superset of the other: all 125 reverse-flip rows
+(narrow-refused, wide-answered) are a single canned template the wide
+detector lacks.
+
+The artifact is specific to this cell's trained checkpoint. The same
+re-grade on the sibling lineages found forward flip rates of 0.05%
+(amendment S, 1/1836; S has no unknown population, gold-answerable QA
+only, so its rate is an instrument-agreement figure, not
+population-comparable to U's), 2.36% (amendment W, 16/677), and 1.75% /
+3.82% / 2.54% (amendment X, 1.7B/8B/14B, 629 rows each): the raw Instruct
+bases never emit the trained contraction template. The flip pattern is itself
+corroborating evidence for amendment W's finding that training sharpens
+behavioral abstention: the training installed the exact phrasing the
+narrow instrument misses.
+
+### Computation integrity
+
+The signed pipeline is not at fault. Re-running this cell's own scorer
+(`experiments/common/readouts/amendment_u_two_signal_score.py`, unmodified,
+dial layer 22, seed 20260630, n_boot 2000) against the archived stage2
+rows and tensors reproduced the signed result bit-for-bit: AUROC 0.9802,
+CI [0.9684, 0.9898], identical to the committed
+`amendment_u_two_signal_result.json`. The artifact enters upstream, in the
+answered-vs-refused labels the narrow detector supplied.
+
+### Corrected label sets and re-scored results
+
+Full aggregate: `analysis-committed/ug3_corrected_rescore.json` (script
+`analysis/ug3_corrected_rescore.py`, gitignored; bootstrap seed 20260718,
+n_boot 10000; the corrected sets re-derived from source rows plus both
+detector functions, then cross-checked against the diagnostic's row flags,
+12/12 keys matching).
+
+| Label set | n hallucination | AUROC (T-correct vs hallucination) | 95% CI | Dial mean (hallucination) | Meets >= 50 floor |
+|---|---|---|---|---|---|
+| Original signed | 121 | 0.9802 | [0.9684, 0.9898] | 0.018 | yes (contaminated) |
+| Set A, instrument-corrected (answered under BOTH detectors) | 12 | 0.9067 | [0.8133, 0.9705] | 0.183 | NO |
+| Set B, census-corrected (Set A minus 4 rows of one refusal template both detectors miss) | 8 | 0.8639 | [0.7384, 0.9498] | 0.274 | NO |
+
+Corrected hallucination rate on the unknown population (n=677): originally
+reported 121/677 = 17.9% (CI [15.1%, 20.8%]); Set A 12/677 = 1.8% (CI
+[0.9%, 2.8%]); Set B 8/677 = 1.2% (CI [0.4%, 2.1%]).
+
+### Governance consequence (per this cell's own locked section 4)
+
+Section 4 pre-registered the adequacy precondition: "Hard floor >= 50
+hallucinations (unknown and answered). ... Below the floor is a DATA-STAGE
+stop", whose pre-stated meaning is that GRPO-v2's native abstention is too
+strong to yield a hallucination class, "itself a reportable behavioral
+finding, NOT a probe verdict". Under corrected labels the floor is not met
+(12 and 8 versus 50). Accordingly:
+
+- **U-G3 (primary): PASS is withdrawn as a gated verdict and reclassified
+  UNPOWERED.** The corrected AUROCs (0.9067 and 0.8639, CIs excluding 0.50)
+  are reported as descriptive numbers only, per the cell's own rule. They
+  are directionally consistent with the original reading but cannot gate.
+- **U-G1 (gate confirm): unaffected and stands** (0.999). Its label is
+  SelfAware's structural answerable/unanswerable assignment and its
+  feature is the pre-gen anchor, so the mislabeling cannot move a row
+  across the known/unknown axis. (The narrow detector does enter row
+  selection, since the scorer loads only detector-answered rows; it plays
+  no role in the label or the feature.)
+- **U-G2 (descriptive) and the dial-score ordering: corrected.** The
+  reported hallucination group mean of 0.018 was dominated by the 109
+  mislabeled refusal rows; the corrected means are 0.183 (Set A) and 0.274
+  (Set B). The striking pre-correction claim that hallucinations read below
+  even genuinely wrong answers (0.018 vs T-wrong 0.353) weakens to a
+  descriptive near-tie (0.274 vs 0.353) at n=8. What the 0.018 figure
+  actually measured is that the checkpoint's trained refusal text reads as
+  lowest trust on the dial, which is expected, not novel.
+- **The within-SelfAware control AUROC is superseded by the same
+  correction.** Section 7's control AUROC(known-answered vs hallucination)
+  = 0.93 [0.899, 0.957] has the identical contaminated hallucination side
+  (the 109 mislabeled refusal rows sit near dial 0 and inflate the
+  separation). Corrected values, same dial and method
+  (`analysis-committed/ug3_corrected_rescore.json`, control_rescore
+  block): 0.8140 vs Set A (CI [0.6953, 0.9127]), 0.7369 vs Set B (CI
+  [0.5947, 0.8549]), and 0.7500 fully corrected (CI [0.6073, 0.8678]),
+  where "fully corrected" also drops the 6 of 276 known-answered control
+  rows the wide detector re-grades as refusals (that contamination is
+  otherwise immaterial: group dial mean 0.679 to 0.690). All three are
+  descriptive at the corrected n. The dataset-shift-control reading in
+  section 7 ("NOT a SelfAware-OOD artifact") therefore rests on a weaker
+  separation, roughly 0.74 to 0.81, than the reported 0.93.
+- **Scientific takeaway 2 above ("the first direct evidence ... that the
+  post-gen correctness representation distinguishes 'I know this' from 'I
+  am making this up'") is withdrawn as stated.** The corrected evidence is
+  suggestive and unpowered.
+- **SUCCESS line: the section 7 verdict rested on U-G3 AND U-G1; with U-G3
+  unpowered the compound claim no longer holds as gated.** The corrected
+  behavioral finding, exactly as section 4 pre-registered for the
+  below-floor case: GRPO-v2 native abstention under forced suppression is
+  far stronger than the contaminated labels suggested (corrected
+  answered-on-unknown 1.8%, not 17.9%).
+
+### Scope of correction
+
+Nothing else in the cell changes. The run provenance, captures, T-side
+dial numbers, and U-G1 stand. The cell was and remains exploratory,
+single-model, single-seed, and not a headline claim. Downstream text that
+cites U-G3 0.980, the 0.018 ordering, or the within-SelfAware control
+0.93 requires corresponding correction, tracked in the writing campaign;
+paper 4 (`papers/paper-4-two-signal-readout/manuscript.md`) cites all
+three, the 0.93 at its lines 415-416, 465, and 947 as the support for its
+dataset-shift rebuttal.
+
+### Red-team
+
+This corrigendum and the Set B template identification were adversarially
+reviewed before signing (2026-07-18). Verdict: sign-off with fixes. The
+review independently reproduced every corrected number, confirmed the
+retained section 7 byte-identical and section 4 untouched, and found one
+major completeness gap, the uncorrected within-SelfAware control 0.93,
+which is fixed above (the corrected control values were then reproduced
+independently by the lead's re-score script before insertion). Full
+verdict and disclosures are recorded in NOTEBOOK.md (2026-07-18 entries).
