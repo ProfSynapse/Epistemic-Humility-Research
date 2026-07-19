@@ -137,5 +137,46 @@ reported straight.
 
 ## Outcome
 
-Filled at resolve. Record the verdict, the gate results, and the one-sentence
-summary that also goes into `verdict:` in the manifest.
+Resolved 2026-07-18. **LP-G0 DATA-STAGE STOP, exactly as pre-registered.**
+
+LP-G0 sub-results: dial reproduction PASSED both arms (S re-fit 0.8342 vs
+signed 0.834; T re-fit 0.8186 vs signed 0.819); row inventories matched
+(1836; 1488); the exact sequence round-trip FAILED on both arms: 14/1836 (S)
+and 16/1488 (T) rows, 0.9% pooled, re-tokenize the cached answer_text with an
+answer-span length off by exactly one BPE token (prompt side exact on every
+row, 28 of 30 short by one). The mechanism is the one the 2026-07-10
+inventory pre-identified: generation-time token IDs were never cached, and
+BPE re-tokenization of decoded text in isolation is not bit-stable at span
+boundaries. Per the gate's own wording ("any mismatch is a data-stage stop,
+not a result"), the stop fires; the harness made no attempt to force a match
+and the gate is not reinterpreted after the fact.
+
+Descriptive numbers (computed for transparency on the round-trip-clean rows,
+NOT a gated result; independently re-derived by the lead from the per-row
+artifacts, byte-identical):
+
+- S base arm (n=1822, 498 correct / 1324 wrong): dial 0.8338, primary
+  length-normalized logprob 0.8198, margin +0.014, paired 95% CI [-0.011,
+  +0.040]. Inside the pre-stated ambiguous band; LP-G1 would not have passed
+  and the falsifier would not have fired.
+- T deployed arm (n=1472, 979 / 493): dial 0.8183, primary logprob 0.6608,
+  margin +0.158, CI [+0.122, +0.192].
+
+Prediction assessment, reported straight: the orchestrator call (base logprob
+0.60-0.72) was WRONG on the base arm; sequence probability on the raw
+Instruct base captures nearly all of the dial's separation (0.820 vs 0.834).
+The directional picture the descriptive numbers suggest, subject to the
+integrity caveat above: the dial's clear margin over the model's own sequence
+probability appears on the DEPLOYED checkpoint (where training degrades the
+logprob signal to 0.661 while the dial holds 0.818), not on the raw base.
+Paper 4 limitation 8 may cite these as descriptive-with-caveat only; any
+gated version of this claim needs a successor cell with generation-time token
+IDs cached (or a tolerance pre-registered BEFORE seeing data), registered
+fresh.
+
+Gate ledger: LP-G0 FAIL (round-trip sub-criterion) -> data-stage stop; LP-G1
+not evaluated as a gate (computed value margin +0.014, ambiguous band);
+falsifier not fired. Artifacts:
+`analysis-committed/lp_logprob_baseline_result.json` and
+`lp_logprob_baseline_id_manifest.json` (aggregates and row_key lists only);
+per-row artifacts gitignored under `analysis/`.
