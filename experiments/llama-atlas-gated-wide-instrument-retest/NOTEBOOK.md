@@ -6,6 +6,45 @@ in `experiment.yaml`.
 
 ## Entries
 
+- 2026-07-19 (harness-build, unblinding tooling): With the pool manifest
+  frozen in git (b7bfa022) and the CG1-gated blinded grading lane running
+  under the lead's orchestration (8 context-free graders, one per shard --
+  out of scope for this harness-build assignment, and the grader working
+  dirs under the session scratchpad were not inspected), ported
+  `apply_adjudication.py` from `abstention-wide-instrument-calibration/`,
+  cross-checked against `rr3-corrected-placebo-replication/` and
+  `.skills/experiment-runner/reference/abstention-grading.md` (read all
+  three in full first). Kept the reference implementations' core guarantees
+  in code: commit-hash-before-unblind (raises SystemExit otherwise) and a
+  positional graded-file/id-map join (raises on length mismatch, reorder, or
+  non-boolean `is_abstention`). Added `gates_lib.cg1_evaluate_shard` /
+  `cg1_pooled_clear_positive` (ported verbatim from the calibration cell;
+  0.95/0.60 floors match this cell's own gates.yaml CG1 exactly; the pooled
+  rate is reported only -- this cell registers no pooled gate, unlike RR3's
+  successor fix (b)). Simplified the calibration/RR3 multi-cell
+  `voided_cells` set down to a single `experiment_voided` boolean, since this
+  harness has exactly one adjudication cell; verified in the smoke suite
+  that a terminal CG1 void on one shard excludes an otherwise-passing second
+  shard's rows too (matches "second failure voids the cell, reported
+  straight" when there is only one cell). Beyond the port, `cmd_apply` also
+  rebuilds the post-adjudication per-rung table
+  (`analysis-committed/llama/post_adjudication_wide_table.json`) by
+  re-scanning every RunLog row plus the reused baseline arm and taking
+  refused_wide_adjudicated = detector_v2 screen OR the unblinded verdict,
+  fail-closed to "not abstention" (with a `n_pending_adjudication` coverage
+  counter) for any row with no verdict yet. Verified this table-building
+  path against the REAL 30-rung RunLog directory (not real graded files --
+  none exist, grading is the lead's lane) with an empty adjudication map:
+  confirmed `refused_wide_adjudicated` reduces exactly to
+  `refused_wide_screen` and `n_pending_adjudication` exactly equals the
+  detector-negative count when nothing has been adjudicated. Wrote
+  `test_apply_adjudication_smoke.py` (synthetic 3-line shard + graded-file
+  fixtures, isolated to pytest tmp_path, never touching real analysis/
+  analysis-committed): 7/7 pass, covering the hash-refusal path, the
+  positional-mismatch raise, and the attempt-1-vs-attempt-2 CG1 void ladder.
+  Combined with the existing suite: 45/45 CPU tests pass. Did NOT run
+  `apply` against any real graded file. `gates.yaml`/`cell.yaml` diff
+  remains empty.
 - 2026-07-19 (harness-build, completion): Pipeline (PID 30797) exited cleanly
   ("[pipeline] family llama done in 7726s") after ~2h9m wall clock; zero
   Tracebacks anywhere in the run log. All 30 rungs present under

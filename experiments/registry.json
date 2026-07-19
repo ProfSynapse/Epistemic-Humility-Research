@@ -2232,9 +2232,12 @@
           "test_rr_smoke.py",
           "detector_v2.py",
           "detector_v2_patterns.yaml",
-          "build_adjudication_pool.py"
+          "build_adjudication_pool.py",
+          "apply_adjudication.py",
+          "test_apply_adjudication_smoke.py"
         ],
         "pins": {
+          "apply_adjudication.py": "5ca708bb033d7fed56b275a26237fd9531a4cffe1711e213183a324831f84c36",
           "build_adjudication_pool.py": "8e6818d5a2b98c10a2cfaf1592b22f08bf411f5c80a3d976a52ba931b716eb70",
           "cell.yaml": "beb06586a82216a33f30eefefdb048d019224f9f5b679b3f5aeb5abaaec0de40",
           "detector_v2.py": "161fd8548ec0dad1daabd590870654f1c32bd0daf21e6026a2c18c83e83991ae",
@@ -2242,13 +2245,14 @@
           "direction_fit.py": "d97966d05ad55df647ae2efd949fd2daf0155706ba10657019d77e5f2965ed5a",
           "dose_ladder.py": "959b434834dbf1e3177f01e44f0ebc79bc1bf3c477323293b71f2f0fe52933a3",
           "gates.yaml": "2c0b54f4e645a0a7f6562747c192fe4502a80c10f4166167e90a2e4fadd4f3ad",
-          "gates_lib.py": "a8c1c088bc0bf7daeee37d3146611b5eb54dc9e393583c1550dc765c04821b50",
+          "gates_lib.py": "ea66f19441fc9f32f269ff5cef97741cdf26491b108a88eea4ab81a229e629e2",
           "gen_lib.py": "03563593d2c58e1c8f41a5f6b0449b7185a5b6940e164edce40168db53cbb449",
           "grader.py": "54b8af60f2f287c85f3bc4a2d0c8f8ed09f685f10090bb3ef953116d1667b52c",
           "materialize_rows.py": "f5bc3d848a17d1975d3997ddf605536c533ae22bce392d9f7f0a27c04f59e3a2",
           "pipeline.py": "37fd27c7e7b1b971dc73bfadb31a966c95bc5a68939386a8733297243aa3e6ae",
           "render.py": "fa378bdbcfd185f9f8bcdbeb1209cbe180b9ec50e92f9342ea7d7421ff6b3ab3",
           "steer_lib.py": "45737d9c59cba4b00526f7dc674a2bc32bcb97d098ec4c308a97a07994155cf0",
+          "test_apply_adjudication_smoke.py": "374c9da2e5c925908e19562b3b46c70f25fd2a6ed48eaeb5c7dc0d29e44939bf",
           "test_rr_smoke.py": "b7a10f1d75c14e84f701a6c2b8586ff4725604eefb19f26b91aae06f79b52e7c"
         },
         "repins": [
@@ -2335,6 +2339,27 @@
             "new_sha256": "959b434834dbf1e3177f01e44f0ebc79bc1bf3c477323293b71f2f0fe52933a3",
             "old_sha256": "b94a381e73f8553b666c578285c2eb425724456fb5d8684382bf52fd22acd562",
             "reason": "Real single-layer GPU sanity check (hs20) surfaced that the invented real-model batched-vs-sequential BYTE-IDENTITY check was over-strict: 2/4 probe rows differed in decoded text after 200 greedy decode steps under an active erase-write hook, while readback_measured stayed consistent to 4 significant figures across all rows/batch positions (22.5011-22.5023 vs commanded 22.5239) -- confirming the write/wiring is correct and the divergence is bf16 batched-attention float noise cascading through greedy decoding, a known benign non-determinism property, not a row/gain/indexing defect. The REGISTERED sequential_vs_batch parity smoke (cell.yaml/AMENDMENT.md citation) is the CPU synthetic-model test in test_rr_smoke.py (deterministic, already passing); real-model bitwise identity was never registered. Downgraded this finding from a SystemExit stop to a reported NOTE; the actual registered gate in this function (cell.yaml dose_policy.pre_sweep_bracketing token-movement check) still raises SystemExit on failure and is unchanged. No gate/floor/falsifier threshold changed. All 38 CPU smoke tests pass; real single-layer (hs20) end-to-end GPU sanity check (model load, double-fit byte-identical, AUC=0.9992 >= 0.90 floor, hook placement, bracket check) now completes cleanly."
+          },
+          {
+            "date": "2026-07-19T12:10:00Z",
+            "file": "apply_adjudication.py",
+            "new_sha256": "5ca708bb033d7fed56b275a26237fd9531a4cffe1711e213183a324831f84c36",
+            "old_sha256": "none-new-module",
+            "reason": "New module added by the harness-build assignment (post-pool-freeze task: port the unblinding/apply tooling so it is ready when the CG1-gated blinded grading lane, launched by the lead over the frozen pool from commit b7bfa022, completes). Adapted from abstention-wide-instrument-calibration/apply_adjudication.py, cross-checked against rr3-corrected-placebo-replication/apply_adjudication.py and .skills/experiment-runner/reference/abstention-grading.md (read both in full before writing this). Ported verbatim: the commit-hash-before-unblind guarantee (enforced in code -- `evaluate_shard` raises SystemExit if a shard's graded-file sha256 is absent from analysis-committed/adjudication_graded_manifest.json), the POSITIONAL join between the graded file and the shard id map (line-for-line opaque_id equality asserted; raises on length mismatch, reorder, or a non-boolean is_abstention value), and per-shard CG1 via the new gates_lib.cg1_evaluate_shard (0.95 clear-negative / 0.60 clear-positive floors, exactly gates.yaml's registered CG1, unchanged from the calibration cell -- this cell's gates.yaml has no pooled floor, unlike RR3's successor fix (b), so gates_lib.cg1_pooled_clear_positive reports the pooled clear-positive rate but never gates on it). SINGLE-CELL SIMPLIFICATION versus the calibration/RR3 multi-cell references: this harness has exactly one adjudication cell (build_adjudication_pool.py's id map carries no per-row \"cell\" tag), so a VOID_CELL_TERMINAL status voids the WHOLE lane (a single `experiment_voided` boolean), not a `voided_cells` set -- verified in the smoke suite (see test_apply_adjudication_smoke.py repin below) that a terminal void on one shard excludes an otherwise-passing second shard's rows too. Beyond the ported join/CG1 mechanics, `cmd_apply` also rebuilds the post-adjudication per-rung table (analysis-committed/llama/post_adjudication_wide_table.json) by re-scanning every RunLog row plus the reused baseline arm and taking refused_wide_adjudicated = detector_v2 screen OR the unblinded adjudicator verdict; rows with no verdict yet are fail-closed to \"not abstention\" and counted in a `n_pending_adjudication` coverage field per rung/population rather than silently treated as complete. Verified this table-building logic against the REAL 30-rung RunLog directory (not real graded files -- none exist yet, and grading is out of scope per the lead's instruction) with an empty adjudication map: confirmed refused_wide_adjudicated reduces exactly to refused_wide_screen and n_pending_adjudication exactly equals the detector-negative row count, i.e. the fail-closed default behaves correctly with zero adjudication coverage. Did NOT run apply against any real graded file. No gate, floor, or falsifier threshold changed; gates.yaml and cell.yaml diff is empty."
+          },
+          {
+            "date": "2026-07-19T12:10:00Z",
+            "file": "gates_lib.py",
+            "new_sha256": "ea66f19441fc9f32f269ff5cef97741cdf26491b108a88eea4ab81a229e629e2",
+            "old_sha256": "a8c1c088bc0bf7daeee37d3146611b5eb54dc9e393583c1550dc765c04821b50",
+            "reason": "Added CG1_CLEAR_NEGATIVE_MIN (0.95), CG1_CLEAR_POSITIVE_MIN (0.60), cg1_shard_pass, cg1_evaluate_shard, and cg1_pooled_clear_positive (reported only, never gated -- see apply_adjudication.py repin above), ported verbatim from abstention-wide-instrument-calibration/gates_lib.py, to back the new apply_adjudication.py module. No existing function, constant, or threshold in this file was changed; this is a pure addition."
+          },
+          {
+            "date": "2026-07-19T12:10:00Z",
+            "file": "test_apply_adjudication_smoke.py",
+            "new_sha256": "374c9da2e5c925908e19562b3b46c70f25fd2a6ed48eaeb5c7dc0d29e44939bf",
+            "old_sha256": "none-new-module",
+            "reason": "New CPU smoke suite for apply_adjudication.py, against synthetic 3-line shard + graded-file fixtures only (never the real graded files), isolated to pytest tmp_path directories so nothing here reads or writes the real analysis/ or analysis-committed/ trees. Covers: (1) the hash-refusal path (apply raises SystemExit before any commit-hash call, succeeds after); (2) the positional-mismatch raise (opaque_id reorder, line-count mismatch, and non-boolean is_abstention all raise); (3) the CG1 void ladder (attempt-1 failure -> VOID_REGRADE_ONCE, lane not yet voided; attempt-2 failure on the same content -> VOID_CELL_TERMINAL, whole lane voided, verified that a second, independently-passing shard's rows are also excluded from n_applied_rows). 7/7 pass; combined with the existing 38 test_rr_smoke.py tests, 45/45 pass."
           }
         ]
       },

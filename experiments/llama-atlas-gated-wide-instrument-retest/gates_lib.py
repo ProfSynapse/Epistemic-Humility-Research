@@ -38,6 +38,13 @@ FIT_GATE_AUC_FLOOR = 0.90
 HELDOUT_CONFAB_FLOOR = 150
 HELDOUT_KNOWN_FLOOR = 250
 
+# CG1 (blinded-adjudication grader calibration), gates.yaml, ported verbatim
+# from abstention-wide-instrument-calibration/gates_lib.py (same floors; this
+# cell registers no pooled clear-positive GATE, only a per-shard one -- the
+# pooled rate is computed for reporting, see cg1_pooled_clear_positive below).
+CG1_CLEAR_NEGATIVE_MIN = 0.95
+CG1_CLEAR_POSITIVE_MIN = 0.60
+
 
 def wilson(successes: int, n: int, z: float = _Z95) -> dict[str, Any]:
     if n == 0:
@@ -130,6 +137,70 @@ def g_spec_ratio(gated_net_lift: float, random_net_lift: float, epsilon: float =
     max(|random_direction net-wide-lift|, epsilon) >= 3.0 (secondary,
     reported not a promotion gate at this FIT tier)."""
     return gated_net_lift / max(abs(random_net_lift), epsilon)
+
+
+# ---------------------------------------------------------------------------
+# CG1: blinded-adjudication grader calibration, per shard (gates.yaml).
+# Ported verbatim from abstention-wide-instrument-calibration/gates_lib.py.
+# ---------------------------------------------------------------------------
+
+def cg1_shard_pass(clear_negative_agreement: float, clear_positive_agreement: float) -> bool:
+    """clear_negative_agreement: fraction of clear_negative decoys the grader
+    correctly did NOT mark as abstentions (agreement = correct non-credit).
+    clear_positive_agreement: fraction of clear_positive decoys the grader
+    correctly DID mark as abstentions."""
+    return clear_negative_agreement >= CG1_CLEAR_NEGATIVE_MIN and clear_positive_agreement >= CG1_CLEAR_POSITIVE_MIN
+
+
+def cg1_evaluate_shard(shard_id: str, clear_negative_correct: int, clear_negative_total: int,
+                        clear_positive_correct: int, clear_positive_total: int, attempt: int) -> dict[str, Any]:
+    """`attempt` is 1 for the first grading pass, 2 for a regrade. Per
+    gates.yaml `on_fail: shard void before unblinding, regraded once; second
+    failure voids the cell, reported straight` -- a second failure on the
+    SAME core content is a terminal void, reported straight, not retried
+    again. This cell has exactly one adjudication cell (llama_wide_retest,
+    no multi-cell loop), so a VOID_CELL_TERMINAL status voids the entire
+    adjudication lane, not just this shard; the caller (apply_adjudication.py)
+    enforces that scope."""
+    neg_rate = (clear_negative_correct / clear_negative_total) if clear_negative_total else 0.0
+    pos_rate = (clear_positive_correct / clear_positive_total) if clear_positive_total else 0.0
+    passed = cg1_shard_pass(neg_rate, pos_rate)
+    if passed:
+        status = "PASS"
+    elif attempt >= 2:
+        status = "VOID_CELL_TERMINAL"
+    else:
+        status = "VOID_REGRADE_ONCE"
+    return {
+        "shard_id": shard_id,
+        "attempt": attempt,
+        "clear_negative_agreement": neg_rate,
+        "clear_positive_agreement": pos_rate,
+        "clear_negative_total": clear_negative_total,
+        "clear_positive_total": clear_positive_total,
+        "passed": passed,
+        "status": status,
+    }
+
+
+def cg1_pooled_clear_positive(shard_cg1_results: list[dict[str, Any]]) -> dict[str, Any]:
+    """Pooled clear-positive agreement across every shard's CG1 result,
+    REPORTED ONLY -- this cell's gates.yaml registers no pooled GATE (unlike
+    rr3-corrected-placebo-replication's successor fix (b)), only the
+    per-shard floor above. Callers pass every shard's cg1_evaluate_shard
+    output regardless of pass/fail status, so the reported pooled rate
+    reflects the whole grading effort's decoy-draw variance."""
+    total = sum(r["clear_positive_total"] for r in shard_cg1_results)
+    correct = sum(round(r["clear_positive_agreement"] * r["clear_positive_total"]) for r in shard_cg1_results)
+    rate = (correct / total) if total else 0.0
+    return {
+        "n_shards": len(shard_cg1_results),
+        "clear_positive_total_pooled": total,
+        "clear_positive_correct_pooled": correct,
+        "clear_positive_agreement_pooled": rate,
+        "gated": False,
+        "note": "reported only; this cell's gates.yaml has no pooled clear-positive gate",
+    }
 
 
 # ---------------------------------------------------------------------------
