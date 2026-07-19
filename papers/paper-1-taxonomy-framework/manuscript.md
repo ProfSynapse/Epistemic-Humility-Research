@@ -170,7 +170,10 @@ Grube, 1997). A humility behavior not anchored to the model's internal state
 is an untethered statue: the right answer today, a runaway under
 distribution shift. The mapping exercise below shows this axis is almost
 entirely unmeasured in the training literature; measuring it is the first
-item of the agenda in Section 6.
+item of the agenda in Section 6, and the program's own companion diagnosis
+paper (paper 3, [*Knows but Doesn't
+Say*](../paper-3-knows-but-doesnt-say/manuscript.md)) now supplies exactly
+that measurement.
 
 ## 3. Corpus and synthesis method
 
@@ -347,6 +350,12 @@ Distinguish two objects inside a trained model:
   everything else) to observable behavior, that is, answering, refusing,
   hedging, and the confidence the model verbalizes.
 
+We use "epistemic signal" here as a working simplification; the program's own
+readout experiment finds it is not one object but at least two dissociable
+signals, an answerability axis and a per-answer correctness axis, separable
+enough that fusing them costs correctness ranking (paper 4, [*It's What's on
+the Inside That Counts*](../paper-4-two-signal-readout/manuscript.md)).
+
 The evidence reads naturally as claims about which object each intervention
 touches. C1's mechanism (Kadavath et al., 2022) is explicit that RLHF damages
 the *readout* while the signal survives (temperature repair). C2/C3's trades
@@ -373,7 +382,16 @@ We state the picture as three propositions, each falsifiable:
   rather than training the output channel harder, is the productive
   engineering target. *(Motivated by the temperature-repair result and the
   probing literature; falsified if the internal signal proves weak, incoherent
-  across estimators (Gani et al., 2026), or non-transferable.)*
+  across estimators (Gani et al., 2026), or non-transferable. Non-transferability
+  is now partially tested: on a methodologically matched lineage, the
+  named known-unknown direction does not fire at all on the world-known
+  (confidently-wrong) error class (primary transfer VOID, out of domain; the
+  population's projections reverse sign), and a direction refit natively on
+  that population shows only a sub-floor, behaviorally inert response to
+  in-context evidence, a population-bound result that constrains P3's scope
+  without falsifying it
+  (`experiments/margin-evidence-responsiveness-worldknown/AMENDMENT.md`,
+  Outcome).)*
 
 The propositions generate a concrete agenda, ordered by the gaps:
 
@@ -397,8 +415,13 @@ The propositions generate a concrete agenda, ordered by the gaps:
    [*It's What's on the Inside That Counts: A Training-Free Two-Signal Readout for
    Epistemic Humility in Small Language
    Models*](../paper-4-two-signal-readout/manuscript.md), tests its transfer across
-   datasets, scales, and families; a planned steering study tests its causal
-   writability.
+   datasets, scales, and families. Causal writability was tested by the program's
+   actuation experiment, [*Readable Is Not Writable: Channel, Gate, and Workspace
+   Constraints on Actuating Known-Unknown State in Small Language
+   Models*](../paper-5-actuation/manuscript.md); the answer is operating-point-dependent,
+   not universal: at an overdrive dose the gate is the sole source of selectivity, while
+   at mid-band doses the write is already content-selective and the gate's role reduces
+   to a modest increment plus cost governance.
 4. **Fill the remaining measurement gaps** (Gaps 5–6): dose-response over the
    IDK fraction, small-model coverage, and OOD stress tests.
 
