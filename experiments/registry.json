@@ -984,6 +984,35 @@
     },
     {
       "checkpoint": {
+        "repo": "unsloth/Qwen3-4B-bnb-4bit",
+        "revision": "as-cached (S manifest model_name; arm 2 uses clean-SFT merged-16bit + GRPO-v2 adapter under scratch/schema_response_confidence/runs/, exact dirs pinned in the harness config)"
+      },
+      "created_at": "2026-07-19T00:59:03Z",
+      "falsifier": "Primary-variant logprob AUROC >= dial AUROC on the primary arm with the paired 95% CI excluding 0 in that direction (dial separation redundant with free sequence probability).",
+      "inputs": [],
+      "instrument": {
+        "configs": [
+          "cell.yaml",
+          "gates.yaml"
+        ],
+        "modules": [],
+        "pins": {
+          "cell.yaml": "94454104898f8f459710f42187ed9d202c43b4db277fb31e2628c94041d9602b",
+          "gates.yaml": "a6fdb9c4bbda9dac4370c83b4c1a71ad5be96de1d26b7be27af514ce2f7a9378"
+        }
+      },
+      "kg": [],
+      "prediction": "orchestrator: LP-G1 passes; primary logprob AUROC 0.60-0.72, dial-minus-logprob margin positive with paired 95% CI excluding 0. user: approved cell + pre-approved GPU launch 2026-07-18, no separate quantitative call recorded.",
+      "question": "What is the correctness dial's margin over the model's own answer-span token log-probabilities (length-normalized mean, primary) on the exact rows the dial was measured on (amendment S base population primary; amendment T deployed arm descriptive)?",
+      "registered": true,
+      "slug": "dial-logprob-baseline",
+      "status": "resolved",
+      "title": "Dial token-logprob baseline (LP)",
+      "type": "probe-fit",
+      "verdict": "DATA-STAGE STOP (2026-07-18): LP-G0 round-trip precondition failed as pre-registered (30/3324 rows off by one BPE token; generation-time token IDs never cached); dial reproduction and inventories clean. Descriptive only: base margin dial-minus-logprob +0.014 [-0.011,+0.040] (logprob 0.820 nearly matches dial 0.834); deployed margin +0.158 [+0.122,+0.192] (logprob 0.661 vs dial 0.818). No gated claim; successor needs cached token IDs or a pre-registered tolerance."
+    },
+    {
+      "checkpoint": {
         "repo": "",
         "revision": ""
       },

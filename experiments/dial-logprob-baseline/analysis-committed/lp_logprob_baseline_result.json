@@ -1,0 +1,94 @@
+{
+  "arms": {
+    "s_base_primary": {
+      "n_rows_common": 1822,
+      "n_rows_expected": 1836,
+      "n_correct": 498,
+      "n_wrong": 1324,
+      "dial": {
+        "layer": 20,
+        "position": "post",
+        "reproduced_auroc": 0.8342,
+        "target_auroc": 0.834,
+        "reproduction_ok_3dp": true,
+        "auroc_on_common_rows": 0.8338
+      },
+      "logprob_variants": {
+        "primary_mean_answer_span": 0.8198,
+        "secondary_sum_answer_span": 0.7863,
+        "secondary_min_answer_span": 0.8243
+      },
+      "margin_dial_minus_primary_logprob": 0.014,
+      "margin_bootstrap_ci": {
+        "n_boot_effective": 2000,
+        "ci_lo": -0.010858790312961683,
+        "ci_hi": 0.03966860439236691,
+        "mean": 0.014131123392126441
+      },
+      "n_roundtrip_mismatch": 14,
+      "row_count_ok": false,
+      "LP_G0_ok_this_arm": false,
+      "resolved_model": "unsloth/Qwen3-4B-bnb-4bit",
+      "resolved_adapter": null
+    },
+    "t_deployed_descriptive": {
+      "n_rows_common": 1472,
+      "n_rows_expected": 1488,
+      "n_correct": 979,
+      "n_wrong": 493,
+      "dial": {
+        "layer": 22,
+        "position": "post",
+        "reproduced_auroc": 0.8186,
+        "target_auroc": 0.819,
+        "reproduction_ok_3dp": true,
+        "auroc_on_common_rows": 0.8183
+      },
+      "logprob_variants": {
+        "primary_mean_answer_span": 0.6608,
+        "secondary_sum_answer_span": 0.7752,
+        "secondary_min_answer_span": 0.7588
+      },
+      "margin_dial_minus_primary_logprob": 0.1576,
+      "margin_bootstrap_ci": {
+        "n_boot_effective": 2000,
+        "ci_lo": 0.12239532105323632,
+        "ci_hi": 0.1917071447978375,
+        "mean": 0.15705855950684255
+      },
+      "n_roundtrip_mismatch": 16,
+      "row_count_ok": false,
+      "LP_G0_ok_this_arm": false,
+      "resolved_model": "/home/profsynapse/code/Epistemic-Humility-Research/scratch/schema_response_confidence/runs/sft_schema_clean_seed1_full/20260623_123624/Qwen3-4B-bnb-4bit/merged-16bit",
+      "resolved_adapter": "/home/profsynapse/code/Epistemic-Humility-Research/scratch/schema_response_confidence/runs/schema_clean_sft_grpo_v2_seed1_full/20260624_095831/final_model"
+    }
+  },
+  "gates": {
+    "LP_G0_integrity_precondition": {
+      "pass": false,
+      "per_arm": {
+        "s_base_primary": false,
+        "t_deployed_descriptive": false
+      }
+    },
+    "LP_G1_primary": {
+      "criterion": "dial AUROC minus primary-logprob AUROC >= +0.05, paired 95% CI excluding 0",
+      "margin": 0.014,
+      "ci_lo": -0.010858790312961683,
+      "ci_hi": 0.03966860439236691,
+      "pass": null,
+      "ambiguous_band": null,
+      "note": "computed regardless of LP-G0 for transparency; NOT a valid result if LP-G0 failed"
+    }
+  },
+  "provenance": {
+    "cell_yaml_seed": 20260719,
+    "n_boot_paired": 2000,
+    "dial_refit_seed": 20260630
+  },
+  "falsifier": {
+    "criterion": "primary-logprob AUROC >= dial AUROC on s_base_primary, paired 95% CI excluding 0 in that direction",
+    "fired": null
+  },
+  "verdict_computable": false
+}
