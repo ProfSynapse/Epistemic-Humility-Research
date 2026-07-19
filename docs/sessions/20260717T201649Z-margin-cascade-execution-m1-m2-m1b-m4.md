@@ -4,7 +4,7 @@ session_id: 20260717T201649Z-margin-cascade-execution-m1-m2-m1b-m4
 title: 'Margin cascade execution: M1 M2 M1b M4'
 status: active
 created_at: '2026-07-17T20:16:49Z'
-updated_at: '2026-07-19T00:54:52Z'
+updated_at: '2026-07-19T01:09:00Z'
 question: Do the framework's margin-theory claims (1, 3) and the mentalistic-naming
   criteria hold at the qwen mid-band operating point, tested cheap-first through the
   M1-M6 cascade?
@@ -404,6 +404,32 @@ checkpoints:
   - Review LP/CD and llama-retest design drafts when designers report; sign-off packets
     to PI; each GPU launch needs fresh approval
   signals: {}
+- id: 015-decision
+  at: '2026-07-19T01:09:00Z'
+  kind: decision
+  title: 'GPU track rulings: LP signed+running, llama retest approved, CD queued'
+  summary: 'PI approved the LP+CD packet ("Approved"), pre-approved GPU launches ("Gpu
+    launch pre approved"), and approved the llama retest cell ("Sounds good on llama",
+    2026-07-18). LP (dial-logprob-baseline) signed on exp/dial-logprob-baseline with
+    pinned cell/gates shas, harness building+running (~1 GPU-hr; LP-G0 dial-reproduction
+    precondition, LP-G1 +0.05 floor). Llama retest redirect verified in governed docs:
+    rr-cross-family-raw-refusal already ran the atlas-sited ladder (shape F, narrow-scored);
+    rr dosed text unrecoverable (worktree gone); task #7 is now llama-atlas-gated-wide-instrument-retest,
+    a 2-4 GPU-hr wide-primary re-run with random-direction arm at peak rungs, hs26
+    late anchor kept, FIT-only. Sequencing per one-amendment-one-PR: LP resolve+merge,
+    then llama (ahead of CD, feeds paper 5/M3), then CD (~8-12 GPU-hr). Durable lesson
+    A6 (stage dosed runlogs off-worktree before teardown) to land in mechinterp-cells
+    skill with the llama arc.'
+  evidence: []
+  run_ids: []
+  commands: []
+  decisions:
+  - 'Amendment order: LP -> llama retest -> CD; llama jumps CD because paper 5 cross-family
+    framing and M3 third family consume it directly'
+  next_steps:
+  - 'On LP harness report: lead verifies, resolves, PRs, merges; then scaffold+sign
+    llama cell'
+  signals: {}
 track: margin-theory-cascade
 ---
 # Margin cascade execution: M1 M2 M1b M4
@@ -507,3 +533,12 @@ _No summary yet._
 - summary: Campaign finale merged under PI standing approval. Paper 4 corrected to corrigendum finals (U-G3 UNPOWERED, control 0.8140/0.7369/0.7500, sharpening claim hedged at five sites after red-team MAJOR: corrected comparison unpowered and null under Set B, 0.274 vs base 0.271). Paper 2 red-team MAJOR fixed: Amendment R (unsigned draft, absent from paper 3) dropped from the confidence-channel list, now J/K/L/M/N. Paper 1 writability sentence + P3 population bound landed. All five manuscripts now reconciled with post-2026-07-10 evidence: PRs #308 (terminology), #309 (paper 5 rewrite), #310 (paper 3), #311 (Amendment U corrigendum), #312 (papers 1/2/4). GPU track opened per PI: LP+CD designs and llama atlas-sited retest design in flight; llama atlas prerequisite already satisfied by jspace-family-atlas (resolved 2026-07-12, band L15-23, 3B weights cached).
 - next steps:
   - Review LP/CD and llama-retest design drafts when designers report; sign-off packets to PI; each GPU launch needs fresh approval
+### 015-decision - GPU track rulings: LP signed+running, llama retest approved, CD queued
+
+- at: `2026-07-19T01:09:00Z`
+- kind: `decision`
+- summary: PI approved the LP+CD packet ("Approved"), pre-approved GPU launches ("Gpu launch pre approved"), and approved the llama retest cell ("Sounds good on llama", 2026-07-18). LP (dial-logprob-baseline) signed on exp/dial-logprob-baseline with pinned cell/gates shas, harness building+running (~1 GPU-hr; LP-G0 dial-reproduction precondition, LP-G1 +0.05 floor). Llama retest redirect verified in governed docs: rr-cross-family-raw-refusal already ran the atlas-sited ladder (shape F, narrow-scored); rr dosed text unrecoverable (worktree gone); task #7 is now llama-atlas-gated-wide-instrument-retest, a 2-4 GPU-hr wide-primary re-run with random-direction arm at peak rungs, hs26 late anchor kept, FIT-only. Sequencing per one-amendment-one-PR: LP resolve+merge, then llama (ahead of CD, feeds paper 5/M3), then CD (~8-12 GPU-hr). Durable lesson A6 (stage dosed runlogs off-worktree before teardown) to land in mechinterp-cells skill with the llama arc.
+- decisions:
+  - Amendment order: LP -> llama retest -> CD; llama jumps CD because paper 5 cross-family framing and M3 third family consume it directly
+- next steps:
+  - On LP harness report: lead verifies, resolves, PRs, merges; then scaffold+sign llama cell
