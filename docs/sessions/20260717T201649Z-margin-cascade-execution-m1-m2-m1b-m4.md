@@ -4,7 +4,7 @@ session_id: 20260717T201649Z-margin-cascade-execution-m1-m2-m1b-m4
 title: 'Margin cascade execution: M1 M2 M1b M4'
 status: active
 created_at: '2026-07-17T20:16:49Z'
-updated_at: '2026-07-19T09:55:45Z'
+updated_at: '2026-07-19T20:21:09Z'
 question: Do the framework's margin-theory claims (1, 3) and the mentalistic-naming
   criteria hold at the qwen mid-band operating point, tested cheap-first through the
   M1-M6 cascade?
@@ -455,6 +455,30 @@ checkpoints:
   - 'On harness G0+ladder report: lead runs the CG1-gated blinded adjudication lane,
     adjudicates R1/R2, resolves, PRs.'
   signals: {}
+- id: 017-result
+  at: '2026-07-19T20:21:09Z'
+  kind: result
+  title: 'Llama wide retest resolved R1 and merged (PR #315); CD signed and launched'
+  summary: 'llama-atlas-gated-wide-instrument-retest resolved R1: falsifier fired
+    on zero rungs; well-formed peak hs20 dose 12 wide 0.457 [0.416,0.497] (narrow
+    0.328, wf 0.946), every rung above wide 0.5 format-broken with runaway known FR;
+    CG1 8/8 PASS attempt 1; cross-cohort baseline agreement 0.1624 vs 0.164; G-spec
+    3.73 PASS at d12, 1.79 FAIL at format-broken d16 (reported); red-team SIGN-OFF
+    with 4 hygiene notes recorded. PI merged PR #315 (9ce4ef0b). Exhaust verified
+    complete (30 RunLogs, 8 shards+id_maps, 8 graded) before worktree teardown. correctness-direction-rotation
+    (CD) scaffolded from the approved design, signed (CD-G0/G1/G2 + split-half noise
+    floor + S->T bracket), committed and pushed on exp/correctness-direction-rotation;
+    harness-builder launched for the ~8-12 GPU-hr pre-approved run.'
+  evidence: []
+  run_ids: []
+  commands: []
+  decisions:
+  - 'Orchestrator CD call recorded pre-run: partial rotation, raw->cleansft cosine
+    0.3-0.6 at L19-L24, later transitions >= 0.85.'
+  next_steps:
+  - 'On CD harness report: lead adjudicates CD-G1/falsifier, resolves, red-teams,
+    PRs. Gemma-4-E4B atlas (task #38) queues after CD.'
+  signals: {}
 track: margin-theory-cascade
 ---
 # Margin cascade execution: M1 M2 M1b M4
@@ -576,3 +600,12 @@ _No summary yet._
   - Sequencing continues LP -> llama -> CD -> Gemma-4-E4B atlas; paper PR merges after red-team sign-off under the PI proceed grant.
 - next steps:
   - On harness G0+ladder report: lead runs the CG1-gated blinded adjudication lane, adjudicates R1/R2, resolves, PRs.
+### 017-result - Llama wide retest resolved R1 and merged (PR #315); CD signed and launched
+
+- at: `2026-07-19T20:21:09Z`
+- kind: `result`
+- summary: llama-atlas-gated-wide-instrument-retest resolved R1: falsifier fired on zero rungs; well-formed peak hs20 dose 12 wide 0.457 [0.416,0.497] (narrow 0.328, wf 0.946), every rung above wide 0.5 format-broken with runaway known FR; CG1 8/8 PASS attempt 1; cross-cohort baseline agreement 0.1624 vs 0.164; G-spec 3.73 PASS at d12, 1.79 FAIL at format-broken d16 (reported); red-team SIGN-OFF with 4 hygiene notes recorded. PI merged PR #315 (9ce4ef0b). Exhaust verified complete (30 RunLogs, 8 shards+id_maps, 8 graded) before worktree teardown. correctness-direction-rotation (CD) scaffolded from the approved design, signed (CD-G0/G1/G2 + split-half noise floor + S->T bracket), committed and pushed on exp/correctness-direction-rotation; harness-builder launched for the ~8-12 GPU-hr pre-approved run.
+- decisions:
+  - Orchestrator CD call recorded pre-run: partial rotation, raw->cleansft cosine 0.3-0.6 at L19-L24, later transitions >= 0.85.
+- next steps:
+  - On CD harness report: lead adjudicates CD-G1/falsifier, resolves, red-teams, PRs. Gemma-4-E4B atlas (task #38) queues after CD.
