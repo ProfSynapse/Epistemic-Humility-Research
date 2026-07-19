@@ -4,7 +4,7 @@ session_id: 20260717T201649Z-margin-cascade-execution-m1-m2-m1b-m4
 title: 'Margin cascade execution: M1 M2 M1b M4'
 status: active
 created_at: '2026-07-17T20:16:49Z'
-updated_at: '2026-07-19T01:09:00Z'
+updated_at: '2026-07-19T09:55:45Z'
 question: Do the framework's margin-theory claims (1, 3) and the mentalistic-naming
   criteria hold at the qwen mid-band operating point, tested cheap-first through the
   M1-M6 cascade?
@@ -430,6 +430,31 @@ checkpoints:
   - 'On LP harness report: lead verifies, resolves, PRs, merges; then scaffold+sign
     llama cell'
   signals: {}
+- id: 016-decision
+  at: '2026-07-19T09:55:45Z'
+  kind: decision
+  title: 'PR #313 merged; llama retest signed+launched; paper 4 limitation 8 edit
+    in red-team'
+  summary: 'PI granted merge and proceed-with-next-steps (2026-07-19). PR #313 (LP
+    data-stage stop) merged to main (cc02a057); LP worktree removed. llama-atlas-gated-wide-instrument-retest
+    scaffolded from the designer draft with all adjudications folded in (A0 fresh
+    re-run, A2 FIT-only, A3 random arm at hs20 dose 12+16, A4 keep hs26, A5 index
+    convention pinned, A6 durable exhaust staging to ehr-exhaust/), signed with rr
+    modules pinned verbatim, committed and pushed on exp/llama-atlas-gated-wide-instrument-retest;
+    harness-builder launched (scorer swap via audited repins, then the pre-approved
+    local-3090 ladder). mechinterp-cells skill gained the A6 stage-RunLogs-before-teardown
+    rule. Paper 4 limitation 8 swapped to the computed logprob baseline (descriptive-with-caveat)
+    on paper/lp-limitation8; red-team running before PR.'
+  evidence: []
+  run_ids: []
+  commands: []
+  decisions:
+  - Sequencing continues LP -> llama -> CD -> Gemma-4-E4B atlas; paper PR merges after
+    red-team sign-off under the PI proceed grant.
+  next_steps:
+  - 'On harness G0+ladder report: lead runs the CG1-gated blinded adjudication lane,
+    adjudicates R1/R2, resolves, PRs.'
+  signals: {}
 track: margin-theory-cascade
 ---
 # Margin cascade execution: M1 M2 M1b M4
@@ -542,3 +567,12 @@ _No summary yet._
   - Amendment order: LP -> llama retest -> CD; llama jumps CD because paper 5 cross-family framing and M3 third family consume it directly
 - next steps:
   - On LP harness report: lead verifies, resolves, PRs, merges; then scaffold+sign llama cell
+### 016-decision - PR #313 merged; llama retest signed+launched; paper 4 limitation 8 edit in red-team
+
+- at: `2026-07-19T09:55:45Z`
+- kind: `decision`
+- summary: PI granted merge and proceed-with-next-steps (2026-07-19). PR #313 (LP data-stage stop) merged to main (cc02a057); LP worktree removed. llama-atlas-gated-wide-instrument-retest scaffolded from the designer draft with all adjudications folded in (A0 fresh re-run, A2 FIT-only, A3 random arm at hs20 dose 12+16, A4 keep hs26, A5 index convention pinned, A6 durable exhaust staging to ehr-exhaust/), signed with rr modules pinned verbatim, committed and pushed on exp/llama-atlas-gated-wide-instrument-retest; harness-builder launched (scorer swap via audited repins, then the pre-approved local-3090 ladder). mechinterp-cells skill gained the A6 stage-RunLogs-before-teardown rule. Paper 4 limitation 8 swapped to the computed logprob baseline (descriptive-with-caveat) on paper/lp-limitation8; red-team running before PR.
+- decisions:
+  - Sequencing continues LP -> llama -> CD -> Gemma-4-E4B atlas; paper PR merges after red-team sign-off under the PI proceed grant.
+- next steps:
+  - On harness G0+ladder report: lead runs the CG1-gated blinded adjudication lane, adjudicates R1/R2, resolves, PRs.
