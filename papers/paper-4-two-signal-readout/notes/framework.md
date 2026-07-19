@@ -1,5 +1,12 @@
 # The Two-Signal Readout Framework — working theory synthesis
 
+> Corrigendum notice (2026-07-18): Amendment U numbers cited below (U-G3
+> AUROC 0.980, hallucination dial-mean 0.018, within-SelfAware control 0.93,
+> 121/677 hallucination rate) were superseded by a governed corrigendum;
+> U-G3 is reclassified UNPOWERED. See
+> `experiments/unified-two-signal-dial-veto/AMENDMENT.md`, Corrigendum
+> section, before citing anything U-derived from this note.
+
 *Working document, 2026-06-30. Synthesizes the O→P→Q→S→T→U→W amendment trajectory
 into a theoretical frame, ahead of editing the diagnosis paper / drafting the
 readout paper. (Numbering note, 2026-07-01: "Paper 2"/"Paper 3" below are the
