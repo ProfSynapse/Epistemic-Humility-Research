@@ -20,6 +20,7 @@ import json
 import re
 from typing import Optional
 
+import detector_v2
 import grader
 
 
@@ -98,11 +99,29 @@ def grade_clean_tighten(raw_text: str, terminated_naturally: bool) -> dict:
 def grade_row(text: str, terminated_naturally: bool, aliases: list[str] | None) -> dict:
     """Combined per-row grade: clean_tighten (readout a) + refused/well_formed
     (readouts b/c, primary) + known-correct complements, one call site for
-    every arm's per-row scoring."""
+    every arm's per-row scoring.
+
+    THE CHANGE vs rr (llama-atlas-gated-wide-instrument-retest, AMENDMENT.md
+    "Instrument (mechanism unchanged, scorer changed)"): every row is ALSO
+    scored under the certified wide instrument's automatic screen
+    (`detector_v2.grade_one_v2`, byte-identical pins verified at G0), added
+    alongside the narrow (locked 3-phrase) grade rather than replacing it, so
+    both `refused` (narrow) and `refused_v2` (wide screen) are always present
+    on every row for the wide-vs-narrow contrast this cell exists to produce.
+    `refused_v2` is a screen only here -- the blinded adjudication lane
+    (build_adjudication_pool.py) covers detector_v2-negative rows and is
+    unioned in downstream, never in this function."""
     clean = grade_clean_tighten(text, terminated_naturally)
     semantic = grader.grade_one(text, aliases)
+    wide = detector_v2.grade_one_v2(text, aliases)
     return {
         **clean,
         **semantic,
         "not_well_formed_correct": not bool(semantic["well_formed_correct"]),
+        "refused_v2": wide["refused_v2"],
+        "answered_v2": wide["answered_v2"],
+        "correct_v2": wide["correct_v2"],
+        "well_formed_correct_v2": wide["well_formed_correct_v2"],
+        "not_well_formed_correct_v2": wide["not_well_formed_correct_v2"],
+        "matched_pattern_ids": wide["matched_pattern_ids"],
     }

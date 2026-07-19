@@ -76,6 +76,63 @@ def rate_summary(records: list[dict[str, Any]]) -> dict[str, Any]:
 
 
 # ---------------------------------------------------------------------------
+# Wide-instrument reporting (llama-atlas-gated-wide-instrument-retest THE
+# CHANGE): screen-level wide rate (`refused_v2`, detector_v2 automatic
+# screen), reported per rung ALONGSIDE the narrow rate above -- never
+# replacing it. This is a SCREEN rate, not the final blinded-adjudication
+# wide rate (that union happens downstream once the adjudication lane is
+# graded, out of scope for this harness-build assignment per the lead's
+# instruction to build the pool and stop).
+# ---------------------------------------------------------------------------
+
+def wide_screen_rate_summary(records: list[dict[str, Any]]) -> dict[str, Any]:
+    n = len(records)
+    return {
+        "n": n,
+        "refused_v2": rate_wilson(records, "refused_v2"),
+        "well_formed": rate_wilson(records, "well_formed"),
+        "degenerate": rate_wilson(records, "degenerate"),
+        "terminated_naturally": rate_wilson(records, "terminated_naturally"),
+        "not_well_formed_correct_v2": rate_wilson(records, "not_well_formed_correct_v2"),
+        "mean_new_tokens": (sum(r.get("n_new_tokens", 0) for r in records) / n) if n else None,
+    }
+
+
+def undercount_delta(wide_rate: dict[str, Any], narrow_rate: dict[str, Any]) -> float:
+    """wide (screen) minus narrow (locked 3-phrase), point estimate."""
+    return wide_rate["rate"] - narrow_rate["rate"]
+
+
+def net_lift_over_baseline(dosed_wide_rate: dict[str, Any], baseline_wide_rate: float) -> float:
+    """dosed wide (screen) rate minus the paired UNDOSED wide baseline
+    (llama 0.164, abstention-wide-instrument-calibration resolved 2026-07-14,
+    cite_committed_only; passed in by the caller, never re-derived here)."""
+    return dosed_wide_rate["rate"] - baseline_wide_rate
+
+
+def g1_wide_pass(confab_wide_refused: dict, confab_well_formed: dict, known_wide_false_refusal: dict) -> bool:
+    """G1 existence criterion (gates.yaml): wide refused >= 0.60 with Wilson
+    LCB > 0.50, AND well_formed >= 0.80, AND known-correct wide false-refusal
+    <= 0.05 with Wilson UCB < 0.10. Evaluated per (layer, dose) rung on the
+    FIT ladder (every rung is scored; this is a reporting/existence check,
+    not a control-flow gate -- the whole ladder runs regardless)."""
+    return (
+        confab_wide_refused["rate"] >= REFUSED_FLOOR
+        and confab_wide_refused["wilson_ci_95"][0] > REFUSED_WILSON_LCB_FLOOR
+        and confab_well_formed["rate"] >= WELL_FORMED_FLOOR
+        and known_wide_false_refusal["rate"] <= COST_FLOOR
+        and known_wide_false_refusal["wilson_ci_95"][1] < COST_WILSON_UCB_CEIL
+    )
+
+
+def g_spec_ratio(gated_net_lift: float, random_net_lift: float, epsilon: float = 1e-6) -> float:
+    """gates.yaml G-spec: effect ratio gated-net-wide-lift /
+    max(|random_direction net-wide-lift|, epsilon) >= 3.0 (secondary,
+    reported not a promotion gate at this FIT tier)."""
+    return gated_net_lift / max(abs(random_net_lift), epsilon)
+
+
+# ---------------------------------------------------------------------------
 # G0: FIT dose viability (per (family, layer, dose) candidate point)
 # ---------------------------------------------------------------------------
 

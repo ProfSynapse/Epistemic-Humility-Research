@@ -1,23 +1,22 @@
 #!/usr/bin/env python3
-"""Top-level CLI for rr-cross-family-raw-refusal: materialize -> FIT dose
-ladder -> held-out four-arm scoring -> outcome-shape report, per family.
+"""Top-level CLI for llama-atlas-gated-wide-instrument-retest: materialize ->
+FIT dose ladder (every rung scored under BOTH instruments) -> report, per
+family (llama only; adapted from rr-cross-family-raw-refusal's pipeline.py,
+read in full before editing).
 
-Each phase's own module (materialize_rows.py, dose_ladder.py,
-heldout_scorer.py) checks for its own prerequisite artifacts and raises a
-clear, actionable error if a prior phase's output is missing, so this
-orchestrator adds no separate phase-manifest layer: relaunching `all` after
-a crash re-enters at whichever phase's precondition first fails, and RunLog
-resumability inside each GPU phase means a killed mid-phase run does not
-lose completed rows either.
+THE CHANGE vs rr: this cell is FIT-only (AMENDMENT.md "Scope: FIT-side
+dose-ladder characterization") -- there is no held-out stage and no
+heldout_scorer.py module (none was copied at sign, per experiment.yaml's
+module list). `cmd_all` no longer branches on a selected operating point; it
+always runs materialize -> dose_ladder (the full ladder, no early stop) ->
+report.
 
-`--mode smoke` is instrument validation ONLY (never a result): it forces
-`materialize_rows.py`'s heldout-power / manifest checks (CPU-only, always
-safe) and, if `--i-know-this-runs-on-gpu` is also passed, runs the FIT dose
-ladder and held-out scorer on a small probe row count for wall-time
-bracketing. The bracket this prints is a MEASUREMENT, not a commitment: it
-is produced from whatever batch size and probe count are passed, on
-whatever GPU is actually available, and should be re-measured at launch
-time rather than trusted from this build.
+Each phase's own module (materialize_rows.py, dose_ladder.py) checks for its
+own prerequisite artifacts and raises a clear, actionable error if a prior
+phase's output is missing, so this orchestrator adds no separate
+phase-manifest layer: relaunching `all` after a crash re-enters at whichever
+phase's precondition first fails, and RunLog resumability inside the GPU
+phase means a killed mid-run does not lose completed rows either.
 """
 
 from __future__ import annotations
@@ -45,41 +44,28 @@ def write_json(path: Path, payload: Any) -> None:
 
 
 def cmd_report(args: argparse.Namespace) -> int:
+    """THE CHANGE vs rr: this cell is FIT-only, every rung already scored
+    under both instruments by dose_ladder.py -- there is no held-out stage
+    and no heldout_scorer.py module (none was copied at sign). This just
+    passes the FIT ladder report through as the family report, unchanged."""
     fit_report_path = COMMITTED / args.family / "fit_dose_ladder_report.json"
     if not fit_report_path.is_file():
         raise SystemExit(f"missing {fit_report_path}; run `pipeline.py fit --family {args.family}` first")
     fit_report = json.loads(fit_report_path.read_text())
+    n_rungs = len(fit_report.get("rungs", []))
     report: dict[str, Any] = {
         "family": args.family,
         "fit_dose_ladder": fit_report,
+        "summary_sentence": (
+            f"{args.family}: FIT-only wide-instrument retest, {n_rungs} "
+            f"(layer, dose, arm) rungs scored, no FIT dose selection and no "
+            f"held-out stage (cell.yaml dose_policy.fit_dose_selection: "
+            f"NONE). [FILLED BY LEAD -- this is the harness's straight "
+            f"readout against G1/G-spec, not the adjudicated Outcome text.]"
+        ),
     }
-    if fit_report["selected_operating_point"] is None:
-        report["outcome_shape"] = "F"
-        report["gates"] = None
-        report["heldout_summary"] = None
-        report["summary_sentence"] = (
-            f"{args.family}: no FIT-viable (layer, dose) exists in the "
-            f"bracketed grid (shape F) -- the write does not actuate clean "
-            f"refusal at the atlas site even where the axis is maximally "
-            f"readable; NOT promoted. [FILLED BY LEAD -- this is the "
-            f"harness's straight readout, not the adjudicated Outcome text.]"
-        )
-    else:
-        heldout_path = COMMITTED / args.family / "heldout_summary.json"
-        if not heldout_path.is_file():
-            raise SystemExit(f"missing {heldout_path}; run `pipeline.py heldout --family {args.family}` first")
-        heldout = json.loads(heldout_path.read_text())
-        report["heldout_summary"] = heldout
-        report["outcome_shape"] = heldout["outcome_shape"]
-        report["gates"] = heldout["gates"]
-        report["summary_sentence"] = (
-            f"{args.family}: shape {heldout['outcome_shape']} at layer "
-            f"{heldout['layer']} dose {heldout['dose_abs']:.4f} -- "
-            f"[FILLED BY LEAD -- this is the harness's straight readout, "
-            f"not the adjudicated Outcome text]."
-        )
     write_json(COMMITTED / args.family / "family_report.json", report)
-    print(json.dumps(report, indent=2, default=str), flush=True)
+    print(json.dumps(report, indent=2, default=str)[:4000], flush=True)
     return 0
 
 
@@ -105,11 +91,6 @@ def cmd_all(args: argparse.Namespace) -> int:
     rc = run([sys.executable, "dose_ladder.py", "--family", args.family, "--batch-size", str(args.batch_size)])
     if rc != 0:
         return rc
-    fit_report = json.loads((COMMITTED / args.family / "fit_dose_ladder_report.json").read_text())
-    if fit_report["selected_operating_point"] is not None:
-        rc = run([sys.executable, "heldout_scorer.py", "--family", args.family, "--batch-size", str(args.batch_size)])
-        if rc != 0:
-            return rc
     rc = run([sys.executable, "pipeline.py", "report", "--family", args.family])
     elapsed = time.time() - t0
     print(f"[pipeline] family {args.family} done in {elapsed:.0f}s (this run's actual wall time, not a projection)", flush=True)
@@ -120,14 +101,14 @@ def main() -> int:
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     sub = ap.add_subparsers(dest="cmd", required=True)
 
-    p_all = sub.add_parser("all", help="materialize -> fit -> heldout -> report, in order")
-    p_all.add_argument("--family", required=True, choices=("llama", "mistral"))
+    p_all = sub.add_parser("all", help="materialize -> fit+full-ladder -> report, in order (no held-out stage in this cell)")
+    p_all.add_argument("--family", required=True, choices=("llama",))
     p_all.add_argument("--batch-size", type=int, default=8)
     p_all.add_argument("--i-know-this-runs-on-gpu", action="store_true")
     p_all.set_defaults(func=cmd_all)
 
-    p_report = sub.add_parser("report", help="combine fit + heldout artifacts into one family report")
-    p_report.add_argument("--family", required=True, choices=("llama", "mistral"))
+    p_report = sub.add_parser("report", help="pass the FIT ladder report through as the family report")
+    p_report.add_argument("--family", required=True, choices=("llama",))
     p_report.set_defaults(func=cmd_report)
 
     args = ap.parse_args()

@@ -68,9 +68,10 @@ REPO_ROOT = HERE.parents[1]
 ATLAS_DIR = REPO_ROOT / "experiments" / "jspace-family-atlas"
 FLEET_DIR = REPO_ROOT / "experiments" / "doubt-snap-cross-family-confirmatory"
 
+# THE CHANGE vs rr: single family only (cell.yaml `families`), per
+# AMENDMENT.md "Motivation and posture" / harness-build instruction #1.
 FAMILY_TO_CELL_ID = {
     "llama": "llama32_3b_instruct",
-    "mistral": "mistral7b_instruct_v03",
 }
 
 
@@ -144,17 +145,22 @@ def load_split_manifest(family: str) -> list[dict[str, Any]]:
     return load_json(path)["rows"]
 
 
-def check_heldout_power(family: str, rows: list[dict[str, Any]]) -> dict[str, Any]:
-    fcell = family_cell(family)
+def check_fit_population(family: str, rows: list[dict[str, Any]]) -> dict[str, Any]:
+    """THE CHANGE vs rr: this cell is FIT-only (AMENDMENT.md "Scope:
+    FIT-side dose-ladder characterization"; cell.yaml has no `heldout_power`
+    field at all, unlike rr's cell.yaml). This reports FIT/held-out
+    population counts for provenance -- held_out rows are counted but NEVER
+    read by dose_ladder.py -- and gates only on the FIT populations this
+    cell actually consumes being non-empty, not on any held-out floor."""
+    confab_fit = sum(1 for r in rows if r["role"] == "confab" and r.get("split") == "fit")
+    known_fit = sum(1 for r in rows if r["role"] == "known_correct_answered" and r.get("split") == "fit")
+    unknown_refused = sum(1 for r in rows if r["role"] == "unknown_refused")
     confab_held = sum(1 for r in rows if r["role"] == "confab" and r.get("split") == "held_out")
     known_held = sum(1 for r in rows if r["role"] == "known_correct_answered" and r.get("split") == "held_out")
-    expected = fcell["heldout_power"]
     return {
-        "confab_held_out": confab_held,
-        "known_correct_answered_held_out": known_held,
-        "matches_cell_yaml": confab_held == expected["confab"] and known_held == expected["known_correct_answered"],
-        "floors_pass": confab_held >= 150 and known_held >= 250,
-        "cell_yaml_expected": expected,
+        "confab_fit": confab_fit, "known_correct_answered_fit": known_fit, "unknown_refused_fit_only": unknown_refused,
+        "confab_held_out_not_touched": confab_held, "known_correct_answered_held_out_not_touched": known_held,
+        "floors_pass": confab_fit > 0 and known_fit > 0 and unknown_refused > 0,
     }
 
 
@@ -300,9 +306,9 @@ def cmd_materialize(args: argparse.Namespace) -> None:
         )
 
     split_rows = load_split_manifest(args.family)
-    power = check_heldout_power(args.family, split_rows)
-    if not power["matches_cell_yaml"] or not power["floors_pass"]:
-        raise SystemExit(f"G0 heldout_power_floors FAIL: {power}")
+    power = check_fit_population(args.family, split_rows)
+    if not power["floors_pass"]:
+        raise SystemExit(f"G0 fit_population_floors FAIL: {power}")
 
     row_pool_path = Path(args.row_pool) if args.row_pool else (
         HERE / "analysis" / "staged_inputs" / args.family / "split_rows_private.jsonl"
@@ -317,7 +323,7 @@ def cmd_materialize(args: argparse.Namespace) -> None:
         "model": fcell["model"],
         "revision": revision,
         "candidate_layers": fcell["candidate_layers"],
-        "heldout_power": power,
+        "fit_population": power,
     }
 
     if not row_pool_path.is_file() or not (capture_dir / "capture.jsonl").is_file():
@@ -375,7 +381,7 @@ def cmd_materialize(args: argparse.Namespace) -> None:
     write_json(cdir / "materialize_manifest.json", {
         "family": args.family, "cell_id": FAMILY_TO_CELL_ID[args.family],
         "model": fcell["model"], "revision": revision,
-        "candidate_layers": fcell["candidate_layers"], "heldout_power": power,
+        "candidate_layers": fcell["candidate_layers"], "fit_population": power,
         "anchor_coverage": {k: v for k, v in coverage.items() if k != "missing_row_keys_sample"},
         "anchors_extracted": anchors_extracted,
         "rows": [

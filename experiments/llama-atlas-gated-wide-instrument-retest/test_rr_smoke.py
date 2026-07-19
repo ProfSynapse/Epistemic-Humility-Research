@@ -286,17 +286,18 @@ def test_anchor_tensor_key_matches_hf_batched_naming():
     assert mrows.anchor_tensor_key(20) == "anchor__L20"
 
 
-def test_resolve_revision_matches_fleet_model_matrix_for_both_families():
+def test_resolve_revision_matches_fleet_model_matrix_for_llama():
+    # THE CHANGE vs rr: single family only (materialize_rows.py FAMILY_TO_CELL_ID trim).
     assert mrows.resolve_revision("llama") == "006f5dcd1393c3add266de40994ba96225e9689d"
-    assert mrows.resolve_revision("mistral") == "c170c708c41dac9275d15a8fff4eca08d52bab71"
 
 
-def test_load_split_manifest_and_heldout_power_matches_cell_yaml_for_both_families():
-    for family in ("llama", "mistral"):
-        rows = mrows.load_split_manifest(family)
-        power = mrows.check_heldout_power(family, rows)
-        assert power["matches_cell_yaml"] is True
-        assert power["floors_pass"] is True
+def test_load_split_manifest_and_fit_population_floors_pass_for_llama():
+    rows = mrows.load_split_manifest("llama")
+    power = mrows.check_fit_population("llama", rows)
+    assert power["floors_pass"] is True
+    assert power["confab_fit"] > 0
+    assert power["known_correct_answered_fit"] > 0
+    assert power["unknown_refused_fit_only"] > 0
 
 
 def test_check_anchor_coverage_flags_missing_rows():
@@ -329,7 +330,7 @@ def test_materialize_precondition_report_when_staged_inputs_absent(tmp_path):
     mrows.cmd_materialize(args)
     report = json.loads((tmp_path / "analysis" / "llama" / "materialize_precondition_report.json").read_text())
     assert report["staged_inputs_present"] is False
-    assert report["heldout_power"]["floors_pass"] is True
+    assert report["fit_population"]["floors_pass"] is True
 
 
 # ---------------------------------------------------------------------------
@@ -405,10 +406,10 @@ def test_materialize_full_success_path_writes_anchors_at_candidate_layers_json(t
         {"row_key": "k_known_held", "role": "known_correct_answered", "split": "held_out"},
     ]
     monkeypatch.setattr(mrows, "load_split_manifest", lambda fam: split_rows)
-    monkeypatch.setattr(mrows, "check_heldout_power", lambda fam, rows: {
-        "confab_held_out": 1, "known_correct_answered_held_out": 1,
-        "matches_cell_yaml": True, "floors_pass": True,
-        "cell_yaml_expected": {"confab": 1, "known_correct_answered": 1},
+    monkeypatch.setattr(mrows, "check_fit_population", lambda fam, rows: {
+        "confab_fit": 1, "known_correct_answered_fit": 1, "unknown_refused_fit_only": 1,
+        "confab_held_out_not_touched": 1, "known_correct_answered_held_out_not_touched": 1,
+        "floors_pass": True,
     })
 
     row_pool_path = tmp_path / "split_rows_private.jsonl"

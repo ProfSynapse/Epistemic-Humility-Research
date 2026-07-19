@@ -6,6 +6,99 @@ in `experiment.yaml`.
 
 ## Entries
 
+- 2026-07-19 (harness-build, completion): Pipeline (PID 30797) exited cleanly
+  ("[pipeline] family llama done in 7726s") after ~2h9m wall clock; zero
+  Tracebacks anywhere in the run log. All 30 rungs present under
+  `analysis/llama/runlog/` (28 gated: 4 layers x 7 dose multipliers, plus the
+  2 registered random_direction rungs at hs20 dose12/16); all staged to the
+  durable exhaust store (`ehr-exhaust/.../runlog/`, `.../analysis-committed/`,
+  `.../adjudication_shards/`, 41M total). G0 re-verified post-hoc from
+  committed artifacts: hook placement passed (decoder_blocks [19,21,22,25] =
+  h-1 for h in [20,22,23,26]); per-layer FIT gate AUC all >=0.999 (floor
+  0.90), with the confounded random-direction reference reported per layer
+  (hs20=0.808, hs22=0.816, hs23=0.912, hs26=0.696); double-fit byte-identical
+  held at every layer (no SystemExit raised, confirmed by the log's zero
+  Traceback count and the clean 4-layer completion -- this check is a hard
+  raise, not a logged boolean); pre_sweep_bracket_check passed at every layer
+  (token movement confirmed at strongest dose, 8/8 probe rows); the
+  batched-vs-sequential parity NOTE (not a gate) recurred at hs20 (4/8
+  mismatches) and hs26 (1/8), zero at hs22/hs23 -- consistent with the
+  earlier single-layer finding, still informational only. Wide-instrument
+  pins re-verified byte-identical to abstention-wide-instrument-calibration's
+  current committed source at report time. Built the committed
+  PRE-ADJUDICATION per-rung table
+  (`analysis-committed/llama/pre_adjudication_wide_vs_narrow_table.json`,
+  31 rows: 1 undosed-baseline reference + 30 rungs) from the already
+  ID-free `fit_dose_ladder_report.json`. Ran the FINAL
+  `build_adjudication_pool.py` (seed 20260719, defaults) over the complete
+  22,647-row detector-negative core (2009 baseline + 22,358 gated legitimate
+  rows across dose*role*layer + 1,152 random_direction confab rows feeding
+  175 clear_positive decoy candidates) plus 4,085 clear_negative candidates;
+  produced 8 shards (`llama_wide_retest_shard_00..07`, ~2850 rows each,
+  21-22 clear_positive decoys/shard, comfortably above the >14 CG1 lesson
+  floor) under gitignored `analysis/shards/`, with the ID-only manifest
+  committed to `analysis-committed/adjudication_pool_manifest.json`
+  (verified zero occurrences of "text" in the committed manifest; the
+  gitignored shard pool files correctly do contain text, confirmed via
+  `git check-ignore`). This overwrote the earlier partial smoke-test output
+  (`--seed 1 --target-shard-size 50`, which had written only shard_00) in
+  `"w"` mode; confirmed exactly 8 shard files on disk post-run, matching the
+  manifest 1:1, so no stale smoke-test shard survives as an orphan. Did NOT
+  run any blinded grading. Did NOT commit. Re-ran all 38 CPU smoke tests
+  post-completion: still 38/38 passing.
+- 2026-07-19 (harness-build, cont.): Launched the full ladder in the background
+  (`pipeline.py all --family llama --batch-size 8 --i-know-this-runs-on-gpu`,
+  PID 30797); `materialize_rows.py` and the layer-20 FIT fit + hook-placement
+  assertion + pre-sweep-and-parity smoke completed cleanly (see the dose_ladder.py
+  repin trail in experiment.yaml for the parity-smoke self-correction), then
+  dose-sweep generation began writing RunLogs under `analysis/llama/runlog/`.
+  Wrote `build_adjudication_pool.py` (new module, not a repin -- registered in
+  experiment.yaml with the same `none-new-module` precedent as detector_v2.py)
+  to build the CG1 blinded pool once generation completes; per the harness-build
+  assignment this script BUILDS the pool and STOPS, it does not grade. A small
+  dry run against the first three completed rungs (hs20 dose2/4/6, ~800 rows
+  each) caught a real bug before trusting the module for the final build:
+  `dose_ladder.load_baseline_wide_by_key`'s `role` field is always None
+  (`baseline_graded_private.jsonl` carries a different pre-fit `role_candidate`
+  label, not the FIT-population role), so every baseline row was silently
+  dropped from the pool's TRACKED_ROLES filter (dry run: n_rows_by_arm.baseline
+  went 0 -> 2009 after joining against `joined_rows_private.jsonl`'s row_key ->
+  role map instead). This gap is benign inside dose_ladder.py itself (its
+  paired net-lift lookups match by row_key against already role-filtered FIT
+  row lists and never read that field back), so no change was needed there.
+  Fixed and repinned (experiment.yaml repins trail has both hashes and the
+  full diagnosis). Set up a persistent background monitor that stages each
+  completed RunLog (jsonl + .meta.json + .summary.json) to the durable exhaust
+  store `/home/profsynapse/code/ehr-exhaust/llama-atlas-gated-wide-instrument-retest/runlog/`
+  as it lands (invariant A6), and separately watches for Traceback/Error/FAIL/
+  SystemExit/CUDA-OOM/pipeline-exit signals.
+- 2026-07-19 (harness-build): Staged the two private inputs neither existed
+  anywhere under /home/profsynapse/code (row pool, atlas capture) by pulling
+  them read-only from their Modal volumes (no compute launched, data
+  staging only): `eh-doubt-snap-cross-family`
+  (`doubt-snap-cross-family-r1/llama32_3b_instruct/analysis/
+  split_rows_private.jsonl` -> `analysis/staged_inputs/llama/
+  split_rows_private.jsonl`, 2956 rows; and `.../baseline_graded_private.jsonl`
+  -> same dir, 4000 rows, the registered `baseline` arm) and
+  `eh-jspace-family-atlas` (`jspace-family-atlas-r1/llama32_3b_instruct/
+  analysis/atlas_capture/{capture.jsonl,checkpoint.json,tensors/}` ->
+  `experiments/jspace-family-atlas/analysis/llama32_3b_instruct/atlas_capture/`,
+  2956 safetensors files, 1017M). The CLI `modal volume get` silently
+  downloaded only ONE file for the 2956-file `tensors/` directory across
+  three repeated attempts (once returning 0 bytes, once 358KB) despite
+  reporting success; worked around with a small script using the Modal
+  Python SDK's `Volume.iterdir(recursive=True)` +
+  `read_file_into_fileobj` instead (script:
+  `/tmp/.../scratchpad/pull_atlas_tensors.py`, not committed). **A1
+  resolution**: `materialize_rows.py --family llama` ran clean against the
+  staged inputs -- anchor coverage 2956/2956 = 1.0 at all four candidate
+  layers (20, 22, 23, 26); NO layer was missing from the atlas's full-depth
+  capture, so NO GPU recapture was needed. FIT population: confab_fit=581,
+  known_correct_answered_fit=222, unknown_refused_fit_only=947 (held-out
+  872/334 counted for provenance, not touched). Also initialized the
+  `synaptic-tuner` submodule in this worktree (was an empty dir after the
+  worktree checkout; `git submodule update --init synaptic-tuner`), needed
+  for `MechInterp.intervention` and `shared.utilities.run_log`.
 - 2026-07-19: Scaffolded and SIGNED. Design from the task #7 designer report
   (lead-verified against rr-cross-family-raw-refusal, abstention-wide-instrument-
   calibration, jspace-family-atlas, and the fleet model_matrix.yaml). Lead
