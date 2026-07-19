@@ -1,0 +1,17 @@
+# dial-logprob-baseline (LP) gates, fixed before launch.
+gates:
+  - id: LP-G0
+    kind: integrity-precondition
+    stop: pre-outcome
+    criteria:
+      - refit dial reproduces signed source AUROC per arm (S 0.834 at L20, T 0.819 at L22) within reporting precision, before any logprob comparison is unblinded
+      - row counts match source inventories (1836 S; 1488 T)
+      - reconstructed sequences round-trip cached prompt_len/answer_tok_len exactly for every row; any mismatch is a data-stage stop, not a result
+  - id: LP-G1
+    kind: primary
+    arm: s_base_primary
+    criterion: dial AUROC minus primary-logprob AUROC >= +0.05, paired bootstrap 95% CI excluding 0
+    floor_justification: matches the S/T self-eval-gain convention (S sec.4 G2; T sec.4 T-G2)
+    ambiguous_band: 0 < margin < +0.05 or CI straddling 0 -> reported as small/uncertain margin; gate never retuned after result
+falsifier: primary-logprob AUROC >= dial AUROC on s_base_primary with paired 95% CI excluding 0 in that direction
+arm2_status: t_deployed_descriptive reported with identical statistics, descriptive only, no gate
