@@ -6,6 +6,24 @@ in `experiment.yaml`.
 
 ## Entries
 
+- 2026-07-19 (data exhaust published, user-approved): Two public HF datasets
+  built with the data-exhaust skill, both `verify_exhaust.py` PASS, dry-run
+  cards user-approved before `--live`.
+  Aggregate: `professorsynapse/eh-llama-atlas-gated-wide-instrument-retest`,
+  revision `f53beaccc8fc0719130b2510af374b7282977b92` (15 files, full
+  `analysis-committed/` mirror, repo commit 86f33204, zero exclusions).
+  Row-level: `professorsynapse/eh-llama-atlas-gated-wide-instrument-retest-rows`,
+  revision `2b46d055c71378cde8dd566e6a6f4bf5c1deff33` (23,510 dosed rows from
+  the 30 staged RunLogs: 17,294 KUQ confab rows with full generation text,
+  MIT permitted; 6,216 TriviaQA+PopQA rows text-free per license gate; zero
+  excluded; per-row `is_abstention_adjudicated` joined from the 8 graded
+  shards covering all 19,230 non-decoy dosed pool entries, remaining 3,592
+  pool entries accounted for as baseline+decoys; opaque_ids verified absent).
+  Row counts per rung 798-799 (hs22/hs23 carry 577 confabs, matching the
+  Outcome table's n=576-577); random_direction rungs 576 (confab-only arm).
+  Staging script kept in session scratch; reshape documented in the dataset
+  `PROVENANCE.json`/README.
+
 - 2026-07-19 (adjudication lane + resolve): Lead orchestrated the blinded
   grading lane per the abstention-grading standard: 8 context-free graders
   (one per shard, private working dirs, rubric + edge conventions verbatim,
