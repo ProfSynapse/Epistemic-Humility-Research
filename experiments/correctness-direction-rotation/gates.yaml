@@ -1,0 +1,44 @@
+# correctness-direction-rotation (CD) gates, fixed before launch.
+gates:
+  - id: CD-G0
+    kind: data-adequacy-precondition
+    stop: pre-outcome
+    per_stage: true
+    criteria:
+      - checkpoint identity assertions pass before any generation (raw-base identity and GRPO-par-true timestamp pinned at staging to the answerability diagnostic's extraction commit d5a90b3b provenance, recorded in NOTEBOOK.md)
+      - ">= 150 correct AND >= 150 wrong answered rows per stage (S/T sec.4 floor); a stage below floor is 'rotation not measurable at this stage', a data-stage stop for that stage, never a probe verdict"
+  - id: CD-G1
+    kind: primary
+    criterion: >-
+      rotation-confirmed iff raw->cleansft correctness cosine <= 0.50 (mean
+      over L19-L24) AND cleansft->grpov2 cosine >= 0.85 AND grpov2->partrue
+      cosine >= 0.85 AND the raw->cleansft cosine is below the grpov2
+      split-half noise floor
+    floor_justification: >-
+      0.50 sits between answerability's SFT drop (0.05-0.27,
+      diag-item9-caution-assembly-timeline committed table) and no-rotation
+      (~1.0); 0.85 mirrors answerability's stable GRPO transitions (>= 0.96
+      and 0.69-0.94)
+    middle_ground: >-
+      raw->cleansft mean cosine in (0.50, 0.80) is pre-stated as 'partial
+      rotation, mechanism unresolved'; neither reading adopted; gate never
+      retuned after result
+  - id: CD-G2
+    kind: readout-sanity
+    tier: reported
+    criterion: >-
+      a stage whose best-layer OOF AUROC < 0.60 is flagged and its cosines
+      reported as unreliable; no cosine from such a stage enters CD-G1
+falsifier: >-
+  raw->cleansft correctness cosine >= 0.80 averaged over L19-L24: no
+  orthogonal rotation at SFT; the rotation account does not transfer to
+  correctness and the 0.679 cold-transfer degradation needs another
+  explanation; reported straight.
+controls:
+  split_half_noise_floor: >-
+    grpov2 correctness direction fit on two random halves; split-half cosine
+    reported as the within-stage noise floor; rotation only counts as real if
+    below this floor
+  instruct_to_grpov2_bracket: >-
+    CPU-only S->T correctness-direction cosine in a shared basis (matches the
+    0.679 transfer's exact checkpoints); reported, not gated

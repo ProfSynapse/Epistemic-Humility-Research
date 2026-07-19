@@ -1,0 +1,30 @@
+slug: correctness-direction-rotation
+title: Correctness-direction rotation across training stages
+type: probe-fit
+status: signed
+registered: true
+created_at: '2026-07-19T20:17:25Z'
+question: Does the correctness (dial) direction rotate across raw -> clean-SFT ->
+  GRPO-v2 -> GRPO-par-true the way the answerability direction does (one near-orthogonal
+  rotation at SFT, then stable), explaining the dial's 0.679 cold cross-checkpoint
+  transfer?
+prediction: 'Partial rotation: raw->cleansft correctness cosine 0.3-0.6 at L19-L24
+  (below the split-half noise floor), later transitions >= 0.85, and the CPU-only
+  Instruct->grpov2 bracket cosine consistent with the partial 0.679 transfer.'
+falsifier: 'raw->cleansft correctness cosine >= 0.80 averaged over L19-L24: no orthogonal
+  rotation at SFT; the rotation account does not transfer to correctness.'
+checkpoint:
+  repo: local four-stage set (see cell.yaml stages; raw + partrue identities pinned
+    at staging per A3)
+  revision: ''
+instrument:
+  configs:
+  - cell.yaml
+  - gates.yaml
+  modules: []
+  pins:
+    cell.yaml: d138bca9f3bb8c3f73815ad738fb24fbb06c9f9915950bbd969da7ce66ce3003
+    gates.yaml: d99ef4997b0a2be1b200726c178364cc6c1a3f1bdb2b09c9d3d3e9a124cf1e63
+inputs: []
+verdict: ''
+kg: []

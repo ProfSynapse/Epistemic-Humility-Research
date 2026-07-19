@@ -1,0 +1,68 @@
+# correctness-direction-rotation (CD) instrument config, pinned at sign.
+# Four-stage correctness-direction rotation tracking, method-identical to
+# diag_item9_caution_timeline.py except for the stated stage-dependent-label
+# difference (see AMENDMENT.md Design). See AMENDMENT.md for doc:line cites.
+apiVersion: lab-cell/v1
+experiment: correctness-direction-rotation
+method_reference: experiments/diag-item9-caution-assembly-timeline/diag_item9_caution_timeline.py
+seed: 20260719
+pca_dim: 128            # copied from the diagnostic for exact comparability
+n_folds: 5
+min_class: 30
+position: post_generation   # last answer content token; the dial's native position (PI-adjudicated)
+pre_gen_secondary: optional-descriptive
+
+stages:
+  - id: raw
+    checkpoint: PINNED_AT_STAGING   # d5a90b3b raw-base identity, asserted pre-generation (A3)
+    generation: forced_best_guess   # T sec.3 protocol; Cheng alias scorer verbatim
+    gpu_est_hr: 1.5-2
+  - id: cleansft
+    checkpoint: scratch/schema_response_confidence/runs/sft_schema_clean_seed1_full/20260623_123624  # merged-16bit
+    generation: forced_best_guess   # abstention-trained; large attempt budget (T needed 8550 attempts for 500 wrong)
+    gpu_est_hr: 3-4
+  - id: grpov2
+    checkpoint: scratch/schema_response_confidence/runs/schema_clean_sft_grpo_v2_seed1_full/20260624_095831/final_model
+    generation: REUSE               # T cell stage2 tensors + labels, CPU-only
+    reuse_from: archive/experiment/phase1-data/probe/qwen3-4b-clean-sft-grpo-v2/amendment_t/stage2
+    n_reuse: {tensors: 2976, correct: 988, wrong: 500}
+  - id: partrue
+    checkpoint: PINNED_AT_STAGING   # exact GRPO-par-true timestamp d5a90b3b used (A3)
+    generation: forced_best_guess
+    gpu_est_hr: 3-4
+
+basis:
+  pca_fit_on: raw stage post-gen activations, per layer, label-agnostic
+  reused_for: all four stages
+direction_fit:
+  model: LogisticRegression(saga, tol=1e-3)
+  space: PCA-128, coef mapped back to 2560-dim residual space, unit-norm
+report:
+  per_layer: L0..L36
+  per_stage: 5-fold pooled OOF AUROC
+  cosines: [raw->cleansft, cleansft->grpov2, grpov2->partrue, each-stage-vs-grpov2]
+
+controls:
+  split_half:
+    stage: grpov2
+    rule: fit on two random halves; split-half cosine = within-stage noise floor
+  instruct_grpov2_bracket:
+    cpu_only: true
+    inputs:
+      s: archive/experiment/phase1-data/probe/qwen3-4b-instruct/amendment_s/stage2   # 3672 tensors, 500/1336
+      t: archive/experiment/phase1-data/probe/qwen3-4b-clean-sft-grpo-v2/amendment_t/stage2
+    rule: S->T correctness-direction cosine in a shared basis; matches the 0.679 transfer checkpoints; reported, not gated
+
+qa_pool:
+  - datasets/popqa/test.jsonl
+  - datasets/triviaqa-rc-nocontext/cheng_test_gold.jsonl
+
+containment:
+  commit: [aggregate per-layer AUROC + cosine tables (JSON + md, diag_item9 shape), per-stage ID-manifests]
+  never_commit: [question_text, answer_text, aliases, generations, labels_with_text, token_ids, hidden_states]
+  exhaust_staging:
+    durable_dir: /home/profsynapse/code/ehr-exhaust/correctness-direction-rotation/
+    rule: hidden states + RunLogs staged before any worktree teardown (A6)
+
+lane: local-3090   # GPU pre-approved by PI 2026-07-18; total ~8-12 GPU-hr
+gpu_python: /home/profsynapse/miniconda3/bin/python3
