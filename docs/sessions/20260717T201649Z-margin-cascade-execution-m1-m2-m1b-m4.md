@@ -4,7 +4,7 @@ session_id: 20260717T201649Z-margin-cascade-execution-m1-m2-m1b-m4
 title: 'Margin cascade execution: M1 M2 M1b M4'
 status: active
 created_at: '2026-07-17T20:16:49Z'
-updated_at: '2026-07-19T00:17:12Z'
+updated_at: '2026-07-19T00:54:52Z'
 question: Do the framework's margin-theory claims (1, 3) and the mentalistic-naming
   criteria hold at the qwen mid-band operating point, tested cheap-first through the
   M1-M6 cascade?
@@ -380,6 +380,30 @@ checkpoints:
   - 'PI merge word on PR #311; then task #33 papers 1/2/4 edits citing corrigendum
     finals including corrected control ~0.74-0.81 at paper 4 manuscript.md:415-416,465,947'
   signals: {}
+- id: 014-result
+  at: '2026-07-19T00:54:52Z'
+  kind: result
+  title: 'Reconciliation campaign CLOSED: PR #312 merged (papers 1/2/4), tasks #29/#33
+    done'
+  summary: 'Campaign finale merged under PI standing approval. Paper 4 corrected to
+    corrigendum finals (U-G3 UNPOWERED, control 0.8140/0.7369/0.7500, sharpening claim
+    hedged at five sites after red-team MAJOR: corrected comparison unpowered and
+    null under Set B, 0.274 vs base 0.271). Paper 2 red-team MAJOR fixed: Amendment
+    R (unsigned draft, absent from paper 3) dropped from the confidence-channel list,
+    now J/K/L/M/N. Paper 1 writability sentence + P3 population bound landed. All
+    five manuscripts now reconciled with post-2026-07-10 evidence: PRs #308 (terminology),
+    #309 (paper 5 rewrite), #310 (paper 3), #311 (Amendment U corrigendum), #312 (papers
+    1/2/4). GPU track opened per PI: LP+CD designs and llama atlas-sited retest design
+    in flight; llama atlas prerequisite already satisfied by jspace-family-atlas (resolved
+    2026-07-12, band L15-23, 3B weights cached).'
+  evidence: []
+  run_ids: []
+  commands: []
+  decisions: []
+  next_steps:
+  - Review LP/CD and llama-retest design drafts when designers report; sign-off packets
+    to PI; each GPU launch needs fresh approval
+  signals: {}
 track: margin-theory-cascade
 ---
 # Margin cascade execution: M1 M2 M1b M4
@@ -476,3 +500,10 @@ _No summary yet._
 - summary: Corrigendum red-team returned sign-off with fixes. MAJOR: within-SelfAware control AUROC 0.93 shares the contaminated hallucination side; lead extended analysis/ug3_corrected_rescore.py with a control_rescore block and independently reproduced the corrected values (0.8140 vs Set A [0.6953,0.9127]; 0.7369 vs Set B [0.5947,0.8549]; 0.7500 fully corrected [0.6073,0.8678]; section-7 0.93 reproduces at 0.9300 on the contaminated side) before inserting them. Minors applied: U-G1 row-selection phrasing, amendment-S no-unknown-population parenthetical, known-answered contamination one-liner (6/276, mean 0.679 to 0.690). Committed cf44667e on exp/amendment-u-corrigendum, PR #311 open awaiting PI merge approval. Paper 3 naming pass merged as PR #310 (7acc30a4).
 - next steps:
   - PI merge word on PR #311; then task #33 papers 1/2/4 edits citing corrigendum finals including corrected control ~0.74-0.81 at paper 4 manuscript.md:415-416,465,947
+### 014-result - Reconciliation campaign CLOSED: PR #312 merged (papers 1/2/4), tasks #29/#33 done
+
+- at: `2026-07-19T00:54:52Z`
+- kind: `result`
+- summary: Campaign finale merged under PI standing approval. Paper 4 corrected to corrigendum finals (U-G3 UNPOWERED, control 0.8140/0.7369/0.7500, sharpening claim hedged at five sites after red-team MAJOR: corrected comparison unpowered and null under Set B, 0.274 vs base 0.271). Paper 2 red-team MAJOR fixed: Amendment R (unsigned draft, absent from paper 3) dropped from the confidence-channel list, now J/K/L/M/N. Paper 1 writability sentence + P3 population bound landed. All five manuscripts now reconciled with post-2026-07-10 evidence: PRs #308 (terminology), #309 (paper 5 rewrite), #310 (paper 3), #311 (Amendment U corrigendum), #312 (papers 1/2/4). GPU track opened per PI: LP+CD designs and llama atlas-sited retest design in flight; llama atlas prerequisite already satisfied by jspace-family-atlas (resolved 2026-07-12, band L15-23, 3B weights cached).
+- next steps:
+  - Review LP/CD and llama-retest design drafts when designers report; sign-off packets to PI; each GPU launch needs fresh approval
