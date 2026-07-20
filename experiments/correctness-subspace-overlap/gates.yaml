@@ -1,0 +1,53 @@
+# correctness-subspace-overlap (SO) gates, fixed before launch.
+gates:
+  - id: SO-G0
+    kind: data-adequacy-precondition
+    stop: pre-outcome
+    reuse_verification: true
+    criteria:
+      - "no generation: reuse CD's verified counts, raw 500/1323, cleansft 750/500, grpov2 988/500, partrue 500/717, S 500/1336, T 988/500, all above the 150/150 floor"
+      - "cache checksums / row counts must match the CD committed table before any fit"
+      - "the matched-population S->T subset must have >= MIN_CLASS (30) per class in each stage (verified: T 230/104, S 245/89)"
+      - "the disjoint half-split grid must keep >= MIN_CLASS per class at m=n/8 (verified: min 62 across stages) or the affected control is reported 'not computable', a data-stage note, never a verdict"
+  - id: SO-G1
+    kind: primary
+    label: subspace-overlap-confirmed
+    k: 8
+    gate_layers: L19-L24
+    criteria:
+      i: "S->T subspace overlap exceeds the label-permutation null 95th percentile AND overlap minus permutation-null mean >= 0.15"
+      ii: "within-stage full-n (extrapolated, or the m=n/2 conservative floor if the extrapolation R^2 < 0.90) reliability >= 0.70 for both S and T"
+      iii: "the recovery curve at k=8 closes >= 0.75 of the floor-to-ceiling gap, where fraction = (AUROC(T | S-subspace, k=8) - floor) / (ceiling - floor), floor = AUROC(T | random k=8 subspace of S), ceiling = AUROC(T | T's own top-8 subspace)"
+    conjunction: all three of (i), (ii), (iii) required
+    threshold_justification:
+      k8: "a quarter-ish of the plausible discriminative dimensionality; large enough to hold a multi-direction subspace, small enough that the permutation null stays modest"
+      margin_015: "the honest (anisotropy-respecting) null is expected higher than an isotropic one, so a +0.30 absolute margin (v1) against the elevated null would be unreasonably strict; +0.15 above the empirical mean AND outside the empirical 95th percentile is a proper test with a small-but-nontrivial effect floor, and the null is reported so the margin is auditable"
+      reliability_070: "a subspace that cannot be reproduced within a stage cannot be compared across stages (CD's lesson); 0.70 is far above CD's single-axis 0.174 and marks a genuinely identified subspace, now computed unbiased (disjoint) and extrapolated to full sample so it is neither a half-sample strawman nor a bootstrap-tightened overestimate"
+      recovery_075: "the same three-quarters criterion as v1 (close about three-quarters of the 0.12 transfer gap), now expressed against the achievable floor-to-ceiling range so it is robust to how much of T's signal even fits in k=8 dimensions and to the anisotropic floor"
+    middle_ground: "pre-stated, gate never retuned after result: overlap above the null but reliability < 0.70, or recovery fraction in (0.25, 0.75), reported as 'partial / unresolved', neither A nor B adopted"
+  - id: SO-G2
+    kind: readout-sanity
+    tier: reported
+    criteria:
+      - "per-stage full-PCA best-layer OOF AUROC >= 0.60 (inherited from CD, already met: 0.809-0.860)"
+      - "the k=1 recovery point lands near the documented 0.679 (pipeline sanity against deployment-port)"
+      - "the top-k restricted AUROC approaches the full-PCA AUROC as k grows; if even k=32 restricted AUROC is far below full-PCA AUROC, the subspace estimator is not capturing the discriminative signal and its overlaps are flagged unreliable"
+falsifier: >-
+  the cell's headline hypothesis (correctness transfer rides on a shared discriminative
+  SUBSPACE that accounts for the 0.679 cold transfer) is FALSIFIED if, at every
+  pre-registered k up to 32 over L19-L24, S->T subspace overlap is statistically
+  indistinguishable from the label-permutation null (inside its 95th percentile and
+  within 0.10 of its mean) WHILE within-stage full-n reliability is high (>= 0.70), AND
+  the recovery curve never closes more than one-quarter of the floor-to-ceiling gap at
+  any k. That is Reading B: no shared subspace beyond the anisotropic chance level,
+  transfer does not ride on subspace overlap, genuine rotation adopted. Reported
+  straight. If overlap is at the null but reliability is also low, that is the
+  middle-ground instrument-limited null, not the falsifier.
+controls:
+  disjoint_split_reliability: "R=15 disjoint stratified half-split partitions per fit-size m in {n/8, n/4, n/2}, B_rel=30 balanced-bootstrap normals per set, median overlap per m, linear-in-1/m extrapolation to full n (R^2 diagnostic and intercept a reported); m=n/2 median always reported as a conservative lower bound and used as fallback if extrapolation R^2 < 0.90"
+  label_permutation_null: "P=100 permutations (seed 20260720), stratified label shuffle within stage, entire bootstrap-SVD pipeline refit per permutation; mean and 95th percentile reported per stage-pair per k; resolved to about 1-percent granularity"
+  isotropic_null_secondary: "N=200 random k-subspace draws within each stage's PCA-128 span, reported sanity baseline; expected gap to the permutation null quantifies the anisotropy contribution"
+  matched_population_bracket: "S->T subspace overlap and recovery curve recomputed on the 334 shared row_keys (T 230/104, S 245/89); stability versus the full-population version reported as the confound sensitivity delta, read against the disjoint-split reliability curve so the power drop from the smaller sample is not misread as rotation"
+  matched_class_balance: "secondary, four-stage timeline: each stage subsampled to a common correct/wrong count, consecutive-stage overlaps recomputed, delta versus full-population overlaps reported"
+  raw_span_overlap: "principal angles and Grassmann projection metric between the two stages' label-agnostic PCA-128 spans directly, reported per stage-pair alongside the permutation null"
+  two_seed_robustness: "headline k=8 S->T overlap and its permutation-null margin rerun under a second pinned seed (20260721) for the bootstrap, permutation, and fold RNGs; the headline call stands only if both seeds agree on the SO-G1(i) outcome; a seed disagreement is reported as a stability caveat, not resolved by picking a seed"

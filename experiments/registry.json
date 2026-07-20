@@ -786,6 +786,47 @@
     },
     {
       "checkpoint": {
+        "repo": "reused five-stage/checkpoint tensor set (see cell.yaml data.stages); no new checkpoint identity, CPU-only reuse of CD and Amendment S/T on-disk extractions",
+        "revision": ""
+      },
+      "created_at": "2026-07-20T13:45:48Z",
+      "falsifier": "At every pre-registered k up to 32 over L19-L24, S->T subspace overlap is indistinguishable from the label-permutation null (inside its 95th percentile and within 0.10 of its mean) while within-stage full-n reliability is high (>= 0.70) and the recovery curve never closes more than one-quarter of the floor-to-ceiling gap at any k.",
+      "inputs": [],
+      "instrument": {
+        "configs": [
+          "cell.yaml",
+          "gates.yaml"
+        ],
+        "modules": [
+          "subspace_overlap_analysis.py"
+        ],
+        "pins": {
+          "cell.yaml": "a2fda52f88177fb8b5da24fb8634b5c53bb5f3ee0440941d49a904097cdcd1d2",
+          "gates.yaml": "9cc19fb3439b09b52f16b121ce22560f701192966c27413b4bead166bf25cca5",
+          "subspace_overlap_analysis.py": "de6c16fb3c266b2d6393ba6700f83b8531108865cf96f82f10079618e330fd71"
+        },
+        "repins": [
+          {
+            "date": "2026-07-20T16:43:58Z",
+            "file": "subspace_overlap_analysis.py",
+            "new_sha256": "de6c16fb3c266b2d6393ba6700f83b8531108865cf96f82f10079618e330fd71",
+            "old_sha256": "c52260e5acec76895962a75e13ecd4f52d6643e7240cb01f366bbedbffa11d53",
+            "reason": "PI-approved parallelization retrofit after sign: layer-level joblib executor (--workers flag, symmetric 1-thread BLAS caps both paths, per-task slices only), plus allocator-alignment fix (fresh contiguous copy before the k=128 raw_span SVD; loky worker spawning perturbs main-process array alignment and OpenBLAS SIMD rounds alignment-sensitively). Smoke: workers 1 vs 8 zero-diff excluding wall_time, 19/19 assertions both, serial output byte-identical to the pre-retrofit baseline. No change to any random draw, gate computation, or output schema."
+          }
+        ]
+      },
+      "kg": [],
+      "prediction": "Reading A: k=8 S->T subspace overlap in the 0.45-0.70 band against a permutation null with mean ~0.20-0.35 and 95th percentile ~0.30-0.45; within-stage full-n reliability 0.75-0.90; recovery curve reaching 0.78-0.80 near the T ceiling by k=8 while the random-subspace-of-S floor stays near 0.60-0.68; the 0.679 transfer is a frozen-axis lower bound on a shared-subspace capacity near 0.80.",
+      "question": "Does correctness classification transfer across checkpoints because a top-k discriminative SUBSPACE is preserved rather than a single axis, and does that subspace overlap quantitatively account for the 0.679 S->T cold transfer?",
+      "registered": true,
+      "slug": "correctness-subspace-overlap",
+      "status": "null-result",
+      "title": "correctness-subspace-overlap",
+      "type": "probe-fit",
+      "verdict": "Null-result, instrument-limited: S->T correctness-subspace overlap at k>=4 sits inside its permutation null and the reliability limb was shown estimator-structurally unreachable for any signal, so the flat-subspace vs rotation question stays open; only the single k=1 shared direction underlying the 0.679 transfer is above null, and S's discriminative subspace reads T only about 0.04 AUROC above a random slice of S's span."
+    },
+    {
+      "checkpoint": {
         "repo": "",
         "revision": ""
       },
