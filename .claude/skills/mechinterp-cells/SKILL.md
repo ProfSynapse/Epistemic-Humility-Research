@@ -111,6 +111,21 @@ maintenance.
   mid-run to add resumability after a crash has already happened. See
   `experiments/common/README-runlog.md` for the import path and per-arm
   log-path convention.
+- **Parallelize by default when it cannot influence results** (PI rule of
+  thumb, 2026-07-20). If a harness's work units are independent (per-layer
+  fits, per-rung scoring, batched generation) and every random draw is keyed
+  by explicit identifiers (seed derived from stage/layer/purpose strings)
+  rather than call order or shared RNG state, then parallel and serial
+  execution are byte-identical and a serial-only implementation is a build
+  gap, not a style choice. Build the executor in from the start (a
+  `--workers N` flag, BLAS threads capped per worker, no full-cache copies
+  per worker, `--workers 1` path preserved) and prove equivalence in the
+  smoke by diffing `--workers 1` vs `--workers N` output. Lesson from
+  correctness-subspace-overlap (2026-07-20): the module shipped serial-only,
+  turning a roughly two-hour parallel job into a 14-hour run and forcing a
+  kill, retrofit, and audited repin cycle after sign. Where order or shared
+  state does matter (sequential dosing on a warm model, cross-item dedup),
+  do not parallelize without an explicit equivalence argument.
 - **Stage dosed RunLogs to a durable location BEFORE any worktree teardown**
   (lesson from rr-cross-family-raw-refusal, 2026-07-18: its llama dosed
   generation text lived only in gitignored `analysis/` inside the amendment
