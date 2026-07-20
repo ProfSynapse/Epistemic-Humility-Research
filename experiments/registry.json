@@ -703,6 +703,49 @@
     },
     {
       "checkpoint": {
+        "repo": "local four-stage set (see cell.yaml stages; raw + partrue identities pinned at staging per A3)",
+        "revision": ""
+      },
+      "created_at": "2026-07-19T20:17:25Z",
+      "falsifier": "raw->cleansft correctness cosine >= 0.80 averaged over L19-L24: no orthogonal rotation at SFT; the rotation account does not transfer to correctness.",
+      "inputs": [],
+      "instrument": {
+        "configs": [
+          "cell.yaml",
+          "gates.yaml"
+        ],
+        "modules": [
+          "cd_stage_extract_gen.py",
+          "cd_rotation_analysis.py"
+        ],
+        "pins": {
+          "cd_rotation_analysis.py": "a0ffc18fcbd08bddd5bea1e9facbde5ef3aa7c6d2456f33868283ba69623d019",
+          "cd_stage_extract_gen.py": "16daec82f3321ffec97bc50485545a5434545cd4edceae84c29299c96feca20d",
+          "cell.yaml": "3ef703bd69e0089fc5ec6076a453f17cec2de3e7af8f504b7a42f0f5044eccfc",
+          "gates.yaml": "d99ef4997b0a2be1b200726c178364cc6c1a3f1bdb2b09c9d3d3e9a124cf1e63"
+        },
+        "repins": [
+          {
+            "date": "2026-07-19T20:29:47Z",
+            "file": "cell.yaml",
+            "new_sha256": "3ef703bd69e0089fc5ec6076a453f17cec2de3e7af8f504b7a42f0f5044eccfc",
+            "old_sha256": "d138bca9f3bb8c3f73815ad738fb24fbb06c9f9915950bbd969da7ce66ce3003",
+            "reason": "A3 placeholder resolution: raw-base + GRPO-par-true identities pinned to the answerability diagnostic's own committed provenance (runpod_diag_caution_timeline.sh:13,16; docs/checkpoint-staging.md:28; h9-propensity-reading-gate/AMENDMENT.md:50), no design content changed"
+          }
+        ]
+      },
+      "kg": [],
+      "prediction": "Partial rotation: raw->cleansft correctness cosine 0.3-0.6 at L19-L24 (below the split-half noise floor), later transitions >= 0.85, and the CPU-only Instruct->grpov2 bracket cosine consistent with the partial 0.679 transfer.",
+      "question": "Does the correctness (dial) direction rotate across raw -> clean-SFT -> GRPO-v2 -> GRPO-par-true the way the answerability direction does (one near-orthogonal rotation at SFT, then stable), explaining the dial's 0.679 cold cross-checkpoint transfer?",
+      "registered": true,
+      "slug": "correctness-direction-rotation",
+      "status": "null-result",
+      "title": "Correctness-direction rotation across training stages",
+      "type": "probe-fit",
+      "verdict": "CD-G1 not met (later transitions 0.449/0.330 vs the 0.85 floor) and falsifier not fired (raw->cleansft 0.192); pre-registered readings exhausted; post-hoc: correctness direction too weakly identified (split-half floor 0.174) for the cosine instrument to resolve rotation; 0.679 cold-transfer mechanism stays open."
+    },
+    {
+      "checkpoint": {
         "repo": "",
         "revision": ""
       },
