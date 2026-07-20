@@ -734,7 +734,10 @@
           }
         ]
       },
-      "kg": [],
+      "kg": [
+        "experiment:correctness-direction-rotation",
+        "mechanism:correctness-direction-weakly-identified-defeats-cosine-rotation-probe"
+      ],
       "prediction": "Partial rotation: raw->cleansft correctness cosine 0.3-0.6 at L19-L24 (below the split-half noise floor), later transitions >= 0.85, and the CPU-only Instruct->grpov2 bracket cosine consistent with the partial 0.679 transfer.",
       "question": "Does the correctness (dial) direction rotate across raw -> clean-SFT -> GRPO-v2 -> GRPO-par-true the way the answerability direction does (one near-orthogonal rotation at SFT, then stable), explaining the dial's 0.679 cold cross-checkpoint transfer?",
       "registered": true,

@@ -43,4 +43,6 @@ verdict: 'CD-G1 not met (later transitions 0.449/0.330 vs the 0.85 floor) and fa
   not fired (raw->cleansft 0.192); pre-registered readings exhausted; post-hoc: correctness
   direction too weakly identified (split-half floor 0.174) for the cosine instrument
   to resolve rotation; 0.679 cold-transfer mechanism stays open.'
-kg: []
+kg:
+- experiment:correctness-direction-rotation
+- mechanism:correctness-direction-weakly-identified-defeats-cosine-rotation-probe

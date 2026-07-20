@@ -695,7 +695,7 @@ Atomic notes extracted from the library papers via the Agents-K1 ingestion skill
 - [[valence-arousal-subspace]] : A two-dimensional linear subspace in LLM activation space spanned by a recovered valence axis (pleasure-displeasure) and arousal axis (activ
 - [[world-model-hallucination-modes]] : A three-type taxonomy of failure modes in generative world models, each anchored to a different pipeline stage. Perceptual hallucination occ
 
-## Mechanisms (cause -> effect) (436)
+## Mechanisms (cause -> effect) (437)
 
 - [[abstention-generalization-failure]] : 'instruction-tuning for abstention on a narrow, homogeneous set of refusal expressions and task formats' **prevents** Abstention ability does not generalize to 
 - [[abstract-representations-enable-zero-shot-generalization]] : High degree of abstract (parallel) representation in ANN hidden layers, as measured by parallelism-score, indicating that compositional rule dimensions are enco
@@ -756,6 +756,7 @@ Atomic notes extracted from the library papers via the Agents-K1 ingestion skill
 - [[consistency-over-verbalization-arithmetic]] : Using self-consistency response consistency rather than direct verbalized-confidence for arithmetic reasoning tasks like gsm8k **increases** 'auroc improves fro
 - [[contrastive-activation-addition-steers-alignment-behaviors]] : A contrastive-activation-addition vector is computed from contrasting behavior examples. **enables** Alignment-relevant behaviors shift during evaluation or gen
 - [[conversational-role-cue-flips-factuality-representation]] : A model engaging in a multi-turn conversation that cues a role incompatible with standard factuality (e.g., asserting opposite-day answers, roleplaying as a dei
+- [[correctness-direction-weakly-identified-defeats-cosine-rotation-probe]] : Fitting a per-stage logistic-regression correctness (correct-vs-wrong) direction in a shared raw-basis PCA-128 subspace at each of four training stages (raw bas
 - [[coverage-aware-sampling-reduces-hallucination]] : Task-uniform data resampling applied to both tokenizer and dynamics model training **decreases** All three normalized hallucination predictor values and rollout
 - [[coverage-specific-capacity-reallocation]] : Optimizing the network for a specific target coverage rather than a single coverage-agnostic confidence ranking. **increases** Capacity is reallocated toward th
 - [[cross-entropy-calibration-couples-to-hallucination]] : Cross-entropy pretraining minimization drives calibration deviation delta toward zero **enables** Base models are structurally calibrated and therefore forced t
