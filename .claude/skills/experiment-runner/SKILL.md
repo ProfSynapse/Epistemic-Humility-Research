@@ -74,9 +74,10 @@ operation, then follow any further routing inside that reference.
   OWN git worktree (`.worktrees/<branch>`) = one PR. NEVER swap branches in the
   primary working tree — live GPU queues and monitors run scripts from it in
   place. Do the full arc in that worktree (recipes, run records, scored
-  results, doc verdict), then PR into protected `main`; PRs still MERGE
-  serially, and never push to `main` directly. See
-  [reference/operator-discipline.md](reference/operator-discipline.md).
+  results, doc verdict), then PR into protected `main`. Amendments proceed in
+  PARALLEL, each in its own worktree; never stack a second amendment on
+  another amendment's branch or worktree, and never push to `main` directly.
+  See [reference/operator-discipline.md](reference/operator-discipline.md).
 - The no-pollution rule is sacrosanct: runner code may not import tuner
   internals, write committed files under `synaptic-tuner/`, or register
   Epistemic-specific tuner behavior. Ephemeral staging under already-gitignored

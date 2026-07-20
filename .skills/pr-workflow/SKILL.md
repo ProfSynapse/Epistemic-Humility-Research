@@ -24,7 +24,7 @@ files, before committing housekeeping docs, and before merging PRs.
 | Artifact | Flow |
 |----------|------|
 | Session notes, `TODO.md`, `docs/ideas/`, backlog edits | Commit directly to `main` |
-| Amendments, `experiment*/` code, `docs/protocols/` docs, `experiments/<slug>/` | One branch = one PR = MERGED before the next amendment branches |
+| Amendments, `experiment*/` code, `docs/protocols/` docs, `experiments/<slug>/` | One dedicated git worktree under `/home/profsynapse/code/ehr-worktrees/<slug>` on its own branch off up-to-date `main` = one PR. Amendments proceed in parallel, each in its own worktree; never stack a second amendment on another amendment's branch or worktree, and never push amendment evidence directly to `main` |
 | `synaptic-tuner/` submodule | Its own branch + PR, generic/experiment-agnostic only |
 | Skills (`.skills/` + generated mirrors) | Reusable infra: sync workflow, then branch + PR (NOT direct-to-main; skills are not housekeeping docs) |
 | Dataset / pool / question-text / eval-row text | NEVER committed (public repo). Stage to the PRIVATE HF dataset repo `professorsynapse/eh-al-prep-staging`; fetch at runtime. See "Datasets are never committed" below |
