@@ -4,7 +4,7 @@ session_id: 20260717T201649Z-margin-cascade-execution-m1-m2-m1b-m4
 title: 'Margin cascade execution: M1 M2 M1b M4'
 status: active
 created_at: '2026-07-17T20:16:49Z'
-updated_at: '2026-07-20T13:27:08Z'
+updated_at: '2026-07-20T15:04:05Z'
 question: Do the framework's margin-theory claims (1, 3) and the mentalistic-naming
   criteria hold at the qwen mid-band operating point, tested cheap-first through the
   M1-M6 cascade?
@@ -501,6 +501,33 @@ checkpoints:
   decisions: []
   next_steps: []
   signals: {}
+- id: 019-checkpoint
+  at: '2026-07-20T15:04:05Z'
+  kind: checkpoint
+  title: Checkpoint
+  summary: 'Subspace successor arc: PI approved designing correctness-subspace-overlap
+    before Gemma. Opus designer packet v1 -> lit due-diligence (opus, KG+external)
+    found 3 REQUIRED statistical fixes (R1 disjoint-split reliability replacing biased
+    in-bootstrap overlap; R2 label-permutation null replacing too-easy isotropic null;
+    R3 recovery curve floor+ceiling) -> designer v2 with pinned constructions -> lead
+    adjudicated all decisions. Tensor inventory: only Qwen3 family survives with correctness-labeled
+    post-gen tensors (S/T/U/W + CD stages + Amendment X 1.7B/8B/14B scale sweep);
+    cross-family arm infeasible, scale arm deferred. Ingested+committed 3 methods
+    papers (truth-cones 2505.21800, CKA-reliability 2210.16156, Subspace Chronicles
+    2310.16484, commit 5c8faf82; 4 of 7 flagged already in KG). Governed docs drafted
+    by sonnet agent, lead-verified constants diff + added 2 missing citations. Harness
+    built subspace_overlap_analysis.py (1099 LOC); first smoke died on 2 real sklearn
+    disjoint-split edge-case bugs (not monitor artifact), fixed, smoke green 19/19
+    deterministic, k=1 recovery 0.707 vs 0.679. SIGNED (pins a2fda52f/9cc19fb3/c52260e5,
+    commit 10d5fc4e on exp/correctness-subspace-overlap); full serial run launched
+    ~14.3 CPU-hr overnight, no GPU. Next: gate adjudication + red-team + resolve +
+    PR on the harness report.'
+  evidence: []
+  run_ids: []
+  commands: []
+  decisions: []
+  next_steps: []
+  signals: {}
 track: margin-theory-cascade
 ---
 # Margin cascade execution: M1 M2 M1b M4
@@ -636,3 +663,8 @@ _No summary yet._
 - at: `2026-07-20T13:27:08Z`
 - kind: `checkpoint`
 - summary: Llama wide-retest exhaust published to HF after PI approval (aggregate f53beacc, rows 2b46d055 with 23510 dosed rows: 17294 KUQ full-text, 6216 TriviaQA/PopQA text-free, per-row adjudicated verdicts joined; revisions recorded, commit 5fae2470). Ingested arXiv 2607.14345 Value Leakage into KG (d3ace59c, tangential, citation-shelf only). CD correctness-direction-rotation ran all stages on 3090 (two harness monitor idle-gaps re-driven by lead), resolved NULL-RESULT and MERGED (PR #316, 69ca2ea1): CD-G0/G2 PASS, CD-G1 not met (cleansft->grpov2 0.449, grpov2->partrue 0.330 vs 0.85 floor), falsifier not fired (raw->cleansft 0.192), readings exhausted; red-team signed off with F1/F2/F6 wording applied; post-hoc: correctness direction weakly identified (split-half floor 0.174), rotation unresolvable, 0.679 cold-transfer mechanism stays open; orchestrator call wrong on both counts. Next: KG-ingest CD resolution, Gemma-4-E4B atlas (#38), harvest tree (#39), M-cascade remainder.
+### 019-checkpoint - Checkpoint
+
+- at: `2026-07-20T15:04:05Z`
+- kind: `checkpoint`
+- summary: Subspace successor arc: PI approved designing correctness-subspace-overlap before Gemma. Opus designer packet v1 -> lit due-diligence (opus, KG+external) found 3 REQUIRED statistical fixes (R1 disjoint-split reliability replacing biased in-bootstrap overlap; R2 label-permutation null replacing too-easy isotropic null; R3 recovery curve floor+ceiling) -> designer v2 with pinned constructions -> lead adjudicated all decisions. Tensor inventory: only Qwen3 family survives with correctness-labeled post-gen tensors (S/T/U/W + CD stages + Amendment X 1.7B/8B/14B scale sweep); cross-family arm infeasible, scale arm deferred. Ingested+committed 3 methods papers (truth-cones 2505.21800, CKA-reliability 2210.16156, Subspace Chronicles 2310.16484, commit 5c8faf82; 4 of 7 flagged already in KG). Governed docs drafted by sonnet agent, lead-verified constants diff + added 2 missing citations. Harness built subspace_overlap_analysis.py (1099 LOC); first smoke died on 2 real sklearn disjoint-split edge-case bugs (not monitor artifact), fixed, smoke green 19/19 deterministic, k=1 recovery 0.707 vs 0.679. SIGNED (pins a2fda52f/9cc19fb3/c52260e5, commit 10d5fc4e on exp/correctness-subspace-overlap); full serial run launched ~14.3 CPU-hr overnight, no GPU. Next: gate adjudication + red-team + resolve + PR on the harness report.
