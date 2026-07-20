@@ -533,7 +533,117 @@ would need fresh approval.
 
 ## Outcome
 
-Filled at resolve, no goalpost moves: the readings, gates, and falsifier
-above are fixed and must not be retuned after seeing results. Record the
-verdict, the gate results, and the one-sentence summary that also goes into
-`verdict:` in the manifest.
+Resolved 2026-07-20 as a null-result (instrument-limited), adjudicated by
+the lead against the signed gates after an adversarial red-team review
+(six findings, sign-off conditional on wording; every wording constraint
+is applied below). All gate numbers were independently re-derived by the
+lead from `analysis-committed/subspace_overlap_timeline.json` and match
+the module's own gate summary exactly. Run provenance: detached CPU run,
+76.4 min wall at 8 workers, module sha unchanged
+(de6c16fb3c266b2d6393ba6700f83b8531108865cf96f82f10079618e330fd71).
+
+Gate results as signed:
+
+- SO-G0 PASS. All five caches matched the CD committed table exactly
+  (raw 1823 = 500/1323, cleansft 1250 = 750/500, grpov2 1488 = 988/500,
+  partrue 1217 = 500/717, S 1836 = 500/1336); matched-population subset
+  counts verified (T 230/104, S 245/89); the m=n/8 half-split grid held
+  at least 62 rows per class everywhere.
+- SO-G1 FAIL on all three limbs (L19-L24 means at k=8):
+  (i) S->T overlap 0.01157 vs permutation-null mean 0.01085 and 95th
+  percentile 0.01419: margin +0.00072 vs the required +0.15, and inside
+  the null band. (ii) Within-stage full-n reliability S 0.0185 and
+  T 0.0293 vs the required 0.70; the 1/m extrapolation R^2 was
+  0.007-0.226 at every gate layer, so the pre-registered m=n/2
+  conservative fallback was used at all 12 stage-layer cells.
+  (iii) Recovery closed fraction 0.1750 vs the required 0.75.
+- SO-G2: per-stage best-layer full-PCA OOF AUROC inherited PASS
+  (0.809-0.860). The k=1 recovery point at L20 is 0.7009, within 0.10 of
+  the documented 0.679 cold transfer; a fresh-refit 1-D probe can only
+  meet or exceed the frozen-coefficient 0.679, so this is a sanity check,
+  not an exact reproduction. Criterion (iii) is met only literally: the
+  k=32 restricted AUROC exceeds full-PCA via the ceiling's label leakage
+  (see caveats), so it is NOT evidence that the subspace estimator
+  captures the discriminative signal.
+- Falsifier (Reading B) NOT fired: its precondition of within-stage
+  reliability >= 0.70 is unmet, and the k=1 and k=2 overlaps are above
+  their nulls, so the "indistinguishable at every k" clause also fails.
+  Per the signed falsifier text, overlap at the null with low reliability
+  is the middle-ground instrument-limited null.
+- Two-seed robustness: both pinned seeds agree so_g1_i_pass = False at
+  every gate layer; the headline call is seed-stable.
+
+Adopted reading: the pre-stated middle ground. Neither Reading A (shared
+flat subspace) nor Reading B (genuine rotation) is adopted. The cell
+could not adjudicate mechanism (a) vs (b): its primary discrimination
+instrument saturated below the gate threshold.
+
+Red-team finding on the nature of the limit (post-hoc diagnosis, labeled
+as such; no gate, threshold, or reading retuned): a planted-signal
+simulation using the module's own estimator at matched n, dimensionality,
+and class balance showed that k=8 within-stage reliability >= 0.70 is
+unreachable for ANY signal, including a perfectly separable redundant
+flat 8-dim subspace, the exact mechanism-(a) case the gate was built to
+detect (best planted case reliability 0.104; the observed real-data
+values 0.0185-0.0293 are indistinguishable from a genuine moderate 8-dim
+signal at 0.018-0.073). The cause is estimator-structural, not
+sample-size: L2-regularized logistic regression collapses a redundant
+discriminative subspace onto one stable weighted normal, so
+bootstrap-normal SVD directions beyond the first are noise regardless of
+the true dimensionality. The pre-stated middle-ground phrase "not
+resolvable at this sample size" is therefore superseded on mechanism:
+more data would not lift this limb. Because both Reading A and the
+falsifier required that limb, both were unreachable before any data were
+seen, and the falsifier's non-firing carries no evidential weight.
+
+What the run does establish (label-clean numbers):
+
+- The k=1 S->T overlap is above its permutation null (0.00896 vs 95th
+  percentile 0.00472, 6.7x the null mean), k=2 marginally so, and k=4
+  through k=32 are inside the null. One weak shared direction, the axis
+  underlying the documented 0.679 transfer, is real; no reproducible
+  shared structure beyond it was detectable by this instrument.
+- S's discriminative 8-subspace reads T only about 0.04 AUROC above a
+  RANDOM 8-dim slice of S's PCA-128 span (recovery 0.742 vs floor 0.701
+  at L20; at k=32 recovery 0.766 is below the floor 0.771). The
+  transferable signal is diffuse in S's span rather than concentrated in
+  S's top discriminative directions.
+
+Caveats (carried):
+
+- The recovery ceiling is label-leaky: T's top-k basis is fit on the full
+  T labels before CV scoring, inflating it above this run's own full-PCA
+  OOF AUROC (0.885 at k=1 decreasing to 0.864 at k=32, vs full-PCA
+  0.814). The bias depresses closed_fraction, so limb (iii)'s FAIL is
+  conservative (an honest ceiling near 0.78 still yields about 0.52,
+  below 0.75), but all closed_fraction values are ceiling-dependent.
+- The two pre-registered subspace estimators (bootstrap-SVD primary vs
+  deflation) agree only 0.17-0.23 at k=8 across stages: independent
+  corroboration that the k=8 subspace is not well determined.
+- The pooled shared-basis secondary runs +0.06 to +0.27 above the
+  per-stage-symmetric primary on the four-stage timeline (the predicted
+  shared-basis inflation); it is not computed for the S->T bracket, so
+  the headline is unaffected.
+- Population/label confound: the matched-population S->T bracket (334
+  shared row keys) gives k=8 overlap 0.0087 vs 0.0128 full-population;
+  the near-null result is not a population artifact.
+- External dependency: re-running requires the five cache_*.npz
+  activation caches (durable exhaust store) and CD's
+  cd_rotation_analysis.py helpers.
+- Exhaust wording gap: cell.yaml's exhaust_staging sentence names derived
+  arrays (bootstrap bases, permutation draws) for the durable store; as
+  designed in the signed packet those are consumed in memory and only
+  summary statistics persist. Provenance artifacts (run log, start stamp,
+  pid file) were staged; no per-draw arrays exist to stage.
+
+Predictions scoreboard adjudication: the orchestrator's Reading A call
+was WRONG on every quantitative band (overlap level, null level,
+reliability, recovery fraction). Recorded straight.
+
+One-sentence verdict (mirrors `experiment.yaml`): S->T correctness-
+subspace overlap at k>=4 sits inside its permutation null and the
+reliability limb was shown estimator-structurally unreachable for any
+signal, so the flat-subspace vs rotation question stays open; only the
+single k=1 shared direction underlying the 0.679 transfer is above null,
+and S's discriminative subspace reads T only about 0.04 AUROC above a
+random slice of S's span.

@@ -820,10 +820,10 @@
       "question": "Does correctness classification transfer across checkpoints because a top-k discriminative SUBSPACE is preserved rather than a single axis, and does that subspace overlap quantitatively account for the 0.679 S->T cold transfer?",
       "registered": true,
       "slug": "correctness-subspace-overlap",
-      "status": "signed",
+      "status": "null-result",
       "title": "correctness-subspace-overlap",
       "type": "probe-fit",
-      "verdict": ""
+      "verdict": "Null-result, instrument-limited: S->T correctness-subspace overlap at k>=4 sits inside its permutation null and the reliability limb was shown estimator-structurally unreachable for any signal, so the flat-subspace vs rotation question stays open; only the single k=1 shared direction underlying the 0.679 transfer is above null, and S's discriminative subspace reads T only about 0.04 AUROC above a random slice of S's span."
     },
     {
       "checkpoint": {
