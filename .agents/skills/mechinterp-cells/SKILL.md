@@ -147,4 +147,15 @@ maintenance.
   `/home/profsynapse/code/ehr-exhaust/<experiment-slug>/` (or the cell's
   registered durable dir) and record the staging path in the experiment's
   NOTEBOOK.md before `git worktree remove`.
+- **A pre-registered gate that thresholds a geometry estimator (direction
+  reliability, subspace overlap, principal angles, CKA, participation ratio,
+  or similar) requires a pre-sign planted-signal validation**: show the
+  estimator can reach the gate's pass threshold on synthetic data with a
+  planted signal at matched n, dimensionality, and class balance, and that
+  the null/no-signal case stays below it. Motivating case:
+  `experiments/correctness-subspace-overlap/AMENDMENT.md` Outcome, whose
+  k=8 reliability gate of 0.70 was unreachable for any signal, including a
+  perfectly separable planted case (best planted reliability 0.104). A
+  post-hoc red-team simulation showed the cell was destined for its
+  middle-ground null before any data were seen.
 
