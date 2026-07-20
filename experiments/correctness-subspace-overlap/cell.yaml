@@ -1,0 +1,106 @@
+# correctness-subspace-overlap (SO) instrument config, pinned at sign.
+# CPU-only Tier-2 probe-fit successor to correctness-direction-rotation (CD):
+# measures the top-k discriminative SUBSPACE and its principal-angle overlap
+# across checkpoints, instead of CD's single logistic-regression axis. See
+# AMENDMENT.md for doc:line cites and the (a)-vs-(b) mechanism fork.
+apiVersion: lab-cell/v1
+experiment: correctness-subspace-overlap
+method_reference: experiments/correctness-direction-rotation/cd_rotation_analysis.py
+
+seeds:
+  pca_fold: 20260719          # CD comparability
+  bootstrap_permutation: 20260720   # primary bootstrap, null, permutation
+  robustness: 20260721        # 2-seed headline rerun
+
+pca_dim: 128
+n_folds: 5
+min_class: 30
+
+position: post_generation     # dial's native position; where 0.679 was measured
+
+estimator:
+  primary: bootstrap-SVD, balanced bootstrap
+  b: 200                      # balanced bootstrap resamples per stage per layer
+  logistic: LogisticRegression(saga, tol=1e-3)   # CD's full_direction machinery
+  secondary_robustness: deflation (fit direction, project out, refit); large disagreement with primary flagged
+
+metric:
+  name: grassmann_projection   # mean squared cosine of principal angles, equivalently mean squared canonical correlation (Krzanowski 1979)
+  k1_sanity_check: should track CD's single-fit cosines 0.192 / 0.449 / 0.330
+
+k_grid: [1, 2, 4, 8, 16, 32]
+gate_layers: L19-L24
+recovery_layer: L20           # where the 0.679 cold transfer was measured
+
+reliability:
+  method: disjoint half-split, 1/m extrapolation
+  r_partitions: 15
+  b_rel: 30
+  m_grid: [n/8, n/4, n/2]
+  extrapolation: linear-in-inverse-m OLS over the 3 m points, evaluated at m=n
+  extrap_r2_fallback: 0.90    # below this, gate uses the m=n/2 conservative median instead of the extrapolated value
+
+null:
+  primary: label-permutation
+  p_perm: 100
+  b_null: 40
+  secondary: isotropic random-subspace draw, reported
+  n_iso: 200
+  raw_span_overlap: reported (label-agnostic PCA-128 span overlap per stage-pair)
+
+basis:
+  primary: per-stage symmetric, PCA-128 fit separately on each stage's own post-gen activations; subspace mapped to ambient 2560-dim; principal angles computed in the common ambient space (fixes CD's raw-only-PCA and S-only-bracket asymmetry)
+  secondary_robustness: shared symmetric basis (PCA-128 on per-stage-balanced pooled union of stages, equal n per stage); agreement with primary reported, large disagreement flagged
+  retained_variance: reported per stage/layer (fraction of total activation variance retained by PCA-128; spot-layer full-PCA vs full-dim AUROC)
+
+recovery_curve:
+  fresh_probe: 5-fold logistic within the restricted k-dim subspace
+  floor: AUROC(T | random k-subspace of S's PCA span), averaged over isotropic draws
+  ceiling: AUROC(T | T's own top-k subspace)
+  k1_sanity_check: should land near the documented 0.679 cold transfer
+
+confound_bounds:
+  matched_population_st:
+    shared_row_keys: 334
+    t: {correct: 230, wrong: 104}
+    s: {correct: 245, wrong: 89}
+  matched_class_balance_timeline: secondary; subsample each stage to a common correct/wrong count
+
+data:
+  stages:
+    - id: raw
+      tensor_dir: /home/profsynapse/code/ehr-exhaust/correctness-direction-rotation/gen_raw
+      rows: {correct: 500, wrong: 1323}
+      source: CD
+    - id: cleansft
+      tensor_dir: /home/profsynapse/code/ehr-exhaust/correctness-direction-rotation/gen_cleansft
+      rows: {correct: 750, wrong: 500}
+      source: CD
+    - id: partrue
+      tensor_dir: /home/profsynapse/code/ehr-exhaust/correctness-direction-rotation/gen_partrue
+      rows: {correct: 500, wrong: 717}
+      source: CD
+    - id: grpov2   # T
+      tensor_dir: archive/experiment/phase1-data/probe/qwen3-4b-clean-sft-grpo-v2/amendment_t/stage2
+      rows: {correct: 988, wrong: 500}
+      source: Amendment T reuse
+    - id: s        # Instruct base
+      tensor_dir: archive/experiment/phase1-data/probe/qwen3-4b-instruct/amendment_s/stage2
+      rows: {correct: 500, wrong: 1336}
+      source: Amendment S reuse
+  caches:
+    dir: /home/profsynapse/code/ehr-exhaust/correctness-direction-rotation/cache/
+    files: [cache_raw.npz, cache_cleansft.npz, cache_grpov2.npz, cache_partrue.npz, cache_s.npz]
+    shape: "arr[layer, row, 2560], y[row], keys[row]"
+    size_total_approx_gb: 2.8
+  row_schema: "{row_key, dataset, answered, refused, correct, label, prompt_len, answer_tok_len, config_sha}; no question, answer, alias, or token-id fields"
+
+containment:
+  commit: [subspace_overlap_timeline.json, subspace_overlap_timeline.md, per-stage ID-manifests (row_key + label only, reused from CD)]
+  never_commit: [question_text, answer_text, aliases, generations, labels_with_text, token_ids, hidden_states, cache_npz]
+  no_openmoss_or_bridge_data: true
+  exhaust_staging:
+    durable_dir: /home/profsynapse/code/ehr-exhaust/correctness-direction-rotation/
+    rule: this cell generates no new tensors; it only adds derived arrays (bootstrap subspace bases, permutation draws) to the durable store, staged before any worktree teardown (A6)
+
+lane: cpu-only   # zero GPU, no launch approval needed; no generation, no extraction, all caches on disk

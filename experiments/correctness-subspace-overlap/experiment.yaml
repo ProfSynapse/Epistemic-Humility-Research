@@ -1,0 +1,36 @@
+slug: correctness-subspace-overlap
+title: correctness-subspace-overlap
+type: probe-fit
+status: signed
+registered: true
+created_at: '2026-07-20T13:45:48Z'
+question: Does correctness classification transfer across checkpoints because a top-k
+  discriminative SUBSPACE is preserved rather than a single axis, and does that subspace
+  overlap quantitatively account for the 0.679 S->T cold transfer?
+prediction: 'Reading A: k=8 S->T subspace overlap in the 0.45-0.70 band against a
+  permutation null with mean ~0.20-0.35 and 95th percentile ~0.30-0.45; within-stage
+  full-n reliability 0.75-0.90; recovery curve reaching 0.78-0.80 near the T ceiling
+  by k=8 while the random-subspace-of-S floor stays near 0.60-0.68; the 0.679 transfer
+  is a frozen-axis lower bound on a shared-subspace capacity near 0.80.'
+falsifier: At every pre-registered k up to 32 over L19-L24, S->T subspace overlap
+  is indistinguishable from the label-permutation null (inside its 95th percentile
+  and within 0.10 of its mean) while within-stage full-n reliability is high (>= 0.70)
+  and the recovery curve never closes more than one-quarter of the floor-to-ceiling
+  gap at any k.
+checkpoint:
+  repo: reused five-stage/checkpoint tensor set (see cell.yaml data.stages); no new
+    checkpoint identity, CPU-only reuse of CD and Amendment S/T on-disk extractions
+  revision: ''
+instrument:
+  configs:
+  - cell.yaml
+  - gates.yaml
+  modules:
+  - subspace_overlap_analysis.py
+  pins:
+    cell.yaml: a2fda52f88177fb8b5da24fb8634b5c53bb5f3ee0440941d49a904097cdcd1d2
+    gates.yaml: 9cc19fb3439b09b52f16b121ce22560f701192966c27413b4bead166bf25cca5
+    subspace_overlap_analysis.py: c52260e5acec76895962a75e13ecd4f52d6643e7240cb01f366bbedbffa11d53
+inputs: []
+verdict: ''
+kg: []
