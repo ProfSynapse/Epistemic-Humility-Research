@@ -24,6 +24,16 @@ Attack surfaces to check, in order:
   survives the pre-stated gate exactly as worded.
 - Provenance: could someone re-run this from the committed files + manifests
   alone? Name every gap.
+- Operational resilience: is the `experiment.yaml` persistence declaration
+  honest against the module's projected wall-clock (an `incremental` module
+  masquerading as `short-run`, or a `measured_smoke_wall_clock_s` that does
+  not match the actual smoke)? For every module declared `persistence:
+  incremental`, is there recorded kill-resume drill evidence (an actual
+  SIGKILL-mid-run-and-resume, dated, in `NOTEBOOK.md`), not just a grep
+  showing `RunLog` is imported? Was any run whose wall-clock exceeded about
+  15 minutes launched through `experiments/common/launch_detached.sh` rather
+  than a harness-tracked background Bash task that could have been torn down
+  mid-run?
 
 Rules: read the signed protocol doc and the actual code — never review from
 the result JSON alone. Do not fix anything; report. Rank findings by whether

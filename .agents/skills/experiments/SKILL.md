@@ -91,9 +91,10 @@ falsifier: <one sentence>        # required to sign
 checkpoint: {repo: ..., revision: ...}   # optional
 instrument:
   configs: [cell.yaml, gates.yaml]       # instrument files pinned at signing
-  modules: []                    # optional grader/render modules, pinned too
+  modules: []                    # optional grader/render/harness modules, pinned too
   pins: {}                       # relpath -> sha256, filled by `exp sign`
   repins: []                     # append-only audit trail, filled by `exp repin`
+  persistence: {}                # relpath (from modules) -> persistence declaration
 inputs: []                       # repo-relative paths this experiment consumes
 pr: <int>                        # optional, the PR that carries this experiment
 verdict: <one sentence>          # filled at resolve
@@ -104,6 +105,57 @@ kg: []                           # typed KG node ids, filled at/after resolve
 `historical-amendment` / `historical` is reserved for imported legacy governed
 records whose original amendment prose is the provenance source; do not use it
 for new experiments.
+
+### Persistence declarations (kill-resume safety)
+
+A signed CPU or GPU module that buffers results in memory and writes output
+only at the end loses the entire run if it is killed one minute before
+finishing. `instrument.persistence` closes this gap at the tooling level: it
+is a mapping, keyed by the same module relpath used in `instrument.modules`
+(same shape as `instrument.pins`), where every module declares up front how
+it survives a kill. Each entry is one of:
+
+```yaml
+instrument:
+  modules: [harness.py, pool_builder.py]
+  persistence:
+    harness.py:
+      persistence: incremental
+      checkpoint_path: experiments/<slug>/analysis/runlog/harness.jsonl
+    pool_builder.py:
+      persistence: short-run
+      measured_smoke_wall_clock_s: 42.5
+```
+
+- `persistence: incremental` with a `checkpoint_path` (repo-relative or
+  `analysis/`-relative): the module writes per-item results through a
+  resumable run log as it goes (see `experiments/common/README-runlog.md` for
+  the `RunLog` import path and log-path convention) rather than only at the
+  end.
+- `persistence: short-run` with `measured_smoke_wall_clock_s` (a number): the
+  module's own smoke run was timed and finishes comfortably inside the
+  window where losing the whole run to a kill is an acceptable risk. A
+  process whose projected wall-clock exceeds about 15 minutes must not use
+  this mode; see the mechinterp-cells SKILL.md persistence invariant.
+
+Config-only instruments (`instrument.modules: []`, everything routed through
+generic tuner verbs) have nothing to declare. The sole hard-enforcement point
+is `bin/exp sign`, which REFUSES to sign an experiment whose
+`instrument.modules` contains an entry with no matching
+`instrument.persistence` key, or whose declaration is malformed (wrong
+`persistence` value, missing `checkpoint_path` on `incremental`, or a
+non-numeric `measured_smoke_wall_clock_s` on `short-run`). `sign` is the
+mandatory gate every new experiment already passes before it can run, so
+enforcement is intact going forward without needing a second gate elsewhere.
+`bin/exp validate` only ever prints a WARNING (non-blocking, at every status
+including `draft`) for the same gap: this keeps validate from retroactively
+failing on a stale draft that predates this field, or one that was run
+informally without ever going through `exp sign` (a Tier-2 exploratory cell,
+say), while still surfacing the gap for anyone reading validate's output.
+Before signing an `incremental` module, run the kill-resume smoke drill
+described in the mechinterp-cells `reference/organization.md` "Kill-resume
+smoke drill" section: a validator or grep check that `RunLog` is imported is
+not evidence that resume actually works.
 
 ## Lifecycle
 
