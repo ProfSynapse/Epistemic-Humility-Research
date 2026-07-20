@@ -4,7 +4,7 @@ session_id: 20260717T201649Z-margin-cascade-execution-m1-m2-m1b-m4
 title: 'Margin cascade execution: M1 M2 M1b M4'
 status: active
 created_at: '2026-07-17T20:16:49Z'
-updated_at: '2026-07-20T15:04:05Z'
+updated_at: '2026-07-20T22:40:00Z'
 question: Do the framework's margin-theory claims (1, 3) and the mentalistic-naming
   criteria hold at the qwen mid-band operating point, tested cheap-first through the
   M1-M6 cascade?
@@ -528,6 +528,138 @@ checkpoints:
   decisions: []
   next_steps: []
   signals: {}
+- id: 020-checkpoint
+  at: '2026-07-20T18:08:40Z'
+  kind: checkpoint
+  title: Checkpoint
+  summary: 'Subspace-overlap full-run saga: PR #317 (parallelize-by-default skill
+    invariant) merged to main at aed254ee per PI word. correctness-subspace-overlap
+    full analysis launched 12:45 EDT (workers 8, SO-G0 passed: all five caches match
+    the CD committed table). Run KILLED at 57m29s during the two-seed robustness rerun,
+    before any output write: no traceback, no kernel OOM in dmesg, 13GB free; root
+    cause is the harness launching it as a harness-tracked background Bash task, which
+    the session runtime tore down mid-run (CD monitor lesson in new costume; harness
+    never got the exit notification either). All compute lost because the module writes
+    outputs only at the end. Remedy: relaunch ordered fully detached (setsid nohup,
+    PID poll in short foreground calls), module untouched (sha de6c16fb unchanged,
+    no repin). Standing lesson queued for skill capture after the cell resolves: hour-scale
+    local compute must be launched detached from any agent session lifecycle, and
+    end-only output writes violate the >15-min resumable-persistence invariant (this
+    module slipped past pre-sign review on that point).'
+  evidence: []
+  run_ids: []
+  commands: []
+  decisions: []
+  next_steps: []
+  signals: {}
+- id: 021-checkpoint
+  at: '2026-07-20T19:51:33Z'
+  kind: checkpoint
+  title: Checkpoint
+  summary: 'correctness-subspace-overlap RESOLVED null-result (instrument-limited),
+    PR #319 open for PI merge word. Full run (detached relaunch, 76.4 min, sha unchanged)
+    exited clean; SO-G0 pass; SO-G1 fails all three limbs (overlap 0.01157 inside
+    perm null 0.01085/0.01419; reliability S 0.0185 T 0.0293 vs 0.70 with m=n/2 fallback
+    everywhere; recovery closed fraction 0.175 vs 0.75); falsifier not fired (reliability
+    precondition unmet, k=1-2 above null); two-seed agreement at every gate layer.
+    Lead re-derived all numbers from committed JSON (exact match). Red-team (Opus,
+    pre-verdict): six findings, conditional sign-off. F1 decisive: planted-signal
+    simulation with the module''s own estimator proves k=8 reliability >= 0.70 unreachable
+    for ANY signal (best planted Rashomon 0.104) because L2 logistic collapses a flat
+    subspace onto one stable normal; Reading A and falsifier were instrumentally unreachable,
+    middle ground was the only admissible outcome; wording must say estimator-structural,
+    NOT sample-size. F2: recovery ceiling label-leaky, conservative for the FAIL.
+    Label-clean positives: k=1 S->T overlap 6.7x null mean (the 0.679 axis is real,
+    nothing shared beyond it); S''s discriminative 8-subspace reads T only ~0.04 AUROC
+    above a random slice of S''s span (negative at k=32), so the transferable signal
+    is diffuse in S''s span. Orchestrator Reading A call recorded WRONG on every band
+    (second consecutive wrong optimistic call after CD). Exhaust wording gap (per-draw
+    arrays in-memory by design) accepted and recorded. PR #318 safeguards merged earlier
+    today (b8fdbecc). Next after PI merge: KG ingest of the resolved result per checklist,
+    then program decision on Gemma atlas (task #38) vs a redesigned subspace instrument
+    (CCA/probe-ensemble-span class, estimator validated by planted simulation BEFORE
+    sign).'
+  evidence: []
+  run_ids: []
+  commands: []
+  decisions: []
+  next_steps: []
+  signals: {}
+- id: 022-checkpoint
+  at: '2026-07-20T20:25:03Z'
+  kind: checkpoint
+  title: Checkpoint
+  summary: 'Post-resolve fanout, all four streams landed. PR #320 MERGED (936d82b2):
+    planted-sim estimator-validation rule now binding in mechinterp-cells + red-team
+    checklist. PR #321 MERGED (1c67a898): CD+SO folded into paper-4-two-signal-readout
+    section 4.2 (SWAP placeholder replaced with the measured rotation-null + subspace-null
+    story) and paper-5-actuation section 6.5 (answerability-vs-correctness portability
+    contrast as explicit next-study hypothesis); lead corrected the drafter''s diffuseness
+    attribution pre-merge (transferable signal is what SO measured diffuse, not within-checkpoint
+    concentration). KG ingest of SO on main (eae897dd): experiment node + mechanism:l2-logistic-bootstrap-svd-cannot-resolve-multidim-discriminative-subspace,
+    7 edges, validator clean. Scale-ladder design ADJUDICATED (packet + lead rulings
+    in scratchpad scale_identifiability_design.md section 12): 3-scale identical-pool
+    ladder (X tensors verified: labels inline, 3000/3000 row_key match, no HF revision
+    pin carried as caveat), gates only on k=1 estimators E1/E2 with mandatory G_val
+    planted validation, 4B excluded, require-both layer policy, thresholds locked
+    from synthetic bands pre-sign; suggested slug correctness-geometry-scale-ladder;
+    ~3 CPU-hr. Gemma atlas: amendment-tier (draft scaffolded on exp/gemma-4-e4b-family-atlas),
+    pin verified fee6332c1abaa (source corrected to doubt-snap fleet model_matrix,
+    NOT rr-cross-family), SCOPE FINDING: no reusable graded pool (fleet abandoned
+    gemma cell pre-launch), lead authorized fleet-resume mining on local 3090 sequenced
+    post-sign, timed probe pre-sign; agent finalizing docs + probe, stops for lead
+    sign. Scale cell branches only after atlas PR merges (amendment serialization).'
+  evidence: []
+  run_ids: []
+  commands: []
+  decisions: []
+  next_steps: []
+  signals: {}
+- id: 023-checkpoint
+  at: '2026-07-20T22:40:00Z'
+  kind: checkpoint
+  title: Checkpoint
+  summary: 'PR #322 merged: worktree-parallel rule purge (docs/backlog/PLAN.md, commit
+    5d9540ab) replaces the amendment-branch serialization convention with one amendment
+    = one dedicated worktree on its own branch = one PR, amendments proceed in parallel,
+    superseding checkpoint 022''s now-stale "scale cell branches only after atlas PR
+    merges" note. correctness-geometry-scale-ladder: harness BUILT on ehr-worktrees/scale-ladder
+    (Qwen3 1.7B/8B/14B on Amendment X stage-2 tensors), NOT signed. Pre-sign G_val
+    planted-signal validation FAILED all four estimators at all three scales; the new
+    PR #320 rule caught this in about four minutes of synthetic compute, versus the
+    full signed null the same estimator-collapse bug class cost correctness-subspace-overlap.
+    Root causes: the two-class mean-shift synthetic cannot express discriminative rank
+    above 1; E2 as specified is structurally tautological; E1''s level at matched-n
+    is plausibly sample-size; E4''s plus-or-minus-1 participation-ratio criterion is
+    unrealistic. Design-v2 iteration loop open (designer revising the synthetic protocol
+    and estimator specs); nothing signed, no real labels touched. gemma-4-e4b-family-atlas:
+    SIGNED (first cell signed under the new persistence-declaration enforcement from
+    PR #318), branch exp/gemma-4-e4b-family-atlas, worktree ehr-worktrees/gemma-atlas.
+    Pool mining run 1: generation stage completed (4000 rows) but the anchor-capture
+    stage died at 576/2819 rows with a transient CUDA "unknown error" (GPU healthy
+    after). Detached resume run 2 completed capture 2819/2819 (checkpoint resume worked;
+    the detached-launch wrapper captured the exit code both times). Fleet prep script
+    then exited 3: generation_terminates_rate 0.802 vs the 0.90 gate (Gemma verbosity
+    against the 200-token generation cap, 572/4000 rows truncated) and the batched-parity
+    smoke failed 2/8 rows on exact-string answer comparison (batched-vs-sequential decode
+    divergence on free-text answers). AG0a (pool-mining integrity) therefore FAILS as
+    signed; the atlas capture stage is HELD, remediation decision with the PI. Inkling
+    (Thinking Machines Lab, July 2026) assessed for KG ingestion: verdict SKIP (no technical
+    report, marketing-grade sources below the KG provenance bar; calibration-RL framing
+    but no abstention/IDK-training or internal-representation content); revisit if a
+    technical report lands.'
+  evidence: []
+  run_ids: []
+  commands: []
+  decisions: []
+  next_steps:
+  - Scale-ladder v2 design adjudication and G_val re-run before any real-tensor sign.
+  - Gemma AG0a remediation decision, then capture+panel stages if cleared.
+  - M-cascade remainder (family memo, M3 anisotropy, M5, item-36/#8 proportional-scalar) stays parked.
+  - Harvest the orphaned analysis/harvest/pending/experiments/j-space-cross-family-layer-contrast/ tree.
+  - aq-sycophancy-activation-actuator draft stays parked, needs PI go-ahead on resolve-vs-redesign.
+  - 'Amendment X scale-sweep HF revision re-pin, only if bit-exact base reproducibility is ever needed.'
+  signals: {}
 track: margin-theory-cascade
 ---
 # Margin cascade execution: M1 M2 M1b M4
@@ -668,3 +800,30 @@ _No summary yet._
 - at: `2026-07-20T15:04:05Z`
 - kind: `checkpoint`
 - summary: Subspace successor arc: PI approved designing correctness-subspace-overlap before Gemma. Opus designer packet v1 -> lit due-diligence (opus, KG+external) found 3 REQUIRED statistical fixes (R1 disjoint-split reliability replacing biased in-bootstrap overlap; R2 label-permutation null replacing too-easy isotropic null; R3 recovery curve floor+ceiling) -> designer v2 with pinned constructions -> lead adjudicated all decisions. Tensor inventory: only Qwen3 family survives with correctness-labeled post-gen tensors (S/T/U/W + CD stages + Amendment X 1.7B/8B/14B scale sweep); cross-family arm infeasible, scale arm deferred. Ingested+committed 3 methods papers (truth-cones 2505.21800, CKA-reliability 2210.16156, Subspace Chronicles 2310.16484, commit 5c8faf82; 4 of 7 flagged already in KG). Governed docs drafted by sonnet agent, lead-verified constants diff + added 2 missing citations. Harness built subspace_overlap_analysis.py (1099 LOC); first smoke died on 2 real sklearn disjoint-split edge-case bugs (not monitor artifact), fixed, smoke green 19/19 deterministic, k=1 recovery 0.707 vs 0.679. SIGNED (pins a2fda52f/9cc19fb3/c52260e5, commit 10d5fc4e on exp/correctness-subspace-overlap); full serial run launched ~14.3 CPU-hr overnight, no GPU. Next: gate adjudication + red-team + resolve + PR on the harness report.
+### 020-checkpoint - Checkpoint
+
+- at: `2026-07-20T18:08:40Z`
+- kind: `checkpoint`
+- summary: Subspace-overlap full-run saga: PR #317 (parallelize-by-default skill invariant) merged to main at aed254ee per PI word. correctness-subspace-overlap full analysis launched 12:45 EDT (workers 8, SO-G0 passed: all five caches match the CD committed table). Run KILLED at 57m29s during the two-seed robustness rerun, before any output write: no traceback, no kernel OOM in dmesg, 13GB free; root cause is the harness launching it as a harness-tracked background Bash task, which the session runtime tore down mid-run (CD monitor lesson in new costume; harness never got the exit notification either). All compute lost because the module writes outputs only at the end. Remedy: relaunch ordered fully detached (setsid nohup, PID poll in short foreground calls), module untouched (sha de6c16fb unchanged, no repin). Standing lesson queued for skill capture after the cell resolves: hour-scale local compute must be launched detached from any agent session lifecycle, and end-only output writes violate the >15-min resumable-persistence invariant (this module slipped past pre-sign review on that point).
+### 021-checkpoint - Checkpoint
+
+- at: `2026-07-20T19:51:33Z`
+- kind: `checkpoint`
+- summary: correctness-subspace-overlap RESOLVED null-result (instrument-limited), PR #319 open for PI merge word. Full run (detached relaunch, 76.4 min, sha unchanged) exited clean; SO-G0 pass; SO-G1 fails all three limbs (overlap 0.01157 inside perm null 0.01085/0.01419; reliability S 0.0185 T 0.0293 vs 0.70 with m=n/2 fallback everywhere; recovery closed fraction 0.175 vs 0.75); falsifier not fired (reliability precondition unmet, k=1-2 above null); two-seed agreement at every gate layer. Lead re-derived all numbers from committed JSON (exact match). Red-team (Opus, pre-verdict): six findings, conditional sign-off. F1 decisive: planted-signal simulation with the module's own estimator proves k=8 reliability >= 0.70 unreachable for ANY signal (best planted Rashomon 0.104) because L2 logistic collapses a flat subspace onto one stable normal; Reading A and falsifier were instrumentally unreachable, middle ground was the only admissible outcome; wording must say estimator-structural, NOT sample-size. F2: recovery ceiling label-leaky, conservative for the FAIL. Label-clean positives: k=1 S->T overlap 6.7x null mean (the 0.679 axis is real, nothing shared beyond it); S's discriminative 8-subspace reads T only ~0.04 AUROC above a random slice of S's span (negative at k=32), so the transferable signal is diffuse in S's span. Orchestrator Reading A call recorded WRONG on every band (second consecutive wrong optimistic call after CD). Exhaust wording gap (per-draw arrays in-memory by design) accepted and recorded. PR #318 safeguards merged earlier today (b8fdbecc). Next after PI merge: KG ingest of the resolved result per checklist, then program decision on Gemma atlas (task #38) vs a redesigned subspace instrument (CCA/probe-ensemble-span class, estimator validated by planted simulation BEFORE sign).
+### 022-checkpoint - Checkpoint
+
+- at: `2026-07-20T20:25:03Z`
+- kind: `checkpoint`
+- summary: Post-resolve fanout, all four streams landed. PR #320 MERGED (936d82b2): planted-sim estimator-validation rule now binding in mechinterp-cells + red-team checklist. PR #321 MERGED (1c67a898): CD+SO folded into paper-4-two-signal-readout section 4.2 (SWAP placeholder replaced with the measured rotation-null + subspace-null story) and paper-5-actuation section 6.5 (answerability-vs-correctness portability contrast as explicit next-study hypothesis); lead corrected the drafter's diffuseness attribution pre-merge (transferable signal is what SO measured diffuse, not within-checkpoint concentration). KG ingest of SO on main (eae897dd): experiment node + mechanism:l2-logistic-bootstrap-svd-cannot-resolve-multidim-discriminative-subspace, 7 edges, validator clean. Scale-ladder design ADJUDICATED (packet + lead rulings in scratchpad scale_identifiability_design.md section 12): 3-scale identical-pool ladder (X tensors verified: labels inline, 3000/3000 row_key match, no HF revision pin carried as caveat), gates only on k=1 estimators E1/E2 with mandatory G_val planted validation, 4B excluded, require-both layer policy, thresholds locked from synthetic bands pre-sign; suggested slug correctness-geometry-scale-ladder; ~3 CPU-hr. Gemma atlas: amendment-tier (draft scaffolded on exp/gemma-4-e4b-family-atlas), pin verified fee6332c1abaa (source corrected to doubt-snap fleet model_matrix, NOT rr-cross-family), SCOPE FINDING: no reusable graded pool (fleet abandoned gemma cell pre-launch), lead authorized fleet-resume mining on local 3090 sequenced post-sign, timed probe pre-sign; agent finalizing docs + probe, stops for lead sign. Scale cell branches only after atlas PR merges (amendment serialization).
+### 023-checkpoint - Checkpoint
+
+- at: `2026-07-20T22:40:00Z`
+- kind: `checkpoint`
+- summary: PR #322 merged: worktree-parallel rule purge (docs/backlog/PLAN.md, commit 5d9540ab) replaces the amendment-branch serialization convention with one amendment = one dedicated worktree on its own branch = one PR, amendments proceed in parallel, superseding checkpoint 022's now-stale "scale cell branches only after atlas PR merges" note. correctness-geometry-scale-ladder: harness BUILT on ehr-worktrees/scale-ladder (Qwen3 1.7B/8B/14B on Amendment X stage-2 tensors), NOT signed. Pre-sign G_val planted-signal validation FAILED all four estimators at all three scales; the new PR #320 rule caught this in about four minutes of synthetic compute, versus the full signed null the same estimator-collapse bug class cost correctness-subspace-overlap. Root causes: the two-class mean-shift synthetic cannot express discriminative rank above 1; E2 as specified is structurally tautological; E1's level at matched-n is plausibly sample-size; E4's plus-or-minus-1 participation-ratio criterion is unrealistic. Design-v2 iteration loop open (designer revising the synthetic protocol and estimator specs); nothing signed, no real labels touched. gemma-4-e4b-family-atlas: SIGNED (first cell signed under the new persistence-declaration enforcement from PR #318), branch exp/gemma-4-e4b-family-atlas, worktree ehr-worktrees/gemma-atlas. Pool mining run 1: generation stage completed (4000 rows) but the anchor-capture stage died at 576/2819 rows with a transient CUDA "unknown error" (GPU healthy after). Detached resume run 2 completed capture 2819/2819 (checkpoint resume worked; the detached-launch wrapper captured the exit code both times). Fleet prep script then exited 3: generation_terminates_rate 0.802 vs the 0.90 gate (Gemma verbosity against the 200-token generation cap, 572/4000 rows truncated) and the batched-parity smoke failed 2/8 rows on exact-string answer comparison (batched-vs-sequential decode divergence on free-text answers). AG0a (pool-mining integrity) therefore FAILS as signed; the atlas capture stage is HELD, remediation decision with the PI. Inkling (Thinking Machines Lab, July 2026) assessed for KG ingestion: verdict SKIP (no technical report, marketing-grade sources below the KG provenance bar; calibration-RL framing but no abstention/IDK-training or internal-representation content); revisit if a technical report lands.
+- next steps:
+  - Scale-ladder v2 design adjudication and G_val re-run before any real-tensor sign.
+  - Gemma AG0a remediation decision, then capture+panel stages if cleared.
+  - M-cascade remainder (family memo, M3 anisotropy, M5, item-36/#8 proportional-scalar) stays parked.
+  - Harvest the orphaned analysis/harvest/pending/experiments/j-space-cross-family-layer-contrast/ tree.
+  - aq-sycophancy-activation-actuator draft stays parked, needs PI go-ahead on resolve-vs-redesign.
+  - Amendment X scale-sweep HF revision re-pin, only if bit-exact base reproducibility is ever needed.

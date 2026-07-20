@@ -85,6 +85,33 @@ Stage-1.5 (orthogonality) → W/X/Z/SR (training-free + generalization).
 Draft: `papers/paper-4-two-signal-readout/manuscript.md`. Figures: `fig-p3-*` (legacy prefix).
 Remaining: traceability appendix + six figures (backlog item 14).
 
+**Correctness-geometry follow-ups, resolved null 2026-07-20:** the dial's 0.679
+cold cross-checkpoint transfer (S fit → T deployed) had only been explained by
+inference, not measurement. Two exploratory Tier-2 cells closed that gap, both
+null. Correctness-direction-rotation (CD) measured the single discriminative
+axis across raw → clean-SFT → GRPO-v2 → GRPO-par-true directly: cosines stayed
+low (raw→cleansft 0.192, cleansft→grpov2 0.449, grpov2→partrue 0.330, all below
+the 0.85 floor), the falsifier did not fire, and every stage still read
+correctness well (OOF AUROC 0.809–0.860), so the direction is only weakly
+identified rather than cleanly rotating or cleanly stable. Correctness-
+subspace-overlap (SO) then tested whether a shared low-dimensional subspace
+(rather than a single axis) explains the same signature: SO-G1 failed all
+three pre-registered limbs at k=8 (S→T overlap 0.0116 inside the permutation
+null; within-stage reliability 0.02–0.03 against a 0.70 floor; recovery closed
+only 17.5% of the floor-to-ceiling gap). A post-hoc planted-signal simulation
+showed the reliability limb is estimator-structurally unreachable for any
+signal at this sample size (L2-regularized logistic regression collapses a
+redundant subspace onto one stable normal), so the falsifier's non-firing
+carries no evidential weight and neither the shared-subspace nor the
+genuine-rotation reading is adopted. What survives: one weak shared direction
+at k=1 (recovery AUROC ≈0.70, matching the 0.679 transfer), with the
+remaining transferable signal diffuse across the base checkpoint's span
+rather than concentrated in a compact subspace. Sources:
+`experiments/correctness-direction-rotation/AMENDMENT.md`,
+`experiments/correctness-subspace-overlap/AMENDMENT.md`. Both cells are
+folded into `papers/paper-4-two-signal-readout/manuscript.md` §4.2, replacing
+the prior inference-only SWAP marker with this measured account.
+
 ---
 
 ## Paper 5 — actuation arc (IN PROGRESS)
@@ -212,6 +239,15 @@ workspace-band `c_hat` write is active. Source:
 Abstract English labels (`doubt`, `caution`, `uncertainty`) and compact
 multilingual refusal/uncertainty tokens remain a separate follow-up screen, not a
 retroactive goalpost shift for this result.
+
+**Correctness-vs-answerability portability contrast (added 2026-07-20):** the
+CD/SO correctness-geometry nulls above (Paper 4 §4.2) motivate a next-study
+hypothesis rather than a cross-family claim here: the answerability axis this
+paper's gated write rides is crisp and portable (Amendment Z/SR), while the
+correctness/dial axis's own cross-checkpoint geometry is only weakly
+identified with no reproducible shared subspace beyond one weak direction.
+`papers/paper-5-actuation/manuscript.md` §6.5 now states the contrast as an
+explicit hypothesis for a future study, not a resolved finding of this paper.
 
 ---
 
