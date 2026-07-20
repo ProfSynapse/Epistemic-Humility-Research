@@ -699,7 +699,7 @@ Atomic notes extracted from the library papers via the Agents-K1 ingestion skill
 - [[valence-arousal-subspace]] : A two-dimensional linear subspace in LLM activation space spanned by a recovered valence axis (pleasure-displeasure) and arousal axis (activ
 - [[world-model-hallucination-modes]] : A three-type taxonomy of failure modes in generative world models, each anchored to a different pipeline stage. Perceptual hallucination occ
 
-## Mechanisms (cause -> effect) (440)
+## Mechanisms (cause -> effect) (441)
 
 - [[abstention-generalization-failure]] : 'instruction-tuning for abstention on a narrow, homogeneous set of refusal expressions and task formats' **prevents** Abstention ability does not generalize to 
 - [[abstract-representations-enable-zero-shot-generalization]] : High degree of abstract (parallel) representation in ANN hidden layers, as measured by parallelism-score, indicating that compositional rule dimensions are enco
@@ -880,6 +880,7 @@ Atomic notes extracted from the library papers via the Agents-K1 ingestion skill
 - [[kuq-fit-direction-reverses-on-world-known-confident-wrongness]] : In margin-evidence-responsiveness-worldknown (M4-WK), the KUQ-fit c_hat direction (fit on answered-vs-refused known-unknown rows, the direction the framework's 
 - [[kv-memorization-gates-truth-encoding]] : Phase 1 of training: rapid key-value-associative-memory|key-value memorisation of subject-attribute associations within approximately 1000 batches, reaching abo
 - [[l1-l2-ratio-enables-k-robustness]] : Penalizing the L1/L2-norm ratio of activations before Top-k selection, concentrating the code onto fewer effective units **enables** Reconstruction quality beco
+- [[l2-logistic-bootstrap-svd-cannot-resolve-multidim-discriminative-subspace]] : Estimating a rank-k>1 discriminative subspace as the top-k right singular vectors of B=200 balanced-bootstrap L2-regularized logistic-regression (saga) separati
 - [[lacie-listener-aware-calibration-transfers-to-humans]] : DPO finetuning with a simulated LLM listener scoring speaker answer acceptance (LACIE training) **enables** Human annotators accept 47% fewer incorrect answers 
 - [[language-priors-override-absent-visual-evidence]] : When visual evidence is uninformative or destroyed (e.g. a Gaussian-noise image), the MLLM falls back on the parametric language priors of its LLM backbone **in
 - [[larger-model-better-abstention]] : Applying idk-sft to a larger model (Llama-2-70b-chat vs 7b-chat) **increases** 5.8% improvement in total Ik-Ik + Ik-Idk questions, indicating better self-knowle

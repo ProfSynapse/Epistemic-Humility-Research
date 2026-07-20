@@ -50,4 +50,6 @@ verdict: 'Null-result, instrument-limited: S->T correctness-subspace overlap at 
   only the single k=1 shared direction underlying the 0.679 transfer is above null,
   and S''s discriminative subspace reads T only about 0.04 AUROC above a random slice
   of S''s span.'
-kg: []
+kg:
+- experiment:correctness-subspace-overlap
+- mechanism:l2-logistic-bootstrap-svd-cannot-resolve-multidim-discriminative-subspace

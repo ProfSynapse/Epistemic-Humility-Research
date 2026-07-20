@@ -815,7 +815,10 @@
           }
         ]
       },
-      "kg": [],
+      "kg": [
+        "experiment:correctness-subspace-overlap",
+        "mechanism:l2-logistic-bootstrap-svd-cannot-resolve-multidim-discriminative-subspace"
+      ],
       "prediction": "Reading A: k=8 S->T subspace overlap in the 0.45-0.70 band against a permutation null with mean ~0.20-0.35 and 95th percentile ~0.30-0.45; within-stage full-n reliability 0.75-0.90; recovery curve reaching 0.78-0.80 near the T ceiling by k=8 while the random-subspace-of-S floor stays near 0.60-0.68; the 0.679 transfer is a frozen-axis lower bound on a shared-subspace capacity near 0.80.",
       "question": "Does correctness classification transfer across checkpoints because a top-k discriminative SUBSPACE is preserved rather than a single axis, and does that subspace overlap quantitatively account for the 0.679 S->T cold transfer?",
       "registered": true,
