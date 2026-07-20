@@ -428,11 +428,12 @@ two findings that stand on their own. First, comparing the base model and the
 deployed checkpoint, exactly one shared direction clears a label-permutation
 chance level with a clear margin; widening the comparison to two dimensions
 clears that bar only marginally, and four to thirty-two dimensions do not
-clear it at all. Second, within a single checkpoint the discriminative signal
-is spread out rather than concentrated: an arbitrary eight-dimensional slice
-of the base model's own activation span recovers about as much of the
-deployed checkpoint's correctness signal (AUROC ~0.70) as the base model's own
-top eight discriminative directions do (~0.74). The portable part of
+clear it at all. Second, the transferable part of the signal is spread out
+across the base model's activation span rather than concentrated in its top
+discriminative directions: an arbitrary eight-dimensional slice of that span
+recovers about as much of the deployed checkpoint's correctness signal
+(AUROC ~0.70) as the base model's own top eight discriminative directions do
+(~0.74). The portable part of
 correctness tracking across checkpoints, in other words, looks like a single
 weak shared direction rather than a shared subspace, and that direction itself
 is not well identified by the data available to fit it. Both follow-ups are

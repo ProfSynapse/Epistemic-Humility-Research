@@ -1013,8 +1013,9 @@ disjoint halves of one checkpoint's own data agrees at only 0.17 cosine, next
 to a readout accuracy that stays flat near AUROC 0.80. A follow-up asking
 whether a shared subspace, rather than a single axis, explains the correctness
 readout's partial transfer between checkpoints found at most one weak shared
-direction and a within-checkpoint signal that is diffuse rather than
-concentrated in any small discriminative subspace. Both results are
+direction, with the transferable signal diffuse across the base model's
+activation span rather than concentrated in any small discriminative
+subspace. Both results are
 exploratory Tier-2 findings from a single model, and neither is a cross-family
 claim. But together they are a reason to expect the two readouts to generalize
 differently across families: this paper's gated write rides the crisp,
