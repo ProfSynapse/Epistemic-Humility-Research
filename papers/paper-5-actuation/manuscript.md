@@ -42,8 +42,10 @@ evidence_base: >
   experiments/jspace-family-atlas/AMENDMENT.md,
   experiments/placebo-seed-distribution-census/AMENDMENT.md,
   experiments/margin-evidence-responsiveness-worldknown/AMENDMENT.md,
-  experiments/evidence-response-direction-search/AMENDMENT.md, and
-  experiments/placebo-signflip-question-type-analysis/AMENDMENT.md.
+  experiments/evidence-response-direction-search/AMENDMENT.md,
+  experiments/placebo-signflip-question-type-analysis/AMENDMENT.md,
+  experiments/correctness-direction-rotation/AMENDMENT.md, and
+  experiments/correctness-subspace-overlap/AMENDMENT.md.
 notes: >
   Draft v0 is a synthesis scaffold, not submission-ready. It deliberately
   separates reader-facing claims from amendment traceability. The core results
@@ -57,7 +59,12 @@ notes: >
   fresh seeds is folded in as Section 4.10; all remain exploratory and
   pre-headline. The next planned step is a larger cross-model / cross-family
   actuation study registered against the per-family placebo null distribution
-  the census measured (Section 4.10).
+  the census measured (Section 4.10). Section 6.5 now also cites two
+  companion-paper null results (a direct cross-checkpoint measurement of the
+  correctness direction's own rotation, and a follow-up asking whether a
+  shared subspace explains its partial transfer) as motivation, not evidence,
+  for treating the correctness axis as a harder cross-family generalization
+  problem than the answerability axis this paper actuates on.
 ---
 
 # Readable Is Not Writable: Channel, Gate, and Workspace Constraints on Actuating Known-Unknown State in Small Language Models
@@ -990,6 +997,33 @@ successor paper on the geometry of these margins; this paper carries no
 margin-cell numbers of its own and defers that account to the successor.
 
 ### 6.5 Next study: the amped-up replication and model sweep
+
+One asymmetry should shape how that next study is designed. The known-unknown
+(answerability) axis this paper's gated write is built on reads at near-ceiling
+accuracy on Qwen3-4B and, in the companion readout paper, transfers across four
+model families at AUROC 0.997 to 0.998 with no per-family refitting. The
+correctness axis a sibling paper reads at the answer token does not carry the
+same portability, even within one model's own training trajectory. A direct
+measurement of its cross-checkpoint rotation found none of the answerability
+axis's single-rotation-then-stable pattern: cosines of 0.19, 0.45, and 0.33
+across the three training transitions, none reaching the 0.85 stability the
+answerability axis shows at the later two. Worse, the fitted correctness
+direction is itself only weakly pinned down by the data: refitting it on two
+disjoint halves of one checkpoint's own data agrees at only 0.17 cosine, next
+to a readout accuracy that stays flat near AUROC 0.80. A follow-up asking
+whether a shared subspace, rather than a single axis, explains the correctness
+readout's partial transfer between checkpoints found at most one weak shared
+direction, with the transferable signal diffuse across the base model's
+activation span rather than concentrated in any small discriminative
+subspace. Both results are
+exploratory Tier-2 findings from a single model, and neither is a cross-family
+claim. But together they are a reason to expect the two readouts to generalize
+differently across families: this paper's gated write rides the crisp,
+portable answerability axis, and any future actuation program built on the
+correctness axis instead should be treated, going in, as a separate and likely
+harder generalization problem, not assumed to inherit the answerability axis's
+portability. That is a hypothesis for the next study to test, not a result it
+can yet report.
 
 The next study should be designed before running, not inferred from this draft.
 Recommended escalation:
