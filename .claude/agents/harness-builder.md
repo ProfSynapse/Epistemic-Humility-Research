@@ -26,6 +26,18 @@ Hard rules (violating any of these invalidates the evidence):
 - Load models once per script; free GPU memory between scripts; write
   progress-visible artifacts (rows.jsonl flushed per row) so the lead can
   check progress from disk without interrupting you.
+- Any process whose projected wall-clock exceeds about 15 minutes MUST launch
+  through `experiments/common/launch_detached.sh`, not a harness-tracked
+  background Bash task. A harness-tracked background task is torn down when
+  the session that launched it ends, even though the underlying process had
+  no reason to die; `launch_detached.sh` launches via `setsid`+`nohup` so the
+  process survives session teardown, and records a recoverable PID and exit
+  code. Harness-tracked background Bash tasks are for sub-10-minute work
+  only. A signed instrument this long must also declare its per-module
+  persistence in `experiment.yaml` (`instrument.persistence`, enforced by
+  `bin/exp sign`) and pass the kill-resume smoke drill before sign; see the
+  experiments SKILL.md and the mechinterp-cells
+  `reference/organization.md` "Kill-resume smoke drill" section.
 
 Your final message is a structured report, not prose for the user: gate
 results with numbers, per-arm/per-cell rates, verdicts against the pre-stated

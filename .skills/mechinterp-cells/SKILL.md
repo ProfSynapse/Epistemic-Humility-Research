@@ -106,11 +106,24 @@ maintenance.
 - **Any local run longer than about 15 minutes writes per-item results
   through the tuner's resumable run log** (`shared/utilities/run_log.py`
   `RunLog`: append + fsync per item, atomic tmp+replace summary write) rather
-  than buffering results in memory and writing only at the end. Sign-pinned
+  than buffering results in memory and writing only at the end. This applies
+  to any module, GPU or CPU, whose projected wall-clock exceeds about 15
+  minutes, INCLUDING pure statistics/analysis passes with no GPU or model in
+  the loop: a bootstrap-CI or aggregation script that buffers every row in
+  memory for an hour before writing a summary is exactly as exposed to a kill
+  as a generation loop is. An end-only output write on a run in that range is
+  a build defect at pre-sign review, not a style preference. Sign-pinned
   instruments must adopt this BEFORE sign: a pinned script cannot be patched
-  mid-run to add resumability after a crash has already happened. See
-  `experiments/common/README-runlog.md` for the import path and per-arm
-  log-path convention.
+  mid-run to add resumability after a crash has already happened, and
+  `bin/exp sign` enforces it structurally: every entry in
+  `instrument.modules` needs a matching `instrument.persistence` declaration
+  (`persistence: incremental` with a `checkpoint_path`, or `persistence:
+  short-run` with a measured smoke wall-clock) before it will pin the
+  instrument, see the experiments SKILL.md "Persistence declarations"
+  section. See `experiments/common/README-runlog.md` for the import path and
+  per-arm log-path convention, and the mechinterp-cells
+  `reference/organization.md` "Kill-resume smoke drill" section for the
+  mandatory pre-sign drill on any `incremental` module.
 - **Parallelize by default when it cannot influence results** (PI rule of
   thumb, 2026-07-20). If a harness's work units are independent (per-layer
   fits, per-rung scoring, batched generation) and every random draw is keyed
