@@ -403,12 +403,42 @@ orthogonally, at instruction SFT (raw-to-SFT cosine 0.06 to 0.25 at mid and late
 layers), and both GRPO stages then ride the rotated direction almost unchanged (cosine
 0.91 and above). One rotation event, not gradual drift. That is why cold transport
 degrades while a refit probe stays strong.
-<!-- SWAP: pending correctness-direction rotation tracking -->
-The diagnostic tracked the answerability
-direction; the correctness direction's own rotation has not been tracked, so its
-application to the dial's 0.679 cold transfer is an inference, not a measurement.
-Exploratory internal evidence, reported separately from the locked numbers and never
-pooled with them; provenance in Appendix A.
+That account was built entirely from the answerability direction. Whether the
+correctness direction rotates the same way was, until a follow-up measured it
+directly, an inference rather than a measurement. The follow-up's answer is a
+null on the single-rotation-at-SFT story: the raw-to-clean-SFT cosine (0.19) is
+low, as the answerability account would predict, but the two later transitions
+that account also predicts should be stable (0.85 or above) come in far lower
+instead (0.45 and 0.33). A reliability control run alongside it shows why a
+single fitted axis struggles to answer this question at all: refitting the
+same direction on two disjoint halves of one checkpoint's own data agrees at
+only 0.17 cosine, even though the readout's ranking accuracy stays flat near
+AUROC 0.80 across every stage. The correctness direction is not reliably
+pinned down by a single fit, so a low cross-checkpoint cosine cannot, by
+itself, tell genuine rotation apart from estimation noise.
+
+A second follow-up asked the sharper question directly: does the partial cold
+transfer ride on a shared low-dimensional subspace, so the single fitted axis
+is just one arbitrary direction inside a wider region the two checkpoints
+share, rather than on a direction that itself moves? That question also
+returned a null (the instrument built to separate the two accounts saturates
+below its own detection threshold for any signal, including a planted example
+of the exact shared-subspace pattern it was designed to find), but it isolated
+two findings that stand on their own. First, comparing the base model and the
+deployed checkpoint, exactly one shared direction clears a label-permutation
+chance level with a clear margin; widening the comparison to two dimensions
+clears that bar only marginally, and four to thirty-two dimensions do not
+clear it at all. Second, within a single checkpoint the discriminative signal
+is spread out rather than concentrated: an arbitrary eight-dimensional slice
+of the base model's own activation span recovers about as much of the
+deployed checkpoint's correctness signal (AUROC ~0.70) as the base model's own
+top eight discriminative directions do (~0.74). The portable part of
+correctness tracking across checkpoints, in other words, looks like a single
+weak shared direction rather than a shared subspace, and that direction itself
+is not well identified by the data available to fit it. Both follow-ups are
+exploratory Tier-2 results, single model, with label-clean positive findings;
+reported separately from the locked numbers and never pooled with them;
+provenance in Appendix A.
 
 One honest caveat carried from the start: the dial *ranks* correctness well (AUROC) but is
 not a calibrated *probability* (ECE 0.151 on the base). The ranking-vs-calibration
@@ -1120,6 +1150,8 @@ Every figure and number is generated from tracked result artifacts. Figures are 
 |---|---|
 | Correctness dial, base model (§4.2) | `amendment_s_stage2_result.json` |
 | Correctness dial, deployed checkpoint (§4.2) | `amendment_t_stage2_result.json` |
+| Correctness-direction cross-checkpoint rotation, null result (§4.2) | `experiments/correctness-direction-rotation/AMENDMENT.md` (Outcome section; repo-root path, not under the probe dir) |
+| Correctness discriminative-subspace overlap across checkpoints, null result (§4.2) | `experiments/correctness-subspace-overlap/AMENDMENT.md` (Outcome section; repo-root path, not under the probe dir) |
 | Hallucination veto, deployed checkpoint (§4.3) | `amendment_u_two_signal_result.json` |
 | Training-free whole mechanism, raw base (§4.6) | `amendment_w_base_model_result.json` |
 | Cross-size sweep, 1.7B/8B/14B (§4.7) | `amendment_x_qwen3-{1.7b,8b,14b}-bnb-4bit_result.json` |
