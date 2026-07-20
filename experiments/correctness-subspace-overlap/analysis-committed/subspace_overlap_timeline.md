@@ -57,13 +57,13 @@ principal angles). Position: post-generation only. Seeds: PCA/fold 20260719, boo
 ## Gate-relevant summary (L19-L24 means; reported straight, no goalpost moves)
 
 - k_gate: 4
-- so_g1_i_overlap_mean: 0.005761616449810835
-- so_g1_i_perm_null_mean: 0.006693885017963108
-- so_g1_i_perm_null_p95: 0.009824792904825772
-- so_g1_i_margin: -0.0009322685681522726
+- so_g1_i_overlap_mean: 0.005761616449810919
+- so_g1_i_perm_null_mean: 0.0066938850179631875
+- so_g1_i_perm_null_p95: 0.009824792904825966
+- so_g1_i_margin: -0.0009322685681522683
 - so_g1_i_pass: False
-- so_g1_ii_reliability_s: 0.016177814851414073
-- so_g1_ii_reliability_t: 0.0227390523769683
+- so_g1_ii_reliability_s: 0.016177814851414105
+- so_g1_ii_reliability_t: 0.02273905237696927
 - so_g1_ii_pass: False
 - so_g1_iii_closed_fraction: 0.34982740146861263
 - so_g1_iii_pass: False

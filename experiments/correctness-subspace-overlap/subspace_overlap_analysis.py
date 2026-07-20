@@ -38,13 +38,16 @@ from __future__ import annotations
 import argparse
 import hashlib
 import json
+import os
 import sys
 import time
 from dataclasses import dataclass, field
 from pathlib import Path
 
 import numpy as np
+from joblib import Parallel, delayed
 from sklearn.decomposition import PCA
+from threadpoolctl import threadpool_limits
 
 # --- reuse CD's primitives verbatim (import, not reimplement) ---------------
 _CD_DIR = Path(__file__).resolve().parents[1] / "correctness-direction-rotation"
@@ -96,6 +99,61 @@ def sub_seed(base_seed: int, *parts: str) -> int:
 
 def rng_for(base_seed: int, *parts: str) -> np.random.Generator:
     return np.random.default_rng(sub_seed(base_seed, *parts))
+
+
+# --- layer-level parallelism (joblib/loky) -----------------------------------
+# Every task dispatched through parallel_map draws its randomness solely from
+# sub_seed(base_seed, *parts) keyed by explicit stage/layer/tag identifiers
+# passed into the task's arguments, never from scheduling order or shared
+# mutable state. That is what makes --workers N byte-identical to --workers 1:
+# each task's output depends only on its own arguments, not on which worker
+# ran it, in what order, or how many other workers were active.
+def _default_workers() -> int:
+    n = os.cpu_count() or 4
+    return max(1, min(8, n - 2))
+
+
+def _run_capped(func, *args):
+    """Run func(*args) with BLAS/OpenMP thread pools capped to 1 for the
+    duration of this call. Loky may keep worker processes warm and reuse them
+    across dispatches, so the cap is applied per-call via threadpoolctl
+    (which mutates the already-loaded BLAS library's thread count directly)
+    rather than relying only on env vars, which BLAS libraries typically read
+    once at their own init time and may not re-read on a reused process."""
+    with threadpool_limits(limits=1):
+        return func(*args)
+
+
+def parallel_map(func, arg_list: list, n_workers: int) -> list:
+    """Deterministic parallel map over independent tasks.
+
+    n_workers <= 1 runs a plain serial Python for-loop -- no joblib involved
+    -- but every task still executes through _run_capped (BLAS/OpenMP capped
+    to 1 thread), exactly as it would under n_workers > 1. This box's OpenBLAS
+    build allows up to 2 threads with no thread-count env var pinned, so an
+    uncapped serial call and a capped parallel call reduce matmuls/SVDs in a
+    different order and differ at the ~1e-13 relative level -- capping both
+    paths identically is what makes --workers 1 and --workers N byte-for-byte
+    identical to each other, which is the pinned-instrument invariant that
+    actually matters (not bit-parity with a pre-parallelization run that
+    happened to float on ambient, uncapped BLAS threading).
+    """
+    if not arg_list:
+        return []
+    if n_workers <= 1:
+        return [_run_capped(func, *args) for args in arg_list]
+    # max_nbytes=None disables joblib's automatic memmap-file backing for
+    # large arguments/return values. Every task here already receives only a
+    # small per-layer slice (never the full multi-layer cache), so memmapping
+    # buys no memory-safety benefit -- but it does route the PCA basis arrays
+    # through a memmap-backed reconstruction on the far side, which can shift
+    # LAPACK's internal SVD blocking path and cost a last-bit (~1e-15
+    # relative) divergence relative to the same array kept as a plain
+    # in-memory ndarray the whole time. Forcing plain pickling keeps every
+    # array's memory layout identical to the --workers 1 path.
+    return Parallel(n_jobs=n_workers, backend="loky", max_nbytes=None)(
+        delayed(_run_capped)(func, *args) for args in arg_list
+    )
 
 
 # --- run configuration (full vs smoke) --------------------------------------
@@ -404,6 +462,191 @@ def fit_stage_layer(X_amb: np.ndarray, y: np.ndarray, cfg: RunConfig, stage: str
     return LayerFit(pca, Xp, y, n_c, n_w, False, float(auroc), subspace)
 
 
+# --- per-(stage,layer) / per-layer worker functions (parallel_map targets) --
+# Each takes only the slices it needs (never the full multi-layer cache) so
+# joblib transfers/memmaps a small per-task array rather than duplicating the
+# whole ~0.7GB-per-stage cache into every worker.
+def _core_fit_worker(stage, layer, X_amb, y, cfg):
+    lf = fit_stage_layer(X_amb, y, cfg, stage, layer)
+    return stage, layer, lf
+
+
+def _layer_summary_worker(layer, fits_at_layer, k_grid, k_max):
+    """Per-layer cross-stage summary: timeline/bracket overlap,
+    deflation-vs-primary. fits_at_layer is {stage: LayerFit} for all
+    ALL_STAGES at this one layer only -- independent of every other layer.
+    Does NOT compute raw_span_overlap: that is the one full-rank (k=128) SVD
+    in the pipeline and is deliberately kept out of worker dispatch (computed
+    serially in the main process by _raw_span_overlap_all_layers below) so it
+    always executes in the same process regardless of --workers."""
+    layer_out = {"stages": {}}
+    for stage in ALL_STAGES:
+        lf = fits_at_layer[stage]
+        layer_out["stages"][stage] = {
+            "auroc_pca128": lf.auroc_pca,
+            "auroc_full_dim": None,  # filled by caller for the recovery layer only
+            "retained_variance_fraction": float(np.sum(lf.pca.explained_variance_ratio_)),
+            "n_correct": lf.n_correct, "n_wrong": lf.n_wrong,
+            "underpowered": lf.underpowered,
+        }
+    timeline_overlap, timeline_spectrum = {}, {}
+    for a, b in TIMELINE_PAIRS:
+        ua, ub = fits_at_layer[a].subspace, fits_at_layer[b].subspace
+        if ua is not None and ub is not None:
+            per_k, spec = {}, {}
+            for k in k_grid:
+                ov, s = grassmann_overlap(ua, ub, k)
+                per_k[str(k)] = ov
+                spec[str(k)] = s
+            timeline_overlap[f"{a}->{b}"] = per_k
+            timeline_spectrum[f"{a}->{b}"] = spec
+    us, ut = fits_at_layer["s"].subspace, fits_at_layer["grpov2"].subspace
+    bracket_overlap, bracket_spectrum = {}, {}
+    if us is not None and ut is not None:
+        for k in k_grid:
+            ov, s = grassmann_overlap(us, ut, k)
+            bracket_overlap[str(k)] = ov
+            bracket_spectrum[str(k)] = s
+    layer_out["timeline_overlap"] = timeline_overlap
+    layer_out["timeline_principal_angle_spectrum"] = timeline_spectrum
+    layer_out["bracket_s_to_t_overlap"] = bracket_overlap
+    layer_out["bracket_s_to_t_spectrum"] = bracket_spectrum
+
+    deflation_layer = {}
+    for stage in ALL_STAGES:
+        lf = fits_at_layer[stage]
+        if lf.underpowered:
+            continue
+        u_defl = deflation_subspace(lf.Xp, lf.y, k_max, lf.pca.components_)
+        ov_at_kgate, _ = grassmann_overlap(lf.subspace, u_defl, min(K_GATE, k_max))
+        deflation_layer[stage] = {"overlap_vs_primary_at_k_gate": ov_at_kgate}
+
+    return layer, layer_out, deflation_layer
+
+
+def _raw_span_overlap_all_layers(layers, fits, k_max):
+    """Label-agnostic PCA-128 span overlap per pair (packet 4.5), for every
+    layer. Deliberately NOT a parallel_map target: this is the one place the
+    pipeline runs a full-rank (k=min(k_max, PCA_DIM)=128) Grassmann SVD, and a
+    128x128 SVD on a 2560-inner-dimension matmul is sensitive to the memory
+    alignment of its input arrays, not just their values. Confirmed by direct
+    test (analysis/diag_pca_determinism2.py, diag_pca_determinism3.py): the
+    pca.components_ arrays feeding this SVD are proven bit-for-bit identical
+    (np.array_equal) whether core fits were dispatched with --workers 1 or
+    --workers N, yet the SVD result still differed by ~1e-14 relative --
+    because loky spinning up worker subprocesses earlier in the same run
+    process perturbs the memory allocator's state, so value-identical arrays
+    can land at different alignments, and OpenBLAS's alignment-sensitive SIMD
+    kernels round large matmuls/SVDs differently for the same values at
+    different addresses. Every other overlap in this module uses k <= 32,
+    small enough that this alignment sensitivity is not observable. Forcing a
+    fresh, explicitly-contiguous copy of each input right before the SVD
+    (np.array(..., copy=True, order='C') then np.ascontiguousarray) isolates
+    this computation from whatever the allocator's prior history was,
+    verified to restore exact byte-identity between --workers 1 and --workers
+    N (see diag_pca_determinism3.py). Running this in the main process
+    (never a parallel_map target) is still correct and kept for the same
+    determinism-by-construction reason as before; the copy is the fix that
+    actually closes the gap."""
+    out = {}
+    for layer in layers:
+        raw_span = {}
+        for a, b in TIMELINE_PAIRS + [BRACKET_PAIR]:
+            comp_a = np.array(fits[a][layer].pca.components_, dtype=np.float64, copy=True, order="C")
+            comp_b = np.array(fits[b][layer].pca.components_, dtype=np.float64, copy=True, order="C")
+            ua_full = np.ascontiguousarray(comp_a.T)
+            ub_full = np.ascontiguousarray(comp_b.T)
+            ov, _ = grassmann_overlap(ua_full, ub_full, min(k_max, PCA_DIM))
+            raw_span[f"{a}->{b}"] = ov
+        out[layer] = raw_span
+    return out
+
+
+def _reliability_worker(stage, layer, X_amb, y, cfg, k_grid):
+    n = len(y)
+    m_values = sorted({max(MIN_CLASS, int(round(n * f))) for f in M_FRACTIONS})
+    per_m = {}
+    for m in m_values:
+        if 2 * m > n:
+            continue
+        per_m[m] = disjoint_reliability(X_amb, y, m, cfg, SEED_PRIMARY, f"{stage}_{layer}", k_grid)
+    if len(per_m) < 2:
+        return stage, layer, {"not_computable": True, "m_values_used": list(per_m)}
+    m_sorted = sorted(per_m.keys())
+    per_k_extrap = {}
+    for k in k_grid:
+        overlap_at_m = [per_m[m][k] for m in m_sorted]
+        per_k_extrap[str(k)] = extrapolate_reliability(m_sorted, overlap_at_m, n)
+    return stage, layer, {
+        "m_values_used": m_sorted,
+        "overlap_by_m_by_k": {str(k): {str(m): per_m[m][k] for m in m_sorted} for k in k_grid},
+        "extrapolation_by_k": per_k_extrap,
+    }
+
+
+def _null_draws_worker(stage, layer, Xp, y, components, cfg):
+    perm_list, iso_list = [], []
+    for p in range(cfg.p_perm):
+        perm_rng = rng_for(SEED_PRIMARY, stage, layer, "perm_label", f"p{p}")
+        boot_rng = rng_for(SEED_PRIMARY, stage, layer, "perm_boot", f"p{p}")
+        perm_list.append(permuted_subspace(Xp, y, components, cfg.b_null, cfg.k_max, perm_rng, boot_rng))
+    for i in range(cfg.n_iso):
+        iso_rng = rng_for(SEED_PRIMARY, stage, layer, "iso", f"i{i}")
+        iso_list.append(random_ambient_subspace(components, cfg.k_max, iso_rng))
+    return stage, layer, perm_list, iso_list
+
+
+def _recovery_worker(layer, lf_s, lf_t, X_t_amb, y_t, iso_draws_s, k_grid):
+    layer_recovery = {}
+    for k in k_grid:
+        u_s_k = lf_s.subspace[:, :k]
+        u_t_k = lf_t.subspace[:, :k]
+        recov = recovery_auroc(X_t_amb, y_t, u_s_k)
+        ceiling = recovery_auroc(X_t_amb, y_t, u_t_k)
+        if iso_draws_s:
+            floor_vals = [recovery_auroc(X_t_amb, y_t, d[:, :k]) for d in iso_draws_s]
+            floor = float(np.mean(floor_vals))
+        else:
+            floor = None
+        denom = (ceiling - floor) if floor is not None else None
+        closed_fraction = float((recov - floor) / denom) if denom and abs(denom) > 1e-9 else None
+        layer_recovery[str(k)] = {
+            "recovery_auroc": float(recov), "floor_auroc": floor,
+            "ceiling_auroc": float(ceiling), "closed_fraction": closed_fraction,
+        }
+    return layer, layer_recovery
+
+
+def _two_seed_robust_worker(layer, x_s_amb, y_s, x_t_amb, y_t, cfg, k_use, p_perm, b_null):
+    pca_s = PCA(n_components=PCA_DIM, svd_solver="randomized", random_state=SEED_PCA_FOLD).fit(x_s_amb)
+    pca_t = PCA(n_components=PCA_DIM, svd_solver="randomized", random_state=SEED_PCA_FOLD).fit(x_t_amb)
+    xp_s, xp_t = pca_s.transform(x_s_amb), pca_t.transform(x_t_amb)
+    rng_s = rng_for(SEED_ROBUST, "s", layer, "core_bootstrap")
+    rng_t = rng_for(SEED_ROBUST, "grpov2", layer, "core_bootstrap")
+    u_s = estimate_stage_subspace(xp_s, y_s, pca_s.components_, cfg.b_boot, rng_s, cfg.k_max)
+    u_t = estimate_stage_subspace(xp_t, y_t, pca_t.components_, cfg.b_boot, rng_t, cfg.k_max)
+    ov, _ = grassmann_overlap(u_s, u_t, k_use)
+    null_vals = []
+    for p in range(p_perm):
+        perm_rng_s = rng_for(SEED_ROBUST, "s", layer, "perm_label", f"p{p}")
+        boot_rng_s = rng_for(SEED_ROBUST, "s", layer, "perm_boot", f"p{p}")
+        d_s = permuted_subspace(xp_s, y_s, pca_s.components_, b_null, k_use, perm_rng_s, boot_rng_s)
+        perm_rng_t = rng_for(SEED_ROBUST, "grpov2", layer, "perm_label", f"p{p}")
+        boot_rng_t = rng_for(SEED_ROBUST, "grpov2", layer, "perm_boot", f"p{p}")
+        d_t = permuted_subspace(xp_t, y_t, pca_t.components_, b_null, k_use, perm_rng_t, boot_rng_t)
+        ov_null, _ = grassmann_overlap(d_s, d_t, k_use)
+        null_vals.append(ov_null)
+    null_mean = float(np.mean(null_vals))
+    null_p95 = float(np.percentile(null_vals, 95))
+    margin = ov - null_mean
+    passes_margin = bool(ov > null_p95 and margin >= MARGIN_015)
+    return layer, {
+        "overlap_k8_or_kmax": ov, "k_used": k_use,
+        "perm_null_mean": null_mean, "perm_null_p95": null_p95,
+        "margin_vs_perm_null_mean": margin, "so_g1_i_pass_this_seed": passes_margin,
+    }
+
+
 # --- markdown rendering helpers ---------------------------------------------
 def fmt(v, nd=4):
     if v is None:
@@ -424,19 +667,31 @@ def main() -> int:
     ap.add_argument("--out-dir", default=str(Path(__file__).parent / "analysis-committed"))
     ap.add_argument("--work-dir", default=str(Path(__file__).parent / "analysis"))
     ap.add_argument("--smoke", action="store_true")
+    ap.add_argument("--workers", type=int, default=_default_workers(),
+                     help="parallel workers for layer-level phases (loky backend); "
+                          "1 = serial, byte-identical to the smoked serial path")
     args = ap.parse_args()
 
     t_start = time.time()
     cfg = make_config(args.smoke)
+    n_workers = max(1, args.workers)
     out_dir = Path(args.out_dir)
     work_dir = Path(args.work_dir)
     out_dir.mkdir(parents=True, exist_ok=True)
     work_dir.mkdir(parents=True, exist_ok=True)
     cache_dir = Path(args.cache_dir)
 
+    # Deliberately do NOT cap BLAS threads in the main process: the main
+    # process's own serial sections (SO-G0, confound bounds, pooled basis,
+    # output writing) must run under the exact same threading regardless of
+    # --workers, or a workers=1 vs workers=N smoke diff could show spurious
+    # floating-point drift from BLAS reduction order rather than a real bug.
+    # Only the dispatched parallel workers get thread-capped (_run_capped),
+    # which is where the actual worker-vs-worker contention risk is.
+
     print(f"[so-analysis] smoke={cfg.smoke} layers={cfg.layers} k_grid={cfg.k_grid} "
           f"b_boot={cfg.b_boot} r_partitions={cfg.r_partitions} p_perm={cfg.p_perm} "
-          f"n_iso={cfg.n_iso}", flush=True)
+          f"n_iso={cfg.n_iso} workers={n_workers}", flush=True)
 
     # --- SO-G0: load + verify caches (pre-outcome stop) ---------------------
     caches = load_all_caches(cache_dir, work_dir)
@@ -460,7 +715,7 @@ def main() -> int:
             "n_iso": cfg.n_iso, "k_grid": list(cfg.k_grid), "gate_layers": cfg.gate_layers,
             "recovery_layer": cfg.recovery_layer, "layers_run": cfg.layers,
             "so_g0_problems": problems, "metric": "grassmann_projection",
-            "position": "post_generation_only",
+            "position": "post_generation_only", "workers": n_workers,
         },
         "class_balance": {},
         "layers": {},
@@ -483,17 +738,21 @@ def main() -> int:
         }
 
     # --- per-stage per-layer core fits (subspace estimator, 4.1) -----------
+    # Flattened over (stage, layer): each unit is independent (keyed only by
+    # its own stage/layer strings via sub_seed), so dispatch order/grouping
+    # across workers cannot change any numeric result.
     fits: dict[str, dict[str, LayerFit]] = {s: {} for s in ALL_STAGES}
+    core_tasks = []
     for stage in ALL_STAGES:
         arr = caches[stage]["arr"]
         y = caches[stage]["y"]
         for layer in cfg.layers:
             li = cd.LAYERS.index(layer)
-            X_amb = arr[li].astype(np.float64)
-            lf = fit_stage_layer(X_amb, y, cfg, stage, layer)
-            fits[stage][layer] = lf
-            print(f"[so-analysis] core {stage} {layer} auroc={fmt(lf.auroc_pca)} "
-                  f"underpowered={lf.underpowered}", flush=True)
+            core_tasks.append((stage, layer, arr[li].astype(np.float64), y, cfg))
+    for stage, layer, lf in parallel_map(_core_fit_worker, core_tasks, n_workers):
+        fits[stage][layer] = lf
+        print(f"[so-analysis] core {stage} {layer} auroc={fmt(lf.auroc_pca)} "
+              f"underpowered={lf.underpowered}", flush=True)
 
     # --- 4.7 retained variance + full-dim AUROC at the recovery layer ------
     full_dim_auroc = {}
@@ -504,106 +763,58 @@ def main() -> int:
             y = caches[stage]["y"]
             full_dim_auroc[stage] = float(cd.cv_auroc(X_amb, y))
 
-    for layer in cfg.layers:
-        layer_out = {"stages": {}}
+    # Per-layer cross-stage summary (timeline/bracket overlap, deflation):
+    # independent across layers, parallelized over layers.
+    summary_tasks = [
+        (layer, {s: fits[s][layer] for s in ALL_STAGES}, cfg.k_grid, cfg.k_max)
+        for layer in cfg.layers
+    ]
+    for layer, layer_out, deflation_layer in parallel_map(
+            _layer_summary_worker, summary_tasks, n_workers):
         for stage in ALL_STAGES:
-            lf = fits[stage][layer]
-            layer_out["stages"][stage] = {
-                "auroc_pca128": lf.auroc_pca,
-                "auroc_full_dim": full_dim_auroc.get(stage) if layer == cfg.recovery_layer else None,
-                "retained_variance_fraction": float(np.sum(lf.pca.explained_variance_ratio_)),
-                "n_correct": lf.n_correct, "n_wrong": lf.n_wrong,
-                "underpowered": lf.underpowered,
-            }
-        # timeline pairwise overlap (primary, per-stage-symmetric ambient basis)
-        timeline_overlap = {}
-        timeline_spectrum = {}
-        for a, b in TIMELINE_PAIRS:
-            ua, ub = fits[a][layer].subspace, fits[b][layer].subspace
-            if ua is not None and ub is not None:
-                per_k = {}
-                spec = {}
-                for k in cfg.k_grid:
-                    ov, s = grassmann_overlap(ua, ub, k)
-                    per_k[str(k)] = ov
-                    spec[str(k)] = s
-                timeline_overlap[f"{a}->{b}"] = per_k
-                timeline_spectrum[f"{a}->{b}"] = spec
-        # S->T bracket
-        us, ut = fits["s"][layer].subspace, fits["grpov2"][layer].subspace
-        bracket_overlap, bracket_spectrum = {}, {}
-        if us is not None and ut is not None:
-            for k in cfg.k_grid:
-                ov, s = grassmann_overlap(us, ut, k)
-                bracket_overlap[str(k)] = ov
-                bracket_spectrum[str(k)] = s
-        layer_out["timeline_overlap"] = timeline_overlap
-        layer_out["timeline_principal_angle_spectrum"] = timeline_spectrum
-        layer_out["bracket_s_to_t_overlap"] = bracket_overlap
-        layer_out["bracket_s_to_t_spectrum"] = bracket_spectrum
-
-        # raw-span overlap: label-agnostic PCA-128 span overlap per pair (4.5)
-        raw_span = {}
-        for a, b in TIMELINE_PAIRS + [BRACKET_PAIR]:
-            comp_a, comp_b = fits[a][layer].pca.components_, fits[b][layer].pca.components_
-            ua_full, ub_full = comp_a.T, comp_b.T   # ambient 2560 x pca_dim, already orthonormal
-            ov, _ = grassmann_overlap(ua_full, ub_full, min(cfg.k_max, PCA_DIM))
-            raw_span[f"{a}->{b}"] = ov
-        results["raw_span_overlap"][layer] = raw_span
-
-        # deflation secondary estimator (reported, not gated)
-        deflation_layer = {}
-        for stage in ALL_STAGES:
-            lf = fits[stage][layer]
-            if lf.underpowered:
-                continue
-            u_defl = deflation_subspace(lf.Xp, lf.y, cfg.k_max, lf.pca.components_)
-            ov_at_kgate, _ = grassmann_overlap(lf.subspace, u_defl, min(K_GATE, cfg.k_max))
-            deflation_layer[stage] = {"overlap_vs_primary_at_k_gate": ov_at_kgate}
-        results["deflation"][layer] = deflation_layer
-
+            layer_out["stages"][stage]["auroc_full_dim"] = (
+                full_dim_auroc.get(stage) if layer == cfg.recovery_layer else None)
         results["layers"][layer] = layer_out
+        results["deflation"][layer] = deflation_layer
         print(f"[so-analysis] layer {layer} timeline/bracket overlaps computed", flush=True)
+
+    # raw_span_overlap (4.5): always computed serially in the main process,
+    # never dispatched through parallel_map, so --workers cannot affect which
+    # process runs it. Still routed through _run_capped -- same 1-thread BLAS
+    # cap every other dispatched computation gets -- so the main process's
+    # ambient thread count (which can otherwise differ subtly depending on
+    # whether loky has spun up worker processes earlier in this same run)
+    # cannot introduce a --workers-dependent difference here either. See
+    # _raw_span_overlap_all_layers docstring for why this one metric is kept
+    # out of worker dispatch in the first place.
+    results["raw_span_overlap"] = _run_capped(_raw_span_overlap_all_layers, cfg.layers, fits, cfg.k_max)
+    print("[so-analysis] raw_span_overlap computed serially (main process, all layers)", flush=True)
 
     # --- 4.4 disjoint half-split reliability (gate layers only) ------------
     for stage in ALL_STAGES:
         results["reliability"][stage] = {}
+    reliability_tasks = []
+    for stage in ALL_STAGES:
+        y = caches[stage]["y"]
+        if min(int((y == 1).sum()), int((y == 0).sum())) < MIN_CLASS:
+            continue
         for layer in cfg.gate_layers:
             if layer not in cfg.layers:
                 continue
-            y = caches[stage]["y"]
-            if min(int((y == 1).sum()), int((y == 0).sum())) < MIN_CLASS:
-                continue
-            n = len(y)
             li = cd.LAYERS.index(layer)
             X_amb = caches[stage]["arr"][li].astype(np.float64)
-            m_values = sorted({max(MIN_CLASS, int(round(n * f))) for f in M_FRACTIONS})
-            per_m = {}
-            for m in m_values:
-                if 2 * m > n:
-                    continue
-                per_m[m] = disjoint_reliability(X_amb, y, m, cfg, SEED_PRIMARY,
-                                                 f"{stage}_{layer}", cfg.k_grid)
-            if len(per_m) < 2:
-                results["reliability"][stage][layer] = {"not_computable": True, "m_values_used": list(per_m)}
-                continue
-            m_sorted = sorted(per_m.keys())
-            per_k_extrap = {}
-            for k in cfg.k_grid:
-                overlap_at_m = [per_m[m][k] for m in m_sorted]
-                per_k_extrap[str(k)] = extrapolate_reliability(m_sorted, overlap_at_m, n)
-            results["reliability"][stage][layer] = {
-                "m_values_used": m_sorted,
-                "overlap_by_m_by_k": {str(k): {str(m): per_m[m][k] for m in m_sorted} for k in cfg.k_grid},
-                "extrapolation_by_k": per_k_extrap,
-            }
-            print(f"[so-analysis] reliability {stage} {layer} m={m_sorted} done", flush=True)
+            reliability_tasks.append((stage, layer, X_amb, y, cfg, cfg.k_grid))
+    for stage, layer, rel_out in parallel_map(_reliability_worker, reliability_tasks, n_workers):
+        results["reliability"][stage][layer] = rel_out
+        print(f"[so-analysis] reliability {stage} {layer} "
+              f"m={rel_out.get('m_values_used')} done", flush=True)
 
     # --- 4.5 label-permutation null (primary) + isotropic null (secondary) -
     pairs_for_null = TIMELINE_PAIRS + [BRACKET_PAIR]
     stages_needed = sorted({s for pair in pairs_for_null for s in pair})
     perm_subspaces: dict[str, dict[str, list]] = {s: {} for s in stages_needed}
     iso_subspaces: dict[str, dict[str, list]] = {s: {} for s in stages_needed}
+    null_tasks = []
     for stage in stages_needed:
         for layer in cfg.gate_layers:
             if layer not in cfg.layers:
@@ -611,18 +822,11 @@ def main() -> int:
             lf = fits[stage][layer]
             if lf.underpowered:
                 continue
-            perm_list, iso_list = [], []
-            for p in range(cfg.p_perm):
-                perm_rng = rng_for(SEED_PRIMARY, stage, layer, "perm_label", f"p{p}")
-                boot_rng = rng_for(SEED_PRIMARY, stage, layer, "perm_boot", f"p{p}")
-                perm_list.append(permuted_subspace(lf.Xp, lf.y, lf.pca.components_,
-                                                    cfg.b_null, cfg.k_max, perm_rng, boot_rng))
-            for i in range(cfg.n_iso):
-                iso_rng = rng_for(SEED_PRIMARY, stage, layer, "iso", f"i{i}")
-                iso_list.append(random_ambient_subspace(lf.pca.components_, cfg.k_max, iso_rng))
-            perm_subspaces[stage][layer] = perm_list
-            iso_subspaces[stage][layer] = iso_list
-            print(f"[so-analysis] null draws {stage} {layer}: perm={len(perm_list)} iso={len(iso_list)}", flush=True)
+            null_tasks.append((stage, layer, lf.Xp, lf.y, lf.pca.components_, cfg))
+    for stage, layer, perm_list, iso_list in parallel_map(_null_draws_worker, null_tasks, n_workers):
+        perm_subspaces[stage][layer] = perm_list
+        iso_subspaces[stage][layer] = iso_list
+        print(f"[so-analysis] null draws {stage} {layer}: perm={len(perm_list)} iso={len(iso_list)}", flush=True)
 
     for a, b in pairs_for_null:
         pair_key = f"{a}->{b}"
@@ -659,6 +863,7 @@ def main() -> int:
             }
 
     # --- 4.6 recovery curve (floor / ceiling), S -> T, gate layers ---------
+    recovery_tasks = []
     for layer in cfg.gate_layers:
         if layer not in cfg.layers:
             continue
@@ -668,24 +873,9 @@ def main() -> int:
         li = cd.LAYERS.index(layer)
         X_t_amb = caches["grpov2"]["arr"][li].astype(np.float64)
         y_t = caches["grpov2"]["y"]
-        layer_recovery = {}
-        for k in cfg.k_grid:
-            u_s_k = lf_s.subspace[:, :k]
-            u_t_k = lf_t.subspace[:, :k]
-            recov = recovery_auroc(X_t_amb, y_t, u_s_k)
-            ceiling = recovery_auroc(X_t_amb, y_t, u_t_k)
-            iso_draws = iso_subspaces.get("s", {}).get(layer, [])
-            if iso_draws:
-                floor_vals = [recovery_auroc(X_t_amb, y_t, d[:, :k]) for d in iso_draws]
-                floor = float(np.mean(floor_vals))
-            else:
-                floor = None
-            denom = (ceiling - floor) if floor is not None else None
-            closed_fraction = float((recov - floor) / denom) if denom and abs(denom) > 1e-9 else None
-            layer_recovery[str(k)] = {
-                "recovery_auroc": float(recov), "floor_auroc": floor,
-                "ceiling_auroc": float(ceiling), "closed_fraction": closed_fraction,
-            }
+        iso_draws = iso_subspaces.get("s", {}).get(layer, [])
+        recovery_tasks.append((layer, lf_s, lf_t, X_t_amb, y_t, iso_draws, cfg.k_grid))
+    for layer, layer_recovery in parallel_map(_recovery_worker, recovery_tasks, n_workers):
         results["recovery"][layer] = layer_recovery
         print(f"[so-analysis] recovery curve {layer} done", flush=True)
 
@@ -827,45 +1017,21 @@ def main() -> int:
             "overlap_k8_or_kmax": ov, "k_used": k_use,
             "margin_vs_perm_null_mean": margin, "so_g1_i_pass_this_seed": passes_margin,
         }
+    # rerun the permutation-null margin too, under SEED_ROBUST, restricted to
+    # this one pair/k (spec 5.4: "...and its permutation-null margin rerun
+    # under a second pinned seed... for the bootstrap, permutation, and fold
+    # RNGs"). Not budgeted in the packet's cost table; flagged. Independent
+    # per gate layer, so dispatched via parallel_map like every other phase.
+    seed_robust_tasks = []
     for layer in seed_rerun_layers:
         li = cd.LAYERS.index(layer)
-        per_stage_subspace = {}
-        per_stage_pca = {}
-        for stage in ("s", "grpov2"):
-            y = caches[stage]["y"]
-            x_amb = caches[stage]["arr"][li].astype(np.float64)
-            pca = PCA(n_components=PCA_DIM, svd_solver="randomized",
-                      random_state=SEED_PCA_FOLD).fit(x_amb)
-            xp = pca.transform(x_amb)
-            rng = rng_for(SEED_ROBUST, stage, layer, "core_bootstrap")
-            u = estimate_stage_subspace(xp, y, pca.components_, cfg.b_boot, rng, cfg.k_max)
-            per_stage_subspace[stage] = u
-            per_stage_pca[stage] = (pca, xp)
-        ov, _ = grassmann_overlap(per_stage_subspace["s"], per_stage_subspace["grpov2"], k_use)
-        # rerun the permutation-null margin too, under SEED_ROBUST, restricted
-        # to this one pair/k (spec 5.4: "...and its permutation-null margin
-        # rerun under a second pinned seed... for the bootstrap, permutation,
-        # and fold RNGs"). Not budgeted in the packet's cost table; flagged.
-        null_vals = []
-        for p in range(cfg.p_perm):
-            draws = {}
-            for stage in ("s", "grpov2"):
-                pca, xp = per_stage_pca[stage]
-                y = caches[stage]["y"]
-                perm_rng = rng_for(SEED_ROBUST, stage, layer, "perm_label", f"p{p}")
-                boot_rng = rng_for(SEED_ROBUST, stage, layer, "perm_boot", f"p{p}")
-                draws[stage] = permuted_subspace(xp, y, pca.components_, cfg.b_null, k_use, perm_rng, boot_rng)
-            ov_null, _ = grassmann_overlap(draws["s"], draws["grpov2"], k_use)
-            null_vals.append(ov_null)
-        null_k = {"mean": float(np.mean(null_vals)), "p95": float(np.percentile(null_vals, 95)),
-                  "n_draws": len(null_vals)}
-        margin = ov - null_k["mean"]
-        passes_margin = bool(ov > null_k["p95"] and margin >= MARGIN_015)
-        two_seed["seed_robust"][layer] = {
-            "overlap_k8_or_kmax": ov, "k_used": k_use,
-            "perm_null_mean": null_k["mean"], "perm_null_p95": null_k["p95"],
-            "margin_vs_perm_null_mean": margin, "so_g1_i_pass_this_seed": passes_margin,
-        }
+        x_s_amb = caches["s"]["arr"][li].astype(np.float64)
+        y_s = caches["s"]["y"]
+        x_t_amb = caches["grpov2"]["arr"][li].astype(np.float64)
+        y_t = caches["grpov2"]["y"]
+        seed_robust_tasks.append((layer, x_s_amb, y_s, x_t_amb, y_t, cfg, k_use, cfg.p_perm, cfg.b_null))
+    for layer, seed_robust_out in parallel_map(_two_seed_robust_worker, seed_robust_tasks, n_workers):
+        two_seed["seed_robust"][layer] = seed_robust_out
     agree = all(
         two_seed["seed_primary"][l]["so_g1_i_pass_this_seed"] == two_seed["seed_robust"][l]["so_g1_i_pass_this_seed"]
         for l in seed_rerun_layers
