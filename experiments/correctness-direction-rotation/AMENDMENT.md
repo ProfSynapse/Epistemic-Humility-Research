@@ -170,6 +170,11 @@ Per-cell gates in `gates.yaml`.
 | orchestrator | Partial rotation: raw->cleansft cosine 0.3-0.6 at L19-L24 (below the split-half noise floor), later transitions >= 0.85, bracket cosine consistent with 0.679. (recorded pre-run) |
 | user | Approved the cell (2026-07-18 signature packet) and pre-approved the local GPU launch without recording a separate quantitative call. |
 
+Scoreboard adjudication (at resolve, 2026-07-20): the orchestrator call was
+WRONG on both counts. Observed raw->cleansft 0.192 fell below the predicted
+0.3-0.6 band, and the later transitions (0.449, 0.330) fell far below the
+predicted >= 0.85. Recorded straight.
+
 ## Lane and cost
 
 Local RTX 3090 (free, PI pre-approved 2026-07-18). grpov2 stage: 0 GPU
@@ -181,6 +186,76 @@ Any paid Modal launch needs fresh user approval.
 
 ## Outcome
 
-Filled at resolve. Record the verdict, the gate results, and the one-sentence
-summary that also goes into `verdict:` in the manifest. No goalpost moves:
-gates and falsifier above are final as signed.
+Resolved 2026-07-20 (status: null-result). Every number below was re-derived by
+the lead from `analysis-committed/cd_rotation_timeline.json` before recording,
+and the adjudication passed adversarial red-team review (8 findings, no
+blockers; sign-off conditional on wording fixes F1/F2/F6, applied here). All
+cosine and floor figures are L19-L24 means unless a layer is named.
+
+Gate results, as signed:
+
+- CD-G0 PASS, all four stages: raw 500 correct / 1323 wrong, cleansft 750/500,
+  grpov2 988/500, partrue 500/717 (floor 150/150). A3 checkpoint identity
+  assertions passed before generation; run manifests carry seed 20260719,
+  greedy decode, and the Amendment T forced-best-guess prompt verbatim.
+- CD-G2 PASS, all four stages: best-layer OOF AUROC raw 0.860 (L24), cleansft
+  0.809 (L33), grpov2 0.811 (L21), partrue 0.817 (L24); no stage below 0.60,
+  so every cosine is admissible.
+- CD-G1 NOT MET: rotation-confirmed requires the full conjunction and it fails
+  decisively on the later transitions. cleansft->grpov2 0.449 and
+  grpov2->partrue 0.330 are both far below the 0.85 stability floor.
+  raw->cleansft 0.192 is itself low, but the pre-registered "then stable"
+  pattern is absent.
+- Falsifier does not fire: raw->cleansft 0.192 is far below 0.80.
+- Middle ground not applicable: 0.192 is below the (0.50, 0.80) band.
+- The pre-registered readings are therefore exhausted without a positive
+  determination.
+
+Post-hoc interpretation (explicitly not a pre-registered outcome): the
+within-stage split-half control returns a floor of 0.174, a half-sample lower
+bound that understates full-sample reliability, meaning the correctness
+direction is only weakly identified by this probe: AUROC is stable near 0.80
+while the hyperplane normal is not, even though the same PCA-on-raw basis let
+the answerability diagnostic reach >= 0.96 cross-stage. At these sample sizes
+the cosine instrument cannot discriminate rotation from identifiability noise,
+so direction identity is not measurable at any transition; the
+answerability-style single-rotation-at-SFT account is neither confirmed nor
+falsified for correctness, and the mechanism behind the dial's 0.679 cold
+transfer stays open. The S->grpov2 bracket cosine (0.170, fit in S's own PCA
+basis and not magnitude-comparable to the raw-basis cross-stage cosines) shows
+a low direction-cosine coexisting with the known well-above-chance 0.679
+transfer AUROC, consistent with a weakly-identified-but-real direction rather
+than evidence of rotation.
+
+Caveats carried with the result:
+
+- The low cross-stage cosines conflate three contributions: genuine rotation,
+  identifiability noise, and the accepted per-stage population/label shift.
+  The split-half control bounds only the second; the population confound is
+  not bounded by any control in this cell.
+- The near-equality of raw->cleansft (0.192) with the split-half floor (0.174)
+  carries no interpretive weight: the floor is a half-sample estimate and the
+  comparison is between differently-powered fits. The CD-G1 fail rests on the
+  later-transition limb alone. This also explains, rather than contradicts,
+  cleansft->grpov2 (0.449) exceeding the floor.
+- Raw-basis PCA truncation is an unquantified but bounded threat: later-stage
+  AUROC of 0.78-0.82 in the raw basis shows the discriminative signal
+  survives, and the answerability diagnostic reached >= 0.96 in the same
+  basis, so truncation does not explain the low cosines. Per-stage explained
+  variance in the raw basis was not recorded.
+- The raw stage's ~0.05 AUROC edge over later stages is partly a basis
+  artifact (the basis is optimal for raw) and is not evidence that
+  correctness is most decodable in the base model.
+- Reproducibility: exact regeneration of the tables requires the gitignored
+  row-level artifacts and tensors in the durable exhaust store
+  (/home/profsynapse/code/ehr-exhaust/correctness-direction-rotation/, staged
+  and count-verified before teardown per A6). The cleansft and grpov2
+  checkpoints are pinned as local scratch paths without a public mirror
+  revision; raw and partrue have HF pins.
+
+One-sentence verdict (mirrors the manifest): CD-G1 not met (later transitions
+0.449/0.330 vs the 0.85 floor) and the falsifier did not fire (raw->cleansft
+0.192); pre-registered readings exhausted, and the post-hoc reading is that
+the correctness direction is too weakly identified (split-half floor 0.174)
+for the cosine instrument to resolve rotation, leaving the 0.679
+cold-transfer mechanism open.

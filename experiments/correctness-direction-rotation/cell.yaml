@@ -14,7 +14,7 @@ pre_gen_secondary: optional-descriptive
 
 stages:
   - id: raw
-    checkpoint: PINNED_AT_STAGING   # d5a90b3b raw-base identity, asserted pre-generation (A3)
+    checkpoint: unsloth/Qwen3-4B-bnb-4bit   # d5a90b3b raw-base identity, asserted pre-generation (A3); HF repo id, no adapter
     generation: forced_best_guess   # T sec.3 protocol; Cheng alias scorer verbatim
     gpu_est_hr: 1.5-2
   - id: cleansft
@@ -27,7 +27,7 @@ stages:
     reuse_from: archive/experiment/phase1-data/probe/qwen3-4b-clean-sft-grpo-v2/amendment_t/stage2
     n_reuse: {tensors: 2976, correct: 988, wrong: 500}
   - id: partrue
-    checkpoint: PINNED_AT_STAGING   # exact GRPO-par-true timestamp d5a90b3b used (A3)
+    checkpoint: scratch/schema_response_confidence/runs/amendment_ai_grpo_true_seed1/20260703_234933/final_model  # exact GRPO-par-true timestamp d5a90b3b used (A3); base = sft_schema_clean_seed1_full/20260623_123624 merged-16bit
     generation: forced_best_guess
     gpu_est_hr: 3-4
 
