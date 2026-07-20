@@ -4,7 +4,7 @@ session_id: 20260717T201649Z-margin-cascade-execution-m1-m2-m1b-m4
 title: 'Margin cascade execution: M1 M2 M1b M4'
 status: active
 created_at: '2026-07-17T20:16:49Z'
-updated_at: '2026-07-19T20:21:09Z'
+updated_at: '2026-07-20T13:27:08Z'
 question: Do the framework's margin-theory claims (1, 3) and the mentalistic-naming
   criteria hold at the qwen mid-band operating point, tested cheap-first through the
   M1-M6 cascade?
@@ -479,6 +479,28 @@ checkpoints:
   - 'On CD harness report: lead adjudicates CD-G1/falsifier, resolves, red-teams,
     PRs. Gemma-4-E4B atlas (task #38) queues after CD.'
   signals: {}
+- id: 018-checkpoint
+  at: '2026-07-20T13:27:08Z'
+  kind: checkpoint
+  title: Checkpoint
+  summary: 'Llama wide-retest exhaust published to HF after PI approval (aggregate
+    f53beacc, rows 2b46d055 with 23510 dosed rows: 17294 KUQ full-text, 6216 TriviaQA/PopQA
+    text-free, per-row adjudicated verdicts joined; revisions recorded, commit 5fae2470).
+    Ingested arXiv 2607.14345 Value Leakage into KG (d3ace59c, tangential, citation-shelf
+    only). CD correctness-direction-rotation ran all stages on 3090 (two harness monitor
+    idle-gaps re-driven by lead), resolved NULL-RESULT and MERGED (PR #316, 69ca2ea1):
+    CD-G0/G2 PASS, CD-G1 not met (cleansft->grpov2 0.449, grpov2->partrue 0.330 vs
+    0.85 floor), falsifier not fired (raw->cleansft 0.192), readings exhausted; red-team
+    signed off with F1/F2/F6 wording applied; post-hoc: correctness direction weakly
+    identified (split-half floor 0.174), rotation unresolvable, 0.679 cold-transfer
+    mechanism stays open; orchestrator call wrong on both counts. Next: KG-ingest
+    CD resolution, Gemma-4-E4B atlas (#38), harvest tree (#39), M-cascade remainder.'
+  evidence: []
+  run_ids: []
+  commands: []
+  decisions: []
+  next_steps: []
+  signals: {}
 track: margin-theory-cascade
 ---
 # Margin cascade execution: M1 M2 M1b M4
@@ -609,3 +631,8 @@ _No summary yet._
   - Orchestrator CD call recorded pre-run: partial rotation, raw->cleansft cosine 0.3-0.6 at L19-L24, later transitions >= 0.85.
 - next steps:
   - On CD harness report: lead adjudicates CD-G1/falsifier, resolves, red-teams, PRs. Gemma-4-E4B atlas (task #38) queues after CD.
+### 018-checkpoint - Checkpoint
+
+- at: `2026-07-20T13:27:08Z`
+- kind: `checkpoint`
+- summary: Llama wide-retest exhaust published to HF after PI approval (aggregate f53beacc, rows 2b46d055 with 23510 dosed rows: 17294 KUQ full-text, 6216 TriviaQA/PopQA text-free, per-row adjudicated verdicts joined; revisions recorded, commit 5fae2470). Ingested arXiv 2607.14345 Value Leakage into KG (d3ace59c, tangential, citation-shelf only). CD correctness-direction-rotation ran all stages on 3090 (two harness monitor idle-gaps re-driven by lead), resolved NULL-RESULT and MERGED (PR #316, 69ca2ea1): CD-G0/G2 PASS, CD-G1 not met (cleansft->grpov2 0.449, grpov2->partrue 0.330 vs 0.85 floor), falsifier not fired (raw->cleansft 0.192), readings exhausted; red-team signed off with F1/F2/F6 wording applied; post-hoc: correctness direction weakly identified (split-half floor 0.174), rotation unresolvable, 0.679 cold-transfer mechanism stays open; orchestrator call wrong on both counts. Next: KG-ingest CD resolution, Gemma-4-E4B atlas (#38), harvest tree (#39), M-cascade remainder.
