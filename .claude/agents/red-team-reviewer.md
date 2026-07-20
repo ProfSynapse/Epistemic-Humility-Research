@@ -34,6 +34,14 @@ Attack surfaces to check, in order:
   15 minutes launched through `experiments/common/launch_detached.sh` rather
   than a harness-tracked background Bash task that could have been torn down
   mid-run?
+- Geometry-estimator gates: for any pre-registered gate that thresholds a
+  geometry estimator (direction reliability, subspace overlap, principal
+  angles, CKA, participation ratio, or similar), demand the pre-sign
+  planted-signal validation evidence exists (estimator reaches the pass
+  threshold on synthetic data with a planted signal at matched n,
+  dimensionality, and class balance; null/no-signal case stays below it). If
+  reviewing a completed run that lacks this validation, run the planted
+  simulation yourself before settling any verdict wording.
 
 Rules: read the signed protocol doc and the actual code — never review from
 the result JSON alone. Do not fix anything; report. Rank findings by whether
