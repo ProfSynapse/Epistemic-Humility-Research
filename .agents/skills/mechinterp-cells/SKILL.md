@@ -54,6 +54,9 @@ Read only the reference files needed for the task:
   runpod-modal reference linked there before paid runs.
 - [reference/legacy-migration-map.md](reference/legacy-migration-map.md) -
   frozen bespoke files, tuner replacements, and current genericization gaps.
+- [../experiment-runner/reference/batched-generation.md](../experiment-runner/reference/batched-generation.md)
+  - vLLM-first backend selection, parity exceptions, structured-output policy,
+  batch-invariance smoke, and full-depth HF bridge.
 
 ## Default Workflow
 
@@ -62,13 +65,16 @@ For a new cell:
 1. Read `organization.md` and decide the experiment slug, instrument type, and
    artifact homes.
 2. Read `verbs-and-schemas.md` for the verb and config schema you need.
-3. Prefer a `mechinterp-pipeline/v1` `pipeline.yaml` as the outer launch
+3. Select and register the backend before writing the GPU stage. New unsteered
+   generation prefers vLLM; full-depth extraction prefers vLLM only after the
+   model-specific bridge passes. Use the experiment-runner batching reference.
+4. Prefer a `mechinterp-pipeline/v1` `pipeline.yaml` as the outer launch
    artifact. Read `pipeline-workflow.md` for stage patterns and command forms.
-4. If using `erase_write`, read `dose-calibration.md` before choosing real
+5. If using `erase_write`, read `dose-calibration.md` before choosing real
    strengths or setpoints.
-5. If launching on Modal or any paid GPU lane, read `modal-launch.md` and the
+6. If launching on Modal or any paid GPU lane, read `modal-launch.md` and the
    linked experiment-runner cloud checklist first.
-6. Validate locally with dry-runs, parse checks, CPU stages, and smoke gates
+7. Validate locally with dry-runs, parse checks, CPU stages, and smoke gates
    before any full GPU run.
 
 For legacy-to-tuner cleanup, read `legacy-migration-map.md` and keep the frozen
@@ -97,6 +103,16 @@ maintenance.
   explicitly says otherwise.
 - Do not move goalposts after results. Exploratory cells report as exploratory;
   claims require the pre-registered confirmatory surface.
+- Do not default to HF batch 1 for a new unsteered generation surface. Prefer
+  pinned vLLM with `VLLM_BATCH_INVARIANT=1`, and use JSON-schema decoding when
+  structure is an interface rather than a measured behavior. Keep the exact
+  prior engine for parity-locked work. Native vLLM hidden-state extraction is
+  allowed only after the model-specific layer, anchor, normalization, and
+  estimator bridge in the experiment-runner batching reference passes.
+- If Synaptic Tuner does not expose the required vLLM engine, treat that as a
+  generic capability gap. Use the registered HF fallback or implement the
+  engine generically in the tuner on its own branch; never hide a one-off
+  backend inside an evidence experiment.
 - **Local GPU runs execute in a pinned container** (binding invariant,
   2026-07-10): every local-3090 `mechinterp` GPU verb runs inside the pinned
   mechinterp runner image, never a bare shared conda environment. See
@@ -158,4 +174,3 @@ maintenance.
   perfectly separable planted case (best planted reliability 0.104). A
   post-hoc red-team simulation showed the cell was destined for its
   middle-ground null before any data were seen.
-

@@ -79,6 +79,20 @@ At signing, pin sha256 for:
 - render modules
 - any other helper listed in the experiment instrument
 
+Also pin the execution surface for every GPU stage:
+
+- engine and exact library version;
+- container image digest and GPU hardware class;
+- model and tokenizer revisions;
+- dtype, tensor parallel size, scheduler limits, and batch-invariance setting;
+- renderer, generation, EOS, stopping, and structured-output schema hashes;
+- hidden-state layer/index, normalization, and anchor contracts when capturing.
+
+For new unsteered work, read the experiment-runner
+`reference/batched-generation.md` and prefer vLLM. Record the required smoke or
+HF bridge in `NOTEBOOK.md` before signing. A parity-locked cell retains its
+registered engine even when another backend is faster.
+
 Set `surface.expected_config_sha` in `cell.yaml` to the signed cell config pin.
 The tuner enforces that value at runtime so the config cannot drift silently.
 

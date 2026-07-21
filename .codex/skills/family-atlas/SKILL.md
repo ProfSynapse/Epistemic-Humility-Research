@@ -56,14 +56,25 @@ cited governed doc instead.
    `held_out`, `fit_only`. `profile_and_read_family_atlas_panel.py` reads
    rows by these exact role and split names; a pool using different role
    names needs a mapping layer before this instrument can read it.
-3. **Capture.** Full-depth anchor capture: every hidden state (0 through
+3. **Select and bridge the capture backend.** Read
+   `../experiment-runner/reference/batched-generation.md`. Prefer native vLLM
+   extraction for a new atlas only after its model-specific bridge establishes
+   exact prompt tokens, state indexing 0 through `num_hidden_layers`, anchor
+   identity, normalization convention, numerical agreement, and profile-level
+   location agreement against the HF reference. A cell extending an existing
+   HF atlas remains HF unless that bridge is pre-stated and passed. If the
+   generic tuner lacks vLLM capture, use the HF fallback and record the
+   capability gap; do not add an experiment-owned engine.
+4. **Capture.** Full-depth anchor capture: every hidden state (0 through
    `num_hidden_layers`), final-prompt-token anchor, float32, via
-   `scripts/capture_family_atlas_cell.py capture`. Point `--render-module`
+   `scripts/capture_family_atlas_cell.py capture`. The script reads
+   `capture.engine` from `cell.yaml`; vLLM mode requires
+   `VLLM_BATCH_INVARIANT=1`. Point `--render-module`
    at a copy of the source experiment's own render logic (see
    `templates/render_example.py`) so the anchor position matches that
    experiment's own convention exactly -- this is capture-only, no steering
    hooks, no re-mining, no re-generation.
-4. **Profile + read panel.** `scripts/profile_and_read_family_atlas_panel.py
+5. **Profile + read panel.** `scripts/profile_and_read_family_atlas_panel.py
    score`: per-layer `eff_dim_frac` (participation-ratio profile) and the
    per-layer two-sided held-out AUROC read panel for doubt / caution /
    raw_refusal, each with a bootstrap CI, plus the standard
@@ -72,7 +83,7 @@ cited governed doc instead.
    this script subdivides it deterministically into `refused_fit` /
    `refused_eval` by default; pass `--no-split-refused` if your pool
    already carries real held-out refused rows.
-5. **Resolve and register.** Adjudicate the prediction/falsifier in
+6. **Resolve and register.** Adjudicate the prediction/falsifier in
    `AMENDMENT.md`, run `bin/exp sign` / resolve per the `experiments` skill,
    then append one row to `docs/atlas/family-layer-map.md` citing the
    resolved doc. Never add a registry row before its governed doc is signed
@@ -126,6 +137,13 @@ cited governed doc instead.
   float32 capture is the expensive-looking but actually cheap part; the
   profile and read panel are CPU-only and effectively free. Budget
   accordingly before asking for spend approval.
+- **A vLLM layer ID is not automatically an atlas hidden-state index.** Native
+  extraction can return selected intermediate layers, but the atlas requires
+  embeddings at index 0 and every block output through N under the same
+  normalization convention as the HF reference. Run the full bridge before
+  adopting vLLM for an established atlas. Disable chunked prefill, capture
+  prompt states only unless completion states are registered, and fail back to
+  HF if the peak-location invariant does not bridge.
 
 ## Gates
 

@@ -37,11 +37,11 @@ Per cell, this script only:
    `capture_anchor()`, NOT the batch-capture engine's `"last"` string
    position spec, so a new atlas cell's anchor matches whichever source
    experiment it is auditing against, exactly.
-4. Runs Synaptic-Tuner's `batch-capture` with `--layers all`, which resolves
-   to `range(n_hidden_states)` -- every hidden-state index
-   `0..num_hidden_layers` inclusive (`synaptic-tuner/tuner/batch/engines/
-   hf_batched.py _resolve_layers`) -- at the single anchor position, in
-   float32.
+4. Runs Synaptic-Tuner's `batch-capture` with the engine registered in
+   `cell.yaml` and `--layers all`. The HF reference resolves this to
+   `range(n_hidden_states)` in `hf_batched.py`; a vLLM engine must pass the
+   skill's bridge proving the same indices `0..num_hidden_layers` inclusive.
+   Capture is at the single anchor position in float32.
 5. Writes two committed, text-free aggregate files: `split_manifest.json`
    (row_key/role/split/source/category_canon only) and
    `capture_manifest.json` (coverage and shape summary for gate AG0). No
@@ -154,6 +154,12 @@ def cmd_capture(args: argparse.Namespace) -> None:
     cell_yaml_path = Path(args.cell_yaml) if args.cell_yaml else (ROOT / "cell.yaml")
     cfg = load_cell_yaml(cell_yaml_path)
     cell = cell_by_id(cfg, args.cell_id)
+    capture_cfg = cfg.get("capture") or {}
+    engine = str(capture_cfg.get("engine", "hf-batched"))
+    if engine == "vllm" and os.environ.get("VLLM_BATCH_INVARIANT") != "1":
+        raise SystemExit(
+            "capture.engine=vllm requires VLLM_BATCH_INVARIANT=1 before engine construction"
+        )
     row_pool_path = Path(args.row_pool)
     if not row_pool_path.is_file():
         raise SystemExit(
@@ -225,7 +231,7 @@ def cmd_capture(args: argparse.Namespace) -> None:
             "--out-dir",
             str(cap_dir),
             "--engine",
-            "hf-batched",
+            engine,
             "--layers",
             "all",
             "--persist-dtype",
@@ -255,6 +261,7 @@ def cmd_capture(args: argparse.Namespace) -> None:
         "hidden_size": cell["hidden_size"],
         "n_hidden_states": cell["n_hidden_states"],
         "layers_requested": "all",
+        "engine": engine,
         "position_name": "anchor",
         "position_rule": "len(token_ids) - 1 (manual tokenize, add_special_tokens=True)",
         "persist_dtype": "float32",
