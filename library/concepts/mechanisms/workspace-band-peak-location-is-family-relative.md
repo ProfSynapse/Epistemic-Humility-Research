@@ -11,12 +11,13 @@ kg:
   id: mechanism:workspace-band-peak-location-is-family-relative
   type: mechanism
   status: canonical
-cause: "On three non-Qwen instruction-tuned families captured full-depth (Llama-3.2-3B-Instruct, Mistral-7B-Instruct-v0.3 via jspace-family-atlas; Gemma-4-E4B-it via gemma-4-e4b-family-atlas), the per-layer eff_dim_frac (representation-variance participation-ratio) profile peaks early-exterior rather than interior: llama at layer 4 of 28 (0.14 depth), mistral at layer 3 of 32 (0.09 depth), gemma-4-e4b at hs_index 4 of 42 (0.095 depth). The interior three-axis readable band (doubt, caution, and raw-refusal all >= 0.80 held-out AUROC simultaneously) also sits at a different depth per family: llama layers 15-23 (best simultaneous read ~L20-23), mistral layers 7-27 (best ~L15-17), gemma-4-e4b a contiguous hs_index 13-42 band (with hs_index 4-6 also marginally clearing it)."
-effect: "Neither the profile's peak layer nor the readable interior band is described by one ported depth fraction: Qwen's registered 0.94-depth late write site, and Qwen3-4B's own hs23-29 J-lens midband peak from a different JVP-based estimator, both land at different relative depths than every mapped family here. A per-family, per-size atlas run is needed before any future actuation amendment borrows a write or read layer, complicating any plan to port a single depth constant across the doubt-snap fleet's family panel. Three of three mapped non-Qwen families now show the same early-exterior-peak-plus-healthy-mid-band-read shape, strengthening this as a candidate general pattern rather than a two-family coincidence, though each atlas remains individually low-confidence exploratory evidence."
+cause: "On four families captured full-depth (Llama-3.2-3B-Instruct, Mistral-7B-Instruct-v0.3 via jspace-family-atlas; Gemma-4-E4B-it via gemma-4-e4b-family-atlas; raw-base Qwen3-4B via qwen3-4b-family-atlas), the per-layer eff_dim_frac (representation-variance participation-ratio) profile peaks early-exterior rather than interior: llama at layer 4 of 28 (0.14 depth), mistral at layer 3 of 32 (0.09 depth), gemma-4-e4b at hs_index 4 of 42 (0.095 depth), qwen3-4b at hs_index 5 of 36 (0.139 depth). The interior three-axis readable band (doubt, caution, and raw-refusal all >= 0.80 held-out AUROC simultaneously) also sits at a different depth per family: llama layers 15-23 (best simultaneous read ~L20-23), mistral layers 7-27 (best ~L15-17), gemma-4-e4b a contiguous hs_index 13-42 band (with hs_index 4-6 also marginally clearing it), qwen3-4b hs_index 22-36."
+effect: "Neither the profile's peak layer nor the readable interior band is described by one ported depth fraction: Qwen's registered 0.94-depth late write site, and Qwen3-4B's own hs23-29 J-lens midband peak from a different JVP-based estimator, both land at different relative depths than every mapped family here, including Qwen3-4B's own eff_dim_frac profile (hs5), which does not reproduce the J-lens peak on the same checkpoint. A per-family, per-size atlas run is needed before any future actuation amendment borrows a write or read layer, complicating any plan to port a single depth constant across the doubt-snap fleet's family panel. Four of four mapped families now show the same early-exterior-peak-plus-healthy-mid-band-read shape, strengthening this as a candidate general pattern rather than a coincidence limited to a couple of families, though each atlas remains individually low-confidence exploratory evidence."
 polarity: complicates
 related:
 - '[[jspace-family-atlas]]'
 - '[[gemma-4-e4b-family-atlas]]'
+- '[[qwen3-4b-family-atlas]]'
 - '[[j-space-mediated-actuation-fragility]]'
 - '[[doubt-snap-cross-family-confirmatory]]'
 - '[[global-workspace]]'
@@ -34,6 +35,12 @@ relationships:
   confidence: low
   evidence:
   - experiments/gemma-4-e4b-family-atlas/AMENDMENT.md#outcome
+- type: supported_by
+  target: '[[qwen3-4b-family-atlas]]'
+  target_id: experiment:qwen3-4b-family-atlas
+  confidence: low
+  evidence:
+  - experiments/qwen3-4b-family-atlas/AMENDMENT.md#outcome
 - type: related_to
   target: '[[j-space-mediated-actuation-fragility]]'
   target_id: mechanism:j-space-mediated-actuation-fragility
@@ -67,8 +74,19 @@ family (Google's MatFormer/per-layer-embedding Gemma-4-E4B-it) and found the
 same shape again: peak at hs_index 4 of 42 (0.095 depth), with a healthy
 contiguous read band from hs_index 13 through 42.
 
-This is exploratory, low-confidence evidence, now from three families across
-two atlas experiments: it complicates rather than confirms
+[[qwen3-4b-family-atlas]] then filled the fourth family, and the first Qwen
+one, on raw-base `unsloth/Qwen3-4B`: peak at hs_index 5 of 36 (0.139 depth),
+with a healthy interior read band from hs_index 22 through 36. This cell
+also runs the same representation-variance profile directly on the substrate
+[[j-space-mediated-actuation-fragility]] was originally built from, and its
+peak (hs5) does not reproduce [[j-space-localization-qwen3-4b]]'s JVP-based
+J-lens peak on the same checkpoint (hs23-29); the read panel's own interior
+band (hs22-36) sits on top of the J-lens band instead, so the two
+instruments dissociate cleanly on peak location while agreeing on where the
+epistemic signal actually reads.
+
+This is exploratory, low-confidence evidence, now from four families across
+three atlas experiments: it complicates rather than confirms
 [[j-space-mediated-actuation-fragility]]'s general write/read-site-mismatch
 account, by showing that even the mismatch's location is not itself portable
 across families. It does not yet establish what, if anything, determines
@@ -77,5 +95,5 @@ only that it moves, and moves the same early-exterior-plus-healthy-mid-band
 way on every family tried so far. Any future per-family actuation amendment
 should treat each atlas's own layer map (llama ~L20-23, mistral ~L15-17,
 gemma-4-e4b ~hs13-42, cleanest at hs14-18/hs36-40 once the random-direction
-control is accounted for) as an input to consume, not a constant to
-extrapolate to a further family without its own atlas run.
+control is accounted for; qwen3-4b ~hs22-36) as an input to consume, not a
+constant to extrapolate to a further family without its own atlas run.
