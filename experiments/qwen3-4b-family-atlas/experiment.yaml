@@ -36,7 +36,7 @@ instrument:
   pins:
     cell.yaml: 695b79248fd7599eb87c93855899e97bc2f4a23978b904f083b64582083cce7d
     gates.yaml: e30e0988a223e54f1324390d045a92863430af6bde8343e30649b87124ff0df4
-    render_qwen3_atlas.py: 9d57ecc35f834a97cb2070b83348f6ad92c9f3cbced2f50867643a42cbdc2355
+    render_qwen3_atlas.py: 07330a8322b467ebea7cb6707187e85fad49f0770c2d1718399419bd12028378
     capture_family_atlas_cell.py: a543a88f8d0f552476968c8e248af9ec61212034f203c17f530694910b0b9b50
     profile_and_read_family_atlas_panel.py: 27cd945c83df20416658a5370544ea99f1422f5717f3e67cffca82d418003ed5
     derive_unknown_refused_manifest.py: b6054a1f8eab474ff8171bc4f416f099d9365621e468e4e201d9f6bc7f47dee5
@@ -116,6 +116,18 @@ instrument:
         entry for the full table and analysis/rebuild_verification.json, gitignored,
         for the raw gate output). Called directly by materialize_rows.py, not run
         standalone in the capture-launch critical path.'
+  repins:
+  - file: render_qwen3_atlas.py
+    old_sha256: 9d57ecc35f834a97cb2070b83348f6ad92c9f3cbced2f50867643a42cbdc2355
+    new_sha256: 07330a8322b467ebea7cb6707187e85fad49f0770c2d1718399419bd12028378
+    date: '2026-07-21T10:49:16Z'
+    reason: 'Signed revision 1: original signed copy read only the cell-specific QWEN3_ATLAS_RENDER_MODEL/REVISION
+      env vars, but the shared capture_family_atlas_cell.py exports FAMILY_ATLAS_RENDER_MODEL/REVISION
+      from cell.yaml; first capture launch (capture_run1) crashed on row 1 with zero
+      rows captured. Fix reads the shared FAMILY_ATLAS_* names first (same contract
+      as render_gemma_atlas.py), keeps QWEN3_ATLAS_* as standalone-smoke fallback;
+      rendered surface unchanged, CPU-smoked before repin. Lead-authored and adjudicated
+      pre-run.'
 inputs:
 - experiments/common/doubt-gated-caution-tighten-heldout-split/split_manifest.json
 - experiments/qwen3-4b-family-atlas/unknown_refused_manifest.json

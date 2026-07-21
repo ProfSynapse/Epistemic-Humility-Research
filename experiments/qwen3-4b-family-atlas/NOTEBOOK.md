@@ -6,6 +6,23 @@ in `experiment.yaml`.
 
 ## Entries
 
+- 2026-07-21 (signed revision 1: render env-var wiring fix, lead-authored).
+  First capture launch (capture_run1, container on the pinned image, CUDA
+  up, provenance line logged) exited 1 on the FIRST rendered row:
+  `render_qwen3_atlas.py` read only the cell-specific
+  `QWEN3_ATLAS_RENDER_MODEL/REVISION` env vars, but the shared
+  `capture_family_atlas_cell.py` exports `FAMILY_ATLAS_RENDER_MODEL/REVISION`
+  from `cell.yaml` (the contract `render_gemma_atlas.py` follows). Zero rows
+  captured, so no data is affected. Fix (two hunks in `_tokenizer()` + the
+  module docstring): read the shared FAMILY_ATLAS_* names first, retain
+  QWEN3_ATLAS_* as a standalone-smoke fallback; rendered surface unchanged
+  (system prompt, chat template, thinking-off pin all untouched). CPU smoke
+  after the fix: `render()` under FAMILY_ATLAS_* env produces the expected
+  surface (trailing empty `<think>` block at the anchor), and the no-env
+  error path still raises. Re-signed immediately (`bin/exp sign`), so the
+  pins record the fixed module; the crashed run's log is retained at
+  `analysis/qwen3_4b_raw_base/capture_run1.log` (exit_code 1).
+
 - 2026-07-21 (recovery: the 341 known_correct_answered row_keys' question
   text, closing the blocker the prior entry flagged). Lead-scoped task: the
   341 missing texts were never truly lost -- `mine_known_correct.py` only

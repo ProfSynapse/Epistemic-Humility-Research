@@ -9,12 +9,12 @@ changing under it. Renders the identical AH-A0 baseline system prompt +
 chat-template + thinking-off pin the source experiment used for its own L34
 anchor extraction, so this atlas's full-depth captures are directly
 comparable to the source experiment's own single-layer capture at the same
-anchor position. Only the environment variable names differ
-(QWEN3_ATLAS_RENDER_MODEL/REVISION instead of a hardcoded model name) to
-follow this skill's own render-module contract (see
-`.skills/family-atlas/templates/render_example.py`) and to avoid any
-cross-experiment env collision if this pipeline and another atlas cell's
-render module ever run in the same process.
+anchor position. Only the environment variable names differ: the module
+reads FAMILY_ATLAS_RENDER_MODEL/REVISION (the names the shared
+capture_family_atlas_cell.py exports from cell.yaml, same contract as
+render_gemma_atlas.py), with QWEN3_ATLAS_RENDER_MODEL/REVISION retained as
+a fallback for standalone smoke use. Signed revision 1 (2026-07-21) wired
+in the FAMILY_ATLAS_* names; the rendered surface is unchanged.
 
 This experiment does no generation and no steering, so the source
 experiment's `enable_thinking=False` pin is kept unchanged; a silently
@@ -83,10 +83,19 @@ def _log_fallback_once(model: str, mode: str, detail: str) -> None:
 
 def _tokenizer():
     global _TOKENIZER, _TOKENIZER_KEY
-    model = os.environ.get("QWEN3_ATLAS_RENDER_MODEL")
+    model = os.environ.get("FAMILY_ATLAS_RENDER_MODEL") or os.environ.get(
+        "QWEN3_ATLAS_RENDER_MODEL"
+    )
     if not model:
-        raise RuntimeError("QWEN3_ATLAS_RENDER_MODEL must name the HF tokenizer repo")
-    revision = os.environ.get("QWEN3_ATLAS_RENDER_REVISION") or None
+        raise RuntimeError(
+            "FAMILY_ATLAS_RENDER_MODEL (set by capture_family_atlas_cell.py from"
+            " cell.yaml) or QWEN3_ATLAS_RENDER_MODEL must name the HF tokenizer repo"
+        )
+    revision = (
+        os.environ.get("FAMILY_ATLAS_RENDER_REVISION")
+        or os.environ.get("QWEN3_ATLAS_RENDER_REVISION")
+        or None
+    )
     key = (model, revision)
     if _TOKENIZER is None or _TOKENIZER_KEY != key:
         from transformers import AutoTokenizer
