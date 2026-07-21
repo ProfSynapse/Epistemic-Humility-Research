@@ -140,6 +140,13 @@ work rather than only literal `mechinterp` CLI calls. Recommend following
 that precedent for consistency across atlas cells, but this is a judgment
 call for the lead, not resolved by this scaffold.
 
+**Lead ruling (2026-07-20): the gemma precedent applies.** This cell's
+capture runs inside the pinned mechinterp-runner container image, the same
+way `gemma-4-e4b-family-atlas` ran its bespoke capture script there. The
+directive's intent is environment pinning for local-GPU evidence
+generation, not a carve-out for scripts that happen to bypass the
+`mechinterp` CLI; atlas cells stay environment-comparable across families.
+
 Instrument files pinned at sign: `cell.yaml`, `gates.yaml`,
 `render_qwen3_atlas.py` (this experiment's own capture render module, ported
 from `experiments/common/renders/ah_a0_raw_base_render.py`, the same render
@@ -155,11 +162,38 @@ for itself).
 
 ## Prediction
 
-TODO-LEAD.
+Qwen3-4B (raw base, `unsloth/Qwen3-4B` at the pinned revision) shows an
+interior workspace band: a contiguous set of layers strictly inside (20%,
+85%) depth where eff_dim_frac peaks AND all three read axes (the
+known-unknown (KU, answerability) axis, caution, and raw refusal --
+artifact keys `doubt`/`caution`/`raw_refusal`) hold held-out AUROC >=
+0.80, with the band's peak layer differing from the program's resolved
+L34 write site (hs_index 34).
+
+This is the program-standard atlas prediction, kept identical to
+`jspace-family-atlas` and `gemma-4-e4b-family-atlas` deliberately: it has
+failed 3 of 3 times on the profile limb, and this cell is the
+pre-registered fourth-family test of whether that failure is the pattern
+or a coincidence. The separately recorded predictor calls (below) state
+what each party actually expects; this section states the registered
+hypothesis the falsifier is armed against, unchanged from the program
+default so the four cells stay directly comparable.
 
 ## Falsifier
 
-TODO-LEAD.
+No interior eff_dim_frac peak exists (the profile is monotone to the last
+layer, OR the profile peaks in the outer 20% of depth on either end --
+early-exterior, as `jspace-family-atlas` found for both llama and mistral
+and `gemma-4-e4b-family-atlas` found for gemma, or late-exterior), OR no
+layer inside (20%, 85%) depth reaches held-out AUROC >= 0.80 on all three
+axes simultaneously.
+
+## Predictions scoreboard
+
+| Predictor | Call |
+|-----------|------|
+| orchestrator | Falsifier fires on the profile limb via an EARLY-EXTERIOR eff_dim_frac peak (outer 20% of depth), making qwen3 the fourth family in the decoupling pattern. Read panel healthy: a wide contiguous mid-band holds all three axes >= 0.80 held-out, including layers strictly inside (20%, 85%). Additional registered sub-call: the J-lens interior peak from `j-space-localization-qwen3-4b` (hs 23-29, a different instrument) does NOT reproduce in this eff_dim_frac profile -- the two instruments dissociate on peak location. (recorded pre-sign, 2026-07-20) |
+| user | _to be recorded before sign/launch -- do not launch without it_ |
 
 ## Gates
 

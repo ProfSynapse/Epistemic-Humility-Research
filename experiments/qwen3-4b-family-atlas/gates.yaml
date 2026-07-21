@@ -59,24 +59,21 @@ AG2:
 
 # Prediction / falsifier restated for cross-reference only (source of truth
 # remains AMENDMENT.md; do not edit here without a signed revision there).
-# LEFT AS PROGRAM-STANDARD DEFAULT TEXT (TODO-LEAD): the lead authors the
-# final Prediction/Falsifier in AMENDMENT.md; this restatement mirrors the
-# same default wording jspace-family-atlas and gemma-4-e4b-family-atlas
-# both registered, extended per SKILL.md gotchas to explicitly name
-# early-exterior and late-exterior peaks as outcomes (the shape that
-# actually occurred in all three prior resolved cells).
+# Authored by the lead 2026-07-20 (program-standard wording retained,
+# extended per SKILL.md gotchas to explicitly name early-exterior and
+# late-exterior peaks as outcomes).
 prediction_restated: >-
-  TODO-LEAD: restate here once AMENDMENT.md's Prediction section is
-  authored. Program-standard default (jspace-family-atlas /
-  gemma-4-e4b-family-atlas wording): Qwen3-4B (raw-base, unsloth/Qwen3-4B)
-  shows an interior workspace band: a contiguous set of layers strictly
-  inside (20%, 85%) depth where eff_dim_frac peaks AND all three read axes
-  (doubt, caution, raw refusal) hold held-out AUROC >= 0.80, with the band's
-  peak layer differing from the ported/resolved L34 write site (hs_index
-  34).
+  (Authored by the lead 2026-07-20, AMENDMENT.md is source of truth.)
+  Qwen3-4B (raw-base, unsloth/Qwen3-4B at the pinned revision) shows an
+  interior workspace band: a contiguous set of layers strictly inside
+  (20%, 85%) depth where eff_dim_frac peaks AND all three read axes
+  (doubt, caution, raw refusal) hold held-out AUROC >= 0.80, with the
+  band's peak layer differing from the ported/resolved L34 write site
+  (hs_index 34). Kept identical to the program default deliberately: this
+  cell is the pre-registered fourth-family test of the decoupling pattern.
 falsifier_restated: >-
-  TODO-LEAD: restate here once AMENDMENT.md's Falsifier section is
-  authored. Program-standard default: no interior eff_dim_frac peak exists
+  (Authored by the lead 2026-07-20, AMENDMENT.md is source of truth.)
+  No interior eff_dim_frac peak exists
   (the profile is monotone to the last layer, OR the profile peaks in the
   outer 20% of depth on either end -- early-exterior, as jspace-family-atlas
   found for both llama and mistral and gemma-4-e4b-family-atlas found for
