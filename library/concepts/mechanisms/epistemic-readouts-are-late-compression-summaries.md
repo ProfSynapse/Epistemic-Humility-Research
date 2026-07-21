@@ -13,7 +13,7 @@ kg:
   type: mechanism
   status: canonical
 cause: "HYPOTHESIS, UNTESTED: IF the network's early high-effective-dimensionality region (where each family's eff_dim_frac profile peaks, early-exterior in the outer ~15 percent of depth in all three families measured) is a high-dimensional deliberation and lexical-processing regime, and the known-unknown (KU), caution, and raw-refusal axes are not workspace-resident variables carried through that broadcast region but are instead late, low-dimensional summary statistics that crystallize only after the representation has compressed past its early peak."
-effect: "THEN this would explain [[eff-dim-peak-decoupled-from-readable-band]] directly: the early eff_dim_frac peak marks the deliberation/lexical regime, and the three-axis read panel becomes linearly readable only in the mid-band that follows because that is where the low-dimensional epistemic summary has already formed, not where a high-dimensional workspace broadcast is still in flight. No resolved experiment gate has adjudicated this account; it is one candidate reading among at least three left open by the atlas gates, which tested only the profile-peak-location and read-panel-AUROC limbs, not this interpretive question. The two named deflationary alternatives, equally untested: (a) a pool surface-diversity artifact, where the eff_dim_frac estimator responds to token-level lexical variety that is naturally higher early in generation, rather than to any workspace property; and (b) an anisotropy or outlier-dimension estimator artifact in the participation-ratio computation itself, a known failure mode of variance-based dimensionality estimators on transformer residual streams. A small-N-coincidence reading (three families is not yet a large sample) is also not ruled out."
+effect: "THEN this would explain [[eff-dim-peak-decoupled-from-readable-band]] directly: the early eff_dim_frac peak marks the deliberation/lexical regime, and the three-axis read panel becomes linearly readable only in the mid-band that follows because that is where the low-dimensional epistemic summary has already formed, not where a high-dimensional workspace broadcast is still in flight. No resolved experiment gate has adjudicated this account; it remains one candidate reading among several left open by the atlas gates, which tested only the profile-peak-location and read-panel-AUROC limbs, not this interpretive question. Of the two originally named deflationary alternatives, the anisotropy or outlier-dimension estimator-artifact alternative has since been TESTED AND SURVIVED on gemma-4-e4b (experiments/gemma-4-e4b-family-atlas/NOTEBOOK.md, 2026-07-20 entry \"anisotropy-artifact control reanalysis\"): the layer-4 peak's LOCATION persists under whitening, top-1/2/4/8 covariance-eigendirection removal, 0.5 percent winsorizing, a rank-based spectral-entropy estimator, and a 50 percent row-subsample guard, though its PROMINENCE (margin over the best interior candidate) compresses from 1.53x baseline to 1.12x under the strongest correction, and the control has not yet been re-run on llama or mistral. The pool surface-diversity alternative, where the eff_dim_frac estimator responds to token-level lexical variety that is naturally higher early in generation rather than to any workspace property, remains untested. A small-N-coincidence reading (three families is not yet a large sample) is under test via a qwen3-4b-family-atlas cell in preparation; that cell's results are not yet available and are not cited here."
 polarity: explains
 related:
 - '[[eff-dim-peak-decoupled-from-readable-band]]'
@@ -22,6 +22,8 @@ related:
 - '[[global-workspace]]'
 - '[[jspace-family-atlas]]'
 - '[[gemma-4-e4b-family-atlas]]'
+- '[[propensity-direction-reads-but-does-not-actuate-fabrication]]'
+- '[[setpoint-write-on-caution-perp-does-not-actuate-fabrication]]'
 relationships:
 - type: explains
   target: '[[eff-dim-peak-decoupled-from-readable-band]]'
@@ -52,6 +54,18 @@ relationships:
   target_id: experiment:gemma-4-e4b-family-atlas
   confidence: low
   note: "Motivating observation, not a test of this specific interpretation; the atlas gates adjudicated profile-peak location and read-panel AUROC only."
+- type: related_to
+  target: '[[propensity-direction-reads-but-does-not-actuate-fabrication]]'
+  target_id: mechanism:propensity-direction-reads-but-does-not-actuate-fabrication
+  confidence: low
+  status: proposed
+  note: "Theoretical conjecture, not an identity claim: this use-the-signal null concerns the confabulation-propensity direction, a DIFFERENT fitted signal than the family-atlas read panel. The link asserts only that the same post-decision-summary account would explain both a readout that reads but does not actuate."
+- type: related_to
+  target: '[[setpoint-write-on-caution-perp-does-not-actuate-fabrication]]'
+  target_id: mechanism:setpoint-write-on-caution-perp-does-not-actuate-fabrication
+  confidence: low
+  status: proposed
+  note: "Theoretical conjecture, not an identity claim: this use-the-signal null concerns an unvalidated caution_perp setpoint write, a DIFFERENT fitted signal than the family-atlas read panel. The link asserts only explanatory scope, not that the two phenomena are the same."
 ---
 
 **Status: hypothesis, untested.** This node records a candidate
@@ -72,13 +86,40 @@ different processing stages, surface/lexical deliberation first, epistemic
 summarization after, and no family should be expected to show them at the
 same depth.
 
-This account is explicitly weighed against two deflationary alternatives
-named in `docs/atlas/family-layer-map.md`'s Cross-family pattern section, and
-none of the three is currently distinguished: a pool surface-diversity
+This account is explicitly weighed against deflationary alternatives named in
+`docs/atlas/family-layer-map.md`'s Cross-family pattern section. One of
+these, the anisotropy or outlier-dimension estimator-artifact reading, was
+tested directly on gemma-4-e4b on 2026-07-20
+(`experiments/gemma-4-e4b-family-atlas/NOTEBOOK.md`, "anisotropy-artifact
+control reanalysis") and survived: the layer-4 peak's location held under
+eight separate correction variants (whitening, dropping the top-1/2/4/8
+covariance eigendirections, winsorizing, a rank-based spectral-entropy
+estimator, and a subsample guard), even though its prominence over the best
+interior candidate compressed under the strongest correction. That control
+has not yet been re-run on llama or mistral. The pool surface-diversity
 artifact (the `eff_dim_frac` estimator tracking lexical variety rather than
-any workspace property), and an anisotropy or outlier-dimension artifact in
-the participation-ratio computation itself. A small-N-coincidence reading is
-also live at three families. Testing this hypothesis would need an
-experiment designed to separate lexical-diversity confounds and estimator
-anisotropy from a genuine deliberation-then-summary staging account, which
-has not been registered as of this writing.
+any workspace property) remains untested. A small-N-coincidence reading is
+under test via a qwen3-4b-family-atlas cell in preparation, whose results
+are not available yet and are not cited here.
+
+This node also links, as a low-confidence proposed conjecture rather than an
+evidentiary claim, to two existing write-side "use the signal" null
+mechanisms: [[propensity-direction-reads-but-does-not-actuate-fabrication]]
+and [[setpoint-write-on-caution-perp-does-not-actuate-fabrication]] (from
+`experiments/radial-anti-propensity-steering` and
+`experiments/selected-setpoint-regulator`). Both concern a DIFFERENT fitted
+signal, the confabulation-propensity direction and an unvalidated
+caution_perp setpoint write, not the family-atlas read panel this hypothesis
+was raised to explain. The link does not claim these are the same
+phenomenon as the eff-dim/readable-band decoupling; it asserts only
+explanatory scope, that IF the late-compression-summary account is correct,
+a signal that reads cleanly but does not actuate is exactly the shape it
+predicts, and these two nulls are additional, weaker, cross-signal instances
+of that shape worth weighing against it, not confirmation of it.
+
+Testing this hypothesis further would still need an experiment designed to
+separate lexical-diversity confounds from a genuine deliberation-then-summary
+staging account (the pool surface-diversity alternative), and more families
+to weigh in on the small-N-coincidence reading, which has not been fully
+registered as of this writing beyond the qwen3-4b-family-atlas cell already
+in preparation.

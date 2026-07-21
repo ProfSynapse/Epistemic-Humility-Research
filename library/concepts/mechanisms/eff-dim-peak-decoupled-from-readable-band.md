@@ -34,6 +34,8 @@ relationships:
   confidence: low
   evidence:
   - experiments/gemma-4-e4b-family-atlas/AMENDMENT.md#outcome
+  - experiments/gemma-4-e4b-family-atlas/NOTEBOOK.md (2026-07-20 entry, "anisotropy-artifact control reanalysis")
+  - experiments/gemma-4-e4b-family-atlas/analysis-committed/gemma4_e4b_it/anisotropy_control/
 - type: related_to
   target: '[[workspace-band-peak-location-is-family-relative]]'
   target_id: mechanism:workspace-band-peak-location-is-family-relative
@@ -83,7 +85,24 @@ sits downstream of it.
 This is exploratory, low-confidence evidence from three families across two
 atlas experiments, with the registered falsifier not cleanly anticipating
 this exact failure shape (an instrument-wording gap recorded straight in both
-resolved `AMENDMENT.md` docs). What, if anything, causally explains the
-decoupling is not settled by the atlas gates themselves; see
+resolved `AMENDMENT.md` docs). A PI-directed deflationary control on
+gemma-4-e4b, run 2026-07-20 (`experiments/gemma-4-e4b-family-atlas/NOTEBOOK.md`,
+"anisotropy-artifact control reanalysis"), asked whether outlier
+eigendirections were manufacturing the layer-4 peak rather than a genuine
+early-exterior maximum. The peak's LOCATION survived all eight correction
+variants tried: whitening by the correlation matrix, dropping the top-1, -2,
+-4, and -8 covariance eigendirections, 0.5 percent winsorizing, a rank-based
+spectral-entropy estimator (a different estimator family), and a 50 percent
+row-subsample guard. Correcting for anisotropy only compressed the peak's
+margin over the best interior candidate, from 1.53x at baseline to 1.12x
+under the strongest correction, and never relocated it; the notebook records
+the caveat that the peak's PROMINENCE partly rides on early-layer isotropy
+even though its LOCATION does not. This is one deflationary alternative
+tested and survived, on gemma-4-e4b specifically (not yet re-run on llama or
+mistral); the pool surface-diversity alternative remains open, and a
+qwen3-4b-family-atlas cell is in preparation to add a fourth family against
+the small-N-coincidence reading. What, if anything, causally explains the
+decoupling itself is still not settled by the atlas gates; see
 [[epistemic-readouts-are-late-compression-summaries]] for one untested
-candidate account and the deflationary alternatives it is weighed against.
+candidate account and the remaining deflationary alternatives it is weighed
+against.
