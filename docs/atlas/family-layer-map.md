@@ -60,9 +60,16 @@ and the registered interior-workspace prediction has failed in all three
 
 Interpretation beyond these four observations (consolidation/crystallization
 accounts, post-decision-report hypotheses) is NOT settled by this table and
-lives in the KG hypothesis nodes and paper drafts; the deflationary
-alternatives (pool-composition artifact, anisotropy artifact, small-N
-coincidence) are open test targets as of this writing.
+lives in the KG hypothesis nodes and paper drafts. Deflationary-alternative
+status: **anisotropy artifact TESTED AND SURVIVED 2026-07-20** (the gemma
+layer-4 peak persists under whitening, top-1/2/4/8 eigendirection removal,
+winsorizing, a rank-based spectral-entropy estimator, and a 50% subsample
+guard; margin over the best interior candidate compresses 1.53x -> 1.12x
+but the peak never relocates -- see
+`experiments/gemma-4-e4b-family-atlas/analysis-committed/gemma4_e4b_it/anisotropy_control/`
+and that cell's NOTEBOOK.md, lab-notebook tier); pool-composition
+(surface-diversity) artifact UNTESTED; small-N coincidence under test via
+the qwen3-4b-family-atlas cell (in preparation).
 
 ## Comparability notes
 

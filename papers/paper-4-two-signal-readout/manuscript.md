@@ -999,10 +999,16 @@ three times. The observation constrains where a deployed readout should be
 fit (the compression regime, not the dimensionality peak) and is consistent
 with the view that these readouts are late, low-dimensional summaries of an
 already-made assessment rather than participants in a high-dimensional
-deliberative workspace; the deflationary alternatives (prompt-set surface
-diversity driving the early peak; mid-band anisotropy suppressing the
-dimensionality estimator) are under active test and this section must not
-be finalized until they resolve.
+deliberative workspace. Of the deflationary alternatives, the
+anisotropy-artifact account (mid-band outlier eigendirections suppressing
+the dimensionality estimator) has been tested and rejected on the gemma
+captures: the early peak survives whitening, top-k eigendirection removal
+(k up to 8), winsorizing, and a rank-based spectral-entropy estimator,
+with its margin compressed but its location unmoved (lab-notebook
+reanalysis, `experiments/gemma-4-e4b-family-atlas`, 2026-07-20). The
+prompt-set surface-diversity account remains untested, and the fourth
+family (qwen3-4b) confirmation is pending; this section must not be
+finalized until both resolve.
 
 ---
 
