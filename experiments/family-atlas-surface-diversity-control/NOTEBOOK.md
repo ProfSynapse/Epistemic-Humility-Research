@@ -4,6 +4,39 @@ Running log for this experiment. Newest entry first. This is a lab notebook,
 not a claims surface; the registered design lives in `AMENDMENT.md` and the
 machine state in `experiment.yaml`.
 
+## 2026-07-21 - Shape A hard stop, PI adjudication pending
+
+The signed CPU command exited 0 and wrote the positive-schema aggregate. G0 and
+G1 passed for Gemma and Qwen. G2 matching support failed for both: Gemma had 293
+pairs, best-orientation surface-role AUROC 0.6427, and maximum scalar SMD 0.1545;
+Qwen had 108 pairs, AUROC 0.6103, and maximum scalar SMD 0.1738. The registered
+floors were at least 100 pairs, AUROC at most 0.60, and maximum scalar SMD at
+most 0.10. Pair counts passed, but both balance diagnostics failed.
+
+The hard stop correctly prevented G3-G5 and all controlled peak calculations.
+The report's downstream `fail` labels mean not reached after G2, as confirmed by
+their null summaries and empty profiles; they are not measured failures. The
+instrument decision is `indeterminate`, with the pre-stated Shape B escalation.
+No verdict has been assigned because PI adjudication is pending.
+
+Committed aggregate: `analysis-committed/aggregate_results.json`, sha256
+`df21b826a041c015657832468bf922f119398f483b7dc528b5a27526d742ebb5`.
+
+## 2026-07-21 - detached CPU analysis launch
+
+Launched the exact signed two-substrate command from commit `a88db1a3` through
+`experiments/common/launch_detached.sh`. The live detached wrapper PID is
+`1727712`; stdout and stderr append to
+`analysis/run/real_cpu.log`, and completion writes
+`analysis/run/real_cpu.log.exit_code`. Source roots and private-row paths match
+the signed preflight. No model or GPU path is involved.
+
+The first one-shot shell invocation returned PID `1725652` but the execution
+environment tore down its detached PID namespace immediately. It wrote no log,
+checkpoint, aggregate, or exit-code sidecar, so it was not a data run. The
+successful launch uses the same required detached script inside a retained shell
+session, which keeps that namespace alive until completion.
+
 ## 2026-07-21 - PI approval and instrument sign
 
 Joseph Rosenbaum approved the registered Shape A design and directed the team

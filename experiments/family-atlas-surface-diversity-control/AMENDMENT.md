@@ -1,6 +1,6 @@
 # Family Atlas Surface-Diversity Control
 
-Status: signed (PI approved 2026-07-21; real-data CPU launch authorized).
+Status: running (CPU analysis complete; PI verdict adjudication pending).
 
 Keep this document the prose home for the experiment. The machine state lives in
 `experiment.yaml` and is never duplicated here.
@@ -283,7 +283,18 @@ After G0-G4 pass, any valid primary controlled profile or registered subsample o
 
 ## Outcome
 
-Not run. The PI must review and sign the instrument before any real-data
-analysis. This experiment authorizes no GPU work. Any later fresh capture or
+The signed CPU analysis completed with exit code 0. G0 and G1 passed on both
+substrates. G2 matching support failed on both substrates: Gemma retained 293
+pairs but had best-orientation surface-role AUROC 0.643 and maximum scalar SMD
+0.154; Qwen retained 108 pairs but had AUROC 0.610 and maximum scalar SMD 0.174.
+The registered thresholds were AUROC at most 0.60 and maximum scalar SMD at most
+0.10. The hard stop therefore fired before G3-G5, and no controlled peak profile
+was computed. The aggregate instrument status is `indeterminate` with the
+pre-stated Shape B escalation. PI verdict adjudication remains pending.
+
+Aggregate artifact:
+`analysis-committed/aggregate_results.json`, sha256
+`df21b826a041c015657832468bf922f119398f483b7dc528b5a27526d742ebb5`.
+This experiment authorizes no GPU work. Any later fresh capture or
 surface-matched pool requires separate PI approval and a separately governed
 Shape B design.

@@ -1466,7 +1466,7 @@
       "question": "Do the Gemma-4-E4B-it and Qwen3-4B early-exterior eff_dim_frac peaks persist after controlling for the registered linear question-surface model and prompt length on their existing captures?",
       "registered": true,
       "slug": "family-atlas-surface-diversity-control",
-      "status": "signed",
+      "status": "running",
       "title": "Family Atlas Surface-Diversity Control",
       "type": "lab-diagnostic",
       "verdict": ""
