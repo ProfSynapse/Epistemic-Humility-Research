@@ -36,6 +36,7 @@ Always choose the narrowest reference needed for the task:
 | Test answer-sycophancy / helpfulness pressure across regimens | [references/sycophancy-probe-path.md](references/sycophancy-probe-path.md) |
 | Test whether a read-side finding generalizes to a second known/unknown dataset | [references/cross-dataset-transfer.md](references/cross-dataset-transfer.md) |
 | Test WHEN an axis fires vs the decision token (pre-commitment vs decision-echo, read-only) | [references/read-trajectory-timing.md](references/read-trajectory-timing.md) |
+| Select a backend for a legacy rerun without breaking parity | [../experiment-runner/reference/batched-generation.md](../experiment-runner/reference/batched-generation.md) |
 
 Do not preload all references. Read only the file needed for the current
 operation, then follow any further routing inside it.
@@ -81,6 +82,9 @@ it. For live Docker/GPU execution the same approval rule applies: do not pass
   `h_base` is the SFT-merged pre-adapter model, not original Qwen base.
 - Keep generated outputs gitignored by default unless a governed publication
   decision explicitly whitelists them.
+- Legacy reruns keep their registered generation and capture backend. The
+  project-wide vLLM preference applies to new surfaces after the required
+  smokes and bridges; it never authorizes an engine swap inside a frozen cell.
 - Stay local to this repository for mech-interp work. Do not use external
   workflow or memory systems unless the user explicitly asks in the current turn.
 

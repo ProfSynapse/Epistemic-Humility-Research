@@ -34,7 +34,7 @@ Always choose the narrowest reference needed for the task:
 | Prepare/gate hidden-state extraction | [reference/hidden-state-probe-smoke.md](reference/hidden-state-probe-smoke.md) |
 | Author a NEW steering / extraction / probe-fit / gate-scoring cell (tuner-backed) | the `mechinterp-cells` skill (`.skills/mechinterp-cells/SKILL.md`) |
 | Grade abstention/refusal in a gated harness (detector + blinded adjudication lane) | [reference/abstention-grading.md](reference/abstention-grading.md) |
-| Decide batch-1 vs batched generation for a GPU cell (parity rules, vLLM/HF lanes, numerics smoke) | [reference/batched-generation.md](reference/batched-generation.md) |
+| Select a generation or hidden-state backend (vLLM-first policy, parity exceptions, structured outputs, bridge smokes) | [reference/batched-generation.md](reference/batched-generation.md) |
 | Plan archived legacy mechinterp causal-pilot sweeps | [reference/legacy-mechinterp-causal-pilot-sweeps.md](reference/legacy-mechinterp-causal-pilot-sweeps.md) |
 | Record durable research-session memory | [reference/research-sessions.md](reference/research-sessions.md) |
 | Audit experiment/session provenance before migration | `python3 .agents/skills/experiment-runner/scripts/provenance_audit.py [--json]` |
@@ -111,6 +111,12 @@ operation, then follow any further routing inside that reference.
   the persistence schema. Rationale and the H3 cautionary case live in the
   data-exhaust skill's "Build-time requirement" section. Containment is
   unchanged: text never leaves gitignored `analysis/`.
+- Backend choice is part of the evidence surface. New unsteered generation
+  prefers pinned vLLM with batch invariance; new full-depth extraction prefers
+  vLLM only after the model-specific HF bridge passes. Parity-locked cells keep
+  their registered backend. Read
+  [reference/batched-generation.md](reference/batched-generation.md) before
+  signing any GPU cell that generates or captures hidden states.
 - GPU smoke/preflight before every full generation run (PI standing directive
   2026-07-16): before any full steering/generation run, execute a small-N
   preflight on the SAME code path as the full run — a few rows per family at

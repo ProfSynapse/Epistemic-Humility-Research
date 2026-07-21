@@ -57,7 +57,18 @@ capture:
   position_name: anchor
   position_rule: "len(token_ids) - 1 (manual tokenize, add_special_tokens=True)"
   layers: all  # synaptic-tuner batch-capture --layers all -> range(n_hidden_states)
-  engine: hf-batched
+  # Prefer vllm only after the model-specific bridge in SKILL.md passes and
+  # the generic tuner exposes that engine. Use hf-batched for a parity-locked
+  # HF atlas or when the bridge/capability is absent.
+  engine: <vllm or hf-batched>
+  backend_bridge:
+    status: <passed or hf_reference_fallback>
+    record: "<NOTEBOOK section or bridge artifact path>"
+  vllm:
+    exact_version: <PINNED_VERSION_OR_NOT_APPLICABLE>
+    batch_invariant: true
+    chunked_prefill: false
+    include_output_tokens: false
   persist_dtype: float32
   render_module: "<path to your copy of render_example.py, adapted>"
   render_system_prompt_source: "<ported verbatim from: name the source experiment's render.py>"
