@@ -193,7 +193,7 @@ axes simultaneously.
 | Predictor | Call |
 |-----------|------|
 | orchestrator | Falsifier fires on the profile limb via an EARLY-EXTERIOR eff_dim_frac peak (outer 20% of depth), making qwen3 the fourth family in the decoupling pattern. Read panel healthy: a wide contiguous mid-band holds all three axes >= 0.80 held-out, including layers strictly inside (20%, 85%). Additional registered sub-call: the J-lens interior peak from `j-space-localization-qwen3-4b` (hs 23-29, a different instrument) does NOT reproduce in this eff_dim_frac profile -- the two instruments dissociate on peak location. (recorded pre-sign, 2026-07-20) |
-| user | _to be recorded before sign/launch -- do not launch without it_ |
+| user | INTERIOR PEAK (recorded 2026-07-21, pre-sign): the first counterexample to the 3-of-3 early-exterior pattern -- the J-lens interior finding (hs 23-29, `j-space-localization-qwen3-4b`) was right about this family, and the eff_dim_frac profile follows it into the interior band. Direct head-to-head disagreement with the orchestrator's early-exterior call. |
 
 ## Gates
 
