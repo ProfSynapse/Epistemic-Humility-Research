@@ -4,7 +4,7 @@ session_id: 20260717T201649Z-margin-cascade-execution-m1-m2-m1b-m4
 title: 'Margin cascade execution: M1 M2 M1b M4'
 status: active
 created_at: '2026-07-17T20:16:49Z'
-updated_at: '2026-07-20T22:40:00Z'
+updated_at: '2026-07-21T02:16:12Z'
 question: Do the framework's margin-theory claims (1, 3) and the mentalistic-naming
   criteria hold at the qwen mid-band operating point, tested cheap-first through the
   M1-M6 cascade?
@@ -622,17 +622,17 @@ checkpoints:
   summary: 'PR #322 merged: worktree-parallel rule purge (docs/backlog/PLAN.md, commit
     5d9540ab) replaces the amendment-branch serialization convention with one amendment
     = one dedicated worktree on its own branch = one PR, amendments proceed in parallel,
-    superseding checkpoint 022''s now-stale "scale cell branches only after atlas PR
-    merges" note. correctness-geometry-scale-ladder: harness BUILT on ehr-worktrees/scale-ladder
+    superseding checkpoint 022''s now-stale "scale cell branches only after atlas
+    PR merges" note. correctness-geometry-scale-ladder: harness BUILT on ehr-worktrees/scale-ladder
     (Qwen3 1.7B/8B/14B on Amendment X stage-2 tensors), NOT signed. Pre-sign G_val
-    planted-signal validation FAILED all four estimators at all three scales; the new
-    PR #320 rule caught this in about four minutes of synthetic compute, versus the
-    full signed null the same estimator-collapse bug class cost correctness-subspace-overlap.
-    Root causes: the two-class mean-shift synthetic cannot express discriminative rank
-    above 1; E2 as specified is structurally tautological; E1''s level at matched-n
-    is plausibly sample-size; E4''s plus-or-minus-1 participation-ratio criterion is
-    unrealistic. Design-v2 iteration loop open (designer revising the synthetic protocol
-    and estimator specs); nothing signed, no real labels touched. gemma-4-e4b-family-atlas:
+    planted-signal validation FAILED all four estimators at all three scales; the
+    new PR #320 rule caught this in about four minutes of synthetic compute, versus
+    the full signed null the same estimator-collapse bug class cost correctness-subspace-overlap.
+    Root causes: the two-class mean-shift synthetic cannot express discriminative
+    rank above 1; E2 as specified is structurally tautological; E1''s level at matched-n
+    is plausibly sample-size; E4''s plus-or-minus-1 participation-ratio criterion
+    is unrealistic. Design-v2 iteration loop open (designer revising the synthetic
+    protocol and estimator specs); nothing signed, no real labels touched. gemma-4-e4b-family-atlas:
     SIGNED (first cell signed under the new persistence-declaration enforcement from
     PR #318), branch exp/gemma-4-e4b-family-atlas, worktree ehr-worktrees/gemma-atlas.
     Pool mining run 1: generation stage completed (4000 rows) but the anchor-capture
@@ -641,13 +641,13 @@ checkpoints:
     the detached-launch wrapper captured the exit code both times). Fleet prep script
     then exited 3: generation_terminates_rate 0.802 vs the 0.90 gate (Gemma verbosity
     against the 200-token generation cap, 572/4000 rows truncated) and the batched-parity
-    smoke failed 2/8 rows on exact-string answer comparison (batched-vs-sequential decode
-    divergence on free-text answers). AG0a (pool-mining integrity) therefore FAILS as
-    signed; the atlas capture stage is HELD, remediation decision with the PI. Inkling
-    (Thinking Machines Lab, July 2026) assessed for KG ingestion: verdict SKIP (no technical
-    report, marketing-grade sources below the KG provenance bar; calibration-RL framing
-    but no abstention/IDK-training or internal-representation content); revisit if a
-    technical report lands.'
+    smoke failed 2/8 rows on exact-string answer comparison (batched-vs-sequential
+    decode divergence on free-text answers). AG0a (pool-mining integrity) therefore
+    FAILS as signed; the atlas capture stage is HELD, remediation decision with the
+    PI. Inkling (Thinking Machines Lab, July 2026) assessed for KG ingestion: verdict
+    SKIP (no technical report, marketing-grade sources below the KG provenance bar;
+    calibration-RL framing but no abstention/IDK-training or internal-representation
+    content); revisit if a technical report lands.'
   evidence: []
   run_ids: []
   commands: []
@@ -655,10 +655,40 @@ checkpoints:
   next_steps:
   - Scale-ladder v2 design adjudication and G_val re-run before any real-tensor sign.
   - Gemma AG0a remediation decision, then capture+panel stages if cleared.
-  - M-cascade remainder (family memo, M3 anisotropy, M5, item-36/#8 proportional-scalar) stays parked.
-  - Harvest the orphaned analysis/harvest/pending/experiments/j-space-cross-family-layer-contrast/ tree.
+  - M-cascade remainder (family memo, M3 anisotropy, M5, item-36/#8 proportional-scalar)
+    stays parked.
+  - Harvest the orphaned analysis/harvest/pending/experiments/j-space-cross-family-layer-contrast/
+    tree.
   - aq-sycophancy-activation-actuator draft stays parked, needs PI go-ahead on resolve-vs-redesign.
-  - 'Amendment X scale-sweep HF revision re-pin, only if bit-exact base reproducibility is ever needed.'
+  - Amendment X scale-sweep HF revision re-pin, only if bit-exact base reproducibility
+    is ever needed.
+  signals: {}
+- id: 024-checkpoint
+  at: '2026-07-21T02:16:12Z'
+  kind: checkpoint
+  title: Checkpoint
+  summary: 'Gemma atlas resolved and merged (PR #323): AG0a passed on the twice-revised
+    mining instrument (answer-capture 0.9286 vs 0.90); falsifier fired on the profile
+    limb (eff_dim_frac peak hs 4 of 42, 0.095 depth, early-exterior), read panel healthy
+    hs 13-42; lead re-derivation found the layer-patchy random-direction control elevation
+    (up to 0.97 at hs 24), clean-control sets hs 14-18 / 36-40 recorded in family-layer-map.
+    KG ingest d5968ef0. Scoreboard: orchestrator unilateral WIN, tally 3-5-2 pending
+    programmatic audit. Scale ladder: first real run VOID (signed driver had synthetic
+    path hardwired; if-True stub); fixed, repinned 24c5da15, quarantined contaminated
+    runlog, relaunched clean (exit 0, 699s, synthetic_smoke false). G1 lands on pre-stated
+    middle ground M3 (best-dial monotone c -0.06/0.09/0.24, Delta_c 0.302 clears both
+    sigma readings; fixed-depth non-monotone) - red-team on selection-circularity
+    in flight before Outcome is written; proposed scoreboard user WIN. Cross-family
+    decoupling pattern codified: family-layer-map standing section, paper-4 placeholder
+    6.x, KG nodes in flight. Terminology correction: PI caught new prose using retired
+    ''doubt''; fixed to KU per papers/common/terminology.md. Launched: qwen3-4b atlas
+    scaffold, anisotropy-artifact reanalysis on gemma captures, programmatic scoreboard
+    audit. AK (commitment-point) launch approval pending PI.'
+  evidence: []
+  run_ids: []
+  commands: []
+  decisions: []
+  next_steps: []
   signals: {}
 track: margin-theory-cascade
 ---
@@ -827,3 +857,8 @@ _No summary yet._
   - Harvest the orphaned analysis/harvest/pending/experiments/j-space-cross-family-layer-contrast/ tree.
   - aq-sycophancy-activation-actuator draft stays parked, needs PI go-ahead on resolve-vs-redesign.
   - Amendment X scale-sweep HF revision re-pin, only if bit-exact base reproducibility is ever needed.
+### 024-checkpoint - Checkpoint
+
+- at: `2026-07-21T02:16:12Z`
+- kind: `checkpoint`
+- summary: Gemma atlas resolved and merged (PR #323): AG0a passed on the twice-revised mining instrument (answer-capture 0.9286 vs 0.90); falsifier fired on the profile limb (eff_dim_frac peak hs 4 of 42, 0.095 depth, early-exterior), read panel healthy hs 13-42; lead re-derivation found the layer-patchy random-direction control elevation (up to 0.97 at hs 24), clean-control sets hs 14-18 / 36-40 recorded in family-layer-map. KG ingest d5968ef0. Scoreboard: orchestrator unilateral WIN, tally 3-5-2 pending programmatic audit. Scale ladder: first real run VOID (signed driver had synthetic path hardwired; if-True stub); fixed, repinned 24c5da15, quarantined contaminated runlog, relaunched clean (exit 0, 699s, synthetic_smoke false). G1 lands on pre-stated middle ground M3 (best-dial monotone c -0.06/0.09/0.24, Delta_c 0.302 clears both sigma readings; fixed-depth non-monotone) - red-team on selection-circularity in flight before Outcome is written; proposed scoreboard user WIN. Cross-family decoupling pattern codified: family-layer-map standing section, paper-4 placeholder 6.x, KG nodes in flight. Terminology correction: PI caught new prose using retired 'doubt'; fixed to KU per papers/common/terminology.md. Launched: qwen3-4b atlas scaffold, anisotropy-artifact reanalysis on gemma captures, programmatic scoreboard audit. AK (commitment-point) launch approval pending PI.
