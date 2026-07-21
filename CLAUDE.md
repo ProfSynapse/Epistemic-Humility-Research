@@ -117,6 +117,14 @@ governed: changes need explicit rationale, changelog, and user approval.
 - `pr-workflow`: standing discipline for branches, worktrees, commits, and PR
   merges; read before spawning a file-writing subagent, committing
   housekeeping docs, or merging PRs.
+- `experiment-wrapup`: the mechanical downstream half of a resolve, run AFTER
+  the lead has adjudicated the verdict/falsifier/scores - write the AMENDMENT
+  Outcome, `bin/exp resolve`, update the family-layer-map and
+  prediction-scoreboard registries, open the resolve PR, commit the living
+  tracking docs to main, hand off KG ingest. Delegable to a sonnet/haiku
+  subagent given a locked adjudication packet. It never decides the verdict or
+  the scores; those are lead-only inputs. Keep for the lead: the adjudication
+  itself, the red-team decision, and the PR merge (needs user approval).
 
 Canonical skill source is `.skills/`. Mirrors under `.agents/skills/` and
 `.claude/skills/` are generated. Do not hand-edit a mirror when the same file
