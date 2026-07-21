@@ -1,7 +1,7 @@
 slug: qwen3-4b-family-atlas
 title: Qwen3-4B family atlas
 type: probe-fit
-status: signed
+status: resolved
 registered: true
 created_at: '2026-07-21T02:19:42Z'
 question: Where does raw-base Qwen3-4B's (unsloth/Qwen3-4B) workspace midband sit
@@ -131,5 +131,14 @@ instrument:
 inputs:
 - experiments/common/doubt-gated-caution-tighten-heldout-split/split_manifest.json
 - experiments/qwen3-4b-family-atlas/unknown_refused_manifest.json
-verdict: ''
+verdict: 'FALSIFIER FIRED on the profile limb: eff_dim_frac peaks early-exterior at
+  hs5/36 (depth 0.139), the 4th family (after llama, mistral, gemma) with an early-exterior
+  dimensionality peak decoupled from a healthy interior three-axis read band (hs22-36
+  clear >=0.80 on doubt/caution/raw_refusal; caution+raw_refusal carry the band over
+  their controls, doubt is norm/position confounded as in the other three families).
+  Scoreboard: orchestrator WIN (early-exterior + J-lens-non-reproduction sub-call
+  both correct) / user LOSS on the registered eff_dim_frac-peak call, with credit
+  that the user''s interior intuition is vindicated on the read panel. The eff_dim_frac
+  profile and the read-axis panel dissociate cleanly on this family, resolving the
+  apparent tension with j-space-localization-qwen3-4b''s interior J-lens peak.'
 kg: []

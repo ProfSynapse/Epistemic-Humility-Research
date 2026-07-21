@@ -195,6 +195,15 @@ axes simultaneously.
 | orchestrator | Falsifier fires on the profile limb via an EARLY-EXTERIOR eff_dim_frac peak (outer 20% of depth), making qwen3 the fourth family in the decoupling pattern. Read panel healthy: a wide contiguous mid-band holds all three axes >= 0.80 held-out, including layers strictly inside (20%, 85%). Additional registered sub-call: the J-lens interior peak from `j-space-localization-qwen3-4b` (hs 23-29, a different instrument) does NOT reproduce in this eff_dim_frac profile -- the two instruments dissociate on peak location. (recorded pre-sign, 2026-07-20) |
 | user | INTERIOR PEAK (recorded 2026-07-21, pre-sign): the first counterexample to the 3-of-3 early-exterior pattern -- the J-lens interior finding (hs 23-29, `j-space-localization-qwen3-4b`) was right about this family, and the eff_dim_frac profile follows it into the interior band. Direct head-to-head disagreement with the orchestrator's early-exterior call. |
 
+**Resolution (2026-07-21): orchestrator WIN / user LOSS.** The eff_dim_frac
+profile peaked early-exterior (hs5, depth 0.139), so the orchestrator's
+call is correct on both clauses and the user's registered eff_dim_frac-peak
+call is falsified. Credit recorded (see Outcome): the user's interior
+intuition is vindicated on the read panel -- the three epistemic axes peak
+interior (hs22-36) on top of the J-lens band -- so the miss is instrument
+attribution, not signal location. Ratified by the PI at resolve
+(2026-07-21, "you've defeated me again").
+
 ## Gates
 
 See `gates.yaml`: AG0 (capture/direction integrity), AG1 (profile), AG2
@@ -208,5 +217,97 @@ plain precondition) before signing.
 
 ## Outcome
 
-Filled at resolve. Record the verdict, the gate results, and the
-one-sentence summary that also goes into `verdict:` in the manifest.
+**Verdict (resolved 2026-07-21, lead adjudication): FALSIFIER FIRED on the
+profile limb. Qwen3-4B is the fourth family with an early-exterior
+eff_dim_frac peak decoupled from a healthy interior read band.** The
+eff_dim_frac profile peaks at hs 5 of 36 (0.014891, depth_frac 0.1389),
+inside the outer 20% of depth on the early side, matching the shape
+`jspace-family-atlas` found for llama (L4/28) and mistral (L3/32) and
+`gemma-4-e4b-family-atlas` found for gemma (hs4/42). The decoupling holds
+4 of 4: the three-axis held-out read band is interior and wide (hs 22-36
+clear >= 0.80 on all three axes simultaneously), nowhere near the
+dimensionality peak.
+
+### Run provenance
+- Capture: `capture_run2` (container, pinned image
+  sha256:d445632098cd..., CUDA 12.8), exit 0, 1768/1768 rows, AG0
+  coverage_frac 1.0, 0 missing; 37 hidden states / 36 layers / 2560 dim.
+  (`capture_run1` crashed on row 1 on a render env-var wiring defect fixed
+  as signed revision 1 via `bin/exp repin`, zero rows captured, no data
+  affected.)
+- Profile + read panel: `read_panel_run2` (same container; CPU-only, host
+  run1 completed the computation but could not write through the
+  root-owned bind-mount dir, resolved by container re-run per the gemma
+  precedent), exit 0, 68s, seed 20260707, 2000 bootstrap resamples,
+  refused pool split 514 fit / 515 eval from the 1029 fit_only rows.
+- All numbers below independently re-derived by the lead from the
+  committed `analysis-committed/qwen3_4b_raw_base/atlas_summary.json`, not
+  relayed from the subagent report.
+
+### AG1 (profile)
+- `eff_dim_frac_every_layer`: PASS (37/37 hidden states).
+- `profile_reproducibility` (20% FIT-row subsample, tolerance +/-1 layer):
+  PASS. Full-profile peak hs5; subsample peak hs5; delta 0. The top-5
+  eff_dim_frac layers are hs {5, 4, 6, 3, 2} (all early); the interior
+  hs20-36 is a flat 0.0068-0.0095 band well below the hs5 peak of 0.0149.
+  The early peak is robust, not a flat-profile artifact.
+
+### AG2 (read panel), no numeric pass/fail; the numbers are the atlas
+Per-hidden-state held-out AUROC (point, 95% CI), all three axes, with the
+random-direction control read alongside each axis:
+- doubt (KU) climbs to >= 0.975 from hs5 onward and reads ~0.99-1.00
+  across the interior, BUT is norm/position confounded: its own
+  `ref_vs_known` control spikes to 0.87-0.98 at hs 21/24/32/36 (the same
+  confound llama, mistral, and gemma all showed on this axis). Read the
+  doubt column against that per-layer control, not against 0.5.
+- caution clears 0.80 from hs22 (0.841) and holds 0.89-0.91 through the
+  interior, against a `ref_vs_confab` control that stays <= 0.79
+  everywhere -- a clean, large margin.
+- raw_refusal clears 0.80 from hs21-22 (0.813/0.853) and rises to
+  0.95-0.98 deep, against a `ref_vs_answered` control mostly <= 0.72
+  (one spike to 0.829 at hs24) -- also a clean margin.
+- Layers clearing >= 0.80 on ALL THREE axes simultaneously: hs 22-36 (15
+  layers). Restricted to the falsifier's strict interior (20%, 85%) depth
+  band (hs 8-30): hs 22-30 qualify (depth_frac 0.611-0.833). The interior
+  read band is carried by caution and raw_refusal with real margins over
+  their controls, so it survives the doubt-axis confound.
+- At the profile's own peak (hs5): doubt 0.975, caution 0.670,
+  raw_refusal 0.737 -- caution and raw_refusal both BELOW 0.80 where the
+  dimensionality peaks. The dissociation is direct.
+
+### Falsifier adjudication
+The falsifier is a disjunction; the first disjunct is satisfied outright:
+the single global eff_dim_frac peak is at hs5, depth_frac 0.1389 < 0.20,
+early-exterior. (The second disjunct, "no interior layer reaches >= 0.80
+on all three," is NOT satisfied -- the interior band is healthy -- but an
+OR needs only one true disjunct.) Falsifier FIRED.
+
+### Predictions scoreboard adjudication (head-to-head)
+- **Orchestrator: WIN.** Called early-exterior eff_dim_frac peak (correct:
+  hs5, 0.139 depth) AND the registered sub-call that the J-lens interior
+  peak (hs 23-29, a different instrument) does NOT reproduce in the
+  eff_dim_frac profile (correct: the profile peaks hs5, not hs23-29). Both
+  clauses hold.
+- **User: LOSS on the registered call, with credit.** Called INTERIOR PEAK
+  for the eff_dim_frac profile; the profile peaked early-exterior (hs5), so
+  the registered eff_dim_frac-peak prediction is falsified. BUT the
+  underlying intuition -- that the interior is where this family's
+  epistemic signal lives, following the J-lens hs23-29 finding -- is
+  independently VINDICATED by the read panel: the three epistemic axes peak
+  in the interior (hs 22-36), directly on top of the J-lens band. The miss
+  is instrument attribution (eff_dim_frac follows the early-exterior
+  dimensionality pattern; the read axes follow the interior signal), not
+  the location of the epistemic signal.
+
+### Scientific note (the dissociation this cell adds)
+Two instruments that both nominally "localize the workspace" dissociate
+cleanly on this family: the eff_dim_frac profile (representation-variance
+participation ratio) peaks early-exterior at hs5, while the three-axis
+read panel (held-out linear readability of KU / caution / refusal) peaks
+interior at hs22-36. This is the same early-peak-then-readable-plateau
+decoupling seen in llama, mistral, and gemma, now 4 of 4, and here it also
+resolves the apparent tension with `j-space-localization-qwen3-4b`'s
+interior J-lens peak: the J-lens was reading the interior readable regime,
+not the dimensionality peak. The doubt-axis norm/position confound
+replicates a fourth time and is recorded in the family-layer-map
+comparability note.
