@@ -44,9 +44,9 @@ neither side and are tallied separately.
 
 | AN (selected-setpoint regulator) | G1 PASS; G2 PASS; G3 PASS ("I agree on all passing") | G1 PASS (~70%); G2 PASS (~40%); G3 PASS (~40%) | **NULL, falsifier fired**: AN-G1 PASS (0 collateral) but VACUOUS - zero effect on the write means zero collateral by construction; AN-G2 MISS (0/116 confabs killed, floor 5; dose ladder 0/0/0 at g=+1/+2/+3); AN-G3 MISS (primary-minus-control diff 0, CI [0.0, 0.0], floor 5). Smoke readback confirms the write lands precisely on-axis (max abs error 0.58 vs sigma 22.13); descriptive bidirectional arm also de-refuses 0/114. Pairing AL's reaching sensor with AC's proven actuator still does not reach the confab cloud | **LOSS / WIN** (user called PASS at full confidence on the central bet; orchestrator's ~40% on G2/G3 was the directionally correct lean, same disagreement shape as AL) |
 | correctness-subspace-overlap (SO) | Approved the design arc 2026-07-20 following lit-review due diligence; no separate quantitative call recorded | Reading A (shared flat subspace): k=8 S->T overlap 0.45-0.70 against a permutation-null mean ~0.20-0.35, within-stage full-n reliability 0.75-0.90, recovery curve closing ~0.80+ of the floor-to-ceiling gap | **Null-result (instrument-limited)**: SO-G1 FAILED all three limbs at k=8 (overlap 0.01157 inside the permutation null 0.01085/0.01419; reliability S 0.0185 / T 0.0293 vs the 0.70 floor; recovery closed fraction 0.175 vs 0.75). A post-hoc planted-signal simulation showed the reliability gate was estimator-structurally unreachable for any signal, so the falsifier's non-firing carries no evidential weight. Label-clean positive: one weak shared direction at k=1 (recovery AUROC ~0.70); the transferable signal is otherwise diffuse across S's span | **— / LOSS** (orchestrator's Reading A call was wrong on every quantitative band; no separate user call to score a win against, so the running tally below is unaffected) |
-| gemma-4-e4b-family-atlas | Approved the atlas arc 2026-07-20 ("get gemma going"); no separate quantitative call recorded | Falsifier fires on the profile limb: eff_dim_frac peaks early-exterior, matching jspace-family-atlas's llama/mistral result, so no interior workspace band is declared. Read panel still healthy: at least one mid-depth layer holds held-out AUROC >= 0.80 on all three axes, not coinciding with an interior eff_dim_frac peak | _pending: signed, AG0a (pool-mining integrity) v1 FAILED (generation_terminates_rate 0.802 vs the 0.90 gate; batched-parity smoke 2/8 mismatches); signed revision 1 approved 2026-07-20 (400-token cap, role-relevant-grade parity comparator, thresholds unchanged) and the re-mine is in flight; profile/read-panel gates not yet run_ | — |
+| gemma-4-e4b-family-atlas | Approved the atlas arc 2026-07-20 ("get gemma going"); no separate quantitative call recorded | Falsifier fires on the profile limb: eff_dim_frac peaks early-exterior, matching jspace-family-atlas's llama/mistral result, so no interior workspace band is declared. Read panel still healthy: at least one mid-depth layer holds held-out AUROC >= 0.80 on all three axes, not coinciding with an interior eff_dim_frac peak. Sub-clause: ported layer hs40 reads well on raw_refusal, weaker on doubt | **RESOLVED (falsifier fired, profile limb)**: eff_dim_frac peaks at hs 4 of 42 (0.095 depth, early-exterior); contiguous all-three-axes >= 0.80 band at hs 13-42; third family with the early-exterior-peak + healthy-midband decoupling. Orchestrator headline exactly right; hs40 sub-clause wrong (doubt is the STRONGEST axis at hs40, 0.9949). AG0a passed on the twice-revised instrument (0.9286 vs 0.90). PR #323, merged 2026-07-20 | **— / WIN** (headline correct on both clauses; sub-clause miss disclosed; user recorded design approval only, so no user-side score) |
 
-Running tally: **user 3 – orchestrator 4 – ties 2** (AG predates the
+Running tally: **user 3 – orchestrator 5 – ties 2** (AG predates the
 two-sided practice; the user gets the point, the orchestrator gets the
 excuse. AH resolved TIE/TIE at first adjudication — instrument voided at
 the locked gates — then upgraded to WIN/WIN when the pre-registered
@@ -64,10 +64,12 @@ is scored a win even though the literal call label was "PASS". SO scores
 a unilateral LOSS for the orchestrator (Reading A wrong on every band);
 the user recorded only a design-approval, not a competing quantitative
 call, so there is no win to award and the tally above does not move.
-gemma-4-e4b-family-atlas is listed pending, matching AD and AK: an
-orchestrator call is recorded pre-run, but the cell has not reached its
-profile/read-panel gates yet, so it is excluded from the tally until
-resolved.)
+gemma-4-e4b-family-atlas scores a unilateral WIN for the orchestrator,
+the mirror image of the SO convention: the recorded headline (falsifier
+fires early-exterior on the profile limb, read panel healthy at mid-depth)
+was exactly right, the descriptive hs40 sub-clause was wrong and is
+disclosed in the resolved doc, and the user recorded design approval only,
+so no user-side score is awarded and only the orchestrator count moves.)
 
 Threshold-setting lesson (AJ, 2026-07-04): both predictions were
 substantively right and the gate still failed to certify, because the
