@@ -29,6 +29,41 @@ the cited doc first.
 | qwen3.5 | `Qwen/Qwen3.5-4B` @ `851bf6e806efd8d0a36b00ddf55e13ccb7b8cd0a` | 32 (hybrid linear-attention) | `experiments/qwen35-4b-midband-doubt-snap` (**pending** -- draft, not signed; Stage C dose ladder not executed) | -- | -- | -- | -- | `experiments/qwen35-4b-midband-doubt-snap/AMENDMENT.md`, status draft as of this table's writing; do not cite numbers from it until it resolves |
 | gemma | `google/gemma-4-E4B-it` @ `fee6332c1abaafb77f6f9624236c63aa2f1d0187` | 42 blocks (hs_index 0-42 incl. embedding state) | `experiments/gemma-4-e4b-family-atlas` (resolved) | hs 4 of 42 (0.095 depth) | hs 13-42 contiguous (hs 4-6 clear marginally, broken by a raw_refusal dip at hs 7-12); interior portion hs 13-35 | hs 14-18 and hs 36-40 (clean-control set; see note) | 0.9949 / 0.9223 / 0.9272 (all at hs 40, clean control 0.592; naive per-axis maxima 1.00 / 0.9305 / 0.9345 at hs 21/25/26 are control-confounded, see note) | `experiments/gemma-4-e4b-family-atlas/AMENDMENT.md`, resolved 2026-07-20 |
 
+Vocabulary note (2026-07-20): running prose in this file uses the renamed
+program vocabulary of `papers/common/terminology.md`; the table's axis
+column headers (`doubt` / `caution` / `raw_refusal`) are artifact keys from
+`atlas_summary.json` and keep their names verbatim under that file's usage
+rule 1. In prose, `doubt` is the known-unknown (KU, answerability) axis.
+
+## Cross-family pattern (standing summary, updated 2026-07-20)
+
+Three families measured with the same instrument now show the same shape,
+and the registered interior-workspace prediction has failed in all three
+(each row's cited AMENDMENT.md is the source of truth):
+
+1. **The eff_dim_frac peak is early-exterior everywhere**: llama layer 4 of
+   28 (0.14 depth), mistral layer 3 of 32 (0.09), gemma hs 4 of 42 (0.095).
+   In each family the profile collapses after the early peak and stays in a
+   low flat band through the remaining depth.
+2. **The three-axis readable band is mid-band and wide**: llama 15-23,
+   mistral 7-27, gemma 13-42. Readability (all three axes >= 0.80 held-out
+   AUROC) begins only AFTER the dimensionality peak has collapsed.
+3. **The two properties are decoupled**: no family shows the predicted
+   coincidence of dimensionality peak and readable band. Effective
+   dimensionality marks the early surface/lexical regime; the epistemic
+   axes (KU, caution, raw refusal) become linearly readable in the
+   compression regime that follows.
+4. **Coordinates do not port; the motif does**: absolute and relative layer
+   indices differ family to family (the original ported-layer null that
+   motivated these atlases), but the early-peak-then-readable-plateau shape
+   has replicated 3 of 3 times.
+
+Interpretation beyond these four observations (consolidation/crystallization
+accounts, post-decision-report hypotheses) is NOT settled by this table and
+lives in the KG hypothesis nodes and paper drafts; the deflationary
+alternatives (pool-composition artifact, anisotropy artifact, small-N
+coincidence) are open test targets as of this writing.
+
 ## Comparability notes
 
 - **llama / mistral doubt axis**: both cells' doubt (known-vs-refused) AUROC
@@ -67,7 +102,7 @@ the cited doc first.
   resolved; the row exists only to mark it as in-flight so the next reader
   does not re-scaffold a duplicate atlas for this substrate.
 - **gemma random-direction control**: the norm/position confound that
-  llama/mistral showed on the doubt axis appears in gemma as a LAYER-PATCHY
+  llama/mistral showed on the known-unknown (KU) axis appears in gemma as a LAYER-PATCHY
   elevation of the whole random-direction baseline: max-over-contrasts
   0.83-0.87 at hs 10-12, up to 0.97 at hs 24, 0.85-0.94 at hs 28-34, 0.89
   at hs 42, while staying near chance (<= 0.64) at hs 0-8, hs 14-18, and

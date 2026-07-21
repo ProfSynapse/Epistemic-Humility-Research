@@ -976,6 +976,34 @@ follow-on steering paper's subject. The reason this paper deploys a *gate*
 read-and-threshold pipeline is validated across four families and four sizes; the gated
 write is validated on one model at one scale.
 
+<!-- PLACEHOLDER SECTION (added 2026-07-20, PI-requested): drafted skeleton
+only; expand after the Qwen3-4B family-atlas cell and the anisotropy-control
+reanalysis resolve. Numbers below are traceable to the cited AMENDMENT.md
+Outcomes; do not extend beyond them without those docs. -->
+
+### 6.x Where the readout lives: a cross-family geometric regularity (placeholder)
+
+Three families measured with the same capture-only atlas instrument
+(`experiments/jspace-family-atlas`, `experiments/gemma-4-e4b-family-atlas`)
+show one shape. The effective dimensionality of representation variance over
+the epistemic pool peaks in the first 10-15% of depth (llama layer 4 of 28;
+mistral layer 3 of 32; gemma hs 4 of 42) and collapses thereafter, while the
+three epistemic contrasts -- the known-unknown (answerability) readout, the
+caution contrast, and raw refusal -- become simultaneously linearly readable
+(held-out AUROC >= 0.80) only after that collapse, across a wide mid-band
+(llama 15-23, mistral 7-27, gemma 13-42). The registered prediction that
+readability would coincide with a dimensionality peak (an interior
+"workspace band") failed in all three families. Layer coordinates do not
+transfer across families, but this decoupling motif has replicated three of
+three times. The observation constrains where a deployed readout should be
+fit (the compression regime, not the dimensionality peak) and is consistent
+with the view that these readouts are late, low-dimensional summaries of an
+already-made assessment rather than participants in a high-dimensional
+deliberative workspace; the deflationary alternatives (prompt-set surface
+diversity driving the early peak; mid-band anisotropy suppressing the
+dimensionality estimator) are under active test and this section must not
+be finalized until they resolve.
+
 ---
 
 ## 7. Limitations
