@@ -811,7 +811,9 @@
         ]
       },
       "kg": [
-        "mechanism:l2-logistic-bootstrap-svd-cannot-resolve-multidim-discriminative-subspace"
+        "mechanism:l2-logistic-bootstrap-svd-cannot-resolve-multidim-discriminative-subspace",
+        "experiment:correctness-geometry-scale-ladder",
+        "mechanism:correctness-identifiability-sharpens-with-scale-under-adaptive-layer-choice"
       ],
       "prediction": "DIFFUSE-STABLE (orchestrator bet): across the matched-n (N*=377/377) ladder, E1 (split-half k=1 reliability) and E2 (top-1/full concentration ratio) do not rise beyond their per-scale planted bands from 1.7B to 14B; E1 stays low, E2 ratio stays well below 1, E3 k=1 margin small and flat, E4 participation ratio high and flat at every scale.",
       "question": "Is correctness diffuseness (CD/SO's finding at Qwen3-4B: readable but weakly-identified, k=1-only shared axis, no compact discriminative subspace) a small-model artifact that crystallizes into a compact, identifiable geometric object as scale grows from 1.7B to 14B, on the identical-pool Amendment X raw-instruct-base ladder?",

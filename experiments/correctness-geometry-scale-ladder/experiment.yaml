@@ -82,3 +82,5 @@ verdict: 'G1 resolves as pre-stated middle ground M3: correctness-direction iden
   falsifier not triggered.'
 kg:
 - mechanism:l2-logistic-bootstrap-svd-cannot-resolve-multidim-discriminative-subspace
+- experiment:correctness-geometry-scale-ladder
+- mechanism:correctness-identifiability-sharpens-with-scale-under-adaptive-layer-choice
