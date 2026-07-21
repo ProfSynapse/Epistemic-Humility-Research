@@ -1,0 +1,227 @@
+# correctness-geometry-scale-ladder instrument config, pinned at sign.
+# Design source: scale_identifiability_design.md (subspace-designer,
+# 2026-07-20), sections 1-11; LEAD ADJUDICATION section 12 is binding where
+# it overrides the packet. CPU-only, Tier-2 exploratory probe-fit/geometry
+# cell. Never pooled with the locked PROTOCOL v0.3 headline matrix or the
+# S/T headline readings.
+apiVersion: lab-cell/v1
+experiment: correctness-geometry-scale-ladder
+method_reference:
+  - experiments/correctness-direction-rotation/cd_rotation_analysis.py   # full_direction, cv_auroc, cos
+  - experiments/correctness-subspace-overlap/subspace_overlap_analysis.py  # sub_seed, rng_for, parallel_map, deflation_subspace
+
+seed_pca_fold: 20260719          # comparability with CD/SO
+seed_primary_draws: 20260720     # matched-n draws, real ladder
+seed_robust_draws: 20260721      # two-seed robustness rerun
+seed_planted: 20260720           # G_val synthetic replicates
+pca_dim: 128                     # primary; matched-variance-fraction secondary (adjudication 3)
+n_folds: 5
+min_class: 30
+n_star: 377                      # matched-n floor, both classes, all scales (adjudication 4)
+r_draws: 30                      # stratified matched-n draws per scale
+r_rand: 20                       # E3 random-slice comparison draws
+r_sim: 30                        # G_val planted-signal replicates per (scale, rank)
+planted_ranks: [1, 2, 4, 8, diffuse]
+position: post_generation   # dial's native position (CD Method sec.1)
+pre_gen_secondary: descriptive-only-not-built   # correct-vs-hallucination + pre-gen anchor deferred (packet sec.2)
+
+data:
+  ladder: three Amendment X raw-instruct-base extractions, identical pool (packet sec.2)
+  off_ladder_4b: EXCLUDED from the ladder (adjudication 1); prose footnote only,
+    citing CD Outcome's committed numbers directly, no cache dependency.
+  no_hf_revision_pin_caveat: >-
+    No HF revision hash is pinned for the three unsloth repos (repo name only,
+    loaded 2026-06-30, per Amendment X manifest.json). Carried as a
+    reproducibility caveat identical to X's; not fixed by this cell (task
+    instruction: "do not fix, per task").
+  scales:
+    - id: "1.7b"
+      checkpoint: unsloth/Qwen3-1.7B-bnb-4bit
+      dir: archive/experiment/phase1-data/probe/qwen3-1.7b-bnb-4bit/amendment_x/stage2
+      n_layers: 28
+      hidden_dim: 2048
+      n_correct: 377
+      n_wrong: 1476
+      best_dial_layer: 21     # X Outcome line 175 (1.7B table)
+      fixed_depth_layer: 17   # round(0.6 * 28)
+    - id: "8b"
+      checkpoint: unsloth/Qwen3-8B-bnb-4bit
+      dir: archive/experiment/phase1-data/probe/qwen3-8b-bnb-4bit/amendment_x/stage2
+      n_layers: 36
+      hidden_dim: 4096
+      n_correct: 648
+      n_wrong: 1205
+      best_dial_layer: 20     # X Outcome line 195 (8B table)
+      fixed_depth_layer: 22   # round(0.6 * 36)
+    - id: "14b"
+      checkpoint: unsloth/Qwen3-14B-bnb-4bit
+      dir: archive/experiment/phase1-data/probe/qwen3-14b-bnb-4bit/amendment_x/stage2
+      n_layers: 40
+      hidden_dim: 5120
+      n_correct: 741
+      n_wrong: 1112
+      best_dial_layer: 28     # X Outcome line 214 (14B table)
+      fixed_depth_layer: 24   # round(0.6 * 40)
+  g0_verified_2026-07-20:
+    - "all three manifest.json match n_layers/hidden_dim table above; seed 20260630, greedy, thinking off"
+    - "rows.jsonl per-class counts match table above exactly (n_correct/n_wrong via the 'correct' field True/False)"
+    - "row_key intersection across all three scales = 3000/3000 (identical pool, task-verified)"
+    - "matched-n floor N*=377/377 achievable at every scale (1.7B correct=377 is the binding min)"
+  primary_object: correct(1)-vs-wrong(0), post-generation content token (dial's native position)
+  secondary_object_descriptive_not_built: correct-vs-hallucination (veto geometry); pre-gen anchor position
+
+layer_policy:
+  rule: require-both (adjudication 2)
+  choices: [best_dial, fixed_depth]
+  g1_conjunction: SHARPENING-confirmed requires the pattern under BOTH choices; disagreement -> M3
+  robustness_window_e1_e2_only: "+/- 3 layers around best_dial, NOT part of the G1 conjunction, reported descriptive"
+
+estimators:
+  # === v3 (2026-07-20, design packet sections 22-23, teammate message) ===
+  # v3 RETIRES v2's construction-validity criterion (a) (unsatisfiable by any
+  # mean-shift-type construction; section 13.1/22.1) and designates E1
+  # PRIMARY; E2/E3_k1/E4 are DESCRIPTIVE COMPANIONS (all-three-scales rule
+  # NOT relaxed for them). E1's own estimator was fixed (averaged over
+  # R_SH=15 independent split-half draws, replacing v2's single noisy draw)
+  # -- see scale_ladder_lib.py e1_split_half_reliability_avg. v1/v2 provenance
+  # retained below where load-bearing to the estimator's own history.
+  E1:
+    name: split-half k=1 direction reliability
+    kind: PRIMARY (v3, section 22.4; gate-able; DESIGNATED PRIMARY per official v3 run)
+    method: >-
+      v2 fix (i): PER-HALF PCA REFIT (SO's convention), replacing v1's shared-basis-across-
+      both-halves fit (an optimism leak). Full-rank PCA(n_components=pca_dim) fit
+      INDEPENDENTLY on each half; cd.full_direction fit in each half's own PCA space, mapped
+      back to the ambient/PCA-128 frame via that half's own components_. Even at full rank
+      (no truncation), this is a real fix: L2-regularized logistic + per-axis StandardScaler
+      is NOT rotation-invariant, so each half's own (sampling-noise-driven) eigenbasis choice
+      changes the effective penalty structure, and sharing one basis fit on the FULL sample
+      before splitting lets each half's frame choice be weakly correlated with the other
+      half's data. v3 fix (i), section 22.6.4: each E1 READING is now the MEAN of R_SH=15
+      independent split-half draws (was a single draw in v2), applied identically in the
+      planted sim and scale_ladder_real.py -- shrinks the RNG component that inflated
+      diffuse_hw (and hence sigma_c) in v2, especially at 1.7B.
+    n_regime: >-
+      v2 fix (ii), lead ruling 21.2 (SWAPS the section 12.4 matched-n-primary call for E1
+      ONLY): FULL-N PRIMARY (each scale's real, imbalanced class counts), matched-n (N*=377/377)
+      retained as a reported SECONDARY. At matched-n each half is only ~188/class, below the
+      estimator's operating floor for ANY signal (confirmed: even a clean compact r=1 signal
+      only reaches E1~=0.31-0.47 at matched-n vs 0.58-0.69 at full-n in the official v2 run).
+      v3 wires this full-n-primary regime into scale_ladder_real.py's real-mode draw loop
+      (item 7 of the teammate message; was a flagged gap after v2).
+    metric: abs(cosine) of the two half-fit ambient-mapped unit normals, averaged over R_SH=15 draws
+    v3_official_result: >-
+      PASSES G_val at all three scales, both via the powered-pair (8B/14B) carve-out AND
+      outright at 1.7B (v3's pre-stated 1.7B-branch mechanism never had to fire this run):
+      compact/diffuse E1_full_n means 1.7B 0.590/0.184, 8B 0.686/0.177, 14B 0.678/0.201; the
+      r-ladder degrades monotonically at every scale (see planted_signal_generator below).
+      DESIGNATED PRIMARY under the unchanged section 21.5 fallback order (E3_k1 fails
+      separation as before, so the mechanism resolves to E1, not a hand-picked override).
+  E2:
+    name: best-single-axis concentration ratio
+    kind: DESCRIPTIVE COMPANION (v3, section 22.4/23; all-three-scales rule NOT relaxed; never primary-eligible)
+    method: >-
+      v2 REDEFINITION (lead's option (a), section 15), replacing v1's top-1-logistic-direction
+      ratio (proven mathematically near-tautological, diagnosis 13.2: v1's "top-1" was the SAME
+      fitted joint normal scored by its own projection). v2's "top-1" is the single PCA AXIS
+      (not a fitted combination) with the strongest TRAIN-FOLD univariate |AUROC-0.5|, selected
+      on train and scored OOF (nested selection, removes max-of-128 selection bias). ratio =
+      (AUROC_bestaxis - 0.5) / (AUROC_full - 0.5).
+    v3_official_result: >-
+      FAILS overall (needs all 3 scales, not relaxed per the teammate message). Separated +
+      monotone at 1.7B (diff=0.119 vs hw=0.089) and 14B (diff=0.269 vs hw=0.096); FAILS at
+      8B (diff=0.029 vs hw=0.069, compact ratio 1.217 vs diffuse ratio 1.188 --
+      indistinguishable). Same partial-pass shape as v2, at different scales.
+  E3_k1:
+    name: within-stage random-slice recovery margin, k=1
+    kind: DESCRIPTIVE COMPANION (v3, section 22.5) -- a support-breadth CONTEXT read, explicitly NOT a check on E1's identifiability headline
+    method: "margin = discriminative_OOF_AUROC(k=1) - mean(R_RAND=20 random-direction OOF AUROCs). UNCHANGED code from v1 (design packet: 'implementation unchanged'; v1's failure traced entirely to the generator, not this estimator)."
+    v3_official_result: >-
+      FAILS separation at every scale (diff 0.003-0.006 vs pooled half-width 0.033-0.037),
+      monotone (flat) everywhere -- consistent with v2's finding. Section 22.5's reading:
+      E3 measures signal SUPPORT-BREADTH (how much of the span a random slice overlaps), a
+      distinct axis from E1's identifiability; in this construction support is ~fixed while
+      rho/r vary, so E3 is flat BY DESIGN, not a defect -- the wrong axis for a gate, but a
+      useful descriptive context read on the real object's SO-style support-breadth
+      fingerprint (target ~0.04 margin) once real data is fit.
+  E3_k8:
+    name: within-stage random-slice recovery margin, k=8
+    kind: SECONDARY, descriptive only (adjudication 6; k>1 discriminative subspace weakly determined)
+    method: "same as E3_k1 but k=8 via SO's deflation_subspace (the only permitted k>1 estimator); not separately computed in the planted sim beyond the construction-validity k-sweep (which already reports k=8 AUROC per condition, now descriptive-only since v3 retires the k-sweep-based construction-validity criterion)."
+  E4:
+    name: null-subtracted participation ratio of the discriminability spectrum
+    kind: DESCRIPTIVE COMPANION (v3, section 22.4/23; never eligible to be primary regardless of pass/fail, per lead ruling 21.5)
+    method: >-
+      v2 fix (section 15): v1's literal "+/-1 of true rank" criterion was hopeless because
+      ~127 of 128 PCA axes carry no true signal but each contributes a small nonzero
+      univariate AUROC deviation by finite-sample chance, dominating the participation-ratio
+      sum. v2 estimates each axis's noise floor by LABEL PERMUTATION (P=100 reshuffles of y on
+      the held-out half, recomputing the spectrum each time) and subtracts the permutation-mean
+      floor before forming PR; band-based (not absolute-integer) criterion.
+    v3_official_result: >-
+      PASSES at ALL THREE scales this run (diffuse PR clearly above compact PR everywhere:
+      1.7B diff=2.67 vs hw=2.64; 8B diff=2.84 vs hw=1.91; 14B diff=11.35 vs hw=2.21) -- an
+      improvement on v2's 2-of-3 partial pass, but per lead ruling 21.5 E4 remains never
+      primary-eligible regardless; reported as corroborating context for E1's headline.
+  forbidden: >-
+    k>1 bootstrap-SVD subspace-reliability estimator (principal-angle overlap between two
+    refits of the top-k bootstrap-normal SVD) is EXCLUDED BY CONSTRUCTION, per SO's planted-sim
+    finding (best planted reliability 0.104 vs a 0.70 gate) and the mechanism note
+    library/concepts/mechanisms/l2-logistic-bootstrap-svd-cannot-resolve-multidim-discriminative-subspace.md.
+    Never imported, never called.
+
+planted_signal_generator:
+  # v2 (section 14, lead ruling 21.4). v1's generator (isotropic background,
+  # bare axis-aligned mean shift) is REMOVED, not kept as a known-broken
+  # code path -- see NOTEBOOK.md v1 entry for its record.
+  name: correlated-redundant flat-Rashomon generator (lib.synthetic_redundant_features)
+  background: >-
+    Isotropic Gaussian in D=128 EXCEPT on the chosen r-axis block, where the within-block
+    covariance is equicorrelated: (1-rho)*I_r + rho*11^T (same for both classes; not
+    label-dependent). Positive class gets a mean shift spread evenly over the SAME r-axis
+    block (axis-aligned, r randomly-chosen raw axes -- carried over from v1's E4 rationale).
+    rho is the "redundancy strength": at rho near 1 the r axes are near-duplicate, correlated
+    readouts of one shared latent; at rho=0 they are r independent slivers.
+  r_ladder_rho: "RHO_LADDER=0.7, fixed and pre-committed before any construction-validity or G_val result was read (packet: 'a small r-ladder at fixed moderate rho'); r in {1,2,4,8}."
+  diffuse_calibration: >-
+    (r, rho) chosen by grid search (DIFFUSE_R_GRID x DIFFUSE_RHO_GRID) to best match CD's 0.174
+    half-sample split-half reliability (priority 1) and SO's ~0.04 random-slice margin
+    (priority 2, tiebreak only, lead ruling 21.1). v3 fix (ii) raised the search's own
+    precision (quick_reps 2->5, quick_calib_iters 25->35) to narrow (not eliminate) the v2
+    calibration-procedure drift between the search's quick estimate and the eventual official
+    R_SIM=30 mean. v3 official run: 1.7B (r=8, rho=0.7; search estimate E1=0.1738 vs official
+    achieved mean 0.1845; E3 search=0.298); 8B (r=8, rho=0.95; search E1=0.1799 vs official
+    0.1769; E3 search=0.351); 14B (r=16, rho=0.5; search E1=0.1654 vs official 0.2013 --
+    the largest remaining drift, 0.036, down from v2's 0.101 at 14B). Priority-1 (E1) close
+    at both the search and official-achieved level everywhere; priority-2 (E3) NOT closely
+    matched anywhere -- recorded as the ruling requires, not retuned further.
+  construction_validity_gate_result: >-
+    v3 PASSES (a=true, b_pass_powered=true, b_1p7b_pass=true [branch=full_pass], c=true;
+    overall_pass=true). v3 RETIRED v2's criterion (a) (k=1 decodability-insufficiency) as
+    UNSATISFIABLE by any mean-shift-type construction for a mathematical reason (LDA
+    argument: any two-class Gaussian mean-shift model, correlated or not, has a Bayes-optimal
+    rank-1 decision boundary) and replaced it with (a-new) monotone E1 full-n degradation
+    across the r-ladder {compact,r2,r4,r8} -- PASSES at all three scales (1.7B
+    0.590->0.451->0.301->0.185; 8B 0.686->0.557->0.394->0.258; 14B 0.678->0.553->0.392->0.232,
+    all clean monotone, no reversals). (b-new) is a derived index-resolution ceiling
+    sigma_c(s) <= R_max ~= 0.2357 (Delta_min=0.5, z=1.5, locked before the run): PASSES at
+    ALL THREE scales including 1.7B outright (sigma_c: 1.7B=0.111, 8B=0.133, 14B=0.108 --
+    all well under R_max), better than the design packet's own pre-run prediction that 1.7B
+    would only clear the weaker stated_limitation branch. This is attributed to v3 fix (i)
+    (E1 averaged over R_SH=15 split-half draws, tightening diffuse_hw as predicted in section
+    22.7). (c) (compact-vs-diffuse separation on the primary estimator, E1) PASSES at all
+    three scales (diff 0.41-0.51 vs half-width 0.05-0.07). See NOTEBOOK.md 2026-07-20 v3
+    entry and analysis-committed/planted_sim_g_val.{json,md} for the full numbers; v2's FAIL
+    record (criteria a and b failed, c passed) is retained there for provenance.
+
+containment:
+  commit:
+    - aggregate per-scale/per-layer/per-estimator tables (JSON + md)
+    - planted-band tables (G_val JSON + md)
+    - per-scale ID-manifests (row_key + label only, no text) -- real-ladder run only, post-sign
+  never_commit: [question_text, answer_text, aliases, generations, token_ids, hidden_states, row-level real fit outputs]
+  exhaust_staging:
+    durable_dir: /home/profsynapse/code/ehr-exhaust/correctness-geometry-scale-ladder/
+    rule: RunLogs + provenance staged before any worktree teardown
+
+lane: local-cpu   # CPU-only throughout; no GPU, no --i-know-this-runs-on-gpu anywhere
