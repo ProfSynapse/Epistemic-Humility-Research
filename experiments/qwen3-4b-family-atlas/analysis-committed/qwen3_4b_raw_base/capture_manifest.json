@@ -1,0 +1,40 @@
+{
+  "batch_size": 8,
+  "capture_index_sha256": "00fc99cf28962991a280c7bf8079406e58ab519469a078287754c012271eb8f8",
+  "cell_id": "qwen3_4b_raw_base",
+  "coverage_frac": 1.0,
+  "coverage_pass_ag0": true,
+  "hidden_size": 2560,
+  "layers_requested": "all",
+  "missing_row_count": 0,
+  "missing_row_keys_sample": [],
+  "model": "unsloth/Qwen3-4B",
+  "n_hidden_states": 37,
+  "n_rows_captured": 1768,
+  "n_rows_in_pool": 1768,
+  "num_hidden_layers": 36,
+  "persist_dtype": "float32",
+  "position_name": "anchor",
+  "position_rule": "len(token_ids) - 1 (manual tokenize, add_special_tokens=True)",
+  "revision": "64033659d5caf1b8ed7f929b29de705e93a4d468",
+  "row_pool_source": {
+    "fleet_cell_id": null,
+    "fleet_experiment": "doubt-gated-caution-tighten",
+    "manifest_row_count": 1768,
+    "promoted_via": "experiments/common/doubt-gated-caution-tighten-heldout-split/split_manifest.json",
+    "role_counts": {
+      "confab": 309,
+      "known_correct_answered": 430,
+      "unknown_refused": 1029
+    },
+    "role_split_counts": {
+      "confab_fit": 124,
+      "confab_held_out": 185,
+      "known_correct_answered_fit": 172,
+      "known_correct_answered_held_out": 258,
+      "unknown_refused_fit_only": 1029
+    },
+    "row_pool_path": "experiments/common/doubt-gated-caution-tighten-heldout-split/split_manifest.json",
+    "unknown_refused_manifest_path": "experiments/qwen3-4b-family-atlas/unknown_refused_manifest.json"
+  }
+}
