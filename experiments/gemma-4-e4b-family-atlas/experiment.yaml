@@ -113,4 +113,7 @@ verdict: 'Falsifier fired on the profile limb: eff_dim_frac peaks early-exterior
   with a contiguous all-three-axes >= 0.80 band at hs 13-42. Third family (after llama
   and mistral) with an early-exterior peak decoupled from a healthy mid-band read
   panel.'
-kg: []
+kg:
+- experiment:gemma-4-e4b-family-atlas
+- mechanism:workspace-band-peak-location-is-family-relative
+- mechanism:refused-vs-known-contrast-carries-norm-position-confound

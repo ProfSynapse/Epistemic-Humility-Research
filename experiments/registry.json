@@ -1671,7 +1671,11 @@
         ],
         "runtime_image_digest": "sha256:d445632098cd2c70c115fe84d5343ff98286ac3f510a2d4c9cb488b550a3d23c"
       },
-      "kg": [],
+      "kg": [
+        "experiment:gemma-4-e4b-family-atlas",
+        "mechanism:workspace-band-peak-location-is-family-relative",
+        "mechanism:refused-vs-known-contrast-carries-norm-position-confound"
+      ],
       "prediction": "Gemma-4-E4B-it shows an interior workspace band: a contiguous set of layers strictly inside (20%, 85%) depth where eff_dim_frac peaks AND all three read axes (doubt, caution, raw refusal) hold held-out AUROC >= 0.80, with the band's peak layer differing from the fleet's ported 0.94-depth layer (hs_index 40, i.e. block 39).",
       "question": "Where does Gemma-4-E4B-it's workspace midband sit (eff_dim_frac profile over depth), and do the doubt, caution, and raw-refusal axes read there, supplying the per-family layer map no Gemma-family actuation amendment has had yet?",
       "registered": true,
