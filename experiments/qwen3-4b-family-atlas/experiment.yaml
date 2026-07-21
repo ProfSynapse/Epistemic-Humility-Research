@@ -31,8 +31,71 @@ instrument:
   - capture_family_atlas_cell.py
   - profile_and_read_family_atlas_panel.py
   - derive_unknown_refused_manifest.py
+  - materialize_rows.py
   pins: {}  # computed by `bin/exp sign`; not filled by this draft scaffold
-  persistence: {}  # to be filled at sign, matching gemma-4-e4b-family-atlas's persistence declarations for the same two shared scripts
+  persistence:
+    render_qwen3_atlas.py:
+      persistence: short-run
+      measured_smoke_wall_clock_s: 6.525
+      note: 'Measured directly (tokenizer load + 20 render() calls against the real
+        pinned unsloth/Qwen3-4B tokenizer at revision 64033659d5caf1b8ed7f929b29de705e93a4d468,
+        CPU-only, no model weights, synthetic placeholder questions only): 6.525s
+        total. Scales linearly with the render-only row count in the atlas capture
+        stage (1768 rows, this cell''s actual pool size -- well under the 15-minute
+        short-run ceiling even at full scale); the GPU-bound work in that stage is
+        capture_family_atlas_cell.py''s own batch-capture call, declared separately
+        below.'
+    capture_family_atlas_cell.py:
+      persistence: incremental
+      checkpoint_path: experiments/qwen3-4b-family-atlas/analysis/qwen3_4b_raw_base/atlas_capture/checkpoint.json
+      note: 'Satisfied at the tuner layer, same mechanism gemma-4-e4b-family-atlas
+        declared for its byte-identical copy of this script: `cmd_capture` shells
+        out to `tuner.py batch-capture --resume`, whose `hf-batched` engine writes
+        a fsync''d checkpoint.json (verified directly in this worktree at
+        synaptic-tuner/tuner/batch/persistence.py -- CHECKPOINT_FILENAME =
+        "checkpoint.json", _fsync_file/_fsync_dir helpers) inside the run''s own
+        --out-dir (analysis/qwen3_4b_raw_base/atlas_capture/, per this cell''s
+        cell_id) after each captured row.'
+    profile_and_read_family_atlas_panel.py:
+      persistence: short-run
+      measured_smoke_wall_clock_s: 71.27
+      note: 'Measured at this cell''s ACTUAL pool scale (not a projection): 1768
+        synthetic rows (172 known_correct_answered fit + 258 held_out, 124 confab
+        fit + 185 held_out, 1029 unknown_refused fit_only -- the real counts from
+        the promoted split_manifest.json and this cell''s own derived
+        unknown_refused_manifest.json), 37 hidden states, hidden_dim=2560, 2000
+        bootstrap resamples, not the tiny smoke_family_atlas.py fixture (114 rows
+        / 4 hidden states / hidden_dim=256). Build 2.57s + score 68.70s = 71.27s
+        total, well under the 15-minute short-run ceiling. Script:
+        /tmp/claude-1000/-mnt-f-Code-Epistemic-Humility-Research/292064d8-cb30-460a-ad90-29559ab5cf7f/scratchpad/time_profile_panel_realistic_scale_qwen3.py
+        (scratchpad, not committed; adapted from gemma-4-e4b-family-atlas''s own
+        realistic-scale timing probe at the same scratchpad path). See NOTEBOOK.md.'
+    derive_unknown_refused_manifest.py:
+      persistence: short-run
+      measured_smoke_wall_clock_s: 1.196
+      note: 'One-shot pre-sign derivation, already executed to completion (see
+        NOTEBOOK.md); output already committed as unknown_refused_manifest.json.
+        Re-run timed at 1.196s wall clock (fetches the already-cached source pool,
+        applies the filter rule, cross-checks, writes ~1029 small JSON rows) --
+        deterministic and reproducible (re-run output sha256 identical to the
+        committed file). Not part of the capture-launch critical path; declared
+        here only to satisfy `bin/exp validate`''s persistence-declaration check.'
+    materialize_rows.py:
+      persistence: short-run
+      measured_smoke_wall_clock_s: 0.60
+      note: 'Measured directly against the real committed manifests (1768 rows):
+        0.60s wall clock (two hf_hub_download cache-hit fetches + a plain JSON
+        join, no model/tokenizer load). KNOWN GAP, not a timing concern: this
+        run hard-fails (exit 1, missing_question=341, all in
+        known_correct_answered) because 341 of the 430 known_correct_answered
+        row_keys have no question text reachable from any locally cached or
+        committed source -- their text was only ever produced by the sibling
+        experiment''s `mine_known_correct.py` (a live unsloth/Qwen3-4B bf16
+        GENERATION pass), whose local output cache is absent on this machine.
+        See NOTEBOOK.md 2026-07-21 entry. This blocks capture for
+        known_correct_answered until that cache is produced or the lead
+        decides an alternate resolution -- flagged, not resolved, by this
+        script.'
 inputs:
 - experiments/common/doubt-gated-caution-tighten-heldout-split/split_manifest.json
 - experiments/qwen3-4b-family-atlas/unknown_refused_manifest.json

@@ -6,6 +6,75 @@ in `experiment.yaml`.
 
 ## Entries
 
+- 2026-07-21 (pre-sign, persistence declarations + materialization script):
+  Two final pre-sign tasks per the lead.
+
+  TASK 1 -- `instrument.persistence` filled in `experiment.yaml` for all
+  four modules, mirroring `gemma-4-e4b-family-atlas`'s pattern:
+  - `render_qwen3_atlas.py` (short-run): measured directly, tokenizer load
+    + 20 `render()` calls against the real pinned tokenizer, CPU-only,
+    synthetic placeholder questions: **6.525s** total.
+  - `capture_family_atlas_cell.py` (incremental): NOT re-timed (this is the
+    GPU capture stage itself, gated behind sign+launch). Verified the
+    checkpoint mechanism directly rather than trusting the gemma citation:
+    initialized the `synaptic-tuner` submodule read-only in this worktree
+    and confirmed `synaptic-tuner/tuner/batch/persistence.py` defines
+    `CHECKPOINT_FILENAME = "checkpoint.json"` plus `_fsync_file`/`_fsync_dir`
+    helpers; `cmd_capture` shells out to `tuner.py batch-capture --resume`
+    (hf-batched engine), which fsyncs `checkpoint.json` into this cell's own
+    `--out-dir` (`analysis/qwen3_4b_raw_base/atlas_capture/`) after each row.
+  - `profile_and_read_family_atlas_panel.py` (short-run): measured at this
+    cell's ACTUAL pool scale, not the tiny `smoke_family_atlas.py` fixture
+    (114 rows / 4 hidden states / hidden_dim=256). Used a scratchpad probe
+    (`.../scratchpad/time_profile_panel_realistic_scale_qwen3.py`, adapted
+    from gemma's own realistic-scale probe at the same scratchpad path):
+    1768 synthetic rows at the cell's real role/split counts (known_correct
+    fit 172 / held_out 258, confab fit 124 / held_out 185, unknown_refused
+    fit_only 1029), 37 hidden states, hidden_dim=2560, 2000 bootstrap
+    resamples. Build 2.57s + score 68.70s = **71.27s** total.
+  - `derive_unknown_refused_manifest.py` (short-run): already executed
+    one-shot pre-sign (see prior entry); re-run for a clean timing sample,
+    **1.196s**, output sha256 unchanged (`71c78f9a...`), confirming
+    determinism.
+  - All four measurements are well under the 15-minute short-run ceiling;
+    nothing flagged to the lead on that front.
+
+  TASK 2 -- `materialize_rows.py` written, mirroring
+  `experiments/doubt-gated-caution-tighten/materialize_rows.py`'s
+  containment scheme exactly, extended to also materialize the
+  `unknown_refused` role (joined against the cached `ak_stage1_pool.jsonl`,
+  which carries `question` directly for all 1,029 of this cell's
+  unknown_refused row_keys). Ran it once against the real committed
+  manifests (`split_manifest.json` + this cell's own
+  `unknown_refused_manifest.json`), 1768 rows total. Output:
+  `experiments/qwen3-4b-family-atlas/analysis/rows_with_text.jsonl`
+  (gitignored; verified `git check-ignore` covers it).
+
+  **Finding, NOT resolved -- flagged to the lead**: `confab` (309/309) and
+  `unknown_refused` (1029/1029) resolve fully to question text. But of the
+  430 `known_correct_answered` row_keys, only 89 resolve (the original
+  AH-A0 pool, staged as `a0_pool_v21_questions.jsonl`). The other **341**
+  row_keys were added to the promoted split manifest by
+  `doubt-gated-caution-tighten/mine_known_correct.py`, whose question text
+  was never re-staged to HF and whose only other copy
+  (`doubt-gated-caution-tighten/analysis/mined_a0_known_correct_rows.jsonl`)
+  does not exist anywhere on this machine (searched
+  `/home/profsynapse` to depth 8, zero hits). Recovering that text requires
+  re-running `mine_known_correct.py`, which loads `unsloth/Qwen3-4B` in
+  bf16 and GENERATES against
+  `archive/experiment/phase1/probe/analysis/ah_stage0/expansion/expansion_candidates.jsonl`
+  -- a live GPU model-generation pass, out of scope for this pre-sign task
+  (no capture, no GPU launch). `materialize_rows.py` checks for that local
+  cache as a fallback (so it will pick the text up automatically once/if
+  that cache is produced) but does not regenerate it itself.
+  `materialize_rows.py` therefore correctly hard-fails
+  (`missing_question=341`, all in `known_correct_answered`, exit 1) on this
+  run, mirroring the sibling script's own hard-fail discipline rather than
+  silently writing a partial or fabricated pool. This blocks a capture
+  launch for the `known_correct_answered` role until either (a) someone
+  runs `mine_known_correct.py`'s generation pass and the resulting cache is
+  present locally, or (b) the lead decides on an alternate resolution.
+
 - 2026-07-21 (blocker close + pin re-verification + import smoke):
   Follow-up to the lead's three requests after reviewing the scaffold and
   authoring Prediction/Falsifier/container ruling (commit 1a3a3326). Still
