@@ -22,9 +22,11 @@ instrument:
   - render_qwen3_atlas.py
   - capture_family_atlas_cell.py
   - profile_and_read_family_atlas_panel.py
+  - derive_unknown_refused_manifest.py
   pins: {}  # computed by `bin/exp sign`; not filled by this draft scaffold
   persistence: {}  # to be filled at sign, matching gemma-4-e4b-family-atlas's persistence declarations for the same two shared scripts
 inputs:
 - experiments/common/doubt-gated-caution-tighten-heldout-split/split_manifest.json
+- experiments/qwen3-4b-family-atlas/unknown_refused_manifest.json
 verdict: ''
 kg: []

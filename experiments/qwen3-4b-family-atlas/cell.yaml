@@ -12,29 +12,39 @@
 # experiments/j-space-midband-write-sweep-qwen3-4b's reuse; this is a THIRD
 # consumer of the same promoted manifest, no re-promotion needed).
 #
-# KNOWN GAP (TODO-LEAD, blocks capture launch -- see AMENDMENT.md "Row pool"):
-# that split_manifest.json's `rows` list carries row-level IDs for confab
-# (309) and known_correct_answered (430) ONLY -- the two roles
-# split_fit_heldout.py actually splits. unknown_refused (1029 rows) is
+# RESOLVED GAP (was TODO-LEAD; closed 2026-07-21): the promoted
+# split_manifest.json's `rows` list carries row-level IDs for confab (309)
+# and known_correct_answered (430) ONLY -- the two roles
+# split_fit_heldout.py actually splits. unknown_refused (1029 rows) was
 # recorded there as a COUNT field only (n_unknown_refused_fit_only: 1029),
-# not a row-key list: split_fit_heldout.py's own docstring states
-# unknown_refused "is NOT split: it is never itself a gated/graded row in
-# this instrument, only fitting scaffold", so it was never written into the
-# ID-only manifest that got promoted. The row-key list lives only in a
-# gitignored local file, experiments/doubt-gated-caution-tighten/analysis/
-# l34_anchor_extract_manifest.json, which is not present in this worktree or
-# the canonical checkout (ephemeral GPU-run scratch, not committed, not
-# volume-backed anywhere this scaffold could reach). unknown_refused is the
-# doubt axis's negative pole, the caution axis's positive pole, and the
-# raw_refusal axis's positive pole in this skill's read panel -- the atlas
-# cannot run AG2 without its row keys. Deriving them is cheap (CPU-only,
-# deterministic: extract_l34_anchor.py:99 defines
-# `unknown_refused = [r for r in ak_stage1_pool if not
-# r["confab_on_unanswerable"]]` against the same private AK Stage-1 pool
-# materialize_rows.py already fetches question text from) but is NOT done by
-# this scaffold; role_counts/role_split_counts below carry the known
-# confab/known_correct_answered figures as real numbers and unknown_refused
-# as a count-only placeholder pending that promotion step.
+# with no row-key list (split_fit_heldout.py never splits that role, so it
+# never entered the manifest's `rows` list), and the original gitignored
+# local file that had it was not reachable. Closed by
+# `derive_unknown_refused_manifest.py` (this directory), which re-derives
+# the row-key list DETERMINISTICALLY from the same private AK Stage-1 pool
+# (`professorsynapse/eh-al-prep-staging:pools/ak_stage1_pool.jsonl`,
+# sha256 48654798d5e94edfbf4abb550ed053f863369e14c05be0187fd8ab192befaa9d)
+# via `extract_l34_anchor.py:99`'s exact filter rule
+# (`not r["confab_on_unanswerable"]`), self-checked two ways before writing:
+# (1) count reproduces exactly 1029, matching the promoted manifest's own
+# `n_unknown_refused_fit_only`; (2) the SAME pool's `confab_on_unanswerable
+# == True` row-key set (n=309) is byte-identical AS A SET to the promoted
+# manifest's own committed confab row-key set, proving this is the same
+# source pool snapshot, not a coincidental count match. Output committed as
+# `unknown_refused_manifest.json` in this directory (row_key/role/split
+# only, same minimal schema as the promoted manifest -- no question text,
+# no answers, no aliases). See NOTEBOOK.md for the full derivation log.
+#
+# NOT yet done (a later, still-gated step, not part of closing this
+# blocker): this row-key list is not yet joined against question text into
+# a local materialized row-pool JSONL (`capture_family_atlas_cell.py`'s
+# `--row-pool` input needs role+split+question for every row across all
+# three roles, mirroring `doubt-gated-caution-tighten/materialize_rows.py`'s
+# pattern but extended to also cover unknown_refused). That materialization
+# script does not exist yet and is local/gitignored-only when it does;
+# writing and running it is capture-launch preparation, gated the same way
+# the rest of capture is (sign + launch approval), not part of this
+# blocker's resolution.
 
 seed: 20260707  # source experiment's own SPLIT_SEED; reused for read-panel bootstrap parity with jspace-family-atlas and gemma-4-e4b-family-atlas
 bootstrap_resamples: 2000
@@ -100,19 +110,23 @@ cells:
       # for j-space-midband-write-sweep-qwen3-4b's reuse (see that manifest's
       # own PROVENANCE.md). This cell is a third, unmodified consumer.
       row_pool_path: "experiments/common/doubt-gated-caution-tighten-heldout-split/split_manifest.json"
-      # Row counts verified directly against that committed manifest
+      # unknown_refused row-key list, freshly derived and promoted for THIS
+      # cell only (see RESOLVED GAP note above); NOT part of the shared
+      # promoted manifest above, which remains untouched.
+      unknown_refused_manifest_path: "experiments/qwen3-4b-family-atlas/unknown_refused_manifest.json"
+      # Row counts verified directly against the committed manifests above
       # (aggregate counts only; no row text touched).
-      manifest_row_count: 739  # confab + known_correct_answered ONLY; excludes unknown_refused (not in this manifest's row list -- see KNOWN GAP note above)
+      manifest_row_count: 1768  # 739 (confab + known_correct_answered, promoted manifest) + 1029 (unknown_refused, this cell's own derived manifest)
       role_counts:
         confab: 309
         known_correct_answered: 430
-        unknown_refused: 1029  # COUNT ONLY -- no row-key list committed anywhere yet; see KNOWN GAP note above
+        unknown_refused: 1029  # real row-key list now committed in unknown_refused_manifest.json (derived + cross-checked; see RESOLVED GAP note)
       role_split_counts:
         confab_fit: 124
         confab_held_out: 185
         known_correct_answered_fit: 172
         known_correct_answered_held_out: 258
-        unknown_refused_fit_only: 1029  # COUNT ONLY, same caveat
+        unknown_refused_fit_only: 1029  # real row-key list now committed in unknown_refused_manifest.json
 
 capture:
   # Manual tokenize + last-token position, mirroring
@@ -134,11 +148,11 @@ capture:
 
 split:
   # Carried verbatim from the promoted split_manifest.json for confab and
-  # known_correct_answered. unknown_refused is fit_only by the source
-  # experiment's own design (never split; see split_fit_heldout.py
-  # docstring) but its row-key list must be freshly promoted before this
-  # split block is fully actionable -- see KNOWN GAP note above.
-  source: promoted_committed_split_manifest
+  # known_correct_answered, plus this cell's own derived
+  # unknown_refused_manifest.json (see RESOLVED GAP note above).
+  # unknown_refused is fit_only by the source experiment's own design
+  # (never split; see split_fit_heldout.py docstring).
+  source: promoted_committed_split_manifest_plus_derived_unknown_refused_manifest
   labels: [fit, held_out, fit_only]
   fit_only_roles: [unknown_refused]
 
@@ -160,7 +174,8 @@ read_panel:
   # profile_and_read_family_atlas_panel.py's split_refused_pool() subdivides
   # it deterministically (seed 20260707) into refused_fit (direction
   # fitting) and refused_eval (scoring), making every reported panel number
-  # two-sided held-out, once its row-key list exists (see KNOWN GAP note).
+  # two-sided held-out. Row-key list resolved (see RESOLVED GAP note above);
+  # text materialization is a separate, later, still-gated step.
   axes:
     doubt:
       contrast: "known_correct_answered (positive) vs unknown_refused (negative)"
