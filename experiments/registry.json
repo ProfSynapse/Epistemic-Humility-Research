@@ -1607,17 +1607,23 @@
           "render_gemma_atlas.py",
           "capture_family_atlas_cell.py",
           "profile_and_read_family_atlas_panel.py",
-          "../doubt-snap-cross-family-confirmatory/prep_tuner_cell.py"
+          "../doubt-snap-cross-family-confirmatory/prep_tuner_cell.py",
+          "prep_tuner_cell_gemma.py"
         ],
         "persistence": {
           "../doubt-snap-cross-family-confirmatory/prep_tuner_cell.py": {
             "checkpoint_path": "experiments/doubt-snap-cross-family-confirmatory/analysis/gemma4_e4b_it/baseline_gen/checkpoint.json",
-            "note": "Satisfied at the tuner layer: `run_baseline()` shells out to `tuner.py batch-generate --resume` with --out-dir analysis/gemma4_e4b_it/baseline_gen/, same fsync'd checkpoint.json mechanism as batch-capture above. Unchanged fleet script, reused verbatim for cell_id=gemma4_e4b_it.",
+            "note": "Satisfied at the tuner layer: `run_baseline()` shells out to `tuner.py batch-generate --resume` with --out-dir analysis/gemma4_e4b_it/baseline_gen/, same fsync'd checkpoint.json mechanism as batch-capture above. Superseded for this cell's mining by prep_tuner_cell_gemma.py below per signed revision 1 (2026-07-20); kept pinned as the record of what the cap-200 runs (run 1, run 2) actually used, now archived.",
             "persistence": "incremental"
           },
           "capture_family_atlas_cell.py": {
             "checkpoint_path": "experiments/gemma-4-e4b-family-atlas/analysis/gemma4_e4b_it/atlas_capture/checkpoint.json",
             "note": "Satisfied at the tuner layer: `cmd_capture` shells out to `tuner.py batch-capture --resume`, whose `hf-batched` engine writes a fsync'd checkpoint.json (see synaptic-tuner/tuner/batch/persistence.py CHECKPOINT_FILENAME) inside the run's own --out-dir (analysis/gemma4_e4b_it/atlas_capture/) after each captured row.",
+            "persistence": "incremental"
+          },
+          "prep_tuner_cell_gemma.py": {
+            "checkpoint_path": "experiments/doubt-snap-cross-family-confirmatory/analysis/gemma4_e4b_it/baseline_gen/checkpoint.json",
+            "note": "Signed revision 1 (2026-07-20) mining instrument. Local pinned copy of the fleet's prep_tuner_cell.py at its pinned sha (212a85cfcf378022ca541c23d75f2b1d1da07bbcff86fb43c282794deb587e61) with exactly four documented hunks (ROOT re-point, 400-token generation cap, 400-token parity re-decode cap, role-relevant-grade parity comparator); see AMENDMENT.md \"Signed revision 1\". ROOT is re-pointed to the fleet cell directory, so this module's data paths, model registry lookup, and analysis output location resolve exactly as prep_tuner_cell.py's did. Persistence satisfied the same way, at the tuner layer: run_baseline() shells out to tuner.py batch-generate --resume (checkpoint.json under analysis/gemma4_e4b_it/baseline_gen/) and the anchor-capture stage to tuner.py batch-capture --resume (checkpoint.json under analysis/gemma4_e4b_it/anchor_capture/), the same mechanism that made the run-2 resume free after the transient CUDA error.",
             "persistence": "incremental"
           },
           "profile_and_read_family_atlas_panel.py": {
@@ -1635,10 +1641,34 @@
           "../doubt-snap-cross-family-confirmatory/prep_tuner_cell.py": "212a85cfcf378022ca541c23d75f2b1d1da07bbcff86fb43c282794deb587e61",
           "capture_family_atlas_cell.py": "a543a88f8d0f552476968c8e248af9ec61212034f203c17f530694910b0b9b50",
           "cell.yaml": "0202574a105b74df3d2352e0c85749ec3d7ed15addb52ae32a79ff3c15dc6f68",
-          "gates.yaml": "efeab08d26dd5ecabd4235c75f8feeefe0326118a482c3bfe6fc45105b1868bd",
+          "gates.yaml": "6e78c7c939fc75c6111b3c8dbc7f52a0782e8e7d1b4e5319ace19b7cdf0417a3",
+          "prep_tuner_cell_gemma.py": "52b2665f2ec5524a501ecc9182308b180ae03052d27e345d3adadfd1eb3a0e66",
           "profile_and_read_family_atlas_panel.py": "27cd945c83df20416658a5370544ea99f1422f5717f3e67cffca82d418003ed5",
           "render_gemma_atlas.py": "1a77be5f873f2364301c9ee295042d42b46b6d4c5fb23dfd2c236670df1b19d4"
         },
+        "repins": [
+          {
+            "date": "2026-07-20T22:45:54Z",
+            "file": "gates.yaml",
+            "new_sha256": "94a44d6a43854b9eaa6701f8707b13dbe4115637d10a63f4d67a0345bf755740",
+            "old_sha256": "efeab08d26dd5ecabd4235c75f8feeefe0326118a482c3bfe6fc45105b1868bd",
+            "reason": "signed revision 1: AG0a v2 mining instrument re-specification, PI-approved 2026-07-20"
+          },
+          {
+            "date": "2026-07-21T01:11:55Z",
+            "file": "gates.yaml",
+            "new_sha256": "6e78c7c939fc75c6111b3c8dbc7f52a0782e8e7d1b4e5319ace19b7cdf0417a3",
+            "old_sha256": "94a44d6a43854b9eaa6701f8707b13dbe4115637d10a63f4d67a0345bf755740",
+            "reason": "signed revision 2: AG0a answer-capture limb, red-team SIGN-WITH-CONSTRAINTS, PI-approved 2026-07-20"
+          },
+          {
+            "date": "2026-07-21T01:11:55Z",
+            "file": "prep_tuner_cell_gemma.py",
+            "new_sha256": "52b2665f2ec5524a501ecc9182308b180ae03052d27e345d3adadfd1eb3a0e66",
+            "old_sha256": "4b1c4911712dd164a471f1cd03d41c0984b6e6024f9a30888963aca05ac14703",
+            "reason": "signed revision 2: AG0a answer-capture limb, red-team SIGN-WITH-CONSTRAINTS, PI-approved 2026-07-20"
+          }
+        ],
         "runtime_image_digest": "sha256:d445632098cd2c70c115fe84d5343ff98286ac3f510a2d4c9cb488b550a3d23c"
       },
       "kg": [],
@@ -1646,10 +1676,10 @@
       "question": "Where does Gemma-4-E4B-it's workspace midband sit (eff_dim_frac profile over depth), and do the doubt, caution, and raw-refusal axes read there, supplying the per-family layer map no Gemma-family actuation amendment has had yet?",
       "registered": true,
       "slug": "gemma-4-e4b-family-atlas",
-      "status": "signed",
+      "status": "resolved",
       "title": "Gemma-4-E4B family atlas",
       "type": "probe-fit",
-      "verdict": ""
+      "verdict": "Falsifier fired on the profile limb: eff_dim_frac peaks early-exterior at hs_index 4 (0.0189, 0.095 depth), no interior workspace band; read panel healthy with a contiguous all-three-axes >= 0.80 band at hs 13-42. Third family (after llama and mistral) with an early-exterior peak decoupled from a healthy mid-band read panel."
     },
     {
       "checkpoint": {

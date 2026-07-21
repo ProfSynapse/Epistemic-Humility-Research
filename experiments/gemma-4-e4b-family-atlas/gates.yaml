@@ -7,10 +7,32 @@
 # reused an already-vetted fleet pool and this one does not.
 
 AG0a:
-  name: pool mining integrity (pre-outcome, this cell only)
+  name: pool mining integrity (pre-outcome, this cell only; v2 per AMENDMENT.md signed revision 1, 2026-07-20)
+  # v1 of mining_completed named the fleet script verbatim and FAILED on
+  # 2026-07-20 (generation_terminates_rate 0.802 vs 0.90 at the fleet's
+  # hardcoded 200-token cap; parity smoke 2/8 on exact-string comparison of
+  # free-text answers). See AMENDMENT.md "Signed revision 1" for the failure
+  # record, diagnosis, and user approval. The 0.90 termination threshold and
+  # the role floors are unchanged in v2.
   checks:
     - id: mining_completed
-      rule: "prep_tuner_cell.py prepare --cell-id gemma4_e4b_it exits 0 (its own g0_prep_summary.json shows held_out_power, generation_terminates_pass, gate_auc_pass, directions_byte_identical, and batched_parity_smoke.passed all true)"
+      rule: >-
+        prep_tuner_cell_gemma.py prepare --cell-id gemma4_e4b_it (this
+        experiment's pinned copy of the fleet script, five documented hunks
+        per signed revisions 1 and 2: ROOT re-point, 400-token generation
+        cap, 400-token parity re-decode cap, role-relevant-grade parity
+        comparator, answer-capture termination limb) exits 0; its
+        g0_prep_summary.json shows held_out_power, answer_capture_pass
+        (threshold unchanged at 0.90 on split rows; a row is captured iff
+        finish_reason != "length" OR its first-JSON answer is complete and
+        well-formed and the row is not degenerate; the raw EOS-emission
+        rate stays as a committed descriptive field), gate_auc_pass,
+        directions_byte_identical, and batched_parity_smoke.passed all
+        true. AG0a is an instrument-adequacy go/no-go, never reported as a
+        finding; per signed revision 2 a third re-specification of the
+        termination limb is not permitted, and a further failure resolves
+        the cell as "the fleet mining instrument cannot cleanly mine this
+        family"
     - id: role_pool_adequacy
       rule: "mined split_manifest.json role_counts meet the SAME held-out floors as AG0 below (confab >= 150 held-out, known_correct_answered >= 250 held-out) before any atlas capture is launched"
 
