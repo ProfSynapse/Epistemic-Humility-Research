@@ -699,7 +699,7 @@ Atomic notes extracted from the library papers via the Agents-K1 ingestion skill
 - [[valence-arousal-subspace]] : A two-dimensional linear subspace in LLM activation space spanned by a recovered valence axis (pleasure-displeasure) and arousal axis (activ
 - [[world-model-hallucination-modes]] : A three-type taxonomy of failure modes in generative world models, each anchored to a different pipeline stage. Perceptual hallucination occ
 
-## Mechanisms (cause -> effect) (441)
+## Mechanisms (cause -> effect) (443)
 
 - [[abstention-generalization-failure]] : 'instruction-tuning for abstention on a narrow, homogeneous set of refusal expressions and task formats' **prevents** Abstention ability does not generalize to 
 - [[abstract-representations-enable-zero-shot-generalization]] : High degree of abstract (parallel) representation in ANN hidden layers, as measured by parallelism-score, indicating that compositional rule dimensions are enco
@@ -790,12 +790,14 @@ Atomic notes extracted from the library papers via the Agents-K1 ingestion skill
 - [[dpo-stability-over-ppo]] : Framing preference alignment as a binary classification loss over preference-pair-data rather than an RL problem **enables** More stable training without the se
 - [[dpo-token-rewards-enable-rl-policy-optimization]] : A DPO-trained policy ratio is reused as a token-wise implicit reward signal. **enables** A later RL policy-optimization stage can optimize dense token-level fee
 - [[early-mlp-drives-subject-enrichment]] : Early MLP sublayers processing the last-subject token across lower layers **enables** The last-subject-position representation becomes attribute-rich, reaching 
+- [[eff-dim-peak-decoupled-from-readable-band]] : On three families captured full-depth with the same capture-only instrument (jspace-family-atlas: Llama-3.2-3B-Instruct, Mistral-7B-Instruct-v0.3; gemma-4-e4b-f
 - [[elicitation-discourse-type-surfaces-distinct-facets]] : Choice of discourse type (description, dialogue, or narration) used to elicit persona expressions from a base model for difference-in-means vector extraction **
 - [[entity-popularity-predicts-parametric-memorization]] : Higher subject entity web popularity (Wikipedia page views) in the input question **increases** Higher LM accuracy on the corresponding factual QA question acro
 - [[entity-rarity-degrades-factual-precision]] : A topic entity is rare in LM pretraining data (low Wikipedia page-view frequency), causing the model's parametric knowledge about that entity to be sparse or ab
 - [[entity-recognition-direction-gates-refusal-vs-hallucination]] : Adding or ablating the sparse-autoencoder entity-recognition (known vs unknown entity) direction in the residual stream during a factual query. **mediates** The
 - [[entity-recognition-direction-regulates-attribute-mover-attention]] : The entity-recognition (unknown-entity) direction is active or amplified at the entity token. **mediates** It disrupts the attention of downstream heads that no
 - [[epistemic-humility-reward-induces-over-hedging]] : Instructing labelers to reward epistemic humility in reinforcement-learning-from-human-feedback training **increases** Model over-hedging on simple questions wi
+- [[epistemic-readouts-are-late-compression-summaries]] : HYPOTHESIS, UNTESTED: IF the network's early high-effective-dimensionality region (where each family's eff_dim_frac profile peaks, early-exterior in the outer ~
 - [[estimator-divergence-invalidates-single-probe-faithfulness]] : Using a single internal confidence estimator (e.g. token-probability RCC or hidden-state DeepConf or sampling consistency) to assess whether a large reasoning m
 - [[evidence-access-bottlenecks-expert-calibration]] : Providing a reasoning model with retrieved evidence passages from web search for each statement in a knowledge-intensive calibration task (retrieval-augmented g
 - [[evidence-contrast-direction-encodes-answer-availability-not-doubt]] : In evidence-response-direction-search (M4c), the same d_ev direction (already shown to fail the covariance-shaped specificity null) is read on the auxiliary ref

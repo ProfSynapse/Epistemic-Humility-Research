@@ -73,7 +73,8 @@ third re-specification of the same limb.
 
 Once mining passed (AG0a v3, all five limbs), the atlas computed the same
 per-layer `eff_dim_frac` (representation-variance participation-ratio) and
-per-layer held-out AUROC read panel (doubt, caution, raw refusal) as
+per-layer held-out AUROC read panel (the known-unknown [KU] axis, labeled
+`doubt` in the read panel, plus caution and raw refusal) as
 `jspace-family-atlas`, at all 43 hidden-state indices (embeddings + 42
 decoder layers). The registered falsifier fired on the profile limb: the
 single maximum sits at hs_index 4 (eff_dim_frac 0.0189, depth 0.095), inside
@@ -92,17 +93,17 @@ layers (the harness report had quoted only two). The control is near chance
 at hs_index 0-8, 14-18, and 36-40, but elevated and spiky through much of the
 mid-band (max-over-contrasts 0.83-0.97 at hs_index 10-12, 24, and 28-34, and
 0.89 at hs_index 42). This is the same norm/position confound family
-`jspace-family-atlas` documented on the doubt (refused-vs-known) contrast
+`jspace-family-atlas` documented on the KU axis (refused-vs-known) contrast
 specifically, but here it is layer-patchy across all three axes rather than
 confined to one contrast, extending
 [[refused-vs-known-contrast-carries-norm-position-confound]] beyond its
 original axis-specific scope. The practical consequence: the naive
-best-per-axis layers (doubt at hs_index 21, caution at hs_index 25, raw
+best-per-axis layers (KU axis at hs_index 21, caution at hs_index 25, raw
 refusal at hs_index 26) all sit where the control itself reads 0.80-0.97 and
 are not clean reads; the clean-control layer sets with all three axes still
 clearing 0.80 are hs_index 14-18 and hs_index 36-40 (the latter containing
-the doubt-snap fleet's ported 0.94-depth write site, hs_index 40, where
-doubt is the strongest axis at 0.9949, correcting the orchestrator's
+the doubt-snap fleet's ported 0.94-depth write site, hs_index 40, where the
+KU axis is the strongest axis at 0.9949, correcting the orchestrator's
 pre-registered call that raw_refusal would read strongest there).
 
 All four gates (AG0a mining integrity, AG0 capture/refit integrity, AG1
