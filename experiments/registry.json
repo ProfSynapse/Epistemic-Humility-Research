@@ -3238,6 +3238,39 @@
     },
     {
       "checkpoint": {
+        "repo": "unsloth/Qwen3-4B",
+        "revision": "64033659d5caf1b8ed7f929b29de705e93a4d468"
+      },
+      "created_at": "2026-07-21T02:19:42Z",
+      "falsifier": "",
+      "inputs": [
+        "experiments/common/doubt-gated-caution-tighten-heldout-split/split_manifest.json"
+      ],
+      "instrument": {
+        "configs": [
+          "cell.yaml",
+          "gates.yaml"
+        ],
+        "modules": [
+          "render_qwen3_atlas.py",
+          "capture_family_atlas_cell.py",
+          "profile_and_read_family_atlas_panel.py"
+        ],
+        "persistence": {},
+        "pins": {}
+      },
+      "kg": [],
+      "prediction": "",
+      "question": "Where does raw-base Qwen3-4B's (unsloth/Qwen3-4B) workspace midband sit (eff_dim_frac profile over depth), and do the doubt, caution, and raw-refusal axes read there, supplying the family-atlas-standard layer map this substrate's own prior instrument (j-space-localization-qwen3-4b, a different JVP-based instrument) never measured?",
+      "registered": true,
+      "slug": "qwen3-4b-family-atlas",
+      "status": "draft",
+      "title": "Qwen3-4B family atlas",
+      "type": "probe-fit",
+      "verdict": ""
+    },
+    {
+      "checkpoint": {
         "repo": "Qwen/Qwen3.5-4B",
         "revision": "851bf6e806efd8d0a36b00ddf55e13ccb7b8cd0a"
       },
