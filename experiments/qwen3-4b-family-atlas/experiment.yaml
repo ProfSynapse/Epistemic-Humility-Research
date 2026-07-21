@@ -141,4 +141,10 @@ verdict: 'FALSIFIER FIRED on the profile limb: eff_dim_frac peaks early-exterior
   that the user''s interior intuition is vindicated on the read panel. The eff_dim_frac
   profile and the read-axis panel dissociate cleanly on this family, resolving the
   apparent tension with j-space-localization-qwen3-4b''s interior J-lens peak.'
-kg: []
+kg:
+- experiment:qwen3-4b-family-atlas
+- mechanism:eff-dim-peak-decoupled-from-readable-band
+- mechanism:workspace-band-peak-location-is-family-relative
+- mechanism:refused-vs-known-contrast-carries-norm-position-confound
+- mechanism:j-space-mediated-actuation-fragility
+- mechanism:epistemic-readouts-are-late-compression-summaries
