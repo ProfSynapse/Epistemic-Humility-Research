@@ -27,6 +27,7 @@ the cited doc first.
 | mistral | `mistralai/Mistral-7B-Instruct-v0.3` @ `c170c708c41dac9275d15a8fff4eca08d52bab71` | 32 | `experiments/jspace-family-atlas` (resolved) | layer 3 of 32 (0.09 depth) | layers 7-27 | ~L15-17 | 1.00 (confounded, see note) / 0.91 (L17) / 0.925 (L17) | `experiments/jspace-family-atlas/AMENDMENT.md`, resolved 2026-07-12 |
 | qwen3 | `unsloth/Qwen3-4B` (bf16 sibling of the raw-base; no revision pin recorded) | 36 | `experiments/j-space-localization-qwen3-4b` (resolved, lab-diagnostic) | hs=26 (peak), band hs23-29 (0.64-0.81 depth) | not measured -- see comparability note | not measured -- see comparability note | not measured -- see comparability note | `experiments/j-space-localization-qwen3-4b/AMENDMENT.md`, resolved 2026-07-07 |
 | qwen3.5 | `Qwen/Qwen3.5-4B` @ `851bf6e806efd8d0a36b00ddf55e13ccb7b8cd0a` | 32 (hybrid linear-attention) | `experiments/qwen35-4b-midband-doubt-snap` (**pending** -- draft, not signed; Stage C dose ladder not executed) | -- | -- | -- | -- | `experiments/qwen35-4b-midband-doubt-snap/AMENDMENT.md`, status draft as of this table's writing; do not cite numbers from it until it resolves |
+| gemma | `google/gemma-4-E4B-it` @ `fee6332c1abaafb77f6f9624236c63aa2f1d0187` | 42 blocks (hs_index 0-42 incl. embedding state) | `experiments/gemma-4-e4b-family-atlas` (resolved) | hs 4 of 42 (0.095 depth) | hs 13-42 contiguous (hs 4-6 clear marginally, broken by a raw_refusal dip at hs 7-12); interior portion hs 13-35 | hs 14-18 and hs 36-40 (clean-control set; see note) | 0.9949 / 0.9223 / 0.9272 (all at hs 40, clean control 0.592; naive per-axis maxima 1.00 / 0.9305 / 0.9345 at hs 21/25/26 are control-confounded, see note) | `experiments/gemma-4-e4b-family-atlas/AMENDMENT.md`, resolved 2026-07-20 |
 
 ## Comparability notes
 
@@ -65,6 +66,17 @@ the cited doc first.
   amendment belong in this table's numeric columns until it is signed and
   resolved; the row exists only to mark it as in-flight so the next reader
   does not re-scaffold a duplicate atlas for this substrate.
+- **gemma random-direction control**: the norm/position confound that
+  llama/mistral showed on the doubt axis appears in gemma as a LAYER-PATCHY
+  elevation of the whole random-direction baseline: max-over-contrasts
+  0.83-0.87 at hs 10-12, up to 0.97 at hs 24, 0.85-0.94 at hs 28-34, 0.89
+  at hs 42, while staying near chance (<= 0.64) at hs 0-8, hs 14-18, and
+  hs 36-40. The "best 3-axis layers" column above therefore lists the
+  clean-control set, not the raw per-axis argmax layers; the argmax layers
+  (hs 21/25/26) sit exactly where the random baseline is 0.80-0.97 and
+  must not be used for per-family actuation layer choices. Source:
+  `experiments/gemma-4-e4b-family-atlas/AMENDMENT.md` Outcome, resolved
+  2026-07-20.
 
 ## See also
 

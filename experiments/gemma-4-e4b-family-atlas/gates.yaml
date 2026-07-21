@@ -1,0 +1,100 @@
+# Pre-stated gates for gemma-4-e4b-family-atlas, transcribed verbatim from
+# AMENDMENT.md "## Gates". Do not add, drop, or retune a threshold here
+# without a signed amendment revision. Identical thresholds to
+# jspace-family-atlas (same program-standard floors), plus one extra
+# pre-outcome gate (AG0a) this cell needs that jspace-family-atlas did not:
+# a pool-mining integrity check on the freshly-mined pool, since that cell
+# reused an already-vetted fleet pool and this one does not.
+
+AG0a:
+  name: pool mining integrity (pre-outcome, this cell only; v2 per AMENDMENT.md signed revision 1, 2026-07-20)
+  # v1 of mining_completed named the fleet script verbatim and FAILED on
+  # 2026-07-20 (generation_terminates_rate 0.802 vs 0.90 at the fleet's
+  # hardcoded 200-token cap; parity smoke 2/8 on exact-string comparison of
+  # free-text answers). See AMENDMENT.md "Signed revision 1" for the failure
+  # record, diagnosis, and user approval. The 0.90 termination threshold and
+  # the role floors are unchanged in v2.
+  checks:
+    - id: mining_completed
+      rule: >-
+        prep_tuner_cell_gemma.py prepare --cell-id gemma4_e4b_it (this
+        experiment's pinned copy of the fleet script, five documented hunks
+        per signed revisions 1 and 2: ROOT re-point, 400-token generation
+        cap, 400-token parity re-decode cap, role-relevant-grade parity
+        comparator, answer-capture termination limb) exits 0; its
+        g0_prep_summary.json shows held_out_power, answer_capture_pass
+        (threshold unchanged at 0.90 on split rows; a row is captured iff
+        finish_reason != "length" OR its first-JSON answer is complete and
+        well-formed and the row is not degenerate; the raw EOS-emission
+        rate stays as a committed descriptive field), gate_auc_pass,
+        directions_byte_identical, and batched_parity_smoke.passed all
+        true. AG0a is an instrument-adequacy go/no-go, never reported as a
+        finding; per signed revision 2 a third re-specification of the
+        termination limb is not permitted, and a further failure resolves
+        the cell as "the fleet mining instrument cannot cleanly mine this
+        family"
+    - id: role_pool_adequacy
+      rule: "mined split_manifest.json role_counts meet the SAME held-out floors as AG0 below (confab >= 150 held-out, known_correct_answered >= 250 held-out) before any atlas capture is launched"
+
+AG0:
+  name: integrity (pre-outcome)
+  checks:
+    - id: capture_coverage
+      rule: "capture covers >= 95% of the cell's manifest rows at every layer"
+      threshold: 0.95
+      scope: per_cell_per_layer
+    - id: direction_refit_determinism
+      rule: "direction refits are byte-identical under the fixed seed"
+      method: "fit twice from the same captured H under seed 20260707; compare byte-for-byte"
+    - id: held_out_power_survives_attrition
+      rule: >-
+        held-out power carried over from the freshly-mined pool (confab >=
+        150, known-correct >= 250 -- same program-standard floors as
+        jspace-family-atlas) still holds after capture attrition
+      thresholds:
+        confab_held_out_minimum: 150
+        known_correct_answered_held_out_minimum: 250
+
+AG1:
+  name: profile
+  checks:
+    - id: eff_dim_frac_every_layer
+      rule: "eff_dim_frac profile is computed at every layer with the registered estimator"
+      scope: "hs_index 0..42 inclusive"
+    - id: profile_reproducibility
+      rule: >-
+        reproducibility re-run on a 20% row subsample keeps the peak layer
+        within +/- 1 layer
+      subsample_frac: 0.20
+      tolerance_layers: 1
+
+AG2:
+  name: read panel
+  checks:
+    - id: per_layer_auroc_with_ci
+      rule: >-
+        per-layer held-out AUROCs reported with CIs for all three axes plus
+        the standard random-direction control; no threshold gate on the
+        values themselves beyond the prediction/falsifier
+      axes: [doubt, caution, raw_refusal]
+      ci_method: bootstrap
+      bootstrap_resamples: 2000
+      note: "AG2 itself has no pass/fail numeric threshold; the numbers are the atlas. Prediction/falsifier (AMENDMENT.md) are adjudicated separately at resolve, not by this gate."
+
+# Prediction / falsifier restated for cross-reference only (source of truth
+# remains AMENDMENT.md; do not edit here without a signed revision there).
+# Extended per SKILL.md gotchas to explicitly name early-exterior and
+# late-exterior peaks as outcomes, matching the guidance the family-atlas
+# skill added after jspace-family-atlas's first run landed in an unnamed gap.
+prediction_restated: >-
+  Gemma-4-E4B-it shows an interior workspace band: a contiguous set of
+  layers strictly inside (20%, 85%) depth where eff_dim_frac peaks AND all
+  three read axes (doubt, caution, raw refusal) hold held-out AUROC >= 0.80,
+  with the band's peak layer differing from the fleet's ported 0.94-depth
+  layer (hs_index 40).
+falsifier_restated: >-
+  No interior eff_dim_frac peak exists (the profile is monotone to the last
+  layer, OR the profile peaks in the outer 20% of depth on either end --
+  early-exterior, as jspace-family-atlas found for both llama and mistral,
+  or late-exterior), OR no layer inside (20%, 85%) depth reaches held-out
+  AUROC >= 0.80 on all three axes simultaneously.

@@ -1,0 +1,71 @@
+{
+  "direction_refit_determinism_pass": true,
+  "layers_checked": [
+    4,
+    13,
+    40
+  ],
+  "per_layer": {
+    "4": {
+      "caution": {
+        "byte_identical": true,
+        "max_abs_diff": 0.0,
+        "norm_run1": 1.0,
+        "norm_run2": 1.0
+      },
+      "doubt": {
+        "byte_identical": true,
+        "max_abs_diff": 0.0,
+        "norm_run1": 0.9999999999999999,
+        "norm_run2": 0.9999999999999999
+      },
+      "raw_refusal": {
+        "byte_identical": true,
+        "max_abs_diff": 0.0,
+        "norm_run1": 1.0,
+        "norm_run2": 1.0
+      }
+    },
+    "13": {
+      "caution": {
+        "byte_identical": true,
+        "max_abs_diff": 0.0,
+        "norm_run1": 0.9999999999999999,
+        "norm_run2": 0.9999999999999999
+      },
+      "doubt": {
+        "byte_identical": true,
+        "max_abs_diff": 0.0,
+        "norm_run1": 1.0,
+        "norm_run2": 1.0
+      },
+      "raw_refusal": {
+        "byte_identical": true,
+        "max_abs_diff": 0.0,
+        "norm_run1": 0.9999999999999999,
+        "norm_run2": 0.9999999999999999
+      }
+    },
+    "40": {
+      "caution": {
+        "byte_identical": true,
+        "max_abs_diff": 0.0,
+        "norm_run1": 0.9999999999999999,
+        "norm_run2": 0.9999999999999999
+      },
+      "doubt": {
+        "byte_identical": true,
+        "max_abs_diff": 0.0,
+        "norm_run1": 1.0,
+        "norm_run2": 1.0
+      },
+      "raw_refusal": {
+        "byte_identical": true,
+        "max_abs_diff": 0.0,
+        "norm_run1": 1.0,
+        "norm_run2": 1.0
+      }
+    }
+  },
+  "seed": 20260707
+}

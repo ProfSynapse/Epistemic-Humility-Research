@@ -1,0 +1,36 @@
+{
+  "answer_capture_pass": true,
+  "answer_capture_rate": 0.9285968028419183,
+  "batched_parity_smoke": {
+    "mismatches": [],
+    "n_rows": 8,
+    "passed": true
+  },
+  "counts": {
+    "confab": {
+      "fit": 840,
+      "fit_only": 0,
+      "held_out": 1263
+    },
+    "known_correct_answered": {
+      "fit": 168,
+      "fit_only": 0,
+      "held_out": 251
+    },
+    "unknown_refused": {
+      "fit": 0,
+      "fit_only": 293,
+      "held_out": 0
+    }
+  },
+  "directions_byte_identical": true,
+  "dose_sweep_config": "/workspace/repo/experiments/doubt-snap-cross-family-confirmatory/analysis/gemma4_e4b_it/steer_dose_fit.yaml",
+  "eos_emission_rate": 0.8849023090586146,
+  "gate_auc_on_fit": 0.9472222222222222,
+  "gate_auc_pass": true,
+  "generation_terminates_rate": 0.8849023090586146,
+  "held_out_power": true,
+  "hidden_dim": 2560,
+  "layer_idx": 39,
+  "n_layers": 42
+}
