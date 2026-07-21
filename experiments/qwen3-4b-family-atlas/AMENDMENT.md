@@ -206,13 +206,6 @@ blocks launch instead, and which the lead should resolve (and decide
 whether it warrants its own pre-outcome gate, or is better handled as a
 plain precondition) before signing.
 
-## Predictions scoreboard
-
-| Predictor | Call |
-|-----------|------|
-| orchestrator | |
-| user | |
-
 ## Outcome
 
 Filled at resolve. Record the verdict, the gate results, and the

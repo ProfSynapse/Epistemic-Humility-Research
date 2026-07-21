@@ -3242,7 +3242,7 @@
         "revision": "64033659d5caf1b8ed7f929b29de705e93a4d468"
       },
       "created_at": "2026-07-21T02:19:42Z",
-      "falsifier": "",
+      "falsifier": "Fires if the profile peak lands in the outer 20% of depth on either end (early- or late-exterior, as in llama, mistral, and gemma), or if no layer inside (20%, 85%) depth reaches held-out AUROC >= 0.80 on all three axes simultaneously. See AMENDMENT.md \"Falsifier\" for the full registered wording.",
       "inputs": [
         "experiments/common/doubt-gated-caution-tighten-heldout-split/split_manifest.json",
         "experiments/qwen3-4b-family-atlas/unknown_refused_manifest.json"
@@ -3262,7 +3262,7 @@
         "pins": {}
       },
       "kg": [],
-      "prediction": "",
+      "prediction": "Program-standard family-atlas prediction, kept deliberately: the eff_dim_frac profile peaks at an interior layer (inside 20%-85% of depth) and a contiguous band containing that peak holds all three axes (doubt, caution, raw_refusal) at held-out AUROC >= 0.80. See AMENDMENT.md \"Prediction\" and \"Predictions scoreboard\" for the two pre-sign calls (orchestrator: early-exterior peak + J-lens dissociation sub-call; user: interior peak).",
       "question": "Where does raw-base Qwen3-4B's (unsloth/Qwen3-4B) workspace midband sit (eff_dim_frac profile over depth), and do the doubt, caution, and raw-refusal axes read there, supplying the family-atlas-standard layer map this substrate's own prior instrument (j-space-localization-qwen3-4b, a different JVP-based instrument) never measured?",
       "registered": true,
       "slug": "qwen3-4b-family-atlas",
